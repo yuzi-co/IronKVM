@@ -76,6 +76,8 @@ func getLatest() (*Latest, error) {
 		return nil, err
 	}
 
+	// latestClient carries both the proxy and the redirect rule, so the manifest
+	// fetch reaches a custom update server the same way the download does.
 	manifestURL, err := joinUpdateURL(baseURL, "latest.json")
 	if err != nil {
 		return nil, err
