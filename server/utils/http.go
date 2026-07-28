@@ -14,9 +14,21 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const maxDownloadSize = int64(1024 * 1024 * 1024)
+// DefaultDownloadTimeout bounds a whole download. Without it a hostile or
+// wedged server pins the goroutine and the socket for the life of the process.
+const DefaultDownloadTimeout = 10 * time.Minute
 
-var downloadClient = NewUpdateHTTPClient(15 * time.Minute)
+// ErrDownloadTooLarge is returned when a body runs past the caller's limit.
+var ErrDownloadTooLarge = errors.New("download exceeds the maximum size")
+
+type DownloadOptions struct {
+	// MaxBytes caps the body. Required: the rootfs lives on the SD card, so an
+	// unbounded body fills the device.
+	MaxBytes int64
+
+	// Timeout defaults to DefaultDownloadTimeout.
+	Timeout time.Duration
+}
 
 func NewAuthenticatedRequest(method string, rawURL string, body io.Reader) (*http.Request, error) {
 	req, err := http.NewRequest(method, rawURL, body)
@@ -66,23 +78,28 @@ func sameUpdateHost(left *url.URL, right *url.URL) bool {
 	return strings.EqualFold(left.Host, right.Host)
 }
 
-func Download(req *http.Request, target string) error {
+func Download(req *http.Request, target string, opts DownloadOptions) error {
+	if opts.MaxBytes <= 0 {
+		return errors.New("download size limit is required")
+	}
+
+	timeout := opts.Timeout
+	if timeout <= 0 {
+		timeout = DefaultDownloadTimeout
+	}
+
 	log.Debugf("downloading %s to %s", req.URL.Redacted(), target)
-	err := os.MkdirAll(filepath.Dir(target), 0o755)
-	if err != nil {
+
+	if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
 		log.Errorf("create dir %s err: %s", filepath.Dir(target), err)
 		return err
 	}
-	out, err := os.OpenFile(target, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o755)
-	if err != nil {
-		log.Errorf("cannot create file '%s', error: %s", target, err)
-		return err
-	}
-	defer func() {
-		_ = out.Close()
-	}()
 
-	resp, err := downloadClient.Do(req)
+	// The client is built per call so that the caller's timeout applies, and it
+	// comes from NewUpdateHTTPClient so that a redirect keeps the credentials a
+	// custom update server needs - but only to the same host, and never from
+	// https to http.
+	resp, err := NewUpdateHTTPClient(timeout).Do(req)
 	if err != nil {
 		log.Errorf("request to %s failed", req.URL.Redacted())
 		return errors.New("update website is inaccessible right now")
@@ -102,13 +119,40 @@ func Download(req *http.Request, target string) error {
 		return errors.New("unsupported content type")
 	}
 
-	written, err := io.Copy(out, io.LimitReader(resp.Body, maxDownloadSize+1))
+	if resp.ContentLength > opts.MaxBytes {
+		log.Errorf("declared size %d exceeds the %d byte limit", resp.ContentLength, opts.MaxBytes)
+		return ErrDownloadTooLarge
+	}
+
+	// Nothing has verified this file yet, so it must not be executable.
+	out, err := os.OpenFile(target, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o600)
 	if err != nil {
-		log.Errorf("download file to %s err: %s", target, err)
+		log.Errorf("cannot create file '%s', error: %s", target, err)
 		return err
 	}
-	if written > maxDownloadSize {
-		return fmt.Errorf("download exceeds %d bytes", maxDownloadSize)
+
+	if err := copyWithin(out, resp.Body, opts.MaxBytes); err != nil {
+		_ = out.Close()
+		_ = os.Remove(target)
+
+		return err
+	}
+
+	return out.Close()
+}
+
+// copyWithin copies at most max bytes and fails if the source has more, so a
+// server that lies about Content-Length cannot fill the disk.
+func copyWithin(dst io.Writer, src io.Reader, max int64) error {
+	written, err := io.Copy(dst, io.LimitReader(src, max+1))
+	if err != nil {
+		log.Errorf("download failed: %s", err)
+		return fmt.Errorf("download failed: %w", err)
+	}
+
+	if written > max {
+		log.Errorf("download exceeded the %d byte limit", max)
+		return ErrDownloadTooLarge
 	}
 
 	return nil
