@@ -1,10 +1,11 @@
 package direct
 
 import (
-	"NanoKVM-Server/middleware"
 	"NanoKVM-Server/service/stream"
 	"strconv"
 	"time"
+
+	"NanoKVM-Server/middleware"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -17,7 +18,7 @@ var (
 	streamer = newStreamer()
 	upgrader = websocket.Upgrader{
 		WriteBufferSize: 256 * 1024,
-		CheckOrigin:     middleware.CheckWebSocketOrigin,
+		CheckOrigin:     middleware.SameOrigin,
 	}
 )
 
