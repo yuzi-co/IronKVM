@@ -20,7 +20,7 @@ import (
 var gatewayUpgrader = websocket.Upgrader{
 	ReadBufferSize:  4096,
 	WriteBufferSize: 4096,
-	CheckOrigin:     middleware.CheckWebSocketOrigin,
+	CheckOrigin:     middleware.SameOrigin,
 }
 
 type relayResult struct {
