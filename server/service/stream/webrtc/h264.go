@@ -14,10 +14,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// SDP plus ICE candidates stay well below this.
+const maxSignalingSize = 256 * 1024
+
 var (
 	upgrader = websocket.Upgrader{
 		WriteBufferSize: 256 * 1024,
-		CheckOrigin:     middleware.CheckWebSocketOrigin,
+		CheckOrigin:     middleware.SameOrigin,
 	}
 	globalManager *WebRTCManager
 	managerOnce   sync.Once
@@ -47,6 +50,8 @@ func Connect(c *gin.Context) {
 
 	var zeroTime time.Time
 	_ = wsConn.SetReadDeadline(zeroTime)
+	// Signaling messages carry SDP and ICE candidates, nothing larger.
+	wsConn.SetReadLimit(maxSignalingSize)
 
 	// create video connection
 	iceServers := createICEServers()

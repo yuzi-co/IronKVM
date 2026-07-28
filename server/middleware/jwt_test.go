@@ -177,29 +177,65 @@ func TestWatchWebSocketClosesRevokedConnection(t *testing.T) {
 	}
 }
 
-func TestCheckWebSocketOrigin(t *testing.T) {
-	tests := []struct {
-		origin string
-		host   string
-		want   bool
-	}{
-		{"", "kvm.local", true},
-		{"http://kvm.local", "kvm.local", true},
-		{"http://KVM.local", "kvm.local", true},
-		{"http://kvm.local:8080", "kvm.local:8080", true},
-		{"http://kvm.local:8081", "kvm.local:8080", false},
-		{"http://evil.example", "kvm.local", false},
+// The origin rule this fork applies is its own: it guards every authenticated
+// request, not only the websocket upgrades, because the session travels in a
+// cookie and a page the operator has open can POST to any endpoint without an
+// upgrade. It compares the hostname alone, because the device serves the same
+// UI over http and https, and it stands down when authentication is switched
+// off. See middleware/origin.go.
+func TestCheckTokenAcceptsValidTokenFromSameOrigin(t *testing.T) {
+	if status := requestWithOriginHeader(t, "https://nanokvm.local"); status != http.StatusNoContent {
+		t.Fatalf("same-origin request with a valid token = %d, want %d", status, http.StatusNoContent)
 	}
-	for _, test := range tests {
-		request := httptest.NewRequest(http.MethodGet, "http://"+test.host+"/api/ws", nil)
-		request.Host = test.host
-		if test.origin != "" {
-			request.Header.Set("Origin", test.origin)
-		}
-		if got := CheckWebSocketOrigin(request); got != test.want {
-			t.Fatalf("origin %q host %q = %v, want %v", test.origin, test.host, got, test.want)
-		}
+}
+
+func TestCheckTokenRejectsValidTokenFromForeignOrigin(t *testing.T) {
+	// The cookie is valid; only the Origin differs. This is the CSRF and
+	// cross-site websocket hijacking case.
+	if status := requestWithOriginHeader(t, "https://evil.example.com"); status != http.StatusForbidden {
+		t.Fatalf("cross-site request = %d, want %d", status, http.StatusForbidden)
 	}
+}
+
+func TestCheckTokenAcceptsValidTokenWithoutOrigin(t *testing.T) {
+	// A non-browser client sends no Origin, and cannot be driven by a web page.
+	if status := requestWithOriginHeader(t, ""); status != http.StatusNoContent {
+		t.Fatalf("request without an origin = %d, want %d", status, http.StatusNoContent)
+	}
+}
+
+func requestWithOriginHeader(t *testing.T, origin string) int {
+	t.Helper()
+	gin.SetMode(gin.TestMode)
+
+	store := authn.NewStore(filepath.Join(t.TempDir(), "pwd"))
+	admin, ok, err := store.Authenticate("admin", "admin")
+	if err != nil || !ok {
+		t.Fatalf("default login: ok=%v err=%v", ok, err)
+	}
+	restore := useTestAuthStore(t, store)
+	defer restore()
+
+	token, err := GenerateJWT(admin.Username, admin.TokenVersion)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	router := gin.New()
+	router.POST("/api/vm/system/reboot", CheckToken(), func(c *gin.Context) {
+		c.Status(http.StatusNoContent)
+	})
+
+	request := httptest.NewRequest(http.MethodPost, "/api/vm/system/reboot", nil)
+	request.Host = "nanokvm.local"
+	request.AddCookie(&http.Cookie{Name: CookieName, Value: token})
+	if origin != "" {
+		request.Header.Set("Origin", origin)
+	}
+
+	recorder := httptest.NewRecorder()
+	router.ServeHTTP(recorder, request)
+	return recorder.Code
 }
 
 func requestWithToken(handler http.Handler, path, token string) int {
