@@ -2,10 +2,6 @@ package middleware
 
 import (
 	"context"
-	"net"
-	"net/http"
-	"net/url"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -69,55 +65,4 @@ func WatchWebSocket(ctx context.Context, connection *websocket.Conn) func() {
 		}
 	}()
 	return func() { stopOnce.Do(func() { close(stopped) }) }
-}
-
-func CheckWebSocketOrigin(request *http.Request) bool {
-	origin := strings.TrimSpace(request.Header.Get("Origin"))
-	if origin == "" {
-		return true
-	}
-	parsed, err := url.Parse(origin)
-	if err != nil || parsed.Host == "" {
-		return false
-	}
-	requestScheme := "http"
-	if request.TLS != nil {
-		requestScheme = "https"
-	}
-	if forwarded := strings.TrimSpace(strings.Split(request.Header.Get("X-Forwarded-Proto"), ",")[0]); forwarded != "" {
-		requestScheme = strings.ToLower(forwarded)
-	}
-	return equalOrigin(parsed, request.Host, requestScheme)
-}
-
-func equalOrigin(origin *url.URL, requestHost, requestScheme string) bool {
-	originHost, originPort := splitHostPort(origin.Host)
-	host, port := splitHostPort(requestHost)
-	if !strings.EqualFold(originHost, host) {
-		return false
-	}
-	if originPort == "" {
-		originPort = defaultPort(origin.Scheme)
-	}
-	if port == "" {
-		port = defaultPort(requestScheme)
-	}
-	return originPort == port
-}
-
-func splitHostPort(value string) (string, string) {
-	host, port, err := net.SplitHostPort(value)
-	if err == nil {
-		return host, port
-	}
-	return strings.Trim(value, "[]"), ""
-}
-
-func defaultPort(scheme string) string {
-	switch strings.ToLower(scheme) {
-	case "https", "wss":
-		return "443"
-	default:
-		return "80"
-	}
 }
