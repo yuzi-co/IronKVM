@@ -39,11 +39,18 @@ func NewAuthenticatedRequest(method string, rawURL string, body io.Reader) (*htt
 	return req, nil
 }
 
+// NewUpdateHTTPClient builds the client every outbound update request uses. It
+// starts from OutboundClient so that a configured proxy applies, and adds the
+// redirect rule that keeps a custom update server's credentials usable.
+//
+// The two have to be one client rather than two. A caller that picked the
+// redirect behaviour would lose the proxy, and a device that can only reach the
+// internet through a proxy would then fail every update.
 func NewUpdateHTTPClient(timeout time.Duration) *http.Client {
-	return &http.Client{
-		Timeout:       timeout,
-		CheckRedirect: preserveBasicAuthRedirect,
-	}
+	client := OutboundClient(timeout)
+	client.CheckRedirect = preserveBasicAuthRedirect
+
+	return client
 }
 
 func preserveBasicAuthRedirect(req *http.Request, via []*http.Request) error {
@@ -72,6 +79,10 @@ func sameUpdateHost(left *url.URL, right *url.URL) bool {
 
 func Download(req *http.Request, target string, maxBytes int64, beforeWrite func(contentLength int64) error) (DownloadInfo, error) {
 	log.Debugf("downloading %s to %s", req.URL.Redacted(), target)
+	// downloadClient comes from NewUpdateHTTPClient, so the download goes
+	// through the configured proxy and a redirect keeps the credentials a
+	// custom update server needs. Its transport resolves the proxy per
+	// request, so building the client at init does not freeze the setting.
 	resp, err := downloadClient.Do(req)
 	if err != nil {
 		log.Errorf("request to %s failed", req.URL.Redacted())
