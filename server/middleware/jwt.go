@@ -67,6 +67,29 @@ func CheckToken() gin.HandlerFunc {
 	}
 }
 
+// CheckSession guards routes that an api key must not reach: the ones that
+// issue and revoke the keys themselves. A stolen key already has the run of
+// the API, but this stops it minting further keys that would outlive the
+// password change made to shut it out.
+func CheckSession() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if !allowByOrigin(c.Request) {
+			abortForbiddenOrigin(c)
+			return
+		}
+
+		principal, token, ok := authenticateBySession(c)
+		if !ok {
+			abortUnauthorized(c)
+			return
+		}
+
+		c.Set(principalContextKey, principal)
+		c.Set(tokenContextKey, token)
+		c.Next()
+	}
+}
+
 func watchSessionState(ctx context.Context, cancel context.CancelFunc, username string, tokenVersion uint64, interval time.Duration) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
@@ -145,7 +168,22 @@ func CheckTokenOrLoopbackInternalToken() gin.HandlerFunc {
 	}
 }
 
+// authenticate accepts either of the two credentials that speak for a user: a
+// login session, or an api key issued to one. CheckSession uses the session
+// half on its own.
 func authenticate(c *gin.Context) (Principal, *Token, bool) {
+	if principal, token, ok := authenticateBySession(c); ok {
+		return principal, token, true
+	}
+
+	if principal, ok := authenticateByAPIKey(c.Request); ok {
+		return principal, nil, true
+	}
+
+	return Principal{}, nil, false
+}
+
+func authenticateBySession(c *gin.Context) (Principal, *Token, bool) {
 	conf := config.GetInstance()
 	if conf.Authentication == "disable" {
 		return Principal{Username: "admin", Role: authn.RoleAdmin}, nil, true
