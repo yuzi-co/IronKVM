@@ -29,4 +29,12 @@ func authRouter(r *gin.Engine) {
 	admin.PUT("/auth/users/:username", service.UpdateUser)
 	admin.DELETE("/auth/users/:username", service.DeleteUser)
 	admin.POST("/auth/users/:username/password", service.ChangeUserPassword)
+
+	// Issuing and revoking keys is session work: an api key must not be able
+	// to mint further keys.
+	keys := r.Group("/api").Use(middleware.CheckSession())
+
+	keys.GET("/auth/api-keys", service.GetAPIKeys)          // list api keys
+	keys.POST("/auth/api-keys", service.CreateAPIKey)       // create an api key
+	keys.DELETE("/auth/api-keys/:id", service.DeleteAPIKey) // revoke an api key
 }
