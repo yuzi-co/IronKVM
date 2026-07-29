@@ -475,8 +475,18 @@ func (s *Store) saveLocked(db *database) error {
 	return dir.Sync()
 }
 
-func defaultDatabase() (*database, error) {
+// defaultPasswordHash is derived once. loadLocked builds the default database
+// on every read while the account file is absent, and bcrypt at the default
+// cost is about a second of a 1GHz C906 - paid on the request path, and on the
+// exact path someone guessing passwords would be hammering. The hash is only
+// kept in memory: the file gets whichever one was current when it was written.
+var defaultPasswordHash = sync.OnceValues(func() (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(defaultPassword), bcrypt.DefaultCost)
+	return string(hash), err
+})
+
+func defaultDatabase() (*database, error) {
+	hash, err := defaultPasswordHash()
 	if err != nil {
 		return nil, err
 	}
@@ -488,7 +498,7 @@ func defaultDatabase() (*database, error) {
 		Version: currentFileVersion,
 		Users: []User{{
 			Username:           defaultUsername,
-			PasswordHash:       string(hash),
+			PasswordHash:       hash,
 			Role:               RoleAdmin,
 			Enabled:            true,
 			TokenVersion:       tokenVersion,
