@@ -22,6 +22,7 @@ import {
 import { Head } from '@/components/head.tsx';
 
 import { CaptureStatusOverlay, useCaptureStatus } from './capture-status';
+import { AbsoluteMouseWarning } from './hid-status';
 import { Keyboard } from './keyboard';
 import { Menu } from './menu';
 import { Mouse } from './mouse';
@@ -209,6 +210,7 @@ export const Desktop = () => {
 
       {isBigScreen && <Notification />}
       <H264ModeNotification />
+      <AbsoluteMouseWarning />
 
       {videoMode && resolution && (
         <div className="relative flex h-full min-h-0 w-full min-w-0">
