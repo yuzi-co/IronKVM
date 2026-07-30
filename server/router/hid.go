@@ -24,6 +24,8 @@ func hidRouter(r *gin.Engine) {
 	api.GET("/hid/shortcuts", service.GetShortcuts)           // get shortcuts
 	api.GET("/hid/shortcut/leader-key", service.GetLeaderKey) // get shortcut leader key
 
+	api.GET("/hid/status", service.GetHidStatus) // per-endpoint delivery state
+
 	api.GET("/hid/mode", service.GetHidMode) // get hid mode
 	api.GET("/hid/leds", service.GetKeyboardLedStatus)
 
