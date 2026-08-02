@@ -8,6 +8,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// captureLifecycle mirrors the real implementation so the state machine behaves
+// the same way in a build with no hardware behind it.
+var captureLifecycle = newCaptureGate()
+
 // This stub replaces the cgo capture bindings when the "novision" build tag is
 // set. The real implementation links against libkvm in dl_lib through cgo, so
 // building it needs CGO_ENABLED=1 and the riscv64 cross-compiler. Without this
@@ -46,4 +50,18 @@ func (k *KvmVision) SetGop(gop uint8) {}
 
 func (k *KvmVision) SetFrameDetect(frame uint8) {}
 
-func (k *KvmVision) Close() {}
+func (k *KvmVision) Close() {
+	captureLifecycle.stop(func() {})
+}
+
+func (k *KvmVision) StopCapture() {
+	captureLifecycle.stop(func() {})
+}
+
+func (k *KvmVision) ResumeCapture() {
+	captureLifecycle.resume(func() {})
+}
+
+func (k *KvmVision) IsCapturing() bool {
+	return captureLifecycle.isLive()
+}
