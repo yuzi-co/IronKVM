@@ -791,6 +791,7 @@ const en = {
       toggle: 'Toggle Fullscreen'
     },
     speaker: {
+      title: 'Speaker',
       unmute: 'Unmute',
       mute: 'Mute'
     },
