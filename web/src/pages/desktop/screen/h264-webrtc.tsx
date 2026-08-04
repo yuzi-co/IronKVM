@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { notification, Spin } from 'antd';
 import clsx from 'clsx';
-import { useAtom, useAtomValue } from 'jotai';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { useTranslation } from 'react-i18next';
 import { w3cwebsocket as W3cWebSocket } from 'websocket';
 
 import * as storage from '@/lib/localstorage.ts';
 import { getBaseUrl } from '@/lib/service.ts';
-import { audioMutedAtom } from '@/jotai/audio.ts';
+import { audioMutedAtom, hasAudioAtom } from '@/jotai/audio.ts';
 import { mouseStyleAtom } from '@/jotai/mouse.ts';
 import { videoScaleAtom } from '@/jotai/screen.ts';
 
@@ -36,6 +36,7 @@ export const H264Webrtc = () => {
   const [connectionAttempt, setConnectionAttempt] = useState(0);
   const [notificationApi, contextHolder] = notification.useNotification();
   const isMuted = useAtomValue(audioMutedAtom);
+  const setHasAudio = useSetAtom(hasAudioAtom);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -161,8 +162,11 @@ export const H264Webrtc = () => {
           videoElement.srcObject = new MediaStream([event.track]);
         }
 
+        // An audio track arrives only when the device has the USB audio
+        // gadget, so this event is what tells the UI to offer a speaker.
         if (audioElement && event.track.kind === 'audio') {
           audioElement.srcObject = new MediaStream([event.track]);
+          setHasAudio(true);
         }
       };
 
@@ -307,6 +311,9 @@ export const H264Webrtc = () => {
       if (audioElement) {
         audioElement.srcObject = null;
       }
+      // The track goes with the peer connection, so the speaker button goes
+      // with it. A reconnect sets this again if a track still arrives.
+      setHasAudio(false);
       videoOfferSent.current = false;
       videoIceCandidates.current = [];
 
@@ -316,7 +323,7 @@ export const H264Webrtc = () => {
       clearTimeout(loadingTimer);
       clearTimeout(connectionTimeoutTimer);
     };
-  }, [connectionAttempt, notificationApi]);
+  }, [connectionAttempt, notificationApi, setHasAudio]);
 
   useEffect(() => {
     return () => {
