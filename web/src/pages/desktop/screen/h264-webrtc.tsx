@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { w3cwebsocket as W3cWebSocket } from 'websocket';
 
 import { getBaseUrl } from '@/lib/service.ts';
+import { audioMutedAtom } from '@/jotai/audio.ts';
 import { mouseStyleAtom } from '@/jotai/mouse.ts';
 
 import { ScreenViewport } from './viewport.tsx';
@@ -33,8 +34,10 @@ export const H264Webrtc = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [connectionAttempt, setConnectionAttempt] = useState(0);
   const [notificationApi, contextHolder] = notification.useNotification();
+  const isMuted = useAtomValue(audioMutedAtom);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const videoOfferSent = useRef(false);
   const videoIceCandidates = useRef<RTCIceCandidate[]>([]);
   const translationRef = useRef(t);
@@ -47,6 +50,7 @@ export const H264Webrtc = () => {
     const url = `${getBaseUrl('ws')}/api/stream/h264`;
     const ws = new W3cWebSocket(url);
     const videoElement = videoRef.current;
+    const audioElement = audioRef.current;
 
     let video: RTCPeerConnection | null = null;
     let heartbeatTimer: ReturnType<typeof setInterval> | null = null;
@@ -125,7 +129,7 @@ export const H264Webrtc = () => {
           videoOfferSent.current = true;
           const offer = await peer.createOffer({
             offerToReceiveVideo: true,
-            offerToReceiveAudio: false
+            offerToReceiveAudio: true
           });
 
           await peer.setLocalDescription(offer);
@@ -155,6 +159,10 @@ export const H264Webrtc = () => {
         if (videoElement && event.track.kind === 'video') {
           videoElement.srcObject = new MediaStream([event.track]);
         }
+
+        if (audioElement && event.track.kind === 'audio') {
+          audioElement.srcObject = new MediaStream([event.track]);
+        }
       };
 
       peer.onicecandidate = (event) => {
@@ -164,6 +172,7 @@ export const H264Webrtc = () => {
       };
 
       peer.addTransceiver('video', { direction: 'recvonly' });
+      peer.addTransceiver('audio', { direction: 'recvonly' });
     };
 
     const handleVideoAnswer = (data: RTCSessionDescriptionInit) => {
@@ -294,6 +303,9 @@ export const H264Webrtc = () => {
       if (videoElement) {
         videoElement.srcObject = null;
       }
+      if (audioElement) {
+        audioElement.srcObject = null;
+      }
       videoOfferSent.current = false;
       videoIceCandidates.current = [];
 
@@ -310,6 +322,12 @@ export const H264Webrtc = () => {
       notificationApi.destroy(WEBRTC_CONNECTION_FAILED_NOTIFICATION_KEY);
     };
   }, [notificationApi]);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.muted = isMuted;
+    }
+  }, [isMuted]);
 
   return (
     <div className="relative h-full min-h-0 w-full min-w-0 overflow-hidden">
@@ -333,6 +351,8 @@ export const H264Webrtc = () => {
           }}
         />
       </ScreenViewport>
+
+      <audio ref={audioRef} muted autoPlay playsInline />
 
       {isLoading && (
         <div className="pointer-events-none absolute inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-[2px] transition-all duration-300">
