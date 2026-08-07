@@ -78,5 +78,7 @@ func vmRouter(r *gin.Engine) {
 	admin.DELETE("/vm/autostart/:name", service.DeleteAutostart)  // delete autostart script
 	admin.POST("/vm/autostart/:name", service.UploadAutostart)    // upload autostart script
 
+	api.GET("/vm/ion", service.GetIon) // get ION carveout state
+
 	admin.POST("/vm/system/reboot", service.Reboot) // reboot system
 }
