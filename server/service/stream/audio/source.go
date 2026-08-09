@@ -18,32 +18,26 @@ const (
 	// ChunkBytes is 20 ms of 48 kHz stereo S16_LE: 960 frames of 4 bytes.
 	ChunkBytes = 960 * 4
 
-	// restartLimit and restartWindow decide when a failing child stops being
-	// worth retrying.
-	//
-	// The limit is a wall-clock budget, not a count: the backoff doubles from
-	// minBackoff, so five attempts against a card that is simply absent are
-	// spent in about three seconds. Three seconds is not enough. Every gadget
-	// rebuild takes the card away for a moment - the audio switch itself, the
-	// virtual disk and network switches, and the USB PHY reset in
-	// service/hid - and losing that race retires capture for good, because
-	// StartAudioStream has one caller and it fires on an ICE state change that
-	// a settled connection never produces again.
-	//
-	// Eight attempts reach the 5 s cap and span about sixteen seconds, which
-	// covers a rebuild with room left over.
-	restartLimit  = 8
-	restartWindow = time.Minute
-
 	// stderrDrainTimeout bounds the wait for the child's last stderr line
 	// before we reap it. Short: the line is already written by then in every
 	// case that matters, and this sits on the teardown path.
 	stderrDrainTimeout = 200 * time.Millisecond
 
-	// minRunDuration is the minimum time a child must run to reset the failure
-	// budget. A child that emits a single chunk and exits is not a healthy
-	// restart; it is a crash loop.
+	// minRunDuration is the minimum time a child must run to count as healthy.
+	// A child that emits a single chunk and exits is not a healthy restart; it
+	// is a crash loop.
 	minRunDuration = 5 * time.Second
+
+	// quietAfterFailures is how many consecutive failures are worth a line
+	// each. The source says so once more at that count and then writes nothing
+	// until it recovers.
+	//
+	// Capture is never retired, so without this a source that cannot work
+	// writes a line per attempt for as long as a viewer listens. A managed
+	// host that plays nothing streams nothing, and arecord fails every time,
+	// so that is the ordinary case rather than a rare one. The log it fills is
+	// /tmp/nanokvm-server.log, which S99vidiag and the supervisor both read.
+	quietAfterFailures = 5
 
 	// stderrLimit caps what is kept of the child's stderr. ALSA states its
 	// reason in one short line, so this is generous; the cap is there because
@@ -133,25 +127,28 @@ func newArecord() *exec.Cmd {
 	)
 }
 
-// Run calls handle with each full chunk until Stop is called, or until the
-// child has failed restartLimit times inside restartWindow. The slice handed
+// Run calls handle with each full chunk until Stop is called. The slice handed
 // to handle is reused on the next read and is only valid until handle returns.
 // Run blocks.
+//
+// A failing child is retried for as long as the caller listens, and capture is
+// never retired. A host that streams no audio is the ordinary idle state of
+// this device rather than a fault, and it becomes audio again the moment the
+// host plays something. Retiring capture would make that moment produce
+// nothing: StartAudioStream has one caller, and it fires on an ICE state
+// change that a settled connection never produces again.
+//
+// What the retry must not do is cost anything while it waits. The backoff
+// climbs to maxBackoff, and the log falls quiet after quietAfterFailures.
 func (s *Source) Run(handle func([]byte)) {
 	chunk := make([]byte, ChunkBytes)
 	backoff := s.minBackoff
 
-	var restarts int
-	windowStart := time.Now()
+	var failures int
 
 	for {
 		if s.isStopped() {
 			return
-		}
-
-		if time.Since(windowStart) > restartWindow {
-			windowStart = time.Now()
-			restarts = 0
 		}
 
 		delivered, uptime := s.runOnce(chunk, handle)
@@ -159,20 +156,27 @@ func (s *Source) Run(handle func([]byte)) {
 		if delivered && uptime > minRunDuration {
 			// The child produced audio and ran long enough, so the next failure
 			// is a fresh one.
+			if failures >= quietAfterFailures {
+				log.Infof("audio capture recovered after %d failed attempts", failures)
+			}
+
 			backoff = s.minBackoff
-			windowStart = time.Now()
-			restarts = 0
+			failures = 0
 		} else {
 			// This branch is the negation of the condition above, so every
 			// arrival here is a child that failed or one that did not run
 			// long enough to count.
-			log.Warnf("audio capture exited (uptime=%v, delivered=%v), restart %d/%d",
-				uptime, delivered, restarts+1, restartLimit)
+			failures++
 
-			restarts++
-			if restarts >= restartLimit {
-				log.Errorf("audio capture failed %d times, giving up", restarts)
-				return
+			switch {
+			case failures < quietAfterFailures:
+				log.Warnf("audio capture exited (uptime=%v, delivered=%v), attempt %d",
+					uptime, delivered, failures)
+			case failures == quietAfterFailures:
+				log.Warnf("audio capture has failed %d times, and the last reason was "+
+					"(uptime=%v, delivered=%v); it retries every %v from here, without "+
+					"another line until it recovers",
+					failures, uptime, delivered, s.maxBackoff)
 			}
 		}
 
