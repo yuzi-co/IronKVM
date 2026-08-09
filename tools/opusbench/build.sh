@@ -31,7 +31,7 @@ mkdir -p "$work"
 cd "$work"
 
 if [ ! -f "opus-$VERSION.tar.gz" ]; then
-    curl -sSL -o "opus-$VERSION.tar.gz" \
+    wget -q -O "opus-$VERSION.tar.gz" \
         "https://downloads.xiph.org/releases/opus/opus-$VERSION.tar.gz"
 fi
 
