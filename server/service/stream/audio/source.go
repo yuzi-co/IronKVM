@@ -15,8 +15,9 @@ const (
 	// probe order and moves when the gadget is rebuilt; the name does not.
 	CaptureDevice = "hw:UAC1Gadget,0"
 
-	// ChunkBytes is 20 ms of 48 kHz stereo S16_LE: 960 frames of 4 bytes.
-	ChunkBytes = 960 * 4
+	// ChunkBytes is 20 ms of 48 kHz stereo S16_LE. It is derived rather than
+	// written out, because arecord and the encoder have to agree on it.
+	ChunkBytes = SamplesPerFrame * Channels * 2
 
 	// stderrDrainTimeout bounds the wait for the child's last stderr line
 	// before we reap it. Short: the line is already written by then in every
