@@ -101,7 +101,10 @@ func TestStopIsSafeToRepeatOnADeliveringStream(t *testing.T) {
 // A source that gives up must end the stream by itself. If it does not, the
 // consumer blocks on a channel nothing will close, and the manager goes on
 // believing audio is being sent, so it never starts a replacement.
-func TestStreamClosesFramesWhenTheSourceGivesUp(t *testing.T) {
+// A source that cannot capture is not a finished stream. The listener keeps
+// its channel, and capture keeps trying, because the host may start streaming
+// at any moment. Only Stop closes the frames.
+func TestStreamKeepsFramesOpenWhileCaptureRetries(t *testing.T) {
 	// Suppress the expected error log spam from repeated child failures.
 	original := log.StandardLogger().Out
 	log.SetOutput(io.Discard)
@@ -125,14 +128,21 @@ func TestStreamClosesFramesWhenTheSourceGivesUp(t *testing.T) {
 
 	select {
 	case <-done:
+		t.Fatal("the frame channel closed while capture was still worth retrying")
+	case <-time.After(300 * time.Millisecond):
+	}
+
+	stream.Stop()
+
+	select {
+	case <-done:
 	case <-time.After(5 * time.Second):
-		stream.Stop()
-		t.Fatal("the frame channel stayed open after capture gave up")
+		t.Fatal("the frame channel stayed open after Stop")
 	}
 }
 
-// Stop after the source already gave up must not panic on a second close.
-func TestStreamStopIsSafeAfterTheSourceGivesUp(t *testing.T) {
+// Stop on a stream whose capture is failing must not panic on a second close.
+func TestStreamStopIsSafeWhileCaptureIsFailing(t *testing.T) {
 	// Suppress the expected error log spam from repeated child failures.
 	original := log.StandardLogger().Out
 	log.SetOutput(io.Discard)
@@ -146,10 +156,11 @@ func TestStreamStopIsSafeAfterTheSourceGivesUp(t *testing.T) {
 	}
 
 	stream.Start()
+	time.Sleep(100 * time.Millisecond)
+
+	stream.Stop()
+	stream.Stop()
 
 	for range stream.Frames() { //nolint:revive // draining is the point
 	}
-
-	stream.Stop()
-	stream.Stop()
 }
