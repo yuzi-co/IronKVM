@@ -63,9 +63,19 @@ support/*/build             text eol=lf
 *.ts                        text eol=lf
 *.tsx                       text eol=lf
 
+# Read by the riscv64 cross-compiler out of the working tree, through a
+# mounted Docker volume, not out of the index. A checkout with
+# core.autocrlf=true is exactly what feeds that mount, so without this rule a
+# fresh clone can hand the compiler headers with CRLF in them.
+server/include/opus/*.h     text eol=lf
+
 # Device payloads that must stay byte-exact.
 *.ko                        binary
 *.so                        binary
 *.so.*                      binary
 kvmapp/kvm_system/*         binary
 kvmapp/kvm_new_app          binary
+# The only .a in the repository, sitting beside the .so files above it in
+# server/dl_lib/. Same reason: a device payload, not source, and it must not
+# be run through any text conversion.
+*.a                         binary
