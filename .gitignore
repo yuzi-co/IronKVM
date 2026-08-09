@@ -40,3 +40,6 @@ kvmapp/kvm_system/kvm_system
 # Scratch space for subagent-driven plan execution: ledgers, briefs, reports,
 # and review packages. The git history is the record; these are working notes.
 /.superpowers/
+
+tools/opusbench/.build/
+tools/opusbench/opusbench
