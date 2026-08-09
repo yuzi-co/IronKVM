@@ -29,9 +29,18 @@ share of one core the row needs to keep up with real time. CPU time comes from
 
 ## What the numbers said on 2026-08-09
 
-The server ships stereo, 96 kbit/s, complexity 3, which measured 5.60%. The
-129-tap FIR and G.711 path it replaced measured 4.66%, so full-rate audio
-costs about one percentage point more than telephone audio did.
+The server ships stereo, 96 kbit/s, complexity 3, which measured 5.60% of the
+core.
+
+Read the `g711-fir` row with care, because two different numbers describe the
+path Opus replaced. That row is a C transcription of the decimator and the
+mu-law encoder, compiled at `-O3`, and it measures 1.64%. The Go code that
+actually ran in the server measures 4.66% for the same work, benchmarked on
+the device with a cross-compiled `go test -c` binary. Go pays for bounds
+checks and for the ring index, and the gap is 2.8 times.
+
+The comparison that decides the design is therefore 5.60% against 4.66%: what
+the server spends now, against what it spent before.
 
 Do not build libopus in fixed point. The C906B has a hardware FPU, and the
 fixed-point build measured 9.78% against 7.88% for float at complexity 5.
