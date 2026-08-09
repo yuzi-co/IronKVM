@@ -16,6 +16,7 @@ are operator tools.
 | `deploy/`     | Install a server build and put the old one back if it does not serve.   |
 | `usbdev/`     | Check the USB gadget: the optional ACM console, and the link order.     |
 | `audiodiag/`  | Say whether USB audio capture works, and name the end that fails.      |
+| `opusbench/`  | Rebuild `libopus.a` for the board, and measure what it costs.          |
 
 ## Ten things that cost real time
 
