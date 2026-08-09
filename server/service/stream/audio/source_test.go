@@ -3,10 +3,14 @@
 package audio
 
 import (
+	"bytes"
 	"os/exec"
+	"strings"
 	"sync"
 	"testing"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // collector gathers what Run hands out, from whichever goroutine calls it.
@@ -86,10 +90,16 @@ func TestRunReturnsAfterStop(t *testing.T) {
 	}
 }
 
-func TestRunGivesUpAfterRepeatedFailures(t *testing.T) {
+// TestRunKeepsRetryingAFailingChild states the rule that matters on this
+// device: a host that is not streaming audio is the ordinary idle state, not a
+// fault. Capture has to be there when the host finally plays something, and
+// StartAudioStream fires on an ICE state change that a settled connection
+// never produces again - so a Source that retires itself is audio that never
+// comes back without a page reload.
+func TestRunKeepsRetryingAFailingChild(t *testing.T) {
 	source := NewSource()
 	source.minBackoff = time.Millisecond
-	source.maxBackoff = time.Millisecond
+	source.maxBackoff = 2 * time.Millisecond
 
 	var starts int
 	var mutex sync.Mutex
@@ -108,18 +118,71 @@ func TestRunGivesUpAfterRepeatedFailures(t *testing.T) {
 		close(done)
 	}()
 
+	// Long enough for far more attempts than the old eight-attempt budget.
+	time.Sleep(500 * time.Millisecond)
+
+	select {
+	case <-done:
+		t.Fatal("Run retired a failing child instead of retrying it")
+	default:
+	}
+
+	const wantAtLeast = 20
+
+	mutex.Lock()
+	got := starts
+	mutex.Unlock()
+
+	if got < wantAtLeast {
+		t.Errorf("started the child %d times, want at least %d", got, wantAtLeast)
+	}
+
+	source.Stop()
+
 	select {
 	case <-done:
 	case <-time.After(5 * time.Second):
-		source.Stop()
-		t.Fatal("Run kept restarting a child that always fails")
+		t.Fatal("Run did not return after Stop")
+	}
+}
+
+// Retrying forever must not mean writing forever. The log that fills is
+// /tmp/nanokvm-server.log, which S99vidiag and the supervisor both read, and
+// the device it fills is the boot SD card.
+func TestRunStopsLoggingOnceFailureIsTheSteadyState(t *testing.T) {
+	var captured bytes.Buffer
+	original := log.StandardLogger().Out
+	log.SetOutput(&captured)
+	t.Cleanup(func() { log.SetOutput(original) })
+
+	source := NewSource()
+	source.minBackoff = time.Millisecond
+	source.maxBackoff = time.Millisecond
+	source.newCmd = func() *exec.Cmd {
+		return exec.Command("sh", "-c", "exit 1")
 	}
 
-	mutex.Lock()
-	defer mutex.Unlock()
+	done := make(chan struct{})
+	go func() {
+		source.Run(func([]byte) {})
+		close(done)
+	}()
 
-	if starts < restartLimit || starts > restartLimit+1 {
-		t.Errorf("started the child %d times, want %d to %d", starts, restartLimit, restartLimit+1)
+	time.Sleep(500 * time.Millisecond)
+	source.Stop()
+
+	select {
+	case <-done:
+	case <-time.After(5 * time.Second):
+		t.Fatal("Run did not return after Stop")
+	}
+
+	// Dozens of attempts fit in half a second. A handful of lines describes
+	// the fault; the rest only wear the card.
+	const wantAtMost = 10
+
+	if lines := strings.Count(captured.String(), "audio capture"); lines > wantAtMost {
+		t.Errorf("wrote %d audio capture log lines, want no more than %d", lines, wantAtMost)
 	}
 }
 
@@ -168,10 +231,14 @@ func TestStopCalledTwice(t *testing.T) {
 	}
 }
 
+// TestMinRunDurationReset checks that a child which emits a chunk and exits at
+// once is not counted as healthy. Nothing gives up any more, so the visible
+// consequence is the backoff: a healthy child returns it to minBackoff, and a
+// crash loop must instead let it climb.
 func TestMinRunDurationReset(t *testing.T) {
 	source := NewSource()
-	source.minBackoff = time.Millisecond
-	source.maxBackoff = time.Millisecond
+	source.minBackoff = 5 * time.Millisecond
+	source.maxBackoff = 200 * time.Millisecond
 
 	var starts int
 	var mutex sync.Mutex
@@ -191,17 +258,25 @@ func TestMinRunDurationReset(t *testing.T) {
 		close(done)
 	}()
 
+	time.Sleep(time.Second)
+	source.Stop()
+
 	select {
 	case <-done:
 	case <-time.After(5 * time.Second):
-		source.Stop()
-		t.Fatal("Run kept restarting a child that ran too briefly")
+		t.Fatal("Run did not return after Stop")
 	}
+
+	// Climbing from 5 ms to the 200 ms cap allows about ten attempts in a
+	// second. Treating this child as healthy would hold the backoff at 5 ms
+	// and produce an order of magnitude more.
+	const tooMany = 30
 
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	if starts < restartLimit || starts > restartLimit+1 {
-		t.Errorf("started the child %d times, want %d to %d", starts, restartLimit, restartLimit+1)
+	if starts >= tooMany {
+		t.Errorf("started the child %d times, want fewer than %d: the backoff did not climb",
+			starts, tooMany)
 	}
 }
