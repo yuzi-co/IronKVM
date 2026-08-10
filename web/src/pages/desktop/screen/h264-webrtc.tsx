@@ -5,6 +5,7 @@ import { useAtomValue, useSetAtom } from 'jotai';
 import { useTranslation } from 'react-i18next';
 import { w3cwebsocket as W3cWebSocket } from 'websocket';
 
+import { withStereoOpus } from '@/lib/sdp-opus.ts';
 import { getBaseUrl } from '@/lib/service.ts';
 import { audioMutedAtom, hasAudioAtom } from '@/jotai/audio.ts';
 import { mouseStyleAtom } from '@/jotai/mouse.ts';
@@ -132,6 +133,13 @@ export const H264Webrtc = () => {
             offerToReceiveVideo: true,
             offerToReceiveAudio: true
           });
+
+          // Chrome's default Opus fmtp omits `stereo`, which decodes to mono
+          // per RFC 7587. The device encodes real stereo, so without this the
+          // second channel is silently dropped. See lib/sdp-opus.ts.
+          if (offer.sdp) {
+            offer.sdp = withStereoOpus(offer.sdp);
+          }
 
           await peer.setLocalDescription(offer);
 
