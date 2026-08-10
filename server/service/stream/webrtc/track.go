@@ -9,8 +9,9 @@ import (
 // peer negotiated.
 const defaultPlayoutDelayExtensionID uint8 = 5
 
-// audioClockRate is the RTP clock for G.711.
-const audioClockRate = 8000
+// audioClockRate is the RTP clock for Opus. Opus always uses 48000 in RTP,
+// whatever rate the encoder was created with.
+const audioClockRate = 48000
 
 // rtpExtensionProfile is the one-byte header extension profile (RFC 5285).
 const rtpExtensionProfile = 0xBEDE

@@ -19,6 +19,9 @@ import (
 // state Stop has to interrupt in production.
 func deliveringStream() *Stream {
 	stream := NewStream()
+	stream.newEncoder = func() (Encoder, error) {
+		return &fakeEncoder{packet: []byte("opus-packet")}, nil
+	}
 	stream.source.minBackoff = time.Millisecond
 	stream.source.maxBackoff = time.Millisecond
 	stream.source.newCmd = func() *exec.Cmd {
@@ -44,8 +47,8 @@ func TestStopEndsAStreamThatIsDelivering(t *testing.T) {
 			if !ok {
 				t.Fatal("the frame channel closed before capture delivered anything")
 			}
-			if len(frame) != FrameSamples {
-				t.Fatalf("frame is %d bytes, want %d", len(frame), FrameSamples)
+			if string(frame) != "opus-packet" {
+				t.Fatalf("frame carried %q, want the encoder's packet", frame)
 			}
 		case <-time.After(5 * time.Second):
 			stream.Stop()
@@ -111,6 +114,9 @@ func TestStreamKeepsFramesOpenWhileCaptureRetries(t *testing.T) {
 	t.Cleanup(func() { log.SetOutput(original) })
 
 	stream := NewStream()
+	stream.newEncoder = func() (Encoder, error) {
+		return &fakeEncoder{packet: []byte("opus-packet")}, nil
+	}
 	stream.source.minBackoff = time.Millisecond
 	stream.source.maxBackoff = time.Millisecond
 	stream.source.newCmd = func() *exec.Cmd {
@@ -149,6 +155,9 @@ func TestStreamStopIsSafeWhileCaptureIsFailing(t *testing.T) {
 	t.Cleanup(func() { log.SetOutput(original) })
 
 	stream := NewStream()
+	stream.newEncoder = func() (Encoder, error) {
+		return &fakeEncoder{packet: []byte("opus-packet")}, nil
+	}
 	stream.source.minBackoff = time.Millisecond
 	stream.source.maxBackoff = time.Millisecond
 	stream.source.newCmd = func() *exec.Cmd {
@@ -162,5 +171,28 @@ func TestStreamStopIsSafeWhileCaptureIsFailing(t *testing.T) {
 	stream.Stop()
 
 	for range stream.Frames() { //nolint:revive // draining is the point
+	}
+}
+
+// The encoder is a C object. Whatever ends the stream has to release it, or a
+// gadget that is switched off and on again leaks one encoder per cycle.
+func TestStreamClosesTheEncoderWhenCaptureEnds(t *testing.T) {
+	encoder := &fakeEncoder{packet: []byte("opus-packet")}
+
+	stream := NewStream()
+	stream.newEncoder = func() (Encoder, error) { return encoder, nil }
+	// An inert child: it blocks the way arecord does while the host plays
+	// nothing, and Stop is what ends it.
+	stream.source.newCmd = func() *exec.Cmd {
+		return exec.Command("sh", "-c", "sleep 60")
+	}
+
+	stream.Start()
+	stream.Stop()
+
+	// Stop waits for the source goroutine, and that goroutine closes the
+	// encoder on its way out.
+	if !encoder.isClosed() {
+		t.Error("the encoder was not closed when the stream stopped")
 	}
 }
