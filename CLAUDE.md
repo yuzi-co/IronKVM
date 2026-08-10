@@ -123,8 +123,8 @@ novision` and do not run on a workstation at all. Cross-compile the test binary 
 and run it on the board:
 
 ```shell
-docker run --rm -v "$PWD:/home/build/NanoKVM" \
-  nanokvm-builder-local-$(id -u)-$(id -g) bash -c \
+docker run -e UID=$(id -u) -e GID=$(id -g) -v "$PWD:/home/build/NanoKVM" --rm \
+  nanokvm-builder-local-$(id -u)-$(id -g) /bin/bash -c \
   'cd /home/build/NanoKVM/server && CGO_ENABLED=1 GOOS=linux GOARCH=riscv64 \
    CC=riscv64-unknown-linux-musl-gcc \
    CGO_CFLAGS="-mcpu=c906fdv -march=rv64imafdcv0p7xthead -mcmodel=medany -mabi=lp64d" \
