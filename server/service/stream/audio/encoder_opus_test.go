@@ -3,7 +3,10 @@
 package audio
 
 import (
+	"fmt"
 	"math"
+	"runtime"
+	"sync"
 	"testing"
 )
 
@@ -152,5 +155,84 @@ func TestOpusEncoderEncodesTwoChunksInSequence(t *testing.T) {
 	}
 	if len(second) < 50 {
 		t.Errorf("the second packet is %d bytes, which is too small to carry a tone", len(second))
+	}
+}
+
+// TestOpusEncoderUnderGOMAXPROCSConcurrency forces opus_encode onto
+// Go-created Ms rather than the runtime's first M.
+//
+// cgocall runs opus_encode on the calling M's g0 stack. This binary is linked
+// with riscv64-unknown-linux-musl-gcc, and musl sizes a new thread's stack at
+// 128 KB by default -- glibc's default is 8 MB. libopus here is a float build
+// configured without --enable-alloca, so the CELT encoder uses C99 VLAs sized
+// from the frame on whatever stack it is given. A VLA that overflows that
+// stack is a SIGSEGV in this process, not a recoverable Go panic, and on this
+// board a crashed server costs a reboot rather than a restarted child.
+//
+// Neither existing proof covers the Go-created-M case. tools/opusbench calls
+// opus_encode from a static C binary's main(), which runs on the process's
+// own large stack. The other tests in this file run sequentially and call
+// newOpusEncoder directly, so they very likely stay on the runtime's first M
+// -- whose g0 is also the large main stack, not a musl thread stack.
+// Production runs the encoder on a goroutine that can land on any M the
+// runtime creates.
+//
+// Raising GOMAXPROCS and running many independent encoders on many goroutines
+// concurrently is what actually forces the runtime to create new Ms, each
+// with its own musl-sized g0, and keeps enough of them busy encoding real
+// frames that a marginal stack would show itself here rather than in
+// production.
+func TestOpusEncoderUnderGOMAXPROCSConcurrency(t *testing.T) {
+	const goroutines = 8
+	const encodesPerGoroutine = 500
+
+	previous := runtime.GOMAXPROCS(goroutines * 2)
+	t.Cleanup(func() { runtime.GOMAXPROCS(previous) })
+
+	signal := tone()
+
+	var wg sync.WaitGroup
+	errs := make(chan error, goroutines)
+
+	for g := range goroutines {
+		wg.Add(1)
+
+		go func(id int) {
+			defer wg.Done()
+
+			encoder, err := newOpusEncoder()
+			if err != nil {
+				errs <- fmt.Errorf("goroutine %d: failed to create the encoder: %w", id, err)
+				return
+			}
+			defer encoder.Close()
+
+			for i := range encodesPerGoroutine {
+				packet, err := encoder.Encode(signal, nil)
+				if err != nil {
+					errs <- fmt.Errorf("goroutine %d, encode %d: %w", id, i, err)
+					return
+				}
+
+				if len(packet) < 50 {
+					errs <- fmt.Errorf("goroutine %d, encode %d: packet is %d bytes, too small to carry a tone",
+						id, i, len(packet))
+					return
+				}
+
+				if len(packet) > maxPacketBytes {
+					errs <- fmt.Errorf("goroutine %d, encode %d: packet is %d bytes, over the %d byte buffer",
+						id, i, len(packet), maxPacketBytes)
+					return
+				}
+			}
+		}(g)
+	}
+
+	wg.Wait()
+	close(errs)
+
+	for err := range errs {
+		t.Error(err)
 	}
 }
