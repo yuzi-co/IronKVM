@@ -42,7 +42,7 @@ func NewWebRTCManager() *WebRTCManager {
 			rtpMTU,
 			audioPayloadType,
 			audioSSRC,
-			&codecs.G711Payloader{},
+			&codecs.OpusPayloader{},
 			rtp.NewRandomSequencer(),
 			audioClockRate,
 		),

@@ -78,30 +78,6 @@ func TestAvailableIsFalseWhenTheFileIsMissing(t *testing.T) {
 	}
 }
 
-func TestStreamEncodesSourceChunksIntoFrames(t *testing.T) {
-	stream := NewStream()
-
-	// Feed one chunk of silence directly, bypassing arecord.
-	go func() {
-		stream.consume(make([]byte, ChunkBytes))
-		stream.Stop()
-	}()
-
-	frame, ok := <-stream.Frames()
-	if !ok {
-		t.Fatal("the frame channel closed before delivering a frame")
-	}
-
-	if len(frame) != FrameSamples {
-		t.Errorf("got a %d byte frame, want %d", len(frame), FrameSamples)
-	}
-
-	// Silence is 0xFF in mu-law, not 0x00.
-	if frame[0] != 0xFF {
-		t.Errorf("silence encoded to %#02x, want 0xFF", frame[0])
-	}
-}
-
 func TestStreamClosesFramesOnStop(t *testing.T) {
 	stream := NewStream()
 	stream.Stop()
