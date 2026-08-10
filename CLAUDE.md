@@ -93,8 +93,9 @@ below the release it was built from and leave that page advertising an upgrade f
 The stamp is the only way to tell which server binary is running: the application version itself
 lives in `/kvmapp/version` and is rewritten by the updater, not by deploying a binary.
 
-For anything that does not need the real capture bindings, use the `novision` build tag — it swaps
-`common/kvm_vision.go` for a pure-Go stub so the tree can be type-checked and tested off-device:
+For anything that does not need the device-native libraries, use the `novision` build tag — it swaps
+`common/kvm_vision.go` and `service/stream/audio/encoder_opus.go` for pure-Go stubs, so the tree can
+be type-checked and tested off-device:
 
 ```shell
 cd server
@@ -116,6 +117,25 @@ docker run --rm -v "$PWD/server:/src" -v nanokvm-gomod:/go/pkg/mod -w /src \
 
 A few tests are additionally gated on `//go:build linux` (`service/hid/stale_test.go`,
 `service/extensions/tailscale/cli_test.go`) and silently do not run elsewhere.
+
+The cgo Opus encoder needs the riscv64 cross-compiler, so its tests do not run under `-tags
+novision` and do not run on a workstation at all. Cross-compile the test binary in the builder image
+and run it on the board:
+
+```shell
+docker run -e UID=$(id -u) -e GID=$(id -g) -v "$PWD:/home/build/NanoKVM" --rm \
+  nanokvm-builder-local-$(id -u)-$(id -g) /bin/bash -c \
+  'cd /home/build/NanoKVM/server && CGO_ENABLED=1 GOOS=linux GOARCH=riscv64 \
+   CC=riscv64-unknown-linux-musl-gcc \
+   CGO_CFLAGS="-mcpu=c906fdv -march=rv64imafdcv0p7xthead -mcmodel=medany -mabi=lp64d" \
+   go test -c -buildvcs=false -o /home/build/NanoKVM/audio.test ./service/stream/audio'
+
+scp audio.test root@<device>:/tmp/
+ssh root@<device> 'chmod +x /tmp/audio.test && /tmp/audio.test -test.v; rm -f /tmp/audio.test'
+rm -f audio.test
+```
+
+Do not commit `audio.test`. Delete it after every run.
 
 ### Deploying to a device
 
@@ -215,11 +235,19 @@ Parse and validate input with `proto.ParseQueryRequest` / `ParseJsonRequest`, wh
 Setting `authentication: disable` in the config turns on permissive CORS in `main.go`; it exists for
 local frontend development only.
 
-**The cgo boundary** is `common/kvm_vision.go` (`//go:build !novision`), which `#cgo`-links `-lkvm`
-from `server/dl_lib`. Prebuilt `.so` files (including `libkvm.so`) are committed there, so the
-cross-compile needs nothing extra; rebuilding them from `support/sg2002` is only necessary when
-changing `kvm_vision`. The executable's RPATH must be patched to `$ORIGIN/dl_lib` after linking —
-a build that skips `patchelf` will not start on the device, and `make app` does not run it.
+**The cgo boundary has two crossings, both gated on `//go:build !novision`.** The first is
+`common/kvm_vision.go`, which `#cgo`-links `-lkvm` from `server/dl_lib`. Prebuilt `.so` files
+(including `libkvm.so`) are committed there, so the cross-compile needs nothing extra; rebuilding
+them from `support/sg2002` is only necessary when changing `kvm_vision`. The executable's RPATH must
+be patched to `$ORIGIN/dl_lib` after linking — a build that skips `patchelf` will not start on the
+device, and `make app` does not run it.
+
+The second is `service/stream/audio/encoder_opus.go`, which links `server/dl_lib/libopus.a`. That
+archive is static, so it adds no `NEEDED` entry to the binary — the RPATH patch above is for
+`libkvm.so`'s shared libraries, not for libopus. `tools/opusbench/build.sh` rebuilds the archive.
+
+`novision` therefore does not mean "no vision" — it means no device-native library. The tag swaps
+out both `kvm_vision.go` and `encoder_opus.go` for pure-Go stubs.
 
 The committed `libkvm.so` records `$ORIGIN` as its `RUNPATH`. The cross-linker needs that entry to
 find the other libraries in `dl_lib`. MaixCDK writes an absolute build directory into the `RPATH`

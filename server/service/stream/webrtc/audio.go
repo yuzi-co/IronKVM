@@ -7,8 +7,9 @@ import (
 )
 
 const (
-	// audioPayloadType 0 is PCMU's static assignment. pion rewrites it per
-	// binding from what the peer negotiated, the same as video.
+	// audioPayloadType is a placeholder. Opus has no static assignment, and
+	// pion rewrites it per binding from what the peer negotiated, the same as
+	// video.
 	audioPayloadType = 0
 	audioSSRC        = 0x1234ABCE
 )
@@ -66,7 +67,7 @@ func (m *WebRTCManager) StartAudioStream() {
 	stream.Start()
 	go m.sendAudioStream(stream)
 
-	log.Debugf("start sending g711 stream")
+	log.Debugf("start sending opus stream")
 }
 
 // StopAudioCapture stops capture whatever the client count, and kills the
@@ -108,14 +109,14 @@ func (m *WebRTCManager) stopAudioStream() {
 		stream.Stop()
 	}
 
-	log.Debugf("stop sending g711 stream")
+	log.Debugf("stop sending opus stream")
 }
 
 // stopAudioStreamIfIdle stops capture once the last listener has gone.
 //
 // The condition mirrors StartAudioStream, which starts only when a client can
 // hear the result. Stopping on an empty client map instead would keep arecord,
-// the FIR and the packetizer running for a viewer that negotiated no audio
+// the encoder and the packetizer running for a viewer that negotiated no audio
 // track, which is what a viewer that connected before the switch was thrown
 // has for its whole life.
 //
@@ -140,16 +141,17 @@ func (m *WebRTCManager) sendAudioStream(stream *audio.Stream) {
 		m.deliverAudioFrame(frame)
 	}
 
-	// The channel closed. Either the last listener left and
-	// stopAudioStreamIfIdle stopped this stream, or capture failed too often
-	// and the source gave up. The second case leaves the flag set unless it is
-	// cleared here, and no later StartAudioStream could ever run.
+	// The channel closed for one of two reasons: the last listener left and
+	// stopAudioStreamIfIdle stopped this stream, or Start could not construct
+	// the encoder and closed the channel itself before any capture ran. The
+	// second case leaves the flag set unless it is cleared here, and no later
+	// StartAudioStream could ever run.
 	//
 	// Clearing the flag does not bring audio back for the viewer that lost it.
 	// StartAudioStream has one caller, an ICE state change, so a viewer whose
-	// capture gave up stays silent until it reconnects. What this buys is that
-	// the next connection starts a fresh stream instead of finding the manager
-	// still convinced audio is being sent.
+	// encoder failed to construct stays silent until it reconnects. What this
+	// buys is that the next connection starts a fresh stream instead of finding
+	// the manager still convinced audio is being sent.
 	m.clearAudioStream(stream)
 }
 
@@ -181,7 +183,9 @@ func (m *WebRTCManager) deliverAudioFrame(frame []byte) {
 		return
 	}
 
-	packets := m.audioPacketizer.Packetize(frame, audio.FrameSamples)
+	// The sample count is per channel and fixed at 20 ms, whatever the encoded
+	// packet happens to be long.
+	packets := m.audioPacketizer.Packetize(frame, audio.SamplesPerFrame)
 
 	for _, client := range clients {
 		if !client.hasAudioTrack() {

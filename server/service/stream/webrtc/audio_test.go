@@ -15,7 +15,7 @@ import (
 
 func audioFrame() []*rtp.Packet {
 	return []*rtp.Packet{
-		{Header: rtp.Header{SequenceNumber: 7}, Payload: []byte("mulaw")},
+		{Header: rtp.Header{SequenceNumber: 7}, Payload: []byte("opus")},
 	}
 }
 
@@ -57,8 +57,8 @@ func TestWriteAudioPacketsCarriesNoHeaderExtension(t *testing.T) {
 		t.Error("an audio packet carried a header extension")
 	}
 
-	if got := string(written[0].Payload); got != "mulaw" {
-		t.Errorf("payload is %q, want %q", got, "mulaw")
+	if got := string(written[0].Payload); got != "opus" {
+		t.Errorf("payload is %q, want %q", got, "opus")
 	}
 }
 
@@ -296,8 +296,8 @@ func TestStopAudioStreamIfIdleClearsTheFlag(t *testing.T) {
 // The stop condition mirrors the start condition, and a client alone is not
 // the start condition. A viewer that connected while the gadget had no card
 // carries no audio track for its whole life, so capture that kept running for
-// it would run arecord, the FIR and the packetizer with nobody able to hear
-// any of it, for as long as that viewer stayed.
+// it would run arecord, the encoder and the packetizer with nobody able to
+// hear any of it, for as long as that viewer stayed.
 func TestStopAudioStreamIfIdleStopsWhileAVideoOnlyClientRemains(t *testing.T) {
 	manager := NewWebRTCManager()
 
@@ -399,7 +399,9 @@ func TestDeliverAudioFrameReachesOnlyClientsWithAudio(t *testing.T) {
 	withAudio.mutex.Unlock()
 	manager.storeClient(&websocket.Conn{}, withAudio)
 
-	manager.deliverAudioFrame(make([]byte, audio.FrameSamples))
+	// A plausible Opus packet. Nothing here decodes it; only its presence and
+	// its length matter.
+	manager.deliverAudioFrame(make([]byte, 240))
 
 	if videoOnly.audioSlot.Pending() {
 		t.Error("a client without an audio track was handed a frame")

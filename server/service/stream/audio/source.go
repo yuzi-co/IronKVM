@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"os/exec"
+	"strconv"
 	"sync"
 	"time"
 
@@ -15,8 +16,9 @@ const (
 	// probe order and moves when the gadget is rebuilt; the name does not.
 	CaptureDevice = "hw:UAC1Gadget,0"
 
-	// ChunkBytes is 20 ms of 48 kHz stereo S16_LE: 960 frames of 4 bytes.
-	ChunkBytes = 960 * 4
+	// ChunkBytes is 20 ms of 48 kHz stereo S16_LE. It is derived rather than
+	// written out, because arecord and the encoder have to agree on it.
+	ChunkBytes = SamplesPerFrame * Channels * 2
 
 	// stderrDrainTimeout bounds the wait for the child's last stderr line
 	// before we reap it. Short: the line is already written by then in every
@@ -112,18 +114,27 @@ func NewSource() *Source {
 
 // newArecord reads the gadget and writes raw samples to stdout.
 //
-// The period is pinned to 960 frames, which is 20 ms and the same size as a
-// chunk. Left to ALSA, the period comes from the driver's default and decides
-// how much delay sits in front of the encoder. The gadget advertises
+// The period is pinned to SamplesPerFrame, which is 20 ms and the same size
+// as a chunk. Left to ALSA, the period comes from the driver's default and
+// decides how much delay sits in front of the encoder. The gadget advertises
 // PERIOD_SIZE [32 1024], so 960 is inside its range.
+//
+// The rate, channel count and period are built from the package constants
+// rather than written out as literals, so this is actually the single set of
+// constants the comment on those constants claims it is. Two literal sets
+// that happen to agree today can drift silently: change SampleRate alone and
+// arecord would still capture 48 kHz while the encoder assumed a different
+// rate, and nothing on this path would catch it — io.ReadFull still fills the
+// (now wrong) chunk size, opus_encode still succeeds, and the only symptom is
+// audio at the wrong speed.
 func newArecord() *exec.Cmd {
 	return exec.Command("arecord",
 		"-D", CaptureDevice,
 		"-f", "S16_LE",
-		"-r", "48000",
-		"-c", "2",
+		"-r", strconv.Itoa(SampleRate),
+		"-c", strconv.Itoa(Channels),
 		"-t", "raw",
-		"--period-size=960",
+		"--period-size="+strconv.Itoa(SamplesPerFrame),
 	)
 }
 
