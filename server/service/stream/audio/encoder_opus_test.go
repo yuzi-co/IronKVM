@@ -98,3 +98,59 @@ func TestOpusEncoderRejectsAnEmptyChunk(t *testing.T) {
 		t.Error("Encode accepted an empty chunk")
 	}
 }
+
+// Encode is exported, so a caller can reach it after Close. Without a guard
+// that hands opus_encode a NULL state pointer, which is a SIGSEGV inside the
+// codec running in the server process.
+func TestOpusEncoderEncodeAfterCloseReturnsError(t *testing.T) {
+	encoder, err := newOpusEncoder()
+	if err != nil {
+		t.Fatalf("failed to create the encoder: %s", err)
+	}
+
+	encoder.Close()
+
+	if _, err := encoder.Encode(tone(), nil); err == nil {
+		t.Error("Encode after Close did not return an error")
+	}
+}
+
+// Close is called from a defer in the pipeline this encoder feeds, so a
+// second call reaching it (teardown racing an earlier error path, for
+// example) must be a no-op rather than a double free.
+func TestOpusEncoderCloseTwiceIsSafe(t *testing.T) {
+	encoder, err := newOpusEncoder()
+	if err != nil {
+		t.Fatalf("failed to create the encoder: %s", err)
+	}
+
+	encoder.Close()
+	encoder.Close()
+}
+
+// The encoder is reused across frames fifty times a second in production;
+// nothing above exercises more than a single call, so this checks the second
+// call succeeds with the state the first call left behind.
+func TestOpusEncoderEncodesTwoChunksInSequence(t *testing.T) {
+	encoder, err := newOpusEncoder()
+	if err != nil {
+		t.Fatalf("failed to create the encoder: %s", err)
+	}
+	t.Cleanup(encoder.Close)
+
+	first, err := encoder.Encode(tone(), nil)
+	if err != nil {
+		t.Fatalf("failed to encode the first chunk: %s", err)
+	}
+	if len(first) < 50 {
+		t.Errorf("the first packet is %d bytes, which is too small to carry a tone", len(first))
+	}
+
+	second, err := encoder.Encode(tone(), nil)
+	if err != nil {
+		t.Fatalf("failed to encode the second chunk: %s", err)
+	}
+	if len(second) < 50 {
+		t.Errorf("the second packet is %d bytes, which is too small to carry a tone", len(second))
+	}
+}
