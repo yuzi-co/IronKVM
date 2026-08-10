@@ -18,6 +18,7 @@ package audio
 import "C"
 
 import (
+	"errors"
 	"fmt"
 	"unsafe"
 )
@@ -79,6 +80,18 @@ func newOpusEncoder() (Encoder, error) {
 // io.ReadFull and cannot produce a short one, but that guarantee lives in
 // another file and this is where it has to hold.
 func (e *opusEncoder) Encode(pcm []byte, dst []byte) ([]byte, error) {
+	// Encoder is an exported interface, so a caller can call Encode after
+	// Close. Without this check that hands opus_encode a NULL OpusEncoder *
+	// and the process takes SIGSEGV — this codec runs in the server process,
+	// where that means a reboot rather than a restarted child. This is not
+	// guarding against a race: the one caller in this codebase closes with a
+	// defer on the same goroutine that encodes, after the capture loop has
+	// already returned, so nothing is in flight when Close runs. The guard is
+	// for the interface's exported contract, not for concurrent use.
+	if e.state == nil {
+		return dst, errors.New("audio: the encoder is closed")
+	}
+
 	if len(pcm) != ChunkBytes {
 		return dst, fmt.Errorf("audio: chunk is %d bytes, want %d", len(pcm), ChunkBytes)
 	}
