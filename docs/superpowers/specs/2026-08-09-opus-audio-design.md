@@ -177,9 +177,18 @@ Three lines, and one call:
 - `client.go` — the track takes `webrtc.MimeTypeOpus`, clock rate 48000, `Channels: 2`.
 - `audio.go` — `Packetize(packet, audio.SamplesPerFrame)`.
 
-`RegisterDefaultCodecs()` already registers Opus, so negotiation needs nothing. The static
-payload type constant keeps its comment: Opus is a dynamic type and pion rewrites it per
-connection.
+`RegisterDefaultCodecs()` already registers Opus, so negotiation of the codec itself needs
+nothing. The static payload type constant keeps its comment: Opus is a dynamic type and pion
+rewrites it per connection.
+
+That is not the whole story for stereo. RFC 7587 §7.1 defaults the `stereo` fmtp parameter to 0,
+and Chrome's offer omits it, so an unmodified negotiation configures Chrome's decoder for one
+channel and it downmixes whatever the device sends. The device pays for a stereo encode either
+way — 5.60% of the core against 3.53% for mono, from the table above — so an unmodified
+negotiation buys nothing for that cost. The browser's own offer is what configures its receive
+side, and the answerer cannot override it, so `web/src/lib/sdp-opus.ts` rewrites the offer's Opus
+`a=fmtp` line to add `stereo=1;sprop-stereo=1` before it becomes the local description. See that
+file for the rewrite and why it targets the offer rather than the answer.
 
 ## Data flow
 
@@ -385,3 +394,20 @@ streams audio. This is the residual risk the design names under "cgo moves the c
 server process".
 
 **The bandwidth rise is not measured on the wire.** 96 kbit/s is the encoder's own figure.
+
+**Update, 2026-08-10: the musl thread-stack risk is now verified.** `cgocall` runs `opus_encode`
+on the calling M's `g0` stack, and this binary links with `riscv64-unknown-linux-musl-gcc`, whose
+default thread stack is 128 KB rather than glibc's 8 MB. libopus here is a float build with no
+`--enable-alloca`, so the CELT encoder's C99 VLAs are sized from the frame on whatever stack they
+get. `opusbench` and the unit tests above do not cover this: `opusbench` calls `opus_encode` from
+a static binary's `main()` on the process's own large stack, and the other tests in this file
+very likely stay on the runtime's first M, whose `g0` is also the large main stack — not a musl
+thread stack. Production runs the encoder on a goroutine that can land on any M the runtime
+creates.
+
+`TestOpusEncoderUnderGOMAXPROCSConcurrency` in `encoder_opus_test.go` closes that gap: it raises
+`GOMAXPROCS` and runs 8 goroutines, each with its own encoder, each encoding 500 chunks (4,000
+encodes total), which is what forces the runtime to create new Ms with their own musl-sized `g0`
+stacks. Cross-compiled and run on the device on 2026-08-10, it passed in 5.31s alongside the rest
+of the package's tests, with no crash. The thread-stack risk is verified rather than reasoned
+about.
