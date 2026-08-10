@@ -24,8 +24,8 @@ const (
 	Complexity = 3
 
 	// maxPacketBytes bounds one encoded frame. 20 ms of stereo at 96 kbit/s is
-	// about 240 bytes, and Opus never exceeds 1275 bytes per channel per
-	// frame, so this has room to spare.
+	// about 240 bytes, and RFC 6716 caps a single-frame Opus packet at 1275
+	// bytes total (not per channel), so this has room to spare.
 	maxPacketBytes = 4000
 )
 
@@ -38,6 +38,13 @@ type Encoder interface {
 	// Encode appends the packet to dst and returns the extended slice, which
 	// is the convention the rest of this package uses. Passing dst[:0] reuses
 	// the caller's buffer.
+	//
+	// pcm must be 2-byte aligned: the libopus implementation casts its first
+	// byte to a *C.opus_int16, and an unaligned pointer is undefined behavior
+	// in C. Every caller in this codebase gets pcm from make([]byte, ...) or
+	// a slice of one, which the Go allocator always aligns well enough. A
+	// future implementer or caller that slices pcm from an arbitrary byte
+	// offset needs to preserve that alignment.
 	Encode(pcm []byte, dst []byte) ([]byte, error)
 
 	// Close releases the encoder. It is called once, from the goroutine that
