@@ -182,7 +182,9 @@ func (s *Stream) closeFrames() {
 //
 // The wait on done is what makes closing frames safe: it means the source
 // goroutine, and therefore consume, has finished. A stream that was never
-// started has no such goroutine to wait for.
+// started has no such goroutine to wait for. Nor does a stream whose encoder
+// failed to construct: Start closes done itself on that path, before any
+// goroutine runs, so the wait returns at once and finds nothing left to race.
 //
 // The wait is bounded by stopTimeout. On a timeout Stop returns without
 // closing the channel, because consume may still be running and a send on a

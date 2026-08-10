@@ -296,8 +296,8 @@ func TestStopAudioStreamIfIdleClearsTheFlag(t *testing.T) {
 // The stop condition mirrors the start condition, and a client alone is not
 // the start condition. A viewer that connected while the gadget had no card
 // carries no audio track for its whole life, so capture that kept running for
-// it would run arecord, the FIR and the packetizer with nobody able to hear
-// any of it, for as long as that viewer stayed.
+// it would run arecord, the encoder and the packetizer with nobody able to
+// hear any of it, for as long as that viewer stayed.
 func TestStopAudioStreamIfIdleStopsWhileAVideoOnlyClientRemains(t *testing.T) {
 	manager := NewWebRTCManager()
 
