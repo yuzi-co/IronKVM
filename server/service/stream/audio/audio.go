@@ -1,5 +1,5 @@
 // Package audio reads what the managed host plays into the UAC1 USB gadget and
-// hands it out as 20 ms frames of G.711 mu-law.
+// hands it out as 20 ms frames of Opus.
 package audio
 
 import (
@@ -11,10 +11,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 )
-
-// FrameSamples is 20 ms at 8 kHz, and one mu-law byte per sample makes a frame
-// 160 bytes.
-const FrameSamples = OutputRate / 50
 
 // cardName is the id the UAC1 gadget registers under.
 const cardName = "UAC1Gadget"
@@ -88,16 +84,24 @@ func Available() bool {
 	return bytes.Contains(cards, []byte(cardName))
 }
 
-// Stream turns the capture device into mu-law frames.
+// Stream turns the capture device into Opus packets.
 type Stream struct {
-	source    *Source
-	decimator *Decimator
-	frames    chan []byte
+	source *Source
+	frames chan []byte
 
-	// samples and frame are scratch buffers. Only the source goroutine
-	// touches them.
-	samples []int16
-	frame   []byte
+	// newEncoder is a field so a test can supply an encoder that needs no
+	// libopus. The production value is the cgo wrapper, or the stub on a build
+	// without the device libraries.
+	newEncoder func() (Encoder, error)
+
+	// encoder and packet are touched only by the source goroutine, between
+	// Start launching it and Run returning.
+	encoder Encoder
+	packet  []byte
+
+	// encodeFailures counts consecutive failed frames, so the log can fall
+	// quiet when failure is the steady state.
+	encodeFailures int
 
 	mutex     sync.Mutex
 	started   bool
@@ -107,14 +111,13 @@ type Stream struct {
 
 func NewStream() *Stream {
 	return &Stream{
-		source:    NewSource(),
-		decimator: NewDecimator(),
+		source:     NewSource(),
+		newEncoder: newOpusEncoder,
 		// Four frames of slack. A consumer further behind than 80 ms is not
 		// going to catch up, and buffering only adds delay.
-		frames:  make(chan []byte, 4),
-		samples: make([]int16, 0, FrameSamples),
-		frame:   make([]byte, 0, FrameSamples),
-		done:    make(chan struct{}),
+		frames: make(chan []byte, 4),
+		packet: make([]byte, 0, maxPacketBytes),
+		done:   make(chan struct{}),
 	}
 }
 
@@ -128,16 +131,33 @@ func (s *Stream) Start() {
 	s.started = true
 	s.mutex.Unlock()
 
+	encoder, err := s.newEncoder()
+	if err != nil {
+		// This is permanent, and it is deliberately unlike the source's retry
+		// loop. A host that plays nothing is idle and may start at any moment,
+		// so capture retries it forever. An encoder that cannot be built will
+		// not build itself later, so the stream ends and the manager learns
+		// that audio stopped.
+		//
+		// Nothing was launched, so this path closes done itself. The goroutine
+		// below is the only other closer and it never runs.
+		log.Errorf("audio is off: %s", err)
+		close(s.done)
+		s.closeFrames()
+
+		return
+	}
+
+	s.encoder = encoder
+
 	go func() {
 		defer close(s.done)
+		defer s.encoder.Close()
 
 		s.source.Run(s.consume)
 
-		// Run returns for two reasons: Stop killed the child, or the child
-		// failed too often and the source gave up. Closing here covers the
-		// second one. Without it, a stream that gave up leaves its consumer
-		// blocked on a channel that never closes, and the manager still
-		// believes audio is being sent, so it never starts a new one.
+		// Run returns when Stop killed the child. Closing here is what lets a
+		// consumer that is draining Frames finish.
 		s.closeFrames()
 	}()
 }
@@ -192,7 +212,7 @@ func (s *Stream) Frames() <-chan []byte {
 	return s.frames
 }
 
-// consume converts one capture chunk and offers the frame. It never blocks: a
+// consume encodes one capture chunk and offers the packet. It never blocks: a
 // consumer that is behind loses 20 ms rather than stalling capture.
 //
 // A drop here is not the same as the per-client drop in Client.enqueueAudio,
@@ -205,15 +225,45 @@ func (s *Stream) Frames() <-chan []byte {
 // reports that it happened. This channel therefore has to keep up, and the
 // only consumer is the send loop, which does not block.
 func (s *Stream) consume(chunk []byte) {
-	s.samples = s.decimator.Process(chunk, s.samples[:0])
-	s.frame = EncodeULaw(s.samples, s.frame[:0])
+	packet, err := s.encoder.Encode(chunk, s.packet[:0])
+	if err != nil {
+		s.reportEncodeFailure(err)
+		return
+	}
+
+	// Keep the grown buffer for the next frame.
+	s.packet = packet
+
+	if s.encodeFailures >= quietAfterFailures {
+		log.Infof("audio encode recovered after %d failed frames", s.encodeFailures)
+	}
+	s.encodeFailures = 0
 
 	// The buffer is reused, so the channel gets a copy.
-	frame := make([]byte, len(s.frame))
-	copy(frame, s.frame)
+	frame := make([]byte, len(packet))
+	copy(frame, packet)
 
 	select {
 	case s.frames <- frame:
 	default:
+	}
+}
+
+// reportEncodeFailure logs the first few failures and then goes quiet, the way
+// Source does and for the same reason: the log is /tmp/nanokvm-server.log,
+// which S99vidiag and the supervisor both read, and a frame arrives fifty
+// times a second.
+//
+// A failed frame is dropped rather than fatal. One bad 20 ms is not a reason
+// to end a stream that may encode the next one.
+func (s *Stream) reportEncodeFailure(err error) {
+	s.encodeFailures++
+
+	switch {
+	case s.encodeFailures < quietAfterFailures:
+		log.Warnf("audio encode failed: %s (frame %d)", err, s.encodeFailures)
+	case s.encodeFailures == quietAfterFailures:
+		log.Warnf("audio encode has failed %d times, and the last reason was %s; "+
+			"it stays quiet until a frame encodes again", s.encodeFailures, err)
 	}
 }

@@ -219,9 +219,9 @@ func (c *Client) AddTrack() error {
 	if audio.Available() {
 		audioTrack, err := webrtc.NewTrackLocalStaticRTP(
 			webrtc.RTPCodecCapability{
-				MimeType:  webrtc.MimeTypePCMU,
+				MimeType:  webrtc.MimeTypeOpus,
 				ClockRate: audioClockRate,
-				Channels:  1,
+				Channels:  audio.Channels,
 			},
 			"audio",
 			"pion-audio",
