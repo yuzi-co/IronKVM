@@ -7,8 +7,9 @@ import (
 )
 
 const (
-	// audioPayloadType 0 is PCMU's static assignment. pion rewrites it per
-	// binding from what the peer negotiated, the same as video.
+	// audioPayloadType is a placeholder. Opus has no static assignment, and
+	// pion rewrites it per binding from what the peer negotiated, the same as
+	// video.
 	audioPayloadType = 0
 	audioSSRC        = 0x1234ABCE
 )
@@ -66,7 +67,7 @@ func (m *WebRTCManager) StartAudioStream() {
 	stream.Start()
 	go m.sendAudioStream(stream)
 
-	log.Debugf("start sending g711 stream")
+	log.Debugf("start sending opus stream")
 }
 
 // StopAudioCapture stops capture whatever the client count, and kills the
@@ -108,7 +109,7 @@ func (m *WebRTCManager) stopAudioStream() {
 		stream.Stop()
 	}
 
-	log.Debugf("stop sending g711 stream")
+	log.Debugf("stop sending opus stream")
 }
 
 // stopAudioStreamIfIdle stops capture once the last listener has gone.
@@ -181,7 +182,9 @@ func (m *WebRTCManager) deliverAudioFrame(frame []byte) {
 		return
 	}
 
-	packets := m.audioPacketizer.Packetize(frame, audio.FrameSamples)
+	// The sample count is per channel and fixed at 20 ms, whatever the encoded
+	// packet happens to be long.
+	packets := m.audioPacketizer.Packetize(frame, audio.SamplesPerFrame)
 
 	for _, client := range clients {
 		if !client.hasAudioTrack() {
