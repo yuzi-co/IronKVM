@@ -30,9 +30,18 @@ work=$root/tools/opusbench/.build
 mkdir -p "$work"
 cd "$work"
 
+# Download to a temporary name and move into place only once the checksum
+# passes. A failed wget or a failed sha256sum used to leave a bad file at
+# "opus-$VERSION.tar.gz", and the [ ! -f ] check below then skipped the
+# re-download on every later run: the script failed identically forever until
+# someone deleted the file by hand.
 if [ ! -f "opus-$VERSION.tar.gz" ]; then
-    wget -q -O "opus-$VERSION.tar.gz" \
+    tmp="opus-$VERSION.tar.gz.part"
+    rm -f "$tmp"
+    wget -q -O "$tmp" \
         "https://downloads.xiph.org/releases/opus/opus-$VERSION.tar.gz"
+    echo "$SHA256  $tmp" | sha256sum -c -
+    mv "$tmp" "opus-$VERSION.tar.gz"
 fi
 
 echo "$SHA256  opus-$VERSION.tar.gz" | sha256sum -c -
