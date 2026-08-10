@@ -310,3 +310,78 @@ makes the deploy two files and gives the guarded restore an inconsistent pair to
 **A vendored cgo module such as `hraban/opus`.** Needs no committed binary, but adds a Go
 dependency, pins libopus 1.3.1 rather than the 1.5.2 that was measured, and recompiles all of
 libopus on every build.
+
+## Verified on hardware
+
+**Date:** 2026-08-10. **Build stamp:** `dev.20260810.1121.9ffb0251`. **Device:** 10.0.0.222.
+
+### The archive links statically
+
+`patchelf --print-needed NanoKVM-Server` reports `libkvm.so` and `libc.so`, and nothing else.
+This is the gate that matters for uptime. The device carries no `libopus.so`, so a dynamic link
+would give a server that cannot start. The list agrees with the committed library.
+
+### The deploy replaced the running process
+
+The guarded script `/data/deploy-server` ran with `DEPLOY_TIMEOUT=200`. It snapshotted the old
+binary, installed the new one, and reported `deploy: OK, serving within 200s and running what
+was installed` 43 seconds after the restart. The process id changed from 1044 to 1450.
+
+Three digests agree, which is the only proof that the new image is the one that runs:
+
+```
+6b63cc9f073b850c0f30a36326619014  (host) server/NanoKVM-Server
+6b63cc9f073b850c0f30a36326619014  /proc/1450/exe
+6b63cc9f073b850c0f30a36326619014  /kvmapp/server/NanoKVM-Server
+```
+
+The server answers on loopback with HTTP 401, which shows that it bound its port and read its
+config. The log records no `audio`, `opus`, `panic` or `SIGSEGV` line.
+
+### libopus 1.5.2 runs on the C906
+
+`tools/opusbench`, built against the committed `server/dl_lib/libopus.a` and run on the device
+under `nice -n 15`, reproduces the numbers this design was approved on. The shipped
+configuration is the `stereo / 96k / cx 3` row:
+
+```
+what                   chans      rate    cx    cpu_s   core_%    kbit/s
+g711-fir(today)        stereo        -     -    0.164     1.64      64.0
+opus/audio/tone        stereo      96k     3    0.559     5.59      96.4
+opus/audio/pink        stereo      96k     3    0.623     6.23      96.4
+opus-DECODE/tone       stereo      96k     5    0.374     3.74         -
+```
+
+5.59% against the 5.60% this design records, which reproduces the measurement the decision was
+made on. The pink noise row, 6.23%, is the more honest figure for real content.
+
+Opus costs more than the path it replaces, as the design states: 5.59% against the 4.66% the Go
+G.711 code measured. The rise is under 1% of one core, and it buys the full audio band. The
+`g711-fir` row above is the C transcription at 1.64%, not the Go cost — do not read it as the
+comparison.
+
+### The capture path did not run
+
+`/data/audiodiag.sh` exits 2: the KVM is correct and the managed host is not streaming. The
+gadget reports `chmask 3 / rate 48000 / sample size 2`, which is the 48 kHz stereo this design
+consumes. `arecord` and the `UAC1Gadget` card are present. No frame arrives, and `arecord`
+reports `pcm_read: read error: I/O error`.
+
+`/proc/asound/UAC1Gadget/pcm0c/sub0/status` reads `closed` on two reads four seconds apart, and
+no `arecord` process runs. That is the correct idle state: capture starts only when a viewer
+opens audio, and the host is not driving the gadget in any case. The managed host has no
+`snd-usb-audio` module, which `unraid-needs-a-built-usb-audio-module` already records. This is
+a host condition and not a fault in this change.
+
+### What this does not verify
+
+**Nobody listened.** The end-to-end chain — browser, WebRTC, Opus decode, speaker — is
+unproven on hardware. Confirm it by hand.
+
+**The in-process encoder never encoded a frame on the device.** `opus_encoder_create` and
+`opus_encode` are proven on this CPU by `opusbench`, and the Go pipeline around them is proven
+by the unit tests, but the two have not run together on the board. They cannot until the host
+streams audio. This is the residual risk the design names under "cgo moves the codec into the
+server process".
+
+**The bandwidth rise is not measured on the wire.** 96 kbit/s is the encoder's own figure.
