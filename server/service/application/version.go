@@ -115,6 +115,20 @@ func getLatest() (*Latest, error) {
 		return nil, fmt.Errorf("latest manifest exceeds %d bytes", maxLatestJSONSize)
 	}
 
+	latest, err := parseLatest(body, baseURL)
+	if err != nil {
+		return nil, err
+	}
+
+	log.Debugf("get application latest version: %s", latest.Version)
+	return latest, nil
+}
+
+// parseLatest reads the manifest and refuses anything it would not be safe to
+// act on. The name decides both the URL and where the package is written, and
+// it is written before the checksum has had a chance to reject the package, so
+// it has to be a plain file name.
+func parseLatest(body []byte, baseURL string) (*Latest, error) {
 	var latest Latest
 	if err := json.Unmarshal(body, &latest); err != nil {
 		log.Errorf("failed to unmarshal response: %s", err)
@@ -124,12 +138,23 @@ func getLatest() (*Latest, error) {
 		return nil, err
 	}
 
-	latest.Url, err = joinUpdateURL(baseURL, latest.Name)
+	// validateLatest has already refused any name that is not
+	// nanokvm_X.Y.Z.tar.gz, so the name cannot carry a path separator by the
+	// time it reaches the URL or the file on disk. It bounds size_bytes for a
+	// version 2 manifest, but nothing bounds the legacy size, and the package
+	// is written to the SD card the device boots from. Refuse an oversized
+	// manifest here rather than starting a download that cannot finish.
+	if latest.LegacySize > maxPackageSize {
+		log.Errorf("refusing update package of %d bytes", latest.LegacySize)
+		return nil, fmt.Errorf("package is too large")
+	}
+
+	joined, err := joinUpdateURL(baseURL, latest.Name)
 	if err != nil {
 		return nil, err
 	}
+	latest.Url = joined
 
-	log.Debugf("get application latest version: %s", latest.Version)
 	return &latest, nil
 }
 
