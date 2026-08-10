@@ -15,7 +15,7 @@ import (
 
 func audioFrame() []*rtp.Packet {
 	return []*rtp.Packet{
-		{Header: rtp.Header{SequenceNumber: 7}, Payload: []byte("mulaw")},
+		{Header: rtp.Header{SequenceNumber: 7}, Payload: []byte("opus")},
 	}
 }
 
@@ -57,8 +57,8 @@ func TestWriteAudioPacketsCarriesNoHeaderExtension(t *testing.T) {
 		t.Error("an audio packet carried a header extension")
 	}
 
-	if got := string(written[0].Payload); got != "mulaw" {
-		t.Errorf("payload is %q, want %q", got, "mulaw")
+	if got := string(written[0].Payload); got != "opus" {
+		t.Errorf("payload is %q, want %q", got, "opus")
 	}
 }
 
@@ -399,7 +399,9 @@ func TestDeliverAudioFrameReachesOnlyClientsWithAudio(t *testing.T) {
 	withAudio.mutex.Unlock()
 	manager.storeClient(&websocket.Conn{}, withAudio)
 
-	manager.deliverAudioFrame(make([]byte, audio.FrameSamples))
+	// A plausible Opus packet. Nothing here decodes it; only its presence and
+	// its length matter.
+	manager.deliverAudioFrame(make([]byte, 240))
 
 	if videoOnly.audioSlot.Pending() {
 		t.Error("a client without an audio track was handed a frame")
