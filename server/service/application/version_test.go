@@ -1,7 +1,6 @@
 package application
 
 import (
-	"crypto/sha512"
 	"encoding/base64"
 	"fmt"
 	"testing"
@@ -9,15 +8,20 @@ import (
 
 const baseURL = "https://cdn.example.com/nanokvm"
 
-func validDigest() string {
-	digest := sha512.Sum512([]byte("package"))
-	return base64.StdEncoding.EncodeToString(digest[:])
-}
+// validPackageName satisfies the pattern validateLatest enforces. The pattern is
+// stricter than "a plain file name" - it pins the whole shape - so a fixture
+// that only avoided path separators would now be rejected for the wrong reason
+// and would prove nothing about the case under test.
+const validPackageName = "nanokvm_2.0.0.tar.gz"
+
+// validSha512 is a well-formed digest rather than a real one: validateLatest
+// checks that it decodes to 64 bytes and nothing here checks the contents.
+var validSha512 = base64.StdEncoding.EncodeToString(make([]byte, 64))
 
 func validLatest() Latest {
 	return Latest{
 		Version: "1.2.3", Name: "nanokvm_1.2.3.tar.gz",
-		Sha512: validDigest(), LegacySize: 1,
+		Sha512: validSha512, LegacySize: 1,
 	}
 }
 
@@ -27,9 +31,7 @@ func latestJSON(name string) []byte {
 
 func latestJSONWithSize(name string, size uint64) []byte {
 	return []byte(fmt.Sprintf(
-		`{"version":"2.0.0","name":%q,"sha512":%q,"size":%d}`,
-		name, validDigest(), size,
-	))
+		`{"version":"2.0.0","name":%q,"sha512":%q,"size":%d}`, name, validSha512, size))
 }
 
 func TestValidateLatestV1DoesNotInterpretLegacySizeAsBytes(t *testing.T) {
@@ -64,12 +66,12 @@ func TestValidateLatestV2RequiresExactByteFields(t *testing.T) {
 }
 
 func TestParseLatestBuildsTheDownloadURL(t *testing.T) {
-	latest, err := parseLatest(latestJSON("nanokvm_2.0.0.tar.gz"), baseURL)
+	latest, err := parseLatest(latestJSON(validPackageName), baseURL)
 	if err != nil {
 		t.Fatalf("expected a normal package to be accepted: %s", err)
 	}
 
-	if latest.Url != baseURL+"/nanokvm_2.0.0.tar.gz" {
+	if latest.Url != baseURL+"/"+validPackageName {
 		t.Fatalf("unexpected url %q", latest.Url)
 	}
 
@@ -84,11 +86,11 @@ func TestParseLatestRejectsANameThatIsNotAPlainFile(t *testing.T) {
 	for _, name := range []string{
 		"../../etc/init.d/S99evil",
 		"/etc/init.d/S99evil",
-		"sub/dir/nanokvm_2.0.0.tar.gz",
+		"sub/dir/" + validPackageName,
 		"..",
 		"",
 		".hidden",
-		"nanokvm_2.0.0.tar.gz; reboot",
+		validPackageName + "; reboot",
 	} {
 		if _, err := parseLatest(latestJSON(name), baseURL); err == nil {
 			t.Fatalf("expected %q to be rejected", name)
@@ -103,7 +105,7 @@ func TestParseLatestRejectsMalformedJSON(t *testing.T) {
 }
 
 func TestParseLatestRejectsAnOversizedPackage(t *testing.T) {
-	body := latestJSONWithSize("nanokvm_2.0.0.tar.gz", maxPackageSize+1)
+	body := latestJSONWithSize(validPackageName, maxPackageSize+1)
 
 	if _, err := parseLatest(body, baseURL); err == nil {
 		t.Fatal("expected an oversized package to be rejected before downloading")
