@@ -97,8 +97,8 @@ func (e *opusEncoder) Encode(pcm []byte, dst []byte) ([]byte, error) {
 	}
 
 	// The samples are S16_LE and this is a little-endian machine, so the byte
-	// slice is already an array of opus_int16. A slice from make is aligned
-	// well enough for the cast.
+	// slice is already an array of opus_int16. The alignment requirement this
+	// cast relies on is documented on Encoder.Encode in encoder.go.
 	written := C.opus_encode(
 		e.state,
 		(*C.opus_int16)(unsafe.Pointer(&pcm[0])),
