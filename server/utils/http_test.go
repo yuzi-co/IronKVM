@@ -74,3 +74,28 @@ func TestDownloadRemovesPartialFileAndReportsWrittenBytes(t *testing.T) {
 		t.Fatalf("written = %d, want 5", info.Written)
 	}
 }
+
+func TestDownloadedFileIsNotExecutable(t *testing.T) {
+	// The file exists before anything has verified it, so it must not be
+	// something the system will happily run.
+	oldClient := downloadClient
+	downloadClient = testDownloadClient("package", "application/gzip")
+	defer func() { downloadClient = oldClient }()
+
+	target := filepath.Join(t.TempDir(), "package.tar.gz")
+	req, err := http.NewRequest(http.MethodGet, "https://updates.example/package", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Download(req, target, 1024, nil); err != nil {
+		t.Fatal(err)
+	}
+
+	info, err := os.Stat(target)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if info.Mode().Perm()&0o111 != 0 {
+		t.Fatalf("mode = %o, want a non-executable file", info.Mode().Perm())
+	}
+}
