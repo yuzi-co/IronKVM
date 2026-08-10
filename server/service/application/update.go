@@ -76,6 +76,8 @@ func update() error {
 		return err
 	}
 
+	// validateLatest refused any name that is not a plain package name, so
+	// joining it onto the workspace cannot escape it.
 	target := filepath.Join(workspace.dir, latest.Name)
 	downloadInfo, err := download(latest, target)
 	if err != nil {

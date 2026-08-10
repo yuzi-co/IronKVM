@@ -246,6 +246,7 @@ func saveUploadedFile(part *multipart.Part, contentLength int64, workspaceDir st
 	pw := newProgressWriter(out, contentLength)
 	defer pw.Stop()
 
+	// The rootfs lives on the SD card, so an unbounded upload fills the device.
 	written, err := io.Copy(pw, io.LimitReader(part, int64(maxPackageSize)+1))
 	if err != nil {
 		return "", fmt.Errorf("failed to write file: %w", err)
