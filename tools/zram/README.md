@@ -64,12 +64,21 @@ echo zstd > /sys/block/zram0/comp_algorithm
 
 ## Build and install
 
+The modules are the only manual step. The server installs the init script.
+
 ```shell
 ssh root@<device> 'zcat /proc/config.gz' > kernel.config
 tools/zram/build-modules.sh /path/to/linux_5.10 kernel.config ./ko
 scp ko/*.ko root@<device>:/mnt/system/ko/
-scp tools/zram/S01zram root@<device>:/etc/init.d/ && ssh root@<device> 'chmod 755 /etc/init.d/S01zram'
 ```
+
+Then open `Settings > Device > Advanced` in the web UI and turn on **Compressed
+swap (zram)**. The toggle copies `/kvmapp/system/init.d/S01zram` to
+`/etc/init.d/`, makes it executable, and starts it. Turning the toggle off
+stops the device and removes the script again.
+
+The row reports "The kernel modules are not installed on this device" and the
+toggle stays disabled until both `.ko` files are in place.
 
 `build-modules.sh` refuses to emit modules whose vermagic does not match
 `5.10.4-tag- preempt mod_unload riscv` exactly, so a module that cannot load
@@ -77,6 +86,33 @@ never reaches a device.
 
 `loadsystemko.sh` lists modules explicitly and does not glob, so dropping files
 into `/mnt/system/ko` does not make them load. `S01zram` is what enables them.
+
+## Where the script lives
+
+`S01zram` moved to `kvmapp/system/init.d/` so that it ships in the install
+package and the server has a source to copy from. It is not in the list of
+scripts that `kvm_system` copies at boot: that list is hard-coded C++, and
+adding a name to it needs a MaixCDK rebuild and a redeploy on every device. The
+presence of `/etc/init.d/S01zram` is what marks the feature as enabled, the
+same way `S98tailscaled` already works.
+
+`tools/zram/test-zram-swapon.sh` checks the swap priority and its fallback:
+
+```shell
+sh tools/zram/test-zram-swapon.sh
+```
+
+## Swap priority
+
+The script asks for `swapon -p 100`. zram and the optional swap file are both
+swapped on during boot, and the order between them is not defined: `S01zram`
+runs from `rcS`, and the swap file runs from the `si11::sysinit` line that the
+server appends to `/etc/inittab`. Without a priority, the swap file can win, and
+the kernel then writes to the SD card before it writes to compressed RAM.
+
+BusyBox documents `swapon -p PRI`, but an applet built without the option
+rejects it. The script falls back to a plain `swapon`, so a rejected option
+costs the priority and not the swap.
 
 ## The trade
 
