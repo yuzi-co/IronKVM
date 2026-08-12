@@ -9,7 +9,7 @@ are operator tools.
 | `build/`      | App-only cross-compile toolchain: `NanoKVM-Server` without MaixCDK.    |
 | `slots/`      | A/B root filesystems: patch the initramfs, build and install a slot.   |
 | `slots/device/S00awatchdog` | Reverts the slot marker if a board under test never becomes reachable. |
-| `zram/`       | Build `zram.ko`/`zsmalloc.ko` for the stock kernel, and enable them.   |
+| `zram/`       | Build `zram.ko`/`zsmalloc.ko` for the stock kernel. The web UI enables them. |
 | `vi-loadavg/` | Build `soph_vi.ko` with the four idle ISP waits moved to `TASK_IDLE`.  |
 | `oled/`       | Move the status image to spread OLED wear, with no change to `kvm_system`. |
 | `service/`    | Restart `NanoKVM-Server` and `kvm_system` if they die. Nothing else does. |
