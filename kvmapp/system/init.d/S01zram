@@ -11,12 +11,37 @@
 # zram means the OOM killer rather than slow paging, so mem_limit caps how much
 # RAM zram may consume: it cannot grow into the pressure it exists to relieve.
 #
-# Install as /etc/init.d/S01zram, mode 755. Shutdown is already covered by the
-# swapoff -a that inittab runs at runlevel 0/6.
+# The server installs this as /etc/init.d/S01zram, mode 755, from the zram
+# toggle in Settings > Device > Advanced. Presence in /etc/init.d is what marks
+# the feature as enabled. Shutdown is already covered by the swapoff -a that
+# inittab runs at runlevel 0/6.
+#
+# The list of scripts that kvm_system copies at boot is hard-coded C++, so this
+# one is not in it. The server owns the copy instead.
 
+ZRAM_DEV=/dev/zram0
 ZRAM_DISKSIZE=96M
 ZRAM_MEM_LIMIT=40M
 ZRAM_COMP=lzo-rle
+ZRAM_PRIORITY=100
+
+# Swap priority puts zram ahead of the optional swap file on the SD card. Both
+# are swapped on during boot, and the order between them is not defined: this
+# script runs from rcS, and the swap file runs from the si11::sysinit line that
+# the server appends to /etc/inittab. If the swap file wins, the kernel writes
+# to the SD card before it writes to compressed RAM.
+#
+# BusyBox documents swapon -p PRI, but the applet on a given image may be built
+# without it. A rejected option must not leave the board with no swap, so this
+# falls back to a plain swapon at the kernel's default priority.
+swapon_zram() {
+	if swapon -p "$ZRAM_PRIORITY" "$ZRAM_DEV" 2>/dev/null
+	then
+		return 0
+	fi
+
+	swapon "$ZRAM_DEV"
+}
 
 start() {
 	printf "zram: "
@@ -50,8 +75,8 @@ start() {
 	# answer if you need to confirm it took.
 	echo "$ZRAM_MEM_LIMIT" > /sys/block/zram0/mem_limit 2>/dev/null
 
-	mkswap /dev/zram0 > /dev/null 2>&1
-	if ! swapon /dev/zram0
+	mkswap "$ZRAM_DEV" > /dev/null 2>&1
+	if ! swapon_zram
 	then
 		echo "FAIL (swapon)"
 		return 1

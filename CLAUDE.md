@@ -219,8 +219,8 @@ stat the SD card and cannot be shadowed by a file on disk.
 
 **Responses always return HTTP 200** with a `{code, msg, data}` envelope — `code: 0` means success.
 Use the `proto.Response` helpers (`OkRsp`, `OkRspWithData`, `ErrRsp`) rather than `c.JSON` directly.
-Parse and validate input with `proto.ParseQueryRequest` / `ParseJsonRequest`, which run
-`validator/v10` over the struct tags.
+Parse and validate input with `proto.ParseQueryRequest` (GET) / `ParseFormRequest` (POST, and it
+binds JSON too), which run `validator/v10` over the struct tags.
 
 **Auth is three middlewares**, all of which also enforce an origin check:
 
