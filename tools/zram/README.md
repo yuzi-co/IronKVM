@@ -102,17 +102,59 @@ same way `S98tailscaled` already works.
 sh tools/zram/test-zram-swapon.sh
 ```
 
-## Swap priority
+## Swap priority cannot be set on this image
 
-The script asks for `swapon -p 100`. zram and the optional swap file are both
-swapped on during boot, and the order between them is not defined: `S01zram`
-runs from `rcS`, and the swap file runs from the `si11::sysinit` line that the
-server appends to `/etc/inittab`. Without a priority, the swap file can win, and
-the kernel then writes to the SD card before it writes to compressed RAM.
+The script asks for `swapon -p 100` and falls back to a plain `swapon`. On this
+board the fallback is what always runs. Measured 2026-08-13:
 
-BusyBox documents `swapon -p PRI`, but an applet built without the option
-rejects it. The script falls back to a plain `swapon`, so a rejected option
-costs the priority and not the swap.
+```
+$ swapon --help
+Usage: swapon [-a] [-e] [DEVICE]
+	-a	Start swapping on all swap devices
+	-e	Silently skip devices that do not exist
+```
+
+BusyBox 1.36.1 here is built without `FEATURE_SWAPON_PRI`, so neither `-p` nor
+the `pri=` option in `/etc/fstab` is available. zram lands at the kernel's
+default priority, which shows as `-2` in `/proc/swaps`.
+
+The `-p` attempt stays in the script. It is correct on an image that has the
+feature, and `tools/zram/test-zram-swapon.sh` covers both paths.
+
+Boot order does not compensate. The kernel gives the first device swapped on
+the higher priority, and the swap file goes first:
+
+```
+si5::sysinit:/sbin/swapon -a          <- inittab, sysinit
+si11::sysinit:/sbin/swapon /swapfile  <- appended by the swap file feature
+rcS:12345:wait:/etc/init.d/rcS        <- reaches S01zram
+```
+
+BusyBox init runs every `sysinit` entry to completion before it starts the
+`wait` entries, so the swap file is always enabled first and always takes the
+better priority.
+
+**Do not enable both on this board.** With both on, the kernel writes to the SD
+card before it writes to compressed RAM, which defeats the reason for using
+zram. The two controls in `Settings > Device > Advanced` are independent by
+design, so nothing stops you; this is the reason not to.
+
+## Stopping and starting a live device
+
+`swapoff` takes the device out of `/proc/swaps` but leaves it initialised: it
+keeps its `disksize`. The kernel then rejects a second write to `disksize`:
+
+```
+sh: write error: Resource busy
+```
+
+`start` therefore resets a device that reports a non-zero `disksize` before it
+configures one. Nothing hit this while the script only ran at boot, because a
+freshly inserted module reports 0. The UI toggle stops and starts a live
+device, which is the path that needs the repair.
+
+`disable` does not remove the modules. They stay loaded, so the toggle keeps
+reporting the feature as available and a re-enable costs no `insmod`.
 
 ## The trade
 
