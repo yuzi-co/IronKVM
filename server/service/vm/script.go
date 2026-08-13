@@ -95,10 +95,7 @@ func (s *Service) RunScript(c *gin.Context) {
 	}
 
 	var output []byte
-	cmd := exec.Command(script)
-	if strings.HasSuffix(strings.ToLower(req.Name), ".py") {
-		cmd = exec.Command("python", script)
-	}
+	cmd := scriptCommand(req.Name, script)
 
 	if req.Type == "foreground" {
 		output, err = cmd.CombinedOutput()
@@ -149,6 +146,22 @@ func (s *Service) DeleteScript(c *gin.Context) {
 
 	rsp.OkRsp(c)
 	log.Debugf("delete script %s success", file)
+}
+
+// scriptCommand builds the command that runs a script. The interpreter takes
+// the path as an argument, so the name can never become shell text.
+//
+// A shell script goes through sh rather than being executed directly. Upload
+// sets the execute bit, but the kernel still needs a shebang to know what
+// interprets the file, and a .sh written as a plain list of commands has none.
+// Executing the path itself fails those with ENOEXEC; naming the interpreter
+// does not.
+func scriptCommand(name string, path string) *exec.Cmd {
+	if strings.HasSuffix(strings.ToLower(name), ".py") {
+		return exec.Command("python", path)
+	}
+
+	return exec.Command("sh", path)
 }
 
 func isScript(name string) bool {
