@@ -173,7 +173,7 @@ Extractions that share a prerequisite form a chain. Land the shorter branch firs
 prefix of the branch below it.
 
 ```
-security/api-injection-holes
+security/contain-request-paths
   ├─ security/download-verify ─ feat/device-http-proxy
   ├─ security/api-key-auth
   └─ security/usb-gadget-identity ─ fix/hid-gadget-rebuild ─ fix/hid-endpoint-reporting
