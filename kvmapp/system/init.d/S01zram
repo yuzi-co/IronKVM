@@ -20,20 +20,42 @@
 # one is not in it. The server owns the copy instead.
 
 ZRAM_DEV=/dev/zram0
+ZRAM_SYSFS=/sys/block/zram0
 ZRAM_DISKSIZE=96M
 ZRAM_MEM_LIMIT=40M
 ZRAM_COMP=lzo-rle
 ZRAM_PRIORITY=100
 
-# Swap priority puts zram ahead of the optional swap file on the SD card. Both
-# are swapped on during boot, and the order between them is not defined: this
-# script runs from rcS, and the swap file runs from the si11::sysinit line that
-# the server appends to /etc/inittab. If the swap file wins, the kernel writes
-# to the SD card before it writes to compressed RAM.
+# Swap priority would put zram ahead of the optional swap file on the SD card.
+# On this image it cannot: the BusyBox 1.36.1 applet is built without
+# FEATURE_SWAPON_PRI, so `swapon --help` offers only -a and -e. The -p attempt
+# stays because it is correct on an image that has the feature, and the
+# fallback costs the priority rather than the swap.
 #
-# BusyBox documents swapon -p PRI, but the applet on a given image may be built
-# without it. A rejected option must not leave the board with no swap, so this
-# falls back to a plain swapon at the kernel's default priority.
+# Boot order does not compensate. The swap file is enabled by a si11::sysinit
+# line that the server appends to /etc/inittab, and BusyBox init runs every
+# sysinit entry before the rcS wait entry that reaches this script. So the swap
+# file is swapped on first and takes the higher priority. Enabling both means
+# the kernel writes to the SD card before it writes to compressed RAM. Prefer
+# one or the other on this board; tools/zram/README.md records the measurement.
+# swapoff removes the device from /proc/swaps but leaves it initialised: it
+# keeps its disksize, and the kernel then rejects a second write to disksize
+# with EBUSY. A reset is what makes disksize writable again.
+#
+# Nothing hit this while the script only ran at boot, because a freshly
+# inserted module reports disksize 0. The toggle in Settings > Device >
+# Advanced stops and starts a live device, and that is the path that needs the
+# repair. The caller has already established that the device is not in
+# /proc/swaps, so the reset cannot take swap away from anything.
+reset_stale_device() {
+	size=$(cat "$ZRAM_SYSFS/disksize" 2>/dev/null || echo 0)
+
+	# No file means no device to repair, and 0 means a fresh module.
+	[ -z "$size" ] || [ "$size" = "0" ] && return 0
+
+	echo 1 > "$ZRAM_SYSFS/reset"
+}
+
 swapon_zram() {
 	if swapon -p "$ZRAM_PRIORITY" "$ZRAM_DEV" 2>/dev/null
 	then
@@ -46,26 +68,28 @@ swapon_zram() {
 start() {
 	printf "zram: "
 
-	if [ ! -e /dev/zram0 ]
+	if [ ! -e "$ZRAM_DEV" ]
 	then
 		insmod /mnt/system/ko/zsmalloc.ko 2>/dev/null
 		insmod /mnt/system/ko/zram.ko 2>/dev/null
 	fi
 
-	if [ ! -e /dev/zram0 ]
+	if [ ! -e "$ZRAM_DEV" ]
 	then
 		echo "FAIL (no zram device)"
 		return 1
 	fi
 
-	if grep -q '^/dev/zram0 ' /proc/swaps
+	if grep -q "^$ZRAM_DEV " /proc/swaps
 	then
 		echo "already active"
 		return 0
 	fi
 
-	echo "$ZRAM_COMP" > /sys/block/zram0/comp_algorithm 2>/dev/null
-	if ! echo "$ZRAM_DISKSIZE" > /sys/block/zram0/disksize
+	reset_stale_device
+
+	echo "$ZRAM_COMP" > "$ZRAM_SYSFS/comp_algorithm" 2>/dev/null
+	if ! echo "$ZRAM_DISKSIZE" > "$ZRAM_SYSFS/disksize"
 	then
 		echo "FAIL (disksize)"
 		return 1
@@ -73,7 +97,7 @@ start() {
 	# mem_limit is write-only in sysfs: reading it back gives nothing, which
 	# looks identical to it not being set. Field 4 of mm_stat is the real
 	# answer if you need to confirm it took.
-	echo "$ZRAM_MEM_LIMIT" > /sys/block/zram0/mem_limit 2>/dev/null
+	echo "$ZRAM_MEM_LIMIT" > "$ZRAM_SYSFS/mem_limit" 2>/dev/null
 
 	mkswap "$ZRAM_DEV" > /dev/null 2>&1
 	if ! swapon_zram
@@ -86,10 +110,10 @@ start() {
 }
 
 stop() {
-	if grep -q '^/dev/zram0 ' /proc/swaps
+	if grep -q "^$ZRAM_DEV " /proc/swaps
 	then
 		printf "zram: "
-		swapoff /dev/zram0 && echo "OK" || echo "FAIL"
+		swapoff "$ZRAM_DEV" && echo "OK" || echo "FAIL"
 	fi
 }
 
