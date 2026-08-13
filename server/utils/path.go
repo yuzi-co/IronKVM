@@ -8,9 +8,13 @@ import (
 )
 
 // safeName matches names that are safe both as a path component and as an
-// argument to a shell command: letters, digits, dot, dash and underscore only,
-// and never starting with a dot or a dash.
-var safeName = regexp.MustCompile(`^[A-Za-z0-9_][A-Za-z0-9._-]*$`)
+// argument to a command: letters, digits, space, dot, dash and underscore
+// only, and never starting with any of the last three.
+//
+// A space is allowed because the name reaches the interpreter as one argument
+// and never as shell text. Names such as "nightly backup.sh" are ordinary, and
+// refusing them would also leave an existing one impossible to delete.
+var safeName = regexp.MustCompile(`^[A-Za-z0-9_][A-Za-z0-9._ -]*$`)
 
 var errUnsafeName = errors.New("unsafe file name")
 

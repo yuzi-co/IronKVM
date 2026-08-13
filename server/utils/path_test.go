@@ -29,10 +29,28 @@ func TestSecureJoinRejectsTraversal(t *testing.T) {
 func TestSecureJoinRejectsShellMetacharacters(t *testing.T) {
 	// These names are safe as file paths but become command injection once the
 	// result is handed to sh -c.
-	for _, name := range []string{"a.sh; reboot", "a.sh&&reboot", "a.sh`reboot`", "a.sh$(reboot)", "a b.sh", "a|b.sh"} {
+	for _, name := range []string{"a.sh; reboot", "a.sh&&reboot", "a.sh`reboot`", "a.sh$(reboot)", "a|b.sh"} {
 		if _, err := SecureJoin("/etc/kvm/scripts", name); err == nil {
 			t.Fatalf("name %q must be rejected", name)
 		}
+	}
+}
+
+func TestSecureJoinAcceptsNameWithSpace(t *testing.T) {
+	// A space is safe: the name reaches the interpreter as one argument, never
+	// as shell text, and it is a common way to name an uploaded script.
+	path, err := SecureJoin("/etc/kvm/scripts", "nightly backup.sh")
+	if err != nil {
+		t.Fatalf("a name with a space should be accepted: %s", err)
+	}
+	if path != "/etc/kvm/scripts/nightly backup.sh" {
+		t.Fatalf("unexpected path %q", path)
+	}
+}
+
+func TestSecureJoinRejectsLeadingSpace(t *testing.T) {
+	if _, err := SecureJoin("/etc/kvm/scripts", " a.sh"); err == nil {
+		t.Fatal("a name starting with a space must be rejected")
 	}
 }
 
