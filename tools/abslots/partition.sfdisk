@@ -1,0 +1,37 @@
+# NanoKVM A/B/recovery layout for the 60506112 sector (28.85 GiB) card.
+#
+# p1 is copied from the card as it is: start sector 1, 32768 sectors, type c,
+# bootable. The boot ROM finds fip.bin by reading the first FAT partition, so
+# this entry is the one thing here that must not change, and it is not
+# reformatted. The official v1.4.3 release image has the same p1, so this is
+# what a NanoKVM card looks like rather than a local convention.
+#
+# Everything from p2 is 4 MiB aligned, which is the erase block size that
+# matters on this card. p1 cannot be aligned because it cannot move.
+#
+# Sizes come from measurement, not from a rule applied to a guess. The root
+# filesystem in use holds 911 MB, of which 132 MB is accumulated operator state
+# that a built image does not carry, so a built root is about 780 MB. 2 GiB is
+# 2.5x that. Bigger would cost real time on every install: slot install writes a
+# whole partition with dd, so install time and SD write endurance scale with the
+# partition, not with the bytes in it.
+#
+# p4 is the extended container. Each logical partition costs one EBR sector, so
+# p5 and p6 start 8192 sectors after the preceding boundary rather than
+# immediately, which keeps them aligned too.
+#
+#   p1  FAT16        1 ..    32768     16.00 MiB  /boot
+#   p2  ext4     40960 ..  4235263      2.00 GiB  root A
+#   p3  ext4   4235264 ..  8429567      2.00 GiB  root B
+#   p5  ext4   8437760 .. 10534911      1.00 GiB  recovery
+#   p6  exfat 10543104 .. 60506111     23.82 GiB  /data
+label: dos
+label-id: 0x70781617
+unit: sectors
+
+1 : start=1,        size=32768,    type=c, bootable
+2 : start=40960,    size=4194304,  type=83
+3 : start=4235264,  size=4194304,  type=83
+4 : start=8429568,  size=52076544, type=5
+5 : start=8437760,  size=2097152,  type=83
+6 : start=10543104, size=49963008, type=7
