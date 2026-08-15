@@ -1,0 +1,159 @@
+#!/bin/sh
+# Operator tool for the A/B/recovery slots.
+#
+#   slot status
+#   slot install <a|b|recovery> <image>
+#   slot try <a|b>
+#   slot confirm
+#   slot revert
+#   slot recovery
+#
+# SLOT_CONF, BOOT and RUNNING_SLOT are variables so test-slot.sh can drive this
+# against loop files instead of a card. On the device nothing sets them.
+#
+# On confirm and who decides "healthy": this command is deliberately dumb. It
+# promotes whatever is running and does not judge it. The judging lives in
+# S00awatchdog's healthy(), which calls this once a door is open, so there is
+# one definition of reachable rather than two that drift. Running `slot confirm`
+# by hand is therefore an operator override, which is what an override should
+# be: it does what you told it.
+SLOT_CONF=${SLOT_CONF:-/etc/nanokvm-slots.conf}
+BOOT=${BOOT:-/boot}
+
+[ -f "$SLOT_CONF" ] || { echo "slot: no $SLOT_CONF" >&2; exit 1; }
+. "$SLOT_CONF"
+
+die() { echo "slot: $*" >&2; exit 1; }
+
+device_of() {
+	case "$1" in
+		a) echo "$SLOT_A" ;;
+		b) echo "$SLOT_B" ;;
+		recovery) echo "$RECOVERY" ;;
+		*) echo "" ;;
+	esac
+}
+
+# Which slot is running, decided by what is actually mounted on / rather than
+# by any marker. A marker says what should have booted; this says what did.
+running_slot() {
+	[ -n "$RUNNING_SLOT" ] && { echo "$RUNNING_SLOT"; return; }
+	dev=$(awk '$2 == "/" { print $1; exit }' /proc/mounts 2>/dev/null)
+	case "$dev" in
+		"$SLOT_A") echo a ;;
+		"$SLOT_B") echo b ;;
+		"$RECOVERY") echo recovery ;;
+		*) echo unknown ;;
+	esac
+}
+
+trusted_slot() {
+	[ -e "$BOOT/slot" ] || { echo a; return; }
+	read t < "$BOOT/slot"
+	[ -n "$t" ] && echo "$t" || echo a
+}
+
+read_or() { [ -e "$1" ] && cat "$1" || echo "$2"; }
+
+# Provenance, written into every image at build time. This is the question
+# nobody could answer during the 2026-08-15 outage: what does that slot contain?
+manifest_of() {
+	dev=$(device_of "$1")
+	[ -n "$dev" ] || return
+	[ -b "$dev" ] || return
+	out=$(dd if="$dev" bs=1M count=64 2>/dev/null | strings 2>/dev/null | grep -m1 '^manifestsha ')
+	[ -n "$out" ] && echo "$out"
+}
+
+cmd_status() {
+	printf '%-10s %s\n' running  "$(running_slot)"
+	printf '%-10s %s\n' trusted  "$(trusted_slot)"
+	printf '%-10s %s\n' trial    "$(read_or "$BOOT/slot.try" none)"
+	printf '%-10s %s\n' prev     "$(read_or "$BOOT/slot.prev" none)"
+	printf '%-10s %s\n' recovery "$( [ -e "$BOOT/recovery" ] && echo requested || echo no )"
+
+	if [ -r /etc/slot-manifest ]; then
+		echo
+		sed 's/^/  /' /etc/slot-manifest
+	fi
+}
+
+cmd_install() {
+	name=$1
+	image=$2
+	[ -n "$name" ] && [ -n "$image" ] || die "usage: slot install <a|b|recovery> <image>"
+
+	dev=$(device_of "$name")
+	[ -n "$dev" ] || die "$name is not a slot"
+	[ "$name" = "$(running_slot)" ] && die "refusing to install onto the running slot"
+	[ -f "$image" ] || die "no such image: $image"
+
+	isize=$(wc -c < "$image")
+	# blockdev first: wc -c on a block device reads every byte of it to count
+	# them, which is a full partition read before anything has been written.
+	# The wc fallback is for the tests, which drive this against plain files.
+	dsize=$(blockdev --getsize64 "$dev" 2>/dev/null || wc -c < "$dev")
+	[ "$isize" -le "$dsize" ] || die "image is $isize bytes, $dev holds $dsize"
+
+	before=$(sha256sum "$image" | cut -d' ' -f1)
+	echo "slot: writing $image to $dev"
+	dd if="$image" of="$dev" bs=1M conv=fsync 2>/dev/null || die "write to $dev failed"
+
+	# Read back exactly as many bytes as were written and compare. A short
+	# write and a silent card are the two ways this goes wrong.
+	after=$(dd if="$dev" bs=1M 2>/dev/null | head -c "$isize" | sha256sum | cut -d' ' -f1)
+	[ "$before" = "$after" ] || die "read-back mismatch on $dev"
+
+	echo "slot: $name installed and verified ($isize bytes)"
+}
+
+cmd_try() {
+	name=$1
+	[ -n "$(device_of "$name")" ] || die "usage: slot try <a|b>"
+	[ "$name" = recovery ] && die "use 'slot recovery' for recovery"
+	printf '%s\n' "$name" > "$BOOT/slot.try"
+	sync
+	echo "slot: $name will be tried once on the next boot"
+	echo "slot: if it does not become reachable, the next boot returns to $(trusted_slot)"
+}
+
+cmd_confirm() {
+	now=$(running_slot)
+	[ "$now" = unknown ] && die "cannot tell which slot is running"
+	[ "$now" = recovery ] && die "recovery does not promote itself"
+
+	was=$(trusted_slot)
+	if [ "$was" != "$now" ]; then
+		# Only record prev when the trusted slot actually changes. Confirming
+		# twice must not overwrite the real previous slot with the current one,
+		# which would make revert a no-op exactly when it is needed.
+		printf '%s\n' "$was" > "$BOOT/slot.prev"
+	fi
+	printf '%s\n' "$now" > "$BOOT/slot"
+	sync
+	echo "slot: $now confirmed"
+}
+
+cmd_revert() {
+	[ -e "$BOOT/slot.prev" ] || die "no previous slot recorded"
+	cp "$BOOT/slot.prev" "$BOOT/slot"
+	sync
+	echo "slot: reverted to $(trusted_slot)"
+}
+
+cmd_recovery() {
+	: > "$BOOT/recovery"
+	sync
+	echo "slot: the next boot is recovery"
+	echo "slot: recovery is sticky; remove $BOOT/recovery and reboot to leave it"
+}
+
+case "$1" in
+	status)   cmd_status ;;
+	install)  shift; cmd_install "$@" ;;
+	try)      shift; cmd_try "$@" ;;
+	confirm)  cmd_confirm ;;
+	revert)   cmd_revert ;;
+	recovery) cmd_recovery ;;
+	*) echo "Usage: slot {status|install <slot> <image>|try <slot>|confirm|revert|recovery}"; exit 1 ;;
+esac
