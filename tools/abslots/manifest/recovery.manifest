@@ -40,8 +40,13 @@ remove  /etc/init.d/S50avahi-daemon
 remove  /etc/init.d/S50ser2net
 remove  /etc/init.d/S80dnsmasq
 
-# Network functions for hardware this board does not have, sitting between the
-# network coming up and sshd starting.
+# Network functions recovery does not use. The reason here is not that they can
+# hang, because they cannot: S25wifimod is four insmod lines and S30wifi
+# daemonises everything it starts. It is that recovery needs exactly one door on
+# eth0 plus the USB console, and loading four wireless driver modules into a
+# rescue root buys nothing while costing kernel memory on a 166MB board.
+#
+# The full root keeps both. It has a Wi-Fi provisioning page to serve.
 remove  /etc/init.d/S25wifimod
 remove  /etc/init.d/S30wifi
 remove  /etc/init.d/S30rndis
