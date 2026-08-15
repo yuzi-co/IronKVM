@@ -1,0 +1,44 @@
+#!/bin/sh
+#
+# Run every /etc/init.d/S* in order, and record each one and its exit status in
+# /bootlog.
+#
+# This exists because a boot that completes with no listeners leaves no
+# evidence. rcS reports nothing by default and every service writes its log to
+# tmpfs, so on 2026-08-15 there was nothing to read but a port that would not
+# answer. An instrumented copy is what turned a silent failure into two named
+# faults: S03usbdev and S95nanokvm exiting 127, and S50sshd exiting 0 having
+# started nothing.
+#
+# The log is truncated at the start of each boot, so it always describes the
+# boot you are looking at rather than an unbounded history. The previous boot is
+# not worth keeping: if the board is up you can read it live, and if it is not
+# you want this boot.
+#
+# The sync after every line is the part that matters. A stalled board is ended
+# by cutting power, and an unsynced log dies with the page cache. It costs one
+# small write per init script, once per boot.
+BOOTLOG=${BOOTLOG:-/bootlog}
+INITDIR=${INITDIR:-/etc/init.d}
+
+: > "$BOOTLOG"
+sync
+
+for i in "$INITDIR"/S??* ; do
+    case "$i" in
+        *.sh) continue ;;
+    esac
+    [ -x "$i" ] || continue
+
+    echo "$(cut -d. -f1 /proc/uptime 2>/dev/null)s  start  $i" >> "$BOOTLOG"
+    sync
+
+    "$i" start
+    rc=$?
+
+    echo "$(cut -d. -f1 /proc/uptime 2>/dev/null)s  done   $i (rc=$rc)" >> "$BOOTLOG"
+    sync
+done
+
+echo "$(cut -d. -f1 /proc/uptime 2>/dev/null)s  rcS complete" >> "$BOOTLOG"
+sync

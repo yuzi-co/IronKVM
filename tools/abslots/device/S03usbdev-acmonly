@@ -1,0 +1,73 @@
+#!/bin/sh
+#
+# Recovery's USB gadget: an ACM console and nothing else.
+#
+# Installed as /etc/init.d/S03usbdev in the recovery root only. The full root
+# keeps the fork's own S03usbdev, which builds the HID and mass storage
+# functions the KVM needs.
+#
+# This is the door that needs no network. On 2026-08-15 the network was healthy
+# and the board was still lost; the opposite case, a healthy board with a broken
+# network configuration, is just as real. Two doors that fail for unrelated
+# reasons is the point of having both.
+#
+# No HID and no mass storage here. Recovery does not drive the managed host, and
+# a gadget with fewer functions is a gadget with fewer ways to fail its bind. A
+# failed bind wedges g0, and recovery is the rung with nothing below it.
+#
+# The root password must not be the factory one, because whoever controls the
+# managed host gets a login prompt on this console. That precondition belongs to
+# whoever enables recovery, not to this script.
+G=${G:-/sys/kernel/config/usb_gadget/g0}
+
+start() {
+    grep -q ' /sys/kernel/config ' /proc/mounts 2>/dev/null \
+        || mount -t configfs none /sys/kernel/config 2>/dev/null
+
+    if [ -d "$G" ]; then
+        echo "S03usbdev: gadget already exists"
+        return 0
+    fi
+
+    mkdir -p "$G/strings/0x409" "$G/configs/c.1/strings/0x409" "$G/functions/acm.GS0" || {
+        echo "S03usbdev: configfs is not available, no console"
+        return 0
+    }
+
+    echo 0x3346             > "$G/idVendor"
+    echo 0x1009             > "$G/idProduct"
+    echo 'sipeed'           > "$G/strings/0x409/manufacturer"
+    echo 'NanoKVM recovery' > "$G/strings/0x409/product"
+    echo '0123456789ABCDEF' > "$G/strings/0x409/serialnumber"
+    echo 'recovery'         > "$G/configs/c.1/strings/0x409/configuration"
+
+    ln -s "$G/functions/acm.GS0" "$G/configs/c.1/" 2>/dev/null
+
+    udc=$(ls /sys/class/udc 2>/dev/null | head -1)
+    if [ -z "$udc" ]; then
+        echo "S03usbdev: no UDC, no console"
+        return 0
+    fi
+
+    # A bind that fails must not take the boot down with it. Recovery's job is
+    # to reach a login prompt on eth0 even when the USB side is unhappy.
+    echo "$udc" > "$G/UDC" 2>/dev/null \
+        && echo "S03usbdev: acm console bound to $udc" \
+        || echo "S03usbdev: bind to $udc failed, no console"
+
+    echo device > /proc/cviusb/otg_role 2>/dev/null
+    return 0
+}
+
+stop() {
+    [ -d "$G" ] || return 0
+    echo "" > "$G/UDC" 2>/dev/null
+    return 0
+}
+
+case "$1" in
+    start) start ;;
+    stop)  stop ;;
+    restart) stop; start ;;
+    *) echo "Usage: $0 {start|stop|restart}"; exit 1 ;;
+esac
