@@ -1,0 +1,26 @@
+# The artifacts a slot image is built from. Fetched 2026-08-15.
+#
+# Both come from github.com/sipeed/NanoKVM/releases, not from
+# https://cdn.sipeed.com/nanokvm/latest.zip. That stable channel still serves
+# 2.4.3 while the board already runs 2.5.0, so building from it would be a
+# downgrade.
+#
+# Neither comes from this board. Slot A on the 2026-08-15 card was archived for
+# comparison and is older than v1.4.3: it carries Feb 2025 file dates and has
+# no /etc/ipmi, which v1.4.3 ships. Building from a running board is how a
+# factory /etc/kvm/ssh_stop and a CRLF init script reached a slot.
+#
+# The application is verified against the sha256.txt published beside it in the
+# same release. The system image ships no checksum, so its hash is recorded
+# here as a pin rather than verified against the publisher.
+
+b03f3be9b556dd68c6175b90ae80abd04f256922580f66186befffa399c47f71  20260610_NanoKVM_Rev1_4_3.img  sipeed/NanoKVM release v1.4.3, 2026-06-10, 1627390464 bytes
+af05aa73de5115ba5dc883f716dbcb36a04727a1c14bdcb4bda6ed021427318a  nanokvm_2.5.0.tar.gz           sipeed/NanoKVM release 2.5.0, 2026-08-04, 16464014 bytes, matches the release sha256.txt
+4ae4df4d7ea1f0da8763febb2202cf117eb657f247298ca407977d8fe7126963  nanokvm-base-official.tar.zst  rootfs from partition 2 of the image above, 251625581 bytes
+
+# Measured on the official rootfs while it was mounted, because both facts
+# change what the manifest has to do:
+#
+#   /etc/kvm/ssh_stop   present, 0 bytes.  S50sshd reads it and exits 0 having
+#                       started nothing. The manifest removes it.
+#   /kvmapp/version     2.4.3.              The 2.5.0 tarball is layered on top.
