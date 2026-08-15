@@ -1,0 +1,92 @@
+# The full NanoKVM root: the official base, the official application, and the
+# fork delta. Three declared layers and nothing copied from a running board.
+#
+# Paths on the left are relative to the payload tree the builder is given.
+# Paths on the right are absolute inside the image.
+#
+# The add and remove lists were discovered, not remembered: the running fork
+# slot was compared against the official v1.4.3 rootfs file by file, and every
+# fork script on the board turned out to match this repository byte for byte.
+
+# ---------------------------------------------------------------- application
+#
+# Layer one is the official 2.5.0 release tarball, unpacked into
+# payload/official-kvmapp/. The base's own /kvmapp is 2.4.3, so this is an
+# upgrade and not a re-copy. Trailing slashes on both sides merge rather than
+# replace.
+#
+# Layer two is the fork's own kvmapp on top. The order is what makes an image
+# describable: everything in layer one is published and checksummed by Sipeed,
+# and everything this fork changes is layer two and nothing else.
+add     official-kvmapp/                          /kvmapp/
+add     kvmapp/                                   /kvmapp/
+
+# The stripped server build. 17209304 bytes against 24279504, because the
+# binary runs from tmpfs and every debug byte is pinned RAM on a 166MB board.
+add     server/NanoKVM-Server                     /kvmapp/server/NanoKVM-Server
+
+# --------------------------------------------------------------- init scripts
+#
+# /etc/init.d is what boots. /kvmapp/system/init.d is the install package's own
+# copy and is written by the layer above. Both exist on a real device, and a
+# change that lands in only one of them does not run.
+
+# Modified by the fork. Each of these differs from the official base.
+add     kvmapp/system/init.d/S01fs                /etc/init.d/S01fs
+add     kvmapp/system/init.d/S03usbdev            /etc/init.d/S03usbdev
+add     kvmapp/system/init.d/S30eth               /etc/init.d/S30eth
+add     kvmapp/system/init.d/S95nanokvm           /etc/init.d/S95nanokvm
+
+# Added by the fork. None of these exist in the official base.
+add     kvmapp/system/init.d/S01zram              /etc/init.d/S01zram
+add     kvmapp/system/init.d/S99vidiag            /etc/init.d/S99vidiag
+add     tools/oled/S97oled-nudge                  /etc/init.d/S97oled-nudge
+add     tools/service/S98supervise                /etc/init.d/S98supervise
+
+# The watchdog goes in the manifest so "it was not installed" cannot happen
+# again. On 2026-08-15 it was missing from the failing slot, which is half of
+# why the card had to come out.
+add     tools/abslots/device/S00awatchdog         /etc/init.d/S00awatchdog
+
+# Identity lives on /data and is bound over /etc/kvm, so a slot switch keeps
+# the password and the certificates and no image ever carries them.
+add     tools/abslots/device/S02identity          /etc/init.d/S02identity
+
+# The instrumented rcS. A boot that completes with no listeners leaves no
+# evidence otherwise, and that is exactly the failure this whole design is
+# about. It is what turned a silent failure into two named faults.
+add     tools/abslots/device/rcS                  /etc/init.d/rcS
+
+# The operator tool, in every root, because the slot you are on is the one you
+# need it from.
+add     tools/abslots/device/slot                 /usr/bin/slot
+
+# -------------------------------------------------------------------- removes
+#
+# cp adds and overwrites and never deletes, so anything the base has and the
+# fork does not survives unless it is named here.
+
+# Present in the official v1.4.3 rootfs at 0 bytes. S50sshd reads it and exits
+# 0 having started nothing, which is a board with no ssh and a script that
+# reported success. This line is load-bearing, not defensive.
+remove  /etc/kvm/ssh_stop
+
+# The fork slot has run for weeks without either, on a board with no wireless
+# hardware. Both sit between the network coming up and sshd starting, which is
+# the worst place for a script that can wait on hardware that is not there.
+remove  /etc/init.d/S25wifimod
+remove  /etc/init.d/S30wifi
+
+# Operator state accumulated on a running board. 132 MB of it on the slot this
+# was measured from, and none of it belongs in an image.
+remove  /root
+remove  /watchdog.log
+remove  /bootlog
+remove  /device_key
+
+# --------------------------------------------------------------------- touches
+#
+# S01fs runs mkfs.exfat on the data partition when this marker is absent, and a
+# base has no marker. Without this line the first boot after a flash reformats
+# /data, which is where the identity and every kept slot image live.
+touch   /etc/kvm.disk0

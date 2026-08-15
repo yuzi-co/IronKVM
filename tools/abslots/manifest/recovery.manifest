@@ -1,0 +1,60 @@
+# Recovery: the official base, minus everything that can fail, plus a way in.
+#
+# It runs a network, sshd, an ACM console and the slot tool. It cannot fail the
+# way the 2026-08-15 board failed, because it does not run the things that
+# failed.
+#
+# The removes below are deliberately conservative. Recovery is the bottom of
+# the ladder and nothing catches it, so anything the network genuinely depends
+# on stays even if it looks unnecessary. A recovery root that will not come up
+# is worse than one that carries a few services it never uses.
+
+# The operator tool and its repair verbs are the point of landing here.
+add     tools/abslots/device/slot                 /usr/bin/slot
+
+# The instrumented rcS, so a recovery boot that fails still says where.
+add     tools/abslots/device/rcS                  /etc/init.d/rcS
+
+# A USB console for the managed host: a door that needs no network at all. On
+# 2026-08-15 the network was healthy and the board was still lost, and the
+# opposite case is just as real. Two doors that fail for unrelated reasons is
+# the whole point.
+add     tools/abslots/device/S03usbdev-acmonly    /etc/init.d/S03usbdev
+
+# Identity, so an operator in recovery sees the real config and the real
+# certificates rather than a factory copy.
+add     tools/abslots/device/S02identity          /etc/init.d/S02identity
+
+# --------------------------------------------------------------------- removes
+
+# The application, and the hardware bring-up it needs. This is the thing that
+# failed, and recovery exists to be reachable when it has.
+remove  /etc/init.d/S95nanokvm
+remove  /etc/init.d/S15kvmhwd
+remove  /etc/init.d/S04fb
+remove  /kvmapp
+
+# Services recovery does not need, each of which can wait on something.
+remove  /etc/init.d/S49ntp
+remove  /etc/init.d/S50avahi-daemon
+remove  /etc/init.d/S50ser2net
+remove  /etc/init.d/S80dnsmasq
+
+# Network functions for hardware this board does not have, sitting between the
+# network coming up and sshd starting.
+remove  /etc/init.d/S25wifimod
+remove  /etc/init.d/S30wifi
+remove  /etc/init.d/S30rndis
+
+# Recovery never puts itself on trial and never promotes itself, so it carries
+# no watchdog. A watchdog here could only reboot the board into recovery again.
+remove  /etc/init.d/S00awatchdog
+
+# The trap that would otherwise leave recovery with no ssh, which would make it
+# useless in the exact situation it exists for.
+remove  /etc/kvm/ssh_stop
+
+remove  /root
+remove  /bootlog
+
+touch   /etc/kvm.disk0
