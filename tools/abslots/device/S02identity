@@ -1,0 +1,51 @@
+#!/bin/sh
+#
+# Bind /data/identity over /etc/kvm, so a slot switch keeps the device's
+# identity and no image ever contains it.
+#
+# /etc/kvm holds the bcrypt password, the TLS key and certificate, the picoclaw
+# internal token and the API keys. Build a slot from a base and all of it is
+# gone and the board returns as admin/admin. Bake it into the image and every
+# copy of that image carries one device's private key.
+#
+# Runs after S01fs, which mounts /data, and before anything that reads the
+# config. NanoKVM-Server starts at S95.
+#
+# On a board where /data is missing or will not mount, this stands aside and
+# leaves the image's own /etc/kvm in place. That is the wrong identity, but a
+# recovery root that refuses to boot because a data partition is unreadable is
+# worse than one that comes up and says so.
+IDENTITY=${IDENTITY:-/data/identity}
+TARGET=${TARGET:-/etc/kvm}
+
+start() {
+    if ! grep -q ' /data ' /proc/mounts 2>/dev/null; then
+        echo "S02identity: /data is not mounted, keeping the image's $TARGET"
+        return 0
+    fi
+
+    if [ ! -d "$IDENTITY" ]; then
+        # First boot after a flash: seed the directory from whatever the image
+        # carries, so the board has a working identity and the next boot binds
+        # a real one.
+        echo "S02identity: $IDENTITY is absent, seeding it from $TARGET"
+        mkdir -p "$IDENTITY"
+        cp -a "$TARGET/." "$IDENTITY/" 2>/dev/null
+    fi
+
+    mount --bind "$IDENTITY" "$TARGET" \
+        && echo "S02identity: $IDENTITY bound over $TARGET" \
+        || echo "S02identity: bind failed, keeping the image's $TARGET"
+}
+
+stop() {
+    grep -q " $TARGET " /proc/mounts 2>/dev/null && umount "$TARGET"
+    return 0
+}
+
+case "$1" in
+    start) start ;;
+    stop)  stop ;;
+    restart) stop; start ;;
+    *) echo "Usage: $0 {start|stop|restart}"; exit 1 ;;
+esac

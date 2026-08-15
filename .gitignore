@@ -43,3 +43,8 @@ kvmapp/kvm_system/kvm_system
 
 tools/opusbench/.build/
 tools/opusbench/opusbench
+
+# Build input, not source. The official application tarball is unpacked here
+# by tools/abslots. It is published and checksummed by Sipeed, so it is fetched
+# rather than committed.
+official-kvmapp/
