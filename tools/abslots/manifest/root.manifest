@@ -71,11 +71,19 @@ add     tools/abslots/device/slot                 /usr/bin/slot
 # reported success. This line is load-bearing, not defensive.
 remove  /etc/kvm/ssh_stop
 
-# The fork slot has run for weeks without either, on a board with no wireless
-# hardware. Both sit between the network coming up and sshd starting, which is
-# the worst place for a script that can wait on hardware that is not there.
-remove  /etc/init.d/S25wifimod
-remove  /etc/init.d/S30wifi
+# S25wifimod and S30wifi are deliberately NOT removed, and an earlier revision
+# of this file removed them. The reason given was that they sit between the
+# network coming up and sshd starting and could wait on hardware that is not
+# there. That was wrong on both counts.
+#
+# Neither can block. S25wifimod is four insmod lines and an exit. S30wifi runs
+# wpa_supplicant with -B and udhcpc with -b inside a backgrounded subshell, and
+# a grep for while, sleep, until and wait finds nothing in either script.
+#
+# And the fork ships a Wi-Fi provisioning page in the web UI, so removing
+# S30wifi would break a feature that this repository deliberately carries. The
+# running slot happens not to have them, but that is an observation about one
+# board, not a decision anybody recorded.
 
 # Operator state accumulated on a running board. 132 MB of it on the slot this
 # was measured from, and none of it belongs in an image.
