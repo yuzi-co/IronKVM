@@ -1,0 +1,172 @@
+#!/bin/sh
+#
+# Second-layer boot watchdog. Install as /etc/init.d/S00awatchdog, mode 755, in
+# every full root. It is in the manifest, so "it was not installed" cannot
+# happen again: on 2026-08-15 the previous copy was missing from the failing
+# slot, which is half of why the card had to come out.
+#
+# It is the SECOND layer, and knowing what the first one covers is what keeps
+# this file small. The initramfs disarms a slot on trial before handing over, so
+# a trial that never comes up is already handled without this script running at
+# all. What is left for this layer is the case the initramfs cannot see: a slot
+# that came up, was reachable, and then lost both doors while running. No
+# trial is in flight then, so there is nothing for the initramfs to disarm.
+#
+# The name sorts before S00kmod, so the watchdog arms before anything else in
+# the rc sequence can fail.
+#
+# Environment, for tests and for dry runs on a live board:
+#   BOOT               where the markers live            (default /boot)
+#   WATCHDOG_LOG       where decisions are recorded      (default /watchdog.log)
+#   WATCHDOG_DEADLINE  seconds to wait for a way in      (default 300)
+#   WATCHDOG_DRY_RUN=1 log the decision, change nothing
+
+BOOT=${BOOT:-/boot}
+LOG=${WATCHDOG_LOG:-/watchdog.log}
+DEADLINE=${WATCHDOG_DEADLINE:-300}
+INTERVAL=${WATCHDOG_INTERVAL:-10}
+
+# /var/log is a symlink into tmpfs, so a boot that never finishes leaves nothing
+# there. The root filesystem does survive a power cut, which is the only reason
+# the cause of a failed boot can be read afterwards.
+log() {
+    echo "$(cut -d. -f1 /proc/uptime 2>/dev/null)s  $*" >> "$LOG"
+    sync
+}
+
+# Probes. Kept outside the extracted blocks below so the test can replace them.
+
+carrier_up() {
+    [ "$(cat /sys/class/net/eth0/carrier 2>/dev/null)" = "1" ]
+}
+
+address_up() {
+    ip -4 addr show eth0 2>/dev/null | grep -q 'inet '
+}
+
+# A 401 counts. A server that demands a token has started, bound its port and
+# read its config, and a browser can still reach it to log in.
+web_up() {
+    for url in http://127.0.0.1/ https://127.0.0.1/; do
+        code=$(curl -sSk -o /dev/null -w '%{http_code}' --max-time 5 "$url" 2>/dev/null)
+        case "$code" in
+            2??|3??|401) return 0 ;;
+        esac
+    done
+    return 1
+}
+
+# A listener, not a process. `pidof sshd` passes on a board whose server died,
+# which is one of the two faults this script was written after.
+ssh_up() {
+    netstat -lnt 2>/dev/null | grep -q ':22 '
+}
+
+# S01fs is what mounts /boot. If the boot failed before that, the marker has to
+# be reached directly, or the write lands in the root filesystem and changes
+# nothing that the next boot reads.
+ensure_boot_mounted() {
+    [ "$BOOT" = /boot ] || return 0
+    grep -q ' /boot ' /proc/mounts 2>/dev/null && return 0
+    mkdir -p /boot
+    mount -t vfat /dev/mmcblk0p1 /boot
+}
+
+# --- health check ---
+# Reachable has one definition and both users read this function: this watchdog,
+# and the confirm it performs on a slot that has just been tried. Two copies of
+# a health test drift, and the copy that drifts is the one nobody runs.
+#
+# No carrier is not a slot fault. The cable is out or the switch is down, and
+# rebooting into recovery lands on a board whose cable is still out. The old
+# rule was net_up AND (web_up OR ssh_up) with net_up requiring carrier, so an
+# unplugged cable rebooted the board, forever. Standing down is the correct
+# answer to a fault this board cannot fix.
+#
+# Either door counts, because either door is a way back in. A board that
+# answers ssh but serves nothing is a broken KVM that a person can repair. Only
+# losing both needs rescuing.
+healthy() {
+	carrier_up || return 0
+	address_up || return 1
+	web_up && return 0
+	ssh_up && return 0
+	return 1
+}
+# --- end health check ---
+
+# --- escalate ---
+# Go to recovery, not to another full root.
+#
+# The previous version restored /boot/slot.good, which lands on a second full
+# system that can carry the same fault: on 2026-08-15 every candidate slot had
+# the same class of problem. Recovery runs a network, sshd and an ACM console
+# and nothing else, so it fails almost nowhere, and it is sticky on purpose. An
+# operator leaves it with `rm /boot/recovery && reboot`, which is possible
+# because recovery answers ssh.
+escalate() {
+    ensure_boot_mounted
+    log "no way in after ${DEADLINE}s: carrier=$(carrier_up && echo up || echo down) address=$(address_up && echo up || echo down) web=$(web_up && echo up || echo down) ssh=$(ssh_up && echo up || echo down)"
+
+    if [ "${WATCHDOG_DRY_RUN:-0}" = "1" ]; then
+        log "dry run: would have set the recovery marker"
+        return 0
+    fi
+
+    : > "$BOOT/recovery"
+    sync
+    log "recovery marker set, rebooting"
+    reboot -f
+}
+# --- end escalate ---
+
+start() {
+    # The watcher must not inherit this shell's stdio. It lives for up to
+    # DEADLINE seconds, and started over ssh it would hold the file descriptor
+    # open for that long before the ssh command returned.
+    (
+        waited=0
+        while [ "$waited" -lt "$DEADLINE" ]; do
+            sleep "$INTERVAL"
+            waited=$((waited + INTERVAL))
+
+            if healthy; then
+                log "reachable after ${waited}s (web=$(web_up && echo up || echo down), ssh=$(ssh_up && echo up || echo down))"
+
+                # Confirm whatever is running. If this boot was a trial, the
+                # initramfs already deleted its marker, so without this the slot
+                # would revert on the next reboot and the operator would have to
+                # remember a step. If it was not a trial, this rewrites the same
+                # value and costs one FAT write.
+                slot confirm >> "$LOG" 2>&1
+
+                log "standing down"
+                exit 0
+            fi
+        done
+
+        escalate
+    ) < /dev/null > /dev/null 2>&1 &
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop|restart|reload)
+        # Nothing to stop: the watcher exits on its own, either when it finds a
+        # way in or when it has rebooted the board.
+        ;;
+    check)
+        # Report the verdict now, for use by hand on a running board.
+        if healthy; then
+            echo "reachable (carrier=$(carrier_up && echo up || echo down), web=$(web_up && echo up || echo down), ssh=$(ssh_up && echo up || echo down))"
+        else
+            echo "NO WAY IN (carrier=$(carrier_up && echo up || echo down), address=$(address_up && echo up || echo down), web=$(web_up && echo up || echo down), ssh=$(ssh_up && echo up || echo down))"
+        fi
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|check}"
+        exit 1
+        ;;
+esac
