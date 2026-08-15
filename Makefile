@@ -29,7 +29,12 @@ GIT_SHA := $(shell git rev-parse --short HEAD 2>/dev/null)
 GIT_DIRTY := $(shell git status --porcelain 2>/dev/null | head -n 1)
 BUILD_DATE := $(shell date +%Y%m%d.%H%M)
 BUILD_STAMP ?= dev.$(BUILD_DATE)$(if $(GIT_SHA),.$(GIT_SHA))$(if $(GIT_DIRTY),.dirty)
-GO_LDFLAGS := $(if $(BUILD_STAMP),-ldflags "-X NanoKVM-Server/common/version.Build=$(BUILD_STAMP)")
+# -s -w drop the symbol table and the DWARF sections. The binary runs from
+# /tmp, which is tmpfs, so those 6.7MB are pinned RAM on a board that has
+# 166MB. Nothing on the device reads them: there is no debugger there, and Go
+# builds a panic trace from .gopclntab, which these flags leave alone. They sit
+# outside the stamp fragment because an unstamped build must strip as well.
+GO_LDFLAGS := -ldflags "-s -w$(if $(BUILD_STAMP), -X NanoKVM-Server/common/version.Build=$(BUILD_STAMP))"
 
 # Build commands
 #
