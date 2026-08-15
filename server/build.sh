@@ -66,10 +66,13 @@ fi
 
 echo -e "${YELLOW}[INFO] Build stamp: ${BUILD_STAMP:-none}${NC}"
 
+# -s -w drop the symbol table and the DWARF sections. See the note beside
+# GO_LDFLAGS in the repository Makefile for why the device cares. Both branches
+# strip, because an unstamped build is deployed the same way a stamped one is.
 if [ -n "$BUILD_STAMP" ]; then
-    go build -ldflags "-X NanoKVM-Server/common/version.Build=$BUILD_STAMP" -o "$BINARY_NAME" -v
+    go build -ldflags "-s -w -X NanoKVM-Server/common/version.Build=$BUILD_STAMP" -o "$BINARY_NAME" -v
 else
-    go build -o "$BINARY_NAME" -v
+    go build -ldflags "-s -w" -o "$BINARY_NAME" -v
 fi
 
 if [ -f "$BINARY_NAME" ]; then
