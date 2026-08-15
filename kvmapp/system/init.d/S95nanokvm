@@ -22,6 +22,12 @@
 # runs, so these cases must not depend on it.
 SERVER_LOG=/tmp/nanokvm-server.log
 
+# Where the runtime copy comes from and where it goes. Both are variables so
+# tools/vidiag/test-server-copy.sh can drive the copy against a scratch tree
+# instead of the boot SD card.
+SERVER_SRC=${SERVER_SRC:-/kvmapp/server}
+SERVER_DST=${SERVER_DST:-/tmp/server}
+
 wait_for_exit() {
     process="$1"
     timeout="$2"
@@ -129,6 +135,49 @@ prepare_runtime_state() {
     link_runtime_file state
 }
 
+# is_backup reports whether a name is something a deploy left beside the file
+# it replaced, rather than something the server runs.
+is_backup() {
+    case "$1" in
+        *.prev|*.bak|*.old|*.rollback) return 0 ;;
+    esac
+    return 1
+}
+
+# copy_tree copies one directory into another, skipping backups at every depth.
+# It recurses instead of calling `cp -r` on the whole tree, because an excluded
+# name must never be written at all: a copy that lands first and is deleted
+# afterwards still has to fit while it is there, and room is the constraint the
+# order in start_services exists to protect.
+copy_tree() {
+    mkdir -p "$2"
+
+    for entry in "$1"/* "$1"/.[!.]*; do
+        [ -e "$entry" ] || continue
+
+        name=${entry##*/}
+        if is_backup "$name"; then
+            echo "S95nanokvm: skipping backup $entry"
+            continue
+        fi
+
+        if [ -d "$entry" ] && [ ! -L "$entry" ]; then
+            copy_tree "$entry" "$2/$name"
+        else
+            cp -a "$entry" "$2/$name"
+        fi
+    done
+}
+
+# copy_server puts the server tree in tmpfs, which is RAM. A backup that rides
+# along is pinned memory for as long as the board is up: two orphans measured
+# on a device, web.rollback at 3.83MB and dl_lib/libkvm.so.prev at 1.48MB, cost
+# 5.3MB of 166MB and neither was ever opened.
+copy_server() {
+    rm -rf "$SERVER_DST"
+    copy_tree "$SERVER_SRC" "$SERVER_DST"
+}
+
 start_services() {
     prepare_runtime_state
 
@@ -162,9 +211,8 @@ start_services() {
     fi
 
     if ! pidof NanoKVM-Server >/dev/null 2>&1; then
-        rm -rf /tmp/server
-        cp -r /kvmapp/server /tmp/
-        /tmp/server/NanoKVM-Server >> "$SERVER_LOG" 2>&1 &
+        copy_server
+        "$SERVER_DST/NanoKVM-Server" >> "$SERVER_LOG" 2>&1 &
     fi
 }
 
@@ -249,6 +297,13 @@ case "$1" in
     echo "OK"
    ;;
     
+  # Not for an operator. tools/vidiag/test-server-copy.sh calls this with
+  # SERVER_SRC and SERVER_DST pointed at a scratch tree, the way S99vidiag and
+  # S98supervise expose their own loops.
+  __copy_server)
+    copy_server
+   ;;
+
   *)
     echo "Usage: $0 {start|stop|restart}"
     exit 1
