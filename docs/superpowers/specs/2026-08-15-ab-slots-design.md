@@ -38,8 +38,24 @@ The lesson is one sentence. **A guard that the suspect runs is not a guard.**
 
 ## Partition layout
 
-The boot ROM reads `fip.bin` from raw sectors before p1. u-boot reads `boot.sd`
-from a FAT p1. Both must keep their present offsets.
+Measured on the card, not assumed:
+
+```
+Disk /dev/sdg: 60506112 sectors of 512 bytes, 28.85 GiB, MBR
+sdg1  *      1 ..    32768     32768 sectors   16M  c  W95 FAT32 (LBA)
+sdg2      32769 .. 16000000  15967232 sectors  7.6G  83 Linux
+sdg3   16001024 .. 60506111  44505088 sectors 21.2G  83 Linux
+```
+
+**p1 starts at sector 1.** There is no gap before it, and `fip.bin` is a 440832
+byte *file* inside the FAT partition beside `boot.sd`. An earlier draft of this
+document said `fip.bin` lives in raw sectors before p1. That is wrong for this
+board, and it mattered, because it made the migration guard the wrong thing.
+
+The real constraint is therefore: **p1 keeps its type, its boot flag, its start
+sector and its contents.** The boot ROM finds `fip.bin` by reading the first
+FAT partition, so the partition may not move, may not change type, and may not
+be reformatted. Everything from sector 32769 upward is ours.
 
 ```
 p1  FAT16     /boot       boot.sd and the markers
@@ -54,18 +70,29 @@ MBR gives four primary partitions and this design needs five filesystems, so
 one extended partition holds the last two. GPT is tidier. It is not used here,
 because the boot ROM and this u-boot have not been tested with it.
 
-### Sizing rule
+### Sizes
 
-Sizes are a rule, not a constant, because the card capacity decides them:
+The rule is: p1 unchanged, recovery 256MB, root A and root B equal at 1.5 times
+the present root image, `/data` takes the remainder. A card that cannot satisfy
+it is too small for A/B, and the operator must learn that before the partition
+table is written.
 
-- p1 keeps its present size and start sector. Do not move it.
-- Recovery gets 256MB.
-- Root A and root B are equal. Each gets the larger of 3GB or 1.5 times the
-  measured size of the present root filesystem.
-- `/data` gets the remainder.
+Applied to this card. The present root is a 3 GiB image that holds 254109 of
+786432 blocks, so about 993MB is in use and 4.5GB per slot leaves room to grow
+without being wasteful:
 
-A card that cannot satisfy this rule is too small for A/B, and the operator must
-know that before the partition table is written, not after.
+```
+p1  FAT16      1 ..    32768        16M   /boot     unchanged, boot flag kept
+p2  ext4   32769 ..  9469952       4.5G   root A
+p3  ext4 9469953 .. 18907136       4.5G   root B
+p4  extended
+ p5 ext4                            256M  recovery
+ p6 exfat                          ~19.5G /data
+```
+
+`/data` loses about 1.7GB against the 21.2GB it has today. Its present contents
+are copied off before the table is written, so the loss is planned, not
+discovered.
 
 ### The partition number trap
 
@@ -378,9 +405,11 @@ The order matters, because step 2 is the only copy of a board that worked.
 4. Extract `/etc/kvm/` from the good slot. It becomes `/data/identity/`.
 5. Clone the good slot, compare it against the pinned base, and keep the
    difference. That difference is the first manifest.
-6. Repartition. Keep p1 at its present start sector and write nothing before it.
-   `fip.bin` lives there, and a wrong start sector is the one mistake in this
-   plan that no recovery in it can undo.
+6. Repartition, and leave the p1 entry byte-identical: same start sector, same
+   length, same type `c`, same boot flag, and no reformat. The boot ROM finds
+   `fip.bin` by reading that partition, so losing it is the one mistake in this
+   plan that no recovery in it can undo. Rewrite the entries for p2 upward only,
+   and read the table back before writing any filesystem.
 7. Write recovery first and boot it on purpose. Prove `ssh` answers before root
    A exists. If recovery does not work, nothing below it works either.
 8. Boot root A, verify it, then build root B from the same manifest.
