@@ -59,7 +59,6 @@ mount() {
 umount() { return 0; }
 e2fsck() { return 0; }
 msc() { echo "DEVICE=msc"; exit 0; }
-slotlog() { echo "LOG: $*" >> "$LOGFILE"; }
 STUB
 }
 
@@ -76,7 +75,8 @@ run_case() {
         LOGFILE="$WORK/log"
         MOUNTABLE="$4"
         BUSYBOX="$WORK/busybox"
-        export BOOT LOGFILE MOUNTABLE BUSYBOX
+        KMSG="$WORK/kmsg"
+        export BOOT LOGFILE MOUNTABLE BUSYBOX KMSG
         eval "$(harness)"
         . "$SEL"
         . "$DIS"
@@ -130,9 +130,9 @@ echo b > "$WORK/boot/slot"
 echo a > "$WORK/boot/slot.try"
 : > "$WORK/log"
 got=$( (
-    BOOT="$WORK/boot"; LOGFILE="$WORK/log"; MOUNTABLE="$A $B $R"; BUSYBOX="$WORK/busybox"
+    BOOT="$WORK/boot"; LOGFILE="$WORK/log"; MOUNTABLE="$A $B $R"; BUSYBOX="$WORK/busybox"; KMSG="$WORK/kmsg"
     STUB_RM_FAILS=1
-    export BOOT LOGFILE MOUNTABLE BUSYBOX STUB_RM_FAILS
+    export BOOT LOGFILE MOUNTABLE BUSYBOX KMSG STUB_RM_FAILS
     eval "$(harness)"
     . "$SEL"; . "$DIS"
     echo "DEVICE=${bootdev}"
@@ -142,7 +142,7 @@ echo "$got" | grep -q "DEVICE=$B" \
     && note "an undeletable trial marker is ignored, trusted boots" OK \
     || note "an undeletable trial marker is ignored, trusted boots (got: $got)" FAIL
 
-grep -q "could not be deleted" "$WORK/log" \
+grep -q "could not be deleted" "$WORK/kmsg" \
     && note "and it says why" OK \
     || note "and it says why" FAIL
 
