@@ -27,10 +27,13 @@ echo "== go mod download"
 go mod download
 
 echo "== go build (stamp: ${BUILD_STAMP:-none})"
+# -s -w drop the symbol table and the DWARF sections. See the note beside
+# GO_LDFLAGS in the repository Makefile. Both branches strip, because an
+# unstamped build is deployed the same way a stamped one is.
 if [ -n "$BUILD_STAMP" ]; then
-    go build -ldflags "-X NanoKVM-Server/common/version.Build=$BUILD_STAMP" -o "$BINARY"
+    go build -ldflags "-s -w -X NanoKVM-Server/common/version.Build=$BUILD_STAMP" -o "$BINARY"
 else
-    go build -o "$BINARY"
+    go build -ldflags "-s -w" -o "$BINARY"
 fi
 
 # Expected during linking:
