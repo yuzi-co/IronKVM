@@ -6,11 +6,29 @@
 # starts, and the only symptom is a port that does not answer. Nothing is
 # logged that names the cause.
 #
-# core.autocrlf=true on a Windows checkout produces exactly that, so the rule
-# below pins the working-tree ending for these paths whatever the local setting
-# is. It deliberately does not cover the whole repository: `support/` carries
-# sources committed with CRLF, and renormalising them would rewrite files this
-# repository does not own.
+# core.autocrlf=true on a Windows checkout produces exactly that, so the rules
+# below pin the working-tree ending whatever the local setting is.
+#
+# The default is now the whole repository, and the exceptions are named at the
+# end. Enumerating the paths that needed the rule was tried first and it failed
+# four times in one day, which is recorded in the tools/ comment further down.
+# The same argument applies to the repository: a file is exempt because somebody
+# decided it is exempt, not because nobody thought of its extension.
+#
+# `git ls-files --eol` measured what this costs. Six blobs in the index hold
+# CRLF and every one is an upstream C or C++ source under `support/sg2002/`.
+# Those six are marked `-text` at the end of this file, so no conversion touches
+# them and no commit renormalises files this repository does not own. Every
+# other tracked blob is already LF, so the default below changes no blob at all.
+# It changes what a fresh checkout writes, which is the failure being prevented.
+#
+# Adding this rule does not repair a working tree that is already CRLF. Git
+# applies attributes when it writes a file, so a file checked out before the
+# rule existed keeps its carriage returns and reports clean. Find them with
+# `git ls-files --eol | awk '$1=="i/lf" && $2=="w/crlf"'`, then delete and
+# check out again.
+
+* text=auto eol=lf
 
 kvmapp/system/init.d/*      text eol=lf
 kvmapp/system/*.py          text eol=lf
@@ -79,3 +97,22 @@ kvmapp/kvm_new_app          binary
 # server/dl_lib/. Same reason: a device payload, not source, and it must not
 # be run through any text conversion.
 *.a                         binary
+
+# The six exceptions the default at the top of this file refers to. Upstream
+# committed these with CRLF, and the blobs still hold it. `-text` turns every
+# conversion off for them, in both directions: a checkout writes the blob
+# unchanged, and a commit stores the working tree unchanged. Without it, the
+# default `text=auto` would rewrite each one to LF the next time it is staged,
+# which would put a whitespace-only diff on files this repository does not own
+# and would make every later merge from upstream conflict on all of them.
+#
+# They are compiled, never executed by a shell and never copied to the device,
+# so their line endings cost nothing. Listed one per line rather than matched by
+# a directory glob, because the neighbouring sources in the same directories are
+# LF and must stay that way.
+support/sg2002/kvm_system/main/include/config.h             -text
+support/sg2002/kvm_system/main/lib/hdmi/hdmi.cpp            -text
+support/sg2002/kvm_system/main/lib/hdmi/hdmi.h              -text
+support/sg2002/kvm_system/main/lib/oled_ctrl/oled_ctrl.h    -text
+support/sg2002/kvm_system/main/src/main.cpp                 -text
+support/sg2002/kvm_vision_test/main/src/main.cpp            -text
