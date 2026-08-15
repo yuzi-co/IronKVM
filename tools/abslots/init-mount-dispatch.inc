@@ -1,3 +1,4 @@
+# --- slot dispatch ---
 # Device names, fixed here rather than computed anywhere. In this layout p3 is
 # a root filesystem, and S01fs used to run mkfs.exfat on p3, so a path that
 # derives a device from a partition number is the shape of that bug.
@@ -85,3 +86,4 @@ then
 fi
 
 slotlog "booted ${bootdev}"
+# --- end slot dispatch ---

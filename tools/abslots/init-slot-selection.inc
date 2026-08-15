@@ -22,6 +22,23 @@ BOOT=${BOOT:-/boot}
 # nothing sets it and it is /busybox.
 BUSYBOX=${BUSYBOX:-/busybox}
 
+# Defined here rather than in the dispatch block, because this block runs
+# first and calls it. It was in the dispatch block once, and the effect was a
+# selection that logged nothing at all: the function did not exist yet, so the
+# "trial discarded" line that explains an undeletable marker would have gone
+# missing on exactly the boot that needed explaining.
+#
+# The console trace from set -x goes to the serial port, which a deployed board
+# does not have. These land in dmesg, so a board that fell back explains itself
+# over the network with `dmesg | grep nanokvm-slot`.
+# KMSG is a variable so the tests can read what was logged. On the device
+# nothing sets it and it is /dev/kmsg.
+KMSG=${KMSG:-/dev/kmsg}
+
+slotlog() {
+	echo "nanokvm-slot: $*" >> "$KMSG"
+}
+
 trusted=a
 if [ -e "$BOOT/slot" ]
 then
