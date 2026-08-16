@@ -95,6 +95,29 @@ healthy() {
 }
 # --- end health check ---
 
+# --- trial boot ---
+# Is this boot a trial? No marker records it, and none needs to: the initramfs
+# deletes slot.try before it hands over, but it leaves both halves of the
+# answer on disk. The running slot is what is mounted on /, the trusted slot is
+# /boot/slot, and a boot where those differ is a slot being tried.
+#
+# `slot status` is the one reader of both, so this asks it rather than keeping
+# a second copy of the rule that would drift.
+slot_field() {
+    slot status 2>/dev/null | awk -v k="$1" '$1 == k { print $2; exit }'
+}
+
+on_trial() {
+    r=$(slot_field running)
+    t=$(slot_field trusted)
+    [ -n "$r" ] || return 1
+    [ -n "$t" ] || return 1
+    [ "$r" = unknown ] && return 1
+    [ "$r" = recovery ] && return 1
+    [ "$r" != "$t" ]
+}
+# --- end trial boot ---
+
 # --- escalate ---
 # Go to recovery, not to another full root.
 #
@@ -107,6 +130,21 @@ healthy() {
 escalate() {
     ensure_boot_mounted
     log "no way in after ${DEADLINE}s: carrier=$(carrier_up && echo up || echo down) address=$(address_up && echo up || echo down) web=$(web_up && echo up || echo down) ssh=$(ssh_up && echo up || echo down)"
+
+    # A trial has a better fallback than recovery: the slot that was working
+    # minutes ago. Its marker is already gone, so a plain reboot lands on it.
+    # Recovery serves no video and no HID, so sending a failed trial there
+    # costs the board its whole reason to exist, and costs the operator a
+    # second reboot to leave a marker that is sticky on purpose.
+    if on_trial; then
+        if [ "${WATCHDOG_DRY_RUN:-0}" = "1" ]; then
+            log "dry run: would have rebooted into the trusted slot"
+            return 0
+        fi
+        log "this boot is a trial of $(slot_field running); rebooting into $(slot_field trusted)"
+        reboot -f
+        return 0
+    fi
 
     if [ "${WATCHDOG_DRY_RUN:-0}" = "1" ]; then
         log "dry run: would have set the recovery marker"
