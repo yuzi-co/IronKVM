@@ -59,8 +59,10 @@ changes and why.
 - **The card image needs a card of at least 32 GB and ignores anything beyond
   that.** The partition table is fixed and the data partition is not grown on
   first boot yet.
-- **The hardware acceptance test for the boot-script rollback has not been run.**
-  Until it has, that mechanism is tested only against a scratch tree.
+- **Slot-aware updates are still the goal.** The boot-script rollback passed on
+  hardware on 2026-08-16: a board that lost its network to a bad update undid it
+  and returned in 367 seconds without needing recovery. It is a repair, not a
+  trial, and a trial is still better.
 - **Only the English strings are rebranded.** The other 24 locale files keep
   their current text, because a part-retranslated file is worse than an
   untouched one.

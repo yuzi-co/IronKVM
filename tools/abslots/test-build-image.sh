@@ -403,6 +403,30 @@ cmp -s "$WORK/inv1" "$WORK/inv3" \
     || note "an image with an extra file reads as different" OK
 
 echo
+echo "===== a backup file in /etc/init.d is refused ====="
+
+# rcS runs every file in /etc/init.d whose name begins with S, so a backup left
+# beside a script is a second script that runs at every boot. On 2026-08-16 a
+# board carried /etc/init.d/S02identity.rollback, an older identity script that
+# ran after the current one and bound /etc/kvm a second time. Nothing reported
+# it: the board booted, served and looked healthy.
+cp "$WORK/payload/scripts/S00awatchdog" "$WORK/payload/scripts/S02identity.rollback"
+cat > "$WORK/stray.manifest" <<'MANIFEST'
+add     scripts/S00awatchdog          /etc/init.d/S00awatchdog          0755
+add     scripts/S02identity.rollback  /etc/init.d/S02identity.rollback  0755
+touch   /etc/kvm.disk0
+MANIFEST
+if sh "$BUILD" "$WORK/base.tar.zst" "$WORK/stray.manifest" "$WORK/payload" 64 \
+      "$WORK/stray.img" > "$WORK/stray.log" 2>&1; then
+    note "a build carrying a .rollback in init.d is refused" FAIL
+else
+    note "a build carrying a .rollback in init.d is refused" OK
+fi
+grep -q 'stray file in init.d: S02identity.rollback' "$WORK/stray.log" \
+    && note "it names the file it refused" OK \
+    || note "it names the file it refused" FAIL
+
+echo
 if [ "$fails" -eq 0 ]; then
     echo "all cases passed"
 else
