@@ -18,9 +18,54 @@ move to CI later.
 | Docker | The server cross-compile and the image build both use it. |
 | The MaixCDK builder image | Build it once with `make shell`. |
 | `pnpm` | For the web user interface. |
-| `sfdisk`, `mkfs.vfat`, `mtools`, `e2fsprogs`, `xz` | For the card image. |
+| `sfdisk`, `mkfs.vfat`, `mtools`, `e2fsprogs`, `zstd`, `xz` | For the card image. |
+| `u-boot-tools`, `cpio` | For the boot image, and the ability to `mknod`. |
 | `gh`, authenticated | Creates the release. |
 | A `base/` directory | See below. |
+
+### Running it from a Windows workstation
+
+A Windows workstation has almost none of that. `Dockerfile` beside this file is
+the host as an image: build it once, then run the release inside it.
+
+```shell
+docker build -t ironkvm-release-host tools/release
+```
+
+From a WSL shell, in the checkout:
+
+```shell
+docker run --rm \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v "$PWD:$PWD" -w "$PWD" \
+  -e BUILD_UID=<the id the builder image was built with> \
+  -e BUILD_GID=<the same for the group> \
+  ironkvm-release-host tools/release/release.sh --dry-run 1.0.0
+```
+
+Three details make that work, and each one fails differently without it.
+
+**The checkout is mounted at its own path.** `release.sh` starts a second
+container and passes `$PWD` as the bind source. The daemon resolves that path
+itself, so it has to mean the same thing inside the container and outside it.
+
+**The Docker socket is the workstation's.** The container holds the client and
+nothing else. The MaixCDK builder image never has to exist twice.
+
+**`BUILD_UID` names the identity the builder image was built with**, which is
+the Windows account's id, not the id a WSL shell or a container reports. The
+builder bakes the ownership of `/home/build` in at build time and its entry
+point drops to whatever id it is given, so a mismatch leaves `go` unable to
+write its module cache. `docker images` shows the id in the image name.
+
+The container runs as root on purpose: `repack-boot.sh` unpacks an initramfs
+holding `dev/console`, and `mknod` is refused to anybody else.
+
+One cost is worth knowing. `build-card.sh` creates the card at its full 28.85
+GiB and truncates it afterwards, which is instant on a Linux filesystem because
+the file is sparse. A Windows drive through a bind mount is not sparse, so the
+build writes about 25 GB for real and reads it back twice to check both slots.
+Point `RELEASE_OUT` at a Docker volume to avoid it.
 
 ## The base
 
@@ -152,6 +197,45 @@ describe fails nowhere until a device tries to install it, and three guards in
 this repository have already rotted into passing while testing nothing.
 
 ## Acceptance record
+
+### 2026-08-17, first end-to-end dry run: PASS, after four faults
+
+`tools/release/release.sh --dry-run 1.0.0`, in the image above, against
+`fork/integration` at `30a674e9`. It produced a 12,484,962 byte package, a
+372,265,848 byte compressed card image, `latest.json` and `SHA256SUMS`. Both
+slots pass `e2fsck` when read back out of the compressed artifact, the table
+carries all six partitions, and `p1` holds `fip.bin` and the repacked `boot.sd`.
+
+It took four attempts. The faults are what the run was for.
+
+**The web build stopped on a question.** pnpm asks before it purges a modules
+directory another platform installed and refuses to purge without a TTY. It was
+the first step, so the release stopped having built nothing.
+
+**The builder identity was the host's.** `release.sh` passed `id -u` to an image
+that bakes the ownership of `/home/build` in at build time. Any host but the one
+that built the image ran `go` as a user that cannot write its module cache.
+
+**The package left out the identity script.** The image manifest installs five
+boot scripts from `tools/`, and the package carried three. `S02identity` is the
+one that stops a slot switch reverting the root password to the factory one.
+`rcS` is the other, and it is now held back on purpose: it is what runs the
+watchdog, so a valid but wrong `rcS` would leave nothing to repair the board.
+
+**The package was missing 27 files, and this is the one that mattered.** It was
+assembled from `kvmapp/` alone, which holds only what the fork changes: 14 of
+the 37 libraries in `server/dl_lib`, no `kvm_system`, no `system/tool`. The
+updater replaces `/kvmapp` rather than merging into it, so installing 1.0.0
+would have moved away `libopencv_core`, `libcvi_audio` and twenty others and
+left a server that cannot load `libkvm.so`.
+
+The board would have stayed reachable through it. ssh answers and the address is
+up, so the watchdog calls it healthy and rolls nothing back. A KVM that is online
+and cannot show a screen is the failure this project exists to prevent, and it
+was one command away from shipping.
+
+The package is now built from the same two layers as the image, and a check
+after the copy refuses any package missing a file the official one carries.
 
 ### 2026-08-16, boot-script rollback: PASS
 
