@@ -28,7 +28,9 @@ Installing replaces everything on the card, including the data partition.
 
 1. Download `ironkvm-<version>-sdcard.img.xz` from
    [Releases](https://github.com/yuzi-co/IronKVM/releases).
-2. Check it against `SHA256SUMS`.
+2. Check it against `SHA256SUMS`. That proves the download is intact. It is not
+   signed, so it does not prove who built it: anybody who could replace the
+   image could replace the checksums beside it.
 3. Write it to the card with your usual imaging tool.
 4. Put the card in the board and power it on. The first boot makes the data
    partition and takes longer than later ones.

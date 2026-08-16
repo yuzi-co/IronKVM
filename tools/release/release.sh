@@ -7,7 +7,7 @@
 #   release.sh --verify-only 1.0.0  check an existing output directory
 #
 # Runs on a Linux host that has Docker, the MaixCDK builder image, a Sipeed base
-# image, minisign and gh. A hosted runner has none of the first three, which is
+# image and gh. A hosted runner has none of the first three, which is
 # why this is a script and not a workflow. A workflow file that cannot run is
 # worse than no workflow file.
 #
@@ -119,6 +119,24 @@ git diff --quiet && git diff --cached --quiet || {
 git rev-parse "v$VERSION" > /dev/null 2>&1 && {
     echo "tag v$VERSION already exists" >&2; exit 1; }
 
+# Every tool the run will need, checked before anything is built. A build that
+# discovers a missing tool at its last step has already spent twenty minutes and
+# leaves half a release behind. gh is only needed to publish, so a dry run does
+# not demand it.
+echo "==> checking the host"
+NEED="docker pnpm tar xz openssl sha256sum git"
+[ "$DRY_RUN" = "1" ] || NEED="$NEED gh"
+missing=""
+for t in $NEED; do
+    command -v "$t" > /dev/null 2>&1 || missing="$missing $t"
+done
+[ -z "$missing" ] || { echo "missing tools:$missing" >&2; exit 1; }
+
+BUILDER=${BUILDER_IMAGE:-nanokvm-builder-local-$(id -u)-$(id -g)}
+docker image inspect "$BUILDER" > /dev/null 2>&1 || {
+    echo "no builder image '$BUILDER'; build it once with 'make shell'" >&2; exit 1; }
+echo "    tools present, builder image $BUILDER"
+
 for f in "$BASE_TAR" "$STOCK_BOOT_SD" "$OFFICIAL_APP"; do
     [ -f "$f" ] || { echo "no such base input: $f" >&2; exit 1; }
 done
@@ -151,7 +169,7 @@ echo "==> cross-compiling the server"
 # tool to run one command. -buildvcs=false because Docker shows the bind mount as
 # root-owned, git then refuses the checkout as dubious, and Go stops.
 docker run -e UID="$(id -u)" -e GID="$(id -g)" -v "$PWD:/home/build/NanoKVM" --rm \
-    "${BUILDER_IMAGE:-nanokvm-builder-local-$(id -u)-$(id -g)}" /bin/bash -c \
+    "$BUILDER" /bin/bash -c \
     "cd /home/build/NanoKVM/server && go mod tidy \
      && CGO_ENABLED=1 GOOS=linux GOARCH=riscv64 CC=riscv64-unknown-linux-musl-gcc \
         CGO_CFLAGS='-mcpu=c906fdv -march=rv64imafdcv0p7xthead -mcmodel=medany -mabi=lp64d' \
@@ -254,8 +272,20 @@ cat > "$OUT/latest.json" <<EOF
 EOF
 
 echo "==> checksums"
+# SHA256SUMS is not signed. It proves a download is intact, and it proves
+# nothing about who produced it: anyone who can replace the artifacts can
+# replace this file beside them.
+#
+# A signature was designed in and then dropped for 1.0, because it is only worth
+# what the key's safekeeping is worth. An offline key would let somebody who
+# pinned it detect a later compromise of this repository; a key sitting on the
+# build machine with no backup would add ceremony and no protection, and losing
+# it would force every user to re-trust from scratch. The README says the
+# checksums are unsigned rather than implying otherwise.
+#
+# The device does not read this file at all. Its update path checks a sha512
+# from latest.json over TLS, so signing here would never have protected it.
 ( cd "$OUT" && sha256sum "$PKG" "$IMG" > SHA256SUMS )
-minisign -Sm "$OUT/SHA256SUMS"
 
 verify
 
@@ -269,7 +299,7 @@ publish() {
     git push origin "v$VERSION"
     gh release create "v$VERSION" --repo "$REPO" --title "IronKVM $VERSION" \
         --notes-file "$OUT/notes.md" \
-        "$OUT/$PKG" "$OUT/$IMG" "$OUT/SHA256SUMS" "$OUT/SHA256SUMS.minisig"
+        "$OUT/$PKG" "$OUT/$IMG" "$OUT/SHA256SUMS"
 
     # The feed lives on its own branch so a 26 MB package never enters the
     # repository's history.
