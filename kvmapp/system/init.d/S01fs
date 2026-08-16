@@ -26,6 +26,22 @@ data_device() {
 }
 # --- end data device ---
 
+# --- data mount ---
+# /data is exfat, which stores no POSIX mode, so every file on it takes its
+# mode from the mount. The board keeps its root password hash and its
+# authorized_keys there, and 0755 for those two is wrong even on a board whose
+# only login user is root.
+#
+# fmask and dmask exist only on the FAT family. If /data is ever another
+# filesystem the masked mount fails, and an unmounted /data is the fault this
+# script was fixed for on 2026-08-16. So fall back to a plain mount rather than
+# leave /data unmounted, and report failure only when neither works.
+mount_data() {
+        mount -o fmask=0077,dmask=0077 "$1" "$2" 2>/dev/null && return 0
+        mount "$1" "$2"
+}
+# --- end data mount ---
+
 # --- autopartition guard ---
 # The /boot/usb.disk0 branch below runs `parted mkpart` and then
 # `mkfs.exfat /dev/mmcblk0p3`. On a card that declares an A/B layout, p3 is a
@@ -129,7 +145,7 @@ then
         if [ -e "$DATADEV" ]
         then
                 mkdir -p /data
-                mount "$DATADEV" /data
+                mount_data "$DATADEV" /data
                 printf "(data on %s) " "$DATADEV"
         else
                 printf "(no data device at %s) " "$DATADEV"
