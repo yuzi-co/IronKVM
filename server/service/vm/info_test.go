@@ -108,3 +108,56 @@ func TestGetApplicationVersionIsUnstampedInAReleaseBuild(t *testing.T) {
 		t.Fatalf("getApplicationVersion() = %q, want %q", got, "2.4.3")
 	}
 }
+
+// useBaseVersionFile writes a base-version file for one test. An empty string
+// leaves the path missing, which is what an upstream image looks like.
+func useBaseVersionFile(t *testing.T, contents string) {
+	t.Helper()
+
+	originalPath := baseVersionFile
+	t.Cleanup(func() {
+		baseVersionFile = originalPath
+	})
+
+	path := filepath.Join(t.TempDir(), "base-version")
+	if contents != "" {
+		if err := os.WriteFile(path, []byte(contents), 0o644); err != nil {
+			t.Fatalf("failed to write base version file: %s", err)
+		}
+	}
+
+	baseVersionFile = path
+}
+
+// The fork cannot put the upstream number inside its own version. Semver
+// ignores build metadata, so 2.4.3+iron.5 compares equal to 2.4.3, and a
+// prerelease suffix sorts below the release it came from. Either would break
+// the comparison the update page makes with semver.gte. So it travels beside
+// the version, written at build time by the release script.
+func TestGetBaseVersionReadsTheFile(t *testing.T) {
+	useBaseVersionFile(t, "2.4.3\n")
+
+	if got := getBaseVersion(); got != "2.4.3" {
+		t.Fatalf("base version = %q, want %q", got, "2.4.3")
+	}
+}
+
+// An upstream image has no such file. Reporting nothing is correct there: the
+// About panel then shows the version alone, exactly as it does today.
+func TestGetBaseVersionIsEmptyWhenTheFileIsAbsent(t *testing.T) {
+	useBaseVersionFile(t, "")
+
+	if got := getBaseVersion(); got != "" {
+		t.Fatalf("base version = %q, want empty", got)
+	}
+}
+
+// A build stamp must not leak into the base. The base names an upstream
+// release, and the stamp describes this binary.
+func TestGetBaseVersionIsNotStamped(t *testing.T) {
+	useBaseVersionFile(t, "2.4.3")
+
+	if got := getBaseVersion(); got != "2.4.3" {
+		t.Fatalf("base version = %q, want it unchanged by the build stamp", got)
+	}
+}
