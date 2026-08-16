@@ -12,6 +12,7 @@ type GetInfoRsp struct {
 	Mdns        string `json:"mdns"`
 	Image       string `json:"image"`
 	Application string `json:"application"`
+	Base        string `json:"base,omitempty"`
 	DeviceKey   string `json:"deviceKey"`
 }
 
