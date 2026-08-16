@@ -145,6 +145,27 @@ cp    server/NanoKVM-Server "$PAYLOAD/server/NanoKVM-Server"
 cp -a web/dist              "$PAYLOAD/server/web"
 echo "$VERSION" > "$PAYLOAD/version"
 
+# Some boot scripts live in tools/ rather than in kvmapp/system/init.d, and the
+# image manifest adds them to /etc/init.d straight from there. install.sh copies
+# only what the package carries, so without this the tarball would ship the
+# fork's boot behaviour minus its watchdog, its supervisor and the OLED nudge:
+# an update would install the scripts that can break a boot and leave out the
+# one that undoes them.
+for s in tools/abslots/device/S00awatchdog tools/service/S98supervise \
+         tools/oled/S97oled-nudge; do
+    [ -f "$s" ] || { echo "missing boot script: $s" >&2; exit 1; }
+    cp "$s" "$PAYLOAD/system/init.d/${s##*/}"
+done
+
+# Every script the image installs to /etc/init.d must also be in the package, or
+# an image and a tarball of the same release boot differently.
+for want in $(sed -n 's|^add .* /etc/init.d/\([^ ]*\).*|\1|p' \
+              tools/abslots/manifest/root.manifest); do
+    [ -f "$PAYLOAD/system/init.d/$want" ] || {
+        echo "the image installs /etc/init.d/$want but the package does not carry it" >&2
+        exit 1; }
+done
+
 # The base travels beside the version because semver cannot carry it.
 BASE=$(cat "${BASE_VERSION_FILE:-base/version}" 2>/dev/null || echo "unknown")
 echo "$BASE" > "$PAYLOAD/base-version"
