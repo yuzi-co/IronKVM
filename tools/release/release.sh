@@ -171,7 +171,14 @@ STAGE=$(mktemp -d)
 trap 'rm -rf "$STAGE"' EXIT
 
 echo "==> building the web user interface"
-( cd web && pnpm install --frozen-lockfile && pnpm build )
+# CI=true because pnpm asks before it purges a modules directory that another
+# platform or another pnpm version installed, and it refuses to purge without a
+# TTY. A release runs from a script and has no answer to give.
+#
+# The purge is not a side issue. web/node_modules is the developer's, and the
+# install that follows writes it for the host that builds the release. A
+# workstation that also runs `pnpm dev` gets its modules directory rebuilt.
+( cd web && CI=true pnpm install --frozen-lockfile && pnpm build )
 
 echo "==> cross-compiling the server"
 # The Makefile's own recipe, run directly. `make` is not installed on every host

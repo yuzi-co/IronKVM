@@ -210,6 +210,12 @@ check "the builder image name follows the build identity" \
 check "the host id does not reach the builder directly" \
     "$(grep -c 'e UID="\$(id -u)"' "$SCRIPT")" "0"
 
+# pnpm asks before it purges a modules directory another platform installed, and
+# it refuses to purge without a TTY. A release runs from a script, so the build
+# stopped there with the web user interface unbuilt and nothing else attempted.
+check "the web build never waits for an answer" \
+    "$(grep -c 'CI=true pnpm install --frozen-lockfile' "$SCRIPT")" "1"
+
 # Signing was designed in and dropped for 1.0. The checksums must not claim to
 # be more than they are, and nothing may reference a signature that is not made.
 check "no signature is produced" \
