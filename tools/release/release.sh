@@ -19,6 +19,8 @@
 #   OFFICIAL_APP       the pinned official application (default base/nanokvm_2.5.0.tar.gz)
 #   BASE_VERSION_FILE  the official version it is from (default base/version)
 #   REPO               the GitHub repository          (default yuzi-co/IronKVM)
+#   BUILDER_IMAGE      the MaixCDK builder image      (default from BUILD_UID/GID)
+#   BUILD_UID/GID      the identity the builder runs as (default the host's own)
 
 set -eu
 
@@ -132,7 +134,15 @@ for t in $NEED; do
 done
 [ -z "$missing" ] || { echo "missing tools:$missing" >&2; exit 1; }
 
-BUILDER=${BUILDER_IMAGE:-nanokvm-builder-local-$(id -u)-$(id -g)}
+# The builder image bakes the ownership of /home/build in at build time, and its
+# entrypoint drops to whatever UID it is given. The two agree only on the machine
+# that built the image. A WSL shell reports 1000, and an image built from a
+# Windows checkout carries that account's id, so handing the host's own id to a
+# foreign image produces a build that runs as a user which cannot write $HOME,
+# and go stops at the module cache. Override both when they differ.
+BUILD_UID=${BUILD_UID:-$(id -u)}
+BUILD_GID=${BUILD_GID:-$(id -g)}
+BUILDER=${BUILDER_IMAGE:-nanokvm-builder-local-${BUILD_UID}-${BUILD_GID}}
 docker image inspect "$BUILDER" > /dev/null 2>&1 || {
     echo "no builder image '$BUILDER'; build it once with 'make shell'" >&2; exit 1; }
 echo "    tools present, builder image $BUILDER"
@@ -168,7 +178,7 @@ echo "==> cross-compiling the server"
 # that has Docker and the builder image, and this script must not need a fourth
 # tool to run one command. -buildvcs=false because Docker shows the bind mount as
 # root-owned, git then refuses the checkout as dubious, and Go stops.
-docker run -e UID="$(id -u)" -e GID="$(id -g)" -v "$PWD:/home/build/NanoKVM" --rm \
+docker run -e UID="$BUILD_UID" -e GID="$BUILD_GID" -v "$PWD:/home/build/NanoKVM" --rm \
     "$BUILDER" /bin/bash -c \
     "cd /home/build/NanoKVM/server && go mod tidy \
      && CGO_ENABLED=1 GOOS=linux GOARCH=riscv64 CC=riscv64-unknown-linux-musl-gcc \
