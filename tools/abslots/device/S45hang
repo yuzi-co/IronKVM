@@ -1,0 +1,28 @@
+#!/bin/sh
+# A TEST FIXTURE. IT BRICKS THE SLOT IT IS INSTALLED IN, ON PURPOSE.
+#
+# It is never named by root.manifest or by recovery.manifest, and it must never
+# be. tools/abslots/acceptance.sh copies root.manifest, appends one line that
+# adds this file, and builds a slot that cannot come up.
+#
+# The number puts it after S30eth and before S50sshd, so the board gets a
+# carrier and an address and then starts no listener at all. That is the
+# 2026-08-15 failure reproduced deliberately: a boot that reaches the network
+# and stops, leaving nothing to log in to and nothing to explain itself.
+#
+# What must happen next is the whole point of the A/B design:
+#
+#   the initramfs deleted /boot/slot.try before it handed over, so the next
+#   boot is the trusted slot whatever this one does
+#
+#   S00awatchdog armed before this script ran, and its watcher is a background
+#   subshell, so it survives the hang. After WATCHDOG_DEADLINE it finds no way
+#   in, sees that the running slot is not the trusted slot, and reboots without
+#   setting the recovery marker.
+#
+# The board must therefore return to the trusted slot within one boot, with no
+# operator action and no card removal.
+echo "S45hang: this slot is a deliberate acceptance-test failure" > /dev/kmsg 2>/dev/null
+while true; do
+	sleep 60
+done
