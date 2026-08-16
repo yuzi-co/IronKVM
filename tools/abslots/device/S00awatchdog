@@ -26,6 +26,17 @@ LOG=${WATCHDOG_LOG:-/watchdog.log}
 DEADLINE=${WATCHDOG_DEADLINE:-300}
 INTERVAL=${WATCHDOG_INTERVAL:-10}
 
+# Where a package update leaves what it replaced, and how many boots have failed
+# since. Both live in the root filesystem: this script runs before S01fs mounts
+# anything, and the root filesystem is already writable here, which the log
+# above proves on every boot. It is also per-slot, and /boot is shared, so a
+# backup taken on /boot from slot A could be restored into slot B.
+IRONDIR=${IRONDIR:-/root/.ironkvm}
+ATTEMPTS=${ATTEMPTS:-$IRONDIR/boot-attempts}
+INITD_BACKUP=${INITD_BACKUP:-$IRONDIR/initd-backup}
+INITD=${INITD:-/etc/init.d}
+ATTEMPT_LIMIT=${ATTEMPT_LIMIT:-3}
+
 # /var/log is a symlink into tmpfs, so a boot that never finishes leaves nothing
 # there. The root filesystem does survive a power cut, which is the only reason
 # the cause of a failed boot can be read afterwards.
@@ -118,6 +129,78 @@ on_trial() {
 }
 # --- end trial boot ---
 
+# --- initd rollback ---
+# Undo a package update that installed boot scripts the board cannot boot.
+#
+# A slot switch is already protected twice: the initramfs disarms a trial before
+# handing over, and the trial branch above reboots into the trusted slot. A
+# package update has neither. It lands in place on the running slot, so no trial
+# is in flight and there is no previous slot to fall back to. This counter is
+# the substitute. It is bumped before anything else in the rc sequence runs, and
+# it is cleared the moment the board proves it is reachable.
+#
+# Three boots, not two. A single boot that misses the deadline happens for
+# reasons that have nothing to do with the update, a switch still learning being
+# the usual one, and undoing a good update over that would be worse than waiting
+# one more boot.
+bump_attempts() {
+    n=0
+    [ -f "$ATTEMPTS" ] && n=$(cat "$ATTEMPTS" 2>/dev/null)
+    # A power cut during the write leaves whatever the card had. Treat anything
+    # that is not a number as a fresh start rather than refusing to count at all.
+    case "$n" in
+        ''|*[!0-9]*) n=0 ;;
+    esac
+    n=$((n + 1))
+    mkdir -p "$IRONDIR" 2>/dev/null
+    echo "$n" > "$ATTEMPTS"
+    sync
+    echo "$n"
+}
+
+clear_attempts() {
+    rm -f "$ATTEMPTS"
+    sync
+}
+
+# Returns non-zero when it restored nothing, so the caller cannot report a
+# repair that did not happen. Every fault this design was written after was a
+# step that reported success while doing nothing.
+restore_initd() {
+    manifest="$INITD_BACKUP/manifest"
+    [ -f "$manifest" ] || return 1
+
+    restored=0
+    while read -r name existed; do
+        [ -n "$name" ] || continue
+        # install.sh writes this file, but it lives on a filesystem a power cut
+        # can scramble, and this runs as root before anything else in the boot.
+        case "$name" in
+            */*|.*) continue ;;
+        esac
+
+        if [ "$existed" = yes ]; then
+            [ -f "$INITD_BACKUP/$name" ] || continue
+            cp "$INITD_BACKUP/$name" "$INITD/$name" || continue
+            chmod 755 "$INITD/$name"
+        else
+            # The update added this script. Undoing means removing it: there is
+            # no original to put back, and leaving it is leaving the fault.
+            rm -f "$INITD/$name"
+        fi
+        restored=$((restored + 1))
+    done < "$manifest"
+
+    [ "$restored" -gt 0 ] || return 1
+
+    # Spend the manifest. Without this every later boot would undo whatever
+    # update came after the repair, and the board could never move forward.
+    mv "$manifest" "$manifest.done"
+    sync
+    return 0
+}
+# --- end initd rollback ---
+
 # --- escalate ---
 # Go to recovery, not to another full root.
 #
@@ -159,6 +242,20 @@ escalate() {
 # --- end escalate ---
 
 start() {
+    # Before anything else in the rc sequence. A restore performed here repairs
+    # S01 through S95 before they run, so a bad boot-script update costs one
+    # boot rather than two. The watcher below cannot do it: it waits up to
+    # DEADLINE seconds, by which time every other script has run or hung.
+    attempt=$(bump_attempts)
+    if [ "$attempt" -ge "$ATTEMPT_LIMIT" ]; then
+        if restore_initd; then
+            log "boot attempt $attempt with no success: restored the previous $INITD"
+            clear_attempts
+        else
+            log "boot attempt $attempt with no success: no init.d backup to restore"
+        fi
+    fi
+
     # The watcher must not inherit this shell's stdio. It lives for up to
     # DEADLINE seconds, and started over ssh it would hold the file descriptor
     # open for that long before the ssh command returned.
@@ -170,6 +267,10 @@ start() {
 
             if healthy; then
                 log "reachable after ${waited}s (web=$(web_up && echo up || echo down), ssh=$(ssh_up && echo up || echo down))"
+
+                # This boot worked, so whatever the last package update
+                # installed is good and the count starts again from nothing.
+                clear_attempts
 
                 # Confirm whatever is running. If this boot was a trial, the
                 # initramfs already deleted its marker, so without this the slot
