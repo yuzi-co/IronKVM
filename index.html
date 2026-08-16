@@ -1,0 +1,33 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>IronKVM update feed</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { color-scheme: light dark; }
+  body { font: 16px/1.6 system-ui, sans-serif; max-width: 42rem; margin: 4rem auto; padding: 0 1.5rem; }
+  code { background: rgba(128,128,128,.18); padding: .1em .35em; border-radius: 3px; }
+  .note { opacity: .7; font-size: .9em; }
+</style>
+
+<h1>IronKVM update feed</h1>
+
+<p>
+  This is the update feed for <a href="https://github.com/yuzi-co/IronKVM">IronKVM</a>,
+  community firmware for the Sipeed NanoKVM. It is not a website. A device polls
+  <code>latest.json</code> from here and downloads the package the manifest names.
+</p>
+
+<p>
+  <a href="latest.json">latest.json</a>
+</p>
+
+<p class="note">
+  The manifest lives here because it is a few hundred bytes. The packages live on
+  the repository's releases page, because they are not. The manifest names each
+  one with an absolute URL.
+</p>
+
+<p class="note">
+  IronKVM is not affiliated with Sipeed. Hardware questions belong to
+  <a href="https://wiki.sipeed.com/nanokvm">their wiki</a>.
+</p>
