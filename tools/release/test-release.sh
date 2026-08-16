@@ -183,6 +183,31 @@ check "the offsets are read from the image, not assumed" \
 check "a missing pin refuses rather than passing" \
     "$(grep -q 'no pin recorded for' "$FETCH" && echo yes || echo no)" "yes"
 
+echo
+echo "release.sh preflight"
+
+# A build that finds a missing tool at its last step has already spent twenty
+# minutes and leaves half a release behind. That is exactly how the signing step
+# would have failed: it was the final command, and the signer was not installed.
+check "the host is checked before anything is built" \
+    "$(grep -q '==> checking the host' "$SCRIPT" && echo yes || echo no)" "yes"
+check "the tool check runs before the web build" \
+    "$(grep -n 'checking the host\|building the web user interface' "$SCRIPT" \
+       | head -1 | grep -c 'checking the host')" "1"
+check "the builder image is checked, not assumed" \
+    "$(grep -q 'docker image inspect' "$SCRIPT" && echo yes || echo no)" "yes"
+check "a dry run does not demand gh" \
+    "$(grep -q 'DRY_RUN" = "1" \] || NEED="\$NEED gh"' "$SCRIPT" && echo yes || echo no)" "yes"
+
+# Signing was designed in and dropped for 1.0. The checksums must not claim to
+# be more than they are, and nothing may reference a signature that is not made.
+check "no signature is produced" \
+    "$(grep -c 'minisign' "$SCRIPT")" "0"
+check "no signature is published" \
+    "$(grep -c 'minisig' "$SCRIPT")" "0"
+check "the checksums say what they do not prove" \
+    "$(grep -q 'nothing about who produced it' "$SCRIPT" && echo yes || echo no)" "yes"
+
 # Dry run is what makes the rest of this script testable at all, so it is the
 # guard worth asserting hardest.
 check "publishing is guarded by the dry-run flag" \
