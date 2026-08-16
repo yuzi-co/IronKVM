@@ -61,21 +61,21 @@ hundred bytes of JSON and GitHub Releases is right for a 26 MB tarball, and a
 release asset lives under a per-tag path that no fixed base URL can reach. The
 manifest therefore names the package with an absolute `url`.
 
-## The first release only
+## The feed branch
 
-Create the feed branch once:
+Done on 2026-08-16. `gh-pages` exists, GitHub Pages serves it at
+`https://yuzi-co.github.io/IronKVM/`, and HTTPS is enforced. The branch holds an
+`index.html` that says what the URL is for, and a `.nojekyll` so Pages does not
+run a Jekyll build over a directory containing one JSON file.
 
-```shell
-git switch --orphan gh-pages
-git commit --allow-empty -m "Start the IronKVM feed"
-git push -u origin gh-pages
-git switch fork/integration
-```
+It was created as an orphan with plumbing rather than `git switch --orphan`,
+which empties the working tree of every tracked file and puts them back on the
+way out. On a checkout this size that is a lot of churn for a branch holding two
+files.
 
-Then turn on GitHub Pages for that branch, and check that
-`https://yuzi-co.github.io/IronKVM/latest.json` answers before announcing
-anything. A device whose feed 404s reports that the update server is
-inaccessible, which is correct but unhelpful.
+`latest.json` returns 404 until the first release writes it. That is correct: a
+device asked to check for updates before then reports that the update server is
+inaccessible. Check the URL answers before announcing anything.
 
 ## What the script refuses
 
