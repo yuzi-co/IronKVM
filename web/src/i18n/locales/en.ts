@@ -265,7 +265,7 @@ const en = {
     },
     terminal: {
       title: 'Terminal',
-      nanokvm: 'NanoKVM Terminal',
+      nanokvm: 'IronKVM Terminal',
       serial: 'Serial Port Terminal',
       serialPort: 'Serial Port',
       serialPortPlaceholder: 'Please enter the serial port',
@@ -340,12 +340,12 @@ const en = {
         cancelBtn: 'Cancel'
       },
       about: {
-        title: 'About NanoKVM',
+        title: 'About IronKVM',
         information: 'Information',
         ip: 'IP',
         mdns: 'mDNS',
         application: 'Application Version',
-        applicationTip: 'NanoKVM web application version',
+        applicationTip: 'IronKVM web application version',
         image: 'Image Version',
         imageTip: 'NanoKVM system image version',
         deviceKey: 'Device Key',
@@ -610,8 +610,9 @@ const en = {
           save: 'Save',
           confirmTitle: 'Use a custom update server?',
           confirmDesc:
-            'SHA-512 only checks that the package matches the manifest supplied by this server. It does not prove that the package is an official NanoKVM release. A faulty or malicious server may make the device unusable, cause data loss, or compromise the system.',
+            'SHA-512 only checks that the package matches the manifest supplied by this server. It does not prove that the package is an official IronKVM release. A faulty or malicious server may make the device unusable, cause data loss, or compromise the system.',
           confirm: 'Use Anyway',
+          useSipeed: 'Use the official Sipeed server',
           previewDisabled: 'Preview Updates are unavailable while a custom update server is enabled'
         },
         offline: {
