@@ -19,7 +19,6 @@ move to CI later.
 | The MaixCDK builder image | Build it once with `make shell`. |
 | `pnpm` | For the web user interface. |
 | `sfdisk`, `mkfs.vfat`, `mtools`, `e2fsprogs`, `xz` | For the card image. |
-| `minisign` with the release key | Signs `SHA256SUMS`. |
 | `gh`, authenticated | Creates the release. |
 | A `base/` directory | See below. |
 
@@ -99,12 +98,28 @@ push. Use it first.
 | `ironkvm-<v>-sdcard.img.xz` | Release assets | First install. Flash the card. |
 | `ironkvm_<v>.tar.gz` | Release assets | In-user-interface update, and offline upload. |
 | `latest.json` | The `gh-pages` branch | The feed a device polls. |
-| `SHA256SUMS`, `SHA256SUMS.minisig` | Release assets | For a person checking a download. |
+| `SHA256SUMS` | Release assets | For a person checking a download is intact. Unsigned, see below. |
 
 The feed and the packages live apart on purpose. GitHub Pages is right for a few
 hundred bytes of JSON and GitHub Releases is right for a 26 MB tarball, and a
 release asset lives under a per-tag path that no fixed base URL can reach. The
 manifest therefore names the package with an absolute `url`.
+
+### The checksums are not signed
+
+`SHA256SUMS` proves a download is intact. It proves nothing about who produced
+it: anybody who can replace the artifacts can replace this file beside them.
+
+A signature was designed in and then dropped for 1.0. It is worth exactly what
+the key's safekeeping is worth. An offline key would let somebody who pinned it
+detect a later compromise of this repository, which is real value; a key sitting
+on the build machine with no backup adds ceremony and no protection, and losing
+it forces every user to re-trust from scratch. Saying the checksums are unsigned
+is more honest than a signature nobody can rely on.
+
+The device never reads this file. Its update path checks a sha512 from
+`latest.json` over TLS, so signing here would not have protected it either way.
+Signature verification on the device is a different and larger piece of work.
 
 ## The feed branch
 
