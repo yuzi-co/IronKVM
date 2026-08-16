@@ -257,14 +257,44 @@ echo "===== two builds agree on content ====="
 
 sh "$BUILD" "$WORK/base.tar.zst" "$WORK/good.manifest" "$WORK/payload" 64 "$WORK/again.img" \
    > "$WORK/again.log" 2>&1
+
+# `ls -l -R` is not debugfs syntax. debugfs rejects the -R and prints nothing,
+# so the first version of this case compared two empty files and passed by
+# doing nothing, for every build, including builds that differed. That is the
+# third guard in this repository to rot exactly that way, so the emptiness
+# check below is not decoration and neither is the negative control.
 inventory() {
-    debugfs -R "ls -l -R /" "$1" 2>/dev/null | awk '{ $1=""; $6=""; $7=""; $8=""; print }' | sort
+    d=$(mktemp -d)
+    debugfs -R "rdump / $d" "$1" >/dev/null 2>&1
+    ( cd "$d" && find . -printf '%y %m %U %G %s %p\n' 2>/dev/null | sort )
+    rm -rf "$d"
 }
 inventory "$WORK/out.img"   > "$WORK/inv1"
 inventory "$WORK/again.img" > "$WORK/inv2"
+
+[ "$(wc -l < "$WORK/inv1")" -gt 5 ] \
+    && note "the inventory reads more than nothing" OK \
+    || note "the inventory read $(wc -l < "$WORK/inv1") lines, so it compares nothing" FAIL
+
 cmp -s "$WORK/inv1" "$WORK/inv2" \
     && note "two builds produce the same inventory" OK \
     || note "two builds produce different inventories" FAIL
+
+# The negative control. A comparison that cannot tell two different images
+# apart is not a comparison, and this is the only thing that proves it can.
+cat > "$WORK/extra.manifest" <<'MANIFEST'
+add     scripts/S00awatchdog      /etc/init.d/S00awatchdog
+add     scripts/S01declared       /etc/init.d/S01declared      0755
+remove  /etc/kvm/ssh_stop
+remove  /root
+touch   /etc/kvm.disk0
+MANIFEST
+sh "$BUILD" "$WORK/base.tar.zst" "$WORK/extra.manifest" "$WORK/payload" 64 "$WORK/extra.img" \
+   > "$WORK/extra.log" 2>&1
+inventory "$WORK/extra.img" > "$WORK/inv3"
+cmp -s "$WORK/inv1" "$WORK/inv3" \
+    && note "an image with an extra file reads as identical, so the check is blind" FAIL \
+    || note "an image with an extra file reads as different" OK
 
 echo
 if [ "$fails" -eq 0 ]; then
