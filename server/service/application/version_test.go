@@ -174,3 +174,35 @@ func TestParseLatestRefusesANonHTTPSManifestURL(t *testing.T) {
 		}
 	}
 }
+
+// IronKVM ships packages under its own name. An official Sipeed package must
+// still install, because being able to return to the official firmware is the
+// reason the rename stayed shallow.
+func TestValidateLatestAcceptsBothPackagePrefixes(t *testing.T) {
+	for _, name := range []string{"ironkvm_1.0.0.tar.gz", "nanokvm_2.4.3.tar.gz"} {
+		latest := Latest{Version: "1.0.0", Name: name, Sha512: validSha512, LegacySize: 100}
+		if err := validateLatest(&latest); err != nil {
+			t.Fatalf("%s should be accepted: %s", name, err)
+		}
+	}
+}
+
+// The name decides both the URL and the file written to the SD card, and it is
+// written before the checksum has had a chance to reject the package. It has to
+// stay a plain file name of one known shape.
+func TestValidateLatestStillRefusesAnUnsafePackageName(t *testing.T) {
+	for _, name := range []string{
+		"../ironkvm_1.0.0.tar.gz",
+		"sub/ironkvm_1.0.0.tar.gz",
+		"ironkvm_1.0.0.tar.gz.sh",
+		"evilkvm_1.0.0.tar.gz",
+		"ironkvm_1.0.tar.gz",
+		"ironkvm_1.0.0.zip",
+		"IRONKVM_1.0.0.tar.gz",
+	} {
+		latest := Latest{Version: "1.0.0", Name: name, Sha512: validSha512, LegacySize: 100}
+		if err := validateLatest(&latest); err == nil {
+			t.Fatalf("expected %q to be refused", name)
+		}
+	}
+}
