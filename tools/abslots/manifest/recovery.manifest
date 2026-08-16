@@ -21,9 +21,14 @@ add     tools/abslots/device/rcS                  /etc/init.d/rcS
 # the whole point.
 add     tools/abslots/device/S03usbdev-acmonly    /etc/init.d/S03usbdev
 
-# Identity, so an operator in recovery sees the real config and the real
-# certificates rather than a factory copy.
+# Identity, so an operator in recovery sees the real config, the real
+# certificates, and the real root password rather than the factory one.
 add     tools/abslots/device/S02identity          /etc/init.d/S02identity
+
+# The fork S01fs, which finds /data from /etc/nanokvm-slots.conf instead of
+# naming p3. Recovery needs /data mounted for the line above to do anything,
+# and the official S01fs would look for /data on what is now root B.
+add     kvmapp/system/init.d/S01fs                /etc/init.d/S01fs
 
 # --------------------------------------------------------------------- removes
 

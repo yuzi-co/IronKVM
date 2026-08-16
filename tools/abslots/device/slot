@@ -148,6 +148,19 @@ cmd_recovery() {
 	echo "slot: recovery is sticky; remove $BOOT/recovery and reboot to leave it"
 }
 
+# Capture the running board's identity to /data so the next slot inherits it.
+#
+# Run it after changing the root password or adding an ssh key. It is explicit
+# rather than automatic on shutdown, because a write-back that only happens at
+# shutdown is lost to exactly the power cut this board's normal way of ending
+# is, and losing a password change silently is worse than remembering a command.
+cmd_identity() {
+	case "$1" in
+		save) /etc/init.d/S02identity save ;;
+		*) die "usage: slot identity save" ;;
+	esac
+}
+
 case "$1" in
 	status)   cmd_status ;;
 	install)  shift; cmd_install "$@" ;;
@@ -155,5 +168,6 @@ case "$1" in
 	confirm)  cmd_confirm ;;
 	revert)   cmd_revert ;;
 	recovery) cmd_recovery ;;
-	*) echo "Usage: slot {status|install <slot> <image>|try <slot>|confirm|revert|recovery}"; exit 1 ;;
+	identity) shift; cmd_identity "$@" ;;
+	*) echo "Usage: slot {status|install <slot> <image>|try <slot>|confirm|revert|recovery|identity save}"; exit 1 ;;
 esac
