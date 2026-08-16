@@ -44,10 +44,24 @@ file is the only record of which bytes an image was built from: the official
 system image ships no checksum of its own, so its hash is a pin rather than a
 verification.
 
-### Rebuilding base/ from the official image
+### Rebuilding base/
 
-The rootfs comes from partition 2 of the official card image and the boot
-directory from partition 1.
+`tools/release/fetch-base.sh` does the whole thing: it downloads both artifacts
+from Sipeed, checks each against the pin, reads the image's own partition table,
+and extracts `/boot` and the root filesystem. It needs Linux and the ability to
+loop-mount. It downloads about 1.6 GB and leaves about 280 MB.
+
+```shell
+tools/release/fetch-base.sh
+```
+
+This fork does not republish the base. The GPL parts could be redistributed, but
+the image also carries vendor binaries for the SG2002 whose terms are not stated,
+and fetching from the publisher gets the same reproducibility without answering
+that question on somebody else's behalf.
+
+By hand, the same steps are these. The rootfs comes from partition 2 of the
+official card image and the boot directory from partition 1.
 
 ```shell
 # p1, the boot partition: 16 MiB at sector 1
