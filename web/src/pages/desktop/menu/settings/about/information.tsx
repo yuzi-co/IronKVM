@@ -21,6 +21,9 @@ type Info = {
   mdns: string;
   image: string;
   application: string;
+  // The upstream release this build started from. Absent on an image that
+  // carries no record of one, which is what an official image looks like.
+  base?: string;
   deviceKey: string;
 };
 
@@ -106,7 +109,17 @@ export const Information = () => {
             </Tooltip>
           </div>
 
-          <span>{information ? information.application : '-'}</span>
+          {/*
+            The base cannot live inside the version string: semver ignores build
+            metadata, so 2.4.3+iron.5 would compare equal to 2.4.3, and a
+            prerelease suffix would sort below it. So it is shown beside it.
+          */}
+          <span>
+            {information ? information.application : '-'}
+            {information?.base && (
+              <span className="text-neutral-500"> (based on NanoKVM {information.base})</span>
+            )}
+          </span>
         </div>
 
         <Hostname editable={account.role === 'admin'} />
