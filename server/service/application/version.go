@@ -45,7 +45,10 @@ const (
 
 var (
 	latestClient       = utils.NewUpdateHTTPClient(15 * time.Second)
-	packageNamePattern = regexp.MustCompile(`^nanokvm_[0-9]+\.[0-9]+\.[0-9]+\.tar\.gz$`)
+	// Both prefixes, because a board must be able to leave as easily as it
+	// arrived: IronKVM ships its own packages, and an official Sipeed package
+	// stays installable through the same updater.
+	packageNamePattern = regexp.MustCompile(`^(?:nanokvm|ironkvm)_[0-9]+\.[0-9]+\.[0-9]+\.tar\.gz$`)
 	versionPattern     = regexp.MustCompile(`^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$`)
 )
 
@@ -158,7 +161,7 @@ func parseLatest(body []byte, baseURL string) (*Latest, error) {
 	}
 
 	// validateLatest has already refused any name that is not
-	// nanokvm_X.Y.Z.tar.gz, so the name cannot carry a path separator by the
+	// (nanokvm|ironkvm)_X.Y.Z.tar.gz, so the name cannot carry a path separator by the
 	// time it reaches the URL or the file on disk. It bounds size_bytes for a
 	// version 2 manifest, but nothing bounds the legacy size, and the package
 	// is written to the SD card the device boots from. Refuse an oversized
