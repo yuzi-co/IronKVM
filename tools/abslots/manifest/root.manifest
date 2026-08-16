@@ -23,7 +23,7 @@ add     kvmapp/                                   /kvmapp/
 
 # The stripped server build. 17209304 bytes against 24279504, because the
 # binary runs from tmpfs and every debug byte is pinned RAM on a 166MB board.
-add     server/NanoKVM-Server                     /kvmapp/server/NanoKVM-Server
+add     server/NanoKVM-Server                     /kvmapp/server/NanoKVM-Server 0755
 
 # --------------------------------------------------------------- init scripts
 #
@@ -32,34 +32,34 @@ add     server/NanoKVM-Server                     /kvmapp/server/NanoKVM-Server
 # change that lands in only one of them does not run.
 
 # Modified by the fork. Each of these differs from the official base.
-add     kvmapp/system/init.d/S01fs                /etc/init.d/S01fs
-add     kvmapp/system/init.d/S03usbdev            /etc/init.d/S03usbdev
-add     kvmapp/system/init.d/S30eth               /etc/init.d/S30eth
-add     kvmapp/system/init.d/S95nanokvm           /etc/init.d/S95nanokvm
+add     kvmapp/system/init.d/S01fs                /etc/init.d/S01fs            0755
+add     kvmapp/system/init.d/S03usbdev            /etc/init.d/S03usbdev        0755
+add     kvmapp/system/init.d/S30eth               /etc/init.d/S30eth           0755
+add     kvmapp/system/init.d/S95nanokvm           /etc/init.d/S95nanokvm       0755
 
 # Added by the fork. None of these exist in the official base.
-add     kvmapp/system/init.d/S01zram              /etc/init.d/S01zram
-add     kvmapp/system/init.d/S99vidiag            /etc/init.d/S99vidiag
-add     tools/oled/S97oled-nudge                  /etc/init.d/S97oled-nudge
-add     tools/service/S98supervise                /etc/init.d/S98supervise
+add     kvmapp/system/init.d/S01zram              /etc/init.d/S01zram          0755
+add     kvmapp/system/init.d/S99vidiag            /etc/init.d/S99vidiag        0755
+add     tools/oled/S97oled-nudge                  /etc/init.d/S97oled-nudge    0755
+add     tools/service/S98supervise                /etc/init.d/S98supervise     0755
 
 # The watchdog goes in the manifest so "it was not installed" cannot happen
 # again. On 2026-08-15 it was missing from the failing slot, which is half of
 # why the card had to come out.
-add     tools/abslots/device/S00awatchdog         /etc/init.d/S00awatchdog
+add     tools/abslots/device/S00awatchdog         /etc/init.d/S00awatchdog     0755
 
 # Identity lives on /data and is bound over /etc/kvm, so a slot switch keeps
 # the password and the certificates and no image ever carries them.
-add     tools/abslots/device/S02identity          /etc/init.d/S02identity
+add     tools/abslots/device/S02identity          /etc/init.d/S02identity      0755
 
 # The instrumented rcS. A boot that completes with no listeners leaves no
 # evidence otherwise, and that is exactly the failure this whole design is
 # about. It is what turned a silent failure into two named faults.
-add     tools/abslots/device/rcS                  /etc/init.d/rcS
+add     tools/abslots/device/rcS                  /etc/init.d/rcS              0755
 
 # The operator tool, in every root, because the slot you are on is the one you
 # need it from.
-add     tools/abslots/device/slot                 /usr/bin/slot
+add     tools/abslots/device/slot                 /usr/bin/slot                0755
 
 # -------------------------------------------------------------------- removes
 #

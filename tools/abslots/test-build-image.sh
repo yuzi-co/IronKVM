@@ -92,7 +92,109 @@ dumpe2fs -h "$WORK/out.img" 2>/dev/null | grep -q 'has_journal' \
     || note "the image has no journal, which a power cut would punish" FAIL
 
 echo
+echo "===== modes and ownership are declared, not inherited ====="
+#
+# The payload is a copy of a Windows checkout on a Linux build host, so its
+# modes and its ownership describe the copy and not the image. On 2026-08-16 a
+# root A image shipped /kvmapp/server/NanoKVM-Server at 0644 owned by the
+# builder's uid, which is a slot that boots and then cannot start its server.
+#
+# So the image declares both: the manifest names the mode, the builder writes
+# the owner, and a gate catches an add that forgot.
+
+mkdir -p "$WORK/payload/scripts"
+printf '#!/bin/sh\necho declared\n' > "$WORK/payload/scripts/S01declared"
+chmod 644 "$WORK/payload/scripts/S01declared"
+
+cat > "$WORK/mode.manifest" <<'MANIFEST'
+add     scripts/S00awatchdog      /etc/init.d/S00awatchdog
+add     scripts/S01declared       /etc/init.d/S01declared      0755
+remove  /etc/kvm/ssh_stop
+remove  /root
+touch   /etc/kvm.disk0
+MANIFEST
+
+if sh "$BUILD" "$WORK/base.tar.zst" "$WORK/mode.manifest" "$WORK/payload" 64 "$WORK/mode.img" \
+   > "$WORK/mode.log" 2>&1; then
+    note "a manifest mode column builds" OK
+else
+    note "a manifest mode column builds" FAIL
+    sed 's/^/    /' "$WORK/mode.log" | tail -20
+fi
+
+statline() { debugfs -R "stat $2" "$1" 2>/dev/null | tr -s ' '; }
+
+if [ -f "$WORK/mode.img" ]; then
+    statline "$WORK/mode.img" /etc/init.d/S01declared | grep -q 'Mode: 0755' \
+        && note "the declared mode reaches the image" OK \
+        || note "the declared mode reaches the image, got: $(statline "$WORK/mode.img" /etc/init.d/S01declared | grep -o 'Mode: [0-7]*')" FAIL
+else
+    note "the declared mode reaches the image" FAIL
+fi
+
+# Ownership. Only meaningful where the test itself can chown, which means
+# running as root on a filesystem that stores uids. Say SKIP otherwise rather
+# than pass quietly.
+: > "$WORK/ownprobe"
+if chown 1000:1000 "$WORK/ownprobe" 2>/dev/null \
+   && [ "$(find "$WORK/ownprobe" -user 1000 | wc -l)" -eq 1 ]; then
+    chown 1000:1000 "$WORK/payload/scripts/S00awatchdog"
+    sh "$BUILD" "$WORK/base.tar.zst" "$WORK/mode.manifest" "$WORK/payload" 64 "$WORK/own.img" \
+       > "$WORK/own.log" 2>&1
+    if [ -f "$WORK/own.img" ]; then
+        statline "$WORK/own.img" /etc/init.d/S00awatchdog | grep -q 'User: 0 Group: 0' \
+            && note "an added file is owned by root, not by the builder" OK \
+            || note "an added file is owned by $(statline "$WORK/own.img" /etc/init.d/S00awatchdog | grep -o 'User: [0-9]* Group: [0-9]*')" FAIL
+    else
+        note "an added file is owned by root, not by the builder" FAIL
+        sed 's/^/    /' "$WORK/own.log" | tail -20
+    fi
+    chown 0:0 "$WORK/payload/scripts/S00awatchdog"
+else
+    note "an added file is owned by root (this host cannot chown)" SKIP
+fi
+
+echo
 echo "===== the gates refuse a bad build, and write nothing ====="
+
+# An ELF that is not executable is the 2026-08-16 fault itself. The init.d gate
+# does not see it, because the server binary is not an init script.
+printf '\177ELF\002\001\001\0\0\0\0\0\0\0\0\0' > "$WORK/payload/scripts/fakebin"
+chmod 644 "$WORK/payload/scripts/fakebin"
+cat > "$WORK/elf.manifest" <<'MANIFEST'
+add     scripts/S00awatchdog      /etc/init.d/S00awatchdog
+add     scripts/fakebin           /usr/bin/fakebin
+remove  /etc/kvm/ssh_stop
+remove  /root
+touch   /etc/kvm.disk0
+MANIFEST
+if sh "$BUILD" "$WORK/base.tar.zst" "$WORK/elf.manifest" "$WORK/payload" 64 "$WORK/elf.img" \
+   > "$WORK/elf.log" 2>&1; then
+    note "a non-executable ELF is refused" FAIL
+else
+    note "a non-executable ELF is refused" OK
+fi
+[ -f "$WORK/elf.img" ] \
+    && note "the refused ELF build leaves no image behind" FAIL \
+    || note "the refused ELF build leaves no image behind" OK
+
+# And the same ELF with a declared mode must build, because that is the fix an
+# operator reaches for when the gate fires.
+cat > "$WORK/elfok.manifest" <<'MANIFEST'
+add     scripts/S00awatchdog      /etc/init.d/S00awatchdog
+add     scripts/fakebin           /usr/bin/fakebin             0755
+remove  /etc/kvm/ssh_stop
+remove  /root
+touch   /etc/kvm.disk0
+MANIFEST
+if sh "$BUILD" "$WORK/base.tar.zst" "$WORK/elfok.manifest" "$WORK/payload" 64 "$WORK/elfok.img" \
+   > "$WORK/elfok.log" 2>&1; then
+    note "the same ELF with a declared mode builds" OK
+else
+    note "the same ELF with a declared mode builds" FAIL
+    sed 's/^/    /' "$WORK/elfok.log" | tail -20
+fi
+rm -f "$WORK/payload/scripts/fakebin"
 
 # A CRLF init script must stop the build. It exits 127 on the device with
 # nothing logged that names the cause.
