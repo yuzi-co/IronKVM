@@ -265,15 +265,17 @@ case "$1" in
         iptables -I OUTPUT -o eth0 -p udp --sport 67 -j DROP
     fi
 
-    # Logo selection
+    # Logo selection. The served file is named for the firmware rather than for
+    # the hardware vendor, and both the favicon and the login page point at it,
+    # so /boot/logo.ico still replaces both exactly as it always did.
     if [ -f /boot/logo.ico ]; then
         if [ ! -f /kvmapp/server/web/original.ico ]; then
-            mv /kvmapp/server/web/sipeed.ico /kvmapp/server/web/original.ico
-            cp /boot/logo.ico /kvmapp/server/web/sipeed.ico
+            mv /kvmapp/server/web/ironkvm.ico /kvmapp/server/web/original.ico
+            cp /boot/logo.ico /kvmapp/server/web/ironkvm.ico
         fi
     else
         if [ -f /kvmapp/server/web/original.ico ]; then
-            mv /kvmapp/server/web/original.ico /kvmapp/server/web/sipeed.ico
+            mv /kvmapp/server/web/original.ico /kvmapp/server/web/ironkvm.ico
         fi
     fi
 
