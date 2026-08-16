@@ -229,6 +229,41 @@ escalate() {
         return 0
     fi
 
+    # Before recovery, undo a boot-script update if one is outstanding. A board
+    # that cannot be reached right after an update is very probably broken BY
+    # that update, and putting the previous scripts back costs one reboot and
+    # keeps video and HID. Recovery keeps neither, and it is sticky, so it costs
+    # the operator a second reboot to leave.
+    #
+    # This branch is why the counter in start() is not the only trigger. On a
+    # board with this watchdog the counter alone could never reach its limit:
+    # either the board is reachable and the count clears, or it is not and
+    # recovery took it on the first boot. The counter still earns its place on a
+    # board whose power is cut before this deadline, and on one with no recovery
+    # slot to fall back to.
+    if restore_initd; then
+        if [ "${WATCHDOG_DRY_RUN:-0}" = "1" ]; then
+            log "dry run: would have restored $INITD and rebooted"
+            return 0
+        fi
+        log "no way in after an update: restored the previous $INITD, rebooting"
+        clear_attempts
+        reboot -f
+        return 0
+    fi
+
+    # The recovery marker only means something to the fork's initramfs, and this
+    # script can now reach a board that has none: install.sh copies it out of an
+    # update package, and a board on stock partitioning has no recovery slot to
+    # go to. There the marker is an inert file and the reboot is a loop that
+    # repeats every DEADLINE seconds for ever. Standing down is the correct
+    # answer to a fault this board cannot fix, which is the same rule the
+    # carrier check above follows.
+    if ! command -v slot > /dev/null 2>&1; then
+        log "no slot tool: this board has no recovery slot, standing down"
+        return 0
+    fi
+
     if [ "${WATCHDOG_DRY_RUN:-0}" = "1" ]; then
         log "dry run: would have set the recovery marker"
         return 0
