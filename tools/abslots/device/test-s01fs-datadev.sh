@@ -91,6 +91,82 @@ got=$( SLOT_CONF="$WORK/absent.conf" sh -c ". $WORK/ap.sh; may_autopartition && 
     || note "an undeclared layout can no longer autopartition, a regression" FAIL
 
 echo
+echo "===== /data is mounted so its identity files are not world readable ====="
+#
+# /data is exfat, which stores no POSIX mode, so every file on it takes its
+# mode from the mount. The board keeps its root password hash and its
+# authorized_keys there, and 0755 for those two is wrong even on a board whose
+# only login user is root.
+#
+# fmask and dmask exist only on the FAT family. If /data is ever anything else
+# the masked mount fails, and an unmounted /data is the exact fault the block
+# above was written for, so the fallback matters more than the mask.
+
+sed -n '/^# --- data mount ---/,/^# --- end data mount ---/p' "$S01" > "$WORK/dm.sh"
+if [ ! -s "$WORK/dm.sh" ]; then
+    note "the data mount block can be extracted" FAIL
+else
+    note "the data mount block can be extracted" OK
+
+    cat > "$WORK/mountstub.sh" <<'STUB'
+mount() {
+    echo "mount $*" >> "$MOUNTLOG"
+    case "$*" in
+        *fmask*) [ "${STUB_MASK_FAILS:-no}" = yes ] && return 1 ;;
+    esac
+    [ "${STUB_ALL_FAILS:-no}" = yes ] && return 1
+    return 0
+}
+STUB
+
+    drive() {
+        MOUNTLOG="$WORK/mlog"; : > "$MOUNTLOG"
+        export MOUNTLOG STUB_MASK_FAILS STUB_ALL_FAILS
+        sh -c ". $WORK/mountstub.sh; . $WORK/dm.sh; mount_data /dev/mmcblk0p6 /data" >/dev/null 2>&1
+        echo $?
+    }
+
+    STUB_MASK_FAILS=no STUB_ALL_FAILS=no
+    rc=$(drive)
+    [ "$rc" = 0 ] && note "a masked mount that works reports success" OK \
+                  || note "a masked mount that works returned $rc" FAIL
+    grep -q 'fmask=0077' "$WORK/mlog" \
+        && note "the mount masks files to 0077" OK \
+        || note "the mount does not mask files, got: $(cat "$WORK/mlog")" FAIL
+    grep -q 'dmask=0077' "$WORK/mlog" \
+        && note "the mount masks directories to 0077" OK \
+        || note "the mount does not mask directories" FAIL
+    [ "$(wc -l < "$WORK/mlog")" -eq 1 ] \
+        && note "and it does not mount twice" OK \
+        || note "it mounted $(wc -l < "$WORK/mlog") times" FAIL
+
+    # A filesystem with no fmask must still end up mounted. This is the case
+    # that matters: /data unmounted is worse than /data world readable.
+    STUB_MASK_FAILS=yes STUB_ALL_FAILS=no
+    rc=$(drive)
+    [ "$rc" = 0 ] && note "a filesystem with no fmask still mounts" OK \
+                  || note "a filesystem with no fmask left /data unmounted (rc $rc)" FAIL
+    [ "$(grep -c 'fmask' "$WORK/mlog")" -eq 1 ] && [ "$(wc -l < "$WORK/mlog")" -eq 2 ] \
+        && note "it falls back to a plain mount, once" OK \
+        || note "the fallback is wrong, got: $(tr '\n' ';' < "$WORK/mlog")" FAIL
+
+    # And a device that cannot be mounted at all must report failure rather
+    # than let the caller print that /data is ready.
+    STUB_MASK_FAILS=no STUB_ALL_FAILS=yes
+    rc=$(drive)
+    [ "$rc" != 0 ] && note "a device that cannot mount reports failure" OK \
+                   || note "a device that cannot mount reported success" FAIL
+fi
+
+# The call site must go through the function, or none of the above runs on the
+# device.
+if grep -qE '^[[:space:]]*mount_data[[:space:]]+"\$DATADEV"' "$S01"; then
+    note "the call site uses mount_data" OK
+else
+    note "the call site still calls mount directly" FAIL
+fi
+
+echo
 echo "===== the script still parses ====="
 sh -n "$S01" 2>/dev/null && note "sh -n accepts S01fs" OK || note "sh -n accepts S01fs" FAIL
 
