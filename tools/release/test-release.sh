@@ -157,6 +157,32 @@ check "the base is verified against the recorded pins" \
 check "the build does not depend on make" \
     "$(grep -c '^make ' "$SCRIPT")" "0"
 
+echo
+echo "fetch-base.sh"
+
+FETCH="$HERE/fetch-base.sh"
+PINS="$HERE/../abslots/BASE.sha256"
+
+# The pin lookup has to resolve against the real file, not a fixture. A grep that
+# silently matches nothing would let the script "verify" every download.
+for name in 20260610_NanoKVM_Rev1_4_3.img nanokvm_2.5.0.tar.gz nanokvm-base-official.tar.zst; do
+    got=$(grep "  $name\( \|\$\)" "$PINS" | grep -o '^[0-9a-f]\{64\}' | head -1)
+    check "a pin resolves for $name" "$(printf '%s' "$got" | wc -c | tr -d ' ')" "64"
+done
+
+# The derived tarball is the one that could differ without anybody noticing: it
+# is produced here rather than downloaded, so its pin is what says the extraction
+# reproduced the bytes the fork was developed against.
+check "the extracted root filesystem is verified too" \
+    "$(grep -q 'check "\$DEST/rootfs.tar.zst" nanokvm-base-official.tar.zst' "$FETCH" && echo yes || echo no)" "yes"
+
+# Sipeed's layout is not the fork's, and it is not partition.sfdisk.
+check "the offsets are read from the image, not assumed" \
+    "$(grep -c 'fdisk -l -o Device,Start' "$FETCH")" "2"
+
+check "a missing pin refuses rather than passing" \
+    "$(grep -q 'no pin recorded for' "$FETCH" && echo yes || echo no)" "yes"
+
 # Dry run is what makes the rest of this script testable at all, so it is the
 # guard worth asserting hardest.
 check "publishing is guarded by the dry-run flag" \
