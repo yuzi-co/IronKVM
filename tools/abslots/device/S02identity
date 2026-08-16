@@ -33,6 +33,7 @@ SYSDIR=${SYSDIR:-/data/identity-system}
 TARGET=${TARGET:-/etc/kvm}
 ETCDIR=${ETCDIR:-/etc}
 ROOTHOME=${ROOTHOME:-/root}
+SSHDIR=${SSHDIR:-/etc/ssh}
 
 data_mounted() {
     [ -n "$DATA_MOUNTED" ] && { [ "$DATA_MOUNTED" = yes ]; return; }
@@ -46,6 +47,38 @@ usable_shadow() {
     [ -s "$1" ] || return 1
     grep -q '^root:' "$1" || return 1
     return 0
+}
+
+# The ssh host key is identity, and it is the one that is easiest to forget.
+# A slot switch swaps the whole root filesystem and /etc/ssh goes with it, so
+# the board's fingerprint changes and every client that ever connected refuses
+# it. With BatchMode=yes ssh does not even print why.
+#
+# Only non-empty files are copied, in both directions. sshd refuses to start on
+# a zero-length host key, and a board with no sshd is what this design exists
+# to prevent.
+# Returns non-zero when it copied nothing, so the caller cannot announce a
+# restore that did not happen. Every fault this design was written after was a
+# step that reported success while doing nothing.
+copy_host_keys() {
+    from=$1
+    to=$2
+    # No test for a missing $from. An unmatched glob leaves the pattern
+    # literal, [ -s ] rejects it, and copied stays 0, so one mechanism decides.
+    # Two guards here made each other untestable: removing either alone changed
+    # nothing, because the other still covered it.
+    copied=0
+    for k in "$from"/ssh_host_*; do
+        [ -s "$k" ] || continue
+        mkdir -p "$to"
+        cp "$k" "$to/${k##*/}"
+        case "$k" in
+            *.pub) chmod 644 "$to/${k##*/}" ;;
+            *)     chmod 600 "$to/${k##*/}" ;;
+        esac
+        copied=$((copied + 1))
+    done
+    [ "$copied" -gt 0 ]
 }
 
 start() {
@@ -69,6 +102,7 @@ start() {
         [ -f "$ETCDIR/passwd" ] && cp -a "$ETCDIR/passwd" "$SYSDIR/passwd"
         [ -f "$ROOTHOME/.ssh/authorized_keys" ] && \
             cp -a "$ROOTHOME/.ssh/authorized_keys" "$SYSDIR/authorized_keys"
+        copy_host_keys "$SSHDIR" "$SYSDIR/ssh"
     fi
 
     if mount --bind "$IDENTITY" "$TARGET" 2>/dev/null; then
@@ -97,6 +131,12 @@ start() {
         chmod 600 "$ROOTHOME/.ssh/authorized_keys"
         echo "S02identity: authorized_keys restored"
     fi
+
+    # Before S50sshd, so sshd finds the board's own keys and does not generate
+    # a fresh set that makes this slot look like a different machine.
+    if copy_host_keys "$SYSDIR/ssh" "$SSHDIR"; then
+        echo "S02identity: ssh host keys restored"
+    fi
 }
 
 # Capture the running system's identity back to /data. Called by
@@ -109,6 +149,7 @@ save() {
     [ -f "$ETCDIR/shadow" ] && { cp "$ETCDIR/shadow" "$SYSDIR/shadow"; chmod 600 "$SYSDIR/shadow"; }
     [ -f "$ETCDIR/passwd" ] && cp "$ETCDIR/passwd" "$SYSDIR/passwd"
     [ -f "$ROOTHOME/.ssh/authorized_keys" ] && cp "$ROOTHOME/.ssh/authorized_keys" "$SYSDIR/authorized_keys"
+    copy_host_keys "$SSHDIR" "$SYSDIR/ssh"
     sync
     echo "S02identity: identity saved to $SYSDIR"
 }
