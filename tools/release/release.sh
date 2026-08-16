@@ -214,9 +214,25 @@ tar xzf "$OFFICIAL_APP" -C official-kvmapp --strip-components=1
 echo "==> assembling the package"
 PAYLOAD="$STAGE/ironkvm_${VERSION}"
 mkdir -p "$PAYLOAD"
-cp -a kvmapp/. "$PAYLOAD/"
+# The same layers, in the same order, that root.manifest builds the image from.
+#
+# The updater REPLACES /kvmapp rather than merging into it: it moves the whole
+# tree to the backup directory and moves the new one in. Every file the package
+# leaves out is therefore a file the device loses.
+#
+# kvmapp/ holds only what the fork changes. It carries 14 of the 37 libraries in
+# server/dl_lib and neither kvm_system nor system/tool, so a package built from
+# it alone installs a server that cannot load libkvm.so. The board still answers
+# ssh after that, so the watchdog reports it healthy, nothing rolls back, and
+# the KVM is simply gone.
+cp -a official-kvmapp/. "$PAYLOAD/"
+cp -a kvmapp/.          "$PAYLOAD/"
 cp    server/NanoKVM-Server "$PAYLOAD/server/NanoKVM-Server"
-cp -a web/dist              "$PAYLOAD/server/web"
+
+# Replaced, not merged. Two builds never collide on a hashed asset name, so a
+# merge would leave the official bundle's files beside the fork's.
+rm -rf "$PAYLOAD/server/web"
+cp -a web/dist "$PAYLOAD/server/web"
 echo "$VERSION" > "$PAYLOAD/version"
 
 # Some boot scripts live in tools/ rather than in kvmapp/system/init.d, and the
@@ -257,6 +273,21 @@ done
 BASE=$(cat "${BASE_VERSION_FILE:-base/version}" 2>/dev/null || echo "unknown")
 echo "$BASE" > "$PAYLOAD/base-version"
 
+# Nothing the official package carries may go missing. The layering above is
+# what puts those files there, and this is what says so afterwards: a guard that
+# reads the built tree cannot rot into passing the way a comment can.
+#
+# Two exceptions. kvm/ holds runtime state the device writes for itself. The web
+# directory is replaced wholesale by this fork's own build, so none of the
+# official bundle's hashed asset names survive, and neither does its icon.
+tar tzf "$OFFICIAL_APP" | sed 's|^[^/]*/||' | grep -v '/$' | sort > "$STAGE/official.list"
+( cd "$PAYLOAD" && find . -type f | sed 's|^\./||' | sort ) > "$STAGE/payload.list"
+gone=$(comm -13 "$STAGE/payload.list" "$STAGE/official.list" | grep -vE '^(kvm/|server/web/)') || true
+[ -z "$gone" ] || {
+    echo "the package drops files the official one carries:" >&2
+    echo "$gone" >&2
+    exit 1; }
+
 chmod 755 "$PAYLOAD/system/install.sh" "$PAYLOAD/server/NanoKVM-Server"
 tar czf "$OUT/$PKG" -C "$STAGE" "ironkvm_${VERSION}"
 
@@ -277,7 +308,10 @@ tools/abslots/build-image.sh "$BASE_TAR" tools/abslots/manifest/recovery.manifes
 echo "==> repacking the boot image"
 tools/abslots/repack-boot.sh "$STOCK_BOOT_SD" "$STAGE/bootbuild"
 cp -a "$BASE_BOOT/." "$STAGE/boot/"
-cp "$STAGE/bootbuild/boot.sd" "$STAGE/boot/boot.sd"
+# repack-boot.sh writes boot.sd.new, and the name is deliberate: it says the
+# image has not been accepted yet. It is accepted here, after that script's own
+# verification has passed.
+cp "$STAGE/bootbuild/boot.sd.new" "$STAGE/boot/boot.sd"
 
 echo "==> assembling the card"
 tools/abslots/build-card.sh "$STAGE/boot" "$STAGE/root.img" "$STAGE/recovery.img" \
