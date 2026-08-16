@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -60,6 +61,23 @@ func stubRootPassword(t *testing.T) *string {
 	}
 
 	return &applied
+}
+
+// stubSaveIdentity records whether the identity write-back ran, and lets a
+// test make it fail.
+func stubSaveIdentity(t *testing.T, err error) *int {
+	t.Helper()
+
+	original := saveIdentity
+	t.Cleanup(func() { saveIdentity = original })
+
+	var calls int
+	saveIdentity = func() error {
+		calls++
+		return err
+	}
+
+	return &calls
 }
 
 func changePassword(t *testing.T, body string) *httptest.ResponseRecorder {
@@ -145,5 +163,67 @@ func TestChangePasswordAllowsFirstTimeSetupWithoutCurrentPassword(t *testing.T) 
 
 	if !strings.Contains(w.Body.String(), `"code":0`) {
 		t.Fatalf("expected success on first-time setup, got %s", w.Body.String())
+	}
+}
+
+// A changed password has to outlive the slot it was set on.
+//
+// /etc/shadow lives in the slot's own root filesystem, and S02identity restores
+// it from /data at every boot. Without a write-back, changing the password and
+// rebooting silently restores the old one, and switching slots loses it
+// outright. Asking the operator to remember a command afterwards is not a
+// mechanism: they will not, and nothing tells them it was needed.
+func TestChangePasswordSavesIdentity(t *testing.T) {
+	useTempAccountFile(t, "correct-horse")
+	stubRootPassword(t)
+	calls := stubSaveIdentity(t, nil)
+
+	w := changePassword(t, `{"username":"admin","oldPassword":"`+encryptPassword("correct-horse")+
+		`","password":"`+encryptPassword("new-password")+`"}`)
+
+	if !strings.Contains(w.Body.String(), `"code":0`) {
+		t.Fatalf("expected success, got %s", w.Body.String())
+	}
+	if *calls != 1 {
+		t.Fatalf("expected the identity write-back to run once, ran %d times", *calls)
+	}
+}
+
+// The password is already written when the write-back runs, so a failure here
+// cannot be undone by refusing. Reporting failure would also delete the account
+// file on the way out, which drops the web UI back to admin/admin: a worse
+// outcome than an identity copy that is one boot stale.
+func TestChangePasswordSucceedsWhenIdentitySaveFails(t *testing.T) {
+	useTempAccountFile(t, "correct-horse")
+	applied := stubRootPassword(t)
+	stubSaveIdentity(t, errors.New("no /data"))
+
+	w := changePassword(t, `{"username":"admin","oldPassword":"`+encryptPassword("correct-horse")+
+		`","password":"`+encryptPassword("new-password")+`"}`)
+
+	if !strings.Contains(w.Body.String(), `"code":0`) {
+		t.Fatalf("a failed identity save must not fail the password change, got %s", w.Body.String())
+	}
+	if *applied != "new-password" {
+		t.Fatalf("the root password should still have been set, got %q", *applied)
+	}
+}
+
+// Nothing was changed, so there is nothing to persist. Saving here would copy
+// a shadow the caller never altered.
+func TestChangePasswordSkipsIdentitySaveWhenRootPasswordFails(t *testing.T) {
+	useTempAccountFile(t, "correct-horse")
+
+	original := setRootPassword
+	t.Cleanup(func() { setRootPassword = original })
+	setRootPassword = func(string) error { return errors.New("passwd failed") }
+
+	calls := stubSaveIdentity(t, nil)
+
+	changePassword(t, `{"username":"admin","oldPassword":"`+encryptPassword("correct-horse")+
+		`","password":"`+encryptPassword("new-password")+`"}`)
+
+	if *calls != 0 {
+		t.Fatalf("the identity write-back must not run when the password change failed, ran %d times", *calls)
 	}
 }
