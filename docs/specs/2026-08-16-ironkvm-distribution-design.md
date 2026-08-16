@@ -123,19 +123,28 @@ A tag `v1.0.0` produces four things.
 | `ironkvm-1.0.0-sdcard.img.xz` | Release assets | First install. Full A/B/recovery card image. |
 | `ironkvm_1.0.0.tar.gz` | Release assets | In-user-interface update, and offline upload. |
 | `latest.json` | GitHub Pages | The feed the device polls. |
-| `SHA256SUMS` and its signature | Release assets | For a human checking a download. |
+| `SHA256SUMS` | Release assets | For a human checking a download is intact. Unsigned; see the amendment below. |
 
 The tarball's top-level directory is `ironkvm_1.0.0/`, because `update.go`
 derives the expected root from the package name.
 
-`SHA256SUMS` is signed with `minisign`. The tool is one binary, the public key
-is one line that fits in the README, and it needs no key server and no web of
-trust. The private key stays off the build host's repository checkout.
+**Amended 2026-08-16, during implementation: `SHA256SUMS` is not signed.**
 
-Signing covers the release artifacts for human verification. The device path
-keeps its existing integrity check: a sha512 in the manifest, fetched over TLS
-from the same origin as the package. Signature verification on the device is
-not part of 1.0.
+The design called for `minisign`, on the reasoning that it is one binary and a
+one-line public key. Implementation made the trade-off concrete and it did not
+hold up for 1.0. A signature is worth what the key's safekeeping is worth: an
+offline key lets somebody who pinned it detect a later compromise of the
+repository, but a key on the build machine with no backup adds ceremony and no
+protection, and losing it forces every user to re-trust from scratch.
+
+The device was never going to read it either way. Its update path checks a
+sha512 from the manifest, fetched over TLS from the same origin as the package,
+so signing the release artifacts protects a human at a terminal and nothing
+else. The README states that the checksums are unsigned rather than implying
+otherwise.
+
+Signature verification on the device stays out of scope, and is the piece that
+would actually change the threat model.
 
 ## Build and publish
 
