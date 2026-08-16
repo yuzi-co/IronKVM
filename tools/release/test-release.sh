@@ -164,6 +164,33 @@ check "the image is built from the repository root, not the package" \
 check "the official application is unpacked for the manifest" \
     "$(grep -q 'tar xzf "$OFFICIAL_APP" -C official-kvmapp' "$SCRIPT" && echo yes || echo no)" "yes"
 
+# The package needs the SAME three layers as the image. The updater replaces
+# /kvmapp rather than merging into it, so every file the package omits is a file
+# the device loses. kvmapp/ alone carries 14 of the 37 libraries in
+# server/dl_lib and neither kvm_system nor system/tool, which installs a server
+# that cannot load libkvm.so onto a board that still answers ssh.
+check "the package is layered the way the image is" \
+    "$(grep -c 'cp -a official-kvmapp/\. "\$PAYLOAD/"' "$SCRIPT")" "1"
+check "the fork's tree goes on top of the official one" \
+    "$(grep -n 'cp -a official-kvmapp/\. "\$PAYLOAD/"\|cp -a kvmapp/\. *"\$PAYLOAD/"' "$SCRIPT" \
+       | head -1 | grep -c official-kvmapp)" "1"
+
+# Two builds never collide on a hashed asset name, so a merge would leave the
+# official bundle's files beside the fork's and serve both.
+check "the web directory is replaced, not merged" \
+    "$(grep -c 'rm -rf "\$PAYLOAD/server/web"' "$SCRIPT")" "1"
+
+# The guard that would have caught the missing libraries. A grep proves the
+# layering is written; this proves the build refuses to ship without it.
+check "the package is checked against the official one" \
+    "$(grep -c 'the package drops files the official one carries' "$SCRIPT")" "1"
+
+# repack-boot.sh writes boot.sd.new, deliberately: the name says the image has
+# not been accepted yet. Asking for boot.sd fails after every verification in
+# that script has already passed.
+check "the repacked boot image is taken by the name it is written under" \
+    "$(grep -c 'bootbuild/boot\.sd\.new' "$SCRIPT")" "1"
+
 # The base is Sipeed's, and the system image ships no checksum of its own, so the
 # pin in BASE.sha256 is the only statement of which bytes an image came from.
 check "the base is verified against the recorded pins" \
