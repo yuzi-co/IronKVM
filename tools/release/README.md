@@ -61,6 +61,14 @@ write its module cache. `docker images` shows the id in the image name.
 The container runs as root on purpose: `repack-boot.sh` unpacks an initramfs
 holding `dev/console`, and `mknod` is refused to anybody else.
 
+A real release also tags, pushes and creates the GitHub release, so it needs the
+credentials a dry run does not. Add `-e GH_TOKEN` and mount the key `git push`
+uses:
+
+```shell
+  -e GH_TOKEN -v "$HOME/.ssh:/root/.ssh:ro"
+```
+
 One cost is worth knowing. `build-card.sh` creates the card at its full 28.85
 GiB and truncates it afterwards, which is instant on a Linux filesystem because
 the file is sparse. A Windows drive through a bind mount is not sparse, so the

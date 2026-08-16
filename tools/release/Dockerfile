@@ -30,6 +30,16 @@ RUN curl -fsSL "https://download.docker.com/linux/static/stable/x86_64/docker-${
 # The same version .github/workflows/package.yml installs.
 RUN npm install --global pnpm@11
 
+# A dry run does not need gh, and a release does. Without it the preflight stops
+# in seconds, which is correct and still means the image cannot finish the job
+# it exists for.
+ARG GH_VERSION=2.63.2
+RUN curl -fsSL "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz" \
+        -o /tmp/gh.tgz \
+    && tar -xzf /tmp/gh.tgz -C /tmp "gh_${GH_VERSION}_linux_amd64/bin/gh" \
+    && install -m 0755 "/tmp/gh_${GH_VERSION}_linux_amd64/bin/gh" /usr/local/bin/gh \
+    && rm -rf /tmp/gh.tgz "/tmp/gh_${GH_VERSION}_linux_amd64"
+
 # The checkout is bind-mounted from the workstation and its owner is not root
 # inside the container. Without this git refuses it as dubious, and release.sh
 # stops at its first check.
