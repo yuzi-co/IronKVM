@@ -23,7 +23,7 @@ func (s *Service) SetWebTitle(c *gin.Context) {
 		return
 	}
 
-	if req.Title == "" || req.Title == "NanoKVM" {
+	if req.Title == "" || req.Title == "IronKVM" {
 		err := os.Remove(WebTitleFile)
 		if err != nil {
 			rsp.ErrRsp(c, -2, "reset failed")

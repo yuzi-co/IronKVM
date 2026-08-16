@@ -77,7 +77,7 @@ export const Login = (): ReactElement => {
           <div className="flex flex-col items-center justify-center pb-4">
             <img
               id="logo"
-              src="/sipeed.ico"
+              src="/ironkvm.ico"
               alt="Sipeed"
               onClick={(evt) => {
                 evt.preventDefault();
