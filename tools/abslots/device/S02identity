@@ -1,41 +1,116 @@
 #!/bin/sh
 #
-# Bind /data/identity over /etc/kvm, so a slot switch keeps the device's
-# identity and no image ever contains it.
+# Carry a board's identity across a slot switch, so that images stay generic and
+# no image ever contains a device's secrets.
 #
-# /etc/kvm holds the bcrypt password, the TLS key and certificate, the picoclaw
-# internal token and the API keys. Build a slot from a base and all of it is
-# gone and the board returns as admin/admin. Bake it into the image and every
-# copy of that image carries one device's private key.
+# The first A/B flash lost three things, and all three were identity that does
+# not live in /etc/kvm:
 #
-# Runs after S01fs, which mounts /data, and before anything that reads the
-# config. NanoKVM-Server starts at S95.
+#   /etc/shadow                 the root password reverted to the factory one.
+#                               With /boot/usb.acm enabled that hands a root
+#                               prompt to the managed host over USB.
+#   /root/.ssh/authorized_keys  removed along with /root as "operator cruft",
+#                               so key login was impossible and only the
+#                               factory password worked.
+#   /data itself                not mounted, because S01fs named p3 directly
+#                               and p3 is root B in this layout.
 #
-# On a board where /data is missing or will not mount, this stands aside and
-# leaves the image's own /etc/kvm in place. That is the wrong identity, but a
-# recovery root that refuses to boot because a data partition is unreadable is
-# worse than one that comes up and says so.
+# Two directories, deliberately siblings rather than nested. The bind source has
+# to contain exactly what /etc/kvm should contain, so anything else stored
+# inside it would appear inside /etc/kvm.
+#
+#   /data/identity          bound over /etc/kvm
+#   /data/identity-system   shadow, passwd, authorized_keys, copied out
+#
+# shadow and authorized_keys are copied, not bound. passwd rewrites its file by
+# rename, which breaks a single-file bind mount, and a broken bind on
+# /etc/shadow is a board nobody can log into.
+#
+# Every path is a variable so tools/abslots/device/test-identity.sh can drive
+# this against a scratch tree. On the device nothing sets them.
 IDENTITY=${IDENTITY:-/data/identity}
+SYSDIR=${SYSDIR:-/data/identity-system}
 TARGET=${TARGET:-/etc/kvm}
+ETCDIR=${ETCDIR:-/etc}
+ROOTHOME=${ROOTHOME:-/root}
+
+data_mounted() {
+    [ -n "$DATA_MOUNTED" ] && { [ "$DATA_MOUNTED" = yes ]; return; }
+    grep -q ' /data ' /proc/mounts 2>/dev/null
+}
+
+# A stored shadow is only used when it is plausibly a shadow file with a root
+# entry. An empty or truncated one would lock the board out of every login it
+# has, and this script runs before anybody could notice.
+usable_shadow() {
+    [ -s "$1" ] || return 1
+    grep -q '^root:' "$1" || return 1
+    return 0
+}
 
 start() {
-    if ! grep -q ' /data ' /proc/mounts 2>/dev/null; then
-        echo "S02identity: /data is not mounted, keeping the image's $TARGET"
+    if ! data_mounted; then
+        echo "S02identity: /data is not mounted, keeping the image's identity"
         return 0
     fi
 
+    # First boot after a flash: seed from whatever the image carries, so the
+    # board has a working identity now and binds a real one next time.
     if [ ! -d "$IDENTITY" ]; then
-        # First boot after a flash: seed the directory from whatever the image
-        # carries, so the board has a working identity and the next boot binds
-        # a real one.
-        echo "S02identity: $IDENTITY is absent, seeding it from $TARGET"
+        echo "S02identity: seeding $IDENTITY from $TARGET"
         mkdir -p "$IDENTITY"
         cp -a "$TARGET/." "$IDENTITY/" 2>/dev/null
     fi
 
-    mount --bind "$IDENTITY" "$TARGET" \
-        && echo "S02identity: $IDENTITY bound over $TARGET" \
-        || echo "S02identity: bind failed, keeping the image's $TARGET"
+    if [ ! -d "$SYSDIR" ]; then
+        echo "S02identity: seeding $SYSDIR from the running system"
+        mkdir -p "$SYSDIR"
+        [ -f "$ETCDIR/shadow" ] && cp -a "$ETCDIR/shadow" "$SYSDIR/shadow"
+        [ -f "$ETCDIR/passwd" ] && cp -a "$ETCDIR/passwd" "$SYSDIR/passwd"
+        [ -f "$ROOTHOME/.ssh/authorized_keys" ] && \
+            cp -a "$ROOTHOME/.ssh/authorized_keys" "$SYSDIR/authorized_keys"
+    fi
+
+    if mount --bind "$IDENTITY" "$TARGET" 2>/dev/null; then
+        echo "S02identity: $IDENTITY bound over $TARGET"
+    else
+        echo "S02identity: bind failed, keeping the image's $TARGET"
+    fi
+
+    if usable_shadow "$SYSDIR/shadow"; then
+        cp "$SYSDIR/shadow" "$ETCDIR/shadow"
+        chmod 600 "$ETCDIR/shadow"
+        echo "S02identity: root password restored"
+    elif [ -e "$SYSDIR/shadow" ]; then
+        echo "S02identity: stored shadow is unusable, keeping the image's"
+    fi
+
+    if [ -f "$SYSDIR/passwd" ] && [ -s "$SYSDIR/passwd" ]; then
+        cp "$SYSDIR/passwd" "$ETCDIR/passwd"
+        chmod 644 "$ETCDIR/passwd"
+    fi
+
+    if [ -s "$SYSDIR/authorized_keys" ]; then
+        mkdir -p "$ROOTHOME/.ssh"
+        chmod 700 "$ROOTHOME/.ssh"
+        cp "$SYSDIR/authorized_keys" "$ROOTHOME/.ssh/authorized_keys"
+        chmod 600 "$ROOTHOME/.ssh/authorized_keys"
+        echo "S02identity: authorized_keys restored"
+    fi
+}
+
+# Capture the running system's identity back to /data. Called by
+# `slot identity save` after changing a password or adding a key, rather than on
+# shutdown: a write-back that only happens at shutdown is lost to the power cut
+# that this board's normal way of ending is.
+save() {
+    data_mounted || { echo "S02identity: /data is not mounted, nothing saved"; return 1; }
+    mkdir -p "$SYSDIR"
+    [ -f "$ETCDIR/shadow" ] && { cp "$ETCDIR/shadow" "$SYSDIR/shadow"; chmod 600 "$SYSDIR/shadow"; }
+    [ -f "$ETCDIR/passwd" ] && cp "$ETCDIR/passwd" "$SYSDIR/passwd"
+    [ -f "$ROOTHOME/.ssh/authorized_keys" ] && cp "$ROOTHOME/.ssh/authorized_keys" "$SYSDIR/authorized_keys"
+    sync
+    echo "S02identity: identity saved to $SYSDIR"
 }
 
 stop() {
@@ -45,7 +120,8 @@ stop() {
 
 case "$1" in
     start) start ;;
+    save)  save ;;
     stop)  stop ;;
     restart) stop; start ;;
-    *) echo "Usage: $0 {start|stop|restart}"; exit 1 ;;
+    *) echo "Usage: $0 {start|save|stop|restart}"; exit 1 ;;
 esac
