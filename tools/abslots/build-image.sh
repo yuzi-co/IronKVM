@@ -207,6 +207,26 @@ done < "$STAGE/m"
     && note "every added path is owned by root" OK \
     || note "$badown added path(s) are not owned by root" FAIL
 
+# The web UI has to be the fork's, because the fork's server answers a
+# different shape. /api/vm/device/virtual returns {enabled, active, cost} per
+# device here and a plain boolean upstream, and an object is truthy in
+# JavaScript, so the official UI drew the virtual disk and the virtual network
+# as permanently ON and read every click to turn them off as a request to turn
+# them on. The switches could not be moved.
+#
+# The first root A shipped exactly that pairing, because root.manifest added no
+# web at all and the official one arrived with the application tarball. Neither
+# half looks wrong on its own, which is why this is a gate and not a review
+# note. The string is an i18n key only the fork's UI has, and it survives
+# minification.
+if [ -d "$STAGE/tree/kvmapp" ]; then
+    if grep -rq 'settings\.device\.endpoints' "$STAGE/tree/kvmapp/server/web" 2>/dev/null; then
+        note "the web UI is the fork's build" OK
+    else
+        note "the web UI is not the fork's; its API shape differs from the server" FAIL
+    fi
+fi
+
 [ -e "$STAGE/tree/etc/kvm.disk0" ] \
     && note "/etc/kvm.disk0 is present" OK \
     || note "/etc/kvm.disk0 is missing, the first boot would reformat /data" FAIL
