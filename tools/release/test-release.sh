@@ -276,5 +276,24 @@ check "nothing outside publish() calls gh" \
     "$(grep -c '^[^#]*gh release' "$SCRIPT")" "1"
 
 echo
+echo "the release host image"
+
+# The image has to satisfy the preflight it will be run against. Reading the
+# tool list out of release.sh rather than repeating it here is the point: a tool
+# added to one and not the other is exactly the drift this catches, and gh was
+# already missing when the image was first written.
+if command -v docker > /dev/null 2>&1 \
+   && docker image inspect ironkvm-release-host > /dev/null 2>&1; then
+    want=$(sed -n 's/^NEED="\(.*\)"$/\1/p' "$SCRIPT" | head -1)
+    want="$want gh sfdisk mkfs.vfat mcopy mke2fs e2fsck zstd cpio mkimage"
+    absent=$(docker run --rm ironkvm-release-host sh -c \
+        "for t in $want; do command -v \$t > /dev/null 2>&1 || echo \$t; done" \
+        2>/dev/null | tr '\n' ' ' | sed 's/ *$//')
+    check "the image carries every tool a release needs" "$absent" ""
+else
+    echo "  skip  the image carries every tool a release needs (no image built)"
+fi
+
+echo
 echo "passed $pass, failed $fail"
 [ "$fail" -eq 0 ]
