@@ -15,7 +15,8 @@
 #   RELEASE_OUT        where artifacts are written    (default ./release-out)
 #   BASE_TAR           the pinned base rootfs tarball (default base/rootfs.tar.zst)
 #   BASE_BOOT          a directory holding /boot      (default base/boot)
-#   STOCK_BOOT_SD      the stock boot.sd to repack    (default base/boot.sd)
+#   STOCK_BOOT_SD      the stock boot.sd to repack    (default base/boot/boot.sd)
+#   OFFICIAL_APP       the pinned official application (default base/nanokvm_2.5.0.tar.gz)
 #   BASE_VERSION_FILE  the official version it is from (default base/version)
 #   REPO               the GitHub repository          (default yuzi-co/IronKVM)
 
@@ -38,7 +39,8 @@ OUT=${RELEASE_OUT:-./release-out}
 REPO=${REPO:-yuzi-co/IronKVM}
 BASE_TAR=${BASE_TAR:-base/rootfs.tar.zst}
 BASE_BOOT=${BASE_BOOT:-base/boot}
-STOCK_BOOT_SD=${STOCK_BOOT_SD:-base/boot.sd}
+STOCK_BOOT_SD=${STOCK_BOOT_SD:-base/boot/boot.sd}
+OFFICIAL_APP=${OFFICIAL_APP:-base/nanokvm_2.5.0.tar.gz}
 
 [ -n "$VERSION" ] || { echo "usage: release.sh [--dry-run|--verify-only] X.Y.Z" >&2; exit 1; }
 
@@ -117,10 +119,24 @@ git diff --quiet && git diff --cached --quiet || {
 git rev-parse "v$VERSION" > /dev/null 2>&1 && {
     echo "tag v$VERSION already exists" >&2; exit 1; }
 
-for f in "$BASE_TAR" "$STOCK_BOOT_SD"; do
+for f in "$BASE_TAR" "$STOCK_BOOT_SD" "$OFFICIAL_APP"; do
     [ -f "$f" ] || { echo "no such base input: $f" >&2; exit 1; }
 done
 [ -d "$BASE_BOOT" ] || { echo "no such boot directory: $BASE_BOOT" >&2; exit 1; }
+
+# Check the base against the pins the repository records, rather than trusting a
+# file name. tools/abslots/BASE.sha256 exists because the artefacts come from
+# Sipeed and one of them ships no checksum of its own, so the pin is the only
+# statement of which bytes a slot was ever built from. A base that drifts
+# produces an image nobody can reproduce and nobody would notice.
+echo "==> verifying the base against tools/abslots/BASE.sha256"
+for f in "$BASE_TAR" "$OFFICIAL_APP"; do
+    have=$(sha256sum "$f" | cut -d' ' -f1)
+    grep -q "^$have  " tools/abslots/BASE.sha256 || {
+        echo "$f is $have, which is not pinned in tools/abslots/BASE.sha256" >&2
+        exit 1; }
+    echo "    $(basename "$f") matches its pin"
+done
 
 mkdir -p "$OUT"
 STAGE=$(mktemp -d)
@@ -130,12 +146,35 @@ echo "==> building the web user interface"
 ( cd web && pnpm install --frozen-lockfile && pnpm build )
 
 echo "==> cross-compiling the server"
-make app DOCKER_TTY=
-# make app does not patch the RPATH, and a binary without it does not start on
-# the device.
+# The Makefile's own recipe, run directly. `make` is not installed on every host
+# that has Docker and the builder image, and this script must not need a fourth
+# tool to run one command. -buildvcs=false because Docker shows the bind mount as
+# root-owned, git then refuses the checkout as dubious, and Go stops.
+docker run -e UID="$(id -u)" -e GID="$(id -g)" -v "$PWD:/home/build/NanoKVM" --rm \
+    "${BUILDER_IMAGE:-nanokvm-builder-local-$(id -u)-$(id -g)}" /bin/bash -c \
+    "cd /home/build/NanoKVM/server && go mod tidy \
+     && CGO_ENABLED=1 GOOS=linux GOARCH=riscv64 CC=riscv64-unknown-linux-musl-gcc \
+        CGO_CFLAGS='-mcpu=c906fdv -march=rv64imafdcv0p7xthead -mcmodel=medany -mabi=lp64d' \
+        go build -buildvcs=false -ldflags '-s -w -X NanoKVM-Server/common/version.Build='"
+
+# The build does not patch the RPATH, and a binary without it does not start on
+# the device: the loader cannot find libkvm.so.
 docker run --rm -v "$PWD/server:/src" -w /src ubuntu:24.04 \
     sh -c 'apt-get update -qq && apt-get install -y -qq patchelf \
            && patchelf --add-rpath "\$ORIGIN/dl_lib" NanoKVM-Server'
+
+# The release binary carries no build stamp, the way a release does. The stamp
+# exists to identify a hand-built server; a released one is identified by the
+# version the updater writes.
+echo "==> unpacking the pinned official application"
+# root.manifest layers this under the fork's own kvmapp, because the base rootfs
+# carries 2.4.3 and the manifest's first add has to put the newer official tree
+# in place before the fork's files land on top of it.
+rm -rf official-kvmapp
+mkdir -p official-kvmapp
+tar xzf "$OFFICIAL_APP" -C official-kvmapp --strip-components=1
+[ -d official-kvmapp/server ] || {
+    echo "$OFFICIAL_APP did not unpack into the expected shape" >&2; exit 1; }
 
 echo "==> assembling the package"
 PAYLOAD="$STAGE/ironkvm_${VERSION}"
@@ -176,10 +215,16 @@ tar czf "$OUT/$PKG" -C "$STAGE" "ironkvm_${VERSION}"
 echo "==> building the slot filesystems"
 # build-image.sh takes five positional arguments and makes ONE ext4 root. The
 # sizes are the partition sizes from partition.sfdisk.
+#
+# The payload is the REPOSITORY ROOT, not the package staged above. root.manifest
+# names paths like official-kvmapp/, kvmapp/, server/NanoKVM-Server, web/dist and
+# tools/abslots/device/*, which only exist together here. Handing it the package
+# directory instead produces an image missing everything the manifest adds from
+# tools/, and the build reports success either way.
 tools/abslots/build-image.sh "$BASE_TAR" tools/abslots/manifest/root.manifest \
-    "$PAYLOAD" 2048 "$STAGE/root.img"
+    . 2048 "$STAGE/root.img"
 tools/abslots/build-image.sh "$BASE_TAR" tools/abslots/manifest/recovery.manifest \
-    "$PAYLOAD" 1024 "$STAGE/recovery.img"
+    . 1024 "$STAGE/recovery.img"
 
 echo "==> repacking the boot image"
 tools/abslots/repack-boot.sh "$STOCK_BOOT_SD" "$STAGE/bootbuild"
