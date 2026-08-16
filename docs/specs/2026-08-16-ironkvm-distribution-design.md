@@ -157,8 +157,11 @@ The release script does these steps:
 2. Build the web user interface with `pnpm build`.
 3. Cross-compile the server, then patch its RPATH to `$ORIGIN/dl_lib`.
 4. Assemble the payload, then produce `ironkvm_<version>.tar.gz`.
-5. Build the SD image with `tools/abslots/build-image.sh`, which runs its own
-   gates.
+5. Build the two slot filesystems with `tools/abslots/build-image.sh`, which runs
+   its own gates, then assemble them into a card with
+   `tools/abslots/build-card.sh`. The second script did not exist when this
+   design was written: `build-image.sh` produces one root filesystem, and the
+   slots in use had been written to a card partitioned by hand.
 6. Compute checksums, then write `latest.json`.
 7. Verify its own output: the tarball top directory matches the package name,
    and the sha512 in `latest.json` matches the artifact it names.
@@ -335,7 +338,7 @@ guard.
   documented as one.
 - `docs/CHANGES-FROM-OFFICIAL.md`. The real difference from the official
   firmware, grouped by security, reliability, performance and features, written
-  by hand from the 243 commits. A generated commit list is not a document that
+  by hand from the 254 commits. A generated commit list is not a document that
   anybody reads.
 - `CHANGELOG.md`, one section per release, generated from tags and then edited.
 - `README_ZH.md` and `README_JA.md` receive the identity header and the
