@@ -48,3 +48,5 @@ tools/opusbench/opusbench
 # by tools/abslots. It is published and checksummed by Sipeed, so it is fetched
 # rather than committed.
 official-kvmapp/
+base/
+release-out/
