@@ -236,6 +236,26 @@ safety feature, and it punishes an external fault.
 To escalate is to log to `/watchdog.log` in the image, `touch /boot/recovery`,
 `sync`, and `reboot -f`.
 
+Escalation has two destinations, and the watchdog chooses between them:
+
+| This boot | Escalation goes to | Why |
+| --- | --- | --- |
+| The trusted slot | Recovery | There is no better slot to fall back to. |
+| A slot on trial | The trusted slot | It was working minutes ago. |
+
+A trial that fails must not reach recovery. Recovery serves no video and no
+HID, so it costs the board its whole function, and its marker is sticky, so it
+costs the operator a second reboot to leave. The trusted slot is a better
+fallback and it is already armed: the initramfs deleted `slot.try` before the
+handover, so a plain `reboot -f` lands on it.
+
+No marker records that a boot is a trial, and none is necessary. The running
+slot is what is mounted on `/`, the trusted slot is `/boot/slot`, and a boot
+where those two differ is a trial. `slot status` reads both. If either reads
+blank, or the running slot is `unknown` or `recovery`, the watchdog takes the
+recovery branch: a watchdog that cannot tell where it is must not assume it has
+a good slot to fall back to.
+
 The watchdog probes a listener, not a process. `pidof sshd` passes on a board
 whose server died.
 
