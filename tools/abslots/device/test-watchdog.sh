@@ -107,6 +107,13 @@ rm -f "$WORK/boot/recovery" "$WORK/rebooted"
     ensure_boot_mounted() { return 0; }
     log() { echo "$*" >> "$LOG"; }
     reboot() { : > "$WORK/rebooted"; }
+    # A board that HAS slots. escalate now checks, because install.sh can put
+    # this watchdog on a board with stock partitioning where the marker means
+    # nothing. command -v finds a function, so this is enough to model one.
+    slot() { :; }
+    # Nothing to undo. The rollback is tried first now, and it must not stop
+    # the fall back to recovery when there is no update to blame.
+    restore_initd() { return 1; }
     . "$WORK/esc.sh"
     escalate
 ) >/dev/null 2>&1
@@ -122,6 +129,86 @@ rm -f "$WORK/boot/recovery" "$WORK/rebooted"
 [ -e "$WORK/rebooted" ] \
     && note "escalation reboots" OK \
     || note "escalation reboots" FAIL
+
+echo
+echo "===== an outstanding update is undone before recovery is used ====="
+
+# A board that cannot be reached right after an update is very probably broken
+# BY that update. Putting the previous boot scripts back costs one reboot and
+# keeps video and HID; recovery keeps neither and is sticky on purpose.
+#
+# This ordering is also what makes the rollback reachable at all. Without it the
+# boot counter could never reach its limit on a board with this watchdog: either
+# the board answers and the count clears, or it does not and recovery takes it
+# on the first boot.
+rm -f "$WORK/boot/recovery" "$WORK/rebooted" "$WORK/restored"
+
+(
+    BOOT="$WORK/boot"
+    LOG="$WORK/wd.log"
+    DEADLINE=1
+    export BOOT LOG DEADLINE
+    carrier_up() { return 1; }
+    address_up() { return 1; }
+    web_up()     { return 1; }
+    ssh_up()     { return 1; }
+    ensure_boot_mounted() { return 0; }
+    log() { echo "$*" >> "$LOG"; }
+    reboot() { : > "$WORK/rebooted"; }
+    slot() { :; }
+    clear_attempts() { :; }
+    restore_initd() { : > "$WORK/restored"; return 0; }
+    . "$WORK/esc.sh"
+    escalate
+) >/dev/null 2>&1
+
+[ -e "$WORK/restored" ] \
+    && note "an outstanding update is undone" OK \
+    || note "an outstanding update is undone" FAIL
+
+[ -e "$WORK/boot/recovery" ] \
+    && note "undoing an update does NOT also drop to recovery" FAIL \
+    || note "undoing an update does NOT also drop to recovery" OK
+
+[ -e "$WORK/rebooted" ] \
+    && note "undoing an update reboots" OK \
+    || note "undoing an update reboots" FAIL
+
+echo
+echo "===== a board with no recovery slot stands down instead of looping ====="
+
+# install.sh copies this watchdog out of an update package, so it can now run on
+# a board with stock partitioning. There the marker is an inert file and the
+# reboot repeats every DEADLINE seconds for ever, which stops anyone reaching
+# the board during boot. Standing down is the same answer the carrier check
+# gives to a fault the board cannot fix.
+rm -f "$WORK/boot/recovery" "$WORK/rebooted"
+
+(
+    BOOT="$WORK/boot"
+    LOG="$WORK/wd.log"
+    DEADLINE=1
+    export BOOT LOG DEADLINE
+    PATH=/nonexistent
+    carrier_up() { return 1; }
+    address_up() { return 1; }
+    web_up()     { return 1; }
+    ssh_up()     { return 1; }
+    ensure_boot_mounted() { return 0; }
+    log() { echo "$*" >> "$LOG"; }
+    reboot() { : > "$WORK/rebooted"; }
+    restore_initd() { return 1; }
+    . "$WORK/esc.sh"
+    escalate
+) >/dev/null 2>&1
+
+[ -e "$WORK/boot/recovery" ] \
+    && note "no slot tool means no recovery marker" FAIL \
+    || note "no slot tool means no recovery marker" OK
+
+[ -e "$WORK/rebooted" ] \
+    && note "no slot tool means no reboot loop" FAIL \
+    || note "no slot tool means no reboot loop" OK
 
 echo
 echo "===== a failed trial goes back to the trusted slot, not to recovery ====="
