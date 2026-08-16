@@ -226,7 +226,7 @@ echo "$VERSION" > "$PAYLOAD/version"
 # an update would install the scripts that can break a boot and leave out the
 # one that undoes them.
 for s in tools/abslots/device/S00awatchdog tools/service/S98supervise \
-         tools/oled/S97oled-nudge; do
+         tools/oled/S97oled-nudge tools/abslots/device/S02identity; do
     [ -f "$s" ] || { echo "missing boot script: $s" >&2; exit 1; }
     cp "$s" "$PAYLOAD/system/init.d/${s##*/}"
 done
@@ -235,6 +235,19 @@ done
 # an image and a tarball of the same release boot differently.
 for want in $(sed -n 's|^add .* /etc/init.d/\([^ ]*\).*|\1|p' \
               tools/abslots/manifest/root.manifest); do
+    # rcS is the one exception, and it is deliberate. Every S* script an update
+    # installs is covered by the watchdog, which puts the previous set back when
+    # the board cannot be reached. rcS is what RUNS the watchdog. A syntactically
+    # valid rcS that does the wrong thing means
+    # nothing would run at all, including the watchdog: no attempt would be
+    # counted, no marker would be set for the recovery slot, and the board would
+    # boot into silence for ever. install.sh checks syntax, not behaviour.
+    #
+    # The cost of holding it back is that a board updated by package rather than
+    # by image keeps the stock rcS and writes no /bootlog. The stock one still
+    # runs every S* file, so the watchdog, the slots and the identity carry-over
+    # all work. A diagnostic is worth less than the path that repairs the board.
+    [ "$want" = rcS ] && continue
     [ -f "$PAYLOAD/system/init.d/$want" ] || {
         echo "the image installs /etc/init.d/$want but the package does not carry it" >&2
         exit 1; }
