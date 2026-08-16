@@ -111,3 +111,66 @@ func TestParseLatestRejectsAnOversizedPackage(t *testing.T) {
 		t.Fatal("expected an oversized package to be rejected before downloading")
 	}
 }
+
+// A feed that hosts its manifest and its packages on different hosts has to name
+// the package outright. GitHub Pages is the right place for a few hundred bytes
+// of JSON and GitHub Releases is the right place for a 26 MB tarball, but a
+// release asset lives under a per-tag path that no fixed base URL can reach.
+func TestParseLatestUsesTheManifestURLWhenPresent(t *testing.T) {
+	body := []byte(fmt.Sprintf(
+		`{"manifest_version":2,"version":"1.0.0","name":"nanokvm_1.0.0.tar.gz",`+
+			`"url":%q,"sha512":%q,"size":100,"size_bytes":100,"unpacked_size_bytes":200}`,
+		"https://github.com/yuzi-co/IronKVM/releases/download/v1.0.0/nanokvm_1.0.0.tar.gz",
+		validSha512))
+
+	latest, err := parseLatest(body, baseURL)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	want := "https://github.com/yuzi-co/IronKVM/releases/download/v1.0.0/nanokvm_1.0.0.tar.gz"
+	if latest.Url != want {
+		t.Fatalf("download URL = %q, want %q", latest.Url, want)
+	}
+}
+
+// Without the field nothing changes for a feed that serves both from one
+// directory, which is every feed that exists today, including Sipeed's.
+func TestParseLatestJoinsTheBaseURLWhenTheManifestHasNoURL(t *testing.T) {
+	body := []byte(fmt.Sprintf(
+		`{"manifest_version":2,"version":"1.0.0","name":"nanokvm_1.0.0.tar.gz",`+
+			`"sha512":%q,"size":100,"size_bytes":100,"unpacked_size_bytes":200}`, validSha512))
+
+	latest, err := parseLatest(body, baseURL)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	if latest.Url != baseURL+"/nanokvm_1.0.0.tar.gz" {
+		t.Fatalf("download URL = %q, want the joined base URL", latest.Url)
+	}
+}
+
+// The package is written to the SD card the device boots from, and the manifest
+// is the only thing that says where it comes from. Plain HTTP would let anyone
+// on the path replace it, and the sha512 that would catch that comes from the
+// same document.
+func TestParseLatestRefusesANonHTTPSManifestURL(t *testing.T) {
+	for _, raw := range []string{
+		"http://example.com/nanokvm_1.0.0.tar.gz",
+		"ftp://example.com/nanokvm_1.0.0.tar.gz",
+		"/releases/nanokvm_1.0.0.tar.gz",
+		"nanokvm_1.0.0.tar.gz",
+		"file:///tmp/nanokvm_1.0.0.tar.gz",
+		"https:///nanokvm_1.0.0.tar.gz",
+	} {
+		body := []byte(fmt.Sprintf(
+			`{"manifest_version":2,"version":"1.0.0","name":"nanokvm_1.0.0.tar.gz",`+
+				`"url":%q,"sha512":%q,"size":100,"size_bytes":100,"unpacked_size_bytes":200}`,
+			raw, validSha512))
+
+		if _, err := parseLatest(body, baseURL); err == nil {
+			t.Fatalf("expected %q to be refused", raw)
+		}
+	}
+}
