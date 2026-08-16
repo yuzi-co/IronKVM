@@ -19,12 +19,20 @@
 # to contain exactly what /etc/kvm should contain, so anything else stored
 # inside it would appear inside /etc/kvm.
 #
-#   /data/identity          bound over /etc/kvm
-#   /data/identity-system   shadow, passwd, authorized_keys, copied out
+#   /data/identity                    bound over /etc/kvm
+#   /data/identity-system/root-ssh    bound over /root/.ssh
+#   /data/identity-system             shadow, passwd and the host keys, copied
 #
-# shadow and authorized_keys are copied, not bound. passwd rewrites its file by
-# rename, which breaks a single-file bind mount, and a broken bind on
-# /etc/shadow is a board nobody can log into.
+# What is bound and what is copied is decided by one rule: a DIRECTORY can be
+# bound, a single file cannot. passwd and every editor write by rename, and a
+# rename replaces a single-file bind, so a bound /etc/shadow would come apart
+# the first time the password changed, and a broken bind there is a board
+# nobody can log into. A rename inside a bound DIRECTORY stays inside it, which
+# is why /root/.ssh is bound and a key added later needs no further step.
+#
+# /etc/shadow is the one that cannot be bound and does change. The server
+# writes it back through `S02identity save` as soon as a password change
+# succeeds, so nothing depends on an operator remembering a command.
 #
 # Every path is a variable so tools/abslots/device/test-identity.sh can drive
 # this against a scratch tree. On the device nothing sets them.
@@ -34,6 +42,7 @@ TARGET=${TARGET:-/etc/kvm}
 ETCDIR=${ETCDIR:-/etc}
 ROOTHOME=${ROOTHOME:-/root}
 SSHDIR=${SSHDIR:-/etc/ssh}
+ROOTSSH=${ROOTSSH:-/data/identity-system/root-ssh}
 
 data_mounted() {
     [ -n "$DATA_MOUNTED" ] && { [ "$DATA_MOUNTED" = yes ]; return; }
@@ -103,6 +112,11 @@ start() {
         [ -f "$ROOTHOME/.ssh/authorized_keys" ] && \
             cp -a "$ROOTHOME/.ssh/authorized_keys" "$SYSDIR/authorized_keys"
         copy_host_keys "$SSHDIR" "$SYSDIR/ssh"
+        if [ -s "$ROOTHOME/.ssh/authorized_keys" ]; then
+            mkdir -p "$ROOTSSH"
+            cp "$ROOTHOME/.ssh/authorized_keys" "$ROOTSSH/authorized_keys"
+            chmod 600 "$ROOTSSH/authorized_keys" 2>/dev/null
+        fi
     fi
 
     if mount --bind "$IDENTITY" "$TARGET" 2>/dev/null; then
@@ -124,12 +138,31 @@ start() {
         chmod 644 "$ETCDIR/passwd"
     fi
 
-    if [ -s "$SYSDIR/authorized_keys" ]; then
-        mkdir -p "$ROOTHOME/.ssh"
-        chmod 700 "$ROOTHOME/.ssh"
-        cp "$SYSDIR/authorized_keys" "$ROOTHOME/.ssh/authorized_keys"
+    # /root/.ssh is a directory bind, not a copy, so a key added afterwards
+    # lands on /data with no command to remember. A single-file bind would not
+    # do: an editor and ssh-copy-id both write by rename, and the rename
+    # replaces the bind. Renaming INSIDE a bound directory stays inside it.
+    mkdir -p "$ROOTSSH"
+    chmod 700 "$ROOTSSH" 2>/dev/null
+
+    # Boards built before this change keep the key beside the shadow. Move it
+    # in, or the first boot after an upgrade has no key login.
+    if [ -s "$SYSDIR/authorized_keys" ] && [ ! -e "$ROOTSSH/authorized_keys" ]; then
+        cp "$SYSDIR/authorized_keys" "$ROOTSSH/authorized_keys"
+        chmod 600 "$ROOTSSH/authorized_keys" 2>/dev/null
+        echo "S02identity: migrated authorized_keys into $ROOTSSH"
+    fi
+
+    mkdir -p "$ROOTHOME/.ssh"
+    if mount --bind "$ROOTSSH" "$ROOTHOME/.ssh" 2>/dev/null; then
+        echo "S02identity: $ROOTSSH bound over $ROOTHOME/.ssh"
+    elif [ -s "$ROOTSSH/authorized_keys" ]; then
+        # Degrade to the old behaviour rather than to no key login at all.
+        # A copy that needs `slot identity save` beats a board you cannot
+        # reach with a key.
+        cp "$ROOTSSH/authorized_keys" "$ROOTHOME/.ssh/authorized_keys"
         chmod 600 "$ROOTHOME/.ssh/authorized_keys"
-        echo "S02identity: authorized_keys restored"
+        echo "S02identity: bind failed, authorized_keys copied instead"
     fi
 
     # Before S50sshd, so sshd finds the board's own keys and does not generate
@@ -148,13 +181,22 @@ save() {
     mkdir -p "$SYSDIR"
     [ -f "$ETCDIR/shadow" ] && { cp "$ETCDIR/shadow" "$SYSDIR/shadow"; chmod 600 "$SYSDIR/shadow"; }
     [ -f "$ETCDIR/passwd" ] && cp "$ETCDIR/passwd" "$SYSDIR/passwd"
-    [ -f "$ROOTHOME/.ssh/authorized_keys" ] && cp "$ROOTHOME/.ssh/authorized_keys" "$SYSDIR/authorized_keys"
+    # Only meaningful on the fallback path. When the bind is live this is a
+    # copy of a file onto itself, which cp declines, and that is fine.
+    if ! grep -q " $ROOTHOME/.ssh " /proc/mounts 2>/dev/null; then
+        mkdir -p "$ROOTSSH"
+        [ -f "$ROOTHOME/.ssh/authorized_keys" ] && {
+            cp "$ROOTHOME/.ssh/authorized_keys" "$ROOTSSH/authorized_keys"
+            chmod 600 "$ROOTSSH/authorized_keys" 2>/dev/null
+        }
+    fi
     copy_host_keys "$SSHDIR" "$SYSDIR/ssh"
     sync
     echo "S02identity: identity saved to $SYSDIR"
 }
 
 stop() {
+    grep -q " $ROOTHOME/.ssh " /proc/mounts 2>/dev/null && umount "$ROOTHOME/.ssh"
     grep -q " $TARGET " /proc/mounts 2>/dev/null && umount "$TARGET"
     return 0
 }
