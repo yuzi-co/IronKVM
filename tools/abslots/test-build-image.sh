@@ -155,6 +155,46 @@ else
 fi
 
 echo
+echo "===== the base's own boot path is owned by root ====="
+#
+# Sipeed's v1.4.3 rootfs ships /etc/init.d, its 24 scripts and /usr/sbin/tailscaled
+# owned by uid 1000, which is their build host's user and exists in no passwd
+# file on the board. Root ignores the mode when it executes them, so the board
+# boots and nothing looks wrong.
+#
+# It is still a writable-by-a-stranger boot path. The manifest already replaces
+# a third of the files in that directory, so this repository owns it either
+# way, and an owner that means nothing here should be root.
+#
+# Only /etc/init.d is corrected. The rest of the base keeps what Sipeed
+# shipped, because /etc/bind and /var/www are legitimately owned by named and
+# www-data, and a blanket chown would break exactly the cases that are right.
+
+if chown 1000:1000 "$WORK/ownprobe" 2>/dev/null \
+   && [ "$(find "$WORK/ownprobe" -user 1000 | wc -l)" -eq 1 ]; then
+    rm -rf "$WORK/base2"
+    cp -a "$WORK/base" "$WORK/base2"
+    chown -R 1000:1000 "$WORK/base2/etc/init.d"
+    ( cd "$WORK/base2" && tar --numeric-owner -cf - . | zstd -q -o "$WORK/base2.tar.zst" )
+
+    sh "$BUILD" "$WORK/base2.tar.zst" "$WORK/good.manifest" "$WORK/payload" 64 "$WORK/base2.img" \
+       > "$WORK/base2.log" 2>&1
+    if [ -f "$WORK/base2.img" ]; then
+        statline "$WORK/base2.img" /etc/init.d/S50sshd | grep -q 'User: 0 Group: 0' \
+            && note "a base script owned by uid 1000 becomes root-owned" OK \
+            || note "a base script stayed $(statline "$WORK/base2.img" /etc/init.d/S50sshd | grep -o 'User: [0-9]* Group: [0-9]*')" FAIL
+        statline "$WORK/base2.img" /etc/init.d | grep -q 'User: 0 Group: 0' \
+            && note "and the directory itself is root-owned" OK \
+            || note "the directory itself stayed $(statline "$WORK/base2.img" /etc/init.d | grep -o 'User: [0-9]* Group: [0-9]*')" FAIL
+    else
+        note "a base script owned by uid 1000 becomes root-owned" FAIL
+        sed 's/^/    /' "$WORK/base2.log" | tail -20
+    fi
+else
+    note "the base's boot path is owned by root (this host cannot chown)" SKIP
+fi
+
+echo
 echo "===== the gates refuse a bad build, and write nothing ====="
 
 # An ELF that is not executable is the 2026-08-16 fault itself. The init.d gate
