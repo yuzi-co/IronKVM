@@ -12,13 +12,20 @@
 #
 # The manifest has three verbs and the order they run in matters:
 #
-#   remove <path in the image>                    runs first
-#   add    <path in the payload> <path in image>  runs second
-#   touch  <path in the image>                    runs last
+#   remove <path in the image>                           runs first
+#   add    <path in the payload> <path in image> [mode]  runs second
+#   touch  <path in the image>                           runs last
 #
 # remove before add, so a manifest can replace a directory by removing it and
 # adding a new one. touch last, because a marker may live inside a directory
 # that add created.
+#
+# The optional mode on add is not decoration. The payload is a copy of a
+# Windows checkout on a Linux build host, so its modes and its ownership
+# describe the copy and not the image. On 2026-08-16 that shipped a root A with
+# /kvmapp/server/NanoKVM-Server at 0644: a slot that boots and then cannot
+# start its own server. Declare the mode for anything that must be executable,
+# and the builder writes root ownership on every added path itself.
 #
 # The remove list is the half that matters. cp adds and overwrites and never
 # deletes, so a file the base has and the fork does not will survive into every
@@ -49,13 +56,13 @@ echo
 echo "############ 2. apply the manifest"
 grep -v '^[[:space:]]*#' "$MANIFEST" | grep -v '^[[:space:]]*$' > "$STAGE/m" || true
 
-while read -r verb a b; do
+while read -r verb a b c; do
     [ "$verb" = remove ] || continue
     rm -rf "$STAGE/tree${a}"
     echo "  remove  $a"
 done < "$STAGE/m"
 
-while read -r verb a b; do
+while read -r verb a b c; do
     [ "$verb" = add ] || continue
     if [ ! -e "$PAYLOAD/$a" ]; then
         echo "  add     $a -> MISSING in $PAYLOAD"
@@ -71,10 +78,23 @@ while read -r verb a b; do
         */*/) cp -a "$PAYLOAD/${a%/}/." "$STAGE/tree${b}" ;;
         *)    rm -rf "$STAGE/tree${b}"; cp -a "$PAYLOAD/$a" "$STAGE/tree${b}" ;;
     esac
-    echo "  add     $a -> $b"
+    # The image is a root filesystem. Nothing added to it belongs to the person
+    # who ran the build, and a uid that only exists on the build host is one
+    # more thing that reads as correct until sshd applies StrictModes to it.
+    chown -R 0:0 "$STAGE/tree${b}" 2>/dev/null || true
+    if [ -n "$c" ]; then
+        if [ -d "$STAGE/tree${b}" ]; then
+            chmod -R "$c" "$STAGE/tree${b}"
+        else
+            chmod "$c" "$STAGE/tree${b}"
+        fi
+        echo "  add     $a -> $b (mode $c)"
+    else
+        echo "  add     $a -> $b"
+    fi
 done < "$STAGE/m"
 
-while read -r verb a b; do
+while read -r verb a b c; do
     [ "$verb" = touch ] || continue
     mkdir -p "$(dirname "$STAGE/tree${a}")"
     : > "$STAGE/tree${a}"
@@ -110,6 +130,7 @@ echo
 echo "############ 5. gates"
 fail=0
 note() { printf '  %-58s %s\n' "$1" "$2"; [ "$2" = FAIL ] && fail=1; return 0; }
+ELFMAGIC=7f454c46
 
 crlf=0
 if [ -d "$STAGE/tree/etc/init.d" ]; then
@@ -135,6 +156,39 @@ for f in "$STAGE/tree/etc/init.d"/*; do
 done
 [ "$badsyntax" -eq 0 ] && note "sh -n accepts every init script" OK || note "$badsyntax script(s) fail sh -n" FAIL
 
+# An executable that is not executable. The init.d gate above cannot see this
+# one, because the server binary is not an init script, and that is exactly how
+# a root A shipped on 2026-08-16 with /kvmapp/server/NanoKVM-Server at 0644.
+# Reading four bytes needs no `file` and no assumption about where binaries
+# live: anything with the ELF magic is meant to be run.
+badelf=0
+find "$STAGE/tree" -type f ! -perm -u+x -print > "$STAGE/nonexec" 2>/dev/null || true
+while IFS= read -r f; do
+    # Three kinds of ELF are read and not run, and all three are correct at
+    # 0644: a shared library that ld.so maps, a kernel module that insmod
+    # reads, and an object file. Only a program is wrong at 0644.
+    case "$f" in *.so|*.so.*|*.ko|*.o|*.a) continue ;; esac
+    [ "$(dd if="$f" bs=4 count=1 2>/dev/null | od -An -tx1 | tr -d ' \n')" = "$ELFMAGIC" ] || continue
+    badelf=$((badelf + 1))
+    echo "      not executable: ${f#$STAGE/tree}"
+done < "$STAGE/nonexec"
+[ "$badelf" -eq 0 ] \
+    && note "every ELF file is executable" OK \
+    || note "$badelf ELF file(s) are not executable; declare a mode" FAIL
+
+# Ownership on the paths the manifest added. The base keeps whatever Sipeed
+# shipped; everything this repository puts in belongs to root.
+badown=0
+while read -r verb a b c; do
+    [ "$verb" = add ] || continue
+    [ -e "$STAGE/tree${b}" ] || continue
+    n=$(find "$STAGE/tree${b}" \( ! -user 0 -o ! -group 0 \) -print 2>/dev/null | wc -l)
+    [ "$n" -gt 0 ] && { badown=$((badown + n)); echo "      not root-owned: $b ($n)"; }
+done < "$STAGE/m"
+[ "$badown" -eq 0 ] \
+    && note "every added path is owned by root" OK \
+    || note "$badown added path(s) are not owned by root" FAIL
+
 [ -e "$STAGE/tree/etc/kvm.disk0" ] \
     && note "/etc/kvm.disk0 is present" OK \
     || note "/etc/kvm.disk0 is missing, the first boot would reformat /data" FAIL
@@ -147,7 +201,7 @@ done
     && note "no /swapfile" FAIL \
     || note "no /swapfile" OK
 
-while read -r verb a b; do
+while read -r verb a b c; do
     [ "$verb" = remove ] || continue
     [ -e "$STAGE/tree${a}" ] && note "removed: $a" FAIL || note "removed: $a" OK
 done < "$STAGE/m"
