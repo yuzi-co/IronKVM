@@ -33,6 +33,7 @@ func (s *Service) GetInfo(c *gin.Context) {
 		Mdns:        getMdns(),
 		Image:       getImageVersion(),
 		Application: getApplicationVersion(),
+		Base:        getBaseVersion(),
 		DeviceKey:   getDeviceKey(),
 	}
 
@@ -95,6 +96,30 @@ func getImageVersion() string {
 
 // applicationVersionFile is written by the updater. Tests point it elsewhere.
 var applicationVersionFile = "/kvmapp/version"
+
+// baseVersionFile records the official firmware version this build started
+// from. The release script writes it. Tests point it elsewhere.
+var baseVersionFile = "/kvmapp/base-version"
+
+// getBaseVersion reports the upstream version this build started from, or an
+// empty string on an image that carries no such record.
+//
+// It travels beside the version rather than inside it. Semver ignores build
+// metadata, so 2.4.3+iron.5 compares equal to 2.4.3, and a prerelease suffix
+// sorts below the release it was built from. Either would break the comparison
+// the update page performs with semver.gte, and the second would leave that
+// page advertising an upgrade for ever.
+//
+// It is not decorated with the build stamp. The stamp describes this binary;
+// this value names somebody else's release.
+func getBaseVersion() string {
+	content, err := os.ReadFile(baseVersionFile)
+	if err != nil {
+		return ""
+	}
+
+	return strings.TrimSpace(string(content))
+}
 
 func getApplicationVersion() string {
 	version := "1.0.0"
