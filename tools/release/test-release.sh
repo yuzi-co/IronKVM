@@ -128,6 +128,22 @@ check "the payload picks up the boot scripts that live outside kvmapp" \
 check "the payload is checked against the image manifest" \
     "$(grep -c 'the image installs /etc/init.d' "$SCRIPT")" "1"
 
+# The identity script is the reason a slot switch does not revert the root
+# password to the factory one. An update that ships the fork's boot scripts and
+# omits this one is the exact failure it was written to stop.
+check "the identity script travels with the package" \
+    "$(grep -c 'tools/abslots/device/S02identity' "$SCRIPT")" "1"
+
+# rcS is the single exception, and it has to stay a named one. Every S* script
+# is protected by the watchdog; rcS is what STARTS the watchdog, so a valid but
+# broken rcS installed by an update leaves a board with no repair path and no
+# recovery marker. The exception is only defensible while the reason is written
+# down beside it.
+check "rcS is held back from the package" \
+    "$(grep -c '\[ "\$want" = rcS \] && continue' "$SCRIPT")" "1"
+check "the reason rcS is held back is recorded" \
+    "$(grep -c 'nothing would run at all, including the watchdog' "$SCRIPT")" "1"
+
 # Every script the manifest installs must exist where the release script expects
 # to find it. This is the check that catches a script being moved or renamed.
 missing=0
