@@ -14,16 +14,14 @@
 #                                login was impossible
 #   /data itself                 unmounted, because S01fs hardcoded p3
 #
-# Two directories on /data, deliberately siblings rather than nested. The bind
-# source has to contain exactly what /etc/kvm should contain, so anything else
-# would show up inside /etc/kvm.
+# A directory can be bound, a single file cannot: passwd and every editor write
+# by rename, and a rename replaces a single-file bind. So /etc/kvm and
+# /root/.ssh are bound and change themselves, while /etc/shadow is copied and
+# the server writes it back the moment a password change succeeds.
 #
-#   /data/identity          bound over /etc/kvm
-#   /data/identity-system   shadow, passwd, authorized_keys, copied out
-#
-# shadow and authorized_keys are copied rather than bound. passwd rewrites its
-# file by rename, which breaks a single-file bind mount, and a broken bind on
-# /etc/shadow is a board nobody can log into.
+#   /data/identity                    bound over /etc/kvm
+#   /data/identity-system/root-ssh    bound over /root/.ssh
+#   /data/identity-system             shadow, passwd and the host keys, copied
 S02=${1:-$(dirname "$0")/S02identity}
 [ -f "$S02" ] || { echo "usage: test-identity.sh <S02identity>"; exit 1; }
 
@@ -34,12 +32,20 @@ WORK=$(mktemp -d)
 # test, its own `rm -rf` fails with EBUSY, and the build host collects a mount
 # per run. On Windows the bind always fails, so this was invisible there and
 # every local run looked clean.
-unbind() {
+unbind_one() {
     i=0
-    while grep -q " $WORK/root/etc/kvm " /proc/mounts 2>/dev/null && [ "$i" -lt 32 ]; do
-        umount "$WORK/root/etc/kvm" 2>/dev/null || break
+    while grep -q " $1 " /proc/mounts 2>/dev/null && [ "$i" -lt 32 ]; do
+        umount "$1" 2>/dev/null || break
         i=$((i + 1))
     done
+}
+
+# Both bind targets. S02identity binds /etc/kvm and /root/.ssh, and a helper
+# that only knew about the first would leak the second exactly the way this
+# whole helper exists to prevent.
+unbind() {
+    unbind_one "$WORK/root/root/.ssh"
+    unbind_one "$WORK/root/etc/kvm"
 }
 trap 'unbind; rm -rf "$WORK"' EXIT
 
@@ -66,8 +72,9 @@ run() {
         ETCDIR="$WORK/root/etc"
         ROOTHOME="$WORK/root/root"
         SSHDIR="$WORK/root/etc/ssh"
+        ROOTSSH="$WORK/data/identity-system/root-ssh"
         DATA_MOUNTED="$1"
-        export IDENTITY SYSDIR TARGET ETCDIR ROOTHOME SSHDIR DATA_MOUNTED
+        export IDENTITY SYSDIR TARGET ETCDIR ROOTHOME SSHDIR ROOTSSH DATA_MOUNTED
         sh "$S02" "${2:-start}"
     ) 2>&1
 }
@@ -115,6 +122,60 @@ if [ "$(ls -l "$WORK/permprobe" | cut -c1-10)" = "-rw-------" ]; then
 else
     note "authorized_keys is 0600 (this filesystem ignores chmod)" SKIP
 fi
+
+echo
+echo "===== /root/.ssh is a directory bind, so a key edit needs no command ====="
+#
+# authorized_keys used to be copied out of /data at boot and copied back only by
+# `slot identity save`. A command an operator has to remember after editing a
+# file is not a mechanism: they do not, nothing tells them it was needed, and
+# the next slot switch silently restores the old file.
+#
+# A single-file bind is not the answer, because an editor writes by rename and
+# the rename replaces the bind. A DIRECTORY bind survives that: the rename
+# happens inside the bound directory, so it lands on /data either way.
+
+setup
+mkdir -p "$WORK/data/identity" "$WORK/data/identity-system/root-ssh"
+printf 'ssh-ed25519 AAAA bound\n' > "$WORK/data/identity-system/root-ssh/authorized_keys"
+run yes > "$WORK/logb1"
+
+grep -q bound "$WORK/root/root/.ssh/authorized_keys" 2>/dev/null \
+    && note "the stored key is visible under /root/.ssh" OK \
+    || note "the stored key is visible under /root/.ssh" FAIL
+
+# The real proof, and it only runs where a bind mount works. Write through
+# /root/.ssh the way ssh-copy-id would, and it has to appear on /data with no
+# further step.
+if grep -q " $WORK/root/root/.ssh " /proc/mounts 2>/dev/null; then
+    printf 'ssh-ed25519 AAAA added-later\n' >> "$WORK/root/root/.ssh/authorized_keys"
+    grep -q added-later "$WORK/data/identity-system/root-ssh/authorized_keys" \
+        && note "a key added afterwards lands on /data by itself" OK \
+        || note "a key added afterwards did not reach /data" FAIL
+
+    # An editor writes by rename. That is what breaks a single-file bind.
+    printf 'ssh-ed25519 AAAA renamed-in\n' > "$WORK/root/root/.ssh/.tmpkey"
+    mv "$WORK/root/root/.ssh/.tmpkey" "$WORK/root/root/.ssh/authorized_keys"
+    grep -q renamed-in "$WORK/data/identity-system/root-ssh/authorized_keys" \
+        && note "and so does a file replaced by rename" OK \
+        || note "a rename broke the link to /data" FAIL
+else
+    note "a key added afterwards lands on /data (no bind mount here)" SKIP
+    note "and so does a file replaced by rename (no bind mount here)" SKIP
+fi
+
+# Boards built before this change keep their key beside the shadow. It has to
+# come across, or the first boot after an upgrade loses key login.
+setup
+mkdir -p "$WORK/data/identity" "$WORK/data/identity-system"
+printf 'ssh-ed25519 AAAA legacy\n' > "$WORK/data/identity-system/authorized_keys"
+run yes > "$WORK/logb2"
+grep -q legacy "$WORK/data/identity-system/root-ssh/authorized_keys" 2>/dev/null \
+    && note "a legacy authorized_keys is migrated into root-ssh" OK \
+    || note "a legacy authorized_keys is not migrated, so key login is lost" FAIL
+grep -q legacy "$WORK/root/root/.ssh/authorized_keys" 2>/dev/null \
+    && note "and it is still readable at /root/.ssh" OK \
+    || note "and it is still readable at /root/.ssh" FAIL
 
 echo
 echo "===== the ssh host key is identity too ====="
