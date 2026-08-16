@@ -124,6 +124,103 @@ rm -f "$WORK/boot/recovery" "$WORK/rebooted"
     || note "escalation reboots" FAIL
 
 echo
+echo "===== a failed trial goes back to the trusted slot, not to recovery ====="
+#
+# Recovery is the fallback for a TRUSTED slot that failed. A trial has a better
+# one: the slot that was working minutes ago. The initramfs already deleted
+# slot.try before handing over, so a plain reboot lands on the trusted slot.
+#
+# Sending a failed trial to recovery instead costs the board its whole KVM
+# function, since recovery serves no video and no HID, and it costs the
+# operator a second reboot to leave a marker that is sticky on purpose.
+#
+# No new marker is needed to tell the two apart. A boot whose running slot is
+# not the trusted slot is a trial, and both halves of that are already on disk.
+
+sed -n '/^# --- trial boot ---/,/^# --- end trial boot ---/p' "$WD" > "$WORK/trial.sh"
+if [ ! -s "$WORK/trial.sh" ]; then
+    note "the trial-boot block can be extracted" FAIL
+else
+    note "the trial-boot block can be extracted" OK
+fi
+
+# escalate_with <running> <trusted>  -- returns the marker state it left
+escalate_with() {
+    rm -rf "$WORK/e"; mkdir -p "$WORK/e/boot"
+    printf '%s\n' "$2" > "$WORK/e/boot/slot"
+    (
+        BOOT="$WORK/e/boot"
+        LOG="$WORK/e/wd.log"
+        RUNNING=$1 TRUSTED=$2
+        export BOOT LOG RUNNING TRUSTED
+        carrier_up() { return 1; }
+        address_up() { return 1; }
+        web_up()     { return 1; }
+        ssh_up()     { return 1; }
+        ensure_boot_mounted() { return 0; }
+        log() { echo "$*" >> "$LOG"; }
+        reboot() { : > "$WORK/e/rebooted"; }
+        # The one external fact the block reads. `slot status` prints a
+        # two-column table, and this is that table.
+        slot() {
+            [ "$1" = status ] || return 1
+            printf 'running    %s\ntrusted    %s\n' "$RUNNING" "$TRUSTED"
+        }
+        . "$WORK/trial.sh"
+        . "$WORK/esc.sh"
+        escalate
+    ) >/dev/null 2>&1
+    [ -e "$WORK/e/boot/recovery" ] && echo recovery || echo reboot
+}
+
+[ "$(escalate_with b a)" = reboot ] \
+    && note "a trial of b with a trusted returns to a" OK \
+    || note "a trial of b with a trusted went to recovery" FAIL
+
+[ "$(escalate_with a b)" = reboot ] \
+    && note "a trial of a with b trusted returns to b" OK \
+    || note "a trial of a with b trusted went to recovery" FAIL
+
+# The trusted slot failing is the case recovery exists for.
+[ "$(escalate_with a a)" = recovery ] \
+    && note "the trusted slot failing still goes to recovery" OK \
+    || note "the trusted slot failing no longer goes to recovery" FAIL
+
+# And anything this cannot read must take the safe branch. A watchdog that
+# cannot tell where it is must not assume it has a good slot to fall back to.
+[ "$(escalate_with unknown a)" = recovery ] \
+    && note "an unreadable running slot takes the safe branch" OK \
+    || note "an unreadable running slot skipped recovery" FAIL
+
+[ "$(escalate_with '' '')" = recovery ] \
+    && note "an unreadable status takes the safe branch" OK \
+    || note "an unreadable status skipped recovery" FAIL
+
+# Half an answer is not an answer. "running is blank, trusted is a" differs as
+# a string comparison and would read as a trial, which is the one way this
+# could skip recovery on a board it knows nothing about.
+[ "$(escalate_with '' a)" = recovery ] \
+    && note "a blank running slot takes the safe branch" OK \
+    || note "a blank running slot read as a trial" FAIL
+
+[ "$(escalate_with b '')" = recovery ] \
+    && note "a blank trusted slot takes the safe branch" OK \
+    || note "a blank trusted slot read as a trial" FAIL
+
+# Recovery carries no watchdog, so this cannot happen; it costs one line to
+# make sure it stays that way if one is ever added.
+[ "$(escalate_with recovery a)" = recovery ] \
+    && note "recovery is never treated as a trial" OK \
+    || note "recovery was treated as a trial" FAIL
+
+# Either way the board must reboot. A watchdog that decides and then does
+# nothing is the dead board it exists to prevent.
+escalate_with b a >/dev/null
+[ -e "$WORK/e/rebooted" ] \
+    && note "a failed trial still reboots" OK \
+    || note "a failed trial decided and then sat there" FAIL
+
+echo
 echo "===== a healthy trial is confirmed without anyone remembering to ====="
 
 grep -q 'slot confirm' "$WD" \
