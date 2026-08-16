@@ -136,6 +136,27 @@ for want in $(sed -n 's|^add \([^ ]*\) /etc/init.d/.*|\1|p' "$HERE/../abslots/ma
 done
 check "every boot script the manifest names exists" "$missing" "0"
 
+# root.manifest names paths that only exist together at the repository root:
+# official-kvmapp/, kvmapp/, server/NanoKVM-Server, web/dist, tools/abslots/...
+# Handing build-image.sh the staged package instead produces an image missing
+# everything the manifest adds from tools/, and the build reports success.
+check "the image is built from the repository root, not the package" \
+    "$(grep -cE '^ +\. [0-9]+ "\$STAGE/(root|recovery)\.img"' "$SCRIPT")" "2"
+
+# The manifest layers the official 2.5.0 tree under the fork's own, because the
+# base rootfs carries 2.4.3. Without it the image ships an older application.
+check "the official application is unpacked for the manifest" \
+    "$(grep -q 'tar xzf "$OFFICIAL_APP" -C official-kvmapp' "$SCRIPT" && echo yes || echo no)" "yes"
+
+# The base is Sipeed's, and the system image ships no checksum of its own, so the
+# pin in BASE.sha256 is the only statement of which bytes an image came from.
+check "the base is verified against the recorded pins" \
+    "$(grep -q 'which is not pinned in tools/abslots/BASE.sha256' "$SCRIPT" && echo yes || echo no)" "yes"
+
+# make is not installed on every host that has Docker and the builder image.
+check "the build does not depend on make" \
+    "$(grep -c '^make ' "$SCRIPT")" "0"
+
 # Dry run is what makes the rest of this script testable at all, so it is the
 # guard worth asserting hardest.
 check "publishing is guarded by the dry-run flag" \

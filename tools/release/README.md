@@ -23,18 +23,49 @@ move to CI later.
 | `gh`, authenticated | Creates the release. |
 | A `base/` directory | See below. |
 
-The `base/` directory holds the pinned Sipeed inputs. It is not in the
-repository, because it is Sipeed's build and it is large.
+## The base
+
+`base/` holds the pinned Sipeed inputs. It is gitignored: the files are Sipeed's
+and they total about 280 MB.
 
 ```
-base/rootfs.tar.zst   the base root filesystem
-base/boot/            the contents of the base /boot partition
-base/boot.sd          the stock boot.sd, repacked by the release
-base/version          the official version these came from
+base/rootfs.tar.zst        251 MB  the base root filesystem, from p2 of the official image
+base/nanokvm_2.5.0.tar.gz   16 MB  the official application, layered under the fork's own
+base/boot/                  12 MB  the official /boot, including boot.sd and fip.bin
+base/version                        the official application version these came from
 ```
 
 `base/version` becomes `/kvmapp/base-version` on the device, and the About panel
-reads it to show `IronKVM 1.0.0 (based on NanoKVM <base>)`.
+reads it to show `IronKVM 1.0.0 (based on NanoKVM 2.5.0)`.
+
+The release script verifies `rootfs.tar.zst` and the application against
+`tools/abslots/BASE.sha256` and refuses to build from anything unpinned. That
+file is the only record of which bytes an image was built from: the official
+system image ships no checksum of its own, so its hash is a pin rather than a
+verification.
+
+### Rebuilding base/ from the official image
+
+The rootfs comes from partition 2 of the official card image and the boot
+directory from partition 1.
+
+```shell
+# p1, the boot partition: 16 MiB at sector 1
+mount -o loop,offset=512,ro 20260610_NanoKVM_Rev1_4_3.img /mnt/p1
+cp -a /mnt/p1/. base/boot/
+umount /mnt/p1
+
+# p2, the root filesystem. Its offset comes from the image's own table.
+mount -o loop,offset=$((<p2_start> * 512)),ro 20260610_NanoKVM_Rev1_4_3.img /mnt/p2
+( cd /mnt/p2 && tar --numeric-owner -cf - . ) | zstd -q -o base/rootfs.tar.zst
+umount /mnt/p2
+
+sha256sum base/rootfs.tar.zst base/nanokvm_*.tar.gz   # must appear in BASE.sha256
+```
+
+Do not build the base from a running board. `tools/abslots/BASE.sha256` records
+why: the slot archived on 2026-08-15 is older than v1.4.3, and building from a
+board is how a factory `/etc/kvm/ssh_stop` and a CRLF init script reached a slot.
 
 ## Running it
 
