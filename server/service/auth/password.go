@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"io"
 	"os"
 	"os/exec"
@@ -17,6 +18,14 @@ import (
 )
 
 var systemPasswordUpdater = changeRootPassword
+
+// saveIdentity is a variable so a test can stand in for the write-back.
+var saveIdentity = writeBackIdentity
+
+// identityScript carries the board's identity between slots. It is absent on an
+// upstream image, and on a board that has one this is the only thing that makes
+// a password change outlive the slot it was set on.
+const identityScript = "/etc/init.d/S02identity"
 
 func (s *Service) ChangePassword(c *gin.Context) {
 	var req proto.ChangePasswordReq
@@ -49,6 +58,20 @@ func (s *Service) ChangePassword(c *gin.Context) {
 
 	middleware.RevokeUserSessions(principal.Username)
 	clearSessionCookie(c)
+
+	// Persist it beyond this slot. /etc/shadow lives in the slot's own root
+	// filesystem and S02identity restores it from /data at every boot, so
+	// without this a password change is undone by the next reboot and lost
+	// outright by a slot switch.
+	//
+	// A failure here does not fail the request. The password is already
+	// written, and the store has already revoked the sessions that knew the old
+	// one, so refusing cannot undo either. A copy that is one boot stale is the
+	// better of the two outcomes, and changing the password again repairs it.
+	if err := saveIdentity(); err != nil {
+		log.Warnf("password changed but the identity write-back failed: %s", err)
+	}
+
 	rsp.OkRsp(c)
 	log.Infof("password changed for user: %s", principal.Username)
 }
@@ -92,6 +115,22 @@ func changeUserPassword(username, encryptedPassword string) error {
 	}
 	_, err = authn.DefaultStore.SetPassword(username, password)
 	return err
+}
+
+// writeBackIdentity copies the credentials the board just changed to /data, so
+// the next boot of any slot restores them rather than the ones it replaced.
+//
+// A board without the script is an upstream image with no slot layout, where
+// there is nothing to write back to and nothing to lose. That is not an error.
+func writeBackIdentity() error {
+	if _, err := os.Stat(identityScript); err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil
+		}
+		return err
+	}
+
+	return exec.Command(identityScript, "save").Run()
 }
 
 func changeRootPassword(password string) error {
