@@ -17,8 +17,8 @@ changes and why.
 - A serial console for the managed host, off by default.
 - An update feed of its own, with the official Sipeed server kept as a one-click
   preset.
-- A boot-script rollback: an update that stops the board booting is undone after
-  three failed boots.
+- A boot-script rollback: an update that stops the board booting is undone by the
+  watchdog before it falls back to recovery.
 - zram, an HTTP proxy setting, API keys, and a build stamp that identifies the
   running binary.
 - `tools/release/release.sh`, which builds, verifies and publishes a release, and
