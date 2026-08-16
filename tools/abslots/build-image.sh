@@ -166,6 +166,24 @@ for f in "$STAGE/tree/etc/init.d"/S*; do
 done
 [ "$badmode" -eq 0 ] && note "every S* script is executable" OK || note "$badmode S* script(s) are not executable" FAIL
 
+# rcS runs every file in /etc/init.d whose name starts with S, so a backup left
+# beside a script is not a backup, it is a second script that runs at every
+# boot. On 2026-08-16 a board carried /etc/init.d/S02identity.rollback, an older
+# identity script that ran after the current one and bound /etc/kvm a second
+# time. It was found only because the mount count looked wrong.
+stray=0
+for f in "$STAGE/tree/etc/init.d"/*; do
+    [ -e "$f" ] || continue
+    case "${f##*/}" in
+        *.rollback|*.bak|*.orig|*.old|*.save|*~|*.dpkg-*|*.rpm*)
+            stray=$((stray + 1))
+            echo "      stray file in init.d: ${f##*/}" ;;
+    esac
+done
+[ "$stray" -eq 0 ] \
+    && note "no backup files in /etc/init.d" OK \
+    || note "$stray backup file(s) in /etc/init.d would run at boot" FAIL
+
 badsyntax=0
 for f in "$STAGE/tree/etc/init.d"/*; do
     [ -f "$f" ] || continue
