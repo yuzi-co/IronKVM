@@ -199,6 +199,17 @@ check "the builder image is checked, not assumed" \
 check "a dry run does not demand gh" \
     "$(grep -q 'DRY_RUN" = "1" \] || NEED="\$NEED gh"' "$SCRIPT" && echo yes || echo no)" "yes"
 
+# The builder image bakes the ownership of its home directory in at build time.
+# A host whose own id differs from it runs the build as a user that cannot write
+# $HOME, and go stops at the module cache. The identity must therefore be
+# overridable separately from whatever id the host reports.
+check "the build identity can be overridden" \
+    "$(grep -c '^BUILD_UID=\${BUILD_UID:-\$(id -u)}' "$SCRIPT")" "1"
+check "the builder image name follows the build identity" \
+    "$(grep -c 'nanokvm-builder-local-\${BUILD_UID}-\${BUILD_GID}' "$SCRIPT")" "1"
+check "the host id does not reach the builder directly" \
+    "$(grep -c 'e UID="\$(id -u)"' "$SCRIPT")" "0"
+
 # Signing was designed in and dropped for 1.0. The checksums must not claim to
 # be more than they are, and nothing may reference a signature that is not made.
 check "no signature is produced" \
