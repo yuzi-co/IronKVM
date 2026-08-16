@@ -166,6 +166,25 @@ teardown
 # watcher below it waits up to five minutes, by which time every other script
 # has already run or hung.
 echo "S00awatchdog wiring"
+
+# The escalate path has to try the undo BEFORE the recovery marker. Without
+# that, the counter in start() can never reach its limit on a board that has
+# this watchdog: either the board is reachable and the count clears, or it is
+# not and recovery takes it on the first boot. The rollback would be dead code.
+check "escalate tries the rollback before recovery" \
+    "$(sed -n '/^escalate()/,/^}/p' "$WATCHDOG" | grep 'restore_initd\|: > "\$BOOT/recovery"' \
+       | head -1 | grep -c restore_initd)" "1"
+check "escalate still falls back to recovery" \
+    "$(sed -n '/^escalate()/,/^}/p' "$WATCHDOG" | grep -c ': > "\$BOOT/recovery"')" "1"
+check "the rollback reboot is guarded by the dry run" \
+    "$(sed -n '/^escalate()/,/^}/p' "$WATCHDOG" | grep -c 'would have restored')" "1"
+
+# install.sh can now put this watchdog on a board with stock partitioning, where
+# there is no recovery slot and the marker is an inert file. Rebooting there
+# every DEADLINE seconds for ever is worse than doing nothing.
+check "escalate checks for a recovery slot before using one" \
+    "$(sed -n '/^escalate()/,/^}/p' "$WATCHDOG" | grep 'command -v slot\|: > "\$BOOT/recovery"' \
+       | head -1 | grep -c 'command -v slot')" "1"
 check "start bumps the counter before the subshell" \
     "$(sed -n '/^start()/,/^    (/p' "$WATCHDOG" | grep -c 'bump_attempts')" "1"
 check "start restores when the limit is reached" \

@@ -54,8 +54,11 @@ This is the largest group, and the reason the fork exists.
   password change writes itself back with no command to remember.
 - **The server restarts when it dies.** Nothing supervised it before.
 - **A boot-script update can undo itself.** A package update that installs boot
-  scripts keeps what it replaced, and three boots with no success restores them
-  before the rest of the boot sequence runs.
+  scripts keeps what it replaced. If the board cannot be reached afterwards, the
+  watchdog puts them back and reboots, before it considers recovery: a board
+  that stops answering right after an update is very probably broken by that
+  update, and undoing it keeps video and HID that recovery does not. A counter
+  covers the case where the power is cut before the watchdog's deadline.
 - **HID survives a USB gadget rebuild.** Keyboard and mouse used to stop working
   until a reboot.
 - **The capture pipeline tears down in the right order.** The server waited on
