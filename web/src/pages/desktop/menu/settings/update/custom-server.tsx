@@ -5,7 +5,12 @@ import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/application.ts';
 
-const OFFICIAL_UPDATE_SERVER = 'https://cdn.sipeed.com/nanokvm';
+const OFFICIAL_UPDATE_SERVER = 'https://yuzi-co.github.io/IronKVM';
+
+// Kept as a preset so that leaving IronKVM stays one click. The shallow rename
+// exists for the same reason: an official package still installs through this
+// updater.
+const SIPEED_UPDATE_SERVER = 'https://cdn.sipeed.com/nanokvm';
 
 interface CustomServerProps {
   checkForUpdates: () => void;
@@ -196,6 +201,19 @@ export const CustomServer = ({
                 {t('settings.update.customServer.save')}
               </Button>
             </div>
+
+            <Button
+              className="self-start px-0"
+              type="link"
+              size="small"
+              disabled={isSaving || url.trim() === SIPEED_UPDATE_SERVER}
+              onClick={() => {
+                setUrl(SIPEED_UPDATE_SERVER);
+                setError('');
+              }}
+            >
+              {t('settings.update.customServer.useSipeed')}
+            </Button>
           </div>
         )}
       </div>

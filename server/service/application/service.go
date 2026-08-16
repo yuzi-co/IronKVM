@@ -1,7 +1,16 @@
 package application
 
 const (
-	StableURL  = "https://cdn.sipeed.com/nanokvm"
+	// StableURL is the IronKVM feed. It serves latest.json alone: the manifest
+	// names the package on GitHub Releases, because a release asset lives under
+	// a per-tag path that no fixed base URL can reach.
+	StableURL = "https://yuzi-co.github.io/IronKVM"
+
+	// SipeedURL is the official feed, kept so that leaving this firmware stays
+	// one click rather than a research project. The shallow rename exists for
+	// the same reason.
+	SipeedURL = "https://cdn.sipeed.com/nanokvm"
+
 	PreviewURL = "https://cdn.sipeed.com/nanokvm/preview"
 
 	CacheDir = "/root/.kvmcache"

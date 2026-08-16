@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="IronKVM">
+  <rect width="64" height="64" rx="12" fill="#1c1f24"/>
+  <path d="M20 16h24v6h-8v20h8v6H20v-6h8V22h-8z" fill="#cdd3da"/>
+  <rect x="14" y="47" width="36" height="3" rx="1.5" fill="#a33b2a"/>
+</svg>
