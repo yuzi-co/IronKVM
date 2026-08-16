@@ -119,6 +119,23 @@ sed -i 's|"size_bytes": [0-9]*|"size_bytes": 12345|' "$WORK/out/latest.json"
 check "a mismatched size_bytes fails the self-check" "$(verify)" "1"
 rm -rf "$WORK"
 
+# The image and the package must install the same boot scripts. Three of them
+# live in tools/ and the image manifest adds them from there, so a package built
+# from kvmapp/ alone would ship the scripts that can break a boot and leave out
+# the watchdog that undoes them.
+check "the payload picks up the boot scripts that live outside kvmapp" \
+    "$(grep -c 'tools/abslots/device/S00awatchdog tools/service/S98supervise' "$SCRIPT")" "1"
+check "the payload is checked against the image manifest" \
+    "$(grep -c 'the image installs /etc/init.d' "$SCRIPT")" "1"
+
+# Every script the manifest installs must exist where the release script expects
+# to find it. This is the check that catches a script being moved or renamed.
+missing=0
+for want in $(sed -n 's|^add \([^ ]*\) /etc/init.d/.*|\1|p' "$HERE/../abslots/manifest/root.manifest"); do
+    [ -f "$HERE/../../$want" ] || missing=$((missing + 1))
+done
+check "every boot script the manifest names exists" "$missing" "0"
+
 # Dry run is what makes the rest of this script testable at all, so it is the
 # guard worth asserting hardest.
 check "publishing is guarded by the dry-run flag" \
