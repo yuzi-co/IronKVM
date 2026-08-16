@@ -29,7 +29,14 @@ type Latest struct {
 	LegacySize        uint64 `json:"size"`
 	SizeBytes         uint64 `json:"size_bytes,omitempty"`
 	UnpackedSizeBytes uint64 `json:"unpacked_size_bytes,omitempty"`
-	Url               string `json:"-"`
+
+	// ManifestURL lets a feed serve its packages from a different host than the
+	// manifest. It is optional: without it the package is looked for beside the
+	// manifest, which is what every feed did before this field existed.
+	ManifestURL string `json:"url,omitempty"`
+
+	// Url is the resolved download location. It is never read from the document.
+	Url string `json:"-"`
 }
 
 const (
@@ -161,13 +168,45 @@ func parseLatest(body []byte, baseURL string) (*Latest, error) {
 		return nil, fmt.Errorf("package is too large")
 	}
 
-	joined, err := joinUpdateURL(baseURL, latest.Name)
+	resolved, err := resolveDownloadURL(latest.ManifestURL, baseURL, latest.Name)
 	if err != nil {
 		return nil, err
 	}
-	latest.Url = joined
+	latest.Url = resolved
 
 	return &latest, nil
+}
+
+// resolveDownloadURL decides where the package is fetched from.
+//
+// A manifest may name the package outright, which is what lets the manifest and
+// the package live on different hosts: a few hundred bytes of JSON and a 26 MB
+// tarball do not want the same kind of hosting, and a release asset lives under
+// a per-tag path that no fixed base URL can reach.
+//
+// It must be absolute and it must be https. The sha512 that would catch a
+// substituted package comes from this same document, so transport security is
+// the only thing between the device and whatever is on the path.
+//
+// Naming the package grants no trust the manifest did not already have. A
+// hostile feed could always serve any bytes it liked from its own directory.
+func resolveDownloadURL(manifestURL string, baseURL string, name string) (string, error) {
+	if manifestURL == "" {
+		return joinUpdateURL(baseURL, name)
+	}
+
+	parsed, err := url.Parse(manifestURL)
+	if err != nil {
+		return "", fmt.Errorf("invalid update package url: %w", err)
+	}
+	if parsed.Scheme != "https" {
+		return "", errors.New("update package url must use https")
+	}
+	if parsed.Host == "" {
+		return "", errors.New("update package url must be absolute")
+	}
+
+	return parsed.String(), nil
 }
 
 func joinUpdateURL(baseURL string, element string) (string, error) {
