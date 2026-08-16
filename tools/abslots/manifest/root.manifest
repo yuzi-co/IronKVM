@@ -25,6 +25,24 @@ add     kvmapp/                                   /kvmapp/
 # binary runs from tmpfs and every debug byte is pinned RAM on a 166MB board.
 add     server/NanoKVM-Server                     /kvmapp/server/NanoKVM-Server 0755
 
+# The fork's web UI, built with `pnpm build` in web/. This line was missing
+# from the first root A, and the image therefore paired the fork's server with
+# Sipeed's official 2.5.0 UI. The two disagree about the API:
+# /api/vm/device/virtual returns {enabled, active, cost} per device here and a
+# plain boolean upstream. An object is truthy in JavaScript, so the official UI
+# drew the virtual disk and the virtual network as permanently ON and read
+# every click to turn them off as a request to turn them on.
+#
+# NO TRAILING SLASH, deliberately. A merge would leave the official bundle's
+# hashed asset filenames beside the fork's, because two builds never collide on
+# those names. This replaces the directory instead. It must also stay below the
+# official-kvmapp merge above, which is what puts the official web there.
+#
+# web/dist is a build artefact and .gitignore excludes it, so the payload
+# carries a build rather than a checkout. build-image.sh gates on a string only
+# this UI has.
+add     web/dist                                  /kvmapp/server/web
+
 # --------------------------------------------------------------- init scripts
 #
 # /etc/init.d is what boots. /kvmapp/system/init.d is the install package's own

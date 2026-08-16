@@ -155,6 +155,72 @@ else
 fi
 
 echo
+echo "===== the web UI in the image is the fork's, not the base's ====="
+#
+# The first root A shipped the fork's server with Sipeed's official 2.5.0 web
+# UI, because root.manifest never added a built web and the official one came
+# in with the application tarball. The two disagree about the API.
+#
+# /api/vm/device/virtual returns {enabled, active, cost} per device in this
+# fork and a plain boolean upstream. An object is truthy in JavaScript, so the
+# official UI drew the virtual disk and the virtual network as permanently ON,
+# and every click to turn them off was read by the server as a request to turn
+# them on. The switches could not be moved.
+#
+# A mismatch like that cannot be caught by looking at either half alone, so the
+# gate looks for a string only the fork's UI has.
+
+# Built from a copy. An earlier revision added the web fixture to $WORK/base
+# itself, and the ownership case further down reuses that base: it then carried
+# a /kvmapp with the official web, the new gate refused its build, and a case
+# about chown failed for a reason that had nothing to do with chown.
+rm -rf "$WORK/base3"
+cp -a "$WORK/base" "$WORK/base3"
+mkdir -p "$WORK/base3/kvmapp/server/web/assets"
+printf 'var a=e.data.disk,b=e.data.network;\n' > "$WORK/base3/kvmapp/server/web/assets/official.js"
+( cd "$WORK/base3" && tar --numeric-owner -cf - . | zstd -q -o "$WORK/base3.tar.zst" )
+
+cat > "$WORK/noweb.manifest" <<'MANIFEST'
+add     scripts/S00awatchdog      /etc/init.d/S00awatchdog
+remove  /etc/kvm/ssh_stop
+remove  /root
+touch   /etc/kvm.disk0
+MANIFEST
+if sh "$BUILD" "$WORK/base3.tar.zst" "$WORK/noweb.manifest" "$WORK/payload" 64 "$WORK/noweb.img" \
+   > "$WORK/noweb.log" 2>&1; then
+    note "an image carrying the base's own web UI is refused" FAIL
+else
+    note "an image carrying the base's own web UI is refused" OK
+fi
+[ -f "$WORK/noweb.img" ] \
+    && note "the refused web build leaves no image behind" FAIL \
+    || note "the refused web build leaves no image behind" OK
+
+mkdir -p "$WORK/payload/webdist/assets"
+printf 'var t="settings.device.endpoints.cost";\n' > "$WORK/payload/webdist/assets/desktop.js"
+cat > "$WORK/web.manifest" <<'MANIFEST'
+add     scripts/S00awatchdog      /etc/init.d/S00awatchdog
+add     webdist                   /kvmapp/server/web
+remove  /etc/kvm/ssh_stop
+remove  /root
+touch   /etc/kvm.disk0
+MANIFEST
+if sh "$BUILD" "$WORK/base3.tar.zst" "$WORK/web.manifest" "$WORK/payload" 64 "$WORK/web.img" \
+   > "$WORK/web.log" 2>&1; then
+    note "replacing it with the fork's build passes" OK
+else
+    note "replacing it with the fork's build passes" FAIL
+    sed 's/^/    /' "$WORK/web.log" | tail -20
+fi
+
+# A non-merge add must REPLACE the directory. A merge would leave the base's
+# hashed asset filenames alongside the fork's, because they never collide.
+present2() { debugfs -R "stat $1" "$WORK/web.img" 2>/dev/null | grep -q 'Inode:'; }
+present2 /kvmapp/server/web/assets/official.js \
+    && note "the base's own assets survived alongside the fork's" FAIL \
+    || note "the base's own assets are gone, not merged with" OK
+
+echo
 echo "===== the base's own boot path is owned by root ====="
 #
 # Sipeed's v1.4.3 rootfs ships /etc/init.d, its 24 scripts and /usr/sbin/tailscaled
