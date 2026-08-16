@@ -102,6 +102,24 @@ while read -r verb a b c; do
 done < "$STAGE/m"
 
 echo
+echo "############ 2b. correct the base's boot path ownership"
+# Sipeed's rootfs ships /etc/init.d, its scripts and /usr/sbin/tailscaled owned
+# by uid 1000, which is their build host's user and exists in no passwd file on
+# the board. Root ignores the mode when it executes them, so the board boots and
+# nothing looks wrong. It is still a boot path owned by a stranger.
+#
+# Only these two paths are corrected. The rest of the base keeps what Sipeed
+# shipped: /etc/bind belongs to named and /var/www to www-data, and a blanket
+# chown would break the cases that are already right.
+for p in /etc/init.d /usr/sbin/tailscaled; do
+    [ -e "$STAGE/tree$p" ] || continue
+    n=$(find "$STAGE/tree$p" \( ! -user 0 -o ! -group 0 \) -print 2>/dev/null | wc -l)
+    [ "$n" -eq 0 ] && continue
+    chown -R 0:0 "$STAGE/tree$p" 2>/dev/null || true
+    printf '  %-40s %s path(s) to root\n' "$p" "$n"
+done
+
+echo
 echo "############ 3. record provenance"
 # This is the question nobody could answer during the 2026-08-15 outage: what
 # does that slot contain? `slot status` reads it back.
