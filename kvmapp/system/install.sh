@@ -25,23 +25,47 @@
 #   INSTALL_SRC     scripts to install    (default /kvmapp/system/init.d)
 #   INSTALL_DEST    where they go         (default /etc/init.d)
 #   INSTALL_BACKUP  where originals go    (default /root/.ironkvm/initd-backup)
+#   INSTALL_LIST    which ones to install (default /kvmapp/system/init.d.install)
 
 SRC=${INSTALL_SRC:-/kvmapp/system/init.d}
 DEST=${INSTALL_DEST:-/etc/init.d}
 BACKUP=${INSTALL_BACKUP:-/root/.ironkvm/initd-backup}
+LIST=${INSTALL_LIST:-$(dirname "$SRC")/init.d.install}
 
 # A package that carries no init.d directory is not a fault. The hook runs on
 # every update, including one that changes nothing outside /kvmapp.
 [ -d "$SRC" ] || { echo "install.sh: $SRC is missing, nothing to install"; exit 0; }
 
+# The list names the scripts this package may install, and release.sh derives it
+# from the image manifest so the two can never install different sets.
+#
+# Installing the whole directory is wrong and was the first thing this script
+# did. /kvmapp/system/init.d is the application's own reference copy: it carries
+# 20 scripts and the image installs 10. The image leaves S50sshd, S00kmod,
+# S15kvmhwd and S80dnsmasq at the versions the base system shipped, and it never
+# installs avahi, ssdpd, tailscaled, picoclaw, wifi or usbhid at all. Installing
+# the directory would start six daemons at the next boot that the same release's
+# SD image never starts, on a board with 166MB of RAM.
+#
+# A package with no list was not built by release.sh, and the safe reading is
+# that it changes no boot script. Guessing is what caused the fault above.
+[ -f "$LIST" ] || { echo "install.sh: $LIST is missing, no boot scripts to install"; exit 0; }
+NAMES=$(grep -v '^[[:space:]]*$' "$LIST")
+
 # Check every script before installing any of them. A partial install is the
 # worst outcome available: some scripts new, some old, and a board that may not
 # come up to be repaired. `sh -n` catches the fault that actually happens, which
 # is a truncated or mis-edited file.
-for f in "$SRC"/*; do
-    [ -f "$f" ] || continue
-    if ! sh -n "$f" 2>/dev/null; then
-        echo "install.sh: ${f##*/} fails a syntax check, installing nothing"
+#
+# Only the listed ones are checked. A script nothing installs cannot break a
+# boot, so it must not be able to stop the scripts that will.
+for n in $NAMES; do
+    if [ ! -f "$SRC/$n" ]; then
+        echo "install.sh: $LIST names $n and the package does not carry it, installing nothing"
+        exit 1
+    fi
+    if ! sh -n "$SRC/$n" 2>/dev/null; then
+        echo "install.sh: $n fails a syntax check, installing nothing"
         exit 1
     fi
 done
@@ -72,15 +96,16 @@ install_one() {
 
 # The watchdog is what repairs the board, so it goes last. If this run dies
 # partway, the copy still in place is the one that already works.
-for f in "$SRC"/*; do
-    [ -f "$f" ] || continue
-    [ "${f##*/}" = S00awatchdog ] && continue
-    install_one "$f" || exit 1
+for n in $NAMES; do
+    [ "$n" = S00awatchdog ] && continue
+    install_one "$SRC/$n" || exit 1
 done
 
-if [ -f "$SRC/S00awatchdog" ]; then
-    install_one "$SRC/S00awatchdog" || exit 1
-fi
+for n in $NAMES; do
+    if [ "$n" = S00awatchdog ]; then
+        install_one "$SRC/S00awatchdog" || exit 1
+    fi
+done
 
 # Only replace the manifest when this run changed something. The updater may
 # retry, and a second run finds every script identical, so an unconditional move
