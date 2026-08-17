@@ -158,14 +158,26 @@ action() {
 # The defaults are repeated at the point of use, like every other threshold in
 # this script, so an extracted block measures the value that ships and a test
 # can override it.
+# The marker carries the time it was written, in its contents. The obvious
+# alternative, reading the file's mtime, does not work on this device: busybox
+# here is built without FEATURE_STAT_FORMAT, so `stat -c %Y` reports
+# "unrecognized option: c" and the age can never be read. That was found on
+# hardware after the tests passed, because the container the tests run in has a
+# busybox with the feature compiled in.
+#
+# Contents need no optional applet feature. `date +%s` is all this depends on.
 updating() {
     [ -f "${UPDATE_MARKER:-/tmp/nanokvm-updating}" ] || return 1
 
-    written=$(stat -c %Y "${UPDATE_MARKER:-/tmp/nanokvm-updating}" 2>/dev/null)
+    written=$(cat "${UPDATE_MARKER:-/tmp/nanokvm-updating}" 2>/dev/null)
     age=$(( $(date +%s 2>/dev/null || echo 0) - ${written:-0} ))
 
-    # An age that is not a plain non-negative number means the timestamp could
-    # not be read, or the clock moved under us. Resume supervising.
+    # An age that is not a plain non-negative number means the marker holds no
+    # timestamp, or the clock moved under us. Resume supervising.
+    #
+    # This is not a theoretical branch. It is what fired on 2026-08-17 when the
+    # age came from `stat -c`, which this busybox does not have, and it is the
+    # only reason that failure was visible at all.
     #
     # The direction matters. Standing off for ever leaves a dead server that
     # nothing restarts, and only a reboot clears that. Acting early risks the
