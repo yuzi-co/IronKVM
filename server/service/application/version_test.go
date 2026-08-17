@@ -187,6 +187,47 @@ func TestValidateLatestAcceptsBothPackagePrefixes(t *testing.T) {
 	}
 }
 
+// An offline upload has no manifest, so the version it checks the package
+// against comes from the file name. That derivation stripped the literal prefix
+// "nanokvm_", which does nothing to an IronKVM package: the expected version
+// became "ironkvm_1.0.0", the package's own version file says "1.0.0", and
+// every offline upload of an IronKVM release was refused as a layout error.
+//
+// Uploading the file is the path a board with no route to the update server
+// has, and the path the README tells a user to take.
+func TestPackageVersionReadsEitherProduct(t *testing.T) {
+	for name, want := range map[string]string{
+		"ironkvm_1.0.0.tar.gz":   "1.0.0",
+		"nanokvm_2.5.0.tar.gz":   "2.5.0",
+		"ironkvm_10.2.34.tar.gz": "10.2.34",
+	} {
+		got, ok := packageVersion(name)
+		if !ok {
+			t.Fatalf("%s should be accepted", name)
+		}
+		if got != want {
+			t.Fatalf("%s: got version %q, want %q", name, got, want)
+		}
+	}
+}
+
+// The same shapes validateLatest refuses. A name that reaches this helper has
+// already been checked, and it must not become the second place that decides.
+func TestPackageVersionRefusesAnythingElse(t *testing.T) {
+	for _, name := range []string{
+		"evilkvm_1.0.0.tar.gz",
+		"ironkvm_1.0.tar.gz",
+		"ironkvm_1.0.0.zip",
+		"../ironkvm_1.0.0.tar.gz",
+		"ironkvm_1.0.0",
+		"",
+	} {
+		if got, ok := packageVersion(name); ok {
+			t.Fatalf("expected %q to be refused, got %q", name, got)
+		}
+	}
+}
+
 // The name decides both the URL and the file written to the SD card, and it is
 // written before the checksum has had a chance to reject the package. It has to
 // stay a plain file name of one known shape.
