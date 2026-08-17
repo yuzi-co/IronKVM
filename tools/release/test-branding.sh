@@ -68,6 +68,21 @@ check "the product strings were changed" \
 check "no locale but en.ts mentions IronKVM" \
     "$(grep -l 'IronKVM' "$ROOT"/web/src/i18n/locales/*.ts 2>/dev/null | grep -vc '/en\.ts$')" "0"
 
+# The offline upload validates the file name in the browser, before the server
+# ever sees it. The server pattern was widened to accept both products and this
+# one was not, so the page refused every IronKVM release with "Invalid filename
+# format. Please download from GitHub releases." and the link beside it pointed
+# at Sipeed's releases, which do not carry one.
+OFFLINE="$ROOT/web/src/pages/desktop/menu/settings/update/offline.tsx"
+check "the offline upload accepts an IronKVM package" \
+    "$(grep -c 'nanokvm|ironkvm' "$OFFLINE")" "1"
+check "the offline upload still accepts an official package" \
+    "$(grep -c 'nanokvm|ironkvm' "$OFFLINE")" "1"
+check "the releases link points at this fork" \
+    "$(grep -c 'github.com/yuzi-co/IronKVM/releases' "$OFFLINE")" "1"
+check "the releases link no longer points at Sipeed" \
+    "$(grep -c 'github.com/sipeed/NanoKVM/releases' "$OFFLINE")" "0"
+
 echo
 echo "passed $pass, failed $fail"
 [ "$fail" -eq 0 ]
