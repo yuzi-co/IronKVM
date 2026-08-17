@@ -314,9 +314,22 @@ cp -a "$BASE_BOOT/." "$STAGE/boot/"
 cp "$STAGE/bootbuild/boot.sd.new" "$STAGE/boot/boot.sd"
 
 echo "==> assembling the card"
+# Assembled in $STAGE, and only the compressed image is moved out.
+#
+# build-card.sh creates the card at its full 28.85 GiB and truncates it
+# afterwards, because the table has to describe a data partition the image does
+# not carry. On a filesystem with sparse files that hole costs nothing. On one
+# without it costs 25 GB of real writes, and the two slots are then read back out
+# of it to be checked, so the same bytes cross the filesystem three times.
+#
+# $OUT is wherever the publisher keeps artifacts. On a Windows workstation that
+# is a bind mount with no sparse support: measured at 8.0G allocated for an 8.0G
+# hole, against 0 on ext4. $STAGE is the build host's own filesystem and always
+# has them. This is not a flag to remember, which is the point.
 tools/abslots/build-card.sh "$STAGE/boot" "$STAGE/root.img" "$STAGE/recovery.img" \
-    "$OUT/ironkvm-${VERSION}-sdcard.img"
-xz -T0 -f "$OUT/ironkvm-${VERSION}-sdcard.img"
+    "$STAGE/ironkvm-${VERSION}-sdcard.img"
+xz -T0 -f "$STAGE/ironkvm-${VERSION}-sdcard.img"
+mv "$STAGE/ironkvm-${VERSION}-sdcard.img.xz" "$OUT/$IMG"
 
 echo "==> writing latest.json"
 SHA=$(openssl dgst -sha512 -binary "$OUT/$PKG" | openssl base64 -A)
