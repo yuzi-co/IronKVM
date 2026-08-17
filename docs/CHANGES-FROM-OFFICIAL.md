@@ -147,3 +147,16 @@ Deliberately, and worth knowing before you go looking for a bug.
   table, so a card larger than 32 GB leaves the extra space unused.
 - **A preview channel.** The code supports one. There is nothing to preview yet,
   and a channel with nothing in it is a promise that has to be kept.
+- **An upgrade in place from the official firmware.** You install IronKVM by
+  writing the card image. A board running Sipeed's firmware cannot reach IronKVM
+  through `Settings > Update`.
+
+  The official updater refuses a package that is not named `nanokvm_X.Y.Z.tar.gz`,
+  and it does not run the hook that installs the boot scripts. A package renamed
+  to satisfy it would replace the application and leave `/etc/init.d` alone, so
+  the board would get the server and the web user interface and none of the A/B
+  slots, the boot watchdog or the identity carry-over. Nothing on the board would
+  say so, and no later update would repair it.
+
+  A migration needs the server to bring the boot scripts up to date by itself.
+  That is a piece of work, not a rename, so 1.0 does not claim it.
