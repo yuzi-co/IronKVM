@@ -100,6 +100,35 @@ settled_within() {
 }
 # --- end settle ---
 
+# --- standoff ---
+# Tell S98supervise to leave the board alone while this runs.
+#
+# The supervisor polls every five seconds and acts on a server it finds gone or
+# not answering. A deploy stops the server, replaces the binary and restarts it,
+# which looks like exactly that from outside. On 2026-08-17 the supervisor
+# started the server in the middle of a deploy and then killed it 63 seconds
+# later as hung, while this script was still deciding whether its own candidate
+# worked. Two things restarting the same service is how a verdict becomes
+# meaningless.
+#
+# The path is the same one the updater writes. If these two ever disagree the
+# stand-off protects nothing, so the test compares them.
+#
+# Unlike the updater, this script is not the thing being replaced, so it can
+# clean up after itself and must: a marker left behind suspends the supervisor
+# for the whole stand-off window, and a supervisor that never acts is worse than
+# one that acts too early.
+UPDATE_MARKER=${UPDATE_MARKER:-/tmp/nanokvm-updating}
+
+hold_supervisor() {
+    : > "${UPDATE_MARKER:-/tmp/nanokvm-updating}" 2>/dev/null || true
+}
+
+release_supervisor() {
+    rm -f "${UPDATE_MARKER:-/tmp/nanokvm-updating}" 2>/dev/null || true
+}
+# --- end standoff ---
+
 restart() {
     # S95nanokvm backgrounds the server with `&`, so it inherits this shell's
     # stdio and would hold the ssh session open. setsid detaches it properly;
@@ -188,6 +217,12 @@ main() {
     [ -f "$NEW" ] || { echo "no such file: $NEW"; exit 1; }
 
     mkdir -p "$DEPLOY_DIR/known-good"
+
+    # Stand the supervisor off for the whole run. The trap covers every exit
+    # path there is - the five verdicts below, a failed preflight, and a shell
+    # that dies for a reason none of them anticipated.
+    trap release_supervisor EXIT
+    hold_supervisor
 
     say "deploy: starting, candidate $(wc -c < "$NEW") bytes"
 

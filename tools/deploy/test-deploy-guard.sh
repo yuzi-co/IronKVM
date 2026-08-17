@@ -19,7 +19,9 @@ sed -n '/^# --- settle ---$/,/^# --- end settle ---$/p' "$DG" > "$WORK/settle.sh
 [ -s "$WORK/verdict.sh" ]  || { echo "could not extract the verdict block"; exit 1; }
 [ -s "$WORK/snapshot.sh" ] || { echo "could not extract the snapshot block"; exit 1; }
 [ -s "$WORK/preflight.sh" ] || { echo "could not extract the preflight block"; exit 1; }
+sed -n '/^# --- standoff ---$/,/^# --- end standoff ---$/p' "$DG" > "$WORK/standoff.sh"
 [ -s "$WORK/settle.sh" ] || { echo "could not extract the settle block"; exit 1; }
+[ -s "$WORK/standoff.sh" ] || { echo "could not extract the standoff block"; exit 1; }
 
 fails=0
 note() { printf '  %-62s %s\n' "$1" "$2"; [ "$2" = FAIL ] && fails=$((fails + 1)); return 0; }
@@ -179,6 +181,49 @@ sh -n "$DG" && note "deploy-server is valid shell" OK || note "deploy-server doe
 grep -q 'setsid' "$DG" \
     && note "detaches, so a dropped ssh cannot abandon it mid-deploy" OK \
     || note "does not detach - a dropped ssh would leave it half done" FAIL
+
+echo
+echo "===== standing off the supervisor ====="
+# S98supervise polls every five seconds and acts on a server it finds gone or
+# not answering. A deploy stops the server and restarts it, which looks like
+# exactly that. On 2026-08-17 the supervisor started the server in the middle of
+# a deploy and then killed it 63 seconds later as hung, while the deploy was
+# still deciding whether its own candidate worked.
+#
+# Unlike the updater, this script is not the thing being replaced, so it can and
+# must clean up after itself.
+standoff_case() {
+    desc="$1"; body="$2"; want="$3"
+    got=$(WORK="$WORK" BODY="$body" sh -c '
+        UPDATE_MARKER=$WORK/marker
+        export UPDATE_MARKER
+        rm -f "$UPDATE_MARKER"
+        . "$WORK/standoff.sh"
+        eval "$BODY"
+        [ -f "$UPDATE_MARKER" ] && echo present || echo absent
+    ' 2>/dev/null)
+    [ "$got" = "$want" ] && note "$desc -> $got" OK || note "$desc -> $got, want $want" FAIL
+}
+
+standoff_case "hold_supervisor writes the marker"      "hold_supervisor"                  present
+standoff_case "release_supervisor removes it"          "hold_supervisor; release_supervisor" absent
+standoff_case "releasing without holding is harmless"  "release_supervisor"               absent
+standoff_case "holding twice is harmless"              "hold_supervisor; hold_supervisor" present
+
+# The marker must not survive the script. A deploy that exits leaving it behind
+# suspends the supervisor for the whole stand-off window, and the one thing worse
+# than a supervisor that acts too early is one that never acts at all.
+grep -q 'trap .*release_supervisor' "$DG" \
+    && note "the marker is cleared on every exit path, including a failure" OK \
+    || note "the marker can outlive the deploy" FAIL
+
+# The two scripts have to name the same file or the stand-off protects nothing.
+DEPLOY_MARKER=$(sed -n 's|^UPDATE_MARKER=${UPDATE_MARKER:-\(.*\)}$|\1|p' "$DG" | head -1)
+SUPERVISE_MARKER=$(sed -n 's|^UPDATE_MARKER=${SUPERVISE_UPDATE_MARKER:-\(.*\)}$|\1|p' \
+    "$(dirname "$DG")/../service/S98supervise" | head -1)
+[ -n "$DEPLOY_MARKER" ] && [ "$DEPLOY_MARKER" = "$SUPERVISE_MARKER" ] \
+    && note "deploy and supervisor agree on the marker path ($DEPLOY_MARKER)" OK \
+    || note "marker paths disagree: deploy '$DEPLOY_MARKER' vs supervisor '$SUPERVISE_MARKER'" FAIL
 
 echo
 if [ "$fails" -eq 0 ]; then
