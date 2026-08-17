@@ -206,6 +206,7 @@ standoff_case() {
 }
 
 standoff_case "hold_supervisor writes the marker"      "hold_supervisor"                  present
+standoff_case "the marker carries a timestamp"         "hold_supervisor; grep -q \"^[0-9][0-9]*\$\" \"\$UPDATE_MARKER\" || rm -f \"\$UPDATE_MARKER\"" present
 standoff_case "release_supervisor removes it"          "hold_supervisor; release_supervisor" absent
 standoff_case "releasing without holding is harmless"  "release_supervisor"               absent
 standoff_case "holding twice is harmless"              "hold_supervisor; hold_supervisor" present
