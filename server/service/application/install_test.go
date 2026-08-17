@@ -50,6 +50,89 @@ func useTempDirs(t *testing.T) string {
 	return source
 }
 
+// useTempUpdateMarker points the stand-off marker at a scratch path.
+func useTempUpdateMarker(t *testing.T) string {
+	t.Helper()
+
+	original := updateMarkerPath
+	t.Cleanup(func() { updateMarkerPath = original })
+
+	updateMarkerPath = filepath.Join(t.TempDir(), "nanokvm-updating")
+	return updateMarkerPath
+}
+
+// S98supervise polls every five seconds and restarts a server it finds gone. An
+// update stops the server and then moves /kvmapp, so without a stand-off the
+// supervisor starts a server in the middle of that. On 2026-08-17 it did: the
+// server it started died three seconds later with its own files being moved,
+// and the board rebooted.
+func TestInstallPreparedPackageMarksTheUpdate(t *testing.T) {
+	source := useTempDirs(t)
+	marker := useTempUpdateMarker(t)
+	stubInstallHook(t, nil)
+
+	if err := installPreparedPackage(source); err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	if _, err := os.Stat(marker); err != nil {
+		t.Fatalf("the marker should outlive a successful install: %s", err)
+	}
+}
+
+// It must outlive the install, because the restart that follows is inside the
+// window it protects: the process that would remove it is the one being
+// replaced. The next server to start clears it instead.
+func TestTheUpdateMarkerIsNotRemovedOnSuccess(t *testing.T) {
+	source := useTempDirs(t)
+	marker := useTempUpdateMarker(t)
+	stubInstallHook(t, nil)
+
+	if err := installPreparedPackage(source); err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+	if _, err := os.Stat(marker); os.IsNotExist(err) {
+		t.Fatal("the marker was removed, so the supervisor can act during the restart")
+	}
+}
+
+// An install that fails restores the old application and does not restart, so
+// there is nothing left to protect. Leaving the marker would suspend the
+// supervisor for the whole stand-off over a board that is already running.
+func TestAFailedInstallClearsTheUpdateMarker(t *testing.T) {
+	source := useTempDirs(t)
+	marker := useTempUpdateMarker(t)
+	stubInstallHook(t, errors.New("boom"))
+
+	if err := installPreparedPackage(source); err == nil {
+		t.Fatal("expected the hook failure to be reported")
+	}
+
+	if _, err := os.Stat(marker); !os.IsNotExist(err) {
+		t.Fatal("a failed install must not leave the supervisor standing off")
+	}
+}
+
+// The next server to start is what ends the stand-off, so this runs at startup.
+func TestClearUpdateMarkerRemovesIt(t *testing.T) {
+	marker := useTempUpdateMarker(t)
+	if err := os.WriteFile(marker, nil, 0o644); err != nil {
+		t.Fatalf("failed to write the marker: %s", err)
+	}
+
+	ClearUpdateMarker()
+
+	if _, err := os.Stat(marker); !os.IsNotExist(err) {
+		t.Fatal("the marker survived startup, so the supervisor stays stood off")
+	}
+}
+
+// Every boot calls it and almost none of them are after an update.
+func TestClearUpdateMarkerIsQuietWhenThereIsNoMarker(t *testing.T) {
+	useTempUpdateMarker(t)
+	ClearUpdateMarker()
+}
+
 // The boot scripts are the half of the fork that a package alone cannot install:
 // nothing copies kvmapp/system/init.d into /etc/init.d. Without this call a
 // release ships them in the image and omits them from the tarball, and the two
