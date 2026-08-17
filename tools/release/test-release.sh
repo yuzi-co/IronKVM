@@ -208,6 +208,17 @@ check "the package is checked against the official one" \
 check "the repacked boot image is taken by the name it is written under" \
     "$(grep -c 'bootbuild/boot\.sd\.new' "$SCRIPT")" "1"
 
+# /boot/ver comes from the Sipeed base and reports v1.4.3 whatever is written
+# over it, so the card image was the one artefact a board could not name. The
+# application version cannot stand in: an update replaces the application and
+# leaves the card alone, which is exactly the half that carries the slots, the
+# watchdog and the recovery filesystem.
+check "the card image stamps its own version onto /boot" \
+    "$(grep -c '> "\$STAGE/boot/ironkvm\.ver"' "$SCRIPT")" "1"
+check "the stamp is written before the card is assembled" \
+    "$(grep -n 'ironkvm\.ver"\|build-card\.sh "\$STAGE/boot"' "$SCRIPT" \
+       | head -1 | grep -c 'ironkvm\.ver')" "1"
+
 # The base is Sipeed's, and the system image ships no checksum of its own, so the
 # pin in BASE.sha256 is the only statement of which bytes an image came from.
 check "the base is verified against the recorded pins" \

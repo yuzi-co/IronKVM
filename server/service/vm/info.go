@@ -79,6 +79,19 @@ func getMdns() string {
 // elsewhere.
 var imageVersionFile = "/boot/ver"
 
+// ownImageFile records which IronKVM card image wrote this /boot. build-card.sh
+// puts it there. Tests point it elsewhere.
+//
+// It is needed because /boot/ver comes from the Sipeed base and keeps reporting
+// v1.4.3 whatever is written over it. The card image is the half of a release
+// that carries the boot changes, so it was the one artefact a board could not
+// name, and the application version cannot stand in: an update replaces the
+// application and leaves the card alone.
+//
+// The name is 8.3 clean on purpose. p1 is FAT and a long name costs a second
+// directory entry for nothing.
+var ownImageFile = "/boot/ironkvm.ver"
+
 func getImageVersion() string {
 	content, err := os.ReadFile(imageVersionFile)
 	if err != nil {
@@ -88,10 +101,26 @@ func getImageVersion() string {
 	image := strings.ReplaceAll(string(content), "\n", "")
 
 	if version, ok := imageVersionMap[image]; ok {
+		image = version
+	}
+
+	// An official card carries no marker and reads exactly as it always did.
+	own, err := os.ReadFile(ownImageFile)
+	if err != nil {
+		return image
+	}
+
+	// A marker that exists and says nothing is a build fault, not a version.
+	// Reporting "(based on v1.4.3)" with nothing in front would read as one.
+	version := strings.TrimSpace(string(own))
+	if version == "" {
+		return image
+	}
+	if image == "" {
 		return version
 	}
 
-	return image
+	return fmt.Sprintf("%s (based on %s)", version, image)
 }
 
 // applicationVersionFile is written by the updater. Tests point it elsewhere.

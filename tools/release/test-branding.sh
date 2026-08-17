@@ -57,8 +57,14 @@ check "the About panel still links the hardware vendor" \
 # locale files is the failure this guards against.
 check "the reset instruction still names the hardware" \
     "$(grep -c 'BOOT button on the NanoKVM' "$ROOT/web/src/i18n/locales/en.ts")" "2"
+# The wording changed when the card image gained a version of its own: the field
+# now shows both, so the tooltip has to name both. What this guards is unchanged
+# - the hardware reference must survive, because the system image is Sipeed's
+# and calling it anything else would be a lie about whose kernel is running.
 check "the system image version still names NanoKVM" \
-    "$(grep -c 'NanoKVM system image version' "$ROOT/web/src/i18n/locales/en.ts")" "1"
+    "$(grep -c 'NanoKVM system image' "$ROOT/web/src/i18n/locales/en.ts")" "1"
+check "the tooltip names the card image too" \
+    "$(grep -c 'IronKVM card image' "$ROOT/web/src/i18n/locales/en.ts")" "1"
 check "the product strings were changed" \
     "$(grep -c 'About IronKVM' "$ROOT/web/src/i18n/locales/en.ts")" "1"
 
