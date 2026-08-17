@@ -98,7 +98,10 @@ func offlineUpdate(c *gin.Context) error {
 
 	archiveName := filepath.Base(target)
 	expectedRoot := strings.TrimSuffix(archiveName, ".tar.gz")
-	expectedVersion := strings.TrimPrefix(expectedRoot, "nanokvm_")
+	expectedVersion, ok := packageVersion(archiveName)
+	if !ok {
+		return fmt.Errorf("invalid update package name: %s", archiveName)
+	}
 	info, err := inspectUpdateArchive(target, expectedRoot)
 	if err != nil {
 		return fmt.Errorf("inspect update package: %w", err)
