@@ -79,16 +79,58 @@ func releaseUpdateLock() {
 	isUpdating = false
 }
 
+// updateMarkerPath tells S98supervise to leave the board alone. Tests point it
+// elsewhere.
+//
+// It lives in tmpfs on purpose. A reboot clears it, so the stand-off can never
+// outlive the boot that needed it, and it costs no write to the SD card.
+var updateMarkerPath = "/tmp/nanokvm-updating"
+
+// markUpdateInProgress asks the supervisor to stand off.
+//
+// S98supervise polls every five seconds and restarts a server it finds gone. An
+// update stops the server and then moves /kvmapp out from under it, so without
+// this the supervisor starts a server into a directory that is being replaced.
+// On 2026-08-17 it did exactly that: the server it started died three seconds
+// later and the board rebooted.
+//
+// A failure here is logged and not returned. The marker is an optimisation for
+// a supervisor that may not even be installed, and refusing to install an
+// update because /tmp is full would be the wrong trade.
+func markUpdateInProgress() {
+	if err := os.WriteFile(updateMarkerPath, nil, 0o644); err != nil {
+		log.Warnf("failed to mark the update in progress: %s", err)
+	}
+}
+
+// ClearUpdateMarker ends the stand-off. main calls it at startup.
+//
+// The updater cannot do this itself. The restart is inside the window the
+// marker protects, so the process that would clean up is the one being
+// replaced. A server that is running is proof the update finished.
+func ClearUpdateMarker() {
+	if err := os.Remove(updateMarkerPath); err != nil && !os.IsNotExist(err) {
+		log.Warnf("failed to clear the update marker: %s", err)
+	}
+}
+
 func installPreparedPackage(sourceDir string) error {
+	// Before the first move. Everything below this point leaves /kvmapp in a
+	// state the supervisor would read as a dead server.
+	markUpdateInProgress()
+
 	if err := backupCurrentApp(); err != nil {
+		ClearUpdateMarker()
 		return err
 	}
 
 	if err := applyUpdate(sourceDir); err != nil {
+		ClearUpdateMarker()
 		return err
 	}
 
 	if err := utils.ChmodRecursively(AppDir, 0o755); err != nil {
+		ClearUpdateMarker()
 		return fmt.Errorf("failed to chmod: %w", err)
 	}
 
@@ -96,7 +138,12 @@ func installPreparedPackage(sourceDir string) error {
 	// A failure here is reported rather than undone: an application that updated
 	// while its boot scripts did not is a partial state the operator has to know
 	// about, and rolling the application back would not repair the scripts.
+	// Every failure above and below clears the marker, because a caller that
+	// gets an error does not restart the server: the one that is running keeps
+	// running, so the supervisor has nothing to stand off from. Only the
+	// success path leaves it, and only because the restart follows.
 	if err := runInstallHook(); err != nil {
+		ClearUpdateMarker()
 		log.Errorf("install hook failed: %s", err)
 		return fmt.Errorf("application installed but the boot scripts were not updated: %w", err)
 	}
