@@ -44,13 +44,33 @@ const (
 )
 
 var (
-	latestClient       = utils.NewUpdateHTTPClient(15 * time.Second)
+	latestClient = utils.NewUpdateHTTPClient(15 * time.Second)
 	// Both prefixes, because a board must be able to leave as easily as it
 	// arrived: IronKVM ships its own packages, and an official Sipeed package
 	// stays installable through the same updater.
-	packageNamePattern = regexp.MustCompile(`^(?:nanokvm|ironkvm)_[0-9]+\.[0-9]+\.[0-9]+\.tar\.gz$`)
+	packageNamePattern = regexp.MustCompile(`^(?:nanokvm|ironkvm)_([0-9]+\.[0-9]+\.[0-9]+)\.tar\.gz$`)
 	versionPattern     = regexp.MustCompile(`^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$`)
 )
+
+// packageVersion reports the version a package file name states.
+//
+// An offline upload carries no manifest, so this is the only statement of which
+// version the file claims to be, and it is what the extracted package's own
+// version file is checked against. The product half of the name is not fixed:
+// this fork ships ironkvm_ and Sipeed ships nanokvm_, and both install through
+// the same updater. Stripping one literal prefix left an IronKVM package
+// expecting the version "ironkvm_1.0.0", which no version file can match, so
+// every offline upload of an IronKVM release was refused as a layout error.
+//
+// The name is matched against the same pattern that guards the download, so
+// this cannot become a second place that decides which names are acceptable.
+func packageVersion(name string) (string, bool) {
+	match := packageNamePattern.FindStringSubmatch(name)
+	if match == nil {
+		return "", false
+	}
+	return match[1], true
+}
 
 // versionFile is written by the updater. Tests point it elsewhere.
 var versionFile = fmt.Sprintf("%s/version", AppDir)
