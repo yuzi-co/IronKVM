@@ -209,6 +209,52 @@ this repository have already rotted into passing while testing nothing.
 
 ## Acceptance record
 
+### 2026-08-17, installing 1.0.0 on a board: PASS, with one open question
+
+`ironkvm_1.0.0.tar.gz` uploaded through `Settings > Update` to a board on slot A.
+Every check passed.
+
+| Check | Result |
+| --- | --- |
+| `/kvmapp/version` | `1.0.0` |
+| `/kvmapp/base-version` | `2.5.0` |
+| `server/dl_lib` | 38 libraries |
+| `kvm_system`, `system/tool` | present, 2 files |
+| `libkvm.so` mapped by the running server | yes, 0 relocation errors |
+| Boot scripts changed | `S95nanokvm` replaced, `S99vidiag` added |
+| avahi, ssdpd, tailscaled, picoclaw, wifi, usbhid | none installed |
+| Backup file left in `/etc/init.d` | none |
+
+The two fixes that mattered are both proved here. The 38 libraries and the clean
+loader are the layering fix: a package built from `kvmapp/` alone would have
+left 14 and a server that cannot start. The two-line backup manifest is the
+install list: without it, ten more scripts would have been written and six
+daemons would have started at the next boot.
+
+**The open question is the reboot.** The board rebooted during the update, and
+nothing in the logs says which component asked for it. The supervisor did not:
+it reboots at five short runs and recorded one. The watchdog stood down. The
+shutdown was orderly, so something called `reboot` deliberately.
+
+What the supervisor log does show is a race:
+
+```
+18:51:09  NanoKVM-Server is gone after 5s (short_runs=1), restarting in 10s
+18:51:19  started /tmp/server/NanoKVM-Server as pid 2322
+18:51:32  NanoKVM-Server is gone after 3s (short_runs=1), restarting in 20s
+18:51:43  supervisor stopped
+```
+
+The supervisor started the server while the updater was moving `/kvmapp`. The
+updater does create a sentinel file, but it is a download lock: it is removed
+when the upload handler returns, which is before `restartServices` runs, and
+`S98supervise` does not read it in any case. An update should tell the
+supervisor to stand off until it is finished, and that is not written yet.
+
+An update therefore costs a boot rather than a service restart. On this board
+that is about two minutes with no way in, which is worth knowing before an
+update is applied to something that is somebody's only route to a machine.
+
 ### 2026-08-17, first end-to-end dry run: PASS, after four faults
 
 `tools/release/release.sh --dry-run 1.0.0`, in the image above, against
