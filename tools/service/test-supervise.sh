@@ -19,6 +19,8 @@ sed -n '/^# --- escalate ---$/,/^# --- end escalate ---$/p' "$SV" > "$WORK/escal
 sed -n '/^# --- count ---$/,/^# --- end count ---$/p' "$SV" > "$WORK/count.sh"
 sed -n '/^# --- act ---$/,/^# --- end act ---$/p' "$SV" > "$WORK/act.sh"
 sed -n '/^# --- ion ---$/,/^# --- end ion ---$/p' "$SV" > "$WORK/ion.sh"
+sed -n '/^# --- updating ---$/,/^# --- end updating ---$/p' "$SV" > "$WORK/updating.sh"
+[ -s "$WORK/updating.sh" ] || { echo "could not extract the updating block"; exit 1; }
 [ -s "$WORK/decide.sh" ]  || { echo "could not extract the decide block"; exit 1; }
 [ -s "$WORK/backoff.sh" ] || { echo "could not extract the backoff block"; exit 1; }
 [ -s "$WORK/cure.sh" ]    || { echo "could not extract the cure block"; exit 1; }
@@ -75,6 +77,94 @@ decide_case "not answering for a long time"              yes yes no 600 hung
 # under heavy IO - none of those are worth killing a working KVM for, so the
 # grace period has to be generous and the default has to be inaction.
 decide_case "answering again before the threshold"       yes yes yes 59  healthy
+
+echo
+echo "===== standing off while an update is in progress ====="
+# On 2026-08-17 an update stopped the server, this script noticed 5s later, and
+# started it 10 seconds into the install. That server died 3 seconds after,
+# because its own files were being moved out from under it, and the board
+# rebooted. The supervisor has to leave a running update alone.
+#
+# Two things bound the stand-off, because a marker nothing clears is a
+# supervisor that never supervises again. The marker lives in tmpfs, so a reboot
+# clears it, and it is ignored once it is older than the window.
+updating_case() {
+    desc="$1"; age="$2"; want="$3"
+    got=$(AGE="$age" WORK="$WORK" sh -c '
+        M=$WORK/marker
+        rm -f "$M"
+        [ "$AGE" = absent ] || : > "$M"
+        UPDATE_MARKER=$M UPDATE_STANDOFF=300
+        export UPDATE_MARKER UPDATE_STANDOFF
+        . "$WORK/updating.sh"
+        if updating; then echo yes; else echo no; fi
+    ' 2>/dev/null)
+    [ "$got" = "$want" ] && note "$desc -> $got" OK || note "$desc -> $got, want $want" FAIL
+}
+
+# Written the same way the shipped script sees it, because touch -d with an
+# arithmetic expression is not portable to busybox.
+updating_age() {
+    desc="$1"; seconds="$2"; want="$3"
+    got=$(SEC="$seconds" WORK="$WORK" sh -c '
+        M=$WORK/marker
+        rm -f "$M"; : > "$M"
+        touch -d "@$(( $(date +%s) - SEC ))" "$M"
+        UPDATE_MARKER=$M UPDATE_STANDOFF=300
+        export UPDATE_MARKER UPDATE_STANDOFF
+        . "$WORK/updating.sh"
+        if updating; then echo yes; else echo no; fi
+    ' 2>/dev/null)
+    [ "$got" = "$want" ] && note "$desc -> $got" OK || note "$desc -> $got, want $want" FAIL
+}
+
+updating_case "no marker at all"                    absent no
+updating_case "a marker written just now"           fresh  yes
+updating_age  "a marker 30s old, inside the window" 30     yes
+updating_age  "a marker 299s old, at the edge"      299    yes
+updating_age  "a marker 301s old, past the window"  301    no
+updating_age  "a marker an hour old"                3600   no
+
+# A marker whose age cannot be read must resume supervision, not suspend it.
+# Standing off for ever means a dead server nothing restarts, and only a reboot
+# clears that; acting early only risks the fault this block prevents, which is
+# rare and recoverable. The dangerous direction is the one that fails silent.
+got=$(WORK="$WORK" sh -c '
+    M=$WORK/marker; rm -f "$M"; : > "$M"
+    stat() { return 1; }
+    UPDATE_MARKER=$M UPDATE_STANDOFF=300
+    export UPDATE_MARKER UPDATE_STANDOFF
+    . "$WORK/updating.sh"
+    if updating; then echo yes; else echo no; fi
+' 2>/dev/null)
+[ "$got" = no ] && note "an unreadable timestamp resumes supervision -> $got" OK \
+                || note "an unreadable timestamp resumes supervision -> $got, want no" FAIL
+
+echo
+echo "  --- and the decision uses it"
+# The stand-off is worth nothing unless action() consults it. The case that
+# matters is exactly the one that caused the fault: binary staged, no process,
+# which without this returns restart.
+updating_decides() {
+    desc="$1"; marker="$2"; want="$3"
+    got=$(MK="$marker" WORK="$WORK" sh -c '
+        M=$WORK/marker; rm -f "$M"
+        [ "$MK" = yes ] && : > "$M"
+        UPDATE_MARKER=$M UPDATE_STANDOFF=300
+        export UPDATE_MARKER UPDATE_STANDOFF
+        binary_present()  { true; }
+        process_running() { false; }
+        serving()         { return 1; }
+        unhealthy_for()   { echo 0; }
+        . "$WORK/updating.sh"
+        . "$WORK/decide.sh"
+        action
+    ' 2>/dev/null)
+    [ "$got" = "$want" ] && note "$desc -> $got" OK || note "$desc -> $got, want $want" FAIL
+}
+
+updating_decides "binary staged, no process, update running" yes updating
+updating_decides "binary staged, no process, no update"      no  restart
 
 echo
 echo "  --- a probe that cannot run is not evidence of anything"

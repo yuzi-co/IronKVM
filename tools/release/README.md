@@ -246,14 +246,30 @@ What the supervisor log does show is a race:
 ```
 
 The supervisor started the server while the updater was moving `/kvmapp`. The
-updater does create a sentinel file, but it is a download lock: it is removed
-when the upload handler returns, which is before `restartServices` runs, and
-`S98supervise` does not read it in any case. An update should tell the
-supervisor to stand off until it is finished, and that is not written yet.
+existing sentinel file could not have prevented it: that one is a download lock,
+removed when the upload handler returns, which is before `restartServices` runs,
+and `S98supervise` never read it.
 
-An update therefore costs a boot rather than a service restart. On this board
-that is about two minutes with no way in, which is worth knowing before an
-update is applied to something that is somebody's only route to a machine.
+**Fixed on 2026-08-17.** The updater writes `/tmp/nanokvm-updating` before it
+touches `/kvmapp`, and `S98supervise` returns a new `updating` verdict while
+that marker is fresh, which suppresses every other decision. The updater does
+not remove the marker, because the restart is inside the window it protects: the
+process that would clean up is the one being replaced. The next server to start
+clears it, and a failed install clears it too, since a caller that gets an error
+never restarts anything.
+
+Two bounds stop a marker nothing clears from suspending the supervisor for good.
+It lives in tmpfs, so a reboot clears it. And it is ignored once it is older than
+`SUPERVISE_UPDATE_STANDOFF`, 300 seconds by default, so an update that dies
+halfway costs one window rather than the board. An unreadable timestamp resumes
+supervision rather than extending the stand-off: a dead server nothing restarts
+is only cleared by a reboot, and that is the failure that stays silent.
+
+**The reboot itself is still unexplained.** Removing the race removes the most
+likely trigger, since the server the supervisor started died with its files
+being moved, but nothing in the logs named the component that called `reboot`,
+and this is not evidence that it will not happen again. The next update on real
+hardware is the test.
 
 ### 2026-08-17, first end-to-end dry run: PASS, after four faults
 
