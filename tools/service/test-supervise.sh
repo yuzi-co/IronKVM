@@ -93,7 +93,7 @@ updating_case() {
     got=$(AGE="$age" WORK="$WORK" sh -c '
         M=$WORK/marker
         rm -f "$M"
-        [ "$AGE" = absent ] || : > "$M"
+        [ "$AGE" = absent ] || date +%s > "$M"
         UPDATE_MARKER=$M UPDATE_STANDOFF=300
         export UPDATE_MARKER UPDATE_STANDOFF
         . "$WORK/updating.sh"
@@ -108,8 +108,8 @@ updating_age() {
     desc="$1"; seconds="$2"; want="$3"
     got=$(SEC="$seconds" WORK="$WORK" sh -c '
         M=$WORK/marker
-        rm -f "$M"; : > "$M"
-        touch -d "@$(( $(date +%s) - SEC ))" "$M"
+        rm -f "$M"
+        echo $(( $(date +%s) - SEC )) > "$M"
         UPDATE_MARKER=$M UPDATE_STANDOFF=300
         export UPDATE_MARKER UPDATE_STANDOFF
         . "$WORK/updating.sh"
@@ -131,14 +131,35 @@ updating_age  "a marker an hour old"                3600   no
 # rare and recoverable. The dangerous direction is the one that fails silent.
 got=$(WORK="$WORK" sh -c '
     M=$WORK/marker; rm -f "$M"; : > "$M"
-    stat() { return 1; }
     UPDATE_MARKER=$M UPDATE_STANDOFF=300
     export UPDATE_MARKER UPDATE_STANDOFF
     . "$WORK/updating.sh"
     if updating; then echo yes; else echo no; fi
 ' 2>/dev/null)
-[ "$got" = no ] && note "an unreadable timestamp resumes supervision -> $got" OK \
-                || note "an unreadable timestamp resumes supervision -> $got, want no" FAIL
+[ "$got" = no ] && note "an empty marker resumes supervision -> $got" OK \
+                || note "an empty marker resumes supervision -> $got, want no" FAIL
+
+got=$(WORK="$WORK" sh -c '
+    M=$WORK/marker; rm -f "$M"; echo "not-a-number" > "$M"
+    UPDATE_MARKER=$M UPDATE_STANDOFF=300
+    export UPDATE_MARKER UPDATE_STANDOFF
+    . "$WORK/updating.sh"
+    if updating; then echo yes; else echo no; fi
+' 2>/dev/null)
+[ "$got" = no ] && note "a marker holding rubbish resumes supervision -> $got" OK \
+                || note "a marker holding rubbish resumes supervision -> $got, want no" FAIL
+
+# The age comes from the marker's CONTENTS, never from its mtime. busybox on the
+# device is built without FEATURE_STAT_FORMAT: `stat -c %Y` reports
+# "unrecognized option: c" there, so the age could never be read and the
+# stand-off never engaged. The container these tests run in has a busybox with
+# the feature, which is why this passed everywhere except on hardware.
+# Comments are stripped first: the reason this rule exists is written in the
+# script, and a guard that fires on its own explanation is a guard that has to
+# be deleted the moment somebody documents anything.
+grep -v '^[[:space:]]*#' "$SV" | grep -q 'stat -c' \
+    && note "the age is not read with stat -c, which the device lacks" FAIL \
+    || note "the age is not read with stat -c, which the device lacks" OK
 
 echo
 echo "  --- and the decision uses it"
@@ -149,7 +170,7 @@ updating_decides() {
     desc="$1"; marker="$2"; want="$3"
     got=$(MK="$marker" WORK="$WORK" sh -c '
         M=$WORK/marker; rm -f "$M"
-        [ "$MK" = yes ] && : > "$M"
+        [ "$MK" = yes ] && date +%s > "$M"
         UPDATE_MARKER=$M UPDATE_STANDOFF=300
         export UPDATE_MARKER UPDATE_STANDOFF
         binary_present()  { true; }
