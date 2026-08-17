@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -97,8 +98,14 @@ var updateMarkerPath = "/tmp/nanokvm-updating"
 // A failure here is logged and not returned. The marker is an optimisation for
 // a supervisor that may not even be installed, and refusing to install an
 // update because /tmp is full would be the wrong trade.
+// The marker carries the time it was written, in its contents. S98supervise
+// reads it from there rather than from the file's mtime, because busybox on the
+// device is built without FEATURE_STAT_FORMAT: `stat -c %Y` reports
+// "unrecognized option: c" and no age can ever be read. An empty marker would
+// therefore be treated as having no timestamp and ignored.
 func markUpdateInProgress() {
-	if err := os.WriteFile(updateMarkerPath, nil, 0o644); err != nil {
+	stamp := strconv.FormatInt(time.Now().Unix(), 10) + "\n"
+	if err := os.WriteFile(updateMarkerPath, []byte(stamp), 0o644); err != nil {
 		log.Warnf("failed to mark the update in progress: %s", err)
 	}
 }
