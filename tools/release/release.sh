@@ -171,14 +171,28 @@ STAGE=$(mktemp -d)
 trap 'rm -rf "$STAGE"' EXIT
 
 echo "==> building the web user interface"
-# CI=true because pnpm asks before it purges a modules directory that another
-# platform or another pnpm version installed, and it refuses to purge without a
-# TTY. A release runs from a script and has no answer to give.
+# Built from a copy in $STAGE, without the developer's node_modules.
 #
-# The purge is not a side issue. web/node_modules is the developer's, and the
-# install that follows writes it for the host that builds the release. A
-# workstation that also runs `pnpm dev` gets its modules directory rebuilt.
-( cd web && CI=true pnpm install --frozen-lockfile && pnpm build )
+# web/node_modules belongs to whoever works in this checkout. Installing into it
+# writes it for the host that builds the release, so a Windows workstation that
+# also runs `pnpm dev` had its modules directory replaced with Linux binaries on
+# every release. Reinstalling afterwards is a step somebody has to remember,
+# which is the same as not having one.
+#
+# This costs nothing. The build runs in a container that is removed afterwards,
+# so pnpm's store starts empty either way, and the only new work is copying the
+# sources. Nothing in web/ refers to a path outside it.
+#
+# CI=true still: pnpm asks before it purges a modules directory another pnpm
+# version left behind, and it refuses to purge without a TTY.
+mkdir -p "$STAGE/web"
+tar -cf - -C web --exclude=./node_modules --exclude=./dist . | tar -xf - -C "$STAGE/web"
+( cd "$STAGE/web" && CI=true pnpm install --frozen-lockfile && pnpm build )
+
+# root.manifest adds web/dist from the repository root, so the output has to come
+# back. It is plain JavaScript and carries no platform.
+rm -rf web/dist
+cp -a "$STAGE/web/dist" web/dist
 
 echo "==> cross-compiling the server"
 # The Makefile's own recipe, run directly. `make` is not installed on every host
