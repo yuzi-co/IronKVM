@@ -42,7 +42,14 @@ setup() {
 teardown() { rm -rf "$WORK"; }
 
 run() {
+    # A test that does not care which scripts are chosen gets the whole fixture
+    # directory listed, so these cases keep testing what they were written for:
+    # ordering, the backup manifest, the syntax gate and repeated runs.
+    if [ ! -f "$WORK/init.d.install" ] && [ -d "$WORK/src" ]; then
+        ( cd "$WORK/src" && ls ) > "$WORK/init.d.install"
+    fi
     INSTALL_SRC="$WORK/src" INSTALL_DEST="$WORK/dest" INSTALL_BACKUP="$WORK/backup" \
+        INSTALL_LIST="$WORK/init.d.install" \
         sh "$SCRIPT" > "$WORK/out" 2>&1
     echo $?
 }
@@ -124,6 +131,61 @@ setup
 rm -rf "$WORK/src"
 status=$(run)
 check "a missing source directory is not a failure" "$status" "0"
+teardown
+
+# /kvmapp/system/init.d is the application's own reference copy. It carries 20
+# scripts and the SD image installs 10 of them: it leaves S50sshd, S00kmod,
+# S15kvmhwd and S80dnsmasq at their base versions, and it never installs avahi,
+# ssdpd, tailscaled, picoclaw, wifi or usbhid at all. Installing the directory
+# would put six daemons on a 166MB board that its own image never runs, and
+# would replace four scripts the image chose not to touch.
+setup
+printf '#!/bin/sh\necho a\n' > "$WORK/src/S40wanted"
+printf '#!/bin/sh\necho b\n' > "$WORK/src/S41unwanted"
+echo S40wanted > "$WORK/init.d.install"
+run > /dev/null
+check "only the listed scripts are installed" \
+    "$(ls "$WORK/dest" | tr '\n' ' ' | sed 's/ *$//')" "S40wanted"
+teardown
+
+# A script nothing will install cannot break a boot, so it must not be able to
+# stop the scripts that will.
+setup
+printf '#!/bin/sh\necho a\n'      > "$WORK/src/S40wanted"
+printf '#!/bin/sh\nif [ broken\n' > "$WORK/src/S41unwanted"
+echo S40wanted > "$WORK/init.d.install"
+status=$(run)
+check "a broken script nobody installs does not stop the run" "$status" "0"
+check "and the listed script still arrives" \
+    "$([ -f "$WORK/dest/S40wanted" ] && echo yes || echo no)" "yes"
+teardown
+
+# The list travels in the same package as this script, so a package without one
+# was not built by release.sh. Guessing is what caused the fault above, and the
+# safe reading of an absent list is that the package changes no boot script.
+setup
+printf '#!/bin/sh\necho a\n' > "$WORK/src/S40thing"
+: > "$WORK/init.d.install"
+rm -f "$WORK/init.d.install"
+touch "$WORK/nolist"
+INSTALL_SRC="$WORK/src" INSTALL_DEST="$WORK/dest" INSTALL_BACKUP="$WORK/backup" \
+    INSTALL_LIST="$WORK/nosuchlist" sh "$SCRIPT" > "$WORK/out" 2>&1
+status=$?
+check "a missing list is not a failure" "$status" "0"
+check "a missing list installs nothing" \
+    "$(ls "$WORK/dest" | wc -l | tr -d ' ')" "0"
+check "and it says why" "$(grep -c 'no boot scripts to install' "$WORK/out")" "1"
+teardown
+
+# A list naming a script the package does not carry means the two halves of the
+# release disagree. Installing the rest would leave the board with some of the
+# new boot behaviour and not the rest.
+setup
+printf '#!/bin/sh\necho a\n' > "$WORK/src/S40here"
+printf 'S40here\nS41gone\n' > "$WORK/init.d.install"
+status=$(run)
+check "a listed script the package lacks fails the run" "$status" "1"
+check "and nothing is installed" "$(ls "$WORK/dest" | wc -l | tr -d ' ')" "0"
 teardown
 
 echo

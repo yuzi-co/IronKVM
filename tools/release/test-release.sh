@@ -144,6 +144,23 @@ check "rcS is held back from the package" \
 check "the reason rcS is held back is recorded" \
     "$(grep -c 'nothing would run at all, including the watchdog' "$SCRIPT")" "1"
 
+# /kvmapp/system/init.d is the application's own reference copy and carries 20
+# scripts. The image installs 10 of them, deliberately: it leaves S50sshd,
+# S00kmod, S15kvmhwd and S80dnsmasq at their base versions and never installs
+# avahi, ssdpd, tailscaled, picoclaw, wifi or usbhid at all. install.sh had no
+# way to know that and installed the directory, so a package update would have
+# added six daemons to a 166MB board that its own image never runs.
+#
+# The list is derived from the manifest so the two cannot name different sets.
+check "the package names the boot scripts install.sh may install" \
+    "$(grep -c '> "\$PAYLOAD/system/init\.d\.install"' "$SCRIPT")" "1"
+check "an empty list is refused rather than shipped" \
+    "$(grep -c '\[ -s "\$PAYLOAD/system/init\.d\.install" \]' "$SCRIPT")" "1"
+check "the list is derived from the image manifest" \
+    "$(grep -B3 '"\$PAYLOAD/system/init\.d\.install"' "$SCRIPT" | grep -c 'root\.manifest')" "1"
+check "rcS is kept out of the list too" \
+    "$(grep -c "grep -v '\^rcS\$'" "$SCRIPT")" "1"
+
 # Every script the manifest installs must exist where the release script expects
 # to find it. This is the check that catches a script being moved or renamed.
 missing=0
