@@ -13,6 +13,7 @@ import (
 	"NanoKVM-Server/logger"
 	"NanoKVM-Server/middleware"
 	"NanoKVM-Server/router"
+	"NanoKVM-Server/service/application"
 	"NanoKVM-Server/service/ion"
 	"NanoKVM-Server/service/stream/webrtc"
 	"NanoKVM-Server/service/vm"
@@ -48,6 +49,12 @@ func initialize() {
 	// restore the memory limit the user configured, which is otherwise only
 	// applied to the process that set it and lost on the next boot
 	utils.InitGoMemLimit()
+
+	// End any update stand-off. S98supervise leaves the board alone while an
+	// update is replacing /kvmapp, and the updater cannot lift that itself: the
+	// restart is inside the window, so the process that would clean up is the
+	// one being replaced. A server reaching this line is the proof it finished.
+	application.ClearUpdateMarker()
 
 	// init screen parameters
 	_ = common.GetScreen()
