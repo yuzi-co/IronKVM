@@ -52,6 +52,10 @@ boot scripts back by itself. It is not yet a slot trial: see
 You can also download the `.tar.gz` from a release and upload it in the same
 page, which needs no network access from the board.
 
+Both paths need a board that already runs IronKVM. You cannot upgrade to IronKVM
+from the official firmware: write the card image instead. See
+[Not here yet](docs/CHANGES-FROM-OFFICIAL.md#not-here-yet) for why.
+
 ## Going back to the official firmware
 
 This is a supported path, not an apology.
