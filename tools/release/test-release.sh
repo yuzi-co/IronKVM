@@ -275,6 +275,20 @@ check "publishing is guarded by the dry-run flag" \
 check "nothing outside publish() calls gh" \
     "$(grep -c '^[^#]*gh release' "$SCRIPT")" "1"
 
+# build-card.sh creates the card at its full 28.85 GiB and truncates it after.
+# That costs nothing on a filesystem with sparse files and 25 GB of real writes
+# on one without, and it is then read back twice to check both slots. A Windows
+# checkout through a bind mount has no sparse files: measured at 8.0G allocated
+# for an 8.0G hole, against 0 on ext4. The build host's own filesystem always
+# has them, so the card is assembled there and only the compressed image is
+# moved out.
+check "the card is assembled on the build host's own filesystem" \
+    "$(grep -c '"\$STAGE/ironkvm-\${VERSION}-sdcard\.img"' "$SCRIPT")" "2"
+check "the uncompressed card never lands in the output directory" \
+    "$(grep -c '"\$OUT/ironkvm-\${VERSION}-sdcard\.img"' "$SCRIPT")" "0"
+check "only the compressed image is moved to the output directory" \
+    "$(grep -c '^mv "\$STAGE/ironkvm-\${VERSION}-sdcard\.img\.xz" "\$OUT/\$IMG"' "$SCRIPT")" "1"
+
 echo
 echo "the release host image"
 
