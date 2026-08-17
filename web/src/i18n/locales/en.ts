@@ -347,7 +347,7 @@ const en = {
         application: 'Application Version',
         applicationTip: 'IronKVM web application version',
         image: 'Image Version',
-        imageTip: 'NanoKVM system image version',
+        imageTip: 'IronKVM card image, and the NanoKVM system image it is built on',
         deviceKey: 'Device Key',
         videoMemory: 'Video Memory',
         videoMemoryTip:

@@ -344,6 +344,16 @@ cp -a "$BASE_BOOT/." "$STAGE/boot/"
 # verification has passed.
 cp "$STAGE/bootbuild/boot.sd.new" "$STAGE/boot/boot.sd"
 
+# Which card image wrote this /boot. The base's own /boot/ver travels with it and
+# keeps reporting the Sipeed system image, v1.4.3, whatever is written over it,
+# so without this the card is the one artefact a board cannot name. That is the
+# half of a release carrying the slots, the watchdog and the recovery
+# filesystem, and the application version cannot stand in for it: an update
+# replaces the application and leaves the card alone.
+#
+# 8.3 clean, because p1 is FAT and a long name costs a second directory entry.
+echo "$VERSION" > "$STAGE/boot/ironkvm.ver"
+
 echo "==> assembling the card"
 # Assembled in $STAGE, and only the compressed image is moved out.
 #
