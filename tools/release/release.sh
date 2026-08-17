@@ -283,6 +283,23 @@ for want in $(sed -n 's|^add .* /etc/init.d/\([^ ]*\).*|\1|p' \
         exit 1; }
 done
 
+# Which of those scripts install.sh may put into /etc/init.d, derived from the
+# image manifest so a package and an image of the same release can never install
+# different sets.
+#
+# /kvmapp/system/init.d is the application's own reference copy and carries 20
+# scripts. The image installs 10: it leaves S50sshd, S00kmod, S15kvmhwd and
+# S80dnsmasq at their base versions and never installs avahi, ssdpd, tailscaled,
+# picoclaw, wifi or usbhid at all. install.sh installed the directory, so an
+# update would have started six daemons the same release's image never starts.
+#
+# rcS is excluded here for the reason given above: it is what runs the watchdog.
+sed -n 's|^add .* /etc/init.d/\([^ ]*\).*|\1|p' tools/abslots/manifest/root.manifest \
+    | grep -v '^rcS$' > "$PAYLOAD/system/init.d.install"
+[ -s "$PAYLOAD/system/init.d.install" ] || {
+    echo "the image manifest named no boot scripts; the list would be empty" >&2
+    exit 1; }
+
 # The base travels beside the version because semver cannot carry it.
 BASE=$(cat "${BASE_VERSION_FILE:-base/version}" 2>/dev/null || echo "unknown")
 echo "$BASE" > "$PAYLOAD/base-version"
