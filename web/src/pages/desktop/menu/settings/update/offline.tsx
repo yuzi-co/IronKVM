@@ -95,8 +95,13 @@ export const Offline = ({ status, setStatus, setIsLocked, setErrMsg }: UpdatePro
       });
   }
 
+  // Both products, and the same shape the server enforces. IronKVM ships its
+  // own packages and an official Sipeed package stays installable, because
+  // being able to return to the official firmware is the reason the rename
+  // stayed shallow. This check ran in the browser and refused every IronKVM
+  // release before the server ever saw the file.
   function validateFilename(filename: string) {
-    const regex: RegExp = /^nanokvm_\d+\.\d+\.\d+\.tar\.gz$/;
+    const regex: RegExp = /^(?:nanokvm|ironkvm)_\d+\.\d+\.\d+\.tar\.gz$/;
     return regex.test(filename);
   }
 
@@ -110,7 +115,7 @@ export const Offline = ({ status, setStatus, setIsLocked, setErrMsg }: UpdatePro
 
               <a
                 className="flex items-center text-neutral-500 hover:text-blue-500"
-                href="https://github.com/sipeed/NanoKVM/releases"
+                href="https://github.com/yuzi-co/IronKVM/releases"
                 target="_blank"
               >
                 <ExternalLinkIcon size={15} />
