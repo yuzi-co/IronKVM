@@ -47,6 +47,11 @@ CRASH_LOOP_N=${SUPERVISE_CRASH_LOOP_N:-5}
 HANG_CURES_K=${SUPERVISE_HANG_CURES:-2}
 NO_REBOOT=${SUPERVISE_NO_REBOOT:-0}
 
+# An update stops the server and replaces /kvmapp underneath it. See the
+# updating block below for why the marker is not removed by the updater.
+UPDATE_MARKER=${SUPERVISE_UPDATE_MARKER:-/tmp/nanokvm-updating}
+UPDATE_STANDOFF=${SUPERVISE_UPDATE_STANDOFF:-300}
+
 SERVER_BIN=${SERVER_BIN:-/tmp/server/NanoKVM-Server}
 SYSTEM_BIN=${SYSTEM_BIN:-/tmp/kvm_system/kvm_system}
 
@@ -88,6 +93,14 @@ log() {
 # cannot run, a slow start under heavy IO, a moment of SD contention - none of
 # those is worth killing a working KVM for.
 action() {
+    # Before anything else. An update stops the server and then replaces
+    # /kvmapp underneath it, and every other verdict below reads a board in
+    # that state as a fault.
+    if updating; then
+        echo updating
+        return
+    fi
+
     if process_running; then
         serving
         answered=$?
@@ -121,6 +134,50 @@ action() {
     fi
 }
 # --- end decide ---
+
+# --- updating ---
+# Leave a running update alone.
+#
+# An update stops the server, moves /kvmapp to the backup directory, moves the
+# new tree in, installs the boot scripts and restarts. This script polls every
+# five seconds, so without a stand-off it acts in the middle of that. On
+# 2026-08-17 it did: it started the server ten seconds into an install, that
+# server died three seconds later with its own files being moved out from under
+# it, and the board rebooted.
+#
+# The updater writes the marker before it touches /kvmapp. It does NOT remove
+# it, and that is deliberate rather than an oversight: the restart is inside the
+# window this protects, so the process that would clean up is the one being
+# replaced. The next server to start removes it instead.
+#
+# Two things bound it, because a marker nothing clears is a supervisor that
+# never supervises again. It lives in tmpfs, so a reboot clears it. And it is
+# ignored once it is older than the window, so an update that dies halfway costs
+# one stand-off and not the board.
+#
+# The defaults are repeated at the point of use, like every other threshold in
+# this script, so an extracted block measures the value that ships and a test
+# can override it.
+updating() {
+    [ -f "${UPDATE_MARKER:-/tmp/nanokvm-updating}" ] || return 1
+
+    written=$(stat -c %Y "${UPDATE_MARKER:-/tmp/nanokvm-updating}" 2>/dev/null)
+    age=$(( $(date +%s 2>/dev/null || echo 0) - ${written:-0} ))
+
+    # An age that is not a plain non-negative number means the timestamp could
+    # not be read, or the clock moved under us. Resume supervising.
+    #
+    # The direction matters. Standing off for ever leaves a dead server that
+    # nothing restarts, and only a reboot clears that. Acting early risks the
+    # fault this block exists to prevent, which is rare and recoverable. The
+    # dangerous failure is the silent one.
+    case "$written$age" in
+        ''|*[!0-9]*) return 1 ;;
+    esac
+
+    [ "$age" -le "${UPDATE_STANDOFF:-300}" ]
+}
+# --- end updating ---
 
 # --- escalate ---
 # The cures above assume the fault is in the process. Some faults are not: an
@@ -530,6 +587,10 @@ watch_loop() {
     # here? A reboot can only help a board where the answer is yes.
     served_ever=no
 
+    # Whether the last pass stood off for an update, so the log records the two
+    # transitions and not every poll in between.
+    stood_off=no
+
     while :; do
         sleep "$INTERVAL"
 
@@ -564,7 +625,25 @@ watch_loop() {
             cures=0
         fi
 
+        # The end of a stand-off is worth a line. /data/supervise.log is what an
+        # operator reads to find out why a board restarted itself, and a gap in
+        # it with no explanation is the thing that made the 2026-08-17 update
+        # take an hour to understand.
+        if [ "$state" != updating ] && [ "$stood_off" = yes ]; then
+            log "no update in progress any more, supervising again"
+            stood_off=no
+        fi
+
         case "$state" in
+            updating)
+                # The first pass only. At five seconds a stand-off would
+                # otherwise write sixty lines into that same log.
+                if [ "$stood_off" = no ]; then
+                    log "an update is in progress, standing off"
+                    stood_off=yes
+                fi
+                ;;
+
             healthy)
                 started=$(now)
                 ;;
