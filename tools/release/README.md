@@ -69,11 +69,14 @@ uses:
   -e GH_TOKEN -v "$HOME/.ssh:/root/.ssh:ro"
 ```
 
-One cost is worth knowing. `build-card.sh` creates the card at its full 28.85
-GiB and truncates it afterwards, which is instant on a Linux filesystem because
-the file is sparse. A Windows drive through a bind mount is not sparse, so the
-build writes about 25 GB for real and reads it back twice to check both slots.
-Point `RELEASE_OUT` at a Docker volume to avoid it.
+The card is assembled inside the container and only the compressed image is
+moved to `RELEASE_OUT`. `build-card.sh` creates the card at its full 28.85 GiB
+and truncates it afterwards, and that hole is free on a filesystem with sparse
+files. A Windows drive through a bind mount has none: an 8 GiB hole measured
+8.0G allocated there against 0 on ext4. Assembling the card on the bind mount
+therefore wrote about 25 GB for real and read it back twice to check the slots,
+which is where the first dry run spent an hour. The build host's own filesystem
+always has sparse files, so nothing about this needs configuring.
 
 ## The base
 
