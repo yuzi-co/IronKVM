@@ -259,6 +259,22 @@ check "the host id does not reach the builder directly" \
 check "the web build never waits for an answer" \
     "$(grep -c 'CI=true pnpm install --frozen-lockfile' "$SCRIPT")" "1"
 
+# web/node_modules belongs to the developer. Installing into it wrote it for
+# whatever host built the release, so a Windows workstation that also runs
+# `pnpm dev` had its modules directory replaced with Linux binaries every time,
+# and putting it back is a step somebody has to remember.
+check "the web user interface is built from a copy" \
+    "$(grep -c 'cd "\$STAGE/web" && CI=true pnpm install' "$SCRIPT")" "1"
+check "the developer's modules directory is never installed into" \
+    "$(grep -c 'cd web && CI=true pnpm install' "$SCRIPT")" "0"
+check "node_modules is left out of the copy" \
+    "$(grep -c 'exclude=\./node_modules' "$SCRIPT")" "1"
+
+# root.manifest reads web/dist from the repository root, so the build output has
+# to come back. It is plain JavaScript with no platform in it.
+check "the built output is copied back to web/dist" \
+    "$(grep -c 'cp -a "\$STAGE/web/dist" web/dist' "$SCRIPT")" "1"
+
 # Signing was designed in and dropped for 1.0. The checksums must not claim to
 # be more than they are, and nothing may reference a signature that is not made.
 check "no signature is produced" \
