@@ -64,6 +64,62 @@ func TestGetImageVersionNamesEveryReleasedImage(t *testing.T) {
 	}
 }
 
+// useOwnImageFile writes the marker an IronKVM card image leaves on /boot.
+func useOwnImageFile(t *testing.T, contents string) {
+	t.Helper()
+
+	original := ownImageFile
+	t.Cleanup(func() {
+		ownImageFile = original
+	})
+
+	path := filepath.Join(t.TempDir(), "ironkvm.ver")
+	if err := os.WriteFile(path, []byte(contents), 0o644); err != nil {
+		t.Fatalf("failed to write ironkvm.ver: %s", err)
+	}
+
+	ownImageFile = path
+}
+
+// The card image is the half of a release that carries the boot changes: the
+// slots, the watchdog, the recovery filesystem. It was the only artefact with
+// no version anywhere in the user interface, because /boot/ver comes from the
+// Sipeed base and reports v1.4.3 whatever was written over it. A board that
+// cannot name its own card image cannot answer the first question any report
+// about a boot fault begins with.
+func TestGetImageVersionNamesTheCardAndItsBase(t *testing.T) {
+	useImageFile(t, "2026-06-10-1_4_3.img\n")
+	useOwnImageFile(t, "1.0.0\n")
+
+	if got := getImageVersion(); got != "1.0.0 (based on v1.4.3)" {
+		t.Errorf("getImageVersion() = %q, want %q", got, "1.0.0 (based on v1.4.3)")
+	}
+}
+
+// An official card carries no marker and must read exactly as it did before.
+func TestGetImageVersionIsUnchangedWithoutTheMarker(t *testing.T) {
+	useImageFile(t, "2026-06-10-1_4_3.img\n")
+
+	original := ownImageFile
+	t.Cleanup(func() { ownImageFile = original })
+	ownImageFile = filepath.Join(t.TempDir(), "absent")
+
+	if got := getImageVersion(); got != "v1.4.3" {
+		t.Errorf("getImageVersion() = %q, want %q", got, "v1.4.3")
+	}
+}
+
+// A marker that exists and says nothing is a build fault, not a version. It
+// must not produce "(based on v1.4.3)" with an empty name in front of it.
+func TestGetImageVersionIgnoresAnEmptyMarker(t *testing.T) {
+	useImageFile(t, "2026-06-10-1_4_3.img\n")
+	useOwnImageFile(t, "\n  \n")
+
+	if got := getImageVersion(); got != "v1.4.3" {
+		t.Errorf("getImageVersion() = %q, want %q", got, "v1.4.3")
+	}
+}
+
 func useBuildStamp(t *testing.T, stamp string) {
 	t.Helper()
 
