@@ -1,4 +1,5 @@
-# NanoKVM A/B/recovery layout for the 60506112 sector (28.85 GiB) card.
+# NanoKVM A/B/recovery layout. The table ends after the recovery slot, and the
+# data partition is made on the first boot of the card.
 #
 # p1 is copied from the card as it is: start sector 1, 32768 sectors, type c,
 # bootable. The boot ROM finds fip.bin by reading the first FAT partition, so
@@ -17,14 +18,21 @@
 # partition, not with the bytes in it.
 #
 # p4 is the extended container. Each logical partition costs one EBR sector, so
-# p5 and p6 start 8192 sectors after the preceding boundary rather than
-# immediately, which keeps them aligned too.
+# p5 starts 8192 sectors after the container begins rather than immediately,
+# which keeps it aligned too.
+#
+# THE TABLE DECLARES NO DATA PARTITION. A declared one needs a card of at least
+# the sector it ends at, and that is what limited the 1.0.0 image to a 32 GB
+# card. S01fs makes it on the first boot, at the end of the card, so the image
+# fits any card of 8 GB or more and the data partition takes whatever is left.
+# Its start sector comes from data-start.sh and is 10543104, which is where it
+# sat in the fixed table this replaces.
 #
 #   p1  FAT16        1 ..    32768     16.00 MiB  /boot
 #   p2  ext4     40960 ..  4235263      2.00 GiB  root A
 #   p3  ext4   4235264 ..  8429567      2.00 GiB  root B
 #   p5  ext4   8437760 .. 10534911      1.00 GiB  recovery
-#   p6  exfat 10543104 .. 60506111     23.82 GiB  /data
+#   --                                            made on first boot: /data
 label: dos
 label-id: 0x70781617
 unit: sectors
@@ -32,6 +40,5 @@ unit: sectors
 1 : start=1,        size=32768,    type=c, bootable
 2 : start=40960,    size=4194304,  type=83
 3 : start=4235264,  size=4194304,  type=83
-4 : start=8429568,  size=52076544, type=5
+4 : start=8429568,  size=2105344,  type=5
 5 : start=8437760,  size=2097152,  type=83
-6 : start=10543104, size=49963008, type=7
