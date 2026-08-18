@@ -144,7 +144,22 @@ Deliberately, and worth knowing before you go looking for a bug.
   protected by the boot-script rollback rather than by a slot trial. Moving the
   updater onto the slot machinery is the next piece of work.
 - **Growing the data partition.** The card image carries a fixed partition
-  table, so a card larger than 32 GB leaves the extra space unused.
+  table that ends at sector 60,506,111, so a card larger than 32 GB leaves the
+  extra space unused and a card smaller than that cannot be used at all. The
+  image itself is only 5.03 GiB, because it is truncated where the data
+  partition starts, so nothing but the table stands in the way: an 8 GB card
+  would hold every slot and about 2.5 GB of data.
+
+  The fix is to ship the data partition at a safe minimum and grow it on first
+  boot, rather than to declare a fixed end. Shipping a minimum rather than
+  nothing matters, because a grow that fails then leaves a small working data
+  partition instead of none, and that partition holds the board's identity.
+
+  It is not done yet because it rewrites the master boot record on the running
+  boot device, and the entries for the boot partition and both root slots live
+  in that same sector. Upstream's own script already does this to create its
+  data partition, and this fork disabled it: on an A/B layout the third
+  partition is root B, and upstream would have formatted it.
 - **A preview channel.** The code supports one. There is nothing to preview yet,
   and a channel with nothing in it is a promise that has to be kept.
 - **An upgrade in place from the official firmware.** You install IronKVM by
