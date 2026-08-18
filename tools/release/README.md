@@ -70,13 +70,19 @@ uses:
 ```
 
 The card is assembled inside the container and only the compressed image is
-moved to `RELEASE_OUT`. `build-card.sh` creates the card at its full 28.85 GiB
-and truncates it afterwards, and that hole is free on a filesystem with sparse
-files. A Windows drive through a bind mount has none: an 8 GiB hole measured
-8.0G allocated there against 0 on ext4. Assembling the card on the bind mount
-therefore wrote about 25 GB for real and read it back twice to check the slots,
-which is where the first dry run spent an hour. The build host's own filesystem
-always has sparse files, so nothing about this needs configuring.
+moved to `RELEASE_OUT`. `build-card.sh` creates the card at exactly its final
+size, because the table declares no data partition and there is no hole to cut
+back. The card is still assembled on the build host's own filesystem: the image
+is 5 GiB and both slots are read back out of it to be checked, so the same bytes
+cross the filesystem three times, and a Windows drive through a bind mount is
+slow enough that this is worth avoiding. Nothing about it needs configuring.
+
+Until 1.0.1 the card was created at its full 28.85 GiB and truncated afterwards,
+because the table had to describe a data partition the image did not carry. That
+hole is free on a filesystem with sparse files and a bind mount has none:
+measured at 8.0G allocated for an 8.0G hole, against 0 on ext4. Assembling on
+the bind mount therefore wrote about 25 GB for real, which is where the first
+dry run spent an hour.
 
 ## The base
 
