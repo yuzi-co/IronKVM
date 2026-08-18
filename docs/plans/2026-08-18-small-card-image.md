@@ -2047,6 +2047,36 @@ MSYS_NO_PATHCONV=1 docker run --rm -v "$PWD:/w" -w /w ironkvm-release-host:lates
 
 Expected: `5398069248`, which is 10543104 sectors.
 
+**Done, 2026-08-18.** The dry run completed and the artifacts verify:
+
+```
+uncompressed bytes : 5398069248   (10543104 sectors, as expected)
+build-card.sh said : 5148 MiB, slot B empty, data partition made on first boot
+table in the image : 5 partitions, no p6
+                     p1 bootable, start 1, type c
+                     p4 extended, 8429568 .. 10534911
+                     p5 ext4,     8437760 .. 10534911
+ironkvm-1.0.1-sdcard.img.xz  372289444 bytes
+ironkvm_1.0.1.tar.gz          12492266 bytes
+```
+
+The compressed image is 372.3 MB against 1.0.0's 372.3 MB, which confirms what
+`README.md` now says: the download does not change with the card.
+
+**Run this from WSL, not from Git Bash.** `release.sh` starts a second container
+and passes `$PWD` as the bind source, so the daemon has to resolve that path
+itself. Docker Desktop's daemon cannot see `/mnt/d/...` when the outer container
+is launched from Git Bash: the nested mount silently comes up empty and the build
+stops at `cd: /home/build/NanoKVM/server: No such file or directory`. From WSL the
+path is real and the whole thing works.
+
+```shell
+wsl.exe -e sh -c 'cd /mnt/d/projects/NanoKVM && docker run --rm \
+  -v /var/run/docker.sock:/var/run/docker.sock -v "$PWD:$PWD" -w "$PWD" \
+  -e BUILD_UID=<uid> -e BUILD_GID=<gid> \
+  ironkvm-release-host tools/release/release.sh --dry-run 1.0.1'
+```
+
 - [ ] **Step 2: Flash the A-Data card**
 
 Use the A-Data card, not the card in the board. Flashing the working card removes
