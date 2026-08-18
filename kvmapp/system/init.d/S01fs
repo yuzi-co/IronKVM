@@ -26,6 +26,89 @@ data_device() {
 }
 # --- end data device ---
 
+# --- data geometry ---
+# What the card actually is, read from the table on the card itself.
+#
+# parted -sm prints one colon separated line per partition, after a BYT; header
+# and a line describing the disk:
+#
+#   BYT;
+#   /dev/mmcblk0:60506112s:sd/mmc:512:512:msdos:SD SA32G:;
+#   6:10543104s:60506111s:49963008s:::;
+#
+# Field 2 of the disk line is the size of the disk in sectors. Fields 2, 3 and 4
+# of a partition line are its start, its end and its size.
+#
+# NOTHING HERE READS PARTED'S EXIT STATUS. On a disk with a mounted partition
+# parted cannot make the kernel re-read the whole table, so it warns and returns
+# 1, having already done the work. Measured on this board: both the resize and
+# the mkpart return 1 and both succeed.
+DISK=${DISK:-/dev/mmcblk0}
+PARTED=${PARTED:-parted}
+BLKID=${BLKID:-blkid}
+PARTITIONS=${PARTITIONS:-/proc/partitions}
+
+table() {
+    "$PARTED" -sm "$DISK" unit s print 2>/dev/null
+}
+
+disk_sectors() {
+    table | awk -F: 'NR == 2 { gsub(/[^0-9]/, "", $2); print $2 }'
+}
+
+part_end_sector() {
+    table | awk -F: -v p="$1" '$1 == p { gsub(/[^0-9]/, "", $3); print $3 }'
+}
+
+part_size_sectors() {
+    table | awk -F: -v p="$1" '$1 == p { gsub(/[^0-9]/, "", $4); print $4 }'
+}
+
+# Whether a partition holds a filesystem this board can name.
+#
+# busybox blkid prints LABEL and UUID and NEVER prints a TYPE field, for vfat,
+# for ext4 and for exfat alike. For a partition with no filesystem it prints
+# nothing and still exits 0. So neither a TYPE test nor the exit status carries
+# any information, and the only valid test is whether it printed anything.
+#
+# This is the guard that stands between a re-flash and the board's identity. A
+# partition blkid can name is never touched.
+has_filesystem() {
+    [ -n "$("$BLKID" "$1" 2>/dev/null)" ]
+}
+
+# Whether the kernel and the table agree about the data partition.
+#
+# /proc/partitions counts 1024 byte blocks, so a sector count is twice it. A
+# filesystem made on a node whose size is stale would be the wrong size and
+# could not be repaired, because resize.exfat does not exist on this device.
+data_partition_ready() {
+    [ -e "$1" ] || return 1
+    blocks=$(awk -v n="$(basename "$1")" '$4 == n { print $3 }' "$PARTITIONS" 2>/dev/null)
+    [ -n "$blocks" ] || return 1
+    [ "$((blocks * 2))" = "$(part_size_sectors "${1##*p}")" ]
+}
+
+# Which sector the data partition starts at, from the slot configuration.
+#
+# Prints nothing when the configuration does not say. A board that did not
+# declare where its data goes must never be partitioned by this script: that is
+# an unmigrated board or an image from before this change, and guessing at a
+# start sector on a card whose layout is unknown is how a root slot gets
+# overwritten.
+data_start() {
+    if [ -r "$SLOT_CONF" ]; then
+        DATA_START=
+        . "$SLOT_CONF"
+        if [ -n "$DATA_START" ]; then
+            echo "$DATA_START"
+            return 0
+        fi
+    fi
+    echo ""
+}
+# --- end data geometry ---
+
 # --- data mount ---
 # /data is exfat, which stores no POSIX mode, so every file on it takes its
 # mode from the mount. The board keeps its root password hash and its
