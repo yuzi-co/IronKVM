@@ -80,7 +80,12 @@ echo "===== the script still parses ====="
 sh -n "$FS" && note "S01fs is valid shell" OK || note "S01fs does not parse" FAIL
 grep -q 'mount -t vfat /dev/mmcblk0p1 /boot' "$FS" \
     && note "still mounts /boot" OK || note "/boot mount is gone" FAIL
-grep -q 'mount /dev/mmcblk0p3 /data' "$FS" \
+# S01fs stopped naming the data device inline at fb6fc799: the device now
+# comes from the layout and the mount goes through mount_data, which also
+# sets the exfat mode mask. This assertion held the old hardcoded string, so
+# it reported a fault for several commits while the script was correct. It
+# now checks the call the script actually makes.
+grep -qE 'mount_data[[:space:]]+"[$]DATADEV"[[:space:]]+/data' "$FS" \
     && note "still mounts /data" OK || note "/data mount is gone" FAIL
 grep -q 'kvm.disk0' "$FS" \
     && note "the mkfs guard is untouched" OK || note "the mkfs guard is gone" FAIL
