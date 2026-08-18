@@ -77,6 +77,17 @@ echo "===== provenance and device names are recorded ====="
 present /etc/slot-manifest      && note "/etc/slot-manifest is written" OK      || note "/etc/slot-manifest is written" FAIL
 present /etc/nanokvm-slots.conf && note "/etc/nanokvm-slots.conf is written" OK || note "/etc/nanokvm-slots.conf is written" FAIL
 
+# S01fs makes the data partition on the first boot and needs to be told where it
+# goes. Without this line it makes nothing, and the board comes up with no /data
+# and the factory root password.
+debugfs -R "cat /etc/nanokvm-slots.conf" "$WORK/out.img" 2>/dev/null > "$WORK/slots"
+grep -q '^DATA_DEV=/dev/mmcblk0p6$' "$WORK/slots" \
+    && note "the slot conf names the data device" OK \
+    || note "the slot conf names the data device" FAIL
+grep -q '^DATA_START=10543104$' "$WORK/slots" \
+    && note "the slot conf carries DATA_START" OK \
+    || note "the slot conf carries DATA_START, got: $(grep DATA_START "$WORK/slots" || echo nothing)" FAIL
+
 debugfs -R "cat /etc/slot-manifest" "$WORK/out.img" 2>/dev/null > "$WORK/prov"
 grep -q 'basesha ' "$WORK/prov"     && note "provenance records the base hash" OK     || note "provenance records the base hash" FAIL
 grep -q 'manifestsha ' "$WORK/prov" && note "provenance records the manifest hash" OK || note "provenance records the manifest hash" FAIL
