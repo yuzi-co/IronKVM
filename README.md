@@ -19,17 +19,13 @@ NanoKVM Cube (Lite and Full) and NanoKVM PCIe. Anything built on the SG2002.
 NanoKVM-Pro is a different chip and a different repository. IronKVM does not run
 on it.
 
-The card image needs a microSD card of **60,506,112 sectors or more**, which is
-30.98 GB. Most 32 GB cards are larger than this and are fine, but capacities
-differ between makes, so check before you write:
+The card image needs a microSD card of 8 GB or more. The image itself is 5.02
+GiB, and the first boot gives the data partition everything the card has left, so
+a bigger card is used rather than wasted.
 
-```shell
-blockdev --getsz /dev/sdX     # must be at least 60506112
-```
-
-The partition table is fixed, so a card short of that number writes and boots
-and then has no working data partition, which is where the board keeps its
-password and its ssh host key. Space beyond 32 GB is unused for now.
+The download does not change with the card. It is one file of about 372 MB for
+every size, because the image is mostly the two slot filesystems and the empty
+one compresses away.
 
 Buy for endurance rather than for speed. The board runs the card at 25 MHz in
 high-speed mode and never switches to 1.8 V signalling, so UHS-I speed grades
