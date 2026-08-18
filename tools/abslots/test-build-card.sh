@@ -38,14 +38,15 @@ P2=40960
 P3=57344
 P5=75776
 SLOT=16384
-KEEP=100352
-FULL=135168
+# The end of the image, which is also where the data partition starts. Same rule
+# as the real table: the end of the recovery slot plus the 4 MiB EBR gap.
+END=100352
 
 setup() {
     WORK=$(mktemp -d)
     # The same shape as the real table: one FAT that must not move, two ext4
-    # slots, an extended container, a recovery slot, and a data partition that
-    # starts past the end of the file the script produces.
+    # slots, an extended container that stops with the recovery slot, and no
+    # data partition at all. The device makes that one on the first boot.
     cat > "$WORK/table.sfdisk" <<'EOF'
 label: dos
 label-id: 0x70781617
@@ -54,9 +55,8 @@ unit: sectors
 1 : start=1,      size=32768,  type=c, bootable
 2 : start=40960,  size=16384,  type=83
 3 : start=57344,  size=16384,  type=83
-4 : start=73728,  size=61440,  type=5
+4 : start=73728,  size=18432,  type=5
 5 : start=75776,  size=16384,  type=83
-6 : start=100352, size=34816,  type=7
 EOF
     mkdir -p "$WORK/boot"
     printf 'fip\n'  > "$WORK/boot/fip.bin"
@@ -70,7 +70,7 @@ EOF
 teardown() { rm -rf "$WORK"; }
 
 run() {
-    CARD_TABLE="$WORK/table.sfdisk" CARD_DROP_FROM=6 \
+    CARD_TABLE="$WORK/table.sfdisk" \
         sh "$SCRIPT" "$WORK/boot" "$WORK/root.img" "$WORK/recovery.img" \
            "$WORK/card.img" > "$WORK/out" 2>&1
     echo $?
@@ -83,30 +83,19 @@ status=$(run)
 check "a card is built" "$status" "0"
 
 # The table has to survive into the image, or the board has no slots to boot.
-# All six, including the data partition whose bytes are not carried: its EBR
-# sector sits in the gap ahead of it, and that gap is inside the kept region.
-check "the image carries every partition" \
-    "$(sfdisk -l "$WORK/card.img" 2>/dev/null | grep -c '^/.*card\.img[0-9]')" "6"
+# Five, not six. A sixth would mean the table still declares a data partition,
+# which is what limited the image to a 32 GB card.
+check "the image carries five partitions" \
+    "$(sfdisk -l "$WORK/card.img" 2>/dev/null | grep -c '^/.*card\.img[0-9]')" "5"
 
-# Truncating at the data partition is what keeps the real image 5 GiB instead of
-# 28.85 GiB. Cutting one gap earlier, at the end of the recovery slot, takes the
-# data partition's EBR with it and S01fs then has no device to format.
-check "the image ends where the data partition starts" \
-    "$(sectors "$WORK/card.img")" "$KEEP"
+check "no data partition is declared" \
+    "$(sfdisk -l "$WORK/card.img" 2>/dev/null | grep -c 'card\.img6')" "0"
 
-# The data partition must still be described, because S01fs formats that device
-# on first boot and can only find it through the table. sfdisk cannot list a
-# partition that starts past the end of the FILE, so the check is whether the
-# description survives being written to a card that is big enough: extend a copy
-# back to full size and it must reappear. That is exactly what flashing does.
-#
-# It also catches the mistake this test made first. Each logical partition needs
-# an EBR sector ahead of it, so a data partition starting immediately after the
-# recovery slot leaves no room for one, and sfdisk drops it without a word.
-cp "$WORK/card.img" "$WORK/full.img"
-truncate -s $((FULL * 512)) "$WORK/full.img"
-check "the data partition reappears on a full-sized card" \
-    "$(sfdisk -l "$WORK/full.img" 2>/dev/null | grep -c 'full\.img6')" "1"
+# The image ends where the data partition will start. The 4 MiB gap ahead of it
+# is carried and zeroed, so a card that previously held a different layout has
+# no stale EBR sector left anywhere the new chain could reach.
+check "the image ends where the data partition will start" \
+    "$(sectors "$WORK/card.img")" "$END"
 
 # p1 is a FAT filesystem holding files, not a raw image. The boot ROM finds
 # fip.bin by reading that filesystem, so a build that wrote an image over the
