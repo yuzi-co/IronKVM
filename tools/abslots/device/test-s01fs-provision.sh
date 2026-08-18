@@ -36,10 +36,24 @@ note "the data geometry block can be extracted" OK
 
 # A parted stub that prints the machine-readable table of the card in use, and
 # returns 1 the way the real one does on a busy disk.
+# A real parted changes the table it prints once it has resized something, and a
+# mkpart makes a device node appear. The stub does both, or the provisioning
+# would stop after the resize and the cases below would prove nothing about the
+# steps that come later.
+#
+# It exits 1 always, exactly as the real one does on a disk with a mounted
+# partition, having already done the work.
 cat > "$WORK/parted" <<'STUB'
 #!/bin/sh
+grown=no
+[ -n "${PARTED_TABLE_GROWN:-}" ] && grep -q resizepart "$PARTED_LOG" 2>/dev/null && grown=yes
 case "$*" in
-    *print*) cat "$PARTED_TABLE" ;;
+    *print*)
+        if [ "$grown" = yes ]; then cat "$PARTED_TABLE_GROWN"; else cat "$PARTED_TABLE"; fi
+        ;;
+    *mkpart*)
+        [ -n "${PARTED_DEV:-}" ] && : > "$PARTED_DEV"
+        ;;
 esac
 echo "$*" >> "$PARTED_LOG"
 exit "${PARTED_RC:-1}"
@@ -204,6 +218,156 @@ got=$( SLOT_CONF="$WORK/absent.conf" sh -c ". $WORK/geo.sh; data_start" )
 [ -z "$got" ] \
     && note "no conf at all gives nothing" OK \
     || note "no conf gave '$got'" FAIL
+
+echo
+echo "===== the partition and the filesystem are made once, and only when needed ====="
+
+sed -n '/^# --- data provisioning ---/,/^# --- end data provisioning ---/p' "$S01" > "$WORK/prov.sh"
+if [ ! -s "$WORK/prov.sh" ]; then
+    note "the data provisioning block can be extracted" FAIL
+else
+    note "the data provisioning block can be extracted" OK
+
+    cat > "$WORK/mkfs.exfat" <<'STUB'
+#!/bin/sh
+echo "mkfs $*" >> "$MKFS_LOG"
+exit "${MKFS_RC:-0}"
+STUB
+    chmod +x "$WORK/mkfs.exfat"
+
+    # provision <table> <blkid-output> <device-exists yes|no> <kernel-blocks> [grown-table]
+    #
+    # The device is a real file named to end in p6, for the same reason the
+    # readiness cases above use one: a workstation has no /dev/mmcblk0p6, so a
+    # fake path would make every existence test false and hide what is broken.
+    provision() {
+        PARTED_TABLE=$1
+        BLKID_OUT=$2
+        PARTED_TABLE_GROWN=${5:-}
+        PARTED_DEV="$WORK/mmcblk0p6"
+        PARTED_LOG="$WORK/plog"; : > "$PARTED_LOG"
+        MKFS_LOG="$WORK/mlog";   : > "$MKFS_LOG"
+
+        rm -f "$WORK/mmcblk0p6"
+        [ "$3" = yes ] && : > "$WORK/mmcblk0p6"
+
+        cat > "$WORK/partitions" <<PART
+major minor  #blocks  name
+
+ 179        6   $4 mmcblk0p6
+PART
+        export PARTED_TABLE PARTED_LOG BLKID_OUT MKFS_LOG PARTED_TABLE_GROWN PARTED_DEV
+        sh -c "PARTED=$WORK/parted; BLKID=$WORK/blkid; \
+               MKFS_EXFAT=$WORK/mkfs.exfat; PARTITIONS=$WORK/partitions; \
+               . $WORK/geo.sh; . $WORK/prov.sh; \
+               provision_data $WORK/mmcblk0p6 10543104" > /dev/null 2>&1
+        echo $?
+    }
+
+    # wrote reports whether parted was asked to CHANGE anything. Its log also
+    # carries every read, because the geometry functions call parted too, so an
+    # empty log is not what "nothing was written" looks like.
+    wrote() { grep -qE 'resizepart|mkpart' "$WORK/plog"; }
+
+    # The board in use. Everything is already there, so nothing may be written.
+    rc=$(provision "$WORK/full.table" '/dev/mmcblk0p6: LABEL="data" UUID="EE8B-6CB5"' yes 24981504)
+    [ "$rc" = 0 ] && note "a card that is already provisioned reports success" OK \
+                  || note "a provisioned card returned $rc" FAIL
+    [ ! -s "$WORK/plog" ] \
+        && note "and it does not run parted at all, not even to read" OK \
+        || note "it ran parted on a provisioned card: $(tr '\n' ';' < "$WORK/plog")" FAIL
+    [ ! -s "$WORK/mlog" ] \
+        && note "and it does not format anything" OK \
+        || note "IT FORMATTED A LIVE DATA PARTITION" FAIL
+
+    # A freshly flashed 8 GB card, driven all the way through. The container
+    # reaches 15523839 after the resize, the data partition lands at 10543104 and
+    # runs to the end of the card, which is 4980736 sectors, and the kernel
+    # reports half that many 1024 byte blocks.
+    cat > "$WORK/fresh-grown.table" <<'T'
+BYT;
+/dev/mmcblk0:15523840s:sd/mmc:512:512:msdos:SD SA08G:;
+1:1s:32768s:32768s:fat16::boot, lba;
+2:40960s:4235263s:4194304s:ext4::;
+3:4235264s:8429567s:4194304s:::;
+4:8429568s:15523839s:7094272s:::;
+5:8437760s:10534911s:2097152s:ext4::;
+6:10543104s:15523839s:4980736s:::;
+T
+
+    rc=$(provision "$WORK/fresh.table" '' no 2490368 "$WORK/fresh-grown.table")
+    [ "$rc" = 0 ] && note "a fresh card is provisioned end to end" OK \
+                  || note "a fresh card returned $rc" FAIL
+    grep -q "^-s /dev/mmcblk0 resizepart 4 100%$" "$WORK/plog" \
+        && note "a fresh card grows the container first" OK \
+        || note "the container was not grown, log: $(tr '\n' ';' < "$WORK/plog")" FAIL
+    grep -q 'mkfs .*-L data' "$WORK/mlog" \
+        && note "and then makes the filesystem on it" OK \
+        || note "no filesystem was made on a fresh card" FAIL
+
+    # The explicit start keeps every card on one layout. Without it parted picks
+    # its own aligned offset, 8192 sectors further along.
+    grep -q "^-s /dev/mmcblk0 mkpart logical ntfs 10543104s 100%$" "$WORK/plog" \
+        && note "it makes the partition at the declared sector, as type ntfs" OK \
+        || note "the mkpart call is wrong: $(tr '\n' ';' < "$WORK/plog")" FAIL
+
+    # Order, not position. The log's first lines are reads, because the geometry
+    # functions call parted too, so this looks only at the calls that change
+    # something. mkpart before resizepart fails with "Can't have overlapping
+    # partitions", because the container does not yet reach the new partition.
+    order=$(grep -oE 'resizepart|mkpart' "$WORK/plog" | tr '\n' ' ')
+    [ "$order" = "resizepart mkpart " ] \
+        && note "and the resize runs before the mkpart" OK \
+        || note "the write order was '$order', want 'resizepart mkpart '" FAIL
+
+    # A card whose container already reaches the end, from a run that got that
+    # far and stopped. The resize must not run again: it would rewrite sector 0
+    # for nothing, on every boot.
+    cat > "$WORK/grown.table" <<'T'
+BYT;
+/dev/mmcblk0:15523840s:sd/mmc:512:512:msdos:SD SA08G:;
+4:8429568s:15523839s:7094272s:::;
+5:8437760s:10534911s:2097152s:ext4::;
+T
+    rc=$(provision "$WORK/grown.table" '' no 0)
+    grep -q resizepart "$WORK/plog" \
+        && note "a container that already reaches the end is resized again" FAIL \
+        || note "a container that already reaches the end is left alone" OK
+
+    # A table that cannot be read at all. Writing a partition table blind is
+    # worse than leaving the card as it is.
+    : > "$WORK/empty.table"
+    rc=$(provision "$WORK/empty.table" '' no 0)
+    [ "$rc" != 0 ] && note "an unreadable table reports failure" OK \
+                   || note "an unreadable table reported success" FAIL
+    wrote && note "it wrote to a disk whose table it could not read" FAIL \
+          || note "and nothing is written to it" OK
+
+    # A node the kernel has not caught up with. Formatting it makes a filesystem
+    # of the wrong size that nothing on this device can repair.
+    rc=$(provision "$WORK/full.table" '' yes 1024)
+    [ ! -s "$WORK/mlog" ] \
+        && note "a stale node is not formatted" OK \
+        || note "a stale node was formatted at the wrong size" FAIL
+    [ "$rc" != 0 ] && note "and it reports failure" OK \
+                   || note "a stale node reported success" FAIL
+
+    # A partition that exists and is empty. This is the repair path: a card
+    # whose data partition survived but whose filesystem did not.
+    rc=$(provision "$WORK/full.table" '' yes 24981504)
+    grep -q 'mkfs .*-L data' "$WORK/mlog" \
+        && note "an empty data partition is formatted, labelled data" OK \
+        || note "an empty data partition was not formatted: $(cat "$WORK/mlog")" FAIL
+    grep -q resizepart "$WORK/plog" \
+        && note "and the table is not rewritten to do it" FAIL \
+        || note "and the table is not rewritten to do it" OK
+
+    # mkfs failing must be reported, not swallowed. A caller that believes the
+    # filesystem is there goes on to print that /data is ready.
+    rc=$(MKFS_RC=1 provision "$WORK/full.table" '' yes 24981504)
+    [ "$rc" != 0 ] && note "a failed mkfs reports failure" OK \
+                   || note "a failed mkfs reported success" FAIL
+fi
 
 echo
 echo "===== the script still parses ====="

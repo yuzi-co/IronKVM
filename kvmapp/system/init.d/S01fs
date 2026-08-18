@@ -109,6 +109,83 @@ data_start() {
 }
 # --- end data geometry ---
 
+# --- data provisioning ---
+# Make the data partition and its filesystem on the first boot of a card.
+#
+# The shipped table declares p1 to p5 and stops, so the image fits any card of
+# 8 GB or more. This gives the data partition everything the card has left.
+#
+# Every step is gated on a condition read from the partition table, and each gate
+# is satisfied by the step it guards. So nothing repeats, and no marker file is
+# needed. The resize guard below already argues for this: a marker in the root
+# filesystem does not survive a slot image built from a fresh rootfs, and the
+# table is the same for every slot on the card.
+#
+# The gates are also what bounds the retries. A mkpart that fails writes nothing
+# at all, which is measured, so a card that cannot be partitioned does not wear
+# its own sector 0 on every boot.
+#
+# parted prints "udevadm: not found" on every call, because the board runs mdev.
+# That is noise and not a fault.
+MKFS_EXFAT=${MKFS_EXFAT:-mkfs.exfat}
+
+# The container has to reach the end of the card before a logical partition can
+# be made out there. Growing it rewrites sector 0. Measured on four card sizes:
+# the entries for /boot, root A and root B come out bit for bit identical, and
+# only the container's own entry changes.
+container_reaches_end() {
+    end=$(part_end_sector 4)
+    disk=$(disk_sectors)
+    [ -n "$end" ] && [ -n "$disk" ] && [ "$end" = "$((disk - 1))" ]
+}
+
+provision_data() {
+    dev=$1
+    start=$2
+
+    # The common case, on every boot after the first. One blkid and nothing else.
+    if [ -e "$dev" ] && has_filesystem "$dev"; then
+        return 0
+    fi
+
+    # A table that cannot be read is a card this script must not write to.
+    if [ -z "$(disk_sectors)" ] || [ -z "$(part_end_sector 4)" ]; then
+        echo "S01fs: cannot read the partition table of $DISK, leaving the card alone"
+        return 1
+    fi
+
+    if ! container_reaches_end; then
+        echo "S01fs: growing the partition container to the end of the card"
+        "$PARTED" -s "$DISK" resizepart 4 100% > /dev/null 2>&1
+        if ! container_reaches_end; then
+            echo "S01fs: the container did not grow, leaving the card alone"
+            return 1
+        fi
+    fi
+
+    if [ ! -e "$dev" ]; then
+        echo "S01fs: making the data partition at sector $start"
+        "$PARTED" -s "$DISK" mkpart logical ntfs "${start}s" 100% > /dev/null 2>&1
+    fi
+
+    # The size the kernel reports has to match the size the table declares before
+    # anything is formatted. resize.exfat does not exist on this device, so a
+    # filesystem made at the wrong size is a filesystem that stays wrong.
+    if ! data_partition_ready "$dev"; then
+        echo "S01fs: the data partition did not appear at $dev, leaving the card alone"
+        return 1
+    fi
+
+    echo "S01fs: making an exfat filesystem on $dev, $(( $(part_size_sectors "${dev##*p}") / 2048 )) MiB"
+    if ! "$MKFS_EXFAT" -L data "$dev" > /dev/null 2>&1; then
+        echo "S01fs: mkfs.exfat failed on $dev"
+        return 1
+    fi
+
+    return 0
+}
+# --- end data provisioning ---
+
 # --- data mount ---
 # /data is exfat, which stores no POSIX mode, so every file on it takes its
 # mode from the mount. The board keeps its root password hash and its
