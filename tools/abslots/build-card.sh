@@ -19,22 +19,16 @@
 #
 # Two decisions worth knowing before you read the code.
 #
-# The image is TRUNCATED at the start of the data partition. Its table still describes
-# the data partition, and S01fs formats that device on first boot when its
-# marker is present, so the bytes are not needed. Carrying them would make the
-# image 28.85 GiB instead of 5.02 GiB, and compressing 23 GiB of zeros costs
-# minutes on every release for nothing.
+# The image ENDS where the data partition starts. The table declares no data
+# partition at all: S01fs makes it on the first boot, at the end of whatever card
+# the image was written to. So the image is 5.02 GiB, it fits any card of 8 GB or
+# more, and there is no 23 GiB hole to create and cut back.
 #
 # Slot B ships EMPTY. It is what the first update writes. Populating it would
 # add 2 GiB to every download to carry a second copy of slot A.
 #
-# The table is fixed, so the image needs a card of at least the sector count the
-# table ends at. A larger card leaves the extra space unused until a release
-# grows the data partition on first boot.
-#
 # Environment, for tests:
 #   CARD_TABLE            the sfdisk layout        (default partition.sfdisk)
-#   CARD_DROP_FROM        first partition to omit  (default 6)
 set -eu
 
 HERE=$(cd "$(dirname "$0")" && pwd)
@@ -44,7 +38,6 @@ RECOVERY=${3:?usage: build-card.sh <boot-dir> <root.img> <recovery.img> <out.img
 OUT=${4:?usage: build-card.sh <boot-dir> <root.img> <recovery.img> <out.img>}
 
 TABLE=${CARD_TABLE:-$HERE/partition.sfdisk}
-DROP_FROM=${CARD_DROP_FROM:-6}
 
 # Every input is checked before anything is written. A build that fails halfway
 # leaves a file that looks like a card and is not one.
@@ -66,26 +59,23 @@ field() {
 P1_START=$(field 1 start); P1_SIZE=$(field 1 size)
 P2_START=$(field 2 start); P2_SIZE=$(field 2 size)
 P5_START=$(field 5 start); P5_SIZE=$(field 5 size)
-P6_START=$(field 6 start); P6_SIZE=$(field 6 size)
 
-for v in "$P1_START" "$P1_SIZE" "$P2_START" "$P2_SIZE" "$P5_START" "$P5_SIZE" \
-         "$P6_START" "$P6_SIZE"; do
+for v in "$P1_START" "$P1_SIZE" "$P2_START" "$P2_SIZE" "$P5_START" "$P5_SIZE"; do
     [ -n "$v" ] || { echo "$TABLE does not describe the expected layout" >&2; exit 1; }
 done
 
-# The file is created at its FULL size first, so sfdisk never writes a table
-# that describes sectors past the end of the file it is writing to. It is
-# sparse, so those sectors cost nothing until something writes them, and
-# nothing does.
-FULL=$((P6_START + P6_SIZE))
-
-# Keep everything up to the START of the dropped partition, not to the end of
-# the one before it. A logical partition is described by an EBR sector that sits
-# ahead of it, in the gap the table leaves for exactly that, so cutting at the
-# end of the recovery slot throws away the record of the data partition and
-# S01fs then has no device to format. The gap is 4 MiB.
-KEEP=$(field "$DROP_FROM" start)
-[ -n "$KEEP" ] || { echo "$TABLE has no partition $DROP_FROM to drop" >&2; exit 1; }
+# The image ends where the data partition will start, and that sector comes from
+# the same rule every other consumer uses.
+#
+# The table declares no data partition, so there is no hole to carry and no
+# truncation afterwards. The 1.0.0 image was created at 28.85 GiB and cut back to
+# 5 GiB, which cost 25 GB of writes on any filesystem without sparse files.
+#
+# The 4 MiB gap ahead of the data partition IS carried, and it is zeroed. parted
+# writes the EBR for the data partition somewhere in that gap on the first boot,
+# and a card that previously held a different layout must not leave a stale one
+# there.
+FULL=$("$HERE/data-start.sh" "$TABLE")
 
 # Refuse an oversized filesystem before writing it. dd would otherwise write it
 # straight over the next partition, and the first thing to notice would be a
@@ -143,10 +133,6 @@ check_fs() {
 check_fs "$P2_START" "$P2_SIZE"
 check_fs "$P5_START" "$P5_SIZE"
 
-# Drop the tail. The table keeps describing the data partition, and S01fs makes
-# a filesystem there on first boot.
-truncate -s $((KEEP * 512)) "$WORK"
-
 mv "$WORK" "$OUT"
 trap - EXIT
-echo "built $OUT: $((KEEP / 2048)) MiB, slot B empty, data partition formatted on first boot"
+echo "built $OUT: $((FULL / 2048)) MiB, slot B empty, data partition made on first boot"
