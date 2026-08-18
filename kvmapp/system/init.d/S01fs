@@ -217,6 +217,68 @@ may_autopartition() {
 }
 # --- end autopartition guard ---
 
+# --- disk0 provisioning ---
+# Upstream's first-boot provisioning for a stock partition layout, made safe to
+# interrupt. It is dead on an IronKVM card, where may_autopartition above
+# refuses it and the image manifest has already created the marker. It is live
+# for a stock-layout board that installs this firmware over the air, because the
+# update package carries this script and carries neither of those two files.
+#
+# What it used to do: create /etc/kvm.disk0, then run `(mkfs.exfat ...) &`. The
+# marker existed while the filesystem did not. S03usbdev runs later in the same
+# boot and hands the mass-storage LUN whatever /boot/usb.disk0 names, so a board
+# that lost power during the format came back, read the marker, decided the disk
+# was ready, and exported a half-made filesystem to the host. Nothing ever
+# retried it, because the marker said the work was done.
+#
+# So the order is inverted. A separate marker records that a format is in
+# flight, the format runs in the foreground, and /etc/kvm.disk0 is written only
+# after mkfs.exfat reports success. A boot interrupted at any point either finds
+# no marker at all and starts again, or finds the in-flight marker and formats
+# again without repartitioning. Neither state can present a disk to the host.
+#
+# The foreground format costs boot time. mkfs.exfat writes metadata only, so
+# that cost is small, and the thing it buys is not handing a host a corrupt
+# disk.
+#
+# The parted call takes the ntfs type, which sets the MBR id to 0x07 so a
+# desktop mounts the card, and the filesystem is labelled. The A/B path above
+# already does both. Its exit status is ignored for the reason recorded there:
+# parted returns 1 on a busy disk after it has succeeded, so the outcome is
+# checked instead.
+DISK0_DISK=${DISK0_DISK:-/dev/mmcblk0}
+DISK0_DEV=${DISK0_DEV:-/dev/mmcblk0p3}
+DISK0_MARKER=${DISK0_MARKER:-/etc/kvm.disk0}
+DISK0_PENDING=${DISK0_PENDING:-/etc/kvm.disk0.formatting}
+DISK0_SETTLE=${DISK0_SETTLE:-1}
+
+provision_disk0() {
+    [ -e "$DISK0_MARKER" ] && return 0
+
+    if [ ! -e "$DISK0_PENDING" ]; then
+        touch "$DISK0_PENDING"
+        # use all sdcard free space for data
+        parted -s "$DISK0_DISK" mkpart primary ntfs 8193MB 100% > /dev/null 2>&1
+        [ "$DISK0_SETTLE" = 0 ] || sleep "$DISK0_SETTLE"
+    fi
+
+    if [ ! -e "$DISK0_DEV" ]; then
+        echo "S01fs: the data partition did not appear at $DISK0_DEV"
+        return 1
+    fi
+
+    if ! mkfs.exfat -L data "$DISK0_DEV" > /dev/null 2>&1; then
+        echo "S01fs: mkfs.exfat failed on $DISK0_DEV, the next boot tries again"
+        return 1
+    fi
+
+    # Last. Until this exists, the next boot repeats the work.
+    touch "$DISK0_MARKER"
+    rm -f "$DISK0_PENDING"
+    return 0
+}
+# --- end disk0 provisioning ---
+
 # --- partition probes ---
 part3_exists() {
     [ -e /dev/mmcblk0p3 ]
@@ -289,16 +351,7 @@ then
 
         if [ -e /boot/usb.disk0 ] && may_autopartition
         then
-                if [ ! -e /etc/kvm.disk0 ]
-                then
-                        touch /etc/kvm.disk0
-                        # use all sdcard free space for data
-                        parted -s /dev/mmcblk0 "mkpart primary 8193MB 100%"
-                        sleep 1
-                        # resize data filesystem
-                        (mkfs.exfat /dev/mmcblk0p3) &
-                        sleep 1
-                fi
+                provision_disk0 || true
         fi
 
         DATADEV=$(data_device)
