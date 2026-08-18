@@ -101,7 +101,7 @@ them out:
 cd server && go test -tags novision ./...
 ```
 
-See [CLAUDE.md](CLAUDE.md) for the rest, including the traps that cost real time.
+See [AGENTS.md](AGENTS.md) for the rest, including the traps that cost real time.
 
 ## Release
 

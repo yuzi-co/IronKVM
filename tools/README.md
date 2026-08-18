@@ -112,7 +112,7 @@ Measured against the tree at `283f6dbd` on 2026-08-01:
 
 A rebuilt `libkvm.so` needs two `patchelf` steps before it works: MaixCDK writes
 its own build directory into the `RPATH`, and the link records an opencv module
-that nothing calls. `CLAUDE.md` gives both commands and the reason for each.
+that nothing calls. `AGENTS.md` gives both commands and the reason for each.
 
 The device answers the question that symbol lists only approach. Copy the new
 library and a server that links against it into a scratch directory, and ask the
@@ -898,7 +898,7 @@ The report drops from `printf` to `debug`, matching the same condition in mode 2
 
 `server/dl_lib/libkvm.so` is committed prebuilt and was built before this change,
 so the board still runs the old behaviour. The fix reaches a device only after
-`make support`-style rebuild of `kvm_vision`, and the RPATH step in `CLAUDE.md`
+`make support`-style rebuild of `kvm_vision`, and the RPATH step in `AGENTS.md`
 applies to the result:
 
 ```shell
