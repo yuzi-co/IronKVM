@@ -27,6 +27,46 @@ The single missing commit is `d382f062`, "fix: report and retry WebRTC connectio
 Nine of the open pull requests on `sipeed/NanoKVM` are this fork's own extractions (`#846`, `#847`,
 `#848`, `#849`, `#850`, `#851`, `#852`, `#871`, `#873`). The third-party pool is 20 pull requests.
 
+## Status, 2026-08-19
+
+The survey above is a record of 2026-08-17 and is left as written. This section
+records what changed after it.
+
+The fork is no longer behind. `fork/integration` and `main` were rebased onto
+`d382f062` on 2026-08-19, which was step 1 of the suggested order. All nine of
+this fork's own extraction branches were rebased onto the same commit and
+force-pushed, and each still carries the identical patch it carried before.
+
+Three items are done:
+
+| Item | State |
+| --- | --- |
+| PR #813, gate the data disk until the filesystem is ready | Done. `S01fs` now provisions through `provision_disk0`, covered by `tools/abslots/device/test-s01fs-disk0.sh`. |
+| PR #749, request DHCP option 121 | Done, for `S30eth` and `S30wifi` both, covered by `tools/network/test-dhcp-options.sh`. |
+| PR #764, set the `/data` partition type and label | Done. The A/B path already did it; the stock path now does it too. |
+| PR #759, `GOMEMLIMIT` for the server | The init-script half is done, covered by `tools/service/test-server-memlimit.sh`. The NetBird VPN is not taken. |
+
+Three corrections to the text above, from checking it against the tree rather
+than re-reading it:
+
+- Item 1 says the #813 defect is "in this tree today". True as code, but it
+  cannot run on an IronKVM card: `may_autopartition` refuses it whenever
+  `/etc/nanokvm-slots.conf` is readable, and the image manifest creates
+  `/etc/kvm.disk0` as well. The population it reached is a stock-layout board
+  that installs this firmware over the air, because the update package carries
+  `S01fs` and carries neither of those files.
+- Item 8 understates what is already done. `S95nanokvm` links `state` to tmpfs
+  as well as `now_fps`. What remains of #751 is `wifi_state`, `width` and
+  `height`.
+- Item 7 describes a different failure here. The server generates and owns
+  `/etc/kvm/.picoclaw_internal_token` and the bridge script reads it, so the
+  cache cannot be overtaken by PicoClaw. It can go stale only if `/etc/kvm` is
+  rebuilt underneath the running server.
+
+Item 3 was also confirmed on hardware rather than assumed: the board's
+`/usr/share/udhcpc/default.script:73` does test `$staticroutes`, so requesting
+the option is enough and no handler was needed.
+
 ---
 
 ## Priority 0: a live bug here, or a small clean change
