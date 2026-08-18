@@ -34,6 +34,8 @@
 # v1.4.3 rootfs.
 set -e
 
+HERE=$(cd "$(dirname "$0")" && pwd)
+
 BASE=${1:?usage: build-image.sh <base.tar.zst> <manifest> <payload-dir> <size-mib> <out.img>}
 MANIFEST=${2:?usage: build-image.sh <base.tar.zst> <manifest> <payload-dir> <size-mib> <out.img>}
 PAYLOAD=${3:?usage: build-image.sh <base.tar.zst> <manifest> <payload-dir> <size-mib> <out.img>}
@@ -137,11 +139,18 @@ echo
 echo "############ 4. device names, written once"
 # No script computes a device from a partition number. In this layout p3 is a
 # root filesystem, and S01fs used to run mkfs.exfat on p3.
-cat > "$STAGE/tree/etc/nanokvm-slots.conf" <<'CONF'
+#
+# S01fs makes the data partition on the first boot and reads its start sector
+# from here. The number is derived from partition.sfdisk rather than written
+# down, because the table and this file must never disagree about where the
+# partition goes.
+DATA_START=$("$HERE/data-start.sh")
+cat > "$STAGE/tree/etc/nanokvm-slots.conf" <<CONF
 SLOT_A=/dev/mmcblk0p2
 SLOT_B=/dev/mmcblk0p3
 RECOVERY=/dev/mmcblk0p5
 DATA_DEV=/dev/mmcblk0p6
+DATA_START=$DATA_START
 CONF
 
 echo
