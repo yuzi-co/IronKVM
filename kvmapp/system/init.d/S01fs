@@ -302,11 +302,32 @@ then
         fi
 
         DATADEV=$(data_device)
+        DATASTART=$(data_start)
+
+        # Only a layout that declares where its data goes is ever partitioned.
+        # A board without that line is an unmigrated board or an image from
+        # before this existed, and guessing at a start sector on a card whose
+        # layout is unknown is how a root slot gets overwritten.
+        #
+        # A failure is not fatal here. rcS must carry on, and provision_data has
+        # already said on the console what went wrong.
+        if [ -n "$DATASTART" ]
+        then
+                provision_data "$DATADEV" "$DATASTART" || true
+        fi
+
         if [ -e "$DATADEV" ]
         then
                 mkdir -p /data
-                mount_data "$DATADEV" /data
-                printf "(data on %s) " "$DATADEV"
+                # The result is tested. This script used to discard it and print
+                # OK, so a board with no /data reported a clean boot and only
+                # said so weeks later, through the factory root password.
+                if mount_data "$DATADEV" /data
+                then
+                        printf "(data on %s) " "$DATADEV"
+                else
+                        printf "(FAILED to mount %s) " "$DATADEV"
+                fi
         else
                 printf "(no data device at %s) " "$DATADEV"
         fi
