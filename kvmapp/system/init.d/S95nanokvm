@@ -178,6 +178,49 @@ copy_server() {
     copy_tree "$SERVER_SRC" "$SERVER_DST"
 }
 
+# The Go collector's only default input is how much the heap has grown since
+# the last collection. It cannot see what the board has left. This board has
+# 166MB Linux can address and about 96MB spare once the video carveout, the
+# kernel and the running services are counted, and below roughly 30MB free it
+# stops being able to start a process at all: fork fails, the kernel picks no
+# victim, and only a power cycle clears it. The failure guarded against here is
+# therefore not a killed server. It is a board that answers nothing and cannot
+# be reached to repair it.
+#
+# GOMEMLIMIT supplies the missing input. The default is 64MiB, a little over
+# twice the 27.8MB peak measured on the reference device over 26 hours
+# (/proc/<pid>/status, VmHWM), which leaves the collector room to work before
+# it becomes the thing that consumes the board.
+#
+# /etc/kvm/GOMEMLIMIT.server overrides it, in MiB. tailscaled reads its own
+# /etc/kvm/GOMEMLIMIT, and the two stay separate on purpose: one number cannot
+# suit both a VPN daemon and the process that has to answer the browser, and a
+# value chosen for tailscaled would silently disable this one.
+#
+# The value is checked before it is used. Go refuses to start when GOMEMLIMIT
+# does not parse, so a typo in that file would take the server down rather than
+# merely mis-size it.
+#
+# No oom_score_adj is set here. The kernel on this board does not choose an OOM
+# victim under the pressure this fork has measured; allocation stops working
+# first. Lowering the score would read as protection while changing nothing.
+server_memlimit() {
+    dir=${MEMLIMIT_DIR:-/etc/kvm}
+    value=
+
+    if [ -r "$dir/GOMEMLIMIT.server" ]; then
+        value=$(cat "$dir/GOMEMLIMIT.server" 2>/dev/null)
+    fi
+
+    case "$value" in
+        "" | *[!0-9]*) value=64 ;;
+        0)             value=64 ;;
+    esac
+
+    GOMEMLIMIT="${value}MiB"
+    export GOMEMLIMIT
+}
+
 start_services() {
     prepare_runtime_state
 
@@ -212,6 +255,8 @@ start_services() {
 
     if ! pidof NanoKVM-Server >/dev/null 2>&1; then
         copy_server
+        server_memlimit
+        echo "GOMEMLIMIT set to ${GOMEMLIMIT}"
         "$SERVER_DST/NanoKVM-Server" >> "$SERVER_LOG" 2>&1 &
     fi
 }
