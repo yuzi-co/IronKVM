@@ -43,6 +43,19 @@ docker run --rm \
   ironkvm-release-host tools/release/release.sh --dry-run 1.0.0
 ```
 
+**On a Windows workstation, run that from WSL and not from Git Bash.** The path
+below has to be one the Docker daemon can resolve, and Docker Desktop's daemon
+does not see `/mnt/d/...` when the outer container is launched from Git Bash. The
+nested mount then comes up empty rather than failing, and the build stops several
+minutes later at `cd: /home/build/NanoKVM/server: No such file or directory`.
+
+```shell
+wsl.exe -e sh -c 'cd /mnt/d/projects/NanoKVM && docker run --rm \
+  -v /var/run/docker.sock:/var/run/docker.sock -v "$PWD:$PWD" -w "$PWD" \
+  -e BUILD_UID=<uid> -e BUILD_GID=<gid> \
+  ironkvm-release-host tools/release/release.sh --dry-run <version>'
+```
+
 Three details make that work, and each one fails differently without it.
 
 **The checkout is mounted at its own path.** `release.sh` starts a second
