@@ -55,7 +55,13 @@ run_start() {
     # so "mkdir configs/c.1/strings/0x409" works there and not here. Make mkdir
     # behave the same rather than let a real failure hide in that noise.
     echo 'mkdir() { /bin/mkdir -p "$@"; }' > "$work/func.sh"
-    sed -n '/^start_usb_dev()/,/^}/p' "$S03" \
+    # start_usb_dev calls usb_has, usb_resolve, usb_dropped, usb_prune_list
+    # and usb_report, and those call five more helpers again. Extracting only
+    # start_usb_dev left every one of them undefined, so each call returned
+    # 127: the "on" cases failed outright and the "off" cases passed for the
+    # wrong reason, because a missing command is falsy. Take every top level
+    # function, so a helper added later is covered without editing this line.
+    sed -n '/^[a-z_][a-z_]*() *{$/,/^}$/p' "$S03" \
         | sed "s|/sys/|$work/sys/|g; s|/boot/|$work/boot/|g; s|/proc/|$work/proc/|g; s|\. /etc/profile|:|" \
         >> "$work/func.sh"
     echo 'start_usb_dev' >> "$work/func.sh"
