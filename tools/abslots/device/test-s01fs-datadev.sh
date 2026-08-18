@@ -160,10 +160,33 @@ fi
 
 # The call site must go through the function, or none of the above runs on the
 # device.
-if grep -qE '^[[:space:]]*mount_data[[:space:]]+"\$DATADEV"' "$S01"; then
+if grep -qE 'mount_data[[:space:]]+"\$DATADEV"[[:space:]]+/data' "$S01"; then
     note "the call site uses mount_data" OK
 else
     note "the call site still calls mount directly" FAIL
+fi
+
+# A mount that failed must not be reported as a mounted /data. S01fs discarded
+# the return value and printed OK, so a board with no /data, the factory root
+# password and a new ssh host key reported a clean boot. That is how the 1.0.0
+# card image shipped without anybody noticing it made no data partition.
+if grep -qE '^[[:space:]]*if[[:space:]]+mount_data[[:space:]]' "$S01"; then
+    note "the call site tests whether the mount worked" OK
+else
+    note "the call site discards the result of the mount" FAIL
+fi
+
+if grep -q 'FAILED to mount' "$S01"; then
+    note "and it says so when the mount fails" OK
+else
+    note "a failed mount is still silent" FAIL
+fi
+
+# The provisioning has to be wired in, or it never runs on the device.
+if grep -qE '^[[:space:]]*provision_data[[:space:]]+"\$DATADEV"' "$S01"; then
+    note "the boot path calls provision_data" OK
+else
+    note "provision_data is defined and never called" FAIL
 fi
 
 echo
