@@ -13,10 +13,14 @@
 # See README.md for the command that runs it.
 FROM node:22-bookworm
 
+# parted and exfatprogs are for tools/abslots/test-provision-integration.sh,
+# which drives the two parted calls the device makes and then formats the
+# partition they produce. The release itself uses neither: the card image
+# carries no data filesystem, because the device makes it on the first boot.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         fdisk util-linux dosfstools mtools e2fsprogs zstd xz-utils \
         u-boot-tools cpio device-tree-compiler openssl ca-certificates \
-        coreutils tar gzip file patchelf \
+        coreutils tar gzip file patchelf parted exfatprogs \
     && rm -rf /var/lib/apt/lists/*
 
 # The client only. The daemon is the workstation's, reached over the socket.
