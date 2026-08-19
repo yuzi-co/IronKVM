@@ -50,8 +50,17 @@ export const Login = (): ReactElement => {
           return;
         }
 
+        // A browser that discards the session cookie sends the operator back
+        // here with no explanation, forever. That happens after HTTPS is
+        // switched off: the Secure cookie the https page wrote cannot be read
+        // or replaced over plain http, so every login writes a cookie the
+        // browser throws away. Say so rather than looping.
+        if (!setToken(rsp.data.token)) {
+          setMsg(t('auth.cookieRejected'));
+          return;
+        }
+
         setMsg('');
-        setToken(rsp.data.token);
 
         navigate('/', { replace: true });
         window.location.reload();
