@@ -778,6 +778,15 @@ const en = {
     fullscreen: {
       toggle: 'Toggle Fullscreen'
     },
+    input: {
+      disconnected: 'Keyboard and mouse are not connected',
+      disconnectedTls:
+        'The browser refused the secure connection that carries keyboard and mouse, which it does without asking. The certificate this device generated is not trusted yet. Open this address in a new tab, accept the certificate, then reload. Installing the certificate is the reliable fix.',
+      disconnectedNever:
+        'The connection that carries keyboard and mouse could not be opened. The rest of the page works because it does not use it. Check that nothing between you and the device is blocking it.',
+      disconnectedDropped:
+        'The connection that carries keyboard and mouse was lost and has not come back. It reconnects on its own after a restart; if this stays, reload the page.'
+    },
     speaker: {
       title: 'Speaker',
       unmute: 'Unmute',

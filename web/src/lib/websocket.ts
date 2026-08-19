@@ -11,6 +11,29 @@ export enum MessageEvent {
   Mouse = 2
 }
 
+// Keyboard and mouse travel over this socket and nothing else carries them, so
+// a socket that will not open is an input outage even though the page, the REST
+// calls and the video all keep working.
+//
+// A browser will not say so. It asks the operator about an untrusted
+// certificate when it loads a page and refuses a websocket to the same origin
+// without asking, reporting nothing the page can catch. Enabling HTTPS was
+// therefore enough to remove the input with no message anywhere, which is what
+// this state exists to make visible.
+export type WsStatus = {
+  connected: boolean;
+  // Retries since the last time the socket was open. This client retries for
+  // as long as the tab is open, so the count is the only measure of how wrong
+  // things are.
+  attempts: number;
+  // False until the socket has opened at least once. A socket that has never
+  // opened is a different fault from one that dropped: the first points at the
+  // certificate or a blocked port, the second usually at a server restart.
+  everConnected: boolean;
+};
+
+type StatusHandler = (status: WsStatus) => void;
+
 interface WsClientOptions {
   url?: string;
   heartbeatInterval?: number;
@@ -32,6 +55,8 @@ export class WsClient {
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private reconnectAttempts = 0;
   private shouldReconnect = true;
+  private everConnected = false;
+  private readonly statusHandlers = new Set<StatusHandler>();
 
   private readonly eventHandlers = new Map<string, Set<MessageHandler>>();
 
@@ -106,6 +131,31 @@ export class WsClient {
     return this.instance?.readyState === W3cWebSocket.OPEN;
   }
 
+  // onStatus reports the connection state and returns an unsubscribe function.
+  // It fires immediately with the current state, so a component that mounts
+  // after the socket has already failed still learns about it.
+  public onStatus(handler: StatusHandler): () => void {
+    this.statusHandlers.add(handler);
+    handler(this.status);
+
+    return () => {
+      this.statusHandlers.delete(handler);
+    };
+  }
+
+  public get status(): WsStatus {
+    return {
+      connected: this.isConnected,
+      attempts: this.reconnectAttempts,
+      everConnected: this.everConnected
+    };
+  }
+
+  private emitStatus(): void {
+    const status = this.status;
+    this.statusHandlers.forEach((handler) => handler(status));
+  }
+
   private createConnection(): void {
     this.cleanup();
 
@@ -120,11 +170,14 @@ export class WsClient {
 
   private handleOpen(): void {
     this.reconnectAttempts = 0;
+    this.everConnected = true;
     this.startHeartbeat();
+    this.emitStatus();
   }
 
   private handleClose(): void {
     this.stopHeartbeat();
+    this.emitStatus();
     this.scheduleReconnect();
   }
 
@@ -171,6 +224,7 @@ export class WsClient {
 
     this.reconnectAttempts++;
     console.log(`[WebSocket] Reconnecting... (attempt ${this.reconnectAttempts})`);
+    this.emitStatus();
 
     this.reconnectTimer = setTimeout(() => {
       this.createConnection();
