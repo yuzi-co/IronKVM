@@ -28,6 +28,12 @@ SERVER_LOG=/tmp/nanokvm-server.log
 SERVER_SRC=${SERVER_SRC:-/kvmapp/server}
 SERVER_DST=${SERVER_DST:-/tmp/server}
 
+# kvm_system's runtime copy, named for the same reason: stop_services has to be
+# able to reason about it, and tools/service/test-server-stop.sh has to be able
+# to point it somewhere harmless. start_services writes it with `cp -r ... /tmp/`,
+# which lands in this same place.
+SYSTEM_DST=${SYSTEM_DST:-/tmp/kvm_system}
+
 wait_for_exit() {
     process="$1"
     timeout="$2"
@@ -93,7 +99,26 @@ stop_services() {
     # After the server is gone, or it starts a new child.
     stop_audio_capture
 
-    rm -rf /tmp/kvm_system /tmp/server
+    # Remove a runtime copy only once nothing is running from it.
+    #
+    # These copies live in tmpfs, so one left behind is pinned RAM for as long
+    # as the board is up, and removing them is worth doing. But a stop does not
+    # always stop: this board has a server that outlives the signals above and
+    # keeps answering. start_services then reads a live pidof and skips the
+    # copy, because its job is to avoid starting a second one:
+    #
+    #     if ! pidof NanoKVM-Server >/dev/null 2>&1; then
+    #         copy_server
+    #
+    # So an unconditional remove here leaves a running process whose whole tree
+    # is gone. It answers the API, because routing is already in memory, and it
+    # returns 404 for every file in the web UI, because the web root is derived
+    # from its own executable path. Nothing logs it.
+    #
+    # Each copy is judged by its own process. They are started and stopped
+    # separately, and one that stopped should not keep the other's copy in RAM.
+    pidof NanoKVM-Server >/dev/null 2>&1 || rm -rf "$SERVER_DST"
+    pidof kvm_system >/dev/null 2>&1 || rm -rf "$SYSTEM_DST"
 }
 
 # now_fps is rewritten whenever the measured frame rate changes, so a
