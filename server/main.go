@@ -120,7 +120,12 @@ func run() {
 		// product, it removes the input: keyboard and mouse ride the websocket
 		// at /api/ws, and a browser refuses an untrusted websocket silently
 		// while still rendering the page.
-		utils.EnsureCert()
+		if err := utils.EnsureCert(); err != nil {
+			// Not fatal. The certificate on disk may still serve, and a board
+			// that refuses to start its listener is worse than one serving a
+			// certificate the browser will question.
+			log.Printf("failed to refresh the TLS certificate: %v", err)
+		}
 
 		go func() {
 			server := utils.NewServer(utils.ListenAddr(conf.Host, httpsPortStr), r)

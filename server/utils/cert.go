@@ -214,13 +214,12 @@ func ensureCert(certPath, keyPath string, id certIdentity) (bool, error) {
 // address under DHCP would otherwise keep serving a certificate for the address
 // it used to have, which fails in exactly the same silent way as the original
 // fault and needs no operator mistake to happen.
-func EnsureCert() {
+func EnsureCert() error {
 	id := CurrentCertIdentity()
 
 	replaced, err := ensureCert(CertFile, KeyFile, id)
 	if err != nil {
-		log.Errorf("failed to refresh the TLS certificate: %v", err)
-		return
+		return err
 	}
 
 	if replaced {
@@ -228,6 +227,8 @@ func EnsureCert() {
 			"a browser that trusted the old certificate has to be told about this one",
 			append(id.DNS, ipStrings(id.IPs)...))
 	}
+
+	return nil
 }
 
 func ipStrings(ips []net.IP) []string {

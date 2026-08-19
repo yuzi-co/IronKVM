@@ -39,8 +39,17 @@ func (s *Service) SetTls(c *gin.Context) {
 	_ = exec.Command("sh", "-c", "/etc/init.d/S95nanokvm restart").Run()
 }
 
+// ensureTlsCert is a variable so a test can prove that switching HTTPS on does
+// not mint a certificate when the one on disk still answers for this device.
+var ensureTlsCert = utils.EnsureCert
+
 func enableTls() error {
-	if err := utils.GenerateCert(); err != nil {
+	// EnsureCert, not GenerateCert. Switching HTTPS off leaves the certificate
+	// on disk, so switching it back on can reuse the one the operator already
+	// installed in their trust store. Generating unconditionally voided that
+	// trust on every switch, and a self-signed certificate has to be trusted by
+	// hand, so the cost of getting this wrong is a manual step every time.
+	if err := ensureTlsCert(); err != nil {
 		return err
 	}
 
