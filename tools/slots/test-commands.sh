@@ -8,8 +8,17 @@
 # it is symlinked or invoked as /busybox <applet>. This check exists because
 # losetup was compiled in, reported present by a naive check, and still failed
 # a real boot with rc=127.
-INIT=${1:?usage: test-commands.sh <init> <tree>}
-TREE=${2:?usage: test-commands.sh <init> <tree>}
+INIT=$1
+TREE=$2
+# Exit 2, not 1. This suite needs an unpacked initramfs that no checkout
+# carries, and "cannot run here" is a different answer from "the init is
+# broken". tools/run-tests.sh counts 2 as skipped and 1 as a failure, so a
+# sweep of the whole tree stops reporting a missing artefact as a defect.
+[ -n "$INIT" ] && [ -n "$TREE" ] || {
+    echo "usage: $(basename "$0") <init> <unpacked-initramfs-tree>" >&2
+    echo "repack-boot.sh beside this file runs it on the tree it unpacks." >&2
+    exit 2
+}
 
 BUILTINS="if then else elif fi for while until do done case esac in return echo read export set eval exit shift local unset true false break continue cd pwd [ ] test printf : { } function . source trap wait exec"
 
