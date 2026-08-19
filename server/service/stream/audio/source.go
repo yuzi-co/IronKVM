@@ -2,6 +2,7 @@ package audio
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"os/exec"
 	"strconv"
@@ -162,7 +163,7 @@ func (s *Source) Run(handle func([]byte)) {
 			return
 		}
 
-		delivered, uptime := s.runOnce(chunk, handle)
+		delivered, uptime, reason := s.runOnce(chunk, handle)
 
 		if delivered && uptime > minRunDuration {
 			// The child produced audio and ran long enough, so the next failure
@@ -179,15 +180,26 @@ func (s *Source) Run(handle func([]byte)) {
 			// long enough to count.
 			failures++
 
+			// The child's own reason rides on these lines rather than on one
+			// of its own, so it falls quiet with them. A host that plays
+			// nothing is this board's ordinary idle state, and arecord
+			// complains about it on every attempt, for as long as the board is
+			// up. The reason is still the only diagnostic this feature has, so
+			// it is carried, not dropped.
+			said := ""
+			if reason != "" {
+				said = fmt.Sprintf(", and it said: %s", reason)
+			}
+
 			switch {
 			case failures < quietAfterFailures:
-				log.Warnf("audio capture exited (uptime=%v, delivered=%v), attempt %d",
-					uptime, delivered, failures)
+				log.Warnf("audio capture exited (uptime=%v, delivered=%v), attempt %d%s",
+					uptime, delivered, failures, said)
 			case failures == quietAfterFailures:
 				log.Warnf("audio capture has failed %d times, and the last reason was "+
-					"(uptime=%v, delivered=%v); it retries every %v from here, without "+
+					"(uptime=%v, delivered=%v)%s; it retries every %v from here, without "+
 					"another line until it recovers",
-					failures, uptime, delivered, s.maxBackoff)
+					failures, uptime, delivered, said, s.maxBackoff)
 			}
 		}
 
@@ -208,16 +220,20 @@ func (s *Source) Run(handle func([]byte)) {
 }
 
 // runOnce starts one child and reads it to exhaustion. It reports whether the
-// child delivered any audio and how long it ran.
-func (s *Source) runOnce(chunk []byte, handle func([]byte)) (bool, time.Duration) {
+// child delivered any audio, how long it ran, and the last thing it said.
+//
+// It reports the reason rather than logging it. Whether a line is worth writing
+// depends on how many attempts have failed already, and that is only known in
+// Run. Logging here wrote the same sentence every retry for as long as the
+// board was up.
+func (s *Source) runOnce(chunk []byte, handle func([]byte)) (bool, time.Duration, string) {
 	startTime := time.Now()
 
 	cmd := s.newCmd()
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		log.Errorf("failed to open the audio capture pipe: %s", err)
-		return false, time.Since(startTime)
+		return false, time.Since(startTime), fmt.Sprintf("the capture pipe would not open: %s", err)
 	}
 
 	// Keep the tail of stderr. A child that never delivers is the case that
@@ -234,13 +250,15 @@ func (s *Source) runOnce(chunk []byte, handle func([]byte)) (bool, time.Duration
 
 	stderrPipe, err := cmd.StderrPipe()
 	if err != nil {
-		log.Errorf("failed to open the audio capture error pipe: %s", err)
-		return false, time.Since(startTime)
+		return false, time.Since(startTime), fmt.Sprintf("the capture error pipe would not open: %s", err)
 	}
 
+	// Reported rather than logged, for the same reason as the child's own
+	// complaint: a capture command that cannot start cannot start on every
+	// retry either, and one line per attempt for the life of the board is not
+	// more informative than one line.
 	if err := cmd.Start(); err != nil {
-		log.Errorf("failed to start audio capture: %s", err)
-		return false, time.Since(startTime)
+		return false, time.Since(startTime), fmt.Sprintf("the capture command would not start: %s", err)
 	}
 
 	go func() {
@@ -258,7 +276,9 @@ func (s *Source) runOnce(chunk []byte, handle func([]byte)) (bool, time.Duration
 		_ = cmd.Wait()
 		<-copied
 		_ = stdout.Close()
-		return false, time.Since(startTime)
+
+		// Stopping is not a failure and has no reason to report.
+		return false, time.Since(startTime), ""
 	}
 	s.cmd = cmd
 	s.stdout = stdout
@@ -301,13 +321,12 @@ func (s *Source) runOnce(chunk []byte, handle func([]byte)) (bool, time.Duration
 	<-copied
 
 	// A healthy child never gets here, so this costs nothing while audio works.
+	var reason string
 	if !delivered {
-		if line := stderr.lastLine(); line != "" {
-			log.Warnf("audio capture said: %s", line)
-		}
+		reason = stderr.lastLine()
 	}
 
-	return delivered, time.Since(startTime)
+	return delivered, time.Since(startTime), reason
 }
 
 // Stop kills the child and stops the loop. It is safe to call more than once,
