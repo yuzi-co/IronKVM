@@ -62,15 +62,57 @@ Switching is one write, before `disksize` is set:
 echo zstd > /sys/block/zram0/comp_algorithm
 ```
 
-## Build and install
+## The modules ship in the install package
 
-The modules are the only manual step. The server installs the init script.
+`kvmapp/system/ko/zram.ko` and `kvmapp/system/ko/zsmalloc.ko` are committed.
+That directory is part of the install package and already carried two other
+modules, so an image built from this repository has them and an over-the-air
+update restores them. Nothing has to be copied by hand.
+
+This was not the original design. The modules went to `/mnt/system/ko`, and the
+design document listed shipping them as out of scope because the base image
+already carries about 30 modules there. `/mnt` is not a mount point. It is a
+plain directory on the root slot, so the rootfs rebuild of 2026-08-16 deleted
+both modules from the reference board. zram was off for three days. The only
+trace was one `S01zram (rc=1)` line in `/bootlog`, because the script degrades
+quietly by design and nothing else reports a fault.
+
+`S01zram` and the server both search `/kvmapp/system/ko` first and
+`/mnt/system/ko` second, so a board that was set up by hand keeps working. A
+directory has to hold both modules to be used: zram cannot load without
+zsmalloc, and a pair split across two directories is two different builds.
+
+## Rebuilding them
+
+Only needed when the device kernel moves. The build runs in a container,
+because the kernel tree cannot be checked out on a Windows filesystem: it
+carries paths Windows refuses, and `git clone` fails at the checkout step.
 
 ```shell
+docker build -t nanokvm-app-builder tools/build
+docker build -t nanokvm-zram-builder tools/zram
+
 ssh root@<device> 'zcat /proc/config.gz' > kernel.config
-tools/zram/build-modules.sh /path/to/linux_5.10 kernel.config ./ko
-scp ko/*.ko root@<device>:/mnt/system/ko/
+
+docker volume create nanokvm-kernel
+docker run --rm -v nanokvm-kernel:/src -w /src nanokvm-zram-builder sh -c '
+  git clone --depth 1 --filter=blob:none --sparse -b NanoKVM \
+      https://github.com/sipeed/LicheeRV-Nano-Build
+  cd LicheeRV-Nano-Build && git sparse-checkout set linux_5.10'
+
+docker run --rm \
+  -v nanokvm-kernel:/kernel \
+  -v "$PWD/tools/zram:/tools:ro" \
+  -v "$PWD/ko:/work" \
+  nanokvm-zram-builder \
+  bash /tools/build-modules.sh /kernel/LicheeRV-Nano-Build/linux_5.10 \
+       /work/kernel.config /work/ko
+
+cp ko/*.ko kvmapp/system/ko/
 ```
+
+Commit the result. `.gitattributes` marks `*.ko` as `binary`, so the blob is
+byte-exact; check it with `sha256sum` against the file if you want the proof.
 
 Then open `Settings > Device > Advanced` in the web UI and turn on **Compressed
 swap (zram)**. The toggle copies `/kvmapp/system/init.d/S01zram` to
@@ -156,6 +198,42 @@ device, which is the path that needs the repair.
 `disable` does not remove the modules. They stay loaded, so the toggle keeps
 reporting the feature as available and a re-enable costs no `insmod`.
 
+## Testing on a live board
+
+Use a `hot_add` device, never the live swap, and give it a `mem_limit`. Keep
+the payload small: 8 MB is the figure the measurements above used, and it is
+small for a reason.
+
+```shell
+N=$(cat /sys/class/zram-control/hot_add)
+echo 16M > /sys/block/zram$N/disksize
+echo 8M  > /sys/block/zram$N/mem_limit     # do not skip this
+dd if=/some/real/file of=/dev/zram$N bs=64k count=128
+cat /sys/block/zram$N/mm_stat
+echo 1 > /sys/block/zram$N/reset
+echo $N > /sys/class/zram-control/hot_remove
+```
+
+Two mistakes wedged the reference board on 2026-08-19, and each on its own was
+enough:
+
+- **The payload was staged in `/tmp`.** `/tmp` is tmpfs, so a 57 MB tar file
+  spent 57 MB of the board's RAM before the test began. Read from a real file
+  on `/data`, or generate the data in the pipe.
+- **The `hot_add` device had no `mem_limit`.** `zram0` is capped at 40 MB by
+  `S01zram` and cannot spiral. A device created by hand is uncapped, and it
+  compressed the payload into whatever RAM was left.
+
+The board did not crash, and it did not OOM-kill anything. It stopped being
+able to `fork`: `ping` answered, the already-running `NanoKVM-Server` answered
+HTTP in 138 ms, and `ssh` timed out during the banner exchange because `sshd`
+could not start a child. That is the failure mode this board has instead of an
+OOM, and there is no remote power cycle for it.
+
+Use `/dev/zero` only to check deduplication. It never reaches the compressor:
+identical pages are counted in the `same_pages` field of `mm_stat` and the
+compressed size stays 0.
+
 ## The trade
 
 With no disk swap behind it, exceeding zram means the OOM killer rather than
@@ -164,3 +242,7 @@ with it. `mem_limit` caps the RAM zram may consume so it cannot spiral, but the
 tail behaviour is a cliff rather than a slope. On a board that measured 143
 pages ever swapped, and zero under a live streaming session, that cliff is a
 long way off.
+
+The 2026-08-19 wedge above is what that cliff looks like when the cap is
+missing. It says nothing about `zram0`, which was capped and behaved: the swap
+device stayed at its 40 MB limit throughout.

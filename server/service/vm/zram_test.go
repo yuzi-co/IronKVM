@@ -10,7 +10,12 @@ import (
 // zramPaths collects the temporary files that stand in for the device's real
 // ones during a test.
 type zramPaths struct {
-	moduleDir  string
+	// moduleDir stands in for /kvmapp/system/ko, the copy that ships in the
+	// install package. fallbackDir stands in for /mnt/system/ko, where a pair
+	// installed by hand before that existed still lives.
+	moduleDir   string
+	fallbackDir string
+
 	initScript string
 	initSource string
 	sysfsDir   string
@@ -29,7 +34,9 @@ func useZramPaths(t *testing.T) zramPaths {
 	root := t.TempDir()
 	var commands []string
 	paths := zramPaths{
-		moduleDir:  filepath.Join(root, "ko"),
+		moduleDir:   filepath.Join(root, "kvmapp", "ko"),
+		fallbackDir: filepath.Join(root, "mnt", "ko"),
+
 		initScript: filepath.Join(root, "init.d", "S01zram"),
 		initSource: filepath.Join(root, "kvmapp", "S01zram"),
 		sysfsDir:   filepath.Join(root, "sys", "zram0"),
@@ -38,29 +45,31 @@ func useZramPaths(t *testing.T) zramPaths {
 		commands:   &commands,
 	}
 
-	for _, dir := range []string{paths.moduleDir, filepath.Dir(paths.initScript)} {
+	for _, dir := range []string{paths.moduleDir, paths.fallbackDir, filepath.Dir(paths.initScript)} {
 		if err := os.MkdirAll(dir, 0o755); err != nil {
 			t.Fatalf("failed to create %s: %s", dir, err)
 		}
 	}
 
 	original := []*string{
-		&zramModuleDir, &zramInitScript, &zramInitSource,
+		&zramInitScript, &zramInitSource,
 		&zramSysfsDir, &procSwapsPath, &procVmstatPath,
 	}
 	saved := make([]string, len(original))
 	for i, p := range original {
 		saved[i] = *p
 	}
+	savedDirs := zramModuleDirs
 	originalRunner := runShellCommand
 	t.Cleanup(func() {
 		for i, p := range original {
 			*p = saved[i]
 		}
+		zramModuleDirs = savedDirs
 		runShellCommand = originalRunner
 	})
 
-	zramModuleDir = paths.moduleDir
+	zramModuleDirs = []string{paths.moduleDir, paths.fallbackDir}
 	zramInitScript = paths.initScript
 	zramInitSource = paths.initSource
 	zramSysfsDir = paths.sysfsDir
@@ -174,6 +183,71 @@ func TestReadZramStatusNeedsBothModules(t *testing.T) {
 				t.Errorf("available = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+// The modules used to be read from /mnt/system/ko alone. /mnt is a plain
+// directory on the root slot, so a rootfs rebuild deleted them and the board
+// ran with no swap until somebody read /bootlog. They now ship in the install
+// package under /kvmapp/system/ko, and both directories are searched.
+func TestReadZramStatusFindsModulesInEitherDirectory(t *testing.T) {
+	tests := []struct {
+		name    string
+		install func(t *testing.T, p zramPaths)
+		want    bool
+	}{
+		{
+			name: "install package only",
+			install: func(t *testing.T, p zramPaths) {
+				p.writeFile(t, filepath.Join(p.moduleDir, "zram.ko"), "")
+				p.writeFile(t, filepath.Join(p.moduleDir, "zsmalloc.ko"), "")
+			},
+			want: true,
+		},
+		{
+			name: "hand-installed pair only",
+			install: func(t *testing.T, p zramPaths) {
+				p.writeFile(t, filepath.Join(p.fallbackDir, "zram.ko"), "")
+				p.writeFile(t, filepath.Join(p.fallbackDir, "zsmalloc.ko"), "")
+			},
+			want: true,
+		},
+		{
+			// A pair split across two directories is two different builds.
+			// Loading one of each is how a board gets a module that resolves
+			// its symbols against the wrong copy, so neither directory counts.
+			name: "one module in each directory",
+			install: func(t *testing.T, p zramPaths) {
+				p.writeFile(t, filepath.Join(p.moduleDir, "zram.ko"), "")
+				p.writeFile(t, filepath.Join(p.fallbackDir, "zsmalloc.ko"), "")
+			},
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			paths := useZramPaths(t)
+			tt.install(t, paths)
+
+			if got := readZramStatus().Available; got != tt.want {
+				t.Errorf("available = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+// The install package copy is the one an image build refreshes, so it is the
+// one that matches the rest of the installed firmware.
+func TestZramModuleDirPrefersTheInstallPackage(t *testing.T) {
+	paths := useZramPaths(t)
+	for _, dir := range []string{paths.moduleDir, paths.fallbackDir} {
+		paths.writeFile(t, filepath.Join(dir, "zram.ko"), "")
+		paths.writeFile(t, filepath.Join(dir, "zsmalloc.ko"), "")
+	}
+
+	if got := zramModuleDir(); got != paths.moduleDir {
+		t.Errorf("zramModuleDir() = %q, want %q", got, paths.moduleDir)
 	}
 }
 
