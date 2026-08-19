@@ -141,7 +141,10 @@ line_of() { printf '%s\n' "$2" | grep -n -- "$1" | head -1 | cut -d: -f1; }
 
 server_at=$(line_of '^ *stop_process NanoKVM-Server$' "$body")
 system_at=$(line_of '^ *stop_process kvm_system$' "$body")
-rm_at=$(line_of '^ *rm -rf /tmp/' "$body")
+# The removal used to name /tmp directly. It is guarded now, and it names
+# SERVER_DST and SYSTEM_DST, so match the removal itself rather than the path it
+# used to carry. The leading [^#]* keeps a comment that mentions rm out of it.
+rm_at=$(line_of '^[^#]*rm -rf' "$body")
 
 if [ -n "$server_at" ] && [ -n "$system_at" ] && [ "$server_at" -lt "$system_at" ]; then
     note "the server stops before kvm_system, so it can release MMF" OK
