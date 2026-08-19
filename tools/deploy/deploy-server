@@ -24,12 +24,63 @@
 #
 # Environment:
 #   DEPLOY_TIMEOUT   seconds to wait for HTTP 200      (default 45)
-#   DEPLOY_URL       what to probe                     (default loopback)
+#   DEPLOY_URL       what to probe                     (default: read from
+#                                                     /etc/kvm/server.yaml)
 #   DEPLOY_DIR       where backups live                (default /data/deploy)
+
+# --- probe url ---
+# default_probe_url builds the loopback URL to probe from the server's own
+# configuration.
+#
+# The guard waits for HTTP 200 and restores the previous binary when it does not
+# arrive. A probe fixed at http:// therefore stops being a health check the
+# moment the operator sets `proto: https`: the server answers 307 on plain HTTP,
+# the guard reads that as a server that will not serve, and it puts the old
+# binary back over a new one that was working. That is the guard causing the
+# outage it exists to prevent, and it happened on 2026-08-19, on the first
+# deploy after the protocol was switched.
+#
+# The port is read from the block belonging to the scheme in use. Reading the
+# other one aims the probe at a socket nothing is listening to, which fails the
+# same way for a different reason.
+#
+# An unreadable config falls back to plain HTTP on 80, which is what this script
+# always assumed and what the compiled-in default serves.
+default_probe_url() {
+    conf=${SERVER_CONFIG:-/etc/kvm/server.yaml}
+
+    proto=http
+    port=
+
+    if [ -r "$conf" ]
+    then
+        got=$(sed -n 's/^proto:[[:space:]]*\([A-Za-z][A-Za-z]*\).*/\1/p' "$conf" | head -1)
+        case "$got" in
+            https) proto=https ;;
+            http)  proto=http ;;
+        esac
+
+        # Scoped to the block under `port:`. cert:, jwt: and logger: all carry
+        # indented keys of their own, and an unscoped match would take whichever
+        # came first.
+        port=$(sed -n '/^port:/,/^[^[:space:]#]/p' "$conf" \
+            | sed -n "s/^[[:space:]][[:space:]]*$proto:[[:space:]]*\([0-9][0-9]*\).*/\1/p" \
+            | head -1)
+    fi
+
+    # A default port is left out, so the common case reads the way an operator
+    # would write it by hand.
+    case "$proto:$port" in
+        https:|https:443) echo "https://127.0.0.1/" ;;
+        http:|http:80)    echo "http://127.0.0.1/" ;;
+        *)                echo "$proto://127.0.0.1:$port/" ;;
+    esac
+}
+# --- end probe url ---
 
 NEW=$1
 DEPLOY_TIMEOUT=${DEPLOY_TIMEOUT:-45}
-DEPLOY_URL=${DEPLOY_URL:-http://127.0.0.1/}
+DEPLOY_URL=${DEPLOY_URL:-$(default_probe_url)}
 DEPLOY_DIR=${DEPLOY_DIR:-/data/deploy}
 CURRENT=${CURRENT:-/kvmapp/server/NanoKVM-Server}
 GOOD=${GOOD:-$DEPLOY_DIR/known-good/NanoKVM-Server}
