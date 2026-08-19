@@ -289,7 +289,92 @@ usb_enumerated() {
     return 1
 }
 
+# usb_record_link appends one line per boot, so the speed the link negotiated
+# survives long enough for somebody to read it.
+#
+# The kernel reports that speed once, at reset time, and the report does not
+# last. This board writes a VPSS line to the ring buffer every second once the
+# video pipeline runs, and the ring holds about forty minutes. Measured on
+# 2026-08-19: forty minutes after boot the ring held no dwc2 line at all.
+#
+# That is why a board that comes up full-speed has been characterised several
+# times and diagnosed none. The symptom is a keyboard that does nothing, the
+# operator looks some hours later, and every trace of the enumeration has gone.
+#
+# A good boot costs one line. A boot that did not come up high-speed and
+# configured also copies the dwc2 lines out of the ring, because that is the
+# last moment they exist.
+#
+# The log is bounded and it lives on /data. A board that reboots in a loop must
+# not fill the partition, and runtime state never goes on /kvmapp, which is the
+# boot card.
+#
+# The defaults are resolved here rather than at the top of the file. The test
+# suites lift function bodies out of this script and source them, so a default
+# written as a top-level assignment is simply absent when they run.
+usb_link_speed() {
+    for f in /sys/class/udc/*/current_speed
+    do
+        [ -r "$f" ] && { cat "$f"; return; }
+    done
+
+    echo unknown
+}
+
+usb_link_state() {
+    for f in /sys/class/udc/*/state
+    do
+        [ -r "$f" ] && { cat "$f"; return; }
+    done
+
+    echo unknown
+}
+
+usb_record_link() {
+    log=${USB_LINK_LOG:-/data/usb-link.log}
+    keep=${USB_LINK_KEEP:-200}
+
+    # S01fs mounts /data before this script runs. A board whose data partition
+    # is absent or broken must still boot, so this is a silence, not an error.
+    [ -d "$(dirname "$log")" ] || return 0
+
+    speed=$(usb_link_speed)
+    state=$(usb_link_state)
+    up=$(cut -d. -f1 /proc/uptime 2>/dev/null)
+
+    {
+        echo "$(date '+%Y-%m-%d %H:%M:%S') up=${up:-?}s speed=$speed state=$state rebinds=${1:-0}"
+
+        # Only when something was wrong. The dwc2 lines are the evidence, and
+        # copying them every boot would put the whole ring on the card.
+        if [ "$speed" != high-speed ] || [ "$state" != configured ]
+        then
+            dmesg | grep dwc2 | sed 's/^/    /'
+        fi
+    } >> "$log" 2>/dev/null
+
+    if [ "$(wc -l < "$log" 2>/dev/null || echo 0)" -gt "$keep" ]
+    then
+        tail -n "$keep" "$log" > "$log.new" 2>/dev/null && mv "$log.new" "$log"
+    fi
+
+    return 0
+}
+
+# usb_watch_enumeration records whatever the watch settled on, and returns what
+# the watch decided. Every exit of usb_watch_link is a boot worth a line: the
+# one that worked, the one that needed a rebind, and the one that never
+# enumerated at all.
 usb_watch_enumeration() {
+    usb_watch_link
+    watched=$?
+
+    usb_record_link "$rebinds"
+
+    return "$watched"
+}
+
+usb_watch_link() {
     rebinds=0
 
     while :
