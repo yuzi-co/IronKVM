@@ -87,7 +87,7 @@ for fn in usb_record_link usb_link_speed usb_link_state; do
         && note "S03usbdev defines $fn" OK \
         || note "S03usbdev defines $fn" FAIL
 done
-[ "$fails" -eq 0 ] || { echo; echo "$fails case(s) FAILED"; exit "$fails"; }
+[ "$fails" -eq 0 ] || { echo; echo "$fails case(s) FAILED"; exit 1; }
 
 LOG=$work/log/usb-link.log
 
@@ -261,5 +261,5 @@ if [ "$fails" -eq 0 ]; then
     echo "===== every boot leaves the speed it negotiated ====="
 else
     echo "$fails case(s) FAILED"
+    exit 1
 fi
-exit "$fails"

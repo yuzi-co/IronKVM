@@ -62,7 +62,7 @@ else
     sed 's/^/    /' "$WORK/apply.log" | tail -12
     echo
     echo "$fails case(s) FAILED"
-    exit "$fails"
+    exit 1
 fi
 
 sfdisk -d "$WORK/disk.img" > "$WORK/back" 2>/dev/null
@@ -170,5 +170,5 @@ if [ "$fails" -eq 0 ]; then
     echo "all cases passed"
 else
     echo "$fails case(s) FAILED"
+    exit 1
 fi
-exit "$fails"
