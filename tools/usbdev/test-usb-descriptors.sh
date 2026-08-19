@@ -103,10 +103,15 @@ STUB
 }
 
 # run lifts a script, appends one call, and runs the result.
+#
+# Under a timeout, always. sleep is stubbed above, so a loop in the script that
+# lost its bound does not merely run slowly here, it never ends, and the whole
+# suite stops with no output. That is a defect worth reporting, not a reason to
+# hang; the retry section below turns the timeout into a case of its own.
 run() {
     lift "$1"
     echo "$2" >> "$work/func.sh"
-    sh "$work/func.sh" > "$work/out" 2>&1
+    timeout 10 sh "$work/func.sh" > "$work/out" 2>&1
     G=$work/sys/kernel/config/usb_gadget/g0
 }
 
@@ -332,6 +337,58 @@ fi
 
 run "$S03" restart_usb_dev
 is UDC 4340000.usb "restart binds the controller again"
+
+# --- binding when the controller is late ---------------------------------
+
+echo
+echo "===== S03usbdev, a controller that is not there yet ====="
+# dwc2 can still be probing when this script runs. A single write then puts
+# nothing into UDC, and an empty UDC is how a caller deliberately unbinds, so
+# the gadget is built and never bound and nothing says so: /dev/hidg* are
+# missing and the board looks like it has no keyboard.
+no_controller() {
+    build_env
+    rm -rf "$work/sys/class/udc"
+    mkdir -p "$work/sys/class/udc"
+}
+
+no_controller
+run "$S03" start_usb_dev
+is UDC "" "no controller present leaves the gadget unbound"
+if grep -q unbound "$work/out"
+then
+    note "the script reports that it gave up" OK
+else
+    note "the script gives up silently, so nothing records why HID is missing" FAIL
+fi
+
+# The retry has to be bounded. This script runs from the rcS wait entry, so a
+# loop that waits for ever stops the boot before the network and the server
+# start, and the USB console cannot be reached to find out why.
+no_controller
+lift "$S03"
+echo start_usb_dev >> "$work/func.sh"
+if timeout 10 sh "$work/func.sh" > "$work/out" 2>&1
+then
+    note "the retry gives up rather than holding rcS for ever" OK
+elif [ $? -eq 124 ]
+then
+    note "the retry never returns, so rcS stops here" FAIL
+else
+    note "the retry gives up rather than holding rcS for ever" OK
+fi
+
+# sleep is the retry's only pause, so a stub that brings the controller up on
+# the third one shows that a later attempt is what binds.
+no_controller
+lift "$S03"
+{
+    printf '%s\n' 'sleep() { _n=$((${_n:-0} + 1)); [ "$_n" -ge 3 ] && mkdir -p "'"$work"'/sys/class/udc/4340000.usb"; return 0; }'
+    printf '%s\n' start_usb_dev
+} >> "$work/func.sh"
+timeout 10 sh "$work/func.sh" > "$work/out" 2>&1
+G=$work/sys/kernel/config/usb_gadget/g0
+is UDC 4340000.usb "a controller that appears late is still picked up"
 
 # --- the HID-only script -------------------------------------------------
 

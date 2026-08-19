@@ -1,6 +1,44 @@
 #!/bin/sh
 # kvmhwd hid only
 
+# usb_bind hands the gadget to a device controller, and waits for one to exist.
+#
+# The single write this replaces assumed /sys/class/udc was populated by the
+# time this script ran. It usually is. When dwc2 is still probing it is empty,
+# the write puts nothing into UDC, and writing nothing to UDC is how a caller
+# deliberately unbinds - so the gadget is built, never bound, and no error is
+# reported anywhere. What an operator sees is a board with no keyboard.
+#
+# The retry comes from sipeed/LicheeRV-Nano-Build a3ccb527. The bound does not.
+# That loop is `while true`, and this script runs from the rcS wait entry, so a
+# controller that never appears would stop the boot before the network and the
+# server start. Coming up unbound is recoverable from the web UI; not coming up
+# is not, and the USB console that would answer instead is part of this gadget.
+#
+# The pause is a whole second because this image's BusyBox sleep is not built
+# with fractional support, and the tests stub sleep so they do not pay it.
+usb_bind() {
+    tries=${USB_BIND_TRIES:-10}
+    udc=/sys/kernel/config/usb_gadget/g0/UDC
+    n=0
+
+    while [ -z "$(cat "$udc" 2>/dev/null)" ]
+    do
+        if [ "$n" -ge "$tries" ]
+        then
+            echo "usb: no device controller after $tries tries, gadget left unbound"
+            return 1
+        fi
+
+        [ "$n" -gt 0 ] && sleep 1
+        n=$((n + 1))
+
+        ls /sys/class/udc/ | cat > "$udc" 2>/dev/null
+    done
+
+    return 0
+}
+
 start_usb_dev(){
     . /etc/profile
     echo "usb mode: device"
@@ -72,7 +110,7 @@ start_usb_dev(){
     echo -ne \\x05\\x01\\x09\\x02\\xa1\\x01\\x09\\x01\\xa1\\x00\\x05\\x09\\x19\\x01\\x29\\x03\\x15\\x00\\x25\\x01\\x95\\x03\\x75\\x01\\x81\\x02\\x95\\x01\\x75\\x05\\x81\\x01\\x05\\x01\\x09\\x30\\x09\\x31\\x15\\x00\\x26\\xff\\x7f\\x35\\x00\\x46\\xff\\x7f\\x75\\x10\\x95\\x02\\x81\\x02\\x05\\x01\\x09\\x38\\x15\\x81\\x25\\x7f\\x35\\x00\\x45\\x00\\x75\\x08\\x95\\x01\\x81\\x06\\xc0\\xc0 > functions/hid.GS2/report_desc
     ln -s functions/hid.GS2 configs/c.1
 
-    ls /sys/class/udc/ | cat > UDC
+    usb_bind
     echo device > /proc/cviusb/otg_role
 }
 
@@ -84,7 +122,7 @@ start_usb_host(){
 restart_usb_dev(){
     echo > /sys/kernel/config/usb_gadget/g0/UDC
     sleep 1
-    ls /sys/class/udc/ | cat > /sys/kernel/config/usb_gadget/g0/UDC
+    usb_bind || return 1
     echo "USB Restart OK!"
 }
 
