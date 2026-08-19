@@ -8,8 +8,17 @@
 # check that passes both ways is worthless, and several checks written during
 # this work did exactly that before being fixed.
 HERE=$(cd "$(dirname "$0")" && pwd)
-INIT=${1:?usage: test-mutation.sh <init> <tree>}
-TREE=${2:?usage: test-mutation.sh <init> <tree>}
+INIT=$1
+TREE=$2
+# Exit 2, not 1. This suite needs an unpacked initramfs that no checkout
+# carries, and "cannot run here" is a different answer from "the init is
+# broken". tools/run-tests.sh counts 2 as skipped and 1 as a failure, so a
+# sweep of the whole tree stops reporting a missing artefact as a defect.
+[ -n "$INIT" ] && [ -n "$TREE" ] || {
+    echo "usage: $(basename "$0") <init> <unpacked-initramfs-tree>" >&2
+    echo "use the tree repack-boot.sh leaves in its output directory." >&2
+    exit 2
+}
 
 echo "== shipped init (uses /busybox losetup)"
 if sh "$HERE/test-commands.sh" "$INIT" "$TREE"; then
