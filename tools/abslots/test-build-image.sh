@@ -18,6 +18,24 @@
 BUILD=${1:-$(dirname "$0")/build-image.sh}
 [ -f "$BUILD" ] || { echo "usage: test-build-image.sh <build-image.sh>"; exit 1; }
 
+# A tool that is absent here is not a defect in what this file checks. Name the
+# missing one and stop with status 2, which tools/run-tests.sh counts as
+# skipped. The old behaviour ran on and reported a case as FAILED, which reads
+# as a broken image or a broken table and teaches whoever sees it to stop
+# believing the suite.
+need() {
+    for _cmd in "$@"
+    do
+        command -v "$_cmd" >/dev/null 2>&1 && continue
+        echo "$(basename "$0"): needs $_cmd, which is not on PATH." >&2
+        echo "the release host image carries it:" >&2
+        echo "  docker build -t ironkvm-release-host tools/release" >&2
+        echo "  docker run --rm -v \"$PWD:/repo\" -w /repo ironkvm-release-host sh $0" >&2
+        exit 2
+    done
+}
+need mke2fs e2fsck debugfs tar zstd
+
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 
