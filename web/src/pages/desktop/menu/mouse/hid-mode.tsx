@@ -38,13 +38,14 @@ export const HidMode = () => {
       });
   }
 
+  // The switch used to reboot the board, so this waited thirty seconds and then
+  // reloaded the page. It rebuilds the USB gadget instead, which takes about a
+  // second and leaves the network, the video and this session alone, so the
+  // answer can simply be believed.
   function updateHidMode() {
     if (isLoading) return;
     setIsLoading(true);
-
-    const timeoutId = setTimeout(() => {
-      window.location.reload();
-    }, 30000);
+    setErrMsg('');
 
     const mode = hidMode === 'normal' ? 'hid-only' : 'normal';
 
@@ -53,14 +54,17 @@ export const HidMode = () => {
       .then((rsp) => {
         if (rsp.code !== 0) {
           setErrMsg(rsp.msg);
-          setIsLoading(false);
-          clearTimeout(timeoutId);
+          return;
         }
+
+        setHidMode(mode);
+        setIsModalOpen(false);
       })
       .catch((err) => {
         console.log(err);
+      })
+      .finally(() => {
         setIsLoading(false);
-        clearTimeout(timeoutId);
       });
   }
 
@@ -93,7 +97,7 @@ export const HidMode = () => {
           <ul>
             <li>{t('mouse.hidOnly.tip1')}</li>
             <li>{t('mouse.hidOnly.tip2')}</li>
-            <li>{t('mouse.hidOnly.tip3')}</li>
+            <li>{t('mouse.hidOnly.rebuild')}</li>
           </ul>
         </Paragraph>
 

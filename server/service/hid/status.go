@@ -97,14 +97,6 @@ func (s *Service) SetHidMode(c *gin.Context) {
 		return
 	}
 
-	h := GetHid()
-	h.Lock()
-	h.CloseNoLock()
-	defer func() {
-		h.OpenNoLock()
-		h.Unlock()
-	}()
-
 	srcScript := ModeNormalScript
 	if req.Mode == ModeHidOnly {
 		srcScript = ModeHidOnlyScript
@@ -115,11 +107,80 @@ func (s *Service) SetHidMode(c *gin.Context) {
 		return
 	}
 
-	rsp.OkRsp(c)
+	if err := applyHidMode(req.Mode); err != nil {
+		log.Errorf("failed to switch to HID mode %s: %s", req.Mode, err)
+		rsp.ErrRsp(c, -4, "failed to apply hid mode")
+		return
+	}
 
-	log.Println("reboot system...")
-	time.Sleep(500 * time.Millisecond)
-	_ = exec.Command("reboot").Run()
+	rsp.OkRsp(c)
+	log.Debugf("hid mode is now %s", req.Mode)
+}
+
+// usbDevCommand runs one action of the gadget script that is installed at
+// USBDevScript. It is a variable so the switch can be tested without a device.
+var usbDevCommand = func(action string) error {
+	return exec.Command("sh", "-c", fmt.Sprintf("%s %s", USBDevScript, action)).Run()
+}
+
+// applyHidMode rebuilds the USB gadget from the script SetHidMode has just
+// installed, so that changing mode does not need a reboot.
+//
+// This used to call reboot. A restart of this board costs about two minutes
+// under the graceful stop, and it takes the video, the web session and any
+// mounted image with it. The gadget needs none of that: `stop` writes an empty
+// UDC and `start` builds the configuration again from whichever script is now
+// at /etc/init.d/S03usbdev. It is the same sequence the virtual disk, network,
+// console and speaker toggles already use.
+//
+// What makes it work is in the scripts rather than here. Both of them take
+// their HID functions out of the configuration before they write the
+// descriptors, because f_hid copies subclass, protocol, report_length and the
+// report descriptor into the instance at the moment the link is made and
+// refuses every write to them while it exists. A rebuild that skipped that
+// would rebind carrying the descriptors of the mode it left, while the mode
+// flag said otherwise.
+func applyHidMode(mode string) error {
+	h := GetHid()
+	h.Lock()
+	h.CloseNoLock()
+	defer h.Unlock()
+
+	err := switchGadget(mode, usbDevCommand, GetMode)
+
+	// Reopen whatever the rebuild produced, even after it reported a failure.
+	// Leaving the descriptors closed would take the keyboard away for a reason
+	// that has nothing to do with which mode is installed, and the operator
+	// would have no way back through the UI.
+	if openErr := h.OpenNoLockWithRetry(hidReopenTimeout, hidReopenRetryDelay); openErr != nil && err == nil {
+		err = fmt.Errorf("reopen the HID devices: %w", openErr)
+	}
+
+	return err
+}
+
+// switchGadget rebuilds the gadget and confirms it came back in the mode that
+// was asked for. Everything it touches is passed in, so it can be tested off a
+// device.
+//
+// The check at the end is not ceremony. The mode is read from bcdDevice on the
+// live gadget, so a rebuild that ran but left the old descriptor in place would
+// otherwise be reported to the operator as a success.
+func switchGadget(mode string, run func(string) error, readMode func() (string, error)) error {
+	if err := run("stop_start"); err != nil {
+		return fmt.Errorf("rebuild the usb gadget: %w", err)
+	}
+
+	got, err := readMode()
+	if err != nil {
+		return fmt.Errorf("read the HID mode back: %w", err)
+	}
+
+	if got != mode {
+		return fmt.Errorf("the gadget reports %s after switching to %s", got, mode)
+	}
+
+	return nil
 }
 
 func (s *Service) ResetHid(c *gin.Context) {
@@ -164,8 +225,7 @@ func ResetUSBPHY() error {
 	h.CloseNoLock()
 	defer h.Unlock()
 
-	command := fmt.Sprintf("%s restart_phy", USBDevScript)
-	if err := exec.Command("sh", "-c", command).Run(); err != nil {
+	if err := usbDevCommand("restart_phy"); err != nil {
 		return fmt.Errorf("restart usb phy: %w", err)
 	}
 
