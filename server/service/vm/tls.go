@@ -50,8 +50,8 @@ func enableTls() error {
 	}
 
 	conf.Proto = "https"
-	conf.Cert.Crt = "/etc/kvm/server.crt"
-	conf.Cert.Key = "/etc/kvm/server.key"
+	conf.Cert.Crt = utils.CertFile
+	conf.Cert.Key = utils.KeyFile
 
 	if err := config.Write(conf); err != nil {
 		return err

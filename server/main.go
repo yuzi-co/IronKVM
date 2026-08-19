@@ -114,6 +114,14 @@ func run() {
 	if conf.Proto == "https" {
 		httpsPortStr := strconv.Itoa(conf.Port.Https)
 
+		// Before the listener, not after. A board that moved to another address
+		// under DHCP would otherwise serve a certificate for the address it used
+		// to have, and a certificate the browser rejects does not degrade this
+		// product, it removes the input: keyboard and mouse ride the websocket
+		// at /api/ws, and a browser refuses an untrusted websocket silently
+		// while still rendering the page.
+		utils.EnsureCert()
+
 		go func() {
 			server := utils.NewServer(utils.ListenAddr(conf.Host, httpsPortStr), r)
 			if err := server.ListenAndServeTLS(conf.Cert.Crt, conf.Cert.Key); err != nil {
