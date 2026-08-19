@@ -38,17 +38,19 @@ trap 'rm -rf "$work"' EXIT
 
 UDC=/sys/class/udc/4340000.usb
 
-# reset <state> <configured-after-N-sleeps>
+# reset <state> <speed> <settles-after-N-sleeps>
 #
-# The fake controller starts in <state>. The sleep stub counts calls and flips
-# the file to "configured" once it has been called N times, so a case can say
-# "the host accepts it on the third poll" without waiting three seconds.
+# The fake controller starts in <state> at <speed>. The sleep stub counts calls
+# and settles the controller to "configured" at high speed once it has been
+# called N times, so a case can say "the host accepts it on the third poll"
+# without waiting three seconds.
 reset() {
     rm -rf "$work/sys" "$work/kernel"
     mkdir -p "$work$UDC" "$work/sys/kernel/config/usb_gadget/g0"
     printf '%s\n' "$1" > "$work$UDC/state"
+    printf '%s\n' "$2" > "$work$UDC/current_speed"
     : > "$work/sys/kernel/config/usb_gadget/g0/UDC"
-    echo "$2" > "$work/flip_at"
+    echo "$3" > "$work/flip_at"
     : > "$work/binds"
 }
 
@@ -62,6 +64,7 @@ sleep() {
     echo "\$n" > "$work/ticks"
     if [ "\$n" -ge "\$(cat "$work/flip_at")" ] && [ "\$(cat "$work/flip_at")" -gt 0 ]; then
         echo configured > "$work$UDC/state"
+        echo high-speed > "$work$UDC/current_speed"
     fi
 }
 
@@ -103,7 +106,7 @@ run() {
 
 echo "===== a host that accepts the gadget costs nothing ====="
 
-reset configured 0
+reset configured high-speed 0
 run
 grep -q 'rc=0' "$work/out" \
     && note "an already configured gadget succeeds" OK \
@@ -122,7 +125,7 @@ echo
 echo "===== a host that is slow is waited for, not interrupted ====="
 
 # The managed host may be powering on. Arriving late is not a fault.
-reset "not attached" 3
+reset "not attached" unknown 3
 run
 grep -q 'rc=0' "$work/out" \
     && note "a host that enumerates on the third poll succeeds" OK \
@@ -134,7 +137,7 @@ grep -q 'rebinding' "$work/out" \
 echo
 echo "===== a gadget the host never takes is rebound, and bounded ====="
 
-reset "not attached" 0
+reset "not attached" unknown 0
 TRIES=2 run
 grep -q 'rebinding' "$work/out" \
     && note "a gadget that never enumerates is rebound" OK \
@@ -156,12 +159,73 @@ grep -q 'rc=1' "$work/out" \
     && note "it reports the failure rather than hanging" OK \
     || note "it did not report that the gadget is unenumerated" FAIL
 
+# The console has to name this fault correctly, and asserting that is also the
+# only thing left that proves usb_enumerated still reads the controller state.
+# Every other case here reaches the same outcome through the speed check, so a
+# usb_enumerated that answered yes to everything would go unnoticed.
+grep -q 'has not enumerated the gadget' "$work/out" \
+    && note "the console says the host never took the gadget" OK \
+    || note "the console misreports a gadget the host never took" FAIL
+
 # The board with nothing plugged in is the case this must not punish. It reaches
 # the same place, and the only cost that matters is that it ends.
 ticks=$(cat "$work/ticks")
 [ "$ticks" -le 20 ] \
     && note "an unattached board ends the watch quickly ($ticks tick(s))" OK \
     || note "it spent $ticks tick(s), so the watch is effectively unbounded" FAIL
+
+echo
+echo "===== a link the host took at the wrong speed is not a link ====="
+
+# This is the case the first version of the watch walked straight past. A board
+# that comes up full-speed does reach "configured": the host addresses it, reads
+# the descriptors and selects the configuration. What it then cannot do is carry
+# the gadget. At full speed the periodic bandwidth in a frame does not hold three
+# HID interrupt endpoints alongside the console, the disk and the speaker, so the
+# host schedules what fits and silently stops polling the rest.
+#
+# On 2026-08-19 that left a working absolute mouse and a dead keyboard, and a
+# watch that had already returned success.
+
+reset configured full-speed 0
+TRIES=2 run
+grep -q 'rebinding' "$work/out" \
+    && note "a full-speed link is rebound" OK \
+    || note "a full-speed link was accepted, which is the fault this misses" FAIL
+
+got=$(grep -c 'rebinding' "$work/out")
+[ "$got" -eq 2 ] \
+    && note "a full-speed link is rebound exactly twice, then left alone" OK \
+    || note "it rebound $got time(s), want 2" FAIL
+
+# A host that really is full-speed only is a board that works as well as it can.
+# It must settle, not rebind for the rest of the uptime.
+grep -q 'rc=1' "$work/out" \
+    && note "a link that stays full-speed is reported, not retried forever" OK \
+    || note "a permanently full-speed link was reported as healthy" FAIL
+
+grep -q 'full-speed' "$work/out" \
+    && note "the console line names the speed it settled at" OK \
+    || note "the console does not say which of the two faults happened" FAIL
+
+# Rebinding is the recovery. Measured on the device: 60 unbind/rebind cycles all
+# came up high-speed. So a link that improves must be taken, and must not burn
+# the rest of the bound.
+reset configured full-speed 3
+TRIES=2 run
+grep -q 'rc=0' "$work/out" \
+    && note "a link that improves to high-speed succeeds" OK \
+    || note "a link that recovered was still reported as a failure" FAIL
+[ "$(grep -c 'rebinding' "$work/out")" -le 1 ] \
+    && note "it stops rebinding as soon as the speed is right" OK \
+    || note "it kept rebinding a link that had already recovered" FAIL
+
+# The reverse guard. A good link must never be rebound for its speed.
+reset configured high-speed 0
+run
+[ "$(wc -l < "$work/binds")" -eq 0 ] \
+    && note "a high-speed link is never rebound for its speed" OK \
+    || note "a healthy high-speed link was rebound" FAIL
 
 echo
 echo "===== the boot path starts the watch without waiting for it ====="
