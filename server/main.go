@@ -200,9 +200,19 @@ const disposeTimeout = 5 * time.Second
 //
 // S95nanokvm sends that signal and starts the next server, so the survivor is
 // what makes the new one fail: its channel enable finds the carveout already
-// committed and reports ENOMEM. Leaving without a clean teardown costs one
-// leaked video buffer pool, which the driver already handles on the next start.
-// Not leaving costs the restart.
+// committed and reports ENOMEM. Not leaving costs the restart, so this leaves.
+//
+// It costs a leaked video buffer pool to do that, and the driver does NOT hand
+// that pool back on the next start. Measured on the device 2026-08-19: a
+// SIGTERM was answered, this teardown ran and was cut off at disposeTimeout,
+// the process left in 7s, and the carveout read 30392320 bytes both before and
+// after, with every buffer still at the same physical address. The next
+// generation then cost 6516736 bytes, which is one ISP_SHARED_BUFFER_0 plus one
+// VbPool1. Nothing in userspace returns it. Only a reboot does.
+//
+// So the teardown here is not what protects the carveout, and no fix should be
+// built on the idea that it is. What protects the carveout is stopping the
+// server fewer times.
 func disposeWithin(timeout time.Duration, teardown func()) bool {
 	done := make(chan struct{})
 
