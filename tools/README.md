@@ -19,6 +19,7 @@ are operator tools.
 | `audiodiag/`  | Say whether USB audio capture works, and name the end that fails.      |
 | `opusbench/`  | Rebuild `libopus.a` for the board, and measure what it costs.          |
 | `run-tests.sh` | Run every `test-*.sh` under `tools/`. It reports pass, skip or fail. |
+| `test-suite-status.sh` | Check that every suite reports its result as a status the runner can read. |
 
 ## Running the test suites
 
@@ -37,7 +38,7 @@ The exit status of a suite carries the result:
 | ------ | ------------------------------------------------------------- |
 | 0      | Every case passed.                                            |
 | 2      | The suite cannot run here. Its last line says why.            |
-| other  | A case failed. That is a defect in the thing the suite tests. |
+| 1      | A case failed. That is a defect in the thing the suite tests. |
 
 Status 2 has three causes. A tool that the suite needs is absent, and the suite
 names it. An artefact that no checkout carries was not supplied, such as an
@@ -47,10 +48,14 @@ refuses to run outside a throwaway container.
 A skipped suite is not a passing suite. The runner prints the skip count on a
 line of its own.
 
-Two rules keep the sweep worth running:
+Three rules keep the sweep worth running:
 
 - A suite fails only for a defect in the thing it tests.
 - A suite that cannot run says why, and exits 2.
+- A suite that fails exits 1. It must not exit the number of cases that failed:
+  two failures exit 2, and the sweep then reports a skip. `test-suite-status.sh`
+  holds this rule. It finds the variable each suite counts its failures in, and
+  it refuses a suite that exits that variable.
 
 The gadget suites in `usbdev/` lift the functions out of the shipped init
 scripts and run them against a fake configfs. They choose the shell by

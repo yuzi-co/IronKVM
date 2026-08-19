@@ -177,5 +177,5 @@ if [ "$fails" -eq 0 ]; then
     echo "===== the guard catches and recovers a real full-speed link ====="
 else
     echo "$fails case(s) FAILED"
+    exit 1
 fi
-exit "$fails"
