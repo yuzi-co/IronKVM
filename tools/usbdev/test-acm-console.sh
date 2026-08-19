@@ -117,7 +117,9 @@ line_of() { printf '%s\n' "$body" | grep -n -- "$1" | tail -1 | cut -d: -f1; }
 
 acm_at=$(line_of '^ *ln -s functions/acm')
 hid_at=$(line_of '^ *ln -s functions/hid\.GS2')
-udc_at=$(line_of 'class/udc/.*> *UDC')
+# The bind used to be an inline write of /sys/class/udc into UDC. It is
+# usb_bind now, which retries, so match the call rather than the write.
+udc_at=$(line_of '^ *usb_bind$')
 
 if [ -z "$acm_at" ]; then
     note "start_usb_dev links an ACM function" FAIL

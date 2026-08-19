@@ -104,6 +104,13 @@ m_wake() { sed -i 's|echo 1 > functions/hid.GS1/wakeup_on_write|echo 0 > functio
 # The hid-only configuration attributes.
 m_hidonly() { sed -i 's|echo 0xA0 > configs/c.1/bmAttributes|echo 0xE0 > configs/c.1/bmAttributes|' "$1/S03usbhid"; }
 
+# The bound on the bind retry. Without it the script waits for a controller for
+# ever, and rcS never reaches the network or the server.
+m_unbounded() { sed -i 's|if \[ "$n" -ge "$tries" \]|if false|' "$1/S03usbdev"; }
+
+# The retry itself, back to the single write it replaced.
+m_noretry() { sed -i 's@^    usb_bind$@    ls /sys/class/udc/ | cat > UDC@' "$1/S03usbdev"; }
+
 echo "===== every mutation must be caught ====="
 try "keyboard report descriptor bytes"      m_desc
 try "composite device class"                m_class
@@ -117,6 +124,8 @@ try "read-only media becomes writable"      m_ro
 try "OS descriptor signature"               m_osdesc
 try "relative mouse stops waking the host"  m_wake
 try "hid-only config attributes"            m_hidonly
+try "bind retry loses its bound"            m_unbounded
+try "bind retry removed"                    m_noretry
 
 echo
 if [ "$fail" -eq 0 ]
