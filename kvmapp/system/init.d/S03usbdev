@@ -374,6 +374,36 @@ usb_watch_enumeration() {
     return "$watched"
 }
 
+# usb_link_ok answers whether the host took the gadget AND at a speed that can
+# carry it. Those are two separate failures with one symptom.
+#
+# Reaching "configured" is not enough. A board that comes up full-speed is
+# addressed, has its descriptors read and its configuration selected, and still
+# cannot work: the periodic bandwidth in a full-speed frame does not hold three
+# HID interrupt endpoints alongside the console, the disk and the speaker. The
+# host schedules what fits and silently stops polling the rest. On 2026-08-19
+# that left a working absolute mouse and a dead keyboard.
+#
+# The first version of this watch waited for "configured" alone. It looked
+# directly at that board and reported it healthy.
+usb_link_ok() {
+    usb_enumerated || return 1
+
+    [ "$(usb_link_speed)" = high-speed ]
+}
+
+# usb_link_fault names which of the two happened, so the console line is worth
+# reading. "Not enumerated" and "enumerated uselessly" want different answers
+# from whoever finds the board.
+usb_link_fault() {
+    if usb_enumerated
+    then
+        echo "the host enumerated the gadget at $(usb_link_speed)"
+    else
+        echo "the host has not enumerated the gadget"
+    fi
+}
+
 usb_watch_link() {
     rebinds=0
 
@@ -382,19 +412,22 @@ usb_watch_link() {
         waited=0
         while [ "$waited" -lt "$USB_ENUM_WAIT" ]
         do
-            usb_enumerated && return 0
+            usb_link_ok && return 0
             sleep 1
             waited=$((waited + 1))
         done
 
+        # The bound matters more here than it did. A host that really is
+        # full-speed only is a board working as well as it can, and it must
+        # settle rather than rebind for the rest of its uptime.
         if [ "$rebinds" -ge "$USB_ENUM_TRIES" ]
         then
-            echo "usb: the host has not enumerated the gadget after $rebinds rebind(s), leaving it bound"
+            echo "usb: $(usb_link_fault) after $rebinds rebind(s), leaving it bound"
             return 1
         fi
 
         rebinds=$((rebinds + 1))
-        echo "usb: the host has not enumerated the gadget, rebinding ($rebinds/$USB_ENUM_TRIES)"
+        echo "usb: $(usb_link_fault), rebinding ($rebinds/$USB_ENUM_TRIES)"
 
         echo "" > /sys/kernel/config/usb_gadget/g0/UDC 2>/dev/null
         sleep 1
