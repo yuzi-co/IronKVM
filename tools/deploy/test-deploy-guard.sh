@@ -20,6 +20,8 @@ sed -n '/^# --- settle ---$/,/^# --- end settle ---$/p' "$DG" > "$WORK/settle.sh
 [ -s "$WORK/snapshot.sh" ] || { echo "could not extract the snapshot block"; exit 1; }
 [ -s "$WORK/preflight.sh" ] || { echo "could not extract the preflight block"; exit 1; }
 sed -n '/^# --- standoff ---$/,/^# --- end standoff ---$/p' "$DG" > "$WORK/standoff.sh"
+sed -n '/^# --- probe url ---$/,/^# --- end probe url ---$/p' "$DG" > "$WORK/probeurl.sh"
+[ -s "$WORK/probeurl.sh" ] || { echo "could not extract the probe url block"; exit 1; }
 [ -s "$WORK/settle.sh" ] || { echo "could not extract the settle block"; exit 1; }
 [ -s "$WORK/standoff.sh" ] || { echo "could not extract the standoff block"; exit 1; }
 
@@ -225,6 +227,84 @@ SUPERVISE_MARKER=$(sed -n 's|^UPDATE_MARKER=${SUPERVISE_UPDATE_MARKER:-\(.*\)}$|
 [ -n "$DEPLOY_MARKER" ] && [ "$DEPLOY_MARKER" = "$SUPERVISE_MARKER" ] \
     && note "deploy and supervisor agree on the marker path ($DEPLOY_MARKER)" OK \
     || note "marker paths disagree: deploy '$DEPLOY_MARKER' vs supervisor '$SUPERVISE_MARKER'" FAIL
+
+echo
+echo "===== the probe follows the protocol the server is configured for ====="
+
+# The guard waits for 200. With `proto: https` the server answers 307 on plain
+# HTTP, so a probe fixed at http:// would fail on a board that is serving
+# perfectly and the guard would restore the previous binary over a good one.
+# That happened on 2026-08-19, the first deploy after the protocol was switched.
+url_case() {
+    desc=$1; want=$2
+    cfg=$WORK/server.yaml
+    cat > "$cfg"
+    got=$(SERVER_CONFIG="$cfg" sh -c '. "$1"; default_probe_url' _ "$WORK/probeurl.sh")
+    [ "$got" = "$want" ] && note "$desc -> $got" OK || note "$desc -> $got, want $want" FAIL
+}
+
+url_case "https on the standard port" "https://127.0.0.1/" <<'YAML'
+proto: https
+port:
+    http: 80
+    https: 443
+YAML
+
+url_case "http on the standard port" "http://127.0.0.1/" <<'YAML'
+proto: http
+port:
+    http: 80
+    https: 443
+YAML
+
+# A port that is not the scheme's default has to appear, or the probe asks the
+# wrong socket and the guard reads a healthy server as a dead one.
+url_case "https on a port of its own" "https://127.0.0.1:8443/" <<'YAML'
+proto: https
+port:
+    http: 80
+    https: 8443
+YAML
+
+url_case "http on a port of its own" "http://127.0.0.1:8080/" <<'YAML'
+proto: http
+port:
+    http: 8080
+    https: 443
+YAML
+
+# The scheme decides which port is read. Reading the wrong one is how a probe
+# ends up on a socket nothing is listening to.
+url_case "https ignores the http port" "https://127.0.0.1:8443/" <<'YAML'
+proto: https
+port:
+    http: 8080
+    https: 8443
+YAML
+
+# The lookup is scoped to the port block. Any other block is free to carry a key
+# of the same name, and taking the first match in the file would aim the probe
+# at whatever that block meant.
+url_case "the port comes from the port block, not another one" "https://127.0.0.1/" <<'YAML'
+proto: https
+mirror:
+    https: 8443
+port:
+    http: 80
+    https: 443
+YAML
+
+url_case "a config with no proto falls back to http" "http://127.0.0.1/" <<'YAML'
+port:
+    http: 80
+YAML
+
+got=$(SERVER_CONFIG="$WORK/there-is-no-such-file.yaml"       sh -c '. "$1"; default_probe_url' _ "$WORK/probeurl.sh")
+[ "$got" = "http://127.0.0.1/" ]     && note "an unreadable config falls back to http -> $got" OK     || note "an unreadable config gave $got, want http://127.0.0.1/" FAIL
+
+# It has to be the default rather than the value, or an operator cannot point
+# the probe somewhere else.
+grep -q 'DEPLOY_URL=${DEPLOY_URL:-$(default_probe_url)}' "$DG"     && note "DEPLOY_URL still overrides what the config says" OK     || note "DEPLOY_URL is not an overridable default" FAIL
 
 echo
 if [ "$fails" -eq 0 ]; then
