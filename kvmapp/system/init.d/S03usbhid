@@ -49,6 +49,13 @@ start_usb_dev(){
 
     echo 0x0101 > bcdUSB
     echo 0x0623 > bcdDevice
+
+    # Clear what S03usbdev set. A mode switch runs this against the gadget that
+    # script built, and a composite class on a device that now carries HID
+    # alone describes something that is not there.
+    echo 0x00 > bDeviceClass
+    echo 0x00 > bDeviceSubClass
+    echo 0x00 > bDeviceProtocol
     # echo 0x3346 > idVendor
     # echo 0x1009 > idProduct
     if [ -e /boot/usb.vid ]
@@ -73,6 +80,28 @@ start_usb_dev(){
     echo 200 > configs/c.1/MaxPower
     mkdir configs/c.1/strings/0x409
     echo "NanoKVM" >  configs/c.1/strings/0x409/configuration
+
+    # Take out everything the other mode may have linked.
+    #
+    # `stop` writes an empty UDC and leaves configs/c.1 exactly as it was, so a
+    # switch from normal mode arrives with the console, the disk, the network
+    # and the speaker still in the configuration. Those are six endpoints of
+    # the nine this controller fits, and HID needs three: left alone the gadget
+    # refuses to bind and every /dev/hidg* disappears, which is the one outcome
+    # this mode exists to avoid.
+    #
+    # The HID functions come out for a different reason. f_hid copies subclass,
+    # protocol, report_length and the report descriptor into the instance when
+    # the link is made, and refuses to write any of them while it exists, so
+    # this script cannot install the hid-only descriptors over the normal ones
+    # without unlinking first.
+    #
+    # Symlinks only, never a function directory: `rmdir functions/acm.GS0`
+    # blocks for ever because /etc/inittab respawns a getty on /dev/ttyGS0.
+    rm -f configs/c.1/hid.GS0 configs/c.1/hid.GS1 configs/c.1/hid.GS2
+    rm -f configs/c.1/acm.GS0 configs/c.1/mass_storage.disk0           configs/c.1/rndis.usb0 configs/c.1/ncm.usb0 configs/c.1/uac1.usb0
+    rm -f os_desc/c.1
+    echo 0 > os_desc/use
 
     # keyboard
     mkdir functions/hid.GS0
