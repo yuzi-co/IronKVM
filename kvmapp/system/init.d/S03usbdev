@@ -283,6 +283,15 @@ start_usb_dev(){
     mkdir g0
     cd g0
 
+    # bcdDevice is what the server reads to report which HID mode the board is
+    # in, so it has to be written rather than left at its default. The default
+    # happens to be the value wanted here: the kernel derives it from its own
+    # version, and 5.10 gives 0x0510. That is a coincidence, and it stops being
+    # true the moment a mode switch runs S03usbhid, which writes 0x0623 and
+    # leaves it there for whatever starts next.
+    echo 0x0200 > bcdUSB
+    echo 0x0510 > bcdDevice
+
     # echo 0x3346 > idVendor
     # echo 0x1009 > idProduct
     if [ -e /boot/usb.vid ]
@@ -391,7 +400,28 @@ start_usb_dev(){
         echo 0xCD > os_desc/b_vendor_code
         echo MSFT100 > os_desc/qw_sign
         ln -s configs/c.1 os_desc
+    else
+        # The link survives a start that drops the network, the same way the
+        # function links do, and it then advertises Microsoft OS descriptors
+        # for a configuration that has nothing to describe.
+        rm -f os_desc/c.1
+        echo 0 > os_desc/use
     fi
+
+    # Take the HID functions out of the configuration before touching them.
+    #
+    # f_hid copies subclass, protocol, report_length and the report descriptor
+    # into the instance when the link is made, and refuses every write to those
+    # attributes with EBUSY for as long as the link exists. A start that runs
+    # against a gadget the other mode built would therefore write nothing, see
+    # no error worth acting on, and rebind carrying the other mode's
+    # descriptors.
+    #
+    # The symlink only. The function directory stays: see usb_prune_list.
+    #
+    # This runs whether or not HID is wanted, so that /boot/disable_hid also
+    # removes links an earlier start made.
+    rm -f configs/c.1/hid.GS0 configs/c.1/hid.GS1 configs/c.1/hid.GS2
 
     if [ ! -e /boot/disable_hid ]
     then
