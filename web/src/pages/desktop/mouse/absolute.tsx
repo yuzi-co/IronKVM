@@ -8,6 +8,11 @@ import { resolutionAtom } from '@/jotai/screen.ts';
 
 import { MouseAbsoluteEvent } from './types.ts';
 
+type MediaSize = {
+  width: number;
+  height: number;
+};
+
 enum MouseButton {
   Left = 0,
   Middle = 1,
@@ -516,7 +521,7 @@ export const Absolute = () => {
   return <></>;
 };
 
-function getMediaSize(screen: Element) {
+function getMediaSize(screen: Element): MediaSize | null {
   if (screen instanceof HTMLVideoElement && screen.videoWidth > 0 && screen.videoHeight > 0) {
     return { width: screen.videoWidth, height: screen.videoHeight };
   }
@@ -525,8 +530,16 @@ function getMediaSize(screen: Element) {
     return { width: screen.naturalWidth, height: screen.naturalHeight };
   }
 
-  if (screen instanceof HTMLCanvasElement && screen.width > 0 && screen.height > 0) {
-    return { width: screen.width, height: screen.height };
+  // A canvas keeps its placeholder size on this thread once its control is
+  // transferred to a worker, so its own width and height describe nothing. The
+  // direct H.264 worker reports every frame size change instead, and
+  // h264-direct.tsx records the value here.
+  if (screen instanceof HTMLCanvasElement) {
+    const width = Number(screen.dataset.mediaWidth);
+    const height = Number(screen.dataset.mediaHeight);
+    if (width > 0 && height > 0) {
+      return { width, height };
+    }
   }
 
   return null;
