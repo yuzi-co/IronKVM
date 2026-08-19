@@ -18,8 +18,19 @@ ok()    { pass=$((pass + 1)); echo "  ok    $1"; }
 bad()   { fail=$((fail + 1)); echo "  FAIL  $1"; }
 check() { if [ "$2" = "$3" ]; then ok "$1"; else bad "$1 (got '$2', want '$3')"; fi; }
 
+skip_missing() {
+    echo "$(basename "$0"): needs $1, which is not on PATH." >&2
+    echo "the release host image carries it:" >&2
+    echo "  docker build -t ironkvm-release-host tools/release" >&2
+    echo "  docker run --rm -v \"$PWD:/repo\" -w /repo ironkvm-release-host sh $0" >&2
+    exit 2
+}
+
 for t in openssl tar; do
-    command -v "$t" > /dev/null 2>&1 || { echo "SKIP: $t is missing"; exit 0; }
+    # Exit 2, not 0. A suite that ran no case has not passed, and a green
+    # line for a suite that did nothing is worse than a red one: it is
+    # counted as coverage that does not exist.
+    command -v "$t" > /dev/null 2>&1 || { skip_missing "$t"; }
 done
 
 echo "release.sh"

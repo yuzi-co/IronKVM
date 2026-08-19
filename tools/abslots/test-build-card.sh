@@ -28,8 +28,19 @@ sectors() {
     echo $(( $(wc -c < "$1") / 512 ))
 }
 
+skip_missing() {
+    echo "$(basename "$0"): needs $1, which is not on PATH." >&2
+    echo "the release host image carries it:" >&2
+    echo "  docker build -t ironkvm-release-host tools/release" >&2
+    echo "  docker run --rm -v \"$PWD:/repo\" -w /repo ironkvm-release-host sh $0" >&2
+    exit 2
+}
+
 for t in sfdisk mkfs.vfat e2fsck mke2fs mcopy mdir; do
-    command -v "$t" > /dev/null 2>&1 || { echo "SKIP: $t is missing"; exit 0; }
+    # Exit 2, not 0. A suite that ran no case has not passed, and a green
+    # line for a suite that did nothing is worse than a red one: it is
+    # counted as coverage that does not exist.
+    command -v "$t" > /dev/null 2>&1 || { skip_missing "$t"; }
 done
 
 # The offsets the assertions use, kept beside the table they come from.

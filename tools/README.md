@@ -18,6 +18,53 @@ are operator tools.
 | `usbdev/`     | Check the USB gadget: the optional ACM console, and the link order.     |
 | `audiodiag/`  | Say whether USB audio capture works, and name the end that fails.      |
 | `opusbench/`  | Rebuild `libopus.a` for the board, and measure what it costs.          |
+| `run-tests.sh` | Run every `test-*.sh` under `tools/`. It reports pass, skip or fail. |
+
+## Running the test suites
+
+`tools/run-tests.sh` runs every `test-*.sh` under `tools/`. It prints one line
+for each suite.
+
+```shell
+sh tools/run-tests.sh                    # every suite
+sh tools/run-tests.sh usbdev             # only the paths that contain "usbdev"
+TEST_TIMEOUT=300 sh tools/run-tests.sh   # bound each suite, in seconds
+```
+
+The exit status of a suite carries the result:
+
+| Status | Meaning                                                       |
+| ------ | ------------------------------------------------------------- |
+| 0      | Every case passed.                                            |
+| 2      | The suite cannot run here. Its last line says why.            |
+| other  | A case failed. That is a defect in the thing the suite tests. |
+
+Status 2 has three causes. A tool that the suite needs is absent, and the suite
+names it. An artefact that no checkout carries was not supplied, such as an
+unpacked initramfs or a stock `boot.sd`. The suite is destructive, and it
+refuses to run outside a throwaway container.
+
+A skipped suite is not a passing suite. The runner prints the skip count on a
+line of its own.
+
+Two rules keep the sweep worth running:
+
+- A suite fails only for a defect in the thing it tests.
+- A suite that cannot run says why, and exits 2.
+
+The gadget suites in `usbdev/` lift the functions out of the shipped init
+scripts and run them against a fake configfs. They choose the shell by
+behaviour and print the winner as `harness shell: ...`. The scripts build each
+HID report descriptor with `echo -ne \xNN`, and busybox ash writes those
+escapes as bytes. The device runs busybox ash. dash does not: it prints `-ne`
+as text and leaves the escapes alone, so every descriptor arrives as literal
+backslashes. `/bin/sh` is dash on Debian and on Ubuntu, so the suites test the
+candidates rather than trust the name.
+
+The same suites replace `ln` while the lifted script runs. configfs does not
+store a symlink; it resolves the target at the moment of the call and records
+an internal link. A plain filesystem cannot do that, and a filesystem without
+symlinks refuses the call.
 
 ## Ten things that cost real time
 
