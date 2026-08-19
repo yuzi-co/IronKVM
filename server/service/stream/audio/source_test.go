@@ -186,6 +186,57 @@ func TestRunStopsLoggingOnceFailureIsTheSteadyState(t *testing.T) {
 	}
 }
 
+// The quiet promise covers one line and has to cover both. On a device on
+// 2026-08-19 the retry message fell silent after five attempts exactly as
+// designed, and arecord's own complaint kept arriving every fifteen seconds for
+// hours: "audio capture said: arecord: pcm_read:2240: read error: I/O error".
+// A host that plays nothing is the ordinary idle state of this board, so that
+// is the steady state, not an incident.
+//
+// TestRunStopsLoggingOnceFailureIsTheSteadyState does not catch it, because the
+// child it runs exits without writing anything, and a silent child has no
+// complaint to repeat.
+func TestRunStopsRepeatingTheChildsComplaint(t *testing.T) {
+	var captured bytes.Buffer
+	original := log.StandardLogger().Out
+	log.SetOutput(&captured)
+	t.Cleanup(func() { log.SetOutput(original) })
+
+	source := NewSource()
+	source.minBackoff = time.Millisecond
+	source.maxBackoff = time.Millisecond
+	source.newCmd = func() *exec.Cmd {
+		return exec.Command("sh", "-c", "echo 'pcm_read:2240: read error: I/O error' >&2; exit 1")
+	}
+
+	done := make(chan struct{})
+	go func() {
+		source.Run(func([]byte) {})
+		close(done)
+	}()
+
+	time.Sleep(500 * time.Millisecond)
+	source.Stop()
+
+	select {
+	case <-done:
+	case <-time.After(5 * time.Second):
+		t.Fatal("Run did not return after Stop")
+	}
+
+	// Silence is not the goal. An operator who has to diagnose no audio needs
+	// the reason the child gave, so it has to appear.
+	if !strings.Contains(captured.String(), "read error") {
+		t.Error("the child's reason was never reported, so nothing says why audio is off")
+	}
+
+	const wantAtMost = 10
+
+	if lines := strings.Count(captured.String(), "audio capture"); lines > wantAtMost {
+		t.Errorf("wrote %d audio capture log lines, want no more than %d", lines, wantAtMost)
+	}
+}
+
 func TestStopBeforeRun(t *testing.T) {
 	source := NewSource()
 	// This child would run indefinitely, but Stop is called before Run.
