@@ -55,6 +55,31 @@ device_files() {
 echo "===== no device file carries a carriage return ====="
 device_files > "$LIST"
 
+# Both halves of device_files are git commands, so without git the list comes
+# out empty and every section below reports "all 0 device files ... OK". That
+# is not a hypothetical. The other suites here run in a busybox container, this
+# one was run the same way, and busybox carries no git: the check passed on
+# every invocation while 133 files in the working tree held CRLF, one of them
+# kvmapp/system/init.d/S03usbhid, which is a device init script and exactly the
+# failure this file exists to prevent.
+#
+# So an empty list is a failure, not a pass. The floor is well under the 103
+# files found on 2026-08-19; it catches the enumeration breaking outright and is
+# not a number to keep raising.
+if ! git rev-parse --git-dir > /dev/null 2>&1; then
+    note "git is available (this check is built entirely from git commands)" FAIL
+    echo
+    echo "===== 1 problem(s): run this where git exists, not in a busybox container ====="
+    exit 1
+fi
+
+if [ "$(wc -l < "$LIST")" -lt 40 ]; then
+    note "at least forty device files were found (got $(wc -l < "$LIST"))" FAIL
+    echo
+    echo "===== 1 problem(s): the file list came out empty, so nothing was checked ====="
+    exit 1
+fi
+
 bad=0
 while IFS= read -r f; do
     [ -f "$f" ] || continue
