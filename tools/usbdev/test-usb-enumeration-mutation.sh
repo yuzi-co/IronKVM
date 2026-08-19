@@ -88,6 +88,25 @@ m_nowatch() {
     sed -i '\@^    usb_watch_enumeration &$@d' "$1"
 }
 
+# The speed check goes, so usb_link_ok is back to asking only whether the host
+# took the gadget. This is the defect as it shipped: the board that came up
+# full-speed reached "configured", and the watch reported it healthy.
+m_nospeedcheck() {
+    sed -i 's@^    \[ "$(usb_link_speed)" = high-speed \]$@    :@' "$1"
+}
+
+# The check is inverted, so a healthy high-speed link is rebound and a useless
+# full-speed one is kept.
+m_invertedspeed() {
+    sed -i 's@^    \[ "$(usb_link_speed)" = high-speed \]$@    [ "$(usb_link_speed)" != high-speed ]@' "$1"
+}
+
+# The console reports every fault as "not enumerated", so the one line an
+# operator gets names the wrong problem and sends them after the wrong thing.
+m_faultlies() {
+    sed -i 's@^        echo "the host enumerated the gadget at $(usb_link_speed)"$@        echo "not enumerated"@' "$1"
+}
+
 echo "===== every mutation must be caught ====="
 try "the rebind bound is removed"              m_unbounded
 try "it notices but never rebinds"             m_norebind
@@ -95,6 +114,9 @@ try "any controller state counts as enumerated" m_anystate
 try "it rebinds without waiting first"         m_nowait
 try "the watch delays the boot"                m_inline
 try "the boot never starts the watch"          m_nowatch
+try "the speed check is dropped"               m_nospeedcheck
+try "the speed check is inverted"              m_invertedspeed
+try "the console names the wrong fault"        m_faultlies
 
 echo
 if [ "$fail" -eq 0 ]; then
