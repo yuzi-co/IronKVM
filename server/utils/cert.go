@@ -18,9 +18,13 @@ import (
 const (
 	CertFile = "/etc/kvm/server.crt"
 	KeyFile  = "/etc/kvm/server.key"
-
-	certValidFor = time.Hour * 24 * 365 * 10
 )
+
+// certValidFor is a variable so a test can build a certificate that has already
+// expired. An expired certificate fails the handshake exactly like a mismatched
+// one and takes the input with it in the same silence, so CertCovers has to
+// reject it and that has to be provable.
+var certValidFor = time.Hour * 24 * 365 * 10
 
 // certIdentity is every name and address a certificate for this device has to
 // answer for.
