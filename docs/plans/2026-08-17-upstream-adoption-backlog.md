@@ -63,6 +63,37 @@ than re-reading it:
   cache cannot be overtaken by PicoClaw. It can go stale only if `/etc/kvm` is
   rebuilt underneath the running server.
 
+## Status, 2026-08-19, second round
+
+Four more items are taken. None of them was taken as written, and the reasons
+are worth keeping.
+
+| Item | State |
+| --- | --- |
+| PR #675, HID mode without a reboot | Done, by a different route. `applyHidMode` runs `stop_start` on the installed script and reads the mode back, the way the disk, network, console and speaker toggles already work. The pull request rebuilds the gadget in Go and calls `log.Fatalf` on the way, which would stop the server. |
+| PR #877, mouse coordinates on direct H.264 | Half taken. The canvas size fix is correct and is in. The letterbox inference is not: it treats black columns at both edges as padding, which a console or a dark desktop has, and it needs the bars to decode to exactly zero, which H.264 limited-range black need not. |
+| PR #814, `tests/usb-init-scripts-test.sh` | Not portable. It drives an `S03usb-common` this fork does not have through nine environment variables these scripts do not read. Its four report descriptors were taken, as a second transcription to check ours against, and the harness is the one `test-acm-console.sh` already used. |
+| `a3ccb527`, UDC bind retry | Taken with a bound. That loop is `while true` in a script `rcS` waits on, so a controller that never appears would stop the boot before the network and the server start. |
+
+The HID mode switch needed two changes in the gadget scripts before the server
+change could work at all, and neither is obvious from the pull request:
+
+- `f_hid` copies `subclass`, `protocol`, `report_length` and the report
+  descriptor into the instance when the function is linked into a
+  configuration, and returns `EBUSY` for every write to them while the link
+  exists. A rebuild that does not unlink first rebinds carrying the descriptors
+  of the mode it left, while `bcdDevice` says otherwise.
+- `stop` writes an empty UDC and leaves `configs/c.1` alone, so hid-only mode
+  arrives with whatever normal mode linked. Console, disk and network together
+  are six endpoints of nine before HID asks for three, so left in place the
+  gadget refuses to bind and every `/dev/hidg*` disappears.
+
+`S03usbdev` also now writes `bcdUSB` and `bcdDevice` rather than leaving them at
+the kernel's default. The default was the wanted value by coincidence: the
+kernel derives `bcdDevice` from its own version, and 5.10 gives `0x0510`.
+
+---
+
 Item 3 was also confirmed on hardware rather than assumed: the board's
 `/usr/share/udhcpc/default.script:73` does test `$staticroutes`, so requesting
 the option is enough and no handler was needed.
