@@ -100,6 +100,41 @@ the option is enough and no handler was needed.
 
 ---
 
+## Status, 2026-08-19, PR #800
+
+Closed with no production change. The mechanism the pull request fixes does not
+exist here, and the board says so rather than the reading of it.
+
+Upstream caches a token that PicoClaw regenerates. Here the direction is
+reversed: the server generates `/etc/kvm/.picoclaw_internal_token`, owns it, and
+the bridge script only reads it. Nothing can overtake the cache. `/etc/kvm` is
+mounted at `S02identity`, long before `S95nanokvm` starts the server, and no code
+in this tree rebuilds it while the server runs.
+
+Measured on the device against `/api/picoclaw/screenshot`, which is one of the
+five loopback paths:
+
+| Request | Status |
+| --- | --- |
+| The header holds the token from the file | 200 |
+| The header holds a different token | 401 |
+| No header | 401 |
+
+The cached token and the file agree on a running board. The fork also answers
+the pull request's own mechanism separately: `ensurePicoclawPicoToken` reconciles
+PicoClaw's `.security.yml` channel token at every runtime start.
+
+What the item did find is a second copy of the token, and no test on it.
+`defaultPicoclawMCPServer` writes the token into PicoClaw's `config.json` as a
+request header, and that copy is what PicoClaw sends. `setMCPServer` overwrites
+it when it differs, which is correct, but nothing held that behaviour in place.
+The failure it prevents is silent: a stale header returns 401 to every MCP call,
+the agent stops being able to touch the machine, and no page reports an error.
+`runtime_defaults_test.go` now pins it. Two mutations confirm the tests bite:
+making the field loop create-only, and dropping `e.changed`.
+
+---
+
 ## Priority 0: a live bug here, or a small clean change
 
 ### 1. PR #813, gate the default data disk until the filesystem is ready
