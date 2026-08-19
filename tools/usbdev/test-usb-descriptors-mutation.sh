@@ -111,6 +111,22 @@ m_unbounded() { sed -i 's|if \[ "$n" -ge "$tries" \]|if false|' "$1/S03usbdev"; 
 # The retry itself, back to the single write it replaced.
 m_noretry() { sed -i 's@^    usb_bind$@    ls /sys/class/udc/ | cat > UDC@' "$1/S03usbdev"; }
 
+# The HID unlink, without which f_hid refuses every attribute write and a mode
+# switch rebinds carrying the descriptors of the mode it left.
+m_nounlink_dev() { sed -i '/^    rm -f configs\/c.1\/hid.GS0 configs\/c.1\/hid.GS1 configs\/c.1\/hid.GS2$/d' "$1/S03usbdev"; }
+m_nounlink_hid() { sed -i '/^    rm -f configs\/c.1\/hid.GS0 configs\/c.1\/hid.GS1 configs\/c.1\/hid.GS2$/d' "$1/S03usbhid"; }
+
+# The prune hid-only does of whatever normal mode linked. Left in place they are
+# six endpoints of nine before HID asks for three.
+m_noprune_hid() { sed -i '/^    rm -f configs\/c.1\/acm.GS0 configs\/c.1\/mass_storage.disk0/,+1d' "$1/S03usbhid"; }
+
+# The explicit device version, which is what the server reads to report the
+# mode. Left to the kernel it keeps whatever the other script wrote.
+m_nobcd() { sed -i '/^    echo 0x0510 > bcdDevice$/d' "$1/S03usbdev"; }
+
+# The composite class hid-only clears.
+m_noclass() { sed -i '/^    echo 0x00 > bDeviceClass$/d' "$1/S03usbhid"; }
+
 echo "===== every mutation must be caught ====="
 try "keyboard report descriptor bytes"      m_desc
 try "composite device class"                m_class
@@ -126,6 +142,11 @@ try "relative mouse stops waking the host"  m_wake
 try "hid-only config attributes"            m_hidonly
 try "bind retry loses its bound"            m_unbounded
 try "bind retry removed"                    m_noretry
+try "S03usbdev stops unlinking HID"         m_nounlink_dev
+try "S03usbhid stops unlinking HID"         m_nounlink_hid
+try "hid-only stops pruning the other mode" m_noprune_hid
+try "the device version is left to default" m_nobcd
+try "hid-only stops clearing device class"  m_noclass
 
 echo
 if [ "$fail" -eq 0 ]

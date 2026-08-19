@@ -198,6 +198,8 @@ echo "===== S03usbdev, no markers ====="
 build_env
 run "$S03" start_usb_dev
 
+is bcdUSB    0x0200 "the USB version is stated, not left to the kernel"
+is bcdDevice 0x0510 "the device version carries the HID mode flag"
 is bDeviceClass    0xEF "device class 0xEF, a composite device"
 is bDeviceSubClass 0x02 "device subclass 0x02"
 is bDeviceProtocol 0x01 "device protocol 0x01"
@@ -338,6 +340,110 @@ fi
 run "$S03" restart_usb_dev
 is UDC 4340000.usb "restart binds the controller again"
 
+# --- switching modes on a gadget that already exists ---------------------
+
+echo
+echo "===== switching modes without a reboot ====="
+# The mode switch used to reboot, so each script only ever ran against a gadget
+# that did not exist yet. Running one against the other's gadget needs two
+# things that neither script did.
+#
+# f_hid refuses every attribute write while the function is linked into a
+# config. subclass, protocol, report_length and report_desc all return EBUSY,
+# and hidg_alloc copies the values into the instance at the moment the link is
+# made. So the links have to come out before the descriptors are written, or
+# the gadget rebinds carrying the descriptors of the mode it just left.
+#
+# And whatever the previous mode linked stays linked, because stop writes an
+# empty UDC and leaves configs/c.1 exactly as it was. hid-only therefore has to
+# take out the console, the disk, the network and the speaker itself. Left in,
+# they put the gadget over its endpoint budget, it refuses to bind, and every
+# /dev/hidg* disappears.
+
+# The disk and the network together are eight of the nine endpoints once HID
+# has taken three. Adding the console here would put the set over the budget and
+# the network would never be linked, so the case would prove nothing about
+# unlinking it. The console and the speaker get their own round below.
+build_env
+: > "$work/boot/usb.disk0"
+: > "$work/boot/usb.rndis0"
+run "$S03" start_usb_dev
+present configs/c.1/mass_storage.disk0 "normal mode starts out with the disk"
+present configs/c.1/rndis.usb0 "normal mode starts out with the network"
+present os_desc/c.1 "normal mode starts out with the OS descriptor link"
+
+run "$HID" start_usb_dev
+is bcdDevice 0x0623 "switching to hid-only moves the mode flag"
+hex_is functions/hid.GS0/report_desc "$HID_ONLY_KEYBOARD_DESC" \
+   "the keyboard descriptor becomes the hid-only one"
+hex_is functions/hid.GS2/report_desc "$HID_ONLY_ABSOLUTE_DESC" \
+   "the absolute pointer descriptor becomes the hid-only one"
+absent configs/c.1/mass_storage.disk0 "hid-only unlinks the disk"
+absent configs/c.1/rndis.usb0 "hid-only unlinks the network"
+absent os_desc/c.1 "hid-only removes the OS descriptor link"
+is bDeviceClass 0x00 "hid-only clears the composite device class"
+
+run "$S03" start_usb_dev
+is bcdDevice 0x0510 "switching back moves the mode flag"
+is bcdUSB    0x0200 "switching back restores the USB version"
+is bDeviceClass 0xEF "switching back restores the composite device class"
+hex_is functions/hid.GS0/report_desc "$KEYBOARD_DESC" \
+   "the keyboard descriptor is the normal one again"
+hex_is functions/hid.GS2/report_desc "$ABSOLUTE_MOUSE_DESC" \
+   "the absolute pointer descriptor is the normal one again"
+present configs/c.1/mass_storage.disk0 "the disk comes back"
+present configs/c.1/rndis.usb0 "the network comes back"
+present os_desc/c.1 "the OS descriptor link comes back"
+
+# The console and the speaker cost three and one, so they fit beside HID with
+# room to spare and can be checked on their own.
+build_env
+: > "$work/boot/usb.acm"
+: > "$work/boot/usb.uac"
+run "$S03" start_usb_dev
+present configs/c.1/acm.GS0   "normal mode starts out with the console"
+present configs/c.1/uac1.usb0 "normal mode starts out with the speaker"
+
+run "$HID" start_usb_dev
+absent configs/c.1/acm.GS0   "hid-only unlinks the console"
+absent configs/c.1/uac1.usb0 "hid-only unlinks the speaker"
+
+echo
+echo "===== the HID links come out before the descriptors go in ====="
+# A tree of plain files cannot return EBUSY, so the section above would pass
+# whether or not the links are removed first. This one reads the shipped text
+# instead, which is where that ordering actually lives.
+order_case() {
+    name=$1
+    body=$(sed -n '/^start_usb_dev()/,/^}/p' "$2")
+
+    first_of() { printf '%s\n' "$body" | grep -n -- "$1" | head -1 | cut -d: -f1; }
+
+    unlink_at=$(first_of 'rm -f configs/c.1/hid')
+    write_at=$(first_of 'functions/hid.GS0/subclass')
+    relink_at=$(first_of 'ln -s functions/hid.GS0')
+
+    if [ -z "$unlink_at" ]
+    then
+        note "$name unlinks the HID functions before it configures them" FAIL
+        return
+    fi
+    if [ -n "$write_at" ] && [ "$unlink_at" -lt "$write_at" ]
+    then
+        note "$name unlinks the HID functions before it writes their attributes" OK
+    else
+        note "$name writes HID attributes while the functions are still linked" FAIL
+    fi
+    if [ -n "$relink_at" ] && [ "$unlink_at" -lt "$relink_at" ]
+    then
+        note "$name unlinks before it links again" OK
+    else
+        note "$name links the HID functions before it unlinks them" FAIL
+    fi
+}
+order_case S03usbdev "$S03"
+order_case S03usbhid "$HID"
+
 # --- binding when the controller is late ---------------------------------
 
 echo
@@ -409,7 +515,9 @@ is configs/c.1/MaxPower     200  "hid-only config asks the host for 200"
 is strings/0x409/manufacturer sipeed  "hid-only manufacturer string"
 is strings/0x409/product      NanoKVM "hid-only product string"
 absent strings/0x409/serialnumber "hid-only sets no serial number"
-absent bDeviceClass "hid-only declares no composite device class"
+is bDeviceClass    0x00 "hid-only clears the composite device class"
+is bDeviceSubClass 0x00 "hid-only clears the composite device subclass"
+is bDeviceProtocol 0x00 "hid-only clears the composite device protocol"
 
 hid_is hid.GS0 1  1 8 "$HID_ONLY_KEYBOARD_DESC" "hid-only keyboard"
 hid_is hid.GS1 1  2 4 "$RELATIVE_MOUSE_DESC"    "hid-only relative mouse"
