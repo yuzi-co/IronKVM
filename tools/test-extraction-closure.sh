@@ -231,5 +231,5 @@ if [ "$fails" -eq 0 ]; then
     echo "all $checked harness(es) are closed, $skipped skipped"
 else
     echo "$fails of $checked harness(es) FAILED, $skipped skipped"
+    exit 1
 fi
-exit "$fails"

@@ -58,7 +58,7 @@ if [ -n "$SKIP_BUILD" ]; then
     echo "(build case skipped)"
     echo
     [ "$fails" -eq 0 ] && echo "all cases passed" || echo "$fails case(s) FAILED"
-    exit "$fails"
+    exit 1
 fi
 
 echo
@@ -107,7 +107,7 @@ else
     sed 's/^/    /' "$WORK/probe.err" | tail -20
     echo
     echo "$fails case(s) FAILED"
-    exit "$fails"
+    exit 1
 fi
 
 sections=$(awk '{ if ($2 ~ /^\./) print $2 }' "$WORK/probe.txt")
@@ -145,5 +145,5 @@ if [ "$fails" -eq 0 ]; then
     echo "all cases passed"
 else
     echo "$fails case(s) FAILED"
+    exit 1
 fi
-exit "$fails"
