@@ -68,7 +68,7 @@ echo "===== the builder applies a manifest ====="
 
 if [ ! -x "$BUILD" ] && [ ! -f "$BUILD" ]; then
     note "build-image.sh exists" FAIL
-    echo; echo "$fails case(s) FAILED"; exit "$fails"
+    echo; echo "$fails case(s) FAILED"; exit 1
 fi
 note "build-image.sh exists" OK
 
@@ -78,7 +78,7 @@ if sh "$BUILD" "$WORK/base.tar.zst" "$WORK/good.manifest" "$WORK/payload" 64 "$W
 else
     note "the build succeeds" FAIL
     sed 's/^/    /' "$WORK/build.log" | tail -20
-    echo; echo "$fails case(s) FAILED"; exit "$fails"
+    echo; echo "$fails case(s) FAILED"; exit 1
 fi
 
 present() { debugfs -R "stat $1" "$WORK/out.img" 2>/dev/null | grep -q 'Inode:'; }
@@ -460,5 +460,5 @@ if [ "$fails" -eq 0 ]; then
     echo "all cases passed"
 else
     echo "$fails case(s) FAILED"
+    exit 1
 fi
-exit "$fails"
