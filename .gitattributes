@@ -24,9 +24,26 @@
 #
 # Adding this rule does not repair a working tree that is already CRLF. Git
 # applies attributes when it writes a file, so a file checked out before the
-# rule existed keeps its carriage returns and reports clean. Find them with
-# `git ls-files --eol | awk '$1=="i/lf" && $2=="w/crlf"'`, then delete and
-# check out again.
+# rule existed keeps its carriage returns and reports clean.
+#
+# `git ls-files --eol` puts the three status fields in one tab-separated column
+# and the path in the next, so the path is $2 under `-F'\t'` and the statuses
+# have to be split out of $1 by hand. Splitting on whitespace instead makes
+# `$1` and `$2` the first two statuses, the condition then matches every text
+# file in the repository, and `$4` prints the tail of the attribute string. It
+# reports a long list of `eol=lf` and looks like it worked. Find and repair
+# them with:
+#
+#   git ls-files --eol \
+#     | awk -F'\t' '{ split($1, s, " "); if (s[1] == "i/lf" && s[2] == "w/crlf") print $2 }' \
+#     > stale.txt
+#   while IFS= read -r f; do rm -f "$f"; done < stale.txt
+#   git checkout -- $(tr '\n' ' ' < stale.txt)
+#
+# Run on 2026-08-19 this found 133 files, among them
+# `kvmapp/system/init.d/S03usbhid`, which is a device init script and therefore
+# the exact silent failure described at the top of this file. No blob changed,
+# which is the point: the index was always LF and only the checkout was wrong.
 
 * text=auto eol=lf
 
