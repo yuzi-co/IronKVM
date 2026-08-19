@@ -10,6 +10,8 @@ import { mouseModeAtom } from '@/jotai/mouse.ts';
 
 import { HidDeviceStatus, isAbsoluteMouseStalled } from './model.ts';
 
+export { InputDisconnectedWarning } from './input-disconnected.tsx';
+
 const NOTIFICATION_KEY = 'absolute_mouse_stalled';
 const POLL_INTERVAL_MS = 10_000;
 

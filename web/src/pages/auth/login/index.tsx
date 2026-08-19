@@ -54,8 +54,26 @@ export const Login = (): ReactElement => {
           return;
         }
 
-        setMsg('');
-        navigate('/', { replace: true });
+        // A browser that discards the session cookie sends the operator back
+        // here with no explanation, forever. That happens when the page is
+        // served over plain http while the server still believes it is on
+        // https: the cookie it sets carries Secure, and the browser throws it
+        // away. The cookie is HttpOnly, so the page cannot look at it. Ask for
+        // the account instead, which is the same question one step further on.
+        return api
+          .getAccount()
+          .then((account: any) => {
+            if (account.code !== 0 || !account.data?.username) {
+              setMsg(t('auth.cookieRejected'));
+              return;
+            }
+
+            setMsg('');
+            navigate('/', { replace: true });
+          })
+          .catch(() => {
+            setMsg(t('auth.cookieRejected'));
+          });
       })
       .catch(() => {
         setMsg(t('auth.error'));

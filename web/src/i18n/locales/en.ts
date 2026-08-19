@@ -8,6 +8,8 @@ const en = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      cookieRejected:
+        'The browser refused to store the session. A cookie left behind by a previous HTTPS session cannot be replaced over plain http. Clear cookies for this address, or open a private window, and sign in again.',
       login: 'Login',
       placeholderUsername: 'Username',
       placeholderPassword: 'Password',
@@ -516,7 +518,10 @@ const en = {
         },
         tls: {
           description: 'Enable HTTPS protocol',
-          tip: 'Be aware: Using HTTPS can increase latency, especially with MJPEG video mode.'
+          tip: 'Be aware: Using HTTPS can increase latency, especially with MJPEG video mode. Switching signs you out, and the browser will ask you to trust the certificate the device generates for itself.',
+          restarting: 'Restarting the device server, this takes about two minutes...',
+          waiting: 'Waiting for the device to answer again...',
+          waitingHttp: 'Switching back to http. Reload this page if it does not open on its own.'
         },
         dns: {
           title: 'DNS',
@@ -828,6 +833,15 @@ const en = {
     },
     fullscreen: {
       toggle: 'Toggle Fullscreen'
+    },
+    input: {
+      disconnected: 'Keyboard and mouse are not connected',
+      disconnectedTls:
+        'The browser refused the secure connection that carries keyboard and mouse, which it does without asking. The certificate this device generated is not trusted yet. Open this address in a new tab, accept the certificate, then reload. Installing the certificate is the reliable fix.',
+      disconnectedNever:
+        'The connection that carries keyboard and mouse could not be opened. The rest of the page works because it does not use it. Check that nothing between you and the device is blocking it.',
+      disconnectedDropped:
+        'The connection that carries keyboard and mouse was lost and has not come back. It reconnects on its own after a restart; if this stays, reload the page.'
     },
     speaker: {
       title: 'Speaker',
