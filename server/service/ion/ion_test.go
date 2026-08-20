@@ -67,8 +67,8 @@ func TestTheReserveFallsAsTheGenerationSpendsTheFloor(t *testing.T) {
 
 	// spent 11341824 of the 12582912 floor, so 1241088 is still ahead - and
 	// that is under the orphan cost, which is the value that has to win.
-	if got.Reserve != 6516736 {
-		t.Fatalf("Reserve = %d, want the orphan cost 6516736", got.Reserve)
+	if got.Reserve != 11636736 {
+		t.Fatalf("Reserve = %d, want the orphan cost 11636736", got.Reserve)
 	}
 	if !got.Measured {
 		t.Fatal("Measured = false, want true once a peak has been read")
@@ -83,6 +83,11 @@ func TestTheReserveFallsAsTheGenerationSpendsTheFloor(t *testing.T) {
 // mark, found 15,777,792 free against a 23,891,968 "reserve", and told the
 // operator to reboot a healthy board. Requiring the carveout to hold the working
 // set a second time was right only while a dying process kept its buffers.
+//
+// The grade is amber rather than green, and that is not the old fault coming
+// back. It is one orphan of headroom on a 56MB carveout, which is what made the
+// resize marginal and what the revert was for: the reserve is the 11,636,736 an
+// encoding generation strands, and twice that does not fit beside the peak.
 func TestAFullyExercisedGenerationReservesOnlyTheOrphanCost(t *testing.T) {
 	dir := fakeCarveout(t, 58720256, 19050496, 19050496, summaryIdle)
 	Init(12582912)
@@ -92,14 +97,35 @@ func TestAFullyExercisedGenerationReservesOnlyTheOrphanCost(t *testing.T) {
 
 	got := Read()
 
-	if got.Reserve != 6516736 {
-		t.Fatalf("Reserve = %d, want the orphan cost 6516736", got.Reserve)
+	if got.Reserve != 11636736 {
+		t.Fatalf("Reserve = %d, want the orphan cost 11636736", got.Reserve)
 	}
 	if got.Free != 15777792 {
 		t.Fatalf("Free = %d, want 15777792", got.Free)
 	}
+	if got.Verdict != VerdictWarn {
+		t.Fatalf("Verdict = %q, want %q: one orphan of headroom is amber", got.Verdict, VerdictWarn)
+	}
+}
+
+// TestTheSameGenerationIsGreenOnTheStockCarveout is the other half of that
+// case, and it is why the board runs the stock reservation again. The same
+// fully exercised generation, on the 75MB carveout, has room for three orphans
+// rather than one.
+func TestTheSameGenerationIsGreenOnTheStockCarveout(t *testing.T) {
+	dir := fakeCarveout(t, 78643200, 19050496, 19050496, summaryIdle)
+	Init(12582912)
+
+	writeCounter(t, dir, "alloc_mem", 42942464)
+	writeCounter(t, dir, "peak", 42942464)
+
+	got := Read()
+
+	if got.Free != 35700736 {
+		t.Fatalf("Free = %d, want 35700736", got.Free)
+	}
 	if got.Verdict != VerdictOK {
-		t.Fatalf("Verdict = %q, want %q: this board is healthy", got.Verdict, VerdictOK)
+		t.Fatalf("Verdict = %q, want %q", got.Verdict, VerdictOK)
 	}
 }
 
@@ -123,8 +149,8 @@ func TestTheFloorStandsBeforeTheGenerationHasGrown(t *testing.T) {
 
 // TestTheReserveNeverFallsBelowOneOrphan states the part that does not depend
 // on what the generation has done. A process that dies without its teardown
-// leaves 6,516,736 bytes that only a reboot returns, so a board with less than
-// that free is one crash away from a carveout it cannot recover.
+// leaves everything it held, and only a reboot returns it, so a board with less
+// than one generation free is one crash away from a carveout it cannot recover.
 func TestTheReserveNeverFallsBelowOneOrphan(t *testing.T) {
 	dir := fakeCarveout(t, 58720256, 19050496, 19050496, summaryIdle)
 	Init(1024)
@@ -134,8 +160,8 @@ func TestTheReserveNeverFallsBelowOneOrphan(t *testing.T) {
 
 	got := Read()
 
-	if got.Reserve != 6516736 {
-		t.Fatalf("Reserve = %d, want the orphan cost 6516736", got.Reserve)
+	if got.Reserve != 11636736 {
+		t.Fatalf("Reserve = %d, want the orphan cost 11636736", got.Reserve)
 	}
 }
 
