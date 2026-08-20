@@ -14,6 +14,13 @@ import (
 // killed.
 var Root = "/sys/kernel/debug/ion/cvi_carveout_heap_dump"
 
+// orphanCost is what one generation leaves behind when its process dies without
+// running the capture teardown: one VI channel pool and one ISP_SHARED_BUFFER_0.
+// Measured on the device four times, always 6,516,736 bytes, and no userspace
+// action returns it. It is the floor under Reserve, because a board with less
+// than this free cannot absorb a single crash.
+const orphanCost = 6516736
+
 // writeFile is a variable so a test can make the peak reset fail while the
 // counter stays readable. The container that runs the tests is root, and root
 // ignores the write bit, so the failure cannot be staged on the filesystem.
@@ -104,23 +111,50 @@ func Read() Status {
 		}
 	}
 
-	// peak - base is a high-water mark over the delivery paths this process
-	// has actually exercised so far, not over every path it could exercise. It
-	// is a lower bound on the true requirement, not an upper bound: a board
-	// that has only ever served screenshots will measure less than it needs
-	// the moment someone opens an H264 stream. Reporting that measurement on
-	// its own would let the verdict read "ok" right up to the allocation that
-	// segfaults the server, which is the failure this package exists to catch
-	// early. So the floor stands until a measurement is seen to exceed it, and
-	// Reserve is effectively max(measured, floor): understating the reserve is
-	// fatal, overstating it only costs an earlier warning.
-	status.Reserve = floor
+	// What has to stay free is what this generation has not allocated yet, and
+	// never less than what one crash costs.
+	//
+	// peak - base is what this generation has already taken since it started.
+	// It is spent, not pending: those buffers are held right now and the free
+	// space is what is left beside them. Requiring the carveout to hold that
+	// much a second time was right only while a dying process kept its buffers,
+	// which it did until the teardown was fixed on 2026-08-20. A clean stop
+	// releases them before the next generation asks for them, so counting the
+	// working set as a future cost double-counts it.
+	//
+	// Measured on this board after the fix: a fully exercised generation holds
+	// 42,942,464 bytes and the stop gives all of it back. Grading it against
+	// its own high-water mark called a healthy board critical, and on the 75MB
+	// carveout the same arithmetic had already been calling it amber.
+	//
+	// So the reserve is what is still ahead of this generation: the floor, less
+	// whatever of it the generation has already spent. A board that has not
+	// opened a stream still needs room to open one. A board that has opened
+	// every stream needs room for none of it again.
+	//
+	// The orphan cost is the part that never goes away. A process that dies
+	// without running its teardown - a SIGKILL, a segfault, the dispose
+	// timeout expiring - still leaves one VI channel pool and one ISP shared
+	// buffer behind, and nothing but a reboot returns those. A board with less
+	// than that free is one crash from a carveout it cannot recover, whatever
+	// it has or has not allocated, so the reserve never falls below it.
+	status.Reserve = orphanCost
+	if floor > orphanCost {
+		status.Reserve = floor
+	}
+
 	if haveBase && reset {
-		if peak, err := readCounter("peak"); err == nil && peak > base {
-			if growth := peak - base; growth > floor {
-				status.Reserve = growth
-				status.Measured = true
+		if peak, err := readCounter("peak"); err == nil && peak >= base {
+			spent := peak - base
+			pending := uint64(0)
+			if floor > spent {
+				pending = floor - spent
 			}
+			status.Reserve = pending
+			if orphanCost > pending {
+				status.Reserve = orphanCost
+			}
+			status.Measured = true
 		}
 	}
 
