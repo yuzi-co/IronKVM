@@ -167,15 +167,57 @@ func dispose() {
 	// This covers SIGTERM, which is what `S95nanokvm restart` and the in-place
 	// updater send. S95nanokvm kills arecord as well, because a SIGKILL or a
 	// crash reaches no code in this process.
-	webrtc.StopAudioCapture()
+	before := ion.Read()
+	log.Printf("teardown: carveout before: used=%d free=%d generations=%d",
+		before.Used, before.Free, before.Generations)
 
-	common.GetKvmVision().Close()
+	teardownStep("audio capture", webrtc.StopAudioCapture)
+	teardownStep("capture pipeline", func() { common.GetKvmVision().Close() })
+
+	after := ion.Read()
+	log.Printf("teardown: carveout after: used=%d free=%d generations=%d",
+		after.Used, after.Free, after.Generations)
+}
+
+// teardownStep runs one step of dispose and records both ends of it.
+//
+// The carveout readings on either side say whether the teardown gave anything
+// back, and these say which step spent the budget when it does not finish. Only
+// the opening line survives a step that never returns, because the process
+// exits where it stands when disposeTimeout expires, so the last line in the
+// log names the step that was still running.
+func teardownStep(name string, run func()) {
+	log.Printf("teardown: %s started", name)
+
+	started := time.Now()
+	run()
+
+	log.Printf("teardown: %s done in %s", name, time.Since(started).Round(time.Millisecond))
 }
 
 // disposeTimeout bounds the teardown that runs when the process is asked to
-// stop. Five seconds is long enough for a pipeline that is going to release,
-// and short enough that the init script's own wait covers it.
-const disposeTimeout = 5 * time.Second
+// stop. It has to stay under the wait S95nanokvm allows after SIGTERM, which is
+// ten seconds: a budget at or above that wait ends in SIGKILL, and a SIGKILL
+// reaches no code at all.
+//
+// A teardown that works needs about a second of it. Measured on the device
+// 2026-08-20 with the steps instrumented: audio child 0s, reader gate 0s,
+// kvmv_deinit 823ms, and the carveout gave back 6,516,736 bytes - one VI channel
+// pool and one ISP shared buffer, the exact amount a stop used to leak.
+//
+// It did not work before that day, and no budget would have rescued it. The
+// teardown ran past 5s and past 8s without returning, because kvmv_deinit joins
+// a libkvm thread whose loop could not exit: watchdog_sf_feed fell off the end
+// of a function declared void*, so GCC treated the break as unreachable and
+// deleted the test that reaches it. The exit flag was also a plain field. Both
+// are fixed in support/sg2002/additional/kvm/src/kvm_vision.cpp, and
+// tools/vidiag/test-libkvm-thread-exit.sh holds the shipped library to it.
+//
+// The margin over the measurement is deliberate. The teardown walks the whole
+// capture pipeline down, and how long that takes depends on what the pipeline
+// was doing; eight seconds covers a slow one and still leaves the init script
+// two seconds of its own.
+const disposeTimeout = 8 * time.Second
 
 // disposeWithin runs teardown and returns whether it finished before timeout.
 //
@@ -187,9 +229,18 @@ const disposeTimeout = 5 * time.Second
 //
 // S95nanokvm sends that signal and starts the next server, so the survivor is
 // what makes the new one fail: its channel enable finds the carveout already
-// committed and reports ENOMEM. Leaving without a clean teardown costs one
-// leaked video buffer pool, which the driver already handles on the next start.
-// Not leaving costs the restart.
+// committed and reports ENOMEM. Not leaving costs the restart, so this leaves.
+//
+// Leaving early costs a video buffer pool and an ISP shared buffer, and the
+// driver does not hand either back on the next start. Only a reboot does. That
+// is what every stop cost until 2026-08-20, when the teardown could not finish
+// at all: kvmv_deinit joined a libkvm thread whose exit test the compiler had
+// deleted. The measurement then was 6516736 bytes a stop, four times running.
+//
+// The teardown finishes now, in about 823ms, and a stop gives those bytes back.
+// So this timeout is a bound on a teardown that works rather than a way out of
+// one that cannot, and the cost of hitting it is real: what expires here is
+// what leaks.
 func disposeWithin(timeout time.Duration, teardown func()) bool {
 	done := make(chan struct{})
 
