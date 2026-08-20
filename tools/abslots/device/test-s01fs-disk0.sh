@@ -46,7 +46,7 @@ if [ ! -s "$WORK/f.sh" ]; then
     note "S01fs carries a disk0 provisioning block" FAIL
     echo
     echo "$fails case(s) FAILED"
-    exit "$fails"
+    exit 1
 fi
 note "S01fs carries a disk0 provisioning block" OK
 
@@ -180,5 +180,5 @@ if [ "$fails" -eq 0 ]; then
     echo "all cases passed"
 else
     echo "$fails case(s) FAILED"
+    exit 1
 fi
-exit "$fails"

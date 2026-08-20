@@ -17,12 +17,26 @@
 # so the test states it exactly: two lines change in the decompiled source, both
 # from "okay" to "disabled", at /reserved-memory/cvifb and at /cvifb. Anything
 # else is a failure, including a change that looks harmless.
-ORIG=${1:?usage: test-repack-fdt.sh <stock-boot.sd> [workdir]}
+ORIG=$1
+# Exit 2, not 1: a stock boot.sd is an artefact no checkout carries, and
+# "cannot run here" is a different answer from "the tool is broken".
+[ -n "$ORIG" ] || { echo "usage: test-repack-fdt.sh <stock-boot.sd> [workdir]" >&2; exit 2; }
 WORK=${2:-$(mktemp -d)}
 HERE=$(cd "$(dirname "$0")" && pwd)
 TOOL="$HERE/repack-fdt.sh"
 
-[ -f "$ORIG" ] || { echo "no such file: $ORIG"; exit 1; }
+[ -f "$ORIG" ] || { echo "no such file: $ORIG" >&2; exit 2; }
+
+# The tools the header names. One of them being absent is not a defect in
+# repack-fdt.sh, so say which one and exit 2 rather than fail a case.
+for _t in dumpimage mkimage dtc fdtdump
+do
+    command -v "$_t" >/dev/null 2>&1 && continue
+    echo "test-repack-fdt.sh: needs $_t, which is not on PATH." >&2
+    echo "the release host image carries it:" >&2
+    echo "  docker run --rm -v \"$PWD:/repo\" -w /repo ironkvm-release-host sh $0 $ORIG" >&2
+    exit 2
+done
 
 fails=0
 note() { printf '  %-58s %s\n' "$1" "$2"; [ "$2" = FAIL ] && fails=$((fails + 1)); return 0; }
@@ -35,7 +49,7 @@ if [ ! -x "$TOOL" ]; then
     note "repack-fdt.sh exists and is executable" FAIL
     echo
     echo "$fails case(s) FAILED"
-    exit "$fails"
+    exit 1
 fi
 note "repack-fdt.sh exists and is executable" OK
 
@@ -46,7 +60,7 @@ else
     sed 's/^/    /' "$WORK/run.log"
     echo
     echo "$fails case(s) FAILED"
-    exit "$fails"
+    exit 1
 fi
 
 NEW="$WORK/build/boot.sd.new"
@@ -54,7 +68,7 @@ NEW="$WORK/build/boot.sd.new"
     note "it writes boot.sd.new" FAIL
     echo
     echo "$fails case(s) FAILED"
-    exit "$fails"
+    exit 1
 }
 
 # Pull all three images back out of both files and compare them directly,
@@ -148,5 +162,5 @@ if [ "$fails" -eq 0 ]; then
     echo "all cases passed"
 else
     echo "$fails case(s) FAILED"
+    exit 1
 fi
-exit "$fails"
