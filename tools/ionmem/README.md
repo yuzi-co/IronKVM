@@ -26,8 +26,50 @@ WebRTC adds nothing over H.264 direct. They share the `VENC_1_*` encoder buffers
 the peak did not move when the mode changed.
 
 A crash still orphans a generation, because a process that dies runs no teardown. A
-clean stop does not, since the teardown was fixed on the same day: see the capture
-teardown section in `tools/README.md`.
+clean stop releases the VI pools and the ISP buffer, since the teardown was fixed on
+the same day: see the capture teardown section in `tools/README.md`.
+
+It did not release the H.264 encoder until 2026-08-20. A restart taken while a
+browser was streaming stranded 11,636,736 bytes: four `VENC_1_ReconFrameBuf` where a
+single generation holds two, and a second copy of `VCODEC_H264_FW_Buffer`,
+`VENC_1_BitStreamBuffer`, `VENC_1_H264_WorkBuffer`, `ISP_SHARED_BUFFER_0` and one
+`VbPool`.
+
+The cause was a reference count, not the encoder. `mmf_deinit` is
+`mmf_try_deinit(false)`: it decrements `mmf_used_cnt` and tears the pipeline down
+only on the call that reaches zero. `_mmf_deinit` is that teardown, and it is the
+only caller of `mmf_del_venc_channel_all`. MJPEG is served through
+`Image::to_jpeg`, which reaches `mmf_enc_jpg_init`, which takes a reference that
+nothing gives back. So one served JPEG frame left the count permanently one too
+high, every later stop decremented to one, and the encoder stayed allocated.
+`kvmv_deinit` calls `mmf_try_deinit(true)` now.
+
+Measured with `tools/vidiag/venc-leak.cpp`, which drives the same sequence with
+synthetic frames and needs no HDMI signal:
+
+| library             | start      | peak       | after the stop | stranded    |
+| ------------------- | ---------- | ---------- | -------------- | ----------- |
+| before (`c268de5f`) | 25,567,232 | 49,459,200 | 43,237,376     | +17,670,144 |
+| after (`1f4a7955`)  | 43,237,376 | 73,646,080 | 43,237,376     |           0 |
+
+Both runs take the same 23,891,968 bytes. The second starts higher because it runs
+on the board the first one left. Its own reading of the start is 49,754,112, which
+is 43,237,376 plus the 6,516,736 the library allocates while it loads: `kvm_vision`
+constructs its camera in a global, so the pipeline is up before `main` runs.
+
+A crash still strands what the process held. Nothing in the kernel returns it:
+`osdrv/interdrv/v2/vcodec` builds with `-DCVI_H26X_USE_ION_FW_BUFFER`, which compiles
+`vpu_free_buffers()` out of `vpu_release()`, and `soph_sys` drops its bindings when
+its file descriptor closes but never walks its buffer list. The memory stays
+allocated until the board reboots.
+
+Reclaiming an orphan from the next process is not a way out, and trying it panics
+the board. The user-space free path is `SYS_ION_FREE`, which reaches `_sys_ion_free`,
+which dereferences `mem_info.dmabuf`. Buffers the vc driver allocates come from
+`sys_ion_alloc_nofd`, which stores a null there, and no ioctl reaches
+`_sys_ion_free_nofd`. `_free_leak_memory_of_ion` in `kvm_mmf.cpp` is right to
+reclaim `VI_DMA_BUF` alone: that one is allocated from user space, in
+`middleware/v2/modules/vpu/src/cvi_vi.c`.
 
 ## Sizes
 
@@ -36,11 +78,28 @@ orphaned generation. The refusal is hard rather than a warning. An undersized ca
 does not degrade: libkvm never checks an allocation result, so the server takes a
 SIGSEGV on a NULL and dies before it binds its port, and the board answers nothing.
 
-This fork installs **56MB** (`0x03800000`). It returns 19,922,944 bytes to Linux and
-leaves 15.8MB over the measured peak, or 8.8MB if a crash orphans a generation before
-anyone reboots.
+**Nothing is installed at present.** 56MB was reverted while the encoder leaked. The
+leak is fixed, so the question is open again, but it needs a fresh measurement on a
+board that rebooted after the fix rather than a re-reading of the numbers below.
 
-48MB looks tempting and is not safe: about 5MB over the peak, which one orphan spends.
+56MB was installed on 2026-08-20 and reverted the same day. It returns 19,922,944
+bytes and leaves 15.8MB over the measured peak, which is enough room for the peak
+plus exactly one restart taken while streaming:
+
+    peak                    42,942,464
+    one encoder orphan      11,636,736
+                          = 54,579,200   =  93% of 56MB
+
+A second such restart exhausts it. Deploying is a normal operator action, so that is
+not a corner case. On 75MB the same sequence leaves 24MB spare.
+
+48MB was never safe: about 5MB over the peak, which one idle orphan spends.
+
+**What has to be true before this goes back on.** A restart taken while streaming has
+to cost what an idle one costs, which is nothing. That holds since 2026-08-20. What is
+still missing is the peak: every figure above was measured on a board carrying orphans
+from the leak, so the peak has to be measured again from a clean boot, and the size
+chosen against that. Budget for one crash, not one restart.
 
 ## Use
 
@@ -79,14 +138,22 @@ The realistic failure is a kernel that boots and a server that cannot allocate, 
 leaves ssh up and the image restorable over the network. A kernel that will not boot
 needs hands on the device, and there is no remote power cycle here.
 
-## Measured after the change
+## Measured, installed, and reverted
 
-Installed 2026-08-20:
+Installed 2026-08-20 at 56MB. It worked exactly as designed:
 
 ```
 /proc/device-tree/reserved-memory/ion/size   0x03800000
 MemTotal                                     189,244 kB   (was 169,788 kB)
 carveout total                               58,720,256
-idle with capture up                         19,050,496   (unchanged)
+idle with capture up                         19,050,496   unchanged
+peak, every path re-exercised                42,942,464   unchanged, 74% of the new total
 server up                                    37s after reset, no allocation errors
 ```
+
+Reverted the same day, from `/data/boot.sd.pre-ion-20260820`, after a restart taken
+while streaming left an orphaned encoder set and took the board to 93% with its free
+space in two fragments. The reservation was not the problem and the measurement was
+not wrong. The input was incomplete: every "a stop returns what it took" reading
+behind the 56MB decision was taken on an idle pipeline, which holds no encoder
+buffers, so none had to be released for the reading to come out clean.
