@@ -358,6 +358,9 @@ entry, or with a total of zero, writes no line at all rather than a wrong one.
 ```shell
 sh tools/service/test-supervise.sh            # the decisions
 sh tools/service/test-supervise-mutation.sh   # proves those cases can fail
+
+sh tools/service/test-server-stop-signals.sh           # which signal, and how long it waits
+sh tools/service/test-server-stop-signals-mutation.sh  # proves those cases can fail
 ```
 
 Run both on the board as well as on a workstation. busybox `ash` is not the
@@ -981,16 +984,35 @@ A deploy on 2026-08-03 failed this way and was reported as successful.
 
 ### The repair
 
-`wait_for_stop` polls for both processes to be gone and forces them after
-`STOP_TIMEOUT`, and `disposeWithin` bounds the teardown at five seconds and
-exits regardless. Leaving without a clean teardown costs one leaked video buffer
-pool, which the driver already handles on the next start. Not leaving costs the
-restart.
+`stop_process` signals the process and waits for it to go, and `disposeWithin`
+bounds the teardown at five seconds and exits regardless.
+
+The signal is SIGTERM, and it used to be SIGINT. SIGINT reaches no code in
+either process. S95nanokvm starts both of them as background jobs of a shell
+without job control, and POSIX makes such a shell set SIGINT to SIG_IGN in the
+child. `/proc/<pid>/status` on the device shows it: `NanoKVM-Server` reports
+`SigIgn` 0x2 and catches SIGTERM, and `kvm_system` reports 0x6, catches nothing
+at all, and takes the default action on SIGTERM. The old sequence sent SIGINT
+first and then waited twenty seconds for an answer that could not come, so every
+stop paid that time for nothing.
+
+The wait after SIGTERM is ten seconds, and it must stay longer than
+`disposeTimeout` in `server/main.go`. A wait equal to that bound races a
+teardown that was going to finish, and the loser is sent SIGKILL.
+
+Leaving without a clean teardown costs one leaked video buffer pool, and **the
+driver does not hand that pool back on the next start**. Measured 2026-08-19: a
+SIGTERM was answered, the teardown ran and was cut off at `disposeTimeout`, the
+process left in 7s, and `alloc_mem` read 30392320 both before and after with
+every buffer still at the same physical address. The next generation then cost
+6516736 bytes. Only a reboot returns it. Leave anyway: not leaving costs the
+restart, and the pool is lost either way.
 
 Call the wait **after** the staged copies are removed, not before. `S98supervise`
 reads a staged binary with no process as a crash, and the wait is long enough for
-it to start a server of its own — which would put two servers back on the board
-by another route. `tools/vidiag/test-restart-waits.sh` checks that order.
+it to start a server of its own, which would put two servers back on the board by
+another route. `tools/vidiag/test-restart-waits.sh` checks that order, and
+`tools/service/test-server-stop-signals.sh` checks the signals and the waits.
 
 Measured after the change: a restart takes 7s, the pid changes, no force is
 needed, and the log holds no `Out of memory`.
