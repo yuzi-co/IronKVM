@@ -176,9 +176,23 @@ git merge-base main <branch>
   shaped so a pull request to `sipeed/NanoKVM` shows only that change.
 - **Cut from `main`.** Fork work that `main` does not carry yet.
 
-`fork/integration` stacks the second kind on top of `main`. It is what the device should run, and it
-stays ahead of `upstream/main` permanently. `main` is a linear stack on `upstream/main` with no merge
-commits, so `git rev-list --count upstream/main..main` measures how far the fork has moved.
+`fork/integration` carries the second kind. It is what the device should run, and it stays ahead of
+`upstream/main` permanently. `main` is a linear stack on `upstream/main` with no merge commits, so
+`git rev-list --count upstream/main..main` measures how far the fork has moved.
+
+**Each feature gets its own branch, and `fork/integration` merges it.** Cut the branch from `main`,
+put the whole feature on it, and bring it in with `git merge --no-ff`. The merge commit is what
+records the boundary of the feature, so `git log --first-parent fork/integration` reads as a list of
+features rather than a list of edits. Commits older than 2026-08-20 sit directly on the branch,
+because it was a linear stack until then; do not read that as permission to add more.
+
+Keep a feature branch coherent rather than chronological. If a later commit rewrites what an earlier
+one on the same branch added, squash them: the branch should not contain a state that the same
+branch immediately corrects. Reasoning that was true when it was written and is false now belongs in
+the commit that supersedes it, not preserved as a wrong comment in the tree.
+
+Two branches will often edit the same file, `tools/README.md` above all. Resolve that once, in the
+merge, rather than by serialising the work.
 
 **An extraction branch is patch-equal to `main` by design.** The work lands in `main` first, and the
 branch is the upstream-facing copy of it. `git cherry main <branch>` reporting every commit as `-` is
