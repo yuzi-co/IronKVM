@@ -47,7 +47,7 @@ if [ "$defined" != 2 ]; then
     note "the script defines wait_for_exit and stop_process ($defined/2)" FAIL
     echo
     echo "$fails case(s) FAILED"
-    exit "$fails"
+    exit 1
 fi
 note "the script defines wait_for_exit and stop_process" OK
 
@@ -93,9 +93,20 @@ run_case() {
 # --- a server that stops when it is asked ---
 run_case 2
 
-grep -q -- '-INT' "$work/log" \
-    && note "a running server is asked politely first" OK \
-    || note "a running server is asked politely first" FAIL
+# SIGTERM, not SIGINT. Both processes start as background jobs of a shell
+# without job control, so POSIX makes that shell set SIGINT to SIG_IGN in the
+# child, and /proc/<pid>/status on the device confirms it: NanoKVM-Server shows
+# SigIgn 0x2 and kvm_system shows 0x6. A first signal of SIGINT reached no code
+# in either process, and the wait that followed it was spent for nothing.
+grep -q -- '-TERM' "$work/log" \
+    && note "a running server is asked to stop before it is forced" OK \
+    || note "a running server is asked to stop before it is forced" FAIL
+
+if grep -q -- '-INT' "$work/log"; then
+    note "it does not spend a wait on SIGINT, which is ignored" FAIL
+else
+    note "it does not spend a wait on SIGINT, which is ignored" OK
+fi
 
 if grep -q -- '-KILL' "$work/log"; then
     note "a server that stops is not forced" FAIL
@@ -115,14 +126,16 @@ run_case 999
 # The order is the point: a KILL that arrives first gives the server no chance
 # to release VI, which is the state this whole sequence protects.
 order=$(grep -o -- '-INT\|-TERM\|-KILL' "$work/log" | tr '\n' ' ')
-[ "$order" = "-INT -TERM -KILL " ] \
-    && note "it escalates INT then TERM then KILL" OK \
+[ "$order" = "-TERM -KILL " ] \
+    && note "it escalates TERM then KILL" OK \
     || note "it signals in the order: ${order:-nothing}" FAIL
 
 polls=$(cat "$work/polls")
-# 20 + 5 + 2 is the budget the three waits describe. One extra poll per wait is
-# the loop noticing the deadline, so 30 is the ceiling, not 27.
-[ "$polls" -le 30 ] \
+# 10 + 2 is the budget the two waits describe. One extra poll per wait is the
+# loop noticing the deadline, so 14 is the ceiling, not 12. The ceiling stays
+# close to the budget on purpose: a generous one stays true when a wait grows,
+# and then it asserts nothing about how long a stop takes.
+[ "$polls" -le 14 ] \
     && note "it gives up after the timeouts ($polls poll(s))" OK \
     || note "it waited $polls poll(s), so the wait is unbounded" FAIL
 
@@ -175,7 +188,12 @@ fi
 echo
 if [ "$fails" -eq 0 ]; then
     echo "all cases passed"
-else
-    echo "$fails case(s) FAILED"
+    exit 0
 fi
-exit "$fails"
+
+# Exit 1, not "$fails". run-tests.sh reads 0 as "every case passed", 2 as "this
+# suite cannot run here", and anything else as "a case failed". A suite that
+# exits its own failure count reports a skip whenever exactly two cases fail,
+# and a skip is the one answer that hides a real break.
+echo "$fails case(s) FAILED"
+exit 1
