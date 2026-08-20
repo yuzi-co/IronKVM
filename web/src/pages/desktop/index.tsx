@@ -22,7 +22,7 @@ import {
 import { Head } from '@/components/head.tsx';
 
 import { CaptureStatusOverlay, useCaptureStatus } from './capture-status';
-import { AbsoluteMouseWarning } from './hid-status';
+import { AbsoluteMouseWarning, InputDisconnectedWarning } from './hid-status';
 import { IonCheckingIndicator, IonCriticalGate, IonWarningBadge, useIonStatus } from './ion-status';
 import { Keyboard } from './keyboard';
 import { Menu } from './menu';
@@ -213,6 +213,7 @@ export const Desktop = () => {
       {isBigScreen && <Notification />}
       <H264ModeNotification />
       <AbsoluteMouseWarning />
+      <InputDisconnectedWarning />
 
       {videoMode && resolution && (
         <div className="relative flex h-full min-h-0 w-full min-w-0">
