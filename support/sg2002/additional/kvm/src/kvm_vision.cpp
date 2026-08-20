@@ -88,6 +88,17 @@ typedef struct {
     uint8_t reinit_flag = 1;
     uint8_t reopen_cam_flag = 0;
     uint8_t hdmi_cable_state = 0;
+    // Read and written through __atomic_* everywhere, and it has to stay that
+    // way. kvmv_deinit sets this and then joins the two threads that watch it.
+    // As a plain field it is an object no thread loop can be seen to write, so
+    // the compiler is entitled to read it once and keep the answer: in the
+    // library shipped before 2026-08-20, GCC hoisted the test out of both loops
+    // and left no load of it anywhere inside either. Neither thread could ever
+    // observe the request, both joins waited for good, and kvmv_deinit never
+    // reached cam->close() or mmf_deinit(). The process was then killed by its
+    // own timeout with the VI channel pool and the ISP shared buffer it had
+    // allocated still held: 6,516,736 bytes of the carveout per server
+    // generation, which only a reboot gives back.
     uint8_t try_exit_thread = 0;
     uint8_t thread_is_running = 0;
     uint8_t Auto_res = 0;
@@ -1154,7 +1165,7 @@ void* watchdog_sf_feed(void * arg)
 {
     while(true)
     {
-        if(kvmv_cfg.try_exit_thread == 1)
+        if(__atomic_load_n(&kvmv_cfg.try_exit_thread, __ATOMIC_ACQUIRE) == 1)
             break;
         time::sleep_ms(500);
         if (watchdog_sf_is_open()){
@@ -1166,6 +1177,20 @@ void* watchdog_sf_feed(void * arg)
             vision_update_watchdog();
         }
     }
+
+    // The return is not decoration. Both of libkvm's threads are declared void*
+    // and neither used to return anything, so control fell off the end of a
+    // function that owes a value - undefined behaviour, and GCC is entitled to
+    // assume it never happens. It concluded that the break above could not be
+    // reached and deleted the test that leads to it. In the library shipped
+    // before 2026-08-20 the loop held no reference to the exit flag at all, and
+    // making the flag atomic on its own did not bring the test back: the load
+    // appeared, and its result was still never examined.
+    //
+    // So kvmv_deinit's join waited on a thread with no way out, the teardown
+    // never reached mmf_deinit, and every stop of the server left a VI channel
+    // pool and an ISP shared buffer behind.
+    return NULL;
 }
 
 void get_hdmi_version()
@@ -1229,7 +1254,7 @@ void* vi_subsystem_detection(void * arg)
     last_vi_state_refresh_ms = vi_state_shared::monotonic_ms() - vi_state_publish_interval_ms;
     while(true)
     {
-        if(kvmv_cfg.try_exit_thread == 1)
+        if(__atomic_load_n(&kvmv_cfg.try_exit_thread, __ATOMIC_ACQUIRE) == 1)
             break;
 
         uint8_t get_new_hdmi_mode = get_hdmi_mode();
@@ -1484,6 +1509,10 @@ void* vi_subsystem_detection(void * arg)
 		time::sleep_ms(10);
     }
     kvmv_cfg.thread_is_running = 0;
+
+    // See watchdog_sf_feed: without this the compiler treats the break out of
+    // the loop above as unreachable and removes the test that reaches it.
+    return NULL;
 }
 
 int sync_vi_res()
@@ -1740,7 +1769,7 @@ void kvmv_init(uint8_t _debug_info_en)
         kvmv_data_buffer[i].p_img_data = NULL;
     }
 
-    kvmv_cfg.try_exit_thread = 0;
+    __atomic_store_n(&kvmv_cfg.try_exit_thread, 0, __ATOMIC_RELEASE);
     // debug("[kvmv]kvmv_init - 2\r\n");
 
     if(kvmv_cfg.thread_is_running == 1){
@@ -2033,13 +2062,19 @@ void kvmv_deinit()
     // apart. Both break on try_exit_thread and the slower one polls every 500ms,
     // so this returns in well under a second.
     //
+    // That last sentence was false for as long as the flag was a plain field:
+    // the compiler read it once per thread and neither loop ever looked again,
+    // so both joins here waited for a change they could not see. The store and
+    // the two tests are atomic now, and the note beside the field records what
+    // it cost.
+    //
     // Waiting also removes a second fault. vi_subsystem_detection clears
     // thread_is_running as it leaves, and kvmv_init reads that flag to decide
     // whether to start the threads again. Without the join, an init that arrived
     // while the old thread was still exiting would skip creating a new one and
     // then watch the old one die, leaving the board with no HDMI detection until
     // the process restarted.
-    kvmv_cfg.try_exit_thread = 1;
+    __atomic_store_n(&kvmv_cfg.try_exit_thread, 1, __ATOMIC_RELEASE);
 
     if (kvmv_cfg.detect_thread_valid) {
         pthread_join(kvmv_cfg.detect_thread, NULL);
