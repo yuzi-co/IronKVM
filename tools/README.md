@@ -343,10 +343,16 @@ before `S95nanokvm` touches anything:
 
 The fields are bytes allocated, bytes total, the percentage used, and `gen`,
 the count of `ISP_SHARED_BUFFER_0` entries in the carveout's own summary. The
-carveout erodes with restarts, not with uptime. A dead process keeps its
-whole ION working set, because the buffers belong to the kernel driver
-rather than to the process. A `gen` value above 1 means an earlier restart
-already orphaned a generation that nothing has freed.
+A process that dies without finishing its teardown keeps its whole ION
+working set, because the buffers belong to the kernel driver rather than to
+the process. Until 2026-08-20 that was every stop, and the carveout eroded
+with restarts rather than with uptime.
+
+A clean stop now releases what it allocated, so an ordinary restart costs
+nothing. A `gen` value above 1 therefore no longer means "an earlier
+restart": it means a stop that did not complete - a SIGKILL, a crash, or a
+generation orphaned before the fix. It is a stronger signal than it was, and
+a rising `gen` on a board that only restarts normally is a regression.
 
 The reader touches only `alloc_mem`, `total_mem` and `summary` under
 `/sys/kernel/debug/ion/cvi_carveout_heap_dump`. It never reads
@@ -1000,13 +1006,36 @@ The wait after SIGTERM is ten seconds, and it must stay longer than
 `disposeTimeout` in `server/main.go`. A wait equal to that bound races a
 teardown that was going to finish, and the loser is sent SIGKILL.
 
-Leaving without a clean teardown costs one leaked video buffer pool, and **the
-driver does not hand that pool back on the next start**. Measured 2026-08-19: a
-SIGTERM was answered, the teardown ran and was cut off at `disposeTimeout`, the
-process left in 7s, and `alloc_mem` read 30392320 both before and after with
-every buffer still at the same physical address. The next generation then cost
-6516736 bytes. Only a reboot returns it. Leave anyway: not leaving costs the
-restart, and the pool is lost either way.
+Leaving without a clean teardown costs one video buffer pool and one ISP shared
+buffer, and **the driver does not hand them back on the next start**. Measured
+2026-08-19: a SIGTERM was answered, the teardown ran and was cut off at
+`disposeTimeout`, the process left in 7s, and `alloc_mem` read 30392320 both
+before and after with every buffer still at the same physical address. The next
+generation then cost 6516736 bytes. Only a reboot returned it.
+
+**Fixed 2026-08-20, in libkvm.** The teardown could not finish, and no budget
+would have let it: `kvmv_deinit` joins `watchdog_sf_feed`, and that loop had no
+way out. The function is declared `void*` and returned nothing, so control fell
+off the end of a function that owes a value. GCC treats that as unreachable and
+deleted the test on `try_exit_thread` that leads to the `break`. The flag was
+also a plain field rather than an atomic one, and making it atomic alone did not
+help: the load appeared and its result was still never examined.
+
+Both faults are corrected in `support/sg2002/additional/kvm/src/kvm_vision.cpp`,
+and `server/dl_lib/libkvm.so` is rebuilt from it.
+`tools/vidiag/test-libkvm-thread-exit.sh` reads the shipped library and fails if
+either thread loop loses its exit test again. It needs the cross binutils, so it
+exits 2 on a workstation and has to run in the builder image:
+
+```shell
+docker run --rm -v "$PWD:/repo" -w /repo nanokvm-builder-local-$(id -u)-$(id -g) \
+  /bin/bash -c 'export PATH=/usr/local/host-tools/gcc/riscv64-linux-musl-x86_64/bin:$PATH \
+  && sh tools/vidiag/test-libkvm-thread-exit.sh'
+```
+
+Measured after the fix, on the device: `kvmv_deinit` returned in 823ms, the log
+holds `maix multi-media driver destroyed` inside the teardown, and the stop gave
+back 6516736 bytes - exactly what a stop used to leak. A whole stop now takes 1s.
 
 Call the wait **after** the staged copies are removed, not before. `S98supervise`
 reads a staged binary with no process as a crash, and the wait is long enough for

@@ -1,6 +1,11 @@
 package common
 
-import "sync"
+import (
+	"sync"
+	"time"
+
+	log "github.com/sirupsen/logrus"
+)
 
 // captureGate keeps calls into libkvm out of the way of capture teardown.
 //
@@ -55,15 +60,25 @@ func (g *captureGate) withLive(fn func()) bool {
 // stop runs deinit once, after every call already inside the boundary has left.
 // A second stop does nothing: calling kvmv_deinit twice would destroy a mutex
 // that is already destroyed.
+// Both ends of both phases are recorded, because the process that runs this is
+// on its way out under a timeout and is killed where it stands when that
+// expires. A phase that never returns leaves its opening line and no closing
+// one, and the last line written names the phase that ran out of time. A single
+// line at the end would say nothing about the case we are looking for.
 func (g *captureGate) stop(deinit func()) {
+	started := time.Now()
+
 	g.mu.Lock()
 	defer g.mu.Unlock()
+
+	log.Infof("capture stop: readers left after %s", time.Since(started).Round(time.Millisecond))
 
 	if !g.live {
 		return
 	}
 
 	deinit()
+	log.Infof("capture stop: deinit returned after %s", time.Since(started).Round(time.Millisecond))
 	g.live = false
 }
 
