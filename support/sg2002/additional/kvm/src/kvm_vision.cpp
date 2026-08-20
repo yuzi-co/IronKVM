@@ -2087,7 +2087,37 @@ void kvmv_deinit()
 
     pthread_mutex_destroy(&vi_mutex);
     cam->close();
-    mmf_deinit();
+
+    // Force, because the refcount this used to decrement does not come back to
+    // zero once a browser has asked for MJPEG.
+    //
+    // mmf_deinit is mmf_try_deinit(false): it decrements mmf_used_cnt and does
+    // the actual teardown only on the call that reaches zero. _mmf_deinit is
+    // that teardown, and it is the only caller of mmf_del_venc_channel_all, so
+    // it is the only thing that ever gives the H.264 encoder back.
+    //
+    // MJPEG is served through Image::to_jpeg, which reaches mmf_enc_jpg_init,
+    // which takes a reference. Nothing returns it: mmf_enc_jpg_deinit runs from
+    // _mmf_deinit, and from the mode switch below only when venc_auto_recyc is
+    // set, which nothing sets. So a session that ever served one JPEG frame
+    // leaves the count one too high, every later stop decrements to one, and
+    // the encoder stays allocated. Measured at 11,636,736 bytes for the whole
+    // channel plus one ISP_SHARED_BUFFER_0, and the carveout is 75MB.
+    //
+    // Nothing else recovers it. The vcodec driver builds with
+    // CVI_H26X_USE_ION_FW_BUFFER, which compiles vpu_free_buffers out of
+    // vpu_release, and soph_sys drops bindings when its fd closes but never
+    // walks its buffer list. What this call does not release stays allocated
+    // until the board reboots.
+    //
+    // Forcing is right rather than merely convenient: kvm_vision is the only
+    // user of MMF in this process, so at this point the count describes
+    // references nobody holds. kvmv_init opens the camera again, which calls
+    // mmf_init again, so a later start is unaffected - and it has to be,
+    // because the idle timeout stops capture at runtime, not only at exit.
+    //
+    // tools/vidiag/venc-leak.cpp measures each step of this on the device.
+    mmf_try_deinit(true);
     free_all_kvmv_data();
 }
 
