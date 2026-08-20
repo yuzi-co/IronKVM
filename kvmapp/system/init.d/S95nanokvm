@@ -49,6 +49,29 @@ wait_for_exit() {
     return 0
 }
 
+# The first signal has to be one the processes can receive. Both of them start
+# as background jobs of a shell without job control, and POSIX makes such a
+# shell set SIGINT to SIG_IGN in the child. Measured on the device 2026-08-19,
+# from /proc/<pid>/status: NanoKVM-Server ignores SIGINT and catches SIGTERM;
+# kvm_system ignores SIGINT and SIGQUIT, catches nothing at all, and takes the
+# default action on SIGTERM.
+#
+# So the SIGINT stage that used to come first reached no code in either process,
+# and the twenty seconds it waited afterwards were spent on a signal that could
+# not arrive. Two SIGINTs to a running server produced no log line and no exit
+# after 21s. One SIGTERM was answered and the process left in 7s.
+#
+# Ten seconds, not five. The server bounds its own teardown with disposeTimeout
+# in server/main.go, and then it exits whatever the teardown is still doing. A
+# wait equal to that bound races a teardown that was going to finish, so the
+# wait has to be longer than it. tools/service/test-server-stop-signals.sh reads
+# the constant out of main.go rather than repeating it here, because the two
+# drifting apart is the failure that matters.
+#
+# SIGKILL stays, and it stays last. It reaches no code, so it costs the ION
+# carveout a leaked video buffer pool that no userspace action gives back. A
+# process wedged in uninterruptible sleep answers nothing else, though, and the
+# stop has to end.
 stop_process() {
     process="$1"
 
@@ -56,13 +79,8 @@ stop_process() {
         return
     fi
 
-    killall -INT "$process" 2>/dev/null || true
-    if wait_for_exit "$process" 20; then
-        return
-    fi
-
     killall -TERM "$process" 2>/dev/null || true
-    if wait_for_exit "$process" 5; then
+    if wait_for_exit "$process" 10; then
         return
     fi
 
