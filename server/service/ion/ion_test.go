@@ -48,54 +48,114 @@ func TestInitResetsPeakSoTheRequirementCanBeMeasured(t *testing.T) {
 	}
 }
 
-func TestReadMeasuresTheReserveFromPeakGrowth(t *testing.T) {
-	dir := fakeCarveout(t, 78643200, 19050496, 19050496, summaryIdle)
-	Init(25165824)
+// TestTheReserveFallsAsTheGenerationSpendsTheFloor holds the model the reserve
+// uses: what has to stay free is what this generation has not allocated yet.
+//
+// A generation that has taken 11,341,824 bytes of a 12,582,912 floor has
+// 1,241,088 of that cost still ahead of it, so that is what it must find. It
+// does not have to find the whole floor again, and it does not have to find
+// what it already holds.
+func TestTheReserveFallsAsTheGenerationSpendsTheFloor(t *testing.T) {
+	dir := fakeCarveout(t, 58720256, 19050496, 19050496, summaryIdle)
+	Init(12582912)
 
-	// 19050496 and 49459200 are both genuine captures, but of different
-	// physical events - the second includes an orphaned generation from a
-	// restart, not a single measured session. The pairing is constructed only
-	// to put growth (30408704) above the floor and exercise that branch; it
-	// was never itself observed as one measurement.
-	writeCounter(t, dir, "alloc_mem", 49459200)
-	writeCounter(t, dir, "peak", 49459200)
+	// 30392320 is what opening a stream costs, measured on the device.
+	writeCounter(t, dir, "alloc_mem", 30392320)
+	writeCounter(t, dir, "peak", 30392320)
 
 	got := Read()
 
-	// 49459200 - 19050496 = 30408704, above the 25165824 floor.
-	if got.Reserve != 30408704 {
-		t.Fatalf("Reserve = %d, want 30408704", got.Reserve)
+	// spent 11341824 of the 12582912 floor, so 1241088 is still ahead - and
+	// that is under the orphan cost, which is the value that has to win.
+	if got.Reserve != 6516736 {
+		t.Fatalf("Reserve = %d, want the orphan cost 6516736", got.Reserve)
 	}
 	if !got.Measured {
-		t.Fatal("Measured = false, want true once the growth exceeds the floor")
+		t.Fatal("Measured = false, want true once a peak has been read")
 	}
 }
 
-// TestTheFloorWinsWhileTheMeasurementIsBelowIt documents the asymmetry that
-// TestReadMeasuresTheReserveFromPeakGrowth's numbers used to obscure: a
-// measurement is a lower bound over the paths exercised so far, not an upper
-// bound, so a smaller-than-floor measurement must not replace the floor.
+// TestAFullyExercisedGenerationReservesOnlyTheOrphanCost is the case the
+// 2026-08-20 carveout resize turned up on real hardware.
 //
-// The floor this test passes to Init is 24MB, which was the shipped default
-// until the branch measured what starting the stream really costs and moved it
-// to 12MB. The number here is only a fixture: Init takes the floor as a
-// parameter, so the case is about the comparison, not about the value the
-// device ships. It stays at 24MB because the growth staged below has to sit
-// under whatever floor the case uses.
-func TestTheFloorWinsWhileTheMeasurementIsBelowIt(t *testing.T) {
-	dir := fakeCarveout(t, 78643200, 19050496, 19050496, summaryIdle)
-	Init(25165824)
+// The board had run every delivery path, so its peak was its whole working set
+// and nothing more was pending. The old model graded it against that high-water
+// mark, found 15,777,792 free against a 23,891,968 "reserve", and told the
+// operator to reboot a healthy board. Requiring the carveout to hold the working
+// set a second time was right only while a dying process kept its buffers.
+func TestAFullyExercisedGenerationReservesOnlyTheOrphanCost(t *testing.T) {
+	dir := fakeCarveout(t, 58720256, 19050496, 19050496, summaryIdle)
+	Init(12582912)
 
 	writeCounter(t, dir, "alloc_mem", 42942464)
 	writeCounter(t, dir, "peak", 42942464)
 
 	got := Read()
 
-	if got.Reserve != 25165824 {
-		t.Fatalf("Reserve = %d, want the floor 25165824", got.Reserve)
+	if got.Reserve != 6516736 {
+		t.Fatalf("Reserve = %d, want the orphan cost 6516736", got.Reserve)
 	}
-	if got.Measured {
-		t.Fatal("Measured = true, want false while growth stays below the floor")
+	if got.Free != 15777792 {
+		t.Fatalf("Free = %d, want 15777792", got.Free)
+	}
+	if got.Verdict != VerdictOK {
+		t.Fatalf("Verdict = %q, want %q: this board is healthy", got.Verdict, VerdictOK)
+	}
+}
+
+// TestTheFloorStandsBeforeTheGenerationHasGrown keeps the half of the old
+// asymmetry that is still true. A board that has not opened a stream has the
+// whole cost of opening one ahead of it, and reporting a small reserve there
+// would read "ok" right up to the allocation that segfaults the server.
+func TestTheFloorStandsBeforeTheGenerationHasGrown(t *testing.T) {
+	dir := fakeCarveout(t, 58720256, 19050496, 19050496, summaryIdle)
+	Init(12582912)
+
+	writeCounter(t, dir, "alloc_mem", 19050496)
+	writeCounter(t, dir, "peak", 19050496)
+
+	got := Read()
+
+	if got.Reserve != 12582912 {
+		t.Fatalf("Reserve = %d, want the whole floor 12582912", got.Reserve)
+	}
+}
+
+// TestTheReserveNeverFallsBelowOneOrphan states the part that does not depend
+// on what the generation has done. A process that dies without its teardown
+// leaves 6,516,736 bytes that only a reboot returns, so a board with less than
+// that free is one crash away from a carveout it cannot recover.
+func TestTheReserveNeverFallsBelowOneOrphan(t *testing.T) {
+	dir := fakeCarveout(t, 58720256, 19050496, 19050496, summaryIdle)
+	Init(1024)
+
+	writeCounter(t, dir, "alloc_mem", 42942464)
+	writeCounter(t, dir, "peak", 42942464)
+
+	got := Read()
+
+	if got.Reserve != 6516736 {
+		t.Fatalf("Reserve = %d, want the orphan cost 6516736", got.Reserve)
+	}
+}
+
+// TestOrphansEatTheHeadroomUntilItIsCritical walks the failure the grade exists
+// to catch, on the resized carveout. Two crashed generations leave 13,033,472
+// bytes stranded, and what is left is under one more orphan.
+func TestOrphansEatTheHeadroomUntilItIsCritical(t *testing.T) {
+	dir := fakeCarveout(t, 58720256, 19050496, 19050496, summaryIdle)
+	Init(12582912)
+
+	writeCounter(t, dir, "alloc_mem", 55975936)
+	writeCounter(t, dir, "peak", 55975936)
+
+	got := Read()
+
+	if got.Free != 2744320 {
+		t.Fatalf("Free = %d, want 2744320", got.Free)
+	}
+	if got.Verdict != VerdictCritical {
+		t.Fatalf("Verdict = %q, want %q", got.Verdict, VerdictCritical)
 	}
 }
 
