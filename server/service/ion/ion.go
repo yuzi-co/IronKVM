@@ -14,12 +14,33 @@ import (
 // killed.
 var Root = "/sys/kernel/debug/ion/cvi_carveout_heap_dump"
 
-// orphanCost is what one generation leaves behind when its process dies without
-// running the capture teardown: one VI channel pool and one ISP_SHARED_BUFFER_0.
-// Measured on the device four times, always 6,516,736 bytes, and no userspace
-// action returns it. It is the floor under Reserve, because a board with less
-// than this free cannot absorb a single crash.
-const orphanCost = 6516736
+// orphanCost is what one generation leaves behind when it does not release what
+// it held. No userspace action returns it. It is the floor under Reserve,
+// because a board with less than this free cannot absorb one more.
+//
+// Only a crash strands memory now. An ordinary stop releases everything it
+// took, on every delivery path, since kvmv_deinit stopped decrementing a
+// reference count that a served JPEG frame had already pushed out of reach.
+// tools/vidiag/venc-leak.cpp measures both libraries through that sequence.
+//
+// There are two figures, and this is the larger one on purpose.
+//
+// An idle pipeline strands one VI channel pool and one ISP_SHARED_BUFFER_0 when
+// its process dies without a teardown: 6,516,736 bytes, measured four times.
+// The dead process leaves 19,050,496, and the next start takes the VI pool back
+// - _free_leak_memory_of_vb reclaims a leaked VbPool, and nothing reclaims the
+// rest.
+//
+// A pipeline that has encoded strands 11,636,736: two VENC_1_ReconFrameBuf, one
+// VCODEC_H264_FW_Buffer, one VENC_1_BitStreamBuffer, one VENC_1_H264_WorkBuffer,
+// the encoder's VbPool and one ISP_SHARED_BUFFER_0. Nothing takes any of that
+// back. The vcodec driver builds with CVI_H26X_USE_ION_FW_BUFFER, which drops
+// its own release path, and soph_sys never walks its buffer list on close.
+//
+// Understating this is what lets a grade read "ok" up to the allocation that
+// segfaults the server, so the constant carries the cost of the worse case.
+// See tools/ionmem/README.md.
+const orphanCost = 11636736
 
 // writeFile is a variable so a test can make the peak reset fail while the
 // counter stays readable. The container that runs the tests is root, and root
