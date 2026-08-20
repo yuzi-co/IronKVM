@@ -41,7 +41,7 @@ if [ ! -s "$work/f.sh" ]; then
     note "S95nanokvm defines server_memlimit" FAIL
     echo
     echo "$fails case(s) FAILED"
-    exit "$fails"
+    exit 1
 fi
 note "S95nanokvm defines server_memlimit" OK
 
@@ -99,5 +99,5 @@ if [ "$fails" -eq 0 ]; then
     echo "all cases passed"
 else
     echo "$fails case(s) FAILED"
+    exit 1
 fi
-exit "$fails"

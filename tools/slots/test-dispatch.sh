@@ -13,8 +13,9 @@
 # shell function stubs. Modelling that matters: it is exactly the property that
 # let a "command not found" reach a real boot.
 INIT="$1"
-[ -f "$INIT" ] || { echo "usage: SLOTTEST_SANDBOX=1 test-dispatch.sh <init>"; exit 1; }
-[ "$SLOTTEST_SANDBOX" = "1" ] || { echo "refusing to run: set SLOTTEST_SANDBOX=1 in a throwaway container"; exit 1; }
+# repack-boot.sh beside this file runs it on the init it just patched.
+[ -f "$INIT" ] || { echo "usage: SLOTTEST_SANDBOX=1 test-dispatch.sh <init>" >&2; exit 2; }
+[ "$SLOTTEST_SANDBOX" = "1" ] || { echo "refusing to run: set SLOTTEST_SANDBOX=1 in a throwaway container" >&2; exit 2; }
 
 sed -n '/^# --- slot selection ---$/,/^# --- end slot selection ---$/p' "$INIT" > /tmp/blk_slot.sh
 sed -n '/^SLOTA=\/dev\/mmcblk0p2$/,/^echo "nanokvm-slot: booted /p'          "$INIT" > /tmp/blk_mount.sh

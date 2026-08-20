@@ -38,6 +38,44 @@ note() { printf '  %-64s %s\n' "$1" "$2"; [ "$2" = FAIL ] && fails=$((fails + 1)
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 
+# The device runs busybox ash. Its echo takes -ne and writes \xNN as one byte,
+# and the gadget scripts build every report descriptor that way. dash does
+# neither: it prints "-ne" as text and leaves the escapes alone, so the
+# descriptors arrive as a run of literal backslashes and this suite reports a
+# dozen failures that say nothing about the script under test. /bin/sh is dash
+# on Debian and on Ubuntu, so that is the common case and not a corner.
+#
+# Pick the shell by what it does with the shipped line, not by its name, and
+# say which one won. A harness that chooses in silence is a harness whose
+# fidelity nobody can check.
+SH=
+cat > "$work/probe.sh" <<'PROBE'
+echo -ne \\x41 > probe
+PROBE
+for _candidate in "busybox sh" ash bash sh
+do
+    command -v "${_candidate%% *}" >/dev/null 2>&1 || continue
+    rm -f "$work/probe"
+    (cd "$work" && $_candidate probe.sh) 2>/dev/null
+    [ "$(od -An -tx1 -v "$work/probe" 2>/dev/null | tr -d ' \n')" = 41 ] || continue
+    SH=$_candidate
+    break
+done
+if [ -z "$SH" ]
+then
+    echo "no shell here writes \xNN as bytes the way busybox ash does." >&2
+    echo "install busybox, ash or bash, then run this again." >&2
+    exit 2
+fi
+echo "harness shell: $SH"
+
+# The bound below proves that the retry terminates. It is not a statement about
+# how fast this workstation is, and it must not become one: a subshell costs
+# about 5ms on a quiet Git Bash and was measured at 124ms on a busy one, so a
+# tight bound turns a loaded machine into two failing cases that name a defect
+# nobody introduced. A minute still catches a loop that never ends.
+CASE_TIMEOUT=${CASE_TIMEOUT:-60}
+
 # The descriptors, as a host sees them.
 KEYBOARD_DESC=05010906a101050719e029e71500250175019508810295017508810395057501050819012905910295017503910395067508150025e70507190029e78100c0
 HID_ONLY_KEYBOARD_DESC=05010906a101050719e029e71500250175019508810295017508810395057501050819012905910295017503910395067508150025650507190029658100c0
@@ -94,6 +132,29 @@ mkdir() {
         esac
     done
 }
+# configfs does not store a symlink. It resolves the target at the moment of the
+# call, against the working directory of the caller, and records an internal
+# link. A plain filesystem cannot do that: the stored target is relative to the
+# link, so it dangles, and a filesystem without symlinks refuses the call
+# outright. Record the link the way a reader of this tree tests for it, and keep
+# the one behaviour that matters - configfs refuses a link to a function that
+# was never created, so this has to refuse it too.
+ln() {
+    _target= _dest=
+    for _arg in "$@"
+    do
+        case "$_arg" in -*) continue ;; esac
+        if [ -z "$_target" ]
+        then _target=$_arg
+        else _dest=$_arg
+        fi
+    done
+    [ -n "$_target" ] && [ -n "$_dest" ] || return 1
+    [ -e "$_target" ] || return 1
+    _dest=${_dest%/}
+    [ -d "$_dest" ] && _dest=$_dest/${_target##*/}
+    : > "$_dest"
+}
 sleep() { :; }
 STUB
 
@@ -111,7 +172,7 @@ STUB
 run() {
     lift "$1"
     echo "$2" >> "$work/func.sh"
-    timeout 10 sh "$work/func.sh" > "$work/out" 2>&1
+    timeout "$CASE_TIMEOUT" $SH "$work/func.sh" > "$work/out" 2>&1
     G=$work/sys/kernel/config/usb_gadget/g0
 }
 
@@ -474,7 +535,7 @@ fi
 no_controller
 lift "$S03"
 echo start_usb_dev >> "$work/func.sh"
-if timeout 10 sh "$work/func.sh" > "$work/out" 2>&1
+if timeout "$CASE_TIMEOUT" $SH "$work/func.sh" > "$work/out" 2>&1
 then
     note "the retry gives up rather than holding rcS for ever" OK
 elif [ $? -eq 124 ]
@@ -492,7 +553,7 @@ lift "$S03"
     printf '%s\n' 'sleep() { _n=$((${_n:-0} + 1)); [ "$_n" -ge 3 ] && mkdir -p "'"$work"'/sys/class/udc/4340000.usb"; return 0; }'
     printf '%s\n' start_usb_dev
 } >> "$work/func.sh"
-timeout 10 sh "$work/func.sh" > "$work/out" 2>&1
+timeout "$CASE_TIMEOUT" $SH "$work/func.sh" > "$work/out" 2>&1
 G=$work/sys/kernel/config/usb_gadget/g0
 is UDC 4340000.usb "a controller that appears late is still picked up"
 

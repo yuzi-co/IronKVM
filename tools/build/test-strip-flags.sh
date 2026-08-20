@@ -58,26 +58,42 @@ if [ -n "$SKIP_BUILD" ]; then
     echo "(build case skipped)"
     echo
     [ "$fails" -eq 0 ] && echo "all cases passed" || echo "$fails case(s) FAILED"
-    exit "$fails"
+    exit 1
 fi
 
 echo
 echo "===== the built binary carries no debug metadata ====="
 
 IMAGE=nanokvm-app-builder
-if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
-    note "builder image $IMAGE is present" FAIL
+if ! command -v docker >/dev/null 2>&1 || ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
+    # An absent builder is not a defect in the three build entry points, and
+    # every case above did run. Keep their verdict, name what could not run,
+    # and exit 2 so tools/run-tests.sh counts this as skipped. Reporting it as
+    # "builder image is present FAIL" said the build was broken when nothing
+    # about the build had been looked at.
+    echo
+    echo "(build case skipped: no $IMAGE image here)"
     echo "    build it with: docker build -t $IMAGE tools/build"
     echo
-    echo "$fails case(s) FAILED"
-    exit "$fails"
+    if [ "$fails" -ne 0 ]
+    then
+        echo "$fails source case(s) FAILED"
+        exit 1
+    fi
+    echo "all source cases passed"
+    exit 2
 fi
 note "builder image $IMAGE is present" OK
 
 # Build into a scratch name so a failed run cannot leave a half-linked binary
 # where a deploy would find it.
 mkdir -p "$WORK"
-if docker run --rm \
+# MSYS_NO_PATHCONV keeps Git Bash from rewriting the container-side paths. It
+# turns "-w /src" into "C:/Program Files/Git/src" and the run dies on an
+# invalid working directory, which this suite then reported as a failed
+# cross-compile. The variable means nothing outside Git Bash, so it costs a
+# Linux run nothing.
+if MSYS_NO_PATHCONV=1 docker run --rm \
     -v "$ROOT/server:/src" -v "$ROOT/tools/build:/build" \
     -v nanokvm-gopath:/gopath -v nanokvm-gocache:/gocache \
     -w /src -e GOPATH=/gopath -e GOCACHE=/gocache \
@@ -91,7 +107,7 @@ else
     sed 's/^/    /' "$WORK/probe.err" | tail -20
     echo
     echo "$fails case(s) FAILED"
-    exit "$fails"
+    exit 1
 fi
 
 sections=$(awk '{ if ($2 ~ /^\./) print $2 }' "$WORK/probe.txt")
@@ -129,5 +145,5 @@ if [ "$fails" -eq 0 ]; then
     echo "all cases passed"
 else
     echo "$fails case(s) FAILED"
+    exit 1
 fi
-exit "$fails"

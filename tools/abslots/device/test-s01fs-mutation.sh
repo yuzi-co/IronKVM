@@ -97,5 +97,5 @@ if [ "$fails" -eq 0 ]; then
     echo "all cases passed"
 else
     echo "$fails case(s) FAILED"
+    exit 1
 fi
-exit "$fails"

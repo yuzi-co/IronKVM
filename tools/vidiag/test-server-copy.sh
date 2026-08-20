@@ -55,7 +55,7 @@ else
     sed 's/^/    /' "$WORK/copy.log" | head -5
     echo
     echo "$fails case(s) FAILED"
-    exit "$fails"
+    exit 1
 fi
 
 for want in NanoKVM-Server dl_lib/libkvm.so web/assets/index.js; do
@@ -110,5 +110,5 @@ if [ "$fails" -eq 0 ]; then
     echo "all cases passed"
 else
     echo "$fails case(s) FAILED"
+    exit 1
 fi
-exit "$fails"

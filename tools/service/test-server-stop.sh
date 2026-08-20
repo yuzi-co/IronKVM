@@ -56,7 +56,7 @@ STUB
 lift
 if ! grep -q '^stop_services() {' "$work/f.sh"; then
     note "S95nanokvm defines stop_services" FAIL
-    echo; echo "$fails case(s) FAILED"; exit "$fails"
+    echo; echo "$fails case(s) FAILED"; exit 1
 fi
 note "S95nanokvm defines stop_services" OK
 
@@ -126,5 +126,5 @@ if [ "$fails" -eq 0 ]; then
     echo "===== stop_services keeps what is still running ====="
 else
     echo "$fails case(s) FAILED"
+    exit 1
 fi
-exit "$fails"

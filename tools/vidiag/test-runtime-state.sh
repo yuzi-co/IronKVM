@@ -39,7 +39,7 @@ if [ ! -s "$work/funcs.sh" ]; then
     note "the script still defines prepare_runtime_state" FAIL
     echo
     echo "$fails case(s) FAILED"
-    exit "$fails"
+    exit 1
 fi
 
 mkdir -p "$work/tmp" "$work/kvmapp/kvm"
@@ -120,5 +120,5 @@ if [ "$fails" -eq 0 ]; then
     echo "all cases passed"
 else
     echo "$fails case(s) FAILED"
+    exit 1
 fi
-exit "$fails"

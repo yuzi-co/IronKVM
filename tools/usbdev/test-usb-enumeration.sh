@@ -87,7 +87,7 @@ STUB
 lift
 if ! grep -q '^usb_watch_enumeration() {' "$work/f.sh"; then
     note "S03usbdev defines usb_watch_enumeration" FAIL
-    echo; echo "$fails case(s) FAILED"; exit "$fails"
+    echo; echo "$fails case(s) FAILED"; exit 1
 fi
 note "S03usbdev defines usb_watch_enumeration" OK
 
@@ -245,5 +245,5 @@ if [ "$fails" -eq 0 ]; then
     echo "===== the boot notices a gadget the host never took ====="
 else
     echo "$fails case(s) FAILED"
+    exit 1
 fi
-exit "$fails"
