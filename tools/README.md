@@ -554,6 +554,134 @@ control, so the only way back is the SD card in a reader. Measure a real peak
 first, across a reboot, a resolution change and every video mode, and treat the
 change as one that needs the case open if it goes wrong.
 
+## The encoder was not released, and the cause was a reference count
+
+A stop used to give the carveout back only when the session had served H.264 and
+nothing else. A session that had served one MJPEG frame stranded the whole H.264
+encoder: 11,636,736 bytes, and only a reboot returned them. Fixed 2026-08-20.
+
+`mmf_deinit` is `mmf_try_deinit(false)`. It decrements `mmf_used_cnt` and does the
+teardown only on the call that reaches zero. That teardown is `_mmf_deinit`, and it
+is the only caller of `mmf_del_venc_channel_all`, so it is the only thing that ever
+returns the encoder. MJPEG is served through `Image::to_jpeg`, which reaches
+`mmf_enc_jpg_init`, which calls `mmf_init` and takes a reference. Nothing gives that
+reference back: `mmf_enc_jpg_deinit` runs from `_mmf_deinit`, and from the mode
+switch in `kvm_vision.cpp` only when `venc_auto_recyc` is set, which nothing sets.
+One JPEG frame therefore left the count permanently one too high, and every later
+stop decremented to one.
+
+`kvmv_deinit` calls `mmf_try_deinit(true)` now. Forcing is correct rather than
+convenient: `kvm_vision` is the only user of MMF in the process, so at that point the
+count describes references nobody holds. A later `kvmv_init` opens the camera again,
+which calls `mmf_init` again. That matters, because the idle timeout stops capture
+while the board runs, not only at exit.
+
+### Measuring it
+
+`tools/vidiag/venc-leak.cpp` drives libkvm directly and prints the carveout at each
+step. It runs with no HDMI signal, which the server's own path cannot do: with no
+frames arriving `kvmv_read_img` never returns, so no encoder is ever built.
+
+Build it against the committed library with the toolchain in the zram builder image:
+
+```shell
+docker run --rm -v "$PWD:/repo" -w /repo nanokvm-zram-builder   /usr/local/host-tools/gcc/riscv64-linux-musl-x86_64/bin/riscv64-unknown-linux-musl-g++   -O2 -mcpu=c906fdv -march=rv64imafdcv0p7xthead -mcmodel=medany -mabi=lp64d   -Iserver/include -Isupport/sg2002/additional/kvm_mmf/include   -o venc-leak tools/vidiag/venc-leak.cpp   -Lserver/dl_lib -lkvm -lkvm_mmf -Wl,-rpath,'$ORIGIN/dl_lib'
+```
+
+Put it in a directory with a `dl_lib` beside it, because the RPATH is `$ORIGIN/dl_lib`:
+
+```shell
+ssh root@<device> 'mkdir -p /tmp/vlk && ln -sfn /kvmapp/server/dl_lib /tmp/vlk/dl_lib'
+scp venc-leak root@<device>:/tmp/vlk/
+```
+
+The video hardware takes one owner, and the supervisor restarts a server that goes
+away, so stand both off first:
+
+```shell
+/etc/init.d/S98supervise stop
+/etc/init.d/S95nanokvm stop
+/tmp/vlk/venc-leak --mode channel --push 30 --jpg --server-stop
+/etc/init.d/S95nanokvm start
+/etc/init.d/S98supervise start
+```
+
+`--server-stop` is the sequence that leaked: `kvmv_init`, both encoders alive at
+once, `kvmv_deinit`. `--push` encodes synthetic frames, which is what allocates
+`VENC_1_ReconFrameBuf` - a channel that never encoded does not have one, so a test
+without it proves nothing about the two largest buffers. `--cycles N` starts and
+stops with no frames, which is the check that a forced teardown does not stop capture
+from coming back. `--abort` leaves without any teardown, which is what a killed
+server does.
+
+Measured on the device, same sequence, both libraries:
+
+| library             | start      | peak       | after the stop | stranded    |
+| ------------------- | ---------- | ---------- | -------------- | ----------- |
+| before (`c268de5f`) | 25,567,232 | 49,459,200 | 43,237,376     | +17,670,144 |
+| after (`1f4a7955`)  | 43,237,376 | 73,646,080 | 43,237,376     |           0 |
+
+Delete the binary after the run. Do not commit it.
+
+### Nothing recovers an orphan, and one obvious repair panics the board
+
+A process that dies still strands what it held, and no part of the kernel takes it
+back. `osdrv/interdrv/v2/vcodec/Makefile` builds with `-DCVI_H26X_USE_ION_FW_BUFFER`,
+which compiles `vpu_free_buffers()` out of `vpu_release()`. `soph_sys` drops its
+bindings when its file descriptor closes and never walks its buffer list. So the
+memory stays allocated until the board reboots.
+
+Reclaiming it from the next process looks like the repair and is not. The user-space
+free path is the `SYS_ION_FREE` ioctl, which reaches `_sys_ion_free`, which reads
+`mem_info.dmabuf->priv` before it tests anything. `soph_vc_driver` allocates through
+`sys_ion_alloc_nofd`, which stores a null in that field, and no ioctl reaches
+`_sys_ion_free_nofd`. Freeing a leaked `VENC_1_*` buffer from user space therefore
+dereferences a null pointer in the kernel.
+
+`_free_leak_memory_of_ion` in `kvm_mmf.cpp` reclaims `VI_DMA_BUF` and nothing else,
+and that is right: `VI_DMA_BUF` is allocated from user space, in
+`middleware/v2/modules/vpu/src/cvi_vi.c`, so it has a real `dma_buf` behind it.
+
+## Whether the carveout can be regular RAM instead
+
+It cannot today, and the reason is not the reservation. Three facts settle it.
+
+**Every DMA buffer must be physically contiguous.** `CONFIG_IOMMU_SUPPORT` is unset,
+and the media stack passes raw `u64PhyAddr` between modules. So `ion_system_heap`,
+which is registered and is backed by scattered pages, cannot serve anything the
+hardware reads.
+
+**The buddy allocator stops at about 2MB.** `CONFIG_FORCE_MAX_ZONEORDER=10`. That
+caps `ion_system_contig_heap`, which is also registered and is regular RAM, to the
+small buffers. Of the current set only `VENC_1_BitStreamBuffer` (1,048,576),
+`VCODEC_H264_FW_Buffer` (786,432), `ISP_SHARED_BUFFER_0` (294,912) and
+`VENC_1_H264_WorkBuffer` (81,920) fit, which is 2.2MB in total.
+
+**The heap type is compiled in, not configured.** Every in-kernel allocation the
+media stack makes goes through `osdrv/interdrv/v2/sys/common/sys.c`, and both call
+sites there pass `ION_HEAP_TYPE_CARVEOUT` as a literal. `_cvi_ion_alloc` then takes
+the first heap of that type. No device tree property changes which heap a buffer
+comes from.
+
+What a CMA route would take, if it is ever wanted:
+
+- A `reusable` `shared-dma-pool` region in the device tree. `CONFIG_ION_CMA_HEAP=y`
+  and `CONFIG_DMA_CMA=y` are already set, and `ion_cma_heap.c` registers an ION heap
+  for every CMA area from a `device_initcall`, so no change to `cvitek_ion.c` is
+  needed for the heap to exist. `CONFIG_CMA_SIZE_MBYTES=0` and `CmaTotal: 0 kB`, so
+  there is no area at present. Note that `cvitek_ion_probe` would not build the heap
+  by itself: its switch sends `ION_HEAP_TYPE_DMA` to `default: continue`.
+- Two lines in `sys.c`, and a rebuild of `soph_sys.ko`. `tools/vi-loadavg` and
+  `tools/zram` already build modules from this kernel tree.
+
+The trade-off is the reason to think before doing it. A carveout allocation is
+guaranteed and a CMA allocation is best effort, and libkvm never checks an allocation
+result, so a CMA failure is a SIGSEGV rather than an error. The version worth having
+is a split: a guaranteed carveout for the always-on VI and ISP path, and CMA for the
+encoder set and `jpeg_ion`, which only exist while somebody is streaming. An idle
+board would give back about 24MB, and a failure would cost video while leaving HID
+and the console up.
+
 ## The video pipeline's errors now survive a reboot
 
 The capture pipeline fails to start sometimes, and the failure repairs itself on
