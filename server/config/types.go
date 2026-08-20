@@ -53,15 +53,21 @@ type Security struct {
 
 // Ion configures how the carveout is graded.
 type Ion struct {
-	// ReserveFloor is the assumed cost of starting the stream, in bytes, used
-	// until this process has been observed needing more. 12MB: opening a stream
-	// on a fresh board took the carveout from 19,050,496 to 30,392,320, so one
-	// stream start costs 11,341,824 bytes.
+	// ReserveFloor is the cost of starting the stream, in bytes. 12MB: opening a
+	// stream on a fresh board took the carveout from 19,050,496 to 30,392,320,
+	// so one stream start costs 11,341,824 bytes.
+	//
+	// It is what a generation that has not opened a stream still has ahead of
+	// it. As the generation allocates, that much of the cost stops being
+	// pending, and the reserve falls with it until only the orphan cost is
+	// left. See service/ion, which holds the reasoning.
 	//
 	// An earlier value of 24MB was the cost of a whole capture session, which
 	// graded a healthy board amber: `ok` needs twice this much free, and twice
 	// 24MB is 64% of the 75MB carveout, so a board with video running could
-	// never reach it.
+	// never reach it. The same arithmetic reached the verdict a second way
+	// through the measured path, and that is fixed in service/ion rather than
+	// here.
 	ReserveFloor uint64 `yaml:"reserveFloor"`
 }
 
