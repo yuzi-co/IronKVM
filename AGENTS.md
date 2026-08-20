@@ -109,9 +109,13 @@ Without a local Go toolchain, a plain `golang` image is enough for this — the
 heavy MaixCDK builder is only needed for an actual device build:
 
 ```shell
-docker run --rm -v "$PWD/server:/src" -v nanokvm-gomod:/go/pkg/mod -w /src \
+docker run --rm -v "$PWD:/repo" -v nanokvm-gomod:/go/pkg/mod -w /repo/server \
   -e CGO_ENABLED=0 golang:1.25 go test -tags novision ./...
 ```
+
+Mount the repository root, not `server/`. `service/vm/endpoints_shell_test.go` reads
+`kvmapp/system/init.d/S03usbdev` and holds the Go code against what that script does. A mount of
+`server/` alone fails seven cases in that one file, and none of the seven is a defect.
 
 `-race` needs `CGO_ENABLED=1`. The same image cross-checks the target arch with
 `CGO_ENABLED=0 GOOS=linux GOARCH=riscv64 go build -tags novision ./...`.
@@ -137,6 +141,19 @@ rm -f audio.test
 ```
 
 Do not commit `audio.test`. Delete it after every run.
+
+### Device tool suites (`tools/`)
+
+```shell
+sh tools/run-tests.sh              # every test-*.sh under tools/
+sh tools/run-tests.sh usbdev       # only the paths that contain "usbdev"
+```
+
+A suite exits 0 when every case passes, 2 when it cannot run here, and 1 when a case fails. Status 2
+names what is missing: a tool, an artefact that no checkout carries, or the sandbox that a
+destructive suite demands. A skipped suite is not a passing suite. Do not read a bare run of one
+suite as a verdict until you have checked which of the three it gave you. `tools/README.md` holds
+the rest.
 
 ### Deploying to a device
 

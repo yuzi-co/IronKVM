@@ -33,6 +33,37 @@ note() { printf '  %-64s %s\n' "$1" "$2"; [ "$2" = FAIL ] && fails=$((fails + 1)
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 
+# The device runs busybox ash, and the gadget script writes its byte-valued
+# fields with `echo -ne \xNN`. dash does neither half: it prints "-ne" as text
+# and leaves the escapes alone, so the lifted script builds a gadget that is
+# not the one the device builds. /bin/sh is dash on Debian and on Ubuntu, so
+# running the lift under plain `sh` is the common case, not a corner. This file
+# asserts no bytes, and would therefore not notice.
+#
+# Pick the shell by what it does with the shipped line, not by its name, and
+# say which one won. A harness that chooses in silence is a harness whose
+# fidelity nobody can check.
+SH=
+cat > "$work/probe.sh" <<'PROBE'
+echo -ne \\x41 > probe
+PROBE
+for _candidate in "busybox sh" ash bash sh
+do
+    command -v "${_candidate%% *}" >/dev/null 2>&1 || continue
+    rm -f "$work/probe"
+    (cd "$work" && $_candidate probe.sh) 2>/dev/null
+    [ "$(od -An -tx1 -v "$work/probe" 2>/dev/null | tr -d ' \n')" = 41 ] || continue
+    SH=$_candidate
+    break
+done
+if [ -z "$SH" ]
+then
+    echo "no shell here writes \xNN as bytes the way busybox ash does." >&2
+    echo "install busybox, ash or bash, then run this again." >&2
+    exit 2
+fi
+echo "harness shell: $SH"
+
 # run_start builds a fake configfs, runs the shipped start_usb_dev against it,
 # and leaves the result in $work/sys/kernel/config/usb_gadget/g0.
 # $1 is "on" to create the /boot/usb.acm flag first.
@@ -55,6 +86,31 @@ run_start() {
     # so "mkdir configs/c.1/strings/0x409" works there and not here. Make mkdir
     # behave the same rather than let a real failure hide in that noise.
     echo 'mkdir() { /bin/mkdir -p "$@"; }' > "$work/func.sh"
+    cat >> "$work/func.sh" <<'STUB'
+# configfs does not store a symlink. It resolves the target at the moment of the
+# call, against the working directory of the caller, and records an internal
+# link. A plain filesystem cannot do that: the stored target is relative to the
+# link, so it dangles, and a filesystem without symlinks refuses the call
+# outright. Record the link the way a reader of this tree tests for it, and keep
+# the one behaviour that matters - configfs refuses a link to a function that
+# was never created, so this has to refuse it too.
+ln() {
+    _target= _dest=
+    for _arg in "$@"
+    do
+        case "$_arg" in -*) continue ;; esac
+        if [ -z "$_target" ]
+        then _target=$_arg
+        else _dest=$_arg
+        fi
+    done
+    [ -n "$_target" ] && [ -n "$_dest" ] || return 1
+    [ -e "$_target" ] || return 1
+    _dest=${_dest%/}
+    [ -d "$_dest" ] && _dest=$_dest/${_target##*/}
+    : > "$_dest"
+}
+STUB
     # start_usb_dev calls usb_has, usb_resolve, usb_dropped, usb_prune_list
     # and usb_report, and those call five more helpers again. Extracting only
     # start_usb_dev left every one of them undefined, so each call returned
@@ -65,7 +121,7 @@ run_start() {
         | sed "s|/sys/|$work/sys/|g; s|/boot/|$work/boot/|g; s|/proc/|$work/proc/|g; s|\. /etc/profile|:|" \
         >> "$work/func.sh"
     echo 'start_usb_dev' >> "$work/func.sh"
-    sh "$work/func.sh" > "$work/out" 2>&1
+    $SH "$work/func.sh" > "$work/out" 2>&1
     G=$work/sys/kernel/config/usb_gadget/g0
 }
 
@@ -142,5 +198,5 @@ if [ "$fails" -eq 0 ]; then
     echo "all cases passed"
 else
     echo "$fails case(s) FAILED"
+    exit 1
 fi
-exit "$fails"
