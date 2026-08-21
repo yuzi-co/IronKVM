@@ -107,11 +107,22 @@ past the reservation. The test suite holds this case because the number looks sa
 70MB is the smallest whole megabyte that passes, and it clears the floor by 49,152
 bytes. Taking 5MB for that margin is not worth doing.
 
-**What would make 64MB real.** Reclaim `jpeg_ion` at startup. It is 9,437,184 bytes,
-and unlike the `VENC_1_*` buffers it is allocated from user space, so freeing it
-through `SYS_ION_FREE` is safe rather than a kernel panic. That drops the post-crash
-requirement to 63,913,984 and leaves 64MB with 3.2MB spare. It is work in
-`_free_leak_memory_of_ion`, not a size change.
+**Reclaiming `jpeg_ion` at startup would make 64MB fit, and it is not available.**
+The buffer is 9,437,184 bytes, and dropping it would take the post-crash requirement
+to 63,913,984. But `jpeg_ion` is named inside `soph_vc_driver.ko`, the binary-only
+module that allocates the `VENC_1_*` buffers, and that module references
+`sys_ion_alloc_nofd` and `sys_ion_free_nofd` and nothing else. So it is a kernel
+allocation with no `dma_buf` behind it, exactly like the encoder buffers, and freeing
+it through `SYS_ION_FREE` dereferences a null pointer in the kernel.
+
+Only `VI_DMA_BUF` is reclaimable from user space, which is what
+`_free_leak_memory_of_ion` already does. Making the rest reclaimable needs a kernel
+change: `_sys_ion_free` has to send a buffer with no `dma_buf` to
+`_sys_ion_free_nofd`, which already exists and which no ioctl reaches. That is about
+three lines, and then `soph_sys.ko` has to be rebuilt and hand-installed, and nine
+modules depend on it. It also needs a way to tell an orphan from a buffer another
+process is using, which the summary file does not report and which is why the
+existing reclaim is restricted to one name.
 
 56MB was installed on 2026-08-20 and reverted the same day, while the encoder still
 leaked on an ordinary stop. 48MB was never safe.
@@ -120,7 +131,7 @@ leaked on an ordinary stop. 48MB was never safe.
 to cost what an idle one costs, which is nothing, and that holds since 2026-08-21.
 The peak was remeasured from a clean boot on the same day and came back at
 42,942,464, identical to the earlier figure. What remains is the crash budget above,
-and only reclaiming `jpeg_ion` moves it.
+and nothing moves it without a kernel change.
 
 ## Use
 
