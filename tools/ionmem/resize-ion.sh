@@ -18,19 +18,18 @@
 # dynamic - it carries "size" with no fixed "reg" - so the kernel places the
 # region itself and only the length changes here.
 #
-# What the pipeline actually needs, measured on the device 2026-08-20 at
-# 1920x1080 60fps, which is the LT6911 sensor's ceiling, with MJPEG, H.264
-# direct and WebRTC all exercised from a browser:
+# What the pipeline actually needs, measured on the device at 1920x1080 60fps,
+# which is the LT6911 sensor's ceiling, with MJPEG, H.264 direct and WebRTC all
+# exercised from a browser:
 #
 #     peak                       42,942,464   (55% of the reservation)
 #     idle, capture up           19,050,496
-#     one orphaned generation     6,516,736   (a crash leaks this; a clean stop
-#                                              no longer does)
 #
-# So the floor below is the peak plus one orphan. Under it the board cannot
-# work, and the failure is not graceful: libkvm does not check the result of an
-# allocation, so an exhausted carveout is a segfault rather than an error, and
-# the server dies before it binds its port. See tools/README.md.
+# A stop returns everything it took, on every delivery path, since 2026-08-21. A
+# crash still strands the lot, and nothing gives it back before a reboot, so the
+# floor below is sized against a crash rather than against the peak. The failure
+# is not graceful: libkvm does not check the result of an allocation, so an
+# exhausted carveout is a segfault rather than an error. See tools/README.md.
 set -e
 
 ORIG=${1:?usage: resize-ion.sh <boot.sd> <workdir> <new-size-bytes>}
@@ -38,9 +37,25 @@ OUT=${2:?usage: resize-ion.sh <boot.sd> <workdir> <new-size-bytes>}
 WANT=${3:?usage: resize-ion.sh <boot.sd> <workdir> <new-size-bytes>}
 HERE=$(cd "$(dirname "$0")" && pwd)
 
-# The measured peak plus one orphaned generation. A size under this is refused
-# rather than warned about, because the board that boots it answers nothing.
-MIN_SIZE=49459200
+# What the board needs after one crash taken while streaming. A size under this
+# is refused rather than warned about, because the board that boots it answers
+# nothing.
+#
+# This is not the peak. A crashed process strands its whole working set, the
+# next start reclaims none of it beyond reusing the two VI pools, and the
+# generation after that needs its own. Measured on the device 2026-08-21, in
+# that order:
+#
+#     peak on a clean board                        42,942,464
+#     stranded by a crash while streaming          42,942,464
+#     idle again after the next start              49,459,200
+#     a second streaming generation reaches        73,351,168
+#
+# 49,459,200 was the floor here until that sequence was measured. It is the
+# third line, not the fourth: it describes a board that has already crashed and
+# is now idle, which is the state a reservation has to survive rather than the
+# one it has to fit.
+MIN_SIZE=73351168
 
 # The reservation is placed by the kernel, but a length that is not a whole
 # number of megabytes buys nothing and makes the value hard to read against the
@@ -97,8 +112,10 @@ printf '  %-40s %s bytes (%s MB)\n' "requested size" "$WANT" "$((WANT / 1048576)
 [ $((WANT % ALIGN)) -eq 0 ] || { echo "  size must be a whole number of MB"; exit 1; }
 if [ "$WANT" -lt "$MIN_SIZE" ]; then
     echo "  refused: under the measured floor of $MIN_SIZE bytes"
-    echo "  that is the 42,942,464 peak plus one orphaned generation. A board"
-    echo "  that boots a smaller reservation segfaults its server on start."
+    echo "  that is what the board reaches when it opens a stream after one"
+    echo "  crash taken while streaming. A smaller reservation serves a clean"
+    echo "  board and then segfaults on the first stream after a crash, because"
+    echo "  libkvm does not check an allocation result."
     exit 1
 fi
 

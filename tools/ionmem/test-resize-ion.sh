@@ -40,9 +40,10 @@ note() { printf '  %-58s %s\n' "$1" "$2"; [ "$2" = FAIL ] && fails=$((fails + 1)
 
 mkdir -p "$WORK"
 
-# 56MB. The size this fork installs, and the one the cases below are written
-# against.
-WANT=58720256
+# 70MB. The smallest whole megabyte the tool accepts, and the one the cases
+# below are written against. The fork installs nothing: 70MB clears the floor by
+# 49,152 bytes, which is not a margin worth taking 5MB for.
+WANT=73400320
 
 echo "===== resize-ion.sh shrinks the reservation ====="
 
@@ -146,15 +147,21 @@ refuses() {
 
 # One byte under the floor, so the case tests the boundary rather than an
 # obviously silly number.
-refuses "a size under the measured floor is refused"     49459199 floor
-refuses "a size that is not a whole MB is refused"       58720257 align
+refuses "a size under the measured floor is refused"     73351167 floor
+refuses "a size that is not a whole MB is refused"       73400321 align
 refuses "growing the reservation is refused"             83886080 grow
 refuses "a size equal to the current one is refused"     78643200 same
-refuses "a size that is not a number is refused"         fiftysix  nan
+refuses "a size that is not a number is refused"         seventy   nan
+
+# 64MB reads as a comfortable cut against the 42,942,464 peak and is not one. A
+# board carrying one crash taken while streaming passes 67,059,712 before it
+# asks for the first VENC_1_ReconFrameBuf, and that allocation is the one that
+# returns null. This case is here because the number looks safe.
+refuses "64MB is refused, because a crash does not fit beside it" 67108864 sixtyfour
 
 # The floor itself has to be accepted, or the constant in the tool and the
 # constant in this file have drifted apart and one of them is wrong.
-if sh "$TOOL" "$ORIG" "$WORK/atfloor" 49459200 > "$WORK/atfloor.log" 2>&1; then
+if sh "$TOOL" "$ORIG" "$WORK/atfloor" 73351168 > "$WORK/atfloor.log" 2>&1; then
     note "a size at the floor is refused for alignment, not for the floor" FAIL
 else
     grep -q "whole number of MB" "$WORK/atfloor.log" \
