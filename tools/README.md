@@ -534,7 +534,19 @@ The device tree reserves nothing for the RTOS core. Checked on the board:
 So the 75MB carveout is not shared with a second operating system. It is all the
 video pipeline's, and ION accounts for the whole of it.
 
-### There is headroom in the carveout, and taking it is not safe yet
+### There is headroom in the carveout, and taking it is not safe
+
+Settled 2026-08-21, on the device, after the encoder leak was fixed. The board keeps
+the stock 75MB. `tools/ionmem/README.md` carries the measurements; the short version
+is that the reservation is sized against a crash, not against the peak, and a crashed
+process strands its whole working set with nothing reclaiming it before a reboot. A
+second streaming generation then reaches 73,351,168 bytes of the 78,643,200 available.
+`resize-ion.sh` refuses everything under that now, 64MB included.
+
+The older reasoning below is kept because the reasoning is what was wrong, not the
+numbers.
+
+### The earlier reading of the same headroom
 
 `/sys/kernel/debug/ion/cvi_carveout_heap_dump/summary` after a day of use at
 1920x1080:
