@@ -73,33 +73,54 @@ reclaim `VI_DMA_BUF` alone: that one is allocated from user space, in
 
 ## Sizes
 
-`resize-ion.sh` refuses anything below **49,459,200** bytes, which is the peak plus one
-orphaned generation. The refusal is hard rather than a warning. An undersized carveout
-does not degrade: libkvm never checks an allocation result, so the server takes a
-SIGSEGV on a NULL and dies before it binds its port, and the board answers nothing.
+**The board keeps the stock 75MB, and this tool now refuses every size that was
+previously considered.** Decided 2026-08-21, on measurements rather than arithmetic.
 
-**Nothing is installed at present.** 56MB was reverted while the encoder leaked. The
-leak is fixed, so the question is open again, but it needs a fresh measurement on a
-board that rebooted after the fix rather than a re-reading of the numbers below.
+`resize-ion.sh` refuses anything below **73,351,168** bytes. The refusal is hard
+rather than a warning. An undersized carveout does not degrade: libkvm never checks
+an allocation result, so the server takes a SIGSEGV on a NULL, and on this path it
+does so when a viewer opens a stream rather than at startup.
 
-56MB was installed on 2026-08-20 and reverted the same day. It returns 19,922,944
-bytes and leaves 15.8MB over the measured peak, which is enough room for the peak
-plus exactly one restart taken while streaming:
+The floor is not the peak. Measured on the device in this order:
 
-    peak                    42,942,464
-    one encoder orphan      11,636,736
-                          = 54,579,200   =  93% of 56MB
+| state                                          | bytes      |
+| ---------------------------------------------- | ---------- |
+| peak on a clean board, every mode exercised     | 42,942,464 |
+| stranded by a crash taken while streaming       | 42,942,464 |
+| reclaimed by the next start                     |          0 |
+| idle again, next server running                 | 49,459,200 |
+| a second streaming generation reaches           | 73,351,168 |
 
-A second such restart exhausts it. Deploying is a normal operator action, so that is
-not a corner case. On 75MB the same sequence leaves 24MB spare.
+A crashed process strands its whole working set. The next start reuses the two VI
+pools and nothing else, so `jpeg_ion` and the entire encoder set stay allocated until
+the board reboots. The reservation therefore has to hold a second full generation
+beside the first one's corpse.
 
-48MB was never safe: about 5MB over the peak, which one idle orphan spends.
+75MB clears that by 5,292,032 bytes. It is a margin, not slack.
+
+**Why 64MB is refused although it looks safe.** It is 24MB over the peak, which reads
+as comfortable. On a board carrying one streaming-crash orphan the sequence passes
+67,059,712 after `mmf_add_venc_channel` and then asks for the first
+`VENC_1_ReconFrameBuf`: that allocation is the one that returns null, 49,152 bytes
+past the reservation. The test suite holds this case because the number looks safe.
+
+70MB is the smallest whole megabyte that passes, and it clears the floor by 49,152
+bytes. Taking 5MB for that margin is not worth doing.
+
+**What would make 64MB real.** Reclaim `jpeg_ion` at startup. It is 9,437,184 bytes,
+and unlike the `VENC_1_*` buffers it is allocated from user space, so freeing it
+through `SYS_ION_FREE` is safe rather than a kernel panic. That drops the post-crash
+requirement to 63,913,984 and leaves 64MB with 3.2MB spare. It is work in
+`_free_leak_memory_of_ion`, not a size change.
+
+56MB was installed on 2026-08-20 and reverted the same day, while the encoder still
+leaked on an ordinary stop. 48MB was never safe.
 
 **What has to be true before this goes back on.** A restart taken while streaming has
-to cost what an idle one costs, which is nothing. That holds since 2026-08-20. What is
-still missing is the peak: every figure above was measured on a board carrying orphans
-from the leak, so the peak has to be measured again from a clean boot, and the size
-chosen against that. Budget for one crash, not one restart.
+to cost what an idle one costs, which is nothing, and that holds since 2026-08-21.
+The peak was remeasured from a clean boot on the same day and came back at
+42,942,464, identical to the earlier figure. What remains is the crash budget above,
+and only reclaiming `jpeg_ion` moves it.
 
 ## Use
 
@@ -140,7 +161,8 @@ needs hands on the device, and there is no remote power cycle here.
 
 ## Measured, installed, and reverted
 
-Installed 2026-08-20 at 56MB. It worked exactly as designed:
+Installed 2026-08-20 at 56MB, and reverted the same day. It worked exactly as
+designed:
 
 ```
 /proc/device-tree/reserved-memory/ion/size   0x03800000
