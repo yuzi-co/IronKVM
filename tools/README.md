@@ -719,6 +719,29 @@ and the media stack passes raw `u64PhyAddr` between modules. So `ion_system_heap
 which is registered and is backed by scattered pages, cannot serve anything the
 hardware reads.
 
+There is no IOMMU to turn on, and no patch to find. Checked 2026-08-21:
+
+- No board in the SDK declares an `iommu` node, and this board's device tree has
+  none.
+- `linux_5.10/drivers/iommu` holds AMD, ARM, Exynos, FSL, Hyper-V, Intel, IPMMU,
+  MSM, MTK, OMAP, Rockchip, S390, sun50i and Tegra. There is no RISC-V driver in
+  this kernel, and Linux did not get one until long after 5.10.
+- The RISC-V IOMMU specification was ratified in 2024. This is C906 silicon from
+  before that, so the hardware would have to implement a document published after
+  it was made.
+- The RISC-V IOMMU work on GitHub is the specification, FPGA IP cores and demos.
+  Nothing targets cvitek or sophgo silicon.
+
+`vi_core.h` and `cif.c` do `#include <linux/iommu.h>` and then call nothing from it.
+The include is vestigial, and with `CONFIG_IOMMU_SUPPORT` unset it resolves to stubs.
+
+An IOMMU would not help even if it existed, because the stack could not use one. An
+IOMMU buys scatter-gather DMA only where drivers map buffers and then use the
+addresses the mapping returns. These drivers hand physical addresses to each other
+directly, and `soph_vc_driver.ko` is binary-only, so the ones that matter most cannot
+be changed. This is why CMA is the only route to elastic video memory here: it gives
+back physically contiguous memory, which is the shape this hardware requires.
+
 **The buddy allocator stops at about 2MB.** `CONFIG_FORCE_MAX_ZONEORDER=10`. That
 caps `ion_system_contig_heap`, which is also registered and is regular RAM, to the
 small buffers. Of the current set only `VENC_1_BitStreamBuffer` (1,048,576),
