@@ -669,6 +669,47 @@ one. `_sys_ion_free` would have to send a buffer whose `mem_info.dmabuf` is null
 three-line patch, and then `soph_sys.ko` has to be rebuilt and hand-installed, and
 nine loaded modules depend on it.
 
+### No other fork has done this kernel work
+
+Checked 2026-08-21, before deciding whether to write either patch. Nobody in the
+CV180x/SG2002 ecosystem has fixed the null dereference or built the CMA heap, so
+there is nothing to take and nothing to sync with later.
+
+- **Sipeed's own newer branches.** `newsdk` carries 33 patches and `v4.1.0` is an
+  older SDK release. None of them touch ION, `sys.c`, or the carveout. The patches
+  are wireless, panel, touchscreen and framebuffer. The one memory patch,
+  `0016-...-memmap.py-chang.patch`, grows the boot logo and framebuffer region to
+  8000K, which is the region `tools/fbmem` already disables here.
+- **The vendor upstream.** `sophgo/osdrv` master has the same `_sys_ion_free` with
+  the same unguarded `dmabuf->priv`, and the same two hard-coded
+  `ION_HEAP_TYPE_CARVEOUT` literals. Its only addition on that path is a
+  `SYS_ION_G_ION_MEM_STATE` ioctl.
+- **Milk-V's maintained SDK.** `milkv-duo/duo-buildroot-sdk-v2` uses a newer osdrv
+  layout and is identical on both points: the same unguarded dereference, and the
+  same `default: continue` in `cvitek_ion_probe` that drops `ION_HEAP_TYPE_DMA`.
+- **GitHub code search finds no exceptions.** No repository guards
+  `mem_info.dmabuf == NULL`, and none calls `ion_cma_heap_create` from a cvitek
+  probe. Every fork carries the same `cvi_ion_heap_list` declaring `cvitek,cma_vpp`
+  and `civtek,cma` heaps that the probe then refuses to build.
+- **The NanoKVM forks vendor the SDK and change nothing in it.**
+
+Two things this settles beyond the search itself.
+
+`_free_leak_memory_of_ion` restricts itself to `VI_DMA_BUF`, and **that restriction
+and its comment are upstream Sipeed's, not this fork's**. Upstream reached the same
+wall and narrowed the reclaim for the same reason. `sipeed/NanoKVM-System` carries
+its own copy of `kvm_mmf`, so `kvm_system` runs the same code, which is why the
+comment names it as a possible owner of `ISP_SHARED_BUFFER_0`.
+
+The panic is confirmed rather than inferred. `sys_ctx_mem_get` matches on `phy_addr`
+alone and returns the record whatever `dmabuf` holds, so a buffer allocated in kernel
+is found, its null `dmabuf` is dereferenced, and the lookup has already zeroed the
+bookkeeping entry before the caller gets there.
+
+The one encouraging reading: the null guard is a real upstream bug across the whole
+ecosystem, not a NanoKVM quirk. Writing it would be a three-line patch that belongs
+in `sophgo/osdrv`, so it need not be a permanent out-of-tree burden.
+
 ## Whether the carveout can be regular RAM instead
 
 It cannot today, and the reason is not the reservation. Three facts settle it.
