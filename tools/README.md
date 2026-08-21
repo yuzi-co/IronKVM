@@ -654,6 +654,21 @@ dereferences a null pointer in the kernel.
 and that is right: `VI_DMA_BUF` is allocated from user space, in
 `middleware/v2/modules/vpu/src/cvi_vi.c`, so it has a real `dma_buf` behind it.
 
+`jpeg_ion` looks like a second candidate and is not one. The name is inside
+`soph_vc_driver.ko`, so the JPEG output buffer comes from the same binary-only module
+and the same `sys_ion_alloc_nofd` as the encoder buffers. Check where a name lives
+before assuming which side allocated it:
+
+```shell
+grep -l "<buffer name>" /mnt/system/ko/*.ko /kvmapp/server/dl_lib/*.so
+```
+
+Making the kernel-allocated orphans reclaimable is a kernel change, not a user-space
+one. `_sys_ion_free` would have to send a buffer whose `mem_info.dmabuf` is null to
+`_sys_ion_free_nofd`, which already exists and which no ioctl reaches. That is a
+three-line patch, and then `soph_sys.ko` has to be rebuilt and hand-installed, and
+nine loaded modules depend on it.
+
 ## Whether the carveout can be regular RAM instead
 
 It cannot today, and the reason is not the reservation. Three facts settle it.
