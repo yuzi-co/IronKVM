@@ -243,6 +243,27 @@ cp -a official-kvmapp/. "$PAYLOAD/"
 cp -a kvmapp/.          "$PAYLOAD/"
 cp    server/NanoKVM-Server "$PAYLOAD/server/NanoKVM-Server"
 
+# The two native libraries the fork builds, from the tracked path. The copy
+# above takes them from kvmapp/server/dl_lib, which .gitignore excludes, so on a
+# fresh clone it brings nothing and the package would ship Sipeed's libkvm.so
+# with the fork's server: the H.264 encoder would strand its carveout on every
+# stop and nothing would say so. root.manifest names the same two files for the
+# card image, for the same reason.
+cp server/dl_lib/libkvm.so server/dl_lib/libkvm_mmf.so "$PAYLOAD/server/dl_lib/"
+
+# Read back what was assembled, not what was asked for. The whole point of the
+# two lines above is that a missing source is silent, so the check has to look
+# at the result.
+for lib in libkvm.so libkvm_mmf.so; do
+    want=$(md5sum < "server/dl_lib/$lib" | cut -d' ' -f1)
+    got=$(md5sum < "$PAYLOAD/server/dl_lib/$lib" 2>/dev/null | cut -d' ' -f1)
+    [ "$want" = "$got" ] || {
+        echo "the package's $lib is not the one server/dl_lib holds" >&2
+        echo "  want $want" >&2
+        echo "  got  ${got:-nothing}" >&2
+        exit 1; }
+done
+
 # Replaced, not merged. Two builds never collide on a hashed asset name, so a
 # merge would leave the official bundle's files beside the fork's.
 rm -rf "$PAYLOAD/server/web"
