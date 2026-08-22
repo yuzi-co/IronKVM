@@ -2028,7 +2028,7 @@ MSG
 measured on this board's parted, busybox and kernel, but through a loop device
 and through files. The write to sector 0 of the real boot device is untested.
 
-- [ ] **Step 1: Build the release**
+- [x] **Step 1: Build the release**
 
 ```shell
 MSYS_NO_PATHCONV=1 docker run --rm -v "$PWD:/mnt/d/projects/NanoKVM" \
@@ -2077,13 +2077,13 @@ wsl.exe -e sh -c 'cd /mnt/d/projects/NanoKVM && docker run --rm \
   ironkvm-release-host tools/release/release.sh --dry-run 1.0.1'
 ```
 
-- [ ] **Step 2: Flash the A-Data card**
+- [x] **Step 2: Flash the A-Data card**
 
 Use the A-Data card, not the card in the board. Flashing the working card removes
 the only way back if the board does not come up, and there is no remote power
 cycle for this board.
 
-- [ ] **Step 3: Boot it and take the evidence**
+- [x] **Step 3: Boot it and take the evidence**
 
 ```shell
 ssh root@10.0.0.222 '
@@ -2102,14 +2102,65 @@ All four must hold:
 - `blkid` names `/dev/mmcblk0p6`
 - `/boot`, root A and root B are at sectors 1, 40960 and 4235264
 
-- [ ] **Step 4: Prove the identity survives**
+**Done, 2026-08-22.** The A-Data card booted and all four hold:
+
+```
+/dev/mmcblk0p2 /     ext4     /dev/mmcblk0p1 /boot vfat
+/dev/mmcblk0p6 /data exfat    also bound over /etc/kvm and /root/.ssh
+1:1s        2:40960s     3:4235264s     boot, root A, root B
+4:8429568s:61071359s     extended, grown to the end of the card
+6:10543104s:61071359s    data, 50528256 sectors, 24.1G free
+blkid: LABEL="data" UUID="9DA7-0008"
+/etc/nanokvm-slots.conf: DATA_START=10543104
+```
+
+The card is 61071360 sectors, so p6 reaches its last sector. `S01fs` made the
+partition and the filesystem on the first boot, with no marker file.
+
+Two faults came out of this step, and both are fixed:
+
+- `/kvmapp/version` read `2.5.0`. The image never carried the release version,
+  so a flashed board reported the official application and `semver.gte` told the
+  update page it was newer than every IronKVM release. See
+  `Merge fix/image-version-stamp`.
+- `/data/identity-system/ssh` did not exist. The host keys were never stored,
+  because `S02identity` runs 48 scripts before `sshd` makes them. See
+  `Merge fix/host-key-persistence`.
+
+- [x] **Step 4: Prove the identity survives**
 
 Set a password in the web UI, reboot, and log in with it. This is what proves
 `/data` is genuinely mounted rather than a directory on the root filesystem that
 happens to exist. A board that reports a mounted `/data` and loses the password
 across a reboot has `S02identity` binding nothing.
 
+**Done, 2026-08-22.** The operator set a password in the web UI. The server's
+write-back ran on its own: `/etc/kvm/pwd`, `/etc/shadow` and
+`/data/identity-system/shadow` were all stamped at the same second, with nothing
+run by hand. A reboot then returned every part of the identity byte for byte:
+
+```
+                        before      after
+/etc/shadow             9a6467bc    9a6467bc
+/etc/kvm/pwd            94391245    94391245
+authorized_keys         ef5c4c46    ef5c4c46
+ssh_host_ed25519_key    6e56d1f3    6e56d1f3
+ssh_host_rsa_key        7e57347c    7e57347c
+```
+
+The web UI takes the new password, and `S02identity` reported `rc=0` in 3
+seconds. A key appended to `/root/.ssh/authorized_keys` appeared under
+`/data/identity-system/root-ssh` with no further command, which is the bind
+this design turns on.
+
+The host keys are in that list only because they were stored by hand first. On
+the flashed image they were not stored at all: see Step 3.
+
 - [ ] **Step 5: Publish**
+
+The 1.0.1 artifacts built on 2026-08-18 must not be published. Both faults found
+in Step 3 are in that image. Rebuild it from a tree that carries both fixes, and
+check `/kvmapp/version` in the built root filesystem before publishing anything.
 
 Only after all of the above. Note in the release that the 1.0.0 card image is
 superseded and why: a board flashed with it has no data partition and keeps the
