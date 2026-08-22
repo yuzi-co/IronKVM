@@ -32,6 +32,12 @@ support/sg2002/kvm_vision_test/CMakeLists.txt
 
 support/sg2002/additional/original
 kvmapp/server/dl_lib
+
+# Written by tools/release/release.sh so the card image reports the same version
+# the package does. root.manifest layers kvmapp/ over the official application,
+# so a file here covers the version that one carries.
+kvmapp/version
+kvmapp/base-version
 kvmapp/kvm_system/kvm_system
 
 # Release packages assembled by scripts/package.sh
