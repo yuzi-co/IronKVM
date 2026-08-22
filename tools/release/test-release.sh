@@ -230,6 +230,34 @@ check "the stamp is written before the card is assembled" \
     "$(grep -n 'ironkvm\.ver"\|build-card\.sh "\$STAGE/boot"' "$SCRIPT" \
        | head -1 | grep -c 'ironkvm\.ver')" "1"
 
+# /boot/ironkvm.ver names the card. It does not name the application, and the
+# application version is the one the update page compares. The card image is
+# built from the repository root and not from the package, so the package's own
+# version file never reaches it, and a flashed board reported the official
+# application version instead: 2.5.0 against a feed at 1.0.1, which semver.gte
+# reads as up to date for ever. Measured on a flashed card on 2026-08-22.
+check "the image tree is stamped with the release version" \
+    "$(grep -c '^echo "\$VERSION" > kvmapp/version$' "$SCRIPT")" "1"
+check "the image tree records the base it came from" \
+    "$(grep -c '^echo "\$BASE"    > kvmapp/base-version$' "$SCRIPT")" "1"
+
+# Both writes have to precede the image build, or they land in the tree after
+# the manifest has copied it and the card carries the value they replace.
+check "the version reaches the tree before the slots are built" \
+    "$(grep -n '> kvmapp/version$\|build-image\.sh "\$BASE_TAR"' "$SCRIPT" \
+       | head -1 | grep -c 'kvmapp/version')" "1"
+check "the base version reaches the tree before the slots are built" \
+    "$(grep -n '> kvmapp/base-version$\|build-image\.sh "\$BASE_TAR"' "$SCRIPT" \
+       | head -1 | grep -c 'kvmapp/base-version')" "1"
+
+# root.manifest merges kvmapp/ into /kvmapp after official-kvmapp/, and that
+# order is the only reason no manifest line is needed. If it ever reverses, the
+# official version file covers the one written above and the fault returns.
+check "the manifest layers the fork over the official application" \
+    "$(grep -n '^add  *official-kvmapp/\|^add  *kvmapp/ ' \
+       "$HERE/../abslots/manifest/root.manifest" | head -1 \
+       | grep -c official-kvmapp)" "1"
+
 # The base is Sipeed's, and the system image ships no checksum of its own, so the
 # pin in BASE.sha256 is the only statement of which bytes an image came from.
 check "the base is verified against the recorded pins" \
