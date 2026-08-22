@@ -2183,6 +2183,29 @@ package     12478228 bytes
 The S02identity checksum is the same in the image, in the package, in the git
 blob and on the running board, so all four agree.
 
+
+**Rebuilt once more, 2026-08-22, with `kvmapp/server/dl_lib` moved out of the
+tree.** That directory is in `.gitignore` and carries no tracked file, so a
+fresh clone does not have it. Building without it is the only way to see what a
+clone would produce, and the run before this one could not tell the difference.
+
+```
+                    package        card image     tracked in git   Sipeed 2.5.0
+libkvm.so           1f4a7955       1f4a7955       1f4a7955         d693a517
+libkvm_mmf.so       cd1a202f       cd1a202f       cd1a202f         (fork only)
+/kvmapp/version     1.0.1          1.0.1
+S02identity                        a2085b14
+dl_lib count        38
+```
+
+Both artifacts carry the fork's libraries although the directory they used to
+come from was absent. Before `Merge fix/fork-libraries-from-tracked-path` the
+same run would have shipped `d693a517`, the official library, and said nothing:
+the H.264 encoder would strand its whole working set on every capture stop, and
+the carveout would fill over about a day.
+
+The artifacts in `release-out/` are from this run.
+
 Publishing is the operator's call and nothing here has run without `--dry-run`.
 
 Only after all of the above. Note in the release that the 1.0.0 card image is
