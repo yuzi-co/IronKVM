@@ -322,6 +322,24 @@ gone=$(comm -13 "$STAGE/payload.list" "$STAGE/official.list" | grep -vE '^(kvm/|
 chmod 755 "$PAYLOAD/system/install.sh" "$PAYLOAD/server/NanoKVM-Server"
 tar czf "$OUT/$PKG" -C "$STAGE" "ironkvm_${VERSION}"
 
+echo "==> stamping the version onto the image tree"
+# The package above carries $PAYLOAD/version and $PAYLOAD/base-version, and the
+# card image is built from the repository root instead, so those two writes do
+# not reach it. Without this block a flashed board keeps the version that
+# official-kvmapp carries, which is the official application and not this
+# release.
+#
+# That is not cosmetic. web/src/pages/desktop/menu/settings/update/index.tsx
+# decides with semver.gte(current, latest). An official 2.5.0 is greater than
+# every IronKVM version, so the page reports a board that can take no update at
+# all as up to date, and the badge in settings/index.tsx never appears either.
+#
+# root.manifest adds official-kvmapp/ and then kvmapp/ into the same /kvmapp, so
+# a file written here lands on top and no manifest line is needed. Both are in
+# .gitignore, because they are build output and not source.
+echo "$VERSION" > kvmapp/version
+echo "$BASE"    > kvmapp/base-version
+
 echo "==> building the slot filesystems"
 # build-image.sh takes five positional arguments and makes ONE ext4 root. The
 # sizes are the partition sizes from partition.sfdisk.
