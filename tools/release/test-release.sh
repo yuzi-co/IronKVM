@@ -11,6 +11,7 @@ set -u
 
 HERE=$(cd "$(dirname "$0")" && pwd)
 SCRIPT="$HERE/release.sh"
+MANIFEST="$HERE/../abslots/manifest/root.manifest"
 pass=0
 fail=0
 
@@ -257,6 +258,35 @@ check "the manifest layers the fork over the official application" \
     "$(grep -n '^add  *official-kvmapp/\|^add  *kvmapp/ ' \
        "$HERE/../abslots/manifest/root.manifest" | head -1 \
        | grep -c official-kvmapp)" "1"
+
+# The fork's whole native-library delta is two files. Everything else in
+# server/dl_lib is byte-identical to the official 2.5.0 release, so these two
+# are the only ones a build can lose without changing anything visible.
+#
+# They used to reach both artifacts through kvmapp/server/dl_lib, which
+# .gitignore excludes and git therefore does not carry. On the workstation that
+# built 1.0.1 the directory happened to hold the right files. On a fresh clone
+# it is empty, and the build would ship Sipeed's libkvm.so with the fork's
+# server: the H.264 encoder strands its carveout on every stop, and no step
+# fails.
+check "the package takes the fork libraries from the tracked path" \
+    "$(grep -c '^cp server/dl_lib/libkvm\.so server/dl_lib/libkvm_mmf\.so "\$PAYLOAD/server/dl_lib/"$' "$SCRIPT")" "1"
+check "and reads back what was assembled rather than trusting the copy" \
+    "$(grep -c 'is not the one server/dl_lib holds' "$SCRIPT")" "1"
+
+# The card image is built from the manifest and never sees $PAYLOAD, so it needs
+# its own line for each.
+check "the image names libkvm.so from server/dl_lib" \
+    "$(grep -c '^add  *server/dl_lib/libkvm\.so ' "$MANIFEST")" "1"
+check "the image names libkvm_mmf.so from server/dl_lib" \
+    "$(grep -c '^add  *server/dl_lib/libkvm_mmf\.so ' "$MANIFEST")" "1"
+
+# Order decides which copy survives. kvmapp/ merges into the same /kvmapp, so a
+# line above it would be overwritten by whatever the ignored directory holds,
+# which is the state this replaced.
+check "the image lines come after the kvmapp merge" \
+    "$(grep -n '^add  *kvmapp/ \|^add  *server/dl_lib/libkvm\.so ' "$MANIFEST" \
+       | head -1 | grep -c 'kvmapp/ ')" "1"
 
 # The base is Sipeed's, and the system image ships no checksum of its own, so the
 # pin in BASE.sha256 is the only statement of which bytes an image came from.

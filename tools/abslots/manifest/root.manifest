@@ -25,6 +25,20 @@ add     kvmapp/                                   /kvmapp/
 # binary runs from tmpfs and every debug byte is pinned RAM on a 166MB board.
 add     server/NanoKVM-Server                     /kvmapp/server/NanoKVM-Server 0755
 
+# The two native libraries the fork builds. Everything else in server/dl_lib is
+# Sipeed's and arrives with official-kvmapp above: of the 14 that
+# kvmapp/server/dl_lib carries, only these two differ from the official 2.5.0
+# release, and the other 12 are byte-identical to it.
+#
+# They are named from server/dl_lib, which git tracks, and NOT from
+# kvmapp/server/dl_lib, which .gitignore excludes. Taking them from the ignored
+# directory made the encoder fix depend on one workstation's working tree: a
+# fresh clone has that directory empty, so the image would keep the official
+# libkvm.so, the H.264 encoder would strand its carveout again, and the build
+# would report success either way.
+add     server/dl_lib/libkvm.so                   /kvmapp/server/dl_lib/libkvm.so     0755
+add     server/dl_lib/libkvm_mmf.so               /kvmapp/server/dl_lib/libkvm_mmf.so 0755
+
 # The fork's web UI, built with `pnpm build` in web/. This line was missing
 # from the first root A, and the image therefore paired the fork's server with
 # Sipeed's official 2.5.0 UI. The two disagree about the API:
