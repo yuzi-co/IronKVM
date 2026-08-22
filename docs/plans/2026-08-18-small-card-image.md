@@ -2162,6 +2162,29 @@ The 1.0.1 artifacts built on 2026-08-18 must not be published. Both faults found
 in Step 3 are in that image. Rebuild it from a tree that carries both fixes, and
 check `/kvmapp/version` in the built root filesystem before publishing anything.
 
+**The rebuild is done, 2026-08-22.** Both toolchain images had been dropped from
+the local docker cache and were built again first. The artifacts were then read
+from the inside rather than from the script that writes them:
+
+```
+card image  5398069248 bytes    10543104 sectors, as before
+  table     p1 bootable 1s, p2 40960s, p3 4235264s, p4 ext, p5 8437760s, no p6
+  /boot/ironkvm.ver         1.0.1
+  /kvmapp/version           1.0.1     was 2.5.0
+  /kvmapp/base-version      2.5.0     was absent
+  /etc/init.d/S02identity   a2085b14f09f7c683e2a4252cdfc1505
+package     12478228 bytes
+  version                   1.0.1
+  base-version              2.5.0
+  system/init.d/S02identity a2085b14f09f7c683e2a4252cdfc1505
+  init.d.install            every name present
+```
+
+The S02identity checksum is the same in the image, in the package, in the git
+blob and on the running board, so all four agree.
+
+Publishing is the operator's call and nothing here has run without `--dry-run`.
+
 Only after all of the above. Note in the release that the 1.0.0 card image is
 superseded and why: a board flashed with it has no data partition and keeps the
 factory root password.
