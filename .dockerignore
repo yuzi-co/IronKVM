@@ -11,3 +11,30 @@ support/sg2002/kvm_system/CMakeLists.txt
 support/sg2002/kvm_vision_test/build
 support/sg2002/kvm_vision_test/dist
 support/sg2002/kvm_vision_test/CMakeLists.txt
+# Build output and caches. None of it is a source the builder image needs, and
+# all of it is large: .pnpm-store is 254MB, release-out holds two card images at
+# 372MB each, and base/ is the 268MB pinned Sipeed input that only release.sh
+# reads, on the host, from the bind mount.
+#
+# .pnpm-store is not optional. pnpm keeps a content-addressable store here when
+# the home directory is on another filesystem, and one of its files cannot be
+# opened by a Windows process, so loading the context fails outright:
+#   error from sender: open .pnpm-store\v11\projects\...: The file cannot be
+#   accessed by the system
+.git
+.pnpm-store
+release-out
+base
+
+# tools/opusbench/.build holds a libtool tree made under Linux. It contains
+# .libs/libopus.la as a relative symlink, and the context sender on a Windows
+# workstation refuses it:
+#   invalid file request tools/opusbench/.build/build/.libs/libopus.la
+tools/opusbench/.build
+
+# official-kvmapp is unpacked by release.sh on every run, on the host.
+official-kvmapp
+
+# Agent scratch space, and the two build trees the makefile writes in place.
+.superpowers
+kvmapp/server
