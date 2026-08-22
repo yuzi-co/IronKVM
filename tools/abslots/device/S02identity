@@ -43,6 +43,10 @@ ETCDIR=${ETCDIR:-/etc}
 ROOTHOME=${ROOTHOME:-/root}
 SSHDIR=${SSHDIR:-/etc/ssh}
 ROOTSSH=${ROOTSSH:-/data/identity-system/root-ssh}
+KEYGEN=${KEYGEN:-/usr/bin/ssh-keygen}
+# Empty on the device. ssh-keygen -A writes to /etc/ssh and takes -f as a
+# prefix in front of it, which is how the test drives it at a scratch tree.
+KEYGEN_PREFIX=${KEYGEN_PREFIX:-}
 
 data_mounted() {
     [ -n "$DATA_MOUNTED" ] && { [ "$DATA_MOUNTED" = yes ]; return; }
@@ -90,6 +94,56 @@ copy_host_keys() {
     [ "$copied" -gt 0 ]
 }
 
+# Restore the board's host keys, and make them first if it has none.
+#
+# The keys have to exist before this script can store them, and on a freshly
+# flashed card they do not. sshd runs `ssh-keygen -A` from S50sshd, 48 scripts
+# after this one, so the seed copied nothing. The seed then never ran again,
+# because it is guarded on the directory it had just made, and nothing else
+# stored the keys sshd produced a moment later. Measured on a card flashed with
+# 1.0.1 on 2026-08-22: /data/identity-system/ssh did not exist, and the board
+# would have shown a different fingerprint on its other slot.
+#
+# So this script makes them rather than waiting for sshd. `ssh-keygen -A` makes
+# only the keys that are absent, and S50sshd's own guard then finds them and
+# generates nothing. It costs 20 seconds of RSA on this board, on the first boot
+# of a card, and it is the same 20 seconds S50sshd used to spend a little later.
+#
+# A board with no ssh-keygen keeps going. sshd is what would be missing there,
+# and a host key is of no use without it.
+ensure_host_keys() {
+    if copy_host_keys "$SYSDIR/ssh" "$SSHDIR"; then
+        echo "S02identity: ssh host keys restored"
+        return 0
+    fi
+
+    if [ ! -s "$SSHDIR/ssh_host_rsa_key" ] || [ ! -s "$SSHDIR/ssh_host_ed25519_key" ]; then
+        if [ -x "$KEYGEN" ]; then
+            echo "S02identity: no stored ssh host keys, generating them"
+            # ssh-keygen -A does not make the directory it writes into, and it
+            # exits 0 when every save failed for want of one. Measured on the
+            # board on 2026-08-22: with the directory absent it printed three
+            # "Could not save your private key" lines and still returned 0. So
+            # the directory is made here, and the copy below is what decides
+            # whether this worked.
+            mkdir -p "$SSHDIR"
+            if [ -n "$KEYGEN_PREFIX" ]; then
+                "$KEYGEN" -A -f "$KEYGEN_PREFIX" > /dev/null 2>&1
+            else
+                "$KEYGEN" -A > /dev/null 2>&1
+            fi
+        else
+            echo "S02identity: no ssh host keys and no ssh-keygen to make them"
+        fi
+    fi
+
+    if copy_host_keys "$SSHDIR" "$SYSDIR/ssh"; then
+        echo "S02identity: ssh host keys stored"
+    else
+        echo "S02identity: no ssh host keys to store, the next slot will differ"
+    fi
+}
+
 start() {
     if ! data_mounted; then
         echo "S02identity: /data is not mounted, keeping the image's identity"
@@ -111,7 +165,6 @@ start() {
         [ -f "$ETCDIR/passwd" ] && cp -a "$ETCDIR/passwd" "$SYSDIR/passwd"
         [ -f "$ROOTHOME/.ssh/authorized_keys" ] && \
             cp -a "$ROOTHOME/.ssh/authorized_keys" "$SYSDIR/authorized_keys"
-        copy_host_keys "$SSHDIR" "$SYSDIR/ssh"
         if [ -s "$ROOTHOME/.ssh/authorized_keys" ]; then
             mkdir -p "$ROOTSSH"
             cp "$ROOTHOME/.ssh/authorized_keys" "$ROOTSSH/authorized_keys"
@@ -167,9 +220,7 @@ start() {
 
     # Before S50sshd, so sshd finds the board's own keys and does not generate
     # a fresh set that makes this slot look like a different machine.
-    if copy_host_keys "$SYSDIR/ssh" "$SSHDIR"; then
-        echo "S02identity: ssh host keys restored"
-    fi
+    ensure_host_keys
 }
 
 # Capture the running system's identity back to /data. Called by
