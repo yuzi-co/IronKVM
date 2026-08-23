@@ -2156,7 +2156,7 @@ this design turns on.
 The host keys are in that list only because they were stored by hand first. On
 the flashed image they were not stored at all: see Step 3.
 
-- [ ] **Step 5: Publish**
+- [x] **Step 5: Publish**
 
 The 1.0.1 artifacts built on 2026-08-18 must not be published. Both faults found
 in Step 3 are in that image. Rebuild it from a tree that carries both fixes, and
@@ -2211,6 +2211,39 @@ Publishing is the operator's call and nothing here has run without `--dry-run`.
 Only after all of the above. Note in the release that the 1.0.0 card image is
 superseded and why: a board flashed with it has no data partition and keeps the
 factory root password.
+
+**Published 2026-08-23.** `release.sh 1.0.1` ran without `--dry-run` and did all
+four outward things. Verified afterwards from outside the machine:
+
+```
+tag        v1.0.1 -> fafa43a3, which is fork/integration at the time
+release    IronKVM 1.0.1, not a draft, not a prerelease
+assets     ironkvm-1.0.1-sdcard.img.xz  372250284
+           ironkvm_1.0.1.tar.gz          12478937
+           SHA256SUMS                          181
+feed       https://yuzi-co.github.io/IronKVM/latest.json  http 200, version 1.0.1
+```
+
+The published `SHA256SUMS` matches the local artifacts byte for byte, and the
+feed's sha512 matches the tarball downloaded back from the release, so a device
+that reads the feed gets exactly the file the feed describes.
+
+`gh-pages` had no `latest.json` before this. 1.0.0 was tagged but its feed entry
+was never written, so no board could have seen an update until now.
+
+Three things stopped a release that a dry run cannot reach, and each was found
+by checking rather than by trying:
+
+- Nothing wrote `notes.md`, which `publish()` passes to gh after it has already
+  pushed the tag. See `Merge fix/release-notes-before-the-tag`.
+- The release container carries no git identity, so `git tag -a` had nobody to
+  sign as. Passed in as the repository's own.
+- `origin` is ssh, and a Windows bind mount cannot give a private key 0600, so
+  ssh refuses it. `git@github.com:` is rewritten to https with a token
+  credential helper, which is what `gh` already authenticates with.
+
+The last two are properties of this workstation, not of the repository, so they
+are recorded here rather than fixed in `release.sh`.
 
 ---
 
