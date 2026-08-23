@@ -288,6 +288,42 @@ check "the image lines come after the kvmapp merge" \
     "$(grep -n '^add  *kvmapp/ \|^add  *server/dl_lib/libkvm\.so ' "$MANIFEST" \
        | head -1 | grep -c 'kvmapp/ ')" "1"
 
+
+echo
+echo "release notes"
+
+# publish() passes --notes-file $OUT/notes.md to gh, and for four releases
+# nothing wrote that file. The order is what makes it expensive: the tag is
+# pushed first, so a missing notes file leaves a tag on the remote with no
+# release under it and a feed still naming the version before.
+#
+# So the file is checked in the preflight, before anything is built, and it is a
+# file in the repository rather than prose typed at the prompt.
+check "the notes are checked before anything is built" \
+    "$(grep -n 'NOTES_SRC is missing or empty\|^echo "==> building the slot filesystems"' "$SCRIPT" \
+       | head -1 | grep -c 'NOTES_SRC')" "1"
+check "a release without notes is refused" \
+    "$(grep -c 'write the release notes first' "$SCRIPT")" "1"
+check "the notes come from the repository, named by version" \
+    "$(grep -c '^NOTES_SRC="tools/release/notes/\${VERSION}\.md"$' "$SCRIPT")" "1"
+check "the notes are staged beside the artifacts" \
+    "$(grep -c 'cp "\$NOTES_SRC" "\$OUT/notes\.md"' "$SCRIPT")" "1"
+
+# A dry run must not demand them, the same way it does not demand gh, or the
+# only way to read the notes before publishing is to write them under pressure.
+check "a dry run does not demand notes" \
+    "$(grep -c '\[ "\$DRY_RUN" = "1" \] || \[ -s "\$NOTES_SRC" \]' "$SCRIPT")" "1"
+
+# set -eu is on, so `[ -s x ] && cp` aborts the whole run when x is absent.
+# That is exactly the dry run the check above is meant to allow.
+check "the staging copy cannot abort a run that has no notes" \
+    "$(grep -c '^\[ -s "\$NOTES_SRC" \] && cp' "$SCRIPT")" "0"
+
+# The notes for the version being released now.
+check "1.0.1 has notes to publish" \
+    "$([ -s "$HERE/notes/1.0.1.md" ] && echo yes || echo no)" "yes"
+check "and they say the 1.0.0 card image is superseded" \
+    "$(grep -ci 'superseded' "$HERE/notes/1.0.1.md")" "1"
 # The base is Sipeed's, and the system image ships no checksum of its own, so the
 # pin in BASE.sha256 is the only statement of which bytes an image came from.
 check "the base is verified against the recorded pins" \
