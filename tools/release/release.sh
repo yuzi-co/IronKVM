@@ -134,6 +134,17 @@ for t in $NEED; do
 done
 [ -z "$missing" ] || { echo "missing tools:$missing" >&2; exit 1; }
 
+# The release notes, checked here and not at the point of use. publish() reaches
+# for $OUT/notes.md after it has already pushed the tag, so a missing file there
+# leaves a tag on the remote, no release under it, and a feed still pointing at
+# the version before. Nothing wrote that file at all until this check existed.
+#
+# A dry run does not need notes, the same way it does not need gh.
+NOTES_SRC="tools/release/notes/${VERSION}.md"
+[ "$DRY_RUN" = "1" ] || [ -s "$NOTES_SRC" ] || {
+    echo "$NOTES_SRC is missing or empty; write the release notes first" >&2
+    exit 1; }
+
 # The builder image bakes the ownership of /home/build in at build time, and its
 # entrypoint drops to whatever UID it is given. The two agree only on the machine
 # that built the image. A WSL shell reports 1000, and an image built from a
@@ -440,6 +451,13 @@ echo "==> checksums"
 # The device does not read this file at all. Its update path checks a sha512
 # from latest.json over TLS, so signing here would never have protected it.
 ( cd "$OUT" && sha256sum "$PKG" "$IMG" > SHA256SUMS )
+
+# The notes travel with the artifacts, so what is published is a file in the
+# repository and not prose typed at the prompt. A dry run copies them too: it is
+# the only way to see the notes before they are the release.
+if [ -s "$NOTES_SRC" ]; then
+    cp "$NOTES_SRC" "$OUT/notes.md"
+fi
 
 verify
 
