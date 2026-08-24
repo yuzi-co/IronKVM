@@ -46,7 +46,12 @@
 #define vi_height_path          "/kvmapp/kvm/height"
 #define hdmi_mode_path          "/etc/kvm/hdmi_mode"
 #define hdmi_state_path         "/proc/lt_int"
-#define hdmi_signal_file_path   "/kvmapp/kvm/state"
+// tmpfs, not the boot medium: this file is rewritten on every change of HDMI
+// presence, and the value means nothing after a reboot. S95nanokvm leaves a
+// symlink at /kvmapp/kvm/state for the readers that know the old path. The
+// publish below renames a temporary file over this one, and a rename replaces
+// a symlink rather than following it, so both paths have to name tmpfs.
+#define hdmi_signal_file_path   "/tmp/kvm/state"
 #define watchdog_mode_path      "/etc/kvm/watchdog"
 #define watchdog_temp_path      "/tmp/watchdog"
 #define watchdog_file           "/tmp/nanokvm_wd"
@@ -158,7 +163,7 @@ void debug(const char *format, ...);
 
 static bool write_hdmi_signal_file(uint8_t active)
 {
-    char temp_path[] = "/kvmapp/kvm/.state.tmp.XXXXXX";
+    char temp_path[] = "/tmp/kvm/.state.tmp.XXXXXX";
     const char *state = active != 0 ? "1\n" : "0\n";
     const size_t state_size = 2;
     int fd = mkstemp(temp_path);

@@ -10,9 +10,15 @@ using namespace maix::sys;
 extern kvm_sys_state_t kvm_sys_state;
 extern kvm_oled_state_t kvm_oled_state;
 
+// The state file lives in tmpfs. /kvmapp is the boot medium, and a file that
+// is rewritten whenever HDMI presence changes wears it for no gain: the value
+// describes this moment and means nothing after a reboot. S95nanokvm leaves a
+// symlink at the old path, which a reader follows and this writer must not
+// replace, so the temporary file is made beside the target rather than beside
+// the link.
 static void write_hdmi_state(uint8_t active)
 {
-    char temp_path[] = "/kvmapp/kvm/.state.init.XXXXXX";
+    char temp_path[] = "/tmp/kvm/.state.init.XXXXXX";
     const char *state = active != 0 ? "1\n" : "0\n";
     int fd = mkstemp(temp_path);
     if(fd < 0){
@@ -33,7 +39,7 @@ static void write_hdmi_state(uint8_t active)
     if(close(fd) != 0 && failure == 0){
         failure = errno;
     }
-    if(failure == 0 && rename(temp_path, "/kvmapp/kvm/state") != 0){
+    if(failure == 0 && rename(temp_path, "/tmp/kvm/state") != 0){
         failure = errno;
     }
     if(failure != 0){
