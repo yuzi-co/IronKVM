@@ -17,7 +17,7 @@ import (
 var (
 	upgrader = websocket.Upgrader{
 		WriteBufferSize: 256 * 1024,
-		CheckOrigin:     middleware.CheckWebSocketOrigin,
+		CheckOrigin:     middleware.SameOrigin,
 	}
 	globalManager *WebRTCManager
 	managerOnce   sync.Once
