@@ -75,13 +75,32 @@ stop_services() {
 # missing file crashes it. The target is created here, before anything reads
 # it, and refreshed on restart in case tmpfs was cleared underneath us.
 #
-# state is the same shape of file. libkvm writes it from inside its frame read,
-# with a shell, on every change of HDMI presence: "echo 1 > /kvmapp/kvm/state"
-# when it starts getting frames and 0 when it stops. A source that comes and
-# goes therefore writes to the boot medium on its own, with no user in the loop,
-# and holds the capture mutex while it forks. The value describes this moment
-# and means nothing after a reboot. kvm_system writes 0 into it at startup
-# anyway, so tmpfs loses nothing.
+# state is the same shape of file. libkvm rewrites it on every change of HDMI
+# presence, from inside its frame read, while it holds the capture mutex. A
+# source that comes and goes therefore writes to the boot medium on its own,
+# with no user in the loop. The value describes this moment and means nothing
+# after a reboot. kvm_system writes 0 into it at startup anyway, so tmpfs loses
+# nothing.
+#
+# The link only carries the writes of a library that writes through it. The
+# libkvm in server/dl_lib publishes the file by renaming a temporary one over
+# the path, and a rename replaces the link rather than following it, so with
+# that library the first publish puts a regular file back on the card. The
+# sources in support/sg2002 now write to /tmp/kvm/state directly. The link is
+# what keeps the old path working for the readers, and it starts saving the
+# writes as soon as a library built from those sources ships.
+#
+# wifi_state is the same problem as now_fps, and it is not written on
+# transitions. kvm_system's state machine runs on a 1000 ms loop, and each pass
+# echoes the current value through a shell whether or not it changed: a fork and
+# a write per second, on the boot medium, for a value that means nothing after a
+# reboot. A shell redirect follows a symlink, so the link is all it takes.
+#
+# width and height stay on the card. Their writers are shell redirects too, so
+# the link would work, but libkvm reads them back at capture init to restore the
+# resolution the board last saw. A tmpfs copy seeded with 0 changes what the
+# sensor is configured with on the first frame after a boot, and that needs
+# hardware to answer rather than a symlink.
 #
 # link_runtime_file points one of these names at tmpfs. It replaces a regular
 # file with the link, so a board that has been running the old layout is
@@ -102,6 +121,7 @@ prepare_runtime_state() {
 
     link_runtime_file now_fps
     link_runtime_file state
+    link_runtime_file wifi_state
 }
 
 start_services() {
