@@ -1,8 +1,8 @@
 # What IronKVM changes
 
 IronKVM is a fork of [sipeed/NanoKVM](https://github.com/sipeed/NanoKVM). This
-page says what it changes and why. It is written by hand from 254 commits,
-because a generated commit list is not a document that anybody reads.
+page says what it changes and why. It is written by hand rather than generated
+from the commit list, because a generated list is not a document anybody reads.
 
 Nothing here is a criticism of the vendor. Most of it comes from running the
 board as the only way into a machine, which is a narrower job than the firmware
@@ -13,19 +13,21 @@ is built for, and which makes some faults matter more than they otherwise would.
 - **The API refuses cross-site requests, path traversal and shell injection.**
   Several endpoints accepted a request that another site could forge, and a
   handful built shell commands from request parameters. A stolen session or a
-  crafted page was enough to take the device.
-- **A password change now requires the current password.** Without it, a forged
-  request could take the device permanently.
-- **The JWT check accepts only the algorithm the server issues.** Accepting
-  whatever the token declares is the classic way to forge one.
+  crafted page was enough to take the device. The official image checks the
+  origin of a websocket upgrade; here every authenticated request is checked, on
+  the hostname alone, because the device answers on both http and https.
 - **A missing secret key fails the server rather than falling back to a
-  guessable one.** A default that works is a default nobody replaces.
+  guessable one.** A default that works is a default nobody replaces. The
+  official image still derives one from the clock when the random source fails,
+  and signs every session and the PicoClaw internal token with it.
 - **Downloads are verified before they are trusted or stored.** The updater
   checks a size and a checksum before writing to the SD card, and refuses a
   manifest it cannot make sense of.
 - **API keys.** Scripts authenticate with a key instead of borrowing a browser
   session, and the routes that mint keys need a session, so a stolen key cannot
-  issue successors.
+  issue successors. A key carries the account it was issued to and that
+  account's role, so it reaches no further than the operator who asked for it,
+  and a disabled or deleted account takes its keys with it.
 - **The USB gadget has a stable identity and a safe default.** The device no
   longer presents a changing identity to the host it controls.
 - **The login lockout survives a table full of other addresses.** An attacker
