@@ -4,18 +4,29 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
-	"time"
+	"io"
 )
 
-// Generate random string for secret key.
-func generateRandomSecretKey() string {
+// secretKeyReader is the entropy source. nil means crypto/rand; tests replace
+// it to exercise the failure path.
+var secretKeyReader io.Reader
+
+func generateSecretKey(reader io.Reader) (string, error) {
 	b := make([]byte, 64)
-	_, err := rand.Read(b)
-	if err != nil {
-		currentTime := time.Now().UnixNano()
-		timeString := fmt.Sprintf("%d", currentTime)
-		return fmt.Sprintf("%064s", timeString)
+
+	var err error
+	if reader == nil {
+		_, err = rand.Read(b)
+	} else {
+		_, err = io.ReadFull(reader, b)
 	}
 
-	return base64.URLEncoding.EncodeToString(b)
+	if err != nil {
+		// There is no safe fallback. Anything derived from the clock is a key
+		// an attacker can search, because they know roughly when the device
+		// booted, so this has to fail instead.
+		return "", fmt.Errorf("failed to read random bytes for the secret key: %w", err)
+	}
+
+	return base64.URLEncoding.EncodeToString(b), nil
 }
