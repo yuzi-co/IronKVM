@@ -26,7 +26,7 @@ type WinSize struct {
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  maxMessageSize,
 	WriteBufferSize: maxMessageSize,
-	CheckOrigin:     middleware.CheckWebSocketOrigin,
+	CheckOrigin:     middleware.SameOrigin,
 }
 
 func (s *Service) Terminal(c *gin.Context) {

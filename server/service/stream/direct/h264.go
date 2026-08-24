@@ -17,7 +17,7 @@ var (
 	streamer = newStreamer()
 	upgrader = websocket.Upgrader{
 		WriteBufferSize: 256 * 1024,
-		CheckOrigin:     middleware.CheckWebSocketOrigin,
+		CheckOrigin:     middleware.SameOrigin,
 	}
 )
 

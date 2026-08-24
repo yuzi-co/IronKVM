@@ -13,7 +13,7 @@ type Service struct{}
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
-	CheckOrigin:     middleware.CheckWebSocketOrigin,
+	CheckOrigin:     middleware.SameOrigin,
 }
 
 func NewService() *Service {
