@@ -371,3 +371,110 @@ what a smaller rootfs would drop.
 4. PR #749 and PR #764. Seven lines in total, and both merge clean.
 5. PR #759, `GOMEMLIMIT` and OOM protection for the server.
 6. PR #858, monotonic OLED timers.
+
+---
+
+## Status, 2026-08-25, upstream `71ab9127`
+
+`sipeed/NanoKVM` landed one commit since the 2026-08-19 rebase: `71ab9127`,
+"feat: add secure multi-user support (#876)", 59 files, +2702/-510. It rewrites
+the authentication subsystem this fork had five branches sitting on: a new
+`server/authn` package with users, roles and token versions, a rewritten
+`middleware/jwt.go`, a new `middleware/session.go`, `service/auth/account.go`
+deleted, and every router re-plumbed for role checks.
+
+`main` and `fork/integration` are rebased onto it. The nine extraction branches
+are rebased onto the same commit.
+
+### What upstream took, and what it left
+
+Three of this fork's open pull requests describe faults `#876` also fixed. It
+did not merge them; it wrote its own. The three are not equal, so the answers
+differ:
+
+| Fault | Upstream now | This fork |
+| --- | --- | --- |
+| Current password required to change the password | Required every time, checked against the account store | Dropped. `#848` closed. |
+| JWT algorithm confusion | Method check plus an explicit method list in `ParseJWT` | Implementation dropped. `alg=none`, which upstream does not test, kept as a test. |
+| Cross-site requests | `CheckWebSocketOrigin` on the five upgraders | Kept. Upstream guards the upgrades; the API around them still takes any origin. |
+
+The origin rule is the one worth stating plainly, because "upstream has an
+origin check now" reads like the work is done. Upstream's check covers websocket
+upgrades only, compares the port as well as the host, and does not know about
+`authentication: disable`. This fork applies the rule to every authenticated
+request, compares the hostname alone because the device serves the same UI over
+http and https, and stands down in the mode that exists for frontend
+development. The two implementations disagree, so the fork keeps one of them and
+removes the other rather than running both.
+
+### What had to be re-expressed rather than replayed
+
+- **API keys.** A key now carries the account it was issued to and that
+  account's role. Before `#876` the device had one account and a key could carry
+  every authority it had. With roles, a key that spoke for nobody in particular
+  would let any operator mint an administrator, so `apikey.Verify` returns the
+  key, the middleware resolves the account, and a disabled or deleted account
+  takes its keys with it. Keys issued before this are adopted by the system
+  account.
+- **The default account hash.** The fork derived it once instead of per login
+  attempt. Upstream stores the hash in the account file, which removes most of
+  the cost, but `defaultDatabase()` still runs bcrypt on every read while the
+  file is absent, and `Get` reads on every request that carries a session. The
+  fix is now `sync.OnceValues` in `authn/store.go`.
+- **The secret key.** Upstream deleted the rotation on logout, because a session
+  is revoked through the account's token version now. It kept the clock-derived
+  fallback in `generateRandomSecretKey`, which is the half that mattered: that
+  fallback signs every session and the PicoClaw internal token. The fork's
+  generator replaces it and the rotation is gone.
+- **The web session cookie.** `web/src/lib/cookie.ts` is deleted with upstream.
+  The server sets the cookie itself, with `SameSite=Strict`, `Secure` on https
+  and `HttpOnly`, which is stronger than anything the page could do. The two
+  places that used the helper changed shape: the login page confirms the session
+  by asking for the account rather than reading the cookie back, and the TLS
+  switch calls logout instead of deleting the cookie from JavaScript.
+
+### Pull requests
+
+| PR | State |
+| --- | --- |
+| #846 novision build tag | Rebased, mergeable. |
+| #847 origin check | Rebased and re-scoped to the API half. Retitled. |
+| #848 current password | Closed, superseded by `#876`. |
+| #849 request paths | Rebased, mergeable. |
+| #850 JWT | Rebased and re-scoped to the signing key. Retitled. |
+| #851 mass storage | Rebased, mergeable. |
+| #852 frame rate counter | Rebased, mergeable. |
+| #871 MCP protocol | Rebased, mergeable. |
+| #873 zram | Rebased. Routes moved to the admin group. |
+
+No maintainer has commented on any of them. `#873` is the only one with a
+conversation, and it is with another user rather than a maintainer.
+
+### Item 8, PR #751, runtime state on tmpfs
+
+Taken, and it found something. `now_fps` and `state` were already redirected
+here by symlink. The `state` link never held: libkvm publishes that file by
+renaming a temporary one over the path, and a rename replaces a symlink instead
+of following it, so the first publish after every start put a regular file back
+on the boot medium. `prepare_runtime_state` re-made the link at the next
+restart, which hid it.
+
+Both publishers now write to `/tmp/kvm/state` directly. The link stays for the
+readers that know the old path, and the writes move as soon as a library built
+from these sources ships: `server/dl_lib/libkvm.so` still holds the old path.
+
+`wifi_state` is redirected, which is all it needed: kvm_system writes it with a
+shell redirect and a redirect follows a symlink.
+
+`width` and `height` stay on the card. libkvm reads them back at capture init to
+restore the resolution the board last saw, so a tmpfs copy seeded with 0 changes
+what the sensor is configured with on the first frame after a boot. That is a
+device behaviour change and it needs hardware to answer.
+
+### What is not done
+
+- `libkvm.so` and `kvm_system` are not rebuilt, so the `state` move is in the
+  sources and not yet in the binaries this repository ships.
+- The extraction branches that have no pull request open, `security/api-key-auth`
+  above all, are not rebased onto `71ab9127`. They carry the pre-`#876` shape of
+  the auth code and have to be re-expressed the way `main` was.
