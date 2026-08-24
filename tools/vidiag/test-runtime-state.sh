@@ -3,16 +3,22 @@
 #
 #   test-runtime-state.sh [path-to-S95nanokvm]
 #
-# /kvmapp is the boot medium. Two files under /kvmapp/kvm are rewritten while
+# /kvmapp is the boot medium. Three files under /kvmapp/kvm are rewritten while
 # the board runs, by processes rather than by a person:
 #
-#   now_fps  the measured frame rate, rewritten for as long as a stream runs
-#   state    HDMI presence, rewritten by libkvm on every change, from inside
-#            its frame read, with a shell, while it holds the capture mutex
+#   now_fps     the measured frame rate, rewritten for as long as a stream runs
+#   state       HDMI presence, rewritten on every change from inside the frame
+#               read, while the capture mutex is held
+#   wifi_state  the wireless link, rewritten every second by kvm_system's state
+#               loop, through a shell, whether or not the value changed
 #
-# Neither value survives a reboot with any meaning, so both belong in tmpfs with
-# a symlink left behind. The readers keep the path they already use, and nothing
-# has to be rebuilt for it.
+# No value survives a reboot with any meaning, so all three belong in tmpfs with
+# a symlink left behind. The readers keep the path they already use.
+#
+# width and height are deliberately absent. They are read back at capture init
+# to restore the resolution the board last saw, so tmpfs would change what the
+# sensor is configured with on the first frame after a boot. That is a device
+# behaviour change, and it needs hardware to answer.
 #
 # This runs the shipped function against a fake root and checks the result, so
 # it fails if the function stops doing what its comment claims.
@@ -24,7 +30,7 @@ note() { printf '  %-64s %s\n' "$1" "$2"; [ "$2" = FAIL ] && fails=$((fails + 1)
 
 # The names the function is expected to handle. Adding one to the script
 # without adding it here leaves it untested, which is the point of the list.
-NAMES="now_fps state"
+NAMES="now_fps state wifi_state"
 
 echo "===== every runtime file is redirected to tmpfs ====="
 
