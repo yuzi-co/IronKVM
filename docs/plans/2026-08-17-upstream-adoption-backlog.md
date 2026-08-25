@@ -478,3 +478,105 @@ device behaviour change and it needs hardware to answer.
 - The extraction branches that have no pull request open, `security/api-key-auth`
   above all, are not rebased onto `71ab9127`. They carry the pre-`#876` shape of
   the auth code and have to be re-expressed the way `main` was.
+
+---
+
+## Status, 2026-08-25, upstream `2ba45a21`
+
+Upstream moved again the day after `#876`. Three commits, all from the same
+author, all pushed to `main` with no pull request and no review:
+
+| Commit      | Subject                                                |
+| ----------- | ------------------------------------------------------ |
+| `527caeff`  | `fix(web): correct mouse coordinates for direct h264 frames` |
+| `9e6d2808`  | `feat(web): add configurable mouse input regions`      |
+| `2ba45a21`  | `feat(web): enhance configurable input regions`        |
+
+Together they add one feature: the operator marks which part of the captured
+frame is the host's real picture, and the absolute pointer maps into that
+rectangle instead of the whole frame. The board scales every source into a
+fixed 1920x1080 output, so a 4:3 or 5:4 host arrives with black bars down both
+sides, and the pointer drifts further from the cursor the closer it gets to an
+edge.
+
+The feature has three modes. `off` uses the whole frame. `auto` samples the
+rendered pixels and looks for black borders. `manual` stores a rectangle the
+operator drew. `off` is the default on both sides of the wire, so nothing
+changes for a board that never opens the menu.
+
+Three new routes, all on the token group rather than the admin group, which
+matches `/vm/gpio` and `/vm/screen` next to them. The setting is stored as
+`/etc/kvm/input-region.json`.
+
+### What it cost to take
+
+`main` rebased onto `2ba45a21` with no conflict at all.
+
+`fork/integration` had four, and three of them were import lists. The fourth is
+the only one worth recording. `9e6d2808` introduces a `ScreenViewport`
+component and moves every stream into it, which is also where the video scale
+now lives, so upstream deleted the per-screen `getVideoScale` effect from
+`mjpeg.tsx` and `h264-webrtc.tsx`. The fork's audio commit had added an
+`<audio>` element and a second copy of that same effect to the WebRTC screen.
+The effect is gone with upstream's, and the `<audio>` element now sits beside
+`<ScreenViewport>` rather than inside it: the component clones a single child
+and rewrites its style, so a second child there would be dropped.
+
+### One fork commit is dropped
+
+`89ee7021`, "Tell the mouse how large a direct H.264 frame really is", took the
+first half of upstream PR `#877`: the direct H.264 worker owns the canvas
+through `transferControlToOffscreen`, so the element this thread can see keeps
+its default 300x150 and the pointer mapped against a 2:1 picture. `527caeff` is
+that pull request, landed, with the same mechanism down to the `frame-size`
+message and the `dataset` attributes. Keeping the fork's copy would have been a
+second implementation of one fix, so it is skipped.
+
+That commit's message argued at length against the second half of `#877`, the
+black-border sampling, on the grounds that a console or a BIOS screen has exact
+black at both edges and would be read as padding. Upstream's answer is the mode
+switch: the sampling runs only when the operator selects `auto`, and the
+default is `off`. The objection stands as a description of what `auto` will do
+on a dark host, and it is now the operator's choice to make rather than a
+behaviour every board gets.
+
+### What it confirms
+
+`width` and `height` stay on the SD card, and there is now a second reason.
+`GetInputResolution` reads `/kvmapp/kvm/width` and `/kvmapp/kvm/height` to offer
+the original-resolution presets. Had item 8 moved those two files to tmpfs, the
+new endpoint would have failed on every boot until the first resolution change,
+in a feature that has no other way to learn the source size.
+
+`/etc/kvm/input-region.json` needs no work to survive a slot switch. `S02identity`
+binds `/data/identity` over the whole of `/etc/kvm`, so anything the server
+writes there is already on the data partition.
+
+### Two things in the new code, not acted on
+
+- `removeInputRegion` in `server/service/vm/input_region.go` has no caller.
+- Neither `Regions` nor `Resolutions` has a length limit, and the server has no
+  request body cap outside the offline updater. An authenticated user can post
+  an arbitrarily large array, which is decoded into memory on a board that
+  wedges rather than OOM-kills below about 30 MB free. This is not specific to
+  the new routes: every JSON endpoint here has the same exposure, so the fix is
+  one body cap in the middleware rather than a length check per handler. It is
+  a fork item, not a defect to report upstream on its own.
+
+### Pull requests
+
+All eight open pull requests still report `MERGEABLE` against `2ba45a21`, and a
+local `git merge-tree` against the new upstream agrees for every one of them.
+None needed a rebase. Only `#873` touches the same files at all: it appends its
+routes and its proto types below upstream's, and its web changes are in the
+settings panel rather than in the screen.
+
+### Still not done
+
+Both items from the `71ab9127` section stand, against the newer base:
+
+- `libkvm.so` and `kvm_system` are not rebuilt, so the `state` move is in the
+  sources and not in the binaries this repository ships.
+- The extraction branches with no pull request open, `security/api-key-auth`
+  above all, are not rebased. They still carry the pre-`#876` shape of the auth
+  code.
