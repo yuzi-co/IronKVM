@@ -1,0 +1,90 @@
+#!/bin/sh
+#
+# Apply the saved CPU clock, once, at boot.
+#
+# The SG2002 C906 boots at 850 MHz and is rated for 1000. There is no voltage
+# control and no cpufreq driver on this board, so the clock is set by
+# reprogramming a PLL and pointing the CPU mux at it. Switching the mux while
+# the system runs glitches and can fault a running process, so the frequency
+# setting in Settings never switches the live clock. It records a target here,
+# and this script applies it before the server and the capture pipeline start.
+# That is the one safe moment: nothing a mux glitch could fault is running yet.
+#
+# The server installs this as /etc/init.d/S00cpufreq, mode 755, from the CPU
+# frequency setting in Settings > Device > Advanced. Selecting stock removes it
+# again, so a factory clock boots with nothing extra to run.
+#
+# The list of scripts that kvm_system copies at boot is hard-coded C++, so this
+# one is not in it. The server owns the copy instead.
+#
+# /etc/kvm/cpufreq holds one number, the target MHz. Only values this script
+# knows are applied. The register values below are validated on SG2002 hardware;
+# 1000 MHz is the rated ceiling and nothing above it is applied here. An
+# unknown value leaves the factory 850 MHz clock, which is also what a missing
+# file does.
+
+CONFIG=/etc/kvm/cpufreq
+
+DEVMEM=/usr/sbin/devmem
+[ -x "$DEVMEM" ] || DEVMEM=devmem
+
+# The C906 clock mux, and the TPLL that carries the 1000 MHz rate. TPLL is
+# programmed to 1000 first, and the mux is pointed at it only after a read-back
+# confirms the write. TPLL's own stock value is 1400 MHz, which is past the
+# silicon wall, so the mux must never select TPLL until it holds 1000.
+MUX=0x03002130
+TPLL=0x0300290c
+
+TPLL_1000=0x07508101 # TPLL CSR for 1000 MHz
+MUX_ON_TPLL=0x00010009 # mux: parent TPLL, divider 1
+
+apply_1000() {
+	printf "cpufreq: "
+
+	"$DEVMEM" "$TPLL" 32 "$TPLL_1000"
+
+	# A read-back of the register is the gate. Without it a PLL that did not
+	# take the write would leave the mux pointed at whatever rate TPLL holds,
+	# and TPLL's stock rate is past the wall.
+	got=$("$DEVMEM" "$TPLL" 2>/dev/null)
+	if [ "$got" != "$TPLL_1000" ]; then
+		echo "FAIL (TPLL read-back $got), staying at 850 MHz"
+		return 1
+	fi
+
+	"$DEVMEM" "$MUX" 32 "$MUX_ON_TPLL"
+	echo "OK (1000 MHz)"
+}
+
+apply() {
+	[ -r "$CONFIG" ] || return 0
+
+	# Keep digits only, so a stray newline or space cannot defeat the match.
+	freq=$(tr -dc '0-9' < "$CONFIG")
+
+	case "$freq" in
+		1000)
+			apply_1000
+			;;
+		*)
+			# 850 and any unknown value: leave the factory clock.
+			;;
+	esac
+}
+
+case "$1" in
+	start)
+		apply
+		;;
+	stop)
+		# The clock cannot be switched back safely while the system runs, and
+		# it does not matter at shutdown. Nothing to do.
+		;;
+	restart|reload)
+		apply
+		;;
+	*)
+		echo "Usage: $0 {start|stop|restart}"
+		exit 1
+		;;
+esac

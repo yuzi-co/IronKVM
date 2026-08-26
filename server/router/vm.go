@@ -61,6 +61,9 @@ func vmRouter(r *gin.Engine) {
 	admin.GET("/vm/zram", service.GetZram)  // get compressed swap state
 	admin.POST("/vm/zram", service.SetZram) // enable or disable compressed swap
 
+	admin.GET("/vm/cpufreq", service.GetCpuFreq)  // get cpu frequency and target
+	admin.POST("/vm/cpufreq", service.SetCpuFreq) // set the boot-time cpu frequency
+
 	admin.GET("/vm/mouse-jiggler", service.GetMouseJiggler)   // get mouse jiggler
 	admin.POST("/vm/mouse-jiggler/", service.SetMouseJiggler) // set mouse jiggler
 
