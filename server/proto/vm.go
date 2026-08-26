@@ -124,6 +124,23 @@ type SetSwapReq struct {
 	Size int64 `validate:"omitempty"` // unit: MB
 }
 
+// GetCpuFreqRsp reports the CPU clock. Running is what the core runs now, read
+// from the clock registers; Target is what the next boot applies. They differ
+// after a change until the operator reboots, which is the only safe moment to
+// switch the clock.
+type GetCpuFreqRsp struct {
+	Running        int     `json:"running"`        // MHz now, 0 when the registers cannot be decoded
+	Measured       bool    `json:"measured"`       // Running was decoded from the clock registers
+	Target         int     `json:"target"`         // MHz the next boot applies
+	Temperature    float64 `json:"temperature"`    // CPU temperature, degrees C, 0 when unavailable
+	Options        []int   `json:"options"`        // selectable frequencies, MHz
+	RebootRequired bool    `json:"rebootRequired"` // Running differs from Target, so a reboot is due
+}
+
+type SetCpuFreqReq struct {
+	Target int `validate:"required"` // MHz, must be one of GetCpuFreqRsp.Options
+}
+
 type GetMouseJigglerRsp struct {
 	Enabled bool   `json:"enabled"`
 	Mode    string `json:"mode"`

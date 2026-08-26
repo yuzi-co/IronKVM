@@ -411,6 +411,14 @@ const en = {
           tip: 'Set a strong password before enabling (Account - Change Password)'
         },
         advanced: 'Advanced Settings',
+        cpuFreq: {
+          title: 'CPU Frequency',
+          description: 'Set the CPU clock applied at the next boot',
+          tip: 'The CPU boots at 850 MHz and is rated for 1000 MHz. A new value is applied at the next boot, not while the system runs. 1000 MHz is in-spec; the temperature is well within limits at either setting.',
+          running: 'Running: {{mhz}} MHz',
+          rebootToApply: 'reboot to apply',
+          rebootConfirm: 'Reboot now to apply {{mhz}} MHz?'
+        },
         swap: {
           title: 'Swap',
           disable: 'Disable',

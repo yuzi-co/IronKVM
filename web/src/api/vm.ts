@@ -186,6 +186,16 @@ export function setSwap(size: number) {
   return http.post('/api/vm/swap', { size });
 }
 
+// get cpu frequency, boot-time target, and temperature
+export function getCpuFreq() {
+  return http.get('/api/vm/cpufreq');
+}
+
+// set the boot-time cpu frequency (applied on next reboot)
+export function setCpuFreq(target: number) {
+  return http.post('/api/vm/cpufreq', { target });
+}
+
 // get mouse jiggler
 export function getMouseJiggler() {
   return http.get('/api/vm/mouse-jiggler');
