@@ -499,7 +499,7 @@ const en = {
           inactive:
             'On, but not running: the USB controller ran out of endpoints. Turn another device off and this one starts straight away.',
           explain:
-            'The USB controller has a fixed number of endpoints. If more devices are enabled than fit, the keyboard and mouse are kept and the rest are turned off.',
+            'The USB controller has a fixed number of inbound endpoints, and this counts those. If more devices are enabled than fit, the keyboard and mouse are kept and the rest are turned off.',
           error: 'Could not reach the device. Try again.'
         },
         reboot: 'Reboot',

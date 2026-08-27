@@ -116,8 +116,9 @@ m_noretry() { sed -i 's@^    usb_bind$@    ls /sys/class/udc/ | cat > UDC@' "$1/
 m_nounlink_dev() { sed -i '/^    rm -f configs\/c.1\/hid.GS0 configs\/c.1\/hid.GS1 configs\/c.1\/hid.GS2$/d' "$1/S03usbdev"; }
 m_nounlink_hid() { sed -i '/^    rm -f configs\/c.1\/hid.GS0 configs\/c.1\/hid.GS1 configs\/c.1\/hid.GS2$/d' "$1/S03usbhid"; }
 
-# The prune hid-only does of whatever normal mode linked. Left in place they are
-# six endpoints of nine before HID asks for three.
+# The prune hid-only does of whatever normal mode linked. Left in place the
+# console, the disk and the network are five inbound endpoints of six before
+# HID asks for three.
 m_noprune_hid() { sed -i '/^    rm -f configs\/c.1\/acm.GS0 configs\/c.1\/mass_storage.disk0/,+1d' "$1/S03usbhid"; }
 
 # The explicit device version, which is what the server reads to report the

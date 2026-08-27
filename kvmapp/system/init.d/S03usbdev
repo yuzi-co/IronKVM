@@ -26,28 +26,87 @@ usb_marker() {
     [ -e "/boot/$1" ]
 }
 
-# usb_budget is how many endpoints of functions this controller fits.
+# usb_in_budget and usb_out_budget are how many endpoints of functions this
+# controller fits, in each direction.
 #
-# The number is measured, not read. dwc2 prints its own count a few seconds
-# before this script runs:
+# The two directions have different limits and the inbound one runs out first.
+# dwc2 prints its own count a few seconds before this script runs:
 #
 #   dwc2 4340000.usb: EPs: 8, dedicated fifos, 3072 entries in SPRAM
 #
-# That is not the budget. Configurations totalling nine endpoints bind and work
-# - acm+network, acm+disk+audio, and disk+network+audio, each with all three
-# HID functions - and ten fails. Parsing the kernel's line looks like the
-# careful thing to do and would permanently refuse two configurations that are
-# known good, with a comment claiming it read the real value from the hardware.
+# That is neither budget. The controller reports both, and this is what it
+# reported on 2026-08-27:
 #
-# Leave this as a constant. If a future controller differs, measure it the same
-# way and change the number here.
-usb_budget() {
-    echo 9
+#   # cat /sys/kernel/debug/usb/4340000.usb/hw_params
+#   num_dev_ep                    : 7
+#   total_fifo_size               : 3072
+#   # cat /sys/kernel/debug/usb/4340000.usb/fifo
+#   RXFIFO: Size 536
+#   NPTXFIFO: Size 32, Start 0x00000218
+#   Periodic TXFIFOs:
+#       DPTXFIFO 1: Size 768, Start 0x00000238
+#       DPTXFIFO 2: Size 512, Start 0x00000538
+#       DPTXFIFO 3: Size 512, Start 0x00000738
+#       DPTXFIFO 4: Size 384, Start 0x00000938
+#       DPTXFIFO 5: Size 128, Start 0x00000ab8
+#       DPTXFIFO 6: Size 128, Start 0x00000b38
+#
+# Seven endpoint pairs beside ep0, and six dedicated transmit FIFOs. dwc2 runs
+# in dedicated FIFO mode here, and it refuses an IN endpoint it cannot give a
+# FIFO of its own to, so six is the inbound ceiling and seven is the outbound
+# one. A seventh FIFO does not fit either: 536 + 32 + 768 + 512 + 512 + 384 +
+# 128 + 128 is 3000 of the 3072 words the controller has.
+#
+# A flat budget of nine stood here before, which was the two directions added
+# together and fitted to three configurations that were tried on hardware. It
+# agreed with two of them by arithmetic accident. It got the console and the
+# network together wrong: that pair asks for seven inbound endpoints and can
+# only be given six.
+#
+# The wrong case is quiet. Endpoint structures are handed out at bind time and
+# there are seven of those, so the gadget binds. The shortage appears later,
+# when the host sets the configuration and dwc2 has no transmit FIFO left for
+# the seventh IN endpoint.
+#
+# Built on the board on 2026-08-28, console and network with all three HID
+# functions:
+#
+#   dwc2 4340000.usb: new device is high-speed
+#   dwc2 4340000.usb: new address 6
+#   dwc2 4340000.usb: dwc2_hsotg_ep_enable: No suitable fifo found
+#   dwc2 4340000.usb: dwc2_hsotg_ep_enable: No suitable fifo found
+#
+# Only the kernel ring showed it. The UDC reported "configured", /dev/hidg0
+# through /dev/hidg2 and /dev/ttyGS0 were all there, and usb0 was up. Which
+# endpoint loses is whichever is enabled seventh, and in that run the HID
+# endpoints kept their places while a bulk pair did not.
+#
+# Depth matters too, for a function this script does not build yet. Each IN
+# endpoint is seated in a FIFO that holds a whole packet, and only FIFO 1 holds
+# more than 512 words. A camera or a microphone at high bandwidth therefore has
+# one seat and can lose it to whatever was linked first. Count endpoints here
+# and read the depths above before adding either.
+#
+# Leave these as constants. If a future controller differs, read the two files
+# above on that board and change the numbers here.
+usb_in_budget() {
+    echo 6
 }
 
-# usb_hid_cost charges nothing when HID is switched off, because those endpoints
-# are then genuinely free and functions that fit would otherwise be refused.
-usb_hid_cost() {
+usb_out_budget() {
+    echo 7
+}
+
+# usb_hid_in_cost and usb_hid_out_cost are what the keyboard, the relative
+# mouse and the absolute pointer cost together. They charge nothing when HID is
+# switched off, because those endpoints are then genuinely free and functions
+# that fit would otherwise be refused.
+#
+# Each HID function is an interrupt IN endpoint and an interrupt OUT endpoint.
+# The OUT half is easy to miss because nothing here writes to it: f_hid
+# allocates it whether or not the report descriptor has output reports, and it
+# was read as active on the board.
+usb_hid_in_cost() {
     if usb_marker disable_hid
     then
         echo 0
@@ -56,11 +115,37 @@ usb_hid_cost() {
     fi
 }
 
-usb_cost() {
+usb_hid_out_cost() {
+    if usb_marker disable_hid
+    then
+        echo 0
+    else
+        echo 3
+    fi
+}
+
+# usb_in_cost and usb_out_cost are what one optional function takes.
+#
+# f_acm and the two network functions each take a bulk pair and an interrupt IN
+# for notifications, so two inbound and one outbound. f_mass_storage takes a
+# bulk pair. The speaker is a playback stream alone, which is one isochronous
+# OUT and no inbound endpoint at all, so it never competes for the scarce
+# direction.
+usb_in_cost() {
     case "$1" in
-        console) echo 3 ;;
-        network) echo 3 ;;
-        disk)    echo 2 ;;
+        console) echo 2 ;;
+        network) echo 2 ;;
+        disk)    echo 1 ;;
+        audio)   echo 0 ;;
+        *)       echo 0 ;;
+    esac
+}
+
+usb_out_cost() {
+    case "$1" in
+        console) echo 1 ;;
+        network) echo 1 ;;
+        disk)    echo 1 ;;
         audio)   echo 1 ;;
         *)       echo 0 ;;
     esac
@@ -96,12 +181,23 @@ usb_enabled() {
     echo $set
 }
 
-usb_used() {
-    used=$(usb_hid_cost)
+usb_used_in() {
+    used=$(usb_hid_in_cost)
 
     for name in $1
     do
-        used=$((used + $(usb_cost "$name")))
+        used=$((used + $(usb_in_cost "$name")))
+    done
+
+    echo "$used"
+}
+
+usb_used_out() {
+    used=$(usb_hid_out_cost)
+
+    for name in $1
+    do
+        used=$((used + $(usb_out_cost "$name")))
     done
 
     echo "$used"
@@ -131,7 +227,8 @@ usb_has() {
 # budget too small for anything optional simply yields an empty set.
 usb_resolve() {
     enabled=$1
-    budget=$2
+    in_budget=$2
+    out_budget=$3
 
     keep=""
 
@@ -139,10 +236,10 @@ usb_resolve() {
     do
         usb_has "$enabled" "$name" || continue
 
-        if [ "$(usb_used "$keep $name")" -le "$budget" ]
-        then
-            keep="$keep $name"
-        fi
+        [ "$(usb_used_in "$keep $name")" -le "$in_budget" ] || continue
+        [ "$(usb_used_out "$keep $name")" -le "$out_budget" ] || continue
+
+        keep="$keep $name"
     done
 
     echo $keep
@@ -226,7 +323,7 @@ usb_prune_list() {
 usb_report() {
     for name in $1
     do
-        message="usb: not enough endpoints, $name is off (needs $(usb_cost "$name"))"
+        message="usb: not enough endpoints, $name is off (needs $(usb_in_cost "$name") in, $(usb_out_cost "$name") out)"
         echo "$message"
 
         if [ -d /data ]
@@ -521,7 +618,7 @@ start_usb_dev(){
     # simply not built - its marker is untouched and it returns on its own
     # when something else is switched off.
     usb_wanted=$(usb_enabled)
-    usb_keep=$(usb_resolve "$usb_wanted" "$(usb_budget)")
+    usb_keep=$(usb_resolve "$usb_wanted" "$(usb_in_budget)" "$(usb_out_budget)")
     usb_report "$(usb_dropped "$usb_wanted" "$usb_keep")"
 
     # usb_kept answers whether a function survived the budget.
