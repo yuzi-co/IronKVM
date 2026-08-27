@@ -456,8 +456,8 @@ present configs/c.1/mass_storage.disk0 "the disk comes back"
 present configs/c.1/rndis.usb0 "the network comes back"
 present os_desc/c.1 "the OS descriptor link comes back"
 
-# The console and the speaker cost three and one, so they fit beside HID with
-# room to spare and can be checked on their own.
+# The console and the speaker are three inbound endpoints between them once HID
+# has taken three, so they fit and can be checked on their own.
 build_env
 : > "$work/boot/usb.acm"
 : > "$work/boot/usb.uac"
@@ -465,9 +465,65 @@ run "$S03" start_usb_dev
 present configs/c.1/acm.GS0   "normal mode starts out with the console"
 present configs/c.1/uac1.usb0 "normal mode starts out with the speaker"
 
+# p_chmask 0 removes the sound card's IN endpoint, so the managed host gains a
+# speaker and not a microphone. Left at the kernel default, Windows and most
+# Linux desktops move the default recording device to the new USB card as
+# readily as the playback one, and switching a speaker on would take over the
+# microphone on the managed machine.
+is functions/uac1.usb0/p_chmask 0 "the sound card offers no microphone"
+
+# req_number is how many isochronous requests u_audio keeps in flight. A
+# service interval the host does not fill still completes its request, and
+# u_audio copies that request's buffer into the ALSA ring again, so the capture
+# repeats the audio from req_number milliseconds earlier. The kernel default of
+# 3 is the worst setting available here and the buffer costs 192 bytes each.
+is functions/uac1.usb0/req_number 8 "the sound card keeps eight requests in flight"
+
 run "$HID" start_usb_dev
 absent configs/c.1/acm.GS0   "hid-only unlinks the console"
 absent configs/c.1/uac1.usb0 "hid-only unlinks the speaker"
+
+echo
+echo "===== the sound card is configured before it is linked ====="
+# configfs answers EBUSY on these attributes once the gadget holds a reference
+# to the function, which was confirmed on the board. A tree of plain files
+# cannot return EBUSY, so the assertions above would pass whichever order the
+# script used. This one reads the shipped text instead.
+uac_link=$(grep -n 'ln -s functions/uac1.usb0' "$S03" | head -1 | cut -d: -f1)
+uac_unlink=$(grep -n 'rm -f configs/c.1/uac1.usb0' "$S03" | head -1 | cut -d: -f1)
+if [ -z "$uac_link" ]
+then
+    note "S03usbdev never links the sound card" FAIL
+else
+    for attr in p_chmask req_number
+    do
+        write=$(grep -n "> functions/uac1.usb0/$attr" "$S03" | head -1 | cut -d: -f1)
+        if [ -z "$write" ]
+        then
+            note "S03usbdev never writes uac1.usb0/$attr" FAIL
+        elif [ "$write" -lt "$uac_link" ]
+        then
+            note "$attr is written before the sound card is linked" OK
+        else
+            note "$attr is written after the link, where configfs refuses it" FAIL
+        fi
+    done
+
+    # The function directory and its config entry both survive a stop_start, so
+    # every rebuild after the first writes to a function the config still
+    # holds, and configfs refuses it. Measured on the board: a stop_start with
+    # this block writing 8 left req_number at the kernel default of 3. The
+    # entry has to come out before the attributes go in.
+    if [ -z "$uac_unlink" ]
+    then
+        note "the sound card is never unlinked, so a rebuild keeps the old attributes" FAIL
+    elif [ "$uac_unlink" -lt "$write" ] && [ "$uac_unlink" -lt "$uac_link" ]
+    then
+        note "the config entry comes out before the attributes go in" OK
+    else
+        note "the unlink is at line $uac_unlink, after a write or the link" FAIL
+    fi
+fi
 
 echo
 echo "===== the HID links come out before the descriptors go in ====="
