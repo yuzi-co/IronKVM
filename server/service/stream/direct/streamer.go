@@ -1,7 +1,6 @@
 package direct
 
 import (
-	"NanoKVM-Server/common"
 	"NanoKVM-Server/service/stream"
 	"NanoKVM-Server/service/vm"
 	"sync"
@@ -86,52 +85,58 @@ func (s *Streamer) getClients() []*client {
 	return *clients
 }
 
+// idleCheckInterval is how often the loop asks whether its last viewer has
+// gone. The loop used to notice on the capture tick, which it no longer owns.
+// Nothing is served in the meantime, so a second of lag costs nothing, and
+// stopIfIdle rechecks the client count under the mutex, so a viewer arriving
+// inside that second is not stranded.
+const idleCheckInterval = time.Second
+
+// run takes frames from the shared capture loop rather than reading the
+// encoder itself. WebRTC mode reads the same encoder, and two readers do not
+// each get the stream: they divide it, and half a GOP decodes to nothing.
 func (s *Streamer) run() {
-	screen := common.GetScreen()
-	common.CheckScreen()
-	values := screen.Snapshot()
-	fps := values.FPS
-
-	ticker := time.NewTicker(time.Second / time.Duration(fps))
-	defer ticker.Stop()
-
-	vision := common.GetKvmVision()
-	startTime := time.Now()
-
-	for range ticker.C {
+	// The demand check runs on the capture loop's goroutine. It reads the
+	// client snapshot, which is an atomic pointer, so it takes no lock that
+	// this goroutine holds.
+	subscription := stream.SubscribeH264(func() bool {
 		clients := s.getClients()
-		if len(clients) == 0 {
-			if s.stopIfIdle() {
+
+		return len(clients) > 0 && hasCaptureDemand(clients)
+	})
+	defer subscription.Close()
+
+	idle := time.NewTicker(idleCheckInterval)
+	defer idle.Stop()
+
+	for {
+		select {
+		case <-idle.C:
+			if len(s.getClients()) == 0 && s.stopIfIdle() {
 				log.Debug("h264 stream stopped due to no clients")
 				return
 			}
-			continue
+
+		case frame, ok := <-subscription.Frames():
+			if !ok {
+				return
+			}
+
+			stream.UpdateCaptureStatus(stream.CaptureModeDirect, frame.Result)
+			if frame.Result < 0 || len(frame.Data) == 0 {
+				continue
+			}
+
+			clients := s.getClients()
+			if len(clients) == 0 {
+				continue
+			}
+
+			outbound := newOutboundFrame(frame.KeyFrame, frame.Timestamp, frame.Data)
+			for _, client := range clients {
+				client.offer(outbound)
+			}
 		}
-
-		values = screen.Snapshot()
-
-		if values.FPS != fps && values.FPS != 0 {
-			fps = values.FPS
-			ticker.Reset(time.Second / time.Duration(fps))
-		}
-
-		if !hasCaptureDemand(clients) {
-			continue
-		}
-
-		data, result := vision.ReadH264(values.Width, values.Height, values.BitRate)
-		stream.UpdateCaptureStatus(stream.CaptureModeDirect, result)
-		if result < 0 || len(data) == 0 {
-			continue
-		}
-
-		timestamp := time.Since(startTime).Microseconds()
-		frame := newOutboundFrame(result == 3, timestamp, data)
-		for _, client := range clients {
-			client.offer(frame)
-		}
-
-		stream.GetFrameRateCounter().Update()
 	}
 }
 

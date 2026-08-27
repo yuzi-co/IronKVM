@@ -79,6 +79,12 @@ func (s *FrameSlot[T]) Pending() bool {
 	return len(s.frames) > 0
 }
 
+// Channel exposes the pending frame directly, for a consumer that has to wait
+// on something else at the same time. It closes with the slot.
+func (s *FrameSlot[T]) Channel() <-chan T {
+	return s.frames
+}
+
 // Take blocks until a frame is available, returning false once the slot is
 // closed and drained.
 func (s *FrameSlot[T]) Take() (T, bool) {
