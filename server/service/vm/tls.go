@@ -8,6 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"NanoKVM-Server/config"
+	"NanoKVM-Server/middleware"
 	"NanoKVM-Server/proto"
 	"NanoKVM-Server/utils"
 )
@@ -23,9 +24,9 @@ func (s *Service) SetTls(c *gin.Context) {
 	}
 
 	if req.Enabled {
-		err = enableTls()
+		err = enableTlsConfig()
 	} else {
-		err = disableTls()
+		err = disableTlsConfig()
 	}
 
 	if err != nil {
@@ -34,14 +35,43 @@ func (s *Service) SetTls(c *gin.Context) {
 		return
 	}
 
+	if !req.Enabled {
+		// This response is the last one the browser gets over HTTPS, and it is
+		// the only chance to take the session cookie back.
+		//
+		// The cookie was set with Secure while HTTPS was on, so the browser
+		// will not send it over plain HTTP and will not let a plain HTTP
+		// response replace or delete it either. Leaving it in place logs the
+		// operator into nothing: the login form posts, the server answers with
+		// a new cookie the browser refuses to store over the old Secure one,
+		// and the page returns to the login form with nothing in the log to
+		// say why. Deleting it here, while this connection is still encrypted,
+		// costs one deliberate log in and avoids that.
+		middleware.ClearSessionCookie(c, true)
+	}
+
 	rsp.OkRsp(c)
 
+	restartServer()
+}
+
+// restartServer is a variable so a test can drive SetTls without shelling out
+// to an init script that is not there.
+var restartServer = func() {
 	_ = exec.Command("sh", "-c", "/etc/init.d/S95nanokvm restart").Run()
 }
 
 // ensureTlsCert is a variable so a test can prove that switching HTTPS on does
 // not mint a certificate when the one on disk still answers for this device.
 var ensureTlsCert = utils.EnsureCert
+
+// enableTlsConfig and disableTlsConfig are variables for the same reason: both
+// write the real configuration file, and what SetTls does around them is
+// testable without that.
+var (
+	enableTlsConfig  = enableTls
+	disableTlsConfig = disableTls
+)
 
 func enableTls() error {
 	// EnsureCert, not GenerateCert. Switching HTTPS off leaves the certificate
