@@ -761,10 +761,14 @@ The two items from the `71ab9127` section stand. Beyond them:
 ## Extraction branch rebase, 2026-08-28
 
 The item that has stood since the `71ab9127` section, "the extraction branches with no pull request
-open are not rebased", is done. Forty branches were in scope: every branch cut from an upstream base
-that has no pull request open. `pr675`, `pr814` and `pr877` are copies of other contributors' pull
-requests rather than extractions, so they stay as they are. The eight branches with an open pull
-request stay as they are too.
+open are not rebased", is done. Forty branches were in scope at first: every branch cut from an
+upstream base that had no pull request open. The eight branches that did have one were then closed
+upstream, which removed the reason to leave them alone, so they were rebased in the same pass. All
+forty-eight extraction branches are now accounted for and forty-six sit on current `upstream/main`.
+The two that do not are dead, and the reason is below.
+
+`pr675`, `pr814` and `pr877` are copies of other contributors' pull requests rather than
+extractions, so they stay as they are.
 
 ### A rebase produces the wrong branch
 
@@ -817,10 +821,10 @@ Two more branches lost part of what they proposed, because upstream landed that 
 
 ### What was verified
 
-Thirty-four branches touch Go. Each one was stacked on `build/novision-tag` and put through
-`go vet -tags novision ./...` and `go test -tags novision ./...` in `golang:1.25`. All thirty-four
-pass. Four failed on the first run. Three of the four were the known `picoclaw` and `ws` timing
-flakes and passed on a second run. The fourth was `perf/webrtc-per-viewer-writer` above.
+Forty-two branches touch Go. Each one was stacked on `build/novision-tag` and put through
+`go vet -tags novision ./...` and `go test -tags novision ./...` in `golang:1.25`. All forty-two
+pass. Five failed on the first run. Four of the five were the known `picoclaw` and `ws` timing
+flakes and passed on a second run. The fifth was `perf/webrtc-per-viewer-writer` above.
 
 Stack the tag from the `build/novision-tag` branch, not from `main`'s copy of that commit. `main`'s
 first version of the stub predates `HasHDMISignal`, which upstream added in `#859`. It fails
@@ -833,14 +837,27 @@ first time the probe change has been compiled at all: `26781dc4` says "NOT COMPI
 
 `fix/p2-resize-guard` touches shell only. Both of its files pass `sh -n`.
 
+### The eight pull requests are closed
+
+`#846`, `#847`, `#849`, `#850`, `#851`, `#852`, `#871` and `#873` are closed on `sipeed/NanoKVM`,
+with no comment left on any of them. No branch was deleted, so any of the eight can be reopened
+while its branch exists.
+
+Those eight were the only branches still on an old base, and closing the pull requests removed the
+reason to leave them there. They were cut from `71ab9127`, which is `#876` itself, so they were
+already past the change that made the other batch stale and they were only three web-only commits
+behind. All eight rebased with no conflict and none lost a commit. All eight pass the same novision
+gate.
+
+This also settles the `security/contain-request-paths` question. It is rebased now, so
+`security/download-verify` and `feat/device-http-proxy` no longer stack on a copy of it that a pull
+request contradicts.
+
 ### Still not done
 
-- `feat/zram-swap` has an open pull request and adds six files under `tools/`, which belongs to the
-  fork. Whether a zram pull request should carry its module build tooling is a decision rather than
-  a defect, so the branch is untouched.
-- `security/download-verify` and `feat/device-http-proxy` now stack on a rebased
-  `security/contain-request-paths`, while pull request `#849` still shows the older one. Landing or
-  rebasing `#849` means doing those two again.
+- `feat/zram-swap` adds six files under `tools/`, which belongs to the fork. Whether a zram pull
+  request should carry its module build tooling is a decision rather than a defect, so the branch
+  keeps them.
 - `fix/vi-init-race` and `main` no longer agree. The branch serialises with an RAII guard class.
   `main` folded the same lock into `160d9fc8` with an explicit unlock at each exit, beside a
   different change. The branch is the better single-purpose pull request, so the divergence stays.
