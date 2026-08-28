@@ -49,6 +49,10 @@ changes and why.
   speed as a fault, because that reads "configured" and cannot carry the
   gadget.
 - A stalled viewer that froze the stream for every other viewer.
+- A Japanese Zenkaku/Hankaku key that stuck down on the host. The browser can
+  start a composition between that key's own keydown and keyup, and the keyup
+  was dropped, so the host kept the key held and this side suppressed every
+  later press of it.
 - A capture pipeline that reported success after a failed initialisation, and
   that was dismantled while its own threads were still using it.
 - A resolution probe that spun forever on an unreadable HDMI input.

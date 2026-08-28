@@ -84,13 +84,24 @@ export const Keyboard = () => {
 
     function handleKeyUp(event: KeyboardEvent) {
       if (!isKeyboardEnabled) return;
-      if (isComposing.current || event.isComposing) return;
-
-      event.preventDefault();
-      event.stopPropagation();
 
       const code = normalizeKeyCode(event, os);
       if (!code) return;
+
+      // A key already reported as pressed is always released, whatever the IME
+      // is doing. The guard used to skip every keyup while composing, which is
+      // right for a key the IME is consuming and wrong for one this side has
+      // already sent a keydown for. The JIS Zenkaku/Hankaku key is exactly
+      // that case: it toggles the local IME, so compositionstart can arrive
+      // between its own keydown and keyup. The keyup was dropped, the host was
+      // left holding the key, and because this side still had it in
+      // pressedKeys its next keydown was suppressed too. One press and the key
+      // never worked again.
+      const wasPressed = pressedKeys.current.has(code);
+      if ((isComposing.current || event.isComposing) && !wasPressed) return;
+
+      event.preventDefault();
+      event.stopPropagation();
 
       // Handle leader key release
       const leaderHandled = leaderKeyRef.current.handleKeyUp(code);
@@ -144,6 +155,12 @@ export const Keyboard = () => {
         sendKeyEvent('keyup', code);
       });
       pressedKeys.current.clear();
+
+      // Releasing everything ends any composition as far as this side is
+      // concerned. Leaving the flag set would have the next keyup skipped for a
+      // key that is no longer tracked as pressed, which is how the fault above
+      // starts.
+      isComposing.current = false;
 
       leaderKeyRef.current.reset();
       altGrRef.current.reset();
