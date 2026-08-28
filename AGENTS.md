@@ -165,20 +165,23 @@ SSH must be enabled first (Web UI: `Settings > SSH`; default login `root`/`root`
 
 ## Branches
 
-This fork keeps two kinds of branch. Tell them apart by their merge-base, never by their name and
-never by whether their content is already in `main`:
+**The fork stopped contributing to `sipeed/NanoKVM` on 2026-08-28.** Every branch here is now fork
+work, cut from `main`. Read the next section before you assume otherwise, because the repository
+kept a second kind of branch until that date and the traces are still visible.
+
+`fork/integration` is what the device should run, and it stays ahead of `upstream/main`
+permanently. `main` is a linear stack on `upstream/main` with no merge commits, so
+`git rev-list --count upstream/main..main` measures how far the fork has moved.
+
+Tell a branch's kind by its merge-base, never by its name and never by whether its content is
+already in `main`:
 
 ```shell
 git merge-base main <branch>
 ```
 
-- **Cut from `upstream/main`.** A single-purpose extraction of work that already lives in `main`,
-  shaped so a pull request to `sipeed/NanoKVM` shows only that change.
-- **Cut from `main`.** Fork work that `main` does not carry yet.
-
-`fork/integration` carries the second kind. It is what the device should run, and it stays ahead of
-`upstream/main` permanently. `main` is a linear stack on `upstream/main` with no merge commits, so
-`git rev-list --count upstream/main..main` measures how far the fork has moved.
+A merge-base on the `upstream/main` line means an extraction branch, and none should be left. A
+merge-base on `main` means fork work.
 
 **Each feature gets its own branch, and `fork/integration` merges it.** Cut the branch from `main`,
 put the whole feature on it, and bring it in with `git merge --no-ff`. The merge commit is what
@@ -194,40 +197,53 @@ the commit that supersedes it, not preserved as a wrong comment in the tree.
 Two branches will often edit the same file, `tools/README.md` above all. Resolve that once, in the
 merge, rather than by serialising the work.
 
-**An extraction branch is patch-equal to `main` by design.** The work lands in `main` first, and the
-branch is the upstream-facing copy of it. `git cherry main <branch>` reporting every commit as `-` is
-therefore not evidence that the branch is stale. Deleting on that signal destroys the only
-upstream-facing copy of the work. Record the SHAs before deleting any branch here.
-
-### Pull request order
-
-Extractions that share a prerequisite form a chain. Land the shorter branch first — each one is a
-prefix of the branch below it.
-
-```
-security/contain-request-paths
-  ├─ security/download-verify ─ feat/device-http-proxy
-  ├─ security/api-key-auth
-  └─ security/usb-gadget-identity ─ fix/hid-gadget-rebuild ─ fix/hid-endpoint-reporting
-
-fix/stream-stalled-viewer ─ perf/mjpeg-per-client
-  └─ perf/frame-copy-reduction ─ perf/web-cache-headers
-```
-
-Every other branch stands alone.
-
 Upstream lands pull requests two ways: a true merge (`#845`) and a squash (`#844`). A squash returns
 with a different patch id, so a rebase of `fork/integration` onto the new `upstream/main` does not
-drop it. Expect to `git rebase --skip` those by hand.
+drop it. Expect to `git rebase --skip` those by hand. This still applies. The fork no longer sends
+pull requests, but it still rebases onto an upstream that keeps moving.
 
-### What does not go upstream
+### The retired extraction branches
+
+Until 2026-08-28 the fork also kept extraction branches: single-purpose copies of work that already
+lived in `main`, each shaped so a pull request to `sipeed/NanoKVM` showed only that change. The
+eight open pull requests were closed and all forty-eight branches were deleted from this clone.
+`docs/plans/2026-08-28-retired-extraction-branches.md` lists every one with both of its surviving
+commits and the command to restore it.
+
+Two facts from that page decide what you may safely delete:
+
+- **`origin` still holds all forty-eight, at their pre-rebase commits.** Those are what the closed
+  pull requests point at, and a closed pull request can be reopened only while its head branch
+  exists. Do not delete them from `origin` unless the intent is to end that.
+- **`refs/archive/extractions-20260828/` holds the rebased version, and this clone is its only
+  copy.** The branches were never pushed after the 2026-08-28 rebase.
+
+**Never delete a branch here because its content looks like it is already in `main`.** An extraction
+branch was patch-equal to `main` by design, so `git cherry main <branch>` reporting `-` for every
+commit proved nothing. Checking the forty-eight properly found twenty-six with patch mismatches and
+exactly one holding work reachable from nowhere else: `fix/hdmi-signal-reported` carries the fork's
+own `server/utils/hdmi.go` and its test, which `main` dropped in `a189c906` when upstream replaced
+them. Record the SHAs before deleting any branch here.
+
+### What belongs to the fork alone
 
 `tools/`, `AGENTS.md`, `CLAUDE.md`, `.gitattributes` and `server/dl_lib/` belong to the fork. So does
 `kvmapp/system/init.d/S99vidiag`, the capture diagnostic script, because upstream has no such file.
+This mattered most while the fork sent pull requests. It still decides what a rebase onto
+`upstream/main` must never lose.
 
-`backup/pre-rebase-20260801` is not a redundant copy. It holds `server/service/vm/hdmi_idle.go` and
-its tests, about 540 lines that the 2026-08-01 rebase dropped, and they exist on no other ref. Do not
-prune it.
+### Refs that are the only copy of something
+
+Do not prune these. Each holds work that exists on no other ref:
+
+- `backup/pre-rebase-20260801` holds `server/service/vm/hdmi_idle.go` and its tests, about 540 lines
+  that the 2026-08-01 rebase dropped.
+- `refs/archive/extractions-20260828/` holds the rebased form of the forty-eight retired extraction
+  branches, which were never pushed. `origin` has only their pre-rebase form.
+- `refs/rebase-backup/20260828/` holds the pre-2026-08-28 head of every local branch, 92 of them.
+  This is the one namespace here that is probably redundant: 81 of the 92 are also on `origin`, and
+  the other 11 name branches that still exist locally and were never rewritten. Check a ref against
+  both before dropping it rather than trusting that count.
 
 ### Line endings when you read git output
 
