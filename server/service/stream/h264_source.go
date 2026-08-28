@@ -45,6 +45,17 @@ type H264Source struct {
 // for them while a viewer is behind, so a subscriber that wants nothing must be
 // able to say so: with every subscriber quiet the source reads nothing at all,
 // which is what kept an idle board off the encoder before this existed.
+//
+// It runs on the capture goroutine, and both paths share that goroutine now.
+// So demand must not block, must not write to a socket, and must not take a
+// lock that anything holds across a write. One path that broke this rule would
+// stall the other path's viewers as well as its own, which is the whole failure
+// the frame slots below exist to prevent, arriving by a different door.
+//
+// Both implementations hold to it today. Each reads its client list from an
+// atomic snapshot, and direct mode's hasCaptureDemand takes a per-client mutex
+// that is only ever held for bookkeeping: the websocket writer pops a frame
+// under that mutex and releases it before it writes.
 type H264Subscription struct {
 	source *H264Source
 	slot   *FrameSlot[H264Frame]
