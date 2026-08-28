@@ -21,18 +21,34 @@ func TestUsedEndpointsCountsHidAndEachFunctionOnce(t *testing.T) {
 	for _, test := range []struct {
 		name    string
 		markers []string
-		want    int
+		want    endpointUse
 	}{
-		{"nothing but hid", nil, 3},
-		{"hid and the console", []string{virtualConsole}, 6},
-		{"hid, console and audio", []string{virtualConsole, virtualAudio}, 7},
-		{"hid, console and disk", []string{virtualConsole, virtualDisk}, 8},
-		{"disk and network without the console", []string{virtualDisk, virtualNetwork}, 8},
-		{"everything at once", []string{virtualConsole, virtualDisk, virtualNetwork, virtualAudio}, 12},
+		{"nothing but hid", nil, endpointUse{in: 3, out: 3}},
+		{"hid and the console", []string{virtualConsole}, endpointUse{in: 5, out: 4}},
+		{"hid, console and audio", []string{virtualConsole, virtualAudio}, endpointUse{in: 5, out: 5}},
+		{"hid, console and disk", []string{virtualConsole, virtualDisk}, endpointUse{in: 6, out: 5}},
+		{"disk and network without the console", []string{virtualDisk, virtualNetwork}, endpointUse{in: 6, out: 5}},
+		{"hid, console and network", []string{virtualConsole, virtualNetwork}, endpointUse{in: 7, out: 5}},
+		{"everything at once", []string{virtualConsole, virtualDisk, virtualNetwork, virtualAudio}, endpointUse{in: 8, out: 7}},
 	} {
 		if got := usedEndpoints(presence(test.markers...)); got != test.want {
-			t.Errorf("%s: used %d endpoints, want %d", test.name, got, test.want)
+			t.Errorf("%s: used %+v endpoints, want %+v", test.name, got, test.want)
 		}
+	}
+}
+
+// The shipped gadget sits exactly on the inbound ceiling, and the ceiling was
+// read from the controller. If either number moves without the other, the
+// board runs one endpoint short and says nothing about it.
+func TestTheShippedConfigurationIsExactlyTheInboundBudget(t *testing.T) {
+	used := usedEndpoints(presence(virtualConsole, virtualDisk, virtualAudio))
+
+	if used.in != DefaultInEndpointBudget {
+		t.Errorf("console + disk + speaker uses %d inbound endpoints, want exactly %d", used.in, DefaultInEndpointBudget)
+	}
+
+	if used.out > DefaultOutEndpointBudget {
+		t.Errorf("console + disk + speaker uses %d outbound endpoints of %d", used.out, DefaultOutEndpointBudget)
 	}
 }
 
@@ -51,49 +67,84 @@ func TestUsedEndpointsCountsTheNetworkOnce(t *testing.T) {
 // A board with HID disabled has three more endpoints to spend. Charging for
 // hardware that is not there would drop functions that fit.
 func TestHidCostsNothingWhenItIsDisabled(t *testing.T) {
-	if got := usedEndpoints(presence(disableHid)); got != 0 {
-		t.Errorf("used %d endpoints with hid disabled, want 0", got)
+	if got := usedEndpoints(presence(disableHid)); got != (endpointUse{}) {
+		t.Errorf("used %+v endpoints with hid disabled, want none", got)
 	}
 }
 
 func TestCanEnableAllowsWhatFits(t *testing.T) {
-	// hid(3) + console(3) is 6 of 9.
+	// hid(3 in) + console(2 in) is 5 of 6, and the speaker costs nothing
+	// inbound.
 	ok, free, _ := canEnable("audio", presence(virtualConsole))
 
 	if !ok {
-		t.Error("refused audio with 3 endpoints free")
+		t.Error("refused the speaker, which costs no inbound endpoint at all")
 	}
 
-	if free != 3 {
-		t.Errorf("reported %d free, want 3", free)
+	if free != (endpointUse{in: 1, out: 3}) {
+		t.Errorf("reported %+v free, want {in:1 out:3}", free)
 	}
 }
 
-// Measured on hardware: acm + network is 9 and binds, so the guard must allow
-// it. An earlier draft budgeted 8 and would have refused this forever.
-func TestCanEnableAllowsTheConsoleAndNetworkTogether(t *testing.T) {
-	if ok, _, _ := canEnable("network", presence(virtualConsole)); !ok {
-		t.Error("refused the network alongside the console, which binds on hardware")
+// The speaker is the one function that can always be switched on. It is an
+// isochronous OUT stream and nothing else, so it never competes for the
+// direction that runs out.
+func TestCanEnableAlwaysAllowsTheSpeaker(t *testing.T) {
+	for _, markers := range [][]string{
+		nil,
+		{virtualConsole},
+		{virtualConsole, virtualDisk},
+		{virtualDisk, virtualNetwork},
+	} {
+		if ok, free, _ := canEnable("audio", presence(markers...)); !ok {
+			t.Errorf("refused the speaker with %v enabled and %+v free", markers, free)
+		}
+	}
+}
+
+// The console and the network are two inbound endpoints each, HID is three,
+// and the controller has six dedicated transmit FIFOs. The pair cannot work.
+//
+// A flat budget of nine allowed it, because nine is what the pair costs when
+// both directions are added together. Nothing complains at boot: endpoint
+// structures are handed out at bind time and there are seven of those, so the
+// gadget binds and the UDC reports "configured". The shortage only appears
+// when the host sets the configuration, and one interrupt IN endpoint fails to
+// enable with nothing said about it.
+func TestCanEnableRefusesTheConsoleAndNetworkTogether(t *testing.T) {
+	ok, free, relief := canEnable("network", presence(virtualConsole))
+
+	if ok {
+		t.Fatal("allowed the network alongside the console, which needs a seventh inbound endpoint")
+	}
+
+	if free.in != 1 {
+		t.Errorf("reported %d inbound free, want 1", free.in)
+	}
+
+	if !reflect.DeepEqual(relief, []string{"console"}) {
+		t.Errorf("suggested %v, want [console]", relief)
 	}
 }
 
 func TestCanEnableRefusesWhatDoesNotFit(t *testing.T) {
-	// console(3) + disk(2) + hid(3) is 8 of 9, so one endpoint is left and the
-	// network needs three.
+	// hid(3 in) + console(2 in) + disk(1 in) is 6 of 6, so nothing inbound is
+	// left and the network needs two.
 	ok, free, relief := canEnable("network", presence(virtualConsole, virtualDisk))
 
 	if ok {
-		t.Error("allowed the network with one endpoint free")
+		t.Error("allowed the network with no inbound endpoint free")
 	}
 
-	if free != 1 {
-		t.Errorf("reported %d free, want 1", free)
+	if free != (endpointUse{in: 0, out: 2}) {
+		t.Errorf("reported %+v free, want {in:0 out:2}", free)
 	}
 
 	// Naming something that would not free enough is worse than naming
-	// nothing: the operator turns it off and is refused again.
-	if !reflect.DeepEqual(relief, []string{"disk", "console"}) {
-		t.Errorf("suggested %v, want [disk console]", relief)
+	// nothing: the operator turns it off and is refused again. The disk frees
+	// one inbound endpoint of the two that are short, so it is not named.
+	if !reflect.DeepEqual(relief, []string{"console"}) {
+		t.Errorf("suggested %v, want [console]", relief)
 	}
 }
 
@@ -108,7 +159,7 @@ func TestCanEnableOnlySuggestsFunctionsThatFreeEnough(t *testing.T) {
 		t.Fatal("the network is missing from the table")
 	}
 
-	needed := wanted - free
+	needed := shortfall(wanted, free)
 
 	if len(relief) == 0 {
 		t.Fatal("refused the network without suggesting anything")
@@ -120,21 +171,17 @@ func TestCanEnableOnlySuggestsFunctionsThatFreeEnough(t *testing.T) {
 			t.Fatalf("suggested %q, which is not a function", name)
 		}
 
-		if cost < needed {
-			t.Errorf("suggested %q, which frees %d of the %d needed", name, cost, needed)
+		if cost.in < needed.in || cost.out < needed.out {
+			t.Errorf("suggested %q, which frees %+v of the %+v needed", name, cost, needed)
 		}
 	}
 }
 
-// The case above cannot catch the filter being deleted: with the console and
-// the disk enabled, one endpoint is free, the network needs two more, and both
-// candidates clear that bar - so removing the filter returns the same list.
-//
-// This one discriminates. console(3) + disk(2) + audio(1) + hid(3) is exactly 9
-// and the network needs all three of its endpoints back, so only the console
-// can supply them on its own. A build with no filter would answer
-// [audio disk console] and send the operator to turn off a speaker that frees
-// one of the three endpoints it needs.
+// console(2 in) + disk(1 in) + audio(0 in) + hid(3 in) is exactly six, and the
+// network needs both of its inbound endpoints back. The disk frees one and the
+// speaker frees none, so only the console can supply them on its own. A build
+// with no filter would answer [audio disk console] and send the operator to
+// turn off a speaker that frees nothing at all in the direction that is short.
 //
 // This filter has already been deleted once during this task. It stays tested.
 func TestCanEnableWillNotSuggestAFunctionThatIsTooSmall(t *testing.T) {
@@ -144,12 +191,12 @@ func TestCanEnableWillNotSuggestAFunctionThatIsTooSmall(t *testing.T) {
 		t.Fatal("allowed the network at a full budget")
 	}
 
-	if free != 0 {
-		t.Fatalf("reported %d free, want 0", free)
+	if free.in != 0 {
+		t.Fatalf("reported %d inbound free, want 0", free.in)
 	}
 
 	if !reflect.DeepEqual(relief, []string{"console"}) {
-		t.Errorf("suggested %v, want [console] - the only one that frees 3", relief)
+		t.Errorf("suggested %v, want [console] - the only one that frees two inbound", relief)
 	}
 }
 
@@ -159,8 +206,8 @@ func TestEndpointCostRejectsUnknownNames(t *testing.T) {
 	}
 }
 
-// The console claims three of the nine endpoints - the largest single share
-// after HID - so it needs a switch like the rest. A budget display that shows
+// The console claims two of the six inbound endpoints - the largest single
+// share after HID - so it needs a switch like the rest. A budget display that shows
 // the operator a full bar while offering no way to free the biggest consumer
 // states the problem and withholds the answer.
 func TestConsoleIsTogglableLikeTheOthers(t *testing.T) {
@@ -194,17 +241,29 @@ func TestPriorityOrderIsAudioFirstConsoleLast(t *testing.T) {
 // failed" would leave the operator exactly where they were before it existed:
 // switching things at random and losing HID.
 func TestRefusalMessageNamesTheNumbersAndTheWayOut(t *testing.T) {
-	message := refusalMessage("network", 1, []string{"disk", "console"})
+	message := refusalMessage("network", endpointUse{in: 0, out: 1}, []string{"console"})
 
-	for _, want := range []string{"network", "3", "1 free", "disk", "console"} {
+	// The direction is part of the answer. A refusal that reports the wrong
+	// one cannot be checked against the controller.
+	for _, want := range []string{"network", "2", "inbound", "0 free", "console"} {
 		if !strings.Contains(message, want) {
 			t.Errorf("refusal %q does not mention %q", message, want)
 		}
 	}
 }
 
+// A function that fits inbound and not outbound has to be told so, or the
+// operator reads the inbound bar, sees room, and cannot explain the refusal.
+func TestRefusalMessageNamesTheOutboundDirectionWhenThatIsWhatIsShort(t *testing.T) {
+	message := refusalMessage("audio", endpointUse{in: 2, out: 0}, nil)
+
+	if !strings.Contains(message, "outbound") {
+		t.Errorf("refusal %q does not say which direction is short", message)
+	}
+}
+
 func TestRefusalMessageWithNothingToSuggest(t *testing.T) {
-	message := refusalMessage("network", 0, nil)
+	message := refusalMessage("network", endpointUse{}, nil)
 
 	if strings.Contains(message, "turn off") {
 		t.Errorf("refusal %q offers a way out when there is none", message)

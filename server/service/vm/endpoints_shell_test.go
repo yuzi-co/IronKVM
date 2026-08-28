@@ -26,17 +26,17 @@ func readInitScript(t *testing.T) string {
 // shellCosts pulls the case arms out of usb_cost:
 //
 //	console) echo 3 ;;
-func shellCosts(t *testing.T, script string) map[string]int {
+func shellCosts(t *testing.T, script string, fn string) map[string]int {
 	t.Helper()
 
-	start := strings.Index(script, "usb_cost() {")
+	start := strings.Index(script, fn+"() {")
 	if start < 0 {
-		t.Fatal("S03usbdev has no usb_cost function")
+		t.Fatalf("S03usbdev has no %s function", fn)
 	}
 
 	end := strings.Index(script[start:], "\n}")
 	if end < 0 {
-		t.Fatal("usb_cost is not terminated")
+		t.Fatalf("%s is not terminated", fn)
 	}
 
 	arm := regexp.MustCompile(`(?m)^\s*([a-z]+}?\))\s*echo\s+(\d+)`)
@@ -50,7 +50,7 @@ func shellCosts(t *testing.T, script string) map[string]int {
 
 		value, err := strconv.Atoi(match[2])
 		if err != nil {
-			t.Fatalf("usb_cost gives %q a non-numeric cost %q", name, match[2])
+			t.Fatalf("%s gives %q a non-numeric cost %q", fn, name, match[2])
 		}
 
 		costs[name] = value
@@ -63,22 +63,32 @@ func shellCosts(t *testing.T, script string) map[string]int {
 // permits a set the boot script then refuses to build, or the other way round,
 // and the symptom is the silent HID loss this whole feature exists to prevent.
 func TestShellAndGoAgreeOnEveryCost(t *testing.T) {
-	costs := shellCosts(t, readInitScript(t))
+	script := readInitScript(t)
 
-	if len(costs) != len(usbFunctions) {
-		t.Errorf("usb_cost names %d functions, the Go table has %d: %v vs %v",
-			len(costs), len(usbFunctions), costs, usbFunctions)
-	}
+	for _, direction := range []struct {
+		fn   string
+		want func(usbFunction) int
+	}{
+		{"usb_in_cost", func(f usbFunction) int { return f.cost.in }},
+		{"usb_out_cost", func(f usbFunction) int { return f.cost.out }},
+	} {
+		costs := shellCosts(t, script, direction.fn)
 
-	for _, function := range usbFunctions {
-		shell, ok := costs[function.name]
-		if !ok {
-			t.Errorf("usb_cost has no arm for %q", function.name)
-			continue
+		if len(costs) != len(usbFunctions) {
+			t.Errorf("%s names %d functions, the Go table has %d: %v vs %v",
+				direction.fn, len(costs), len(usbFunctions), costs, usbFunctions)
 		}
 
-		if shell != function.cost {
-			t.Errorf("%s costs %d in S03usbdev and %d in Go", function.name, shell, function.cost)
+		for _, function := range usbFunctions {
+			shell, ok := costs[function.name]
+			if !ok {
+				t.Errorf("%s has no arm for %q", direction.fn, function.name)
+				continue
+			}
+
+			if shell != direction.want(function) {
+				t.Errorf("%s costs %d in %s and %d in Go", function.name, shell, direction.fn, direction.want(function))
+			}
 		}
 	}
 }
@@ -137,51 +147,59 @@ func TestShellAndGoAgreeOnTheKeepOrder(t *testing.T) {
 }
 
 // usb_hid_cost has two arms and only one of them is hidCost: the disable_hid
-// arm must charge nothing, and the other arm must charge exactly hidCost. A
-// substring search over the whole function body would stay green if the two
-// arms were swapped - HID would then cost nothing while still being built,
-// the guard would approve 9 endpoints of optional functions on top of the 3
-// HID actually uses, the gadget would ask for 12 against a budget of 9, and
-// every /dev/hidg* would disappear along with everything else.
+// arm must charge nothing, and the other arm must charge exactly what Go
+// charges. A substring search over the whole function body would stay green if
+// the two arms were swapped - HID would then cost nothing while still being
+// built, the guard would approve the console and the network together on top
+// of the three inbound endpoints HID actually uses, and the gadget would ask
+// for seven inbound of six with nothing said about it.
 var hidCostShape = regexp.MustCompile(
 	`(?s)if\s+usb_marker\s+disable_hid\s*\n\s*then\s*\n\s*echo\s+(\d+)\s*\n\s*else\s*\n\s*echo\s+(\d+)`)
 
 func TestShellAndGoAgreeOnWhatHidCosts(t *testing.T) {
 	script := readInitScript(t)
 
-	start := strings.Index(script, "usb_hid_cost() {")
-	if start < 0 {
-		t.Fatal("S03usbdev has no usb_hid_cost function")
-	}
+	for _, direction := range []struct {
+		fn   string
+		want int
+	}{
+		{"usb_hid_in_cost", hidInCost},
+		{"usb_hid_out_cost", hidOutCost},
+	} {
+		start := strings.Index(script, direction.fn+"() {")
+		if start < 0 {
+			t.Fatalf("S03usbdev has no %s function", direction.fn)
+		}
 
-	end := strings.Index(script[start:], "\n}")
-	if end < 0 {
-		t.Fatal("usb_hid_cost is not terminated")
-	}
+		end := strings.Index(script[start:], "\n}")
+		if end < 0 {
+			t.Fatalf("%s is not terminated", direction.fn)
+		}
 
-	body := script[start : start+end]
+		body := script[start : start+end]
 
-	arms := hidCostShape.FindStringSubmatch(body)
-	if arms == nil {
-		t.Fatalf("usb_hid_cost does not have the if usb_marker disable_hid / then / else shape this test parses:\n%s", body)
-	}
+		arms := hidCostShape.FindStringSubmatch(body)
+		if arms == nil {
+			t.Fatalf("%s does not have the if usb_marker disable_hid / then / else shape this test parses:\n%s", direction.fn, body)
+		}
 
-	disabled, err := strconv.Atoi(arms[1])
-	if err != nil {
-		t.Fatalf("usb_hid_cost's disable_hid arm echoes %q, which is not a number", arms[1])
-	}
+		disabled, err := strconv.Atoi(arms[1])
+		if err != nil {
+			t.Fatalf("%s's disable_hid arm echoes %q, which is not a number", direction.fn, arms[1])
+		}
 
-	built, err := strconv.Atoi(arms[2])
-	if err != nil {
-		t.Fatalf("usb_hid_cost's else arm echoes %q, which is not a number", arms[2])
-	}
+		built, err := strconv.Atoi(arms[2])
+		if err != nil {
+			t.Fatalf("%s's else arm echoes %q, which is not a number", direction.fn, arms[2])
+		}
 
-	if disabled != 0 {
-		t.Errorf("usb_hid_cost charges %d when disable_hid is present, want 0", disabled)
-	}
+		if disabled != 0 {
+			t.Errorf("%s charges %d when disable_hid is present, want 0", direction.fn, disabled)
+		}
 
-	if built != hidCost {
-		t.Errorf("usb_hid_cost charges %d when HID is built, Go's hidCost is %d", built, hidCost)
+		if built != direction.want {
+			t.Errorf("%s charges %d when HID is built, Go charges %d", direction.fn, built, direction.want)
+		}
 	}
 }
 
@@ -254,45 +272,62 @@ func TestShellAndGoAgreeOnEveryGadgetDirectory(t *testing.T) {
 	}
 }
 
-// Both copies carry the same measured constant. Nothing derives the budget
-// from dmesg or from the kernel at all - it is 9 in Go and 9 in the shell
-// because both were set by hand from the same measurement, and this test is
-// what notices if a future edit moves only one of them.
+// Both copies carry the same two constants, read from the controller rather
+// than derived at runtime. This test is what notices if a future edit moves
+// only one of them.
 func TestShellAndGoAgreeOnTheBudget(t *testing.T) {
 	script := readInitScript(t)
 
-	budget := regexp.MustCompile(`usb_budget\(\) \{\s*echo (\d+)`).FindStringSubmatch(script)
-	if budget == nil {
-		t.Fatal("S03usbdev has no usb_budget function, or it does not echo a constant")
-	}
+	for _, direction := range []struct {
+		fn   string
+		want int
+	}{
+		{"usb_in_budget", DefaultInEndpointBudget},
+		{"usb_out_budget", DefaultOutEndpointBudget},
+	} {
+		budget := regexp.MustCompile(direction.fn + `\(\) \{\s*echo (\d+)`).FindStringSubmatch(script)
+		if budget == nil {
+			t.Fatalf("S03usbdev has no %s function, or it does not echo a constant", direction.fn)
+		}
 
-	shell, err := strconv.Atoi(budget[1])
-	if err != nil {
-		t.Fatalf("usb_budget echoes %q, which is not a number", budget[1])
-	}
+		shell, err := strconv.Atoi(budget[1])
+		if err != nil {
+			t.Fatalf("%s echoes %q, which is not a number", direction.fn, budget[1])
+		}
 
-	if shell != DefaultEndpointBudget {
-		t.Errorf("S03usbdev budgets %d endpoints, Go budgets %d", shell, DefaultEndpointBudget)
+		if shell != direction.want {
+			t.Errorf("S03usbdev budgets %d endpoints in %s, Go budgets %d", shell, direction.fn, direction.want)
+		}
 	}
 }
 
-// The budget is measured, and the kernel's own number disagrees with it. A
-// later change that "fixes" the constant by parsing dmesg would silently refuse
-// acm+network and acm+disk+audio, both of which bind on hardware.
+// The two directions are not the same number. A change that collapsed them
+// back into one would allow the console and the network together again.
+func TestTheTwoBudgetsAreNotOneNumber(t *testing.T) {
+	if DefaultInEndpointBudget == DefaultOutEndpointBudget {
+		t.Error("both directions budget the same count, so the direction is being ignored")
+	}
+}
+
+// The budgets are read from the controller, and the kernel's own summary line
+// disagrees with both. A later change that "fixes" a constant by parsing dmesg
+// would take 8 for a number that means neither thing.
 func TestTheShellBudgetIsNotReadFromDmesg(t *testing.T) {
 	script := readInitScript(t)
 
-	start := strings.Index(script, "usb_budget() {")
-	if start < 0 {
-		t.Fatal("S03usbdev has no usb_budget function")
-	}
+	for _, fn := range []string{"usb_in_budget", "usb_out_budget"} {
+		start := strings.Index(script, fn+"() {")
+		if start < 0 {
+			t.Fatalf("S03usbdev has no %s function", fn)
+		}
 
-	end := strings.Index(script[start:], "\n}")
-	if end < 0 {
-		t.Fatal("usb_budget is not terminated")
-	}
+		end := strings.Index(script[start:], "\n}")
+		if end < 0 {
+			t.Fatalf("%s is not terminated", fn)
+		}
 
-	if strings.Contains(script[start:start+end], "dmesg") {
-		t.Error("usb_budget consults dmesg, which reports 8 while 9 endpoints bind")
+		if strings.Contains(script[start:start+end], "dmesg") {
+			t.Errorf("%s consults dmesg, which reports a number that is neither budget", fn)
+		}
 	}
 }

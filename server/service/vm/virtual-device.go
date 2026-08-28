@@ -145,7 +145,7 @@ func (s *Service) GetVirtualDevice(c *gin.Context) {
 		return proto.VirtualDeviceState{
 			Enabled: function.enabled(present),
 			Active:  isFunctionActive(function.name),
-			Cost:    function.cost,
+			Cost:    function.cost.in,
 		}
 	}
 
@@ -154,8 +154,11 @@ func (s *Service) GetVirtualDevice(c *gin.Context) {
 		Network: state("network"),
 		Disk:    state("disk"),
 		Audio:   state("audio"),
-		Used:    usedEndpoints(present),
-		Total:   endpointBudget(),
+		// The panel reports the inbound direction. It is the one that runs
+		// out: with every function enabled the gadget asks for eight inbound
+		// endpoints of six, and seven outbound of seven.
+		Used:  usedEndpoints(present).in,
+		Total: endpointBudget().in,
 	})
 
 	log.Debugf("get virtual device success")

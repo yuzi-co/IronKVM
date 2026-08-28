@@ -421,8 +421,8 @@ echo "===== switching modes without a reboot ====="
 # they put the gadget over its endpoint budget, it refuses to bind, and every
 # /dev/hidg* disappears.
 
-# The disk and the network together are eight of the nine endpoints once HID
-# has taken three. Adding the console here would put the set over the budget and
+# The disk and the network together are all six inbound endpoints once HID has
+# taken three. Adding the console here would put the set over the budget and
 # the network would never be linked, so the case would prove nothing about
 # unlinking it. The console and the speaker get their own round below.
 build_env

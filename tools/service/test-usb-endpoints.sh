@@ -17,53 +17,63 @@ sed -n '/^# --- endpoint budget ---$/,/^# --- end endpoint budget ---$/p' "$SV" 
 fails=0
 note() { printf '  %-62s %s\n' "$1" "$2"; [ "$2" = FAIL ] && fails=$((fails + 1)); return 0; }
 
-echo "===== what each function costs ====="
+echo "===== what each function costs, in each direction ====="
 cost_case() {
-    got=$(WORK="$WORK" sh -c ". \"\$WORK/budget.sh\"; usb_cost $1")
-    [ "$got" = "$2" ] && note "$1 costs $got" OK || note "$1 costs $got, want $2" FAIL
+    got=$(WORK="$WORK" sh -c ". \"\$WORK/budget.sh\"; usb_in_cost $1")
+    [ "$got" = "$2" ] && note "$1 costs $got in" OK || note "$1 costs $got in, want $2" FAIL
+    got=$(WORK="$WORK" sh -c ". \"\$WORK/budget.sh\"; usb_out_cost $1")
+    [ "$got" = "$3" ] && note "$1 costs $got out" OK || note "$1 costs $got out, want $3" FAIL
 }
-cost_case console 3
-cost_case network 3
-cost_case disk    2
-cost_case audio   1
-cost_case nonsense 0
+#         name      in out
+cost_case console    2  1
+cost_case network    2  1
+cost_case disk       1  1
+cost_case audio      0  1
+cost_case nonsense   0  0
 
 echo
-echo "===== the total, against a budget of 9 ====="
-# HID is three of the eight before anything optional is added, so only two
-# optional functions ever fit and some pairs do not.
+echo "===== the totals, against six in and seven out ====="
+# HID is three inbound of the six before anything optional is added. The
+# speaker costs nothing inbound, which is why it fits where the network does
+# not.
 used_case() {
-    desc="$1"; set="$2"; want="$3"
-    got=$(WORK="$WORK" HID=3 sh -c '. "$WORK/budget.sh"; usb_hid_cost() { echo "$HID"; }; usb_used "'"$set"'"')
-    [ "$got" = "$want" ] && note "$desc -> $got" OK || note "$desc -> $got, want $want" FAIL
+    desc="$1"; set="$2"; want_in="$3"; want_out="$4"
+    got=$(WORK="$WORK" HID=3 sh -c '. "$WORK/budget.sh"; usb_hid_in_cost() { echo "$HID"; }; usb_hid_out_cost() { echo "$HID"; }; usb_used_in "'"$set"'"')
+    [ "$got" = "$want_in" ] && note "$desc -> $got in" OK || note "$desc -> $got in, want $want_in" FAIL
+    got=$(WORK="$WORK" HID=3 sh -c '. "$WORK/budget.sh"; usb_hid_in_cost() { echo "$HID"; }; usb_hid_out_cost() { echo "$HID"; }; usb_used_out "'"$set"'"')
+    [ "$got" = "$want_out" ] && note "$desc -> $got out" OK || note "$desc -> $got out, want $want_out" FAIL
 }
-used_case "hid alone"                    ""                            3
-used_case "hid + console"                "console"                     6
-used_case "hid + console + audio"        "console audio"               7
-used_case "hid + console + disk"         "console disk"                8
-used_case "hid + disk + network"         "disk network"                8
-used_case "everything"                   "console disk network audio"  12
+#                                                                  in out
+used_case "hid alone"              ""                               3  3
+used_case "hid + console"          "console"                        5  4
+used_case "hid + console + audio"  "console audio"                  5  5
+used_case "hid + console + disk"   "console disk"                   6  5
+used_case "hid + disk + network"   "disk network"                   6  5
+used_case "hid + console + net"    "console network"                7  5
+used_case "everything"             "console disk network audio"     8  7
 
 echo
-echo "===== usb_hid_cost, unstubbed ====="
-# Every case above stubs usb_hid_cost so the arithmetic can pick HID's cost
-# directly. That leaves the real function itself untested: a mutation that
-# charges HID nothing would let console+disk+network+audio (9) through the
-# budget on top of the 3 endpoints HID actually uses, the gadget would ask
-# for 12 against 9, and the bind would fail with all HID gone.
+echo "===== the hid cost, unstubbed ====="
+# Every case above stubs the HID cost so the arithmetic can pick it directly.
+# That leaves the real functions untested: a mutation that charges HID nothing
+# would let the console and the network through together, the gadget would ask
+# for seven inbound endpoints of six, and one interrupt IN endpoint would fail
+# to come up with nothing said about it.
 hid_cost_case() {
-    desc="$1"; marker="$2"; want="$3"
-    got=$(WORK="$WORK" MARKER="$marker" sh -c '
+    desc="$1"; marker="$2"; fn="$3"; want="$4"
+    got=$(WORK="$WORK" MARKER="$marker" FN="$fn" sh -c '
         . "$WORK/budget.sh"
         BOOT="$WORK/boot-hidcost-$$"; mkdir -p "$BOOT"
         [ -n "$MARKER" ] && : > "$BOOT/$MARKER"
         usb_marker() { [ -e "$BOOT/$1" ]; }
-        usb_hid_cost
+        "$FN"
     ')
     [ "$got" = "$want" ] && note "$desc -> $got" OK || note "$desc -> $got, want $want" FAIL
 }
-hid_cost_case "hid built by default"       ""            3
-hid_cost_case "disable_hid marker present" disable_hid   0
+hid_cost_case "hid built by default, in"    ""          usb_hid_in_cost   3
+hid_cost_case "hid built by default, out"   ""          usb_hid_out_cost  3
+hid_cost_case "disable_hid present, in"     disable_hid usb_hid_in_cost   0
+hid_cost_case "disable_hid present, out"    disable_hid usb_hid_out_cost  0
 
 echo
 echo "===== resolving a set that does not fit ====="
@@ -71,7 +81,7 @@ echo "===== resolving a set that does not fit ====="
 # the only way into a board whose network is gone.
 resolve_case() {
     desc="$1"; set="$2"; want="$3"
-    got=$(WORK="$WORK" HID=3 sh -c '. "$WORK/budget.sh"; usb_hid_cost() { echo "$HID"; }; usb_resolve "'"$set"'" 9')
+    got=$(WORK="$WORK" HID=3 sh -c '. "$WORK/budget.sh"; usb_hid_in_cost() { echo "$HID"; }; usb_hid_out_cost() { echo "$HID"; }; usb_resolve "'"$set"'" 6 7')
     [ "$got" = "$want" ] && note "$desc -> [$got]" OK || note "$desc -> [$got], want [$want]" FAIL
 }
 # Everything enabled keeps three of the four. Giving up the lowest priority
@@ -79,10 +89,14 @@ resolve_case() {
 # losing audio for nothing.
 resolve_case "everything keeps console + disk + audio" "console disk network audio" "console disk audio"
 resolve_case "console + audio already fits"            "console audio"              "console audio"
-resolve_case "console + disk + audio is exactly 9"     "console disk audio"         "console disk audio"
-resolve_case "disk + network + audio is exactly 9"     "disk network audio"         "disk network audio"
-resolve_case "console + network is exactly 9"          "console network"            "console network"
-resolve_case "adding audio to those two costs audio"   "console network audio"      "console network"
+resolve_case "console + disk + audio is exactly 6 in"  "console disk audio"         "console disk audio"
+resolve_case "disk + network + audio is exactly 6 in"  "disk network audio"         "disk network audio"
+# The pair the flat budget of nine got wrong. The console and the network take
+# two inbound endpoints each, HID takes three, and the controller has six. The
+# speaker takes the place the network cannot have, because it costs nothing
+# inbound at all.
+resolve_case "console + network does not fit"          "console network"            "console"
+resolve_case "the speaker fits where the network does not" "console network audio"  "console audio"
 resolve_case "nothing enabled stays nothing"           ""                           ""
 
 # The output is in priority order regardless of how the set arrived, because
@@ -94,7 +108,7 @@ resolve_case "the result is ordered, not as given"     "audio disk console"     
 # console costs 3 and audio costs 1, so a resolve that filled cheaply first
 # would keep audio and drop the console - the exact inversion that leaves a
 # board with no way in when its network dies.
-got=$(WORK="$WORK" HID=3 sh -c '. "$WORK/budget.sh"; usb_hid_cost() { echo "$HID"; }; usb_resolve "console network audio" 9')
+got=$(WORK="$WORK" HID=3 sh -c '. "$WORK/budget.sh"; usb_hid_in_cost() { echo "$HID"; }; usb_hid_out_cost() { echo "$HID"; }; usb_resolve "console network audio" 6 7')
 case " $got " in
     *" console "*) note "the console outranks audio for the last place" OK ;;
     *)             note "the console lost its place to a cheaper function" FAIL ;;
@@ -114,7 +128,7 @@ echo "===== HID is never a candidate ====="
 # The one rule with no exception. A board that gives up HID has given up being
 # a KVM, so no combination of markers may reach that state.
 for set in "console disk network audio" "console network" "disk network audio"; do
-    got=$(WORK="$WORK" HID=3 sh -c '. "$WORK/budget.sh"; usb_hid_cost() { echo "$HID"; }; usb_resolve "'"$set"'" 9')
+    got=$(WORK="$WORK" HID=3 sh -c '. "$WORK/budget.sh"; usb_hid_in_cost() { echo "$HID"; }; usb_hid_out_cost() { echo "$HID"; }; usb_resolve "'"$set"'" 6 7')
     case "$got" in
         *hid*) note "resolving [$set] dropped hid" FAIL ;;
         *)     note "resolving [$set] keeps hid" OK ;;
@@ -123,7 +137,7 @@ done
 
 # A budget so small that nothing optional fits must still not touch HID, and
 # must not loop forever trying.
-got=$(WORK="$WORK" HID=3 sh -c '. "$WORK/budget.sh"; usb_hid_cost() { echo "$HID"; }; usb_resolve "console disk network audio" 3')
+got=$(WORK="$WORK" HID=3 sh -c '. "$WORK/budget.sh"; usb_hid_in_cost() { echo "$HID"; }; usb_hid_out_cost() { echo "$HID"; }; usb_resolve "console disk network audio" 3 3')
 [ -z "$got" ] && note "a budget of 3 leaves only hid, and terminates" OK \
               || note "a budget of 3 left [$got]" FAIL
 
@@ -201,18 +215,24 @@ done
 
 echo
 echo "===== the config a second start leaves behind ====="
-# The four-step scenario the prune exists for, driven through the real
-# functions. Boot with usb.acm, usb.ncm, usb.disk0 and usb.uac all present:
-# twelve endpoints are wanted, console+disk+audio is kept, and the network is
-# never linked. The operator then switches the disk off in the web UI, which
-# removes the disk symlink and its marker and restarts this script. The resolve
-# now keeps console+network - and uac1.usb0, linked by the first start, has to
-# be gone before the link pass. Left behind it makes hid(3) + acm(3) + ncm(3) +
-# uac1(1) = 10 against a budget of 9: the gadget does not bind, /dev/hidg0..2
-# never appear, and every command still exits 0 so the UI reports success.
-sim=$(WORK="$WORK" HID=3 sh -c '
+# The scenario the prune exists for, driven through the real functions.
+#
+# A toggle that switches a function off frees endpoints and can only ever let
+# more in, so it cannot leave a stale link. Switching HID back on is the case
+# that can: it takes three inbound endpoints that were free a moment ago, and
+# nothing unlinks the function that has to give up its place.
+#
+# Boot with /boot/disable_hid present and usb.acm, usb.ncm, usb.disk0 and
+# usb.uac all set: five inbound endpoints are wanted of six, so all four are
+# kept and linked. The operator then switches HID on in the web UI, which
+# removes the marker and restarts this script. The resolve now keeps
+# console+disk+audio, and ncm.usb0, linked by the first start, has to be gone
+# before the link pass. Left behind it makes hid(3) + acm(2) + ncm(2) + msc(1)
+# = 8 inbound of 6: the gadget still binds and the UDC still reports
+# "configured", the host's set-configuration fails to enable one interrupt IN
+# endpoint, and every command here still exits 0 so the UI reports success.
+sim=$(WORK="$WORK" sh -c '
     . "$WORK/budget.sh"
-    usb_hid_cost() { echo "$HID"; }
 
     G="$WORK/sim"; rm -rf "$G"; mkdir -p "$G/functions" "$G/configs/c.1"
     cd "$G"
@@ -224,9 +244,11 @@ sim=$(WORK="$WORK" HID=3 sh -c '
     link() { mkdir -p "functions/$1"; : > "configs/c.1/$1"; }
     listing() { ls configs/c.1 | sort | tr "\n" " "; }
 
-    # Step 1: the first boot. hid is unconditional; the kept set is linked.
-    keep1=$(usb_resolve "console disk network audio" "$(usb_budget)")
-    link hid.GS0; link hid.GS1; link hid.GS2
+    # Step 1: the first boot, with HID switched off. Nothing links hid.GS*.
+    HID=0
+    usb_hid_in_cost() { echo "$HID"; }
+    usb_hid_out_cost() { echo "$HID"; }
+    keep1=$(usb_resolve "console disk network audio" "$(usb_in_budget)" "$(usb_out_budget)")
     for name in $keep1
     do
         for dir in $(usb_gadget_dirs "$name")
@@ -238,11 +260,11 @@ sim=$(WORK="$WORK" HID=3 sh -c '
     echo "KEEP1:$(echo $keep1)"
     echo "STEP1:$(listing)"
 
-    # Step 2: the disk toggle. This is exactly unmountDiskCommands.
-    rm -f configs/c.1/mass_storage.disk0
+    # Step 2: the HID toggle removes /boot/disable_hid. It unlinks nothing.
+    HID=3
 
-    # Step 3: markers are acm + ncm + uac now.
-    keep2=$(usb_resolve "console network audio" "$(usb_budget)")
+    # Step 3: the same markers, three fewer endpoints to spend.
+    keep2=$(usb_resolve "console disk network audio" "$(usb_in_budget)" "$(usb_out_budget)")
     echo "KEEP2:$(echo $keep2)"
 
     # Step 4: the prune, then the link pass - the order start_usb_dev uses.
@@ -250,6 +272,7 @@ sim=$(WORK="$WORK" HID=3 sh -c '
     do
         rm -f "configs/c.1/$usb_stale"
     done
+    link hid.GS0; link hid.GS1; link hid.GS2
     for name in $keep2
     do
         for dir in $(usb_gadget_dirs "$name")
@@ -264,26 +287,26 @@ sim=$(WORK="$WORK" HID=3 sh -c '
 sim_field() { printf '%s\n' "$sim" | sed -n "s/^$1://p" | sed 's/ *$//'; }
 
 got=$(sim_field KEEP1)
-[ "$got" = "console disk audio" ] && note "step 1 keeps [$got]" OK \
-                                  || note "step 1 keeps [$got], want [console disk audio]" FAIL
+[ "$got" = "console disk network audio" ] && note "step 1 keeps [$got]" OK \
+    || note "step 1 keeps [$got], want [console disk network audio]" FAIL
 
 got=$(sim_field STEP1)
-want="acm.GS0 hid.GS0 hid.GS1 hid.GS2 mass_storage.disk0 uac1.usb0"
+want="acm.GS0 mass_storage.disk0 ncm.usb0 uac1.usb0"
 [ "$got" = "$want" ] && note "step 1 links [$got]" OK \
                      || note "step 1 links [$got], want [$want]" FAIL
 
 got=$(sim_field KEEP2)
-[ "$got" = "console network" ] && note "step 3 keeps [$got]" OK \
-                              || note "step 3 keeps [$got], want [console network]" FAIL
+[ "$got" = "console disk audio" ] && note "step 3 keeps [$got]" OK \
+                                 || note "step 3 keeps [$got], want [console disk audio]" FAIL
 
 got=$(sim_field STEP4)
-want="acm.GS0 hid.GS0 hid.GS1 hid.GS2 ncm.usb0"
+want="acm.GS0 hid.GS0 hid.GS1 hid.GS2 mass_storage.disk0 uac1.usb0"
 [ "$got" = "$want" ] && note "step 4 links [$got]" OK \
                      || note "step 4 links [$got], want [$want]" FAIL
 
 case " $(sim_field STEP4) " in
-    *" uac1.usb0 "*) note "the dropped speaker is still linked after step 4" FAIL ;;
-    *)               note "the dropped speaker is gone after step 4" OK ;;
+    *" ncm.usb0 "*) note "the dropped network is still linked after step 4" FAIL ;;
+    *)              note "the dropped network is gone after step 4" OK ;;
 esac
 
 missing=""
@@ -298,23 +321,33 @@ done
                   || note "the prune removed$missing" FAIL
 
 echo
-echo "===== the budget is the measured constant, not the kernel's ====="
-# dwc2 announces "EPs: 8" and that is not the budget: acm+network is nine
-# endpoints and binds, as does acm+disk+audio. Reading the kernel's number
-# would refuse both. The guard must not consult dmesg at all.
-got=$(WORK="$WORK" sh -c '. "$WORK/budget.sh"; usb_budget')
-[ "$got" = 9 ] && note "the budget is 9" OK || note "the budget is [$got], want 9" FAIL
+echo "===== the budgets are the controller's numbers, not dmesg's ====="
+# dwc2 announces "EPs: 8" and that is neither budget. The controller reports
+# seven endpoint pairs and six dedicated transmit FIFOs, so the two limits are
+# six inbound and seven outbound. The guard must not consult dmesg at all.
+got=$(WORK="$WORK" sh -c '. "$WORK/budget.sh"; usb_in_budget')
+[ "$got" = 6 ] && note "the inbound budget is 6" OK || note "the inbound budget is [$got], want 6" FAIL
+
+got=$(WORK="$WORK" sh -c '. "$WORK/budget.sh"; usb_out_budget')
+[ "$got" = 7 ] && note "the outbound budget is 7" OK || note "the outbound budget is [$got], want 7" FAIL
+
+# The two are not the same number. A mutation that made them equal would let
+# the console and the network through together.
+[ "$(WORK="$WORK" sh -c '. "$WORK/budget.sh"; usb_in_budget')" \
+    != "$(WORK="$WORK" sh -c '. "$WORK/budget.sh"; usb_out_budget')" ] \
+    && note "the two directions have different limits" OK \
+    || note "both directions report the same limit" FAIL
 
 if grep -q dmesg "$WORK/budget.sh"; then
-    note "usb_budget consults dmesg, which reports the wrong number" FAIL
+    note "the budget consults dmesg, which reports the wrong number" FAIL
 else
     note "the budget never consults dmesg" OK
 fi
 
 # A board that reports something else must not change the answer, because the
-# answer was measured on this hardware and the kernel's line disagrees with it.
-got=$(WORK="$WORK" sh -c '. "$WORK/budget.sh"; dmesg() { echo "dwc2 4340000.usb: EPs: 8, dedicated fifos"; }; usb_budget')
-[ "$got" = 9 ] && note "a dmesg line saying 8 does not move the budget" OK \
+# answer was read from the controller and the kernel's line disagrees with it.
+got=$(WORK="$WORK" sh -c '. "$WORK/budget.sh"; dmesg() { echo "dwc2 4340000.usb: EPs: 8, dedicated fifos"; }; usb_in_budget')
+[ "$got" = 6 ] && note "a dmesg line saying 8 does not move the budget" OK \
                || note "dmesg moved the budget to [$got]" FAIL
 
 echo
