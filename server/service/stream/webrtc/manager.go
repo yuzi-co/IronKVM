@@ -1,7 +1,6 @@
 package webrtc
 
 import (
-	"NanoKVM-Server/common"
 	"NanoKVM-Server/service/stream"
 	"NanoKVM-Server/service/vm"
 	"time"
@@ -154,57 +153,56 @@ func (m *WebRTCManager) stopVideoStreamIfIdle() bool {
 	return true
 }
 
+// idleCheckInterval is how often the loop asks whether its last viewer has
+// gone. The loop used to notice on the capture tick, which it no longer owns.
+const idleCheckInterval = time.Second
+
+// sendVideoStream takes frames from the shared capture loop rather than
+// reading the encoder itself. Direct mode reads the same encoder, and two
+// readers do not each get the stream: they divide it between them.
 func (m *WebRTCManager) sendVideoStream() {
-	screen := common.GetScreen()
-	common.CheckScreen()
-	values := screen.Snapshot()
-	fps := values.FPS
-	duration := time.Second / time.Duration(fps)
+	subscription := stream.SubscribeH264(func() bool {
+		return len(m.getClients()) > 0
+	})
+	defer subscription.Close()
 
-	vision := common.GetKvmVision()
+	idle := time.NewTicker(idleCheckInterval)
+	defer idle.Stop()
 
-	ticker := time.NewTicker(duration)
-	defer ticker.Stop()
-
-	for range ticker.C {
-		clients := m.getClients()
-		if len(clients) == 0 {
-			if m.stopVideoStreamIfIdle() {
+	for {
+		select {
+		case <-idle.C:
+			if len(m.getClients()) == 0 && m.stopVideoStreamIfIdle() {
 				log.Debugf("stop sending h264 stream")
 				return
 			}
 
-			continue
+		case frame, ok := <-subscription.Frames():
+			if !ok {
+				return
+			}
+
+			stream.UpdateCaptureStatus(stream.CaptureModeH264, frame.Result)
+			if frame.Result < 0 || len(frame.Data) == 0 {
+				continue
+			}
+
+			clients := m.getClients()
+			if len(clients) == 0 {
+				continue
+			}
+
+			// Packetized once for everyone. Cutting the same frame up again
+			// for each viewer copies the whole payload per client, which is
+			// real work on a board with one core and no memory to spare.
+			samples := uint32(frame.Duration.Seconds() * clockRate)
+			packets := m.videoPacketizer.Packetize(frame.Data, samples)
+
+			// Handing the frame over never blocks: a client that is behind
+			// drops it and waits for the next keyframe.
+			for _, client := range clients {
+				client.enqueue(packets, frame.KeyFrame)
+			}
 		}
-
-		values = screen.Snapshot()
-
-		data, result := vision.ReadH264(values.Width, values.Height, values.BitRate)
-		stream.UpdateCaptureStatus(stream.CaptureModeH264, result)
-		if result < 0 || len(data) == 0 {
-			continue
-		}
-
-		// Packetized once for everyone. Cutting the same frame up again for
-		// each viewer copies the whole payload per client, which is real work
-		// on a board with one core and no memory to spare.
-		samples := uint32(duration.Seconds() * clockRate)
-		packets := m.videoPacketizer.Packetize(data, samples)
-
-		isKeyFrame := result == 3
-
-		// Handing the frame over never blocks: a client that is behind drops
-		// it and waits for the next keyframe.
-		for _, client := range clients {
-			client.enqueue(packets, isKeyFrame)
-		}
-
-		if values.FPS != fps && values.FPS != 0 {
-			fps = values.FPS
-			duration = time.Second / time.Duration(fps)
-			ticker.Reset(duration)
-		}
-
-		stream.GetFrameRateCounter().Update()
 	}
 }
