@@ -78,7 +78,7 @@ func TestMouseModeSwitchReleasesPreviousDevice(t *testing.T) {
 	if !bytes.Equal(absoluteData[6:], wantRelease) {
 		t.Fatalf("absolute release report = %v, want %v", absoluteData[6:], wantRelease)
 	}
-	relativeData := make([]byte, 4)
+	relativeData := make([]byte, RelativeMouseReportLen)
 	if _, err := io.ReadFull(relativeReader, relativeData); err != nil {
 		t.Fatal(err)
 	}

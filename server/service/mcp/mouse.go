@@ -30,6 +30,10 @@ func buildRelativeMouseReport(deltaX int, deltaY int, buttons byte, wheel int) [
 		byte(int8(clampInt(deltaX, -127, 127))),
 		byte(int8(clampInt(deltaY, -127, 127))),
 		byte(int8(clampInt(wheel, -127, 127))),
+		// Horizontal wheel. Nothing drives an agent's pointer sideways yet, so
+		// this is always zero; the byte is here because the report is five
+		// bytes and a short one is rejected.
+		0x00,
 	}
 }
 

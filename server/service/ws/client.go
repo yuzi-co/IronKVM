@@ -98,12 +98,12 @@ func (c *Client) Read() error {
 			c.queueManualReport(c.keyboard, inputcontrol.ManualKeyboard, report, keyboardReportHeld(report), true)
 		case MouseEvent:
 			report := data[1:]
-			if len(report) != 4 && len(report) != 6 {
+			if !isMouseReport(report) {
 				log.Debugf("invalid manual mouse report: %v", report)
 				continue
 			}
 			kind := inputcontrol.ManualRelativeMouse
-			if len(report) == 6 {
+			if len(report) == hid.AbsoluteMouseReportLen {
 				kind = inputcontrol.ManualAbsoluteMouse
 			}
 			c.queueManualReport(c.mouse, kind, report, report[0] != 0, mouseReportStartsCooldown(report))
@@ -156,12 +156,35 @@ func keyboardReportHeld(report []byte) bool {
 	return false
 }
 
+// isMouseReport reports whether the length identifies one of the two mouse
+// endpoints. The length is the only discriminator the protocol carries.
+func isMouseReport(report []byte) bool {
+	return len(report) == hid.RelativeMouseReportLen || len(report) == hid.AbsoluteMouseReportLen
+}
+
+// mouseReportStartsCooldown reports whether this event is real input, which
+// suspends the jiggler.
+//
+// It used to test the LAST byte for wheel movement. That worked while the wheel
+// was last, and the relative report now ends in a horizontal wheel byte, so the
+// test would have quietly stopped recognising an ordinary scroll. Both wheel
+// bytes are checked instead of the trailing one.
 func mouseReportStartsCooldown(report []byte) bool {
-	if len(report) != 4 && len(report) != 6 {
+	if !isMouseReport(report) {
 		return true
 	}
 	if report[0] != 0 {
 		return true
+	}
+
+	// The wheel bytes are in different places in the two layouts, so the
+	// length has to choose. Relative is buttons, X, Y, wheel, horizontal
+	// wheel; absolute is buttons, a 16-bit X, a 16-bit Y, wheel.
+	//
+	// Movement itself is deliberately not input here. The jiggler moves the
+	// relative mouse, so counting X and Y would have it suspend itself.
+	if len(report) == hid.RelativeMouseReportLen {
+		return report[3] != 0 || report[4] != 0
 	}
 	return report[len(report)-1] != 0
 }
