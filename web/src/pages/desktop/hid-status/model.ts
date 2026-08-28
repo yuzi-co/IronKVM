@@ -1,7 +1,10 @@
 export type HidDeviceStatus = {
   name: string;
   path: string;
-  state: 'unknown' | 'accepting' | 'stalled' | 'error';
+  // 'detached' means the gadget is not enumerated, so every endpoint is dead
+  // rather than this one. The remedies below do not apply to it: the server
+  // supervises the link itself and repairs it without being asked.
+  state: 'unknown' | 'accepting' | 'stalled' | 'detached' | 'error';
   detail?: string;
   stateForMs: number;
   observedMsAgo: number;

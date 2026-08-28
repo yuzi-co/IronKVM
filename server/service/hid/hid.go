@@ -132,6 +132,34 @@ func (h *Hid) Status() []proto.HidDeviceStatus {
 	return statuses
 }
 
+// linkFaultSince reports when the endpoints started failing with an error that
+// means the gadget is not enumerated, and the zero time when none of them is.
+//
+// The supervisor in usb_watchdog.go reads this to break a tie it cannot break
+// on its own. A wedged gadget and a perfectly healthy one in a switched-off
+// computer both read "not attached" at the controller, and only one of them
+// wants repairing. Somebody driving this KVM while every report is refused is
+// not an idle host, so this evidence shortens how long the supervisor waits.
+//
+// The earliest of the endpoints wins. They fail together when the cause is the
+// link, and the earliest is when the link went, which is the age the supervisor
+// wants to compare against.
+func (h *Hid) linkFaultSince() time.Time {
+	var earliest time.Time
+
+	for _, device := range h.devices() {
+		since := device.health.linkFaultSince()
+		if since.IsZero() {
+			continue
+		}
+		if earliest.IsZero() || since.Before(earliest) {
+			earliest = since
+		}
+	}
+
+	return earliest
+}
+
 func (h *Hid) devices() []hidDevice {
 	return []hidDevice{
 		h.keyboardDevice(HID0),
@@ -443,6 +471,16 @@ func (d hidDevice) note(err error) error {
 
 	if !transition.Changed {
 		return fmt.Errorf("%w: %w", errRepeatedFailure, err)
+	}
+
+	if transition.To == hidStateDetached {
+		// Different from a stall, and worth different words. The target is not
+		// refusing this endpoint: there is no link at all, so nothing typed or
+		// clicked is reaching the host. Say so once, and leave the repair to
+		// the supervisor, which is watching the controller and can tell an
+		// unplugged cable from a wedged gadget.
+		log.Errorf("%s: the gadget is not enumerated, so every report is lost. "+
+			"Either no host is attached, or the USB link has failed", d.path)
 	}
 
 	if transition.To == hidStateStalled {

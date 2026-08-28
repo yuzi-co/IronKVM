@@ -42,6 +42,12 @@ changes and why.
 - A secret key that fell back to a guessable default.
 - Updates that were installed without verifying what was downloaded.
 - HID that stopped working until a reboot after a USB gadget rebuild.
+- A USB gadget that stayed dead for the rest of uptime once its link failed.
+  The board keeps answering on the network throughout, so nothing looked
+  wrong except that the keyboard did nothing. The server now watches the
+  controller and repairs the link, and it counts a link enumerated at full
+  speed as a fault, because that reads "configured" and cannot carry the
+  gadget.
 - A stalled viewer that froze the stream for every other viewer.
 - A capture pipeline that reported success after a failed initialisation, and
   that was dismantled while its own threads were still using it.
