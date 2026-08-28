@@ -951,3 +951,70 @@ for those from 2026-08-19 that the source commit did not have.
 - `pi-bmc/nanokvm-app`, twelve `cvi` commits. "Stop the drivers' error reporting from killing the
   board" and "Drain the encoder even when it has just refused a frame" are the interesting two. It
   is a Go rewrite of the capture path, so it stays read-and-reimplement.
+
+## Input fixes from eringiriri, adopted 2026-08-28
+
+`eringiriri/ERINGI_JPN_NanoKVM` carries two changes on top of `71ab9127` that upstream does not
+have. Both are input correctness, both are small, and neither needed reworking for this fork beyond
+the descriptor.
+
+### The composition guard stranded a key pressed
+
+`ee4c48bf`, taken as `fix/keyboard-composition-release`.
+
+The keyup handler returned early for every event while a composition was active. That is right for
+a key the IME is consuming and wrong for a key the page has already sent a keydown for. The JIS
+Zenkaku/Hankaku key is the second case: it toggles the local IME, so `compositionstart` can arrive
+between its own keydown and its keyup. The keyup was dropped, the host kept the key held, and
+because `pressedKeys` still held it, the next press was suppressed as a repeat. One press and the
+key stopped working for the rest of the session, with a key held down on the managed host.
+
+Release now runs for any key already tracked as pressed. A key the IME really is consuming was
+never in `pressedKeys`, so it is still skipped. `releaseKeys` clears the composing flag too, which
+the source commit also does: leaving it set after releasing everything recreates the fault.
+
+The second half sends `Lang5` from the on-screen Japanese keyboard's Backquote position. `Lang5` is
+already in `web/src/lib/keymap.ts`, so this is one line plus the key's label.
+
+### Horizontal scroll had nowhere to go
+
+`68bfdd74`, taken as `feat/mouse-horizontal-scroll`.
+
+The relative mouse report was buttons, X, Y and a vertical wheel. A tilt wheel or a thumb wheel
+reached the browser and stopped there. The fix adds a fifth byte, AC Pan from the Consumer page,
+appended so that bytes 0 to 2 keep the USB boot mouse layout.
+
+Three things were done differently from the source commit.
+
+**Named constants rather than a literal swap.** The source replaces every `4` with `5`. In this
+tree the literal appeared in seven files and doubled as a type discriminator: the mouse queue, the
+websocket and the jiggler cooldown all told a relative report from an absolute one by its length.
+`KeyboardReportLen`, `RelativeMouseReportLen` and `AbsoluteMouseReportLen` now carry that meaning.
+
+**A test that holds the shell and the Go together.** This is the part worth keeping.
+`server/service/hid/usb_report_test.go` reads both init scripts, decodes the `hid.GS1` descriptor,
+totals the bits its Input items ask for, and holds `report_length` and the descriptor and the Go
+constants to one number. It also checks that the horizontal wheel really is AC Pan and that it comes
+after X and Y, because a descriptor of the right length with the wrong usage or the wrong order
+would otherwise pass. Same pattern as `endpoints_shell_test.go` and the endpoint budget. Verified by
+mutation: setting `report_length` back to 4 and stripping the AC Pan item each fail the right test
+with the right sentence.
+
+**`S03usbhid` as well as `S03usbdev`.** The HID-only mode carries its own copy of the descriptors.
+The source commit changes both; it is worth saying out loud, because changing one leaves the other
+mode broken and nothing on a running device would say so.
+
+The cooldown test needed more than a new number, which the source commit also spotted. It asked
+whether the last byte was non-zero to detect wheel movement. That was right while the wheel was
+last. Left alone it would have stopped recognising an ordinary scroll as input, and the jiggler
+would have nudged the pointer under someone reading a document. Here the two layouts are handled
+apart as well, because byte 3 of an absolute report is half of the Y coordinate and counting it
+would have made pointer movement suspend the jiggler.
+
+### Not deployed
+
+Both are verified off-device: `go vet`, the full `go test` twice, a `GOARCH=riscv64` build,
+`tsc --noEmit`, eslint and prettier. The scroll change alters the USB descriptor, so it needs a
+gadget rebuild on the device and both halves have to arrive together. A server that sends five bytes
+to a gadget composed from the old script has its reports truncated and the horizontal wheel silently
+dropped. That is a device window and a deploy plan, not a background task.
