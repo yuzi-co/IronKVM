@@ -74,7 +74,17 @@ echo "harness shell: $SH"
 # about 5ms on a quiet Git Bash and was measured at 124ms on a busy one, so a
 # tight bound turns a loaded machine into two failing cases that name a defect
 # nobody introduced. A minute still catches a loop that never ends.
-CASE_TIMEOUT=${CASE_TIMEOUT:-60}
+# Every case runs the whole script under this bound, and the script itself
+# waits for a device controller: usb_bind tries ten times with a sleep between
+# them, so the no-controller cases spend about nine seconds there before they
+# do anything else.
+#
+# 60 was not enough. On Git Bash on Windows, where every mkdir into the fake
+# configfs is a separate process, both no-controller cases hit the bound on a
+# tree with nothing wrong with it and reported the defects they exist to catch.
+# A timeout that fires on a healthy tree is worse than a slow true failure, so
+# this is set for the slowest host it runs on and overridden downwards, not up.
+CASE_TIMEOUT=${CASE_TIMEOUT:-240}
 
 # The descriptors, as a host sees them.
 KEYBOARD_DESC=05010906a101050719e029e71500250175019508810295017508810395057501050819012905910295017503910395067508150025e70507190029e78100c0
