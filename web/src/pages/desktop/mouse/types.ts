@@ -18,6 +18,7 @@ interface MouseButtonEvent {
 interface MouseWheelEvent {
   type: 'wheel';
   deltaY: number;
+  deltaX?: number;
 }
 
 export type MouseAbsoluteEvent = MouseMoveAbsoluteEvent | MouseButtonEvent | MouseWheelEvent;

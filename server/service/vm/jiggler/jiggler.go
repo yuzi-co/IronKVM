@@ -223,11 +223,11 @@ func move(mode string) {
 		}()
 		_ = waitMove(ctx, 100*time.Millisecond)
 	} else {
-		if err := h.WriteRelativeMouseReport([]byte{0x00, 0xa, 0xa, 0x00}); err != nil {
+		if err := h.WriteRelativeMouseReport([]byte{0x00, 0xa, 0xa, 0x00, 0x00}); err != nil {
 			return
 		}
 		defer func() {
-			_ = h.WriteRelativeMouseReport([]byte{0x00, 0xf6, 0xf6, 0x00})
+			_ = h.WriteRelativeMouseReport([]byte{0x00, 0xf6, 0xf6, 0x00, 0x00})
 		}()
 		_ = waitMove(ctx, 100*time.Millisecond)
 	}

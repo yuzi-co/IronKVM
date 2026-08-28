@@ -58,15 +58,15 @@ func (h *Hid) mouseReports(queue <-chan QueuedReport, relativePath string, absol
 				log.Debugf("dropped %d stale mouse HID reports after write failure", dropped)
 			}
 
-			if len(event.Data) == 4 && event.Data[0] != 0 {
+			if len(event.Data) == RelativeMouseReportLen && event.Data[0] != 0 {
 				relativeButtonsActive = true
 			}
-			if len(event.Data) == 6 && event.Data[0] != 0 {
+			if len(event.Data) == AbsoluteMouseReportLen && event.Data[0] != 0 {
 				absoluteButtonsActive = true
 				absoluteReleaseReport = absoluteMouseReleaseReport(event.Data)
 			}
 
-			if relativeButtonsActive || len(event.Data) == 4 {
+			if relativeButtonsActive || len(event.Data) == RelativeMouseReportLen {
 				if err := runCleanup(execute, func() error {
 					return h.writeHID(h.relativeMouseDevice(relativePath), relativeMouseReleaseReport())
 				}); err != nil {
@@ -100,7 +100,7 @@ func (h *Hid) mouseReports(queue <-chan QueuedReport, relativePath string, absol
 		}
 
 		switch len(event.Data) {
-		case 4:
+		case RelativeMouseReportLen:
 			if absoluteButtonsActive {
 				if err := runCleanup(execute, func() error {
 					return h.writeHID(h.absoluteMouseDevice(absolutePath), absoluteReleaseReport)
@@ -122,7 +122,7 @@ func (h *Hid) mouseReports(queue <-chan QueuedReport, relativePath string, absol
 			}
 			relativeButtonsActive = event.Data[0] != 0
 			event.complete(true)
-		case 6:
+		case AbsoluteMouseReportLen:
 			if relativeButtonsActive {
 				if err := runCleanup(execute, func() error {
 					return h.writeHID(h.relativeMouseDevice(relativePath), relativeMouseReleaseReport())
@@ -153,7 +153,7 @@ func (h *Hid) mouseReports(queue <-chan QueuedReport, relativePath string, absol
 }
 
 func relativeMouseReleaseReport() []byte {
-	return []byte{0x00, 0x00, 0x00, 0x00}
+	return make([]byte, RelativeMouseReportLen)
 }
 
 func absoluteMouseReleaseReport(positionReport []byte) []byte {

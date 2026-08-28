@@ -45,9 +45,9 @@ func releaseOwnedSession(lock *SessionLock, sessionID string, releaseHID func() 
 }
 
 func (s *Service) releaseAllHIDState() {
-	s.hid.WriteHid0([]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
-	s.hid.WriteHid1([]byte{0x00, 0x00, 0x00, 0x00})
-	s.hid.WriteHid2([]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
+	s.hid.WriteHid0(make([]byte, hid.KeyboardReportLen))
+	s.hid.WriteHid1(make([]byte, hid.RelativeMouseReportLen))
+	s.hid.WriteHid2(make([]byte, hid.AbsoluteMouseReportLen))
 }
 
 func picoclawMediaTempDir() string {

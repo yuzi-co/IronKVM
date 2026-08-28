@@ -94,9 +94,17 @@ func TestMouseReportStartsCooldown(t *testing.T) {
 		report []byte
 		want   bool
 	}{
-		{name: "relative move", report: []byte{0, 10, 0, 0}, want: false},
-		{name: "relative wheel", report: []byte{0, 0, 0, 1}, want: true},
-		{name: "relative button", report: []byte{1, 0, 0, 0}, want: true},
+		{name: "relative move", report: []byte{0, 10, 0, 0, 0}, want: false},
+		{name: "relative wheel", report: []byte{0, 0, 0, 1, 0}, want: true},
+		// The horizontal wheel is the last byte and the vertical one is no
+		// longer last, so both need a case. A test that only covered the
+		// trailing byte would have passed while ordinary scrolling stopped
+		// suspending the jiggler.
+		{name: "relative horizontal wheel", report: []byte{0, 0, 0, 0, 1}, want: true},
+		{name: "relative button", report: []byte{1, 0, 0, 0, 0}, want: true},
+		// A four-byte report is the old relative layout. It is not a report
+		// this server sends any more, so it is not a mouse report.
+		{name: "relative, old four-byte layout", report: []byte{0, 10, 0, 0}, want: true},
 		{name: "absolute move", report: []byte{0, 1, 0, 1, 0, 0}, want: false},
 		{name: "absolute wheel", report: []byte{0, 1, 0, 1, 0, 0xff}, want: true},
 		{name: "absolute button", report: []byte{1, 1, 0, 1, 0, 0}, want: true},

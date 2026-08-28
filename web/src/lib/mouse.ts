@@ -26,7 +26,7 @@ function getMouseButtonBit(button: number): number {
 }
 
 /**
- * Relative Mouse Report (4 bytes)
+ * Relative Mouse Report (5 bytes)
  * Used with /dev/hidg1 (relative mouse)
  *
  * Byte 0: Buttons
@@ -50,13 +50,15 @@ export class MouseReportRelative {
    * @param deltaX X movement (-127 to 127)
    * @param deltaY Y movement (-127 to 127)
    * @param wheel Scroll wheel (-127 to 127, negative = down)
+   * @param hwheel Horizontal wheel (-127 to 127, negative = left)
    */
-  buildReport(deltaX: number, deltaY: number, wheel: number = 0): Uint8Array {
-    const report = new Uint8Array(4);
+  buildReport(deltaX: number, deltaY: number, wheel: number = 0, hwheel = 0): Uint8Array {
+    const report = new Uint8Array(5);
     report[0] = this.buttons;
     report[1] = this.clamp(Math.round(deltaX), -127, 127) & 0xff;
     report[2] = this.clamp(Math.round(deltaY), -127, 127) & 0xff;
     report[3] = this.clamp(Math.round(wheel), -127, 127) & 0xff;
+    report[4] = this.clamp(Math.round(hwheel), -127, 127) & 0xff;
     return report;
   }
 

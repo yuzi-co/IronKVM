@@ -43,6 +43,33 @@ const (
 	HID2 = "/dev/hidg2" // Touchpad (Absolute Mode)
 )
 
+// Report lengths, one per endpoint. These were literals spread over seven
+// files, and the literal did double duty: the mouse queue, the websocket and
+// the cooldown all told a relative report from an absolute one by its length
+// alone. That is workable while the numbers never move, and it is exactly what
+// makes moving one dangerous.
+//
+// They must agree with report_length in kvmapp/system/init.d/S03usbdev and
+// S03usbhid, which is what f_hid copies into the gadget. usb_report_test.go
+// reads both scripts and fails the build if they disagree, the same way
+// endpoints_shell_test.go holds the endpoint budget to its table.
+const (
+	// KeyboardReportLen is modifiers, one reserved byte, and six key codes.
+	KeyboardReportLen = 8
+
+	// RelativeMouseReportLen is buttons, X, Y, wheel, and horizontal wheel.
+	// The fifth byte is AC Pan, from the Consumer page rather than Generic
+	// Desktop, which is the usage a tilt wheel and a thumb wheel report.
+	//
+	// It is appended rather than inserted, so bytes 0 to 2 keep the USB boot
+	// mouse layout. This interface claims the boot protocol, and a host reading
+	// it in boot mode takes the first three bytes and ignores the rest.
+	RelativeMouseReportLen = 5
+
+	// AbsoluteMouseReportLen is buttons, a 16-bit X, a 16-bit Y, and wheel.
+	AbsoluteMouseReportLen = 6
+)
+
 const (
 	hidWriteTimeout     = 50 * time.Millisecond
 	hidWriteRetryDelay  = time.Millisecond
@@ -402,21 +429,21 @@ func (h *Hid) WriteHid2(data []byte) {
 }
 
 func (h *Hid) WriteKeyboardReport(data []byte) error {
-	if len(data) != 8 {
+	if len(data) != KeyboardReportLen {
 		return fmt.Errorf("invalid keyboard report length: %d", len(data))
 	}
 	return h.writeHID(h.keyboardDevice(HID0), data)
 }
 
 func (h *Hid) WriteRelativeMouseReport(data []byte) error {
-	if len(data) != 4 {
+	if len(data) != RelativeMouseReportLen {
 		return fmt.Errorf("invalid relative mouse report length: %d", len(data))
 	}
 	return h.writeHID(h.relativeMouseDevice(HID1), data)
 }
 
 func (h *Hid) WriteAbsoluteMouseReport(data []byte) error {
-	if len(data) != 6 {
+	if len(data) != AbsoluteMouseReportLen {
 		return fmt.Errorf("invalid absolute mouse report length: %d", len(data))
 	}
 	return h.writeHID(h.absoluteMouseDevice(HID2), data)

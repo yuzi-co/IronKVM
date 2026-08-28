@@ -19,6 +19,8 @@ changes and why.
   preset.
 - A boot-script rollback: an update that stops the board booting is undone by the
   watchdog before it falls back to recovery.
+- Horizontal scroll in relative mouse mode. A tilt wheel or a thumb wheel now
+  reaches the host, which needed a fifth byte on the relative HID report.
 - zram, an HTTP proxy setting, API keys, and a build stamp that identifies the
   running binary.
 - `tools/release/release.sh`, which builds, verifies and publishes a release, and

@@ -294,7 +294,7 @@ export const Relative = () => {
     function handleMouseWheel(e: WheelEvent) {
       disableEvent(e);
 
-      if (Math.floor(e.deltaY) === 0) {
+      if (Math.floor(e.deltaY) === 0 && Math.floor(e.deltaX) === 0) {
         return;
       }
 
@@ -303,8 +303,17 @@ export const Relative = () => {
         return;
       }
 
-      const deltaY = (e.deltaY > 0 ? 1 : -1) * scrollDirection;
-      handleMouseEvent({ type: 'wheel', deltaY });
+      // Math.sign, not a ternary. A ternary maps 0 to -1, and now that a
+      // purely horizontal scroll reaches this line, that would send a phantom
+      // vertical notch with every sideways one.
+      //
+      // The two axes take opposite signs. A browser deltaY above zero means
+      // down and the HID Wheel usage counts up, so vertical is inverted;
+      // a browser deltaX above zero and AC Pan both mean right, so horizontal
+      // is not.
+      const deltaY = Math.sign(e.deltaY) * scrollDirection;
+      const deltaX = Math.sign(e.deltaX) * -scrollDirection;
+      handleMouseEvent({ type: 'wheel', deltaY, deltaX });
       lastScrollTimeRef.current = currentTime;
     }
 
@@ -345,7 +354,7 @@ export const Relative = () => {
         report = mouse.buildButtonReport();
         break;
       case 'wheel':
-        report = mouse.buildReport(0, 0, event.deltaY);
+        report = mouse.buildReport(0, 0, event.deltaY, event.deltaX ?? 0);
         break;
       case 'move':
         report = mouse.buildReport(event.deltaX, event.deltaY);
