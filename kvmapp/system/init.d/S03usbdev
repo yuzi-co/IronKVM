@@ -815,8 +815,47 @@ start_usb_dev(){
         # f_uac1 gates its IN endpoint on p_chmask, so zero removes it. If the
         # attribute is absent on this kernel the write fails and the gadget is
         # built the old way, which is why this does not abort the script.
-        echo 0 > functions/uac1.usb0/p_chmask 2>/dev/null
 
+        # How many isochronous requests u_audio keeps in flight. The kernel
+        # default on this board is 3, read from the attribute itself.
+        #
+        # It is not only a latency setting. If a service interval passes and
+        # the host delivered no transfer, the request still completes, and
+        # u_audio copies that request's buffer into the ALSA ring a second
+        # time. The capture then contains the audio from req_number
+        # milliseconds earlier again, and the join is audible.
+        #
+        # RobbyV2/NanoKVM measured this against a Windows host playing a
+        # 1025 Hz tone: at 4 requests, one millisecond in 5.6 was a
+        # byte-identical repeat of the millisecond 4 ms before it and 60% of
+        # block boundaries were discontinuous; at 8, one in 46 and 26%. That
+        # measurement is not repeated here.
+        #
+        # The cost is buffer alone. At 48 kHz, stereo, 16-bit, a request holds
+        # one millisecond, which is 192 bytes, so this asks for 1536 bytes
+        # instead of 576.
+        #
+        # Unlink before writing, and only then link. configfs refuses both
+        # attributes while a config holds the function:
+        #
+        #   # echo 8 > .../functions/uac1.usb0/req_number
+        #   sh: write error: Resource busy
+        #
+        # Neither the directory nor the symlink goes away on a stop_start, so
+        # on every rebuild after the first the writes above land on a function
+        # the config still holds. They are redirected to /dev/null, so they
+        # fail silently and the gadget comes back carrying whatever the first
+        # boot wrote. Measured: a stop_start with this block writing 8 left
+        # req_number at the kernel default of 3.
+        #
+        # rm -f on the config entry is the same operation the endpoint prune
+        # already performs, and it removes the symlink alone. The function
+        # directory stays, because rmdir on it blocks forever.
+        rm -f configs/c.1/uac1.usb0
+        echo 0 > functions/uac1.usb0/p_chmask 2>/dev/null
+        echo 8 > functions/uac1.usb0/req_number 2>/dev/null
+
+        # Linked last, so the interface numbering above is unchanged.
         ln -s functions/uac1.usb0 configs/c.1
     fi
 
