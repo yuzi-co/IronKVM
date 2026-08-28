@@ -580,3 +580,178 @@ Both items from the `71ab9127` section stand, against the newer base:
 - The extraction branches with no pull request open, `security/api-key-auth`
   above all, are not rebased. They still carry the pre-`#876` shape of the auth
   code.
+
+---
+
+## Status, 2026-08-28
+
+A second survey of the same two sources, plus the fork pool. `sipeed/NanoKVM`
+has not moved: `upstream/main` is still `2ba45a21` and `fork/integration` is 366
+ahead, 0 behind. Everything new is in the pull request pool and in third-party
+forks.
+
+### Pull requests this document had not triaged
+
+Thirty-three are open. Five were not covered above, four of them opened after
+the 2026-08-25 pass.
+
+| PR | Author | What | Verdict |
+| --- | --- | --- | --- |
+| #888 | `@watermeko` | Share H.264 capture between direct and WebRTC | Idea taken, code not |
+| #880 | `@SiYue-ZO` | Harden multi-user sessions and proxy authentication | Two parts taken |
+| #881 | `@SiYue-ZO` | `make server` staging target | Overlaps `tools/deploy`, and has no rollback |
+| #879 | `@rajr0` | Reboot button in the toolbar | 27 files, 24 of them locale stubs |
+| #795 | `@bilibilifmk` | Login persistence and desktop interaction | Stores the password in `localStorage` |
+
+**#888** is right about the defect and wrong about the fix. Direct mode and
+WebRTC mode each ran their own ticker and each called `ReadH264`. One encoder
+sits behind that call and hands each caller whatever frame is ready, so two
+viewers on different modes divided the stream instead of each receiving it.
+
+Its own hand-off blocks the capture loop on a four-deep channel, with a WebRTC
+track write behind that, so one slow peer stalls the direct viewers as well.
+That is what `fix/stream-stalled-viewer` and `FrameSlot` exist to prevent. It
+also commits `libopencv_video.so.409` to `dl_lib` to satisfy the cross-linker.
+Nothing in that library is used: measured against the binary the pull request
+adds, `libkvm.so` has 320 undefined symbols, the library exports 694 functions,
+and the two sets do not meet. `patchelf --remove-needed` is what this fork
+already does, and upstream's own committed `libkvm.so` carries the entry while
+this fork's does not. Its frame rate figure also rests on an empty interceptor
+registry, which removes the NACK responder and TWCC.
+
+Taken as `perf/shared-h264-source`, on `FrameSlot`.
+
+**#880** carries two things this fork wanted. Its `Decrypt` reimplementation
+fixes a fault that is in this tree: `utils.Decrypt` panics on a malformed cipher
+text, `POST /api/auth/login` runs it on the request body before any credential is
+checked, and almost any garbage of the right length reaches it, because the last
+byte of a wrong decryption is above the block size fifteen times in sixteen.
+`gin.Recovery()` turns that into a 500 rather than a stopped server, and there
+are six call sites. Its cookie change is the other: the `Secure` attribute has to
+come from the request rather than from `conf.Proto`.
+
+Taken as `fix/decrypt-panic` and `fix/secure-cookie-scheme`.
+
+### The endpoint budget was wrong, and the controller says so
+
+The flat budget of nine in `S03usbdev` and `endpoints.go` was fitted to
+configurations tried by hand. It is the two directions added together.
+
+```
+# cat /sys/kernel/debug/usb/4340000.usb/hw_params
+num_dev_ep       : 7
+total_fifo_size  : 3072
+# cat /sys/kernel/debug/usb/4340000.usb/fifo
+Periodic TXFIFOs:
+    DPTXFIFO 1: Size 768   DPTXFIFO 2: Size 512   DPTXFIFO 3: Size 512
+    DPTXFIFO 4: Size 384   DPTXFIFO 5: Size 128   DPTXFIFO 6: Size 128
+```
+
+Seven endpoint pairs beside ep0 and six dedicated transmit FIFOs. dwc2 runs in
+dedicated FIFO mode and refuses an IN endpoint it cannot give a FIFO of its own
+to, so the ceiling is six inbound and seven outbound. A seventh FIFO does not
+fit either: those depths plus the RX and non-periodic FIFOs are 3000 of the 3072
+words the part has. The shipped gadget sits exactly on the inbound ceiling, with
+all six FIFOs seated and `ep7in` idle.
+
+One combination changes: the console and the network together, which is seven
+inbound of six. It was built on the board to see what that does.
+
+```
+dwc2 4340000.usb: new device is high-speed
+dwc2 4340000.usb: new address 6
+dwc2 4340000.usb: dwc2_hsotg_ep_enable: No suitable fifo found
+dwc2 4340000.usb: dwc2_hsotg_ep_enable: No suitable fifo found
+```
+
+The kernel ring is the only place it appears. At the same moment the UDC
+reported `configured`, `/dev/hidg0` through `/dev/hidg2` and `/dev/ttyGS0` were
+all present, and `usb0` was up, so every check anyone would think to make says
+the gadget is fine. Which endpoint loses is whichever is enabled seventh rather
+than a fixed one: in that run the HID endpoints kept their places and a bulk
+pair did not.
+
+**Do not read a successful bind, a `configured` UDC, or the presence of
+`/dev/hidg*` as proof that a gadget configuration works.** The 2026-08-05 round
+recorded console with network as binding, and it does. Only the bind was
+checked.
+
+`RobbyV2/NanoKVM` models the same constraint, and its inbound six and its FIFO
+depths match this hardware exactly. Its outbound five does not: the controller
+reports seven.
+
+Taken as `fix/usb-endpoint-direction`.
+
+### The audio gadget was writing attributes nothing accepted
+
+`req_number` is how many isochronous requests `u_audio` keeps in flight. A
+service interval the host does not fill still completes its request, and
+`u_audio` copies that request's buffer into the ALSA ring again, so the capture
+repeats the audio from `req_number` milliseconds earlier. `RobbyV2/NanoKVM`
+measured one millisecond in 5.6 as a byte-identical repeat at 4 requests against
+one in 46 at 8. Not re-measured here. The cost is 1536 bytes of buffer rather
+than 576.
+
+Setting it exposed an older fault in the same block. configfs refuses these
+attributes while a config holds the function:
+
+```
+# echo 8 > .../functions/uac1.usb0/req_number
+sh: write error: Resource busy
+```
+
+Neither the function directory nor its config entry goes away on a
+`stop_start`, so every rebuild after the first writes to a function the config
+is still holding. Both writes are redirected to `/dev/null`, so they fail
+silently. Deployed and measured: a `stop_start` with the block writing 8 left
+`req_number` at 3 and said nothing. `p_chmask`, which carries the whole "the
+host gets a speaker and not a microphone" decision, had the same problem.
+
+The config entry now comes out first, then both attributes, then the link.
+Re-measured after that change: 3 to 8, with the gadget and all three HID
+functions intact.
+
+Taken as `fix/uac-request-number`.
+
+### What was taken
+
+| Branch | What |
+| --- | --- |
+| `fix/decrypt-panic` | Read the salted AES format here, padding checked, instead of panicking on it |
+| `fix/secure-cookie-scheme` | `Secure` from the request; delete the cookie while HTTPS is still on |
+| `perf/shared-h264-source` | One capture loop for both H.264 paths, handed off through `FrameSlot` |
+| `fix/usb-endpoint-direction` | Six inbound and seven outbound, per function and per direction |
+| `fix/uac-request-number` | `req_number` 8, and both audio attributes actually applied |
+| `fix/usb-test-case-timeout` | `CASE_TIMEOUT` 240, so the suite stops failing on a slow host |
+
+The last one is not an adoption. Two cases in `test-usb-descriptors.sh` failed on
+a tree with nothing wrong with it, because each case runs the whole of
+`start_usb_dev` and `usb_bind` spends about nine seconds retrying when no
+controller is present. On Git Bash on Windows the case does not finish inside 60
+seconds. Confirmed by running the same unmodified tree at 240, where both pass.
+
+### Deployed
+
+`fork/integration` at `7f3e95b2`, cross-compiled and installed through
+`tools/deploy/deploy-server` with `DEPLOY_TIMEOUT=240`. The guard reported
+`OK, serving within 240s and running what was installed`, and the running
+process, the on-disk copy and the staged candidate all hash the same.
+`S03usbdev` went to `/etc/init.d` and `/kvmapp/system/init.d` both, and was
+applied with a `stop_start` behind a check that restores the previous script if
+the gadget that comes back is not the one that was there.
+
+The web assets were not rebuilt. The only frontend change is one English string,
+and the numbers the panel shows come from the API.
+
+### Still not done
+
+The two items from the `71ab9127` section stand. Beyond them:
+
+- The other twenty-eight open pull requests are as this document already
+  described them.
+- `#888` has not been commented on upstream.
+- The comment beside `patchelf` in `tools/build/build-app.sh` says `libkvm.so`
+  links against five OpenCV libraries, and that
+  `libopencv_video.so.409 ... not found` is expected during linking. That is
+  true of upstream's committed library and no longer true of this fork's, which
+  records four.

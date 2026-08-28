@@ -369,3 +369,59 @@ If this fork stops being a NanoKVM fork and becomes a BMC, exposing Redfish and 
 `pi-bmc/nanokvm-app` has already done a year of that work and is the right base. That is a restart on
 their tree rather than a rebase of this one, and it costs all 267 commits. It is a product decision,
 not a git decision.
+
+---
+
+## Second pass, 2026-08-28
+
+Forks pushed since the survey above: `pi-bmc/nanokvm-app` (2026-08-25),
+`mrjeeves/NanoKVM` (2026-08-24), `woffko/Hardened_NanoKVM` (2026-08-21, no
+commits), and four that the survey did not have. One of the four matters.
+
+### RobbyV2/NanoKVM, 234 ahead, 0 behind, active 2026-08-26
+
+Not in the survey above, and the most useful fork found so far for the work this
+one is doing. It rebases onto upstream rather than drifting, so it is 0 behind.
+
+It carries a `server/service/presentation` package that treats the USB gadget as
+a compiled profile: a capability table for the controller, an endpoint
+accounting pass, a plan, and a reconcile against what is already linked. Beside
+that there is USB passthrough over WebUSB, functionfs profiles, an EDID parser
+with a recovery UI, an ethernet bridge, a wstunnel tunnel, media sources, and a
+tier of kernel integration tests behind a build tag.
+
+Two things were taken from it on 2026-08-28, and both are recorded in
+`2026-08-17-upstream-adoption-backlog.md`:
+
+- **The endpoint model.** Its `staticV1` carries `MaxInEndpoints: 6` and
+  `InFIFOWords: {768, 512, 512, 384, 128, 128}`. Those are this board's dwc2
+  parameters exactly, read back from `/sys/kernel/debug/usb/4340000.usb/fifo`.
+  Its `MaxOutEndpoints: 5` is not: `hw_params` reports `num_dev_ep: 7` and the
+  outbound direction needs no dedicated FIFO.
+- **`req_number` for the audio gadget.** Their measurement of `u_audio`
+  repeating a stale request buffer is the reason the value moved from the kernel
+  default of 3 to 8.
+
+Worth reading before `feat/usb-audio` is finished: their `service/media`
+separates a quiet host from a parked stream, which an `arecord`-based capture
+path has to answer differently but still has to answer. `SeatFIFOs` is worth
+reading before any function that wants a wide isochronous IN endpoint is added,
+because only FIFO 1 holds more than 512 words.
+
+Their commit style and the shape of their comments are close enough to this
+fork's that the two trees read as siblings. That is a reason to compare findings
+carefully rather than to adopt them, as the outbound five shows.
+
+### The rest
+
+- **`mrjeeves/NanoKVM`**: one commit worth the name,
+  "supervise the gadget instead of only repairing it at startup". Relevant to
+  the recovery path, not yet read.
+- **`eringiriri/ERINGI_JPN_NanoKVM`**: horizontal scroll on relative mode, and a
+  fix for a composition guard that strands the JIS Zenkaku key pressed. Both
+  small and additive.
+- **`pi-bmc/nanokvm-app`**: twelve more `cvi` commits the survey missed by one
+  day, including "Stop the drivers' error reporting from killing the board" and
+  "Drain the encoder even when it has just refused a frame". Still a Go rewrite
+  of the capture path, so still read and reimplement rather than adopt.
+- `woffko/Hardened_NanoKVM` and `Schattenwelt/NanoKVM` have not moved.
