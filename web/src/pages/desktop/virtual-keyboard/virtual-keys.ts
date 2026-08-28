@@ -255,7 +255,7 @@ export const keyboardOptions = {
     Slash_ko: '/',
 
     // Japanese display (representative hiragana per key)
-    Backquote_ja: '`',
+    Backquote_ja: '半角<br/>全角',
     Digit1_ja: '1',
     Digit2_ja: '2',
     Digit3_ja: '3',

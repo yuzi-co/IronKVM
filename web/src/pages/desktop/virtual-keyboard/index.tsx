@@ -152,6 +152,14 @@ export const VirtualKeyboard = () => {
 
     if (keyboardLanguage === 'ja' && key.endsWith('_ja')) {
       const base = key.replace('_ja', '');
+
+      // The Backquote position on a JIS keyboard is the Zenkaku/Hankaku key,
+      // which toggles the IME. Sending the plain Grave usage (0x35) toggles it
+      // only on a host whose active layout really is JIS 106/109; Lang5 (0x94)
+      // is the layout-independent USB HID usage for the same toggle, so it
+      // works wherever the host has a Japanese IME at all.
+      if (base === 'Backquote') return getKeycode('Lang5');
+
       return getKeycode(base);
     }
 
