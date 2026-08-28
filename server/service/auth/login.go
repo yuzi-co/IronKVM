@@ -1,8 +1,6 @@
 package auth
 
 import (
-	"net/http"
-	"strings"
 	"time"
 
 	"NanoKVM-Server/authn"
@@ -104,25 +102,9 @@ func (s *Service) GetAccount(c *gin.Context) {
 }
 
 func setSessionCookie(c *gin.Context, token string) {
-	conf := config.GetInstance()
-	secure := conf.Proto == "https" || c.Request.TLS != nil ||
-		strings.EqualFold(c.GetHeader("X-Forwarded-Proto"), "https")
-	c.SetSameSite(http.SameSiteStrictMode)
-	c.SetCookie(
-		middleware.CookieName,
-		token,
-		int(conf.JWT.RefreshTokenDuration),
-		"/",
-		"",
-		secure,
-		true,
-	)
+	middleware.SetSessionCookie(c, token)
 }
 
 func clearSessionCookie(c *gin.Context) {
-	conf := config.GetInstance()
-	secure := conf.Proto == "https" || c.Request.TLS != nil ||
-		strings.EqualFold(c.GetHeader("X-Forwarded-Proto"), "https")
-	c.SetSameSite(http.SameSiteStrictMode)
-	c.SetCookie(middleware.CookieName, "", -1, "/", "", secure, true)
+	middleware.ClearSessionCookie(c, middleware.RequestIsSecure(c))
 }
