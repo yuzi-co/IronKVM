@@ -755,3 +755,94 @@ The two items from the `71ab9127` section stand. Beyond them:
   `libopencv_video.so.409 ... not found` is expected during linking. That is
   true of upstream's committed library and no longer true of this fork's, which
   records four.
+
+---
+
+## Extraction branch rebase, 2026-08-28
+
+The item that has stood since the `71ab9127` section, "the extraction branches with no pull request
+open are not rebased", is done. Forty branches were in scope: every branch cut from an upstream base
+that has no pull request open. `pr675`, `pr814` and `pr877` are copies of other contributors' pull
+requests rather than extractions, so they stay as they are. The eight branches with an open pull
+request stay as they are too.
+
+### A rebase produces the wrong branch
+
+`git rebase --onto upstream/main` replays the branch's own old commits. Twenty-four branches rebased
+with no conflict, and thirteen of those twenty-four came out carrying a version of the change that
+`main` has since moved past. A clean rebase is therefore not evidence that the branch is right.
+
+`main` sits on current `upstream/main`, so `main` already holds the reconciled version of every
+change these branches carry. The operation that works is to cut the branch again from
+`upstream/main` and cherry-pick `main`'s commits. That is how `security/api-key-auth` got the
+post-`#876` shape of the auth code, which is what this item was about.
+
+Cherry-picking brings `main`'s commit message with it, and that message is the wrong one. `main`'s
+messages carry fork context: a reference to `hdmi_idle.go` that the extracted diff does not contain,
+a pointer to `tools/README.md`, and in one case the line "NOT COMPILED AND NOT RUN". The extraction
+branch's own message is the upstream-facing one. In the probe case it is also the more current one,
+because it records a hardware check that came later. Every re-cut branch had its message put back,
+and the tree was compared against the tree before that rewrite to prove that only the message moved.
+
+Three further traps:
+
+- `cherry-pick -x` writes `(cherry picked from commit ...)` with a hash that resolves nowhere
+  upstream. Twelve branches already carried such a line from an earlier pass. They are stripped.
+- `main` squashed several single-purpose fork commits into one. `c7a7943e` alone carries the logger,
+  the router, `service/hid`, the frame rate counter, `service/ws` and `utils/memory`. The extraction
+  branches are the unsquashed versions, which is their purpose, so "patch-equal to `main`" can no
+  longer be required of them. Those changes were taken out by path instead.
+- A worktree needs `core.autocrlf=false` set before the checkout, not after. Setting it after leaves
+  every file reading as modified, and `git rebase` then refuses to start.
+
+### Three branches were dead or duplicated
+
+- `security/password-change-requires-current` asks for what upstream already does.
+  `ChangePasswordReq` in `upstream/main` carries `CurrentPassword`, which `#876` brought in. Pull
+  request `#848` is closed for the same reason.
+- `fix/hdmi-signal-reported` asks for what upstream already does. `GetGetHdmiStateRsp` carries
+  `Signal bool` from `#859`, and `main` dropped the fork's own reader in `a189c906`.
+- `perf/webrtc-per-viewer-writer` has never compiled on its own. It uses `stream.FrameSlot`, which
+  `perf/mjpeg-per-client` defines, and it did not carry that commit. Its final patch is identical to
+  the last commit of `perf/webrtc-shared-packetizer`. Adding the missing prerequisite gives the two
+  branches the same tree, so one of the two should go. This fault predates the rebase.
+
+Two more branches lost part of what they proposed, because upstream landed that part:
+
+- `fix/etc-kvm-file-modes` had three hunks and now has one. After `#876`, `authn/store.go` writes
+  the account file 0o600 through a temporary file, and it calls `MkdirAll` with 0o755. Only the mode
+  that `/etc/kvm` itself is created with still needs correcting.
+- `security/usb-gadget-identity` dropped its MAC derivation. Upstream merged `#828` with the same
+  fix, which is what `586ee30e` records.
+
+### What was verified
+
+Thirty-four branches touch Go. Each one was stacked on `build/novision-tag` and put through
+`go vet -tags novision ./...` and `go test -tags novision ./...` in `golang:1.25`. All thirty-four
+pass. Four failed on the first run. Three of the four were the known `picoclaw` and `ws` timing
+flakes and passed on a second run. The fourth was `perf/webrtc-per-viewer-writer` above.
+
+Stack the tag from the `build/novision-tag` branch, not from `main`'s copy of that commit. `main`'s
+first version of the stub predates `HasHDMISignal`, which upstream added in `#859`. It fails
+`go vet` on every branch, and the failure says nothing about the branch under test.
+
+Three branches touch C++, and all three build in the MaixCDK builder. The build log confirms that
+`kvm_vision.cpp` compiled for `fix/hdmi-probe-spin` and `fix/kvmv-thread-join`, and that
+`kvm_mmf.cpp` compiled for `fix/vi-init-race`. Read the log rather than the exit status. This is the
+first time the probe change has been compiled at all: `26781dc4` says "NOT COMPILED AND NOT RUN".
+
+`fix/p2-resize-guard` touches shell only. Both of its files pass `sh -n`.
+
+### Still not done
+
+- `feat/zram-swap` has an open pull request and adds six files under `tools/`, which belongs to the
+  fork. Whether a zram pull request should carry its module build tooling is a decision rather than
+  a defect, so the branch is untouched.
+- `security/download-verify` and `feat/device-http-proxy` now stack on a rebased
+  `security/contain-request-paths`, while pull request `#849` still shows the older one. Landing or
+  rebasing `#849` means doing those two again.
+- `fix/vi-init-race` and `main` no longer agree. The branch serialises with an RAII guard class.
+  `main` folded the same lock into `160d9fc8` with an explicit unlock at each exit, beside a
+  different change. The branch is the better single-purpose pull request, so the divergence stays.
+- Nothing is pushed. Every rewritten branch keeps its previous head under
+  `refs/rebase-backup/20260828/`, which is how the one accident in this pass was found and undone.
