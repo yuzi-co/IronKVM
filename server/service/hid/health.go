@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"sync"
+	"syscall"
 	"time"
 
 	"NanoKVM-Server/proto"
@@ -29,6 +30,7 @@ const (
 	hidStateUnknown   = "unknown"   // nothing has been written yet
 	hidStateAccepting = "accepting" // the target is fetching reports
 	hidStateStalled   = "stalled"   // writes time out: the target is not fetching
+	hidStateDetached  = "detached"  // the gadget is not enumerated: reports go nowhere
 	hidStateError     = "error"     // the write failed some other way
 )
 
@@ -74,15 +76,44 @@ func (h *endpointHealth) record(err error, now time.Time) hidTransition {
 	return hidTransition{Changed: true, From: from, To: state}
 }
 
+// classifyWriteResult separates the three ways a report can fail to arrive,
+// because they are three different faults and only one of them is repairable
+// from this side.
+//
+// A deadline is back-pressure from a live host. The link is up and the target
+// is simply not fetching from this one endpoint, so it stays "stalled": the
+// operator's answer is a different mouse mode or a reset, and nothing automatic
+// should touch the gadget for it.
+//
+// ESHUTDOWN is the opposite. f_hid returns it when the function is disabled,
+// which means the gadget is not enumerated and every report to every endpoint
+// goes nowhere. ENODEV is the same fact arriving as the node disappearing under
+// a write, which is what a rebind racing a keystroke looks like. Those two are
+// the ones the supervisor in usb_watchdog.go reads, and they are why this is
+// not one undifferentiated "error" any more.
 func classifyWriteResult(err error) (state string, detail string) {
 	switch {
 	case err == nil:
 		return hidStateAccepting, ""
 	case errors.Is(err, os.ErrDeadlineExceeded):
 		return hidStateStalled, ""
+	case errors.Is(err, syscall.ESHUTDOWN), errors.Is(err, syscall.ENODEV):
+		return hidStateDetached, err.Error()
 	default:
 		return hidStateError, err.Error()
 	}
+}
+
+// linkFaultSince reports how long this endpoint has been failing with an error
+// that means the gadget is not enumerated, and the zero time when it is not.
+func (h *endpointHealth) linkFaultSince() time.Time {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	if h.state != hidStateDetached {
+		return time.Time{}
+	}
+	return h.since
 }
 
 func (h *endpointHealth) snapshot(now time.Time) proto.HidDeviceStatus {

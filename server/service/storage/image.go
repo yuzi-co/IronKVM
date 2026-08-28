@@ -158,6 +158,11 @@ func (s *Service) MountImage(c *gin.Context) {
 		return
 	}
 
+	// Mounting an image bounces the UDC. Tell the gadget supervisor, so it
+	// does not read this operation's own transient "not attached" as the link
+	// failing and start a recovery underneath the mount.
+	hid.NoteUSBGadgetMutated()
+
 	h := hid.GetHid()
 	h.Lock()
 	h.CloseNoLock()

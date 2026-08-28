@@ -863,3 +863,91 @@ request contradicts.
   different change. The branch is the better single-purpose pull request, so the divergence stays.
 - Nothing is pushed. Every rewritten branch keeps its previous head under
   `refs/rebase-backup/20260828/`, which is how the one accident in this pass was found and undone.
+
+## Gadget supervision, adopted 2026-08-28
+
+`mrjeeves/NanoKVM` `50b9e3c8`, "fix(usb): supervise the gadget instead of only repairing it at
+startup". The first adoption made after the fork stopped contributing upstream, so it goes straight
+onto a feature branch and into `fork/integration`. It is `fix/usb-gadget-supervision`.
+
+Its diagnosis is correct here as well. Recovery ran at two moments and only two: `S03usbdev`'s boot
+watch, which spends a fixed budget in the first seconds of uptime and exits for good, and an
+operator pressing "reset USB". A link that failed at any other moment stayed failed. The board keeps
+answering on `eth0` throughout, so every remote signal reads healthy and only the keyboard is gone.
+
+Half of the source commit is already here, and half of it is wrong for this board.
+
+### What was taken
+
+The shape: a ticker that reads the controller, a debounce that is longer when the link has never
+been seen working, a backoff, a settle window around deliberate gadget operations, and failed HID
+writes as the evidence that separates a wedged gadget from a healthy one in a computer that is
+switched off. Those two read identically at the controller, and that is the real difficulty in
+acting on the reading at all.
+
+The fault classifier was taken as an idea rather than as code. `mrjeeves` adds a package-level
+counter of consecutive failed writes. This fork already records per-endpoint health with timestamps,
+in `service/hid/health.go`, for `GET /api/hid/status`. So `ESHUTDOWN` and `ENODEV` became a fourth
+endpoint state, `detached`, beside `stalled`. `Hid.linkFaultSince` folds the three endpoints into
+the one answer the supervisor wants. That is a smaller change than the source commit makes, it
+improves a response the web UI already renders, and it removes the import cycle that put the source
+commit's supervisor in `service/storage`: this one lives in `service/hid` with everything it calls.
+
+### What was rejected, and why
+
+**The health test.** The source commit treats `configured` as health. On this board a gadget that
+enumerated at full speed reports `configured` and does not work: the periodic bandwidth in a
+full-speed frame does not hold three HID interrupt endpoints beside the console, the disk and the
+speaker, so the host schedules what fits and silently stops polling the rest. On 2026-08-19 that
+left this board with a working absolute mouse and a dead keyboard. `usb_link_ok` in `S03usbdev`
+already makes the two-part test for the boot window; `usb_link.go` now makes it for the rest of
+uptime. A full-speed link is a fault in its own right here, and it is one the source commit's
+supervisor cannot see at all.
+
+**The escalation to `restart_phy`.** The source commit rebinds, then resets the PHY. `restart_phy`
+unbinds the dwc2 controller from its driver, and a bind that then fails leaves the gadget wedged
+with no way back: rewriting `UDC` does not recover it and neither does another `restart_phy`. Only a
+full configfs teardown does, and that needs a shell on the device. This board has no remote power
+cycle. An unattended escalation that can strand it is not worth having however rare the failure is,
+so the ladder stops at `stop_start`, which flips the controller role and composes the gadget again,
+and which was observed returning a full-speed link to high-speed. `restart_phy` stays where it is,
+behind an operator who is watching.
+
+**The removal of `stop_start`.** The source commit removes it, on the grounds that `stop` leaves the
+configfs tree standing so the following `start` mutates a live composite under an attached host.
+That is true of their `stop`, which only unbinds the UDC. This fork's `stop` is `start_usb_host`,
+which also writes `host` to `/proc/cviusb/otg_role`. That flips the hardware ID pin and takes the
+controller through a full `dwc2_core_init()`, so the composite is not live when `start_usb_dev`
+runs again. `stop_start` is the proven recovery here and it stays.
+
+**The `S03usbdev` bind hardening.** Already present. `usb_bind` has taken its retry count from the
+environment and read the `UDC` back since the boot watch was added.
+
+### What is deliberately not covered
+
+A gadget that is `configured` at high-speed and still has dead endpoints, because the composition
+asked for more IN endpoints than the controller has transmit FIFOs. That reads healthy to this
+supervisor by design. It is a composition fault, no amount of rebinding fixes it, and the endpoint
+budget in `S03usbdev` and `service/vm/endpoints.go` refuses it before the bind.
+
+### Verification
+
+`go vet`, `go test` and a `GOARCH=riscv64` build, all under `-tags novision`, all clean. The
+decision logic is a pure function and is covered case by case, including the full-speed grading, the
+suspended-host case that must not trigger anything, and the ladder ending in a give-up rather than
+rebinding forever.
+
+**Not validated on hardware.** The source commit says the same about itself. What is untested here
+is not the decision logic but the sysfs semantics it rests on, and the fork has hardware evidence
+for those from 2026-08-19 that the source commit did not have.
+
+### Still to adopt
+
+- `RobbyV2/NanoKVM` `server/service/media`, read narrowly. `hold.go` and `pcmloop.go` are 6.5KB
+  between them and hold the quiet-host against parked-stream distinction that `feat/usb-audio`
+  needs. `manager.go` and `output_linux.go` are 72KB and are a reimplementation, not an adoption.
+- `eringiriri/ERINGI_JPN_NanoKVM`: horizontal scroll in relative mouse mode, and a composition guard
+  that leaves the JIS Zenkaku key stranded. Both small and additive.
+- `pi-bmc/nanokvm-app`, twelve `cvi` commits. "Stop the drivers' error reporting from killing the
+  board" and "Drain the encoder even when it has just refused a frame" are the interesting two. It
+  is a Go rewrite of the capture path, so it stays read-and-reimplement.

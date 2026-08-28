@@ -141,6 +141,10 @@ var usbDevCommand = func(action string) error {
 // would rebind carrying the descriptors of the mode it left, while the mode
 // flag said otherwise.
 func applyHidMode(mode string) error {
+	// Same reason as ResetUSBPHY: switchGadget unbinds the UDC, and the
+	// supervisor would otherwise see that as the link dying.
+	NoteUSBGadgetMutated()
+
 	h := GetHid()
 	h.Lock()
 	h.CloseNoLock()
@@ -220,6 +224,10 @@ func (s *Service) RecoverUSB(c *gin.Context) {
 }
 
 func ResetUSBPHY() error {
+	// The supervisor must not read this operation's own disconnect as a fault
+	// and start rebinding underneath it.
+	NoteUSBGadgetMutated()
+
 	h := GetHid()
 	h.Lock()
 	h.CloseNoLock()

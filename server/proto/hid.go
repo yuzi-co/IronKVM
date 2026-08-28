@@ -22,10 +22,16 @@ type GetKeyboardLedStatusRsp struct {
 // ObservedMsAgo is the age of the observation. Nothing writes to an endpoint the
 // operator has switched away from, so a stalled state goes stale rather than
 // clearing, and a consumer must be able to tell the two apart.
+//
+// "stalled" and "detached" are different faults and want different answers.
+// Stalled is one endpoint the target has stopped polling on a working link, and
+// the operator's remedies are a different mouse mode or a USB reset. Detached
+// is no link at all, so every endpoint is dead together, and the server's own
+// gadget supervisor repairs that without being asked.
 type HidDeviceStatus struct {
 	Name          string `json:"name"` // keyboard, mouse-relative, mouse-absolute
 	Path          string `json:"path"`
-	State         string `json:"state"` // unknown, accepting, stalled, error
+	State         string `json:"state"` // unknown, accepting, stalled, detached, error
 	Detail        string `json:"detail,omitempty"`
 	StateForMs    int64  `json:"stateForMs"`
 	ObservedMsAgo int64  `json:"observedMsAgo"`

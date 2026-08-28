@@ -14,6 +14,7 @@ import (
 	"NanoKVM-Server/middleware"
 	"NanoKVM-Server/router"
 	"NanoKVM-Server/service/application"
+	"NanoKVM-Server/service/hid"
 	"NanoKVM-Server/service/ion"
 	"NanoKVM-Server/service/stream/webrtc"
 	"NanoKVM-Server/service/vm"
@@ -81,6 +82,15 @@ func initialize() {
 
 	// run mouse jiggler
 	jiggler.GetJiggler().Run()
+
+	// Supervise the USB gadget for the rest of uptime. S03usbdev's boot watch
+	// covers the first seconds and then exits, so before this a link that died
+	// later stayed dead until somebody restarted the server or replugged the
+	// cable. The board keeps answering on eth0 throughout, so nothing looks
+	// wrong except that the keyboard does nothing. See service/hid/
+	// usb_watchdog.go, which also says why the escalation stops short of
+	// restart_phy.
+	hid.StartUSBWatchdog()
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)

@@ -3,6 +3,7 @@ package hid
 import (
 	"errors"
 	"os"
+	"syscall"
 	"testing"
 	"time"
 )
@@ -179,3 +180,78 @@ type wrapped struct{ err error }
 
 func (w wrapped) Error() string { return "timeout after 50ms: " + w.err.Error() }
 func (w wrapped) Unwrap() error { return w.err }
+
+// ESHUTDOWN is f_hid's answer when the function is disabled: the gadget is not
+// enumerated and every report to every endpoint is lost. That is a different
+// fault from a stall, which is one endpoint the host has stopped polling on an
+// otherwise working link, and the supervisor acts on only one of the two.
+func TestHealthShutdownIsDetachedNotAnError(t *testing.T) {
+	for _, err := range []error{syscall.ESHUTDOWN, syscall.ENODEV} {
+		var h endpointHealth
+
+		h.record(nil, at(0))
+		h.record(&os.PathError{Op: "write", Path: HID0, Err: err}, at(1))
+
+		got := h.snapshot(at(1))
+		if got.State != hidStateDetached {
+			t.Fatalf("%v gave state %q, want %q", err, got.State, hidStateDetached)
+		}
+	}
+}
+
+func TestHealthDeadlinesAreNeverDetached(t *testing.T) {
+	var h endpointHealth
+
+	h.record(os.ErrDeadlineExceeded, at(0))
+
+	if got := h.snapshot(at(0)); got.State != hidStateStalled {
+		t.Fatalf("a deadline gave state %q, want %q", got.State, hidStateStalled)
+	}
+	if !h.linkFaultSince().IsZero() {
+		t.Fatal("back-pressure from a live host must not read as a link fault")
+	}
+}
+
+// The supervisor compares this against a minimum age, so it has to be when the
+// run of faults started, not when the last one landed.
+func TestLinkFaultSinceIsTheStartOfTheRun(t *testing.T) {
+	var h endpointHealth
+
+	h.record(syscall.ESHUTDOWN, at(1))
+	h.record(syscall.ESHUTDOWN, at(2))
+	h.record(syscall.ESHUTDOWN, at(3))
+
+	if got := h.linkFaultSince(); !got.Equal(at(1)) {
+		t.Fatalf("linkFaultSince = %s, want %s", got, at(1))
+	}
+
+	h.record(nil, at(4))
+	if !h.linkFaultSince().IsZero() {
+		t.Fatal("one successful report must clear the link fault")
+	}
+}
+
+// Hid.linkFaultSince folds three endpoints into one answer, and the earliest is
+// when the link went.
+func TestHidLinkFaultSinceTakesTheEarliest(t *testing.T) {
+	var h Hid
+
+	h.relHealth.record(syscall.ESHUTDOWN, at(5))
+	h.kbHealth.record(syscall.ESHUTDOWN, at(2))
+	h.absHealth.record(os.ErrDeadlineExceeded, at(1))
+
+	if got := h.linkFaultSince(); !got.Equal(at(2)) {
+		t.Fatalf("linkFaultSince = %s, want %s", got, at(2))
+	}
+}
+
+func TestHidLinkFaultSinceIsZeroWithoutFaults(t *testing.T) {
+	var h Hid
+
+	h.kbHealth.record(nil, at(1))
+	h.relHealth.record(os.ErrDeadlineExceeded, at(1))
+
+	if got := h.linkFaultSince(); !got.IsZero() {
+		t.Fatalf("linkFaultSince = %s with no link fault, want the zero time", got)
+	}
+}
