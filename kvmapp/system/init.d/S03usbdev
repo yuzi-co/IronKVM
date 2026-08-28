@@ -29,7 +29,19 @@ start_usb_dev(){
     echo 0x01 > bDeviceProtocol
 
     mkdir strings/0x409
-    echo '0123456789ABCDEF' > strings/0x409/serialnumber
+    # A hardware-derived serial lets a host tell two NanoKVMs apart. Mass
+    # storage needs at least 12 characters, so fall back rather than hand the
+    # gadget a serial the host will reject.
+    serial='0123456789ABCDEF'
+    if [ -f /sys/class/cvi-base/base_uid ]
+    then
+        uid_serial=$(awk '{print $2}' /sys/class/cvi-base/base_uid | tr -d '_')
+        if [ ${#uid_serial} -ge 12 ]
+        then
+            serial="$uid_serial"
+        fi
+    fi
+    echo "$serial" > strings/0x409/serialnumber
     echo 'sipeed' > strings/0x409/manufacturer
     echo 'NanoKVM' > strings/0x409/product
 
@@ -89,7 +101,7 @@ start_usb_dev(){
         then
             echo 1 > functions/hid.GS0/subclass
         fi
-        if [ ! -e /boot/usb.notwakeup ]
+        if [ -e /boot/usb.wakeup ]
         then
             echo 1 > functions/hid.GS0/wakeup_on_write
         fi
@@ -104,7 +116,7 @@ start_usb_dev(){
         then
             echo 1 > functions/hid.GS1/subclass
         fi
-        if [ ! -e /boot/usb.notwakeup ]
+        if [ -e /boot/usb.wakeup ]
         then
             echo 1 > functions/hid.GS1/wakeup_on_write
         fi
@@ -119,7 +131,7 @@ start_usb_dev(){
         then
             echo 1 > functions/hid.GS2/subclass
         fi
-        if [ ! -e /boot/usb.notwakeup ]
+        if [ -e /boot/usb.wakeup ]
         then
             echo 1 > functions/hid.GS2/wakeup_on_write
         fi
@@ -141,17 +153,15 @@ start_usb_dev(){
             fi
             echo "NanoKVM USB Mass Storage0520" > functions/mass_storage.disk0/lun.0/inquiry_string
             disk=$(cat /boot/usb.disk0)
-            if [ -z "${disk}" ]
+            if [ -n "${disk}" ]
             then
-                    # if [ ! -e /mnt/usbdisk.img ]
-                    # then
-                    #         fallocate -l 8G /mnt/usbdisk.img
-                    #         mkfs.vfat /mnt/usbdisk.img
-                    # fi
-                    echo /dev/mmcblk0p3 > functions/mass_storage.disk0/lun.0/file
-            else
                     cat /boot/usb.disk0 > functions/mass_storage.disk0/lun.0/file
             fi
+            # With usb.disk0 empty, leave lun.0/file unset so the gadget
+            # reports "no media" (removable=1) and a BIOS moves on to the next
+            # boot device. This used to point at /dev/mmcblk0p3, handing the
+            # target machine our raw eMMC partition -- which has no MBR, so
+            # Legacy BIOS reads no 0x55AA signature and hangs in a HLT loop.
     fi
 
     ls /sys/class/udc/ | cat > UDC
