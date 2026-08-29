@@ -419,14 +419,30 @@ merge commit `f756d9a5`. It completed the whole build, so `actions/checkout`, `a
 and `actions/upload-artifact` each resolved from a sha. `actions/download-artifact` stays
 unexercised, because `release.yml` is the only workflow that uses it and that workflow publishes.
 
-**The gap this opens, and it is real.** A sha never follows a release.
-`dependabot_security_updates` is enabled on the repository, so an advisory against one of these
-four actions still produces a pull request. But `.github/dependabot.yml` exists on neither
-`main` nor `fork/integration`, so no ecosystem here is watched for routine releases: `npm`,
-`gomod` and `github-actions` are all unwatched. The pins will now age in silence. Closing that
-needs a `dependabot.yml` on `main`, because Dependabot reads its configuration from the default
-branch, and it needs `target-branch: fork/integration` so the pull requests reach the branch
-that carries the pins. That is standing configuration and it is not added here.
+**The gap this opened, and how it is closed.** A sha never follows a release, so a pin ages in
+silence until somebody edits it. `dependabot_security_updates` was already enabled, but that
+fires on an advisory and not on a release, and `.github/dependabot.yml` existed on neither
+branch, so no ecosystem here was watched for routine releases at all.
+
+`chore/dependabot-actions` adds that file. It lives on `main`, because Dependabot reads its
+configuration from the default branch, and `target-branch: fork/integration` sends it to read
+the manifests of, and open against, the branch that carries the pins. It watches
+`github-actions` alone, monthly, grouped into one pull request, because six of the ten
+references are `actions/checkout` and ungrouped updates would arrive as near duplicates. The
+file was validated against the published `dependabot-2.0` schema, which sets
+`additionalProperties: false`, so an unknown key would have been caught. The first scheduled run
+is 2026-09-01.
+
+`npm` under `web/` and `gomod` under `server/` stay unwatched on purpose. This audit chose those
+versions deliberately, and finding 6 holds TypeScript at 6 because typescript-eslint declares
+`>=4.8.4 <6.1.0`. A monthly pull request proposing TypeScript 7 would argue with that decision
+every month until the peer range widens.
+
+One property of `target-branch` is worth writing down, because no other option reverses it.
+GitHub's reference says that when it is set, security updates "always use the default branch for
+the repository". An advisory against one of these four actions therefore still opens against
+`main`, where the actions are named by tag rather than by sha. That is the same split the
+react-router alerts showed earlier in this audit. The file neither causes it nor fixes it.
 
 ## What this plan deliberately leaves alone
 
