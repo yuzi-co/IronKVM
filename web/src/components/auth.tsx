@@ -1,7 +1,7 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { AuthContext, useAuth } from '@/contexts/auth.ts';
 import { Spin } from 'antd';
-import { Navigate } from 'react-router-dom';
+import { Navigate } from 'react-router';
 
 import { Account, getAccount } from '@/api/auth.ts';
 import { AUTH_EXPIRED_EVENT } from '@/lib/auth-events.ts';

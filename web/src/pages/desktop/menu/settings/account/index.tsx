@@ -1,7 +1,7 @@
 import { useAuth } from '@/contexts/auth.ts';
 import { Button, Divider } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { Logout } from './logout.tsx';
 import { Users } from './users.tsx';
