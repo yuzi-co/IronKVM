@@ -384,9 +384,44 @@ Two things came out of it that were not planned. `eslint-plugin-react` was in de
 sets `composite: true` with no `noEmit`, so every type-check writes two `.tsbuildinfo` caches and
 emits `vite.config.js` into the working tree. Those are in `.gitignore` now.
 
-**Not done, and worth a phase of its own:** the four GitHub actions are pinned to tags, not to
-commit SHAs. A tag can be moved. Phase 3 pinned the two Dockerfiles' downloads by checksum for
-exactly that reason, and the workflows are the remaining unpinned build input.
+### The follow-up, done the same day
+
+Phase 6 left one thing open: the four GitHub actions were pinned to tags, not to commit shas,
+and the account that owns an action can move a tag at any time. Phase 3 stopped the two
+Dockerfiles trusting a movable name for exactly that reason, so the workflows were the last
+build input a third party could still change under us. `chore/pin-workflow-actions` closes it.
+All ten references now name a commit, each with the version beside it:
+
+| action | commit | version | used |
+| --- | --- | --- | --- |
+| `actions/checkout` | `3d3c42e5` | v7.0.1 | 6 times |
+| `actions/setup-node` | `82076278` | v7.0.0 | once |
+| `actions/upload-artifact` | `043fb46d` | v7.0.1 | once |
+| `actions/download-artifact` | `3e5f45b2` | v8.0.1 | once |
+
+The shas are what the tags resolved to on 2026-08-29, so the commit changes which commit runs,
+not which version runs.
+
+`tools/build/test-pinned-actions.sh` holds them there. It reads the workflow files, runs no
+build, and makes no network call. It fails if an external `uses:` names anything but a
+40-character sha, if a pin loses its `# vX.Y.Z` comment, if one action is pinned to two
+different commits, or if a local reusable workflow points at a file that is absent. The third
+case is the one that motivated the suite: `actions/checkout` is used six times, so a bump that
+reaches five of them leaves the sixth behind and both builds still pass. Each of the four cases
+was shown to fail under a mutation, and each mutation was confirmed to have applied, before the
+suite was committed.
+
+The suite asks GitHub nothing. A test that compared a pin against the tag would fail on the day
+an action published a release and would report a correct pin as a defect.
+
+**The gap this opens, and it is real.** A sha never follows a release.
+`dependabot_security_updates` is enabled on the repository, so an advisory against one of these
+four actions still produces a pull request. But `.github/dependabot.yml` exists on neither
+`main` nor `fork/integration`, so no ecosystem here is watched for routine releases: `npm`,
+`gomod` and `github-actions` are all unwatched. The pins will now age in silence. Closing that
+needs a `dependabot.yml` on `main`, because Dependabot reads its configuration from the default
+branch, and it needs `target-branch: fork/integration` so the pull requests reach the branch
+that carries the pins. That is standing configuration and it is not added here.
 
 ## What this plan deliberately leaves alone
 
