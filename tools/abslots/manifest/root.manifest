@@ -75,6 +75,12 @@ add     kvmapp/system/init.d/S99vidiag            /etc/init.d/S99vidiag        0
 add     tools/oled/S97oled-nudge                  /etc/init.d/S97oled-nudge    0755
 add     tools/service/S98supervise                /etc/init.d/S98supervise     0755
 
+# The layer under the other two. S98supervise and S00awatchdog are processes and
+# both must fork to act; the SoC timer is what is left when the board cannot fork
+# at all, and this enclosure has no remote power cycle. S01, because S00kmod is
+# what insmods soph_wdt and there is no /dev/watchdog before it.
+add     tools/service/S01hwdt                     /etc/init.d/S01hwdt          0755
+
 # The watchdog goes in the manifest so "it was not installed" cannot happen
 # again. On 2026-08-15 it was missing from the failing slot, which is half of
 # why the card had to come out.

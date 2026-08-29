@@ -288,6 +288,7 @@ echo "$VERSION" > "$PAYLOAD/version"
 # an update would install the scripts that can break a boot and leave out the
 # one that undoes them.
 for s in tools/abslots/device/S00awatchdog tools/service/S98supervise \
+         tools/service/S01hwdt \
          tools/oled/S97oled-nudge tools/abslots/device/S02identity; do
     [ -f "$s" ] || { echo "missing boot script: $s" >&2; exit 1; }
     cp "$s" "$PAYLOAD/system/init.d/${s##*/}"
