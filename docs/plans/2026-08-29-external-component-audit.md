@@ -243,7 +243,7 @@ or the opus build output, and each of them stops `docker build` outright on
 Windows. The go download also asked for `go1.25.0.linux-aarch64.tar.gz` on an
 arm64 host, a file that has never existed.
 
-### Phase 4: the rest of the Go direct dependencies
+### Phase 4: the rest of the Go direct dependencies (done, 2026-08-29)
 
 `chore/go-dependency-refresh`. Fourteen modules, no major steps, no advisories.
 
@@ -254,7 +254,33 @@ Gate: the novision suite, then hardware acceptance on all three video paths. `ca
 gives the baselines to compare against: MJPEG about 90% of the core, H.264 direct about 24%, no
 viewer about 7%.
 
-Cost: a day, mostly the three-path acceptance run.
+Done, and two of the fourteen were held back rather than taken.
+
+**gin stays at 1.10.0.** Every release after it links `quic-go/http3`, in 1.11 as well as 1.12,
+and 1.12 also pulls mongo-driver in through `gin/binding`. This board will never speak QUIC or
+read BSON. With gin 1.12 in the tree govulncheck reported GO-2026-5676 in quic-go as reachable,
+against nothing reachable before it, and gin 1.10.0 carries no advisory of its own. The trade was
+backwards.
+
+**modelcontextprotocol/go-sdk stays at 1.6.1.** 1.7.0 stops returning an `Mcp-Session-Id` header
+on initialize. That is a protocol change on the surface PicoClaw drives, so it needs its own
+branch.
+
+The other twelve moved. The three-path acceptance ran against the deployed build with a live HDMI
+signal, in 20-second samples from `/proc/stat`:
+
+| path | busy | delivered |
+| --- | --- | --- |
+| no viewer | 6.0% | n/a |
+| MJPEG | 98.2% | 48.9MB in 20s |
+| H.264 direct | 18.9% | 285 KB/s |
+
+WebRTC negotiated fully: an 883-byte answer carrying H.264, `sendonly`, a DTLS fingerprint and the
+playout-delay extension, with three ICE candidates trickled. SRTP media flow is the one thing a
+scripted client cannot exercise, because it needs a real ICE and DTLS handshake.
+
+The `service/ws` heartbeat test failed once in the full run and passes five times out of five on
+its own. That is the known load flake, not this change.
 
 ### Phase 5: the frontend runtime majors, with React held at 18
 
