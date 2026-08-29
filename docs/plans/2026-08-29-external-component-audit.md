@@ -196,7 +196,7 @@ All of it passed. The deploy guard reported "OK, serving within 240s and running
 installed", and the sha256 of the running image matches the local build. Cost: about an hour, most
 of it the deploy.
 
-### Phase 2: react-router 6 to 7
+### Phase 2: react-router 6 to 7 (done, 2026-08-29)
 
 `fix/react-router-advisories`. Closes both open Dependabot alerts, which is the only reason this
 outranks the rest of the frontend.
@@ -208,9 +208,14 @@ Gate: `pnpm build`, then a real device with a deployed `web/`. Walk login, the s
 and the Wi-Fi provisioning page, because `ProtectedRoute` and the redirect behaviour are exactly what
 this package owns.
 
-Cost: half a day, most of it the walk-through.
+Done. 7.18.2 rather than 7.18.3: both carry the fix, and taking the newer one
+would have meant writing a release-age bypass into pnpm-workspace.yaml. The
+device walk-through covered the redirect, the nested admin route, the query
+string and the lazy chunks. The pages behind the login wall were not covered.
+Both GitHub alerts closed once the fix reached `main`, which is the branch
+Dependabot scans.
 
-### Phase 3: pin the build inputs
+### Phase 3: pin the build inputs (done, 2026-08-29)
 
 `fix/pin-build-inputs`. The supply-chain finding, and the phase with the longest tail if it is left.
 
@@ -227,7 +232,16 @@ two lists must agree, and this is the change most likely to move them.
 Do this before Phase 4 and not after. A dependency bump that is investigated on top of an
 unpinned toolchain cannot be told apart from a toolchain that moved underneath it.
 
-Cost: a day, nearly all of it the from-scratch image rebuild.
+Done, and the gate held. Both images were rebuilt from scratch, the two
+checksums verified, and a libkvm.so rebuilt from the pinned MaixCDK commit has
+a NEEDED list identical to the committed library, all twenty-three entries.
+`tools/build/test-pinned-inputs.sh` keeps the pins in place and catches all
+seven mutations tried against it.
+
+Two extra things came out of it. `.dockerignore` did not exclude `.pnpm-store`
+or the opus build output, and each of them stops `docker build` outright on
+Windows. The go download also asked for `go1.25.0.linux-aarch64.tar.gz` on an
+arm64 host, a file that has never existed.
 
 ### Phase 4: the rest of the Go direct dependencies
 
@@ -286,8 +300,7 @@ nothing to bump directly.
 
 **Opus and Tailscale.** Already current, for the reasons in finding 8.
 
-## One correction to the record
+## One correction to the record (made)
 
 `AGENTS.md` says the backend is Go 1.24. `server/go.mod` says `go 1.25.0`, and both Dockerfiles
-install Go 1.25.0. The document is the thing that is wrong. Fix it in Phase 3, alongside the
-MaixCDK pin, since that phase is already editing the build documentation.
+install Go 1.25.0. The document was the thing that was wrong, and it now says 1.25.
