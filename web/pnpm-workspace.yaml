@@ -10,16 +10,19 @@ allowBuilds:
 # Two packages are held above what their parents ask for, because the parent
 # resolves a version below the one that carries the fix:
 #
-#   esbuild      vite 8.2.0 resolves 0.27.7. GHSA-g7r4-m6w7-qqqr, an esbuild
-#                dev server that reads arbitrary files on Windows, is fixed in
-#                0.28.1.
-#   @babel/core  jotai resolves 7.29.0. GHSA-4x5r-pxfx-6jf8, an arbitrary file
-#                read through a sourceMappingURL comment, is fixed in 7.29.6.
+#   esbuild      GHSA-g7r4-m6w7-qqqr, an esbuild dev server that reads
+#                arbitrary files on Windows, is fixed in 0.28.1. vite 8.2.0
+#                asked for 0.27.7; vite 8.2.2 asks for ^0.28.2 and no longer
+#                needs the floor.
+#   @babel/core  GHSA-4x5r-pxfx-6jf8, an arbitrary file read through a
+#                sourceMappingURL comment, is fixed in 7.29.6. jotai resolves
+#                7.29.0, and eslint-plugin-react-hooks 7 is a second parent
+#                since it carries the React Compiler.
 #
-# Neither package is reachable from a built artefact, and with the floor raised
-# neither resolves at all: vite 8 builds with rolldown and nothing here uses
-# jotai's babel plugin. Both are kept so that a future parent cannot quietly
-# pull the vulnerable version back in.
+# Neither package is reachable from a built artefact: vite 8 builds with
+# rolldown, and nothing here runs jotai's babel plugin or the compiler
+# transform. Both floors are kept so that a future parent cannot quietly pull
+# the vulnerable version back in.
 overrides:
   esbuild: ^0.28.1
   '@babel/core': ^7.29.6

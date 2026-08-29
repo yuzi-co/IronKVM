@@ -1,6 +1,21 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Tailwind CSS v4, with preflight left out on purpose.
+ *
+ * `@import "tailwindcss"` would pull in theme, preflight and utilities in one
+ * line. Preflight is Tailwind's own CSS reset, and antd ships a reset of its
+ * own that every component here is drawn against. tailwind.config.js set
+ * `corePlugins.preflight = false` for that reason, and v4 has no config file to
+ * say it in, so the two layers that are wanted are imported by name instead.
+ *
+ * v4 finds its own content, starting from this file and skipping whatever
+ * .gitignore excludes. The @source line states it anyway, because the file
+ * lives three directories below the code it scans. */
+@layer theme, base, components, utilities;
+
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+@source '../../../index.html';
+@source '../../**/*.{js,ts,jsx,tsx}';
 
 html,
 body {
