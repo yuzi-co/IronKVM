@@ -1,0 +1,37 @@
+# Dependabot reads this file from the default branch, which is `main`. It reads
+# nothing from `fork/integration` unless an entry says so, and the entry below
+# says so with `target-branch`.
+#
+# Why this file exists. Every action in `.github/workflows/` is pinned to a
+# commit sha, and a sha never follows a release. Without a version update the
+# pins age in silence until somebody edits them. The pin holds the supply chain
+# still. This file is what moves it forward on purpose.
+#
+# `target-branch` has one consequence that no other option reverses. GitHub's
+# reference says that when it is defined, "security updates always use the
+# default branch for the repository". A Dependabot security update therefore
+# still opens against `main`, where the actions are still named by tag. That is
+# the same split the react-router alerts showed on 2026-08-29. It is not new,
+# and this file does not make it worse.
+#
+# Only `github-actions` is watched. `npm` under `web/` and `gomod` under
+# `server/` stay unwatched on purpose. The 2026-08-29 audit set those versions
+# deliberately, and it holds TypeScript at 6 because typescript-eslint does not
+# support 7, so a schedule would argue every month with a decision that audit
+# recorded. Adding them later is two more entries here.
+version: 2
+
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: fork/integration
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
+    groups:
+      # One pull request a month for the whole set. Six of the ten references
+      # are actions/checkout, so ungrouped updates would arrive as near
+      # duplicates of one another.
+      github-actions:
+        patterns:
+          - '*'
