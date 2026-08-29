@@ -2,7 +2,7 @@ import { ReactElement, useEffect, useState } from 'react';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Button, Form, Input } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import * as api from '@/api/auth.ts';
 import { encrypt } from '@/lib/encrypt.ts';

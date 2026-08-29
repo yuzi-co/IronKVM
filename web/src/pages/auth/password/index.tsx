@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/auth.ts';
 import { LockOutlined } from '@ant-design/icons';
 import { Button, Card, Form, Input } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import * as api from '@/api/auth.ts';
 import { notifyAuthExpired } from '@/lib/auth-events.ts';

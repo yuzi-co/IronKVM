@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Button, notification } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { isPasswordUpdated } from '@/api/auth.ts';
 import { getSkipModifyPassword, setSkipModifyPassword } from '@/lib/localstorage.ts';
