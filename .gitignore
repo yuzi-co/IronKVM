@@ -5,6 +5,12 @@ web/node_modules
 web/dist
 web/web
 
+# tsconfig.node.json is a composite project, so `tsc` writes a build cache and
+# emits vite.config.js beside the source it type-checked. None of it is input.
+web/*.tsbuildinfo
+web/vite.config.js
+web/vite.config.d.ts
+
 # pnpm keeps its content-addressable store next to the project when the
 # home directory is on a different filesystem (e.g. inside the dev container)
 .pnpm-store/
