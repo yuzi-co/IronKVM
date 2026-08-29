@@ -1,0 +1,315 @@
+#!/bin/sh
+#
+# Arm the SoC watchdog timer. Install as /etc/init.d/S01hwdt, mode 755.
+#
+# S01, not S00, and the number is load-bearing. soph_wdt is a module, and
+# /etc/init.d/S00kmod is what insmods it, so /dev/watchdog does not exist until
+# S00kmod has run. A copy installed as S00hwdt runs first, finds no device and
+# refuses to arm, which it reports and which is easy to miss:
+#
+#   1s  not arming: no-device (device=/dev/watchdog daemon=/usr/sbin/watchdog ...)
+#
+# S01 also puts this after S01fs, which mounts /data, so the log below lands on
+# the partition that survives a reset rather than on the root filesystem
+# underneath the mount point, where nothing will ever look for it.
+#
+# This is the layer under every other guard in this repository, and it is the
+# only one that keeps working when userspace cannot act at all. S98supervise
+# restarts a server that died. S00awatchdog undoes a boot that never became
+# reachable. Both of them are processes, and both need to fork to do anything.
+# Two faults on this board leave nothing able to fork:
+#
+#   Driving the board below about 30MB available wedges process creation. The
+#   kernel never invokes the OOM killer, sshd accepts TCP and then times out
+#   during the banner, and a shell never returns from its next fork. Measured on
+#   2026-08-14 and again on 2026-08-19. Nothing in userspace recovered it.
+#
+#   A kernel-side lockup, where the same is true for a different reason.
+#
+# There is no remote power cycle on this enclosure, so today both of those cost
+# a trip to the board. The hardware timer is the only thing that can end them.
+#
+# Environment, for tests and for a dry run on a live board:
+#   HWDOG_DEVICE       the watchdog character device      (default /dev/watchdog)
+#   HWDOG_DAEMON       the daemon binary            (default /usr/sbin/watchdog)
+#   HWDOG_CONF         where the generated config goes  (default /tmp/watchdog.conf)
+#   HWDOG_TIMEOUT      hardware timeout in seconds        (default 60)
+#   HWDOG_INTERVAL     seconds between pings              (default 8)
+#   HWDOG_RETRY        seconds a test must keep failing   (default 120)
+#   HWDOG_ALLOCATABLE  pages the memory test asks for     (default 256, so 1MB)
+#   HWDOG_LOG          where decisions are recorded       (default /data/hwdt.log)
+
+DEVICE=${HWDOG_DEVICE:-/dev/watchdog}
+DAEMON=${HWDOG_DAEMON:-/usr/sbin/watchdog}
+CONF=${HWDOG_CONF:-/tmp/watchdog.conf}
+TIMEOUT=${HWDOG_TIMEOUT:-60}
+INTERVAL=${HWDOG_INTERVAL:-8}
+RETRY=${HWDOG_RETRY:-120}
+ALLOCATABLE=${HWDOG_ALLOCATABLE:-256}
+LOG=${HWDOG_LOG:-/data/hwdt.log}
+
+# /data survives the reset this script can cause, which is the whole reason to
+# write anything down. The guard is the same one S03usbdev uses: this runs
+# before S01fs has mounted /data on some boots, and a redirection error would
+# print over the console line that matters.
+log() {
+    echo "$(cut -d. -f1 /proc/uptime 2>/dev/null)s  $*" >> "$LOG" 2>/dev/null
+    return 0
+}
+
+# --- config ---
+# The configuration is generated rather than shipped, so the thresholds live in
+# one file with the reasoning that chose them, and /etc/watchdog.conf stays the
+# base image's.
+#
+# What is switched on:
+#
+#   watchdog-timeout   The kernel resets the board this long after the last
+#                      ping. What is asked for is not what is armed. The part is
+#                      a Synopsys DesignWare watchdog, its steps are powers of
+#                      two, and the driver takes the largest step BELOW the
+#                      request. Measured on the board on 2026-08-29:
+#
+#                        asked 20 or 30 -> armed 21    asked 42 -> armed 21
+#                        asked 45 or 60 -> armed 42
+#
+#                      Asking for exactly 42 arms 21, which is the trap worth
+#                      knowing about. 60 is asked for here and 42 is what runs.
+#
+#   allocatable-memory An ACTIVE test: the daemon asks for the pages and touches
+#                      them. It is the closest thing available to the fault
+#                      described at the top of this file, because a board that
+#                      cannot give out a megabyte is a board that cannot fork.
+#                      A passive reading would not do: measured on this board,
+#                      MemFree sits at 14MB while 88MB is available, so the
+#                      number that looks alarming is normal here.
+#
+#   realtime           The daemon locks itself into memory with mlockall. A
+#                      watchdog that is swapped out during memory pressure stops
+#                      exactly when it is needed. The same setting also asks for
+#                      a real-time scheduler class, and this kernel answers
+#                      "Function not implemented" to that. The daemon logs it and
+#                      carries on, so the lock is what this line buys here.
+#
+#   retry-timeout      A test must keep failing for this long before the daemon
+#                      acts. Every threshold here is biased toward inaction: the
+#                      cost of acting late is a few more seconds of an outage
+#                      that has already happened, and the cost of acting early
+#                      is resetting a working KVM.
+#
+# What is deliberately left off, and why, because each of these is a line
+# somebody will otherwise be tempted to add from the sample file:
+#
+#   max-load-1/5/15    This board idles at a load average of about 4 with no CPU
+#                      load at all. A reader of /proc/cvitek/vb blocks in
+#                      uninterruptible sleep and is counted for ever, so load
+#                      here is not a CPU signal and must never be a reset
+#                      trigger.
+#
+#   min-memory         Passive, and it reads MemFree + Buffers + Cached, which
+#                      is about 117MB on a healthy board here. It measures cache
+#                      rather than the thing that fails.
+#
+#   max-swap           The one wedge on record gives one data point, and a
+#                      threshold guessed from one point would reset healthy
+#                      boards. allocatable-memory measures the symptom directly.
+#
+#   ping / interface   An external fault is not a board fault. S00awatchdog
+#                      learned this the expensive way: an unplugged cable used
+#                      to reboot the board into recovery, where the cable was
+#                      still unplugged.
+#
+#   pidfile            S98supervise already restarts what dies, and a restart is
+#                      a far better answer than a reset.
+#
+#   repair-binary      A repair has to fork, and the fault this exists for is
+#                      that forking has stopped. The reset is the repair.
+#
+# The memory test is the one setting here that has never been proven against the
+# fault it is for, and it cannot be: the rule that came out of 2026-08-19 is that
+# memory pressure is never to be induced on this board again, because inducing
+# it is what wedges it. Zero switches the test off and leaves the plain timer,
+# which is the part that is understood. Everything else stays armed.
+write_conf() {
+    cat > "$CONF" <<EOF
+# Generated by S01hwdt. Edit the script, not this file.
+watchdog-device		= $DEVICE
+watchdog-timeout	= $TIMEOUT
+interval		= $INTERVAL
+retry-timeout		= $RETRY
+realtime		= yes
+priority		= 1
+EOF
+
+    [ "$ALLOCATABLE" -gt 0 ] 2>/dev/null || return 0
+    echo "allocatable-memory	= $ALLOCATABLE" >> "$CONF"
+}
+# --- end config ---
+
+# --- preflight ---
+# Every branch returns a reason rather than a status, so the caller logs one
+# line and the test reads one word. Standing down is always allowed: this script
+# runs first in the boot sequence, and a watchdog that refuses to arm must never
+# be the thing that stops a board coming up.
+#
+# The interval check is the one that would otherwise be silent. A daemon that
+# pings less often than the hardware resets is a reset timer with extra steps,
+# and it would take out a healthy board on a fixed period for ever.
+preflight() {
+    [ -c "$DEVICE" ] || { echo "no-device"; return; }
+    [ -x "$DAEMON" ] || { echo "no-daemon"; return; }
+
+    for num in "$TIMEOUT" "$INTERVAL" "$RETRY" "$ALLOCATABLE"
+    do
+        case "$num" in ''|*[!0-9]*) echo "bad-number"; return ;; esac
+    done
+
+    [ "$TIMEOUT" -gt 0 ] || { echo "bad-number"; return; }
+    [ "$INTERVAL" -gt 0 ] || { echo "bad-number"; return; }
+
+    # Six, not three, and the factor of two is the driver rounding down rather
+    # than caution. What is armed can be a little over half of what is asked for,
+    # so a rule written against the request has to leave room for that. Six
+    # against the request is three against the worst case the hardware can give.
+    [ $(( INTERVAL * 6 )) -le "$TIMEOUT" ] || { echo "interval-too-long"; return; }
+
+    echo ok
+}
+# --- end preflight ---
+
+running() {
+    pidof watchdog > /dev/null 2>&1
+}
+
+start() {
+    if running; then
+        log "already armed"
+        return 0
+    fi
+
+    verdict=$(preflight)
+    if [ "$verdict" != ok ]; then
+        log "not arming: $verdict (device=$DEVICE daemon=$DAEMON timeout=$TIMEOUT interval=$INTERVAL)"
+        echo "hwdt: not armed ($verdict)"
+        return 0
+    fi
+
+    write_conf
+
+    if "$DAEMON" -c "$CONF"; then
+        log "armed: ${TIMEOUT}s timeout, ${INTERVAL}s ping, ${ALLOCATABLE} pages, ${RETRY}s retry"
+        echo "hwdt: armed (${TIMEOUT}s)"
+    else
+        log "the daemon refused to start"
+        echo "hwdt: FAILED to arm"
+    fi
+
+    return 0
+}
+
+# --- stopping ---
+# stop and disarm are opposites, and which one a caller wants depends entirely
+# on what happens next.
+#
+# The kernel decides whether the timer keeps running from HOW the device was
+# closed, not from the fact that it was. A daemon that writes the magic V before
+# closing stops the timer; a daemon that dies without writing it leaves the timer
+# running, and the kernel logs that it did. soph_wdt is loaded with nowayout=N,
+# so both are available.
+#
+# stop is what /etc/init.d/rcK runs on the way to a reboot, and it uses SIGKILL
+# on purpose, to deny the daemon the chance to write V. On 2026-08-15 this board
+# ran a whole shutdown and then did not reset: it answered ping for 25 minutes
+# with every port refused, and only removing power ended it. There is no remote
+# power cycle here, so that fault costs a trip to the enclosure. Leaving the
+# timer running through the shutdown is the only thing that can end it. A
+# reboot that works resets the SoC long before the timer expires and nothing
+# notices this at all.
+#
+# The same applies to a halt, and that is intended rather than overlooked. A
+# board halted at the far end of a USB cable is indistinguishable from the fault
+# above, and on out-of-band management hardware coming back up is the better of
+# the two outcomes.
+#
+# disarm is the maintenance action, and it is the one to use before doing
+# anything that stops the daemon on purpose. SIGTERM lets it write V.
+#
+# nowayout is deliberately NOT set on the module. It would close the shutdown
+# case completely and it would also make a daemon that cannot start into an
+# unbreakable reset loop, on a board with no way to cut power. The partial cover
+# is worth more than that risk.
+stop() {
+    if running; then
+        killall -9 watchdog 2>/dev/null
+        log "left the timer armed for the shutdown (${TIMEOUT}s)"
+        echo "hwdt: timer left armed for the shutdown"
+    else
+        echo "hwdt: not running"
+    fi
+    return 0
+}
+
+disarm() {
+    if ! running; then
+        echo "hwdt: not running"
+        return 0
+    fi
+
+    killall watchdog 2>/dev/null
+
+    # Wait for it to actually go. Without this a restart is a disarm: start runs
+    # while the old daemon is still dying, finds a pid, reports "already armed"
+    # and starts nothing, and the board is left with no timer at all. Seen on
+    # 2026-08-29, and the only trace was two log lines in the same second:
+    #
+    #   203s  disarmed by hand
+    #   203s  already armed
+    i=0
+    while running && [ "$i" -lt 10 ]
+    do
+        i=$((i + 1))
+        sleep 1
+    done
+
+    # SIGKILL is not the answer here, and this is the one place in the file
+    # where that matters. A daemon killed hard cannot write its magic V, so the
+    # timer keeps running, and disarm would then do the opposite of its name.
+    if running; then
+        log "the daemon did not leave after ${i}s; the timer is still armed"
+        echo "hwdt: the daemon did not leave, so the timer is STILL ARMED"
+        return 1
+    fi
+
+    log "disarmed by hand"
+    echo "hwdt: disarmed"
+    return 0
+}
+# --- end stopping ---
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart|reload)
+        disarm
+        start
+        ;;
+    disarm)
+        disarm
+        ;;
+    status)
+        echo "preflight : $(preflight)"
+        echo "daemon    : $(running && echo armed || echo "not running")"
+        echo "device    : $DEVICE"
+        echo "timeout   : ${TIMEOUT}s, pinged every ${INTERVAL}s"
+        echo "recent    :"
+        tail -5 "$LOG" 2>/dev/null | sed 's/^/  /'
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart|disarm|status}"
+        exit 1
+        ;;
+esac

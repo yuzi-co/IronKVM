@@ -60,6 +60,11 @@ remove  /etc/init.d/S30rndis
 # no watchdog. A watchdog here could only reboot the board into recovery again.
 remove  /etc/init.d/S00awatchdog
 
+# And no hardware timer either, for a stronger version of the same reason.
+# Recovery is where the board goes when everything else failed. A reset loop
+# here, on a board with no way to cut power, is the one failure with no way out.
+remove  /etc/init.d/S01hwdt
+
 # The trap that would otherwise leave recovery with no ssh, which would make it
 # useless in the exact situation it exists for.
 remove  /etc/kvm/ssh_stop
