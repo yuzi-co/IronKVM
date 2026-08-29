@@ -1,4 +1,13 @@
 Dockerfile
+# The pnpm store is gitignored but was not excluded here, so the whole
+# store was sent as build context. On Windows that fails outright: the
+# sender hits a file it cannot open and the build ends before the first
+# layer runs. web/ is already excluded wholesale, which covers
+# web/node_modules.
+.pnpm-store
+# Opus build output. The libtool .la file under .libs is a symlink that
+# buildkit refuses to send, so this directory stops the build the same way.
+tools/opusbench/.build
 !server/go.mod
 server/go.sum
 server/NanoKVM-Server
