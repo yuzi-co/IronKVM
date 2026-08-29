@@ -315,7 +315,7 @@ clean; the merge into `fork/integration` then failed on
 `hid-status/input-disconnected.tsx`, a fork-only file carrying the same
 `duration: null`. A single build on the branch would have shipped that.
 
-### Phase 6: the build-time packages and the CI actions
+### Phase 6: the build-time packages and the CI actions (done, 2026-08-29)
 
 `chore/build-tooling`. Nothing here reaches the device.
 
@@ -329,6 +329,64 @@ workflow. Tailwind 4 changes how classes are emitted, so a diff of the built CSS
 that matters.
 
 Cost: two days, dominated by Tailwind.
+
+Done, and one target moved. The phase says "nothing here reaches the device", and that was wrong
+about one thing: Tailwind emits the stylesheet the device serves, so this phase ended with a deploy
+like the others.
+
+**TypeScript stops at 6, not 7.** typescript-eslint refuses version 7 outright, with
+`Error: typescript-eslint does not support TS 7.0`, and `pnpm lint` then exits 2 having linted
+nothing. Its peer range is `>=4.8.4 <6.1.0`. The compiler itself is ready: tsc 7.0.2, the native
+build, type-checks this tree with no errors against the same tsconfig. Only the linter blocks it.
+TypeScript 6 is worth taking on its own account, because it reports what 7 removes, and it named one
+thing here: `baseUrl`, which is now gone from tsconfig.json.
+
+**eslint 10 brings 47 findings that are not lint noise.** eslint-plugin-react-hooks 7 puts the React
+Compiler rules in its recommended set: 20 `set-state-in-effect`, 16 `immutability`, 10 `refs` and
+one `purity`. Every one is worth reading, and fixing them means changing how the desktop UI renders,
+on a device where a broken UI is a KVM nobody can reach. They are warnings, with the reasoning in
+`eslint.config.js` beside them. `rules-of-hooks` stays an error and reports nothing.
+
+This is the phase's one deliberate debt, and it is real work rather than a formality.
+
+**Tailwind 4 kept the page identical, and the evidence is a class-level diff.** Four utilities moved
+one step down their scale and were renamed at nine call sites, so the emitted declarations match the
+old build exactly: `shadow-sm` to `shadow-xs`, `rounded-sm` to `rounded-xs`, `backdrop-blur-sm` to
+`backdrop-blur-xs`, and `outline-none` to `outline-hidden`. Preflight is left out by importing the
+theme and utilities layers by name, because `tailwind.config.js` is gone and antd owns the reset.
+
+Comparing the two builds found 27 utilities gone and 22 new, and all 27 are accounted for. Five of
+them were never real: Tailwind 3's scanner read `if (!container)` out of JavaScript and emitted a
+`.\!container` utility for it.
+
+The palette is taken as it comes. Version 4 generates its colours in OKLCH, so sky-400 moves from
+`#38bdf8` to `#00bcfe` and red-500 from `#ef4444` to `#fb2c36`. The greys do not move, and they are
+most of this UI. Pinning the old table back would mean carrying it forever.
+
+**The two-build rule found nothing this time, which is the answer it exists to give.** The branch was
+cut from `main`, which lacks eleven of this tree's frontend files, so the class comparison was run
+again on the merged tree against a Tailwind 3 build of `fork/integration`. Same 27 gone, same 22 new,
+one for one.
+
+**Verified on the device.** The desktop menu bar, the settings modal and the Appearance tab all
+render correctly under antd 6 and Tailwind 4, which also closes the "pages behind the login wall"
+gap that Phase 5 left open. The only console message is the react-router `HydrateFallback` warning
+that Phase 2 introduced. `.rounded` computes to a 4px radius in the browser, the same as before.
+
+The deploy taught one thing worth writing down. `S95nanokvm` copies `/kvmapp/server` to
+`/tmp/server` at boot and runs the binary from there, and the web root follows the executable. A
+frontend written only to `/kvmapp/server/web` changes nothing until a restart, while looking
+entirely correct on disk. Both trees have to be updated, and swapping the `/tmp` one in place costs
+no downtime.
+
+Two things came out of it that were not planned. `eslint-plugin-react` was in devDependencies and
+`eslint.config.js` never loaded it, so it linted nothing; it is removed. And `tsconfig.node.json`
+sets `composite: true` with no `noEmit`, so every type-check writes two `.tsbuildinfo` caches and
+emits `vite.config.js` into the working tree. Those are in `.gitignore` now.
+
+**Not done, and worth a phase of its own:** the four GitHub actions are pinned to tags, not to
+commit SHAs. A tag can be moved. Phase 3 pinned the two Dockerfiles' downloads by checksum for
+exactly that reason, and the workflows are the remaining unpinned build input.
 
 ## What this plan deliberately leaves alone
 
