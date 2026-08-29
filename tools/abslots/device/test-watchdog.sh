@@ -3,11 +3,19 @@
 #
 #   test-watchdog.sh [path-to-S00awatchdog]
 #
-# The rule changed for a reason worth keeping in front of whoever edits it next.
-# The old rule was net_up AND (web_up OR ssh_up), and net_up required carrier. An
-# unplugged cable therefore rebooted the board into recovery, where the cable was
-# still unplugged. That is a reboot loop dressed as a safety feature, and it
+# The rule changed twice, and both reasons are worth keeping in front of whoever
+# edits it next.
+#
+# The first rule was net_up AND (web_up OR ssh_up), and net_up required carrier.
+# An unplugged cable therefore rebooted the board into recovery, where the cable
+# was still unplugged. That is a reboot loop dressed as a safety feature, and it
 # punishes an external fault with the one action that cannot help it.
+#
+# The repair for that reported no carrier as healthy, which overshot. eth0 has no
+# carrier at the first sample of every boot, so the watchdog stood down after ten
+# seconds and confirmed the running slot on evidence it had not gathered. The
+# rule is three-valued now, and the third answer is tested twice below: once in
+# the health block, and once in the watch loop that has to act on it.
 #
 # The block is extracted from the script rather than copied here, so the test
 # cannot drift away from what ships. Two guards in this repository had already
@@ -40,7 +48,12 @@ verdict() {
         web_up()     { [ "$LISTENER" = web ]; }
         ssh_up()     { [ "$LISTENER" = ssh ]; }
         . "$WORK/health.sh"
-        if healthy; then echo healthy; else echo escalate; fi
+        healthy
+        case $? in
+            0) echo healthy ;;
+            2) echo wait ;;
+            *) echo escalate ;;
+        esac
     )
 }
 
@@ -48,14 +61,15 @@ echo
 echo "===== an external fault is not a slot fault ====="
 
 # No carrier means the cable is out or the switch is down. Rebooting into
-# recovery lands on a board whose cable is still out.
-[ "$(verdict no no none)" = healthy ] \
-    && note "no carrier stands down instead of escalating" OK \
-    || note "no carrier escalates, which reboots into a still-unplugged cable" FAIL
+# recovery lands on a board whose cable is still out. It is equally not health:
+# a board that nothing can reach has proven nothing about itself.
+[ "$(verdict no no none)" = wait ] \
+    && note "no carrier is neither a fault nor health" OK \
+    || note "no carrier is read as a fault or as health, not as unproven" FAIL
 
-[ "$(verdict no yes web)" = healthy ] \
-    && note "no carrier stands down even if something answers" OK \
-    || note "no carrier stands down even if something answers" FAIL
+[ "$(verdict no yes web)" = wait ] \
+    && note "no carrier is unproven even when a local port answers" OK \
+    || note "no carrier is unproven even when a local port answers" FAIL
 
 echo
 echo "===== a slot fault does escalate ====="
@@ -73,6 +87,91 @@ echo "===== either door is enough ====="
 
 [ "$(verdict yes yes web)" = healthy ] && note "web alone is healthy" OK || note "web alone is healthy" FAIL
 [ "$(verdict yes yes ssh)" = healthy ] && note "ssh alone is healthy" OK || note "ssh alone is healthy" FAIL
+
+echo
+echo "===== the watch loop acts on all three answers ====="
+
+# The health block alone could not have caught the defect this section exists
+# for. `healthy` returning 0 for no carrier is a defensible reading in
+# isolation; what made it a fault was the loop reading that 0 as proof and
+# running `slot confirm` on it, ten seconds into every boot.
+sed -n '/^# --- watch loop ---/,/^# --- end watch loop ---/p' "$WD" > "$WORK/watch.sh"
+if [ -s "$WORK/watch.sh" ]; then
+    note "the watch loop can be extracted" OK
+else
+    note "the watch loop can be extracted" FAIL
+fi
+
+# absent <file> <name>: the file must not be there, and the case is named for
+# what its presence would mean.
+absent() {
+    if [ -e "$WORK/$1" ]; then note "$2" FAIL; else note "$3" OK; fi
+}
+
+present() {
+    if [ -e "$WORK/$1" ]; then note "$2" OK; else note "$2" FAIL; fi
+}
+
+# run_watch <shell text defining the four probes>. sleep is stubbed, so three
+# polls of a 30-second deadline run instantly.
+run_watch() {
+    rm -f "$WORK/confirmed" "$WORK/cleared" "$WORK/escalated" "$WORK/n" "$WORK/watch.log"
+    (
+        LOG="$WORK/watch.log"
+        DEADLINE=30
+        INTERVAL=10
+        export LOG DEADLINE INTERVAL
+        sleep() { :; }
+        log() { echo "$*" >> "$WORK/watch.log"; }
+        clear_attempts() { : > "$WORK/cleared"; }
+        slot() { echo "$*" > "$WORK/confirmed"; }
+        escalate() { : > "$WORK/escalated"; }
+        . "$WORK/health.sh"
+        eval "$1"
+        . "$WORK/watch.sh"
+        watch
+    ) > /dev/null 2>&1
+}
+
+run_watch 'carrier_up() { return 1; }
+address_up() { return 1; }
+web_up()     { return 1; }
+ssh_up()     { return 1; }'
+
+absent confirmed     "a boot with no carrier confirms the slot on no evidence"     "a boot with no carrier confirms nothing"
+absent cleared     "a boot with no carrier clears an update counter it did not earn"     "a boot with no carrier leaves the update counter alone"
+absent escalated     "a boot with no carrier escalates into a still-unplugged cable"     "a boot with no carrier does not escalate"
+
+if grep -q 'no carrier' "$WORK/watch.log" 2>/dev/null; then
+    note "the log says why it stood down" OK
+else
+    note "the log says why it stood down" FAIL
+fi
+
+run_watch 'carrier_up() { return 0; }
+address_up() { return 0; }
+web_up()     { return 1; }
+ssh_up()     { return 1; }'
+
+present escalated "carrier up and no door escalates at the deadline"
+absent confirmed     "a slot that never answered is confirmed anyway"     "a slot that never answered is not confirmed"
+
+# The ordinary boot: eth0 has no carrier at the first sample and comes up before
+# the deadline. The old loop stood down on that first sample and never saw it.
+run_watch 'carrier_up() {
+    n=$(cat "$WORK/n" 2>/dev/null)
+    case "$n" in ""|*[!0-9]*) n=0 ;; esac
+    n=$((n + 1))
+    echo "$n" > "$WORK/n"
+    [ "$n" -ge 2 ]
+}
+address_up() { return 0; }
+web_up()     { return 0; }
+ssh_up()     { return 1; }'
+
+present confirmed "a door answering after the carrier arrives confirms the slot"
+present cleared   "a reachable boot clears the update counter"
+absent escalated     "a reachable boot escalates"     "a reachable boot does not escalate"
 
 echo
 echo "===== the escalation goes to recovery, not to a marker revert ====="

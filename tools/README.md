@@ -8,7 +8,8 @@ are operator tools.
 | ------------- | --------------------------------------------------------------------- |
 | `build/`      | App-only cross-compile toolchain: `NanoKVM-Server` without MaixCDK.    |
 | `slots/`      | A/B root filesystems: patch the initramfs, build and install a slot.   |
-| `slots/device/S00awatchdog` | Reverts the slot marker if a board under test never becomes reachable. |
+| `abslots/`    | A/B root filesystems: build the card image and the update package.     |
+| `abslots/device/S00awatchdog` | Falls back if a boot never becomes reachable: undo an init.d update, return a failed trial to the trusted slot, or go to recovery. |
 | `zram/`       | Build `zram.ko`/`zsmalloc.ko` for the stock kernel. The web UI enables them. |
 | `fbmem/`      | Disable the unused framebuffer reservation in `boot.sd`. Returns 8MB.  |
 | `ionmem/`     | Shrink the ION carveout in `boot.sd`. Returns 19MB at the size installed. |

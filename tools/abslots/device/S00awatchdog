@@ -94,11 +94,37 @@ ensure_boot_mounted() {
 # unplugged cable rebooted the board, forever. Standing down is the correct
 # answer to a fault this board cannot fix.
 #
+# Three answers, not two, which is the shape `serving` uses in S98supervise and
+# for the same reason: "nothing was measured" is not "the board is well", and a
+# two-valued test has to report one of them as the other.
+#
+#   0  a door answers, so this slot works
+#   1  the address is up and no door answers, so this slot is at fault
+#   2  no carrier, so nothing is proven either way
+#
+# No carrier is not a slot fault. The cable is out or the switch is down, and
+# rebooting into recovery lands on a board whose cable is still out. The first
+# rule here was net_up AND (web_up OR ssh_up), with net_up requiring carrier, so
+# an unplugged cable rebooted the board for ever.
+#
+# The repair for that returned 0, which reads no carrier as healthy, and it
+# overshot. eth0 has no carrier ten seconds into a boot, and ten seconds is the
+# first sample this takes, so every boot stood down before sshd or the server
+# had started. /watchdog.log recorded the protection retiring itself, twice:
+#
+#   12s  reachable after 10s (web=down, ssh=down)
+#   slot: a confirmed
+#   12s  standing down
+#
+# The confirm is the worse half. A stand-down only forgets to watch; a confirm
+# tells the next boot that an untested slot is trusted, and it clears the
+# counter that undoes a bad init.d update.
+#
 # Either door counts, because either door is a way back in. A board that
 # answers ssh but serves nothing is a broken KVM that a person can repair. Only
 # losing both needs rescuing.
 healthy() {
-	carrier_up || return 0
+	carrier_up || return 2
 	address_up || return 1
 	web_up && return 0
 	ssh_up && return 0
@@ -276,6 +302,63 @@ escalate() {
 }
 # --- end escalate ---
 
+# --- watch loop ---
+# Sample until a door answers, and escalate only when the deadline passes with
+# the slot at fault.
+#
+# Verdict 2 is what this loop exists to get right, and reading it as either of
+# the other two is a defect that has already shipped once in each direction.
+# Read as a fault it reboots a board whose cable is out. Read as health it
+# confirms a slot that has proven nothing, ten seconds into every boot. It is
+# neither: keep waiting, and if it is still the answer at the deadline, leave
+# without confirming anything.
+#
+# Nothing here reads a clock, a file or a device. Every probe and the escalation
+# are functions the caller supplies, so a test drives this loop rather than a
+# copy of it.
+watch() {
+    waited=0
+    verdict=2
+
+    while [ "$waited" -lt "$DEADLINE" ]; do
+        sleep "$INTERVAL"
+        waited=$((waited + INTERVAL))
+
+        healthy
+        verdict=$?
+
+        [ "$verdict" -eq 0 ] || continue
+
+        log "reachable after ${waited}s (web=$(web_up && echo up || echo down), ssh=$(ssh_up && echo up || echo down))"
+
+        # This boot worked, so whatever the last package update installed is
+        # good and the count starts again from nothing.
+        clear_attempts
+
+        # Confirm whatever is running. If this boot was a trial, the initramfs
+        # already deleted its marker, so without this the slot would revert on
+        # the next reboot and the operator would have to remember a step. If it
+        # was not a trial, this rewrites the same value and costs one FAT write.
+        slot confirm >> "$LOG" 2>&1
+
+        log "standing down"
+        return 0
+    done
+
+    # The deadline passed with no carrier. Standing down is right, because a
+    # board this board cannot reach is not a board a reboot repairs. Confirming
+    # is not right, and neither is clearing the attempt counter: a slot on trial
+    # that could not be reached has to revert on the next reboot, and an update
+    # that has not proven itself has to keep its counter.
+    if [ "$verdict" -eq 2 ]; then
+        log "no carrier after ${DEADLINE}s: the cable is out or the switch is down, standing down without confirming"
+        return 0
+    fi
+
+    escalate
+}
+# --- end watch loop ---
+
 start() {
     # Before anything else in the rc sequence. A restore performed here repairs
     # S01 through S95 before they run, so a bad boot-script update costs one
@@ -294,33 +377,7 @@ start() {
     # The watcher must not inherit this shell's stdio. It lives for up to
     # DEADLINE seconds, and started over ssh it would hold the file descriptor
     # open for that long before the ssh command returned.
-    (
-        waited=0
-        while [ "$waited" -lt "$DEADLINE" ]; do
-            sleep "$INTERVAL"
-            waited=$((waited + INTERVAL))
-
-            if healthy; then
-                log "reachable after ${waited}s (web=$(web_up && echo up || echo down), ssh=$(ssh_up && echo up || echo down))"
-
-                # This boot worked, so whatever the last package update
-                # installed is good and the count starts again from nothing.
-                clear_attempts
-
-                # Confirm whatever is running. If this boot was a trial, the
-                # initramfs already deleted its marker, so without this the slot
-                # would revert on the next reboot and the operator would have to
-                # remember a step. If it was not a trial, this rewrites the same
-                # value and costs one FAT write.
-                slot confirm >> "$LOG" 2>&1
-
-                log "standing down"
-                exit 0
-            fi
-        done
-
-        escalate
-    ) < /dev/null > /dev/null 2>&1 &
+    ( watch ) < /dev/null > /dev/null 2>&1 &
 }
 
 case "$1" in
@@ -333,11 +390,18 @@ case "$1" in
         ;;
     check)
         # Report the verdict now, for use by hand on a running board.
-        if healthy; then
-            echo "reachable (carrier=$(carrier_up && echo up || echo down), web=$(web_up && echo up || echo down), ssh=$(ssh_up && echo up || echo down))"
-        else
-            echo "NO WAY IN (carrier=$(carrier_up && echo up || echo down), address=$(address_up && echo up || echo down), web=$(web_up && echo up || echo down), ssh=$(ssh_up && echo up || echo down))"
-        fi
+        healthy
+        case $? in
+            0)
+                echo "reachable (web=$(web_up && echo up || echo down), ssh=$(ssh_up && echo up || echo down))"
+                ;;
+            2)
+                echo "NOTHING PROVEN: eth0 has no carrier, so the cable is out or the switch is down"
+                ;;
+            *)
+                echo "NO WAY IN (address=$(address_up && echo up || echo down), web=$(web_up && echo up || echo down), ssh=$(ssh_up && echo up || echo down))"
+                ;;
+        esac
         ;;
     *)
         echo "Usage: $0 {start|stop|check}"
