@@ -184,6 +184,27 @@ mutate "the inline restart branch stops calling ion_line" \
     's|^                    ion_line$|                    :|'
 
 echo
+echo "== the other door, which is judged and cured on its own"
+# Every one of these is a plausible edit that would either cure a door that is
+# not shut, or leave a shut door alone for ever.
+mutate "the door is cured the instant it blinks" 's/SSH_DOWN_AFTER:-60/SSH_DOWN_AFTER:-0/'
+mutate "the down threshold is off by one" 's/-ge "${SSH_DOWN_AFTER/-gt "${SSH_DOWN_AFTER/'
+mutate "the cure backoff is removed" 's/SSH_CURE_BACKOFF:-300/SSH_CURE_BACKOFF:-0/'
+mutate "the backoff is off by one" 's/-ge "${SSH_CURE_BACKOFF/-gt "${SSH_CURE_BACKOFF/'
+# Anything that is not a clear "no" has to mean do nothing. A board with no
+# netstat would otherwise restart sshd on every poll, for ever.
+mutate "any probe answer is taken as the door being shut" 's/\[ "$answered" = 1 \]/[ 1 = 1 ]/'
+# The port needs its trailing space or a listener on 2222 reads as the ssh
+# door, and a board with no sshd would look reachable.
+mutate "the port match loses its boundary" "s/:22 '/:22'/"
+# The cure has to stay inside the update stand-off: an update replaces the boot
+# scripts, and restarting one in the middle of that is the fault the stand-off
+# was written after. Anchored on the whole guard line, because the stand-off log
+# line above tests the same variable and a looser pattern would mutate that one
+# instead and report the gap in the wrong place.
+mutate "the cure runs only during an update" 's/"$state" != updating \]; then/"$state" = updating ]; then/'
+
+echo
 if [ "$fails" -eq 0 ]; then
     echo "===== every mutation was caught ====="
 else

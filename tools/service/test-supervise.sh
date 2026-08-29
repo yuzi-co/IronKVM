@@ -20,6 +20,8 @@ sed -n '/^# --- count ---$/,/^# --- end count ---$/p' "$SV" > "$WORK/count.sh"
 sed -n '/^# --- act ---$/,/^# --- end act ---$/p' "$SV" > "$WORK/act.sh"
 sed -n '/^# --- ion ---$/,/^# --- end ion ---$/p' "$SV" > "$WORK/ion.sh"
 sed -n '/^# --- updating ---$/,/^# --- end updating ---$/p' "$SV" > "$WORK/updating.sh"
+sed -n '/^# --- ssh door ---$/,/^# --- end ssh door ---$/p' "$SV" > "$WORK/sshdoor.sh"
+[ -s "$WORK/sshdoor.sh" ] || { echo "could not extract the ssh door block"; exit 1; }
 [ -s "$WORK/updating.sh" ] || { echo "could not extract the updating block"; exit 1; }
 [ -s "$WORK/decide.sh" ]  || { echo "could not extract the decide block"; exit 1; }
 [ -s "$WORK/backoff.sh" ] || { echo "could not extract the backoff block"; exit 1; }
@@ -724,6 +726,113 @@ if [ "$(grep -c '^[[:space:]]*served_ever=no$' "$SV")" -eq 1 ]; then
     note "the latch is set once at boot and never cleared" OK
 else
     note "served_ever is assigned no in more than one place, so it is a counter" FAIL
+fi
+
+echo
+echo "===== the other door ====="
+# sshd is how this board gets repaired when the server is the thing that broke,
+# and nothing watched it before. It is judged on its own: the cases below are
+# about the door alone, and the two shape assertions at the end are what keep it
+# from ever reaching the reboot ladder.
+
+# ssh_case <description> <probe answer> <seconds down> <seconds since cure> <want>
+ssh_case() {
+    desc="$1"; answered="$2"; down="$3"; since="$4"; want="$5"
+    got=$(WORK="$WORK" sh -c '
+        . "$WORK/sshdoor.sh"
+        ssh_action "$1" "$2" "$3"
+    ' sh "$answered" "$down" "$since")
+    if [ "$got" = "$want" ]; then
+        note "$desc -> $got" OK
+    else
+        note "$desc -> $got, want $want" FAIL
+    fi
+}
+
+#         description                              answer down  since  want
+ssh_case "listening, so nothing to do"             0     0      999    none
+ssh_case "listening after a long outage"           0     9999   999    none
+ssh_case "the probe could not run"                 2     9999   999    none
+ssh_case "down, but not for long enough"           1     30     999    none
+ssh_case "down for exactly the threshold"          1     60     999    restart
+ssh_case "down for longer"                         1     600    999    restart
+ssh_case "down, but a cure is still backing off"   1     600    30     none
+ssh_case "down, and the backoff has expired"       1     600    300    restart
+
+# The same fail-closed rule should_reboot documents. An error inside `[` is not
+# a false comparison: it skips the guard entirely.
+ssh_case "an empty seconds-down"                   1     ""     999    none
+ssh_case "a non-numeric seconds-down"              1     abc    999    none
+ssh_case "a negative seconds-down"                 1     -5     999    none
+ssh_case "an empty backoff clock"                  1     600    ""     none
+ssh_case "a seconds-down too wide to compare"      1     99999999999 999 none
+
+echo
+echo "===== the door is a listener, not a process ====="
+# `pidof sshd` passes on a board nobody can reach: a wedged sshd keeps its pid
+# and its port. This tests the shipped probe against a stub netstat.
+mkdir -p "$WORK/bin"
+printf '#!/bin/sh\ncat "$LISTENERS"\n' > "$WORK/bin/netstat"
+chmod 755 "$WORK/bin/netstat"
+
+printf 'tcp 0 0 0.0.0.0:22 0.0.0.0:* LISTEN\n' > "$WORK/listening"
+printf 'tcp 0 0 :::80 :::* LISTEN\n'           > "$WORK/shut"
+printf 'tcp 0 0 0.0.0.0:2222 0.0.0.0:* LISTEN\n' > "$WORK/nearly"
+
+probe() {
+    (
+        PATH="$WORK/bin:$PATH"
+        LISTENERS="$WORK/$1"
+        export PATH LISTENERS
+        . "$WORK/sshdoor.sh"
+        ssh_listening
+        echo $?
+    )
+}
+
+[ "$(probe listening)" = 0 ] \
+    && note "a listener on 22 reads as open" OK \
+    || note "a listener on 22 reads as $(probe listening)" FAIL
+
+[ "$(probe shut)" = 1 ] \
+    && note "no listener on 22 reads as shut" OK \
+    || note "no listener on 22 reads as $(probe shut)" FAIL
+
+# 2222 is a listener that contains the digits and is not the door.
+[ "$(probe nearly)" = 1 ] \
+    && note "a listener on 2222 is not mistaken for 22" OK \
+    || note "a listener on 2222 is read as the ssh door" FAIL
+
+# PATH is emptied inside the shell, not in front of it: emptying it in front
+# leaves no sh to run.
+no_netstat=$(WORK="$WORK" sh -c 'PATH=/nonexistent; . "$WORK/sshdoor.sh"; ssh_listening; echo $?')
+[ "$no_netstat" = 2 ] \
+    && note "a probe that cannot run says so instead of reporting the door shut" OK \
+    || note "a missing netstat reads as $no_netstat, not as unknown" FAIL
+
+echo
+echo "===== the ssh door never reaches the reboot ladder ====="
+# This board serves video and HID through the web door. Restarting a working KVM
+# because a maintenance daemon will not start is the worst trade in the file, so
+# the ssh cure must stay out of should_reboot and out of escalate.
+if grep -n 'should_reboot' "$SV" | grep -qi 'ssh'; then
+    note "the ssh door feeds the reboot decision" FAIL
+else
+    note "the ssh door never feeds the reboot decision" OK
+fi
+
+if grep -n 'escalate ' "$SV" | grep -qi 'ssh'; then
+    note "the ssh door can escalate to a reboot" FAIL
+else
+    note "the ssh door cannot escalate to a reboot" OK
+fi
+
+# An update replaces the boot scripts. Restarting one in the middle of that is
+# the fault the stand-off exists to prevent, so the cure sits inside the guard.
+if sed -n '/if \[ "\$state" != updating \]; then/,/^        fi$/p' "$SV" | grep -q 'cure_ssh'; then
+    note "the ssh cure stands off during an update" OK
+else
+    note "the ssh cure runs during an update" FAIL
 fi
 
 echo
