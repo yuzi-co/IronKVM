@@ -13,7 +13,7 @@ export const Recorder = ({ recordMode, recordedKeys }: RecorderProps) => {
   }
 
   return (
-    <div className="animate-in fade-in slide-in-from-top-4 pointer-events-none fixed right-5 top-5 z-[9999] flex min-w-[150px] flex-col gap-2 rounded-xl border border-white/10 bg-black/60 p-4 shadow-2xl backdrop-blur-md transition-all duration-200">
+    <div className="animate-in fade-in slide-in-from-top-4 pointer-events-none fixed right-5 top-5 z-9999 flex min-w-[150px] flex-col gap-2 rounded-xl border border-white/10 bg-black/60 p-4 shadow-2xl backdrop-blur-md transition-all duration-200">
       {recordedKeys.length === 0 ? (
         <>
           <div className="flex items-center gap-2">
@@ -48,7 +48,7 @@ export const Recorder = ({ recordMode, recordedKeys }: RecorderProps) => {
             {recordedKeys.map((key) => (
               <span
                 key={key}
-                className="flex items-center justify-center rounded border-b-2 border-white/20 bg-white/10 px-2 py-0.5 font-mono text-sm font-medium text-white shadow-sm"
+                className="flex items-center justify-center rounded border-b-2 border-white/20 bg-white/10 px-2 py-0.5 font-mono text-sm font-medium text-white shadow-xs"
               >
                 {key}
               </span>

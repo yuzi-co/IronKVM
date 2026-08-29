@@ -75,7 +75,7 @@ export const Menu = () => {
       <div
         ref={nodeRef}
         className={clsx(
-          'fixed left-1/2 top-[10px] z-[1000] -translate-x-1/2 transition-opacity duration-300',
+          'fixed left-1/2 top-[10px] z-1000 -translate-x-1/2 transition-opacity duration-300',
           isInitialized ? 'opacity-100' : 'opacity-0'
         )}
         onMouseEnter={() => handleHovered(true)}
@@ -84,7 +84,7 @@ export const Menu = () => {
       >
         {/* Trigger area for auto-show when hidden */}
         {isMenuExpanded && (
-          <div className="absolute -top-[10px] left-0 right-0 h-[46px] w-full bg-transparent" />
+          <div className="absolute top-[-10px] left-0 right-0 h-[46px] w-full bg-transparent" />
         )}
 
         {/* Menubar */}
@@ -93,7 +93,7 @@ export const Menu = () => {
             className={clsx(
               'relative h-[36px] items-center rounded bg-neutral-800/80 pl-1 pr-2 transition-all duration-300',
               isMenuExpanded ? 'flex' : 'hidden',
-              isMenuHidden ? '-translate-y-[110%] opacity-80' : 'translate-y-0 opacity-100'
+              isMenuHidden ? 'translate-y-[-110%] opacity-80' : 'translate-y-0 opacity-100'
             )}
           >
             {isMenuExpanded && isKeyboardLedStatusVisible && (

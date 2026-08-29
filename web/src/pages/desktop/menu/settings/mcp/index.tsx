@@ -236,7 +236,7 @@ export const MCP = () => {
 
         {config.enabled && (
           <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className="flex flex-col overflow-hidden rounded-xl border border-neutral-700/50 bg-neutral-800/40 shadow-sm">
+            <div className="flex flex-col overflow-hidden rounded-xl border border-neutral-700/50 bg-neutral-800/40 shadow-xs">
               <CredentialRow
                 label={t('settings.mcp.endpoint')}
                 value={endpoint}
