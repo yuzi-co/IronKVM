@@ -414,6 +414,11 @@ suite was committed.
 The suite asks GitHub nothing. A test that compared a pin against the tag would fail on the day
 an action published a release and would report a correct pin as a defect.
 
+GitHub itself resolved the pins in run 33269300032, dispatched on `fork/integration` at the
+merge commit `f756d9a5`. It completed the whole build, so `actions/checkout`, `actions/setup-node`
+and `actions/upload-artifact` each resolved from a sha. `actions/download-artifact` stays
+unexercised, because `release.yml` is the only workflow that uses it and that workflow publishes.
+
 **The gap this opens, and it is real.** A sha never follows a release.
 `dependabot_security_updates` is enabled on the repository, so an advisory against one of these
 four actions still produces a pull request. But `.github/dependabot.yml` exists on neither
