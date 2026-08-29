@@ -44,7 +44,7 @@ otherwise). Auth changes therefore cannot be tested through `pnpm dev` — build
 
 There is no frontend test runner.
 
-### Backend (`server/`, Go 1.24)
+### Backend (`server/`, Go 1.25)
 
 The device build is a RISC-V cross-compile and links against `libkvm` from `server/dl_lib` +
 `server/include`, so it does not build natively on a workstation.

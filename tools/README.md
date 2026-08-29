@@ -7,6 +7,7 @@ are operator tools.
 | Path          | What it does                                                          |
 | ------------- | --------------------------------------------------------------------- |
 | `build/`      | App-only cross-compile toolchain: `NanoKVM-Server` without MaixCDK.    |
+| `build/test-pinned-inputs.sh` | Hold both builder images to a pinned MaixCDK commit and a checksum for every archive they download. |
 | `slots/`      | A/B root filesystems: patch the initramfs, build and install a slot.   |
 | `abslots/`    | A/B root filesystems: build the card image and the update package.     |
 | `abslots/device/S00awatchdog` | Falls back if a boot never becomes reachable: undo an init.d update, return a failed trial to the trusted slot, or go to recovery. |
