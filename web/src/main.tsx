@@ -3,7 +3,7 @@ import { ConfigProvider, Spin, theme } from 'antd';
 import ReactDOM from 'react-dom/client';
 import { ErrorBoundary } from 'react-error-boundary';
 import { HelmetProvider } from 'react-helmet-async';
-import { RouterProvider } from 'react-router-dom';
+import { RouterProvider } from 'react-router';
 
 import { MainError } from './components/main-error.tsx';
 import { router } from './router';

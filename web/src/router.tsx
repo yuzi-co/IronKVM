@@ -1,4 +1,4 @@
-import { createHashRouter, Outlet } from 'react-router-dom';
+import { createHashRouter, Outlet } from 'react-router';
 
 import { AdminRoute, ProtectedRoute } from '@/components/auth';
 import { Root } from '@/components/root';
