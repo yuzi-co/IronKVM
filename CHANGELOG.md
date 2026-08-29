@@ -1,6 +1,75 @@
 # Changelog
 
-## 1.0.0 (unreleased)
+## 1.0.2 (unreleased)
+
+The first release since the fork stopped sending pull requests to Sipeed on
+2026-08-28. Everything below is either fork work or a change the rebase onto
+`upstream/main` brought in.
+
+### Added
+
+- Horizontal scroll in relative mouse mode. A tilt wheel or a thumb wheel now
+  reaches the host. The relative HID report carries a fifth byte for it, AC Pan
+  from the Consumer page, appended so the first three bytes keep the USB boot
+  mouse layout.
+- A boot-time CPU frequency setting.
+
+### Changed
+
+- The USB endpoint budget counts inbound and outbound separately, because the
+  controller does. It has six transmit FIFOs and seven endpoint pairs, and a
+  single number could not describe that. An over-subscribed configuration used
+  to bind and then lose an endpoint at the host's SET_CONFIGURATION, with
+  nothing but one line in the kernel ring to say so.
+- USB audio keeps eight isochronous requests in flight instead of the kernel
+  default of three. Below that, a service interval the host does not use makes
+  u_audio copy the same buffer into the ALSA ring twice, and the repeat is
+  audible.
+- Wireless runtime state no longer goes to the boot card.
+
+### Fixed
+
+- A USB gadget that stayed dead for the rest of uptime once its link failed.
+  Recovery ran at two moments only: a boot-time guard, and an operator pressing
+  a button. The board answers on the network throughout, so nothing looks wrong
+  except that the keyboard does nothing. The server now watches the controller
+  for as long as it runs and repairs the link, and it counts a link enumerated
+  at full speed as a fault of its own, because that reads "configured" and
+  cannot carry three HID endpoints.
+- An anonymous caller could stop the server by sending a malformed password.
+  `POST /api/auth/login` decrypts the body before it checks any credential, and
+  two shapes of garbage panicked the cipher underneath.
+- A login that looped with nothing logged in. The session cookie took its
+  Secure attribute from what the server offers rather than from how the request
+  arrived, so a board configured for HTTPS marked the cookie Secure on a plain
+  HTTP reply, and the browser then never sent it back.
+- Two viewers on different H.264 paths divided the stream instead of sharing it.
+  Direct mode and WebRTC each ran their own read loop against one encoder, so
+  each viewer got roughly every second frame of a GOP, which decodes to nothing
+  useful, while the board paid for the capture twice. The reported frame rate
+  was double the frames captured, for the same reason.
+- A Japanese Zenkaku/Hankaku key that stuck down on the host. The browser can
+  start a composition between that key's own keydown and keyup, so the keyup was
+  dropped, the host kept the key held, and this side then suppressed every later
+  press of it as a repeat.
+- Login was slower than it needed to be and gave a password guesser more of the
+  board than it should have. A device with no account file rebuilt the default
+  database on every read, and that ran bcrypt at the default cost each time,
+  about a second of a 1GHz core, on every request carrying a session.
+
+### Security
+
+- 48 dependency advisories closed, 16 Go and 34 npm. Nearly all of them needed
+  no more than a version the existing constraint already allowed; the lockfile
+  had not been refreshed.
+
+### From upstream
+
+The rebase onto `upstream/main` brought in Sipeed's secure multi-user support
+(`#876`), configurable mouse input regions, and a fix for mouse coordinates on
+direct H.264 frames.
+
+## 1.0.1 (2026-08-23)
 
 The first IronKVM release. It is a fork of the official NanoKVM firmware, and
 [docs/CHANGES-FROM-OFFICIAL.md](docs/CHANGES-FROM-OFFICIAL.md) lists what it
@@ -19,8 +88,6 @@ changes and why.
   preset.
 - A boot-script rollback: an update that stops the board booting is undone by the
   watchdog before it falls back to recovery.
-- Horizontal scroll in relative mouse mode. A tilt wheel or a thumb wheel now
-  reaches the host, which needed a fifth byte on the relative HID report.
 - zram, an HTTP proxy setting, API keys, and a build stamp that identifies the
   running binary.
 - `tools/release/release.sh`, which builds, verifies and publishes a release, and
@@ -44,17 +111,7 @@ changes and why.
 - A secret key that fell back to a guessable default.
 - Updates that were installed without verifying what was downloaded.
 - HID that stopped working until a reboot after a USB gadget rebuild.
-- A USB gadget that stayed dead for the rest of uptime once its link failed.
-  The board keeps answering on the network throughout, so nothing looked
-  wrong except that the keyboard did nothing. The server now watches the
-  controller and repairs the link, and it counts a link enumerated at full
-  speed as a fault, because that reads "configured" and cannot carry the
-  gadget.
 - A stalled viewer that froze the stream for every other viewer.
-- A Japanese Zenkaku/Hankaku key that stuck down on the host. The browser can
-  start a composition between that key's own keydown and keyup, and the keyup
-  was dropped, so the host kept the key held and this side suppressed every
-  later press of it.
 - A capture pipeline that reported success after a failed initialisation, and
   that was dismantled while its own threads were still using it.
 - A resolution probe that spun forever on an unreadable HDMI input.
