@@ -189,8 +189,13 @@ check "start bumps the counter before the subshell" \
     "$(sed -n '/^start()/,/^    (/p' "$WATCHDOG" | grep -c 'bump_attempts')" "1"
 check "start restores when the limit is reached" \
     "$(sed -n '/^start()/,/^    (/p' "$WATCHDOG" | grep -c 'restore_initd')" "1"
-check "the healthy branch clears the counter" \
-    "$(sed -n '/if healthy; then/,/standing down/p' "$WATCHDOG" | grep -c 'clear_attempts')" "1"
+# The loop lives in watch() now, because the defect it was refactored for was in
+# what the loop did with the answer rather than in the answer. This stays a
+# shape check, and the behaviour it stands for is executed in test-watchdog.sh:
+# "a reachable boot clears the update counter", beside the case that proves an
+# unreachable one does not.
+check "the success path clears the counter, and only it" \
+    "$(sed -n '/^watch()/,/^}/p' "$WATCHDOG" | grep -c 'clear_attempts')" "1"
 
 echo
 echo "passed $pass, failed $fail, skipped $skipped"
