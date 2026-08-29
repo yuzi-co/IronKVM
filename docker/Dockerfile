@@ -24,8 +24,17 @@ USER $DOCKER_UID:$DOCKER_GID
 
 FROM base_apt AS host_tools
 
+# The URL carries no version and the server publishes no checksum, so this
+# sha256 is the only thing that ties a build to a known toolchain. It was taken
+# on 2026-08-29 by streaming the 840MB download through sha256sum. If it stops
+# matching, do not raise it to whatever arrived: find out what changed at that
+# URL first.
+ARG HOST_TOOLS_URL=https://sophon-file.sophon.cn/sophon-prod-s3/drive/23/03/07/16/host-tools.tar.gz
+ARG HOST_TOOLS_SHA256=ff9a58e8e192b20ea42e1d729c42d2219523209706cb3f0cf134582f6c70f805
+
 USER root
-RUN wget -O /tmp/host-tools.tar.gz https://sophon-file.sophon.cn/sophon-prod-s3/drive/23/03/07/16/host-tools.tar.gz \
+RUN wget -O /tmp/host-tools.tar.gz "$HOST_TOOLS_URL" \
+    && echo "$HOST_TOOLS_SHA256  /tmp/host-tools.tar.gz" | sha256sum -c - \
     && tar -C /usr/local -zxvf /tmp/host-tools.tar.gz  \
     && rm -f /tmp/host-tools.tar.gz \
     && export PATH=$PATH:/usr/local/host-tools/gcc/riscv64-linux-musl-x86_64/bin \
@@ -33,11 +42,29 @@ RUN wget -O /tmp/host-tools.tar.gz https://sophon-file.sophon.cn/sophon-prod-s3/
 
 FROM base_apt AS golang
 
+ARG GO_VERSION=1.25.0
+# One sum for each architecture this image is built on. An architecture that is
+# not listed stops the build. A silent skip is the failure this whole change
+# exists to remove, so there is no fallback branch here.
+ARG GO_SHA256_AMD64=2852af0cb20a13139b3448992e69b868e50ed0f8a1e5940ee1de9e19a123b613
+ARG GO_SHA256_ARM64=05de75d6994a2783699815ee553bd5a9327d8b79991de36e38b66862782f54ae
+
 USER root
-RUN bash -c 'wget -O /tmp/go.tar.gz https://go.dev/dl/go1.25.0.linux-$([ `uname -m` == "x86_64" ] && echo "amd64" || uname -m).tar.gz' \
-    && tar -C /usr/local -zxvf /tmp/go.tar.gz \
-    && export PATH=$PATH:/usr/local/go/bin \
-    && echo "Installed golang" &&  go version
+# The mapping is explicit because `uname -m` does not name what go.dev
+# publishes. The previous expression passed "aarch64" through unchanged and
+# asked for a tarball that has never existed.
+RUN set -eu; \
+    case "$(uname -m)" in \
+        x86_64)  goarch=amd64; gosum="$GO_SHA256_AMD64" ;; \
+        aarch64) goarch=arm64; gosum="$GO_SHA256_ARM64" ;; \
+        *) echo "no pinned go checksum for $(uname -m)" >&2; exit 1 ;; \
+    esac; \
+    wget -O /tmp/go.tar.gz "https://go.dev/dl/go${GO_VERSION}.linux-${goarch}.tar.gz"; \
+    echo "$gosum  /tmp/go.tar.gz" | sha256sum -c -; \
+    tar -C /usr/local -zxvf /tmp/go.tar.gz; \
+    rm -f /tmp/go.tar.gz; \
+    export PATH=$PATH:/usr/local/go/bin; \
+    echo "Installed golang"; go version
 
 COPY server /tmp/go_cache
 
@@ -54,12 +81,23 @@ FROM base_apt AS sdk
 
 ENV HOME="/home/$DOCKER_USER"
 
+# Pinned. A bare clone of the default branch made this image unreproducible:
+# two builds of the same commit of this repository could link libkvm.so against
+# different SDK sources, and nothing would report it.
+#
+# This commit is the one that built the libkvm.so committed under
+# server/dl_lib. It is MaixCDK's head from 2026-08-20, the commit before it is
+# from 2026-07-17, and the library was rebuilt on 2026-08-28, so no other
+# commit can have produced it. The nearest release tag is v4.11.3.
+ARG MAIXCDK_COMMIT=30f4b8b7e3f66ded9cfa64fb081b46e30bc27248
+
 RUN cd ~ \
     && git clone https://github.com/Sipeed/MaixCDK \
     && cd MaixCDK \
+    && git checkout --detach "$MAIXCDK_COMMIT" \
     && python3 -m venv . \
     && . ./bin/activate \
-    && pip install -U -r requirements.txt 
+    && pip install -U -r requirements.txt
 
 COPY --chown=$DOCKER_UID:$DOCKER_GID . /home/$DOCKER_USER/NanoKVM
 
