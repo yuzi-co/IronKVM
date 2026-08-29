@@ -67,7 +67,7 @@ export const AbsoluteMouseWarning = () => {
         message: t('mouse.absoluteStalled'),
         description: t('mouse.absoluteStalledDesc'),
         placement: 'topRight',
-        duration: null,
+        duration: false,
         // Two remedies, because either can be the right one and the server
         // cannot tell which. Recovering USB is offered first: it keeps the
         // mouse mode the operator chose.

@@ -149,7 +149,7 @@ export const Settings = () => {
         destroyOnHidden={true}
         onCancel={closeModal}
         style={{ maxWidth: '1080px' }}
-        styles={{ content: { padding: 0 } }}
+        styles={{ container: { padding: 0 } }}
       >
         <div className="flex h-[80vh] max-h-[700px] rounded-lg outline outline-1 outline-neutral-700">
           <div className="flex h-full max-w-[260px] flex-col space-y-0.5 rounded-l-lg bg-neutral-800/90 px-1 sm:w-1/5 md:w-1/4 md:px-2">
