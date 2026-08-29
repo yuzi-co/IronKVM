@@ -66,7 +66,7 @@ export const H264Webrtc = () => {
         description: translationRef.current('screen.webrtcConnectionFailed.description'),
         placement: 'topRight',
         closable: false,
-        duration: null
+        duration: false
       });
     };
 

@@ -43,7 +43,7 @@ export const Notification = () => {
               {t('auth.ok')}
             </Button>
           ),
-          duration: null,
+          duration: false,
           onClose: () => setSkipModifyPassword(true)
         });
       }
@@ -75,7 +75,7 @@ export const H264ModeNotification = () => {
           message: t('screen.mixedH264.title'),
           description: t('screen.mixedH264.description'),
           placement: 'topRight',
-          duration: null
+          duration: false
         });
       } else {
         api.destroy(MIXED_H264_NOTIFICATION_KEY);

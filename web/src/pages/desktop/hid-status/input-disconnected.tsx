@@ -66,7 +66,7 @@ export const InputDisconnectedWarning = () => {
         message: t('input.disconnected'),
         description,
         placement: 'topRight',
-        duration: null,
+        duration: false,
         onClose: () => {
           isOpen.current = false;
         }
