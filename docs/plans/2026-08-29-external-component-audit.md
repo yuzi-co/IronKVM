@@ -282,7 +282,7 @@ scripted client cannot exercise, because it needs a real ICE and DTLS handshake.
 The `service/ws` heartbeat test failed once in the full run and passes five times out of five on
 its own. That is the known load flake, not this change.
 
-### Phase 5: the frontend runtime majors, with React held at 18
+### Phase 5: the frontend runtime majors, with React held at 18 (done, 2026-08-29)
 
 `chore/frontend-majors`. Ten packages, listed in finding 5. React and `react-dom` stay at 18.3.1, and
 `@types/react` stays at 18.
@@ -293,7 +293,27 @@ surface, and it is the one that will need screenshots rather than a build gate.
 Gate: `pnpm build`, `pnpm lint`, then a deployed walk-through of every page. There is no frontend
 test runner, so the walk-through is the whole gate.
 
-Cost: two to three days, dominated by antd.
+Done. Twelve packages moved and React stayed at 18.3.1 throughout, which the
+peer dependencies allowed exactly as finding 5 predicted.
+
+antd was the only one of the twelve that needed source changes, and tsc named
+both. `duration: null` no longer disables auto-close on a notification: v6 uses
+`false`, and five notifications here must stay up until the operator dismisses
+them. Modal's semantic DOM dropped `styles.content` for `styles.container`.
+
+Four packages are pinned below their newest release because pnpm's release-age
+gate holds those back and taking them would have written a bypass into
+pnpm-workspace.yaml. antd 6.6.2 was a day old, lucide-react 1.37.0 was eight
+hours old.
+
+antd 6 is smaller than antd 5 here: the desktop chunk falls from 1005kB to
+991kB and LockOutlined from 191kB to 148kB.
+
+**Build on the branch, then build again on the merge.** The branch was cut from
+`main`, and `main` lacks 39 of the fork's frontend files. The branch compiled
+clean; the merge into `fork/integration` then failed on
+`hid-status/input-disconnected.tsx`, a fork-only file carrying the same
+`duration: null`. A single build on the branch would have shipped that.
 
 ### Phase 6: the build-time packages and the CI actions
 
