@@ -1,6 +1,45 @@
 # Changelog
 
-## 1.0.2 (unreleased)
+## 1.0.3 (unreleased)
+
+Three layers of recovery, and the one that was already there had stopped
+working.
+
+### Fixed
+
+- The boot watchdog stood down ten seconds into every boot and confirmed the
+  running slot on evidence it had not gathered. Its health test had two answers
+  and needed three: no carrier was reported as healthy, and eth0 has no carrier
+  at the first sample. The 300-second deadline, the init.d rollback and the fall
+  back to recovery were all unreachable in practice. No carrier is neither a
+  fault nor health now, so the watcher keeps waiting on it and leaves without
+  confirming anything if it is still the answer at the deadline.
+
+### Added
+
+- The supervisor watches the ssh door. A board that serves video with a dead
+  sshd looks healthy from a browser and cannot be repaired from anywhere. It is
+  judged apart from the server and never reaches the reboot ladder, because
+  restarting a working KVM over a maintenance daemon is the worst trade
+  available here. The probe is the listener rather than the process, since a
+  wedged sshd keeps its pid and answers nothing.
+- The SoC watchdog is armed. Every other guard in the tree is a process and has
+  to fork to act, and this board has two faults that leave nothing able to fork:
+  memory pressure that wedges process creation without an OOM kill, and a
+  kernel-side lockup. There is no remote power cycle on this enclosure, so both
+  cost a trip to the board today. It arms 42 seconds of hardware timer, pinged
+  every eight, plus an active test that asks for a megabyte and touches it,
+  because a board that cannot hand out a megabyte is a board that cannot fork.
+
+  A shutdown deliberately leaves the timer running. On 2026-08-15 this board ran
+  a whole shutdown and never reset, answering ping for 25 minutes with every
+  port refused, and only removing power ended it.
+
+  Almost everything in the sample configuration is deliberately left off, and
+  the script says why for each line. `max-load-1` is the dangerous one: this
+  board idles at a load average of about 4 with no CPU load at all.
+
+## 1.0.2 (2026-08-29)
 
 The first release since the fork stopped sending pull requests to Sipeed on
 2026-08-28. Everything below is either fork work or a change the rebase onto
