@@ -14,7 +14,7 @@ are operator tools.
 | `ionmem/`     | Shrink the ION carveout in `boot.sd`. Returns 19MB at the size installed. |
 | `vi-loadavg/` | Build `soph_vi.ko` with the four idle ISP waits moved to `TASK_IDLE`.  |
 | `oled/`       | Move the status image to spread OLED wear, with no change to `kvm_system`. |
-| `service/`    | Restart `NanoKVM-Server` and `kvm_system` if they die. Nothing else does. |
+| `service/`    | Restart `NanoKVM-Server`, `kvm_system` and `sshd` if they die. Nothing else does. |
 | `deploy/`     | Install a server build and put the old one back if it does not serve.   |
 | `usbdev/`     | Check the USB gadget: the optional ACM console, and the link order.     |
 | `audiodiag/`  | Say whether USB audio capture works, and name the end that fails.      |

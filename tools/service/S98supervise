@@ -27,6 +27,9 @@
 #   SUPERVISE_CRASH_LOOP_N  short runs that trigger a reboot     (default 5)
 #   SUPERVISE_HANG_CURES    failed cures that trigger a reboot   (default 2)
 #   SUPERVISE_NO_REBOOT     1 logs the decision and does not act (default 0)
+#   SSH_DOWN_AFTER       seconds with no listener on 22 before a restart (60)
+#   SSH_CURE_BACKOFF     seconds between two sshd restarts               (300)
+#   SSHD_INIT            the init script to restart (default /etc/init.d/S50sshd)
 
 INTERVAL=${SUPERVISE_INTERVAL:-5}
 # Seconds a process may be alive and not answering before it counts as hung. A
@@ -54,6 +57,14 @@ UPDATE_STANDOFF=${SUPERVISE_UPDATE_STANDOFF:-300}
 
 SERVER_BIN=${SERVER_BIN:-/tmp/server/NanoKVM-Server}
 SYSTEM_BIN=${SYSTEM_BIN:-/tmp/kvm_system/kvm_system}
+
+# The other door. sshd is not what this board is for, so losing it costs no
+# service at all. It is how the board gets repaired when the server is the thing
+# that broke, so losing it quietly is how a recoverable fault becomes a trip to
+# the enclosure. Nothing watched it before this.
+SSH_DOWN_AFTER=${SSH_DOWN_AFTER:-60}
+SSH_CURE_BACKOFF=${SSH_CURE_BACKOFF:-300}
+SSHD_INIT=${SSHD_INIT:-/etc/init.d/S50sshd}
 
 # Where the server's own output goes. This must be the path S95nanokvm uses,
 # because S99vidiag reads that one file. libkvm reports a capture pipeline that
@@ -509,6 +520,70 @@ delay_after_run() {
 }
 # --- end backoff ---
 
+# --- ssh door ---
+# sshd gets its own probe, its own cure and no escalation at all.
+#
+# It is judged apart from the server on purpose. A dead sshd is no evidence
+# about NanoKVM-Server, and it must never move the board toward a reboot: this
+# board serves video and HID through the web door, and restarting a working KVM
+# because a maintenance daemon will not start is the worst trade in this file.
+# When both doors are shut, the server ladder above is already the one deciding.
+#
+# The listener, not the process. `pidof sshd` passes on a board nobody can
+# reach, because a wedged sshd keeps its pid and its port. S00awatchdog tests
+# the same door the same way, for the same reason.
+#
+# Three answers, exactly like serving(). A probe that could not run is not a
+# report that the door is shut:
+#
+#   0  something is listening on 22
+#   1  nothing is
+#   2  the probe could not run, so nothing was measured
+ssh_listening() {
+    [ -x "$(command -v netstat)" ] || return 2
+
+    netstat -lnt 2>/dev/null | grep -q ':22 ' || return 1
+    return 0
+}
+
+# Every input is passed in. Nothing here reads a clock, a file or a process.
+#
+# The backoff is what keeps this from becoming a loop against a fault it cannot
+# fix. An sshd with an unreadable host key never starts, and retrying that every
+# five seconds would spend the only core this board has. It never gives up
+# either, for the reason first_delay gives: this is the thing you reach for when
+# nothing else answers.
+ssh_action() {   # $1 = probe answer, $2 = seconds down, $3 = seconds since the last cure
+    answered=$1; down_for=$2; since_cure=$3
+
+    # Anything that is not a clear "no" is not evidence. A board without netstat
+    # would otherwise restart sshd on every poll, for ever.
+    [ "$answered" = 1 ] || { echo none; return; }
+
+    # Fail closed on anything that is not a plain non-negative integer, and on
+    # anything wider than busybox `[` compares without erroring. An error is not
+    # a false comparison: it skips the guard it was meant to be, which is the
+    # same hole should_reboot documents.
+    for num in "$down_for" "$since_cure" "${SSH_DOWN_AFTER:-60}" "${SSH_CURE_BACKOFF:-300}"
+    do
+        case "$num" in ''|*[!0-9]*) echo none; return ;; esac
+        [ "${#num}" -le 10 ] || { echo none; return; }
+    done
+
+    [ "$down_for"   -ge "${SSH_DOWN_AFTER:-60}" ]    || { echo none; return; }
+    [ "$since_cure" -ge "${SSH_CURE_BACKOFF:-300}" ] || { echo none; return; }
+
+    echo restart
+}
+
+# setsid for the reason start() gives: the init script holds stdio through its
+# own restart, and a supervisor that waits on it has stopped supervising.
+cure_ssh() {
+    setsid sh -c '"$1" restart > /tmp/supervise-sshd.log 2>&1' \
+        sh "${SSHD_INIT:-/etc/init.d/S50sshd}" < /dev/null > /dev/null 2>&1 &
+}
+# --- end ssh door ---
+
 binary_present() {
     [ -x "$SERVER_BIN" ]
 }
@@ -602,6 +677,14 @@ watch_loop() {
     # Whether the last pass stood off for an update, so the log records the two
     # transitions and not every poll in between.
     stood_off=no
+
+    # The ssh door keeps its own clock, because it is cured on its own and never
+    # counts toward a reboot. An empty ssh_cured_at means no cure has happened,
+    # which the backoff must read as "long enough ago" and not as uptime zero: a
+    # board whose sshd dies in the first five minutes would otherwise wait out a
+    # backoff it never earned.
+    SSH_LAST_OK=$(now)
+    ssh_cured_at=
 
     while :; do
         sleep "$INTERVAL"
@@ -736,6 +819,30 @@ watch_loop() {
             "$SYSTEM_BIN" < /dev/null > /dev/null 2>&1 &
             log "kvm_system was gone, started it as pid $!"
         fi
+
+        # The other door. An update replaces the boot scripts, so restarting one
+        # of them in the middle of an update is the fault the stand-off exists to
+        # prevent.
+        if [ "$state" != updating ]; then
+            ssh_listening
+            ssh_answered=$?
+
+            [ "$ssh_answered" -eq 1 ] || SSH_LAST_OK=$(now)
+
+            if [ -z "$ssh_cured_at" ]; then
+                since_ssh_cure=${SSH_CURE_BACKOFF:-300}
+            else
+                since_ssh_cure=$(( $(now) - ssh_cured_at ))
+            fi
+            ssh_down_for=$(( $(now) - SSH_LAST_OK ))
+
+            if [ "$(ssh_action "$ssh_answered" "$ssh_down_for" "$since_ssh_cure")" = restart ]
+            then
+                log "nothing has listened on port 22 for ${ssh_down_for}s, restarting $SSHD_INIT"
+                cure_ssh
+                ssh_cured_at=$(now)
+            fi
+        fi
     done
 }
 
@@ -759,7 +866,7 @@ start() {
     # Without them a reboot directory produced by a test with the floor at 0
     # reads exactly like one produced by a real incident, for whoever opens it
     # afterwards - and that is the only record of which run it was.
-    log "supervisor started as pid $!, checking every ${INTERVAL}s (floor ${REBOOT_FLOOR}s, ${CRASH_LOOP_N} short runs, ${HANG_CURES_K} cures, no_reboot=${NO_REBOOT})"
+    log "supervisor started as pid $!, checking every ${INTERVAL}s (floor ${REBOOT_FLOOR}s, ${CRASH_LOOP_N} short runs, ${HANG_CURES_K} cures, ssh after ${SSH_DOWN_AFTER}s, no_reboot=${NO_REBOOT})"
     echo "OK (pid $!, every ${INTERVAL}s)"
 }
 
@@ -815,6 +922,12 @@ case "$1" in
         esac
         echo "server     : $(process_running && echo up || echo down)"
         echo "kvm_system : $(system_running && echo up || echo down)"
+        ssh_listening
+        case $? in
+            0) echo "ssh door   : listening" ;;
+            1) echo "ssh door   : NOT listening" ;;
+            *) echo "ssh door   : unknown (netstat is missing)" ;;
+        esac
         echo "recent     :"
         tail -5 "$LOG" 2>/dev/null | sed 's/^/  /'
         ;;
