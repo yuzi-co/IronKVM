@@ -135,95 +135,55 @@ making the field loop create-only, and dropping `e.changed`.
 
 ---
 
-## Priority 0: a live bug here, or a small clean change
+## Priority 0 and Priority 1, reviewed 2026-08-30
 
-### 1. PR #813, gate the default data disk until the filesystem is ready
+Six of the eight items are in this tree already, and a seventh was never a defect here. The list
+below records what closed each one. A later session that reads the old text starts work that is
+finished, so the evidence is a path in this checkout rather than a claim.
 
-Author `@mjc`. `+1253/-61`, 9 files, `mergeable=clean`. Includes tests.
+None of the seven was cherry-picked. Each was implemented in the fork, sometimes before the pull
+request was read, so the upstream branch and the fork's answer share a defect and not a patch.
 
-`kvmapp/system/init.d/S01fs:134` creates `/etc/kvm.disk0`. Line 139 then runs
-`(mkfs.exfat /dev/mmcblk0p3) &` in the background. The marker therefore exists before the format
-completes. If the board loses power during the format, the next boot reads the marker, treats a
-half-formatted partition as usable, and exports it over USB mass storage.
+### Closed
 
-The pull request tracks an interrupted format with `/etc/kvm.disk0.formatting` and retries it on the
-next boot.
+- **#813, gate the default data disk until the filesystem is ready.**
+  `kvmapp/system/init.d/S01fs:252` adds the in-flight marker `/etc/kvm.disk0.formatting`.
+  `provision_disk0` at `:255` formats in the foreground and writes `/etc/kvm.disk0` only after
+  `mkfs.exfat` reports success, so no boot can export a half-made filesystem.
+- **#675, change the HID mode without a reboot.** `server/service/hid/status.go:143`,
+  `applyHidMode`, rebuilds the gadget through the init script. The comment at `:126` records the
+  removal of the `reboot` call and what the scripts must do for the rebuild to work.
+- **#749, request DHCP option 121.** `kvmapp/system/init.d/S30eth:60` and `:68` both pass `-O 121`.
+- **#764, set the data partition type and label.** `kvmapp/system/init.d/S01fs:261` calls
+  `parted mkpart primary ntfs`, which sets the MBR id to `0x07`. Line `:270` labels the filesystem
+  with `mkfs.exfat -L data`.
+- **#759, `GOMEMLIMIT` and OOM protection for the server.** `kvmapp/system/init.d/S95nanokvm:270`,
+  `server_memlimit`, defaults to 64MiB and reads `/etc/kvm/GOMEMLIMIT.server` in MiB. The OOM half
+  is refused on purpose. The comment at `:267` says the kernel on this board does not choose a
+  victim under the pressure this fork measures: allocation stops working first, so an
+  `oom_score_adj` would read as protection and change nothing.
+- **#751, move more runtime state to tmpfs.** `kvmapp/system/init.d/S95nanokvm:193`,
+  `prepare_runtime_state`, links `now_fps`, `state` and `wifi_state` into `/tmp/kvm`. `width` and
+  `height` stay on the card, because libkvm reads them back at capture init to restore the last
+  resolution, and a tmpfs copy seeded with 0 changes what the sensor is configured with.
+- **#800, read the PicoClaw token dynamically.** Not a defect here. This fork generates and writes
+  `/etc/kvm/.picoclaw_internal_token` itself, so the cached value cannot go stale. The check, and
+  the second copy of the token that it did find, are recorded in the 2026-08-28 status section
+  above.
 
-This is the highest-value item on the list, because the defect is in this tree today.
+### Still open
 
-### 2. PR #675, change HID mode without a reboot
+**PR #858, safer OLED sleep and monotonic timers.** Author `@SiYue-ZO`. `+759/-577`, 12 files,
+draft, `mergeable=clean`.
 
-Author `@scpcom`. `+1019/-46`, 11 files, `mergeable=dirty`, last updated 2026-02-16.
+Confirmed still absent on 2026-08-30: no `CLOCK_MONOTONIC` and no `steady_clock` anywhere under
+`support/sg2002/kvm_system/main/lib/oled_ctrl/` or `.../oled_ui/`. Every timer there reads wall
+time, so an NTP step at boot can blank or wake the panel for no reason. The pull request moves the
+inactivity, carousel, event-wake, Wi-Fi and button timers onto monotonic time, and it separates the
+OLED power state from the UI subpage.
 
-`server/service/hid/status.go:120` still logs "reboot system..." and calls `exec.Command("reboot")`.
-A restart on this board costs 135 seconds under the graceful-stop init script.
-
-The branch conflicts and is old. Read it for the approach, then implement it here. Do not
-cherry-pick.
-
-### 3. PR #749, request DHCP option 121
-
-Author `@phaidros7`. `+3/-3`, 1 file, `mergeable=clean`.
-
-`kvmapp/system/init.d/S30eth:60` and `:68` call `udhcpc` without `-O 121`, so the server never
-offers classless static routes. The existing `default.script` already handles them per RFC 3442.
-
-### 4. PR #764, set the `/data` partition type and label
-
-Author `@jjmaestro`. `+4/-3`, 1 file, `mergeable=clean`.
-
-Creates `mmcblk0p3` with the parted NTFS type, so the MBR id is `0x07` instead of Linux `0x83`, and
-gives the exfat filesystem a label. `S01fs` sets neither today.
-
-Check this against the A/B slot caveat recorded at `kvmapp/system/init.d/S01fs:46-50` before you
-apply it.
-
----
-
-## Priority 1: worth the work
-
-### 5. PR #858, safer OLED sleep and monotonic timers
-
-Author `@SiYue-ZO`. `+759/-577`, 12 files, draft, `mergeable=clean`.
-
-No monotonic clock exists anywhere in `support/sg2002/kvm_system/main/lib/oled_ctrl/` or
-`.../oled_ui/`. An NTP step at boot can therefore blank or wake the panel for no reason. The pull
-request moves inactivity, carousel, event-wake, Wi-Fi and button timers onto monotonic time, and
-separates the OLED power state from the UI subpage.
-
-This sits next to the existing `fix/oled-sleep-never` branch.
-
-### 6. PR #759, take the init-script half only
-
-Author `@AndrewMoryakov`. `+1651/-16`, 23 files, `mergeable=dirty`.
-
-Do not take the NetBird VPN. Take the `S95nanokvm` changes: `GOMEMLIMIT` and OOM protection for
-`NanoKVM-Server` itself.
-
-This fork sets `GOMEMLIMIT` only for tailscaled, at `kvmapp/system/init.d/S98tailscaled:46-53`.
-Memory pressure is the worst failure mode on this board, so the server deserves the same treatment.
-
-### 7. PR #800, read the PicoClaw token dynamically
-
-Author `@BeaconCat`. `+52/-0`, 1 file, `mergeable=clean`.
-
-The pull request reads the token from `~/.picoclaw/.security.yml` on every call, because PicoClaw
-regenerates it on restart.
-
-This fork uses a different file and caches the value: `server/config/picoclaw_internal.go:24` returns
-`picoclawInternalToken.value` when it is not empty, and the file is
-`/etc/kvm/.picoclaw_internal_token`. The mechanism differs, but the failure shape is the same.
-Confirm whether the cache goes stale here before you write any code.
-
-### 8. PR #751, move more runtime state to tmpfs
-
-Author `@winstar0070`. `+33/-32`, 8 files, `mergeable=dirty`.
-
-The `perf/now-fps-off-sd-card` branch covers `now_fps`. This pull request also covers `state`,
-`wifi_state`, `width` and `height`, and it changes the C++ side in `kvm_vision.cpp` and
-`system_state.cpp`, which this fork has not touched.
-
-Diff his file list against the fork branch and take the remainder.
+This sits next to the existing `fix/oled-sleep-never` branch. It needs a MaixCDK build and a
+`kvm_system` deploy, so it cannot be verified off the device.
 
 ---
 
@@ -365,12 +325,14 @@ what a smaller rootfs would drop.
 
 ## Suggested order
 
-1. Rebase onto `d382f062`.
-2. PR #813, the data-disk gating. The defect is in this tree.
-3. PR #675, HID mode without a reboot. It returns 135 seconds per mode change.
-4. PR #749 and PR #764. Seven lines in total, and both merge clean.
-5. PR #759, `GOMEMLIMIT` and OOM protection for the server.
-6. PR #858, monotonic OLED timers.
+Steps 1 to 5 of the original order are done, and the review above records what closed each one.
+`main` is level with `upstream/main` as of 2026-08-30, so no rebase is pending either. What is
+left:
+
+1. PR #858, monotonic OLED timers. It is the only open item from Priority 0 or Priority 1.
+2. PR #864, the Spanish paste layout. `server/service/hid/paste.go:39` still carries `de` and `fr`
+   alone, so the change stays additive.
+3. Priority 2, in whatever order the device needs.
 
 ---
 
