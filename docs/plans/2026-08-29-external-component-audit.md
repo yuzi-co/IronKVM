@@ -309,6 +309,22 @@ hours old.
 antd 6 is smaller than antd 5 here: the desktop chunk falls from 1005kB to
 991kB and LockOutlined from 191kB to 148kB.
 
+**lucide 1.x redraws seven of the icons, and the new drawings are kept.** The
+1.0 release is a redesign, not only a rename, so going from 0.562.0 to 1.35.0
+changes the path data of seven of the fifty-five icons this app imports:
+`ArrowBigUp`, `ArrowBigUpDash`, `ArrowBigDownDash`, `EthernetPort`, `BookOpen`,
+`PackageSearch`, and `Clock3`, whose nodes only changed order and which renders
+the same. The three arrows are the visible ones, because they are the Shift and
+Caps keys on the virtual keyboard. Their corner joins go from a radius of 1 to
+a radius of 0.707, so the arrows read as sharper than the rounded ones before.
+
+This was noticed on the device on 2026-08-30 and taken as it comes, the same
+way as the OKLCH palette below. Nothing else depends on the version of an icon
+package, so pinning back to 0.562.0 stays available if the drawings turn out to
+be wrong for the product. Reach for that before assuming a radius utility moved:
+the Tailwind 4 migration changed no radius at all, and `--radius-lg`, `md`, `xs`
+and bare `rounded` all still resolve to what version 3 emitted.
+
 **Build on the branch, then build again on the merge.** The branch was cut from
 `main`, and `main` lacks 39 of the fork's frontend files. The branch compiled
 clean; the merge into `fork/integration` then failed on
