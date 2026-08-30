@@ -947,7 +947,8 @@ for those from 2026-08-19 that the source commit did not have.
   between them and hold the quiet-host against parked-stream distinction that `feat/usb-audio`
   needs. `manager.go` and `output_linux.go` are 72KB and are a reimplementation, not an adoption.
 - `eringiriri/ERINGI_JPN_NanoKVM`: horizontal scroll in relative mouse mode, and a composition guard
-  that leaves the JIS Zenkaku key stranded. Both small and additive.
+  that leaves the JIS Zenkaku key stranded. Both small and additive. **Both are adopted in the next
+  section, and both are on the device since 2026-08-30.**
 - `pi-bmc/nanokvm-app`, twelve `cvi` commits. "Stop the drivers' error reporting from killing the
   board" and "Drain the encoder even when it has just refused a frame" are the interesting two. It
   is a Go rewrite of the capture path, so it stays read-and-reimplement.
@@ -1011,10 +1012,26 @@ would have nudged the pointer under someone reading a document. Here the two lay
 apart as well, because byte 3 of an absolute report is half of the Y coordinate and counting it
 would have made pointer movement suspend the jiggler.
 
-### Not deployed
+### Deployed, 2026-08-30
 
-Both are verified off-device: `go vet`, the full `go test` twice, a `GOARCH=riscv64` build,
-`tsc --noEmit`, eslint and prettier. The scroll change alters the USB descriptor, so it needs a
-gadget rebuild on the device and both halves have to arrive together. A server that sends five bytes
-to a gadget composed from the old script has its reports truncated and the horizontal wheel silently
-dropped. That is a device window and a deploy plan, not a background task.
+Both halves are on the device, and the descriptor and the server agree about the report length.
+
+The two init scripts in `/kvmapp/system/init.d` have the same md5 as the blobs on
+`fork/integration`: `a6d582041d3057992e7845b23827681e` for `S03usbdev` and
+`f8069690f8799ccd4d6baf8a41569e90` for `S03usbhid`. `/etc/init.d/S03usbdev`, which is the copy that
+boot reads, matches as well. There is no `/etc/init.d/S03usbhid`, and there does not have to be:
+`server/service/hid/status.go` runs the HID-only script from `/kvmapp` by its absolute path. The
+gadget agrees with the scripts, because
+`/sys/kernel/config/usb_gadget/g0/functions/hid.GS1/report_length` reads 5.
+
+The running server is `dev.20260829.1819.ce311bb5`, and `feat/mouse-horizontal-scroll` is an
+ancestor of that commit. The binary therefore sends five-byte reports to a gadget that asks for
+five. The composition fix is frontend only, and the served tree is current: all 42 files under
+`/tmp/server/web` are byte-identical to a fresh build of the branch head, and `/kvmapp/server/web`
+matches the same build.
+
+Before the deploy, both changes were verified off-device: `go vet`, the full `go test` twice, a
+`GOARCH=riscv64` build, `tsc --noEmit`, eslint and prettier. The scroll change alters the USB
+descriptor, so the two halves had to arrive together. A server that sends five bytes to a gadget
+composed from the old script has its reports truncated, and the horizontal wheel is dropped with no
+error anywhere.
