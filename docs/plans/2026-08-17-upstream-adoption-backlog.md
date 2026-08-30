@@ -171,19 +171,46 @@ request was read, so the upstream branch and the fork's answer share a defect an
   the second copy of the token that it did find, are recorded in the 2026-08-28 status section
   above.
 
-### Still open
+### PR #858, half taken on 2026-08-30
 
-**PR #858, safer OLED sleep and monotonic timers.** Author `@SiYue-ZO`. `+759/-577`, 12 files,
-draft, `mergeable=clean`.
+**The timers are monotonic now.** `fix/oled-monotonic-timers`, merged as `bb1285e9`. MaixCDK
+documents the rule in `maix_time.hpp` itself: `time_ms()` is the wall clock, and "if you want to
+calculate time interval, please use ticks_ms()". `ticks_ms()` calls
+`clock_gettime(CLOCK_MONOTONIC, ...)`, read from
+`components/basic/src/maix_time.cpp:74` in the builder image.
 
-Confirmed still absent on 2026-08-30: no `CLOCK_MONOTONIC` and no `steady_clock` anywhere under
-`support/sg2002/kvm_system/main/lib/oled_ctrl/` or `.../oled_ui/`. Every timer there reads wall
-time, so an NTP step at boot can blank or wake the panel for no reason. The pull request moves the
-inactivity, carousel, event-wake, Wi-Fi and button timers onto monotonic time, and it separates the
-OLED power state from the UI subpage.
+The fork had two wall-clock intervals, not the five the pull request names. The carousel timers are
+loop counters here, `run_count` against `IP_Change_time/STATE_DELAY` at `oled_ui.cpp:148` and
+`QR_Change_time/STATE_DELAY` at `:400`, and a counter cannot be stepped by NTP. What did read the
+wall clock:
 
-This sits next to the existing `fix/oled-sleep-never` branch. It needs a MaixCDK build and a
-`kvm_system` deploy, so it cannot be verified off the device.
+- The OLED inactivity countdown, started at `oled_auto_sleep_time_update` and compared in
+  `oled_auto_sleep`.
+- The button hold in `thread_key_handle`, where nine seconds resets the password.
+
+The board carries no RTC battery, so the first NTP answer of a boot moves the wall clock by about
+1.7e12 ms. A countdown that starts before that answer is over by any measure after it, and the
+comparison is unsigned, so a step backwards wraps instead of clamping. The button case is worse than
+a blanked panel: the operator presses that button to configure the Wi-Fi, connecting the Wi-Fi is
+what lets NTP answer, and the old `uint32_t` truncation of the step leaves an arbitrary value that
+can clear `KEY_LONGLONG_PRESS`.
+
+The same commit fixes a defect the pull request does not mention. `press_time` was uninitialized and
+the release path assumed a press came first. An operator who holds the button through power-on
+releases it after the thread opens `/dev/input/event0`, so the first event of the process is a
+release, and the password reset could fire from stack garbage.
+
+**Still open: separating the OLED power state from the UI subpage.** Sleep is expressed as
+`kvm_sys_state.sub_page = 1` today, so the panel's power state and the page it shows are one
+variable. The pull request splits them. That changes how the pages are driven and needs a panel to
+judge, which is why it was left out of a change that needs no hardware to verify.
+
+`fix/oled-sleep-never` no longer exists. It went with the forty-eight extraction branches on
+2026-08-28, and `origin` plus `refs/archive/extractions-20260828/` hold the copies.
+
+**Not deployed.** The binary is built and it is not on the device. `kvm_system` is not committed to
+`kvmapp/`, unlike `kvm_stream`, so the change reaches a board only through `make support` and a
+deploy.
 
 ---
 
@@ -329,10 +356,11 @@ Steps 1 to 5 of the original order are done, and the review above records what c
 `main` is level with `upstream/main` as of 2026-08-30, so no rebase is pending either. What is
 left:
 
-1. PR #858, monotonic OLED timers. It is the only open item from Priority 0 or Priority 1.
-2. PR #864, the Spanish paste layout. `server/service/hid/paste.go:39` still carries `de` and `fr`
+1. Deploy `kvm_system`, so the monotonic timers reach the board. The build is done.
+2. PR #858's other half, separating the OLED power state from the UI subpage. It needs a panel.
+3. PR #864, the Spanish paste layout. `server/service/hid/paste.go:39` still carries `de` and `fr`
    alone, so the change stays additive.
-3. Priority 2, in whatever order the device needs.
+4. Priority 2, in whatever order the device needs.
 
 ---
 
