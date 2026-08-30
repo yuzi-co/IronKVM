@@ -333,6 +333,25 @@ void OLED_Set_Offset(uint8_t rows)
 	oled_write_register(OLED_CMD, rows & 0x3F);
 }
 
+// OLED_Blank_Span blanks a rectangle: width columns from x, over pages whole
+// pages from the given one.
+//
+// It exists so a caller can erase what a shorter string left behind without
+// clearing anything a reader is looking at. Clearing a whole page before
+// drawing turns every redraw into a visible flash.
+void OLED_Blank_Span(uint8_t x, uint8_t page, uint8_t width, uint8_t pages)
+{
+	uint8_t p;
+	uint16_t n;
+
+	for(p = page; p < page + pages && p < 8; p++){
+		OLED_Set_Pos(x, p);
+		for(n = 0; n < width && (x + n) < 128; n++){
+			oled_write_register(OLED_DATA, 0x00);
+		}
+	}
+}
+
 // OLED_Clear_Pages blanks whole pages rather than the panel. The roaming page
 // redraws three of the eight, and clearing only those keeps a move to about a
 // third of the I2C traffic of OLED_Clear.

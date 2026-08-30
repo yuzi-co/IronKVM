@@ -359,6 +359,7 @@ uint8_t oled_drive_level(void);
 void OLED_Set_Contrast(uint8_t level);
 void OLED_Set_Offset(uint8_t rows);
 void OLED_Clear_Pages(uint8_t first, uint8_t count);
+void OLED_Blank_Span(uint8_t x, uint8_t page, uint8_t width, uint8_t pages);
 void OLED_Revolve(void);
 void OLED_ShowState(uint8_t x,uint8_t y,char chr,uint8_t size);
 void OLED_DisplayTurn(uint8_t i);
