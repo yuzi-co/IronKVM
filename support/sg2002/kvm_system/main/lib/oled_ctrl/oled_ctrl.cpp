@@ -143,10 +143,18 @@ void OLED_ShowChar(uint8_t x,uint8_t y,char chr,uint8_t sizey)
 	else if(sizey==4)size1=4;
 	else size1=(sizey/8+((sizey%8)?1:0))*(sizey/2);
 	c=chr-' ';//得到偏移后的值
-	// The 4 pixel table stops at ']', which is 62 entries from the space. A
-	// character past that would index whatever follows it in flash and draw
-	// four bytes of noise, so it becomes a space instead.
+	// Every table starts at the space and ends somewhere different: the 4 pixel
+	// one at ']', the others further along. A character past the end indexes
+	// whatever follows the table in flash, and what it draws looks like
+	// horizontal streaks rather than like a wrong letter, which is a hard thing
+	// to read as a bug. Anything out of range becomes a space.
 	if(sizey==4 && c>=(uint8_t)(sizeof(oled_asc2_0804)/sizeof(oled_asc2_0804[0]))){
+		c=0;
+	}
+	if(sizey==8 && c>=(uint8_t)(sizeof(oled_asc2_0806)/sizeof(oled_asc2_0806[0]))){
+		c=0;
+	}
+	if(sizey==16 && c>=(uint8_t)(sizeof(oled_asc2_1608)/sizeof(oled_asc2_1608[0]))){
 		c=0;
 	}
 	OLED_Set_Pos(x, y);
