@@ -1,9 +1,10 @@
 # Changelog
 
-## 1.0.3 (unreleased)
+## 1.0.3 (2026-08-30)
 
 Three layers of recovery, and the one that was already there had stopped
-working.
+working. The rest of the release is the dependency tree brought to current and
+pinned.
 
 ### Fixed
 
@@ -38,6 +39,37 @@ working.
   Almost everything in the sample configuration is deliberately left off, and
   the script says why for each line. `max-load-1` is the dangerous one: this
   board idles at a load average of about 4 with no CPU load at all.
+
+### Changed
+
+- The web interface is built on current majors: antd 6, Tailwind 4, react-router
+  7, TypeScript 6, eslint 10 and ten other frontend majors. React stays at 18.
+  The interface itself is deliberately unchanged, and the Tailwind step was
+  taken as a port of the styling rather than a redesign.
+- The WebRTC stack and six other Go dependencies are current. Two are held back
+  on purpose, and the commits say which and why.
+- The desktop page does less work when it opens. The mount-time work moved into
+  the initial state instead of an effect, and the virtual keyboard derives its
+  layout instead of storing a copy of it.
+
+### Security
+
+- Two moderate react-router advisories, an open redirect through a backslash in
+  `<Link>` and `useNavigate`, and constructor injection during SSR hydration.
+  The lockfile held the last 6.x release, so closing them was a major step. The
+  second advisory does not describe this product, which serves a hash-routed
+  single page and hydrates nothing.
+- One reachable Go advisory, an infinite loop on invalid input in
+  `golang.org/x/text`. Every outbound request resolves a proxy through the
+  affected path, so the update feed and the Tailscale download both cross it.
+  `x/net`, `x/crypto` and `x/sys` move with it for advisories that are present
+  and not called. `govulncheck` now reports nothing called.
+
+### Build
+
+- Everything the builder images download is pinned and verified, and the four
+  GitHub actions are pinned to the commits their tags named. Dependabot watches
+  those pins, so a pin does not mean an abandoned version.
 
 ## 1.0.2 (2026-08-29)
 
