@@ -758,20 +758,6 @@ The two items from the `71ab9127` section stand. Beyond them:
 
 ---
 
-## `feat/usb-audio` is superseded, 2026-08-30
-
-The branch holds 28 commits cut from an old `main`. Every one of them reached `fork/integration` in
-a later form, and the Opus migration then rewrote that form. `git merge-base --is-ancestor` still
-reports the branch as unmerged, which is true of the SHAs and false of the content.
-
-A re-cut onto today's `main` was tried and thrown away. It applied with four small conflicts, passed
-`go vet`, all 29 novision test packages, a `GOARCH=riscv64` build, `tsc --noEmit`, eslint and the
-frontend build, and it added nothing: `g711.go`, `resample.go` and one plan document are the only
-files on it that `fork/integration` does not have, and the Opus work deleted the first two on
-purpose.
-
-Compare the files before acting on the merge-base. `origin` still holds the branch at `06871b81`.
-
 ## Extraction branch rebase, 2026-08-28
 
 The item that has stood since the `71ab9127` section, "the extraction branches with no pull request
@@ -957,11 +943,8 @@ for those from 2026-08-19 that the source commit did not have.
 
 ### Still to adopt
 
-- `RobbyV2/NanoKVM` `server/service/media`, read narrowly. `hold.go` and `pcmloop.go` are 6.5KB
-  between them and hold the quiet-host against parked-stream distinction that the audio path here
-  still lacks. `manager.go` and `output_linux.go` are 72KB and are a reimplementation, not an
-  adoption. This bullet named `feat/usb-audio` when it was written. That branch is superseded, and
-  the code to compare against is `server/service/stream/audio` on this branch.
+- `RobbyV2/NanoKVM` `server/service/media`. **Read on 2026-08-30, and nothing is adopted.** The
+  last section of this document says what the two files hold and why neither transfers.
 - `eringiriri/ERINGI_JPN_NanoKVM`: horizontal scroll in relative mouse mode, and a composition guard
   that leaves the JIS Zenkaku key stranded. Both small and additive. **Both are adopted in the next
   section, and both are on the device since 2026-08-30.**
@@ -1051,3 +1034,67 @@ Before the deploy, both changes were verified off-device: `go vet`, the full `go
 descriptor, so the two halves had to arrive together. A server that sends five bytes to a gadget
 composed from the old script has its reports truncated, and the horizontal wheel is dropped with no
 error anywhere.
+
+## `feat/usb-audio` is superseded, 2026-08-30
+
+The branch holds 28 commits cut from an old `main`. Every one of them reached `fork/integration` in
+a later form, and the Opus migration then rewrote that form. `git merge-base --is-ancestor` still
+reports the branch as unmerged, which is true of the SHAs and false of the content.
+
+A re-cut onto today's `main` was tried and thrown away. It applied with four small conflicts, passed
+`go vet`, all 29 novision test packages, a `GOARCH=riscv64` build, `tsc --noEmit`, eslint and the
+frontend build, and it added nothing: `g711.go`, `resample.go` and one plan document are the only
+files on it that `fork/integration` does not have, and the Opus work deleted the first two on
+purpose.
+
+Compare the files before acting on the merge-base. `origin` still holds the branch at `06871b81`.
+
+## RobbyV2 `service/media`, read 2026-08-30
+
+`hold.go` and `pcmloop.go` are read. Neither is adopted, and the bullet that asked for them was
+wrong about one of the two.
+
+### `pcmloop.go` describes a loop this fork does not have
+
+The file is 41 lines. It sorts one non-blocking PCM transfer into three outcomes: a whole period
+moved, the endpoint had nothing this tick (`EAGAIN`), or the stream is broken. The third case is the
+one worth the reading. ALSA parks a substream after an under- or overrun, and it moves no more
+samples until something prepares it again, so a loop that treats a broken transfer as an idle one
+goes quiet for the rest of the binding.
+
+That distinction belongs to a capture loop that calls ALSA directly through cgo. This fork captures
+through an `arecord` child, so no return code reaches Go. A quiet host is a child that blocks and
+delivers nothing. A parked stream is a child that exits. The equivalent of the ALSA prepare is
+starting a new child, and `Source.Run` already does that.
+
+The policy the file argues for is also already in `source.go`, arrived at from the device rather
+than from this fork. Capture is never retired, because a host that plays nothing is this board's
+ordinary idle state. The backoff climbs to 5 seconds, the log falls quiet after 5 consecutive
+failures, and the child's own stderr line rides on the same lines so it falls quiet with them.
+
+### `hold.go` is about cameras, not audio
+
+The file keeps one `open(2)` per linked UVC video node. `f_uvc` sets `bind_deactivated`, so the
+controller holds its soft-disconnect for the whole gadget until something opens the node, and the
+kernel's deactivation counter is asymmetric: the release always increments, the activate refuses to
+go below zero. A second overlapping open therefore leaks a deactivation that no later open pays
+back, and the gadget stays off the bus with HID, the network and mass storage on it.
+
+None of that reaches a fork with no UVC function. This one has none.
+
+### The one idea worth carrying, and this tree already has it
+
+Both halves of `hold.go` run their syscall on its own goroutine against a deadline, and retire the
+node rather than reopen it, because a kernel that never returns must not take the manager with it.
+That is a good rule on this board: a read of `/proc/cvitek/vb` blocks forever in D state and
+survives every signal.
+
+This tree applies the rule where it matters already. `Stream.Stop` bounds its wait at 2 seconds and
+says why in a comment that names the same `/proc/cvitek/vb` case, and `service/hid/hid.go` sets a
+write deadline before every write to `/dev/hidg*`.
+
+### What is still worth reading there
+
+`SeatFIFOs`, before any function that wants a wide isochronous IN endpoint is added, because only
+FIFO 1 on this controller holds more than 512 words. `manager.go` and `output_linux.go` are 78KB
+between them and stay a reimplementation rather than an adoption.
