@@ -349,6 +349,50 @@ on a device where a broken UI is a KVM nobody can reach. They are warnings, with
 
 This is the phase's one deliberate debt, and it is real work rather than a formality.
 
+### What the 47 findings turned out to be
+
+Worked on 2026-08-30, on `perf/fewer-mount-renders`. The first thing to establish was that the
+React Compiler is **not** enabled in this build: it is not in `vite.config.ts`, not in
+`package.json`, and not in the dependency tree. That splits the findings in two, because a rule
+that only matters to the compiler costs nothing today.
+
+| rule | at the start | now | what they are |
+| --- | --- | --- | --- |
+| `set-state-in-effect` | 20 | 9 | a real extra render on every mount, compiler or not |
+| `immutability` | 16 | 15 | all one shape: an effect placed above the `function` it calls |
+| `refs` | 10 | 10 | the "latest ref" idiom, written during render |
+| `purity` | 1 | 1 | `Date.now()` inside an event handler |
+
+**Eleven are fixed, and three of them were defects rather than slow renders.** Each fixed site
+read a value that already existed when the component first rendered, from localStorage,
+`navigator` or `window.location`, and then set it from an effect. The first paint therefore
+showed a value already known to be wrong.
+
+- `mdns`, `ssh` and `web-title` started with `isLoading` false and set it true from the effect,
+  so each switch was interactive for one paint while its value was still unknown.
+- The virtual keyboard read the stored language into state from an effect, but its `Select` is
+  uncontrolled and takes `defaultValue`, which applies on mount alone. A stored language other
+  than English never reached the control until the drawer was reopened.
+- `speed.tsx` held a pure function of an atom as state, so the slider's `defaultValue` was 100,
+  the fast end, rather than the stored speed.
+
+**Sixteen `immutability` findings are cosmetic here.** Every one is "cannot access variable
+before it is declared", which is a `function` declaration used above its definition. Hoisting
+makes that correct at runtime. It matters only if the compiler is adopted, so it is not worth a
+diff today.
+
+**The ten `refs` findings are left on purpose.** All ten are `const r = useRef(x); r.current = x`
+written during render. The rewrite is to move the assignment into an effect, which changes when
+the ref updates from during render to after paint. Two of the ten are in the keyboard input path,
+and `use-sidebar.ts` reads its ref during the same render that writes it, so the rewrite is a
+behaviour change and not a tidy-up. On a board where the UI is the only way in, that trade is not
+worth taking without a reason better than a warning count.
+
+The nine remaining `set-state-in-effect` findings are each a judgement rather than a pattern:
+hydrating a jotai atom from localStorage, resetting state when a prop changes, and driving an
+async flow. `useMenuVisibility` is the largest, and fixing it properly means giving the atoms in
+`src/jotai/settings.ts` their own initialisers, which reaches every component that reads them.
+
 **Tailwind 4 kept the page identical, and the evidence is a class-level diff.** Four utilities moved
 one step down their scale and were renamed at nine call sites, so the emitted declarations match the
 old build exactly: `shadow-sm` to `shadow-xs`, `rounded-sm` to `rounded-xs`, `backdrop-blur-sm` to
