@@ -416,7 +416,21 @@ void kvm_oled_clear(uint8_t subpage_changed)
 // The steps are coprime with the travel they walk, so the block visits many
 // positions before it repeats rather than pacing one line.
 #define COMPACT_DX_STEP 13
-#define COMPACT_PAGE_STEP 5
+
+// Where the block lands vertically, as first-page numbers, walked in order and
+// repeated. It is a weighted list rather than a stride, because the panel this
+// was written for is not worn evenly.
+//
+// The wear is a photograph of the page this replaces: a title band across the
+// top and five value lines filling the rest, so rows 9 to 23 carried nothing
+// but a separator and are the freshest glass left. The address is drawn in the
+// tall font at the top two pages of the block, which puts it on those rows when
+// the block starts at page 1 or 2.
+//
+// The other positions still appear. A block that only ever sat on the fresh
+// strip would wear a fresh ghost into it, which is the fault this whole page
+// exists to avoid.
+static const uint8_t compact_page_order[] = {1, 2, 1, 2, 3, 1, 2, 0, 1, 2, 4, 2, 1, 3};
 
 static uint8_t compact_dx = 0;
 static uint8_t compact_page = 0;
@@ -711,7 +725,11 @@ static void compact_move(void)
 
 	compact_move_index++;
 	compact_dx = (uint8_t)((compact_move_index * COMPACT_DX_STEP) % (dx_max + 1));
-	compact_page = (uint8_t)((compact_move_index * COMPACT_PAGE_STEP) % (COMPACT_PAGE_MAX + 1));
+	compact_page = compact_page_order[compact_move_index %
+		(sizeof(compact_page_order) / sizeof(compact_page_order[0]))];
+	if(compact_page > COMPACT_PAGE_MAX){
+		compact_page = COMPACT_PAGE_MAX;
+	}
 
 	compact_draw(1);
 }
@@ -750,7 +768,7 @@ void kvm_compact_ui_disp(uint8_t first_disp)
 		OLED_Clear();
 		compact_move_pass = 0;
 		compact_dx = 0;
-		compact_page = 0;
+		compact_page = compact_page_order[0];
 		compact_drive = oled_drive_level();
 		compact_drive_pass = 0;
 		compact_draw(1);
