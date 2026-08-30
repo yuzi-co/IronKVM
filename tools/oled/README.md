@@ -120,14 +120,27 @@ Environment: `OLED_NUDGE_MAX` rows of travel, 0 disables movement;
 `OLED_NUDGE_PERIOD` seconds between moves; `OLED_CONTRAST` drive current, or
 `keep` to leave it alone; `OLED_BUS` and `OLED_ADDR` to skip detection.
 
-## Lowering the drive
+## Setting the drive
 
 `kvm_system` writes contrast `0xCF` in `OLED_Init`, which is about 81% of full
-drive, and never writes it again. The script sets `0x60` by default.
+drive, and never writes it again. The script changes nothing unless
+`OLED_CONTRAST` is set, and which way to set it depends on the panel.
 
-A pixel ages with the light it has emitted and the relationship is worse than
-linear, so a dimmer panel buys back more life than the brightness it costs. This
-screen is read from arm's length in a rack rather than in sunlight.
+**A new panel wants less.** A pixel ages with the light it has emitted and the
+relationship is worse than linear, so a dimmer panel buys back more life than
+the brightness it costs. This screen is read from arm's length in a rack rather
+than in sunlight, so `0x60` is comfortable and roughly doubles what is left.
+
+**A worn panel wants more, and this is the part that is not obvious.** A worn
+pixel needs more current to emit what a fresh one does. Dimming the whole panel
+therefore pushes the worn pixels under the eye's threshold while the fresh ones
+still look fine, so the unevenness a ghost creates gets worse rather than
+better. Measured on the reference board on 2026-08-30: at `0x60` the screen was
+unreadable and at `0xFF` it was fine, with nothing else changed.
+
+The default is `keep` because a script cannot tell which of those two panels it
+is running on, and guessing wrong makes a board unreadable at boot with nothing
+on the screen to say why.
 
 The value is clamped into `0x10..0xFF`, because a drive of zero is a legal
 command and an unreadable screen, and a script that runs at boot must not be
