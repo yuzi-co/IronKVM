@@ -284,7 +284,83 @@ server_memlimit() {
     export GOMEMLIMIT
 }
 
+# S98supervise starts NanoKVM-Server and kvm_system again within five seconds
+# of finding either gone. That is what it is for, and it is wrong while this
+# script is deliberately stopping them: it fills the gap between a stop and the
+# start that follows, and then two of the same program run.
+#
+# The supervisor already stands off for an update, on a marker holding the time
+# it was written, bounded to SUPERVISE_UPDATE_STANDOFF so a marker nobody clears
+# cannot wedge it. A restart is the same claim for a shorter time, so it uses
+# the same marker rather than inventing a second one for the supervisor to read.
+#
+# release_standoff removes only a marker this script wrote. The updater writes
+# one and deliberately leaves it behind, and clearing that one here would put
+# the supervisor back to work in the middle of an update.
+STANDOFF_MARKER=${STANDOFF_MARKER:-/tmp/nanokvm-updating}
+standoff_held=no
+
+hold_standoff() {
+    [ -f "$STANDOFF_MARKER" ] && return 0
+
+    if date +%s > "$STANDOFF_MARKER" 2>/dev/null; then
+        standoff_held=yes
+    fi
+}
+
+release_standoff() {
+    [ "$standoff_held" = yes ] || return 0
+
+    rm -f "$STANDOFF_MARKER"
+    standoff_held=no
+}
+
+# refresh_kvm_system copies the binary from /kvmapp and leaves nothing running.
+#
+# The copy has to happen with the old process gone. Linux refuses to write to a
+# running executable, so a copy over a live /tmp/kvm_system/kvm_system returns
+# ETXTBSY, cp says so to a caller that is not reading, and the board keeps
+# running the previous binary while the deploy reports success.
+#
+# The process that has to be gone is not always the one this script stopped.
+# S98supervise starts kvm_system within five seconds of finding none, so during
+# a restart it can put one back before this runs.
+refresh_kvm_system() {
+    if pidof kvm_system > /dev/null 2>&1; then
+        kill $(pidof kvm_system) 2>/dev/null
+        waited=0
+        while [ "$waited" -lt 10 ]; do
+            pidof kvm_system > /dev/null 2>&1 || break
+            sleep 1
+            waited=$((waited + 1))
+        done
+    fi
+
+    cp -r /kvmapp/kvm_system /tmp/
+}
+
+# start_kvm_system starts one, and only if there is not one already.
+#
+# Two of them drive the OLED at once. Each writes a single byte per I2C
+# transaction after positioning the cursor, so two bursts interleave and the
+# pixels land at the wrong column, and the corruption stays: the display is
+# redrawn field by field and nothing rewrites a field whose value did not
+# change. That is what a restart looked like on 2026-08-30, and it took an
+# evening to tell apart from a bad binary.
+#
+# The server below is already guarded this way. This is the same guard for the
+# other program this script starts.
+start_kvm_system() {
+    if pidof kvm_system > /dev/null 2>&1; then
+        echo "kvm_system is already running"
+        return 0
+    fi
+
+    /tmp/kvm_system/kvm_system &
+}
+
 start_services() {
+    hold_standoff
     prepare_runtime_state
 
     # Start each run with an empty file, so the log always describes the server
@@ -295,10 +371,10 @@ start_services() {
     # room for its 36MB.
     : > "$SERVER_LOG"
 
-    cp -r /kvmapp/kvm_system /tmp/
+    refresh_kvm_system
     if [ -f /kvmapp/kvm_new_app ]; then
         touch /tmp/.nanokvm_migrating
-        /tmp/kvm_system/kvm_system &
+        start_kvm_system
 
         # The legacy migration invokes this init script recursively and starts
         # the server itself. Wait for that single migration path to finish.
@@ -306,6 +382,7 @@ start_services() {
         while [ "$migration_wait" -lt 30 ]; do
             if [ ! -f /kvmapp/kvm_new_app ] && pidof NanoKVM-Server >/dev/null 2>&1; then
                 rm -f /tmp/.nanokvm_migrating
+                release_standoff
                 return
             fi
             sleep 1
@@ -313,7 +390,7 @@ start_services() {
         done
         rm -f /tmp/.nanokvm_migrating
     else
-        /tmp/kvm_system/kvm_system &
+        start_kvm_system
     fi
 
     if ! pidof NanoKVM-Server >/dev/null 2>&1; then
@@ -322,6 +399,11 @@ start_services() {
         echo "GOMEMLIMIT set to ${GOMEMLIMIT}"
         "$SERVER_DST/NanoKVM-Server" >> "$SERVER_LOG" 2>&1 &
     fi
+
+    # Everything this script starts is started. The supervisor watches again
+    # from here, which is what puts either program back if it dies for a reason
+    # that is not this script.
+    release_standoff
 }
 
 case "$1" in

@@ -815,7 +815,20 @@ watch_loop() {
 
         # kvm_system drives the OLED and the hardware monitor. Losing it costs
         # no availability, so it gets a plain restart with no backoff.
-        if ! system_running && system_binary_present; then
+        #
+        # Not during a stand-off, for the same reason the ssh door below waits.
+        # A restart of S95nanokvm kills kvm_system, refreshes /tmp/kvm_system
+        # from /kvmapp and starts it again, and this poll used to fill the gap
+        # between the kill and the start. Two of them then drove the panel at
+        # once: each writes one byte per I2C transaction after positioning the
+        # cursor, so the bursts interleave and the pixels land at the wrong
+        # column. The corruption survives, because the display is redrawn field
+        # by field and nothing rewrites a field that did not change.
+        #
+        # It is also how a kvm_system update could fail to take. Linux refuses
+        # to write to a running executable, so a copy that lands while this
+        # poll's process is running returns ETXTBSY and the old binary stays.
+        if [ "$state" != updating ] && ! system_running && system_binary_present; then
             "$SYSTEM_BIN" < /dev/null > /dev/null 2>&1 &
             log "kvm_system was gone, started it as pid $!"
         fi
