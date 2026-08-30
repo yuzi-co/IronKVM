@@ -357,6 +357,378 @@ void kvm_oled_clear(uint8_t subpage_changed)
 	}
 }
 
+
+// --- the compact roaming page ---
+//
+// An OLED pixel dims with the light it has emitted, so a status screen that
+// fills the panel and never moves wears its own layout into the glass. On a
+// board measured on 2026-08-30 the ghost was still legible with every pixel
+// lit, and it read TYPE: H264 while the live screen said MJPG: the wear records
+// what the panel showed for the longest, not what it shows now.
+//
+// The page below answers that in two ways at once. It draws the same facts in
+// 84x24 rather than 128x64, so about a third of the pixels carry the load, and
+// it moves the block around the panel so no pixel carries it for long.
+//
+// Moving needs the block to be small first, and both halves of the move are
+// done in the drawing rather than in the controller.
+//
+// The controller can shift vertically by itself with command 0xD3, which costs
+// no redraw at all, and the first version of this used it. On the panel the
+// block came apart: the shift wraps, and it wraps in the direction opposite to
+// the one assumed here, so the bottom line reappeared at the top. Choosing the
+// first page instead addresses display RAM directly and cannot wrap, at the
+// price of moving in steps of a whole page.
+//
+// So vertical travel is six positions of 8 rows and horizontal travel is a
+// column bias, and a move redraws three pages. At one move per period that is
+// nothing: the same three pages are redrawn whenever a value changes anyway.
+
+// The 6x8 font, which is the middle of the three this panel has. 16 columns of
+// it is 96 pixels, leaving 32 columns of travel.
+//
+// The 4 pixel font fits more and was tried first. It is too small to read at
+// the distance the panel is actually looked at, and its table stops at ']': no
+// lower case, so "Middle" and "1920x1080" could not even be spelled. The 8x16
+// font is the other way. Three lines of it would fill 48 of the 64 rows and all
+// 128 columns, leaving nothing to move through.
+#define COMPACT_FONT    8
+#define COMPACT_CHAR_W  6
+#define COMPACT_COLS    16
+#define COMPACT_W       (COMPACT_COLS * COMPACT_CHAR_W)
+
+// The address is drawn in the 8x16 font instead, because it is the reason
+// somebody looks at this panel: it is what they type into a browser. Everything
+// else on the screen describes a session they can only start once they have it.
+//
+// That font is 8 pixels wide and two pages tall, so the address line is as wide
+// as 8 times its length and the block is four pages rather than three.
+#define COMPACT_ADDR_FONT 16
+#define COMPACT_ADDR_CHAR_W 8
+#define COMPACT_PAGES   4
+#define COMPACT_PAGE_MAX (8 - COMPACT_PAGES)
+
+// The OLED thread runs on a 1000 ms loop, so a period is in passes and in
+// seconds at the same time. /etc/kvm/oled_move overrides it.
+#define COMPACT_PERIOD_DEFAULT  600
+#define COMPACT_PERIOD_MIN      10
+
+// The steps are coprime with the travel they walk, so the block visits many
+// positions before it repeats rather than pacing one line.
+#define COMPACT_DX_STEP 13
+#define COMPACT_PAGE_STEP 5
+
+static uint8_t compact_dx = 0;
+static uint8_t compact_page = 0;
+static uint16_t compact_move_pass = 0;
+static uint32_t compact_move_index = 0;
+
+// The address this page last drew. kvm_state_is_changed does not compare
+// addresses, because the full page detects those through ip_changed in its own
+// per-field draws, and this page has no per-field draws to hang that on.
+static char compact_last_addr[24] = {0};
+
+// The drive currently written to the panel. OLED_Init sets it once, and this
+// page re-reads the file so the level can be judged on the panel itself rather
+// than through a build. Reading is cheap: the file is a few bytes and the
+// kernel has it cached, and it is only read every COMPACT_DRIVE_PASSES passes.
+#define COMPACT_DRIVE_PASSES 5
+static uint8_t compact_drive = 0;
+static uint8_t compact_drive_pass = 0;
+
+// compact_period reads the move period once per pass. Reading it every time
+// rather than caching it lets an operator retune the panel without restarting
+// the process, and the file is small and in the page cache.
+static void compact_remember(void);
+
+static uint16_t compact_period(void)
+{
+	FILE *fp;
+	char buf[16] = {0};
+	long value;
+	char *end;
+
+	fp = fopen("/etc/kvm/oled_move", "r");
+	if(fp == NULL){
+		return COMPACT_PERIOD_DEFAULT;
+	}
+	if(fgets(buf, sizeof(buf), fp) == NULL){
+		fclose(fp);
+		return COMPACT_PERIOD_DEFAULT;
+	}
+	fclose(fp);
+
+	value = strtol(buf, &end, 0);
+	if(end == buf || value < COMPACT_PERIOD_MIN){
+		return COMPACT_PERIOD_DEFAULT;
+	}
+	if(value > 65535){
+		return 65535;
+	}
+	return (uint16_t)value;
+}
+
+// compact_pair lays one line out as a fixed field, left flush and right flush,
+// padded with spaces. The padding is what erases the previous value: a shorter
+// string drawn over a longer one would otherwise leave its tail behind.
+static void compact_pair(char *out, const char *left, const char *right)
+{
+	size_t l = strlen(left);
+	size_t r = strlen(right);
+
+	memset(out, ' ', COMPACT_COLS);
+	out[COMPACT_COLS] = '\0';
+
+	if(l > COMPACT_COLS) l = COMPACT_COLS;
+	memcpy(out, left, l);
+
+	// The left side wins a collision. The pair that can collide is an address
+	// and a frame rate, and an address with a digit missing is worse than no
+	// frame rate at all: 192.168.100.100 is 15 of the 16 columns by itself.
+	if(r + l + 1 > COMPACT_COLS){
+		return;
+	}
+	memcpy(out + COMPACT_COLS - r, right, r);
+}
+
+// compact_flags is one character per subsystem, and a dot for down. Four
+// characters carry what four icons used to, and they cost 16 pixels.
+//
+// W is blank rather than a dot when the board has no wireless at all, because
+// wifi_state -2 means the hardware is absent and a dot would read as a fault.
+static void compact_flags(char *out)
+{
+	out[0] = (kvm_sys_state.eth_state >= 1) ? 'E' : '.';
+	if(kvm_sys_state.wifi_state == -2){
+		out[1] = ' ';
+	} else {
+		out[1] = (kvm_sys_state.wifi_state == 1) ? 'W' : '.';
+	}
+	out[2] = (kvm_sys_state.usb_state == 1) ? 'H' : '.';
+	out[3] = (kvm_sys_state.hdmi_state == 1) ? 'V' : '.';
+	out[4] = '\0';
+}
+
+// compact_address prefers the wired address, because that is the one a rack
+// cable reaches. The full page alternates between the two every five seconds;
+// this one does not, since an address that changes under the reader is worth
+// less than one that stays still.
+static void compact_address(char *out, size_t n)
+{
+	if(kvm_sys_state.eth_state == 3 && kvm_sys_state.eth_addr[0] != 0){
+		snprintf(out, n, "%s", (char *)kvm_sys_state.eth_addr);
+		return;
+	}
+	if(kvm_sys_state.wifi_state == 1 && kvm_sys_state.wifi_addr[0] != 0){
+		snprintf(out, n, "%s", (char *)kvm_sys_state.wifi_addr);
+		return;
+	}
+	snprintf(out, n, "--");
+}
+
+static const char *compact_type(void)
+{
+	switch(kvm_sys_state.type){
+		case KVM_TYPE_MJPG: return "MJPG";
+		case KVM_TYPE_H264: return "H264";
+		default:            return "--";
+	}
+}
+
+static const char *compact_quality(void)
+{
+	switch(kvm_sys_state.qlty){
+		case 1:  return "LOW";
+		case 2:  return "Middle";
+		case 3:  return "HIGH";
+		case 4:  return "EXTRA";
+		default: return "--";
+	}
+}
+
+// compact_draw writes all three lines. The whole block is redrawn rather than
+// the field that changed, because it is 63 characters of a 4 pixel font: about
+// 250 I2C writes, against the 1024 that one OLED_Clear costs. Partial updates
+// bought their complexity when a redraw meant the whole panel.
+// compact_block_w is how wide the drawn block actually is, which decides how
+// far it can travel sideways. The address line sets it whenever the address is
+// long, so the travel shrinks on a 192.168.100.100 and opens up on a 10.0.0.5
+// rather than being fixed at the worst case.
+static uint8_t compact_block_w(const char *address)
+{
+	uint8_t addr_w = (uint8_t)(strlen(address) * COMPACT_ADDR_CHAR_W);
+
+	return (addr_w > COMPACT_W) ? addr_w : COMPACT_W;
+}
+
+static void compact_draw(void)
+{
+	char line[COMPACT_COLS + 1];
+	char address[24] = {0};
+	char flags[8] = {0};
+	char res[16] = {0};
+	char detail[COMPACT_COLS + 1] = {0};
+
+	// Clear the block's own pages first. The address is drawn in a wider font
+	// and is not padded to a fixed width, so a shorter one would otherwise
+	// leave the tail of the last behind, and 10.0.0.5 over 10.0.0.222 reads as
+	// a working address that is not this board's.
+	OLED_Clear_Pages(compact_page, COMPACT_PAGES);
+
+	compact_address(address, sizeof(address));
+	OLED_ShowString(compact_dx, compact_page + 0, address, COMPACT_ADDR_FONT);
+
+	if(kvm_sys_state.hdmi_width != 0 || kvm_sys_state.hdmi_height != 0){
+		snprintf(res, sizeof(res), "%dx%d",
+			kvm_sys_state.hdmi_width, kvm_sys_state.hdmi_height);
+	} else {
+		snprintf(res, sizeof(res), "--");
+	}
+	compact_flags(flags);
+	compact_pair(line, flags, res);
+	OLED_ShowString(compact_dx, compact_page + 2, line, COMPACT_FONT);
+
+	// The frame rate rides with the quality, so a stream that is running says
+	// so on the line that describes it.
+	if(kvm_sys_state.now_fps > 0){
+		snprintf(detail, sizeof(detail), "%s %dF",
+			compact_quality(), kvm_sys_state.now_fps);
+	} else {
+		snprintf(detail, sizeof(detail), "%s", compact_quality());
+	}
+	compact_pair(line, compact_type(), detail);
+	OLED_ShowString(compact_dx, compact_page + 3, line, COMPACT_FONT);
+
+	compact_remember();
+}
+
+// compact_remember copies what was just drawn into kvm_oled_state, which is
+// what kvm_state_is_changed compares against. The full page does this inside
+// each per-field draw. Without it here the first change would leave the two
+// structures apart for good, and the page would redraw every second forever.
+static void compact_remember(void)
+{
+	kvm_oled_state.eth_state    = kvm_sys_state.eth_state;
+	kvm_oled_state.wifi_state   = kvm_sys_state.wifi_state;
+	kvm_oled_state.usb_state    = kvm_sys_state.usb_state;
+	kvm_oled_state.hdmi_state   = kvm_sys_state.hdmi_state;
+	kvm_oled_state.hdmi_width   = kvm_sys_state.hdmi_width;
+	kvm_oled_state.hdmi_height  = kvm_sys_state.hdmi_height;
+	kvm_oled_state.type         = kvm_sys_state.type;
+	kvm_oled_state.qlty         = kvm_sys_state.qlty;
+	kvm_oled_state.now_fps      = kvm_sys_state.now_fps;
+
+	compact_address(compact_last_addr, sizeof(compact_last_addr));
+}
+
+// compact_changed adds the address to what kvm_state_is_changed already covers.
+static uint8_t compact_changed(void)
+{
+	char address[24] = {0};
+
+	compact_address(address, sizeof(address));
+	if(strcmp(address, compact_last_addr) != 0){
+		return 1;
+	}
+
+	return kvm_state_is_changed();
+}
+
+// compact_move picks the next position. The vertical half is a controller
+// register and needs no redraw; the horizontal half is a bias in the drawing,
+// so the three pages are blanked first and then drawn again at the new column.
+static void compact_move(void)
+{
+	char address[24] = {0};
+	uint8_t dx_max;
+
+	// The pages the block is leaving. compact_draw clears the ones it is
+	// arriving at, so between them nothing of the old position survives.
+	OLED_Clear_Pages(compact_page, COMPACT_PAGES);
+
+	compact_address(address, sizeof(address));
+	dx_max = (uint8_t)(128 - compact_block_w(address));
+
+	compact_move_index++;
+	compact_dx = (uint8_t)((compact_move_index * COMPACT_DX_STEP) % (dx_max + 1));
+	compact_page = (uint8_t)((compact_move_index * COMPACT_PAGE_STEP) % (COMPACT_PAGE_MAX + 1));
+
+	compact_draw();
+}
+
+// compact_page_wanted decides which main page runs.
+//
+// The compact page is the default on the boards it was drawn for, and
+// /etc/kvm/oled_classic brings the full page back without a new binary. That
+// escape hatch matters because this replaces the screen an operator knows, and
+// a file is cheaper to try than a rebuild.
+//
+// The PCIe board keeps its own layout either way. It draws through
+// kvm_init_pcie_ui with the panel rotated and a different address, and none of
+// that has been on a bench here.
+static uint8_t compact_page_wanted(void)
+{
+	if(kvm_hw_ver == 2){
+		return 0;
+	}
+	if(access("/etc/kvm/oled_classic", F_OK) == 0){
+		return 0;
+	}
+	return 1;
+}
+
+// kvm_compact_ui_disp is the page. It draws when something it shows has
+// changed, and it moves on its own schedule.
+void kvm_compact_ui_disp(uint8_t first_disp)
+{
+	if(first_disp){
+		// A previous run of this code may have left a display offset behind,
+		// and OLED_Init sets it to zero only when the process restarts. Put it
+		// back explicitly, because everything below assumes RAM rows and screen
+		// rows are the same thing.
+		OLED_Set_Offset(0);
+		OLED_Clear();
+		compact_move_pass = 0;
+		compact_dx = 0;
+		compact_page = 0;
+		compact_drive = oled_drive_level();
+		compact_drive_pass = 0;
+		compact_draw();
+		return;
+	}
+
+	// The drive first, because a panel nobody can read is worse than a panel
+	// that ages. This is the lever that was set too low on 2026-08-30: the
+	// block is small and it moves now, and those two carry the wear on their
+	// own. See tools/oled/README.md.
+	compact_drive_pass++;
+	if(compact_drive_pass >= COMPACT_DRIVE_PASSES){
+		uint8_t drive = oled_drive_level();
+
+		compact_drive_pass = 0;
+		if(drive != compact_drive){
+			compact_drive = drive;
+			OLED_Set_Contrast(drive);
+		}
+	}
+
+	compact_move_pass++;
+	if(compact_move_pass >= compact_period()){
+		compact_move_pass = 0;
+		compact_move();
+		return;
+	}
+
+	// now_fps is deliberately outside kvm_state_is_changed, because it moves
+	// every second while a viewer watches and would redraw the block at 1 Hz
+	// for a number nobody is reading that closely. It reaches the panel on the
+	// next change of anything else, or on the next move.
+	if(compact_changed()){
+		compact_draw();
+	}
+}
+// --- end of the compact roaming page ---
+
 void kvm_main_ui_disp(uint8_t first_disp, uint8_t subpage_changed)
 {
 	ip_addr_t now_ip_type;
@@ -371,6 +743,9 @@ void kvm_main_ui_disp(uint8_t first_disp, uint8_t subpage_changed)
 		// main page (oled sleep)
 		kvm_oled_clear(first_disp || subpage_changed);
 		kvm_oled_state.oled_sleep_state = 1;
+	} else if(compact_page_wanted()){
+		kvm_oled_state.oled_sleep_state = 0;
+		kvm_compact_ui_disp(first_disp || subpage_changed);
 	} else {
 		// main page
 		kvm_oled_state.oled_sleep_state = 0;

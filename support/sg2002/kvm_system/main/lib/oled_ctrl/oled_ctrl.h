@@ -16,6 +16,17 @@
 #define OLED_ENABLE		1
 #define OLED_ADDR		0x3D
 #define OLED_PCIe_ADDR  0x3C
+
+// Drive current for command 0x81.
+//
+// This is the factory level. Dimming was tried on 2026-08-30 and reversed the
+// same evening: at 0x60 the panel was hard to read in the room it lives in,
+// and dimming is the wrong lever once the page is small and moving. A block of
+// 96x32 that roams leaves any given pixel lit maybe a tenth of the time, which
+// is most of a burn-in fix on its own. /etc/kvm/oled_contrast still overrides
+// this, and the compact page re-reads it while it runs.
+#define OLED_DRIVE_DEFAULT  0xCF
+#define OLED_DRIVE_MIN      0x10
 #define OLED_CMD		0x00
 #define OLED_DATA		0x40
 
@@ -344,6 +355,10 @@ int oled_exist(void);
 void OLED_Clear(void);
 void OLED_Fill(void);
 void OLED_Init(void);
+uint8_t oled_drive_level(void);
+void OLED_Set_Contrast(uint8_t level);
+void OLED_Set_Offset(uint8_t rows);
+void OLED_Clear_Pages(uint8_t first, uint8_t count);
 void OLED_Revolve(void);
 void OLED_ShowState(uint8_t x,uint8_t y,char chr,uint8_t size);
 void OLED_DisplayTurn(uint8_t i);

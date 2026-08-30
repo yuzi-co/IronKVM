@@ -129,8 +129,12 @@ export function getOLED() {
 }
 
 // set OLED configuration
-export function setOLED(sleep: number) {
-  return http.post('/api/vm/oled', { sleep });
+//
+// Both fields are optional, and the server only writes the ones it is sent.
+// Sleep and brightness are separate controls, so a change to one must not
+// rewrite the other with a stale value from this page.
+export function setOLED(settings: { sleep?: number; brightness?: number }) {
+  return http.post('/api/vm/oled', settings);
 }
 
 // reset HDMI

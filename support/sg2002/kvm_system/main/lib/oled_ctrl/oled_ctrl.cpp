@@ -143,6 +143,12 @@ void OLED_ShowChar(uint8_t x,uint8_t y,char chr,uint8_t sizey)
 	else if(sizey==4)size1=4;
 	else size1=(sizey/8+((sizey%8)?1:0))*(sizey/2);
 	c=chr-' ';//得到偏移后的值
+	// The 4 pixel table stops at ']', which is 62 entries from the space. A
+	// character past that would index whatever follows it in flash and draw
+	// four bytes of noise, so it becomes a space instead.
+	if(sizey==4 && c>=(uint8_t)(sizeof(oled_asc2_0804)/sizeof(oled_asc2_0804[0]))){
+		c=0;
+	}
 	OLED_Set_Pos(x, y);
 	for(i=0; i<size1; i++)
 	{
@@ -269,6 +275,79 @@ void OLED_DisplayTurn(uint8_t i)
 }
 
 //初始化				    
+// oled_drive_level reads the drive current for command 0x81.
+//
+// A pixel of this panel ages with the light it has emitted, and worse than
+// linearly, so the drive decides how long the display stays readable. The
+// factory value is 0xCF, which is 81% of full, and the status screen is read
+// from arm's length in a rack rather than in sunlight.
+//
+// /etc/kvm/oled_contrast overrides it, in decimal or with a 0x prefix. The
+// value is held above OLED_DRIVE_MIN because a drive of zero is a legal command
+// and a screen nobody can read, and this runs at boot with nobody watching.
+uint8_t oled_drive_level(void)
+{
+	FILE *fp;
+	char buf[16] = {0};
+	long value;
+	char *end;
+
+	fp = fopen("/etc/kvm/oled_contrast", "r");
+	if(fp == NULL){
+		return OLED_DRIVE_DEFAULT;
+	}
+	if(fgets(buf, sizeof(buf), fp) == NULL){
+		fclose(fp);
+		return OLED_DRIVE_DEFAULT;
+	}
+	fclose(fp);
+
+	value = strtol(buf, &end, 0);
+	if(end == buf){
+		return OLED_DRIVE_DEFAULT;
+	}
+	if(value < OLED_DRIVE_MIN){
+		return OLED_DRIVE_MIN;
+	}
+	if(value > 0xFF){
+		return 0xFF;
+	}
+	return (uint8_t)value;
+}
+
+// OLED_Set_Contrast writes the drive current. It is one command and it takes
+// effect on the next frame, so a level can be judged by writing a file rather
+// than by building a binary.
+void OLED_Set_Contrast(uint8_t level)
+{
+	oled_write_register(OLED_CMD, 0x81);
+	oled_write_register(OLED_CMD, level);
+}
+
+// OLED_Set_Offset shifts the whole image vertically inside the controller,
+// which costs one command and no redraw. The shift wraps, so the caller has to
+// keep the drawn content inside the rows the shift leaves free.
+void OLED_Set_Offset(uint8_t rows)
+{
+	oled_write_register(OLED_CMD, 0xD3);
+	oled_write_register(OLED_CMD, rows & 0x3F);
+}
+
+// OLED_Clear_Pages blanks whole pages rather than the panel. The roaming page
+// redraws three of the eight, and clearing only those keeps a move to about a
+// third of the I2C traffic of OLED_Clear.
+void OLED_Clear_Pages(uint8_t first, uint8_t count)
+{
+	uint8_t page, n;
+
+	for(page = first; page < first + count && page < 8; page++){
+		oled_write_register(OLED_CMD, 0xb0 + page);
+		oled_write_register(OLED_CMD, 0x00);
+		oled_write_register(OLED_CMD, 0x10);
+		for(n = 0; n < 128; n++) oled_write_register(OLED_DATA, 0x00);
+	}
+}
+
 void OLED_Init(void)
 {
 	// pinmap::set_pin_function("A19", "GPIOP19");
@@ -282,7 +361,7 @@ void OLED_Init(void)
 	oled_write_register(OLED_CMD, 0x10);//---set high column address
 	oled_write_register(OLED_CMD, 0x40);//--set start line address  Set Mapping RAM Display Start Line (0x00~0x3F)
 	oled_write_register(OLED_CMD, 0x81);//--set contrast control register
-	oled_write_register(OLED_CMD, 0xCF);// Set SEG Output Current Brightness
+	oled_write_register(OLED_CMD, oled_drive_level());// Set SEG Output Current Brightness
 	oled_write_register(OLED_CMD, 0xA1);//--Set SEG/Column Mapping     0xa0左右反置 0xa1正常
 	oled_write_register(OLED_CMD, 0xC8);//Set COM/Row Scan Direction   0xc0上下反置 0xc8正常
 	oled_write_register(OLED_CMD, 0xA6);//--set normal display

@@ -20,6 +20,29 @@ void build_recovery(void)
 	}
 }
 
+// oled_publish_features names what this build of kvm_system can do with the
+// panel, so the server offers a setting only when something acts on it.
+//
+// The need is specific to this fork. A release takes kvm_system from Sipeed's
+// application tarball, and that build reads neither /etc/kvm/oled_contrast nor
+// /etc/kvm/oled_move. A brightness control in the Web UI would otherwise write
+// a file that nothing reads, and report success while the panel did not change.
+//
+// The file goes to tmpfs. It describes this process, it means nothing after a
+// reboot, and /kvmapp is the boot medium.
+void oled_publish_features(void)
+{
+	FILE *fp;
+
+	mkdir("/tmp/kvm", 0755);
+	fp = fopen("/tmp/kvm/oled_features", "w");
+	if(fp == NULL){
+		return;
+	}
+	fprintf(fp, "brightness\nmove\ncompact\n");
+	fclose(fp);
+}
+
 void* thread_oled_handle(void * arg)
 {
 	OLED_Init();
@@ -233,6 +256,7 @@ int main(int argc, char* argv[])
 	if(OLED_state){
 		printf("oled exist\r\n");
 		system("touch /etc/kvm/oled_exist");
+		oled_publish_features();
 	} else {
 		printf("oled not exist\r\n");
 		system("rm /etc/kvm/oled_exist");
