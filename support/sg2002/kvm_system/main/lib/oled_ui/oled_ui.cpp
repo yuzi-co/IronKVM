@@ -423,10 +423,25 @@ static uint8_t compact_page = 0;
 static uint16_t compact_move_pass = 0;
 static uint32_t compact_move_index = 0;
 
-// The address this page last drew. kvm_state_is_changed does not compare
-// addresses, because the full page detects those through ip_changed in its own
+// What this page last put on the panel, one entry per line it draws.
+//
+// The comparison is the drawn text and not the state behind it, which is what
+// keeps a redraw from being visible. A field can change without changing what
+// it spells: the frame rate ticks between 59 and 60 all through a stream, and
+// the resolution is the same string whether it was measured once or ten times.
+// Comparing text means those cost nothing at all.
+//
+// It also covers what kvm_state_is_changed does not. That function ignores the
+// address, because the full page notices those through ip_changed inside its
 // per-field draws, and this page has no per-field draws to hang that on.
-static char compact_last_addr[24] = {0};
+static char compact_shown_addr[24] = {0};
+// The address takes two of the four pages, so two small lines follow it.
+#define COMPACT_TEXT_LINES 2
+static char compact_shown_line[COMPACT_TEXT_LINES][COMPACT_COLS + 1] = {{0}};
+
+// The width the address was drawn at. A shorter one has to blank what the last
+// one left behind, and it is drawn in a font with no fixed field to pad.
+static uint8_t compact_shown_addr_w = 0;
 
 // The drive currently written to the panel. OLED_Init sets it once, and this
 // page re-reads the file so the level can be judged on the panel itself rather
@@ -561,22 +576,63 @@ static uint8_t compact_block_w(const char *address)
 	return (addr_w > COMPACT_W) ? addr_w : COMPACT_W;
 }
 
-static void compact_draw(void)
+// compact_line writes one of the small lines, and only when it says something
+// different from what is already there.
+//
+// These are drawn as a fixed field padded with spaces, so a line that changes
+// erases the last one by itself: no clear is needed and nothing flashes.
+static void compact_line(uint8_t index, const char *text, uint8_t force)
+{
+	if(!force && strcmp(text, compact_shown_line[index]) == 0){
+		return;
+	}
+
+	// Page 0 and 1 carry the address, so the small lines start at page 2.
+	OLED_ShowString(compact_dx, compact_page + 2 + index, (char *)text, COMPACT_FONT);
+	snprintf(compact_shown_line[index], COMPACT_COLS + 1, "%s", text);
+}
+
+// compact_blank_tail erases the columns an older, longer address left behind.
+//
+// The alternative is to clear the pages before every draw, which is what this
+// did first. That turns every redraw into a visible flash, and a redraw can
+// happen for reasons the reader never sees: the panel blinked once a second
+// through a stream because something in the state was moving even though the
+// text was not.
+static void compact_blank_tail(uint8_t from_w, uint8_t to_w)
+{
+	if(to_w >= from_w){
+		return;
+	}
+
+	// Two pages, because the address is drawn in the 8x16 font.
+	OLED_Blank_Span(compact_dx + to_w, compact_page, from_w - to_w, 2);
+}
+
+// compact_draw writes only what is not already on the panel.
+//
+// force says the block has moved, so every line has to be written again wherever
+// it now sits, and what was on the screen before says nothing about it.
+static void compact_draw(uint8_t force)
 {
 	char line[COMPACT_COLS + 1];
 	char address[24] = {0};
 	char flags[8] = {0};
 	char res[16] = {0};
 	char detail[COMPACT_COLS + 1] = {0};
-
-	// Clear the block's own pages first. The address is drawn in a wider font
-	// and is not padded to a fixed width, so a shorter one would otherwise
-	// leave the tail of the last behind, and 10.0.0.5 over 10.0.0.222 reads as
-	// a working address that is not this board's.
-	OLED_Clear_Pages(compact_page, COMPACT_PAGES);
+	uint8_t addr_w;
 
 	compact_address(address, sizeof(address));
-	OLED_ShowString(compact_dx, compact_page + 0, address, COMPACT_ADDR_FONT);
+	addr_w = (uint8_t)(strlen(address) * COMPACT_ADDR_CHAR_W);
+
+	if(force || strcmp(address, compact_shown_addr) != 0){
+		OLED_ShowString(compact_dx, compact_page + 0, address, COMPACT_ADDR_FONT);
+		if(!force){
+			compact_blank_tail(compact_shown_addr_w, addr_w);
+		}
+		snprintf(compact_shown_addr, sizeof(compact_shown_addr), "%s", address);
+		compact_shown_addr_w = addr_w;
+	}
 
 	if(kvm_sys_state.hdmi_width != 0 || kvm_sys_state.hdmi_height != 0){
 		snprintf(res, sizeof(res), "%dx%d",
@@ -586,7 +642,7 @@ static void compact_draw(void)
 	}
 	compact_flags(flags);
 	compact_pair(line, flags, res);
-	OLED_ShowString(compact_dx, compact_page + 2, line, COMPACT_FONT);
+	compact_line(0, line, force);
 
 	// The frame rate rides with the quality, so a stream that is running says
 	// so on the line that describes it.
@@ -597,7 +653,7 @@ static void compact_draw(void)
 		snprintf(detail, sizeof(detail), "%s", compact_quality());
 	}
 	compact_pair(line, compact_type(), detail);
-	OLED_ShowString(compact_dx, compact_page + 3, line, COMPACT_FONT);
+	compact_line(1, line, force);
 
 	compact_remember();
 }
@@ -617,22 +673,8 @@ static void compact_remember(void)
 	kvm_oled_state.type         = kvm_sys_state.type;
 	kvm_oled_state.qlty         = kvm_sys_state.qlty;
 	kvm_oled_state.now_fps      = kvm_sys_state.now_fps;
-
-	compact_address(compact_last_addr, sizeof(compact_last_addr));
 }
 
-// compact_changed adds the address to what kvm_state_is_changed already covers.
-static uint8_t compact_changed(void)
-{
-	char address[24] = {0};
-
-	compact_address(address, sizeof(address));
-	if(strcmp(address, compact_last_addr) != 0){
-		return 1;
-	}
-
-	return kvm_state_is_changed();
-}
 
 // compact_move picks the next position. The vertical half is a controller
 // register and needs no redraw; the horizontal half is a bias in the drawing,
@@ -642,8 +684,8 @@ static void compact_move(void)
 	char address[24] = {0};
 	uint8_t dx_max;
 
-	// The pages the block is leaving. compact_draw clears the ones it is
-	// arriving at, so between them nothing of the old position survives.
+	// The pages the block is leaving. Nothing of the old position survives,
+	// and the draw below is told to write every line at the new one.
 	OLED_Clear_Pages(compact_page, COMPACT_PAGES);
 
 	compact_address(address, sizeof(address));
@@ -653,7 +695,7 @@ static void compact_move(void)
 	compact_dx = (uint8_t)((compact_move_index * COMPACT_DX_STEP) % (dx_max + 1));
 	compact_page = (uint8_t)((compact_move_index * COMPACT_PAGE_STEP) % (COMPACT_PAGE_MAX + 1));
 
-	compact_draw();
+	compact_draw(1);
 }
 
 // compact_page_wanted decides which main page runs.
@@ -693,7 +735,7 @@ void kvm_compact_ui_disp(uint8_t first_disp)
 		compact_page = 0;
 		compact_drive = oled_drive_level();
 		compact_drive_pass = 0;
-		compact_draw();
+		compact_draw(1);
 		return;
 	}
 
@@ -719,13 +761,12 @@ void kvm_compact_ui_disp(uint8_t first_disp)
 		return;
 	}
 
-	// now_fps is deliberately outside kvm_state_is_changed, because it moves
-	// every second while a viewer watches and would redraw the block at 1 Hz
-	// for a number nobody is reading that closely. It reaches the panel on the
-	// next change of anything else, or on the next move.
-	if(compact_changed()){
-		compact_draw();
-	}
+	// Every pass, because compact_draw compares the text it is about to write
+	// with what is on the panel and writes only the lines that differ. A state
+	// that moves without changing what it spells costs nothing, and the frame
+	// rate reaches the screen while a viewer watches instead of waiting for
+	// something else to change.
+	compact_draw(0);
 }
 // --- end of the compact roaming page ---
 
