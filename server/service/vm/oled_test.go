@@ -69,3 +69,77 @@ func TestClampSleepSecondsTreatsNegativeAsNever(t *testing.T) {
 		t.Fatalf("clampSleepSeconds(-5) = %d, want 0", got)
 	}
 }
+
+func TestClampBrightnessKeepsThePanelReadable(t *testing.T) {
+	// A drive of zero is a legal SSD1306 command and a screen nobody can read.
+	// This setting is reachable from a browser, so the floor is what stops a
+	// slip of the hand from blanking the panel with no way to see how to put
+	// it back.
+	for _, level := range []int{-1, 0, 1, 0x0F} {
+		if got := clampBrightness(level); got != minBrightness {
+			t.Fatalf("clampBrightness(%d) = %d, want %d", level, got, minBrightness)
+		}
+	}
+}
+
+func TestClampBrightnessKeepsLevelsThePanelAccepts(t *testing.T) {
+	// The command carries one byte, and both ends of the range are usable.
+	for _, level := range []int{0x10, 0x60, 0xCF, 0xFF} {
+		if got := clampBrightness(level); got != level {
+			t.Fatalf("clampBrightness(%d) = %d, want it unchanged", level, got)
+		}
+	}
+}
+
+func TestClampBrightnessLowersLevelsThatDoNotFitTheCommand(t *testing.T) {
+	// kvm_system writes the value as the argument of command 0x81, which is a
+	// single byte. 256 would wrap to 0 and blank the panel.
+	for _, level := range []int{256, 1000} {
+		if got := clampBrightness(level); got != maxBrightness {
+			t.Fatalf("clampBrightness(%d) = %d, want %d", level, got, maxBrightness)
+		}
+	}
+}
+
+func TestWriteBrightnessSettingStoresAValueTheFirmwareCanActOn(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "oled_contrast")
+
+	if err := writeBrightnessSetting(path, 0); err != nil {
+		t.Fatalf("expected the setting to be written: %s", err)
+	}
+
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("expected the setting to be readable: %s", err)
+	}
+
+	if string(data) != "16" {
+		t.Fatalf("stored %q, want \"16\"", data)
+	}
+}
+
+func TestReadIntSettingReportsTheDefaultForAnAbsentFile(t *testing.T) {
+	// A board that has never had the setting written is the common case, and
+	// it means the firmware default rather than an error.
+	got, err := readIntSetting(filepath.Join(t.TempDir(), "absent"), defaultBrightness)
+	if err != nil {
+		t.Fatalf("expected an absent file to be no error: %s", err)
+	}
+
+	if got != defaultBrightness {
+		t.Fatalf("read %d, want %d", got, defaultBrightness)
+	}
+}
+
+func TestReadIntSettingReportsAFileThatCannotBeParsed(t *testing.T) {
+	// A file that exists and holds nonsense is a fault. Reporting the default
+	// would hide it and leave the UI showing a value the device does not have.
+	path := filepath.Join(t.TempDir(), "oled_contrast")
+	if err := os.WriteFile(path, []byte("bright"), 0o644); err != nil {
+		t.Fatalf("could not write the fixture: %s", err)
+	}
+
+	if _, err := readIntSetting(path, defaultBrightness); err == nil {
+		t.Fatal("expected an unparseable file to be an error")
+	}
+}

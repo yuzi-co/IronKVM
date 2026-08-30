@@ -404,7 +404,17 @@ const en = {
           300: '5 min',
           600: '10 min',
           1800: '30 min',
-          3600: '1 hour'
+          3600: '1 hour',
+          brightness: 'OLED brightness',
+          brightnessDescription: 'A lower level makes the panel last longer',
+          brightnessLevels: {
+            64: 'Lowest',
+            96: 'Low',
+            128: 'Medium',
+            160: 'High',
+            207: 'Default',
+            255: 'Maximum'
+          }
         },
         ssh: {
           description: 'Enable SSH remote access',

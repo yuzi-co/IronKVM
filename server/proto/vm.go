@@ -88,13 +88,24 @@ type GetMemoryLimitRsp struct {
 	Limit   int64 `json:"limit"`
 }
 
+// SetOledReq carries only the settings the caller means to change. The fields
+// are pointers because zero is a real value for both of them: a sleep of 0
+// keeps the screen on for good, and the request has to say the difference
+// between asking for that and not mentioning sleep at all.
 type SetOledReq struct {
-	Sleep int `validate:"omitempty"`
+	Sleep      *int `json:"sleep" validate:"omitempty"`
+	Brightness *int `json:"brightness" validate:"omitempty"`
 }
 
 type GetOLEDRsp struct {
-	Exist bool `json:"exist"`
-	Sleep int  `json:"sleep"`
+	Exist      bool `json:"exist"`
+	Sleep      int  `json:"sleep"`
+	Brightness int  `json:"brightness"`
+
+	// BrightnessSupported reports whether the running kvm_system acts on the
+	// brightness setting. A release carries Sipeed's build, which does not, and
+	// a control that writes a file nothing reads is worse than no control.
+	BrightnessSupported bool `json:"brightnessSupported"`
 }
 
 type GetGetHdmiStateRsp struct {
