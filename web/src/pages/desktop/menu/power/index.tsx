@@ -17,14 +17,11 @@ export const Power = () => {
 
   const [isPowerOn, setIsPowerOn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(() => localstorage.getPowerConfirm());
 
   useEffect(() => {
     getLed();
     const interval = setInterval(getLed, 5000);
-
-    const powerConfirm = localstorage.getPowerConfirm();
-    setShowConfirm(powerConfirm);
 
     return () => {
       clearInterval(interval);
