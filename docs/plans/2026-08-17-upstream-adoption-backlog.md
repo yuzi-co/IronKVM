@@ -208,9 +208,43 @@ judge, which is why it was left out of a change that needs no hardware to verify
 `fix/oled-sleep-never` no longer exists. It went with the forty-eight extraction branches on
 2026-08-28, and `origin` plus `refs/archive/extractions-20260828/` hold the copies.
 
-**Not deployed.** The binary is built and it is not on the device. `kvm_system` is not committed to
-`kvmapp/`, unlike `kvm_stream`, so the change reaches a board only through `make support` and a
-deploy.
+**The fix cannot ship yet, and the reason is the build and not the change.** Tried on the device on
+2026-08-30, and rolled back the same hour.
+
+No IronKVM release has ever carried a `kvm_system` of the fork's own. `tools/release/release.sh`
+unpacks Sipeed's pinned application tarball into `official-kvmapp/` and copies `kvmapp/` over it,
+and `kvmapp/kvm_system/` holds one empty `kvm_stream` placeholder, which is what upstream carries
+too. The binary a board runs is Sipeed's build. `libkvm.so` is different: `release.sh` copies that
+one out of `server/dl_lib` by name, and checks the copy by md5 afterwards.
+
+So the fork's own C++ has to be committed as a binary to reach anybody. It was tried:
+
+- Built in the MaixCDK builder image, 388,624 bytes against Sipeed's 388,592.
+- Installed to `/kvmapp/kvm_system/kvm_system` and `/tmp/kvm_system/kvm_system` on the device at
+  10.0.0.222, with the official binary saved to `/data/kvm_system-backup/` first.
+- Restarted by killing the process. `tools/service/S98supervise` starts it again within its
+  five-second poll, and the new process ran with no crash and no restart loop.
+- **The OLED stayed blank.** It was not the sleep timer: the countdown had 10 minutes on it and 40
+  seconds had passed. The official binary, restored and restarted exactly the same way, brought the
+  panel straight back.
+
+The binary runs and does not drive the panel, so the difference is in the build and not in the two
+lines this branch changed. The likely cause is that the builder image's MaixCDK is not the one
+Sipeed built with, and `OLED_Init` reaches a peripheral layer that behaves differently. That is a
+guess: nothing has read the process's own output yet, and the supervisor sends it to `/dev/null`.
+
+What a next session should do, in this order:
+
+1. Run the rebuilt binary in the foreground with its output captured, and read what `OLED_Init` and
+   `oled_exist` report. It costs one blank panel for as long as the run lasts.
+2. Compare the builder image's MaixCDK against the version Sipeed's own build used, if that can be
+   established at all.
+3. Only then decide whether committing a fork-built `kvm_system` is a thing this repository should
+   ever do. It replaces a vendor binary that drives the OLED, the button, the password reset and the
+   Wi-Fi provisioning, on hardware variants the fork cannot all test.
+
+The button half of the change cannot be tested on this board at all. The enclosure exposes power and
+reset only, and neither is the button `thread_key_handle` reads.
 
 ---
 
@@ -356,7 +390,8 @@ Steps 1 to 5 of the original order are done, and the review above records what c
 `main` is level with `upstream/main` as of 2026-08-30, so no rebase is pending either. What is
 left:
 
-1. Deploy `kvm_system`, so the monotonic timers reach the board. The build is done.
+1. Find out why a fork-built `kvm_system` leaves the OLED blank. Until that is answered, no C++
+   change in `support/sg2002/kvm_system/` can reach a device at all.
 2. PR #858's other half, separating the OLED power state from the UI subpage. It needs a panel.
 3. PR #864, the Spanish paste layout. `server/service/hid/paste.go:39` still carries `de` and `fr`
    alone, so the change stays additive.
