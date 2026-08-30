@@ -28,11 +28,11 @@
 #   OLED_BUS, OLED_ADDR      skip detection and use these
 #   OLED_NUDGE_MAX           rows of travel, 0 disables movement (default 2)
 #   OLED_NUDGE_PERIOD        seconds between moves       (default 600)
-#   OLED_CONTRAST            drive current, or "keep"    (default 0x60)
+#   OLED_CONTRAST            drive current, or "keep"    (default keep)
 
 MAX=${OLED_NUDGE_MAX:-2}
 PERIOD=${OLED_NUDGE_PERIOD:-600}
-CONTRAST=${OLED_CONTRAST:-0x60}
+CONTRAST=${OLED_CONTRAST:-keep}
 PIDFILE=/tmp/oled-nudge.pid
 
 # What kvm_system's OLED_Init writes. stop puts this back, so a stopped script
