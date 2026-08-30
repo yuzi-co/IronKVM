@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { AppleOutlined, WindowsOutlined } from '@ant-design/icons';
 import clsx from 'clsx';
 import { useAtom } from 'jotai';
@@ -26,14 +26,49 @@ import {
   specialKeyMap
 } from './virtual-keys.ts';
 
+const languages = [
+  { value: 'en', label: 'English' },
+  { value: 'fr', label: 'French' },
+  { value: 'de', label: 'German' },
+  { value: 'ru', label: 'Russian' },
+  { value: 'ko', label: 'Korean' },
+  { value: 'ja', label: 'Japanese' }
+];
+
+const layoutByLanguage = new Map([
+  ['en', 'default'],
+  ['ru', 'rus'],
+  ['de', 'qwertz'],
+  ['fr', 'azerty'],
+  ['ko', 'ko'],
+  ['ja', 'ja']
+]);
+
+// The layout follows from the language and the system. Nothing else sets it, so
+// it is derived during render rather than stored and corrected by an effect.
+function layoutFor(system: string, language: string) {
+  if (language === 'en' && system === 'mac') {
+    return 'mac';
+  }
+  return layoutByLanguage.get(language) ?? 'default';
+}
+
 export const VirtualKeyboard = () => {
   const isBigScreen = useMediaQuery({ minWidth: 850 });
 
   const [isKeyboardOpen, setIsKeyboardOpen] = useAtom(isKeyboardOpenAtom);
 
-  const [keyboardLayout, setKeyboardLayout] = useState('default');
-  const [keyboardSystem, setKeyboardSystem] = useState('win');
-  const [keyboardLanguage, setKeyboardLanguage] = useState('en');
+  // Read on the first render. Set from an effect, the stored language never
+  // reached the Select below, because its `defaultValue` only applies on mount.
+  const [keyboardSystem, setKeyboardSystem] = useState(() => {
+    const stored = storage.getKeyboardSystem();
+    return stored && ['win', 'mac'].includes(stored) ? stored : 'win';
+  });
+  const [keyboardLanguage, setKeyboardLanguage] = useState(() => {
+    const stored = storage.getKeyboardLanguage();
+    return stored && languages.some((lng) => lng.value === stored) ? stored : 'en';
+  });
+  const keyboardLayout = layoutFor(keyboardSystem, keyboardLanguage);
   const [activeModifierKeys, setActiveModifierKeys] = useState<string[]>([]);
 
   const keyboardRef = useRef<any>(null);
@@ -42,50 +77,6 @@ export const VirtualKeyboard = () => {
     { value: 'win', icon: <WindowsOutlined /> },
     { value: 'mac', icon: <AppleOutlined /> }
   ];
-
-  const languages = [
-    { value: 'en', label: 'English' },
-    { value: 'fr', label: 'French' },
-    { value: 'de', label: 'German' },
-    { value: 'ru', label: 'Russian' },
-    { value: 'ko', label: 'Korean' },
-    { value: 'ja', label: 'Japanese' }
-  ];
-
-  useEffect(() => {
-    const system = storage.getKeyboardSystem();
-    if (system && ['win', 'mac'].includes(system)) {
-      setKeyboardSystem(system);
-    }
-
-    const language = storage.getKeyboardLanguage();
-    if (language && languages.some((lng) => lng.value === language)) {
-      setKeyboardLanguage(language);
-    }
-  }, []);
-
-  useEffect(() => {
-    const layoutMap = new Map([
-      ['en', 'default'],
-      ['ru', 'rus'],
-      ['de', 'qwertz'],
-      ['fr', 'azerty'],
-      ['ko', 'ko'],
-      ['ja', 'ja']
-    ]);
-
-    if (keyboardLanguage === 'en' && keyboardSystem === 'mac') {
-      setKeyboardLayout('mac');
-      return;
-    }
-
-    if (layoutMap.has(keyboardLanguage)) {
-      setKeyboardLayout(layoutMap.get(keyboardLanguage)!);
-      return;
-    }
-
-    setKeyboardLayout('default');
-  }, [keyboardSystem, keyboardLanguage]);
 
   // Press key
   function onKeyPress(key: string) {

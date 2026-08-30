@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { Popover, Tooltip } from 'antd';
 import { useAtomValue } from 'jotai';
 import { CheckIcon, TvMinimalPlayIcon } from 'lucide-react';
@@ -13,18 +12,13 @@ const videoModes = [
   { key: 'mjpeg', name: 'MJPEG' }
 ];
 
+// Neither fact changes while the page is open, so both are read once rather
+// than in an effect that renders the component a second time.
+const isDirectSupported = window.location.protocol === 'https:' && !!window.VideoDecoder;
+
 export const VideoMode = () => {
   const { t } = useTranslation();
   const videoMode = useAtomValue(videoModeAtom);
-
-  const [isDirectSupported, setIsDirectSupported] = useState(false);
-
-  useEffect(() => {
-    const isHttps = window.location.protocol === 'https:';
-    const isDecoderSupported = !!window.VideoDecoder;
-
-    setIsDirectSupported(isHttps && isDecoderSupported);
-  }, []);
 
   function update(mode: string) {
     if (mode === videoMode) return;

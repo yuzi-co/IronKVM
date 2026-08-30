@@ -11,13 +11,13 @@ export const FrameDetect = () => {
   const { t } = useTranslation();
 
   const [isLoading, setIsLoading] = useState(false);
-  const [isEnabled, setIsEnabled] = useState(false);
+  const [isEnabled, setIsEnabled] = useState(() => !!ls.getFrameDetect());
 
+  // The stored value initialises the state above, so the effect is left with
+  // the one part that is not state: telling the device when the stored value
+  // is off.
   useEffect(() => {
-    const enabled = ls.getFrameDetect();
-    if (enabled) {
-      setIsEnabled(true);
-    } else {
+    if (!ls.getFrameDetect()) {
       api.updateFrameDetect(false);
     }
   }, []);

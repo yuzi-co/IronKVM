@@ -10,11 +10,12 @@ export const WebTitle = () => {
   const { t } = useTranslation();
   const [webTitle, setWebTitle] = useAtom(webTitleAtom);
 
-  const [isLoading, setIsLoading] = useState(false);
+  // The request starts on mount, so the control begins in its loading state.
+  // Setting the flag inside the effect left one paint where the control was
+  // interactive and the value behind it was not yet known.
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setIsLoading(true);
-
     api
       .getWebTitle()
       .then((rsp) => {

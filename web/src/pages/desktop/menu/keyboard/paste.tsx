@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, useRef, useState } from 'react';
 import { Button, Divider, Input, Modal, Select } from 'antd';
 import type { InputRef } from 'antd';
 import clsx from 'clsx';
@@ -11,13 +11,16 @@ import { keyboardLockAtom } from '@/jotai/keyboard.ts';
 
 type InputStatus = '' | 'error';
 
+// Fixed for the lifetime of the document. Read in an effect, the paste button
+// rendered once as unsupported before the check had run.
+const isClipboardSupported = 'clipboard' in navigator;
+
 export const Paste = () => {
   const { t } = useTranslation();
   const setKeyboardLock = useSetAtom(keyboardLockAtom);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [inputValue, setInputValue] = useState('');
-  const [isClipboardSupported, setIsClipboardSupported] = useState(false);
   const [isReadingClipboard, setIsReadingClipboard] = useState(false);
   const [langue, setLangue] = useState('en');
   const [status, setStatus] = useState<InputStatus>('');
@@ -32,10 +35,6 @@ export const Paste = () => {
     { value: 'fr', label: t('keyboard.dropdownFrench') },
     { value: 'ru', label: t('keyboard.dropdownRussian') }
   ];
-
-  useEffect(() => {
-    setIsClipboardSupported('clipboard' in navigator);
-  }, []);
 
   function onChange(e: ChangeEvent<HTMLTextAreaElement>) {
     const value = e.target.value;

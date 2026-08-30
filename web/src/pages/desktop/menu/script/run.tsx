@@ -12,12 +12,12 @@ type RunProps = {
 
 export const Run = ({ script, setIsRunning }: RunProps) => {
   const { t } = useTranslation();
-  const [state, setState] = useState('');
+  // The request is sent on mount, so 'running' is the state the first paint
+  // should already show.
+  const [state, setState] = useState('running');
   const [log, setLog] = useState('');
 
   useEffect(() => {
-    setState('running');
-
     api
       .runScript(script, 'foreground')
       .then((rsp) => {
