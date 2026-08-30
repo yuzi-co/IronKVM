@@ -73,6 +73,34 @@ drive_case ""   keep
 drive_case abc  keep
 
 echo
+echo "===== the script stands down for a firmware that owns the panel ====="
+# Two writers of the same registers fight. A kvm_system that moves the image and
+# holds the drive itself says so in tmpfs, and this script has to believe it.
+owner_case() {
+    desc="$1"; body="$2"; want="$3"
+    f="$WORK/features"
+    rm -f "$f"
+    [ -n "$body" ] && printf '%s' "$body" > "$f"
+    got=$(FEATURES="$f" WORK="$WORK" ND="$ND" sh -c '
+        FEATURES=$FEATURES
+        eval "$(sed -n "/^firmware_owns_panel() {/,/^}/p" "$ND")"
+        firmware_owns_panel && echo owns || echo free
+    ')
+    [ "$got" = "$want" ] && note "$desc -> $got" OK || note "$desc -> $got, want $want" FAIL
+}
+
+owner_case "a firmware that names brightness owns it" "brightness
+move
+compact
+" owns
+owner_case "a firmware that names other features does not" "compact
+" free
+owner_case "no file at all leaves this script in charge" "" free
+# A substring must not count: "brightness-planned" is not the feature.
+owner_case "a near miss does not count" "brightness-planned
+" free
+
+echo
 echo "===== finding the panel ====="
 # hw=beta puts the display on bus 5, hw=alpha on bus 1, and the PCIe board
 # answers at 0x3c instead of 0x3d. Probe rather than trust one of them.

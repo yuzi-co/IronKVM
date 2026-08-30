@@ -15,8 +15,21 @@ Three levers exist, and they are independent:
 | lever            | where it lives                     | effect                        |
 | ---------------- | ---------------------------------- | ----------------------------- |
 | screen off       | `/etc/kvm/oled_sleep`, Web UI      | the strongest, all or nothing |
-| lower the drive  | `S97oled-nudge`, `OLED_CONTRAST`   | slows the wear everywhere     |
+| smaller, moving  | `kvm_system`, the compact page     | the best of the rest          |
+| lower the drive  | `/etc/kvm/oled_contrast`, Web UI   | slows the wear everywhere     |
 | move the image   | `S97oled-nudge`, `OLED_NUDGE_MAX`  | spreads the wear              |
+
+**Which of these is yours depends on the `kvm_system` the board runs.** The
+fork's build draws a small page, moves it around the panel, and holds the drive
+current itself, and it says so by writing `/tmp/kvm/oled_features` at start.
+`S97oled-nudge` reads that file and stands down when it finds `brightness`
+there, because two writers of the same registers fight: the script would put its
+own brightness back every period while the firmware re-read the setting it was
+given. The Web UI reads the same file, and offers the brightness control only
+when something acts on it.
+
+A release carries Sipeed's `kvm_system`, which does none of that, so on a stock
+board the script is the whole of the answer below the sleep timer.
 
 **Set the sleep timer first, because a device that has never had one is the
 case this whole directory exists for.** A missing `/etc/kvm/oled_sleep` does not

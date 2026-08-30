@@ -155,8 +155,27 @@ resolve() {
     [ -n "$BUS" ]
 }
 
+# kvm_system publishes what it does with the panel when it starts. A build that
+# moves the image and holds the drive current itself needs no help from here,
+# and two writers of the same registers fight: this script would put its own
+# brightness back every period while that one re-read the setting it was given.
+#
+# The file is in tmpfs and it names the feature rather than a version, so an
+# older kvm_system, or none at all, leaves this script in charge.
+FEATURES=${OLED_FEATURES:-/tmp/kvm/oled_features}
+
+firmware_owns_panel() {
+    [ -r "$FEATURES" ] || return 1
+    grep -q '^brightness$' "$FEATURES" 2>/dev/null
+}
+
 start() {
     printf "oled-nudge: "
+
+    if firmware_owns_panel; then
+        echo "kvm_system drives the panel itself, nothing to do"
+        return 0
+    fi
 
     if ! resolve; then
         echo "no panel found, nothing to do"
@@ -244,6 +263,9 @@ case "$1" in
         echo "travel : $(clamp_max "$MAX") rows"
         echo "period : ${PERIOD}s"
         echo "drive  : $(clamp_contrast "$CONTRAST")"
+        if firmware_owns_panel; then
+            echo "owner  : kvm_system, so this script stands down"
+        fi
         if [ -f "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
             echo "running: yes (pid $(cat "$PIDFILE"))"
         else
