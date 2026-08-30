@@ -758,6 +758,20 @@ The two items from the `71ab9127` section stand. Beyond them:
 
 ---
 
+## `feat/usb-audio` is superseded, 2026-08-30
+
+The branch holds 28 commits cut from an old `main`. Every one of them reached `fork/integration` in
+a later form, and the Opus migration then rewrote that form. `git merge-base --is-ancestor` still
+reports the branch as unmerged, which is true of the SHAs and false of the content.
+
+A re-cut onto today's `main` was tried and thrown away. It applied with four small conflicts, passed
+`go vet`, all 29 novision test packages, a `GOARCH=riscv64` build, `tsc --noEmit`, eslint and the
+frontend build, and it added nothing: `g711.go`, `resample.go` and one plan document are the only
+files on it that `fork/integration` does not have, and the Opus work deleted the first two on
+purpose.
+
+Compare the files before acting on the merge-base. `origin` still holds the branch at `06871b81`.
+
 ## Extraction branch rebase, 2026-08-28
 
 The item that has stood since the `71ab9127` section, "the extraction branches with no pull request
@@ -944,8 +958,10 @@ for those from 2026-08-19 that the source commit did not have.
 ### Still to adopt
 
 - `RobbyV2/NanoKVM` `server/service/media`, read narrowly. `hold.go` and `pcmloop.go` are 6.5KB
-  between them and hold the quiet-host against parked-stream distinction that `feat/usb-audio`
-  needs. `manager.go` and `output_linux.go` are 72KB and are a reimplementation, not an adoption.
+  between them and hold the quiet-host against parked-stream distinction that the audio path here
+  still lacks. `manager.go` and `output_linux.go` are 72KB and are a reimplementation, not an
+  adoption. This bullet named `feat/usb-audio` when it was written. That branch is superseded, and
+  the code to compare against is `server/service/stream/audio` on this branch.
 - `eringiriri/ERINGI_JPN_NanoKVM`: horizontal scroll in relative mouse mode, and a composition guard
   that leaves the JIS Zenkaku key stranded. Both small and additive. **Both are adopted in the next
   section, and both are on the device since 2026-08-30.**
