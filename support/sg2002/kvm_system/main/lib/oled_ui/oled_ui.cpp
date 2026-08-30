@@ -511,9 +511,20 @@ static void compact_pair(char *out, const char *left, const char *right)
 //
 // W is blank rather than a dot when the board has no wireless at all, because
 // wifi_state -2 means the hardware is absent and a dot would read as a fault.
+// The case of the wired flag carries what the address line no longer does.
+// Capital E is a link whose gateway answers, lower case e is a link that
+// carries an address but no verified route, and a dot is no link at all. That
+// distinction is worth keeping: a board that answers on its own address while
+// nothing beyond the switch replies is a real and confusing state.
 static void compact_flags(char *out)
 {
-	out[0] = (kvm_sys_state.eth_state >= 1) ? 'E' : '.';
+	if(kvm_sys_state.eth_state >= 3){
+		out[0] = 'E';
+	} else if(kvm_sys_state.eth_state >= 1){
+		out[0] = 'e';
+	} else {
+		out[0] = '.';
+	}
 	if(kvm_sys_state.wifi_state == -2){
 		out[1] = ' ';
 	} else {
@@ -528,9 +539,16 @@ static void compact_flags(char *out)
 // cable reaches. The full page alternates between the two every five seconds;
 // this one does not, since an address that changes under the reader is worth
 // less than one that stays still.
+//
+// An address is shown whenever the board has one. It is deliberately not gated
+// on the link verdict: eth_state only reaches 3 when the default gateway answers
+// a ping, and plenty of networks do not answer one. The reference board is such
+// a network, and gating on 3 left the panel reading "--" while the Web UI was
+// answering on the address it would not print. The verdict is not lost, it is in
+// the flag character on the line below.
 static void compact_address(char *out, size_t n)
 {
-	if(kvm_sys_state.eth_state == 3 && kvm_sys_state.eth_addr[0] != 0){
+	if(kvm_sys_state.eth_state >= 1 && kvm_sys_state.eth_addr[0] != 0){
 		snprintf(out, n, "%s", (char *)kvm_sys_state.eth_addr);
 		return;
 	}
