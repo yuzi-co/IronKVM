@@ -293,6 +293,16 @@ else
     note "kvm_system no longer starts the way it did" FAIL
 fi
 
+# The gap between S95nanokvm killing kvm_system and starting it again is five
+# seconds wide at most, and this poll used to fill it. Two of them then drove
+# the OLED at once and wrote each other's pixels to the wrong column, which is
+# corruption no redraw clears because fields are drawn only when they change.
+if grep -q 'if \[ "\$state" != updating \] && ! system_running && system_binary_present; then' "$SV"; then
+    note "kvm_system is not started during a stand-off" OK
+else
+    note "kvm_system can still be started in the middle of a restart" FAIL
+fi
+
 echo
 echo "===== when restarting cannot work, reboot ====="
 # S98supervise restarts and never reboots, which is right for a hung server and
