@@ -485,9 +485,18 @@ void kvm_wifi_config_ui_disp(uint8_t first_disp, uint8_t subpage_changed)
 	// switch(show_which_page())
 }
 
+// oled_auto_sleep_time_update restarts the inactivity countdown.
+//
+// The clock is time::ticks_ms(), which MaixCDK reads from CLOCK_MONOTONIC.
+// time::time_ms() is the wall clock, and this board carries no RTC battery, so
+// it starts every boot near the epoch and jumps to the real date as soon as
+// NTP answers. The jump is about 1.7e12 ms. A countdown that started before
+// the sync is over by any measure after it, and the panel blanks with the
+// operator watching it. A step backwards is worse: the subtraction below is
+// unsigned, so it wraps to an enormous number rather than to zero.
 void oled_auto_sleep_time_update(void)
 {
-	kvm_oled_state.oled_sleep_start = time::time_ms();
+	kvm_oled_state.oled_sleep_start = time::ticks_ms();
 }
 
 void oled_auto_sleep(void)
@@ -536,7 +545,7 @@ void oled_auto_sleep(void)
 				kvm_sys_state.sub_page = 0;
 			}
 		} else {
-			if((time::time_ms() - kvm_oled_state.oled_sleep_start)/1000 >= kvm_oled_state.oled_sleep_param){
+			if((time::ticks_ms() - kvm_oled_state.oled_sleep_start)/1000 >= kvm_oled_state.oled_sleep_param){
 				// kvm_oled_state.oled_sleep_state = 1;
 				kvm_sys_state.sub_page = 1;
 			} else {

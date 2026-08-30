@@ -63,10 +63,28 @@ void* thread_oled_handle(void * arg)
 	kvm_sys_state.oled_thread_running = -1;
 }
 
+// thread_key_handle measures how long the board button is held, and a hold
+// that is long enough resets the password. The measurement therefore has to be
+// right.
+//
+// The clock is time::ticks_ms(), which MaixCDK reads from CLOCK_MONOTONIC.
+// time::time_ms() is the wall clock, and this board carries no RTC battery, so
+// the first NTP answer of a boot moves that clock by about 1.7e12 ms. A hold
+// that starts before the answer and ends after it measures the step and not the
+// hold. The operator presses this button to configure the Wi-Fi, and connecting
+// the Wi-Fi is what lets NTP answer, so the press and the step fall in the same
+// few seconds by design.
+//
+// key_down is what makes a release meaningful. The kernel delivers what the
+// button does and it promises no press first: an operator who holds the button
+// through power-on releases it after this thread opens the device, so the first
+// event of the process is a release. press_time held stack garbage then, and
+// the password reset could fire from it.
 void* thread_key_handle(void * arg)
 {
-	uint64_t __attribute__((unused)) press_time;
-	uint32_t press_cycle;
+	uint64_t press_time = 0;
+	uint64_t press_cycle;
+	uint8_t key_down = 0;
 	int fd = open ("/dev/input/event0", O_RDONLY);
 	if (fd == -1) {
 		kvm_sys_state.key_thread_running = 0;
@@ -79,11 +97,17 @@ void* thread_key_handle(void * arg)
 		if (event.type == EV_KEY) {
 			if (event.value == 1){
 				// printf ("[kvmk]按键按下\n");
-				press_time = time::time_ms();
+				press_time = time::ticks_ms();
+				key_down = 1;
 			} else if (event.value == 0){
 				oled_auto_sleep_time_update();
 				// printf ("[kvmk]按键抬起\n");
-				press_cycle = time::time_ms() - press_time;
+				if(key_down == 0){
+					time::sleep_ms(KEY_DELAY);
+					continue;
+				}
+				key_down = 0;
+				press_cycle = time::ticks_ms() - press_time;
 				if(press_cycle >= KEY_LONGLONG_PRESS){
 					kvm_reset_password();
 				} else if (press_cycle >= KEY_LONG_PRESS && press_cycle < KEY_LONGLONG_PRESS){
