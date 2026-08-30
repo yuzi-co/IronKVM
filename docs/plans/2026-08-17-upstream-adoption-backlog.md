@@ -948,9 +948,8 @@ for those from 2026-08-19 that the source commit did not have.
 - `eringiriri/ERINGI_JPN_NanoKVM`: horizontal scroll in relative mouse mode, and a composition guard
   that leaves the JIS Zenkaku key stranded. Both small and additive. **Both are adopted in the next
   section, and both are on the device since 2026-08-30.**
-- `pi-bmc/nanokvm-app`, twelve `cvi` commits. "Stop the drivers' error reporting from killing the
-  board" and "Drain the encoder even when it has just refused a frame" are the interesting two. It
-  is a Go rewrite of the capture path, so it stays read-and-reimplement.
+- `pi-bmc/nanokvm-app`, the `cvi` commits. **Read on 2026-08-30, and nothing is adopted.** The last
+  section of this document says which one was checked against the device and what each check found.
 
 ## Input fixes from eringiriri, adopted 2026-08-28
 
@@ -1098,3 +1097,91 @@ write deadline before every write to `/dev/hidg*`.
 `SeatFIFOs`, before any function that wants a wide isochronous IN endpoint is added, because only
 FIFO 1 on this controller holds more than 512 words. `manager.go` and `output_linux.go` are 78KB
 between them and stay a reimplementation rather than an adoption.
+
+## pi-bmc `cvi`, read 2026-08-30
+
+`pi-bmc/nanokvm-app` rewrites the capture path in Go against the cvi SDK. Sixteen `cvi` commits are
+read. Nothing is adopted, and six of them were checked against the device rather than judged by
+their message.
+
+Eight are bring-up steps for a pipeline this fork does not build: the MIPI RX pad mux, the LT6911
+receiver attributes, the DMA working memory VI never allocates, the ISP mempool, the CSI receiver
+clock and ISP frame size, loading the media drivers, converting the source frame rate, and feeding
+the encoder by hand instead of binding it. There is nothing here to port them into. This fork calls
+`libkvm`, and MaixCDK owns everything below it. Two more are diagnostics, and one of those is the
+only thing in either fork worth building here. The last section says which.
+
+### The six that describe a condition this fork could share
+
+**Leftover pipeline objects refuse the next create (`05b02120`).** Their bring-up found VPSS group
+0, the VI pipe and the encoder channel still allocated after an unclean exit, and every later create
+failed with `vpss: resource exists` until the modules were unloaded. This fork already destroys
+before it creates. `init_venc_h264` calls `mmf_del_venc_channel` before `mmf_add_venc_channel`
+unconditionally, and `CVI_VPSS_CreateGrp` destroys the group and retries once when the first create
+fails.
+
+**`pr_err` per dropped frame stops the board (`f5443585`, and the same cause behind `b0ab5def` and
+`64d2fc70`).** At 60fps on a 115200 serial console, each message is a synchronous in-kernel write on
+the only core, and userspace stops being scheduled while ping still answers from softirq. Not
+reachable here. The device boots `console=ttyS0,115200 loglevel=0`, `/proc/sys/kernel/printk` reads
+`0 4 1 7`, and `dmesg` holds no `vb_qbuf` line at all. Sipeed already put on the kernel command line
+what that commit wants there.
+
+**The encoder deadlocks when a refused send skips the collection (`4ca23886`).** VENC answers BUSY
+when its input queue is full, which is when its output most needs draining, so a loop that collects
+only after an accepted send never makes room. Not reachable here. `mmf_venc_push` uses
+`CVI_VENC_SendFrame(ch, frame, 1000)`, which blocks rather than refusing, and `kvm_vision.cpp`
+answers a failed push by deleting the channel and re-initialising on the next frame.
+
+**A channel mutex held by a killed process wedges every later ioctl (`25afbaaf`).** Real in
+principle and not fixable their way. They bound their own ioctls and give up after five seconds.
+The equivalent call here is inside `libkvm` behind cgo, and a cgo call that never returns cannot be
+bounded from Go. The hardware watchdog is what covers this, and it is armed.
+
+**The VI MAC clock leaks because the open count never returns to zero (`613d2a48`).** Their
+`clk_csi_mac0_vip` climbed 15, 22, 32 over a morning of rebuilds. On this device the same counter
+reads 11 after 28 hours of uptime, and it did not move through a `direct` session, a switch to
+`mjpeg`, or a close. That is expected: capture bring-up runs once per server process, so no viewer
+can reach it. Settling it needs one restart, and it is not worth 135 seconds of downtime on its own.
+Read the counter either side of the next restart that happens for another reason. If 11 becomes 12
+and never falls, the leak is here too.
+
+### What the measurement found instead
+
+The run was 360 samples at 2 second intervals over 12 minutes, plus a 90 second tail after the last
+viewer left and a check 6 minutes after that. Every sample in the 12 minutes is identical.
+
+| state | ION `alloc_mem` | board busy | server |
+| --- | --- | --- | --- |
+| before the first stream of the process | 31,600,640 | | |
+| `direct`, one viewer | 42,942,464 | | |
+| after switching to `mjpeg` | 42,942,464 | | |
+| no viewer, 6 minutes after the close | 42,942,464 | 5% | 1% |
+
+Three things follow. A path switch frees nothing and allocates nothing, so it is not a leak path.
+The first stream of a process costs 11,341,824 bytes that the process never gives back. And "capture
+stops when the last viewer leaves" is true of the core and false of the carveout, which is a
+distinction this document and `AGENTS.md` had both lost.
+
+The one log line the whole run produced is `kvm image reads recovered after 5 failed reads with
+result -1`, timestamped in the same second as the allocation step. The first reads after a cold open
+fail, and that is normal.
+
+### The idle stop is not restored, deliberately
+
+`backup/pre-rebase-20260801` holds `service/vm/hdmi_idle.go` and its tests, about 540 lines, and
+restoring them would also mean restoring `StopCapture`, `ResumeCapture` and `IsCapturing` in
+`common/kvm_vision.go` and the rebuild-on-read in `common/capture_gate.go`. It is not worth it.
+
+The 11,341,824 bytes it would release are inside the 75MB ION carveout, which is a fixed reservation
+made before Linux starts and is not CMA, so releasing them returns nothing that anything else can
+spend. The core is already back to 5% without it. Against that, a release and rebuild cycle runs a
+fresh carveout allocation on a board where a failed one segfaults immediately.
+
+### The one thing worth taking from either fork
+
+`a65d89ce` adds a tap on the VI channel and looks at the luma plane, because a locked receiver
+writing nothing, a scaler producing nothing and an encoder that never runs are all the same black
+rectangle. Nothing here answers that question. `HasHDMISignal` reports the link and `S99vidiag`
+collects logs, and neither looks at what a frame contains. For this fork it needs no C: pull one
+MJPEG frame over HTTP and report its mean and variance. Not done.

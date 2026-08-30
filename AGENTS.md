@@ -332,9 +332,25 @@ patchelf --print-needed libkvm.so
 The executable records `libkvm.so` and `libc.so` as its own `NEEDED` entries.
 
 **Video has three delivery paths**, all under `service/stream/`: `mjpeg`, `webrtc` (H.264 over
-WebRTC, with STUN/TURN configured in `server.yaml`), and `direct` (H.264 over plain HTTP). Capture is
-reference-counted against viewers — `service/vm/hdmi_idle.go` stops it after an idle timeout, and
-`main.go` starts the idle countdown at boot because nothing is watching yet.
+WebRTC, with STUN/TURN configured in `server.yaml`), and `direct` (H.264 over plain HTTP).
+
+**Capture starts once and never stops before the process does.** The first call to
+`common.GetKvmVision()` builds the pipeline, and only the teardown in `main.go` takes it down.
+`service/vm/hdmi_idle.go` no longer exists: the 2026-08-01 rebase dropped it, and it survives only
+on `backup/pre-rebase-20260801`. The note at the end of `common/capture_gate.go` says what that
+leaves: nothing on a device can stop capture without ending the process.
+
+Upstream has an idle timer of its own in `service/vm/hdmi.go`, and it is a different thing.
+`scheduleHdmiIdleTimerLocked` calls `setHDMI(false)`, which reaches `kvmv_hdmi_control` and not
+`kvmv_deinit`. It stops the capture work and it keeps the pipeline. Its default timeout is 0, which
+means off, and the device carries no `/etc/kvm/hdmi_idle_timeout` to change that.
+
+Read "capture stops" as the core, therefore, and not as the carveout. Measured on 2026-08-30: ION
+holds 31,600,640 bytes before the first stream of a server process and 42,942,464 after it, and the
+second figure stays for the life of the process with no viewer at all.
+The board goes back to 5% busy and the server to 1% in the same state, so the work does stop. The
+retained 11,341,824 bytes cost nothing that Linux can spend, because the 75MB carveout is a fixed
+reservation and not CMA.
 
 **Config** is a viper-backed singleton, `config.GetInstance()`, read from `/etc/kvm/server.yaml`
 with a compiled-in default if the file is missing. See `server/README.md` for the annotated schema.
