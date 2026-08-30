@@ -28,10 +28,16 @@
 #   OLED_BUS, OLED_ADDR      skip detection and use these
 #   OLED_NUDGE_MAX           rows of travel, 0 disables movement (default 2)
 #   OLED_NUDGE_PERIOD        seconds between moves       (default 600)
+#   OLED_CONTRAST            drive current, or "keep"    (default 0x60)
 
 MAX=${OLED_NUDGE_MAX:-2}
 PERIOD=${OLED_NUDGE_PERIOD:-600}
+CONTRAST=${OLED_CONTRAST:-0x60}
 PIDFILE=/tmp/oled-nudge.pid
+
+# What kvm_system's OLED_Init writes. stop puts this back, so a stopped script
+# leaves the panel at the brightness the drawing code expects.
+INIT_CONTRAST=207
 
 # --- offset sequence ---
 # clamp_max keeps the travel inside the display offset field, which is six bits.
@@ -59,6 +65,37 @@ triangle() {
     fi
 }
 # --- end offset sequence ---
+
+# --- contrast ---
+# Command 0x81 sets the drive current, and kvm_system writes 0xCF in OLED_Init
+# and never again, so a value set here survives every redraw the same way the
+# offset does.
+#
+# This is the lever that slows the wear everywhere rather than spreading it.
+# An OLED pixel ages with the light it has emitted, and the relationship is
+# worse than linear, so running the panel dimmer buys back more life than the
+# brightness it costs. The panel is read from arm's length in a rack, not in
+# sunlight.
+#
+# clamp_contrast keeps the value inside 0x10..0xFF. A drive of zero is a legal
+# command and an unreadable screen, and this script must not be able to produce
+# one. "keep" leaves whatever kvm_system set, which is how an operator turns
+# this off without removing the script.
+clamp_contrast() {
+    v=$1
+
+    case "$v" in
+        keep|KEEP|"") echo keep; return ;;
+        0[xX]*)       n=$((v)) ;;
+        *[!0-9]*)     echo keep; return ;;
+        *)            n=$v ;;
+    esac
+
+    [ "$n" -lt 16 ] 2>/dev/null && n=16
+    [ "$n" -gt 255 ] 2>/dev/null && n=255
+    echo "$n"
+}
+# --- end contrast ---
 
 # probe reports whether anything answers at an address. i2cdetect prints the
 # address itself in the cell when a device replies.
@@ -101,6 +138,11 @@ set_offset() {
     i2cset -y "$1" "$2" 0x00 0xD3 "$3" i
 }
 
+# 0x81 is set contrast, and the byte after it is the drive level.
+set_contrast() {
+    i2cset -y "$1" "$2" 0x00 0x81 "$3" i
+}
+
 resolve() {
     if [ -n "$OLED_BUS" ] && [ -n "$OLED_ADDR" ]; then
         BUS=$OLED_BUS
@@ -122,8 +164,19 @@ start() {
     fi
 
     max=$(clamp_max "$MAX")
-    if [ "$max" -eq 0 ]; then
-        echo "disabled (travel 0)"
+    drive=$(clamp_contrast "$CONTRAST")
+
+    # The drive is set once here so it applies immediately, and again on every
+    # pass of the loop below. kvm_system rewrites it in OLED_Init, so a restart
+    # of that process puts the panel back to full brightness: re-applying is
+    # what makes this setting hold without anything having to watch for the
+    # restart.
+    if [ "$drive" != keep ]; then
+        set_contrast "$BUS" "$ADDR" "$drive" 2>/dev/null
+    fi
+
+    if [ "$max" -eq 0 ] && [ "$drive" = keep ]; then
+        echo "disabled (travel 0, contrast keep)"
         return 0
     fi
 
@@ -135,13 +188,22 @@ start() {
         step=0
         while :; do
             sleep "$PERIOD"
-            set_offset "$BUS" "$ADDR" "$(triangle "$step" "$max")" 2>/dev/null
+            if [ "$max" -gt 0 ]; then
+                set_offset "$BUS" "$ADDR" "$(triangle "$step" "$max")" 2>/dev/null
+            fi
+            if [ "$drive" != keep ]; then
+                set_contrast "$BUS" "$ADDR" "$drive" 2>/dev/null
+            fi
             step=$((step + 1))
         done
     ) < /dev/null > /dev/null 2>&1 &
 
     echo "$!" > "$PIDFILE"
-    echo "OK (bus $BUS, ${ADDR}, ${max} rows every ${PERIOD}s)"
+    if [ "$drive" = keep ]; then
+        echo "OK (bus $BUS, ${ADDR}, ${max} rows every ${PERIOD}s, contrast unchanged)"
+    else
+        echo "OK (bus $BUS, ${ADDR}, ${max} rows every ${PERIOD}s, contrast ${drive})"
+    fi
 }
 
 stop() {
@@ -150,10 +212,13 @@ stop() {
         kill "$(cat "$PIDFILE")" 2>/dev/null
         rm -f "$PIDFILE"
     fi
-    # Put the image back where the drawing code thinks it is.
+    # Put the panel back the way the drawing code expects it: the offset to 0
+    # and the drive to what OLED_Init writes. Otherwise stopping this script
+    # would leave the display dim with nothing left to explain why.
     if resolve; then
         set_offset "$BUS" "$ADDR" 0 2>/dev/null
-        echo "stopped, offset reset to 0"
+        set_contrast "$BUS" "$ADDR" "$INIT_CONTRAST" 2>/dev/null
+        echo "stopped, offset reset to 0 and contrast to $INIT_CONTRAST"
     else
         echo "stopped"
     fi
@@ -178,6 +243,7 @@ case "$1" in
         fi
         echo "travel : $(clamp_max "$MAX") rows"
         echo "period : ${PERIOD}s"
+        echo "drive  : $(clamp_contrast "$CONTRAST")"
         if [ -f "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
             echo "running: yes (pid $(cat "$PIDFILE"))"
         else

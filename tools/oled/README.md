@@ -12,18 +12,60 @@ the layout stays visible as a ghost after the content changes.
 
 Three levers exist, and they are independent:
 
-| lever            | where it lives                    | effect                       |
-| ---------------- | --------------------------------- | ---------------------------- |
-| screen off       | `/etc/kvm/oled_sleep`, Web UI     | the strongest, all or nothing |
-| move the image   | `S97oled-nudge` in this directory | spreads the wear             |
-| lower the drive  | SSD1306 contrast, command `0x81`  | slows the wear everywhere    |
+| lever            | where it lives                     | effect                        |
+| ---------------- | ---------------------------------- | ----------------------------- |
+| screen off       | `/etc/kvm/oled_sleep`, Web UI      | the strongest, all or nothing |
+| lower the drive  | `S97oled-nudge`, `OLED_CONTRAST`   | slows the wear everywhere     |
+| move the image   | `S97oled-nudge`, `OLED_NUDGE_MAX`  | spreads the wear              |
 
-The sleep timer already exists and defaults to 3600 seconds. Shortening it is
-one write and costs nothing:
+**Set the sleep timer first, because a device that has never had one is the
+case this whole directory exists for.** A missing `/etc/kvm/oled_sleep` does not
+mean a default: `oled_auto_sleep` reads the absent file as 0, which is "never
+sleep", and `GetOLED` reports 0 to the Web UI. So a board nobody has configured
+runs a static screen for its whole life. The file is read within a second of
+being written and no restart is needed:
 
 ```shell
 echo 300 > /etc/kvm/oled_sleep         # or use Settings in the Web UI
 ```
+
+The value is in seconds. Below 10, `kvm_system` disables sleeping rather than
+shortening it, and the server clamps to that. A file that exists but is empty
+means 30 seconds.
+
+Any change of state restarts the countdown and wakes the panel, because
+`kvm_main_ui_disp` calls `oled_auto_sleep_time_update` whenever
+`kvm_state_is_changed()` is true. Plugging HDMI, an address change or a stream
+starting all bring the screen back. **On an enclosure whose only buttons are
+POWER and RESET there is nothing else that wakes it**, so the panel is dark
+whenever the board is genuinely idle. That is the point, and it is worth knowing
+before somebody wonders why the screen is off.
+
+## What the wear looks like
+
+Measured on a board that had run without a sleep timer since it was new: fill
+the panel with every pixel lit, and the aged pixels are visibly darker, so the
+old content reads as a photographic negative.
+
+```shell
+# every pixel on, eight pages of 128 columns, four i2cset blocks per page
+for page in 0 1 2 3 4 5 6 7; do
+    i2cset -y 5 0x3d 0x00 $((0xB0 + page)) 0x00 0x10 i
+    for chunk in 1 2 3 4; do
+        i2cset -y 5 0x3d 0x40 $(for i in $(seq 32); do printf '0xff '; done) i
+    done
+done
+```
+
+Pause `kvm_system` with `kill -STOP` first, or it redraws over the fill, and
+`kill -CONT` afterwards. Do not kill it: `S98supervise` would start a second
+copy, and two processes writing this panel is what corrupts it. Restarting
+`kvm_system` afterwards is what puts the real screen back, because only a full
+redraw rewrites every pixel.
+
+The ghost on that board showed `TYPE: H264` and `QUALITY: Middle` while the live
+screen read `MJPG` and `EXTRA`, and several IP addresses on top of each other.
+The wear records what the panel showed for the longest, not what it shows now.
 
 ## How the nudge works
 
@@ -62,8 +104,47 @@ Use `demo` to judge the movement on the panel. If the screen has gone to sleep,
 wake it first, or the walk happens with the display off.
 
 Environment: `OLED_NUDGE_MAX` rows of travel, 0 disables movement;
-`OLED_NUDGE_PERIOD` seconds between moves; `OLED_BUS` and `OLED_ADDR` to skip
-detection.
+`OLED_NUDGE_PERIOD` seconds between moves; `OLED_CONTRAST` drive current, or
+`keep` to leave it alone; `OLED_BUS` and `OLED_ADDR` to skip detection.
+
+## Lowering the drive
+
+`kvm_system` writes contrast `0xCF` in `OLED_Init`, which is about 81% of full
+drive, and never writes it again. The script sets `0x60` by default.
+
+A pixel ages with the light it has emitted and the relationship is worse than
+linear, so a dimmer panel buys back more life than the brightness it costs. This
+screen is read from arm's length in a rack rather than in sunlight.
+
+The value is clamped into `0x10..0xFF`, because a drive of zero is a legal
+command and an unreadable screen, and a script that runs at boot must not be
+able to produce one. Anything that is not a number is treated as `keep`.
+
+The loop re-applies it every period. That is not redundancy: a restart of
+`kvm_system` runs `OLED_Init` again and puts the panel back to `0xCF`, so
+re-applying is what makes the setting hold without anything having to watch for
+the restart. `stop` puts `0xCF` back, so a stopped script never leaves a dim
+panel behind with nothing to explain it.
+
+## Why not periodic inversion
+
+Command `0xA7` lights every pixel the page leaves dark, so running inverted part
+of the time evens the wear out instead of letting it accumulate in one pattern.
+It is the wrong trade here.
+
+The status page lights roughly 15 to 20% of the pixels, so an inverted panel
+drives 80 to 85%: four to five times the emitted light, and the wear follows the
+light. It converts a legible ghost into uniform dimming, and it spends much more
+of the panel to do it.
+
+It also cannot repair what is already there. Equalising an existing ghost needs
+the dark pixels to accumulate drive-hours comparable to what the lit ones banked
+over the life of the board. At a duty cycle anybody would tolerate looking at,
+that takes longer than the panel has left.
+
+Inversion earns its place on a panel that must stay lit permanently, where
+uniform dimming beats a readable ghost. A board with a sleep timer is not that
+panel.
 
 ## Which bus and address
 
@@ -97,12 +178,29 @@ the Makefile is the only reason it appears to need one.
 One I2C transaction per period. `kvm_system` writes the panel far more often
 than that.
 
-It sends each command byte as its own transaction. `oled_write_register(OLED_CMD,
-0xD3)` and the value after it are two separate writes on the bus, so a nudge can
-land between a command and its argument. The worst case is one malformed frame,
-corrected by the next redraw. A long period keeps it rare. There is no way to
-hold an I2C bus against another process, so the race cannot be closed from here
-- only made unlikely and harmless.
+It sends each command byte as its own transaction, and the SSD1306 takes a
+command's argument from the next byte it receives whatever transaction that byte
+arrives in. So a write from here landing between `0x81` and its value is read as
+the value, and the display is left mis-configured rather than merely
+mis-drawn. No redraw corrects that, because a redraw writes pixels and not
+configuration.
+
+The exposure is narrower than it sounds. The only commands here that take an
+argument are in `OLED_Init`, which runs when `kvm_system` starts, so the window
+is a few milliseconds against a period of ten minutes. Cursor positioning is
+three single-byte commands with no arguments, and a write landing between them
+is harmless.
+
+There is no way to hold an I2C bus against another process, so the race cannot
+be closed from here, only made unlikely.
+
+**A second `kvm_system` is the dangerous case, not this script.** It writes each
+pixel byte as its own transaction after positioning the cursor, so two of them
+interleave one another's bursts and the data lands at the wrong column. That
+corruption does persist, because the UI redraws only the fields whose value
+changed. It is reached by killing `kvm_system` and starting a copy by hand:
+`S98supervise` fills the gap with one of its own. Replace the binary and then
+kill the process, so exactly one is ever running.
 
 ## Tests
 

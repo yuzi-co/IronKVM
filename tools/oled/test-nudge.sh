@@ -13,8 +13,10 @@ trap 'rm -rf "$WORK"' EXIT
 
 sed -n '/^# --- offset sequence ---$/,/^# --- end offset sequence ---$/p' "$ND" > "$WORK/seq.sh"
 sed -n '/^# --- device detection ---$/,/^# --- end device detection ---$/p' "$ND" > "$WORK/find.sh"
-[ -s "$WORK/seq.sh" ]  || { echo "could not extract the offset sequence block"; exit 1; }
-[ -s "$WORK/find.sh" ] || { echo "could not extract the detection block"; exit 1; }
+sed -n '/^# --- contrast ---$/,/^# --- end contrast ---$/p' "$ND" > "$WORK/drive.sh"
+[ -s "$WORK/seq.sh" ]   || { echo "could not extract the offset sequence block"; exit 1; }
+[ -s "$WORK/find.sh" ]  || { echo "could not extract the detection block"; exit 1; }
+[ -s "$WORK/drive.sh" ] || { echo "could not extract the contrast block"; exit 1; }
 
 fails=0
 note() { printf '  %-58s %s\n' "$1" "$2"; [ "$2" = FAIL ] && fails=$((fails + 1)); return 0; }
@@ -49,6 +51,26 @@ got=$(WORK="$WORK" sh -c '. "$WORK/seq.sh"; clamp_max 200')
 [ "$got" = "63" ] && note "a max above the field is clamped to 63" OK || note "clamp_max 200 = $got" FAIL
 got=$(WORK="$WORK" sh -c '. "$WORK/seq.sh"; clamp_max -5')
 [ "$got" = "0" ] && note "a negative max becomes 0" OK || note "clamp_max -5 = $got" FAIL
+
+echo
+echo "===== the drive stays inside what is readable ====="
+# A contrast of zero is a legal command and a dark screen. This script must not
+# be able to produce one, whatever it is handed.
+drive_case() {
+    got=$(WORK="$WORK" sh -c '. "$WORK/drive.sh"; clamp_contrast '"$1")
+    [ "$got" = "$2" ] && note "clamp_contrast $1 -> $got" OK                       || note "clamp_contrast $1 -> $got, want $2" FAIL
+}
+
+drive_case 0x60 96
+drive_case 96   96
+drive_case 0    16
+drive_case 1    16
+drive_case 300  255
+drive_case 0xFF 255
+# Anything that is not a number leaves the panel alone rather than guessing.
+drive_case keep keep
+drive_case ""   keep
+drive_case abc  keep
 
 echo
 echo "===== finding the panel ====="
