@@ -1,6 +1,41 @@
 package common
 
-import "sync"
+import (
+	"os"
+	"strconv"
+	"strings"
+	"sync"
+)
+
+// ScreenFileMap names the file each setting is stored in.
+//
+// These are the operator's choices rather than runtime state, so they stay on
+// the card: a board set to 60 frames should still be at 60 frames after a
+// reboot. They are written once per change, which is what makes that
+// acceptable where `now_fps` and `wifi_state` are not - see the comment about
+// tmpfs in `kvmapp/system/init.d/S95nanokvm`.
+//
+// `gop` is absent on purpose. The API hands it straight to libkvm and stores
+// nothing, so there is nothing to restore.
+//
+// It is a variable so a test can point it at a temporary directory. Nothing on
+// the device changes it.
+var ScreenFileMap = map[string]string{
+	"type":       "/kvmapp/kvm/type",
+	"fps":        "/kvmapp/kvm/fps",
+	"quality":    "/kvmapp/kvm/qlty",
+	"resolution": "/kvmapp/kvm/res",
+}
+
+// defaultScreenValues is what a board serves when it has never been configured.
+var defaultScreenValues = ScreenValues{
+	Width:   0,
+	Height:  0,
+	Quality: 80,
+	FPS:     30,
+	BitRate: 3000,
+	GOP:     30,
+}
 
 // ScreenValues is a consistent copy of the capture parameters.
 type ScreenValues struct {
@@ -50,19 +85,54 @@ var BitRateMap = map[uint16]bool{
 
 func GetScreen() *Screen {
 	screenOnce.Do(func() {
-		screen = &Screen{
-			values: ScreenValues{
-				Width:   0,
-				Height:  0,
-				Quality: 80,
-				FPS:     30,
-				BitRate: 3000,
-				GOP:     30,
-			},
-		}
+		screen = &Screen{values: loadScreenValues()}
 	})
 
 	return screen
+}
+
+// loadScreenValues seeds the singleton from what the operator last chose.
+//
+// The settings files outlive the process, and nothing read them back: every
+// start served 30 frames at quality 80 whatever the board was set to, until
+// somebody opened the UI and changed a setting. The browser kept its own copy
+// in localStorage, so the page went on showing 60 while the server sent 30, and
+// a second browser saw neither.
+//
+// A file that is missing, unreadable or not a number leaves its default alone.
+// That is the same answer for all three, and none of them is worth a log line
+// on a board where an unconfigured setting is the ordinary case.
+func loadScreenValues() ScreenValues {
+	values := defaultScreenValues
+
+	// Resolution first, so a stored quality that the resolution constrains is
+	// applied against the right one. The order also matches the switch below.
+	for _, key := range []string{"resolution", "quality", "fps"} {
+		if value, ok := readScreenSetting(key); ok {
+			applyScreenValue(&values, key, value)
+		}
+	}
+
+	return values
+}
+
+func readScreenSetting(key string) (int, bool) {
+	path, ok := ScreenFileMap[key]
+	if !ok {
+		return 0, false
+	}
+
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return 0, false
+	}
+
+	value, err := strconv.Atoi(strings.TrimSpace(string(data)))
+	if err != nil {
+		return 0, false
+	}
+
+	return value, true
 }
 
 // Snapshot returns the current parameters as a single consistent copy.
@@ -79,26 +149,34 @@ func SetScreen(key string, value int) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
+	applyScreenValue(&s.values, key, value)
+}
+
+// applyScreenValue is shared by the API and by the restore at startup, so a
+// stored setting is read back under exactly the rule that wrote it. The
+// overloaded quality field is the reason that matters: one API key carries
+// either a JPEG quality or an H.264 bitrate, and both land in the same file.
+func applyScreenValue(values *ScreenValues, key string, value int) {
 	switch key {
 	case "resolution":
 		height := uint16(value)
 		if width, ok := ResolutionMap[height]; ok {
-			s.values.Width = width
-			s.values.Height = height
+			values.Width = width
+			values.Height = height
 		}
 
 	case "quality":
 		if value > 100 {
-			s.values.BitRate = uint16(value)
+			values.BitRate = uint16(value)
 		} else {
-			s.values.Quality = uint16(value)
+			values.Quality = uint16(value)
 		}
 
 	case "fps":
-		s.values.FPS = validateFPS(value)
+		values.FPS = validateFPS(value)
 
 	case "gop":
-		s.values.GOP = uint8(value)
+		values.GOP = uint8(value)
 	}
 }
 
