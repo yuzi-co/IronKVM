@@ -1684,7 +1684,10 @@ bool jpg_dump(kvmv_data_t* dump_to, image::Image *raw)
     if(dump_to == NULL || raw == NULL || raw->data() == NULL || raw->data_size() == 0){
         return false;
     }
-    if(raw->data_size() > UINT32_MAX || !reserve_save_buffer(dump_to, (uint32_t)raw->data_size())){
+    // data_size() answers an int, so it cannot exceed UINT32_MAX and the
+    // comparison that used to stand here was always false. The signed value
+    // is what needs testing before the cast.
+    if(raw->data_size() < 0 || !reserve_save_buffer(dump_to, (uint32_t)raw->data_size())){
         dump_to->img_data_size = 0;
         dump_to->img_data_type = 0;
         return false;
