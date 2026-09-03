@@ -44,7 +44,7 @@ logger:
 # 认证与安全
 authentication: enable              # 是否开启 HTTP 接口与网页的身份校验。可选 `enable` (开启) 或 `disable` (禁用)。默认为 `enable`。强烈建议公开在互联网的机器开启此项！
 jwt:
-   secretKey: ""                    # 用于签发和验证 JWT Token 的密钥。如果不填，服务启动时将自动随机生成
+   secretKey: ""                    # 用于签发和验证 JWT Token 的密钥。如果不填，服务首次启动时自动随机生成并保存到 `/etc/kvm/.jwt_secret`，重启后会话依然有效
    refreshTokenDuration: 2678400    # 登录超时的刷新周期（单位：秒）。默认为 `2678400`（约31天）
    revokeTokensOnLogout: true       # 退出登录时是否废除该用户的全部会话；不会影响其他用户。设为 false 时仅清除浏览器 Cookie，不推荐使用。默认为 `true`
 security:
