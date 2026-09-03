@@ -2357,8 +2357,14 @@ int mmf_venc_push(int ch, uint8_t *data, int w, int h, int format) {
 		case PIXEL_FORMAT_NV21:
 		{
 			if (frame_info->stVFrame.u32Stride[0] != (CVI_U32)w) {
+				// The destination row is h0, not h. Advancing by stride * h put
+				// every one of the h * 3 / 2 rows at the same address, so the
+				// frame the encoder read was whatever the buffer held before,
+				// with one row of the new picture at the start of the chroma
+				// plane. The write stayed inside the buffer, which is why this
+				// showed as a corrupt picture and never as a crash.
 				for (int h0 = 0; h0 < h * 3 / 2; h0 ++) {
-					memcpy((uint8_t *)frame_info->stVFrame.pu8VirAddr[0] + frame_info->stVFrame.u32Stride[0] * h,
+					memcpy((uint8_t *)frame_info->stVFrame.pu8VirAddr[0] + frame_info->stVFrame.u32Stride[0] * h0,
 							((uint8_t *)data) + w * h0, w);
 				}
 			} else {
