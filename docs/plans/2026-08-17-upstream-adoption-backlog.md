@@ -1224,3 +1224,158 @@ writing nothing, a scaler producing nothing and an encoder that never runs are a
 rectangle. Nothing here answers that question. `HasHDMISignal` reports the link and `S99vidiag`
 collects logs, and neither looks at what a frame contains. For this fork it needs no C: pull one
 MJPEG frame over HTTP and report its mean and variance. Not done.
+
+## Status, 2026-09-03
+
+`upstream/main` moved for the first time since 2026-08-25, from `2ba45a21` to `7f95fe9b`. The pull
+request pool grew by eighteen in two days, all from one author and nearly all on paths this fork
+owns. `RobbyV2/NanoKVM` added nineteen commits. `mrjeeves/NanoKVM` and
+`eringiriri/ERINGI_JPN_NanoKVM` did not move, and both of their deltas are already carried here.
+
+### Upstream's two commits
+
+`a9e1ef24` routes Direct and WebRTC through one H.264 capture source. This fork reached the same
+conclusion first, in `perf/shared-h264-source` and `perf/shared-h264-demand-contract`, and the two
+answers are not the same shape. Upstream shares a source. This fork shares a source *and* asks each
+path whether it wants a frame before the read happens, so an idle board reads nothing at all.
+Nothing to take from `a9e1ef24`.
+
+`7f95fe9b` carries three separate things, and two of them are gaps here.
+
+**`-Wl,--as-needed` on the `kvm` component.** `support/sg2002/additional/kvm/CMakeLists.txt` gains
+one line, and the unused OpenCV `NEEDED` entries stop being written in the first place. This fork
+documents the same problem in `AGENTS.md` and answers it with a manual
+`patchelf --remove-needed libopencv_video.so.409` after every rebuild. A step somebody has to
+remember is not a mechanism. Take the linker flag and retire the step.
+
+**NACK and RTCP report interceptors.** Upstream had been passing an empty `interceptor.Registry`
+and now configures both. This fork's `createPeerConnection` passes no registry at all, which is the
+same outcome by a different route: no retransmission for a lost RTP packet, and no sender or
+receiver reports. Take it.
+
+The third is the RTP MTU, `1450` to `1200`. This fork already reads `1200`, with the reason written
+beside the constant, so upstream converged on a value that was already here.
+
+### The keyframe gate the frame slot was built for
+
+`7f95fe9b` also gates a slow subscriber after a drop: once a frame is discarded, deliver nothing
+until the next keyframe, because a decoder handed the middle of a GOP has nothing to do with it.
+
+This fork has the machinery and does not use it. `frame_slot.go` says so in its own doc comment:
+
+> TryPut refuses while a frame is pending, so the producer learns the client is behind and can
+> decide what to send next (H.264, where a gap has to be repaired with a keyframe).
+
+`H264Source.run()` calls `subscription.slot.TryPut(frame)` and discards the result. The producer is
+told the client is behind and does nothing with the fact, so the next frame that fits is delivered
+mid-GOP and the viewer decodes garbage until the encoder's next natural keyframe. This is a fork
+defect that upstream found first, not an upstream feature.
+
+### The pull request pool, `dormancygrace` #891 to #908
+
+Eighteen pull requests opened on 2026-09-02 and 2026-09-03. Every one carries a hardware
+measurement and a CI build link, which is more evidence than this pool usually offers. None is
+merged. They are read here as a source to reimplement from, not as code to wait for.
+
+Six touch `kvm_vision` or `kvm_mmf`. That matters because this fork ships its own
+`server/dl_lib/libkvm.so` and can rebuild it, so these are actionable here in a way the
+`kvm_system` ones are not.
+
+| PR | What | Verdict here |
+| --- | --- | --- |
+| #904 | Feed native VI frames straight to the JPEG encoder | Take. Their A/B: 22% of one core to 9%, and 8% more frames, at 1080p. Stacked on #896, #898, #902. |
+| #898 | Submit VI frames to VENC without CPU mapping | Take. 19.6% to 16.3% Direct, 41.0% to 39.1% WebRTC. |
+| #893 | Poll HDMI at 10 Hz while the input is stable, not 100 Hz | Take. Seven lines, about 15% of a core. |
+| #896, #894, #902 | Reuse encoded-frame and VENC pack storage | Take. Allocator churn on the frame hot path. |
+| #892 | Advance the destination by `stride * h0`, not `stride * h` | Take. An out-of-bounds write, reachable only when `u32Stride[0] != w`. |
+| #895 | Program VENC rate control from the requested FPS | Read. The encoder is told 60 while capture runs at 30. |
+| #906 | Persist the generated JWT key to `/etc/kvm/.jwt_secret` | Take. See below. |
+| #907 | Load the persisted screen settings at startup | Take. See below. |
+| #899 | `nohup` and detached stdio for both services | Half taken already. See below. |
+| #900 | Signed Tailscale binary updates | Read later. Large, and it is a feature rather than a fix. |
+| #908 | Isolate MJPEG writers; reconnect a silently closed multipart stream | Server half already here. Browser half is not. |
+| #903 | Join the kvm_vision workers before MMF teardown | Already here, and further. See below. |
+| #901 | Strip the Go server's debug symbols | Already here, with a test. |
+| #891, #905 | `kvm_system` network probes, OLED panel power | Cannot ship. The fork takes `kvm_system` from Sipeed's releases. |
+
+**#906 applies exactly.** `server/config/default.go` generates a signing key with
+`generateSecretKey` when `jwt.secretKey` is empty and keeps it in memory only, so every restart
+invalidates every browser session. A restart costs 135 seconds here, which makes the logout more
+expensive than it is upstream.
+
+**#907 applies exactly.** `common.GetScreen` builds the singleton with 0x0 auto, quality 80, 30 FPS,
+3000 kbit/s and GOP 30 every time. The settings files survive a restart and are not read back, so a
+board configured for 60 FPS serves 30 until somebody touches the UI.
+
+**#899 is half here.** Its stop half, that `SIGINT` reaches neither process and `SIGTERM` reaches
+the server, was found here independently on 2026-08-19 and the measurement is written into
+`kvmapp/system/init.d/S95nanokvm`. Its start half is not: detaching stdio with `nohup` so a closed
+SSH session cannot take both services down with it. Cheap, and worth taking.
+
+**#903 is already here and this fork went further.** Retained thread handles, an atomic stop flag,
+both joins before the MMF teardown, and the `return NULL` that a non-void pthread entry needs are
+all in `support/sg2002/additional/kvm/src/kvm_vision.cpp`, and the reasoning is in the comments
+around `try_exit_thread`. That was the 2026-08-20 carveout-leak commit.
+
+**One number from #903 and #899 is worth chasing separately.** With both applied they measure a
+restart at 2.6 seconds with no stream and 3.1 seconds during an active MJPEG stream. This fork has
+the #903 half already and still takes 135 seconds. The slow restart here is therefore something
+else, and it has never been attributed. It is the single largest availability cost this fork has.
+
+### RobbyV2, third read
+
+Nineteen commits since the 2026-08-28 pass. Most are in `service/media`, `service/presentation` and
+`service/sources`, packages built around UVC and a compiled gadget profile, and this fork has
+neither. Four items reach it.
+
+**`e6fecf66`, an OTG role write proves nothing.** Their hardware note is the important part: the
+write to `/proc/cviusb/otg_role` returns success while the controller settles back into `host`, and
+a gadget bound in host mode never enumerates. The UDC reads `not attached`, dwc2 logs
+`Mode Mismatch Interrupt`, HID and the gadget NIC and the disk are all dead at once, and configfs
+still reports every function linked and the UDC bound. Writing `device` once more recovered it with
+no reboot. This fork writes the same attribute in `stop_start` and never reads it back, so its
+supervisor would score that failure as a successful recovery. Take the read-back and the retry.
+
+**`d8674c4a`, a stored setting cannot brick the page.** `web/src/lib/localstorage.ts` here decodes
+three values with a bare `JSON.parse` and no guard. A single corrupt entry throws out of whichever
+component reads it, and because the entry survives the reload the operator gets the same dead page
+on every refresh. A value that cannot be read is a value we no longer have: drop it and take the
+default. Take it.
+
+**`18ef627f`, a panel failure is not a page failure.** Per-panel, per-menu-item and per-overlay
+error boundaries, plus a route error element. This fork has `main-error.tsx` and nothing else, so a
+lazy chunk that fails to load still shows react-router's bare "Unexpected Application Error!" with
+no way back. Take it.
+
+**`7e393706`, the widest microframe the host will take.** Not applicable: it is a UVC isochronous
+endpoint width, and there is no UVC function here. Worth recording anyway, because it retracts an
+earlier measurement of theirs that this fork's notes cite. Re-measured byte-exact at realistic frame
+sizes, 3072 truncated 0.2% of 44 KB frames against 16.2% at 768, and the failure mode changed rather
+than the rate. Their conclusion that endpoint width buys nothing was an artefact of a 3285-byte test
+payload.
+
+### pibmc and the rest
+
+`pi-bmc/nanokvm-app` moved to `d9b4fc66`, tagged v2.3.16, and added `feat/universal-board-support`
+and `feat/rhi-cdc-eem`. The delta is Redfish `TaskService`, an OP-TEE sensor graph, a package
+restructure under `pkg/`, and a long dependency-injection campaign. It is a BMC for other boards
+now, not a NanoKVM application, and the survey's verdict stands: skip unless this fork decides to
+become one.
+
+`mrjeeves/NanoKVM` and `eringiriri/ERINGI_JPN_NanoKVM` did not move.
+
+### Order
+
+1. `-Wl,--as-needed`, and delete the manual `patchelf` step it replaces.
+2. The WebRTC interceptor registry.
+3. The keyframe gate after a dropped H.264 frame.
+4. The persisted JWT key.
+5. The persisted screen settings.
+6. The `localStorage` guard.
+7. The error boundaries.
+8. The OTG role read-back.
+
+Then the `libkvm` rebuild items, #893 first because it is seven lines, then #892, then the
+#896/#898/#902/#904 stack. Those need `./build update_lib`, a rebuild of both libraries, the
+`$ORIGIN` search path set by hand, and a dependency-list comparison against the committed library
+before anything ships.
