@@ -19,6 +19,7 @@ import {
   selectedOriginalResolutionAtom,
   videoModeAtom
 } from '@/jotai/screen.ts';
+import { OverlayBoundary, PanelBoundary } from '@/components/error-boundary';
 import { Head } from '@/components/head.tsx';
 
 import { CaptureStatusOverlay, useCaptureStatus } from './capture-status';
@@ -210,10 +211,12 @@ export const Desktop = () => {
     <div className="h-screen w-screen overflow-hidden bg-neutral-950">
       <Head title={t('head.desktop')} />
 
-      {isBigScreen && <Notification />}
-      <H264ModeNotification />
-      <AbsoluteMouseWarning />
-      <InputDisconnectedWarning />
+      <OverlayBoundary name="notifications">
+        {isBigScreen && <Notification />}
+        <H264ModeNotification />
+        <AbsoluteMouseWarning />
+        <InputDisconnectedWarning />
+      </OverlayBoundary>
 
       {videoMode && resolution && (
         <div className="relative flex h-full min-h-0 w-full min-w-0">
@@ -236,9 +239,15 @@ export const Desktop = () => {
                     )
                   ) : (
                     <>
-                      <Screen />
-                      <CaptureStatusOverlay status={captureStatus} />
-                      <IonWarningBadge status={ion.status} />
+                      <PanelBoundary name="screen">
+                        <Screen />
+                      </PanelBoundary>
+                      <OverlayBoundary name="capture-status">
+                        <CaptureStatusOverlay status={captureStatus} />
+                      </OverlayBoundary>
+                      <OverlayBoundary name="ion-status">
+                        <IonWarningBadge status={ion.status} />
+                      </OverlayBoundary>
                     </>
                   )}
                 </div>
@@ -249,26 +258,40 @@ export const Desktop = () => {
                 max="45%"
                 resizable={isBigScreen && isPicoclawChatOpen}
               >
-                {isBigScreen && isPicoclawChatOpen ? <PicoclawSidebar /> : null}
+                {isBigScreen && isPicoclawChatOpen ? (
+                  <PanelBoundary name="picoclaw-sidebar">
+                    <PicoclawSidebar />
+                  </PanelBoundary>
+                ) : null}
               </Splitter.Panel>
             </Splitter>
           </div>
-          <ActionOverlay />
-          <AutoRegion />
-          <ManualRegion />
-          <InputRegionOverlay />
-          <Mouse />
-          <Keyboard />
+          <OverlayBoundary name="regions">
+            <ActionOverlay />
+            <AutoRegion />
+            <ManualRegion />
+            <InputRegionOverlay />
+          </OverlayBoundary>
+          <OverlayBoundary name="mouse">
+            <Mouse />
+          </OverlayBoundary>
+          <OverlayBoundary name="keyboard">
+            <Keyboard />
+          </OverlayBoundary>
         </div>
       )}
 
       {!isBigScreen && isPicoclawChatOpen ? (
-        <div className="fixed inset-x-0 bottom-0 top-14 z-980 overflow-hidden bg-[#0d0d0f] shadow-2xl">
-          <PicoclawSidebar />
+        <div className="fixed inset-x-0 top-14 bottom-0 z-980 overflow-hidden bg-[#0d0d0f] shadow-2xl">
+          <PanelBoundary name="picoclaw-sidebar">
+            <PicoclawSidebar />
+          </PanelBoundary>
         </div>
       ) : null}
 
-      <VirtualKeyboard />
+      <OverlayBoundary name="virtual-keyboard">
+        <VirtualKeyboard />
+      </OverlayBoundary>
     </div>
   );
 };
