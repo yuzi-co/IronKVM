@@ -26,6 +26,32 @@ type ItemWithExpiry = {
   expiry: number;
 };
 
+// Every stored value that has to be decoded goes through here.
+//
+// A value we cannot read is a value we no longer have. Throwing instead of
+// saying so used to take the whole page down: the exception escaped whichever
+// component read the entry, and because the entry survived the reload it took
+// the page down again on every refresh. A single unreadable setting could shut
+// an operator out of the desktop for good, with no way back that did not
+// involve the browser's developer tools.
+//
+// decode is expected to throw on anything it will not vouch for, shape
+// included. JSON.parse accepts plenty of well-formed values that are not the
+// value we stored, and handing one of those back is the same defect arriving
+// one function later.
+function readItem<T>(key: string, decode: (raw: string) => T): T | null {
+  const raw = localStorage.getItem(key);
+  if (raw === null) return null;
+
+  try {
+    return decode(raw);
+  } catch (error) {
+    console.warn(`[nanokvm] discarding unreadable ${key}`, error);
+    localStorage.removeItem(key);
+    return null;
+  }
+}
+
 // set the value with expiration time (unit: milliseconds)
 function setWithExpiry(key: string, value: string, ttl: number) {
   const now = new Date();
@@ -40,10 +66,15 @@ function setWithExpiry(key: string, value: string, ttl: number) {
 
 // get the value with expiration time
 function getWithExpiry(key: string) {
-  const itemStr = localStorage.getItem(key);
-  if (!itemStr) return null;
+  const item = readItem(key, (raw) => {
+    const parsed = JSON.parse(raw) as ItemWithExpiry;
+    if (typeof parsed?.value !== 'string' || typeof parsed?.expiry !== 'number') {
+      throw new Error('not an expiring item');
+    }
+    return parsed;
+  });
+  if (!item) return null;
 
-  const item: ItemWithExpiry = JSON.parse(itemStr);
   const now = new Date();
   if (now.getTime() > item.expiry) {
     localStorage.removeItem(key);
@@ -82,13 +113,15 @@ export function setVideoScale(scale: number): void {
 }
 
 export function getResolution(): Resolution | null {
-  const resolution = localStorage.getItem(WEB_RESOLUTION_KEY);
-  if (resolution) {
-    const obj = JSON.parse(window.atob(resolution));
-    return obj as Resolution;
-  }
-
-  return null;
+  // Two decoders in a row, and either can throw: atob rejects anything that is
+  // not base64, and JSON.parse rejects what comes out of it.
+  return readItem(WEB_RESOLUTION_KEY, (raw) => {
+    const parsed = JSON.parse(window.atob(raw)) as Resolution;
+    if (typeof parsed?.width !== 'number' || typeof parsed?.height !== 'number') {
+      throw new Error('not a resolution');
+    }
+    return parsed;
+  });
 }
 
 export function setResolution(resolution: Resolution) {
@@ -210,8 +243,15 @@ export function setMenuDisabledItems(items: string[]) {
 }
 
 export function getMenuDisabledItems(): string[] {
-  const value = localStorage.getItem(MENU_DISABLED_ITEMS_KEY);
-  return value ? JSON.parse(value) : [];
+  const items = readItem(MENU_DISABLED_ITEMS_KEY, (raw) => {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed) || parsed.some((item) => typeof item !== 'string')) {
+      throw new Error('not a list of menu items');
+    }
+    return parsed as string[];
+  });
+
+  return items ?? [];
 }
 
 export function getMenuDisplayMode(): string {
