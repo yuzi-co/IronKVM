@@ -30,6 +30,9 @@
 #define MMF_VI_MAX_CHN 			2		// manually limit the max channel number of vi
 #define MMF_RGN_MAX_NUM			16
 #define MMF_VENC_MAX_CHN		4
+// The most packs one encoded frame is allowed to arrive in. H.264 sends an
+// I frame as SPS, PPS and picture, so three, and a P frame as one.
+#define MMF_VENC_MAX_PACKS		8
 
 #define MMF_VB_VI_ID			0
 
@@ -151,6 +154,16 @@ typedef struct {
 
 static priv_t priv;
 static g_priv_t g_priv;
+
+// Pack descriptors for the encoded frame currently held by each channel.
+// These were malloc-ed and freed on every pop, which is thirty allocations
+// a second on the video path and a leak on four of the error returns that
+// forgot to free. The encoder is single reader per channel and the frame is
+// released before the next pop, so one array per channel is enough.
+static VENC_PACK_S venc_pack_storage[MMF_VENC_MAX_CHN][MMF_VENC_MAX_PACKS];
+// The JPEG path keeps its own, because it runs on its own channel state and
+// gets exactly one pack per frame.
+static VENC_PACK_S jpeg_pack_storage;
 
 #define MODULE_NAME "soph_vi"
 
@@ -2045,38 +2058,45 @@ int mmf_enc_jpg_push(int ch, uint8_t *data, int w, int h, int format)
 int mmf_enc_jpg_pop(int ch, uint8_t **data, int *size)
 {
 	CVI_S32 s32Ret = CVI_SUCCESS;
+	if (ch < 0 || ch >= MMF_VENC_MAX_CHN) {
+		printf("Invalid JPEG channel:%d\r\n", ch);
+		return -1;
+	}
 	if (!priv.enc_jpg_running) {
 		return s32Ret;
 	}
 
-	priv.enc_jpeg_frame.pstPack = (VENC_PACK_S *)malloc(sizeof(VENC_PACK_S) * 1);
-	if (!priv.enc_jpeg_frame.pstPack) {
-		printf("Malloc failed!\r\n");
-		return -1;
-	}
-
-	VENC_CHN_STATUS_S stStatus;
-	s32Ret = CVI_VENC_QueryStatus(ch, &stStatus);
+	memset(&jpeg_pack_storage, 0, sizeof(jpeg_pack_storage));
+	priv.enc_jpeg_frame.pstPack = &jpeg_pack_storage;
+	// Go straight to the blocking call. This runs immediately after the
+	// frame was submitted, and CVI_VENC_QueryStatus reports no pack while
+	// the encoder is still working on it, so asking first turned ordinary
+	// encoder latency into a dropped frame. CVI_VENC_GetStream waits, which
+	// is what the caller wanted.
+	s32Ret = CVI_VENC_GetStream(ch, &priv.enc_jpeg_frame, 1000);
 	if (s32Ret != CVI_SUCCESS) {
-		printf("CVI_VENC_QueryStatus failed with %#x\n", s32Ret);
+		printf("CVI_VENC_GetStream failed with %#x\n", s32Ret);
+		priv.enc_jpeg_frame.pstPack = NULL;
 		return s32Ret;
 	}
 
-	if (stStatus.u32CurPacks > 0) {
-		s32Ret = CVI_VENC_GetStream(ch, &priv.enc_jpeg_frame, 1000);
-		if (s32Ret != CVI_SUCCESS) {
-			printf("CVI_VENC_GetStream failed with %#x\n", s32Ret);
-			return s32Ret;
-		}
-	} else {
-		printf("CVI_VENC_QueryStatus find not pack\r\n");
+	VENC_PACK_S *pack = priv.enc_jpeg_frame.pstPack;
+	if (priv.enc_jpeg_frame.u32PackCount != 1 || pack->pu8Addr == NULL
+		|| pack->u32Offset > pack->u32Len) {
+		printf("Invalid JPEG stream pack\r\n");
+		CVI_VENC_ReleaseStream(ch, &priv.enc_jpeg_frame);
+		priv.enc_jpeg_frame.pstPack = NULL;
+		priv.enc_jpg_running = 0;
 		return -1;
 	}
 
+	// Skip the header region the encoder reserves at the front of the pack.
+	// mmf_venc_pop has always done this and the JPEG path never did, so a
+	// non-zero offset put those bytes in front of the image.
 	if (data)
-		*data = priv.enc_jpeg_frame.pstPack[0].pu8Addr;
+		*data = pack->pu8Addr + pack->u32Offset;
 	if (size)
-		*size = priv.enc_jpeg_frame.pstPack[0].u32Len;
+		*size = pack->u32Len - pack->u32Offset;
 
 	return s32Ret;
 }
@@ -2095,7 +2115,6 @@ int mmf_enc_jpg_free(int ch)
 	}
 
 	if (priv.enc_jpeg_frame.pstPack) {
-		free(priv.enc_jpeg_frame.pstPack);
 		priv.enc_jpeg_frame.pstPack = NULL;
 	}
 
@@ -2424,38 +2443,40 @@ int mmf_venc_pop(int ch, mmf_stream_t *stream) {
 		return -1;
 	}
 
-	venc_stream->pstPack = (VENC_PACK_S *)malloc(sizeof(VENC_PACK_S) * 8);
-	if (!venc_stream->pstPack) {
-		printf("Malloc failed!\r\n");
-		return -1;
-	}
-
-
-	VENC_CHN_STATUS_S stStatus;
+	VENC_CHN_STATUS_S stStatus = {};
 	s32Ret = CVI_VENC_QueryStatus(ch, &stStatus);
 	if (s32Ret != CVI_SUCCESS) {
 		printf("CVI_VENC_QueryStatus failed with %#x\n", s32Ret);
 		return s32Ret;
 	}
 
-	if (stStatus.u32CurPacks > 0) {
-		s32Ret = CVI_VENC_GetStream(ch, venc_stream, 1000);
-		if (s32Ret != CVI_SUCCESS) {
-			printf("CVI_VENC_GetStream failed with %#x\n", s32Ret);
-			free(venc_stream->pstPack);
-			return s32Ret;
-		}
-	} else {
+	if (stStatus.u32CurPacks == 0) {
 		printf("CVI_VENC_QueryStatus find not pack\r\n");
-		free(venc_stream->pstPack);
 		return -1;
+	}
+	// Ask before the call that writes, not after it. CVI_VENC_GetStream
+	// fills one descriptor per pack the channel holds, so a frame that came
+	// back in more than MMF_VENC_MAX_PACKS packs used to be written past the
+	// end of an eight element buffer, and the count was only checked once
+	// the writing was done.
+	if (stStatus.u32CurPacks > MMF_VENC_MAX_PACKS) {
+		printf("pack count is too large! cnt:%d\r\n", stStatus.u32CurPacks);
+		return -1;
+	}
+
+	memset(venc_pack_storage[ch], 0, sizeof(venc_pack_storage[ch]));
+	venc_stream->pstPack = venc_pack_storage[ch];
+	s32Ret = CVI_VENC_GetStream(ch, venc_stream, 1000);
+	if (s32Ret != CVI_SUCCESS) {
+		printf("CVI_VENC_GetStream failed with %#x\n", s32Ret);
+		venc_stream->pstPack = NULL;
+		return s32Ret;
 	}
 
 	if (stream) {
 		stream->count = venc_stream->u32PackCount;
-		if (stream->count > 8) {
+		if (stream->count > MMF_VENC_MAX_PACKS) {
 			printf("pack count is too large! cnt:%d\r\n", stream->count);
-			free(venc_stream->pstPack);
 			return -1;
 		}
 		for (int i = 0; i < stream->count; i++) {
@@ -2490,7 +2511,6 @@ int mmf_venc_free(int ch) {
 	}
 
 	if (venc_stream->pstPack) {
-		free(venc_stream->pstPack);
 		venc_stream->pstPack = NULL;
 	}
 
