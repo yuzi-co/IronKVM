@@ -12,13 +12,6 @@ import (
 	"NanoKVM-Server/proto"
 )
 
-var screenFileMap = map[string]string{
-	"type":       "/kvmapp/kvm/type",
-	"fps":        "/kvmapp/kvm/fps",
-	"quality":    "/kvmapp/kvm/qlty",
-	"resolution": "/kvmapp/kvm/res",
-}
-
 func (s *Service) SetScreen(c *gin.Context) {
 	var req proto.SetScreenReq
 	var rsp proto.Response
@@ -61,7 +54,9 @@ func (s *Service) SetScreen(c *gin.Context) {
 }
 
 func writeScreen(key string, value string) error {
-	file, ok := screenFileMap[key]
+	// The same map the restore at startup reads, so a setting cannot be stored
+	// in one place and looked for in another.
+	file, ok := common.ScreenFileMap[key]
 	if !ok {
 		return fmt.Errorf("invalid argument %s", key)
 	}
