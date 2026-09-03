@@ -1793,7 +1793,8 @@ void set_frame_detact(uint8_t _frame_detact)
     kvmv_cfg.stream_stop = 0;
 }
 
-int8_t raw_to_h264(image::Image *raw, kvmv_data_t* ret_stream, uint16_t _qlty)
+int8_t frame_to_h264(uint8_t *data, int width, int height, int format, int vi_ch,
+    kvmv_data_t* ret_stream, uint16_t _qlty)
 {
 	uint64_t __attribute__((unused)) start_time;
 	uint64_t __attribute__((unused)) frame_time;
@@ -1802,26 +1803,36 @@ int8_t raw_to_h264(image::Image *raw, kvmv_data_t* ret_stream, uint16_t _qlty)
 		// start_time = time::time_ms();
 		// log::info("getimg: %d \r\n", (int)(time::time_ms()));
     mmf_stream_t _stream = {0};
-    if(kvm_venc.enc_h264_init != 1 || raw->width() != kvm_venc.kvm_venc_cfg.w || raw->height() != kvm_venc.kvm_venc_cfg.h || _qlty != kvm_venc.kvm_venc_cfg.bitrate){
-		debug("[kvmv]init_venc_h264	enc_h264_init = %d; raw->width() = %d | %d raw->height() = %d | %d \n",
+    if(kvm_venc.enc_h264_init != 1 || width != kvm_venc.kvm_venc_cfg.w || height != kvm_venc.kvm_venc_cfg.h || _qlty != kvm_venc.kvm_venc_cfg.bitrate){
+		debug("[kvmv]init_venc_h264	enc_h264_init = %d; width = %d | %d height = %d | %d \n",
 				kvm_venc.enc_h264_init,
-				raw->width(), kvm_venc.kvm_venc_cfg.w,
-				raw->height(), kvm_venc.kvm_venc_cfg.h);
+				width, kvm_venc.kvm_venc_cfg.w,
+				height, kvm_venc.kvm_venc_cfg.h);
 
-		init_venc_h264(raw->width(), raw->height(), _qlty);
-        debug("[kvmv]init_venc_h264 finish enc_h264_init = %d; raw->width() = %d | %d raw->height() = %d | %d \n",
+		init_venc_h264(width, height, _qlty);
+        debug("[kvmv]init_venc_h264 finish enc_h264_init = %d; width = %d | %d height = %d | %d \n",
 				kvm_venc.enc_h264_init,
-				raw->width(), kvm_venc.kvm_venc_cfg.w,
-				raw->height(), kvm_venc.kvm_venc_cfg.h);
+				width, kvm_venc.kvm_venc_cfg.w,
+				height, kvm_venc.kvm_venc_cfg.h);
         // if(kvm_venc.enc_h264_init == 1){
-		// 	init_venc_h264(raw->width(), raw->height(), _qlty);
+		// 	init_venc_h264(width, height, _qlty);
 		// } else {
 		// 	init_venc_h264(default_vpss_width, default_vpss_height, default_h264_qlty);
 		// }
     }
 	// log::info("init(): %d \r\n", (int)(time::time_ms() - start_time));
-    if (mmf_venc_push(kvm_venc.mmf_venc_chn, (uint8_t *)raw->data(), raw->width(), raw->height(), mmf_invert_format_to_mmf(raw->format()))) {
+    int push_ret = vi_ch >= 0
+        ? mmf_venc_push_vi(kvm_venc.mmf_venc_chn, vi_ch)
+        : mmf_venc_push(kvm_venc.mmf_venc_chn, data, width, height, format);
+    if (push_ret) {
         mmf_del_venc_channel(kvm_venc.mmf_venc_chn);
+        // The only exit from here that mmf_venc_free does not cover. It
+        // returns early while the channel is not running, and the channel
+        // never started, so the frame would be held until the VB pool ran
+        // out.
+        if (vi_ch >= 0) {
+            mmf_vi_frame_release(vi_ch);
+        }
         kvm_venc.enc_h264_init = 0;
         // rtmp->unlock();
 		debug("[kvmv]mmf venc push failed!\n");
@@ -2014,17 +2025,43 @@ int kvmv_read_img(uint16_t _width, uint16_t _height, uint8_t _type, uint16_t _ql
 			kvmv_cfg.reinit_flag = 0;
         }
         // debug("[kvmv]befor read img: %d \r\n", (int)(time::time_ms() - start_time));
-        image::Image *img = cam->read();
+        //
+        // Nothing on the H.264 path reads a pixel. cam->read() maps the
+        // frame and invalidates the cache over all of it first, which is
+        // 3.1MB at 1080p in NV12, every frame, so take the frame where the
+        // hardware left it and let the encoder read it there.
+        //
+        // MJPEG still reads: frame_changed() compares pixels, and to_jpeg()
+        // encodes from this address space.
+        image::Image *img = NULL;
+        int native_vi_ch = -1;
+        int native_len = 0;
+        int native_width = 0;
+        int native_height = 0;
+        int native_format = 0;
+        if (_type == VENC_H264) {
+            native_vi_ch = cam->get_channel();
+            if (mmf_vi_frame_pop_native(native_vi_ch, &native_len, &native_width,
+                    &native_height, &native_format) != 0) {
+                native_vi_ch = -1;
+            }
+        } else {
+            img = cam->read();
+        }
         // debug("[kvmv]read img: %d \r\n", (int)(time::time_ms() - start_time));
 
-        if(img != NULL){
+        if(img != NULL || native_vi_ch >= 0){
             if(kvmv_cfg.fresh_frame_count != 0){
                 // Do not restart VI after HDMI idle. Reopening the MMF
                 // channel can exhaust the carveout heap when the detector
                 // thread is also transitioning. Consume queued frames
                 // instead; the camera buffer contains at most three frames.
                 kvmv_cfg.fresh_frame_count--;
-                delete img;
+                if (native_vi_ch >= 0) {
+                    mmf_vi_frame_release(native_vi_ch);
+                } else {
+                    delete img;
+                }
                 continue;
             }
 
@@ -2106,13 +2143,17 @@ int kvmv_read_img(uint16_t _width, uint16_t _height, uint8_t _type, uint16_t _ql
             if(p_kvmv_data == NULL){
                 // buffer full
 			    delete img;
+                if(native_vi_ch >= 0){
+                    mmf_vi_frame_release(native_vi_ch);
+                }
                 *_pp_kvm_data = NULL;
                 pthread_mutex_unlock(&vi_mutex);
                 return IMG_BUFFER_FULL;
             }
             // debug("[kvmv]get_save_buffer: %d \r\n", (int)(time::time_ms() - start_time));
-            ret = raw_to_h264(img, p_kvmv_data, maxmin_data(10000, 500, (int)_qlty));
-            // debug("[kvmv]venc raw_to_h264: %d \r\n", (int)(time::time_ms() - start_time));
+            ret = frame_to_h264(NULL, native_width, native_height, native_format,
+                native_vi_ch, p_kvmv_data, maxmin_data(10000, 500, (int)_qlty));
+            // debug("[kvmv]venc frame_to_h264: %d \r\n", (int)(time::time_ms() - start_time));
 			delete img;
             if(ret < 0){
                 release_save_buffer(p_kvmv_data);
