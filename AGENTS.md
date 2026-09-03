@@ -71,6 +71,23 @@ docker run -e UID=$(id -u) -e GID=$(id -g) -v "$PWD:/home/build/NanoKVM" --rm \
    && ./build update_lib && ./build kvm_vision'
 ```
 
+On this workstation neither that command nor `make vision` runs as written. Both name the image
+after the host uid, and the image here is `nanokvm-builder-local-1000-1000` while the Windows uid is
+197609. Pass the uid the image was built with, so the container is the `build` user that owns
+`/home/build/MaixCDK`:
+
+```shell
+MSYS_NO_PATHCONV=1 docker run -e UID=1000 -e GID=1000 -v "$(pwd -W):/home/build/NanoKVM" --rm \
+  nanokvm-builder-local-1000-1000 /bin/bash -c \
+  '. /home/build/MaixCDK/bin/activate && cd /home/build/NanoKVM/support/sg2002 \
+   && ./build update_lib && ./build kvm_vision'
+```
+
+A build from zero takes about twelve minutes, and an incremental one about ninety seconds. Delete
+`support/sg2002/kvm_vision_test/build` and `dist` first if an earlier build left them owned by a
+different uid, because the container cannot overwrite them. Until 2026-09-04 the script reported
+that failure as a successful build and left the previous library in place.
+
 The Makefile targets shell out to `id -u` and refuse to run as root — they need Docker and a
 POSIX shell (Git Bash/WSL on Windows, not PowerShell). They allocate a TTY by default; pass
 `DOCKER_TTY=` to drive them from a non-interactive tool call. `server/build.sh` is the same build for
@@ -324,15 +341,27 @@ remove that line. The committed library was trimmed by hand before the flag exis
 `patchelf --remove-needed libopencv_video.so.409 libkvm.so`, which is still the repair if a rebuild
 somehow brings the entry back.
 
-Compare the dependency list against the committed library before you ship a rebuild. The two lists
-must agree, and the committed one is 22 entries with four opencv modules:
+**A rebuild records 8 entries, not 22.** The committed library predates the flag and still records
+22. The flag drops fourteen of them, measured on 2026-09-04, so do not read that difference as a
+broken build:
 
 ```shell
 patchelf --print-needed libkvm.so
 ```
 
-The workstation has no `patchelf` and no `readelf`. Run this check inside the app-builder image,
-which carries both, or read the `PT_DYNAMIC` entries some other way.
+Thirteen of the fourteen are safe because `libkvm_mmf.so` records them itself and the loader reaches
+them through it. The fourteenth, `libopencv_highgui.so.409`, is referenced by nothing.
+
+What proves a rebuild is the symbol table, not the count. A good rebuild exports the same symbols
+and leaves the same ones undefined as the committed library, and no undefined one is answered by a
+library the flag dropped. Compare those sets:
+
+```shell
+riscv64-unknown-linux-musl-readelf -sW --dyn-syms libkvm.so
+```
+
+Neither `patchelf` nor `readelf` is on the workstation. Run both inside the builder image, which
+carries them, or read the `PT_DYNAMIC` entries some other way.
 
 The executable records `libkvm.so` and `libc.so` as its own `NEEDED` entries.
 
