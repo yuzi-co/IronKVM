@@ -847,7 +847,9 @@ const en = {
     },
     error: {
       title: "We've ran into an issue",
-      refresh: 'Refresh'
+      refresh: 'Refresh',
+      panel: 'This part of the page stopped working',
+      retry: 'Retry'
     },
     fullscreen: {
       toggle: 'Toggle Fullscreen'

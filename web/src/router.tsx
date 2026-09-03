@@ -1,11 +1,13 @@
 import { createHashRouter, Outlet } from 'react-router';
 
 import { AdminRoute, ProtectedRoute } from '@/components/auth';
+import { RouteError } from '@/components/error-boundary';
 import { Root } from '@/components/root';
 
 export const router = createHashRouter([
   {
     path: '/auth/login',
+    errorElement: <RouteError />,
     lazy: async () => {
       const { Login } = await import('./pages/auth/login');
       return { Component: Login };
@@ -13,6 +15,7 @@ export const router = createHashRouter([
   },
   {
     path: '/',
+    errorElement: <RouteError />,
     element: (
       <ProtectedRoute>
         <Root />
@@ -54,6 +57,7 @@ export const router = createHashRouter([
   {
     path: '/wifi',
     caseSensitive: false,
+    errorElement: <RouteError />,
     lazy: async () => {
       const { Wifi } = await import('./pages/wifi');
       return { Component: Wifi };
