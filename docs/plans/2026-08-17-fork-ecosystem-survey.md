@@ -425,3 +425,30 @@ carefully rather than to adopt them, as the outbound five shows.
   "Drain the encoder even when it has just refused a frame". Still a Go rewrite
   of the capture path, so still read and reimplement rather than adopt.
 - `woffko/Hardened_NanoKVM` and `Schattenwelt/NanoKVM` have not moved.
+
+## Third pass, 2026-09-03
+
+Four remotes are configured in this clone now, so the pass is a fetch rather than a search:
+`upstream`, `robbyv2`, `pibmc`, `mrjeeves`, `eringiriri`. What each of them did since 2026-08-28:
+
+| Fork | Moved | Verdict |
+| --- | --- | --- |
+| `sipeed/NanoKVM` | `2ba45a21` to `7f95fe9b`, two commits | Two items taken. See the backlog. |
+| `RobbyV2/NanoKVM` | 234 to 253 ahead | Three items taken, one recorded and not applicable. |
+| `pi-bmc/nanokvm-app` | `25afbaaf` to `d9b4fc66`, tag v2.3.16, two new branches | Skip, and more firmly than before. |
+| `mrjeeves/NanoKVM` | No change | Already reconciled. |
+| `eringiriri/ERINGI_JPN_NanoKVM` | No change | Both commits adopted 2026-08-28. |
+
+The one thing this pass changes about the survey's conclusions is `pi-bmc`. The survey called it a
+NanoKVM fork with a Redfish and IPMI surface. It is no longer that. The new work is a package
+restructure under `pkg/platform`, `pkg/app`, `pkg/protocol` and `pkg/device`, a Redfish
+`TaskService` with a task-monitored `SimpleUpdate`, an OP-TEE sensor reader, EDK2 capsule updates in
+place of u-boot, and a `feat/universal-board-support` branch. It is a board-agnostic BMC that still
+builds for SG2002 among others. Nothing in that direction is worth reading here except the `cvi`
+material the backlog already read on 2026-08-30.
+
+The larger finding of this pass is not in a fork at all. `sipeed/NanoKVM` took eighteen pull
+requests from one author, `dormancygrace`, on 2026-09-02 and 2026-09-03, six of them on
+`kvm_vision` and `kvm_mmf` with on-device A/B measurements. That is the most useful single source
+found in three passes, and it is in the pull request pool rather than in a fork. Recorded in
+`2026-08-17-upstream-adoption-backlog.md`.
