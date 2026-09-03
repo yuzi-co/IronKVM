@@ -108,6 +108,21 @@ m_hidonly() { sed -i 's|echo 0xA0 > configs/c.1/bmAttributes|echo 0xE0 > configs
 # ever, and rcS never reaches the network or the server.
 m_unbounded() { sed -i 's|if \[ "$n" -ge "$tries" \]|if false|' "$1/S03usbdev"; }
 
+# The OTG role write reported as taken without reading the file back. This is
+# the state the script was in before the read-back existed, and it is the state
+# a well-meaning simplification would put it back in: the write does return 0,
+# and the controller can still settle into the other role behind it.
+m_otg_noreadback() {
+    sed -i 's|        if \[ "$(cat /proc/cviusb/otg_role 2>/dev/null)" = "$role" \]|        if true|' "$1/S03usbdev"
+}
+
+# The role call losing its place as the last statement of start_usb_dev. The
+# status of stop_start is the status of that last command, so anything appended
+# after the role call throws away the only signal the server's supervisor gets.
+m_otg_notlast() {
+    sed -i '/^    set_otg_role device$/a\    echo "usb: done"' "$1/S03usbdev"
+}
+
 # The retry itself, back to the single write it replaced.
 m_noretry() { sed -i 's@^    usb_bind$@    ls /sys/class/udc/ | cat > UDC@' "$1/S03usbdev"; }
 
@@ -148,6 +163,8 @@ try "S03usbhid stops unlinking HID"         m_nounlink_hid
 try "hid-only stops pruning the other mode" m_noprune_hid
 try "the device version is left to default" m_nobcd
 try "hid-only stops clearing device class"  m_noclass
+try "the otg role is not read back"         m_otg_noreadback
+try "the otg role is no longer the last statement" m_otg_notlast
 
 echo
 if [ "$fail" -eq 0 ]

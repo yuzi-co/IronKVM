@@ -554,6 +554,53 @@ usb_bind() {
     return 0
 }
 
+# set_otg_role writes the role and then reads it back.
+#
+# The write is not a note of intent. It reaches dwc2_set_hw_id(), which pokes
+# the SoC register at 0x03000048 and flips the hardware ID pin, and the
+# controller answers asynchronously through a workqueue. What the file reads
+# back afterwards is cviusb.id_override, and platform.c initialises that to 0,
+# which is "host".
+#
+# The write can therefore report success while the controller settles back on
+# the other side of it. RobbyV2 measured that on this SoC after a camera
+# toggle: the gadget bound to 4340000.usb, every function still linked,
+# /proc/cviusb/otg_role reading "host", the UDC at "not attached", and dwc2
+# logging "Mode Mismatch Interrupt: currently in Host mode". A gadget bound in
+# host mode never enumerates, so HID, the gadget NIC and the disk are all dead
+# at once while configfs reports a healthy gadget. Writing "device" once more
+# brought it back with no reboot.
+#
+# Nothing here read the file back, so a recovery that left the board in host
+# mode was scored as a successful recovery. This does not prove the controller
+# reached the mode - that is what usb_link_ok's two-part test is for - it proves
+# only that the setting stuck, which is the part that was observed drifting.
+#
+# The pause is a whole second for the same reason usb_bind's is: this image's
+# BusyBox sleep is not built with fractional support.
+set_otg_role() {
+    role=$1
+    tries=${USB_OTG_ROLE_TRIES:-3}
+    n=0
+
+    while [ "$n" -lt "$tries" ]
+    do
+        [ "$n" -gt 0 ] && sleep 1
+        n=$((n + 1))
+
+        echo "$role" > /proc/cviusb/otg_role 2>/dev/null
+
+        if [ "$(cat /proc/cviusb/otg_role 2>/dev/null)" = "$role" ]
+        then
+            [ "$n" -gt 1 ] && echo "usb: otg role $role took on write $n"
+            return 0
+        fi
+    done
+
+    echo "usb: otg role stayed at '$(cat /proc/cviusb/otg_role 2>/dev/null)' after $tries writes, wanted $role"
+    return 1
+}
+
 start_usb_dev(){
     . /etc/profile
     echo "usb mode: device"
@@ -860,12 +907,12 @@ start_usb_dev(){
     fi
 
     usb_bind
-    echo device > /proc/cviusb/otg_role
+    set_otg_role device
 }
 
 start_usb_host(){
     echo '' > /sys/kernel/config/usb_gadget/g0/UDC
-    echo host > /proc/cviusb/otg_role
+    set_otg_role host
 }
 
 restart_usb_dev(){
