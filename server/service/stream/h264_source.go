@@ -61,6 +61,13 @@ type H264Subscription struct {
 	slot   *FrameSlot[H264Frame]
 	demand func() bool
 	once   sync.Once
+
+	// repairing is read and written by deliver and by nothing else, and
+	// deliver runs only on the capture goroutine. subscribe and remove hold
+	// the source mutex, so a subscription is in the map before the loop can
+	// reach it and out of the map before the next tick. That is why this needs
+	// no lock of its own, and it is why it must not grow a second writer.
+	repairing bool
 }
 
 func newH264Source() *H264Source {
@@ -116,6 +123,47 @@ func (p *H264Subscription) Frames() <-chan H264Frame {
 // Dropped counts the frames this path was not ready to take.
 func (p *H264Subscription) Dropped() uint64 {
 	return p.slot.Dropped()
+}
+
+// deliver offers one frame to this path, and holds the stream back until the
+// next keyframe once a frame has been dropped.
+//
+// The slot refuses while the client still holds the previous frame, which is
+// the whole reason it is a TryPut and not a Replace: MJPEG frames stand alone
+// and the newest one is always the right one to keep, but an H.264 frame is
+// coded against the one before it. Handing a decoder the frame after a gap
+// gives it a picture predicted from a reference it never received, and the
+// error propagates through every following frame until the encoder emits a
+// keyframe. The viewer watches a smeared image for the rest of the GOP.
+//
+// Waiting instead costs the same time and looks like a still picture rather
+// than a broken one, and it ends the moment a keyframe arrives. At the default
+// GOP of 30 that is at most a second.
+//
+// Status frames are exempt in both directions. They carry no picture, each path
+// reports them under its own capture mode, and a status nobody reports is a
+// stream that fails silently. So a gap in the video must not silence the status,
+// and a refused status frame must not start a repair.
+func (p *H264Subscription) deliver(frame H264Frame) {
+	status := frame.Result < 0 || len(frame.Data) == 0
+
+	if status {
+		p.slot.TryPut(frame)
+
+		return
+	}
+
+	if p.repairing {
+		if !frame.KeyFrame {
+			return
+		}
+
+		p.repairing = false
+	}
+
+	if !p.slot.TryPut(frame) {
+		p.repairing = true
+	}
 }
 
 // Close leaves the capture loop. It is safe to call more than once.
@@ -214,11 +262,8 @@ func (s *H264Source) run() {
 			Duration:  duration,
 		}
 
-		// A negative result still goes out, because each path reports capture
-		// status under its own mode and a status nobody reports is a stream
-		// that fails silently.
 		for _, subscription := range wanted {
-			subscription.slot.TryPut(frame)
+			subscription.deliver(frame)
 		}
 
 		if result < 0 || len(data) == 0 {
