@@ -8,12 +8,23 @@ Project_PATH="None"
 Project_Action="None"
 KVMAPP_PATH="$NanoKVM_PATH/kvmapp"
 
+# The artefact that proves the build ran. Set with the project, and tested by
+# chack_build below.
+Build_Artifact="None"
+
 maixcdk_build() {
   local input_value="$1"
 
   DIST_PATH="./dist"
-  rm -rf $DIST_PATH
-  
+  # A stale dist directory is what made a failed build look like a good one:
+  # chack_build tested for the directory, and the directory survived. Refuse to
+  # build on top of output this user cannot replace.
+  if ! rm -rf $DIST_PATH
+  then
+    echo -e "\e[36m[build] \e[31mCannot remove $DIST_PATH. Check who owns it.\e[0m"
+    return 1
+  fi
+
   if [ "$input_value" = "from_zero" ]
   then
     maixcdk build <<EOF
@@ -24,14 +35,22 @@ EOF
   fi
 }
 
+# Two questions, and the old version asked neither. maixcdk exits non-zero when
+# it fails, and the artefact is absent when it did not link. A build that
+# reports SUCCESS while the library on disk is somebody else's is worse than a
+# build that reports nothing, because the stale library then ships.
 chack_build(){
-  DIST_PATH="./dist"  
-  if [ -d "$DIST_PATH" ]
+  if [ "$1" != "0" ]
   then
-    echo "SUCCESS"
-  else
     echo "FAILURE"
+    return
   fi
+  if [ "$Build_Artifact" = "None" ] || [ ! -e "$Build_Artifact" ]
+  then
+    echo "FAILURE"
+    return
+  fi
+  echo "SUCCESS"
 }
 
 maixcdk_clean(){
@@ -57,11 +76,13 @@ case "$1" in
   kvm_system)
     Project_Name="kvm_system"
     Project_PATH="$NanoKVM_PATH/support/sg2002/kvm_system"
+    Build_Artifact="$Project_PATH/dist/kvm_system_release/kvm_system"
     echo -e "\e[36m[build] \e[32mProject: kvm_system \e[0m"
   ;;
   kvm_vision)
     Project_Name="kvm_vision"
     Project_PATH="$NanoKVM_PATH/support/sg2002/kvm_vision_test"
+    Build_Artifact="$Project_PATH/dist/kvm_vision_test_release/dl_lib/libkvm.so"
     echo -e "\e[36m[build] \e[32mProject: kvm_vision \e[0m"
   ;;
   *)
@@ -75,11 +96,13 @@ case "$1" in
       then
         Project_Name="kvm_system"
         Project_PATH="$NanoKVM_PATH/support/sg2002/kvm_system"
+        Build_Artifact="$Project_PATH/dist/kvm_system_release/kvm_system"
         break
       elif [[ "$input" -eq 1 ]]
       then
         Project_Name="kvm_vision"
         Project_PATH="$NanoKVM_PATH/support/sg2002/kvm_vision_test"
+        Build_Artifact="$Project_PATH/dist/kvm_vision_test_release/dl_lib/libkvm.so"
         break
       else
         echo -e "\e[36m[build] \e[31mInvalid Index \e[0m"
@@ -123,9 +146,12 @@ then
       fi
 
       cd $Project_PATH
+      # Quoted, because the pattern holds a space. Unquoted it split into a
+      # pattern and a file name that does not exist, grep reported an error for
+      # that file, and every build took the from_zero path by accident.
       if [ -f $JSON_PATH ]
       then
-        if grep -q $Platform_Char $JSON_PATH; then
+        if grep -q "$Platform_Char" $JSON_PATH; then
           maixcdk_build
         else
           maixcdk_clean
@@ -134,8 +160,9 @@ then
       else
         maixcdk_build "from_zero"
       fi
+      Build_Status=$?
 
-      RES=$(chack_build)
+      RES=$(chack_build "$Build_Status")
       
       if [ "$RES" = "SUCCESS" ]
       then
