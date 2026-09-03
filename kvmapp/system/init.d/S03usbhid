@@ -39,6 +39,35 @@ usb_bind() {
     return 0
 }
 
+# set_otg_role writes the role and reads it back, because the write reports
+# success even when the controller settles back into the other role and leaves
+# a bound gadget that never enumerates. S03usbdev carries the full account and
+# the hardware evidence.
+#
+# The pause is a whole second for the same reason usb_bind's above is.
+set_otg_role() {
+    role=$1
+    tries=${USB_OTG_ROLE_TRIES:-3}
+    n=0
+
+    while [ "$n" -lt "$tries" ]
+    do
+        [ "$n" -gt 0 ] && sleep 1
+        n=$((n + 1))
+
+        echo "$role" > /proc/cviusb/otg_role 2>/dev/null
+
+        if [ "$(cat /proc/cviusb/otg_role 2>/dev/null)" = "$role" ]
+        then
+            [ "$n" -gt 1 ] && echo "usb: otg role $role took on write $n"
+            return 0
+        fi
+    done
+
+    echo "usb: otg role stayed at '$(cat /proc/cviusb/otg_role 2>/dev/null)' after $tries writes, wanted $role"
+    return 1
+}
+
 start_usb_dev(){
     . /etc/profile
     echo "usb mode: device"
@@ -140,12 +169,12 @@ start_usb_dev(){
     ln -s functions/hid.GS2 configs/c.1
 
     usb_bind
-    echo device > /proc/cviusb/otg_role
+    set_otg_role device
 }
 
 start_usb_host(){
     echo '' > /sys/kernel/config/usb_gadget/g0/UDC
-    echo host > /proc/cviusb/otg_role
+    set_otg_role host
 }
 
 restart_usb_dev(){

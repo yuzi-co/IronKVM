@@ -656,6 +656,64 @@ absent configs/c.1/acm.GS0    "hid-only ignores /boot/usb.acm"
 is UDC 4340000.usb "hid-only binds to the controller"
 
 echo
+echo "===== the OTG role is read back ====="
+# A write to /proc/cviusb/otg_role reaches dwc2_set_hw_id() and returns success
+# whether or not the controller stays on that side of the switch. It was
+# measured settling back into host after a camera toggle, which leaves a bound
+# gadget with every function linked that never enumerates: HID, the gadget NIC
+# and the disk all dead at once, and nothing in configfs saying so. Reading the
+# file back is the only thing that notices, and a recovery that does not read it
+# back scores that failure as a success.
+
+build_env
+run "$S03" 'set_otg_role device; echo "status=$?"'
+if grep -q '^status=0$' "$work/out"
+then
+    note "a role that sticks is reported as taken" OK
+else
+    note "a role that sticks is reported as taken: got '$(head -3 "$work/out")'" FAIL
+fi
+
+build_env
+# A directory refuses the write and reads back as nothing, which is what a role
+# that will not take looks like from here. The suite makes it with the real
+# mkdir; the stub inside the lifted script is not involved.
+rm -f "$work/proc/cviusb/otg_role"
+mkdir -p "$work/proc/cviusb/otg_role"
+run "$S03" 'USB_OTG_ROLE_TRIES=2; set_otg_role device; echo "status=$?"'
+if grep -q '^status=1$' "$work/out"
+then
+    note "a role that will not take is reported as a failure" OK
+else
+    note "a role that will not take is reported as a failure: got '$(head -3 "$work/out")'" FAIL
+fi
+if grep -q 'otg role' "$work/out"
+then
+    note "the failure says so on the console" OK
+else
+    note "the failure says so on the console" FAIL
+fi
+
+# stop_start's exit status is start_usb_dev's, and start_usb_dev's is that of
+# its last command. That is the whole path by which a role that will not take
+# reaches the server's supervisor, which checks the status of the stop_start it
+# runs. A statement added after the role call would silently break it.
+last=$(sed -n '/^start_usb_dev()/,/^}/p' "$S03" |
+    sed '$d' |
+    sed -e '/^[[:space:]]*$/d' -e '/^[[:space:]]*#/d' |
+    tail -1 |
+    sed -e 's|^[[:space:]]*||' -e 's|[[:space:]]*$||')
+
+# The whole line, not a substring of it. "set_otg_role device ; echo done" ends
+# with the role call by any looser test and still throws the status away.
+if [ "$last" = "set_otg_role device" ]
+then
+    note "start_usb_dev ends with the role call, so a failure reaches stop_start" OK
+else
+    note "start_usb_dev ends with '$last', so a failed role never reaches stop_start" FAIL
+fi
+
+echo
 if [ "$fails" -eq 0 ]
 then
     echo "===== all cases passed ====="
