@@ -56,6 +56,11 @@
 #define watchdog_temp_path      "/tmp/watchdog"
 #define watchdog_file           "/tmp/nanokvm_wd"
 #define vi_state_publish_interval_ms 10000U
+// The detection loop polls /proc/lt_int for HDMI edge counts. It has to be
+// quick while a resolution is being chosen, and it has nothing to do once the
+// input is settled. See the sleep at the end of vi_subsystem_detection.
+#define vi_detection_active_poll_ms 10U
+#define vi_detection_idle_poll_ms 100U
 
 #define LT6911_ADDR 	0x2B
 #define LT6911_READ 	0xFF
@@ -1511,7 +1516,30 @@ void* vi_subsystem_detection(void * arg)
             break;
         }
 
-		time::sleep_ms(10);
+		// Poll fast only while the resolution is still in question. In mode 0
+		// the board reads a settled input, and in modes 1 and 2 a detect state
+		// of 2 means the resolution is found, so a further 90ms of latency on
+		// an HDMI edge costs nothing a person can see.
+		//
+		// Measured on this fork, 2026-09-04, mode 0 with no HDMI signal and no
+		// viewer: the thread took 57 ticks over 30 seconds, which is 1.9% of
+		// the only core. The 10ms sleep is the whole of it, because the loop
+		// opens /proc/lt_int on every pass. Upstream reports about 15% for the
+		// same change; that figure does not reproduce here and it likely
+		// includes the mode 1 spin this fork already stopped with the 1000ms
+		// sleep in the try_res == 2 branch above.
+		//
+		// One thing this widens: the loop reads two characters of /proc/lt_int
+		// and splits them into a falling and a rising count of one digit each.
+		// Ten edges of one kind between two polls therefore read as zero. A
+		// bouncing connector is ten times more likely to reach that in 100ms
+		// than in 10ms. The driver is kernel side and not in this tree, so
+		// whether it saturates or wraps is unverified.
+		const uint32_t poll_interval_ms =
+			(kvmv_cfg.hdmi_mode == 0 || kvmv_cfg.vi_detect_state == 2)
+				? vi_detection_idle_poll_ms
+				: vi_detection_active_poll_ms;
+		time::sleep_ms(poll_interval_ms);
     }
     kvmv_cfg.thread_is_running = 0;
 
