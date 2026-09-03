@@ -1379,3 +1379,43 @@ Then the `libkvm` rebuild items, #893 first because it is seven lines, then #892
 #896/#898/#902/#904 stack. Those need `./build update_lib`, a rebuild of both libraries, the
 `$ORIGIN` search path set by hand, and a dependency-list comparison against the committed library
 before anything ships.
+
+### All eight taken, 2026-09-03
+
+Each is one branch merged into `fork/integration` with `--no-ff`, in the order
+above:
+
+| Branch | Verified by |
+| --- | --- |
+| `build/libkvm-as-needed` | Nothing. The flag's effect only shows in a fresh `libkvm.so`, and the MaixCDK builder image is not built on this workstation. |
+| `feat/webrtc-nack-rtcp` | 4 cases, one of which reads the generated SDP. |
+| `fix/h264-repair-after-drop` | 4 cases, mutation-checked twice. |
+| `feat/persist-jwt-secret` | 7 cases, mutation-checked. Three READMEs updated. |
+| `fix/restore-screen-settings` | 8 cases, mutation-checked, including one written for the single line that wires it up. |
+| `fix/localstorage-guard` | A scratch check of 9 cases against a fake `localStorage`. Five fail on the version it replaces. |
+| `feat/panel-error-boundaries` | `tsc`, `pnpm lint` and `pnpm build`. The runtime behaviour is not browser-verified. |
+| `fix/otg-role-readback` | 4 cases and 2 mutations in the usbdev suites. Not verified on hardware. |
+
+Two of the eight ship without evidence that the thing they fix is fixed, and
+both say so in their own commit message. The linker flag needs a library
+rebuild. The OTG read-back answers a failure that was measured on somebody
+else's board and cannot be provoked on demand here.
+
+Three findings came out of doing the work rather than out of reading it:
+
+**The WebRTC connection already advertised NACK.** `RegisterDefaultCodecs` puts
+`nack` on every video codec, so the browser has been sending retransmission
+requests all along and reaching a server with no interceptor registered to
+answer them. It also advertises `nack pli`, which asks for a keyframe now, and
+`libkvm` exposes `set_h264_gop` and no IDR request. That promise is still
+unkept. Giving the encoder a way to answer a picture loss indication is the
+better fix and is not done.
+
+**The RTP MTU was already 1200 here.** Upstream's `7f95fe9b` moves to the same
+value, so that part of the commit is convergence rather than a gap.
+
+**`localStorage` itself is still unguarded.** The decode guard covers our own
+values going bad. The accessor throws in a browser with site data blocked, and
+covering that means routing all twenty-odd accessors through one place.
+
+Not started, and unchanged in priority: the `libkvm` rebuild items, #893 first.
