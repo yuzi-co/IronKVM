@@ -10,12 +10,31 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/pion/dtls/v3"
+	"github.com/pion/interceptor"
+	"github.com/pion/interceptor/pkg/nack"
 	"github.com/pion/webrtc/v4"
 	log "github.com/sirupsen/logrus"
 )
 
 // SDP plus ICE candidates stay well below this.
 const maxSignalingSize = 256 * 1024
+
+// nackResponderSize is how many sent packets are kept for retransmission, per
+// track and per client. pion defaults to 1024 and that is far more history
+// than a retransmission can use: a packet the decoder has already passed is
+// worth nothing however faithfully it arrives.
+//
+// The window that matters is the browser's NACK interval plus the round trip.
+// pion's generator runs on a 100ms interval, and 1080p at 30 frames and
+// 4.3 Mbit/s fills about 450 packets a second at the 1200 byte MTU below. So
+// 100ms of history is about 45 packets, and 256 covers well over half a second
+// of round trip - more than any link this board is reachable over.
+//
+// The size is also a memory bound, which is the reason to pick it rather than
+// take the default. A full buffer holds up to size * MTU per track, so 256 caps
+// video at about 300KB per viewer where 1024 would allow 1.2MB. The value has
+// to be one of pion's powers of two.
+const nackResponderSize = 256
 
 var (
 	upgrader = websocket.Upgrader{
@@ -167,6 +186,54 @@ func createMediaEngine() (*webrtc.MediaEngine, error) {
 	return mediaEngine, nil
 }
 
+// createInterceptorRegistry builds the RTCP behaviour this server needs.
+//
+// pion registers nothing by default: an API built without a registry sends no
+// sender reports and answers no retransmission request, which is what this
+// package did until now. Both matter here, and for different reasons.
+//
+// Sender reports carry the mapping from RTP timestamp to wall clock. Without
+// them a browser has no common clock for the video and audio tracks, so it
+// cannot hold them in sync and cannot measure the round trip either.
+//
+// NACK is the only repair this server can offer. A lost packet corrupts the
+// rest of its frame, and nothing here can force the encoder to emit a keyframe
+// early, so an unrepaired loss stays on screen until the next GOP boundary: a
+// whole second at the default 30 frames and GOP 30. Retransmission is what
+// keeps that from being the normal outcome of a single dropped datagram.
+func createInterceptorRegistry() (*interceptor.Registry, error) {
+	registry := &interceptor.Registry{}
+
+	if err := webrtc.ConfigureRTCPReports(registry); err != nil {
+		return nil, err
+	}
+
+	// No RegisterFeedback call is needed. RegisterDefaultCodecs already puts
+	// `nack`, `nack pli`, `ccm fir`, `goog-remb` and `transport-cc` on every
+	// video codec, so the browser has been able to send retransmission requests
+	// all along and there was simply nothing here to answer them.
+	//
+	// One of those defaults is a promise this server cannot keep. `nack pli`
+	// asks the sender for a keyframe now, and `libkvm` exposes `set_h264_gop`
+	// and no IDR request, so a picture loss indication is answered with silence
+	// and the viewer waits for the next GOP boundary. Removing it from the
+	// answer would mean hand-registering the codecs instead of taking the
+	// defaults; producing a keyframe on demand would be the better answer, and
+	// neither is done here.
+	//
+	// Only the responder is registered. The generator half of ConfigureNack
+	// acts on inbound streams, and this server has no OnTrack handler and never
+	// receives media.
+	responder, err := nack.NewResponderInterceptor(nack.ResponderSize(nackResponderSize))
+	if err != nil {
+		return nil, err
+	}
+
+	registry.Add(responder)
+
+	return registry, nil
+}
+
 func createPeerConnection(iceServers []webrtc.ICEServer, mediaEngine *webrtc.MediaEngine) (*webrtc.PeerConnection, error) {
 	settingEngine := webrtc.SettingEngine{}
 	settingEngine.SetSRTPProtectionProfiles(
@@ -178,7 +245,16 @@ func createPeerConnection(iceServers []webrtc.ICEServer, mediaEngine *webrtc.Med
 		webrtc.WithSettingEngine(settingEngine),
 	}
 	if mediaEngine != nil {
-		apiOptions = append(apiOptions, webrtc.WithMediaEngine(mediaEngine))
+		registry, err := createInterceptorRegistry()
+		if err != nil {
+			log.Errorf("failed to create interceptor registry: %s", err)
+			return nil, err
+		}
+
+		apiOptions = append(apiOptions,
+			webrtc.WithMediaEngine(mediaEngine),
+			webrtc.WithInterceptorRegistry(registry),
+		)
 	}
 
 	api := webrtc.NewAPI(apiOptions...)
