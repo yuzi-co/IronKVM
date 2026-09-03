@@ -140,6 +140,11 @@ typedef struct {
 	uint8_t* p_img_data = NULL;
     uint8_t img_data_type = 0;
     uint32_t img_data_size = 0;
+    // The allocation behind p_img_data outlives the frame in it. Capacity
+    // is what was allocated, img_data_size is what the current frame uses,
+    // and in_use says the slot is taken.
+    uint32_t img_data_capacity = 0;
+    uint8_t in_use = 0;
 } kvmv_data_t;
 
 typedef struct {
@@ -269,15 +274,64 @@ int maxmin_data(int _max, int _min, int _data)
 	return _data;
 }
 
+// Take the next free slot. The version this replaces looked at one slot,
+// the one after the last, and gave up if that slot was busy: three free
+// buffers next to it were not considered and the caller was told the ring
+// was full. Walk the whole ring instead, starting where the old one did so
+// the buffers still rotate rather than always reusing slot 0.
 kvmv_data_t* get_save_buffer()
 {
-    kvmv_data_buffer_index = to_roll(kvmv_data_buffer_index + 1);
-    // debug("[kvmv]kvmv_data_buffer_index = %d\n", kvmv_data_buffer_index);
-    // debug("[kvmv]kvmv_data_buffer.p_img_data = %d\n", kvmv_data_buffer[kvmv_data_buffer_index].p_img_data);
-    if(kvmv_data_buffer[kvmv_data_buffer_index].p_img_data == NULL){
-        return &kvmv_data_buffer[kvmv_data_buffer_index];
+    for(int i = 0; i < kvmv_data_buffer_size; i++){
+        kvmv_data_buffer_index = to_roll(kvmv_data_buffer_index + 1);
+        kvmv_data_t* buffer = &kvmv_data_buffer[kvmv_data_buffer_index];
+        if(buffer->in_use == 0){
+            buffer->in_use = 1;
+            buffer->img_data_type = 0;
+            buffer->img_data_size = 0;
+            return buffer;
+        }
     }
     return NULL;
+}
+
+// Hand a slot back without freeing what it holds. Every path that takes a
+// buffer and then fails has to reach this, or the slot is lost for the life
+// of the process.
+static void release_save_buffer(kvmv_data_t* buffer)
+{
+    if(buffer != NULL){
+        buffer->in_use = 0;
+    }
+}
+
+// Make sure the slot can hold size bytes, reusing the allocation it already
+// has whenever that one is big enough.
+//
+// A frame is one or two hundred kilobytes at 1080p, far above the size at
+// which musl serves malloc from mmap. The code this replaces allocated and
+// freed one of those per frame, so every frame paid an mmap, a fault on
+// each of its forty-odd pages, and a munmap, thirty times a second on the
+// one core this board has.
+//
+// What it costs to keep them is bounded: four slots, each at the largest
+// frame it has held. Capacity never shrinks, so a board that ran at 1080p
+// keeps 1080p sized buffers after a change to 720p until the process ends.
+static bool reserve_save_buffer(kvmv_data_t* buffer, uint32_t size)
+{
+    if(buffer == NULL || size == 0){
+        return false;
+    }
+    if(buffer->p_img_data != NULL && buffer->img_data_capacity >= size){
+        return true;
+    }
+
+    uint8_t* data = (uint8_t *)realloc(buffer->p_img_data, size);
+    if(data == NULL){
+        return false;
+    }
+    buffer->p_img_data = data;
+    buffer->img_data_capacity = size;
+    return true;
 }
 
 // ====HDMI RES==================================================
@@ -1630,8 +1684,7 @@ bool jpg_dump(kvmv_data_t* dump_to, image::Image *raw)
     if(dump_to == NULL || raw == NULL || raw->data() == NULL || raw->data_size() == 0){
         return false;
     }
-    dump_to->p_img_data = (uint8_t *)malloc(raw->data_size());
-    if(dump_to->p_img_data == NULL){
+    if(raw->data_size() > UINT32_MAX || !reserve_save_buffer(dump_to, (uint32_t)raw->data_size())){
         dump_to->img_data_size = 0;
         dump_to->img_data_type = 0;
         return false;
@@ -1676,11 +1729,25 @@ void init_venc_h264(uint16_t _width, uint16_t _height, uint16_t _qlty)
 int h264_stream_dump(kvmv_data_t* dump_to, mmf_stream_t* dump_from)
 {
     static int8_t I_Frame_index = -1;
+    if(dump_to == NULL || dump_from == NULL){
+        return IMG_VENC_ERROR;
+    }
     // debug("[kvmv]dump_from->count = %d\n", dump_from->count);
     if (dump_from->count == 3) {
-
-        dump_to->p_img_data = (uint8_t *)malloc(dump_from->data_size[0]+dump_from->data_size[1]+dump_from->data_size[2]);
-        dump_to->img_data_size = dump_from->data_size[0]+dump_from->data_size[1]+dump_from->data_size[2];
+        // Neither branch used to test its allocation, and memory is what
+        // this board runs out of first.
+        for(int i = 0; i < dump_from->count; i++){
+            if(dump_from->data[i] == NULL || dump_from->data_size[i] <= 0){
+                return IMG_VENC_ERROR;
+            }
+        }
+        uint64_t total_size = (uint64_t)dump_from->data_size[0] +
+                              (uint64_t)dump_from->data_size[1] +
+                              (uint64_t)dump_from->data_size[2];
+        if(total_size > UINT32_MAX || !reserve_save_buffer(dump_to, (uint32_t)total_size)){
+            return IMG_BUFFER_FULL;
+        }
+        dump_to->img_data_size = (uint32_t)total_size;
         dump_to->img_data_type = IMG_H264_TYPE_IF;
         memcpy(dump_to->p_img_data, dump_from->data[0], dump_from->data_size[0]);
         memcpy(dump_to->p_img_data+dump_from->data_size[0], dump_from->data[1], dump_from->data_size[1]);
@@ -1695,7 +1762,12 @@ int h264_stream_dump(kvmv_data_t* dump_to, mmf_stream_t* dump_from)
     } else if (dump_from->count == 1) {
         // debug("[kvmv]dump P-Frame\r\n");
         I_Frame_index = -1;
-        dump_to->p_img_data = (uint8_t *)malloc(dump_from->data_size[0]);
+        if(dump_from->data[0] == NULL || dump_from->data_size[0] <= 0){
+            return IMG_VENC_ERROR;
+        }
+        if(!reserve_save_buffer(dump_to, (uint32_t)dump_from->data_size[0])){
+            return IMG_BUFFER_FULL;
+        }
         dump_to->img_data_size = dump_from->data_size[0];
         dump_to->img_data_type = IMG_H264_TYPE_PF;
         memcpy(dump_to->p_img_data, dump_from->data[0], dump_from->data_size[0]);
@@ -1800,6 +1872,8 @@ void kvmv_init(uint8_t _debug_info_en)
     cam->restart(default_vpss_width, default_vpss_height, image::FMT_YVU420SP);
     for(int i = 0; i < kvmv_data_buffer_size; i++){
         kvmv_data_buffer[i].p_img_data = NULL;
+        kvmv_data_buffer[i].img_data_capacity = 0;
+        kvmv_data_buffer[i].in_use = 0;
     }
 
     __atomic_store_n(&kvmv_cfg.try_exit_thread, 0, __ATOMIC_RELEASE);
@@ -2015,6 +2089,7 @@ int kvmv_read_img(uint16_t _width, uint16_t _height, uint8_t _type, uint16_t _ql
             if(jpg == NULL || !jpg_dump(p_kvmv_data, jpg)){
                 delete jpg;
 			    delete img;
+                release_save_buffer(p_kvmv_data);
                 debug("[kvmv]failed to allocate jpg buffer\n");
                 pthread_mutex_unlock(&vi_mutex);
                 return IMG_BUFFER_FULL;
@@ -2039,6 +2114,13 @@ int kvmv_read_img(uint16_t _width, uint16_t _height, uint8_t _type, uint16_t _ql
             ret = raw_to_h264(img, p_kvmv_data, maxmin_data(10000, 500, (int)_qlty));
             // debug("[kvmv]venc raw_to_h264: %d \r\n", (int)(time::time_ms() - start_time));
 			delete img;
+            if(ret < 0){
+                release_save_buffer(p_kvmv_data);
+                *_pp_kvm_data = NULL;
+                *_p_kvmv_data_size = 0;
+                pthread_mutex_unlock(&vi_mutex);
+                return ret;
+            }
             *_pp_kvm_data = p_kvmv_data->p_img_data;
             *_p_kvmv_data_size = p_kvmv_data->img_data_size;
             pthread_mutex_unlock(&vi_mutex);
@@ -2051,22 +2133,31 @@ int kvmv_read_img(uint16_t _width, uint16_t _height, uint8_t _type, uint16_t _ql
     return IMG_NOT_EXIST;
 }
 
+// Give the slot back. The allocation stays where it is, ready for the next
+// frame that fits in it.
+//
+// This runs on the reader thread while a second reader can be inside
+// kvmv_read_img holding vi_mutex, and it deliberately takes no lock. The
+// slot named here is in_use and belongs to this caller, so nothing else can
+// reallocate it or claim it; the pointers of the other slots are only ever
+// compared, and a live allocation cannot equal another live allocation.
+// The one ordering that matters is reading the type before clearing in_use:
+// the other way round, a reader could claim the slot in between and reset
+// the type to 0 under us. Locking here would instead put a frame release
+// behind whatever encoder call the other reader is waiting on, which can be
+// a full second.
 int free_kvmv_data(uint8_t ** _pp_kvm_data)
 {
+    if(_pp_kvm_data == NULL || *_pp_kvm_data == NULL){
+        return IMG_NOT_EXIST;
+    }
         // debug("[kvmv]free_kvmv_data - 1\r\n");
     for(int i = 0; i < kvmv_data_buffer_size; i++){
         if(*_pp_kvm_data == kvmv_data_buffer[i].p_img_data){
             // debug("[kvmv]free buffer : %d\n", *_pp_kvm_data);
-            if (*_pp_kvm_data != NULL){
-        // debug("[kvmv]free_kvmv_data - 2\r\n");
-                free(*_pp_kvm_data);
-        // debug("[kvmv]free_kvmv_data - 3\r\n");
-                kvmv_data_buffer[i].p_img_data = NULL;
-                uint8_t _type = kvmv_data_buffer[i].img_data_type;
-                return _type;
-            } else {
-                return IMG_NOT_EXIST;
-            }
+            uint8_t _type = kvmv_data_buffer[i].img_data_type;
+            kvmv_data_buffer[i].in_use = 0;
+            return _type;
         }
     }
     return IMG_NOT_EXIST;
@@ -2079,6 +2170,8 @@ void free_all_kvmv_data()
             free(kvmv_data_buffer[i].p_img_data);
             kvmv_data_buffer[i].p_img_data = NULL;
         }
+        kvmv_data_buffer[i].img_data_capacity = 0;
+        kvmv_data_buffer[i].in_use = 0;
     }
 }
 
