@@ -77,6 +77,17 @@ printf '%s\n' "$push" | grep -q '_mmf_map_vi_frame(vi_ch)' \
     && note "the native push maps only to fall back to a copy" OK \
     || note "the native push maps only to fall back to a copy" FAIL
 
+jpush=$(body "$MMF" mmf_enc_jpg_push_vi_with_quality)
+printf '%s\n' "$jpush" | grep -q 'priv.vi_frame_valid\[vi_ch\] || !priv.vi_frame_deferred\[vi_ch\]' \
+    && note "the native JPEG push refuses a frame it does not hold" OK \
+    || note "the native JPEG push refuses a frame it does not hold" FAIL
+printf '%s\n' "$jpush" | grep -q 'mmf_enc_jpg_deinit(ch);' \
+    && note "the native JPEG push deinits before it re-inits" OK \
+    || note "the native JPEG push deinits before it re-inits" FAIL
+printf '%s\n' "$jpush" | grep -q 'mmf_enc_jpg_push_with_quality(ch, data' \
+    && note "the native JPEG push falls back to the copying push" OK \
+    || note "the native JPEG push falls back to the copying push" FAIL
+
 echo
 echo "===== every exit holding a frame gives it back ====="
 
@@ -88,32 +99,46 @@ printf '%s\n' "$enc" | grep -q 'mmf_vi_frame_release(vi_ch);' \
     && note "a failed push releases the frame it was given" OK \
     || note "a failed push releases the frame it was given" FAIL
 
+# frame_to_jpeg owns the frame from the moment it is called, so each of its
+# exits has to release it. Counting both is what says none was added without
+# one.
+jpeg=$(awk '/^static int8_t frame_to_jpeg/,/^}/' "$VIS")
+jreturns=$(printf '%s\n' "$jpeg" | grep -cE '^[[:space:]]*return ')
+jreleases=$(printf '%s\n' "$jpeg" | grep -c 'mmf_vi_frame_release(vi_ch)')
+[ "$jreturns" -gt 0 ] && [ "$jreturns" = "$jreleases" ] \
+    && note "frame_to_jpeg releases at every one of its $jreturns exits" OK \
+    || note "frame_to_jpeg has $jreturns exits and $jreleases releases" FAIL
+
 releases=$(awk '/^int kvmv_read_img/,/^}/' "$VIS" | grep -c 'mmf_vi_frame_release(native_vi_ch)')
-[ "$releases" = 2 ] \
-    && note "kvmv_read_img releases at both of its early exits ($releases)" OK \
-    || note "kvmv_read_img releases at both of its early exits ($releases, wanted 2)" FAIL
+[ "$releases" = 3 ] \
+    && note "kvmv_read_img releases at each of its early exits ($releases)" OK \
+    || note "kvmv_read_img releases at each of its early exits ($releases, wanted 3)" FAIL
 
 # The count above only means something while the number of ways out of that
 # region is the number it was written against. Between taking the frame and
-# handing it to the encoder there are seven:
+# handing it to the encoder there are nine:
 #
-#   two release the frame, and are the two counted above;
+#   three release the frame, and are the three counted above;
+#   two hand it to frame_to_jpeg, which releases it on every path of its own;
 #   one leaves because there was no frame at all;
-#   one belongs to the frame detector, which only runs for MJPEG;
-#   three belong to the MJPEG encode.
+#   one belongs to the frame detector, which only runs while the detector is on
+#     and an unmapped frame is only taken while it is off;
+#   two belong to the MJPEG encode from a mapped frame, which is reached only
+#     after the unmapped branch has already returned.
 #
-# The last four cannot be reached holding a native frame while only H.264 takes
-# one. A new way out, or MJPEG learning to take one, changes that and this case
-# is what says so.
+# A new way out changes that, and this case is what says so.
 exits=$(awk '/int native_vi_ch = -1;/,/frame_to_h264\(NULL/' "$VIS" \
     | grep -cE '^[[:space:]]*(return |continue;)')
-[ "$exits" = 7 ] \
-    && note "the region still has seven ways out ($exits)" OK \
-    || note "the region has $exits ways out, not the seven this was written against" FAIL
+[ "$exits" = 9 ] \
+    && note "the region still has nine ways out ($exits)" OK \
+    || note "the region has $exits ways out, not the nine this was written against" FAIL
 
-printf '%s\n' "$(awk '/^int kvmv_read_img/,/^}/' "$VIS")" | grep -q 'if (_type == VENC_H264) {' \
-    && note "only H.264 takes the unmapped frame" OK \
-    || note "only H.264 takes the unmapped frame" FAIL
+# MJPEG takes an unmapped frame too, but only while the frame detector is off.
+# The detector compares pixels of consecutive frames and needs them mapped.
+printf '%s\n' "$(awk '/^int kvmv_read_img/,/^}/' "$VIS")" \
+    | grep -q 'VENC_MJPEG && kvmv_cfg.frame_detact == 0' \
+    && note "MJPEG takes one only while the detector is off" OK \
+    || note "MJPEG takes one only while the detector is off" FAIL
 
 echo
 if [ "$fails" -eq 0 ]; then

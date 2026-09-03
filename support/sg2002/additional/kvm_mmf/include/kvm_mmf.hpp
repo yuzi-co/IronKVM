@@ -63,6 +63,8 @@ int mmf_enc_jpg_init(int ch, int w, int h, int format, int quality);
 int mmf_enc_jpg_deinit(int ch);
 int mmf_enc_jpg_push(int ch, uint8_t *data, int w, int h, int format);
 int mmf_enc_jpg_push_with_quality(int ch, uint8_t *data, int w, int h, int format, int quality);
+// Encode a frame taken with mmf_vi_frame_pop_native, without mapping it.
+int mmf_enc_jpg_push_vi_with_quality(int ch, int vi_ch, int quality);
 int mmf_enc_jpg_pop(int ch, uint8_t **data, int *size);
 int mmf_enc_jpg_free(int ch);
 int mmf_add_venc_channel(int ch, mmf_venc_cfg_t *cfg);
