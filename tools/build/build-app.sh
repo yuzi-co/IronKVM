@@ -36,11 +36,14 @@ else
     go build -ldflags "-s -w" -o "$BINARY"
 fi
 
-# Expected during linking:
-#   libopencv_video.so.409, needed by dl_lib/libkvm.so, not found
-# libkvm.so links against five OpenCV libraries and only four ship in dl_lib;
-# the fifth lives in the device rootfs, which the cross-linker cannot see. The
-# executable records only libkvm.so and libc.so as its own NEEDED entries.
+# libkvm.so records four OpenCV libraries and all four ship in dl_lib, so the
+# link is quiet. It used to record a fifth, libopencv_video.so.409, which lives
+# only in the device rootfs and made the cross-linker report
+# "libopencv_video.so.409, needed by dl_lib/libkvm.so, not found" on every
+# build. That entry was trimmed out of the committed library and the linker no
+# longer writes it, because the kvm component now builds with -Wl,--as-needed.
+# If the line comes back, the rebuild lost that flag. The executable records
+# only libkvm.so and libc.so as its own NEEDED entries.
 
 echo "== patchelf"
 patchelf --add-rpath '$ORIGIN/dl_lib' "$BINARY"

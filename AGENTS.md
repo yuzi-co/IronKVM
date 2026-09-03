@@ -310,24 +310,29 @@ patchelf --set-rpath '$ORIGIN' libkvm.so
 The device loader does not need this step. The loader searches the `RPATH` of `NanoKVM-Server`,
 which is `$ORIGIN/dl_lib`, for every library in the chain. Only the cross-linker needs the change.
 
-A rebuilt `libkvm.so` also records a dependency that it does not use. The MaixCDK `vision`
-component requires the whole `opencv` package, so the linker writes one `NEEDED` entry for each
-opencv module. `libopencv_video.so.409` is one of them. No symbol in `libkvm.so` comes from it: the
-library has 311 undefined symbols, `libopencv_video.so.409` exports 249, and the two sets do not
-meet. The entry still costs memory. The device resolves it from `/usr/lib`, and that library needs
-`libopencv_dnn`, `libopencv_calib3d`, `libopencv_features2d` and `libopencv_flann`. The loader then
-maps 6.1MB that nothing calls. Remove the entry after you set the search path:
+A rebuilt `libkvm.so` used to record a dependency that it does not use. The MaixCDK `vision`
+component requires the whole `opencv` package, so the linker was handed every opencv module and
+wrote one `NEEDED` entry for each. `libopencv_video.so.409` was one of them. No symbol in
+`libkvm.so` comes from it: the library has 311 undefined symbols, `libopencv_video.so.409` exports
+249, and the two sets do not meet. The entry still costs memory. The device resolves it from
+`/usr/lib`, and that library needs `libopencv_dnn`, `libopencv_calib3d`, `libopencv_features2d` and
+`libopencv_flann`. The loader then maps 6.1MB that nothing calls.
 
-```shell
-patchelf --remove-needed libopencv_video.so.409 libkvm.so
-```
+`support/sg2002/additional/kvm/CMakeLists.txt` now passes `-Wl,--as-needed`, so the linker records
+a dependency only when it resolves an undefined symbol and the entry is never written. Do not
+remove that line. The committed library was trimmed by hand before the flag existed, with
+`patchelf --remove-needed libopencv_video.so.409 libkvm.so`, which is still the repair if a rebuild
+somehow brings the entry back.
 
 Compare the dependency list against the committed library before you ship a rebuild. The two lists
-must agree:
+must agree, and the committed one is 22 entries with four opencv modules:
 
 ```shell
 patchelf --print-needed libkvm.so
 ```
+
+The workstation has no `patchelf` and no `readelf`. Run this check inside the app-builder image,
+which carries both, or read the `PT_DYNAMIC` entries some other way.
 
 The executable records `libkvm.so` and `libc.so` as its own `NEEDED` entries.
 
