@@ -1419,3 +1419,113 @@ values going bad. The accessor throws in a browser with site data blocked, and
 covering that means routing all twenty-odd accessors through one place.
 
 Not started, and unchanged in priority: the `libkvm` rebuild items, #893 first.
+
+### The libkvm rebuild stack, 2026-09-04
+
+Seven branches, each merged into `fork/integration` with `--no-ff`.
+
+| Branch | What | Verified by |
+| --- | --- | --- |
+| `fix/build-reports-real-status` | The build script reports a failed build as a failure | 9 cases; 6 fail on the version it replaces |
+| `perf/hdmi-detect-poll-rate` | #893, poll the detector at 10Hz once the input is settled | Measured on the board before the change |
+| `fix/venc-push-stride-row` | #892, each row to its own row | 8 cases; the one that matters fails on the old source |
+| `perf/reuse-frame-buffers` | #896, keep the four frame buffers | 21 cases and 10 mutations, all caught |
+| `perf/venc-pack-storage` | #894 and #902, hold the pack descriptors | 12 cases; 11 fail on the old source |
+| `perf/h264-native-vi-frame` | #898, H.264 from an unmapped frame | 17 static cases. **Not on hardware** |
+| `perf/jpeg-native-vi-frame` | #904, MJPEG from an unmapped frame | The same suite. **Not on hardware** |
+
+An eighth, `fix/jpg-dump-size-guard`, removes an always-false comparison the
+first of those introduced. It was the only new compiler warning in the rebuild,
+and the warning set now matches the one before the stack exactly.
+
+**The libraries in `server/dl_lib` and `kvmapp/server/dl_lib` are unchanged, so
+none of this reaches a device yet.** Those are the shipped artefacts. Updating
+them is a separate decision, and it should follow a run on hardware rather than
+precede one.
+
+#### The toolchain note in the previous section is wrong
+
+It says the MaixCDK builder image is not built on this workstation. The image is
+here, it is `nanokvm-builder-local-1000-1000`, and it works. What stopped the
+2026-09-03 attempt was not a missing image. Run it with `-e UID=1000 -e GID=1000`
+so the container is the `build` user that owns `/home/build/MaixCDK`, and note
+that `make vision` does not run `./build update_lib`, so the components have to
+be copied by hand or the build compiles whatever the image was baked with.
+
+A build from zero takes about twelve minutes. An incremental build takes about
+ninety seconds, and `update_lib` touches every component it copies, so
+"incremental" still means recompiling `kvm`, `kvm_mmf` and `vision`.
+
+#### `-Wl,--as-needed` is verified now, and it does more than the note claimed
+
+The rebuilt `libkvm.so` records 8 `NEEDED` entries where the committed one
+records 22. The note that shipped with the flag expected it to drop one entry,
+`libopencv_video.so.409`. It drops fourteen.
+
+The other thirteen are safe for a reason worth writing down. Twelve of them are
+dependencies of `libkvm_mmf.so`, which `libkvm.so` still records, so the loader
+maps them anyway. The thirteenth is `libopencv_highgui.so.409`, which nothing
+references.
+
+The proof that nothing was lost: the rebuilt library exports the same 3001
+symbols and leaves the same 319 undefined as the committed one, and of those
+319, not one is exported by any of the fourteen dropped libraries. The 254 that
+the `dl_lib` closure does not answer are all C++ runtime, libgcc and libatomic
+symbols, and those four libraries stay in `NEEDED`. There is no `dlopen` in
+either source, so the symbol table is the whole story.
+
+#### A failed build reported success
+
+The 2026-09-03 rebuild attempt failed with a `PermissionError` from maixcdk and
+printed "Build completed!". `chack_build` tested for the `dist` directory, and
+`rm -rf ./dist` had failed to remove it because it belonged to another user id,
+so the directory was there. The library in it was three weeks old and built from
+different sources, and `add_to_kvmapp` would have shipped it.
+
+That is fixed first, in `fix/build-reports-real-status`, because every other
+item in this section depends on the build telling the truth.
+
+#### Three of the upstream claims do not survive contact
+
+**#893 is 1.9% of a core here, not 15%.** Measured on the board on 2026-09-04,
+mode 0, no HDMI signal, no viewer: the detection thread took 57 ticks over 30
+seconds. The difference is almost certainly the mode 1 spin, which this fork
+stopped on 2026-08-19 with the 1000ms sleep in the `try_res == 2` branch. The
+change is still worth seven lines on a board with one usable core.
+
+**#892 is not an out of bounds write.** `stride * h + w` stays inside a buffer
+of `stride * h * 3 / 2`. Every row landed on the first row of the chroma plane,
+so the encoder read a mostly stale picture, and nothing crashed. The entry in
+the 2026-09-03 table is wrong.
+
+**#894's real content is a buffer overflow.** The pack count was tested after
+`CVI_VENC_GetStream` had already written one descriptor per pack into an array
+of eight. Reusing the array is the cheap half of that change; moving the test in
+front of the call is the half that matters.
+
+#### What #896 turned up on the way
+
+Two defects that are not in the upstream description.
+
+`get_save_buffer` looked at one slot. It advanced the ring index by one and
+answered "full" unless that single slot was free, so three free buffers next to
+a busy one dropped the frame.
+
+`h264_stream_dump` tested neither of its allocations, on a board where running
+out of memory is the usual way things stop.
+
+#### What is still missing
+
+A run on hardware for the last two. `perf/h264-native-vi-frame` and
+`perf/jpeg-native-vi-frame` move the frame lifetime into this code: a VI frame
+that is not handed back leaves the VPSS pool for good, and the symptom is the
+capture stopping rather than anything that reads as a leak. The static suite
+counts every exit against every release and says when a path is added, which is
+worth having and is not the same as a board.
+
+Upstream's numbers for those two, none of them reproduced here: Direct 19.6% of
+a core to 16.3%, WebRTC 41.0% to 39.1%, MJPEG 22% to 9% with 8% more frames.
+
+#895, "program VENC rate control from the requested FPS", is still only read.
+`init_venc_h264` sets `intput_fps` and `output_fps` to 60 while capture runs at
+30, which is what that pull request is about, and it is the obvious next one.
