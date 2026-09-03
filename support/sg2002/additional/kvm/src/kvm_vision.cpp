@@ -1695,6 +1695,59 @@ bool jpg_dump(kvmv_data_t* dump_to, image::Image *raw)
     return true;
 }
 
+// Encode a frame the hardware still holds, straight into a save slot. This
+// is the JPEG counterpart of frame_to_h264, and like that one it owns the
+// VI frame from the moment it is called: every exit here releases it.
+//
+// The JPEG encoder lives on channel 0, which is where image::Image::to_jpeg
+// puts it as well.
+static int8_t frame_to_jpeg(int vi_ch, kvmv_data_t* dump_to, uint16_t quality)
+{
+    int ret = mmf_enc_jpg_push_vi_with_quality(0, vi_ch, quality);
+    if (ret != 0) {
+        release_save_buffer(dump_to);
+        mmf_vi_frame_release(vi_ch);
+        return IMG_VENC_ERROR;
+    }
+
+    uint8_t *data = NULL;
+    int data_size = 0;
+    ret = mmf_enc_jpg_pop(0, &data, &data_size);
+    if (ret != 0 || data == NULL || data_size <= 0) {
+        mmf_enc_jpg_deinit(0);
+        release_save_buffer(dump_to);
+        mmf_vi_frame_release(vi_ch);
+        return IMG_VENC_ERROR;
+    }
+
+    if (!reserve_save_buffer(dump_to, (uint32_t)data_size)) {
+        dump_to->img_data_size = 0;
+        dump_to->img_data_type = 0;
+        if (mmf_enc_jpg_free(0) != 0) {
+            mmf_enc_jpg_deinit(0);
+        }
+        release_save_buffer(dump_to);
+        mmf_vi_frame_release(vi_ch);
+        return IMG_BUFFER_FULL;
+    }
+
+    memcpy(dump_to->p_img_data, data, data_size);
+    dump_to->img_data_size = data_size;
+    dump_to->img_data_type = VENC_MJPEG;
+    // The encoder is done with the input frame once the output is out, so
+    // the release below is in the right order behind this one.
+    if (mmf_enc_jpg_free(0) != 0) {
+        mmf_enc_jpg_deinit(0);
+        dump_to->img_data_size = 0;
+        dump_to->img_data_type = 0;
+        release_save_buffer(dump_to);
+        mmf_vi_frame_release(vi_ch);
+        return IMG_VENC_ERROR;
+    }
+    mmf_vi_frame_release(vi_ch);
+    return IMG_MJPEG_TYPE;
+}
+
 uint8_t kvmvenc_gop = default_h264_gop;
 kvm_venc_t kvm_venc;
 mmf_venc_cfg_t cfg;
@@ -2039,7 +2092,8 @@ int kvmv_read_img(uint16_t _width, uint16_t _height, uint8_t _type, uint16_t _ql
         int native_width = 0;
         int native_height = 0;
         int native_format = 0;
-        if (_type == VENC_H264) {
+        if (_type == VENC_H264
+            || (_type == VENC_MJPEG && kvmv_cfg.frame_detact == 0)) {
             native_vi_ch = cam->get_channel();
             if (mmf_vi_frame_pop_native(native_vi_ch, &native_len, &native_width,
                     &native_height, &native_format) != 0) {
@@ -2117,10 +2171,26 @@ int kvmv_read_img(uint16_t _width, uint16_t _height, uint8_t _type, uint16_t _ql
             kvmv_data_t* p_kvmv_data = get_save_buffer();
             if(p_kvmv_data == NULL){
                 // buffer full
-			    delete img;
+                if (native_vi_ch >= 0) {
+                    mmf_vi_frame_release(native_vi_ch);
+                } else {
+			        delete img;
+                }
                 debug("[kvmv]jpg buffer full\n");
                 pthread_mutex_unlock(&vi_mutex);
                 return IMG_BUFFER_FULL;
+            }
+            if (native_vi_ch >= 0) {
+                int jpeg_ret = frame_to_jpeg(native_vi_ch, p_kvmv_data,
+                    maxmin_data(99, 51, (int)_qlty));
+                if (jpeg_ret < 0) {
+                    pthread_mutex_unlock(&vi_mutex);
+                    return jpeg_ret;
+                }
+                *_pp_kvm_data = p_kvmv_data->p_img_data;
+                *_p_kvmv_data_size = p_kvmv_data->img_data_size;
+                pthread_mutex_unlock(&vi_mutex);
+                return jpeg_ret;
             }
             image::Image *jpg = img->to_jpeg(maxmin_data(99, 51, (int)_qlty));
             if(jpg == NULL || !jpg_dump(p_kvmv_data, jpg)){
