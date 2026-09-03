@@ -46,7 +46,7 @@ logger:
 # Authentication & Security
 authentication: enable              # Whether to enable identity verification for HTTP API and Web endpoints. Options are `enable` or `disable`. Default is `enable`. Highly recommended to leave this enabled for internet-facing devices!
 jwt:
-   secretKey: ""                    # The secret key used to sign and verify JWT Tokens. If left empty, a random key will be generated automatically on startup
+   secretKey: ""                    # The secret key used to sign and verify JWT Tokens. If left empty, the server generates a random key on first start and stores it in `/etc/kvm/.jwt_secret`, so sessions stay valid across a restart
    refreshTokenDuration: 2678400    # The token refresh duration threshold in seconds before forcing a re-login. Default is `2678400` (~31 days)
    revokeTokensOnLogout: true       # Whether logout invalidates all sessions belonging to that user. Other users are never logged out. Setting this to false only clears the browser cookie and is not recommended. Default is `true`
 security:

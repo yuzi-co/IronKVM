@@ -40,7 +40,7 @@ var defaultConfig = &Config{
 
 func checkDefaultValue() {
 	if instance.JWT.SecretKey == "" {
-		key, err := generateSecretKey(secretKeyReader)
+		key, err := loadOrCreateSecretKey()
 		if err != nil {
 			// Every session on the device is signed with this. Running with a
 			// key we could not generate properly is not an option.
