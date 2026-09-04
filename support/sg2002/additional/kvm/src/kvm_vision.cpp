@@ -14,6 +14,7 @@
 #include "internal/vi_state_writer.hpp"
 
 #include <errno.h>
+#include <stdarg.h>
 #include <sys/stat.h>
 
 #define default_venc_chn        1
@@ -143,7 +144,11 @@ uint32_t last_vi_state_refresh_ms = 0;
 uint8_t hdmi_capture_enabled = 0;
 uint8_t hdmi_signal_active = 0;
 
-void debug(const char *format, ...);
+// The attribute makes the compiler check every call here the way it checks a
+// printf, which is the whole point of taking the arguments seriously below:
+// a format string and its arguments that disagree is now a warning at the
+// call site rather than a wrong number in a log nobody reads.
+void debug(const char *format, ...) __attribute__((format(printf, 1, 2)));
 
 static bool write_hdmi_signal_file(uint8_t active)
 {
@@ -217,11 +222,26 @@ static void set_hdmi_detection_state(uint8_t active)
     set_hdmi_signal_state(active);
 }
 
+// This dropped its arguments: it declared the varargs and then called
+// printf with the format string alone. Every one of the calls below that
+// carries a %d or a %s therefore read arguments that were never passed, so
+// the numbers in the output were whatever the stack held. It was also a
+// non-constant format string passed straight to printf, which is the
+// -Wformat-security shape.
+//
+// Nothing had noticed because debug_en is 0 unless kvmv_init is asked for
+// logging, and the server always asks for 0, so no call here has ever
+// printed anything on a device.
 void debug(const char *format, ...)
 {
-    if(debug_en){
-        printf(format);
+    if(debug_en == 0){
+        return;
     }
+
+    va_list args;
+    va_start(args, format);
+    vprintf(format, args);
+    va_end(args);
 }
 
 uint8_t refresh_vi_state()
