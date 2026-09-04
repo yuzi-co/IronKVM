@@ -1,0 +1,399 @@
+#!/bin/sh
+#
+# Report what a device is actually running, against this checkout.
+#
+#   sh tools/deploy/check-deployed [user@host]
+#
+# The device address comes from the argument, then from NANOKVM_DEVICE, and
+# there is no default. This script runs on the workstation, because it needs
+# the git repository. Everything it asks of the device is read-only.
+#
+# Why this exists: nothing on the device records which commit it came from.
+# /kvmapp/version holds the application version, and the updater rewrites that,
+# so it does not change when a binary is deployed by hand. The only durable
+# record of a hand deploy was prose in a commit message, and prose goes stale.
+# On 2026-09-04 two commits on fork/integration said "Not deployed" about work
+# that had been deployed for hours, and one library that the same reasoning
+# said was current was two builds behind. A person reading those messages
+# reaches the wrong conclusion in both directions.
+#
+# Four things are compared:
+#
+#   server binary   The build stamp names the commit it was built from.
+#   dl_lib          The libraries the server links against, libkvm.so above all.
+#   init scripts    Boot reads /etc/init.d. /kvmapp/system/init.d is the package
+#                   copy, and a change installed to one and not the other does
+#                   not run.
+#   web bundle      Compared against a local web/dist, which has to be built
+#                   first. There is no build output in git to compare against.
+#
+# Each of those exists twice on the device. S95nanokvm copies /kvmapp/server to
+# /tmp/server at boot and starts the server from there, so a file written to
+# /kvmapp alone is installed and not serving. This script reports the two
+# separately and names that state rather than calling it a match.
+#
+# Repository-side hashes come from `git cat-file`, which applies no filter. The
+# working tree on a Windows host carries CRLF for files whose stored blobs have
+# none, and comparing those bytes against the device would report every shell
+# script as different.
+#
+# Exit status follows the tools convention: 0 when the device matches this
+# checkout, 1 when something differs, 2 when the check cannot run.
+set -u
+
+DEVICE=${1:-${NANOKVM_DEVICE:-}}
+SSH_OPTS=${SSH_OPTS:--o ConnectTimeout=10 -o BatchMode=yes}
+
+if [ -z "$DEVICE" ]; then
+    echo "usage: check-deployed <user@host>    (or set NANOKVM_DEVICE)" >&2
+    exit 2
+fi
+
+for tool in git ssh md5sum awk sed; do
+    command -v "$tool" >/dev/null 2>&1 || {
+        echo "cannot run: $tool is not on PATH" >&2
+        exit 2
+    }
+done
+
+git rev-parse --git-dir >/dev/null 2>&1 || {
+    echo "cannot run: not a git repository" >&2
+    exit 2
+}
+
+# Run from the repository root whatever directory the caller is in, so every
+# path below is one thing.
+cd "$(git rev-parse --show-toplevel)" || exit 2
+
+work=$(mktemp -d)
+trap 'rm -rf "$work"' EXIT
+
+problems=0
+pending=0
+
+flag()  { problems=$((problems + 1)); }
+wait_() { pending=$((pending + 1)); }
+
+row() { printf '  %-30s %s\n' "$1" "$2"; }
+
+# --- ask the device ---
+#
+# One round trip. The probe goes over stdin rather than as an argument, so
+# nothing here has to survive a second round of shell quoting, and the report
+# comes back as one line per fact.
+cat > "$work/probe.sh" <<'PROBE'
+set -u
+
+pid=$(pidof NanoKVM-Server 2>/dev/null | tr ' ' '\n' | head -1)
+echo "PID=${pid:-}"
+
+if [ -n "${pid:-}" ]; then
+    echo "EXE=$(readlink /proc/$pid/exe 2>/dev/null)"
+    # The stamp is linked in as version.Build and is the only thing in the
+    # binary that names a commit. -s -w strips the symbol table, so there is
+    # nothing else in there to read.
+    stamp=$(grep -a -o 'dev\.[0-9]\{8\}\.[0-9]\{4\}\.[0-9a-f]\{7,12\}\(\.dirty\)\{0,1\}' \
+        "/proc/$pid/exe" 2>/dev/null | head -1)
+    echo "STAMP=${stamp:-}"
+fi
+
+emit() {
+    if [ ! -d "$2" ]; then
+        echo "ABSENT $1 $2"
+        return 0
+    fi
+    ( cd "$2" 2>/dev/null || exit 0
+      find . -type f 2>/dev/null | sed 's#^\./##' | sort | while read -r f; do
+          # A .gz is hashed by what it holds, not by its own bytes. gzip writes
+          # the source operating system into the header, and two runs of the
+          # same compressor on different hosts therefore produce different
+          # bytes for identical content. Every one of the 19 precompressed
+          # assets read as different on the first run of this script for that
+          # reason alone. What reaches the browser is the decompressed content,
+          # so that is what is compared.
+          case "$f" in
+              *.gz) sum=$(gzip -dc "$f" 2>/dev/null | md5sum | cut -d' ' -f1) ;;
+              *)    sum=$(md5sum "$f" 2>/dev/null | cut -d' ' -f1) ;;
+          esac
+          [ -n "$sum" ] && echo "FILE $1 $f $sum"
+      done )
+}
+
+emit lib-disk  /kvmapp/server/dl_lib
+emit lib-run   /tmp/server/dl_lib
+emit web-disk  /kvmapp/server/web
+emit web-run   /tmp/server/web
+emit initd-boot /etc/init.d
+emit initd-pkg  /kvmapp/system/init.d
+PROBE
+
+# shellcheck disable=SC2086
+if ! ssh $SSH_OPTS "$DEVICE" sh -s < "$work/probe.sh" > "$work/report" 2>"$work/err"; then
+    echo "cannot run: the device did not answer" >&2
+    sed 's/^/  /' "$work/err" >&2
+    exit 2
+fi
+
+[ -s "$work/report" ] || { echo "cannot run: the device returned nothing" >&2; exit 2; }
+
+dev_md5() {
+    awk -v slot="$1" -v name="$2" \
+        '$1 == "FILE" && $2 == slot && $3 == name { print $4; exit }' "$work/report"
+}
+
+slot_absent() {
+    grep -q "^ABSENT $1 " "$work/report"
+}
+
+head_md5() {
+    git cat-file -p "HEAD:$1" 2>/dev/null | md5sum | cut -d' ' -f1
+}
+
+file_md5() {
+    # Same rule as the probe: a .gz is hashed by its content, so a header the
+    # compressor wrote does not read as a difference.
+    case "$1" in
+        *.gz) gzip -dc "$1" 2>/dev/null | md5sum | cut -d' ' -f1 ;;
+        *)    md5sum "$1" 2>/dev/null | cut -d' ' -f1 ;;
+    esac
+}
+
+echo "device   $DEVICE"
+echo "checkout $(git rev-parse --abbrev-ref HEAD) $(git rev-parse --short HEAD)"
+if [ -n "$(git status --porcelain 2>/dev/null | head -1)" ]; then
+    echo "         working tree is dirty, so comparisons are against HEAD and not what is on disk"
+fi
+echo
+
+# --- the server binary ---
+echo "===== server binary ====="
+
+pid=$(sed -n 's/^PID=//p' "$work/report" | head -1)
+exe=$(sed -n 's/^EXE=//p' "$work/report" | head -1)
+stamp=$(sed -n 's/^STAMP=//p' "$work/report" | head -1)
+
+if [ -z "$pid" ]; then
+    row "running" "NOTHING, no NanoKVM-Server process"
+    flag
+elif [ -z "$stamp" ]; then
+    row "running" "pid $pid, $exe"
+    # A release build carries no stamp at all, so this is not necessarily a
+    # fault. It does mean the commit cannot be recovered from the binary.
+    row "build stamp" "none, so this is a release build or was built with BUILD_STAMP="
+    flag
+else
+    row "running" "pid $pid, $exe"
+    row "build stamp" "$stamp"
+
+    sha=$(echo "$stamp" | sed 's/\.dirty$//' | awk -F. '{ print $NF }')
+
+    case "$stamp" in
+        *.dirty)
+            row "built from" "$sha, with uncommitted changes on top"
+            # Nothing can be said about what those changes were, so the
+            # comparison below is a lower bound on the difference.
+            flag
+            ;;
+    esac
+
+    if ! git cat-file -e "$sha^{commit}" 2>/dev/null; then
+        row "built from" "$sha, which is not a commit in this clone"
+        flag
+    else
+        subject=$(git log --format='%s' -1 "$sha")
+        row "built from" "$sha $subject"
+
+        if [ "$(git rev-parse "$sha")" = "$(git rev-parse HEAD)" ]; then
+            row "verdict" "CURRENT"
+        elif git merge-base --is-ancestor "$sha" HEAD 2>/dev/null; then
+            behind=$(git rev-list --count "$sha..HEAD")
+            touching=$(git rev-list --count "$sha..HEAD" -- server/)
+            row "verdict" "STALE, $behind commits behind HEAD, $touching of them touch server/"
+            flag
+            if [ "$touching" -gt 0 ]; then
+                echo
+                echo "  server/ changes the running binary does not have:"
+                git log --format='    %h %s' "$sha..HEAD" -- server/
+            fi
+        else
+            # A binary from a branch that HEAD does not contain. Worth saying
+            # plainly, because "behind" would be the wrong word for it.
+            row "verdict" "DIVERGED, that commit is not an ancestor of HEAD"
+            flag
+        fi
+    fi
+fi
+echo
+
+# --- a group of files ---
+#
+# Reports how many of the repository's files match on disk and in the copy the
+# server runs from, and names only the ones that do not. Listing all 39
+# libraries every run would bury the one that matters.
+compare_group() {
+    label=$1       # what to call this group
+    disk_slot=$2   # the copy that is installed
+    disk_label=$3  # what to call that copy
+    run_slot=$4    # the copy that is used
+    run_label=$5   # what to call that one
+    lag_note=$6    # what a difference between the two means
+    list=$7        # file of "<name> <expected md5>" pairs
+
+    # The label reads well in the report and makes a poor filename, so the
+    # scratch file gets a flattened form of it.
+    slug=$(echo "$label" | tr -c 'A-Za-z0-9' '_')
+
+    total=0
+    disk_ok=0
+    run_ok=0
+    both_ok=0
+    mixed=no
+
+    # State per file is written to a scratch file rather than accumulated in a
+    # variable, because a name list in a shell variable cannot hold two fields
+    # per entry without inventing a separator that a filename could contain.
+    : > "$work/bad.$slug"
+
+    while read -r name want; do
+        [ -n "$name" ] || continue
+        total=$((total + 1))
+
+        got_disk=$(dev_md5 "$disk_slot" "$name")
+        got_run=$(dev_md5 "$run_slot" "$name")
+
+        if   [ -z "$got_disk" ];        then state_disk=absent
+        elif [ "$got_disk" = "$want" ]; then state_disk=match; disk_ok=$((disk_ok + 1))
+        else                                 state_disk=differs
+        fi
+
+        if   [ -z "$got_run" ];        then state_run=absent
+        elif [ "$got_run" = "$want" ]; then state_run=match; run_ok=$((run_ok + 1))
+        else                                state_run=differs
+        fi
+
+        if [ "$state_disk" = match ] && [ "$state_run" = match ]; then
+            both_ok=$((both_ok + 1))
+            continue
+        fi
+
+        printf '%s %s %s\n' "$name" "$state_disk" "$state_run" >> "$work/bad.$slug"
+    done < "$list"
+
+    row "$label" "$total files, $both_ok match in both copies"
+    row "  $disk_label" "$disk_ok/$total match"
+    if slot_absent "$run_slot"; then
+        row "  $run_label" "the directory does not exist"
+    else
+        row "  $run_label" "$run_ok/$total match"
+    fi
+
+    # Both copies are named for every file that is not right, because which of
+    # the two is wrong decides the fix. A file that is correct in one and not
+    # the other has been installed and not picked up, and the repair is a
+    # restart or a second copy. A file that is wrong in both was never
+    # deployed.
+    while read -r name state_disk state_run; do
+        [ -n "$name" ] || continue
+        row "  $name" "$disk_label: $state_disk, $run_label: $state_run"
+
+        if [ "$state_disk" = match ] || [ "$state_run" = match ]; then
+            wait_
+            mixed=yes
+        else
+            flag
+        fi
+    done < "$work/bad.$slug"
+
+    # Only when there is such a file. Explaining a state that did not occur
+    # reads as though it did.
+    if [ "${mixed:-no}" = yes ] && [ -n "$lag_note" ]; then
+        printf '  %s\n' "one copy right and the other not: $lag_note"
+    fi
+}
+
+# --- dl_lib ---
+echo "===== libraries (server/dl_lib) ====="
+
+: > "$work/lib.list"
+git ls-tree --name-only HEAD server/dl_lib/ | while read -r path; do
+    name=${path##*/}
+    # A static archive is consumed at link time and is never installed. libopus.a
+    # is the only one, and looking for it on the device would report a false
+    # miss on every run.
+    case "$name" in
+        *.a) continue ;;
+    esac
+    printf '%s %s\n' "$name" "$(head_md5 "$path")"
+done >> "$work/lib.list"
+
+compare_group "dl_lib" \
+    lib-disk "installed (/kvmapp)" \
+    lib-run  "serving (/tmp/server)" \
+    "installed but not serving, restart pending" \
+    "$work/lib.list"
+echo
+
+# --- init scripts ---
+echo "===== init scripts ====="
+
+: > "$work/initd.list"
+git ls-tree --name-only HEAD kvmapp/system/init.d/ | while read -r path; do
+    name=${path##*/}
+    printf '%s %s\n' "$name" "$(head_md5 "$path")"
+done >> "$work/initd.list"
+
+# /etc/init.d is what rcS runs, so it is the one that decides behaviour. It also
+# holds scripts from the base image that this repository does not carry, and
+# those are not compared: only the names the repository owns are looked for.
+compare_group "init.d" \
+    initd-boot "boot reads (/etc/init.d)" \
+    initd-pkg  "package copy (/kvmapp)" \
+    "the two locations disagree, so what boots is not what the package holds" \
+    "$work/initd.list"
+echo
+
+# --- web bundle ---
+echo "===== web bundle ====="
+
+if [ ! -d web/dist ]; then
+    # Not a failure. There is no built frontend in git, so with nothing to
+    # compare against the honest answer is that this was not checked.
+    row "web/dist" "absent, so the bundle was not compared"
+    row "to compare" "build the frontend first, then run this again"
+else
+    # A stale web/dist would make the device look wrong when the build is what
+    # is out of date. Any source file newer than the whole of dist says so.
+    newest_dist=$(find web/dist -type f -printf '%T@\n' 2>/dev/null | sort -n | tail -1)
+    newer_src=$(find web/src web/index.html web/package.json -type f \
+        -newermt "@${newest_dist%%.*}" 2>/dev/null | head -1)
+    if [ -n "${newest_dist:-}" ] && [ -n "$newer_src" ]; then
+        row "note" "web/dist is older than $newer_src, so build again before trusting this"
+    fi
+
+    : > "$work/web.list"
+    ( cd web/dist && find . -type f | sed 's#^\./##' | sort ) | while read -r name; do
+        printf '%s %s\n' "$name" "$(file_md5 "web/dist/$name")"
+    done >> "$work/web.list"
+
+    compare_group "web/dist" \
+        web-disk "installed (/kvmapp)" \
+        web-run  "serving (/tmp/server)" \
+        "installed but not serving, restart pending" \
+        "$work/web.list"
+fi
+echo
+
+# --- verdict ---
+if [ "$problems" -eq 0 ] && [ "$pending" -eq 0 ]; then
+    echo "the device matches this checkout"
+    exit 0
+fi
+
+if [ "$problems" -eq 0 ]; then
+    echo "$pending file(s) are right in one copy and not the other"
+    exit 1
+fi
+
+echo "$problems item(s) do not match this checkout"
+[ "$pending" -gt 0 ] && echo "$pending more are right in one copy and not the other"
+exit 1

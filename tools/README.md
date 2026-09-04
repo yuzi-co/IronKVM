@@ -19,7 +19,7 @@ are operator tools.
 | `oled/`       | Move the status image to spread OLED wear, with no change to `kvm_system`. |
 | `service/`    | Restart `NanoKVM-Server`, `kvm_system` and `sshd` if they die, and arm the SoC watchdog. |
 | `service/S01hwdt` | The layer under the other guards: the SoC timer resets the board when nothing can fork. |
-| `deploy/`     | Install a server build and put the old one back if it does not serve.   |
+| `deploy/`     | Install a server build and put the old one back if it does not serve. Report what a device runs. |
 | `usbdev/`     | Check the USB gadget: the optional ACM console, and the link order.     |
 | `audiodiag/`  | Say whether USB audio capture works, and name the end that fails.      |
 | `opusbench/`  | Rebuild `libopus.a` for the board, and measure what it costs.          |
@@ -75,6 +75,69 @@ The same suites replace `ln` while the lifted script runs. configfs does not
 store a symlink; it resolves the target at the moment of the call and records
 an internal link. A plain filesystem cannot do that, and a filesystem without
 symlinks refuses the call.
+
+## Knowing what a device is running
+
+`tools/deploy/check-deployed` compares a device against this checkout. It runs
+on the workstation, because it reads the git repository. Everything it asks of
+the device is read-only.
+
+```shell
+sh tools/deploy/check-deployed root@10.0.0.222
+NANOKVM_DEVICE=root@10.0.0.222 sh tools/deploy/check-deployed
+```
+
+The exit status is 0 when the device matches, 1 when something differs, and 2
+when the check cannot run.
+
+The device records nothing about the commit it came from. `/kvmapp/version`
+holds the application version, and the updater writes that file, so the version
+does not change when a person deploys a binary by hand. Before this script, the
+only record of a hand deploy was prose in a commit message.
+
+That record is not reliable. On 2026-09-04 two commits on `fork/integration`
+said "Not deployed" about work that had run on the device for hours. At the same
+time `libkvm.so` on the device was two builds old, and the reasoning that
+declared the first two current also declared that library current. A reader
+reaches the wrong conclusion in both directions.
+
+The script compares four things:
+
+| Thing         | How                                                          |
+| ------------- | ------------------------------------------------------------ |
+| Server binary | The build stamp names the commit. The script finds that commit and measures the distance to HEAD. |
+| `dl_lib`      | Every library, `libkvm.so` above all.                        |
+| Init scripts  | Boot reads `/etc/init.d`. `/kvmapp/system/init.d` is the package copy. |
+| Web bundle    | Against a local `web/dist`, which you must build first.      |
+
+Three of those exist twice on the device. `S95nanokvm` copies `/kvmapp/server`
+to `/tmp/server` at boot, and it starts the server from the copy. A file written
+to `/kvmapp` alone is installed and is not serving. The report gives a column to
+each location and names both for every file that does not match, because which
+of the two is wrong decides the repair.
+
+### Two things that make a false report
+
+**A `.gz` is hashed by what it holds.** gzip writes the source operating system
+into the header, so the same compressor on two hosts makes different bytes for
+the same content. The first run of this script reported all 19 precompressed
+assets as changed for that reason alone. The browser reads the content, so the
+content is what the script compares.
+
+**Repository hashes come from `git cat-file`.** That reader applies no filter. A
+working tree on a Windows host holds CRLF for blobs that have none, and a
+comparison against the working tree reports every shell script as different.
+
+### Reading the build stamp
+
+The stamp is `dev.<date>.<time>.<short sha>` and it can end in `.dirty`. The
+Makefile computes it on the host, because the builder container sees the
+checkout and not `.git`. `-s -w` strips the symbol table, so the stamp is the
+only thing left in the binary that names a commit.
+
+A binary with no stamp is a release build, or somebody passed `BUILD_STAMP=`.
+The script says so and does not call it current, because the commit cannot be
+recovered from such a binary.
 
 ## Ten things that cost real time
 
