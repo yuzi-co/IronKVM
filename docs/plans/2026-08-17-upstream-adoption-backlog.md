@@ -1557,6 +1557,31 @@ worth having and is not the same as a board.
 Upstream's numbers, none of them reproduced here: Direct 19.6% of a core to
 16.3%, WebRTC 41.0% to 39.1%, MJPEG 22% to 9% with 8% more frames.
 
-#895, "program VENC rate control from the requested FPS", is still only read.
-`init_venc_h264` sets `intput_fps` and `output_fps` to 60 while capture runs at
-30, which is what that pull request is about, and it is the obvious next one.
+#### #895, taken the same day
+
+`init_venc_h264` configured the channel at 60 frames a second while the capture
+loop ran at whatever the screen settings said, which defaults to 30. The rate
+controller divides the bitrate by the rate it was given to decide what a frame
+may cost, so a board configured for 3000 kbit/s was getting about half of it.
+`set_h264_fps` now carries the real rate, and `H264Source.run` announces it when
+a stream starts as well as when the setting changes, because the encoder has a
+compiled-in default and no way to ask.
+
+**Expect this to raise bandwidth.** The stream has been running at roughly half
+its configured bitrate and now runs at the configured one.
+
+The declaration in `server/include/kvm_vision.h` is weak on purpose. A library
+and a binary are deployed one file at a time here, and an ordinary undefined
+reference would stop a new server starting against an older `libkvm.so`, which
+takes the KVM off the network. That was tested rather than assumed: the new
+server was deployed first, against the `libkvm.so` that has no `set_h264_fps`,
+and it started and served. The library followed.
+
+Three Go tests, each mutation checked, all runnable under `novision`. The rate
+itself is still unmeasured, for the same reason as the rest: no HDMI signal, so
+no stream, so `init_venc_h264` is never reached.
+
+Nothing is left in the `dormancygrace` pool that this fork can take. #900
+(signed Tailscale updates) is a feature rather than a fix and is still only
+read; #908's browser half is still open; #891 and #905 touch `kvm_system`,
+which this fork takes from Sipeed's releases and therefore cannot ship.
