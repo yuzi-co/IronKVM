@@ -1524,3 +1524,67 @@ the board do more work, not less. The only lever that would help is a cheaper
 answer to "is the VI producing frames" - the interrupt count for `a000000.vi` in
 `/proc/interrupts` is one - and that serves the OLED alone. The detection thread
 still needs the width, the height and the frame rate from the same read.
+
+## What removing a frame copy would buy, and why it was not removed
+
+An encoded frame is copied twice between the encoder and the socket. The first
+copy is in `libkvm`: `frame_to_jpeg` and `h264_stream_dump` both `memcpy` the
+encoder's output into one of the four save slots in `kvmv_data_buffer`. The
+second is in the server: `common/kvm_vision.go` calls `C.GoBytes` on that slot,
+which allocates a Go slice and copies into it.
+
+Removing the first copy has been on the list for a while, at an estimated
+12MB/s. The estimate was right and the conclusion drawn from it was wrong,
+because nobody had measured what this board copies at.
+
+### It copies at about 1.3GB/s
+
+Measured on the device on 2026-09-04, with a static riscv64 binary built by the
+MaixCDK toolchain and run while the board was otherwise idle:
+
+| copy size | MB/s | microseconds per copy |
+| --------- | ---- | --------------------- |
+| 32KiB     | 1769 | 17.7 |
+| 64KiB     | 1682 | 37.2 |
+| 128KiB    | 1292 | 96.7 |
+| 256KiB    | 1236 | 202.3 |
+| 512KiB    | 1288 | 388.1 |
+
+At 1.29GB/s, a stream copying 12MB/s spends **0.93% of one core** doing it. A
+1080p MJPEG stream at 30 frames a second copies about 4.4MB/s, which is 0.34%.
+Both figures are for the whole copy, so removing one of the two halves them.
+
+### What removing it would cost
+
+The first copy exists to give the caller a buffer with a lifetime it controls.
+Take it out and `kvmv_read_img` has to return the encoder's own output pointer
+and leave the hardware buffer unreleased until `free_kvmv_data` runs, which
+happens after `kvmv_read_img` has already unlocked `vi_mutex`. A second reader
+entering in that window pushes a new frame into an encoder channel whose
+previous output has not been freed.
+
+The H.264 path cannot do it at all. `mmf_venc_pop` returns up to eight separate
+packs, and `h264_stream_dump` concatenating them is what gives the server one
+contiguous frame. Removing that copy means changing the interface to hand out a
+scatter list.
+
+So the change is: hold a hardware encoder buffer across a lock release, on a
+board with no remote power cycle, for at most one point of one core, and only
+on the MJPEG path. **Do not do it.** The precedent is the detection thread
+above, where one point of one core was also measured and also not taken.
+
+### The second copy is load-bearing, not waste
+
+`C.GoBytes` looks like the easier one to remove, because a pool of reusable
+buffers is an ordinary thing to write. It is not available here. The slice
+outlives the capture loop iteration: it sits in each client's `FrameSlot` and in
+the MJPEG screenshot cache, and both are read by other goroutines after the loop
+has moved on. That independent lifetime is what lets a slow client drop a frame
+instead of being handed one that is half overwritten. Reusing the buffer needs a
+reference count that every client writer and every disconnect path releases
+correctly.
+
+What the allocation costs is collector time, and that is worth about 1.8 points
+of the core rather than one. It was addressed by setting `GOGC`, which needs no
+new lifetime rule at all. See `tools/service/test-server-gogc.sh` for the
+measurement and the reasoning.
