@@ -233,18 +233,26 @@ uint8_t wedge_note_no_frame(wedge_state_t *w, uint32_t now_ms, uint8_t vi_live)
     if(w == NULL){
         return 0;
     }
+    // A source that stopped sending is not a wedged channel, and restarting
+    // the camera cannot bring a signal back. The detection thread owns that
+    // case, and it is by far the common one on a desk where the host sleeps.
+    //
+    // Start the run again rather than counting these. A client that keeps
+    // asking across a long outage drives the counter into the hundreds, and
+    // counting them would mean the first failure after the signal returned
+    // rebuilt the channel on the strength of evidence gathered while there
+    // was no signal at all. Every recovery seen on 2026-09-04 produced three
+    // or four such failures, so that would have fired on all of them.
+    if(vi_live == 0){
+        w->fail_count = 0;
+        return 0;
+    }
+
     if(w->fail_count == 0){
         w->first_fail_ms = now_ms;
     }
     if(w->fail_count < 0xFFFFFFFFU){
         w->fail_count++;
-    }
-
-    // A source that stopped sending is not a wedged channel, and restarting
-    // the camera cannot bring a signal back. The detection thread owns that
-    // case, and it is by far the common one on a desk where the host sleeps.
-    if(vi_live == 0){
-        return 0;
     }
     if(w->fail_count < wedge_fail_threshold){
         return 0;
