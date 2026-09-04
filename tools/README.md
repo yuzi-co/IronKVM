@@ -1419,6 +1419,27 @@ the rebuild, so no module that links against `soph_vi` can lose a symbol.
 `osdrv/interdrv/v2/vi` has no commits since before the shipped module was built,
 so the source carries no vendor changes along with the patch.
 
+### It was never loaded at boot, until 2026-09-04
+
+The measurement below is real and it did not persist. `S00kmod` did
+`cd /mnt/system/ko` and loaded all 22 modules from there, so the rebuilt module
+in `/kvmapp/system/ko` was shipped, installed, and never run. The figures come
+from a module inserted by hand, and the next reboot put the stock one back.
+
+The board then idled at a load average of about 4 for the five days afterwards,
+which is the symptom this patch removes, and it read as though the patch had
+not worked.
+
+`S00kmod` now takes each module from the first directory that has it and can
+load it, with `/kvmapp/system/ko` first, the way `S01zram` already did for
+`zram` and `zsmalloc`. `tools/service/test-kmod-dirs.sh` covers it. Nothing
+here has to be copied over `/mnt/system/ko` by hand, and nothing should be: a
+rootfs rebuild reverts that, silently.
+
+**A reboot is what puts this into effect.** The patched module has been on the
+board since 2026-08-29 and the load average is the way to tell whether it is
+the one running. The four threads read `D` when it is not and `I` when it is.
+
 ### Measured on the device
 
 | | stock | patched |
