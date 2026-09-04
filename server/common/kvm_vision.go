@@ -156,6 +156,20 @@ func (k *KvmVision) SetGop(gop uint8) {
 	})
 }
 
+// SetFPS tells the encoder what frame rate the capture loop is feeding it, so
+// its rate controller can work out what one frame may cost. It answers false
+// when the library is older than the call, which is possible because a library
+// and a server binary are deployed one file at a time here.
+func (k *KvmVision) SetFPS(fps uint8) bool {
+	_fps := C.uint8_t(fps)
+	available := false
+	captureLifecycle.withLive(func() {
+		available = C.set_h264_fps_if_available(_fps) != 0
+	})
+
+	return available
+}
+
 func (k *KvmVision) SetFrameDetect(frame uint8) {
 	_frame := C.uint8_t(frame)
 	captureLifecycle.withLive(func() {

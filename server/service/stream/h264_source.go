@@ -83,6 +83,13 @@ var readH264 = func(width uint16, height uint16, bitRate uint16) ([]byte, int) {
 	return common.GetKvmVision().ReadH264(width, height, bitRate)
 }
 
+// setEncoderFPS is a variable for the same reason readH264 is: the loop below
+// has to be drivable without capture hardware, and what it tells the encoder is
+// part of what this file is responsible for.
+var setEncoderFPS = func(fps int) {
+	common.GetKvmVision().SetFPS(uint8(fps))
+}
+
 // SubscribeH264 joins the shared capture loop, starting it if it is not
 // running. demand reports whether this path has anything to send a frame to;
 // pass a function that returns true to take every frame.
@@ -217,6 +224,12 @@ func (s *H264Source) run() {
 	fps := values.FPS
 	duration := time.Second / time.Duration(fps)
 
+	// The encoder decides what one frame may cost by dividing the bitrate by
+	// the frame rate it was given, so it has to be told the rate this loop is
+	// actually going to feed it. It has its own default and no way to learn the
+	// configured one, so say it here rather than only on a later change.
+	setEncoderFPS(fps)
+
 	startTime := time.Now()
 
 	ticker := time.NewTicker(duration)
@@ -236,6 +249,7 @@ func (s *H264Source) run() {
 		if values.FPS != fps && values.FPS != 0 {
 			fps = values.FPS
 			duration = time.Second / time.Duration(fps)
+			setEncoderFPS(fps)
 			ticker.Reset(duration)
 		}
 

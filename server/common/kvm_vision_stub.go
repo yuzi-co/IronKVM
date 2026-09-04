@@ -67,6 +67,10 @@ func (k *KvmVision) HasHDMISignal() bool {
 
 func (k *KvmVision) SetGop(gop uint8) {}
 
+// SetFPS answers false off-device, the same as a library that predates the
+// call, so a caller that reports the difference is exercised here too.
+func (k *KvmVision) SetFPS(fps uint8) bool { return false }
+
 func (k *KvmVision) SetFrameDetect(frame uint8) {}
 
 func (k *KvmVision) Close() {

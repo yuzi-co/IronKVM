@@ -63,6 +63,35 @@ int kvmv_read_img(uint16_t _width, uint16_t _height, uint8_t _type, uint16_t _ql
 int free_kvmv_data(uint8_t ** _pp_kvm_data);
 void free_all_kvmv_data();
 void set_h264_gop(uint8_t _gop);
+
+/*
+ * Declared weak, so a server built with this header still starts against a
+ * libkvm.so that predates set_h264_fps. Deploying one file at a time is normal
+ * here - tools/deploy/deploy-server takes a single path and the fork has
+ * shipped a library without the binary - and an ordinary undefined reference
+ * would leave the loader refusing to start the server at all. That takes the
+ * KVM off the network, which is the one outcome worth this much care.
+ *
+ * A weak reference the loader cannot satisfy resolves to zero instead, so the
+ * test below is the whole guard. Call set_h264_fps_if_available, never
+ * set_h264_fps.
+ */
+#if defined(__GNUC__)
+void set_h264_fps(uint8_t _fps) __attribute__((weak));
+#else
+void set_h264_fps(uint8_t _fps);
+#endif
+
+static inline uint8_t set_h264_fps_if_available(uint8_t _fps)
+{
+    if (!set_h264_fps) {
+        return 0;
+    }
+
+    set_h264_fps(_fps);
+    return 1;
+}
+
 void set_frame_detact(uint8_t _frame_detact);
 void kvmv_deinit();
 uint8_t kvmv_hdmi_control(uint8_t _en);
