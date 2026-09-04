@@ -12,6 +12,12 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// setCaptureFPS is a variable so the loop can be driven without the capture
+// hardware, the same way setFrameDetect is in frame-detect.go.
+var setCaptureFPS = func(fps int) {
+	common.GetKvmVision().SetCaptureFPS(uint8(fps))
+}
+
 type Streamer struct {
 	mutex          sync.Mutex
 	clients        map[*gin.Context]*client
@@ -98,6 +104,11 @@ func (s *Streamer) run() {
 
 	vision := common.GetKvmVision()
 
+	// The capture channel hands out every frame the source produces unless it
+	// is told otherwise, and a frame this loop never reads is still written to
+	// memory in full. The H.264 loop says the same thing for the same reason.
+	setCaptureFPS(fps)
+
 	ticker := time.NewTicker(time.Second / time.Duration(fps))
 	defer ticker.Stop()
 
@@ -109,6 +120,17 @@ func (s *Streamer) run() {
 		}
 
 		values = screen.Snapshot()
+
+		// Ahead of the read, and ahead of the early return under it. This used
+		// to sit at the end of the loop, past a continue that a failed read and
+		// an unchanged frame both take, so while the screen was still a rate
+		// change reached neither the ticker nor the capture channel. The H.264
+		// loop has always read the setting here.
+		if values.FPS != fps && values.FPS != 0 {
+			fps = values.FPS
+			setCaptureFPS(fps)
+			ticker.Reset(time.Second / time.Duration(fps))
+		}
 
 		data, result := vision.ReadMjpeg(values.Width, values.Height, values.Quality)
 		stream.UpdateCaptureStatus(stream.CaptureModeMJPEG, result)
@@ -124,11 +146,6 @@ func (s *Streamer) run() {
 		// the newest frame and the older one is dropped.
 		for _, client := range clients {
 			client.enqueue(data)
-		}
-
-		if values.FPS != fps && values.FPS != 0 {
-			fps = values.FPS
-			ticker.Reset(time.Second / time.Duration(fps))
 		}
 
 		stream.GetFrameRateCounter().Update()

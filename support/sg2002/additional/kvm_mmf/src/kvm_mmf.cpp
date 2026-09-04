@@ -90,6 +90,11 @@ typedef struct {
 	bool vi_is_inited;
 	bool vi_chn_is_inited[MMF_VI_MAX_CHN];
 	int vi_chn_pool_id[MMF_VI_MAX_CHN];
+	// Frames per second the channel should hand out, or 0 to hand out
+	// every frame the sensor produces. Kept here rather than in the
+	// caller because a resolution change tears the channel down and
+	// builds it again, and the rate has to survive that.
+	int vi_chn_dst_fps[MMF_VI_MAX_CHN];
 	SIZE_S vi_size;
 	VIDEO_FRAME_INFO_S vi_frame[MMF_VI_MAX_CHN];
 	VB_CONFIG_S vb_conf;
@@ -1176,13 +1181,21 @@ int mmf_get_vi_unused_channel(void) {
 	return _vi_get_unused_ch();
 }
 
-static CVI_S32 _mmf_vpss_chn_init(VPSS_GRP VpssGrp, VPSS_CHN VpssChn, int width, int height, PIXEL_FORMAT_E format, int fps, int depth, bool mirror, bool flip, int fit)
+// fps is the rate the sensor delivers and dst_fps the rate this channel
+// should hand out, or 0 for all of them. The two were always the same
+// value, which asks the hardware to drop nothing: frame rate control
+// only drops when the destination is below the source.
+static CVI_S32 _mmf_vpss_chn_init(VPSS_GRP VpssGrp, VPSS_CHN VpssChn, int width, int height, PIXEL_FORMAT_E format, int fps, int dst_fps, int depth, bool mirror, bool flip, int fit)
 {
 #if 1
 	VPSS_GRP_ATTR_S stGrpAttr;
 	VPSS_CROP_INFO_S   stChnCropInfo;
 	VPSS_CHN_ATTR_S chn_attr = {0};
 	CVI_S32 s32Ret = CVI_SUCCESS;
+
+	if (dst_fps <= 0 || dst_fps > fps) {
+		dst_fps = fps;
+	}
 
 	s32Ret = CVI_VPSS_GetGrpAttr(VpssGrp, &stGrpAttr);
 	if (s32Ret != CVI_SUCCESS) {
@@ -1198,7 +1211,7 @@ static CVI_S32 _mmf_vpss_chn_init(VPSS_GRP VpssGrp, VPSS_CHN VpssChn, int width,
 		chn_attr.enVideoFormat               = VIDEO_FORMAT_LINEAR;
 		chn_attr.enPixelFormat               = format;
 		chn_attr.stFrameRate.s32SrcFrameRate = fps;
-		chn_attr.stFrameRate.s32DstFrameRate = fps;
+		chn_attr.stFrameRate.s32DstFrameRate = dst_fps;
 		chn_attr.u32Depth                    = depth;
 		chn_attr.bMirror                     = mirror;
 		chn_attr.bFlip                       = flip;
@@ -1218,7 +1231,7 @@ static CVI_S32 _mmf_vpss_chn_init(VPSS_GRP VpssGrp, VPSS_CHN VpssChn, int width,
 		chn_attr.enVideoFormat               = VIDEO_FORMAT_LINEAR;
 		chn_attr.enPixelFormat               = format;
 		chn_attr.stFrameRate.s32SrcFrameRate = fps;
-		chn_attr.stFrameRate.s32DstFrameRate = fps;
+		chn_attr.stFrameRate.s32DstFrameRate = dst_fps;
 		chn_attr.u32Depth                    = depth;
 		chn_attr.bMirror                     = mirror;
 		chn_attr.bFlip                       = flip;
@@ -1234,7 +1247,7 @@ static CVI_S32 _mmf_vpss_chn_init(VPSS_GRP VpssGrp, VPSS_CHN VpssChn, int width,
 		chn_attr.enVideoFormat               = VIDEO_FORMAT_LINEAR;
 		chn_attr.enPixelFormat               = format;
 		chn_attr.stFrameRate.s32SrcFrameRate = fps;
-		chn_attr.stFrameRate.s32DstFrameRate = fps;
+		chn_attr.stFrameRate.s32DstFrameRate = dst_fps;
 		chn_attr.u32Depth                    = depth;
 		chn_attr.bMirror                     = mirror;
 		chn_attr.bFlip                       = flip;
@@ -1286,7 +1299,7 @@ static CVI_S32 _mmf_vpss_chn_init(VPSS_GRP VpssGrp, VPSS_CHN VpssChn, int width,
 	chn_attr.enVideoFormat               = VIDEO_FORMAT_LINEAR;
 	chn_attr.enPixelFormat               = format;
 	chn_attr.stFrameRate.s32SrcFrameRate = fps;
-	chn_attr.stFrameRate.s32DstFrameRate = fps;
+	chn_attr.stFrameRate.s32DstFrameRate = dst_fps;
 	chn_attr.u32Depth                    = depth;
 	chn_attr.bMirror                     = mirror;
 	chn_attr.bFlip                       = flip;
@@ -1484,7 +1497,8 @@ static int _mmf_add_vi_channel(int ch, int width, int height, int format) {
 		return CVI_FAILURE;
 	}
 
-	s32Ret = _mmf_vpss_chn_init(0, ch, width_out, height_out, format_out, fps, depth, mirror, flip, 2);
+	s32Ret = _mmf_vpss_chn_init(0, ch, width_out, height_out, format_out, fps,
+		priv.vi_chn_dst_fps[ch], depth, mirror, flip, 2);
 	if (s32Ret != CVI_SUCCESS) {
 		SAMPLE_PRT("_mmf_vpss_chn_init failed with %#x!\n", s32Ret);
 		return CVI_FAILURE;
@@ -1636,6 +1650,51 @@ int mmf_vi_frame_pop_native(int ch, int *len, int *width, int *height, int *form
 		return -1;
 	}
 	priv.vi_frame_deferred[ch] = true;
+	return 0;
+}
+
+// Set how many frames a second the channel hands out. Anything at or above
+// the sensor rate, or 0, means all of them.
+//
+// The rate is remembered whether or not a channel is open, because a
+// resolution change destroys the channel and builds a new one, and the new
+// one has to come up at the rate that was asked for rather than at the
+// sensor rate.
+//
+// A frame the channel does not hand out is a frame the hardware does not
+// write, so this is DDR bandwidth rather than CPU: at 1080p each one is
+// 3.1MB.
+int mmf_vi_set_chn_fps(int ch, int dst_fps) {
+	if (ch < 0 || ch >= MMF_VI_MAX_CHN) {
+		return -1;
+	}
+	if (dst_fps < 0) {
+		dst_fps = 0;
+	}
+	priv.vi_chn_dst_fps[ch] = dst_fps;
+	if (!priv.vi_chn_is_inited[ch]) {
+		return 0;
+	}
+
+	VPSS_CHN_ATTR_S chn_attr;
+	CVI_S32 s32Ret = CVI_VPSS_GetChnAttr(0, ch, &chn_attr);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_PRT("CVI_VPSS_GetChnAttr failed with %#x\n", s32Ret);
+		return -1;
+	}
+
+	int src = chn_attr.stFrameRate.s32SrcFrameRate;
+	int want = (dst_fps <= 0 || (src > 0 && dst_fps > src)) ? src : dst_fps;
+	if (chn_attr.stFrameRate.s32DstFrameRate == want) {
+		return 0;
+	}
+
+	chn_attr.stFrameRate.s32DstFrameRate = want;
+	s32Ret = CVI_VPSS_SetChnAttr(0, ch, &chn_attr);
+	if (s32Ret != CVI_SUCCESS) {
+		SAMPLE_PRT("CVI_VPSS_SetChnAttr failed with %#x\n", s32Ret);
+		return -1;
+	}
 	return 0;
 }
 

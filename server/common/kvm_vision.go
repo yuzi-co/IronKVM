@@ -170,6 +170,24 @@ func (k *KvmVision) SetFPS(fps uint8) bool {
 	return available
 }
 
+// SetCaptureFPS tells the capture channel how many frames a second the stream
+// loop is going to take from it. The channel came up handing out every frame
+// the source produced, which on a 60Hz source is twice what a default stream
+// reads, and every frame nobody takes is still written to memory.
+//
+// It answers false when the library is older than the call, in which case the
+// channel keeps handing out everything, which is what it did before this
+// existed.
+func (k *KvmVision) SetCaptureFPS(fps uint8) bool {
+	_fps := C.uint8_t(fps)
+	available := false
+	captureLifecycle.withLive(func() {
+		available = C.set_capture_fps_if_available(_fps) != 0
+	})
+
+	return available
+}
+
 func (k *KvmVision) SetFrameDetect(frame uint8) {
 	_frame := C.uint8_t(frame)
 	captureLifecycle.withLive(func() {

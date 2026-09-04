@@ -1757,6 +1757,11 @@ static int8_t frame_to_jpeg(int vi_ch, kvmv_data_t* dump_to, uint16_t quality)
 
 uint8_t kvmvenc_gop = default_h264_gop;
 uint8_t kvmvenc_fps = default_h264_fps;
+// 0 means the channel hands out every frame the source produces, which is
+// what it did before this existed. A server too old to call
+// set_capture_fps therefore behaves exactly as it used to.
+uint8_t kvmvi_dst_fps = 0;
+uint8_t kvmvi_fps_pending = 0;
 kvm_venc_t kvm_venc;
 mmf_venc_cfg_t cfg;
 void init_venc_h264(uint16_t _width, uint16_t _height, uint16_t _qlty)
@@ -1868,6 +1873,40 @@ void set_h264_fps(uint8_t _fps)
     kvmvenc_fps = fps;
     kvm_venc.enc_h264_init = 0;
     debug("[kvmv] set_h264_fps = %d\n", kvmvenc_fps);
+}
+
+// Tell the capture channel how many frames a second anyone is going to
+// take from it.
+//
+// The VPSS channel came up asking for 60 in and 60 out. Frame rate control
+// only drops when the destination is below the source, so it dropped
+// nothing, and no setting of any kind could make it drop anything. The
+// stream loop reads at the configured rate, which defaults to 30.
+//
+// Measured on 2026-09-04 at 1080p, from the CHN OUTPUT RESOLUTION block of
+// /proc/cvitek/vpss: the channel hands out 31 frames a second with the rate
+// set to 30, against a source delivering about 50. Each frame it no longer
+// hands out is 3.1MB of NV21 that is not written, so roughly 59MB/s of
+// memory bandwidth. None of it shows in a CPU figure.
+//
+// Read that block and not VIDevFPS. VIDevFPS is the rate the VI device
+// delivers, upstream of this control, and it does not move when the channel
+// rate changes. It cannot show the effect of this either way.
+//
+// The channel is not touched from here. A resolution change rebuilds it
+// from the detector thread, and CVI_VPSS_SetChnAttr from this thread while
+// that is in flight is a race worth not having. The next read applies it
+// under vi_mutex instead, which is one frame away.
+void set_capture_fps(uint8_t _fps)
+{
+    uint8_t fps = maxmin_data(60, 10, (int)_fps);
+    if (fps == kvmvi_dst_fps) {
+        return;
+    }
+
+    kvmvi_dst_fps = fps;
+    kvmvi_fps_pending = 1;
+    debug("[kvmv] set_capture_fps = %d\n", kvmvi_dst_fps);
 }
 
 void set_frame_detact(uint8_t _frame_detact)
@@ -2108,6 +2147,15 @@ int kvmv_read_img(uint16_t _width, uint16_t _height, uint8_t _type, uint16_t _ql
             cam->hmirror(1);
             cam->vflip(1);
 			kvmv_cfg.reinit_flag = 0;
+        }
+
+        // Under vi_mutex, so this cannot land while the detector thread is
+        // rebuilding the channel. mmf_vi_set_chn_fps records the rate even
+        // when no channel is open, and the rebuild reads it back, so a
+        // resolution change does not quietly return the board to 60.
+        if (kvmvi_fps_pending != 0) {
+            kvmvi_fps_pending = 0;
+            mmf_vi_set_chn_fps(cam->get_channel(), (int)kvmvi_dst_fps);
         }
         // debug("[kvmv]befor read img: %d \r\n", (int)(time::time_ms() - start_time));
         //
