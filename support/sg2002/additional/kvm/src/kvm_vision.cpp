@@ -66,6 +66,31 @@
 #define vi_detection_active_poll_ms 10U
 #define vi_detection_idle_poll_ms 100U
 
+// The VPSS channel can stop delivering frames while the VI device keeps
+// running. Measured on 2026-09-04: VIDevFPS held at about 50 while the
+// channel's SendOK stayed frozen and its FrameRate read 0 for 27 minutes,
+// with the kernel reporting "CVI_VPSS_GetChnFrame fail" and
+// "jobs wait(0) work(0) done(0)" once a second for as long as something kept
+// reading. The board recovered only when the HDMI source changed resolution,
+// because that sets reopen_cam_flag and check_kvmv then restarts the camera.
+// Nothing else recovers it, so a viewer that loses the channel sees "no HDMI"
+// until the process is restarted.
+//
+// The counters below ask for that same restart on the board's own initiative.
+// They are deliberately slow. Reopening the MMF channel is the operation that
+// can exhaust the carveout heap, which is the reason fresh_frame_discard_count
+// exists to avoid it after an HDMI idle, so this must not become something the
+// board does often.
+//
+// A run of failures has to be long enough to rule out the ordinary case, which
+// is a source that stopped sending. Measured in the same fault: the reader
+// failed about once a second, so 30 failures is roughly half a minute of a
+// channel that hands out nothing.
+#define wedge_fail_threshold        30U
+#define wedge_min_run_ms          2000U
+#define wedge_first_cooldown_ms  10000U
+#define wedge_max_cooldown_ms    60000U
+
 #define LT6911_ADDR 	0x2B
 #define LT6911_READ 	0xFF
 #define LT6911_WRITE 	0x00
@@ -172,6 +197,86 @@ uint8_t last_vi_state_code = 0;
 uint32_t last_vi_state_refresh_ms = 0;
 uint8_t hdmi_capture_enabled = 0;
 uint8_t hdmi_signal_active = 0;
+
+// Set by the reader when it decides the channel is wedged, and consumed by
+// vi_subsystem_detection. The restart happens on that thread because every
+// other cam->restart in this library already happens there or under
+// reopen_cam_flag, and because vi_mutex does not serialise the two: the
+// detection thread has never taken that lock.
+uint8_t vi_wedge_rebuild_request = 0;
+
+// How the reader decides. Split out from kvmv_read_img so it can be run
+// off-device: everything it needs is an argument, and it touches no hardware.
+//
+// "A frame" means the channel handed one out, whatever happened to it
+// afterwards. An encode that fails still proves the channel is alive, which
+// is the only thing these counters are about.
+typedef struct {
+    uint32_t fail_count;
+    uint32_t first_fail_ms;
+    uint32_t last_rebuild_ms;
+    uint32_t cooldown_ms;
+    uint8_t  rebuilt_before;
+} wedge_state_t;
+
+void wedge_note_frame(wedge_state_t *w)
+{
+    if(w == NULL){
+        return;
+    }
+    w->fail_count = 0;
+    w->cooldown_ms = wedge_first_cooldown_ms;
+}
+
+uint8_t wedge_note_no_frame(wedge_state_t *w, uint32_t now_ms, uint8_t vi_live)
+{
+    if(w == NULL){
+        return 0;
+    }
+    if(w->fail_count == 0){
+        w->first_fail_ms = now_ms;
+    }
+    if(w->fail_count < 0xFFFFFFFFU){
+        w->fail_count++;
+    }
+
+    // A source that stopped sending is not a wedged channel, and restarting
+    // the camera cannot bring a signal back. The detection thread owns that
+    // case, and it is by far the common one on a desk where the host sleeps.
+    if(vi_live == 0){
+        return 0;
+    }
+    if(w->fail_count < wedge_fail_threshold){
+        return 0;
+    }
+    // Unsigned throughout, so the monotonic clock wrapping every 49 days is
+    // not a special case here.
+    if(now_ms - w->first_fail_ms < wedge_min_run_ms){
+        return 0;
+    }
+
+    uint32_t cooldown = w->cooldown_ms == 0 ? wedge_first_cooldown_ms : w->cooldown_ms;
+    if(w->rebuilt_before != 0 && now_ms - w->last_rebuild_ms < cooldown){
+        return 0;
+    }
+
+    w->last_rebuild_ms = now_ms;
+    if(w->rebuilt_before == 0){
+        // The first retry comes quickly, because one restart often is enough
+        // and a viewer is waiting.
+        w->rebuilt_before = 1;
+        w->cooldown_ms = wedge_first_cooldown_ms;
+    } else {
+        // Then back off, so a channel that cannot be recovered is not
+        // reopened every ten seconds for as long as the board is up.
+        w->cooldown_ms = cooldown > wedge_max_cooldown_ms / 2
+            ? wedge_max_cooldown_ms
+            : cooldown * 2;
+    }
+    return 1;
+}
+
+wedge_state_t vi_wedge = { 0, 0, 0, wedge_first_cooldown_ms, 0 };
 
 void debug(const char *format, ...);
 
@@ -1593,6 +1698,27 @@ void* vi_subsystem_detection(void * arg)
 		// bouncing connector is ten times more likely to reach that in 100ms
 		// than in 10ms. The driver is kernel side and not in this tree, so
 		// whether it saturates or wraps is unverified.
+		// The rebuild the reader asked for, run here so that every
+		// cam->restart this library performs happens on one thread. Doing
+		// it on the reader's own thread would not have excluded this one:
+		// vi_mutex is taken in exactly one place, kvmv_read_img, and this
+		// thread has never held it.
+		//
+		// The request is dropped rather than kept whenever a transition is
+		// already in flight, because that transition rebuilds the channel
+		// by itself. If the channel is still wedged afterwards the reader
+		// asks again, one cooldown later.
+		if (__atomic_load_n(&vi_wedge_rebuild_request, __ATOMIC_ACQUIRE) != 0) {
+			__atomic_store_n(&vi_wedge_rebuild_request, 0, __ATOMIC_RELEASE);
+			if (kvmv_cfg.vi_detect_state != 1 &&
+					kvmv_cfg.reopen_cam_flag == 0 &&
+					kvmv_cfg.hdmi_reading_flag == 0 &&
+					kvmv_cfg.hdmi_stop_flag != 1) {
+				debug("[kvmv]rebuilding the VI channel, the VPSS channel handed out nothing\n");
+				cam->restart(default_vpss_width, default_vpss_height, image::FMT_YVU420SP);
+			}
+		}
+
 		const uint32_t poll_interval_ms =
 			(kvmv_cfg.hdmi_mode == 0 || kvmv_cfg.vi_detect_state == 2)
 				? vi_detection_idle_poll_ms
@@ -2149,10 +2275,11 @@ int kvmv_read_img(uint16_t _width, uint16_t _height, uint8_t _type, uint16_t _ql
 			kvmv_cfg.reinit_flag = 0;
         }
 
-        // Under vi_mutex, so this cannot land while the detector thread is
-        // rebuilding the channel. mmf_vi_set_chn_fps records the rate even
-        // when no channel is open, and the rebuild reads it back, so a
-        // resolution change does not quietly return the board to 60.
+        // mmf_vi_set_chn_fps records the rate even when no channel is open,
+        // and a rebuild reads it back, so a resolution change does not
+        // quietly return the board to 60. That is what makes this safe and
+        // not the lock: vi_mutex is taken here and nowhere else, so it does
+        // not order this against the detection thread's own rebuilds.
         if (kvmvi_fps_pending != 0) {
             kvmvi_fps_pending = 0;
             mmf_vi_set_chn_fps(cam->get_channel(), (int)kvmvi_dst_fps);
@@ -2183,6 +2310,10 @@ int kvmv_read_img(uint16_t _width, uint16_t _height, uint8_t _type, uint16_t _ql
         if (mmf_vi_frame_pop_native(native_vi_ch, &native_len, &native_width,
                 &native_height, &native_format) != 0) {
             native_vi_ch = -1;
+        } else {
+            // The channel is alive. Whatever the encoder makes of this frame
+            // is a separate question, so this is the only place that says so.
+            wedge_note_frame(&vi_wedge);
         }
         // debug("[kvmv]read img: %d \r\n", (int)(time::time_ms() - start_time));
 
@@ -2309,6 +2440,17 @@ int kvmv_read_img(uint16_t _width, uint16_t _height, uint8_t _type, uint16_t _ql
         }
     } while (check_kvmv(try_num++));
     // debug("[kvmv]return: %d \r\n", (int)(time::time_ms() - start_time));
+    //
+    // Nothing came out of the channel for this whole call.
+    // kvmv_hdmi_signal_active is what separates a wedged channel from a
+    // source that stopped: it is 0 exactly when the VI device reports no
+    // frames of its own.
+    if (wedge_note_no_frame(&vi_wedge, vi_state_shared::monotonic_ms(),
+            kvmv_hdmi_signal_active()) != 0) {
+        debug("[kvmv]channel handed out nothing %u times with the VI device live, asking for a rebuild\n",
+            (unsigned int)vi_wedge.fail_count);
+        __atomic_store_n(&vi_wedge_rebuild_request, 1, __ATOMIC_RELEASE);
+    }
     *_pp_kvm_data = NULL;
     pthread_mutex_unlock(&vi_mutex);
     return IMG_NOT_EXIST;
