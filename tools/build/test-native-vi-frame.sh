@@ -110,35 +110,36 @@ jreleases=$(printf '%s\n' "$jpeg" | grep -c 'mmf_vi_frame_release(vi_ch)')
     || note "frame_to_jpeg has $jreturns exits and $jreleases releases" FAIL
 
 releases=$(awk '/^int kvmv_read_img/,/^}/' "$VIS" | grep -c 'mmf_vi_frame_release(native_vi_ch)')
-[ "$releases" = 3 ] \
+[ "$releases" = 5 ] \
     && note "kvmv_read_img releases at each of its early exits ($releases)" OK \
-    || note "kvmv_read_img releases at each of its early exits ($releases, wanted 3)" FAIL
+    || note "kvmv_read_img releases at each of its early exits ($releases, wanted 5)" FAIL
 
 # The count above only means something while the number of ways out of that
 # region is the number it was written against. Between taking the frame and
-# handing it to the encoder there are nine:
+# handing it to the encoder there are seven:
 #
-#   three release the frame, and are the three counted above;
+#   four release the frame, and are four of the five counted above;
 #   two hand it to frame_to_jpeg, which releases it on every path of its own;
-#   one leaves because there was no frame at all;
-#   one belongs to the frame detector, which only runs while the detector is on
-#     and an unmapped frame is only taken while it is off;
-#   two belong to the MJPEG encode from a mapped frame, which is reached only
-#     after the unmapped branch has already returned.
+#   one leaves because there was no frame at all.
+#
+# The fifth release counted above is past this region, on the branch that runs
+# when the encode type is neither of the two the callers ask for.
 #
 # A new way out changes that, and this case is what says so.
-exits=$(awk '/int native_vi_ch = -1;/,/frame_to_h264\(NULL/' "$VIS" \
+exits=$(awk '/int native_vi_ch = cam->get_channel\(\);/,/frame_to_h264\(NULL/' "$VIS" \
     | grep -cE '^[[:space:]]*(return |continue;)')
-[ "$exits" = 9 ] \
-    && note "the region still has nine ways out ($exits)" OK \
-    || note "the region has $exits ways out, not the nine this was written against" FAIL
+[ "$exits" = 7 ] \
+    && note "the region still has seven ways out ($exits)" OK \
+    || note "the region has $exits ways out, not the seven this was written against" FAIL
 
-# MJPEG takes an unmapped frame too, but only while the frame detector is off.
-# The detector compares pixels of consecutive frames and needs them mapped.
+# MJPEG used to be held out of the unmapped path whenever the frame detector
+# was on, which cost the fifty-nine frames in sixty that the detector never
+# looks at. Both encodings take an unmapped frame now, and the detector maps
+# the one frame it samples.
 printf '%s\n' "$(awk '/^int kvmv_read_img/,/^}/' "$VIS")" \
-    | grep -q 'VENC_MJPEG && kvmv_cfg.frame_detact == 0' \
-    && note "MJPEG takes one only while the detector is off" OK \
-    || note "MJPEG takes one only while the detector is off" FAIL
+    | grep -q 'frame_detact == 0' \
+    && note "taking a frame no longer depends on the detector" FAIL \
+    || note "taking a frame no longer depends on the detector" OK
 
 echo
 if [ "$fails" -eq 0 ]; then
