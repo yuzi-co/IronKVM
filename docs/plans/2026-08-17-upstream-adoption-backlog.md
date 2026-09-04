@@ -1581,6 +1581,41 @@ Three Go tests, each mutation checked, all runnable under `novision`. The rate
 itself is still unmeasured, for the same reason as the rest: no HDMI signal, so
 no stream, so `init_venc_h264` is never reached.
 
+#### #897 was missing from the table, and it is already here
+
+The 2026-09-03 table lists seventeen of the eighteen pull requests. #897,
+"avoid Direct H264 payload copy", was never assessed, so the sentence that
+closed this section was written against an incomplete list.
+
+Assessed on 2026-09-04, and this fork does not need it. It solved the same
+problem on 2026-08-03 in `75ed9b68`, and the two arrive at the same cost by
+different routes.
+
+Upstream built the wire payload with `make([]byte, 9+len(data))` and copied the
+frame into it, having already copied the frame out of the library with
+`C.GoBytes`: two allocations and two copies per frame. #897 removes one of each
+by reading the frame with nine bytes of headroom and writing the header into
+that headroom.
+
+This fork removed the same allocation and the same copy by not building a
+payload at all. `outboundFrame` holds the encoder's buffer as it came back, the
+header is a nine byte array on the stack, and `writeFrame` puts both into one
+websocket message with two writes through `NextWriter`. One allocation and one
+copy per frame, the same as #897.
+
+Where they differ is what each leaves exposed. #897 puts a writable prefix on
+the frame and passes it along as `H264Frame.Storage`, and in this fork that
+frame is shared: one `H264Source` read feeds the Direct streamer and the WebRTC
+streamer together. Nothing breaks today, because the Direct streamer is a
+package singleton and writes those nine bytes once before any client sees the
+frame, and WebRTC only ever reads from offset nine. It is still a coupling this
+fork does not have to take on, and the version already here does not have it.
+
+The remaining copy is the one out of the library, and it cannot go: the slot is
+handed back with `free_kvmv_data` immediately afterwards, and since #896 that
+slot is reused for a later frame, so a slice over the library's buffer would be
+a use after free.
+
 Nothing is left in the `dormancygrace` pool that this fork can take. #900
 (signed Tailscale updates) is a feature rather than a fix and is still only
 read; #908's browser half is still open; #891 and #905 touch `kvm_system`,
