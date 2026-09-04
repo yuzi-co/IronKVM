@@ -1,32 +1,77 @@
 #!/bin/sh
+#
+# Load the kernel modules the video pipeline needs.
+#
+# Each module comes from the first directory that has it and can load it. The
+# install package ships modules in /kvmapp/system/ko, and the stock ones live
+# in /mnt/system/ko, which is a plain directory on the root filesystem rather
+# than a mount point.
+#
+# This script used to "cd /mnt/system/ko" and load everything from there, so a
+# module shipped in the install package was never the one the board ran.
+# soph_vi.ko has carried a patch since 2026-09-03 that keeps four idle ISP
+# threads out of the load average, it has been in /kvmapp/system/ko since then,
+# and every boot loaded the stock module over it. The measurement that proved
+# the patch, a load average of 4.06 down to 0.54, came from a module inserted
+# by hand and did not survive the reboot.
+#
+# S01zram already reads these two directories in this order for zram and
+# zsmalloc. This brings the rest of the modules in line with it.
+#
+# A module that is present in the first directory but refuses to load falls
+# through to the second. This board is out-of-band management hardware with no
+# remote power cycle, so a stock module that works is better than no module at
+# all, and a rebuilt module that the kernel rejects must not take the video
+# pipeline down with it.
+#
+# The order below is load-bearing and unchanged: soph_sys and soph_base carry
+# the symbols the rest resolve against, and soph_vc_driver keeps the channel
+# counts it has always been given.
+
+KMOD_DIRS=${KMOD_DIRS:-"/kvmapp/system/ko /mnt/system/ko"}
+
+# load_ko <name.ko> [module parameters...]
+load_ko() {
+	_ko_name=$1
+	shift
+	for _ko_dir in $KMOD_DIRS; do
+		[ -f "$_ko_dir/$_ko_name" ] || continue
+		if insmod "$_ko_dir/$_ko_name" "$@"; then
+			return 0
+		fi
+	done
+	# Reported rather than fatal. Nothing here was ever checked, and a boot
+	# that stops on one absent module leaves a board nobody can reach.
+	echo "[S00kmod] $_ko_name not loaded"
+	return 1
+}
 
 if [ "$1" = "start" ]
 then
 	. /etc/profile
 	printf "load kernel module: "
-	cd /mnt/system/ko/
-	insmod soph_sys.ko
-	insmod soph_base.ko
-	insmod soph_rtos_cmdqu.ko
-	insmod soph_fast_image.ko
-	insmod soph_mipi_rx.ko
-	insmod soph_snsr_i2c.ko
-	insmod soph_vi.ko
-	insmod soph_vpss.ko
-	insmod soph_dwa.ko
-	insmod soph_vo.ko
-	insmod soph_rgn.ko
-	insmod soph_wdt.ko
-	insmod soph_clock_cooling.ko
-	insmod soph_tpu.ko
-	insmod soph_vcodec.ko
-	insmod soph_jpeg.ko
-	insmod soph_vc_driver.ko MaxVencChnNum=9 MaxVdecChnNum=9
-	insmod soph_rtc.ko
-	insmod soph_ive.ko
-	insmod soph_mon.ko
-	insmod soph_pwm.ko
-	insmod soph_wiegand.ko
+	load_ko soph_sys.ko
+	load_ko soph_base.ko
+	load_ko soph_rtos_cmdqu.ko
+	load_ko soph_fast_image.ko
+	load_ko soph_mipi_rx.ko
+	load_ko soph_snsr_i2c.ko
+	load_ko soph_vi.ko
+	load_ko soph_vpss.ko
+	load_ko soph_dwa.ko
+	load_ko soph_vo.ko
+	load_ko soph_rgn.ko
+	load_ko soph_wdt.ko
+	load_ko soph_clock_cooling.ko
+	load_ko soph_tpu.ko
+	load_ko soph_vcodec.ko
+	load_ko soph_jpeg.ko
+	load_ko soph_vc_driver.ko MaxVencChnNum=9 MaxVdecChnNum=9
+	load_ko soph_rtc.ko
+	load_ko soph_ive.ko
+	load_ko soph_mon.ko
+	load_ko soph_pwm.ko
+	load_ko soph_wiegand.ko
 	echo "OK"
 	exit 0
 fi
