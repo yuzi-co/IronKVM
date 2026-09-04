@@ -2105,10 +2105,21 @@ int8_t frame_to_h264(uint8_t *data, int width, int height, int format, int vi_ch
 	// log::info("push(): %d \r\n", (int)(time::time_ms() - start_time));
     if (mmf_venc_pop(kvm_venc.mmf_venc_chn, &_stream)) {
         // log::error("mmf_venc_pop failed\n");
+        //
+        // This exit releases the VI frame, although nothing here calls
+        // mmf_vi_frame_release. The push above succeeded, so the encoder
+        // channel is running, and mmf_venc_free releases every held VI frame
+        // whenever it finds the channel in that state. The push failure path
+        // a few lines up has to release by hand for the opposite reason: it
+        // returns while the channel never started, so mmf_venc_free returns
+        // without releasing anything there.
+        //
+        // The asymmetry is deliberate. A release added here would be a
+        // second release of a block from a pool of two.
         mmf_venc_free(kvm_venc.mmf_venc_chn);
         mmf_del_venc_channel(kvm_venc.mmf_venc_chn);
         kvm_venc.enc_h264_init = 0;
-		debug("[kvmv]mmf venc push failed!\n");
+		debug("[kvmv]mmf venc pop failed!\n");
         // rtmp->unlock();
         return -1;
     }
