@@ -63,6 +63,11 @@ echo "===== the policy ====="
 try "a dead VI device no longer stops a rebuild" \
     's/if(vi_live == 0){/if(0){/'
 
+# Scoped to the vi_live block, because wedge_note_frame clears the same field
+# and a bare substitution would edit that one instead.
+try "an outage leaves its failures on the counter" \
+    '/if(vi_live == 0){/,/^    }/ s/w->fail_count = 0;//'
+
 try "the threshold drops to a single failure" \
     's/w->fail_count < wedge_fail_threshold/w->fail_count < 1U/'
 

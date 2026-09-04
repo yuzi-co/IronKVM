@@ -221,6 +221,34 @@ int main(void)
             feed(&w, 5000, 1000, 1000, 0, NULL), 0);
     }
     {
+        // The case the first version of this got wrong. A client that keeps
+        // asking across a long outage drives the counter far past the
+        // threshold while the source is away. If those count, the first
+        // failure after the signal returns rebuilds the channel on evidence
+        // gathered while there was no signal, and every recovery seen on
+        // 2026-09-04 produced three or four such failures.
+        wedge_state_t w = { 0, 0, 0, wedge_first_cooldown_ms, 0 };
+        feed(&w, 600, 1000, 1000, 0, NULL);
+        check("failures with no signal are not counted at all",
+            w.fail_count, 0);
+    }
+    {
+        // The reset matters for the narrower case the line above cannot
+        // reach: real evidence gathered while the source was live, then an
+        // outage, then the source returning. The channel is rebuilt by that
+        // transition, so the evidence from before it is spent.
+        wedge_state_t w = { 0, 0, 0, wedge_first_cooldown_ms, 0 };
+        feed(&w, wedge_fail_threshold - 5, 1000, 1000, 1, NULL);
+        check("a live run is on the counter to begin with",
+            w.fail_count, wedge_fail_threshold - 5);
+        feed(&w, 600, 100000, 1000, 0, NULL);
+        check("an outage clears the run behind it", w.fail_count, 0);
+        check("the first failures after a signal returns ask for nothing",
+            feed(&w, 6, 700000, 1000, 1, NULL), 0);
+        check("a full run after the signal returns still asks",
+            feed(&w, wedge_fail_threshold, 710000, 1000, 1, NULL), 1);
+    }
+    {
         // A reader that spins far faster than the board does must not reach a
         // rebuild on count alone.
         wedge_state_t w = { 0, 0, 0, wedge_first_cooldown_ms, 0 };
