@@ -49,6 +49,10 @@ int mmf_vi_frame_pop(int ch, void **data, int *len, int *width, int *height, int
 // go to an H.264 encoder with mmf_venc_push_vi(), and it must reach either
 // that or mmf_vi_frame_release().
 int mmf_vi_frame_pop_native(int ch, int *len, int *width, int *height, int *format);
+// Set how many frames a second VI channel ch hands out. 0, or anything at
+// or above the sensor rate, means every frame. Remembered across a channel
+// rebuild. Returns 0 on success.
+int mmf_vi_set_chn_fps(int ch, int dst_fps);
 // Map a frame taken with mmf_vi_frame_pop_native so the CPU may read it.
 // Returns NULL if there is no such frame. The frame still has to reach an
 // encoder push or mmf_vi_frame_release afterwards.

@@ -71,6 +71,9 @@ func (k *KvmVision) SetGop(gop uint8) {}
 // call, so a caller that reports the difference is exercised here too.
 func (k *KvmVision) SetFPS(fps uint8) bool { return false }
 
+// SetCaptureFPS answers false off-device for the same reason SetFPS does.
+func (k *KvmVision) SetCaptureFPS(fps uint8) bool { return false }
+
 func (k *KvmVision) SetFrameDetect(frame uint8) {}
 
 func (k *KvmVision) Close() {

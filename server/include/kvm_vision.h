@@ -92,6 +92,29 @@ static inline uint8_t set_h264_fps_if_available(uint8_t _fps)
     return 1;
 }
 
+/*
+ * Declared weak for the same reason set_h264_fps is: a library and a server
+ * binary are deployed one file at a time here, and an ordinary undefined
+ * reference would stop the server starting at all.
+ *
+ * Call set_capture_fps_if_available, never set_capture_fps.
+ */
+#if defined(__GNUC__)
+void set_capture_fps(uint8_t _fps) __attribute__((weak));
+#else
+void set_capture_fps(uint8_t _fps);
+#endif
+
+static inline uint8_t set_capture_fps_if_available(uint8_t _fps)
+{
+    if (!set_capture_fps) {
+        return 0;
+    }
+
+    set_capture_fps(_fps);
+    return 1;
+}
+
 void set_frame_detact(uint8_t _frame_detact);
 void kvmv_deinit();
 uint8_t kvmv_hdmi_control(uint8_t _en);

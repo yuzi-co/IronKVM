@@ -90,6 +90,13 @@ var setEncoderFPS = func(fps int) {
 	common.GetKvmVision().SetFPS(uint8(fps))
 }
 
+// setCaptureFPS is a variable for the same reason setEncoderFPS is. It tells a
+// different thing: the encoder is told what rate to size a frame for, and the
+// capture channel is told how many frames to hand out at all.
+var setCaptureFPS = func(fps int) {
+	common.GetKvmVision().SetCaptureFPS(uint8(fps))
+}
+
 // SubscribeH264 joins the shared capture loop, starting it if it is not
 // running. demand reports whether this path has anything to send a frame to;
 // pass a function that returns true to take every frame.
@@ -230,6 +237,11 @@ func (s *H264Source) run() {
 	// configured one, so say it here rather than only on a later change.
 	setEncoderFPS(fps)
 
+	// The capture channel needs the same number for a different reason: it
+	// hands out every frame the source produces unless told otherwise, and a
+	// frame this loop never reads is still written to memory in full.
+	setCaptureFPS(fps)
+
 	startTime := time.Now()
 
 	ticker := time.NewTicker(duration)
@@ -250,6 +262,7 @@ func (s *H264Source) run() {
 			fps = values.FPS
 			duration = time.Second / time.Duration(fps)
 			setEncoderFPS(fps)
+			setCaptureFPS(fps)
 			ticker.Reset(duration)
 		}
 
