@@ -1639,6 +1639,19 @@ int mmf_vi_frame_pop_native(int ch, int *len, int *width, int *height, int *form
 	return 0;
 }
 
+// Map a frame taken with mmf_vi_frame_pop_native, so the CPU may read it.
+// Ownership does not change: the frame still has to reach an encoder push
+// or mmf_vi_frame_release, and the release is what unmaps it.
+//
+// This is the expensive half of a pop, and avoiding it is why pop_native
+// exists: the invalidate covers the whole frame, 3.1MB at 1080p in NV21.
+// Call it only on a frame something is going to read. Nothing has to be
+// flushed afterwards, because the caller only reads through the mapping
+// and the hardware that wrote the frame is finished with it.
+void *mmf_vi_frame_map(int ch) {
+	return _mmf_map_vi_frame(ch);
+}
+
 void mmf_vi_frame_free(int ch) {
 	if (ch < 0 || ch >= MMF_VI_MAX_CHN || !priv.vi_frame_valid[ch]) {
 		return;

@@ -49,6 +49,10 @@ int mmf_vi_frame_pop(int ch, void **data, int *len, int *width, int *height, int
 // go to an H.264 encoder with mmf_venc_push_vi(), and it must reach either
 // that or mmf_vi_frame_release().
 int mmf_vi_frame_pop_native(int ch, int *len, int *width, int *height, int *format);
+// Map a frame taken with mmf_vi_frame_pop_native so the CPU may read it.
+// Returns NULL if there is no such frame. The frame still has to reach an
+// encoder push or mmf_vi_frame_release afterwards.
+void *mmf_vi_frame_map(int ch);
 void mmf_vi_frame_free(int ch);
 // Release the current VI frame immediately. mmf_vi_frame_free() defers
 // release so the frame can be sent directly to VENC without a second copy.
