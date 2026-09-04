@@ -115,6 +115,15 @@ try "the request is no longer cleared" \
 try "the reader restarts the camera itself" \
     's/        __atomic_store_n(&vi_wedge_rebuild_request, 1, __ATOMIC_RELEASE);/        cam->restart(default_vpss_width, default_vpss_height, image::FMT_YVU420SP);/'
 
+try "the ask goes back to being invisible" \
+    's/printf("\[kvmv\]channel handed out nothing/debug("[kvmv]channel handed out nothing/'
+
+try "the rebuild goes back to being invisible" \
+    's/printf("\[kvmv\]rebuilding the VI channel/debug("[kvmv]rebuilding the VI channel/'
+
+try "a rebuild that stands down says nothing" \
+    's/printf("\[kvmv\]a rebuild was asked for while/debug("[kvmv]a rebuild was asked for while/'
+
 try "a second lock site appears on vi_mutex" \
     's/    int mutex_res = pthread_mutex_timedlock(&vi_mutex, &ts);/    pthread_mutex_lock(\&vi_mutex);\n    int mutex_res = pthread_mutex_timedlock(\&vi_mutex, \&ts);/'
 

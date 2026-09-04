@@ -89,6 +89,15 @@ printf '%s\n' "$read_body" | grep -A4 'if (wedge_note_no_frame(&vi_wedge' \
     && note "the reader raises the request, and only when told to" OK \
     || note "the reader raises the request, and only when told to" FAIL
 
+# debug() prints nothing unless the server passed a flag to kvmv_init that it
+# does not pass, and it drops its arguments on the floor besides: it takes a
+# variadic list and hands only the format to printf. Both of these events are
+# rare, both are rate limited by the cooldown, and both describe a fault that
+# otherwise leaves the board blank with nothing in the log to say why.
+printf '%s\n' "$read_body" | grep -q 'printf("\[kvmv\]channel handed out nothing' \
+    && note "the ask is logged whether or not debug is on" OK \
+    || note "the ask is logged whether or not debug is on" FAIL
+
 echo "===== the restart happens on the detection thread ====="
 
 det_body=$(body "$VIS" vi_subsystem_detection)
@@ -119,6 +128,17 @@ for guard in 'vi_detect_state != 1' 'reopen_cam_flag == 0' \
         && note "the rebuild stands down on $guard" OK \
         || note "the rebuild stands down on $guard" FAIL
 done
+
+printf '%s\n' "$det_body" | grep -q 'printf("\[kvmv\]rebuilding the VI channel' \
+    && note "the rebuild is logged whether or not debug is on" OK \
+    || note "the rebuild is logged whether or not debug is on" FAIL
+
+# A rebuild that never happened because something else was already
+# transitioning looks exactly like a rebuild that happened and did not help,
+# so the stood-down case needs a line of its own.
+printf '%s\n' "$det_body" | grep -q 'printf("\[kvmv\]a rebuild was asked for while' \
+    && note "a rebuild that stands down says so" OK \
+    || note "a rebuild that stands down says so" FAIL
 
 # vi_mutex really is taken in one place. The comment above the rebuild says so
 # and the design depends on it, so a second lock site has to break this.

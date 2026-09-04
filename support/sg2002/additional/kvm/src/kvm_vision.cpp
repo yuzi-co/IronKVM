@@ -1714,8 +1714,13 @@ void* vi_subsystem_detection(void * arg)
 					kvmv_cfg.reopen_cam_flag == 0 &&
 					kvmv_cfg.hdmi_reading_flag == 0 &&
 					kvmv_cfg.hdmi_stop_flag != 1) {
-				debug("[kvmv]rebuilding the VI channel, the VPSS channel handed out nothing\n");
+				printf("[kvmv]rebuilding the VI channel, the VPSS channel handed out nothing\n");
 				cam->restart(default_vpss_width, default_vpss_height, image::FMT_YVU420SP);
+			} else {
+				// Worth a line of its own. A rebuild that never happens because
+				// something else was already transitioning looks exactly like a
+				// rebuild that happened and did not help.
+				printf("[kvmv]a rebuild was asked for while the channel was already in transition, standing down\n");
 			}
 		}
 
@@ -2447,7 +2452,12 @@ int kvmv_read_img(uint16_t _width, uint16_t _height, uint8_t _type, uint16_t _ql
     // frames of its own.
     if (wedge_note_no_frame(&vi_wedge, vi_state_shared::monotonic_ms(),
             kvmv_hdmi_signal_active()) != 0) {
-        debug("[kvmv]channel handed out nothing %u times with the VI device live, asking for a rebuild\n",
+        // Not debug(). This fires at most once per cooldown and only in a
+        // fault that otherwise leaves the board blank with no explanation,
+        // so it has to reach the log of a device nobody is debugging.
+        // debug() would also print the format string raw: it takes its
+        // arguments and passes only the format to printf.
+        printf("[kvmv]channel handed out nothing %u times with the VI device live, asking for a rebuild\n",
             (unsigned int)vi_wedge.fail_count);
         __atomic_store_n(&vi_wedge_rebuild_request, 1, __ATOMIC_RELEASE);
     }
