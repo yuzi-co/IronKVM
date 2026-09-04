@@ -1620,3 +1620,95 @@ Nothing is left in the `dormancygrace` pool that this fork can take. #900
 (signed Tailscale updates) is a feature rather than a fix and is still only
 read; #908's browser half is still open; #891 and #905 touch `kvm_system`,
 which this fork takes from Sipeed's releases and therefore cannot ship.
+
+## Beyond the upstream pool: the MJPEG capture path, 2026-09-04
+
+The pool is exhausted, so this section is the fork's own work rather than an
+upstream adoption. It records what a read of the whole capture path found after
+the `libkvm` stack landed, what hardware said about it, and what is left.
+
+An HDMI source was attached for the first time since the stack was written, so
+the five encode-path changes that had never executed all ran. `#898`, `#902`,
+`#894` and `#904` served a live stream with zero `fallback to copy` and zero
+VENC errors. `#895` delivered 2.52 Mbit/s against a 3000 kbps setting, which is
+consistent with the fix being live, because the bug it removed would have
+halved that. That is evidence rather than proof: there is no before number for
+`#895` on this board.
+
+### What the read found
+
+Four things, in the order they cost the board something.
+
+**MJPEG gave up the unmapped path for every frame whenever frame detect was
+on.** Taken and fixed. See the section below.
+
+**The VPSS runs at 60fps whatever the consumer does.** `_mmf_add_vi_channel`
+hardcodes `int fps = 60` and sets `s32SrcFrameRate` and `s32DstFrameRate` to
+the same value, so the channel does no rate dropping. `/proc/cvitek/vi_dbg`
+reports `VIFPS: 60` and `VIDevFPS` between 43 and 59, mean about 50, in every
+mode measured. The server consumes at the configured rate, which is 30.
+
+That gap is about 20 frames a second of 3.1MB written to DDR and dropped, or
+about 62MB/s. It holds while H.264 runs with the core 72% idle, so it is not a
+consequence of the consumer being slow. It never appears in a CPU figure
+because it is DMA.
+
+`CVI_VPSS_SetChnAttr` can change the rate on a live channel, so this does not
+need the channel teardown that the carveout notes warn about. Not taken, and
+not measured.
+
+**Every encoded frame is copied twice.** `frame_to_jpeg` copies the encoder
+output into a slot and `C.GoBytes` copies the slot into Go. The second copy is
+the floor, for the reason the `#897` section above gives. The first could go by
+handing Go the encoder's pointer and calling `mmf_enc_jpg_free` from
+`free_kvmv_data`, which would save about 12MB/s on the MJPEG path and almost
+nothing on H.264, where frames are a tenth the size.
+
+It is not worth the risk as things stand. `kvmv_read_img` releases `vi_mutex`
+before `C.GoBytes` runs, so a second reader could push into the same VENC
+channel while the output buffer is still unfreed, and `priv.enc_jpg_running` is
+all that stands between that and a conflict. Named, not taken.
+
+**The Go heap churns about 9MB/s under MJPEG.** `C.GoBytes` allocates a fresh
+slice of roughly 100 to 400KB per frame, all of it in large object spans.
+`S95nanokvm` sets `GOMEMLIMIT` but never `GOGC`, so collection is driven by the
+default doubling. The slices are noscan, so marking them is cheap and the cost
+is span churn rather than mark time. Raising `GOGC` and watching the frame rate
+counter is the cheap probe. A frame ring is the real fix and needs refcounting,
+because a frame is shared with every client slot.
+
+### What was taken: the lazy map
+
+`frame_changed()` reads pixels, so MJPEG took its frames through `cam->read()`
+whenever frame detect was on. It reads them on one frame in `frame_detact`, and
+that setting is 60, so fifty-nine frames in sixty paid for a `CVI_SYS_MmapCache`
+and an invalidate over the whole frame, a full-frame copy into an
+`image::Image`, and a third copy into the encoder from `Image::to_jpeg`. Three
+passes over 3.1MB and two mmap/munmap pairs, per frame, to decide nothing.
+
+Measured at 1080p with a live source, 20 second samples of `/proc/stat` and
+`/proc/net/dev`:
+
+| | busy | tx KB/s | core per delivered frame |
+| --- | --- | --- | --- |
+| before, detect off | 91.9% | 3678 | 24.99 |
+| before, detect on | 95.2% | 3212 | 29.64 |
+| after, detect off | 91.4% | 3620 | 25.25 |
+| after, detect on | 91.2% | 3632 | 25.10 |
+
+A feature the UI offers as a way to save the board work cost 3.3 points of core
+and an eighth of the frame rate on a screen that was changing, which is when
+anyone turns it on. It now measures the same as no detection at all: 18.1% less
+core per delivered frame than before, and 13.1% more frames.
+
+The risk worth measuring first was the pool. A native frame is held for the
+whole encode, and the VI channel has two blocks, so a 1080p JPEG that takes
+long enough would starve it. `VIDevFPS` reads 50.4 with the copy and 50.0
+without it, bracketed either side by the native path, so the hardware delivers
+the same number either way and the pool is not the constraint. Had it been, the
+fix was to raise `_create_vb_pool` from two blocks to three.
+
+**Do not read the absence of a fallback as proof the fallback is dead.**
+`mmf_enc_jpg_push_vi_with_quality` still copies if `CVI_VENC_SendFrame` refuses
+a frame. Nothing has made it fire on this board, and it is what keeps an
+unexpected geometry from ending the stream.
