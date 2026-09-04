@@ -284,6 +284,60 @@ server_memlimit() {
     export GOMEMLIMIT
 }
 
+# The collector also needs to know how hard to work between those bounds, and
+# that is GOGC. Left unset it is 100, which means a collection every time the
+# heap grows by the size of the live heap. On the MJPEG path the capture loop
+# hands over a freshly allocated slice per frame, about 150KiB thirty times a
+# second, so a small live heap is passed several times a second and the
+# collector runs about twice a second.
+#
+# That is not free on a board with one core. Measured on the reference device
+# on 2026-09-04, with the frame size and rate above and two client slots
+# holding each frame:
+#
+#   live heap   GOGC=100   GOGC=200   GOGC=400
+#   2MiB          4.3%       2.6%       1.7%
+#   8MiB          4.9%       3.1%       2.3%
+#
+# The server peaks at 27.8MB of RSS over 26 hours, so its live heap is at the
+# small end of that table. GOGC=200 buys back about 1.8 points of the core for
+# about 3 to 9MiB of peak heap, and that core is the scarce thing while MJPEG
+# is running: capture alone costs 90% of it.
+#
+# 400 was measured and not taken. It buys only 0.8 points more and costs
+# another 10 to 24MiB of peak heap, and this board stops being able to start a
+# process below about 30MB free.
+#
+# The H.264 paths are unaffected either way. Their frames are a few KiB, so the
+# same sweep records no collection at all above GOGC=100.
+#
+# Raising GOGC is safe here only because GOMEMLIMIT is set above it. GOGC has
+# no upper bound of its own: it is a ratio, so a live heap that grows takes the
+# trigger with it. The limit is what stops that, and the same measurement shows
+# it working, with the peak heap held at about 52MiB under a 64MiB limit
+# whatever GOGC says. Do not raise GOGC here without keeping that limit.
+#
+# /etc/kvm/GOGC.server overrides it, in percent, the same way as above. "off"
+# is deliberately not accepted: it disables the ratio entirely and leaves the
+# memory limit as the only trigger, which is the configuration that collects
+# hardest exactly when the board is least able to afford it.
+server_gogc() {
+    dir=${MEMLIMIT_DIR:-/etc/kvm}
+    value=
+
+    if [ -r "$dir/GOGC.server" ]; then
+        value=$(cat "$dir/GOGC.server" 2>/dev/null)
+    fi
+
+    case "$value" in
+        "" | *[!0-9]*) value=200 ;;
+        0)             value=200 ;;
+    esac
+
+    GOGC="$value"
+    export GOGC
+}
+
 # S98supervise starts NanoKVM-Server and kvm_system again within five seconds
 # of finding either gone. That is what it is for, and it is wrong while this
 # script is deliberately stopping them: it fills the gap between a stop and the
@@ -396,7 +450,8 @@ start_services() {
     if ! pidof NanoKVM-Server >/dev/null 2>&1; then
         copy_server
         server_memlimit
-        echo "GOMEMLIMIT set to ${GOMEMLIMIT}"
+        server_gogc
+        echo "GOMEMLIMIT set to ${GOMEMLIMIT}, GOGC set to ${GOGC}"
         "$SERVER_DST/NanoKVM-Server" >> "$SERVER_LOG" 2>&1 &
     fi
 
