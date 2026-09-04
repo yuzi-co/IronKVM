@@ -1438,10 +1438,9 @@ An eighth, `fix/jpg-dump-size-guard`, removes an always-false comparison the
 first of those introduced. It was the only new compiler warning in the rebuild,
 and the warning set now matches the one before the stack exactly.
 
-**The libraries in `server/dl_lib` and `kvmapp/server/dl_lib` are unchanged, so
-none of this reaches a device yet.** Those are the shipped artefacts. Updating
-them is a separate decision, and it should follow a run on hardware rather than
-precede one.
+`server/dl_lib/libkvm.so` and `libkvm_mmf.so` are rebuilt and committed, so the
+stack ships. Both were deployed to the board first, in two guarded stages, and
+what that did and did not prove is at the end of this section.
 
 #### The toolchain note in the previous section is wrong
 
@@ -1514,17 +1513,49 @@ a busy one dropped the frame.
 `h264_stream_dump` tested neither of its allocations, on a board where running
 out of memory is the usual way things stop.
 
+#### What the board showed, and what it could not
+
+Both libraries were deployed on 2026-09-04 under `tools/deploy/deploy-server`,
+in two stages so that each rollback would land on a state already shown to work.
+`libkvm_mmf.so` went first under the old `libkvm.so`, because the old one calls
+`mmf_venc_pop`, `mmf_enc_jpg_pop` and `mmf_venc_push` and all three changed.
+`libkvm.so` followed, against the `libkvm_mmf.so` the first stage had proved.
+Both answered inside the timeout and the guard confirmed the running copy was
+the installed one.
+
+#893 is measured now. In the conditions the 1.9% baseline was taken in, the
+detection thread falls from 57 ticks per 30 seconds to 13, and its wakeups from
+about 2730 to 274. That is 1.9% of the one core down to 0.43%. The wakeups fall
+by the ten times the interval changed by; the CPU falls by less, because the ten
+second state refresh does not scale with the poll rate.
+
+The linker flag shows on the device as well. `libopencv_highgui.so.409`, 146376
+bytes there, is no longer mapped by the server process. It is the only one of
+the fourteen dropped entries that changes what gets loaded, because the other
+thirteen are dependencies of `libkvm_mmf.so` and the loader reaches them
+through it.
+
+The carveout read 19050496 bytes of 78643200 with the peak equal to the current
+value, and the startup log was clean apart from the HDMI control message every
+alpha and beta board prints.
+
+**The encode path did not run.** The board has no HDMI signal, so
+`kvmv_read_img` returns before it reaches a frame. The stride fix, the pack
+storage, the frame buffer reuse and both unmapped frame changes are still
+verified by their test suites and by nothing else. Attach a source and measure
+before trusting any of the upstream numbers below.
+
 #### What is still missing
 
-A run on hardware for the last two. `perf/h264-native-vi-frame` and
+A run against a real video source, for five of the eight. `perf/h264-native-vi-frame` and
 `perf/jpeg-native-vi-frame` move the frame lifetime into this code: a VI frame
 that is not handed back leaves the VPSS pool for good, and the symptom is the
 capture stopping rather than anything that reads as a leak. The static suite
 counts every exit against every release and says when a path is added, which is
 worth having and is not the same as a board.
 
-Upstream's numbers for those two, none of them reproduced here: Direct 19.6% of
-a core to 16.3%, WebRTC 41.0% to 39.1%, MJPEG 22% to 9% with 8% more frames.
+Upstream's numbers, none of them reproduced here: Direct 19.6% of a core to
+16.3%, WebRTC 41.0% to 39.1%, MJPEG 22% to 9% with 8% more frames.
 
 #895, "program VENC rate control from the requested FPS", is still only read.
 `init_venc_h264` sets `intput_fps` and `output_fps` to 60 while capture runs at
