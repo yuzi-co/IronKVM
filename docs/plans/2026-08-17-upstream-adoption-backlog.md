@@ -1644,18 +1644,10 @@ on.** Taken and fixed. See the section below.
 
 **The VPSS runs at 60fps whatever the consumer does.** `_mmf_add_vi_channel`
 hardcodes `int fps = 60` and sets `s32SrcFrameRate` and `s32DstFrameRate` to
-the same value, so the channel does no rate dropping. `/proc/cvitek/vi_dbg`
-reports `VIFPS: 60` and `VIDevFPS` between 43 and 59, mean about 50, in every
-mode measured. The server consumes at the configured rate, which is 30.
-
-That gap is about 20 frames a second of 3.1MB written to DDR and dropped, or
-about 62MB/s. It holds while H.264 runs with the core 72% idle, so it is not a
-consequence of the consumer being slow. It never appears in a CPU figure
-because it is DMA.
-
-`CVI_VPSS_SetChnAttr` can change the rate on a live channel, so this does not
-need the channel teardown that the carveout notes warn about. Not taken, and
-not measured.
+the same value. Frame rate control only drops when the destination is below
+the source, so the channel could not drop a frame for any device at any
+setting. Taken; see "Correcting the frame rate finding" below for what the
+first version of this paragraph got wrong.
 
 **Every encoded frame is copied twice.** `frame_to_jpeg` copies the encoder
 output into a slot and `C.GoBytes` copies the slot into Go. The second copy is
@@ -1712,3 +1704,43 @@ fix was to raise `_create_vb_pool` from two blocks to three.
 `mmf_enc_jpg_push_vi_with_quality` still copies if `CVI_VENC_SendFrame` refuses
 a frame. Nothing has made it fire on this board, and it is what keeps an
 unexpected geometry from ending the stream.
+
+### Correcting the frame rate finding, 2026-09-04
+
+The paragraph above first said this board discarded about 20 frames a second
+and 62MB/s of DDR write. That number came from assuming the server read at the
+code default of 30. **This board has `/kvmapp/kvm/fps` set to 60**, so it asked
+for everything the source offered and discarded nothing. The assumption was
+never checked before it was written down, and it reached a commit message and
+this file before hardware contradicted it.
+
+The bug is still real: with source and destination both 60, no device could
+ever have benefited, including the majority that run the default 30.
+
+**Measure it from `/proc/cvitek/vpss`, not from `/proc/cvitek/vi_dbg`.** The
+`CHN OUTPUT RESOLUTION` block carries a per-channel `FrameRate`, which is what
+this control changes. `VIDevFPS` is the rate the VI device delivers, upstream
+of the control, and does not move when the channel rate changes. It cannot show
+this effect either way, and the first version of the finding used it as though
+it could.
+
+With the rate set to 30 at 1080p:
+
+```
+VPSS CHN ATTR              SrcFRate 60   DstFRate 30
+VPSS CHN OUTPUT RESOLUTION SendOK 47578  FrameRate 31
+```
+
+against a source delivering about 50. So about 19 frames a second are no longer
+handed out, and each is 3.1MB of NV21, which is roughly 59MB/s of memory
+bandwidth. It costs no delivered frames: the stream loop already ticked at the
+configured rate and was never going to read them.
+
+Watching `DstFRate` move from 60 to 30 also proves the weak-symbol call path
+end to end, which had never been confirmed on hardware. `set_h264_fps` from
+#895 uses the identical pattern, so that is confirmed by the same observation.
+
+One thing this still does not touch. On the same board MJPEG delivers about
+36 frames a second while the source produces about 50, because the core
+saturates at 91%. Those frames are dropped at the VI stage, which is upstream
+of the channel control, and no setting here reaches them.
