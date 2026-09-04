@@ -293,20 +293,29 @@ server_memlimit() {
 #
 # That is not free on a board with one core. Measured on the reference device
 # on 2026-09-04, with the frame size and rate above and two client slots
-# holding each frame:
+# holding each frame, as a percentage of the one core:
 #
-#   live heap   GOGC=100   GOGC=200   GOGC=400
-#   2MiB          4.3%       2.6%       1.7%
-#   8MiB          4.9%       3.1%       2.3%
+#   live heap   GOGC=100   GOGC=150   GOGC=200   GOGC=400
+#   2MiB          4.3%       3.2%       2.6%       1.7%
+#   4MiB          5.3%       3.8%       3.1%         -
+#   8MiB          5.4%       3.5%       2.8%       2.3%
+#
+# The peak heap follows the ratio, at about (1 + GOGC/100) times the live heap.
+# That model matched the measurement at every step, so read the heap cost off
+# it rather than from a sampled figure: 100 gives twice the live heap, 150 two
+# and a half times, 200 three times.
 #
 # The server peaks at 27.8MB of RSS over 26 hours, so its live heap is at the
-# small end of that table. GOGC=200 buys back about 1.8 points of the core for
-# about 3 to 9MiB of peak heap, and that core is the scarce thing while MJPEG
+# small end of that table. 150 buys back about 1.1 to 1.9 points of the core
+# for half the live heap again, and that core is the scarce thing while MJPEG
 # is running: capture alone costs 90% of it.
 #
-# 400 was measured and not taken. It buys only 0.8 points more and costs
-# another 10 to 24MiB of peak heap, and this board stops being able to start a
-# process below about 30MB free.
+# 200 and 400 were both measured and neither was taken. 200 is another 0.7
+# points for another 2 to 3MiB, which is not a bad rate on its own; 150 is the
+# more conservative end of a range where both are defensible, and this board
+# stops being able to start a process below about 30MB free, so the
+# conservative end is the one that matches what the board is for. 400 costs 10
+# to 24MiB more again, which is well past useful.
 #
 # The H.264 paths are unaffected either way. Their frames are a few KiB, so the
 # same sweep records no collection at all above GOGC=100.
@@ -330,8 +339,8 @@ server_gogc() {
     fi
 
     case "$value" in
-        "" | *[!0-9]*) value=200 ;;
-        0)             value=200 ;;
+        "" | *[!0-9]*) value=150 ;;
+        0)             value=150 ;;
     esac
 
     GOGC="$value"

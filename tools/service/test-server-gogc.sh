@@ -16,17 +16,22 @@
 # second and the collector runs about twice a second.
 #
 # Measured on the reference device on 2026-09-04, with that frame size and rate
-# and two client slots holding each frame:
+# and two client slots holding each frame, as a percentage of the one core:
 #
-#   live heap   GOGC=100   GOGC=200   GOGC=400
-#   2MiB          4.3%       2.6%       1.7%
-#   8MiB          4.9%       3.1%       2.3%
+#   live heap   GOGC=100   GOGC=150   GOGC=200   GOGC=400
+#   2MiB          4.3%       3.2%       2.6%       1.7%
+#   4MiB          5.3%       3.8%       3.1%         -
+#   8MiB          5.4%       3.5%       2.8%       2.3%
+#
+# The peak heap follows the ratio, at about (1 + GOGC/100) times the live heap,
+# a model that matched the measurement at every step.
 #
 # The server peaks at 27.8MB of RSS over 26 hours, so its live heap is at the
-# small end of that table. 200 buys back about 1.8 points of the one core for
-# about 3 to 9MiB of peak heap. 400 was measured and not taken: another 0.8
-# points for another 10 to 24MiB, on a board that stops being able to start a
-# process below about 30MB free.
+# small end of that table. 150 buys back about 1.1 to 1.9 points of the one
+# core for half the live heap again. 200 and 400 were measured and neither was
+# taken: 200 is another 0.7 points for another 2 to 3MiB, and 400 is 10 to
+# 24MiB beyond that, on a board that stops being able to start a process below
+# about 30MB free.
 #
 # The H.264 paths are unaffected. Their frames are a few KiB, and the same
 # sweep records no collection at all above GOGC=100.
@@ -68,8 +73,8 @@ run() {
 
 mkdir -p "$work/empty"
 got=$(run "$work/empty")
-[ "$got" = "200" ] && note "with no override the target is 200" OK \
-                   || note "with no override the target is 200 (got '$got')" FAIL
+[ "$got" = "150" ] && note "with no override the target is 150" OK \
+                   || note "with no override the target is 150 (got '$got')" FAIL
 
 mkdir -p "$work/set"
 echo 300 > "$work/set/GOGC.server"
@@ -79,11 +84,11 @@ got=$(run "$work/set")
 
 # Go refuses to start on a GOGC it cannot parse, so a typo in that file would
 # take the server down rather than merely mis-tune it.
-for bad in "" "  " "200%" "abc" "-5" "12 34" "1e3"; do
+for bad in "" "  " "150%" "abc" "-5" "12 34" "1e3"; do
     mkdir -p "$work/bad"
     printf '%s\n' "$bad" > "$work/bad/GOGC.server"
     got=$(run "$work/bad")
-    [ "$got" = "200" ] && note "a junk override ('$bad') falls back to the default" OK \
+    [ "$got" = "150" ] && note "a junk override ('$bad') falls back to the default" OK \
                        || note "a junk override ('$bad') falls back to the default (got '$got')" FAIL
     rm -rf "$work/bad"
 done
@@ -95,7 +100,7 @@ done
 mkdir -p "$work/off"
 echo off > "$work/off/GOGC.server"
 got=$(run "$work/off")
-[ "$got" = "200" ] && note "'off' is refused and falls back to the default" OK \
+[ "$got" = "150" ] && note "'off' is refused and falls back to the default" OK \
                    || note "'off' is refused and falls back to the default (got '$got')" FAIL
 
 echo "===== it reaches the server ====="
