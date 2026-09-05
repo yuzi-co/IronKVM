@@ -1,0 +1,196 @@
+#!/bin/sh
+#
+# Install an init script to both locations and register it with the boot
+# watchdog. Runs ON the device.
+#
+#   scp kvmapp/system/init.d/S03usbdev root@<device>:/data/S03usbdev.new
+#   scp tools/deploy/deploy-initd root@<device>:/data/
+#   ssh root@<device> 'sh /data/deploy-initd /data/S03usbdev.new'
+#
+# Why this exists: an init script lives in two places and is covered by a third.
+#
+#   /etc/init.d            rcS runs this one. A change installed anywhere else
+#                          does not run.
+#   /kvmapp/system/init.d  the package copy. A reinstall or an update reads it,
+#                          so a change missing here comes back later.
+#   /root/.ironkvm/initd-backup
+#                          what S00awatchdog puts back after three failed boots.
+#
+# Installing by hand reaches the first two and misses the third, and the miss is
+# silent. It is also worse than it looks. restore_initd counts a manifest entry
+# as repaired whether or not that entry was the fault, then it spends the
+# manifest by renaming it. So a board that fails to boot on an unregistered
+# script restores files that were never wrong, reports a successful repair, and
+# comes back with the fault still in place and its one automatic repair used up.
+# On 2026-09-05 S03usbdev was installed by hand into exactly that state.
+#
+# The registration happens BEFORE the install. A run that dies in the middle
+# then leaves the recovery armed for a change that has not been made, which is
+# harmless, rather than a change made with no way back.
+set -u
+
+CANDIDATE=${1:-}
+NAME=${2:-}
+
+INITD=${INITD:-/etc/init.d}
+PKG_INITD=${PKG_INITD:-/kvmapp/system/init.d}
+IRONDIR=${IRONDIR:-/root/.ironkvm}
+INITD_BACKUP=${INITD_BACKUP:-$IRONDIR/initd-backup}
+
+usage() {
+    echo "usage: deploy-initd <candidate> [name]" >&2
+    exit 2
+}
+
+[ -n "$CANDIDATE" ] || usage
+[ -f "$CANDIDATE" ] || { echo "no such file: $CANDIDATE" >&2; exit 2; }
+
+[ -n "$NAME" ] || NAME=$(basename "$CANDIDATE")
+# A candidate staged as S03usbdev.new installs as S03usbdev.
+NAME=${NAME%.new}
+
+say() { echo "initd: $*"; }
+
+# --- refuse before touching anything ---
+
+# restore_initd in S00awatchdog skips any manifest name holding a slash or
+# starting with a dot. Registering such a name would record a backup that the
+# watchdog will never act on, so it is refused here rather than written down as
+# a protection that does not exist.
+case "$NAME" in
+    */*|.*|"")
+        echo "refusing the name '$NAME': the watchdog would skip it" >&2
+        exit 2
+        ;;
+esac
+
+[ -s "$CANDIDATE" ] || { echo "refusing an empty candidate" >&2; exit 2; }
+
+# A carriage return is the other rc=127. busybox reads the CR as part of the
+# command name and every line fails, and at boot the only symptom is a port that
+# does not answer.
+if [ "$(tr -cd '\r' < "$CANDIDATE" | wc -c)" -ne 0 ]; then
+    echo "refusing a candidate with carriage returns" >&2
+    exit 2
+fi
+
+# The shell that will actually run it, not the one this script happens to be in.
+if ! sh -n "$CANDIDATE" 2>/dev/null; then
+    echo "refusing a candidate that does not parse" >&2
+    sh -n "$CANDIDATE"
+    exit 2
+fi
+
+say "candidate $CANDIDATE parses, no carriage returns, installs as $NAME"
+
+# --- register with the watchdog, before installing ---
+
+mkdir -p "$INITD_BACKUP"
+manifest="$INITD_BACKUP/manifest"
+
+# A spent manifest is renamed rather than emptied, so an absent manifest beside
+# a manifest.done is the normal state after a repair, not a missing file.
+[ -f "$manifest" ] || : > "$manifest"
+
+# Already registered means an earlier deploy saved the version before it. That
+# copy is the one worth restoring, and overwriting it with the version being
+# replaced now would leave the watchdog able to roll back only to the previous
+# broken attempt.
+if awk -v n="$NAME" '$1 == n { found = 1 } END { exit !found }' "$manifest"; then
+    say "already registered, keeping the backup taken by the earlier deploy"
+else
+    if [ -f "$INITD/$NAME" ]; then
+        cp "$INITD/$NAME" "$INITD_BACKUP/.$NAME.tmp"
+        chmod 700 "$INITD_BACKUP/.$NAME.tmp"
+        mv "$INITD_BACKUP/.$NAME.tmp" "$INITD_BACKUP/$NAME"
+        entry="$NAME yes"
+        say "registered, and saved the script it replaces"
+    else
+        # Nothing to put back. Undoing an added script means removing it, which
+        # is what the watchdog does for a "no" entry.
+        entry="$NAME no"
+        say "registered as new, so a rollback removes it"
+    fi
+
+    # The manifest is read with `while read -r name existed`, so it needs a
+    # trailing newline or the last entry is not read at all.
+    { cat "$manifest"; echo "$entry"; } > "$INITD_BACKUP/.manifest.tmp"
+    chmod 600 "$INITD_BACKUP/.manifest.tmp"
+    mv "$INITD_BACKUP/.manifest.tmp" "$manifest"
+fi
+
+sync 2>/dev/null || true
+
+# --- install ---
+
+# busybox here is built without FEATURE_STAT_FORMAT, so `stat -c %a` does not
+# exist. The mode is read off ls instead.
+mode_of() {
+    ls -l "$1" 2>/dev/null | awk '
+        {
+            p = substr($1, 2, 9)
+            m = 0
+            for (i = 0; i < 3; i++) {
+                d = 0
+                if (substr(p, i * 3 + 1, 1) == "r") d += 4
+                if (substr(p, i * 3 + 2, 1) == "w") d += 2
+                if (substr(p, i * 3 + 3, 1) == "x") d += 1
+                m = m * 10 + d
+            }
+            printf "%03d\n", m
+            exit
+        }'
+}
+
+# Each location keeps the mode it had. They differ on this device: /etc/init.d
+# holds 700 and the package copy 755, and a deploy is not the place to decide
+# that they should agree.
+install_to() {
+    dir=$1
+    [ -d "$dir" ] || { say "no $dir, skipped"; return 0; }
+
+    if [ -f "$dir/$NAME" ]; then
+        mode=$(mode_of "$dir/$NAME")
+    else
+        mode=755
+    fi
+
+    cp "$CANDIDATE" "$dir/.$NAME.tmp"
+    chmod "$mode" "$dir/.$NAME.tmp"
+    mv "$dir/.$NAME.tmp" "$dir/$NAME"
+    say "installed $dir/$NAME mode $mode"
+}
+
+install_to "$INITD"
+install_to "$PKG_INITD"
+sync 2>/dev/null || true
+
+# --- verify ---
+
+want=$(md5sum "$CANDIDATE" | cut -d' ' -f1)
+rc=0
+
+for dir in "$INITD" "$PKG_INITD"; do
+    [ -d "$dir" ] || continue
+    got=$(md5sum "$dir/$NAME" 2>/dev/null | cut -d' ' -f1)
+    if [ "$got" = "$want" ]; then
+        say "verified $dir/$NAME"
+    else
+        say "FAILED $dir/$NAME does not match the candidate"
+        rc=1
+    fi
+done
+
+if awk -v n="$NAME" '$1 == n { found = 1 } END { exit !found }' "$manifest"; then
+    registered=$(grep -c . "$manifest" 2>/dev/null)
+    say "registered with the watchdog, which now tracks $registered change(s)"
+else
+    say "FAILED the manifest does not name $NAME"
+    rc=1
+fi
+
+# The change runs at the next boot. Saying so is the difference between a deploy
+# that is installed and one that is known to work.
+say "installed. It takes effect at the next boot, and nothing here has run it."
+
+exit $rc

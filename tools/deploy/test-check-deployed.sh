@@ -250,6 +250,56 @@ case "$out" in
     *)  note "a half-applied deploy is not called a mismatch" FAIL ;;
 esac
 
+echo "===== whether the watchdog can undo an init script ====="
+
+# An init script that boot reads, that differs from the checkout, and that
+# S00awatchdog cannot put back is a change with no way home. Worse than none:
+# restore_initd counts any manifest entry as a repair, spends the manifest and
+# reboots into the same failure. So the report has to separate "differs and is
+# registered" from "differs and is not".
+initd_name=$(git -C "$repo" ls-tree --name-only HEAD kvmapp/system/init.d/ | head -1)
+initd_name=${initd_name##*/}
+
+build_report "$work/mf.report"
+sed "s#^FILE initd-boot $initd_name .*#FILE initd-boot $initd_name deadbeefdeadbeefdeadbeefdeadbeef#"     "$work/mf.report" > "$work/mf1.report"
+
+# Registered: the difference is recoverable, so it must not be called out as
+# unregistered.
+cp "$work/mf1.report" "$work/mf2.report"
+printf 'MANIFEST %s yes
+' "$initd_name" >> "$work/mf2.report"
+REPORT="$work/mf2.report"; export REPORT
+out=$(run root@device); status=$?
+case "$out" in
+    *"not registered"*) note "a registered difference is not called unregistered" FAIL ;;
+    *)                  note "a registered difference is not called unregistered" OK ;;
+esac
+case "$out" in
+    *"watchdog manifest"*"$initd_name"*) note "the manifest contents are reported" OK ;;
+    *)                                   note "the manifest contents are reported" FAIL ;;
+esac
+
+# Not registered: this is the state the tooling exists to prevent.
+REPORT="$work/mf1.report"; export REPORT
+out=$(run root@device); status=$?
+case "$out" in
+    *"not registered"*) note "an unregistered difference is called out" OK ;;
+    *)                  note "an unregistered difference is called out" FAIL ;;
+esac
+[ "$status" -eq 1 ] && note "an unregistered difference exits 1" OK                     || note "an unregistered difference exits 1 (got $status)" FAIL
+
+# A manifest already spent by a repair protects nothing, and reads differently
+# from one that was never written.
+grep -v '^MANIFEST' "$work/mf.report" > "$work/mf3.report"
+printf 'MANIFEST_SPENT /root/.ironkvm/initd-backup/manifest.done
+' >> "$work/mf3.report"
+REPORT="$work/mf3.report"; export REPORT
+out=$(run root@device)
+case "$out" in
+    *"spent by a repair"*) note "a spent manifest is reported as spent" OK ;;
+    *)                     note "a spent manifest is reported as spent" FAIL ;;
+esac
+
 echo "===== the probe that runs on the device ====="
 
 # Lifted out of the script rather than copied, so a change to one is a change
