@@ -176,14 +176,14 @@ script second > "$T/second"; out=$(run "$T/second" S30twice); status=$?
 echo "===== an existing manifest is not disturbed ====="
 
 new_tree
-printf 'S95nanokvm yes\nS99vidiag no\n' > "$INITD_BACKUP/manifest"
+printf 'S95nanokvm yes\nS98vidiag no\n' > "$INITD_BACKUP/manifest"
 script old > "$T/etc/S40new"
 script new > "$T/S40new.cand"
 run "$T/S40new.cand" S40new > /dev/null
 
 grep -q '^S95nanokvm yes$' "$INITD_BACKUP/manifest" \
     && note "an earlier entry survives" OK || note "an earlier entry survives" FAIL
-grep -q '^S99vidiag no$' "$INITD_BACKUP/manifest" \
+grep -q '^S98vidiag no$' "$INITD_BACKUP/manifest" \
     && note "a second earlier entry survives" OK || note "a second earlier entry survives" FAIL
 [ "$(grep -c . "$INITD_BACKUP/manifest")" = "3" ] \
     && note "the manifest has three entries" OK \

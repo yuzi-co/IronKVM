@@ -245,9 +245,14 @@ them. Record the SHAs before deleting any branch here.
 ### What belongs to the fork alone
 
 `tools/`, `AGENTS.md`, `CLAUDE.md`, `.gitattributes` and `server/dl_lib/` belong to the fork. So does
-`kvmapp/system/init.d/S99vidiag`, the capture diagnostic script, because upstream has no such file.
+`kvmapp/system/init.d/S98vidiag`, the capture diagnostic script, because upstream has no such file.
 This mattered most while the fork sent pull requests. It still decides what a rebase onto
 `upstream/main` must never lose.
+
+Do not rename that script to `S99vidiag`. Upstream's `kvm_system` runs `rm -f /etc/init.d/S99*` in
+`new_app_init()`, so the number is the difference between a script that survives an application
+update and one that disappears without a message. The fork cannot change `kvm_system`, because a
+release takes that binary from Sipeed.
 
 ### Refs that are the only copy of something
 

@@ -253,7 +253,7 @@ func (s *Stream) consume(chunk []byte) {
 
 // reportEncodeFailure logs the first few failures and then goes quiet, the way
 // Source does and for the same reason: the log is /tmp/nanokvm-server.log,
-// which S99vidiag and the supervisor both read, and a frame arrives fifty
+// which S98vidiag and the supervisor both read, and a frame arrives fifty
 // times a second.
 //
 // A failed frame is dropped rather than fatal. One bad 20 ms is not a reason

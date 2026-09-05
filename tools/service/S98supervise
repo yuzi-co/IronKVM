@@ -67,14 +67,14 @@ SSH_CURE_BACKOFF=${SSH_CURE_BACKOFF:-300}
 SSHD_INIT=${SSHD_INIT:-/etc/init.d/S50sshd}
 
 # Where the server's own output goes. This must be the path S95nanokvm uses,
-# because S99vidiag reads that one file. libkvm reports a capture pipeline that
+# because S98vidiag reads that one file. libkvm reports a capture pipeline that
 # does not start with printf, and that output is the only record of the failure.
 # A server this script starts must therefore write to the same place, or the
 # first crash makes the record stop while the file stays where it was.
 #
 # Append, and do not empty the file. S95nanokvm empties it, because a restart
 # there replaces everything in /tmp. A crash restart keeps what the dead server
-# said, and what it said last is the most useful part. S99vidiag empties the
+# said, and what it said last is the most useful part. S98vidiag empties the
 # file when it passes 128KB.
 SERVER_LOG=/tmp/nanokvm-server.log
 

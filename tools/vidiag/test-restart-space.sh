@@ -5,7 +5,7 @@
 #
 # The server writes its standard output to /tmp/nanokvm-server.log, and libkvm
 # prints on some error paths once per frame. A pipeline that fails in a loop
-# therefore writes into tmpfs without a limit. S99vidiag empties the file while
+# therefore writes into tmpfs without a limit. S98vidiag empties the file while
 # it reads, but that trim stops when the reader stops, so no other script can
 # depend on it.
 #
@@ -80,7 +80,7 @@ done
 
 echo
 echo "===== the log is named once ====="
-# A path written out twice drifts. The reader in S99vidiag follows one path, so
+# A path written out twice drifts. The reader in S98vidiag follows one path, so
 # a second spelling here means the collector reads a file nobody writes.
 defs=$(grep -c '^SERVER_LOG=' "$S95")
 [ "$defs" = 1 ] && note "SERVER_LOG is defined once" OK \

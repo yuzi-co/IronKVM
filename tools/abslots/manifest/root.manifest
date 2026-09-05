@@ -71,7 +71,7 @@ add     kvmapp/system/init.d/S95nanokvm           /etc/init.d/S95nanokvm       0
 
 # Added by the fork. None of these exist in the official base.
 add     kvmapp/system/init.d/S01zram              /etc/init.d/S01zram          0755
-add     kvmapp/system/init.d/S99vidiag            /etc/init.d/S99vidiag        0755
+add     kvmapp/system/init.d/S98vidiag            /etc/init.d/S98vidiag        0755
 add     tools/oled/S97oled-nudge                  /etc/init.d/S97oled-nudge    0755
 add     tools/service/S98supervise                /etc/init.d/S98supervise     0755
 

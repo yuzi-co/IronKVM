@@ -265,7 +265,7 @@ echo "===== a restarted server still reports where libkvm fails ====="
 # libkvm reports a capture pipeline that does not start with printf, and that
 # output is the only record of the failure. A server started with its output on
 # /dev/null is a server nobody can debug, and a crash is when the record matters
-# most. S99vidiag would go on reading a file that nothing writes to, and the
+# most. S98vidiag would go on reading a file that nothing writes to, and the
 # file would still be there, so nothing would look wrong.
 if grep -q '"\$SERVER_BIN" < /dev/null >> "\$SERVER_LOG" 2>&1 &' "$SV"; then
     note "the crash restart sends the server's output to the log" OK
@@ -273,7 +273,7 @@ else
     note "the crash restart discards the server's output" FAIL
 fi
 
-# One path, spelled in two scripts, drifts. S99vidiag reads one file, so a
+# One path, spelled in two scripts, drifts. S98vidiag reads one file, so a
 # second spelling here means the collector follows a file nobody writes.
 sv_log=$(sed -n 's/^SERVER_LOG=\(.*\)$/\1/p' "$SV")
 s95_log=$(sed -n 's/^SERVER_LOG=\(.*\)$/\1/p' "$S95")

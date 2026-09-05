@@ -1,13 +1,13 @@
 #!/bin/sh
-# Exercise the decisions in S99vidiag, taken straight out of the script that
+# Exercise the decisions in S98vidiag, taken straight out of the script that
 # ships so the test cannot drift from it.
 #
-#   test-vidiag.sh [path-to-S99vidiag]
+#   test-vidiag.sh [path-to-S98vidiag]
 #
 # Not destructive: every case runs against a temporary directory. No device is
 # touched, and nothing reads the real syslog.
-VD=${1:-$(dirname "$0")/../../kvmapp/system/init.d/S99vidiag}
-[ -f "$VD" ] || { echo "usage: test-vidiag.sh <S99vidiag>"; exit 1; }
+VD=${1:-$(dirname "$0")/../../kvmapp/system/init.d/S98vidiag}
+[ -f "$VD" ] || { echo "usage: test-vidiag.sh <S98vidiag>"; exit 1; }
 
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT

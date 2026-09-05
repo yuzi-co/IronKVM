@@ -240,7 +240,7 @@ Every check passed.
 | `server/dl_lib` | 38 libraries |
 | `kvm_system`, `system/tool` | present, 2 files |
 | `libkvm.so` mapped by the running server | yes, 0 relocation errors |
-| Boot scripts changed | `S95nanokvm` replaced, `S99vidiag` added |
+| Boot scripts changed | `S95nanokvm` replaced, `S98vidiag` added |
 | avahi, ssdpd, tailscaled, picoclaw, wifi, usbhid | none installed |
 | Backup file left in `/etc/init.d` | none |
 
