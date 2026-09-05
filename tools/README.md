@@ -19,7 +19,7 @@ are operator tools.
 | `oled/`       | Move the status image to spread OLED wear, with no change to `kvm_system`. |
 | `service/`    | Restart `NanoKVM-Server`, `kvm_system` and `sshd` if they die, and arm the SoC watchdog. |
 | `service/S01hwdt` | The layer under the other guards: the SoC timer resets the board when nothing can fork. |
-| `deploy/`     | Install a server build and put the old one back if it does not serve. Report what a device runs. |
+| `deploy/`     | Install a server build, or an init script, and put the old one back. Report what a device runs. |
 | `usbdev/`     | Check the USB gadget: the optional ACM console, and the link order.     |
 | `audiodiag/`  | Say whether USB audio capture works, and name the end that fails.      |
 | `opusbench/`  | Rebuild `libopus.a` for the board, and measure what it costs.          |
@@ -138,6 +138,52 @@ only thing left in the binary that names a commit.
 A binary with no stamp is a release build, or somebody passed `BUILD_STAMP=`.
 The script says so and does not call it current, because the commit cannot be
 recovered from such a binary.
+
+
+## Installing an init script
+
+`tools/deploy/deploy-initd` installs an init script and registers it with the
+boot watchdog. It runs ON the device.
+
+```shell
+scp kvmapp/system/init.d/S03usbdev root@<device>:/data/S03usbdev.new
+scp tools/deploy/deploy-initd root@<device>:/data/
+ssh root@<device> 'sh /data/deploy-initd /data/S03usbdev.new'
+```
+
+An init script lives in two places and a third thing covers it:
+
+| Path                          | What it is                                    |
+| ----------------------------- | --------------------------------------------- |
+| `/etc/init.d`                 | rcS runs this copy. A change anywhere else does not run. |
+| `/kvmapp/system/init.d`       | The package copy. An update reads it, so a change missing here comes back. |
+| `/root/.ironkvm/initd-backup` | What `S00awatchdog` puts back after three failed boots. |
+
+A hand install reaches the first two and misses the third. **The miss is worse
+than no protection.** `restore_initd` counts a manifest entry as repaired
+whether or not that entry was the fault, and then it spends the manifest by
+renaming it to `manifest.done`. A board that fails to boot on an unregistered
+script therefore restores files that were never wrong, records a successful
+repair, and comes back with the fault in place and its one automatic repair
+gone. On 2026-09-05 `S03usbdev` was installed by hand into exactly that state.
+
+The script refuses a candidate before it touches anything: an empty file, a file
+with carriage returns, a file the device shell will not parse, and a name that
+`restore_initd` skips. It registers before it installs, so a run that dies in
+the middle leaves recovery armed for a change that was not made. It keeps the
+mode each location already had, because the two disagree on this device.
+
+A second deploy of the same script keeps the backup the first one took. The
+version worth restoring is the one from before any of this started, not the
+previous attempt.
+
+`check-deployed` reports the manifest, and it names any script that boot reads,
+that differs from the checkout, and that the watchdog cannot put back.
+
+**The change runs at the next boot, and nothing here runs it.** An init script
+is installed, never proven, until the board boots. Weigh that before rebooting a
+board you cannot reach: `S03usbdev` runs before `S30eth`, so a script that hangs
+takes the network with it, and this board has no remote power cycle.
 
 ## Ten things that cost real time
 

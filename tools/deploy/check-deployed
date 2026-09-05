@@ -119,6 +119,21 @@ emit() {
       done )
 }
 
+# What the boot watchdog can put back. An init script that differs from the
+# checkout and is not named here has no automatic rollback: S00awatchdog counts
+# a manifest entry as repaired whether or not it was the fault, spends the
+# manifest, and reboots into the same failure with its one repair used up.
+manifest=/root/.ironkvm/initd-backup/manifest
+if [ -f "$manifest" ]; then
+    while read -r mname mexisted; do
+        [ -n "$mname" ] && echo "MANIFEST $mname ${mexisted:-?}"
+    done < "$manifest"
+elif [ -f "$manifest.done" ]; then
+    echo "MANIFEST_SPENT $manifest.done"
+else
+    echo "MANIFEST_NONE $manifest"
+fi
+
 emit lib-disk  /kvmapp/server/dl_lib
 emit lib-run   /tmp/server/dl_lib
 emit web-disk  /kvmapp/server/web
@@ -241,7 +256,10 @@ compare_group() {
 
     # The label reads well in the report and makes a poor filename, so the
     # scratch file gets a flattened form of it.
-    slug=$(echo "$label" | tr -c 'A-Za-z0-9' '_')
+    # printf, not echo: tr -c rewrites every character outside the set, and
+    # echo's trailing newline is one of them, so "init.d" became "init_d_".
+    # That only mattered once something outside this function named the file.
+    slug=$(printf '%s' "$label" | tr -c 'A-Za-z0-9' '_')
 
     total=0
     disk_ok=0
@@ -350,6 +368,36 @@ compare_group "init.d" \
     initd-pkg  "package copy (/kvmapp)" \
     "the two locations disagree, so what boots is not what the package holds" \
     "$work/initd.list"
+
+# Registration coverage. Reported beside the init scripts because it is only
+# meaningful about them.
+if grep -q '^MANIFEST ' "$work/report"; then
+    row "watchdog manifest"         "$(awk '$1 == "MANIFEST" { printf "%s%s(%s)", sep, $2, $3; sep = ", " }' "$work/report")"
+elif grep -q '^MANIFEST_SPENT' "$work/report"; then
+    row "watchdog manifest" "spent by a repair, so nothing has a rollback until the next deploy"
+else
+    row "watchdog manifest" "absent, so no init script has an automatic rollback"
+fi
+
+# A script that boot reads, that differs from the checkout, and that the
+# watchdog cannot put back. That is a change with no way home.
+unregistered=""
+if [ -f "$work/bad.init_d" ]; then
+    while read -r bname bdisk brun; do
+        [ "$bdisk" = differs ] || continue
+        awk -v n="$bname" '$1 == "MANIFEST" && $2 == n { found = 1 } END { exit !found }'             "$work/report" && continue
+        unregistered="$unregistered $bname"
+    done < "$work/bad.init_d"
+fi
+
+if [ -n "$unregistered" ]; then
+    for f in $unregistered; do
+        row "  not registered" "$f differs and the watchdog cannot put it back"
+        flag
+    done
+else
+    row "  registration" "every script boot reads is either current or recoverable"
+fi
 echo
 
 # --- web bundle ---
