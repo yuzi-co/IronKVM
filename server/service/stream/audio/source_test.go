@@ -147,7 +147,7 @@ func TestRunKeepsRetryingAFailingChild(t *testing.T) {
 }
 
 // Retrying forever must not mean writing forever. The log that fills is
-// /tmp/nanokvm-server.log, which S99vidiag and the supervisor both read, and
+// /tmp/nanokvm-server.log, which S98vidiag and the supervisor both read, and
 // the device it fills is the boot SD card.
 func TestRunStopsLoggingOnceFailureIsTheSteadyState(t *testing.T) {
 	var captured bytes.Buffer

@@ -11,6 +11,17 @@
 # partition and survives a reboot. It writes a few lines for each start of the
 # capture pipeline, and nothing else while the pipeline is healthy.
 #
+# The name must not start with S99. Upstream's kvm_system runs
+# `rm -f /etc/init.d/S99*` in new_app_init(), which speeds up the boot by
+# deleting the scripts the base image ships at that number. That glob deleted
+# this script as well. The deletion runs after an application update and not on
+# every boot, so it looked like the script had never been installed.
+#
+# S98 keeps the script last in the boot order, because rcS runs the names in
+# collation order and `vidiag` sorts after `supervise` and `tailscaled`. Running
+# last is what the sweep below depends on: the drivers load first, so their
+# errors are already in the file when the reader starts.
+#
 # The script starts a background reader and returns. If the reader stops, the
 # KVM is unaffected. Nothing here is in the path of the video service.
 

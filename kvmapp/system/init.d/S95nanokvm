@@ -6,7 +6,7 @@
 # /dev/null after a scripted restart. Both are lost, so every earlier attempt
 # to explain the intermittent failure had no error code to work from.
 #
-# Send the output to tmpfs instead. S99vidiag follows this file and copies the
+# Send the output to tmpfs instead. S98vidiag follows this file and copies the
 # few lines that matter to /data, which survives a reboot. The path is under
 # /tmp because /kvmapp is the boot SD card.
 #
@@ -18,7 +18,7 @@
 # error paths once per frame. A capture pipeline that fails in a loop therefore
 # fills tmpfs, and the copy of /kvmapp/server then has no space for its 36MB. A
 # copy that runs out of space leaves a truncated NanoKVM-Server, and the case
-# starts it anyway. S99vidiag also empties this file, but only while its reader
+# starts it anyway. S98vidiag also empties this file, but only while its reader
 # runs, so these cases must not depend on it.
 SERVER_LOG=/tmp/nanokvm-server.log
 
@@ -427,7 +427,7 @@ start_services() {
     prepare_runtime_state
 
     # Start each run with an empty file, so the log always describes the server
-    # that is running now. S99vidiag has already copied what it read to /data.
+    # that is running now. S98vidiag has already copied what it read to /data.
     #
     # This runs before the copies below, not after them: a capture pipeline that
     # fails in a loop fills tmpfs, and the copy of /kvmapp/server then has no
@@ -554,7 +554,7 @@ case "$1" in
    ;;
     
   # Not for an operator. tools/vidiag/test-server-copy.sh calls this with
-  # SERVER_SRC and SERVER_DST pointed at a scratch tree, the way S99vidiag and
+  # SERVER_SRC and SERVER_DST pointed at a scratch tree, the way S98vidiag and
   # S98supervise expose their own loops.
   __copy_server)
     copy_server

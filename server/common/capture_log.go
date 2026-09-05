@@ -32,7 +32,7 @@ func captureReadOutcome(result int) int {
 // is usually mundane: a target whose monitor is off returns "no image" on every
 // read, for as long as a viewer is connected. Recording each one measured 213KB
 // an hour into /tmp/nanokvm-server.log on an otherwise idle board. That file
-// lives in the 80MB tmpfs the restart path needs 36MB of, and only S99vidiag's
+// lives in the 80MB tmpfs the restart path needs 36MB of, and only S98vidiag's
 // trim was holding it down - a trim its own header says nothing may depend on,
 // because it stops when the reader stops.
 //

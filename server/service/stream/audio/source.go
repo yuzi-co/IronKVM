@@ -39,7 +39,7 @@ const (
 	// writes a line per attempt for as long as a viewer listens. A managed
 	// host that plays nothing streams nothing, and arecord fails every time,
 	// so that is the ordinary case rather than a rare one. The log it fills is
-	// /tmp/nanokvm-server.log, which S99vidiag and the supervisor both read.
+	// /tmp/nanokvm-server.log, which S98vidiag and the supervisor both read.
 	quietAfterFailures = 5
 
 	// stderrLimit caps what is kept of the child's stderr. ALSA states its

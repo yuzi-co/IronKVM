@@ -371,7 +371,7 @@ what a smaller rootfs would drop.
 - **Empty-UDC detection.** Commit `5602fd9d` adds `adbd_monitor.sh`, which polls
   `/sys/kernel/config/usb_gadget/g0/UDC` and restarts the gadget when it reads empty. Their recovery
   will not work here, because a rebind fails and `rmdir acm.GS0` blocks on the ttyGS0 getty. The
-  detection half is still a free health signal for `S99vidiag` or `/api/hid/status`.
+  detection half is still a free health signal for `S98vidiag` or `/api/hid/status`.
 
 ### Ideas, not code
 
@@ -1221,7 +1221,7 @@ fresh carveout allocation on a board where a failed one segfaults immediately.
 
 `a65d89ce` adds a tap on the VI channel and looks at the luma plane, because a locked receiver
 writing nothing, a scaler producing nothing and an encoder that never runs are all the same black
-rectangle. Nothing here answers that question. `HasHDMISignal` reports the link and `S99vidiag`
+rectangle. Nothing here answers that question. `HasHDMISignal` reports the link and `S98vidiag`
 collects logs, and neither looks at what a frame contains. For this fork it needs no C: pull one
 MJPEG frame over HTTP and report its mean and variance. Not done.
 

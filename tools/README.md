@@ -368,7 +368,7 @@ board that crashes once a day does not creep to the cap and stay there.
 The supervisor starts the server itself, rather than through `S95nanokvm`,
 because a full restart copies 36MB back into tmpfs for nothing. It therefore
 carries the same redirection: the server's output goes to
-`/tmp/nanokvm-server.log`, which is where `S99vidiag` reads it. Without that, the
+`/tmp/nanokvm-server.log`, which is where `S98vidiag` reads it. Without that, the
 first crash ends the record of the capture pipeline, and it ends it silently -
 the file stays where it is, and nothing looks wrong. The supervisor appends,
 because what a dead server said last is the most useful part of the file.
@@ -896,8 +896,15 @@ at all, for two reasons:
 - The server sent its own standard output to `/dev/null`, so every message from
   `libkvm` was discarded as it was written.
 
-`S99vidiag` copies the useful lines to `/data/kvm-diag/vi-errors.log`. `/data` is
+`S98vidiag` copies the useful lines to `/data/kvm-diag/vi-errors.log`. `/data` is
 a separate partition, so the record survives a reboot.
+
+The script was called `S99vidiag` until 2026-09-05, and it kept disappearing from
+`/etc/init.d`. Upstream's `kvm_system` runs `rm -f /etc/init.d/S99*` in
+`new_app_init()` to shorten the boot, and that glob matched this script too. The
+call runs after an application update rather than on every boot, so the removal
+looked like an install that had never happened. `S98` is outside the glob and
+still sorts last, because `vidiag` follows `supervise` and `tailscaled`.
 
 | what | value |
 | --- | --- |
@@ -906,7 +913,7 @@ a separate partition, so the record survives a reboot.
 | rotates at | 256KB |
 | stops after | 200 lines for each source in one boot, and says so in the log |
 | empties the server log at | 128KB |
-| control | `/etc/init.d/S99vidiag` with `start`, `stop` or `restart` |
+| control | `/etc/init.d/S98vidiag` with `start`, `stop` or `restart` |
 | tests | `tools/vidiag/test-vidiag.sh`, `tools/vidiag/test-restart-space.sh` |
 
 ### The two sources report different halves of the failure
