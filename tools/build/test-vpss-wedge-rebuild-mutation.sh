@@ -18,6 +18,27 @@ SUITE=$ROOT/tools/build/test-vpss-wedge-rebuild.sh
 [ -f "$VIS" ] || { echo "missing: $VIS"; exit 2; }
 [ -f "$SUITE" ] || { echo "missing: $SUITE"; exit 2; }
 
+# A mutant that never finishes is not a mutant the suite caught, and a suite
+# that runs one unbounded takes its parent down with it: on 2026-09-06 a mutated
+# source sent AddressSanitizer into a signal-handler loop, and this suite sat on
+# it until tools/run-tests.sh killed the pair at 1800 seconds. A bound turns that
+# into a line of output.
+#
+# The result is deliberately not counted as "the suite caught it". The suite
+# reported nothing, so nothing is known, and pretending otherwise is how a
+# mutation suite starts passing for the wrong reason.
+MUTANT_TIMEOUT=${MUTANT_TIMEOUT:-120}
+run_bounded() {
+    if command -v timeout > /dev/null 2>&1; then
+        timeout "$MUTANT_TIMEOUT" "$@"
+        status=$?
+        [ "$status" = 124 ] && return 124
+        return "$status"
+    fi
+    "$@"
+}
+
+
 CXX=${CXX:-g++}
 command -v "$CXX" >/dev/null 2>&1 || {
     echo "test-vpss-wedge-rebuild-mutation.sh: needs $CXX, which is not on PATH." >&2
@@ -26,7 +47,7 @@ command -v "$CXX" >/dev/null 2>&1 || {
 
 # The suite has to pass on the unedited source, or every case below is
 # meaningless.
-if ! sh "$SUITE" "$VIS" >/dev/null 2>&1; then
+if ! run_bounded sh "$SUITE" "$VIS" >/dev/null 2>&1; then
     echo "test-vpss-wedge-rebuild-mutation.sh: the suite fails on the unedited" >&2
     echo "source, so no mutation here proves anything. Fix that first." >&2
     exit 1
@@ -51,8 +72,14 @@ try() {
         note "$desc" "FAIL (the edit never applied)"
         return 0
     fi
-    if sh "$SUITE" "$work/m.cpp" >/dev/null 2>&1; then
+    run_bounded sh "$SUITE" "$work/m.cpp" >/dev/null 2>&1
+    status=$?
+    if [ "$status" = 0 ]; then
         note "$desc" "FAIL (survived)"
+    elif [ "$status" = 124 ]; then
+        # The suite never answered. A timeout exits non-zero, which would read
+        # as "caught", and those are not the same thing.
+        note "$desc" "FAIL (no answer in ${MUTANT_TIMEOUT}s)"
     else
         note "$desc" OK
     fi

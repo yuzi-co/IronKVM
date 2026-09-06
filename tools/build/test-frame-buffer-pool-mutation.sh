@@ -23,6 +23,27 @@ TEST=$DIR/test-frame-buffer-pool.sh
 
 [ -f "$SRC" ] || { echo "missing: $SRC"; exit 2; }
 [ -f "$TEST" ] || { echo "missing: $TEST"; exit 2; }
+
+# A mutant that never finishes is not a mutant the suite caught, and a suite
+# that runs one unbounded takes its parent down with it: on 2026-09-06 a mutated
+# source sent AddressSanitizer into a signal-handler loop, and this suite sat on
+# it until tools/run-tests.sh killed the pair at 1800 seconds. A bound turns that
+# into a line of output.
+#
+# The result is deliberately not counted as "the suite caught it". The suite
+# reported nothing, so nothing is known, and pretending otherwise is how a
+# mutation suite starts passing for the wrong reason.
+MUTANT_TIMEOUT=${MUTANT_TIMEOUT:-120}
+run_bounded() {
+    if command -v timeout > /dev/null 2>&1; then
+        timeout "$MUTANT_TIMEOUT" "$@"
+        status=$?
+        [ "$status" = 124 ] && return 124
+        return "$status"
+    fi
+    "$@"
+}
+
 CXX=${CXX:-g++}
 command -v "$CXX" > /dev/null 2>&1 || { echo "no C++ compiler ($CXX); cannot run here"; exit 2; }
 
@@ -44,7 +65,7 @@ try() {
         return
     fi
 
-    sh "$TEST" "$d/kvm_vision.cpp" > "$d/out" 2>&1
+    run_bounded sh "$TEST" "$d/kvm_vision.cpp" > "$d/out" 2>&1
     status=$?
     if [ "$status" = 0 ]; then
         printf '  %-14s %s\n' SURVIVED "$desc"
@@ -52,6 +73,11 @@ try() {
     elif [ "$status" = 2 ]; then
         # A mutation that stops the lift is not a mutation this suite tested.
         printf '  %-14s %s\n' UNTESTED "$desc"
+        fail=$((fail + 1))
+    elif [ "$status" = 124 ]; then
+        # The suite never answered, so this mutation was not caught by it. A
+        # non-zero exit from a timeout would otherwise read as "caught".
+        printf '  %-14s %s (no answer in %ss)\n' HUNG "$desc" "$MUTANT_TIMEOUT"
         fail=$((fail + 1))
     else
         printf '  %-14s %s\n' caught "$desc"

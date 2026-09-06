@@ -62,6 +62,37 @@ Three rules keep the sweep worth running:
   holds this rule. It finds the variable each suite counts its failures in, and
   it refuses a suite that exits that variable.
 
+Three suites in `build/` compile a function out of the shipped C++ and run it
+under AddressSanitizer: `test-mjpeg-lazy-map.sh`, `test-vpss-wedge-rebuild.sh`
+and `test-frame-buffer-pool.sh`. Each sets
+`ASAN_OPTIONS=abort_on_error=1:handle_segv=0:handle_sigbus=0`, and that setting
+is what makes them finish.
+
+ASan maps its shadow memory at a fixed address. A kernel that hands out more
+ASLR entropy than the mapping allows, `vm.mmap_rnd_bits` of 32 against the 28
+ASan was built for, makes that mapping fail. ASan then takes a signal inside
+its own signal handler, prints `AddressSanitizer:DEADLYSIGNAL`, and takes the
+same signal again for ever. On 2026-09-06 that gave one of these suites the
+whole 1800 second budget in `--container`, and the sweep never reached the
+suites after it.
+
+The report is the worse loss. While ASan is in that state it names nothing: a
+deliberate heap overflow prints `DEADLYSIGNAL` in a loop and never reports the
+overflow, so the sanitizer cases passed on a runtime that could not fail them.
+
+`abort_on_error` ends the first fault ASan detects itself, instead of handling
+it. `handle_segv` and `handle_sigbus` cover the rest, and the mutation suites
+are what proved they were needed: a wild pointer far outside any mapping raises
+a signal before ASan has anything to report, so the broken handler runs first
+and loops before `abort_on_error` is consulted. With both, all six suites finish
+in under ten seconds and every mutation is still caught. `setarch -R` would also
+work, and it needs a privilege the container does not have.
+
+The three `*-mutation.sh` suites beside them bound each child run with
+`MUTANT_TIMEOUT`, 120 seconds by default. A mutant that never answers is
+reported as such rather than counted as caught: a timeout exits non-zero, and
+non-zero is exactly what "the suite noticed" looks like.
+
 The gadget suites in `usbdev/` lift the functions out of the shipped init
 scripts and run them against a fake configfs. They choose the shell by
 behaviour and print the winner as `harness shell: ...`. The scripts build each

@@ -42,6 +42,38 @@ note() {
 # vi_subsystem_detection is declared "void* vi_subsystem_detection(...)".
 body() { sed -n "/^[a-z0-9_ *]*[ *]$2(/,/^}/p" "$1" | grep -v '^[[:space:]]*//'; }
 
+# AddressSanitizer needs this, and without it this suite does not finish.
+#
+# ASan maps its shadow at a fixed address. When the kernel hands out more ASLR
+# entropy than that mapping allows, vm.mmap_rnd_bits of 32 against the 28 ASan
+# was built for, the mapping fails and ASan takes a signal inside its own signal
+# handler. It then prints AddressSanitizer:DEADLYSIGNAL and takes the same
+# signal again, for ever. tools/run-tests.sh gave this suite its whole 1800
+# second budget and killed it, and the sweep never reached the suites after it.
+#
+# The loop is not the worst of it. While ASan is in that state it reports
+# nothing: a deliberate heap overflow under these conditions prints DEADLYSIGNAL
+# and never names the overflow, so the sanitizer cases here were passing on a
+# runtime that could not have failed them.
+#
+# abort_on_error ends the first fault instead of handling it, which restores
+# both the report and the exit status for a fault ASan detects itself. Verified
+# in the release host image on 2026-09-06: a deliberate 4-byte overrun prints
+# DEADLYSIGNAL in a loop without this and reports heap-buffer-overflow with it.
+#
+# handle_segv and handle_sigbus are the other half, and a mutation suite is what
+# found it. A wild pointer far outside any mapping raises SIGSEGV before ASan
+# has anything to report, so the broken handler runs first and loops before
+# abort_on_error is ever consulted. Off, the process simply dies of the signal.
+# Nothing is lost: a heap overrun near its allocation is caught by the redzone
+# instrumentation and still names itself, and a wild one is still a non-zero
+# exit, which is what a suite acts on.
+#
+# setarch -R would be the other way to do it, and it needs a privilege the
+# container does not have.
+ASAN_OPTIONS=${ASAN_OPTIONS:-abort_on_error=1:handle_segv=0:handle_sigbus=0}
+export ASAN_OPTIONS
+
 work=$(mktemp -d) || exit 2
 trap 'rm -rf "$work"' EXIT INT TERM
 

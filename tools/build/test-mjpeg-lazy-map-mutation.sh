@@ -20,6 +20,27 @@ for f in "$SUITE" "$VIS" "$MMF" "$HPP"; do
     [ -f "$f" ] || { echo "missing: $f"; exit 2; }
 done
 
+# A mutant that never finishes is not a mutant the suite caught, and a suite
+# that runs one unbounded takes its parent down with it: on 2026-09-06 a mutated
+# source sent AddressSanitizer into a signal-handler loop, and this suite sat on
+# it until tools/run-tests.sh killed the pair at 1800 seconds. A bound turns that
+# into a line of output.
+#
+# The result is deliberately not counted as "the suite caught it". The suite
+# reported nothing, so nothing is known, and pretending otherwise is how a
+# mutation suite starts passing for the wrong reason.
+MUTANT_TIMEOUT=${MUTANT_TIMEOUT:-120}
+run_bounded() {
+    if command -v timeout > /dev/null 2>&1; then
+        timeout "$MUTANT_TIMEOUT" "$@"
+        status=$?
+        [ "$status" = 124 ] && return 124
+        return "$status"
+    fi
+    "$@"
+}
+
+
 CXX=${CXX:-g++}
 command -v "$CXX" >/dev/null 2>&1 || {
     echo "test-mjpeg-lazy-map-mutation.sh: needs $CXX, which is not on PATH." >&2
@@ -54,8 +75,14 @@ mutate() {
         note "$what" "FAIL (the mutation changed nothing)"
         return 0
     fi
-    if sh "$SUITE" "$work/v.cpp" "$work/m.cpp" "$work/m.hpp" >/dev/null 2>&1; then
+    run_bounded sh "$SUITE" "$work/v.cpp" "$work/m.cpp" "$work/m.hpp" >/dev/null 2>&1
+    status=$?
+    if [ "$status" = 0 ]; then
         note "$what" "FAIL (survived)"
+    elif [ "$status" = 124 ]; then
+        # The suite never answered. A timeout exits non-zero, which would read
+        # as "caught", and those are not the same thing.
+        note "$what" "FAIL (no answer in ${MUTANT_TIMEOUT}s)"
     else
         note "$what" OK
     fi
