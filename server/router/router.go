@@ -77,6 +77,7 @@ func server(r *gin.Engine) {
 	wsRouter(r)
 	downloadRouter(r)
 	extensionsRouter(r)
+	debugRouter(r)
 }
 
 func LoopbackHTTPAllowedPaths() []string {

@@ -76,6 +76,27 @@ JSON，并以 `0600` 权限原子写入多用户格式。沿用同一路径可�
 且不会影响其他用户。多个用户可同时观看和协作控制 KVM；输入沿用现有 HID 协调器，因此同时输入可能交错。
 视频模式、画质、分辨率和 MJPEG 帧检测仍属于共享 KVM 操作；多人同时调整时，以最后一次设备级修改为准。
 
+## 性能分析
+
+服务端在 `/api/debug/pprof/` 下提供标准的 Go 性能分析接口。这些路由需要管理员会话或管理员 API 密钥。它们始终可用，因为需要重启才能开启的分析器无法展示重启前的问题。
+
+```shell
+go tool pprof 'http://<device>/api/debug/pprof/heap'
+go tool pprof 'http://<device>/api/debug/pprof/profile?seconds=20'
+go tool pprof 'http://<device>/api/debug/pprof/goroutine'
+```
+
+`go tool pprof` 不发送凭据。请先在浏览器中登录并传递会话 cookie，或者使用 API 密钥：
+
+```shell
+curl -H 'X-API-Key: <key>' -o heap.out 'http://<device>/api/debug/pprof/heap'
+go tool pprof heap.out
+```
+
+`profile` 和 `trace` 的 `seconds` 参数上限为 30。设备只有一个可用核心，而采集通路已占用其大部分。更长的请求会返回 30 秒的分析数据。
+
+`block` 和 `mutex` 分析保持为空。两者都需要采样率，而该采样率在设置期间会向每个 goroutine 收取开销，因此服务端不设置它。
+
 ## 编译部署
 
 **注意：请使用 Linux 操作系统（x86-64）和 Go 1.25 或更高版本。该工具链无法在 ARM、Windows 或 macOS 下使用。**

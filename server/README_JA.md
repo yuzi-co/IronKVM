@@ -63,6 +63,27 @@ turn:
     turnCred: example_cred
 ```
 
+## プロファイリング
+
+サーバーは `/api/debug/pprof/` 下で標準の Go プロファイルを公開します。これらのルートには管理者セッションまたは管理者 API キーが必要です。常に利用できます。有効化に再起動を必要とするプロファイラでは、再起動で消えた問題を見られないからです。
+
+```shell
+go tool pprof 'http://<device>/api/debug/pprof/heap'
+go tool pprof 'http://<device>/api/debug/pprof/profile?seconds=20'
+go tool pprof 'http://<device>/api/debug/pprof/goroutine'
+```
+
+`go tool pprof` は認証情報を送信しません。先にブラウザでログインしてセッション cookie を渡すか、API キーを使ってください。
+
+```shell
+curl -H 'X-API-Key: <key>' -o heap.out 'http://<device>/api/debug/pprof/heap'
+go tool pprof heap.out
+```
+
+`profile` と `trace` の `seconds` パラメータの上限は 30 です。ボードの使えるコアは 1 つで、キャプチャ経路がその大半を使います。より長い要求は 30 秒のプロファイルを返します。
+
+`block` と `mutex` のプロファイルは空のままです。どちらもサンプルレートを必要とし、そのレートは設定中の間すべての goroutine にコストをかけるため、サーバーは設定しません。
+
 ## コンパイルとデプロイ
 
 注意: Linux オペレーティングシステム (x86-64) と Go 1.25 以降を使用してください。このビルドプロセスは ARM、Windows、macOS では互換性がありません。
