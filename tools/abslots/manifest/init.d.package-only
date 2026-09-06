@@ -1,0 +1,45 @@
+# Boot scripts that the install package carries and that no image installs into
+# /etc/init.d.
+#
+# kvmapp/system/init.d is the application's own reference copy. /etc/init.d is
+# what boots. A script that lands in only one of them does not run, and the
+# gap is silent: the package looks right, the image looks right, and the
+# behaviour is the base's.
+#
+# Every script in kvmapp/system/init.d must be named either by
+# tools/abslots/manifest/root.manifest or by this file.
+# tools/abslots/check-init-install.sh enforces that, and it checks the two
+# reasons below differently.
+#
+#   same-as-base            The base rootfs carries this script and the fork
+#                           does not change it, so installing our copy would
+#                           write the same bytes. The check compares them. The
+#                           moment the fork edits one of these the reason stops
+#                           being true, the check fails, and the script has to
+#                           move to root.manifest.
+#
+#   not-installed-by-policy The fork keeps this out of /etc/init.d on purpose.
+#                           The check compares nothing, because the point is
+#                           that the script must not run at boot.
+#
+# Format: <script> <reason> [note]
+
+# The server owns this one. It writes /etc/init.d/S00cpufreq when Settings >
+# Device > Advanced selects a non-stock clock and removes it again on stock, so
+# an image must not carry it. See server/service/vm/cpufreq.go.
+S00cpufreq       not-installed-by-policy  the server installs and removes it
+
+# Daemons the image deliberately never starts. install.sh installed the whole
+# directory once, and an update then started six daemons that the same
+# release's image does not start.
+S03usbhid        not-installed-by-policy  the gadget is built by S03usbdev
+S50ssdpd         not-installed-by-policy  no discovery daemon in the fork's boot
+S96picoclaw      not-installed-by-policy  started on demand, not at boot
+S98tailscaled    not-installed-by-policy  started on demand, not at boot
+
+# Carried for reference, identical to the base. The base copy is the one that
+# runs, and it is the same file.
+S15kvmhwd        same-as-base
+S50avahi-daemon  same-as-base
+S50sshd          same-as-base
+S80dnsmasq       same-as-base

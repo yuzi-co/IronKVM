@@ -63,10 +63,15 @@ add     web/dist                                  /kvmapp/server/web
 # copy and is written by the layer above. Both exist on a real device, and a
 # change that lands in only one of them does not run.
 
-# Modified by the fork. Each of these differs from the official base.
+# Modified by the fork. Each of these differs from the official base, so the
+# base copy has to be replaced or the change does not run.
+# tools/abslots/check-init-install.sh holds this list against the base and
+# against tools/abslots/manifest/init.d.package-only.
+add     kvmapp/system/init.d/S00kmod              /etc/init.d/S00kmod          0755
 add     kvmapp/system/init.d/S01fs                /etc/init.d/S01fs            0755
 add     kvmapp/system/init.d/S03usbdev            /etc/init.d/S03usbdev        0755
 add     kvmapp/system/init.d/S30eth               /etc/init.d/S30eth           0755
+add     kvmapp/system/init.d/S30wifi              /etc/init.d/S30wifi          0755
 add     kvmapp/system/init.d/S95nanokvm           /etc/init.d/S95nanokvm       0755
 
 # Added by the fork. None of these exist in the official base.
