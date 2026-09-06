@@ -67,6 +67,7 @@ const en = {
       title: 'Screen',
       video: 'Video Mode',
       videoDirectTips: 'Enable HTTPS in "Settings > Device" to use this mode',
+      videoAudioNote: 'Audio is only available in H.264 (WebRTC)',
       resolution: 'Resolution',
       controlRegion: {
         title: 'Mouse Calibration',
