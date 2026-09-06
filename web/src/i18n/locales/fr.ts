@@ -480,6 +480,41 @@ const fr = {
           description: 'Activer le protocole HTTPS',
           tip: "Attention : l'utilisation de HTTPS peut augmenter la latence, surtout en mode vidéo MJPEG."
         },
+        ethernet: {
+          title: 'Adresse IP',
+          description: 'Configurez la façon dont NanoKVM obtient son adresse sur le réseau filaire',
+          dhcp: 'DHCP',
+          manual: 'Manuel',
+          networkDetails: 'Détails du réseau',
+          interface: 'Interface',
+          ipAddress: 'Adresse IP',
+          subnetMask: 'Masque de sous-réseau',
+          router: 'Routeur',
+          save: 'Appliquer',
+          invalidAddress: 'Veuillez saisir une adresse IP valide',
+          invalidMask:
+            'Veuillez saisir un masque de sous-réseau valide, par exemple 255.255.255.0 ou 24',
+          invalidRouter: 'Veuillez saisir une adresse de routeur valide',
+          addressRequired: 'Une adresse IP est requise',
+          maskRequired: 'Un masque de sous-réseau est requis',
+          applyTitle: "Modifier l'adresse de NanoKVM ?",
+          applyWarning:
+            'La connexion à cette page sera perdue. NanoKVM applique la nouvelle adresse, puis attend {{seconds}} secondes votre confirmation depuis la nouvelle adresse. Sans confirmation, NanoKVM rétablit les paramètres précédents.',
+          applyConfirm: 'Appliquer',
+          applyCancel: 'Annuler',
+          applyFailed: "Échec de l'application de l'adresse",
+          trialTitle: 'En attente de confirmation',
+          trialDhcp: 'NanoKVM demande une adresse au DHCP.',
+          trialStatic: 'NanoKVM est maintenant à {{address}}.',
+          trialInstruction:
+            'Ouvrez NanoKVM à sa nouvelle adresse, connectez-vous, puis revenez ici pour conserver la modification. NanoKVM rétablit les paramètres précédents dans {{seconds}} secondes.',
+          trialOpen: 'Ouvrir la nouvelle adresse',
+          trialKeep: 'Conserver ces paramètres',
+          trialKept: 'La nouvelle adresse est enregistrée',
+          trialKeepFailed: 'Échec de la conservation des paramètres',
+          trialGone: 'La modification a déjà été annulée. Veuillez réessayer.',
+          unsaved: 'Modifications non enregistrées'
+        },
         dns: {
           title: 'DNS',
           description: 'Configurer les serveurs DNS pour NanoKVM',

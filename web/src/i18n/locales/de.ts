@@ -482,6 +482,42 @@ const de = {
           description: 'HTTPS-Protokoll aktivieren',
           tip: 'Hinweis: Die Verwendung von HTTPS kann die Latenz erhöhen, besonders im MJPEG-Videomodus.'
         },
+        ethernet: {
+          title: 'IP-Adresse',
+          description:
+            'Legen Sie fest, wie NanoKVM seine Adresse im kabelgebundenen Netzwerk erhält',
+          dhcp: 'DHCP',
+          manual: 'Manuell',
+          networkDetails: 'Netzwerkdetails',
+          interface: 'Schnittstelle',
+          ipAddress: 'IP-Adresse',
+          subnetMask: 'Subnetzmaske',
+          router: 'Router',
+          save: 'Übernehmen',
+          invalidAddress: 'Bitte geben Sie eine gültige IP-Adresse ein',
+          invalidMask:
+            'Bitte geben Sie eine gültige Subnetzmaske ein, zum Beispiel 255.255.255.0 oder 24',
+          invalidRouter: 'Bitte geben Sie eine gültige Router-Adresse ein',
+          addressRequired: 'Eine IP-Adresse ist erforderlich',
+          maskRequired: 'Eine Subnetzmaske ist erforderlich',
+          applyTitle: 'Adresse von NanoKVM ändern?',
+          applyWarning:
+            'Die Verbindung zu dieser Seite geht verloren. NanoKVM übernimmt die neue Adresse und wartet dann {{seconds}} Sekunden auf Ihre Bestätigung von der neuen Adresse aus. Ohne Bestätigung stellt NanoKVM die vorherigen Einstellungen wieder her.',
+          applyConfirm: 'Übernehmen',
+          applyCancel: 'Abbrechen',
+          applyFailed: 'Die Adresse konnte nicht übernommen werden',
+          trialTitle: 'Warten auf Bestätigung',
+          trialDhcp: 'NanoKVM fordert eine Adresse per DHCP an.',
+          trialStatic: 'NanoKVM ist jetzt unter {{address}} erreichbar.',
+          trialInstruction:
+            'Öffnen Sie NanoKVM unter der neuen Adresse, melden Sie sich an und kehren Sie hierher zurück, um die Änderung zu behalten. NanoKVM stellt die vorherigen Einstellungen in {{seconds}} Sekunden wieder her.',
+          trialOpen: 'Neue Adresse öffnen',
+          trialKeep: 'Diese Einstellungen behalten',
+          trialKept: 'Die neue Adresse ist gespeichert',
+          trialKeepFailed: 'Die Einstellungen konnten nicht behalten werden',
+          trialGone: 'Die Änderung wurde bereits zurückgenommen. Bitte erneut versuchen.',
+          unsaved: 'Ungespeicherte Änderungen'
+        },
         dns: {
           title: 'DNS',
           description: 'DNS-Server für NanoKVM konfigurieren',
