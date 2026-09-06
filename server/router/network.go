@@ -31,4 +31,11 @@ func networkRouter(r *gin.Engine) {
 	admin.POST("/network/wifi/disconnect", service.DisconnectWifi) // disconnect Wi-Fi
 	admin.GET("/network/dns", service.GetDNS)                      // get DNS configuration
 	admin.POST("/network/dns", service.SetDNS)                     // set DNS configuration
+
+	// The address routes change the interface the caller is talking over, so
+	// a change is applied on trial and reverts unless it is confirmed from
+	// the new address.
+	admin.GET("/network/ethernet", service.GetEthernet)              // get the wired address configuration
+	admin.POST("/network/ethernet", service.SetEthernet)             // apply a wired address configuration on trial
+	admin.POST("/network/ethernet/confirm", service.ConfirmEthernet) // keep the applied configuration
 }
