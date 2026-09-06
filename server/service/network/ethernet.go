@@ -236,16 +236,44 @@ func startTrial(token string, mode string, config ethernetConfig, seconds int) {
 		pendingTrial.timer.Stop()
 	}
 
+	window := time.Duration(seconds) * time.Second
+	deadline := time.Now().Add(window)
+
 	pendingTrial = &trial{
 		token:    token,
 		mode:     mode,
 		config:   config,
-		deadline: time.Now().Add(time.Duration(seconds) * time.Second),
+		deadline: deadline,
 	}
-	pendingTrial.timer = time.AfterFunc(time.Duration(seconds)*time.Second, func() {
+	pendingTrial.timer = time.AfterFunc(window, func() {
 		log.Warnf("ethernet trial %s was not confirmed, putting the saved configuration back", token)
 		revertNow()
 	})
+
+	// The timer above is in this process, and this process is not the thing
+	// the trial protects against. See ethernet_guard.go: the same deadline is
+	// written to /run and handed to a detached shell, so a server that dies
+	// between the apply and the confirmation still leaves something behind
+	// that puts the address back.
+	state := trialState{
+		Token:    token,
+		Mode:     mode,
+		Address:  config.Address,
+		Prefix:   config.Prefix,
+		Gateway:  config.Gateway,
+		Deadline: deadline,
+	}
+	if err := writeTrialState(state); err != nil {
+		log.Errorf("failed to record the ethernet trial: %s", err)
+		return
+	}
+	if err := startExternalRevert(token, window+externalRevertGrace); err != nil {
+		// The in-process timer still reverts, so the trial goes ahead. Clear
+		// the record rather than leave one that claims a revert nothing is
+		// counting down to.
+		log.Errorf("failed to start the detached ethernet revert: %s", err)
+		clearTrialState()
+	}
 }
 
 func describeTrial() *proto.EthernetTrial {
@@ -253,12 +281,7 @@ func describeTrial() *proto.EthernetTrial {
 	defer trialMutex.Unlock()
 
 	if pendingTrial == nil {
-		return nil
-	}
-
-	remaining := int(time.Until(pendingTrial.deadline).Seconds())
-	if remaining < 0 {
-		remaining = 0
+		return describeAdoptedTrialLocked()
 	}
 
 	return &proto.EthernetTrial{
@@ -267,32 +290,103 @@ func describeTrial() *proto.EthernetTrial {
 		Address:          pendingTrial.config.Address,
 		Prefix:           pendingTrial.config.Prefix,
 		Gateway:          pendingTrial.config.Gateway,
-		RemainingSeconds: remaining,
+		RemainingSeconds: remainingSeconds(pendingTrial.deadline),
 	}
+}
+
+// describeAdoptedTrialLocked reports a trial that a previous server process
+// started. The detached revert outlived that process and is still counting, so
+// reporting nothing here would tell the caller the address is settled while it
+// is about to change back underneath them.
+func describeAdoptedTrialLocked() *proto.EthernetTrial {
+	state, ok := readTrialState()
+	if !ok {
+		return nil
+	}
+
+	return &proto.EthernetTrial{
+		Token:            state.Token,
+		Mode:             state.Mode,
+		Address:          state.Address,
+		Prefix:           state.Prefix,
+		Gateway:          state.Gateway,
+		RemainingSeconds: remainingSeconds(state.Deadline),
+	}
+}
+
+func remainingSeconds(deadline time.Time) int {
+	remaining := int(time.Until(deadline).Seconds())
+	if remaining < 0 {
+		return 0
+	}
+
+	return remaining
 }
 
 func confirmTrial(token string) error {
 	trialMutex.Lock()
+	defer trialMutex.Unlock()
 
-	if pendingTrial == nil {
-		trialMutex.Unlock()
-		return fmt.Errorf("there is no change waiting to be confirmed")
-	}
-	if pendingTrial.token != token {
-		trialMutex.Unlock()
-		// A confirmation for a trial that a later request replaced must not
-		// save the later one.
-		return fmt.Errorf("this change is no longer the one waiting to be confirmed")
+	mode, config, err := awaitingConfirmationLocked(token)
+	if err != nil {
+		return err
 	}
 
-	confirmed := pendingTrial
-	confirmed.timer.Stop()
-	pendingTrial = nil
-	trialMutex.Unlock()
+	// Saved before the revert is called off, and not after. A confirmation
+	// that cannot write the file has to leave the deadline running: a board
+	// that kept an address it failed to save would work until the next reboot
+	// and lose it then, which is the one outcome nobody could have predicted
+	// from the page that said the change was kept.
+	if err := persistEthernet(mode, config); err != nil {
+		return err
+	}
 
+	if pendingTrial != nil {
+		pendingTrial.timer.Stop()
+		pendingTrial = nil
+	}
+
+	// The detached revert wakes at its own deadline, does not find this token,
+	// and exits without touching the interface.
+	clearTrialState()
+
+	return nil
+}
+
+// awaitingConfirmationLocked returns the change this token confirms. It reads
+// the file when this process holds no trial, which is a trial that a previous
+// process started: the address is live, the detached revert is still counting,
+// and the person holding the token is the one who can end it.
+func awaitingConfirmationLocked(token string) (string, ethernetConfig, error) {
+	if pendingTrial != nil {
+		if pendingTrial.token != token {
+			// A confirmation for a trial that a later request replaced must
+			// not save the later one.
+			return "", ethernetConfig{}, fmt.Errorf("this change is no longer the one waiting to be confirmed")
+		}
+
+		return pendingTrial.mode, pendingTrial.config, nil
+	}
+
+	state, ok := readTrialState()
+	if !ok {
+		return "", ethernetConfig{}, fmt.Errorf("there is no change waiting to be confirmed")
+	}
+	if state.Token != token {
+		return "", ethernetConfig{}, fmt.Errorf("this change is no longer the one waiting to be confirmed")
+	}
+
+	return state.Mode, ethernetConfig{
+		Address: state.Address,
+		Prefix:  state.Prefix,
+		Gateway: state.Gateway,
+	}, nil
+}
+
+func persistEthernet(mode string, config ethernetConfig) error {
 	var err error
-	if confirmed.mode == ethModeStatic {
-		err = writeEthernetConfig(confirmed.config)
+	if mode == ethModeStatic {
+		err = writeEthernetConfig(config)
 	} else {
 		err = removeEthernetConfig()
 	}
@@ -314,6 +408,9 @@ func revertNow() {
 		pendingTrial.timer.Stop()
 		pendingTrial = nil
 	}
+	// Cleared here too, so the detached revert finds no token and does not run
+	// the boot script a second time behind this one.
+	clearTrialState()
 	trialMutex.Unlock()
 
 	stopDHCPClient()
