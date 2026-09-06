@@ -78,8 +78,20 @@ func (l *commandLog) contains(fragment string) bool {
 
 // clearTrial makes each test start with no change waiting, because the trial
 // is package state.
-func clearTrial(t *testing.T) {
+//
+// It also points the record the detached revert reads at a directory the test
+// may write, and replaces the detached revert with a recorder. Without the
+// second part a test run would write /run on the machine it runs on and leave
+// a sleeping shell behind for every trial it starts.
+func clearTrial(t *testing.T) *revertLog {
 	t.Helper()
+
+	originalFile := trialStateFile
+	trialStateFile = filepath.Join(t.TempDir(), "trial.json")
+
+	originalRevert := startExternalRevert
+	recorder := &revertLog{}
+	startExternalRevert = recorder.record
 
 	stop := func() {
 		trialMutex.Lock()
@@ -92,7 +104,43 @@ func clearTrial(t *testing.T) {
 	}
 
 	stop()
-	t.Cleanup(stop)
+	t.Cleanup(func() {
+		stop()
+		startExternalRevert = originalRevert
+		trialStateFile = originalFile
+	})
+
+	return recorder
+}
+
+type revertLog struct {
+	mutex sync.Mutex
+	calls []revertCall
+	fail  bool
+}
+
+type revertCall struct {
+	token string
+	after time.Duration
+}
+
+func (l *revertLog) record(token string, after time.Duration) error {
+	l.mutex.Lock()
+	defer l.mutex.Unlock()
+
+	l.calls = append(l.calls, revertCall{token: token, after: after})
+	if l.fail {
+		return os.ErrPermission
+	}
+
+	return nil
+}
+
+func (l *revertLog) all() []revertCall {
+	l.mutex.Lock()
+	defer l.mutex.Unlock()
+
+	return append([]revertCall(nil), l.calls...)
 }
 
 func TestParseEthernetLine(t *testing.T) {
