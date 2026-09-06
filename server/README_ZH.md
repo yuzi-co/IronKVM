@@ -33,6 +33,7 @@ port:
 cert:
     crt: server.crt    # HTTPS 服务使用的公钥证书路径
     key: server.key    # HTTPS 服务使用的私钥文件路径
+http2: false           # HTTPS 监听端口是否提供 HTTP/2，默认为 `false`，并且建议保持默认。此处没有可复用连接的多路请求，而 HTTP/2 会让视频流付出代价：在 1080p 下实测，MJPEG 经 HTTP/1.1 传输 10.5MB/s，经 HTTP/2 仅 3.5MB/s。它还会让键盘和鼠标失效，因为 websocket 无法运行在 HTTP/2 连接上，而 HID 使用 `/api/ws`。纯 HTTP 监听端口从不提供 HTTP/2，因此 `proto` 为 `http` 时该设置无效
 
 
 # 日志配置

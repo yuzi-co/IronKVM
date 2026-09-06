@@ -48,10 +48,12 @@ func selfSignedCert(t *testing.T) tls.Certificate {
 	return tls.Certificate{Certificate: [][]byte{der}, PrivateKey: key, Leaf: leaf}
 }
 
-// TestTLSNegotiatesHTTP11 is the case that matters. Asserting on the field
-// alone would pass for a nil map on a Go release that changed the default, and
-// the negotiated protocol is what the cost and the websocket both depend on.
-func TestTLSNegotiatesHTTP11(t *testing.T) {
+// negotiatedProtocol serves one TLS connection and reports what ALPN chose.
+// The client always offers h2 first, so the answer is the server's decision and
+// not the client's preference.
+func negotiatedProtocol(t *testing.T, configure func(*http.Server)) string {
+	t.Helper()
+
 	cert := selfSignedCert(t)
 
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
@@ -63,6 +65,9 @@ func TestTLSNegotiatesHTTP11(t *testing.T) {
 	server := NewServer(listener.Addr().String(), http.HandlerFunc(
 		func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusNoContent) }))
 	server.TLSConfig = &tls.Config{Certificates: []tls.Certificate{cert}}
+	if configure != nil {
+		configure(server)
+	}
 
 	go func() { _ = server.ServeTLS(listener, "", "") }()
 	defer func() { _ = server.Close() }()
@@ -70,7 +75,6 @@ func TestTLSNegotiatesHTTP11(t *testing.T) {
 	pool := x509.NewCertPool()
 	pool.AddCert(cert.Leaf)
 
-	// The client offers h2 first. A server that left HTTP/2 on picks it.
 	conn, err := tls.Dial("tcp", listener.Addr().String(), &tls.Config{
 		RootCAs:    pool,
 		NextProtos: []string{"h2", "http/1.1"},
@@ -81,9 +85,42 @@ func TestTLSNegotiatesHTTP11(t *testing.T) {
 	}
 	defer conn.Close()
 
-	if got := conn.ConnectionState().NegotiatedProtocol; got != "http/1.1" {
+	return conn.ConnectionState().NegotiatedProtocol
+}
+
+// TestTLSNegotiatesHTTP11 is the case that matters. Asserting on the field
+// alone would pass for a nil map on a Go release that changed the default, and
+// the negotiated protocol is what the cost and the websocket both depend on.
+func TestTLSNegotiatesHTTP11(t *testing.T) {
+	if got := negotiatedProtocol(t, nil); got != "http/1.1" {
 		t.Fatalf("negotiated %q over TLS, want http/1.1: HTTP/2 costs the video "+
 			"stream and cannot carry the /api/ws websocket", got)
+	}
+}
+
+// TestAllowHTTP2NegotiatesH2 is the other half of the setting. Without it the
+// option would be a field nobody had checked reaches the handshake, and a
+// setting that does nothing is worse than no setting.
+func TestAllowHTTP2NegotiatesH2(t *testing.T) {
+	if got := negotiatedProtocol(t, AllowHTTP2); got != "h2" {
+		t.Fatalf("negotiated %q over TLS with http2 on, want h2", got)
+	}
+}
+
+// TestAllowHTTP2ChangesOnlyTheProtocol keeps the setting from quietly undoing
+// the timeouts the constructor exists for.
+func TestAllowHTTP2ChangesOnlyTheProtocol(t *testing.T) {
+	server := NewServer("127.0.0.1:0", http.NotFoundHandler())
+	AllowHTTP2(server)
+
+	if server.TLSNextProto != nil {
+		t.Error("TLSNextProto is not nil, so HTTP/2 is still off")
+	}
+	if server.ReadHeaderTimeout != readHeaderTimeout || server.IdleTimeout != idleTimeout {
+		t.Error("the timeouts changed with the protocol")
+	}
+	if server.ReadTimeout != 0 || server.WriteTimeout != 0 {
+		t.Error("a whole-request deadline would cut off the MJPEG stream")
 	}
 }
 
