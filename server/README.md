@@ -89,6 +89,33 @@ uses the existing cooperative HID coordinator, so simultaneous input can interle
 Video mode, quality, resolution, and MJPEG frame-detection controls remain shared KVM
 operations; when several users adjust them concurrently, the latest change applies device-wide.
 
+## Profiling
+
+The server exposes the standard Go profiles under `/api/debug/pprof/`. The routes need an
+administrator session or an administrator API key. They are always available, because a
+profile that needs a restart to switch on cannot show you the problem you restarted away.
+
+```shell
+go tool pprof 'http://<device>/api/debug/pprof/heap'
+go tool pprof 'http://<device>/api/debug/pprof/profile?seconds=20'
+go tool pprof 'http://<device>/api/debug/pprof/goroutine'
+```
+
+`go tool pprof` sends no credentials. Log in with the browser first, then pass the session
+cookie, or use an API key:
+
+```shell
+curl -H 'X-API-Key: <key>' -o heap.out 'http://<device>/api/debug/pprof/heap'
+go tool pprof heap.out
+```
+
+The `seconds` parameter of `profile` and `trace` has a limit of 30. The board has one usable
+core, and the capture path already takes most of it. A longer request returns a 30 second
+profile.
+
+The `block` and `mutex` profiles stay empty. Both need a sample rate that charges every
+goroutine for the whole time it is set, so the server does not set one.
+
 ## Compile & Deploy
 
 Note: The manual steps below require a Linux x86-64 host with Go 1.25 or newer; they are not compatible with ARM, Windows or macOS. With Docker you can skip them entirely and use the containerized flow instead — the root [Makefile](../Makefile) (`make shell`) or the dev container (see "Development" in the root [README](../README.md)) — which works on any host OS; run `server/build.sh` inside the container for a release-equivalent build.
