@@ -109,65 +109,95 @@ echo "===== it behaves like printf ====="
     echo 'uint8_t debug_en = 0;'
     printf '%s\n' "$debug_body"
     cat <<'MAIN'
-int main(void)
+// Capture through a file, not through setvbuf.
+//
+// setvbuf on a stream that has already been used is undefined, and the two C
+// libraries this suite runs on disagree about it. glibc in the release host
+// image leaves the first bytes of a line in the buffer the previous call
+// flushed, so a case that produced exactly the right text compared unequal and
+// the suite reported a fault in debug() that was not there.
+//
+// Redirecting the stream and reading back what each call appended is something
+// every libc agrees about.
+static const char *capture_path;
+static long capture_mark;
+
+static void capture_begin(const char *path)
+{
+    capture_path = path;
+    if (freopen(path, "w+", stdout) == NULL) {
+        fprintf(stderr, "cannot redirect stdout to %s\n", path);
+        exit(9);
+    }
+    capture_mark = 0;
+}
+
+static char *capture_take(char *buf, size_t n)
+{
+    FILE *reader;
+    size_t got = 0;
+
+    fflush(stdout);
+    reader = fopen(capture_path, "rb");
+    if (reader == NULL) {
+        fprintf(stderr, "cannot read back %s\n", capture_path);
+        exit(9);
+    }
+    if (fseek(reader, capture_mark, SEEK_SET) == 0) {
+        got = fread(buf, 1, n - 1, reader);
+    }
+    fclose(reader);
+
+    buf[got] = '\0';
+    capture_mark += (long)got;
+    return buf;
+}
+
+int main(int argc, char **argv)
 {
     char buf[256];
 
+    if (argc < 2) {
+        fprintf(stderr, "usage: lifted <capture-file>\n");
+        return 8;
+    }
+    capture_begin(argv[1]);
+
     // Off by default, which is the state every device runs in.
     debug_en = 0;
-    memset(buf, 0, sizeof(buf));
-    setvbuf(stdout, buf, _IOFBF, sizeof(buf));
     debug("[t] silent %d\n", 41);
-    fflush(stdout);
-    setvbuf(stdout, NULL, _IONBF, 0);
-    if (buf[0] != 0) {
+    if (capture_take(buf, sizeof(buf))[0] != '\0') {
         fprintf(stderr, "printed while disabled: %s\n", buf);
         return 1;
     }
 
     // On, one integer.
     debug_en = 1;
-    memset(buf, 0, sizeof(buf));
-    setvbuf(stdout, buf, _IOFBF, sizeof(buf));
     debug("[t] one %d\n", 41);
-    fflush(stdout);
-    setvbuf(stdout, NULL, _IONBF, 0);
-    if (strcmp(buf, "[t] one 41\n") != 0) {
+    if (strcmp(capture_take(buf, sizeof(buf)), "[t] one 41\n") != 0) {
         fprintf(stderr, "one integer: got %s\n", buf);
         return 2;
     }
 
     // Several arguments of mixed type, which is what the busiest calls in
     // kvm_vision.cpp look like.
-    memset(buf, 0, sizeof(buf));
-    setvbuf(stdout, buf, _IOFBF, sizeof(buf));
     debug("[t] %s %d %d %x\n", "res", 1920, 1080, 255);
-    fflush(stdout);
-    setvbuf(stdout, NULL, _IONBF, 0);
-    if (strcmp(buf, "[t] res 1920 1080 ff\n") != 0) {
+    if (strcmp(capture_take(buf, sizeof(buf)), "[t] res 1920 1080 ff\n") != 0) {
         fprintf(stderr, "mixed: got %s\n", buf);
         return 3;
     }
 
     // No arguments at all, which is the other two thirds of the calls.
-    memset(buf, 0, sizeof(buf));
-    setvbuf(stdout, buf, _IOFBF, sizeof(buf));
     debug("[t] plain\n");
-    fflush(stdout);
-    setvbuf(stdout, NULL, _IONBF, 0);
-    if (strcmp(buf, "[t] plain\n") != 0) {
+    if (strcmp(capture_take(buf, sizeof(buf)), "[t] plain\n") != 0) {
         fprintf(stderr, "plain: got %s\n", buf);
         return 4;
     }
 
     // A percent sign that is data, not a specifier. The old code would have
     // read an argument for it.
-    memset(buf, 0, sizeof(buf));
-    setvbuf(stdout, buf, _IOFBF, sizeof(buf));
     debug("[t] %d%% busy\n", 90);
-    fflush(stdout);
-    setvbuf(stdout, NULL, _IONBF, 0);
-    if (strcmp(buf, "[t] 90% busy\n") != 0) {
+    if (strcmp(capture_take(buf, sizeof(buf)), "[t] 90% busy\n") != 0) {
         fprintf(stderr, "percent: got %s\n", buf);
         return 5;
     }
@@ -180,7 +210,7 @@ MAIN
 if "$CXX" -x c++ -O1 -Wall -Wextra -Wformat=2 -o "$work/lifted" "$work/lifted.c" \
         2> "$work/build.log"; then
     note "the lifted function compiles" OK
-    if "$work/lifted" > "$work/run.log" 2>&1; then
+    if "$work/lifted" "$work/capture.txt" > "$work/run.log" 2>&1; then
         note "it prints nothing while debug_en is 0" OK
         note "it prints one integer argument" OK
         note "it prints several arguments of mixed type" OK
