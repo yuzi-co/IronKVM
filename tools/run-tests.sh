@@ -54,7 +54,20 @@ then
     # a checkout that sits at /repo in here and somewhere else out there hands
     # it a path that does not exist, and the cross-compile fails for a reason
     # that has nothing to do with the build.
+    #
+    # seccomp=unconfined is for AddressSanitizer, and nothing else here
+    # needs it. ASan maps its shadow at a fixed address and needs the
+    # kernel to hand out at most 28 bits of ASLR entropy; the kernel
+    # behind Docker Desktop hands out 32, so the mapping fails for some
+    # address layouts and not others. The three sanitizer suites in
+    # tools/build then fail about one run in four, which is worse than
+    # failing every time. Turning ASLR off for those children fixes it
+    # and setarch needs the personality syscall, which the default
+    # seccomp profile blocks. See tools/build/asan-env.sh.
+    #
+    # This is a throwaway container running this checkout's own tests.
     MSYS_NO_PATHCONV=1 exec docker run --rm \
+        --security-opt seccomp=unconfined \
         -v /var/run/docker.sock:/var/run/docker.sock \
         -v "$ROOT:$ROOT" -w "$ROOT" "$IMAGE" sh tools/run-tests.sh "$@"
 fi

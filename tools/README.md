@@ -64,29 +64,33 @@ Three rules keep the sweep worth running:
 
 Three suites in `build/` compile a function out of the shipped C++ and run it
 under AddressSanitizer: `test-mjpeg-lazy-map.sh`, `test-vpss-wedge-rebuild.sh`
-and `test-frame-buffer-pool.sh`. Each sets
-`ASAN_OPTIONS=abort_on_error=1:handle_segv=0:handle_sigbus=0`, and that setting
-is what makes them finish.
+and `test-frame-buffer-pool.sh`. All three source `build/asan-env.sh`, which is
+what makes them usable here, and that file holds the reasoning.
 
-ASan maps its shadow memory at a fixed address. A kernel that hands out more
-ASLR entropy than the mapping allows, `vm.mmap_rnd_bits` of 32 against the 28
-ASan was built for, makes that mapping fail. ASan then takes a signal inside
-its own signal handler, prints `AddressSanitizer:DEADLYSIGNAL`, and takes the
-same signal again for ever. On 2026-09-06 that gave one of these suites the
-whole 1800 second budget in `--container`, and the sweep never reached the
-suites after it.
+ASan maps its shadow memory at a fixed address and needs the kernel to hand out
+no more than 28 bits of ASLR entropy. The kernel behind Docker Desktop hands out
+32. The mapping then fails for some address layouts and not others, so these
+suites do not fail, they fail about one run in four:
+`test-frame-buffer-pool.sh` segfaulted 11 times in 40 runs on 2026-09-06, and
+looked healthy whenever it was run a few times by hand.
 
-The report is the worse loss. While ASan is in that state it names nothing: a
-deliberate heap overflow prints `DEADLYSIGNAL` in a loop and never reports the
-overflow, so the sanitizer cases passed on a runtime that could not fail them.
+Two things follow.
 
-`abort_on_error` ends the first fault ASan detects itself, instead of handling
-it. `handle_segv` and `handle_sigbus` cover the rest, and the mutation suites
-are what proved they were needed: a wild pointer far outside any mapping raises
-a signal before ASan has anything to report, so the broken handler runs first
-and loops before `abort_on_error` is consulted. With both, all six suites finish
-in under ten seconds and every mutation is still caught. `setarch -R` would also
-work, and it needs a privilege the container does not have.
+Disabling ASLR for the sanitized child puts the mapping back in reach.
+`setarch -R` needs the `personality` syscall, which Docker's default seccomp
+profile blocks, so `--container` passes `--security-opt seccomp=unconfined`.
+With that, the same suite passed 40 runs out of 40. Where `setarch` cannot be
+used the suites build without the sanitizer and print
+`the sanitizer runs  SKIP (...)` with the reason, rather than reporting a fault
+they cannot stand behind. Their other cases still run.
+
+`ASAN_OPTIONS=abort_on_error=1:handle_segv=0:handle_sigbus=0` is the second
+half, and it matters when the mapping fails anyway. Without it ASan takes a
+signal inside its own signal handler, prints `AddressSanitizer:DEADLYSIGNAL`,
+and takes the same signal again for ever: on 2026-09-06 one suite held its whole
+1800 second budget under `--container` and the sweep never reached the suites
+after it. It reports nothing in that state either, so a deliberate heap overflow
+prints `DEADLYSIGNAL` and never names the overflow.
 
 The three `*-mutation.sh` suites beside them bound each child run with
 `MUTANT_TIMEOUT`, 120 seconds by default. A mutant that never answers is
