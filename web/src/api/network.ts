@@ -1,6 +1,7 @@
 import { http } from '@/lib/http.ts';
 
 export type DNSMode = 'manual' | 'dhcp';
+export type EthernetMode = 'static' | 'dhcp';
 
 // wake on lan
 export function wol(mac: string) {
@@ -78,4 +79,31 @@ export function getDNS() {
 
 export function setDNS(mode: DNSMode, servers: string[]) {
   return http.post('/api/network/dns', { mode, servers });
+}
+
+export function getEthernet() {
+  return http.get('/api/network/ethernet');
+}
+
+// Applies the addressing on trial. The device puts the previous settings back
+// unless confirmEthernet arrives with this token before the window closes, so
+// a wrong address costs a wait rather than a trip to the device.
+export function setEthernet(
+  mode: EthernetMode,
+  address: string,
+  prefix: number,
+  gateway: string,
+  trialSeconds?: number
+) {
+  return http.post('/api/network/ethernet', {
+    mode,
+    address,
+    prefix,
+    gateway,
+    trialSeconds: trialSeconds ?? 0
+  });
+}
+
+export function confirmEthernet(token: string) {
+  return http.post('/api/network/ethernet/confirm', { token });
 }
