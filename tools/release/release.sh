@@ -181,6 +181,25 @@ mkdir -p "$OUT"
 STAGE=$(mktemp -d)
 trap 'rm -rf "$STAGE"' EXIT
 
+# Every boot script the package carries must be either installed into
+# /etc/init.d by the manifest or declared package-only. The check runs here,
+# before anything is built, because its answer does not depend on the build and
+# a release that would ship a fix nobody receives should cost seconds to stop.
+#
+# It caught nothing when it was written and would have caught S00kmod. The fork
+# rewrote that script on 2026-09-04 to load the modules the package ships, the
+# manifest did not install it because until then the fork did not change it, and
+# every image built afterwards kept the stock loader. See
+# tools/abslots/check-init-install.sh.
+echo "==> checking that every packaged boot script has a decided fate"
+BASE_TREE="$STAGE/base-tree"
+mkdir -p "$BASE_TREE"
+# Only /etc/init.d is wanted. zstd still decompresses the whole stream, which
+# costs about half a minute against the 251 MB base and is the cheapest part of
+# a release.
+zstd -dc "$BASE_TAR" | tar -xf - -C "$BASE_TREE" ./etc/init.d
+tools/abslots/check-init-install.sh "$BASE_TREE/etc/init.d" || exit 1
+
 echo "==> building the web user interface"
 # Built from a copy in $STAGE, without the developer's node_modules.
 #
@@ -320,11 +339,15 @@ done
 # image manifest so a package and an image of the same release can never install
 # different sets.
 #
-# /kvmapp/system/init.d is the application's own reference copy and carries 20
-# scripts. The image installs 10: it leaves S50sshd, S00kmod, S15kvmhwd and
-# S80dnsmasq at their base versions and never installs avahi, ssdpd, tailscaled,
-# picoclaw, wifi or usbhid at all. install.sh installed the directory, so an
-# update would have started six daemons the same release's image never starts.
+# /kvmapp/system/init.d is the application's own reference copy. The image
+# installs the scripts the fork changes or adds, and leaves the rest at their
+# base versions. install.sh installed the whole directory once, so an update
+# started daemons the same release's image never starts.
+#
+# Which of the two a script belongs in is not a judgement made here. Every
+# script in the package is named either by the manifest or by
+# tools/abslots/manifest/init.d.package-only, and check-init-install.sh above
+# has already refused this release if one was left out.
 #
 # rcS is excluded here for the reason given above: it is what runs the watchdog.
 sed -n 's|^add .* /etc/init.d/\([^ ]*\).*|\1|p' tools/abslots/manifest/root.manifest \
