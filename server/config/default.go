@@ -36,6 +36,7 @@ var defaultConfig = &Config{
 	Ion: Ion{
 		ReserveFloor: 12582912,
 	},
+	HTTP2: false,
 }
 
 func checkDefaultValue() {

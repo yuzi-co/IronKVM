@@ -16,6 +16,12 @@ type Config struct {
 	// bare host:port. Empty means the environment decides.
 	Proxy string `yaml:"proxy"`
 
+	// HTTP2 offers HTTP/2 on the HTTPS listener. Off by default, and the
+	// default is the recommendation: see utils.NewServer for what it costs on
+	// this hardware and for the websocket it takes away. It has no effect on a
+	// plain HTTP listener, which never speaks h2 here.
+	HTTP2 bool `yaml:"http2"`
+
 	Hardware Hardware `yaml:"-"`
 }
 

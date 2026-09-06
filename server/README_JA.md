@@ -35,6 +35,13 @@ cert:
     crt: server.crt
     key: server.key
 
+# HTTPS リスナーが HTTP/2 を提供するかどうか。 デフォルト: false。 このデフォルトを推奨します。
+# ここには多重化するものがなく、HTTP/2 は映像ストリームに代償を払わせます。 1080p での実測では、
+# MJPEG は HTTP/1.1 で 10.5MB/s、HTTP/2 では 3.5MB/s でした。 さらにキーボードとマウスが
+# 使えなくなります。 websocket は HTTP/2 接続では動作せず、HID は `/api/ws` を使うからです。
+# 平文の HTTP リスナーは HTTP/2 を提供しないため、`proto` が `http` のときこの設定は効きません。
+http2: false
+
 # ログレベル (debug/info/warn/error)
 # 注意: 本番環境では 'info' または 'error' を使用し、'debug' は開発環境でのみ使用してください
 logger:

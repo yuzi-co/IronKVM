@@ -139,6 +139,11 @@ func run() {
 
 		go func() {
 			server := utils.NewServer(utils.ListenAddr(conf.Host, httpsPortStr), r)
+			// Only the TLS listener can speak h2, so this is the only place
+			// the setting means anything.
+			if conf.HTTP2 {
+				utils.AllowHTTP2(server)
+			}
 			if err := server.ListenAndServeTLS(conf.Cert.Crt, conf.Cert.Key); err != nil {
 				panic("start https server failed")
 			}

@@ -35,6 +35,7 @@ port:
 cert:
     crt: server.crt    # The path to the public key certificate for HTTPS
     key: server.key    # The path to the private key file for HTTPS
+http2: false           # Whether the HTTPS listener offers HTTP/2. Default is `false`, and the default is the recommendation. HTTP/2 has nothing to multiplex here and it costs the video stream: measured at 1080p, MJPEG carried 10.5MB/s over HTTP/1.1 and 3.5MB/s over HTTP/2. It also stops the keyboard and the mouse, because a websocket cannot run on an HTTP/2 connection and HID uses `/api/ws`. A plain HTTP listener never offers HTTP/2, so this setting does nothing when `proto` is `http`
 
 
 # Logging Configuration
