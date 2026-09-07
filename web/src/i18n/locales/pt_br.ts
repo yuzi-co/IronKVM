@@ -494,7 +494,7 @@ const pt_br = {
           maskRequired: 'Uma máscara de sub-rede é obrigatória',
           applyTitle: 'Alterar o endereço do NanoKVM?',
           applyWarning:
-            'A conexão com esta página será perdida. O NanoKVM aplica o novo endereço e aguarda {{seconds}} segundos pela sua confirmação a partir do novo endereço. Sem confirmação, o NanoKVM restaura as configurações anteriores.',
+            'A conexão com esta página será perdida. O NanoKVM aplica o novo endereço e depois espera {{seconds}} segundos para você abri-lo nesse endereço e entrar. Se ninguém o alcançar, o NanoKVM restaura as configurações anteriores.',
           applyConfirm: 'Aplicar',
           applyCancel: 'Cancelar',
           applyFailed: 'Falha ao aplicar o endereço',
@@ -502,7 +502,7 @@ const pt_br = {
           trialDhcp: 'O NanoKVM está solicitando um endereço por DHCP.',
           trialStatic: 'O NanoKVM agora está em {{address}}.',
           trialInstruction:
-            'Abra o NanoKVM no novo endereço, entre e volte aqui para manter a alteração. O NanoKVM restaura as configurações anteriores em {{seconds}} segundos.',
+            'Abra o NanoKVM no novo endereço e entre. Isso mantém a alteração. Se ninguém alcançar o NanoKVM em {{seconds}} segundos, ele restaura as configurações anteriores.',
           trialOpen: 'Abrir o novo endereço',
           trialKeep: 'Manter estas configurações',
           trialKept: 'O novo endereço está salvo',

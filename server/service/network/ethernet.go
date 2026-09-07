@@ -48,6 +48,10 @@ type trial struct {
 	config   ethernetConfig
 	deadline time.Time
 	timer    *time.Timer
+	// applied says the interface carries this trial. A request that arrives
+	// before it does came in over the address the board is leaving, and
+	// ethernet_reach.go must not read one as proof that the change works.
+	applied bool
 }
 
 var (
@@ -149,7 +153,7 @@ func (s *Service) SetEthernet(c *gin.Context) {
 
 	rsp.OkRspWithData(c, data)
 
-	go applyAfterResponse(req.Mode, config)
+	go applyAfterResponse(token, req.Mode, config)
 
 	log.Infof("ethernet trial started: mode=%s address=%s/%d gateway=%s seconds=%d",
 		req.Mode, config.Address, config.Prefix, config.Gateway, seconds)
@@ -176,7 +180,7 @@ func (s *Service) ConfirmEthernet(c *gin.Context) {
 // applyAfterResponse waits for the response to leave, then changes the
 // interface. It runs in its own goroutine because the request that started it
 // is one of the connections the change breaks.
-func applyAfterResponse(mode string, config ethernetConfig) {
+func applyAfterResponse(token string, mode string, config ethernetConfig) {
 	time.Sleep(applyDelay)
 
 	var err error
@@ -192,7 +196,10 @@ func applyAfterResponse(mode string, config ethernetConfig) {
 		// may be no address at all. Put the saved configuration back rather
 		// than wait out the trial.
 		revertNow()
+		return
 	}
+
+	markTrialApplied(token)
 }
 
 func clampTrialSeconds(seconds int) int {
@@ -245,6 +252,11 @@ func startTrial(token string, mode string, config ethernetConfig, seconds int) {
 		config:   config,
 		deadline: deadline,
 	}
+	// Read by every signed-in request. See ethernet_reach.go: a request that
+	// arrives over the new address confirms the trial, and the flag is what
+	// keeps that check off the mutex while no trial is running.
+	trialPending.Store(true)
+
 	pendingTrial.timer = time.AfterFunc(window, func() {
 		log.Warnf("ethernet trial %s was not confirmed, putting the saved configuration back", token)
 		revertNow()
@@ -327,6 +339,10 @@ func confirmTrial(token string) error {
 	trialMutex.Lock()
 	defer trialMutex.Unlock()
 
+	return confirmTrialLocked(token)
+}
+
+func confirmTrialLocked(token string) error {
 	mode, config, err := awaitingConfirmationLocked(token)
 	if err != nil {
 		return err
@@ -349,6 +365,7 @@ func confirmTrial(token string) error {
 	// The detached revert wakes at its own deadline, does not find this token,
 	// and exits without touching the interface.
 	clearTrialState()
+	trialPending.Store(false)
 
 	return nil
 }
@@ -411,6 +428,7 @@ func revertNow() {
 	// Cleared here too, so the detached revert finds no token and does not run
 	// the boot script a second time behind this one.
 	clearTrialState()
+	trialPending.Store(false)
 	trialMutex.Unlock()
 
 	stopDHCPClient()

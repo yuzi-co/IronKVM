@@ -8,6 +8,7 @@ import (
 
 	"NanoKVM-Server/authn"
 	"NanoKVM-Server/config"
+	"NanoKVM-Server/service/network"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -186,6 +187,9 @@ func authenticate(c *gin.Context) (Principal, *Token, bool) {
 func authenticateBySession(c *gin.Context) (Principal, *Token, bool) {
 	conf := config.GetInstance()
 	if conf.Authentication == "disable" {
+		// Not reported as a client that reached the board. With the check off
+		// there is no signed-in client to speak of, and an address trial that
+		// confirmed itself on any request at all would confirm on a port scan.
 		return Principal{Username: "admin", Role: authn.RoleAdmin}, nil, true
 	}
 
@@ -202,6 +206,13 @@ func authenticateBySession(c *gin.Context) (Principal, *Token, bool) {
 		log.Debugf("validate session for %q: %s", token.Username, err)
 		return Principal{}, nil, false
 	}
+
+	// A signed-in request is the proof an address trial is waiting for, so it
+	// is reported from the one place that decides a session is genuine rather
+	// than from each route. See service/network/ethernet_reach.go: it costs two
+	// atomic loads while no trial is running, which is nearly always.
+	network.NoteSignedInRequest(c)
+
 	return Principal{Username: user.Username, Role: user.Role}, token, true
 }
 

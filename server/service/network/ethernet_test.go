@@ -101,6 +101,12 @@ func clearTrial(t *testing.T) *revertLog {
 			pendingTrial.timer.Stop()
 			pendingTrial = nil
 		}
+
+		// The reachability check in ethernet_reach.go reads these before it
+		// reads anything else, and both are package state that would otherwise
+		// carry one test's trial into the next.
+		trialPending.Store(false)
+		adoptOnce = new(sync.Once)
 	}
 
 	stop()
@@ -493,7 +499,7 @@ func TestAFailedApplyRevertsImmediately(t *testing.T) {
 	commands.fail = true
 	startTrial("token-e", ethModeStatic, ethernetConfig{Address: "10.0.0.99", Prefix: 24}, 60)
 
-	applyAfterResponse(ethModeStatic, ethernetConfig{Address: "10.0.0.99", Prefix: 24})
+	applyAfterResponse("token-e", ethModeStatic, ethernetConfig{Address: "10.0.0.99", Prefix: 24})
 
 	if describeTrial() != nil {
 		t.Error("the trial survived an apply that failed")

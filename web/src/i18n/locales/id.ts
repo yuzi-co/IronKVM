@@ -493,7 +493,7 @@ const id = {
           maskRequired: 'Subnet mask wajib diisi',
           applyTitle: 'Ubah alamat NanoKVM?',
           applyWarning:
-            'Koneksi ke halaman ini akan terputus. NanoKVM menerapkan alamat baru, lalu menunggu {{seconds}} detik agar Anda mengonfirmasinya dari alamat baru. Jika tidak dikonfirmasi, NanoKVM mengembalikan pengaturan sebelumnya.',
+            'Koneksi ke halaman ini akan terputus. NanoKVM menerapkan alamat baru, lalu menunggu {{seconds}} detik sampai Anda membukanya di alamat tersebut dan masuk. Jika tidak ada yang menjangkaunya, NanoKVM mengembalikan pengaturan sebelumnya.',
           applyConfirm: 'Terapkan',
           applyCancel: 'Batal',
           applyFailed: 'Gagal menerapkan alamat',
@@ -501,7 +501,7 @@ const id = {
           trialDhcp: 'NanoKVM sedang meminta alamat melalui DHCP.',
           trialStatic: 'NanoKVM sekarang berada di {{address}}.',
           trialInstruction:
-            'Buka NanoKVM di alamat barunya, masuk, lalu kembali ke sini untuk mempertahankan perubahan. NanoKVM mengembalikan pengaturan sebelumnya dalam {{seconds}} detik.',
+            'Buka NanoKVM di alamat barunya dan masuk. Itu mempertahankan perubahan. Jika tidak ada yang menjangkau NanoKVM dalam {{seconds}} detik, NanoKVM mengembalikan pengaturan sebelumnya.',
           trialOpen: 'Buka alamat baru',
           trialKeep: 'Pertahankan pengaturan ini',
           trialKept: 'Alamat baru tersimpan',

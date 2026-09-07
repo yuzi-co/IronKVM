@@ -482,7 +482,7 @@ const zh = {
           maskRequired: '请填写子网掩码',
           applyTitle: '要更改 NanoKVM 的地址吗？',
           applyWarning:
-            '与此页面的连接将会断开。NanoKVM 会应用新地址，然后等待 {{seconds}} 秒，等你从新地址确认。如果没有确认，NanoKVM 会恢复之前的设置。',
+            '与此页面的连接将断开。NanoKVM 应用新地址后，会等待 {{seconds}} 秒，等你在该地址打开并登录。如果无人连接，NanoKVM 会恢复先前的设置。',
           applyConfirm: '应用',
           applyCancel: '取消',
           applyFailed: '地址应用失败',
@@ -490,7 +490,7 @@ const zh = {
           trialDhcp: 'NanoKVM 正在通过 DHCP 请求地址。',
           trialStatic: 'NanoKVM 现在位于 {{address}}。',
           trialInstruction:
-            '请在新地址打开 NanoKVM 并登录，然后返回此处保留更改。NanoKVM 将在 {{seconds}} 秒后恢复之前的设置。',
+            '在新地址打开 NanoKVM 并登录，即可保留此更改。如果 {{seconds}} 秒内无人连接 NanoKVM，它会恢复先前的设置。',
           trialOpen: '打开新地址',
           trialKeep: '保留这些设置',
           trialKept: '新地址已保存',

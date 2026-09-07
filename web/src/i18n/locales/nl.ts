@@ -499,7 +499,7 @@ const nl = {
           maskRequired: 'Een subnetmasker is vereist',
           applyTitle: 'Het adres van NanoKVM wijzigen?',
           applyWarning:
-            'De verbinding met deze pagina gaat verloren. NanoKVM past het nieuwe adres toe en wacht dan {{seconds}} seconden op uw bevestiging vanaf het nieuwe adres. Zonder bevestiging zet NanoKVM de vorige instellingen terug.',
+            'De verbinding met deze pagina gaat verloren. NanoKVM past het nieuwe adres toe en wacht dan {{seconds}} seconden tot u het op dat adres opent en zich aanmeldt. Bereikt niemand het, dan zet NanoKVM de vorige instellingen terug.',
           applyConfirm: 'Toepassen',
           applyCancel: 'Annuleren',
           applyFailed: 'Het adres kon niet worden toegepast',
@@ -507,7 +507,7 @@ const nl = {
           trialDhcp: 'NanoKVM vraagt een adres aan via DHCP.',
           trialStatic: 'NanoKVM is nu bereikbaar op {{address}}.',
           trialInstruction:
-            'Open NanoKVM op het nieuwe adres, meld u aan en kom hier terug om de wijziging te behouden. NanoKVM zet de vorige instellingen over {{seconds}} seconden terug.',
+            'Open NanoKVM op zijn nieuwe adres en meld u aan. Daarmee blijft de wijziging behouden. Bereikt niemand NanoKVM binnen {{seconds}} seconden, dan zet het de vorige instellingen terug.',
           trialOpen: 'Het nieuwe adres openen',
           trialKeep: 'Deze instellingen behouden',
           trialKept: 'Het nieuwe adres is opgeslagen',

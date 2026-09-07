@@ -488,7 +488,7 @@ const ko = {
           maskRequired: '서브넷 마스크가 필요합니다',
           applyTitle: 'NanoKVM의 주소를 변경할까요?',
           applyWarning:
-            '이 페이지와의 연결이 끊어집니다. NanoKVM이 새 주소를 적용한 뒤, 새 주소에서 확인할 때까지 {{seconds}}초 동안 기다립니다. 확인하지 않으면 NanoKVM이 이전 설정을 되돌립니다.',
+            '이 페이지와의 연결이 끊어집니다. NanoKVM이 새 주소를 적용한 다음, 해당 주소에서 열고 로그인할 때까지 {{seconds}}초 동안 기다립니다. 아무도 연결하지 못하면 NanoKVM이 이전 설정으로 되돌립니다.',
           applyConfirm: '적용',
           applyCancel: '취소',
           applyFailed: '주소를 적용하지 못했습니다',
@@ -496,7 +496,7 @@ const ko = {
           trialDhcp: 'NanoKVM이 DHCP에 주소를 요청하고 있습니다.',
           trialStatic: 'NanoKVM이 이제 {{address}}에 있습니다.',
           trialInstruction:
-            '새 주소로 NanoKVM을 열고 로그인한 다음, 여기로 돌아와 변경 사항을 유지하세요. NanoKVM은 {{seconds}}초 후 이전 설정을 되돌립니다.',
+            '새 주소로 NanoKVM을 열고 로그인하세요. 그러면 변경 사항이 유지됩니다. {{seconds}}초 안에 아무도 NanoKVM에 연결하지 못하면 이전 설정으로 되돌립니다.',
           trialOpen: '새 주소 열기',
           trialKeep: '이 설정 유지',
           trialKept: '새 주소가 저장되었습니다',

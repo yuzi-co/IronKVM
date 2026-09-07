@@ -502,7 +502,7 @@ const de = {
           maskRequired: 'Eine Subnetzmaske ist erforderlich',
           applyTitle: 'Adresse von NanoKVM ändern?',
           applyWarning:
-            'Die Verbindung zu dieser Seite geht verloren. NanoKVM übernimmt die neue Adresse und wartet dann {{seconds}} Sekunden auf Ihre Bestätigung von der neuen Adresse aus. Ohne Bestätigung stellt NanoKVM die vorherigen Einstellungen wieder her.',
+            'Die Verbindung zu dieser Seite geht verloren. NanoKVM übernimmt die neue Adresse und wartet dann {{seconds}} Sekunden, bis Sie es unter dieser Adresse öffnen und sich anmelden. Erreicht es niemand, stellt NanoKVM die vorherigen Einstellungen wieder her.',
           applyConfirm: 'Übernehmen',
           applyCancel: 'Abbrechen',
           applyFailed: 'Die Adresse konnte nicht übernommen werden',
@@ -510,7 +510,7 @@ const de = {
           trialDhcp: 'NanoKVM fordert eine Adresse per DHCP an.',
           trialStatic: 'NanoKVM ist jetzt unter {{address}} erreichbar.',
           trialInstruction:
-            'Öffnen Sie NanoKVM unter der neuen Adresse, melden Sie sich an und kehren Sie hierher zurück, um die Änderung zu behalten. NanoKVM stellt die vorherigen Einstellungen in {{seconds}} Sekunden wieder her.',
+            'Öffnen Sie NanoKVM unter seiner neuen Adresse und melden Sie sich an. Damit bleibt die Änderung erhalten. Erreicht NanoKVM niemand innerhalb von {{seconds}} Sekunden, stellt es die vorherigen Einstellungen wieder her.',
           trialOpen: 'Neue Adresse öffnen',
           trialKeep: 'Diese Einstellungen behalten',
           trialKept: 'Die neue Adresse ist gespeichert',

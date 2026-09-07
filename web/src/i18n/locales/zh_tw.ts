@@ -479,7 +479,7 @@ const zh_tw = {
           maskRequired: '請填寫子網路遮罩',
           applyTitle: '要變更 NanoKVM 的位址嗎？',
           applyWarning:
-            '與此頁面的連線將會中斷。NanoKVM 會套用新位址，然後等待 {{seconds}} 秒，等你從新位址確認。若未確認，NanoKVM 會還原先前的設定。',
+            '與此頁面的連線將中斷。NanoKVM 套用新位址後，會等待 {{seconds}} 秒，等你在該位址開啟並登入。如果無人連線，NanoKVM 會還原先前的設定。',
           applyConfirm: '套用',
           applyCancel: '取消',
           applyFailed: '位址套用失敗',
@@ -487,7 +487,7 @@ const zh_tw = {
           trialDhcp: 'NanoKVM 正在透過 DHCP 要求位址。',
           trialStatic: 'NanoKVM 現在位於 {{address}}。',
           trialInstruction:
-            '請在新位址開啟 NanoKVM 並登入，然後回到這裡保留變更。NanoKVM 將在 {{seconds}} 秒後還原先前的設定。',
+            '在新位址開啟 NanoKVM 並登入，即可保留此變更。如果 {{seconds}} 秒內無人連線 NanoKVM，它會還原先前的設定。',
           trialOpen: '開啟新位址',
           trialKeep: '保留這些設定',
           trialKept: '新位址已儲存',
