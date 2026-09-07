@@ -58,6 +58,12 @@ type trialState struct {
 	Prefix   int       `json:"prefix"`
 	Gateway  string    `json:"gateway"`
 	Deadline time.Time `json:"deadline"`
+	// Applied says the interface took the change. The in-process flag of the
+	// same name does not survive the process, and a trial adopted from this
+	// record would otherwise be assumed to have been applied: a server that
+	// died between writing this record and finishing the apply would let the
+	// next request confirm a change the interface never took.
+	Applied bool `json:"applied"`
 }
 
 func writeTrialState(state trialState) error {

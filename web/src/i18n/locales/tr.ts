@@ -495,7 +495,7 @@ const tr = {
           maskRequired: 'Alt ağ maskesi gereklidir',
           applyTitle: 'NanoKVM adresi değiştirilsin mi?',
           applyWarning:
-            'Bu sayfayla bağlantı kesilecek. NanoKVM yeni adresi uygular, sonra onu bu adreste açıp oturum açmanız için {{seconds}} saniye bekler. Kimse ona ulaşamazsa NanoKVM önceki ayarları geri yükler.',
+            'Bu sayfayla bağlantı kesilecek. NanoKVM yeni adresi uygular ve ona bu adresten ulaşmanız için {{seconds}} saniye bekler. Ona ulaşmak değişikliği korur. Ona hiçbir şey ulaşmazsa NanoKVM önceki ayarları geri yükler.',
           applyConfirm: 'Uygula',
           applyCancel: 'İptal',
           applyFailed: 'Adres uygulanamadı',
@@ -503,7 +503,7 @@ const tr = {
           trialDhcp: 'NanoKVM, DHCP üzerinden adres istiyor.',
           trialStatic: 'NanoKVM şimdi {{address}} adresinde.',
           trialInstruction:
-            "NanoKVM'i yeni adresinde açın ve oturum açın. Bu, değişikliği korur. {{seconds}} saniye içinde NanoKVM'e kimse ulaşamazsa önceki ayarlar geri yüklenir.",
+            "NanoKVM'i yeni adresinde açın ve isterse oturum açın. Ona orada ulaşmak değişikliği korur. {{seconds}} saniye içinde NanoKVM'e hiçbir şey ulaşmazsa önceki ayarlar geri yüklenir.",
           trialOpen: 'Yeni adresi aç',
           trialKeep: 'Bu ayarları koru',
           trialKept: 'Yeni adres kaydedildi',

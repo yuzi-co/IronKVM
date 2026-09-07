@@ -15,6 +15,15 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// noteSignedInAdmin reports a request that an administrator's session
+// authenticated, which is the proof an address trial waits for. See
+// service/network/ethernet_reach.go.
+//
+// It is a var so a test can watch the seam. Without one, deleting the call in
+// authenticateBySession leaves every test in the tree green and the feature
+// gone, because the network package's own tests call it directly.
+var noteSignedInAdmin = network.NoteSignedInAdminRequest
+
 const (
 	principalContextKey = "principal"
 	tokenContextKey     = "token"
@@ -207,11 +216,14 @@ func authenticateBySession(c *gin.Context) (Principal, *Token, bool) {
 		return Principal{}, nil, false
 	}
 
-	// A signed-in request is the proof an address trial is waiting for, so it
-	// is reported from the one place that decides a session is genuine rather
-	// than from each route. See service/network/ethernet_reach.go: it costs two
-	// atomic loads while no trial is running, which is nearly always.
-	network.NoteSignedInRequest(c)
+	// Reported from the one place that decides a session is genuine, rather
+	// than from each route. Only an administrator's: every ethernet route is
+	// behind RequireRole(RoleAdmin), and a change must not be ratified through
+	// a session that could not have made it. This runs before RequireRole, so
+	// the role is read here rather than left to the route.
+	if user.Role == authn.RoleAdmin {
+		noteSignedInAdmin(c)
+	}
 
 	return Principal{Username: user.Username, Role: user.Role}, token, true
 }

@@ -496,7 +496,7 @@ const pl = {
           maskRequired: 'Maska podsieci jest wymagana',
           applyTitle: 'Zmienić adres NanoKVM?',
           applyWarning:
-            'Połączenie z tą stroną zostanie utracone. NanoKVM zastosuje nowy adres, a potem czeka {{seconds}} sekund, aż otworzysz go pod tym adresem i zalogujesz się. Jeśli nikt do niego nie dotrze, NanoKVM przywróci poprzednie ustawienia.',
+            'Połączenie z tą stroną zostanie utracone. NanoKVM zastosuje nowy adres i czeka {{seconds}} sekund, aż dotrzesz do niego pod tym adresem. Dotarcie do niego zachowa zmianę. Jeśli nic do niego nie dotrze, NanoKVM przywróci poprzednie ustawienia.',
           applyConfirm: 'Zastosuj',
           applyCancel: 'Anuluj',
           applyFailed: 'Nie udało się zastosować adresu',
@@ -504,7 +504,7 @@ const pl = {
           trialDhcp: 'NanoKVM prosi o adres przez DHCP.',
           trialStatic: 'NanoKVM jest teraz pod adresem {{address}}.',
           trialInstruction:
-            'Otwórz NanoKVM pod jego nowym adresem i zaloguj się. To zachowa zmianę. Jeśli nikt nie dotrze do NanoKVM w ciągu {{seconds}} sekund, przywróci on poprzednie ustawienia.',
+            'Otwórz NanoKVM pod jego nowym adresem i zaloguj się, jeśli o to poprosi. Dotarcie do niego zachowa zmianę. Jeśli nic nie dotrze do NanoKVM w ciągu {{seconds}} sekund, przywróci on poprzednie ustawienia.',
           trialOpen: 'Otwórz nowy adres',
           trialKeep: 'Zachowaj te ustawienia',
           trialKept: 'Nowy adres został zapisany',

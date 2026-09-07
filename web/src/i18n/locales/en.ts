@@ -560,7 +560,7 @@ const en = {
           maskRequired: 'A subnet mask is required',
           applyTitle: 'Change the address of NanoKVM?',
           applyWarning:
-            'The connection to this page will be lost. NanoKVM applies the new address, then waits {{seconds}} seconds for you to open it at that address and sign in. If nobody reaches it, NanoKVM puts the previous settings back.',
+            'The connection to this page will be lost. NanoKVM applies the new address and waits {{seconds}} seconds for you to reach it there. Reaching it keeps the change. If nothing reaches it, NanoKVM puts the previous settings back.',
           applyConfirm: 'Apply',
           applyCancel: 'Cancel',
           applyFailed: 'Failed to apply the address',
@@ -568,7 +568,7 @@ const en = {
           trialDhcp: 'NanoKVM is asking DHCP for an address.',
           trialStatic: 'NanoKVM is now at {{address}}.',
           trialInstruction:
-            'Open NanoKVM at its new address and sign in. That keeps the change. If nobody reaches NanoKVM in {{seconds}} seconds, it puts the previous settings back.',
+            'Open NanoKVM at its new address and sign in if it asks. Reaching it there keeps the change. If nothing reaches NanoKVM in {{seconds}} seconds, it puts the previous settings back.',
           trialOpen: 'Open the new address',
           trialKeep: 'Keep these settings',
           trialKept: 'The new address is saved',
