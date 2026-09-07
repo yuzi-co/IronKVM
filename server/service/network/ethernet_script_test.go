@@ -49,6 +49,77 @@ func TestTheTrialAsksForWhatTheBootScriptAsksFor(t *testing.T) {
 	}
 }
 
+// Neither the trial nor the boot script may flush IPv6.
+//
+// `ip addr flush dev eth0` takes every family with it, the IPv6 link-local
+// included. On the device on 2026-09-07 a revert left eth0 with no IPv6 at all
+// for several minutes. The global address came back later on its own and the
+// link-local did not, and it took disabling and re-enabling IPv6 on the
+// interface to get both. An address change should not cost an address family
+// it does not manage, however long it takes to come back.
+//
+// Both copies are checked here, because the revert runs the boot script and
+// the trial runs the Go code, so a fix to one of them alone leaves the other
+// stripping the interface.
+func TestNeitherTheTrialNorTheBootScriptFlushesIPv6(t *testing.T) {
+	t.Run("the trial", func(t *testing.T) {
+		for _, apply := range []struct {
+			name string
+			run  func() error
+		}{
+			{name: "static", run: func() error {
+				return applyStatic(ethernetConfig{Address: "10.0.0.99", Prefix: 24})
+			}},
+			{name: "dhcp", run: applyDHCP},
+		} {
+			t.Run(apply.name, func(t *testing.T) {
+				commands := recordCommands(t)
+				if err := apply.run(); err != nil {
+					t.Fatalf("failed to apply: %s", err)
+				}
+
+				assertFlushesIPv4Only(t, commands.all())
+			})
+		}
+	})
+
+	t.Run("the boot script", func(t *testing.T) {
+		script, err := os.ReadFile(ethInitScriptSource)
+		if err != nil {
+			t.Skipf("cannot read %s: %s", ethInitScriptSource, err)
+		}
+
+		assertFlushesIPv4Only(t, strings.Split(string(script), "\n"))
+	})
+}
+
+// assertFlushesIPv4Only requires at least one flush, so a copy that stopped
+// flushing does not pass by having nothing to check, and requires every flush
+// it finds to name the family.
+func assertFlushesIPv4Only(t *testing.T, lines []string) {
+	t.Helper()
+
+	found := 0
+	for _, line := range lines {
+		fields := strings.Fields(line)
+		if len(fields) < 2 || fields[0] != "ip" {
+			continue
+		}
+		if !strings.Contains(line, "flush") {
+			continue
+		}
+
+		found++
+		if fields[1] != "-4" {
+			t.Errorf("this flush takes the IPv6 addresses with it: %q", strings.TrimSpace(line))
+		}
+	}
+
+	if found == 0 {
+		t.Error("nothing here flushes the interface, so this test is measuring nothing")
+	}
+}
+
 // udhcpcOptionsIn collects the request options the script passes, which are the
 // arguments that change what the lease carries. The timeouts and the pid file
 // are deliberately not compared: the script uses a shorter retry count on its

@@ -342,7 +342,7 @@ func TestAStaticTrialSetsTheAddressWithoutSavingIt(t *testing.T) {
 		t.Fatalf("failed to apply: %s", err)
 	}
 
-	if !commands.contains("ip addr flush dev eth0") {
+	if !commands.contains("ip -4 addr flush dev eth0") {
 		t.Error("the old address was not removed")
 	}
 	if !commands.contains("ip addr add 10.0.0.99/24 brd + dev eth0") {
