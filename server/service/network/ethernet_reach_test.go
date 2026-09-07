@@ -195,6 +195,7 @@ func TestAnAdoptedTrialIsConfirmedByAReachingClient(t *testing.T) {
 		Address: "10.0.0.222",
 		Prefix:  24,
 		Gateway: "10.0.0.1",
+		Applied: true,
 	}
 	if err := writeTrialState(state); err != nil {
 		t.Fatalf("failed to write the trial record: %s", err)
@@ -208,6 +209,78 @@ func TestAnAdoptedTrialIsConfirmedByAReachingClient(t *testing.T) {
 	}
 	if _, ok := readTrialState(); ok {
 		t.Error("the record the detached revert reads was left behind")
+	}
+}
+
+// A server that died between writing the record and applying the change leaves
+// a trial the interface never took, and neither shape of it may be confirmed.
+// A DHCP trial has no address of its own, so the address the board was leaving
+// answers for it. A static trial that names the address the board already had
+// answers for itself.
+func TestAnAdoptedTrialThatWasNeverAppliedProvesNothing(t *testing.T) {
+	tests := []struct {
+		name    string
+		mode    string
+		address string
+	}{
+		{name: "a static trial", mode: ethModeStatic, address: "10.0.0.222"},
+		{name: "a dhcp trial", mode: ethModeDHCP, address: ""},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			useTempConfig(t)
+			recordCommands(t)
+			clearTrial(t)
+			stubEthernetAddresses(t, "10.0.0.222")
+
+			state := trialState{
+				Token:   "token-unapplied",
+				Mode:    test.mode,
+				Address: test.address,
+				Prefix:  24,
+			}
+			if err := writeTrialState(state); err != nil {
+				t.Fatalf("failed to write the trial record: %s", err)
+			}
+
+			noteReachable("10.0.0.222", "10.0.0.5:51314")
+
+			if _, isStatic := readEthernetConfig(); isStatic {
+				t.Error("a trial that was never applied saved a static configuration")
+			}
+			if _, ok := readTrialState(); !ok {
+				t.Error("a trial that was never applied was called off anyway")
+			}
+		})
+	}
+}
+
+// The apply is recorded in the file as well as in memory, so the trial
+// survives a restart as an applied one rather than as an unproven one.
+func TestApplyingATrialIsRecordedOutsideTheProcess(t *testing.T) {
+	useTempConfig(t)
+	recordCommands(t)
+	clearTrial(t)
+
+	startTrial("token-record", ethModeStatic, ethernetConfig{Address: "10.0.0.222", Prefix: 24}, 60)
+
+	state, ok := readTrialState()
+	if !ok {
+		t.Fatal("the trial was not recorded at all")
+	}
+	if state.Applied {
+		t.Error("a trial is recorded as applied before the interface takes it")
+	}
+
+	markTrialApplied("token-record")
+
+	state, ok = readTrialState()
+	if !ok {
+		t.Fatal("the record went away when the trial was applied")
+	}
+	if !state.Applied {
+		t.Error("the apply was not recorded outside the process")
 	}
 }
 
@@ -249,7 +322,7 @@ func TestAReachThatCannotSaveLeavesTheTrialRunning(t *testing.T) {
 	}
 }
 
-func TestNoteSignedInRequestReadsTheAcceptingSocket(t *testing.T) {
+func TestNoteSignedInAdminRequestReadsTheAcceptingSocket(t *testing.T) {
 	useTempConfig(t)
 	recordCommands(t)
 	clearTrial(t)
@@ -267,7 +340,7 @@ func TestNoteSignedInRequestReadsTheAcceptingSocket(t *testing.T) {
 	c, _ := gin.CreateTestContext(httptest.NewRecorder())
 	c.Request = request
 
-	NoteSignedInRequest(c)
+	NoteSignedInAdminRequest(c)
 
 	if describeTrial() != nil {
 		t.Error("a signed-in request over the new address did not confirm the trial")
@@ -276,7 +349,7 @@ func TestNoteSignedInRequestReadsTheAcceptingSocket(t *testing.T) {
 
 // A request that carries no accepting socket, which is every request a test
 // builds by hand, must not confirm anything.
-func TestNoteSignedInRequestWithoutALocalAddress(t *testing.T) {
+func TestNoteSignedInAdminRequestWithoutALocalAddress(t *testing.T) {
 	useTempConfig(t)
 	recordCommands(t)
 	clearTrial(t)
@@ -286,8 +359,8 @@ func TestNoteSignedInRequestWithoutALocalAddress(t *testing.T) {
 	c, _ := gin.CreateTestContext(httptest.NewRecorder())
 	c.Request = httptest.NewRequest(http.MethodGet, "/api/network/ethernet", nil)
 
-	NoteSignedInRequest(c)
-	NoteSignedInRequest(&gin.Context{})
+	NoteSignedInAdminRequest(c)
+	NoteSignedInAdminRequest(&gin.Context{})
 
 	if describeTrial() == nil {
 		t.Error("a request with no accepting socket confirmed the trial")

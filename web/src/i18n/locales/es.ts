@@ -496,7 +496,7 @@ const es = {
           maskRequired: 'Se requiere una máscara de subred',
           applyTitle: '¿Cambiar la dirección de NanoKVM?',
           applyWarning:
-            'Se perderá la conexión con esta página. NanoKVM aplica la nueva dirección y espera {{seconds}} segundos a que lo abra en esa dirección e inicie sesión. Si nadie llega a él, NanoKVM restaura la configuración anterior.',
+            'Se perderá la conexión con esta página. NanoKVM aplica la nueva dirección y espera {{seconds}} segundos a que llegue a él en esa dirección. Llegar a él conserva el cambio. Si no llega nada, NanoKVM restaura la configuración anterior.',
           applyConfirm: 'Aplicar',
           applyCancel: 'Cancelar',
           applyFailed: 'No se pudo aplicar la dirección',
@@ -504,7 +504,7 @@ const es = {
           trialDhcp: 'NanoKVM está solicitando una dirección por DHCP.',
           trialStatic: 'NanoKVM está ahora en {{address}}.',
           trialInstruction:
-            'Abra NanoKVM en su nueva dirección e inicie sesión. Eso conserva el cambio. Si nadie llega a NanoKVM en {{seconds}} segundos, restaura la configuración anterior.',
+            'Abra NanoKVM en su nueva dirección e inicie sesión si se la pide. Llegar a él allí conserva el cambio. Si no llega nada a NanoKVM en {{seconds}} segundos, restaura la configuración anterior.',
           trialOpen: 'Abrir la nueva dirección',
           trialKeep: 'Conservar esta configuración',
           trialKept: 'La nueva dirección está guardada',

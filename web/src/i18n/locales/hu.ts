@@ -496,7 +496,7 @@ const hu = {
           maskRequired: 'Alhálózati maszk megadása kötelező',
           applyTitle: 'Megváltoztatja a NanoKVM címét?',
           applyWarning:
-            'A kapcsolat ezzel az oldallal megszakad. A NanoKVM alkalmazza az új címet, majd {{seconds}} másodpercet vár arra, hogy megnyissa azon a címen és bejelentkezzen. Ha senki sem éri el, a NanoKVM visszaállítja a korábbi beállításokat.',
+            'A kapcsolat ezzel az oldallal megszakad. A NanoKVM alkalmazza az új címet, és {{seconds}} másodpercet vár arra, hogy elérje azon a címen. Az elérés megtartja a módosítást. Ha semmi sem éri el, a NanoKVM visszaállítja a korábbi beállításokat.',
           applyConfirm: 'Alkalmaz',
           applyCancel: 'Mégse',
           applyFailed: 'A cím alkalmazása nem sikerült',
@@ -504,7 +504,7 @@ const hu = {
           trialDhcp: 'A NanoKVM címet kér a DHCP-től.',
           trialStatic: 'A NanoKVM most a következő címen érhető el: {{address}}.',
           trialInstruction:
-            'Nyissa meg a NanoKVM-et az új címén, és jelentkezzen be. Ezzel a módosítás megmarad. Ha {{seconds}} másodpercen belül senki sem éri el a NanoKVM-et, visszaállítja a korábbi beállításokat.',
+            'Nyissa meg a NanoKVM-et az új címén, és jelentkezzen be, ha kéri. Az elérés megtartja a módosítást. Ha {{seconds}} másodpercen belül semmi sem éri el a NanoKVM-et, visszaállítja a korábbi beállításokat.',
           trialOpen: 'Az új cím megnyitása',
           trialKeep: 'Beállítások megtartása',
           trialKept: 'Az új cím mentve',

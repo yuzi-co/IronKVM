@@ -33,6 +33,10 @@ import (
 //     operator can. A key holder that wants to keep a change can still call
 //     the confirm route, which is an explicit act rather than a side effect of
 //     polling.
+//   - That session belongs to an administrator. Every ethernet route is behind
+//     RequireRole(RoleAdmin), so ratifying a change must not be reachable
+//     through a session that could not have made it. An operator whose browser
+//     reaches the board keeps nothing.
 //   - The request arrived on the address the trial applied. That is the whole
 //     proof, and it is what excludes a request that came in over Wi-Fi, over
 //     the USB network gadget, or over a connection older than the change.
@@ -49,8 +53,15 @@ import (
 // whoever answers, and that has not changed.
 
 // trialPending is read on every signed-in request, so it is an atomic and not
-// the mutex. A confirmation holds trialMutex while it writes /boot and runs
-// sync, and every other request would queue behind it.
+// the mutex. While no trial runs, which is nearly always, the check costs this
+// load and the one inside adoptOnce and touches nothing else.
+//
+// It does not make the whole path lock free. While a trial does run, every
+// signed-in request takes trialMutex, and a request that confirms holds it
+// across the /boot write and the sync. Measured on the device on 2026-09-07,
+// that write and sync together take under a millisecond, so the others queue
+// for no time worth naming. Do not read the flag as a promise about the
+// confirming request itself.
 var trialPending atomic.Bool
 
 // adoptOnce is the single look at /run for a trial that a previous process
@@ -66,10 +77,11 @@ func adoptPendingTrial() {
 	}
 }
 
-// NoteSignedInRequest records that a signed-in client reached the board. The
-// authentication middleware calls it, so it runs on every request a session
-// authenticates and does nothing at all while no trial is running.
-func NoteSignedInRequest(c *gin.Context) {
+// NoteSignedInAdminRequest records that an administrator's client reached the
+// board. The authentication middleware calls it, so it runs on every request
+// an administrator's session authenticates and does nothing at all while no
+// trial is running.
+func NoteSignedInAdminRequest(c *gin.Context) {
 	if c == nil || c.Request == nil {
 		return
 	}
@@ -125,6 +137,12 @@ func trialReachedLocked(local string) (token string, mode string, ok bool) {
 			trialPending.Store(false)
 			return "", "", false
 		}
+		if !state.Applied {
+			// The process that started this trial did not live to apply it.
+			// The interface still carries the address the board was leaving,
+			// so a request that arrives on it proves nothing.
+			return "", "", false
+		}
 		token, mode, applied = state.Token, state.Mode, state.Address
 	}
 
@@ -139,13 +157,30 @@ func trialReachedLocked(local string) (token string, mode string, ok bool) {
 	return token, mode, applied != "" && applied == local
 }
 
-// markTrialApplied says the interface now carries the trial.
+// markTrialApplied says the interface now carries the trial. It records the
+// fact in both places the trial lives, because a trial adopted from /run by a
+// later process has no other way to tell an applied change from one that was
+// only recorded.
 func markTrialApplied(token string) {
 	trialMutex.Lock()
 	defer trialMutex.Unlock()
 
-	if pendingTrial != nil && pendingTrial.token == token {
-		pendingTrial.applied = true
+	if pendingTrial == nil || pendingTrial.token != token {
+		return
+	}
+	pendingTrial.applied = true
+
+	state, ok := readTrialState()
+	if !ok || state.Token != token {
+		return
+	}
+
+	state.Applied = true
+	if err := writeTrialState(state); err != nil {
+		// The in-process trial is still marked, so this server confirms on
+		// reach as usual. Only a server that restarts from here loses the
+		// fact, and it then waits out the deadline instead of confirming.
+		log.Errorf("failed to record that the ethernet trial was applied: %s", err)
 	}
 }
 

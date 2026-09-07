@@ -498,7 +498,7 @@ const it = {
           maskRequired: 'È richiesta una maschera di sottorete',
           applyTitle: "Cambiare l'indirizzo di NanoKVM?",
           applyWarning:
-            "La connessione a questa pagina andrà persa. NanoKVM applica il nuovo indirizzo, poi attende {{seconds}} secondi che tu lo apra a quell'indirizzo e acceda. Se nessuno lo raggiunge, NanoKVM ripristina le impostazioni precedenti.",
+            "La connessione a questa pagina andrà persa. NanoKVM applica il nuovo indirizzo e attende {{seconds}} secondi che tu lo raggiunga a quell'indirizzo. Raggiungerlo mantiene la modifica. Se non lo raggiunge nulla, NanoKVM ripristina le impostazioni precedenti.",
           applyConfirm: 'Applica',
           applyCancel: 'Annulla',
           applyFailed: "Impossibile applicare l'indirizzo",
@@ -506,7 +506,7 @@ const it = {
           trialDhcp: 'NanoKVM sta chiedendo un indirizzo al DHCP.',
           trialStatic: 'NanoKVM ora si trova a {{address}}.',
           trialInstruction:
-            'Apri NanoKVM al suo nuovo indirizzo e accedi. Questo mantiene la modifica. Se nessuno raggiunge NanoKVM entro {{seconds}} secondi, ripristina le impostazioni precedenti.',
+            'Apri NanoKVM al suo nuovo indirizzo e accedi se lo chiede. Raggiungerlo lì mantiene la modifica. Se nulla raggiunge NanoKVM entro {{seconds}} secondi, ripristina le impostazioni precedenti.',
           trialOpen: 'Apri il nuovo indirizzo',
           trialKeep: 'Mantieni queste impostazioni',
           trialKept: 'Il nuovo indirizzo è salvato',

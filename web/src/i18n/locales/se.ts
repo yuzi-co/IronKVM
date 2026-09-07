@@ -490,7 +490,7 @@ const se = {
           maskRequired: 'En nätmask krävs',
           applyTitle: 'Vill du ändra adressen för NanoKVM?',
           applyWarning:
-            'Anslutningen till den här sidan går förlorad. NanoKVM tillämpar den nya adressen och väntar sedan {{seconds}} sekunder på att du öppnar den på den adressen och loggar in. Om ingen når den återställer NanoKVM de tidigare inställningarna.',
+            'Anslutningen till den här sidan går förlorad. NanoKVM tillämpar den nya adressen och väntar {{seconds}} sekunder på att du når den där. Att nå den behåller ändringen. Om ingenting når den återställer NanoKVM de tidigare inställningarna.',
           applyConfirm: 'Tillämpa',
           applyCancel: 'Avbryt',
           applyFailed: 'Adressen kunde inte tillämpas',
@@ -498,7 +498,7 @@ const se = {
           trialDhcp: 'NanoKVM begär en adress via DHCP.',
           trialStatic: 'NanoKVM finns nu på {{address}}.',
           trialInstruction:
-            'Öppna NanoKVM på dess nya adress och logga in. Det behåller ändringen. Om ingen når NanoKVM inom {{seconds}} sekunder återställs de tidigare inställningarna.',
+            'Öppna NanoKVM på dess nya adress och logga in om den ber om det. Att nå den där behåller ändringen. Om ingenting når NanoKVM inom {{seconds}} sekunder återställs de tidigare inställningarna.',
           trialOpen: 'Öppna den nya adressen',
           trialKeep: 'Behåll dessa inställningar',
           trialKept: 'Den nya adressen är sparad',

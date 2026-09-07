@@ -493,7 +493,7 @@ const cz = {
           maskRequired: 'Maska podsítě je povinná',
           applyTitle: 'Změnit adresu NanoKVM?',
           applyWarning:
-            'Spojení s touto stránkou se ztratí. NanoKVM použije novou adresu a potom čeká {{seconds}} sekund, než ho na této adrese otevřete a přihlásíte se. Pokud se k němu nikdo nedostane, NanoKVM obnoví předchozí nastavení.',
+            'Spojení s touto stránkou se ztratí. NanoKVM použije novou adresu a čeká {{seconds}} sekund, než se k němu na této adrese dostanete. Tím se změna zachová. Pokud se k němu nic nedostane, NanoKVM obnoví předchozí nastavení.',
           applyConfirm: 'Použít',
           applyCancel: 'Zrušit',
           applyFailed: 'Adresu se nepodařilo použít',
@@ -501,7 +501,7 @@ const cz = {
           trialDhcp: 'NanoKVM žádá o adresu přes DHCP.',
           trialStatic: 'NanoKVM je nyní na adrese {{address}}.',
           trialInstruction:
-            'Otevřete NanoKVM na jeho nové adrese a přihlaste se. Tím se změna zachová. Pokud se k NanoKVM nikdo do {{seconds}} sekund nedostane, obnoví předchozí nastavení.',
+            'Otevřete NanoKVM na jeho nové adrese a přihlaste se, pokud o to požádá. Tím se změna zachová. Pokud se k NanoKVM nic do {{seconds}} sekund nedostane, obnoví předchozí nastavení.',
           trialOpen: 'Otevřít novou adresu',
           trialKeep: 'Zachovat toto nastavení',
           trialKept: 'Nová adresa je uložena',
