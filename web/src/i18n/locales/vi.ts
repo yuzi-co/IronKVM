@@ -491,7 +491,7 @@ const vi = {
           maskRequired: 'Cần có mặt nạ mạng con',
           applyTitle: 'Thay đổi địa chỉ của NanoKVM?',
           applyWarning:
-            'Kết nối tới trang này sẽ bị mất. NanoKVM áp dụng địa chỉ mới, sau đó chờ {{seconds}} giây để bạn xác nhận từ địa chỉ mới. Nếu bạn không xác nhận, NanoKVM khôi phục các cài đặt trước đó.',
+            'Kết nối tới trang này sẽ mất. NanoKVM áp dụng địa chỉ mới, rồi chờ {{seconds}} giây để bạn mở nó tại địa chỉ đó và đăng nhập. Nếu không ai kết nối được, NanoKVM khôi phục các cài đặt trước đó.',
           applyConfirm: 'Áp dụng',
           applyCancel: 'Hủy',
           applyFailed: 'Không áp dụng được địa chỉ',
@@ -499,7 +499,7 @@ const vi = {
           trialDhcp: 'NanoKVM đang yêu cầu địa chỉ qua DHCP.',
           trialStatic: 'NanoKVM hiện ở {{address}}.',
           trialInstruction:
-            'Mở NanoKVM tại địa chỉ mới, đăng nhập và quay lại đây để giữ thay đổi. NanoKVM khôi phục các cài đặt trước đó sau {{seconds}} giây.',
+            'Mở NanoKVM tại địa chỉ mới và đăng nhập. Thao tác đó giữ lại thay đổi. Nếu không ai kết nối tới NanoKVM trong {{seconds}} giây, nó khôi phục các cài đặt trước đó.',
           trialOpen: 'Mở địa chỉ mới',
           trialKeep: 'Giữ các cài đặt này',
           trialKept: 'Địa chỉ mới đã được lưu',

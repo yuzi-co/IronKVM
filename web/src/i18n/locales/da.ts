@@ -492,7 +492,7 @@ const da = {
           maskRequired: 'En undernetmaske er påkrævet',
           applyTitle: 'Vil du ændre adressen på NanoKVM?',
           applyWarning:
-            'Forbindelsen til denne side går tabt. NanoKVM anvender den nye adresse og venter derefter {{seconds}} sekunder på din bekræftelse fra den nye adresse. Uden bekræftelse gendanner NanoKVM de forrige indstillinger.',
+            'Forbindelsen til denne side går tabt. NanoKVM anvender den nye adresse og venter derefter {{seconds}} sekunder på, at du åbner den på den adresse og logger ind. Hvis ingen når den, gendanner NanoKVM de tidligere indstillinger.',
           applyConfirm: 'Anvend',
           applyCancel: 'Annuller',
           applyFailed: 'Adressen kunne ikke anvendes',
@@ -500,7 +500,7 @@ const da = {
           trialDhcp: 'NanoKVM beder om en adresse via DHCP.',
           trialStatic: 'NanoKVM er nu på {{address}}.',
           trialInstruction:
-            'Åbn NanoKVM på den nye adresse, log ind, og vend tilbage hertil for at beholde ændringen. NanoKVM gendanner de forrige indstillinger om {{seconds}} sekunder.',
+            'Åbn NanoKVM på dens nye adresse, og log ind. Det bevarer ændringen. Hvis ingen når NanoKVM inden for {{seconds}} sekunder, gendanner den de tidligere indstillinger.',
           trialOpen: 'Åbn den nye adresse',
           trialKeep: 'Behold disse indstillinger',
           trialKept: 'Den nye adresse er gemt',

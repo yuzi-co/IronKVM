@@ -496,7 +496,7 @@ const ja = {
           maskRequired: 'サブネットマスクが必要です',
           applyTitle: 'NanoKVM のアドレスを変更しますか?',
           applyWarning:
-            'このページとの接続は失われます。NanoKVM は新しいアドレスを適用し、新しいアドレスから確認するまで {{seconds}} 秒待ちます。確認しない場合、NanoKVM は以前の設定に戻します。',
+            'このページとの接続は失われます。NanoKVM は新しいアドレスを適用し、そのアドレスで開いてサインインするのを {{seconds}} 秒間待ちます。誰も到達しない場合、NanoKVM は以前の設定に戻します。',
           applyConfirm: '適用',
           applyCancel: 'キャンセル',
           applyFailed: 'アドレスを適用できませんでした',
@@ -504,7 +504,7 @@ const ja = {
           trialDhcp: 'NanoKVM は DHCP にアドレスを要求しています。',
           trialStatic: 'NanoKVM は現在 {{address}} にあります。',
           trialInstruction:
-            '新しいアドレスで NanoKVM を開いてサインインし、ここに戻って変更を保持してください。NanoKVM は {{seconds}} 秒後に以前の設定に戻します。',
+            '新しいアドレスで NanoKVM を開き、サインインしてください。それで変更が保持されます。{{seconds}} 秒以内に誰も NanoKVM に到達しない場合、以前の設定に戻ります。',
           trialOpen: '新しいアドレスを開く',
           trialKeep: 'この設定を保持',
           trialKept: '新しいアドレスを保存しました',

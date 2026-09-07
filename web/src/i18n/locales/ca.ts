@@ -492,7 +492,7 @@ const ca = {
           maskRequired: 'Cal una màscara de subxarxa',
           applyTitle: "Voleu canviar l'adreça de NanoKVM?",
           applyWarning:
-            'Es perdrà la connexió amb aquesta pàgina. NanoKVM aplica la nova adreça i després espera {{seconds}} segons que la confirmeu des de la nova adreça. Si no la confirmeu, NanoKVM restaura la configuració anterior.',
+            "Es perdrà la connexió amb aquesta pàgina. NanoKVM aplica la nova adreça i després espera {{seconds}} segons que l'obriu en aquesta adreça i hi inicieu la sessió. Si ningú no hi arriba, NanoKVM restaura la configuració anterior.",
           applyConfirm: 'Aplica',
           applyCancel: 'Cancel·la',
           applyFailed: "No s'ha pogut aplicar l'adreça",
@@ -500,7 +500,7 @@ const ca = {
           trialDhcp: 'NanoKVM està demanant una adreça per DHCP.',
           trialStatic: 'NanoKVM ara és a {{address}}.',
           trialInstruction:
-            "Obriu NanoKVM a la seva nova adreça, inicieu la sessió i torneu aquí per conservar el canvi. NanoKVM restaura la configuració anterior d'aquí a {{seconds}} segons.",
+            'Obriu NanoKVM a la seva nova adreça i inicieu la sessió. Això conserva el canvi. Si ningú no hi arriba en {{seconds}} segons, NanoKVM restaura la configuració anterior.',
           trialOpen: 'Obre la nova adreça',
           trialKeep: 'Conserva aquesta configuració',
           trialKept: "La nova adreça s'ha desat",
