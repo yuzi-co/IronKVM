@@ -441,7 +441,25 @@ func revertNow() {
 func applyStatic(config ethernetConfig) error {
 	stopDHCPClient()
 
-	if err := runCommand("ip", "addr", "flush", "dev", ethInterface); err != nil {
+	// -4, because this panel manages IPv4 and nothing else. A bare flush takes
+	// the IPv6 addresses with it, the link-local included.
+	//
+	// Measured on the device on 2026-09-07. Right after a revert eth0 had no
+	// IPv6 at all, and it still had none several minutes later. Some time after
+	// that the global address came back on its own and the link-local did not,
+	// which is not a state the interface reaches by itself. Disabling and
+	// re-enabling IPv6 on the interface restored both. disable_ipv6 was 0
+	// throughout, so nothing had turned IPv6 off.
+	//
+	// So the cost is an address family that goes away for minutes at a time and
+	// comes back incompletely, on hardware whose whole job is being reachable
+	// when other things are not. It is not a permanent loss and it does not
+	// need a link bounce, which is what the first reading of it suggested.
+	//
+	// S30eth carries the same flag for the same reason. Its own flush runs
+	// before the link is up at boot, where the loss does not show, and it runs
+	// again on every revert, where it does.
+	if err := runCommand("ip", "-4", "addr", "flush", "dev", ethInterface); err != nil {
 		return err
 	}
 
@@ -460,7 +478,7 @@ func applyStatic(config ethernetConfig) error {
 func applyDHCP() error {
 	stopDHCPClient()
 
-	if err := runCommand("ip", "addr", "flush", "dev", ethInterface); err != nil {
+	if err := runCommand("ip", "-4", "addr", "flush", "dev", ethInterface); err != nil {
 		return err
 	}
 

@@ -58,6 +58,43 @@ for f in S30eth S30wifi; do
     [ "$missing" = 0 ] && note "$f: all $total udhcpc call(s) request option 121" OK
 done
 
+echo "===== no address flush takes the IPv6 addresses with it ====="
+
+# `ip addr flush dev eth0` clears every family. It removes the IPv6 link-local
+# as well as the global, so the interface keeps IPv4 and loses IPv6.
+#
+# At boot the loss does not show, because the link comes up after the script
+# runs. S30eth also runs on every revert of an address trial, and there it does
+# show: measured on a device on 2026-09-07, eth0 had no IPv6 at all for several
+# minutes after a revert, and when the global address did come back on its own
+# the link-local did not come with it.
+#
+# Point this at /etc/init.d on a device to check the copy that actually boots,
+# which is the copy that matters and the one a package update can replace.
+for f in S30eth S30wifi; do
+    script="$DIR/$f"
+    [ -f "$script" ] || continue
+
+    flushes=$(grep -n '^[[:space:]]*ip .*addr .*flush' "$script" || true)
+    if [ -z "$flushes" ]; then
+        note "$f flushes no addresses" OK
+        continue
+    fi
+
+    total=0
+    bare=0
+    for n in $(echo "$flushes" | cut -d: -f1); do
+        total=$((total + 1))
+        text=$(sed -n "${n}p" "$script")
+        case "$text" in
+            *ip\ -4\ *) : ;;
+            *) bare=$((bare + 1)); note "$f:$n names the address family" FAIL ;;
+        esac
+    done
+
+    [ "$bare" = 0 ] && note "$f: all $total flush(es) keep IPv6" OK
+done
+
 echo
 if [ "$fails" -eq 0 ]; then
     echo "all cases passed"

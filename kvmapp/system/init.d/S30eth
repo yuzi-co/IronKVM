@@ -23,7 +23,12 @@ EOF
 }
 
 start() {
-    ip addr flush dev eth0
+    # -4 keeps the IPv6 addresses, the link-local included. A bare flush drops
+    # them and the kernel does not restore them while the interface stays up.
+    # At boot that is invisible, because the link comes up afterwards. This
+    # script also runs on every revert of an address trial, and there it costs
+    # the board its IPv6 until somebody bounces the link.
+    ip -4 addr flush dev eth0
     if [ -e /boot/eth.nodhcp ]; then
         while IFS= read -r line || [ -n "$line" ]; do
             line=$(clean_line "$line")
