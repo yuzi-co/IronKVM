@@ -69,6 +69,23 @@ esac
 PKG="ironkvm_${VERSION}.tar.gz"
 IMG="ironkvm-${VERSION}-sdcard.img.xz"
 
+# The tag carries a name and not only a number, because the two projects share
+# one tag namespace and upstream is still using it. Sipeed tags each card image
+# revision as vX.Y.Z, and those tags reach this repository with every fetch:
+# v1.1.0 is Sipeed's, dated 2024-07-08, and v1.4.3 is Sipeed's too, dated
+# 2026-06-09. The fork's first three releases took v1.0.1 to v1.0.3 and did not
+# collide by luck rather than by design. The fourth wanted v1.1.0, which was
+# taken.
+#
+# A prefixed tag cannot collide with an image revision, whatever number either
+# project reaches next. The version itself does not change: latest.json, the
+# About panel and the package name all read $VERSION, and only the tag and the
+# asset URL carry the prefix.
+#
+# Releases 1.0.1 to 1.0.3 keep the tags they were published under. A retag
+# would break the download URL of every asset they hold.
+TAG="ironkvm-${VERSION}"
+
 json_string() {
     sed -n "s/.*\"$1\"[[:space:]]*:[[:space:]]*\"\([^\"]*\)\".*/\1/p" "$OUT/latest.json" | head -1
 }
@@ -118,8 +135,8 @@ fi
 
 git diff --quiet && git diff --cached --quiet || {
     echo "the tree is dirty; commit or stash first" >&2; exit 1; }
-git rev-parse "v$VERSION" > /dev/null 2>&1 && {
-    echo "tag v$VERSION already exists" >&2; exit 1; }
+git rev-parse "$TAG" > /dev/null 2>&1 && {
+    echo "tag $TAG already exists" >&2; exit 1; }
 
 # Every tool the run will need, checked before anything is built. A build that
 # discovers a missing tool at its last step has already spent twenty minutes and
@@ -452,7 +469,7 @@ cat > "$OUT/latest.json" <<EOF
   "manifest_version": 2,
   "version": "$VERSION",
   "name": "$PKG",
-  "url": "https://github.com/$REPO/releases/download/v$VERSION/$PKG",
+  "url": "https://github.com/$REPO/releases/download/$TAG/$PKG",
   "sha512": "$SHA",
   "size": $SIZE,
   "size_bytes": $SIZE,
@@ -491,9 +508,9 @@ publish() {
         return 0
     fi
 
-    git tag -a "v$VERSION" -m "IronKVM $VERSION"
-    git push origin "v$VERSION"
-    gh release create "v$VERSION" --repo "$REPO" --title "IronKVM $VERSION" \
+    git tag -a "$TAG" -m "IronKVM $VERSION"
+    git push origin "$TAG"
+    gh release create "$TAG" --repo "$REPO" --title "IronKVM $VERSION" \
         --notes-file "$OUT/notes.md" \
         "$OUT/$PKG" "$OUT/$IMG" "$OUT/SHA256SUMS"
 

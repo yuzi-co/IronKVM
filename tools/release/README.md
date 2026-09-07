@@ -166,6 +166,24 @@ tools/release/release.sh --verify-only 1.0.0
 The dry run performs every step except tagging, the GitHub release and the feed
 push. Use it first.
 
+### The tag name
+
+The script tags a release `ironkvm-X.Y.Z`. It does not tag `vX.Y.Z`.
+
+This repository holds Sipeed's tags as well as the fork's, because a fetch from
+upstream brings them. Sipeed tags each card image revision `vX.Y.Z`, and it
+still does: `v1.1.0` is theirs, from 2024-07-08, and `v1.4.3` is theirs, from
+2026-06-09. Releases 1.0.1 to 1.0.3 took `v1.0.1` to `v1.0.3` and missed a
+collision by luck. Release 1.1.0 did not: the tag it wanted was already in the
+repository and on the remote.
+
+The prefix removes the shared namespace. The version number itself does not
+change, so `latest.json`, the package name and the About panel all read
+`X.Y.Z`. Only the tag and the asset URL carry the prefix.
+
+The three releases published before this keep the tags they carry. A retag would
+break the download URL of every asset under them.
+
 ## What it produces
 
 | Artifact | Goes to | For |
