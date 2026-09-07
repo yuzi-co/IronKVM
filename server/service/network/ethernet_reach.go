@@ -147,11 +147,18 @@ func trialReachedLocked(local string) (token string, mode string, ok bool) {
 	}
 
 	if mode == ethModeDHCP {
-		// The lease picks the address, so the trial does not know it. Any
+		// The lease picks the address, so the trial does not know it. Any IPv4
 		// address the interface carries is one the lease put there: the apply
 		// flushes the interface first, so the address the board is leaving is
 		// gone before a request can arrive on it.
-		return token, mode, ethernetCarries(local)
+		//
+		// The family is part of the question. The flush stops at IPv4, by
+		// design, so the addresses a router advertisement put on the interface
+		// outlive an address change untouched. A client that arrives over one
+		// of them has proved the board is up and has proved nothing about the
+		// lease. The static branch below needs no such test, because it
+		// compares the arrival against the IPv4 address it applied.
+		return token, mode, isIPv4(local) && ethernetCarries(local)
 	}
 
 	return token, mode, applied != "" && applied == local
@@ -215,6 +222,15 @@ func hostOf(value string) string {
 	}
 
 	return ip.String()
+}
+
+// isIPv4 reports whether this is an address in the family the trial manages.
+// hostOf has already written a v4 mapped address as a dotted quad, so this
+// answers for the address as the interface reports it.
+func isIPv4(value string) bool {
+	ip := net.ParseIP(value)
+
+	return ip != nil && ip.To4() != nil
 }
 
 func isLoopbackAddress(value string) bool {
