@@ -393,3 +393,36 @@ func TestHostOf(t *testing.T) {
 		})
 	}
 }
+
+// The trial changes the IPv4 configuration and nothing else. Since the apply
+// stopped flushing IPv6, the addresses SLAAC put on the interface outlive an
+// address change, so a client that arrives over one of them reached the board
+// on something the trial never touched. It proves the board is up. It does not
+// prove the lease arrived, and that is the whole question a DHCP trial asks.
+//
+// The static branch is not exposed to this: it compares the arrival against
+// the IPv4 address it applied, and an IPv6 address cannot equal one. The DHCP
+// branch asks the interface instead, and the interface answers for every
+// family it holds.
+func TestADhcpTrialIsNotConfirmedByAnIPv6Arrival(t *testing.T) {
+	const global = "2002:82cc:8f31:0:4ada:35ff:fe6f:6f69"
+
+	useTempConfig(t)
+	recordCommands(t)
+	clearTrial(t)
+	stubEthernetAddresses(t, global, "fe80::4ada:35ff:fe6f:6f69", "10.0.0.150")
+
+	startAppliedTrial("token-ipv6", ethModeDHCP, ethernetConfig{})
+
+	noteReachable(global, "[2002:82cc:8f31::36b]:51314")
+
+	if describeTrial() == nil {
+		t.Fatal("an arrival over an address the lease did not provide confirmed the trial")
+	}
+
+	noteReachable("10.0.0.150", "10.0.0.5:51314")
+
+	if describeTrial() != nil {
+		t.Error("the leased address did not confirm the trial")
+	}
+}
