@@ -1961,3 +1961,71 @@ Still a mesh product built on this board rather than a source for it.
 - #911's `S25wifimod` half.
 - #910 against `958bb8a9`.
 - Whether #927's binary provenance layout should cover this fork's downloads.
+
+### Both taken, 2026-09-08
+
+Items 1 and 2 of the order above, each one branch merged into `fork/integration`
+with `--no-ff`.
+
+| Branch | Verified by |
+| --- | --- |
+| `fix/dhcp-broadcast-reply` | Two checks, one per copy, both mutation-checked. busybox's own source settled the open question. |
+| `fix/vision-writes-without-a-shell` | Two suites, six mutations. A `libkvm.so` rebuild with the NEEDED and symbol comparison. Not verified on hardware. |
+
+**The placement caveat does not apply.** The question left open above was whether
+busybox `-B` puts the broadcast flag on a RENEW, where pi-bmc argues it should
+not be. It does not. `add_client_options()` in `networking/udhcp/dhcpc.c` reads:
+
+```c
+/* Request broadcast replies if we have no IP addr */
+if ((option_mask32 & OPT_B) && packet->ciaddr == 0)
+	packet->flags |= htons(BROADCAST_FLAG);
+```
+
+A RENEW fills `ciaddr` with the address the client holds, so the guard excludes
+it, and the flag reaches the DISCOVER and the SELECT only. busybox draws the
+line that pi-bmc had to draw by hand in a Go client, so the option can go on
+every call here with no placement rule of its own.
+
+**The interrupt claim was too strong, and the correction is the finding.** The
+section above reads `985bca94` as attributing the SIGINT disposition this fork
+works around. It does not, and neither does removing the shells. `S95nanokvm`
+already carries a sufficient cause for the measured behaviour: both services
+start as background jobs of a shell without job control, and POSIX makes such a
+shell set SIGINT to `SIG_IGN` in the child. That alone makes SIGINT unreachable
+for anything this script starts, whatever libkvm does.
+
+What the shells were is a second, independent mechanism. `system(3)` sets SIGINT
+and SIGQUIT to `SIG_IGN` process-wide for as long as the child runs, and two
+threads inside it at once race on the restore: the second saves `SIG_IGN` as the
+handler to put back, the first restores the real one, and the second then
+installs `SIG_IGN` permanently. The HDMI detection thread and the watchdog
+thread both wrote these files while the main thread was still in `kvmv_init`.
+
+So the change removes a hazard for every start path that is not that shell, and
+it changes nothing about the stop path. The init script still has to send
+SIGTERM, and it now says so beside the measurement, because a reader who found
+this commit first would otherwise be entitled to conclude the workaround had
+become unnecessary.
+
+`985bca94`'s other half, re-asserting the handler after `kvmv_init` and reading
+`/proc/self/status` to prove which disposition the kernel holds, is still not
+taken. It is worth having only with a test that reads the disposition, and that
+test cannot run off the device.
+
+**The rebuild is the part that could have gone wrong and did not.** The
+comparison against the committed library found the same eight `NEEDED` entries
+and identical defined and undefined dynamic symbol sets, and
+`tools/vidiag/test-libkvm-thread-exit.sh`, run inside the builder image because
+the workstation has no cross `objdump`, still finds both threads testing the
+exit flag and reaching a return. That last one is the 2026-08-20 carveout-leak
+fix, and a rebuild is exactly how it would be lost.
+
+The proof that the build compiled this checkout rather than the sources baked
+into the image is the `echo %d > %s` format string: the committed library
+carries it and the rebuilt one does not.
+
+**Still not taken from this pass.** `kvm_mmf.cpp` keeps its `rmmod`/`insmod`
+block. Those run programs rather than write files, replacing them means
+`finit_module`, and the driver reload they belong to has never worked here
+anyway, which `tools/README.md` records.
