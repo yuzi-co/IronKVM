@@ -20,6 +20,11 @@ const (
 	// maxReadSize bounds one client frame; large enough for a paste, small
 	// enough that a hostile client cannot exhaust memory.
 	maxReadSize = 64 * 1024
+	// terminalWorkingDir is where a session starts, and a login shell reads
+	// its profile from. pty.Start fails outright if the directory is absent,
+	// which would leave the web terminal dead rather than merely prompt-less,
+	// so a test holds S95nanokvm to creating this exact path.
+	terminalWorkingDir = "/root"
 )
 
 type WinSize struct {
@@ -45,7 +50,8 @@ func (s *Service) Terminal(c *gin.Context) {
 		_ = ws.Close()
 	}()
 
-	cmd := exec.Command("/bin/sh")
+	cmd := exec.Command("/bin/sh", "-l")
+	cmd.Dir = terminalWorkingDir
 	ptmx, err := pty.Start(cmd)
 	if err != nil {
 		log.Errorf("failed to start pty: %s", err)
