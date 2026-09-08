@@ -61,6 +61,11 @@ wait_for_exit() {
 # not arrive. Two SIGINTs to a running server produced no log line and no exit
 # after 21s. One SIGTERM was answered and the process left in 7s.
 #
+# libkvm used to take SIGINT away a second time, through the system(3) calls it
+# made to write its small files, and it no longer does. That changes nothing
+# here. The shell rule above is on its own enough to make SIGINT unreachable for
+# a service this script starts, so the first signal still has to be SIGTERM.
+#
 # Ten seconds, not five. The server bounds its own teardown with disposeTimeout
 # in server/main.go, and then it exits whatever the teardown is still doing. A
 # wait equal to that bound races a teardown that was going to finish, so the

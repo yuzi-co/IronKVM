@@ -14,8 +14,10 @@
 #include "internal/vi_state_writer.hpp"
 
 #include <errno.h>
+#include <fcntl.h>
 #include <stdarg.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #define default_venc_chn        1
 
@@ -516,22 +518,75 @@ uint8_t check_res(uint16_t _width, uint16_t _height)
     return UNKNOWN_RES;
 }
 
+/* Write one short value to one file, the way `echo <value> > <path>` did.
+ *
+ * Every caller below used to build that command and hand it to system(3), and
+ * system(3) is not a way to write a file. It sets SIGINT and SIGQUIT to
+ * SIG_IGN for the whole process, runs the command, and puts the previous
+ * handlers back. Two threads that do that at the same time race on the
+ * restore: the second call saves SIG_IGN as the handler to put back, the first
+ * one restores the real handler, and the second one then installs SIG_IGN for
+ * good. This library starts an HDMI detection thread and a watchdog thread,
+ * both of which wrote these files while the main thread was still inside
+ * kvmv_init, so the race had every chance to run.
+ *
+ * Read that as a hazard removed, not as a symptom cured. The server on this
+ * board does ignore SIGINT, measured from /proc/<pid>/status on 2026-08-19 and
+ * written into S95nanokvm, but that observation already has a sufficient cause
+ * of its own: both services start as background jobs of a shell without job
+ * control, and POSIX makes such a shell set SIGINT to SIG_IGN in the child.
+ * The init script sends SIGTERM for that reason and still has to. What this
+ * removes is the second mechanism, the one that takes SIGINT away from a
+ * process that had it, which covers every way of starting the server that is
+ * not that shell.
+ *
+ * The rest is cost. Each of these writes forked a shell, and a shell here is a
+ * fork, an exec, a parse and a wait to perform one open, one write and one
+ * close, on a single core that a capture session already saturates.
+ *
+ * The trailing newline is what `echo` wrote. Nothing that reads these files
+ * needs it, atoi() and sysfs both stop at the first byte that is not a digit,
+ * but writing the same bytes as before means the change cannot alter what any
+ * other reader on the device sees.
+ *
+ * Failures are silent, as they were: system(3) returned a status that no
+ * caller here examined, and a resolution file that cannot be written is
+ * already reported by the capture failure that follows it.
+ */
+static bool write_small_file(const char *_path, const char *_format, ...)
+{
+    char text[64] = {0};
+    va_list args;
+
+    va_start(args, _format);
+    int length = vsnprintf(text, sizeof(text) - 1, _format, args);
+    va_end(args);
+
+    if(length < 0 || (size_t)length >= sizeof(text) - 1) return false;
+
+    text[length] = '\n';
+    length++;
+
+    int fd = open(_path, O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC, 0644);
+    if(fd < 0) return false;
+
+    ssize_t written = write(fd, text, (size_t)length);
+    close(fd);
+
+    return written == (ssize_t)length;
+}
+
 void write_res_to_file(uint16_t _width, uint16_t _height)
 {
-	char Cmd[100]={0};
-    sprintf(Cmd, "echo %d > %s", _width, vi_width_path);
-    system(Cmd);
-    sprintf(Cmd, "echo %d > %s", _height, vi_height_path);
-    system(Cmd);
-    system("sync");
+    write_small_file(vi_width_path, "%d", _width);
+    write_small_file(vi_height_path, "%d", _height);
+    sync();
 }
 
 int set_hdmi_mode(uint8_t _hdmi_mode)
 {
     if(_hdmi_mode >= 0 && _hdmi_mode <= 2){
-        char Cmd[100]={0};
-        sprintf(Cmd, "echo %d > %s", _hdmi_mode, hdmi_mode_path);
-        system(Cmd);
+        write_small_file(hdmi_mode_path, "%d", _hdmi_mode);
         return 1;
     } else {
         debug("[kvmv] Incorrect HDMI mode.\n");
@@ -557,9 +612,7 @@ int get_hdmi_mode(void)
         tmp8 = atoi((char*)RW_Data);
         if(tmp8 > 2) {
             tmp8 = 0;
-	        char Cmd[100]={0};
-            sprintf(Cmd, "echo 0 > %s", hdmi_mode_path);
-            system(Cmd);
+            write_small_file(hdmi_mode_path, "%d", 0);
         }
         if(tmp8 != kvmv_cfg.hdmi_mode){
             kvmv_cfg.hdmi_mode = tmp8;
@@ -631,28 +684,20 @@ int get_manual_resolution(void)
     // res min limit
     if(tmp_width < vi_min_width){
         tmp_width = vi_min_width;
-	    char Cmd[100]={0};
-        sprintf(Cmd, "echo %d > %s", vi_min_width, vi_width_path);
-	    system(Cmd);
+        write_small_file(vi_width_path, "%d", vi_min_width);
     }
     if(tmp_height < vi_min_height){
         tmp_height = vi_min_height;
-	    char Cmd[100]={0};
-        sprintf(Cmd, "echo %d > %s", vi_min_height, vi_height_path);
-	    system(Cmd);
+        write_small_file(vi_height_path, "%d", vi_min_height);
     }
     // res max limit
     if(tmp_width > vi_max_width){
         tmp_width = vi_max_width;
-	    char Cmd[100]={0};
-        sprintf(Cmd, "echo %d > %s", vi_max_width, vi_width_path);
-	    system(Cmd);
+        write_small_file(vi_width_path, "%d", vi_max_width);
     }
     if(tmp_height > vi_max_height){
         tmp_height = vi_max_height;
-	    char Cmd[100]={0};
-        sprintf(Cmd, "echo %d > %s", vi_max_height, vi_height_path);
-	    system(Cmd);
+        write_small_file(vi_height_path, "%d", vi_max_height);
     }
 
     // res change ?
@@ -722,10 +767,8 @@ uint8_t auto_try_res()
             // CSI abnormal due to resolution error
             // The test list is short; sequential testing can be performed
             printf("[kvmv] Trying %d * %d res ..\n", hdmi_res_list[auto_trying_times][0], hdmi_res_list[auto_trying_times][1]);
-            sprintf(Cmd, "echo %d > %s", hdmi_res_list[auto_trying_times][0], vi_width_path);
-            system(Cmd);
-            sprintf(Cmd, "echo %d > %s", hdmi_res_list[auto_trying_times][1], vi_height_path);
-            system(Cmd);
+            write_small_file(vi_width_path, "%d", hdmi_res_list[auto_trying_times][0]);
+            write_small_file(vi_height_path, "%d", hdmi_res_list[auto_trying_times][1]);
 
             kvmv_cfg.vi_width = hdmi_res_list[auto_trying_times][0];
             kvmv_cfg.vi_height = hdmi_res_list[auto_trying_times][1];
@@ -1484,9 +1527,7 @@ void* vi_subsystem_detection(void * arg)
             if(get_new_hdmi_mode == 1){
                 kvmv_cfg.vi_detect_state = 0;
                 // reset hdmi_state
-                char Cmd[100]={0};
-                sprintf(Cmd, "echo 0 > %s", hdmi_state_path);
-                system(Cmd);
+                write_small_file(hdmi_state_path, "%d", 0);
                 // reset hdmi
                 kvmv_hdmi_control(0);
                 time::sleep_ms(10);
@@ -2652,17 +2693,17 @@ uint8_t kvmv_hdmi_control(uint8_t _en)
         return -1;
     }
     if(access("/sys/class/gpio/gpio451/value", F_OK) != 0){
-        system("echo 451 > /sys/class/gpio/export");
-        system("echo out > /sys/class/gpio/gpio451/direction");
+        write_small_file("/sys/class/gpio/export", "%d", 451);
+        write_small_file("/sys/class/gpio/gpio451/direction", "%s", "out");
     }
     if(_en == 0){
         kvmv_cfg.hdmi_stop_flag = 1;
         while(kvmv_cfg.hdmi_reading_flag == 1) time::sleep_ms(10);
-        system("echo 0 > /sys/class/gpio/gpio451/value");
+        write_small_file("/sys/class/gpio/gpio451/value", "%d", 0);
         return 0;
     } else {
         kvmv_cfg.hdmi_stop_flag = 0;
-        system("echo 1 > /sys/class/gpio/gpio451/value");
+        write_small_file("/sys/class/gpio/gpio451/value", "%d", 1);
 
         // Keep the existing VI channel and consume queued frames after idle.
         // Reopening it here or from kvmv_read_img can exhaust the carveout
