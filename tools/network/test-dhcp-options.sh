@@ -58,6 +58,49 @@ for f in S30eth S30wifi; do
     [ "$missing" = 0 ] && note "$f: all $total udhcpc call(s) request option 121" OK
 done
 
+echo "===== every udhcpc call asks for a broadcast reply ====="
+
+# A client that holds no address cannot be reached by unicast. RFC 2131 4.4.1
+# lets the server answer a DISCOVER either way, and a relay agent can only use
+# the broadcast one, because the unicast one asks it to ARP for a host that has
+# not configured the address yet. It drops the reply instead. The symptom is a
+# board that leases in a second on a directly attached network and never leases
+# through a switch that relays DHCP from another VLAN.
+#
+# busybox sets the flag only while ciaddr is zero, in add_client_options(), so
+# -B reaches the DISCOVER and the SELECT and leaves a RENEW alone. That is what
+# RFC 2131 4.3.6 asks for, and it is why the option can go on every call here.
+#
+# S30wifi also passes -B to wpa_supplicant, where it means "run in the
+# background". Only the udhcpc lines are read below.
+for f in S30eth S30wifi; do
+    script="$DIR/$f"
+    if [ ! -f "$script" ]; then
+        note "$f exists" FAIL
+        continue
+    fi
+
+    calls=$(grep -n 'udhcpc ' "$script" | grep -v 'kill\|rm \|-e "\|\[ ' || true)
+
+    if [ -z "$calls" ]; then
+        note "$f calls udhcpc" FAIL
+        continue
+    fi
+
+    total=0
+    missing=0
+    for n in $(echo "$calls" | cut -d: -f1); do
+        total=$((total + 1))
+        text=" $(sed -n "${n}p" "$script") "
+        case "$text" in
+            *\ -B\ *) : ;;
+            *) missing=$((missing + 1)); note "$f:$n asks for a broadcast reply" FAIL ;;
+        esac
+    done
+
+    [ "$missing" = 0 ] && note "$f: all $total udhcpc call(s) ask for a broadcast reply" OK
+done
+
 echo "===== no address flush takes the IPv6 addresses with it ====="
 
 # `ip addr flush dev eth0` clears every family. It removes the IPv6 link-local

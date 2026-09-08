@@ -486,10 +486,13 @@ func applyDHCP() error {
 	// things. -O 121 requests the classless static routes: without it a board
 	// that took its lease from a trial would be missing routes that the same
 	// board has after a reboot, and the difference would show up later as a
-	// subnet that stopped being reachable. -b puts udhcpc in the background
-	// once it has a lease.
+	// subnet that stopped being reachable. -B asks the server to broadcast its
+	// reply, which is the only delivery a relay agent can perform for a client
+	// that holds no address yet; busybox sets the flag only while ciaddr is
+	// zero, so a renewal stays unicast. -b puts udhcpc in the background once
+	// it has a lease.
 	return runCommand("udhcpc", "-i", ethInterface, "-t", "10", "-T", "1", "-A", "5",
-		"-O", "121", "-b", "-p", udhcpcPidFile)
+		"-O", "121", "-B", "-b", "-p", udhcpcPidFile)
 }
 
 // stopDHCPClient ends the lease loop. A client left running would put its own

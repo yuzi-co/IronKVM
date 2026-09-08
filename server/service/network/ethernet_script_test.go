@@ -3,6 +3,7 @@ package network
 import (
 	"os"
 	"regexp"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -91,6 +92,69 @@ func TestNeitherTheTrialNorTheBootScriptFlushesIPv6(t *testing.T) {
 
 		assertFlushesIPv4Only(t, strings.Split(string(script), "\n"))
 	})
+}
+
+// A client in SELECTING state holds no address, so RFC 2131 4.4.1 lets the
+// server answer either by unicast to the address it is about to offer or by
+// broadcast, and only if the client asks for the second one does it get it.
+// A relay agent cannot deliver the first: it would have to ARP for a host that
+// has not configured the address yet, so it drops the reply. The symptom is a
+// board that leases in a second on a directly attached network and never
+// leases through a switch that relays DHCP from another VLAN.
+//
+// busybox sets the flag only while `ciaddr` is zero, so `-B` reaches the
+// DISCOVER and the SELECT and leaves a RENEW alone, which is where RFC 2131
+// 4.3.6 wants it. Passing it on every call is therefore correct.
+//
+// Both copies are checked, because a boot runs the script and a trial runs the
+// Go code, and a board that leases at boot and not on a trial is worse than
+// one that fails at both.
+func TestBothTheTrialAndTheBootScriptAskForABroadcastReply(t *testing.T) {
+	t.Run("the trial", func(t *testing.T) {
+		commands := recordCommands(t)
+		if err := applyDHCP(); err != nil {
+			t.Fatalf("failed to apply dhcp: %s", err)
+		}
+
+		assertEveryDHCPClientAsksForBroadcast(t, commands.all())
+	})
+
+	t.Run("the boot script", func(t *testing.T) {
+		script, err := os.ReadFile(ethInitScriptSource)
+		if err != nil {
+			t.Skipf("cannot read %s: %s", ethInitScriptSource, err)
+		}
+
+		assertEveryDHCPClientAsksForBroadcast(t, strings.Split(string(script), "\n"))
+	})
+}
+
+// assertEveryDHCPClientAsksForBroadcast requires at least one udhcpc call, so
+// a copy that stopped running one does not pass by having nothing to check.
+// Lines that only stop the client or read its pid file carry no options and
+// are skipped.
+func assertEveryDHCPClientAsksForBroadcast(t *testing.T, lines []string) {
+	t.Helper()
+
+	found := 0
+	for _, line := range lines {
+		fields := strings.Fields(line)
+		if !slices.Contains(fields, "udhcpc") {
+			continue
+		}
+		if !slices.Contains(fields, "-i") {
+			continue
+		}
+
+		found++
+		if !slices.Contains(fields, "-B") {
+			t.Errorf("a relay agent cannot deliver this lease: %q", strings.TrimSpace(line))
+		}
+	}
+
+	if found == 0 {
+		t.Error("nothing here runs udhcpc, so this test is measuring nothing")
+	}
 }
 
 // assertFlushesIPv4Only requires at least one flush, so a copy that stopped
