@@ -1744,3 +1744,220 @@ One thing this still does not touch. On the same board MJPEG delivers about
 36 frames a second while the source produces about 50, because the core
 saturates at 91%. Those frames are dropped at the VI stage, which is upstream
 of the channel control, and no setting here reaches them.
+
+## Status, 2026-09-08
+
+`upstream/main` moved from `7f95fe9b` to `5c0bef01`, two commits, both from Sipeed
+rather than from the contributor pool. The pull request pool changed shape instead:
+a second high-volume author appeared, and `dormancygrace` moved from small fixes to
+a feature that this fork does not have.
+
+Fork movement since the 2026-09-03 read: `RobbyV2/NanoKVM` added fifteen commits,
+`pi-bmc/nanokvm-app` added thirty, `mrjeeves/NanoKVM` added three, and
+`eringiriri/ERINGI_JPN_NanoKVM` did not move.
+
+### Upstream's two commits
+
+`283c1390` writes `/root/.profile` at boot when the file is absent, so the shell
+shows `user@host:dir#`. One guarded line in `S95nanokvm`, next to the
+`hostname.prefix` write this fork already carries. It lands on the root slot, not on
+`/kvmapp`, so it costs the boot SD card nothing. A slot rebuild reverts it, and the
+next boot writes it again.
+
+`5c0bef01` starts the web terminal as `/bin/sh -l` with `cmd.Dir = "/root"`, so the
+terminal gets the same prompt. It touches four lines of `terminal.go`, none of them
+near the read bound or the origin check this fork changed there.
+
+Take both. They are cosmetic, they are cheap, and carrying them removes two hunks
+from the next rebase.
+
+### A second author, and a wave this document has never triaged
+
+`Schokobecher` opened seven pull requests on 2026-09-08, none of which this document
+has read before. Unlike the `dormancygrace` pool, they are features rather than
+fixes, and five of the seven live in `server/` and `web/` where this fork can take
+them outright.
+
+| PR | What | Verdict here |
+| --- | --- | --- |
+| #918 | Complete `new_app_init()`'s init-script copy list | Cannot ship, and it matters anyway. See below. |
+| #919 | `/etc/kvm/enable-<svc>` flags, and a `/vm/services` API | Read. A real mechanism, and it competes with nothing here. |
+| #923 | Network-tab toggles for ssdpd and dnsmasq | Read, with #919. Depends on it. |
+| #920 | `/etc/kvm/device-name`, `-vendor`, `-serial` for hostname and USB strings | Compare against `4c9da557`. See below. |
+| #921 | A read-only Diagnostics settings tab over `GET /vm/diagnostics` | Read. Overlaps `S98vidiag` in intent, not in surface. |
+| #924 | Replaceable login logo and favicon, persisted to `/boot/logo.ico` | Skip unless somebody asks. Cosmetic, and it adds an upload path. |
+| #926 | Make the virtual keyboard responsive on mobile | Take if mobile matters. Two files, CSS and one component. |
+
+**#918 is the one this fork cannot take and should read anyway.** It is a
+`kvm_system` change, and this fork takes that binary from Sipeed's releases, so the
+patch itself is unreachable here. What it documents is not. `new_app_init()` copies
+a fixed list from `/kvmapp/system/init.d` to `/etc/init.d`, five scripts were missing
+from that list, and the `S95nanokvm` copy was gated on a PCIe-only file test. That is
+the same defect this fork wrote down as "boot reads `/etc/init.d`, not `/kvmapp`" and
+answered with `fix/manifest-installs-modified-init-scripts` and a two-place deploy.
+If #918 merges and ships in a Sipeed release, the two-place deploy stops being
+necessary for those five scripts. It does not stop being necessary for `S98vidiag`,
+which upstream does not know about.
+
+#918 also confirms, in the diff rather than in a claim, that `new_app_init()` still
+runs `rm -f /etc/init.d/S99*`. The reason `S98vidiag` is not `S99vidiag` is intact.
+
+**#920 and `4c9da557` answer the same question differently.** This fork gave the
+gadget a safe default and a stable identity in the init scripts. #920 makes the
+identity a file that the UI writes: `/etc/kvm/device-name` becomes the single source
+for the hostname, the USB product string and the mass-storage inquiry string, with
+`device-vendor` and `device-serial` beside it. That is strictly more than this fork
+has, and it is the shape a fleet wants. It also collides directly with `4c9da557`, so
+taking it means re-expressing this fork's defaults on top of their file contract
+rather than merging.
+
+`Schokobecher` also carries five branches with no pull request behind them:
+`fork/firewall-baseline`, `fork/ota-endpoint`, `feat/https-default`, `feat/mesh` and
+`fork/build-compile-out`. None has been read.
+
+### The `dormancygrace` pull requests this document has not triaged
+
+The 2026-09-03 table covered #891 to #908. Four are newer than it.
+
+| PR | What | Verdict here |
+| --- | --- | --- |
+| #914 | H.265 on the hardware encoder, plus a video consolidation | See below. The one genuinely new capability in the pool. |
+| #911 | Wi-Fi driver selection by detected SDIO device, and Wi-Fi state off persistent storage | Read. Half is `kvm_system` and cannot ship; the `S25wifimod`/`S30wifi` half can. |
+| #910 | Stop rewriting p2 at every boot; derive p3 from live sysfs values | Compare against `958bb8a9`. Both refuse to shrink; theirs also stops the resize entirely. |
+| #909 | Superseded by #911 | Skip. |
+
+**#914 is worth a decision rather than a read.** Most of it is consolidation of
+things this fork already merged separately: native VI submission, reusable pack
+storage, the stride copy, capture and VENC FPS alignment, persisted screen settings,
+MJPEG client isolation, throttled HDMI polling. Taking those back would be a
+regression to re-litigate. What is new is H.265, and this fork is closer to it than
+the pool knows: `kvm_mmf` already carries the `h265_or_h264_is_used` path and takes
+`type = 1` for HEVC, and `kvm_vision.cpp` hardcodes `cfg.type = 2` at one line. The
+encoder is there. What #914 adds around it is the Go and browser half: an encoder
+selector in the screen menu, WebCodecs and Pion configured for HEVC, and the
+`video_source.go` split that lets one pipeline serve both codecs.
+
+The argument for taking it is bitrate. This board's constraint is memory and the
+network, not encoder silicon, and HEVC buys roughly a third off the same picture. The
+argument against is the decoder: HEVC in WebCodecs needs hardware support in the
+viewer's browser, Firefox is unreliable, and a video path that fails on some
+operators' machines is an availability regression on a device whose whole purpose is
+being reachable. If it is taken, it is taken as a selectable mode with H.264 as the
+default, which is the opposite of #914's own choice.
+
+### #927, NetBird, supersedes #759
+
+`AndrewMoryakov` reopened the NetBird work as a managed extension: a signed binary
+with `SHA256`/`SOURCE`/`VERSION` files beside the Tailscale ones, an `S99netbird`
+init script, a build script, and a release workflow that verifies the assets. It is
+9,481 lines.
+
+Two things about it are worth noting whatever happens to the VPN itself. It puts the
+binary provenance files under `kvmapp/system/<tool>/` for Tailscale as well as
+NetBird, which is a mechanism this fork wants for anything it downloads and does not
+have. And `S99netbird` will be deleted by `new_app_init()` on the next application
+update, for the reason `S98vidiag` exists.
+
+Skip the VPN. Read the provenance layout.
+
+### The convergence, and what it costs this fork
+
+The `dormancygrace` branch list is worth writing down, because the overlap with this
+fork's topic-branch names is not a coincidence anyone should have to rediscover:
+`fix/persist-jwt-secret`, `fix/load-screen-settings`, `perf/reuse-venc-pack-storage`,
+`perf/mjpeg-native-frame`, `fix/venc-stride-copy-offset`, `fix/join-kvm-vision-workers`,
+`perf/throttle-idle-hdmi-polling`, `fix/sync-venc-frame-rate` and
+`perf/strip-server-release`. Each names a change this fork merged under a
+near-identical name. #910 and #911 now also add `tools/test-*.sh` suites, in the same
+shape as this fork's, to a repository that had no `tools/` directory before.
+
+This document does not need to decide what that is. It needs to record the
+consequence, which points one way: the parts of this fork that were its
+differentiators are becoming upstream's. That is good for the rebase and bad for the
+argument that the fork carries anything unique. Every one of those that lands
+upstream is a fork commit to drop rather than to rebase, and the 2026-09-03 order
+should be read again with that in mind before the next rebase.
+
+### The two items to take now
+
+Everything above is a read. Two things in this pass are small, evidenced, and answer
+a defect that is live here.
+
+**The DHCP broadcast flag.** `pi-bmc` `c29cabc6` measured a client that leases
+instantly on a directly attached network and never leases through a switch that
+relays DHCP from another VLAN. RFC 2131 4.4.1 gives the server two ways to answer a
+client in SELECTING state, and a relay agent cannot deliver the unicast one, because
+it would have to ARP for a host that has not configured the address yet. Their fix is
+to set the broadcast flag on DISCOVER and REQUEST and deliberately not on RENEW.
+
+This fork runs `udhcpc -i eth0 -t 3 -T 1 -A 5 -O 121 -b`, in `S30eth` twice, in
+`S30wifi` once, and in `ethernet.go`. `-b` is background-if-no-lease. The broadcast
+flag is `-B`, and it is not set anywhere. The failure they measured is therefore
+reachable here, and nothing in this fork's Ethernet work would have found it: every
+trial on this bench is on a flat segment.
+
+Their placement rule does not carry over unchanged. busybox `udhcpc -B` sets the flag
+on every message it sends, including RENEW, where they argue it should not be. Check
+what busybox actually does before taking it. A RENEW that asks for a broadcast reply
+is a working lease made noisier, not a broken one, but the claim should be measured
+rather than assumed.
+
+**The `system(3)` interrupt disposition.** `RobbyV2` `985bca94` and `fee042eb`
+attribute a thing this fork found and worked around. `system(3)` sets SIGINT and
+SIGQUIT to `SIG_IGN` in the calling process for as long as the child runs.
+`kvmv_init` writes its small files through `system(3)`, from the capture restart and
+from the HDMI detection and watchdog threads, so the server's SIGINT disposition is
+left ignored after initialisation.
+
+`S95nanokvm` already records the observation, measured on 2026-08-19: the server
+ignores SIGINT and catches SIGTERM, two SIGINTs produced no log line and no exit
+after 21 seconds, and one SIGTERM was answered in 7. The script answers it by sending
+SIGTERM and never SIGINT. That works, and it leaves `signal.Notify` in `main.go`
+registering a signal the process cannot receive, which is a trap for the next person.
+
+Two fixes, and this fork can ship both because it builds `libkvm.so`. `fee042eb`
+removes the shells from `kvm_vision.cpp` and `kvm_mmf.cpp` and writes the files
+directly, which is the root cause. `985bca94` re-asserts the handler after
+`kvmv_init` returns, and reads `/proc/self/status` to prove which disposition the
+kernel holds, which is the belt for the case where something else calls `system(3)`
+later. Take the first. The second is only worth it with a test that reads the
+disposition.
+
+Neither explains the 135-second restart. That number is still unattributed.
+
+### The rest of the fork movement
+
+`RobbyV2`'s other thirteen commits are in `service/media`, `service/presentation` and
+`service/sources`, packages built around UVC and a compiled gadget profile that this
+fork does not have. Three are worth recording without taking: `e17f085e` writes the
+shutdown lines to `/dev/kmsg`, so they survive a log that is emptied on restart,
+which this fork's `S95nanokvm` does on purpose; `6c683b53` makes the second signal
+during a slow stop actually exit; `94937896` bounds proc-file reads to one page, for
+the same allocation reason as `985bca94`.
+
+`pi-bmc/nanokvm-app` continued away from this hardware: Redfish `TaskService`, an
+in-repo mDNS responder replacing `brutella/dnssd`, CDC-EEM and CDC-ACM gadget
+functions, a host-authoritative BIOS attribute registry, and a reset-line power
+policy. The survey's verdict stands. The two DHCP commits above are the exception,
+and they are findings rather than code: their client is `nclient4` in Go, and this
+fork's is `udhcpc`.
+
+`mrjeeves/NanoKVM` added a support-number approval flow and pinned MyOwnMesh v0.3.18.
+Still a mesh product built on this board rather than a source for it.
+
+### Order
+
+1. The `udhcpc` broadcast flag, after checking what busybox `-B` does to RENEW.
+2. The shells out of `kvm_vision.cpp` and `kvm_mmf.cpp`, with a `libkvm` rebuild.
+3. Upstream's `283c1390` and `5c0bef01`.
+4. Read #919 and #920 properly, and decide whether the identity contract replaces
+   `4c9da557` or sits beside it.
+5. Decide H.265, as a selectable mode with H.264 default, or not at all.
+
+### Not done
+
+- `Schokobecher`'s five branches with no pull request behind them.
+- #921's diagnostics surface against `S98vidiag`.
+- #911's `S25wifimod` half.
+- #910 against `958bb8a9`.
+- Whether #927's binary provenance layout should cover this fork's downloads.
