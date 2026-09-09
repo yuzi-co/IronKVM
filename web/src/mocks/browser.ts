@@ -28,6 +28,23 @@ export const handlers = [
     isLoggedIn = false;
     return HttpResponse.json({ code: 0 });
   }),
+  // The capture settings the board holds. The menu draws itself from this, so
+  // without it every item falls back to a default and the mocked UI shows a
+  // configuration no device has.
+  http.get('/api/vm/screen', () => {
+    return HttpResponse.json({
+      code: 0,
+      data: {
+        width: 1920,
+        height: 1080,
+        quality: 80,
+        bitRate: 3000,
+        fps: 30,
+        gop: 30,
+        codec: 1
+      }
+    });
+  }),
   http.get('/api/vm/ion', () => {
     return HttpResponse.json({
       code: 0,

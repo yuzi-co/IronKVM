@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 
 import { updateScreen } from '@/api/vm';
 import { Resolution as TypeResolution } from '@/types';
-import { setResolution as setCookie } from '@/lib/localstorage';
 import { resolutionAtom } from '@/jotai/screen.ts';
 
 const resolutions: TypeResolution[] = [
@@ -27,7 +26,6 @@ export const Resolution = () => {
     }
 
     setResolution(item);
-    setCookie(item);
   }
 
   const content = (

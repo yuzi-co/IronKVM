@@ -4,8 +4,8 @@ import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { useTranslation } from 'react-i18next';
 import { useMediaQuery } from 'react-responsive';
 
-import { getInputRegion, setControlRegionMode } from '@/api/vm.ts';
-import { ControlRegionConfig, InputRegion } from '@/types';
+import { getInputRegion, getScreen, setControlRegionMode } from '@/api/vm.ts';
+import { ControlRegionConfig, InputRegion, ScreenSettings } from '@/types';
 import * as storage from '@/lib/localstorage.ts';
 import { client } from '@/lib/websocket.ts';
 import { picoclawChatOpenAtom } from '@/jotai/picoclaw.ts';
@@ -15,6 +15,7 @@ import {
   manualInputRegionAtom,
   manualRegionsAtom,
   resolutionAtom,
+  screenSettingsAtom,
   selectedManualRegionAtom,
   selectedOriginalResolutionAtom,
   videoModeAtom
@@ -70,6 +71,7 @@ export const Desktop = () => {
   const setManualRegions = useSetAtom(manualRegionsAtom);
   const setSelectedManualRegion = useSetAtom(selectedManualRegionAtom);
   const setSelectedOriginalResolution = useSetAtom(selectedOriginalResolutionAtom);
+  const setScreenSettings = useSetAtom(screenSettingsAtom);
   const isPicoclawChatOpen = useAtomValue(picoclawChatOpenAtom);
 
   useEffect(() => {
@@ -77,14 +79,32 @@ export const Desktop = () => {
 
     setVideoMode(activeVideoMode);
 
-    const res = storage.getResolution() || { width: 0, height: 0 };
-    setResolution(res);
+    // The capture resolution belongs to the board, not to this browser. It
+    // starts at auto and is corrected as soon as the server answers, because
+    // absolute mouse positioning scales by it and a wrong value puts the
+    // pointer in the wrong place.
+    setResolution({ width: 0, height: 0 });
     setInputRegion(null);
     setManualInputRegion(null);
     setManualRegions([]);
     setSelectedManualRegion('');
     setSelectedOriginalResolution('');
     setControlRegionModeState('off');
+
+    getScreen()
+      .then((rsp) => {
+        if (rsp.code !== 0) return;
+
+        const settings = rsp.data as ScreenSettings | null;
+        if (!settings) return;
+
+        setResolution({ width: settings.width, height: settings.height });
+        setScreenSettings(settings);
+      })
+      .catch(() => {
+        // Auto is the safe answer: the capture pipeline picks the source
+        // resolution and the mouse scales to what the picture reports.
+      });
 
     getInputRegion()
       .then((rsp) => {
@@ -126,6 +146,7 @@ export const Desktop = () => {
     setManualRegions,
     setResolution,
     setSelectedManualRegion,
+    setScreenSettings,
     setSelectedOriginalResolution,
     setVideoMode
   ]);

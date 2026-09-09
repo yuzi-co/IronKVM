@@ -1,12 +1,6 @@
-import { Resolution } from '@/types';
-
 const LANGUAGE_KEY = 'nano-kvm-language';
 const VIDEO_MODE_KEY = 'nano-kvm-vide-mode';
 const VIDEO_SCALE_KEY = 'nano-kvm-video-scale';
-const WEB_RESOLUTION_KEY = 'nano-kvm-web-resolution';
-const FPS_KEY = 'nano-kvm-fps';
-const QUALITY_KEY = 'nano-kvm-quality';
-const GOP_KEY = 'nano-kvm-gop';
 const FRAME_DETECT_KEY = 'nano-kvm-frame-detect';
 const MOUSE_STYLE_KEY = 'nano-kvm-mouse-style';
 const MOUSE_MODE_KEY = 'nano-kvm-mouse-mode';
@@ -110,49 +104,6 @@ export function getVideoScale(): number | null {
 
 export function setVideoScale(scale: number): void {
   localStorage.setItem(VIDEO_SCALE_KEY, String(scale));
-}
-
-export function getResolution(): Resolution | null {
-  // Two decoders in a row, and either can throw: atob rejects anything that is
-  // not base64, and JSON.parse rejects what comes out of it.
-  return readItem(WEB_RESOLUTION_KEY, (raw) => {
-    const parsed = JSON.parse(window.atob(raw)) as Resolution;
-    if (typeof parsed?.width !== 'number' || typeof parsed?.height !== 'number') {
-      throw new Error('not a resolution');
-    }
-    return parsed;
-  });
-}
-
-export function setResolution(resolution: Resolution) {
-  localStorage.setItem(WEB_RESOLUTION_KEY, window.btoa(JSON.stringify(resolution)));
-}
-
-export function getFps() {
-  const fps = localStorage.getItem(FPS_KEY);
-  return fps ? Number(fps) : null;
-}
-
-export function setFps(fps: number) {
-  localStorage.setItem(FPS_KEY, String(fps));
-}
-
-export function getQuality() {
-  const quality = localStorage.getItem(QUALITY_KEY);
-  return quality ? Number(quality) : null;
-}
-
-export function setQuality(quality: number) {
-  localStorage.setItem(QUALITY_KEY, String(quality));
-}
-
-export function getGop() {
-  const gop = localStorage.getItem(GOP_KEY);
-  return gop ? Number(gop) : null;
-}
-
-export function setGop(gop: number) {
-  localStorage.setItem(GOP_KEY, String(gop));
 }
 
 export function getFrameDetect(): boolean {

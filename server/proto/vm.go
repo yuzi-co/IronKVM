@@ -35,6 +35,26 @@ type SetScreenReq struct {
 	Value int    `validate:"number"`   // value
 }
 
+// GetScreenRsp is what the server currently holds for the capture pipeline.
+//
+// The browser used to keep its own copy of all of this and push it on load,
+// which meant a second viewer saw its own settings rather than the board's.
+// This is the read that ends that, so it reports the values a stream would
+// actually use and not the raw contents of the settings files.
+//
+// Quality and BitRate are separate here although one API key carries both: the
+// key's value decides which of the two it means, and the browser has no way to
+// make that distinction on the way back.
+type GetScreenRsp struct {
+	Width   uint16 `json:"width"`
+	Height  uint16 `json:"height"`
+	Quality uint16 `json:"quality"` // JPEG quality, for MJPEG
+	BitRate uint16 `json:"bitRate"` // kbit/s, for both H.264 paths
+	FPS     int    `json:"fps"`
+	GOP     uint8  `json:"gop"`
+	Codec   uint8  `json:"codec"` // 1 H.264, 2 H.265
+}
+
 type GetScriptsRsp struct {
 	Files []string `json:"files"`
 }

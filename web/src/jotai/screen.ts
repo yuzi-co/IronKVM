@@ -1,6 +1,6 @@
 import { atom } from 'jotai';
 
-import { ControlRegionMode, InputRegion, Resolution } from '@/types';
+import { ControlRegionMode, InputRegion, Resolution, ScreenSettings } from '@/types';
 
 export const isHdmiEnabledAtom = atom(true);
 
@@ -12,8 +12,27 @@ export const videoModeAtom = atom('');
 
 export const videoScaleAtom = atom<number>(1.0);
 
-// browser screen resolution
+// capture resolution, as the board reports it
 export const resolutionAtom = atom<Resolution | null>(null);
+
+// What the server holds for the capture pipeline, read once when the desktop
+// loads. There is one encoder, so these are the board's settings and not this
+// browser's: the menu draws itself from this rather than from localStorage.
+// Null until the read answers, or for good if it fails.
+export const screenSettingsAtom = atom<ScreenSettings | null>(null);
+
+// What the menu shows while the read has not answered. These match the
+// server's own defaults, so an unconfigured board and an unreachable one look
+// the same, which is the truth: neither has told us anything.
+export const defaultScreenSettings: ScreenSettings = {
+  width: 0,
+  height: 0,
+  quality: 80,
+  bitRate: 3000,
+  fps: 30,
+  gop: 30,
+  codec: 1
+};
 
 // currently effective absolute mouse input region
 export const inputRegionAtom = atom<InputRegion | null>(null);

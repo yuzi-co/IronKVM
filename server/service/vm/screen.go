@@ -12,6 +12,32 @@ import (
 	"NanoKVM-Server/proto"
 )
 
+// GetScreen reports the capture settings the server holds.
+//
+// The browser needs this to draw the menu. Without it the menu had to remember
+// its own choices and push them on load, so two browsers disagreed with each
+// other and both of them could disagree with the board.
+//
+// CheckScreen runs first because the answer has to be the values a stream would
+// use. The settings files are plain text on the card, and a menu that offered a
+// value the capture loop repairs would tick an option the board is not running.
+func (s *Service) GetScreen(c *gin.Context) {
+	var rsp proto.Response
+
+	common.CheckScreen()
+	values := common.GetScreen().Snapshot()
+
+	rsp.OkRspWithData(c, &proto.GetScreenRsp{
+		Width:   values.Width,
+		Height:  values.Height,
+		Quality: values.Quality,
+		BitRate: values.BitRate,
+		FPS:     values.FPS,
+		GOP:     values.GOP,
+		Codec:   values.Codec,
+	})
+}
+
 func (s *Service) SetScreen(c *gin.Context) {
 	var req proto.SetScreenReq
 	var rsp proto.Response
@@ -29,13 +55,6 @@ func (s *Service) SetScreen(c *gin.Context) {
 			data = "mjpeg"
 		}
 		err = writeScreen("type", data)
-
-	case "gop":
-		gop := 30
-		if req.Value >= 1 && req.Value <= 100 {
-			gop = req.Value
-		}
-		common.GetKvmVision().SetGop(uint8(gop))
 
 	default:
 		data := strconv.Itoa(req.Value)

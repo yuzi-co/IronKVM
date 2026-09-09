@@ -5,7 +5,6 @@ import { CheckIcon, ScanBarcodeIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { updateScreen } from '@/api/vm';
-import { setFps as setCookie } from '@/lib/localstorage';
 
 const fpsList = [
   { key: 60, label: '60Hz' },
@@ -49,7 +48,6 @@ export const Fps = ({ fps, setFps }: FpsProps) => {
     }
 
     setFps(value);
-    setCookie(value);
     if (isCustomize) {
       setIsCustomize(false);
     }

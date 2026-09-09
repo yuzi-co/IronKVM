@@ -23,6 +23,7 @@ func vmRouter(r *gin.Engine) {
 	api.POST("/vm/gpio", service.SetGpio)     // update gpio
 	api.GET("/vm/gpio", service.GetGpio)      // get gpio
 	api.POST("/vm/screen", service.SetScreen) // update screen
+	api.GET("/vm/screen", service.GetScreen)  // get screen
 
 	api.GET("/vm/input-region", service.GetInputRegion)
 	api.POST("/vm/input-region", service.SetInputRegion)

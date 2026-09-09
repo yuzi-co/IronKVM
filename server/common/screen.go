@@ -15,9 +15,6 @@ import (
 // acceptable where `now_fps` and `wifi_state` are not - see the comment about
 // tmpfs in `kvmapp/system/init.d/S95nanokvm`.
 //
-// `gop` is absent on purpose. The API hands it straight to libkvm and stores
-// nothing, so there is nothing to restore.
-//
 // It is a variable so a test can point it at a temporary directory. Nothing on
 // the device changes it.
 var ScreenFileMap = map[string]string{
@@ -26,6 +23,7 @@ var ScreenFileMap = map[string]string{
 	"quality":    "/kvmapp/kvm/qlty",
 	"resolution": "/kvmapp/kvm/res",
 	"codec":      "/kvmapp/kvm/codec",
+	"gop":        "/kvmapp/kvm/gop",
 }
 
 // The video codecs the encoder implements. These are libkvm's public numbering
@@ -120,7 +118,7 @@ func loadScreenValues() ScreenValues {
 
 	// Resolution first, so a stored quality that the resolution constrains is
 	// applied against the right one. The order also matches the switch below.
-	for _, key := range []string{"resolution", "quality", "fps", "codec"} {
+	for _, key := range []string{"resolution", "quality", "fps", "codec", "gop"} {
 		if value, ok := readScreenSetting(key); ok {
 			applyScreenValue(&values, key, value)
 		}
@@ -189,7 +187,7 @@ func applyScreenValue(values *ScreenValues, key string, value int) {
 		values.FPS = validateFPS(value)
 
 	case "gop":
-		values.GOP = uint8(value)
+		values.GOP = validateGOP(value)
 
 	case "codec":
 		// Anything else is left alone rather than stored. A codec libkvm does
@@ -223,6 +221,7 @@ func CheckScreen() {
 	}
 
 	s.values.Codec = validateCodec(s.values.Codec)
+	s.values.GOP = validateGOP(int(s.values.GOP))
 }
 
 // validateCodec keeps an unusable codec away from the encoder. The settings
@@ -245,4 +244,20 @@ func validateFPS(fps int) int {
 	}
 
 	return fps
+}
+
+// validateGOP holds the keyframe interval to the range libkvm accepts.
+//
+// set_h264_gop clamps to 1..100 itself, so a value outside that range is not
+// the value the encoder ends up using. Storing it anyway would leave the
+// settings reporting a GOP the board is not running, which is the whole class
+// of bug that reading the settings back was meant to end. Out of range falls
+// back to the default rather than to the nearest bound: a number that far off
+// is a corrupt file or a caller with a bug, not an operator's choice.
+func validateGOP(gop int) uint8 {
+	if gop < 1 || gop > 100 {
+		return defaultScreenValues.GOP
+	}
+
+	return uint8(gop)
 }
