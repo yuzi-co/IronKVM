@@ -23,6 +23,7 @@
 
 #define VENC_MJPEG              0
 #define VENC_H264               1
+#define VENC_H265               2
 
 #define KVMV_MAX_TRY_NUM	   	2
 #define vi_min_width            32
@@ -182,7 +183,7 @@ typedef struct {
 typedef struct {
     uint8_t mmf_venc_chn;
 	uint8_t enc_h264_running;
-	uint8_t enc_h264_init;
+	uint8_t enc_video_init;
     mmf_venc_cfg_t kvm_venc_cfg;
 } kvm_venc_t;
 
@@ -1903,7 +1904,7 @@ uint8_t frame_changed(const uint8_t *data, int size)
 }
 
 // Encode a frame the hardware still holds, straight into a save slot. This
-// is the JPEG counterpart of frame_to_h264, and like that one it owns the
+// is the JPEG counterpart of frame_to_video, and like that one it owns the
 // VI frame from the moment it is called: every exit here releases it.
 //
 // The JPEG encoder lives on channel 0, which is where image::Image::to_jpeg
@@ -1964,100 +1965,148 @@ uint8_t kvmvi_dst_fps = 0;
 uint8_t kvmvi_fps_pending = 0;
 kvm_venc_t kvm_venc;
 mmf_venc_cfg_t cfg;
-void init_venc_h264(uint16_t _width, uint16_t _height, uint16_t _qlty)
+int init_venc_video(uint16_t _width, uint16_t _height, uint16_t _qlty,
+    uint8_t _codec, uint8_t _gop, uint8_t _fps)
 {
-    cfg.type = 2; //1, h265, 2, h264
+    // The public codec numbering and the mmf one are not the same, and they run
+    // in opposite directions: kvmv_read_video takes 1 for H.264 and 2 for
+    // H.265, mmf_venc_cfg_t.type takes 1 for H.265 and 2 for H.264. Convert
+    // here, once, so no caller has to know.
+    cfg.type = (_codec == VENC_H265) ? 1 : 2;
     cfg.w = _width;
     cfg.h = _height;
     cfg.fmt = mmf_invert_format_to_mmf(image::Format::FMT_YVU420SP);
     cfg.jpg_quality = 0;       // unused
-    cfg.gop = kvmvenc_gop;
+    cfg.gop = _gop ? _gop : kvmvenc_gop;
     // The rate controller divides the bitrate by the frame rate it is given
     // to decide what one frame may cost. Told 60 while the capture loop runs
     // at 30, it spent half the configured bitrate per frame and the stream
     // came out at about half the rate that was asked for.
-    cfg.intput_fps = kvmvenc_fps;
-    cfg.output_fps = kvmvenc_fps;
+    cfg.intput_fps = _fps ? _fps : kvmvenc_fps;
+    cfg.output_fps = _fps ? _fps : kvmvenc_fps;
     cfg.bitrate = _qlty;  // 码率
 
     kvm_venc.mmf_venc_chn = default_venc_chn;
-    kvm_venc.enc_h264_init = 0;
+    kvm_venc.enc_video_init = 0;
     kvm_venc.kvm_venc_cfg = cfg;
 
 	// if(mmf_vdec_is_used(kvm_venc.mmf_venc_chn)){
 		mmf_del_venc_channel(kvm_venc.mmf_venc_chn);
 	// }
-    if (0 != mmf_add_venc_channel(kvm_venc.mmf_venc_chn, &kvm_venc.kvm_venc_cfg)) {
-        err::check_raise(err::ERR_RUNTIME, "mmf venc init failed!");
+    // Report the failure, do not raise it. This runs under a cgo call, and an
+    // uncaught C++ exception there is std::terminate: the server dies with
+    // nothing in its own log, and the supervisor restart loop is the only
+    // record left. A codec the encoder refuses must cost one frame, not the
+    // KVM. Measured on the board on 2026-09-09, before this changed: asking
+    // for HEVC from a library that could not encode it made the server exit
+    // after 3s and then after 0s.
+    int add_ret = mmf_add_venc_channel(kvm_venc.mmf_venc_chn, &kvm_venc.kvm_venc_cfg);
+    if (0 != add_ret) {
+        debug("[kvmv]mmf venc init failed: codec=%d %dx%d bitrate=%d gop=%d ret=%d\n",
+            _codec, _width, _height, _qlty, cfg.gop, add_ret);
+        return add_ret;
     }
-    kvm_venc.enc_h264_init = 1;
+    kvm_venc.enc_video_init = 1;
+    return 0;
 
 	// init_kvm_h264_stream(&kvm_h264_stream, mmf_stream_buf);
 	// init_h264_stream_struct(&kvm_h264_stream);
 }
 
-int h264_stream_dump(kvmv_data_t* dump_to, mmf_stream_t* dump_from)
+// True when the access unit holds a random-access picture. H.264 marks one with
+// nal_unit_type 5 in the low five bits of the header byte; HEVC marks one with
+// types 16 to 21 in bits 1 to 6 of that byte.
+static bool annexb_contains_keyframe(const uint8_t *data, int size, uint8_t codec)
 {
-    static int8_t I_Frame_index = -1;
+    for (int i = 0; i + 3 < size;) {
+        int prefix_size = 0;
+        if (i + 4 < size && data[i] == 0 && data[i + 1] == 0 && data[i + 2] == 0 && data[i + 3] == 1) {
+            prefix_size = 4;
+        } else if (data[i] == 0 && data[i + 1] == 0 && data[i + 2] == 1) {
+            prefix_size = 3;
+        }
+        if (prefix_size == 0) {
+            i++;
+            continue;
+        }
+        int nal = i + prefix_size;
+        if (nal >= size) {
+            break;
+        }
+        if (codec == VENC_H264 && (data[nal] & 0x1f) == 5) {
+            return true;
+        }
+        if (codec == VENC_H265) {
+            uint8_t nal_type = (data[nal] >> 1) & 0x3f;
+            if (nal_type >= 16 && nal_type <= 21) {
+                return true;
+            }
+        }
+        i = nal + 1;
+    }
+    return false;
+}
+
+// Concatenate the packs of one access unit into the caller's buffer, and say
+// whether it can be decoded from cold.
+int video_stream_dump(kvmv_data_t* dump_to, mmf_stream_t* dump_from, uint8_t codec)
+{
     if(dump_to == NULL || dump_from == NULL){
         return IMG_VENC_ERROR;
     }
-    // debug("[kvmv]dump_from->count = %d\n", dump_from->count);
-    if (dump_from->count == 3) {
-        // Neither branch used to test its allocation, and memory is what
-        // this board runs out of first.
-        for(int i = 0; i < dump_from->count; i++){
-            if(dump_from->data[i] == NULL || dump_from->data_size[i] <= 0){
-                return IMG_VENC_ERROR;
-            }
-        }
-        uint64_t total_size = (uint64_t)dump_from->data_size[0] +
-                              (uint64_t)dump_from->data_size[1] +
-                              (uint64_t)dump_from->data_size[2];
-        if(total_size > UINT32_MAX || !reserve_save_buffer(dump_to, (uint32_t)total_size)){
-            return IMG_BUFFER_FULL;
-        }
-        dump_to->img_data_size = (uint32_t)total_size;
-        dump_to->img_data_type = IMG_H264_TYPE_IF;
-        memcpy(dump_to->p_img_data, dump_from->data[0], dump_from->data_size[0]);
-        memcpy(dump_to->p_img_data+dump_from->data_size[0], dump_from->data[1], dump_from->data_size[1]);
-        memcpy(dump_to->p_img_data+dump_from->data_size[0]+dump_from->data_size[1], dump_from->data[2], dump_from->data_size[2]);
-
-        debug("[kvmv]SPS size = %d\n", dump_from->data_size[0]);
-        debug("[kvmv]PPS size = %d\n", dump_from->data_size[1]);
-        debug("[kvmv]I-Frame size = %d\n", dump_from->data_size[2]);
-
-        return IMG_H264_TYPE_IF;
-
-    } else if (dump_from->count == 1) {
-        // debug("[kvmv]dump P-Frame\r\n");
-        I_Frame_index = -1;
-        if(dump_from->data[0] == NULL || dump_from->data_size[0] <= 0){
-            return IMG_VENC_ERROR;
-        }
-        if(!reserve_save_buffer(dump_to, (uint32_t)dump_from->data_size[0])){
-            return IMG_BUFFER_FULL;
-        }
-        dump_to->img_data_size = dump_from->data_size[0];
-        dump_to->img_data_type = IMG_H264_TYPE_PF;
-        memcpy(dump_to->p_img_data, dump_from->data[0], dump_from->data_size[0]);
-        return IMG_H264_TYPE_PF;
-    } else {
-        debug("[kvmv]venc error!\r\n");
+    // mmf_stream_t carries a fixed pack array. Derive the bound from it rather
+    // than repeating the number, so the two cannot drift apart.
+    const int max_packs = (int)(sizeof(dump_from->data) / sizeof(dump_from->data[0]));
+    if(dump_from->count < 1 || dump_from->count > max_packs){
+        debug("[kvmv]invalid venc pack count: %d\n", dump_from->count);
         return IMG_VENC_ERROR;
     }
+
+    // Neither branch of the old version tested its allocation, and memory is
+    // what this board runs out of first.
+    uint64_t total_size = 0;
+    bool keyframe = false;
+    for(int i = 0; i < dump_from->count; i++){
+        if(dump_from->data[i] == NULL || dump_from->data_size[i] <= 0){
+            return IMG_VENC_ERROR;
+        }
+        total_size += (uint64_t)dump_from->data_size[i];
+        keyframe = keyframe ||
+            annexb_contains_keyframe(dump_from->data[i], dump_from->data_size[i], codec);
+    }
+    // The encoder normally emits the parameter sets as their own packs, three
+    // for H.264 and four for HEVC. Keep that as a fallback for a pack that
+    // carries no start code for the scan above to find.
+    keyframe = keyframe || (codec == VENC_H264 && dump_from->count >= 3) ||
+        (codec == VENC_H265 && dump_from->count >= 4);
+
+    if(total_size > UINT32_MAX || !reserve_save_buffer(dump_to, (uint32_t)total_size)){
+        dump_to->img_data_size = 0;
+        return IMG_BUFFER_FULL;
+    }
+
+    uint32_t offset = 0;
+    for(int i = 0; i < dump_from->count; i++){
+        memcpy(dump_to->p_img_data + offset, dump_from->data[i], dump_from->data_size[i]);
+        offset += (uint32_t)dump_from->data_size[i];
+    }
+    dump_to->img_data_size = (uint32_t)total_size;
+    dump_to->img_data_type = keyframe ? IMG_H264_TYPE_IF : IMG_H264_TYPE_PF;
+    debug("[kvmv]frame size = %d, packs = %d, keyframe = %d\n",
+        dump_to->img_data_size, dump_from->count, (int)keyframe);
+    return dump_to->img_data_type;
 }
 
 void set_h264_gop(uint8_t _gop)
 {
-    kvm_venc.enc_h264_init = 0; // call
+    kvm_venc.enc_video_init = 0; // call
     kvmvenc_gop = maxmin_data(100, 1, (int)_gop);
     debug("[kvmv] set_h264_gop = %d\n", kvmvenc_gop);
 }
 
 // Change the frame rate the encoder is configured for. The next frame
-// rebuilds the channel, which is what init_venc_h264 does when
-// enc_h264_init is clear.
+// rebuilds the channel, which is what init_venc_video does when
+// enc_video_init is clear.
 //
 // Unlike set_h264_gop this returns early when nothing changed. The server
 // calls it whenever a stream starts, and tearing the encoder down and
@@ -2071,7 +2120,7 @@ void set_h264_fps(uint8_t _fps)
     }
 
     kvmvenc_fps = fps;
-    kvm_venc.enc_h264_init = 0;
+    kvm_venc.enc_video_init = 0;
     debug("[kvmv] set_h264_fps = %d\n", kvmvenc_fps);
 }
 
@@ -2117,8 +2166,8 @@ void set_frame_detact(uint8_t _frame_detact)
     kvmv_cfg.stream_stop = 0;
 }
 
-int8_t frame_to_h264(uint8_t *data, int width, int height, int format, int vi_ch,
-    kvmv_data_t* ret_stream, uint16_t _qlty)
+int8_t frame_to_video(uint8_t *data, int width, int height, int format, int vi_ch,
+    kvmv_data_t* ret_stream, uint16_t _qlty, uint8_t _codec, uint8_t _gop, uint8_t _fps)
 {
 	uint64_t __attribute__((unused)) start_time;
 	uint64_t __attribute__((unused)) frame_time;
@@ -2127,22 +2176,23 @@ int8_t frame_to_h264(uint8_t *data, int width, int height, int format, int vi_ch
 		// start_time = time::time_ms();
 		// log::info("getimg: %d \r\n", (int)(time::time_ms()));
     mmf_stream_t _stream = {0};
-    if(kvm_venc.enc_h264_init != 1 || width != kvm_venc.kvm_venc_cfg.w || height != kvm_venc.kvm_venc_cfg.h || _qlty != kvm_venc.kvm_venc_cfg.bitrate){
-		debug("[kvmv]init_venc_h264	enc_h264_init = %d; width = %d | %d height = %d | %d \n",
-				kvm_venc.enc_h264_init,
+    uint8_t want_mmf_type = (_codec == VENC_H265) ? 1 : 2;
+    if(kvm_venc.enc_video_init != 1 || width != kvm_venc.kvm_venc_cfg.w
+        || height != kvm_venc.kvm_venc_cfg.h || _qlty != kvm_venc.kvm_venc_cfg.bitrate
+        || want_mmf_type != kvm_venc.kvm_venc_cfg.type){
+		debug("[kvmv]init_venc_video enc_video_init = %d; codec = %d; width = %d | %d height = %d | %d \n",
+				kvm_venc.enc_video_init, _codec,
 				width, kvm_venc.kvm_venc_cfg.w,
 				height, kvm_venc.kvm_venc_cfg.h);
 
-		init_venc_h264(width, height, _qlty);
-        debug("[kvmv]init_venc_h264 finish enc_h264_init = %d; width = %d | %d height = %d | %d \n",
-				kvm_venc.enc_h264_init,
-				width, kvm_venc.kvm_venc_cfg.w,
-				height, kvm_venc.kvm_venc_cfg.h);
-        // if(kvm_venc.enc_h264_init == 1){
-		// 	init_venc_h264(width, height, _qlty);
-		// } else {
-		// 	init_venc_h264(default_vpss_width, default_vpss_height, default_h264_qlty);
-		// }
+		// A refused codec ends this frame. It does not end the process, and it
+		// leaves enc_video_init clear so the next frame tries again.
+		if(0 != init_venc_video(width, height, _qlty, _codec, _gop, _fps)){
+			if (vi_ch >= 0) {
+				mmf_vi_frame_release(vi_ch);
+			}
+			return IMG_VENC_ERROR;
+		}
     }
 	// log::info("init(): %d \r\n", (int)(time::time_ms() - start_time));
     int push_ret = vi_ch >= 0
@@ -2157,7 +2207,7 @@ int8_t frame_to_h264(uint8_t *data, int width, int height, int format, int vi_ch
         if (vi_ch >= 0) {
             mmf_vi_frame_release(vi_ch);
         }
-        kvm_venc.enc_h264_init = 0;
+        kvm_venc.enc_video_init = 0;
         // rtmp->unlock();
 		debug("[kvmv]mmf venc push failed!\n");
         // err::check_raise(err::ERR_RUNTIME, "mmf venc push failed!\r\n");
@@ -2179,13 +2229,13 @@ int8_t frame_to_h264(uint8_t *data, int width, int height, int format, int vi_ch
         // second release of a block from a pool of two.
         mmf_venc_free(kvm_venc.mmf_venc_chn);
         mmf_del_venc_channel(kvm_venc.mmf_venc_chn);
-        kvm_venc.enc_h264_init = 0;
+        kvm_venc.enc_video_init = 0;
 		debug("[kvmv]mmf venc pop failed!\n");
         // rtmp->unlock();
         return -1;
     }
 	// log::info("pop(): %d \r\n", (int)(time::time_ms() - start_time));
-    ret = h264_stream_dump(ret_stream, &_stream);
+    ret = video_stream_dump(ret_stream, &_stream, _codec);
     mmf_venc_free(kvm_venc.mmf_venc_chn);
 	// log::info("dump(): %d \r\n", (int)(time::time_ms() - start_time));
 
@@ -2301,13 +2351,15 @@ void set_venc_auto_recyc(uint8_t _enable)
          4: Acquire H264 encoded images(P)
          5: IMG not changed
  **********************************************************************************/
-int kvmv_read_img(uint16_t _width, uint16_t _height, uint8_t _type, uint16_t _qlty, uint8_t** _pp_kvm_data, uint32_t* _p_kvmv_data_size)
+static int kvmv_read_frame(uint16_t _width, uint16_t _height, uint8_t _type,
+    uint16_t _qlty, uint8_t _gop, uint8_t _fps, uint8_t** _pp_kvm_data,
+    uint32_t* _p_kvmv_data_size)
 {
     *_pp_kvm_data = NULL;
     *_p_kvmv_data_size = 0;
     static uint8_t frame_undetact_count = 0;
 	// uint64_t __attribute__((unused)) start_time = time::time_ms();
-    debug("[kvmv]kvmv_read_img type = %d...\n", _type);
+    debug("[kvmv]kvmv_read_frame type = %d...\n", _type);
     struct timespec ts;
     clock_gettime(CLOCK_REALTIME, &ts);
     ts.tv_sec += 1;
@@ -2455,13 +2507,14 @@ int kvmv_read_img(uint16_t _width, uint16_t _height, uint8_t _type, uint16_t _ql
             if(kvmv_cfg.venc_auto_recyc == 1){
                 mmf_enc_jpg_deinit(0);
             }
-            kvm_venc.enc_h264_init = 1;
+            kvm_venc.enc_video_init = 1;
         }
-        if(kvmv_cfg.venc_type == VENC_H264 && kvmv_cfg.venc_type != _type){
+        if((kvmv_cfg.venc_type == VENC_H264 || kvmv_cfg.venc_type == VENC_H265)
+            && kvmv_cfg.venc_type != _type){
             if(kvmv_cfg.venc_auto_recyc == 1){
                 mmf_del_venc_channel(kvm_venc.mmf_venc_chn);
             }
-            kvm_venc.enc_h264_init = 0;
+            kvm_venc.enc_video_init = 0;
         }
 
         kvmv_cfg.venc_type = _type;
@@ -2485,7 +2538,7 @@ int kvmv_read_img(uint16_t _width, uint16_t _height, uint8_t _type, uint16_t _ql
             *_p_kvmv_data_size = p_kvmv_data->img_data_size;
             pthread_mutex_unlock(&vi_mutex);
             return jpeg_ret;
-        } else if (kvmv_cfg.venc_type == VENC_H264){
+        } else if (kvmv_cfg.venc_type == VENC_H264 || kvmv_cfg.venc_type == VENC_H265){
             int ret;
             kvmv_data_t* p_kvmv_data = get_save_buffer();
             if(p_kvmv_data == NULL){
@@ -2496,9 +2549,10 @@ int kvmv_read_img(uint16_t _width, uint16_t _height, uint8_t _type, uint16_t _ql
                 return IMG_BUFFER_FULL;
             }
             // debug("[kvmv]get_save_buffer: %d \r\n", (int)(time::time_ms() - start_time));
-            ret = frame_to_h264(NULL, native_width, native_height, native_format,
-                native_vi_ch, p_kvmv_data, maxmin_data(10000, 500, (int)_qlty));
-            // debug("[kvmv]venc frame_to_h264: %d \r\n", (int)(time::time_ms() - start_time));
+            ret = frame_to_video(NULL, native_width, native_height, native_format,
+                native_vi_ch, p_kvmv_data, maxmin_data(10000, 500, (int)_qlty),
+                kvmv_cfg.venc_type, _gop, _fps);
+            // debug("[kvmv]venc frame_to_video: %d \r\n", (int)(time::time_ms() - start_time));
             if(ret < 0){
                 release_save_buffer(p_kvmv_data);
                 *_pp_kvm_data = NULL;
@@ -2559,6 +2613,26 @@ int kvmv_read_img(uint16_t _width, uint16_t _height, uint8_t _type, uint16_t _ql
 // the type to 0 under us. Locking here would instead put a frame release
 // behind whatever encoder call the other reader is waiting on, which can be
 // a full second.
+int kvmv_read_img(uint16_t _width, uint16_t _height, uint8_t _type, uint16_t _qlty, uint8_t** _pp_kvm_data, uint32_t* _p_kvmv_data_size)
+{
+    // 0 for the gop and the frame rate means "keep what set_h264_gop and
+    // set_capture_fps last set", which is what this entry point has always
+    // done.
+    return kvmv_read_frame(_width, _height, _type, _qlty, 0, 0,
+        _pp_kvm_data, _p_kvmv_data_size);
+}
+
+int kvmv_read_video(uint16_t _width, uint16_t _height, uint8_t _codec, uint16_t _bitrate,
+    uint8_t _gop, uint8_t _fps, uint8_t** _pp_kvm_data, uint32_t* _p_kvmv_data_size)
+{
+    if(_codec != VENC_H264 && _codec != VENC_H265){
+        debug("[kvmv]kvmv_read_video: unknown codec %d\n", (int)_codec);
+        return IMG_VENC_ERROR;
+    }
+    return kvmv_read_frame(_width, _height, _codec, maxmin_data(10000, 500, (int)_bitrate),
+        _gop, _fps, _pp_kvm_data, _p_kvmv_data_size);
+}
+
 int free_kvmv_data(uint8_t ** _pp_kvm_data)
 {
     if(_pp_kvm_data == NULL || *_pp_kvm_data == NULL){

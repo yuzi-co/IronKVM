@@ -15,10 +15,10 @@ typedef struct {
 	int h;
 	int fmt;
 	uint8_t jpg_quality;	// jpeg
-	int gop;				// h264
-	int intput_fps;			// h264
-	int output_fps;			// h264
-	int bitrate;			// h264
+	int gop;				// h264/h265
+	int intput_fps;			// h264/h265
+	int output_fps;			// h264/h265
+	int bitrate;			// h264/h265
 } mmf_venc_cfg_t;
 
 // init sys
