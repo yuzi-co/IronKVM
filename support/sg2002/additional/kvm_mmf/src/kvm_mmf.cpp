@@ -149,6 +149,8 @@ typedef struct {
 	bool vi_frame_valid[MMF_VI_MAX_CHN];
 	bool vi_frame_mapped[MMF_VI_MAX_CHN];
 	bool vi_frame_deferred[MMF_VI_MAX_CHN];
+	bool venc_stream_acquired[MMF_VENC_MAX_CHN];
+	int venc_input_vi_ch[MMF_VENC_MAX_CHN];
 } priv_t;
 
 typedef struct {
@@ -1086,9 +1088,16 @@ _need_exit_sys_and_deinit_vi:
 static void _mmf_deinit(void)
 {
 	UNUSED(cvi_ive_deinit);
-	mmf_del_vi_channel_all();
+	/*
+	 * Encoders can still own input frames from VI. Tear them down before VI so
+	 * those frames are returned while their producer is still alive. JPEG also
+	 * owns a separate MMF reference; forced process teardown has already reset
+	 * the reference count, so its public deinit can safely release its pools
+	 * here without recursively entering this function.
+	 */
 	mmf_del_venc_channel_all();
 	mmf_enc_jpg_deinit(0);
+	mmf_del_vi_channel_all();
 	_try_release_venc_all();
 	_try_release_vpss_all();
 	mmf_vi_deinit();
@@ -1983,11 +1992,11 @@ int mmf_enc_jpg_deinit(int ch)
 		_destroy_vb_pool(priv.enc_jpg_output_pool_id);
 		priv.enc_jpg_output_pool_id = -1;
 		_destroy_vb_pool(priv.enc_jpg_input_pool_id);
-		priv.enc_jpg_output_pool_id = -1;
+		priv.enc_jpg_input_pool_id = -1;
 		break;
 	case PIXEL_FORMAT_NV21:
 		_destroy_vb_pool(priv.enc_jpg_input_pool_id);
-		priv.enc_jpg_output_pool_id = -1;
+		priv.enc_jpg_input_pool_id = -1;
 		break;
 	default:
 		break;
@@ -2349,87 +2358,155 @@ void mmf_get_vi_vflip(int ch, bool *en)
 	*en = (bool)g_priv.vi_vflip[ch];
 }
 
+template <typename T>
+static void _set_h26x_rate_timing(T &rate, const mmf_venc_cfg_t *cfg)
+{
+	rate.u32Gop = cfg->gop;
+	rate.u32StatTime = 2;
+	rate.u32SrcFrameRate = cfg->intput_fps;
+	rate.fr32DstFrameRate = cfg->output_fps;
+	rate.bVariFpsEn = CVI_FALSE;
+}
+
+static void _set_h26x_rc_attr(VENC_CHN_ATTR_S *attr, const mmf_venc_cfg_t *cfg)
+{
+	if (cfg->type == 2) {
+		attr->stRcAttr.enRcMode = VENC_RC_MODE_H264CBR;
+		_set_h26x_rate_timing(attr->stRcAttr.stH264Cbr, cfg);
+		attr->stRcAttr.stH264Cbr.u32BitRate = cfg->bitrate;
+	} else {
+		attr->stRcAttr.enRcMode = VENC_RC_MODE_H265CBR;
+		_set_h26x_rate_timing(attr->stRcAttr.stH265Cbr, cfg);
+		attr->stRcAttr.stH265Cbr.u32BitRate = cfg->bitrate;
+	}
+}
+
+template <typename T>
+static void _set_h26x_rc_limits(T &param)
+{
+	param.u32MinIprop = 1;
+	param.u32MaxIprop = 10;
+	param.u32MaxQp = 51;
+	param.u32MinQp = 20;
+	param.u32MaxIQp = 51;
+	param.u32MinIQp = 20;
+	param.bQpMapEn = CVI_FALSE;
+}
+
+static void _set_h26x_cbr_limits(VENC_RC_PARAM_S *param, const mmf_venc_cfg_t *cfg)
+{
+	if (cfg->type == 2) {
+		_set_h26x_rc_limits(param->stParamH264Cbr);
+	} else {
+		_set_h26x_rc_limits(param->stParamH265Cbr);
+	}
+}
+
+static int _venc_init_failed(int ch, const char *stage, CVI_S32 error)
+{
+	fprintf(stderr, "[kvm_mmf] %s failed on VENC channel %d with %#x\n", stage, ch, error);
+	fflush(stderr);
+	int cleanup = mmf_del_venc_channel(ch);
+	if (cleanup != 0) {
+		fprintf(stderr, "[kvm_mmf] failed to unwind VENC channel %d after %s: %#x\n",
+			ch, stage, cleanup);
+		fflush(stderr);
+	}
+	return error == CVI_SUCCESS ? CVI_FAILURE : error;
+}
+
 int mmf_add_venc_channel(int ch, mmf_venc_cfg_t *cfg) {
 	CVI_S32 s32Ret = CVI_SUCCESS;
-	if (ch >= MMF_VENC_MAX_CHN || priv.venc[ch].is_used) {
-		printf("Invalid venc ch:%d\r\n", ch);
+	if (ch < 0 || ch >= MMF_VENC_MAX_CHN || priv.venc[ch].is_used) {
+		fprintf(stderr, "[kvm_mmf] invalid or busy VENC channel %d\n", ch);
+		fflush(stderr);
+		return -1;
+	}
+	if (cfg->type != 1 && cfg->type != 2) {
+		fprintf(stderr, "[kvm_mmf] unsupported VENC codec type=%d\n", cfg->type);
+		fflush(stderr);
 		return -1;
 	}
 
-	switch (cfg->type) {
-	case 2:
-	{
-		VENC_CHN_ATTR_S stVencChnAttr;
-		memset(&stVencChnAttr, 0, sizeof(VENC_CHN_ATTR_S));
-		stVencChnAttr.stVencAttr.enType = PT_H264;
-		stVencChnAttr.stVencAttr.u32MaxPicWidth = cfg->w;
-		stVencChnAttr.stVencAttr.u32MaxPicHeight = cfg->h;
-		stVencChnAttr.stVencAttr.u32BufSize = 1024 * 1024;	// 1024Kb
-		stVencChnAttr.stVencAttr.bByFrame = CVI_TRUE;
-		stVencChnAttr.stVencAttr.u32PicWidth = cfg->w;
-		stVencChnAttr.stVencAttr.u32PicHeight = cfg->h;
-		stVencChnAttr.stVencAttr.bEsBufQueueEn = CVI_TRUE;
-		stVencChnAttr.stVencAttr.bIsoSendFrmEn = CVI_TRUE;
-		stVencChnAttr.stGopAttr.enGopMode = VENC_GOPMODE_NORMALP;
-		stVencChnAttr.stGopAttr.stNormalP.s32IPQpDelta = 2;
-		stVencChnAttr.stRcAttr.enRcMode = VENC_RC_MODE_H264CBR;
-		stVencChnAttr.stRcAttr.stH264Cbr.u32Gop = cfg->gop;
-		stVencChnAttr.stRcAttr.stH264Cbr.u32StatTime = 2;
-		stVencChnAttr.stRcAttr.stH264Cbr.u32SrcFrameRate = cfg->intput_fps;
-		stVencChnAttr.stRcAttr.stH264Cbr.fr32DstFrameRate = cfg->output_fps;
-		stVencChnAttr.stRcAttr.stH264Cbr.u32BitRate = cfg->bitrate;
-		stVencChnAttr.stRcAttr.stH264Cbr.bVariFpsEn = 0;
-		s32Ret = CVI_VENC_CreateChn(ch, &stVencChnAttr);
-		if (s32Ret != CVI_SUCCESS) {
-			printf("CVI_VENC_CreateChn [%d] failed with %d\n", ch, s32Ret);
-			return s32Ret;
-		}
 
-		VENC_RECV_PIC_PARAM_S stRecvParam;
-		stRecvParam.s32RecvPicNum = -1;
-		s32Ret = CVI_VENC_StartRecvFrame(ch, &stRecvParam);
-		if (s32Ret != CVI_SUCCESS) {
-			printf("CVI_VENC_StartRecvPic failed with %d\n", s32Ret);
-			return CVI_FAILURE;
-		}
-
-		VENC_RC_PARAM_S stRcParam;
-		s32Ret = CVI_VENC_GetRcParam(ch, &stRcParam);
-		if (s32Ret != CVI_SUCCESS) {
-			printf("CVI_VENC_GetRcParam failed with %d\n", s32Ret);
-			return s32Ret;
-		}
-		stRcParam.s32FirstFrameStartQp = 35;
-		stRcParam.s32InitialDelay = 1000;
-		stRcParam.stParamH264Cbr.u32MinIprop = 1;
-		stRcParam.stParamH264Cbr.u32MaxIprop = 10;
-		stRcParam.stParamH264Cbr.u32MaxQp = 51;
-		stRcParam.stParamH264Cbr.u32MinQp = 20;
-		stRcParam.stParamH264Cbr.u32MaxIQp = 51;
-		stRcParam.stParamH264Cbr.u32MinIQp = 20;
-		s32Ret = CVI_VENC_SetRcParam(ch, &stRcParam);
-		if (s32Ret != CVI_SUCCESS) {
-			printf("CVI_VENC_SetRcParam failed with %d\n", s32Ret);
-			return s32Ret;
-		}
-
-		VENC_FRAMELOST_S stFL;
-		s32Ret = CVI_VENC_GetFrameLostStrategy(ch, &stFL);
-		if (s32Ret != CVI_SUCCESS) {
-			printf("CVI_VENC_GetFrameLostStrategy failed with %d\n", s32Ret);
-			return s32Ret;
-		}
-		stFL.enFrmLostMode = FRMLOST_PSKIP;
-		s32Ret = CVI_VENC_SetFrameLostStrategy(ch, &stFL);
-		if (s32Ret != CVI_SUCCESS) {
-			printf("CVI_VENC_SetFrameLostStrategy failed with %d\n", s32Ret);
-			return s32Ret;
-		}
-
-		break;
+	VENC_CHN_ATTR_S stVencChnAttr;
+	memset(&stVencChnAttr, 0, sizeof(VENC_CHN_ATTR_S));
+	stVencChnAttr.stVencAttr.enType = cfg->type == 1 ? PT_H265 : PT_H264;
+	stVencChnAttr.stVencAttr.u32MaxPicWidth = cfg->w;
+	stVencChnAttr.stVencAttr.u32MaxPicHeight = cfg->h;
+	stVencChnAttr.stVencAttr.u32BufSize = 1024 * 1024;	// 1024Kb
+	stVencChnAttr.stVencAttr.bByFrame = CVI_TRUE;
+	stVencChnAttr.stVencAttr.u32PicWidth = cfg->w;
+	stVencChnAttr.stVencAttr.u32PicHeight = cfg->h;
+	stVencChnAttr.stVencAttr.bEsBufQueueEn = CVI_TRUE;
+	stVencChnAttr.stVencAttr.bIsoSendFrmEn = CVI_TRUE;
+	stVencChnAttr.stGopAttr.enGopMode = VENC_GOPMODE_NORMALP;
+	stVencChnAttr.stGopAttr.stNormalP.s32IPQpDelta = 2;
+	_set_h26x_rc_attr(&stVencChnAttr, cfg);
+	s32Ret = CVI_VENC_CreateChn(ch, &stVencChnAttr);
+	if (s32Ret != CVI_SUCCESS) {
+		fprintf(stderr,
+			"[kvm_mmf] CVI_VENC_CreateChn failed: channel=%d codec=%d "
+			"size=%ux%u bitrate=%u gop=%u error=%#x\n",
+			ch, cfg->type, cfg->w, cfg->h, cfg->bitrate, cfg->gop, s32Ret);
+		fflush(stderr);
+		return s32Ret;
 	}
-	default: printf("Only support h264 encode! type:%d\r\n", cfg->type);
-		return -1;
+
+	// From this point on, make every failed initialization visible to teardown.
+	// Otherwise a successfully created vendor channel can be orphaned while the
+	// local bookkeeping still says that the channel is free.
+	venc_info_t *info = (venc_info_t *)&priv.venc[ch];
+	memset(info, 0, sizeof(venc_info_t));
+	info->ch = ch;
+	info->type = cfg->type;
+	info->pool_id = VB_INVALID_POOLID;
+	priv.venc_stream_acquired[ch] = false;
+	priv.venc_input_vi_ch[ch] = -1;
+	memcpy(&info->cfg, cfg, sizeof(mmf_venc_cfg_t));
+	info->is_used = 1;
+	info->is_inited = 1;
+	priv.h265_or_h264_is_used = 1;
+
+	VENC_RECV_PIC_PARAM_S stRecvParam = {0};
+	stRecvParam.s32RecvPicNum = -1;
+	s32Ret = CVI_VENC_StartRecvFrame(ch, &stRecvParam);
+	if (s32Ret != CVI_SUCCESS) {
+		return _venc_init_failed(ch, "CVI_VENC_StartRecvFrame", s32Ret);
+	}
+
+	VENC_RC_PARAM_S stRcParam;
+	s32Ret = CVI_VENC_GetRcParam(ch, &stRcParam);
+	if (s32Ret != CVI_SUCCESS) {
+		return _venc_init_failed(ch, "CVI_VENC_GetRcParam", s32Ret);
+	}
+	stRcParam.s32FirstFrameStartQp = 35;
+	stRcParam.s32InitialDelay = 1000;
+	_set_h26x_cbr_limits(&stRcParam, cfg);
+	s32Ret = CVI_VENC_SetRcParam(ch, &stRcParam);
+	if (s32Ret != CVI_SUCCESS) {
+		return _venc_init_failed(ch, "CVI_VENC_SetRcParam", s32Ret);
+	}
+
+	VENC_FRAMELOST_S stFL;
+	s32Ret = CVI_VENC_GetFrameLostStrategy(ch, &stFL);
+	if (s32Ret != CVI_SUCCESS) {
+		return _venc_init_failed(ch, "CVI_VENC_GetFrameLostStrategy", s32Ret);
+	}
+	fprintf(stderr,
+		"[kvm_mmf] VENC channel %d frame-loss defaults: codec=%d open=%d threshold=%u mode=%d gap=%u\n",
+		ch, cfg->type, stFL.bFrmLostOpen, stFL.u32FrmLostBpsThr,
+		stFL.enFrmLostMode, stFL.u32EncFrmGaps);
+	fflush(stderr);
+	/* A KVM stream must preserve its reference chain. The generic vendor
+	 * frame-loss strategy can discard a reference frame when instantaneous
+	 * bitrate spikes, after which Direct/WebCodecs cannot decode later deltas. */
+	stFL.bFrmLostOpen = CVI_FALSE;
+	stFL.enFrmLostMode = FRMLOST_NORMAL;
+	stFL.u32EncFrmGaps = 0;
+	s32Ret = CVI_VENC_SetFrameLostStrategy(ch, &stFL);
+	if (s32Ret != CVI_SUCCESS) {
+		return _venc_init_failed(ch, "CVI_VENC_SetFrameLostStrategy", s32Ret);
 	}
 
 	char name[20];
@@ -2437,67 +2514,95 @@ int mmf_add_venc_channel(int ch, mmf_venc_cfg_t *cfg) {
 	uint32_t size = VDEC_GetPicBufferSize((PAYLOAD_TYPE_E)cfg->type, cfg->w, cfg->h, (PIXEL_FORMAT_E)cfg->fmt, DATA_BITWIDTH_8, COMPRESS_MODE_NONE);
 	int pool_id = _create_vb_pool(name, MMF_MOD_VENC, size, 1);
 	if (pool_id < 0) {
-		printf("[%s][%d]_create_vb_pool failed, id %d\n", __func__, __LINE__, pool_id);
-		return CVI_FAILURE;
+		return _venc_init_failed(ch, "_create_vb_pool", pool_id);
 	}
 
-	venc_info_t *info = (venc_info_t *)&priv.venc[ch];
-	info->ch = ch;
-	info->type = cfg->type;
 	info->pool_id = pool_id;
-	memcpy(&info->cfg, cfg, sizeof(mmf_venc_cfg_t));
 	info->capture_frame = (VIDEO_FRAME_INFO_S *)_mmf_alloc_frame(info->pool_id, (SIZE_S){(CVI_U32)cfg->w, (CVI_U32)cfg->h}, (PIXEL_FORMAT_E)cfg->fmt);
 	if (!info->capture_frame) {
-		printf("Alloc frame failed!\r\n");
-		CVI_VENC_DestroyChn(ch);
-		_destroy_vb_pool(pool_id);
-		return -1;
+		return _venc_init_failed(ch, "_mmf_alloc_frame", CVI_FAILURE);
 	}
-	info->is_used = 1;
-	info->is_inited = 1;
-	priv.h265_or_h264_is_used = 1;
+	fprintf(stderr,
+		"[kvm_mmf] VENC channel %d initialized: codec=%d rc=cbr size=%ux%u bitrate=%u gop=%u\n",
+		ch, cfg->type, cfg->w, cfg->h, cfg->bitrate, cfg->gop);
+	fflush(stderr);
 
 	return 0;
 }
 
 int mmf_del_venc_channel(int ch) {
-	if (!priv.venc[ch].is_inited) {
+	if (ch < 0 || ch >= MMF_VENC_MAX_CHN) {
+		return -1;
+	}
+	venc_info_t *info = (venc_info_t *)&priv.venc[ch];
+	if (!info->is_inited) {
 		return 0;
 	}
+	fprintf(stderr, "[kvm_mmf] tearing down VENC channel %d: codec=%d rc=cbr running=%d\n",
+		ch, info->cfg.type, info->is_running);
+	fflush(stderr);
 
-	mmf_stream_t stream;
-	if (!mmf_venc_pop(ch, &stream)) {
+	if (info->is_running || priv.venc_stream_acquired[ch]) {
+		mmf_stream_t stream = {0};
+		mmf_venc_pop(ch, &stream);
 		mmf_venc_free(ch);
 	}
 
 	CVI_S32 s32Ret = CVI_SUCCESS;
 	s32Ret = CVI_VENC_StopRecvFrame(ch);
 	if (s32Ret != CVI_SUCCESS) {
-		printf("CVI_VENC_StopRecvPic failed with %d\n", s32Ret);
+		fprintf(stderr, "[kvm_mmf] CVI_VENC_StopRecvFrame(%d) failed with %#x\n", ch, s32Ret);
+		fflush(stderr);
 	}
 
-	s32Ret = CVI_VENC_ResetChn(ch);
-	if (s32Ret != CVI_SUCCESS) {
-		printf("CVI_VENC_ResetChn vechn[%d] failed with %#x!\n", ch, s32Ret);
+	CVI_S32 destroyRet = CVI_FAILURE;
+	for (int attempt = 0; attempt < 3; attempt++) {
+		if (attempt != 0) {
+			usleep(5000 * attempt);
+		}
+		s32Ret = CVI_VENC_ResetChn(ch);
+		if (s32Ret != CVI_SUCCESS) {
+			fprintf(stderr, "[kvm_mmf] CVI_VENC_ResetChn(%d) attempt %d failed with %#x\n",
+				ch, attempt + 1, s32Ret);
+			fflush(stderr);
+		}
+		destroyRet = CVI_VENC_DestroyChn(ch);
+		if (destroyRet == CVI_SUCCESS) {
+			break;
+		}
+		fprintf(stderr, "[kvm_mmf] CVI_VENC_DestroyChn(%d) attempt %d failed with %#x\n",
+			ch, attempt + 1, destroyRet);
+		fflush(stderr);
+	}
+	if (destroyRet != CVI_SUCCESS) {
+		// Preserve the bookkeeping so the next frame can retry teardown.  In
+		// particular, never claim that a still-existing vendor channel is free.
+		return destroyRet;
 	}
 
-	s32Ret = CVI_VENC_DestroyChn(ch);
-	if (s32Ret != CVI_SUCCESS) {
-		printf("CVI_VENC_DestroyChn [%d] failed with %d\n", ch, s32Ret);
+	if (info->capture_frame) {
+		_mmf_free_frame(info->capture_frame);
+		info->capture_frame = NULL;
+	}
+	/*
+	 * Do not release deferred VI frames here. Profile reconfiguration happens
+	 * after CameraCviMmf::read() has leased the next zero-copy frame, and that
+	 * exact frame must remain valid until it has been sent to the replacement
+	 * encoder. An outstanding frame owned by the old encoder is released by
+	 * mmf_venc_free() above when info->is_running is true.
+	 */
+	if (info->pool_id != VB_INVALID_POOLID && info->pool_id < VB_MAX_COMM_POOLS) {
+		_destroy_vb_pool(info->pool_id);
 	}
 
-	if (priv.venc[ch].capture_frame) {
-		_mmf_free_frame(priv.venc[ch].capture_frame);
-		priv.venc[ch].capture_frame = NULL;
-	}
-
-	_destroy_vb_pool(priv.venc[ch].pool_id);
-
-	if (priv.venc[ch].type == 2 || priv.venc[ch].type == 1) {
+	if (info->type == 2 || info->type == 1) {
 		priv.h265_or_h264_is_used = 0;
 	}
-	priv.venc[ch].is_inited = 0;
-	priv.venc[ch].is_used = 0;
+	memset(info, 0, sizeof(venc_info_t));
+	priv.venc_stream_acquired[ch] = false;
+	priv.venc_input_vi_ch[ch] = -1;
+	fprintf(stderr, "[kvm_mmf] VENC channel %d destroyed\n", ch);
+	fflush(stderr);
 
 	return 0;
 }
@@ -2555,6 +2660,7 @@ static int _mmf_venc_push_copy(int ch, uint8_t *data, int w, int h, int format) 
 	s32Ret = CVI_VENC_SendFrame(ch, frame_info, 1000);
 	if (s32Ret != CVI_SUCCESS) {
 		printf("CVI_VENC_SendFrame failed with %#x\n", s32Ret);
+		priv.venc_input_vi_ch[ch] = -1;
 		return s32Ret;
 	}
 
@@ -2576,7 +2682,7 @@ int mmf_venc_push(int ch, uint8_t *data, int w, int h, int format) {
 	 * Image -> VENC buffer copy. Non-camera callers still use the old path.
 	 */
 	venc_info_t *info = (venc_info_t *)&priv.venc[ch];
-	if (info->type == 2) {
+	if (info->type == 1 || info->type == 2) {
 		VIDEO_FRAME_INFO_S *vi_frame = NULL;
 		if (_mmf_find_deferred_vi_frame(w, h, format, &vi_frame) >= 0) {
 			CVI_S32 ret = CVI_VENC_SendFrame(ch, vi_frame, 1000);
@@ -2603,7 +2709,8 @@ int mmf_venc_push_vi(int ch, int vi_ch) {
 
 	venc_info_t *info = (venc_info_t *)&priv.venc[ch];
 	VIDEO_FRAME_INFO_S *frame = &priv.vi_frame[vi_ch];
-	if (info->type != 2 || frame->stVFrame.enPixelFormat != PIXEL_FORMAT_NV21) {
+	if ((info->type != 1 && info->type != 2) ||
+		frame->stVFrame.enPixelFormat != PIXEL_FORMAT_NV21) {
 		printf("Unsupported native frame. venc_type:%d format:%d\r\n",
 			info->type, frame->stVFrame.enPixelFormat);
 		return -1;
@@ -2626,7 +2733,7 @@ int mmf_venc_push_vi(int ch, int vi_ch) {
 
 int mmf_venc_pop(int ch, mmf_stream_t *stream) {
 	CVI_S32 s32Ret = CVI_SUCCESS;
-	if (ch >= MMF_VENC_MAX_CHN || !priv.venc[ch].is_inited) {
+	if (ch < 0 || ch >= MMF_VENC_MAX_CHN || !priv.venc[ch].is_inited) {
 		printf("Invalid venc ch:%d\r\n", ch);
 		return -1;
 	}
@@ -2634,9 +2741,16 @@ int mmf_venc_pop(int ch, mmf_stream_t *stream) {
 	venc_info_t *info = (venc_info_t *)&priv.venc[ch];
 	VENC_STREAM_S *venc_stream = (VENC_STREAM_S *)&priv.venc[ch].capture_stream;
 	if (!info->is_running) {
-		return s32Ret;
+		/* No frame was submitted, so reporting success would expose an empty
+		 * stream to kvm_vision and turn an ordinary profile transition into the
+		 * misleading IMG_VENC_ERROR (-2). */
+		return -1;
 	}
-
+	if (priv.venc_stream_acquired[ch]) {
+		fprintf(stderr, "[kvm_mmf] VENC channel %d stream was not released before next pop\n", ch);
+		fflush(stderr);
+		return -1;
+	}
 	int fd = CVI_VENC_GetFd(ch);
 	if (fd < 0) {
 		printf("CVI_VENC_GetFd failed with %d\n", fd);
@@ -2697,8 +2811,23 @@ int mmf_venc_pop(int ch, mmf_stream_t *stream) {
 			return -1;
 		}
 		for (int i = 0; i < stream->count; i++) {
-			stream->data[i] = venc_stream->pstPack[i].pu8Addr + venc_stream->pstPack[i].u32Offset;
-			stream->data_size[i] = venc_stream->pstPack[i].u32Len - venc_stream->pstPack[i].u32Offset;
+			VENC_PACK_S *pack = &venc_stream->pstPack[i];
+			stream->data[i] = pack->pu8Addr == NULL ? NULL : pack->pu8Addr + pack->u32Offset;
+			stream->data_size[i] = pack->u32Offset > pack->u32Len ? -1 :
+				(int)(pack->u32Len - pack->u32Offset);
+			if (stream->data[i] == NULL || stream->data_size[i] <= 0) {
+				static unsigned int invalid_pack_count = 0;
+				invalid_pack_count++;
+				if (invalid_pack_count <= 16 ||
+					(invalid_pack_count & (invalid_pack_count - 1)) == 0) {
+					fprintf(stderr,
+						"[kvm_mmf] invalid VENC pack #%u: ch=%d pack=%d/%d queried=%u addr=%p len=%u offset=%u data_num=%u frame_end=%d\n",
+						invalid_pack_count, ch, i, stream->count, stStatus.u32CurPacks,
+						pack->pu8Addr, pack->u32Len, pack->u32Offset,
+						pack->u32DataNum, pack->bFrameEnd);
+					fflush(stderr);
+				}
+			}
 		}
 	}
 
@@ -2707,14 +2836,14 @@ int mmf_venc_pop(int ch, mmf_stream_t *stream) {
 
 int mmf_venc_free(int ch) {
 	CVI_S32 s32Ret = CVI_SUCCESS;
-	if (ch >= MMF_VENC_MAX_CHN || !priv.venc[ch].is_inited) {
+	if (ch < 0 || ch >= MMF_VENC_MAX_CHN || !priv.venc[ch].is_inited) {
 		printf("Invalid venc ch:%d\r\n", ch);
 		return -1;
 	}
 
 	venc_info_t *info = (venc_info_t *)&priv.venc[ch];
 	VENC_STREAM_S *venc_stream = (VENC_STREAM_S *)&priv.venc[ch].capture_stream;
-	if (!info->is_running) {
+	if (!info->is_running && !priv.venc_stream_acquired[ch]) {
 		// Encoder reinitialization happens after CameraCviMmf has already
 		// acquired the next VI frame.  With no submitted VENC frame there is
 		// nothing to release here; releasing all VI frames would invalidate
@@ -2732,6 +2861,9 @@ int mmf_venc_free(int ch) {
 	}
 
 	info->is_running = 0;
-	_mmf_release_all_vi_frames();
+	if (priv.venc_input_vi_ch[ch] >= 0) {
+		_mmf_release_vi_frame(priv.venc_input_vi_ch[ch]);
+		priv.venc_input_vi_ch[ch] = -1;
+	}
 	return s32Ret;
 }
