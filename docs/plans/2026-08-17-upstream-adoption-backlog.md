@@ -1830,12 +1830,53 @@ The 2026-09-03 table covered #891 to #908. Four are newer than it.
 things this fork already merged separately: native VI submission, reusable pack
 storage, the stride copy, capture and VENC FPS alignment, persisted screen settings,
 MJPEG client isolation, throttled HDMI polling. Taking those back would be a
-regression to re-litigate. What is new is H.265, and this fork is closer to it than
-the pool knows: `kvm_mmf` already carries the `h265_or_h264_is_used` path and takes
-`type = 1` for HEVC, and `kvm_vision.cpp` hardcodes `cfg.type = 2` at one line. The
-encoder is there. What #914 adds around it is the Go and browser half: an encoder
-selector in the screen menu, WebCodecs and Pion configured for HEVC, and the
-`video_source.go` split that lets one pipeline serve both codecs.
+regression to re-litigate. What is new is H.265.
+
+**Correction, 2026-09-09. The paragraph that stood here was wrong, and it was wrong
+in the direction that invites wasted work.** It said this fork was closer to H.265
+than the pool knew, because `kvm_mmf` "already carries the `h265_or_h264_is_used`
+path and takes `type = 1` for HEVC", so that only one hardcoded line stood in the
+way. The encoder is not there.
+
+`h265_or_h264_is_used` is a boolean that means "a video codec rather than JPEG". It
+is set to 1 inside the H.264 branch after the channel is created and cleared when the
+channel is deleted. It selects nothing. `mmf_add_venc_channel` implements exactly one
+codec:
+
+```c
+case 2:   /* PT_H264, VENC_RC_MODE_H264CBR, stH264Cbr */
+...
+default: printf("Only support h264 encode! type:%d\r\n", cfg->type);
+    return -1;
+```
+
+The header comment `// 0, jpg; 1, h265; 2, h264` describes an intent that was never
+implemented. Confirmed in the deployed binary as well as the source: the guard string
+is present in `libkvm_mmf.so` and no `PT_H265` or `H265Cbr` symbol is.
+
+**It was tested on hardware, and it fails hard.** Flipping `cfg.type` to 1 and
+deploying to the board made `NanoKVM-Server` exit after 3s and then after 0s, with
+nothing in the Go log. `mmf_add_venc_channel` returns -1, `init_venc_h264` answers
+that with `err::check_raise`, and an uncaught C++ exception crossing the cgo boundary
+is `std::terminate`. `/data/supervise.log` was the only place that recorded it. Two
+things came out of that run and are worth more than the spike: the deploy guard
+reported `deploy: OK` for a library that never survived three seconds, because it
+samples one HTTP 200 and the supervisor restarts fast enough to satisfy it; and the
+recovery had to be done by hand from `/data/deploy/known-good/`.
+
+So what #914 adds is not only the Go and browser half. It adds the encoder itself:
+`enType = cfg->type == 1 ? PT_H265 : PT_H264`, `VENC_RC_MODE_H265CBR` with the
+`stH265Cbr` rate control, shared `_set_h26x_rate_timing` and `_set_h26x_rc_limits`
+helpers, and a real type check in place of the bailout. Around it sits the Go and
+browser half: an encoder selector in the screen menu, WebCodecs and Pion configured
+for HEVC, and the `video_source.go` split that lets one pipeline serve both codecs.
+
+The ABI addition is purely additive: a new `kvmv_read_video(width, height, codec,
+bitrate, gop, fps, ...)` beside an untouched `kvmv_read_img`, so the fork's existing
+Go keeps compiling whether or not the Go half is taken. Note that the numbering
+inverts at that boundary. The public API is `1 H264, 2 H265`; the internal
+`cfg->type` is `1 h265, 2 h264`. Getting it backwards is not a wrong picture, it is
+the `std::terminate` above.
 
 The argument for taking it is bitrate. This board's constraint is memory and the
 network, not encoder silicon, and HEVC buys roughly a third off the same picture. The
@@ -1844,6 +1885,27 @@ viewer's browser, Firefox is unreliable, and a video path that fails on some
 operators' machines is an availability regression on a device whose whole purpose is
 being reachable. If it is taken, it is taken as a selectable mode with H.264 as the
 default, which is the opposite of #914's own choice.
+
+**Cost of taking the C++ half, measured 2026-09-09.** The two C++ files plus their
+headers are 876 added and 345 removed, about 30% of the pull request. Applied to
+`fork/integration` with `git apply --3way` they leave 44 conflicts:
+
+| file | conflicts | comment only | real code |
+| --- | --- | --- | --- |
+| `kvm_mmf.cpp` | 17 | 8 | 9 |
+| `kvm_mmf.hpp` | 2 | 1 | 1 |
+| `kvm_vision.cpp` | 25 | 5 | 20 |
+
+The mmf side is largely mechanical, because the fork documented the same
+optimisations that #914 consolidates and the conflict is a comment against nothing.
+`kvm_vision.cpp` is not mechanical: twenty conflicts touch code, and several are fork
+features upstream has never seen, including the `vi_wedge_rebuild_request` recovery,
+`kvmvi_fps_pending` and `wedge_fail_threshold`. In some of those the incoming side is
+empty.
+
+`libkvm_mmf.so` changes as well as `libkvm.so`, so shipping it is a two-stage deploy:
+mmf first, under the old caller, then the caller. See the note in
+`docs/plans/` on the deploy guard, and do not read `deploy: OK` as proof.
 
 ### #927, NetBird, supersedes #759
 
@@ -1953,6 +2015,10 @@ Still a mesh product built on this board rather than a source for it.
 4. Read #919 and #920 properly, and decide whether the identity contract replaces
    `4c9da557` or sits beside it.
 5. Decide H.265, as a selectable mode with H.264 default, or not at all.
+   Taken as far as the encoder on 2026-09-09: the C++ half of #914 is on
+   `feat/h265-encoder-from-914`. The Go and browser half is deliberately not
+   taken, because it consolidates work this fork already merged and because it
+   makes H.265 the default. The default stays ours to choose.
 
 ### Not done
 
