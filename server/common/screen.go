@@ -25,7 +25,15 @@ var ScreenFileMap = map[string]string{
 	"fps":        "/kvmapp/kvm/fps",
 	"quality":    "/kvmapp/kvm/qlty",
 	"resolution": "/kvmapp/kvm/res",
+	"codec":      "/kvmapp/kvm/codec",
 }
+
+// The video codecs the encoder implements. These are libkvm's public numbering
+// and not mmf's, which runs the other way: libkvm converts.
+const (
+	CodecH264 = 1
+	CodecH265 = 2
+)
 
 // defaultScreenValues is what a board serves when it has never been configured.
 var defaultScreenValues = ScreenValues{
@@ -35,6 +43,7 @@ var defaultScreenValues = ScreenValues{
 	FPS:     30,
 	BitRate: 3000,
 	GOP:     30,
+	Codec:   CodecH264,
 }
 
 // ScreenValues is a consistent copy of the capture parameters.
@@ -45,6 +54,10 @@ type ScreenValues struct {
 	Quality uint16
 	BitRate uint16
 	GOP     uint8
+	// Codec applies to both H.264 delivery paths. There is one hardware
+	// encoder, so this cannot be a per-viewer choice: changing it rebuilds
+	// the VENC channel out from under every viewer at once.
+	Codec uint8
 }
 
 // Screen holds the capture parameters. HTTP handlers write them while the
@@ -107,7 +120,7 @@ func loadScreenValues() ScreenValues {
 
 	// Resolution first, so a stored quality that the resolution constrains is
 	// applied against the right one. The order also matches the switch below.
-	for _, key := range []string{"resolution", "quality", "fps"} {
+	for _, key := range []string{"resolution", "quality", "fps", "codec"} {
 		if value, ok := readScreenSetting(key); ok {
 			applyScreenValue(&values, key, value)
 		}
@@ -177,6 +190,16 @@ func applyScreenValue(values *ScreenValues, key string, value int) {
 
 	case "gop":
 		values.GOP = uint8(value)
+
+	case "codec":
+		// Anything else is left alone rather than stored. A codec libkvm does
+		// not implement reaches mmf_add_venc_channel, which answers -1, and
+		// before 2026-09-09 that was an uncaught C++ exception across cgo and
+		// so the whole server. It is an error return now, and it still has no
+		// business getting that far.
+		if value == CodecH264 || value == CodecH265 {
+			values.Codec = uint8(value)
+		}
 	}
 }
 
@@ -198,6 +221,19 @@ func CheckScreen() {
 	if _, ok := BitRateMap[s.values.BitRate]; !ok {
 		s.values.BitRate = 3000
 	}
+
+	s.values.Codec = validateCodec(s.values.Codec)
+}
+
+// validateCodec keeps an unusable codec away from the encoder. The settings
+// files are plain text on the card and a person can edit them, so the value
+// read back is not necessarily one this build knows.
+func validateCodec(codec uint8) uint8 {
+	if codec == CodecH264 || codec == CodecH265 {
+		return codec
+	}
+
+	return CodecH264
 }
 
 func validateFPS(fps int) int {

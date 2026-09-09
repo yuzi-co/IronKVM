@@ -11,6 +11,7 @@ import { MenuItem } from '@/components/menu-item.tsx';
 import { getQualityMap, getScreenType } from './constants.ts';
 import { Fps } from './fps';
 import { FrameDetect } from './frame-detect';
+import { Codec, CODEC_H264 } from './codec.tsx';
 import { Gop } from './gop.tsx';
 import { Quality } from './quality';
 import { Reset } from './reset.tsx';
@@ -27,6 +28,9 @@ export const Screen = () => {
   const [fps, setFps] = useState(30);
   const [quality, setQuality] = useState(2);
   const [gop, setGop] = useState(30);
+  // The server holds the real value and restores it from the card, so this
+  // is only what the menu shows until the operator changes it.
+  const [codec, setCodec] = useState(CODEC_H264);
 
   useEffect(() => {
     const screenType = getScreenType(videoMode);
@@ -82,6 +86,7 @@ export const Screen = () => {
       <Fps fps={fps} setFps={setFps} />
       <Scale />
       {!isMjpeg && <Gop gop={gop} setGop={setGop} />}
+      {videoMode === 'direct' && <Codec codec={codec} setCodec={setCodec} />}
       {isMjpeg && <FrameDetect />}
       <Reset />
     </div>

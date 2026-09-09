@@ -1,6 +1,7 @@
 package webrtc
 
 import (
+	"NanoKVM-Server/common"
 	"NanoKVM-Server/service/stream"
 	"NanoKVM-Server/service/vm"
 	"time"
@@ -157,10 +158,31 @@ func (m *WebRTCManager) stopVideoStreamIfIdle() bool {
 // gone. The loop used to notice on the capture tick, which it no longer owns.
 const idleCheckInterval = time.Second
 
+// codecIsDeliverable says whether this path can carry what the encoder is
+// producing.
+//
+// The packetizer is built once, in NewWebRTCManager, with codecs.H264Payloader,
+// and the SDP this path answers with declares H.264. There is one hardware
+// encoder and the codec is a global setting, so when the operator selects
+// H.265 this path cannot quietly serve something else: it would packetize HEVC
+// as H.264 and every viewer would get a connection that never shows a picture.
+// Refusing is the only honest answer until an HEVC payloader and an SDP to
+// match it exist here.
+func codecIsDeliverable(codec uint8) bool {
+	return codec == common.CodecH264
+}
+
 // sendVideoStream takes frames from the shared capture loop rather than
 // reading the encoder itself. Direct mode reads the same encoder, and two
 // readers do not each get the stream: they divide it between them.
 func (m *WebRTCManager) sendVideoStream() {
+	if codec := common.GetScreen().Snapshot().Codec; !codecIsDeliverable(codec) {
+		log.Warnf("webrtc cannot deliver codec %d, refusing to send video; "+
+			"select H.264 or use the direct path", codec)
+		m.stopVideoStreamIfIdle()
+		return
+	}
+
 	subscription := stream.SubscribeH264(func() bool {
 		return len(m.getClients()) > 0
 	})

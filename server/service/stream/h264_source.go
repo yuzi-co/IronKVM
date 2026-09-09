@@ -76,11 +76,16 @@ func newH264Source() *H264Source {
 
 var defaultH264Source = newH264Source()
 
-// readH264 is a variable so a test can drive the loop without capture
+// readVideo is a variable so a test can drive the loop without capture
 // hardware. Off-device the stub answers -1 to everything, which exercises the
 // status path and never the delivery one.
-var readH264 = func(width uint16, height uint16, bitRate uint16) ([]byte, int) {
-	return common.GetKvmVision().ReadH264(width, height, bitRate)
+//
+// gop and fps are passed as 0, meaning "whatever the module already holds".
+// SetGop and SetFPS have their own routes and set that module state, and
+// kvmv_read_img has always worked this way; passing the stored values here
+// would quietly override an API that stores nothing.
+var readVideo = func(width uint16, height uint16, codec uint8, bitRate uint16, gop uint8, fps uint8) ([]byte, int) {
+	return common.GetKvmVision().ReadVideo(width, height, codec, bitRate, gop, fps)
 }
 
 // setEncoderFPS is a variable for the same reason readH264 is: the loop below
@@ -279,7 +284,7 @@ func (s *H264Source) run() {
 			continue
 		}
 
-		data, result := readH264(values.Width, values.Height, values.BitRate)
+		data, result := readVideo(values.Width, values.Height, values.Codec, values.BitRate, 0, 0)
 
 		frame := H264Frame{
 			Data:      data,

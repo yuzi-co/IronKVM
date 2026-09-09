@@ -54,6 +54,13 @@ func (k *KvmVision) ReadH264(width uint16, height uint16, bitRate uint16) (data 
 	return nil, result
 }
 
+func (k *KvmVision) ReadVideo(width uint16, height uint16, codec uint8, bitRate uint16, gop uint8, fps uint8) (data []byte, result int) {
+	result = -1
+	reportCaptureRead(&h264Reads, result)
+
+	return nil, result
+}
+
 func (k *KvmVision) SetHDMI(enable bool) int {
 	return 0
 }
