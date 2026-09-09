@@ -86,7 +86,7 @@ export const Screen = () => {
       <Fps fps={fps} setFps={setFps} />
       <Scale />
       {!isMjpeg && <Gop gop={gop} setGop={setGop} />}
-      {videoMode === 'direct' && <Codec codec={codec} setCodec={setCodec} />}
+      {!isMjpeg && <Codec codec={codec} setCodec={setCodec} videoMode={videoMode} />}
       {isMjpeg && <FrameDetect />}
       <Reset />
     </div>

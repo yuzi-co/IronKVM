@@ -7,6 +7,10 @@ import { updateScreen } from '@/api/vm.ts';
 type CodecProps = {
   codec: number;
   setCodec: (codec: number) => void;
+  // Which delivery path is in use. The two carry H.265 through different
+  // browser machinery and support for them is not the same, so the question
+  // "can this browser decode H.265" has two different answers.
+  videoMode: string;
 };
 
 // libkvm's public numbering, which is not the same as mmf's and runs the other
@@ -24,12 +28,9 @@ const codecList = [
   { key: CODEC_H265, label: 'H.265' }
 ];
 
-// Whether this browser can decode HEVC at all. Firefox usually cannot, and
-// hardware support varies even where the API exists. There is one encoder on
-// the board, so selecting H.265 changes the stream for every viewer: an
-// operator whose browser cannot decode it would take the picture away from
-// everyone and see no error. Ask before offering the choice.
-async function hevcIsDecodable(): Promise<boolean> {
+// The direct path decodes with WebCodecs. Firefox usually cannot decode HEVC
+// there, and hardware support varies even where the API exists.
+async function hevcIsDecodableByWebCodecs(): Promise<boolean> {
   if (typeof VideoDecoder === 'undefined' || !VideoDecoder.isConfigSupported) {
     return false;
   }
@@ -42,13 +43,43 @@ async function hevcIsDecodable(): Promise<boolean> {
   }
 }
 
-export const Codec = ({ codec, setCodec }: CodecProps) => {
+// WebRTC decodes through the peer connection instead, and its HEVC support is
+// narrower than WebCodecs': a browser that decodes HEVC on the direct path may
+// still not receive it over WebRTC. Ask the receiver rather than assuming the
+// two agree.
+function hevcIsReceivableByWebRTC(): boolean {
+  if (typeof RTCRtpReceiver === 'undefined' || !RTCRtpReceiver.getCapabilities) {
+    return false;
+  }
+
+  try {
+    const capabilities = RTCRtpReceiver.getCapabilities('video');
+    return (
+      capabilities?.codecs?.some((entry) => entry.mimeType.toLowerCase() === 'video/h265') === true
+    );
+  } catch {
+    return false;
+  }
+}
+
+// There is one encoder on the board, so selecting H.265 changes the stream for
+// every viewer. An operator whose browser cannot decode it would take the
+// picture away from everyone and see no error, so ask before offering it.
+async function hevcIsUsable(videoMode: string): Promise<boolean> {
+  if (videoMode === 'h264') {
+    return hevcIsReceivableByWebRTC();
+  }
+
+  return hevcIsDecodableByWebCodecs();
+}
+
+export const Codec = ({ codec, setCodec, videoMode }: CodecProps) => {
   const [hevcSupported, setHevcSupported] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
 
-    hevcIsDecodable().then((supported) => {
+    hevcIsUsable(videoMode).then((supported) => {
       if (!cancelled) {
         setHevcSupported(supported);
       }
@@ -57,7 +88,7 @@ export const Codec = ({ codec, setCodec }: CodecProps) => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [videoMode]);
 
   async function update(value: number) {
     if (value === codec) return;
@@ -85,7 +116,13 @@ export const Codec = ({ codec, setCodec }: CodecProps) => {
                 : 'flex cursor-pointer select-none items-center rounded py-1 pl-1 pr-6 hover:bg-neutral-700/70'
             }
             onClick={() => update(item.key)}
-            title={disabled ? 'This browser cannot decode H.265' : undefined}
+            title={
+              disabled
+                ? videoMode === 'h264'
+                  ? 'This browser cannot receive H.265 over WebRTC'
+                  : 'This browser cannot decode H.265'
+                : undefined
+            }
           >
             <div className="flex h-[14px] w-[20px] items-end text-blue-500">
               {item.key === codec && <CheckIcon size={14} />}
@@ -96,7 +133,7 @@ export const Codec = ({ codec, setCodec }: CodecProps) => {
       })}
       <div className="max-w-[220px] px-1 pt-2 text-xs text-neutral-400">
         The board has one encoder, so this changes the stream for every viewer.
-        WebRTC mode carries H.264 only.
+        Reconnect to apply it to a running WebRTC session.
       </div>
     </>
   );

@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/pion/rtp"
 	"github.com/pion/rtp/codecs"
+	"github.com/pion/webrtc/v4"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -30,14 +31,24 @@ func NewWebRTCManager() *WebRTCManager {
 	m := &WebRTCManager{
 		clients:      make(map[*websocket.Conn]*Client),
 		videoSending: false,
-		videoPacketizer: rtp.NewPacketizer(
-			rtpMTU,
-			videoPayloadType,
-			videoSSRC,
-			&codecs.H264Payloader{},
-			rtp.NewRandomSequencer(),
-			clockRate,
-		),
+		videoPacketizers: map[uint8]rtp.Packetizer{
+			common.CodecH264: rtp.NewPacketizer(
+				rtpMTU,
+				videoPayloadType,
+				videoSSRC,
+				&codecs.H264Payloader{},
+				rtp.NewRandomSequencer(),
+				clockRate,
+			),
+			common.CodecH265: rtp.NewPacketizer(
+				rtpMTU,
+				videoPayloadType,
+				videoSSRC,
+				&codecs.H265Payloader{},
+				rtp.NewRandomSequencer(),
+				clockRate,
+			),
+		},
 		audioPacketizer: rtp.NewPacketizer(
 			rtpMTU,
 			audioPayloadType,
@@ -158,31 +169,39 @@ func (m *WebRTCManager) stopVideoStreamIfIdle() bool {
 // gone. The loop used to notice on the capture tick, which it no longer owns.
 const idleCheckInterval = time.Second
 
-// codecIsDeliverable says whether this path can carry what the encoder is
-// producing.
+// mimeTypeForCodec names what a track carrying this codec must declare.
 //
-// The packetizer is built once, in NewWebRTCManager, with codecs.H264Payloader,
-// and the SDP this path answers with declares H.264. There is one hardware
-// encoder and the codec is a global setting, so when the operator selects
-// H.265 this path cannot quietly serve something else: it would packetize HEVC
-// as H.264 and every viewer would get a connection that never shows a picture.
-// Refusing is the only honest answer until an HEVC payloader and an SDP to
-// match it exist here.
-func codecIsDeliverable(codec uint8) bool {
-	return codec == common.CodecH264
+// The value is fixed when the track is created, which is before the peer
+// answers, so a session is tied to the codec that was configured when it
+// negotiated. The sender below uses the codec each session recorded rather
+// than the one currently configured, so a setting changed under a live viewer
+// cannot put HEVC into a track that promised H.264.
+func mimeTypeForCodec(codec uint8) string {
+	if codec == common.CodecH265 {
+		return webrtc.MimeTypeH265
+	}
+
+	return webrtc.MimeTypeH264
+}
+
+// packetizerFor returns the one packetizer for this codec.
+//
+// It has to be the same one every time: the packetizer carries the RTP
+// sequence number, and a fresh one per frame would restart the sequence and
+// leave the peer treating the stream as permanently reordered. An unknown
+// codec gets the H.264 packetizer, matching mimeTypeForCodec.
+func (m *WebRTCManager) packetizerFor(codec uint8) rtp.Packetizer {
+	if packetizer, ok := m.videoPacketizers[codec]; ok {
+		return packetizer
+	}
+
+	return m.videoPacketizers[common.CodecH264]
 }
 
 // sendVideoStream takes frames from the shared capture loop rather than
 // reading the encoder itself. Direct mode reads the same encoder, and two
 // readers do not each get the stream: they divide it between them.
 func (m *WebRTCManager) sendVideoStream() {
-	if codec := common.GetScreen().Snapshot().Codec; !codecIsDeliverable(codec) {
-		log.Warnf("webrtc cannot deliver codec %d, refusing to send video; "+
-			"select H.264 or use the direct path", codec)
-		m.stopVideoStreamIfIdle()
-		return
-	}
-
 	subscription := stream.SubscribeH264(func() bool {
 		return len(m.getClients()) > 0
 	})
@@ -214,15 +233,32 @@ func (m *WebRTCManager) sendVideoStream() {
 				continue
 			}
 
-			// Packetized once for everyone. Cutting the same frame up again
-			// for each viewer copies the whole payload per client, which is
-			// real work on a board with one core and no memory to spare.
+			// Packetized once per codec, not once per viewer. Cutting the
+			// same frame up again for each viewer copies the whole payload
+			// per client, which is real work on a board with one core and no
+			// memory to spare.
+			//
+			// There is normally one codec in play, so this is one packetize
+			// as before. Two only happens across a codec change, while
+			// sessions negotiated before it are still open.
 			samples := uint32(frame.Duration.Seconds() * clockRate)
-			packets := m.videoPacketizer.Packetize(frame.Data, samples)
+			captured := common.GetScreen().Snapshot().Codec
 
-			// Handing the frame over never blocks: a client that is behind
-			// drops it and waits for the next keyframe.
+			var packets []*rtp.Packet
 			for _, client := range clients {
+				// A session that negotiated the other codec cannot be served
+				// this frame: its description promised something else, and
+				// the peer would decode noise. It waits for the viewer to
+				// reconnect, which renegotiates at the current codec.
+				if client.codec != captured {
+					continue
+				}
+				if packets == nil {
+					packets = m.packetizerFor(captured).Packetize(frame.Data, samples)
+				}
+
+				// Handing the frame over never blocks: a client that is
+				// behind drops it and waits for the next keyframe.
 				client.enqueue(packets, frame.KeyFrame)
 			}
 		}
