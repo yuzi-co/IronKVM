@@ -1,6 +1,32 @@
 #!/bin/sh
 # kvmhwd hid only
 
+# usb_unbind empties the UDC and then reads it back.
+#
+# The write is not proof. configfs answers ENODEV when the gadget is already
+# unbound, and a write that fails for any other reason leaves the controller
+# name in place. The shell discards both. usb_bind is then handed a UDC that is
+# already populated, its wait loop never runs, and it returns success without
+# having bound anything - so an unbind that did not take was scored as a
+# completed rebind.
+#
+# That matters most to the supervisor in server/service/hid/usb_watchdog.go.
+# `restart` is the cheap rung it tries twice before escalating to stop_start,
+# so two silent no-ops looked like two honest repairs that did not help.
+usb_unbind() {
+    udc=/sys/kernel/config/usb_gadget/g0/UDC
+
+    echo "" > "$udc" 2>/dev/null
+
+    if [ -n "$(cat "$udc" 2>/dev/null)" ]
+    then
+        echo "usb: the gadget is still bound to $(cat "$udc"), not rebinding"
+        return 1
+    fi
+
+    return 0
+}
+
 # usb_bind hands the gadget to a device controller, and waits for one to exist.
 #
 # The single write this replaces assumed /sys/class/udc was populated by the
@@ -69,6 +95,18 @@ set_otg_role() {
 }
 
 start_usb_dev(){
+    # f_hid copies the descriptors into its instance when the gadget is bound
+    # and refuses every write to them afterwards, so rebuilding on top of a
+    # bound gadget rewrites nothing and still reports success. stop_start gets
+    # here through start_usb_host, whose unbind can now fail, and the case arm
+    # cannot test that without also treating a failed otg role write as fatal.
+    # Refuse at the point the invariant is actually needed.
+    if [ -n "$(cat /sys/kernel/config/usb_gadget/g0/UDC 2>/dev/null)" ]
+    then
+        echo "usb: the gadget is still bound, not rebuilding it"
+        return 1
+    fi
+
     . /etc/profile
     echo "usb mode: device"
     cd /sys/kernel/config/usb_gadget
@@ -173,12 +211,12 @@ start_usb_dev(){
 }
 
 start_usb_host(){
-    echo '' > /sys/kernel/config/usb_gadget/g0/UDC
+    usb_unbind || return 1
     set_otg_role host
 }
 
 restart_usb_dev(){
-    echo > /sys/kernel/config/usb_gadget/g0/UDC
+    usb_unbind || return 1
     sleep 1
     usb_bind || return 1
     echo "USB Restart OK!"

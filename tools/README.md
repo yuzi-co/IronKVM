@@ -20,7 +20,7 @@ are operator tools.
 | `service/`    | Restart `NanoKVM-Server`, `kvm_system` and `sshd` if they die, and arm the SoC watchdog. |
 | `service/S01hwdt` | The layer under the other guards: the SoC timer resets the board when nothing can fork. |
 | `deploy/`     | Install a server build, or an init script, and put the old one back. Report what a device runs. |
-| `usbdev/`     | Check the USB gadget: the optional ACM console, and the link order.     |
+| `usbdev/`     | Check the USB gadget: the optional ACM console, the link order, and that a rebind which did not happen is reported as a failure. |
 | `audiodiag/`  | Say whether USB audio capture works, and name the end that fails.      |
 | `opusbench/`  | Rebuild `libopus.a` for the board, and measure what it costs.          |
 | `run-tests.sh` | Run every `test-*.sh` under `tools/`. It reports pass, skip or fail. |
@@ -110,6 +110,23 @@ The same suites replace `ln` while the lifted script runs. configfs does not
 store a symlink; it resolves the target at the moment of the call and records
 an internal link. A plain filesystem cannot do that, and a filesystem without
 symlinks refuses the call.
+
+`test-usb-rebind.sh` is the exception to the shell choice above: it asserts on
+what the script reports, never on descriptor bytes, so `echo -ne` cannot change
+its answer. It holds the UDC readback stuck rather than making the file
+unwritable, because file modes do not survive every sandbox this suite runs in
+and the readback is the part under test. It runs against both `S03usbdev` and
+`S03usbhid`, which carry the same gadget functions.
+
+What it defends is a gap the supervisor could not see. Emptying the UDC is how
+a caller unbinds the gadget, and the write is not proof: configfs answers
+ENODEV for a gadget that is already unbound, and a write that fails any other
+way leaves the controller name in place. `usb_bind` then waits only while the
+UDC is empty, so handed a populated one it runs no iteration and returns 0.
+`restart` printed `USB Restart OK!` over a gadget it had not touched.
+`server/service/hid/usb_watchdog.go` tries `restart` twice before it escalates
+to `stop_start`, so two silent no-ops read as two honest repairs that did not
+help, and the escalation was spent on the strength of them.
 
 ## Knowing what a device is running
 
