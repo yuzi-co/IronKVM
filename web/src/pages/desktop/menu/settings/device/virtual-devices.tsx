@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Progress, Switch, Tooltip } from 'antd';
+import { useAtomValue } from 'jotai';
+import { Volume2Icon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { getHidMode } from '@/api/hid.ts';
@@ -8,9 +10,20 @@ import type {
   VirtualDeviceName,
   VirtualDevices as VirtualDevicesState
 } from '@/api/virtual-device.ts';
+import { videoModeAtom } from '@/jotai/screen.ts';
 
 export const VirtualDevices = () => {
   const { t } = useTranslation();
+
+  // Audio reaches the browser on the WebRTC path and nowhere else. The server
+  // has one caller of audio.NewStream and it is in that path: MJPEG is a
+  // multipart response, and Direct is a websocket whose nine-byte frame header
+  // has no room to say what a message holds, so neither can carry a second
+  // stream. This note used to sit in the Video Mode menu, which said it to
+  // everyone whether or not they had asked for audio. Saying it beside the
+  // switch reaches the person who is about to wonder why they hear nothing.
+  const videoMode = useAtomValue(videoModeAtom);
+  const audioIsAudible = videoMode === 'h264';
 
   const [isHidOnlyMode, setIsHidOnlyMode] = useState(false);
   const [devices, setDevices] = useState<VirtualDevicesState | null>(null);
@@ -106,6 +119,13 @@ export const VirtualDevices = () => {
 
           {device === 'console' && (
             <span className="text-xs text-amber-500">{t('settings.device.consoleTip')}</span>
+          )}
+
+          {device === 'audio' && !audioIsAudible && (
+            <span className="flex items-start space-x-1.5 text-xs text-amber-500">
+              <Volume2Icon className="mt-[2px] shrink-0" size={12} />
+              <span>{t('settings.device.audioNote')}</span>
+            </span>
           )}
 
           {state.enabled && !state.active && (

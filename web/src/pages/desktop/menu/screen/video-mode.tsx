@@ -1,6 +1,6 @@
 import { Popover, Tooltip } from 'antd';
 import { useAtomValue } from 'jotai';
-import { CheckIcon, TvMinimalPlayIcon, Volume2Icon } from 'lucide-react';
+import { CheckIcon, TvMinimalPlayIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { setVideoMode as setCookie } from '@/lib/localstorage.ts';
@@ -61,17 +61,6 @@ export const VideoMode = () => {
             </div>
           )
       )}
-
-      {/* The speaker control only appears once a WebRTC audio track arrives,
-          so on the other two modes there is nothing to click and nothing to
-          say why. The server has one caller of audio.NewStream and it is in
-          the WebRTC path: MJPEG is a multipart response and Direct is a
-          websocket whose nine-byte frame header has no room to say what a
-          message holds, so neither can carry a second stream. */}
-      <div className="mt-1 flex max-w-[210px] items-start space-x-1.5 border-t border-neutral-700 pt-1.5 pr-5 pl-1 text-xs text-neutral-500">
-        <Volume2Icon className="mt-[2px] shrink-0" size={12} />
-        <span className="select-none">{t('screen.videoAudioNote')}</span>
-      </div>
     </>
   );
 
