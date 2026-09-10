@@ -495,8 +495,7 @@ const en = {
         audio: 'Virtual Speaker',
         audioDesc:
           'Present a USB sound card to the remote host, so you can hear it. The host must select it as its output device. Switching this rebuilds the USB connection.',
-        audioNote:
-          'This browser is not in H.264 (WebRTC), which is the only mode that carries audio.',
+        audioNote: 'Audio is only available in H.264 (WebRTC)',
         console: 'Serial Console',
         consoleDesc:
           'Present a USB serial port to the remote host, for logging in to this NanoKVM when the network is unreachable',
