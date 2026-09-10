@@ -2,7 +2,6 @@ import { Popover } from 'antd';
 import { CheckIcon, SquareKanbanIcon } from 'lucide-react';
 
 import { updateScreen } from '@/api/vm.ts';
-import { setGop as setCookie } from '@/lib/localstorage';
 
 type GopProps = {
   gop: number;
@@ -26,7 +25,6 @@ export const Gop = ({ gop, setGop }: GopProps) => {
     }
 
     setGop(value);
-    setCookie(value);
   }
 
   const content = (

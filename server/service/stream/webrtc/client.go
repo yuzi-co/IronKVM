@@ -1,6 +1,7 @@
 package webrtc
 
 import (
+	"NanoKVM-Server/common"
 	"encoding/json"
 	"sync"
 
@@ -194,9 +195,14 @@ func (c *Client) ReadMessage() (*Message, error) {
 }
 
 func (c *Client) AddTrack() error {
+	// The codec is read once, here, and remembered. The track declares it to
+	// the peer and the answer is built from that, so this session carries this
+	// codec for as long as it lives even if the setting changes underneath.
+	c.codec = common.GetScreen().Snapshot().Codec
+
 	// video track
 	videoTrack, err := webrtc.NewTrackLocalStaticRTP(
-		webrtc.RTPCodecCapability{MimeType: webrtc.MimeTypeH264},
+		webrtc.RTPCodecCapability{MimeType: mimeTypeForCodec(c.codec)},
 		"video",
 		"pion-video",
 	)

@@ -19,10 +19,15 @@ type WebRTCManager struct {
 	mutex          sync.Mutex
 	viewerVersion  uint64
 
-	// videoPacketizer is shared: a frame is cut into RTP packets once and the
-	// packets handed to every client, rather than each client paying to
-	// packetize and copy the same frame again.
-	videoPacketizer rtp.Packetizer
+	// videoPacketizers holds one packetizer per codec. A frame is cut into RTP
+	// packets once per codec and the packets handed to every client on that
+	// codec, rather than each client paying to packetize and copy the same
+	// frame again.
+	//
+	// It is a map rather than a field because the codec is a global setting
+	// that can change while sessions are live, and each packetizer has to keep
+	// its own RTP sequence across such a change.
+	videoPacketizers map[uint8]rtp.Packetizer
 
 	audioSending    bool
 	audioStream     *audio.Stream
@@ -34,6 +39,12 @@ type Client struct {
 	video *webrtc.PeerConnection
 	track *Track
 	mutex sync.Mutex
+
+	// codec is what this session's video track told the peer it carries. It is
+	// fixed at AddTrack and never changes: the mime type is part of the
+	// negotiated description, so a codec change needs a new session rather than
+	// a different payload in the old one.
+	codec uint8
 
 	// slot holds at most one frame for this client. The capture loop hands a
 	// frame over and moves on; the writer goroutine takes frames at whatever

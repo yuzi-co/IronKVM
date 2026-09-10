@@ -76,11 +76,16 @@ func newH264Source() *H264Source {
 
 var defaultH264Source = newH264Source()
 
-// readH264 is a variable so a test can drive the loop without capture
+// readVideo is a variable so a test can drive the loop without capture
 // hardware. Off-device the stub answers -1 to everything, which exercises the
 // status path and never the delivery one.
-var readH264 = func(width uint16, height uint16, bitRate uint16) ([]byte, int) {
-	return common.GetKvmVision().ReadH264(width, height, bitRate)
+//
+// gop and fps are passed as 0, meaning "whatever the module already holds".
+// setEncoderGop and setEncoderFPS below set that module state, and
+// kvmv_read_img has always worked this way. Saying it once on a change costs
+// one channel rebuild; saying it on every frame would cost one per frame.
+var readVideo = func(width uint16, height uint16, codec uint8, bitRate uint16, gop uint8, fps uint8) ([]byte, int) {
+	return common.GetKvmVision().ReadVideo(width, height, codec, bitRate, gop, fps)
 }
 
 // setEncoderFPS is a variable for the same reason readH264 is: the loop below
@@ -88,6 +93,17 @@ var readH264 = func(width uint16, height uint16, bitRate uint16) ([]byte, int) {
 // part of what this file is responsible for.
 var setEncoderFPS = func(fps int) {
 	common.GetKvmVision().SetFPS(uint8(fps))
+}
+
+// setEncoderGop is a variable for the same reason setEncoderFPS is.
+//
+// This used to be sent from the HTTP handler instead. That left a GOP restored
+// from the card unapplied, because nothing else calls set_h264_gop, and it
+// reached libkvm from a request: GetKvmVision builds the capture pipeline on
+// its first call, so changing this one menu item on an idle board started
+// capture.
+var setEncoderGop = func(gop uint8) {
+	common.GetKvmVision().SetGop(gop)
 }
 
 // setCaptureFPS is a variable for the same reason setEncoderFPS is. It tells a
@@ -229,6 +245,7 @@ func (s *H264Source) run() {
 	common.CheckScreen()
 	values := screen.Snapshot()
 	fps := values.FPS
+	gop := values.GOP
 	duration := time.Second / time.Duration(fps)
 
 	// The encoder decides what one frame may cost by dividing the bitrate by
@@ -241,6 +258,13 @@ func (s *H264Source) run() {
 	// hands out every frame the source produces unless told otherwise, and a
 	// frame this loop never reads is still written to memory in full.
 	setCaptureFPS(fps)
+
+	// The GOP is said here for the same reason the frame rate is: the encoder
+	// has a compiled-in default and no way to learn the configured one. Unlike
+	// set_h264_fps, set_h264_gop does not return early when nothing changed, so
+	// this costs one channel rebuild at the start of a stream. A stream opens on
+	// a keyframe in any case, which is what that rebuild produces.
+	setEncoderGop(gop)
 
 	startTime := time.Now()
 
@@ -258,6 +282,13 @@ func (s *H264Source) run() {
 		}
 
 		values = screen.Snapshot()
+		// No zero guard, unlike the frame rate below: applyScreenValue puts an
+		// out-of-range GOP back to the default rather than storing it, so the
+		// snapshot never carries one the encoder would refuse.
+		if values.GOP != gop {
+			gop = values.GOP
+			setEncoderGop(gop)
+		}
 		if values.FPS != fps && values.FPS != 0 {
 			fps = values.FPS
 			duration = time.Second / time.Duration(fps)
@@ -279,7 +310,7 @@ func (s *H264Source) run() {
 			continue
 		}
 
-		data, result := readH264(values.Width, values.Height, values.BitRate)
+		data, result := readVideo(values.Width, values.Height, values.Codec, values.BitRate, 0, 0)
 
 		frame := H264Frame{
 			Data:      data,

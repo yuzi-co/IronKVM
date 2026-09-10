@@ -15,9 +15,6 @@ import (
 // acceptable where `now_fps` and `wifi_state` are not - see the comment about
 // tmpfs in `kvmapp/system/init.d/S95nanokvm`.
 //
-// `gop` is absent on purpose. The API hands it straight to libkvm and stores
-// nothing, so there is nothing to restore.
-//
 // It is a variable so a test can point it at a temporary directory. Nothing on
 // the device changes it.
 var ScreenFileMap = map[string]string{
@@ -25,7 +22,16 @@ var ScreenFileMap = map[string]string{
 	"fps":        "/kvmapp/kvm/fps",
 	"quality":    "/kvmapp/kvm/qlty",
 	"resolution": "/kvmapp/kvm/res",
+	"codec":      "/kvmapp/kvm/codec",
+	"gop":        "/kvmapp/kvm/gop",
 }
+
+// The video codecs the encoder implements. These are libkvm's public numbering
+// and not mmf's, which runs the other way: libkvm converts.
+const (
+	CodecH264 = 1
+	CodecH265 = 2
+)
 
 // defaultScreenValues is what a board serves when it has never been configured.
 var defaultScreenValues = ScreenValues{
@@ -35,6 +41,7 @@ var defaultScreenValues = ScreenValues{
 	FPS:     30,
 	BitRate: 3000,
 	GOP:     30,
+	Codec:   CodecH264,
 }
 
 // ScreenValues is a consistent copy of the capture parameters.
@@ -45,6 +52,10 @@ type ScreenValues struct {
 	Quality uint16
 	BitRate uint16
 	GOP     uint8
+	// Codec applies to both H.264 delivery paths. There is one hardware
+	// encoder, so this cannot be a per-viewer choice: changing it rebuilds
+	// the VENC channel out from under every viewer at once.
+	Codec uint8
 }
 
 // Screen holds the capture parameters. HTTP handlers write them while the
@@ -107,7 +118,7 @@ func loadScreenValues() ScreenValues {
 
 	// Resolution first, so a stored quality that the resolution constrains is
 	// applied against the right one. The order also matches the switch below.
-	for _, key := range []string{"resolution", "quality", "fps"} {
+	for _, key := range []string{"resolution", "quality", "fps", "codec", "gop"} {
 		if value, ok := readScreenSetting(key); ok {
 			applyScreenValue(&values, key, value)
 		}
@@ -176,7 +187,17 @@ func applyScreenValue(values *ScreenValues, key string, value int) {
 		values.FPS = validateFPS(value)
 
 	case "gop":
-		values.GOP = uint8(value)
+		values.GOP = validateGOP(value)
+
+	case "codec":
+		// Anything else is left alone rather than stored. A codec libkvm does
+		// not implement reaches mmf_add_venc_channel, which answers -1, and
+		// before 2026-09-09 that was an uncaught C++ exception across cgo and
+		// so the whole server. It is an error return now, and it still has no
+		// business getting that far.
+		if value == CodecH264 || value == CodecH265 {
+			values.Codec = uint8(value)
+		}
 	}
 }
 
@@ -198,6 +219,20 @@ func CheckScreen() {
 	if _, ok := BitRateMap[s.values.BitRate]; !ok {
 		s.values.BitRate = 3000
 	}
+
+	s.values.Codec = validateCodec(s.values.Codec)
+	s.values.GOP = validateGOP(int(s.values.GOP))
+}
+
+// validateCodec keeps an unusable codec away from the encoder. The settings
+// files are plain text on the card and a person can edit them, so the value
+// read back is not necessarily one this build knows.
+func validateCodec(codec uint8) uint8 {
+	if codec == CodecH264 || codec == CodecH265 {
+		return codec
+	}
+
+	return CodecH264
 }
 
 func validateFPS(fps int) int {
@@ -209,4 +244,20 @@ func validateFPS(fps int) int {
 	}
 
 	return fps
+}
+
+// validateGOP holds the keyframe interval to the range libkvm accepts.
+//
+// set_h264_gop clamps to 1..100 itself, so a value outside that range is not
+// the value the encoder ends up using. Storing it anyway would leave the
+// settings reporting a GOP the board is not running, which is the whole class
+// of bug that reading the settings back was meant to end. Out of range falls
+// back to the default rather than to the nearest bound: a number that far off
+// is a corrupt file or a caller with a bug, not an operator's choice.
+func validateGOP(gop int) uint8 {
+	if gop < 1 || gop > 100 {
+		return defaultScreenValues.GOP
+	}
+
+	return uint8(gop)
 }

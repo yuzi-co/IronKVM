@@ -120,6 +120,47 @@ func (k *KvmVision) ReadH264(width uint16, height uint16, bitRate uint16) (data 
 	return
 }
 
+// ReadVideo reads one encoded access unit in the codec asked for.
+//
+// ReadH264 above goes through kvmv_read_img, which can only ever ask for
+// H.264. This goes through kvmv_read_video, which takes the codec, the gop and
+// the frame rate, so the encoder is configured by the caller rather than by
+// whatever the module last remembered.
+//
+// The codec numbering here is libkvm's public one, CodecH264 and CodecH265.
+// libkvm converts to mmf's, which runs the other way.
+func (k *KvmVision) ReadVideo(width uint16, height uint16, codec uint8, bitRate uint16, gop uint8, fps uint8) (data []byte, result int) {
+	var (
+		kvmData  *C.uint8_t
+		dataSize C.uint32_t
+	)
+
+	if !captureLifecycle.withLive(func() {
+		result = int(C.kvmv_read_video(
+			C.uint16_t(width),
+			C.uint16_t(height),
+			C.uint8_t(codec),
+			C.uint16_t(bitRate),
+			C.uint8_t(gop),
+			C.uint8_t(fps),
+			&kvmData,
+			&dataSize,
+		))
+
+		reportCaptureRead(&h264Reads, result)
+		if result < 0 {
+			return
+		}
+		defer C.free_kvmv_data(&kvmData)
+
+		data = C.GoBytes(unsafe.Pointer(kvmData), C.int(dataSize))
+	}) {
+		return nil, imgNotExist
+	}
+
+	return
+}
+
 func (k *KvmVision) SetHDMI(enable bool) int {
 	hdmiEnable := C.uint8_t(0)
 	if enable {

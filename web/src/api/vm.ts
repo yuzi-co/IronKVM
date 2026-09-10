@@ -25,6 +25,11 @@ export function getGpio() {
   return http.get('/api/vm/gpio');
 }
 
+// get the capture settings the server holds
+export function getScreen() {
+  return http.get('/api/vm/screen');
+}
+
 // update screen arguments
 export function updateScreen(type: string, value: number) {
   const data = {

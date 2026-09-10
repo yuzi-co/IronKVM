@@ -10,9 +10,14 @@ import (
 func withCapture(t *testing.T, read func(uint16, uint16, uint16) ([]byte, int)) {
 	t.Helper()
 
-	original := readH264
-	t.Cleanup(func() { readH264 = original })
-	readH264 = read
+	original := readVideo
+	t.Cleanup(func() { readVideo = original })
+	// These tests predate the codec and care only about the frames, so the
+	// codec, the gop and the frame rate are dropped here rather than threaded
+	// through every one of them.
+	readVideo = func(width uint16, height uint16, codec uint8, bitRate uint16, gop uint8, fps uint8) ([]byte, int) {
+		return read(width, height, bitRate)
+	}
 }
 
 func waitFor(t *testing.T, what string, condition func() bool) {

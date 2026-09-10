@@ -4,7 +4,6 @@ import { CheckIcon, SquareActivityIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { updateScreen } from '@/api/vm';
-import { setQuality as setCookie } from '@/lib/localstorage.ts';
 import { videoModeAtom } from '@/jotai/screen.ts';
 
 import { getQualityMap } from './constants.ts';
@@ -38,7 +37,6 @@ export const Quality = ({ quality, setQuality }: QualityProps) => {
     }
 
     setQuality(key);
-    setCookie(key);
   }
 
   const content = (

@@ -15,6 +15,15 @@ let pendingAckTimestamp: number | null = null;
 let decodeBackpressured = false;
 let reportedFrameWidth = 0;
 let reportedFrameHeight = 0;
+let configuredCodec: 'avc' | 'hevc' | null = null;
+
+// The board has one hardware encoder, so which of these arrives is the
+// operator's global choice, not this viewer's. The stream is read rather than
+// asked about: a keyframe says what it is, which keeps the worker right even
+// when the codec changes under a live connection.
+const avcCodec = 'avc1.42E02A';
+// Main profile, level 4.0, the lowest that covers 1080p30.
+const hevcCodec = 'hev1.1.6.L120.B0';
 
 const maxQueuedFrames = 1;
 const maxReconnectDelayMs = 5_000;
@@ -150,6 +159,40 @@ function clearReconnectTimer() {
   }
 }
 
+// Read the codec out of an Annex-B keyframe. H.264 opens with an SPS, whose
+// nal_unit_type is 7 in the low five bits. HEVC opens with a VPS, type 32 in
+// bits 1 to 6 of the same byte. Nothing else needs to agree for this to work,
+// which is why the codec travels in no header and needs no API call.
+function detectCodec(data: Uint8Array): 'avc' | 'hevc' | null {
+  for (let i = 0; i + 3 < data.length; ) {
+    let prefix = 0;
+    if (i + 4 < data.length && data[i] === 0 && data[i + 1] === 0 && data[i + 2] === 0 && data[i + 3] === 1) {
+      prefix = 4;
+    } else if (data[i] === 0 && data[i + 1] === 0 && data[i + 2] === 1) {
+      prefix = 3;
+    }
+    if (prefix === 0) {
+      i++;
+      continue;
+    }
+
+    const nal = i + prefix;
+    if (nal >= data.length) {
+      break;
+    }
+    if ((data[nal] & 0x1f) === 7) {
+      return 'avc';
+    }
+    const hevcType = (data[nal] >> 1) & 0x3f;
+    if (hevcType === 32 || hevcType === 33) {
+      return 'hevc';
+    }
+    i = nal + 1;
+  }
+
+  return null;
+}
+
 function handleWsMessage(message: ArrayBuffer) {
   try {
     if (message.byteLength < 9) {
@@ -160,6 +203,22 @@ function handleWsMessage(message: ArrayBuffer) {
     const isKeyFrame = view.getUint8(0) === 1;
     const timestamp = Number(view.getBigUint64(1, true));
     const data = new Uint8Array(message, 9);
+
+    // A keyframe carries the parameter sets, so it is the only frame that can
+    // say which codec this is, and the only frame a fresh decoder can start
+    // on. The operator can change the codec under a live connection: the
+    // encoder rebuilds its channel and the next keyframe arrives in the new
+    // codec, so a decoder configured for the old one is torn down here rather
+    // than left to fail on data it cannot read.
+    if (isKeyFrame) {
+      const seen = detectCodec(data);
+      if (seen) {
+        if (seen !== configuredCodec && decoder) {
+          resetDecoder();
+        }
+        configuredCodec = seen;
+      }
+    }
 
     if (!decoder) {
       if (!isKeyFrame) {
@@ -212,7 +271,7 @@ function createDecoder(): VideoDecoder | null {
       releaseDecodeBackpressure(configuredDecoder);
     };
     instance.configure({
-      codec: 'avc1.42E02A',
+      codec: configuredCodec === 'hevc' ? hevcCodec : avcCodec,
       hardwareAcceleration: 'prefer-hardware',
       optimizeForLatency: true
     });

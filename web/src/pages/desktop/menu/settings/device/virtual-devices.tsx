@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Progress, Switch, Tooltip } from 'antd';
+import { Volume2Icon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { getHidMode } from '@/api/hid.ts';
@@ -106,6 +107,22 @@ export const VirtualDevices = () => {
 
           {device === 'console' && (
             <span className="text-xs text-amber-500">{t('settings.device.consoleTip')}</span>
+          )}
+
+          {/* Audio reaches the browser on the WebRTC path and nowhere else.
+              The server has one caller of audio.NewStream and it is in that
+              path: MJPEG is a multipart response, and Direct is a websocket
+              whose nine-byte frame header has no room to say what a message
+              holds, so neither can carry a second stream.
+
+              Said whatever this browser is on, because the switch is a device
+              setting: it presents a sound card to the host for every viewer,
+              and the one flipping it may not be the one listening. */}
+          {device === 'audio' && (
+            <span className="flex items-start space-x-1.5 text-xs text-amber-500">
+              <Volume2Icon className="mt-[2px] shrink-0" size={12} />
+              <span>{t('settings.device.audioNote')}</span>
+            </span>
           )}
 
           {state.enabled && !state.active && (
