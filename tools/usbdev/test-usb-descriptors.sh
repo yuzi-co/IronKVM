@@ -443,6 +443,12 @@ present configs/c.1/mass_storage.disk0 "normal mode starts out with the disk"
 present configs/c.1/rndis.usb0 "normal mode starts out with the network"
 present os_desc/c.1 "normal mode starts out with the OS descriptor link"
 
+# A mode switch reaches these functions as stop_start, so the gadget is
+# unbound before the incoming script builds it. Say so rather than calling
+# start_usb_dev straight over a bound gadget: f_hid refuses every descriptor
+# write while the function is linked into a bound config, so the shortcut
+# modelled a sequence the device never runs.
+run "$HID" start_usb_host
 run "$HID" start_usb_dev
 is bcdDevice 0x0623 "switching to hid-only moves the mode flag"
 hex_is functions/hid.GS0/report_desc "$HID_ONLY_KEYBOARD_DESC" \
@@ -454,6 +460,7 @@ absent configs/c.1/rndis.usb0 "hid-only unlinks the network"
 absent os_desc/c.1 "hid-only removes the OS descriptor link"
 is bDeviceClass 0x00 "hid-only clears the composite device class"
 
+run "$S03" start_usb_host
 run "$S03" start_usb_dev
 is bcdDevice 0x0510 "switching back moves the mode flag"
 is bcdUSB    0x0200 "switching back restores the USB version"
@@ -489,6 +496,7 @@ is functions/uac1.usb0/p_chmask 0 "the sound card offers no microphone"
 # 3 is the worst setting available here and the buffer costs 192 bytes each.
 is functions/uac1.usb0/req_number 8 "the sound card keeps eight requests in flight"
 
+run "$HID" start_usb_host
 run "$HID" start_usb_dev
 absent configs/c.1/acm.GS0   "hid-only unlinks the console"
 absent configs/c.1/uac1.usb0 "hid-only unlinks the speaker"

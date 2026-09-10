@@ -62,7 +62,7 @@ m_unbounded() {
 
 # The watch becomes a report: it notices, and does nothing about it.
 m_norebind() {
-    sed -i '\@^        echo "" > /sys/kernel/config/usb_gadget/g0/UDC 2>/dev/null@d' "$1"
+    sed -i '\@^        usb_unbind || return 1@d' "$1"
 }
 
 # Every state counts as enumerated, so the watch always returns happy and the
