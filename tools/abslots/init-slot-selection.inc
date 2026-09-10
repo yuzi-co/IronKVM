@@ -54,6 +54,28 @@ if [ -e "$BOOT/slot.try" ]
 then
 	read trial < "$BOOT/slot.try"
 
+	# The stock init mounts the boot partition read-only:
+	#
+	#     mount -o ro /dev/mmcblk0p1 /boot
+	#
+	# and this block is injected between that line and the umount eight lines
+	# later, so it runs inside a read-only window. The delete below therefore
+	# never landed on a real board, the proof under it discarded every trial,
+	# and `slot try` had not once booted the slot it was given. The marker was
+	# readable, which is why the log named the right slot before discarding it.
+	#
+	# Remounting rather than mounting, because the mount already exists and the
+	# path is the one the rest of this block reads. `mount` is one of the twelve
+	# applets symlinked in the initramfs, so it needs no busybox prefix.
+	#
+	# The result is deliberately not tested. If the remount fails the delete
+	# fails too, and the proof below catches that and says so. A second failure
+	# path here would only be a second way to describe the same boot.
+	#
+	# It is not put back read-only afterwards. The stock init unmounts this
+	# partition eight lines further down, before it hands over.
+	mount -o remount,rw "$BOOT"
+
 	"$BUSYBOX" rm -f "$BOOT/slot.try"
 	"$BUSYBOX" sync
 
