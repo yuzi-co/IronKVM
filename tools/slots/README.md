@@ -40,8 +40,15 @@ behaves correctly across twelve scenarios.
 
 Two builds from identical inputs do not produce identical bytes: `mkimage`
 stamps the FIT with the current time. Compare the verification output, not
-sha256 across builds. `SOURCE_DATE_EPOCH` would make it reproducible but has
-not been booted on hardware here, so it is not set.
+sha256 across builds.
+
+This applies to `tools/slots` only. `tools/abslots/repack-boot.sh` sets
+`SOURCE_DATE_EPOCH` to the repository's last commit time, so two builds of one
+commit do agree, and `tools/abslots/test-reproducible.sh` proves it. That change
+has not yet booted on hardware. The timestamp is informational in a FIT and
+U-Boot verifies the hashes rather than the clock, so the risk is small and it is
+not zero: the first board to take an image built that way should be one somebody
+can reach.
 
 Then on the device:
 

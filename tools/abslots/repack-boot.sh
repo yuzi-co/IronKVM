@@ -15,6 +15,35 @@ HERE=$(cd "$(dirname "$0")" && pwd)
 ORIG=${1:?usage: repack-boot.sh <stock-boot.sd> [output-dir]}
 OUT=${2:-/tmp/slotbuild}
 
+# Make the output byte-reproducible.
+#
+# mkimage stamps the current time into the FIT header, so two builds from
+# identical sources produced different bytes and a sha256 said nothing about
+# whether a board was running this repository's boot image. On 2026-09-11 that
+# cost a real investigation: the merged tree rebuilt to 6e854fdb while the board
+# carried 25b5a8e9, with git reporting no difference in any input.
+#
+# mkimage honours SOURCE_DATE_EPOCH and writes it in place of the clock. The
+# value here is the repository's last commit time, so the stamp still means
+# something: it is when the sources that define this image were last changed.
+# Two builds of one commit now agree, and a build of a different commit still
+# differs, which is the property worth having.
+#
+# The fallback is the mtime of the stock image being repacked, for a checkout
+# with no git available. Pass SOURCE_DATE_EPOCH to override either.
+#
+# NOT YET BOOTED WITH THIS SET. The timestamp is informational in a FIT and
+# U-Boot verifies the hashes rather than the clock, so the risk is small and it
+# is not zero. The first board to take an image built this way should be one
+# somebody can reach.
+if [ -z "${SOURCE_DATE_EPOCH:-}" ]; then
+    SOURCE_DATE_EPOCH=$(git -C "$HERE" log -1 --format=%ct 2>/dev/null) || true
+fi
+if [ -z "${SOURCE_DATE_EPOCH:-}" ]; then
+    SOURCE_DATE_EPOCH=$(stat -c %Y "$ORIG" 2>/dev/null) || true
+fi
+export SOURCE_DATE_EPOCH
+
 [ -f "$ORIG" ] || { echo "no such file: $ORIG"; exit 1; }
 rm -rf "$OUT"; mkdir -p "$OUT"
 
