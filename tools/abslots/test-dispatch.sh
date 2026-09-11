@@ -33,6 +33,7 @@ cat > "$WORK/busybox" <<'BB'
 #!/bin/sh
 applet=$1
 shift
+[ -n "${MOUNTTRACE:-}" ] && echo "busybox $applet $*" >> "$MOUNTTRACE"
 case "$applet" in
     rm)   [ -n "$STUB_RM_FAILS" ] && exit 0; rm "$@" ;;
     sync) sync ;;
@@ -53,6 +54,7 @@ R=/dev/mmcblk0p5
 harness() {
     cat <<'STUB'
 mount() {
+    [ -n "${MOUNTTRACE:-}" ] && echo "mount $*" >> "$MOUNTTRACE"
     for d in $MOUNTABLE; do [ "$d" = "$3" ] && return 0; done
     return 1
 }
@@ -145,6 +147,51 @@ echo "$got" | grep -q "DEVICE=$B" \
 grep -q "could not be deleted" "$WORK/kmsg" \
     && note "and it says why" OK \
     || note "and it says why" FAIL
+
+echo
+echo "===== the boot partition is made writable before the disarm ====="
+
+# The case above proves the right thing happens when the delete does not land.
+# It does not ask why it would not land, and on a real board it never lands at
+# all: line 72 of the stock /init is
+#
+#     mount -o ro /dev/mmcblk0p1 /boot
+#
+# and this block is injected between that mount and the umount eight lines
+# later. So every trial ran inside a read-only window, the delete always failed,
+# and every trial was discarded. `slot try` had never once booted the slot it
+# was given.
+#
+# Nothing here could have caught it. BOOT is a stub directory on a writable
+# filesystem, so the one condition that breaks it in production is the one the
+# sandbox cannot reproduce. This case asserts the remount instead: it is the
+# only part of the fix that is visible from inside the sandbox.
+rm -rf "$WORK/boot"; mkdir -p "$WORK/boot"
+echo b > "$WORK/boot/slot"
+echo a > "$WORK/boot/slot.try"
+: > "$WORK/log"
+: > "$WORK/trace"
+(
+    BOOT="$WORK/boot"; LOGFILE="$WORK/log"; MOUNTABLE="$A $B $R"
+    BUSYBOX="$WORK/busybox"; KMSG="$WORK/kmsg"; MOUNTTRACE="$WORK/trace"
+    export BOOT LOGFILE MOUNTABLE BUSYBOX KMSG MOUNTTRACE
+    eval "$(harness)"
+    . "$SEL"; . "$DIS"
+) >/dev/null 2>&1
+
+grep -q "^mount .*remount,rw.*$WORK/boot" "$WORK/trace" \
+    && note "the boot partition is remounted read-write" OK \
+    || note "the boot partition is remounted read-write" FAIL
+
+# Order is the whole point. A remount after the delete changes nothing, and a
+# remount that is never proved by the delete would hide the next failure.
+rw_line=$(grep -n "^mount .*remount,rw" "$WORK/trace" | head -1 | cut -d: -f1)
+rm_line=$(grep -n "^busybox rm " "$WORK/trace" | head -1 | cut -d: -f1)
+if [ -n "$rw_line" ] && [ -n "$rm_line" ] && [ "$rw_line" -lt "$rm_line" ]; then
+    note "the remount happens before the delete" OK
+else
+    note "the remount happens before the delete (rw=$rw_line rm=$rm_line)" FAIL
+fi
 
 echo
 if [ "$fails" -eq 0 ]; then

@@ -45,6 +45,14 @@ caught "a trial that is never disarmed" "$WORK/sel-nodisarm.inc" "$DIS"
 sed '/could not be deleted/,+1d' "$SEL" > "$WORK/sel-noproof.inc"
 caught "a disarm that is not proved" "$WORK/sel-noproof.inc" "$DIS"
 
+# 3. The remount is dropped, which is the state this file shipped in until
+#    2026-09-11. The stock init mounts the boot partition read-only, so without
+#    it the disarm cannot land, the proof discards every trial, and `slot try`
+#    silently never boots the slot it is given. The board stays safe and the
+#    feature does nothing, which is the worst pair to leave untested.
+sed '/mount -o remount,rw/d' "$SEL" > "$WORK/sel-noremount.inc"
+caught "a disarm with no remount, so it can never land" "$WORK/sel-noremount.inc" "$DIS"
+
 # 3. Recovery is dropped from the ladder, so a trusted slot that will not mount
 #    strands the board at msc, which needs a person and a card reader.
 sed '/falling back to recovery/,+1d' "$DIS" > "$WORK/dis-norecovery.inc"
