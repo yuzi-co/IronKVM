@@ -10,15 +10,23 @@
 # privileged mount, which is what makes this buildable through Docker on
 # Windows at all.
 #
-# The manifest has three verbs and the order they run in matters:
+# The manifest has four verbs and the order they run in matters:
 #
 #   remove <path in the image>                           runs first
 #   add    <path in the payload> <path in image> [mode]  runs second
+#   drop   <path in the image>                           runs third
 #   touch  <path in the image>                           runs last
 #
 # remove before add, so a manifest can replace a directory by removing it and
 # adding a new one. touch last, because a marker may live inside a directory
 # that add created.
+#
+# drop exists because remove cannot delete what add is about to create. A
+# manifest that adds a vendor directory wholesale and wants three files left out
+# of it has no way to say so with remove, which has already run by then. A drop
+# that matches nothing fails the build rather than passing silently: a list of
+# files to leave out is only safe while it still describes the base it was
+# written against.
 #
 # The optional mode on add is not decoration. The payload is a copy of a
 # Windows checkout on a Linux build host, so its modes and its ownership
@@ -94,6 +102,19 @@ while read -r verb a b c; do
     else
         echo "  add     $a -> $b"
     fi
+done < "$STAGE/m"
+
+while read -r verb a b c; do
+    [ "$verb" = drop ] || continue
+    if [ ! -e "$STAGE/tree${a}" ]; then
+        echo "  drop    $a -> NOT PRESENT in the assembled tree"
+        echo
+        echo "a drop matched nothing, so this manifest no longer describes the"
+        echo "base it was written against; no image written"
+        exit 1
+    fi
+    rm -rf "$STAGE/tree${a}"
+    echo "  drop    $a"
 done < "$STAGE/m"
 
 while read -r verb a b c; do
@@ -284,12 +305,71 @@ echo "############ 6. build the filesystem"
 # ending is a power cut, and an unclean unmount with no journal is a repair with
 # no record of what was in flight.
 #
+# Its size is pinned at 16 MiB instead of being derived from the size of the
+# image. mke2fs picks the journal from the filesystem it is making, so a 2 GiB
+# image got a 64 MiB journal: four times what this filesystem can ever need, and
+# 64 MiB written to the card on every install. 16 MiB is what mke2fs itself
+# chooses for a filesystem of a few hundred megabytes, which is the size this
+# image is now built at, and it stays 16 MiB after S01fs grows the filesystem to
+# fill the slot.
+#
+# The reserved block percentage goes to zero. Those blocks exist so that a full
+# filesystem still lets root log in and clean up, which is an argument about a
+# machine with users. This is a root filesystem whose content is decided at
+# build time, 5% of a 2 GiB slot is 102 MiB, and the thing that actually fills
+# a slot here is a package install, which runs as root and would spend them
+# anyway.
+#
+# resize_inode is NOT disabled, although it costs space. S01fs grows the
+# filesystem on the first boot of a slot, and without that feature it cannot.
+#
+# THE BLOCK SIZE AND THE INODE RATIO ARE DECLARED, AND BOTH HAVE TO BE. mke2fs
+# chooses them from the size of the filesystem it is making, and this filesystem
+# is made at a fraction of the size it will run at. Left to itself at 256 MiB it
+# picks 1 KiB blocks and one inode per 4 KiB, and resize2fs can change neither:
+# the grown 2 GiB filesystem would keep 1 KiB blocks, which is four times the
+# block groups and four times the bitmap work for the life of the slot, and it
+# would carry 524,288 inodes in 128 MiB of inode tables for about a thousand
+# files.
+#
+# 4 KiB and one inode per 16 KiB are what mke2fs itself picks for a 2 GiB
+# filesystem, so the grown result is the same shape as an image built at full
+# size used to be. This is the one place where building small could have made
+# the running board worse rather than better, and it is invisible from anything
+# except dumpe2fs.
+#
 # metadata_csum_seed is dropped so the image is not bound to the UUID it was
 # built with, which lets one image be written to either slot.
 rm -f "$OUT"
-mke2fs -q -F -t ext4 -L "$(basename "$OUT" .img)" -d "$STAGE/tree" -O ^metadata_csum_seed \
+mke2fs -q -F -t ext4 -L "$(basename "$OUT" .img)" -d "$STAGE/tree" \
+       -O ^metadata_csum_seed -J size=16 -m 0 -b 4096 -i 16384 \
        "$OUT" "${SIZE_MIB}m"
 e2fsck -fp "$OUT" >/dev/null 2>&1 || true
+
+# The image is built smaller than the slot it is written to, and S01fs grows it
+# on the first boot. Without resize_inode that grow cannot happen, and the slot
+# would stay at the built size for ever with no message saying why. mke2fs sets
+# the feature by default, so this gate is here to catch a future option that
+# turns it off for the space it costs.
+if command -v dumpe2fs >/dev/null 2>&1; then
+    if ! dumpe2fs -h "$OUT" 2>/dev/null | grep -q '^Filesystem features:.*resize_inode'; then
+        echo
+        echo "the image has no resize_inode, so S01fs could never grow it to fill a slot"
+        rm -f "$OUT"
+        exit 1
+    fi
+    # resize2fs cannot change the block size, so this one is decided here and
+    # then lived with for the life of the slot. mke2fs picks 1 KiB for a small
+    # filesystem, and a grown 2 GiB filesystem with 1 KiB blocks is four times
+    # the block groups it should have.
+    bs=$(dumpe2fs -h "$OUT" 2>/dev/null | awk '$1 == "Block" && $2 == "size:" { print $3 }')
+    if [ "$bs" != 4096 ]; then
+        echo
+        echo "the image has a ${bs} byte block size; a slot filesystem needs 4096"
+        rm -f "$OUT"
+        exit 1
+    fi
+fi
 
 echo
 printf '  %-40s %s\n' "image" "$OUT"

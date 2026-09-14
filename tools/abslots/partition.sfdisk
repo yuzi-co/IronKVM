@@ -13,9 +13,14 @@
 # Sizes come from measurement, not from a rule applied to a guess. The root
 # filesystem in use holds 911 MB, of which 132 MB is accumulated operator state
 # that a built image does not carry, so a built root is about 780 MB. 2 GiB is
-# 2.5x that. Bigger would cost real time on every install: slot install writes a
-# whole partition with dd, so install time and SD write endurance scale with the
-# partition, not with the bytes in it.
+# 2.5x that.
+#
+# Install time no longer scales with this number, and it used to. `slot install`
+# writes the image and not the partition, and an image is now built at a few
+# hundred megabytes and grown by S01fs on the first boot of the slot. So the
+# size here bounds what a slot can hold rather than what every install costs.
+# The Alpine image is 256 MiB built and 24 MiB compressed, against the 2 GiB
+# that a full-size image made of this partition.
 #
 # p4 is the extended container. Each logical partition costs one EBR sector, so
 # p5 starts 8192 sectors after the container begins rather than immediately,
