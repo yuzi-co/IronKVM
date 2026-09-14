@@ -50,6 +50,63 @@ U-Boot verifies the hashes rather than the clock, so the risk is small and it is
 not zero: the first board to take an image built that way should be one somebody
 can reach.
 
+## An image is smaller than the slot it goes in
+
+`tools/abslots/build-image.sh` builds at whatever size it is given, and the
+Alpine image is built at 256 MiB for a 2 GiB slot. `S01fs` grows the filesystem
+to fill the partition on the first boot of that slot, so the size of the
+partition no longer decides what an install costs.
+
+Three things follow, and all three have a gate:
+
+- **The image needs `resize_inode`.** Without it the grow cannot happen, the
+  slot works, and nothing says why it has an eighth of the space it should.
+  `build-image.sh` refuses to write an image that lacks the feature.
+- **The base needs `resize2fs`.** Alpine keeps it in `e2fsprogs-extra` and not in
+  `e2fsprogs`, so a root filesystem can carry `mke2fs` and `e2fsck` and still
+  have no way to resize itself.
+- **`grow_root` reads `/proc/mounts`.** It grows whatever is mounted on `/`, so
+  one image is correct in slot A, in slot B and in recovery.
+
+The journal is pinned at 16 MiB and the reserved block percentage is 0. `mke2fs`
+sizes a journal from the filesystem it is making, so a 2 GiB image used to get a
+64 MiB journal, and 5% of a 2 GiB slot is 102 MiB held back for a recovery login
+that a board where every process is root does not have.
+
+**The block size and the inode ratio are declared for the same reason, and that
+one matters more.** `mke2fs` picks both from the size of the filesystem, and
+`resize2fs` can change neither afterwards. A 256 MiB image left to itself takes
+1 KiB blocks and one inode per 4 KiB, and grows into a 2 GiB filesystem with four
+times the block groups it should have and 128 MiB of inode tables for about a
+thousand files. `-b 4096 -i 16384` is what `mke2fs` chooses for a 2 GiB
+filesystem on its own, so the grown slot has the shape a full-size image used to
+have. Only `dumpe2fs` shows any of this, so the builder gates on it.
+
+`slot install` takes a `.zst` and decompresses it to the partition as it writes,
+so the card never holds both copies. It tests the stream's own checksum first,
+because every later pass decompresses the file again: a stream that stopped early
+would stop in the same place each time, and the size, the hash and the read back
+would all agree with each other about half an image.
+
+```shell
+slot install b /data/slot-b.img.zst     # 24 MiB copied, 256 MiB written
+slot install b /data/slot-b.img         # still works, needs no zstd
+```
+
+A board whose root filesystem is Sipeed's has no `zstd`. The refusal says so
+rather than writing anything.
+
+## The manifest's fourth verb
+
+`drop <path in the image>` deletes a path after `add` has created it. `remove`
+runs before `add` and so cannot take one file out of a directory that a manifest
+adds whole, which is the shape `/kvmapp/server/dl_lib` has: 38 vendor libraries
+arrive together and the running chain opens 17.
+
+A drop that matches nothing fails the build. A list of files to leave out is only
+safe while it still describes the base it was written against, and a silent no-op
+would let it go on being trusted after the directory had changed underneath it.
+
 Then on the device:
 
 ```shell

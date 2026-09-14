@@ -328,6 +328,119 @@ needs_resize() {
 }
 # --- end resize guard ---
 
+# --- root filesystem grow ---
+# Grow the root filesystem to fill the slot it was written to.
+#
+# The slot images are built at a few hundred megabytes and the slots are 2 GiB,
+# because the difference is what `slot install` has to write to the card. A
+# 2 GiB image is 2 GiB of SD writes for about 50 MiB of content, and almost all
+# of it is zeroes. Building small and growing here trades one resize2fs on the
+# first boot of a slot for eight ninths of every install.
+#
+# Nothing here names a partition. The filesystem to grow is whatever is mounted
+# on /, so this is correct in slot A, in slot B and in recovery, and it stays
+# correct if the layout ever changes. The size to grow it to comes from
+# /proc/partitions, which is the kernel's own view of the device rather than the
+# partition table's.
+#
+# The guard is a comparison, not a marker file. A marker in the root filesystem
+# would be written by the image and so would arrive already set, and the whole
+# point is that a freshly installed slot has not been grown yet. A filesystem
+# that already fills its partition is left alone, so this writes nothing on
+# every boot after the first.
+#
+# WHAT HAS BEEN MEASURED AND WHAT HAS NOT. Growing a built image from 256 MiB to
+# 2 GiB was done offline against the image file: 65,536 blocks become 524,288,
+# 16,384 inodes become 131,072, the block size and the journal do not move, and
+# e2fsck is clean afterwards. That is the same count a full-size image used to
+# have. The ONLINE resize this performs, on a root filesystem that is mounted,
+# has not been exercised anywhere: it needs a loop device, and the container this
+# project builds in has none. It is the ordinary ext4 path and the kernel has
+# CONFIG_EXT4_FS built in, so the expectation is reasonable and it is still an
+# expectation.
+#
+# What that costs if it is wrong is bounded, which is why it is acceptable to
+# find out on hardware. A failed resize leaves a working slot with 180 MiB free
+# instead of 1.9 GiB, and a line on the console saying so. Nothing on this board
+# writes to the root filesystem in normal running.
+#
+# It is done here rather than offline from the initramfs, which would be more
+# reliable, because the initramfs lives in the single /boot/boot.sd that the A/B
+# slots do not protect. A mistake there takes out both slots and recovery at
+# once. A mistake here takes out nothing.
+#
+# The position in rcS also matters, and it is the position this script already
+# had. S01fs sorts before S01hwdt, which is what arms the SoC watchdog, so the
+# resize cannot be the thing that makes a boot miss its first pet. Do not renumber
+# this script above S01hwdt.
+RESIZE2FS=${RESIZE2FS:-resize2fs}
+DUMPE2FS=${DUMPE2FS:-dumpe2fs}
+MOUNTS=${MOUNTS:-/proc/mounts}
+# Also set by the data geometry block above. Repeated here because this block is
+# extracted and sourced on its own by test-s01fs-grow.sh, and an empty file name
+# would send awk to read standard input and hang the boot it was meant to test.
+PARTITIONS=${PARTITIONS:-/proc/partitions}
+
+root_device() {
+    awk '$2 == "/" && $1 ~ /^\/dev\// { print $1; exit }' "$MOUNTS" 2>/dev/null
+}
+
+# The size of a block device in 1024 byte blocks, which is the unit
+# /proc/partitions counts in.
+device_kb() {
+    awk -v n="${1##*/}" '$4 == n { print $3 }' "$PARTITIONS" 2>/dev/null
+}
+
+# The size of the filesystem on it, in the same unit. dumpe2fs -h reads the
+# superblock only, so this costs no more than a read of a mounted filesystem.
+filesystem_kb() {
+    "$DUMPE2FS" -h "$1" 2>/dev/null | awk '
+        $1 == "Block" && $2 == "count:" { c = $3 }
+        $1 == "Block" && $2 == "size:"  { s = $3 }
+        END { if (c != "" && s != "") printf "%d\n", c * (s / 1024) }'
+}
+
+grow_root() {
+    dev=$(root_device)
+    [ -n "$dev" ] || return 0
+
+    # A root that the kernel does not list as a partition is not something to
+    # resize. This also rejects the tests' plain files, and an initramfs root.
+    pkb=$(device_kb "$dev")
+    [ -n "$pkb" ] || return 0
+
+    # Both tools, and they are not always together. The board running the Sipeed
+    # root filesystem has resize2fs and no dumpe2fs, so this says so and leaves
+    # the filesystem alone rather than growing something it could not measure.
+    # That base needs no growing anyway: its root filesystem was made at the size
+    # of the partition. The Alpine image takes e2fsprogs-extra, which is where
+    # Alpine keeps both.
+    if ! command -v "$RESIZE2FS" > /dev/null 2>&1; then
+        echo "S01fs: no resize2fs, leaving the root filesystem at its built size"
+        return 0
+    fi
+    if ! command -v "$DUMPE2FS" > /dev/null 2>&1; then
+        echo "S01fs: no dumpe2fs, so the root filesystem size cannot be read"
+        return 0
+    fi
+
+    fkb=$(filesystem_kb "$dev")
+    [ -n "$fkb" ] || return 0
+
+    # A megabyte of slack. mke2fs rounds a filesystem down to whole block
+    # groups, so one that fills its partition is still a little smaller than it,
+    # and growing for that would be a write on every boot for nothing.
+    [ "$((pkb - fkb))" -gt 1024 ] || return 0
+
+    echo "S01fs: growing the root filesystem on $dev, $((fkb / 1024)) MiB to $((pkb / 1024)) MiB"
+    if ! "$RESIZE2FS" "$dev" > /dev/null 2>&1; then
+        echo "S01fs: resize2fs failed on $dev, the next boot tries again"
+        return 1
+    fi
+    return 0
+}
+# --- end root filesystem grow ---
+
 if [ "$1" = "start" ]
 then
         if needs_resize
@@ -339,6 +452,17 @@ then
                 " | parted ---pretend-input-tty /dev/mmcblk0 "resizepart 2 8192MB"
                 # resize data filesystem
                 (resize2fs /dev/mmcblk0p2) &
+        else
+                # The stock path above grows a partition and then the
+                # filesystem in it, and it fires only on a card that has never
+                # been laid out. An A/B card always takes this branch, because
+                # p3 exists from the moment the table is written.
+                #
+                # It is an either/or rather than two steps because the stock
+                # path backgrounds its own resize2fs. Two resize2fs processes on
+                # one device is not something to find out about on a board that
+                # cannot be power cycled.
+                grow_root || true
         fi
 
 

@@ -57,8 +57,18 @@ mkdir -p "$WORK/payload/scripts"
 printf '#!/bin/sh\necho watchdog\n' > "$WORK/payload/scripts/S00awatchdog"
 chmod 755 "$WORK/payload/scripts/S00awatchdog"
 
+# A payload directory added whole, of which one file is not wanted. This is the
+# shape the vendor library directory has: 38 libraries arrive together and 21 of
+# them are opened by nothing, and remove cannot take them out because remove has
+# already run by the time add creates them.
+mkdir -p "$WORK/payload/libs"
+printf 'used\n'   > "$WORK/payload/libs/libkept.so"
+printf 'unused\n' > "$WORK/payload/libs/libdead.so"
+
 cat > "$WORK/good.manifest" <<'MANIFEST'
 add     scripts/S00awatchdog      /etc/init.d/S00awatchdog
+add     libs                      /usr/lib/dl
+drop    /usr/lib/dl/libdead.so
 remove  /etc/kvm/ssh_stop
 remove  /root
 touch   /etc/kvm.disk0
@@ -89,6 +99,8 @@ present /root/notes.txt          && note "a removed directory is gone" FAIL     
 present /etc/kvm.disk0           && note "a touched file is present" OK         || note "a touched file is present" FAIL
 present /etc/init.d/S50sshd      && note "the base survives" OK                 || note "the base survives" FAIL
 present /etc/kvm/pwd             && note "an untouched base file survives" OK   || note "an untouched base file survives" FAIL
+present /usr/lib/dl/libdead.so   && note "a dropped file is gone" FAIL          || note "a dropped file is gone" OK
+present /usr/lib/dl/libkept.so   && note "its siblings survive the drop" OK     || note "its siblings survive the drop" FAIL
 
 echo
 echo "===== provenance and device names are recorded ====="
@@ -119,6 +131,48 @@ e2fsck -fn "$WORK/out.img" > "$WORK/fsck.log" 2>&1 \
 dumpe2fs -h "$WORK/out.img" 2>/dev/null | grep -q 'has_journal' \
     && note "the image keeps its journal" OK \
     || note "the image has no journal, which a power cut would punish" FAIL
+
+dumpe2fs -h "$WORK/out.img" 2>/dev/null > "$WORK/geom"
+
+# The image is built smaller than the slot and grown by S01fs on the first boot
+# of that slot. Without resize_inode it cannot be grown, and the slot keeps an
+# eighth of the space it should have with nothing said about why.
+grep -q '^Filesystem features:.*resize_inode' "$WORK/geom" \
+    && note "the image can be grown to fill its slot" OK \
+    || note "the image has no resize_inode, so S01fs could never grow it" FAIL
+
+# mke2fs picks the block size and the inode ratio from the size of the
+# filesystem it is making, and this one is made at a fraction of the size it
+# will run at. resize2fs can change neither, so a 256 MiB image left to mke2fs
+# gets 1 KiB blocks and grows into a 2 GiB filesystem with four times the block
+# groups it should have and 128 MiB of inode tables for a thousand files.
+bs=$(awk '$1 == "Block" && $2 == "size:" { print $3 }' "$WORK/geom")
+[ "$bs" = 4096 ] \
+    && note "the block size is 4096, whatever size the image is built at" OK \
+    || note "the block size is $bs; resize2fs cannot change it later" FAIL
+
+# One inode per 16 KiB is what mke2fs picks for a 2 GiB filesystem, so the grown
+# result has the shape a full-size image used to have.
+ratio=$(awk '$1 == "Inode" && $2 == "count:" { c = $3 } $1 == "Block" && $2 == "count:" { b = $3 } END { printf "%d\n", b * 4096 / c }' "$WORK/geom")
+[ "$ratio" = 16384 ] \
+    && note "one inode per 16 KiB, whatever size the image is built at" OK \
+    || note "one inode per $ratio bytes; a grown slot would carry the wrong count" FAIL
+
+# 5% of a 2 GiB slot is 102 MiB held back for a recovery login that this board
+# does not have: every process on it is already root.
+res=$(awk '/^Reserved block count:/ { print $4 }' "$WORK/geom")
+[ "$res" = 0 ] \
+    && note "no blocks are reserved for root" OK \
+    || note "$res blocks are reserved for root, which nothing here needs" FAIL
+
+# mke2fs sizes the journal from the filesystem, so a 2 GiB image used to get a
+# 64 MiB journal: four times what this filesystem needs, written to the card on
+# every install, and it stays that size after the grow.
+jsize=$(awk '/^Total journal size:/ { print $4 }' "$WORK/geom")
+case "$jsize" in
+    16M|16384k) note "the journal is pinned at 16 MiB" OK ;;
+    *)          note "the journal is $jsize, not the pinned 16 MiB" FAIL ;;
+esac
 
 echo
 echo "===== modes and ownership are declared, not inherited ====="
@@ -386,6 +440,29 @@ if sh "$BUILD" "$WORK/base.tar.zst" "$WORK/missing.manifest" "$WORK/payload" 64 
 else
     note "an add with no source is refused" OK
 fi
+
+# A drop that matches nothing means the list of files to leave out no longer
+# describes the base. That list is 21 vendor libraries chosen because a loader
+# was measured and none of them was opened; a silent no-op would let it go on
+# being trusted after the directory it describes had changed underneath it.
+cat > "$WORK/staledrop.manifest" <<'MANIFEST'
+add     scripts/S00awatchdog      /etc/init.d/S00awatchdog
+drop    /usr/lib/dl/libgone.so
+remove  /etc/kvm/ssh_stop
+touch   /etc/kvm.disk0
+MANIFEST
+if sh "$BUILD" "$WORK/base.tar.zst" "$WORK/staledrop.manifest" "$WORK/payload" 64 "$WORK/staledrop.img" \
+   > "$WORK/staledrop.log" 2>&1; then
+    note "a drop that matches nothing is refused" FAIL
+else
+    note "a drop that matches nothing is refused" OK
+fi
+grep -q 'no longer describes' "$WORK/staledrop.log" \
+    && note "it says why the drop was refused" OK \
+    || note "it says why the drop was refused" FAIL
+[ -f "$WORK/staledrop.img" ] \
+    && note "the refused drop build leaves no image behind" FAIL \
+    || note "the refused drop build leaves no image behind" OK
 
 echo
 echo "===== two builds agree on content ====="

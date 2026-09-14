@@ -2,7 +2,7 @@
 # Operator tool for the A/B/recovery slots.
 #
 #   slot status
-#   slot install <a|b|recovery> <image>
+#   slot install <a|b|recovery> <image|image.zst>
 #   slot try <a|b>
 #   slot confirm
 #   slot revert
@@ -19,6 +19,7 @@
 # be: it does what you told it.
 SLOT_CONF=${SLOT_CONF:-/etc/nanokvm-slots.conf}
 BOOT=${BOOT:-/boot}
+ZSTD=${ZSTD:-zstd}
 
 [ -f "$SLOT_CONF" ] || { echo "slot: no $SLOT_CONF" >&2; exit 1; }
 . "$SLOT_CONF"
@@ -88,16 +89,41 @@ cmd_install() {
 	[ "$name" = "$(running_slot)" ] && die "refusing to install onto the running slot"
 	[ -f "$image" ] || die "no such image: $image"
 
-	isize=$(wc -c < "$image")
+	# A compressed image is read through zstd and written out as it decompresses,
+	# so the card never holds the compressed copy and /data never has to have
+	# room for both. A slot image is mostly zeroes, so this is the difference
+	# between keeping a 256 MiB file and keeping a 15 MiB one.
+	#
+	# The integrity test comes first and is not optional. Everything below
+	# decompresses the image again, so a stream that stops early would stop early
+	# in the same place every time: the size, the hash and the read back would
+	# all agree with each other and all describe half an image. zstd checks its
+	# own frame checksum, which is the only thing here that can tell a short
+	# image from a small one.
+	case "$image" in
+	*.zst)
+		command -v "$ZSTD" > /dev/null 2>&1 \
+			|| die "$image is compressed and this board has no zstd"
+		"$ZSTD" -t "$image" > /dev/null 2>&1 \
+			|| die "$image fails its own zstd integrity check"
+		read_image="$ZSTD -dc"
+		;;
+	*)
+		read_image=cat
+		;;
+	esac
+
+	isize=$($read_image "$image" | wc -c)
 	# blockdev first: wc -c on a block device reads every byte of it to count
 	# them, which is a full partition read before anything has been written.
 	# The wc fallback is for the tests, which drive this against plain files.
 	dsize=$(blockdev --getsize64 "$dev" 2>/dev/null || wc -c < "$dev")
 	[ "$isize" -le "$dsize" ] || die "image is $isize bytes, $dev holds $dsize"
 
-	before=$(sha256sum "$image" | cut -d' ' -f1)
+	before=$($read_image "$image" | sha256sum | cut -d' ' -f1)
 	echo "slot: writing $image to $dev"
-	dd if="$image" of="$dev" bs=1M conv=fsync 2>/dev/null || die "write to $dev failed"
+	$read_image "$image" | dd of="$dev" bs=1M conv=fsync 2>/dev/null \
+		|| die "write to $dev failed"
 
 	# Read back exactly as many bytes as were written and compare. A short
 	# write and a silent card are the two ways this goes wrong.
