@@ -92,6 +92,13 @@ while read -r verb a b c; do
     # who ran the build, and a uid that only exists on the build host is one
     # more thing that reads as correct until sshd applies StrictModes to it.
     chown -R 0:0 "$STAGE/tree${b}" 2>/dev/null || true
+    # The same holds for write permission. A checkout mounted into a container
+    # over virtiofs reports every file and directory as 0777, so a plain add
+    # copied 0777 into the image. On 2026-09-16 the first Alpine slot to reach
+    # userland booted with world-writable directories. Nothing the payload
+    # carries is meant to be writable by anyone but root, so the bits come off
+    # before any declared mode is applied.
+    chmod -R go-w "$STAGE/tree${b}" 2>/dev/null || true
     if [ -n "$c" ]; then
         if [ -d "$STAGE/tree${b}" ]; then
             chmod -R "$c" "$STAGE/tree${b}"
@@ -254,6 +261,19 @@ done < "$STAGE/m"
 [ "$badown" -eq 0 ] \
     && note "every added path is owned by root" OK \
     || note "$badown added path(s) are not owned by root" FAIL
+
+# World-writable paths in the whole tree, base included. The add loop removes
+# the bits from what the payload brings, so a failure here comes from the base.
+# That is the fault the 2026-09-16 Alpine slot had: its base was unpacked onto a
+# virtiofs mount, every directory came out 0777, and sshd refused to start
+# because /var/empty was world-writable. A sticky directory such as /tmp is
+# meant to be writable by everyone, and a symlink's own mode means nothing.
+find "$STAGE/tree" ! -type l -perm -0002 ! -perm -1000 -print > "$STAGE/worldw" 2>/dev/null || true
+worldw=$(wc -l < "$STAGE/worldw")
+sed -n '1,10s|^'"$STAGE/tree"'|      world-writable: |p' "$STAGE/worldw"
+[ "$worldw" -eq 0 ] \
+    && note "nothing is world-writable except sticky directories" OK \
+    || note "$worldw path(s) are world-writable" FAIL
 
 # The web UI has to be the fork's, because the fork's server answers a
 # different shape. /api/vm/device/virtual returns {enabled, active, cost} per
