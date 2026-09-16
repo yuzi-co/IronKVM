@@ -12,38 +12,36 @@ export const Hdmi = () => {
   const [isHdmiEnabled, setIsHdmiEnabled] = useAtom(isHdmiEnabledAtom);
 
   const [isPcie, setIsPcie] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [idleTimeout, setIdleTimeout] = useState(0);
   const [idleTimeoutInput, setIdleTimeoutInput] = useState<number | null>(0);
   const [isIdleTimeoutLoading, setIsIdleTimeoutLoading] = useState(false);
 
   useEffect(() => {
+    async function getHardware() {
+      const rsp = await api.getHardware();
+      if (rsp.code !== 0) {
+        return;
+      }
+
+      setIsPcie(rsp.data?.version === 'PCIE');
+    }
+
+    async function getHdmiState() {
+      const rsp = await api.getHdmiState();
+      if (rsp.code === 0) {
+        setIsHdmiEnabled(rsp.data.enabled);
+        const timeout = rsp.data.idleTimeout ?? 0;
+        setIdleTimeout(timeout);
+        setIdleTimeoutInput(timeout);
+      }
+
+      setIsLoading(false);
+    }
+
     getHardware();
     getHdmiState();
-  }, []);
-
-  async function getHardware() {
-    const rsp = await api.getHardware();
-    if (rsp.code !== 0) {
-      return;
-    }
-
-    setIsPcie(rsp.data?.version === 'PCIE');
-  }
-
-  async function getHdmiState() {
-    setIsLoading(true);
-
-    const rsp = await api.getHdmiState();
-    if (rsp.code === 0) {
-      setIsHdmiEnabled(rsp.data.enabled);
-      const timeout = rsp.data.idleTimeout ?? 0;
-      setIdleTimeout(timeout);
-      setIdleTimeoutInput(timeout);
-    }
-
-    setIsLoading(false);
-  }
+  }, [setIsHdmiEnabled]);
 
   function updateIdleTimeout() {
     if (

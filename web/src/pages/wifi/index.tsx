@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
 
 import * as api from '@/api/network.ts';
+import { useStableCallback } from '@/hooks/useStableCallback.ts';
 import { Head } from '@/components/head.tsx';
 
 type State = '' | 'loading' | 'success' | 'failed' | 'denied';
@@ -20,14 +21,7 @@ export const Wifi = () => {
   const [verifying, setVerifying] = useState<boolean>(false);
   const [verifyState, setVerifyState] = useState<VerifyState>('');
 
-  useEffect(() => {
-    const pass = searchParams.get('p') || searchParams.get('P');
-    if (pass) {
-      verifyPassword(pass);
-    }
-  }, []);
-
-  async function verifyPassword(password: string) {
+  const verifyPassword = useStableCallback(async (password: string) => {
     if (verifying) return;
     setVerifying(true);
     setVerifyState('');
@@ -45,7 +39,18 @@ export const Wifi = () => {
       setVerifyState('failed');
     }
     setVerifying(false);
-  }
+  });
+
+  // A password in the link is tried once, when the page opens. The parameter
+  // is read from the first render so that a later change to the query string
+  // does not submit it again.
+  const [linkPassword] = useState(() => searchParams.get('p') || searchParams.get('P'));
+
+  useEffect(() => {
+    if (linkPassword) {
+      verifyPassword(linkPassword);
+    }
+  }, [linkPassword, verifyPassword]);
 
   async function onVerifyFinish(values: any) {
     if (!values.apPassword) return;

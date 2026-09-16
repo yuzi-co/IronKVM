@@ -25,33 +25,43 @@ export const Users = () => {
   const [passwordForm] = Form.useForm<PasswordValues>();
 
   const [users, setUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  // The list loads on mount, so the table starts in its loading state. Every
+  // other caller of loadUsers sets the flag before its own request, which is
+  // why loadUsers only clears it.
+  const [isLoading, setIsLoading] = useState(true);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [passwordUser, setPasswordUser] = useState<string | null>(null);
 
-  const loadUsers = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const rsp = await api.getUsers();
-      if (rsp.code !== 0) {
-        throw new Error(rsp.msg);
-      }
+  // A promise chain rather than async/await: the lint that forbids a
+  // synchronous setState in an effect cannot see that a finally block after an
+  // await runs later, and reads this as if it cleared the flag immediately.
+  const loadUsers = useCallback(
+    () =>
+      api
+        .getUsers()
+        .then((rsp) => {
+          if (rsp.code !== 0) {
+            throw new Error(rsp.msg);
+          }
 
-      const data = Array.isArray(rsp.data) ? rsp.data : rsp.data?.users;
-      setUsers(
-        (Array.isArray(data) ? data : []).map((user: User) => ({
-          username: user.username,
-          role: user.role === 'admin' ? 'admin' : 'user',
-          enabled: user.enabled !== false,
-          systemAccount: user.systemAccount === true
-        }))
-      );
-    } catch {
-      messageApi.error(t('settings.account.users.loadFailed'));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [messageApi, t]);
+          const data = Array.isArray(rsp.data) ? rsp.data : rsp.data?.users;
+          setUsers(
+            (Array.isArray(data) ? data : []).map((user: User) => ({
+              username: user.username,
+              role: user.role === 'admin' ? 'admin' : 'user',
+              enabled: user.enabled !== false,
+              systemAccount: user.systemAccount === true
+            }))
+          );
+        })
+        .catch(() => {
+          messageApi.error(t('settings.account.users.loadFailed'));
+        })
+        .finally(() => {
+          setIsLoading(false);
+        }),
+    [messageApi, t]
+  );
 
   useEffect(() => {
     loadUsers();

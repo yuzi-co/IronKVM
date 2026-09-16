@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Switch, Tooltip } from 'antd';
 import { CircleAlertIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -57,13 +57,9 @@ async function waitUntil(serving: boolean, budgetMs: number): Promise<void> {
 export const Tls = () => {
   const { t } = useTranslation();
 
-  const [isEnabled, setIsEnabled] = useState(false);
+  const [isEnabled, setIsEnabled] = useState(() => window.location.protocol === 'https:');
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState('');
-
-  useEffect(() => {
-    setIsEnabled(window.location.protocol === 'https:');
-  }, []);
 
   async function update() {
     if (isLoading) return;

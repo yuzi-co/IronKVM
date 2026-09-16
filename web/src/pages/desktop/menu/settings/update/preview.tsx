@@ -13,16 +13,10 @@ interface PreviewProps {
 export const Preview = ({ checkForUpdates, disabled = false }: PreviewProps) => {
   const { t } = useTranslation();
 
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isEnabled, setIsEnabled] = useState(false);
 
   useEffect(() => {
-    getPreviewUpdates();
-  }, []);
-
-  function getPreviewUpdates() {
-    setIsLoading(true);
-
     api
       .getPreviewUpdates()
       .then((rsp) => {
@@ -36,7 +30,7 @@ export const Preview = ({ checkForUpdates, disabled = false }: PreviewProps) => 
       .finally(() => {
         setIsLoading(false);
       });
-  }
+  }, []);
 
   function setPreviewUpdates() {
     if (isLoading) return;

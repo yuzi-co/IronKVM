@@ -72,16 +72,8 @@ export const Settings = () => {
   useEffect(() => {
     if (!isAdmin) return;
     const skip = ls.getSkipUpdate();
-    if (!skip) {
-      checkForUpdates();
-    }
-  }, [isAdmin]);
+    if (skip) return;
 
-  useEffect(() => {
-    scrollViewportRef.current?.scrollTo({ top: 0, left: 0 });
-  }, [currentTab]);
-
-  function checkForUpdates() {
     api.getVersion().then((rsp: any) => {
       if (rsp.code !== 0) {
         return;
@@ -94,7 +86,11 @@ export const Settings = () => {
         setIsUpdateAvailable(true);
       }
     });
-  }
+  }, [isAdmin]);
+
+  useEffect(() => {
+    scrollViewportRef.current?.scrollTo({ top: 0, left: 0 });
+  }, [currentTab]);
 
   function changeTab(tab: string) {
     if (isLocked) {

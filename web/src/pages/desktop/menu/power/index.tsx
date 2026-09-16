@@ -20,6 +20,17 @@ export const Power = () => {
   const [showConfirm, setShowConfirm] = useState(() => localstorage.getPowerConfirm());
 
   useEffect(() => {
+    async function getLed() {
+      try {
+        const rsp = await api.getGpio();
+        if (rsp.code === 0) {
+          setIsPowerOn(rsp.data.pwr);
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    }
+
     getLed();
     const interval = setInterval(getLed, 5000);
 
@@ -27,17 +38,6 @@ export const Power = () => {
       clearInterval(interval);
     };
   }, []);
-
-  async function getLed() {
-    try {
-      const rsp = await api.getGpio();
-      if (rsp.code === 0) {
-        setIsPowerOn(rsp.data.pwr);
-      }
-    } catch (err) {
-      console.log(err);
-    }
-  }
 
   function updateShowConfirm(value: boolean) {
     setShowConfirm(value);

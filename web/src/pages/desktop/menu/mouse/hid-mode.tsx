@@ -12,17 +12,11 @@ export const HidMode = () => {
   const { t } = useTranslation();
 
   const [hidMode, setHidMode] = useState<'normal' | 'hid-only'>('normal');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [errMsg, setErrMsg] = useState('');
 
   useEffect(() => {
-    getHidMode();
-  }, []);
-
-  function getHidMode() {
-    setIsLoading(true);
-
     api
       .getHidMode()
       .then((rsp) => {
@@ -36,7 +30,7 @@ export const HidMode = () => {
       .finally(() => {
         setIsLoading(false);
       });
-  }
+  }, []);
 
   // The switch used to reboot the board, so this waited thirty seconds and then
   // reloaded the page. It rebuilds the USB gadget instead, which takes about a

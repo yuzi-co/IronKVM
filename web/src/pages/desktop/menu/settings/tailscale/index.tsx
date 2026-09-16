@@ -4,6 +4,7 @@ import { LoaderCircleIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/extensions/tailscale.ts';
+import { useStableCallback } from '@/hooks/useStableCallback.ts';
 
 import { Device } from './device.tsx';
 import { Header } from './header.tsx';
@@ -23,11 +24,7 @@ export const Tailscale = ({ setIsLocked }: TailscaleProps) => {
   const [status, setStatus] = useState<Status>();
   const [errMsg, setErrMsg] = useState('');
 
-  useEffect(() => {
-    getStatus();
-  }, []);
-
-  function getStatus() {
+  const getStatus = useStableCallback(() => {
     if (isLoading) return;
     setIsLoading(true);
 
@@ -47,7 +44,11 @@ export const Tailscale = ({ setIsLocked }: TailscaleProps) => {
       .finally(() => {
         setIsLoading(false);
       });
-  }
+  });
+
+  useEffect(() => {
+    getStatus();
+  }, [getStatus]);
 
   return (
     <>

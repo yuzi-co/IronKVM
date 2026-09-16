@@ -52,6 +52,21 @@ export function useLeaderKey(
     leaderState.current.code = leaderKeyCode;
   }, [leaderKeyCode]);
 
+  const reset = () => {
+    const leader = leaderState.current;
+
+    for (const key of leader.recordModifiers) {
+      sendKeyEvent('keyup', key);
+    }
+
+    leader.startTime = 0;
+    leader.recordMode = false;
+    leader.recordModifiers = [];
+
+    setRecordMode(false);
+    setRecordedKeys([]);
+  };
+
   const handleKeyDown = (code: string): boolean => {
     const leader = leaderState.current;
 
@@ -111,21 +126,6 @@ export function useLeaderKey(
     }
 
     return false;
-  };
-
-  const reset = () => {
-    const leader = leaderState.current;
-
-    for (const key of leader.recordModifiers) {
-      sendKeyEvent('keyup', key);
-    }
-
-    leader.startTime = 0;
-    leader.recordMode = false;
-    leader.recordModifiers = [];
-
-    setRecordMode(false);
-    setRecordedKeys([]);
   };
 
   return { handleKeyDown, handleKeyUp, reset, recordMode, recordedKeys };

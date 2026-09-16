@@ -24,6 +24,12 @@ enum MouseButton {
   Forward = 4
 }
 
+// disable default events
+function disableEvent(event: Event) {
+  event.preventDefault();
+  event.stopPropagation();
+}
+
 export const Absolute = () => {
   const resolution = useAtomValue(resolutionAtom);
   const inputRegion = useAtomValue(inputRegionAtom);
@@ -532,12 +538,6 @@ export const Absolute = () => {
       }
     };
   }, [inputRegion, resolution, scrollDirection, scrollInterval]);
-
-  // disable default events
-  function disableEvent(event: Event) {
-    event.preventDefault();
-    event.stopPropagation();
-  }
 
   return <></>;
 };

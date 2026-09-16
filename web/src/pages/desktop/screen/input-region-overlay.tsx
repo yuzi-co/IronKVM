@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type PointerEvent
+} from 'react';
 import { HolderOutlined } from '@ant-design/icons';
 import { Alert, Button, Card, Space, theme } from 'antd';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
@@ -114,9 +121,13 @@ export const InputRegionOverlay = () => {
   const promptRef = useRef<HTMLDivElement>(null);
   const previousVideoScaleRef = useRef(videoScale);
 
-  if (!selecting) {
-    previousVideoScaleRef.current = videoScale;
-  }
+  // Remember the scale from outside a selection, so the selection can put it
+  // back. Layout effects run before the effect below reads it.
+  useLayoutEffect(() => {
+    if (!selecting) {
+      previousVideoScaleRef.current = videoScale;
+    }
+  }, [selecting, videoScale]);
 
   const cancelSelection = useCallback(() => {
     dragStartRef.current = null;

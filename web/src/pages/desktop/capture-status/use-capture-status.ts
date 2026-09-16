@@ -15,13 +15,12 @@ export function useCaptureStatus(activeVideoMode: string) {
 
   useEffect(() => {
     latestStatusRef.current = null;
-    setCaptureStatus(null);
 
     if (!activeVideoMode) {
       return;
     }
 
-    return client.on(CAPTURE_STATUS_EVENT, (message) => {
+    const unsubscribe = client.on(CAPTURE_STATUS_EVENT, (message) => {
       const status = parseCaptureStatusMessage(message);
       if (!status || status.mode !== activeVideoMode) {
         return;
@@ -33,6 +32,14 @@ export function useCaptureStatus(activeVideoMode: string) {
       latestStatusRef.current = status;
       setCaptureStatus(status.ok ? null : status);
     });
+
+    // A status belongs to the mode it arrived for. The clear happens when that
+    // mode's subscription ends, which is also the only time a status can have
+    // been set, so the next mode starts from nothing.
+    return () => {
+      unsubscribe();
+      setCaptureStatus(null);
+    };
   }, [activeVideoMode]);
 
   return captureStatus;

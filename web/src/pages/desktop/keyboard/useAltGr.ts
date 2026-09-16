@@ -19,11 +19,12 @@ export function useAltGr(
   pressedKeys: React.MutableRefObject<Set<string>>,
   sendKeyEvent: (type: 'keydown' | 'keyup', code: string) => void
 ): AltGrHandlers {
-  const state = useRef<AltGrState | null>(null);
-
-  if (os === 'Windows' && !state.current) {
-    state.current = { active: false, ctrlLeftTimestamp: 0 };
-  }
+  // Only Windows sends AltGr as ControlLeft then AltRight, so only there does
+  // the hook keep state. The operating system does not change while the page
+  // is open, which is what lets the first render decide.
+  const state = useRef<AltGrState | null>(
+    os === 'Windows' ? { active: false, ctrlLeftTimestamp: 0 } : null
+  );
 
   const handleKeyDown = (code: string, timestamp: number): void => {
     if (!state.current) return;

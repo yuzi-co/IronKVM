@@ -67,11 +67,13 @@ export const MCP = () => {
     controlMode: 'picoclaw',
     transitioning: false
   });
-  const [isLoading, setIsLoading] = useState(false);
+  // The first load starts on mount, so both copies of the flag start set, and
+  // that load only clears them. A loud load happens nowhere else.
+  const [isLoading, setIsLoading] = useState(true);
   const [isKeyVisible, setIsKeyVisible] = useState(false);
   const [isEndpointCopied, setIsEndpointCopied] = useState(false);
   const [isKeyCopied, setIsKeyCopied] = useState(false);
-  const isLoadingRef = useRef(false);
+  const isLoadingRef = useRef(true);
   const silentRefreshRef = useRef(false);
   const actionVersionRef = useRef(0);
 
@@ -99,8 +101,6 @@ export const MCP = () => {
       if (silent) {
         if (isLoadingRef.current || silentRefreshRef.current) return;
         silentRefreshRef.current = true;
-      } else {
-        updateLoading(true);
       }
       const actionVersion = actionVersionRef.current;
 
