@@ -344,6 +344,74 @@ else
 fi
 
 echo
+echo "===== nothing is world-writable ====="
+#
+# The first Alpine slot to reach userland, on 2026-09-16, had every directory at
+# 0777: its tree had passed through a virtiofs mount, which reports that mode for
+# everything. sshd refused to start because /var/empty was world-writable, and no
+# gate had looked.
+
+mkdir -p "$WORK/payload/wide/sub"
+printf 'data\n' > "$WORK/payload/wide/sub/file"
+chmod 777 "$WORK/payload/wide" "$WORK/payload/wide/sub" "$WORK/payload/wide/sub/file"
+cat > "$WORK/wide.manifest" <<'MANIFEST'
+add     scripts/S00awatchdog      /etc/init.d/S00awatchdog
+add     wide                      /opt/wide
+remove  /etc/kvm/ssh_stop
+remove  /root
+touch   /etc/kvm.disk0
+MANIFEST
+if sh "$BUILD" "$WORK/base.tar.zst" "$WORK/wide.manifest" "$WORK/payload" 64 "$WORK/wide.img" \
+   > "$WORK/wide.log" 2>&1; then
+    note "a world-writable payload still builds" OK
+    for p in /opt/wide /opt/wide/sub /opt/wide/sub/file; do
+        m=$(statline "$WORK/wide.img" "$p" | grep -o 'Mode: [0-7]*' | cut -d' ' -f2)
+        case "$m" in
+            0755|0644) note "the payload's $p loses its write bits ($m)" OK ;;
+            *)         note "the payload's $p loses its write bits (got '$m')" FAIL ;;
+        esac
+    done
+else
+    note "a world-writable payload still builds" FAIL
+    sed 's/^/    /' "$WORK/wide.log" | tail -20
+fi
+
+# The base is not rewritten, because it cannot be told apart from a base that
+# means it. It is refused instead, and a sticky directory is not a fault.
+mkdir -p "$WORK/widebase/etc/init.d" "$WORK/widebase/etc/kvm" "$WORK/widebase/root" \
+    "$WORK/widebase/var/empty" "$WORK/widebase/tmp"
+printf '#!/bin/sh\necho sshd\n' > "$WORK/widebase/etc/init.d/S50sshd"
+printf '' > "$WORK/widebase/etc/kvm/ssh_stop"
+chmod 755 "$WORK/widebase/etc/init.d/S50sshd"
+chmod 1777 "$WORK/widebase/tmp"
+chmod 777 "$WORK/widebase/var/empty"
+( cd "$WORK/widebase" && tar --numeric-owner -cf - . | zstd -q -o "$WORK/widebase.tar.zst" )
+if sh "$BUILD" "$WORK/widebase.tar.zst" "$WORK/good.manifest" "$WORK/payload" 64 "$WORK/widebase.img" \
+   > "$WORK/widebase.log" 2>&1; then
+    note "a base with a world-writable directory is refused" FAIL
+else
+    note "a base with a world-writable directory is refused" OK
+fi
+grep -q 'world-writable: /var/empty' "$WORK/widebase.log" \
+    && note "the refusal names the path" OK \
+    || note "the refusal names the path" FAIL
+grep -q 'world-writable: /tmp' "$WORK/widebase.log" \
+    && note "a sticky /tmp is not reported" FAIL \
+    || note "a sticky /tmp is not reported" OK
+[ -f "$WORK/widebase.img" ] \
+    && note "the refused base leaves no image behind" FAIL \
+    || note "the refused base leaves no image behind" OK
+chmod 755 "$WORK/widebase/var/empty"
+( cd "$WORK/widebase" && tar --numeric-owner -cf - . | zstd -q -f -o "$WORK/widebase.tar.zst" )
+if sh "$BUILD" "$WORK/widebase.tar.zst" "$WORK/good.manifest" "$WORK/payload" 64 "$WORK/widebase.img" \
+   > "$WORK/widebase.log" 2>&1; then
+    note "the same base at 0755 builds" OK
+else
+    note "the same base at 0755 builds" FAIL
+    sed 's/^/    /' "$WORK/widebase.log" | tail -20
+fi
+
+echo
 echo "===== the gates refuse a bad build, and write nothing ====="
 
 # An ELF that is not executable is the 2026-08-16 fault itself. The init.d gate
