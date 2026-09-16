@@ -158,12 +158,12 @@ fi
 echo
 echo "===== the map happens where the read happens ====="
 
-read_img=$(awk '/^int kvmv_read_img/,/^}/' "$VIS" | grep -v '^[[:space:]]*//')
+read_img=$(awk '/^static int kvmv_read_frame[(]/,/^}/' "$VIS" | grep -v '^[[:space:]]*//')
 
 maps=$(printf '%s\n' "$read_img" | grep -c 'mmf_vi_frame_map')
 [ "$maps" = 1 ] \
-    && note "kvmv_read_img maps a frame in exactly one place ($maps)" OK \
-    || note "kvmv_read_img maps a frame in $maps places, wanted 1" FAIL
+    && note "kvmv_read_frame maps a frame in exactly one place ($maps)" OK \
+    || note "kvmv_read_frame maps a frame in $maps places, wanted 1" FAIL
 
 # The one map has to sit inside the detector branch. Anywhere above it and
 # every frame pays for it again, which is the whole cost this removes.

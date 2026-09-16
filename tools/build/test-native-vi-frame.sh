@@ -91,10 +91,10 @@ printf '%s\n' "$jpush" | grep -q 'mmf_enc_jpg_push_with_quality(ch, data' \
 echo
 echo "===== every exit holding a frame gives it back ====="
 
-# frame_to_h264 reaches mmf_venc_free on every path but one: a push that fails
+# frame_to_video reaches mmf_venc_free on every path but one: a push that fails
 # leaves the channel not running, and mmf_venc_free returns early in that state
 # without releasing anything.
-enc=$(body "$VIS" frame_to_h264)
+enc=$(body "$VIS" frame_to_video)
 printf '%s\n' "$enc" | grep -q 'mmf_vi_frame_release(vi_ch);' \
     && note "a failed push releases the frame it was given" OK \
     || note "a failed push releases the frame it was given" FAIL
@@ -109,10 +109,10 @@ jreleases=$(printf '%s\n' "$jpeg" | grep -c 'mmf_vi_frame_release(vi_ch)')
     && note "frame_to_jpeg releases at every one of its $jreturns exits" OK \
     || note "frame_to_jpeg has $jreturns exits and $jreleases releases" FAIL
 
-releases=$(awk '/^int kvmv_read_img/,/^}/' "$VIS" | grep -c 'mmf_vi_frame_release(native_vi_ch)')
+releases=$(awk '/^static int kvmv_read_frame[(]/,/^}/' "$VIS" | grep -c 'mmf_vi_frame_release(native_vi_ch)')
 [ "$releases" = 5 ] \
-    && note "kvmv_read_img releases at each of its early exits ($releases)" OK \
-    || note "kvmv_read_img releases at each of its early exits ($releases, wanted 5)" FAIL
+    && note "kvmv_read_frame releases at each of its early exits ($releases)" OK \
+    || note "kvmv_read_frame releases at each of its early exits ($releases, wanted 5)" FAIL
 
 # The count above only means something while the number of ways out of that
 # region is the number it was written against. Between taking the frame and
@@ -126,7 +126,7 @@ releases=$(awk '/^int kvmv_read_img/,/^}/' "$VIS" | grep -c 'mmf_vi_frame_releas
 # when the encode type is neither of the two the callers ask for.
 #
 # A new way out changes that, and this case is what says so.
-exits=$(awk '/int native_vi_ch = cam->get_channel\(\);/,/frame_to_h264\(NULL/' "$VIS" \
+exits=$(awk '/int native_vi_ch = cam->get_channel\(\);/,/frame_to_video\(NULL/' "$VIS" \
     | grep -cE '^[[:space:]]*(return |continue;)')
 [ "$exits" = 7 ] \
     && note "the region still has seven ways out ($exits)" OK \
@@ -136,7 +136,7 @@ exits=$(awk '/int native_vi_ch = cam->get_channel\(\);/,/frame_to_h264\(NULL/' "
 # was on, which cost the fifty-nine frames in sixty that the detector never
 # looks at. Both encodings take an unmapped frame now, and the detector maps
 # the one frame it samples.
-printf '%s\n' "$(awk '/^int kvmv_read_img/,/^}/' "$VIS")" \
+printf '%s\n' "$(awk '/^static int kvmv_read_frame[(]/,/^}/' "$VIS")" \
     | grep -q 'frame_detact == 0' \
     && note "taking a frame no longer depends on the detector" FAIL \
     || note "taking a frame no longer depends on the detector" OK

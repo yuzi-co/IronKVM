@@ -49,7 +49,7 @@ trap 'rm -rf "$work"' EXIT INT TERM
 
 echo "===== the reader reports what the channel did ====="
 
-read_body=$(body "$VIS" kvmv_read_img)
+read_body=$(body "$VIS" kvmv_read_frame)
 
 # One site each. The frame site sits on the successful pop, so an encode that
 # fails afterwards still counts as a live channel, and the empty-call site sits

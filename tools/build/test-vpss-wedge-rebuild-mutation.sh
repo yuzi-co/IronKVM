@@ -119,8 +119,17 @@ try "a frame no longer resets the cooldown" \
 try "the failure counter wraps instead of saturating" \
     's/if(w->fail_count < 0xFFFFFFFFU){/if(1){/'
 
-try "a null state is dereferenced" \
-    '/^void wedge_note_frame(/,/^}/ s/if(w == NULL){/if(0){/'
+# Only the sanitizer sees this one. The null write is undefined behaviour, and
+# at -O1 the compiler is free to drop it, so without AddressSanitizer the suite
+# has nothing to catch. Where the sanitizer cannot run, say so rather than
+# report a gap in the suite that is really a gap in this machine.
+. "$(dirname "$0")/asan-env.sh"
+if [ "$ASAN_USABLE" = 1 ]; then
+    try "a null state is dereferenced" \
+        '/^void wedge_note_frame(/,/^}/ s/if(w == NULL){/if(0){/'
+else
+    note "a null state is dereferenced" "SKIP (needs the sanitizer: $ASAN_NOTE)"
+fi
 
 echo "===== the call sites ====="
 
