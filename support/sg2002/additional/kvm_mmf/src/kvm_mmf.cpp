@@ -2630,6 +2630,7 @@ static int _mmf_venc_push_copy(int ch, uint8_t *data, int w, int h, int format) 
 	VIDEO_FRAME_INFO_S *frame_info = (VIDEO_FRAME_INFO_S *)info->capture_frame;
 	if (frame_info == NULL) {
 		printf("frame info is null!\r\n");
+		priv.venc_input_vi_ch[ch] = -1;
 		return -1;
 	}
 
@@ -2654,6 +2655,7 @@ static int _mmf_venc_push_copy(int ch, uint8_t *data, int w, int h, int format) 
 		break;
 		default:
 			printf("Not support format:%d\r\n", format);
+			priv.venc_input_vi_ch[ch] = -1;
 			return -1;
 	}
 
@@ -2682,9 +2684,16 @@ int mmf_venc_push(int ch, uint8_t *data, int w, int h, int format) {
 	 * Image -> VENC buffer copy. Non-camera callers still use the old path.
 	 */
 	venc_info_t *info = (venc_info_t *)&priv.venc[ch];
+	priv.venc_input_vi_ch[ch] = -1;
 	if (info->type == 1 || info->type == 2) {
 		VIDEO_FRAME_INFO_S *vi_frame = NULL;
-		if (_mmf_find_deferred_vi_frame(w, h, format, &vi_frame) >= 0) {
+		int vi_ch = _mmf_find_deferred_vi_frame(w, h, format, &vi_frame);
+		if (vi_ch >= 0) {
+			// Record the frame on both paths, as upstream #914 does.
+			// mmf_venc_free releases exactly this frame and no other, so a
+			// frame the encoder took and nobody recorded stays leased until
+			// the next read on its channel.
+			priv.venc_input_vi_ch[ch] = vi_ch;
 			CVI_S32 ret = CVI_VENC_SendFrame(ch, vi_frame, 1000);
 			if (ret == CVI_SUCCESS) {
 				info->is_running = 1;
@@ -2716,6 +2725,10 @@ int mmf_venc_push_vi(int ch, int vi_ch) {
 		return -1;
 	}
 
+	// The frame mmf_venc_free gives back. It is recorded before the send so
+	// the copy fallback carries it too; _mmf_venc_push_copy clears it again
+	// on failure, because that exit leaves the release to the caller.
+	priv.venc_input_vi_ch[ch] = vi_ch;
 	CVI_S32 ret = CVI_VENC_SendFrame(ch, frame, 1000);
 	if (ret == CVI_SUCCESS) {
 		info->is_running = 1;
@@ -2725,6 +2738,7 @@ int mmf_venc_push_vi(int ch, int vi_ch) {
 	printf("CVI_VENC_SendFrame native failed with %#x, fallback to mapped copy\n", ret);
 	uint8_t *data = (uint8_t *)_mmf_map_vi_frame(vi_ch);
 	if (data == NULL) {
+		priv.venc_input_vi_ch[ch] = -1;
 		return -1;
 	}
 	return _mmf_venc_push_copy(ch, data, frame->stVFrame.u32Width,
