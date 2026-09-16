@@ -172,6 +172,11 @@ start() {
         fi
     fi
 
+    # Made here because not every base ships it. Sipeed's does; an Alpine root
+    # filesystem does not, and on 2026-09-16 the bind below failed for want of a
+    # directory, the server started on factory defaults, and S95nanokvm created
+    # /etc/kvm a few seconds too late to matter.
+    mkdir -p "$TARGET"
     if mount --bind "$IDENTITY" "$TARGET" 2>/dev/null; then
         echo "S02identity: $IDENTITY bound over $TARGET"
     else

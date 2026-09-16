@@ -213,6 +213,29 @@ else
     note "and so does a file replaced by rename (no bind mount here)" SKIP
 fi
 
+echo
+echo "===== an image with no /etc/kvm still gets the device's identity ====="
+# Sipeed's root filesystem ships /etc/kvm and an Alpine one does not. On the
+# second Alpine slot, 2026-09-16, the bind found no directory to mount over, the
+# server started on factory defaults, and S95nanokvm made the directory later,
+# after the bind had already failed.
+setup
+rm -rf "$WORK/root/etc/kvm"
+mkdir -p "$WORK/data/identity" "$WORK/data/identity-system"
+printf 'device-config\n' > "$WORK/data/identity/server.yaml"
+run yes > "$WORK/lognokvm"
+
+[ -d "$WORK/root/etc/kvm" ] \
+    && note "the bind target is created when the image lacks it" OK \
+    || note "the bind target is created when the image lacks it" FAIL
+if grep -q " $WORK/root/etc/kvm " /proc/mounts 2>/dev/null; then
+    grep -q device-config "$WORK/root/etc/kvm/server.yaml" 2>/dev/null \
+        && note "and the device's config is what it shows" OK \
+        || note "and the device's config is what it shows" FAIL
+else
+    note "and the device's config is what it shows (no bind mount here)" SKIP
+fi
+
 # Boards built before this change keep their key beside the shadow. It has to
 # come across, or the first boot after an upgrade loses key login.
 setup
