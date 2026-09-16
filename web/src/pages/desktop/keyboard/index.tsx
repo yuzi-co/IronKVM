@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import { useAtomValue } from 'jotai';
 
 import { getOperatingSystem } from '@/lib/browser.ts';
@@ -13,6 +13,11 @@ import { useAltGr } from './useAltGr.ts';
 import { useLeaderKey } from './useLeaderKey.ts';
 import { normalizeKeyCode } from './utils.ts';
 
+function sendReport(report: Uint8Array) {
+  const data = new Uint8Array([MessageEvent.Keyboard, ...report]);
+  client.send(data);
+}
+
 export const Keyboard = () => {
   const os = getOperatingSystem();
 
@@ -23,22 +28,30 @@ export const Keyboard = () => {
   const pressedKeys = useRef(new Set<string>());
   const isComposing = useRef(false);
 
-  // Send key event helper
-  const sendKeyEvent = (type: 'keydown' | 'keyup', code: string) => {
+  // Send key event helper. It reads only refs, so one instance serves every
+  // render, and the listener effect below can name it without re-subscribing.
+  // A re-subscribe is not free: its cleanup releases every pressed key.
+  const sendKeyEvent = useCallback((type: 'keydown' | 'keyup', code: string) => {
     const kb = keyboardRef.current;
     const report = type === 'keydown' ? kb.keyDown(code) : kb.keyUp(code);
     sendReport(report);
-  };
+  }, []);
 
   // Init leader key handler
   const leaderKey = useLeaderKey(pressedKeys, sendKeyEvent);
   const leaderKeyRef = useRef(leaderKey);
-  leaderKeyRef.current = leaderKey;
 
   // Init AltGr key handler
   const altGr = useAltGr(os, pressedKeys, sendKeyEvent);
   const altGrRef = useRef(altGr);
-  altGrRef.current = altGr;
+
+  // The listeners read the handlers through these refs. They are brought up to
+  // date after each commit and before any effect runs, which is before any
+  // event can reach a listener.
+  useLayoutEffect(() => {
+    leaderKeyRef.current = leaderKey;
+    altGrRef.current = altGr;
+  });
 
   useEffect(() => {
     if (!picoclawTakeoverState.active) {
@@ -179,12 +192,7 @@ export const Keyboard = () => {
 
       releaseKeys();
     };
-  }, [isKeyboardEnabled]);
-
-  function sendReport(report: Uint8Array) {
-    const data = new Uint8Array([MessageEvent.Keyboard, ...report]);
-    client.send(data);
-  }
+  }, [isKeyboardEnabled, os, sendKeyEvent]);
 
   return (
     <>

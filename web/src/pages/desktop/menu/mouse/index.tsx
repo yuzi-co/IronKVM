@@ -49,7 +49,7 @@ export const Mouse = () => {
     if (interval) {
       setScrollInterval(interval);
     }
-  }, []);
+  }, [setMouseStyle, setMouseMode, setScrollDirection, setScrollInterval]);
 
   const content = (
     <div className="flex flex-col space-y-1">

@@ -31,10 +31,11 @@ export const Run = ({ script, setIsRunning }: RunProps) => {
         setLog(rsp.data.log);
       })
       .catch(() => {
-        setLog(t('script.runFailed'));
-        setState('failed');
+        // The sentence is chosen at render, so the effect does not depend on
+        // t. A language change must not run the script a second time.
+        setState('unreachable');
       });
-  }, []);
+  }, [script]);
 
   return (
     <Modal
@@ -50,7 +51,9 @@ export const Run = ({ script, setIsRunning }: RunProps) => {
           <Spin indicator={<LoadingOutlined spin />} size="large" />
         </div>
       ) : (
-        <Card className="h-[600px] overflow-auto whitespace-pre-line font-mono">{log}</Card>
+        <Card className="h-[600px] overflow-auto whitespace-pre-line font-mono">
+          {state === 'unreachable' ? t('script.runFailed') : log}
+        </Card>
       )}
 
       <div className="mt-5 flex justify-center">

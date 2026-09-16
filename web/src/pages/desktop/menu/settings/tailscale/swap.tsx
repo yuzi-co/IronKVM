@@ -8,16 +8,10 @@ import * as api from '@/api/vm.ts';
 export const Swap = () => {
   const { t } = useTranslation();
 
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isEnabled, setIsEnabled] = useState(false);
 
   useEffect(() => {
-    getSwap();
-  }, []);
-
-  function getSwap() {
-    setIsLoading(true);
-
     api
       .getSwap()
       .then((rsp) => {
@@ -28,7 +22,7 @@ export const Swap = () => {
       .finally(() => {
         setIsLoading(false);
       });
-  }
+  }, []);
 
   function update(enable: boolean) {
     if (isLoading) return;

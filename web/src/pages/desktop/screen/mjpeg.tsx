@@ -56,6 +56,17 @@ export const Mjpeg = () => {
 
   useEffect(() => clearRetry, []);
 
+  // A new resolution asks for the stream again from a clean state. The state
+  // half is done during render, so no frame is painted with the old error flag
+  // against the new resolution. The first render needs neither step: the
+  // stream it builds is already the first request.
+  const [prevResolution, setPrevResolution] = useState(resolution);
+  if (resolution !== prevResolution) {
+    setPrevResolution(resolution);
+    setHasError(false);
+    setStreamNonce((current) => current + 1);
+  }
+
   useEffect(() => {
     // stop frame detect for a while
     const enabled = getFrameDetect();
@@ -65,8 +76,6 @@ export const Mjpeg = () => {
 
     clearRetry();
     retryDelay.current = retryDelayMs;
-    setHasError(false);
-    setStreamNonce((current) => current + 1);
   }, [resolution]);
 
   return (

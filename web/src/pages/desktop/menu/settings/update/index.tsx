@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import semver from 'semver';
 
 import * as api from '@/api/application.ts';
+import { useStableCallback } from '@/hooks/useStableCallback.ts';
 
 import { CustomServer } from './custom-server.tsx';
 import { Offline } from './offline.tsx';
@@ -25,11 +26,7 @@ export const Update = ({ setIsLocked }: UpdateProps) => {
   const [isCustomServerPending, setIsCustomServerPending] = useState(false);
   const versionRequestRef = useRef(0);
 
-  useEffect(() => {
-    checkForUpdates();
-  }, []);
-
-  function checkForUpdates() {
+  const checkForUpdates = useStableCallback(() => {
     const requestId = ++versionRequestRef.current;
     setStatus('loading');
 
@@ -58,7 +55,11 @@ export const Update = ({ setIsLocked }: UpdateProps) => {
         setStatus('failed');
         setErrMsg(t('settings.update.queryFailed'));
       });
-  }
+  });
+
+  useEffect(() => {
+    checkForUpdates();
+  }, [checkForUpdates]);
 
   function update() {
     if (status !== 'outdated' || isCustomServerPending) return;

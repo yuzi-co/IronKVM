@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { LogoutOutlined } from '@ant-design/icons';
 import { Button, Divider, Popconfirm, Switch } from 'antd';
 import { useTranslation } from 'react-i18next';
@@ -15,14 +15,19 @@ type DeviceProps = {
 export const Device = ({ status, onLogout }: DeviceProps) => {
   const { t } = useTranslation();
 
-  const [isRunning, setIsRunning] = useState(false);
+  const [isRunning, setIsRunning] = useState(status.state === 'running');
   const [isUpdating, setIsUpdating] = useState(false);
   const [isLogging, setIsLogging] = useState(false);
   const [errMsg, setErrMsg] = useState('');
 
-  useEffect(() => {
+  // A new status from the parent replaces whatever the switch last set. This
+  // is done during render rather than in an effect, so the switch never paints
+  // the old value against the new status.
+  const [prevStatus, setPrevStatus] = useState(status);
+  if (status !== prevStatus) {
+    setPrevStatus(status);
     setIsRunning(status.state === 'running');
-  }, [status]);
+  }
 
   async function update() {
     if (isUpdating) return;

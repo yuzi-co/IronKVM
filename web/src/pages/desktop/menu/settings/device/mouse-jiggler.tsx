@@ -10,21 +10,9 @@ export const MouseJiggler = () => {
 
   const [enabled, setEnabled] = useState(false);
   const [mode, setMode] = useState('relative');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    getMouseJiggler();
-  }, []);
-
-  const options = [
-    { value: 'disable', label: t('settings.device.mouseJiggler.disable') },
-    { value: 'relative', label: t('settings.device.mouseJiggler.relative') },
-    { value: 'absolute', label: t('settings.device.mouseJiggler.absolute') }
-  ];
-
-  function getMouseJiggler() {
-    setIsLoading(true);
-
     api
       .getMouseJiggler()
       .then((rsp) => {
@@ -39,7 +27,13 @@ export const MouseJiggler = () => {
       .finally(() => {
         setIsLoading(false);
       });
-  }
+  }, []);
+
+  const options = [
+    { value: 'disable', label: t('settings.device.mouseJiggler.disable') },
+    { value: 'relative', label: t('settings.device.mouseJiggler.relative') },
+    { value: 'absolute', label: t('settings.device.mouseJiggler.absolute') }
+  ];
 
   function enable() {
     if (isLoading) return;

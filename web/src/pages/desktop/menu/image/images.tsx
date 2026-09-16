@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/storage.ts';
 import { client } from '@/lib/websocket.ts';
+import { useStableCallback } from '@/hooks/useStableCallback.ts';
 
 const imageUpdatedEvent = 'nanokvm:image-updated';
 
@@ -34,24 +35,24 @@ export const Images = ({ isOpen, cdrom, setIsMounted }: ImagesProps) => {
   const [selectedImage, setSelectedImage] = useState('');
   const [deletingImage, setDeletingImage] = useState('');
 
-  useEffect(() => {
-    if (!isOpen) return;
+  // get mounted image
+  function getMountedImage() {
+    api.getMountedImage().then((rsp) => {
+      if (rsp.code !== 0) return;
 
-    getImages();
-
-    const handleImageUpdated = () => {
-      getImages();
-    };
-    window.addEventListener(imageUpdatedEvent, handleImageUpdated);
-
-    return () => {
-      window.removeEventListener(imageUpdatedEvent, handleImageUpdated);
-    };
-  }, [isOpen]);
+      const file = rsp.data?.file;
+      setMountedImage(file);
+      setIsMounted(!!file);
+    });
+  }
 
   // get image list
-  function getImages() {
-    if (isLoading) return;
+  //
+  // force skips the in-flight guard. The effect below passes it: an update event
+  // can arrive while an earlier request is still out, and that request may have
+  // been answered before the change it announces.
+  const getImages = useStableCallback((force = false) => {
+    if (isLoading && !force) return;
     setIsLoading(true);
 
     api
@@ -73,18 +74,22 @@ export const Images = ({ isOpen, cdrom, setIsMounted }: ImagesProps) => {
       .finally(() => {
         setIsLoading(false);
       });
-  }
+  });
 
-  // get mounted image
-  function getMountedImage() {
-    api.getMountedImage().then((rsp) => {
-      if (rsp.code !== 0) return;
+  useEffect(() => {
+    if (!isOpen) return;
 
-      const file = rsp.data?.file;
-      setMountedImage(file);
-      setIsMounted(!!file);
-    });
-  }
+    getImages(true);
+
+    const handleImageUpdated = () => {
+      getImages(true);
+    };
+    window.addEventListener(imageUpdatedEvent, handleImageUpdated);
+
+    return () => {
+      window.removeEventListener(imageUpdatedEvent, handleImageUpdated);
+    };
+  }, [isOpen, getImages]);
 
   // mount/unmount image
   function mountImage(image: string) {

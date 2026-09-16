@@ -26,7 +26,7 @@ export const WebTitle = () => {
       .finally(() => {
         setIsLoading(false);
       });
-  }, []);
+  }, [setWebTitle]);
 
   function submit() {
     if (isLoading) return;

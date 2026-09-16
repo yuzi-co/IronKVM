@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useAtom, useSetAtom } from 'jotai';
 import { useTranslation } from 'react-i18next';
 
@@ -25,10 +25,7 @@ import {
   getPicoclawSidebarStatusColor,
   isPicoclawRuntimeInstalling
 } from './runtime-view.ts';
-import {
-  createPicoclawSidebarActions,
-  type PicoclawMutation
-} from './sidebar-actions.ts';
+import { usePicoclawSidebarActions, type PicoclawMutation } from './sidebar-actions.ts';
 import {
   usePicoclawGatewayAutoConnect,
   usePicoclawGatewayEvents,
@@ -107,7 +104,7 @@ export const useSidebar = () => {
     : isSnapshotInstalling
       ? installSnapshot?.installStage
       : undefined;
-  const actions = createPicoclawSidebarActions({
+  const actions = usePicoclawSidebarActions({
     t,
     runtimeStatus,
     transportState,
@@ -137,9 +134,14 @@ export const useSidebar = () => {
     setPicoclawMutation,
     setKeyboardLock
   });
+  // The gateway, lifecycle and refresh hooks call through these refs from
+  // callbacks. They are brought up to date after each commit, before any
+  // effect runs.
   const refreshStateRef = useRef(actions.refreshState);
-  refreshStateRef.current = actions.refreshState;
-  isTogglingRuntimeRef.current = isTogglingRuntime;
+  useLayoutEffect(() => {
+    refreshStateRef.current = actions.refreshState;
+    isTogglingRuntimeRef.current = isTogglingRuntime;
+  });
   const sessionActions = createPicoclawSidebarSessionActions({
     t,
     transportState,
@@ -149,7 +151,7 @@ export const useSidebar = () => {
     isFreshConversation,
     isSidebarMutationPending,
     isSwitchingSession,
-    refreshState: refreshStateRef.current,
+    refreshState: actions.refreshState,
     setMessages,
     setTakeover,
     setOverlay,

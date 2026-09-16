@@ -87,7 +87,11 @@ type PicoclawSidebarActionOptions = {
   setKeyboardLock: KeyboardLockSetter;
 };
 
-export function createPicoclawSidebarActions(options: PicoclawSidebarActionOptions) {
+// Named as a hook because it is used as one: use-sidebar calls it on every
+// render and hands it refs, which it only reads from the callbacks it returns.
+// It calls no hooks itself. A plain function name made the React compiler lint
+// assume the refs were read while rendering.
+export function usePicoclawSidebarActions(options: PicoclawSidebarActionOptions) {
   const {
     t,
     runtimeStatus,

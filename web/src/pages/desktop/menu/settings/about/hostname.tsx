@@ -9,19 +9,13 @@ import * as api from '@/api/vm.ts';
 export const Hostname = ({ editable = false }: { editable?: boolean }) => {
   const { t } = useTranslation();
 
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [hostname, setHostname] = useState('');
 
   const [editState, setEditState] = useState<'' | 'editing' | 'edited'>('');
   const [input, setInput] = useState('');
 
   useEffect(() => {
-    getHostname();
-  }, []);
-
-  function getHostname() {
-    setIsLoading(true);
-
     api
       .getHostname()
       .then((rsp) => {
@@ -32,7 +26,7 @@ export const Hostname = ({ editable = false }: { editable?: boolean }) => {
       .finally(() => {
         setIsLoading(false);
       });
-  }
+  }, []);
 
   function showInput() {
     setInput(hostname);

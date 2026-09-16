@@ -18,9 +18,10 @@ export const ActionOverlay = () => {
   const [rect, setRect] = useState<ScreenRect | null>(null);
 
   useEffect(() => {
+    // With no screen there is nothing to measure. rect is already null here,
+    // because the cleanup of the run that measured a screen clears it.
     const screen = document.getElementById('screen');
     if (!screen) {
-      setRect(null);
       return;
     }
 
@@ -45,6 +46,7 @@ export const ActionOverlay = () => {
       observer.disconnect();
       window.removeEventListener('resize', updateRect);
       window.removeEventListener('scroll', updateRect, true);
+      setRect(null);
     };
   }, [takeover.active]);
 

@@ -31,7 +31,7 @@ export function useMenuVisibility(): MenuVisibilityState {
   const setKeyboardLedStatusVisible = useSetAtom(keyboardLedStatusVisibleAtom);
   const submenuOpenCount = useAtomValue(submenuOpenCountAtom);
 
-  const [isMenuExpanded, setIsMenuExpanded] = useState(true);
+  const [isMenuExpanded, setIsMenuExpanded] = useState(() => getMenuDisplayMode() !== 'off');
   const [isMenuMoved, setIsMenuMoved] = useState(false);
   const [isMenuHovered, setIsMenuHovered] = useState(false);
   const [isMenuHidden, setIsMenuHidden] = useState(false);
@@ -70,21 +70,29 @@ export function useMenuVisibility(): MenuVisibilityState {
 
     setKeyboardLedStatusVisible(getKeyboardLedStatusVisible());
 
-    if (displayMode === 'off') {
-      setIsMenuExpanded(false);
-    }
-
-    setIsInitialized(true);
+    // The menu fades in once the settings above have reached the atoms. The
+    // flag is raised on the next frame rather than in this effect, which is
+    // when that render has happened.
+    const frame = requestAnimationFrame(() => setIsInitialized(true));
 
     return () => {
+      cancelAnimationFrame(frame);
       stopCountdown();
     };
-  }, []);
+  }, [setMenuDisplayMode, setMenuDisabledItems, setKeyboardLedStatusVisible, stopCountdown]);
+
+  // Any change to what the countdown depends on shows the menu again. That is
+  // done during render, so a hidden menu is never painted against the new
+  // state.
+  const countdownKey = `${menuDisplayMode}|${submenuOpenCount}|${isMenuExpanded}|${isMenuMoved}`;
+  const [prevCountdownKey, setPrevCountdownKey] = useState(countdownKey);
+  if (countdownKey !== prevCountdownKey) {
+    setPrevCountdownKey(countdownKey);
+    setIsMenuHidden(false);
+  }
 
   // Handle display mode changes
   useEffect(() => {
-    setIsMenuHidden(false);
-
     if (menuDisplayMode === 'auto') {
       startCountdown();
     } else {

@@ -8,7 +8,7 @@ import * as api from '@/api/vm.ts';
 export const Swap = () => {
   const { t } = useTranslation();
 
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [size, setSize] = useState('0');
 
   const options = [
@@ -20,12 +20,6 @@ export const Swap = () => {
   ];
 
   useEffect(() => {
-    getSwap();
-  }, []);
-
-  function getSwap() {
-    setIsLoading(true);
-
     api
       .getSwap()
       .then((rsp) => {
@@ -36,7 +30,7 @@ export const Swap = () => {
       .finally(() => {
         setIsLoading(false);
       });
-  }
+  }, []);
 
   function update(value: string) {
     if (isLoading) return;

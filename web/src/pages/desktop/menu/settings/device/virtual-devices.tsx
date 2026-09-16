@@ -9,6 +9,7 @@ import type {
   VirtualDeviceName,
   VirtualDevices as VirtualDevicesState
 } from '@/api/virtual-device.ts';
+import { useStableCallback } from '@/hooks/useStableCallback.ts';
 
 export const VirtualDevices = () => {
   const { t } = useTranslation();
@@ -18,25 +19,7 @@ export const VirtualDevices = () => {
   const [loading, setLoading] = useState<'' | VirtualDeviceName>('');
   const [refusal, setRefusal] = useState('');
 
-  useEffect(() => {
-    getHidOnlyMode();
-    getVirtualDevice();
-  }, []);
-
-  async function getHidOnlyMode() {
-    try {
-      const rsp = await getHidMode();
-      if (rsp.code !== 0) {
-        console.log(rsp.msg);
-        return;
-      }
-      setIsHidOnlyMode(rsp.data.mode === 'hid-only');
-    } catch (err) {
-      console.log(err);
-    }
-  }
-
-  async function getVirtualDevice() {
+  const getVirtualDevice = useStableCallback(async () => {
     try {
       const rsp = await api.getVirtualDevice();
       if (rsp.code !== 0) {
@@ -50,7 +33,25 @@ export const VirtualDevices = () => {
       console.log(err);
       setRefusal(t('settings.device.endpoints.error'));
     }
-  }
+  });
+
+  useEffect(() => {
+    async function getHidOnlyMode() {
+      try {
+        const rsp = await getHidMode();
+        if (rsp.code !== 0) {
+          console.log(rsp.msg);
+          return;
+        }
+        setIsHidOnlyMode(rsp.data.mode === 'hid-only');
+      } catch (err) {
+        console.log(err);
+      }
+    }
+
+    getHidOnlyMode();
+    getVirtualDevice();
+  }, [getVirtualDevice]);
 
   async function update(device: VirtualDeviceName) {
     if (loading) return;
