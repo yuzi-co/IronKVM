@@ -1,11 +1,11 @@
 #!/bin/sh
-# Check who releases the VI frame on each exit from frame_to_h264.
+# Check who releases the VI frame on each exit from frame_to_video.
 #
 #   test-h264-frame-ownership.sh [kvm_vision.cpp [kvm_mmf.cpp]]
 #
 # Not destructive: both sources are only read.
 #
-# frame_to_h264 owns the VI frame from the moment it is called, the same way
+# frame_to_video owns the VI frame from the moment it is called, the same way
 # frame_to_jpeg does. The frame is one block from a pool of two, so an exit
 # that keeps it stalls the pipeline within a frame or two, and an exit that
 # releases it twice corrupts the pool.
@@ -42,8 +42,24 @@ body() {
     sed -n "/^int8_t $2(/,/^}/p" "$1" | grep -v '^[[:space:]]*//'
 }
 
-h264=$(body "$VIS" frame_to_h264)
-[ -n "$h264" ] || { echo "could not read frame_to_h264 out of $VIS"; exit 2; }
+h264=$(body "$VIS" frame_to_video)
+[ -n "$h264" ] || { echo "could not read frame_to_video out of $VIS"; exit 2; }
+
+echo "===== a refused encoder releases by hand ====="
+
+# init_venc_video can refuse a codec. That exit comes before any push, so no
+# channel is running and mmf_venc_free would release nothing.
+init_exit=$(printf '%s\n' "$h264" | sed -n '/if(0 != init_venc_video(/,/return IMG_VENC_ERROR;/p')
+[ -n "$init_exit" ] || { echo "could not read the refused encoder exit"; exit 2; }
+
+printf '%s\n' "$init_exit" | grep -B2 'mmf_vi_frame_release(vi_ch)' \
+    | grep -q 'if (vi_ch >= 0)' \
+    && note "a refused encoder releases the frame it was handed" OK \
+    || note "a refused encoder releases the frame it was handed" FAIL
+
+printf '%s\n' "$init_exit" | grep -q 'mmf_venc_free(' \
+    && note "a refused encoder does not also call mmf_venc_free" FAIL \
+    || note "a refused encoder does not also call mmf_venc_free" OK
 
 echo "===== the push failure releases by hand ====="
 
@@ -96,7 +112,7 @@ echo "===== the success exit ====="
 
 # The success path releases through the same mmf_venc_free, so it must not
 # release by hand either.
-success=$(printf '%s\n' "$h264" | sed -n '/h264_stream_dump(ret_stream/,$p')
+success=$(printf '%s\n' "$h264" | sed -n '/video_stream_dump(ret_stream/,$p')
 printf '%s\n' "$success" | grep -q 'mmf_venc_free(' \
     && note "the success exit calls mmf_venc_free" OK \
     || note "the success exit calls mmf_venc_free" FAIL
@@ -107,21 +123,48 @@ printf '%s\n' "$success" | grep -q 'mmf_vi_frame_release' \
 
 echo "===== every exit is accounted for ====="
 
-# Three returns: the push failure, the pop failure and the success. A fourth
-# added later has to be looked at by hand, so fail rather than pass silently.
+# Four returns: the refused encoder, the push failure, the pop failure and the
+# success. A fifth added later has to be looked at by hand, so fail rather than
+# pass silently.
 returns=$(printf '%s\n' "$h264" | grep -c 'return ')
-[ "$returns" = 3 ] \
-    && note "frame_to_h264 has the 3 exits this suite covers" OK \
-    || note "frame_to_h264 has $returns exits, this suite covers 3" FAIL
+[ "$returns" = 4 ] \
+    && note "frame_to_video has the 4 exits this suite covers" OK \
+    || note "frame_to_video has $returns exits, this suite covers 4" FAIL
 
 echo "===== what the pop path depends on, in kvm_mmf.cpp ====="
 
 venc_free=$(sed -n '/^int mmf_venc_free(int ch) {/,/^}/p' "$MMF")
 [ -n "$venc_free" ] || { echo "could not read mmf_venc_free out of $MMF"; exit 2; }
 
-printf '%s\n' "$venc_free" | grep -q '_mmf_release_all_vi_frames()' \
-    && note "mmf_venc_free releases the held VI frames" OK \
-    || note "mmf_venc_free releases the held VI frames" FAIL
+# Since the H.265 encoder came from upstream #914, mmf_venc_free gives back the
+# one frame the push recorded, rather than every held VI frame.
+printf '%s\n' "$venc_free" | grep -q '_mmf_release_vi_frame(priv.venc_input_vi_ch\[ch\])' \
+    && note "mmf_venc_free releases the frame the push recorded" OK \
+    || note "mmf_venc_free releases the frame the push recorded" FAIL
+
+# That only releases anything if the pushes record the frame, and the adoption
+# of #914 left them out: every encoded frame then stayed leased until the next
+# read took its channel's next frame. Both push paths have to record it.
+native_rec=$(sed -n '/^int mmf_venc_push_vi(int ch, int vi_ch) {/,/^}/p' "$MMF" \
+    | grep -v '^[[:space:]]*//' | sed -n '1,/CVI_VENC_SendFrame(/p')
+printf '%s\n' "$native_rec" | grep -q 'priv.venc_input_vi_ch\[ch\] = vi_ch;' \
+    && note "a native push records its frame before sending it" OK \
+    || note "a native push records its frame before sending it" FAIL
+
+data_rec=$(sed -n '/^int mmf_venc_push(int ch, uint8_t \*data/,/^}/p' "$MMF" \
+    | grep -v '^[[:space:]]*//' | sed -n '1,/CVI_VENC_SendFrame(/p')
+printf '%s\n' "$data_rec" | grep -q 'priv.venc_input_vi_ch\[ch\] = vi_ch;' \
+    && note "a zero-copy push records its frame before sending it" OK \
+    || note "a zero-copy push records its frame before sending it" FAIL
+
+# A push that fails leaves the release to frame_to_video, which does it by
+# hand. A record left behind would let a later mmf_venc_free release a newer
+# frame that happens to sit on the same channel.
+copy_fail=$(sed -n '/^static int _mmf_venc_push_copy(/,/^}/p' "$MMF" \
+    | sed -n '/CVI_VENC_SendFrame(ch, frame_info/,/return s32Ret;/p')
+printf '%s\n' "$copy_fail" | grep -q 'priv.venc_input_vi_ch\[ch\] = -1;' \
+    && note "a failed copy push clears the record" OK \
+    || note "a failed copy push clears the record" FAIL
 
 # The early return is the reason the push path cannot rely on this one.
 printf '%s\n' "$venc_free" | grep -q '!info->is_running' \
@@ -131,7 +174,7 @@ printf '%s\n' "$venc_free" | grep -q '!info->is_running' \
 # And the release has to be after that test, not before it, or the push
 # failure path would release twice.
 run_at=$(printf '%s\n' "$venc_free" | grep -n '!info->is_running' | head -1 | cut -d: -f1)
-rel_at=$(printf '%s\n' "$venc_free" | grep -n '_mmf_release_all_vi_frames()' | head -1 | cut -d: -f1)
+rel_at=$(printf '%s\n' "$venc_free" | grep -n '_mmf_release_vi_frame(priv.venc_input_vi_ch' | head -1 | cut -d: -f1)
 if [ -n "$run_at" ] && [ -n "$rel_at" ] && [ "$run_at" -lt "$rel_at" ]; then
     note "the release is behind the running test" OK
 else

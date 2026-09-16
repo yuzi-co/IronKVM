@@ -116,7 +116,7 @@ printf '%s\n' "$set_cap" | grep -q 'kvmvi_fps_pending = 1;' \
     && note "the setter leaves the work for the next read" OK \
     || note "the setter leaves the work for the next read" FAIL
 
-read_img=$(awk '/^int kvmv_read_img/,/^}/' "$VIS" | grep -v '^[[:space:]]*//')
+read_img=$(awk '/^static int kvmv_read_frame[(]/,/^}/' "$VIS" | grep -v '^[[:space:]]*//')
 printf '%s\n' "$read_img" | grep -q 'mmf_vi_set_chn_fps(cam->get_channel()' \
     && note "the read applies it, which is under vi_mutex" OK \
     || note "the read applies it, which is under vi_mutex" FAIL
