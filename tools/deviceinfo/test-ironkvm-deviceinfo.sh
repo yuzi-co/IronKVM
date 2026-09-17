@@ -121,6 +121,18 @@ DEVICEINFO_PATHS="$WORK/a" sh "$READER" >/dev/null 2>&1; st=$?
 SHIPPED=$ROOT/kvmapp/system/deviceinfo
 shipped() { DEVICEINFO_PATHS="$SHIPPED" sh "$READER" "$@" 2>"$WORK/err"; }
 
+# Whether a description states a key that is true only of a card the build laid
+# out. The check below runs it on the shipped file, and the mutation at the end
+# runs it on a copy that declares one, because a check that cannot fail proves
+# nothing.
+declares_layout() {
+    for k in SLOT_A SLOT_B RECOVERY DATA KERNEL_IN_SLOT SLOT_SIZE_MIB DATA_START
+    do
+        DEVICEINFO_PATHS="$1" sh "$READER" get "$k" > /dev/null 2>&1 && return 0
+    done
+    return 1
+}
+
 [ -f "$SHIPPED" ]; t "the tarball carries a description" $?
 
 # The reader checks the whole file before it prints anything, so one read that
@@ -139,6 +151,19 @@ do
     shipped get "$key" > /dev/null; st=$?
     [ "$st" = 1 ]; t "it declares no $key (got $st)" $?
 done
+
+! declares_layout "$SHIPPED"; t "so the shipped description declares no layout" $?
+
+# The mutation. A description that takes the layout keys back is the state this
+# whole rule exists to prevent, and the check above has to notice it. Done on a
+# copy: the shipped file is never written.
+cp "$SHIPPED" "$WORK/mutated"
+printf '%s\n' DATA=6 >> "$WORK/mutated"
+if cmp -s "$SHIPPED" "$WORK/mutated"; then
+    echo "FAIL - the mutation did not apply"; fails=1
+else
+    declares_layout "$WORK/mutated"; t "and a description that takes DATA back is caught" $?
+fi
 
 sh -n "$READER"; t "the reader parses" $?
 exit $fails

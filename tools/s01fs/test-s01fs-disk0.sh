@@ -99,18 +99,28 @@ chmod +x "$WORK/bin/parted" "$WORK/bin/mkfs.exfat" \
 PATH="$WORK/bin:$PATH"
 export PATH
 
+# What blkid answers for the device this case is about, and what the in-flight
+# marker holds.
+fsout()   { printf '%s\n' "$1" > "$WORK/fs/$(basename "$dev")"; }
+pends()   { printf '%s\n' "$1" > "$WORK/root/etc/kvm.disk0.formatting"; }
+
 # One run of the function against a fresh fake root.
-# $1 = "fresh" | "marked" | "pending" | "nodev" | "slot" | "hasfs"
-# $2 = mkfs exit code
+# $1 = the case; $2 = mkfs exit code
 #
-# "slot" gives the device a description that calls it a root slot. Its disk is a
-# path under the scratch directory, so nothing in /dev is named even if the
-# guard it tests is broken.
+# "slot" and "slot-pending" give the device a description that calls it a root
+# slot. Their disk is a path under the scratch directory, so nothing in /dev is
+# named even if the guard they test is broken.
+#
+# The "resume" cases are a board that lost power during mkfs.exfat. The device
+# holds the half-made filesystem and the marker names it, which is the one state
+# that may be formatted again. Two spellings of the same state, because the two
+# kinds of board answer blkid differently: util-linux prints a TYPE field and
+# busybox never does.
 run() {
     rm -rf "$WORK/root"; mkdir -p "$WORK/root/etc"
     : > "$WORK/root/plog"
     rm -rf "$WORK/fs"; mkdir -p "$WORK/fs"
-    : > "$WORK/deviceinfo"
+    printf '%s\n' DATA_FS=exfat > "$WORK/deviceinfo"
     dev="$WORK/root/mmcblk0p3"
 
     case "$1" in
@@ -119,10 +129,39 @@ run() {
         nodev)   PARTED_MAKES=""; ;;
         slot)    dev="$WORK/root/fake0p3"
                  printf '%s\n' "DISK=$WORK/root/fake0" BOOT_PART=1 \
-                     SLOT_A=2 SLOT_B=3 RECOVERY=5 > "$WORK/deviceinfo" ;;
+                     SLOT_A=2 SLOT_B=3 RECOVERY=5 DATA_FS=exfat > "$WORK/deviceinfo" ;;
         hasfs)   : > "$dev"
-                 printf '%s\n' '/dev/mmcblk0p3: LABEL="data" UUID="EE8B-6CB5"' \
-                     > "$WORK/fs/$(basename "$dev")" ;;
+                 fsout '/dev/mmcblk0p3: LABEL="data" UUID="EE8B-6CB5" TYPE="exfat"' ;;
+        resume)  : > "$dev"
+                 fsout '/dev/mmcblk0p3: LABEL="data" UUID="EE8B-6CB5" TYPE="exfat"'
+                 pends "$dev" ;;
+        resume-bare)
+                 # busybox blkid, and the label not written yet.
+                 : > "$dev"
+                 fsout '/dev/mmcblk0p3: UUID="EE8B-6CB5"'
+                 pends "$dev" ;;
+        resume-ext4)
+                 : > "$dev"
+                 fsout '/dev/mmcblk0p3: LABEL="slot-b" UUID="accd0050" TYPE="ext4"'
+                 pends "$dev" ;;
+        resume-ext4-busybox)
+                 : > "$dev"
+                 fsout '/dev/mmcblk0p3: LABEL="slot-b" UUID="accd0050"'
+                 pends "$dev" ;;
+        stale)   : > "$dev"
+                 fsout '/dev/mmcblk0p3: LABEL="data" UUID="EE8B-6CB5" TYPE="exfat"'
+                 pends /dev/some-other-device ;;
+        legacy)  # The empty marker the earlier code wrote with touch.
+                 : > "$dev"
+                 fsout '/dev/mmcblk0p3: LABEL="data" UUID="EE8B-6CB5" TYPE="exfat"'
+                 : > "$WORK/root/etc/kvm.disk0.formatting" ;;
+        slot-pending)
+                 dev="$WORK/root/fake0p3"
+                 printf '%s\n' "DISK=$WORK/root/fake0" BOOT_PART=1 \
+                     SLOT_A=2 SLOT_B=3 RECOVERY=5 DATA_FS=exfat > "$WORK/deviceinfo"
+                 : > "$dev"
+                 fsout '/dev/fake0p3: LABEL="data" UUID="EE8B-6CB5" TYPE="exfat"'
+                 pends "$dev" ;;
     esac
 
     (
@@ -237,6 +276,83 @@ said 'already holds a filesystem' && note "and it says so on the console" OK \
                                   || note "and it says so on the console" FAIL
 marked && note "and the disk is not claimed on the strength of it" FAIL \
        || note "and the disk is not claimed on the strength of it" OK
+
+# --- the interrupted format still completes ---------------------------------
+# The refusal above has one exception, and it is the state this whole block was
+# restructured for. A board that lost power during mkfs.exfat comes back with
+# the half-made filesystem on the device, so a refusal with no exception would
+# wedge it for ever: no /etc/kvm.disk0, no disk for the host, and no message
+# anybody would go looking for. The marker names the device, so the script knows
+# it started that format itself.
+rc=$(run resume)
+[ "$rc" = "rc=0" ] && note "an interrupted format of the data filesystem retries" OK \
+                   || note "an interrupted format of the data filesystem retries ($rc)" FAIL
+ran 'mkfs.exfat' && note "and the filesystem is made" OK \
+                 || note "and the filesystem is made" FAIL
+ran 'parted' && note "and the card is not partitioned a second time" FAIL \
+             || note "and the card is not partitioned a second time" OK
+marked && note "and the disk is claimed afterwards" OK \
+       || note "and the disk is claimed afterwards" FAIL
+
+# busybox blkid prints no TYPE field for any filesystem, so on that board a
+# half-made exfat reads as a UUID and nothing else. It must still retry, or the
+# exception never fires on the boards this branch actually serves.
+rc=$(run resume-bare)
+[ "$rc" = "rc=0" ] && note "a half-made filesystem with no TYPE field retries" OK \
+                   || note "a half-made filesystem with no TYPE field retries ($rc)" FAIL
+ran 'mkfs.exfat' && note "and that filesystem is made too" OK \
+                 || note "and that filesystem is made too" FAIL
+
+# --- but only that state ----------------------------------------------------
+# A root slot is ext4. The marker cannot excuse formatting one.
+rc=$(run resume-ext4)
+[ "$rc" = "rc=1" ] && note "another filesystem is refused despite the marker" OK \
+                   || note "another filesystem is refused despite the marker ($rc)" FAIL
+ran 'mkfs.exfat' && note "AND A ROOT SLOT IS NOT FORMATTED BY THE RETRY" FAIL \
+                 || note "and a root slot is not formatted by the retry" OK
+said 'is not exfat' && note "and it names the filesystem it found" OK \
+                    || note "and it names the filesystem it found" FAIL
+
+# The same card read by busybox blkid, which prints no TYPE. The label is what
+# tells a root slot from the data filesystem there.
+rc=$(run resume-ext4-busybox)
+[ "$rc" = "rc=1" ] && note "a slot with no TYPE field is refused by its label" OK \
+                   || note "a slot with no TYPE field is refused by its label ($rc)" FAIL
+ran 'mkfs.exfat' && note "AND THAT ROOT SLOT IS NOT FORMATTED EITHER" FAIL \
+                 || note "and that root slot is not formatted either" OK
+
+# A marker left by another device excuses nothing. This is why the marker
+# records the device instead of only existing.
+rc=$(run stale)
+[ "$rc" = "rc=1" ] && note "a marker naming another device excuses no format" OK \
+                   || note "a marker naming another device excuses no format ($rc)" FAIL
+ran 'mkfs.exfat' && note "and nothing is formatted for it" FAIL \
+                 || note "and nothing is formatted for it" OK
+
+# The empty marker the earlier code wrote with touch names no device, so it
+# cannot say which device the interrupted format was on.
+rc=$(run legacy)
+[ "$rc" = "rc=1" ] && note "an empty marker from the earlier code excuses nothing" OK \
+                   || note "an empty marker from the earlier code excuses nothing ($rc)" FAIL
+ran 'mkfs.exfat' && note "and nothing is formatted for it either" FAIL \
+                 || note "and nothing is formatted for it either" OK
+
+# And the description outranks the marker. A device it calls a slot is refused
+# whatever state the format was left in.
+rc=$(run slot-pending)
+[ "$rc" = "rc=1" ] && note "a slot is refused whatever the marker says" OK \
+                   || note "a slot is refused whatever the marker says ($rc)" FAIL
+said 'slot or recovery' && note "and it is refused for being a slot" OK \
+                        || note "and it is refused for being a slot" FAIL
+ran 'mkfs.exfat' && note "AND A DECLARED SLOT IS NOT FORMATTED BY THE RETRY" FAIL \
+                 || note "and a declared slot is not formatted by the retry" OK
+
+# The marker has to carry the device for any of the above to work. A format that
+# failed leaves it behind, which is where its content can be read.
+rc=$(run fresh 1)
+[ "$(cat "$WORK/root/etc/kvm.disk0.formatting")" = "$WORK/root/mmcblk0p3" ] \
+    && note "the in-flight marker records the device" OK \
+    || note "the in-flight marker holds '$(cat "$WORK/root/etc/kvm.disk0.formatting")'" FAIL
 
 # --- the shipped text itself ------------------------------------------------
 # The background format is the defect. Reading the file is the only way to

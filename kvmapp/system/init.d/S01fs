@@ -385,6 +385,15 @@ may_autopartition() {
 # no marker at all and starts again, or finds the in-flight marker and formats
 # again without repartitioning. Neither state can present a disk to the host.
 #
+# ONE WINDOW IS NOT COVERED, and it is the marker's position rather than its
+# content. The marker is written before parted runs, so a board that lost power
+# during the mkpart comes back with a marker, no partition, and a retry that
+# skips the mkpart because the marker is there. It then reports that the data
+# partition did not appear, on that boot and on every boot after it. Gating the
+# mkpart on the device rather than on the marker would close it. That is a
+# separate change, and this note is here so the next person does not read the
+# paragraph above as covering more than it does.
+#
 # The foreground format costs boot time. mkfs.exfat writes metadata only, so
 # that cost is small, and the thing it buys is not handing a host a corrupt
 # disk.
@@ -423,16 +432,60 @@ may_autopartition() {
 #   description declares nothing, this is all there is, and it is the same test
 #   the A/B path uses to decide that a card is already provisioned.
 #
-# The second guard also ends the retry of an interrupted format once the
-# filesystem is nameable. mkfs.exfat writes its superblock and the disk is never
-# claimed, so the board repeats the refusal on every boot until somebody reads
-# the console. That is the correct direction: the alternative is a script that
-# re-formats a partition it can see a filesystem on.
+# The second guard has one exception, and the exception is the whole reason this
+# block was restructured. A board interrupted during mkfs.exfat has to format
+# again on the next boot, and after the interruption the device often does hold
+# a filesystem: the half-made one. A refusal with no exception would wedge that
+# board for ever. It would never write /etc/kvm.disk0, never present its disk,
+# and never say anything a person would go looking for. So the filesystem on the
+# device is formatted again only when both of these hold:
+#
+#   The in-flight marker names this same device, so this script started a format
+#   on it and did not finish.
+#
+#   What is on it is not a filesystem that is something else. A root slot is
+#   ext4, so this keeps the dangerous case refused even where the description
+#   declares no slots.
+#
+# The marker records the device rather than only existing. A marker is written
+# only after both guards accepted the device, so a marker that names this device
+# says that one boot ago the device held no filesystem this board could name.
+# That is what makes the retry safe: whatever is on it now was written by the
+# mkfs.exfat below. A marker that names another device, or an empty one from the
+# earlier code, excuses nothing.
 DISK0_DISK=${DISK0_DISK:-/dev/mmcblk0}
 DISK0_DEV=${DISK0_DEV:-/dev/mmcblk0p3}
 DISK0_MARKER=${DISK0_MARKER:-/etc/kvm.disk0}
 DISK0_PENDING=${DISK0_PENDING:-/etc/kvm.disk0.formatting}
 DISK0_SETTLE=${DISK0_SETTLE:-1}
+
+# Whether this script is finishing a format it started on this same device.
+resuming_format() {
+    [ -e "$DISK0_PENDING" ] || return 1
+    [ "$(cat "$DISK0_PENDING" 2>/dev/null)" = "$DISK0_DEV" ]
+}
+
+# Whether what is on the device is a filesystem that is not the data one.
+#
+# Two arms, because the two kinds of board answer differently. util-linux blkid
+# prints a TYPE field, so the type decides. busybox blkid prints no TYPE field
+# at all, for exfat and for ext4 alike, so the label decides: this branch and
+# the A/B path both write `mkfs.exfat -L data`, and a root slot carries the name
+# of its slot. A partition that gives neither reads as not foreign, which is the
+# state a half-made exfat leaves on a busybox board, and the paragraph above is
+# why formatting it again is safe.
+holds_foreign_filesystem() {
+    found=$("$BLKID" "$DISK0_DEV" 2>/dev/null)
+    case "$found" in
+        *"TYPE=\"$DATA_FS\""*) ;;
+        *'TYPE="'*) return 0 ;;
+    esac
+    case "$found" in
+        *'LABEL="data"'*) ;;
+        *'LABEL="'*) return 0 ;;
+    esac
+    return 1
+}
 
 provision_disk0() {
     [ -e "$DISK0_MARKER" ] && return 0
@@ -443,12 +496,19 @@ provision_disk0() {
     fi
 
     if has_filesystem "$DISK0_DEV"; then
-        echo "S01fs: $DISK0_DEV already holds a filesystem, leaving the card alone"
-        return 1
+        if ! resuming_format; then
+            echo "S01fs: $DISK0_DEV already holds a filesystem, leaving the card alone"
+            return 1
+        fi
+        if holds_foreign_filesystem; then
+            echo "S01fs: $DISK0_DEV holds a filesystem that is not ${DATA_FS:-the data filesystem}, leaving the card alone"
+            return 1
+        fi
     fi
 
     if [ ! -e "$DISK0_PENDING" ]; then
-        touch "$DISK0_PENDING"
+        # The device, not an empty file. resuming_format above reads it back.
+        printf '%s\n' "$DISK0_DEV" > "$DISK0_PENDING"
         # use all sdcard free space for data
         parted -s "$DISK0_DISK" mkpart primary ntfs 8193MB 100% > /dev/null 2>&1
         [ "$DISK0_SETTLE" = 0 ] || sleep "$DISK0_SETTLE"
