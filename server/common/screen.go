@@ -13,7 +13,9 @@ import (
 // the card: a board set to 60 frames should still be at 60 frames after a
 // reboot. They are written once per change, which is what makes that
 // acceptable where `now_fps` and `wifi_state` are not - see the comment about
-// tmpfs in `kvmapp/system/init.d/S95nanokvm`.
+// tmpfs in `kvmapp/system/init.d/S95nanokvm`. That script also makes each path
+// a link into /etc/kvm/screen, on /data, so both slots share one copy.
+// os.WriteFile follows the link; a write by rename would not.
 //
 // It is a variable so a test can point it at a temporary directory. Nothing on
 // the device changes it.

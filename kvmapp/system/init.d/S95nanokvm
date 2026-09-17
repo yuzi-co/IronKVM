@@ -217,6 +217,45 @@ link_runtime_file() {
     fi
 }
 
+# The screen settings are the operator's choices: stream type, frame rate,
+# quality, resolution, codec and GOP. They belong to the board, not to a slot.
+# /kvmapp is part of the root filesystem, so each slot used to keep its own
+# copy, and booting the other slot quietly changed all of them.
+#
+# Each name becomes a link to /etc/kvm/screen. S02identity binds /data/identity
+# over /etc/kvm before this script runs, so the files live on /data and both
+# slots read and write the same ones. On a board with no /data the directory is
+# on the root filesystem, and the settings stay per slot as they were.
+#
+# The links are made here and not on /data because /data is exFAT, which has
+# no symlinks. Every writer follows the link: the server uses os.WriteFile, and
+# kvm_system writes its defaults with a shell redirect. Neither renames.
+#
+# A regular file seeds the shared copy only when the shared copy is absent. The
+# first slot to boot with this change therefore keeps its settings, and the
+# other slot's own copy is discarded in favour of them, which is the point.
+#
+# width and height are not here. They describe the HDMI source, not a choice,
+# and the comment above link_runtime_file says why they stay where they are.
+SETTINGS_DIR=${SETTINGS_DIR:-/etc/kvm/screen}
+SCREEN_SETTINGS="type fps qlty res codec gop"
+
+share_screen_settings() {
+    mkdir -p "$SETTINGS_DIR" || return 0
+
+    for name in $SCREEN_SETTINGS; do
+        file="/kvmapp/kvm/$name"
+        [ -L "$file" ] && continue
+
+        if [ -f "$file" ] && [ ! -e "$SETTINGS_DIR/$name" ]; then
+            cp "$file" "$SETTINGS_DIR/$name" || continue
+        fi
+
+        rm -f "$file"
+        ln -s "$SETTINGS_DIR/$name" "$file"
+    done
+}
+
 prepare_runtime_state() {
     mkdir -p /tmp/kvm
 
@@ -422,6 +461,7 @@ start_kvm_system() {
 start_services() {
     hold_standoff
     prepare_runtime_state
+    share_screen_settings
 
     # Start each run with an empty file, so the log always describes the server
     # that is running now. S98vidiag has already copied what it read to /data.
