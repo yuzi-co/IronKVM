@@ -1,5 +1,7 @@
 #!/bin/sh
-# Prove that test-deploy-guard.sh fails when the probe URL is built wrongly.
+# Prove that test-deploy-guard.sh fails when the probe URL is built wrongly, when
+# the install writes over the running file, and when an old process passes for
+# the new one.
 #
 #   test-deploy-guard-mutation.sh
 #
@@ -85,6 +87,28 @@ m_nofallback() {
     sed -i 's@^    proto=http$@    proto=@' "$1"
 }
 
+# The install writes the file in place. On the device that is ETXTBSY for the
+# executable and SIGBUS for a library the running server has loaded.
+m_inplace() {
+    sed -i 's@ && mv -f "$tmp" "$2"; then@ && cat "$tmp" > "$2" && rm -f "$tmp"; then@' "$1"
+}
+
+# The copy is no longer compared with its source, so a short copy is installed.
+m_nocmp() {
+    sed -i 's@ && cmp -s "$1" "$tmp"@@' "$1"
+}
+
+# The mapping match is by substring, so "path (deleted)" counts as the new file.
+m_substring() {
+    sed -i 's@grep -qxF -e "$installed"@grep -qF -e "$installed"@' "$1"
+}
+
+# CURRENT is compared as given, so a path through the /tmp/server link never
+# matches the resolved path the kernel prints.
+m_noresolve() {
+    sed -i 's@^    installed=$(readlink -f "$CURRENT" 2>/dev/null) || installed=$CURRENT$@    installed=$CURRENT@' "$1"
+}
+
 echo "===== every mutation must be caught ====="
 try "the probe goes back to fixed http"        m_fixedhttp
 try "a non-default port is dropped"            m_noport
@@ -92,6 +116,10 @@ try "the port is read for the wrong scheme"    m_wrongscheme
 try "the port lookup leaves the port block"    m_unscoped
 try "DEPLOY_URL stops being overridable"       m_notoverridable
 try "an unreadable config has no fallback"     m_nofallback
+try "the install writes over the running file" m_inplace
+try "a short copy is installed"                m_nocmp
+try "a deleted mapping passes for the new one" m_substring
+try "CURRENT through the link is not resolved" m_noresolve
 
 echo
 if [ "$fail" -eq 0 ]; then

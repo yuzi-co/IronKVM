@@ -162,11 +162,35 @@ The script compares four things:
 | Init scripts  | Boot reads `/etc/init.d`. `/kvmapp/system/init.d` is the package copy. |
 | Web bundle    | Against a local `web/dist`, which you must build first.      |
 
-Three of those exist twice on the device. `S95nanokvm` copies `/kvmapp/server`
-to `/tmp/server` at boot, and it starts the server from the copy. A file written
-to `/kvmapp` alone is installed and is not serving. The report gives a column to
-each location and names both for every file that does not match, because which
-of the two is wrong decides the repair.
+Three of those exist twice on the device: the installed file, and the file in
+use. For the init scripts, boot uses `/etc/init.d`. For the server, its
+libraries and the web bundle, the script reads the running process. `S95nanokvm`
+starts the server through a link at `/tmp/server` that points at
+`/kvmapp/server`, so the directory in use is the installed one. A library that
+was replaced after the server started is still mapped, and `/proc/<pid>/maps`
+marks it `(deleted)`. The report calls that file installed and not in use. The
+report gives a column to each location and names both for every file that does
+not match, because which of the two is wrong decides the repair.
+
+### The server runs from the SD card
+
+`S95nanokvm` used to copy `/kvmapp/server` into tmpfs at `/tmp/server` and start
+the copy. The copy held 32.7MB of RAM that the kernel could not reclaim.
+Measured on 2026-09-17 in one boot with the server idle, the board had 93.9MB
+available with the copy and 128.4MB with the server started from the card.
+
+`/tmp/server` is now a link to `/kvmapp/server`. The path stays for three
+readers: `S98supervise` reads the path as the operator's intent, `kvm_system`
+starts `/tmp/server/NanoKVM-Server` after an update, and the notes about this
+board name it. `tools/vidiag/test-server-link.sh` holds the link.
+
+The change has one rule for everything that writes to `/kvmapp/server`. Replace a
+file with a rename, and never write over it. The server maps its executable and
+its libraries. A write over the executable fails with `ETXTBSY`, and a write over
+a loaded library kills the server with `SIGBUS`. The updater already moves files
+by rename. `tools/deploy/deploy-server` copies the candidate beside the target,
+compares it, and renames it into place. A web asset is read per request and is
+not mapped, so an upload over it is safe.
 
 ### Two things that make a false report
 
@@ -472,9 +496,11 @@ a signature would get weaker exactly as the fault got worse.
 
 Only an answering probe clears the counters. A verdict is not enough: the
 supervisor's own cure runs `S95nanokvm restart`, which removes `/tmp/server` and
-copies 36MB back, and for about half a minute of that the board looks stopped. A
-counter that cleared there would reset on every slow SD card, and the hang
-escalation could never reach its threshold on the boards that need it most.
+stages it again, and for that window the board looks stopped. When the stage
+was a 36MB copy the window was about half a minute. A counter that cleared there
+would reset on every slow SD card, and the hang escalation could never reach its
+threshold on the boards that need it most. The stage is a link now, and the
+window is shorter but still there.
 
 Two guards stand between this and a reboot loop, and they do different jobs.
 
@@ -1026,6 +1052,9 @@ the reader reading the file again, not the fault happening again.
 
 The trim above runs inside the reader's loop. If the reader stops, nothing
 empties the file, and `S95nanokvm` must not depend on it.
+
+This section predates the link at `/tmp/server`, when `S95nanokvm` still copied
+the server into tmpfs. The order still matters for the `kvm_system` copy.
 
 `S95nanokvm` used to empty the log after it copied `/kvmapp/server` into tmpfs.
 That order leaves no margin. Removing `/tmp/server` returns exactly the space

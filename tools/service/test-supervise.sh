@@ -259,7 +259,8 @@ reset_case "died right at the threshold"              60 40 5
 echo
 echo "===== a restarted server still reports where libkvm fails ====="
 # The supervisor restarts a crashed server itself, rather than through
-# S95nanokvm, because a full restart copies 36MB back into tmpfs for nothing.
+# S95nanokvm, because a full restart also stops and restarts kvm_system for
+# nothing. It used to copy 36MB back into tmpfs as well.
 # That shortcut has to carry the redirection with it.
 #
 # libkvm reports a capture pipeline that does not start with printf, and that
@@ -447,9 +448,10 @@ clear_case() {
 clear_case "answering: the fault is over"                       healthy yes      yes
 clear_case "up but not answering yet, inside the grace"         healthy no       no
 # The supervisor's own cure is S95nanokvm restart, which removes /tmp/server and
-# copies 36MB back. For that whole window there is no process and no binary, so
+# stages it again. For that whole window there is no process and no binary, so
 # the verdict is the one a deliberate stop gives - and clearing there wipes the
-# cure counters on exactly the slow SD card the fault arrives with. Measured: a
+# cure counters. When the stage was a 36MB copy, that was on exactly the slow SD
+# card the fault arrives with. Measured: a
 # 20-second re-stage escalated on the third hung verdict, a 40-second re-stage
 # never escalated at all. An operator who stops the server and brings it back
 # produces an answering healthy poll, which clears the counters safely.

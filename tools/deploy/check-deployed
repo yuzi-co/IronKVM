@@ -27,10 +27,15 @@
 #   web bundle      Compared against a local web/dist, which has to be built
 #                   first. There is no build output in git to compare against.
 #
-# Each of those exists twice on the device. S95nanokvm copies /kvmapp/server to
-# /tmp/server at boot and starts the server from there, so a file written to
-# /kvmapp alone is installed and not serving. This script reports the two
-# separately and names that state rather than calling it a match.
+# Each of those exists twice on the device: what is installed, and what is in
+# use. For the init scripts the second is /etc/init.d. For the server, the
+# libraries and the web bundle it is whatever the running process was started
+# from. S95nanokvm used to copy /kvmapp/server to /tmp/server and run the copy.
+# It now runs /kvmapp/server through a link at /tmp/server, so the directory is
+# the installed one, and a library replaced since the process started shows up
+# only in /proc/<pid>/maps, with " (deleted)" after its path. This script reports
+# the two separately and names a file installed and not in use as a restart
+# that is pending, rather than calling it a match.
 #
 # Repository-side hashes come from `git cat-file`, which applies no filter. The
 # working tree on a Windows host carries CRLF for files whose stored blobs have
@@ -134,10 +139,31 @@ else
     echo "MANIFEST_NONE $manifest"
 fi
 
+# What the server runs is read from the process, not from a fixed path. The
+# kernel resolves the /tmp/server link, so a board on the link reports
+# /kvmapp/server here and a board on the old copy reports /tmp/server.
+rundir=/tmp/server
+if [ -n "${pid:-}" ]; then
+    exe=$(readlink "/proc/$pid/exe" 2>/dev/null)
+    exe=${exe% (deleted)}
+    [ -n "$exe" ] && rundir=${exe%/*}
+fi
+
+# A library renamed over after the process mapped it is still the old one in
+# memory. Its name is reported first, with a value no checksum can equal, and
+# dev_md5 takes the first line for a name, so it reads as in use and different.
+if [ -n "${pid:-}" ]; then
+    awk '{ $1 = $2 = $3 = $4 = $5 = ""; sub(/^ +/, ""); print }' "/proc/$pid/maps" 2>/dev/null \
+        | grep " (deleted)$" | grep "/dl_lib/" | sort -u | while read -r mapped; do
+            mapped=${mapped% (deleted)}
+            echo "FILE lib-run ${mapped##*/} replaced-since-start"
+        done
+fi
+
 emit lib-disk  /kvmapp/server/dl_lib
-emit lib-run   /tmp/server/dl_lib
+emit lib-run   "$rundir/dl_lib"
 emit web-disk  /kvmapp/server/web
-emit web-run   /tmp/server/web
+emit web-run   "$rundir/web"
 emit initd-boot /etc/init.d
 emit initd-pkg  /kvmapp/system/init.d
 PROBE
@@ -346,7 +372,7 @@ done >> "$work/lib.list"
 
 compare_group "dl_lib" \
     lib-disk "installed (/kvmapp)" \
-    lib-run  "serving (/tmp/server)" \
+    lib-run  "in use by the server" \
     "installed but not serving, restart pending" \
     "$work/lib.list"
 echo
@@ -425,7 +451,7 @@ else
 
     compare_group "web/dist" \
         web-disk "installed (/kvmapp)" \
-        web-run  "serving (/tmp/server)" \
+        web-run  "served" \
         "installed but not serving, restart pending" \
         "$work/web.list"
 fi

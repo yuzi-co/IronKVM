@@ -16,6 +16,10 @@ sed -n '/^# --- verdict ---$/,/^# --- end verdict ---$/p'   "$DG" > "$WORK/verdi
 sed -n '/^# --- snapshot ---$/,/^# --- end snapshot ---$/p' "$DG" > "$WORK/snapshot.sh"
 sed -n '/^# --- preflight ---$/,/^# --- end preflight ---$/p' "$DG" > "$WORK/preflight.sh"
 sed -n '/^# --- settle ---$/,/^# --- end settle ---$/p' "$DG" > "$WORK/settle.sh"
+sed -n '/^# --- running ---$/,/^# --- end running ---$/p' "$DG" > "$WORK/running.sh"
+sed -n '/^# --- install ---$/,/^# --- end install ---$/p' "$DG" > "$WORK/install.sh"
+[ -s "$WORK/running.sh" ] || { echo "could not extract the running block"; exit 1; }
+[ -s "$WORK/install.sh" ] || { echo "could not extract the install block"; exit 1; }
 [ -s "$WORK/verdict.sh" ]  || { echo "could not extract the verdict block"; exit 1; }
 [ -s "$WORK/snapshot.sh" ] || { echo "could not extract the snapshot block"; exit 1; }
 [ -s "$WORK/preflight.sh" ] || { echo "could not extract the preflight block"; exit 1; }
@@ -46,10 +50,10 @@ verdict_case "answers, and the running copy is the one installed" yes yes keep
 verdict_case "does not answer"                                  no  yes restore
 
 # The failure this was rewritten after. tmpfs filled up, the candidate copied in
-# truncated, and the guard said OK - because S95nanokvm runs a copy of the binary
-# from /tmp and that copy was still the old good one. Serving proves a server is
-# up. It does not prove it is the server just installed.
-verdict_case "answers, but a stale copy is running"             yes no  restore
+# truncated, and the guard said OK - because S95nanokvm then ran a copy of the
+# binary from /tmp and that copy was still the old good one. Serving proves a
+# server is up. It does not prove it is the server just installed.
+verdict_case "answers, but an old server is running"            yes no  restore
 
 echo
 echo "===== the known-good copy is only replaced by a proven one ====="
@@ -100,13 +104,14 @@ got=$(WORK="$WORK" sh -c '
 
 echo
 echo "===== refuse before touching anything ====="
-# Staging in tmpfs is what broke this. /tmp is 79MB, S95nanokvm copies the whole
-# of /kvmapp/server into it on every restart, and a short copy is silent.
+# A short copy is silent, and it is what this script was written after. The
+# new file is held beside the old one until the rename, so the filesystem that
+# holds CURRENT needs room for it first.
 pre_case() {
-    desc="$1"; elf="$2"; tmpfree="$3"; want="$4"
-    got=$(ELF="$elf" TMPFREE="$tmpfree" NEEDED=24000 WORK="$WORK" sh -c '
+    desc="$1"; elf="$2"; free="$3"; want="$4"
+    got=$(ELF="$elf" FREE="$free" NEEDED=24000 WORK="$WORK" sh -c '
         candidate_is_elf()  { [ "$ELF" = yes ]; }
-        tmp_free_kb()       { echo "$TMPFREE"; }
+        install_free_kb()   { echo "$FREE"; }
         candidate_size_kb() { echo "$NEEDED"; }
         . "$WORK/preflight.sh"
         preflight && echo proceed || echo refuse
@@ -114,14 +119,12 @@ pre_case() {
     [ "$got" = "$want" ] && note "$desc -> $got" OK || note "$desc -> $got, want $want" FAIL
 }
 
-pre_case "intact candidate and room in tmpfs"       yes 48000 proceed
-pre_case "candidate is not an ELF"                  no  48000 refuse
-pre_case "tmpfs cannot hold the copy S95nanokvm makes" yes 20000 refuse
+pre_case "intact candidate and room beside CURRENT"   yes 48000 proceed
+pre_case "candidate is not an ELF"                    no  48000 refuse
+pre_case "no room to hold the new file beside the old" yes 20000 refuse
 
-# The boundary is 1.5x the candidate, because /kvmapp/server is not just the
-# binary: measured on the device it is a 23.6MB binary plus about 5MB of dl_lib
-# and 2.5MB of web assets, so the copy needs roughly 1.31x. 1.5x is margin over
-# a measured number rather than a guess. NEEDED is 24000, so the line is 36000.
+# The boundary is 1.5x the candidate: one candidate for the file held beside the
+# old one, and half again as margin. NEEDED is 24000, so the line is 36000.
 pre_case "exactly at the 1.5x boundary"             yes 36000 proceed
 pre_case "one kB under the boundary"                yes 35999 refuse
 
@@ -176,6 +179,132 @@ calls=$(grep -c 'settled_within "\$DEPLOY_TIMEOUT"' "$DG")
 
 # The racy helper must be gone, not merely bypassed on one path.
 grep -q 'wait_for_service' "$DG"     && note "wait_for_service is still present and can be reached again" FAIL     || note "the helper that judged on the first answer is gone" OK
+
+echo
+echo "===== the running server is judged by what it maps ====="
+# /tmp/server is a link to /kvmapp/server, so a file at that path compared with
+# CURRENT is a file compared with itself. What tells an old process from a new
+# one is the kernel's own record: a mapping of a file that was renamed over is
+# printed with " (deleted)" after its path.
+#
+# PROC stands in for /proc, and pidof is stubbed to name the pids under it. Each
+# line of the second argument is "pid|maps line".
+running_case() {
+    desc="$1"; maps="$2"; current="$3"; want="$4"
+    P="$WORK/proc"; rm -rf "$P"; mkdir -p "$P"
+    printf '%s\n' "$maps" | while IFS='|' read -r pid line; do
+        [ -n "$pid" ] || continue
+        mkdir -p "$P/$pid"
+        printf '%s\n' "$line" >> "$P/$pid/maps"
+    done
+    got=$(PROC="$P" CURRENT="$current" WORK="$WORK" sh -c '
+        pidof() { ls "$PROC"; }
+        . "$WORK/running.sh"
+        running_matches_installed && echo new || echo old
+    ' 2>/dev/null)
+    [ "$got" = "$want" ] && note "$desc -> $got" OK || note "$desc -> $got, want $want" FAIL
+}
+
+mkdir -p "$WORK/app/dl_lib"
+: > "$WORK/app/NanoKVM-Server"
+: > "$WORK/app/dl_lib/libkvm.so"
+
+running_case "a process started from the installed binary" \
+"100|3fb0000000-3fb1000000 r-xp 00000000 b3:03 1234   $WORK/app/NanoKVM-Server" \
+    "$WORK/app/NanoKVM-Server" new
+
+running_case "the old process, whose binary was renamed over" \
+"100|3fb0000000-3fb1000000 r-xp 00000000 b3:03 1234   $WORK/app/NanoKVM-Server (deleted)" \
+    "$WORK/app/NanoKVM-Server" old
+
+running_case "no server process at all" "" "$WORK/app/NanoKVM-Server" old
+
+# The deploy of a library passes CURRENT=.../libkvm.so. The binary is not what
+# changed, so only the library's mapping can say which process is new.
+running_case "a library deploy, the library freshly mapped" \
+"100|3fb2000000-3fb2100000 r-xp 00000000 b3:03 99     $WORK/app/dl_lib/libkvm.so" \
+    "$WORK/app/dl_lib/libkvm.so" new
+
+running_case "a library deploy, the old library still mapped" \
+"100|3fb0000000-3fb1000000 r-xp 00000000 b3:03 1234   $WORK/app/NanoKVM-Server
+100|3fb2000000-3fb2100000 r-xp 00000000 b3:03 98     $WORK/app/dl_lib/libkvm.so (deleted)" \
+    "$WORK/app/dl_lib/libkvm.so" old
+
+# A restart that has started the new server while the old one is still dying.
+running_case "old and new process side by side" \
+"100|3fb0000000-3fb1000000 r-xp 00000000 b3:03 1234   $WORK/app/NanoKVM-Server (deleted)
+200|3fb0000000-3fb1000000 r-xp 00000000 b3:03 1235   $WORK/app/NanoKVM-Server" \
+    "$WORK/app/NanoKVM-Server" new
+
+# A path that only starts with CURRENT is a different file.
+running_case "a mapping of NanoKVM-Server.deploy-new is not the binary" \
+"100|3fb0000000-3fb1000000 r-xp 00000000 b3:03 1234   $WORK/app/NanoKVM-Server.deploy-new" \
+    "$WORK/app/NanoKVM-Server" old
+
+# The kernel prints the resolved path, so a CURRENT given through the link must
+# be resolved before it is compared. Git Bash on Windows copies instead of
+# linking, so this case runs only where ln -s makes a link.
+if ln -s "$WORK/app" "$WORK/link" 2>/dev/null && [ -L "$WORK/link" ]; then
+    running_case "CURRENT named through the /tmp/server link" \
+"100|3fb0000000-3fb1000000 r-xp 00000000 b3:03 1234   $WORK/app/NanoKVM-Server" \
+        "$WORK/link/NanoKVM-Server" new
+fi
+
+echo
+echo "===== the install renames, and never writes over the running file ====="
+# The server runs from /kvmapp/server. cp over its executable fails with
+# ETXTBSY, and cp over a library it has loaded truncates pages it is executing.
+# A rename gives the file a new inode and leaves the old one to the process.
+I="$WORK/inst"
+rm -rf "$I"; mkdir -p "$I"
+printf 'old\n' > "$I/current"
+printf 'new\n' > "$I/candidate"
+exec 3< "$I/current"
+before=$(ls -i "$I/current" | awk '{print $1}')
+
+if WORK="$WORK" I="$I" sh -c '. "$WORK/install.sh"; install_file "$I/candidate" "$I/current"'; then
+    note "install_file succeeds" OK
+else
+    note "install_file succeeds" FAIL
+fi
+after=$(ls -i "$I/current" | awk '{print $1}')
+[ "$(cat "$I/current")" = new ] \
+    && note "the destination holds the new content" OK \
+    || note "the destination holds the new content" FAIL
+[ "$before" != "$after" ] \
+    && note "the destination is a new inode, renamed into place" OK \
+    || note "the destination is a new inode, renamed into place" FAIL
+[ "$(cat <&3)" = old ] \
+    && note "a process holding the old file still reads the old content" OK \
+    || note "a process holding the old file still reads the old content" FAIL
+exec 3<&-
+[ -e "$I/current.deploy-new" ] \
+    && note "no temporary file is left behind" FAIL \
+    || note "no temporary file is left behind" OK
+
+# A copy that does not match its source must not be renamed into place: a short
+# copy is how a deploy once installed a truncated binary.
+printf 'old\n' > "$I/current"
+got=$(WORK="$WORK" I="$I" sh -c '
+    cmp() { return 1; }
+    . "$WORK/install.sh"
+    install_file "$I/candidate" "$I/current" && echo installed || echo refused
+' 2>/dev/null)
+[ "$got" = refused ] && [ "$(cat "$I/current")" = old ] \
+    && note "a copy that does not match the source is not installed" OK \
+    || note "a copy that does not match the source is not installed" FAIL
+[ -e "$I/current.deploy-new" ] \
+    && note "a refused copy is cleaned up" FAIL \
+    || note "a refused copy is cleaned up" OK
+
+# Both installs go through it: the candidate and the rollback.
+calls=$(grep -c '^    if ! install_file ' "$DG")
+[ "$calls" = 2 ] \
+    && note "the deploy and the rollback both install by rename" OK \
+    || note "install_file is used $calls time(s), want 2 (deploy and rollback)" FAIL
+grep -qE '^[[:space:]]*cp "\$(NEW|GOOD)" "\$CURRENT"' "$DG" \
+    && note "nothing copies straight onto CURRENT" FAIL \
+    || note "nothing copies straight onto CURRENT" OK
 
 echo
 echo "===== the script still parses ====="
