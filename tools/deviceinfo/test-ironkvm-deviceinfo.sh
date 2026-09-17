@@ -67,6 +67,42 @@ printf 'DEVICE=ok\nEMPTY=\nQEMPTY=""\n' > "$WORK/a"
 get EMPTY >/dev/null; t "an empty bare value exits 0" $?
 get QEMPTY >/dev/null; t "an empty quoted value exits 0" $?
 
+# part turns a partition number into a device path. The separator belongs to the
+# disk: mmcblk and nvme name partitions with a p, sd and vd do not.
+part() { DEVICEINFO_PATHS="$WORK/a" sh "$READER" part "$1" 2>"$WORK/err"; }
+
+printf 'DISK=/dev/mmcblk0\nSLOT_A=2\nDATA=6\nBOOT_PART=1\n' > "$WORK/a"
+[ "$(part SLOT_A)" = /dev/mmcblk0p2 ]; t "a numbered disk gets a p" $?
+[ "$(part DATA)" = /dev/mmcblk0p6 ];  t "another partition on the same disk" $?
+
+printf 'DISK=/dev/sda\nSLOT_A=2\n' > "$WORK/a"
+[ "$(part SLOT_A)" = /dev/sda2 ]; t "a letter-named disk gets no p" $?
+
+printf 'DISK=/dev/nvme0n1\nSLOT_A=2\n' > "$WORK/a"
+[ "$(part SLOT_A)" = /dev/nvme0n1p2 ]; t "nvme gets a p" $?
+
+printf 'DISK=/dev/mmcblk0\nSLOT_A=2\n' > "$WORK/a"
+part RECOVERY >/dev/null; st=$?
+[ "$st" = 1 ]; t "a partition key that is not set exits 1 (got $st)" $?
+
+printf 'SLOT_A=2\n' > "$WORK/a"
+part SLOT_A >/dev/null; st=$?
+[ "$st" = 1 ]; t "no DISK exits 1 (got $st)" $?
+
+printf 'DISK=/dev/mmcblk0\nSLOT_A=x\n' > "$WORK/a"
+part SLOT_A >/dev/null; st=$?
+[ "$st" = 5 ] && grep -q 'SLOT_A=x is not a partition number' "$WORK/err"
+t "a partition number that is not a number exits 5 (got $st)" $?
+
+printf 'DISK=mmcblk0\nSLOT_A=2\n' > "$WORK/a"
+part SLOT_A >/dev/null; st=$?
+[ "$st" = 5 ] && grep -q 'DISK=mmcblk0 is not a path' "$WORK/err"
+t "a DISK that is not a path exits 5 (got $st)" $?
+
+printf 'DISK=/dev/mmcblk0\nSLOT_A=0\n' > "$WORK/a"
+part SLOT_A >/dev/null; st=$?
+[ "$st" = 5 ]; t "partition 0 exits 5 (got $st)" $?
+
 # Usage.
 DEVICEINFO_PATHS="$WORK/a" sh "$READER" >/dev/null 2>&1; st=$?
 [ "$st" = 2 ]; t "no arguments exits 2 (got $st)" $?
