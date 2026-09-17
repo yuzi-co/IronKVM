@@ -41,6 +41,60 @@ export PATH
 # Write a description for the next case. Each argument is one KEY=value line.
 deviceinfo() { printf '%s\n' "$@" > "$WORK/deviceinfo"; }
 
+# The card under the description. data_device falls back to the partition table
+# when no DATA is declared, so every case says what the table holds and what
+# blkid answers for each partition on it.
+#
+# The parted stub prints the table in use and exits 1, exactly as the real one
+# does on a disk with a mounted partition. The blkid stub answers from one file
+# per device name, and prints nothing for a partition no case described, which
+# is what blkid does for a partition with no filesystem.
+cat > "$WORK/bin/parted" <<STUB
+#!/bin/sh
+cat "\$PARTED_TABLE"
+exit 1
+STUB
+chmod 755 "$WORK/bin/parted"
+
+cat > "$WORK/bin/blkid" <<STUB
+#!/bin/sh
+f="$WORK/fs/\$(basename "\$1")"
+[ -f "\$f" ] && cat "\$f"
+exit 0
+STUB
+chmod 755 "$WORK/bin/blkid"
+
+mkdir -p "$WORK/fs"
+# card <table-file>; then fs <device name> <blkid output> for each partition.
+card() { PARTED_TABLE=$1; export PARTED_TABLE; rm -rf "$WORK/fs"; mkdir -p "$WORK/fs"; }
+fs() { printf '%s\n' "$2" > "$WORK/fs/$1"; }
+
+: > "$WORK/no.table"
+
+# The stock layout Sipeed's installer makes: boot, root, data.
+cat > "$WORK/stock.table" <<'T'
+BYT;
+/dev/mmcblk0:15523840s:sd/mmc:512:512:msdos:SD SA08G:;
+1:1s:32768s:32768s:fat16::boot, lba;
+2:40960s:8429567s:8388608s:ext4::;
+3:8429568s:15523839s:7094272s:::;
+T
+
+# The A/B layout, on a card laid out before the image carried a description.
+# p3 is a root slot here, which is what makes the stock guess dangerous.
+cat > "$WORK/ab.table" <<'T'
+BYT;
+/dev/mmcblk0:60506112s:sd/mmc:512:512:msdos:SD SA32G:;
+1:1s:32768s:32768s:fat16::boot, lba;
+2:40960s:4235263s:4194304s:ext4::;
+3:4235264s:8429567s:4194304s:ext4::;
+4:8429568s:60506111s:52076544s:::;
+5:8437760s:10534911s:2097152s:ext4::;
+6:10543104s:60506111s:49963008s:::;
+T
+
+card "$WORK/no.table"
+
 echo "===== the data device comes from the device description ====="
 
 sed -n '/^# --- data device ---/,/^# --- end data device ---/p' "$S01" > "$WORK/dd.sh"
@@ -50,7 +104,19 @@ if [ ! -s "$WORK/dd.sh" ]; then
 fi
 note "the data device block can be extracted" OK
 
-run_data_device() { sh -c ". $WORK/dd.sh; data_device" 2>/dev/null; }
+# data_device falls back to the table, and the one place that reads the table is
+# the data geometry block. Both are sourced, in the order the script has them.
+sed -n '/^# --- data geometry ---/,/^# --- end data geometry ---/p' "$S01" > "$WORK/geo.sh"
+if [ ! -s "$WORK/geo.sh" ]; then
+    note "the data geometry block can be extracted" FAIL
+    echo; echo "$fails case(s) FAILED"; exit 1
+fi
+note "the data geometry block can be extracted" OK
+
+run_data_device() {
+    sh -c "PARTED=$WORK/bin/parted; BLKID=$WORK/bin/blkid; \
+           . $WORK/dd.sh; . $WORK/geo.sh; data_device" 2>/dev/null
+}
 run_data_start()  { sh -c ". $WORK/dd.sh; data_start" 2>/dev/null; }
 
 # The board in use. DATA is a partition number, and the reader turns it into a
@@ -97,6 +163,120 @@ if grep -n 'mmcblk0p[0-9]' "$WORK/dd.sh" | grep -qv '^[0-9]*:#'; then
 else
     note "the data device block names no partition of its own" OK
 fi
+
+echo
+echo "===== a description with no DATA finds the partition on the card ====="
+#
+# The copy the application tarball carries declares no layout. It describes the
+# device, and the card under it is whatever Sipeed's installer or an older build
+# made, so the partition number is not something this file can state. It used to
+# carry the image's own DATA=6, which named /dev/mmcblk0p6 on a stock card whose
+# highest partition is p3: the device did not exist, /data was not mounted, and
+# upstream's own behaviour of mounting p3 was lost.
+#
+# The two cards that reach this path want two different numbers, and on each of
+# them the other card's number is wrong in a way that matters. p3 is the data
+# partition of a stock card and a root slot of an A/B one.
+
+# A declared DATA still wins, whatever the card says. A card the build laid out
+# is authoritative about itself.
+card "$WORK/stock.table"
+fs mmcblk0p3 '/dev/mmcblk0p3: LABEL="data" UUID="EE8B-6CB5" TYPE="exfat"'
+deviceinfo DISK=/dev/mmcblk0 SLOT_A=2 SLOT_B=3 RECOVERY=5 DATA=6 BOOT_PART=1
+got=$(run_data_device)
+[ "$got" = /dev/mmcblk0p6 ] \
+    && note "a declared DATA beats what is on the card" OK \
+    || note "a declared DATA gave '$got', want /dev/mmcblk0p6" FAIL
+
+# A stock card. p3 holds the data filesystem, and upstream labels it data.
+card "$WORK/stock.table"
+fs mmcblk0p1 '/dev/mmcblk0p1: LABEL="BOOT" TYPE="vfat"'
+fs mmcblk0p2 '/dev/mmcblk0p2: LABEL="rootfs" TYPE="ext4"'
+fs mmcblk0p3 '/dev/mmcblk0p3: LABEL="data" UUID="EE8B-6CB5" TYPE="exfat"'
+deviceinfo DISK=/dev/mmcblk0 BOOT_PART=1 DATA_FS=exfat
+got=$(run_data_device)
+[ "$got" = /dev/mmcblk0p3 ] \
+    && note "a stock card gives p3" OK \
+    || note "a stock card gave '$got', want /dev/mmcblk0p3" FAIL
+
+# An A/B card laid out before the image carried a description. Here p3 is root B
+# and the data partition is p6, so the stock number is a running system.
+card "$WORK/ab.table"
+fs mmcblk0p1 '/dev/mmcblk0p1: LABEL="BOOT" TYPE="vfat"'
+fs mmcblk0p2 '/dev/mmcblk0p2: LABEL="slot-a" TYPE="ext4"'
+fs mmcblk0p3 '/dev/mmcblk0p3: LABEL="slot-b" TYPE="ext4"'
+fs mmcblk0p5 '/dev/mmcblk0p5: LABEL="recovery" TYPE="ext4"'
+fs mmcblk0p6 '/dev/mmcblk0p6: LABEL="data" UUID="9DA7-0008" TYPE="exfat"'
+deviceinfo DISK=/dev/mmcblk0 BOOT_PART=1 DATA_FS=exfat
+got=$(run_data_device)
+[ "$got" = /dev/mmcblk0p6 ] \
+    && note "an A/B card with no DATA gives p6, not the stock p3" OK \
+    || note "an A/B card gave '$got', want /dev/mmcblk0p6" FAIL
+
+# A data partition an older installer made without a label. busybox blkid prints
+# no TYPE field, so this case answers only on a board with util-linux, which is
+# why the label is the first test and the type is the second.
+card "$WORK/stock.table"
+fs mmcblk0p2 '/dev/mmcblk0p2: LABEL="rootfs" TYPE="ext4"'
+fs mmcblk0p3 '/dev/mmcblk0p3: UUID="EE8B-6CB5" TYPE="exfat"'
+deviceinfo DISK=/dev/mmcblk0 BOOT_PART=1 DATA_FS=exfat
+got=$(run_data_device)
+[ "$got" = /dev/mmcblk0p3 ] \
+    && note "an unlabelled partition is found by its filesystem type" OK \
+    || note "an unlabelled data partition gave '$got', want /dev/mmcblk0p3" FAIL
+
+# Nothing on the card holds a data filesystem. An empty answer and a message on
+# the console are the whole point: the alternative is a typed partition number,
+# and on one of the two layouts that number is a root slot.
+card "$WORK/stock.table"
+fs mmcblk0p2 '/dev/mmcblk0p2: LABEL="rootfs" TYPE="ext4"'
+deviceinfo DISK=/dev/mmcblk0 BOOT_PART=1 DATA_FS=exfat
+got=$(run_data_device)
+[ -z "$got" ] \
+    && note "no data filesystem anywhere gives no device" OK \
+    || note "no data filesystem anywhere guessed '$got'" FAIL
+
+if grep -q 'no data device: none declared' "$S01"; then
+    note "and the boot path says so on the console" OK
+else
+    note "an empty data device is not reported on the console" FAIL
+fi
+
+# A partition the description calls a slot is never the data device, whatever
+# blkid says about it. A card whose old data filesystem was written over by a
+# slot image still carries the label until something formats it.
+card "$WORK/stock.table"
+fs mmcblk0p3 '/dev/mmcblk0p3: LABEL="data" TYPE="exfat"'
+deviceinfo DISK=/dev/mmcblk0 BOOT_PART=1 SLOT_A=2 SLOT_B=3 DATA_FS=exfat
+got=$(run_data_device)
+[ -z "$got" ] \
+    && note "a declared slot is never taken as the data device" OK \
+    || note "a declared slot was taken as the data device: '$got'" FAIL
+
+# And neither is the boot partition.
+card "$WORK/stock.table"
+fs mmcblk0p1 '/dev/mmcblk0p1: LABEL="data" TYPE="exfat"'
+deviceinfo DISK=/dev/mmcblk0 BOOT_PART=1 DATA_FS=exfat
+got=$(run_data_device)
+[ -z "$got" ] \
+    && note "the boot partition is never taken as the data device" OK \
+    || note "the boot partition was taken as the data device: '$got'" FAIL
+
+# The block builds a device path from a partition number, and so does the
+# reader's part verb. Two spellings of one rule drift, so they are held against
+# each other here.
+card "$WORK/no.table"
+for disk in /dev/mmcblk0 /dev/sda /dev/nvme0n1; do
+    deviceinfo DISK="$disk" DATA=6 BOOT_PART=1
+    want=$(ironkvm-deviceinfo part DATA 2>/dev/null)
+    got=$(sh -c "PARTED=$WORK/bin/parted; BLKID=$WORK/bin/blkid; \
+                 . $WORK/dd.sh; . $WORK/geo.sh; part_device 6" 2>/dev/null)
+    [ -n "$want" ] && [ "$got" = "$want" ] \
+        && note "part_device agrees with the reader on $disk" OK \
+        || note "part_device gave '$got' and the reader '$want' on $disk" FAIL
+done
+
+card "$WORK/no.table"
 
 echo
 echo "===== the reader is found on a board that has none on PATH ====="

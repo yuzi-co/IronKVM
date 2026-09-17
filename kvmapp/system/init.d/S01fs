@@ -17,8 +17,10 @@
 #
 # Nothing here falls back to /dev/mmcblk0p3 any more. That was a partition
 # number typed into a generic script, and on a layout where p3 is a root
-# filesystem it named a slot. A board with no description mounts no /data and
-# says so on the console, which is a fault somebody can see and repair.
+# filesystem it named a slot. The second step below finds the data partition by
+# what is on it rather than by its number, and a board where nothing holds a
+# data filesystem mounts no /data and says so on the console, which is a fault
+# somebody can see and repair.
 #
 # The reader is found in two steps. An image built by ironkvm-dist installs it
 # at /usr/bin/ironkvm-deviceinfo, so the bare name resolves through PATH. A
@@ -45,7 +47,51 @@ fi
 devinfo_get() { "$DEVINFO" get "$1" 2>/dev/null; }
 devinfo_part() { "$DEVINFO" part "$1" 2>/dev/null; }
 
-data_device() { devinfo_part DATA; }
+# Where /data lives. Declared first, found on the card second.
+#
+# A description that declares DATA wins, because a card the build laid out is
+# authoritative about itself. The copy the application tarball carries declares
+# no layout at all: it describes the device, and the card under it is whatever
+# Sipeed's installer or an older build made. So the second step reads the
+# partition table and looks for the partition that holds the data filesystem.
+# data_device_from_table is in the data geometry block, which is the one place
+# that reads the table.
+#
+# This is why no number is typed here. The tarball used to carry the image's own
+# DATA=6, which named /dev/mmcblk0p6 on a stock card whose highest partition is
+# p3. The device did not exist, /data was not mounted, and upstream's own
+# behaviour of mounting p3 was lost.
+data_device() {
+    dev=$(devinfo_part DATA)
+    if [ -n "$dev" ]
+    then
+        printf '%s\n' "$dev"
+        return 0
+    fi
+    data_device_from_table
+}
+
+# The devices the description keeps for something that is not data: the boot
+# partition, the two slots and recovery.
+#
+# A description that declares none of them prints nothing, and every caller then
+# treats no device as reserved. That is the honest answer for a description that
+# describes the device and not the card.
+reserved_devices() {
+    for key in BOOT_PART SLOT_A SLOT_B RECOVERY
+    do
+        devinfo_part "$key"
+    done
+}
+
+is_reserved_device() {
+    [ -n "$1" ] || return 1
+    for reserved in $(reserved_devices)
+    do
+        [ "$reserved" = "$1" ] && return 0
+    done
+    return 1
+}
 
 # Which sector the data partition starts at.
 #
@@ -83,6 +129,7 @@ data_start() { devinfo_get DATA_START; }
 # block above defines. This block is also extracted and sourced on its own by
 # test-s01fs-provision.sh, which sets DISK itself.
 DISK=${DISK:-$(devinfo_get DISK)}
+DATA_FS=${DATA_FS:-$(devinfo_get DATA_FS)}
 PARTED=${PARTED:-parted}
 BLKID=${BLKID:-blkid}
 PARTITIONS=${PARTITIONS:-/proc/partitions}
@@ -126,6 +173,76 @@ data_partition_ready() {
     blocks=$(awk -v n="$(basename "$1")" '$4 == n { print $3 }' "$PARTITIONS" 2>/dev/null)
     [ -n "$blocks" ] || return 1
     [ "$((blocks * 2))" = "$(part_size_sectors "${1##*p}")" ]
+}
+
+# The device path of a partition number on this disk.
+#
+# The separator belongs to the disk: mmcblk0 and nvme0n1 end in a digit and take
+# a p, sda and vda do not. This is the same rule the reader's part verb applies.
+# test-s01fs-datadev.sh holds the two against each other, because a rule written
+# twice is a rule that drifts.
+part_device() {
+    case "$DISK" in
+        '') ;;
+        *[0-9]) printf '%s\n' "${DISK}p$1" ;;
+        *) printf '%s\n' "${DISK}$1" ;;
+    esac
+}
+
+# Every partition number the table declares, in the order the table lists them.
+part_numbers() {
+    table | awk -F: 'NR > 2 { gsub(/[^0-9]/, "", $1); if ($1 != "") print $1 }'
+}
+
+# The data partition of a card whose description does not declare one.
+#
+# Two kinds of card arrive here. A board on Sipeed's firmware has the stock
+# layout, where the data partition is p3. A card laid out by a build from before
+# the image carried a description has the A/B layout, where p3 is a root slot
+# and the data partition is p6. The number is therefore not something a generic
+# script can know, and the naive stock guess is a root filesystem on the other
+# card. So this asks each partition what it holds.
+#
+# The evidence is what blkid prints. provision_data and provision_disk0 both
+# make the filesystem with `mkfs.exfat -L data`, so the label is the strong
+# signal and it is the one every card this script made carries. The filesystem
+# type is the weak one: busybox blkid prints no TYPE field at all, so it answers
+# only on a board with util-linux, and it is a fallback for a data partition
+# that an older installer made without a label.
+#
+# Reserved partitions are skipped before blkid is even asked. Where the
+# description declares slots, this can never hand back one of them.
+#
+# Nothing is guessed. A card where no partition holds a data filesystem gets an
+# empty answer, and the caller says so on the console.
+data_device_from_table() {
+    typed=
+    for n in $(part_numbers)
+    do
+        candidate=$(part_device "$n")
+        [ -n "$candidate" ] || continue
+        is_reserved_device "$candidate" && continue
+
+        found=$("$BLKID" "$candidate" 2>/dev/null)
+        [ -n "$found" ] || continue
+
+        case "$found" in
+            *'LABEL="data"'*)
+                printf '%s\n' "$candidate"
+                return 0
+                ;;
+        esac
+
+        if [ -z "$typed" ] && [ -n "$DATA_FS" ]
+        then
+            case "$found" in
+                *"TYPE=\"$DATA_FS\""*) typed=$candidate ;;
+            esac
+        fi
+    done
+
+    [ -n "$typed" ] && printf '%s\n' "$typed"
+    return 0
 }
 
 # --- end data geometry ---
@@ -571,7 +688,14 @@ then
                 provision_data "$DATADEV" "$DATASTART" || true
         fi
 
-        if [ -e "$DATADEV" ]
+        if [ -z "$DATADEV" ]
+        then
+                # No number declared, and no partition on the card holds a data
+                # filesystem. Saying so is the whole point: the alternative is a
+                # guessed partition number, and on one of the two layouts that
+                # number is a root slot.
+                printf "(no data device: none declared, and none found on %s) " "$DISK"
+        elif [ -e "$DATADEV" ]
         then
                 mkdir -p /data
                 # The result is tested. This script used to discard it and print

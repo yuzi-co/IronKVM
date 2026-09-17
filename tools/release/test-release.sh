@@ -229,9 +229,15 @@ check "the description is this board's" \
        sh "$ROOT/kvmapp/system/ironkvm-deviceinfo" get DEVICE 2>/dev/null)" "sipeed-nanokvm"
 # The reader checks the whole file before it prints anything, so a read that
 # works is a file every other read will work on too.
+#
+# BOOT_PART, not DATA. The copy the tarball carries declares no layout: it is
+# read only on a board that does not run an IronKVM image, and that card has the
+# stock layout with no sixth partition. Partition 1 is the boot partition of
+# both layouts, so it is the one partition number the file can state.
+# tools/deviceinfo/test-ironkvm-deviceinfo.sh holds the rest of that rule.
 check "and the reader accepts every line of it" \
     "$(DEVICEINFO_PATHS="$ROOT/kvmapp/system/deviceinfo" \
-       sh "$ROOT/kvmapp/system/ironkvm-deviceinfo" part DATA 2>/dev/null)" "/dev/mmcblk0p6"
+       sh "$ROOT/kvmapp/system/ironkvm-deviceinfo" part BOOT_PART 2>/dev/null)" "/dev/mmcblk0p1"
 
 # Two builds never collide on a hashed asset name, so a merge would leave the
 # official bundle's files beside the fork's and serve both.

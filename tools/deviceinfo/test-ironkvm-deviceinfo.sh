@@ -107,5 +107,38 @@ part SLOT_A >/dev/null; st=$?
 DEVICEINFO_PATHS="$WORK/a" sh "$READER" >/dev/null 2>&1; st=$?
 [ "$st" = 2 ]; t "no arguments exits 2 (got $st)" $?
 
+# The description the application tarball carries, at kvmapp/system/deviceinfo.
+#
+# It is read only on a board that does not run an IronKVM image, which means a
+# board on Sipeed's firmware, whose card has the stock layout: p1 boot, p2 root,
+# p3 data, and no sixth partition. It was a byte copy of the image's own
+# description, so it declared DATA=6. S01fs then named /dev/mmcblk0p6 on a card
+# whose highest partition is p3, /data was not mounted, and upstream's own
+# behaviour of mounting p3 was lost.
+#
+# So it states what the device is and nothing about how a card is laid out. The
+# scripts find the data partition on the card itself.
+SHIPPED=$ROOT/kvmapp/system/deviceinfo
+shipped() { DEVICEINFO_PATHS="$SHIPPED" sh "$READER" "$@" 2>"$WORK/err"; }
+
+[ -f "$SHIPPED" ]; t "the tarball carries a description" $?
+
+# The reader checks the whole file before it prints anything, so one read that
+# works is a file every other read works on.
+[ "$(shipped get DEVICE)" = sipeed-nanokvm ]; t "the reader accepts every line of it" $?
+[ "$(shipped get DISK)" = /dev/mmcblk0 ]; t "it names the disk" $?
+[ "$(shipped get DATA_FS)" = exfat ]; t "it names the data filesystem" $?
+
+# Partition 1 is the boot partition of both layouts, so this one number is a
+# fact about the device.
+[ "$(shipped part BOOT_PART)" = /dev/mmcblk0p1 ]; t "it names the boot partition" $?
+
+# And every key that is true only of a card the build laid out is gone.
+for key in SLOT_A SLOT_B RECOVERY DATA KERNEL_IN_SLOT SLOT_SIZE_MIB DATA_START
+do
+    shipped get "$key" > /dev/null; st=$?
+    [ "$st" = 1 ]; t "it declares no $key (got $st)" $?
+done
+
 sh -n "$READER"; t "the reader parses" $?
 exit $fails
