@@ -1125,6 +1125,26 @@ alone because both are read at startup to recover the last known resolution, so
 moving them changes what the board does on its first frame after a reboot. That
 wants its own measurement first.
 
+### The screen settings belong to the board, not to a slot
+
+`/kvmapp` is part of each slot's root filesystem. The stream type, frame rate,
+quality, resolution, codec and GOP were therefore kept once per slot, and a slot
+switch changed all six without a message.
+
+`share_screen_settings` in `S95nanokvm` replaces each of the six files with a
+link to `/etc/kvm/screen`. `S02identity` binds `/data/identity` over `/etc/kvm`
+earlier in the boot, so both slots read and write one copy on `/data`. The links
+live on the slot because `/data` is exFAT, which has no symlinks.
+
+The first slot to start with this change seeds the shared copy from its own
+files. The other slot discards its own files and uses the shared copy. If the
+board has no `/data`, the directory is on the root filesystem and the settings
+stay per slot.
+
+`tools/vidiag/test-screen-settings.sh` runs the shipped function against a
+scratch tree. It needs a filesystem with symlinks, so run it under Linux or on
+the board.
+
 ### What the first sweep found, and what it did not
 
 The reader recorded two events. Both are server restarts that the operator
