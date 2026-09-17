@@ -4,14 +4,14 @@ Scripts for work that happens on or to a device, rather than inside one of the
 four deliverables. Nothing here is part of a build or an install package; these
 are operator tools.
 
+The A/B slot tooling that used to be in `tools/abslots` lives in the ironkvm-dist repository.
+
 | Path          | What it does                                                          |
 | ------------- | --------------------------------------------------------------------- |
 | `build/`      | App-only cross-compile toolchain: `NanoKVM-Server` without MaixCDK.    |
 | `build/test-pinned-inputs.sh` | Hold both builder images to a pinned MaixCDK commit and a checksum for every archive they download. |
 | `build/test-pinned-actions.sh` | Hold every GitHub action in `.github/workflows/` to a commit sha, not to a tag that its owner can move. |
 | `slots/`      | A/B root filesystems: patch the initramfs, build and install a slot.   |
-| `abslots/`    | A/B root filesystems: build the card image and the update package.     |
-| `abslots/device/S00awatchdog` | Falls back if a boot never becomes reachable: undo an init.d update, return a failed trial to the trusted slot, or go to recovery. |
 | `zram/`       | Build `zram.ko`/`zsmalloc.ko` for the stock kernel. The web UI enables them. |
 | `fbmem/`      | Disable the unused framebuffer reservation in `boot.sd`. Returns 8MB.  |
 | `ionmem/`     | Shrink the ION carveout in `boot.sd`. Returns 19MB at the size installed. |

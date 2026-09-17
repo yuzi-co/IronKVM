@@ -512,7 +512,7 @@ case "$1" in
     echo -n kvm > /boot/hostname.prefix
 
     # The stock rootfs ships /root and this fork's images do not.
-    # tools/abslots/manifest/root.manifest removes it, because a running board
+    # The ironkvm-dist image manifest removes it, because a running board
     # accumulates about 132MB of operator state there and none of it belongs in
     # an image. The profile below and the web terminal both need the directory
     # to exist: server/service/vm/terminal.go starts its shell there, and

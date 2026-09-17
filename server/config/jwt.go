@@ -16,10 +16,11 @@ const (
 	// none, which is every board by default.
 	//
 	// /etc/kvm is the right home for it. On an A/B board that directory is a
-	// bind mount of /data/identity (tools/abslots/device/S02identity), so a key
-	// written here survives a slot switch as well as a restart. It is a
-	// dot-file for the same reason .picoclaw_internal_token is: a secret is not
-	// a setting, and nothing should list it beside the files an operator edits.
+	// bind mount of /data/identity (S02identity, in the ironkvm-dist
+	// repository), so a key written here survives a slot switch as well as a
+	// restart. It is a dot-file for the same reason .picoclaw_internal_token
+	// is: a secret is not a setting, and nothing should list it beside the
+	// files an operator edits.
 	jwtSecretFile = "/etc/kvm/.jwt_secret"
 
 	// A stored key shorter than this did not come from generateSecretKey, which

@@ -42,20 +42,20 @@ Two builds from identical inputs do not produce identical bytes: `mkimage`
 stamps the FIT with the current time. Compare the verification output, not
 sha256 across builds.
 
-This applies to `tools/slots` only. `tools/abslots/repack-boot.sh` sets
-`SOURCE_DATE_EPOCH` to the repository's last commit time, so two builds of one
-commit do agree, and `tools/abslots/test-reproducible.sh` proves it. That change
-has not yet booted on hardware. The timestamp is informational in a FIT and
-U-Boot verifies the hashes rather than the clock, so the risk is small and it is
-not zero: the first board to take an image built that way should be one somebody
-can reach.
+This applies to `tools/slots` only. The ironkvm-dist repository's
+`abslots/repack-boot.sh` sets `SOURCE_DATE_EPOCH` to the repository's last
+commit time, so two builds of one commit do agree, and its
+`abslots/test-reproducible.sh` proves it. That change has not yet booted on
+hardware. The timestamp is informational in a FIT and U-Boot verifies the hashes
+rather than the clock, so the risk is small and it is not zero: the first board
+to take an image built that way should be one somebody can reach.
 
 ## An image is smaller than the slot it goes in
 
-`tools/abslots/build-image.sh` builds at whatever size it is given, and the
-Alpine image is built at 256 MiB for a 2 GiB slot. `S01fs` grows the filesystem
-to fill the partition on the first boot of that slot, so the size of the
-partition no longer decides what an install costs.
+The ironkvm-dist repository's `abslots/build-image.sh` builds at whatever size
+it is given, and the Alpine image is built at 256 MiB for a 2 GiB slot. `S01fs`
+grows the filesystem to fill the partition on the first boot of that slot, so
+the size of the partition no longer decides what an install costs.
 
 Three things follow, and all three have a gate:
 

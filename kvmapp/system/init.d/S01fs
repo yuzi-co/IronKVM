@@ -8,9 +8,9 @@
 # S02identity had nothing to bind, and the board came up with the image's own
 # /etc/kvm rather than the device's.
 #
-# /etc/nanokvm-slots.conf is written into every image by tools/abslots. A board
-# that has not been migrated has no such file and keeps the old behaviour, which
-# is why the fallback is p3 rather than an error.
+# /etc/nanokvm-slots.conf is written into every image by the ironkvm-dist
+# repository. A board that has not been migrated has no such file and keeps the
+# old behaviour, which is why the fallback is p3 rather than an error.
 SLOT_CONF=${SLOT_CONF:-/etc/nanokvm-slots.conf}
 
 data_device() {
