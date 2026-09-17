@@ -27,6 +27,22 @@ trap 'rm -rf "$WORK"' EXIT
 fails=0
 note() { printf '  %-62s %s\n' "$1" "$2"; [ "$2" = FAIL ] && fails=$((fails + 1)); return 0; }
 
+# The device description, read by the real reader through a stub that puts it on
+# PATH under the name S01fs calls. The blocks below are sourced on their own, so
+# each case that needs the description says which one it is working with.
+READER=${READER:-$(cd "$(dirname "$0")/../.." && pwd)/kvmapp/system/ironkvm-deviceinfo}
+[ -f "$READER" ] || { echo "needs kvmapp/system/ironkvm-deviceinfo"; exit 2; }
+mkdir -p "$WORK/bin"
+cat > "$WORK/bin/ironkvm-deviceinfo" <<STUB
+#!/bin/sh
+DEVICEINFO_PATHS="$WORK/deviceinfo" exec sh "$READER" "\$@"
+STUB
+chmod 755 "$WORK/bin/ironkvm-deviceinfo"
+PATH="$WORK/bin:$PATH"
+export PATH
+
+deviceinfo() { printf '%s\n' "$@" > "$WORK/deviceinfo"; }
+
 sed -n '/^# --- data geometry ---/,/^# --- end data geometry ---/p' "$S01" > "$WORK/geo.sh"
 if [ ! -s "$WORK/geo.sh" ]; then
     note "the data geometry block can be extracted" FAIL
@@ -91,10 +107,13 @@ BYT;
 5:8437760s:10534911s:2097152s:ext4::;
 T
 
+# DISK is set here rather than left to the description. The geometry block is
+# sourced on its own, without the reader helpers the data device block defines,
+# and the card these cases describe is the one the tables above are taken from.
 geo() {
     PARTED_TABLE=$1; PARTED_LOG=$WORK/plog; shift
     export PARTED_TABLE PARTED_LOG
-    sh -c "PARTED=$WORK/parted; . $WORK/geo.sh; $*" 2>/dev/null
+    sh -c "DISK=/dev/mmcblk0; PARTED=$WORK/parted; . $WORK/geo.sh; $*" 2>/dev/null
 }
 
 echo "===== the table is read, not guessed ====="
@@ -132,7 +151,7 @@ echo "===== a filesystem is recognised by output, not by TYPE or by status =====
 hasfs() {
     BLKID_OUT=$1
     export BLKID_OUT
-    sh -c "BLKID=$WORK/blkid; . $WORK/geo.sh; has_filesystem /dev/mmcblk0p6 && echo yes || echo no" 2>/dev/null
+    sh -c "DISK=/dev/mmcblk0; BLKID=$WORK/blkid; . $WORK/geo.sh; has_filesystem /dev/mmcblk0p6 && echo yes || echo no" 2>/dev/null
 }
 
 # This is the exact output busybox blkid gives for the data partition in use.
@@ -173,7 +192,7 @@ PART
     : > "$WORK/mmcblk0p6"
     PARTED_TABLE=$WORK/full.table; PARTED_LOG=$WORK/plog
     export PARTED_TABLE PARTED_LOG
-    sh -c "PARTED=$WORK/parted; PARTITIONS=$WORK/partitions; . $WORK/geo.sh; \
+    sh -c "DISK=/dev/mmcblk0; PARTED=$WORK/parted; PARTITIONS=$WORK/partitions; . $WORK/geo.sh; \
            data_partition_ready $WORK/mmcblk0p6 && echo yes || echo no" 2>/dev/null
 }
 
@@ -190,34 +209,37 @@ got=$(ready 1024)
                 || note "a stale node was accepted, which would format the wrong size" FAIL
 
 echo
-echo "===== the start sector comes from the slot configuration ====="
+echo "===== the start sector comes from the device description ====="
 
-cat > "$WORK/slots.conf" <<'CONF'
-SLOT_A=/dev/mmcblk0p2
-SLOT_B=/dev/mmcblk0p3
-RECOVERY=/dev/mmcblk0p5
-DATA_DEV=/dev/mmcblk0p6
-DATA_START=10543104
-CONF
+# data_start lives in the data device block, beside the reader helpers it uses.
+sed -n '/^# --- data device ---/,/^# --- end data device ---/p' "$S01" > "$WORK/dd.sh"
+[ -s "$WORK/dd.sh" ] \
+    && note "the data device block can be extracted" OK \
+    || note "the data device block can be extracted" FAIL
 
-got=$( SLOT_CONF="$WORK/slots.conf" sh -c ". $WORK/geo.sh; data_start" )
+start() { sh -c ". $WORK/dd.sh; data_start" 2>/dev/null; }
+
+deviceinfo DISK=/dev/mmcblk0 SLOT_A=2 SLOT_B=3 RECOVERY=5 DATA=6 BOOT_PART=1 DATA_START=10543104
+got=$(start)
 [ "$got" = 10543104 ] \
-    && note "a conf with DATA_START is honoured" OK \
-    || note "a conf with DATA_START gave '$got'" FAIL
+    && note "a description with DATA_START is honoured" OK \
+    || note "a description with DATA_START gave '$got'" FAIL
 
-# An image from before this change, or a board that was never migrated. It must
-# print nothing, so that the caller makes no partition at all. Partitioning a
-# board that did not declare where its data goes is worse than not partitioning.
-printf 'DATA_DEV=/dev/mmcblk0p6\n' > "$WORK/old.conf"
-got=$( SLOT_CONF="$WORK/old.conf" sh -c ". $WORK/geo.sh; data_start" )
+# The copy the application tarball carries, which the build never wrote a start
+# sector into. It must print nothing, so that the caller makes no partition at
+# all. Partitioning a board that did not declare where its data goes is worse
+# than not partitioning.
+deviceinfo DISK=/dev/mmcblk0 SLOT_A=2 SLOT_B=3 DATA=6 BOOT_PART=1
+got=$(start)
 [ -z "$got" ] \
-    && note "a conf without DATA_START gives nothing" OK \
-    || note "a conf without DATA_START gave '$got'" FAIL
+    && note "a description without DATA_START gives nothing" OK \
+    || note "a description without DATA_START gave '$got'" FAIL
 
-got=$( SLOT_CONF="$WORK/absent.conf" sh -c ". $WORK/geo.sh; data_start" )
+rm -f "$WORK/deviceinfo"
+got=$(start)
 [ -z "$got" ] \
-    && note "no conf at all gives nothing" OK \
-    || note "no conf gave '$got'" FAIL
+    && note "no description at all gives nothing" OK \
+    || note "no description gave '$got'" FAIL
 
 echo
 echo "===== the partition and the filesystem are made once, and only when needed ====="
@@ -257,7 +279,7 @@ major minor  #blocks  name
  179        6   $4 mmcblk0p6
 PART
         export PARTED_TABLE PARTED_LOG BLKID_OUT MKFS_LOG PARTED_TABLE_GROWN PARTED_DEV
-        sh -c "PARTED=$WORK/parted; BLKID=$WORK/blkid; \
+        sh -c "DISK=/dev/mmcblk0; PARTED=$WORK/parted; BLKID=$WORK/blkid; \
                MKFS_EXFAT=$WORK/mkfs.exfat; PARTITIONS=$WORK/partitions; \
                . $WORK/geo.sh; . $WORK/prov.sh; \
                provision_data $WORK/mmcblk0p6 10543104" > /dev/null 2>&1

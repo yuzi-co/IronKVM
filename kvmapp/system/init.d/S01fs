@@ -1,29 +1,43 @@
 #!/bin/sh
 
 # --- data device ---
-# Where /data lives, from configuration rather than from a partition number.
+# Where /data lives, from the device description rather than from a partition
+# number typed into this script.
 #
 # The A/B layout puts root B on p3 and /data on p6. This script mounted
 # /dev/mmcblk0p3 on /data directly, so the first A/B boot left /data unmounted,
 # S02identity had nothing to bind, and the board came up with the image's own
 # /etc/kvm rather than the device's.
 #
-# /etc/nanokvm-slots.conf is written into every image by the ironkvm-dist
-# repository. A board that has not been migrated has no such file and keeps the
-# old behaviour, which is why the fallback is p3 rather than an error.
-SLOT_CONF=${SLOT_CONF:-/etc/nanokvm-slots.conf}
+# The description is at /usr/share/ironkvm/deviceinfo on an image built by
+# ironkvm-dist, and at /kvmapp/system/deviceinfo on a board that runs Sipeed's
+# firmware. ironkvm-deviceinfo reads it. Its `part` verb turns a partition
+# number into a device path, because the separator belongs to the disk: mmcblk0
+# takes a p and sda does not.
+#
+# Nothing here falls back to /dev/mmcblk0p3 any more. That was a partition
+# number typed into a generic script, and on a layout where p3 is a root
+# filesystem it named a slot. A board with no description mounts no /data and
+# says so on the console, which is a fault somebody can see and repair.
+DEVINFO=${DEVINFO:-ironkvm-deviceinfo}
 
-data_device() {
-    if [ -r "$SLOT_CONF" ]; then
-        DATA_DEV=
-        . "$SLOT_CONF"
-        if [ -n "$DATA_DEV" ]; then
-            echo "$DATA_DEV"
-            return 0
-        fi
-    fi
-    echo /dev/mmcblk0p3
-}
+devinfo_get() { "$DEVINFO" get "$1" 2>/dev/null; }
+devinfo_part() { "$DEVINFO" part "$1" 2>/dev/null; }
+
+data_device() { devinfo_part DATA; }
+
+# Which sector the data partition starts at.
+#
+# Prints nothing when the description does not say. A board that did not declare
+# where its data goes must never be partitioned by this script: that is a board
+# on Sipeed's firmware, or an image from before this change, and guessing at a
+# start sector on a card whose layout is unknown is how a root slot gets
+# overwritten.
+#
+# DATA_START is written into the image by the build, from the table it just
+# made. No device file carries it, so it is present only on a card that was laid
+# out deliberately.
+data_start() { devinfo_get DATA_START; }
 # --- end data device ---
 
 # --- data geometry ---
@@ -43,7 +57,11 @@ data_device() {
 # parted cannot make the kernel re-read the whole table, so it warns and returns
 # 1, having already done the work. Measured on this board: both the resize and
 # the mkpart return 1 and both succeed.
-DISK=${DISK:-/dev/mmcblk0}
+#
+# The disk comes from the device description, through the helper the data device
+# block above defines. This block is also extracted and sourced on its own by
+# test-s01fs-provision.sh, which sets DISK itself.
+DISK=${DISK:-$(devinfo_get DISK)}
 PARTED=${PARTED:-parted}
 BLKID=${BLKID:-blkid}
 PARTITIONS=${PARTITIONS:-/proc/partitions}
@@ -89,24 +107,6 @@ data_partition_ready() {
     [ "$((blocks * 2))" = "$(part_size_sectors "${1##*p}")" ]
 }
 
-# Which sector the data partition starts at, from the slot configuration.
-#
-# Prints nothing when the configuration does not say. A board that did not
-# declare where its data goes must never be partitioned by this script: that is
-# an unmigrated board or an image from before this change, and guessing at a
-# start sector on a card whose layout is unknown is how a root slot gets
-# overwritten.
-data_start() {
-    if [ -r "$SLOT_CONF" ]; then
-        DATA_START=
-        . "$SLOT_CONF"
-        if [ -n "$DATA_START" ]; then
-            echo "$DATA_START"
-            return 0
-        fi
-    fi
-    echo ""
-}
 # --- end data geometry ---
 
 # --- data provisioning ---
@@ -209,10 +209,15 @@ mount_data() {
 #
 # The branch is already gated on /etc/kvm.disk0, and the image manifest creates
 # that marker, which is what stopped it on the first real A/B boot. This is the
-# second lock: a layout that names its own devices has been partitioned
-# deliberately and must never be repartitioned by a boot script.
+# second lock: a layout that declares where its data partition starts has been
+# partitioned deliberately and must never be repartitioned by a boot script.
+#
+# DATA_START is the test rather than the description itself. The build writes
+# that key into the image's own deviceinfo and no device file carries it, so the
+# copy in the application tarball does not answer here. A board on Sipeed's
+# firmware therefore still provisions its stock data disk the way it always did.
 may_autopartition() {
-    [ -r "$SLOT_CONF" ] && return 1
+    [ -n "$("${DEVINFO:-ironkvm-deviceinfo}" get DATA_START 2>/dev/null)" ] && return 1
     return 0
 }
 # --- end autopartition guard ---
@@ -246,6 +251,14 @@ may_autopartition() {
 # already does both. Its exit status is ignored for the reason recorded there:
 # parted returns 1 on a busy disk after it has succeeded, so the outcome is
 # checked instead.
+#
+# These two are the one pair of device names this script still spells out, and
+# they are deliberate. This branch belongs to the stock layout, where the data
+# partition is the third primary on the SoC's own SD card, which is what the
+# mkpart below creates. DATA in the device description is not that partition: it
+# names p6 of the A/B layout, and a stock card has no p6, so reading it here
+# would make this branch ask for a partition that never appears and report a
+# failure on every boot of a board it is supposed to provision.
 DISK0_DISK=${DISK0_DISK:-/dev/mmcblk0}
 DISK0_DEV=${DISK0_DEV:-/dev/mmcblk0p3}
 DISK0_MARKER=${DISK0_MARKER:-/etc/kvm.disk0}
@@ -441,17 +454,56 @@ grow_root() {
 }
 # --- end root filesystem grow ---
 
+# --- stock root grow ---
+# Grow the root partition, and the filesystem in it, on a card that has never
+# been laid out. This is upstream's own first boot path. needs_resize above is
+# what decides that the card is still in the state it was flashed in.
+#
+# It used to name /dev/mmcblk0 and partition 2 outright. Partition 2 is slot A,
+# so a board that booted from slot B would have grown the partition it was not
+# running from, over the top of the one it was. The partition to grow is the one
+# the root filesystem is mounted from, and the kernel already reports it.
+#
+# The disk comes from the device description, so nothing here names a device.
+# An empty disk, or a root that is not a partition of it, means the board cannot
+# say what to grow, and a resizepart with a missing argument on a card whose
+# layout is unknown is how a partition table gets destroyed. So it says so and
+# does nothing.
+#
+# MOUNTS, PARTED and RESIZE2FS are set above as well. They are repeated here
+# because this block is extracted and sourced on its own by test-s01fs-grow.sh,
+# and an empty tool name would run the wrong thing. DISK is set by the data
+# geometry block, and the suite sets it itself.
+MOUNTS=${MOUNTS:-/proc/mounts}
+PARTED=${PARTED:-parted}
+RESIZE2FS=${RESIZE2FS:-resize2fs}
+
+grow_stock_root() {
+    root_dev=$(awk '$2 == "/" && $1 ~ /^\/dev\// { print $1; exit }' "$MOUNTS" 2>/dev/null)
+    # The trailing run of digits is the partition number, on mmcblk0p2 and on
+    # sda2 alike.
+    root_part=${root_dev##*[!0-9]}
+    if [ -z "$DISK" ] || [ -z "$root_dev" ] || [ -z "$root_part" ]; then
+        echo "S01fs: no disk or root partition to grow, leaving the card alone"
+        return 0
+    fi
+
+    # use all sdcard free space for data
+    "$PARTED" -s "$DISK" "resizepart $root_part -0"
+    echo "yes
+    8192MB
+    " | "$PARTED" ---pretend-input-tty "$DISK" "resizepart $root_part 8192MB"
+    # resize data filesystem
+    ("$RESIZE2FS" "$root_dev") &
+    return 0
+}
+# --- end stock root grow ---
+
 if [ "$1" = "start" ]
 then
         if needs_resize
         then
-                # use all sdcard free space for data
-                parted -s /dev/mmcblk0 "resizepart 2 -0"
-                echo "yes
-                8192MB
-                " | parted ---pretend-input-tty /dev/mmcblk0 "resizepart 2 8192MB"
-                # resize data filesystem
-                (resize2fs /dev/mmcblk0p2) &
+                grow_stock_root
         else
                 # The stock path above grows a partition and then the
                 # filesystem in it, and it fires only on a card that has never
@@ -469,7 +521,7 @@ then
         . /etc/profile
         printf "mounting filesystem : "
         mkdir -p /boot
-        mount -t vfat /dev/mmcblk0p1 /boot
+        mount -t vfat "$(devinfo_part BOOT_PART)" /boot
         mount -t configfs configfs /sys/kernel/config
         mount -t debugfs debugfs /sys/kernel/debug
 

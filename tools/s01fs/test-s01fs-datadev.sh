@@ -1,5 +1,5 @@
 #!/bin/sh
-# Check that S01fs finds /data from the slot configuration, not from a
+# Check that S01fs finds /data from the device description, not from a
 # hardcoded partition number.
 #
 #   test-s01fs-datadev.sh [path-to-S01fs]
@@ -24,7 +24,24 @@ trap 'rm -rf "$WORK"' EXIT
 fails=0
 note() { printf '  %-62s %s\n' "$1" "$2"; [ "$2" = FAIL ] && fails=$((fails + 1)); return 0; }
 
-echo "===== the data device comes from configuration ====="
+# S01fs reads the device description through ironkvm-deviceinfo now. The real
+# reader is used, not a stub, because a stub would not catch a key this script
+# asks for under the wrong name.
+READER=${READER:-$(cd "$(dirname "$0")/../.." && pwd)/kvmapp/system/ironkvm-deviceinfo}
+[ -f "$READER" ] || { echo "needs kvmapp/system/ironkvm-deviceinfo"; exit 2; }
+mkdir -p "$WORK/bin"
+cat > "$WORK/bin/ironkvm-deviceinfo" <<STUB
+#!/bin/sh
+DEVICEINFO_PATHS="$WORK/deviceinfo" exec sh "$READER" "\$@"
+STUB
+chmod 755 "$WORK/bin/ironkvm-deviceinfo"
+PATH="$WORK/bin:$PATH"
+export PATH
+
+# Write a description for the next case. Each argument is one KEY=value line.
+deviceinfo() { printf '%s\n' "$@" > "$WORK/deviceinfo"; }
+
+echo "===== the data device comes from the device description ====="
 
 sed -n '/^# --- data device ---/,/^# --- end data device ---/p' "$S01" > "$WORK/dd.sh"
 if [ ! -s "$WORK/dd.sh" ]; then
@@ -33,33 +50,53 @@ if [ ! -s "$WORK/dd.sh" ]; then
 fi
 note "the data device block can be extracted" OK
 
-# With a conf that names p6, that is what must be used.
-cat > "$WORK/slots.conf" <<'CONF'
-SLOT_A=/dev/mmcblk0p2
-SLOT_B=/dev/mmcblk0p3
-RECOVERY=/dev/mmcblk0p5
-DATA_DEV=/dev/mmcblk0p6
-CONF
+run_data_device() { sh -c ". $WORK/dd.sh; data_device" 2>/dev/null; }
+run_data_start()  { sh -c ". $WORK/dd.sh; data_start" 2>/dev/null; }
 
-got=$( SLOT_CONF="$WORK/slots.conf" sh -c ". $WORK/dd.sh; data_device" )
+# The board in use. DATA is a partition number, and the reader turns it into a
+# device with the separator the disk asks for.
+deviceinfo DISK=/dev/mmcblk0 SLOT_A=2 SLOT_B=3 RECOVERY=5 DATA=6 BOOT_PART=1 DATA_START=10543104
+got=$(run_data_device)
 [ "$got" = /dev/mmcblk0p6 ] \
-    && note "a conf naming p6 is honoured" OK \
-    || note "a conf naming p6 gave '$got'" FAIL
+    && note "the data device comes from DISK and DATA" OK \
+    || note "the data device gave '$got', want /dev/mmcblk0p6" FAIL
 
-# With no conf at all, the old single-root layout must still work, because a
-# board that has not been migrated still boots this script.
-got=$( SLOT_CONF="$WORK/absent.conf" sh -c ". $WORK/dd.sh; data_device" )
-[ "$got" = /dev/mmcblk0p3 ] \
-    && note "no conf falls back to p3, the pre-A/B layout" OK \
-    || note "no conf gave '$got', want /dev/mmcblk0p3" FAIL
+# Another board, another disk and another partition. This is the whole point of
+# reading a description: no edit here describes a second layout.
+deviceinfo DISK=/dev/sda SLOT_A=2 SLOT_B=3 DATA=4 BOOT_PART=1 DATA_START=99
+got=$(run_data_device)
+[ "$got" = /dev/sda4 ] \
+    && note "another layout gives another device" OK \
+    || note "another layout gave '$got', want /dev/sda4" FAIL
 
-# A conf with no DATA_DEV line is a conf from an older build. Fall back rather
-# than mount nothing.
-printf 'SLOT_A=/dev/mmcblk0p2\n' > "$WORK/partial.conf"
-got=$( SLOT_CONF="$WORK/partial.conf" sh -c ". $WORK/dd.sh; data_device" )
-[ "$got" = /dev/mmcblk0p3 ] \
-    && note "a conf without DATA_DEV falls back to p3" OK \
-    || note "a conf without DATA_DEV gave '$got'" FAIL
+deviceinfo DISK=/dev/mmcblk0 SLOT_A=2 SLOT_B=3 DATA=6 BOOT_PART=1 DATA_START=10543104
+got=$(run_data_start)
+[ "$got" = 10543104 ] \
+    && note "the data start comes from the same file" OK \
+    || note "the data start gave '$got', want 10543104" FAIL
+
+# A description with no DATA_START is the copy the application tarball carries.
+# The caller makes no partition at all then.
+deviceinfo DISK=/dev/mmcblk0 SLOT_A=2 SLOT_B=3 DATA=6 BOOT_PART=1
+got=$(run_data_start)
+[ -z "$got" ] \
+    && note "a description without DATA_START gives nothing" OK \
+    || note "a description without DATA_START gave '$got'" FAIL
+
+# No description at all. The old fallback was /dev/mmcblk0p3, which in the A/B
+# layout is a root filesystem, so a guess here formats a slot.
+rm -f "$WORK/deviceinfo"
+got=$(run_data_device)
+[ -z "$got" ] \
+    && note "no deviceinfo leaves the data device empty rather than guessing" OK \
+    || note "no deviceinfo guessed '$got'" FAIL
+
+# And nothing in the block names a device of its own.
+if grep -n 'mmcblk0p[0-9]' "$WORK/dd.sh" | grep -qv '^[0-9]*:#'; then
+    note "the data device block names no partition of its own" FAIL
+else
+    note "the data device block names no partition of its own" OK
+fi
 
 echo
 echo "===== no bare partition number survives in the mount path ====="
@@ -71,6 +108,14 @@ else
     note "the /data mount no longer hardcodes p3" OK
 fi
 
+# /boot is where the trial marker and the boot counter live, and its partition
+# number is a fact about the layout like any other.
+if grep -qE '^[[:space:]]*mount -t vfat[[:space:]]+"\$\(devinfo_part BOOT_PART\)"[[:space:]]+/boot' "$S01"; then
+    note "the /boot mount takes its device from BOOT_PART" OK
+else
+    note "the /boot mount still names a partition" FAIL
+fi
+
 echo
 echo "===== the auto-partition branch cannot run on a declared layout ====="
 
@@ -80,12 +125,27 @@ sed -n '/^# --- autopartition guard ---/,/^# --- end autopartition guard ---/p' 
     && note "the autopartition guard block can be extracted" OK \
     || note "the autopartition guard block can be extracted" FAIL
 
-got=$( SLOT_CONF="$WORK/slots.conf" sh -c ". $WORK/ap.sh; may_autopartition && echo yes || echo no" )
+may_auto() { sh -c ". $WORK/ap.sh; may_autopartition && echo yes || echo no" 2>/dev/null; }
+
+# DATA_START is written into the image by the build, so a description that
+# carries it describes a card that was laid out deliberately.
+deviceinfo DISK=/dev/mmcblk0 SLOT_A=2 SLOT_B=3 RECOVERY=5 DATA=6 BOOT_PART=1 DATA_START=10543104
+got=$(may_auto)
 [ "$got" = no ] \
     && note "a declared layout refuses to autopartition" OK \
     || note "a declared layout would autopartition, which formats root B" FAIL
 
-got=$( SLOT_CONF="$WORK/absent.conf" sh -c ". $WORK/ap.sh; may_autopartition && echo yes || echo no" )
+# The copy in the application tarball describes the same board and carries no
+# DATA_START. A board on Sipeed's firmware must still provision its stock data
+# disk, so this one may.
+deviceinfo DISK=/dev/mmcblk0 SLOT_A=2 SLOT_B=3 DATA=6 BOOT_PART=1
+got=$(may_auto)
+[ "$got" = yes ] \
+    && note "a description without DATA_START may still autopartition" OK \
+    || note "a tarball description disarmed the stock provisioning" FAIL
+
+rm -f "$WORK/deviceinfo"
+got=$(may_auto)
 [ "$got" = yes ] \
     && note "an undeclared layout may still autopartition as before" OK \
     || note "an undeclared layout can no longer autopartition, a regression" FAIL

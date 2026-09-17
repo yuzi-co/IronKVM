@@ -5,8 +5,9 @@
 #
 # This covers the /boot/usb.disk0 branch, which is upstream's own first-boot
 # provisioning for a stock partition layout. It is not the A/B path: on an
-# IronKVM card /etc/nanokvm-slots.conf disarms it, and the image manifest
-# creates /etc/kvm.disk0 as well, so the branch is dead there twice over. It
+# IronKVM card the DATA_START in the image's deviceinfo disarms it, and the
+# image manifest creates /etc/kvm.disk0 as well, so the branch is dead there
+# twice over. It
 # is live for a stock-layout board that installs this firmware over the air,
 # because the update package carries system/init.d/S01fs and carries neither
 # of those two files.
