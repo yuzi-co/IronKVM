@@ -18,7 +18,7 @@
 #
 #   busybox blkid never prints a TYPE field, for any filesystem, and it exits 0
 #   for a partition that holds none. Only an empty stdout means no filesystem.
-S01=${1:-$(dirname "$0")/../../../kvmapp/system/init.d/S01fs}
+S01=${1:-$(dirname "$0")/../../kvmapp/system/init.d/S01fs}
 [ -f "$S01" ] || { echo "usage: test-s01fs-provision.sh <S01fs>"; exit 1; }
 
 WORK=$(mktemp -d)

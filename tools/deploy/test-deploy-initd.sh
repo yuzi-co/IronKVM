@@ -19,10 +19,11 @@ DEPLOY=${1:-$(dirname "$0")/deploy-initd}
 [ -f "$DEPLOY" ] || { echo "usage: test-deploy-initd.sh <deploy-initd>"; exit 1; }
 DEPLOY=$(cd "$(dirname "$DEPLOY")" && pwd)/$(basename "$DEPLOY")
 
-# tools/abslots/device/ is the copy this device runs, byte for byte.
+# ironkvm-dist abslots/device/ is the copy this device runs, byte for byte.
 # tools/slots/device/ holds an older one with no restore_initd at all, and
 # pointing at it would skip the only group that proves anything.
-WATCHDOG=${WATCHDOG:-$(dirname "$0")/../abslots/device/S00awatchdog}
+WATCHDOG=${WATCHDOG:-$(dirname "$0")/../../../ironkvm-dist/abslots/device/S00awatchdog}
+[ -f "$WATCHDOG" ] || { echo "needs S00awatchdog from ironkvm-dist; set WATCHDOG"; exit 2; }
 
 for tool in md5sum awk sed tr; do
     command -v "$tool" >/dev/null 2>&1 || { echo "SKIP: $tool is not on PATH"; exit 2; }

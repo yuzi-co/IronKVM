@@ -12,7 +12,7 @@
 # destroy the board's identity, and one of them makes a filesystem that nothing
 # on the device can repair.
 HERE=$(cd "$(dirname "$0")" && pwd)
-S01="$HERE/../../../kvmapp/system/init.d/S01fs"
+S01="$HERE/../../kvmapp/system/init.d/S01fs"
 SUITE="$HERE/test-s01fs-provision.sh"
 
 WORK=$(mktemp -d)

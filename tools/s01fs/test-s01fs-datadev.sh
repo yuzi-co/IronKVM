@@ -15,7 +15,7 @@
 # creates that marker, which is what stopped it on the real first boot. Belt and
 # braces: a layout that declares its own devices must never reach that branch at
 # all.
-S01=${1:-$(dirname "$0")/../../../kvmapp/system/init.d/S01fs}
+S01=${1:-$(dirname "$0")/../../kvmapp/system/init.d/S01fs}
 [ -f "$S01" ] || { echo "usage: test-s01fs-datadev.sh <S01fs>"; exit 1; }
 
 WORK=$(mktemp -d)
