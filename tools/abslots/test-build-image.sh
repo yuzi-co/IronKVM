@@ -65,9 +65,25 @@ mkdir -p "$WORK/payload/libs"
 printf 'used\n'   > "$WORK/payload/libs/libkept.so"
 printf 'unused\n' > "$WORK/payload/libs/libdead.so"
 
+# A second tree, standing in for the ironkvm-dist checkout. After the slot
+# tooling moves there, the manifest names its own scripts with dist: and the
+# payload stays the IronKVM checkout. Every build below that reads
+# good.manifest needs it, so it is exported once here.
+mkdir -p "$WORK/dist/abslots/device"
+printf '#!/bin/sh\necho slot\n' > "$WORK/dist/abslots/device/slot"
+chmod 755 "$WORK/dist/abslots/device/slot"
+# A decoy at the same path in the payload. A builder that resolves dist: against
+# the payload then still builds, and only the content tells the two roots apart.
+mkdir -p "$WORK/payload/abslots/device"
+printf '#!/bin/sh\necho payload\n' > "$WORK/payload/abslots/device/slot"
+chmod 755 "$WORK/payload/abslots/device/slot"
+DIST_ROOT="$WORK/dist"
+export DIST_ROOT
+
 cat > "$WORK/good.manifest" <<'MANIFEST'
 add     scripts/S00awatchdog      /etc/init.d/S00awatchdog
 add     libs                      /usr/lib/dl
+add     dist:abslots/device/slot  /usr/bin/slot               0755
 drop    /usr/lib/dl/libdead.so
 remove  /etc/kvm/ssh_stop
 remove  /root
@@ -101,6 +117,25 @@ present /etc/init.d/S50sshd      && note "the base survives" OK                 
 present /etc/kvm/pwd             && note "an untouched base file survives" OK   || note "an untouched base file survives" FAIL
 present /usr/lib/dl/libdead.so   && note "a dropped file is gone" FAIL          || note "a dropped file is gone" OK
 present /usr/lib/dl/libkept.so   && note "its siblings survive the drop" OK     || note "its siblings survive the drop" FAIL
+
+echo
+echo "===== a dist: source comes from the second checkout ====="
+debugfs -R "cat /usr/bin/slot" "$WORK/out.img" 2>/dev/null | grep -q '^echo slot$' \
+    && note "a dist: source is copied from DIST_ROOT" OK \
+    || note "a dist: source is copied from DIST_ROOT" FAIL
+
+# The same manifest with DIST_ROOT unset must refuse, not copy nothing.
+if DIST_ROOT= sh "$BUILD" "$WORK/base.tar.zst" "$WORK/good.manifest" "$WORK/payload" 64 "$WORK/nodist.img" \
+        > "$WORK/nodist.log" 2>&1; then
+    note "a dist: source without DIST_ROOT refuses the build" FAIL
+else
+    grep -q 'DIST_ROOT is not set' "$WORK/nodist.log" \
+        && note "a dist: source without DIST_ROOT refuses the build" OK \
+        || note "a dist: source without DIST_ROOT refuses the build" FAIL
+fi
+[ ! -e "$WORK/nodist.img" ] \
+    && note "and writes no image" OK \
+    || note "and writes no image" FAIL
 
 echo
 echo "===== provenance and device names are recorded ====="

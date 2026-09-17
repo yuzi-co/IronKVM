@@ -21,6 +21,9 @@
 # adding a new one. touch last, because a marker may live inside a directory
 # that add created.
 #
+# An add source that starts with dist: is a path in $DIST_ROOT, the
+# ironkvm-dist checkout, and not in the payload.
+#
 # drop exists because remove cannot delete what add is about to create. A
 # manifest that adds a vendor directory wholesale and wants three files left out
 # of it has no way to say so with remove, which has already run by then. A drop
@@ -72,10 +75,23 @@ while read -r verb a b c; do
     echo "  remove  $a"
 done < "$STAGE/m"
 
+# An add source is a path in the payload, which is the IronKVM checkout, unless
+# it starts with dist:. Then it is a path in the ironkvm-dist checkout, where the
+# slot tooling lives. The two are separate repositories, so one manifest needs
+# both roots.
+if grep -q '^add[[:space:]][[:space:]]*dist:' "$STAGE/m" && [ -z "${DIST_ROOT:-}" ]; then
+    echo "the manifest names dist: sources and DIST_ROOT is not set; no image written"
+    exit 1
+fi
+
 while read -r verb a b c; do
     [ "$verb" = add ] || continue
-    if [ ! -e "$PAYLOAD/$a" ]; then
-        echo "  add     $a -> MISSING in $PAYLOAD"
+    case "$a" in
+        dist:*) src_root=$DIST_ROOT; a=${a#dist:} ;;
+        *)      src_root=$PAYLOAD ;;
+    esac
+    if [ ! -e "$src_root/$a" ]; then
+        echo "  add     $a -> MISSING in $src_root"
         echo
         echo "the payload does not carry everything the manifest adds; no image written"
         exit 1
@@ -85,8 +101,8 @@ while read -r verb a b c; do
     # which is how the official application and the fork's own copy of /kvmapp
     # are layered without one erasing the other.
     case "$a$b" in
-        */*/) cp -a "$PAYLOAD/${a%/}/." "$STAGE/tree${b}" ;;
-        *)    rm -rf "$STAGE/tree${b}"; cp -a "$PAYLOAD/$a" "$STAGE/tree${b}" ;;
+        */*/) cp -a "$src_root/${a%/}/." "$STAGE/tree${b}" ;;
+        *)    rm -rf "$STAGE/tree${b}"; cp -a "$src_root/$a" "$STAGE/tree${b}" ;;
     esac
     # The image is a root filesystem. Nothing added to it belongs to the person
     # who ran the build, and a uid that only exists on the build host is one
