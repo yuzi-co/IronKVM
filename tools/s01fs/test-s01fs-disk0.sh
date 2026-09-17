@@ -30,7 +30,7 @@
 # this same script already does both.
 set -u
 
-S01=${1:-$(dirname "$0")/../../../kvmapp/system/init.d/S01fs}
+S01=${1:-$(dirname "$0")/../../kvmapp/system/init.d/S01fs}
 [ -f "$S01" ] || { echo "usage: test-s01fs-disk0.sh <S01fs>"; exit 1; }
 
 fails=0

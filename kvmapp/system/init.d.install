@@ -1,0 +1,11 @@
+S00kmod
+S01fs
+S03usbdev
+S30eth
+S30wifi
+S95nanokvm
+S01zram
+S98vidiag
+S97oled-nudge
+S98supervise
+S01hwdt

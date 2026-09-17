@@ -3,23 +3,25 @@
 `release.sh` builds, verifies and publishes one release. It runs on a Linux host,
 not in CI.
 
+A release publishes the application tarball and `latest.json`. It no longer publishes a
+card image. `ironkvm-1.1.0` was the last Buildroot card image. Card images are built by
+the ironkvm-dist repository from now on.
+
 ## Why it is not a workflow
 
-The card image needs two inputs a hosted runner does not have: Sipeed's base
-image, and the MaixCDK builder image, which exists only as a locally built
+The server cross-compile needs an input a hosted runner does not have: the
+MaixCDK builder image, which exists only as a locally built
 `nanokvm-builder-local-<uid>-<gid>`. A workflow file that cannot run is worse
-than no workflow file. The package half needs only Go and pnpm, so that part can
-move to CI later.
+than no workflow file. Everything else needs only Go and pnpm, so this can move
+to CI when the builder image can.
 
 ## What the host needs
 
 | Requirement | Note |
 | --- | --- |
-| Docker | The server cross-compile and the image build both use it. |
+| Docker | The server cross-compile uses it. |
 | The MaixCDK builder image | Build it once with `make shell`. |
 | `pnpm` | For the web user interface. |
-| `sfdisk`, `mkfs.vfat`, `mtools`, `e2fsprogs`, `zstd`, `xz` | For the card image. |
-| `u-boot-tools`, `cpio` | For the boot image, and the ability to `mknod`. |
 | `gh`, authenticated | Creates the release. |
 | A `base/` directory | See below. |
 
@@ -71,9 +73,6 @@ builder bakes the ownership of `/home/build` in at build time and its entry
 point drops to whatever id it is given, so a mismatch leaves `go` unable to
 write its module cache. `docker images` shows the id in the image name.
 
-The container runs as root on purpose: `repack-boot.sh` unpacks an initramfs
-holding `dev/console`, and `mknod` is refused to anybody else.
-
 A real release also tags, pushes and creates the GitHub release, so it needs the
 credentials a dry run does not. Add `-e GH_TOKEN` and mount the key `git push`
 uses:
@@ -82,78 +81,50 @@ uses:
   -e GH_TOKEN -v "$HOME/.ssh:/root/.ssh:ro"
 ```
 
-The card is assembled inside the container and only the compressed image is
-moved to `RELEASE_OUT`. `build-card.sh` creates the card at exactly its final
-size, because the table declares no data partition and there is no hole to cut
-back. The card is still assembled on the build host's own filesystem: the image
-is 5 GiB and both slots are read back out of it to be checked, so the same bytes
-cross the filesystem three times, and a Windows drive through a bind mount is
-slow enough that this is worth avoiding. Nothing about it needs configuring.
-
-Until 1.0.1 the card was created at its full 28.85 GiB and truncated afterwards,
-because the table had to describe a data partition the image did not carry. That
-hole is free on a filesystem with sparse files and a bind mount has none:
-measured at 8.0G allocated for an 8.0G hole, against 0 on ext4. Assembling on
-the bind mount therefore wrote about 25 GB for real, which is where the first
-dry run spent an hour.
-
 ## The base
 
-`base/` holds the pinned Sipeed inputs. It is gitignored: the files are Sipeed's
-and they total about 280 MB.
+`base/` holds the pinned Sipeed input. It is gitignored: the file is Sipeed's and
+it is about 16 MB.
 
 ```
-base/rootfs.tar.zst        251 MB  the base root filesystem, from p2 of the official image
 base/nanokvm_2.5.0.tar.gz   16 MB  the official application, layered under the fork's own
-base/boot/                  12 MB  the official /boot, including boot.sd and fip.bin
-base/version                        the official application version these came from
+base/version                       the official application version it came from
 ```
 
 `base/version` becomes `/kvmapp/base-version` on the device, and the About panel
 reads it to show `IronKVM 1.0.0 (based on NanoKVM 2.5.0)`.
 
-The release script verifies `rootfs.tar.zst` and the application against
-`tools/abslots/BASE.sha256` and refuses to build from anything unpinned. That
-file is the only record of which bytes an image was built from: the official
-system image ships no checksum of its own, so its hash is a pin rather than a
-verification.
+The release script verifies the application against `tools/release/APP.sha256`
+and refuses to build from anything unpinned. That file is the record of which
+bytes a package was built from.
 
 ### Rebuilding base/
 
-`tools/release/fetch-base.sh` does the whole thing: it downloads both artifacts
-from Sipeed, checks each against the pin, reads the image's own partition table,
-and extracts `/boot` and the root filesystem. It needs Linux and the ability to
-loop-mount. It downloads about 1.6 GB and leaves about 280 MB.
+`tools/release/fetch-base.sh` does the whole thing: it downloads the application
+tarball from Sipeed and checks it against the pin. It needs `curl`, `tar` and
+`sha256sum`, and it downloads about 16 MB.
 
 ```shell
 tools/release/fetch-base.sh
 ```
 
 This fork does not republish the base. The GPL parts could be redistributed, but
-the image also carries vendor binaries for the SG2002 whose terms are not stated,
-and fetching from the publisher gets the same reproducibility without answering
-that question on somebody else's behalf.
+the tarball also carries vendor binaries for the SG2002 whose terms are not
+stated, and fetching from the publisher gets the same reproducibility without
+answering that question on somebody else's behalf.
 
-By hand, the same steps are these. The rootfs comes from partition 2 of the
-official card image and the boot directory from partition 1.
+By hand, the same steps are these.
 
 ```shell
-# p1, the boot partition: 16 MiB at sector 1
-mount -o loop,offset=512,ro 20260610_NanoKVM_Rev1_4_3.img /mnt/p1
-cp -a /mnt/p1/. base/boot/
-umount /mnt/p1
-
-# p2, the root filesystem. Its offset comes from the image's own table.
-mount -o loop,offset=$((<p2_start> * 512)),ro 20260610_NanoKVM_Rev1_4_3.img /mnt/p2
-( cd /mnt/p2 && tar --numeric-owner -cf - . ) | zstd -q -o base/rootfs.tar.zst
-umount /mnt/p2
-
-sha256sum base/rootfs.tar.zst base/nanokvm_*.tar.gz   # must appear in BASE.sha256
+curl -fSL -o base/nanokvm_2.5.0.tar.gz \
+  https://github.com/sipeed/NanoKVM/releases/download/2.5.0/nanokvm_2.5.0.tar.gz
+sha256sum base/nanokvm_*.tar.gz   # must appear in APP.sha256
+echo 2.5.0 > base/version
 ```
 
-Do not build the base from a running board. `tools/abslots/BASE.sha256` records
-why: the slot archived on 2026-08-15 is older than v1.4.3, and building from a
-board is how a factory `/etc/kvm/ssh_stop` and a CRLF init script reached a slot.
+Do not build the base from a running board. A board carries whatever a card and
+an update left on it, and building from one is how a factory
+`/etc/kvm/ssh_stop` and a CRLF init script reached a slot.
 
 ## Running it
 
@@ -188,7 +159,6 @@ break the download URL of every asset under them.
 
 | Artifact | Goes to | For |
 | --- | --- | --- |
-| `ironkvm-<v>-sdcard.img.xz` | Release assets | First install. Flash the card. |
 | `ironkvm_<v>.tar.gz` | Release assets | In-user-interface update, and offline upload. |
 | `latest.json` | The `gh-pages` branch | The feed a device polls. |
 | `SHA256SUMS` | Release assets | For a person checking a download is intact. Unsigned, see below. |

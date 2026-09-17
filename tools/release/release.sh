@@ -6,16 +6,17 @@
 #   release.sh --dry-run 1.0.0      build and verify, publish nothing
 #   release.sh --verify-only 1.0.0  check an existing output directory
 #
-# Runs on a Linux host that has Docker, the MaixCDK builder image, a Sipeed base
-# image and gh. A hosted runner has none of the first three, which is
-# why this is a script and not a workflow. A workflow file that cannot run is
-# worse than no workflow file.
+# A release publishes the application tarball and latest.json. It does not
+# publish a card image any more: ironkvm-1.1.0 was the last Buildroot card, and
+# card images come from the ironkvm-dist repository from now on.
+#
+# Runs on a Linux host that has Docker, the MaixCDK builder image, Sipeed's
+# pinned application tarball and gh. A hosted runner has none of the first
+# three, which is why this is a script and not a workflow. A workflow file that
+# cannot run is worse than no workflow file.
 #
 # Environment:
 #   RELEASE_OUT        where artifacts are written    (default ./release-out)
-#   BASE_TAR           the pinned base rootfs tarball (default base/rootfs.tar.zst)
-#   BASE_BOOT          a directory holding /boot      (default base/boot)
-#   STOCK_BOOT_SD      the stock boot.sd to repack    (default base/boot/boot.sd)
 #   OFFICIAL_APP       the pinned official application (default base/nanokvm_2.5.0.tar.gz)
 #   BASE_VERSION_FILE  the official version it is from (default base/version)
 #   REPO               the GitHub repository          (default yuzi-co/IronKVM)
@@ -39,9 +40,6 @@ done
 
 OUT=${RELEASE_OUT:-./release-out}
 REPO=${REPO:-yuzi-co/IronKVM}
-BASE_TAR=${BASE_TAR:-base/rootfs.tar.zst}
-BASE_BOOT=${BASE_BOOT:-base/boot}
-STOCK_BOOT_SD=${STOCK_BOOT_SD:-base/boot/boot.sd}
 OFFICIAL_APP=${OFFICIAL_APP:-base/nanokvm_2.5.0.tar.gz}
 
 [ -n "$VERSION" ] || { echo "usage: release.sh [--dry-run|--verify-only] X.Y.Z" >&2; exit 1; }
@@ -67,7 +65,6 @@ esac
     echo "version must be X.Y.Z, got '$VERSION'" >&2; exit 1; }
 
 PKG="ironkvm_${VERSION}.tar.gz"
-IMG="ironkvm-${VERSION}-sdcard.img.xz"
 
 # The tag carries a name and not only a number, because the two projects share
 # one tag namespace and upstream is still using it. Sipeed tags each card image
@@ -175,47 +172,36 @@ docker image inspect "$BUILDER" > /dev/null 2>&1 || {
     echo "no builder image '$BUILDER'; build it once with 'make shell'" >&2; exit 1; }
 echo "    tools present, builder image $BUILDER"
 
-for f in "$BASE_TAR" "$STOCK_BOOT_SD" "$OFFICIAL_APP"; do
-    [ -f "$f" ] || { echo "no such base input: $f" >&2; exit 1; }
-done
-[ -d "$BASE_BOOT" ] || { echo "no such boot directory: $BASE_BOOT" >&2; exit 1; }
+[ -f "$OFFICIAL_APP" ] || { echo "no such base input: $OFFICIAL_APP" >&2; exit 1; }
 
-# Check the base against the pins the repository records, rather than trusting a
-# file name. tools/abslots/BASE.sha256 exists because the artefacts come from
-# Sipeed and one of them ships no checksum of its own, so the pin is the only
-# statement of which bytes a slot was ever built from. A base that drifts
-# produces an image nobody can reproduce and nobody would notice.
-echo "==> verifying the base against tools/abslots/BASE.sha256"
-for f in "$BASE_TAR" "$OFFICIAL_APP"; do
-    have=$(sha256sum "$f" | cut -d' ' -f1)
-    grep -q "^$have  " tools/abslots/BASE.sha256 || {
-        echo "$f is $have, which is not pinned in tools/abslots/BASE.sha256" >&2
-        exit 1; }
-    echo "    $(basename "$f") matches its pin"
-done
+# Check the official application against the pin the repository records, rather
+# than trusting a file name. The tarball is Sipeed's and the package layers the
+# fork's own tree over it, so the pin is the only statement of which bytes a
+# release was built from. A base that drifts produces a package nobody can
+# reproduce and nobody would notice.
+echo "==> verifying the official application against tools/release/APP.sha256"
+have=$(sha256sum "$OFFICIAL_APP" | cut -d' ' -f1)
+grep -q "^$have  " tools/release/APP.sha256 || {
+    echo "$OFFICIAL_APP is $have, which is not pinned in tools/release/APP.sha256" >&2
+    exit 1; }
+echo "    $(basename "$OFFICIAL_APP") matches its pin"
 
 mkdir -p "$OUT"
 STAGE=$(mktemp -d)
 trap 'rm -rf "$STAGE"' EXIT
 
 # Every boot script the package carries must be either installed into
-# /etc/init.d by the manifest or declared package-only. The check runs here,
+# /etc/init.d by install.sh or declared package-only. The check runs here,
 # before anything is built, because its answer does not depend on the build and
 # a release that would ship a fix nobody receives should cost seconds to stop.
 #
 # It caught nothing when it was written and would have caught S00kmod. The fork
 # rewrote that script on 2026-09-04 to load the modules the package ships, the
-# manifest did not install it because until then the fork did not change it, and
-# every image built afterwards kept the stock loader. See
-# tools/abslots/check-init-install.sh.
+# install list did not name it because until then the fork did not change it,
+# and every board updated afterwards kept the stock loader.
 echo "==> checking that every packaged boot script has a decided fate"
-BASE_TREE="$STAGE/base-tree"
-mkdir -p "$BASE_TREE"
-# Only /etc/init.d is wanted. zstd still decompresses the whole stream, which
-# costs about half a minute against the 251 MB base and is the cheapest part of
-# a release.
-zstd -dc "$BASE_TAR" | tar -xf - -C "$BASE_TREE" ./etc/init.d
-tools/abslots/check-init-install.sh "$BASE_TREE/etc/init.d" || exit 1
+sh tools/release/test-init-install-list.sh > /dev/null || {
+    sh tools/release/test-init-install-list.sh | grep FAIL >&2; exit 1; }
 
 echo "==> building the web user interface"
 # Built from a copy in $STAGE, without the developer's node_modules.
@@ -236,7 +222,7 @@ mkdir -p "$STAGE/web"
 tar -cf - -C web --exclude=./node_modules --exclude=./dist . | tar -xf - -C "$STAGE/web"
 ( cd "$STAGE/web" && CI=true pnpm install --frozen-lockfile && pnpm build )
 
-# root.manifest adds web/dist from the repository root, so the output has to come
+# The package takes web/dist from the repository root, so the output has to come
 # back. It is plain JavaScript and carries no platform.
 rm -rf web/dist
 cp -a "$STAGE/web/dist" web/dist
@@ -263,9 +249,9 @@ docker run --rm -v "$PWD/server:/src" -w /src ubuntu:24.04 \
 # exists to identify a hand-built server; a released one is identified by the
 # version the updater writes.
 echo "==> unpacking the pinned official application"
-# root.manifest layers this under the fork's own kvmapp, because the base rootfs
-# carries 2.4.3 and the manifest's first add has to put the newer official tree
-# in place before the fork's files land on top of it.
+# The package layers this under the fork's own kvmapp, because kvmapp/ holds
+# only what the fork changes. The newer official tree has to be in place before
+# the fork's files land on top of it.
 rm -rf official-kvmapp
 mkdir -p official-kvmapp
 tar xzf "$OFFICIAL_APP" -C official-kvmapp --strip-components=1
@@ -275,7 +261,7 @@ tar xzf "$OFFICIAL_APP" -C official-kvmapp --strip-components=1
 echo "==> assembling the package"
 PAYLOAD="$STAGE/ironkvm_${VERSION}"
 mkdir -p "$PAYLOAD"
-# The same layers, in the same order, that root.manifest builds the image from.
+# The same layers, in the same order, that a slot image is built from.
 #
 # The updater REPLACES /kvmapp rather than merging into it: it moves the whole
 # tree to the backup directory and moves the new one in. Every file the package
@@ -294,8 +280,8 @@ cp    server/NanoKVM-Server "$PAYLOAD/server/NanoKVM-Server"
 # above takes them from kvmapp/server/dl_lib, which .gitignore excludes, so on a
 # fresh clone it brings nothing and the package would ship Sipeed's libkvm.so
 # with the fork's server: the H.264 encoder would strand its carveout on every
-# stop and nothing would say so. root.manifest names the same two files for the
-# card image, for the same reason.
+# stop and nothing would say so. The ironkvm-dist image manifest names the same
+# two files, for the same reason.
 cp server/dl_lib/libkvm.so server/dl_lib/libkvm_mmf.so "$PAYLOAD/server/dl_lib/"
 
 # Read back what was assembled, not what was asked for. The whole point of the
@@ -318,60 +304,47 @@ cp -a web/dist "$PAYLOAD/server/web"
 echo "$VERSION" > "$PAYLOAD/version"
 
 # Some boot scripts live in tools/ rather than in kvmapp/system/init.d, and the
-# image manifest adds them to /etc/init.d straight from there. install.sh copies
-# only what the package carries, so without this the tarball would ship the
-# fork's boot behaviour minus its watchdog, its supervisor and the OLED nudge:
-# an update would install the scripts that can break a boot and leave out the
-# one that undoes them.
-for s in tools/abslots/device/S00awatchdog tools/service/S98supervise \
-         tools/service/S01hwdt \
-         tools/oled/S97oled-nudge tools/abslots/device/S02identity; do
+# install list names them all the same. install.sh copies only what the package
+# carries, so without this the tarball would ship the fork's boot behaviour
+# minus its supervisor, its hardware watchdog and the OLED nudge: an update
+# would install the scripts that can break a boot and leave out the ones that
+# watch it.
+#
+# S00awatchdog and S02identity are not here any more. They belong to the
+# ironkvm-dist repository, which installs them from its own image, and a
+# Buildroot board already has the copies its card installed.
+for s in tools/service/S98supervise tools/service/S01hwdt tools/oled/S97oled-nudge; do
     [ -f "$s" ] || { echo "missing boot script: $s" >&2; exit 1; }
     cp "$s" "$PAYLOAD/system/init.d/${s##*/}"
 done
 
-# Every script the image installs to /etc/init.d must also be in the package, or
-# an image and a tarball of the same release boot differently.
-for want in $(sed -n 's|^add .* /etc/init.d/\([^ ]*\).*|\1|p' \
-              tools/abslots/manifest/root.manifest); do
-    # rcS is the one exception, and it is deliberate. Every S* script an update
-    # installs is covered by the watchdog, which puts the previous set back when
-    # the board cannot be reached. rcS is what RUNS the watchdog. A syntactically
-    # valid rcS that does the wrong thing means
-    # nothing would run at all, including the watchdog: no attempt would be
-    # counted, no marker would be set for the recovery slot, and the board would
-    # boot into silence for ever. install.sh checks syntax, not behaviour.
-    #
-    # The cost of holding it back is that a board updated by package rather than
-    # by image keeps the stock rcS and writes no /bootlog. The stock one still
-    # runs every S* file, so the watchdog, the slots and the identity carry-over
-    # all work. A diagnostic is worth less than the path that repairs the board.
-    [ "$want" = rcS ] && continue
+# Which scripts install.sh puts into /etc/init.d. The list is committed beside
+# the package, and tools/release/test-init-install-list.sh holds it against the
+# scripts the package carries.
+#
+# /kvmapp/system/init.d is the application's own reference copy. The list names
+# the scripts the fork changes or adds, and leaves the rest at their base
+# versions. install.sh installed the whole directory once, so an update started
+# daemons that a board never ran before.
+#
+# rcS is not in the list, and it is deliberate. Every S* script an update
+# installs is covered by the watchdog, which puts the previous set back when the
+# board cannot be reached. rcS is what RUNS the watchdog. A syntactically valid
+# rcS that does the wrong thing means
+# nothing would run at all, including the watchdog: no attempt would be counted,
+# no marker would be set for the recovery slot, and the board would boot into
+# silence for ever. install.sh checks syntax, not behaviour.
+#
+# The cost of holding it back is that a board updated by package rather than by
+# image keeps the stock rcS and writes no /bootlog. The stock one still runs
+# every S* file, so the watchdog, the slots and the identity carry-over all
+# work. A diagnostic is worth less than the path that repairs the board.
+cp kvmapp/system/init.d.install "$PAYLOAD/system/init.d.install"
+for want in $(cat kvmapp/system/init.d.install); do
     [ -f "$PAYLOAD/system/init.d/$want" ] || {
-        echo "the image installs /etc/init.d/$want but the package does not carry it" >&2
+        echo "init.d.install names $want but the package does not carry it" >&2
         exit 1; }
 done
-
-# Which of those scripts install.sh may put into /etc/init.d, derived from the
-# image manifest so a package and an image of the same release can never install
-# different sets.
-#
-# /kvmapp/system/init.d is the application's own reference copy. The image
-# installs the scripts the fork changes or adds, and leaves the rest at their
-# base versions. install.sh installed the whole directory once, so an update
-# started daemons the same release's image never starts.
-#
-# Which of the two a script belongs in is not a judgement made here. Every
-# script in the package is named either by the manifest or by
-# tools/abslots/manifest/init.d.package-only, and check-init-install.sh above
-# has already refused this release if one was left out.
-#
-# rcS is excluded here for the reason given above: it is what runs the watchdog.
-sed -n 's|^add .* /etc/init.d/\([^ ]*\).*|\1|p' tools/abslots/manifest/root.manifest \
-    | grep -v '^rcS$' > "$PAYLOAD/system/init.d.install"
-[ -s "$PAYLOAD/system/init.d.install" ] || {
-    echo "the image manifest named no boot scripts; the list would be empty" >&2
-    exit 1; }
 
 # The base travels beside the version because semver cannot carry it.
 BASE=$(cat "${BASE_VERSION_FILE:-base/version}" 2>/dev/null || echo "unknown")
@@ -394,71 +367,6 @@ gone=$(comm -13 "$STAGE/payload.list" "$STAGE/official.list" | grep -vE '^(kvm/|
 
 chmod 755 "$PAYLOAD/system/install.sh" "$PAYLOAD/server/NanoKVM-Server"
 tar czf "$OUT/$PKG" -C "$STAGE" "ironkvm_${VERSION}"
-
-echo "==> stamping the version onto the image tree"
-# The package above carries $PAYLOAD/version and $PAYLOAD/base-version, and the
-# card image is built from the repository root instead, so those two writes do
-# not reach it. Without this block a flashed board keeps the version that
-# official-kvmapp carries, which is the official application and not this
-# release.
-#
-# That is not cosmetic. web/src/pages/desktop/menu/settings/update/index.tsx
-# decides with semver.gte(current, latest). An official 2.5.0 is greater than
-# every IronKVM version, so the page reports a board that can take no update at
-# all as up to date, and the badge in settings/index.tsx never appears either.
-#
-# root.manifest adds official-kvmapp/ and then kvmapp/ into the same /kvmapp, so
-# a file written here lands on top and no manifest line is needed. Both are in
-# .gitignore, because they are build output and not source.
-echo "$VERSION" > kvmapp/version
-echo "$BASE"    > kvmapp/base-version
-
-echo "==> building the slot filesystems"
-# build-image.sh takes five positional arguments and makes ONE ext4 root. The
-# sizes are the partition sizes from partition.sfdisk.
-#
-# The payload is the REPOSITORY ROOT, not the package staged above. root.manifest
-# names paths like official-kvmapp/, kvmapp/, server/NanoKVM-Server, web/dist and
-# tools/abslots/device/*, which only exist together here. Handing it the package
-# directory instead produces an image missing everything the manifest adds from
-# tools/, and the build reports success either way.
-tools/abslots/build-image.sh "$BASE_TAR" tools/abslots/manifest/root.manifest \
-    . 2048 "$STAGE/root.img"
-tools/abslots/build-image.sh "$BASE_TAR" tools/abslots/manifest/recovery.manifest \
-    . 1024 "$STAGE/recovery.img"
-
-echo "==> repacking the boot image"
-tools/abslots/repack-boot.sh "$STOCK_BOOT_SD" "$STAGE/bootbuild"
-cp -a "$BASE_BOOT/." "$STAGE/boot/"
-# repack-boot.sh writes boot.sd.new, and the name is deliberate: it says the
-# image has not been accepted yet. It is accepted here, after that script's own
-# verification has passed.
-cp "$STAGE/bootbuild/boot.sd.new" "$STAGE/boot/boot.sd"
-
-# Which card image wrote this /boot. The base's own /boot/ver travels with it and
-# keeps reporting the Sipeed system image, v1.4.3, whatever is written over it,
-# so without this the card is the one artefact a board cannot name. That is the
-# half of a release carrying the slots, the watchdog and the recovery
-# filesystem, and the application version cannot stand in for it: an update
-# replaces the application and leaves the card alone.
-#
-# 8.3 clean, because p1 is FAT and a long name costs a second directory entry.
-echo "$VERSION" > "$STAGE/boot/ironkvm.ver"
-
-echo "==> assembling the card"
-# Assembled in $STAGE, and only the compressed image is moved out.
-#
-# build-card.sh creates the card at exactly its final size. The table declares no
-# data partition, so there is no hole to make and cut back: the device makes that
-# partition on the first boot, at the end of whatever card the image reached.
-#
-# $STAGE rather than $OUT is still deliberate. The two slot filesystems are read
-# back out of the image to be checked, so the same 5 GiB crosses the filesystem
-# three times, and $OUT on a Windows workstation is a bind mount.
-tools/abslots/build-card.sh "$STAGE/boot" "$STAGE/root.img" "$STAGE/recovery.img" \
-    "$STAGE/ironkvm-${VERSION}-sdcard.img"
-xz -T0 -f "$STAGE/ironkvm-${VERSION}-sdcard.img"
-mv "$STAGE/ironkvm-${VERSION}-sdcard.img.xz" "$OUT/$IMG"
 
 echo "==> writing latest.json"
 SHA=$(openssl dgst -sha512 -binary "$OUT/$PKG" | openssl base64 -A)
@@ -491,7 +399,7 @@ echo "==> checksums"
 #
 # The device does not read this file at all. Its update path checks a sha512
 # from latest.json over TLS, so signing here would never have protected it.
-( cd "$OUT" && sha256sum "$PKG" "$IMG" > SHA256SUMS )
+( cd "$OUT" && sha256sum "$PKG" > SHA256SUMS )
 
 # The notes travel with the artifacts, so what is published is a file in the
 # repository and not prose typed at the prompt. A dry run copies them too: it is
@@ -512,7 +420,7 @@ publish() {
     git push origin "$TAG"
     gh release create "$TAG" --repo "$REPO" --title "IronKVM $VERSION" \
         --notes-file "$OUT/notes.md" \
-        "$OUT/$PKG" "$OUT/$IMG" "$OUT/SHA256SUMS"
+        "$OUT/$PKG" "$OUT/SHA256SUMS"
 
     # The feed lives on its own branch so a 26 MB package never enters the
     # repository's history.

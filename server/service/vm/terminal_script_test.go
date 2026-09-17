@@ -28,11 +28,11 @@ func readNanokvmInitScript(t *testing.T) string {
 // handler closes the socket before the operator sees a prompt.
 //
 // That directory is /root, and this fork's own image does not have to have it.
-// tools/abslots/manifest/root.manifest carries `remove /root`, because a
-// running board accumulates about 132MB of operator state there and none of it
-// belongs in an image. The stock Sipeed rootfs does have /root, which is why
-// the upstream change that introduced this chdir could not have seen the
-// problem: on a fork-built slot the same code has nowhere to go.
+// The ironkvm-dist image manifest carries `remove /root`, because a running
+// board accumulates about 132MB of operator state there and none of it belongs
+// in an image. The stock Sipeed rootfs does have /root, which is why the
+// upstream change that introduced this chdir could not have seen the problem:
+// on a fork-built slot the same code has nowhere to go.
 //
 // So the script has to create the directory before it starts the server. This
 // test is the thing that keeps the three files agreeing with each other: the

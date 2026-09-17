@@ -13,7 +13,7 @@
 # So every one of these cases is about the grow either happening or being
 # reported. The four at the end are about it never being the reason a boot
 # stops, because this runs in rcS on a board that cannot be power cycled.
-S01=${1:-$(dirname "$0")/../../../kvmapp/system/init.d/S01fs}
+S01=${1:-$(dirname "$0")/../../kvmapp/system/init.d/S01fs}
 [ -f "$S01" ] || { echo "usage: test-s01fs-grow.sh <S01fs>"; exit 1; }
 
 WORK=$(mktemp -d)
@@ -238,7 +238,13 @@ echo "--- and it runs before the watchdog is armed ---"
 # The two scripts live in different source directories, so the order is a
 # property of the names the manifest gives them in the image and not of where
 # they are kept. That is what this reads.
-MANIFEST=${MANIFEST:-$(dirname "$0")/../manifest/root.manifest}
+#
+# The manifest is in the ironkvm-dist repository, which is a sibling checkout
+# and not always present. Its absence makes this one case unrunnable, so the
+# suite reports it as a skip instead of a failure.
+IRONKVM_DIST=${IRONKVM_DIST:-$(dirname "$0")/../../../ironkvm-dist}
+MANIFEST=${MANIFEST:-$IRONKVM_DIST/abslots/manifest/root.manifest}
+no_manifest=no
 if [ -f "$MANIFEST" ]; then
     fs=$(awk '$1 == "add" && $3 ~ /\/etc\/init\.d\/.*fs$/ { n = $3; sub(/.*\//, "", n); print n }' "$MANIFEST" | head -1)
     hwdt=$(awk '$1 == "add" && $3 ~ /\/etc\/init\.d\/.*hwdt$/ { n = $3; sub(/.*\//, "", n); print n }' "$MANIFEST" | head -1)
@@ -250,10 +256,15 @@ if [ -f "$MANIFEST" ]; then
         note "$hwdt sorts before $fs; the resize would run under the watchdog" FAIL
     fi
 else
-    note "no manifest at $MANIFEST to read the boot order from" FAIL
+    no_manifest=yes
 fi
 
 echo
+if [ "$fails" -eq 0 ] && [ "$no_manifest" = yes ]; then
+    echo "every other case passed"
+    echo "needs the ironkvm-dist checkout for $MANIFEST; set IRONKVM_DIST or MANIFEST"
+    exit 2
+fi
 if [ "$fails" -eq 0 ]; then
     echo "all cases passed"
     exit 0

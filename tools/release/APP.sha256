@@ -1,0 +1,3 @@
+# Sipeed's application tarball, layered under the fork's own package. Verified
+# against the sha256.txt published beside it in the same release.
+af05aa73de5115ba5dc883f716dbcb36a04727a1c14bdcb4bda6ed021427318a  nanokvm_2.5.0.tar.gz  sipeed/NanoKVM release 2.5.0, 2026-08-04, 16464014 bytes

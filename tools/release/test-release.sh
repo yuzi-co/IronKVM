@@ -10,8 +10,9 @@
 set -u
 
 HERE=$(cd "$(dirname "$0")" && pwd)
+ROOT=$(cd "$HERE/../.." && pwd)
 SCRIPT="$HERE/release.sh"
-MANIFEST="$HERE/../abslots/manifest/root.manifest"
+INSTALL_LIST="$ROOT/kvmapp/system/init.d.install"
 pass=0
 fail=0
 
@@ -131,20 +132,26 @@ sed -i 's|"size_bytes": [0-9]*|"size_bytes": 12345|' "$WORK/out/latest.json"
 check "a mismatched size_bytes fails the self-check" "$(verify)" "1"
 rm -rf "$WORK"
 
-# The image and the package must install the same boot scripts. Three of them
-# live in tools/ and the image manifest adds them from there, so a package built
-# from kvmapp/ alone would ship the scripts that can break a boot and leave out
-# the watchdog that undoes them.
+# Three of the scripts the install list names live in tools/ rather than in
+# kvmapp/system/init.d, so a package built from kvmapp/ alone would ship the
+# scripts that can break a boot and leave out the ones that watch it.
 check "the payload picks up the boot scripts that live outside kvmapp" \
-    "$(grep -c 'tools/abslots/device/S00awatchdog tools/service/S98supervise' "$SCRIPT")" "1"
-check "the payload is checked against the image manifest" \
-    "$(grep -c 'the image installs /etc/init.d' "$SCRIPT")" "1"
+    "$(grep -c '^for s in tools/service/S98supervise tools/service/S01hwdt tools/oled/S97oled-nudge; do$' "$SCRIPT")" "1"
+check "the payload is checked against the install list" \
+    "$(grep -c 'init\.d\.install names \$want but the package does not carry it' "$SCRIPT")" "1"
 
-# The identity script is the reason a slot switch does not revert the root
-# password to the factory one. An update that ships the fork's boot scripts and
-# omits this one is the exact failure it was written to stop.
-check "the identity script travels with the package" \
-    "$(grep -c 'tools/abslots/device/S02identity' "$SCRIPT")" "1"
+# The slot tooling moved to the ironkvm-dist repository, and so did the card
+# image. Nothing in a release may reach for a path that is no longer here.
+check "no path under tools/abslots is named" \
+    "$(grep -c 'tools/abslots' "$SCRIPT")" "0"
+
+# S00awatchdog and S02identity belong to ironkvm-dist now. The tarball stops
+# carrying them: a Buildroot board keeps the copies its card installed, and an
+# Alpine board gets them from its image.
+check "the watchdog and the identity script are not copied in" \
+    "$(sed -n '/^for s in tools\//p' "$SCRIPT" | grep -c 'S00awatchdog\|S02identity')" "0"
+check "and neither is named by the install list" \
+    "$(grep -cx 'S00awatchdog\|S02identity' "$INSTALL_LIST")" "0"
 
 # rcS is the single exception, and it has to stay a named one. Every S* script
 # is protected by the watchdog; rcS is what STARTS the watchdog, so a valid but
@@ -152,45 +159,46 @@ check "the identity script travels with the package" \
 # recovery marker. The exception is only defensible while the reason is written
 # down beside it.
 check "rcS is held back from the package" \
-    "$(grep -c '\[ "\$want" = rcS \] && continue' "$SCRIPT")" "1"
+    "$(grep -cx 'rcS' "$INSTALL_LIST")" "0"
 check "the reason rcS is held back is recorded" \
     "$(grep -c 'nothing would run at all, including the watchdog' "$SCRIPT")" "1"
 
-# /kvmapp/system/init.d is the application's own reference copy and carries 20
-# scripts. The image installs 10 of them, deliberately: it leaves S50sshd,
-# S00kmod, S15kvmhwd and S80dnsmasq at their base versions and never installs
-# avahi, ssdpd, tailscaled, picoclaw, wifi or usbhid at all. install.sh had no
-# way to know that and installed the directory, so a package update would have
-# added six daemons to a 166MB board that its own image never runs.
+# /kvmapp/system/init.d is the application's own reference copy and carries 17
+# scripts. install.sh installs 8 of them, deliberately: it leaves S15kvmhwd,
+# S50sshd and S80dnsmasq at their base versions and never installs avahi,
+# ssdpd, tailscaled, picoclaw or usbhid at all. install.sh had no way to know
+# that and installed the directory, so a package update would have added six
+# daemons to a 166MB board that never ran them before.
 #
-# The list is derived from the manifest so the two cannot name different sets.
+# The list is committed beside the package. It used to be derived from the image
+# manifest, which now lives in another repository, so a release that still read
+# a manifest would read one that is not there.
 check "the package names the boot scripts install.sh may install" \
-    "$(grep -c '> "\$PAYLOAD/system/init\.d\.install"' "$SCRIPT")" "1"
-check "an empty list is refused rather than shipped" \
-    "$(grep -c '\[ -s "\$PAYLOAD/system/init\.d\.install" \]' "$SCRIPT")" "1"
-check "the list is derived from the image manifest" \
-    "$(grep -B3 '"\$PAYLOAD/system/init\.d\.install"' "$SCRIPT" | grep -c 'root\.manifest')" "1"
-check "rcS is kept out of the list too" \
-    "$(grep -c "grep -v '\^rcS\$'" "$SCRIPT")" "1"
+    "$(grep -c '^cp kvmapp/system/init\.d\.install "\$PAYLOAD/system/init\.d\.install"$' "$SCRIPT")" "1"
+check "the list is committed, not derived from an image manifest" \
+    "$(grep -c 'root\.manifest' "$SCRIPT")" "0"
 
-# Every script the manifest installs must exist where the release script expects
-# to find it. This is the check that catches a script being moved or renamed.
+# A list that names a script the package does not carry, or a packaged script
+# that no list names, is refused before anything is built. The rule itself lives
+# in its own suite, which the release runs and this one does not repeat.
+check "the list is held against the package before the build" \
+    "$(grep -c 'sh tools/release/test-init-install-list\.sh' "$SCRIPT")" "2"
+
+# Every script the install list names must exist where the release script
+# expects to find it. This is the check that catches a script being moved or
+# renamed.
 missing=0
-for want in $(sed -n 's|^add \([^ ]*\) /etc/init.d/.*|\1|p' "$HERE/../abslots/manifest/root.manifest"); do
-    [ -f "$HERE/../../$want" ] || missing=$((missing + 1))
+for want in $(cat "$INSTALL_LIST"); do
+    [ -f "$ROOT/kvmapp/system/init.d/$want" ] \
+        || [ -f "$ROOT/tools/service/$want" ] \
+        || [ -f "$ROOT/tools/oled/$want" ] || missing=$((missing + 1))
 done
-check "every boot script the manifest names exists" "$missing" "0"
+check "every boot script the install list names exists" "$missing" "0"
 
-# root.manifest names paths that only exist together at the repository root:
-# official-kvmapp/, kvmapp/, server/NanoKVM-Server, web/dist, tools/abslots/...
-# Handing build-image.sh the staged package instead produces an image missing
-# everything the manifest adds from tools/, and the build reports success.
-check "the image is built from the repository root, not the package" \
-    "$(grep -cE '^ +\. [0-9]+ "\$STAGE/(root|recovery)\.img"' "$SCRIPT")" "2"
-
-# The manifest layers the official 2.5.0 tree under the fork's own, because the
-# base rootfs carries 2.4.3. Without it the image ships an older application.
-check "the official application is unpacked for the manifest" \
+# The package layers the official 2.5.0 tree under the fork's own, because
+# kvmapp/ holds only what the fork changes. Without it the package ships an
+# older application.
+check "the official application is unpacked for the package" \
     "$(grep -q 'tar xzf "$OFFICIAL_APP" -C official-kvmapp' "$SCRIPT" && echo yes || echo no)" "yes"
 
 # The package needs the SAME three layers as the image. The updater replaces
@@ -214,51 +222,6 @@ check "the web directory is replaced, not merged" \
 check "the package is checked against the official one" \
     "$(grep -c 'the package drops files the official one carries' "$SCRIPT")" "1"
 
-# repack-boot.sh writes boot.sd.new, deliberately: the name says the image has
-# not been accepted yet. Asking for boot.sd fails after every verification in
-# that script has already passed.
-check "the repacked boot image is taken by the name it is written under" \
-    "$(grep -c 'bootbuild/boot\.sd\.new' "$SCRIPT")" "1"
-
-# /boot/ver comes from the Sipeed base and reports v1.4.3 whatever is written
-# over it, so the card image was the one artefact a board could not name. The
-# application version cannot stand in: an update replaces the application and
-# leaves the card alone, which is exactly the half that carries the slots, the
-# watchdog and the recovery filesystem.
-check "the card image stamps its own version onto /boot" \
-    "$(grep -c '> "\$STAGE/boot/ironkvm\.ver"' "$SCRIPT")" "1"
-check "the stamp is written before the card is assembled" \
-    "$(grep -n 'ironkvm\.ver"\|build-card\.sh "\$STAGE/boot"' "$SCRIPT" \
-       | head -1 | grep -c 'ironkvm\.ver')" "1"
-
-# /boot/ironkvm.ver names the card. It does not name the application, and the
-# application version is the one the update page compares. The card image is
-# built from the repository root and not from the package, so the package's own
-# version file never reaches it, and a flashed board reported the official
-# application version instead: 2.5.0 against a feed at 1.0.1, which semver.gte
-# reads as up to date for ever. Measured on a flashed card on 2026-08-22.
-check "the image tree is stamped with the release version" \
-    "$(grep -c '^echo "\$VERSION" > kvmapp/version$' "$SCRIPT")" "1"
-check "the image tree records the base it came from" \
-    "$(grep -c '^echo "\$BASE"    > kvmapp/base-version$' "$SCRIPT")" "1"
-
-# Both writes have to precede the image build, or they land in the tree after
-# the manifest has copied it and the card carries the value they replace.
-check "the version reaches the tree before the slots are built" \
-    "$(grep -n '> kvmapp/version$\|build-image\.sh "\$BASE_TAR"' "$SCRIPT" \
-       | head -1 | grep -c 'kvmapp/version')" "1"
-check "the base version reaches the tree before the slots are built" \
-    "$(grep -n '> kvmapp/base-version$\|build-image\.sh "\$BASE_TAR"' "$SCRIPT" \
-       | head -1 | grep -c 'kvmapp/base-version')" "1"
-
-# root.manifest merges kvmapp/ into /kvmapp after official-kvmapp/, and that
-# order is the only reason no manifest line is needed. If it ever reverses, the
-# official version file covers the one written above and the fault returns.
-check "the manifest layers the fork over the official application" \
-    "$(grep -n '^add  *official-kvmapp/\|^add  *kvmapp/ ' \
-       "$HERE/../abslots/manifest/root.manifest" | head -1 \
-       | grep -c official-kvmapp)" "1"
-
 # The fork's whole native-library delta is two files. Everything else in
 # server/dl_lib is byte-identical to the official 2.5.0 release, so these two
 # are the only ones a build can lose without changing anything visible.
@@ -274,20 +237,12 @@ check "the package takes the fork libraries from the tracked path" \
 check "and reads back what was assembled rather than trusting the copy" \
     "$(grep -c 'is not the one server/dl_lib holds' "$SCRIPT")" "1"
 
-# The card image is built from the manifest and never sees $PAYLOAD, so it needs
-# its own line for each.
-check "the image names libkvm.so from server/dl_lib" \
-    "$(grep -c '^add  *server/dl_lib/libkvm\.so ' "$MANIFEST")" "1"
-check "the image names libkvm_mmf.so from server/dl_lib" \
-    "$(grep -c '^add  *server/dl_lib/libkvm_mmf\.so ' "$MANIFEST")" "1"
-
-# Order decides which copy survives. kvmapp/ merges into the same /kvmapp, so a
-# line above it would be overwritten by whatever the ignored directory holds,
-# which is the state this replaced.
-check "the image lines come after the kvmapp merge" \
-    "$(grep -n '^add  *kvmapp/ \|^add  *server/dl_lib/libkvm\.so ' "$MANIFEST" \
-       | head -1 | grep -c 'kvmapp/ ')" "1"
-
+# ironkvm-1.1.0 was the last Buildroot card image. The card half of this script
+# is gone, and the ironkvm-dist repository builds images from now on.
+check "no card image is assembled" \
+    "$(grep -c 'sdcard' "$SCRIPT")" "0"
+check "no card image is published" \
+    "$(grep -c '\$IMG' "$SCRIPT")" "0"
 
 echo
 echo "release notes"
@@ -300,7 +255,7 @@ echo "release notes"
 # So the file is checked in the preflight, before anything is built, and it is a
 # file in the repository rather than prose typed at the prompt.
 check "the notes are checked before anything is built" \
-    "$(grep -n 'NOTES_SRC is missing or empty\|^echo "==> building the slot filesystems"' "$SCRIPT" \
+    "$(grep -n 'NOTES_SRC is missing or empty\|^echo "==> building the web user interface"' "$SCRIPT" \
        | head -1 | grep -c 'NOTES_SRC')" "1"
 check "a release without notes is refused" \
     "$(grep -c 'write the release notes first' "$SCRIPT")" "1"
@@ -324,10 +279,10 @@ check "1.0.1 has notes to publish" \
     "$([ -s "$HERE/notes/1.0.1.md" ] && echo yes || echo no)" "yes"
 check "and they say the 1.0.0 card image is superseded" \
     "$(grep -ci 'superseded' "$HERE/notes/1.0.1.md")" "1"
-# The base is Sipeed's, and the system image ships no checksum of its own, so the
-# pin in BASE.sha256 is the only statement of which bytes an image came from.
-check "the base is verified against the recorded pins" \
-    "$(grep -q 'which is not pinned in tools/abslots/BASE.sha256' "$SCRIPT" && echo yes || echo no)" "yes"
+# The official application is Sipeed's, and the pin in APP.sha256 is the only
+# statement of which bytes a package was built from.
+check "the official application is verified against its recorded pin" \
+    "$(grep -q 'which is not pinned in tools/release/APP.sha256' "$SCRIPT" && echo yes || echo no)" "yes"
 
 # make is not installed on every host that has Docker and the builder image.
 check "the build does not depend on make" \
@@ -337,24 +292,28 @@ echo
 echo "fetch-base.sh"
 
 FETCH="$HERE/fetch-base.sh"
-PINS="$HERE/../abslots/BASE.sha256"
+PINS="$HERE/APP.sha256"
 
 # The pin lookup has to resolve against the real file, not a fixture. A grep that
 # silently matches nothing would let the script "verify" every download.
-for name in 20260610_NanoKVM_Rev1_4_3.img nanokvm_2.5.0.tar.gz nanokvm-base-official.tar.zst; do
+for name in nanokvm_2.5.0.tar.gz; do
     got=$(grep "  $name\( \|\$\)" "$PINS" | grep -o '^[0-9a-f]\{64\}' | head -1)
     check "a pin resolves for $name" "$(printf '%s' "$got" | wc -c | tr -d ' ')" "64"
 done
 
-# The derived tarball is the one that could differ without anybody noticing: it
-# is produced here rather than downloaded, so its pin is what says the extraction
-# reproduced the bytes the fork was developed against.
-check "the extracted root filesystem is verified too" \
-    "$(grep -q 'check "\$DEST/rootfs.tar.zst" nanokvm-base-official.tar.zst' "$FETCH" && echo yes || echo no)" "yes"
+# The same file both scripts read. A second pin file is how the release and the
+# fetch drift apart without either failing.
+check "the release script reads the same pin file" \
+    "$(grep -c '^PINS="\$HERE/APP\.sha256"$' "$FETCH")" "1"
 
-# Sipeed's layout is not the fork's, and it is not partition.sfdisk.
-check "the offsets are read from the image, not assumed" \
-    "$(grep -c 'fdisk -l -o Device,Start' "$FETCH")" "2"
+# The card image half is gone, and so is everything it needed: the system image
+# download, the loop mounts, and the extracted root filesystem.
+check "no system image is downloaded" \
+    "$(grep -c '20260610_NanoKVM_Rev1_4_3\.img' "$FETCH")" "0"
+check "no partition is mounted" \
+    "$(grep -c '^mount -o loop' "$FETCH")" "0"
+check "no root filesystem is extracted" \
+    "$(grep -c 'rootfs\.tar\.zst' "$FETCH")" "0"
 
 check "a missing pin refuses rather than passing" \
     "$(grep -q 'no pin recorded for' "$FETCH" && echo yes || echo no)" "yes"
@@ -423,19 +382,6 @@ check "publishing is guarded by the dry-run flag" \
     "$(sed -n '/^publish()/,/^}/p' "$SCRIPT" | grep -c 'DRY_RUN')" "1"
 check "nothing outside publish() calls gh" \
     "$(grep -c '^[^#]*gh release' "$SCRIPT")" "1"
-
-# build-card.sh creates the card at exactly its final size, because the table
-# declares no data partition and there is no hole to cut back. The card is still
-# assembled on the build host's own filesystem rather than in the output
-# directory: the image is 5 GiB and both slots are read back out of it to be
-# checked, so the same bytes cross the filesystem three times, and the output
-# directory on a Windows workstation is a bind mount.
-check "the card is assembled on the build host's own filesystem" \
-    "$(grep -c '"\$STAGE/ironkvm-\${VERSION}-sdcard\.img"' "$SCRIPT")" "2"
-check "the uncompressed card never lands in the output directory" \
-    "$(grep -c '"\$OUT/ironkvm-\${VERSION}-sdcard\.img"' "$SCRIPT")" "0"
-check "only the compressed image is moved to the output directory" \
-    "$(grep -c '^mv "\$STAGE/ironkvm-\${VERSION}-sdcard\.img\.xz" "\$OUT/\$IMG"' "$SCRIPT")" "1"
 
 echo
 echo "the release host image"

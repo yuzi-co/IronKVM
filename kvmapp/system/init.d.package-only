@@ -7,8 +7,8 @@
 # behaviour is the base's.
 #
 # Every script in kvmapp/system/init.d must be named either by
-# tools/abslots/manifest/root.manifest or by this file.
-# tools/abslots/check-init-install.sh enforces that, and it checks the two
+# the ironkvm-dist repository's abslots/manifest/root.manifest or by this file.
+# Its abslots/check-init-install.sh enforces that, and it checks the two
 # reasons below differently.
 #
 #   same-as-base            The base rootfs carries this script and the fork
