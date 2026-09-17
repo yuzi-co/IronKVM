@@ -4,11 +4,11 @@
 #
 #   test-server-stop.sh [path-to-S95nanokvm]
 #
-# stop_services removes the runtime copies in tmpfs, and start_services only
-# rebuilds the server's copy when no server is running:
+# stop_services removes the runtime paths in tmpfs, and start_services only
+# stages the server again when no server is running:
 #
 #     if ! pidof NanoKVM-Server >/dev/null 2>&1; then
-#         copy_server
+#         stage_server
 #         "$SERVER_DST/NanoKVM-Server" &
 #     fi
 #

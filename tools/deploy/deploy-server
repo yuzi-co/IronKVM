@@ -7,10 +7,10 @@
 #   scp tools/deploy/deploy-server root@<device>:/data/
 #   ssh root@<device> 'sh /data/deploy-server /data/NanoKVM-Server.new'
 #
-# /tmp is a 79MB tmpfs that S95nanokvm already fills with a copy of
-# /kvmapp/server. Staging a second 23MB binary there is how a deploy got
-# truncated in the first place, and cp reported the error to a caller that was
-# not checking. /data is 21GB of exFAT.
+# /tmp is a 79MB tmpfs. Staging a 23MB binary there, beside the copy of
+# /kvmapp/server that S95nanokvm used to make, is how a deploy got truncated in
+# the first place, and cp reported the error to a caller that was not checking.
+# /data is 21GB of exFAT.
 #
 # Why this exists: nothing supervises NanoKVM-Server. S95nanokvm starts it with
 # `&` and inittab respawns only two gettys, so a build that crashes on startup
@@ -84,7 +84,6 @@ DEPLOY_URL=${DEPLOY_URL:-$(default_probe_url)}
 DEPLOY_DIR=${DEPLOY_DIR:-/data/deploy}
 CURRENT=${CURRENT:-/kvmapp/server/NanoKVM-Server}
 GOOD=${GOOD:-$DEPLOY_DIR/known-good/NanoKVM-Server}
-RUNNING=${RUNNING:-/tmp/server/NanoKVM-Server}
 LOG=${DEPLOY_LOG:-$DEPLOY_DIR/deploy.log}
 
 say() {
@@ -92,12 +91,62 @@ say() {
     [ -d "$(dirname "$LOG")" ] && echo "$(date '+%Y-%m-%d %H:%M:%S') $*" >> "$LOG"
 }
 
-# running_matches_installed compares the copy S95nanokvm actually executes with
-# the file that was just installed.
+# --- running ---
+# running_matches_installed reports whether a server process that is running now
+# was started from the file just installed.
+#
+# It used to hash /tmp/server/NanoKVM-Server against CURRENT, because S95nanokvm
+# ran a copy from there. /tmp/server is now a link to /kvmapp/server, so that
+# compares a file with itself and passes while the old process still answers.
+#
+# The process is the evidence instead. install_file renames the new file over
+# CURRENT, and the kernel then prints every mapping of the replaced file with
+# " (deleted)" after its path: measured on the device on 2026-09-17. A process
+# that maps CURRENT under its plain path therefore started after the install.
+# That holds for a library as much as for the binary, so CURRENT may name
+# libkvm.so.
+#
+# The kernel prints the resolved path, so CURRENT is resolved too, and a CURRENT
+# given through the /tmp/server link still matches.
+PROC=${PROC:-/proc}
+
 running_matches_installed() {
-    [ -f "$RUNNING" ] || return 1
-    [ "$(sha256sum "$RUNNING" | cut -d' ' -f1)" = "$(sha256sum "$CURRENT" | cut -d' ' -f1)" ]
+    installed=$(readlink -f "$CURRENT" 2>/dev/null) || installed=$CURRENT
+    [ -n "$installed" ] || installed=$CURRENT
+
+    for pid in $(pidof NanoKVM-Server 2>/dev/null); do
+        awk '{ $1 = $2 = $3 = $4 = $5 = ""; sub(/^ +/, ""); print }' "$PROC/$pid/maps" 2>/dev/null \
+            | grep -qxF -e "$installed" && return 0
+    done
+    return 1
 }
+# --- end running ---
+
+# --- install ---
+# install_file puts a file in place by renaming it there, never by writing over it.
+#
+# The server runs from /kvmapp/server now, not from a copy in tmpfs, so the file
+# this replaces can be mapped by the running process. cp over it goes wrong both
+# ways: over the executable it fails with ETXTBSY and the deploy installs
+# nothing, and over a loaded library it truncates pages the server is executing,
+# which kills it with SIGBUS. A rename leaves the running process its own file
+# and gives the next one the new file.
+#
+# The temporary name sits beside the target, so the rename stays on one
+# filesystem and is atomic. It is compared with the source before the rename,
+# because a short copy is the failure this script was written after.
+install_file() {   # $1 = source, $2 = destination
+    tmp="$2.deploy-new"
+    rm -f "$tmp"
+
+    if cp "$1" "$tmp" && chmod 755 "$tmp" && cmp -s "$1" "$tmp" && mv -f "$tmp" "$2"; then
+        return 0
+    fi
+
+    rm -f "$tmp"
+    return 1
+}
+# --- end install ---
 
 candidate_is_elf() {
     [ "$(head -c 4 "$NEW" | od -An -tx1 | tr -d ' 
@@ -108,8 +157,10 @@ candidate_size_kb() {
     echo $(( $(wc -c < "$NEW") / 1024 ))
 }
 
-tmp_free_kb() {
-    df -k /tmp | awk 'NR==2{print $4}'
+# install_free_kb is the free space where CURRENT lives. install_file holds the
+# new file beside the old one until the rename, so both must fit at once.
+install_free_kb() {
+    df -k "$(dirname "$CURRENT")" | awk 'NR==2{print $4}'
 }
 
 # serving reports whether the server answers. A 401 counts: the process is up,
@@ -128,7 +179,7 @@ serving() {
 # Waiting for "something answers" is not enough and was the bug that made this
 # block necessary. `restart` is detached, so for a second or two after it the
 # process still answering is the old one - and the verdict taken at that moment
-# reads "it serves, but /tmp/server is not what I installed", which is the exact
+# reads "it serves, but that is not what I installed", which is the exact
 # signature of a corrupt candidate. On a device the guard stamped `installed,
 # restarting` and `FAILED to serve` in the same second and rolled back a build
 # that was fine.
@@ -194,11 +245,12 @@ restart() {
 # --- verdict ---
 # Serving is necessary and not sufficient.
 #
-# S95nanokvm copies /kvmapp/server to /tmp/server and runs the copy. So an HTTP
-# 200 can come from a stale copy while the file just installed is corrupt. That
-# is not hypothetical: tmpfs filled up during a deploy, the candidate landed
-# truncated, and an earlier version of this script reported OK - leaving a board
-# that would have failed to start on its next reboot.
+# An HTTP 200 can come from a process that is not running the file just
+# installed. That is not hypothetical: when S95nanokvm ran a copy from tmpfs,
+# tmpfs filled up during a deploy, the candidate landed truncated, and an earlier
+# version of this script reported OK - leaving a board that would have failed to
+# start on its next reboot. The same holds for an old process that has not been
+# replaced yet.
 #
 # A deploy is only good if the service answers AND what is running is what was
 # installed.
@@ -231,17 +283,17 @@ restore_worked() {
 # all this, and a truncated Go binary can still start, so size alone is a weak
 # test - check that it is an ELF as well.
 #
-# tmpfs must also have room. /tmp is 79MB here and S95nanokvm copies the whole of
-# /kvmapp/server into it on every restart, so a deploy that fits on the SD card
-# can still be truncated on the way to the place it actually runs from. Ask for
-# the candidate's size plus half again, so the web assets and dl_lib beside it fit.
+# The filesystem that holds CURRENT must also have room, because install_file
+# keeps the new file beside the old one until it renames. That needs one
+# candidate's size. Half as much again is margin, so a filesystem that is
+# nearly full is refused before anything is written to it.
 preflight() {
     if ! candidate_is_elf; then
         return 1
     fi
 
     needed=$(candidate_size_kb)
-    free=$(tmp_free_kb)
+    free=$(install_free_kb)
 
     [ "$free" -ge $((needed + needed / 2)) ]
 }
@@ -281,7 +333,7 @@ main() {
     say "deploy: starting, candidate $(wc -c < "$NEW") bytes"
 
     if ! preflight; then
-        say "deploy: REFUSED - candidate is not an intact ELF, or /tmp has only $(tmp_free_kb)kB free for a $(candidate_size_kb)kB binary"
+        say "deploy: REFUSED - candidate is not an intact ELF, or $(dirname "$CURRENT") has only $(install_free_kb)kB free for a $(candidate_size_kb)kB binary"
         say "deploy: nothing was changed"
         exit 4
     fi
@@ -296,8 +348,11 @@ main() {
         fi
     fi
 
-    cp "$NEW" "$CURRENT"
-    chmod 755 "$CURRENT"
+    if ! install_file "$NEW" "$CURRENT"; then
+        say "deploy: REFUSED - could not install $NEW as $CURRENT"
+        say "deploy: nothing was changed"
+        exit 4
+    fi
     say "deploy: installed, restarting"
     restart
 
@@ -307,7 +362,7 @@ main() {
     fi
 
     if serving; then
-        say "deploy: FAILED - it serves, but $RUNNING is not the binary just installed"
+        say "deploy: FAILED - it serves, but no running server maps the $CURRENT just installed"
     else
         say "deploy: FAILED to serve within ${DEPLOY_TIMEOUT}s"
     fi
@@ -318,8 +373,10 @@ main() {
     fi
 
     say "deploy: restoring the known-good binary"
-    cp "$GOOD" "$CURRENT"
-    chmod 755 "$CURRENT"
+    if ! install_file "$GOOD" "$CURRENT"; then
+        say "deploy: could not put $GOOD back as $CURRENT - the board needs attention"
+        exit 3
+    fi
     restart
 
     # The same wait, for the same reason: for a moment after the restore the

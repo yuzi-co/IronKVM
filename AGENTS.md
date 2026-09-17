@@ -176,7 +176,11 @@ the rest.
 
 SSH must be enabled first (Web UI: `Settings > SSH`; default login `root`/`root`).
 
-- Backend: replace `/kvmapp/server/NanoKVM-Server`.
+- Backend: replace `/kvmapp/server/NanoKVM-Server` by a rename. Upload it beside the target and `mv`
+  it into place. The server runs from `/kvmapp/server`, so a write over the running executable
+  fails with `ETXTBSY`, and a write over a loaded library in `dl_lib` kills the server.
+  `tools/deploy/deploy-server` does this for you and restores the old binary if the new one does
+  not serve.
 - Frontend: rename `web/dist` to `web` and upload to `/kvmapp/server/`.
 - Then `/etc/init.d/S95nanokvm restart`.
 

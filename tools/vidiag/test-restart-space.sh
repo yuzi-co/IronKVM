@@ -9,20 +9,21 @@
 # it reads, but that trim stops when the reader stops, so no other script can
 # depend on it.
 #
-# tmpfs holds 80892K on the device and /kvmapp/server is 36236K. A flood fills
-# the free space. The restart case then removes /tmp/server and /tmp/kvm_system,
-# which returns 36540K, copies kvm_system back, which takes 328K, and copies the
-# server, which needs 36236K. That leaves 24K less than the copy needs. The
-# margin is not engineered: it is the difference between two unrelated sizes.
+# This was found when S95nanokvm still copied the server into tmpfs. tmpfs holds
+# 80892K on the device and /kvmapp/server was 36236K. A flood filled the free
+# space, the restart case removed /tmp/server and /tmp/kvm_system, which
+# returned 36540K, copied kvm_system back, which took 328K, and copied the
+# server, which needed 36236K. That left 24K less than the copy needed.
 #
-# A copy that runs out of space leaves a truncated NanoKVM-Server, and the case
-# starts it anyway. The KVM is then down until somebody logs in.
+# The server is no longer copied: /tmp/server is a link to /kvmapp/server. The
+# kvm_system copy remains, and a flood can leave no room at all, so a copy into
+# a full tmpfs still leaves a truncated binary that the case then starts.
 #
 # The fix is an order, not a size: empty the log first, and the flood's space is
 # back before the first copy asks for it. This script checks that order.
 #
-# tools/vidiag/spacetest.sh replays the whole sequence on a real tmpfs of the
-# device's size. Run that by hand when the numbers change.
+# tools/vidiag/spacetest.sh replays the old sequence on a real tmpfs of the
+# device's size.
 S95=${1:-$(dirname "$0")/../../kvmapp/system/init.d/S95nanokvm}
 [ -f "$S95" ] || { echo "usage: test-restart-space.sh <S95nanokvm>"; exit 1; }
 
@@ -43,11 +44,11 @@ events=$(awk '
     fn && /^\}/                           { fn = 0 }
     fn && /^[ \t]*: > "\$SERVER_LOG"/     { print "empty", NR }
     fn && /^[ \t]*cp -r \/kvmapp\//       { print "copy", NR }
-    fn && /^[ \t]*copy_server[ \t]*$/     { print "copy", NR }
+    fn && /^[ \t]*refresh_kvm_system[ \t]*$/ { print "copy", NR }
 ' "$S95")
 
 echo "===== the log is emptied before the first copy ====="
-# start_services copies 36MB into tmpfs, and the server's log shares that
+# start_services copies kvm_system into tmpfs, and the server's log shares that
 # space. Emptying after the copy returns the room too late.
 empty=$(echo "$events" | awk '$1 == "empty" { print $2; exit }')
 copy=$(echo "$events"  | awk '$1 == "copy"  { print $2; exit }')

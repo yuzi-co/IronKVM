@@ -14,17 +14,35 @@
 # messages wait in libc for the process to exit, and this file collects one
 # line and then nothing. See server/common/libkvm_stdout.go.
 #
-# Empty the file before the copies below, not after them. libkvm prints on some
-# error paths once per frame. A capture pipeline that fails in a loop therefore
-# fills tmpfs, and the copy of /kvmapp/server then has no space for its 36MB. A
-# copy that runs out of space leaves a truncated NanoKVM-Server, and the case
-# starts it anyway. S98vidiag also empties this file, but only while its reader
-# runs, so these cases must not depend on it.
+# Empty the file at every start. libkvm prints on some error paths once per
+# frame, so a capture pipeline that fails in a loop fills tmpfs, and a full
+# tmpfs breaks everything else that keeps its state there. S98vidiag also
+# empties this file, but only while its reader runs, so these cases must not
+# depend on it.
 SERVER_LOG=/tmp/nanokvm-server.log
 
-# Where the runtime copy comes from and where it goes. Both are variables so
-# tools/vidiag/test-server-copy.sh can drive the copy against a scratch tree
-# instead of the boot SD card.
+# The server runs from /kvmapp/server, through a link at /tmp/server.
+#
+# It used to run from a copy of /kvmapp/server in tmpfs. That copy cost 32.7MB of
+# RAM that the kernel could never reclaim, on a board with about 96MB spare, and
+# it bought nothing: executing a file and reading its web assets does not write
+# the SD card. Measured on 2026-09-17 in one boot, with the server idle, the
+# board had 93.9MB available running the copy and 128.4MB running the same
+# server from the card. The binary's pages are now ordinary page cache, which
+# the kernel drops and reads back under pressure instead of holding them.
+#
+# The link keeps the path. S98supervise reads /tmp/server as the operator's
+# intent, because a deliberate stop removes it. kvm_system, which this fork
+# cannot rebuild for a release, starts /tmp/server/NanoKVM-Server itself after an
+# update. The deploy tools and every note about this board name that path too.
+#
+# A file under /kvmapp/server that the server has mapped must now be replaced by
+# a rename and never rewritten in place. Rewriting the running executable fails
+# with ETXTBSY, and truncating a loaded library kills the server with SIGBUS.
+# The updater already renames, and tools/deploy/deploy-server does too.
+#
+# Both paths are variables so tools/vidiag/test-server-link.sh can drive the
+# link against a scratch tree instead of the boot SD card.
 SERVER_SRC=${SERVER_SRC:-/kvmapp/server}
 SERVER_DST=${SERVER_DST:-/tmp/server}
 
@@ -122,24 +140,28 @@ stop_services() {
     # After the server is gone, or it starts a new child.
     stop_audio_capture
 
-    # Remove a runtime copy only once nothing is running from it.
+    # Remove a runtime path only once nothing is running from it.
     #
-    # These copies live in tmpfs, so one left behind is pinned RAM for as long
-    # as the board is up, and removing them is worth doing. But a stop does not
-    # always stop: this board has a server that outlives the signals above and
-    # keeps answering. start_services then reads a live pidof and skips the
-    # copy, because its job is to avoid starting a second one:
+    # A deliberate stop removes the path, because S98supervise reads its
+    # absence as "stopped on purpose" and a present one as "crashed, restart
+    # it". But a stop does not always stop: this board has a server that
+    # outlives the signals above and keeps answering. start_services then reads
+    # a live pidof and skips staging, because its job is to avoid starting a
+    # second one:
     #
     #     if ! pidof NanoKVM-Server >/dev/null 2>&1; then
-    #         copy_server
+    #         stage_server
     #
-    # So an unconditional remove here leaves a running process whose whole tree
-    # is gone. It answers the API, because routing is already in memory, and it
-    # returns 404 for every file in the web UI, because the web root is derived
-    # from its own executable path. Nothing logs it.
+    # When /tmp/server was a copy, an unconditional remove here left a running
+    # process whose whole tree was gone. It answered the API and returned 404
+    # for every file in the web UI. The link is judged the same way, so that a
+    # server still running keeps the path the supervisor watches.
     #
-    # Each copy is judged by its own process. They are started and stopped
-    # separately, and one that stopped should not keep the other's copy in RAM.
+    # Each path is judged by its own process. They are started and stopped
+    # separately.
+    #
+    # rm removes a link and not what it points at, so this does not reach the
+    # SD card. tools/vidiag/test-server-link.sh holds that.
     pidof NanoKVM-Server >/dev/null 2>&1 || rm -rf "$SERVER_DST"
     pidof kvm_system >/dev/null 2>&1 || rm -rf "$SYSTEM_DST"
 }
@@ -203,47 +225,17 @@ prepare_runtime_state() {
     link_runtime_file wifi_state
 }
 
-# is_backup reports whether a name is something a deploy left beside the file
-# it replaced, rather than something the server runs.
-is_backup() {
-    case "$1" in
-        *.prev|*.bak|*.old|*.rollback) return 0 ;;
-    esac
-    return 1
-}
-
-# copy_tree copies one directory into another, skipping backups at every depth.
-# It recurses instead of calling `cp -r` on the whole tree, because an excluded
-# name must never be written at all: a copy that lands first and is deleted
-# afterwards still has to fit while it is there, and room is the constraint the
-# order in start_services exists to protect.
-copy_tree() {
-    mkdir -p "$2"
-
-    for entry in "$1"/* "$1"/.[!.]*; do
-        [ -e "$entry" ] || continue
-
-        name=${entry##*/}
-        if is_backup "$name"; then
-            echo "S95nanokvm: skipping backup $entry"
-            continue
-        fi
-
-        if [ -d "$entry" ] && [ ! -L "$entry" ]; then
-            copy_tree "$entry" "$2/$name"
-        else
-            cp -a "$entry" "$2/$name"
-        fi
-    done
-}
-
-# copy_server puts the server tree in tmpfs, which is RAM. A backup that rides
-# along is pinned memory for as long as the board is up: two orphans measured
-# on a device, web.rollback at 3.83MB and dl_lib/libkvm.so.prev at 1.48MB, cost
-# 5.3MB of 166MB and neither was ever opened.
-copy_server() {
+# stage_server points /tmp/server at the installed tree. See SERVER_DST above
+# for why this is a link and not a copy.
+#
+# Whatever is at the path is removed first, and that is not only tidiness.
+# `ln -s` onto an existing link to a directory does not replace the link: it
+# follows it and writes a new link inside the installed tree. And a copy left
+# there by kvm_system's update path, or by an S95nanokvm older than this one,
+# is 32MB of RAM that nothing will run again.
+stage_server() {
     rm -rf "$SERVER_DST"
-    copy_tree "$SERVER_SRC" "$SERVER_DST"
+    ln -s "$SERVER_SRC" "$SERVER_DST"
 }
 
 # The Go collector's only default input is how much the heap has grown since
@@ -434,9 +426,9 @@ start_services() {
     # Start each run with an empty file, so the log always describes the server
     # that is running now. S98vidiag has already copied what it read to /data.
     #
-    # This runs before the copies below, not after them: a capture pipeline that
-    # fails in a loop fills tmpfs, and the copy of /kvmapp/server then has no
-    # room for its 36MB.
+    # This runs before the kvm_system copy below, not after it: a capture
+    # pipeline that fails in a loop fills tmpfs, and a copy into a full tmpfs
+    # leaves a truncated binary that the case then starts.
     : > "$SERVER_LOG"
 
     refresh_kvm_system
@@ -462,7 +454,7 @@ start_services() {
     fi
 
     if ! pidof NanoKVM-Server >/dev/null 2>&1; then
-        copy_server
+        stage_server
         server_memlimit
         server_gogc
         echo "GOMEMLIMIT set to ${GOMEMLIMIT}, GOGC set to ${GOGC}"
@@ -568,11 +560,11 @@ case "$1" in
     echo "OK"
    ;;
     
-  # Not for an operator. tools/vidiag/test-server-copy.sh calls this with
+  # Not for an operator. tools/vidiag/test-server-link.sh calls these with
   # SERVER_SRC and SERVER_DST pointed at a scratch tree, the way S98vidiag and
   # S98supervise expose their own loops.
-  __copy_server)
-    copy_server
+  __stage_server)
+    stage_server
    ;;
 
   *)

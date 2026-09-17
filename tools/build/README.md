@@ -24,7 +24,8 @@ The named volumes cache Go modules and build output, so rebuilds are quick.
 Deploy the binary alone — leave the device's `dl_lib` untouched:
 
 ```shell
-scp server/NanoKVM-Server root@<device>:/kvmapp/server/NanoKVM-Server
+scp server/NanoKVM-Server root@<device>:/kvmapp/server/NanoKVM-Server.new
+ssh root@<device> "mv -f /kvmapp/server/NanoKVM-Server.new /kvmapp/server/NanoKVM-Server"
 ssh root@<device> "setsid sh -c '/etc/init.d/S95nanokvm restart > /tmp/nanokvm.log 2>&1' < /dev/null > /dev/null 2>&1 &"
 ```
 
@@ -33,8 +34,11 @@ session's stdout and the connection never closes. Worse, killing that ssh can
 take the server down with a SIGPIPE. `setsid` with the output redirected
 detaches it properly. `/tmp` is tmpfs, so the log costs no SD wear.
 
-The restart is not optional: `S95nanokvm` copies `/kvmapp/server` to
-`/tmp/server` and runs the copy, so replacing the file under `/kvmapp` changes
-nothing until the copy is remade. It also means `readlink /proc/<pid>/exe`
-reports `/tmp/server/NanoKVM-Server` — to confirm which build is running,
-compare sha256 rather than the path.
+The restart is not optional: the running server keeps the binary it started
+from until it is restarted. Replace the file with a rename, never by writing
+over it. The server runs from `/kvmapp/server` through the link at `/tmp/server`,
+so a write over the running executable fails with `ETXTBSY`, and a write over a
+loaded library kills the server. `readlink /proc/<pid>/exe` prints the path with
+` (deleted)` after it while the replaced binary is still running. To confirm
+which build is running, use `tools/deploy/check-deployed`, which reads the build
+stamp.
