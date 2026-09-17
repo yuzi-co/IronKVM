@@ -212,6 +212,27 @@ check "the fork's tree goes on top of the official one" \
     "$(grep -n 'cp -a official-kvmapp/\. "\$PAYLOAD/"\|cp -a kvmapp/\. *"\$PAYLOAD/"' "$SCRIPT" \
        | head -1 | grep -c official-kvmapp)" "1"
 
+# The generic boot scripts take the disk, the partitions and the swap size from
+# a device description. An image built by ironkvm-dist installs it at
+# /usr/share/ironkvm/deviceinfo, and a board on Sipeed's firmware has no such
+# path, so the reader looks in /kvmapp/system next. The package carries that
+# copy. Without it every generic script on such a board asks for a description
+# that is not there.
+#
+# Nothing in release.sh names the file: it travels with the rest of kvmapp/ in
+# the copy checked above. What this holds is that the file exists to travel, and
+# that the reader can still read it.
+check "the package carries a device description" \
+    "$(test -f "$ROOT/kvmapp/system/deviceinfo" && echo yes || echo no)" "yes"
+check "the description is this board's" \
+    "$(DEVICEINFO_PATHS="$ROOT/kvmapp/system/deviceinfo" \
+       sh "$ROOT/kvmapp/system/ironkvm-deviceinfo" get DEVICE 2>/dev/null)" "sipeed-nanokvm"
+# The reader checks the whole file before it prints anything, so a read that
+# works is a file every other read will work on too.
+check "and the reader accepts every line of it" \
+    "$(DEVICEINFO_PATHS="$ROOT/kvmapp/system/deviceinfo" \
+       sh "$ROOT/kvmapp/system/ironkvm-deviceinfo" part DATA 2>/dev/null)" "/dev/mmcblk0p6"
+
 # Two builds never collide on a hashed asset name, so a merge would leave the
 # official bundle's files beside the fork's and serve both.
 check "the web directory is replaced, not merged" \

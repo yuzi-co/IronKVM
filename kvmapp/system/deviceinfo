@@ -1,0 +1,24 @@
+# Sipeed NanoKVM on the Sophgo SG2002. Variants alpha, beta and pcie share this
+# image and are told apart at first boot.
+DEVICE=sipeed-nanokvm
+SOC=sophgo-sg2002
+ARCH=riscv64
+KERNEL=vendor-prebuilt
+BOOT_BACKEND=sg2002-initramfs
+DISK=/dev/mmcblk0
+BOOT_PART=1
+SLOT_A=2
+SLOT_B=3
+RECOVERY=5
+DATA=6
+KERNEL_IN_SLOT=no
+SLOT_SIZE_MIB=2048
+DATA_FS=exfat
+FLASH_METHOD=sd-card
+CONSOLE=ttyS0,115200
+RAM_MIB=256
+ZRAM_MIB=96
+SERVER_GOMEMLIMIT_MIB=64
+SERVER_GOGC=150
+LOADER_ALIASES="ld-musl-riscv64xthead.so.1 ld-musl-riscv64v_xthead.so.1 ld-musl-riscv64v0p7_xthead.so.1"
+SUPPORT=official
