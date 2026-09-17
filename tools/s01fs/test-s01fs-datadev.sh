@@ -99,6 +99,84 @@ else
 fi
 
 echo
+echo "===== the reader is found on a board that has none on PATH ====="
+#
+# An image built by ironkvm-dist installs the reader at
+# /usr/bin/ironkvm-deviceinfo, so the bare name resolves through PATH. A board
+# that runs Sipeed's firmware installs the application tarball instead, and its
+# install.sh comes from the official base tarball, which the fork cannot change:
+# nothing puts the reader on PATH there. The tarball carries the reader at
+# /kvmapp/system/ironkvm-deviceinfo, so that is where the script looks next.
+#
+# Without that second look the reader was never found on such a board, the data
+# device came out empty, and /data was not mounted. That is the exact fault this
+# whole file exists to prevent.
+
+# A second stub stands at the path the tarball installs, and answers from a
+# description of its own, so every case below says which reader replied.
+mkdir -p "$WORK/tarball"
+cat > "$WORK/tarball/ironkvm-deviceinfo" <<STUB
+#!/bin/sh
+DEVICEINFO_PATHS="$WORK/tarball-deviceinfo" exec sh "$READER" "\$@"
+STUB
+chmod 755 "$WORK/tarball/ironkvm-deviceinfo"
+TARBALL="$WORK/tarball/ironkvm-deviceinfo"
+tarball_deviceinfo() { printf '%s\n' "$@" > "$WORK/tarball-deviceinfo"; }
+tarball_deviceinfo DISK=/dev/sda DATA=4 BOOT_PART=1
+
+# A third reader, for the case that names one outright.
+mkdir -p "$WORK/other"
+cat > "$WORK/other/reader" <<STUB
+#!/bin/sh
+DEVICEINFO_PATHS="$WORK/other-deviceinfo" exec sh "$READER" "\$@"
+STUB
+chmod 755 "$WORK/other/reader"
+printf '%s\n' DISK=/dev/vda DATA=7 BOOT_PART=1 > "$WORK/other-deviceinfo"
+
+# A PATH with no reader on it, which is what a stock firmware board has.
+BARE=/usr/bin:/bin
+
+deviceinfo DISK=/dev/mmcblk0 SLOT_A=2 SLOT_B=3 RECOVERY=5 DATA=6 BOOT_PART=1 DATA_START=10543104
+
+got=$(DEVINFO_TARBALL="$TARBALL" sh -c ". $WORK/dd.sh; data_device" 2>/dev/null)
+[ "$got" = /dev/mmcblk0p6 ] \
+    && note "a reader on PATH is the one that answers" OK \
+    || note "a reader on PATH gave '$got', want /dev/mmcblk0p6" FAIL
+
+got=$(PATH="$BARE" DEVINFO_TARBALL="$TARBALL" sh -c ". $WORK/dd.sh; data_device" 2>/dev/null)
+[ "$got" = /dev/sda4 ] \
+    && note "no reader on PATH falls back to the tarball's copy" OK \
+    || note "no reader on PATH gave '$got', want /dev/sda4" FAIL
+
+got=$(DEVINFO="$WORK/other/reader" DEVINFO_TARBALL="$TARBALL" sh -c ". $WORK/dd.sh; data_device" 2>/dev/null)
+[ "$got" = /dev/vda7 ] \
+    && note "a DEVINFO from the environment beats both" OK \
+    || note "a DEVINFO from the environment gave '$got', want /dev/vda7" FAIL
+
+# A DEVINFO that names a reader which is not there keeps the behaviour this
+# block already has for a missing reader: no device, rather than a guess. The
+# suites drive that case this way, so the fallback must not rescue it.
+got=$(DEVINFO="$WORK/no-such-reader" DEVINFO_TARBALL="$TARBALL" sh -c ". $WORK/dd.sh; data_device" 2>/dev/null)
+[ -z "$got" ] \
+    && note "a DEVINFO that names nothing still gives no device" OK \
+    || note "a DEVINFO that names nothing gave '$got'" FAIL
+
+# The fallback is in /kvmapp because that is the only path the application
+# tarball owns. A file written into the vendor root filesystem is removed by the
+# next firmware update and belongs to nobody.
+if grep -q '^DEVINFO_TARBALL=${DEVINFO_TARBALL:-/kvmapp/system/ironkvm-deviceinfo}$' "$S01"; then
+    note "the fallback is the tarball's own path" OK
+else
+    note "the fallback is not /kvmapp/system/ironkvm-deviceinfo" FAIL
+fi
+
+if grep -v '^[[:space:]]*#' "$S01" | grep -q '/usr/'; then
+    note "no line outside a comment names a path in /usr" FAIL
+else
+    note "no line outside a comment names a path in /usr" OK
+fi
+
+echo
 echo "===== no bare partition number survives in the mount path ====="
 
 # The mount must not name a partition directly any more.
@@ -125,7 +203,18 @@ sed -n '/^# --- autopartition guard ---/,/^# --- end autopartition guard ---/p' 
     && note "the autopartition guard block can be extracted" OK \
     || note "the autopartition guard block can be extracted" FAIL
 
-may_auto() { sh -c ". $WORK/ap.sh; may_autopartition && echo yes || echo no" 2>/dev/null; }
+# The guard reads the reader the data device block resolved, so both blocks are
+# sourced here, in the order the script has them.
+may_auto() { sh -c ". $WORK/dd.sh; . $WORK/ap.sh; may_autopartition && echo yes || echo no" 2>/dev/null; }
+
+# And it names no reader of its own. Two spellings of the same name drift, and a
+# guard that reads a different description from the rest of the script arms the
+# branch that formats a root slot.
+if grep -v '^[[:space:]]*#' "$WORK/ap.sh" | grep -q 'ironkvm-deviceinfo'; then
+    note "the guard names no reader of its own" FAIL
+else
+    note "the guard names no reader of its own" OK
+fi
 
 # DATA_START is written into the image by the build, so a description that
 # carries it describes a card that was laid out deliberately.
@@ -149,6 +238,23 @@ got=$(may_auto)
 [ "$got" = yes ] \
     && note "an undeclared layout may still autopartition as before" OK \
     || note "an undeclared layout can no longer autopartition, a regression" FAIL
+
+# On a stock firmware board the reader is the tarball's copy, and the guard has
+# to read the same one. A description there that declares DATA_START must disarm
+# the branch exactly as the image's own description does.
+tarball_deviceinfo DISK=/dev/sda DATA=4 BOOT_PART=1 DATA_START=99
+got=$(PATH="$BARE" DEVINFO_TARBALL="$TARBALL" \
+    sh -c ". $WORK/dd.sh; . $WORK/ap.sh; may_autopartition && echo yes || echo no" 2>/dev/null)
+[ "$got" = no ] \
+    && note "the guard reads the reader the script resolved" OK \
+    || note "the guard gave '$got' for a declared layout with no reader on PATH" FAIL
+
+tarball_deviceinfo DISK=/dev/sda DATA=4 BOOT_PART=1
+got=$(PATH="$BARE" DEVINFO_TARBALL="$TARBALL" \
+    sh -c ". $WORK/dd.sh; . $WORK/ap.sh; may_autopartition && echo yes || echo no" 2>/dev/null)
+[ "$got" = yes ] \
+    && note "and a tarball description still permits the stock branch" OK \
+    || note "a tarball description disarmed the stock branch, got '$got'" FAIL
 
 echo
 echo "===== /data is mounted so its identity files are not world readable ====="

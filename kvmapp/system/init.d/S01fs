@@ -19,7 +19,28 @@
 # number typed into a generic script, and on a layout where p3 is a root
 # filesystem it named a slot. A board with no description mounts no /data and
 # says so on the console, which is a fault somebody can see and repair.
+#
+# The reader is found in two steps. An image built by ironkvm-dist installs it
+# at /usr/bin/ironkvm-deviceinfo, so the bare name resolves through PATH. A
+# board that runs Sipeed's firmware installs the application tarball instead,
+# and that install.sh comes from the official base tarball, which the fork
+# cannot change: nothing puts the reader on PATH there. So the second step is
+# the copy the tarball carries. Without it the reader was never found on such a
+# board, the data device came out empty, and /data was not mounted.
+#
+# The fallback is in /kvmapp because that is the only path the tarball owns. A
+# copy written into the vendor root filesystem is removed by the next firmware
+# update and belongs to nobody.
+#
+# Only the default is resolved this way. A DEVINFO from the environment is used
+# as it is, including one that names a path which does not exist, because that
+# is how the suites drive the missing reader case.
 DEVINFO=${DEVINFO:-ironkvm-deviceinfo}
+DEVINFO_TARBALL=${DEVINFO_TARBALL:-/kvmapp/system/ironkvm-deviceinfo}
+if [ "$DEVINFO" = ironkvm-deviceinfo ] && ! command -v "$DEVINFO" > /dev/null 2>&1
+then
+    DEVINFO=$DEVINFO_TARBALL
+fi
 
 devinfo_get() { "$DEVINFO" get "$1" 2>/dev/null; }
 devinfo_part() { "$DEVINFO" part "$1" 2>/dev/null; }
@@ -216,8 +237,13 @@ mount_data() {
 # that key into the image's own deviceinfo and no device file carries it, so the
 # copy in the application tarball does not answer here. A board on Sipeed's
 # firmware therefore still provisions its stock data disk the way it always did.
+#
+# DEVINFO is the one the data device block resolved. This block named the reader
+# a second time, and two spellings of the same name drift: a guard that reads a
+# different description from the rest of the script is a guard that arms the
+# branch which formats a root slot.
 may_autopartition() {
-    [ -n "$("${DEVINFO:-ironkvm-deviceinfo}" get DATA_START 2>/dev/null)" ] && return 1
+    [ -n "$("$DEVINFO" get DATA_START 2>/dev/null)" ] && return 1
     return 0
 }
 # --- end autopartition guard ---

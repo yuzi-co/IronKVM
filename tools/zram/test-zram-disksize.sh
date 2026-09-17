@@ -123,6 +123,87 @@ got=$(size)
     || note "ZRAM_MIB=1M gave '$got', which sysfs refuses" FAIL
 
 echo
+echo "===== the reader is found on a board that has none on PATH ====="
+#
+# An image built by ironkvm-dist installs the reader at
+# /usr/bin/ironkvm-deviceinfo, so the bare name resolves through PATH. A board
+# that runs Sipeed's firmware installs the application tarball instead, and its
+# install.sh comes from the official base tarball, which the fork cannot change:
+# nothing puts the reader on PATH there. The tarball carries the reader at
+# /kvmapp/system/ironkvm-deviceinfo, so that is where the script looks next.
+#
+# This script degrades to 96M without it, so the fault is quiet. S01fs, which
+# resolves the reader the same way, leaves /data unmounted instead.
+
+# A second stub stands at the path the tarball installs, and answers from a
+# description of its own, so every case below says which reader replied.
+mkdir -p "$work/tarball" "$work/other"
+cat > "$work/tarball/ironkvm-deviceinfo" <<STUB
+#!/bin/sh
+DEVICEINFO_PATHS="$work/tarball-deviceinfo" exec sh "$READER" "\$@"
+STUB
+chmod 755 "$work/tarball/ironkvm-deviceinfo"
+TARBALL="$work/tarball/ironkvm-deviceinfo"
+printf '%s\n' DEVICE=tarball ZRAM_MIB=384 > "$work/tarball-deviceinfo"
+
+# A third reader, for the case that names one outright.
+cat > "$work/other/reader" <<STUB
+#!/bin/sh
+DEVICEINFO_PATHS="$work/other-deviceinfo" exec sh "$READER" "\$@"
+STUB
+chmod 755 "$work/other/reader"
+printf '%s\n' DEVICE=other ZRAM_MIB=128 > "$work/other-deviceinfo"
+
+# A PATH with no reader on it, which is what a stock firmware board has.
+BARE=/usr/bin:/bin
+
+# Each case drives the block with DEVINFO unset, so the script's own default is
+# what resolves the reader. The prefixes go on sh rather than on a function,
+# because an assignment in front of a function call outlives the call in ash.
+deviceinfo DEVICE=sipeed-nanokvm RAM_MIB=256 ZRAM_MIB=64
+got=$(PATH="$work/bin:$PATH" DEVINFO_TARBALL="$TARBALL" \
+    sh -c ". $work/block.sh; echo \$ZRAM_DISKSIZE" 2>/dev/null)
+[ "$got" = 64M ] \
+    && note "a reader on PATH is the one that answers" OK \
+    || note "a reader on PATH gave '$got', want 64M" FAIL
+
+got=$(PATH="$BARE" DEVINFO_TARBALL="$TARBALL" \
+    sh -c ". $work/block.sh; echo \$ZRAM_DISKSIZE" 2>/dev/null)
+[ "$got" = 384M ] \
+    && note "no reader on PATH falls back to the tarball's copy" OK \
+    || note "no reader on PATH gave '$got', want 384M" FAIL
+
+got=$(PATH="$work/bin:$PATH" DEVINFO="$work/other/reader" DEVINFO_TARBALL="$TARBALL" \
+    sh -c ". $work/block.sh; echo \$ZRAM_DISKSIZE" 2>/dev/null)
+[ "$got" = 128M ] \
+    && note "a DEVINFO from the environment beats both" OK \
+    || note "a DEVINFO from the environment gave '$got', want 128M" FAIL
+
+# A DEVINFO that names a reader which is not there keeps the behaviour this
+# block already has for a missing reader: 96M and swap. The suites drive that
+# case this way, so the fallback must not rescue it.
+got=$(PATH="$work/bin:$PATH" DEVINFO="$work/no-such-reader" DEVINFO_TARBALL="$TARBALL" \
+    sh -c ". $work/block.sh; echo \$ZRAM_DISKSIZE" 2>/dev/null)
+[ "$got" = 96M ] \
+    && note "a DEVINFO that names nothing still falls back to 96M" OK \
+    || note "a DEVINFO that names nothing gave '$got'" FAIL
+
+# The fallback is in /kvmapp because that is the only path the application
+# tarball owns. A file written into the vendor root filesystem is removed by the
+# next firmware update and belongs to nobody.
+if grep -q '^DEVINFO_TARBALL=${DEVINFO_TARBALL:-/kvmapp/system/ironkvm-deviceinfo}$' "$S01"; then
+    note "the fallback is the tarball's own path" OK
+else
+    note "the fallback is not /kvmapp/system/ironkvm-deviceinfo" FAIL
+fi
+
+if grep -v '^[[:space:]]*#' "$S01" | grep -q '/usr/'; then
+    note "no line outside a comment names a path in /usr" FAIL
+else
+    note "no line outside a comment names a path in /usr" OK
+fi
+
+echo
 echo "===== the size is not written into the script ====="
 
 if grep -qE '^ZRAM_DISKSIZE=[0-9]' "$S01"; then
