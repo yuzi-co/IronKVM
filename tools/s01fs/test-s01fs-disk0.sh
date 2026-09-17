@@ -51,6 +51,21 @@ if [ ! -s "$WORK/f.sh" ]; then
 fi
 note "S01fs carries a disk0 provisioning block" OK
 
+# The branch now proves the device is not something else before it writes to it,
+# and both proofs come from blocks above it: the description says whether the
+# device is a slot, and blkid says whether it already holds a filesystem. So the
+# blocks are sourced in the order the script has them, exactly as a boot does.
+sed -n '/^# --- data device ---/,/^# --- end data device ---/p' "$S01" > "$WORK/dd.sh"
+sed -n '/^# --- data geometry ---/,/^# --- end data geometry ---/p' "$S01" > "$WORK/geo.sh"
+[ -s "$WORK/dd.sh" ] && [ -s "$WORK/geo.sh" ] \
+    && note "the data device and geometry blocks can be extracted" OK \
+    || note "the data device and geometry blocks can be extracted" FAIL
+
+# The real reader, not a stub. A stub would not catch a key the guard asks for
+# under the wrong name.
+READER=${READER:-$(cd "$(dirname "$0")/../.." && pwd)/kvmapp/system/ironkvm-deviceinfo}
+[ -f "$READER" ] || { echo "needs kvmapp/system/ironkvm-deviceinfo"; exit 2; }
+
 # Stubs. parted logs its argv and creates the partition node, so the function
 # sees the outcome rather than a return code: parted exits 1 on a busy disk
 # after it has succeeded, which is measured behaviour on this board.
@@ -66,21 +81,48 @@ cat > "$WORK/bin/mkfs.exfat" <<'EOF'
 echo "mkfs.exfat $*" >> "$PLOG"
 exit "${MKFS_RC:-0}"
 EOF
-chmod +x "$WORK/bin/parted" "$WORK/bin/mkfs.exfat"
+cat > "$WORK/bin/ironkvm-deviceinfo" <<STUB
+#!/bin/sh
+DEVICEINFO_PATHS="$WORK/deviceinfo" exec sh "$READER" "\$@"
+STUB
+# One file per device name, so a case says what blkid answers for the device it
+# is about. A device no case described reads as empty, which is what blkid
+# prints for a partition with no filesystem.
+cat > "$WORK/bin/blkid" <<STUB
+#!/bin/sh
+f="$WORK/fs/\$(basename "\$1")"
+[ -f "\$f" ] && cat "\$f"
+exit 0
+STUB
+chmod +x "$WORK/bin/parted" "$WORK/bin/mkfs.exfat" \
+    "$WORK/bin/ironkvm-deviceinfo" "$WORK/bin/blkid"
 PATH="$WORK/bin:$PATH"
 export PATH
 
 # One run of the function against a fresh fake root.
-# $1 = "fresh" | "marked" | "pending" | "nodev"; $2 = mkfs exit code
+# $1 = "fresh" | "marked" | "pending" | "nodev" | "slot" | "hasfs"
+# $2 = mkfs exit code
+#
+# "slot" gives the device a description that calls it a root slot. Its disk is a
+# path under the scratch directory, so nothing in /dev is named even if the
+# guard it tests is broken.
 run() {
     rm -rf "$WORK/root"; mkdir -p "$WORK/root/etc"
     : > "$WORK/root/plog"
+    rm -rf "$WORK/fs"; mkdir -p "$WORK/fs"
+    : > "$WORK/deviceinfo"
     dev="$WORK/root/mmcblk0p3"
 
     case "$1" in
         marked)  : > "$WORK/root/etc/kvm.disk0"; : > "$dev" ;;
         pending) : > "$WORK/root/etc/kvm.disk0.formatting"; : > "$dev" ;;
         nodev)   PARTED_MAKES=""; ;;
+        slot)    dev="$WORK/root/fake0p3"
+                 printf '%s\n' "DISK=$WORK/root/fake0" BOOT_PART=1 \
+                     SLOT_A=2 SLOT_B=3 RECOVERY=5 > "$WORK/deviceinfo" ;;
+        hasfs)   : > "$dev"
+                 printf '%s\n' '/dev/mmcblk0p3: LABEL="data" UUID="EE8B-6CB5"' \
+                     > "$WORK/fs/$(basename "$dev")" ;;
     esac
 
     (
@@ -92,14 +134,19 @@ run() {
         DISK0_PENDING="$WORK/root/etc/kvm.disk0.formatting"
         DISK0_SETTLE=0
         export DISK0_DEV DISK0_MARKER DISK0_PENDING DISK0_SETTLE
+        DEVINFO="$WORK/bin/ironkvm-deviceinfo"
+        BLKID="$WORK/bin/blkid"
+        . "$WORK/dd.sh"
+        . "$WORK/geo.sh"
         . "$WORK/f.sh"
-        provision_disk0 > /dev/null 2>&1
+        provision_disk0 > "$WORK/root/out" 2>&1
         echo "rc=$?"
     )
 }
 
 log()      { cat "$WORK/root/plog"; }
 ran()      { grep -q "$1" "$WORK/root/plog"; }
+said()     { grep -q "$1" "$WORK/root/out"; }
 marked()   { [ -e "$WORK/root/etc/kvm.disk0" ]; }
 pending()  { [ -e "$WORK/root/etc/kvm.disk0.formatting" ]; }
 
@@ -154,6 +201,42 @@ ran 'mkfs.exfat' && note "a missing partition is never formatted" FAIL \
                  || note "a missing partition is never formatted" OK
 marked && note "a missing partition is never claimed" FAIL \
        || note "a missing partition is never claimed" OK
+
+# --- the device is a slot: refuse, and say so -------------------------------
+# On an A/B card p3 is a root filesystem, and mkfs.exfat there formats the
+# system the board is running from. Three conditions used to keep this branch
+# away from such a card: may_autopartition refuses a description that declares
+# DATA_START, /boot/usb.disk0 has to exist, and /etc/kvm.disk0 has to be absent.
+# A card laid out before the build wrote DATA_START satisfies the first, so on
+# that card one missing marker file was the whole defence. This is the positive
+# guard: the description names the device as a slot, so the branch stops.
+rc=$(run slot)
+[ "$rc" = "rc=1" ] && note "a device the description calls a slot is refused" OK \
+                   || note "a device the description calls a slot is refused ($rc)" FAIL
+ran 'parted' && note "and the card is not partitioned" FAIL \
+             || note "and the card is not partitioned" OK
+ran 'mkfs.exfat' && note "AND A ROOT SLOT IS NOT FORMATTED" FAIL \
+                 || note "and a root slot is not formatted" OK
+said 'slot or recovery' && note "and it says so on the console" OK \
+                        || note "and it says so on the console" FAIL
+marked  && note "a refused device is never claimed" FAIL \
+        || note "a refused device is never claimed" OK
+pending && note "and no format is recorded as in flight" FAIL \
+        || note "and no format is recorded as in flight" OK
+
+# --- the device already holds a filesystem: refuse --------------------------
+# Where the description declares no layout there is nothing to ask, so the
+# second guard asks the card. A partition blkid can name is never formatted,
+# which is the same test the A/B path uses to decide a card is provisioned.
+rc=$(run hasfs)
+[ "$rc" = "rc=1" ] && note "a device that already holds a filesystem is refused" OK \
+                   || note "a device that already holds a filesystem is refused ($rc)" FAIL
+ran 'mkfs.exfat' && note "AND AN EXISTING FILESYSTEM IS NOT FORMATTED" FAIL \
+                 || note "and an existing filesystem is not formatted" OK
+said 'already holds a filesystem' && note "and it says so on the console" OK \
+                                  || note "and it says so on the console" FAIL
+marked && note "and the disk is not claimed on the strength of it" FAIL \
+       || note "and the disk is not claimed on the strength of it" OK
 
 # --- the shipped text itself ------------------------------------------------
 # The background format is the defect. Reading the file is the only way to

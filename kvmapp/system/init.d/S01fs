@@ -398,10 +398,36 @@ may_autopartition() {
 # These two are the one pair of device names this script still spells out, and
 # they are deliberate. This branch belongs to the stock layout, where the data
 # partition is the third primary on the SoC's own SD card, which is what the
-# mkpart below creates. DATA in the device description is not that partition: it
-# names p6 of the A/B layout, and a stock card has no p6, so reading it here
-# would make this branch ask for a partition that never appears and report a
-# failure on every boot of a board it is supposed to provision.
+# mkpart below creates. It cannot take that device from the description,
+# because the description a board reaches here declares no layout at all: the
+# copy the application tarball carries says what the device is, and the card
+# under it is whatever Sipeed's installer made. A description that does declare
+# a layout belongs to a card this branch must not touch, which is what the two
+# guards below are for.
+#
+# THE GUARDS. On an A/B card p3 is a root slot, and `mkfs.exfat /dev/mmcblk0p3`
+# there formats the system the board is running from. Three conditions used to
+# keep this branch away from such a card: may_autopartition refuses a
+# description that declares DATA_START, /boot/usb.disk0 has to exist, and
+# /etc/kvm.disk0 has to be absent. A card laid out before the build wrote
+# DATA_START satisfies the first, so on that card a single missing marker file
+# was the whole defence. That is an argument, not a guard.
+#
+# So the branch now proves the device is not something else before it writes to
+# it:
+#
+#   The description is asked whether the device is a slot or recovery. Where it
+#   declares a layout, this is decisive.
+#
+#   blkid is asked whether the device already holds a filesystem. Where the
+#   description declares nothing, this is all there is, and it is the same test
+#   the A/B path uses to decide that a card is already provisioned.
+#
+# The second guard also ends the retry of an interrupted format once the
+# filesystem is nameable. mkfs.exfat writes its superblock and the disk is never
+# claimed, so the board repeats the refusal on every boot until somebody reads
+# the console. That is the correct direction: the alternative is a script that
+# re-formats a partition it can see a filesystem on.
 DISK0_DISK=${DISK0_DISK:-/dev/mmcblk0}
 DISK0_DEV=${DISK0_DEV:-/dev/mmcblk0p3}
 DISK0_MARKER=${DISK0_MARKER:-/etc/kvm.disk0}
@@ -410,6 +436,16 @@ DISK0_SETTLE=${DISK0_SETTLE:-1}
 
 provision_disk0() {
     [ -e "$DISK0_MARKER" ] && return 0
+
+    if is_reserved_device "$DISK0_DEV"; then
+        echo "S01fs: $DISK0_DEV is a slot or recovery partition of this device, leaving the card alone"
+        return 1
+    fi
+
+    if has_filesystem "$DISK0_DEV"; then
+        echo "S01fs: $DISK0_DEV already holds a filesystem, leaving the card alone"
+        return 1
+    fi
 
     if [ ! -e "$DISK0_PENDING" ]; then
         touch "$DISK0_PENDING"
