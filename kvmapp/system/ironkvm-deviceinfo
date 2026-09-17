@@ -1,7 +1,9 @@
 #!/bin/sh
 # Read one key from the device's deviceinfo.
 #
-#   ironkvm-deviceinfo get <KEY>
+#   ironkvm-deviceinfo get <KEY>     print the value of KEY
+#   ironkvm-deviceinfo part <KEY>    print the device path for the partition
+#                                    number in KEY, using DISK
 #
 # deviceinfo is data. Sourcing it with . would run whatever it holds, as root,
 # and in the initramfs before anything could check it. So this reads each line
@@ -19,10 +21,14 @@
 # by the application tarball, for a board that runs Sipeed's firmware.
 PATHS=${DEVICEINFO_PATHS:-/usr/share/ironkvm/deviceinfo /kvmapp/system/deviceinfo}
 
-[ "${1:-}" = get ] && [ -n "${2:-}" ] || {
-    echo "usage: ironkvm-deviceinfo get <KEY>" >&2
-    exit 2
-}
+case "${1:-}" in
+    get|part) [ -n "${2:-}" ] || set -- usage ;;
+esac
+case "${1:-}" in
+    get|part) ;;
+    *) echo "usage: ironkvm-deviceinfo get <KEY> | part <KEY>" >&2; exit 2 ;;
+esac
+verb=$1
 want=$2
 
 file=
@@ -37,6 +43,9 @@ fi
 
 found=no
 value=
+# part needs two values, so the reader keeps both while it walks the file.
+disk=
+disk_found=no
 seen=" "
 n=0
 while IFS= read -r line || [ -n "$line" ]; do
@@ -73,10 +82,38 @@ while IFS= read -r line || [ -n "$line" ]; do
         found=yes
         value=$v
     fi
+    if [ "$key" = DISK ]; then
+        disk_found=yes
+        disk=$v
+    fi
 done < "$file"
 
 if [ "$found" = no ]; then
     echo "ironkvm-deviceinfo: $want is not set in $file" >&2
     exit 1
 fi
-printf '%s\n' "$value"
+
+if [ "$verb" = get ]; then
+    printf '%s\n' "$value"
+    exit 0
+fi
+
+# part: a partition number becomes a device path. The separator belongs to the
+# disk. mmcblk0 and nvme0n1 end in a digit and take a p; sda and vda do not.
+# Getting this wrong names a device that either does not exist or belongs to
+# something else, so both halves are checked rather than assumed.
+if [ "$disk_found" = no ]; then
+    echo "ironkvm-deviceinfo: DISK is not set in $file" >&2
+    exit 1
+fi
+case "$disk" in
+    /*) ;;
+    *) echo "ironkvm-deviceinfo: DISK=$disk is not a path" >&2; exit 5 ;;
+esac
+case "$value" in
+    ''|*[!0-9]*|0) echo "ironkvm-deviceinfo: $want=$value is not a partition number" >&2; exit 5 ;;
+esac
+case "$disk" in
+    *[0-9]) printf '%s\n' "${disk}p${value}" ;;
+    *)      printf '%s\n' "${disk}${value}" ;;
+esac

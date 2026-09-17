@@ -1,29 +1,110 @@
 #!/bin/sh
 
 # --- data device ---
-# Where /data lives, from configuration rather than from a partition number.
+# Where /data lives, from the device description rather than from a partition
+# number typed into this script.
 #
 # The A/B layout puts root B on p3 and /data on p6. This script mounted
 # /dev/mmcblk0p3 on /data directly, so the first A/B boot left /data unmounted,
 # S02identity had nothing to bind, and the board came up with the image's own
 # /etc/kvm rather than the device's.
 #
-# /etc/nanokvm-slots.conf is written into every image by the ironkvm-dist
-# repository. A board that has not been migrated has no such file and keeps the
-# old behaviour, which is why the fallback is p3 rather than an error.
-SLOT_CONF=${SLOT_CONF:-/etc/nanokvm-slots.conf}
+# The description is at /usr/share/ironkvm/deviceinfo on an image built by
+# ironkvm-dist, and at /kvmapp/system/deviceinfo on a board that runs Sipeed's
+# firmware. ironkvm-deviceinfo reads it. Its `part` verb turns a partition
+# number into a device path, because the separator belongs to the disk: mmcblk0
+# takes a p and sda does not.
+#
+# Nothing here falls back to /dev/mmcblk0p3 any more. That was a partition
+# number typed into a generic script, and on a layout where p3 is a root
+# filesystem it named a slot. The second step below finds the data partition by
+# what is on it rather than by its number, and a board where nothing holds a
+# data filesystem mounts no /data and says so on the console, which is a fault
+# somebody can see and repair.
+#
+# The reader is found in two steps. An image built by ironkvm-dist installs it
+# at /usr/bin/ironkvm-deviceinfo, so the bare name resolves through PATH. A
+# board that runs Sipeed's firmware installs the application tarball instead,
+# and that install.sh comes from the official base tarball, which the fork
+# cannot change: nothing puts the reader on PATH there. So the second step is
+# the copy the tarball carries. Without it the reader was never found on such a
+# board, the data device came out empty, and /data was not mounted.
+#
+# The fallback is in /kvmapp because that is the only path the tarball owns. A
+# copy written into the vendor root filesystem is removed by the next firmware
+# update and belongs to nobody.
+#
+# Only the default is resolved this way. A DEVINFO from the environment is used
+# as it is, including one that names a path which does not exist, because that
+# is how the suites drive the missing reader case.
+DEVINFO=${DEVINFO:-ironkvm-deviceinfo}
+DEVINFO_TARBALL=${DEVINFO_TARBALL:-/kvmapp/system/ironkvm-deviceinfo}
+if [ "$DEVINFO" = ironkvm-deviceinfo ] && ! command -v "$DEVINFO" > /dev/null 2>&1
+then
+    DEVINFO=$DEVINFO_TARBALL
+fi
 
+devinfo_get() { "$DEVINFO" get "$1" 2>/dev/null; }
+devinfo_part() { "$DEVINFO" part "$1" 2>/dev/null; }
+
+# Where /data lives. Declared first, found on the card second.
+#
+# A description that declares DATA wins, because a card the build laid out is
+# authoritative about itself. The copy the application tarball carries declares
+# no layout at all: it describes the device, and the card under it is whatever
+# Sipeed's installer or an older build made. So the second step reads the
+# partition table and looks for the partition that holds the data filesystem.
+# data_device_from_table is in the data geometry block, which is the one place
+# that reads the table.
+#
+# This is why no number is typed here. The tarball used to carry the image's own
+# DATA=6, which named /dev/mmcblk0p6 on a stock card whose highest partition is
+# p3. The device did not exist, /data was not mounted, and upstream's own
+# behaviour of mounting p3 was lost.
 data_device() {
-    if [ -r "$SLOT_CONF" ]; then
-        DATA_DEV=
-        . "$SLOT_CONF"
-        if [ -n "$DATA_DEV" ]; then
-            echo "$DATA_DEV"
-            return 0
-        fi
+    dev=$(devinfo_part DATA)
+    if [ -n "$dev" ]
+    then
+        printf '%s\n' "$dev"
+        return 0
     fi
-    echo /dev/mmcblk0p3
+    data_device_from_table
 }
+
+# The devices the description keeps for something that is not data: the boot
+# partition, the two slots and recovery.
+#
+# A description that declares none of them prints nothing, and every caller then
+# treats no device as reserved. That is the honest answer for a description that
+# describes the device and not the card.
+reserved_devices() {
+    for key in BOOT_PART SLOT_A SLOT_B RECOVERY
+    do
+        devinfo_part "$key"
+    done
+}
+
+is_reserved_device() {
+    [ -n "$1" ] || return 1
+    for reserved in $(reserved_devices)
+    do
+        [ "$reserved" = "$1" ] && return 0
+    done
+    return 1
+}
+
+# Which sector the data partition starts at.
+#
+# Prints nothing when the description does not say. A board that did not declare
+# where its data goes must never be partitioned by this script: that is a board
+# on Sipeed's firmware, or an image from before this change, and guessing at a
+# start sector on a card whose layout is unknown is how a root slot gets
+# overwritten.
+#
+# DATA_START is written into the image by the build, from the table it just
+# made. No device file carries it, so it is present only on a card that was laid
+# out deliberately.
+data_start() { devinfo_get DATA_START; }
 # --- end data device ---
 
 # --- data geometry ---
@@ -43,7 +124,12 @@ data_device() {
 # parted cannot make the kernel re-read the whole table, so it warns and returns
 # 1, having already done the work. Measured on this board: both the resize and
 # the mkpart return 1 and both succeed.
-DISK=${DISK:-/dev/mmcblk0}
+#
+# The disk comes from the device description, through the helper the data device
+# block above defines. This block is also extracted and sourced on its own by
+# test-s01fs-provision.sh, which sets DISK itself.
+DISK=${DISK:-$(devinfo_get DISK)}
+DATA_FS=${DATA_FS:-$(devinfo_get DATA_FS)}
 PARTED=${PARTED:-parted}
 BLKID=${BLKID:-blkid}
 PARTITIONS=${PARTITIONS:-/proc/partitions}
@@ -89,24 +175,76 @@ data_partition_ready() {
     [ "$((blocks * 2))" = "$(part_size_sectors "${1##*p}")" ]
 }
 
-# Which sector the data partition starts at, from the slot configuration.
+# The device path of a partition number on this disk.
 #
-# Prints nothing when the configuration does not say. A board that did not
-# declare where its data goes must never be partitioned by this script: that is
-# an unmigrated board or an image from before this change, and guessing at a
-# start sector on a card whose layout is unknown is how a root slot gets
-# overwritten.
-data_start() {
-    if [ -r "$SLOT_CONF" ]; then
-        DATA_START=
-        . "$SLOT_CONF"
-        if [ -n "$DATA_START" ]; then
-            echo "$DATA_START"
-            return 0
-        fi
-    fi
-    echo ""
+# The separator belongs to the disk: mmcblk0 and nvme0n1 end in a digit and take
+# a p, sda and vda do not. This is the same rule the reader's part verb applies.
+# test-s01fs-datadev.sh holds the two against each other, because a rule written
+# twice is a rule that drifts.
+part_device() {
+    case "$DISK" in
+        '') ;;
+        *[0-9]) printf '%s\n' "${DISK}p$1" ;;
+        *) printf '%s\n' "${DISK}$1" ;;
+    esac
 }
+
+# Every partition number the table declares, in the order the table lists them.
+part_numbers() {
+    table | awk -F: 'NR > 2 { gsub(/[^0-9]/, "", $1); if ($1 != "") print $1 }'
+}
+
+# The data partition of a card whose description does not declare one.
+#
+# Two kinds of card arrive here. A board on Sipeed's firmware has the stock
+# layout, where the data partition is p3. A card laid out by a build from before
+# the image carried a description has the A/B layout, where p3 is a root slot
+# and the data partition is p6. The number is therefore not something a generic
+# script can know, and the naive stock guess is a root filesystem on the other
+# card. So this asks each partition what it holds.
+#
+# The evidence is what blkid prints. provision_data and provision_disk0 both
+# make the filesystem with `mkfs.exfat -L data`, so the label is the strong
+# signal and it is the one every card this script made carries. The filesystem
+# type is the weak one: busybox blkid prints no TYPE field at all, so it answers
+# only on a board with util-linux, and it is a fallback for a data partition
+# that an older installer made without a label.
+#
+# Reserved partitions are skipped before blkid is even asked. Where the
+# description declares slots, this can never hand back one of them.
+#
+# Nothing is guessed. A card where no partition holds a data filesystem gets an
+# empty answer, and the caller says so on the console.
+data_device_from_table() {
+    typed=
+    for n in $(part_numbers)
+    do
+        candidate=$(part_device "$n")
+        [ -n "$candidate" ] || continue
+        is_reserved_device "$candidate" && continue
+
+        found=$("$BLKID" "$candidate" 2>/dev/null)
+        [ -n "$found" ] || continue
+
+        case "$found" in
+            *'LABEL="data"'*)
+                printf '%s\n' "$candidate"
+                return 0
+                ;;
+        esac
+
+        if [ -z "$typed" ] && [ -n "$DATA_FS" ]
+        then
+            case "$found" in
+                *"TYPE=\"$DATA_FS\""*) typed=$candidate ;;
+            esac
+        fi
+    done
+
+    [ -n "$typed" ] && printf '%s\n' "$typed"
+    return 0
+}
+
 # --- end data geometry ---
 
 # --- data provisioning ---
@@ -209,10 +347,20 @@ mount_data() {
 #
 # The branch is already gated on /etc/kvm.disk0, and the image manifest creates
 # that marker, which is what stopped it on the first real A/B boot. This is the
-# second lock: a layout that names its own devices has been partitioned
-# deliberately and must never be repartitioned by a boot script.
+# second lock: a layout that declares where its data partition starts has been
+# partitioned deliberately and must never be repartitioned by a boot script.
+#
+# DATA_START is the test rather than the description itself. The build writes
+# that key into the image's own deviceinfo and no device file carries it, so the
+# copy in the application tarball does not answer here. A board on Sipeed's
+# firmware therefore still provisions its stock data disk the way it always did.
+#
+# DEVINFO is the one the data device block resolved. This block named the reader
+# a second time, and two spellings of the same name drift: a guard that reads a
+# different description from the rest of the script is a guard that arms the
+# branch which formats a root slot.
 may_autopartition() {
-    [ -r "$SLOT_CONF" ] && return 1
+    [ -n "$("$DEVINFO" get DATA_START 2>/dev/null)" ] && return 1
     return 0
 }
 # --- end autopartition guard ---
@@ -237,6 +385,15 @@ may_autopartition() {
 # no marker at all and starts again, or finds the in-flight marker and formats
 # again without repartitioning. Neither state can present a disk to the host.
 #
+# ONE WINDOW IS NOT COVERED, and it is the marker's position rather than its
+# content. The marker is written before parted runs, so a board that lost power
+# during the mkpart comes back with a marker, no partition, and a retry that
+# skips the mkpart because the marker is there. It then reports that the data
+# partition did not appear, on that boot and on every boot after it. Gating the
+# mkpart on the device rather than on the marker would close it. That is a
+# separate change, and this note is here so the next person does not read the
+# paragraph above as covering more than it does.
+#
 # The foreground format costs boot time. mkfs.exfat writes metadata only, so
 # that cost is small, and the thing it buys is not handing a host a corrupt
 # disk.
@@ -246,17 +403,112 @@ may_autopartition() {
 # already does both. Its exit status is ignored for the reason recorded there:
 # parted returns 1 on a busy disk after it has succeeded, so the outcome is
 # checked instead.
+#
+# These two are the one pair of device names this script still spells out, and
+# they are deliberate. This branch belongs to the stock layout, where the data
+# partition is the third primary on the SoC's own SD card, which is what the
+# mkpart below creates. It cannot take that device from the description,
+# because the description a board reaches here declares no layout at all: the
+# copy the application tarball carries says what the device is, and the card
+# under it is whatever Sipeed's installer made. A description that does declare
+# a layout belongs to a card this branch must not touch, which is what the two
+# guards below are for.
+#
+# THE GUARDS. On an A/B card p3 is a root slot, and `mkfs.exfat /dev/mmcblk0p3`
+# there formats the system the board is running from. Three conditions used to
+# keep this branch away from such a card: may_autopartition refuses a
+# description that declares DATA_START, /boot/usb.disk0 has to exist, and
+# /etc/kvm.disk0 has to be absent. A card laid out before the build wrote
+# DATA_START satisfies the first, so on that card a single missing marker file
+# was the whole defence. That is an argument, not a guard.
+#
+# So the branch now proves the device is not something else before it writes to
+# it:
+#
+#   The description is asked whether the device is a slot or recovery. Where it
+#   declares a layout, this is decisive.
+#
+#   blkid is asked whether the device already holds a filesystem. Where the
+#   description declares nothing, this is all there is, and it is the same test
+#   the A/B path uses to decide that a card is already provisioned.
+#
+# The second guard has one exception, and the exception is the whole reason this
+# block was restructured. A board interrupted during mkfs.exfat has to format
+# again on the next boot, and after the interruption the device often does hold
+# a filesystem: the half-made one. A refusal with no exception would wedge that
+# board for ever. It would never write /etc/kvm.disk0, never present its disk,
+# and never say anything a person would go looking for. So the filesystem on the
+# device is formatted again only when both of these hold:
+#
+#   The in-flight marker names this same device, so this script started a format
+#   on it and did not finish.
+#
+#   What is on it is not a filesystem that is something else. A root slot is
+#   ext4, so this keeps the dangerous case refused even where the description
+#   declares no slots.
+#
+# The marker records the device rather than only existing. A marker is written
+# only after both guards accepted the device, so a marker that names this device
+# says that one boot ago the device held no filesystem this board could name.
+# That is what makes the retry safe: whatever is on it now was written by the
+# mkfs.exfat below. A marker that names another device, or an empty one from the
+# earlier code, excuses nothing.
 DISK0_DISK=${DISK0_DISK:-/dev/mmcblk0}
 DISK0_DEV=${DISK0_DEV:-/dev/mmcblk0p3}
 DISK0_MARKER=${DISK0_MARKER:-/etc/kvm.disk0}
 DISK0_PENDING=${DISK0_PENDING:-/etc/kvm.disk0.formatting}
 DISK0_SETTLE=${DISK0_SETTLE:-1}
 
+# Whether this script is finishing a format it started on this same device.
+resuming_format() {
+    [ -e "$DISK0_PENDING" ] || return 1
+    [ "$(cat "$DISK0_PENDING" 2>/dev/null)" = "$DISK0_DEV" ]
+}
+
+# Whether what is on the device is a filesystem that is not the data one.
+#
+# Two arms, because the two kinds of board answer differently. util-linux blkid
+# prints a TYPE field, so the type decides. busybox blkid prints no TYPE field
+# at all, for exfat and for ext4 alike, so the label decides: this branch and
+# the A/B path both write `mkfs.exfat -L data`, and a root slot carries the name
+# of its slot. A partition that gives neither reads as not foreign, which is the
+# state a half-made exfat leaves on a busybox board, and the paragraph above is
+# why formatting it again is safe.
+holds_foreign_filesystem() {
+    found=$("$BLKID" "$DISK0_DEV" 2>/dev/null)
+    case "$found" in
+        *"TYPE=\"$DATA_FS\""*) ;;
+        *'TYPE="'*) return 0 ;;
+    esac
+    case "$found" in
+        *'LABEL="data"'*) ;;
+        *'LABEL="'*) return 0 ;;
+    esac
+    return 1
+}
+
 provision_disk0() {
     [ -e "$DISK0_MARKER" ] && return 0
 
+    if is_reserved_device "$DISK0_DEV"; then
+        echo "S01fs: $DISK0_DEV is a slot or recovery partition of this device, leaving the card alone"
+        return 1
+    fi
+
+    if has_filesystem "$DISK0_DEV"; then
+        if ! resuming_format; then
+            echo "S01fs: $DISK0_DEV already holds a filesystem, leaving the card alone"
+            return 1
+        fi
+        if holds_foreign_filesystem; then
+            echo "S01fs: $DISK0_DEV holds a filesystem that is not ${DATA_FS:-the data filesystem}, leaving the card alone"
+            return 1
+        fi
+    fi
+
     if [ ! -e "$DISK0_PENDING" ]; then
-        touch "$DISK0_PENDING"
+        # The device, not an empty file. resuming_format above reads it back.
+        printf '%s\n' "$DISK0_DEV" > "$DISK0_PENDING"
         # use all sdcard free space for data
         parted -s "$DISK0_DISK" mkpart primary ntfs 8193MB 100% > /dev/null 2>&1
         [ "$DISK0_SETTLE" = 0 ] || sleep "$DISK0_SETTLE"
@@ -441,17 +693,56 @@ grow_root() {
 }
 # --- end root filesystem grow ---
 
+# --- stock root grow ---
+# Grow the root partition, and the filesystem in it, on a card that has never
+# been laid out. This is upstream's own first boot path. needs_resize above is
+# what decides that the card is still in the state it was flashed in.
+#
+# It used to name /dev/mmcblk0 and partition 2 outright. Partition 2 is slot A,
+# so a board that booted from slot B would have grown the partition it was not
+# running from, over the top of the one it was. The partition to grow is the one
+# the root filesystem is mounted from, and the kernel already reports it.
+#
+# The disk comes from the device description, so nothing here names a device.
+# An empty disk, or a root that is not a partition of it, means the board cannot
+# say what to grow, and a resizepart with a missing argument on a card whose
+# layout is unknown is how a partition table gets destroyed. So it says so and
+# does nothing.
+#
+# MOUNTS, PARTED and RESIZE2FS are set above as well. They are repeated here
+# because this block is extracted and sourced on its own by test-s01fs-grow.sh,
+# and an empty tool name would run the wrong thing. DISK is set by the data
+# geometry block, and the suite sets it itself.
+MOUNTS=${MOUNTS:-/proc/mounts}
+PARTED=${PARTED:-parted}
+RESIZE2FS=${RESIZE2FS:-resize2fs}
+
+grow_stock_root() {
+    root_dev=$(awk '$2 == "/" && $1 ~ /^\/dev\// { print $1; exit }' "$MOUNTS" 2>/dev/null)
+    # The trailing run of digits is the partition number, on mmcblk0p2 and on
+    # sda2 alike.
+    root_part=${root_dev##*[!0-9]}
+    if [ -z "$DISK" ] || [ -z "$root_dev" ] || [ -z "$root_part" ]; then
+        echo "S01fs: no disk or root partition to grow, leaving the card alone"
+        return 0
+    fi
+
+    # use all sdcard free space for data
+    "$PARTED" -s "$DISK" "resizepart $root_part -0"
+    echo "yes
+    8192MB
+    " | "$PARTED" ---pretend-input-tty "$DISK" "resizepart $root_part 8192MB"
+    # resize data filesystem
+    ("$RESIZE2FS" "$root_dev") &
+    return 0
+}
+# --- end stock root grow ---
+
 if [ "$1" = "start" ]
 then
         if needs_resize
         then
-                # use all sdcard free space for data
-                parted -s /dev/mmcblk0 "resizepart 2 -0"
-                echo "yes
-                8192MB
-                " | parted ---pretend-input-tty /dev/mmcblk0 "resizepart 2 8192MB"
-                # resize data filesystem
-                (resize2fs /dev/mmcblk0p2) &
+                grow_stock_root
         else
                 # The stock path above grows a partition and then the
                 # filesystem in it, and it fires only on a card that has never
@@ -469,7 +760,7 @@ then
         . /etc/profile
         printf "mounting filesystem : "
         mkdir -p /boot
-        mount -t vfat /dev/mmcblk0p1 /boot
+        mount -t vfat "$(devinfo_part BOOT_PART)" /boot
         mount -t configfs configfs /sys/kernel/config
         mount -t debugfs debugfs /sys/kernel/debug
 
@@ -493,7 +784,14 @@ then
                 provision_data "$DATADEV" "$DATASTART" || true
         fi
 
-        if [ -e "$DATADEV" ]
+        if [ -z "$DATADEV" ]
+        then
+                # No number declared, and no partition on the card holds a data
+                # filesystem. Saying so is the whole point: the alternative is a
+                # guessed partition number, and on one of the two layouts that
+                # number is a root slot.
+                printf "(no data device: none declared, and none found on %s) " "$DISK"
+        elif [ -e "$DATADEV" ]
         then
                 mkdir -p /data
                 # The result is tested. This script used to discard it and print

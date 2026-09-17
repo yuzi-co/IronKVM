@@ -208,6 +208,89 @@ rc=$?
     || note "an unreadable superblock gave rc $rc" FAIL
 
 echo
+echo "--- the stock grow works on the slot the boot came from ---"
+
+# The other branch of S01fs, which is upstream's first boot path for a card that
+# has never been laid out. It ran `resizepart 2` on /dev/mmcblk0 outright.
+# Partition 2 is slot A, so a board that booted from slot B would have grown the
+# partition it was not running from, over the top of the one it was.
+sed -n '/^# --- stock root grow ---/,/^# --- end stock root grow ---/p' \
+    "$S01" > "$WORK/stock.sh"
+if [ ! -s "$WORK/stock.sh" ]; then
+    note "the stock grow block can be extracted" FAIL
+else
+    note "the stock grow block can be extracted" OK
+
+    cat > "$WORK/parted" <<'STUB'
+#!/bin/sh
+echo "$*" >> "$PARTED_LOG"
+exit 0
+STUB
+    chmod +x "$WORK/parted"
+
+    # Drive grow_stock_root with the root filesystem on $1 and the card at $2.
+    # resize2fs is backgrounded by the function, so the shell waits for it
+    # before it exits or the log would be read before it is written.
+    run_stock() {
+        mounts "$1"
+        : > "$WORK/resized"
+        : > "$WORK/plog"
+        RESIZE_LOG="$WORK/resized" PARTED_LOG="$WORK/plog" \
+        MOUNTS="$WORK/mounts" PARTED="$WORK/parted" RESIZE2FS="$WORK/resize2fs" \
+        DISK="$2" \
+            sh -c ". $WORK/stock.sh; grow_stock_root; wait" > "$WORK/out" 2>&1
+    }
+
+    run_stock /dev/mmcblk0p3 /dev/mmcblk0
+    grep -q '^-s /dev/mmcblk0 resizepart 3 -0$' "$WORK/plog" \
+        && note "a root on p3 grows partition 3, not partition 2" OK \
+        || note "a root on p3 resized: $(tr '\n' ';' < "$WORK/plog")" FAIL
+    grep -q 'resizepart 3 8192MB' "$WORK/plog" \
+        && note "and it is partition 3 that is taken to the target size" OK \
+        || note "the target resize named the wrong partition" FAIL
+    [ "$(cat "$WORK/resized")" = /dev/mmcblk0p3 ] \
+        && note "and the filesystem it grows is the one root is mounted from" OK \
+        || note "it grew the filesystem on '$(cat "$WORK/resized")'" FAIL
+
+    # The stock card, which is the layout this branch is for. It must keep
+    # behaving as it always did.
+    run_stock /dev/mmcblk0p2 /dev/mmcblk0
+    grep -q '^-s /dev/mmcblk0 resizepart 2 -0$' "$WORK/plog" \
+        && note "a root on p2 still grows partition 2" OK \
+        || note "a root on p2 resized: $(tr '\n' ';' < "$WORK/plog")" FAIL
+
+    # Another disk and another separator. The disk comes from the device
+    # description, and sda names its partitions without a p.
+    run_stock /dev/sda4 /dev/sda
+    grep -q '^-s /dev/sda resizepart 4 -0$' "$WORK/plog" \
+        && note "another layout resizes its own disk and partition" OK \
+        || note "another layout resized: $(tr '\n' ';' < "$WORK/plog")" FAIL
+
+    # A root that is not a partition of any disk. parted with a missing argument
+    # on a card whose layout is unknown is how a partition table is destroyed.
+    printf 'overlay / overlay rw 0 0\n' > "$WORK/mounts"
+    : > "$WORK/plog"; : > "$WORK/resized"
+    RESIZE_LOG="$WORK/resized" PARTED_LOG="$WORK/plog" MOUNTS="$WORK/mounts" \
+    PARTED="$WORK/parted" RESIZE2FS="$WORK/resize2fs" DISK=/dev/mmcblk0 \
+        sh -c ". $WORK/stock.sh; grow_stock_root; wait" > "$WORK/out" 2>&1
+    [ ! -s "$WORK/plog" ] && [ ! -s "$WORK/resized" ] \
+        && note "a root that is not a partition is left alone" OK \
+        || note "a root on overlay was resized anyway" FAIL
+
+    # No description, so no disk. Same reasoning.
+    run_stock /dev/mmcblk0p2 ""
+    [ ! -s "$WORK/plog" ] && [ ! -s "$WORK/resized" ] \
+        && note "a board that cannot say what its disk is, is left alone" OK \
+        || note "an empty disk was passed to parted" FAIL
+
+    if grep -n 'mmcblk\|/dev/sd' "$WORK/stock.sh" | grep -qv '^[0-9]*:[[:space:]]*#'; then
+        note "the stock grow block names no device of its own" FAIL
+    else
+        note "the stock grow block names no device of its own" OK
+    fi
+fi
+
+echo
 echo "--- the caller cannot be stopped by it either ---"
 
 # grow_root returns 1 when resize2fs fails, so the call site has to discard it.

@@ -21,10 +21,57 @@
 
 ZRAM_DEV=/dev/zram0
 ZRAM_SYSFS=/sys/block/zram0
-ZRAM_DISKSIZE=96M
 ZRAM_MEM_LIMIT=40M
 ZRAM_COMP=lzo-rle
 ZRAM_PRIORITY=100
+
+# --- disk size ---
+# The size follows the board. 96M was chosen for 256MB of RAM, and a board with
+# more or less memory needs its own number, which the device description carries
+# as ZRAM_MIB. The reader is ironkvm-deviceinfo.
+#
+# The fallback to 96M is deliberate. A swap device of the wrong size is better
+# than no swap at all on a board whose description is missing, and this script
+# runs long before anything could report the problem.
+#
+# What is checked is the number, not the string built from it. A description
+# that said ZRAM_MIB=1M would otherwise make 1MM, which the kernel rejects with
+# a write error, and the board would lose its swap to a value that looked almost
+# right. Zero is refused for the same reason: a zero-size device is no swap.
+#
+# The reader is found in two steps. An image built by ironkvm-dist installs it
+# at /usr/bin/ironkvm-deviceinfo, so the bare name resolves through PATH. A
+# board that runs Sipeed's firmware installs the application tarball instead,
+# and that install.sh comes from the official base tarball, which the fork
+# cannot change: nothing puts the reader on PATH there. So the second step is
+# the copy the tarball carries.
+#
+# The fallback is in /kvmapp because that is the only path the tarball owns. A
+# copy written into the vendor root filesystem is removed by the next firmware
+# update and belongs to nobody.
+#
+# Only the default is resolved this way. A DEVINFO from the environment is used
+# as it is, including one that names a path which does not exist, because that
+# is how the suites drive the missing reader case.
+DEVINFO=${DEVINFO:-ironkvm-deviceinfo}
+DEVINFO_TARBALL=${DEVINFO_TARBALL:-/kvmapp/system/ironkvm-deviceinfo}
+if [ "$DEVINFO" = ironkvm-deviceinfo ] && ! command -v "$DEVINFO" > /dev/null 2>&1
+then
+	DEVINFO=$DEVINFO_TARBALL
+fi
+
+zram_disksize() {
+	mib=$("$DEVINFO" get ZRAM_MIB 2>/dev/null)
+
+	case "$mib" in
+		''|*[!0-9]*|0) mib=96 ;;
+	esac
+
+	echo "${mib}M"
+}
+
+ZRAM_DISKSIZE=${ZRAM_DISKSIZE:-$(zram_disksize)}
+# --- end disk size ---
 
 # Where the modules live, most specific first.
 #

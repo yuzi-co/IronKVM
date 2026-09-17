@@ -78,7 +78,11 @@ probe_case "4G card: target is the whole card"  "$SMALL" target_mb 3965
 echo
 echo "===== the script still parses ====="
 sh -n "$FS" && note "S01fs is valid shell" OK || note "S01fs does not parse" FAIL
-grep -q 'mount -t vfat /dev/mmcblk0p1 /boot' "$FS" \
+# S01fs stopped naming the boot partition inline as well: its number comes from
+# BOOT_PART in the device description, and the reader turns that into a device.
+# The assertion checks the call the script makes, not the device this board
+# happens to use.
+grep -Fq 'mount -t vfat "$(devinfo_part BOOT_PART)" /boot' "$FS" \
     && note "still mounts /boot" OK || note "/boot mount is gone" FAIL
 # S01fs stopped naming the data device inline at fb6fc799: the device now
 # comes from the layout and the mount goes through mount_data, which also

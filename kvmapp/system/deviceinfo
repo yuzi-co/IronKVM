@@ -1,0 +1,38 @@
+# What a Sipeed NanoKVM is, for a board that does not run an IronKVM image.
+#
+# This is the copy the application tarball carries, and it holds device facts
+# only. A board with an IronKVM image has the reader and its own description at
+# /usr/share/ironkvm, and the reader prefers that file, so the only board that
+# reads this one is a board on Sipeed's firmware. Such a card has the stock
+# layout: p1 boot, p2 root, p3 data, and no sixth partition at all.
+#
+# It declares no layout for that reason. The description the build installs into
+# an image keeps SLOT_A, SLOT_B, RECOVERY, DATA, KERNEL_IN_SLOT and
+# SLOT_SIZE_MIB, because the build made that layout and the card is what the
+# build says it is. Copied here those numbers describe a card this file has
+# never seen: DATA=6 named /dev/mmcblk0p6 on a card whose highest partition is
+# p3, so /data was not mounted and the stock behaviour was lost.
+#
+# BOOT_PART stays because partition 1 is the boot partition of both layouts.
+# Nothing else here is a partition number. The scripts find the data partition
+# on the card itself, from its filesystem label and its type. See the data
+# device block in kvmapp/system/init.d/S01fs.
+#
+# Variants alpha, beta and pcie share this description and are told apart at
+# first boot.
+DEVICE=sipeed-nanokvm
+SOC=sophgo-sg2002
+ARCH=riscv64
+KERNEL=vendor-prebuilt
+BOOT_BACKEND=sg2002-initramfs
+DISK=/dev/mmcblk0
+BOOT_PART=1
+DATA_FS=exfat
+FLASH_METHOD=sd-card
+CONSOLE=ttyS0,115200
+RAM_MIB=256
+ZRAM_MIB=96
+SERVER_GOMEMLIMIT_MIB=64
+SERVER_GOGC=150
+LOADER_ALIASES="ld-musl-riscv64xthead.so.1 ld-musl-riscv64v_xthead.so.1 ld-musl-riscv64v0p7_xthead.so.1"
+SUPPORT=official

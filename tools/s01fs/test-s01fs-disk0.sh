@@ -5,8 +5,9 @@
 #
 # This covers the /boot/usb.disk0 branch, which is upstream's own first-boot
 # provisioning for a stock partition layout. It is not the A/B path: on an
-# IronKVM card /etc/nanokvm-slots.conf disarms it, and the image manifest
-# creates /etc/kvm.disk0 as well, so the branch is dead there twice over. It
+# IronKVM card the DATA_START in the image's deviceinfo disarms it, and the
+# image manifest creates /etc/kvm.disk0 as well, so the branch is dead there
+# twice over. It
 # is live for a stock-layout board that installs this firmware over the air,
 # because the update package carries system/init.d/S01fs and carries neither
 # of those two files.
@@ -50,6 +51,21 @@ if [ ! -s "$WORK/f.sh" ]; then
 fi
 note "S01fs carries a disk0 provisioning block" OK
 
+# The branch now proves the device is not something else before it writes to it,
+# and both proofs come from blocks above it: the description says whether the
+# device is a slot, and blkid says whether it already holds a filesystem. So the
+# blocks are sourced in the order the script has them, exactly as a boot does.
+sed -n '/^# --- data device ---/,/^# --- end data device ---/p' "$S01" > "$WORK/dd.sh"
+sed -n '/^# --- data geometry ---/,/^# --- end data geometry ---/p' "$S01" > "$WORK/geo.sh"
+[ -s "$WORK/dd.sh" ] && [ -s "$WORK/geo.sh" ] \
+    && note "the data device and geometry blocks can be extracted" OK \
+    || note "the data device and geometry blocks can be extracted" FAIL
+
+# The real reader, not a stub. A stub would not catch a key the guard asks for
+# under the wrong name.
+READER=${READER:-$(cd "$(dirname "$0")/../.." && pwd)/kvmapp/system/ironkvm-deviceinfo}
+[ -f "$READER" ] || { echo "needs kvmapp/system/ironkvm-deviceinfo"; exit 2; }
+
 # Stubs. parted logs its argv and creates the partition node, so the function
 # sees the outcome rather than a return code: parted exits 1 on a busy disk
 # after it has succeeded, which is measured behaviour on this board.
@@ -65,21 +81,87 @@ cat > "$WORK/bin/mkfs.exfat" <<'EOF'
 echo "mkfs.exfat $*" >> "$PLOG"
 exit "${MKFS_RC:-0}"
 EOF
-chmod +x "$WORK/bin/parted" "$WORK/bin/mkfs.exfat"
+cat > "$WORK/bin/ironkvm-deviceinfo" <<STUB
+#!/bin/sh
+DEVICEINFO_PATHS="$WORK/deviceinfo" exec sh "$READER" "\$@"
+STUB
+# One file per device name, so a case says what blkid answers for the device it
+# is about. A device no case described reads as empty, which is what blkid
+# prints for a partition with no filesystem.
+cat > "$WORK/bin/blkid" <<STUB
+#!/bin/sh
+f="$WORK/fs/\$(basename "\$1")"
+[ -f "\$f" ] && cat "\$f"
+exit 0
+STUB
+chmod +x "$WORK/bin/parted" "$WORK/bin/mkfs.exfat" \
+    "$WORK/bin/ironkvm-deviceinfo" "$WORK/bin/blkid"
 PATH="$WORK/bin:$PATH"
 export PATH
 
+# What blkid answers for the device this case is about, and what the in-flight
+# marker holds.
+fsout()   { printf '%s\n' "$1" > "$WORK/fs/$(basename "$dev")"; }
+pends()   { printf '%s\n' "$1" > "$WORK/root/etc/kvm.disk0.formatting"; }
+
 # One run of the function against a fresh fake root.
-# $1 = "fresh" | "marked" | "pending" | "nodev"; $2 = mkfs exit code
+# $1 = the case; $2 = mkfs exit code
+#
+# "slot" and "slot-pending" give the device a description that calls it a root
+# slot. Their disk is a path under the scratch directory, so nothing in /dev is
+# named even if the guard they test is broken.
+#
+# The "resume" cases are a board that lost power during mkfs.exfat. The device
+# holds the half-made filesystem and the marker names it, which is the one state
+# that may be formatted again. Two spellings of the same state, because the two
+# kinds of board answer blkid differently: util-linux prints a TYPE field and
+# busybox never does.
 run() {
     rm -rf "$WORK/root"; mkdir -p "$WORK/root/etc"
     : > "$WORK/root/plog"
+    rm -rf "$WORK/fs"; mkdir -p "$WORK/fs"
+    printf '%s\n' DATA_FS=exfat > "$WORK/deviceinfo"
     dev="$WORK/root/mmcblk0p3"
 
     case "$1" in
         marked)  : > "$WORK/root/etc/kvm.disk0"; : > "$dev" ;;
         pending) : > "$WORK/root/etc/kvm.disk0.formatting"; : > "$dev" ;;
         nodev)   PARTED_MAKES=""; ;;
+        slot)    dev="$WORK/root/fake0p3"
+                 printf '%s\n' "DISK=$WORK/root/fake0" BOOT_PART=1 \
+                     SLOT_A=2 SLOT_B=3 RECOVERY=5 DATA_FS=exfat > "$WORK/deviceinfo" ;;
+        hasfs)   : > "$dev"
+                 fsout '/dev/mmcblk0p3: LABEL="data" UUID="EE8B-6CB5" TYPE="exfat"' ;;
+        resume)  : > "$dev"
+                 fsout '/dev/mmcblk0p3: LABEL="data" UUID="EE8B-6CB5" TYPE="exfat"'
+                 pends "$dev" ;;
+        resume-bare)
+                 # busybox blkid, and the label not written yet.
+                 : > "$dev"
+                 fsout '/dev/mmcblk0p3: UUID="EE8B-6CB5"'
+                 pends "$dev" ;;
+        resume-ext4)
+                 : > "$dev"
+                 fsout '/dev/mmcblk0p3: LABEL="slot-b" UUID="accd0050" TYPE="ext4"'
+                 pends "$dev" ;;
+        resume-ext4-busybox)
+                 : > "$dev"
+                 fsout '/dev/mmcblk0p3: LABEL="slot-b" UUID="accd0050"'
+                 pends "$dev" ;;
+        stale)   : > "$dev"
+                 fsout '/dev/mmcblk0p3: LABEL="data" UUID="EE8B-6CB5" TYPE="exfat"'
+                 pends /dev/some-other-device ;;
+        legacy)  # The empty marker the earlier code wrote with touch.
+                 : > "$dev"
+                 fsout '/dev/mmcblk0p3: LABEL="data" UUID="EE8B-6CB5" TYPE="exfat"'
+                 : > "$WORK/root/etc/kvm.disk0.formatting" ;;
+        slot-pending)
+                 dev="$WORK/root/fake0p3"
+                 printf '%s\n' "DISK=$WORK/root/fake0" BOOT_PART=1 \
+                     SLOT_A=2 SLOT_B=3 RECOVERY=5 DATA_FS=exfat > "$WORK/deviceinfo"
+                 : > "$dev"
+                 fsout '/dev/fake0p3: LABEL="data" UUID="EE8B-6CB5" TYPE="exfat"'
+                 pends "$dev" ;;
     esac
 
     (
@@ -91,14 +173,19 @@ run() {
         DISK0_PENDING="$WORK/root/etc/kvm.disk0.formatting"
         DISK0_SETTLE=0
         export DISK0_DEV DISK0_MARKER DISK0_PENDING DISK0_SETTLE
+        DEVINFO="$WORK/bin/ironkvm-deviceinfo"
+        BLKID="$WORK/bin/blkid"
+        . "$WORK/dd.sh"
+        . "$WORK/geo.sh"
         . "$WORK/f.sh"
-        provision_disk0 > /dev/null 2>&1
+        provision_disk0 > "$WORK/root/out" 2>&1
         echo "rc=$?"
     )
 }
 
 log()      { cat "$WORK/root/plog"; }
 ran()      { grep -q "$1" "$WORK/root/plog"; }
+said()     { grep -q "$1" "$WORK/root/out"; }
 marked()   { [ -e "$WORK/root/etc/kvm.disk0" ]; }
 pending()  { [ -e "$WORK/root/etc/kvm.disk0.formatting" ]; }
 
@@ -153,6 +240,119 @@ ran 'mkfs.exfat' && note "a missing partition is never formatted" FAIL \
                  || note "a missing partition is never formatted" OK
 marked && note "a missing partition is never claimed" FAIL \
        || note "a missing partition is never claimed" OK
+
+# --- the device is a slot: refuse, and say so -------------------------------
+# On an A/B card p3 is a root filesystem, and mkfs.exfat there formats the
+# system the board is running from. Three conditions used to keep this branch
+# away from such a card: may_autopartition refuses a description that declares
+# DATA_START, /boot/usb.disk0 has to exist, and /etc/kvm.disk0 has to be absent.
+# A card laid out before the build wrote DATA_START satisfies the first, so on
+# that card one missing marker file was the whole defence. This is the positive
+# guard: the description names the device as a slot, so the branch stops.
+rc=$(run slot)
+[ "$rc" = "rc=1" ] && note "a device the description calls a slot is refused" OK \
+                   || note "a device the description calls a slot is refused ($rc)" FAIL
+ran 'parted' && note "and the card is not partitioned" FAIL \
+             || note "and the card is not partitioned" OK
+ran 'mkfs.exfat' && note "AND A ROOT SLOT IS NOT FORMATTED" FAIL \
+                 || note "and a root slot is not formatted" OK
+said 'slot or recovery' && note "and it says so on the console" OK \
+                        || note "and it says so on the console" FAIL
+marked  && note "a refused device is never claimed" FAIL \
+        || note "a refused device is never claimed" OK
+pending && note "and no format is recorded as in flight" FAIL \
+        || note "and no format is recorded as in flight" OK
+
+# --- the device already holds a filesystem: refuse --------------------------
+# Where the description declares no layout there is nothing to ask, so the
+# second guard asks the card. A partition blkid can name is never formatted,
+# which is the same test the A/B path uses to decide a card is provisioned.
+rc=$(run hasfs)
+[ "$rc" = "rc=1" ] && note "a device that already holds a filesystem is refused" OK \
+                   || note "a device that already holds a filesystem is refused ($rc)" FAIL
+ran 'mkfs.exfat' && note "AND AN EXISTING FILESYSTEM IS NOT FORMATTED" FAIL \
+                 || note "and an existing filesystem is not formatted" OK
+said 'already holds a filesystem' && note "and it says so on the console" OK \
+                                  || note "and it says so on the console" FAIL
+marked && note "and the disk is not claimed on the strength of it" FAIL \
+       || note "and the disk is not claimed on the strength of it" OK
+
+# --- the interrupted format still completes ---------------------------------
+# The refusal above has one exception, and it is the state this whole block was
+# restructured for. A board that lost power during mkfs.exfat comes back with
+# the half-made filesystem on the device, so a refusal with no exception would
+# wedge it for ever: no /etc/kvm.disk0, no disk for the host, and no message
+# anybody would go looking for. The marker names the device, so the script knows
+# it started that format itself.
+rc=$(run resume)
+[ "$rc" = "rc=0" ] && note "an interrupted format of the data filesystem retries" OK \
+                   || note "an interrupted format of the data filesystem retries ($rc)" FAIL
+ran 'mkfs.exfat' && note "and the filesystem is made" OK \
+                 || note "and the filesystem is made" FAIL
+ran 'parted' && note "and the card is not partitioned a second time" FAIL \
+             || note "and the card is not partitioned a second time" OK
+marked && note "and the disk is claimed afterwards" OK \
+       || note "and the disk is claimed afterwards" FAIL
+
+# busybox blkid prints no TYPE field for any filesystem, so on that board a
+# half-made exfat reads as a UUID and nothing else. It must still retry, or the
+# exception never fires on the boards this branch actually serves.
+rc=$(run resume-bare)
+[ "$rc" = "rc=0" ] && note "a half-made filesystem with no TYPE field retries" OK \
+                   || note "a half-made filesystem with no TYPE field retries ($rc)" FAIL
+ran 'mkfs.exfat' && note "and that filesystem is made too" OK \
+                 || note "and that filesystem is made too" FAIL
+
+# --- but only that state ----------------------------------------------------
+# A root slot is ext4. The marker cannot excuse formatting one.
+rc=$(run resume-ext4)
+[ "$rc" = "rc=1" ] && note "another filesystem is refused despite the marker" OK \
+                   || note "another filesystem is refused despite the marker ($rc)" FAIL
+ran 'mkfs.exfat' && note "AND A ROOT SLOT IS NOT FORMATTED BY THE RETRY" FAIL \
+                 || note "and a root slot is not formatted by the retry" OK
+said 'is not exfat' && note "and it names the filesystem it found" OK \
+                    || note "and it names the filesystem it found" FAIL
+
+# The same card read by busybox blkid, which prints no TYPE. The label is what
+# tells a root slot from the data filesystem there.
+rc=$(run resume-ext4-busybox)
+[ "$rc" = "rc=1" ] && note "a slot with no TYPE field is refused by its label" OK \
+                   || note "a slot with no TYPE field is refused by its label ($rc)" FAIL
+ran 'mkfs.exfat' && note "AND THAT ROOT SLOT IS NOT FORMATTED EITHER" FAIL \
+                 || note "and that root slot is not formatted either" OK
+
+# A marker left by another device excuses nothing. This is why the marker
+# records the device instead of only existing.
+rc=$(run stale)
+[ "$rc" = "rc=1" ] && note "a marker naming another device excuses no format" OK \
+                   || note "a marker naming another device excuses no format ($rc)" FAIL
+ran 'mkfs.exfat' && note "and nothing is formatted for it" FAIL \
+                 || note "and nothing is formatted for it" OK
+
+# The empty marker the earlier code wrote with touch names no device, so it
+# cannot say which device the interrupted format was on.
+rc=$(run legacy)
+[ "$rc" = "rc=1" ] && note "an empty marker from the earlier code excuses nothing" OK \
+                   || note "an empty marker from the earlier code excuses nothing ($rc)" FAIL
+ran 'mkfs.exfat' && note "and nothing is formatted for it either" FAIL \
+                 || note "and nothing is formatted for it either" OK
+
+# And the description outranks the marker. A device it calls a slot is refused
+# whatever state the format was left in.
+rc=$(run slot-pending)
+[ "$rc" = "rc=1" ] && note "a slot is refused whatever the marker says" OK \
+                   || note "a slot is refused whatever the marker says ($rc)" FAIL
+said 'slot or recovery' && note "and it is refused for being a slot" OK \
+                        || note "and it is refused for being a slot" FAIL
+ran 'mkfs.exfat' && note "AND A DECLARED SLOT IS NOT FORMATTED BY THE RETRY" FAIL \
+                 || note "and a declared slot is not formatted by the retry" OK
+
+# The marker has to carry the device for any of the above to work. A format that
+# failed leaves it behind, which is where its content can be read.
+rc=$(run fresh 1)
+[ "$(cat "$WORK/root/etc/kvm.disk0.formatting")" = "$WORK/root/mmcblk0p3" ] \
+    && note "the in-flight marker records the device" OK \
+    || note "the in-flight marker holds '$(cat "$WORK/root/etc/kvm.disk0.formatting")'" FAIL
 
 # --- the shipped text itself ------------------------------------------------
 # The background format is the defect. Reading the file is the only way to
