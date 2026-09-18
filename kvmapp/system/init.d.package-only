@@ -39,7 +39,11 @@ S98tailscaled    not-installed-by-policy  started on demand, not at boot
 
 # Carried for reference, identical to the base. The base copy is the one that
 # runs, and it is the same file.
-S15kvmhwd        same-as-base
+#
+# S15kvmhwd was one of these until it became a wrapper over ironkvm-board and
+# ironkvm-hwinit. It is no longer the base's bytes, so root.manifest in
+# ironkvm-dist installs it: the base copy detects the board a second way, and on
+# a pcie board it reboots with no latch to stop it repeating.
 S50avahi-daemon  same-as-base
 S50sshd          same-as-base
 S80dnsmasq       same-as-base

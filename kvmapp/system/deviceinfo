@@ -36,3 +36,13 @@ SERVER_GOMEMLIMIT_MIB=64
 SERVER_GOGC=150
 LOADER_ALIASES="ld-musl-riscv64xthead.so.1 ld-musl-riscv64v_xthead.so.1 ld-musl-riscv64v0p7_xthead.so.1"
 SUPPORT=official
+
+# The board's unique id. The SoC publishes it as "UID: d199448e_1359c372", so
+# the second field with the underscore removed is the id, and that is what
+# raw-field2 means. S03usbdev already builds the USB gadget serial number from
+# exactly that field, and S10uuid builds the hostname and three MAC addresses
+# from the first four characters of the SHA-512 of the whole file, which is what
+# `ironkvm-board uid --short` answers. Both values are therefore already in use
+# on every deployed board, and neither may change.
+UID_SOURCE=/sys/class/cvi-base/base_uid
+UID_FORM=raw-field2

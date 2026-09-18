@@ -164,11 +164,11 @@ check "the reason rcS is held back is recorded" \
     "$(grep -c 'nothing would run at all, including the watchdog' "$SCRIPT")" "1"
 
 # /kvmapp/system/init.d is the application's own reference copy and carries 17
-# scripts. install.sh installs 8 of them, deliberately: it leaves S15kvmhwd,
-# S50sshd and S80dnsmasq at their base versions and never installs avahi,
-# ssdpd, tailscaled, picoclaw or usbhid at all. install.sh had no way to know
-# that and installed the directory, so a package update would have added six
-# daemons to a 166MB board that never ran them before.
+# scripts. install.sh installs 9 of them, deliberately: it leaves S50sshd,
+# S50avahi-daemon and S80dnsmasq at their base versions and never installs
+# ssdpd, tailscaled, picoclaw, usbhid or cpufreq at all. install.sh had no way
+# to know that and installed the directory, so a package update would have added
+# five daemons to a 166MB board that never ran them before.
 #
 # The list is committed beside the package. It used to be derived from the image
 # manifest, which now lives in another repository, so a release that still read
