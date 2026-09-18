@@ -2,12 +2,16 @@
 #
 # Arm the SoC watchdog timer. Install as /etc/init.d/S01hwdt, mode 755.
 #
-# S01, not S00, and the number is load-bearing. soph_wdt is a module, and
-# /etc/init.d/S00kmod is what insmods it, so /dev/watchdog does not exist until
-# S00kmod has run. A copy installed as S00hwdt runs first, finds no device and
-# refuses to arm, which it reports and which is easy to miss:
+# S01, not S00, and the number is load-bearing. The watchdog driver is a module,
+# and /etc/init.d/S00kmod is what insmods it, so the watchdog device does not
+# exist until S00kmod has run. A copy installed as S00hwdt runs first, finds no
+# device and refuses to arm, which it reports and which is easy to miss:
 #
 #   1s  not arming: no-device (device=/dev/watchdog daemon=/usr/sbin/watchdog ...)
+#
+# That is why the description names the module as well as the device. The
+# refusal says which module should have created the device, so the log answers
+# the question the line above only raises.
 #
 # S01 also puts this after S01fs, which mounts /data, so the log below lands on
 # the partition that survives a reset rather than on the root filesystem
@@ -29,8 +33,10 @@
 # There is no remote power cycle on this enclosure, so today both of those cost
 # a trip to the board. The hardware timer is the only thing that can end them.
 #
-# Environment, for tests and for a dry run on a live board:
+# Environment, for tests and for a dry run on a live board. Each one wins over
+# the device description:
 #   HWDOG_DEVICE       the watchdog character device      (default /dev/watchdog)
+#   HWDOG_MODULE       the driver that creates it         (default: none named)
 #   HWDOG_DAEMON       the daemon binary            (default /usr/sbin/watchdog)
 #   HWDOG_CONF         where the generated config goes  (default /tmp/watchdog.conf)
 #   HWDOG_TIMEOUT      hardware timeout in seconds        (default 60)
@@ -38,14 +44,8 @@
 #   HWDOG_RETRY        seconds a test must keep failing   (default 120)
 #   HWDOG_ALLOCATABLE  pages the memory test asks for     (default 256, so 1MB)
 #   HWDOG_LOG          where decisions are recorded       (default /data/hwdt.log)
+#   DEVINFO            the device description reader (default ironkvm-deviceinfo)
 
-DEVICE=${HWDOG_DEVICE:-/dev/watchdog}
-DAEMON=${HWDOG_DAEMON:-/usr/sbin/watchdog}
-CONF=${HWDOG_CONF:-/tmp/watchdog.conf}
-TIMEOUT=${HWDOG_TIMEOUT:-60}
-INTERVAL=${HWDOG_INTERVAL:-8}
-RETRY=${HWDOG_RETRY:-120}
-ALLOCATABLE=${HWDOG_ALLOCATABLE:-256}
 LOG=${HWDOG_LOG:-/data/hwdt.log}
 
 # /data survives the reset this script can cause, which is the whole reason to
@@ -58,6 +58,55 @@ log() {
 }
 
 # --- config ---
+# Where the values come from, and what is generated from them. This whole block
+# is extracted and sourced on its own by tools/service/test-hwdt.sh, so keep it
+# free of anything above it.
+#
+# Three of these are facts about the board and not about this script: the
+# watchdog character device, the module that creates it, and the hardware
+# timeout. They come from the device description now, because a second board
+# states all three differently. Each keeps the value this script has always used
+# as its default, so a board whose description says nothing about the watchdog
+# arms exactly what it armed before.
+#
+# The environment wins over the description. The suites need that order, and so
+# does a dry run on a live board.
+#
+# The reader is found in two steps, the same two S01fs and S01zram take. An
+# image built by ironkvm-dist installs it at /usr/bin/ironkvm-deviceinfo, so the
+# bare name resolves through PATH. A board that runs Sipeed's firmware installs
+# the application tarball instead, and that install.sh comes from the official
+# base tarball, which the fork cannot change: nothing puts the reader on PATH
+# there. So the second step is the copy the tarball carries.
+#
+# Only the default is resolved this way. A DEVINFO from the environment is used
+# as it is, including one that names a path which does not exist, because that
+# is how the suites drive the missing reader case.
+DEVINFO=${DEVINFO:-ironkvm-deviceinfo}
+DEVINFO_TARBALL=${DEVINFO_TARBALL:-/kvmapp/system/ironkvm-deviceinfo}
+if [ "$DEVINFO" = ironkvm-deviceinfo ] && ! command -v "$DEVINFO" > /dev/null 2>&1
+then
+    DEVINFO=$DEVINFO_TARBALL
+fi
+
+devinfo_get() { "$DEVINFO" get "$1" 2>/dev/null; }
+
+DEVICE=${HWDOG_DEVICE:-$(devinfo_get WATCHDOG_DEV)}
+DEVICE=${DEVICE:-/dev/watchdog}
+MODULE=${HWDOG_MODULE:-$(devinfo_get WATCHDOG_MODULE)}
+TIMEOUT=${HWDOG_TIMEOUT:-$(devinfo_get WATCHDOG_TIMEOUT_S)}
+TIMEOUT=${TIMEOUT:-60}
+
+# The rest are not device facts, so they keep a literal default and no key.
+# /usr/sbin/watchdog is where the watchdog package puts its daemon on every
+# board that installs it, and the three thresholds below are this script's own
+# judgement, argued for further down.
+DAEMON=${HWDOG_DAEMON:-/usr/sbin/watchdog}
+CONF=${HWDOG_CONF:-/tmp/watchdog.conf}
+INTERVAL=${HWDOG_INTERVAL:-8}
+RETRY=${HWDOG_RETRY:-120}
+ALLOCATABLE=${HWDOG_ALLOCATABLE:-256}
+
 # The configuration is generated rather than shipped, so the thresholds live in
 # one file with the reasoning that chose them, and /etc/watchdog.conf stays the
 # base image's.
@@ -74,7 +123,11 @@ log() {
 #                        asked 45 or 60 -> armed 42
 #
 #                      Asking for exactly 42 arms 21, which is the trap worth
-#                      knowing about. 60 is asked for here and 42 is what runs.
+#                      knowing about. The request comes from the description,
+#                      and this board sets 60, so 42 is what runs. That
+#                      arithmetic is this driver's, so it is recorded beside the
+#                      value in the description rather than here: another board
+#                      rounds differently or not at all.
 #
 #   allocatable-memory An ACTIVE test: the daemon asks for the pages and touches
 #                      them. It is the closest thing available to the fault
@@ -191,6 +244,16 @@ start() {
     if [ "$verdict" != ok ]; then
         log "not arming: $verdict (device=$DEVICE daemon=$DAEMON timeout=$TIMEOUT interval=$INTERVAL)"
         echo "hwdt: not armed ($verdict)"
+
+        # A missing watchdog device is a module that was not loaded, every
+        # time, so say which one rather than leaving the reader to find out.
+        # The description names it; a board whose watchdog is built into the
+        # kernel names none, and then there is nothing useful to add.
+        if [ "$verdict" = no-device ] && [ -n "$MODULE" ]; then
+            log "$DEVICE is created by $MODULE, which has to load before this script runs"
+            echo "hwdt: $DEVICE is created by $MODULE"
+        fi
+
         return 0
     fi
 

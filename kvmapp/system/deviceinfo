@@ -63,3 +63,18 @@ UID_FORM=raw-field2
 USB_ROLE_SWITCH=hook
 USB_PHY_DRIVER=dwc2
 USB_PHY_DEVICE=4340000.usb
+
+# The hardware watchdog. These are device facts too, so they are the same here
+# as in devices/sipeed-nanokvm/deviceinfo.
+#
+# soph_wdt is what creates /dev/watchdog, and /etc/init.d/S00kmod is what loads
+# it, which is why S01hwdt is numbered S01 and not S00. A missing device is a
+# module that was not loaded, so the refusal names it.
+#
+# 60 is asked for and 42 is what the hardware arms. The part is a Synopsys
+# DesignWare watchdog: its steps are powers of two and the driver takes the
+# largest step BELOW the request. Measured on the board on 2026-08-29, 20 and
+# 30 both arm 21, 45 and 60 both arm 42, and asking for exactly 42 arms 21.
+WATCHDOG_DEV=/dev/watchdog
+WATCHDOG_MODULE=soph_wdt
+WATCHDOG_TIMEOUT_S=60
