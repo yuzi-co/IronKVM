@@ -78,3 +78,17 @@ USB_PHY_DEVICE=4340000.usb
 WATCHDOG_DEV=/dev/watchdog
 WATCHDOG_MODULE=soph_wdt
 WATCHDOG_TIMEOUT_S=60
+
+# The network interfaces. These are device facts too, so they are the same here
+# as in devices/sipeed-nanokvm/deviceinfo.
+#
+# The wired interface is eth0 on every variant. The wireless one is wlan0 where
+# there is a radio: the alpha and the pcie variant carry one and the beta does
+# not. One description covers all three, so the key states the name and not the
+# presence. S30wifi finds no such interface on a beta and carries on.
+#
+# WLAN_IF has to be here for that reason. S30wifi reads an absent key as "this
+# board has no radio" and configures nothing, so dropping this line would take
+# the wireless off every board that reads this copy.
+ETH_IF=eth0
+WLAN_IF=wlan0
