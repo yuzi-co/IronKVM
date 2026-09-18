@@ -580,7 +580,51 @@ usb_bind() {
     return 0
 }
 
-# set_otg_role writes the role and then reads it back.
+# usb_devinfo reads one key from the device description.
+#
+# Two facts about the USB port live there now: USB_ROLE_SWITCH says how the port
+# changes role, and USB_PHY_DRIVER with USB_PHY_DEVICE name what restart_phy
+# unbinds and binds again. A second board states both differently, and until
+# this change they were spelled out in this file.
+#
+# The reader is found in two steps, the same two S01fs and S01zram take. An
+# image built by ironkvm-dist installs it at /usr/bin/ironkvm-deviceinfo, so the
+# bare name resolves through PATH. A board that runs Sipeed's firmware installs
+# the application tarball instead, and that install.sh comes from the official
+# base tarball, which the fork cannot change: nothing puts the reader on PATH
+# there. So the second step is the copy the tarball carries.
+#
+# Nothing here fails when the reader or the key is missing. The callers treat an
+# empty answer as "this board says nothing", and what they do then is what this
+# script did before the keys existed.
+usb_devinfo() {
+    _reader=${DEVINFO:-ironkvm-deviceinfo}
+    if [ "$_reader" = ironkvm-deviceinfo ] && ! command -v "$_reader" > /dev/null 2>&1
+    then
+        _reader=${DEVINFO_TARBALL:-/kvmapp/system/ironkvm-deviceinfo}
+    fi
+    "$_reader" get "$1" 2> /dev/null
+}
+
+# set_otg_role puts the port in a role, through the device's helper where there
+# is one, and through /proc/cviusb/otg_role where there is not.
+#
+# The two paths are the shape S15kvmhwd uses, and for the same reason. An image
+# built by ironkvm-dist installs /usr/lib/ironkvm/hw.d/usb-role, which carries
+# the whole read-back loop below and the account of why it is there. A board on
+# Sipeed's firmware has no such file: it has this application tarball and
+# nothing else, and it has to keep working exactly as it does today. So the old
+# code stays here, and it is what runs when the helper is absent.
+#
+# USB_ROLE_SWITCH=none is the third answer. It says the port is wired for one
+# role and there is nothing to switch, so the right action is no action. A
+# description that says nothing at all, or a reader that cannot be found, falls
+# through to the old code rather than to silence, because a board whose
+# description went missing must still come up with a gadget.
+#
+# What follows is the account of the read-back. The helper carries a copy, and
+# the two have to stay in step: devices/sipeed-nanokvm/test-usb-role.sh in
+# ironkvm-dist holds the failure line of one against the other.
 #
 # The write is not a note of intent. It reaches dwc2_set_hw_id(), which pokes
 # the SoC register at 0x03000048 and flips the hardware ID pin, and the
@@ -606,6 +650,19 @@ usb_bind() {
 # BusyBox sleep is not built with fractional support.
 set_otg_role() {
     role=$1
+
+    if [ "$(usb_devinfo USB_ROLE_SWITCH)" = none ]
+    then
+        return 0
+    fi
+
+    hook=${USB_ROLE_HOOK:-/usr/lib/ironkvm/hw.d/usb-role}
+    if [ -x "$hook" ]
+    then
+        "$hook" "$role"
+        return $?
+    fi
+
     tries=${USB_OTG_ROLE_TRIES:-3}
     n=0
 
@@ -960,6 +1017,36 @@ restart_usb_dev(){
     echo "USB Restart OK!"
 }
 
+# restart_phy takes the controller away from its driver and gives it back.
+#
+# This is the last rung the supervisor in server/service/hid/usb_watchdog.go
+# climbs to, and it is the heaviest thing short of a reboot: the driver releases
+# the controller, the gadget goes with it, and both are built again.
+#
+# Which controller and which driver is a fact about the board, so it comes from
+# the device description. Neither key has a default. A board that declares one
+# and not the other has said nothing usable, and building the path from an empty
+# value writes the device name into /sys/bus/platform/drivers//unbind, which is
+# a write to a file that is not the one meant. So this says the board cannot do
+# it and returns 0: the caller asked for a repair this board does not have, and
+# that is not a failure of the caller.
+restart_phy() {
+    driver=$(usb_devinfo USB_PHY_DRIVER)
+    device=$(usb_devinfo USB_PHY_DEVICE)
+
+    if [ -z "$driver" ] || [ -z "$device" ]
+    then
+        echo "usb: this board has no PHY restart"
+        return 0
+    fi
+
+    echo "$device" > "/sys/bus/platform/drivers/$driver/unbind"
+    sleep 1
+    echo "$device" > "/sys/bus/platform/drivers/$driver/bind"
+    start_usb_host
+    start_usb_dev
+}
+
 case "$1" in
   start)
     start_usb_dev
@@ -981,10 +1068,6 @@ case "$1" in
     start_usb_dev
   ;;
    restart_phy)
-    echo "4340000.usb" > /sys/bus/platform/drivers/dwc2/unbind
-    sleep 1
-    echo "4340000.usb" > /sys/bus/platform/drivers/dwc2/bind
-    start_usb_host
-    start_usb_dev
+    restart_phy
   ;;
 esac

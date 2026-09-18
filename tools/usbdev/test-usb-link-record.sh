@@ -252,9 +252,19 @@ sed -n '/^usb_record_link() {/,/^}/p' "$S03" | grep -q 'USB_LINK_LOG:-' \
 # Comments first. A comment that explains why runtime state stays off the boot
 # card names the boot card, and a locator that reads prose fails a script for
 # saying the right thing.
-grep -v '^[[:space:]]*#' "$S03" | grep -q '/kvmapp' \
-    && note "the script writes to /kvmapp, which is the boot card" FAIL \
-    || note "it never writes to the boot card" OK
+#
+# One path under /kvmapp is allowed, and it is a read rather than a write:
+# /kvmapp/system/ironkvm-deviceinfo is the copy of the device description reader
+# that the application tarball carries. A board on Sipeed's firmware has the
+# reader nowhere else, because the install.sh that puts the tarball on the card
+# comes from the official base tarball and the fork cannot change it. S01fs and
+# S01zram resolve the same path for the same reason. Nothing is written there,
+# and the rule this case holds is about writes: /kvmapp is the boot SD card, and
+# a hot file wears it out.
+grep -v '^[[:space:]]*#' "$S03" | grep '/kvmapp' \
+    | grep -qv '^[^#]*/kvmapp/system/ironkvm-deviceinfo' \
+    && note "the script touches /kvmapp for something other than the reader" FAIL \
+    || note "it touches the boot card only to find the description reader" OK
 
 echo
 if [ "$fails" -eq 0 ]; then

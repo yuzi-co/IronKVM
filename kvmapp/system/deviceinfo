@@ -46,3 +46,20 @@ SUPPORT=official
 # on every deployed board, and neither may change.
 UID_SOURCE=/sys/class/cvi-base/base_uid
 UID_FORM=raw-field2
+
+# The USB port. These are device facts, so they are the same here as in
+# devices/sipeed-nanokvm/deviceinfo, which gates/check-tarball-deviceinfo.sh in
+# ironkvm-dist holds them to.
+#
+# USB_ROLE_SWITCH=hook says the device supplies /usr/lib/ironkvm/hw.d/usb-role,
+# which puts the port in the device role or the host role. The board that reads
+# this copy is a board on Sipeed's firmware, and it has no such file, so
+# S03usbdev falls back to the /proc/cviusb/otg_role code it has always run. The
+# key states what the device offers; the file being there is what decides which
+# path runs.
+#
+# USB_PHY_DRIVER and USB_PHY_DEVICE name the dwc2 platform device that
+# restart_phy unbinds and binds again.
+USB_ROLE_SWITCH=hook
+USB_PHY_DRIVER=dwc2
+USB_PHY_DEVICE=4340000.usb
