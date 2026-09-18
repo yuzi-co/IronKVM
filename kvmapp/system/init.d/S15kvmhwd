@@ -1,5 +1,69 @@
 #!/bin/sh
 # kvmhwd Rev2.5
+#
+# This file is a wrapper. Everything below "the old way" is Sipeed's script,
+# unchanged in what it does, and everything above it is the path an IronKVM
+# image takes instead.
+#
+# == Why there are two paths ==
+#
+# ironkvm-dist moves this work into device hooks: ironkvm-hwinit runs the pinmux
+# stage, ironkvm-board runs the detection hooks and writes one board
+# description, and a late hook mirrors that description into /etc/kvm/hw and
+# /etc/kvm/hdmi_version for the vendor code that reads them. An image built by
+# ironkvm-dist installs both tools in /usr/bin.
+#
+# A board that runs Sipeed's firmware has neither. It has this application
+# tarball and nothing else, and it has to keep booting exactly as it does today.
+# So when either tool is missing, this script runs the old code, and the old
+# code is kept here for that reason alone.
+#
+# The old code has a bug and it is kept. kvm_hw_detect opens with
+#
+#     if [ ! -e /etc/kvm/hdmi_version ]; then rm /etc/kvm/hw; fi
+#
+# while kvm_hdmi_version_detect runs on the beta and pcie path only, so an alpha
+# board never has /etc/kvm/hdmi_version from detection and re-probes on every
+# boot. The new path does not inherit it, because it asks the description
+# whether the board has been detected and the description is one file. Fixing it
+# in the old path would change what a board on Sipeed's firmware does, and that
+# is not what this change is for.
+#
+# == What calls this ==
+#
+# kvm_system is a binary this project cannot rebuild. It calls exactly two of
+# these subcommands, and it copies this file from /kvmapp/system/init.d into
+# /etc/init.d when an application update runs, so both copies have to work:
+#
+#     /kvmapp/system/init.d/S15kvmhwd get_hdmi_version   system_init.cpp
+#     /etc/init.d/S15kvmhwd start                        system_init.cpp
+#
+# kvm_vision calls get_hdmi_version as well. Both read /etc/kvm/hdmi_version
+# afterwards and ignore what this prints, so the file is the answer and the
+# printed line is a convenience.
+#
+# re-detect and re-init keep their old arguments although nothing calls them,
+# and an unknown argument still exits 0 and does nothing. That surface is what a
+# vendor binary sees and this change is about keeping it still.
+#
+# == What the new path does not do ==
+#
+# It does not reboot. The pcie variant needs one reboot after it is found, and
+# the latch that grants it belongs to `ironkvm-board reboot-if-required`, which
+# S02hwlate calls at boot. A reboot from here would happen while kvm_system is
+# mid-update.
+#
+# It does not write /etc/kvm/hw either. The late hook mirrors the description
+# into that file, and by the time this runs at S15 the late stage has already
+# been through. `start` only makes sure the board is detected and the pins are
+# muxed, and both of those are repeatable.
+#
+# Every path here is written out in full, /etc/kvm and /sys/class/gpio alike,
+# and none of them is a variable. Two suites in ironkvm-dist parse the pin
+# numbers, the register writes and the variant names straight out of this file
+# so that the hooks which replace it cannot drift from it, and a variable would
+# leave them nothing to read. tools/hwd/test-s15kvmhwd.sh rewrites the paths in
+# a copy instead, and refuses to run if any of them survives the rewrite.
 
 Alpha_OLED_RST_Pin=371
 Beta_OLED_RST_Pin=502
@@ -14,6 +78,58 @@ Beta_PWR_LED_Pin=504
 Beta_PWR_KEY_Pin=503
 Beta_RST_KEY_Pin=505
 PCIe_HDMI_RST_Pin=451
+
+# --------------------------------------------------------------- the new way
+
+# Both tools or neither. ironkvm-board without the hook runner would detect the
+# board and leave the pins unmuxed, which is a worse board than either path
+# gives on its own.
+have_ironkvm_tools() {
+  command -v ironkvm-board > /dev/null 2>&1 || return 1
+  command -v ironkvm-hwinit > /dev/null 2>&1 || return 1
+  return 0
+}
+
+# The bridge the description names, or nothing. An alpha board has no
+# hdmi_bridge key, and neither has a board that has not been detected yet.
+described_hdmi_bridge() {
+  have_ironkvm_tools || return 0
+  ironkvm-board get hdmi_bridge 2> /dev/null
+}
+
+# Write the file only when it does not already say this, for the reason the
+# mirror hook gives: /etc/kvm is on the boot card.
+write_hdmi_version() {
+  if [ -f "/etc/kvm/hdmi_version" ] && [ "$(cat "/etc/kvm/hdmi_version")" = "$1" ]
+  then
+    return 0
+  fi
+  [ -d "/etc/kvm" ] || mkdir -p "/etc/kvm"
+  printf '%s\n' "$1" > "/etc/kvm/hdmi_version"
+}
+
+# get_hdmi_version answers from the description where the description has the
+# answer, and probes the bus where it does not. An alpha board is the second
+# case: it has no hdmi_bridge key, and kvm_system has always got a probed value
+# there, so the probe is what keeps that board unchanged.
+kvm_get_hdmi_version() {
+  bridge=$(described_hdmi_bridge)
+  if [ -n "$bridge" ]
+  then
+    write_hdmi_version "$bridge"
+  else
+    kvm_hdmi_version_detect
+  fi
+  [ -f "/etc/kvm/hdmi_version" ] && cat "/etc/kvm/hdmi_version"
+  return 0
+}
+
+# --------------------------------------------------------------- the old way
+#
+# Sipeed's script from here down, byte for byte, with one change and no others:
+# the case statement at the end asks have_ironkvm_tools first. This code runs on
+# a board that has no ironkvm-board, and it behaves exactly as the release it
+# came from, the alpha re-probe included.
 
 init_alpha_hw(){
   devmem 0x030010D0 32 0x2  # I2C1_SCL
@@ -204,18 +320,35 @@ kvm_hdmi_version_detect()
 
 case "$1" in
   start)
-    kvm_hw_detect
-    kvm_hw_init
+    if have_ironkvm_tools
+    then
+      ironkvm-board detect
+      ironkvm-hwinit pinmux
+    else
+      kvm_hw_detect
+      kvm_hw_init
+    fi
   ;;
   re-detect)
-    rm /etc/kvm/hw
-    kvm_hw_detect
-    kvm_hw_init
+    if have_ironkvm_tools
+    then
+      ironkvm-board detect --again
+      ironkvm-hwinit pinmux
+    else
+      rm /etc/kvm/hw
+      kvm_hw_detect
+      kvm_hw_init
+    fi
   ;;
   re-init)
-    kvm_hw_init
+    if have_ironkvm_tools
+    then
+      ironkvm-hwinit pinmux
+    else
+      kvm_hw_init
+    fi
   ;;
   get_hdmi_version)
-    kvm_hdmi_version_detect
+    kvm_get_hdmi_version
   ;;
 esac
