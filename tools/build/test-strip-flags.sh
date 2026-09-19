@@ -53,12 +53,21 @@ grep -q 'ldflags "-s -w' "$ROOT/Makefile" \
     && note "the Makefile strips even without a build stamp" OK \
     || note "the Makefile strips even without a build stamp" FAIL
 
+# The status of a suite is its whole report to a sweep: 0 every case passed, 1 a
+# case failed, 2 the suite could not run here and the last line says why, because
+# the last line is what tools/run-tests.sh prints beside the SKIP. A skip that
+# ends on "all cases passed" reads as a pass, and a skip that exits 1 reads as a
+# defect in the build. Both endings below therefore name what did not run, on the
+# last line, and keep the verdict of the cases that did run.
 if [ -n "$SKIP_BUILD" ]; then
     echo
-    echo "(build case skipped)"
-    echo
-    [ "$fails" -eq 0 ] && echo "all cases passed" || echo "$fails case(s) FAILED"
-    exit 1
+    if [ "$fails" -ne 0 ]
+    then
+        echo "$fails source case(s) FAILED"
+        exit 1
+    fi
+    echo "the source cases passed; SKIP_BUILD is set, so the built-artefact cases did not run"
+    exit 2
 fi
 
 echo
@@ -72,15 +81,14 @@ if ! command -v docker >/dev/null 2>&1 || ! docker image inspect "$IMAGE" >/dev/
     # "builder image is present FAIL" said the build was broken when nothing
     # about the build had been looked at.
     echo
-    echo "(build case skipped: no $IMAGE image here)"
-    echo "    build it with: docker build -t $IMAGE tools/build"
-    echo
+    echo "(build case skipped)"
+    echo "    build the image with: docker build -t $IMAGE tools/build"
     if [ "$fails" -ne 0 ]
     then
         echo "$fails source case(s) FAILED"
         exit 1
     fi
-    echo "all source cases passed"
+    echo "the source cases passed; the $IMAGE image is not here, so the built-artefact cases did not run"
     exit 2
 fi
 note "builder image $IMAGE is present" OK
