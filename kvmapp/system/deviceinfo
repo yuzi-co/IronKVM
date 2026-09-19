@@ -122,3 +122,18 @@ HID_OUTPUTS=usb-gadget
 # firmware would answer a question differently from the same board on an
 # IronKVM image.
 CAPABILITIES="virtual-media usb-audio-gadget atx-gpio oled wifi"
+
+# What the real time clock is worth. A device fact too, so it is the same here
+# as in devices/sipeed-nanokvm/deviceinfo.
+#
+# The board has an RTC: /dev/rtc0 exists and /sys/class/rtc/rtc0/name is
+# cvi_rtc. It gives no time. On 2026-09-17 hwclock -r on the reference board
+# timed out, so the part is there and the reading is not, which is what
+# unreliable means.
+#
+# The reader of this key is S02clock, which an IronKVM image installs and this
+# tarball does not carry. A board on Sipeed's firmware therefore declares the
+# fact and nothing acts on it, the same way it declares HID_OUTPUTS and
+# CAPABILITIES. The fact belongs with the board either way, and a device fact
+# the device's own description declares has to be in this copy as well.
+RTC=unreliable
