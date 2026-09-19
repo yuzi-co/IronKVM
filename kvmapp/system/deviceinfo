@@ -92,3 +92,15 @@ WATCHDOG_TIMEOUT_S=60
 # the wireless off every board that reads this copy.
 ETH_IF=eth0
 WLAN_IF=wlan0
+
+# How the board types for the managed host. A device fact too, so it is the
+# same here as in devices/sipeed-nanokvm/deviceinfo.
+#
+# usb-gadget is the only output this board has, and it is therefore also the
+# default. S03usbhid creates the three endpoints it names, and
+# server/service/hid/hid.go opens them at /dev/hidg0, /dev/hidg1 and
+# /dev/hidg2. The paths themselves live in the device's hid.d/usb-gadget file,
+# which an IronKVM image installs at /usr/share/ironkvm/hid.d/. A board that
+# reads this copy has no such file, and nothing reads one yet in either case:
+# the server still holds the three paths itself.
+HID_OUTPUTS=usb-gadget
