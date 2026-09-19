@@ -23,6 +23,21 @@ trap 'rm -rf "$WORK"' EXIT
 fails=0
 note() { printf '  %-62s %s\n' "$1" "$2"; [ "$2" = FAIL ] && fails=$((fails + 1)); return 0; }
 
+# A board that is already armed answers pidof, and start then reports "already
+# armed" and writes nothing. That is correct on the board and useless here: it
+# turned ten cases red when this suite was run on the reference board, which is
+# where it matters most, because a live board is the one host that can tell a
+# stub apart from the real thing. So the suite answers the question itself.
+#
+# The stub lives in its own directory rather than beside the daemon, because
+# this one goes on PATH and the daemon must be found by its full path alone.
+mkdir -p "$WORK/path"
+cat > "$WORK/path/pidof" <<'STUB'
+#!/bin/sh
+exit 1
+STUB
+chmod 755 "$WORK/path/pidof"
+
 # A daemon that records how it was called and starts nothing.
 mkdir -p "$WORK/bin"
 cat > "$WORK/bin/watchdog" <<'STUB'
@@ -37,7 +52,23 @@ chmod 755 "$WORK/bin/watchdog"
 DEV=/dev/null
 [ -c "$DEV" ] || { echo "this host has no character device at $DEV to stand in for /dev/watchdog"; exit 2; }
 
+# The watchdog device, the module that creates it and the hardware timeout come
+# from the device description now. It is read with the real ironkvm-deviceinfo,
+# copied into the sandbox and given a fixture, so a key this suite spells wrong
+# is a key the suite fails on rather than one a stub agrees with.
+READER=${READER:-$HERE/../../kvmapp/system/ironkvm-deviceinfo}
+[ -f "$READER" ] || { echo "no ironkvm-deviceinfo at $READER; set READER"; exit 2; }
+cp "$READER" "$WORK/bin/ironkvm-deviceinfo"
+chmod 755 "$WORK/bin/ironkvm-deviceinfo"
+DEVINFO=$WORK/bin/ironkvm-deviceinfo
+
+# DEVICEINFO_PATHS names a file that is not there, so the cases below read no
+# description at all. The host may have one: the board this suite is run on
+# carries /kvmapp/system/deviceinfo, and a case that read it would answer
+# differently on the board and on a workstation.
 run() {   # run <action>, with the environment already set by the caller
+    PATH="$WORK/path:$PATH" \
+    DEVICEINFO_PATHS="$WORK/no-such-deviceinfo" \
     HWDOG_DEVICE=${DEVICE_OVERRIDE:-$DEV} \
     HWDOG_DAEMON=${DAEMON_OVERRIDE:-$WORK/bin/watchdog} \
     HWDOG_CONF="$WORK/watchdog.conf" \
@@ -62,6 +93,50 @@ reset_env() {
 
 verdict() {
     run status | sed -n 's/^preflight : //p'
+}
+
+# The cases that drive the description need HWDOG_DEVICE and HWDOG_TIMEOUT
+# unset, because the whole question is what the script does when only the
+# description speaks. An empty value is what the script reads as unset, so
+# ENV_DEVICE and ENV_TIMEOUT hold either an override or nothing.
+describe() {    # describe KEY=value ...
+    : > "$WORK/deviceinfo"
+    for kv in "$@"; do
+        printf '%s\n' "$kv" >> "$WORK/deviceinfo"
+    done
+}
+
+run_described() {   # run_described <action>
+    PATH="$WORK/path:$PATH" \
+    HWDOG_DEVICE="$ENV_DEVICE" \
+    HWDOG_TIMEOUT="$ENV_TIMEOUT" \
+    HWDOG_DAEMON="$WORK/bin/watchdog" \
+    HWDOG_CONF="$WORK/watchdog.conf" \
+    HWDOG_LOG="$WORK/hwdt.log" \
+    ARGV_OUT="$WORK/argv" \
+    HWDOG_INTERVAL="$INTERVAL" \
+    DEVINFO="$DEVINFO" \
+    DEVICEINFO_PATHS="$WORK/deviceinfo" \
+    sh "$WD" "$1" 2>&1
+}
+
+reset_desc() {
+    ENV_DEVICE=
+    ENV_TIMEOUT=
+    INTERVAL=8
+    rm -f "$WORK/watchdog.conf" "$WORK/argv" "$WORK/hwdt.log" "$WORK/deviceinfo"
+}
+
+verdict_desc() {
+    run_described status | sed -n 's/^preflight : //p'
+}
+
+field_desc() {  # field_desc <label from the status output>
+    run_described status | sed -n "s/^$1  *: //p"
+}
+
+conf_says() {   # conf_says <key>: what the generated configuration sets it to
+    sed -n "s/^[[:space:]]*$1[[:space:]]*=[[:space:]]*//p" "$WORK/watchdog.conf" 2>/dev/null
 }
 
 echo
@@ -247,6 +322,132 @@ for key in max-load-1 max-load-5 max-load-15 min-memory max-swap ping \
         note "$key is not set" OK
     fi
 done
+
+echo
+echo "===== the board says which watchdog it has ====="
+# Three values are facts about the board rather than about this script: the
+# watchdog character device, the module that creates it, and the hardware
+# timeout. They come from the device description, each keeping the value the
+# script has always used as its default, and the environment still wins over
+# both.
+#
+# preflight is what stands between a bad description and a board that arms a
+# watchdog it cannot feed, so the last cases here hold it against values a
+# description can now carry.
+
+reset_desc
+describe DEVICE=test WATCHDOG_DEV="$DEV"
+run_described start > /dev/null 2>&1
+[ "$(conf_says watchdog-device)" = "$DEV" ] \
+    && note "the device from the description reaches the configuration" OK \
+    || note "the description said $DEV, the configuration says [$(conf_says watchdog-device)]" FAIL
+
+reset_desc
+describe DEVICE=test
+[ "$(field_desc device)" = /dev/watchdog ] \
+    && note "a description with no watchdog keys keeps /dev/watchdog" OK \
+    || note "a description with no watchdog keys gives [$(field_desc device)]" FAIL
+
+[ "$(field_desc timeout)" = "60s, pinged every 8s" ] \
+    && note "a description with no watchdog keys keeps the 60s timeout" OK \
+    || note "a description with no watchdog keys gives [$(field_desc timeout)]" FAIL
+
+# The environment is how a person drives this script by hand on a live board,
+# and how every case above this section works. It has to beat the description.
+reset_desc
+describe DEVICE=test WATCHDOG_DEV=/dev/watchdog1
+ENV_DEVICE=$DEV
+run_described start > /dev/null 2>&1
+[ "$(conf_says watchdog-device)" = "$DEV" ] \
+    && note "HWDOG_DEVICE beats the description" OK \
+    || note "the description beat HWDOG_DEVICE: the configuration says [$(conf_says watchdog-device)]" FAIL
+
+reset_desc
+describe DEVICE=test WATCHDOG_DEV="$DEV" WATCHDOG_TIMEOUT_S=45
+ENV_TIMEOUT=120
+INTERVAL=20
+run_described start > /dev/null 2>&1
+[ "$(conf_says watchdog-timeout)" = 120 ] \
+    && note "HWDOG_TIMEOUT beats the description" OK \
+    || note "the description beat HWDOG_TIMEOUT: the configuration says [$(conf_says watchdog-timeout)]" FAIL
+
+reset_desc
+INTERVAL=5
+describe DEVICE=test WATCHDOG_DEV="$DEV" WATCHDOG_TIMEOUT_S=30
+run_described start > /dev/null 2>&1
+[ "$(conf_says watchdog-timeout)" = 30 ] \
+    && note "the timeout from the description reaches the configuration" OK \
+    || note "the description said 30, the configuration says [$(conf_says watchdog-timeout)]" FAIL
+
+# A description cannot talk preflight out of anything. Whatever it names has to
+# be a character device, and the numbers it gives are checked exactly as the
+# ones from the environment are.
+reset_desc
+: > "$WORK/plain"
+describe DEVICE=test WATCHDOG_DEV="$WORK/plain"
+[ "$(verdict_desc)" = no-device ] \
+    && note "a description naming a plain file still gives no-device" OK \
+    || note "a description naming a plain file gives $(verdict_desc)" FAIL
+
+# 8 pings in 30 seconds is fewer than six inside the window, and this verdict
+# fires only if the timeout the description gave is the one preflight read.
+reset_desc
+describe DEVICE=test WATCHDOG_DEV="$DEV" WATCHDOG_TIMEOUT_S=30
+[ "$(verdict_desc)" = interval-too-long ] \
+    && note "interval-too-long uses the timeout the description gave" OK \
+    || note "a 30s timeout from the description against an 8s interval gives $(verdict_desc)" FAIL
+
+# +5 is the value that separates the two checks. The digits-only test refuses
+# it, and [ +5 -gt 0 ] does not, so a preflight that skipped the first test
+# would let this description through.
+for bad in abc +5; do
+    reset_desc
+    describe DEVICE=test WATCHDOG_DEV="$DEV" WATCHDOG_TIMEOUT_S="$bad"
+    [ "$(verdict_desc)" = bad-number ] \
+        && note "a timeout of [$bad] from the description is refused" OK \
+        || note "a timeout of [$bad] from the description gives $(verdict_desc)" FAIL
+done
+
+# A watchdog device that is absent at boot is a module that was not loaded, so
+# the refusal names the module the description gives. This is the whole reason
+# the script is numbered S01 and not S00, and the log used to leave the reader
+# to work that out.
+reset_desc
+describe DEVICE=test WATCHDOG_DEV=/dev/watchdog1 WATCHDOG_MODULE=a_watchdog_module
+out=$(run_described start 2>&1)
+case "$out" in
+    *a_watchdog_module*) note "a missing device names the module that creates it" OK ;;
+    *)                   note "a missing device reports [$out] and names no module" FAIL ;;
+esac
+
+reset_desc
+describe DEVICE=test WATCHDOG_DEV=/dev/watchdog1
+out=$(run_described start 2>&1)
+case "$out" in
+    *"is created by"*) note "a description with no module invents one" FAIL ;;
+    *)                 note "a description with no module names none" OK ;;
+esac
+
+# The resolution has to sit inside the config block, because that block is what
+# gets extracted and read on its own.
+sed -n '/^# --- config ---/,/^# --- end config ---/p' "$WD" > "$WORK/config.sh"
+if [ -s "$WORK/config.sh" ]; then
+    note "the config block can be extracted" OK
+else
+    note "the config block can be extracted" FAIL
+fi
+
+reset_desc
+describe DEVICE=test WATCHDOG_DEV=/dev/watchdog9 WATCHDOG_TIMEOUT_S=45
+got=$(
+    DEVICEINFO_PATHS="$WORK/deviceinfo"
+    export DEVINFO DEVICEINFO_PATHS
+    . "$WORK/config.sh"
+    echo "$DEVICE $TIMEOUT"
+) 2>/dev/null
+[ "$got" = "/dev/watchdog9 45" ] \
+    && note "the config block alone reads the description" OK \
+    || note "the config block alone gives [$got], want [/dev/watchdog9 45]" FAIL
 
 echo
 echo "===== stopping and disarming are opposites ====="

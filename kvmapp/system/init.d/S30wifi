@@ -4,6 +4,44 @@
 
 APFLAG_FILE=/tmp/wifiap
 
+# The wireless interface. A second board names it something else, so the name
+# is a fact about the board and comes from the description.
+#
+# The reader is found in two steps, the same two S01fs, S01zram and S01hwdt
+# take. An image built by ironkvm-dist installs it at /usr/bin/ironkvm-deviceinfo,
+# so the bare name resolves through PATH. A board that runs Sipeed's firmware
+# installs the application tarball instead, and that install.sh comes from the
+# official base tarball, which the fork cannot change: nothing puts the reader
+# on PATH there. So the second step is the copy the tarball carries.
+DEVINFO=${DEVINFO:-ironkvm-deviceinfo}
+DEVINFO_TARBALL=${DEVINFO_TARBALL:-/kvmapp/system/ironkvm-deviceinfo}
+if [ "$DEVINFO" = ironkvm-deviceinfo ] && ! command -v "$DEVINFO" > /dev/null 2>&1
+then
+    DEVINFO=$DEVINFO_TARBALL
+fi
+
+# An absent key is an answer and not a gap: a description that can be read and
+# names no wireless interface is a board with no radio, and there is nothing
+# here to configure. The reader exits 1 for a key it did not find.
+#
+# Anything else is a board that could not be read at all: no description, or no
+# reader. That keeps wlan0, because "the description could not be read" must
+# not take the wireless off a board which has it. The reader exits 3 with no
+# description and 4 with one it refuses.
+IF=$("$DEVINFO" get WLAN_IF 2>/dev/null)
+case $? in
+    0|1) ;;
+    *) IF=wlan0 ;;
+esac
+
+if [ -z "$IF" ]; then
+    echo "wifi: this board declares no wireless interface"
+    exit 0
+fi
+
+# airmon-ng names the monitor interface after the one it was started on.
+MONIF="${IF}mon"
+
 gen_hostapd_conf() {
     ssid="${1}"
     pass="${2}"
@@ -39,7 +77,7 @@ gen_udhcpd_conf() {
 gen_dnsmasq_conf() {
     ipv4_prefix=${1}
     echo "bind-interfaces"
-    echo "interface=wlan0"
+    echo "interface=${IF}"
     echo "address=/config.kvm/${ipv4_prefix}.1"
     echo "no-hosts"
     echo "dhcp-range=${ipv4_prefix}.2,${ipv4_prefix}.254"
@@ -71,9 +109,9 @@ start() {
     fi
     echo "ctrl_interface=/var/run/wpa_supplicant" >/etc/wpa_supplicant.conf
     wpa_passphrase "$ssid" "$pass" >>/etc/wpa_supplicant.conf
-    wpa_supplicant -B -i wlan0 -c /etc/wpa_supplicant.conf
+    wpa_supplicant -B -i "$IF" -c /etc/wpa_supplicant.conf
     if [ ! -e /boot/wifi.nodhcp ]; then
-        (udhcpc -i wlan0 -t 10 -T 1 -A 5 -O 121 -B -b -p /run/udhcpc.wlan0.pid) &
+        (udhcpc -i "$IF" -t 10 -T 1 -A 5 -O 121 -B -b -p "/run/udhcpc.$IF.pid") &
     fi
 }
 
@@ -100,8 +138,8 @@ ap_start() {
     fi
     gen_hostapd_conf "$ssid" "$pass" >/etc/hostapd.conf
     ipv4_prefix=10.$id3.$id2
-    if [ ! -e /etc/udhcpd.wlan0.conf ]; then
-        gen_udhcpd_conf wlan0 "${ipv4_prefix}" >/etc/udhcpd.wlan0.conf
+    if [ ! -e "/etc/udhcpd.$IF.conf" ]; then
+        gen_udhcpd_conf "$IF" "${ipv4_prefix}" >"/etc/udhcpd.$IF.conf"
     fi
     # gen_dnsmasq_conf "${ipv4_prefix}"  > /etc/dnsmasq.conf
 
@@ -110,15 +148,15 @@ ap_start() {
     # iptables --policy OUTPUT ACCEPT
     # iptables -F
     # iptables -t nat -F
-    # iptables -t nat -A PREROUTING -i wlan0 -p udp --dport 53 -j DNAT --to ${ipv4_prefix}.1
+    # iptables -t nat -A PREROUTING -i "$IF" -p udp --dport 53 -j DNAT --to ${ipv4_prefix}.1
 
-    ifconfig wlan0 up
+    ifconfig "$IF" up
     ip route del default || true
-    ip add flush dev wlan0
-    ip addr add $ipv4_prefix.1/24 dev wlan0
+    ip add flush dev "$IF"
+    ip addr add $ipv4_prefix.1/24 dev "$IF"
     # dnsmasq --pid-file=/tmp/dnsmasq.run -C /etc/dnsmasq.conf
-    hostapd -B -i wlan0 /etc/hostapd.conf
-    udhcpd -S /etc/udhcpd.wlan0.conf
+    hostapd -B -i "$IF" /etc/hostapd.conf
+    udhcpd -S "/etc/udhcpd.$IF.conf"
 
     if [ ! -f "$APFLAG_FILE" ]; then
         touch "$APFLAG_FILE"
@@ -128,15 +166,15 @@ ap_start() {
 
 stop() {
     ps -ef | grep hostapd | grep -v grep | awk '{print $1}' | xargs kill -2 || true
-    ps -ef | grep "udhcpd -S /etc/udhcpd.wlan0.conf" | grep -v grep | awk '{print $1}' | xargs kill -2 || true
+    ps -ef | grep "udhcpd -S /etc/udhcpd.$IF.conf" | grep -v grep | awk '{print $1}' | xargs kill -2 || true
     killall wpa_supplicant || true
-    if [ -e /run/udhcpc.wlan0.pid ]; then
-        kill $(cat /run/udhcpc.wlan0.pid) || true
-        rm -f /run/udhcpc.wlan0.pid
+    if [ -e "/run/udhcpc.$IF.pid" ]; then
+        kill $(cat "/run/udhcpc.$IF.pid") || true
+        rm -f "/run/udhcpc.$IF.pid"
     fi
-    if [ -e /var/run/udhcpd.wlan0.pid ]; then
-        kill $(cat /var/run/udhcpd.wlan0.pid) || true
-        rm -f /var/run/udhcpd.wlan0.pid
+    if [ -e "/var/run/udhcpd.$IF.pid" ]; then
+        kill $(cat "/var/run/udhcpd.$IF.pid") || true
+        rm -f "/var/run/udhcpd.$IF.pid"
     fi
     if [ -e /tmp/dnsmasq.run ]; then
         kill $(cat /tmp/dnsmasq.run) || true
@@ -146,7 +184,7 @@ stop() {
     # then
     # 	echo > /etc/wpa_supplicant.conf
     # fi
-    airmon-ng stop wlan0mon || true
+    airmon-ng stop "$MONIF" || true
 
     if [ -f "$APFLAG_FILE" ]; then
         rm "$APFLAG_FILE"

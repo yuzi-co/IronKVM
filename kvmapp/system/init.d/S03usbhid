@@ -65,14 +65,38 @@ usb_bind() {
     return 0
 }
 
-# set_otg_role writes the role and reads it back, because the write reports
-# success even when the controller settles back into the other role and leaves
-# a bound gadget that never enumerates. S03usbdev carries the full account and
-# the hardware evidence.
+# usb_devinfo reads one key from the device description. S03usbdev carries the
+# account of the two places it looks in and why.
+usb_devinfo() {
+    _reader=${DEVINFO:-ironkvm-deviceinfo}
+    if [ "$_reader" = ironkvm-deviceinfo ] && ! command -v "$_reader" > /dev/null 2>&1
+    then
+        _reader=${DEVINFO_TARBALL:-/kvmapp/system/ironkvm-deviceinfo}
+    fi
+    "$_reader" get "$1" 2> /dev/null
+}
+
+# set_otg_role puts the port in a role, through the device's helper where there
+# is one, and through /proc/cviusb/otg_role where there is not. S03usbdev
+# carries the account of both paths, of USB_ROLE_SWITCH=none, and of why the
+# write is read back at all.
 #
 # The pause is a whole second for the same reason usb_bind's above is.
 set_otg_role() {
     role=$1
+
+    if [ "$(usb_devinfo USB_ROLE_SWITCH)" = none ]
+    then
+        return 0
+    fi
+
+    hook=${USB_ROLE_HOOK:-/usr/lib/ironkvm/hw.d/usb-role}
+    if [ -x "$hook" ]
+    then
+        "$hook" "$role"
+        return $?
+    fi
+
     tries=${USB_OTG_ROLE_TRIES:-3}
     n=0
 
@@ -222,6 +246,26 @@ restart_usb_dev(){
     echo "USB Restart OK!"
 }
 
+# restart_phy takes the controller away from its driver and gives it back.
+# S03usbdev carries the account of why the two keys have no default and why a
+# board that declares neither gets a message and a zero status.
+restart_phy() {
+    driver=$(usb_devinfo USB_PHY_DRIVER)
+    device=$(usb_devinfo USB_PHY_DEVICE)
+
+    if [ -z "$driver" ] || [ -z "$device" ]
+    then
+        echo "usb: this board has no PHY restart"
+        return 0
+    fi
+
+    echo "$device" > "/sys/bus/platform/drivers/$driver/unbind"
+    sleep 1
+    echo "$device" > "/sys/bus/platform/drivers/$driver/bind"
+    start_usb_host
+    start_usb_dev
+}
+
 case "$1" in
   start)
     start_usb_dev
@@ -237,10 +281,6 @@ case "$1" in
     start_usb_dev
   ;;
    restart_phy)
-    echo "4340000.usb" > /sys/bus/platform/drivers/dwc2/unbind
-    sleep 1
-    echo "4340000.usb" > /sys/bus/platform/drivers/dwc2/bind
-    start_usb_host
-    start_usb_dev
+    restart_phy
   ;;
 esac
