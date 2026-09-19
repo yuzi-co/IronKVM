@@ -277,6 +277,75 @@ stage_server() {
     ln -s "$SERVER_SRC" "$SERVER_DST"
 }
 
+# --- Go tuning ---
+# The two numbers below come from three places, most specific first.
+#
+# 1. /etc/kvm/GOMEMLIMIT.server and /etc/kvm/GOGC.server. A file on one board,
+#    so it wins. It exists to let one board differ from its own description,
+#    and a description is shared by every board of the device.
+# 2. The device description, through SERVER_GOMEMLIMIT_MIB and SERVER_GOGC.
+#    This states what the device allows.
+# 3. The compiled-in 64 and 150, for a board whose description says nothing.
+#
+# The NanoKVM description declares 64 and 150, the same values that were
+# compiled in before it had a reader, so no board changes behaviour here.
+#
+# A value from the description that is not a positive integer is ignored and a
+# line says so. Go refuses to start when GOMEMLIMIT does not parse, and a
+# description is read by every board of its device, so a typo there would stop
+# all of them. A board that does not start the server is the failure this whole
+# block exists to prevent.
+#
+# The reader is found in two steps. An image built by ironkvm-dist installs it
+# at /usr/bin/ironkvm-deviceinfo, so the bare name resolves through PATH. A
+# board that runs Sipeed's firmware installs the application tarball instead,
+# and that install.sh comes from the official base tarball, which the fork
+# cannot change: nothing puts the reader on PATH there. So the second step is
+# the copy the tarball carries.
+#
+# The fallback is in /kvmapp because that is the only path the tarball owns. A
+# copy written into the vendor root filesystem is removed by the next firmware
+# update and belongs to nobody.
+#
+# Only the default is resolved this way. A DEVINFO from the environment is used
+# as it is, including one that names a path which does not exist, because that
+# is how the suites drive the missing reader case.
+DEVINFO=${DEVINFO:-ironkvm-deviceinfo}
+DEVINFO_TARBALL=${DEVINFO_TARBALL:-/kvmapp/system/ironkvm-deviceinfo}
+if [ "$DEVINFO" = ironkvm-deviceinfo ] && ! command -v "$DEVINFO" > /dev/null 2>&1
+then
+    DEVINFO=$DEVINFO_TARBALL
+fi
+
+devinfo_get() {
+    "$DEVINFO" get "$1" 2>/dev/null
+}
+
+# Prints the declared value when it is a positive integer, and nothing at all
+# otherwise. A key the description does not carry is silent, because that is
+# the normal case for a device that tunes nothing. A key it carries with a
+# value this script cannot use is reported, because that is a fault in the
+# description and nothing else on the board reports it.
+#
+# The report goes to stderr. This function is read through a command
+# substitution, so a line on stdout would become the value it was asked for.
+devinfo_positive() {
+    declared=$(devinfo_get "$1")
+
+    case "$declared" in
+        "")
+            return 0
+            ;;
+        *[!0-9]* | 0)
+            echo "S95nanokvm: $1 is '$declared' in the device description," \
+                 "not a positive integer, ignoring it" >&2
+            return 0
+            ;;
+    esac
+
+    echo "$declared"
+}
+
 # The Go collector's only default input is how much the heap has grown since
 # the last collection. It cannot see what the board has left. This board has
 # 166MB Linux can address and about 96MB spare once the video carveout, the
@@ -310,6 +379,14 @@ server_memlimit() {
     if [ -r "$dir/GOMEMLIMIT.server" ]; then
         value=$(cat "$dir/GOMEMLIMIT.server" 2>/dev/null)
     fi
+
+    # The per-board file is read first, so it wins whenever it holds a number
+    # this script can use. A file that holds anything else is treated as absent
+    # rather than as a reason to ignore the description: the two are unrelated,
+    # and a typo in one board's file must not also discard what the device says.
+    case "$value" in
+        "" | *[!0-9]* | 0) value=$(devinfo_positive SERVER_GOMEMLIMIT_MIB) ;;
+    esac
 
     case "$value" in
         "" | *[!0-9]*) value=64 ;;
@@ -374,6 +451,14 @@ server_gogc() {
         value=$(cat "$dir/GOGC.server" 2>/dev/null)
     fi
 
+    # Same order as the limit above: the per-board file first, the device
+    # description second, the compiled-in 150 last. "off" is not a number, so
+    # it takes this path like any other value the script refuses, and the
+    # result is the default. That is the behaviour this file has always had.
+    case "$value" in
+        "" | *[!0-9]* | 0) value=$(devinfo_positive SERVER_GOGC) ;;
+    esac
+
     case "$value" in
         "" | *[!0-9]*) value=150 ;;
         0)             value=150 ;;
@@ -382,6 +467,7 @@ server_gogc() {
     GOGC="$value"
     export GOGC
 }
+# --- end Go tuning ---
 
 # S98supervise starts NanoKVM-Server and kvm_system again within five seconds
 # of finding either gone. That is what it is for, and it is wrong while this
