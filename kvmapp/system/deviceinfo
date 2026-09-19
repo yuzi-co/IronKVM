@@ -137,3 +137,18 @@ CAPABILITIES="virtual-media usb-audio-gadget atx-gpio oled wifi"
 # CAPABILITIES. The fact belongs with the board either way, and a device fact
 # the device's own description declares has to be in this copy as well.
 RTC=unreliable
+
+# What the boot partition needs written on it. Nothing at all. A device fact
+# too, so it is the same here as in devices/sipeed-nanokvm/deviceinfo.
+#
+# The partition carries fip.bin, which the SoC ROM looks for, and boot.sd,
+# which is a FIT image. The kernel, the initramfs and the device tree are all
+# inside that FIT, and the device tree is chosen by the configuration node the
+# FIT names, not by a line somebody edits. There is no text file on that
+# partition for a board or an operator to change, and this is as true of a card
+# running Sipeed's firmware as of one an IronKVM build laid out.
+#
+# Nothing reads this key on either card. It is here because a device fact the
+# device's own description declares has to be in this copy as well, or the same
+# board would answer one question two ways.
+BOOT_CONFIG=none
