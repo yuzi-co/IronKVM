@@ -104,3 +104,21 @@ WLAN_IF=wlan0
 # reads this copy has no such file, and nothing reads one yet in either case:
 # the server still holds the three paths itself.
 HID_OUTPUTS=usb-gadget
+
+# What the board offers beyond typing. A device fact too, so it is the same
+# here as in devices/sipeed-nanokvm/deviceinfo.
+#
+# virtual-media and usb-audio-gadget are the mass_storage.disk0 and uac1.usb0
+# functions that S03usbdev builds. atx-gpio is the power and reset lines that
+# S15kvmhwd exports, and every variant has both. oled is the panel kvm_system
+# drives.
+#
+# wifi is declared although the beta variant has no radio, for the same reason
+# WLAN_IF above states the name and not the presence: one description covers
+# all three variants, and the board is the authority on what is fitted.
+#
+# Nothing reads this key yet. It is here because a device fact the device's own
+# description declares has to be in this copy as well, or a board on Sipeed's
+# firmware would answer a question differently from the same board on an
+# IronKVM image.
+CAPABILITIES="virtual-media usb-audio-gadget atx-gpio oled wifi"
