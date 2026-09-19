@@ -35,10 +35,22 @@
 #
 # The H.264 paths are unaffected. Their frames are a few KiB, and the same
 # sweep records no collection at all above GOGC=100.
+#
+# The target comes from three places, most specific first: /etc/kvm/GOGC.server,
+# then SERVER_GOGC in the device description, then the compiled-in 150. The file
+# stays on top because it lets one board differ from a description that every
+# board of its device shares.
+#
+# The real reader is used behind a stub, not a hand-written fake. A fake
+# would answer whatever this suite expects, including for a key that S95nanokvm
+# asks for under the wrong name.
 set -u
 
 S95=${1:-$(dirname "$0")/../../kvmapp/system/init.d/S95nanokvm}
 [ -f "$S95" ] || { echo "usage: test-server-gogc.sh <S95nanokvm>"; exit 1; }
+
+READER=${READER:-$(cd "$(dirname "$0")/../.." && pwd)/kvmapp/system/ironkvm-deviceinfo}
+[ -f "$READER" ] || { echo "needs kvmapp/system/ironkvm-deviceinfo"; exit 2; }
 
 fails=0
 note() { printf '  %-64s %s\n' "$1" "$2"; [ "$2" = FAIL ] && fails=$((fails + 1)); return 0; }
@@ -48,27 +60,71 @@ trap 'rm -rf "$work"' EXIT
 
 echo "===== the server starts under a collector target ====="
 
-# Run the shipped function, not a copy of it.
-sed -n '/^server_gogc() {/,/^}/p' "$S95" > "$work/f.sh"
+# Run the shipped text, not a copy of it. The block is taken whole, because the
+# function now reads the device description through the reader the same block
+# resolves.
+sed -n '/^# --- Go tuning ---/,/^# --- end Go tuning ---/p' "$S95" > "$work/f.sh"
 if [ ! -s "$work/f.sh" ]; then
-    note "S95nanokvm defines server_gogc" FAIL
+    note "S95nanokvm carries the Go tuning block" FAIL
     echo
     echo "$fails case(s) FAILED"
     exit 1
 fi
-note "S95nanokvm defines server_gogc" OK
+note "S95nanokvm carries the Go tuning block" OK
+
+grep -q '^server_gogc() {' "$work/f.sh" \
+    && note "the block defines server_gogc" OK \
+    || note "the block defines server_gogc" FAIL
+
+# The reader is resolved the way S01zram and S01fs resolve it. The fallback is
+# load-bearing: nothing puts the reader on PATH on a board running Sipeed's
+# firmware, so a block that only asked PATH would read no description there.
+grep -q '^DEVINFO_TARBALL=${DEVINFO_TARBALL:-/kvmapp/system/ironkvm-deviceinfo}$' "$work/f.sh" \
+    && note "the block falls back to the reader the tarball carries" OK \
+    || note "the block falls back to the reader the tarball carries" FAIL
+
+# A stub in front of the real reader, pointed at this suite's fixture. The cases
+# name it through DEVINFO rather than putting it on PATH: how the reader is
+# found is settled in the zram and S01fs suites, and what is under test here is
+# what the block does with the answer.
+mkdir -p "$work/bin"
+cat > "$work/bin/ironkvm-deviceinfo" <<STUB
+#!/bin/sh
+DEVICEINFO_PATHS="$work/deviceinfo" exec sh "$READER" "\$@"
+STUB
+chmod 755 "$work/bin/ironkvm-deviceinfo"
+STUB_READER=$work/bin/ironkvm-deviceinfo
+
+# Write a description for the next case. Each argument is one KEY=value line.
+deviceinfo() { printf '%s\n' "$@" > "$work/deviceinfo"; }
 
 run() {
-    # Prints the value as a CHILD process sees it. The server is started as a
-    # child, so a value assigned but never exported reaches nothing, and
-    # reading it back in the same shell would pass either way.
+    # $1 is the config directory to read from, $2 the reader. Prints the value
+    # as a CHILD process sees it. The server is started as a child, so a value
+    # assigned but never exported reaches nothing, and reading it back in the
+    # same shell would pass either way.
+    #
+    # With no $2 the reader names a path that does not exist, so the case reads
+    # no description at all and the workstation's own files cannot reach it.
     (
         MEMLIMIT_DIR=$1
-        export MEMLIMIT_DIR
+        DEVINFO=${2:-$work/no-such-reader}
+        export MEMLIMIT_DIR DEVINFO
         . "$work/f.sh"
         server_gogc
         sh -c 'echo "${GOGC:-unset}"'
-    )
+    ) 2>/dev/null
+}
+
+# The same call, keeping what it said rather than what it set.
+run_said() {
+    (
+        MEMLIMIT_DIR=$1
+        DEVINFO=${2:-$work/no-such-reader}
+        export MEMLIMIT_DIR DEVINFO
+        . "$work/f.sh"
+        server_gogc
+    ) 2>&1 >/dev/null
 }
 
 mkdir -p "$work/empty"
@@ -102,6 +158,100 @@ echo off > "$work/off/GOGC.server"
 got=$(run "$work/off")
 [ "$got" = "150" ] && note "'off' is refused and falls back to the default" OK \
                    || note "'off' is refused and falls back to the default (got '$got')" FAIL
+
+echo "===== the device description supplies the target ====="
+
+# A device whose collector should work differently says so once, in its
+# description, and no edit here describes a second device.
+mkdir -p "$work/empty"
+deviceinfo DEVICE=other RAM_MIB=512 SERVER_GOGC=96
+got=$(run "$work/empty" "$STUB_READER")
+[ "$got" = "96" ] && note "a description saying 96 gives 96" OK \
+                  || note "a description saying 96 gives 96 (got '$got')" FAIL
+
+# The per-board file is on top of the description, and this is the case that
+# says which way round the two are read. The file exists so that one board can
+# differ from a description its whole device shares.
+mkdir -p "$work/over"
+echo 300 > "$work/over/GOGC.server"
+deviceinfo DEVICE=other RAM_MIB=512 SERVER_GOGC=96
+got=$(run "$work/over" "$STUB_READER")
+[ "$got" = "300" ] && note "/etc/kvm/GOGC.server beats the description" OK \
+                   || note "/etc/kvm/GOGC.server beats the description (got '$got')" FAIL
+
+# This board. The description in devices/sipeed-nanokvm and the copy in
+# kvmapp/system/deviceinfo both say 150, which is what was compiled in before
+# the key had a reader, so no board changes behaviour.
+deviceinfo DEVICE=sipeed-nanokvm RAM_MIB=256 SERVER_GOGC=150
+got=$(run "$work/empty" "$STUB_READER")
+[ "$got" = "150" ] && note "this board's description keeps 150" OK \
+                   || note "this board's description keeps 150 (got '$got')" FAIL
+
+# A device that tunes nothing is the normal case, and it is silent.
+deviceinfo DEVICE=other RAM_MIB=256
+got=$(run "$work/empty" "$STUB_READER")
+[ "$got" = "150" ] && note "a description with no key leaves today's 150" OK \
+                   || note "a description with no key leaves today's 150 (got '$got')" FAIL
+said=$(run_said "$work/empty" "$STUB_READER")
+[ -z "$said" ] && note "a description with no key says nothing" OK \
+               || note "a description with no key said '$said'" FAIL
+
+# Go refuses to start on a GOGC it cannot parse, and a description is read by
+# every board of its device, so a typo there would stop all of them. The value
+# is ignored, the default stands, and a line names the key.
+#
+# "off" is in this list and is the one entry Go would accept. It removes the
+# ratio entirely and leaves the memory limit as the only trigger, which is the
+# configuration that collects hardest exactly when the board can least afford
+# it. A description must not be able to ask for it, any more than a board file
+# can.
+#
+# The value and the line are one case on purpose. The block checks the number
+# twice, once where it reads the description and once before it exports it, so
+# a reader that accepted anything would still produce 150 here. The line is
+# what tells the two apart, and it is read from stderr: the value is read
+# through a command substitution, so a report on stdout would be swallowed into
+# the number and nobody would see it.
+for bad in abc 150% -5 0 off; do
+    deviceinfo DEVICE=other RAM_MIB=256 "SERVER_GOGC=$bad"
+    got=$(run "$work/empty" "$STUB_READER")
+    said=$(run_said "$work/empty" "$STUB_READER")
+    if [ "$got" = "150" ]; then
+        case "$said" in
+            *SERVER_GOGC*"$bad"*)
+                note "a non-numeric value ('$bad') leaves today's 150 and says so" OK ;;
+            *)
+                note "a non-numeric value ('$bad') left 150 but said '$said'" FAIL ;;
+        esac
+    else
+        note "a non-numeric value ('$bad') leaves today's 150 (got '$got')" FAIL
+    fi
+done
+
+# A key the description carries with no value at all. The default stands, and
+# there is nothing worth naming in a message.
+deviceinfo DEVICE=other RAM_MIB=256 SERVER_GOGC=
+got=$(run "$work/empty" "$STUB_READER")
+[ "$got" = "150" ] && note "an empty value leaves today's 150" OK \
+                   || note "an empty value leaves today's 150 (got '$got')" FAIL
+
+# "off" in the board file is refused, and refusing it must not also throw away
+# what the device says. The two are unrelated.
+deviceinfo DEVICE=other RAM_MIB=512 SERVER_GOGC=200
+got=$(run "$work/off" "$STUB_READER")
+[ "$got" = "200" ] && note "'off' in the board file falls through to the description" OK \
+                   || note "'off' in the board file falls through to the description (got '$got')" FAIL
+
+# A reader that is not installed is not a fault. A board running Sipeed's
+# firmware may carry neither copy, and it has to start the server anyway.
+rm -f "$work/deviceinfo"
+got=$(run "$work/empty" "$STUB_READER")
+[ "$got" = "150" ] && note "no description at all leaves today's 150" OK \
+                   || note "no description at all leaves today's 150 (got '$got')" FAIL
+
+got=$(run "$work/empty" "$work/no-such-reader")
+[ "$got" = "150" ] && note "no reader at all leaves today's 150" OK \
+                   || note "no reader at all leaves today's 150 (got '$got')" FAIL
 
 echo "===== it reaches the server ====="
 
