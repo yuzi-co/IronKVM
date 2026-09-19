@@ -66,11 +66,19 @@ device_files > "$LIST"
 # So an empty list is a failure, not a pass. The floor is well under the 103
 # files found on 2026-08-19; it catches the enumeration breaking outright and is
 # not a number to keep raising.
+#
+# A missing git is a different thing from a broken enumeration, and it gets a
+# different status. The contract of a suite here is 0 every case passed, 1 a case
+# failed, 2 the suite cannot run and the last line says why, because that last
+# line is what tools/run-tests.sh prints beside the SKIP. A tool that is not
+# installed has never been a defect in what this suite checks, so it is status 2.
+# The floor below stays status 1: git answered, and the list still came out short.
 if ! git rev-parse --git-dir > /dev/null 2>&1; then
-    note "git is available (this check is built entirely from git commands)" FAIL
     echo
-    echo "===== 1 problem(s): run this where git exists, not in a busybox container ====="
-    exit 1
+    echo "this check is built entirely from git commands, so without git the file"
+    echo "list comes out empty and every case would pass having read nothing."
+    echo "git is not available here, so no device file was checked"
+    exit 2
 fi
 
 if [ "$(wc -l < "$LIST")" -lt 40 ]; then
