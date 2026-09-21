@@ -17,10 +17,22 @@ FROM node:22-bookworm
 # abslots/test-provision-integration.sh, which drives the two parted calls the
 # device makes and then formats the partition they produce. A release uses
 # neither: it builds no image at all.
+#
+# minisign is for that repository's generic/test-slot.sh, which makes a
+# throwaway key pair and drives the signature check in `slot install`. Without
+# it that section cannot run, and the suite then answers cannot-run rather than
+# passing, so the whole file reads as a skip in a sweep.
+#
+# Bookworm carries 0.11 and the board carries 0.12. They agree on everything
+# the tool depends on, checked on 2026-09-21: the same exit statuses for a good
+# signature, a wrong key, an edited file and a missing signature file, and the
+# same message for the edited file, which is the string `slot install` matches
+# to tell an image that was edited after signing from one signed by a key
+# nobody trusts.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         fdisk util-linux dosfstools mtools e2fsprogs zstd xz-utils \
         u-boot-tools cpio device-tree-compiler openssl ca-certificates \
-        coreutils tar gzip file patchelf parted exfatprogs \
+        coreutils tar gzip file patchelf parted exfatprogs minisign \
     && rm -rf /var/lib/apt/lists/*
 
 # The client only. The daemon is the workstation's, reached over the socket.
