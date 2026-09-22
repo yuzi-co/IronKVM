@@ -420,6 +420,16 @@ func extractPicoclawBinary(archivePath string, destinationDir string) (string, e
 }
 
 func installPicoclawBinary(source string, destination string) error {
+	// The destination directory need not exist: on a distribution image it is
+	// the add-on's own directory on /data, and the first install of PicoClaw on
+	// a board is what creates it. Measured on the reference board on
+	// 2026-09-22, before this line: "failed to create destination binary: open
+	// /data/ironkvm/addons/picoclaw/picoclaw.tmp: no such file or directory",
+	// twice, and the web UI offered to install again.
+	if err := os.MkdirAll(filepath.Dir(destination), 0o755); err != nil {
+		return fmt.Errorf("failed to create destination directory: %w", err)
+	}
+
 	inFile, err := os.Open(source)
 	if err != nil {
 		return fmt.Errorf("failed to open extracted picoclaw binary: %w", err)

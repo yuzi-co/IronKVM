@@ -90,3 +90,24 @@ func TestPicoclawElsewhereInstallsAsItAlwaysDid(t *testing.T) {
 		t.Fatal("nothing may be written to /data off a distribution image")
 	}
 }
+
+// The add-on's directory does not exist before the first install, and the
+// install is what makes it.
+func TestInstallBinaryMakesItsDirectory(t *testing.T) {
+	scratchImage(t, true)
+	base := t.TempDir()
+	source := filepath.Join(base, "picoclaw")
+	if err := os.WriteFile(source, []byte("bin"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	dest := picoclawInstallDestination()
+	if _, err := os.Stat(filepath.Dir(dest)); err == nil {
+		t.Fatal("the add-on directory must not exist yet, or this proves nothing")
+	}
+	if err := installPicoclawBinary(source, dest); err != nil {
+		t.Fatal(err)
+	}
+	if b, err := os.ReadFile(dest); err != nil || string(b) != "bin" {
+		t.Fatalf("the binary is not at %s: %q %v", dest, b, err)
+	}
+}
