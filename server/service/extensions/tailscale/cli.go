@@ -1,6 +1,7 @@
 package tailscale
 
 import (
+	"NanoKVM-Server/service/extensions/addon"
 	"NanoKVM-Server/utils"
 	"bufio"
 	"encoding/json"
@@ -59,7 +60,10 @@ func (c *Cli) Start() error {
 	}
 
 	command := strings.Join(commands, " && ")
-	return exec.Command("sh", "-c", command).Run()
+	if err := exec.Command("sh", "-c", command).Run(); err != nil {
+		return err
+	}
+	return recordEnabled(true)
 }
 
 func (c *Cli) Restart() error {
@@ -79,7 +83,21 @@ func (c *Cli) Stop() error {
 		return err
 	}
 
+	if err := recordEnabled(false); err != nil {
+		return err
+	}
 	return os.Remove(ScriptPath)
+}
+
+// recordEnabled keeps "start at boot" on /data on a distribution image, where
+// /etc/init.d belongs to the slot and a new image would forget it. S04addons
+// reads it at the next boot. Anywhere else the script in /etc/init.d is the
+// whole record, as it always was.
+func recordEnabled(on bool) error {
+	if !addon.OnData() {
+		return nil
+	}
+	return addon.SetEnabled(addonSpec().Name, on)
 }
 
 func (c *Cli) Up() error {
