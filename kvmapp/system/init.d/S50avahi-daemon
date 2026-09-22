@@ -1,10 +1,24 @@
 #!/bin/sh
 #
 # avahi-daemon init script
+#
+# The web UI's mDNS switch records "off" in /etc/kvm/mdns_disabled. That file
+# is on /data, so it survives an image update. Deleting this script, which is
+# what the switch also does, does not: the script lives on the root slot and
+# the next image puts it back. So start honours the marker and does nothing.
+#
+# Both paths are variables so tools/mdns/test-avahi-init.sh can drive this with
+# a stub daemon. On the device nothing sets them.
 
-DAEMON=/usr/sbin/avahi-daemon
+DAEMON=${AVAHI_DAEMON:-/usr/sbin/avahi-daemon}
+DISABLED=${MDNS_DISABLED_FILE:-/etc/kvm/mdns_disabled}
+
 case "$1" in
     start)
+	if [ -e "$DISABLED" ]; then
+		echo "avahi-daemon: mDNS is off ($DISABLED exists), not starting"
+		exit 0
+	fi
 	$DAEMON -c || $DAEMON -D
 	;;
     stop)

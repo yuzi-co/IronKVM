@@ -44,6 +44,9 @@ S98tailscaled    not-installed-by-policy  started on demand, not at boot
 # ironkvm-hwinit. It is no longer the base's bytes, so root.manifest in
 # ironkvm-dist installs it: the base copy detects the board a second way, and on
 # a pcie board it reboots with no latch to stop it repeating.
-S50avahi-daemon  same-as-base
+#
+# S50avahi-daemon left this list for the same reason. It reads
+# /etc/kvm/mdns_disabled now, so that turning mDNS off survives an image update,
+# and root.manifest installs it.
 S50sshd          same-as-base
 S80dnsmasq       same-as-base
