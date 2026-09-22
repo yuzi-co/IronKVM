@@ -87,6 +87,25 @@ func writeBrightnessSetting(path string, level int) error {
 // is absent. A file that exists and does not parse is a fault worth reporting,
 // so it comes back as an error rather than as the default.
 func readIntSetting(path string, fallback int) (int, error) {
+	return readSetting(path, fallback, 10)
+}
+
+// readBrightnessSetting reads the drive level the way kvm_system does, with
+// strtol base 0, so "0xFF" is a value and not a fault. The reference board's
+// file held exactly that, and the decimal-only parse turned it into an error
+// that failed the whole OLED section of the settings page. The result is
+// clamped the way the firmware clamps it, so the page shows the level the
+// panel is actually driven at.
+func readBrightnessSetting(path string) (int, error) {
+	level, err := readSetting(path, defaultBrightness, 0)
+	if err != nil {
+		return level, err
+	}
+
+	return clampBrightness(level), nil
+}
+
+func readSetting(path string, fallback int, base int) (int, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -101,7 +120,12 @@ func readIntSetting(path string, fallback int) (int, error) {
 		return fallback, nil
 	}
 
-	return strconv.Atoi(content)
+	value, err := strconv.ParseInt(content, base, 0)
+	if err != nil {
+		return fallback, err
+	}
+
+	return int(value), nil
 }
 
 // oledFeatures reports what the running kvm_system does with the panel.
@@ -173,7 +197,7 @@ func (s *Service) GetOLED(c *gin.Context) {
 		return
 	}
 
-	brightness, err := readIntSetting(OLEDBrightnessFile, defaultBrightness)
+	brightness, err := readBrightnessSetting(OLEDBrightnessFile)
 	if err != nil {
 		log.Errorf("failed to parse OLED brightness: %s", err)
 		rsp.ErrRsp(c, -1, "failed to parse OLED config")

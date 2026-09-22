@@ -143,3 +143,48 @@ func TestReadIntSettingReportsAFileThatCannotBeParsed(t *testing.T) {
 		t.Fatal("expected an unparseable file to be an error")
 	}
 }
+
+func TestReadBrightnessSettingAcceptsTheHexTheFirmwareAccepts(t *testing.T) {
+	// kvm_system reads the file with strtol base 0, and the file on the
+	// reference board held "0xFF". Atoi refused it, GetOLED answered with an
+	// error, and the whole OLED section of the settings page failed to load.
+	for content, want := range map[string]int{
+		"0xFF\n": 0xFF,
+		"0x10":   0x10,
+		"207":    207,
+		" 128 ":  128,
+	} {
+		path := filepath.Join(t.TempDir(), "oled_contrast")
+		if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+			t.Fatalf("could not write the fixture: %s", err)
+		}
+
+		got, err := readBrightnessSetting(path)
+		if err != nil {
+			t.Fatalf("%q: expected no error, got %s", content, err)
+		}
+		if got != want {
+			t.Fatalf("%q: read %d, want %d", content, got, want)
+		}
+	}
+}
+
+func TestReadBrightnessSettingReportsTheDefaultForAnAbsentFile(t *testing.T) {
+	got, err := readBrightnessSetting(filepath.Join(t.TempDir(), "absent"))
+	if err != nil {
+		t.Fatalf("expected an absent file to be no error: %s", err)
+	}
+	if got != defaultBrightness {
+		t.Fatalf("read %d, want %d", got, defaultBrightness)
+	}
+}
+
+func TestReadBrightnessSettingReportsAFileThatCannotBeParsed(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "oled_contrast")
+	if err := os.WriteFile(path, []byte("bright"), 0o644); err != nil {
+		t.Fatalf("could not write the fixture: %s", err)
+	}
+	if _, err := readBrightnessSetting(path); err == nil {
+		t.Fatal("expected an unparseable file to be an error")
+	}
+}
