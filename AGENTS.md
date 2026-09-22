@@ -327,11 +327,19 @@ The committed `libkvm.so` records `$ORIGIN` as its `RUNPATH`. The cross-linker n
 find the other libraries in `dl_lib`. MaixCDK writes an absolute build directory into the `RPATH`
 instead, and it omits `$ORIGIN`. A library that keeps the MaixCDK search path does not link: the
 linker reports every dependency as `not found`, then it stops with undefined references to the
-`cv::` and `mmf_` symbols. If you rebuild `libkvm.so`, set the search path by hand:
+`cv::` and `mmf_` symbols. If you rebuild `libkvm.so` or `libkvm_mmf.so`, set the search path by
+hand on the library you rebuilt:
 
 ```shell
 patchelf --set-rpath '$ORIGIN' libkvm.so
+patchelf --set-rpath '$ORIGIN' libkvm_mmf.so
 ```
+
+This applies to every library in `dl_lib` that names another one, and `libkvm_mmf.so` is the
+second. It was committed without the entry on 2026-09-16 in `1b1c6403`, and `make app` did not
+link from that day until 2026-09-22. The failure names the Cvitek libraries rather than the
+library that cannot find them, so read `patchelf --print-rpath` on each of the two before you
+look anywhere else.
 
 The device loader does not need this step. The loader searches the `RPATH` of `NanoKVM-Server`,
 which is `$ORIGIN/dl_lib`, for every library in the chain. Only the cross-linker needs the change.
