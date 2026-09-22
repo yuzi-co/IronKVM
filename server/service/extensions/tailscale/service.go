@@ -2,6 +2,7 @@ package tailscale
 
 import (
 	"NanoKVM-Server/proto"
+	"NanoKVM-Server/service/extensions/addon"
 	"NanoKVM-Server/utils"
 	"net"
 	"os"
@@ -12,12 +13,28 @@ import (
 
 type Service struct{}
 
-const (
+// Variables rather than constants so the tests can point them at a scratch
+// root. On a distribution image both are links into the add-on on /data.
+var (
 	TailscalePath  = "/usr/bin/tailscale"
 	TailscaledPath = "/usr/sbin/tailscaled"
-
-	GoMemLimit int64 = 75
 )
+
+const GoMemLimit int64 = 75
+
+// addonSpec is what Tailscale needs back from the root filesystem after a new
+// image: its two binaries in their usual places and its boot script while it is
+// enabled. Its login is already on /data, where S98tailscaled keeps it.
+func addonSpec() addon.Spec {
+	return addon.Spec{
+		Name: "tailscale",
+		Links: []addon.Link{
+			{Path: "/usr/bin/tailscale", File: "tailscale"},
+			{Path: "/usr/sbin/tailscaled", File: "tailscaled"},
+		},
+		Initd: "S98tailscaled",
+	}
+}
 
 var StateMap = map[string]proto.TailscaleState{
 	"NoState":          proto.TailscaleNotRunning,
@@ -55,6 +72,11 @@ func (s *Service) Uninstall(c *gin.Context) {
 	_ = NewCli().Stop()
 	_ = utils.DelGoMemLimit()
 
+	if addon.OnData() {
+		if err := addon.Remove(addonSpec()); err != nil {
+			log.Errorf("failed to remove the tailscale add-on: %s", err)
+		}
+	}
 	_ = os.Remove(TailscalePath)
 	_ = os.Remove(TailscaledPath)
 

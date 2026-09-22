@@ -9,9 +9,11 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
+	"NanoKVM-Server/service/extensions/addon"
 	"NanoKVM-Server/utils"
 
 	log "github.com/sirupsen/logrus"
@@ -65,22 +67,41 @@ func install() error {
 		return err
 	}
 
-	// move
-	tailscalePath := fmt.Sprintf("%s/tailscale", dir)
-	err = utils.MoveFile(tailscalePath, TailscalePath)
-	if err != nil {
-		log.Errorf("failed to move tailscale: %s", err)
-		return err
-	}
-
-	tailscaledPath := fmt.Sprintf("%s/tailscaled", dir)
-	err = utils.MoveFile(tailscaledPath, TailscaledPath)
-	if err != nil {
-		log.Errorf("failed to move tailscaled: %s", err)
+	if err := placeBinaries(dir); err != nil {
 		return err
 	}
 
 	log.Debugf("install tailscale successfully")
+	return nil
+}
+
+// placeBinaries moves the two unpacked binaries into place. On a distribution
+// image that is the add-on's directory on /data, with links from /usr/bin and
+// /usr/sbin, so the next image still has them. Anywhere else it is /usr/bin and
+// /usr/sbin, as it always was.
+func placeBinaries(dir string) error {
+	tailscaleDst, tailscaledDst := TailscalePath, TailscaledPath
+	onData := addon.OnData()
+	if onData {
+		tailscaleDst = filepath.Join(addon.Dir(addonSpec().Name), "tailscale")
+		tailscaledDst = filepath.Join(addon.Dir(addonSpec().Name), "tailscaled")
+	}
+
+	if err := utils.MoveFile(fmt.Sprintf("%s/tailscale", dir), tailscaleDst); err != nil {
+		log.Errorf("failed to move tailscale: %s", err)
+		return err
+	}
+	if err := utils.MoveFile(fmt.Sprintf("%s/tailscaled", dir), tailscaledDst); err != nil {
+		log.Errorf("failed to move tailscaled: %s", err)
+		return err
+	}
+
+	if onData {
+		if err := addon.Record(addonSpec()); err != nil {
+			log.Errorf("failed to record the tailscale add-on: %s", err)
+			return err
+		}
+	}
 	return nil
 }
 
