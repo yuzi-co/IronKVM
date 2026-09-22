@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"NanoKVM-Server/service/controlmode"
+	"NanoKVM-Server/service/extensions/addon"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -317,6 +318,11 @@ func (s *Service) UninstallRuntime(c *gin.Context) {
 			_ = os.RemoveAll(filepath.Join(home, ".picoclaw"))
 		} else {
 			_ = os.RemoveAll("/root/.picoclaw")
+		}
+	}
+	if addon.OnData() {
+		if err := addon.Remove(picoclawAddon()); err != nil {
+			log.Errorf("picoclaw uninstall: failed to remove the add-on: %v", err)
 		}
 	}
 	_ = os.Remove(picoclawBinaryPath)

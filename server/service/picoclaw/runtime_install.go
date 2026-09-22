@@ -17,6 +17,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
+	"NanoKVM-Server/service/extensions/addon"
 	"NanoKVM-Server/utils"
 )
 
@@ -134,10 +135,16 @@ func (s *Service) runInstallRuntime(ctx context.Context, cancel context.CancelFu
 	log.Debugf("picoclaw install: extracted binary to %s", extractedPath)
 
 	s.setInstallProgress("installing", 95, "")
-	log.Debugf("picoclaw install: installing binary to %s", picoclawBinaryPath)
-	if err := installPicoclawBinary(extractedPath, picoclawBinaryPath); err != nil {
+	destination := picoclawInstallDestination()
+	log.Debugf("picoclaw install: installing binary to %s", destination)
+	if err := installPicoclawBinary(extractedPath, destination); err != nil {
 		log.Errorf("picoclaw install: install failed: %v", err)
 		s.finishInstallFailure(installFailureStatus(err), err.Error())
+		return
+	}
+	if err := recordPicoclawAddon(); err != nil {
+		log.Errorf("picoclaw install: failed to record the add-on: %v", err)
+		s.finishInstallFailure("install_failed", err.Error())
 		return
 	}
 	log.Debugf("picoclaw install: install completed successfully")
@@ -443,4 +450,36 @@ func installPicoclawBinary(source string, destination string) error {
 		return fmt.Errorf("failed to install picoclaw binary: %w", err)
 	}
 	return nil
+}
+
+// picoclawAddon is what PicoClaw needs back from the root filesystem after a
+// new image: its binary at /usr/bin/picoclaw and its settings, the model and
+// its API key among them, at /root/.picoclaw. It has no boot script: the server
+// starts it from /kvmapp when the intent in /etc/kvm says so, and /etc/kvm is
+// already on /data.
+func picoclawAddon() addon.Spec {
+	return addon.Spec{
+		Name:  "picoclaw",
+		Links: []addon.Link{{Path: picoclawBinaryPath, File: "picoclaw"}},
+		Binds: []addon.Bind{{Dir: "/root/.picoclaw", Sub: "home"}},
+	}
+}
+
+// picoclawInstallDestination is where the binary is written. On a distribution
+// image that is the add-on's directory on /data, which the next image keeps.
+func picoclawInstallDestination() string {
+	if addon.OnData() {
+		return filepath.Join(addon.Dir(picoclawAddon().Name), "picoclaw")
+	}
+	return picoclawBinaryPath
+}
+
+// recordPicoclawAddon makes the link and the bind on a distribution image, and
+// does nothing anywhere else. Settings already in /root/.picoclaw are carried
+// into the add-on before the bind covers them.
+func recordPicoclawAddon() error {
+	if !addon.OnData() {
+		return nil
+	}
+	return addon.Record(picoclawAddon())
 }
