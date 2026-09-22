@@ -80,6 +80,7 @@ type PicoclawSidebarActionOptions = {
   setIsInstallRequestPending: Dispatch<SetStateAction<boolean>>;
   setInstallSnapshot: Dispatch<SetStateAction<PicoclawRuntimeInstallSnapshot | null>>;
   setIsSavingModelConfig: Dispatch<SetStateAction<boolean>>;
+  setModelConfigError: Dispatch<SetStateAction<string>>;
   setIsSwitchingAgent: Dispatch<SetStateAction<boolean>>;
   setIsUninstallRequestPending: Dispatch<SetStateAction<boolean>>;
   setIsReleasingControl: Dispatch<SetStateAction<boolean>>;
@@ -116,6 +117,7 @@ export function usePicoclawSidebarActions(options: PicoclawSidebarActionOptions)
     setIsInstallRequestPending,
     setInstallSnapshot,
     setIsSavingModelConfig,
+    setModelConfigError,
     setIsSwitchingAgent,
     setIsUninstallRequestPending,
     setIsReleasingControl,
@@ -776,7 +778,9 @@ export function usePicoclawSidebarActions(options: PicoclawSidebarActionOptions)
     const apiBase = modelApiBase.trim();
     const apiKey = modelApiKey.trim();
     const model = modelIdentifier.trim();
+    setModelConfigError('');
     if (!apiBase || !apiKey || !model) {
+      setModelConfigError(t('picoclaw.model.invalid'));
       setMessages((current) => [
         ...current,
         createErrorMessage({
@@ -810,6 +814,7 @@ export function usePicoclawSidebarActions(options: PicoclawSidebarActionOptions)
         (response as { message?: string; msg?: string }).message ||
         (response as { message?: string; msg?: string }).msg ||
         t('picoclaw.model.saveFailed');
+      setModelConfigError(errorMessage);
       setMessages((current) => [
         ...current,
         createErrorMessage({
@@ -820,6 +825,7 @@ export function usePicoclawSidebarActions(options: PicoclawSidebarActionOptions)
       ]);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : t('picoclaw.model.saveFailed');
+      setModelConfigError(errorMessage);
       setMessages((current) => [
         ...current,
         createErrorMessage({

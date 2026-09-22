@@ -62,6 +62,7 @@ export const Sidebar = () => {
     isReleasingControl,
     modelApiBase,
     modelApiKey,
+    modelConfigError,
     modelIdentifier,
     isModelConfigOpen,
     runState,
@@ -307,6 +308,7 @@ export const Sidebar = () => {
           <SidebarModelConfig
             apiBase={modelApiBase}
             apiKey={modelApiKey}
+            error={modelConfigError}
             disabled={actionBusy}
             isSaving={isSavingModelConfig}
             modelIdentifier={modelIdentifier}
