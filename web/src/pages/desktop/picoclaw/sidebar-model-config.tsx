@@ -19,6 +19,7 @@ type SidebarModelConfigProps = {
   apiBase: string;
   apiKey: string;
   disabled?: boolean;
+  error?: string;
   isSaving: boolean;
   modelIdentifier: string;
   modelName?: string;
@@ -34,6 +35,7 @@ export const SidebarModelConfig = ({
   apiBase,
   apiKey,
   disabled,
+  error,
   isSaving,
   modelIdentifier,
   modelName,
@@ -53,6 +55,10 @@ export const SidebarModelConfig = ({
       setKeyboardLock({ source: PICOCLAW_MODEL_CONFIG_KEYBOARD_LOCK_SOURCE, locked: false });
     };
   }, [setKeyboardLock]);
+
+  // After a failed save, mark every field that is still empty, since all three
+  // are required and the message alone does not say which one is missing.
+  const fieldStatus = (value: string) => (error && !value.trim() ? 'error' : undefined);
 
   return (
     <div className="flex flex-1 flex-col overflow-y-auto px-5 pb-8 pt-10">
@@ -100,6 +106,7 @@ export const SidebarModelConfig = ({
           <Input
             prefix={<CpuIcon size={13} className="text-neutral-500" />}
             placeholder={t('picoclaw.model.modelIdentifierPlaceholder')}
+            status={fieldStatus(modelIdentifier)}
             value={modelIdentifier}
             onChange={(e) => onModelIdentifierChange(e.target.value)}
           />
@@ -111,6 +118,7 @@ export const SidebarModelConfig = ({
           <Input.Password
             prefix={<KeyRoundIcon size={13} className="text-neutral-500" />}
             placeholder={t('picoclaw.model.apiKeyPlaceholder')}
+            status={fieldStatus(apiKey)}
             value={apiKey}
             onChange={(e) => onApiKeyChange(e.target.value)}
           />
@@ -122,11 +130,18 @@ export const SidebarModelConfig = ({
           <Input
             prefix={<LinkIcon size={13} className="text-neutral-500" />}
             placeholder={t('picoclaw.model.apiBasePlaceholder')}
+            status={fieldStatus(apiBase)}
             value={apiBase}
             onChange={(e) => onApiBaseChange(e.target.value)}
           />
         </div>
       </div>
+
+      {error && (
+        <div role="alert" className="mt-4 text-xs leading-5 text-red-400">
+          {error}
+        </div>
+      )}
 
       {/* Save */}
       <div className="mt-6 flex justify-end gap-2">

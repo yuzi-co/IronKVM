@@ -62,6 +62,10 @@ export const useSidebar = () => {
   const [isInstallRequestPending, setIsInstallRequestPending] = useState(false);
   const [isUninstallRequestPending, setIsUninstallRequestPending] = useState(false);
   const [isSavingModelConfig, setIsSavingModelConfig] = useState(false);
+  // Why the last save of the model form failed, shown on the form. The same
+  // text also goes to the chat list, but the form covers that list while it
+  // is open, so a save that failed looked like a save that did nothing.
+  const [modelConfigError, setModelConfigError] = useState('');
   const [isSwitchingAgent, setIsSwitchingAgent] = useState(false);
   const [isSwitchingSession, setIsSwitchingSession] = useState(false);
   const [isTogglingRuntime, setIsTogglingRuntime] = useState(false);
@@ -128,6 +132,7 @@ export const useSidebar = () => {
     setIsInstallRequestPending,
     setInstallSnapshot,
     setIsSavingModelConfig,
+    setModelConfigError,
     setIsSwitchingAgent,
     setIsUninstallRequestPending,
     setIsReleasingControl,
@@ -233,13 +238,25 @@ export const useSidebar = () => {
     activeSessionId,
     aiControlStatus,
     connectionLabel,
-    handleCancelModelConfig: () => setIsModelConfigOpen(false),
+    handleCancelModelConfig: () => {
+      setModelConfigError('');
+      setIsModelConfigOpen(false);
+    },
     handleAgentProfileChange: actions.handleAgentProfileChange,
     handleCloseHistory: sessionActions.handleCloseHistory,
     handleDeleteHistorySession: sessionActions.handleDeleteHistorySession,
-    handleModelApiBaseChange: setModelApiBase,
-    handleModelApiKeyChange: setModelApiKey,
-    handleModelIdentifierChange: setModelIdentifier,
+    handleModelApiBaseChange: (value: string) => {
+      setModelConfigError('');
+      setModelApiBase(value);
+    },
+    handleModelApiKeyChange: (value: string) => {
+      setModelConfigError('');
+      setModelApiKey(value);
+    },
+    handleModelIdentifierChange: (value: string) => {
+      setModelConfigError('');
+      setModelIdentifier(value);
+    },
     handleNewConversation: sessionActions.handleNewConversation,
     handleReconnectGateway: sessionActions.handleReconnectGateway,
     handleOpenHistory: sessionActions.handleOpenHistory,
@@ -270,6 +287,7 @@ export const useSidebar = () => {
     messages,
     modelApiBase,
     modelApiKey,
+    modelConfigError,
     modelIdentifier,
     isModelConfigOpen,
     runState,
