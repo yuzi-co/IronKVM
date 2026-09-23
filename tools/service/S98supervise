@@ -30,6 +30,7 @@
 #   SSH_DOWN_AFTER       seconds with no listener on 22 before a restart (60)
 #   SSH_CURE_BACKOFF     seconds between two sshd restarts               (300)
 #   SSHD_INIT            the init script to restart (default /etc/init.d/S50sshd)
+#   SSH_STOP_FLAG        present when the owner turned SSH off (/etc/kvm/ssh_stop)
 
 INTERVAL=${SUPERVISE_INTERVAL:-5}
 # Seconds a process may be alive and not answering before it counts as hung. A
@@ -563,6 +564,11 @@ ssh_action() {   # $1 = probe answer, $2 = seconds down, $3 = seconds since the 
     # Anything that is not a clear "no" is not evidence. A board without netstat
     # would otherwise restart sshd on every poll, for ever.
     [ "$answered" = 1 ] || { echo none; return; }
+
+    # The owner turned SSH off in the web UI, so no listener is the setting and
+    # not a fault. S50sshd would refuse to start anyway, and a restart every
+    # backoff for as long as the switch stays off only writes the log.
+    [ -e "${SSH_STOP_FLAG:-/etc/kvm/ssh_stop}" ] && { echo none; return; }
 
     # Fail closed on anything that is not a plain non-negative integer, and on
     # anything wider than busybox `[` compares without erroring. An error is not
