@@ -30,18 +30,18 @@ func (m *WebRTCManager) hasAudioListener() bool {
 	return false
 }
 
-// clearAudioStream forgets a stream that has ended on its own, so that a later
-// viewer starts a fresh one. It ignores a stream that has already been
-// replaced.
-func (m *WebRTCManager) clearAudioStream(stream *audio.Stream) {
+// clearAudioStream forgets a subscription whose capture has ended on its own,
+// so that a later viewer starts a fresh one. It ignores a subscription that has
+// already been replaced.
+func (m *WebRTCManager) clearAudioStream(sub *audio.Subscription) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	if m.audioStream != stream {
+	if m.audioSub != sub {
 		return
 	}
 
-	m.audioStream = nil
+	m.audioSub = nil
 	m.audioSending = false
 }
 
@@ -59,13 +59,18 @@ func (m *WebRTCManager) StartAudioStream() {
 		return
 	}
 
-	stream := audio.NewStream()
-	m.audioStream = stream
+	// The hub starts capture if nobody else holds it, and shares it if a
+	// direct viewer already does.
+	sub := m.audioHub.Subscribe()
+	if sub == nil {
+		m.mutex.Unlock()
+		return
+	}
+	m.audioSub = sub
 	m.audioSending = true
 	m.mutex.Unlock()
 
-	stream.Start()
-	go m.sendAudioStream(stream)
+	go m.sendAudioStream(sub)
 
 	log.Debugf("start sending opus stream")
 }
@@ -86,6 +91,7 @@ func (m *WebRTCManager) StartAudioStream() {
 // uses.
 func StopAudioCapture() {
 	getManager().stopAudioStream()
+	audio.Shared.StopAll()
 }
 
 // stopAudioStream ends capture and forgets the stream. The caller decides
@@ -98,15 +104,16 @@ func (m *WebRTCManager) stopAudioStream() {
 		return
 	}
 
-	stream := m.audioStream
-	m.audioStream = nil
+	sub := m.audioSub
+	m.audioSub = nil
 	m.audioSending = false
 	m.mutex.Unlock()
 
-	// Stop runs outside the lock. It waits on the capture goroutine, and no
-	// other caller may be held up behind that.
-	if stream != nil {
-		stream.Stop()
+	// Close runs outside the lock. As the last listener it stops capture and
+	// waits on the capture goroutine, and no other caller may be held up
+	// behind that.
+	if sub != nil {
+		sub.Close()
 	}
 
 	log.Debugf("stop sending opus stream")
@@ -136,9 +143,24 @@ func (m *WebRTCManager) stopAudioStreamIfIdle() {
 
 // sendAudioStream packetizes each frame once and hands the packets to every
 // client, the same way the video loop does.
-func (m *WebRTCManager) sendAudioStream(stream *audio.Stream) {
-	for frame := range stream.Frames() {
-		m.deliverAudioFrame(frame)
+//
+// A gap in the sequence is frames this loop lost in the hub. The packetizer
+// advances its RTP timestamp only by what it is handed, so a lost frame would
+// cut 20 ms out of the stream and the receiver would drift further from the
+// host with every one. SkipSamples moves the clock across the gap, and the
+// receiver treats it as loss, which its jitter buffer is built for.
+func (m *WebRTCManager) sendAudioStream(sub *audio.Subscription) {
+	var next uint64
+	started := false
+
+	for frame := range sub.Frames() {
+		if started && frame.Seq > next {
+			m.audioPacketizer.SkipSamples(uint32(frame.Seq-next) * audio.SamplesPerFrame)
+		}
+		next = frame.Seq + 1
+		started = true
+
+		m.deliverAudioFrame(frame.Data)
 	}
 
 	// The channel closed for one of two reasons: the last listener left and
@@ -152,7 +174,7 @@ func (m *WebRTCManager) sendAudioStream(stream *audio.Stream) {
 	// encoder failed to construct stays silent until it reconnects. What this
 	// buys is that the next connection starts a fresh stream instead of finding
 	// the manager still convinced audio is being sent.
-	m.clearAudioStream(stream)
+	m.clearAudioStream(sub)
 }
 
 // deliverAudioFrame packetizes one frame and hands the packets to every

@@ -3,6 +3,7 @@ package webrtc
 import (
 	"NanoKVM-Server/common"
 	"NanoKVM-Server/service/stream"
+	"NanoKVM-Server/service/stream/audio"
 	"NanoKVM-Server/service/vm"
 	"time"
 
@@ -57,6 +58,7 @@ func NewWebRTCManager() *WebRTCManager {
 			rtp.NewRandomSequencer(),
 			audioClockRate,
 		),
+		audioHub: audio.Shared,
 	}
 	m.updateClientSnapshotLocked()
 
