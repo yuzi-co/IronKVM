@@ -16,6 +16,9 @@ let decodeBackpressured = false;
 let reportedFrameWidth = 0;
 let reportedFrameHeight = 0;
 let configuredCodec: 'avc' | 'hevc' | null = null;
+// Asked for only when the page can play it. The board starts arecord for every
+// listener, and a browser without AudioDecoder would hold it for nothing.
+let wantAudio = false;
 
 // The board has one hardware encoder, so which of these arrives is the
 // operator's global choice, not this viewer's. The stream is read rather than
@@ -28,6 +31,10 @@ const hevcCodec = 'hev1.1.6.L120.B0';
 const maxQueuedFrames = 1;
 const maxReconnectDelayMs = 5_000;
 const frameAckMessage = 2;
+// Byte 0 of a video message is the keyframe flag, 0 or 1. The server marks an
+// audio message with a value video never sends, and sends audio only because
+// this worker asks for it in the URL.
+const audioMessage = 0x10;
 const streamResyncMessage = 3;
 const flowControlWindow = 8;
 const decoderHighWatermark = 6;
@@ -39,6 +46,7 @@ type WorkerMessage = {
   type: 'h264' | 'stop';
   canvas?: OffscreenCanvas;
   url?: string;
+  audio?: boolean;
 };
 
 frameChannel.port1.onmessage = () => {
@@ -47,7 +55,7 @@ frameChannel.port1.onmessage = () => {
 };
 
 self.onmessage = (event: MessageEvent<WorkerMessage>) => {
-  const { type, canvas: offscreenCanvas, url } = event.data;
+  const { type, canvas: offscreenCanvas, url, audio } = event.data;
 
   switch (type) {
     case 'h264':
@@ -63,6 +71,7 @@ self.onmessage = (event: MessageEvent<WorkerMessage>) => {
         desynchronized: true
       }) as OffscreenCanvasRenderingContext2D;
       streamUrl = url;
+      wantAudio = audio === true;
       stopped = false;
       connect();
       break;
@@ -83,6 +92,9 @@ function connect() {
   try {
     const url = new URL(streamUrl);
     url.searchParams.set('flow', String(flowControlWindow));
+    if (wantAudio) {
+      url.searchParams.set('audio', '1');
+    }
     const nextSocket = new WebSocket(url);
     nextSocket.binaryType = 'arraybuffer';
     socket = nextSocket;
@@ -200,6 +212,17 @@ function handleWsMessage(message: ArrayBuffer) {
     }
 
     const view = new DataView(message);
+
+    // The worker cannot play sound, so an audio frame goes to the page as it
+    // arrived. The slice is a copy, which the transfer then moves rather than
+    // copying a second time.
+    if (view.getUint8(0) === audioMessage) {
+      const seq = Number(view.getBigUint64(1, true));
+      const data = message.slice(9);
+      self.postMessage({ type: 'audio', seq, data }, [data]);
+      return;
+    }
+
     const isKeyFrame = view.getUint8(0) === 1;
     const timestamp = Number(view.getBigUint64(1, true));
     const data = new Uint8Array(message, 9);

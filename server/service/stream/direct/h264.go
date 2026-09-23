@@ -50,6 +50,19 @@ func Connect(c *gin.Context) {
 
 	streamer.addClient(client)
 
+	// Audio only for a browser that asked. An older viewer reads byte 0 of
+	// every message as the keyframe flag and must never be sent an audio one.
+	// The hub shares the capture with WebRTC, whose viewers may be listening
+	// already, and it returns nil when this board has no capture card.
+	if c.Query("audio") == "1" {
+		if sub := audioHub.Subscribe(); sub != nil {
+			go forwardAudio(sub, client)
+			// Deferred after the removal above, so it runs first: the last
+			// listener to leave stops arecord.
+			defer sub.Close()
+		}
+	}
+
 	unregisterMode := stream.RegisterH264Mode(stream.H264ModeDirect)
 	defer unregisterMode()
 

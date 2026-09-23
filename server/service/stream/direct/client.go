@@ -234,6 +234,12 @@ func (q *frameQueue) clearFramesLocked() {
 	q.queuedBytes = 0
 }
 
+// wakeWriter wakes the client writer for something other than a video frame.
+// The send does not touch the queue state, so it needs no lock.
+func (q *frameQueue) wakeWriter() {
+	q.signalLocked()
+}
+
 func (q *frameQueue) signalLocked() {
 	select {
 	case q.wake <- struct{}{}:
@@ -244,6 +250,7 @@ func (q *frameQueue) signalLocked() {
 type client struct {
 	conn  *websocket.Conn
 	queue *frameQueue
+	audio *audioQueue
 
 	done       chan struct{}
 	writerDone chan struct{}
@@ -254,6 +261,7 @@ func newClient(conn *websocket.Conn) *client {
 	return &client{
 		conn:       conn,
 		queue:      newFrameQueue(defaultQueueFrames, defaultQueueBytes),
+		audio:      &audioQueue{},
 		done:       make(chan struct{}),
 		writerDone: make(chan struct{}),
 	}
@@ -267,6 +275,7 @@ func (c *client) close() {
 	c.closeOnce.Do(func() {
 		close(c.done)
 		c.queue.close()
+		c.audio.close()
 		_ = c.conn.Close()
 	})
 }
@@ -367,6 +376,22 @@ func (c *client) writeLoop() {
 		default:
 		}
 
+		// Audio first. It is a few hundred bytes every 20 ms, and a frame that
+		// waits behind a large keyframe arrives late enough to be heard.
+		wroteAudio := false
+		for _, frame := range c.audio.popAll() {
+			if err := c.conn.SetWriteDeadline(time.Now().Add(writeWait)); err != nil {
+				c.close()
+				return
+			}
+			if err := writeAudio(c.conn, frame); err != nil {
+				log.Debugf("failed to write audio to %s: %s", c.conn.RemoteAddr(), err)
+				c.close()
+				return
+			}
+			wroteAudio = true
+		}
+
 		if frame := c.queue.popForWrite(); frame != nil {
 			if err := c.conn.SetWriteDeadline(time.Now().Add(writeWait)); err != nil {
 				c.close()
@@ -377,6 +402,9 @@ func (c *client) writeLoop() {
 				c.close()
 				return
 			}
+			continue
+		}
+		if wroteAudio {
 			continue
 		}
 

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -422,15 +423,17 @@ func TestDeliverAudioFrameReachesOnlyClientsWithAudio(t *testing.T) {
 func TestSendAudioStreamClearsTheFlagWhenTheStreamEnds(t *testing.T) {
 	manager := NewWebRTCManager()
 
-	stream := audio.NewStream()
+	capture := newEndingCapture()
+	manager.audioHub = audio.NewHubWith(func() audio.Capture { return capture }, func() bool { return true })
+	sub := manager.audioHub.Subscribe()
 
 	manager.mutex.Lock()
-	manager.audioStream = stream
+	manager.audioSub = sub
 	manager.audioSending = true
 	manager.mutex.Unlock()
 
-	stream.Stop()
-	manager.sendAudioStream(stream)
+	capture.end()
+	manager.sendAudioStream(sub)
 
 	manager.mutex.Lock()
 	sending := manager.audioSending
@@ -438,5 +441,73 @@ func TestSendAudioStreamClearsTheFlagWhenTheStreamEnds(t *testing.T) {
 
 	if sending {
 		t.Error("the send loop returned but the manager still believes audio is sending")
+	}
+}
+
+// endingCapture is a capture the test ends by hand, the way one whose encoder
+// could not be built ends by itself.
+type endingCapture struct {
+	frames chan []byte
+	once   sync.Once
+}
+
+func newEndingCapture() *endingCapture { return &endingCapture{frames: make(chan []byte, 8)} }
+
+func (c *endingCapture) Start()                {}
+func (c *endingCapture) Stop()                 { c.end() }
+func (c *endingCapture) Frames() <-chan []byte { return c.frames }
+func (c *endingCapture) end()                  { c.once.Do(func() { close(c.frames) }) }
+
+// skipRecorder is a packetizer that records what the send loop asks of it.
+type skipRecorder struct {
+	rtp.Packetizer
+	skipped []uint32
+}
+
+func (r *skipRecorder) SkipSamples(n uint32)                                   { r.skipped = append(r.skipped, n) }
+func (r *skipRecorder) Packetize(payload []byte, samples uint32) []*rtp.Packet { return nil }
+
+// A frame the hub dropped for this loop must still move the RTP clock, or the
+// receiver hears the host with 20 ms cut out for every drop.
+//
+// Twenty frames arrive before the loop runs, more than a subscription holds,
+// so the hub drops the tail. The loop then sees the buffered frames, a gap,
+// and one more frame, and must skip exactly the frames that were dropped.
+func TestSendAudioStreamMovesTheClockAcrossAGap(t *testing.T) {
+	manager := NewWebRTCManager()
+	recorder := &skipRecorder{}
+	manager.audioPacketizer = recorder
+
+	listener := newTestClient()
+	listener.mutex.Lock()
+	listener.track.audio = &recordingWriter{}
+	listener.mutex.Unlock()
+	manager.storeClient(&websocket.Conn{}, listener)
+
+	capture := &endingCapture{frames: make(chan []byte, 32)}
+	manager.audioHub = audio.NewHubWith(func() audio.Capture { return capture }, func() bool { return true })
+	sub := manager.audioHub.Subscribe()
+
+	const sent = 20
+	for i := 0; i < sent; i++ {
+		capture.frames <- []byte{byte(i)}
+	}
+	time.Sleep(100 * time.Millisecond)
+	buffered := len(sub.Frames())
+
+	done := make(chan struct{})
+	go func() { manager.sendAudioStream(sub); close(done) }()
+	time.Sleep(50 * time.Millisecond)
+	capture.frames <- []byte{sent}
+	time.Sleep(50 * time.Millisecond)
+	capture.end()
+	<-done
+
+	if buffered == 0 || buffered >= sent {
+		t.Fatalf("the subscription held %d of %d frames, so the hub dropped nothing to test", buffered, sent)
+	}
+	want := uint32(sent-buffered) * audio.SamplesPerFrame
+	if len(recorder.skipped) != 1 || recorder.skipped[0] != want {
+		t.Fatalf("skipped %v, want one skip of %d samples", recorder.skipped, want)
 	}
 }

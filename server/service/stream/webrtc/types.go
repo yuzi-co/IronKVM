@@ -30,8 +30,13 @@ type WebRTCManager struct {
 	videoPacketizers map[uint8]rtp.Packetizer
 
 	audioSending    bool
-	audioStream     *audio.Stream
+	audioSub        *audio.Subscription
 	audioPacketizer rtp.Packetizer
+
+	// audioHub is audio.Shared in production. The capture device opens
+	// exclusively, so this path and H.264 direct share one capture through it.
+	// A field so a test can supply a hub with no arecord behind it.
+	audioHub *audio.Hub
 }
 
 type Client struct {
