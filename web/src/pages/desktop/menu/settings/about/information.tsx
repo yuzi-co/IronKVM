@@ -20,6 +20,9 @@ type Info = {
   ips: IP[];
   mdns: string;
   image: string;
+  // The running kernel release, as uname -r prints it. Absent from a server
+  // older than this field.
+  kernel?: string;
   application: string;
   // The upstream release this build started from. Absent on an image that
   // carries no record of one, which is what an official image looks like.
@@ -94,6 +97,22 @@ export const Information = () => {
           </div>
 
           <span>{information ? information.image : '-'}</span>
+        </div>
+
+        {/* kernel version */}
+        <div className="flex w-full items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <span>{t('settings.about.kernel')}</span>
+            <Tooltip
+              title={t('settings.about.kernelTip')}
+              className="cursor-pointer text-neutral-500"
+              placement="right"
+            >
+              <CircleHelpIcon size={15} />
+            </Tooltip>
+          </div>
+
+          <span>{information?.kernel || '-'}</span>
         </div>
 
         {/* application version */}

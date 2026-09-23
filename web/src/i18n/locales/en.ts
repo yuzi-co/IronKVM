@@ -350,6 +350,8 @@ const en = {
         applicationTip: 'IronKVM web application version',
         image: 'Image Version',
         imageTip: 'IronKVM card image, and the NanoKVM system image it is built on',
+        kernel: 'Kernel Version',
+        kernelTip: 'Release of the Linux kernel that is running now',
         deviceKey: 'Device Key',
         videoMemory: 'Video Memory',
         videoMemoryTip:

@@ -217,3 +217,42 @@ func TestGetBaseVersionIsNotStamped(t *testing.T) {
 		t.Fatalf("base version = %q, want it unchanged by the build stamp", got)
 	}
 }
+
+// useKernelReleaseFile writes an osrelease file for one test and points the
+// reader at it. Passing an empty string leaves the path missing.
+func useKernelReleaseFile(t *testing.T, contents string) {
+	t.Helper()
+
+	originalPath := kernelReleaseFile
+	t.Cleanup(func() {
+		kernelReleaseFile = originalPath
+	})
+
+	path := filepath.Join(t.TempDir(), "osrelease")
+	if contents != "" {
+		if err := os.WriteFile(path, []byte(contents), 0o644); err != nil {
+			t.Fatalf("failed to write osrelease file: %s", err)
+		}
+	}
+
+	kernelReleaseFile = path
+}
+
+// The kernel reports its release with a trailing newline. The About panel
+// shows the release alone, so the newline must go.
+func TestGetKernelVersionReadsTheRelease(t *testing.T) {
+	useKernelReleaseFile(t, "5.10.270-ironkvm0\n")
+
+	if got := getKernelVersion(); got != "5.10.270-ironkvm0" {
+		t.Fatalf("kernel version = %q, want %q", got, "5.10.270-ironkvm0")
+	}
+}
+
+// A missing file reports nothing, and the panel shows a dash.
+func TestGetKernelVersionIsEmptyWhenTheFileIsAbsent(t *testing.T) {
+	useKernelReleaseFile(t, "")
+
+	if got := getKernelVersion(); got != "" {
+		t.Fatalf("kernel version = %q, want empty", got)
+	}
+}
