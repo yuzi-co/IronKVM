@@ -62,3 +62,4 @@ tools/opusbench/opusbench
 official-kvmapp/
 base/
 release-out/
+tools/viewer/viewer.exe

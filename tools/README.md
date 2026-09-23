@@ -23,6 +23,7 @@ The A/B slot tooling that used to be in `tools/abslots` lives in the ironkvm-dis
 | `usbdev/`     | Check the USB gadget: the optional ACM console, the link order, and that a rebind which did not happen is reported as a failure. |
 | `audiodiag/`  | Say whether USB audio capture works, and name the end that fails.      |
 | `opusbench/`  | Rebuild `libopus.a` for the board, and measure what it costs.          |
+| `viewer/`     | Watch the WebRTC, H.264 direct or MJPEG stream with no browser, to measure what each costs the board. |
 | `run-tests.sh` | Run every `test-*.sh` under `tools/`. It reports pass, skip or fail. |
 | `test-suite-status.sh` | Check that every suite reports its result as a status the runner can read. |
 
