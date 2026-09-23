@@ -134,11 +134,11 @@ check "a missing source directory is not a failure" "$status" "0"
 teardown
 
 # /kvmapp/system/init.d is the application's own reference copy. It carries 17
-# scripts and install.sh installs 9 of them: it leaves S50sshd, S50avahi-daemon
-# and S80dnsmasq at their base versions, and it never installs ssdpd,
+# scripts and install.sh installs 10 of them: it leaves S50sshd and S80dnsmasq
+# at their base versions, and it never installs ssdpd,
 # tailscaled, picoclaw, usbhid or cpufreq at all. Installing the directory would
 # put five daemons on a 166MB board that its own image never runs, and would
-# replace three scripts the image chose not to touch.
+# replace two scripts the image chose not to touch.
 setup
 printf '#!/bin/sh\necho a\n' > "$WORK/src/S40wanted"
 printf '#!/bin/sh\necho b\n' > "$WORK/src/S41unwanted"

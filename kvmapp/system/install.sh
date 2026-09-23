@@ -43,8 +43,8 @@ LIST=${INSTALL_LIST:-$(dirname "$SRC")/init.d.install}
 # did. /kvmapp/system/init.d is the application's own reference copy: it carries
 # 20 scripts and the image installs 10. The image leaves S50sshd, S00kmod,
 # S15kvmhwd and S80dnsmasq at the versions the base system shipped, and it never
-# installs avahi, ssdpd, tailscaled, picoclaw, wifi or usbhid at all. Installing
-# the directory would start six daemons at the next boot that the same release's
+# installs ssdpd, tailscaled, picoclaw, wifi or usbhid at all. Installing the
+# directory would start five daemons at the next boot that the same release's
 # SD image never starts, on a board with 166MB of RAM.
 #
 # A package with no list was not built by release.sh, and the safe reading is
