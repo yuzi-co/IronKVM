@@ -103,6 +103,46 @@ start() {
     fi
 }
 
+# --- link record ---
+# One line per boot in /data/eth-link.log: the uptime at which the link came up
+# and its speed. On the reference board the link has come up anywhere from a
+# few seconds to 94s after the PHY was configured, while rcS finished at 12 to
+# 25s every time, so the wait is what decides when the board is reachable.
+# Nothing kept it: dmesg is per boot and /watchdog.log is per slot. A good boot
+# costs one line, and a board rebooting in a loop costs one line per boot.
+#
+# The marker in /run makes it once per boot, because this script also runs
+# when an address trial is reverted. Every path is a variable so
+# tools/network/test-eth-link-record.sh can drive this against a scratch tree.
+eth_record_link() {
+    log=${ETH_LINK_LOG:-/data/eth-link.log}
+    net=${SYS_NET:-/sys/class/net}
+    mark=${ETH_RUN_DIR:-/run}/eth-link.$IF
+    boot=${ETH_BOOT_ID:-$(cat /proc/sys/kernel/random/boot_id 2>/dev/null)}
+    wait_max=${ETH_LINK_WAIT:-600}
+
+    if [ -n "${ETH_DATA_MOUNTED:-}" ]; then
+        [ "$ETH_DATA_MOUNTED" = yes ] || return 0
+    else
+        grep -q ' /data ' /proc/mounts 2>/dev/null || return 0
+    fi
+    [ "$(cat "$mark" 2>/dev/null)" = "$boot" ] && return 0
+    echo "$boot" > "$mark"
+
+    waited=0
+    while [ "$(cat "$net/$IF/carrier" 2>/dev/null)" != 1 ]; do
+        if [ "$waited" -ge "$wait_max" ]; then
+            echo "$(date '+%Y-%m-%d %H:%M:%S') no link after ${wait_max}s boot=$boot" >> "$log"
+            return 0
+        fi
+        sleep 1
+        waited=$((waited + 1))
+    done
+
+    echo "$(date '+%Y-%m-%d %H:%M:%S') up=$(cut -d. -f1 /proc/uptime)s speed=$(cat "$net/$IF/speed" 2>/dev/null) boot=$boot" >> "$log"
+}
+# --- end link record ---
+
 stop() {
     [ ! -e "/run/udhcpc.$IF.pid" ] && exit 1
     kill "$(cat "/run/udhcpc.$IF.pid")"
@@ -110,7 +150,12 @@ stop() {
 }
 
 case "$1" in
-    start) start ;;
+    start)
+        start
+        # Backgrounded, as S03usbdev backgrounds its enumeration watch: rcS
+        # waits on this script, and a board with no cable is a board that works.
+        eth_record_link > /dev/null 2>&1 &
+        ;;
     stop) stop ;;
     restart|reload)
         $0 stop
