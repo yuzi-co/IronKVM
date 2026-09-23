@@ -32,6 +32,7 @@ func (s *Service) GetInfo(c *gin.Context) {
 		IPs:         getIPs(),
 		Mdns:        getMdns(),
 		Image:       getImageVersion(),
+		Kernel:      getKernelVersion(),
 		Application: getApplicationVersion(),
 		Base:        getBaseVersion(),
 		DeviceKey:   getDeviceKey(),
@@ -121,6 +122,22 @@ func getImageVersion() string {
 	}
 
 	return fmt.Sprintf("%s (based on %s)", version, image)
+}
+
+// kernelReleaseFile holds the release string of the running kernel, the same
+// value uname -r prints. Tests point it elsewhere.
+//
+// The card image and the kernel are separate artefacts: a card can carry a
+// kernel of its own, and an image version alone does not say which one booted.
+var kernelReleaseFile = "/proc/sys/kernel/osrelease"
+
+func getKernelVersion() string {
+	content, err := os.ReadFile(kernelReleaseFile)
+	if err != nil {
+		return ""
+	}
+
+	return strings.TrimSpace(string(content))
 }
 
 // applicationVersionFile is written by the updater. Tests point it elsewhere.
