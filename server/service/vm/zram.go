@@ -46,6 +46,40 @@ var zramModules = []string{"zram.ko", "zsmalloc.ko"}
 // /bootlog. S01zram searches the same two directories in the same order.
 var zramModuleDirs = []string{"/kvmapp/system/ko", "/mnt/system/ko"}
 
+// zramReleaseDir holds the pair built for the running kernel, when the image
+// carries one. The vendor kernel ignores vermagic, so a 5.10.4 zram.ko
+// force-loads on 5.10.270. S01zram therefore reads this directory alone when
+// it exists, and Available has to follow the same rule, or it would report a
+// pair that the script never loads. On 5.10.4 the directory does not exist and
+// zramModuleDirs is searched as before. It is a variable so a test can point
+// it at a temporary tree.
+var zramReleaseDir = releaseModuleDir(readFileString("/proc/sys/kernel/osrelease"))
+
+// releaseModuleDir returns /lib/modules/<release>/extra for the release in
+// /proc/sys/kernel/osrelease, or an empty string when the release is unknown.
+// That file holds what uname -r prints, and reading it keeps this code free of
+// a platform-specific syscall.
+func releaseModuleDir(osrelease string) string {
+	release := strings.TrimSpace(osrelease)
+	if release == "" || strings.Contains(release, "/") {
+		return ""
+	}
+
+	return "/lib/modules/" + release + "/extra"
+}
+
+// zramSearchDirs returns the directories that S01zram would search on this
+// kernel: the release directory alone when it exists, else the legacy list.
+func zramSearchDirs() []string {
+	if zramReleaseDir != "" {
+		if info, err := os.Stat(zramReleaseDir); err == nil && info.IsDir() {
+			return []string{zramReleaseDir}
+		}
+	}
+
+	return zramModuleDirs
+}
+
 // These are variables rather than constants so a test can point the reader at
 // a temporary tree.
 var (
@@ -156,7 +190,7 @@ func (s *Service) SetZram(c *gin.Context) {
 // device would report "survives a reboot" for a feature that does not run.
 func enableZram() error {
 	if !zramModulesInstalled() {
-		log.Errorf("zram modules are not installed in any of %s", strings.Join(zramModuleDirs, ", "))
+		log.Errorf("zram modules are not installed in any of %s", strings.Join(zramSearchDirs(), ", "))
 		return errZramUnavailable
 	}
 
@@ -247,7 +281,7 @@ func installZramInitScript() error {
 // the same vermagic, so the kernel accepts them, and zram then resolves its
 // symbols against a zsmalloc it was not compiled with.
 func zramModuleDir() string {
-	for _, dir := range zramModuleDirs {
+	for _, dir := range zramSearchDirs() {
 		complete := true
 
 		for _, module := range zramModules {

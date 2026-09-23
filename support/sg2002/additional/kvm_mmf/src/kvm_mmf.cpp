@@ -7,6 +7,9 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <sys/param.h>
+#include <sys/stat.h>
+#include <sys/utsname.h>
+#include <limits.h>
 #include <pthread.h>
 #include "math.h"
 #include <inttypes.h>
@@ -316,22 +319,54 @@ static int _is_module_in_use(const char *module_name) {
     return 0;
 }
 
+// The directory that holds the soph_* modules built for the running kernel.
+//
+// The vendor kernel's module loader ignores vermagic, so an insmod of a
+// module built for another release succeeds and the mismatch shows up later
+// as a fault. The init scripts therefore read /lib/modules/<release>/extra
+// alone when it exists, and this reload must insert from the same place or it
+// replaces a matching stack with the 5.10.4 one. On 5.10.4 no such directory
+// exists and the reload reads /mnt/system/ko as it always did.
+static void soph_module_dir(char *dir, size_t size)
+{
+	struct utsname uts;
+	struct stat st;
+
+	if (uname(&uts) == 0) {
+		snprintf(dir, size, "/lib/modules/%s/extra", uts.release);
+		if (stat(dir, &st) == 0 && S_ISDIR(st.st_mode))
+			return;
+	}
+	snprintf(dir, size, "%s", "/mnt/system/ko");
+}
+
 static int reinit_soph_vb(void)
 {
-	printf("mmf insmod..\r\n");
+	// The load order is the dependency order; do not sort it.
+	static const char *const modules[] = {
+		// "soph_sys",
+		"soph_base",
+		"soph_rtos_cmdqu",
+		"soph_fast_image",
+		"soph_mipi_rx",
+		"soph_snsr_i2c",
+		"soph_vi",
+		"soph_vpss",
+		"soph_dwa",
+		"soph_rgn",
+		"soph_vc_driver",
+		"soph_ive",
+	};
+	char dir[PATH_MAX];
+	char cmd[PATH_MAX + 32];
+
+	soph_module_dir(dir, sizeof(dir));
+	printf("mmf insmod from %s..\r\n", dir);
 	system("rmmod soph_ive soph_vc_driver soph_rgn soph_dwa soph_vpss soph_vi soph_snsr_i2c soph_mipi_rx soph_fast_image soph_rtos_cmdqu soph_base");
-	// system("insmod /mnt/system/ko/soph_sys.ko");
-	system("insmod /mnt/system/ko/soph_base.ko");
-	system("insmod /mnt/system/ko/soph_rtos_cmdqu.ko");
-	system("insmod /mnt/system/ko/soph_fast_image.ko");
-	system("insmod /mnt/system/ko/soph_mipi_rx.ko");
-	system("insmod /mnt/system/ko/soph_snsr_i2c.ko");
-	system("insmod /mnt/system/ko/soph_vi.ko");
-	system("insmod /mnt/system/ko/soph_vpss.ko");
-	system("insmod /mnt/system/ko/soph_dwa.ko");
-	system("insmod /mnt/system/ko/soph_rgn.ko");
-	system("insmod /mnt/system/ko/soph_vc_driver.ko");
-	system("insmod /mnt/system/ko/soph_ive.ko");
+	for (size_t i = 0; i < sizeof(modules) / sizeof(modules[0]); i++) {
+		snprintf(cmd, sizeof(cmd), "insmod %s/%s.ko", dir, modules[i]);
+		system(cmd);
+	}
 
 	return 0;
 }
