@@ -110,11 +110,12 @@ export const VirtualDevices = () => {
             <span className="text-xs text-amber-500">{t('settings.device.consoleTip')}</span>
           )}
 
-          {/* Audio reaches the browser on the WebRTC path and nowhere else.
-              The server has one caller of audio.NewStream and it is in that
-              path: MJPEG is a multipart response, and Direct is a websocket
-              whose nine-byte frame header has no room to say what a message
-              holds, so neither can carry a second stream.
+          {/* Audio reaches the browser on both H.264 paths and not on MJPEG.
+              WebRTC carries it as an Opus track. Direct carries it on the
+              video websocket, as messages whose first byte is 0x10, which a
+              video message never starts with; the browser asks for them with
+              ?audio=1 and plays them through WebCodecs. MJPEG is a multipart
+              response with no room for a second stream.
 
               Said whatever this browser is on, because the switch is a device
               setting: it presents a sound card to the host for every viewer,
