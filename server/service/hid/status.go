@@ -25,6 +25,15 @@ const (
 	ModeHidOnlyScript = "/kvmapp/system/init.d/S03usbhid"
 
 	USBDevScript = "/etc/init.d/S03usbdev"
+
+	// HidOnlyFlag records that the owner chose HID-only mode.
+	//
+	// Copying S03usbhid over USBDevScript is not enough on its own. That file
+	// lives on the root slot, and on an A/B board the next image puts the
+	// normal script back, so the board came up in normal mode after every
+	// update. /etc/kvm is bound from /data, so this file survives an image,
+	// and S03usbdev hands every action to S03usbhid while it exists.
+	HidOnlyFlag = "/etc/kvm/hid_only"
 )
 
 var modeMap = map[string]string{
@@ -100,6 +109,14 @@ func (s *Service) SetHidMode(c *gin.Context) {
 	srcScript := ModeNormalScript
 	if req.Mode == ModeHidOnly {
 		srcScript = ModeHidOnlyScript
+	}
+
+	// Before the copy and the rebuild. A normal script that still found the
+	// marker would hand the rebuild straight back to S03usbhid.
+	if err := recordHidMode(HidOnlyFlag, req.Mode); err != nil {
+		log.Errorf("failed to record hid mode %s in %s: %s", req.Mode, HidOnlyFlag, err)
+		rsp.ErrRsp(c, -3, "operation failed")
+		return
 	}
 
 	if err := copyModeFile(srcScript); err != nil {
@@ -241,6 +258,18 @@ func ResetUSBPHY() error {
 		return fmt.Errorf("reopen HID devices after usb phy reset: %w", err)
 	}
 
+	return nil
+}
+
+// recordHidMode writes the marker for HID-only mode and removes it for normal.
+func recordHidMode(marker string, mode string) error {
+	if mode == ModeHidOnly {
+		return os.WriteFile(marker, nil, 0o644)
+	}
+
+	if err := os.Remove(marker); err != nil && !os.IsNotExist(err) {
+		return err
+	}
 	return nil
 }
 

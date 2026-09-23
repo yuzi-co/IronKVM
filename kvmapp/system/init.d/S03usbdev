@@ -1047,6 +1047,25 @@ restart_phy() {
     start_usb_dev
 }
 
+# HID-only mode. The web UI chooses it by copying S03usbhid over this file, and
+# this file is on the root slot, so the next image put the normal script back and
+# the board came up in normal mode. The server also records the choice in
+# /etc/kvm/hid_only, which is on /data, and while it exists every action goes to
+# S03usbhid, which is the script that mode has always run. The usb watchdog's
+# restart and stop_start come through here too, so they rebuild the same gadget.
+#
+# S03USBDEV_DELEGATED stops a second hand-over if S03usbhid ever becomes this
+# script. The paths are variables so tools/usbdev/test-hid-only-mode.sh can drive
+# this with a stub. On the device nothing sets them.
+HID_ONLY_FILE=${HID_ONLY_FILE:-/etc/kvm/hid_only}
+HID_ONLY_SCRIPT=${HID_ONLY_SCRIPT:-/kvmapp/system/init.d/S03usbhid}
+if [ -e "$HID_ONLY_FILE" ] && [ -z "${S03USBDEV_DELEGATED:-}" ]; then
+    if [ -f "$HID_ONLY_SCRIPT" ]; then
+        S03USBDEV_DELEGATED=1 exec sh "$HID_ONLY_SCRIPT" "$@"
+    fi
+    echo "usb: $HID_ONLY_FILE asks for HID-only mode and there is no $HID_ONLY_SCRIPT, staying normal"
+fi
+
 case "$1" in
   start)
     start_usb_dev
