@@ -65,6 +65,15 @@
 # leave them nothing to read. tools/hwd/test-s15kvmhwd.sh rewrites the paths in
 # a copy instead, and refuses to run if any of them survives the rewrite.
 
+# The i2c modules come from the running kernel's own directory when the image
+# carries one, and never from /mnt/system/ko on that kernel.
+KMOD_RELEASE_DIR=${KMOD_RELEASE_DIR:-/lib/modules/$(uname -r)/extra}
+if [ -d "$KMOD_RELEASE_DIR" ]; then
+	KO_DIR=${KO_DIR:-$KMOD_RELEASE_DIR}
+else
+	KO_DIR=${KO_DIR:-/mnt/system/ko}
+fi
+
 Alpha_OLED_RST_Pin=371
 Beta_OLED_RST_Pin=502
 Beta_OLED_SCL=595
@@ -161,8 +170,8 @@ init_alpha_hw(){
   echo out > /sys/class/gpio/gpio${Alpha_PWR_KEY_Pin}/direction    # pwr key
   echo out > /sys/class/gpio/gpio${Alpha_RST_KEY_Pin}/direction    # rst key
 
-  rmmod /mnt/system/ko/i2c-gpio.ko
-  rmmod /mnt/system/ko/i2c-algo-bit.ko
+  rmmod "$KO_DIR"/i2c-gpio.ko
+  rmmod "$KO_DIR"/i2c-algo-bit.ko
 
   # rm /etc/init.d/S25wifimod
   # rm /etc/init.d/S30wifi
@@ -204,10 +213,10 @@ init_beta_pcie_hw(){
 
   echo 1 > /sys/class/gpio/gpio${PCIe_HDMI_RST_Pin}/value    # rst key
 
-  rmmod /mnt/system/ko/i2c-gpio.ko
-  rmmod /mnt/system/ko/i2c-algo-bit.ko
-  insmod /mnt/system/ko/i2c-algo-bit.ko
-  insmod /mnt/system/ko/i2c-gpio.ko
+  rmmod "$KO_DIR"/i2c-gpio.ko
+  rmmod "$KO_DIR"/i2c-algo-bit.ko
+  insmod "$KO_DIR"/i2c-algo-bit.ko
+  insmod "$KO_DIR"/i2c-gpio.ko
 }
 
 kvm_hw_detect(){
@@ -257,10 +266,10 @@ kvm_hw_detect(){
       echo out > /sys/class/gpio/gpio${Beta_OLED_RST_Pin}/direction
       echo 1 > /sys/class/gpio/gpio${Beta_OLED_RST_Pin}/value
 
-      rmmod /mnt/system/ko/i2c-gpio.ko
-      rmmod /mnt/system/ko/i2c-algo-bit.ko
-      insmod /mnt/system/ko/i2c-algo-bit.ko
-      insmod /mnt/system/ko/i2c-gpio.ko
+      rmmod "$KO_DIR"/i2c-gpio.ko
+      rmmod "$KO_DIR"/i2c-algo-bit.ko
+      insmod "$KO_DIR"/i2c-algo-bit.ko
+      insmod "$KO_DIR"/i2c-gpio.ko
 
       kvm_hdmi_version_detect
 

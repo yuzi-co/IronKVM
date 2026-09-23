@@ -329,6 +329,39 @@ else
 fi
 
 echo
+echo "===== the i2c modules follow KMOD_RELEASE_DIR ====="
+
+# A scratch directory standing in for /lib/modules/<release>/extra. Its mere
+# presence is what the script keys on, so an empty pair of files is enough.
+REL_KO=$WORK/relko
+mkdir -p "$REL_KO"
+: > "$REL_KO/i2c-algo-bit.ko"
+: > "$REL_KO/i2c-gpio.ko"
+
+reset
+echo beta > "$ETC/hw"
+KMOD_RELEASE_DIR=$REL_KO PATH=$BARE_PATH sh "$SCRIPT" re-init > "$WORK/out" 2>&1
+if grep -q "^insmod $REL_KO/i2c-algo-bit.ko\$" "$WORK/ko.log" \
+    && grep -q "^insmod $REL_KO/i2c-gpio.ko\$" "$WORK/ko.log" \
+    && ! grep -q '/mnt/system/ko/i2c-' "$WORK/ko.log"
+then
+    note "a release directory supplies the i2c modules" OK
+else
+    note "a release directory supplies the i2c modules (got: $(tr '\n' ';' < "$WORK/ko.log"))" FAIL
+fi
+
+reset
+echo beta > "$ETC/hw"
+KMOD_RELEASE_DIR=$WORK/no-such-release PATH=$BARE_PATH sh "$SCRIPT" re-init > "$WORK/out" 2>&1
+if grep -q '^insmod /mnt/system/ko/i2c-algo-bit.ko$' "$WORK/ko.log" \
+    && grep -q '^insmod /mnt/system/ko/i2c-gpio.ko$' "$WORK/ko.log"
+then
+    note "without a release directory /mnt/system/ko still supplies them" OK
+else
+    note "without a release directory /mnt/system/ko still supplies them (got: $(tr '\n' ';' < "$WORK/ko.log"))" FAIL
+fi
+
+echo
 echo "===== the script still parses ====="
 sh -n "$S15" 2>/dev/null && note "sh -n accepts S15kvmhwd" OK || note "sh -n accepts S15kvmhwd" FAIL
 

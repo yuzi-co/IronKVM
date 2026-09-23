@@ -172,6 +172,45 @@ rc=$(ZRAM_DEV="$work/root/zram0" \
 [ ! -s "$work/log" ] && note "and is not inserted twice" OK \
                      || note "and is not inserted twice (got: $(cat "$work/log"))" FAIL
 
+# --- a kernel with its own directory ----------------------------------------
+# Extract the variable block on its own, the same way load_modules is
+# extracted above, so the case exercises the shipped logic rather than a copy
+# of it.
+sed -n '/^ZRAM_RELEASE_DIR=/,/^fi$/p' "$S01" > "$work/release.sh"
+
+if [ ! -s "$work/release.sh" ]; then
+    note "the script defines the release-dir block" FAIL
+else
+    note "the script defines the release-dir block" OK
+fi
+
+rm -rf "$work/root"
+mkdir -p "$work/root/lib/modules/5.10.270-ironkvm0/extra" "$work/root/kvmapp/system/ko"
+: > "$work/root/lib/modules/5.10.270-ironkvm0/extra/zsmalloc.ko"
+: > "$work/root/lib/modules/5.10.270-ironkvm0/extra/zram.ko"
+: > "$work/root/kvmapp/system/ko/zsmalloc.ko"
+: > "$work/root/kvmapp/system/ko/zram.ko"
+: > "$work/log"
+
+rc=$(ZRAM_DEV="$work/root/zram0" \
+     ZRAM_RELEASE_DIR="$work/root/lib/modules/5.10.270-ironkvm0/extra" \
+     LOGFILE="$work/log" WORKDIR="$work/root" \
+     sh -c ". $work/harness.sh; . $work/release.sh; . $work/func.sh; load_modules"; echo $?)
+[ "$rc" = 0 ] && note "modules under the release directory load" OK \
+              || note "modules under the release directory load (rc=$rc)" FAIL
+[ "$(loaded_from)" = "$work/root/lib/modules/5.10.270-ironkvm0/extra " ] \
+    && note "and only the release pair is named" OK \
+    || note "and only the release pair is named (got: $(loaded_from))" FAIL
+
+# --- no release directory: the legacy order still holds ---------------------
+# ZRAM_RELEASE_DIR names a path this board does not have, so the fallback in
+# the script itself is what gets exercised, not an override from the test.
+ko_dirs=$(ZRAM_RELEASE_DIR="$work/root/lib/modules/5.10.4-none/extra" \
+     sh -c ". $work/release.sh; printf '%s' \"\$ZRAM_KO_DIRS\"")
+[ "$ko_dirs" = "/kvmapp/system/ko /mnt/system/ko" ] \
+    && note "without a release directory the legacy order holds" OK \
+    || note "without a release directory the legacy order holds (got: $ko_dirs)" FAIL
+
 # --- the shipped text ------------------------------------------------------
 # The hardcoded path is the defect. Assert it is gone, ignoring comments, since
 # the block above names /mnt/system/ko in prose to explain why it is second.

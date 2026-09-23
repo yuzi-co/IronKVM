@@ -175,7 +175,7 @@ INSMOD_LOG="$work/log" INSMOD_REFUSE=/dev/null KMOD_DIRS="$PKG $STOCK" \
     || note "stop loads nothing" FAIL
 
 # The directory order is the whole fix, so it has to be readable as such.
-grep -q 'KMOD_DIRS=.*kvmapp/system/ko.*mnt/system/ko' "$SCRIPT" \
+grep -q 'KMOD_LEGACY_DIRS=.*kvmapp/system/ko.*mnt/system/ko' "$SCRIPT" \
     && note "the package directory is searched before stock" OK \
     || note "the package directory is searched before stock" FAIL
 
@@ -183,6 +183,41 @@ grep -q 'KMOD_DIRS=.*kvmapp/system/ko.*mnt/system/ko' "$SCRIPT" \
 grep -q '^	cd /mnt/system/ko' "$SCRIPT" \
     && note "the hardcoded cd into the stock directory is gone" FAIL \
     || note "the hardcoded cd into the stock directory is gone" OK
+
+echo "===== a kernel with its own directory ====="
+
+REL="$work/lib/modules/5.10.270-ironkvm0/extra"
+mkdir -p "$REL"
+for m in $ORDER; do echo "release $m" > "$REL/$m"; done
+
+run_release() {
+    rm -f "$work/log" "$work/log.refused"
+    INSMOD_LOG="$work/log" INSMOD_REFUSE=/dev/null \
+    KMOD_RELEASE_DIR="$REL" KMOD_LEGACY_DIRS="$PKG $STOCK" \
+    PATH="$work/bin:$PATH" \
+        sh "$work/under-test" start > "$work/out" 2>&1
+    echo $? > "$work/rc"
+}
+
+run_release
+[ "$(grep -c "^$REL/" "$work/log")" = 22 ] && ! grep -qv "^$REL/" "$work/log" \
+    && note "every module comes from the release directory" OK \
+    || note "every module comes from the release directory" FAIL
+
+rm -f "$REL/soph_vi.ko"
+run_release
+grep -q "soph_vi.ko not loaded" "$work/out" && ! grep -q "soph_vi.ko" "$work/log" \
+    && note "a module the release lacks is reported, not taken from stock" OK \
+    || note "a module the release lacks is reported, not taken from stock" FAIL
+[ "$(cat "$work/rc")" = 0 ] \
+    && note "a missing release module still exits 0" OK \
+    || note "a missing release module exits $(cat "$work/rc")" FAIL
+
+rm -rf "$work/lib"
+run_release
+grep -q "^$PKG/soph_vi.ko" "$work/log" && grep -q "^$STOCK/soph_base.ko" "$work/log" \
+    && note "without a release directory the legacy order holds" OK \
+    || note "without a release directory the legacy order holds" FAIL
 
 echo
 if [ "$fails" = 0 ]; then

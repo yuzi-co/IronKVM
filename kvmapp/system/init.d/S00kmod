@@ -27,8 +27,24 @@
 # The order below is load-bearing and unchanged: soph_sys and soph_base carry
 # the symbols the rest resolve against, and soph_vc_driver keeps the channel
 # counts it has always been given.
+#
+# On a kernel with its own module directory only that directory is searched;
+# see the block below.
 
-KMOD_DIRS=${KMOD_DIRS:-"/kvmapp/system/ko /mnt/system/ko"}
+# The modules built for the running kernel, when this image carries them.
+#
+# The vendor's kernel/module.c ignores vermagic on every load, so the kernel
+# does not refuse a module built for another release. On a kernel that has its
+# own directory, that directory is therefore the only one searched: a module it
+# lacks is reported, never taken from a 5.10.4 directory. On 5.10.4 no such
+# directory exists and the search is what it always was.
+KMOD_RELEASE_DIR=${KMOD_RELEASE_DIR:-/lib/modules/$(uname -r)/extra}
+KMOD_LEGACY_DIRS=${KMOD_LEGACY_DIRS:-"/kvmapp/system/ko /mnt/system/ko"}
+if [ -d "$KMOD_RELEASE_DIR" ]; then
+	KMOD_DIRS=${KMOD_DIRS:-$KMOD_RELEASE_DIR}
+else
+	KMOD_DIRS=${KMOD_DIRS:-$KMOD_LEGACY_DIRS}
+fi
 
 # load_ko <name.ko> [module parameters...]
 load_ko() {

@@ -88,7 +88,16 @@ ZRAM_DISKSIZE=${ZRAM_DISKSIZE:-$(zram_disksize)}
 #
 # /mnt/system/ko stays in the list, second, so a device that was set up by hand
 # before this change keeps the modules it has.
-ZRAM_KO_DIRS=${ZRAM_KO_DIRS:-"/kvmapp/system/ko /mnt/system/ko"}
+#
+# The pair built for the running kernel, when this image carries it. A 5.10.4
+# zram.ko force-loads on 5.10.270 because the vendor kernel ignores vermagic,
+# so on a kernel with its own directory the legacy directories are not read.
+ZRAM_RELEASE_DIR=${ZRAM_RELEASE_DIR:-/lib/modules/$(uname -r)/extra}
+if [ -d "$ZRAM_RELEASE_DIR" ]; then
+	ZRAM_KO_DIRS=${ZRAM_KO_DIRS:-$ZRAM_RELEASE_DIR}
+else
+	ZRAM_KO_DIRS=${ZRAM_KO_DIRS:-"/kvmapp/system/ko /mnt/system/ko"}
+fi
 
 # Swap priority would put zram ahead of the optional swap file on the SD card.
 # On this image it cannot: the BusyBox 1.36.1 applet is built without
