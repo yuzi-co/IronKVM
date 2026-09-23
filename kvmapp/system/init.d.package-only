@@ -46,7 +46,8 @@ S98tailscaled    not-installed-by-policy  started on demand, not at boot
 # a pcie board it reboots with no latch to stop it repeating.
 #
 # S50avahi-daemon left this list for the same reason. It reads
-# /etc/kvm/mdns_disabled now, so that turning mDNS off survives an image update,
-# and root.manifest installs it.
+# /etc/kvm/mdns_disabled now, so that turning mDNS off survives an image update.
+# root.manifest installs it on an image, and init.d.install names it so that
+# install.sh does the same on a board that runs the vendor firmware.
 S50sshd          same-as-base
 S80dnsmasq       same-as-base
