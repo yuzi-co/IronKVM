@@ -750,7 +750,9 @@ echo "===== the other door ====="
 # ssh_case <description> <probe answer> <seconds down> <seconds since cure> <want>
 ssh_case() {
     desc="$1"; answered="$2"; down="$3"; since="$4"; want="$5"
-    got=$(WORK="$WORK" sh -c '
+    # The owner's off switch points at a path that does not exist, so a run
+    # on a board whose owner turned SSH off still tests the table.
+    got=$(WORK="$WORK" SSH_STOP_FLAG="$WORK/no-ssh-stop" sh -c '
         . "$WORK/sshdoor.sh"
         ssh_action "$1" "$2" "$3"
     ' sh "$answered" "$down" "$since")
@@ -778,6 +780,19 @@ ssh_case "a non-numeric seconds-down"              1     abc    999    none
 ssh_case "a negative seconds-down"                 1     -5     999    none
 ssh_case "an empty backoff clock"                  1     600    ""     none
 ssh_case "a seconds-down too wide to compare"      1     99999999999 999 none
+
+# SSH that the owner turned off is not a fault. The web UI's switch writes
+# /etc/kvm/ssh_stop, and the supervisor used to "cure" the missing listener
+# every five minutes for as long as the switch stayed off, writing a line to
+# the SD card each time. S50sshd honoured the flag, so nothing started, but the
+# door kept treating a setting as a failure.
+touch "$WORK/ssh-stop"
+got=$(WORK="$WORK" SSH_STOP_FLAG="$WORK/ssh-stop" sh -c '
+    . "$WORK/sshdoor.sh"
+    ssh_action 1 600 999
+')
+[ "$got" = none ] && note "down, and the owner turned SSH off -> $got" OK \
+    || note "down, and the owner turned SSH off -> $got, want none" FAIL
 
 echo
 echo "===== the door is a listener, not a process ====="
