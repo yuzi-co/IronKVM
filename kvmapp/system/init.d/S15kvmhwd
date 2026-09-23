@@ -59,11 +59,17 @@
 # muxed, and both of those are repeatable.
 #
 # Every path here is written out in full, /etc/kvm and /sys/class/gpio alike,
-# and none of them is a variable. Two suites in ironkvm-dist parse the pin
-# numbers, the register writes and the variant names straight out of this file
-# so that the hooks which replace it cannot drift from it, and a variable would
-# leave them nothing to read. tools/hwd/test-s15kvmhwd.sh rewrites the paths in
-# a copy instead, and refuses to run if any of them survives the rewrite.
+# and none of them is a variable, with one exception below. Two suites in
+# ironkvm-dist parse the pin numbers, the register writes and the variant names
+# straight out of this file so that the hooks which replace it cannot drift
+# from it, and a variable would leave them nothing to read.
+# tools/hwd/test-s15kvmhwd.sh rewrites the paths in a copy instead, and refuses
+# to run if any of them survives the rewrite.
+#
+# The i2c module paths are the one exception, and they are safe: the two
+# ironkvm-dist suites read pin numbers, register writes and variant names out
+# of this file, never a module path, so the variable leaves them nothing less
+# to parse.
 
 # The i2c modules come from the running kernel's own directory when the image
 # carries one, and never from /mnt/system/ko on that kernel.
