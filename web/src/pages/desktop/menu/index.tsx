@@ -128,9 +128,10 @@ export const Menu = () => {
             <MenuBoundary name="mouse">
               <Mouse />
             </MenuBoundary>
-            {/* hasAudio comes from the peer connection's ontrack event. A
-                device without the USB audio gadget offers no audio track, and
-                the button would then unmute an <audio> with no stream in it. */}
+            {/* hasAudio is set by the video path when sound arrives: the
+                WebRTC audio track, or the first audio frame on H.264 direct.
+                A device without the USB audio gadget sends neither, and the
+                button would then unmute nothing. */}
             {isEnabled('speaker') && hasAudio && (
               <MenuBoundary name="speaker">
                 <Speaker />
