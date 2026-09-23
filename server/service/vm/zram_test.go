@@ -1,6 +1,7 @@
 package vm
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -15,6 +16,11 @@ type zramPaths struct {
 	// installed by hand before that existed still lives.
 	moduleDir   string
 	fallbackDir string
+
+	// releaseDir stands in for /lib/modules/<release>/extra. The tree does
+	// not create it, so a test sees a 5.10.4 board unless it makes the
+	// directory itself.
+	releaseDir string
 
 	initScript string
 	initSource string
@@ -36,6 +42,7 @@ func useZramPaths(t *testing.T) zramPaths {
 	paths := zramPaths{
 		moduleDir:   filepath.Join(root, "kvmapp", "ko"),
 		fallbackDir: filepath.Join(root, "mnt", "ko"),
+		releaseDir:  filepath.Join(root, "lib", "modules", "extra"),
 
 		initScript: filepath.Join(root, "init.d", "S01zram"),
 		initSource: filepath.Join(root, "kvmapp", "S01zram"),
@@ -60,16 +67,19 @@ func useZramPaths(t *testing.T) zramPaths {
 		saved[i] = *p
 	}
 	savedDirs := zramModuleDirs
+	savedReleaseDir := zramReleaseDir
 	originalRunner := runShellCommand
 	t.Cleanup(func() {
 		for i, p := range original {
 			*p = saved[i]
 		}
 		zramModuleDirs = savedDirs
+		zramReleaseDir = savedReleaseDir
 		runShellCommand = originalRunner
 	})
 
 	zramModuleDirs = []string{paths.moduleDir, paths.fallbackDir}
+	zramReleaseDir = paths.releaseDir
 	zramInitScript = paths.initScript
 	zramInitSource = paths.initSource
 	zramSysfsDir = paths.sysfsDir
@@ -248,6 +258,86 @@ func TestZramModuleDirPrefersTheInstallPackage(t *testing.T) {
 
 	if got := zramModuleDir(); got != paths.moduleDir {
 		t.Errorf("zramModuleDir() = %q, want %q", got, paths.moduleDir)
+	}
+}
+
+// On a kernel that has its own module directory, S01zram reads that directory
+// alone, because the vendor kernel would force-load a 5.10.4 pair. Available
+// must give the same answer the script would, so a pair in a legacy directory
+// does not count once the release directory exists.
+func TestZramModuleDirReadsOnlyTheReleaseDirectoryWhenItExists(t *testing.T) {
+	tests := []struct {
+		name    string
+		release []string // modules in the release directory; nil = no directory
+		legacy  bool     // a complete pair in the install package directory
+		want    string   // "release", "legacy" or ""
+	}{
+		{name: "no release directory, legacy pair", release: nil, legacy: true, want: "legacy"},
+		{name: "release pair and legacy pair", release: []string{"zram.ko", "zsmalloc.ko"}, legacy: true, want: "release"},
+		{name: "release pair only", release: []string{"zram.ko", "zsmalloc.ko"}, want: "release"},
+		{name: "empty release directory, legacy pair", release: []string{}, legacy: true, want: ""},
+		{name: "half a pair in the release directory, legacy pair", release: []string{"zram.ko"}, legacy: true, want: ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			paths := useZramPaths(t)
+			if tt.legacy {
+				paths.installModules(t)
+			}
+			if tt.release != nil {
+				if err := os.MkdirAll(paths.releaseDir, 0o755); err != nil {
+					t.Fatalf("failed to create %s: %s", paths.releaseDir, err)
+				}
+				for _, module := range tt.release {
+					paths.writeFile(t, filepath.Join(paths.releaseDir, module), "")
+				}
+			}
+
+			want := map[string]string{"release": paths.releaseDir, "legacy": paths.moduleDir, "": ""}[tt.want]
+			if got := zramModuleDir(); got != want {
+				t.Errorf("zramModuleDir() = %q, want %q", got, want)
+			}
+			if got := readZramStatus().Available; got != (want != "") {
+				t.Errorf("available = %v, want %v", got, want != "")
+			}
+		})
+	}
+}
+
+// An enable on a kernel with its own directory must refuse a legacy pair,
+// because S01zram would not load it and the rollback would follow anyway.
+func TestEnableZramRefusesALegacyPairOnANewKernel(t *testing.T) {
+	paths := useZramPaths(t)
+	paths.installModules(t)
+	if err := os.MkdirAll(paths.releaseDir, 0o755); err != nil {
+		t.Fatalf("failed to create %s: %s", paths.releaseDir, err)
+	}
+
+	if err := enableZram(); !errors.Is(err, errZramUnavailable) {
+		t.Errorf("enableZram() = %v, want %v", err, errZramUnavailable)
+	}
+	if len(*paths.commands) != 0 {
+		t.Errorf("commands = %q, want none", *paths.commands)
+	}
+}
+
+func TestReleaseModuleDir(t *testing.T) {
+	tests := []struct {
+		osrelease string
+		want      string
+	}{
+		{"5.10.270-ironkvm0\n", "/lib/modules/5.10.270-ironkvm0/extra"},
+		{"5.10.4-tag-\n", "/lib/modules/5.10.4-tag-/extra"},
+		{"", ""},
+		{"  \n", ""},
+		{"../../etc\n", ""},
+	}
+
+	for _, tt := range tests {
+		if got := releaseModuleDir(tt.osrelease); got != tt.want {
+			t.Errorf("releaseModuleDir(%q) = %q, want %q", tt.osrelease, got, tt.want)
+		}
 	}
 }
 
