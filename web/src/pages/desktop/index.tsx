@@ -44,8 +44,22 @@ import { InputRegionOverlay } from './screen/input-region-overlay.tsx';
 import { ManualRegion } from './screen/manual-region.tsx';
 import { VirtualKeyboard } from './virtual-keyboard';
 
+// H.264 direct is the default where the browser can decode both its video and
+// its audio. Measured on 2026-09-23 at 1080p30, it held the board at 17% busy
+// against 28.5% for WebRTC, because WebRTC seals and sends every 1200 bytes as
+// its own packet on a core with no AES instructions. Direct carries the host's
+// audio too, but only through WebCodecs' AudioDecoder, so a browser without it
+// keeps WebRTC and does not lose the sound.
+function getDefaultVideoMode() {
+  if (window.VideoDecoder && window.AudioDecoder) {
+    return 'direct';
+  }
+
+  return window.RTCPeerConnection ? 'h264' : 'mjpeg';
+}
+
 function getVideoMode() {
-  const defaultVideoMode = window.RTCPeerConnection ? 'h264' : 'mjpeg';
+  const defaultVideoMode = getDefaultVideoMode();
 
   const cookieVideoMode = storage.getVideoMode();
   if (!cookieVideoMode || (cookieVideoMode === 'direct' && !window.VideoDecoder)) {
