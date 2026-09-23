@@ -19,7 +19,7 @@ import (
 	"github.com/pion/webrtc/v4"
 )
 
-var bytesIn, pkts atomic.Int64
+var bytesIn, pkts, audioMsgs atomic.Int64
 
 func main() {
 	if len(os.Args) > 1 && os.Args[1] == "mint" {
@@ -31,6 +31,7 @@ func main() {
 	host := flag.String("host", "10.0.0.222", "board")
 	secs := flag.Int("secs", 40, "seconds to view")
 	tokFile := flag.String("token", "kvm-token", "token file")
+	withAudio := flag.Bool("audio", false, "direct: ask for audio and count it apart from video")
 	flag.Parse()
 	tok, err := os.ReadFile(*tokFile)
 	if err != nil {
@@ -46,11 +47,15 @@ func main() {
 	case "mjpeg":
 		mjpeg(*host, cookie, done)
 	case "direct":
-		wsRead(*host, "/api/stream/h264/direct", cookie, done)
+		path := "/api/stream/h264/direct"
+		if *withAudio {
+			path += "?audio=1"
+		}
+		wsRead(*host, path, cookie, done)
 	case "webrtc":
 		rtc(*host, cookie, done)
 	}
-	fmt.Printf("TOTAL mode=%s bytes=%d packets=%d\n", *mode, bytesIn.Load(), pkts.Load())
+	fmt.Printf("TOTAL mode=%s bytes=%d packets=%d audio=%d\n", *mode, bytesIn.Load(), pkts.Load(), audioMsgs.Load())
 }
 
 func report(done chan struct{}) {
@@ -109,6 +114,11 @@ func wsRead(host, path, cookie string, done chan struct{}) {
 		_, m, err := ws.ReadMessage()
 		if err != nil {
 			return
+		}
+		// Byte 0 is the keyframe flag on video and 0x10 on audio.
+		if len(m) > 0 && m[0] == 0x10 {
+			audioMsgs.Add(1)
+			continue
 		}
 		bytesIn.Add(int64(len(m)))
 		pkts.Add(1)
