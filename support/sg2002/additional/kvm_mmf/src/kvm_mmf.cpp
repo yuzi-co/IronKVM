@@ -2368,16 +2368,25 @@ static void _set_h26x_rate_timing(T &rate, const mmf_venc_cfg_t *cfg)
 	rate.bVariFpsEn = CVI_FALSE;
 }
 
+// Variable bit rate, with the bit rate setting as its ceiling.
+//
+// This was constant bit rate, which spends the whole setting whether the
+// picture moves or not. On 2026-09-23 two 40 second windows of an unchanged
+// screen each came to exactly 13,158,312 bytes at the 2000 kbit/s default.
+// The server encrypts and sends every one of those bytes, and on the WebRTC
+// path every 1200 of them is a packet with its own SRTP seal and UDP send.
+// VBR spends the same while the picture moves and much less while it does
+// not. tools/build/test-venc-rate-control.sh holds this.
 static void _set_h26x_rc_attr(VENC_CHN_ATTR_S *attr, const mmf_venc_cfg_t *cfg)
 {
 	if (cfg->type == 2) {
-		attr->stRcAttr.enRcMode = VENC_RC_MODE_H264CBR;
-		_set_h26x_rate_timing(attr->stRcAttr.stH264Cbr, cfg);
-		attr->stRcAttr.stH264Cbr.u32BitRate = cfg->bitrate;
+		attr->stRcAttr.enRcMode = VENC_RC_MODE_H264VBR;
+		_set_h26x_rate_timing(attr->stRcAttr.stH264Vbr, cfg);
+		attr->stRcAttr.stH264Vbr.u32MaxBitRate = cfg->bitrate;
 	} else {
-		attr->stRcAttr.enRcMode = VENC_RC_MODE_H265CBR;
-		_set_h26x_rate_timing(attr->stRcAttr.stH265Cbr, cfg);
-		attr->stRcAttr.stH265Cbr.u32BitRate = cfg->bitrate;
+		attr->stRcAttr.enRcMode = VENC_RC_MODE_H265VBR;
+		_set_h26x_rate_timing(attr->stRcAttr.stH265Vbr, cfg);
+		attr->stRcAttr.stH265Vbr.u32MaxBitRate = cfg->bitrate;
 	}
 }
 
@@ -2393,12 +2402,20 @@ static void _set_h26x_rc_limits(T &param)
 	param.bQpMapEn = CVI_FALSE;
 }
 
-static void _set_h26x_cbr_limits(VENC_RC_PARAM_S *param, const mmf_venc_cfg_t *cfg)
+// The limits go to the parameter block of the mode that runs. SetRcParam
+// reads only that block, so limits left in the CBR block while VBR runs would
+// be ignored without an error.
+//
+// s32ChangePos is where VBR starts raising QP: at 90% of the ceiling. Below
+// it the encoder spends what the picture needs down to the MinQp floor.
+static void _set_h26x_vbr_limits(VENC_RC_PARAM_S *param, const mmf_venc_cfg_t *cfg)
 {
 	if (cfg->type == 2) {
-		_set_h26x_rc_limits(param->stParamH264Cbr);
+		_set_h26x_rc_limits(param->stParamH264Vbr);
+		param->stParamH264Vbr.s32ChangePos = 90;
 	} else {
-		_set_h26x_rc_limits(param->stParamH265Cbr);
+		_set_h26x_rc_limits(param->stParamH265Vbr);
+		param->stParamH265Vbr.s32ChangePos = 90;
 	}
 }
 
@@ -2482,7 +2499,7 @@ int mmf_add_venc_channel(int ch, mmf_venc_cfg_t *cfg) {
 	}
 	stRcParam.s32FirstFrameStartQp = 35;
 	stRcParam.s32InitialDelay = 1000;
-	_set_h26x_cbr_limits(&stRcParam, cfg);
+	_set_h26x_vbr_limits(&stRcParam, cfg);
 	s32Ret = CVI_VENC_SetRcParam(ch, &stRcParam);
 	if (s32Ret != CVI_SUCCESS) {
 		return _venc_init_failed(ch, "CVI_VENC_SetRcParam", s32Ret);
