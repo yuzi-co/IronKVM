@@ -593,6 +593,18 @@ start_services() {
     release_standoff
 }
 
+# --- cgroup ---
+# ironkvm-dist's S01cgroups makes a kvm memory group whose memory.min the
+# kernel never reclaims to feed an add-on. This script joins it before it
+# starts anything, so the server and kvm_system inherit it, whether rcS, the
+# supervisor or the web UI runs the script. Without the group (a kernel with no
+# cgroup2, or Sipeed's firmware) nothing changes.
+CGROUP_PROCS=${CGROUP_PROCS:-/sys/fs/cgroup/kvm/cgroup.procs}
+if [ -w "$CGROUP_PROCS" ]; then
+    { echo $$ > "$CGROUP_PROCS"; } 2>/dev/null || true
+fi
+# --- end cgroup ---
+
 case "$1" in
   start)
     echo -n kvm > /boot/hostname.prefix

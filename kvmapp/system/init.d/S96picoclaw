@@ -222,6 +222,18 @@ stop_service() {
   rm -f "$PICOCLAW_PID_FILE"
 }
 
+# --- cgroup ---
+# ironkvm-dist's S01cgroups makes an addons memory group with a soft and a hard
+# limit. This script joins it before it starts the gateway, so the gateway
+# inherits it however the script is run: at boot, or from the web UI through
+# the server, whose own group it would otherwise inherit. Without the group
+# nothing changes.
+CGROUP_PROCS=${CGROUP_PROCS:-/sys/fs/cgroup/addons/cgroup.procs}
+if [ -w "$CGROUP_PROCS" ]; then
+  { echo $$ > "$CGROUP_PROCS"; } 2>/dev/null || true
+fi
+# --- end cgroup ---
+
 case "$1" in
   start)
     start_service

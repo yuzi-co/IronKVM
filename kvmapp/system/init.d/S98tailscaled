@@ -102,6 +102,19 @@ running_pid() {
     echo "$pid"
 }
 
+# --- cgroup ---
+# ironkvm-dist's S01cgroups makes an addons memory group with a soft and a hard
+# limit, so that tailscaled, the largest process on the board, cannot take the
+# memory the KVM needs. This script joins it before it starts the daemon, so
+# the daemon inherits it however the script is run: at boot, or from the web UI
+# through the server, whose own group it would otherwise inherit. Without the
+# group nothing changes.
+CGROUP_PROCS=${CGROUP_PROCS:-/sys/fs/cgroup/addons/cgroup.procs}
+if [ -w "$CGROUP_PROCS" ]; then
+    { echo $$ > "$CGROUP_PROCS"; } 2>/dev/null || true
+fi
+# --- end cgroup ---
+
 case "$1" in
         start)
                 if [ -f "$KVMDIR/GOMEMLIMIT" ]; then
