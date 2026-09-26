@@ -15,6 +15,11 @@ export function getHidMode() {
   return http.get('/api/hid/mode');
 }
 
+// press and release one Consumer Control (media) or System Control (power) key
+export function sendKey(page: 'consumer' | 'system', usage: number) {
+  return http.post('/api/hid/key', { page, usage });
+}
+
 // get remote keyboard lock LED status
 export function getKeyboardLedStatus() {
   return http.get('/api/hid/leds');

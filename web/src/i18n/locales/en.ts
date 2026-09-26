@@ -147,6 +147,16 @@ const en = {
       dropdownGerman: 'German',
       dropdownFrench: 'French',
       dropdownRussian: 'Russian',
+      mediaKeys: {
+        title: 'Media keys',
+        mute: 'Mute',
+        volumeDown: 'Volume down',
+        volumeUp: 'Volume up',
+        previous: 'Previous track',
+        playPause: 'Play or pause',
+        next: 'Next track',
+        stop: 'Stop'
+      },
       shortcut: {
         title: 'Shortcuts',
         custom: 'Custom',
@@ -319,7 +329,14 @@ const en = {
       resetConfirm: 'Proceed reset operation?',
       powerConfirm: 'Proceed power operation?',
       okBtn: 'Yes',
-      cancelBtn: 'No'
+      cancelBtn: 'No',
+      hostOs: 'Host OS',
+      hostOsTip: 'Sent as USB keys. The host decides what they do.',
+      sleep: 'Sleep',
+      wake: 'Wake',
+      powerDown: 'Power down',
+      sleepConfirm: 'Put the host to sleep?',
+      powerDownConfirm: 'Send the power-down key to the host?'
     },
     settings: {
       title: 'Settings',
