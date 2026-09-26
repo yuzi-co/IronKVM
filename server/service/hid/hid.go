@@ -164,6 +164,10 @@ type hidDevice struct {
 	// Only the pointer sets it; the keys on the same endpoint carry their own
 	// ID in the report.
 	idPrefix bool
+	// needsID refuses the write when the open handle's gadget declares no
+	// report IDs. The keys set it: without IDs their first byte would reach
+	// the host as the pointer's buttons.
+	needsID bool
 }
 
 func (d hidDevice) get() *os.File {
@@ -220,7 +224,7 @@ func (h *Hid) absoluteMouseDevice(path string) hidDevice {
 // System Control keys. It shares the handle, the lock and the health record,
 // and it writes reports as given.
 func (h *Hid) extendedKeyDevice() hidDevice {
-	return hidDevice{path: HID2, name: NameAbsoluteMouse, mu: &h.mouseMutex, file: &h.g2, health: &h.absHealth}
+	return hidDevice{path: HID2, name: NameAbsoluteMouse, mu: &h.mouseMutex, file: &h.g2, health: &h.absHealth, needsID: true}
 }
 
 // Status reports what the target is doing with each endpoint. It takes none of
@@ -563,7 +567,12 @@ func (h *Hid) writeHID(device hidDevice, data []byte) error {
 	device.mu.Lock()
 	defer device.mu.Unlock()
 
-	return device.note(h.writeHIDLocked(device, data))
+	err := h.writeHIDLocked(device, data)
+	if errors.Is(err, errExtendedKeysUnavailable) {
+		// Nothing reached the endpoint, so it says nothing about its health.
+		return err
+	}
+	return device.note(err)
 }
 
 // note records what one write did to the endpoint and decides whether the
@@ -650,6 +659,12 @@ func (h *Hid) writeHIDLocked(device hidDevice, data []byte) error {
 		return fmt.Errorf("%s: hid handle is nil", device.path)
 	}
 
+	// absReportID was read when this handle was opened, so this check and
+	// the write below see the same gadget: a mode switch that rebuilt it
+	// deleted the node, and the reopen above read the ID again.
+	if device.needsID && h.absReportID == 0 {
+		return errExtendedKeysUnavailable
+	}
 	if device.idPrefix && h.absReportID != 0 {
 		if len(data) != AbsoluteMouseReportLen {
 			return fmt.Errorf("%s: pointer report of %d bytes, want %d", device.path, len(data), AbsoluteMouseReportLen)

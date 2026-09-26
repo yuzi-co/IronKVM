@@ -51,7 +51,8 @@ func (s *Service) GetHidMode(c *gin.Context) {
 	}
 
 	rsp.OkRspWithData(c, &proto.GetHidModeRsp{
-		Mode: mode,
+		Mode:         mode,
+		ExtendedKeys: GetHid().ExtendedKeysAvailable(),
 	})
 	log.Debugf("get hid mode: %s", mode)
 }
