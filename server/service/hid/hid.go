@@ -68,6 +68,19 @@ const (
 
 	// AbsoluteMouseReportLen is buttons, a 16-bit X, a 16-bit Y, and wheel.
 	AbsoluteMouseReportLen = 6
+
+	// AbsoluteMouseReportLenWithID is what the host reads from the absolute
+	// pointer in normal mode: one report ID byte, then the report.
+	AbsoluteMouseReportLenWithID = AbsoluteMouseReportLen + 1
+)
+
+// Report IDs on the absolute pointer. Only S03usbdev declares them; the
+// keyboard and the relative mouse claim the boot protocol, where a firmware
+// reads reports without an ID, so they never carry one.
+const (
+	AbsolutePointerReportID byte = 1
+	ConsumerReportID        byte = 2
+	SystemReportID          byte = 3
 )
 
 const (
