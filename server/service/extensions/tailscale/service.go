@@ -3,8 +3,8 @@ package tailscale
 import (
 	"NanoKVM-Server/proto"
 	"NanoKVM-Server/service/extensions/addon"
+	"NanoKVM-Server/service/extensions/vpn"
 	"NanoKVM-Server/utils"
-	"net"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -34,16 +34,6 @@ func addonSpec() addon.Spec {
 		},
 		Initd: "S98tailscaled",
 	}
-}
-
-var StateMap = map[string]proto.TailscaleState{
-	"NoState":          proto.TailscaleNotRunning,
-	"Starting":         proto.TailscaleNotRunning,
-	"NeedsLogin":       proto.TailscaleNotLogin,
-	"NeedsMachineAuth": proto.TailscaleNotLogin,
-	"InUseOtherUser":   proto.TailscaleNotLogin,
-	"Running":          proto.TailscaleRunning,
-	"Stopped":          proto.TailscaleStopped,
 }
 
 func NewService() *Service {
@@ -218,44 +208,18 @@ func (s *Service) Logout(c *gin.Context) {
 func (s *Service) GetStatus(c *gin.Context) {
 	var rsp proto.Response
 
-	if !isInstalled() {
-		rsp.OkRspWithData(c, &proto.GetTailscaleStatusRsp{
-			State: proto.TailscaleNotInstall,
-		})
-		return
-	}
-
-	status, err := NewCli().Status()
-	if err != nil {
-		log.Debugf("failed to get tailscale status: %s", err)
-		rsp.OkRspWithData(c, &proto.GetTailscaleStatusRsp{
-			State: proto.TailscaleNotRunning,
-		})
-		return
-	}
-
-	state, ok := StateMap[status.BackendState]
-	if !ok {
-		log.Errorf("unknown tailscale state: %s", status.BackendState)
-		rsp.ErrRsp(c, -1, "unknown state")
-		return
-	}
-
-	ipv4 := ""
-	for _, tailscaleIp := range status.Self.TailscaleIPs {
-		ip := net.ParseIP(tailscaleIp)
-		if ip != nil && ip.To4() != nil {
-			ipv4 = ip.String()
+	st := proto.VpnStatus{State: proto.VpnNotInstall}
+	if isInstalled() {
+		st = proto.VpnStatus{State: proto.VpnNotRunning}
+		if ts, err := NewCli().Status(); err != nil {
+			log.Debugf("failed to get tailscale status: %s", err)
+		} else if st, err = toVpnStatus(ts); err != nil {
+			log.Errorf("%s", err)
+			rsp.ErrRsp(c, -1, err.Error())
+			return
 		}
 	}
 
-	data := proto.GetTailscaleStatusRsp{
-		State:   state,
-		IP:      ipv4,
-		Name:    status.Self.HostName,
-		Account: status.CurrentTailnet.Name,
-	}
-
-	rsp.OkRspWithData(c, &data)
-	log.Debugf("get tailscale status successfully")
+	vpn.Fill(&st, addon.Tailscale)
+	rsp.OkRspWithData(c, &st)
 }

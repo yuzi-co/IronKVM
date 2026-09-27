@@ -4,8 +4,6 @@ import (
 	"NanoKVM-Server/service/extensions/addon"
 	"NanoKVM-Server/service/extensions/vpn"
 	"NanoKVM-Server/utils"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -23,19 +21,6 @@ const (
 )
 
 type Cli struct{}
-
-type TsStatus struct {
-	BackendState string `json:"BackendState"`
-
-	Self struct {
-		HostName     string   `json:"HostName"`
-		TailscaleIPs []string `json:"TailscaleIPs"`
-	} `json:"Self"`
-
-	CurrentTailnet struct {
-		Name string `json:"Name"`
-	} `json:"CurrentTailnet"`
-}
 
 func NewCli() *Cli {
 	return &Cli{}
@@ -105,31 +90,11 @@ func (c *Cli) Down() error {
 }
 
 func (c *Cli) Status() (*TsStatus, error) {
-	command := "tailscale status --json"
-	cmd := exec.Command("sh", "-c", command)
-
-	output, err := cmd.CombinedOutput()
+	output, err := exec.Command("sh", "-c", "tailscale status --json").CombinedOutput()
 	if err != nil {
 		return nil, err
 	}
-
-	// output is not in standard json format
-	if outputStr := string(output); !strings.HasPrefix(outputStr, "{") {
-		index := strings.Index(outputStr, "{")
-		if index == -1 {
-			return nil, errors.New("unknown output")
-		}
-
-		output = []byte(outputStr[index:])
-	}
-
-	var status TsStatus
-	err = json.Unmarshal(output, &status)
-	if err != nil {
-		return nil, err
-	}
-
-	return &status, nil
+	return parseStatus(output)
 }
 
 func (c *Cli) Login() (string, error) {
