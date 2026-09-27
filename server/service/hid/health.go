@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"sync"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -42,6 +43,12 @@ type endpointHealth struct {
 	detail   string
 	since    time.Time // when the current state began
 	observed time.Time // when the current state was last confirmed
+
+	// stalledWrites and detachedWrites count every write that failed each way
+	// since the server started, not only the changes of state. The metrics
+	// endpoint reads them without the lock.
+	stalledWrites  atomic.Uint64
+	detachedWrites atomic.Uint64
 }
 
 // hidTransition describes what one write did to an endpoint's state. Callers
@@ -56,6 +63,12 @@ type hidTransition struct {
 // record takes the outcome of one write and reports the transition it caused.
 func (h *endpointHealth) record(err error, now time.Time) hidTransition {
 	state, detail := classifyWriteResult(err)
+	switch state {
+	case hidStateStalled:
+		h.stalledWrites.Add(1)
+	case hidStateDetached:
+		h.detachedWrites.Add(1)
+	}
 
 	h.mu.Lock()
 	defer h.mu.Unlock()
@@ -138,4 +151,19 @@ func millisBetween(from, to time.Time) int64 {
 		return 0
 	}
 	return elapsed.Milliseconds()
+}
+
+// EndpointStates lists every state an endpoint can report, in a fixed order.
+// The metrics endpoint writes a 0 for each state an endpoint is not in, so a
+// state that ends leaves a 0 behind rather than a series that goes stale.
+func EndpointStates() []string {
+	return []string{hidStateUnknown, hidStateAccepting, hidStateStalled, hidStateDetached, hidStateError}
+}
+
+// EndpointWriteErrors counts the failed writes to one endpoint since the
+// server started. Name is the endpoint's code, as in HidDeviceStatus.
+type EndpointWriteErrors struct {
+	Name     string
+	Stalled  uint64
+	Detached uint64
 }

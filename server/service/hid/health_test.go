@@ -3,6 +3,8 @@ package hid
 import (
 	"errors"
 	"os"
+	"reflect"
+	"slices"
 	"syscall"
 	"testing"
 	"time"
@@ -253,5 +255,58 @@ func TestHidLinkFaultSinceIsZeroWithoutFaults(t *testing.T) {
 
 	if got := h.linkFaultSince(); !got.IsZero() {
 		t.Fatalf("linkFaultSince = %s with no link fault, want the zero time", got)
+	}
+}
+
+// The counters count every failed write, not only the changes of state. A
+// stall that lasts forty minutes is one transition and thousands of lost
+// reports, and the rate is what a dashboard needs.
+func TestHealthCountsEveryStalledAndDetachedWrite(t *testing.T) {
+	var h endpointHealth
+
+	h.record(os.ErrDeadlineExceeded, at(0))
+	h.record(os.ErrDeadlineExceeded, at(1))
+	h.record(syscall.ESHUTDOWN, at(2))
+	h.record(nil, at(3))
+	h.record(errors.New("some other failure"), at(4))
+
+	if got := h.stalledWrites.Load(); got != 2 {
+		t.Fatalf("stalled writes = %d, want 2", got)
+	}
+	if got := h.detachedWrites.Load(); got != 1 {
+		t.Fatalf("detached writes = %d, want 1", got)
+	}
+}
+
+func TestWriteErrorsReportsEachEndpointByName(t *testing.T) {
+	h := &Hid{}
+	h.kbHealth.record(os.ErrDeadlineExceeded, at(0))
+	h.absHealth.record(syscall.ENODEV, at(0))
+	h.absHealth.record(syscall.ENODEV, at(1))
+
+	got := h.WriteErrors()
+	want := []EndpointWriteErrors{
+		{Name: NameKeyboard, Stalled: 1},
+		{Name: NameRelativeMouse},
+		{Name: NameAbsoluteMouse, Detached: 2},
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("WriteErrors() = %+v, want %+v", got, want)
+	}
+}
+
+// The metrics endpoint writes a 0 for every state an endpoint is not in, so the
+// list has to hold every state Status can report.
+func TestEndpointStatesCoversEveryStateStatusReports(t *testing.T) {
+	states := EndpointStates()
+
+	for _, err := range []error{nil, os.ErrDeadlineExceeded, syscall.ESHUTDOWN, errors.New("other")} {
+		state, _ := classifyWriteResult(err)
+		if !slices.Contains(states, state) {
+			t.Errorf("EndpointStates() lacks %q", state)
+		}
+	}
+	if !slices.Contains(states, hidStateUnknown) {
+		t.Errorf("EndpointStates() lacks %q", hidStateUnknown)
 	}
 }
