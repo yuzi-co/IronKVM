@@ -110,6 +110,12 @@ func (s *Service) checkPassword(c *gin.Context, username, password string) (*aut
 		return nil, false
 	}
 
+	// Credentials that passed within the last minute, for the account as it
+	// is now, skip the bcrypt.
+	if user, err := s.deps.Accounts.Get(username); err == nil && user.Enabled && s.credentials.has(user, password) {
+		return user, true
+	}
+
 	user, ok, err := s.deps.Accounts.Authenticate(username, password)
 	if err != nil {
 		log.Errorf("redfish: load accounts: %s", err)
@@ -124,6 +130,7 @@ func (s *Service) checkPassword(c *gin.Context, username, password string) (*aut
 	}
 
 	s.deps.Limiter.Succeeded(ip)
+	s.credentials.remember(user, password)
 	return user, true
 }
 

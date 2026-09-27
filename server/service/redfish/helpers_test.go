@@ -135,6 +135,26 @@ func (f *fakeLimiter) Succeeded(ip string) {
 	f.succeeded = append(f.succeeded, ip)
 }
 
+// countingAccounts counts the password checks that reach the store.
+type countingAccounts struct {
+	*authn.Store
+	mu     sync.Mutex
+	checks int
+}
+
+func (a *countingAccounts) Authenticate(username, password string) (*authn.User, bool, error) {
+	a.mu.Lock()
+	a.checks++
+	a.mu.Unlock()
+	return a.Store.Authenticate(username, password)
+}
+
+func (a *countingAccounts) passwordChecks() int {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	return a.checks
+}
+
 const testUUID = "8e1b3a52-6c1f-4c55-9a8e-0f3c2d1b4a77"
 
 // clientIP is where every test request comes from.
@@ -147,6 +167,7 @@ type harness struct {
 	host     *fakeHost
 	limiter  *fakeLimiter
 	accounts *authn.Store
+	counted  *countingAccounts
 	// keys maps an API key secret to its account.
 	keys         map[string]string
 	clock        time.Time
@@ -179,6 +200,7 @@ func newHarness(t *testing.T) *harness {
 		host:     &fakeHost{led: &on},
 		limiter:  &fakeLimiter{locked: map[string]bool{}},
 		accounts: accounts,
+		counted:  &countingAccounts{Store: accounts},
 		keys:     map[string]string{},
 		clock:    time.Date(2026, 9, 27, 12, 0, 0, 0, time.UTC),
 		imageDir: t.TempDir(),
@@ -196,7 +218,7 @@ func newHarness(t *testing.T) *harness {
 		InsertDrive: h.host.insertDrive,
 		EjectDrive:  h.host.ejectDrive,
 		ImageDir:    h.imageDir,
-		Accounts:    accounts,
+		Accounts:    h.counted,
 		APIKeyUser: func(secret string) (string, bool) {
 			username, ok := h.keys[secret]
 			return username, ok

@@ -99,8 +99,9 @@ type NIC struct {
 
 // Service answers the /redfish routes.
 type Service struct {
-	deps     Deps
-	sessions *sessionStore
+	deps        Deps
+	sessions    *sessionStore
+	credentials *credentialCache
 
 	// resetMu serializes Reset actions from the LED read to the settle time
 	// after the press.
@@ -112,7 +113,7 @@ func New(deps Deps) *Service {
 		deps.Now = time.Now
 	}
 
-	return &Service{deps: deps, sessions: newSessionStore(deps.Now)}
+	return &Service{deps: deps, sessions: newSessionStore(deps.Now), credentials: newCredentialCache(deps.Now)}
 }
 
 // Register adds the /redfish routes to r. It also sets r's NoRoute handler,

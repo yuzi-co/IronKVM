@@ -206,3 +206,85 @@ func TestLoginLimiterUsesTheLoginsBruteForceLimit(t *testing.T) {
 		t.Fatal("still locked after a success cleared the record")
 	}
 }
+
+// bcrypt is slow on the board, so a client that sends Basic credentials on
+// every request has them checked once a minute, not every time.
+func TestBasicCredentialsAreCheckedOnceAMinute(t *testing.T) {
+	h := withProbe(newHarness(t))
+	probe := func() {
+		t.Helper()
+		w := h.do(http.MethodGet, "/redfish/v1/Probe", "", "Authorization", basic("alice", "valid-password"))
+		if w.Code != http.StatusOK {
+			t.Fatalf("got %d %s", w.Code, w.Body.String())
+		}
+	}
+
+	probe()
+	probe()
+	if got := h.counted.passwordChecks(); got != 1 {
+		t.Fatalf("%d password checks for two requests, want 1", got)
+	}
+
+	h.clock = h.clock.Add(61 * time.Second)
+	probe()
+	if got := h.counted.passwordChecks(); got != 2 {
+		t.Fatalf("%d password checks after a minute, want 2", got)
+	}
+}
+
+func TestAWrongPasswordIsNeverRemembered(t *testing.T) {
+	h := withProbe(newHarness(t))
+
+	for i := 0; i < 2; i++ {
+		w := h.do(http.MethodGet, "/redfish/v1/Probe", "", "Authorization", basic("alice", "wrong"))
+		expectError(t, w, http.StatusUnauthorized, "NoValidSession")
+	}
+	if got := h.counted.passwordChecks(); got != 2 {
+		t.Fatalf("%d password checks, want 2", got)
+	}
+}
+
+func TestRememberedCredentialsEndWithAPasswordChange(t *testing.T) {
+	h := withProbe(newHarness(t))
+	old := basic("alice", "valid-password")
+
+	if w := h.do(http.MethodGet, "/redfish/v1/Probe", "", "Authorization", old); w.Code != http.StatusOK {
+		t.Fatalf("got %d", w.Code)
+	}
+	if _, err := h.accounts.SetPassword("alice", "another-password"); err != nil {
+		t.Fatal(err)
+	}
+
+	w := h.do(http.MethodGet, "/redfish/v1/Probe", "", "Authorization", old)
+	expectError(t, w, http.StatusUnauthorized, "NoValidSession")
+}
+
+func TestRememberedCredentialsEndWithARevoke(t *testing.T) {
+	h := withProbe(newHarness(t))
+	creds := basic("alice", "valid-password")
+
+	h.do(http.MethodGet, "/redfish/v1/Probe", "", "Authorization", creds)
+	if _, err := h.accounts.Revoke("alice"); err != nil {
+		t.Fatal(err)
+	}
+	if w := h.do(http.MethodGet, "/redfish/v1/Probe", "", "Authorization", creds); w.Code != http.StatusOK {
+		t.Fatalf("got %d", w.Code)
+	}
+	if got := h.counted.passwordChecks(); got != 2 {
+		t.Fatalf("%d password checks, want 2: the revoke did not forget the credentials", got)
+	}
+}
+
+func TestRememberedCredentialsEndWhenTheAccountIsDisabled(t *testing.T) {
+	h := withProbe(newHarness(t))
+	creds := basic("alice", "valid-password")
+
+	h.do(http.MethodGet, "/redfish/v1/Probe", "", "Authorization", creds)
+	disabled := false
+	if _, err := h.accounts.Update("admin", "alice", authn.UserPatch{Enabled: &disabled}); err != nil {
+		t.Fatal(err)
+	}
+
+	w := h.do(http.MethodGet, "/redfish/v1/Probe", "", "Authorization", creds)
+	expectError(t, w, http.StatusUnauthorized, "NoValidSession")
+}
