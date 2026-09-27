@@ -2,15 +2,13 @@ package tailscale
 
 import (
 	"NanoKVM-Server/service/extensions/addon"
+	"NanoKVM-Server/service/extensions/vpn"
 	"NanoKVM-Server/utils"
-	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
-	"regexp"
 	"strings"
 	"time"
 )
@@ -22,10 +20,6 @@ const (
 	// loginURLTimeout bounds how long the handler waits for the login URL.
 	// The command itself runs for ten minutes waiting on the browser.
 	loginURLTimeout = 60 * time.Second
-
-	// waitDelay bounds how long Wait tolerates a still-open pipe after the
-	// process itself has gone.
-	waitDelay = 5 * time.Second
 )
 
 type Cli struct{}
@@ -140,74 +134,10 @@ func (c *Cli) Status() (*TsStatus, error) {
 
 func (c *Cli) Login() (string, error) {
 	// No shell: killing "sh -c tailscale ..." leaves tailscale holding the
-	// stderr pipe, so the timeout below could never take effect.
+	// stderr pipe, so the timeout could never take effect.
 	cmd := exec.Command("tailscale", "login", "--accept-dns=false", "--timeout=10m")
 
-	return loginURL(cmd, loginURLTimeout)
-}
-
-var whitespace = regexp.MustCompile(`\s+`)
-
-type loginResult struct {
-	url string
-	err error
-}
-
-// loginURL starts the login and returns the URL the user has to visit.
-//
-// The command keeps running afterwards, until the login is completed in the
-// browser, so its output has to keep draining: closing the pipe early hands it
-// a SIGPIPE on its next line and kills the login. It also has to be reaped
-// rather than left as an orphan, once, on every path out of here.
-func loginURL(cmd *exec.Cmd, timeout time.Duration) (string, error) {
-	stderr, err := cmd.StderrPipe()
-	if err != nil {
-		return "", err
-	}
-
-	// Safety net if the command ever leaves a child holding the pipe open.
-	cmd.WaitDelay = waitDelay
-
-	if err := cmd.Start(); err != nil {
-		return "", err
-	}
-
-	// Buffered, so this goroutine still finishes if nobody is listening.
-	results := make(chan loginResult, 1)
-
-	go func() {
-		url, err := readLoginURL(stderr)
-		results <- loginResult{url: url, err: err}
-
-		// Wait closes the pipe itself, so it must not be closed here.
-		_, _ = io.Copy(io.Discard, stderr)
-		_ = cmd.Wait()
-	}()
-
-	select {
-	case result := <-results:
-		return result.url, result.err
-
-	case <-time.After(timeout):
-		// Otherwise the handler blocks for the command's whole ten minutes.
-		_ = cmd.Process.Kill()
-		return "", fmt.Errorf("timed out waiting for the tailscale login url")
-	}
-}
-
-func readLoginURL(reader io.Reader) (string, error) {
-	buffered := bufio.NewReader(reader)
-
-	for {
-		line, err := buffered.ReadString('\n')
-		if err != nil {
-			return "", err
-		}
-
-		if strings.Contains(line, "https") {
-			return whitespace.ReplaceAllString(line, ""), nil
-		}
-	}
+	return vpn.LoginURL(cmd, false, loginURLTimeout, 0)
 }
 
 func (c *Cli) Logout() error {
