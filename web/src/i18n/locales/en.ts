@@ -694,6 +694,21 @@ const en = {
         logout: 'Logout',
         logoutDesc: 'Are you sure you want to logout?'
       },
+      netbird: {
+        title: 'NetBird',
+        notLogin:
+          'This device has not joined a NetBird network yet. Join with a setup key, or log in with SSO.',
+        setupKey: 'Setup key',
+        setupKeyPlaceholder: 'Paste a setup key from the NetBird dashboard',
+        join: 'Join',
+        or: 'or',
+        sso: 'Log in with SSO',
+        urlPeriod: 'This url is valid for 10 minutes',
+        loginSuccess: 'Login Success',
+        logout: 'Deregister',
+        logoutDesc:
+          'Deregister removes this peer from your NetBird account and deletes its configuration here. Joining again needs a setup key or an SSO login, and the peer may get a new IP. Continue?'
+      },
       update: {
         title: 'Check for Updates',
         queryFailed: 'Get version failed',
