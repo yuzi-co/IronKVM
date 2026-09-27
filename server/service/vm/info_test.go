@@ -256,3 +256,21 @@ func TestGetKernelVersionIsEmptyWhenTheFileIsAbsent(t *testing.T) {
 		t.Fatalf("kernel version = %q, want empty", got)
 	}
 }
+
+// build_info carries the same three strings the About panel shows.
+func TestVersionsReportsWhatGetInfoReports(t *testing.T) {
+	useImageFile(t, "2026-06-10-1_4_3.img\n")
+	useKernelReleaseFile(t, "5.10.270-ironkvm0\n")
+	useVersionFile(t, "2.4.3\n")
+	useBuildStamp(t, "")
+
+	originalOwn := ownImageFile
+	ownImageFile = filepath.Join(t.TempDir(), "absent")
+	t.Cleanup(func() { ownImageFile = originalOwn })
+
+	image, kernel, app := Versions()
+	if image != "v1.4.3" || kernel != "5.10.270-ironkvm0" || app != "2.4.3" {
+		t.Fatalf("Versions() = %q, %q, %q, want %q, %q, %q",
+			image, kernel, app, "v1.4.3", "5.10.270-ironkvm0", "2.4.3")
+	}
+}

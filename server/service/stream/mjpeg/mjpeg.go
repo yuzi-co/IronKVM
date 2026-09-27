@@ -46,3 +46,9 @@ func EnableLatestFrameCache() {
 func DisableLatestFrameCache() {
 	streamer.disableLatestFrameCache()
 }
+
+// Suppressed reports how many frames duplicate suppression has kept off the
+// wire since the server started. The metrics endpoint reads it.
+func Suppressed() uint64 {
+	return streamer.Suppressed()
+}

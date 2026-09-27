@@ -48,9 +48,28 @@ func (f *FrameRateCounter) publishFPS(path string, fps int32) bool {
 	return true
 }
 
+// startedCounter holds the counter once GetFrameRateCounter has started it,
+// and nil before. CurrentFPS reads it without the Once, so reading the rate
+// never starts the ticker.
+var startedCounter atomic.Pointer[FrameRateCounter]
+
+// CurrentFPS reports the rate without starting the counter. Before any stream
+// has started it, the rate is 0 and started is false. The metrics endpoint
+// reads it: a scrape is not a stream, and starting the counter would start a
+// ticker that writes now_fps to the card every three seconds.
+func CurrentFPS() (fps int32, started bool) {
+	c := startedCounter.Load()
+	if c == nil {
+		return 0, false
+	}
+
+	return c.GetFPS(), true
+}
+
 func GetFrameRateCounter() *FrameRateCounter {
 	counterOnce.Do(func() {
 		counter = &FrameRateCounter{}
+		startedCounter.Store(counter)
 
 		go func() {
 			ticker := time.NewTicker(3 * time.Second)

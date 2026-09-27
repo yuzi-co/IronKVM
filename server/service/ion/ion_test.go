@@ -372,3 +372,30 @@ func writeCounter(t *testing.T, dir, name string, v uint64) {
 		t.Fatalf("write %s: %s", name, err)
 	}
 }
+
+func TestReadUsageReadsTotalAndUsed(t *testing.T) {
+	fakeCarveout(t, 78643200, 19050496, 0, "")
+
+	total, used, ok := ReadUsage()
+	if !ok || total != 78643200 || used != 19050496 {
+		t.Fatalf("ReadUsage() = %d, %d, %t, want 78643200, 19050496, true", total, used, ok)
+	}
+}
+
+func TestReadUsageIsUnavailableWithoutTheCounters(t *testing.T) {
+	original := Root
+	Root = filepath.Join(t.TempDir(), "not-here")
+	t.Cleanup(func() { Root = original })
+
+	if _, _, ok := ReadUsage(); ok {
+		t.Fatal("ReadUsage reported a carveout that does not exist")
+	}
+}
+
+func TestReadUsageIsUnavailableForAnEmptyCarveout(t *testing.T) {
+	fakeCarveout(t, 0, 0, 0, "")
+
+	if _, _, ok := ReadUsage(); ok {
+		t.Fatal("a carveout of 0 bytes must read as unavailable, as Read does")
+	}
+}

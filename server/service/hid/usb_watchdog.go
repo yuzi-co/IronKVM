@@ -40,6 +40,7 @@ package hid
 
 import (
 	"sync"
+	"sync/atomic"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -96,6 +97,30 @@ var (
 	usbRecoverRebind  = func() error { return usbDevCommand("restart") }
 	usbRecoverRebuild = func() error { return usbDevCommand("stop_start") }
 )
+
+// usbRebinds and usbRebuilds count the recoveries the supervisor has started
+// since the server did, whether or not they worked. The metrics endpoint reads
+// them.
+var (
+	usbRebinds  atomic.Uint64
+	usbRebuilds atomic.Uint64
+)
+
+// noteUSBRecovery counts one rung of the ladder under the name recover logs it
+// with.
+func noteUSBRecovery(what string) {
+	switch what {
+	case "rebind":
+		usbRebinds.Add(1)
+	case "rebuild":
+		usbRebuilds.Add(1)
+	}
+}
+
+// USBRecoveries reports how many rebinds and rebuilds the supervisor has run.
+func USBRecoveries() (rebinds uint64, rebuilds uint64) {
+	return usbRebinds.Load(), usbRebuilds.Load()
+}
 
 // NoteUSBGadgetMutated tells the supervisor to hold off. Call it around
 // anything that unbinds the UDC on purpose: mounting an image, switching HID
@@ -251,6 +276,8 @@ func (w *usbWatchdog) poll() {
 // one shot, because /dev/hidg* reappear a moment after the bind and a single
 // attempt loses the race often enough to matter.
 func (w *usbWatchdog) recover(run func() error, what string) {
+	noteUSBRecovery(what)
+
 	h := GetHid()
 	h.Lock()
 	h.CloseNoLock()

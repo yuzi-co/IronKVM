@@ -157,3 +157,44 @@ func TestWriteFrameSendsOneMessageWithTheHeaderInFront(t *testing.T) {
 		t.Fatalf("received %v, want %v", payload, want)
 	}
 }
+
+// A frame is counted once it is on the wire, header included.
+func TestWriteFrameCountsTheBytesItSent(t *testing.T) {
+	frame := newOutboundFrame(false, 7, []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
+
+	written := make(chan error, 1)
+	upgrader := websocket.Upgrader{}
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			written <- err
+			return
+		}
+		defer func() { _ = conn.Close() }()
+
+		written <- writeFrame(conn, frame)
+		_, _, _ = conn.ReadMessage()
+	}))
+	defer server.Close()
+
+	before := SentBytes()
+
+	client, _, err := websocket.DefaultDialer.Dial("ws"+server.URL[len("http"):], nil)
+	if err != nil {
+		t.Fatalf("failed to dial: %s", err)
+	}
+	defer func() { _ = client.Close() }()
+
+	_ = client.SetReadDeadline(time.Now().Add(5 * time.Second))
+	if _, _, err := client.ReadMessage(); err != nil {
+		t.Fatalf("failed to read: %s", err)
+	}
+	if err := <-written; err != nil {
+		t.Fatalf("writeFrame: %s", err)
+	}
+
+	if got := SentBytes() - before; got != uint64(frame.size()) {
+		t.Fatalf("counted %d bytes, want %d", got, frame.size())
+	}
+}

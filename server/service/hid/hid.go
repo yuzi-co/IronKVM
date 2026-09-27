@@ -244,6 +244,24 @@ func (h *Hid) Status() []proto.HidDeviceStatus {
 	return statuses
 }
 
+// WriteErrors reports how many writes to each endpoint have stalled or found
+// the gadget detached since the server started. Like Status, it takes none of
+// the HID locks. The Consumer and System Control keys share the absolute
+// pointer's endpoint, so their failures count under mouse-absolute.
+func (h *Hid) WriteErrors() []EndpointWriteErrors {
+	devices := h.devices()
+	counts := make([]EndpointWriteErrors, 0, len(devices))
+	for _, device := range devices {
+		counts = append(counts, EndpointWriteErrors{
+			Name:     device.name,
+			Stalled:  device.health.stalledWrites.Load(),
+			Detached: device.health.detachedWrites.Load(),
+		})
+	}
+
+	return counts
+}
+
 // linkFaultSince reports when the endpoints started failing with an error that
 // means the gadget is not enumerated, and the zero time when none of them is.
 //
