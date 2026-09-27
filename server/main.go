@@ -47,6 +47,10 @@ func initialize() {
 	// restart re-pays - the direction the design calls fatal.
 	ion.Init(config.GetInstance().Ion.ReserveFloor)
 
+	// A leftover of the old Tailscale memory switch goes first, or it would
+	// cap this server; see MigrateGoMemLimit.
+	utils.MigrateGoMemLimit()
+
 	// restore the memory limit the user configured, which is otherwise only
 	// applied to the process that set it and lost on the next boot
 	utils.InitGoMemLimit()

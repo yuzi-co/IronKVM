@@ -3,22 +3,24 @@ import { LogoutOutlined } from '@ant-design/icons';
 import { Button, Divider, Popconfirm, Switch } from 'antd';
 import { useTranslation } from 'react-i18next';
 
-import * as api from '@/api/extensions/tailscale.ts';
-
-import { Status } from './types.ts';
+import { Details } from './details.tsx';
+import { MemoryBars } from './memory.tsx';
+import { Peers } from './peers.tsx';
+import type { Status, VpnInfo } from './types.ts';
 
 type DeviceProps = {
+  vpn: VpnInfo;
   status: Status;
-  onLogout: () => void;
+  onChange: () => void;
+  onError: (msg: string) => void;
 };
 
-export const Device = ({ status, onLogout }: DeviceProps) => {
+export const Device = ({ vpn, status, onChange, onError }: DeviceProps) => {
   const { t } = useTranslation();
 
   const [isRunning, setIsRunning] = useState(status.state === 'running');
   const [isUpdating, setIsUpdating] = useState(false);
   const [isLogging, setIsLogging] = useState(false);
-  const [errMsg, setErrMsg] = useState('');
 
   // A new status from the parent replaces whatever the switch last set. This
   // is done during render rather than in an effect, so the switch never paints
@@ -29,74 +31,63 @@ export const Device = ({ status, onLogout }: DeviceProps) => {
     setIsRunning(status.state === 'running');
   }
 
-  async function update() {
+  async function toggle() {
     if (isUpdating) return;
     setIsUpdating(true);
+    onError('');
 
     try {
-      const rsp = isRunning ? await api.down() : await api.up();
+      const rsp = isRunning ? await vpn.api.down() : await vpn.api.up();
       if (rsp.code !== 0) {
-        setErrMsg(rsp.msg);
+        onError(rsp.msg);
         return;
       }
-
       setIsRunning(!isRunning);
+    } catch (err: any) {
+      onError(err?.message || 'Request failed');
     } finally {
       setIsUpdating(false);
     }
   }
 
-  async function logout() {
+  function logout() {
     if (isLogging) return;
     setIsLogging(true);
+    onError('');
 
-    api
+    vpn.api
       .logout()
       .then((rsp) => {
         if (rsp.code !== 0) {
-          setErrMsg(rsp.msg);
+          onError(rsp.msg);
           return;
         }
-
-        onLogout();
+        onChange();
       })
-      .catch((err) => {
-        setErrMsg(err?.message || 'Failed to logout');
-      })
-      .finally(() => {
-        setIsLogging(false);
-      });
+      .catch((err) => onError(err?.message || 'Failed to logout'))
+      .finally(() => setIsLogging(false));
   }
 
   return (
     <div className="flex flex-col space-y-6 pt-5">
       <div className="flex justify-between">
-        <span>{t('settings.tailscale.enable')}</span>
-        <Switch checked={isRunning} loading={isUpdating} onClick={update} />
+        <span>{t('settings.vpn.enable', { name: vpn.title })}</span>
+        <Switch checked={isRunning} loading={isUpdating} onClick={toggle} />
       </div>
 
-      <div className="flex justify-between">
-        <span>{t('settings.tailscale.deviceName')}</span>
-        <span>{status.name}</span>
-      </div>
-
-      <div className="flex justify-between">
-        <span>{t('settings.tailscale.deviceIP')}</span>
-        <span>{status.ip}</span>
-      </div>
-
-      <div className="flex justify-between">
-        <span>{t('settings.tailscale.account')}</span>
-        <span>{status.account}</span>
-      </div>
-      <Divider />
+      <Details status={status} />
+      <Divider className="my-0" />
+      <Peers peers={status.peers ?? []} />
+      <Divider className="my-0" />
+      <MemoryBars memory={status.memory} />
+      <Divider className="my-0" />
 
       <div className="flex justify-center pt-3">
         <Popconfirm
           placement="bottom"
-          title={t('settings.tailscale.logoutDesc')}
-          okText={t('settings.tailscale.okBtn')}
-          cancelText={t('settings.tailscale.cancelBtn')}
+          title={<div className="max-w-[320px]">{vpn.logoutWarning}</div>}
+          okText={t('settings.vpn.okBtn')}
+          cancelText={t('settings.vpn.cancelBtn')}
           onConfirm={logout}
         >
           <Button
@@ -107,12 +98,10 @@ export const Device = ({ status, onLogout }: DeviceProps) => {
             icon={<LogoutOutlined />}
             loading={isLogging}
           >
-            {t('settings.tailscale.logout')}
+            {vpn.logoutLabel}
           </Button>
         </Popconfirm>
       </div>
-
-      {errMsg && <span className="text-red-500">{errMsg}</span>}
     </div>
   );
 };

@@ -1,0 +1,25 @@
+{
+  "Version": "1.90.1-t8b5c4a1e2-g3f6d7c8b9",
+  "BackendState": "Running",
+  "Self": {
+    "HostName": "nanokvm",
+    "DNSName": "ironkvm.tail1234.ts.net.",
+    "TailscaleIPs": ["100.101.102.103", "fd7a:115c:a1e0::1"],
+    "Online": true
+  },
+  "CurrentTailnet": { "Name": "owner@example.com", "MagicDNSSuffix": "tail1234.ts.net" },
+  "Peer": {
+    "nodekey:bbb": {
+      "HostName": "Phone",
+      "DNSName": "phone.tail1234.ts.net.",
+      "TailscaleIPs": ["100.64.0.3"],
+      "Online": false
+    },
+    "nodekey:aaa": {
+      "HostName": "LAPTOP-1",
+      "DNSName": "laptop.tail1234.ts.net.",
+      "TailscaleIPs": ["100.64.0.2", "fd7a:115c:a1e0::2"],
+      "Online": true
+    }
+  }
+}

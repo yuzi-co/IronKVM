@@ -70,3 +70,34 @@ func TestDelGoMemLimitRemovesTheCapEntirely(t *testing.T) {
 		t.Fatalf("expected the cap to be removed, got %d", got)
 	}
 }
+
+// The old Tailscale switch wrote exactly "75". The init scripts derive the
+// daemons' limit now, and the file would only cap the server.
+func TestMigrateGoMemLimitRemovesTheOldTailscaleValue(t *testing.T) {
+	withTempLimitFile(t)
+	if err := os.WriteFile(GoMemLimitFile, []byte("75"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if !MigrateGoMemLimit() {
+		t.Fatal("the old value must be removed")
+	}
+	if IsGoMemLimitExist() {
+		t.Fatal("the file must be gone")
+	}
+	if MigrateGoMemLimit() {
+		t.Fatal("nothing left to migrate the second time")
+	}
+}
+
+// Any other content is an owner's setting, and stays.
+func TestMigrateGoMemLimitKeepsAnOwnersSetting(t *testing.T) {
+	withTempLimitFile(t)
+	for _, v := range []string{"76", "75\n", "750", "128"} {
+		if err := os.WriteFile(GoMemLimitFile, []byte(v), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		if MigrateGoMemLimit() || !IsGoMemLimitExist() {
+			t.Fatalf("%q must stay", v)
+		}
+	}
+}

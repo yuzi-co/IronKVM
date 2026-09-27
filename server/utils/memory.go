@@ -79,3 +79,29 @@ func IsGoMemLimitExist() bool {
 	_, err := os.Stat(GoMemLimitFile)
 	return err == nil
 }
+
+// oldTailscaleLimit is what the Tailscale page's memory switch wrote to
+// /etc/kvm/GOMEMLIMIT, byte for byte, before the init scripts derived the
+// daemons' limit from the addons group.
+const oldTailscaleLimit = "75"
+
+// MigrateGoMemLimit removes a /etc/kvm/GOMEMLIMIT that holds exactly the old
+// Tailscale value, and reports whether it did. Nothing writes that file for
+// Tailscale any more, so a leftover would stay forever and cap this server at
+// 75 MiB through InitGoMemLimit. S98tailscaled and S98netbird then fall back
+// to seven eighths of the addons group's memory.high. Any other content is an
+// owner's setting and stays. It runs at every start and is a no-op once the
+// file is gone, so it logs once.
+func MigrateGoMemLimit() bool {
+	data, err := os.ReadFile(GoMemLimitFile)
+	if err != nil || string(data) != oldTailscaleLimit {
+		return false
+	}
+	if err := os.Remove(GoMemLimitFile); err != nil {
+		log.Errorf("failed to remove the old Tailscale GOMEMLIMIT: %s", err)
+		return false
+	}
+	log.Infof("removed %s, which held the old Tailscale memory limit of %s MiB; the init scripts derive it now",
+		GoMemLimitFile, oldTailscaleLimit)
+	return true
+}

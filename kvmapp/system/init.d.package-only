@@ -36,6 +36,7 @@ S03usbhid        not-installed-by-policy  the gadget is built by S03usbdev
 S50ssdpd         not-installed-by-policy  no discovery daemon in the fork's boot
 S96picoclaw      not-installed-by-policy  started on demand, not at boot
 S98tailscaled    not-installed-by-policy  started on demand, not at boot
+S98netbird       not-installed-by-policy  started on demand, not at boot
 
 # Carried for reference, identical to the base. The base copy is the one that
 # runs, and it is the same file.

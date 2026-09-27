@@ -1,0 +1,164 @@
+#!/bin/sh
+#
+# NetBird's daemon. The web UI starts, stops and restarts it through this
+# script in /kvmapp/system/init.d. While start at boot is on, the script is
+# also in /etc/init.d, where S04addons puts it back after a new image.
+# Modeled on S98tailscaled.
+
+DAEMON="netbird"
+
+# Every path is a variable so tools/service/test-netbird.sh can drive this
+# script against a scratch tree and a stub daemon. On the device nothing sets
+# them.
+NETBIRD=${NETBIRD:-/usr/bin/$DAEMON}
+PIDFILE=${PIDFILE:-/var/run/$DAEMON.pid}
+SOCKET=${SOCKET:-/var/run/$DAEMON.sock}
+LOGFILE=${LOGFILE:-/var/log/$DAEMON.log}
+STATEDIR=${STATEDIR:-/var/lib/netbird}
+KVMDIR=${KVMDIR:-/etc/kvm}
+MOUNTS=${MOUNTS:-/proc/mounts}
+DATA=${DATA:-/data}
+START_WAIT=${START_WAIT:-5}
+STOP_WAIT=${STOP_WAIT:-15}
+
+# The peer's identity is its WireGuard key and its login, in NetBird's profile
+# files. It belongs to the board, not to a slot, as Tailscale's state does, so
+# a board that boots its other slot is still the same peer.
+#
+# NetBird 0.78 keeps its profiles in one directory: default.json,
+# active_profile.json and state.json. NB_STATE_DIR moves that directory, and
+# --config names the default profile inside it. With /data mounted both point
+# there; without it everything stays under /var/lib/netbird.
+IDENTITY_DIR=${IDENTITY_DIR:-$DATA/identity-system/netbird}
+
+if [ ! -x "$NETBIRD" ]; then
+    echo "$NETBIRD not found, install NetBird from the web UI"
+    exit 1
+fi
+
+state_dir() {
+    if grep -q " $DATA " "$MOUNTS" 2>/dev/null && mkdir -p "$IDENTITY_DIR" 2>/dev/null; then
+        echo "$IDENTITY_DIR"
+        return
+    fi
+    mkdir -p "$STATEDIR"
+    echo "$STATEDIR"
+}
+
+# Started and stopped by pid file, in the shell, as S98tailscaled explains:
+# Alpine's busybox has no start-stop-daemon. A pid file is trusted only while
+# its process is still netbird, so a stale file after a power cut never gets
+# another process signalled.
+running_pid() {
+    [ -f "$PIDFILE" ] || return 1
+    pid=$(cat "$PIDFILE" 2>/dev/null)
+    case "$pid" in
+        "" | *[!0-9]*) return 1 ;;
+    esac
+    kill -0 "$pid" 2>/dev/null || return 1
+    grep -q "$DAEMON" "/proc/$pid/cmdline" 2>/dev/null || return 1
+    echo "$pid"
+}
+
+# --- cgroup ---
+# ironkvm-dist's S01cgroups makes an addons memory group with a soft and a hard
+# limit. This script joins it before it starts the daemon, so the daemon
+# inherits it however the script is run: at boot, or from the web UI through
+# the server, whose own group it would otherwise inherit. Without the group
+# nothing changes.
+CGROUP_PROCS=${CGROUP_PROCS:-/sys/fs/cgroup/addons/cgroup.procs}
+if [ -w "$CGROUP_PROCS" ]; then
+    { echo $$ > "$CGROUP_PROCS"; } 2>/dev/null || true
+fi
+# --- end cgroup ---
+
+# --- memlimit ---
+# The Go memory limit, in MiB. /etc/kvm/GOMEMLIMIT is the owner's setting,
+# and without it the limit is 512. A value that is not a whole number is
+# ignored: Go refuses to start under a GOMEMLIMIT it cannot parse.
+#
+# In the addons group the kernel throttles the daemon at memory.high and kills
+# it at memory.max, and Go frees memory only as its heap nears GOMEMLIMIT. So
+# the limit is capped at seven eighths of memory.high, 56 for 64M, which leaves
+# room for what Go does not count. An owner's setting below that stays.
+memlimit_mib() {
+    mib=512
+    if [ -f "$KVMDIR/GOMEMLIMIT" ]; then
+        v=$(cat "$KVMDIR/GOMEMLIMIT" 2>/dev/null)
+        case "$v" in
+            ''|*[!0-9]*|0) ;;
+            *) mib=$v ;;
+        esac
+    fi
+    high=$(cat "${CGROUP_PROCS%/*}/memory.high" 2>/dev/null)
+    case "$high" in
+        ''|*[!0-9]*) ;;
+        *)
+            cap=$((high / 1048576 * 7 / 8))
+            if [ "$cap" -gt 0 ] && [ "$cap" -lt "$mib" ]; then
+                mib=$cap
+            fi
+            ;;
+    esac
+    echo "$mib"
+}
+# --- end memlimit ---
+
+case "$1" in
+        start)
+                export GOMEMLIMIT="$(memlimit_mib)MiB"
+                echo "GOMEMLIMIT set to ${GOMEMLIMIT}"
+
+                if pid=$(running_pid); then
+                    echo "$DAEMON is already running as $pid"
+                    exit 0
+                fi
+
+                mkdir -p "$(dirname "$PIDFILE")" "$(dirname "$SOCKET")" "$(dirname "$LOGFILE")"
+                dir=$(state_dir)
+                export NB_STATE_DIR="$dir"
+
+                printf "Starting $DAEMON: "
+                "$NETBIRD" service run \
+                    --config "$dir/config.json" \
+                    --daemon-addr "unix://$SOCKET" \
+                    --log-file "$LOGFILE" </dev/null >/dev/null 2>&1 &
+                echo $! > "$PIDFILE"
+                sleep "$START_WAIT"
+                if running_pid >/dev/null; then
+                    echo "OK"
+                else
+                    rm -f "$PIDFILE"
+                    echo "FAIL"
+                fi
+                ;;
+        stop)
+                printf "Stopping $DAEMON: "
+                if pid=$(running_pid); then
+                    kill "$pid" 2>/dev/null
+                    waited=0
+                    while kill -0 "$pid" 2>/dev/null && [ "$waited" -lt "$STOP_WAIT" ]; do
+                        sleep 1
+                        waited=$((waited + 1))
+                    done
+                    if kill -0 "$pid" 2>/dev/null; then
+                        echo "FAIL"
+                    else
+                        rm -f "$PIDFILE"
+                        echo "OK"
+                    fi
+                else
+                    rm -f "$PIDFILE"
+                    echo "FAIL"
+                fi
+                ;;
+        restart|reload)
+                "$0" stop
+                "$0" start
+                ;;
+        *)
+                echo "Usage: $0 {start|stop|restart}"
+                exit 1
+esac
+
+exit 0

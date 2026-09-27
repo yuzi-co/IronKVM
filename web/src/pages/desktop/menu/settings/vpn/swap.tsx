@@ -48,9 +48,9 @@ export const Swap = () => {
   return (
     <div className="flex h-[40px] cursor-pointer items-center justify-between space-x-6 rounded px-2 text-neutral-300 hover:bg-neutral-700/70">
       <div className="flex items-center space-x-1">
-        <span>{t('settings.tailscale.swap.title')}</span>
+        <span>{t('settings.vpn.swap.title')}</span>
         <Tooltip
-          title={t('settings.tailscale.swap.tip')}
+          title={t('settings.vpn.swap.tip')}
           className="cursor-pointer text-neutral-500"
           placement="top"
           styles={{ root: { maxWidth: '400px' } }}

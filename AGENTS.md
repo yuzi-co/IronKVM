@@ -138,7 +138,8 @@ Mount the repository root, not `server/`. `service/vm/endpoints_shell_test.go` r
 `CGO_ENABLED=0 GOOS=linux GOARCH=riscv64 go build -tags novision ./...`.
 
 A few tests are additionally gated on `//go:build linux` (`service/hid/stale_test.go`,
-`service/extensions/tailscale/cli_test.go`) and silently do not run elsewhere.
+`service/extensions/vpn/{tail,login}_test.go`, and the lifecycle tests in
+`service/extensions/{addon,tailscale,netbird}/`) and silently do not run elsewhere.
 
 The cgo Opus encoder needs the riscv64 cross-compiler, so its tests do not run under `-tags
 novision` and do not run on a workstation at all. Cross-compile the test binary in the builder image

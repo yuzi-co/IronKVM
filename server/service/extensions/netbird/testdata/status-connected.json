@@ -1,0 +1,1 @@
+{"peers":{"total":0,"connected":0,"details":null},"cliVersion":"0.78.2","daemonVersion":"0.78.2","daemonStatus":"Connected","management":{"url":"https://api.netbird.io:443","connected":true,"error":""},"signal":{"url":"https://signal.netbird.io:443","connected":true,"error":""},"netbirdIp":"100.73.212.105/16","fqdn":"ironkvm.netbird.cloud","usesKernelInterface":true}

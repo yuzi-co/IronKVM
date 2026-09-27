@@ -3,13 +3,14 @@ import { Modal } from 'antd';
 import { Trash2Icon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import * as api from '@/api/extensions/tailscale.ts';
+import type { VpnInfo } from './types.ts';
 
 type UninstallProps = {
+  vpn: VpnInfo;
   onSuccess: () => void;
 };
 
-export const Uninstall = ({ onSuccess }: UninstallProps) => {
+export const Uninstall = ({ vpn, onSuccess }: UninstallProps) => {
   const { t } = useTranslation();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -19,7 +20,7 @@ export const Uninstall = ({ onSuccess }: UninstallProps) => {
     if (isLoading) return;
     setIsLoading(true);
 
-    api.uninstall().finally(() => {
+    vpn.api.uninstall().finally(() => {
       setIsModalOpen(false);
       setIsLoading(false);
       onSuccess();
@@ -29,7 +30,7 @@ export const Uninstall = ({ onSuccess }: UninstallProps) => {
   const title = (
     <div className="flex items-center space-x-1 text-red-500">
       <Trash2Icon size={18} />
-      <span>{t('settings.tailscale.uninstall')}</span>
+      <span>{t('settings.vpn.uninstall', { name: vpn.title })}</span>
     </div>
   );
 
@@ -39,7 +40,7 @@ export const Uninstall = ({ onSuccess }: UninstallProps) => {
         className="flex h-[30px] cursor-pointer items-center space-x-1 rounded px-2 py-1 text-neutral-300 hover:bg-neutral-700/70"
         onClick={() => setIsModalOpen(true)}
       >
-        <span>{t('settings.tailscale.uninstall')}</span>
+        <span>{t('settings.vpn.uninstall', { name: vpn.title })}</span>
       </div>
 
       <Modal
@@ -47,14 +48,14 @@ export const Uninstall = ({ onSuccess }: UninstallProps) => {
         open={isModalOpen}
         centered={true}
         okType="danger"
-        okText={t('settings.tailscale.okBtn')}
-        cancelText={t('settings.tailscale.cancelBtn')}
+        okText={t('settings.vpn.okBtn')}
+        cancelText={t('settings.vpn.cancelBtn')}
         onOk={uninstall}
         onCancel={() => setIsModalOpen(false)}
         confirmLoading={isLoading}
       >
         <div className="py-5">
-          <p className="text-base">{t('settings.tailscale.uninstallDesc')}</p>
+          <p className="text-base">{t('settings.vpn.uninstallDesc', { name: vpn.title })}</p>
         </div>
       </Modal>
     </>
