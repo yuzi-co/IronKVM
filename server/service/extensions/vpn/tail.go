@@ -88,12 +88,14 @@ func Message(what string, err error) string {
 // Script runs an add-on's boot script with one action.
 //
 // The scripts exit 0 even when the daemon did not come up; they print
-// "Starting <daemon>: FAIL" instead. So a start or restart that prints such a
-// line fails here too. logFile, when set, is the daemon's own log: a daemon
-// that dies at once says why there and not in the script's output.
+// "Starting <daemon>: FAIL" instead, and "Stopping <daemon>: FAIL" for a stop
+// that did not end it. So a start, restart or stop that prints such a line
+// fails here too. A restart is judged by its start: its stop prints FAIL when
+// nothing ran. logFile, when set, is the daemon's own log: a daemon that dies
+// at once says why there and not in the script's output.
 func Script(path, action, logFile string) error {
 	out, err := Run(exec.Command("sh", path, action))
-	if err == nil && (action == "start" || action == "restart") && startFailed(out) {
+	if err == nil && printedFail(out, action) {
 		err = &CmdError{
 			Err:  fmt.Errorf("%s %s failed", filepath.Base(path), action),
 			Tail: Tail(out, TailLines),
@@ -110,10 +112,19 @@ func Script(path, action, logFile string) error {
 	return err
 }
 
-func startFailed(out []byte) bool {
+func printedFail(out []byte, action string) bool {
+	var verb string
+	switch action {
+	case "start", "restart":
+		verb = "Starting "
+	case "stop":
+		verb = "Stopping "
+	default:
+		return false
+	}
 	for _, line := range strings.Split(string(out), "\n") {
 		line = strings.TrimSpace(line)
-		if strings.HasPrefix(line, "Starting ") && strings.HasSuffix(line, "FAIL") {
+		if strings.HasPrefix(line, verb) && strings.HasSuffix(line, "FAIL") {
 			return true
 		}
 	}

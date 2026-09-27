@@ -86,10 +86,11 @@ func TestScriptStartThatSucceeds(t *testing.T) {
 	}
 }
 
-// Stop with nothing running prints FAIL and is still a successful stop.
-func TestScriptStopWithNothingRunningIsNotAnError(t *testing.T) {
-	if err := Script(script(t, `echo "Stopping netbird: FAIL"`), "stop", ""); err != nil {
-		t.Fatal(err)
+// The scripts print FAIL for a stop that left the daemon running, and also
+// when nothing ran. Script reports both; StopDaemon tells them apart.
+func TestScriptStopThatPrintsFailFails(t *testing.T) {
+	if err := Script(script(t, `echo "Stopping netbird: FAIL"`), "stop", ""); err == nil {
+		t.Fatal("a stop that printed FAIL must fail")
 	}
 }
 
