@@ -1,15 +1,9 @@
 package metrics
 
-import (
-	"testing"
-
-	"NanoKVM-Server/service/ion"
-)
+import "testing"
 
 func TestIonWritesTotalAndUsed(t *testing.T) {
-	setVar(t, &readIon, func() ion.Status {
-		return ion.Status{Total: 78643200, Used: 19050496, Verdict: ion.VerdictOK}
-	})
+	setVar(t, &readIon, func() (uint64, uint64, bool) { return 78643200, 19050496, true })
 
 	want := `# HELP ironkvm_ion_bytes ION carveout, from the heap dump. The peak is max_over_time of used.
 # TYPE ironkvm_ion_bytes gauge
@@ -20,9 +14,7 @@ ironkvm_ion_bytes{kind="used"} 19050496
 }
 
 func TestIonIsLeftOutWhenTheCarveoutCannotBeRead(t *testing.T) {
-	setVar(t, &readIon, func() ion.Status {
-		return ion.Status{Verdict: ion.VerdictUnavailable}
-	})
+	setVar(t, &readIon, func() (uint64, uint64, bool) { return 0, 0, false })
 
 	assertText(t, render(t, collectIon), "")
 }

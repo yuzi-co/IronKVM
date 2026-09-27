@@ -101,6 +101,19 @@ func Init(floor uint64) {
 	}
 }
 
+// ReadUsage reads only total_mem and alloc_mem, for a caller that polls often
+// and needs neither the summary nor the reserve. ok is false when the carveout
+// cannot be read or is empty, the same cases Read reports as unavailable.
+func ReadUsage() (total uint64, used uint64, ok bool) {
+	total, errTotal := readCounter("total_mem")
+	used, errUsed := readCounter("alloc_mem")
+	if errTotal != nil || errUsed != nil || total == 0 {
+		return 0, 0, false
+	}
+
+	return total, used, true
+}
+
 // Read takes one reading. It never returns an error: a carveout it cannot read
 // is reported as unavailable, and the UI shows nothing.
 func Read() Status {

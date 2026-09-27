@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -130,4 +131,35 @@ func TestParseKBFieldsConvertsKilobytesToBytes(t *testing.T) {
 	if _, ok := got["Name"]; ok {
 		t.Error("a line whose value is not a number must be skipped")
 	}
+}
+
+// A kernel built without swap has no pswpin or pswpout. That is not 0 pages,
+// so the family is left out.
+func TestMemoryLeavesOutSwapWhenVmstatLacksTheFields(t *testing.T) {
+	proc, _, _ := useMemoryRoots(t)
+	writeFixture(t, proc, "vmstat", "nr_free_pages 5000\n")
+
+	if got := render(t, collectMemory); strings.Contains(got, "ironkvm_swap_pages_total") {
+		t.Fatalf("swap was written without its fields:\n%s", got)
+	}
+}
+
+// A bad field in mm_stat ends the parse. What came before it is served, and
+// nothing after it is reported as 0.
+func TestMemoryWritesOnlyTheZramFieldsThatParsed(t *testing.T) {
+	_, zram, _ := useMemoryRoots(t)
+	writeFixture(t, zram, "mm_stat", "8192000 bad 2621440\n")
+
+	want := `# HELP ironkvm_zram_bytes zram0 sizes, from mm_stat.
+# TYPE ironkvm_zram_bytes gauge
+ironkvm_zram_bytes{kind="orig_data_size"} 8192000
+`
+	assertText(t, render(t, collectMemory), want)
+}
+
+func TestMemoryLeavesOutZramWhenNoFieldParses(t *testing.T) {
+	_, zram, _ := useMemoryRoots(t)
+	writeFixture(t, zram, "mm_stat", "bad 2048000\n")
+
+	assertText(t, render(t, collectMemory), "")
 }

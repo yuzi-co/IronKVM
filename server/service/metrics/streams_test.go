@@ -1,10 +1,19 @@
 package metrics
 
-import "testing"
+import (
+	"strings"
+	"testing"
+
+	"NanoKVM-Server/service/stream"
+)
 
 func TestStreamsWritesEveryFamily(t *testing.T) {
-	setVar(t, &viewerCount, func(source string) int {
-		return map[string]int{"mjpeg": 2, "webrtc": 1}[source]
+	setVar(t, &viewerCounts, func(sources []string) []int {
+		counts := make([]int, len(sources))
+		for i, source := range sources {
+			counts[i] = map[string]int{"mjpeg": 2, "webrtc": 1}[source]
+		}
+		return counts
 	})
 	setVar(t, &streamFPS, func() int32 { return 24 })
 	setVar(t, &sentBytes, []byteSource{
@@ -30,4 +39,21 @@ ironkvm_stream_sent_bytes_total{path="direct"} 500
 ironkvm_stream_suppressed_frames_total 7
 `
 	assertText(t, render(t, collectStreams), want)
+}
+
+// A scrape before any stream must not start the frame counter: its ticker
+// writes now_fps to the card every three seconds from then on.
+func TestAScrapeLeavesTheFrameCounterUnstarted(t *testing.T) {
+	if _, started := stream.CurrentFPS(); started {
+		t.Skip("another test in this binary started the counter")
+	}
+
+	got := render(t, collectStreams)
+
+	if _, started := stream.CurrentFPS(); started {
+		t.Fatal("the scrape started the frame counter")
+	}
+	if !strings.Contains(got, "ironkvm_stream_fps 0\n") {
+		t.Fatalf("the rate of a counter never started is not 0:\n%s", got)
+	}
 }

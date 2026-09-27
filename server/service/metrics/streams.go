@@ -20,12 +20,14 @@ type byteSource struct {
 
 // The stream readers, variables so tests can stub them.
 var (
-	viewerCount = vm.HdmiViewerCount
+	viewerCounts = vm.HdmiViewerCounts
 
-	// GetFrameRateCounter starts the counter's three-second ticker on its first
-	// call, which a scrape before any stream would be. That is the same ticker
-	// the first stream starts, and it only writes now_fps when the rate changes.
-	streamFPS = func() int32 { return stream.GetFrameRateCounter().GetFPS() }
+	// CurrentFPS never starts the frame counter, whose ticker writes now_fps to
+	// the card. Before the first stream starts it, the rate is 0.
+	streamFPS = func() int32 {
+		fps, _ := stream.CurrentFPS()
+		return fps
+	}
 
 	sentBytes = []byteSource{
 		{path: "mjpeg", read: mjpeg.SentBytes},
@@ -43,8 +45,9 @@ const (
 )
 
 func collectStreams(w *Writer) {
-	for _, path := range streamPaths {
-		w.Gauge("ironkvm_stream_viewers", helpViewers, float64(viewerCount(path)), L("path", path))
+	counts := viewerCounts(streamPaths)
+	for i, path := range streamPaths {
+		w.Gauge("ironkvm_stream_viewers", helpViewers, float64(counts[i]), L("path", path))
 	}
 
 	w.Gauge("ironkvm_stream_fps", helpFPS, float64(streamFPS()))

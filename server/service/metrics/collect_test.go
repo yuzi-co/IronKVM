@@ -5,8 +5,6 @@ import (
 	"strings"
 	"sync"
 	"testing"
-
-	"NanoKVM-Server/service/ion"
 )
 
 func sectionWriting(name string, value float64) section {
@@ -81,7 +79,8 @@ func TestCollectLeavesOutASectionThatRepeatsAFamily(t *testing.T) {
 }
 
 // useBareHost runs the real sections against a host with no /proc or /sys
-// fixtures, no ION, no UDC and a frame counter that is not started.
+// fixtures, no ION and no UDC. The frame counter is the real one, never
+// started.
 func useBareHost(t *testing.T) {
 	t.Helper()
 
@@ -89,8 +88,7 @@ func useBareHost(t *testing.T) {
 	setVar(t, &procDir, root+"/proc")
 	setVar(t, &zramDir, root+"/zram0")
 	setVar(t, &cgroupDir, root+"/cgroup")
-	setVar(t, &readIon, func() ion.Status { return ion.Status{Verdict: ion.VerdictUnavailable} })
-	setVar(t, &streamFPS, func() int32 { return 0 })
+	setVar(t, &readIon, func() (uint64, uint64, bool) { return 0, 0, false })
 	setVar(t, &usbLinkState, func() (string, error) { return "", errors.New("no controller") })
 }
 

@@ -65,21 +65,35 @@ func writeSwap(w *Writer) {
 		return
 	}
 
-	in, out := vm.ParseVmstatSwap(body)
+	// A kernel without swap support has neither counter, which is not 0 pages.
+	in, out, found := vm.ParseVmstatSwap(body)
+	if !found {
+		return
+	}
 	w.Counter("ironkvm_swap_pages_total", helpSwap, float64(in), L("direction", "in"))
 	w.Counter("ironkvm_swap_pages_total", helpSwap, float64(out), L("direction", "out"))
 }
 
 func writeZram(w *Writer) {
 	body, ok := readText(filepath.Join(zramDir, "mm_stat"))
-	if !ok || strings.TrimSpace(body) == "" {
+	if !ok {
 		return
 	}
 
+	// Parsing stops at the first bad field. Only the fields before it are
+	// written: a field it never reached reads 0, and 0 is a real size.
 	stat := vm.ParseZramMmStat(body)
-	w.Gauge("ironkvm_zram_bytes", helpZram, float64(stat.Original), L("kind", "orig_data_size"))
-	w.Gauge("ironkvm_zram_bytes", helpZram, float64(stat.Compressed), L("kind", "compr_data_size"))
-	w.Gauge("ironkvm_zram_bytes", helpZram, float64(stat.MemUsed), L("kind", "mem_used_total"))
+	kinds := []struct {
+		kind  string
+		value int64
+	}{
+		{"orig_data_size", stat.Original},
+		{"compr_data_size", stat.Compressed},
+		{"mem_used_total", stat.MemUsed},
+	}
+	for _, k := range kinds[:stat.Fields] {
+		w.Gauge("ironkvm_zram_bytes", helpZram, float64(k.value), L("kind", k.kind))
+	}
 }
 
 // writePressure reports the PSI totals. A kernel booted without psi=1 fails the

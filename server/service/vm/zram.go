@@ -347,7 +347,13 @@ type zramMmStat struct {
 // absent, empty or truncated is a normal state on a board where zram is
 // optional, so every unreadable field stays zero instead of raising an error.
 func parseMmStat(content string) zramMmStat {
-	var stat zramMmStat
+	stat, _ := parseMmStatFields(content)
+	return stat
+}
+
+// parseMmStatFields is parseMmStat that also reports how many leading fields
+// it parsed, so a caller can tell a 0 it read from a 0 it never reached.
+func parseMmStatFields(content string) (stat zramMmStat, parsed int) {
 	targets := []*int64{&stat.Original, &stat.Compressed, &stat.MemUsed, &stat.MemLimit}
 
 	for i, field := range strings.Fields(content) {
@@ -363,9 +369,10 @@ func parseMmStat(content string) zramMmStat {
 		}
 
 		*targets[i] = value
+		parsed++
 	}
 
-	return stat
+	return stat, parsed
 }
 
 // parseCompAlgorithm returns the selected entry of a comp_algorithm list, which
@@ -388,6 +395,14 @@ func parseCompAlgorithm(content string) string {
 // parseVmstatSwap reads the pswpin and pswpout counters from /proc/vmstat.
 // Both are system-wide and cover every swap device, not zram alone.
 func parseVmstatSwap(content string) (in int64, out int64) {
+	in, out, _ = parseVmstatSwapFound(content)
+	return in, out
+}
+
+// parseVmstatSwapFound is parseVmstatSwap that also reports whether both
+// counters were present. A kernel without swap support has neither.
+func parseVmstatSwapFound(content string) (in int64, out int64, found bool) {
+	var haveIn, haveOut bool
 	for _, line := range strings.Split(content, "\n") {
 		fields := strings.Fields(line)
 		if len(fields) != 2 {
@@ -401,13 +416,13 @@ func parseVmstatSwap(content string) (in int64, out int64) {
 
 		switch fields[0] {
 		case "pswpin":
-			in = value
+			in, haveIn = value, true
 		case "pswpout":
-			out = value
+			out, haveOut = value, true
 		}
 	}
 
-	return in, out
+	return in, out, haveIn && haveOut
 }
 
 // ZramMemory is the part of mm_stat the metrics endpoint reports.
@@ -415,18 +430,29 @@ type ZramMemory struct {
 	Original   int64 // orig_data_size
 	Compressed int64 // compr_data_size
 	MemUsed    int64 // mem_used_total
+
+	// Fields is how many of the three, in that order, were parsed. mm_stat
+	// parsing stops at the first bad field, and the ones after it are 0
+	// without having been read.
+	Fields int
 }
 
 // ParseZramMmStat reads mm_stat the way the zram page does.
 func ParseZramMmStat(content string) ZramMemory {
-	stat := parseMmStat(content)
-	return ZramMemory{Original: stat.Original, Compressed: stat.Compressed, MemUsed: stat.MemUsed}
+	stat, parsed := parseMmStatFields(content)
+	// A field past the first bad one was never written, so it is already 0.
+	return ZramMemory{
+		Original:   stat.Original,
+		Compressed: stat.Compressed,
+		MemUsed:    stat.MemUsed,
+		Fields:     min(parsed, 3),
+	}
 }
 
 // ParseVmstatSwap reads pswpin and pswpout from /proc/vmstat, for the metrics
-// endpoint.
-func ParseVmstatSwap(content string) (in int64, out int64) {
-	return parseVmstatSwap(content)
+// endpoint. found is false unless both counters are present.
+func ParseVmstatSwap(content string) (in int64, out int64, found bool) {
+	return parseVmstatSwapFound(content)
 }
 
 // parseSwapsHasZram reports whether /proc/swaps lists the zram device. This is

@@ -1,6 +1,7 @@
 package vm
 
 import (
+	"reflect"
 	"testing"
 
 	hdmistate "NanoKVM-Server/service/vm/hdmi_state"
@@ -22,7 +23,7 @@ func useHdmiDemand(t *testing.T) {
 	})
 }
 
-func TestHdmiViewerCountReadsEachSource(t *testing.T) {
+func TestHdmiViewerCountsReadsEachSourceInOrder(t *testing.T) {
 	useHdmiDemand(t)
 
 	hdmiMutex.Lock()
@@ -30,9 +31,8 @@ func TestHdmiViewerCountReadsEachSource(t *testing.T) {
 	hdmiDemand.UpdateViewer("webrtc", 1, 1)
 	hdmiMutex.Unlock()
 
-	for source, want := range map[string]int{"mjpeg": 2, "webrtc": 1, "direct": 0} {
-		if got := HdmiViewerCount(source); got != want {
-			t.Errorf("HdmiViewerCount(%q) = %d, want %d", source, got, want)
-		}
+	got := HdmiViewerCounts([]string{"mjpeg", "direct", "webrtc"})
+	if want := []int{2, 0, 1}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("HdmiViewerCounts = %v, want %v", got, want)
 	}
 }

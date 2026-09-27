@@ -758,16 +758,40 @@ func TestParseSwapsHasZram(t *testing.T) {
 func TestParseZramMmStatExportsTheFirstThreeFields(t *testing.T) {
 	got := ParseZramMmStat("8192000 2048000 2621440 0 2621440 10 0 0 0\n")
 
-	want := ZramMemory{Original: 8192000, Compressed: 2048000, MemUsed: 2621440}
+	want := ZramMemory{Original: 8192000, Compressed: 2048000, MemUsed: 2621440, Fields: 3}
 	if got != want {
 		t.Fatalf("ParseZramMmStat = %+v, want %+v", got, want)
 	}
 }
 
-func TestParseVmstatSwapIsExported(t *testing.T) {
-	in, out := ParseVmstatSwap("nr_free_pages 5000\npswpin 12\npswpout 34\n")
+// A bad field ends the parse. The fields before it are reported and counted,
+// so a reader can tell a 0 it read from a 0 it never reached.
+func TestParseZramMmStatCountsOnlyTheFieldsItParsed(t *testing.T) {
+	for content, want := range map[string]ZramMemory{
+		"8192000 bad 2621440\n": {Original: 8192000, Fields: 1},
+		"bad 2048000\n":         {},
+		"":                      {},
+		"8192000 2048000\n":     {Original: 8192000, Compressed: 2048000, Fields: 2},
+	} {
+		if got := ParseZramMmStat(content); got != want {
+			t.Errorf("ParseZramMmStat(%q) = %+v, want %+v", content, got, want)
+		}
+	}
+}
 
-	if in != 12 || out != 34 {
-		t.Fatalf("ParseVmstatSwap = %d, %d, want 12, 34", in, out)
+func TestParseVmstatSwapIsExported(t *testing.T) {
+	in, out, ok := ParseVmstatSwap("nr_free_pages 5000\npswpin 12\npswpout 34\n")
+
+	if in != 12 || out != 34 || !ok {
+		t.Fatalf("ParseVmstatSwap = %d, %d, %t, want 12, 34, true", in, out, ok)
+	}
+}
+
+// A kernel without swap support has no pswpin or pswpout. That is not 0 pages.
+func TestParseVmstatSwapReportsMissingFields(t *testing.T) {
+	for _, content := range []string{"nr_free_pages 5000\n", "pswpin 12\n", "pswpout 34\n", ""} {
+		if _, _, ok := ParseVmstatSwap(content); ok {
+			t.Errorf("ParseVmstatSwap(%q) reported both fields found", content)
+		}
 	}
 }

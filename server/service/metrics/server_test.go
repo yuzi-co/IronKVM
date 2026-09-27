@@ -68,3 +68,22 @@ func TestServerLeavesOutRSSWhenStatusCannotBeRead(t *testing.T) {
 		t.Fatalf("the rest of the section went with it:\n%s", got)
 	}
 }
+
+// The version files change only across a restart, so they are read once.
+func TestOnceVersionsReadsTheVersionsOnce(t *testing.T) {
+	calls := 0
+	read := onceVersions(func() (string, string, string) {
+		calls++
+		return "v1.4.3", "5.10.270-ironkvm0", "2.4.3"
+	})
+
+	for range 3 {
+		image, kernel, app := read()
+		if image != "v1.4.3" || kernel != "5.10.270-ironkvm0" || app != "2.4.3" {
+			t.Fatalf("read() = %q, %q, %q", image, kernel, app)
+		}
+	}
+	if calls != 1 {
+		t.Fatalf("the versions were read %d times, want 1", calls)
+	}
+}

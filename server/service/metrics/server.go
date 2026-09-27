@@ -3,6 +3,7 @@ package metrics
 import (
 	"path/filepath"
 	"runtime"
+	"sync"
 	"time"
 
 	"NanoKVM-Server/service/vm"
@@ -14,7 +15,9 @@ var (
 	// changes() over it counts restarts, including the supervisor's.
 	processStart = time.Now()
 
-	versions = vm.Versions
+	// The version files change only across a restart, so they are read on
+	// the first scrape and not again.
+	versions = onceVersions(vm.Versions)
 
 	// ReadMemStats stops the world for a moment. Once per scrape is nothing
 	// beside capture.
@@ -48,4 +51,20 @@ func collectServer(w *Writer) {
 	heap, goroutines := goRuntime()
 	w.Gauge("ironkvm_go_heap_bytes", helpGoHeap, float64(heap))
 	w.Gauge("ironkvm_go_goroutines", helpGoroutines, float64(goroutines))
+}
+
+// onceVersions wraps read so it runs on the first call only, and every later
+// call returns what it returned then.
+func onceVersions(read func() (string, string, string)) func() (string, string, string) {
+	type triple struct{ image, kernel, app string }
+
+	cached := sync.OnceValue(func() triple {
+		image, kernel, app := read()
+		return triple{image, kernel, app}
+	})
+
+	return func() (string, string, string) {
+		v := cached()
+		return v.image, v.kernel, v.app
+	}
 }
