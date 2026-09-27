@@ -121,7 +121,7 @@ func New(deps Deps) *Service {
 // which answers unknown /redfish paths with a Redfish error and leaves every
 // other path to gin's default 404.
 func (s *Service) Register(r *gin.Engine) {
-	r.NoRoute(notFoundUnderRedfish)
+	r.NoRoute(s.notFoundUnderRedfish)
 
 	g := r.Group("", s.authenticate)
 
@@ -199,7 +199,13 @@ func route(g *gin.RouterGroup, path string, handlers map[string]gin.HandlerFunc)
 			allowed = append(allowed, method)
 		}
 	}
+	allowed = append(allowed, http.MethodOptions)
 	allow := strings.Join(allowed, ", ")
+
+	g.Handle(http.MethodOptions, path, func(c *gin.Context) {
+		c.Header("Allow", allow)
+		c.Status(http.StatusNoContent)
+	})
 
 	for _, method := range routeMethods {
 		handler, ok := handlers[method]
@@ -219,9 +225,15 @@ func methodNotAllowed(allow string) gin.HandlerFunc {
 
 // notFoundUnderRedfish is the engine's NoRoute handler. Only paths under
 // /redfish are answered here; anything else falls through to gin's own 404.
-func notFoundUnderRedfish(c *gin.Context) {
+// An unknown path needs credentials as a known one does, so a probe without
+// them cannot tell which resources exist.
+func (s *Service) notFoundUnderRedfish(c *gin.Context) {
 	p := c.Request.URL.Path
 	if p != "/redfish" && !strings.HasPrefix(p, "/redfish/") {
+		return
+	}
+	s.authenticate(c)
+	if c.IsAborted() {
 		return
 	}
 	notFound(c)

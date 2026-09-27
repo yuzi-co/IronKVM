@@ -48,7 +48,12 @@ func (s *Service) authenticate(c *gin.Context) {
 		return
 	}
 
-	if publicRoutes[c.Request.Method+" "+c.FullPath()] {
+	// OPTIONS on a public resource is public too.
+	method := c.Request.Method
+	if method == http.MethodOptions {
+		method = http.MethodGet
+	}
+	if publicRoutes[method+" "+c.FullPath()] {
 		c.Next()
 		return
 	}

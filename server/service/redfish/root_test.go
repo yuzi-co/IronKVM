@@ -75,9 +75,44 @@ func TestUnknownRedfishPathsAnswerARedfishNotFound(t *testing.T) {
 	h := newHarness(t)
 
 	for _, path := range []string{"/redfish/v1/Nope", "/redfish/v1/Systems/2", "/redfish/v2"} {
-		w := h.do(http.MethodGet, path, "")
+		w := h.do(http.MethodGet, path, "", h.user()...)
 		expectError(t, w, http.StatusNotFound, "ResourceMissingAtURI")
 	}
+}
+
+// Without credentials an unknown path is as closed as a known one, so a
+// probe cannot map which resources the service has.
+func TestUnknownRedfishPathsNeedCredentialsFirst(t *testing.T) {
+	h := newHarness(t)
+
+	for _, path := range []string{"/redfish/v1/Nope", "/redfish/v1/Systems/2", "/redfish/v2"} {
+		w := h.do(http.MethodGet, path, "")
+		expectError(t, w, http.StatusUnauthorized, "NoValidSession")
+	}
+}
+
+func TestOptionsNamesTheAllowedMethods(t *testing.T) {
+	h := newHarness(t)
+
+	for _, tc := range []struct {
+		path, allow string
+		headers     []string
+	}{
+		{"/redfish/v1/", "GET, HEAD, OPTIONS", nil},
+		{"/redfish/v1/Systems/1", "GET, HEAD, OPTIONS", h.user()},
+		{resetURL, "POST, OPTIONS", h.user()},
+	} {
+		w := h.do(http.MethodOptions, tc.path, "", tc.headers...)
+		if w.Code != http.StatusNoContent {
+			t.Fatalf("OPTIONS %s: %d %s", tc.path, w.Code, w.Body.String())
+		}
+		if got := w.Header().Get("Allow"); got != tc.allow {
+			t.Fatalf("OPTIONS %s: Allow is %q, want %q", tc.path, got, tc.allow)
+		}
+	}
+
+	w := h.do(http.MethodOptions, "/redfish/v1/Systems/1", "")
+	expectError(t, w, http.StatusUnauthorized, "NoValidSession")
 }
 
 // NoRoute belongs to the whole engine, so a path outside /redfish must still
@@ -96,7 +131,7 @@ func TestAMethodAResourceLacksIsNotAllowed(t *testing.T) {
 
 	w := h.do(http.MethodDelete, "/redfish/v1/", "", h.admin()...)
 	expectError(t, w, http.StatusMethodNotAllowed, "GeneralError")
-	if got := w.Header().Get("Allow"); got != "GET, HEAD" {
+	if got := w.Header().Get("Allow"); got != "GET, HEAD, OPTIONS" {
 		t.Fatalf("Allow is %q", got)
 	}
 }
@@ -104,7 +139,7 @@ func TestAMethodAResourceLacksIsNotAllowed(t *testing.T) {
 func TestErrorsNameTheirRegistryMessage(t *testing.T) {
 	h := newHarness(t)
 
-	w := h.do(http.MethodGet, "/redfish/v1/Nope", "")
+	w := h.do(http.MethodGet, "/redfish/v1/Nope", "", h.user()...)
 	e := decode(t, w)["error"].(map[string]any)
 	info := e["@Message.ExtendedInfo"].([]any)[0].(map[string]any)
 	if info["Message"] != "The resource at the URI '/redfish/v1/Nope' was not found." {
