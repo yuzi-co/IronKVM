@@ -46,6 +46,10 @@ var messages = map[string]message{
 		"There is no valid session established with the implementation.",
 		"Critical", "Establish a session before attempting any operations.",
 	},
+	"SessionLimitExceeded": {
+		"The session establishment failed due to the number of simultaneous sessions exceeding the limit of the implementation.",
+		"Critical", "Reduce the number of other sessions before trying to establish the session or increase the limit of simultaneous sessions (if supported).",
+	},
 	"InsufficientPrivilege": {
 		"There are insufficient privileges for the account or credentials associated with the current session to perform the requested operation.",
 		"Critical", "Either abandon the operation or change the associated access rights and resubmit the request if the operation failed.",

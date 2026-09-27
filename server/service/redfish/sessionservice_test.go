@@ -1,6 +1,7 @@
 package redfish
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 	"testing"
@@ -151,4 +152,16 @@ func TestSessionServiceReportsTheIdleTimeout(t *testing.T) {
 	if timeout := decode(t, w)["SessionTimeout"]; timeout != float64(1800) {
 		t.Fatalf("SessionTimeout is %v", timeout)
 	}
+}
+
+func TestLoginWithEverySessionTakenIsUnavailable(t *testing.T) {
+	h := newHarness(t)
+	for i := 0; i < maxSessions; i++ {
+		if _, _, err := h.service.sessions.create(fmt.Sprintf("user%d", i%(maxSessions/maxSessionsPerUser)), 1); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	w := h.do(http.MethodPost, sessionsURL, `{"UserName":"alice","Password":"valid-password"}`)
+	expectError(t, w, http.StatusServiceUnavailable, "SessionLimitExceeded")
 }

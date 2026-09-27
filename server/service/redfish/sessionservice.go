@@ -2,6 +2,7 @@ package redfish
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -81,6 +82,10 @@ func (s *Service) createSession(c *gin.Context) {
 	}
 
 	sess, token, err := s.sessions.create(username, tokenVersion)
+	if errors.Is(err, errSessionLimit) {
+		writeError(c, http.StatusServiceUnavailable, "SessionLimitExceeded", "")
+		return
+	}
 	if err != nil {
 		log.Errorf("redfish: create a session: %s", err)
 		writeError(c, http.StatusInternalServerError, "GeneralError", "could not create a session")

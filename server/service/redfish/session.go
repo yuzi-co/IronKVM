@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"crypto/subtle"
 	"encoding/hex"
+	"errors"
 	"sync"
 	"time"
 )
@@ -12,9 +13,16 @@ import (
 const (
 	// sessionIdleTimeout ends a session nobody has used for this long.
 	sessionIdleTimeout = 30 * time.Minute
-	// maxSessions bounds the store. A new session past it drops the oldest.
+	// maxSessions bounds the store.
 	maxSessions = 16
+	// maxSessionsPerUser bounds one account. A new session past it drops
+	// that account's least recently used one.
+	maxSessionsPerUser = 4
 )
+
+// errSessionLimit refuses a session when the store is full and the account
+// has none of its own to give up: another account's is never ended for it.
+var errSessionLimit = errors.New("every session is taken")
 
 // session is one login. The token itself is never kept, only its digest.
 type session struct {
@@ -63,8 +71,23 @@ func (s *sessionStore) create(username string, tokenVersion uint64) (session, st
 
 	now := s.now()
 	s.pruneLocked(now)
-	if len(s.sessions) >= maxSessions {
-		s.sessions = s.sessions[len(s.sessions)-maxSessions+1:]
+
+	own := 0
+	oldest := -1
+	for i, candidate := range s.sessions {
+		if candidate.username != username {
+			continue
+		}
+		own++
+		if oldest < 0 || candidate.lastUsed.Before(s.sessions[oldest].lastUsed) {
+			oldest = i
+		}
+	}
+	switch {
+	case own >= maxSessionsPerUser || (len(s.sessions) >= maxSessions && own > 0):
+		s.sessions = append(s.sessions[:oldest], s.sessions[oldest+1:]...)
+	case len(s.sessions) >= maxSessions:
+		return session{}, "", errSessionLimit
 	}
 
 	created := &session{

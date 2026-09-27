@@ -1,6 +1,8 @@
 package redfish
 
 import (
+	"errors"
+	"fmt"
 	"regexp"
 	"testing"
 	"time"
@@ -68,29 +70,62 @@ func TestSessionEndsAfterThirtyIdleMinutes(t *testing.T) {
 	}
 }
 
-func TestSessionStoreKeepsAtMostSixteenAndDropsTheOldest(t *testing.T) {
+// A client that logs in again and again without logging out drops its own
+// least recently used session, never another account's.
+func TestAUsersExtraSessionDropsItsOwnLeastRecentlyUsed(t *testing.T) {
 	store, clock := newTestStore()
 
+	_, other, _ := store.create("alice", 1)
 	var tokens []string
-	for i := 0; i < maxSessions+1; i++ {
+	for i := 0; i < maxSessionsPerUser; i++ {
+		clock.now = clock.now.Add(time.Second)
 		_, token, err := store.create("admin", 1)
 		if err != nil {
 			t.Fatal(err)
 		}
 		tokens = append(tokens, token)
-		clock.now = clock.now.Add(time.Second)
+	}
+	// The first is the oldest, but in use; the second is the least recently
+	// used.
+	clock.now = clock.now.Add(time.Second)
+	store.byToken(tokens[0])
+
+	if _, _, err := store.create("admin", 1); err != nil {
+		t.Fatal(err)
 	}
 
+	if _, ok := store.byToken(tokens[1]); ok {
+		t.Fatal("the least recently used session survived")
+	}
+	for _, token := range append([]string{other, tokens[0]}, tokens[2:]...) {
+		if _, ok := store.byToken(token); !ok {
+			t.Fatal("a session that was not the least recently used was dropped")
+		}
+	}
+	if got := len(store.list()); got != maxSessionsPerUser+1 {
+		t.Fatalf("%d sessions, want %d", got, maxSessionsPerUser+1)
+	}
+}
+
+// With the store full, an account with no session of its own to give up is
+// refused rather than allowed to end another account's.
+func TestAFullStoreRefusesAnAccountWithNoSessionToGiveUp(t *testing.T) {
+	store, _ := newTestStore()
+
+	for i := 0; i < maxSessions; i++ {
+		if _, _, err := store.create(fmt.Sprintf("user%d", i%(maxSessions/maxSessionsPerUser)), 1); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if _, _, err := store.create("newcomer", 1); !errors.Is(err, errSessionLimit) {
+		t.Fatalf("create for a new account = %v, want errSessionLimit", err)
+	}
 	if got := len(store.list()); got != maxSessions {
 		t.Fatalf("%d sessions, want %d", got, maxSessions)
 	}
-	if _, ok := store.byToken(tokens[0]); ok {
-		t.Fatal("the oldest session survived the limit")
-	}
-	for _, token := range tokens[1:] {
-		if _, ok := store.byToken(token); !ok {
-			t.Fatal("a newer session was dropped")
-		}
+	if _, _, err := store.create("user0", 1); err != nil {
+		t.Fatalf("create for an account at its own limit: %s", err)
 	}
 }
 
