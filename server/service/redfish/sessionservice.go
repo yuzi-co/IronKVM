@@ -29,10 +29,19 @@ func sessionBody(sess session) object {
 	return body
 }
 
+// visibleSession reports whether the request may see sess: an admin sees
+// every session, anyone else only their own.
+func visibleSession(c *gin.Context, sess session) bool {
+	p := currentPrincipal(c)
+	return p.admin || sess.username == p.username
+}
+
 func (s *Service) listSessions(c *gin.Context) {
 	var members []string
 	for _, sess := range s.sessions.list() {
-		members = append(members, sessionsPath+"/"+sess.id)
+		if visibleSession(c, sess) {
+			members = append(members, sessionsPath+"/"+sess.id)
+		}
 	}
 
 	writeJSON(c, http.StatusOK, newCollection(sessionsPath, "SessionCollection", "Session Collection", members))
@@ -40,7 +49,7 @@ func (s *Service) listSessions(c *gin.Context) {
 
 func (s *Service) getSession(c *gin.Context) {
 	sess, ok := s.sessions.get(c.Param("id"))
-	if !ok {
+	if !ok || !visibleSession(c, sess) {
 		notFound(c)
 		return
 	}
@@ -98,17 +107,11 @@ func (s *Service) createSession(c *gin.Context) {
 }
 
 // deleteSession is the logout. Anyone may end their own session; ending
-// someone else's needs admin.
+// someone else's needs admin: to anyone else it answers 404, as a GET does.
 func (s *Service) deleteSession(c *gin.Context) {
 	sess, ok := s.sessions.get(c.Param("id"))
-	if !ok {
+	if !ok || !visibleSession(c, sess) {
 		notFound(c)
-		return
-	}
-
-	p := currentPrincipal(c)
-	if !p.admin && sess.username != p.username {
-		writeError(c, http.StatusForbidden, "InsufficientPrivilege", "")
 		return
 	}
 

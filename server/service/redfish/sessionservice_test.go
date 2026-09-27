@@ -110,8 +110,9 @@ func TestOnlyAnAdminEndsSomeoneElsesSession(t *testing.T) {
 	_, _, adminSession := h.login("admin", "admin")
 	_, _, aliceSession := h.login("alice", "valid-password")
 
+	// Another account's session is not there, as far as a user can see.
 	w := h.do(http.MethodDelete, adminSession, "", h.user()...)
-	expectError(t, w, http.StatusForbidden, "InsufficientPrivilege")
+	expectError(t, w, http.StatusNotFound, "ResourceMissingAtURI")
 
 	if w := h.do(http.MethodDelete, aliceSession, "", h.admin()...); w.Code != http.StatusNoContent {
 		t.Fatalf("admin deleting alice's session: %d %s", w.Code, w.Body.String())
@@ -121,15 +122,37 @@ func TestOnlyAnAdminEndsSomeoneElsesSession(t *testing.T) {
 func TestSessionCollectionListsTheLiveSessions(t *testing.T) {
 	h := newHarness(t)
 	h.login("admin", "admin")
-	token := h.user()
+	h.user()
 
-	w := h.do(http.MethodGet, sessionsURL, "", token...)
+	w := h.do(http.MethodGet, sessionsURL, "", h.admin()...)
 	if w.Code != http.StatusOK {
 		t.Fatalf("status %d", w.Code)
 	}
-	if count := decode(t, w)["Members@odata.count"]; count != float64(2) {
-		t.Fatalf("Members@odata.count is %v, want 2", count)
+	if count := decode(t, w)["Members@odata.count"]; count != float64(3) {
+		t.Fatalf("Members@odata.count is %v, want 3", count)
 	}
+}
+
+// A user sees only their own sessions: another account's are not there, not
+// even as a 403 that would say they exist.
+func TestAUserSeesOnlyTheirOwnSessions(t *testing.T) {
+	h := newHarness(t)
+	_, _, adminSession := h.login("admin", "admin")
+	_, token, aliceSession := h.login("alice", "valid-password")
+	alice := []string{"X-Auth-Token", token}
+
+	w := h.do(http.MethodGet, sessionsURL, "", alice...)
+	body := decode(t, w)
+	members, _ := body["Members"].([]any)
+	if len(members) != 1 || members[0].(map[string]any)["@odata.id"] != aliceSession {
+		t.Fatalf("alice sees %v, want only %s", body["Members"], aliceSession)
+	}
+
+	if w := h.do(http.MethodGet, aliceSession, "", alice...); w.Code != http.StatusOK {
+		t.Fatalf("alice's own session: %d", w.Code)
+	}
+	w = h.do(http.MethodGet, adminSession, "", alice...)
+	expectError(t, w, http.StatusNotFound, "ResourceMissingAtURI")
 }
 
 func TestAnUnknownSessionIsNotFound(t *testing.T) {
