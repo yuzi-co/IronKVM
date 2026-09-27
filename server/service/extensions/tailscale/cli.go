@@ -1,24 +1,17 @@
 package tailscale
 
 import (
+	"os/exec"
+	"time"
+
 	"NanoKVM-Server/service/extensions/addon"
 	"NanoKVM-Server/service/extensions/vpn"
 	"NanoKVM-Server/utils"
-	"fmt"
-	"os"
-	"os/exec"
-	"strings"
-	"time"
 )
 
-const (
-	ScriptPath       = "/etc/init.d/S98tailscaled"
-	ScriptBackupPath = "/kvmapp/system/init.d/S98tailscaled"
-
-	// loginURLTimeout bounds how long the handler waits for the login URL.
-	// The command itself runs for ten minutes waiting on the browser.
-	loginURLTimeout = 60 * time.Second
-)
+// loginURLTimeout bounds how long the handler waits for the login URL. The
+// command itself runs for ten minutes waiting on the browser.
+const loginURLTimeout = 60 * time.Second
 
 type Cli struct{}
 
@@ -26,71 +19,37 @@ func NewCli() *Cli {
 	return &Cli{}
 }
 
+// Start runs the boot script from the package copy. It no longer touches
+// start at boot, which is the boot switch's, through addon.SetBoot.
 func (c *Cli) Start() error {
 	for _, filePath := range []string{TailscalePath, TailscaledPath} {
 		if err := utils.EnsurePermission(filePath, 0o100); err != nil {
 			return err
 		}
 	}
-
-	commands := []string{
-		fmt.Sprintf("cp -f %s %s", ScriptBackupPath, ScriptPath),
-		fmt.Sprintf("%s start", ScriptPath),
-	}
-
-	command := strings.Join(commands, " && ")
-	if err := exec.Command("sh", "-c", command).Run(); err != nil {
-		return err
-	}
-	return recordEnabled(true)
+	return vpn.Script(addon.Tailscale.Script(), "start", "")
 }
 
 func (c *Cli) Restart() error {
-	commands := []string{
-		fmt.Sprintf("cp -f %s %s", ScriptBackupPath, ScriptPath),
-		fmt.Sprintf("%s restart", ScriptPath),
-	}
-
-	command := strings.Join(commands, " && ")
-	return exec.Command("sh", "-c", command).Run()
+	return vpn.Script(addon.Tailscale.Script(), "restart", "")
 }
 
 func (c *Cli) Stop() error {
-	command := fmt.Sprintf("%s stop", ScriptPath)
-	err := exec.Command("sh", "-c", command).Run()
-	if err != nil {
-		return err
-	}
-
-	if err := recordEnabled(false); err != nil {
-		return err
-	}
-	return os.Remove(ScriptPath)
-}
-
-// recordEnabled keeps "start at boot" on /data on a distribution image, where
-// /etc/init.d belongs to the slot and a new image would forget it. S04addons
-// reads it at the next boot. Anywhere else the script in /etc/init.d is the
-// whole record, as it always was.
-func recordEnabled(on bool) error {
-	if !addon.OnData() {
-		return nil
-	}
-	return addon.SetEnabled(addonSpec().Name, on)
+	return vpn.Script(addon.Tailscale.Script(), "stop", "")
 }
 
 func (c *Cli) Up() error {
-	command := "tailscale up --accept-dns=false"
-	return exec.Command("sh", "-c", command).Run()
+	_, err := vpn.Run(exec.Command(TailscalePath, "up", "--accept-dns=false"))
+	return err
 }
 
 func (c *Cli) Down() error {
-	command := "tailscale down"
-	return exec.Command("sh", "-c", command).Run()
+	_, err := vpn.Run(exec.Command(TailscalePath, "down"))
+	return err
 }
 
 func (c *Cli) Status() (*TsStatus, error) {
-	output, err := exec.Command("sh", "-c", "tailscale status --json").CombinedOutput()
+	output, err := exec.Command(TailscalePath, "status", "--json").CombinedOutput()
 	if err != nil {
 		return nil, err
 	}
@@ -100,12 +59,12 @@ func (c *Cli) Status() (*TsStatus, error) {
 func (c *Cli) Login() (string, error) {
 	// No shell: killing "sh -c tailscale ..." leaves tailscale holding the
 	// stderr pipe, so the timeout could never take effect.
-	cmd := exec.Command("tailscale", "login", "--accept-dns=false", "--timeout=10m")
+	cmd := exec.Command(TailscalePath, "login", "--accept-dns=false", "--timeout=10m")
 
 	return vpn.LoginURL(cmd, false, loginURLTimeout, 0)
 }
 
 func (c *Cli) Logout() error {
-	command := "tailscale logout"
-	return exec.Command("sh", "-c", command).Run()
+	_, err := vpn.Run(exec.Command(TailscalePath, "logout"))
+	return err
 }

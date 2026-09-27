@@ -91,27 +91,3 @@ func TestPlaceBinariesElsewhereKeepsTheOldPaths(t *testing.T) {
 		t.Fatal("nothing may be written to /data off a distribution image")
 	}
 }
-
-func TestRecordEnabledOnlyOnData(t *testing.T) {
-	scratchImage(t, true)
-	if err := recordEnabled(true); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := os.Stat(filepath.Join(addon.Dir("tailscale"), "enabled")); err != nil {
-		t.Fatal("start must record enabled on /data")
-	}
-	if err := recordEnabled(false); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := os.Stat(filepath.Join(addon.Dir("tailscale"), "enabled")); err == nil {
-		t.Fatal("stop must clear enabled on /data")
-	}
-
-	scratchImage(t, false)
-	if err := recordEnabled(true); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := os.Stat(addon.Dir("tailscale")); err == nil {
-		t.Fatal("nothing may be written to /data off a distribution image")
-	}
-}
