@@ -139,6 +139,11 @@ func (s *Service) Register(r *gin.Engine) {
 	route(g, resetPath, map[string]gin.HandlerFunc{http.MethodPost: adminOnly(s.reset)})
 	route(g, chassisCollection, map[string]gin.HandlerFunc{http.MethodGet: chassisList})
 	route(g, chassisPath, map[string]gin.HandlerFunc{http.MethodGet: s.chassis})
+
+	route(g, managersPath, map[string]gin.HandlerFunc{http.MethodGet: managers})
+	route(g, managerPath, map[string]gin.HandlerFunc{http.MethodGet: s.manager})
+	route(g, nicsPath, map[string]gin.HandlerFunc{http.MethodGet: s.nics})
+	route(g, nicsPath+"/:id", map[string]gin.HandlerFunc{http.MethodGet: s.nic})
 }
 
 // publicRoutes answer without credentials, as the Redfish specification
