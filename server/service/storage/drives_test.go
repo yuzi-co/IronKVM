@@ -328,6 +328,75 @@ func TestEjectALockedMediumReportsIt(t *testing.T) {
 	}
 }
 
+// withForcedEject gives the LUN the forced_eject attribute of a kernel with
+// patch 0006. Writing it empties the LUN's file whatever the host holds.
+func withForcedEject(t *testing.T, dir string, lun string) {
+	t.Helper()
+	if err := os.WriteFile(filepath.Join(dir, lun, "forced_eject"), nil, 0o200); err != nil {
+		t.Fatalf("setup: %s", err)
+	}
+}
+
+// lockedEjectWithForce is lockedEject on a kernel with forced_eject.
+func lockedEjectWithForce(path string, data []byte) error {
+	if filepath.Base(path) == "forced_eject" {
+		return os.WriteFile(filepath.Join(filepath.Dir(path), "file"), []byte("\n"), 0o666)
+	}
+	return lockedEject(path, data)
+}
+
+func TestEjectALockedMediumForcesItOut(t *testing.T) {
+	dir := fakeGadget(t, "lun.0", "lun.1")
+	withForcedEject(t, dir, "lun.1")
+	if err := insertDrive(DriveCdrom, "/data/a.iso", true); err != nil {
+		t.Fatalf("setup: %s", err)
+	}
+	writes := recordWrites(t, lockedEjectWithForce)
+
+	if err := ejectDrive(DriveCdrom); err != nil {
+		t.Fatalf("eject: %s", err)
+	}
+	if got := readAttr(t, dir, "lun.1", "file"); got != "" {
+		t.Fatalf("lun.1/file is %q, want empty", got)
+	}
+	want := []string{"lun.1/file=", "lun.1/forced_eject=1"}
+	if strings.Join(*writes, " ") != strings.Join(want, " ") {
+		t.Fatalf("writes %v, want %v", *writes, want)
+	}
+}
+
+func TestInsertOverALockedMediumForcesTheOldOneOut(t *testing.T) {
+	dir := fakeGadget(t, "lun.0", "lun.1")
+	withForcedEject(t, dir, "lun.1")
+	if err := insertDrive(DriveCdrom, "/data/a.iso", true); err != nil {
+		t.Fatalf("setup: %s", err)
+	}
+	recordWrites(t, lockedEjectWithForce)
+
+	if err := insertDrive(DriveCdrom, "/data/b.iso", true); err != nil {
+		t.Fatalf("insert: %s", err)
+	}
+	if got := readAttr(t, dir, "lun.1", "file"); got != "/data/b.iso" {
+		t.Fatalf("lun.1/file is %q, want the new image", got)
+	}
+}
+
+func TestAnUnlockedEjectNeverForces(t *testing.T) {
+	dir := fakeGadget(t, "lun.0", "lun.1")
+	withForcedEject(t, dir, "lun.0")
+	if err := insertDrive(DriveDisk, "/data/a.img", false); err != nil {
+		t.Fatalf("setup: %s", err)
+	}
+	writes := recordWrites(t, nil)
+
+	if err := ejectDrive(DriveDisk); err != nil {
+		t.Fatalf("eject: %s", err)
+	}
+	if want := "lun.0/file="; strings.Join(*writes, " ") != want {
+		t.Fatalf("writes %v, want %s", *writes, want)
+	}
+}
+
 func TestInsertOverALockedMediumKeepsIt(t *testing.T) {
 	dir := fakeGadget(t, "lun.0", "lun.1")
 	if err := insertDrive(DriveCdrom, "/data/a.iso", true); err != nil {
