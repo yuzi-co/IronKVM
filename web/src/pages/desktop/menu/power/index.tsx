@@ -8,6 +8,7 @@ import * as api from '@/api/vm';
 import * as localstorage from '@/lib/localstorage.ts';
 import { MenuItem } from '@/components/menu-item.tsx';
 
+import { HostPower } from './host-power.tsx';
 import { PowerLong } from './power-long.tsx';
 import { PowerShort } from './power-short.tsx';
 import { Reset } from './reset.tsx';
@@ -82,6 +83,8 @@ export const Power = () => {
         <PowerShort showConfirm={showConfirm} isLoading={isLoading} setIsLoading={setIsLoading} />
         <PowerLong showConfirm={showConfirm} isLoading={isLoading} setIsLoading={setIsLoading} />
       </div>
+
+      <HostPower showConfirm={showConfirm} />
     </div>
   );
 

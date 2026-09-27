@@ -2,6 +2,17 @@ package proto
 
 type GetHidModeRsp struct {
 	Mode string `json:"mode"` // normal or hid-only
+	// ExtendedKeys is true when the gadget carries the Consumer and System
+	// Control reports, which only normal mode's descriptor declares.
+	ExtendedKeys bool `json:"extendedKeys"`
+}
+
+// SendHidKeyReq presses and releases one key outside the keyboard: a
+// Consumer Control usage (media, volume) or a System Control usage (power,
+// sleep, wake).
+type SendHidKeyReq struct {
+	Page  string `json:"page" form:"page" validate:"required,oneof=consumer system"`
+	Usage int    `json:"usage" form:"usage" validate:"required"`
 }
 
 type GetKeyboardLedStatusRsp struct {

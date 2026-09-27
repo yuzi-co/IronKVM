@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -29,11 +30,22 @@ var initScripts = []string{
 	"../../../kvmapp/system/init.d/S03usbhid",
 }
 
-// hidFunctions maps the configfs instance to the constant that must match it.
-var hidFunctions = map[string]int{
-	"hid.GS0": KeyboardReportLen,
-	"hid.GS1": RelativeMouseReportLen,
-	"hid.GS2": AbsoluteMouseReportLen,
+// hidFunctions maps each script to the report lengths each configfs instance
+// may be given, in the order the script writes them. The absolute pointer in
+// S03usbdev has two: with /boot/usb.extkeys one report ID byte in front of the
+// report, and without it the plain report. S03usbhid, the mode for hosts that
+// are picky about the gadget, keeps the plain report.
+var hidFunctions = map[string]map[string][]int{
+	"../../../kvmapp/system/init.d/S03usbdev": {
+		"hid.GS0": {KeyboardReportLen},
+		"hid.GS1": {RelativeMouseReportLen},
+		"hid.GS2": {AbsoluteMouseReportLenWithID, AbsoluteMouseReportLen},
+	},
+	"../../../kvmapp/system/init.d/S03usbhid": {
+		"hid.GS0": {KeyboardReportLen},
+		"hid.GS1": {RelativeMouseReportLen},
+		"hid.GS2": {AbsoluteMouseReportLen},
+	},
 }
 
 func readScript(t *testing.T, path string) string {
@@ -49,21 +61,22 @@ func readScript(t *testing.T, path string) string {
 // shellReportLengths pulls the values out of lines shaped like
 //
 //	echo 8 > functions/hid.GS0/report_length
-func shellReportLengths(t *testing.T, script string) map[string]int {
+//
+// in the order the script writes them, without repeats.
+func shellReportLengths(t *testing.T, script string) map[string][]int {
 	t.Helper()
 
 	pattern := regexp.MustCompile(`echo\s+(\d+)\s*>\s*functions/(hid\.GS\d)/report_length`)
-	found := map[string]int{}
+	found := map[string][]int{}
 
 	for _, match := range pattern.FindAllStringSubmatch(script, -1) {
 		length, err := strconv.Atoi(match[1])
 		if err != nil {
 			t.Fatalf("unreadable report_length %q: %s", match[1], err)
 		}
-		if previous, seen := found[match[2]]; seen && previous != length {
-			t.Fatalf("%s is given two different report lengths, %d and %d", match[2], previous, length)
+		if !slices.Contains(found[match[2]], length) {
+			found[match[2]] = append(found[match[2]], length)
 		}
-		found[match[2]] = length
 	}
 
 	return found
@@ -73,19 +86,20 @@ func TestShellAndGoAgreeOnEveryReportLength(t *testing.T) {
 	for _, path := range initScripts {
 		script := readScript(t, path)
 		found := shellReportLengths(t, script)
+		wantAll := hidFunctions[path]
 
-		if len(found) != len(hidFunctions) {
-			t.Fatalf("%s writes %d report lengths, want %d: %v", path, len(found), len(hidFunctions), found)
+		if len(found) != len(wantAll) {
+			t.Fatalf("%s writes report lengths for %d functions, want %d: %v", path, len(found), len(wantAll), found)
 		}
 
-		for function, want := range hidFunctions {
+		for function, want := range wantAll {
 			got, ok := found[function]
 			if !ok {
 				t.Errorf("%s sets no report_length for %s", path, function)
 				continue
 			}
-			if got != want {
-				t.Errorf("%s gives %s a report_length of %d, but this package sends %d",
+			if !slices.Equal(got, want) {
+				t.Errorf("%s gives %s the report lengths %v, but this package sends %v",
 					path, function, got, want)
 			}
 		}
@@ -259,4 +273,71 @@ func indexOfBytes(haystack []byte, needle []byte) int {
 
 func containsBytes(haystack []byte, needle []byte) bool {
 	return indexOfBytes(haystack, needle) >= 0
+}
+
+// absoluteDescriptors decodes, in order, every set of escaped bytes the script
+// echoes into hid.GS2/report_desc.
+func absoluteDescriptors(t *testing.T, path string, script string) [][]byte {
+	t.Helper()
+
+	pattern := regexp.MustCompile(`echo -ne (\S+) > functions/hid\.GS2/report_desc`)
+	matches := pattern.FindAllStringSubmatch(script, -1)
+	if matches == nil {
+		t.Fatalf("%s: no report_desc line for hid.GS2", path)
+	}
+
+	var descriptors [][]byte
+	for _, match := range matches {
+		descriptor, err := decodeHexEscapes(strings.ReplaceAll(match[1], `\\`, `\`))
+		if err != nil {
+			t.Fatalf("%s: %s", path, err)
+		}
+		descriptors = append(descriptors, descriptor)
+	}
+	return descriptors
+}
+
+// S03usbdev writes two absolute descriptors: the plain one, which is the
+// default, and the one with the key reports, which only /boot/usb.extkeys
+// selects. The server puts AbsolutePointerReportID in front of every pointer
+// report and sends the keys under the other two IDs, so a descriptor that
+// declared different numbers would have the host read clicks as volume keys.
+func TestTheNormalModePointerDeclaresTheThreeReportIDsOnlyWhenAsked(t *testing.T) {
+	path := "../../../kvmapp/system/init.d/S03usbdev"
+	script := readScript(t, path)
+	descriptors := absoluteDescriptors(t, path, script)
+
+	if len(descriptors) != 2 {
+		t.Fatalf("%s writes %d absolute descriptors, want 2", path, len(descriptors))
+	}
+	withIDs, plain := descriptors[0], descriptors[1]
+
+	// 85 NN = Report ID (NN), each right after its application collection.
+	for _, want := range [][]byte{
+		{0x09, 0x02, 0xa1, 0x01, 0x85, AbsolutePointerReportID},
+		{0x09, 0x01, 0xa1, 0x01, 0x85, ConsumerReportID},
+		{0x09, 0x80, 0xa1, 0x01, 0x85, SystemReportID},
+	} {
+		if !containsBytes(withIDs, want) {
+			t.Errorf("%s: the extended absolute descriptor lacks % x", path, want)
+		}
+	}
+	if containsBytes(plain, []byte{0x85}) {
+		t.Errorf("%s: the default absolute descriptor declares a report ID", path)
+	}
+	if !strings.Contains(script, "if [ -e /boot/usb.extkeys ]") {
+		t.Errorf("%s: the report IDs are not behind /boot/usb.extkeys", path)
+	}
+}
+
+// Hid-only mode keeps the pointer without report IDs. The server reads
+// report_length to decide whether to send an ID, and this is the case where it
+// must not.
+func TestTheHidOnlyPointerHasNoReportIDs(t *testing.T) {
+	path := "../../../kvmapp/system/init.d/S03usbhid"
+	for _, descriptor := range absoluteDescriptors(t, path, readScript(t, path)) {
+		if containsBytes(descriptor, []byte{0x85}) {
+			t.Errorf("%s: the hid-only absolute descriptor declares a report ID", path)
+		}
+	}
 }

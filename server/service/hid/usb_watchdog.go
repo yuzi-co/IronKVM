@@ -195,6 +195,10 @@ func (w *usbWatchdog) poll() {
 
 	w.observe(link)
 
+	// A rebuild can change the pointer descriptor without deleting /dev/hidg2,
+	// and nothing else tells the open handle about it.
+	GetHid().RefreshAbsoluteReportID()
+
 	// A deliberate operation is in flight. Whatever the link reads right now is
 	// about that operation, not about a fault.
 	if usbGadgetSettling() {

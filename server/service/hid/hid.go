@@ -35,6 +35,16 @@ type Hid struct {
 	kbHealth  endpointHealth
 	relHealth endpointHealth
 	absHealth endpointHealth
+	// absReportID is the ID put in front of every absolute pointer report, or
+	// 0 for none. It is read from configfs each time /dev/hidg2 is opened,
+	// because the gadget and this binary are deployed separately, and a
+	// pointer that sends the wrong shape does not move: f_hid cuts a 7-byte
+	// write to 6, and a host expecting an ID misreads a 6-byte report.
+	// Guarded by mouseMutex.
+	absReportID byte
+	// absBuf holds one prefixed pointer report, so the prefix costs no
+	// allocation on the hottest path in the server. Guarded by mouseMutex.
+	absBuf [AbsoluteMouseReportLenWithID]byte
 }
 
 const (
@@ -68,6 +78,19 @@ const (
 
 	// AbsoluteMouseReportLen is buttons, a 16-bit X, a 16-bit Y, and wheel.
 	AbsoluteMouseReportLen = 6
+
+	// AbsoluteMouseReportLenWithID is what the host reads from the absolute
+	// pointer in normal mode: one report ID byte, then the report.
+	AbsoluteMouseReportLenWithID = AbsoluteMouseReportLen + 1
+)
+
+// Report IDs on the absolute pointer. Only S03usbdev declares them; the
+// keyboard and the relative mouse claim the boot protocol, where a firmware
+// reads reports without an ID, so they never carry one.
+const (
+	AbsolutePointerReportID byte = 1
+	ConsumerReportID        byte = 2
+	SystemReportID          byte = 3
 )
 
 const (
@@ -76,6 +99,53 @@ const (
 	hidReopenTimeout    = 2 * time.Second
 	hidReopenRetryDelay = 100 * time.Millisecond
 )
+
+// absoluteReportLengthPath is where S03usbdev records the absolute pointer's
+// report length. A variable so tests can point it at a scratch file.
+var absoluteReportLengthPath = "/sys/kernel/config/usb_gadget/g0/functions/hid.GS2/report_length"
+
+// readAbsoluteReportID returns the pointer's report ID if the gadget declares
+// report IDs on hid.GS2, and 0 if it does not. The length is the tell: only
+// the descriptor with IDs is AbsoluteMouseReportLenWithID long. A missing or
+// unreadable file means no IDs, which is what an older gadget and hid-only
+// mode both need.
+func readAbsoluteReportID() byte {
+	raw, err := os.ReadFile(absoluteReportLengthPath)
+	if err != nil {
+		return 0
+	}
+	if string(bytes.TrimSpace(raw)) == strconv.Itoa(AbsoluteMouseReportLenWithID) {
+		return AbsolutePointerReportID
+	}
+	return 0
+}
+
+// RefreshAbsoluteReportID closes the pointer handle when the gadget's
+// report_length no longer matches the ID read when the handle was opened, and
+// reports whether it did. The next write reopens the handle and reads the ID
+// again.
+//
+// Opening is not enough to keep the ID current. S03usbdev stop_start keeps the
+// function directories, so /dev/hidg2 is not deleted and the handle stays
+// valid while the descriptor under it changes. The server then sends plain
+// reports to a gadget that declares IDs, and the host drops every one of them.
+// The USB watchdog calls this on each poll.
+func (h *Hid) RefreshAbsoluteReportID() bool {
+	h.mouseMutex.Lock()
+	defer h.mouseMutex.Unlock()
+
+	if h.g2 == nil {
+		return false
+	}
+	id := readAbsoluteReportID()
+	if id == h.absReportID {
+		return false
+	}
+
+	log.Infof("%s: the pointer report ID changed from %d to %d, reopening", HID2, h.absReportID, id)
+	h.closeDeviceNoLock(h.absoluteMouseDevice(HID2))
+	return true
+}
 
 type hidWriter interface {
 	Write([]byte) (int, error)
@@ -90,6 +160,14 @@ type hidDevice struct {
 	mu     *sync.Mutex
 	file   **os.File
 	health *endpointHealth
+	// idPrefix asks writeHID to put Hid.absReportID in front of the report.
+	// Only the pointer sets it; the keys on the same endpoint carry their own
+	// ID in the report.
+	idPrefix bool
+	// needsID refuses the write when the open handle's gadget declares no
+	// report IDs. The keys set it: without IDs their first byte would reach
+	// the host as the pointer's buttons.
+	needsID bool
 }
 
 func (d hidDevice) get() *os.File {
@@ -139,7 +217,14 @@ func (h *Hid) relativeMouseDevice(path string) hidDevice {
 }
 
 func (h *Hid) absoluteMouseDevice(path string) hidDevice {
-	return hidDevice{path: path, name: NameAbsoluteMouse, mu: &h.mouseMutex, file: &h.g2, health: &h.absHealth}
+	return hidDevice{path: path, name: NameAbsoluteMouse, mu: &h.mouseMutex, file: &h.g2, health: &h.absHealth, idPrefix: true}
+}
+
+// extendedKeyDevice is the absolute pointer's endpoint seen by the Consumer and
+// System Control keys. It shares the handle, the lock and the health record,
+// and it writes reports as given.
+func (h *Hid) extendedKeyDevice() hidDevice {
+	return hidDevice{path: HID2, name: NameAbsoluteMouse, mu: &h.mouseMutex, file: &h.g2, health: &h.absHealth, needsID: true}
 }
 
 // Status reports what the target is doing with each endpoint. It takes none of
@@ -271,6 +356,9 @@ func (h *Hid) openDeviceNoLock(device hidDevice) error {
 	}
 
 	device.set(file)
+	if device.file == &h.g2 {
+		h.absReportID = readAbsoluteReportID()
+	}
 	return nil
 }
 
@@ -479,7 +567,12 @@ func (h *Hid) writeHID(device hidDevice, data []byte) error {
 	device.mu.Lock()
 	defer device.mu.Unlock()
 
-	return device.note(h.writeHIDLocked(device, data))
+	err := h.writeHIDLocked(device, data)
+	if errors.Is(err, errExtendedKeysUnavailable) {
+		// Nothing reached the endpoint, so it says nothing about its health.
+		return err
+	}
+	return device.note(err)
 }
 
 // note records what one write did to the endpoint and decides whether the
@@ -566,6 +659,20 @@ func (h *Hid) writeHIDLocked(device hidDevice, data []byte) error {
 		return fmt.Errorf("%s: hid handle is nil", device.path)
 	}
 
+	// absReportID was read when this handle was opened, so this check and
+	// the write below see the same gadget: a mode switch that rebuilt it
+	// deleted the node, and the reopen above read the ID again.
+	if device.needsID && h.absReportID == 0 {
+		return errExtendedKeysUnavailable
+	}
+	if device.idPrefix && h.absReportID != 0 {
+		if len(data) != AbsoluteMouseReportLen {
+			return fmt.Errorf("%s: pointer report of %d bytes, want %d", device.path, len(data), AbsoluteMouseReportLen)
+		}
+		h.absBuf[0] = h.absReportID
+		copy(h.absBuf[1:], data)
+		data = h.absBuf[:]
+	}
 	if err := writeReport(device.path, file, data, hidWriteTimeout); err != nil {
 		// The LED reader shares the keyboard endpoint's descriptor, so a failed
 		// keyboard write invalidates it too. Drop it before the device handle.
