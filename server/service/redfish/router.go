@@ -123,6 +123,16 @@ func (s *Service) Register(r *gin.Engine) {
 	route(g, rootPath, map[string]gin.HandlerFunc{http.MethodGet: s.serviceRoot})
 	route(g, odataPath, map[string]gin.HandlerFunc{http.MethodGet: serviceDocument})
 	route(g, metadataPath, map[string]gin.HandlerFunc{http.MethodGet: metadata})
+
+	route(g, sessionServicePath, map[string]gin.HandlerFunc{http.MethodGet: sessionService})
+	route(g, sessionsPath, map[string]gin.HandlerFunc{
+		http.MethodGet:  s.listSessions,
+		http.MethodPost: s.createSession,
+	})
+	route(g, sessionsPath+"/:id", map[string]gin.HandlerFunc{
+		http.MethodGet:    s.getSession,
+		http.MethodDelete: s.deleteSession,
+	})
 }
 
 // publicRoutes answer without credentials, as the Redfish specification
