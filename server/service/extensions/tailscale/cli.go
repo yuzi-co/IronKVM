@@ -2,6 +2,7 @@ package tailscale
 
 import (
 	"os/exec"
+	"strings"
 	"time"
 
 	"NanoKVM-Server/service/extensions/addon"
@@ -67,4 +68,14 @@ func (c *Cli) Login() (string, error) {
 func (c *Cli) Logout() error {
 	_, err := vpn.Run(exec.Command(TailscalePath, "logout"))
 	return err
+}
+
+// Version is the installed CLI's version: the first line of `tailscale version`.
+func (c *Cli) Version() (string, error) {
+	out, err := vpn.Run(exec.Command(TailscalePath, "version"))
+	if err != nil {
+		return "", err
+	}
+	first, _, _ := strings.Cut(strings.TrimSpace(string(out)), "\n")
+	return strings.TrimSpace(first), nil
 }

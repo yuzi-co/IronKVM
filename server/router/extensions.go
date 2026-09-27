@@ -27,4 +27,6 @@ func extensionsRouter(r *gin.Engine) {
 	api.POST("/tailscale/stop", ts.Stop)           // tailscale stop
 	api.POST("/tailscale/restart", ts.Restart)     // tailscale restart
 	api.POST("/tailscale/boot", ts.Boot)           // tailscale start at boot on or off
+	api.GET("/tailscale/update", ts.GetUpdate)     // tailscale current and latest version
+	api.POST("/tailscale/update", ts.Update)       // install the latest tailscale
 }

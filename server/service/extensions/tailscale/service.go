@@ -20,6 +20,14 @@ var (
 	TailscaledPath = "/usr/sbin/tailscaled"
 )
 
+// The update check's cache, the lookup and the installer. Variables so the
+// tests need no network.
+var (
+	updates        = &vpn.VersionCache{TTL: vpn.UpdateTTL}
+	fetchLatest    = latestVersion
+	installPackage = install
+)
+
 // addonSpec is what Tailscale needs back from the root filesystem after a new
 // image: its two binaries in their usual places and its boot script while it is
 // enabled. Its login is already on /data, where S98tailscaled keeps it.
@@ -46,7 +54,7 @@ func (s *Service) Install(c *gin.Context) {
 	}
 
 	if !isInstalled() {
-		if err := install(); err != nil {
+		if err := installPackage(); err != nil {
 			rsp.ErrRsp(c, -1, vpn.Message("install failed", err))
 			return
 		}
@@ -231,4 +239,66 @@ func (s *Service) GetStatus(c *gin.Context) {
 // Boot turns start at boot on or off.
 func (s *Service) Boot(c *gin.Context) {
 	vpn.Boot(c, addon.Tailscale, isInstalled())
+}
+
+// GetUpdate reports the installed version and the latest one, which is
+// looked up at most once an hour.
+func (s *Service) GetUpdate(c *gin.Context) {
+	var rsp proto.Response
+
+	if !isInstalled() {
+		rsp.ErrRsp(c, -1, "tailscale is not installed")
+		return
+	}
+
+	current, err := NewCli().Version()
+	if err != nil {
+		rsp.ErrRsp(c, -1, vpn.Message("version failed", err))
+		return
+	}
+
+	latest, err := updates.Latest(fetchLatest)
+	if err != nil {
+		rsp.ErrRsp(c, -1, vpn.Message("update check failed", err))
+		return
+	}
+
+	rsp.OkRspWithData(c, &proto.VpnUpdateRsp{Current: current, Latest: latest})
+}
+
+// Update installs the latest release over the installed one. The login stays
+// on /data, and the daemon runs again afterwards only if it ran before.
+func (s *Service) Update(c *gin.Context) {
+	var rsp proto.Response
+
+	if !isInstalled() {
+		rsp.ErrRsp(c, -1, "tailscale is not installed")
+		return
+	}
+
+	cli := NewCli()
+	wasRunning := addon.Running(addon.Tailscale)
+	if wasRunning {
+		if err := cli.Stop(); err != nil {
+			rsp.ErrRsp(c, -1, vpn.Message("stop failed", err))
+			return
+		}
+	}
+
+	err := installPackage()
+	updates.Reset()
+
+	if wasRunning {
+		if startErr := cli.Start(); startErr != nil && err == nil {
+			err = startErr
+		}
+	}
+	if err != nil {
+		log.Errorf("failed to update tailscale: %s", err)
+		rsp.ErrRsp(c, -1, vpn.Message("update failed", err))
+		return
+	}
+
+	rsp.OkRsp(c)
+	log.Debugf("update tailscale successfully")
 }
