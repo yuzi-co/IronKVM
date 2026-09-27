@@ -679,22 +679,6 @@ const en = {
       },
       tailscale: {
         title: 'Tailscale',
-        memory: {
-          title: 'Memory optimization',
-          tip: 'When memory usage exceeds the limit, garbage collection is performed more aggressively to attempt to free up memory. A Tailscale restart is required for the change to take effect.'
-        },
-        swap: {
-          title: 'Swap memory',
-          tip: 'If issues persist after enabling memory optimization, try enabling swap memory. This sets the swap file size to 256MB by default, which can be adjusted in "Settings > Device".'
-        },
-        restart: 'Restart Tailscale?',
-        stop: 'Stop Tailscale?',
-        stopDesc: 'Log out Tailscale and disable automatic startup on boot.',
-        loading: 'Loading...',
-        notInstall: 'Tailscale not found! Please install.',
-        install: 'Install',
-        installing: 'Installing',
-        failed: 'Install failed',
         retry: 'Please refresh and try again. Or try to install manually',
         download: 'Download the',
         package: 'installation package',
@@ -702,23 +686,13 @@ const en = {
         upTailscale: 'Upload tailscale to NanoKVM directory /usr/bin/',
         upTailscaled: 'Upload tailscaled to NanoKVM directory /usr/sbin/',
         refresh: 'Refresh current page',
-        notRunning: 'Tailscale is not running. Please start it to continue.',
-        run: 'Start',
         notLogin:
           'The device has not been bound yet. Please login and bind this device to your account.',
         urlPeriod: 'This url is valid for 10 minutes',
         login: 'Login',
         loginSuccess: 'Login Success',
-        enable: 'Enable Tailscale',
-        deviceName: 'Device Name',
-        deviceIP: 'Device IP',
-        account: 'Account',
         logout: 'Logout',
-        logoutDesc: 'Are you sure you want to logout?',
-        uninstall: 'Uninstall Tailscale',
-        uninstallDesc: 'Are you sure you want to uninstall Tailscale?',
-        okBtn: 'Yes',
-        cancelBtn: 'No'
+        logoutDesc: 'Are you sure you want to logout?'
       },
       update: {
         title: 'Check for Updates',

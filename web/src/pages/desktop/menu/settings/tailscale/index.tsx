@@ -1,17 +1,11 @@
-import { useEffect, useState } from 'react';
-import { Divider } from 'antd';
-import { LoaderCircleIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/extensions/tailscale.ts';
-import { useStableCallback } from '@/hooks/useStableCallback.ts';
 
-import { Device } from './device.tsx';
-import { Header } from './header.tsx';
-import { Install } from './install.tsx';
+import { VpnPage } from '../vpn/page.tsx';
+import type { VpnInfo } from '../vpn/types.ts';
+import { InstallHelp } from './install-help.tsx';
 import { Login } from './login.tsx';
-import { Run } from './run.tsx';
-import type { Status } from './types.ts';
 
 type TailscaleProps = {
   setIsLocked: (isLocked: boolean) => void;
@@ -20,63 +14,15 @@ type TailscaleProps = {
 export const Tailscale = ({ setIsLocked }: TailscaleProps) => {
   const { t } = useTranslation();
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [status, setStatus] = useState<Status>();
-  const [errMsg, setErrMsg] = useState('');
+  const vpn: VpnInfo = {
+    id: 'tailscale',
+    title: 'Tailscale',
+    api,
+    logoutLabel: t('settings.tailscale.logout'),
+    logoutWarning: t('settings.tailscale.logoutDesc'),
+    renderLogin: (onSuccess) => <Login onSuccess={onSuccess} />,
+    installHelp: <InstallHelp />
+  };
 
-  const getStatus = useStableCallback(() => {
-    if (isLoading) return;
-    setIsLoading(true);
-
-    api
-      .getStatus()
-      .then((rsp) => {
-        if (rsp.code !== 0) {
-          setErrMsg(rsp.msg);
-          return;
-        }
-
-        setStatus(rsp.data);
-      })
-      .catch((err) => {
-        setErrMsg(err?.message || 'Failed to get status');
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  });
-
-  useEffect(() => {
-    getStatus();
-  }, [getStatus]);
-
-  return (
-    <>
-      <Header state={status?.state} onSuccess={getStatus} />
-      <Divider className="opacity-50" />
-
-      {isLoading ? (
-        <div className="flex w-full items-center justify-center space-x-2 pt-5 text-neutral-500">
-          <LoaderCircleIcon className="animate-spin" size={18} />
-          <span>{t('settings.tailscale.loading')}</span>
-        </div>
-      ) : (
-        <>
-          {status?.state === 'notInstall' && (
-            <Install setIsLocked={setIsLocked} onSuccess={getStatus} />
-          )}
-
-          {status?.state === 'notRunning' && <Run onSuccess={getStatus} />}
-
-          {status?.state === 'notLogin' && <Login onSuccess={getStatus} />}
-
-          {(status?.state === 'stopped' || status?.state === 'running') && (
-            <Device status={status} onLogout={getStatus} />
-          )}
-
-          {errMsg && <div className="pt-5 text-red-500">{errMsg}</div>}
-        </>
-      )}
-    </>
-  );
+  return <VpnPage vpn={vpn} setIsLocked={setIsLocked} />;
 };
