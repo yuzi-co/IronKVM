@@ -21,12 +21,16 @@ func NewCli() *Cli {
 }
 
 // Start runs the boot script from the package copy. It no longer touches
-// start at boot, which is the boot switch's, through addon.SetBoot.
+// start at boot, which is the boot switch's, through addon.SetBoot, but while
+// start at boot is on it refreshes the copy in /etc/init.d first.
 func (c *Cli) Start() error {
 	for _, filePath := range []string{TailscalePath, TailscaledPath} {
 		if err := utils.EnsurePermission(filePath, 0o100); err != nil {
 			return err
 		}
+	}
+	if err := addon.RefreshInitd(addon.Tailscale); err != nil {
+		return err
 	}
 	return vpn.Script(addon.Tailscale.Script(), "start", "")
 }
@@ -35,8 +39,10 @@ func (c *Cli) Restart() error {
 	return vpn.Script(addon.Tailscale.Script(), "restart", "")
 }
 
+// Stop fails only when the daemon is still there afterwards. S98tailscaled
+// exits 0 either way and says FAIL, which vpn.Script reads.
 func (c *Cli) Stop() error {
-	return vpn.Script(addon.Tailscale.Script(), "stop", "")
+	return vpn.StopDaemon(addon.Tailscale)
 }
 
 func (c *Cli) Up() error {

@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"NanoKVM-Server/service/extensions/addon"
+	"NanoKVM-Server/service/extensions/vpn"
 	"NanoKVM-Server/utils"
 
 	log "github.com/sirupsen/logrus"
@@ -303,8 +304,12 @@ func getDownloadURL() (string, error) {
 
 // latestVersion is the version the release server's "latest" alias points at.
 func latestVersion() (string, error) {
-	resolved, err := getDownloadURL()
+	// The whole check, redirects included, ends after vpn.CheckTimeout.
+	resolved, err := resolveRedirect(utils.OutboundClient(vpn.CheckTimeout), OriginalURL)
 	if err != nil {
+		return "", err
+	}
+	if err := checkDownloadHost(resolved); err != nil {
 		return "", err
 	}
 	return versionFromPackageURL(resolved)

@@ -62,7 +62,7 @@ func lifecycle(t *testing.T) (calls string) {
 	stub(t, filepath.Join(addon.PkgInitdDir, "S98tailscaled"), `echo "script $1" >> "`+calls+`"
 case "$1" in
 start) echo "GOMEMLIMIT set to 56MiB"; echo "Starting tailscaled[1.2.3]: ${STUB_RESULT:-OK}" ;;
-stop) echo "Stopping tailscaled: OK" ;;
+stop) echo "Stopping tailscaled: ${STUB_STOP:-OK}" ;;
 esac`)
 	stub(t, TailscalePath, `echo "tailscale $*" >> "`+calls+`"
 case "$1" in
@@ -205,5 +205,108 @@ func TestStartNoLongerWritesGoMemLimit(t *testing.T) {
 	}
 	if utils.IsGoMemLimitExist() {
 		t.Fatal("S98tailscaled derives the limit; the server must not write it")
+	}
+}
+
+// Restart of a stopped daemon is a start, and is refused like one.
+func TestRestartOfAStoppedDaemonIsRefusedWhileNetBirdRuns(t *testing.T) {
+	calls := lifecycle(t)
+	fakeRunning(t, addon.NetBird, 4242, "/usr/bin/netbird")
+	rsp := call(t, NewService().Restart, "")
+	if rsp.Code == 0 || !strings.Contains(rsp.Msg, "NetBird is running or starts at boot") {
+		t.Fatalf("got %d %q", rsp.Code, rsp.Msg)
+	}
+	if got := callsOf(t, calls); got != "" {
+		t.Fatalf("nothing may run while refused, ran:\n%s", got)
+	}
+}
+
+func TestStartRefreshesTheBootCopy(t *testing.T) {
+	lifecycle(t)
+	stale := filepath.Join(addon.InitdDir, "S98tailscaled")
+	if err := os.WriteFile(stale, []byte("#!/bin/sh\n# old\n"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if rsp := call(t, NewService().Start, ""); rsp.Code != 0 {
+		t.Fatalf("got %d %q", rsp.Code, rsp.Msg)
+	}
+	got, _ := os.ReadFile(stale)
+	want, _ := os.ReadFile(addon.Tailscale.Script())
+	if string(got) != string(want) {
+		t.Fatalf("the boot copy was not refreshed: %q", got)
+	}
+}
+
+func TestSecondInstallUpdateOrUninstallIsBusy(t *testing.T) {
+	lifecycle(t)
+	savedInstall := installPackage
+	t.Cleanup(func() { installPackage = savedInstall })
+	binary, err := os.ReadFile(TailscalePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = os.Remove(TailscalePath)
+	release, started := make(chan struct{}), make(chan struct{})
+	installPackage = func() error {
+		close(started)
+		<-release
+		return os.WriteFile(TailscalePath, binary, 0o755)
+	}
+	s := NewService()
+	done := make(chan proto.Response)
+	go func() { done <- call(t, s.Install, "") }()
+	<-started
+	for name, h := range map[string]gin.HandlerFunc{"install": s.Install, "update": s.Update, "uninstall": s.Uninstall} {
+		if rsp := call(t, h, ""); rsp.Code != -1 || !strings.Contains(rsp.Msg, "Tailscale is busy") {
+			t.Fatalf("%s: got %d %q", name, rsp.Code, rsp.Msg)
+		}
+	}
+	close(release)
+	if rsp := <-done; rsp.Code != 0 {
+		t.Fatalf("the first install: %d %q", rsp.Code, rsp.Msg)
+	}
+}
+
+// The download runs without the lock; the start after it checks again.
+func TestInstallChecksAgainBeforeItStarts(t *testing.T) {
+	calls := lifecycle(t)
+	savedInstall := installPackage
+	t.Cleanup(func() { installPackage = savedInstall })
+	binary, err := os.ReadFile(TailscalePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = os.Remove(TailscalePath)
+	installPackage = func() error {
+		fakeRunning(t, addon.NetBird, 4242, "/usr/bin/netbird")
+		return os.WriteFile(TailscalePath, binary, 0o755)
+	}
+	rsp := call(t, NewService().Install, "")
+	if rsp.Code != -1 || !strings.Contains(rsp.Msg, "NetBird is running or starts at boot") {
+		t.Fatalf("got %d %q", rsp.Code, rsp.Msg)
+	}
+	if strings.Contains(callsOf(t, calls), "script start") {
+		t.Fatal("tailscale must not start while netbird runs")
+	}
+}
+
+func TestUpdateAndUninstallStopOnAFailedStop(t *testing.T) {
+	calls := lifecycle(t)
+	savedInstall := installPackage
+	t.Cleanup(func() { installPackage = savedInstall })
+	installPackage = func() error { t.Error("nothing may be installed after a failed stop"); return nil }
+	fakeRunning(t, addon.Tailscale, 4343, "/usr/sbin/tailscaled")
+	t.Setenv("STUB_STOP", "FAIL")
+	s := NewService()
+	for name, h := range map[string]gin.HandlerFunc{"update": s.Update, "uninstall": s.Uninstall} {
+		if rsp := call(t, h, ""); rsp.Code != -1 || !strings.Contains(rsp.Msg, "Stopping tailscaled: FAIL") {
+			t.Fatalf("%s: got %d %q", name, rsp.Code, rsp.Msg)
+		}
+	}
+	if !isInstalled() {
+		t.Fatal("uninstall must keep the binaries when the daemon did not stop")
+	}
+	if strings.Contains(callsOf(t, calls), "script start") {
+		t.Fatal("nothing may start after a failed stop")
 	}
 }
