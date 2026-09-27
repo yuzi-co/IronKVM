@@ -631,6 +631,52 @@ const en = {
           none: 'None'
         }
       },
+      vpn: {
+        loading: 'Loading...',
+        okBtn: 'Yes',
+        cancelBtn: 'No',
+        restart: 'Restart {{name}}?',
+        stop: 'Stop {{name}}?',
+        stopDesc: 'The daemon stops now. Start at boot is a separate switch and stays as it is.',
+        update: 'Update {{name}} to {{version}}?',
+        updateDesc: 'The daemon restarts if it is running. The login is kept.',
+        notInstall: '{{name}} is not installed.',
+        install: 'Install',
+        installing: 'Installing',
+        installFailed: 'Install failed',
+        retry: 'Try again',
+        notRunning: '{{name}} is not running. Start it to continue.',
+        run: 'Start',
+        boot: 'Start at boot',
+        bootDesc: 'Start {{name}} when the KVM boots.',
+        enable: 'Enable {{name}}',
+        control: 'Control server',
+        connected: 'Connected',
+        disconnected: 'Not connected',
+        deviceName: 'Device name',
+        deviceIP: 'Device IP',
+        account: 'Account',
+        version: 'Version',
+        uptime: 'Uptime',
+        peers: 'Peers',
+        noPeers: 'No peers yet.',
+        online: 'Online',
+        offline: 'Offline',
+        memory: 'Memory',
+        daemonRss: 'Daemon',
+        group: 'Add-ons group',
+        high: 'throttled above {{size}}',
+        max: 'stopped by the kernel above {{size}}',
+        noGroup: 'No add-ons memory group on this board.',
+        uninstall: 'Uninstall {{name}}',
+        uninstallDesc: 'Are you sure you want to uninstall {{name}}? The login stays on the board.',
+        blocked:
+          '{{other}} is running or starts at boot. Only one VPN runs at a time: stop {{other}} and turn off its start at boot first.',
+        swap: {
+          title: 'Swap memory',
+          tip: 'If the daemon runs short of memory, try enabling swap memory. This sets the swap file size to 256MB by default, which can be adjusted in "Settings > Device".'
+        }
+      },
       tailscale: {
         title: 'Tailscale',
         memory: {
