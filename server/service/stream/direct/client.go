@@ -3,6 +3,7 @@ package direct
 import (
 	"encoding/binary"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -335,6 +336,16 @@ func newOutboundFrame(isKeyFrame bool, timestamp int64, data []byte) *outboundFr
 	}
 }
 
+// sentBytes counts the video bytes every direct writer has put on the wire
+// since the server started, headers included. Audio is not counted. The
+// metrics endpoint reads it.
+var sentBytes atomic.Uint64
+
+// SentBytes reports the video bytes direct viewers have been sent since start.
+func SentBytes() uint64 {
+	return sentBytes.Load()
+}
+
 // writeFrame sends one frame as a single binary message: the header, then the
 // encoder's buffer. Two writes into one message rather than one write into a
 // buffer built for the purpose, which would mean allocating and copying the
@@ -356,7 +367,12 @@ func writeFrame(conn *websocket.Conn, frame *outboundFrame) error {
 	}
 
 	// Close is what flushes the message, so its error is the write's error.
-	return writer.Close()
+	if err := writer.Close(); err != nil {
+		return err
+	}
+
+	sentBytes.Add(uint64(frame.size()))
+	return nil
 }
 
 func (c *client) writeLoop() {

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -18,6 +19,16 @@ import (
 const writeTimeout = 5 * time.Second
 
 var crlf = []byte("\r\n")
+
+// sentBytes counts what every MJPEG writer has put on the wire since the
+// server started: part header, JPEG and trailing CRLF. The metrics endpoint
+// reads it.
+var sentBytes atomic.Uint64
+
+// SentBytes reports the bytes MJPEG viewers have been sent since start.
+func SentBytes() uint64 {
+	return sentBytes.Load()
+}
 
 // client owns the only goroutine that writes to its response. The capture loop
 // hands frames over through the slot and never blocks on the socket.
@@ -94,6 +105,7 @@ func (c *client) writeFrame(data []byte) (err error) {
 	}
 
 	c.ctx.Writer.Flush()
+	sentBytes.Add(uint64(len(header) + len(data) + len(crlf)))
 
 	return nil
 }
