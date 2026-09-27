@@ -56,8 +56,8 @@ var (
 	errInvalidImage = errors.New("not an image under /data")
 	errInOtherDrive = errors.New("the image is loaded in the other drive")
 	// The kernel refuses to eject a medium the host has locked, as Linux does
-	// while a CD is mounted. 5.10 has no forced_eject, so only the host can
-	// release it.
+	// with every CD it sees. A kernel without forced_eject leaves only the
+	// host able to release it.
 	errMediumLocked = errors.New("the host holds the medium, eject it on the host first")
 )
 
@@ -133,12 +133,20 @@ func loadedDrive(file string) (string, error) {
 	return "", nil
 }
 
+// eject empties the drive. When the host has locked the medium, it writes the
+// LUN's forced_eject, which the kernel has from ironkvm-dist's patch 0006 on:
+// that clears the host's lock and closes the file, and the host sees the
+// medium go as it would after a normal eject.
 func eject(d driveDef) error {
 	err := writeAttr(lunPath(d, "file"), []byte("\n"))
-	if errors.Is(err, syscall.EBUSY) {
+	if !errors.Is(err, syscall.EBUSY) {
+		return err
+	}
+	forced := lunPath(d, "forced_eject")
+	if _, err := os.Stat(forced); err != nil {
 		return errMediumLocked
 	}
-	return err
+	return writeAttr(forced, []byte("1"))
 }
 
 // ejectDrive removes the drive's medium. An empty drive is left alone.
