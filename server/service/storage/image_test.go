@@ -1,50 +1,9 @@
 package storage
 
 import (
-	"os"
-	"path/filepath"
+	"errors"
 	"testing"
 )
-
-func TestWriteMountTargetLeavesTheGadgetEmptyWhenUnmounting(t *testing.T) {
-	// Unmounting clears the backing file first. Writing a fallback device
-	// afterwards handed the target machine our raw eMMC partition, which has
-	// no MBR -- Legacy BIOS then hangs instead of skipping the device.
-	path := filepath.Join(t.TempDir(), "file")
-	if err := os.WriteFile(path, []byte("\n"), 0o666); err != nil {
-		t.Fatalf("setup: %s", err)
-	}
-
-	if err := writeMountTarget(path, ""); err != nil {
-		t.Fatalf("expected unmounting to succeed: %s", err)
-	}
-
-	data, err := os.ReadFile(path)
-	if err != nil {
-		t.Fatalf("expected the backing file to be readable: %s", err)
-	}
-
-	if string(data) != "\n" {
-		t.Fatalf("backing file became %q, want it left cleared", data)
-	}
-}
-
-func TestWriteMountTargetMountsARealImage(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "file")
-
-	if err := writeMountTarget(path, "/data/ubuntu.iso"); err != nil {
-		t.Fatalf("expected mounting to succeed: %s", err)
-	}
-
-	data, err := os.ReadFile(path)
-	if err != nil {
-		t.Fatalf("expected the backing file to be readable: %s", err)
-	}
-
-	if string(data) != "/data/ubuntu.iso" {
-		t.Fatalf("backing file is %q, want the image path", data)
-	}
-}
 
 func TestNormalizeMountedImageReportsLegacyEmmcAsNoImage(t *testing.T) {
 	// Devices that have not rebooted since the update still have the eMMC
@@ -95,5 +54,118 @@ func TestIsMountableImageRejectsOtherExtensions(t *testing.T) {
 func TestIsMountableImageRejectsEmptyPath(t *testing.T) {
 	if isMountableImage("") {
 		t.Fatal("an empty path is not a mountable image")
+	}
+}
+
+func TestLegacyMountWithCdromGoesToTheCdDrive(t *testing.T) {
+	dir := fakeGadget(t, "lun.0", "lun.1")
+
+	if err := legacyMount("/data/a.iso", true); err != nil {
+		t.Fatalf("mount: %s", err)
+	}
+	if got := readAttr(t, dir, "lun.1", "file"); got != "/data/a.iso" {
+		t.Fatalf("lun.1/file is %q", got)
+	}
+	if got := readAttr(t, dir, "lun.0", "file"); got != "" {
+		t.Fatalf("lun.0/file is %q, want it untouched", got)
+	}
+}
+
+func TestLegacyMountWithoutCdromGoesToAWritableDisk(t *testing.T) {
+	dir := fakeGadget(t, "lun.0", "lun.1")
+
+	if err := legacyMount("/data/a.img", false); err != nil {
+		t.Fatalf("mount: %s", err)
+	}
+	if got := readAttr(t, dir, "lun.0", "file"); got != "/data/a.img" {
+		t.Fatalf("lun.0/file is %q", got)
+	}
+	if got := readAttr(t, dir, "lun.0", "ro"); got != "0" {
+		t.Fatalf("lun.0/ro is %q, want 0", got)
+	}
+}
+
+func TestLegacyMountOfNothingEjectsBoth(t *testing.T) {
+	dir := fakeGadget(t, "lun.0", "lun.1")
+	if err := insertDrive(DriveDisk, "/data/a.img", false); err != nil {
+		t.Fatalf("setup: %s", err)
+	}
+	if err := insertDrive(DriveCdrom, "/data/b.iso", true); err != nil {
+		t.Fatalf("setup: %s", err)
+	}
+
+	if err := legacyMount("", false); err != nil {
+		t.Fatalf("unmount: %s", err)
+	}
+	if readAttr(t, dir, "lun.0", "file") != "" || readAttr(t, dir, "lun.1", "file") != "" {
+		t.Fatalf("drives not empty")
+	}
+}
+
+func TestLegacyMountOfNothingOnAnOldGadgetEjectsTheDisk(t *testing.T) {
+	dir := fakeGadget(t, "lun.0")
+	if err := insertDrive(DriveDisk, "/data/a.img", false); err != nil {
+		t.Fatalf("setup: %s", err)
+	}
+
+	if err := legacyMount("", false); err != nil {
+		t.Fatalf("unmount: %s", err)
+	}
+	if got := readAttr(t, dir, "lun.0", "file"); got != "" {
+		t.Fatalf("lun.0/file is %q", got)
+	}
+}
+
+func TestLegacyCdromMountOnAnOldGadgetFails(t *testing.T) {
+	dir := fakeGadget(t, "lun.0")
+
+	err := legacyMount("/data/a.iso", true)
+	if !errors.Is(err, errNoCdDrive) {
+		t.Fatalf("got %v, want errNoCdDrive", err)
+	}
+	if got := readAttr(t, dir, "lun.0", "file"); got != "" {
+		t.Fatalf("lun.0/file is %q, the disk must not take the CD's image", got)
+	}
+}
+
+func TestLegacyMountedPrefersTheCd(t *testing.T) {
+	fakeGadget(t, "lun.0", "lun.1")
+	if err := insertDrive(DriveDisk, "/data/a.img", false); err != nil {
+		t.Fatalf("setup: %s", err)
+	}
+
+	got, err := legacyMounted()
+	if err != nil || got != "/data/a.img" {
+		t.Fatalf("got %q, %v, want the disk's image", got, err)
+	}
+
+	if err := insertDrive(DriveCdrom, "/data/b.iso", true); err != nil {
+		t.Fatalf("setup: %s", err)
+	}
+	got, err = legacyMounted()
+	if err != nil || got != "/data/b.iso" {
+		t.Fatalf("got %q, %v, want the CD's image", got, err)
+	}
+}
+
+func TestLegacyCdromReportsACdMedium(t *testing.T) {
+	fakeGadget(t, "lun.0", "lun.1")
+
+	if got, err := legacyCdrom(); err != nil || got != 0 {
+		t.Fatalf("empty: got %d, %v, want 0", got, err)
+	}
+	if err := insertDrive(DriveCdrom, "/data/b.iso", true); err != nil {
+		t.Fatalf("setup: %s", err)
+	}
+	if got, err := legacyCdrom(); err != nil || got != 1 {
+		t.Fatalf("loaded: got %d, %v, want 1", got, err)
+	}
+}
+
+func TestLegacyCdromOnAnOldGadgetIsZero(t *testing.T) {
+	fakeGadget(t, "lun.0")
+
+	if got, err := legacyCdrom(); err != nil || got != 0 {
+		t.Fatalf("got %d, %v, want 0", got, err)
 	}
 }

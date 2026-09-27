@@ -1,13 +1,10 @@
 package storage
 
 import (
-	"fmt"
+	"errors"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -22,11 +19,16 @@ const (
 	// legacyNoImageDevice is what older builds wrote to mean "no image". It is
 	// only ever read now, never written.
 	legacyNoImageDevice = "/dev/mmcblk0p3"
-	cdromFlag           = "/sys/kernel/config/usb_gadget/g0/functions/mass_storage.disk0/lun.0/cdrom"
-	mountDevice         = "/sys/kernel/config/usb_gadget/g0/functions/mass_storage.disk0/lun.0/file"
-	inquiryString       = "/sys/kernel/config/usb_gadget/g0/functions/mass_storage.disk0/lun.0/inquiry_string"
-	roFlag              = "/sys/kernel/config/usb_gadget/g0/functions/mass_storage.disk0/lun.0/ro"
 )
+
+var errNoCdDrive = errors.New("no CD drive")
+
+// hidOnly reports whether the gadget runs without its mass storage function.
+// Tests replace it.
+var hidOnly = func() bool {
+	mode, err := hid.GetMode()
+	return err == nil && mode == hid.ModeHidOnly
+}
 
 // isMountableImage reports whether a client-supplied path may be handed to the
 // USB mass storage gadget. Without this check any file or block device on the
@@ -70,16 +72,6 @@ func (s *Service) GetImages(c *gin.Context) {
 	log.Debugf("get images success, total %d", len(images))
 }
 
-// writeMountTarget points the gadget's backing file at an image. An empty
-// image means "no media": the caller has already cleared the backing file, and
-// naming any device here would expose it to the target machine.
-func writeMountTarget(path string, image string) error {
-	if image == "" {
-		return nil
-	}
-	return os.WriteFile(path, []byte(image), 0o666)
-}
-
 // normalizeMountedImage reads back what the gadget is currently serving.
 // Devices that have not rebooted since this change still hold the old eMMC
 // fallback, which has to keep reading as "nothing mounted".
@@ -91,6 +83,66 @@ func normalizeMountedImage(content string) string {
 	return image
 }
 
+// legacyMount serves the single-drive mount call older clients make. An
+// image goes into the CD drive when cdrom is set, otherwise into a writable
+// disk. No image ejects both drives.
+func legacyMount(file string, cdrom bool) error {
+	if file == "" {
+		for _, d := range driveDefs {
+			if err := ejectDrive(d.id); err != nil && !errors.Is(err, errNoDrive) {
+				return err
+			}
+		}
+		return nil
+	}
+
+	if !cdrom {
+		return insertDrive(DriveDisk, file, false)
+	}
+
+	// Switching lun.0 into a CD-ROM was the path this replaces, so a gadget
+	// without lun.1 fails rather than falling back to it.
+	err := insertDrive(DriveCdrom, file, true)
+	if errors.Is(err, errNoDrive) {
+		return errNoCdDrive
+	}
+	return err
+}
+
+// legacyMounted returns the CD's image if it has one, else the disk's.
+func legacyMounted() (string, error) {
+	drives, err := listDrives()
+	if err != nil {
+		return "", err
+	}
+
+	file := ""
+	for _, d := range drives {
+		if d.File == "" {
+			continue
+		}
+		if d.ID == DriveCdrom {
+			return d.File, nil
+		}
+		file = d.File
+	}
+	return file, nil
+}
+
+// legacyCdrom returns 1 when the CD drive holds a medium.
+func legacyCdrom() (int64, error) {
+	drives, err := listDrives()
+	if err != nil {
+		return 0, err
+	}
+	for _, d := range drives {
+		if d.ID == DriveCdrom && d.File != "" {
+			return 1, nil
+		}
+	}
+	return 0, nil
+}
+
 func (s *Service) MountImage(c *gin.Context) {
 	var req proto.MountImageReq
 	var rsp proto.Response
@@ -100,90 +152,15 @@ func (s *Service) MountImage(c *gin.Context) {
 		return
 	}
 
-	// An empty file unmounts; anything else must be an image under /data.
-	if req.File != "" && !isMountableImage(req.File) {
-		rsp.ErrRsp(c, -1, "invalid arguments")
+	if hidOnly() {
+		rsp.ErrRsp(c, -2, errNoDrive.Error())
 		return
 	}
 
-	// cdrom and ro flag
-	// set to 0 when unmount image
-	// set to 1 when mount image and the CD-ROM is enabled
-	if req.File == "" || req.Cdrom {
-		flag := "0"
-		if req.File != "" && req.Cdrom {
-			flag = "1"
-		}
-
-		// unmount
-		if err := os.WriteFile(mountDevice, []byte("\n"), 0o666); err != nil {
-			log.Errorf("unmount file failed: %s", err)
-			rsp.ErrRsp(c, -2, "unmount image failed")
-			return
-		}
-
-		// ro flag
-		if err := os.WriteFile(roFlag, []byte(flag), 0o666); err != nil {
-			log.Errorf("set ro flag failed: %s", err)
-			rsp.ErrRsp(c, -2, "set ro flag failed")
-			return
-		}
-
-		// cdrom flag
-		if err := os.WriteFile(cdromFlag, []byte(flag), 0o666); err != nil {
-			log.Errorf("set cdrom flag failed: %s", err)
-			rsp.ErrRsp(c, -2, "set cdrom flag failed")
-			return
-		}
-	}
-
-	inquiryVen := "NanoKVM"
-	inquiryPrd := "USB Mass Storage"
-	inquiryVer := 0x0520
-	if req.Cdrom {
-		inquiryPrd = "USB CD/DVD-ROM"
-	}
-	inquiryData := fmt.Sprintf("%-8s%-16s%04x", inquiryVen, inquiryPrd, inquiryVer)
-
-	if err := os.WriteFile(inquiryString, []byte(inquiryData), 0o666); err != nil {
-		log.Errorf("set inquiry %s failed: %s", inquiryData, err)
-		rsp.ErrRsp(c, -2, "set inquiry failed")
+	if err := legacyMount(req.File, req.Cdrom); err != nil {
+		log.Errorf("mount image %q (cdrom %t) failed: %s", req.File, req.Cdrom, err)
+		rsp.ErrRsp(c, -2, err.Error())
 		return
-	}
-
-	// mount
-	if err := writeMountTarget(mountDevice, req.File); err != nil {
-		log.Errorf("mount file %s failed: %s", req.File, err)
-		rsp.ErrRsp(c, -2, "mount image failed")
-		return
-	}
-
-	// Mounting an image bounces the UDC. Tell the gadget supervisor, so it
-	// does not read this operation's own transient "not attached" as the link
-	// failing and start a recovery underneath the mount.
-	hid.NoteUSBGadgetMutated()
-
-	h := hid.GetHid()
-	h.Lock()
-	h.CloseNoLock()
-	defer func() {
-		h.OpenNoLock()
-		h.Unlock()
-	}()
-
-	// reset usb
-	commands := []string{
-		"echo > /sys/kernel/config/usb_gadget/g0/UDC",
-		"ls /sys/class/udc/ | cat > /sys/kernel/config/usb_gadget/g0/UDC",
-	}
-
-	for _, command := range commands {
-		err := exec.Command("sh", "-c", command).Run()
-		if err != nil {
-			rsp.ErrRsp(c, -2, "execute command failed")
-			return
-		}
-		time.Sleep(100 * time.Millisecond)
 	}
 
 	rsp.OkRsp(c)
@@ -193,55 +170,97 @@ func (s *Service) MountImage(c *gin.Context) {
 func (s *Service) GetMountedImage(c *gin.Context) {
 	var rsp proto.Response
 
-	mode, err := hid.GetMode()
-	if err != nil {
-		rsp.ErrRsp(c, -2, "get HID mode failed")
+	if hidOnly() {
+		rsp.OkRspWithData(c, &proto.GetMountedImageRsp{File: ""})
 		return
 	}
 
-	if mode == hid.ModeHidOnly {
-		rsp.OkRspWithData(c, &proto.GetMountedImageRsp{
-			File: "",
-		})
-		return
-	}
-
-	content, err := os.ReadFile(mountDevice)
+	file, err := legacyMounted()
 	if err != nil {
 		rsp.ErrRsp(c, -2, "read failed")
 		return
 	}
 
-	image := normalizeMountedImage(string(content))
-
-	data := &proto.GetMountedImageRsp{
-		File: image,
-	}
-
-	rsp.OkRspWithData(c, data)
+	rsp.OkRspWithData(c, &proto.GetMountedImageRsp{File: file})
 }
 
 func (s *Service) GetCdRom(c *gin.Context) {
 	var rsp proto.Response
 
-	content, err := os.ReadFile(cdromFlag)
-	if err != nil {
-		rsp.ErrRsp(c, -1, "read failed")
+	if hidOnly() {
+		rsp.OkRspWithData(c, &proto.GetCdRomRsp{Cdrom: 0})
 		return
 	}
 
-	flag := strings.ReplaceAll(string(content), "\n", "")
-	flatInt, err := strconv.ParseInt(flag, 10, 64)
+	cdrom, err := legacyCdrom()
 	if err != nil {
-		rsp.ErrRsp(c, -2, "parse failed")
+		rsp.ErrRsp(c, -2, "read failed")
 		return
 	}
 
-	data := &proto.GetCdRomRsp{
-		Cdrom: flatInt,
+	rsp.OkRspWithData(c, &proto.GetCdRomRsp{Cdrom: cdrom})
+}
+
+func (s *Service) GetDrives(c *gin.Context) {
+	var rsp proto.Response
+
+	if hidOnly() {
+		rsp.OkRspWithData(c, &proto.GetDrivesRsp{Drives: []proto.DriveInfo{}})
+		return
 	}
 
-	rsp.OkRspWithData(c, data)
+	drives, err := listDrives()
+	if err != nil {
+		log.Errorf("read drives failed: %s", err)
+		rsp.ErrRsp(c, -2, "read drives failed")
+		return
+	}
+
+	rsp.OkRspWithData(c, &proto.GetDrivesRsp{Drives: drives})
+}
+
+func (s *Service) InsertDrive(c *gin.Context) {
+	var req proto.InsertDriveReq
+	var rsp proto.Response
+
+	if err := proto.ParseFormRequest(c, &req); err != nil {
+		rsp.ErrRsp(c, -1, "invalid arguments")
+		return
+	}
+
+	if hidOnly() {
+		rsp.ErrRsp(c, -2, errNoDrive.Error())
+		return
+	}
+
+	id := c.Param("id")
+	if err := insertDrive(id, req.File, req.Ro); err != nil {
+		log.Errorf("insert %q into %q failed: %s", req.File, id, err)
+		rsp.ErrRsp(c, -2, err.Error())
+		return
+	}
+
+	rsp.OkRsp(c)
+	log.Debugf("inserted %s into %s", req.File, id)
+}
+
+func (s *Service) EjectDrive(c *gin.Context) {
+	var rsp proto.Response
+
+	if hidOnly() {
+		rsp.ErrRsp(c, -2, errNoDrive.Error())
+		return
+	}
+
+	id := c.Param("id")
+	if err := ejectDrive(id); err != nil {
+		log.Errorf("eject %q failed: %s", id, err)
+		rsp.ErrRsp(c, -2, err.Error())
+		return
+	}
+
+	rsp.OkRsp(c)
+	log.Debugf("ejected %s", id)
 }
 
 func (s *Service) DeleteImage(c *gin.Context) {
@@ -257,6 +276,18 @@ func (s *Service) DeleteImage(c *gin.Context) {
 	// original path, so "/data/../root/x.iso" passed it.
 	if !isMountableImage(req.File) {
 		rsp.ErrRsp(c, -2, "invalid arguments")
+		return
+	}
+
+	// Removing an image a drive is serving pulls the medium out from under
+	// the host.
+	holder, err := loadedDrive(req.File)
+	if err != nil {
+		rsp.ErrRsp(c, -2, "read drives failed")
+		return
+	}
+	if holder != "" {
+		rsp.ErrRsp(c, -4, "the image is loaded in the "+holder+" drive")
 		return
 	}
 
