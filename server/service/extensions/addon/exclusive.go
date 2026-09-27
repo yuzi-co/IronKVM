@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 // Paths the boot and exclusivity checks read. Variables so the tests can point
@@ -172,4 +173,37 @@ func copyFile(src, dst string, mode os.FileMode) error {
 		return err
 	}
 	return os.Rename(tmp, dst)
+}
+
+// vpnMu serialises every action that could leave both VPNs running or
+// enabled at boot. CheckExclusive alone is a check followed by an action, and
+// two requests, one per VPN, could both pass the check before either acted.
+var vpnMu sync.Mutex
+
+// LockVPN takes the lock that the exclusivity check and the action it guards
+// hold together, and returns the function that releases it. Long work that
+// cannot start a daemon (a download, apk) must not run under it.
+func LockVPN() func() {
+	vpnMu.Lock()
+	return vpnMu.Unlock
+}
+
+// Exclusive runs action under the VPN lock, after CheckExclusive, and returns
+// the refusal instead when the other VPN runs or starts at boot.
+func Exclusive(self string, action func() error) error {
+	defer LockVPN()()
+	if err := CheckExclusive(self); err != nil {
+		return err
+	}
+	return action()
+}
+
+// RefreshInitd brings the copy in /etc/init.d up to date with the package
+// copy while the daemon starts at boot. Off a distribution image nothing else
+// refreshes it: S04addons, which puts it back at boot, only runs on one.
+func RefreshInitd(d Daemon) error {
+	if !BootEnabled(d) {
+		return nil
+	}
+	return copyFile(d.Script(), filepath.Join(InitdDir, d.Initd), 0o755)
 }

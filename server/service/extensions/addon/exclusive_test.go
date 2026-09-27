@@ -8,7 +8,9 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
+	"time"
 )
 
 // scratchDaemons points the pid files, /proc and both init.d directories at a
@@ -177,5 +179,76 @@ func TestCheckExclusiveNamesTheOther(t *testing.T) {
 		if !strings.Contains(err.Error(), want) {
 			t.Fatalf("%q is missing from %q", want, err.Error())
 		}
+	}
+}
+
+// Two starts at once, one of each VPN: the check and the start happen under
+// one lock, so exactly one of them goes ahead.
+func TestExclusiveLetsOnlyOneOfTwoConcurrentStartsThrough(t *testing.T) {
+	scratchDaemons(t, false)
+	start := func(d Daemon, pid int) func() error {
+		return func() error {
+			time.Sleep(50 * time.Millisecond)
+			fakeRunning(t, d, pid, "/usr/bin/"+d.Process)
+			return nil
+		}
+	}
+	var wg sync.WaitGroup
+	errs := make([]error, 2)
+	for i, d := range []Daemon{Tailscale, NetBird} {
+		wg.Add(1)
+		go func(i int, d Daemon) {
+			defer wg.Done()
+			errs[i] = Exclusive(d.Name, start(d, 100+i))
+		}(i, d)
+	}
+	wg.Wait()
+	ok, blocked := 0, 0
+	for _, err := range errs {
+		var be *BlockedError
+		switch {
+		case err == nil:
+			ok++
+		case errors.As(err, &be):
+			blocked++
+		default:
+			t.Fatalf("unexpected error %v", err)
+		}
+	}
+	if ok != 1 || blocked != 1 {
+		t.Fatalf("want one start and one refusal, got %d and %d", ok, blocked)
+	}
+}
+
+func TestExclusiveDoesNotRunARefusedAction(t *testing.T) {
+	scratchDaemons(t, false)
+	fakeRunning(t, Tailscale, 100, "/usr/sbin/tailscaled")
+	ran := false
+	if err := Exclusive("netbird", func() error { ran = true; return nil }); err == nil || ran {
+		t.Fatalf("got %v, ran %v", err, ran)
+	}
+}
+
+// Off a distribution image the copy in /etc/init.d is the one boot runs, and
+// nothing else brings it up to date after the package copy changes.
+func TestRefreshInitdUpdatesAnEnabledCopy(t *testing.T) {
+	scratchDaemons(t, false)
+	if err := SetBoot(NetBird, true); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(NetBird.Script(), []byte("#!/bin/sh\n# new\n"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := RefreshInitd(NetBird); err != nil {
+		t.Fatal(err)
+	}
+	if b, _ := os.ReadFile(filepath.Join(InitdDir, NetBird.Initd)); string(b) != "#!/bin/sh\n# new\n" {
+		t.Fatalf("the copy is %q", b)
+	}
+	if err := RefreshInitd(Tailscale); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(InitdDir, Tailscale.Initd)); err == nil {
+		t.Fatal("a daemon that does not start at boot gets no copy")
 	}
 }
