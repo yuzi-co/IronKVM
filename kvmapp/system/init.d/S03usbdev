@@ -924,6 +924,16 @@ start_usb_dev(){
             # boot device. This used to point at /dev/mmcblk0p3, handing the
             # target machine our raw eMMC partition -- which has no MBR, so
             # Legacy BIOS reads no 0x55AA signature and hangs in a HLT loop.
+
+            # A second LUN, fixed as a CD-ROM, so an install ISO and a disk
+            # image can be attached together. Neither LUN changes type after
+            # this, so a media change is a write to its file and never needs
+            # a UDC rebind. Left without a file, it reports no medium.
+            mkdir functions/mass_storage.disk0/lun.1
+            echo 1 > functions/mass_storage.disk0/lun.1/removable
+            echo 1 > functions/mass_storage.disk0/lun.1/cdrom
+            echo 1 > functions/mass_storage.disk0/lun.1/ro
+            echo "NanoKVM USB CD/DVD-ROM  0520" > functions/mass_storage.disk0/lun.1/inquiry_string
     fi
 
     # A serial console for the managed host, off unless /boot/usb.acm exists.

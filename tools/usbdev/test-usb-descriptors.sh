@@ -356,6 +356,12 @@ is functions/mass_storage.disk0/lun.0/removable 1 "the LUN is removable, so medi
 is functions/mass_storage.disk0/lun.0/inquiry_string "NanoKVM USB Mass Storage0520" "inquiry string"
 absent functions/mass_storage.disk0/lun.0/file \
    "an empty marker leaves no backing file, so the raw eMMC is never exported"
+present functions/mass_storage.disk0/lun.1 "the CD drive is a second LUN"
+is functions/mass_storage.disk0/lun.1/removable 1 "the CD drive is removable"
+is functions/mass_storage.disk0/lun.1/cdrom     1 "the CD drive is a CD-ROM"
+is functions/mass_storage.disk0/lun.1/ro        1 "the CD drive is read-only"
+is functions/mass_storage.disk0/lun.1/inquiry_string "NanoKVM USB CD/DVD-ROM  0520" "CD inquiry string"
+absent functions/mass_storage.disk0/lun.1/file "the CD drive starts empty"
 
 build_env
 echo /data/install.iso > "$work/boot/usb.disk0"
@@ -364,6 +370,7 @@ run "$S03" start_usb_dev
 is functions/mass_storage.disk0/lun.0/file /data/install.iso "the named image is inserted"
 is functions/mass_storage.disk0/lun.0/ro    1 "the read-only marker sets ro"
 is functions/mass_storage.disk0/lun.0/cdrom 0 "the LUN is not a CD-ROM"
+absent functions/mass_storage.disk0/lun.1/file "the disk image never goes into the CD drive"
 
 # --- network -------------------------------------------------------------
 
