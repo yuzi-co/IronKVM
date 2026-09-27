@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -179,23 +180,47 @@ func writeGpio(device string, duration time.Duration) error {
 	return nil
 }
 
+// gpioReadFailing holds the lines whose last read failed. A board without an
+// LED wired fails every read, and Redfish reads on every GET, so a failure is
+// logged when it starts, not each time it repeats.
+var (
+	gpioReadFailingMu sync.Mutex
+	gpioReadFailing   = map[string]bool{}
+)
+
+// noteGpioRead logs err for device unless the previous read of it failed too.
+// A nil err clears the note, so the next failure is logged again.
+func noteGpioRead(device string, err error) {
+	gpioReadFailingMu.Lock()
+	defer gpioReadFailingMu.Unlock()
+
+	if err == nil {
+		delete(gpioReadFailing, device)
+		return
+	}
+	if gpioReadFailing[device] {
+		return
+	}
+	gpioReadFailing[device] = true
+	log.Errorf("read gpio %s failed: %s", device, err)
+}
+
+// readGpio reports whether an active-low line is asserted. Content that is
+// not a number is an error, not "released": the state is unknown.
 func readGpio(device string) (bool, error) {
 	content, err := os.ReadFile(device)
 	if err != nil {
-		log.Errorf("read gpio %s failed: %s", device, err)
+		noteGpioRead(device, err)
 		return false, err
 	}
 
-	contentStr := string(content)
-	if len(contentStr) > 1 {
-		contentStr = contentStr[:len(contentStr)-1]
-	}
-
-	value, err := strconv.Atoi(contentStr)
+	value, err := strconv.Atoi(strings.TrimSpace(string(content)))
 	if err != nil {
-		log.Errorf("invalid gpio content: %s", content)
-		return false, nil
+		err = fmt.Errorf("invalid gpio content %q", content)
+		noteGpioRead(device, err)
+		return false, err
 	}
 
+	noteGpioRead(device, nil)
 	return value == 0, nil
 }

@@ -8,11 +8,14 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
+	logtest "github.com/sirupsen/logrus/hooks/test"
 
 	"NanoKVM-Server/config"
 )
@@ -214,4 +217,56 @@ func TestFirmwareVersionWithoutAnImageIsTheApplication(t *testing.T) {
 	if got, want := FirmwareVersion(), "2.3.0"; got != want {
 		t.Fatalf("FirmwareVersion() = %q, want %q", got, want)
 	}
+}
+
+// A line that reads as something other than a number is an unknown state,
+// not an unlit LED: Redfish would report the host off and press power on.
+func TestPowerLEDFailsOnContentThatIsNotANumber(t *testing.T) {
+	useButtons(t, "garbage\n")
+
+	if _, err := PowerLED(); err == nil {
+		t.Fatal("PowerLED() on unparseable content succeeded")
+	}
+}
+
+// A board without the LED wired fails every read. Redfish reads it on every
+// GET, so the failure is logged once, not every time.
+func TestAMissingLEDIsLoggedOnce(t *testing.T) {
+	_, _, led := useButtons(t, "")
+	hook := logtest.NewLocal(log.StandardLogger())
+	t.Cleanup(hook.Reset)
+
+	for i := 0; i < 3; i++ {
+		if _, err := PowerLED(); err == nil {
+			t.Fatal("PowerLED() with no LED line succeeded")
+		}
+	}
+	if got := countLogs(hook, led); got != 1 {
+		t.Fatalf("%d log lines about the missing LED, want 1", got)
+	}
+
+	// Once it reads again, a later failure is news again.
+	if err := os.WriteFile(led, []byte("1\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := PowerLED(); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Remove(led); err != nil {
+		t.Fatal(err)
+	}
+	PowerLED()
+	if got := countLogs(hook, led); got != 2 {
+		t.Fatalf("%d log lines after the LED came and went, want 2", got)
+	}
+}
+
+func countLogs(hook *logtest.Hook, path string) int {
+	n := 0
+	for _, entry := range hook.AllEntries() {
+		if strings.Contains(entry.Message, path) {
+			n++
+		}
+	}
+	return n
 }
