@@ -159,6 +159,16 @@ func UpdateHdmiViewerSnapshot(source string, count int, version uint64) {
 	updateHdmiViewerSnapshotLocked(source, count, version)
 }
 
+// HdmiViewerCount reports the client count a stream source last reported, and
+// 0 for a source that has not reported. The metrics endpoint reads it.
+func HdmiViewerCount(source string) int {
+	hdmiMutex.Lock()
+	defer hdmiMutex.Unlock()
+
+	count, _, _ := hdmiDemand.Viewer(source)
+	return count
+}
+
 func updateHdmiViewerSnapshotLocked(source string, count int, version uint64) {
 	if count < 0 {
 		count = 0

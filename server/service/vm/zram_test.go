@@ -754,3 +754,20 @@ func TestParseSwapsHasZram(t *testing.T) {
 		})
 	}
 }
+
+func TestParseZramMmStatExportsTheFirstThreeFields(t *testing.T) {
+	got := ParseZramMmStat("8192000 2048000 2621440 0 2621440 10 0 0 0\n")
+
+	want := ZramMemory{Original: 8192000, Compressed: 2048000, MemUsed: 2621440}
+	if got != want {
+		t.Fatalf("ParseZramMmStat = %+v, want %+v", got, want)
+	}
+}
+
+func TestParseVmstatSwapIsExported(t *testing.T) {
+	in, out := ParseVmstatSwap("nr_free_pages 5000\npswpin 12\npswpout 34\n")
+
+	if in != 12 || out != 34 {
+		t.Fatalf("ParseVmstatSwap = %d, %d, want 12, 34", in, out)
+	}
+}

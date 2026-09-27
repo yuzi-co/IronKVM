@@ -410,6 +410,25 @@ func parseVmstatSwap(content string) (in int64, out int64) {
 	return in, out
 }
 
+// ZramMemory is the part of mm_stat the metrics endpoint reports.
+type ZramMemory struct {
+	Original   int64 // orig_data_size
+	Compressed int64 // compr_data_size
+	MemUsed    int64 // mem_used_total
+}
+
+// ParseZramMmStat reads mm_stat the way the zram page does.
+func ParseZramMmStat(content string) ZramMemory {
+	stat := parseMmStat(content)
+	return ZramMemory{Original: stat.Original, Compressed: stat.Compressed, MemUsed: stat.MemUsed}
+}
+
+// ParseVmstatSwap reads pswpin and pswpout from /proc/vmstat, for the metrics
+// endpoint.
+func ParseVmstatSwap(content string) (in int64, out int64) {
+	return parseVmstatSwap(content)
+}
+
 // parseSwapsHasZram reports whether /proc/swaps lists the zram device. This is
 // the runtime truth: it is true only while compressed swap actually runs.
 func parseSwapsHasZram(content string) bool {
