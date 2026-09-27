@@ -24,12 +24,24 @@ var (
 	installPackage = install
 )
 
+// busy keeps install, update and uninstall apart: they share the fetch
+// workspace and the binary.
+var busy vpn.Busy
+
 func NewService() *Service {
 	return &Service{}
 }
 
+// Install fetches the package without the VPN lock, which a download of
+// minutes must not hold, and starts the daemon under it, after checking again.
 func (s *Service) Install(c *gin.Context) {
 	var rsp proto.Response
+
+	end := busy.Begin(c, addon.NetBird)
+	if end == nil {
+		return
+	}
+	defer end()
 
 	if vpn.Refuse(c, addon.NetBird) {
 		return
@@ -42,8 +54,10 @@ func (s *Service) Install(c *gin.Context) {
 			return
 		}
 
-		if err := NewCli().Start(); err != nil {
+		if err := vpn.StartChecked(addon.NetBird, NewCli().Start); err != nil {
 			log.Errorf("failed to start netbird after install: %s", err)
+			rsp.ErrRsp(c, -1, vpn.Message("NetBird is installed but did not start", err))
+			return
 		}
 	}
 
@@ -52,12 +66,21 @@ func (s *Service) Install(c *gin.Context) {
 }
 
 // Uninstall removes the binary and the add-on. The identity on /data stays, as
-// Tailscale's does, so a reinstall is the same peer.
+// Tailscale's does, so a reinstall is the same peer. A daemon that does not
+// stop keeps its binary.
 func (s *Service) Uninstall(c *gin.Context) {
 	var rsp proto.Response
 
+	end := busy.Begin(c, addon.NetBird)
+	if end == nil {
+		return
+	}
+	defer end()
+
 	if err := NewCli().Stop(); err != nil {
-		log.Debugf("failed to stop netbird before uninstall: %s", err)
+		log.Errorf("failed to stop netbird before uninstall: %s", err)
+		rsp.ErrRsp(c, -1, vpn.Message("stop failed", err))
+		return
 	}
 	if err := addon.SetBoot(addon.NetBird, false); err != nil {
 		log.Errorf("failed to turn off netbird at boot: %s", err)
@@ -76,20 +99,20 @@ func (s *Service) Uninstall(c *gin.Context) {
 func (s *Service) Start(c *gin.Context) {
 	var rsp proto.Response
 
-	if vpn.Refuse(c, addon.NetBird) {
-		return
-	}
-	if err := NewCli().Start(); err != nil {
-		log.Errorf("failed to start netbird: %s", err)
-		rsp.ErrRsp(c, -1, vpn.Message("start failed", err))
+	if !vpn.Guard(c, addon.NetBird, "start failed", NewCli().Start) {
 		return
 	}
 	rsp.OkRsp(c)
 }
 
+// Restart of a stopped daemon is a start, and goes through the same check.
 func (s *Service) Restart(c *gin.Context) {
 	var rsp proto.Response
 
+	defer addon.LockVPN()()
+	if !addon.Running(addon.NetBird) && vpn.Refuse(c, addon.NetBird) {
+		return
+	}
 	if err := NewCli().Restart(); err != nil {
 		log.Errorf("failed to restart netbird: %s", err)
 		rsp.ErrRsp(c, -1, vpn.Message("restart failed", err))
@@ -112,12 +135,7 @@ func (s *Service) Stop(c *gin.Context) {
 func (s *Service) Up(c *gin.Context) {
 	var rsp proto.Response
 
-	if vpn.Refuse(c, addon.NetBird) {
-		return
-	}
-	if err := NewCli().Up(); err != nil {
-		log.Errorf("failed to run netbird up: %s", err)
-		rsp.ErrRsp(c, -1, vpn.Message("netbird up failed", err))
+	if !vpn.Guard(c, addon.NetBird, "netbird up failed", NewCli().Up) {
 		return
 	}
 	rsp.OkRsp(c)
@@ -144,6 +162,17 @@ func (s *Service) Login(c *gin.Context) {
 		rsp.ErrRsp(c, -1, "invalid arguments")
 		return
 	}
+	key := ""
+	if strings.TrimSpace(req.SetupKey) != "" {
+		var err error
+		if key, err = NormalizeSetupKey(req.SetupKey); err != nil {
+			rsp.ErrRsp(c, -1, err.Error())
+			return
+		}
+	}
+
+	// The check, the start and the join hold the lock together.
+	defer addon.LockVPN()()
 	if vpn.Refuse(c, addon.NetBird) {
 		return
 	}
@@ -156,7 +185,7 @@ func (s *Service) Login(c *gin.Context) {
 		}
 	}
 
-	if key := strings.TrimSpace(req.SetupKey); key != "" {
+	if key != "" {
 		if err := cli.JoinWithSetupKey(key); err != nil {
 			log.Errorf("failed to join netbird with a setup key: %s", err)
 			rsp.ErrRsp(c, -2, vpn.Message("join failed", err))
@@ -239,9 +268,16 @@ func (s *Service) GetUpdate(c *gin.Context) {
 }
 
 // Update installs Alpine's current package over the installed binary. The
-// identity stays on /data, and the daemon runs again only if it ran before.
+// identity stays on /data, and the daemon runs again only if it ran before,
+// and only if Tailscale did not start meanwhile.
 func (s *Service) Update(c *gin.Context) {
 	var rsp proto.Response
+
+	end := busy.Begin(c, addon.NetBird)
+	if end == nil {
+		return
+	}
+	defer end()
 
 	if !isInstalled() {
 		rsp.ErrRsp(c, -1, "netbird is not installed")
@@ -261,7 +297,7 @@ func (s *Service) Update(c *gin.Context) {
 	updates.Reset()
 
 	if wasRunning {
-		if startErr := cli.Start(); startErr != nil && err == nil {
+		if startErr := vpn.StartChecked(addon.NetBird, cli.Start); startErr != nil && err == nil {
 			err = startErr
 		}
 	}

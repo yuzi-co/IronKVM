@@ -3,7 +3,10 @@ package netbird
 import (
 	"context"
 	"errors"
+	"fmt"
+	"os"
 	"os/exec"
+	"regexp"
 	"strings"
 	"time"
 
@@ -52,9 +55,13 @@ func run(timeout time.Duration, args ...string) ([]byte, error) {
 }
 
 // Start runs the boot script from the package copy. Start at boot is the boot
-// route's alone.
+// route's alone, but while it is on the copy in /etc/init.d is refreshed
+// first, so a boot runs the script this server ships.
 func (c *Cli) Start() error {
 	if err := utils.EnsurePermission(NetbirdPath, 0o100); err != nil {
+		return err
+	}
+	if err := addon.RefreshInitd(addon.NetBird); err != nil {
 		return err
 	}
 	return vpn.Script(addon.NetBird.Script(), "start", LogFile)
@@ -64,8 +71,9 @@ func (c *Cli) Restart() error {
 	return vpn.Script(addon.NetBird.Script(), "restart", LogFile)
 }
 
+// Stop fails only when the daemon is still there afterwards.
 func (c *Cli) Stop() error {
-	return vpn.Script(addon.NetBird.Script(), "stop", "")
+	return vpn.StopDaemon(addon.NetBird)
 }
 
 func (c *Cli) Up() error {
@@ -103,12 +111,64 @@ func (c *Cli) Version() (string, error) {
 	return strings.TrimSpace(first), nil
 }
 
-// JoinWithSetupKey runs `netbird up --setup-key`. The key is never logged,
-// and a CLI that echoes it has it replaced in the error, which reaches the
-// page and the server log.
+// KeyDir is where a setup key is written for the CLI to read, mode 0600, and
+// removed as soon as the CLI returns. /run is a tmpfs, so the key never reaches
+// the SD card, and a file keeps it out of the process list, where an argument
+// would show. A variable for the tests.
+var KeyDir = "/run"
+
+// setupKeyFormat is how NetBird's management server makes a setup key: an
+// upper-case UUID (management/server/types/setupkey.go at v0.78.2).
+var setupKeyFormat = regexp.MustCompile(`^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$`)
+
+// ErrSetupKeyFormat does not repeat the key: what was pasted may be another
+// secret altogether.
+var ErrSetupKeyFormat = errors.New("the setup key is not in NetBird's format: " +
+	"32 hexadecimal digits in groups of 8, 4, 4, 4 and 12, separated by dashes")
+
+// NormalizeSetupKey trims the key and puts it in upper case, as the management
+// server stores it, or refuses it when it is not a NetBird key.
+func NormalizeSetupKey(key string) (string, error) {
+	key = strings.ToUpper(strings.TrimSpace(key))
+	if !setupKeyFormat.MatchString(key) {
+		return "", ErrSetupKeyFormat
+	}
+	return key, nil
+}
+
+// JoinWithSetupKey runs `netbird up --setup-key-file`. The key is never
+// logged, and a CLI that echoes it has it masked in its output before the
+// output is cut to the tail that reaches the page and the server log.
 func (c *Cli) JoinWithSetupKey(key string) error {
-	_, err := run(upTimeout, "up", "--setup-key", key)
-	return redact(err, key)
+	key, err := NormalizeSetupKey(key)
+	if err != nil {
+		return err
+	}
+
+	f, err := os.CreateTemp(KeyDir, "netbird-setup-key-*")
+	if err != nil {
+		return fmt.Errorf("failed to write the setup key for the CLI: %w", err)
+	}
+	defer func() { _ = os.Remove(f.Name()) }()
+	// CreateTemp makes the file 0600 already; the umask cannot widen it.
+	_, werr := f.WriteString(key + "\n")
+	if cerr := f.Close(); werr == nil {
+		werr = cerr
+	}
+	if werr != nil {
+		return fmt.Errorf("failed to write the setup key for the CLI: %w", werr)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), upTimeout)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, NetbirdPath, "up", "--setup-key-file", f.Name())
+	cmd.WaitDelay = waitDelay
+	out, err := cmd.CombinedOutput()
+	if err == nil {
+		return nil
+	}
+	masked := strings.NewReplacer(key, "***", strings.ToLower(key), "***").Replace(string(out))
+	return &vpn.CmdError{Err: err, Tail: vpn.Tail([]byte(masked), vpn.TailLines)}
 }
 
 // LoginSSO starts an SSO login and returns the URL. NetBird prints it on
@@ -116,17 +176,4 @@ func (c *Cli) JoinWithSetupKey(key string) error {
 func (c *Cli) LoginSSO() (string, error) {
 	cmd := exec.Command(NetbirdPath, "up", "--no-browser")
 	return vpn.LoginURL(cmd, true, loginURLTimeout, ssoLife)
-}
-
-func redact(err error, secret string) error {
-	if err == nil || secret == "" {
-		return err
-	}
-	var ce *vpn.CmdError
-	if errors.As(err, &ce) {
-		ce.Tail = strings.ReplaceAll(ce.Tail, secret, "***")
-		ce.Err = errors.New(strings.ReplaceAll(ce.Err.Error(), secret, "***"))
-		return ce
-	}
-	return errors.New(strings.ReplaceAll(err.Error(), secret, "***"))
 }

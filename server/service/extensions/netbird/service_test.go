@@ -54,13 +54,20 @@ func lifecycle(t *testing.T) (calls string) {
 	addon.NetBird.PidFile = filepath.Join(base, "run", "netbird.pid")
 	updates = &vpn.VersionCache{TTL: vpn.UpdateTTL}
 
-	r := strings.NewReplacer("CALLS", calls, "FIXTURE", fixture)
+	r := strings.NewReplacer("CALLS", calls, "FIXTURE", fixture, "PIDFILE", addon.NetBird.PidFile, "PROCDIR", addon.ProcDir)
 	stub(t, filepath.Join(addon.PkgInitdDir, "S98netbird"), r.Replace(`echo "script $1" >> "CALLS"
 case "$1" in
-start) echo "Starting netbird: ${STUB_RESULT:-OK}" ;;
-stop) echo "Stopping netbird: OK" ;;
+start)
+	if [ -n "$STUB_RUN" ]; then
+		sleep 0.2
+		echo 4242 > "PIDFILE"
+		mkdir -p "PROCDIR/4242"
+		printf "/usr/bin/netbird\000service\000run\000" > "PROCDIR/4242/cmdline"
+	fi
+	echo "Starting netbird: ${STUB_RESULT:-OK}" ;;
+stop) echo "Stopping netbird: ${STUB_STOP:-OK}" ;;
 esac`))
-	stub(t, NetbirdPath, r.Replace(`echo "netbird $*" >> "CALLS"
+	stub(t, NetbirdPath, r.Replace(`echo "netbird $*" | sed "s| [^ ]*netbird-setup-key[^ ]*| KEYFILE|" >> "CALLS"
 case "$1" in
 version) echo "0.78.2" ;;
 status) [ -z "$STUB_HANG" ] || sleep 30; cat "FIXTURE" ;;
@@ -69,6 +76,7 @@ up)
 		printf 'Use this URL to log in:\n\nhttps://login.netbird.io/activate?user_code=ABCD-EFGH \n\n'
 		exit 0
 	fi
+	if [ "$2" = "--setup-key-file" ]; then echo "key $(cat "$3") $(stat -c %a "$3")" >> "CALLS"; fi
 	echo "Connected" ;;
 deregister) echo "Deregistered successfully" ;;
 esac`))
@@ -124,7 +132,7 @@ func TestEntryPointsRefuseWhileTailscaleRuns(t *testing.T) {
 		"install": {s.Install, ""},
 		"start":   {s.Start, ""},
 		"up":      {s.Up, ""},
-		"login":   {s.Login, `{"setupKey":"KEY-123"}`},
+		"login":   {s.Login, `{"setupKey":"A1B2C3D4-E5F6-4789-ABCD-0123456789EF"}`},
 		"boot":    {s.Boot, `{"enabled":true}`},
 	} {
 		rsp := call(t, c.h, c.body)
@@ -137,23 +145,23 @@ func TestEntryPointsRefuseWhileTailscaleRuns(t *testing.T) {
 	}
 }
 
-func TestLoginTrimsTheSetupKey(t *testing.T) {
+func TestLoginTrimsAndUppercasesTheSetupKey(t *testing.T) {
 	calls := lifecycle(t)
 	fakeRunning(t, addon.NetBird, 4242, "/usr/bin/netbird")
-	if rsp := call(t, NewService().Login, `{"setupKey":"  KEY-123 \n"}`); rsp.Code != 0 {
+	if rsp := call(t, NewService().Login, `{"setupKey":"  a1b2c3d4-e5f6-4789-abcd-0123456789ef \n"}`); rsp.Code != 0 {
 		t.Fatalf("got %d %q", rsp.Code, rsp.Msg)
 	}
-	if got := callsOf(t, calls); got != "netbird up --setup-key KEY-123\n" {
+	if got := callsOf(t, calls); got != "netbird up --setup-key-file KEYFILE\nkey A1B2C3D4-E5F6-4789-ABCD-0123456789EF 600\n" {
 		t.Fatalf("calls:\n%s", got)
 	}
 }
 
 func TestLoginStartsAStoppedDaemonFirst(t *testing.T) {
 	calls := lifecycle(t)
-	if rsp := call(t, NewService().Login, `{"setupKey":"KEY-123"}`); rsp.Code != 0 {
+	if rsp := call(t, NewService().Login, `{"setupKey":"A1B2C3D4-E5F6-4789-ABCD-0123456789EF"}`); rsp.Code != 0 {
 		t.Fatalf("got %d %q", rsp.Code, rsp.Msg)
 	}
-	if got := callsOf(t, calls); got != "script start\nnetbird up --setup-key KEY-123\n" {
+	if got := callsOf(t, calls); got != "script start\nnetbird up --setup-key-file KEYFILE\nkey A1B2C3D4-E5F6-4789-ABCD-0123456789EF 600\n" {
 		t.Fatalf("calls:\n%s", got)
 	}
 }
@@ -251,5 +259,150 @@ func TestUpdateKeepsAStoppedDaemonStopped(t *testing.T) {
 	}
 	if got := callsOf(t, calls); got != "script stop\ninstall\nscript start\n" {
 		t.Fatalf("a running daemon must run again:\n%s", got)
+	}
+}
+
+const setupKey = "A1B2C3D4-E5F6-4789-ABCD-0123456789EF"
+
+// A key that is not a NetBird key is refused before anything runs, and the
+// message does not repeat what was pasted.
+func TestLoginRefusesAKeyInAnotherFormat(t *testing.T) {
+	calls := lifecycle(t)
+	rsp := call(t, NewService().Login, `{"setupKey":"tskey-auth-SECRETVALUE"}`)
+	if rsp.Code != -1 || strings.Contains(rsp.Msg, "SECRETVALUE") || !strings.Contains(rsp.Msg, "not in NetBird's format") {
+		t.Fatalf("got %d %q", rsp.Code, rsp.Msg)
+	}
+	if got := callsOf(t, calls); got != "" {
+		t.Fatalf("nothing may run for a malformed key, ran:\n%s", got)
+	}
+}
+
+func TestLoginLeavesNoKeyFileBehind(t *testing.T) {
+	lifecycle(t)
+	fakeRunning(t, addon.NetBird, 4242, "/usr/bin/netbird")
+	if rsp := call(t, NewService().Login, `{"setupKey":"`+setupKey+`"}`); rsp.Code != 0 {
+		t.Fatalf("got %d %q", rsp.Code, rsp.Msg)
+	}
+	if entries, _ := os.ReadDir(KeyDir); len(entries) != 0 {
+		t.Fatalf("the key file must be removed, found %v", entries)
+	}
+}
+
+// Two starts at once, NetBird's through the page and Tailscale's through the
+// same lock: exactly one goes ahead.
+func TestStartRacesTailscaleForTheLock(t *testing.T) {
+	lifecycle(t)
+	t.Setenv("STUB_RUN", "1")
+	done := make(chan proto.Response)
+	go func() { done <- call(t, NewService().Start, "") }()
+	time.Sleep(20 * time.Millisecond)
+	tsErr := addon.Exclusive("tailscale", func() error {
+		fakeRunning(t, addon.Tailscale, 100, "/usr/sbin/tailscaled")
+		return nil
+	})
+	rsp := <-done
+	if (rsp.Code == 0) == (tsErr == nil) {
+		t.Fatalf("exactly one start may go ahead: netbird %d %q, tailscale %v", rsp.Code, rsp.Msg, tsErr)
+	}
+}
+
+// Restart of a stopped daemon is a start, and is refused like one.
+func TestRestartOfAStoppedDaemonIsRefusedWhileTailscaleRuns(t *testing.T) {
+	calls := lifecycle(t)
+	fakeRunning(t, addon.Tailscale, 100, "/usr/sbin/tailscaled")
+	rsp := call(t, NewService().Restart, "")
+	if rsp.Code == 0 || !strings.Contains(rsp.Msg, "Tailscale is running or starts at boot") {
+		t.Fatalf("got %d %q", rsp.Code, rsp.Msg)
+	}
+	if got := callsOf(t, calls); got != "" {
+		t.Fatalf("nothing may run while refused, ran:\n%s", got)
+	}
+}
+
+func TestStartRefreshesTheBootCopy(t *testing.T) {
+	lifecycle(t)
+	stale := filepath.Join(addon.InitdDir, "S98netbird")
+	if err := os.WriteFile(stale, []byte("#!/bin/sh\n# old\n"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if rsp := call(t, NewService().Start, ""); rsp.Code != 0 {
+		t.Fatalf("got %d %q", rsp.Code, rsp.Msg)
+	}
+	got, _ := os.ReadFile(stale)
+	want, _ := os.ReadFile(addon.NetBird.Script())
+	if string(got) != string(want) {
+		t.Fatalf("the boot copy was not refreshed: %q", got)
+	}
+}
+
+// installBlocks makes installPackage wait until the returned channel closes.
+func installBlocks(t *testing.T) (release chan struct{}, started chan struct{}) {
+	t.Helper()
+	release, started = make(chan struct{}), make(chan struct{})
+	binary, err := os.ReadFile(NetbirdPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = os.Remove(NetbirdPath)
+	installPackage = func() error {
+		close(started)
+		<-release
+		return os.WriteFile(NetbirdPath, binary, 0o755)
+	}
+	return release, started
+}
+
+func TestSecondInstallUpdateOrUninstallIsBusy(t *testing.T) {
+	lifecycle(t)
+	release, started := installBlocks(t)
+	s := NewService()
+	done := make(chan proto.Response)
+	go func() { done <- call(t, s.Install, "") }()
+	<-started
+	for name, h := range map[string]gin.HandlerFunc{"install": s.Install, "update": s.Update, "uninstall": s.Uninstall} {
+		if rsp := call(t, h, ""); rsp.Code != -1 || !strings.Contains(rsp.Msg, "NetBird is busy") {
+			t.Fatalf("%s: got %d %q", name, rsp.Code, rsp.Msg)
+		}
+	}
+	close(release)
+	if rsp := <-done; rsp.Code != 0 {
+		t.Fatalf("the first install: %d %q", rsp.Code, rsp.Msg)
+	}
+}
+
+// The download runs without the lock; the start after it checks again.
+func TestInstallChecksAgainBeforeItStarts(t *testing.T) {
+	calls := lifecycle(t)
+	_ = os.Remove(NetbirdPath)
+	installPackage = func() error {
+		fakeRunning(t, addon.Tailscale, 100, "/usr/sbin/tailscaled")
+		stub(t, NetbirdPath, "exit 0")
+		return nil
+	}
+	rsp := call(t, NewService().Install, "")
+	if rsp.Code != -1 || !strings.Contains(rsp.Msg, "Tailscale is running or starts at boot") {
+		t.Fatalf("got %d %q", rsp.Code, rsp.Msg)
+	}
+	if strings.Contains(callsOf(t, calls), "script start") {
+		t.Fatal("netbird must not start while tailscale runs")
+	}
+}
+
+func TestUpdateAndUninstallStopOnAFailedStop(t *testing.T) {
+	calls := lifecycle(t)
+	installPackage = func() error { t.Error("nothing may be installed after a failed stop"); return nil }
+	fakeRunning(t, addon.NetBird, 4242, "/usr/bin/netbird")
+	t.Setenv("STUB_STOP", "FAIL")
+	s := NewService()
+	for name, h := range map[string]gin.HandlerFunc{"update": s.Update, "uninstall": s.Uninstall} {
+		if rsp := call(t, h, ""); rsp.Code != -1 || !strings.Contains(rsp.Msg, "Stopping netbird: FAIL") {
+			t.Fatalf("%s: got %d %q", name, rsp.Code, rsp.Msg)
+		}
+	}
+	if !isInstalled() {
+		t.Fatal("uninstall must keep the binary when the daemon did not stop")
+	}
+	if strings.Contains(callsOf(t, calls), "script start") {
+		t.Fatal("nothing may start after a failed stop")
 	}
 }

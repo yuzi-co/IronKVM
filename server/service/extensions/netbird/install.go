@@ -57,11 +57,24 @@ func workspace() string {
 	return FallbackWorkspace
 }
 
-// apk runs the package manager with a deadline. A failure carries its output.
+// checkTimeout bounds the update check, apk update and search together. A
+// variable for the tests.
+var checkTimeout = vpn.CheckTimeout
+
+// apk runs the package manager with apk's own deadline. A failure carries its
+// output.
 func apk(args ...string) ([]byte, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), apkTimeout)
 	defer cancel()
-	return vpn.Run(exec.CommandContext(ctx, ApkPath, args...))
+	return apkContext(ctx, args...)
+}
+
+// apkContext runs the package manager until ctx ends. WaitDelay closes the
+// pipes if apk leaves a child holding them, so the deadline holds.
+func apkContext(ctx context.Context, args ...string) ([]byte, error) {
+	cmd := exec.CommandContext(ctx, ApkPath, args...)
+	cmd.WaitDelay = 2 * time.Second
+	return vpn.Run(cmd)
 }
 
 // install fetches Alpine's netbird package, checks its signature, and takes
@@ -163,10 +176,12 @@ func placeBinary(src string) error {
 // latestVersion refreshes the index and reads the version of the netbird
 // package it offers.
 func latestVersion() (string, error) {
-	if _, err := apk("update"); err != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), checkTimeout)
+	defer cancel()
+	if _, err := apkContext(ctx, "update"); err != nil {
 		return "", err
 	}
-	out, err := apk("search", "-e", packageName)
+	out, err := apkContext(ctx, "search", "-e", packageName)
 	if err != nil {
 		return "", err
 	}

@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"NanoKVM-Server/service/extensions/addon"
 	"NanoKVM-Server/service/extensions/vpn"
@@ -126,5 +127,25 @@ func TestLatestVersionAsksApk(t *testing.T) {
 	}
 	if got := callsOf(t, calls); got != "update\nsearch -e netbird\n" {
 		t.Fatalf("calls:\n%s", got)
+	}
+}
+
+// The page waits on this check. A mirror that does not answer must not hold
+// it for apk's ten minutes.
+func TestLatestVersionGivesUpAfterTheCheckTimeout(t *testing.T) {
+	scratchImage(t, true)
+	fakeApk(t, "0.79.0")
+	slow := filepath.Join(t.TempDir(), "apk")
+	stub(t, slow, "sleep 30")
+	savedApk, savedTimeout := ApkPath, checkTimeout
+	t.Cleanup(func() { ApkPath, checkTimeout = savedApk, savedTimeout })
+	ApkPath, checkTimeout = slow, 300*time.Millisecond
+
+	start := time.Now()
+	if _, err := latestVersion(); err == nil {
+		t.Fatal("a check that timed out must fail")
+	}
+	if elapsed := time.Since(start); elapsed > 5*time.Second {
+		t.Fatalf("the check took %s", elapsed)
 	}
 }

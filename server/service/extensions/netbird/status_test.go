@@ -76,8 +76,13 @@ func TestDaemonStatuses(t *testing.T) {
 			t.Fatalf("%s: got %q %v, want %q", status, got.State, err, want)
 		}
 	}
-	if _, err := toVpnStatus(&NbStatus{DaemonStatus: "Exploded"}); err == nil {
-		t.Fatal("an unknown daemon status must be an error")
+	// A status a later NetBird adds must not blank the page: the daemon
+	// answered, so it runs.
+	for i := 0; i < 2; i++ {
+		got, err := toVpnStatus(&NbStatus{DaemonStatus: "Exploded", FQDN: "kvm.netbird.cloud"})
+		if err != nil || got.State != proto.VpnRunning || got.Name != "kvm.netbird.cloud" {
+			t.Fatalf("an unknown status reads as running: %+v %v", got, err)
+		}
 	}
 }
 

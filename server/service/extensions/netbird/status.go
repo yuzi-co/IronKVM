@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/url"
 	"sort"
 	"strings"
+	"sync"
 
 	"NanoKVM-Server/proto"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // NbPeer is one entry of peers.details in `netbird status --json`. The names
@@ -46,6 +48,10 @@ var StateMap = map[string]proto.VpnState{
 	"SessionExpired": proto.VpnNotLogin,
 }
 
+// unknownStatuses holds the daemon statuses already logged as unknown, so
+// each one is logged once and not on every visit to the page.
+var unknownStatuses sync.Map
+
 // parseStatus reads the CLI's JSON, skipping anything printed before it.
 func parseStatus(out []byte) (*NbStatus, error) {
 	i := bytes.IndexByte(out, '{')
@@ -64,7 +70,12 @@ func parseStatus(out []byte) (*NbStatus, error) {
 func toVpnStatus(nb *NbStatus) (proto.VpnStatus, error) {
 	state, ok := StateMap[nb.DaemonStatus]
 	if !ok {
-		return proto.VpnStatus{}, fmt.Errorf("unknown netbird status: %s", nb.DaemonStatus)
+		// A later NetBird may add a status. The daemon answered, so it runs,
+		// and the page keeps its details rather than an error.
+		state = proto.VpnRunning
+		if _, seen := unknownStatuses.LoadOrStore(nb.DaemonStatus, true); !seen {
+			log.Warnf("unknown netbird daemon status %q, shown as running", nb.DaemonStatus)
+		}
 	}
 	st := proto.VpnStatus{
 		State:   state,

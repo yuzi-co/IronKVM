@@ -35,11 +35,11 @@ func scratchImage(t *testing.T, onDistro bool) (fsroot string) {
 		t.Fatal(err)
 	}
 
-	saved := struct{ root, dataDir, marker, mounts, fsroot, nb, ws string }{
-		addon.Root, addon.DataDir, addon.DistroMarker, addon.Mounts, addon.FsRoot, NetbirdPath, FallbackWorkspace}
+	saved := struct{ root, dataDir, marker, mounts, fsroot, nb, ws, keys string }{
+		addon.Root, addon.DataDir, addon.DistroMarker, addon.Mounts, addon.FsRoot, NetbirdPath, FallbackWorkspace, KeyDir}
 	t.Cleanup(func() {
 		addon.Root, addon.DataDir, addon.DistroMarker, addon.Mounts, addon.FsRoot = saved.root, saved.dataDir, saved.marker, saved.mounts, saved.fsroot
-		NetbirdPath, FallbackWorkspace = saved.nb, saved.ws
+		NetbirdPath, FallbackWorkspace, KeyDir = saved.nb, saved.ws, saved.keys
 	})
 	addon.Root = filepath.Join(data, "ironkvm", "addons")
 	addon.DataDir = data
@@ -48,6 +48,10 @@ func scratchImage(t *testing.T, onDistro bool) (fsroot string) {
 	addon.FsRoot = fsroot
 	NetbirdPath = fsroot + "/usr/bin/netbird"
 	FallbackWorkspace = filepath.Join(base, "fetch")
+	KeyDir = filepath.Join(base, "run-keys")
+	if err := os.MkdirAll(KeyDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
 	return fsroot
 }
 
