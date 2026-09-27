@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"regexp"
@@ -13,26 +14,36 @@ import (
 	"NanoKVM-Server/service/extensions/addon"
 	"NanoKVM-Server/service/extensions/vpn"
 	"NanoKVM-Server/utils"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // LogFile is where S98netbird points the daemon's log. A start that fails
 // reports its last lines.
-const LogFile = "/var/log/netbird.log"
+var LogFile = "/var/log/netbird.log"
 
 const (
-	// loginURLTimeout bounds how long the handler waits for the SSO URL.
-	loginURLTimeout = 60 * time.Second
+	// loginURLTimeout bounds how long the handler waits for the SSO URL. It
+	// stays under the page's own request timeout.
+	loginURLTimeout = 30 * time.Second
+	// downTimeout bounds the `netbird down` that ends a join's retries.
+	downTimeout = 10 * time.Second
+	// logReadBytes caps how much of the daemon's log one join reads.
+	logReadBytes = 64 * 1024
 	// ssoLife bounds an SSO login nobody finishes: netbird up has no timeout
 	// of its own and would wait for the browser forever.
 	ssoLife = 10 * time.Minute
-	// upTimeout bounds up and a join with a setup key, which talk to the
-	// management server.
+	// upTimeout bounds up, which talks to the management server.
 	upTimeout = 2 * time.Minute
 	// cliTimeout bounds down, deregister and version.
 	cliTimeout = 30 * time.Second
 	// waitDelay bounds how long a command's pipes may outlive it.
 	waitDelay = 2 * time.Second
 )
+
+// joinTimeout bounds `netbird up --setup-key-file`. With a rejected key it
+// never ends on its own. A variable for the tests.
+var joinTimeout = 30 * time.Second
 
 // statusTimeout bounds `netbird status`, which the page runs on every visit.
 // A variable for the tests.
@@ -159,7 +170,8 @@ func (c *Cli) JoinWithSetupKey(key string) error {
 		return fmt.Errorf("failed to write the setup key for the CLI: %w", werr)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), upTimeout)
+	logStart := fileSize(LogFile)
+	ctx, cancel := context.WithTimeout(context.Background(), joinTimeout)
 	defer cancel()
 	cmd := exec.CommandContext(ctx, NetbirdPath, "up", "--setup-key-file", f.Name())
 	cmd.WaitDelay = waitDelay
@@ -167,8 +179,65 @@ func (c *Cli) JoinWithSetupKey(key string) error {
 	if err == nil {
 		return nil
 	}
+
+	// A key the management server rejects does not end `netbird up`: the
+	// daemon retries every few seconds, forever. So the join is ended here,
+	// and `netbird down` stops the retries.
+	timedOut := errors.Is(ctx.Err(), context.DeadlineExceeded)
+	if timedOut {
+		if _, derr := run(downTimeout, "down"); derr != nil {
+			log.Warnf("netbird down after a join that timed out: %s", derr)
+		}
+		err = fmt.Errorf("netbird up timed out after %s", joinTimeout)
+	}
+
+	if strings.Contains(string(readFrom(LogFile, logStart)), rejectedKeyLog) {
+		return ErrSetupKeyRejected
+	}
 	masked := strings.NewReplacer(key, "***", strings.ToLower(key), "***").Replace(string(out))
-	return &vpn.CmdError{Err: err, Tail: vpn.Tail([]byte(masked), vpn.TailLines)}
+	tail := vpn.Tail([]byte(masked), vpn.TailLines)
+	if timedOut {
+		tail = strings.TrimSpace(tail + "\n" + err.Error())
+	}
+	return &vpn.CmdError{Err: err, Tail: tail}
+}
+
+// rejectedKeyLog is what the daemon logs, at v0.78.2, each time the
+// management server refuses the key.
+const rejectedKeyLog = "setup key is invalid"
+
+// ErrSetupKeyRejected is the page's answer for a key the management server
+// refused.
+var ErrSetupKeyRejected = errors.New("NetBird rejected the setup key: it is invalid, expired, " +
+	"or already used (a one-off key works once)")
+
+func fileSize(path string) int64 {
+	fi, err := os.Stat(path)
+	if err != nil {
+		return 0
+	}
+	return fi.Size()
+}
+
+// readFrom returns what the file gained after offset, at most logReadBytes of
+// it: the daemon's log during one join.
+func readFrom(path string, offset int64) []byte {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil
+	}
+	defer func() { _ = f.Close() }()
+	if fi, err := f.Stat(); err != nil || fi.Size() < offset {
+		// Rotated or truncated meanwhile: read it from the start.
+		offset = 0
+	} else if fi.Size()-offset > logReadBytes {
+		offset = fi.Size() - logReadBytes
+	}
+	if _, err := f.Seek(offset, io.SeekStart); err != nil {
+		return nil
+	}
+	b, _ := io.ReadAll(io.LimitReader(f, logReadBytes))
+	return b
 }
 
 // LoginSSO starts an SSO login and returns the URL. NetBird prints it on

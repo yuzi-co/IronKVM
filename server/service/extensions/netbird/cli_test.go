@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"NanoKVM-Server/service/extensions/vpn"
 )
@@ -90,5 +91,90 @@ func TestNormalizeSetupKey(t *testing.T) {
 		if err == nil || (bad != "" && strings.Contains(err.Error(), bad)) {
 			t.Fatalf("%q: got %v", bad, err)
 		}
+	}
+}
+
+// joinScratch points the daemon's log at a scratch file and makes the join
+// time out after timeout.
+func joinScratch(t *testing.T, timeout time.Duration) (logFile string) {
+	t.Helper()
+	scratchImage(t, true)
+	logFile = filepath.Join(t.TempDir(), "netbird.log")
+	savedLog, savedJoin := LogFile, joinTimeout
+	t.Cleanup(func() { LogFile, joinTimeout = savedLog, savedJoin })
+	LogFile, joinTimeout = logFile, timeout
+	return logFile
+}
+
+// A key the management server rejects leaves `netbird up` waiting while the
+// daemon retries forever. The join ends, stops the daemon's retries with
+// `netbird down`, removes the key file, and says why.
+func TestJoinWithARejectedKeyEndsAndSaysWhy(t *testing.T) {
+	logFile := joinScratch(t, 300*time.Millisecond)
+	calls := filepath.Join(t.TempDir(), "calls")
+	stub(t, NetbirdPath, `echo "$1" >> "`+calls+`"
+case "$1" in
+up)
+	echo "2026-09-28T10:00:00Z WARN couldn't add peer: setup key is invalid" >> "`+logFile+`"
+	exec sleep 30 ;;
+esac`)
+
+	start := time.Now()
+	err := NewCli().JoinWithSetupKey(testKey)
+	if elapsed := time.Since(start); elapsed > 5*time.Second {
+		t.Fatalf("the join took %s", elapsed)
+	}
+	if err == nil || err.Error() != "NetBird rejected the setup key: it is invalid, expired, or already used (a one-off key works once)" {
+		t.Fatalf("got %v", err)
+	}
+	if got := callsOf(t, calls); got != "up\ndown\n" {
+		t.Fatalf("calls:\n%s", got)
+	}
+	if entries, _ := os.ReadDir(KeyDir); len(entries) != 0 {
+		t.Fatalf("the key file must be removed, found %v", entries)
+	}
+}
+
+// A timeout with nothing in the log about the key reports the CLI's output.
+func TestJoinThatTimesOutWithoutAReason(t *testing.T) {
+	joinScratch(t, 300*time.Millisecond)
+	stub(t, NetbirdPath, `[ "$1" = up ] || exit 0
+echo "connecting to $(cat "$3")"
+exec sleep 30`)
+	err := NewCli().JoinWithSetupKey(testKey)
+	msg := vpn.Message("join failed", err)
+	if err == nil || !strings.Contains(msg, "timed out") || !strings.Contains(msg, "connecting to ***") || strings.Contains(msg, testKey) {
+		t.Fatalf("message is %q", msg)
+	}
+	if entries, _ := os.ReadDir(KeyDir); len(entries) != 0 {
+		t.Fatalf("the key file must be removed, found %v", entries)
+	}
+}
+
+// Only what the daemon logged during this join counts: an old rejection in
+// the log is not this attempt's reason.
+func TestJoinReadsOnlyThisAttemptsLog(t *testing.T) {
+	logFile := joinScratch(t, 5*time.Second)
+	if err := os.WriteFile(logFile, []byte("old WARN couldn't add peer: setup key is invalid\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	stub(t, NetbirdPath, `[ "$1" = up ] || exit 0
+echo "management unreachable" >&2; exit 1`)
+	msg := vpn.Message("join failed", NewCli().JoinWithSetupKey(testKey))
+	if strings.Contains(msg, "rejected") || !strings.Contains(msg, "management unreachable") {
+		t.Fatalf("message is %q", msg)
+	}
+}
+
+// A rejection the CLI itself reports, with the daemon's log line, is named
+// the same way.
+func TestJoinFailureWithARejectionInTheLog(t *testing.T) {
+	logFile := joinScratch(t, 5*time.Second)
+	stub(t, NetbirdPath, `[ "$1" = up ] || exit 0
+echo "couldn't add peer: setup key is invalid" >> "`+logFile+`"
+echo "login failed" >&2; exit 1`)
+	err := NewCli().JoinWithSetupKey(testKey)
+	if err == nil || !strings.HasPrefix(err.Error(), "NetBird rejected the setup key") {
+		t.Fatalf("got %v", err)
 	}
 }
