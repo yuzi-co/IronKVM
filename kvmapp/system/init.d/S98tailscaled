@@ -126,7 +126,7 @@ fi
 # default meets the kill. So the limit is capped at seven eighths of
 # memory.high, 56 for 64M, which leaves room for what Go does not count (the
 # binary's pages and thread stacks). An owner's setting below that stays.
-tailscale_memlimit_mib() {
+memlimit_mib() {
     mib=512
     if [ -f "$KVMDIR/GOMEMLIMIT" ]; then
         v=$(cat "$KVMDIR/GOMEMLIMIT" 2>/dev/null)
@@ -151,7 +151,7 @@ tailscale_memlimit_mib() {
 
 case "$1" in
         start)
-                export GOMEMLIMIT="$(tailscale_memlimit_mib)MiB"
+                export GOMEMLIMIT="$(memlimit_mib)MiB"
                 echo "GOMEMLIMIT set to ${GOMEMLIMIT}"
 
                 if pid=$(running_pid); then

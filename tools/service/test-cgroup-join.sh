@@ -4,10 +4,10 @@
 #   test-cgroup-join.sh
 #
 # ironkvm-dist's S01cgroups makes two groups, kvm and addons. S95nanokvm joins
-# kvm; S98tailscaled and S96picoclaw join addons. The join is the block between
-# "# --- cgroup ---" and "# --- end cgroup ---" in each script. Only that block
-# is run here, never the script, because running an init script starts or stops
-# real services.
+# kvm; S98tailscaled, S98netbird and S96picoclaw join addons. The join is the
+# block between "# --- cgroup ---" and "# --- end cgroup ---" in each script.
+# Only that block is run here, never the script, because running an init
+# script starts or stops real services.
 set -u
 HERE=$(cd "$(dirname "$0")" && pwd)
 INITD=$HERE/../../kvmapp/system/init.d
@@ -18,7 +18,7 @@ fails=0
 note() { printf '  %-64s %s\n' "$1" "$2"; [ "$2" = FAIL ] && fails=$((fails + 1)); return 0; }
 check() { if [ "$2" = "$3" ]; then note "$1" OK; else note "$1" FAIL; echo "    got '$2' want '$3'"; fi; }
 
-for pair in S95nanokvm:kvm S98tailscaled:addons S96picoclaw:addons; do
+for pair in S95nanokvm:kvm S98tailscaled:addons S98netbird:addons S96picoclaw:addons; do
     s=${pair%%:*}; g=${pair#*:}
     echo "$s"
     sed -n '/^# --- cgroup ---$/,/^# --- end cgroup ---$/p' "$INITD/$s" > "$WORK/block.sh"
