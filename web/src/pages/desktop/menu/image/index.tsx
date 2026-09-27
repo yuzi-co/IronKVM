@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Divider, Modal, Segmented, Tooltip } from 'antd';
+import { Divider, Modal, Tooltip } from 'antd';
 import clsx from 'clsx';
 import { useSetAtom } from 'jotai';
-import { DiscIcon, HardDriveIcon } from 'lucide-react';
+import { DiscIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/storage.ts';
 import { submenuOpenCountAtom } from '@/jotai/settings.ts';
+import { useStableCallback } from '@/hooks/useStableCallback.ts';
 
+import { Drives } from './drives.tsx';
 import { Images } from './images.tsx';
 import { Tips } from './tips.tsx';
 
@@ -16,43 +18,30 @@ export const Image = () => {
   const setSubmenuOpenCount = useSetAtom(submenuOpenCountAtom);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-  const [mode, setMode] = useState('mass-storage');
+  const [drives, setDrives] = useState<api.Drive[]>([]);
+  const [diskRo, setDiskRo] = useState(false);
 
-  const modes = [
-    {
-      value: 'mass-storage',
-      label: (
-        <div className="flex items-center space-x-1">
-          <HardDriveIcon size={16} />
-          <span>Mass Storage</span>
-        </div>
-      )
-    },
-    {
-      value: 'cd-rom',
-      label: (
-        <div className="flex items-center space-x-1">
-          <DiscIcon size={16} />
-          <span>CD ROM</span>
-        </div>
-      )
-    }
-  ];
+  const isMounted = drives.some((drive) => !!drive.file);
+
+  const refreshDrives = useStableCallback(() => {
+    api.getDrives().then((rsp) => {
+      if (rsp.code !== 0) return;
+
+      const list: api.Drive[] = rsp.data?.drives ?? [];
+      setDrives(list);
+
+      // A loaded disk shows its real flag. An empty one keeps the operator's
+      // choice for the next insert.
+      const disk = list.find((drive) => drive.id === 'disk');
+      if (disk?.file) {
+        setDiskRo(disk.ro);
+      }
+    });
+  });
 
   useEffect(() => {
-    api.getMountedImage().then((rsp) => {
-      if (rsp.code === 0) {
-        setIsMounted(!!rsp.data?.file);
-      }
-    });
-
-    api.getCdRom().then((rsp) => {
-      if (rsp.code === 0) {
-        setMode(rsp.data?.cdrom === 1 ? 'cd-rom' : 'mass-storage');
-      }
-    });
-  }, []);
+    refreshDrives();
+  }, [refreshDrives]);
 
   function toggleModal(open: boolean) {
     setIsModalOpen(open);
@@ -82,14 +71,21 @@ export const Image = () => {
         <Divider style={{ margin: '24px 0' }} />
 
         <div className="flex flex-col space-y-6">
-          <div className="flex items-center justify-between">
-            <span>{t('image.mountMode')}</span>
-            <Segmented value={mode} options={modes} disabled={isMounted} onChange={setMode} />
-          </div>
+          <Drives
+            drives={drives}
+            diskRo={diskRo}
+            setDiskRo={setDiskRo}
+            onDrivesChanged={refreshDrives}
+          />
 
           <Divider style={{ margin: '24px 0 0 0' }} />
 
-          <Images isOpen={isModalOpen} cdrom={mode === 'cd-rom'} setIsMounted={setIsMounted} />
+          <Images
+            isOpen={isModalOpen}
+            drives={drives}
+            diskRo={diskRo}
+            onDrivesChanged={refreshDrives}
+          />
         </div>
       </Modal>
     </>

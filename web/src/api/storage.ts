@@ -1,27 +1,32 @@
 import { http } from '@/lib/http.ts';
 
+export type DriveId = 'disk' | 'cdrom';
+
+export type Drive = {
+  id: DriveId;
+  type: DriveId;
+  file: string;
+  ro: boolean;
+};
+
 // get image list
 export function getImages() {
   return http.get('/api/storage/image');
 }
 
-// get mounted image
-export function getMountedImage() {
-  return http.get('/api/storage/image/mounted');
+// list the virtual drives: the disk, and the CD when the gadget has it
+export function getDrives() {
+  return http.get('/api/storage/drives');
 }
 
-// mount/unmount image
-export function mountImage(file?: string, cdrom?: boolean) {
-  const data = {
-    file: file ? file : '',
-    cdrom: cdrom
-  };
-  return http.post('/api/storage/image/mount', data);
+// insert an image into a drive; ro applies to the disk only
+export function insertDrive(id: DriveId, file: string, ro: boolean) {
+  return http.post(`/api/storage/drives/${id}/insert`, { file, ro });
 }
 
-// get CD-ROM flag
-export function getCdRom() {
-  return http.get('/api/storage/cdrom');
+// eject a drive's image
+export function ejectDrive(id: DriveId) {
+  return http.post(`/api/storage/drives/${id}/eject`);
 }
 
 export function deleteImage(file: string) {
