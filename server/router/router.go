@@ -78,6 +78,7 @@ func server(r *gin.Engine) {
 	downloadRouter(r)
 	extensionsRouter(r)
 	debugRouter(r)
+	metricsRouter(r)
 }
 
 func LoopbackHTTPAllowedPaths() []string {
