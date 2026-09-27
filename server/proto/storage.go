@@ -20,3 +20,19 @@ type GetCdRomRsp struct {
 type DeleteImageReq struct {
 	File string `json:"file" validate:"required"`
 }
+
+type DriveInfo struct {
+	ID   string `json:"id"`
+	Type string `json:"type"`
+	File string `json:"file"`
+	Ro   bool   `json:"ro"`
+}
+
+type GetDrivesRsp struct {
+	Drives []DriveInfo `json:"drives"`
+}
+
+type InsertDriveReq struct {
+	File string `json:"file" validate:"required"`
+	Ro   bool   `json:"ro" validate:"omitempty"`
+}
