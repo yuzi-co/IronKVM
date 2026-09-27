@@ -12,9 +12,12 @@ func storageRouter(r *gin.Engine) {
 	service := storage.NewService()
 	api := r.Group("/api").Use(middleware.CheckToken(), middleware.RequireRole(authn.RoleAdmin))
 
-	api.GET("/storage/image", service.GetImages)               // get image list
-	api.GET("/storage/image/mounted", service.GetMountedImage) // get mounted image
-	api.POST("/storage/image/mount", service.MountImage)       // mount image
-	api.GET("/storage/cdrom", service.GetCdRom)                // get CD-ROM flag
-	api.POST("/storage/image/delete", service.DeleteImage)     // delete image
+	api.GET("/storage/image", service.GetImages)                // get image list
+	api.GET("/storage/image/mounted", service.GetMountedImage)  // get mounted image
+	api.POST("/storage/image/mount", service.MountImage)        // mount image
+	api.GET("/storage/cdrom", service.GetCdRom)                 // get CD-ROM flag
+	api.GET("/storage/drives", service.GetDrives)               // list the virtual drives
+	api.POST("/storage/drives/:id/insert", service.InsertDrive) // insert an image into a drive
+	api.POST("/storage/drives/:id/eject", service.EjectDrive)   // eject a drive's image
+	api.POST("/storage/image/delete", service.DeleteImage)      // delete image
 }

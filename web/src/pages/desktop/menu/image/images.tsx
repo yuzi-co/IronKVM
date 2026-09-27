@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react';
-import { Button, Modal, notification, Typography } from 'antd';
+import { useEffect, useState, type MouseEvent as ReactMouseEvent } from 'react';
+import { Button, Modal, notification, Tooltip, Typography } from 'antd';
 import clsx from 'clsx';
 import {
   ArrowBigDownDashIcon,
   ArrowBigUpDashIcon,
+  DiscIcon,
+  HardDriveIcon,
   LoaderCircleIcon,
   PackageIcon,
   PackageSearchIcon,
@@ -12,38 +14,45 @@ import {
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/storage.ts';
-import { client } from '@/lib/websocket.ts';
 import { useStableCallback } from '@/hooks/useStableCallback.ts';
 
 const imageUpdatedEvent = 'nanokvm:image-updated';
 
 type ImagesProps = {
   isOpen: boolean;
-  cdrom: boolean;
-  setIsMounted: (isMounted: boolean) => void;
+  drives: api.Drive[];
+  diskRo: boolean;
+  onDrivesChanged: () => void;
 };
 
-export const Images = ({ isOpen, cdrom, setIsMounted }: ImagesProps) => {
+// defaultDrive picks where a click inserts an image: an ISO into the CD drive
+// and anything else into the disk, falling back to whichever drive exists.
+function defaultDrive(image: string, available: api.DriveId[]): api.DriveId {
+  const preferred: api.DriveId = image.toLowerCase().endsWith('.iso') ? 'cdrom' : 'disk';
+  return available.includes(preferred) ? preferred : available[0];
+}
+
+export const Images = ({ isOpen, drives, diskRo, onDrivesChanged }: ImagesProps) => {
   const { t } = useTranslation();
   const [notify, contextHolder] = notification.useNotification();
 
   const [isLoading, setIsLoading] = useState(false);
   const [images, setImages] = useState<string[]>([]);
-  const [mountingImage, setMountingImage] = useState('');
-  const [mountedImage, setMountedImage] = useState('');
+  const [busyImage, setBusyImage] = useState('');
+  const [targets, setTargets] = useState<Record<string, api.DriveId>>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState('');
   const [deletingImage, setDeletingImage] = useState('');
 
-  // get mounted image
-  function getMountedImage() {
-    api.getMountedImage().then((rsp) => {
-      if (rsp.code !== 0) return;
+  const available = drives.map((drive) => drive.id);
 
-      const file = rsp.data?.file;
-      setMountedImage(file);
-      setIsMounted(!!file);
-    });
+  function loadedIn(image: string): api.DriveId | undefined {
+    return drives.find((drive) => drive.file === image)?.id;
+  }
+
+  function targetOf(image: string): api.DriveId {
+    const chosen = targets[image];
+    return chosen && available.includes(chosen) ? chosen : defaultDrive(image, available);
   }
 
   // get image list
@@ -63,13 +72,8 @@ export const Images = ({ isOpen, cdrom, setIsMounted }: ImagesProps) => {
         }
 
         const files = rsp.data?.files;
-
-        if (files?.length > 0) {
-          setImages(files);
-          getMountedImage();
-        } else {
-          setImages([]);
-        }
+        setImages(files?.length > 0 ? files : []);
+        onDrivesChanged();
       })
       .finally(() => {
         setIsLoading(false);
@@ -91,31 +95,35 @@ export const Images = ({ isOpen, cdrom, setIsMounted }: ImagesProps) => {
     };
   }, [isOpen, getImages]);
 
-  // mount/unmount image
-  function mountImage(image: string) {
-    if (mountingImage) return;
-    setMountingImage(image);
+  // flip the drive a click will insert into, when both drives exist
+  function toggleTarget(e: ReactMouseEvent, image: string) {
+    e.stopPropagation();
+    if (available.length < 2) return;
 
-    client.close();
+    const next: api.DriveId = targetOf(image) === 'cdrom' ? 'disk' : 'cdrom';
+    setTargets((prev) => ({ ...prev, [image]: next }));
+  }
 
-    const isMounted = mountedImage === image;
-    const filename = isMounted ? '' : image;
+  // eject the image from the drive holding it, or insert it into its target
+  function insertOrEject(image: string) {
+    if (busyImage || available.length === 0) return;
+    setBusyImage(image);
 
-    api
-      .mountImage(filename, cdrom)
+    const loaded = loadedIn(image);
+    const target = targetOf(image);
+    const request = loaded
+      ? api.ejectDrive(loaded)
+      : api.insertDrive(target, image, target === 'disk' ? diskRo : true);
+
+    request
       .then((rsp) => {
         if (rsp.code !== 0) {
-          console.log(rsp.msg);
-          openNotification(isMounted);
-          return;
+          openNotification(!!loaded, rsp.msg);
         }
-
-        setMountedImage(filename);
-        setIsMounted(!!filename);
       })
       .finally(() => {
-        setMountingImage('');
-        client.connect();
+        setBusyImage('');
+        onDrivesChanged();
       });
   }
 
@@ -123,7 +131,7 @@ export const Images = ({ isOpen, cdrom, setIsMounted }: ImagesProps) => {
   function showDeleteModal(e: any, image: string) {
     e.stopPropagation();
 
-    const isMounted = mountedImage === image;
+    const isMounted = !!loadedIn(image);
     const isDeleting = deletingImage !== '';
 
     if (isMounted || isDeleting) {
@@ -158,14 +166,11 @@ export const Images = ({ isOpen, cdrom, setIsMounted }: ImagesProps) => {
       });
   }
 
-  // show mount/unmount failed notification
-  function openNotification(isMounted: boolean) {
-    const message = isMounted ? 'image.unmountFailed' : 'image.mountFailed';
-    const description = isMounted ? 'image.unmountDesc' : 'image.mountDesc';
-
+  // show insert/eject failed notification
+  function openNotification(isEject: boolean, description: string) {
     notify.open({
-      message: t(message),
-      description: t(description),
+      message: t(isEject ? 'image.ejectFailed' : 'image.insertFailed'),
+      description,
       duration: 10
     });
   }
@@ -193,50 +198,84 @@ export const Images = ({ isOpen, cdrom, setIsMounted }: ImagesProps) => {
   return (
     <>
       <div className="flex max-h-[400px] flex-col overflow-y-auto pb-2">
-        {images.map((image) => (
-          <div
-            key={image}
-            className={clsx(
-              'group flex cursor-pointer select-none items-center space-x-1 rounded px-1 py-2 hover:bg-neutral-700/70',
-              mountedImage === image && 'text-blue-500'
-            )}
-            onClick={() => mountImage(image)}
-          >
-            <div className="flex h-[24px] w-[24px] items-center justify-center">
-              {mountingImage === image ? (
-                <LoaderCircleIcon className="animate-spin" size={18} />
-              ) : (
-                <PackageIcon size={18} />
-              )}
-            </div>
+        {images.map((image) => {
+          const loaded = loadedIn(image);
+          const drive = loaded ?? targetOf(image);
+          const DriveIcon = drive === 'cdrom' ? DiscIcon : HardDriveIcon;
+          const driveName = t(`image.${drive}`);
 
-            <div className="flex-1 truncate">{image.replace(/^.*[\\/]/, '')}</div>
-
-            <div className="flex h-[24px] w-[24px] items-center justify-center rounded">
-              {mountedImage === image ? (
-                <ArrowBigDownDashIcon size={22} className="hidden text-red-500 group-hover:block" />
-              ) : (
-                <ArrowBigUpDashIcon size={22} className="hidden text-blue-500 group-hover:block" />
-              )}
-            </div>
-
+          return (
             <div
+              key={image}
               className={clsx(
-                'flex h-[24px] w-[24px] items-center justify-center rounded hover:bg-neutral-500/50',
-                mountedImage === image
-                  ? 'cursor-not-allowed text-neutral-500'
-                  : 'text-neutral-300 hover:text-red-500'
+                'group flex cursor-pointer items-center space-x-1 rounded px-1 py-2 select-none hover:bg-neutral-700/70',
+                loaded && 'text-blue-500'
               )}
-              onClick={(e) => showDeleteModal(e, image)}
+              onClick={() => insertOrEject(image)}
             >
-              {deletingImage === image ? (
-                <LoaderCircleIcon className="animate-spin text-red-500" size={16} />
-              ) : (
-                <Trash2Icon size={16} />
+              <div className="flex h-[24px] w-[24px] items-center justify-center">
+                {busyImage === image ? (
+                  <LoaderCircleIcon className="animate-spin" size={18} />
+                ) : (
+                  <PackageIcon size={18} />
+                )}
+              </div>
+
+              <div className="flex-1 truncate">{image.replace(/^.*[\\/]/, '')}</div>
+
+              {available.length > 0 && (
+                <Tooltip
+                  title={
+                    loaded
+                      ? t('image.loadedIn', { drive: driveName })
+                      : t('image.insertInto', { drive: driveName })
+                  }
+                  mouseEnterDelay={0.6}
+                >
+                  <div
+                    className={clsx(
+                      'flex h-[24px] w-[24px] items-center justify-center rounded',
+                      !loaded && available.length > 1 && 'hover:bg-neutral-500/50'
+                    )}
+                    onClick={(e) => (loaded ? e.stopPropagation() : toggleTarget(e, image))}
+                  >
+                    <DriveIcon size={16} />
+                  </div>
+                </Tooltip>
               )}
+
+              <div className="flex h-[24px] w-[24px] items-center justify-center rounded">
+                {loaded ? (
+                  <ArrowBigDownDashIcon
+                    size={22}
+                    className="hidden text-red-500 group-hover:block"
+                  />
+                ) : (
+                  <ArrowBigUpDashIcon
+                    size={22}
+                    className="hidden text-blue-500 group-hover:block"
+                  />
+                )}
+              </div>
+
+              <div
+                className={clsx(
+                  'flex h-[24px] w-[24px] items-center justify-center rounded hover:bg-neutral-500/50',
+                  loaded
+                    ? 'cursor-not-allowed text-neutral-500'
+                    : 'text-neutral-300 hover:text-red-500'
+                )}
+                onClick={(e) => showDeleteModal(e, image)}
+              >
+                {deletingImage === image ? (
+                  <LoaderCircleIcon className="animate-spin text-red-500" size={16} />
+                ) : (
+                  <Trash2Icon size={16} />
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <Modal
