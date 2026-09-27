@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -100,6 +101,10 @@ type NIC struct {
 type Service struct {
 	deps     Deps
 	sessions *sessionStore
+
+	// resetMu serializes Reset actions from the LED read to the settle time
+	// after the press.
+	resetMu sync.Mutex
 }
 
 func New(deps Deps) *Service {

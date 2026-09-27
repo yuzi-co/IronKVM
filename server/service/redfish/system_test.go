@@ -4,7 +4,9 @@ import (
 	"errors"
 	"net/http"
 	"strings"
+	"sync"
 	"testing"
+	"time"
 )
 
 const resetURL = "/redfish/v1/Systems/1/Actions/ComputerSystem.Reset"
@@ -169,5 +171,34 @@ func TestChassisReportsThePowerState(t *testing.T) {
 	body := decode(t, w)
 	if body["PowerState"] != "Off" || body["ChassisType"] != "Other" {
 		t.Fatalf("chassis is %v", body)
+	}
+}
+
+// Two ForceOff calls at once must not both see the LED on: the second would
+// press for 5 s on a host that is already off, and turn it back on.
+func TestConcurrentResetsReadTheLEDAfterEachOther(t *testing.T) {
+	h := newHarness(t)
+	h.host.pressDelay = 50 * time.Millisecond
+	h.host.offAfterPower = true
+
+	admin := h.admin()
+	var wg sync.WaitGroup
+	codes := make([]int, 2)
+	for i := range codes {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			codes[i] = h.do(http.MethodPost, resetURL, `{"ResetType":"ForceOff"}`, admin...).Code
+		}()
+	}
+	wg.Wait()
+
+	for _, code := range codes {
+		if code != http.StatusNoContent {
+			t.Fatalf("answers %v, want both 204", codes)
+		}
+	}
+	if len(h.host.presses) != 1 {
+		t.Fatalf("presses %v, want exactly one", h.host.presses)
 	}
 }

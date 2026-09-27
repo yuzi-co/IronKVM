@@ -105,6 +105,10 @@ func (s *Service) system(c *gin.Context) {
 	writeTagged(c, body)
 }
 
+// resetSettle is how long a reset keeps the lock after a press, so the next
+// one reads an LED that has had time to follow. Tests shorten it.
+var resetSettle = 2 * time.Second
+
 // reset answers 204 once the press is done. It does not wait for the LED to
 // follow: an ATX host can take seconds, and clients poll PowerState.
 func (s *Service) reset(c *gin.Context) {
@@ -129,6 +133,12 @@ func (s *Service) reset(c *gin.Context) {
 		return
 	}
 
+	// The LED is read, the press planned and made, and the host given time
+	// to follow, all under one lock: two ForceOff calls at once would
+	// otherwise both see the host on, and the second would turn it back on.
+	s.resetMu.Lock()
+	defer s.resetMu.Unlock()
+
 	p, err := planReset(resetType, s.powerLED())
 	switch {
 	case errors.Is(err, errResetTypeNotAllowed):
@@ -146,6 +156,7 @@ func (s *Service) reset(c *gin.Context) {
 			writeError(c, http.StatusInternalServerError, "GeneralError", "the button press failed: "+err.Error())
 			return
 		}
+		time.Sleep(resetSettle)
 	}
 
 	c.Status(http.StatusNoContent)

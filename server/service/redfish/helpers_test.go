@@ -26,6 +26,11 @@ type fakeHost struct {
 	pressErr error
 	presses  []string
 
+	// pressDelay is how long a press takes. offAfterPower turns the LED off
+	// once a power press is done, as a host that shuts down would.
+	pressDelay    time.Duration
+	offAfterPower bool
+
 	drives    []proto.DriveInfo
 	insertErr error
 	ejectErr  error
@@ -35,11 +40,20 @@ type fakeHost struct {
 
 func (f *fakeHost) pressButton(kind string, d time.Duration) error {
 	f.mu.Lock()
+	delay := f.pressDelay
+	f.mu.Unlock()
+	time.Sleep(delay)
+
+	f.mu.Lock()
 	defer f.mu.Unlock()
 	if f.pressErr != nil {
 		return f.pressErr
 	}
 	f.presses = append(f.presses, fmt.Sprintf("%s %s", kind, d))
+	if f.offAfterPower && kind == ButtonPower {
+		off := false
+		f.led = &off
+	}
 	return nil
 }
 
@@ -146,6 +160,10 @@ type harness struct {
 func newHarness(t *testing.T) *harness {
 	t.Helper()
 	gin.SetMode(gin.TestMode)
+
+	settle := resetSettle
+	resetSettle = time.Millisecond
+	t.Cleanup(func() { resetSettle = settle })
 
 	accounts := authn.NewStore(filepath.Join(t.TempDir(), "pwd"))
 	if _, ok, err := accounts.Authenticate("admin", "admin"); err != nil || !ok {
