@@ -137,20 +137,23 @@ func (s *Store) Get(username string) (*User, error) {
 	return findUser(db.Users, username)
 }
 
-func (s *Store) Authenticate(username, password string) (*User, bool, error) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
+// compareHash is bcrypt's password check. Tests replace it to observe when
+// it runs.
+var compareHash = bcrypt.CompareHashAndPassword
 
-	db, err := s.loadLocked(true)
+func (s *Store) Authenticate(username, password string) (*User, bool, error) {
+	user, err := s.userForLogin(username)
 	if err != nil {
 		return nil, false, err
 	}
-	user, err := findUser(db.Users, username)
-	if err != nil || !user.Enabled {
+	if user == nil || !user.Enabled {
 		return nil, false, nil
 	}
 
-	if bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)) == nil {
+	// The password check runs on a copy of the account, outside the lock, so
+	// a login does not stall every other reader of the store for the length
+	// of a bcrypt.
+	if compareHash([]byte(user.PasswordHash), []byte(password)) == nil {
 		return user, true, nil
 	}
 
@@ -165,20 +168,78 @@ func (s *Store) Authenticate(username, password string) (*User, bool, error) {
 	if hashErr != nil {
 		return nil, false, hashErr
 	}
-	for index := range db.Users {
-		if db.Users[index].Username == username {
-			db.Users[index].PasswordHash = string(hash)
-			if db.Users[index].TokenVersion == 0 {
-				db.Users[index].TokenVersion = 1
-			}
-			user = cloneUser(&db.Users[index])
-			break
-		}
+
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	db, err := s.loadLocked(true)
+	if err != nil {
+		return nil, false, err
 	}
+	index := userIndex(db.Users, username)
+	// The account changed while the password was checked: the password that
+	// matched may no longer be its own.
+	if index < 0 || !db.Users[index].Enabled || db.Users[index].PasswordHash != user.PasswordHash {
+		return nil, false, nil
+	}
+	db.Users[index].PasswordHash = string(hash)
+	if db.Users[index].TokenVersion == 0 {
+		db.Users[index].TokenVersion = 1
+	}
+	user = cloneUser(&db.Users[index])
 	if err = s.saveLocked(db); err != nil {
 		return nil, false, err
 	}
 	return user, true, nil
+}
+
+// userForLogin returns a copy of the account, or nil when there is none. A
+// current account file is read under the read lock. A missing or legacy one
+// is migrated and written first, under the write lock, as before.
+func (s *Store) userForLogin(username string) (*User, error) {
+	s.mutex.RLock()
+	db, current, err := s.readCurrentLocked()
+	s.mutex.RUnlock()
+	if err != nil {
+		return nil, err
+	}
+
+	if !current {
+		s.mutex.Lock()
+		db, err = s.loadLocked(true)
+		s.mutex.Unlock()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	user, err := findUser(db.Users, username)
+	if err != nil {
+		return nil, nil
+	}
+	return user, nil
+}
+
+// readCurrentLocked reads an account file already in the current format.
+// current is false when the file is missing or in a legacy format, which
+// loadLocked has to migrate.
+func (s *Store) readCurrentLocked() (*database, bool, error) {
+	data, err := os.ReadFile(s.path)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil, false, nil
+	}
+	if err != nil {
+		return nil, false, err
+	}
+
+	var db database
+	if err = json.Unmarshal(data, &db); err != nil || db.Version == 0 {
+		return nil, false, nil
+	}
+	if err = validateDatabase(&db); err != nil {
+		return nil, false, err
+	}
+	return &db, true, nil
 }
 
 func (s *Store) ValidateToken(username string, tokenVersion uint64) (*User, error) {
