@@ -70,7 +70,7 @@ esac`))
 	stub(t, NetbirdPath, r.Replace(`echo "netbird $*" | sed "s| [^ ]*netbird-setup-key[^ ]*| KEYFILE|" >> "CALLS"
 case "$1" in
 version) echo "0.78.2" ;;
-status) [ -z "$STUB_HANG" ] || sleep 30; cat "FIXTURE" ;;
+status) [ -z "$STUB_HANG" ] || exec sleep 30; cat "FIXTURE" ;;
 up)
 	if [ "$2" = "--no-browser" ]; then
 		printf 'Use this URL to log in:\n\nhttps://login.netbird.io/activate?user_code=ABCD-EFGH \n\n'

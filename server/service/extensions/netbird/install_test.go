@@ -136,7 +136,7 @@ func TestLatestVersionGivesUpAfterTheCheckTimeout(t *testing.T) {
 	scratchImage(t, true)
 	fakeApk(t, "0.79.0")
 	slow := filepath.Join(t.TempDir(), "apk")
-	stub(t, slow, "sleep 30")
+	stub(t, slow, "exec sleep 30")
 	savedApk, savedTimeout := ApkPath, checkTimeout
 	t.Cleanup(func() { ApkPath, checkTimeout = savedApk, savedTimeout })
 	ApkPath, checkTimeout = slow, 300*time.Millisecond
