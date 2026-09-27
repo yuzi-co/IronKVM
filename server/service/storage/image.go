@@ -279,21 +279,13 @@ func (s *Service) DeleteImage(c *gin.Context) {
 		return
 	}
 
-	// Removing an image a drive is serving pulls the medium out from under
-	// the host.
-	holder, err := loadedDrive(req.File)
-	if err != nil {
-		rsp.ErrRsp(c, -2, "read drives failed")
-		return
-	}
-	if holder != "" {
-		rsp.ErrRsp(c, -4, "the image is loaded in the "+holder+" drive")
-		return
-	}
-
-	if err := os.Remove(req.File); err != nil {
-		rsp.ErrRsp(c, -3, "remove file failed")
+	if err := removeImage(req.File); err != nil {
 		log.Errorf("failed to remove file %s: %s", req.File, err)
+		if errors.Is(err, errImageLoaded) {
+			rsp.ErrRsp(c, -4, err.Error())
+			return
+		}
+		rsp.ErrRsp(c, -3, "remove file failed")
 		return
 	}
 

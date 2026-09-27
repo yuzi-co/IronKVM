@@ -2,9 +2,11 @@ package storage
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"syscall"
 
 	"NanoKVM-Server/proto"
@@ -34,11 +36,20 @@ var driveDefs = []driveDef{
 // temporary directory laid out the same way.
 var massStorageDir = "/sys/kernel/config/usb_gadget/g0/functions/mass_storage.disk0"
 
+// massStorageLink is the function's entry in the gadget config. Turning the
+// virtual disk off removes it and keeps the function directory, so the LUNs
+// outlive it; only this link says whether the host can see them.
+var massStorageLink = "/sys/kernel/config/usb_gadget/g0/configs/c.1/mass_storage.disk0"
+
 // writeAttr writes one configfs attribute. Tests replace it, because a plain
 // file cannot return the errors the kernel does.
 var writeAttr = func(path string, data []byte) error {
 	return os.WriteFile(path, data, 0o666)
 }
+
+// driveMu serialises every change to the drives, and the delete of an image,
+// so the check that an image is in no other drive holds until its write.
+var driveMu sync.Mutex
 
 var (
 	errNoDrive      = errors.New("no such drive")
@@ -55,6 +66,9 @@ func lunPath(d driveDef, attr string) string {
 }
 
 func driveExists(d driveDef) bool {
+	if _, err := os.Lstat(massStorageLink); err != nil {
+		return false
+	}
 	info, err := os.Stat(filepath.Join(massStorageDir, d.lun))
 	return err == nil && info.IsDir()
 }
@@ -129,6 +143,9 @@ func eject(d driveDef) error {
 
 // ejectDrive removes the drive's medium. An empty drive is left alone.
 func ejectDrive(id string) error {
+	driveMu.Lock()
+	defer driveMu.Unlock()
+
 	d, err := findDrive(id)
 	if err != nil {
 		return err
@@ -146,6 +163,9 @@ func ejectDrive(id string) error {
 // insertDrive loads file into the drive, replacing what it holds. ro applies
 // to the disk only; the CD drive is always read-only.
 func insertDrive(id string, file string, ro bool) error {
+	driveMu.Lock()
+	defer driveMu.Unlock()
+
 	if !isMountableImage(file) {
 		return errInvalidImage
 	}
@@ -185,4 +205,24 @@ func insertDrive(id string, file string, ro bool) error {
 	}
 
 	return writeAttr(lunPath(d, "file"), []byte(filepath.Clean(file)))
+}
+
+// errImageLoaded is wrapped with the drive that holds the image.
+var errImageLoaded = errors.New("the image is loaded")
+
+// removeImage deletes an image unless a drive is serving it. Removing it would
+// pull the medium out from under the host. The lock keeps an insert from
+// loading it between the check and the remove.
+func removeImage(file string) error {
+	driveMu.Lock()
+	defer driveMu.Unlock()
+
+	holder, err := loadedDrive(file)
+	if err != nil {
+		return err
+	}
+	if holder != "" {
+		return fmt.Errorf("%w in the %s drive", errImageLoaded, holder)
+	}
+	return os.Remove(file)
 }
