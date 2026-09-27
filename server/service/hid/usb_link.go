@@ -163,6 +163,19 @@ func readUSBLink() (usbLink, error) {
 	return usbLink{}, firstErr
 }
 
+// USBLinkState reports the device controller's state attribute, such as
+// "configured" or "not attached", for the metrics endpoint. It fails when no
+// controller can be read, which is a kernel without a gadget controller rather
+// than a link fault.
+func USBLinkState() (string, error) {
+	link, err := readUSBLink()
+	if err != nil {
+		return "", err
+	}
+
+	return link.State, nil
+}
+
 func readUDCAttr(udc string, attr string) (string, error) {
 	data, err := udcReadFile(filepath.Join(udcClassDir, udc, attr))
 	if err != nil {
