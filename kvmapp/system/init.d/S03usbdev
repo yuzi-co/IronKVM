@@ -906,7 +906,24 @@ start_usb_dev(){
     if usb_kept disk
     then
             mkdir functions/mass_storage.disk0
-            ln -s functions/mass_storage.disk0 configs/c.1/
+            # f_mass_storage creates a LUN only while the function is not
+            # linked into a config: the link holds a reference, and
+            # fsg_lun_make returns EBUSY. stop_start keeps the function and its
+            # link, so unlink first and link last, as the uac1 block does.
+            # rm -f removes the link alone.
+            rm -f configs/c.1/mass_storage.disk0
+            [ -d functions/mass_storage.disk0/lun.1 ] || mkdir functions/mass_storage.disk0/lun.1
+
+            # lun.0 is always a disk. An older server switched it into a
+            # CD-ROM, and the function outlives stop_start, so a stale one is
+            # emptied and turned back. cdrom and ro change only while no medium
+            # is present.
+            if [ "$(cat functions/mass_storage.disk0/lun.0/cdrom 2>/dev/null)" = 1 ]
+            then
+                    echo > functions/mass_storage.disk0/lun.0/file
+                    echo 0 > functions/mass_storage.disk0/lun.0/ro
+                    echo 0 > functions/mass_storage.disk0/lun.0/cdrom
+            fi
             echo 1 > functions/mass_storage.disk0/lun.0/removable
             if [ -e /boot/usb.disk0.ro ]
             then
@@ -929,11 +946,14 @@ start_usb_dev(){
             # image can be attached together. Neither LUN changes type after
             # this, so a media change is a write to its file and never needs
             # a UDC rebind. Left without a file, it reports no medium.
-            mkdir functions/mass_storage.disk0/lun.1
             echo 1 > functions/mass_storage.disk0/lun.1/removable
             echo 1 > functions/mass_storage.disk0/lun.1/cdrom
             echo 1 > functions/mass_storage.disk0/lun.1/ro
             echo "NanoKVM USB CD/DVD-ROM  0520" > functions/mass_storage.disk0/lun.1/inquiry_string
+
+            # Linked at the same point in the function order as before, so the
+            # interface numbering is unchanged.
+            ln -s functions/mass_storage.disk0 configs/c.1/
     fi
 
     # A serial console for the managed host, off unless /boot/usb.acm exists.

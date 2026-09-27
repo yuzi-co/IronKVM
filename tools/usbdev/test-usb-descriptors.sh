@@ -133,6 +133,13 @@ mkdir() {
     for _arg in "$@"
     do
         case "$_arg" in -*) continue ;; esac
+        # f_mass_storage refuses a new LUN (EBUSY) while its function is linked
+        # into a config, because the link holds a reference on the function.
+        case "$_arg" in
+            */functions/mass_storage.*/lun.*|functions/mass_storage.*/lun.*)
+                _fn=${_arg%/lun.*}
+                [ -e "configs/c.1/${_fn##*/}" ] && return 1 ;;
+        esac
         /bin/mkdir -p "$_arg" || return 1
         case "$_arg" in
             g0|*/g0)
@@ -371,6 +378,25 @@ is functions/mass_storage.disk0/lun.0/file /data/install.iso "the named image is
 is functions/mass_storage.disk0/lun.0/ro    1 "the read-only marker sets ro"
 is functions/mass_storage.disk0/lun.0/cdrom 0 "the LUN is not a CD-ROM"
 absent functions/mass_storage.disk0/lun.1/file "the disk image never goes into the CD drive"
+
+# stop_start keeps the function directory and, before this change, its link.
+# The second start must still find both LUNs set up and the function linked,
+# and must turn a lun.0 an older server left as a CD-ROM back into a disk.
+build_env
+: > "$work/boot/usb.disk0"
+run "$S03" start_usb_dev
+L0=$G/functions/mass_storage.disk0/lun.0
+echo 1 > "$L0/cdrom"
+echo 1 > "$L0/ro"
+echo /data/old.iso > "$L0/file"
+run "$S03" start_usb_host
+run "$S03" start_usb_dev
+present configs/c.1/mass_storage.disk0 "a second start leaves the disk linked"
+is functions/mass_storage.disk0/lun.1/cdrom 1 "a second start keeps the CD drive"
+is functions/mass_storage.disk0/lun.1/inquiry_string "NanoKVM USB CD/DVD-ROM  0520" "a second start keeps the CD inquiry string"
+is functions/mass_storage.disk0/lun.0/cdrom 0 "a lun.0 left as a CD-ROM becomes a disk again"
+is functions/mass_storage.disk0/lun.0/ro 0 "and loses the CD's read-only flag"
+is functions/mass_storage.disk0/lun.0/inquiry_string "NanoKVM USB Mass Storage0520" "and gets the disk inquiry string back"
 
 # --- network -------------------------------------------------------------
 
