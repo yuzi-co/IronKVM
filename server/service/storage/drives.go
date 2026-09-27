@@ -3,6 +3,7 @@ package storage
 import (
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,6 +11,7 @@ import (
 	"syscall"
 
 	"NanoKVM-Server/proto"
+	"NanoKVM-Server/utils"
 )
 
 // The two virtual drives. Each is one LUN of the gadget's mass storage
@@ -119,14 +121,54 @@ func listDrives() ([]proto.DriveInfo, error) {
 }
 
 // loadedDrive returns the id of the drive holding file, or "" if none does.
+// resolveImage returns the file an insert of file would serve, with every
+// link followed, or errInvalidImage when that is not an image file under the
+// image directory. The check on the name alone would let a link such as
+// /data/x.img -> /etc/shadow through. A path that does not exist has nothing
+// to follow and keeps its name; the kernel refuses it when the drive opens it.
+func resolveImage(file string) (string, error) {
+	file = filepath.Clean(file)
+	if !isMountableImage(file) {
+		return "", errInvalidImage
+	}
+
+	resolved, err := filepath.EvalSymlinks(file)
+	if errors.Is(err, fs.ErrNotExist) {
+		return file, nil
+	}
+	if err != nil {
+		return "", errInvalidImage
+	}
+
+	root := realPath(imageRoot)
+	if !utils.IsPathInside(root, resolved) || !hasImageSuffix(resolved) {
+		return "", errInvalidImage
+	}
+	info, err := os.Stat(resolved)
+	if err != nil || !info.Mode().IsRegular() {
+		return "", errInvalidImage
+	}
+	return resolved, nil
+}
+
+// realPath is path with every link followed, or path itself, cleaned, when
+// it cannot be resolved.
+func realPath(path string) string {
+	if resolved, err := filepath.EvalSymlinks(path); err == nil {
+		return resolved
+	}
+	return filepath.Clean(path)
+}
+
 func loadedDrive(file string) (string, error) {
 	drives, err := listDrives()
 	if err != nil {
 		return "", err
 	}
-	clean := filepath.Clean(file)
+	// Two names for one file are one image: compare where they lead.
+	clean := realPath(file)
 	for _, d := range drives {
-		if d.File != "" && filepath.Clean(d.File) == clean {
+		if d.File != "" && realPath(d.File) == clean {
 			return d.ID, nil
 		}
 	}
@@ -174,8 +216,9 @@ func insertDrive(id string, file string, ro bool) error {
 	driveMu.Lock()
 	defer driveMu.Unlock()
 
-	if !isMountableImage(file) {
-		return errInvalidImage
+	file, err := resolveImage(file)
+	if err != nil {
+		return err
 	}
 	d, err := findDrive(id)
 	if err != nil {
