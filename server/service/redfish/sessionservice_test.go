@@ -60,7 +60,7 @@ func TestLoginWithABadPasswordCountsAsAFailure(t *testing.T) {
 
 func TestLoginFromALockedOutAddressIsRefused(t *testing.T) {
 	h := newHarness(t)
-	h.limiter.locked[clientIP] = true
+	h.limiter.lock(clientIP, "admin")
 
 	if code, token, _ := h.login("admin", "admin"); code != http.StatusUnauthorized || token != "" {
 		t.Fatalf("got %d with token %q", code, token)

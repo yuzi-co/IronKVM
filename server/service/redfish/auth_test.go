@@ -59,14 +59,14 @@ func TestBadBasicCredentialsCountAsALoginFailure(t *testing.T) {
 
 	w := h.do(http.MethodGet, "/redfish/v1/Probe", "", "Authorization", basic("admin", "wrong"))
 	expectError(t, w, http.StatusUnauthorized, "NoValidSession")
-	if len(h.limiter.failed) != 1 || h.limiter.failed[0] != clientIP {
+	if len(h.limiter.failed) != 1 || h.limiter.failed[0] != clientIP+" admin" {
 		t.Fatalf("failures recorded: %v", h.limiter.failed)
 	}
 }
 
 func TestALockedOutAddressIsRefusedEvenWithTheRightPassword(t *testing.T) {
 	h := withProbe(newHarness(t))
-	h.limiter.locked[clientIP] = true
+	h.limiter.lock(clientIP, "admin")
 
 	w := h.do(http.MethodGet, "/redfish/v1/Probe", "", "Authorization", basic("admin", "admin"))
 	expectError(t, w, http.StatusUnauthorized, "NoValidSession")
@@ -176,8 +176,8 @@ func TestAdminOnlyRefusesAUser(t *testing.T) {
 	}
 }
 
-// LoginLimiter is the web login's own limit, so failures over Redfish lock
-// the address out of both.
+// LoginLimiter counts Redfish failures per address and account in the web
+// login's table, and honours a lockout the web login put on the address.
 func TestLoginLimiterUsesTheLoginsBruteForceLimit(t *testing.T) {
 	conf := config.GetInstance()
 	original := conf.Security
@@ -186,24 +186,51 @@ func TestLoginLimiterUsesTheLoginsBruteForceLimit(t *testing.T) {
 	t.Cleanup(func() { conf.Security = original })
 
 	ip := fmt.Sprintf("198.51.100.%d", time.Now().UnixNano()%250+1)
-	t.Cleanup(func() { auth.ClearLoginAttempt(ip) })
+	t.Cleanup(func() {
+		auth.ClearLoginAttempt(ip)
+		auth.ClearLoginAttempt(limiterKey(ip, "admin"))
+		auth.ClearLoginAttempt(limiterKey(ip, "alice"))
+	})
 
 	var limiter LoginLimiter
-	limiter.Failed(ip)
-	if limiter.Locked(ip) {
+	limiter.Failed(ip, "admin")
+	if limiter.Locked(ip, "admin") {
 		t.Fatal("locked after one failure")
 	}
-	limiter.Failed(ip)
-	if !limiter.Locked(ip) {
+
+	// A success for another account on the same address must not wipe the
+	// count, or one valid account would buy unlimited guesses at another.
+	limiter.Succeeded(ip, "alice")
+	limiter.Failed(ip, "admin")
+	if !limiter.Locked(ip, "admin") {
 		t.Fatal("not locked after the second failure")
 	}
-	if locked, _, _ := auth.CheckLoginAttempt(ip); !locked {
-		t.Fatal("the web login does not see the lockout")
+	if limiter.Locked(ip, "alice") {
+		t.Fatal("another account on the address is locked too")
 	}
 
-	limiter.Succeeded(ip)
-	if limiter.Locked(ip) {
+	limiter.Succeeded(ip, "admin")
+	if limiter.Locked(ip, "admin") {
 		t.Fatal("still locked after a success cleared the record")
+	}
+
+	auth.RecordLoginFailure(ip)
+	auth.RecordLoginFailure(ip)
+	if !limiter.Locked(ip, "alice") {
+		t.Fatal("a lockout of the address by the web login does not apply")
+	}
+}
+
+// Guesses sent at once all pass the lockout check before any of them fails.
+// One that succeeds after the others locked the account must not get in.
+func TestASuccessAfterALockoutDuringTheCheckIsRefused(t *testing.T) {
+	h := withProbe(newHarness(t))
+	h.counted.during = func() { h.limiter.lock(clientIP, "admin") }
+
+	w := h.do(http.MethodGet, "/redfish/v1/Probe", "", "Authorization", basic("admin", "admin"))
+	expectError(t, w, http.StatusUnauthorized, "NoValidSession")
+	if len(h.limiter.succeeded) != 0 {
+		t.Fatalf("successes recorded: %v", h.limiter.succeeded)
 	}
 }
 

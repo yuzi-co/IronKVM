@@ -109,7 +109,8 @@ func (f *fakeHost) ejectDrive(id string) error {
 	return nil
 }
 
-// fakeLimiter records the brute-force calls and locks the addresses in locked.
+// fakeLimiter records the brute-force calls, as "ip username", and locks the
+// pairs in locked.
 type fakeLimiter struct {
 	mu        sync.Mutex
 	locked    map[string]bool
@@ -117,22 +118,28 @@ type fakeLimiter struct {
 	succeeded []string
 }
 
-func (f *fakeLimiter) Locked(ip string) bool {
+func (f *fakeLimiter) lock(ip, username string) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
-	return f.locked[ip]
+	f.locked[ip+" "+username] = true
 }
 
-func (f *fakeLimiter) Failed(ip string) {
+func (f *fakeLimiter) Locked(ip, username string) bool {
 	f.mu.Lock()
 	defer f.mu.Unlock()
-	f.failed = append(f.failed, ip)
+	return f.locked[ip+" "+username]
 }
 
-func (f *fakeLimiter) Succeeded(ip string) {
+func (f *fakeLimiter) Failed(ip, username string) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
-	f.succeeded = append(f.succeeded, ip)
+	f.failed = append(f.failed, ip+" "+username)
+}
+
+func (f *fakeLimiter) Succeeded(ip, username string) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.succeeded = append(f.succeeded, ip+" "+username)
 }
 
 // countingAccounts counts the password checks that reach the store.
@@ -140,12 +147,18 @@ type countingAccounts struct {
 	*authn.Store
 	mu     sync.Mutex
 	checks int
+	// during runs inside each password check.
+	during func()
 }
 
 func (a *countingAccounts) Authenticate(username, password string) (*authn.User, bool, error) {
 	a.mu.Lock()
 	a.checks++
+	during := a.during
 	a.mu.Unlock()
+	if during != nil {
+		during()
+	}
 	return a.Store.Authenticate(username, password)
 }
 

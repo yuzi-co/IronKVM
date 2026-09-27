@@ -105,7 +105,7 @@ func (s *Service) tokenPrincipal(token string) (principal, bool) {
 // limit. On failure it has answered already.
 func (s *Service) checkPassword(c *gin.Context, username, password string) (*authn.User, bool) {
 	ip := c.RemoteIP()
-	if s.deps.Limiter.Locked(ip) {
+	if s.deps.Limiter.Locked(ip, username) {
 		unauthorized(c)
 		return nil, false
 	}
@@ -123,13 +123,21 @@ func (s *Service) checkPassword(c *gin.Context, username, password string) (*aut
 		return nil, false
 	}
 	if !ok {
-		s.deps.Limiter.Failed(ip)
+		s.deps.Limiter.Failed(ip, username)
 		time.Sleep(s.deps.FailureDelay)
 		unauthorized(c)
 		return nil, false
 	}
 
-	s.deps.Limiter.Succeeded(ip)
+	// Guesses sent at once all pass the check above before any of them has
+	// failed. A right one that lands after the others locked the account is
+	// refused, as it would have been had it come a moment later.
+	if s.deps.Limiter.Locked(ip, username) {
+		unauthorized(c)
+		return nil, false
+	}
+
+	s.deps.Limiter.Succeeded(ip, username)
 	s.credentials.remember(user, password)
 	return user, true
 }
@@ -152,19 +160,30 @@ func adminOnly(handler gin.HandlerFunc) gin.HandlerFunc {
 }
 
 // LoginLimiter applies the web login's brute-force limit from service/auth,
-// so a password guessed over Redfish counts against the same address as one
-// guessed at the login page.
+// counted per address and account: a success for one account must not wipe
+// the failures against another, or a single valid account would buy
+// unlimited guesses at the admin's password. A lockout the web login put on
+// the whole address applies here too.
 type LoginLimiter struct{}
 
-func (LoginLimiter) Locked(ip string) bool {
-	locked, _, _ := auth.CheckLoginAttempt(ip)
+// limiterKey is the record Redfish failures count under in the web login's
+// table. It cannot clash with an address, which never holds a "/".
+func limiterKey(ip, username string) string {
+	return ip + "/" + username
+}
+
+func (LoginLimiter) Locked(ip, username string) bool {
+	if locked, _, _ := auth.CheckLoginAttempt(ip); locked {
+		return true
+	}
+	locked, _, _ := auth.CheckLoginAttempt(limiterKey(ip, username))
 	return locked
 }
 
-func (LoginLimiter) Failed(ip string) {
-	auth.RecordLoginFailure(ip)
+func (LoginLimiter) Failed(ip, username string) {
+	auth.RecordLoginFailure(limiterKey(ip, username))
 }
 
-func (LoginLimiter) Succeeded(ip string) {
-	auth.ClearLoginAttempt(ip)
+func (LoginLimiter) Succeeded(ip, username string) {
+	auth.ClearLoginAttempt(limiterKey(ip, username))
 }

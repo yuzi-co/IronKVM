@@ -83,11 +83,12 @@ type Accounts interface {
 	Get(username string) (*authn.User, error)
 }
 
-// Limiter is the login brute-force limit, keyed by client address.
+// Limiter is the login brute-force limit, keyed by client address and
+// account.
 type Limiter interface {
-	Locked(ip string) bool
-	Failed(ip string)
-	Succeeded(ip string)
+	Locked(ip, username string) bool
+	Failed(ip, username string)
+	Succeeded(ip, username string)
 }
 
 // NIC is one of the board's network interfaces.
