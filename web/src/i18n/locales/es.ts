@@ -196,6 +196,8 @@ const es = {
       mode: 'Modo de ratón',
       absolute: 'Modo absoluto',
       relative: 'Modo relativo',
+      absoluteShort: 'Absoluto',
+      relativeShort: 'Relativo',
       direction: 'Dirección de la rueda de desplazamiento',
       scrollUp: 'Desplazarse hacia arriba',
       scrollDown: 'Desplácese hacia abajo',

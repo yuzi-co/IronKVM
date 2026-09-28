@@ -195,6 +195,8 @@ const cz = {
       mode: 'Režim myši',
       absolute: 'Absolutní režim',
       relative: 'Relativní režim',
+      absoluteShort: 'Absolutní',
+      relativeShort: 'Relativní',
       direction: 'Směr kolečka',
       scrollUp: 'Přejděte nahoru',
       scrollDown: 'Přejděte dolů',

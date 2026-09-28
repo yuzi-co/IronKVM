@@ -195,6 +195,8 @@ const da = {
       mode: 'Tilstand for mus',
       absolute: 'Absolut tilstand',
       relative: 'Relativ tilstand',
+      absoluteShort: 'Absolut',
+      relativeShort: 'Relativ',
       direction: 'Rullehjulsretning',
       scrollUp: 'Rul op',
       scrollDown: 'Rul ned',

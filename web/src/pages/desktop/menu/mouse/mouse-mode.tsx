@@ -42,6 +42,11 @@ export const MouseMode = () => {
       <div className="flex h-[30px] cursor-pointer items-center space-x-2 rounded px-3 text-neutral-300 hover:bg-neutral-700/70">
         <SquareDashedMousePointerIcon size={18} />
         <span>{t('mouse.mode')}</span>
+        {/* The mode is kept in the browser, so a relative mode chosen once
+            outlives the reason for it. Showing it here keeps that visible. */}
+        <span className="ml-auto pl-3 text-xs text-neutral-500">
+          {mouseMode === 'relative' ? t('mouse.relativeShort') : t('mouse.absoluteShort')}
+        </span>
       </div>
     </Popover>
   );

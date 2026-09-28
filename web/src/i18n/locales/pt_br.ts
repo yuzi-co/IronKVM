@@ -195,6 +195,8 @@ const pt_br = {
       mode: 'Modo do mouse',
       absolute: 'Modo absoluto',
       relative: 'Modo relativo',
+      absoluteShort: 'Absoluto',
+      relativeShort: 'Relativo',
       direction: 'Direção da roda de rolagem',
       scrollUp: 'Role para cima',
       scrollDown: 'Role para baixo',

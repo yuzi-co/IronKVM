@@ -196,6 +196,8 @@ const uk = {
       mode: 'Режим миші',
       absolute: 'Абсолютний режим',
       relative: 'Відносний режим',
+      absoluteShort: 'Абсолютний',
+      relativeShort: 'Відносний',
       direction: 'Напрямок коліщатка',
       scrollUp: 'Прокрутіть вгору',
       scrollDown: 'Прокрутіть вниз',

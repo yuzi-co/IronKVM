@@ -197,6 +197,8 @@ const pl = {
       mode: 'Tryb myszki',
       absolute: 'Tryb bezwzględny',
       relative: 'Tryb względny',
+      absoluteShort: 'Bezwzględny',
+      relativeShort: 'Względny',
       direction: 'Kierunek kółka przewijania',
       scrollUp: 'Przewiń w górę',
       scrollDown: 'Przewiń w dół',

@@ -195,6 +195,8 @@ const id = {
       mode: 'Mode tetikus',
       absolute: 'Mode absolut',
       relative: 'Mode relatif',
+      absoluteShort: 'Absolut',
+      relativeShort: 'Relatif',
       direction: 'Arah roda gulir',
       scrollUp: 'Gulir ke atas',
       scrollDown: 'Gulir ke bawah',

@@ -196,6 +196,8 @@ const ru = {
       mode: 'Режим мыши',
       absolute: 'Абсолютный режим',
       relative: 'Относительный режим',
+      absoluteShort: 'Абсолютный',
+      relativeShort: 'Относительный',
       direction: 'Направление прокрутки',
       scrollUp: 'Прокрутите вверх',
       scrollDown: 'Прокрутите вниз',

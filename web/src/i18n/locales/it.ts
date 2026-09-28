@@ -197,6 +197,8 @@ const it = {
       mode: 'Modalità mouse',
       absolute: 'Modalità assoluta',
       relative: 'Modalità relativa',
+      absoluteShort: 'Assoluta',
+      relativeShort: 'Relativa',
       direction: 'Direzione della rotellina',
       scrollUp: "Scorri verso l'alto",
       scrollDown: 'Scorri verso il basso',

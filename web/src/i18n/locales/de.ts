@@ -199,6 +199,8 @@ const de = {
       mode: 'Maus Modus',
       absolute: 'Absoluter Modus',
       relative: 'Relativer Modus',
+      absoluteShort: 'Absolut',
+      relativeShort: 'Relativ',
       direction: 'Scrollrichtung',
       scrollUp: 'Nach oben scrollen',
       scrollDown: 'Scrollen Sie nach unten',

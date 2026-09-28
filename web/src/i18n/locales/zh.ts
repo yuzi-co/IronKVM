@@ -190,6 +190,8 @@ const zh = {
       mode: '鼠标模式',
       absolute: '绝对模式',
       relative: '相对模式',
+      absoluteShort: '绝对',
+      relativeShort: '相对',
       direction: '滚轮方向',
       scrollUp: '向上',
       scrollDown: '向下',

@@ -197,6 +197,8 @@ const hu = {
       mode: 'Egér mód',
       absolute: 'Abszolút mód',
       relative: 'Relatív mód',
+      absoluteShort: 'Abszolút',
+      relativeShort: 'Relatív',
       direction: 'Görgő iránya',
       scrollUp: 'Görgessen felfelé',
       scrollDown: 'Görgessen le',

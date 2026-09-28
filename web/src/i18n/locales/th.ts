@@ -190,6 +190,8 @@ const th = {
       mode: 'โหมดเมาส์',
       absolute: 'โหมดสัมบูรณ์',
       relative: 'โหมดสัมพัทธ์',
+      absoluteShort: 'สัมบูรณ์',
+      relativeShort: 'สัมพัทธ์',
       direction: 'ทิศทางล้อเลื่อน',
       scrollUp: 'เลื่อนขึ้น',
       scrollDown: 'เลื่อนลง',
