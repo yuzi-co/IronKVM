@@ -4,6 +4,7 @@ import { CircleAlertIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/vm.ts';
+import { showFailure } from '@/lib/feedback.ts';
 import { rebootAndReload } from '@/lib/reboot.ts';
 
 type CpuFreqState = {
@@ -50,10 +51,9 @@ export const CpuFreq = () => {
     api
       .setCpuFreq(value)
       .then((rsp) => {
-        if (rsp.code !== 0) {
-          console.log(rsp.msg);
-        }
+        if (rsp.code !== 0) showFailure(rsp);
       })
+      .catch((err) => showFailure(err))
       .finally(() => {
         // Read the state back either way: the change only takes effect on the
         // next boot, so what matters now is the target the server recorded.
