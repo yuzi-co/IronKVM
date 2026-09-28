@@ -96,6 +96,7 @@ func server(r *gin.Engine) {
 	watchdogRouter(r)
 	netbootRouter(r)
 	vncRouter(r)
+	ventoyRouter(r)
 }
 
 func LoopbackHTTPAllowedPaths() []string {

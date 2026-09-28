@@ -326,6 +326,33 @@ const hu = {
       deleteConfirm: 'Biztosan törli ezt a képet?',
       okBtn: 'Igen',
       cancelBtn: 'Nem',
+      deleteFailed: 'A törlés sikertelen',
+      ventoy: {
+        statusNoKernel: 'Ez a firmware nem támogatja',
+        statusNotInstalled: 'Nincs telepítve',
+        statusReady: 'Kész',
+        statusSelected: 'Kiválasztott képfájlok: {{count}}',
+        statusInDrive: 'A lemezmeghajtóban, {{size}}',
+        noKernel:
+          'Ennek a firmware-nek a kernele nem támogatja a device-mappert, ezért a Ventoy csak egy ilyen támogatással rendelkező kép telepítése után használható.',
+        installDesc: 'A gazdagép indítása több képfájlból egyetlen lemezen, másolás nélkül.',
+        install: 'Telepítés',
+        installing: 'A Ventoy letöltése, kb. 20 MB. Ez néhány percig tarthat.',
+        needsData: 'A Ventoyhoz olyan IronKVM kép kell, amelyen a /data partíció csatolva van.',
+        uninstall: 'Eltávolítás',
+        uninstallConfirm: 'Eltávolítja a Ventoy fájljait?',
+        noImages: 'Nincs képfájl a Ventoy lemezhez.',
+        onDisk: 'A Ventoy lemezen',
+        missing: 'Hiányzik: {{file}}',
+        remove: 'Eltávolítás a Ventoy lemezről',
+        setHint: 'A képfájlok köre csak akkor módosítható, ha a Ventoy lemez nincs meghajtóban.',
+        useAsDisk: 'Használat virtuális lemezként',
+        failed: 'A Ventoy kérés sikertelen',
+        secureBoot:
+          'Bekapcsolt Secure Boot esetén a gazdagépnek egyszer regisztrálnia kell a Ventoy kulcsát a MokManagerben. Az ENROLL_THIS_KEY_IN_MOKMANAGER.cer kulcsfájl a VTOYEFI partíción található.',
+        readOnly:
+          'A gazdagép csak olvashatóként látja a lemezt, ezért a Ventoy perzisztencia és a meghajtón lévő ventoy.json nem működik.'
+      },
       tips: {
         title: 'Hogyan tölts fel képeket',
         usb1: 'Csatlakoztassa a NanoKVM-t a számítógépéhez USB-n keresztül.',

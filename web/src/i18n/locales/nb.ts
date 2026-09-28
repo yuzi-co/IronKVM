@@ -324,6 +324,34 @@ const nb = {
       deleteConfirm: 'Er du sikker på at du vil slette dette bildet?',
       okBtn: 'Ja',
       cancelBtn: 'Nei',
+      deleteFailed: 'Sletting mislyktes',
+      ventoy: {
+        statusNoKernel: 'Støttes ikke av denne fastvaren',
+        statusNotInstalled: 'Ikke installert',
+        statusReady: 'Klar',
+        statusSelected: 'Valgte avbildninger: {{count}}',
+        statusInDrive: 'I diskstasjonen, {{size}}',
+        noKernel:
+          'Kjernen i denne fastvaren har ikke støtte for device-mapper, så Ventoy kan ikke brukes før en avbildning med slik støtte er installert.',
+        installDesc: 'Start verten fra flere avbildninger på én disk, uten å kopiere dem.',
+        install: 'Installer',
+        installing: 'Laster ned Ventoy, omtrent 20 MB. Dette kan ta noen minutter.',
+        needsData: 'Ventoy trenger en IronKVM-avbildning med /data-partisjonen montert.',
+        uninstall: 'Avinstaller',
+        uninstallConfirm: 'Fjerne Ventoy-filene?',
+        noImages: 'Ingen avbildninger å legge på Ventoy-disken.',
+        onDisk: 'På Ventoy-disken',
+        missing: 'Mangler: {{file}}',
+        remove: 'Fjern fra Ventoy-disken',
+        setHint:
+          'Utvalget av avbildninger kan bare endres mens Ventoy-disken ikke er i en stasjon.',
+        useAsDisk: 'Bruk som virtuell disk',
+        failed: 'Ventoy-forespørselen mislyktes',
+        secureBoot:
+          'Med Secure Boot på må verten registrere Ventoys nøkkel i MokManager én gang. Nøkkelfilen ENROLL_THIS_KEY_IN_MOKMANAGER.cer ligger på VTOYEFI-partisjonen.',
+        readOnly:
+          'Verten ser disken som skrivebeskyttet, så Ventoy-persistens og ventoy.json på stasjonen fungerer ikke.'
+      },
       tips: {
         title: 'Hvordan laste opp',
         usb1: 'Koble til NanoKVM-enheten til din datamaskin med USB.',

@@ -6,12 +6,15 @@ import { DiscIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/storage.ts';
+import * as ventoyApi from '@/api/ventoy.ts';
+import type { VentoyStatus } from '@/api/ventoy.ts';
 import { submenuOpenCountAtom } from '@/jotai/settings.ts';
 import { useStableCallback } from '@/hooks/useStableCallback.ts';
 
 import { Drives } from './drives.tsx';
 import { Images } from './images.tsx';
 import { Tips } from './tips.tsx';
+import { Ventoy } from './ventoy.tsx';
 
 export const Image = () => {
   const { t } = useTranslation();
@@ -20,6 +23,8 @@ export const Image = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [drives, setDrives] = useState<api.Drive[]>([]);
   const [diskRo, setDiskRo] = useState(false);
+  const [images, setImages] = useState<string[]>([]);
+  const [ventoy, setVentoy] = useState<VentoyStatus | null>(null);
 
   const isMounted = drives.some((drive) => !!drive.file);
 
@@ -42,6 +47,23 @@ export const Image = () => {
   useEffect(() => {
     refreshDrives();
   }, [refreshDrives]);
+
+  // The Ventoy status follows the drive list while the modal is open, since an
+  // eject from the drive list takes the Ventoy disk out too.
+  useEffect(() => {
+    if (!isModalOpen) return;
+
+    ventoyApi
+      .getVentoyStatus()
+      .then((rsp) => {
+        if (rsp.code === 0) setVentoy(rsp.data);
+      })
+      .catch(() => setVentoy(null));
+  }, [isModalOpen, drives]);
+
+  // Images on the Ventoy disk are in use while that disk is in a drive, so they
+  // cannot be deleted, as an image in a drive cannot.
+  const ventoyInUse = ventoy?.inDrive ? (ventoy.images ?? []) : [];
 
   function toggleModal(open: boolean) {
     setIsModalOpen(open);
@@ -84,8 +106,24 @@ export const Image = () => {
             isOpen={isModalOpen}
             drives={drives}
             diskRo={diskRo}
+            inUse={ventoyInUse}
+            onImagesChanged={setImages}
             onDrivesChanged={refreshDrives}
           />
+
+          {/* The status stays empty for an account that may not use Ventoy. */}
+          {ventoy && (
+            <>
+              <Divider style={{ margin: '24px 0 0 0' }} />
+
+              <Ventoy
+                status={ventoy}
+                images={images}
+                onStatusChanged={setVentoy}
+                onDrivesChanged={refreshDrives}
+              />
+            </>
+          )}
         </div>
       </Modal>
     </>

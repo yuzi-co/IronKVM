@@ -324,6 +324,34 @@ const id = {
       deleteConfirm: 'Apakah Anda yakin ingin menghapus gambar ini?',
       okBtn: 'Ya',
       cancelBtn: 'Tidak',
+      deleteFailed: 'Gagal menghapus',
+      ventoy: {
+        statusNoKernel: 'Tidak didukung oleh firmware ini',
+        statusNotInstalled: 'Belum terpasang',
+        statusReady: 'Siap',
+        statusSelected: 'Image terpilih: {{count}}',
+        statusInDrive: 'Di drive disk, {{size}}',
+        noKernel:
+          'Kernel firmware ini tidak mendukung device-mapper, jadi Ventoy tidak dapat digunakan sampai image yang mendukungnya dipasang.',
+        installDesc: 'Boot host dari beberapa image dalam satu disk, tanpa menyalinnya.',
+        install: 'Pasang',
+        installing: 'Mengunduh Ventoy, sekitar 20 MB. Ini dapat memakan waktu beberapa menit.',
+        needsData: 'Ventoy memerlukan image IronKVM dengan partisi /data yang terpasang.',
+        uninstall: 'Copot',
+        uninstallConfirm: 'Hapus berkas Ventoy?',
+        noImages: 'Tidak ada image untuk disk Ventoy.',
+        onDisk: 'Di disk Ventoy',
+        missing: 'Hilang: {{file}}',
+        remove: 'Keluarkan dari disk Ventoy',
+        setHint:
+          'Kumpulan image hanya dapat diubah saat disk Ventoy tidak berada di drive mana pun.',
+        useAsDisk: 'Gunakan sebagai disk virtual',
+        failed: 'Permintaan Ventoy gagal',
+        secureBoot:
+          'Jika Secure Boot aktif, host harus mendaftarkan kunci Ventoy sekali di MokManager. Berkas kunci ENROLL_THIS_KEY_IN_MOKMANAGER.cer ada di partisi VTOYEFI.',
+        readOnly:
+          'Host melihat disk sebagai hanya-baca, jadi persistensi Ventoy dan ventoy.json di drive tidak berfungsi.'
+      },
       tips: {
         title: 'Cara mengunggah',
         usb1: 'Hubungkan NanoKVM ke komputer Anda melalui USB.',

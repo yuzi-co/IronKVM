@@ -325,6 +325,34 @@ const pl = {
       deleteConfirm: 'Czy na pewno chcesz usunąć to zdjęcie?',
       okBtn: 'Tak',
       cancelBtn: 'Nie',
+      deleteFailed: 'Usuwanie nie powiodło się',
+      ventoy: {
+        statusNoKernel: 'Nieobsługiwane przez to oprogramowanie',
+        statusNotInstalled: 'Nie zainstalowano',
+        statusReady: 'Gotowe',
+        statusSelected: 'Wybrane obrazy: {{count}}',
+        statusInDrive: 'W napędzie dysku, {{size}}',
+        noKernel:
+          'Jądro tego oprogramowania nie obsługuje device-mapper, więc Ventoy nie może być używany, dopóki nie zostanie zainstalowany obraz z tą obsługą.',
+        installDesc: 'Uruchamiaj hosta z kilku obrazów na jednym dysku, bez ich kopiowania.',
+        install: 'Zainstaluj',
+        installing: 'Pobieranie Ventoy, około 20 MB. Może to potrwać kilka minut.',
+        needsData: 'Ventoy wymaga obrazu IronKVM z zamontowaną partycją /data.',
+        uninstall: 'Odinstaluj',
+        uninstallConfirm: 'Usunąć pliki Ventoy?',
+        noImages: 'Brak obrazów do umieszczenia na dysku Ventoy.',
+        onDisk: 'Na dysku Ventoy',
+        missing: 'Brak pliku: {{file}}',
+        remove: 'Usuń z dysku Ventoy',
+        setHint:
+          'Zestaw obrazów można zmieniać tylko wtedy, gdy dysk Ventoy nie jest w żadnym napędzie.',
+        useAsDisk: 'Użyj jako dysku wirtualnego',
+        failed: 'Żądanie Ventoy nie powiodło się',
+        secureBoot:
+          'Przy włączonym Secure Boot host musi raz zarejestrować klucz Ventoy w MokManager. Plik klucza ENROLL_THIS_KEY_IN_MOKMANAGER.cer znajduje się na partycji VTOYEFI.',
+        readOnly:
+          'Host widzi dysk jako tylko do odczytu, więc trwałość Ventoy i ventoy.json na napędzie nie działają.'
+      },
       tips: {
         title: 'Jak przesłać obrazy',
         usb1: 'Podłącz urządzenie NanoKVM do komputera przez USB.',

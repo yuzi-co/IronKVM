@@ -321,6 +321,33 @@ const en = {
       deleteConfirm: 'Are you sure you want to delete this image?',
       okBtn: 'Yes',
       cancelBtn: 'No',
+      deleteFailed: 'Delete failed',
+      ventoy: {
+        statusNoKernel: 'Not supported by this firmware',
+        statusNotInstalled: 'Not installed',
+        statusReady: 'Ready',
+        statusSelected: 'Images selected: {{count}}',
+        statusInDrive: 'In the disk drive, {{size}}',
+        noKernel:
+          "This firmware's kernel has no device-mapper support, so Ventoy cannot be used until an image with it is installed.",
+        installDesc: 'Boot the host from several images on one disk, without copying them.',
+        install: 'Install',
+        installing: 'Downloading Ventoy, about 20 MB. This can take a few minutes.',
+        needsData: 'Ventoy needs an IronKVM image with the /data partition mounted.',
+        uninstall: 'Uninstall',
+        uninstallConfirm: 'Remove the Ventoy files?',
+        noImages: 'No images to put on the Ventoy disk.',
+        onDisk: 'On the Ventoy disk',
+        missing: 'Missing: {{file}}',
+        remove: 'Remove from the Ventoy disk',
+        setHint: 'The set of images changes only while the Ventoy disk is not in a drive.',
+        useAsDisk: 'Use as virtual disk',
+        failed: 'Ventoy request failed',
+        secureBoot:
+          "With Secure Boot on, the host must enroll Ventoy's key in MokManager once. The key file ENROLL_THIS_KEY_IN_MOKMANAGER.cer is on the VTOYEFI partition.",
+        readOnly:
+          'The host sees the disk as read-only, so Ventoy persistence and ventoy.json on the drive do not work.'
+      },
       tips: {
         title: 'How to upload',
         usb1: 'Connect the NanoKVM to your computer via USB.',

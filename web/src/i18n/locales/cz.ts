@@ -324,6 +324,33 @@ const cz = {
       deleteConfirm: 'Opravdu chcete smazat tento obrázek?',
       okBtn: 'Ano',
       cancelBtn: 'Ne',
+      deleteFailed: 'Smazání selhalo',
+      ventoy: {
+        statusNoKernel: 'Tento firmware nepodporuje',
+        statusNotInstalled: 'Nenainstalováno',
+        statusReady: 'Připraveno',
+        statusSelected: 'Vybrané obrazy: {{count}}',
+        statusInDrive: 'V diskové jednotce, {{size}}',
+        noKernel:
+          'Jádro tohoto firmwaru nepodporuje device-mapper, takže Ventoy nelze použít, dokud nenainstalujete obraz s touto podporou.',
+        installDesc: 'Spusťte hostitele z několika obrazů na jednom disku, bez jejich kopírování.',
+        install: 'Nainstalovat',
+        installing: 'Stahování Ventoy, asi 20 MB. Může to trvat několik minut.',
+        needsData: 'Ventoy potřebuje obraz IronKVM s připojeným oddílem /data.',
+        uninstall: 'Odinstalovat',
+        uninstallConfirm: 'Odstranit soubory Ventoy?',
+        noImages: 'Žádné obrazy pro disk Ventoy.',
+        onDisk: 'Na disku Ventoy',
+        missing: 'Chybí: {{file}}',
+        remove: 'Odebrat z disku Ventoy',
+        setHint: 'Sadu obrazů lze měnit jen tehdy, když disk Ventoy není v žádné jednotce.',
+        useAsDisk: 'Použít jako virtuální disk',
+        failed: 'Požadavek Ventoy selhal',
+        secureBoot:
+          'Se zapnutým Secure Boot musí hostitel jednou zaregistrovat klíč Ventoy v MokManager. Soubor klíče ENROLL_THIS_KEY_IN_MOKMANAGER.cer je na oddílu VTOYEFI.',
+        readOnly:
+          'Hostitel vidí disk jen pro čtení, takže perzistence Ventoy a ventoy.json na jednotce nefungují.'
+      },
       tips: {
         title: 'Jak nahrát',
         usb1: 'Připojte NanoKVM k vašemu počítači přes USB.',

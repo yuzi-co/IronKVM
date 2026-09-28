@@ -322,6 +322,33 @@ const ca = {
       deleteConfirm: 'Esteu segur que voleu suprimir aquesta imatge?',
       okBtn: 'Sí',
       cancelBtn: 'No',
+      deleteFailed: 'Error en eliminar',
+      ventoy: {
+        statusNoKernel: 'No compatible amb aquest firmware',
+        statusNotInstalled: 'No instal·lat',
+        statusReady: 'A punt',
+        statusSelected: 'Imatges seleccionades: {{count}}',
+        statusInDrive: 'A la unitat de disc, {{size}}',
+        noKernel:
+          "El nucli d'aquest firmware no té suport de device-mapper, així que Ventoy no es pot fer servir fins que s'instal·li una imatge que el tingui.",
+        installDesc: "Arrenca l'amfitrió des de diverses imatges en un sol disc, sense copiar-les.",
+        install: 'Instal·la',
+        installing: "S'està baixant Ventoy, uns 20 MB. Pot trigar uns minuts.",
+        needsData: "Ventoy necessita una imatge d'IronKVM amb la partició /data muntada.",
+        uninstall: 'Desinstal·la',
+        uninstallConfirm: 'Voleu eliminar els fitxers de Ventoy?',
+        noImages: 'No hi ha imatges per posar al disc Ventoy.',
+        onDisk: 'Al disc Ventoy',
+        missing: 'Falta: {{file}}',
+        remove: 'Treu del disc Ventoy',
+        setHint: "El conjunt d'imatges només canvia mentre el disc Ventoy no és en cap unitat.",
+        useAsDisk: 'Fes servir com a disc virtual',
+        failed: 'La sol·licitud de Ventoy ha fallat',
+        secureBoot:
+          "Amb Secure Boot activat, l'amfitrió ha de registrar una vegada la clau de Ventoy a MokManager. El fitxer de clau ENROLL_THIS_KEY_IN_MOKMANAGER.cer és a la partició VTOYEFI.",
+        readOnly:
+          "L'amfitrió veu el disc només de lectura, així que la persistència de Ventoy i ventoy.json a la unitat no funcionen."
+      },
       tips: {
         title: 'Com pujar imatges',
         usb1: 'Connecta el NanoKVM al teu ordinador via USB.',

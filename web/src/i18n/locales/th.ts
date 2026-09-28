@@ -317,6 +317,33 @@ const th = {
       deleteConfirm: 'คุณแน่ใจหรือไม่ว่าต้องการลบภาพนี้?',
       okBtn: 'ใช่',
       cancelBtn: 'ไม่ใช่',
+      deleteFailed: 'ลบไม่สำเร็จ',
+      ventoy: {
+        statusNoKernel: 'เฟิร์มแวร์นี้ไม่รองรับ',
+        statusNotInstalled: 'ยังไม่ได้ติดตั้ง',
+        statusReady: 'พร้อม',
+        statusSelected: 'อิมเมจที่เลือก: {{count}}',
+        statusInDrive: 'อยู่ในไดรฟ์ดิสก์, {{size}}',
+        noKernel:
+          'เคอร์เนลของเฟิร์มแวร์นี้ไม่รองรับ device-mapper จึงใช้ Ventoy ไม่ได้จนกว่าจะติดตั้งอิมเมจที่รองรับ',
+        installDesc: 'บูตโฮสต์จากหลายอิมเมจบนดิสก์เดียว โดยไม่ต้องคัดลอก',
+        install: 'ติดตั้ง',
+        installing: 'กำลังดาวน์โหลด Ventoy ประมาณ 20 MB อาจใช้เวลาสักครู่',
+        needsData: 'Ventoy ต้องใช้อิมเมจ IronKVM ที่เมานต์พาร์ทิชัน /data แล้ว',
+        uninstall: 'ถอนการติดตั้ง',
+        uninstallConfirm: 'ลบไฟล์ของ Ventoy หรือไม่?',
+        noImages: 'ไม่มีอิมเมจสำหรับดิสก์ Ventoy',
+        onDisk: 'อยู่บนดิสก์ Ventoy',
+        missing: 'ไม่พบ: {{file}}',
+        remove: 'นำออกจากดิสก์ Ventoy',
+        setHint: 'ชุดอิมเมจเปลี่ยนได้เฉพาะตอนที่ดิสก์ Ventoy ไม่ได้อยู่ในไดรฟ์ใด',
+        useAsDisk: 'ใช้เป็นดิสก์เสมือน',
+        failed: 'คำขอ Ventoy ล้มเหลว',
+        secureBoot:
+          'เมื่อเปิด Secure Boot โฮสต์ต้องลงทะเบียนคีย์ของ Ventoy ใน MokManager หนึ่งครั้ง ไฟล์คีย์ ENROLL_THIS_KEY_IN_MOKMANAGER.cer อยู่บนพาร์ทิชัน VTOYEFI',
+        readOnly:
+          'โฮสต์เห็นดิสก์เป็นแบบอ่านอย่างเดียว ดังนั้น persistence ของ Ventoy และ ventoy.json บนไดรฟ์จะใช้ไม่ได้'
+      },
       tips: {
         title: 'วิธีการอัปโหลด',
         usb1: 'เชื่อมต่อ NanoKVM กับคอมพิวเตอร์ของคุณผ่าน USB',

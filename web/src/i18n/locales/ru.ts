@@ -324,6 +324,33 @@ const ru = {
       deleteConfirm: 'Вы уверены, что хотите удалить это изображение?',
       okBtn: 'Да',
       cancelBtn: 'Нет',
+      deleteFailed: 'Не удалось удалить',
+      ventoy: {
+        statusNoKernel: 'Не поддерживается этой прошивкой',
+        statusNotInstalled: 'Не установлен',
+        statusReady: 'Готов',
+        statusSelected: 'Выбрано образов: {{count}}',
+        statusInDrive: 'В дисководе, {{size}}',
+        noKernel:
+          'Ядро этой прошивки не поддерживает device-mapper, поэтому Ventoy нельзя использовать, пока не установлен образ с такой поддержкой.',
+        installDesc: 'Загрузка хоста с нескольких образов на одном диске без их копирования.',
+        install: 'Установить',
+        installing: 'Загрузка Ventoy, около 20 МБ. Это может занять несколько минут.',
+        needsData: 'Для Ventoy нужен образ IronKVM со смонтированным разделом /data.',
+        uninstall: 'Удалить',
+        uninstallConfirm: 'Удалить файлы Ventoy?',
+        noImages: 'Нет образов для диска Ventoy.',
+        onDisk: 'На диске Ventoy',
+        missing: 'Отсутствует: {{file}}',
+        remove: 'Убрать с диска Ventoy',
+        setHint: 'Набор образов можно менять, только пока диск Ventoy не вставлен в привод.',
+        useAsDisk: 'Использовать как виртуальный диск',
+        failed: 'Ошибка запроса Ventoy',
+        secureBoot:
+          'При включённом Secure Boot хост должен один раз зарегистрировать ключ Ventoy в MokManager. Файл ключа ENROLL_THIS_KEY_IN_MOKMANAGER.cer находится на разделе VTOYEFI.',
+        readOnly:
+          'Хост видит диск только для чтения, поэтому постоянное хранилище Ventoy и ventoy.json на диске не работают.'
+      },
       tips: {
         title: 'Как загрузить',
         usb1: 'Подключите NanoKVM к вашему компьютеру через USB.',
