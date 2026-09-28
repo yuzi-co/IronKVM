@@ -1,12 +1,13 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { AuthContext, useAuth } from '@/contexts/auth.ts';
 import { Spin } from 'antd';
-import { Navigate } from 'react-router';
+import { Navigate, useLocation } from 'react-router';
 
 import { Account, getAccount } from '@/api/auth.ts';
 import { AUTH_EXPIRED_EVENT } from '@/lib/auth-events.ts';
 
 export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
+  const location = useLocation();
   const [account, setAccount] = useState<Account | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(true);
@@ -24,7 +25,8 @@ export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
 
         setAccount({
           username: rsp.data.username,
-          role: rsp.data.role === 'admin' ? 'admin' : 'user'
+          role: rsp.data.role === 'admin' ? 'admin' : 'user',
+          systemAccount: rsp.data.systemAccount === true
         });
       })
       .catch(() => {
@@ -56,7 +58,8 @@ export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   }
 
   if (!isAuthenticated || !account) {
-    return <Navigate to={'/auth/login'} replace />;
+    // The login page returns here once the operator has signed in again.
+    return <Navigate to="/auth/login" replace state={{ from: location }} />;
   }
 
   return <AuthContext.Provider value={{ account }}>{children}</AuthContext.Provider>;

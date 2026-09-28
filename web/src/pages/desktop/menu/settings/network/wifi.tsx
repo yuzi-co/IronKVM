@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { LockOutlined, WifiOutlined } from '@ant-design/icons';
-import { Button, Input, Modal, Switch } from 'antd';
+import { Button, Input, Modal, Popconfirm, message as toast } from 'antd';
 import { WifiIcon, WifiPenIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/network.ts';
+import { describeFailure, showFailure } from '@/lib/feedback.ts';
 import { wifiCredentialsError } from '@/lib/wifi.ts';
 
 export const Wifi = () => {
@@ -64,8 +65,7 @@ export const Wifi = () => {
     try {
       const rsp = await api.connectWifi(ssid, password);
       if (rsp.code !== 0) {
-        console.log(rsp.msg);
-        setMessage(t('settings.network.wifi.failed'));
+        setMessage(describeFailure(rsp, t('settings.network.wifi.failed')));
         getWiFi();
         return;
       }
@@ -73,28 +73,28 @@ export const Wifi = () => {
       setConnectedWifi(ssid);
       setIsModalOpen(false);
     } catch (err) {
-      console.log(err);
-      setMessage(t('settings.network.wifi.failed'));
+      setMessage(describeFailure(err, t('settings.network.wifi.failed')));
     } finally {
       setStatus('');
     }
   }
 
-  async function disconnect(enable: boolean) {
-    if (enable || status !== '') return;
+  async function disconnect() {
+    if (status !== '') return;
 
     setStatus('disconnecting');
 
     try {
       const rsp = await api.disconnectWifi();
       if (rsp.code !== 0) {
-        console.log(rsp.msg);
+        showFailure(rsp);
         return;
       }
 
       setConnectedWifi('');
+      toast.success(t('settings.network.wifi.disconnected'));
     } catch (err) {
-      console.log(err);
+      showFailure(err);
     } finally {
       setStatus('');
     }
@@ -181,13 +181,29 @@ export const Wifi = () => {
           ) : (
             <div className="flex justify-center">
               <div className="flex w-full max-w-[300px] justify-between rounded-lg bg-neutral-800">
-                <div className="flex w-full justify-between p-3">
+                <div className="flex w-full items-center justify-between gap-3 p-3">
                   <span className="min-w-0 break-all">{connectedWiFi}</span>
-                  <Switch
-                    value={!!connectedWiFi}
-                    loading={status === 'disconnecting'}
-                    onChange={disconnect}
-                  />
+                  <Popconfirm
+                    title={t('settings.network.wifi.disconnect')}
+                    description={
+                      <div className="max-w-[280px]">
+                        {t('settings.network.wifi.disconnectWarning')}
+                      </div>
+                    }
+                    okText={t('settings.network.wifi.disconnectBtn')}
+                    okButtonProps={{ danger: true }}
+                    cancelText={t('settings.network.wifi.cancelBtn')}
+                    onConfirm={disconnect}
+                  >
+                    <Button
+                      danger
+                      size="small"
+                      loading={status === 'disconnecting'}
+                      disabled={status === 'connecting'}
+                    >
+                      {t('settings.network.wifi.disconnectBtn')}
+                    </Button>
+                  </Popconfirm>
                 </div>
               </div>
             </div>

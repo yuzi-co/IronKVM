@@ -22,8 +22,10 @@ import type {
   WatchdogState,
   WatchdogStatus
 } from '@/api/watchdog.ts';
+import { describeFailure } from '@/lib/feedback.ts';
 
 import { PowerLedSetting } from '../../power/power-led-setting.tsx';
+import { StaleNote, StatusTag } from '../components/status-tag.tsx';
 
 // The detector state changes with every sample, which the server takes every
 // 10 seconds.
@@ -69,6 +71,8 @@ export const Watchdog = () => {
   const [entries, setEntries] = useState<WatchdogEntry[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoadingLog, setIsLoadingLog] = useState(false);
+  // Set when the last poll failed, so the state shown may be old.
+  const [isStale, setIsStale] = useState(false);
 
   const getSettings = useCallback(() => {
     api
@@ -81,16 +85,21 @@ export const Watchdog = () => {
         setSettings(rsp.data);
         setDraft(rsp.data);
       })
-      .catch(() => message.error(t('settings.watchdog.failed')));
+      .catch((err) => message.error(describeFailure(err, t('settings.watchdog.failed'))));
   }, [t]);
 
   const getState = useCallback(() => {
     api
       .getWatchdogState()
       .then((rsp) => {
-        if (rsp.code === 0) setState(rsp.data);
+        if (rsp.code !== 0) {
+          setIsStale(true);
+          return;
+        }
+        setState(rsp.data);
+        setIsStale(false);
       })
-      .catch(() => {});
+      .catch(() => setIsStale(true));
   }, []);
 
   // getLog clears the loading flag; refreshLog is what sets it.
@@ -104,7 +113,7 @@ export const Watchdog = () => {
         }
         setEntries(rsp.data || []);
       })
-      .catch(() => message.error(t('settings.watchdog.failed')))
+      .catch((err) => message.error(describeFailure(err, t('settings.watchdog.failed'))))
       .finally(() => setIsLoadingLog(false));
   }, [t]);
 
@@ -129,7 +138,7 @@ export const Watchdog = () => {
       .setWatchdogSettings(next)
       .then((rsp) => {
         if (rsp.code !== 0) {
-          message.error(rsp.msg || t('settings.watchdog.failed'));
+          message.error(describeFailure(rsp, t('settings.watchdog.failed')));
           return;
         }
         setSettings(next);
@@ -137,7 +146,7 @@ export const Watchdog = () => {
         message.success(t('settings.watchdog.saved'));
         getState();
       })
-      .catch(() => message.error(t('settings.watchdog.failed')))
+      .catch((err) => message.error(describeFailure(err, t('settings.watchdog.failed'))))
       .finally(() => setIsSaving(false));
   }
 
@@ -238,7 +247,10 @@ export const Watchdog = () => {
   return (
     <>
       {contextHolder}
-      <div className="text-base">{t('settings.watchdog.title')}</div>
+      <div className="flex items-center justify-between">
+        <span className="text-base">{t('settings.watchdog.title')}</span>
+        {settings && <StatusTag running={settings.enabled} />}
+      </div>
       <Divider className="opacity-50" />
 
       <div className="flex flex-col space-y-6">
@@ -374,13 +386,14 @@ export const Watchdog = () => {
         )}
 
         {state && (
-          <div className="flex flex-col space-y-2">
+          <div className={`flex flex-col space-y-2 ${isStale ? 'opacity-60' : ''}`}>
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">{t('settings.watchdog.state')}</span>
               <Tag color={statusColors[state.status]}>
                 {t(`settings.watchdog.status.${state.status}`)}
               </Tag>
             </div>
+            {isStale && <StaleNote />}
             <div className="flex flex-col overflow-hidden rounded-xl border border-neutral-700/50 bg-neutral-800/40">
               {stateRows.map(([label, value], index) => (
                 <div

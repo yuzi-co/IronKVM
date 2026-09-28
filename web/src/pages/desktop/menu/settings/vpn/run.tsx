@@ -3,6 +3,8 @@ import { PauseCircleOutlined } from '@ant-design/icons';
 import { Button, Card, Result } from 'antd';
 import { useTranslation } from 'react-i18next';
 
+import { describeFailure } from '@/lib/feedback.ts';
+
 import type { VpnInfo } from './types.ts';
 
 type RunProps = {
@@ -26,12 +28,12 @@ export const Run = ({ vpn, blocked, onSuccess, onError }: RunProps) => {
       .start()
       .then((rsp) => {
         if (rsp.code !== 0) {
-          onError(rsp.msg);
+          onError(describeFailure(rsp));
           return;
         }
         onSuccess();
       })
-      .catch((err) => onError(err?.message || 'Failed to start'))
+      .catch((err) => onError(describeFailure(err)))
       .finally(() => setIsLoading(false));
   }
 

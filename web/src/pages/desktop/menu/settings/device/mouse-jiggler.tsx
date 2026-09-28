@@ -1,15 +1,19 @@
 import { useEffect, useState } from 'react';
-import { Select, Switch } from 'antd';
+import { Select } from 'antd';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/vm.ts';
-import { setMouseJiggler } from '@/api/vm.ts';
+import { showFailure, showResult } from '@/lib/feedback.ts';
+
+// One select holds both the switch and the mode: off, or on in one of the two
+// modes. The server keeps the mode while off, so turning it back on from here
+// always names the mode it should run in.
+type Choice = 'off' | 'relative' | 'absolute';
 
 export const MouseJiggler = () => {
   const { t } = useTranslation();
 
-  const [enabled, setEnabled] = useState(false);
-  const [mode, setMode] = useState('relative');
+  const [choice, setChoice] = useState<Choice>('off');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -17,60 +21,38 @@ export const MouseJiggler = () => {
       .getMouseJiggler()
       .then((rsp) => {
         if (rsp.code !== 0) {
-          console.log(rsp.msg);
+          showFailure(rsp);
           return;
         }
 
-        setEnabled(rsp.data.enabled);
-        setMode(rsp.data.mode);
+        setChoice(rsp.data.enabled ? (rsp.data.mode as Choice) : 'off');
       })
+      .catch((err) => showFailure(err))
       .finally(() => {
         setIsLoading(false);
       });
   }, []);
 
   const options = [
-    { value: 'disable', label: t('settings.device.mouseJiggler.disable') },
+    { value: 'off', label: t('settings.device.mouseJiggler.disable') },
     { value: 'relative', label: t('settings.device.mouseJiggler.relative') },
     { value: 'absolute', label: t('settings.device.mouseJiggler.absolute') }
   ];
 
-  function enable() {
+  function update(value: Choice) {
     if (isLoading) return;
     setIsLoading(true);
+
+    const enabled = value !== 'off';
+    const mode = enabled ? value : 'relative';
 
     api
-      .setMouseJiggler(true, mode)
+      .setMouseJiggler(enabled, mode)
       .then((rsp) => {
-        if (rsp.code !== 0) {
-          console.log(rsp.msg);
-          return;
-        }
-
-        setEnabled(true);
+        if (!showResult(rsp)) return;
+        setChoice(value);
       })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }
-
-  function updateMode(value: string) {
-    if (isLoading) return;
-    setIsLoading(true);
-
-    const _enabled = value !== 'disable';
-    const _mode = value === 'disable' ? 'relative' : value;
-
-    setMouseJiggler(_enabled, _mode)
-      .then((rsp) => {
-        if (rsp.code !== 0) {
-          console.log(rsp.msg);
-          return;
-        }
-
-        setEnabled(_enabled);
-        setMode(_mode);
-      })
+      .catch((err) => showFailure(err))
       .finally(() => {
         setIsLoading(false);
       });
@@ -85,17 +67,14 @@ export const MouseJiggler = () => {
         </span>
       </div>
 
-      {enabled ? (
-        <Select
-          style={{ width: 150 }}
-          value={mode}
-          options={options}
-          loading={isLoading}
-          onChange={updateMode}
-        />
-      ) : (
-        <Switch checked={enabled} loading={isLoading} onChange={enable} />
-      )}
+      <Select<Choice>
+        style={{ width: 150 }}
+        value={choice}
+        options={options}
+        loading={isLoading}
+        disabled={isLoading}
+        onChange={update}
+      />
     </div>
   );
 };

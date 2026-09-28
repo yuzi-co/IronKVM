@@ -1,5 +1,21 @@
 const ko = {
   translation: {
+    feedback: {
+      enabled: '{{name}} 켜짐',
+      disabled: '{{name}} 꺼짐',
+      failed: '요청에 실패했습니다. 다시 시도하세요.',
+      network: '장치에 연결할 수 없습니다. 연결을 확인하고 다시 시도하세요.',
+      saved: '저장됨',
+      timeout: '장치 응답이 너무 오래 걸렸습니다. 다시 시도하세요.'
+    },
+    common: {
+      copy: '복사',
+      copied: '복사됨',
+      copyFailed: '복사하지 못했습니다. 텍스트를 선택해 직접 복사하세요.',
+      notUpdating: '업데이트되지 않음: 마지막 새로 고침에 실패했습니다.',
+      off: '꺼짐',
+      running: '실행 중'
+    },
     head: {
       desktop: '원격 데스크톱',
       login: '로그인',
@@ -8,6 +24,7 @@ const ko = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      passwordChanged: '비밀번호가 변경되었습니다. 새 비밀번호로 로그인하세요.',
       cookieRejected:
         '브라우저가 세션 저장을 거부했습니다. 이전 HTTPS 세션에서 남은 쿠키는 일반 http 연결로 교체할 수 없습니다. 이 주소의 쿠키를 삭제하거나 개인 정보 보호 창을 연 다음 다시 로그인하세요.',
       login: '로그인',
@@ -520,6 +537,8 @@ const ko = {
         vpnProvider: 'VPN 제공자'
       },
       mcp: {
+        keyNote:
+          'MCP는 아래에 표시된 자체 API 키를 사용합니다. API 키 페이지의 키는 여기서 작동하지 않습니다.',
         title: 'MCP 서비스',
         service: 'MCP 원격 제어',
         serviceDesc:
@@ -539,6 +558,7 @@ const ko = {
         cancelBtn: '취소'
       },
       redfish: {
+        example: '예시',
         title: 'Redfish',
         service: 'Redfish 서비스',
         serviceDesc:
@@ -567,6 +587,9 @@ const ko = {
         cancelBtn: '취소'
       },
       ipmi: {
+        copyBeforeSave: '지금 비밀번호를 복사하세요. 저장한 뒤에는 다시 볼 수 없습니다.',
+        noLogin:
+          'IPMI가 켜져 있지만 IPMI 비밀번호가 있는 활성 계정이 없어 아무도 로그인할 수 없습니다. 아래에서 설정하세요.',
         title: 'IPMI',
         warning:
           'IPMI 인증은 설계상 약합니다. 보드에 접근할 수 있고 사용자 이름을 아는 사람은 누구나 해당 사용자의 IPMI 비밀번호 해시를 얻어 오프라인으로 해독을 시도할 수 있습니다. 생성된 비밀번호를 사용하고, 신뢰할 수 있는 네트워크에서만 IPMI를 켜고, 도구가 지원하면 HTTPS를 통한 Redfish를 사용하세요.',
@@ -605,6 +628,10 @@ const ko = {
         cancelBtn: '취소'
       },
       vnc: {
+        address: '주소',
+        certHint:
+          'VeNCrypt X509Plain은 장치의 자체 서명 인증서를 사용하므로 첫 연결 시 클라이언트가 경고합니다. 수락하거나, 이 페이지의 HTTPS 주소에서 인증서를 저장해 TigerVNC에 -X509CA=<파일>로 전달하세요.',
+        example: '예시',
         title: 'VNC',
         service: 'VNC 서버',
         serviceDesc:
@@ -905,6 +932,8 @@ const ko = {
         network: '가상 네트워크',
         networkDesc: '원격 호스트에서 가상 네트워크 카드를 마운트합니다.',
         usbNetwork: {
+          boardAddress: 'NanoKVM:',
+          hostAddress: '호스트:',
           description:
             'USB 케이블을 통한 원격 호스트와의 사설 네트워크 연결입니다. 호스트는 게이트웨이와 DNS 없이 주소를 받으므로 NanoKVM을 통해 LAN에 접근할 수 없습니다.',
           off: '끄기',
@@ -916,7 +945,6 @@ const ko = {
           subnet: '서브넷',
           subnetDesc:
             '/24에서 /30 사이의 사설 IPv4 네트워크입니다. NanoKVM이 첫 번째 주소를, 호스트가 두 번째 주소를 사용합니다.',
-          addresses: 'NanoKVM: {{board}}, 호스트: {{host}}',
           invalidSubnet: '172.31.255.0/30 같은 서브넷을 입력하세요.',
           apply: '적용',
           confirm: 'USB 장치를 다시 연결할까요?',
@@ -955,6 +983,10 @@ const ko = {
       network: {
         title: '네트워크',
         wifi: {
+          disconnectBtn: '연결 끊기',
+          disconnectWarning:
+            '이 Wi-Fi 네트워크로 NanoKVM에 접속 중이라면 이 페이지의 연결이 끊깁니다.',
+          disconnected: 'Wi-Fi 연결 끊김',
           title: 'Wi-Fi',
           description: 'Wi-Fi 설정',
           apMode: 'AP 모드가 활성화되었습니다. QR 코드를 스캔하여 Wi-Fi에 연결하세요',
@@ -1044,6 +1076,13 @@ const ko = {
         }
       },
       vpn: {
+        connect: '연결',
+        connectDesc: '{{name}} 네트워크에 연결합니다. 끄면 데몬을 멈추지 않고 연결을 끊습니다.',
+        kvmUrl: 'KVM 주소',
+        moreTip: '추가 작업',
+        restartTip: '재시작',
+        stopTip: '중지',
+        updateTip: '{{version}}(으)로 업데이트',
         loading: '불러오는 중...',
         okBtn: '네',
         cancelBtn: '아니오',
@@ -1061,7 +1100,6 @@ const ko = {
         run: '시작',
         boot: '부팅 시 시작',
         bootDesc: 'KVM이 부팅될 때 {{name}}을(를) 시작합니다.',
-        enable: '{{name}} 활성화',
         control: '제어 서버',
         connected: '연결됨',
         disconnected: '연결되지 않음',
@@ -1158,6 +1196,9 @@ const ko = {
             '사용자 지정 업데이트 서버가 활성화되어 있는 동안에는 미리 보기 업데이트를 사용할 수 없습니다.'
         },
         offline: {
+          chooseFile: '파일 선택',
+          installing: '업로드 완료. 설치 중...',
+          noFile: '선택된 파일 없음',
           title: '오프라인 업데이트',
           desc: '로컬 설치 패키지를 통한 업데이트',
           upload: '업로드',
@@ -1200,6 +1241,12 @@ const ko = {
         }
       },
       apiKeys: {
+        mcpNote: '이 키는 MCP에서 사용할 수 없습니다. MCP는 MCP 페이지에 자체 키가 있습니다.',
+        metricsUrl: '메트릭 URL',
+        monitoring: '모니터링',
+        monitoringDesc:
+          'Prometheus는 이 페이지의 API 키를 Bearer 토큰으로 보내 메트릭을 읽습니다. 모든 역할이 읽을 수 있습니다.',
+        scrapeConfig: 'Prometheus scrape 설정',
         title: 'API 키',
         description:
           '키는 소유자로서 해당 사용자의 역할로 작동합니다. 메트릭과 API에는 Authorization: Bearer <key>로, Redfish에는 X-Auth-Token으로 보내세요.',

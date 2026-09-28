@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Progress, Switch, Tooltip } from 'antd';
+import { Popconfirm, Progress, Switch, Tooltip } from 'antd';
 import { Volume2Icon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -8,6 +8,7 @@ import type {
   VirtualDeviceName,
   VirtualDevices as VirtualDevicesState
 } from '@/api/virtual-device.ts';
+import { describeFailure } from '@/lib/feedback.ts';
 import { useHidMode } from '@/hooks/useHidMode.ts';
 import { useStableCallback } from '@/hooks/useStableCallback.ts';
 
@@ -25,15 +26,13 @@ export const VirtualDevices = () => {
     try {
       const rsp = await api.getVirtualDevice();
       if (rsp.code !== 0) {
-        console.log(rsp.msg);
-        setRefusal(t('settings.device.endpoints.error'));
+        setRefusal(describeFailure(rsp, t('settings.device.endpoints.error')));
         return;
       }
 
       setDevices(rsp.data);
     } catch (err) {
-      console.log(err);
-      setRefusal(t('settings.device.endpoints.error'));
+      setRefusal(describeFailure(err, t('settings.device.endpoints.error')));
     }
   });
 
@@ -51,17 +50,16 @@ export const VirtualDevices = () => {
       if (rsp.code !== 0) {
         // The server owns the numbers, so show its sentence rather than
         // recomputing the budget here and risking a different answer.
-        setRefusal(rsp.msg);
+        setRefusal(describeFailure(rsp));
         return;
       }
 
       await getVirtualDevice();
     } catch (err) {
-      console.log(err);
       // Toggling restarts the USB gadget, so a request can go missing while
       // it rebuilds. Say so, rather than leaving the switch snap back with
       // no explanation.
-      setRefusal(t('settings.device.endpoints.error'));
+      setRefusal(describeFailure(err, t('settings.device.endpoints.error')));
     } finally {
       setLoading('');
     }
@@ -135,13 +133,26 @@ export const VirtualDevices = () => {
               enabled gives the Tooltip a target that still receives hover. */}
           <Tooltip title={fits ? '' : t('settings.device.endpoints.full')}>
             <span className="inline-block">
-              <Switch
-                checked={state.enabled}
-                disabled={!fits}
-                loading={loading === device}
-                onChange={() => update(device)}
-                aria-describedby={`endpoint-cost-${device}`}
-              />
+              {/* Every switch here rebuilds the USB gadget, which drops the
+                  keyboard and mouse for a moment, so each asks first, as the
+                  network link does. */}
+              <Popconfirm
+                title={t('settings.device.usbNetwork.confirm')}
+                description={
+                  <div className="max-w-[280px]">{t('settings.device.usbNetwork.reenumerate')}</div>
+                }
+                okText={t('settings.device.okBtn')}
+                cancelText={t('settings.device.cancelBtn')}
+                onConfirm={() => update(device)}
+                disabled={!fits || !!loading}
+              >
+                <Switch
+                  checked={state.enabled}
+                  disabled={!fits}
+                  loading={loading === device}
+                  aria-describedby={`endpoint-cost-${device}`}
+                />
+              </Popconfirm>
             </span>
           </Tooltip>
         </div>

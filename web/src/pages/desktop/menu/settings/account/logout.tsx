@@ -5,21 +5,25 @@ import { useNavigate } from 'react-router';
 
 import * as api from '@/api/auth.ts';
 import { notifyAuthExpired } from '@/lib/auth-events.ts';
+import { showFailure } from '@/lib/feedback.ts';
 
 export const Logout = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
   function logout() {
-    api.logout().then((rsp) => {
-      if (rsp.code !== 0) {
-        console.log(rsp.msg);
-        return;
-      }
+    api
+      .logout()
+      .then((rsp) => {
+        if (rsp.code !== 0) {
+          showFailure(rsp);
+          return;
+        }
 
-      notifyAuthExpired();
-      navigate('/auth/login');
-    });
+        notifyAuthExpired();
+        navigate('/auth/login');
+      })
+      .catch((err) => showFailure(err));
   }
 
   return (

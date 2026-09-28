@@ -3,6 +3,8 @@ import { LogoutOutlined } from '@ant-design/icons';
 import { Button, Divider, Popconfirm, Switch } from 'antd';
 import { useTranslation } from 'react-i18next';
 
+import { describeFailure } from '@/lib/feedback.ts';
+
 import { Details } from './details.tsx';
 import { MemoryBars } from './memory.tsx';
 import { Peers } from './peers.tsx';
@@ -39,15 +41,15 @@ export const Device = ({ vpn, status, onChange, onError }: DeviceProps) => {
     try {
       const rsp = isRunning ? await vpn.api.down() : await vpn.api.up();
       if (rsp.code !== 0) {
-        onError(rsp.msg);
+        onError(describeFailure(rsp));
         return;
       }
       setIsRunning(!isRunning);
       // Up and down change the peers, the address and the connection, which
       // the page only learns by asking again.
       onChange();
-    } catch (err: any) {
-      onError(err?.message || 'Request failed');
+    } catch (err) {
+      onError(describeFailure(err));
     } finally {
       setIsUpdating(false);
     }
@@ -62,19 +64,24 @@ export const Device = ({ vpn, status, onChange, onError }: DeviceProps) => {
       .logout()
       .then((rsp) => {
         if (rsp.code !== 0) {
-          onError(rsp.msg);
+          onError(describeFailure(rsp));
           return;
         }
         onChange();
       })
-      .catch((err) => onError(err?.message || 'Failed to logout'))
+      .catch((err) => onError(describeFailure(err)))
       .finally(() => setIsLogging(false));
   }
 
   return (
     <div className="flex flex-col space-y-6 pt-5">
-      <div className="flex justify-between">
-        <span>{t('settings.vpn.enable', { name: vpn.title })}</span>
+      <div className="flex items-center justify-between">
+        <div className="flex flex-col space-y-1 pr-4">
+          <span>{t('settings.vpn.connect')}</span>
+          <span className="text-xs text-neutral-500">
+            {t('settings.vpn.connectDesc', { name: vpn.title })}
+          </span>
+        </div>
         <Switch checked={isRunning} loading={isUpdating} onClick={toggle} />
       </div>
 

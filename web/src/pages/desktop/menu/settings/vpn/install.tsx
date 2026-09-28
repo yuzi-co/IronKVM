@@ -3,6 +3,8 @@ import { DownloadOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { Button, Card, Result } from 'antd';
 import { useTranslation } from 'react-i18next';
 
+import { describeFailure } from '@/lib/feedback.ts';
+
 import type { VpnInfo } from './types.ts';
 
 type InstallProps = {
@@ -38,7 +40,7 @@ export const Install = ({ vpn, blocked, setIsLocked, onSuccess, onError }: Insta
       })
       .catch((err) => {
         setState('failed');
-        onError(err?.message || 'Install failed');
+        onError(describeFailure(err, t('settings.vpn.installFailed')));
       })
       .finally(() => {
         setIsLocked(false);

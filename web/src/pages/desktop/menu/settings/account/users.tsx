@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import * as api from '@/api/auth.ts';
 import { User, UserRole } from '@/api/auth.ts';
 import { encrypt } from '@/lib/encrypt.ts';
+import { describeFailure } from '@/lib/feedback.ts';
 
 type CreateValues = {
   username: string;
@@ -41,7 +42,7 @@ export const Users = () => {
         .getUsers()
         .then((rsp) => {
           if (rsp.code !== 0) {
-            throw new Error(rsp.msg);
+            throw rsp;
           }
 
           const data = Array.isArray(rsp.data) ? rsp.data : rsp.data?.users;
@@ -54,8 +55,8 @@ export const Users = () => {
             }))
           );
         })
-        .catch(() => {
-          messageApi.error(t('settings.account.users.loadFailed'));
+        .catch((err) => {
+          messageApi.error(describeFailure(err, t('settings.account.users.loadFailed')));
         })
         .finally(() => {
           setIsLoading(false);
@@ -71,14 +72,14 @@ export const Users = () => {
     setIsLoading(true);
     try {
       const rsp = await api.createUser(values.username, encrypt(values.password), values.role);
-      if (rsp.code !== 0) throw new Error(rsp.msg);
+      if (rsp.code !== 0) throw rsp;
 
       setIsCreateOpen(false);
       createForm.resetFields();
       messageApi.success(t('settings.account.users.created'));
       await loadUsers();
-    } catch {
-      messageApi.error(t('settings.account.users.saveFailed'));
+    } catch (err) {
+      messageApi.error(describeFailure(err, t('settings.account.users.saveFailed')));
       setIsLoading(false);
     }
   }
@@ -87,10 +88,10 @@ export const Users = () => {
     setIsLoading(true);
     try {
       const rsp = await api.updateUser(user.username, changes);
-      if (rsp.code !== 0) throw new Error(rsp.msg);
+      if (rsp.code !== 0) throw rsp;
       await loadUsers();
-    } catch {
-      messageApi.error(t('settings.account.users.saveFailed'));
+    } catch (err) {
+      messageApi.error(describeFailure(err, t('settings.account.users.saveFailed')));
       setIsLoading(false);
     }
   }
@@ -99,11 +100,11 @@ export const Users = () => {
     setIsLoading(true);
     try {
       const rsp = await api.deleteUser(username);
-      if (rsp.code !== 0) throw new Error(rsp.msg);
+      if (rsp.code !== 0) throw rsp;
       messageApi.success(t('settings.account.users.deleted'));
       await loadUsers();
-    } catch {
-      messageApi.error(t('settings.account.users.deleteFailed'));
+    } catch (err) {
+      messageApi.error(describeFailure(err, t('settings.account.users.deleteFailed')));
       setIsLoading(false);
     }
   }
@@ -113,12 +114,12 @@ export const Users = () => {
     setIsLoading(true);
     try {
       const rsp = await api.resetUserPassword(passwordUser, encrypt(values.password));
-      if (rsp.code !== 0) throw new Error(rsp.msg);
+      if (rsp.code !== 0) throw rsp;
       setPasswordUser(null);
       passwordForm.resetFields();
       messageApi.success(t('settings.account.users.passwordUpdated'));
-    } catch {
-      messageApi.error(t('settings.account.users.saveFailed'));
+    } catch (err) {
+      messageApi.error(describeFailure(err, t('settings.account.users.saveFailed')));
     } finally {
       setIsLoading(false);
     }

@@ -13,6 +13,9 @@ type GetEthernetRsp struct {
 	Live EthernetLive `json:"live"`
 	// Trial describes an applied change that nobody has confirmed yet.
 	Trial *EthernetTrial `json:"trial,omitempty"`
+	// TrialSeconds is how long a change waits for confirmation when the
+	// request names no window, so the page can say so before applying.
+	TrialSeconds int `json:"trialSeconds"`
 }
 
 type EthernetLive struct {

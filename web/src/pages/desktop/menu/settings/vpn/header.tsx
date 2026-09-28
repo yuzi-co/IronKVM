@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Popconfirm, Popover } from 'antd';
+import type { ReactNode } from 'react';
+import { Button, Popconfirm, Popover, Tooltip } from 'antd';
 import {
   CircleArrowUpIcon,
   CircleStopIcon,
@@ -10,6 +11,9 @@ import {
 import { useTranslation } from 'react-i18next';
 import semver from 'semver';
 
+import { describeFailure } from '@/lib/feedback.ts';
+
+import { StatusTag } from '../components/status-tag.tsx';
 import { Swap } from './swap.tsx';
 import type { Rsp, State, UpdateInfo, VpnInfo } from './types.ts';
 import { Uninstall } from './uninstall.tsx';
@@ -29,6 +33,21 @@ function isNewer(latest: string, current: string) {
   if (semver.valid(latest) && semver.valid(current)) return semver.gt(latest, current);
   return latest !== current;
 }
+
+type IconButtonProps = {
+  label: string;
+  icon: ReactNode;
+  className?: string;
+};
+
+// IconButton is a header action: a real button, named for screen readers, with
+// the name as a tooltip. Popconfirm and Popover attach their handlers to it,
+// and the Tooltip is inside them so both work.
+const IconButton = ({ label, icon, className = '' }: IconButtonProps) => (
+  <Tooltip title={label}>
+    <Button type="text" size="small" aria-label={label} className={className} icon={icon} />
+  </Tooltip>
+);
 
 export const Header = ({ vpn, state, setIsLocked, onChange, onError }: HeaderProps) => {
   const { t } = useTranslation();
@@ -58,9 +77,9 @@ export const Header = ({ vpn, state, setIsLocked, onChange, onError }: HeaderPro
 
     request()
       .then((rsp) => {
-        if (rsp.code !== 0) onError(rsp.msg);
+        if (rsp.code !== 0) onError(describeFailure(rsp));
       })
-      .catch((err) => onError(err?.message || 'Request failed'))
+      .catch((err) => onError(describeFailure(err)))
       .finally(() => {
         setLoading('');
         if (lock) setIsLocked(false);
@@ -82,7 +101,10 @@ export const Header = ({ vpn, state, setIsLocked, onChange, onError }: HeaderPro
 
   return (
     <div className="flex items-center justify-between">
-      <span className="text-base">{vpn.title}</span>
+      <div className="flex items-center space-x-2">
+        <span className="text-base">{vpn.title}</span>
+        {installed && <StatusTag running={state === 'running'} />}
+      </div>
 
       <div className="flex items-center space-x-2">
         {hasUpdate && update && (
@@ -95,13 +117,17 @@ export const Header = ({ vpn, state, setIsLocked, onChange, onError }: HeaderPro
             placement="bottom"
             disabled={loading !== ''}
           >
-            <div className="flex cursor-pointer rounded p-1 text-blue-500 hover:bg-neutral-600 hover:text-blue-500/80">
-              {loading === 'updating' ? (
-                <LoaderIcon className="animate-spin" size={18} />
-              ) : (
-                <CircleArrowUpIcon size={18} />
-              )}
-            </div>
+            <IconButton
+              label={t('settings.vpn.updateTip', { version: update.latest })}
+              className="text-blue-500 hover:!text-blue-500/80"
+              icon={
+                loading === 'updating' ? (
+                  <LoaderIcon className="animate-spin" size={18} />
+                ) : (
+                  <CircleArrowUpIcon size={18} />
+                )
+              }
+            />
           </Popconfirm>
         )}
 
@@ -115,13 +141,17 @@ export const Header = ({ vpn, state, setIsLocked, onChange, onError }: HeaderPro
               placement="bottom"
               disabled={loading !== ''}
             >
-              <div className="flex cursor-pointer rounded p-1 text-green-500 hover:bg-neutral-600 hover:text-green-500/80">
-                {loading === 'restarting' ? (
-                  <LoaderIcon className="animate-spin" size={18} />
-                ) : (
-                  <RotateCwIcon size={18} />
-                )}
-              </div>
+              <IconButton
+                label={t('settings.vpn.restartTip')}
+                className="text-green-500 hover:!text-green-500/80"
+                icon={
+                  loading === 'restarting' ? (
+                    <LoaderIcon className="animate-spin" size={18} />
+                  ) : (
+                    <RotateCwIcon size={18} />
+                  )
+                }
+              />
             </Popconfirm>
 
             <Popconfirm
@@ -133,13 +163,17 @@ export const Header = ({ vpn, state, setIsLocked, onChange, onError }: HeaderPro
               placement="bottom"
               disabled={loading !== ''}
             >
-              <div className="flex cursor-pointer rounded p-1 text-red-500 hover:bg-neutral-600 hover:text-red-500/80">
-                {loading === 'stopping' ? (
-                  <LoaderIcon className="animate-spin" size={18} />
-                ) : (
-                  <CircleStopIcon size={18} />
-                )}
-              </div>
+              <IconButton
+                label={t('settings.vpn.stopTip')}
+                className="text-red-500 hover:!text-red-500/80"
+                icon={
+                  loading === 'stopping' ? (
+                    <LoaderIcon className="animate-spin" size={18} />
+                  ) : (
+                    <CircleStopIcon size={18} />
+                  )
+                }
+              />
             </Popconfirm>
           </>
         )}
@@ -155,9 +189,7 @@ export const Header = ({ vpn, state, setIsLocked, onChange, onError }: HeaderPro
             placement="bottom"
             trigger="click"
           >
-            <div className="flex cursor-pointer rounded p-1 text-white hover:bg-neutral-700/50">
-              <EllipsisIcon size={18} />
-            </div>
+            <IconButton label={t('settings.vpn.moreTip')} icon={<EllipsisIcon size={18} />} />
           </Popover>
         )}
       </div>

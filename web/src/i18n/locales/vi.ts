@@ -1,5 +1,21 @@
 const vi = {
   translation: {
+    feedback: {
+      enabled: 'Đã bật {{name}}',
+      disabled: 'Đã tắt {{name}}',
+      failed: 'Yêu cầu thất bại. Hãy thử lại.',
+      network: 'Không kết nối được với thiết bị. Kiểm tra kết nối và thử lại.',
+      saved: 'Đã lưu',
+      timeout: 'Thiết bị phản hồi quá lâu. Hãy thử lại.'
+    },
+    common: {
+      copy: 'Sao chép',
+      copied: 'Đã sao chép',
+      copyFailed: 'Không sao chép được. Hãy chọn văn bản và sao chép thủ công.',
+      notUpdating: 'Không cập nhật: lần làm mới gần nhất thất bại.',
+      off: 'Tắt',
+      running: 'Đang chạy'
+    },
     head: {
       desktop: 'Màn hình từ xa',
       login: 'Đăng nhập',
@@ -8,6 +24,7 @@ const vi = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      passwordChanged: 'Đã đổi mật khẩu. Hãy đăng nhập bằng mật khẩu mới.',
       cookieRejected:
         'Trình duyệt từ chối lưu phiên. Cookie còn sót lại từ phiên HTTPS trước không thể bị thay thế qua http thường. Hãy xóa cookie của địa chỉ này, hoặc mở cửa sổ ẩn danh, rồi đăng nhập lại.',
       login: 'Đăng nhập',
@@ -521,6 +538,8 @@ const vi = {
         vpnProvider: 'Nhà cung cấp VPN'
       },
       mcp: {
+        keyNote:
+          'MCP dùng khóa API riêng, hiển thị bên dưới. Khóa từ trang Khóa API không dùng được ở đây.',
         title: 'Dịch vụ MCP',
         service: 'Điều khiển từ xa MCP',
         serviceDesc:
@@ -539,6 +558,7 @@ const vi = {
         cancelBtn: 'Hủy'
       },
       redfish: {
+        example: 'Ví dụ',
         title: 'Redfish',
         service: 'Dịch vụ Redfish',
         serviceDesc:
@@ -567,6 +587,9 @@ const vi = {
         cancelBtn: 'Hủy'
       },
       ipmi: {
+        copyBeforeSave: 'Hãy sao chép mật khẩu ngay. Sau khi lưu sẽ không thể hiển thị lại.',
+        noLogin:
+          'IPMI đang bật, nhưng không tài khoản đang hoạt động nào có mật khẩu IPMI, nên không ai đăng nhập được. Hãy đặt một mật khẩu bên dưới.',
         title: 'IPMI',
         warning:
           'Xác thực IPMI vốn yếu do thiết kế. Bất kỳ ai truy cập được bo mạch và biết một tên người dùng đều có thể lấy hash mật khẩu IPMI của người dùng đó và thử bẻ khóa ngoại tuyến. Hãy dùng mật khẩu được tạo tự động, chỉ bật IPMI trong mạng tin cậy và ưu tiên Redfish qua HTTPS khi công cụ hỗ trợ.',
@@ -606,6 +629,10 @@ const vi = {
         cancelBtn: 'Hủy'
       },
       vnc: {
+        address: 'Địa chỉ',
+        certHint:
+          'VeNCrypt X509Plain dùng chứng chỉ tự ký của thiết bị, nên máy khách sẽ cảnh báo ở lần kết nối đầu. Hãy chấp nhận, hoặc lưu chứng chỉ từ địa chỉ HTTPS của trang này và đưa cho TigerVNC bằng -X509CA=<tệp>.',
+        example: 'Ví dụ',
         title: 'VNC',
         service: 'Máy chủ VNC',
         serviceDesc:
@@ -908,6 +935,8 @@ const vi = {
         network: 'Mạng ảo',
         networkDesc: 'Gắn card mạng ảo trên máy chủ từ xa',
         usbNetwork: {
+          boardAddress: 'NanoKVM:',
+          hostAddress: 'Máy chủ:',
           description:
             'Liên kết mạng riêng với máy chủ từ xa qua cáp USB. Máy chủ nhận một địa chỉ không có gateway và không có DNS, nên không thể truy cập mạng LAN của bạn thông qua NanoKVM.',
           off: 'Tắt',
@@ -918,7 +947,6 @@ const vi = {
           subnet: 'Mạng con',
           subnetDesc:
             'Một mạng IPv4 riêng, từ /24 đến /30. NanoKVM dùng địa chỉ đầu tiên, máy chủ dùng địa chỉ thứ hai.',
-          addresses: 'NanoKVM: {{board}}, máy chủ: {{host}}',
           invalidSubnet: 'Nhập một mạng con, ví dụ 172.31.255.0/30.',
           apply: 'Áp dụng',
           confirm: 'Kết nối lại thiết bị USB?',
@@ -956,6 +984,10 @@ const vi = {
       network: {
         title: 'Mạng',
         wifi: {
+          disconnectBtn: 'Ngắt kết nối',
+          disconnectWarning:
+            'Nếu bạn truy cập NanoKVM qua mạng Wi-Fi này, trang này sẽ mất kết nối.',
+          disconnected: 'Đã ngắt Wi-Fi',
           title: 'Wi-Fi',
           description: 'Cấu hình Wi-Fi',
           apMode: 'Chế độ AP đang bật, hãy kết nối Wi-Fi bằng cách quét mã QR',
@@ -1044,6 +1076,13 @@ const vi = {
         }
       },
       vpn: {
+        connect: 'Kết nối',
+        connectDesc: 'Tham gia mạng {{name}}. Tắt sẽ ngắt kết nối mà không dừng dịch vụ.',
+        kvmUrl: 'Địa chỉ KVM',
+        moreTip: 'Thao tác khác',
+        restartTip: 'Khởi động lại',
+        stopTip: 'Dừng',
+        updateTip: 'Cập nhật lên {{version}}',
         loading: 'Đang tải...',
         okBtn: 'Có',
         cancelBtn: 'Không',
@@ -1062,7 +1101,6 @@ const vi = {
         run: 'Khởi động',
         boot: 'Khởi động cùng hệ thống',
         bootDesc: 'Khởi động {{name}} khi KVM khởi động.',
-        enable: 'Bật {{name}}',
         control: 'Máy chủ điều khiển',
         connected: 'Đã kết nối',
         disconnected: 'Chưa kết nối',
@@ -1162,6 +1200,9 @@ const vi = {
             'Không thể sử dụng Bản cập nhật xem trước khi máy chủ cập nhật tùy chỉnh đang được bật.'
         },
         offline: {
+          chooseFile: 'Chọn tệp',
+          installing: 'Tải lên xong. Đang cài đặt...',
+          noFile: 'Chưa chọn tệp',
           title: 'Cập nhật ngoại tuyến',
           desc: 'Cập nhật thông qua gói cài đặt cục bộ',
           upload: 'Tải lên',
@@ -1205,6 +1246,12 @@ const vi = {
         }
       },
       apiKeys: {
+        mcpNote: 'Các khóa này không dùng được cho MCP, vì MCP có khóa riêng trên trang MCP.',
+        metricsUrl: 'URL số liệu',
+        monitoring: 'Giám sát',
+        monitoringDesc:
+          'Prometheus đọc số liệu bằng một khóa API từ trang này, gửi dưới dạng token Bearer. Mọi vai trò đều đọc được.',
+        scrapeConfig: 'Cấu hình scrape cho Prometheus',
         title: 'Khóa API',
         description:
           'Khóa hoạt động với tư cách chủ sở hữu, với vai trò của người dùng đó. Gửi nó dưới dạng Authorization: Bearer <key> cho metrics và API, hoặc dưới dạng X-Auth-Token cho Redfish.',

@@ -1,5 +1,21 @@
 const it = {
   translation: {
+    feedback: {
+      enabled: '{{name}} attivato',
+      disabled: '{{name}} disattivato',
+      failed: 'La richiesta non è riuscita. Riprova.',
+      network: 'Impossibile raggiungere il dispositivo. Controlla la connessione e riprova.',
+      saved: 'Salvato',
+      timeout: 'Il dispositivo ha impiegato troppo a rispondere. Riprova.'
+    },
+    common: {
+      copy: 'Copia',
+      copied: 'Copiato',
+      copyFailed: 'Copia non riuscita. Seleziona il testo e copialo a mano.',
+      notUpdating: "Non aggiornato: l'ultimo aggiornamento non è riuscito.",
+      off: 'Spento',
+      running: 'In esecuzione'
+    },
     head: {
       desktop: 'Desktop Remoto',
       login: 'Accesso',
@@ -8,6 +24,7 @@ const it = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      passwordChanged: 'Password cambiata. Accedi con la nuova password.',
       cookieRejected:
         'Il browser si è rifiutato di salvare la sessione. Un cookie lasciato da una precedente sessione HTTPS non può essere sostituito tramite http non cifrato. Cancella i cookie di questo indirizzo, oppure apri una finestra privata, e accedi di nuovo.',
       login: 'Accesso',
@@ -531,6 +548,8 @@ const it = {
         vpnProvider: 'Provider VPN'
       },
       mcp: {
+        keyNote:
+          'MCP usa una propria chiave API, mostrata qui sotto. Le chiavi della pagina Chiavi API qui non funzionano.',
         title: 'Servizio MCP',
         service: 'Controllo remoto MCP',
         serviceDesc:
@@ -550,6 +569,7 @@ const it = {
         cancelBtn: 'Annulla'
       },
       redfish: {
+        example: 'Esempio',
         title: 'Redfish',
         service: 'Servizio Redfish',
         serviceDesc:
@@ -578,6 +598,9 @@ const it = {
         cancelBtn: 'Annulla'
       },
       ipmi: {
+        copyBeforeSave: 'Copia la password ora. Una volta salvata, non può più essere mostrata.',
+        noLogin:
+          'IPMI è attivo, ma nessun account attivo ha una password IPMI, quindi nessuno può accedere. Impostane una qui sotto.',
         title: 'IPMI',
         warning:
           "L'autenticazione IPMI è debole per progettazione. Chiunque raggiunga la scheda e conosca un nome utente può ottenere un hash della password IPMI di quell'utente e tentare di violarla offline. Usate password generate, attivate IPMI solo su una rete fidata e preferite Redfish su HTTPS quando lo strumento lo supporta.",
@@ -617,6 +640,10 @@ const it = {
         cancelBtn: 'Annulla'
       },
       vnc: {
+        address: 'Indirizzo',
+        certHint:
+          "VeNCrypt X509Plain usa il certificato autofirmato del dispositivo, quindi il client avvisa alla prima connessione. Accettalo, oppure salva il certificato dall'indirizzo HTTPS di questa pagina e passalo a TigerVNC con -X509CA=<file>.",
+        example: 'Esempio',
         title: 'VNC',
         service: 'Server VNC',
         serviceDesc:
@@ -926,6 +953,8 @@ const it = {
         network: 'Rete virtuale',
         networkDesc: 'Monta la scheda di rete virtuale sull’host remoto',
         usbNetwork: {
+          boardAddress: 'NanoKVM:',
+          hostAddress: 'Host:',
           description:
             "Un collegamento di rete privato con l'host remoto tramite il cavo USB. L'host riceve un indirizzo senza gateway né DNS, quindi non può raggiungere la tua LAN tramite NanoKVM.",
           off: 'Disattivato',
@@ -936,7 +965,6 @@ const it = {
           subnet: 'Sottorete',
           subnetDesc:
             "Una rete IPv4 privata, da /24 a /30. NanoKVM prende il primo indirizzo, l'host il secondo.",
-          addresses: 'NanoKVM: {{board}}, host: {{host}}',
           invalidSubnet: 'Inserisci una sottorete come 172.31.255.0/30.',
           apply: 'Applica',
           confirm: 'Ricollegare il dispositivo USB?',
@@ -975,6 +1003,10 @@ const it = {
       network: {
         title: 'Rete',
         wifi: {
+          disconnectBtn: 'Disconnetti',
+          disconnectWarning:
+            'Se raggiungi NanoKVM tramite questa rete Wi-Fi, questa pagina perderà la connessione.',
+          disconnected: 'Wi-Fi disconnesso',
           title: 'Wi-Fi',
           description: 'Configura Wi-Fi',
           apMode: 'La modalità AP è attiva, connettiti al Wi-Fi scansionando il codice QR',
@@ -1063,6 +1095,13 @@ const it = {
         }
       },
       vpn: {
+        connect: 'Connetti',
+        connectDesc: 'Entra nella rete {{name}}. Spento disconnette senza fermare il servizio.',
+        kvmUrl: 'Indirizzo del KVM',
+        moreTip: 'Altre azioni',
+        restartTip: 'Riavvia',
+        stopTip: 'Ferma',
+        updateTip: 'Aggiorna a {{version}}',
         loading: 'Caricamento...',
         okBtn: 'Sì',
         cancelBtn: 'No',
@@ -1081,7 +1120,6 @@ const it = {
         run: 'Avvia',
         boot: "Avvio all'accensione",
         bootDesc: "Avvia {{name}} all'accensione del KVM.",
-        enable: 'Abilita {{name}}',
         control: 'Server di controllo',
         connected: 'Connesso',
         disconnected: 'Non connesso',
@@ -1181,6 +1219,9 @@ const it = {
             'Gli aggiornamenti in anteprima non sono disponibili quando è attivo un server di aggiornamento personalizzato.'
         },
         offline: {
+          chooseFile: 'Scegli file',
+          installing: 'Caricamento completato. Installazione...',
+          noFile: 'Nessun file scelto',
           title: 'Aggiornamenti offline',
           desc: 'Aggiornamento tramite pacchetto di installazione locale',
           upload: 'Carica',
@@ -1224,6 +1265,12 @@ const it = {
         }
       },
       apiKeys: {
+        mcpNote: 'Queste chiavi non valgono per MCP, che ha una propria chiave nella pagina MCP.',
+        metricsUrl: 'URL delle metriche',
+        monitoring: 'Monitoraggio',
+        monitoringDesc:
+          'Prometheus legge le metriche con una chiave API di questa pagina, inviata come token Bearer. Qualsiasi ruolo può leggerle.',
+        scrapeConfig: 'Configurazione scrape di Prometheus',
         title: 'Chiavi API',
         description:
           "Una chiave agisce come il suo proprietario, con il ruolo di quell'utente. Inviala come Authorization: Bearer <key> per le metriche e l'API, o come X-Auth-Token per Redfish.",

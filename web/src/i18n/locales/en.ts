@@ -1,5 +1,21 @@
 const en = {
   translation: {
+    feedback: {
+      enabled: '{{name}} enabled',
+      disabled: '{{name}} disabled',
+      failed: 'The request failed. Try again.',
+      network: 'Could not reach the device. Check the connection and try again.',
+      saved: 'Saved',
+      timeout: 'The device took too long to answer. Try again.'
+    },
+    common: {
+      copy: 'Copy',
+      copied: 'Copied',
+      copyFailed: 'Could not copy. Select the text and copy it by hand.',
+      notUpdating: 'Not updating: the last refresh failed.',
+      off: 'Off',
+      running: 'Running'
+    },
     head: {
       desktop: 'Remote Desktop',
       login: 'Login',
@@ -8,6 +24,7 @@ const en = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      passwordChanged: 'Password changed. Sign in with the new password.',
       cookieRejected:
         'The browser refused to store the session. A cookie left behind by a previous HTTPS session cannot be replaced over plain http. Clear cookies for this address, or open a private window, and sign in again.',
       login: 'Login',
@@ -522,6 +539,8 @@ const en = {
         vpnProvider: 'VPN provider'
       },
       mcp: {
+        keyNote:
+          'MCP uses its own API key, shown below. Keys from the API Keys page do not work here.',
         title: 'MCP Service',
         service: 'Remote control MCP',
         serviceDesc:
@@ -540,6 +559,7 @@ const en = {
         cancelBtn: 'Cancel'
       },
       redfish: {
+        example: 'Example',
         title: 'Redfish',
         service: 'Redfish service',
         serviceDesc:
@@ -567,6 +587,9 @@ const en = {
         cancelBtn: 'Cancel'
       },
       ipmi: {
+        copyBeforeSave: 'Copy the password now. Once saved, it cannot be shown again.',
+        noLogin:
+          'IPMI is on, but no enabled account has an IPMI password, so nobody can log in. Set one below.',
         title: 'IPMI',
         warning:
           'IPMI authentication is weak by design. Anyone who can reach the board and knows a user name can get a hash of the IPMI password of that user and try to crack it offline. Use generated passwords, turn IPMI on only on a trusted network, and prefer Redfish over HTTPS where a tool supports it.',
@@ -605,6 +628,10 @@ const en = {
         cancelBtn: 'Cancel'
       },
       vnc: {
+        address: 'Address',
+        certHint:
+          "VeNCrypt X509Plain uses the board's self-signed certificate, so the client warns on first connect. Accept it, or save the certificate from this page's HTTPS address and give it to TigerVNC with -X509CA=<file>.",
+        example: 'Example',
         title: 'VNC',
         service: 'VNC server',
         serviceDesc:
@@ -904,6 +931,8 @@ const en = {
         network: 'Virtual Network',
         networkDesc: 'Mount virtual network card on the remote host',
         usbNetwork: {
+          boardAddress: 'NanoKVM:',
+          hostAddress: 'Host:',
           description:
             'A private network link to the remote host over the USB cable. The host gets an address with no gateway and no DNS, so it cannot reach your LAN through NanoKVM.',
           off: 'Off',
@@ -914,7 +943,6 @@ const en = {
           subnet: 'Subnet',
           subnetDesc:
             'A private IPv4 network, /24 to /30. NanoKVM takes the first address, the host the second.',
-          addresses: 'NanoKVM: {{board}}, host: {{host}}',
           invalidSubnet: 'Enter a subnet such as 172.31.255.0/30.',
           apply: 'Apply',
           confirm: 'Reconnect the USB device?',
@@ -952,6 +980,10 @@ const en = {
       network: {
         title: 'Network',
         wifi: {
+          disconnectBtn: 'Disconnect',
+          disconnectWarning:
+            'If you reach NanoKVM over this Wi-Fi network, this page loses its connection.',
+          disconnected: 'Wi-Fi disconnected',
           title: 'Wi-Fi',
           description: 'Configure Wi-Fi',
           apMode: 'AP mode is enabled, connect to Wi-Fi by scanning QR code',
@@ -1040,6 +1072,13 @@ const en = {
         }
       },
       vpn: {
+        connect: 'Connect',
+        connectDesc: 'Join the {{name}} network. Off disconnects without stopping the daemon.',
+        kvmUrl: 'KVM address',
+        moreTip: 'More actions',
+        restartTip: 'Restart',
+        stopTip: 'Stop',
+        updateTip: 'Update to {{version}}',
         loading: 'Loading...',
         okBtn: 'Yes',
         cancelBtn: 'No',
@@ -1057,7 +1096,6 @@ const en = {
         run: 'Start',
         boot: 'Start at boot',
         bootDesc: 'Start {{name}} when the KVM boots.',
-        enable: 'Enable {{name}}',
         control: 'Control server',
         connected: 'Connected',
         disconnected: 'Not connected',
@@ -1155,6 +1193,9 @@ const en = {
           previewDisabled: 'Preview Updates are unavailable while a custom update server is enabled'
         },
         offline: {
+          chooseFile: 'Choose file',
+          installing: 'Upload complete. Installing...',
+          noFile: 'No file chosen',
           title: 'Offline Updates',
           desc: 'Update through local installation package',
           upload: 'Upload',
@@ -1200,6 +1241,12 @@ const en = {
         }
       },
       apiKeys: {
+        mcpNote: 'These keys do not work for MCP, which has its own key on the MCP page.',
+        metricsUrl: 'Metrics URL',
+        monitoring: 'Monitoring',
+        monitoringDesc:
+          'Prometheus reads the metrics with an API key from this page, sent as a Bearer token. Any role can read them.',
+        scrapeConfig: 'Prometheus scrape config',
         title: 'API Keys',
         description:
           "A key acts as its owner, with that user's role. Send it as Authorization: Bearer <key> for metrics and the API, or as X-Auth-Token for Redfish.",

@@ -4,6 +4,7 @@ import { CircleAlertIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/application.ts';
+import { showFailure, showResult } from '@/lib/feedback.ts';
 
 interface PreviewProps {
   checkForUpdates: () => void;
@@ -21,12 +22,13 @@ export const Preview = ({ checkForUpdates, disabled = false }: PreviewProps) => 
       .getPreviewUpdates()
       .then((rsp) => {
         if (rsp.code !== 0) {
-          console.log(rsp.msg);
+          showFailure(rsp);
           return;
         }
 
         setIsEnabled(rsp.data.enabled);
       })
+      .catch((err) => showFailure(err))
       .finally(() => {
         setIsLoading(false);
       });
@@ -41,14 +43,12 @@ export const Preview = ({ checkForUpdates, disabled = false }: PreviewProps) => 
     api
       .setPreviewUpdates(enable)
       .then((rsp) => {
-        if (rsp.code !== 0) {
-          console.log(rsp.msg);
-          return;
-        }
+        if (!showResult(rsp)) return;
 
         setIsEnabled(enable);
         checkForUpdates();
       })
+      .catch((err) => showFailure(err))
       .finally(() => {
         setIsLoading(false);
       });

@@ -1,5 +1,21 @@
 const zh_tw = {
   translation: {
+    feedback: {
+      enabled: '{{name}} 已啟用',
+      disabled: '{{name}} 已停用',
+      failed: '請求失敗，請重試。',
+      network: '無法連線到裝置。請檢查連線後重試。',
+      saved: '已儲存',
+      timeout: '裝置回應逾時，請重試。'
+    },
+    common: {
+      copy: '複製',
+      copied: '已複製',
+      copyFailed: '複製失敗。請選取文字後手動複製。',
+      notUpdating: '未在更新：上次重新整理失敗。',
+      off: '關閉',
+      running: '執行中'
+    },
     head: {
       desktop: '遠端桌面',
       login: '登入',
@@ -8,6 +24,7 @@ const zh_tw = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      passwordChanged: '密碼已變更。請使用新密碼登入。',
       cookieRejected:
         '瀏覽器拒絕儲存工作階段。先前 HTTPS 工作階段留下的 Cookie 無法透過一般 http 取代。請清除此位址的 Cookie，或開啟無痕視窗，然後重新登入。',
       login: '登入',
@@ -508,6 +525,7 @@ const zh_tw = {
         vpnProvider: 'VPN 供應商'
       },
       mcp: {
+        keyNote: 'MCP 使用下方顯示的專用 API 金鑰。API 金鑰頁面中的金鑰在此無效。',
         title: 'MCP 服務',
         service: 'MCP 遠端控制',
         serviceDesc: '允許受信任的 MCP 用戶端控制鍵盤、滑鼠並擷取螢幕截圖',
@@ -525,6 +543,7 @@ const zh_tw = {
         cancelBtn: '取消'
       },
       redfish: {
+        example: '範例',
         title: 'Redfish',
         service: 'Redfish 服務',
         serviceDesc:
@@ -551,6 +570,8 @@ const zh_tw = {
         cancelBtn: '取消'
       },
       ipmi: {
+        copyBeforeSave: '請立即複製密碼。儲存後將無法再次顯示。',
+        noLogin: 'IPMI 已開啟，但沒有任何啟用的帳號設定 IPMI 密碼，因此無人能登入。請在下方設定。',
         title: 'IPMI',
         warning:
           'IPMI 的驗證在設計上就很弱。任何能連到本板並知道使用者名稱的人，都能取得該使用者 IPMI 密碼的雜湊並離線嘗試破解。請使用產生的密碼，只在可信任的網路中開啟 IPMI，工具支援時優先使用透過 HTTPS 的 Redfish。',
@@ -589,6 +610,10 @@ const zh_tw = {
         cancelBtn: '取消'
       },
       vnc: {
+        address: '位址',
+        certHint:
+          'VeNCrypt X509Plain 使用裝置的自簽憑證，因此用戶端首次連線時會警告。可以接受該憑證，或從本頁的 HTTPS 位址儲存憑證，並透過 -X509CA=<檔案> 傳給 TigerVNC。',
+        example: '範例',
         title: 'VNC',
         service: 'VNC 伺服器',
         serviceDesc:
@@ -882,6 +907,8 @@ const zh_tw = {
         network: '虛擬網卡',
         networkDesc: '在遠端主機上新增虛擬網卡',
         usbNetwork: {
+          boardAddress: 'NanoKVM：',
+          hostAddress: '主機：',
           description:
             '透過 USB 線與遠端主機建立的私人網路連線。主機取得的位址不含閘道與 DNS，因此無法透過 NanoKVM 連到您的區域網路。',
           off: '關閉',
@@ -891,7 +918,6 @@ const zh_tw = {
           rndisNote: '此連線使用已不再提供的 RNDIS。請選擇 NCM 或 ECM。',
           subnet: '子網路',
           subnetDesc: '/24 到 /30 的私人 IPv4 網路。NanoKVM 使用第一個位址，主機使用第二個位址。',
-          addresses: 'NanoKVM：{{board}}，主機：{{host}}',
           invalidSubnet: '請輸入子網路，例如 172.31.255.0/30。',
           apply: '套用',
           confirm: '重新連接 USB 裝置？',
@@ -926,6 +952,9 @@ const zh_tw = {
       network: {
         title: '網路',
         wifi: {
+          disconnectBtn: '中斷連線',
+          disconnectWarning: '如果你透過此 Wi-Fi 網路存取 NanoKVM，此頁面將會斷線。',
+          disconnected: 'Wi-Fi 已中斷連線',
           title: 'Wi-Fi',
           description: '設定 Wi-Fi',
           apMode: 'AP 模式已啟用，請掃描 QRCode 連接 Wi-Fi',
@@ -1013,6 +1042,13 @@ const zh_tw = {
         }
       },
       vpn: {
+        connect: '連線',
+        connectDesc: '加入 {{name}} 網路。關閉後會中斷連線，但不停止服務。',
+        kvmUrl: 'KVM 位址',
+        moreTip: '更多操作',
+        restartTip: '重新啟動',
+        stopTip: '停止',
+        updateTip: '更新到 {{version}}',
         loading: '載入中...',
         okBtn: '是',
         cancelBtn: '否',
@@ -1030,7 +1066,6 @@ const zh_tw = {
         run: '啟動',
         boot: '開機啟動',
         bootDesc: 'KVM 開機時自動啟動 {{name}}。',
-        enable: '啟用 {{name}}',
         control: '控制伺服器',
         connected: '已連線',
         disconnected: '未連線',
@@ -1125,6 +1160,9 @@ const zh_tw = {
           previewDisabled: '啟用自訂更新伺服器時，預覽更新無法使用'
         },
         offline: {
+          chooseFile: '選擇檔案',
+          installing: '上傳完成，正在安裝...',
+          noFile: '未選擇檔案',
           title: '離線更新',
           desc: '透過本地安裝包進行更新',
           upload: '上傳',
@@ -1166,6 +1204,12 @@ const zh_tw = {
         }
       },
       apiKeys: {
+        mcpNote: '這些金鑰不能用於 MCP，MCP 在 MCP 頁面有自己的金鑰。',
+        metricsUrl: '指標 URL',
+        monitoring: '監控',
+        monitoringDesc:
+          'Prometheus 使用本頁的 API 金鑰（以 Bearer 權杖傳送）讀取指標。任何角色都可以讀取。',
+        scrapeConfig: 'Prometheus 抓取設定',
         title: 'API Key',
         description:
           'Key 以其擁有者的身分與角色運作。存取 metrics 和 API 時以 Authorization: Bearer <key> 傳送，存取 Redfish 時以 X-Auth-Token 傳送。',

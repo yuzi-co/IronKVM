@@ -5,8 +5,15 @@ import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/netboot.ts';
 import type { NetbootStatus } from '@/api/netboot.ts';
+import { getUsbNetwork } from '@/api/virtual-device.ts';
+import { describeFailure } from '@/lib/feedback.ts';
 
+import { CopyRow } from '../components/copy-button.tsx';
+import { usePoll } from '../components/use-poll.ts';
 import { ErrorDetail } from '../vpn/error-detail.tsx';
+
+// Leases, boots and the log change while a host boots, which takes seconds.
+const statusPollMs = 5 * 1000;
 
 type NetbootProps = {
   setIsLocked: (isLocked: boolean) => void;
@@ -27,25 +34,41 @@ export const Netboot = ({ setIsLocked }: NetbootProps) => {
   const [busy, setBusy] = useState<'' | 'install' | 'uninstall' | 'usb' | 'lan'>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  // Why the USB network link cannot be turned on, when the board refuses it.
+  const [linkRefusal, setLinkRefusal] = useState('');
 
-  // load clears the loading flag; refresh is what sets it.
-  const load = useCallback(() => {
-    api
-      .getNetbootStatus()
-      .then((rsp) => {
-        if (rsp.code !== 0) {
-          message.error(rsp.msg || t('settings.netboot.failed'));
-          return;
-        }
-        setStatus(rsp.data);
-      })
-      .catch(() => message.error(t('settings.netboot.failed')))
-      .finally(() => setIsLoading(false));
-  }, [t]);
+  // load clears the loading flag; refresh is what sets it. A quiet load is
+  // the poll, which says nothing when it fails: the next one tries again.
+  const load = useCallback(
+    (quiet = false) => {
+      api
+        .getNetbootStatus()
+        .then((rsp) => {
+          if (rsp.code !== 0) {
+            if (!quiet) message.error(describeFailure(rsp, t('settings.netboot.failed')));
+            return;
+          }
+          setStatus(rsp.data);
+        })
+        .catch((err) => {
+          if (!quiet) message.error(describeFailure(err, t('settings.netboot.failed')));
+        })
+        .finally(() => setIsLoading(false));
+    },
+    [t]
+  );
 
   useEffect(() => {
     load();
   }, [load]);
+
+  usePoll(
+    () => {
+      if (!busy) load(true);
+    },
+    statusPollMs,
+    !!status && (status.usb || status.lan)
+  );
 
   function refresh() {
     setIsLoading(true);
@@ -61,7 +84,7 @@ export const Netboot = ({ setIsLocked }: NetbootProps) => {
     request()
       .then((rsp) => {
         if (rsp.code !== 0) {
-          setError(rsp.msg || t('settings.netboot.failed'));
+          setError(describeFailure(rsp, t('settings.netboot.failed')));
           load();
           return;
         }
@@ -70,7 +93,7 @@ export const Netboot = ({ setIsLocked }: NetbootProps) => {
       .catch((err) => {
         // The change may have landed before the answer was lost, so the page
         // asks for the state rather than keep showing the old one.
-        setError(err?.message || t('settings.netboot.failed'));
+        setError(describeFailure(err, t('settings.netboot.failed')));
         load();
       })
       .finally(() => {
@@ -118,6 +141,25 @@ export const Netboot = ({ setIsLocked }: NetbootProps) => {
     );
 
   const linkOn = !!status && status.link.mode !== 'off' && status.link.mode !== '';
+  const needsLink = !!status?.usb && !linkOn;
+
+  // With the link off, ask the board whether it could be turned on. If not,
+  // its reason (the USB endpoints) is what the operator has to fix first.
+  useEffect(() => {
+    if (!needsLink) return;
+    let active = true;
+    getUsbNetwork()
+      .then((rsp) => {
+        if (active && rsp.code === 0 && rsp.data.mode === 'off' && !rsp.data.fits) {
+          setLinkRefusal(rsp.data.refusal || '');
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+      setLinkRefusal('');
+    };
+  }, [needsLink]);
   const images = status?.images ?? [];
   const leases = status?.leases ?? [];
   const boots = status?.boots ?? [];
@@ -189,8 +231,13 @@ export const Netboot = ({ setIsLocked }: NetbootProps) => {
             />
           </div>
 
-          {status?.usb && !linkOn && (
-            <Alert type="warning" showIcon message={t('settings.netboot.linkOff')} />
+          {needsLink && (
+            <Alert
+              type="warning"
+              showIcon
+              message={t('settings.netboot.linkOff')}
+              description={linkRefusal || undefined}
+            />
           )}
 
           {status?.usb && linkOn && (
@@ -199,18 +246,21 @@ export const Netboot = ({ setIsLocked }: NetbootProps) => {
                 <span className="text-neutral-400">dnsmasq</span>
                 {runningTag(status.usbRunning)}
               </div>
-              <div className="flex flex-wrap items-center justify-between gap-x-3">
-                <span className="text-neutral-400">{t('settings.netboot.menuUrl')}</span>
-                <span className="min-w-0 font-mono text-xs break-all text-neutral-300 select-all">
-                  {status.menuUrl || '-'}
-                </span>
-              </div>
+              <CopyRow
+                label={t('settings.netboot.menuUrl')}
+                value={status.menuUrl}
+                display={status.menuUrl || '-'}
+              />
               <div className="flex flex-wrap items-center justify-between gap-x-3">
                 <span className="text-neutral-400">{t('settings.netboot.leases')}</span>
                 <span className="min-w-0 font-mono text-xs break-all text-neutral-300">
                   {leases.length === 0
                     ? t('settings.netboot.noLeases')
-                    : leases.map((lease) => `${lease.ip} ${lease.mac}`).join(', ')}
+                    : leases
+                        .map((lease) =>
+                          [lease.ip, lease.mac, lease.hostname].filter(Boolean).join(' ')
+                        )
+                        .join(', ')}
                 </span>
               </div>
             </div>
@@ -289,7 +339,9 @@ export const Netboot = ({ setIsLocked }: NetbootProps) => {
                           : 'flex flex-wrap justify-between gap-x-3 px-4 py-2 text-xs'
                       }
                     >
-                      <span className="min-w-0 font-mono break-all text-neutral-300">{boot.what}</span>
+                      <span className="min-w-0 font-mono break-all text-neutral-300">
+                        {boot.what}
+                      </span>
                       <span className="text-neutral-500">
                         {boot.client} · {formatTime(boot.time)}
                       </span>

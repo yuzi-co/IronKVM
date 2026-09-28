@@ -1,5 +1,21 @@
 const ja = {
   translation: {
+    feedback: {
+      enabled: '{{name}} を有効にしました',
+      disabled: '{{name}} を無効にしました',
+      failed: 'リクエストに失敗しました。もう一度お試しください。',
+      network: 'デバイスに接続できません。接続を確認して、もう一度お試しください。',
+      saved: '保存しました',
+      timeout: 'デバイスの応答に時間がかかりすぎました。もう一度お試しください。'
+    },
+    common: {
+      copy: 'コピー',
+      copied: 'コピーしました',
+      copyFailed: 'コピーできませんでした。テキストを選択して手動でコピーしてください。',
+      notUpdating: '更新されていません: 最後の更新に失敗しました。',
+      off: 'オフ',
+      running: '実行中'
+    },
     head: {
       desktop: 'リモートデスクトップ',
       login: 'ログイン',
@@ -8,6 +24,7 @@ const ja = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      passwordChanged: 'パスワードを変更しました。新しいパスワードでログインしてください。',
       cookieRejected:
         'ブラウザーがセッションの保存を拒否しました。以前の HTTPS セッションで残った Cookie は、通常の http 接続では置き換えられません。このアドレスの Cookie を削除するか、プライベートウィンドウを開いてから、もう一度サインインしてください。',
       login: 'ログイン',
@@ -529,6 +546,8 @@ const ja = {
         vpnProvider: 'VPN プロバイダー'
       },
       mcp: {
+        keyNote:
+          'MCP は下に表示される専用の API キーを使います。API キーページのキーはここでは使えません。',
         title: 'MCP サービス',
         service: 'MCP リモート制御',
         serviceDesc:
@@ -548,6 +567,7 @@ const ja = {
         cancelBtn: 'キャンセル'
       },
       redfish: {
+        example: '例',
         title: 'Redfish',
         service: 'Redfish サービス',
         serviceDesc:
@@ -576,6 +596,9 @@ const ja = {
         cancelBtn: 'キャンセル'
       },
       ipmi: {
+        copyBeforeSave: '今すぐパスワードをコピーしてください。保存後は再表示できません。',
+        noLogin:
+          'IPMI はオンですが、IPMI パスワードを持つ有効なアカウントがないため、誰もログインできません。下で設定してください。',
         title: 'IPMI',
         warning:
           'IPMI の認証は設計上弱いものです。ボードに到達でき、ユーザー名を知っている人は誰でも、そのユーザーの IPMI パスワードのハッシュを取得してオフラインで解読を試みることができます。生成したパスワードを使い、IPMI は信頼できるネットワークでのみオンにし、ツールが対応していれば HTTPS 経由の Redfish を使ってください。',
@@ -615,6 +638,10 @@ const ja = {
         cancelBtn: 'キャンセル'
       },
       vnc: {
+        address: 'アドレス',
+        certHint:
+          'VeNCrypt X509Plain はデバイスの自己署名証明書を使うため、初回接続時にクライアントが警告します。受け入れるか、このページの HTTPS アドレスから証明書を保存し、TigerVNC に -X509CA=<ファイル> で渡してください。',
+        example: '例',
         title: 'VNC',
         service: 'VNC サーバー',
         serviceDesc:
@@ -923,6 +950,8 @@ const ja = {
         network: '仮想ネットワークカード',
         networkDesc: 'リモートホストに仮想ネットワークカードをマウントする',
         usbNetwork: {
+          boardAddress: 'NanoKVM:',
+          hostAddress: 'ホスト:',
           description:
             'USB ケーブル経由でリモートホストと結ぶプライベートネットワークです。ホストにはゲートウェイと DNS のないアドレスが割り当てられるため、NanoKVM を経由して LAN に到達することはできません。',
           off: 'オフ',
@@ -934,7 +963,6 @@ const ja = {
           subnet: 'サブネット',
           subnetDesc:
             '/24 から /30 のプライベート IPv4 ネットワーク。NanoKVM が最初のアドレスを、ホストが 2 番目のアドレスを使用します。',
-          addresses: 'NanoKVM: {{board}}、ホスト: {{host}}',
           invalidSubnet: '172.31.255.0/30 のようなサブネットを入力してください。',
           apply: '適用',
           confirm: 'USB デバイスを再接続しますか?',
@@ -973,6 +1001,10 @@ const ja = {
       network: {
         title: 'ネットワーク',
         wifi: {
+          disconnectBtn: '切断',
+          disconnectWarning:
+            'この Wi-Fi ネットワーク経由で NanoKVM にアクセスしている場合、このページの接続が切れます。',
+          disconnected: 'Wi-Fi を切断しました',
           title: 'Wi-Fi',
           description: 'Wi-Fi 設定',
           apMode: 'AP モードが有効になりました。QR コードをスキャンして Wi-Fi に接続してください。',
@@ -1062,6 +1094,14 @@ const ja = {
         }
       },
       vpn: {
+        connect: '接続',
+        connectDesc:
+          '{{name}} ネットワークに参加します。オフにするとデーモンを止めずに切断します。',
+        kvmUrl: 'KVM アドレス',
+        moreTip: 'その他の操作',
+        restartTip: '再起動',
+        stopTip: '停止',
+        updateTip: '{{version}} に更新',
         loading: '読み込み中...',
         okBtn: 'はい',
         cancelBtn: 'いいえ',
@@ -1080,7 +1120,6 @@ const ja = {
         run: '開始',
         boot: '起動時に開始',
         bootDesc: 'KVM の起動時に {{name}} を開始します。',
-        enable: '{{name}} を有効化',
         control: 'コントロールサーバー',
         connected: '接続済み',
         disconnected: '未接続',
@@ -1181,6 +1220,9 @@ const ja = {
             'カスタム更新サーバーが有効な間は、プレビュー版アップデートを利用できません。'
         },
         offline: {
+          chooseFile: 'ファイルを選択',
+          installing: 'アップロード完了。インストール中...',
+          noFile: 'ファイルが選択されていません',
           title: 'オフラインアップデート',
           desc: 'ローカルインストールパッケージでアップデートする',
           upload: 'アップロード',
@@ -1225,6 +1267,12 @@ const ja = {
         }
       },
       apiKeys: {
+        mcpNote: 'これらのキーは MCP では使えません。MCP には MCP ページに専用のキーがあります。',
+        metricsUrl: 'メトリクス URL',
+        monitoring: '監視',
+        monitoringDesc:
+          'Prometheus はこのページの API キーを Bearer トークンとして送り、メトリクスを読み取ります。どのロールでも読み取れます。',
+        scrapeConfig: 'Prometheus の scrape 設定',
         title: 'API キー',
         description:
           'キーは所有者として、そのユーザーのロールで動作します。メトリクスと API には Authorization: Bearer <key> として、Redfish には X-Auth-Token として送信してください。',

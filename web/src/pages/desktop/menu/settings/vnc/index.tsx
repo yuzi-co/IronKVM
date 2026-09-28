@@ -5,6 +5,11 @@ import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/vnc.ts';
 import type { VncSettings, VncState } from '@/api/vnc.ts';
+import { describeFailure } from '@/lib/feedback.ts';
+import { getHostname } from '@/lib/service.ts';
+
+import { CopyBlock, CopyRow } from '../components/copy-button.tsx';
+import { StaleNote, StatusTag } from '../components/status-tag.tsx';
 
 // The session state changes when a client connects, which nothing announces.
 const statePollMs = 5 * 1000;
@@ -37,6 +42,8 @@ export const Vnc = () => {
   const [state, setState] = useState<VncState | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoadingState, setIsLoadingState] = useState(false);
+  // Set when the last poll failed, so the state shown may be old.
+  const [isStale, setIsStale] = useState(false);
 
   // keepDraft leaves the fields being edited alone. The switch saves only
   // enabled, and reading the settings back must not throw away the rest.
@@ -57,7 +64,7 @@ export const Vnc = () => {
               : { port: next.port, maxFps: next.maxFps, vncAuth: next.vncAuth, password: '' }
           );
         })
-        .catch(() => message.error(t('settings.vnc.failed')));
+        .catch((err) => message.error(describeFailure(err, t('settings.vnc.failed'))));
     },
     [t]
   );
@@ -67,9 +74,14 @@ export const Vnc = () => {
     api
       .getVncState()
       .then((rsp) => {
-        if (rsp.code === 0) setState(rsp.data);
+        if (rsp.code !== 0) {
+          setIsStale(true);
+          return;
+        }
+        setState(rsp.data);
+        setIsStale(false);
       })
-      .catch(() => {})
+      .catch(() => setIsStale(true))
       .finally(() => setIsLoadingState(false));
   }, []);
 
@@ -97,12 +109,12 @@ export const Vnc = () => {
           getSettings(keepDraft);
         }
         if (rsp.code !== 0) {
-          message.error(rsp.msg || t('settings.vnc.failed'));
+          message.error(describeFailure(rsp, t('settings.vnc.failed')));
           return;
         }
         message.success(t('settings.vnc.saved'));
       })
-      .catch(() => message.error(t('settings.vnc.failed')))
+      .catch((err) => message.error(describeFailure(err, t('settings.vnc.failed'))))
       .finally(() => {
         setIsSaving(false);
         getState();
@@ -165,16 +177,23 @@ export const Vnc = () => {
         try {
           const rsp = await api.disconnectVnc();
           if (rsp.code !== 0) {
-            message.error(rsp.msg || t('settings.vnc.failed'));
+            message.error(describeFailure(rsp, t('settings.vnc.failed')));
           }
-        } catch {
-          message.error(t('settings.vnc.failed'));
+        } catch (err) {
+          message.error(describeFailure(err, t('settings.vnc.failed')));
         } finally {
           getState();
         }
       }
     });
   }
+
+  // What a client connects to. TigerVNC reads host::port as a TCP port; a
+  // single colon would be a display number.
+  const host = getHostname();
+  const vncPort = settings?.port ?? 5900;
+  const target = `${host}:${vncPort}`;
+  const example = `vncviewer ${host}::${vncPort}`;
 
   const session = state?.session;
   const sessionRows: [string, string][] = session
@@ -194,7 +213,10 @@ export const Vnc = () => {
   return (
     <>
       {contextHolder}
-      <div className="text-base">{t('settings.vnc.title')}</div>
+      <div className="flex items-center justify-between">
+        <span className="text-base">{t('settings.vnc.title')}</span>
+        {state && <StatusTag running={state.listening} stale={isStale} />}
+      </div>
       <Divider className="opacity-50" />
 
       <div className="flex flex-col space-y-6">
@@ -211,6 +233,16 @@ export const Vnc = () => {
         </div>
 
         <span className="text-xs text-neutral-500">{t('settings.vnc.credentials')}</span>
+
+        {settings?.enabled && (
+          <div className="flex flex-col space-y-3">
+            <div className="rounded-xl border border-neutral-700/50 bg-neutral-800/40 px-4 py-3 text-sm">
+              <CopyRow label={t('settings.vnc.address')} value={target} />
+            </div>
+            <CopyBlock title={t('settings.vnc.example')} text={example} />
+            <span className="text-xs text-neutral-500">{t('settings.vnc.certHint')}</span>
+          </div>
+        )}
 
         {draft && (
           <div className="flex flex-col space-y-4">
@@ -295,7 +327,7 @@ export const Vnc = () => {
         )}
 
         {state && (
-          <div className="flex flex-col space-y-2">
+          <div className={`flex flex-col space-y-2 ${isStale ? 'opacity-60' : ''}`}>
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">{t('settings.vnc.state')}</span>
               <div className="flex items-center space-x-1">
@@ -316,6 +348,7 @@ export const Vnc = () => {
               </div>
             </div>
 
+            {isStale && <StaleNote />}
             {state.error && <Alert type="error" showIcon message={state.error} />}
 
             {session ? (

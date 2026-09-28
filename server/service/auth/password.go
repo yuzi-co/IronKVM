@@ -107,7 +107,7 @@ func changeUserPassword(username, encryptedPassword string) error {
 	if err != nil {
 		return err
 	}
-	if user.SystemAccount && user.Role == authn.RoleAdmin && user.Enabled {
+	if isSystemPasswordOwner(user) {
 		_, err = authn.DefaultStore.SetPasswordAndRun(username, password, func() error {
 			return systemPasswordUpdater(password)
 		})
@@ -115,6 +115,23 @@ func changeUserPassword(username, encryptedPassword string) error {
 	}
 	_, err = authn.DefaultStore.SetPassword(username, password)
 	return err
+}
+
+// isSystemPasswordOwner reports whether a password change for this user also
+// sets the root password. Only the enabled device owner's does.
+func isSystemPasswordOwner(user *authn.User) bool {
+	return user.SystemAccount && user.Role == authn.RoleAdmin && user.Enabled
+}
+
+// changesSystemPassword is isSystemPasswordOwner by name, for the account
+// endpoint, which lets the page say whether the root password changes too. An
+// account that cannot be read reports false, the answer that promises less.
+func changesSystemPassword(username string) bool {
+	user, err := authn.DefaultStore.Get(username)
+	if err != nil {
+		return false
+	}
+	return isSystemPasswordOwner(user)
 }
 
 // writeBackIdentity copies the credentials the board just changed to /data, so

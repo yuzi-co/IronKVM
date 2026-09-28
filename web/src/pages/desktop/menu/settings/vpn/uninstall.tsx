@@ -3,6 +3,8 @@ import { Modal } from 'antd';
 import { Trash2Icon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { describeFailure } from '@/lib/feedback.ts';
+
 import { ErrorDetail } from './error-detail.tsx';
 import type { VpnInfo } from './types.ts';
 
@@ -35,7 +37,7 @@ export const Uninstall = ({ vpn, onSuccess }: UninstallProps) => {
         setIsModalOpen(false);
         onSuccess();
       })
-      .catch((err) => setErrMsg(err?.message || t('settings.vpn.uninstallFailed')))
+      .catch((err) => setErrMsg(describeFailure(err, t('settings.vpn.uninstallFailed'))))
       .finally(() => setIsLoading(false));
   }
 

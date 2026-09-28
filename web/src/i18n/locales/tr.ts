@@ -1,5 +1,21 @@
 const tr = {
   translation: {
+    feedback: {
+      enabled: '{{name}} etkinleştirildi',
+      disabled: '{{name}} devre dışı bırakıldı',
+      failed: 'İstek başarısız oldu. Yeniden deneyin.',
+      network: 'Cihaza ulaşılamadı. Bağlantıyı kontrol edip yeniden deneyin.',
+      saved: 'Kaydedildi',
+      timeout: 'Cihazın yanıtı çok uzun sürdü. Yeniden deneyin.'
+    },
+    common: {
+      copy: 'Kopyala',
+      copied: 'Kopyalandı',
+      copyFailed: 'Kopyalanamadı. Metni seçip elle kopyalayın.',
+      notUpdating: 'Güncellenmiyor: son yenileme başarısız oldu.',
+      off: 'Kapalı',
+      running: 'Çalışıyor'
+    },
     head: {
       desktop: 'Uzak masaüstü',
       login: 'Giriş',
@@ -8,6 +24,7 @@ const tr = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      passwordChanged: 'Parola değiştirildi. Yeni parolayla oturum açın.',
       cookieRejected:
         'Tarayıcı oturumu kaydetmeyi reddetti. Önceki bir HTTPS oturumundan kalan çerez, şifrelenmemiş http üzerinden değiştirilemez. Bu adres için çerezleri temizleyin veya gizli bir pencere açın ve yeniden giriş yapın.',
       login: 'Giriş',
@@ -524,6 +541,8 @@ const tr = {
         vpnProvider: 'VPN sağlayıcısı'
       },
       mcp: {
+        keyNote:
+          'MCP aşağıda gösterilen kendi API anahtarını kullanır. API Anahtarları sayfasındaki anahtarlar burada çalışmaz.',
         title: 'MCP Hizmeti',
         service: 'MCP uzaktan kumanda',
         serviceDesc:
@@ -543,6 +562,7 @@ const tr = {
         cancelBtn: 'İptal'
       },
       redfish: {
+        example: 'Örnek',
         title: 'Redfish',
         service: 'Redfish hizmeti',
         serviceDesc:
@@ -571,6 +591,9 @@ const tr = {
         cancelBtn: 'İptal'
       },
       ipmi: {
+        copyBeforeSave: 'Parolayı şimdi kopyalayın. Kaydedildikten sonra tekrar gösterilemez.',
+        noLogin:
+          'IPMI açık, ancak hiçbir etkin hesabın IPMI parolası yok, bu yüzden kimse oturum açamaz. Aşağıdan bir tane belirleyin.',
         title: 'IPMI',
         warning:
           "IPMI kimlik doğrulaması tasarımı gereği zayıftır. Karta erişebilen ve bir kullanıcı adını bilen herkes, o kullanıcının IPMI parolasının karmasını alıp çevrimdışı kırmayı deneyebilir. Üretilmiş parolalar kullanın, IPMI'yi yalnızca güvenilir bir ağda açın ve araç destekliyorsa HTTPS üzerinden Redfish'i tercih edin.",
@@ -609,6 +632,10 @@ const tr = {
         cancelBtn: 'İptal'
       },
       vnc: {
+        address: 'Adres',
+        certHint:
+          "VeNCrypt X509Plain cihazın kendinden imzalı sertifikasını kullanır, bu yüzden istemci ilk bağlantıda uyarır. Kabul edin ya da sertifikayı bu sayfanın HTTPS adresinden kaydedip TigerVNC'ye -X509CA=<dosya> ile verin.",
+        example: 'Örnek',
         title: 'VNC',
         service: 'VNC sunucusu',
         serviceDesc:
@@ -914,6 +941,8 @@ const tr = {
         network: 'Sanal Ağ',
         networkDesc: 'Sanal ağ kartını uzak ana bilgisayara bağla',
         usbNetwork: {
+          boardAddress: 'NanoKVM:',
+          hostAddress: 'Ana makine:',
           description:
             'USB kablosu üzerinden uzak ana bilgisayarla özel bir ağ bağlantısı. Ana bilgisayar ağ geçidi ve DNS olmadan bir adres alır, bu yüzden NanoKVM üzerinden yerel ağınıza ulaşamaz.',
           off: 'Kapalı',
@@ -924,7 +953,6 @@ const tr = {
           subnet: 'Alt ağ',
           subnetDesc:
             '/24 ile /30 arasında özel bir IPv4 ağı. NanoKVM ilk adresi, ana bilgisayar ikinci adresi alır.',
-          addresses: 'NanoKVM: {{board}}, ana bilgisayar: {{host}}',
           invalidSubnet: '172.31.255.0/30 gibi bir alt ağ girin.',
           apply: 'Uygula',
           confirm: 'USB aygıtı yeniden bağlansın mı?',
@@ -963,6 +991,10 @@ const tr = {
       network: {
         title: 'Ağ',
         wifi: {
+          disconnectBtn: 'Bağlantıyı kes',
+          disconnectWarning:
+            "NanoKVM'e bu Wi-Fi ağı üzerinden erişiyorsanız bu sayfanın bağlantısı kesilir.",
+          disconnected: 'Wi-Fi bağlantısı kesildi',
           title: 'Wi-Fi',
           description: 'Wi-Fi ayarlayın',
           apMode: "AP modu etkin, QR kodu tarayarak Wi-Fi'ye bağlanın",
@@ -1051,6 +1083,13 @@ const tr = {
         }
       },
       vpn: {
+        connect: 'Bağlan',
+        connectDesc: '{{name}} ağına katılın. Kapalı, hizmeti durdurmadan bağlantıyı keser.',
+        kvmUrl: 'KVM adresi',
+        moreTip: 'Diğer işlemler',
+        restartTip: 'Yeniden başlat',
+        stopTip: 'Durdur',
+        updateTip: '{{version}} sürümüne güncelle',
         loading: 'Yükleniyor...',
         okBtn: 'Evet',
         cancelBtn: 'Hayır',
@@ -1069,7 +1108,6 @@ const tr = {
         run: 'Başlat',
         boot: 'Açılışta başlat',
         bootDesc: 'KVM açılırken {{name}} başlatılsın.',
-        enable: '{{name}} etkinleştir',
         control: 'Kontrol sunucusu',
         connected: 'Bağlı',
         disconnected: 'Bağlı değil',
@@ -1167,6 +1205,9 @@ const tr = {
             'Özel bir güncelleme sunucusu etkinken önizleme güncellemeleri kullanılamaz.'
         },
         offline: {
+          chooseFile: 'Dosya seç',
+          installing: 'Yükleme tamamlandı. Kuruluyor...',
+          noFile: 'Dosya seçilmedi',
           title: 'Çevrimdışı Güncellemeler',
           desc: 'Yerel kurulum paketi aracılığıyla güncelleme',
           upload: 'Yükle',
@@ -1209,6 +1250,12 @@ const tr = {
         }
       },
       apiKeys: {
+        mcpNote: "Bu anahtarlar MCP için çalışmaz; MCP'nin MCP sayfasında kendi anahtarı vardır.",
+        metricsUrl: "Metrik URL'si",
+        monitoring: 'İzleme',
+        monitoringDesc:
+          'Prometheus metrikleri bu sayfadaki bir API anahtarıyla, Bearer token olarak göndererek okur. Her rol okuyabilir.',
+        scrapeConfig: 'Prometheus scrape yapılandırması',
         title: 'API Anahtarları',
         description:
           'Bir anahtar, sahibi adına o kullanıcının rolüyle çalışır. Metrikler ve API için Authorization: Bearer <key> olarak, Redfish için X-Auth-Token olarak gönderin.',

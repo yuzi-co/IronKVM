@@ -8,7 +8,10 @@ import type {
   UsbNetwork as UsbNetworkState,
   VirtualDevices
 } from '@/api/virtual-device.ts';
+import { describeFailure } from '@/lib/feedback.ts';
 import { useStableCallback } from '@/hooks/useStableCallback.ts';
+
+import { CopyButton } from '../components/copy-button.tsx';
 
 type Props = {
   devices: VirtualDevices;
@@ -32,8 +35,7 @@ export const UsbNetwork = ({ devices, onChanged }: Props) => {
     try {
       const rsp = await api.getUsbNetwork();
       if (rsp.code !== 0) {
-        console.log(rsp.msg);
-        setError(t('settings.device.endpoints.error'));
+        setError(describeFailure(rsp, t('settings.device.endpoints.error')));
         return;
       }
 
@@ -41,8 +43,7 @@ export const UsbNetwork = ({ devices, onChanged }: Props) => {
       setMode(rsp.data.mode);
       setSubnet(rsp.data.subnet);
     } catch (err) {
-      console.log(err);
-      setError(t('settings.device.endpoints.error'));
+      setError(describeFailure(err, t('settings.device.endpoints.error')));
     }
   });
 
@@ -70,7 +71,7 @@ export const UsbNetwork = ({ devices, onChanged }: Props) => {
       const rsp = await api.setUsbNetwork(mode, subnet.trim());
       if (rsp.code !== 0) {
         // The server owns the rules and the numbers, so show its sentence.
-        setError(rsp.msg);
+        setError(describeFailure(rsp));
         return;
       }
 
@@ -79,10 +80,9 @@ export const UsbNetwork = ({ devices, onChanged }: Props) => {
       setSubnet(rsp.data.subnet);
       await onChanged();
     } catch (err) {
-      console.log(err);
       // Applying rebuilds the USB gadget, so the request can go missing while
       // it does. Say so rather than leave the old values with no word.
-      setError(t('settings.device.endpoints.error'));
+      setError(describeFailure(err, t('settings.device.endpoints.error')));
     } finally {
       setLoading(false);
     }
@@ -149,11 +149,23 @@ export const UsbNetwork = ({ devices, onChanged }: Props) => {
               {t('settings.device.usbNetwork.subnetDesc')}
             </span>
             {state.mode !== 'off' && (
-              <span className="text-xs text-neutral-500">
-                {t('settings.device.usbNetwork.addresses', {
-                  board: state.board,
-                  host: state.host
-                })}
+              <span className="flex flex-wrap items-center gap-x-3 text-xs text-neutral-500">
+                <span className="flex items-center">
+                  {t('settings.device.usbNetwork.boardAddress')}&nbsp;
+                  <span className="font-mono select-all">{state.board}</span>
+                  <CopyButton
+                    text={state.board}
+                    label={t('settings.device.usbNetwork.boardAddress')}
+                  />
+                </span>
+                <span className="flex items-center">
+                  {t('settings.device.usbNetwork.hostAddress')}&nbsp;
+                  <span className="font-mono select-all">{state.host}</span>
+                  <CopyButton
+                    text={state.host}
+                    label={t('settings.device.usbNetwork.hostAddress')}
+                  />
+                </span>
               </span>
             )}
           </div>
