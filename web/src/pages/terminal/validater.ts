@@ -46,6 +46,25 @@ const ALLOWED_STOP_BITS = ['1', '2'];
 
 const PROHIBITED_PORT_CHARS_REGEX = /[;&|`$()<>!*?"'\s\\]/;
 
+// A device path under /dev. Subdirectories are allowed, for the stable names
+// in /dev/serial/by-id and by-path, which also use ':'. The hyphen sits last so
+// it is a literal and not a range: '.-_' used to let through everything from
+// '.' to '_', upper case and '[', ']', '^' and '@' included.
+const SERIAL_PORT_REGEX = /^\/dev\/[a-zA-Z0-9._/:-]+$/;
+
+// isValidSerialPort is the port half of the check, for the dialog that asks
+// for one before the terminal opens.
+export function isValidSerialPort(port: string) {
+  return validatePicocomParameters({
+    port,
+    baud: null,
+    parity: null,
+    flowControl: null,
+    dataBits: null,
+    stopBits: null
+  });
+}
+
 export function validatePicocomParameters(params: PicocomParameters) {
   if (!params.port || params.port.trim() === '') {
     return false;
@@ -61,7 +80,7 @@ export function validatePicocomParameters(params: PicocomParameters) {
   if (PROHIBITED_PORT_CHARS_REGEX.test(port)) {
     return false;
   }
-  if (!/^\/dev\/[a-zA-Z0-9.-_]+$/.test(port)) {
+  if (!SERIAL_PORT_REGEX.test(port)) {
     return false;
   }
 
