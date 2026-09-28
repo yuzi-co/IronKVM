@@ -251,7 +251,6 @@ const ko = {
         desc: '마우스와 키보드가 응답하지 않고 HID 초기화도 도움이 되지 않는다면, NanoKVM과 장치 간의 호환성 문제일 수 있습니다. 더 나은 호환성을 위해 HID 전용 모드를 활성화해 보세요.',
         tip1: 'HID 전용 모드를 활성화하면 가상 USB와 가상 네트워크가 언마운트됩니다',
         tip2: 'HID 전용 모드에서는 이미지 마운트가 비활성화됩니다',
-        tip3: '모드 전환 후 NanoKVM이 자동으로 재부팅됩니다',
         enable: 'HID 전용 모드 활성화',
         disable: 'HID 전용 모드 비활성화'
       }
@@ -672,22 +671,6 @@ const ko = {
       },
       tailscale: {
         title: 'Tailscale',
-        memory: {
-          title: '메모리 최적화',
-          tip: '메모리 사용량이 제한을 초과하면 가비지 컬렉션이 더 적극적으로 실행되어 메모리를 확보하려고 시도합니다. Tailscale을 사용할 경우 50MB로 설정하는 것이 좋습니다. 변경 사항을 적용하려면 Tailscale을 다시 시작해야 합니다.'
-        },
-        swap: {
-          title: '스왑 메모리',
-          tip: '메모리 최적화를 활성화한 후에도 문제가 지속되면 스왑 메모리를 활성화해 보세요. 이 설정은 스왑 파일 크기를 기본값으로 256MB로 설정하며, "설정 > 기기"에서 조정할 수 있습니다.'
-        },
-        restart: '정말로 Tailscale을 다시 시작하시겠습니까?',
-        stop: '정말로 Tailscale을 중지하시겠습니까?',
-        stopDesc: 'Tailscale에서 로그아웃하고 자동 시작을 비활성화합니다.',
-        loading: '불러오는 중...',
-        notInstall: 'Tailscale이 없습니다. 설치해주세요.',
-        install: '설치',
-        installing: '설치중',
-        failed: '설치 실패',
         retry: '새로고침하고 다시 시도하거나, 수동으로 설치하세요',
         download: '다운로드 중 :',
         package: '패키지 설치',
@@ -695,22 +678,12 @@ const ko = {
         upTailscale: 'tailscale을 NanoKVM의 /usr/bin/ 경로에 업로드 했습니다.',
         upTailscaled: 'tailscaled을 NanoKVM의 /usr/sbin/ 경로에 업로드 했습니다.',
         refresh: '현재 페이지 새로고침',
-        notRunning: 'Tailscale이 실행되고 있지 않습니다. 계속하려면 시작해 주세요.',
-        run: '시작',
         notLogin: '이 기기는 현재 연동 되지 않았습니다. 로그인해서 계정에 이 장치를 연동하세요.',
         urlPeriod: '이 주소는 10분간 유효합니다.',
         login: '로그인',
         loginSuccess: '로그인 성공',
-        enable: 'Tailscale 활성화',
-        deviceName: '장치 이름',
-        deviceIP: '장치 IP',
-        account: '계정',
         logout: '로그아웃',
-        logoutDesc: '정말로 로그아웃 하시겠습니까?',
-        uninstall: 'Tailscale 제거',
-        uninstallDesc: '정말로 Tailscale을 제거할까요?',
-        okBtn: '네',
-        cancelBtn: '아니오'
+        logoutDesc: '정말로 로그아웃 하시겠습니까?'
       },
       update: {
         title: '업데이트 확인',
@@ -906,7 +879,6 @@ const ko = {
         deleteConfirmContent: '정말로 "{{title}}"를 삭제할까요?',
         deleteConfirmOk: '삭제',
         deleteConfirmCancel: '취소',
-        messageCount_one: '{{count}}개의 메시지',
         messageCount_other: '{{count}}개의 메시지',
         messageCount: '{{count}}개의 메시지'
       },

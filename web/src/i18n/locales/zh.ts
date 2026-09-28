@@ -250,7 +250,6 @@ const zh = {
         desc: '若使用过程中遇到鼠标键盘无响应，且重置 HID 无效，可能是 NanoKVM 与您的设备存在兼容性问题。建议尝试启用 HID-Only 模式以提升兼容性。',
         tip1: '启用 HID-Only 模式会卸载虚拟 U 盘和虚拟网络',
         tip2: 'HID-Only 模式下，镜像挂载将被禁用',
-        tip3: '切换模式后将自动重启 NanoKVM',
         enable: '启用 HID-Only 模式',
         disable: '关闭 HID-Only 模式'
       }
@@ -662,22 +661,6 @@ const zh = {
       },
       tailscale: {
         title: 'Tailscale',
-        memory: {
-          title: '内存优化',
-          tip: '当内存占用超过限制时，会更积极地执行垃圾回收来尝试释放内存。需重启 Tailscale 后生效。'
-        },
-        swap: {
-          title: '交换内存',
-          tip: '如果启用内存优化后依然存在问题，可以尝试开启交换内存。启用后会将交换文件设置为256MB，可以在「设置 - 设备」中修改该选项。'
-        },
-        restart: '取定要重启 Tailscale 吗？',
-        stop: '确定要停止 Tailscale 吗？',
-        stopDesc: '退出 Tailscale 并禁用开机自动启动。',
-        loading: '加载中...',
-        notInstall: '未检测到 Tailscale，请先安装',
-        install: '安装',
-        installing: '安装中',
-        failed: '安装失败',
         retry: '请刷新后重试，或尝试手动安装',
         download: '下载',
         package: '安装包',
@@ -685,22 +668,12 @@ const zh = {
         upTailscale: '将 tailscale 上传到 NanoKVM 的 /usr/bin/ 目录',
         upTailscaled: '将 tailscaled 上传到 NanoKVM 的 /usr/sbin/ 目录',
         refresh: '刷新页面',
-        notRunning: 'Tailscale 尚未运行，请先执行启动操作',
-        run: '启动',
         notLogin: '该设备尚未绑定，请点击登录并将这台设备绑定到您的账号。',
         urlPeriod: '该链接10分钟内有效',
         login: '登录',
         loginSuccess: '登录完成',
-        enable: '启用 Tailscale',
-        deviceName: '设备名称',
-        deviceIP: '设备地址',
-        account: '账号',
         logout: '退出',
-        logoutDesc: '确定要退出吗？',
-        uninstall: '卸载 Tailscale',
-        uninstallDesc: '确定要卸载 Tailscale 吗？',
-        okBtn: '确认',
-        cancelBtn: '取消'
+        logoutDesc: '确定要退出吗？'
       },
       update: {
         title: '检查更新',
@@ -912,7 +885,6 @@ const zh = {
         deleteConfirmContent: '确定要删除“{{title}}”吗？',
         deleteConfirmOk: '删除',
         deleteConfirmCancel: '取消',
-        messageCount_one: '{{count}} 条消息',
         messageCount_other: '{{count}} 条消息',
         messageCount: '{{count}} 条消息'
       },

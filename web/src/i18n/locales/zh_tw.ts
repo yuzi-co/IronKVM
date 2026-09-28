@@ -247,7 +247,6 @@ const zh_tw = {
         desc: '如果您的滑鼠和鍵盤沒有反應，且重設 HID 無效，可能是 NanoKVM 與您的裝置間有相容性問題。請嘗試啟用 HID-Only 模式以獲得更好的相容性。',
         tip1: '啟用 HID-Only 模式將會停用虛擬隨身碟和虛擬網卡的功能',
         tip2: '在 HID-Only 模式下，映像檔掛載功能將被停用',
-        tip3: 'NanoKVM 將在切換模式後自動重新啟動',
         enable: '啟用 HID-Only 模式',
         disable: '停用 HID-Only 模式'
       }
@@ -659,22 +658,6 @@ const zh_tw = {
       },
       tailscale: {
         title: 'Tailscale',
-        memory: {
-          title: '記憶體最佳化',
-          tip: '當記憶體使用量超過限制時，會更積極的進行垃圾回收來嘗試釋放記憶體。若使用 Tailscale 建議設定為 50MB，於重啟 Tailscale 後生效。'
-        },
-        swap: {
-          title: 'Swap',
-          tip: '如果啟用記憶體最佳化後依然存在問題，可以嘗試開啟 Swap。啟用後會將交換檔案設定為 256MB，可以在「設定 - 裝置」中修改該選項。'
-        },
-        restart: '確定要重啟 Tailscale 嗎？',
-        stop: '確定要停止 Tailscale 嗎？',
-        stopDesc: '登出 Tailscale 並停用開機自動啟動。',
-        loading: '載入中...',
-        notInstall: '未找到 Tailscale ！請先安裝。',
-        install: '安裝',
-        installing: '安裝中',
-        failed: '安裝失敗',
         retry: '請重新整理並重試。或嘗試手動安裝',
         download: '下載',
         package: '安裝包',
@@ -682,22 +665,12 @@ const zh_tw = {
         upTailscale: '將 Tailscale 上傳到 NanoKVM 的 /usr/bin/ 資料夾',
         upTailscaled: '將 Tailscale 上傳到 NanoKVM 的 /usr/sbin/ 資料夾',
         refresh: '重新整理頁面',
-        notRunning: 'Tailscale 尚未執行',
-        run: '啟動',
         notLogin: '設備尚未綁定。請登入並將該裝置綁定到您的帳戶。',
         urlPeriod: '此網址有效期限為 10 分鐘',
         login: '登入',
         loginSuccess: '登入成功',
-        enable: '啟用 Tailscale',
-        deviceName: '裝置名稱',
-        deviceIP: '裝置 IP',
-        account: '帳號',
         logout: '登出',
-        logoutDesc: '確認要登出嗎？',
-        uninstall: '移除 Tailscale',
-        uninstallDesc: '確定要解除安裝 Tailscale 嗎？',
-        okBtn: '確認',
-        cancelBtn: '取消'
+        logoutDesc: '確認要登出嗎？'
       },
       update: {
         title: '檢查更新',
@@ -888,7 +861,6 @@ const zh_tw = {
         deleteConfirmContent: '您確定要刪除「{{title}}」嗎？',
         deleteConfirmOk: '刪除',
         deleteConfirmCancel: '取消',
-        messageCount_one: '{{count}} 則訊息',
         messageCount_other: '{{count}} 則訊息',
         messageCount: '{{count}} 則訊息'
       },

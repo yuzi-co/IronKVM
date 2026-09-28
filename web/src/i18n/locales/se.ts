@@ -252,7 +252,6 @@ const se = {
         desc: 'Om din mus och ditt tangentbord slutar svara och återställning av HID inte hjälper, kan det bero på kompatibilitetsproblem mellan NanoKVM och enheten. Prova att aktivera Endast-HID-läge för bättre kompatibilitet.',
         tip1: 'Aktivering av Endast-HID-läge avmonterar den virtuella U-disken och nätverket',
         tip2: 'I Endast-HID-läge är avbildningsmontering inaktiverat',
-        tip3: 'NanoKVM kommer automatiskt att starta om efter lägesbyte',
         enable: 'Aktivera Endast-HID-läge',
         disable: 'Inaktivera Endast-HID-läge'
       }
@@ -674,22 +673,6 @@ const se = {
       },
       tailscale: {
         title: 'Tailscale',
-        memory: {
-          title: 'Minnesoptimering',
-          tip: 'När minnesanvändningen överskrider gränsen utförs aggressivare skräpsamling för att frigöra minne. Rekommenderas att sättas till 75 MB om du använder Tailscale. Omstart krävs för att det ska gälla.'
-        },
-        swap: {
-          title: 'Byt minne',
-          tip: 'Om problemen kvarstår efter att du har aktiverat minnesoptimering, försök att aktivera utbyte av minne. Detta ställer in växlingsfilens storlek till 256MB som standard, vilket kan justeras i "Inställningar > Enhet".'
-        },
-        restart: 'Starta om Tailscale?',
-        stop: 'Stoppa Tailscale?',
-        stopDesc: 'Logga ut från Tailscale och inaktivera autostart vid uppstart.',
-        loading: 'Laddar...',
-        notInstall: 'Tailscale hittades inte! Installera först.',
-        install: 'Installera',
-        installing: 'Installerar',
-        failed: 'Installationen misslyckades',
         retry: 'Uppdatera sidan och försök igen. Eller installera manuellt',
         download: 'Ladda ner',
         package: 'installationspaketet',
@@ -697,22 +680,12 @@ const se = {
         upTailscale: 'Ladda upp tailscale till NanoKVM-katalogen /usr/bin/',
         upTailscaled: 'Ladda upp tailscaled till NanoKVM-katalogen /usr/sbin/',
         refresh: 'Uppdatera sidan',
-        notRunning: 'Tailscale körs inte. Starta den för att fortsätta.',
-        run: 'Start',
         notLogin: 'Enheten är ännu inte bunden. Logga in och bind enheten till ditt konto.',
         urlPeriod: 'Denna URL är giltig i 10 minuter',
         login: 'Logga in',
         loginSuccess: 'Inloggning lyckades',
-        enable: 'Aktivera Tailscale',
-        deviceName: 'Enhetsnamn',
-        deviceIP: 'Enhets-IP',
-        account: 'Konto',
         logout: 'Logga ut',
-        logoutDesc: 'Är du säker på att du vill logga ut?',
-        uninstall: 'Avinstallera Tailscale',
-        uninstallDesc: 'Är du säker på att du vill avinstallera Tailscale?',
-        okBtn: 'Ja',
-        cancelBtn: 'Nej'
+        logoutDesc: 'Är du säker på att du vill logga ut?'
       },
       update: {
         title: 'Sök efter uppdateringar',

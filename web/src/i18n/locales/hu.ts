@@ -258,7 +258,6 @@ const hu = {
         desc: 'Ha az egér és a billentyűzet nem válaszol, és az HID alaphelyzetbe állítása nem segít, akkor az NanoKVM és az eszköz közötti kompatibilitási probléma lehet. Próbálja engedélyezni az HID-Csak módot a jobb kompatibilitás érdekében.',
         tip1: 'Az HID-Csak mód engedélyezése leválasztja a virtuális U-lemezt és a virtuális hálózatot',
         tip2: 'HID-Csak módban a képrögzítés le van tiltva',
-        tip3: 'A NanoKVM automatikusan újraindul az üzemmódváltás után',
         enable: 'Engedélyezze a HID-Csak módot',
         disable: 'A HID-Csak mód letiltása'
       }
@@ -682,22 +681,6 @@ const hu = {
       },
       tailscale: {
         title: 'Tailscale',
-        memory: {
-          title: 'Memóriaoptimalizálás',
-          tip: "When memory usage exceeds the limit, garbage collection is performed more aggressively to attempt to free up memory. it's recommended to set to 50MB if using Tailscale. A Tailscale restart is required for the change to take effect."
-        },
-        swap: {
-          title: 'Memória csere',
-          tip: 'Ha a memóriaoptimalizálás engedélyezése után is fennállnak a problémák, próbálja meg engedélyezni a swap memóriát. Ez alapértelmezés szerint a swap fájl méretét 256MB értékre állítja be, amely a "Beállítások > Eszköz" menüpontban állítható be.'
-        },
-        restart: 'Are you sure to restart Tailscale?',
-        stop: 'Are you sure to stop Tailscale?',
-        stopDesc: 'Log out Tailscale and disable its automatic startup on boot.',
-        loading: 'Betöltés...',
-        notInstall: 'Tailscale nem található! Kérem, telepítse.',
-        install: 'Telepítés',
-        installing: 'Telepítés folyamatban',
-        failed: 'Telepítés sikertelen',
         retry: 'Frissítse az oldalt, majd próbálja újra. Vagy próbálja meg manuálisan telepíteni.',
         download: 'Letöltés a',
         package: 'telepítési csomag',
@@ -705,23 +688,13 @@ const hu = {
         upTailscale: 'Töltsön fel tailscale-t a NanoKVM /usr/bin/ könyvtárába',
         upTailscaled: 'Töltsön fel tailscaled-t a NanoKVM /usr/sbin/ könyvtárába',
         refresh: 'Frissítse az aktuális oldalt',
-        notRunning: 'Tailscale nem fut. Kérjük, indítsa el a folytatáshoz.',
-        run: 'Indítás',
         notLogin:
           'Az eszköz még nincs kötve. Kérem, jelentkezzen be és kösse az eszközt a fiókjához.',
         urlPeriod: 'Ez az url 10 percig érvényes',
         login: 'Bejelentkezés',
         loginSuccess: 'Sikeres bejelentkezés',
-        enable: 'Tailscale engedélyezése',
-        deviceName: 'Eszköz neve',
-        deviceIP: 'Eszköz IP',
-        account: 'Fiók',
         logout: 'Kijelentkezés',
-        logoutDesc: 'Biztos, hogy ki szeretne jelentkezni?',
-        uninstall: 'Eltávolítás Tailscale',
-        uninstallDesc: 'Biztosan eltávolítja a Tailscale alkalmazást?',
-        okBtn: 'Yes',
-        cancelBtn: 'No'
+        logoutDesc: 'Biztos, hogy ki szeretne jelentkezni?'
       },
       update: {
         title: 'Frissítés keresése',

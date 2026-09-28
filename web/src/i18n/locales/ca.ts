@@ -255,7 +255,6 @@ const ca = {
         desc: 'Si el ratolí i el teclat deixen de respondre i restablir HID no ajuda, pot ser un problema de compatibilitat entre el NanoKVM i el dispositiu. Proveu d’activar el mode només HID per millorar la compatibilitat.',
         tip1: 'Activar el mode només HID desmuntarà el disc virtual i la xarxa virtual',
         tip2: 'En mode només HID, no es pot muntar imatges',
-        tip3: 'El NanoKVM es reiniciarà automàticament en canviar de mode',
         enable: 'Activa mode només HID',
         disable: 'Desactiva mode només HID'
       }
@@ -677,22 +676,6 @@ const ca = {
       },
       tailscale: {
         title: 'Tailscale',
-        memory: {
-          title: 'Optimització de memòria',
-          tip: 'Quan es supera el límit de memòria, es fa una neteja més agressiva. Recomanat: 75MB si uses Tailscale. Requereix reiniciar Tailscale.'
-        },
-        swap: {
-          title: 'Intercanvi de memòria',
-          tip: "Si els problemes persisteixen després d'activar l'optimització de memòria, proveu d'habilitar la memòria d'intercanvi. Això estableix la mida del fitxer d'intercanvi a 256MB per defecte, que es pot ajustar a \"Configuració > Dispositiu\"."
-        },
-        restart: 'Reiniciar Tailscale?',
-        stop: 'Aturar Tailscale?',
-        stopDesc: 'Tanca la sessió de Tailscale i desactiva l’inici automàtic en arrencar.',
-        loading: 'Carregant...',
-        notInstall: 'Tailscale no instal·lat! Instal·la-ho.',
-        install: 'Instal·la',
-        installing: 'Instal·lant',
-        failed: 'Error en la instal·lació',
         retry: 'Actualitza i torna-ho a provar. O instal·la manualment',
         download: 'Descarrega el',
         package: "paquet d'instal·lació",
@@ -700,22 +683,12 @@ const ca = {
         upTailscale: 'Puja tailscale al directori /usr/bin/ del NanoKVM',
         upTailscaled: 'Puja tailscaled al directori /usr/sbin/ del NanoKVM',
         refresh: 'Actualitza la pàgina',
-        notRunning: "Tailscale no s'està executant. Si us plau, inicieu-lo per continuar.",
-        run: 'Comença',
         notLogin: 'El dispositiu no està vinculat. Inicia sessió per vincular-lo.',
         urlPeriod: 'Aquesta URL és vàlida durant 10 minuts',
         login: 'Inicia sessió',
         loginSuccess: 'Sessió iniciada correctament',
-        enable: 'Activa Tailscale',
-        deviceName: 'Nom del dispositiu',
-        deviceIP: 'IP del dispositiu',
-        account: 'Compte',
         logout: 'Tanca sessió',
-        logoutDesc: 'Segur que vols tancar sessió?',
-        uninstall: 'Desinstal·la Tailscale',
-        uninstallDesc: 'Esteu segur que voleu desinstal·lar Tailscale?',
-        okBtn: 'Sí',
-        cancelBtn: 'No'
+        logoutDesc: 'Segur que vols tancar sessió?'
       },
       update: {
         title: 'Comprova actualitzacions',

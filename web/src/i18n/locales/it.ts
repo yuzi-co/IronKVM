@@ -258,7 +258,6 @@ const it = {
         desc: 'Se il mouse e la tastiera smettono di rispondere e il ripristino di HID non aiuta, potrebbe trattarsi di un problema di compatibilità tra NanoKVM e il dispositivo. Prova ad abilitare la modalità HID-Only per una migliore compatibilità.',
         tip1: "L'abilitazione della modalità HID-Solo smonterà il disco U virtuale e la rete virtuale",
         tip2: "Nella modalità HID-Only, il montaggio dell'immagine è disabilitato",
-        tip3: 'NanoKVM si riavvierà automaticamente dopo aver cambiato modalità',
         enable: 'Abilita la modalità HID-Solo',
         disable: 'Disabilita la modalità HID-Solo'
       }
@@ -683,22 +682,6 @@ const it = {
       },
       tailscale: {
         title: 'Tailscale',
-        memory: {
-          title: 'Ottimizzazione memoria',
-          tip: "When memory usage exceeds the limit, garbage collection is performed more aggressively to attempt to free up memory. it's recommended to set to 50MB if using Tailscale. A Tailscale restart is required for the change to take effect."
-        },
-        swap: {
-          title: 'Scambia memoria',
-          tip: 'Se i problemi persistono dopo aver abilitato l\'ottimizzazione della memoria, provare ad abilitare la memoria di scambio. Ciò imposta la dimensione del file di scambio su 256MB per impostazione predefinita, che può essere regolata in "Impostazioni > Dispositivo".'
-        },
-        restart: 'Are you sure to restart Tailscale?',
-        stop: 'Are you sure to stop Tailscale?',
-        stopDesc: 'Log out Tailscale and disable its automatic startup on boot.',
-        loading: 'Caricamento...',
-        notInstall: 'Tailscale non trovato! Per favore, installa.',
-        install: 'Installa',
-        installing: 'Installazione in corso',
-        failed: 'Installazione fallita',
         retry: 'Riprova aggiornando la pagina o installa manualmente',
         download: 'Scarica il',
         package: 'pacchetto di installazione',
@@ -706,23 +689,13 @@ const it = {
         upTailscale: 'Carica tailscale nella directory /usr/bin/ del NanoKVM',
         upTailscaled: 'Carica tailscaled nella directory /usr/sbin/ del NanoKVM',
         refresh: 'Aggiorna la pagina corrente',
-        notRunning: 'Tailscale non è in esecuzione. Per favore avvialo per continuare.',
-        run: 'Inizio',
         notLogin:
           'Il dispositivo non è ancora stato associato. Effettua il login e associa questo dispositivo al tuo account.',
         urlPeriod: 'Questo URL è valido per 10 minuti',
         login: 'Accedi',
         loginSuccess: 'Accesso riuscito',
-        enable: 'Abilita Tailscale',
-        deviceName: 'Nome Dispositivo',
-        deviceIP: 'IP Dispositivo',
-        account: 'Account',
         logout: 'Disconnetti',
-        logoutDesc: 'Sei sicuro di voler uscire?',
-        uninstall: 'Disinstalla Tailscale',
-        uninstallDesc: 'Sei sicuro di voler disinstallare Tailscale?',
-        okBtn: 'Yes',
-        cancelBtn: 'No'
+        logoutDesc: 'Sei sicuro di voler uscire?'
       },
       update: {
         title: 'Controlla Aggiornamenti',

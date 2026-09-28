@@ -256,7 +256,6 @@ const cz = {
         desc: 'Pokud vaše myš a klávesnice přestanou reagovat a resetování HID nepomůže, může jít o problém s kompatibilitou mezi NanoKVM a zařízením. Zkuste povolit režim HID-Only pro lepší kompatibilitu.',
         tip1: 'Povolení režimu HID-Only odpojí virtuální U-disk a virtuální síť',
         tip2: 'V režimu HID-Only je připojení obrazu zakázáno',
-        tip3: 'NanoKVM se po přepnutí režimů automaticky restartuje',
         enable: 'Povolit režim HID-Only',
         disable: 'Zakázat režim HID-Only'
       }
@@ -676,22 +675,6 @@ const cz = {
       },
       tailscale: {
         title: 'Tailscale',
-        memory: {
-          title: 'Optimalizace paměti',
-          tip: "When memory usage exceeds the limit, garbage collection is performed more aggressively to attempt to free up memory. it's recommended to set to 50MB if using Tailscale. A Tailscale restart is required for the change to take effect."
-        },
-        swap: {
-          title: 'Vyměňte paměť',
-          tip: 'Pokud problémy přetrvávají i po povolení optimalizace paměti, zkuste povolit odkládací paměť. Tím se ve výchozím nastavení nastaví velikost odkládacího souboru na 256MB, kterou lze upravit v „Nastavení > Zařízení“.'
-        },
-        restart: 'Are you sure to restart Tailscale?',
-        stop: 'Are you sure to stop Tailscale?',
-        stopDesc: 'Log out Tailscale and disable its automatic startup on boot.',
-        loading: 'Načítání...',
-        notInstall: 'Tailscale nebyl nalezen! Prosím nainstalujte.',
-        install: 'Nainstalovat',
-        installing: 'Instalace probíhá',
-        failed: 'Instalace se nezdařila',
         retry: 'Obnovte stránku a zkuste to znovu. Nebo zkuste instalaci manuálně',
         download: 'Stáhnout',
         package: 'instalační balíček',
@@ -699,23 +682,13 @@ const cz = {
         upTailscale: 'Nahrajte Tailscale do adresáře NanoKVM /usr/bin/',
         upTailscaled: 'Nahrajte Tailscaled do adresáře NanoKVM /usr/sbin/',
         refresh: 'Obnovit stránku',
-        notRunning: 'Tailscale neběží. Chcete-li pokračovat, spusťte jej.',
-        run: 'Spustit',
         notLogin:
           'Zařízení nebylo dosud spárováno. Přihlaste se prosím a spárujte toto zařízení s vaším účtem.',
         urlPeriod: 'Tento odkaz je platný po dobu 10 minut',
         login: 'Přihlášení',
         loginSuccess: 'Přihlášení úspěšné',
-        enable: 'Povolit Tailscale',
-        deviceName: 'Název zařízení',
-        deviceIP: 'IP zařízení',
-        account: 'Účet',
         logout: 'Odhlásit se',
-        logoutDesc: 'Opravdu se chcete odhlásit?',
-        uninstall: 'Odinstalovat Tailscale',
-        uninstallDesc: 'Opravdu chcete odinstalovat Tailscale?',
-        okBtn: 'Yes',
-        cancelBtn: 'No'
+        logoutDesc: 'Opravdu se chcete odhlásit?'
       },
       update: {
         title: 'Zkontrolovat aktualizaci',

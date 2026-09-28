@@ -259,7 +259,6 @@ const nl = {
         desc: 'Als uw muis en toetsenbord niet meer reageren en het opnieuw instellen van HID niet helpt, kan er sprake zijn van een compatibiliteitsprobleem tussen de NanoKVM en het apparaat. Probeer de modus HID-Only in te schakelen voor betere compatibiliteit.',
         tip1: 'Als u de modus HID-Only inschakelt, worden de virtuele U-schijf en het virtuele netwerk ontkoppeld',
         tip2: 'In de modus HID-Alleen is beeldmontage uitgeschakeld',
-        tip3: 'NanoKVM wordt automatisch opnieuw opgestart na het wisselen van modus',
         enable: 'Schakel de modus HID-Alleen in',
         disable: 'Schakel de modus HID-Alleen uit'
       }
@@ -685,22 +684,6 @@ const nl = {
       },
       tailscale: {
         title: 'Tailscale',
-        memory: {
-          title: 'Geheugen optimalisatie',
-          tip: 'Wanneer geheugen gebruik de limiet overschreid, garbage collection wordt agressiever uitgevoerd om geheugen vrij te maken. geadviseerd om 50MB te kiezen als Tailscale wordt gebruikt. Tailscale moet worden herstart om de wijziging door te voeren.'
-        },
-        swap: {
-          title: 'Geheugen wisselen',
-          tip: 'Als de problemen aanhouden nadat u geheugenoptimalisatie hebt ingeschakeld, probeer dan het wisselgeheugen in te schakelen. Hierdoor wordt de grootte van het wisselbestand standaard ingesteld op 256MB, wat kan worden aangepast in "Instellingen > Apparaat".'
-        },
-        restart: 'Weet u zeker dat u Tailscale opnieuw wilt opstarten?',
-        stop: 'Weet u zeker dat u Tailscale wilt stoppen?',
-        stopDesc: 'Meld Tailscale af en schakel het automatisch opstarten bij het opstarten uit.',
-        loading: 'Laden...',
-        notInstall: 'Tailscale niet gevonden! Installeer a.u.b.',
-        install: 'Installeren',
-        installing: 'Installeren bezig',
-        failed: 'Installatie mislukt',
         retry: 'Vernieuw en probeer opnieuw. Of probeer handmatig te installeren',
         download: 'Download het',
         package: 'installatiepakket',
@@ -708,23 +691,13 @@ const nl = {
         upTailscale: 'Upload tailscale naar NanoKVM directory /usr/bin/',
         upTailscaled: 'Upload tailscaled naar NanoKVM directory /usr/sbin/',
         refresh: 'Vernieuw huidige pagina',
-        notRunning: 'Tailscale is niet actief. Start het programma om door te gaan.',
-        run: 'Begin',
         notLogin:
           'Het apparaat is nog niet gekoppeld. Log in en koppel dit apparaat aan uw account.',
         urlPeriod: 'Deze url is 10 minuten geldig',
         login: 'Inloggen',
         loginSuccess: 'Inloggen gelukt',
-        enable: 'Tailscale inschakelen',
-        deviceName: 'Apparaatnaam',
-        deviceIP: 'Apparaat IP',
-        account: 'Account',
         logout: 'Uitloggen',
-        logoutDesc: 'Weet u zeker dat u wilt uitloggen?',
-        uninstall: 'Verwijderen Tailscale',
-        uninstallDesc: 'Weet u zeker dat u Tailscale wilt verwijderen?',
-        okBtn: 'Ja',
-        cancelBtn: 'Nee'
+        logoutDesc: 'Weet u zeker dat u wilt uitloggen?'
       },
       update: {
         title: 'Controleren op updates',

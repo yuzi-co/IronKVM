@@ -255,7 +255,6 @@ const vi = {
         desc: 'Nếu chuột và bàn phím của bạn ngừng phản hồi và việc đặt lại HID không có tác dụng thì đó có thể là sự cố tương thích giữa NanoKVM và thiết bị. Hãy thử bật chế độ HID-Only để tương thích tốt hơn.',
         tip1: 'Kích hoạt HID-Chế độ chỉ sẽ ngắt kết nối đĩa U ảo và mạng ảo',
         tip2: 'Ở chế độ HID-Chỉ, tính năng gắn hình ảnh bị tắt',
-        tip3: 'NanoKVM sẽ tự động khởi động lại sau khi chuyển chế độ',
         enable: 'Bật chế độ HID-Chỉ',
         disable: 'Tắt chế độ HID-Chỉ'
       }
@@ -675,22 +674,6 @@ const vi = {
       },
       tailscale: {
         title: 'Tailscale',
-        memory: {
-          title: 'Tối ưu bộ nhớ',
-          tip: "When memory usage exceeds the limit, garbage collection is performed more aggressively to attempt to free up memory. it's recommended to set to 50MB if using Tailscale. A Tailscale restart is required for the change to take effect."
-        },
-        swap: {
-          title: 'Hoán đổi bộ nhớ',
-          tip: 'Nếu sự cố vẫn tiếp diễn sau khi bật tối ưu hóa bộ nhớ, hãy thử bật bộ nhớ trao đổi. Việc này sẽ đặt kích thước tệp hoán đổi thành 256MB theo mặc định, có thể điều chỉnh được trong "Cài đặt > Thiết bị".'
-        },
-        restart: 'Are you sure to restart Tailscale?',
-        stop: 'Are you sure to stop Tailscale?',
-        stopDesc: 'Log out Tailscale and disable its automatic startup on boot.',
-        loading: 'Đang tải...',
-        notInstall: 'Không tìm thấy Tailscale! Vui lòng cài đặt.',
-        install: 'Cài đặt',
-        installing: 'Đang cài đặt',
-        failed: 'Cài đặt thất bại',
         retry: 'Vui lòng làm mới và thử lại. Hoặc thử cài đặt thủ công',
         download: 'Tải xuống',
         package: 'gói cài đặt',
@@ -698,23 +681,13 @@ const vi = {
         upTailscale: 'Tải tailscale lên thư mục /usr/bin/ của NanoKVM',
         upTailscaled: 'Tải tailscaled lên thư mục /usr/sbin/ của NanoKVM',
         refresh: 'Làm mới trang hiện tại',
-        notRunning: 'Tailscale không chạy. Hãy bắt đầu nó để tiếp tục.',
-        run: 'Bắt đầu',
         notLogin:
           'Thiết bị chưa được liên kết. Vui lòng đăng nhập và liên kết thiết bị này với tài khoản của bạn.',
         urlPeriod: 'URL này có hiệu lực trong 10 phút',
         login: 'Đăng nhập',
         loginSuccess: 'Đăng nhập thành công',
-        enable: 'Kích hoạt Tailscale',
-        deviceName: 'Tên Thiết bị',
-        deviceIP: 'IP Thiết bị',
-        account: 'Tài khoản',
         logout: 'Đăng xuất',
-        logoutDesc: 'Bạn có chắc chắn muốn đăng xuất không?',
-        uninstall: 'Gỡ cài đặt Tailscale',
-        uninstallDesc: 'Bạn có chắc chắn muốn gỡ cài đặt Tailscale không?',
-        okBtn: 'Yes',
-        cancelBtn: 'No'
+        logoutDesc: 'Bạn có chắc chắn muốn đăng xuất không?'
       },
       update: {
         title: 'Kiểm tra cập nhật',
@@ -914,7 +887,6 @@ const vi = {
         deleteConfirmContent: 'Bạn có chắc chắn muốn xóa "{{title}}" không?',
         deleteConfirmOk: 'Xóa',
         deleteConfirmCancel: 'Hủy',
-        messageCount_one: '{{count}} tin nhắn',
         messageCount_other: '{{count}} tin nhắn',
         messageCount: '{{count}} tin nhắn'
       },

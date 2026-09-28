@@ -256,7 +256,6 @@ const ja = {
         desc: '使用中にマウスとキーボードが反応しなくなり、HID をリセットしても効果がない場合は、NanoKVM とデバイス間の互換性に問題がある可能性があります。互換性を向上させるために、HID-Only モードを有効にすることをお勧めします。',
         tip1: 'HID-Only モードを有効にすると、仮想 U ディスクと仮想ネットワークがアンマウントされます',
         tip2: 'HID-Only モードでは、イメージのマウントは無効になります',
-        tip3: 'モードを切り替えると、NanoKVM は自動的に再起動します。',
         enable: 'HID-Only モードを有効化',
         disable: 'HID-Only モードを無効化'
       }
@@ -680,22 +679,6 @@ const ja = {
       },
       tailscale: {
         title: 'Tailscale',
-        memory: {
-          title: 'メモリ最適化',
-          tip: 'メモリ使用量が上限を超えると、メモリ解放のためにより積極的にガベージコレクションが実行されます。Tailscale を使用する場合は 50MB に設定することをお勧めします。この設定を有効にするには Tailscale を再起動する必要があります。'
-        },
-        swap: {
-          title: 'スワップメモリ',
-          tip: 'メモリ最適化を有効にしても問題が解決しない場合は、スワップメモリ​​を有効にしてみてください。有効にするとスワップファイルが 256MB に設定されます。このサイズは「設定 - デバイス」で変更できます。'
-        },
-        restart: 'Tailscale を再起動しますか？',
-        stop: 'Tailscale を停止しますか？',
-        stopDesc: 'Tailscale からログアウトし、起動時の自動実行を無効にします。',
-        loading: '読み込み中...',
-        notInstall: 'Tailscale が見つかりません。インストールしてください。',
-        install: 'インストール',
-        installing: 'インストール中',
-        failed: 'インストールに失敗しました',
         retry: 'ページを更新してもう一度お試しいただくか、手動でインストールしてください',
         download: 'ダウンロードして',
         package: 'インストールパッケージを',
@@ -703,23 +686,13 @@ const ja = {
         upTailscale: 'tailscale ファイルを NanoKVM の /usr/bin ディレクトリにアップロードします',
         upTailscaled: 'tailscaled ファイルを NanoKVM の /usr/sbin ディレクトリにアップロードします',
         refresh: 'ページを更新します',
-        notRunning: 'Tailscale はまだ実行されていません。起動操作を実行してください',
-        run: '起動',
         notLogin:
           'このデバイスはまだバインドされていません。ログインしてデバイスをアカウントにバインドしてください。',
         urlPeriod: 'この URL は 10 分間有効です',
         login: 'ログイン',
         loginSuccess: 'ログイン成功',
-        enable: 'Tailscale を有効化',
-        deviceName: 'デバイス名',
-        deviceIP: 'デバイスアドレス',
-        account: 'アカウント',
         logout: 'ログアウト',
-        logoutDesc: 'ログアウトしてもよろしいですか？',
-        uninstall: 'Tailscale をアンインストール',
-        uninstallDesc: 'Tailscale をアンインストールしてもよろしいですか？',
-        okBtn: 'はい',
-        cancelBtn: 'いいえ'
+        logoutDesc: 'ログアウトしてもよろしいですか？'
       },
       update: {
         title: 'アップデート',
@@ -920,7 +893,6 @@ const ja = {
         deleteConfirmContent: '「{{title}}」を削除してもよろしいですか?',
         deleteConfirmOk: '削除',
         deleteConfirmCancel: 'キャンセル',
-        messageCount_one: '{{count}} メッセージ',
         messageCount_other: '{{count}} メッセージ',
         messageCount: '{{count}} メッセージ'
       },

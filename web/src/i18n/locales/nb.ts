@@ -256,7 +256,6 @@ const nb = {
         desc: 'Hvis musen og tastaturet slutter å svare og tilbakestilling av HID ikke hjelper, kan det være et kompatibilitetsproblem mellom NanoKVM og enheten. Prøv å aktivere HID-Only-modus for bedre kompatibilitet.',
         tip1: 'Aktivering av HID-Only-modus vil demontere den virtuelle U-disken og det virtuelle nettverket',
         tip2: 'I HID-Only-modus er bildemontering deaktivert',
-        tip3: 'NanoKVM vil automatisk starte på nytt etter bytte av modus',
         enable: 'Aktiver HID-Only-modus',
         disable: 'Deaktiver HID-bare-modus'
       }
@@ -675,22 +674,6 @@ const nb = {
       },
       tailscale: {
         title: 'Tailscale',
-        memory: {
-          title: 'Minneoptimalisering',
-          tip: "When memory usage exceeds the limit, garbage collection is performed more aggressively to attempt to free up memory. it's recommended to set to 50MB if using Tailscale. A Tailscale restart is required for the change to take effect."
-        },
-        swap: {
-          title: 'Bytt minne',
-          tip: 'Hvis problemene vedvarer etter at du har aktivert minneoptimalisering, prøv å aktivere swap-minne. Dette setter swap-filstørrelsen til 256MB som standard, som kan justeres i "Innstillinger > Enhet".'
-        },
-        restart: 'Are you sure to restart Tailscale?',
-        stop: 'Are you sure to stop Tailscale?',
-        stopDesc: 'Log out Tailscale and disable its automatic startup on boot.',
-        loading: 'Laster...',
-        notInstall: 'Tailscale er ikke funnet! Vennligst installer.',
-        install: 'Installér',
-        installing: 'Installerer',
-        failed: 'Installering feilet',
         retry: 'Vennligst last inn siden på nytt og forsøk igjen eller installer manuelt',
         download: 'Last ned',
         package: 'installasjonspakken',
@@ -698,23 +681,13 @@ const nb = {
         upTailscale: 'Last opp Tailscale til NanoKVM-enhetens mappe /usr/bin/',
         upTailscaled: 'Last opp tailscaled til NanoKVM-enhetens mappe /usr/sbin/',
         refresh: 'Last inn denne siden på nytt',
-        notRunning: 'Tailscale kjører ikke. Start den for å fortsette.',
-        run: 'Start',
         notLogin:
           'Denne enheten er ikke knyttet til din konto enda. Vennligst logg inn og knytt den til kontoen din..',
         urlPeriod: 'Denne lenken er gyldig i 10 minutter',
         login: 'Logg inn',
         loginSuccess: 'Logget inn',
-        enable: 'Skru på Tailscale',
-        deviceName: 'Enhetens navn',
-        deviceIP: 'Enhetens IP',
-        account: 'Konto',
         logout: 'Logg ut',
-        logoutDesc: 'Er du sikker på at du vil logge ut?',
-        uninstall: 'Avinstaller Tailscale',
-        uninstallDesc: 'Er du sikker på at du vil avinstallere Tailscale?',
-        okBtn: 'Yes',
-        cancelBtn: 'No'
+        logoutDesc: 'Er du sikker på at du vil logge ut?'
       },
       update: {
         title: 'Se etter oppdatering',

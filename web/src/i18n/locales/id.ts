@@ -256,7 +256,6 @@ const id = {
         desc: 'Jika mouse dan keyboard Anda berhenti merespons dan menyetel ulang HID tidak membantu, mungkin ada masalah kompatibilitas antara NanoKVM dan perangkat. Coba aktifkan mode HID-Only untuk kompatibilitas yang lebih baik.',
         tip1: 'Mengaktifkan mode HID-Hanya akan melepas U-disk virtual dan jaringan virtual',
         tip2: 'Dalam mode HID-Only, pemasangan gambar dinonaktifkan',
-        tip3: 'NanoKVM akan otomatis reboot setelah berpindah mode',
         enable: 'Aktifkan mode HID-Hanya',
         disable: 'Nonaktifkan mode HID-Hanya'
       }
@@ -678,22 +677,6 @@ const id = {
       },
       tailscale: {
         title: 'Tailscale',
-        memory: {
-          title: 'Optimasi memori',
-          tip: "When memory usage exceeds the limit, garbage collection is performed more aggressively to attempt to free up memory. it's recommended to set to 50MB if using Tailscale. A Tailscale restart is required for the change to take effect."
-        },
-        swap: {
-          title: 'Tukar memori',
-          tip: 'Jika masalah terus berlanjut setelah mengaktifkan pengoptimalan memori, coba aktifkan memori swap. Ini menetapkan ukuran file swap ke 256MB secara default, yang dapat disesuaikan di "Pengaturan > Perangkat".'
-        },
-        restart: 'Are you sure to restart Tailscale?',
-        stop: 'Are you sure to stop Tailscale?',
-        stopDesc: 'Log out Tailscale and disable its automatic startup on boot.',
-        loading: 'Memuat...',
-        notInstall: 'Tailscale tidak ditemukan! Silahkan pasang.',
-        install: 'Memasang',
-        installing: 'Memasangkan',
-        failed: 'Gagal memasangkan',
         retry: 'Harap segarkan dan coba lagi. Atau coba instal secara manual',
         download: 'Mengunduh',
         package: 'paket instalasi',
@@ -701,23 +684,13 @@ const id = {
         upTailscale: 'Unggah tailscale ke direktori NanoKVM /usr/bin/',
         upTailscaled: 'Unggah tailscaled ke direktori NanoKVM /usr/sbin/',
         refresh: 'Segarkan halaman ini',
-        notRunning: 'Tailscale tidak berjalan. Silakan mulai untuk melanjutkan.',
-        run: 'Mulai',
         notLogin:
           'Perangkat belum ditautkan. Silakan masuk dan tautkan perangkat ini ke akun Anda.',
         urlPeriod: 'Url ini berlaku selama 10 menit',
         login: 'Masuk',
         loginSuccess: 'Berhasil masuk',
-        enable: 'Aktifkan Tailscale',
-        deviceName: 'Nama Perangkat',
-        deviceIP: 'IP Perangkat',
-        account: 'Akun',
         logout: 'Keluar',
-        logoutDesc: 'Apakah Anda yakin ingin logout?',
-        uninstall: 'Copot pemasangan Tailscale',
-        uninstallDesc: 'Apakah Anda yakin ingin menghapus instalan Tailscale?',
-        okBtn: 'Yes',
-        cancelBtn: 'No'
+        logoutDesc: 'Apakah Anda yakin ingin logout?'
       },
       update: {
         title: 'Periksa pembaruan',
@@ -915,7 +888,6 @@ const id = {
         deleteConfirmContent: 'Apakah Anda yakin ingin menghapus "{{title}}"?',
         deleteConfirmOk: 'Hapus',
         deleteConfirmCancel: 'Batalkan',
-        messageCount_one: '{{count}} pesan',
         messageCount_other: '{{count}} pesan',
         messageCount: '{{count}} pesan'
       },

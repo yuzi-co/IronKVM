@@ -255,7 +255,6 @@ const tr = {
         desc: 'Fare ve klavye yanıt vermeyi durdurursa ve HID sıfırlama yardımcı olmazsa, NanoKVM ile cihaz arasında bir uyumluluk sorunu olabilir. Daha iyi uyumluluk için yalnızca HID modunu etkinleştirmeyi deneyin.',
         tip1: 'Yalnızca HID modunu etkinleştirmek sanal U-disk’i ve sanal ağı ayırır',
         tip2: 'Yalnızca HID modunda imaj bağlama devre dışıdır',
-        tip3: 'NanoKVM mod değişiminden sonra kendiliğinden yeniden başlatılacaktır',
         enable: 'Yalnızca HID modunu etkinleştir',
         disable: 'Yalnızca HID modunu devre dışı bırak'
       }
@@ -679,22 +678,6 @@ const tr = {
       },
       tailscale: {
         title: 'Tailscale',
-        memory: {
-          title: 'Bellek optimizasyonu',
-          tip: "Bellek kullanımı sınırı aştığında, belleği boşaltmak amacıyla çöp toplama işlemi daha agresif bir şekilde gerçekleştirilir. Tailscale kullanıyorsanız bu değerin 75 MB olarak ayarlanması önerilir. Değişikliğin etkili olabilmesi için Tailscale'in yeniden başlatılması gerekir."
-        },
-        swap: {
-          title: 'Belleği değiştir',
-          tip: 'Bellek optimizasyonunu etkinleştirdikten sonra sorunlar devam ederse, takas belleğini etkinleştirmeyi deneyin. Bu, takas dosyası boyutunu varsayılan olarak 256MB olarak ayarlar ve bu, "Ayarlar > Cihaz" bölümünden ayarlanabilir.'
-        },
-        restart: "Tailscale'i yeniden başlat?",
-        stop: "Tailscale'i durdur?",
-        stopDesc: 'Tailscale oturumundan çıkış yap ve başlangıçta çalışmasını devre dışı bırak.',
-        loading: 'Yükleniyor...',
-        notInstall: 'Tailscale bulunamadı! Lütfen indirin.',
-        install: 'İndir',
-        installing: 'İndiriliyor',
-        failed: 'İndirme başarısız oldu',
         retry: 'Lütfen sayfayı yenileyin ve tekrar deneyin, ya da manuel indirin',
         download: 'İndir',
         package: 'yükleme paketi',
@@ -702,22 +685,12 @@ const tr = {
         upTailscale: "tailscale dosyasını NanoKVM'in /usr/bin dizinine yükleyin",
         upTailscaled: "tailscaled dosyasını NanoKVM'in /usr/sbin dizinine yükleyin",
         refresh: 'İçinde bulunduğunuz sayfayı yenileyin',
-        notRunning: 'Tailscale çalışmıyor. Devam etmek için lütfen başlatın.',
-        run: 'Başlat',
         notLogin: 'Cihaz bağlı değil. Lütfen giriş yapıp cihazınızı hesabınıza bağlayın.',
         urlPeriod: 'Adres sadece 10 ndakika boyunca geçerlidir',
         login: 'Giriş yap',
         loginSuccess: 'Giriş yapıldı',
-        enable: "Tailscale'i etkinleştir",
-        deviceName: 'Cihaz Adı',
-        deviceIP: 'Cihaz IP adresi',
-        account: 'Hesap',
         logout: 'Çıkış yap',
-        logoutDesc: 'Çıkış yapmak istediğinizden emin misiniz?',
-        uninstall: "Tailscale'i kaldır",
-        uninstallDesc: "Tailscale'i kaldırmak istediğinizden emin misiniz?",
-        okBtn: 'Evet',
-        cancelBtn: 'Hayır'
+        logoutDesc: 'Çıkış yapmak istediğinizden emin misiniz?'
       },
       update: {
         title: 'Güncelleştirmeleri kontrol et',

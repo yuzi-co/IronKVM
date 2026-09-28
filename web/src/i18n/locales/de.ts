@@ -260,7 +260,6 @@ const de = {
         desc: 'Wenn Ihre Maus und Tastatur nicht mehr reagieren und das Zurücksetzen der HID-Verbindung nicht hilft, könnte es sich um ein Kompatibilitätsproblem zwischen dem NanoKVM und dem Gerät handeln. Versuchen Sie, den HID-Only Modus zu aktivieren, um die Kompatibilität zu verbessern.',
         tip1: 'Die Aktivierung des HID-Only Modus entfernt das virtuelle U-Laufwerk und das virtuelle Netzwerk.',
         tip2: 'Im HID-Only Modus ist das Einbinden von Systemabbilder deaktiviert.',
-        tip3: 'NanoKVM wird nach dem Wechsel in den neuen Modus automatisch neu gestartet.',
         enable: 'HID-Only Modus aktivieren',
         disable: 'HID-Only Modus deaktivieren'
       }
@@ -688,22 +687,6 @@ const de = {
       },
       tailscale: {
         title: 'Tailscale',
-        memory: {
-          title: 'Speicher Optimierung',
-          tip: 'Wenn die Speichernutzung das Limit überschreitet, wird die Speicherbereinigung aggressiver durchgeführt, um Speicher freizugeben. Es wird empfohlen, den Wert auf 75 MB zu setzen, wenn Tailscale verwendet wird. Ein Neustart von Tailscale ist erforderlich, damit die Änderung wirksam wird.'
-        },
-        swap: {
-          title: 'Speicher austauschen',
-          tip: 'Wenn die Probleme nach der Aktivierung der Speicheroptimierung weiterhin bestehen, versuchen Sie, den Swap-Speicher zu aktivieren. Dadurch wird die Größe der Auslagerungsdatei standardmäßig auf 256MB festgelegt, was unter „Einstellungen > Gerät“ angepasst werden kann.'
-        },
-        restart: 'Tailscale neu starten?',
-        stop: 'Tailscale stoppen?',
-        stopDesc: 'Von Tailscale abmelden und automatischen Start beim Booten deaktivieren.',
-        loading: 'Lädt...',
-        notInstall: 'Tailscale nicht gefunden! Bitte installieren.',
-        install: 'Installieren',
-        installing: 'Installiere',
-        failed: 'Installation fehlgeschlagen',
         retry: 'Bitte Seite neu laden und erneut versuchen oder manuelle Installation versuchen.',
         download: 'Laden Sie das',
         package: 'Installations-Paket herunter',
@@ -711,23 +694,13 @@ const de = {
         upTailscale: 'Tailscale nach /usr/bin/ auf NanoKVM hochladen',
         upTailscaled: 'Tailscaled nach /usr/bin/ auf NanoKVM hochladen',
         refresh: 'Aktuelle Seite neu laden',
-        notRunning: 'Tailscale läuft nicht. Bitte starten Sie es, um fortzufahren.',
-        run: 'Start',
         notLogin:
           'Das Gerät konnte noch nicht gefunden werden. Bitte melden Sie sich an und verknüpfen Sie dieses Gerät mit Ihrem Konto.',
         urlPeriod: 'Diese URL ist für 10 Minuten gültig',
         login: 'Anmelden',
         loginSuccess: 'Anmeldung erfolgreich',
-        enable: 'Tailscale einschalten',
-        deviceName: 'Geräte Name',
-        deviceIP: 'Geräte IP',
-        account: 'Konto',
         logout: 'Abmelden',
-        logoutDesc: 'Möchten Sie sich wirklich abmelden?',
-        uninstall: 'Tailscale deinstallieren',
-        uninstallDesc: 'Sind Sie sicher, dass Sie Tailscale deinstallieren möchten?',
-        okBtn: 'Ja',
-        cancelBtn: 'Nein'
+        logoutDesc: 'Möchten Sie sich wirklich abmelden?'
       },
       update: {
         title: 'Nach Aktualisierungen suchen',

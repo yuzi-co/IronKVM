@@ -255,7 +255,6 @@ const da = {
         desc: 'Hvis din mus og tastatur holder op med at reagere, og nulstilling af HID ikke hjælper, kan det være et kompatibilitetsproblem mellem NanoKVM og enheden. Prøv at aktivere HID-Only-tilstand for bedre kompatibilitet.',
         tip1: 'Aktivering af HID-Only-tilstand vil afmontere den virtuelle U-disk og det virtuelle netværk',
         tip2: 'I HID-Only-tilstand er billedmontering deaktiveret',
-        tip3: 'NanoKVM genstarter automatisk efter at have skiftet tilstand',
         enable: 'Aktiver HID-kun tilstand',
         disable: 'Deaktiver HID-kun tilstand'
       }
@@ -677,22 +676,6 @@ const da = {
       },
       tailscale: {
         title: 'Tailscale',
-        memory: {
-          title: 'Hukommelsesoptimering',
-          tip: "When memory usage exceeds the limit, garbage collection is performed more aggressively to attempt to free up memory. it's recommended to set to 50MB if using Tailscale. A Tailscale restart is required for the change to take effect."
-        },
-        swap: {
-          title: 'Skift hukommelse',
-          tip: 'Hvis problemerne fortsætter efter aktivering af hukommelsesoptimering, prøv at aktivere swap-hukommelse. Dette indstiller swap-filstørrelsen til 256MB som standard, som kan justeres i "Indstillinger > Enhed".'
-        },
-        restart: 'Are you sure to restart Tailscale?',
-        stop: 'Are you sure to stop Tailscale?',
-        stopDesc: 'Log out Tailscale and disable its automatic startup on boot.',
-        loading: 'Indlæser...',
-        notInstall: 'Tailscale ikke fundet! Installer det for at fuldføre opsætningen.',
-        install: 'Installer',
-        installing: 'Installerer',
-        failed: 'Installation mislykkedes',
         retry: 'Opdater siden og prøv igen. Ellers prøv at installere manuelt.',
         download: 'Download',
         package: 'installationspakken',
@@ -700,23 +683,13 @@ const da = {
         upTailscale: 'Upload tailscale til NanoKVM-mappen /usr/bin/',
         upTailscaled: 'Upload tailscaled til NanoKVM-mappen /usr/sbin/',
         refresh: 'Opdater sides',
-        notRunning: 'Tailscale kører ikke. Start det for at fortsætte.',
-        run: 'Start',
         notLogin:
           'Enheden er ikke tilknyttet en Tailscale-konto endnu. Log ind for at fuldføre tilknytningen til din konto.',
         urlPeriod: 'Denne URL er gyldig i 10 minutter',
         login: 'Log ind',
         loginSuccess: 'Log ind lykkedes',
-        enable: 'Aktiver Tailscale',
-        deviceName: 'Enhedens navn',
-        deviceIP: 'Enhedens IP',
-        account: 'Konto',
         logout: 'Log ud',
-        logoutDesc: 'Er du sikker på, at du vil logge ud?',
-        uninstall: 'Afinstaller Tailscale',
-        uninstallDesc: 'Er du sikker på, at du vil afinstallere Tailscale?',
-        okBtn: 'Yes',
-        cancelBtn: 'No'
+        logoutDesc: 'Er du sikker på, at du vil logge ud?'
       },
       update: {
         title: 'Kontroller for opdatering',
