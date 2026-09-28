@@ -142,6 +142,31 @@ func TestNothingHappensWhileTheWatchdogIsOff(t *testing.T) {
 	}
 }
 
+// Off, the watchdog samples nothing, so what its page shows about the signal
+// and the LED must come from the board now, not from the last sample taken
+// before it was turned off, or from none at all.
+func TestTheStateWhileOffIsReadLive(t *testing.T) {
+	h := newFakeHost()
+	h.settings.Enabled = false
+	h.ledConnected = true
+	h.ledOn = true
+	w := New(h.deps(t))
+
+	st := w.State()
+	if !st.Signal || !st.LEDConnected || !st.LEDOn {
+		t.Fatalf("signal %v, LED connected %v, LED on %v, want all true", st.Signal, st.LEDConnected, st.LEDOn)
+	}
+	if len(h.captures) != 0 {
+		t.Fatalf("captured %d frames for the state", len(h.captures))
+	}
+
+	h.signal = false
+	h.ledErr = errors.New("unreadable")
+	if st := w.State(); st.Signal || st.LEDOn {
+		t.Fatalf("signal %v, LED on %v, want both false", st.Signal, st.LEDOn)
+	}
+}
+
 func TestAStillPictureIsResetAfterTheTimeout(t *testing.T) {
 	h := newFakeHost()
 	w := New(h.deps(t))

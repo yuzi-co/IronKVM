@@ -127,8 +127,17 @@ func (w *Watchdog) State() State {
 		LastPing:     timePtr(w.lastPing),
 		LastAction:   timePtr(w.lastAction),
 	}
+	// Off, the watchdog samples nothing, so the last sample says nothing about
+	// now. The signal and the LED are cheap to read and are read here instead.
 	if !s.Enabled {
 		st.Status = StatusOff
+		st.Signal = w.deps.Signal()
+		st.LEDConnected = w.deps.PowerLEDConnected()
+		st.LEDOn = false
+		if st.LEDConnected {
+			on, err := w.deps.PowerLED()
+			st.LEDOn = err == nil && on
+		}
 	}
 	if s.PingHost != "" {
 		st.PingHost = s.PingHost
