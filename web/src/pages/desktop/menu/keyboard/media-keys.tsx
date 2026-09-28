@@ -1,4 +1,5 @@
 import { Tooltip } from 'antd';
+import clsx from 'clsx';
 import {
   PauseIcon,
   SkipBackIcon,
@@ -10,8 +11,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { sendKey } from '@/api/hid.ts';
-import { useExtendedKeys } from '@/hooks/useExtendedKeys.ts';
+import { useExtendedKeys, useSendKey } from '@/hooks/useExtendedKeys.ts';
 
 // Consumer page usages (HID Usage Tables, section 15).
 const keys = [
@@ -26,9 +26,12 @@ const keys = [
 
 export const MediaKeys = () => {
   const { t } = useTranslation();
-  const available = useExtendedKeys();
+  const state = useExtendedKeys();
+  const sendKey = useSendKey();
 
-  if (!available) return null;
+  if (state === 'hidden') return null;
+
+  const disabled = state === 'disabled';
 
   return (
     <div className="px-3 py-1.5">
@@ -37,14 +40,20 @@ export const MediaKeys = () => {
         {keys.map(({ usage, label, Icon }) => (
           <Tooltip key={usage} title={t(label)} placement="bottom">
             <div
-              className="flex h-7 w-7 cursor-pointer items-center justify-center rounded hover:bg-neutral-700/70"
-              onClick={() => sendKey('consumer', usage)}
+              className={clsx(
+                'flex h-7 w-7 items-center justify-center rounded',
+                disabled
+                  ? 'cursor-not-allowed text-neutral-500'
+                  : 'cursor-pointer hover:bg-neutral-700/70'
+              )}
+              onClick={disabled ? undefined : () => sendKey('consumer', usage)}
             >
               <Icon size={16} />
             </div>
           </Tooltip>
         ))}
       </div>
+      {disabled && <div className="pt-1 text-xs text-neutral-500">{t('input.hidDisabled')}</div>}
     </div>
   );
 };

@@ -94,7 +94,15 @@ new keys are not offered in that mode.
   `extendedKeys` is false.
 - Keyboard menu: a "Media keys" row with Mute, Volume Down, Volume Up, Previous,
   Play/Pause, Next and Stop. Hidden when `extendedKeys` is false.
-- Strings go into `en.ts`; other locales fall back to English.
+- With `/boot/disable_hid` both groups are shown disabled, with the reason, rather than
+  hidden. `GET /api/hid/mode` reports it as `hidDisabled`, and `POST /api/hid/key` refuses
+  with -4 while it is set.
+- The power menu also has "Wake with Shift", which presses Shift on the keyboard, and says
+  that a sleeping host often ignores Wake from the device that put it to sleep.
+- A failed key shows an error message.
+- One shared fetch of `GET /api/hid/mode` (`web/src/jotai/hid.ts`) feeds every menu, and a
+  mode switch fetches it again.
+- The strings are in every locale file.
 - The browser's own media keys are not captured. Browsers mostly consume them.
 
 ## Deploy

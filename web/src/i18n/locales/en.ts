@@ -345,9 +345,12 @@ const en = {
       hostOsTip: 'Sent as USB keys. The host decides what they do.',
       sleep: 'Sleep',
       wake: 'Wake',
+      wakeKey: 'Wake with Shift',
       powerDown: 'Power down',
       sleepConfirm: 'Put the host to sleep?',
       powerDownConfirm: 'Send the power-down key to the host?',
+      wakeTip:
+        'A sleeping host often ignores Wake from the device that put it to sleep. Wake with Shift presses a keyboard key instead, which more hosts accept.',
       led: 'Power LED',
       ledOn: 'On',
       ledOff: 'Off',
@@ -1025,7 +1028,9 @@ const en = {
       disconnectedNever:
         'The connection that carries keyboard and mouse could not be opened. The rest of the page works because it does not use it. Check that nothing between you and the device is blocking it.',
       disconnectedDropped:
-        'The connection that carries keyboard and mouse was lost and has not come back. It reconnects on its own after a restart; if this stays, reload the page.'
+        'The connection that carries keyboard and mouse was lost and has not come back. It reconnects on its own after a restart; if this stays, reload the page.',
+      hidDisabled: 'HID is switched off on this device (/boot/disable_hid).',
+      keyFailed: 'The key could not be sent.'
     },
     speaker: {
       title: 'Speaker',
