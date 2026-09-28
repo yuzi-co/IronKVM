@@ -75,12 +75,7 @@ export class WsClient {
   public close(): void {
     this.shouldReconnect = false;
     this.cleanup();
-
-    if (this.instance && this.instance.readyState === W3cWebSocket.OPEN) {
-      this.instance.close();
-    }
-
-    this.instance = null;
+    this.dropInstance();
   }
 
   public on(type: string, handler: MessageHandler): () => void {
@@ -160,6 +155,7 @@ export class WsClient {
 
   private createConnection(): void {
     this.cleanup();
+    this.dropInstance();
 
     this.instance = new W3cWebSocket(this.options.url);
     this.instance.binaryType = 'arraybuffer';
@@ -239,6 +235,28 @@ export class WsClient {
     this.reconnectTimer = setTimeout(() => {
       this.createConnection();
     }, this.options.reconnectInterval);
+  }
+
+  // dropInstance closes the socket and detaches from it. A socket still
+  // connecting used to be left alone: it opened later, started a heartbeat on
+  // a client that had been closed, and its eventual close scheduled a second
+  // reconnect beside the one connect() had already started.
+  private dropInstance(): void {
+    const instance = this.instance;
+    this.instance = null;
+    if (!instance) return;
+
+    instance.onopen = () => {};
+    instance.onclose = () => {};
+    instance.onerror = () => {};
+    instance.onmessage = () => {};
+
+    if (
+      instance.readyState === W3cWebSocket.CONNECTING ||
+      instance.readyState === W3cWebSocket.OPEN
+    ) {
+      instance.close();
+    }
   }
 
   private cleanup(): void {
