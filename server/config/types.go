@@ -31,6 +31,10 @@ type Config struct {
 	// "redfish" in server.yaml.
 	Redfish Redfish `yaml:"redfish,omitempty" mapstructure:"redfish"`
 
+	// Watchdog configures the host watchdog, kept under "watchdog" in
+	// server.yaml. A file without the block loads with the watchdog off.
+	Watchdog Watchdog `yaml:"watchdog,omitempty" mapstructure:"watchdog"`
+
 	// Hardware holds the board's pins, derived from its version at start. It
 	// is never read from or written to server.yaml.
 	Hardware Hardware `yaml:"-" mapstructure:"-"`
@@ -58,6 +62,52 @@ type Redfish struct {
 // on.
 func (r Redfish) IsEnabled() bool {
 	return r.Enabled == nil || *r.Enabled
+}
+
+// The host watchdog's defaults. A zero value in server.yaml means the default.
+const (
+	DefaultWatchdogTimeoutMinutes  = 5
+	DefaultWatchdogAction          = "reset"
+	DefaultWatchdogCooldownMinutes = 15
+	DefaultWatchdogMaxPerHour      = 3
+)
+
+// Watchdog configures the host watchdog, which resets or power-cycles the
+// host when its picture stops changing. Read it through WithDefaults.
+type Watchdog struct {
+	// Enabled runs the watchdog. Off by default: sampling the picture keeps
+	// capture running.
+	Enabled bool `yaml:"enabled" mapstructure:"enabled"`
+	// TimeoutMinutes is how long the host may show no sign of life before
+	// the watchdog acts.
+	TimeoutMinutes int `yaml:"timeoutMinutes,omitempty" mapstructure:"timeoutMinutes"`
+	// Action is "reset" or "power".
+	Action string `yaml:"action,omitempty" mapstructure:"action"`
+	// CooldownMinutes is the least time between two actions.
+	CooldownMinutes int `yaml:"cooldownMinutes,omitempty" mapstructure:"cooldownMinutes"`
+	// MaxPerHour caps the actions in any hour.
+	MaxPerHour int `yaml:"maxPerHour,omitempty" mapstructure:"maxPerHour"`
+	// PingHost is an address the watchdog pings; a reply is a sign of life.
+	// Empty means no ping.
+	PingHost string `yaml:"pingHost,omitempty" mapstructure:"pingHost"`
+}
+
+// WithDefaults returns the settings with every zero value replaced by its
+// default.
+func (w Watchdog) WithDefaults() Watchdog {
+	if w.TimeoutMinutes <= 0 {
+		w.TimeoutMinutes = DefaultWatchdogTimeoutMinutes
+	}
+	if w.Action == "" {
+		w.Action = DefaultWatchdogAction
+	}
+	if w.CooldownMinutes <= 0 {
+		w.CooldownMinutes = DefaultWatchdogCooldownMinutes
+	}
+	if w.MaxPerHour <= 0 {
+		w.MaxPerHour = DefaultWatchdogMaxPerHour
+	}
+	return w
 }
 
 type Logger struct {
