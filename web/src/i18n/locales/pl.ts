@@ -165,7 +165,8 @@ const pl = {
         videoError: 'Błąd wyświetlania wideo',
         noHdmi: 'Nie wykryto sygnału HDMI',
         unavailable: 'Nie można teraz wyświetlić obrazu'
-      }
+      },
+      directConnectionFailed: 'Nie udało się połączyć ze strumieniem wideo'
     },
     keyboard: {
       title: 'Klawiatura',

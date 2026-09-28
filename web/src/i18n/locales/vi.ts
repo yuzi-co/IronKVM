@@ -164,7 +164,8 @@ const vi = {
         videoError: 'Lỗi hiển thị video',
         noHdmi: 'Không phát hiện tín hiệu HDMI',
         unavailable: 'Hiện không thể hiển thị màn hình'
-      }
+      },
+      directConnectionFailed: 'Kết nối luồng video thất bại'
     },
     keyboard: {
       title: 'Bàn phím',

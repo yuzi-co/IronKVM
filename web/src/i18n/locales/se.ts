@@ -161,7 +161,8 @@ const se = {
         videoError: 'Videovisningsfel',
         noHdmi: 'Ingen HDMI-signal upptäcktes',
         unavailable: 'Skärmen kan inte visas just nu'
-      }
+      },
+      directConnectionFailed: 'Anslutningen till videoströmmen misslyckades'
     },
     keyboard: {
       title: 'Tangentbord',

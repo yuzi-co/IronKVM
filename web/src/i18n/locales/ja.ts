@@ -163,7 +163,8 @@ const ja = {
         videoError: '映像表示エラー',
         noHdmi: 'HDMI 信号が検出されません',
         unavailable: '現在、画面を表示できません'
-      }
+      },
+      directConnectionFailed: '映像ストリームの接続に失敗しました'
     },
     keyboard: {
       title: 'キーボード',

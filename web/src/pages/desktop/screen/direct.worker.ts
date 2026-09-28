@@ -16,6 +16,9 @@ let decodeBackpressured = false;
 let reportedFrameWidth = 0;
 let reportedFrameHeight = 0;
 let configuredCodec: 'avc' | 'hevc' | null = null;
+// Whether this connection has drawn a frame yet. The page shows a spinner
+// until it has, and a notice when the socket stays down.
+let announcedFrame = false;
 // Asked for only when the page can play it. The board starts arecord for every
 // listener, and a browser without AudioDecoder would hold it for nothing.
 let wantAudio = false;
@@ -108,6 +111,8 @@ function connect() {
       resyncRequested = false;
       pendingAckTimestamp = null;
       decodeBackpressured = false;
+      announcedFrame = false;
+      self.postMessage({ type: 'socket', state: 'open' });
     };
 
     nextSocket.onmessage = (event) => {
@@ -134,6 +139,7 @@ function connect() {
       pendingAckTimestamp = null;
       decodeBackpressured = false;
       resetDecoder();
+      self.postMessage({ type: 'socket', state: 'closed' });
       scheduleReconnect();
     };
   } catch (error) {
@@ -396,6 +402,11 @@ function renderFrame(frame: VideoFrame) {
       canvas.height = frame.displayHeight;
     }
     ctx.drawImage(frame, 0, 0, canvas.width, canvas.height);
+
+    if (!announcedFrame) {
+      announcedFrame = true;
+      self.postMessage({ type: 'playing' });
+    }
 
     if (reportedFrameWidth !== frame.displayWidth || reportedFrameHeight !== frame.displayHeight) {
       reportedFrameWidth = frame.displayWidth;

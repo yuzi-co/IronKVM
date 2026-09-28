@@ -165,7 +165,8 @@ const uk = {
         videoError: 'Помилка відображення відео',
         noHdmi: 'Сигнал HDMI не виявлено',
         unavailable: 'Зараз неможливо показати зображення'
-      }
+      },
+      directConnectionFailed: 'Не вдалося підключитися до відеопотоку'
     },
     keyboard: {
       title: 'Клавіатура',

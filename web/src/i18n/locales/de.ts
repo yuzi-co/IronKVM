@@ -169,7 +169,8 @@ const de = {
         videoError: 'Fehler bei der Videoanzeige',
         noHdmi: 'Kein HDMI-Signal erkannt',
         unavailable: 'Der Bildschirm kann derzeit nicht angezeigt werden'
-      }
+      },
+      directConnectionFailed: 'Verbindung zum Videostream fehlgeschlagen'
     },
     keyboard: {
       title: 'Tastatur',

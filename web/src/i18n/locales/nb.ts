@@ -165,7 +165,8 @@ const nb = {
         videoError: 'Feil ved videovisning',
         noHdmi: 'Ingen HDMI-signal oppdaget',
         unavailable: 'Skjermen kan ikke vises akkurat nå'
-      }
+      },
+      directConnectionFailed: 'Tilkoblingen til videostrømmen mislyktes'
     },
     keyboard: {
       title: 'Åpne tastatur',

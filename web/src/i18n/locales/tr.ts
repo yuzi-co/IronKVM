@@ -165,7 +165,8 @@ const tr = {
         videoError: 'Video görüntüleme hatası',
         noHdmi: 'HDMI sinyali algılanmadı',
         unavailable: 'Ekran şu anda gösterilemiyor'
-      }
+      },
+      directConnectionFailed: 'Video akışı bağlantısı başarısız'
     },
     keyboard: {
       title: 'Klavye',

@@ -161,7 +161,8 @@ const th = {
         videoError: 'ข้อผิดพลาดในการแสดงวิดีโอ',
         noHdmi: 'ไม่พบสัญญาณ HDMI',
         unavailable: 'ไม่สามารถแสดงหน้าจอได้ในขณะนี้'
-      }
+      },
+      directConnectionFailed: 'เชื่อมต่อสตรีมวิดีโอไม่สำเร็จ'
     },
     keyboard: {
       title: 'คีบอร์ด',

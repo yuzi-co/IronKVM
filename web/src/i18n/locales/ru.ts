@@ -164,7 +164,8 @@ const ru = {
         videoError: 'Ошибка отображения видео',
         noHdmi: 'Сигнал HDMI не обнаружен',
         unavailable: 'Сейчас невозможно отобразить изображение'
-      }
+      },
+      directConnectionFailed: 'Не удалось подключиться к видеопотоку'
     },
     keyboard: {
       title: 'Клавиатура',

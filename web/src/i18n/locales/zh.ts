@@ -157,7 +157,8 @@ const zh = {
         videoError: '视频显示异常',
         noHdmi: '未检测到 HDMI 信号',
         unavailable: '画面暂时无法显示'
-      }
+      },
+      directConnectionFailed: '视频流连接失败'
     },
     keyboard: {
       title: '键盘',

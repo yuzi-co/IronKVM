@@ -157,7 +157,8 @@ const zh_tw = {
         videoError: '影片顯示異常',
         noHdmi: '未偵測到 HDMI 訊號',
         unavailable: '畫面暫時無法顯示'
-      }
+      },
+      directConnectionFailed: '視訊串流連線失敗'
     },
     keyboard: {
       title: '鍵盤',

@@ -164,7 +164,8 @@ const cz = {
         videoError: 'Chyba zobrazení videa',
         noHdmi: 'Nebyl zjištěn signál HDMI',
         unavailable: 'Obraz teď nelze zobrazit'
-      }
+      },
+      directConnectionFailed: 'Připojení videostreamu selhalo'
     },
     keyboard: {
       title: 'Klávesnice',

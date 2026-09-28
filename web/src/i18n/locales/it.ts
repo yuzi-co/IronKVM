@@ -166,7 +166,8 @@ const it = {
         videoError: 'Errore di visualizzazione video',
         noHdmi: 'Nessun segnale HDMI rilevato',
         unavailable: 'Lo schermo non può essere visualizzato al momento'
-      }
+      },
+      directConnectionFailed: 'Connessione al flusso video non riuscita'
     },
     keyboard: {
       title: 'Tastiera',

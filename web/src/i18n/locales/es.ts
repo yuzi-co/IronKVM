@@ -166,7 +166,8 @@ const es = {
         videoError: 'Error de visualización de video',
         noHdmi: 'No se detectó señal HDMI',
         unavailable: 'La pantalla no puede mostrarse ahora'
-      }
+      },
+      directConnectionFailed: 'Falló la conexión del flujo de vídeo'
     },
     keyboard: {
       title: 'Teclado',

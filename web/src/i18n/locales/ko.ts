@@ -161,7 +161,8 @@ const ko = {
         videoError: '비디오 표시 오류',
         noHdmi: 'HDMI 신호가 감지되지 않았습니다',
         unavailable: '지금은 화면을 표시할 수 없습니다'
-      }
+      },
+      directConnectionFailed: '비디오 스트림 연결에 실패했습니다'
     },
     keyboard: {
       title: '키보드',

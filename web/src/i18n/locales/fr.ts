@@ -168,7 +168,8 @@ const fr = {
         videoError: 'Erreur d’affichage vidéo',
         noHdmi: 'Aucun signal HDMI détecté',
         unavailable: 'L’image ne peut pas être affichée pour le moment'
-      }
+      },
+      directConnectionFailed: 'La connexion au flux vidéo a échoué'
     },
     keyboard: {
       title: 'Clavier',

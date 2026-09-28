@@ -164,7 +164,8 @@ const da = {
         videoError: 'Fejl i videovisning',
         noHdmi: 'Intet HDMI-signal registreret',
         unavailable: 'Skærmbilledet kan ikke vises lige nu'
-      }
+      },
+      directConnectionFailed: 'Forbindelsen til videostrømmen mislykkedes'
     },
     keyboard: {
       title: 'Tastatur',

@@ -162,7 +162,8 @@ const en = {
         videoError: 'Video display error',
         noHdmi: 'No HDMI signal detected',
         unavailable: 'Screen cannot be displayed right now'
-      }
+      },
+      directConnectionFailed: 'Video stream connection failed'
     },
     keyboard: {
       title: 'Keyboard',

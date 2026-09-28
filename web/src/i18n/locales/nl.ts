@@ -167,7 +167,8 @@ const nl = {
         videoError: 'Fout bij videoweergave',
         noHdmi: 'Geen HDMI-signaal gedetecteerd',
         unavailable: 'Het scherm kan nu niet worden weergegeven'
-      }
+      },
+      directConnectionFailed: 'Verbinding met de videostream mislukt'
     },
     keyboard: {
       title: 'Toetsenbord',

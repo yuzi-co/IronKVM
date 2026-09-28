@@ -166,7 +166,8 @@ const hu = {
         videoError: 'Videómegjelenítési hiba',
         noHdmi: 'Nem észlelhető HDMI-jel',
         unavailable: 'A kép jelenleg nem jeleníthető meg'
-      }
+      },
+      directConnectionFailed: 'A videófolyam kapcsolata sikertelen'
     },
     keyboard: {
       title: 'Billentyűzet',

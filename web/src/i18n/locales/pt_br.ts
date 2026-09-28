@@ -164,7 +164,8 @@ const pt_br = {
         videoError: 'Erro na exibição de vídeo',
         noHdmi: 'Nenhum sinal HDMI detectado',
         unavailable: 'A tela não pode ser exibida agora'
-      }
+      },
+      directConnectionFailed: 'Falha na conexão do fluxo de vídeo'
     },
     keyboard: {
       title: 'Teclado',

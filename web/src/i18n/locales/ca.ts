@@ -165,7 +165,8 @@ const ca = {
         videoError: 'Error de visualització de vídeo',
         noHdmi: "No s'ha detectat cap senyal HDMI",
         unavailable: 'La pantalla no es pot mostrar ara'
-      }
+      },
+      directConnectionFailed: 'Ha fallat la connexió del flux de vídeo'
     },
     keyboard: {
       title: 'Teclat',

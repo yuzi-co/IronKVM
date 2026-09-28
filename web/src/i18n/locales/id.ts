@@ -164,7 +164,8 @@ const id = {
         videoError: 'Kesalahan tampilan video',
         noHdmi: 'Sinyal HDMI tidak terdeteksi',
         unavailable: 'Layar tidak dapat ditampilkan saat ini'
-      }
+      },
+      directConnectionFailed: 'Koneksi aliran video gagal'
     },
     keyboard: {
       title: 'Keyboard',
