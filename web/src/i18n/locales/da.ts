@@ -386,7 +386,16 @@ const da = {
       confirm: 'Ja',
       cancel: 'Annuller',
       delete: 'Slet',
-      close: 'Luk'
+      close: 'Luk',
+      empty: 'Ingen scripts endnu. Upload en .sh- eller .py-fil for at køre den på kortet.',
+      loadFailed: 'Kunne ikke indlæse scripts',
+      uploaded: 'Script uploadet',
+      uploadFailed: 'Kunne ikke uploade scriptet',
+      started: 'Scriptet er startet i baggrunden',
+      deleteFailed: 'Kunne ikke slette scriptet',
+      waitLimit: 'Venter på, at scriptet bliver færdigt, i op til {{minutes}} minutter.',
+      timedOut:
+        'Scriptet kørte i mere end {{minutes}} minutter, og siden holdt op med at vente. Det kører måske stadig på kortet.'
     },
     terminal: {
       title: 'Terminal',

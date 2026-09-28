@@ -387,7 +387,15 @@ const ja = {
       confirm: 'はい',
       cancel: 'いいえ',
       delete: '削除',
-      close: '閉じる'
+      close: '閉じる',
+      empty: 'スクリプトはまだありません。.sh または .py ファイルをアップロードするとボードで実行できます。',
+      loadFailed: 'スクリプトを読み込めませんでした',
+      uploaded: 'スクリプトをアップロードしました',
+      uploadFailed: 'スクリプトをアップロードできませんでした',
+      started: 'スクリプトをバックグラウンドで開始しました',
+      deleteFailed: 'スクリプトを削除できませんでした',
+      waitLimit: 'スクリプトの終了を最大 {{minutes}} 分待っています。',
+      timedOut: 'スクリプトが {{minutes}} 分を超えたため、このページは待機をやめました。ボード上ではまだ実行中の可能性があります。'
     },
     terminal: {
       title: 'ターミナル',

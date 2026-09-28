@@ -385,7 +385,16 @@ const vi = {
       confirm: 'Có',
       cancel: 'Không',
       delete: 'Xóa',
-      close: 'Đóng'
+      close: 'Đóng',
+      empty: 'Chưa có script nào. Tải lên tệp .sh hoặc .py để chạy trên bo mạch.',
+      loadFailed: 'Không thể tải danh sách script',
+      uploaded: 'Đã tải lên script',
+      uploadFailed: 'Không thể tải lên script',
+      started: 'Đã chạy script trong nền',
+      deleteFailed: 'Không thể xóa script',
+      waitLimit: 'Đang chờ script chạy xong, tối đa {{minutes}} phút.',
+      timedOut:
+        'Script chạy lâu hơn {{minutes}} phút nên trang này đã ngừng chờ. Có thể script vẫn đang chạy trên bo mạch.'
     },
     terminal: {
       title: 'Terminal',

@@ -384,7 +384,16 @@ const en = {
       confirm: 'Yes',
       cancel: 'No',
       delete: 'Delete',
-      close: 'Close'
+      close: 'Close',
+      empty: 'No scripts yet. Upload a .sh or .py file to run it on the board.',
+      loadFailed: 'Failed to load the scripts',
+      uploaded: 'Script uploaded',
+      uploadFailed: 'Failed to upload the script',
+      started: 'Script started in the background',
+      deleteFailed: 'Failed to delete the script',
+      waitLimit: 'Waiting for the script to finish, for up to {{minutes}} minutes.',
+      timedOut:
+        'The script ran longer than {{minutes}} minutes and this page stopped waiting. It may still be running on the board.'
     },
     terminal: {
       title: 'Terminal',

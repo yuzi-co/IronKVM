@@ -395,7 +395,17 @@ const de = {
       confirm: 'Ja',
       cancel: 'Nein',
       delete: 'Löschen',
-      close: 'Schliessen'
+      close: 'Schliessen',
+      empty:
+        'Noch keine Skripte. Eine .sh- oder .py-Datei hochladen, um sie auf dem Board auszuführen.',
+      loadFailed: 'Skripte konnten nicht geladen werden',
+      uploaded: 'Skript hochgeladen',
+      uploadFailed: 'Skript konnte nicht hochgeladen werden',
+      started: 'Skript im Hintergrund gestartet',
+      deleteFailed: 'Skript konnte nicht gelöscht werden',
+      waitLimit: 'Warte bis zu {{minutes}} Minuten, bis das Skript fertig ist.',
+      timedOut:
+        'Das Skript lief länger als {{minutes}} Minuten und die Seite wartet nicht mehr. Es läuft möglicherweise noch auf dem Board.'
     },
     terminal: {
       title: 'Terminal',

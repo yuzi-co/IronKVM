@@ -11,8 +11,17 @@ export function uploadScript(formData: FormData) {
   });
 }
 
+// A foreground run answers only when the script ends, so it gets far longer
+// than the usual minute before the request gives up.
+export const FOREGROUND_TIMEOUT_MINUTES = 10;
+
 export function runScript(name: string, type: string) {
-  return http.post('/api/vm/script/run', { name, type });
+  return http.request({
+    method: 'post',
+    url: '/api/vm/script/run',
+    data: { name, type },
+    timeout: type === 'foreground' ? FOREGROUND_TIMEOUT_MINUTES * 60 * 1000 : undefined
+  });
 }
 
 export function getScripts() {

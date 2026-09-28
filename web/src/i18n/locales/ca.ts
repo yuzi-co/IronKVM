@@ -386,7 +386,16 @@ const ca = {
       confirm: 'Sí',
       cancel: 'No',
       delete: 'Esborra',
-      close: 'Tanca'
+      close: 'Tanca',
+      empty: 'Encara no hi ha scripts. Pugeu un fitxer .sh o .py per executar-lo a la placa.',
+      loadFailed: "No s'han pogut carregar els scripts",
+      uploaded: 'Script pujat',
+      uploadFailed: "No s'ha pogut pujar l'script",
+      started: 'Script iniciat en segon pla',
+      deleteFailed: "No s'ha pogut suprimir l'script",
+      waitLimit: "S'espera que acabi l'script, fins a {{minutes}} minuts.",
+      timedOut:
+        "L'script ha trigat més de {{minutes}} minuts i aquesta pàgina ha deixat d'esperar. Potser encara s'està executant a la placa."
     },
     terminal: {
       title: 'Terminal',

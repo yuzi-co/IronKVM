@@ -392,7 +392,16 @@ const nl = {
       confirm: 'Ja',
       cancel: 'Nee',
       delete: 'Verwijderen',
-      close: 'Sluiten'
+      close: 'Sluiten',
+      empty: 'Nog geen scripts. Upload een .sh- of .py-bestand om het op het bord uit te voeren.',
+      loadFailed: 'Scripts laden mislukt',
+      uploaded: 'Script geüpload',
+      uploadFailed: 'Script uploaden mislukt',
+      started: 'Script op de achtergrond gestart',
+      deleteFailed: 'Script verwijderen mislukt',
+      waitLimit: 'Wachten tot het script klaar is, maximaal {{minutes}} minuten.',
+      timedOut:
+        'Het script liep langer dan {{minutes}} minuten en deze pagina wacht niet meer. Het draait mogelijk nog op het bord.'
     },
     terminal: {
       title: 'Terminal',

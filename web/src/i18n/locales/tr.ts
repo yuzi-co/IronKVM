@@ -387,7 +387,16 @@ const tr = {
       confirm: 'Evet',
       cancel: 'Hayır',
       delete: 'Sil',
-      close: 'Kapat'
+      close: 'Kapat',
+      empty: 'Henüz betik yok. Kartta çalıştırmak için bir .sh veya .py dosyası yükleyin.',
+      loadFailed: 'Betikler yüklenemedi',
+      uploaded: 'Betik yüklendi',
+      uploadFailed: 'Betik yüklenemedi',
+      started: 'Betik arka planda başlatıldı',
+      deleteFailed: 'Betik silinemedi',
+      waitLimit: 'Betiğin bitmesi en fazla {{minutes}} dakika bekleniyor.',
+      timedOut:
+        'Betik {{minutes}} dakikadan uzun sürdü ve bu sayfa beklemeyi bıraktı. Kartta hâlâ çalışıyor olabilir.'
     },
     terminal: {
       title: 'Uçbirim',

@@ -389,7 +389,16 @@ const hu = {
       confirm: 'Igen',
       cancel: 'Nem',
       delete: 'Törlés',
-      close: 'Bezárás'
+      close: 'Bezárás',
+      empty: 'Még nincs szkript. Töltsön fel egy .sh vagy .py fájlt a panelen való futtatáshoz.',
+      loadFailed: 'Nem sikerült betölteni a szkripteket',
+      uploaded: 'Szkript feltöltve',
+      uploadFailed: 'Nem sikerült feltölteni a szkriptet',
+      started: 'A szkript elindult a háttérben',
+      deleteFailed: 'Nem sikerült törölni a szkriptet',
+      waitLimit: 'Várakozás a szkript befejezésére, legfeljebb {{minutes}} percig.',
+      timedOut:
+        'A szkript {{minutes}} percnél tovább futott, és az oldal abbahagyta a várakozást. Lehet, hogy még fut a panelen.'
     },
     terminal: {
       title: 'Terminál',

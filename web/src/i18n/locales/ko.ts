@@ -381,7 +381,15 @@ const ko = {
       confirm: '네',
       cancel: '아니오',
       delete: '삭제',
-      close: '닫기'
+      close: '닫기',
+      empty: '아직 스크립트가 없습니다. .sh 또는 .py 파일을 업로드하면 보드에서 실행할 수 있습니다.',
+      loadFailed: '스크립트를 불러오지 못했습니다',
+      uploaded: '스크립트를 업로드했습니다',
+      uploadFailed: '스크립트를 업로드하지 못했습니다',
+      started: '스크립트를 백그라운드에서 시작했습니다',
+      deleteFailed: '스크립트를 삭제하지 못했습니다',
+      waitLimit: '스크립트가 끝나기를 최대 {{minutes}}분 동안 기다립니다.',
+      timedOut: '스크립트가 {{minutes}}분 넘게 실행되어 이 페이지는 기다리기를 멈췄습니다. 보드에서는 아직 실행 중일 수 있습니다.'
     },
     terminal: {
       title: '터미널',

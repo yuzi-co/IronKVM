@@ -390,7 +390,16 @@ const es = {
       confirm: 'Sí',
       cancel: 'No',
       delete: 'Eliminar',
-      close: 'Cerrar'
+      close: 'Cerrar',
+      empty: 'Aún no hay scripts. Suba un archivo .sh o .py para ejecutarlo en la placa.',
+      loadFailed: 'No se pudieron cargar los scripts',
+      uploaded: 'Script subido',
+      uploadFailed: 'No se pudo subir el script',
+      started: 'Script iniciado en segundo plano',
+      deleteFailed: 'No se pudo eliminar el script',
+      waitLimit: 'Esperando a que termine el script, hasta {{minutes}} minutos.',
+      timedOut:
+        'El script tardó más de {{minutes}} minutos y esta página dejó de esperar. Puede que siga ejecutándose en la placa.'
     },
     terminal: {
       title: 'Consola',

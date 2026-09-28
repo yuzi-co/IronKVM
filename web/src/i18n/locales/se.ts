@@ -384,7 +384,16 @@ const se = {
       confirm: 'Ja',
       cancel: 'Nej',
       delete: 'Ta bort',
-      close: 'Stäng'
+      close: 'Stäng',
+      empty: 'Inga skript ännu. Ladda upp en .sh- eller .py-fil för att köra den på kortet.',
+      loadFailed: 'Det gick inte att läsa in skripten',
+      uploaded: 'Skript uppladdat',
+      uploadFailed: 'Det gick inte att ladda upp skriptet',
+      started: 'Skriptet startades i bakgrunden',
+      deleteFailed: 'Det gick inte att ta bort skriptet',
+      waitLimit: 'Väntar på att skriptet blir klart, i upp till {{minutes}} minuter.',
+      timedOut:
+        'Skriptet körde längre än {{minutes}} minuter och sidan slutade vänta. Det kan fortfarande köras på kortet.'
     },
     terminal: {
       title: 'Terminal',

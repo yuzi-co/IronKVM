@@ -388,7 +388,16 @@ const nb = {
       confirm: 'Ja',
       cancel: 'Nei',
       delete: 'Slett',
-      close: 'Lukk'
+      close: 'Lukk',
+      empty: 'Ingen skript ennå. Last opp en .sh- eller .py-fil for å kjøre den på kortet.',
+      loadFailed: 'Kunne ikke laste inn skriptene',
+      uploaded: 'Skript lastet opp',
+      uploadFailed: 'Kunne ikke laste opp skriptet',
+      started: 'Skriptet er startet i bakgrunnen',
+      deleteFailed: 'Kunne ikke slette skriptet',
+      waitLimit: 'Venter på at skriptet blir ferdig, i opptil {{minutes}} minutter.',
+      timedOut:
+        'Skriptet kjørte lenger enn {{minutes}} minutter, og siden sluttet å vente. Det kan fortsatt kjøre på kortet.'
     },
     terminal: {
       title: 'Terminal',

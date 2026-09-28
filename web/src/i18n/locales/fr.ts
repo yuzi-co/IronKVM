@@ -392,7 +392,17 @@ const fr = {
       confirm: 'Oui',
       cancel: 'Non',
       delete: 'Supprimer',
-      close: 'Fermer'
+      close: 'Fermer',
+      empty:
+        "Aucun script pour l'instant. Téléversez un fichier .sh ou .py pour l'exécuter sur la carte.",
+      loadFailed: 'Impossible de charger les scripts',
+      uploaded: 'Script téléversé',
+      uploadFailed: 'Impossible de téléverser le script',
+      started: 'Script lancé en arrière-plan',
+      deleteFailed: 'Impossible de supprimer le script',
+      waitLimit: "Attente de la fin du script, jusqu'à {{minutes}} minutes.",
+      timedOut:
+        "Le script a duré plus de {{minutes}} minutes et cette page a cessé d'attendre. Il est peut-être encore en cours sur la carte."
     },
     terminal: {
       title: 'Terminal',

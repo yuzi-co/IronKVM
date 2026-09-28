@@ -388,7 +388,16 @@ const pt_br = {
       confirm: 'Sim',
       cancel: 'Não',
       delete: 'Excluir',
-      close: 'Fechar'
+      close: 'Fechar',
+      empty: 'Nenhum script ainda. Envie um arquivo .sh ou .py para executá-lo na placa.',
+      loadFailed: 'Falha ao carregar os scripts',
+      uploaded: 'Script enviado',
+      uploadFailed: 'Falha ao enviar o script',
+      started: 'Script iniciado em segundo plano',
+      deleteFailed: 'Falha ao excluir o script',
+      waitLimit: 'Aguardando o script terminar, por até {{minutes}} minutos.',
+      timedOut:
+        'O script levou mais de {{minutes}} minutos e esta página parou de esperar. Ele pode ainda estar em execução na placa.'
     },
     terminal: {
       title: 'Terminal',

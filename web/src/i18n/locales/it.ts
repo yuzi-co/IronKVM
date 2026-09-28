@@ -390,7 +390,16 @@ const it = {
       confirm: 'Sì',
       cancel: 'No',
       delete: 'Elimina',
-      close: 'Chiudi'
+      close: 'Chiudi',
+      empty: 'Nessuno script. Carica un file .sh o .py per eseguirlo sulla scheda.',
+      loadFailed: 'Impossibile caricare gli script',
+      uploaded: 'Script caricato',
+      uploadFailed: 'Impossibile caricare lo script',
+      started: 'Script avviato in background',
+      deleteFailed: 'Impossibile eliminare lo script',
+      waitLimit: 'In attesa che lo script finisca, fino a {{minutes}} minuti.',
+      timedOut:
+        'Lo script è durato più di {{minutes}} minuti e questa pagina ha smesso di attendere. Potrebbe essere ancora in esecuzione sulla scheda.'
     },
     terminal: {
       title: 'Terminale',

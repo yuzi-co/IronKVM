@@ -389,7 +389,16 @@ const pl = {
       confirm: 'Tak',
       cancel: 'Nie',
       delete: 'Usuń',
-      close: 'Zamknij'
+      close: 'Zamknij',
+      empty: 'Brak skryptów. Prześlij plik .sh lub .py, aby uruchomić go na płytce.',
+      loadFailed: 'Nie udało się wczytać skryptów',
+      uploaded: 'Przesłano skrypt',
+      uploadFailed: 'Nie udało się przesłać skryptu',
+      started: 'Skrypt uruchomiony w tle',
+      deleteFailed: 'Nie udało się usunąć skryptu',
+      waitLimit: 'Oczekiwanie na zakończenie skryptu, maksymalnie {{minutes}} minut.',
+      timedOut:
+        'Skrypt działał dłużej niż {{minutes}} minut i strona przestała czekać. Może nadal działać na płytce.'
     },
     terminal: {
       title: 'Terminal',

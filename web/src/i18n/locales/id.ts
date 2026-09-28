@@ -388,7 +388,16 @@ const id = {
       confirm: 'Ya',
       cancel: 'Tidak',
       delete: 'Hapus',
-      close: 'Tutup'
+      close: 'Tutup',
+      empty: 'Belum ada skrip. Unggah berkas .sh atau .py untuk menjalankannya di papan.',
+      loadFailed: 'Gagal memuat skrip',
+      uploaded: 'Skrip diunggah',
+      uploadFailed: 'Gagal mengunggah skrip',
+      started: 'Skrip dijalankan di latar belakang',
+      deleteFailed: 'Gagal menghapus skrip',
+      waitLimit: 'Menunggu skrip selesai, hingga {{minutes}} menit.',
+      timedOut:
+        'Skrip berjalan lebih dari {{minutes}} menit dan halaman ini berhenti menunggu. Skrip mungkin masih berjalan di papan.'
     },
     terminal: {
       title: 'Terminal',

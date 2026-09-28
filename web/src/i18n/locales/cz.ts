@@ -387,7 +387,16 @@ const cz = {
       confirm: 'Ano',
       cancel: 'Ne',
       delete: 'Smazat',
-      close: 'Zavřít'
+      close: 'Zavřít',
+      empty: 'Zatím žádné skripty. Nahrajte soubor .sh nebo .py a spusťte ho na desce.',
+      loadFailed: 'Skripty se nepodařilo načíst',
+      uploaded: 'Skript nahrán',
+      uploadFailed: 'Skript se nepodařilo nahrát',
+      started: 'Skript spuštěn na pozadí',
+      deleteFailed: 'Skript se nepodařilo smazat',
+      waitLimit: 'Čeká se na dokončení skriptu, nejvýše {{minutes}} minut.',
+      timedOut:
+        'Skript běžel déle než {{minutes}} minut a stránka přestala čekat. Na desce může stále běžet.'
     },
     terminal: {
       title: 'Terminál',

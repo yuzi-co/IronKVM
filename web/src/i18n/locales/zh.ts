@@ -372,7 +372,15 @@ const zh = {
       confirm: '确定',
       cancel: '取消',
       delete: '删除',
-      close: '关闭'
+      close: '关闭',
+      empty: '还没有脚本。上传 .sh 或 .py 文件即可在板子上运行。',
+      loadFailed: '加载脚本失败',
+      uploaded: '脚本已上传',
+      uploadFailed: '上传脚本失败',
+      started: '脚本已在后台启动',
+      deleteFailed: '删除脚本失败',
+      waitLimit: '正在等待脚本完成，最多 {{minutes}} 分钟。',
+      timedOut: '脚本运行超过 {{minutes}} 分钟，此页面已停止等待。脚本可能仍在板子上运行。'
     },
     terminal: {
       title: '终端',

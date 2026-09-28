@@ -372,7 +372,15 @@ const zh_tw = {
       confirm: '確定',
       cancel: '取消',
       delete: '刪除',
-      close: '關閉'
+      close: '關閉',
+      empty: '還沒有腳本。上傳 .sh 或 .py 檔案即可在板子上執行。',
+      loadFailed: '載入腳本失敗',
+      uploaded: '腳本已上傳',
+      uploadFailed: '上傳腳本失敗',
+      started: '腳本已在背景啟動',
+      deleteFailed: '刪除腳本失敗',
+      waitLimit: '正在等待腳本完成，最多 {{minutes}} 分鐘。',
+      timedOut: '腳本執行超過 {{minutes}} 分鐘，此頁面已停止等待。腳本可能仍在板子上執行。'
     },
     terminal: {
       title: '終端機',
