@@ -19,7 +19,11 @@ func hidRouter(r *gin.Engine) {
 	api := r.Group("/api").Use(middleware.CheckToken())
 	localAPI := r.Group("/api/internal").Use(middleware.CheckLoopbackInternalToken())
 
-	api.POST("/hid/paste", service.Paste) // paste
+	api.POST("/hid/paste", service.Paste)                // start typing a text in the background
+	api.POST("/hid/paste/check", service.CheckPaste)     // what typing a text would take
+	api.GET("/hid/paste/status", service.GetPasteStatus) // progress of the paste
+	api.POST("/hid/paste/cancel", service.CancelPaste)   // stop the paste
+
 	api.POST("/hid/key", service.SendKey) // press one Consumer or System Control key
 
 	api.GET("/hid/shortcuts", service.GetShortcuts)           // get shortcuts
