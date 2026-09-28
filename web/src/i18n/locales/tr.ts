@@ -8,18 +8,23 @@ const tr = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      cookieRejected:
+        'Tarayıcı oturumu kaydetmeyi reddetti. Önceki bir HTTPS oturumundan kalan çerez, şifrelenmemiş http üzerinden değiştirilemez. Bu adres için çerezleri temizleyin veya gizli bir pencere açın ve yeniden giriş yapın.',
       login: 'Giriş',
       placeholderUsername: 'Kullanıcı Adı',
       placeholderPassword: 'Şifre',
+      placeholderCurrentPassword: 'Mevcut şifre',
       placeholderPassword2: 'Şifrenizi tekrar deneyiniz',
       noEmptyUsername: 'Kullanıcı adı gereklidir',
       noEmptyPassword: 'Şifre gereklidir',
+      passwordLength: 'Şifre 8 ile 72 karakter arasında olmalıdır',
       noAccount:
         'Kullanıcı verileri alınırken hata yaşandı, lütfen sayfayı yenileyiniz ya da şifrenizi sıfırlayınız',
       invalidUser: 'Yanlış kullanıcı adı ya da şifre',
       locked: 'Çok fazla giriş yapıldı, lütfen daha sonra tekrar deneyin',
       globalLocked: 'Sistem koruma altında, lütfen daha sonra tekrar deneyin',
       error: 'Beklenmedik bir hata',
+      invalidCurrentPassword: 'Mevcut şifre yanlış',
       changePassword: 'Şifrenizi değiştiriniz',
       changePasswordDesc: 'Güvenlik sebebiyle lütfen şifrenizi değiştiriniz!',
       differentPassword: 'Şifreler eşleşmemektedir',
@@ -242,6 +247,10 @@ const tr = {
       relative: 'Bağıl fare modu',
       absoluteShort: 'Mutlak',
       relativeShort: 'Bağıl',
+      absoluteStalled: 'Hedef cihaz mutlak fareyi yok sayıyor',
+      absoluteStalledDesc:
+        "Hedef cihaz mutlak fare raporlarını almayı bıraktı, bu yüzden imleç hareketleri kayboluyor. Klavye bundan etkilenmez. USB'yi kurtarmak genellikle sorunu giderir; bağıl mod farklı bir uç nokta kullanır.",
+      useRelative: 'Bağıl moda geç',
       direction: 'Kaydırma tekerleği yönü',
       scrollUp: 'Yukarı kaydır',
       scrollDown: 'Aşağı kaydır',
@@ -255,6 +264,7 @@ const tr = {
         desc: 'Fare ve klavye yanıt vermeyi durdurursa ve HID sıfırlama yardımcı olmazsa, NanoKVM ile cihaz arasında bir uyumluluk sorunu olabilir. Daha iyi uyumluluk için yalnızca HID modunu etkinleştirmeyi deneyin.',
         tip1: 'Yalnızca HID modunu etkinleştirmek sanal U-disk’i ve sanal ağı ayırır',
         tip2: 'Yalnızca HID modunda imaj bağlama devre dışıdır',
+        rebuild: 'Mod değiştirmek USB bağlantısını yeniden kurar. NanoKVM yeniden başlamaz',
         enable: 'Yalnızca HID modunu etkinleştir',
         disable: 'Yalnızca HID modunu devre dışı bırak'
       }
@@ -271,6 +281,17 @@ const tr = {
       unmountDesc:
         'Bazı sistemlerde, görüntünün bağlantısını kesmeden önce uzak ana bilgisayardan manuel olarak çıkarmanız gerekir.',
       refresh: 'Disk imajı listesini yenile',
+      disk: 'Disk',
+      cdrom: 'CD',
+      driveEmpty: 'Boş',
+      eject: 'Çıkar',
+      readOnly: 'Salt okunur',
+      readOnlyTip: 'Diske takılacak bir sonraki imaj için geçerlidir.',
+      noDrives: "Sanal sürücü yok. Ayarlar'dan sanal diski açın.",
+      insertFailed: 'Takma başarısız oldu',
+      ejectFailed: 'Çıkarma başarısız oldu',
+      insertInto: 'Sürücüye tak: {{drive}}. Değiştirmek için tıklayın.',
+      loadedIn: 'Sürücüde: {{drive}}',
       attention: 'Dikkat',
       deleteConfirm: 'Bu resmi silmek istediğinizden emin misiniz?',
       okBtn: 'Evet',
@@ -368,7 +389,15 @@ const tr = {
       sleepConfirm: 'Ana makine uyku moduna alınsın mı?',
       powerDownConfirm: 'Kapatma tuşu ana makineye gönderilsin mi?',
       wakeTip:
-        'Uykudaki bir ana makine, onu uyutan cihazdan gelen Uyandır komutunu çoğu zaman yok sayar. Shift ile uyandır klavyede bir tuşa basar ve bunu daha fazla ana makine kabul eder.'
+        'Uykudaki bir ana makine, onu uyutan cihazdan gelen Uyandır komutunu çoğu zaman yok sayar. Shift ile uyandır klavyede bir tuşa basar ve bunu daha fazla ana makine kabul eder.',
+      led: "Güç LED'i",
+      ledOn: 'Yanıyor',
+      ledOff: 'Sönük',
+      ledUnknown: 'Bilinmiyor',
+      ledConnected: "Güç LED'i bağlı",
+      ledConnectedTip:
+        "Yalnızca ana makinenin güç LED'i konnektörü karta bağlıysa açın. Bu bağlantı olmadan güç durumu bilinemez.",
+      ledConnectedFailed: "Güç LED'i ayarı kaydedilemedi"
     },
     settings: {
       title: 'Ayarlar',
@@ -391,6 +420,34 @@ const tr = {
         okBtn: 'Onayla',
         cancelBtn: 'İptal'
       },
+      redfish: {
+        title: 'Redfish',
+        service: 'Redfish hizmeti',
+        serviceDesc:
+          "redfishtool ve Ansible gibi araçlardan güç kontrolü, sanal medya ve durum bilgisi için DMTF Redfish API'si. Kapatmak tüm Redfish oturumlarını sonlandırır.",
+        endpoint: 'Hizmet kökü',
+        httpsOn: 'Kart, çoğu Redfish aracının ihtiyaç duyduğu HTTPS ile hizmet veriyor.',
+        httpsOff:
+          'Kart şifrelenmemiş HTTP ile hizmet veriyor. Çoğu Redfish aracı HTTPS gerektirir: "Ayarlar > Ağ" bölümünden açın.',
+        credentials:
+          'Redfish, KVM hesaplarını Basic kimlik doğrulaması veya Redfish oturumuyla, ayrıca X-Auth-Token olarak gönderilen API anahtarlarını kabul eder. API anahtarları API Anahtarları sayfasından yönetilir.',
+        powerActions: 'Güç işlemleri',
+        powerActionsDesc:
+          'Şu anda sunulan sıfırlama türleri. On, ForceOff ve GracefulShutdown güç durumunu bilmeyi gerektirir; bu yüzden yalnızca güç menüsünde "Güç LED\'i bağlı" açıkken sunulur.',
+        sessions: 'Oturumlar',
+        noSessions: 'Açık Redfish oturumu yok',
+        created: 'Oluşturulma',
+        lastUsed: 'Son kullanım',
+        refresh: 'Yenile',
+        end: 'Sonlandır',
+        endConfirmTitle: 'Bu Redfish oturumu sonlandırılsın mı?',
+        endConfirmDesc:
+          "Oturumun token'ı hemen geçersiz olur. İstemcinin yeniden giriş yapması gerekir.",
+        failed: 'Redfish işlemi başarısız oldu',
+        copyFailed: 'Kopyalama başarısız oldu. Elle kopyalayın.',
+        okBtn: 'Onayla',
+        cancelBtn: 'İptal'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Ana makine watchdog',
@@ -399,7 +456,7 @@ const tr = {
         stillWarning:
           'Ekranı uyku moduna geçen veya çalışırken görüntüsü sabit kalan bir ana makine donmuş görünür. Ana makinede ekran uykusunu kapatın veya bir ping adresi girin.',
         ledHint:
-          'Güç menüsünde "Power LED connected" kapalı. Watchdog ana makinenin ne zaman kapalı olduğunu göremez, bu yüzden onu her zaman açık sayar.',
+          'Güç menüsünde "Güç LED\'i bağlı" kapalı. Watchdog ana makinenin ne zaman kapalı olduğunu göremez, bu yüzden onu her zaman açık sayar.',
         timeout: 'Zaman aşımı',
         timeoutDesc:
           'Watchdog devreye girmeden önce ana makinenin ne kadar süre yaşam belirtisi göstermeyebileceği.',
@@ -463,7 +520,14 @@ const tr = {
         applicationTip: 'NanoKVM web uygulaması sürümü',
         image: 'İmaj Sürümü',
         imageTip: 'NanoKVM sistem imajı sürümü',
+        kernel: 'Çekirdek Sürümü',
+        kernelTip: 'Şu anda çalışan Linux çekirdeğinin sürümü',
         deviceKey: 'Cihaz Anahtarı',
+        videoMemory: 'Video Belleği',
+        videoMemoryTip: 'Video yakalama için ayrılmış bellek. Sistemin geri kalanıyla paylaşılmaz.',
+        videoMemoryGenerations_one: '{{count}} önceki NanoKVM oturumu video belleğini tutuyor',
+        videoMemoryGenerations_other: '{{count}} önceki NanoKVM oturumu video belleğini tutuyor',
+        videoMemoryReboot: 'Geri kazanmak için yeniden başlatın.',
         community: 'Topluluk',
         hostname: 'Ana makine adı',
         hostnameUpdated: 'Hostname güncellendi. Uygulamak için yeniden başlatın.',
@@ -512,6 +576,16 @@ const tr = {
         oled: {
           title: 'OLED',
           description: 'Oled ekranı ... sonra kapatın',
+          brightness: 'OLED parlaklığı',
+          brightnessDescription: 'Daha düşük seviye ekranın ömrünü uzatır',
+          brightnessLevels: {
+            '64': 'En düşük',
+            '96': 'Düşük',
+            '128': 'Orta',
+            '160': 'Yüksek',
+            '207': 'Varsayılan',
+            '255': 'En yüksek'
+          },
           0: 'Hiçbir zaman',
           15: '15 saniye',
           30: '30 saniye',
@@ -527,11 +601,35 @@ const tr = {
           tip: 'Aktifleştirmeden önce güçlü bir şifreye sahip olduğunuzdan emin olun (Hesap - Şifremi Değiştir)'
         },
         advanced: 'Gelişmiş Ayarlar',
+        cpuFreq: {
+          title: 'CPU Frekansı',
+          description: 'Bir sonraki açılışta uygulanacak CPU saat hızını ayarlayın',
+          tip: 'CPU 850 MHz ile açılır ve 1000 MHz için derecelendirilmiştir. Yeni değer sistem çalışırken değil, bir sonraki açılışta uygulanır. 1000 MHz spesifikasyon dahilindedir; sıcaklık her iki ayarda da sınırların oldukça altında kalır.',
+          running: 'Çalışan: {{mhz}} MHz',
+          rebootToApply: 'uygulamak için yeniden başlatın',
+          rebootConfirm: '{{mhz}} MHz uygulamak için şimdi yeniden başlatılsın mı?'
+        },
         swap: {
           title: 'Swap',
           disable: 'Aktifleştir',
           description: 'Swap dosyasının boyutunu belirle',
           tip: 'Bu özelliği aktifleştirmek micro SD kartınızın ömrünü kısaltabilir!'
+        },
+        zram: {
+          title: 'Sıkıştırılmış swap (zram)',
+          description: "Swap, SD kart yerine sıkıştırılmış RAM'de",
+          tip: "zram, swap'ı SD karttan uzak tutar, bu yüzden karta aşınma yapmaz. Arkasında disk swap'ı yoktur: zram dolarsa çekirdek yavaşça sayfalamak yerine bir işlemi durdurur. Bellek sınırı, zram'ın ne kadar RAM kullanabileceğini belirler.",
+          unavailable: 'Bu cihazda çekirdek modülleri yüklü değil',
+          inactive: 'Etkin, ancak aygıt başlamadı',
+          active: 'Aktif - {{used}} / {{total}}, {{ratio}}x',
+          off: 'Kapalı',
+          detail: {
+            algorithm: 'Algoritma: {{algorithm}}',
+            memory: 'Kullanılan bellek: {{used}} / {{limit}}',
+            memoryNoLimit: 'Kullanılan bellek: {{used}}, sınır ayarlanmadı',
+            counters:
+              "Swap'tan okunan sayfalar {{in}}, swap'a yazılan sayfalar {{out}} (tüm swap aygıtları, açılıştan beri)"
+          }
         },
         mouseJiggler: {
           title: 'Fare Oynatıcı',
@@ -588,7 +686,27 @@ const tr = {
           reenumerate:
             'Uygulamak USB bağlantısını yeniden kurar. Ana bilgisayar birkaç saniye boyunca klavyeyi, fareyi ve sanal diski kaybeder.'
         },
+        audio: 'Sanal Hoparlör',
+        audioDesc:
+          'Uzak ana bilgisayara bir USB ses kartı sunar, böylece sesini duyabilirsiniz. Ana bilgisayarın bunu çıkış aygıtı olarak seçmesi gerekir. Bunu değiştirmek USB bağlantısını yeniden kurar.',
+        audioNote:
+          "Ses her iki H.264 modunda (WebRTC ve Direct) kullanılabilir, MJPEG'de kullanılamaz",
+        console: 'Seri Konsol',
+        consoleDesc:
+          "Ağa erişilemediğinde bu NanoKVM'e giriş yapabilmek için uzak ana bilgisayara bir USB seri port sunar",
+        consoleTip:
+          'Uzak ana bilgisayarı kontrol eden herkes bu NanoKVM için bir giriş istemi görür. Etkinleştirmeden önce güçlü bir şifre belirleyin (Hesap - Şifremi Değiştir).',
         endpoints: {
+          title: 'USB uç noktaları',
+          used: '{{used}} / {{total}} kullanımda',
+          cost: '{{cost}} kullanıyor',
+          needs: '{{cost}} gerekli',
+          full: 'Yeterli USB uç noktası yok. Önce başka bir şeyi kapatın.',
+          inactive:
+            'Açık, ancak çalışmıyor: USB denetleyicisinin uç noktaları tükendi. Başka bir aygıtı kapatın, bu aygıt hemen başlar.',
+          explain:
+            'USB denetleyicisinin sabit sayıda giriş uç noktası vardır ve bu sayaç onları sayar. Sığabilecek olandan fazla aygıt etkinse klavye ve fare korunur, diğerleri kapatılır.',
+          error: 'Cihaza ulaşılamadı. Tekrar deneyin.',
           fitTogether: 'Birlikte sığanlar: {{sets}}'
         },
         reboot: 'Yeniden Başlat',
@@ -615,7 +733,10 @@ const tr = {
         },
         tls: {
           description: 'HTTPS protokolünü etkinleştir',
-          tip: 'HTTPS protokolü bağlantıda gecikmeye sebep olabilir, özellikle MJPEG görüntü modu ile.'
+          tip: 'HTTPS protokolü bağlantıda gecikmeye sebep olabilir, özellikle MJPEG görüntü modu ile.',
+          restarting: 'Cihaz sunucusu yeniden başlatılıyor, bu yaklaşık iki dakika sürer...',
+          waiting: 'Cihazın yeniden yanıt vermesi bekleniyor...',
+          waitingHttp: "http'ye geri dönülüyor. Sayfa kendiliğinden açılmazsa yeniden yükleyin."
         },
         ethernet: {
           title: 'IP Adresi',
@@ -676,6 +797,53 @@ const tr = {
           none: 'Yok'
         }
       },
+      vpn: {
+        loading: 'Yükleniyor...',
+        okBtn: 'Evet',
+        cancelBtn: 'Hayır',
+        restart: '{{name}} yeniden başlatılsın mı?',
+        stop: '{{name}} durdurulsun mu?',
+        stopDesc:
+          'Arka plan hizmeti şimdi durur. Açılışta başlatma ayrı bir anahtardır ve olduğu gibi kalır.',
+        update: '{{name}}, {{version}} sürümüne güncellensin mi?',
+        updateDesc: 'Arka plan hizmeti çalışıyorsa yeniden başlar. Oturum bilgisi korunur.',
+        notInstall: '{{name}} yüklü değil.',
+        install: 'Yükle',
+        installing: 'Yükleniyor',
+        installFailed: 'Yükleme başarısız oldu',
+        retry: 'Tekrar dene',
+        notRunning: '{{name}} çalışmıyor. Devam etmek için başlatın.',
+        run: 'Başlat',
+        boot: 'Açılışta başlat',
+        bootDesc: 'KVM açılırken {{name}} başlatılsın.',
+        enable: '{{name}} etkinleştir',
+        control: 'Kontrol sunucusu',
+        connected: 'Bağlı',
+        disconnected: 'Bağlı değil',
+        deviceName: 'Cihaz adı',
+        deviceIP: "Cihaz IP'si",
+        account: 'Hesap',
+        version: 'Sürüm',
+        uptime: 'Çalışma süresi',
+        peers: 'Eşler',
+        noPeers: 'Henüz eş yok.',
+        online: 'Çevrimiçi',
+        offline: 'Çevrimdışı',
+        memory: 'Bellek',
+        daemonRss: 'Hizmet',
+        group: 'Eklentiler grubu',
+        high: '{{size}} üzerinde yavaşlatılır',
+        max: '{{size}} üzerinde çekirdek tarafından durdurulur',
+        noGroup: 'Bu kartta eklenti bellek grubu yok.',
+        uninstall: '{{name}} kaldır',
+        uninstallDesc: '{{name}} kaldırılsın mı? Oturum bilgisi kartta kalır.',
+        blocked:
+          '{{other}} çalışıyor veya açılışta başlıyor. Aynı anda yalnızca bir VPN çalışabilir: önce {{other}} hizmetini durdurun ve açılışta başlatmayı kapatın.',
+        swap: {
+          title: 'Swap belleği',
+          tip: 'Hizmetin belleği yetmezse swap belleğini etkinleştirmeyi deneyin. Bu, swap dosyasının boyutunu varsayılan olarak 256MB yapar; boyut "Ayarlar > Cihaz" bölümünden değiştirilebilir.'
+        }
+      },
       tailscale: {
         title: 'Tailscale',
         retry: 'Lütfen sayfayı yenileyin ve tekrar deneyin, ya da manuel indirin',
@@ -691,6 +859,21 @@ const tr = {
         loginSuccess: 'Giriş yapıldı',
         logout: 'Çıkış yap',
         logoutDesc: 'Çıkış yapmak istediğinizden emin misiniz?'
+      },
+      netbird: {
+        title: 'NetBird',
+        notLogin:
+          'Bu cihaz henüz bir NetBird ağına katılmadı. Bir kurulum anahtarıyla katılın veya SSO ile giriş yapın.',
+        setupKey: 'Kurulum anahtarı',
+        setupKeyPlaceholder: 'NetBird panelinden bir kurulum anahtarı yapıştırın',
+        join: 'Katıl',
+        or: 'veya',
+        sso: 'SSO ile giriş yap',
+        urlPeriod: 'Bu adres 10 dakika boyunca geçerlidir',
+        loginSuccess: 'Giriş yapıldı',
+        logout: 'Kaydı sil',
+        logoutDesc:
+          'Kaydı silmek bu eşi NetBird hesabınızdan kaldırır ve buradaki yapılandırmasını siler. Yeniden katılmak için bir kurulum anahtarı veya SSO girişi gerekir ve eş yeni bir IP alabilir. Devam edilsin mi?'
       },
       update: {
         title: 'Güncelleştirmeleri kontrol et',
@@ -718,6 +901,7 @@ const tr = {
           confirmDesc:
             'SHA-512 yalnızca paketin bu sunucunun sağladığı bildirimle eşleştiğini doğrular. Paketin resmi bir NanoKVM sürümü olduğunu kanıtlamaz. Hatalı veya kötü amaçlı bir sunucu cihazı kullanılamaz hâle getirebilir, veri kaybına yol açabilir ya da sistem güvenliğini tehlikeye atabilir.',
           confirm: 'Yine de kullan',
+          useSipeed: 'Resmi Sipeed sunucusunu kullan',
           previewDisabled:
             'Özel bir güncelleme sunucusu etkinken önizleme güncellemeleri kullanılamaz.'
         },
@@ -735,12 +919,59 @@ const tr = {
       account: {
         title: 'Hesap',
         webAccount: 'Web Hesap Adı',
+        role: 'Rol',
+        roles: { admin: 'Yönetici', user: 'Kullanıcı' },
         password: 'Şifre',
         updateBtn: 'Değiştir',
         logoutBtn: 'Çıkış  yap',
         logoutDesc: 'Çıkış yapmak istediğinizden emin misiniz?',
         okBtn: 'Evet',
-        cancelBtn: 'Hayır'
+        cancelBtn: 'Hayır',
+        users: {
+          title: 'Kullanıcılar',
+          create: 'Kullanıcı Oluştur',
+          enabled: 'Etkin',
+          disabled: 'Devre dışı',
+          deviceOwner: 'Cihaz sahibi',
+          resetPassword: 'Şifreyi Sıfırla',
+          delete: 'Sil',
+          deleteConfirm: 'Bu kullanıcı silinsin ve tüm oturumları iptal edilsin mi?',
+          created: 'Kullanıcı oluşturuldu',
+          deleted: 'Kullanıcı silindi',
+          passwordUpdated: 'Şifre güncellendi',
+          loadFailed: 'Kullanıcılar yüklenemedi',
+          saveFailed: 'Kullanıcı kaydedilemedi',
+          deleteFailed: 'Kullanıcı silinemedi'
+        }
+      },
+      apiKeys: {
+        title: 'API Anahtarları',
+        description:
+          'Bir anahtar, sahibi adına o kullanıcının rolüyle çalışır. Metrikler ve API için Authorization: Bearer <key> olarak, Redfish için X-Auth-Token olarak gönderin.',
+        name: 'Ad',
+        namePlaceholder: 'Anahtarın amacı, örneğin prometheus',
+        nameRequired: 'Anahtara bir ad verin',
+        nameTooLong: 'Ad en fazla 64 karakter olabilir',
+        unnamed: '(adsız)',
+        create: 'Anahtar Oluştur',
+        created: 'Oluşturulma',
+        owner: 'Sahip',
+        empty: 'API anahtarı yok',
+        newKeyTitle: 'Yeni API anahtarınız',
+        newKeyWarning:
+          'Anahtarı şimdi kopyalayın. Saklanmaz ve tekrar gösterilemez. Kaybederseniz iptal edip yenisini oluşturun.',
+        copy: 'Kopyala',
+        copied: 'Kopyalandı',
+        copyFailed: 'Kopyalama başarısız oldu. Elle kopyalayın.',
+        done: 'Tamam',
+        revoke: 'İptal et',
+        revokeConfirmTitle: 'Bu API anahtarı iptal edilsin mi?',
+        revokeConfirmDesc: '"{{name}}" anahtarını kullanan her şey hemen çalışmayı durdurur.',
+        revoked: 'API anahtarı iptal edildi',
+        loadFailed: 'API anahtarları yüklenemedi',
+        createFailed: 'API anahtarı oluşturulamadı',
+        revokeFailed: 'API anahtarı iptal edilemedi',
+        cancelBtn: 'Vazgeç'
       }
     },
     picoclaw: {
@@ -909,18 +1140,38 @@ const tr = {
     },
     error: {
       title: 'Bir hata oldu!',
-      refresh: 'Yenile'
+      refresh: 'Yenile',
+      panel: 'Sayfanın bu bölümü çalışmayı durdurdu',
+      retry: 'Tekrar dene'
     },
     fullscreen: {
       toggle: 'Tam ekrana geç'
     },
     input: {
+      disconnected: 'Klavye ve fare bağlı değil',
+      disconnectedTls:
+        'Tarayıcı, klavye ve fareyi taşıyan güvenli bağlantıyı sormadan reddetti. Bu cihazın oluşturduğu sertifikaya henüz güvenilmiyor. Bu adresi yeni bir sekmede açın, sertifikayı kabul edin ve ardından sayfayı yeniden yükleyin. Kalıcı çözüm sertifikayı yüklemektir.',
+      disconnectedNever:
+        'Klavye ve fareyi taşıyan bağlantı açılamadı. Sayfanın geri kalanı bu bağlantıyı kullanmadığı için çalışıyor. Sizinle cihaz arasında hiçbir şeyin onu engellemediğinden emin olun.',
+      disconnectedDropped:
+        'Klavye ve fareyi taşıyan bağlantı koptu ve geri gelmedi. Yeniden başlatmanın ardından kendiliğinden yeniden bağlanır; bu durum sürerse sayfayı yeniden yükleyin.',
       hidDisabled: 'Bu cihazda HID kapalı (/boot/disable_hid).',
       keyFailed: 'Tuş gönderilemedi.'
     },
+    speaker: { title: 'Hoparlör', unmute: 'Sesi aç', mute: 'Sesi kapat' },
     menu: {
       collapse: 'Menüyü küçült',
       expand: 'Menüyü genişlet'
+    },
+    ion: {
+      checking: 'Akış başlatılmadan önce video belleği kontrol ediliyor...',
+      warn: 'Video belleği az. Tek bir sunucu yeniden başlatması belleği tüketir. Uygun olduğunda yeniden başlatın.',
+      criticalTitle: 'Akışı başlatmak için yeterli video belleği yok',
+      criticalBody:
+        "Videoyu başlatmak ayrılmış belleği tüketir ve sunucuyu durdurur. Güç kontrolü ve yeniden başlatma dahil diğer tüm işlevler çalışmaya devam eder. Bu belleği yalnızca NanoKVM'i yeniden başlatmak geri kazandırır.",
+      criticalContinue: 'Videoyu yine de başlat',
+      criticalReboot: "NanoKVM'i Yeniden Başlat",
+      criticalRebooting: 'Yeniden başlatılıyor...'
     }
   }
 };

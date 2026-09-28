@@ -8,18 +8,23 @@ const cz = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      cookieRejected:
+        'Prohlížeč odmítl uložit relaci. Cookie, které zůstalo z předchozí relace přes HTTPS, nelze přes nešifrované http nahradit. Vymažte cookies pro tuto adresu nebo otevřete anonymní okno a přihlaste se znovu.',
       login: 'Přihlášení',
       placeholderUsername: 'Zadejte prosím uživatelské jméno',
       placeholderPassword: 'Zadejte prosím heslo',
+      placeholderCurrentPassword: 'Aktuální heslo',
       placeholderPassword2: 'Zadejte prosím heslo znovu',
       noEmptyUsername: 'Uživatelské jméno nesmí být prázdné',
       noEmptyPassword: 'Heslo nesmí být prázdné',
+      passwordLength: 'Heslo musí mít 8 až 72 znaků',
       noAccount:
         'Nepodařilo se získat informace o uživateli, prosím obnovte stránku nebo resetujte heslo',
       invalidUser: 'Neplatné uživatelské jméno nebo heslo',
       locked: 'Příliš mnoho přihlášení, zkuste to znovu později',
       globalLocked: 'Systém je chráněn, zkuste to znovu později',
       error: 'Neočekávaná chyba',
+      invalidCurrentPassword: 'Aktuální heslo je nesprávné',
       changePassword: 'Změnit heslo',
       changePasswordDesc:
         'Pro bezpečnost vašeho zařízení prosím změňte heslo pro přihlášení na webu.',
@@ -242,6 +247,10 @@ const cz = {
       relative: 'Relativní režim',
       absoluteShort: 'Absolutní',
       relativeShort: 'Relativní',
+      absoluteStalled: 'Cílové zařízení ignoruje absolutní myš',
+      absoluteStalledDesc:
+        'Cílové zařízení přestalo přijímat hlášení absolutní myši, takže se pohyby kurzoru ztrácejí. Klávesnice není dotčena. Často pomůže obnovení USB; relativní režim používá jiný koncový bod.',
+      useRelative: 'Přepnout na relativní režim',
       direction: 'Směr kolečka',
       scrollUp: 'Přejděte nahoru',
       scrollDown: 'Přejděte dolů',
@@ -256,6 +265,7 @@ const cz = {
         desc: 'Pokud vaše myš a klávesnice přestanou reagovat a resetování HID nepomůže, může jít o problém s kompatibilitou mezi NanoKVM a zařízením. Zkuste povolit režim HID-Only pro lepší kompatibilitu.',
         tip1: 'Povolení režimu HID-Only odpojí virtuální U-disk a virtuální síť',
         tip2: 'V režimu HID-Only je připojení obrazu zakázáno',
+        rebuild: 'Přepnutí režimu znovu sestaví připojení USB. NanoKVM se nerestartuje',
         enable: 'Povolit režim HID-Only',
         disable: 'Zakázat režim HID-Only'
       }
@@ -272,6 +282,17 @@ const cz = {
       unmountDesc:
         'Na některých systémech se musíte před odpojením obrazu ručně vysunout ze vzdáleného hostitele.',
       refresh: 'Obnovte seznam obrázků',
+      disk: 'Disk',
+      cdrom: 'CD',
+      driveEmpty: 'Prázdná',
+      eject: 'Vysunout',
+      readOnly: 'Jen pro čtení',
+      readOnlyTip: 'Platí pro další obraz vložený do disku.',
+      noDrives: 'Žádné virtuální jednotky. Zapněte virtuální disk v Nastavení.',
+      insertFailed: 'Vložení se nezdařilo',
+      ejectFailed: 'Vysunutí se nezdařilo',
+      insertInto: 'Vložit do jednotky {{drive}}. Kliknutím změníte.',
+      loadedIn: 'V jednotce {{drive}}',
       attention: 'Pozor',
       deleteConfirm: 'Opravdu chcete smazat tento obrázek?',
       okBtn: 'Ano',
@@ -369,7 +390,15 @@ const cz = {
       sleepConfirm: 'Uspat hostitele?',
       powerDownConfirm: 'Odeslat hostiteli klávesu vypnutí?',
       wakeTip:
-        'Uspaný hostitel často ignoruje Probudit od zařízení, které ho uspalo. Probudit klávesou Shift stiskne klávesu na klávesnici, kterou přijme více hostitelů.'
+        'Uspaný hostitel často ignoruje Probudit od zařízení, které ho uspalo. Probudit klávesou Shift stiskne klávesu na klávesnici, kterou přijme více hostitelů.',
+      led: 'LED napájení',
+      ledOn: 'Svítí',
+      ledOff: 'Nesvítí',
+      ledUnknown: 'Neznámý',
+      ledConnected: 'LED napájení připojena',
+      ledConnectedTip:
+        'Zapněte, jen pokud je konektor LED napájení hostitele propojen s deskou. Bez něj je stav napájení neznámý.',
+      ledConnectedFailed: 'Nastavení LED napájení se nepodařilo uložit'
     },
     settings: {
       title: 'Nastavení',
@@ -392,6 +421,34 @@ const cz = {
         okBtn: 'Potvrdit',
         cancelBtn: 'Zrušit'
       },
+      redfish: {
+        title: 'Redfish',
+        service: 'Služba Redfish',
+        serviceDesc:
+          'Rozhraní DMTF Redfish API pro ovládání napájení, virtuální média a stav z nástrojů jako redfishtool a Ansible. Vypnutím se ukončí všechny relace Redfish.',
+        endpoint: 'Kořen služby',
+        httpsOn: 'Deska poskytuje HTTPS, které většina nástrojů Redfish potřebuje.',
+        httpsOff:
+          'Deska poskytuje pouze nešifrované HTTP. Většina nástrojů Redfish potřebuje HTTPS: zapněte ho v "Nastavení > Síť".',
+        credentials:
+          'Redfish přijímá účty KVM s ověřením Basic nebo s relací Redfish a také klíče API zasílané jako X-Auth-Token. Klíče API se spravují na stránce Klíče API.',
+        powerActions: 'Akce napájení',
+        powerActionsDesc:
+          'Typy resetu, které jsou nyní nabízeny. On, ForceOff a GracefulShutdown potřebují znát stav napájení, proto se nabízejí jen tehdy, když je v nabídce napájení zapnuto "LED napájení připojena".',
+        sessions: 'Relace',
+        noSessions: 'Žádné otevřené relace Redfish',
+        created: 'Vytvořeno',
+        lastUsed: 'Naposledy použito',
+        refresh: 'Obnovit',
+        end: 'Ukončit',
+        endConfirmTitle: 'Ukončit tuto relaci Redfish?',
+        endConfirmDesc:
+          'Její token okamžitě přestane fungovat. Klient se bude muset znovu přihlásit.',
+        failed: 'Operace Redfish se nezdařila',
+        copyFailed: 'Kopírování se nezdařilo. Zkopírujte ručně.',
+        okBtn: 'Potvrdit',
+        cancelBtn: 'Zrušit'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Watchdog hostitele',
@@ -400,7 +457,7 @@ const cz = {
         stillWarning:
           'Hostitel, jehož displej přejde do spánku nebo jehož obraz se při práci nemění, vypadá jako zamrzlý. Vypněte na hostiteli spánek displeje, nebo zadejte adresu pro ping.',
         ledHint:
-          'Přepínač "Power LED connected" je v nabídce napájení vypnutý. Watchdog nevidí, kdy je hostitel vypnutý, a proto ho považuje za stále zapnutý.',
+          'Přepínač "LED napájení připojena" je v nabídce napájení vypnutý. Watchdog nevidí, kdy je hostitel vypnutý, a proto ho považuje za stále zapnutý.',
         timeout: 'Časový limit',
         timeoutDesc: 'Jak dlouho smí hostitel nejevit známky života, než watchdog zasáhne.',
         action: 'Akce',
@@ -463,7 +520,15 @@ const cz = {
         applicationTip: 'Verze webové aplikace NanoKVM',
         image: 'Verze obrazu',
         imageTip: 'Verze systémového obrazu NanoKVM',
+        kernel: 'Verze jádra',
+        kernelTip: 'Verze aktuálně běžícího jádra Linuxu',
         deviceKey: 'Klíč zařízení',
+        videoMemory: 'Videopaměť',
+        videoMemoryTip: 'Paměť vyhrazená pro snímání videa. Není sdílena se zbytkem systému.',
+        videoMemoryGenerations_one: '{{count}} dřívější relace NanoKVM drží videopaměť',
+        videoMemoryGenerations_few: '{{count}} dřívější relace NanoKVM drží videopaměť',
+        videoMemoryGenerations_other: '{{count}} dřívějších relací NanoKVM drží videopaměť',
+        videoMemoryReboot: 'Pro její uvolnění restartujte.',
         community: 'Komunita',
         hostname: 'Název hostitele',
         hostnameUpdated: 'Název hostitele byl aktualizován. Pro použití restartujte.',
@@ -512,6 +577,16 @@ const cz = {
         oled: {
           title: 'OLED',
           description: 'OLED screen automatically sleep',
+          brightness: 'Jas OLED',
+          brightnessDescription: 'Nižší úroveň prodlužuje životnost displeje',
+          brightnessLevels: {
+            '64': 'Nejnižší',
+            '96': 'Nízký',
+            '128': 'Střední',
+            '160': 'Vysoký',
+            '207': 'Výchozí',
+            '255': 'Maximální'
+          },
           0: 'Nikdy',
           15: '15 sec',
           30: '30 sec',
@@ -527,11 +602,35 @@ const cz = {
           tip: 'Před povolením nastavte silné heslo (Účet – Změnit heslo)'
         },
         advanced: 'Pokročilá nastavení',
+        cpuFreq: {
+          title: 'Frekvence CPU',
+          description: 'Nastavte takt CPU použitý při příštím spuštění',
+          tip: 'CPU se spouští na 850 MHz a je dimenzován na 1000 MHz. Nová hodnota se použije při příštím spuštění, ne za běhu systému. 1000 MHz je v rámci specifikace; teplota je při obou nastaveních hluboko pod limity.',
+          running: 'Aktuálně: {{mhz}} MHz',
+          rebootToApply: 'pro použití restartujte',
+          rebootConfirm: 'Restartovat nyní a použít {{mhz}} MHz?'
+        },
         swap: {
           title: 'Vyměnit',
           disable: 'Zakázat',
           description: 'Nastavte velikost odkládacího souboru',
           tip: 'Povolení této funkce může zkrátit životnost vaší SD karty!'
+        },
+        zram: {
+          title: 'Komprimovaný swap (zram)',
+          description: 'Swap v komprimované RAM místo na SD kartě',
+          tip: 'zram drží swap mimo SD kartu, takže ji neopotřebovává. Za ním není žádný diskový swap: pokud se zram zaplní, jádro ukončí některý proces, místo aby pomalu stránkovalo. Limit paměti určuje, kolik RAM může zram zabrat.',
+          unavailable: 'Moduly jádra nejsou na tomto zařízení nainstalovány',
+          inactive: 'Povoleno, ale zařízení se nespustilo',
+          active: 'Aktivní - {{used}} z {{total}}, {{ratio}}x',
+          off: 'Vypnuto',
+          detail: {
+            algorithm: 'Algoritmus: {{algorithm}}',
+            memory: 'Využitá paměť: {{used}} z {{limit}}',
+            memoryNoLimit: 'Využitá paměť: {{used}}, bez limitu',
+            counters:
+              'Stránky načtené ze swapu {{in}}, zapsané do swapu {{out}} (všechna swap zařízení, od spuštění)'
+          }
         },
         mouseJiggler: {
           title: 'Mouse Jiggler',
@@ -585,7 +684,26 @@ const cz = {
           reenumerate:
             'Použití znovu sestaví připojení USB. Hostitel na několik sekund ztratí klávesnici, myš a virtuální disk.'
         },
+        audio: 'Virtuální reproduktor',
+        audioDesc:
+          'Zpřístupní vzdálenému hostiteli zvukovou kartu USB, abyste slyšeli jeho zvuk. Hostitel ji musí zvolit jako výstupní zařízení. Přepnutí znovu sestaví připojení USB.',
+        audioNote: 'Zvuk je dostupný v obou režimech H.264 (WebRTC a Direct), ne v MJPEG',
+        console: 'Sériová konzole',
+        consoleDesc:
+          'Zpřístupní vzdálenému hostiteli sériový port USB pro přihlášení do tohoto NanoKVM, když je síť nedostupná',
+        consoleTip:
+          'Kdokoli, kdo ovládá vzdáleného hostitele, dostane přihlašovací výzvu tohoto NanoKVM. Před povolením nastavte silné heslo (Účet – Změnit heslo).',
         endpoints: {
+          title: 'Koncové body USB',
+          used: 'Využito {{used}} z {{total}}',
+          cost: 'využívá {{cost}}',
+          needs: 'potřebuje {{cost}}',
+          full: 'Nedostatek koncových bodů USB. Nejprve vypněte něco jiného.',
+          inactive:
+            'Zapnuto, ale neběží: řadiči USB došly koncové body. Vypněte jiné zařízení a toto se ihned spustí.',
+          explain:
+            'Řadič USB má pevný počet vstupních koncových bodů a tento údaj je počítá. Pokud je povoleno více zařízení, než se vejde, klávesnice a myš zůstanou zachovány a ostatní se vypnou.',
+          error: 'Zařízení nelze kontaktovat. Zkuste to znovu.',
           fitTogether: 'Společně se vejdou: {{sets}}'
         },
         reboot: 'Restartujte',
@@ -612,7 +730,11 @@ const cz = {
         },
         tls: {
           description: 'Povolit protokol HTTPS',
-          tip: 'Upozornění: Použití HTTPS může zvýšit latenci, zejména v režimu videa MJPEG.'
+          tip: 'Upozornění: Použití HTTPS může zvýšit latenci, zejména v režimu videa MJPEG.',
+          restarting: 'Restartuje se server zařízení, potrvá to asi dvě minuty...',
+          waiting: 'Čeká se, až zařízení znovu odpoví...',
+          waitingHttp:
+            'Přepíná se zpět na http. Pokud se tato stránka neotevře sama, načtěte ji znovu.'
         },
         ethernet: {
           title: 'IP adresa',
@@ -673,6 +795,53 @@ const cz = {
           none: 'Žádné'
         }
       },
+      vpn: {
+        loading: 'Načítání...',
+        okBtn: 'Ano',
+        cancelBtn: 'Ne',
+        restart: 'Restartovat {{name}}?',
+        stop: 'Zastavit {{name}}?',
+        stopDesc:
+          'Démon se nyní zastaví. Spouštění při startu je samostatný přepínač a zůstane beze změny.',
+        update: 'Aktualizovat {{name}} na {{version}}?',
+        updateDesc: 'Pokud démon běží, restartuje se. Přihlášení zůstane zachováno.',
+        notInstall: '{{name}} není nainstalován.',
+        install: 'Instalovat',
+        installing: 'Instaluje se',
+        installFailed: 'Instalace se nezdařila',
+        retry: 'Zkusit znovu',
+        notRunning: '{{name}} neběží. Pro pokračování ho spusťte.',
+        run: 'Spustit',
+        boot: 'Spouštět při startu',
+        bootDesc: 'Spustit {{name}} při startu KVM.',
+        enable: 'Povolit {{name}}',
+        control: 'Řídicí server',
+        connected: 'Připojeno',
+        disconnected: 'Nepřipojeno',
+        deviceName: 'Název zařízení',
+        deviceIP: 'IP zařízení',
+        account: 'Účet',
+        version: 'Verze',
+        uptime: 'Doba běhu',
+        peers: 'Uzly',
+        noPeers: 'Zatím žádné uzly.',
+        online: 'Online',
+        offline: 'Offline',
+        memory: 'Paměť',
+        daemonRss: 'Démon',
+        group: 'Skupina doplňků',
+        high: 'zpomaleno nad {{size}}',
+        max: 'nad {{size}} ukončeno jádrem',
+        noGroup: 'Na této desce není paměťová skupina doplňků.',
+        uninstall: 'Odinstalovat {{name}}',
+        uninstallDesc: 'Opravdu chcete odinstalovat {{name}}? Přihlášení na desce zůstane.',
+        blocked:
+          '{{other}} běží nebo se spouští při startu. Současně může běžet jen jedna VPN: nejprve zastavte {{other}} a vypněte jeho spouštění při startu.',
+        swap: {
+          title: 'Odkládací paměť',
+          tip: 'Pokud démonu dochází paměť, zkuste povolit odkládací paměť. Výchozí velikost odkládacího souboru je 256MB a lze ji upravit v "Nastavení > Zařízení".'
+        }
+      },
       tailscale: {
         title: 'Tailscale',
         retry: 'Obnovte stránku a zkuste to znovu. Nebo zkuste instalaci manuálně',
@@ -689,6 +858,21 @@ const cz = {
         loginSuccess: 'Přihlášení úspěšné',
         logout: 'Odhlásit se',
         logoutDesc: 'Opravdu se chcete odhlásit?'
+      },
+      netbird: {
+        title: 'NetBird',
+        notLogin:
+          'Toto zařízení se zatím nepřipojilo k síti NetBird. Připojte se pomocí instalačního klíče nebo se přihlaste přes SSO.',
+        setupKey: 'Instalační klíč',
+        setupKeyPlaceholder: 'Vložte instalační klíč z ovládacího panelu NetBird',
+        join: 'Připojit',
+        or: 'nebo',
+        sso: 'Přihlásit přes SSO',
+        urlPeriod: 'Tento odkaz je platný 10 minut',
+        loginSuccess: 'Přihlášení úspěšné',
+        logout: 'Odregistrovat',
+        logoutDesc:
+          'Odregistrování odebere tento uzel z vašeho účtu NetBird a smaže zde jeho konfiguraci. Opětovné připojení vyžaduje instalační klíč nebo přihlášení přes SSO a uzel může dostat novou IP. Pokračovat?'
       },
       update: {
         title: 'Zkontrolovat aktualizaci',
@@ -716,6 +900,7 @@ const cz = {
           confirmDesc:
             'SHA-512 pouze ověřuje, že balíček odpovídá manifestu poskytnutému tímto serverem. Neprokazuje, že je balíček oficiálním vydáním NanoKVM. Vadný nebo škodlivý server může způsobit nefunkčnost zařízení, ztrátu dat nebo narušení zabezpečení systému.',
           confirm: 'Přesto použít',
+          useSipeed: 'Použít oficiální server Sipeed',
           previewDisabled:
             'Testovací aktualizace nejsou při použití vlastního aktualizačního serveru dostupné.'
         },
@@ -733,12 +918,59 @@ const cz = {
       account: {
         title: 'Účet',
         webAccount: 'Název webového účtu',
+        role: 'Role',
+        roles: { admin: 'Správce', user: 'Uživatel' },
         password: 'Heslo',
         updateBtn: 'Update',
         logoutBtn: 'Odhlásit',
         logoutDesc: 'Opravdu se chcete odhlásit?',
         okBtn: 'Ano',
-        cancelBtn: 'Ne'
+        cancelBtn: 'Ne',
+        users: {
+          title: 'Uživatelé',
+          create: 'Vytvořit uživatele',
+          enabled: 'Povolen',
+          disabled: 'Zakázán',
+          deviceOwner: 'Vlastník zařízení',
+          resetPassword: 'Resetovat heslo',
+          delete: 'Smazat',
+          deleteConfirm: 'Smazat tohoto uživatele a zrušit všechny jeho relace?',
+          created: 'Uživatel vytvořen',
+          deleted: 'Uživatel smazán',
+          passwordUpdated: 'Heslo aktualizováno',
+          loadFailed: 'Uživatele se nepodařilo načíst',
+          saveFailed: 'Uživatele se nepodařilo uložit',
+          deleteFailed: 'Uživatele se nepodařilo smazat'
+        }
+      },
+      apiKeys: {
+        title: 'Klíče API',
+        description:
+          'Klíč jedná jménem svého vlastníka s rolí tohoto uživatele. Posílejte ho jako Authorization: Bearer <key> pro metriky a API, nebo jako X-Auth-Token pro Redfish.',
+        name: 'Název',
+        namePlaceholder: 'K čemu klíč slouží, např. prometheus',
+        nameRequired: 'Pojmenujte klíč',
+        nameTooLong: 'Název může mít nejvýše 64 znaků',
+        unnamed: '(bez názvu)',
+        create: 'Vytvořit klíč',
+        created: 'Vytvořeno',
+        owner: 'Vlastník',
+        empty: 'Žádné klíče API',
+        newKeyTitle: 'Váš nový klíč API',
+        newKeyWarning:
+          'Zkopírujte klíč nyní. Neukládá se a nelze ho znovu zobrazit. Pokud ho ztratíte, odvolejte ho a vytvořte nový.',
+        copy: 'Kopírovat',
+        copied: 'Zkopírováno',
+        copyFailed: 'Kopírování se nezdařilo. Zkopírujte ručně.',
+        done: 'Hotovo',
+        revoke: 'Odvolat',
+        revokeConfirmTitle: 'Odvolat tento klíč API?',
+        revokeConfirmDesc: 'Vše, co používá "{{name}}", okamžitě přestane fungovat.',
+        revoked: 'Klíč API odvolán',
+        loadFailed: 'Klíče API se nepodařilo načíst',
+        createFailed: 'Klíč API se nepodařilo vytvořit',
+        revokeFailed: 'Klíč API se nepodařilo odvolat',
+        cancelBtn: 'Zrušit'
       }
     },
     picoclaw: {
@@ -887,6 +1119,7 @@ const cz = {
         deleteConfirmOk: 'Smazat',
         deleteConfirmCancel: 'Zrušit',
         messageCount_one: '{{count}} zpráva',
+        messageCount_few: '{{count}} zprávy',
         messageCount_other: '{{count}} zpráv',
         messageCount: '{{count}} zpráv'
       },
@@ -907,18 +1140,38 @@ const cz = {
     },
     error: {
       title: 'Narazili jsme na problém',
-      refresh: 'Obnovit'
+      refresh: 'Obnovit',
+      panel: 'Tato část stránky přestala fungovat',
+      retry: 'Zkusit znovu'
     },
     fullscreen: {
       toggle: 'Přepnout na celou obrazovku'
     },
     input: {
+      disconnected: 'Klávesnice a myš nejsou připojeny',
+      disconnectedTls:
+        'Prohlížeč bez dotazu odmítl zabezpečené spojení, které přenáší klávesnici a myš. Certifikát vygenerovaný tímto zařízením zatím není důvěryhodný. Otevřete tuto adresu na nové kartě, přijměte certifikát a pak stránku znovu načtěte. Spolehlivým řešením je certifikát nainstalovat.',
+      disconnectedNever:
+        'Spojení, které přenáší klávesnici a myš, se nepodařilo otevřít. Zbytek stránky funguje, protože ho nepoužívá. Zkontrolujte, zda ho nic mezi vámi a zařízením neblokuje.',
+      disconnectedDropped:
+        'Spojení, které přenáší klávesnici a myš, bylo přerušeno a neobnovilo se. Po restartu se připojí samo; pokud tento stav trvá, načtěte stránku znovu.',
       hidDisabled: 'HID je na tomto zařízení vypnuto (/boot/disable_hid).',
       keyFailed: 'Klávesu se nepodařilo odeslat.'
     },
+    speaker: { title: 'Reproduktor', unmute: 'Zapnout zvuk', mute: 'Ztlumit' },
     menu: {
       collapse: 'Sbalit nabídku',
       expand: 'Rozbalte nabídku'
+    },
+    ion: {
+      checking: 'Kontrola videopaměti před spuštěním streamu...',
+      warn: 'Videopaměti je málo. Jeden restart serveru by ji vyčerpal. Až se vám to bude hodit, restartujte.',
+      criticalTitle: 'Nedostatek videopaměti ke spuštění streamu',
+      criticalBody:
+        'Spuštění videa by vyčerpalo vyhrazenou paměť a zastavilo server. Všechny ostatní funkce fungují dál, včetně ovládání napájení a restartu. Tuto paměť uvolní jen restart NanoKVM.',
+      criticalContinue: 'Přesto spustit video',
+      criticalReboot: 'Restartovat NanoKVM',
+      criticalRebooting: 'Restartování...'
     }
   }
 };
