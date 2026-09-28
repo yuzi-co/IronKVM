@@ -7,6 +7,13 @@ import { useTranslation } from 'react-i18next';
 import * as api from '@/api/network.ts';
 import type { EthernetMode } from '@/api/network.ts';
 
+import { isValidIPv4 } from './ip.ts';
+import { Panel } from './panel.tsx';
+
+// defaultTrialSeconds in server/service/network/ethernet.go. The device
+// reports its own value in the state, which wins.
+const DEFAULT_TRIAL_SECONDS = 180;
+
 type EthernetLive = {
   interface?: string;
   address?: string;
@@ -25,6 +32,7 @@ type EthernetTrial = {
 };
 
 type EthernetState = {
+  trialSeconds?: number;
   mode: EthernetMode;
   address: string;
   prefix: number;
@@ -32,19 +40,6 @@ type EthernetState = {
   live: EthernetLive;
   trial?: EthernetTrial;
 };
-
-function isValidIPv4(value: string) {
-  const parts = value.split('.');
-  if (parts.length !== 4) return false;
-
-  return parts.every((part) => {
-    if (!/^\d+$/.test(part)) return false;
-    if (part.length > 1 && part.startsWith('0')) return false;
-
-    const number = Number(part);
-    return number >= 0 && number <= 255;
-  });
-}
 
 // The field accepts either form, because a subnet is written as a dotted mask
 // on one platform and as a prefix length on the next, and a person reading it
@@ -79,28 +74,6 @@ function maskOf(prefix: number) {
 
   return bytes.join('.');
 }
-
-const Panel = ({
-  title,
-  description,
-  children
-}: {
-  title: string;
-  description?: string;
-  children: ReactNode;
-}) => {
-  return (
-    <div className="overflow-hidden rounded-xl bg-neutral-800/50">
-      <div className="px-4 pt-3 pb-1.5">
-        <div className="font-semibold text-neutral-100">{title}</div>
-        {description && (
-          <div className="mt-0.5 text-xs leading-snug text-neutral-500">{description}</div>
-        )}
-      </div>
-      <div>{children}</div>
-    </div>
-  );
-};
 
 const Row = ({
   label,
@@ -144,6 +117,9 @@ export const Ethernet = () => {
 
   const [trial, setTrial] = useState<EthernetTrial | null>(null);
   const [remaining, setRemaining] = useState(0);
+  // How long an applied change waits for confirmation, as the device reports
+  // it. The constant is only the fallback for a server that does not say.
+  const [trialSeconds, setTrialSeconds] = useState(DEFAULT_TRIAL_SECONDS);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -208,6 +184,7 @@ export const Ethernet = () => {
 
       setTrial(data.trial ?? null);
       setRemaining(data.trial?.remainingSeconds ?? 0);
+      if (data.trialSeconds) setTrialSeconds(data.trialSeconds);
     } catch (err) {
       console.log(err);
     } finally {
@@ -461,7 +438,7 @@ export const Ethernet = () => {
         onCancel={() => setIsAsking(false)}
       >
         <p className="text-sm text-neutral-300">
-          {t('settings.network.ethernet.applyWarning', { seconds: 180 })}
+          {t('settings.network.ethernet.applyWarning', { seconds: trialSeconds })}
         </p>
       </Modal>
     </div>

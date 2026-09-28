@@ -76,6 +76,8 @@ func (s *Service) GetEthernet(c *gin.Context) {
 		Gateway: saved.Gateway,
 		Live:    liveEthernet(),
 		Trial:   describeTrial(),
+
+		TrialSeconds: defaultTrialSeconds,
 	}
 
 	// A board that has always been on DHCP has no saved static settings, so

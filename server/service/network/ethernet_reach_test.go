@@ -2,6 +2,7 @@ package network
 
 import (
 	"context"
+	"encoding/json"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -424,5 +425,31 @@ func TestADhcpTrialIsNotConfirmedByAnIPv6Arrival(t *testing.T) {
 
 	if describeTrial() != nil {
 		t.Error("the leased address did not confirm the trial")
+	}
+}
+
+// The page words its warning with the window the board will use, so the
+// state it reads must carry it.
+func TestGetEthernetReportsTheTrialWindow(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	useTempConfig(t)
+	clearTrial(t)
+
+	recorder := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(recorder)
+	c.Request = httptest.NewRequest(http.MethodGet, "/api/network/ethernet", nil)
+
+	(&Service{}).GetEthernet(c)
+
+	var body struct {
+		Data struct {
+			TrialSeconds int `json:"trialSeconds"`
+		} `json:"data"`
+	}
+	if err := json.Unmarshal(recorder.Body.Bytes(), &body); err != nil {
+		t.Fatal(err)
+	}
+	if body.Data.TrialSeconds != defaultTrialSeconds {
+		t.Fatalf("trialSeconds = %d, want %d", body.Data.TrialSeconds, defaultTrialSeconds)
 	}
 }

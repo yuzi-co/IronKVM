@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
 import { Button, Input, Segmented } from 'antd';
 import { CheckIcon, PlusIcon, XIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/network.ts';
 import type { DNSMode } from '@/api/network.ts';
+
+import { isValidIPv4 } from './ip.ts';
+import { Panel } from './panel.tsx';
 
 type DNSState = {
   mode: DNSMode;
@@ -38,19 +40,6 @@ function isValidIP(value: string) {
   return isValidIPv4(value) || isValidIPv6(value);
 }
 
-function isValidIPv4(value: string) {
-  const parts = value.split('.');
-  if (parts.length !== 4) return false;
-
-  return parts.every((part) => {
-    if (!/^\d+$/.test(part)) return false;
-    if (part.length > 1 && part.startsWith('0')) return false;
-
-    const number = Number(part);
-    return number >= 0 && number <= 255;
-  });
-}
-
 function isValidIPv6(value: string) {
   if (!value.includes(':')) return false;
 
@@ -61,28 +50,6 @@ function isValidIPv6(value: string) {
     return false;
   }
 }
-
-const Panel = ({
-  title,
-  description,
-  children
-}: {
-  title: string;
-  description?: string;
-  children: ReactNode;
-}) => {
-  return (
-    <div className="overflow-hidden rounded-xl bg-neutral-800/50">
-      <div className="px-4 pt-3 pb-1.5">
-        <div className="font-semibold text-neutral-100">{title}</div>
-        {description && (
-          <div className="mt-0.5 text-xs leading-snug text-neutral-500">{description}</div>
-        )}
-      </div>
-      <div>{children}</div>
-    </div>
-  );
-};
 
 const ServerList = ({ servers }: { servers: string[] }) => {
   const { t } = useTranslation();
