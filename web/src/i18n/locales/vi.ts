@@ -295,6 +295,33 @@ const vi = {
       deleteConfirm: 'Bạn có chắc chắn muốn xóa hình ảnh này không?',
       okBtn: 'Có',
       cancelBtn: 'Không',
+      deleteFailed: 'Xóa thất bại',
+      ventoy: {
+        statusNoKernel: 'Firmware này không hỗ trợ',
+        statusNotInstalled: 'Chưa cài đặt',
+        statusReady: 'Sẵn sàng',
+        statusSelected: 'Ảnh đĩa đã chọn: {{count}}',
+        statusInDrive: 'Trong ổ đĩa, {{size}}',
+        noKernel:
+          'Nhân của firmware này không hỗ trợ device-mapper, nên không thể dùng Ventoy cho đến khi cài một bản có hỗ trợ.',
+        installDesc: 'Khởi động máy chủ từ nhiều ảnh đĩa trên một đĩa, không cần sao chép.',
+        install: 'Cài đặt',
+        installing: 'Đang tải Ventoy, khoảng 20 MB. Việc này có thể mất vài phút.',
+        needsData: 'Ventoy cần bản IronKVM có phân vùng /data đã được gắn.',
+        uninstall: 'Gỡ cài đặt',
+        uninstallConfirm: 'Xóa các tệp của Ventoy?',
+        noImages: 'Không có ảnh đĩa nào để đưa vào đĩa Ventoy.',
+        onDisk: 'Trên đĩa Ventoy',
+        missing: 'Thiếu: {{file}}',
+        remove: 'Bỏ khỏi đĩa Ventoy',
+        setHint: 'Chỉ có thể thay đổi bộ ảnh đĩa khi đĩa Ventoy không nằm trong ổ nào.',
+        useAsDisk: 'Dùng làm đĩa ảo',
+        failed: 'Yêu cầu Ventoy thất bại',
+        secureBoot:
+          'Khi bật Secure Boot, máy chủ phải đăng ký khóa của Ventoy trong MokManager một lần. Tệp khóa ENROLL_THIS_KEY_IN_MOKMANAGER.cer nằm trên phân vùng VTOYEFI.',
+        readOnly:
+          'Máy chủ thấy đĩa ở chế độ chỉ đọc, nên tính năng lưu trữ bền vững của Ventoy và ventoy.json trên ổ không hoạt động.'
+      },
       tips: {
         title: 'Cách tải lên',
         usb1: 'Kết nối NanoKVM với máy tính của bạn qua USB.',

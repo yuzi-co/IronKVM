@@ -296,6 +296,33 @@ const da = {
       deleteConfirm: 'Er du sikker på, at du vil slette dette billede?',
       okBtn: 'Ja',
       cancelBtn: 'Annuller',
+      deleteFailed: 'Sletning mislykkedes',
+      ventoy: {
+        statusNoKernel: 'Understøttes ikke af denne firmware',
+        statusNotInstalled: 'Ikke installeret',
+        statusReady: 'Klar',
+        statusSelected: 'Valgte images: {{count}}',
+        statusInDrive: 'I diskdrevet, {{size}}',
+        noKernel:
+          'Denne firmwares kerne har ingen device-mapper-understøttelse, så Ventoy kan ikke bruges, før et image med det er installeret.',
+        installDesc: 'Start værten fra flere images på én disk uden at kopiere dem.',
+        install: 'Installer',
+        installing: 'Henter Ventoy, cirka 20 MB. Det kan tage et par minutter.',
+        needsData: 'Ventoy kræver et IronKVM-image med /data-partitionen monteret.',
+        uninstall: 'Afinstaller',
+        uninstallConfirm: 'Fjern Ventoy-filerne?',
+        noImages: 'Ingen images at lægge på Ventoy-disken.',
+        onDisk: 'På Ventoy-disken',
+        missing: 'Mangler: {{file}}',
+        remove: 'Fjern fra Ventoy-disken',
+        setHint: 'Sættet af images kan kun ændres, mens Ventoy-disken ikke er i et drev.',
+        useAsDisk: 'Brug som virtuel disk',
+        failed: 'Ventoy-anmodning mislykkedes',
+        secureBoot:
+          'Med Secure Boot slået til skal værten én gang registrere Ventoys nøgle i MokManager. Nøglefilen ENROLL_THIS_KEY_IN_MOKMANAGER.cer ligger på VTOYEFI-partitionen.',
+        readOnly:
+          'Værten ser disken som skrivebeskyttet, så Ventoy-persistens og ventoy.json på drevet virker ikke.'
+      },
       tips: {
         title: 'Sådan uploader du',
         usb1: 'Forbind din NanoKVM til din computer via USB.',

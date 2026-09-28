@@ -296,6 +296,34 @@ const tr = {
       deleteConfirm: 'Bu resmi silmek istediğinizden emin misiniz?',
       okBtn: 'Evet',
       cancelBtn: 'Hayır',
+      deleteFailed: 'Silme başarısız',
+      ventoy: {
+        statusNoKernel: 'Bu yazılım desteklemiyor',
+        statusNotInstalled: 'Yüklü değil',
+        statusReady: 'Hazır',
+        statusSelected: 'Seçilen imajlar: {{count}}',
+        statusInDrive: 'Disk sürücüsünde, {{size}}',
+        noKernel:
+          'Bu yazılımın çekirdeğinde device-mapper desteği yok, bu yüzden bu desteğe sahip bir imaj yüklenene kadar Ventoy kullanılamaz.',
+        installDesc:
+          'Ana bilgisayarı tek bir diskteki birden çok imajdan, onları kopyalamadan başlatın.',
+        install: 'Yükle',
+        installing: 'Ventoy indiriliyor, yaklaşık 20 MB. Bu birkaç dakika sürebilir.',
+        needsData: 'Ventoy, /data bölümü bağlı bir IronKVM imajı gerektirir.',
+        uninstall: 'Kaldır',
+        uninstallConfirm: 'Ventoy dosyaları kaldırılsın mı?',
+        noImages: 'Ventoy diskine konacak imaj yok.',
+        onDisk: 'Ventoy diskinde',
+        missing: 'Eksik: {{file}}',
+        remove: 'Ventoy diskinden çıkar',
+        setHint: 'İmaj seçimi yalnızca Ventoy diski hiçbir sürücüde değilken değiştirilebilir.',
+        useAsDisk: 'Sanal disk olarak kullan',
+        failed: 'Ventoy isteği başarısız',
+        secureBoot:
+          'Secure Boot açıksa ana bilgisayar, Ventoy anahtarını MokManager içinde bir kez kaydetmelidir. ENROLL_THIS_KEY_IN_MOKMANAGER.cer anahtar dosyası VTOYEFI bölümündedir.',
+        readOnly:
+          'Ana bilgisayar diski salt okunur görür, bu yüzden Ventoy kalıcılığı ve sürücüdeki ventoy.json çalışmaz.'
+      },
       tips: {
         title: 'Nasıl yüklenir',
         usb1: "NanoKVM'i bilgisayarınıza USB ile bağlayın.",

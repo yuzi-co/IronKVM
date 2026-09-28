@@ -292,6 +292,33 @@ const ko = {
       deleteConfirm: '이 이미지를 제거하시겠습니까?',
       okBtn: '네',
       cancelBtn: '아니오',
+      deleteFailed: '삭제 실패',
+      ventoy: {
+        statusNoKernel: '이 펌웨어에서 지원되지 않음',
+        statusNotInstalled: '설치되지 않음',
+        statusReady: '준비됨',
+        statusSelected: '선택한 이미지: {{count}}',
+        statusInDrive: '디스크 드라이브에 있음, {{size}}',
+        noKernel:
+          '이 펌웨어의 커널은 device-mapper를 지원하지 않으므로, 이를 지원하는 이미지를 설치하기 전까지 Ventoy를 사용할 수 없습니다.',
+        installDesc: '여러 이미지를 복사하지 않고 하나의 디스크로 묶어 호스트를 부팅합니다.',
+        install: '설치',
+        installing: 'Ventoy 다운로드 중 (약 20 MB). 몇 분 정도 걸릴 수 있습니다.',
+        needsData: 'Ventoy를 사용하려면 /data 파티션이 마운트된 IronKVM 이미지가 필요합니다.',
+        uninstall: '제거',
+        uninstallConfirm: 'Ventoy 파일을 삭제할까요?',
+        noImages: 'Ventoy 디스크에 넣을 이미지가 없습니다.',
+        onDisk: 'Ventoy 디스크에 포함',
+        missing: '없음: {{file}}',
+        remove: 'Ventoy 디스크에서 빼기',
+        setHint: '이미지 구성은 Ventoy 디스크가 드라이브에 없을 때만 바꿀 수 있습니다.',
+        useAsDisk: '가상 디스크로 사용',
+        failed: 'Ventoy 요청 실패',
+        secureBoot:
+          'Secure Boot가 켜져 있으면 호스트에서 MokManager에 Ventoy 키를 한 번 등록해야 합니다. 키 파일 ENROLL_THIS_KEY_IN_MOKMANAGER.cer는 VTOYEFI 파티션에 있습니다.',
+        readOnly:
+          '호스트에는 디스크가 읽기 전용으로 보이므로 Ventoy 영구 저장과 드라이브의 ventoy.json은 동작하지 않습니다.'
+      },
       tips: {
         title: '업로드 방법',
         usb1: 'USB를 통해 NanoKVM을 컴퓨터에 연결하세요.',

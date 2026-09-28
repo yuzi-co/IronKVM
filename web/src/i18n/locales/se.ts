@@ -293,6 +293,34 @@ const se = {
       deleteConfirm: 'Är du säker på att du vill ta bort denna avbildning?',
       okBtn: 'Ja',
       cancelBtn: 'Nej',
+      deleteFailed: 'Borttagningen misslyckades',
+      ventoy: {
+        statusNoKernel: 'Stöds inte av denna firmware',
+        statusNotInstalled: 'Inte installerad',
+        statusReady: 'Redo',
+        statusSelected: 'Valda avbilder: {{count}}',
+        statusInDrive: 'I diskenheten, {{size}}',
+        noKernel:
+          'Kärnan i denna firmware saknar stöd för device-mapper, så Ventoy kan inte användas förrän en avbild med sådant stöd har installerats.',
+        installDesc: 'Starta värden från flera avbilder på en disk, utan att kopiera dem.',
+        install: 'Installera',
+        installing: 'Laddar ner Ventoy, cirka 20 MB. Det kan ta några minuter.',
+        needsData: 'Ventoy kräver en IronKVM-avbild med /data-partitionen monterad.',
+        uninstall: 'Avinstallera',
+        uninstallConfirm: 'Ta bort Ventoy-filerna?',
+        noImages: 'Inga avbilder att lägga på Ventoy-disken.',
+        onDisk: 'På Ventoy-disken',
+        missing: 'Saknas: {{file}}',
+        remove: 'Ta bort från Ventoy-disken',
+        setHint:
+          'Urvalet av avbilder kan bara ändras medan Ventoy-disken inte sitter i någon enhet.',
+        useAsDisk: 'Använd som virtuell disk',
+        failed: 'Ventoy-begäran misslyckades',
+        secureBoot:
+          'Med Secure Boot påslaget måste värden registrera Ventoys nyckel i MokManager en gång. Nyckelfilen ENROLL_THIS_KEY_IN_MOKMANAGER.cer finns på VTOYEFI-partitionen.',
+        readOnly:
+          'Värden ser disken som skrivskyddad, så Ventoy-persistens och ventoy.json på enheten fungerar inte.'
+      },
       tips: {
         title: 'Hur man laddar upp',
         usb1: 'Anslut NanoKVM till din dator via USB.',

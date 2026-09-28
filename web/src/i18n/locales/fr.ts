@@ -300,6 +300,34 @@ const fr = {
       deleteConfirm: 'Etes-vous sûr de vouloir supprimer cette image?',
       okBtn: 'Oui',
       cancelBtn: 'Non',
+      deleteFailed: 'Échec de la suppression',
+      ventoy: {
+        statusNoKernel: 'Non pris en charge par ce firmware',
+        statusNotInstalled: 'Non installé',
+        statusReady: 'Prêt',
+        statusSelected: 'Images sélectionnées : {{count}}',
+        statusInDrive: 'Dans le lecteur de disque, {{size}}',
+        noKernel:
+          "Le noyau de ce firmware ne prend pas en charge device-mapper, Ventoy ne peut donc pas être utilisé tant qu'une image qui le prend en charge n'est pas installée.",
+        installDesc: "Démarrez l'hôte depuis plusieurs images sur un seul disque, sans les copier.",
+        install: 'Installer',
+        installing: 'Téléchargement de Ventoy, environ 20 Mo. Cela peut prendre quelques minutes.',
+        needsData: 'Ventoy nécessite une image IronKVM avec la partition /data montée.',
+        uninstall: 'Désinstaller',
+        uninstallConfirm: 'Supprimer les fichiers de Ventoy ?',
+        noImages: 'Aucune image à placer sur le disque Ventoy.',
+        onDisk: 'Sur le disque Ventoy',
+        missing: 'Manquant : {{file}}',
+        remove: 'Retirer du disque Ventoy',
+        setHint:
+          "La sélection d'images ne change que lorsque le disque Ventoy n'est dans aucun lecteur.",
+        useAsDisk: 'Utiliser comme disque virtuel',
+        failed: 'Échec de la requête Ventoy',
+        secureBoot:
+          "Avec Secure Boot activé, l'hôte doit enregistrer une fois la clé de Ventoy dans MokManager. Le fichier de clé ENROLL_THIS_KEY_IN_MOKMANAGER.cer se trouve sur la partition VTOYEFI.",
+        readOnly:
+          "L'hôte voit le disque en lecture seule, donc la persistance Ventoy et ventoy.json sur le lecteur ne fonctionnent pas."
+      },
       tips: {
         title: 'Comment télécharger',
         usb1: 'Connectez le NanoKVM à votre ordinateur via USB.',

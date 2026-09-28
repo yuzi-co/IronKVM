@@ -303,6 +303,34 @@ const de = {
       deleteConfirm: 'Sind Sie sicher, dass Sie dieses Bild löschen möchten?',
       okBtn: 'Ja',
       cancelBtn: 'Nein',
+      deleteFailed: 'Löschen fehlgeschlagen',
+      ventoy: {
+        statusNoKernel: 'Von dieser Firmware nicht unterstützt',
+        statusNotInstalled: 'Nicht installiert',
+        statusReady: 'Bereit',
+        statusSelected: 'Ausgewählte Images: {{count}}',
+        statusInDrive: 'Im Laufwerk, {{size}}',
+        noKernel:
+          'Der Kernel dieser Firmware unterstützt kein Device-Mapper, daher kann Ventoy erst nach der Installation eines Images mit dieser Unterstützung genutzt werden.',
+        installDesc: 'Den Host von mehreren Images auf einer Disk booten, ohne sie zu kopieren.',
+        install: 'Installieren',
+        installing: 'Ventoy wird heruntergeladen, etwa 20 MB. Das kann einige Minuten dauern.',
+        needsData: 'Ventoy benötigt ein IronKVM-Image mit eingehängter /data-Partition.',
+        uninstall: 'Deinstallieren',
+        uninstallConfirm: 'Ventoy-Dateien entfernen?',
+        noImages: 'Keine Images für die Ventoy-Disk.',
+        onDisk: 'Auf der Ventoy-Disk',
+        missing: 'Fehlt: {{file}}',
+        remove: 'Von der Ventoy-Disk entfernen',
+        setHint:
+          'Die Auswahl der Images lässt sich nur ändern, solange die Ventoy-Disk in keinem Laufwerk ist.',
+        useAsDisk: 'Als virtuelle Disk verwenden',
+        failed: 'Ventoy-Anfrage fehlgeschlagen',
+        secureBoot:
+          'Bei aktivem Secure Boot muss der Host den Schlüssel von Ventoy einmalig in MokManager registrieren. Die Schlüsseldatei ENROLL_THIS_KEY_IN_MOKMANAGER.cer liegt auf der Partition VTOYEFI.',
+        readOnly:
+          'Der Host sieht die Disk schreibgeschützt, daher funktionieren Ventoy-Persistenz und ventoy.json auf dem Laufwerk nicht.'
+      },
       tips: {
         title: 'So laden Sie Dateien hoch',
         usb1: 'Verbinden Sie den NanoKVM über USB mit Ihrem Computer.',

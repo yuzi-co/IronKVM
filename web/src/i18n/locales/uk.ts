@@ -298,6 +298,34 @@ const uk = {
       deleteConfirm: 'Ви впевнені, що хочете видалити це зображення?',
       okBtn: 'Так',
       cancelBtn: 'Ні',
+      deleteFailed: 'Не вдалося видалити',
+      ventoy: {
+        statusNoKernel: 'Не підтримується цією прошивкою',
+        statusNotInstalled: 'Не встановлено',
+        statusReady: 'Готово',
+        statusSelected: 'Вибрано образів: {{count}}',
+        statusInDrive: 'У дисководі, {{size}}',
+        noKernel:
+          'Ядро цієї прошивки не підтримує device-mapper, тому Ventoy не можна використовувати, доки не встановлено образ із такою підтримкою.',
+        installDesc: 'Завантаження хоста з кількох образів на одному диску без їх копіювання.',
+        install: 'Встановити',
+        installing: 'Завантаження Ventoy, близько 20 МБ. Це може тривати кілька хвилин.',
+        needsData: 'Для Ventoy потрібен образ IronKVM зі змонтованим розділом /data.',
+        uninstall: 'Видалити',
+        uninstallConfirm: 'Видалити файли Ventoy?',
+        noImages: 'Немає образів для диска Ventoy.',
+        onDisk: 'На диску Ventoy',
+        missing: 'Відсутній: {{file}}',
+        remove: 'Прибрати з диска Ventoy',
+        setHint:
+          'Набір образів можна змінювати, лише поки диск Ventoy не вставлено в жоден привод.',
+        useAsDisk: 'Використати як віртуальний диск',
+        failed: 'Помилка запиту Ventoy',
+        secureBoot:
+          'З увімкненим Secure Boot хост має один раз зареєструвати ключ Ventoy у MokManager. Файл ключа ENROLL_THIS_KEY_IN_MOKMANAGER.cer лежить на розділі VTOYEFI.',
+        readOnly:
+          'Хост бачить диск лише для читання, тому постійне сховище Ventoy і ventoy.json на диску не працюють.'
+      },
       tips: {
         title: 'Як завантажити',
         usb1: "Під'єднайте NanoKVM до вашого комп'ютера через USB.",

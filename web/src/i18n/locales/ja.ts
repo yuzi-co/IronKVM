@@ -297,6 +297,34 @@ const ja = {
       deleteConfirm: 'このイメージを削除してもよろしいですか？',
       okBtn: 'はい',
       cancelBtn: 'いいえ',
+      deleteFailed: '削除に失敗しました',
+      ventoy: {
+        statusNoKernel: 'このファームウェアは非対応',
+        statusNotInstalled: '未インストール',
+        statusReady: '準備完了',
+        statusSelected: '選択したイメージ: {{count}}',
+        statusInDrive: 'ディスクドライブ内, {{size}}',
+        noKernel:
+          'このファームウェアのカーネルは device-mapper に対応していないため、対応したイメージをインストールするまで Ventoy は使えません。',
+        installDesc: '複数のイメージをコピーせずに 1 つのディスクにまとめ、ホストを起動します。',
+        install: 'インストール',
+        installing: 'Ventoy をダウンロード中です (約 20 MB)。数分かかることがあります。',
+        needsData: 'Ventoy には /data パーティションがマウントされた IronKVM イメージが必要です。',
+        uninstall: 'アンインストール',
+        uninstallConfirm: 'Ventoy のファイルを削除しますか?',
+        noImages: 'Ventoy ディスクに追加できるイメージがありません。',
+        onDisk: 'Ventoy ディスクに含める',
+        missing: '見つかりません: {{file}}',
+        remove: 'Ventoy ディスクから外す',
+        setHint:
+          'イメージの組み合わせは、Ventoy ディスクがドライブに入っていないときだけ変更できます。',
+        useAsDisk: '仮想ディスクとして使用',
+        failed: 'Ventoy の要求に失敗しました',
+        secureBoot:
+          'Secure Boot が有効な場合、ホストで一度だけ MokManager に Ventoy の鍵を登録する必要があります。鍵ファイル ENROLL_THIS_KEY_IN_MOKMANAGER.cer は VTOYEFI パーティションにあります。',
+        readOnly:
+          'ホストからはディスクが読み取り専用に見えるため、Ventoy の永続化とドライブ上の ventoy.json は機能しません。'
+      },
       tips: {
         title: 'アップロード方法',
         usb1: 'NanoKVM を USB 経由でコンピュータに接続します；',

@@ -301,6 +301,34 @@ const nl = {
       deleteConfirm: 'Weet u zeker dat u deze afbeelding wilt verwijderen?',
       okBtn: 'Ja',
       cancelBtn: 'Nee',
+      deleteFailed: 'Verwijderen mislukt',
+      ventoy: {
+        statusNoKernel: 'Niet ondersteund door deze firmware',
+        statusNotInstalled: 'Niet geïnstalleerd',
+        statusReady: 'Gereed',
+        statusSelected: 'Geselecteerde images: {{count}}',
+        statusInDrive: 'In het schijfstation, {{size}}',
+        noKernel:
+          'De kernel van deze firmware ondersteunt geen device-mapper, dus Ventoy kan pas worden gebruikt nadat een image met die ondersteuning is geïnstalleerd.',
+        installDesc: 'Start de host op vanaf meerdere images op één schijf, zonder ze te kopiëren.',
+        install: 'Installeren',
+        installing: 'Ventoy wordt gedownload, ongeveer 20 MB. Dit kan enkele minuten duren.',
+        needsData: 'Ventoy heeft een IronKVM-image nodig met de /data-partitie gekoppeld.',
+        uninstall: 'Verwijderen',
+        uninstallConfirm: 'Ventoy-bestanden verwijderen?',
+        noImages: 'Geen images voor de Ventoy-schijf.',
+        onDisk: 'Op de Ventoy-schijf',
+        missing: 'Ontbreekt: {{file}}',
+        remove: 'Van de Ventoy-schijf halen',
+        setHint:
+          'De selectie van images kan alleen veranderen zolang de Ventoy-schijf in geen enkel station zit.',
+        useAsDisk: 'Gebruiken als virtuele schijf',
+        failed: 'Ventoy-verzoek mislukt',
+        secureBoot:
+          'Met Secure Boot aan moet de host de sleutel van Ventoy eenmalig registreren in MokManager. Het sleutelbestand ENROLL_THIS_KEY_IN_MOKMANAGER.cer staat op de VTOYEFI-partitie.',
+        readOnly:
+          'De host ziet de schijf als alleen-lezen, dus Ventoy-persistentie en ventoy.json op het station werken niet.'
+      },
       tips: {
         title: 'Hoe te uploaden',
         usb1: 'Verbind de NanoKVM met uw computer via USB.',

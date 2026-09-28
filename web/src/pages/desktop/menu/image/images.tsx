@@ -22,6 +22,8 @@ type ImagesProps = {
   isOpen: boolean;
   drives: api.Drive[];
   diskRo: boolean;
+  inUse: string[];
+  onImagesChanged: (images: string[]) => void;
   onDrivesChanged: () => void;
 };
 
@@ -32,7 +34,14 @@ function defaultDrive(image: string, available: api.DriveId[]): api.DriveId {
   return available.includes(preferred) ? preferred : available[0];
 }
 
-export const Images = ({ isOpen, drives, diskRo, onDrivesChanged }: ImagesProps) => {
+export const Images = ({
+  isOpen,
+  drives,
+  diskRo,
+  inUse,
+  onImagesChanged,
+  onDrivesChanged
+}: ImagesProps) => {
   const { t } = useTranslation();
   const [notify, contextHolder] = notification.useNotification();
 
@@ -48,6 +57,12 @@ export const Images = ({ isOpen, drives, diskRo, onDrivesChanged }: ImagesProps)
 
   function loadedIn(image: string): api.DriveId | undefined {
     return drives.find((drive) => drive.file === image)?.id;
+  }
+
+  // An image is locked against deletion while a drive holds it, directly or
+  // through the Ventoy disk.
+  function isLocked(image: string) {
+    return !!loadedIn(image) || inUse.includes(image);
   }
 
   function targetOf(image: string): api.DriveId {
@@ -71,8 +86,9 @@ export const Images = ({ isOpen, drives, diskRo, onDrivesChanged }: ImagesProps)
           return;
         }
 
-        const files = rsp.data?.files;
-        setImages(files?.length > 0 ? files : []);
+        const files: string[] = rsp.data?.files?.length > 0 ? rsp.data.files : [];
+        setImages(files);
+        onImagesChanged(files);
         onDrivesChanged();
       })
       .finally(() => {
@@ -131,10 +147,9 @@ export const Images = ({ isOpen, drives, diskRo, onDrivesChanged }: ImagesProps)
   function showDeleteModal(e: any, image: string) {
     e.stopPropagation();
 
-    const isMounted = !!loadedIn(image);
     const isDeleting = deletingImage !== '';
 
-    if (isMounted || isDeleting) {
+    if (isLocked(image) || isDeleting) {
       return;
     }
 
@@ -153,7 +168,7 @@ export const Images = ({ isOpen, drives, diskRo, onDrivesChanged }: ImagesProps)
       .deleteImage(selectedImage)
       .then((rsp) => {
         if (rsp.code !== 0) {
-          console.log(rsp.msg);
+          notify.open({ message: t('image.deleteFailed'), description: rsp.msg, duration: 10 });
           return;
         }
 
@@ -261,7 +276,7 @@ export const Images = ({ isOpen, drives, diskRo, onDrivesChanged }: ImagesProps)
               <div
                 className={clsx(
                   'flex h-[24px] w-[24px] items-center justify-center rounded hover:bg-neutral-500/50',
-                  loaded
+                  isLocked(image)
                     ? 'cursor-not-allowed text-neutral-500'
                     : 'text-neutral-300 hover:text-red-500'
                 )}

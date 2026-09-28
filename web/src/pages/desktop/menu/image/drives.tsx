@@ -5,6 +5,7 @@ import { DiscIcon, HardDriveIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/storage.ts';
+import { VENTOY_DEVICE } from '@/api/ventoy.ts';
 
 type DrivesProps = {
   drives: api.Drive[];
@@ -12,6 +13,12 @@ type DrivesProps = {
   setDiskRo: (ro: boolean) => void;
   onDrivesChanged: () => void;
 };
+
+// driveLabel names what a drive holds: the image's file name, or Ventoy for the
+// disk built from the Ventoy set.
+function driveLabel(file: string) {
+  return file === VENTOY_DEVICE ? 'Ventoy' : file.replace(/^.*[\\/]/, '');
+}
 
 // Drives shows what each virtual drive holds, with an eject button per drive
 // and the read-only switch that the next disk insert uses.
@@ -57,7 +64,7 @@ export const Drives = ({ drives, diskRo, setDiskRo, onDrivesChanged }: DrivesPro
                   drive.file ? 'text-blue-500' : 'text-neutral-500'
                 )}
               >
-                {drive.file ? drive.file.replace(/^.*[\\/]/, '') : t('image.driveEmpty')}
+                {drive.file ? driveLabel(drive.file) : t('image.driveEmpty')}
               </span>
 
               {drive.id === 'disk' && (
