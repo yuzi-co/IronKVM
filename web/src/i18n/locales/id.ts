@@ -69,6 +69,31 @@ const id = {
       video: 'Mode Video',
       videoDirectTips: 'Aktifkan HTTPS di "Pengaturan > Perangkat" untuk menggunakan mode ini',
       resolution: 'Resolusi',
+      ocr: {
+        title: 'Baca Teks (OCR)',
+        tips: 'Teks dikenali di browser ini. Anda dapat memperbaikinya sebelum menyalinnya.',
+        hint: 'Seret di atas teks yang ingin dibaca. Tekan Esc untuk membatalkan.',
+        noPicture: 'Tunggu video, lalu seret di atas teks yang ingin dibaca.',
+        cancel: 'Batal',
+        language: 'Bahasa',
+        languages: {
+          eng: 'Inggris'
+        },
+        preview: 'Area yang dipilih',
+        capturing: 'Menangkap layar...',
+        loading: 'Memuat pengenalan teks...',
+        recognizing: 'Membaca teks...',
+        noText: 'Tidak ada teks yang ditemukan di area yang dipilih.',
+        copy: 'Salin',
+        copied: 'Disalin ke clipboard',
+        copyFailed: 'Gagal menyalin ke clipboard',
+        selectAgain: 'Pilih Lagi',
+        unsupported:
+          'Browser ini tidak dapat menjalankan pengenalan teks. Fitur ini memerlukan WebAssembly SIMD, yang dimiliki browser saat ini.',
+        captureFailed: 'Gagal menangkap layar.',
+        outside: 'Area yang dipilih berada di luar gambar.',
+        recognizeFailed: 'Pengenalan teks gagal.'
+      },
       controlRegion: {
         title: 'Kalibrasi Tetikus',
         description:

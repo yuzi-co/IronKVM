@@ -35,6 +35,7 @@ pnpm dev        # dev server on :3001, talks to a real device
 pnpm mocked     # dev server backed by MSW handlers (src/mocks), no device needed
 pnpm build      # tsc && vite build && node scripts/precompress.mjs
 pnpm lint       # eslint
+pnpm test       # node --test over src/**/*.test.ts
 pnpm format     # prettier (import order is enforced by config, see .prettierrc.yaml)
 ```
 
@@ -42,7 +43,11 @@ pnpm format     # prettier (import order is enforced by config, see .prettierrc.
 `authentication: disable` in the device's `/etc/kvm/server.yaml` (CORS blocks the login flow
 otherwise). Auth changes therefore cannot be tested through `pnpm dev` — build and deploy instead.
 
-There is no frontend test runner.
+There is no frontend test framework. `pnpm test` runs Node's own test runner over
+`src/**/*.test.ts`, and Node strips the types itself. That limits a test to modules that run
+outside a browser: no JSX, no `@/` imports other than `import type`, and no DOM at import time.
+`tsconfig.json` leaves the tests out, because they import `node:test` and the app does not load
+Node's types.
 
 ### Backend (`server/`, Go 1.25)
 

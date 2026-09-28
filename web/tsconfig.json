@@ -25,5 +25,8 @@
     }
   },
   "include": ["src"],
+  // The tests run under node --test and import node:test, whose types the app
+  // does not load.
+  "exclude": ["src/**/*.test.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

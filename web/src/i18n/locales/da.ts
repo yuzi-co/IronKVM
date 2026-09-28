@@ -69,6 +69,31 @@ const da = {
       video: 'Videotilstand',
       videoDirectTips: 'Aktiver HTTPS i "Indstillinger > Enhed" for at bruge denne tilstand',
       resolution: 'Opløsning',
+      ocr: {
+        title: 'Læs tekst (OCR)',
+        tips: 'Teksten genkendes i denne browser. Du kan rette den, før du kopierer den.',
+        hint: 'Træk hen over den tekst, der skal læses. Tryk på Esc for at annullere.',
+        noPicture: 'Vent på videoen, og træk derefter hen over den tekst, der skal læses.',
+        cancel: 'Annuller',
+        language: 'Sprog',
+        languages: {
+          eng: 'Engelsk'
+        },
+        preview: 'Valgt område',
+        capturing: 'Optager skærmen...',
+        loading: 'Indlæser tekstgenkendelse...',
+        recognizing: 'Læser teksten...',
+        noText: 'Der blev ikke fundet nogen tekst i det valgte område.',
+        copy: 'Kopiér',
+        copied: 'Kopieret til udklipsholderen',
+        copyFailed: 'Kunne ikke kopiere til udklipsholderen',
+        selectAgain: 'Vælg igen',
+        unsupported:
+          'Denne browser kan ikke køre tekstgenkendelse. Den kræver WebAssembly SIMD, som nuværende browsere har.',
+        captureFailed: 'Kunne ikke optage skærmen.',
+        outside: 'Det valgte område ligger uden for billedet.',
+        recognizeFailed: 'Tekstgenkendelsen mislykkedes.'
+      },
       controlRegion: {
         title: 'Musekalibrering',
         description:

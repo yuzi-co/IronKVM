@@ -68,6 +68,31 @@ const en = {
       video: 'Video Mode',
       videoDirectTips: 'Enable HTTPS in "Settings > Device" to use this mode',
       resolution: 'Resolution',
+      ocr: {
+        title: 'Read Text (OCR)',
+        tips: 'The text is recognized in this browser. You can correct it before you copy it.',
+        hint: 'Drag over the text to read. Press Esc to cancel.',
+        noPicture: 'Wait for the video, then drag over the text to read.',
+        cancel: 'Cancel',
+        language: 'Language',
+        languages: {
+          eng: 'English'
+        },
+        preview: 'Selected area',
+        capturing: 'Capturing the screen...',
+        loading: 'Loading text recognition...',
+        recognizing: 'Reading the text...',
+        noText: 'No text was found in the selected area.',
+        copy: 'Copy',
+        copied: 'Copied to the clipboard',
+        copyFailed: 'Could not copy to the clipboard',
+        selectAgain: 'Select Again',
+        unsupported:
+          'This browser cannot run text recognition. It needs WebAssembly SIMD, which current browsers have.',
+        captureFailed: 'Could not capture the screen.',
+        outside: 'The selected area is outside the picture.',
+        recognizeFailed: 'Text recognition failed.'
+      },
       controlRegion: {
         title: 'Mouse Calibration',
         description:

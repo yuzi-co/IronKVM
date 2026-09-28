@@ -71,6 +71,31 @@ const it = {
       videoDirectTips:
         'Abilita HTTPS in "Impostazioni > Dispositivo" per utilizzare questa modalità',
       resolution: 'Risoluzione',
+      ocr: {
+        title: 'Leggi testo (OCR)',
+        tips: 'Il testo viene riconosciuto in questo browser. Puoi correggerlo prima di copiarlo.',
+        hint: 'Trascina sul testo da leggere. Premi Esc per annullare.',
+        noPicture: 'Attendi il video, poi trascina sul testo da leggere.',
+        cancel: 'Annulla',
+        language: 'Lingua',
+        languages: {
+          eng: 'Inglese'
+        },
+        preview: 'Area selezionata',
+        capturing: 'Acquisizione dello schermo...',
+        loading: 'Caricamento del riconoscimento del testo...',
+        recognizing: 'Lettura del testo...',
+        noText: "Nessun testo trovato nell'area selezionata.",
+        copy: 'Copia',
+        copied: 'Copiato negli appunti',
+        copyFailed: 'Impossibile copiare negli appunti',
+        selectAgain: 'Seleziona di nuovo',
+        unsupported:
+          'Questo browser non può eseguire il riconoscimento del testo. Richiede WebAssembly SIMD, supportato dai browser attuali.',
+        captureFailed: 'Impossibile acquisire lo schermo.',
+        outside: "L'area selezionata è al di fuori dell'immagine.",
+        recognizeFailed: 'Riconoscimento del testo non riuscito.'
+      },
       controlRegion: {
         title: 'Calibrazione del mouse',
         description:

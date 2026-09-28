@@ -70,6 +70,31 @@ const nb = {
       video: 'Video-kodek',
       videoDirectTips: 'Aktiver HTTPS i "Innstillinger > Enhet" for å bruke denne modusen',
       resolution: 'Oppløsning',
+      ocr: {
+        title: 'Les tekst (OCR)',
+        tips: 'Teksten gjenkjennes i denne nettleseren. Du kan rette den før du kopierer den.',
+        hint: 'Dra over teksten som skal leses. Trykk på Esc for å avbryte.',
+        noPicture: 'Vent på videoen, og dra deretter over teksten som skal leses.',
+        cancel: 'Avbryt',
+        language: 'Språk',
+        languages: {
+          eng: 'Engelsk'
+        },
+        preview: 'Valgt område',
+        capturing: 'Tar opp skjermen...',
+        loading: 'Laster inn tekstgjenkjenning...',
+        recognizing: 'Leser teksten...',
+        noText: 'Fant ingen tekst i det valgte området.',
+        copy: 'Kopier',
+        copied: 'Kopiert til utklippstavlen',
+        copyFailed: 'Kunne ikke kopiere til utklippstavlen',
+        selectAgain: 'Velg på nytt',
+        unsupported:
+          'Denne nettleseren kan ikke kjøre tekstgjenkjenning. Den krever WebAssembly SIMD, som dagens nettlesere har.',
+        captureFailed: 'Kunne ikke ta opp skjermen.',
+        outside: 'Det valgte området er utenfor bildet.',
+        recognizeFailed: 'Tekstgjenkjenningen mislyktes.'
+      },
       controlRegion: {
         title: 'Musekalibrering',
         description:

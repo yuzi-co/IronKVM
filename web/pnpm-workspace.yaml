@@ -3,6 +3,9 @@ allowBuilds:
   es5-ext: true
   esbuild: true
   msw: true
+  # tesseract.js runs opencollective-postinstall, which only prints a request
+  # for donations.
+  tesseract.js: false
   utf-8-validate: true
 
 # pnpm 11 reads its settings from this file rather than from package.json.

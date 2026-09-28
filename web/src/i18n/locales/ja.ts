@@ -69,6 +69,31 @@ const ja = {
       video: 'ビデオモード',
       videoDirectTips: 'このモードを使用するには「設定 - デバイス」で HTTPS を有効にしてください',
       resolution: '解像度',
+      ocr: {
+        title: 'テキストを読み取る (OCR)',
+        tips: 'テキストはこのブラウザー内で認識されます。コピーする前に修正できます。',
+        hint: '読み取るテキストの上をドラッグしてください。Esc でキャンセルします。',
+        noPicture: '映像が表示されるのを待ってから、読み取るテキストの上をドラッグしてください。',
+        cancel: 'キャンセル',
+        language: '言語',
+        languages: {
+          eng: '英語'
+        },
+        preview: '選択範囲',
+        capturing: '画面をキャプチャしています...',
+        loading: '文字認識を読み込んでいます...',
+        recognizing: 'テキストを読み取っています...',
+        noText: '選択範囲にテキストが見つかりませんでした。',
+        copy: 'コピー',
+        copied: 'クリップボードにコピーしました',
+        copyFailed: 'クリップボードにコピーできませんでした',
+        selectAgain: '再選択',
+        unsupported:
+          'このブラウザーでは文字認識を実行できません。現在のブラウザーが対応している WebAssembly SIMD が必要です。',
+        captureFailed: '画面をキャプチャできませんでした。',
+        outside: '選択範囲が画像の外にあります。',
+        recognizeFailed: '文字認識に失敗しました。'
+      },
       controlRegion: {
         title: 'マウス位置補正',
         description:

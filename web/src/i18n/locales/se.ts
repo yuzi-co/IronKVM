@@ -67,6 +67,31 @@ const se = {
       video: 'Videoläge',
       videoDirectTips: 'Aktivera HTTPS i "Inställningar > Enhet" för att använda detta läge',
       resolution: 'Upplösning',
+      ocr: {
+        title: 'Läs text (OCR)',
+        tips: 'Texten tolkas i den här webbläsaren. Du kan rätta den innan du kopierar den.',
+        hint: 'Dra över texten som ska läsas. Tryck på Esc för att avbryta.',
+        noPicture: 'Vänta på videon och dra sedan över texten som ska läsas.',
+        cancel: 'Avbryt',
+        language: 'Språk',
+        languages: {
+          eng: 'Engelska'
+        },
+        preview: 'Markerat område',
+        capturing: 'Fångar skärmen...',
+        loading: 'Läser in textigenkänning...',
+        recognizing: 'Läser texten...',
+        noText: 'Ingen text hittades i det markerade området.',
+        copy: 'Kopiera',
+        copied: 'Kopierat till urklipp',
+        copyFailed: 'Det gick inte att kopiera till urklipp',
+        selectAgain: 'Markera igen',
+        unsupported:
+          'Den här webbläsaren kan inte köra textigenkänning. Den kräver WebAssembly SIMD, som dagens webbläsare har.',
+        captureFailed: 'Det gick inte att fånga skärmen.',
+        outside: 'Det markerade området ligger utanför bilden.',
+        recognizeFailed: 'Textigenkänningen misslyckades.'
+      },
       controlRegion: {
         title: 'Muskalibrering',
         description:

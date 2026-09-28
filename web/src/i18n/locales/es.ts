@@ -70,6 +70,31 @@ const es = {
       video: 'Modo de vídeo',
       videoDirectTips: 'Habilita HTTPS en "Ajustes > Dispositivo" para usar este modo',
       resolution: 'Resolución',
+      ocr: {
+        title: 'Leer texto (OCR)',
+        tips: 'El texto se reconoce en este navegador. Puede corregirlo antes de copiarlo.',
+        hint: 'Arrastre sobre el texto que desea leer. Pulse Esc para cancelar.',
+        noPicture: 'Espere al vídeo y luego arrastre sobre el texto que desea leer.',
+        cancel: 'Cancelar',
+        language: 'Idioma',
+        languages: {
+          eng: 'Inglés'
+        },
+        preview: 'Área seleccionada',
+        capturing: 'Capturando la pantalla...',
+        loading: 'Cargando el reconocimiento de texto...',
+        recognizing: 'Leyendo el texto...',
+        noText: 'No se encontró texto en el área seleccionada.',
+        copy: 'Copiar',
+        copied: 'Copiado al portapapeles',
+        copyFailed: 'No se pudo copiar al portapapeles',
+        selectAgain: 'Seleccionar de nuevo',
+        unsupported:
+          'Este navegador no puede ejecutar el reconocimiento de texto. Necesita WebAssembly SIMD, que tienen los navegadores actuales.',
+        captureFailed: 'No se pudo capturar la pantalla.',
+        outside: 'El área seleccionada está fuera de la imagen.',
+        recognizeFailed: 'Falló el reconocimiento de texto.'
+      },
       controlRegion: {
         title: 'Calibración del ratón',
         description:

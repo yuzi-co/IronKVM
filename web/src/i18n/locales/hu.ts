@@ -71,6 +71,31 @@ const hu = {
       videoDirectTips:
         'Engedélyezze az HTTPS elemet a "Beállítások > Eszköz" menüpontban ennek a módnak a használatához',
       resolution: 'Felbontás',
+      ocr: {
+        title: 'Szöveg beolvasása (OCR)',
+        tips: 'A szövegfelismerés ebben a böngészőben fut. Másolás előtt javíthatja a szöveget.',
+        hint: 'Húzza az egeret a beolvasandó szöveg fölé. A megszakításhoz nyomja meg az Esc billentyűt.',
+        noPicture: 'Várja meg a videót, majd húzza az egeret a beolvasandó szöveg fölé.',
+        cancel: 'Mégse',
+        language: 'Nyelv',
+        languages: {
+          eng: 'Angol'
+        },
+        preview: 'Kijelölt terület',
+        capturing: 'A képernyő rögzítése...',
+        loading: 'A szövegfelismerés betöltése...',
+        recognizing: 'A szöveg beolvasása...',
+        noText: 'A kijelölt területen nem található szöveg.',
+        copy: 'Másolás',
+        copied: 'Vágólapra másolva',
+        copyFailed: 'Nem sikerült a vágólapra másolni',
+        selectAgain: 'Újbóli kijelölés',
+        unsupported:
+          'Ez a böngésző nem tud szövegfelismerést futtatni. Ehhez WebAssembly SIMD szükséges, amelyet a jelenlegi böngészők támogatnak.',
+        captureFailed: 'Nem sikerült rögzíteni a képernyőt.',
+        outside: 'A kijelölt terület a képen kívül esik.',
+        recognizeFailed: 'A szövegfelismerés sikertelen.'
+      },
       controlRegion: {
         title: 'Egérkalibrálás',
         description:

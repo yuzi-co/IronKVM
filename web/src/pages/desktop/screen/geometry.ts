@@ -1,4 +1,4 @@
-import { InputRegion } from '@/types';
+import type { InputRegion } from '@/types';
 
 export type MediaSize = {
   width: number;
@@ -180,8 +180,11 @@ function isSymmetricBorder(start: number, end: number, size: number) {
   );
 }
 
+// getRenderedMediaRect finds where object-fit: contain draws the picture inside
+// an element. It takes any rectangle rather than a DOMRect, so that it runs
+// outside a browser too.
 export function getRenderedMediaRect(
-  elementRect: DOMRect,
+  elementRect: FrameContent,
   mediaSize: MediaSize
 ): RenderedMediaRect {
   const mediaRatio = mediaSize.width / mediaSize.height;

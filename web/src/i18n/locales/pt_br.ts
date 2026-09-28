@@ -69,6 +69,31 @@ const pt_br = {
       video: 'Modo de Vídeo',
       videoDirectTips: 'Ative HTTPS em "Configurações > Dispositivo" para usar este modo',
       resolution: 'Resolução',
+      ocr: {
+        title: 'Ler texto (OCR)',
+        tips: 'O texto é reconhecido neste navegador. Você pode corrigi-lo antes de copiar.',
+        hint: 'Arraste sobre o texto a ser lido. Pressione Esc para cancelar.',
+        noPicture: 'Aguarde o vídeo e depois arraste sobre o texto a ser lido.',
+        cancel: 'Cancelar',
+        language: 'Idioma',
+        languages: {
+          eng: 'Inglês'
+        },
+        preview: 'Área selecionada',
+        capturing: 'Capturando a tela...',
+        loading: 'Carregando o reconhecimento de texto...',
+        recognizing: 'Lendo o texto...',
+        noText: 'Nenhum texto foi encontrado na área selecionada.',
+        copy: 'Copiar',
+        copied: 'Copiado para a área de transferência',
+        copyFailed: 'Não foi possível copiar para a área de transferência',
+        selectAgain: 'Selecionar novamente',
+        unsupported:
+          'Este navegador não consegue executar o reconhecimento de texto. Ele precisa de WebAssembly SIMD, que os navegadores atuais têm.',
+        captureFailed: 'Não foi possível capturar a tela.',
+        outside: 'A área selecionada está fora da imagem.',
+        recognizeFailed: 'O reconhecimento de texto falhou.'
+      },
       controlRegion: {
         title: 'Calibração do mouse',
         description:

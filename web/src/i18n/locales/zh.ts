@@ -66,6 +66,31 @@ const zh = {
       video: '视频模式',
       videoDirectTips: '该模式需启用 HTTPS，请前往「设置 - 设备」中开启',
       resolution: '分辨率',
+      ocr: {
+        title: '识别文字 (OCR)',
+        tips: '文字在此浏览器中识别，复制前可以修改。',
+        hint: '拖动选中要识别的文字，按 Esc 取消。',
+        noPicture: '请等待视频画面出现，然后拖动选中要识别的文字。',
+        cancel: '取消',
+        language: '语言',
+        languages: {
+          eng: '英语'
+        },
+        preview: '选中区域',
+        capturing: '正在截取屏幕...',
+        loading: '正在加载文字识别...',
+        recognizing: '正在识别文字...',
+        noText: '选中区域内未找到文字。',
+        copy: '复制',
+        copied: '已复制到剪贴板',
+        copyFailed: '无法复制到剪贴板',
+        selectAgain: '重新选择',
+        unsupported:
+          '此浏览器无法运行文字识别，需要 WebAssembly SIMD 支持，当前主流浏览器均已支持。',
+        captureFailed: '无法截取屏幕。',
+        outside: '选中区域在画面之外。',
+        recognizeFailed: '文字识别失败。'
+      },
       controlRegion: {
         title: '鼠标校准',
         description:
