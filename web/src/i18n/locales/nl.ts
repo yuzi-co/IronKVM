@@ -8,18 +8,23 @@ const nl = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      cookieRejected:
+        'De browser weigerde de sessie op te slaan. Een cookie van een eerdere HTTPS-sessie kan niet via onversleuteld http worden vervangen. Wis de cookies voor dit adres of open een privévenster en log opnieuw in.',
       login: 'Inloggen',
       placeholderUsername: 'Voer gebruikersnaam in',
       placeholderPassword: 'Voer wachtwoord in',
+      placeholderCurrentPassword: 'Huidig wachtwoord',
       placeholderPassword2: 'Voer wachtwoord nogmaals in',
       noEmptyUsername: 'Gebruikersnaam mag niet leeg zijn',
       noEmptyPassword: 'Wachtwoord mag niet leeg zijn',
+      passwordLength: 'Het wachtwoord moet tussen 8 en 72 tekens lang zijn',
       noAccount:
         'Ophalen van gebruikersinformatie mislukt, vernieuw de webpagina of reset het wachtwoord',
       invalidUser: 'Ongeldige gebruikersnaam of wachtwoord',
       locked: 'Te veel aanmeldingen, probeer het later opnieuw',
       globalLocked: 'Systeem wordt beveiligd. Probeer het later opnieuw',
       error: 'Onverwachte fout',
+      invalidCurrentPassword: 'Het huidige wachtwoord is onjuist',
       changePassword: 'Wachtwoord wijzigen',
       changePasswordDesc:
         'Voor de veiligheid van uw apparaat, wijzig alstublieft het webaanmeldingswachtwoord.',
@@ -245,6 +250,10 @@ const nl = {
       relative: 'Relatieve modus',
       absoluteShort: 'Absoluut',
       relativeShort: 'Relatief',
+      absoluteStalled: 'Het doelapparaat negeert de absolute muis',
+      absoluteStalledDesc:
+        'Het doelapparaat neemt geen absolute muisrapporten meer aan, dus aanwijzerbewegingen gaan verloren. Het toetsenbord werkt gewoon. Het herstellen van USB verhelpt dit vaak; de relatieve modus gebruikt een ander endpoint.',
+      useRelative: 'Overschakelen naar relatieve modus',
       direction: 'Scrollwielrichting',
       scrollUp: 'Scroll naar boven',
       scrollDown: 'Scroll naar beneden',
@@ -259,6 +268,8 @@ const nl = {
         desc: 'Als uw muis en toetsenbord niet meer reageren en het opnieuw instellen van HID niet helpt, kan er sprake zijn van een compatibiliteitsprobleem tussen de NanoKVM en het apparaat. Probeer de modus HID-Only in te schakelen voor betere compatibiliteit.',
         tip1: 'Als u de modus HID-Only inschakelt, worden de virtuele U-schijf en het virtuele netwerk ontkoppeld',
         tip2: 'In de modus HID-Alleen is beeldmontage uitgeschakeld',
+        rebuild:
+          'Bij het wisselen van modus wordt de USB-verbinding opnieuw opgebouwd. NanoKVM start niet opnieuw op',
         enable: 'Schakel de modus HID-Alleen in',
         disable: 'Schakel de modus HID-Alleen uit'
       }
@@ -275,6 +286,17 @@ const nl = {
       unmountDesc:
         'Op sommige systemen moet u de image handmatig uitwerpen van de externe host voordat u de image ontkoppelt.',
       refresh: 'Vernieuw de afbeeldingenlijst',
+      disk: 'Schijf',
+      cdrom: 'CD',
+      driveEmpty: 'Leeg',
+      eject: 'Uitwerpen',
+      readOnly: 'Alleen-lezen',
+      readOnlyTip: 'Geldt voor de volgende image die in de schijf wordt geplaatst.',
+      noDrives: 'Geen virtuele stations. Schakel de virtuele schijf in bij Instellingen.',
+      insertFailed: 'Plaatsen mislukt',
+      ejectFailed: 'Uitwerpen mislukt',
+      insertInto: 'Plaatsen in {{drive}}. Klik om te wijzigen.',
+      loadedIn: 'In station {{drive}}',
       attention: 'Let op',
       deleteConfirm: 'Weet u zeker dat u deze afbeelding wilt verwijderen?',
       okBtn: 'Ja',
@@ -372,7 +394,15 @@ const nl = {
       sleepConfirm: 'De host in slaapstand zetten?',
       powerDownConfirm: 'De uitschakeltoets naar de host sturen?',
       wakeTip:
-        'Een slapende host negeert Wekken vaak van het apparaat dat hem in slaap bracht. Wekken met Shift drukt een toets op het toetsenbord in, die meer hosts accepteren.'
+        'Een slapende host negeert Wekken vaak van het apparaat dat hem in slaap bracht. Wekken met Shift drukt een toets op het toetsenbord in, die meer hosts accepteren.',
+      led: 'Power-LED',
+      ledOn: 'Aan',
+      ledOff: 'Uit',
+      ledUnknown: 'Onbekend',
+      ledConnected: 'Power-LED aangesloten',
+      ledConnectedTip:
+        'Schakel dit alleen in als de power-LED-aansluiting van de host met het bord is verbonden. Zonder die aansluiting is de stroomstatus onbekend.',
+      ledConnectedFailed: 'Opslaan van de Power-LED-instelling mislukt'
     },
     settings: {
       title: 'Instellingen',
@@ -395,6 +425,33 @@ const nl = {
         okBtn: 'Bevestigen',
         cancelBtn: 'Annuleren'
       },
+      redfish: {
+        title: 'Redfish',
+        service: 'Redfish-service',
+        serviceDesc:
+          'De DMTF Redfish API, voor stroombeheer, virtuele media en status vanuit tools zoals redfishtool en Ansible. Uitschakelen beëindigt alle Redfish-sessies.',
+        endpoint: 'Service-root',
+        httpsOn: 'Het bord gebruikt HTTPS, wat de meeste Redfish-tools nodig hebben.',
+        httpsOff:
+          'Het bord gebruikt onversleuteld HTTP. De meeste Redfish-tools hebben HTTPS nodig: schakel het in bij "Instellingen > Netwerk".',
+        credentials:
+          'Redfish accepteert de KVM-accounts, met Basic-authenticatie of een Redfish-sessie, en API-sleutels verzonden als X-Auth-Token. API-sleutels beheert u op de pagina API-sleutels.',
+        powerActions: 'Stroomacties',
+        powerActionsDesc:
+          'De resettypen die nu worden aangeboden. On, ForceOff en GracefulShutdown hebben de stroomstatus nodig en worden daarom alleen aangeboden als "Power-LED aangesloten" is ingeschakeld in het stroommenu.',
+        sessions: 'Sessies',
+        noSessions: 'Geen open Redfish-sessies',
+        created: 'Aangemaakt',
+        lastUsed: 'Laatst gebruikt',
+        refresh: 'Vernieuwen',
+        end: 'Beëindigen',
+        endConfirmTitle: 'Deze Redfish-sessie beëindigen?',
+        endConfirmDesc: 'Het token werkt onmiddellijk niet meer. De client moet opnieuw inloggen.',
+        failed: 'Redfish-actie mislukt',
+        copyFailed: 'Kopiëren mislukt. Kopieer handmatig.',
+        okBtn: 'Bevestigen',
+        cancelBtn: 'Annuleren'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Host-watchdog',
@@ -403,7 +460,7 @@ const nl = {
         stillWarning:
           'Een host waarvan het scherm in slaapstand gaat, of waarvan het beeld stilstaat terwijl hij werkt, lijkt vastgelopen. Zet de schermslaapstand op de host uit, of stel een ping-adres in.',
         ledHint:
-          '"Power LED connected" staat uit in het stroommenu. De watchdog ziet niet wanneer de host uit staat, dus behandelt hij de host als altijd aan.',
+          '"Power-LED aangesloten" staat uit in het stroommenu. De watchdog ziet niet wanneer de host uit staat, dus behandelt hij de host als altijd aan.',
         timeout: 'Time-out',
         timeoutDesc:
           'Hoe lang de host geen teken van leven mag geven voordat de watchdog ingrijpt.',
@@ -468,7 +525,15 @@ const nl = {
         applicationTip: 'Versie van de NanoKVM-webapplicatie',
         image: 'Image versie',
         imageTip: 'Versie van de NanoKVM-systeemimage',
+        kernel: 'Kernelversie',
+        kernelTip: 'Versie van de Linux-kernel die nu draait',
         deviceKey: 'Apparaat sleutel',
+        videoMemory: 'Videogeheugen',
+        videoMemoryTip:
+          'Geheugen gereserveerd voor video-opname. Het wordt niet gedeeld met de rest van het systeem.',
+        videoMemoryGenerations_one: '{{count}} eerdere NanoKVM-sessie houdt videogeheugen vast',
+        videoMemoryGenerations_other: '{{count}} eerdere NanoKVM-sessies houden videogeheugen vast',
+        videoMemoryReboot: 'Start opnieuw op om het vrij te maken.',
         community: 'Community',
         hostname: 'Hostnaam',
         hostnameUpdated: 'Hostnaam bijgewerkt. Start opnieuw op om toe te passen.',
@@ -517,6 +582,16 @@ const nl = {
         oled: {
           title: 'OLED',
           description: 'OLED scherm automatisch slapen',
+          brightness: 'OLED-helderheid',
+          brightnessDescription: 'Een lager niveau verlengt de levensduur van het scherm',
+          brightnessLevels: {
+            '64': 'Laagst',
+            '96': 'Laag',
+            '128': 'Gemiddeld',
+            '160': 'Hoog',
+            '207': 'Standaard',
+            '255': 'Maximaal'
+          },
           0: 'Nooit',
           15: '15 sec',
           30: '30 sec',
@@ -532,11 +607,35 @@ const nl = {
           tip: 'Stel een sterk wachtwoord in voordat u (Account - Wachtwoord wijzigen) inschakelt'
         },
         advanced: 'Geavanceerde instellingen',
+        cpuFreq: {
+          title: 'CPU-frequentie',
+          description: 'Stel de CPU-kloksnelheid in voor de volgende keer opstarten',
+          tip: 'De CPU start op 850 MHz en is gespecificeerd voor 1000 MHz. Een nieuwe waarde wordt bij de volgende keer opstarten toegepast, niet terwijl het systeem draait. 1000 MHz valt binnen de specificatie; de temperatuur blijft bij beide instellingen ruim binnen de grenzen.',
+          running: 'Actief: {{mhz}} MHz',
+          rebootToApply: 'opnieuw opstarten om toe te passen',
+          rebootConfirm: 'Nu opnieuw opstarten om {{mhz}} MHz toe te passen?'
+        },
         swap: {
           title: 'Wisselen',
           disable: 'Uitschakelen',
           description: 'Stel de grootte van het wisselbestand in',
           tip: 'Het inschakelen van deze functie kan de bruikbare levensduur van uw SD-kaart verkorten!'
+        },
+        zram: {
+          title: 'Gecomprimeerde swap (zram)',
+          description: 'Swap in gecomprimeerd RAM in plaats van op de SD-kaart',
+          tip: 'zram houdt swap van de SD-kaart af en veroorzaakt dus geen slijtage. Er zit geen swap op schijf achter: als zram vol raakt, stopt de kernel een proces in plaats van traag te pagineren. De geheugenlimiet bepaalt hoeveel RAM zram mag gebruiken.',
+          unavailable: 'De kernelmodules zijn niet geïnstalleerd op dit apparaat',
+          inactive: 'Ingeschakeld, maar het apparaat is niet gestart',
+          active: 'Actief - {{used}} van {{total}}, {{ratio}}x',
+          off: 'Uit',
+          detail: {
+            algorithm: 'Algoritme: {{algorithm}}',
+            memory: 'Geheugen gebruikt: {{used}} van {{limit}}',
+            memoryNoLimit: 'Geheugen gebruikt: {{used}}, geen limiet ingesteld',
+            counters:
+              "Pagina's ingeswapt {{in}}, uitgeswapt {{out}} (alle swap-apparaten, sinds opstarten)"
+          }
         },
         mouseJiggler: {
           title: 'Muisschommel',
@@ -594,7 +693,26 @@ const nl = {
           reenumerate:
             'Toepassen bouwt de USB-verbinding opnieuw op. De host verliest het toetsenbord, de muis en de virtuele schijf enkele seconden.'
         },
+        audio: 'Virtuele luidspreker',
+        audioDesc:
+          'Biedt de externe host een USB-geluidskaart aan, zodat u het geluid kunt horen. De host moet deze als uitvoerapparaat kiezen. Omschakelen bouwt de USB-verbinding opnieuw op.',
+        audioNote: 'Audio is beschikbaar in beide H.264-modi (WebRTC en Direct), niet in MJPEG',
+        console: 'Seriële console',
+        consoleDesc:
+          'Biedt de externe host een seriële USB-poort aan, om op deze NanoKVM in te loggen als het netwerk onbereikbaar is',
+        consoleTip:
+          'Iedereen die de externe host bedient, krijgt een inlogprompt van deze NanoKVM. Stel een sterk wachtwoord in voordat u dit inschakelt (Account - Wachtwoord wijzigen).',
         endpoints: {
+          title: 'USB-endpoints',
+          used: '{{used}} van {{total}} gebruikt',
+          cost: 'gebruikt {{cost}}',
+          needs: 'heeft {{cost}} nodig',
+          full: 'Niet genoeg USB-endpoints. Schakel eerst iets anders uit.',
+          inactive:
+            'Aan, maar niet actief: de USB-controller heeft geen endpoints meer. Schakel een ander apparaat uit en dit apparaat start meteen.',
+          explain:
+            'De USB-controller heeft een vast aantal inkomende endpoints, en die worden hier geteld. Als er meer apparaten zijn ingeschakeld dan er passen, blijven toetsenbord en muis behouden en wordt de rest uitgeschakeld.',
+          error: 'Kan het apparaat niet bereiken. Probeer het opnieuw.',
           fitTogether: 'Deze passen samen: {{sets}}'
         },
         reboot: 'Opnieuw opstarten',
@@ -621,7 +739,10 @@ const nl = {
         },
         tls: {
           description: 'HTTPS-protocol inschakelen',
-          tip: 'Let op: HTTPS gebruiken kan de latentie verhogen, vooral in MJPEG-videomodus.'
+          tip: 'Let op: HTTPS gebruiken kan de latentie verhogen, vooral in MJPEG-videomodus.',
+          restarting: 'De apparaatserver wordt opnieuw gestart, dit duurt ongeveer twee minuten...',
+          waiting: 'Wachten tot het apparaat weer reageert...',
+          waitingHttp: 'Terugschakelen naar http. Vernieuw deze pagina als deze niet vanzelf opent.'
         },
         ethernet: {
           title: 'IP-adres',
@@ -682,6 +803,54 @@ const nl = {
           none: 'Geen'
         }
       },
+      vpn: {
+        loading: 'Laden...',
+        okBtn: 'Ja',
+        cancelBtn: 'Nee',
+        restart: '{{name}} opnieuw starten?',
+        stop: '{{name}} stoppen?',
+        stopDesc:
+          'De daemon stopt nu. "Starten bij opstarten" is een aparte schakelaar en blijft zoals hij is.',
+        update: '{{name}} bijwerken naar {{version}}?',
+        updateDesc: 'De daemon herstart als deze draait. De aanmelding blijft behouden.',
+        notInstall: '{{name}} is niet geïnstalleerd.',
+        install: 'Installeren',
+        installing: 'Installeren',
+        installFailed: 'Installatie mislukt',
+        retry: 'Opnieuw proberen',
+        notRunning: '{{name}} draait niet. Start het om verder te gaan.',
+        run: 'Starten',
+        boot: 'Starten bij opstarten',
+        bootDesc: '{{name}} starten wanneer de KVM opstart.',
+        enable: '{{name}} inschakelen',
+        control: 'Controleserver',
+        connected: 'Verbonden',
+        disconnected: 'Niet verbonden',
+        deviceName: 'Apparaatnaam',
+        deviceIP: 'Apparaat-IP',
+        account: 'Account',
+        version: 'Versie',
+        uptime: 'Uptime',
+        peers: 'Peers',
+        noPeers: 'Nog geen peers.',
+        online: 'Online',
+        offline: 'Offline',
+        memory: 'Geheugen',
+        daemonRss: 'Daemon',
+        group: 'Add-ongroep',
+        high: 'afgeremd boven {{size}}',
+        max: 'gestopt door de kernel boven {{size}}',
+        noGroup: 'Geen geheugengroep voor add-ons op dit bord.',
+        uninstall: '{{name}} verwijderen',
+        uninstallDesc:
+          'Weet u zeker dat u {{name}} wilt verwijderen? De aanmelding blijft op het bord bewaard.',
+        blocked:
+          '{{other}} draait of start bij het opstarten. Er kan maar één VPN tegelijk draaien: stop eerst {{other}} en schakel het starten bij opstarten ervan uit.',
+        swap: {
+          title: 'Swapgeheugen',
+          tip: 'Als de daemon te weinig geheugen heeft, probeer dan swapgeheugen in te schakelen. Dit stelt het wisselbestand standaard in op 256MB; de grootte kunt u aanpassen in "Instellingen > Apparaat".'
+        }
+      },
       tailscale: {
         title: 'Tailscale',
         retry: 'Vernieuw en probeer opnieuw. Of probeer handmatig te installeren',
@@ -698,6 +867,21 @@ const nl = {
         loginSuccess: 'Inloggen gelukt',
         logout: 'Uitloggen',
         logoutDesc: 'Weet u zeker dat u wilt uitloggen?'
+      },
+      netbird: {
+        title: 'NetBird',
+        notLogin:
+          'Dit apparaat is nog niet lid van een NetBird-netwerk. Word lid met een setup key of log in met SSO.',
+        setupKey: 'Setup key',
+        setupKeyPlaceholder: 'Plak een setup key uit het NetBird-dashboard',
+        join: 'Lid worden',
+        or: 'of',
+        sso: 'Inloggen met SSO',
+        urlPeriod: 'Deze url is 10 minuten geldig',
+        loginSuccess: 'Inloggen gelukt',
+        logout: 'Afmelden',
+        logoutDesc:
+          'Afmelden verwijdert deze peer uit uw NetBird-account en wist de configuratie hier. Opnieuw lid worden vereist een setup key of een SSO-login, en de peer kan een nieuw IP-adres krijgen. Doorgaan?'
       },
       update: {
         title: 'Controleren op updates',
@@ -725,6 +909,7 @@ const nl = {
           confirmDesc:
             'SHA-512 controleert alleen of het pakket overeenkomt met het manifest dat door deze server wordt verstrekt. Het bewijst niet dat het pakket een officiële NanoKVM-release is. Een defecte of kwaadwillende server kan het apparaat onbruikbaar maken, gegevensverlies veroorzaken of het systeem compromitteren.',
           confirm: 'Toch gebruiken',
+          useSipeed: 'De officiële Sipeed-server gebruiken',
           previewDisabled:
             'Preview-updates zijn niet beschikbaar zolang een aangepaste updateserver is ingeschakeld.'
         },
@@ -742,12 +927,59 @@ const nl = {
       account: {
         title: 'Account',
         webAccount: 'Web Account Naam',
+        role: 'Rol',
+        roles: { admin: 'Beheerder', user: 'Gebruiker' },
         password: 'Wachtwoord',
         updateBtn: 'Update',
         logoutBtn: 'Afmelden',
         logoutDesc: 'Weet u zeker dat u wilt uitloggen?',
         okBtn: 'Ja',
-        cancelBtn: 'Nee'
+        cancelBtn: 'Nee',
+        users: {
+          title: 'Gebruikers',
+          create: 'Gebruiker aanmaken',
+          enabled: 'Ingeschakeld',
+          disabled: 'Uitgeschakeld',
+          deviceOwner: 'Eigenaar van het apparaat',
+          resetPassword: 'Wachtwoord resetten',
+          delete: 'Verwijderen',
+          deleteConfirm: 'Deze gebruiker verwijderen en al zijn sessies intrekken?',
+          created: 'Gebruiker aangemaakt',
+          deleted: 'Gebruiker verwijderd',
+          passwordUpdated: 'Wachtwoord bijgewerkt',
+          loadFailed: 'Laden van gebruikers mislukt',
+          saveFailed: 'Opslaan van gebruiker mislukt',
+          deleteFailed: 'Verwijderen van gebruiker mislukt'
+        }
+      },
+      apiKeys: {
+        title: 'API-sleutels',
+        description:
+          'Een sleutel handelt namens zijn eigenaar, met de rol van die gebruiker. Stuur hem als Authorization: Bearer <key> voor metrics en de API, of als X-Auth-Token voor Redfish.',
+        name: 'Naam',
+        namePlaceholder: 'Waarvoor de sleutel is, bijvoorbeeld prometheus',
+        nameRequired: 'Geef de sleutel een naam',
+        nameTooLong: 'De naam mag maximaal 64 tekens lang zijn',
+        unnamed: '(naamloos)',
+        create: 'Sleutel aanmaken',
+        created: 'Aangemaakt',
+        owner: 'Eigenaar',
+        empty: 'Geen API-sleutels',
+        newKeyTitle: 'Uw nieuwe API-sleutel',
+        newKeyWarning:
+          'Kopieer de sleutel nu. Hij wordt niet opgeslagen en kan niet opnieuw worden getoond. Als u hem kwijtraakt, trek hem dan in en maak een nieuwe aan.',
+        copy: 'Kopiëren',
+        copied: 'Gekopieerd',
+        copyFailed: 'Kopiëren mislukt. Kopieer handmatig.',
+        done: 'Klaar',
+        revoke: 'Intrekken',
+        revokeConfirmTitle: 'Deze API-sleutel intrekken?',
+        revokeConfirmDesc: 'Alles wat "{{name}}" gebruikt, werkt onmiddellijk niet meer.',
+        revoked: 'API-sleutel ingetrokken',
+        loadFailed: 'Laden van API-sleutels mislukt',
+        createFailed: 'Aanmaken van API-sleutel mislukt',
+        revokeFailed: 'Intrekken van API-sleutel mislukt',
+        cancelBtn: 'Annuleren'
       }
     },
     picoclaw: {
@@ -917,18 +1149,38 @@ const nl = {
     },
     error: {
       title: 'Er is een probleem opgetreden',
-      refresh: 'Vernieuwen'
+      refresh: 'Vernieuwen',
+      panel: 'Dit deel van de pagina werkt niet meer',
+      retry: 'Opnieuw proberen'
     },
     fullscreen: {
       toggle: 'Volledig scherm schakelen'
     },
     input: {
+      disconnected: 'Toetsenbord en muis zijn niet verbonden',
+      disconnectedTls:
+        'De browser weigerde de beveiligde verbinding voor toetsenbord en muis, en doet dat zonder te vragen. Het certificaat dat dit apparaat heeft gegenereerd, wordt nog niet vertrouwd. Open dit adres in een nieuw tabblad, accepteer het certificaat en vernieuw daarna de pagina. Het certificaat installeren is de betrouwbare oplossing.',
+      disconnectedNever:
+        'De verbinding voor toetsenbord en muis kon niet worden geopend. De rest van de pagina werkt, omdat die deze verbinding niet gebruikt. Controleer of niets tussen u en het apparaat haar blokkeert.',
+      disconnectedDropped:
+        'De verbinding voor toetsenbord en muis is verbroken en niet hersteld. Na een herstart maakt ze vanzelf opnieuw verbinding; als dit blijft, vernieuw dan de pagina.',
       hidDisabled: 'HID is uitgeschakeld op dit apparaat (/boot/disable_hid).',
       keyFailed: 'De toets kon niet worden verzonden.'
     },
+    speaker: { title: 'Luidspreker', unmute: 'Geluid aan', mute: 'Dempen' },
     menu: {
       collapse: 'Menu samenvouwen',
       expand: 'Menu uitvouwen'
+    },
+    ion: {
+      checking: 'Videogeheugen controleren voordat de stream start...',
+      warn: 'Het videogeheugen raakt op. Eén herstart van de server zou het uitputten. Start opnieuw op wanneer het u uitkomt.',
+      criticalTitle: 'Niet genoeg videogeheugen om de stream te starten',
+      criticalBody:
+        'Video starten zou het gereserveerde geheugen uitputten en de server stoppen. Alle andere functies blijven werken, inclusief stroombeheer en opnieuw opstarten. Alleen opnieuw opstarten van de NanoKVM maakt dit geheugen vrij.',
+      criticalContinue: 'Video toch starten',
+      criticalReboot: 'NanoKVM opnieuw opstarten',
+      criticalRebooting: 'Opnieuw opstarten...'
     }
   }
 };

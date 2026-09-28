@@ -8,18 +8,23 @@ const da = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      cookieRejected:
+        'Browseren nægtede at gemme sessionen. En cookie fra en tidligere HTTPS-session kan ikke erstattes via ukrypteret http. Ryd cookies for denne adresse, eller åbn et privat vindue, og log ind igen.',
       login: 'Log ind',
       placeholderUsername: 'Indtast brugernavn',
       placeholderPassword: 'indtast adgangskode',
+      placeholderCurrentPassword: 'Nuværende adgangskode',
       placeholderPassword2: 'indtast adgangskode igen',
       noEmptyUsername: 'brugernavn kan ikke være tom',
       noEmptyPassword: 'adgangskode kan ikke være tom',
+      passwordLength: 'Adgangskoden skal være mellem 8 og 72 tegn',
       noAccount:
         'Kunne ikke hente brugeroplysninger. Prøv at opdater siden eller nulstil adgangskoden',
       invalidUser: 'ugyldigt brugernavn eller adgangskode',
       locked: 'For mange logins, prøv venligst igen senere',
       globalLocked: 'System under beskyttelse, prøv venligst igen senere',
       error: 'uventet fejl',
+      invalidCurrentPassword: 'Den nuværende adgangskode er forkert',
       changePassword: 'Skift adgangskode',
       changePasswordDesc: 'For sikkerheden af din enhed, bedes du ændre web-login adgangskoden.',
       differentPassword: 'Adgangskoder er ikke ens',
@@ -242,6 +247,10 @@ const da = {
       relative: 'Relativ tilstand',
       absoluteShort: 'Absolut',
       relativeShort: 'Relativ',
+      absoluteStalled: 'Målenheden ignorerer den absolutte mus',
+      absoluteStalledDesc:
+        'Målenheden er holdt op med at modtage absolutte muserapporter, så markørbevægelser går tabt. Tastaturet er ikke påvirket. Gendannelse af USB løser det ofte; relativ tilstand bruger et andet endpoint.',
+      useRelative: 'Skift til relativ tilstand',
       direction: 'Rullehjulsretning',
       scrollUp: 'Rul op',
       scrollDown: 'Rul ned',
@@ -255,6 +264,7 @@ const da = {
         desc: 'Hvis din mus og tastatur holder op med at reagere, og nulstilling af HID ikke hjælper, kan det være et kompatibilitetsproblem mellem NanoKVM og enheden. Prøv at aktivere HID-Only-tilstand for bedre kompatibilitet.',
         tip1: 'Aktivering af HID-Only-tilstand vil afmontere den virtuelle U-disk og det virtuelle netværk',
         tip2: 'I HID-Only-tilstand er billedmontering deaktiveret',
+        rebuild: 'Skift af tilstand genopbygger USB-forbindelsen. NanoKVM genstarter ikke',
         enable: 'Aktiver HID-kun tilstand',
         disable: 'Deaktiver HID-kun tilstand'
       }
@@ -271,6 +281,17 @@ const da = {
       unmountDesc:
         'På nogle systemer skal du manuelt skubbe ud fra fjernværten, før du afmonterer billedet.',
       refresh: 'Opdater billedlisten',
+      disk: 'Disk',
+      cdrom: 'CD',
+      driveEmpty: 'Tom',
+      eject: 'Skub ud',
+      readOnly: 'Skrivebeskyttet',
+      readOnlyTip: 'Gælder for det næste diskbillede, der indsættes i drevet.',
+      noDrives: 'Ingen virtuelle drev. Slå den virtuelle disk til under Indstillinger.',
+      insertFailed: 'Indsættelse mislykkedes',
+      ejectFailed: 'Udskubning mislykkedes',
+      insertInto: 'Indsæt i {{drive}}. Klik for at ændre.',
+      loadedIn: 'I drevet {{drive}}',
       attention: 'Opmærksomhed påkrævet',
       deleteConfirm: 'Er du sikker på, at du vil slette dette billede?',
       okBtn: 'Ja',
@@ -368,7 +389,15 @@ const da = {
       sleepConfirm: 'Sæt værten i dvale?',
       powerDownConfirm: 'Send sluk-tasten til værten?',
       wakeTip:
-        'En vært i dvale ignorerer ofte Væk fra den enhed, der satte den i dvale. Væk med Shift trykker på en tast på tastaturet, som flere værter reagerer på.'
+        'En vært i dvale ignorerer ofte Væk fra den enhed, der satte den i dvale. Væk med Shift trykker på en tast på tastaturet, som flere værter reagerer på.',
+      led: 'Strøm-LED',
+      ledOn: 'Tændt',
+      ledOff: 'Slukket',
+      ledUnknown: 'Ukendt',
+      ledConnected: 'Strøm-LED tilsluttet',
+      ledConnectedTip:
+        "Slå kun til, hvis værtens stikben til strøm-LED'en er forbundet til kortet. Uden den er strømtilstanden ukendt.",
+      ledConnectedFailed: 'Kunne ikke gemme indstillingen for strøm-LED'
     },
     settings: {
       title: 'Indstillinger',
@@ -390,6 +419,33 @@ const da = {
         okBtn: 'Bekræft',
         cancelBtn: 'Annuller'
       },
+      redfish: {
+        title: 'Redfish',
+        service: 'Redfish-tjeneste',
+        serviceDesc:
+          'DMTF Redfish API til strømstyring, virtuelle medier og status fra værktøjer som redfishtool og Ansible. Når den slås fra, afsluttes alle Redfish-sessioner.',
+        endpoint: 'Tjenesterod',
+        httpsOn: 'Kortet bruger HTTPS, som de fleste Redfish-værktøjer kræver.',
+        httpsOff:
+          'Kortet bruger ukrypteret HTTP. De fleste Redfish-værktøjer kræver HTTPS: slå det til under "Indstillinger > Netværk".',
+        credentials:
+          'Redfish accepterer KVM-kontiene med Basic-godkendelse eller en Redfish-session samt API-nøgler sendt som X-Auth-Token. API-nøgler administreres på siden API-nøgler.',
+        powerActions: 'Strømhandlinger',
+        powerActionsDesc:
+          'De nulstillingstyper, der tilbydes nu. On, ForceOff og GracefulShutdown kræver strømtilstanden, så de tilbydes kun, når "Strøm-LED tilsluttet" er slået til i strømmenuen.',
+        sessions: 'Sessioner',
+        noSessions: 'Ingen åbne Redfish-sessioner',
+        created: 'Oprettet',
+        lastUsed: 'Sidst brugt',
+        refresh: 'Opdater',
+        end: 'Afslut',
+        endConfirmTitle: 'Afslut denne Redfish-session?',
+        endConfirmDesc: 'Dens token holder straks op med at virke. Klienten skal logge ind igen.',
+        failed: 'Redfish-handling mislykkedes',
+        copyFailed: 'Kopiering mislykkedes. Kopiér manuelt.',
+        okBtn: 'Bekræft',
+        cancelBtn: 'Annuller'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Værts-watchdog',
@@ -398,7 +454,7 @@ const da = {
         stillWarning:
           'En vært, hvis skærm går i dvale, eller hvis billede står stille, mens den arbejder, ser ud til at være gået i stå. Slå skærmdvale fra på værten, eller angiv en ping-adresse.',
         ledHint:
-          '"Power LED connected" er slået fra i strømmenuen. Watchdoggen kan ikke se, hvornår værten er slukket, så den behandler værten som altid tændt.',
+          '"Strøm-LED tilsluttet" er slået fra i strømmenuen. Watchdoggen kan ikke se, hvornår værten er slukket, så den behandler værten som altid tændt.',
         timeout: 'Tidsgrænse',
         timeoutDesc: 'Hvor længe værten må være uden livstegn, før watchdoggen griber ind.',
         action: 'Handling',
@@ -462,7 +518,16 @@ const da = {
         applicationTip: 'Version af NanoKVM-webapplikationen',
         image: 'Firmware version',
         imageTip: 'Version af NanoKVM-systemimaget',
+        kernel: 'Kerneversion',
+        kernelTip: 'Udgaven af den Linux-kerne, der kører nu',
         deviceKey: 'Enhedsnøgle',
+        videoMemory: 'Videohukommelse',
+        videoMemoryTip:
+          'Hukommelse reserveret til videooptagelse. Den deles ikke med resten af systemet.',
+        videoMemoryGenerations_one: '{{count}} tidligere NanoKVM-session optager videohukommelse',
+        videoMemoryGenerations_other:
+          '{{count}} tidligere NanoKVM-sessioner optager videohukommelse',
+        videoMemoryReboot: 'Genstart for at frigøre den.',
         community: 'Fællesskab',
         hostname: 'Værtsnavn',
         hostnameUpdated: 'Værtsnavn opdateret. Genstart for at anvende.',
@@ -511,6 +576,16 @@ const da = {
         oled: {
           title: 'OLED',
           description: 'OLED screen automatically sleep',
+          brightness: 'OLED-lysstyrke',
+          brightnessDescription: 'Et lavere niveau får skærmen til at holde længere',
+          brightnessLevels: {
+            '64': 'Lavest',
+            '96': 'Lav',
+            '128': 'Middel',
+            '160': 'Høj',
+            '207': 'Standard',
+            '255': 'Maksimum'
+          },
           0: 'Aldrig',
           15: '15 sek.',
           30: '30 sek.',
@@ -526,11 +601,34 @@ const da = {
           tip: 'Indstil en stærk adgangskode før aktivering (Konto - Skift adgangskode)'
         },
         advanced: 'Avancerede indstillinger',
+        cpuFreq: {
+          title: 'CPU-frekvens',
+          description: 'Indstil den CPU-takt, der bruges ved næste opstart',
+          tip: "CPU'en starter ved 850 MHz og er specificeret til 1000 MHz. En ny værdi anvendes ved næste opstart, ikke mens systemet kører. 1000 MHz er inden for specifikationen; temperaturen er et godt stykke inden for grænserne ved begge indstillinger.",
+          running: 'Kører: {{mhz}} MHz',
+          rebootToApply: 'genstart for at anvende',
+          rebootConfirm: 'Genstart nu for at anvende {{mhz}} MHz?'
+        },
         swap: {
           title: 'Byt',
           disable: 'Deaktiver',
           description: 'Indstil swap-filstørrelsen',
           tip: 'Aktivering af denne funktion kan forkorte dit SD-korts brugbare levetid!'
+        },
+        zram: {
+          title: 'Komprimeret swap (zram)',
+          description: 'Swap i komprimeret RAM i stedet for på SD-kortet',
+          tip: 'zram holder swap væk fra SD-kortet, så det giver intet slid. Der er ingen disk-swap bag det: hvis zram bliver fyldt, stopper kernen en proces i stedet for at swappe langsomt. Hukommelsesgrænsen bestemmer, hvor meget RAM zram må bruge.',
+          unavailable: 'Kernemodulerne er ikke installeret på denne enhed',
+          inactive: 'Slået til, men enheden startede ikke',
+          active: 'Aktiv - {{used}} af {{total}}, {{ratio}}x',
+          off: 'Fra',
+          detail: {
+            algorithm: 'Algoritme: {{algorithm}}',
+            memory: 'Hukommelse brugt: {{used}} af {{limit}}',
+            memoryNoLimit: 'Hukommelse brugt: {{used}}, ingen grænse angivet',
+            counters: 'Sider swappet ind {{in}}, ud {{out}} (alle swap-enheder, siden opstart)'
+          }
         },
         mouseJiggler: {
           title: 'Mus Jiggler',
@@ -586,7 +684,26 @@ const da = {
           reenumerate:
             'Når du anvender, genopbygges USB-forbindelsen. Værten mister tastatur, mus og virtuel disk i nogle sekunder.'
         },
+        audio: 'Virtuel højttaler',
+        audioDesc:
+          'Giv fjernværten et USB-lydkort, så du kan høre den. Værten skal vælge det som sin lydudgang. Når du skifter, genopbygges USB-forbindelsen.',
+        audioNote: 'Lyd er tilgængelig i begge H.264-tilstande (WebRTC og Direct), ikke i MJPEG',
+        console: 'Seriel konsol',
+        consoleDesc:
+          'Giv fjernværten en seriel USB-port, så du kan logge ind på denne NanoKVM, når netværket ikke kan nås',
+        consoleTip:
+          'Alle, der styrer fjernværten, får en login-prompt på denne NanoKVM. Indstil en stærk adgangskode før aktivering (Konto - Skift adgangskode).',
         endpoints: {
+          title: 'USB-endpoints',
+          used: '{{used}} af {{total}} brugt',
+          cost: 'bruger {{cost}}',
+          needs: 'kræver {{cost}}',
+          full: 'Ikke nok USB-endpoints. Slå noget andet fra først.',
+          inactive:
+            'Slået til, men kører ikke: USB-controlleren løb tør for endpoints. Slå en anden enhed fra, så starter denne med det samme.',
+          explain:
+            'USB-controlleren har et fast antal indgående endpoints, og det er dem, der tælles her. Hvis flere enheder er slået til, end der er plads til, beholdes tastatur og mus, og resten slås fra.',
+          error: 'Kunne ikke nå enheden. Prøv igen.',
           fitTogether: 'Disse passer sammen: {{sets}}'
         },
         reboot: 'Genstart',
@@ -613,7 +730,10 @@ const da = {
         },
         tls: {
           description: 'Aktiver HTTPS-protokol',
-          tip: 'Bemærk: Brug af HTTPS kan øge forsinkelsen, især med MJPEG-videotilstand.'
+          tip: 'Bemærk: Brug af HTTPS kan øge forsinkelsen, især med MJPEG-videotilstand.',
+          restarting: 'Enhedens server genstarter, det tager cirka to minutter...',
+          waiting: 'Venter på, at enheden svarer igen...',
+          waitingHttp: 'Skifter tilbage til http. Genindlæs siden, hvis den ikke åbner af sig selv.'
         },
         ethernet: {
           title: 'IP-adresse',
@@ -674,6 +794,54 @@ const da = {
           none: 'Ingen'
         }
       },
+      vpn: {
+        loading: 'Indlæser...',
+        okBtn: 'Ja',
+        cancelBtn: 'Nej',
+        restart: 'Genstart {{name}}?',
+        stop: 'Stop {{name}}?',
+        stopDesc:
+          'Dæmonen stopper nu. "Start ved opstart" er en separat kontakt og forbliver uændret.',
+        update: 'Opdater {{name}} til {{version}}?',
+        updateDesc: 'Dæmonen genstarter, hvis den kører. Login bevares.',
+        notInstall: '{{name}} er ikke installeret.',
+        install: 'Installer',
+        installing: 'Installerer',
+        installFailed: 'Installation mislykkedes',
+        retry: 'Prøv igen',
+        notRunning: '{{name}} kører ikke. Start den for at fortsætte.',
+        run: 'Start',
+        boot: 'Start ved opstart',
+        bootDesc: "Start {{name}}, når KVM'en starter op.",
+        enable: 'Aktiver {{name}}',
+        control: 'Kontrolserver',
+        connected: 'Forbundet',
+        disconnected: 'Ikke forbundet',
+        deviceName: 'Enhedsnavn',
+        deviceIP: 'Enhedens IP',
+        account: 'Konto',
+        version: 'Version',
+        uptime: 'Oppetid',
+        peers: 'Peers',
+        noPeers: 'Ingen peers endnu.',
+        online: 'Online',
+        offline: 'Offline',
+        memory: 'Hukommelse',
+        daemonRss: 'Dæmon',
+        group: 'Tilføjelsesgruppe',
+        high: 'begrænses over {{size}}',
+        max: 'stoppes af kernen over {{size}}',
+        noGroup: 'Ingen hukommelsesgruppe til tilføjelser på dette kort.',
+        uninstall: 'Afinstaller {{name}}',
+        uninstallDesc:
+          'Er du sikker på, at du vil afinstallere {{name}}? Login forbliver på kortet.',
+        blocked:
+          '{{other}} kører eller starter ved opstart. Der kan kun køre ét VPN ad gangen: stop {{other}} og slå først dens start ved opstart fra.',
+        swap: {
+          title: 'Swap-hukommelse',
+          tip: 'Hvis dæmonen mangler hukommelse, så prøv at aktivere swap-hukommelse. Det sætter som standard swap-filen til 256MB, hvilket kan justeres under "Indstillinger > Enhed".'
+        }
+      },
       tailscale: {
         title: 'Tailscale',
         retry: 'Opdater siden og prøv igen. Ellers prøv at installere manuelt.',
@@ -690,6 +858,21 @@ const da = {
         loginSuccess: 'Log ind lykkedes',
         logout: 'Log ud',
         logoutDesc: 'Er du sikker på, at du vil logge ud?'
+      },
+      netbird: {
+        title: 'NetBird',
+        notLogin:
+          'Denne enhed har endnu ikke tilsluttet sig et NetBird-netværk. Tilslut med en opsætningsnøgle, eller log ind med SSO.',
+        setupKey: 'Opsætningsnøgle',
+        setupKeyPlaceholder: 'Indsæt en opsætningsnøgle fra NetBird-dashboardet',
+        join: 'Tilslut',
+        or: 'eller',
+        sso: 'Log ind med SSO',
+        urlPeriod: 'Denne URL er gyldig i 10 minutter',
+        loginSuccess: 'Log ind lykkedes',
+        logout: 'Afregistrer',
+        logoutDesc:
+          'Afregistrering fjerner denne peer fra din NetBird-konto og sletter dens konfiguration her. For at tilslutte igen skal du bruge en opsætningsnøgle eller et SSO-login, og peeren kan få en ny IP. Fortsæt?'
       },
       update: {
         title: 'Kontroller for opdatering',
@@ -717,6 +900,7 @@ const da = {
           confirmDesc:
             'SHA-512 kontrollerer kun, at pakken stemmer overens med manifestet fra denne server. Det beviser ikke, at pakken er en officiel NanoKVM-udgivelse. En fejlbehæftet eller ondsindet server kan gøre enheden ubrugelig, medføre tab af data eller kompromittere systemet.',
           confirm: 'Brug alligevel',
+          useSipeed: 'Brug den officielle Sipeed-server',
           previewDisabled:
             'Forhåndsvisningsopdateringer er ikke tilgængelige, mens en brugerdefineret opdateringsserver er aktiveret.'
         },
@@ -734,11 +918,58 @@ const da = {
       account: {
         title: 'Konto',
         webAccount: 'Navn på webkonto',
+        role: 'Rolle',
+        roles: { admin: 'Administrator', user: 'Bruger' },
         password: 'Adgangskode',
         updateBtn: 'Update',
         logoutBtn: 'Log ud',
         logoutDesc: 'Er du sikker på, at du vil logge ud?',
         okBtn: 'Ja',
+        cancelBtn: 'Annuller',
+        users: {
+          title: 'Brugere',
+          create: 'Opret bruger',
+          enabled: 'Aktiveret',
+          disabled: 'Deaktiveret',
+          deviceOwner: 'Enhedsejer',
+          resetPassword: 'Nulstil adgangskode',
+          delete: 'Slet',
+          deleteConfirm: 'Slet denne bruger og tilbagekald alle brugerens sessioner?',
+          created: 'Bruger oprettet',
+          deleted: 'Bruger slettet',
+          passwordUpdated: 'Adgangskode opdateret',
+          loadFailed: 'Kunne ikke indlæse brugere',
+          saveFailed: 'Kunne ikke gemme bruger',
+          deleteFailed: 'Kunne ikke slette bruger'
+        }
+      },
+      apiKeys: {
+        title: 'API-nøgler',
+        description:
+          "En nøgle handler som sin ejer, med den brugers rolle. Send den som Authorization: Bearer <key> til metrics og API'et, eller som X-Auth-Token til Redfish.",
+        name: 'Navn',
+        namePlaceholder: 'Hvad nøglen bruges til, f.eks. prometheus',
+        nameRequired: 'Giv nøglen et navn',
+        nameTooLong: 'Navnet må højst være 64 tegn',
+        unnamed: '(unavngivet)',
+        create: 'Opret nøgle',
+        created: 'Oprettet',
+        owner: 'Ejer',
+        empty: 'Ingen API-nøgler',
+        newKeyTitle: 'Din nye API-nøgle',
+        newKeyWarning:
+          'Kopiér nøglen nu. Den gemmes ikke og kan ikke vises igen. Hvis du mister den, så tilbagekald den og opret en ny.',
+        copy: 'Kopiér',
+        copied: 'Kopieret',
+        copyFailed: 'Kopiering mislykkedes. Kopiér manuelt.',
+        done: 'Færdig',
+        revoke: 'Tilbagekald',
+        revokeConfirmTitle: 'Tilbagekald denne API-nøgle?',
+        revokeConfirmDesc: 'Alt, der bruger "{{name}}", holder straks op med at virke.',
+        revoked: 'API-nøgle tilbagekaldt',
+        loadFailed: 'Kunne ikke indlæse API-nøgler',
+        createFailed: 'Kunne ikke oprette API-nøgle',
+        revokeFailed: 'Kunne ikke tilbagekalde API-nøgle',
         cancelBtn: 'Annuller'
       }
     },
@@ -908,18 +1139,38 @@ const da = {
     },
     error: {
       title: 'Vi er stødt på et problem',
-      refresh: 'Opdater'
+      refresh: 'Opdater',
+      panel: 'Denne del af siden holdt op med at virke',
+      retry: 'Prøv igen'
     },
     fullscreen: {
       toggle: 'Skift fuldskærm'
     },
     input: {
+      disconnected: 'Tastatur og mus er ikke forbundet',
+      disconnectedTls:
+        'Browseren afviste den sikre forbindelse, der bærer tastatur og mus, og det gør den uden at spørge. Certifikatet, som denne enhed har genereret, er endnu ikke betroet. Åbn denne adresse i en ny fane, accepter certifikatet, og genindlæs derefter. Den pålidelige løsning er at installere certifikatet.',
+      disconnectedNever:
+        'Forbindelsen, der bærer tastatur og mus, kunne ikke åbnes. Resten af siden virker, fordi den ikke bruger forbindelsen. Kontroller, at intet mellem dig og enheden blokerer den.',
+      disconnectedDropped:
+        'Forbindelsen, der bærer tastatur og mus, blev afbrudt og er ikke kommet tilbage. Den genopretter sig selv efter en genstart; hvis dette bliver ved, så genindlæs siden.',
       hidDisabled: 'HID er slået fra på denne enhed (/boot/disable_hid).',
       keyFailed: 'Tasten kunne ikke sendes.'
     },
+    speaker: { title: 'Højttaler', unmute: 'Slå lyd til', mute: 'Slå lyd fra' },
     menu: {
       collapse: 'Skjul menu',
       expand: 'Udvid menu'
+    },
+    ion: {
+      checking: 'Kontrollerer videohukommelsen, før streamen startes...',
+      warn: 'Videohukommelsen er lav. Én genstart af serveren ville opbruge den. Genstart, når det passer dig.',
+      criticalTitle: 'Ikke nok videohukommelse til at starte streamen',
+      criticalBody:
+        'Hvis videoen startes, opbruges den reserverede hukommelse, og serveren stopper. Alle andre funktioner virker stadig, herunder strømstyring og genstart. Kun en genstart af NanoKVM frigør denne hukommelse.',
+      criticalContinue: 'Start video alligevel',
+      criticalReboot: 'Genstart NanoKVM',
+      criticalRebooting: 'Genstarter...'
     }
   }
 };
