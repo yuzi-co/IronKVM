@@ -1,13 +1,17 @@
 package vm
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"syscall"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -96,4 +100,74 @@ func TestAFailedScriptReturnsItsOutput(t *testing.T) {
 	if !strings.Contains(body, "disk full") {
 		t.Fatalf("the output was lost: %s", body)
 	}
+}
+
+// A foreground script that outlives the limit is killed, and so is what it
+// started: the sleep below is a child of the shell, in the shell's group.
+func TestRunForegroundKillsTheProcessGroupAtTheLimit(t *testing.T) {
+	dir := t.TempDir()
+	pidFile := filepath.Join(dir, "child.pid")
+
+	cmd := exec.Command("sh", "-c", "echo started; sleep 30 & echo $! > "+pidFile+"; wait")
+
+	start := time.Now()
+	output, err := runForeground(cmd, 300*time.Millisecond)
+	elapsed := time.Since(start)
+
+	if !errors.Is(err, errScriptTimedOut) {
+		t.Fatalf("err = %v, want errScriptTimedOut", err)
+	}
+	if elapsed > 10*time.Second {
+		t.Fatalf("returned after %s, want soon after the limit", elapsed)
+	}
+	if !strings.Contains(string(output), "started") {
+		t.Fatalf("output %q lost what the script printed before the kill", output)
+	}
+
+	raw, readErr := os.ReadFile(pidFile)
+	if readErr != nil {
+		t.Fatalf("read child pid: %v", readErr)
+	}
+	pid, convErr := strconv.Atoi(strings.TrimSpace(string(raw)))
+	if convErr != nil {
+		t.Fatalf("child pid %q: %v", raw, convErr)
+	}
+
+	// A killed child may linger as a zombie until something reaps it; that
+	// counts as gone.
+	deadline := time.Now().Add(5 * time.Second)
+	for processRunning(pid) {
+		if time.Now().After(deadline) {
+			_ = syscall.Kill(pid, syscall.SIGKILL)
+			t.Fatalf("child %d outlived the kill", pid)
+		}
+		time.Sleep(50 * time.Millisecond)
+	}
+}
+
+func TestRunForegroundReturnsOutputAndExitError(t *testing.T) {
+	output, err := runForeground(exec.Command("sh", "-c", "echo out; echo err >&2; exit 3"), time.Minute)
+
+	var exitErr *exec.ExitError
+	if !errors.As(err, &exitErr) || exitErr.ExitCode() != 3 {
+		t.Fatalf("err = %v, want exit status 3", err)
+	}
+	if !strings.Contains(string(output), "out") || !strings.Contains(string(output), "err") {
+		t.Fatalf("output %q, want both streams", output)
+	}
+}
+
+// processRunning reports whether pid names a process that is not a zombie.
+func processRunning(pid int) bool {
+	stat, err := os.ReadFile("/proc/" + strconv.Itoa(pid) + "/stat")
+	if err != nil {
+		return false
+	}
+	// The state follows the command name, which is in parentheses.
+	rest := string(stat)
+	if i := strings.LastIndexByte(rest, ')'); i >= 0 {
+		rest = rest[i+1:]
+	}
+	fields := strings.Fields(rest)
+	return len(fields) > 0 && fields[0] != "Z"
 }

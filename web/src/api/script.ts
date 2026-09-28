@@ -12,15 +12,21 @@ export function uploadScript(formData: FormData) {
 }
 
 // A foreground run answers only when the script ends, so it gets far longer
-// than the usual minute before the request gives up.
+// than the usual minute before the request gives up. The board kills a run at
+// the same limit and answers with what it printed; the grace lets that answer
+// arrive before the browser stops listening.
 export const FOREGROUND_TIMEOUT_MINUTES = 10;
+const FOREGROUND_GRACE_MS = 30 * 1000;
 
 export function runScript(name: string, type: string) {
   return http.request({
     method: 'post',
     url: '/api/vm/script/run',
     data: { name, type },
-    timeout: type === 'foreground' ? FOREGROUND_TIMEOUT_MINUTES * 60 * 1000 : undefined
+    timeout:
+      type === 'foreground'
+        ? FOREGROUND_TIMEOUT_MINUTES * 60 * 1000 + FOREGROUND_GRACE_MS
+        : undefined
   });
 }
 

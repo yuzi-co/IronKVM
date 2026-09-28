@@ -1,6 +1,7 @@
 package vm
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -9,6 +10,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -19,6 +22,16 @@ import (
 
 // ScriptDirectory is a variable so tests can point it somewhere else.
 var ScriptDirectory = "/etc/kvm/scripts"
+
+// foregroundTimeout bounds a foreground run. The browser stops waiting after
+// ten minutes; a script still going then has no one left to report to, and
+// would hold its request and its processes for as long as it liked. It is a
+// variable so tests can shorten it.
+var foregroundTimeout = 10 * time.Minute
+
+// errScriptTimedOut is the error of a foreground run that was killed for
+// running past foregroundTimeout.
+var errScriptTimedOut = errors.New("timed out")
 
 func (s *Service) GetScripts(c *gin.Context) {
 	var rsp proto.Response
@@ -105,7 +118,7 @@ func (s *Service) RunScript(c *gin.Context) {
 	cmd := scriptCommand(req.Name, script)
 
 	if req.Type == "foreground" {
-		output, err = cmd.CombinedOutput()
+		output, err = runForeground(cmd, foregroundTimeout)
 	} else {
 		cmd.Stdout = nil
 		cmd.Stderr = nil
@@ -173,6 +186,42 @@ func scriptCommand(name string, path string) *exec.Cmd {
 	}
 
 	return exec.Command("sh", path)
+}
+
+// runForeground runs cmd and returns its combined output, killing it once it
+// has run for longer than timeout. The script runs in a process group of its
+// own, and the whole group is killed, so the commands a shell script started
+// go with it instead of living on as orphans.
+func runForeground(cmd *exec.Cmd, timeout time.Duration) ([]byte, error) {
+	var output bytes.Buffer
+	cmd.Stdout = &output
+	cmd.Stderr = &output
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	// A process that left the group can still hold the output pipe open.
+	// Wait gives up on it this long after the kill instead of hanging.
+	cmd.WaitDelay = 5 * time.Second
+
+	if err := cmd.Start(); err != nil {
+		return nil, err
+	}
+
+	done := make(chan error, 1)
+	go func() { done <- cmd.Wait() }()
+
+	timer := time.NewTimer(timeout)
+	defer timer.Stop()
+
+	select {
+	case err := <-done:
+		return output.Bytes(), err
+	case <-timer.C:
+		// The negative pid names the process group.
+		if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL); err != nil {
+			log.Errorf("kill script process group %d: %s", cmd.Process.Pid, err)
+		}
+		<-done
+		return output.Bytes(), errScriptTimedOut
+	}
 }
 
 func isScript(name string) bool {
