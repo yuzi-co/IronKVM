@@ -59,3 +59,28 @@ export function deleteUser(username: string) {
 export function resetUserPassword(username: string, password: string) {
   return http.post(`/api/auth/users/${encodeURIComponent(username)}/password`, { password });
 }
+
+// APIKey describes an issued key. The secret is not part of it: the device
+// keeps only a digest, and hands the secret back once, when the key is created.
+export type APIKey = {
+  id: string;
+  name: string;
+  createdAt: number;
+  username: string;
+};
+
+export type CreatedAPIKey = Omit<APIKey, 'username'> & {
+  key: string;
+};
+
+export function getAPIKeys() {
+  return http.get('/api/auth/api-keys');
+}
+
+export function createAPIKey(name: string) {
+  return http.post('/api/auth/api-keys', { name });
+}
+
+export function revokeAPIKey(id: string) {
+  return http.delete(`/api/auth/api-keys/${encodeURIComponent(id)}`);
+}

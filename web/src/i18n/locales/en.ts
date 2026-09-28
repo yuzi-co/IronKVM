@@ -787,6 +787,35 @@ const en = {
           saveFailed: 'Failed to save user',
           deleteFailed: 'Failed to delete user'
         }
+      },
+      apiKeys: {
+        title: 'API Keys',
+        description:
+          "A key acts as its owner, with that user's role. Send it as Authorization: Bearer <key> for metrics and the API, or as X-Auth-Token for Redfish.",
+        name: 'Name',
+        namePlaceholder: 'What the key is for, such as prometheus',
+        nameRequired: 'Give the key a name',
+        nameTooLong: 'The name is at most 64 characters',
+        unnamed: '(unnamed)',
+        create: 'Create Key',
+        created: 'Created',
+        owner: 'Owner',
+        empty: 'No API keys',
+        newKeyTitle: 'Your new API key',
+        newKeyWarning:
+          'Copy the key now. It is not stored and cannot be shown again. If you lose it, revoke it and create another.',
+        copy: 'Copy',
+        copied: 'Copied',
+        copyFailed: 'Copy failed. Copy manually.',
+        done: 'Done',
+        revoke: 'Revoke',
+        revokeConfirmTitle: 'Revoke this API key?',
+        revokeConfirmDesc: 'Anything that uses "{{name}}" stops working at once.',
+        revoked: 'API key revoked',
+        loadFailed: 'Failed to load API keys',
+        createFailed: 'Failed to create API key',
+        revokeFailed: 'Failed to revoke API key',
+        cancelBtn: 'Cancel'
       }
     },
     picoclaw: {
