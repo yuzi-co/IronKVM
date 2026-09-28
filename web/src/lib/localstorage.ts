@@ -9,6 +9,8 @@ const MOUSE_SCROLL_INTERVAL_KEY = 'nano-kvm-mouse-scroll-interval';
 const SKIP_UPDATE_KEY = 'nano-kvm-check-update';
 const KEYBOARD_SYSTEM_KEY = 'nano-kvm-keyboard-system';
 const KEYBOARD_LANGUAGE_KEY = 'nano-kvm-keyboard-language';
+const PASTE_LAYOUT_KEY = 'nano-kvm-paste-layout';
+const PASTE_DELAY_KEY = 'nano-kvm-paste-delay';
 const SKIP_MODIFY_PASSWORD_KEY = 'nano-kvm-skip-modify-password';
 const MENU_DISABLED_ITEMS_KEY = 'nano-kvm-menu-disabled-items';
 const MENU_AUTO_HIDE_KEY = 'nano-kvm-menu-auto-hide';
@@ -176,6 +178,23 @@ export function setKeyboardLanguage(language: string) {
 
 export function getKeyboardLanguage() {
   return localStorage.getItem(KEYBOARD_LANGUAGE_KEY);
+}
+
+export function setPasteLayout(layout: string) {
+  localStorage.setItem(PASTE_LAYOUT_KEY, layout);
+}
+
+export function getPasteLayout() {
+  return localStorage.getItem(PASTE_LAYOUT_KEY);
+}
+
+export function setPasteDelay(delay: number) {
+  localStorage.setItem(PASTE_DELAY_KEY, String(delay));
+}
+
+export function getPasteDelay() {
+  const delay = Number(localStorage.getItem(PASTE_DELAY_KEY));
+  return Number.isFinite(delay) && delay > 0 ? delay : null;
 }
 
 export function setSkipModifyPassword(skip: boolean) {

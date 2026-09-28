@@ -135,7 +135,7 @@ const nl = {
     keyboard: {
       title: 'Toetsenbord',
       paste: 'Plakken',
-      tips: 'Alleen standaard toetsenbordletters en symbolen worden ondersteund',
+      tips: 'Typt de tekst op de host als toetsaanslagen. Kies de toetsenbordindeling die de host gebruikt.',
       placeholder: 'Voer tekst in',
       submit: 'Verzenden',
       virtual: 'Toetsenbord',
@@ -143,10 +143,45 @@ const nl = {
       clipboardPermissionDenied:
         'Klembordtoestemming geweigerd. Sta klembordtoegang toe in uw browser.',
       clipboardReadError: 'Kan het klembord niet lezen',
-      dropdownEnglish: 'Engels',
-      dropdownGerman: 'Duits',
-      dropdownFrench: 'Frans',
-      dropdownRussian: 'Russisch',
+      pasting: {
+        layout: 'Toetsenbordindeling van de host',
+        layouts: {
+          us: 'Engels (VS)',
+          uk: 'Engels (VK)',
+          de: 'Duits',
+          fr: 'Frans',
+          es: 'Spaans',
+          it: 'Italiaans',
+          ptBr: 'Portugees (Brazilië)',
+          se: 'Zweeds / Fins',
+          ru: 'Russisch',
+          ja: 'Japans',
+          ko: 'Koreaans'
+        },
+        speed: 'Typsnelheid',
+        speeds: {
+          fast: 'Snel',
+          normal: 'Normaal',
+          slow: 'Langzaam'
+        },
+        estimate: 'Typtijd: ongeveer {{duration}}',
+        untypeable: 'Tekens die deze indeling niet kan typen: {{count}}',
+        untypeableAt: 'regel {{line}}, kolom {{column}}',
+        skipUntypeable: 'De rest typen',
+        shortcut: '{{shortcut}} typt het klembord meteen op de host.',
+        clipboardUnavailable:
+          'De browser laat een pagina het klembord alleen via HTTPS lezen. Plak de tekst met Ctrl+V in het vak.',
+        clipboardEmpty: 'Het klembord bevat geen tekst.',
+        tooLong: 'De tekst is te lang. De limiet is {{max}} tekens.',
+        inProgress: 'Er wordt al een geplakte tekst getypt.',
+        typing: 'Typen op de host',
+        done: 'Tekst getypt',
+        canceled: 'Plakken geannuleerd',
+        failed: 'Plakken mislukt',
+        cancel: 'Annuleren',
+        controlBusy: 'Een andere besturing gebruikt het toetsenbord.',
+        hidError: 'De toetsaanslagen konden niet naar de host worden gestuurd.'
+      },
       shortcut: {
         title: 'Snelkoppelingen',
         custom: 'Aangepast',

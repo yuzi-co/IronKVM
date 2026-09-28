@@ -30,6 +30,7 @@ import { Keyboard } from './keyboard';
 import { Menu } from './menu';
 import { Mouse } from './mouse';
 import { H264ModeNotification, Notification } from './notification.tsx';
+import { Paste } from './paste';
 import { Sidebar as PicoclawSidebar } from './picoclaw';
 import { ActionOverlay } from './picoclaw/action-overlay.tsx';
 import { Screen } from './screen';
@@ -326,6 +327,10 @@ export const Desktop = () => {
 
       <OverlayBoundary name="virtual-keyboard">
         <VirtualKeyboard />
+      </OverlayBoundary>
+
+      <OverlayBoundary name="paste">
+        <Paste />
       </OverlayBoundary>
     </div>
   );

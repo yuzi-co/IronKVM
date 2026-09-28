@@ -135,7 +135,7 @@ const en = {
     keyboard: {
       title: 'Keyboard',
       paste: 'Paste',
-      tips: 'Only standard keyboard letters and symbols are supported',
+      tips: 'Types the text on the host as key presses. Pick the keyboard layout the host uses.',
       placeholder: 'Please input',
       submit: 'Submit',
       virtual: 'Keyboard',
@@ -143,10 +143,45 @@ const en = {
       clipboardPermissionDenied:
         'Clipboard permission denied. Please allow clipboard access in your browser.',
       clipboardReadError: 'Failed to read clipboard',
-      dropdownEnglish: 'English',
-      dropdownGerman: 'German',
-      dropdownFrench: 'French',
-      dropdownRussian: 'Russian',
+      pasting: {
+        layout: 'Keyboard layout on the host',
+        layouts: {
+          us: 'English (US)',
+          uk: 'English (UK)',
+          de: 'German',
+          fr: 'French',
+          es: 'Spanish',
+          it: 'Italian',
+          ptBr: 'Portuguese (Brazil)',
+          se: 'Swedish / Finnish',
+          ru: 'Russian',
+          ja: 'Japanese',
+          ko: 'Korean'
+        },
+        speed: 'Typing speed',
+        speeds: {
+          fast: 'Fast',
+          normal: 'Normal',
+          slow: 'Slow'
+        },
+        estimate: 'Typing time: about {{duration}}',
+        untypeable: 'Characters this layout cannot type: {{count}}',
+        untypeableAt: 'line {{line}}, column {{column}}',
+        skipUntypeable: 'Type the rest',
+        shortcut: '{{shortcut}} types the clipboard on the host straight away.',
+        clipboardUnavailable:
+          'The browser lets a page read the clipboard only over HTTPS. Paste the text into the box with Ctrl+V.',
+        clipboardEmpty: 'The clipboard holds no text.',
+        tooLong: 'The text is too long. The limit is {{max}} characters.',
+        inProgress: 'A paste is already being typed.',
+        typing: 'Typing on the host',
+        done: 'Paste typed',
+        canceled: 'Paste canceled',
+        failed: 'Paste failed',
+        cancel: 'Cancel',
+        controlBusy: 'Another controller is using the keyboard.',
+        hidError: 'The key presses could not be sent to the host.'
+      },
       mediaKeys: {
         title: 'Media keys',
         mute: 'Mute',

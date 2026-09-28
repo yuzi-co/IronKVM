@@ -130,7 +130,7 @@ const ko = {
     keyboard: {
       title: '키보드',
       paste: '붙여넣기',
-      tips: '표준 키보드 문자 및 기호만 지원됩니다',
+      tips: '텍스트를 키 입력으로 호스트에 입력합니다. 호스트가 사용하는 키보드 레이아웃을 선택하세요.',
       placeholder: '입력하세요',
       submit: '전송',
       virtual: '키보드',
@@ -138,10 +138,45 @@ const ko = {
       clipboardPermissionDenied:
         '클립보드 권한이 거부되었습니다. 브라우저에서 클립보드 액세스를 허용해 주세요.',
       clipboardReadError: '클립보드를 읽지 못했습니다.',
-      dropdownEnglish: '영어',
-      dropdownGerman: '독일어',
-      dropdownFrench: '프랑스어',
-      dropdownRussian: '러시아어',
+      pasting: {
+        layout: '호스트 키보드 레이아웃',
+        layouts: {
+          us: '영어(미국)',
+          uk: '영어(영국)',
+          de: '독일어',
+          fr: '프랑스어',
+          es: '스페인어',
+          it: '이탈리아어',
+          ptBr: '포르투갈어(브라질)',
+          se: '스웨덴어 / 핀란드어',
+          ru: '러시아어',
+          ja: '일본어',
+          ko: '한국어'
+        },
+        speed: '입력 속도',
+        speeds: {
+          fast: '빠름',
+          normal: '보통',
+          slow: '느림'
+        },
+        estimate: '입력 시간: 약 {{duration}}',
+        untypeable: '이 레이아웃으로 입력할 수 없는 문자: {{count}}',
+        untypeableAt: '{{line}}행 {{column}}열',
+        skipUntypeable: '나머지 입력',
+        shortcut: '{{shortcut}}: 클립보드 내용을 호스트에 바로 입력합니다.',
+        clipboardUnavailable:
+          '브라우저는 HTTPS에서만 페이지가 클립보드를 읽도록 허용합니다. Ctrl+V로 텍스트를 상자에 붙여 넣으세요.',
+        clipboardEmpty: '클립보드에 텍스트가 없습니다.',
+        tooLong: '텍스트가 너무 깁니다. 최대 {{max}}자입니다.',
+        inProgress: '이미 다른 붙여넣기를 입력하는 중입니다.',
+        typing: '호스트에 입력 중',
+        done: '입력 완료',
+        canceled: '붙여넣기 취소됨',
+        failed: '붙여넣기 실패',
+        cancel: '취소',
+        controlBusy: '다른 컨트롤러가 키보드를 사용 중입니다.',
+        hidError: '키 입력을 호스트로 보내지 못했습니다.'
+      },
       shortcut: {
         title: '바로가기',
         custom: '관습',

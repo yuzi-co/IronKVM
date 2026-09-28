@@ -134,7 +134,7 @@ const it = {
     keyboard: {
       title: 'Tastiera',
       paste: 'Incolla',
-      tips: 'Sono supportati solo lettere e simboli standard della tastiera',
+      tips: "Digita il testo sull'host come pressioni di tasti. Scegli il layout di tastiera usato dall'host.",
       placeholder: 'Inserisci testo',
       submit: 'Invia',
       virtual: 'Tastiera',
@@ -142,10 +142,45 @@ const it = {
       clipboardPermissionDenied:
         "Autorizzazione Appunti negata. Consenti l'accesso agli appunti nel tuo browser.",
       clipboardReadError: 'Impossibile leggere gli appunti',
-      dropdownEnglish: 'Inglese',
-      dropdownGerman: 'Tedesco',
-      dropdownFrench: 'Francese',
-      dropdownRussian: 'Russo',
+      pasting: {
+        layout: "Layout di tastiera dell'host",
+        layouts: {
+          us: 'Inglese (USA)',
+          uk: 'Inglese (Regno Unito)',
+          de: 'Tedesco',
+          fr: 'Francese',
+          es: 'Spagnolo',
+          it: 'Italiano',
+          ptBr: 'Portoghese (Brasile)',
+          se: 'Svedese / finlandese',
+          ru: 'Russo',
+          ja: 'Giapponese',
+          ko: 'Coreano'
+        },
+        speed: 'Velocità di digitazione',
+        speeds: {
+          fast: 'Veloce',
+          normal: 'Normale',
+          slow: 'Lenta'
+        },
+        estimate: 'Tempo di digitazione: circa {{duration}}',
+        untypeable: 'Caratteri che questo layout non può digitare: {{count}}',
+        untypeableAt: 'riga {{line}}, colonna {{column}}',
+        skipUntypeable: 'Digita il resto',
+        shortcut: "{{shortcut}} digita subito gli appunti sull'host.",
+        clipboardUnavailable:
+          'Il browser consente a una pagina di leggere gli appunti solo tramite HTTPS. Incolla il testo nel riquadro con Ctrl+V.',
+        clipboardEmpty: 'Gli appunti non contengono testo.',
+        tooLong: 'Il testo è troppo lungo. Il limite è di {{max}} caratteri.',
+        inProgress: 'È già in corso la digitazione di un testo incollato.',
+        typing: "Digitazione sull'host",
+        done: 'Testo digitato',
+        canceled: 'Incolla annullato',
+        failed: 'Incolla non riuscito',
+        cancel: 'Annulla',
+        controlBusy: 'Un altro controller sta usando la tastiera.',
+        hidError: "Impossibile inviare le pressioni dei tasti all'host."
+      },
       shortcut: {
         title: 'Scorciatoie',
         custom: 'Personalizzato',

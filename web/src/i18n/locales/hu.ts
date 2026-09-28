@@ -134,7 +134,7 @@ const hu = {
     keyboard: {
       title: 'Billentyűzet',
       paste: 'Beillesztés',
-      tips: 'Csak a szabványos billentyűzet betűi és szimbólumai támogatottak',
+      tips: 'A szöveget billentyűleütésekként gépeli be a gazdagépen. Válassza ki a gazdagép billentyűzetkiosztását.',
       placeholder: 'Írja be',
       submit: 'Elküldés',
       virtual: 'Billentyűzet',
@@ -142,10 +142,45 @@ const hu = {
       clipboardPermissionDenied:
         'A vágólap engedélye megtagadva. Kérjük, engedélyezze a vágólaphoz való hozzáférést a böngészőjében.',
       clipboardReadError: 'Nem sikerült beolvasni a vágólapot',
-      dropdownEnglish: 'angol',
-      dropdownGerman: 'német',
-      dropdownFrench: 'francia',
-      dropdownRussian: 'orosz',
+      pasting: {
+        layout: 'A gazdagép billentyűzetkiosztása',
+        layouts: {
+          us: 'Angol (USA)',
+          uk: 'Angol (Egyesült Királyság)',
+          de: 'Német',
+          fr: 'Francia',
+          es: 'Spanyol',
+          it: 'Olasz',
+          ptBr: 'Portugál (Brazília)',
+          se: 'Svéd / finn',
+          ru: 'Orosz',
+          ja: 'Japán',
+          ko: 'Koreai'
+        },
+        speed: 'Gépelési sebesség',
+        speeds: {
+          fast: 'Gyors',
+          normal: 'Normál',
+          slow: 'Lassú'
+        },
+        estimate: 'Gépelési idő: kb. {{duration}}',
+        untypeable: 'Karakterek, amelyeket ez a kiosztás nem tud begépelni: {{count}}',
+        untypeableAt: '{{line}}. sor, {{column}}. oszlop',
+        skipUntypeable: 'A többi begépelése',
+        shortcut: 'A {{shortcut}} azonnal begépeli a vágólap tartalmát a gazdagépen.',
+        clipboardUnavailable:
+          'A böngésző csak HTTPS-en engedi, hogy egy oldal olvassa a vágólapot. Illessze be a szöveget a mezőbe a Ctrl+V billentyűkkel.',
+        clipboardEmpty: 'A vágólap nem tartalmaz szöveget.',
+        tooLong: 'A szöveg túl hosszú. A korlát {{max}} karakter.',
+        inProgress: 'Már folyamatban van egy beillesztés begépelése.',
+        typing: 'Gépelés a gazdagépen',
+        done: 'Szöveg begépelve',
+        canceled: 'Beillesztés megszakítva',
+        failed: 'A beillesztés nem sikerült',
+        cancel: 'Mégse',
+        controlBusy: 'Egy másik vezérlő használja a billentyűzetet.',
+        hidError: 'A billentyűleütéseket nem sikerült elküldeni a gazdagépnek.'
+      },
       shortcut: {
         title: 'Parancsikonok',
         custom: 'Egyedi',

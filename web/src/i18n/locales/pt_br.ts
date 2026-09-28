@@ -132,7 +132,7 @@ const pt_br = {
     keyboard: {
       title: 'Teclado',
       paste: 'Colar',
-      tips: 'Apenas letras e símbolos de teclado padrão são suportados',
+      tips: 'Digita o texto no host como pressionamentos de teclas. Escolha o layout de teclado que o host usa.',
       placeholder: 'Por favor, digite',
       submit: 'Enviar',
       virtual: 'Teclado',
@@ -140,10 +140,45 @@ const pt_br = {
       clipboardPermissionDenied:
         'Permissão da área de transferência negada. Permita o acesso à área de transferência no seu navegador.',
       clipboardReadError: 'Falha ao ler a área de transferência',
-      dropdownEnglish: 'Inglês',
-      dropdownGerman: 'Alemão',
-      dropdownFrench: 'Francês',
-      dropdownRussian: 'Russo',
+      pasting: {
+        layout: 'Layout de teclado do host',
+        layouts: {
+          us: 'Inglês (EUA)',
+          uk: 'Inglês (Reino Unido)',
+          de: 'Alemão',
+          fr: 'Francês',
+          es: 'Espanhol',
+          it: 'Italiano',
+          ptBr: 'Português (Brasil)',
+          se: 'Sueco / finlandês',
+          ru: 'Russo',
+          ja: 'Japonês',
+          ko: 'Coreano'
+        },
+        speed: 'Velocidade de digitação',
+        speeds: {
+          fast: 'Rápida',
+          normal: 'Normal',
+          slow: 'Lenta'
+        },
+        estimate: 'Tempo de digitação: cerca de {{duration}}',
+        untypeable: 'Caracteres que este layout não consegue digitar: {{count}}',
+        untypeableAt: 'linha {{line}}, coluna {{column}}',
+        skipUntypeable: 'Digitar o resto',
+        shortcut: '{{shortcut}} digita a área de transferência no host na hora.',
+        clipboardUnavailable:
+          'O navegador só deixa uma página ler a área de transferência via HTTPS. Cole o texto na caixa com Ctrl+V.',
+        clipboardEmpty: 'A área de transferência não contém texto.',
+        tooLong: 'O texto é longo demais. O limite é de {{max}} caracteres.',
+        inProgress: 'Já há uma colagem sendo digitada.',
+        typing: 'Digitando no host',
+        done: 'Texto digitado',
+        canceled: 'Colagem cancelada',
+        failed: 'A colagem falhou',
+        cancel: 'Cancelar',
+        controlBusy: 'Outro controlador está usando o teclado.',
+        hidError: 'Não foi possível enviar os pressionamentos de teclas ao host.'
+      },
       shortcut: {
         title: 'Atalhos',
         custom: 'Personalizado',

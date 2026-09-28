@@ -8,6 +8,7 @@ import { client, MessageEvent } from '@/lib/websocket.ts';
 import { isKeyboardEnableAtom } from '@/jotai/keyboard.ts';
 import { picoclawTakeoverStateAtom } from '@/jotai/picoclaw.ts';
 
+import { isPasteShortcut, usePaste } from '../paste/use-paste.ts';
 import { Recorder } from './recorder.tsx';
 import { useAltGr } from './useAltGr.ts';
 import { useLeaderKey } from './useLeaderKey.ts';
@@ -27,6 +28,9 @@ export const Keyboard = () => {
   const keyboardRef = useRef(new KeyboardReport());
   const pressedKeys = useRef(new Set<string>());
   const isComposing = useRef(false);
+  // Keys whose press started the paste shortcut. The host has been told they
+  // are released, so their auto-repeat and their keyup stay on this side.
+  const swallowedKeys = useRef(new Set<string>());
 
   // Send key event helper. It reads only refs, so one instance serves every
   // render, and the listener effect below can name it without re-subscribing.
@@ -45,12 +49,17 @@ export const Keyboard = () => {
   const altGr = useAltGr(os, pressedKeys, sendKeyEvent);
   const altGrRef = useRef(altGr);
 
+  // Init paste shortcut handler
+  const { pasteClipboard } = usePaste();
+  const pasteClipboardRef = useRef(pasteClipboard);
+
   // The listeners read the handlers through these refs. They are brought up to
   // date after each commit and before any effect runs, which is before any
   // event can reach a listener.
   useLayoutEffect(() => {
     leaderKeyRef.current = leaderKey;
     altGrRef.current = altGr;
+    pasteClipboardRef.current = pasteClipboard;
   });
 
   useEffect(() => {
@@ -80,7 +89,18 @@ export const Keyboard = () => {
       event.stopPropagation();
 
       const code = normalizeKeyCode(event, os);
-      if (!code || pressedKeys.current.has(code)) return;
+      if (!code || pressedKeys.current.has(code) || swallowedKeys.current.has(code)) return;
+
+      // Handle paste shortcut. Its modifiers have reached the host already;
+      // they are released first, or the host would read the pasted text as
+      // Ctrl+Alt+Shift chords.
+      if (isPasteShortcut(event)) {
+        const held = Array.from(pressedKeys.current);
+        releaseKeys();
+        swallowedKeys.current = new Set([...held, code]);
+        pasteClipboardRef.current();
+        return;
+      }
 
       // Handle leader key
       const leaderHandled = leaderKeyRef.current.handleKeyDown(code);
@@ -100,6 +120,12 @@ export const Keyboard = () => {
 
       const code = normalizeKeyCode(event, os);
       if (!code) return;
+
+      if (swallowedKeys.current.delete(code)) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
 
       // A key already reported as pressed is always released, whatever the IME
       // is doing. The guard used to skip every keyup while composing, which is
@@ -168,6 +194,7 @@ export const Keyboard = () => {
         sendKeyEvent('keyup', code);
       });
       pressedKeys.current.clear();
+      swallowedKeys.current.clear();
 
       // Releasing everything ends any composition as far as this side is
       // concerned. Leaving the flag set would have the next keyup skipped for a

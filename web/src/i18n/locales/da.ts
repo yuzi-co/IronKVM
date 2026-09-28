@@ -132,7 +132,7 @@ const da = {
     keyboard: {
       title: 'Tastatur',
       paste: 'Indsæt',
-      tips: 'Kun standard bogstaver og symboler er understøttet',
+      tips: 'Skriver teksten på værten som tastetryk. Vælg det tastaturlayout, værten bruger.',
       placeholder: 'Indtast tekst',
       submit: 'Send',
       virtual: 'Tastatur',
@@ -140,10 +140,45 @@ const da = {
       clipboardPermissionDenied:
         'Udklipsholdertilladelse nægtet. Tillad venligst udklipsholderadgang i din browser.',
       clipboardReadError: 'Kunne ikke læse udklipsholderen',
-      dropdownEnglish: 'Engelsk',
-      dropdownGerman: 'tysk',
-      dropdownFrench: 'Fransk',
-      dropdownRussian: 'russisk',
+      pasting: {
+        layout: 'Tastaturlayout på værten',
+        layouts: {
+          us: 'Engelsk (USA)',
+          uk: 'Engelsk (Storbritannien)',
+          de: 'Tysk',
+          fr: 'Fransk',
+          es: 'Spansk',
+          it: 'Italiensk',
+          ptBr: 'Portugisisk (Brasilien)',
+          se: 'Svensk / finsk',
+          ru: 'Russisk',
+          ja: 'Japansk',
+          ko: 'Koreansk'
+        },
+        speed: 'Skrivehastighed',
+        speeds: {
+          fast: 'Hurtig',
+          normal: 'Normal',
+          slow: 'Langsom'
+        },
+        estimate: 'Skrivetid: cirka {{duration}}',
+        untypeable: 'Tegn, som dette layout ikke kan skrive: {{count}}',
+        untypeableAt: 'linje {{line}}, kolonne {{column}}',
+        skipUntypeable: 'Skriv resten',
+        shortcut: '{{shortcut}} skriver udklipsholderen på værten med det samme.',
+        clipboardUnavailable:
+          'Browseren lader kun en side læse udklipsholderen over HTTPS. Indsæt teksten i feltet med Ctrl+V.',
+        clipboardEmpty: 'Udklipsholderen indeholder ingen tekst.',
+        tooLong: 'Teksten er for lang. Grænsen er {{max}} tegn.',
+        inProgress: 'En indsættelse bliver allerede skrevet.',
+        typing: 'Skriver på værten',
+        done: 'Tekst skrevet',
+        canceled: 'Indsættelse annulleret',
+        failed: 'Indsættelse mislykkedes',
+        cancel: 'Annuller',
+        controlBusy: 'En anden styring bruger tastaturet.',
+        hidError: 'Tastetrykkene kunne ikke sendes til værten.'
+      },
       shortcut: {
         title: 'Genveje',
         custom: 'Brugerdefineret',

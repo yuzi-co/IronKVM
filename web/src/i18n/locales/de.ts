@@ -136,7 +136,7 @@ const de = {
     keyboard: {
       title: 'Tastatur',
       paste: 'Einfügen',
-      tips: 'Server Tastaturbelegung',
+      tips: 'Tippt den Text auf dem Host als Tastendrücke. Wählen Sie das Tastaturlayout des Hosts.',
       placeholder: 'Bitte eingeben',
       submit: 'Senden',
       virtual: 'Tastatur',
@@ -144,10 +144,45 @@ const de = {
       clipboardPermissionDenied:
         'Berechtigung für die Zwischenablage verweigert. Bitte erlauben Sie den Zugriff auf die Zwischenablage in Ihrem Browser.',
       clipboardReadError: 'Zwischenablage konnte nicht gelesen werden',
-      dropdownEnglish: 'Englisch',
-      dropdownGerman: 'Deutsch',
-      dropdownFrench: 'Französisch',
-      dropdownRussian: 'Russisch',
+      pasting: {
+        layout: 'Tastaturlayout des Hosts',
+        layouts: {
+          us: 'Englisch (USA)',
+          uk: 'Englisch (Vereinigtes Königreich)',
+          de: 'Deutsch',
+          fr: 'Französisch',
+          es: 'Spanisch',
+          it: 'Italienisch',
+          ptBr: 'Portugiesisch (Brasilien)',
+          se: 'Schwedisch / Finnisch',
+          ru: 'Russisch',
+          ja: 'Japanisch',
+          ko: 'Koreanisch'
+        },
+        speed: 'Tippgeschwindigkeit',
+        speeds: {
+          fast: 'Schnell',
+          normal: 'Normal',
+          slow: 'Langsam'
+        },
+        estimate: 'Tippdauer: etwa {{duration}}',
+        untypeable: 'Zeichen, die dieses Layout nicht tippen kann: {{count}}',
+        untypeableAt: 'Zeile {{line}}, Spalte {{column}}',
+        skipUntypeable: 'Den Rest tippen',
+        shortcut: '{{shortcut}} tippt die Zwischenablage sofort auf dem Host.',
+        clipboardUnavailable:
+          'Der Browser lässt eine Seite die Zwischenablage nur über HTTPS lesen. Fügen Sie den Text mit Strg+V in das Feld ein.',
+        clipboardEmpty: 'Die Zwischenablage enthält keinen Text.',
+        tooLong: 'Der Text ist zu lang. Die Grenze liegt bei {{max}} Zeichen.',
+        inProgress: 'Es wird bereits ein Text getippt.',
+        typing: 'Tippt auf dem Host',
+        done: 'Text getippt',
+        canceled: 'Einfügen abgebrochen',
+        failed: 'Einfügen fehlgeschlagen',
+        cancel: 'Abbrechen',
+        controlBusy: 'Eine andere Steuerung verwendet die Tastatur.',
+        hidError: 'Die Tastendrücke konnten nicht an den Host gesendet werden.'
+      },
       shortcut: {
         title: 'Verknüpfungen',
         custom: 'Benutzerdefiniert',

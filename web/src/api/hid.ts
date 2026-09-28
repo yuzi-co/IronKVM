@@ -1,8 +1,47 @@
 import { http } from '@/lib/http.ts';
 
-// paste
-export function paste(content: string, langue: string) {
-  return http.post('/api/hid/paste', { content, langue });
+export type PasteUntypeable = {
+  index: number; // offset in the text, in code points
+  line: number;
+  column: number;
+  char: string;
+};
+
+export type PasteCheck = {
+  characters: number;
+  keystrokes: number;
+  durationMs: number;
+  untypeable: PasteUntypeable[]; // the first hundred
+  untypeableCount: number;
+};
+
+export type PasteStatus = {
+  status: 'idle' | 'typing' | 'done' | 'canceled' | 'failed';
+  typed: number;
+  total: number;
+  error?: 'control_busy' | 'hid_error';
+};
+
+// start typing a text on the host in the background. The server refuses a
+// text with characters the layout cannot type, code -4 with a PasteCheck,
+// unless skipUntypeable says to type the rest.
+export function paste(content: string, layout: string, delay: number, skipUntypeable = false) {
+  return http.post('/api/hid/paste', { content, layout, delay, skipUntypeable });
+}
+
+// what typing a text would take, without typing it
+export function checkPaste(content: string, layout: string, delay: number) {
+  return http.post('/api/hid/paste/check', { content, layout, delay });
+}
+
+// progress of the paste typing now, or of the last one
+export function getPasteStatus() {
+  return http.get('/api/hid/paste/status');
+}
+
+// stop the paste typing now
+export function cancelPaste() {
+  return http.post('/api/hid/paste/cancel');
 }
 
 // reset hid

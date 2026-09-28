@@ -133,7 +133,7 @@ const es = {
     keyboard: {
       title: 'Teclado',
       paste: 'Pegar',
-      tips: 'Sólo están soportadas las letras y símbolos estándar del teclado',
+      tips: 'Escribe el texto en el host como pulsaciones de teclas. Elige la distribución de teclado que usa el host.',
       placeholder: 'Por favor, introduce el texto',
       submit: 'Enviar',
       virtual: 'Teclado virtual',
@@ -141,10 +141,45 @@ const es = {
       clipboardPermissionDenied:
         'Permiso de portapapeles denegado. Por favor, permite el acceso al portapapeles en tu navegador.',
       clipboardReadError: 'Error al leer del portapapeles',
-      dropdownEnglish: 'Inglés',
-      dropdownGerman: 'Alemán',
-      dropdownFrench: 'Francés',
-      dropdownRussian: 'ruso',
+      pasting: {
+        layout: 'Distribución de teclado del host',
+        layouts: {
+          us: 'Inglés (EE. UU.)',
+          uk: 'Inglés (Reino Unido)',
+          de: 'Alemán',
+          fr: 'Francés',
+          es: 'Español',
+          it: 'Italiano',
+          ptBr: 'Portugués (Brasil)',
+          se: 'Sueco / finés',
+          ru: 'Ruso',
+          ja: 'Japonés',
+          ko: 'Coreano'
+        },
+        speed: 'Velocidad de escritura',
+        speeds: {
+          fast: 'Rápida',
+          normal: 'Normal',
+          slow: 'Lenta'
+        },
+        estimate: 'Tiempo de escritura: unos {{duration}}',
+        untypeable: 'Caracteres que esta distribución no puede escribir: {{count}}',
+        untypeableAt: 'línea {{line}}, columna {{column}}',
+        skipUntypeable: 'Escribir el resto',
+        shortcut: '{{shortcut}} escribe el portapapeles en el host directamente.',
+        clipboardUnavailable:
+          'El navegador solo permite que una página lea el portapapeles por HTTPS. Pega el texto en el cuadro con Ctrl+V.',
+        clipboardEmpty: 'El portapapeles no contiene texto.',
+        tooLong: 'El texto es demasiado largo. El límite es de {{max}} caracteres.',
+        inProgress: 'Ya se está escribiendo un texto pegado.',
+        typing: 'Escribiendo en el host',
+        done: 'Texto escrito',
+        canceled: 'Pegado cancelado',
+        failed: 'El pegado ha fallado',
+        cancel: 'Cancelar',
+        controlBusy: 'Otro controlador está usando el teclado.',
+        hidError: 'No se pudieron enviar las pulsaciones al host.'
+      },
       shortcut: {
         title: 'Atajos',
         custom: 'Personalizado',

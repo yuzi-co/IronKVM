@@ -112,6 +112,11 @@ micro-optimisation.
   whether a cable is present.
 - **A build stamp**, so the running binary can be identified. The application
   version alone is written by the updater and says nothing about the binary.
+- **Paste as typing that copes with real text.** Long text types in the
+  background with progress and a cancel, on eleven keyboard layouts with dead
+  keys for accented letters. A character the layout cannot type is reported
+  with its line and column rather than dropped, and Ctrl+Alt+Shift+V types the
+  browser's clipboard straight away.
 - **A `novision` build tag**, which stubs the device-native bindings so the tree
   can be built and tested off the board.
 

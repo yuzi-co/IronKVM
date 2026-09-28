@@ -132,7 +132,7 @@ const ja = {
     keyboard: {
       title: 'キーボード',
       paste: '貼り付け',
-      tips: '標準的なキーボードの文字と記号のみをサポートしています',
+      tips: 'テキストをキー入力としてホストに入力します。ホストで使われているキーボード配列を選んでください。',
       placeholder: '入力してください',
       submit: '送信',
       virtual: '仮想キーボード',
@@ -140,10 +140,45 @@ const ja = {
       clipboardPermissionDenied:
         'クリップボードのアクセス許可が拒否されました。ブラウザでクリップボードへのアクセスを許可してください。',
       clipboardReadError: 'クリップボードの読み取りに失敗しました',
-      dropdownEnglish: '英語',
-      dropdownGerman: 'ドイツ語',
-      dropdownFrench: 'フランス語',
-      dropdownRussian: 'ロシア語',
+      pasting: {
+        layout: 'ホストのキーボード配列',
+        layouts: {
+          us: '英語（US）',
+          uk: '英語（UK）',
+          de: 'ドイツ語',
+          fr: 'フランス語',
+          es: 'スペイン語',
+          it: 'イタリア語',
+          ptBr: 'ポルトガル語（ブラジル）',
+          se: 'スウェーデン語 / フィンランド語',
+          ru: 'ロシア語',
+          ja: '日本語',
+          ko: '韓国語'
+        },
+        speed: '入力速度',
+        speeds: {
+          fast: '速い',
+          normal: '標準',
+          slow: '遅い'
+        },
+        estimate: '入力時間: 約 {{duration}}',
+        untypeable: 'この配列で入力できない文字: {{count}}',
+        untypeableAt: '{{line}} 行 {{column}} 列',
+        skipUntypeable: '残りを入力',
+        shortcut: '{{shortcut}} でクリップボードの内容をすぐにホストへ入力します。',
+        clipboardUnavailable:
+          'ブラウザーは HTTPS の場合にのみページがクリップボードを読むことを許可します。Ctrl+V でテキストをボックスに貼り付けてください。',
+        clipboardEmpty: 'クリップボードにテキストがありません。',
+        tooLong: 'テキストが長すぎます。上限は {{max}} 文字です。',
+        inProgress: '別の貼り付けを入力中です。',
+        typing: 'ホストに入力中',
+        done: '入力完了',
+        canceled: '貼り付けをキャンセルしました',
+        failed: '貼り付けに失敗しました',
+        cancel: 'キャンセル',
+        controlBusy: '別のコントローラーがキーボードを使用中です。',
+        hidError: 'キー入力をホストに送信できませんでした。'
+      },
       shortcut: {
         title: 'ショートカット',
         custom: 'カスタム',
