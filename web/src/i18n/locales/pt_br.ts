@@ -459,6 +459,16 @@ const pt_br = {
     },
     settings: {
       title: 'Configurações',
+      nav: {
+        general: 'Geral',
+        device: 'Dispositivo',
+        network: 'Rede',
+        remote: 'Acesso remoto',
+        boot: 'Inicialização',
+        locked:
+          'Uma operação está em andamento. Outras páginas e o fechamento ficam indisponíveis até ela terminar.',
+        vpnProvider: 'Provedor de VPN'
+      },
       mcp: {
         title: 'Serviço MCP',
         service: 'Controle remoto MCP',
@@ -722,7 +732,11 @@ const pt_br = {
       },
       appearance: {
         title: 'Aparência',
-        display: 'Exibição',
+        thisBrowser: 'Este navegador',
+        thisBrowserDesc:
+          'Salvo apenas neste navegador. Outros navegadores mantêm as próprias configurações.',
+        deviceWide: 'Dispositivo',
+        deviceWideDesc: 'Salvo no dispositivo. Vale para todos que o abrem.',
         language: 'Idioma',
         languageDesc: 'Selecione o idioma da interface',
         webTitle: 'Título da Web',
@@ -830,18 +844,6 @@ const pt_br = {
           idleTimeoutTitle: 'Tempo limite de captura inativa',
           idleTimeoutDescription: 'Parar a captura HDMI após não haver visualizadores ativos por',
           minutes: 'min'
-        },
-        autostart: {
-          title: 'Configurações de scripts de inicialização automática',
-          description:
-            'Gerencia scripts que são executados automaticamente na inicialização do sistema',
-          new: 'Novo',
-          deleteConfirm: 'Tem certeza de que deseja excluir este arquivo?',
-          yes: 'Sim',
-          no: 'Não',
-          scriptName: 'Nome do script de inicialização automática',
-          scriptContent: 'Conteúdo do script de inicialização automática',
-          settings: 'Configurações'
         },
         hidOnly: 'Modo Somente-HID',
         hidOnlyDesc: 'Pare de emular dispositivos virtuais, mantendo apenas o controle básico HID',

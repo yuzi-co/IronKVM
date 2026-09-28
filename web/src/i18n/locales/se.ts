@@ -456,6 +456,16 @@ const se = {
     },
     settings: {
       title: 'Inställningar',
+      nav: {
+        general: 'Allmänt',
+        device: 'Enhet',
+        network: 'Nätverk',
+        remote: 'Fjärråtkomst',
+        boot: 'Uppstart',
+        locked:
+          'En åtgärd pågår. Andra sidor och stängning är inte tillgängliga förrän den är klar.',
+        vpnProvider: 'VPN-leverantör'
+      },
       mcp: {
         title: 'MCP-tjänst',
         service: 'MCP-fjärrstyrning',
@@ -716,7 +726,11 @@ const se = {
       },
       appearance: {
         title: 'Utseende',
-        display: 'Visning',
+        thisBrowser: 'Den här webbläsaren',
+        thisBrowserDesc:
+          'Sparas bara i den här webbläsaren. Andra webbläsare har egna inställningar.',
+        deviceWide: 'Enhet',
+        deviceWideDesc: 'Sparas på enheten. Gäller alla som öppnar den.',
         language: 'Språk',
         languageDesc: 'Välj språk för gränssnittet',
         webTitle: 'Webbtitel',
@@ -824,17 +838,6 @@ const se = {
           idleTimeoutDescription:
             'Stoppa HDMI-inspelning efter att det inte har funnits aktiva tittare i',
           minutes: 'min'
-        },
-        autostart: {
-          title: 'Autostart skriptinställningar',
-          description: 'Hantera skript som körs automatiskt vid systemstart',
-          new: 'Nytt',
-          deleteConfirm: 'Är du säker på att du vill ta bort denna fil?',
-          yes: 'Ja',
-          no: 'Nej',
-          scriptName: 'Autostart skriptnamn',
-          scriptContent: 'Autostart skriptinnehåll',
-          settings: 'Inställningar'
         },
         hidOnly: 'Endast-HID-läge',
         hidOnlyDesc: 'Sluta emulera virtuella enheter, behåll bara grundläggande HID kontroll',

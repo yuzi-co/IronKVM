@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import type { ReactNode } from 'react';
 import { useAuth } from '@/contexts/auth.ts';
 import { Badge, Modal, Tooltip } from 'antd';
 import clsx from 'clsx';
@@ -9,6 +10,7 @@ import {
   CircleArrowUpIcon,
   HeartPulseIcon,
   KeyRoundIcon,
+  LockIcon,
   MonitorDownIcon,
   NetworkIcon,
   PaletteIcon,
@@ -16,7 +18,9 @@ import {
   ScreenShareIcon,
   ServerCogIcon,
   SettingsIcon,
+  ShieldIcon,
   SmartphoneIcon,
+  TerminalIcon,
   UserRoundIcon
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -26,8 +30,6 @@ import * as api from '@/api/application.ts';
 import * as ls from '@/lib/localstorage.ts';
 import { keyboardLockAtom } from '@/jotai/keyboard.ts';
 import { submenuOpenCountAtom } from '@/jotai/settings.ts';
-import { Netbird as NetbirdIcon } from '@/components/icons/netbird';
-import { Tailscale as TailscaleIcon } from '@/components/icons/tailscale';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 import { About } from './about';
@@ -37,19 +39,52 @@ import { Appearance } from './appearance';
 import { Device } from './device';
 import { Ipmi } from './ipmi';
 import { MCP } from './mcp';
-import { Netbird } from './netbird';
+import {
+  browserStorage,
+  groupTabs,
+  initialTab,
+  LAST_TAB_KEY,
+  readStored,
+  writeStored
+} from './nav.ts';
+import type { Group } from './nav.ts';
 import { Netboot } from './netboot';
 import { Network } from './network';
 import { Redfish } from './redfish';
-import { Tailscale } from './tailscale';
+import { Ssh } from './ssh';
 import { Update } from './update';
 import { Vnc } from './vnc';
+import { VpnTab } from './vpn/tab.tsx';
 import { Watchdog } from './watchdog';
+
+type Tab = {
+  id: string;
+  group: Group;
+  icon: ReactNode;
+  // A name that needs no translation; otherwise settings.<id>.title.
+  label?: string;
+  component: ReactNode;
+};
+
+// Tailwind's sm breakpoint, which is where the sidebar drops its labels.
+const narrowQuery = '(max-width: 639.98px)';
+
+function subscribeNarrow(onChange: () => void) {
+  const query = window.matchMedia(narrowQuery);
+  query.addEventListener('change', onChange);
+  return () => query.removeEventListener('change', onChange);
+}
+
+function useIsNarrow() {
+  return useSyncExternalStore(subscribeNarrow, () => window.matchMedia(narrowQuery).matches);
+}
 
 export const Settings = () => {
   const { t } = useTranslation();
   const { account } = useAuth();
   const isAdmin = account.role === 'admin';
+  // Below sm the sidebar shows icons only, so each item needs a tooltip.
+  const isNarrow = useIsNarrow();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
@@ -60,43 +95,81 @@ export const Settings = () => {
   const setKeyboardLock = useSetAtom(keyboardLockAtom);
   const setSubmenuOpenCount = useSetAtom(submenuOpenCountAtom);
 
-  const tabs = [
-    { id: 'about', icon: <BadgeInfoIcon size={16} />, component: <About /> },
-    { id: 'appearance', icon: <PaletteIcon size={16} />, component: <Appearance /> },
+  const icon16 = { size: 16 };
+  const tabs: Tab[] = [
+    { id: 'about', group: 'general', icon: <BadgeInfoIcon {...icon16} />, component: <About /> },
+    {
+      id: 'appearance',
+      group: 'general',
+      icon: <PaletteIcon {...icon16} />,
+      component: <Appearance />
+    },
+    {
+      id: 'account',
+      group: 'general',
+      icon: <UserRoundIcon {...icon16} />,
+      component: <Account />
+    },
+    { id: 'apiKeys', group: 'general', icon: <KeyRoundIcon {...icon16} />, component: <APIKeys /> },
     ...(isAdmin
-      ? [
-          { id: 'device', icon: <SmartphoneIcon size={16} />, component: <Device /> },
-          { id: 'network', icon: <NetworkIcon size={16} />, component: <Network /> },
-          { id: 'mcp', icon: <BotIcon size={16} />, component: <MCP /> },
-          { id: 'redfish', icon: <ServerCogIcon size={16} />, component: <Redfish /> },
-          { id: 'ipmi', icon: <PowerIcon size={16} />, component: <Ipmi /> },
-          { id: 'vnc', icon: <ScreenShareIcon size={16} />, component: <Vnc /> },
-          { id: 'watchdog', icon: <HeartPulseIcon size={16} />, component: <Watchdog /> },
+      ? ([
           {
-            id: 'netboot',
-            icon: <MonitorDownIcon size={16} />,
-            component: <Netboot setIsLocked={setIsLocked} />
+            id: 'device',
+            group: 'device',
+            icon: <SmartphoneIcon {...icon16} />,
+            component: <Device />
           },
           {
-            id: 'tailscale',
-            icon: <TailscaleIcon />,
-            component: <Tailscale setIsLocked={setIsLocked} />
-          },
-          {
-            id: 'netbird',
-            icon: <NetbirdIcon />,
-            component: <Netbird setIsLocked={setIsLocked} />
+            id: 'watchdog',
+            group: 'device',
+            icon: <HeartPulseIcon {...icon16} />,
+            component: <Watchdog />
           },
           {
             id: 'update',
-            icon: <CircleArrowUpIcon size={16} />,
+            group: 'device',
+            icon: <CircleArrowUpIcon {...icon16} />,
             component: <Update setIsLocked={setIsLocked} />
+          },
+          {
+            id: 'network',
+            group: 'network',
+            icon: <NetworkIcon {...icon16} />,
+            component: <Network />
+          },
+          {
+            id: 'vpn',
+            group: 'network',
+            icon: <ShieldIcon {...icon16} />,
+            label: 'VPN',
+            component: <VpnTab isLocked={isLocked} setIsLocked={setIsLocked} />
+          },
+          {
+            id: 'ssh',
+            group: 'remote',
+            icon: <TerminalIcon {...icon16} />,
+            label: 'SSH',
+            component: <Ssh />
+          },
+          { id: 'vnc', group: 'remote', icon: <ScreenShareIcon {...icon16} />, component: <Vnc /> },
+          { id: 'ipmi', group: 'remote', icon: <PowerIcon {...icon16} />, component: <Ipmi /> },
+          {
+            id: 'redfish',
+            group: 'remote',
+            icon: <ServerCogIcon {...icon16} />,
+            component: <Redfish />
+          },
+          { id: 'mcp', group: 'remote', icon: <BotIcon {...icon16} />, component: <MCP /> },
+          {
+            id: 'netboot',
+            group: 'boot',
+            icon: <MonitorDownIcon {...icon16} />,
+            component: <Netboot setIsLocked={setIsLocked} />
           }
-        ]
-      : []),
-    { id: 'apiKeys', icon: <KeyRoundIcon size={16} />, component: <APIKeys /> },
-    { id: 'account', icon: <UserRoundIcon size={18} />, component: <Account /> }
+        ] satisfies Tab[])
+      : [])
   ];
+  const groups = groupTabs(tabs);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -121,11 +194,9 @@ export const Settings = () => {
     scrollViewportRef.current?.scrollTo({ top: 0, left: 0 });
   }, [currentTab]);
 
-  function changeTab(tab: string) {
-    if (isLocked) {
-      return;
-    }
-
+  // showTab switches the page. Opening the update page counts as having seen
+  // the update, which clears the badge.
+  function showTab(tab: string) {
     setCurrentTab(tab);
 
     if (isUpdateAvailable && tab === 'update') {
@@ -134,7 +205,19 @@ export const Settings = () => {
     }
   }
 
+  function changeTab(tab: string) {
+    if (isLocked) {
+      return;
+    }
+
+    showTab(tab);
+    writeStored(browserStorage(), LAST_TAB_KEY, tab);
+  }
+
   function openModal() {
+    const ids = tabs.map((tab) => tab.id);
+    showTab(initialTab(ids, readStored(browserStorage(), LAST_TAB_KEY), isUpdateAvailable));
+
     setIsModalOpen(true);
     setKeyboardLock({ source: 'settings-modal', locked: true });
     setSubmenuOpenCount((count) => count + 1);
@@ -147,8 +230,50 @@ export const Settings = () => {
 
     setKeyboardLock({ source: 'settings-modal', locked: false });
     setIsModalOpen(false);
-    setCurrentTab('about');
     setSubmenuOpenCount((count) => Math.max(0, count - 1));
+  }
+
+  function renderItem(tab: Tab) {
+    const label = tab.label ?? t(`settings.${tab.id}.title`);
+    const isCurrent = currentTab === tab.id;
+    const isDisabled = isLocked && !isCurrent;
+
+    let tip: string | undefined;
+    if (isDisabled) {
+      tip = t('settings.nav.locked');
+    } else if (isNarrow) {
+      tip = label;
+    }
+
+    const text = <span className="hidden truncate text-sm sm:block">{label}</span>;
+
+    return (
+      <Tooltip key={tab.id} title={tip} placement="right" mouseEnterDelay={0.3}>
+        <button
+          type="button"
+          aria-label={label}
+          aria-current={isCurrent ? 'page' : undefined}
+          aria-disabled={isDisabled || undefined}
+          className={clsx(
+            'flex w-full shrink-0 items-center space-x-2 rounded-lg p-2 text-left select-none sm:px-3',
+            isCurrent && 'bg-neutral-700/50',
+            !isCurrent && !isDisabled && 'cursor-pointer hover:bg-neutral-700/50',
+            isDisabled && 'cursor-not-allowed opacity-40'
+          )}
+          onClick={() => changeTab(tab.id)}
+        >
+          <div className="h-[16px] w-[16px] shrink-0">{tab.icon}</div>
+
+          {isUpdateAvailable && tab.id === 'update' ? (
+            <Badge dot color="blue" offset={[6, 3]}>
+              {text}
+            </Badge>
+          ) : (
+            text
+          )}
+        </button>
+      </Tooltip>
+    );
   }
 
   return (
@@ -172,46 +297,46 @@ export const Settings = () => {
         centered={true}
         footer={null}
         destroyOnHidden={true}
+        closable={!isLocked}
+        maskClosable={!isLocked}
+        keyboard={!isLocked}
         onCancel={closeModal}
         style={{ maxWidth: '1080px' }}
         styles={{ container: { padding: 0 } }}
       >
         <div className="flex h-[80vh] max-h-[700px] rounded-lg outline outline-1 outline-neutral-700">
-          <div className="flex h-full max-w-[260px] flex-col space-y-0.5 rounded-l-lg bg-neutral-800/90 px-1 sm:w-1/5 md:w-1/4 md:px-2">
-            <div className="hidden px-3 pt-10 text-xl sm:block">{t('settings.title')}</div>
-            <div className="h-10 sm:h-5" />
-            {tabs.map((tab) => (
-              <div
-                key={tab.id}
-                className={clsx(
-                  'flex cursor-pointer select-none items-center space-x-2 rounded-lg p-2 sm:px-3',
-                  currentTab === tab.id ? 'bg-neutral-700/50' : 'hover:bg-neutral-700/50'
-                )}
-                onClick={() => changeTab(tab.id)}
-              >
-                <div className="h-[16px] w-[16px]">{tab.icon}</div>
+          <nav
+            aria-label={t('settings.title')}
+            className="flex h-full max-w-[260px] shrink-0 flex-col overflow-y-auto rounded-l-lg bg-neutral-800/90 px-1 pb-4 sm:w-1/5 md:w-1/4 md:px-2"
+          >
+            <div className="hidden shrink-0 px-3 pt-10 text-xl sm:block">{t('settings.title')}</div>
+            <div className="h-10 shrink-0 sm:h-2" />
 
-                {isUpdateAvailable && tab.id === 'update' ? (
-                  <Badge dot color="blue" offset={[6, 3]}>
-                    <span className="hidden truncate text-sm sm:block">
-                      {t(`settings.${tab.id}.title`)}
-                    </span>
-                  </Badge>
-                ) : (
-                  <span className="hidden truncate text-sm sm:block">
-                    {t(`settings.${tab.id}.title`)}
-                  </span>
-                )}
+            {isLocked && (
+              <div className="mx-1 mb-2 hidden shrink-0 items-start space-x-2 rounded-md bg-amber-500/10 px-2 py-1.5 text-xs text-amber-400 sm:flex">
+                <LockIcon size={12} className="mt-0.5 shrink-0" />
+                <span>{t('settings.nav.locked')}</span>
+              </div>
+            )}
+
+            {groups.map(({ group, tabs: groupItems }, index) => (
+              <div key={group} role="group" aria-label={t(`settings.nav.${group}`)}>
+                {/* Icon-only below sm: a rule stands in for the heading. */}
+                {index > 0 && <div className="mx-2 my-2 border-t border-neutral-700 sm:hidden" />}
+                <div className="hidden px-3 pt-4 pb-1 text-xs font-medium tracking-wide text-neutral-500 uppercase sm:block">
+                  {t(`settings.nav.${group}`)}
+                </div>
+                <div className="flex flex-col space-y-0.5">{groupItems.map(renderItem)}</div>
               </div>
             ))}
-          </div>
+          </nav>
 
           <ScrollArea
             viewportRef={scrollViewportRef}
             className="h-full w-full rounded-r-lg bg-neutral-900/50 px-3 [&_[data-slot=scroll-area-scrollbar]]:w-1.5 [&_[data-slot=scroll-area-scrollbar]]:p-0 [&_[data-slot=scroll-area-thumb]]:bg-neutral-500/30"
           >
             <div className="flex h-full w-full justify-center">
-              <div className="w-full max-w-[600px] pb-10 pt-14">
+              <div className="w-full max-w-[600px] pt-14 pb-10">
                 <>{tabs.find((tab) => tab.id === currentTab)?.component}</>
               </div>
             </div>

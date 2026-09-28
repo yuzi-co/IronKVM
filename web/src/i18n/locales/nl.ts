@@ -464,6 +464,16 @@ const nl = {
     },
     settings: {
       title: 'Instellingen',
+      nav: {
+        general: 'Algemeen',
+        device: 'Apparaat',
+        network: 'Netwerk',
+        remote: 'Toegang op afstand',
+        boot: 'Opstarten',
+        locked:
+          "Er loopt een bewerking. Andere pagina's en sluiten zijn pas weer beschikbaar als die klaar is.",
+        vpnProvider: 'VPN-aanbieder'
+      },
       mcp: {
         title: 'MCP-service',
         service: 'MCP-afstandsbediening',
@@ -725,7 +735,11 @@ const nl = {
       },
       appearance: {
         title: 'Uiterlijk',
-        display: 'Beeldscherm',
+        thisBrowser: 'Deze browser',
+        thisBrowserDesc:
+          'Alleen in deze browser opgeslagen. Andere browsers hebben hun eigen instellingen.',
+        deviceWide: 'Apparaat',
+        deviceWideDesc: 'Op het apparaat opgeslagen. Geldt voor iedereen die het opent.',
         language: 'Taal',
         languageDesc: 'Selecteer de taal voor de interface',
         webTitle: 'Webtitel',
@@ -834,18 +848,6 @@ const nl = {
           idleTimeoutDescription:
             'HDMI-opname stoppen nadat er gedurende deze tijd geen actieve kijkers zijn:',
           minutes: 'min'
-        },
-        autostart: {
-          title: 'Instellingen voor automatisch starten van scripts',
-          description:
-            'Beheer scripts die automatisch worden uitgevoerd bij het opstarten van het systeem',
-          new: 'Nieuw',
-          deleteConfirm: 'Weet u zeker dat u dit bestand wilt verwijderen?',
-          yes: 'Ja',
-          no: 'Nee',
-          scriptName: 'Scriptnaam automatisch starten',
-          scriptContent: 'Scriptinhoud automatisch starten',
-          settings: 'Instellingen'
         },
         hidOnly: 'HID-Alleen modus',
         hidOnlyDesc:

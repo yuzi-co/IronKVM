@@ -459,6 +459,16 @@ const nb = {
     },
     settings: {
       title: 'Innstillinger',
+      nav: {
+        general: 'Generelt',
+        device: 'Enhet',
+        network: 'Nettverk',
+        remote: 'Fjerntilgang',
+        boot: 'Oppstart',
+        locked:
+          'En operasjon pågår. Andre sider og lukking er ikke tilgjengelig før den er ferdig.',
+        vpnProvider: 'VPN-leverandør'
+      },
       mcp: {
         title: 'MCP-tjeneste',
         service: 'MCP-fjernstyring',
@@ -716,7 +726,10 @@ const nb = {
       },
       appearance: {
         title: 'Utseende',
-        display: 'Skjerm',
+        thisBrowser: 'Denne nettleseren',
+        thisBrowserDesc: 'Lagres bare i denne nettleseren. Andre nettlesere har sine egne.',
+        deviceWide: 'Enhet',
+        deviceWideDesc: 'Lagres på enheten. Gjelder for alle som åpner den.',
         language: 'Språk',
         languageDesc: 'Velg språket for grensesnittet',
         webTitle: 'Netttittel',
@@ -823,17 +836,6 @@ const nb = {
           idleTimeoutTitle: 'Tidsavbrudd for inaktivt opptak',
           idleTimeoutDescription: 'Stopp HDMI-opptak etter at det ikke har vært aktive seere i',
           minutes: 'min'
-        },
-        autostart: {
-          title: 'Autostart skriptinnstillinger',
-          description: 'Administrer skript som kjører automatisk ved systemstart',
-          new: 'Ny',
-          deleteConfirm: 'Er du sikker på at du vil slette denne filen?',
-          yes: 'Ja',
-          no: 'Nei',
-          scriptName: 'Autostart skriptnavn',
-          scriptContent: 'Autostart skriptinnhold',
-          settings: 'Innstillinger'
         },
         hidOnly: 'HID-Bare modus',
         hidOnlyDesc: 'Slutt å emulere virtuelle enheter, behold bare grunnleggende HID-kontroll',

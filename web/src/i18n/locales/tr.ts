@@ -458,6 +458,15 @@ const tr = {
     },
     settings: {
       title: 'Ayarlar',
+      nav: {
+        general: 'Genel',
+        device: 'Cihaz',
+        network: 'Ağ',
+        remote: 'Uzaktan erişim',
+        boot: 'Önyükleme',
+        locked: 'Bir işlem sürüyor. Bitene kadar diğer sayfalar ve kapatma kullanılamaz.',
+        vpnProvider: 'VPN sağlayıcısı'
+      },
       mcp: {
         title: 'MCP Hizmeti',
         service: 'MCP uzaktan kumanda',
@@ -718,7 +727,11 @@ const tr = {
       },
       appearance: {
         title: 'Görünüm',
-        display: 'Ekran',
+        thisBrowser: 'Bu tarayıcı',
+        thisBrowserDesc:
+          'Yalnızca bu tarayıcıda saklanır. Diğer tarayıcılar kendi ayarlarını kullanır.',
+        deviceWide: 'Cihaz',
+        deviceWideDesc: 'Cihazda saklanır. Cihazı açan herkes için geçerlidir.',
         language: 'Dil',
         languageDesc: 'Arayüz için dili seçin',
         webTitle: 'Site başlığı',
@@ -827,18 +840,6 @@ const tr = {
           idleTimeoutDescription:
             'Etkin görüntüleyici olmadığında HDMI yakalamayı şu süre sonunda durdur:',
           minutes: 'dk'
-        },
-        autostart: {
-          title: 'Otomatik Başlatılan Komut Dosyaları Ayarları',
-          description:
-            'Sistem başlangıcında otomatik olarak çalıştırılan komut dosyalarını yönetme',
-          new: 'Yeni',
-          deleteConfirm: 'Bu dosyayı silmek istediğinden emin misin?',
-          yes: 'Evet',
-          no: 'Hayır',
-          scriptName: 'Otomatik Başlatma Komut Dosyası Adı',
-          scriptContent: 'Otomatik Başlatılan Komut Dosyası İçeriği',
-          settings: 'Ayarlar'
         },
         hidOnly: 'Yalnızca HID modu',
         hidOnlyDesc:

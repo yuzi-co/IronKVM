@@ -461,6 +461,16 @@ const it = {
     },
     settings: {
       title: 'Impostazioni',
+      nav: {
+        general: 'Generale',
+        device: 'Dispositivo',
+        network: 'Rete',
+        remote: 'Accesso remoto',
+        boot: 'Avvio',
+        locked:
+          "Un'operazione è in corso. Le altre pagine e la chiusura non sono disponibili finché non termina.",
+        vpnProvider: 'Provider VPN'
+      },
       mcp: {
         title: 'Servizio MCP',
         service: 'Controllo remoto MCP',
@@ -725,7 +735,11 @@ const it = {
       },
       appearance: {
         title: 'Aspetto',
-        display: 'Schermo',
+        thisBrowser: 'Questo browser',
+        thisBrowserDesc:
+          'Salvato solo in questo browser. Gli altri browser hanno le proprie impostazioni.',
+        deviceWide: 'Dispositivo',
+        deviceWideDesc: 'Salvato sul dispositivo. Vale per chiunque lo apra.',
         language: 'Lingua',
         languageDesc: "Seleziona la lingua per l'interfaccia",
         webTitle: 'Titolo web',
@@ -834,18 +848,6 @@ const it = {
           idleTimeoutDescription:
             'Interrompi la cattura HDMI dopo che non ci sono visualizzatori attivi per',
           minutes: 'min'
-        },
-        autostart: {
-          title: 'Impostazioni script di avvio automatico',
-          description:
-            "Gestisce gli script che vengono eseguiti automaticamente all'avvio del sistema",
-          new: 'Nuovo',
-          deleteConfirm: 'Sei sicuro di voler eliminare questo file?',
-          yes: 'Sì',
-          no: 'No',
-          scriptName: 'Nome script di avvio automatico',
-          scriptContent: 'Contenuto script di avvio automatico',
-          settings: 'Impostazioni'
         },
         hidOnly: 'HID-Solo modalità',
         hidOnlyDesc:

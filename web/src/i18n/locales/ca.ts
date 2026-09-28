@@ -456,6 +456,16 @@ const ca = {
     },
     settings: {
       title: 'Configuració',
+      nav: {
+        general: 'General',
+        device: 'Dispositiu',
+        network: 'Xarxa',
+        remote: 'Accés remot',
+        boot: 'Arrencada',
+        locked:
+          'Hi ha una operació en curs. Les altres pàgines i el tancament no estan disponibles fins que acabi.',
+        vpnProvider: 'Proveïdor de VPN'
+      },
       mcp: {
         title: 'Servei MCP',
         service: 'Control remot MCP',
@@ -721,7 +731,11 @@ const ca = {
       },
       appearance: {
         title: 'Aparença',
-        display: 'Pantalla',
+        thisBrowser: 'Aquest navegador',
+        thisBrowserDesc:
+          'Es desa només en aquest navegador. Els altres navegadors conserven la seva.',
+        deviceWide: 'Dispositiu',
+        deviceWideDesc: "Es desa al dispositiu. S'aplica a tothom qui l'obre.",
         language: 'Idioma',
         languageDesc: "Seleccioneu l'idioma per a la interfície",
         webTitle: 'Títol web',
@@ -830,17 +844,6 @@ const ca = {
           idleTimeoutDescription:
             'Atura la captura HDMI després de no detectar espectadors actius durant',
           minutes: 'min'
-        },
-        autostart: {
-          title: "Configuració dels scripts d'inici automàtic",
-          description: "Gestioneu els scripts que s'executen automàticament a l'inici del sistema",
-          new: 'Nou',
-          deleteConfirm: 'Estàs segur que vols eliminar aquest fitxer?',
-          yes: 'Sí',
-          no: 'No',
-          scriptName: "Nom de l'script d'inici automàtic",
-          scriptContent: "Contingut de l'script d'inici automàtic",
-          settings: 'Configuració'
         },
         hidOnly: 'Mode només HID',
         hidOnlyDesc: "Deixeu d'emular dispositius virtuals, conservant només el control bàsic HID",

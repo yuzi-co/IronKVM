@@ -455,6 +455,16 @@ const en = {
     },
     settings: {
       title: 'Settings',
+      nav: {
+        general: 'General',
+        device: 'Device',
+        network: 'Network',
+        remote: 'Remote access',
+        boot: 'Boot',
+        locked:
+          'An operation is in progress. Other pages and closing are unavailable until it finishes.',
+        vpnProvider: 'VPN provider'
+      },
       mcp: {
         title: 'MCP Service',
         service: 'Remote control MCP',
@@ -712,7 +722,10 @@ const en = {
       },
       appearance: {
         title: 'Appearance',
-        display: 'Display',
+        thisBrowser: 'This browser',
+        thisBrowserDesc: 'Saved in this browser only. Other browsers keep their own.',
+        deviceWide: 'Device',
+        deviceWideDesc: 'Saved on the device. Applies to everyone who opens it.',
         language: 'Language',
         languageDesc: 'Select the language for the interface',
         webTitle: 'Web Title',
@@ -818,17 +831,6 @@ const en = {
           idleTimeoutTitle: 'Capture idle timeout',
           idleTimeoutDescription: 'Stop HDMI capture after there are no active viewers for',
           minutes: 'min'
-        },
-        autostart: {
-          title: 'Autostart Scripts Settings',
-          description: 'Manage scripts that run automatically on system startup',
-          new: 'New',
-          deleteConfirm: 'Are you sure you want to delete this file?',
-          yes: 'Yes',
-          no: 'No',
-          scriptName: 'Autostart Script Name',
-          scriptContent: 'Autostart Script Content',
-          settings: 'Settings'
         },
         hidOnly: 'HID-Only Mode',
         hidOnlyDesc: 'Stop emulating virtual devices, retaining only basic HID control',

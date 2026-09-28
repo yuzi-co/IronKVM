@@ -461,6 +461,16 @@ const hu = {
     },
     settings: {
       title: 'Beállítások',
+      nav: {
+        general: 'Általános',
+        device: 'Eszköz',
+        network: 'Hálózat',
+        remote: 'Távoli elérés',
+        boot: 'Rendszerindítás',
+        locked:
+          'Egy művelet folyamatban van. A többi oldal és a bezárás a befejezéséig nem érhető el.',
+        vpnProvider: 'VPN-szolgáltató'
+      },
       mcp: {
         title: 'MCP-szolgáltatás',
         service: 'MCP távoli vezérlés',
@@ -723,7 +733,11 @@ const hu = {
       },
       appearance: {
         title: 'Megjelenés',
-        display: 'Kijelző',
+        thisBrowser: 'Ez a böngésző',
+        thisBrowserDesc:
+          'Csak ebben a böngészőben tárolva. A többi böngésző saját beállítást használ.',
+        deviceWide: 'Eszköz',
+        deviceWideDesc: 'Az eszközön tárolva. Mindenkire vonatkozik, aki megnyitja.',
         language: 'Nyelv',
         languageDesc: 'Válassza ki a felület nyelvét',
         webTitle: 'Webcím',
@@ -831,17 +845,6 @@ const hu = {
           idleTimeoutTitle: 'Inaktív rögzítés időkorlátja',
           idleTimeoutDescription: 'A HDMI-rögzítés leállítása, ha nincs aktív néző ennyi ideig:',
           minutes: 'perc'
-        },
-        autostart: {
-          title: 'Automatikus indítási parancsfájlok beállításai',
-          description: 'A rendszer indításakor automatikusan futó szkriptek kezelése',
-          new: 'Új',
-          deleteConfirm: 'Biztosan törli ezt a fájlt?',
-          yes: 'Igen',
-          no: 'Nem',
-          scriptName: 'Automatikusan induló szkript neve',
-          scriptContent: 'A szkripttartalom automatikus indítása',
-          settings: 'Beállítások'
         },
         hidOnly: 'HID-Csak mód',
         hidOnlyDesc:

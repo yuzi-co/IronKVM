@@ -8,6 +8,8 @@ import type { RedfishSession, RedfishSettings } from '@/api/redfish.ts';
 import { writeClipboardText } from '@/lib/clipboard.ts';
 import { getBaseUrl } from '@/lib/service.ts';
 
+import { PowerLedSetting } from '../../power/power-led-setting.tsx';
+
 function formatTime(value: string) {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
@@ -132,6 +134,8 @@ export const Redfish = () => {
             onChange={setEnabled}
           />
         </div>
+
+        <PowerLedSetting />
 
         {settings?.enabled && (
           <>

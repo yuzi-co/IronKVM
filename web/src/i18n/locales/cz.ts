@@ -458,6 +458,15 @@ const cz = {
     },
     settings: {
       title: 'Nastavení',
+      nav: {
+        general: 'Obecné',
+        device: 'Zařízení',
+        network: 'Síť',
+        remote: 'Vzdálený přístup',
+        boot: 'Spouštění',
+        locked: 'Probíhá operace. Ostatní stránky ani zavření nejsou dostupné, dokud neskončí.',
+        vpnProvider: 'Poskytovatel VPN'
+      },
       mcp: {
         title: 'Služba MCP',
         service: 'Vzdálené ovládání MCP',
@@ -716,7 +725,10 @@ const cz = {
       },
       appearance: {
         title: 'Vzhled',
-        display: 'Zobrazení',
+        thisBrowser: 'Tento prohlížeč',
+        thisBrowserDesc: 'Uloženo pouze v tomto prohlížeči. Ostatní prohlížeče mají vlastní.',
+        deviceWide: 'Zařízení',
+        deviceWideDesc: 'Uloženo v zařízení. Platí pro každého, kdo ho otevře.',
         language: 'Jazyk',
         languageDesc: 'Vyberte jazyk rozhraní',
         webTitle: 'Název webu',
@@ -824,17 +836,6 @@ const cz = {
           idleTimeoutTitle: 'Časový limit nečinnosti snímání',
           idleTimeoutDescription: 'Zastavit snímání HDMI po době bez aktivních diváků',
           minutes: 'min'
-        },
-        autostart: {
-          title: 'Nastavení automatického spuštění skriptů',
-          description: 'Správa skriptů, které se spouštějí automaticky při spuštění systému',
-          new: 'Nové',
-          deleteConfirm: 'Opravdu chcete tento soubor smazat?',
-          yes: 'Ano',
-          no: 'Ne',
-          scriptName: 'Název skriptu automatického spuštění',
-          scriptContent: 'Obsah skriptu automatického spuštění',
-          settings: 'Nastavení'
         },
         hidOnly: 'HID-Pouze režim',
         hidOnlyDesc: 'Zastavit emulaci virtuálních zařízení a zachovat pouze základní ovládání HID',

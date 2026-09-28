@@ -141,7 +141,8 @@ export const Information = () => {
           </span>
         </div>
 
-        <Hostname editable={account.role === 'admin'} />
+        {/* An admin edits the hostname under Network; others only see it here. */}
+        {account.role !== 'admin' && <Hostname />}
 
         <VideoMemory />
       </div>
