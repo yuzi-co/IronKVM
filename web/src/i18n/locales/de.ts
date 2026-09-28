@@ -374,7 +374,9 @@ const de = {
       success: 'Download erfolgreich',
       checksumFailed: 'Download fehlgeschlagen: SHA-256-Prüfung fehlgeschlagen',
       cancel: 'Abbrechen',
-      cancelFailed: 'Download konnte nicht abgebrochen werden'
+      cancelFailed: 'Download konnte nicht abgebrochen werden',
+      bootMenu: 'Bootmenü (netboot.xyz)',
+      bootMenuDesc: 'Das netboot.xyz-ISO mit geprüfter Prüfsumme für die virtuelle CD herunterladen'
     },
     power: {
       title: 'Power',
@@ -519,6 +521,46 @@ const de = {
         pressFailed: 'Der Tastendruck ist fehlgeschlagen: {{error}}',
         noScreenshot: 'Kein Screenshot',
         failed: 'Watchdog-Vorgang fehlgeschlagen'
+      },
+      netboot: {
+        title: 'Netzwerkboot',
+        description:
+          'Den Host über das Netzwerk booten: iPXE und ein Menü der Images auf dem KVM über die USB-Netzwerkverbindung, oder netboot.xyz per Proxy-DHCP im LAN.',
+        addon: 'dnsmasq und Boot-Dateien',
+        addonDesc:
+          'Auf /data installiert: dnsmasq aus Alpine, iPXE und netboot.xyz aus ihren Releases, jeweils gegen ihre Prüfsumme geprüft.',
+        install: 'Installieren',
+        installing: 'Wird installiert. Das kann einige Minuten dauern.',
+        uninstall: 'Deinstallieren',
+        uninstallConfirm: 'Netzwerkboot ausschalten und dnsmasq sowie die Boot-Dateien entfernen?',
+        needsData: 'Netzwerkboot braucht ein IronKVM-Image mit eingehängter /data-Partition.',
+        usb: 'Über die USB-Netzwerkverbindung',
+        usbDesc:
+          'Solange die USB-Netzwerkverbindung an ist, bedient dnsmasq sie statt udhcpd. Der Host erhält seine eine Adresse ohne Router und ohne DNS-Server, iPXE für seine Architektur und ein Menü der ISO-Images auf dem KVM.',
+        linkOff: 'Die USB-Netzwerkverbindung ist aus. Schalte sie unter Gerät, USB-Netzwerk ein.',
+        menuUrl: 'Menü',
+        leases: 'Lease des Hosts',
+        noLeases: 'Noch keine',
+        netbootxyzNote:
+          'netboot.xyz im Menü lädt aus dem Internet, das die USB-Verbindung nicht erreicht. Der Host braucht dafür Internet an einem anderen Netzwerkanschluss.',
+        lan: 'Proxy-DHCP im LAN',
+        lanDesc:
+          'Beantwortet PXE-Clients im LAN mit netboot.xyz, das sein Menü dann aus dem Internet lädt. Es vergibt nie Adressen und stellt die Images auf dem KVM nicht bereit.',
+        lanWarning:
+          'Jedem PXE-Client in diesem LAN wird netboot.xyz angeboten, nicht nur dem Host. Schalte das nur in einem Netzwerk ein, das du kontrollierst.',
+        lanConfirm: 'Proxy-DHCP im LAN einschalten?',
+        lanInterface: 'LAN',
+        running: 'Läuft',
+        stopped: 'Läuft nicht',
+        images: 'Images im Menü',
+        noImages: 'Keine ISO-Images im Image-Verzeichnis.',
+        boots: 'Letzte Boots',
+        noBoots: 'Der Host hat noch nichts abgerufen.',
+        log: 'dnsmasq-Protokoll',
+        refresh: 'Aktualisieren',
+        okBtn: 'Bestätigen',
+        cancelBtn: 'Abbrechen',
+        failed: 'Netzwerkboot-Vorgang fehlgeschlagen'
       },
       about: {
         title: 'Über NanoKVM',

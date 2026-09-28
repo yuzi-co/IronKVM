@@ -365,7 +365,9 @@ const vi = {
       success: 'Tải xuống thành công',
       checksumFailed: 'Tải xuống thất bại: xác minh SHA-256 không thành công',
       cancel: 'Hủy',
-      cancelFailed: 'Không thể hủy tải xuống'
+      cancelFailed: 'Không thể hủy tải xuống',
+      bootMenu: 'Menu khởi động (netboot.xyz)',
+      bootMenuDesc: 'Tải ISO netboot.xyz, đã kiểm tra checksum, cho CD ảo'
     },
     power: {
       title: 'Nguồn',
@@ -508,6 +510,46 @@ const vi = {
         pressFailed: 'Nhấn nút thất bại: {{error}}',
         noScreenshot: 'Không có ảnh chụp màn hình',
         failed: 'Thao tác watchdog thất bại'
+      },
+      netboot: {
+        title: 'Khởi động qua mạng',
+        description:
+          'Khởi động máy chủ từ mạng: iPXE và menu các ảnh đĩa trên KVM qua liên kết mạng USB, hoặc netboot.xyz qua proxy DHCP trên LAN.',
+        addon: 'dnsmasq và tệp khởi động',
+        addonDesc:
+          'Cài vào /data: dnsmasq từ Alpine, iPXE và netboot.xyz từ bản phát hành của chúng, mỗi tệp được kiểm tra theo checksum.',
+        install: 'Cài đặt',
+        installing: 'Đang cài đặt. Việc này có thể mất vài phút.',
+        uninstall: 'Gỡ cài đặt',
+        uninstallConfirm: 'Tắt khởi động qua mạng và gỡ dnsmasq cùng các tệp khởi động?',
+        needsData: 'Khởi động qua mạng cần ảnh IronKVM có phân vùng /data được gắn.',
+        usb: 'Trên liên kết mạng USB',
+        usbDesc:
+          'Khi liên kết mạng USB bật, dnsmasq phục vụ nó thay cho udhcpd. Máy chủ nhận địa chỉ duy nhất của nó mà không có bộ định tuyến và không có máy chủ DNS, iPXE cho kiến trúc của nó và menu các ảnh ISO trên KVM.',
+        linkOff: 'Liên kết mạng USB đang tắt. Hãy bật nó trong Thiết bị, Mạng USB.',
+        menuUrl: 'Menu',
+        leases: 'Hợp đồng thuê của máy chủ',
+        noLeases: 'Chưa có',
+        netbootxyzNote:
+          'netboot.xyz trong menu tải từ internet, nơi liên kết USB không tới được. Máy chủ cần internet trên một cổng mạng khác.',
+        lan: 'Proxy DHCP trên LAN',
+        lanDesc:
+          'Trả lời các máy khách PXE trên LAN bằng netboot.xyz, sau đó netboot.xyz tải menu từ internet. Nó không bao giờ cấp địa chỉ và không phục vụ các ảnh đĩa trên KVM.',
+        lanWarning:
+          'Mọi máy khách PXE trên LAN này đều được mời dùng netboot.xyz, không chỉ máy chủ. Chỉ bật tính năng này trên mạng bạn kiểm soát.',
+        lanConfirm: 'Bật proxy DHCP trên LAN?',
+        lanInterface: 'LAN',
+        running: 'Đang chạy',
+        stopped: 'Không chạy',
+        images: 'Ảnh đĩa trong menu',
+        noImages: 'Không có ảnh ISO trong thư mục ảnh.',
+        boots: 'Lần khởi động gần đây',
+        noBoots: 'Máy chủ chưa tải gì.',
+        log: 'Nhật ký dnsmasq',
+        refresh: 'Làm mới',
+        okBtn: 'Xác nhận',
+        cancelBtn: 'Hủy',
+        failed: 'Thao tác khởi động qua mạng thất bại'
       },
       about: {
         title: 'Giới thiệu về NanoKVM',

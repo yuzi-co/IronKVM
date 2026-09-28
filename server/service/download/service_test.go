@@ -2,6 +2,8 @@ package download
 
 import (
 	"testing"
+
+	"NanoKVM-Server/service/netboot"
 )
 
 func TestImageFilenameFromURL(t *testing.T) {
@@ -63,5 +65,19 @@ func TestAvailableBytesReportsFreeSpace(t *testing.T) {
 
 	if available <= 0 {
 		t.Fatalf("expected a positive amount of free space, got %d", available)
+	}
+}
+
+// The Boot menu button stores netboot.xyz's ISO under its release name, and
+// the pinned sum is one the download accepts.
+func TestTheBootMenuISOIsAnImageTheDownloaderAccepts(t *testing.T) {
+	name, err := imageFilenameFromURL(netboot.BootMenuISOURL)
+	if err != nil || name != "netboot.xyz.iso" {
+		t.Fatalf("the boot menu is stored as %q (%v)", name, err)
+	}
+
+	sum, err := parseSHA256(netboot.BootMenuISOSHA256)
+	if err != nil || len(sum) != 32 {
+		t.Fatalf("the pinned sum does not parse: %v", err)
 	}
 }

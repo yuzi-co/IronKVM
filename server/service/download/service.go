@@ -2,6 +2,7 @@ package download
 
 import (
 	"NanoKVM-Server/proto"
+	"NanoKVM-Server/service/netboot"
 	"NanoKVM-Server/utils"
 	"bytes"
 	"context"
@@ -336,14 +337,39 @@ func (s *Service) DownloadImage(c *gin.Context) {
 		return
 	}
 
-	filename, err := imageFilenameFromURL(req.File)
+	s.startRemoteDownload(c, req.File, expectedSHA256)
+}
+
+// DownloadBootMenu downloads the netboot.xyz ISO into the image directory, for
+// the virtual CD. The URL and its SHA-256 are pinned in the server, so the
+// request carries neither.
+func (s *Service) DownloadBootMenu(c *gin.Context) {
+	var rsp proto.Response
+
+	log.Debug("DownloadBootMenu")
+
+	expectedSHA256, err := parseSHA256(netboot.BootMenuISOSHA256)
+	if err != nil {
+		rsp.ErrRsp(c, -1, err.Error())
+		return
+	}
+
+	s.startRemoteDownload(c, netboot.BootMenuISOURL, expectedSHA256)
+}
+
+// startRemoteDownload starts the download of an image in the background and
+// answers with its status, which the page then polls.
+func (s *Service) startRemoteDownload(c *gin.Context, rawURL string, expectedSHA256 []byte) {
+	var rsp proto.Response
+
+	filename, err := imageFilenameFromURL(rawURL)
 	if err != nil {
 		rsp.ErrRsp(c, -1, err.Error())
 		return
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
-	done, err := s.beginDownload(req.File, cancel)
+	done, err := s.beginDownload(rawURL, cancel)
 	if err != nil {
 		cancel()
 		rsp.ErrRsp(c, -1, err.Error())
@@ -353,7 +379,7 @@ func (s *Service) DownloadImage(c *gin.Context) {
 	go func() {
 		defer cancel()
 
-		if err := s.downloadRemoteImage(ctx, req.File, expectedSHA256, filename, func(percentage string) {
+		if err := s.downloadRemoteImage(ctx, rawURL, expectedSHA256, filename, func(percentage string) {
 			s.setDownloadProgress(done, percentage)
 		}); err != nil {
 			if errors.Is(err, context.Canceled) {
@@ -375,7 +401,7 @@ func (s *Service) DownloadImage(c *gin.Context) {
 
 	rsp.OkRspWithData(c, &proto.StatusImageRsp{
 		Status:     string(downloadStatusInProgress),
-		File:       req.File,
+		File:       rawURL,
 		Percentage: "",
 	})
 }

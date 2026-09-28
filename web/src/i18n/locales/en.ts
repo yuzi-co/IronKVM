@@ -364,7 +364,9 @@ const en = {
       success: 'Download successful',
       checksumFailed: 'Download failed: SHA-256 verification failed',
       cancel: 'Cancel',
-      cancelFailed: 'Failed to cancel download'
+      cancelFailed: 'Failed to cancel download',
+      bootMenu: 'Boot menu (netboot.xyz)',
+      bootMenuDesc: 'Download the netboot.xyz ISO, checksum checked, for the virtual CD'
     },
     power: {
       title: 'Power',
@@ -505,6 +507,46 @@ const en = {
         pressFailed: 'The press failed: {{error}}',
         noScreenshot: 'No screenshot',
         failed: 'Watchdog operation failed'
+      },
+      netboot: {
+        title: 'Network boot',
+        description:
+          'Boot the host from the network: iPXE and a menu of the images on the KVM over the USB network link, or netboot.xyz by proxy DHCP on the LAN.',
+        addon: 'dnsmasq and boot files',
+        addonDesc:
+          'Installed on /data: dnsmasq from Alpine, iPXE and netboot.xyz from their releases, each checked against its checksum.',
+        install: 'Install',
+        installing: 'Installing. This can take a few minutes.',
+        uninstall: 'Uninstall',
+        uninstallConfirm: 'Turn network boot off and remove dnsmasq and the boot files?',
+        needsData: 'Network boot needs an IronKVM image with the /data partition mounted.',
+        usb: 'On the USB network link',
+        usbDesc:
+          'While the USB network link is on, dnsmasq serves it instead of udhcpd. The host gets its one address with no router and no DNS server, iPXE for its architecture, and a menu of the ISO images on the KVM.',
+        linkOff: 'The USB network link is off. Turn it on under Device, USB network.',
+        menuUrl: 'Menu',
+        leases: 'Host lease',
+        noLeases: 'None yet',
+        netbootxyzNote:
+          'netboot.xyz in the menu loads from the internet, which the USB link does not reach. The host needs internet on another network port for it.',
+        lan: 'Proxy DHCP on the LAN',
+        lanDesc:
+          'Answers PXE clients on the LAN with netboot.xyz, which then loads its menu from the internet. It never hands out addresses, and it does not serve the images on the KVM.',
+        lanWarning:
+          'Every PXE client on this LAN is offered netboot.xyz, not only the host. Turn this on only on a network you control.',
+        lanConfirm: 'Turn on proxy DHCP on the LAN?',
+        lanInterface: 'LAN',
+        running: 'Running',
+        stopped: 'Not running',
+        images: 'Images in the menu',
+        noImages: 'No ISO images in the image directory.',
+        boots: 'Recent boots',
+        noBoots: 'The host has fetched nothing yet.',
+        log: 'dnsmasq log',
+        refresh: 'Refresh',
+        okBtn: 'Confirm',
+        cancelBtn: 'Cancel',
+        failed: 'Network boot operation failed'
       },
       about: {
         title: 'About IronKVM',

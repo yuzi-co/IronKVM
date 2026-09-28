@@ -20,3 +20,8 @@ export function statusImage() {
 export function imageEnabled() {
   return http.get('/api/download/image/enabled');
 }
+
+// Download the netboot.xyz boot menu ISO. The server holds its URL and checksum.
+export function downloadBootMenu() {
+  return http.post('/api/download/image/netboot');
+}

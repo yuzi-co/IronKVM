@@ -9,6 +9,7 @@ import {
   CircleArrowUpIcon,
   HeartPulseIcon,
   KeyRoundIcon,
+  MonitorDownIcon,
   NetworkIcon,
   PaletteIcon,
   ServerCogIcon,
@@ -34,6 +35,7 @@ import { Appearance } from './appearance';
 import { Device } from './device';
 import { MCP } from './mcp';
 import { Netbird } from './netbird';
+import { Netboot } from './netboot';
 import { Network } from './network';
 import { Redfish } from './redfish';
 import { Tailscale } from './tailscale';
@@ -64,6 +66,11 @@ export const Settings = () => {
           { id: 'mcp', icon: <BotIcon size={16} />, component: <MCP /> },
           { id: 'redfish', icon: <ServerCogIcon size={16} />, component: <Redfish /> },
           { id: 'watchdog', icon: <HeartPulseIcon size={16} />, component: <Watchdog /> },
+          {
+            id: 'netboot',
+            icon: <MonitorDownIcon size={16} />,
+            component: <Netboot setIsLocked={setIsLocked} />
+          },
           {
             id: 'tailscale',
             icon: <TailscaleIcon />,

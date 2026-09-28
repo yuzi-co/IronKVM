@@ -365,7 +365,9 @@ const ca = {
       success: 'Descàrrega correcta',
       checksumFailed: 'Descàrrega fallida: ha fallat la verificació SHA-256',
       cancel: 'Cancel·la',
-      cancelFailed: 'No sha pogut cancel·lar la descàrrega'
+      cancelFailed: 'No sha pogut cancel·lar la descàrrega',
+      bootMenu: "Menú d'arrencada (netboot.xyz)",
+      bootMenuDesc: 'Baixa la ISO de netboot.xyz, amb la suma comprovada, per al CD virtual'
     },
     power: {
       title: 'Alimentació',
@@ -510,6 +512,48 @@ const ca = {
         pressFailed: 'La pulsació ha fallat: {{error}}',
         noScreenshot: 'Sense captura',
         failed: 'Ha fallat l’operació del watchdog'
+      },
+      netboot: {
+        title: 'Arrencada per xarxa',
+        description:
+          "Arrencar l'amfitrió des de la xarxa: iPXE i un menú de les imatges del KVM per l'enllaç de xarxa USB, o netboot.xyz per proxy DHCP a la LAN.",
+        addon: "dnsmasq i fitxers d'arrencada",
+        addonDesc:
+          "Instal·lats a /data: dnsmasq des d'Alpine, iPXE i netboot.xyz des de les seves versions publicades, cadascun comprovat amb la seva suma de verificació.",
+        install: 'Instal·la',
+        installing: "S'està instal·lant. Pot trigar uns minuts.",
+        uninstall: 'Desinstal·la',
+        uninstallConfirm:
+          "Voleu desactivar l'arrencada per xarxa i eliminar dnsmasq i els fitxers d'arrencada?",
+        needsData:
+          "L'arrencada per xarxa necessita una imatge d'IronKVM amb la partició /data muntada.",
+        usb: "A l'enllaç de xarxa USB",
+        usbDesc:
+          "Mentre l'enllaç de xarxa USB està actiu, dnsmasq l'atén en lloc d'udhcpd. L'amfitrió rep la seva única adreça sense encaminador ni servidor DNS, iPXE per a la seva arquitectura i un menú de les imatges ISO del KVM.",
+        linkOff: "L'enllaç de xarxa USB està desactivat. Activeu-lo a Dispositiu, Xarxa USB.",
+        menuUrl: 'Menú',
+        leases: "Concessió de l'amfitrió",
+        noLeases: 'Cap encara',
+        netbootxyzNote:
+          "netboot.xyz al menú es carrega des d'internet, on l'enllaç USB no arriba. L'amfitrió necessita internet en un altre port de xarxa.",
+        lan: 'Proxy DHCP a la LAN',
+        lanDesc:
+          "Respon als clients PXE de la LAN amb netboot.xyz, que després carrega el seu menú des d'internet. No assigna mai adreces i no serveix les imatges del KVM.",
+        lanWarning:
+          "S'ofereix netboot.xyz a tots els clients PXE d'aquesta LAN, no només a l'amfitrió. Activeu-ho només en una xarxa que controleu.",
+        lanConfirm: 'Voleu activar el proxy DHCP a la LAN?',
+        lanInterface: 'LAN',
+        running: 'En execució',
+        stopped: 'Aturat',
+        images: 'Imatges al menú',
+        noImages: "No hi ha imatges ISO al directori d'imatges.",
+        boots: 'Arrencades recents',
+        noBoots: "L'amfitrió encara no ha descarregat res.",
+        log: 'Registre de dnsmasq',
+        refresh: 'Actualitza',
+        okBtn: 'Confirma',
+        cancelBtn: 'Cancel·la',
+        failed: "Ha fallat l'operació d'arrencada per xarxa"
       },
       about: {
         title: 'Sobre NanoKVM',

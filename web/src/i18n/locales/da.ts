@@ -366,7 +366,9 @@ const da = {
       success: 'Download gennemført',
       checksumFailed: 'Download mislykkedes: SHA-256-verifikation mislykkedes',
       cancel: 'Annuller',
-      cancelFailed: 'Kunne ikke annullere download'
+      cancelFailed: 'Kunne ikke annullere download',
+      bootMenu: 'Bootmenu (netboot.xyz)',
+      bootMenuDesc: "Hent netboot.xyz-ISO'en, med kontrolleret checksum, til den virtuelle cd"
     },
     power: {
       title: 'Tænd/sluk-knap',
@@ -508,6 +510,46 @@ const da = {
         pressFailed: 'Tryk mislykkedes: {{error}}',
         noScreenshot: 'Intet skærmbillede',
         failed: 'Watchdog-handlingen mislykkedes'
+      },
+      netboot: {
+        title: 'Netværksboot',
+        description:
+          "Boot værten fra netværket: iPXE og en menu med billederne på KVM'en over USB-netværksforbindelsen, eller netboot.xyz via proxy-DHCP på LAN'et.",
+        addon: 'dnsmasq og bootfiler',
+        addonDesc:
+          'Installeret på /data: dnsmasq fra Alpine, iPXE og netboot.xyz fra deres udgivelser, hver kontrolleret mod sin checksum.',
+        install: 'Installer',
+        installing: 'Installerer. Det kan tage et par minutter.',
+        uninstall: 'Afinstaller',
+        uninstallConfirm: 'Slå netværksboot fra og fjern dnsmasq og bootfilerne?',
+        needsData: 'Netværksboot kræver et IronKVM-billede med /data-partitionen monteret.',
+        usb: 'På USB-netværksforbindelsen',
+        usbDesc:
+          "Mens USB-netværksforbindelsen er slået til, betjener dnsmasq den i stedet for udhcpd. Værten får sin ene adresse uden router og uden DNS-server, iPXE til sin arkitektur og en menu med ISO-billederne på KVM'en.",
+        linkOff: 'USB-netværksforbindelsen er slået fra. Slå den til under Enhed, USB-netværk.',
+        menuUrl: 'Menu',
+        leases: 'Værtens lease',
+        noLeases: 'Ingen endnu',
+        netbootxyzNote:
+          'netboot.xyz i menuen indlæses fra internettet, som USB-forbindelsen ikke når. Værten skal have internet på en anden netværksport.',
+        lan: "Proxy-DHCP på LAN'et",
+        lanDesc:
+          "Svarer PXE-klienter på LAN'et med netboot.xyz, som derefter henter sin menu fra internettet. Den uddeler aldrig adresser og stiller ikke billederne på KVM'en til rådighed.",
+        lanWarning:
+          'Alle PXE-klienter på dette LAN får tilbudt netboot.xyz, ikke kun værten. Slå det kun til på et netværk, du selv styrer.',
+        lanConfirm: "Slå proxy-DHCP til på LAN'et?",
+        lanInterface: 'LAN',
+        running: 'Kører',
+        stopped: 'Kører ikke',
+        images: 'Billeder i menuen',
+        noImages: 'Ingen ISO-billeder i billedmappen.',
+        boots: 'Seneste boots',
+        noBoots: 'Værten har ikke hentet noget endnu.',
+        log: 'dnsmasq-log',
+        refresh: 'Opdater',
+        okBtn: 'Bekræft',
+        cancelBtn: 'Annuller',
+        failed: 'Netværksboot-handlingen mislykkedes'
       },
       about: {
         title: 'Om NanoKVM',

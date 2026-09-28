@@ -356,7 +356,9 @@ const zh_tw = {
       success: '下載成功',
       checksumFailed: '下載失敗：SHA-256 校驗失敗',
       cancel: '取消',
-      cancelFailed: '取消下載失敗'
+      cancelFailed: '取消下載失敗',
+      bootMenu: '開機選單 (netboot.xyz)',
+      bootMenuDesc: '下載經檢查碼驗證的 netboot.xyz ISO，用於虛擬光碟'
     },
     power: {
       title: '電源控制',
@@ -493,6 +495,46 @@ const zh_tw = {
         pressFailed: '按鍵失敗：{{error}}',
         noScreenshot: '無截圖',
         failed: '看門狗操作失敗'
+      },
+      netboot: {
+        title: '網路開機',
+        description:
+          '從網路開機主機：透過 USB 網路連結提供 iPXE 與 KVM 上映像檔的選單，或在區域網路上透過代理 DHCP 提供 netboot.xyz。',
+        addon: 'dnsmasq 與開機檔案',
+        addonDesc:
+          '安裝到 /data：dnsmasq 來自 Alpine，iPXE 與 netboot.xyz 來自各自的發行版本，皆經過檢查碼驗證。',
+        install: '安裝',
+        installing: '正在安裝，可能需要幾分鐘。',
+        uninstall: '解除安裝',
+        uninstallConfirm: '關閉網路開機並移除 dnsmasq 與開機檔案？',
+        needsData: '網路開機需要已掛載 /data 分割區的 IronKVM 映像檔。',
+        usb: '在 USB 網路連結上',
+        usbDesc:
+          'USB 網路連結開啟時，由 dnsmasq 取代 udhcpd 提供服務。主機取得唯一的位址，沒有路由器也沒有 DNS 伺服器，並取得適合其架構的 iPXE 與 KVM 上 ISO 映像檔的選單。',
+        linkOff: 'USB 網路連結已關閉。請在 裝置、USB 網路 中開啟。',
+        menuUrl: '選單',
+        leases: '主機租約',
+        noLeases: '尚無',
+        netbootxyzNote:
+          '選單中的 netboot.xyz 從網際網路載入，而 USB 連結無法連上網際網路。主機需要透過另一個網路連接埠連上網際網路。',
+        lan: '區域網路代理 DHCP',
+        lanDesc:
+          '向區域網路上的 PXE 用戶端提供 netboot.xyz，netboot.xyz 隨後從網際網路載入選單。它從不分配位址，也不提供 KVM 上的映像檔。',
+        lanWarning:
+          '此區域網路上的每個 PXE 用戶端都會收到 netboot.xyz，而不只是主機。請只在你管理的網路上開啟。',
+        lanConfirm: '在區域網路上開啟代理 DHCP？',
+        lanInterface: '區域網路',
+        running: '執行中',
+        stopped: '未執行',
+        images: '選單中的映像檔',
+        noImages: '映像檔目錄中沒有 ISO 映像檔。',
+        boots: '最近的開機',
+        noBoots: '主機尚未取得任何內容。',
+        log: 'dnsmasq 記錄',
+        refresh: '重新整理',
+        okBtn: '確認',
+        cancelBtn: '取消',
+        failed: '網路開機操作失敗'
       },
       about: {
         title: '關於 NanoKVM',

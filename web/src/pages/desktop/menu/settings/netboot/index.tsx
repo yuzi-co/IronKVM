@@ -1,0 +1,310 @@
+import { useCallback, useEffect, useState } from 'react';
+import { Alert, Button, Divider, message, Modal, Switch, Tag } from 'antd';
+import { RefreshCwIcon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+
+import * as api from '@/api/netboot.ts';
+import type { NetbootStatus } from '@/api/netboot.ts';
+
+import { ErrorDetail } from '../vpn/error-detail.tsx';
+
+type NetbootProps = {
+  setIsLocked: (isLocked: boolean) => void;
+};
+
+function formatTime(value: string) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
+}
+
+// Network boot of the host: the add-on (dnsmasq and the boot files), the USB
+// link side, proxy DHCP on the LAN, and what the host fetched.
+export const Netboot = ({ setIsLocked }: NetbootProps) => {
+  const { t } = useTranslation();
+  const [modal, contextHolder] = Modal.useModal();
+
+  const [status, setStatus] = useState<NetbootStatus | null>(null);
+  const [busy, setBusy] = useState<'' | 'install' | 'uninstall' | 'usb' | 'lan'>('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  // load clears the loading flag; refresh is what sets it.
+  const load = useCallback(() => {
+    api
+      .getNetbootStatus()
+      .then((rsp) => {
+        if (rsp.code !== 0) {
+          message.error(rsp.msg || t('settings.netboot.failed'));
+          return;
+        }
+        setStatus(rsp.data);
+      })
+      .catch(() => message.error(t('settings.netboot.failed')))
+      .finally(() => setIsLoading(false));
+  }, [t]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  function refresh() {
+    setIsLoading(true);
+    load();
+  }
+
+  // run sends one change and shows the state the server answers with.
+  function run(kind: typeof busy, request: () => ReturnType<typeof api.getNetbootStatus>) {
+    setBusy(kind);
+    setError('');
+    if (kind === 'install') setIsLocked(true);
+
+    request()
+      .then((rsp) => {
+        if (rsp.code !== 0) {
+          setError(rsp.msg || t('settings.netboot.failed'));
+          load();
+          return;
+        }
+        setStatus(rsp.data);
+      })
+      .catch((err) => setError(err?.message || t('settings.netboot.failed')))
+      .finally(() => {
+        setBusy('');
+        if (kind === 'install') setIsLocked(false);
+      });
+  }
+
+  function setUsb(usb: boolean) {
+    if (!status) return;
+    run('usb', () => api.setNetbootSettings(usb, status.lan));
+  }
+
+  function setLan(lan: boolean) {
+    if (!status) return;
+    if (!lan) {
+      run('lan', () => api.setNetbootSettings(status.usb, false));
+      return;
+    }
+
+    modal.confirm({
+      title: t('settings.netboot.lanConfirm'),
+      content: <span className="text-sm text-neutral-400">{t('settings.netboot.lanWarning')}</span>,
+      okText: t('settings.netboot.okBtn'),
+      cancelText: t('settings.netboot.cancelBtn'),
+      onOk: () => run('lan', () => api.setNetbootSettings(status.usb, true))
+    });
+  }
+
+  function uninstall() {
+    modal.confirm({
+      title: t('settings.netboot.uninstallConfirm'),
+      okText: t('settings.netboot.okBtn'),
+      cancelText: t('settings.netboot.cancelBtn'),
+      okButtonProps: { danger: true },
+      onOk: () => run('uninstall', api.uninstallNetboot)
+    });
+  }
+
+  const runningTag = (running: boolean) =>
+    running ? (
+      <Tag color="green">{t('settings.netboot.running')}</Tag>
+    ) : (
+      <Tag>{t('settings.netboot.stopped')}</Tag>
+    );
+
+  const linkOn = !!status && status.link.mode !== 'off' && status.link.mode !== '';
+  const images = status?.images ?? [];
+  const leases = status?.leases ?? [];
+  const boots = status?.boots ?? [];
+
+  return (
+    <>
+      {contextHolder}
+      <div className="flex items-center justify-between">
+        <span className="text-base">{t('settings.netboot.title')}</span>
+        <Button
+          type="text"
+          size="small"
+          className="text-neutral-400 hover:text-white"
+          loading={isLoading}
+          icon={<RefreshCwIcon size={15} />}
+          title={t('settings.netboot.refresh')}
+          onClick={refresh}
+        />
+      </div>
+      <Divider className="opacity-50" />
+
+      <div className="flex flex-col space-y-6">
+        <span className="text-xs text-neutral-500">{t('settings.netboot.description')}</span>
+
+        {/* The add-on */}
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col space-y-1 pr-4">
+            <span className="text-sm font-medium">{t('settings.netboot.addon')}</span>
+            <span className="text-xs text-neutral-500">{t('settings.netboot.addonDesc')}</span>
+            {status?.installed && status.version && (
+              <span className="font-mono text-xs text-neutral-500">dnsmasq {status.version}</span>
+            )}
+          </div>
+          {status?.installed ? (
+            <Button danger loading={busy === 'uninstall'} disabled={!!busy} onClick={uninstall}>
+              {t('settings.netboot.uninstall')}
+            </Button>
+          ) : (
+            <Button
+              type="primary"
+              loading={busy === 'install'}
+              disabled={!status || !status.onData || !!busy}
+              onClick={() => run('install', api.installNetboot)}
+            >
+              {t('settings.netboot.install')}
+            </Button>
+          )}
+        </div>
+        {status && !status.onData && !status.installed && (
+          <Alert type="info" showIcon message={t('settings.netboot.needsData')} />
+        )}
+        {busy === 'install' && (
+          <Alert type="info" showIcon message={t('settings.netboot.installing')} />
+        )}
+        <ErrorDetail message={error} />
+
+        {/* The USB link */}
+        <div className="flex flex-col space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col space-y-1 pr-4">
+              <span className="text-sm font-medium">{t('settings.netboot.usb')}</span>
+              <span className="text-xs text-neutral-500">{t('settings.netboot.usbDesc')}</span>
+            </div>
+            <Switch
+              checked={status?.usb ?? false}
+              loading={!status || busy === 'usb'}
+              disabled={!status?.installed || (!!busy && busy !== 'usb')}
+              onChange={setUsb}
+            />
+          </div>
+
+          {status?.usb && !linkOn && (
+            <Alert type="warning" showIcon message={t('settings.netboot.linkOff')} />
+          )}
+
+          {status?.usb && linkOn && (
+            <div className="flex flex-col space-y-2 rounded-xl border border-neutral-700/50 bg-neutral-800/40 px-4 py-3.5 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-neutral-400">dnsmasq</span>
+                {runningTag(status.usbRunning)}
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-neutral-400">{t('settings.netboot.menuUrl')}</span>
+                <span className="font-mono text-xs text-neutral-300 select-all">
+                  {status.menuUrl || '-'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-neutral-400">{t('settings.netboot.leases')}</span>
+                <span className="font-mono text-xs text-neutral-300">
+                  {leases.length === 0
+                    ? t('settings.netboot.noLeases')
+                    : leases.map((lease) => `${lease.ip} ${lease.mac}`).join(', ')}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {status?.usb && (
+            <span className="text-xs text-neutral-500">{t('settings.netboot.netbootxyzNote')}</span>
+          )}
+        </div>
+
+        {/* The LAN */}
+        <div className="flex flex-col space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col space-y-1 pr-4">
+              <span className="text-sm font-medium">{t('settings.netboot.lan')}</span>
+              <span className="text-xs text-neutral-500">{t('settings.netboot.lanDesc')}</span>
+            </div>
+            <Switch
+              checked={status?.lan ?? false}
+              loading={!status || busy === 'lan'}
+              disabled={!status?.installed || (!!busy && busy !== 'lan')}
+              onChange={setLan}
+            />
+          </div>
+
+          {status?.lan && (
+            <>
+              <Alert type="warning" showIcon message={t('settings.netboot.lanWarning')} />
+              <div className="flex flex-col space-y-2 rounded-xl border border-neutral-700/50 bg-neutral-800/40 px-4 py-3.5 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-neutral-400">dnsmasq</span>
+                  {runningTag(status.lanRunning)}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-neutral-400">{t('settings.netboot.lanInterface')}</span>
+                  <span className="font-mono text-xs text-neutral-300">
+                    {status.lanInterface ? `${status.lanInterface} ${status.lanNetwork}` : '-'}
+                  </span>
+                </div>
+              </div>
+              {status.lanError && <Alert type="error" showIcon message={status.lanError} />}
+            </>
+          )}
+        </div>
+
+        {/* What the host sees and fetched */}
+        {status?.installed && (
+          <>
+            <div className="flex flex-col space-y-2">
+              <span className="text-sm font-medium">{t('settings.netboot.images')}</span>
+              {images.length === 0 ? (
+                <span className="text-xs text-neutral-500">{t('settings.netboot.noImages')}</span>
+              ) : (
+                <div className="flex flex-wrap gap-y-2">
+                  {images.map((image) => (
+                    <Tag key={image} className="font-mono">
+                      {image}
+                    </Tag>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col space-y-2">
+              <span className="text-sm font-medium">{t('settings.netboot.boots')}</span>
+              {boots.length === 0 ? (
+                <span className="text-xs text-neutral-500">{t('settings.netboot.noBoots')}</span>
+              ) : (
+                <div className="flex flex-col overflow-hidden rounded-xl border border-neutral-700/50 bg-neutral-800/40">
+                  {boots.map((boot, index) => (
+                    <div
+                      key={`${boot.time}-${index}`}
+                      className={
+                        index > 0
+                          ? 'flex justify-between border-t border-neutral-800 px-4 py-2 text-xs'
+                          : 'flex justify-between px-4 py-2 text-xs'
+                      }
+                    >
+                      <span className="font-mono text-neutral-300">{boot.what}</span>
+                      <span className="text-neutral-500">
+                        {boot.client} · {formatTime(boot.time)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {[...(status.usbLog ?? []), ...(status.lanLog ?? [])].length > 0 && (
+              <div className="flex flex-col space-y-2">
+                <span className="text-sm font-medium">{t('settings.netboot.log')}</span>
+                <pre className="max-h-[200px] w-full overflow-auto rounded bg-neutral-800/60 p-3 font-mono text-xs break-words whitespace-pre-wrap text-neutral-400">
+                  {[...(status.usbLog ?? []), ...(status.lanLog ?? [])].join('\n')}
+                </pre>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </>
+  );
+};

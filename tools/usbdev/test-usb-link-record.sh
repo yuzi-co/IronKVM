@@ -265,8 +265,13 @@ sed -n '/^usb_record_link() {/,/^}/p' "$S03" | grep -q 'USB_LINK_LOG:-' \
 # The second allowed path is /kvmapp/system/init.d/S03usbhid, which the script
 # executes in HID-only mode. It is the file the server copies from to choose
 # that mode, and it is read, never written.
+#
+# The third is /kvmapp/system/init.d/S85netboot, the network boot add-on's
+# script, which the link runs to hand its DHCP server to dnsmasq. It is run,
+# never written, and it writes only under /tmp.
 grep -v '^[[:space:]]*#' "$S03" | grep '/kvmapp' \
     | grep -v '^[^#]*/kvmapp/system/ironkvm-deviceinfo' \
+    | grep -v '^[^#]*/kvmapp/system/init.d/S85netboot' \
     | grep -qv '^[^#]*/kvmapp/system/init.d/S03usbhid' \
     && note "the script touches /kvmapp for something other than the reader" FAIL \
     || note "it touches the boot card only to find the description reader" OK

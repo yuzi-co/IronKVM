@@ -93,6 +93,7 @@ func server(r *gin.Engine) {
 	metricsRouter(r)
 	redfishRouter(r)
 	watchdogRouter(r)
+	netbootRouter(r)
 }
 
 func LoopbackHTTPAllowedPaths() []string {

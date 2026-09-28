@@ -13,6 +13,7 @@ func downloadRouter(r *gin.Engine) {
 	api := r.Group("/api").Use(middleware.CheckToken(), middleware.RequireRole(authn.RoleAdmin))
 
 	api.POST("/download/image", service.DownloadImage)              // download image
+	api.POST("/download/image/netboot", service.DownloadBootMenu)   // download the netboot.xyz ISO
 	api.POST("/download/image/cancel", service.CancelDownloadImage) // cancel image download
 	api.GET("/download/image/status", service.StatusImage)          // download image
 	api.GET("/download/image/enabled", service.ImageEnabled)        // download image

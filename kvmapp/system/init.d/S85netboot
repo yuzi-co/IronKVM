@@ -1,0 +1,204 @@
+#!/bin/sh
+#
+# dnsmasq for network boot of the host. The binary is an add-on on /data,
+# installed from the web UI's Network boot page, and so are the boot files it
+# serves by TFTP. The server writes both configuration files; this script
+# never decides anything, it starts and stops.
+#
+# Two instances, one for each side, each with one interface:
+#
+#   start-usb <if> <host> <mask>   the USB link. S03usbdev calls this in place
+#   stop-usb                       of its udhcpd and falls back to udhcpd when
+#                                  it fails. The interface and the one address
+#                                  come from S03usbdev, which owns the link.
+#   start | stop | restart         proxy DHCP on the LAN. While it is on, the
+#                                  server has S04addons put this script in
+#                                  /etc/init.d, so it also runs at boot.
+#
+# With exactly one --interface and bind-interfaces, dnsmasq binds its DHCP
+# socket to that device, which is how it shares port 67 with the Wi-Fi access
+# point's udhcpd and with the other instance.
+
+# Every path is a variable so tools/service/test-netboot.sh can drive this
+# script against a scratch tree and a stub daemon. On the device nothing sets
+# them.
+DNSMASQ=${DNSMASQ:-/data/ironkvm/addons/netboot/dnsmasq}
+CONFDIR=${CONFDIR:-/etc/kvm/netboot}
+RUN=${RUN:-/tmp/netboot}
+START_WAIT=${START_WAIT:-1}
+STOP_WAIT=${STOP_WAIT:-5}
+
+# A log larger than this is started afresh. /tmp is a small tmpfs, and the
+# page reads only the last lines.
+LOG_MAX=${LOG_MAX:-262144}
+
+# --- cgroup ---
+# ironkvm-dist's S01cgroups makes an addons memory group, and the VPN daemons
+# run in it. This script joins it before it starts dnsmasq, so dnsmasq inherits
+# it however the script is run: from S03usbdev at boot, or from the server,
+# whose own group it would otherwise inherit. Without the group nothing
+# changes.
+CGROUP_PROCS=${CGROUP_PROCS:-/sys/fs/cgroup/addons/cgroup.procs}
+if [ -w "$CGROUP_PROCS" ]; then
+    { echo $$ > "$CGROUP_PROCS"; } 2>/dev/null || true
+fi
+# --- end cgroup ---
+
+# running_pid prints the pid of the instance named in $1, usb or lan. A pid
+# file is trusted only while its process is still dnsmasq, so a stale file
+# after a power cut never gets another process signalled.
+running_pid() {
+    pidfile="$RUN/$1.pid"
+    [ -f "$pidfile" ] || return 1
+    pid=$(cat "$pidfile" 2>/dev/null)
+    case "$pid" in
+        "" | *[!0-9]*) return 1 ;;
+    esac
+    kill -0 "$pid" 2>/dev/null || return 1
+    grep -q dnsmasq "/proc/$pid/cmdline" 2>/dev/null || return 1
+    echo "$pid"
+}
+
+# stop_instance stops the instance named in $1 and waits for it to go, so a
+# start that follows can bind the same ports.
+stop_instance() {
+    if pid=$(running_pid "$1"); then
+        kill "$pid" 2>/dev/null
+        waited=0
+        while kill -0 "$pid" 2>/dev/null && [ "$waited" -lt "$STOP_WAIT" ]; do
+            sleep 1
+            waited=$((waited + 1))
+        done
+        if kill -0 "$pid" 2>/dev/null; then
+            return 1
+        fi
+    fi
+    rm -f "$RUN/$1.pid"
+    return 0
+}
+
+# start_instance starts dnsmasq as the instance named in $1, with the
+# configuration file in $2 and any further options after it.
+#
+# dnsmasq stays in the foreground under this script's &, as S98netbird runs
+# its daemon, and its pid is the one in the pid file. It drops from root to
+# nobody once it has bound its sockets: the account its package would have made
+# does not exist, because the package's scripts never run. Its leases and log
+# go to /tmp, never to /data.
+start_instance() {
+    name=$1
+    conf=$2
+    shift 2
+
+    mkdir -p "$RUN"
+    log="$RUN/$name.log"
+    if [ -f "$log" ] && [ "$(wc -c < "$log")" -gt "$LOG_MAX" ]; then
+        : > "$log"
+    fi
+
+    "$DNSMASQ" --keep-in-foreground \
+        --conf-file="$conf" \
+        --pid-file="$RUN/$name.pid" \
+        --log-facility="$log" \
+        "$@" </dev/null >/dev/null 2>&1 &
+    echo $! > "$RUN/$name.pid"
+    sleep "$START_WAIT"
+    if running_pid "$name" >/dev/null; then
+        return 0
+    fi
+    rm -f "$RUN/$name.pid"
+    return 1
+}
+
+# installed says whether the add-on is there. S03usbdev falls back to udhcpd
+# on a failure, so a board without the add-on keeps its link.
+installed() {
+    if [ ! -x "$DNSMASQ" ]; then
+        echo "netboot: $DNSMASQ not found, install network boot from the web UI"
+        return 1
+    fi
+}
+
+# plain_ifname and dotted_quad hold the arguments S03usbdev passes to what it
+# means to pass, because they end up on dnsmasq's command line.
+plain_ifname() {
+    case "$1" in
+        '' | *[!a-zA-Z0-9._-]*) return 1 ;;
+    esac
+}
+
+dotted_quad() {
+    case "$1" in
+        *[!0-9.]* | *..* | .* | *.) return 1 ;;
+        *.*.*.*.*) return 1 ;;
+        *.*.*.*) return 0 ;;
+    esac
+    return 1
+}
+
+case "$1" in
+    start-usb)
+        if [ ! -f "$CONFDIR/usb.conf" ]; then
+            echo "netboot: network boot on the USB link is off"
+            exit 1
+        fi
+        installed || exit 1
+        if ! plain_ifname "$2" || ! dotted_quad "$3" || ! dotted_quad "$4"; then
+            echo "netboot: usage: $0 start-usb <interface> <host address> <netmask>"
+            exit 1
+        fi
+
+        stop_instance usb || { echo "netboot: the link's dnsmasq did not stop"; exit 1; }
+
+        # One address, the host's, for ten days, as udhcpd leases it. The
+        # rest of the rules, no router and no DNS server among them, are in
+        # the file.
+        printf "Starting dnsmasq on %s: " "$2"
+        if start_instance usb "$CONFDIR/usb.conf" \
+            --interface="$2" \
+            --dhcp-range="$3,$3,$4,10d" \
+            --dhcp-leasefile="$RUN/usb.leases"; then
+            echo "OK"
+        else
+            echo "FAIL"
+            exit 1
+        fi
+        ;;
+    stop-usb)
+        printf "Stopping dnsmasq on the USB link: "
+        stop_instance usb && echo "OK" || { echo "FAIL"; exit 1; }
+        ;;
+    start)
+        if [ ! -f "$CONFDIR/lan.conf" ]; then
+            echo "netboot: proxy DHCP on the LAN is off"
+            exit 0
+        fi
+        installed || exit 1
+        if running_pid lan >/dev/null; then
+            echo "netboot: proxy DHCP on the LAN is already running"
+            exit 0
+        fi
+
+        # Proxy DHCP hands out no address, so it keeps no leases.
+        printf "Starting dnsmasq for proxy DHCP on the LAN: "
+        if start_instance lan "$CONFDIR/lan.conf" --leasefile-ro; then
+            echo "OK"
+        else
+            echo "FAIL"
+            exit 1
+        fi
+        ;;
+    stop)
+        printf "Stopping dnsmasq for proxy DHCP on the LAN: "
+        stop_instance lan && echo "OK" || { echo "FAIL"; exit 1; }
+        ;;
+    restart|reload)
+        "$0" stop
+        "$0" start
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart|start-usb <if> <host> <mask>|stop-usb}"
+        exit 1
+esac
+
+exit 0

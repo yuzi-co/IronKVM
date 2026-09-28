@@ -362,7 +362,9 @@ const ko = {
       success: '다운로드 성공',
       checksumFailed: '다운로드 실패: SHA-256 검증 실패',
       cancel: '취소',
-      cancelFailed: '다운로드 취소 실패'
+      cancelFailed: '다운로드 취소 실패',
+      bootMenu: '부팅 메뉴 (netboot.xyz)',
+      bootMenuDesc: '가상 CD용 netboot.xyz ISO를 체크섬 검증과 함께 다운로드'
     },
     power: {
       title: '전원',
@@ -505,6 +507,46 @@ const ko = {
         pressFailed: '버튼 누르기 실패: {{error}}',
         noScreenshot: '스크린샷 없음',
         failed: '워치독 작업에 실패했습니다'
+      },
+      netboot: {
+        title: '네트워크 부팅',
+        description:
+          '호스트를 네트워크에서 부팅합니다. USB 네트워크 링크로 iPXE와 KVM의 이미지 메뉴를 제공하거나, LAN에서 프록시 DHCP로 netboot.xyz를 제공합니다.',
+        addon: 'dnsmasq 및 부팅 파일',
+        addonDesc:
+          '/data에 설치됩니다. dnsmasq는 Alpine에서, iPXE와 netboot.xyz는 각 릴리스에서 받으며 각각 체크섬으로 검증합니다.',
+        install: '설치',
+        installing: '설치 중입니다. 몇 분 정도 걸릴 수 있습니다.',
+        uninstall: '제거',
+        uninstallConfirm: '네트워크 부팅을 끄고 dnsmasq와 부팅 파일을 제거할까요?',
+        needsData: '네트워크 부팅에는 /data 파티션이 마운트된 IronKVM 이미지가 필요합니다.',
+        usb: 'USB 네트워크 링크에서',
+        usbDesc:
+          'USB 네트워크 링크가 켜져 있는 동안 udhcpd 대신 dnsmasq가 응답합니다. 호스트는 라우터와 DNS 서버 없이 하나의 주소, 아키텍처에 맞는 iPXE, KVM의 ISO 이미지 메뉴를 받습니다.',
+        linkOff: 'USB 네트워크 링크가 꺼져 있습니다. 장치의 USB 네트워크에서 켜세요.',
+        menuUrl: '메뉴',
+        leases: '호스트 임대',
+        noLeases: '아직 없음',
+        netbootxyzNote:
+          '메뉴의 netboot.xyz는 인터넷에서 불러오지만 USB 링크는 인터넷에 닿지 않습니다. 호스트의 다른 네트워크 포트에 인터넷 연결이 필요합니다.',
+        lan: 'LAN의 프록시 DHCP',
+        lanDesc:
+          'LAN의 PXE 클라이언트에 netboot.xyz를 제공하며, netboot.xyz는 메뉴를 인터넷에서 불러옵니다. 주소를 배포하지 않으며 KVM의 이미지도 제공하지 않습니다.',
+        lanWarning:
+          '호스트뿐 아니라 이 LAN의 모든 PXE 클라이언트에 netboot.xyz가 제공됩니다. 직접 관리하는 네트워크에서만 켜세요.',
+        lanConfirm: 'LAN에서 프록시 DHCP를 켤까요?',
+        lanInterface: 'LAN',
+        running: '실행 중',
+        stopped: '실행 중이 아님',
+        images: '메뉴의 이미지',
+        noImages: '이미지 디렉터리에 ISO 이미지가 없습니다.',
+        boots: '최근 부팅',
+        noBoots: '호스트가 아직 아무것도 가져가지 않았습니다.',
+        log: 'dnsmasq 로그',
+        refresh: '새로 고침',
+        okBtn: '확인',
+        cancelBtn: '취소',
+        failed: '네트워크 부팅 작업에 실패했습니다'
       },
       about: {
         title: 'NanoKVM 정보',
