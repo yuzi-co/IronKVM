@@ -10,10 +10,12 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
 	"NanoKVM-Server/service/extensions/addon"
+	"NanoKVM-Server/service/extensions/vpn"
 	"NanoKVM-Server/utils"
 
 	log "github.com/sirupsen/logrus"
@@ -254,11 +256,23 @@ func checkDownloadHost(rawURL string) error {
 	return nil
 }
 
-// getDownloadURL resolves the "latest" alias to the versioned package. A HEAD
-// is enough: a GET would pull the whole archive only to discard it and fetch
-// it again.
-func getDownloadURL() (string, error) {
-	resp, err := utils.OutboundClient(checksumTimeout).Head(OriginalURL)
+// packageVersion is the version in a resolved package name,
+// tailscale_1.90.1_riscv64.tgz. The unresolved alias, latest, does not match.
+var packageVersion = regexp.MustCompile(`/tailscale_([0-9][0-9A-Za-z.]*)_riscv64\.tgz$`)
+
+func versionFromPackageURL(u string) (string, error) {
+	m := packageVersion.FindStringSubmatch(u)
+	if m == nil {
+		return "", fmt.Errorf("no version in %q", u)
+	}
+	return m[1], nil
+}
+
+// resolveRedirect asks for rawURL with a HEAD and returns where the redirects
+// ended. A HEAD is enough: a GET would pull the whole archive only to discard
+// it and fetch it again.
+func resolveRedirect(client *http.Client, rawURL string) (string, error) {
+	resp, err := client.Head(rawURL)
 	if err != nil {
 		return "", err
 	}
@@ -270,10 +284,33 @@ func getDownloadURL() (string, error) {
 		return "", fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
-	resolved := resp.Request.URL.String()
+	return resp.Request.URL.String(), nil
+}
+
+// getDownloadURL resolves the "latest" alias to the versioned package, and
+// keeps it on the release host.
+func getDownloadURL() (string, error) {
+	resolved, err := resolveRedirect(utils.OutboundClient(checksumTimeout), OriginalURL)
+	if err != nil {
+		return "", err
+	}
+
 	if err := checkDownloadHost(resolved); err != nil {
 		return "", err
 	}
 
 	return resolved, nil
+}
+
+// latestVersion is the version the release server's "latest" alias points at.
+func latestVersion() (string, error) {
+	// The whole check, redirects included, ends after vpn.CheckTimeout.
+	resolved, err := resolveRedirect(utils.OutboundClient(vpn.CheckTimeout), OriginalURL)
+	if err != nil {
+		return "", err
+	}
+	if err := checkDownloadHost(resolved); err != nil {
+		return "", err
+	}
+	return versionFromPackageURL(resolved)
 }

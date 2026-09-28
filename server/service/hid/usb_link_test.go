@@ -143,3 +143,25 @@ func TestDescribeNamesTheTwoFaultsApart(t *testing.T) {
 		t.Errorf("degraded describes as %q", degraded)
 	}
 }
+
+func TestUSBLinkStateReadsTheStateAttribute(t *testing.T) {
+	fakeUDC(t, map[string]string{"state": "not attached", "current_speed": "UNKNOWN"})
+
+	got, err := USBLinkState()
+	if err != nil {
+		t.Fatalf("USBLinkState: %s", err)
+	}
+	if got != "not attached" {
+		t.Fatalf("state = %q, want %q", got, "not attached")
+	}
+}
+
+// No controller is a kernel without a gadget controller. The metrics endpoint
+// leaves the family out on this error rather than inventing a state.
+func TestUSBLinkStateFailsWithoutAController(t *testing.T) {
+	fakeUDC(t, nil)
+
+	if _, err := USBLinkState(); err == nil {
+		t.Fatal("a missing controller must be an error")
+	}
+}

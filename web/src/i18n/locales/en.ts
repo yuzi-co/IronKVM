@@ -631,24 +631,54 @@ const en = {
           none: 'None'
         }
       },
-      tailscale: {
-        title: 'Tailscale',
-        memory: {
-          title: 'Memory optimization',
-          tip: 'When memory usage exceeds the limit, garbage collection is performed more aggressively to attempt to free up memory. A Tailscale restart is required for the change to take effect.'
-        },
-        swap: {
-          title: 'Swap memory',
-          tip: 'If issues persist after enabling memory optimization, try enabling swap memory. This sets the swap file size to 256MB by default, which can be adjusted in "Settings > Device".'
-        },
-        restart: 'Restart Tailscale?',
-        stop: 'Stop Tailscale?',
-        stopDesc: 'Log out Tailscale and disable automatic startup on boot.',
+      vpn: {
         loading: 'Loading...',
-        notInstall: 'Tailscale not found! Please install.',
+        okBtn: 'Yes',
+        cancelBtn: 'No',
+        restart: 'Restart {{name}}?',
+        stop: 'Stop {{name}}?',
+        stopDesc: 'The daemon stops now. Start at boot is a separate switch and stays as it is.',
+        update: 'Update {{name}} to {{version}}?',
+        updateDesc: 'The daemon restarts if it is running. The login is kept.',
+        notInstall: '{{name}} is not installed.',
         install: 'Install',
         installing: 'Installing',
-        failed: 'Install failed',
+        installFailed: 'Install failed',
+        retry: 'Try again',
+        notRunning: '{{name}} is not running. Start it to continue.',
+        run: 'Start',
+        boot: 'Start at boot',
+        bootDesc: 'Start {{name}} when the KVM boots.',
+        enable: 'Enable {{name}}',
+        control: 'Control server',
+        connected: 'Connected',
+        disconnected: 'Not connected',
+        deviceName: 'Device name',
+        deviceIP: 'Device IP',
+        account: 'Account',
+        version: 'Version',
+        uptime: 'Uptime',
+        peers: 'Peers',
+        noPeers: 'No peers yet.',
+        online: 'Online',
+        offline: 'Offline',
+        memory: 'Memory',
+        daemonRss: 'Daemon',
+        group: 'Add-ons group',
+        high: 'throttled above {{size}}',
+        max: 'stopped by the kernel above {{size}}',
+        noGroup: 'No add-ons memory group on this board.',
+        uninstall: 'Uninstall {{name}}',
+        uninstallDesc: 'Are you sure you want to uninstall {{name}}? The login stays on the board.',
+        blocked:
+          '{{other}} is running or starts at boot. Only one VPN runs at a time: stop {{other}} and turn off its start at boot first.',
+        swap: {
+          title: 'Swap memory',
+          tip: 'If the daemon runs short of memory, try enabling swap memory. This sets the swap file size to 256MB by default, which can be adjusted in "Settings > Device".'
+        }
+      },
+      tailscale: {
+        title: 'Tailscale',
         retry: 'Please refresh and try again. Or try to install manually',
         download: 'Download the',
         package: 'installation package',
@@ -656,23 +686,28 @@ const en = {
         upTailscale: 'Upload tailscale to NanoKVM directory /usr/bin/',
         upTailscaled: 'Upload tailscaled to NanoKVM directory /usr/sbin/',
         refresh: 'Refresh current page',
-        notRunning: 'Tailscale is not running. Please start it to continue.',
-        run: 'Start',
         notLogin:
           'The device has not been bound yet. Please login and bind this device to your account.',
         urlPeriod: 'This url is valid for 10 minutes',
         login: 'Login',
         loginSuccess: 'Login Success',
-        enable: 'Enable Tailscale',
-        deviceName: 'Device Name',
-        deviceIP: 'Device IP',
-        account: 'Account',
         logout: 'Logout',
-        logoutDesc: 'Are you sure you want to logout?',
-        uninstall: 'Uninstall Tailscale',
-        uninstallDesc: 'Are you sure you want to uninstall Tailscale?',
-        okBtn: 'Yes',
-        cancelBtn: 'No'
+        logoutDesc: 'Are you sure you want to logout?'
+      },
+      netbird: {
+        title: 'NetBird',
+        notLogin:
+          'This device has not joined a NetBird network yet. Join with a setup key, or log in with SSO.',
+        setupKey: 'Setup key',
+        setupKeyPlaceholder: 'Paste a setup key from the NetBird dashboard',
+        join: 'Join',
+        or: 'or',
+        sso: 'Log in with SSO',
+        urlPeriod: 'This url is valid for 10 minutes',
+        loginSuccess: 'Login Success',
+        logout: 'Deregister',
+        logoutDesc:
+          'Deregister removes this peer from your NetBird account and deletes its configuration here. Joining again needs a setup key or an SSO login, and the peer may get a new IP. Continue?'
       },
       update: {
         title: 'Check for Updates',

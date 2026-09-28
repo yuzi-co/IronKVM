@@ -177,6 +177,12 @@ func getApplicationVersion() string {
 	return buildversion.Decorate(version)
 }
 
+// Versions reports the card image, kernel and application versions exactly as
+// GetInfo does, for the metrics endpoint's build_info.
+func Versions() (image string, kernel string, app string) {
+	return getImageVersion(), getKernelVersion(), getApplicationVersion()
+}
+
 func getDeviceKey() string {
 	content, err := os.ReadFile("/device_key")
 	if err != nil {

@@ -1,6 +1,12 @@
 package mjpeg
 
-import "testing"
+import (
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/gin-gonic/gin"
+)
 
 func TestEnqueueQueuesFrameForTheWriter(t *testing.T) {
 	c := newClient(nil)
@@ -48,4 +54,40 @@ func TestFailIsIdempotent(t *testing.T) {
 
 	c.fail()
 	c.fail()
+}
+
+// Every byte a viewer received is counted: the part header, the JPEG and the
+// trailing CRLF.
+func TestWriteFrameCountsTheBytesItSent(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	recorder := httptest.NewRecorder()
+	ctx, _ := gin.CreateTestContext(recorder)
+	ctx.Request = httptest.NewRequest(http.MethodGet, "/api/stream/mjpeg", nil)
+	c := newClient(ctx)
+
+	before := SentBytes()
+	if err := c.writeFrame([]byte("jpeg")); err != nil {
+		t.Fatalf("writeFrame: %s", err)
+	}
+
+	got := SentBytes() - before
+	if got != uint64(recorder.Body.Len()) {
+		t.Fatalf("counted %d bytes, the response holds %d", got, recorder.Body.Len())
+	}
+	if got != 62 {
+		t.Fatalf("counted %d bytes, want 62 (56 of header, 4 of JPEG, 2 of CRLF)", got)
+	}
+}
+
+func TestSuppressedReadsThePackageStreamer(t *testing.T) {
+	t.Cleanup(func() { streamer.lastFrame = nil })
+
+	before := Suppressed()
+	frame := []byte("the same frame")
+	streamer.shouldSend(frame)
+	streamer.shouldSend(frame)
+
+	if got := Suppressed() - before; got != 1 {
+		t.Fatalf("suppressed rose by %d, want 1", got)
+	}
 }

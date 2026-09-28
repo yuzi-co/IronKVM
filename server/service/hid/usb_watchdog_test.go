@@ -254,3 +254,23 @@ func TestPollObservesTheLinkAndRespectsTheSettleWindow(t *testing.T) {
 		t.Fatalf("poll acted inside the settle window: attempt=%d", w.attempt)
 	}
 }
+
+// recover itself is not driven here: it reopens /dev/hidg*, which no test host
+// has (see TestPollObservesTheLinkAndRespectsTheSettleWindow). This covers the
+// counting it calls on its first line.
+func TestUSBRecoveriesCountsEachRung(t *testing.T) {
+	rebinds, rebuilds := USBRecoveries()
+
+	noteUSBRecovery("rebind")
+	noteUSBRecovery("rebind")
+	noteUSBRecovery("rebuild")
+	noteUSBRecovery("something else")
+
+	gotRebinds, gotRebuilds := USBRecoveries()
+	if gotRebinds-rebinds != 2 {
+		t.Fatalf("rebinds rose by %d, want 2", gotRebinds-rebinds)
+	}
+	if gotRebuilds-rebuilds != 1 {
+		t.Fatalf("rebuilds rose by %d, want 1", gotRebuilds-rebuilds)
+	}
+}

@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/extensions/tailscale.ts';
 
+import { ErrorDetail } from '../vpn/error-detail.tsx';
+
 type LoginProps = {
   onSuccess: () => void;
 };
@@ -19,6 +21,7 @@ export const Login = ({ onSuccess }: LoginProps) => {
   function login() {
     if (isLoading) return;
     setIsLoading(true);
+    setErrMsg('');
 
     api
       .login()
@@ -75,7 +78,7 @@ export const Login = ({ onSuccess }: LoginProps) => {
         </div>
       )}
 
-      {errMsg && <span className="text-red-500">{errMsg}</span>}
+      <ErrorDetail message={errMsg} />
     </div>
   );
 };

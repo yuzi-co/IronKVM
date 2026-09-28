@@ -1,11 +1,11 @@
 package tailscale
 
 import (
+	"os"
+
 	"NanoKVM-Server/proto"
 	"NanoKVM-Server/service/extensions/addon"
-	"NanoKVM-Server/utils"
-	"net"
-	"os"
+	"NanoKVM-Server/service/extensions/vpn"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -20,57 +20,87 @@ var (
 	TailscaledPath = "/usr/sbin/tailscaled"
 )
 
-const GoMemLimit int64 = 75
+// The update check's cache, the lookup and the installer. Variables so the
+// tests need no network.
+var (
+	updates        = &vpn.VersionCache{TTL: vpn.UpdateTTL}
+	fetchLatest    = latestVersion
+	installPackage = install
+)
 
 // addonSpec is what Tailscale needs back from the root filesystem after a new
 // image: its two binaries in their usual places and its boot script while it is
 // enabled. Its login is already on /data, where S98tailscaled keeps it.
 func addonSpec() addon.Spec {
 	return addon.Spec{
-		Name: "tailscale",
+		Name: addon.Tailscale.Name,
 		Links: []addon.Link{
 			{Path: "/usr/bin/tailscale", File: "tailscale"},
 			{Path: "/usr/sbin/tailscaled", File: "tailscaled"},
 		},
-		Initd: "S98tailscaled",
+		Initd: addon.Tailscale.Initd,
 	}
 }
 
-var StateMap = map[string]proto.TailscaleState{
-	"NoState":          proto.TailscaleNotRunning,
-	"Starting":         proto.TailscaleNotRunning,
-	"NeedsLogin":       proto.TailscaleNotLogin,
-	"NeedsMachineAuth": proto.TailscaleNotLogin,
-	"InUseOtherUser":   proto.TailscaleNotLogin,
-	"Running":          proto.TailscaleRunning,
-	"Stopped":          proto.TailscaleStopped,
-}
+// busy keeps install, update and uninstall apart: they share the download
+// workspace and the binaries.
+var busy vpn.Busy
 
 func NewService() *Service {
 	return &Service{}
 }
 
+// Install downloads without the VPN lock, which a download of minutes must
+// not hold, and starts the daemon under it, after checking again.
 func (s *Service) Install(c *gin.Context) {
 	var rsp proto.Response
 
+	end := busy.Begin(c, addon.Tailscale)
+	if end == nil {
+		return
+	}
+	defer end()
+
+	if vpn.Refuse(c, addon.Tailscale) {
+		return
+	}
+
 	if !isInstalled() {
-		if err := install(); err != nil {
-			rsp.ErrRsp(c, -1, "install failed")
+		if err := installPackage(); err != nil {
+			rsp.ErrRsp(c, -1, vpn.Message("install failed", err))
 			return
 		}
 
-		_ = NewCli().Start()
+		if err := vpn.StartChecked(addon.Tailscale, NewCli().Start); err != nil {
+			log.Errorf("failed to start tailscale after install: %s", err)
+			rsp.ErrRsp(c, -1, vpn.Message("Tailscale is installed but did not start", err))
+			return
+		}
 	}
 
 	rsp.OkRsp(c)
 	log.Debugf("install tailscale successfully")
 }
 
+// Uninstall removes the binaries and the add-on. A daemon that does not stop
+// keeps them.
 func (s *Service) Uninstall(c *gin.Context) {
 	var rsp proto.Response
 
-	_ = NewCli().Stop()
-	_ = utils.DelGoMemLimit()
+	end := busy.Begin(c, addon.Tailscale)
+	if end == nil {
+		return
+	}
+	defer end()
+
+	if err := NewCli().Stop(); err != nil {
+		log.Errorf("failed to stop tailscale before uninstall: %s", err)
+		rsp.ErrRsp(c, -1, vpn.Message("stop failed", err))
+		return
+	}
+	if err := addon.SetBoot(addon.Tailscale, false); err != nil {
+		log.Errorf("failed to turn off tailscale at boot: %s", err)
+	}
 
 	if addon.OnData() {
 		if err := addon.Remove(addonSpec()); err != nil {
@@ -84,31 +114,30 @@ func (s *Service) Uninstall(c *gin.Context) {
 	log.Debugf("uninstall tailscale successfully")
 }
 
+// Start starts the daemon. Start at boot is the boot route's alone now, and
+// the Go memory limit is S98tailscaled's, derived from the addons group.
 func (s *Service) Start(c *gin.Context) {
 	var rsp proto.Response
 
-	err := NewCli().Start()
-	if err != nil {
-		rsp.ErrRsp(c, -1, "start failed")
-		log.Errorf("failed to run tailscale start: %s", err)
+	if !vpn.Guard(c, addon.Tailscale, "start failed", NewCli().Start) {
 		return
-	}
-
-	if !utils.IsGoMemLimitExist() {
-		_ = utils.SetGoMemLimit(GoMemLimit)
 	}
 
 	rsp.OkRsp(c)
 	log.Debugf("tailscale start successfully")
 }
 
+// Restart of a stopped daemon is a start, and goes through the same check.
 func (s *Service) Restart(c *gin.Context) {
 	var rsp proto.Response
 
-	err := NewCli().Restart()
-	if err != nil {
-		rsp.ErrRsp(c, -1, "restart failed")
+	defer addon.LockVPN()()
+	if !addon.Running(addon.Tailscale) && vpn.Refuse(c, addon.Tailscale) {
+		return
+	}
+	if err := NewCli().Restart(); err != nil {
 		log.Errorf("failed to run tailscale restart: %s", err)
+		rsp.ErrRsp(c, -1, vpn.Message("restart failed", err))
 		return
 	}
 
@@ -119,14 +148,11 @@ func (s *Service) Restart(c *gin.Context) {
 func (s *Service) Stop(c *gin.Context) {
 	var rsp proto.Response
 
-	err := NewCli().Stop()
-	if err != nil {
-		rsp.ErrRsp(c, -1, "stop failed")
+	if err := NewCli().Stop(); err != nil {
 		log.Errorf("failed to run tailscale stop: %s", err)
+		rsp.ErrRsp(c, -1, vpn.Message("stop failed", err))
 		return
 	}
-
-	_ = utils.DelGoMemLimit()
 
 	rsp.OkRsp(c)
 	log.Debugf("tailscale stop successfully")
@@ -135,10 +161,7 @@ func (s *Service) Stop(c *gin.Context) {
 func (s *Service) Up(c *gin.Context) {
 	var rsp proto.Response
 
-	err := NewCli().Up()
-	if err != nil {
-		rsp.ErrRsp(c, -1, "tailscale up failed")
-		log.Errorf("failed to run tailscale up: %s", err)
+	if !vpn.Guard(c, addon.Tailscale, "tailscale up failed", NewCli().Up) {
 		return
 	}
 
@@ -149,10 +172,9 @@ func (s *Service) Up(c *gin.Context) {
 func (s *Service) Down(c *gin.Context) {
 	var rsp proto.Response
 
-	err := NewCli().Down()
-	if err != nil {
-		rsp.ErrRsp(c, -1, "tailscale down failed")
+	if err := NewCli().Down(); err != nil {
 		log.Errorf("failed to run tailscale down: %s", err)
+		rsp.ErrRsp(c, -1, vpn.Message("tailscale down failed", err))
 		return
 	}
 
@@ -163,51 +185,50 @@ func (s *Service) Down(c *gin.Context) {
 func (s *Service) Login(c *gin.Context) {
 	var rsp proto.Response
 
-	// check tailscale status
+	// The check, the start and the login hold the lock together.
+	defer addon.LockVPN()()
+	if vpn.Refuse(c, addon.Tailscale) {
+		return
+	}
+
 	cli := NewCli()
 	status, err := cli.Status()
 	if err != nil {
-		_ = cli.Start()
+		if err := cli.Start(); err != nil {
+			rsp.ErrRsp(c, -1, vpn.Message("start failed", err))
+			return
+		}
 		status, err = cli.Status()
 	}
 
 	if err != nil {
 		log.Errorf("failed to get tailscale status: %s", err)
-		rsp.ErrRsp(c, -1, "unknown status")
+		rsp.ErrRsp(c, -1, vpn.Message("unknown status", err))
 		return
 	}
 
 	if status.BackendState == "Running" {
-		rsp.OkRspWithData(c, &proto.LoginTailscaleRsp{})
+		rsp.OkRspWithData(c, &proto.VpnLoginRsp{})
 		return
 	}
 
-	// get login url
 	url, err := cli.Login()
 	if err != nil {
 		log.Errorf("failed to run tailscale login: %s", err)
-		rsp.ErrRsp(c, -2, "login failed")
+		rsp.ErrRsp(c, -2, vpn.Message("login failed", err))
 		return
 	}
 
-	if !utils.IsGoMemLimitExist() {
-		_ = utils.SetGoMemLimit(GoMemLimit)
-	}
-
-	rsp.OkRspWithData(c, &proto.LoginTailscaleRsp{
-		Url: url,
-	})
-
+	rsp.OkRspWithData(c, &proto.VpnLoginRsp{Url: url})
 	log.Debugf("tailscale login url: %s", url)
 }
 
 func (s *Service) Logout(c *gin.Context) {
 	var rsp proto.Response
 
-	err := NewCli().Logout()
-	if err != nil {
-		rsp.ErrRsp(c, -1, "logout failed")
+	if err := NewCli().Logout(); err != nil {
 		log.Errorf("failed to run tailscale logout: %s", err)
+		rsp.ErrRsp(c, -1, vpn.Message("logout failed", err))
 		return
 	}
 
@@ -218,44 +239,91 @@ func (s *Service) Logout(c *gin.Context) {
 func (s *Service) GetStatus(c *gin.Context) {
 	var rsp proto.Response
 
-	if !isInstalled() {
-		rsp.OkRspWithData(c, &proto.GetTailscaleStatusRsp{
-			State: proto.TailscaleNotInstall,
-		})
-		return
-	}
-
-	status, err := NewCli().Status()
-	if err != nil {
-		log.Debugf("failed to get tailscale status: %s", err)
-		rsp.OkRspWithData(c, &proto.GetTailscaleStatusRsp{
-			State: proto.TailscaleNotRunning,
-		})
-		return
-	}
-
-	state, ok := StateMap[status.BackendState]
-	if !ok {
-		log.Errorf("unknown tailscale state: %s", status.BackendState)
-		rsp.ErrRsp(c, -1, "unknown state")
-		return
-	}
-
-	ipv4 := ""
-	for _, tailscaleIp := range status.Self.TailscaleIPs {
-		ip := net.ParseIP(tailscaleIp)
-		if ip != nil && ip.To4() != nil {
-			ipv4 = ip.String()
+	st := proto.VpnStatus{State: proto.VpnNotInstall}
+	if isInstalled() {
+		st = proto.VpnStatus{State: proto.VpnNotRunning}
+		if ts, err := NewCli().Status(); err != nil {
+			log.Debugf("failed to get tailscale status: %s", err)
+		} else if st, err = toVpnStatus(ts); err != nil {
+			log.Errorf("%s", err)
+			rsp.ErrRsp(c, -1, err.Error())
+			return
 		}
 	}
 
-	data := proto.GetTailscaleStatusRsp{
-		State:   state,
-		IP:      ipv4,
-		Name:    status.Self.HostName,
-		Account: status.CurrentTailnet.Name,
+	vpn.Fill(&st, addon.Tailscale)
+	rsp.OkRspWithData(c, &st)
+}
+
+// Boot turns start at boot on or off.
+func (s *Service) Boot(c *gin.Context) {
+	vpn.Boot(c, addon.Tailscale, isInstalled())
+}
+
+// GetUpdate reports the installed version and the latest one, which is
+// looked up at most once an hour.
+func (s *Service) GetUpdate(c *gin.Context) {
+	var rsp proto.Response
+
+	if !isInstalled() {
+		rsp.ErrRsp(c, -1, "tailscale is not installed")
+		return
 	}
 
-	rsp.OkRspWithData(c, &data)
-	log.Debugf("get tailscale status successfully")
+	current, err := NewCli().Version()
+	if err != nil {
+		rsp.ErrRsp(c, -1, vpn.Message("version failed", err))
+		return
+	}
+
+	latest, err := updates.Latest(fetchLatest)
+	if err != nil {
+		rsp.ErrRsp(c, -1, vpn.Message("update check failed", err))
+		return
+	}
+
+	rsp.OkRspWithData(c, &proto.VpnUpdateRsp{Current: current, Latest: latest})
+}
+
+// Update installs the latest release over the installed one. The login stays
+// on /data, and the daemon runs again afterwards only if it ran before.
+func (s *Service) Update(c *gin.Context) {
+	var rsp proto.Response
+
+	end := busy.Begin(c, addon.Tailscale)
+	if end == nil {
+		return
+	}
+	defer end()
+
+	if !isInstalled() {
+		rsp.ErrRsp(c, -1, "tailscale is not installed")
+		return
+	}
+
+	cli := NewCli()
+	wasRunning := addon.Running(addon.Tailscale)
+	if wasRunning {
+		if err := cli.Stop(); err != nil {
+			rsp.ErrRsp(c, -1, vpn.Message("stop failed", err))
+			return
+		}
+	}
+
+	err := installPackage()
+	updates.Reset()
+
+	if wasRunning {
+		if startErr := vpn.StartChecked(addon.Tailscale, cli.Start); startErr != nil && err == nil {
+			err = startErr
+		}
+	}
+	if err != nil {
+		log.Errorf("failed to update tailscale: %s", err)
+		rsp.ErrRsp(c, -1, vpn.Message("update failed", err))
+		return
+	}
+
+	rsp.OkRsp(c)
+	log.Debugf("update tailscale successfully")
 }

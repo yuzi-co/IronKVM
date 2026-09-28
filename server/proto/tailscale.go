@@ -1,22 +1,19 @@
 package proto
 
-type TailscaleState string
+// The Tailscale names predate NetBird. They stay, as aliases, for the code
+// and the clients that use them.
+type TailscaleState = VpnState
 
 const (
-	TailscaleNotInstall TailscaleState = "notInstall"
-	TailscaleNotRunning TailscaleState = "notRunning"
-	TailscaleNotLogin   TailscaleState = "notLogin"
-	TailscaleStopped    TailscaleState = "stopped"
-	TailscaleRunning    TailscaleState = "running"
+	TailscaleNotInstall = VpnNotInstall
+	TailscaleNotRunning = VpnNotRunning
+	TailscaleNotLogin   = VpnNotLogin
+	TailscaleStopped    = VpnStopped
+	TailscaleRunning    = VpnRunning
 )
 
-type GetTailscaleStatusRsp struct {
-	State   TailscaleState `json:"state"`
-	Name    string         `json:"name"`
-	IP      string         `json:"ip"`
-	Account string         `json:"account"`
-}
+// GetTailscaleStatusRsp keeps state, name, ip and account where old clients
+// read them, and carries the rest of VpnStatus beside them.
+type GetTailscaleStatusRsp = VpnStatus
 
-type LoginTailscaleRsp struct {
-	Url string `json:"url"`
-}
+type LoginTailscaleRsp = VpnLoginRsp
