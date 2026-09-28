@@ -346,7 +346,9 @@ const tr = {
       success: 'İndirme başarılı',
       checksumFailed: 'İndirme başarısız: SHA-256 doğrulaması başarısız',
       cancel: 'İptal',
-      cancelFailed: 'İndirme iptal edilemedi'
+      cancelFailed: 'İndirme iptal edilemedi',
+      bootMenu: 'Önyükleme menüsü (netboot.xyz)',
+      bootMenuDesc: "Sanal CD için netboot.xyz ISO'sunu sağlama toplamı doğrulanmış olarak indirin"
     },
     power: {
       title: 'Güç',
@@ -454,6 +456,47 @@ const tr = {
         pressFailed: 'Düğmeye basılamadı: {{error}}',
         noScreenshot: 'Ekran görüntüsü yok',
         failed: 'Watchdog işlemi başarısız oldu'
+      },
+      netboot: {
+        title: 'Ağdan önyükleme',
+        description:
+          "Ana makineyi ağdan başlatın: USB ağ bağlantısı üzerinden iPXE ve KVM'deki görüntülerin menüsü ya da LAN'da proxy DHCP ile netboot.xyz.",
+        addon: 'dnsmasq ve önyükleme dosyaları',
+        addonDesc:
+          "/data'ya kurulur: dnsmasq Alpine'den, iPXE ve netboot.xyz kendi sürümlerinden gelir, her biri sağlama toplamıyla doğrulanır.",
+        install: 'Kur',
+        installing: 'Kuruluyor. Bu birkaç dakika sürebilir.',
+        uninstall: 'Kaldır',
+        uninstallConfirm:
+          'Ağdan önyükleme kapatılsın ve dnsmasq ile önyükleme dosyaları kaldırılsın mı?',
+        needsData: 'Ağdan önyükleme, /data bölümü bağlı bir IronKVM görüntüsü gerektirir.',
+        usb: 'USB ağ bağlantısında',
+        usbDesc:
+          "USB ağ bağlantısı açıkken ona udhcpd yerine dnsmasq hizmet verir. Ana makine tek adresini yönlendirici ve DNS sunucusu olmadan, mimarisine uygun iPXE'yi ve KVM'deki ISO görüntülerinin menüsünü alır.",
+        linkOff: 'USB ağ bağlantısı kapalı. Aygıt, USB ağı altından açın.',
+        menuUrl: 'Menü',
+        leases: 'Ana makinenin kirası',
+        noLeases: 'Henüz yok',
+        netbootxyzNote:
+          'Menüdeki netboot.xyz internetten yüklenir ve USB bağlantısı internete ulaşmaz. Ana makinenin bunun için başka bir ağ bağlantı noktasında internete ihtiyacı vardır.',
+        lan: "LAN'da proxy DHCP",
+        lanDesc:
+          "LAN'daki PXE istemcilerine netboot.xyz sunar; netboot.xyz de menüsünü internetten yükler. Asla adres dağıtmaz ve KVM'deki görüntüleri sunmaz.",
+        lanWarning:
+          "netboot.xyz yalnızca ana makineye değil, bu LAN'daki her PXE istemcisine sunulur. Bunu yalnızca kontrol ettiğiniz bir ağda açın.",
+        lanConfirm: "LAN'da proxy DHCP açılsın mı?",
+        lanInterface: 'LAN',
+        running: 'Çalışıyor',
+        stopped: 'Çalışmıyor',
+        images: 'Menüdeki görüntüler',
+        noImages: 'Görüntü dizininde ISO görüntüsü yok.',
+        boots: 'Son önyüklemeler',
+        noBoots: 'Ana makine henüz hiçbir şey almadı.',
+        log: 'dnsmasq günlüğü',
+        refresh: 'Yenile',
+        okBtn: 'Onayla',
+        cancelBtn: 'İptal',
+        failed: 'Ağdan önyükleme işlemi başarısız oldu'
       },
       about: {
         title: 'NanoKVM Hakkında',

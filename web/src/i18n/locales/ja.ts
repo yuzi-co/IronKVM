@@ -348,7 +348,9 @@ const ja = {
       success: 'ダウンロードに成功しました',
       checksumFailed: 'ダウンロードに失敗しました：SHA-256 検証に失敗しました',
       cancel: 'キャンセル',
-      cancelFailed: 'ダウンロードのキャンセルに失敗しました'
+      cancelFailed: 'ダウンロードのキャンセルに失敗しました',
+      bootMenu: 'ブートメニュー (netboot.xyz)',
+      bootMenuDesc: '仮想 CD 用に netboot.xyz の ISO をチェックサム検証付きでダウンロード'
     },
     power: {
       title: '電源',
@@ -455,6 +457,49 @@ const ja = {
         pressFailed: 'ボタン操作に失敗しました: {{error}}',
         noScreenshot: 'スクリーンショットなし',
         failed: 'ウォッチドッグの操作に失敗しました'
+      },
+      netboot: {
+        title: 'ネットワークブート',
+        description:
+          'ホストをネットワークから起動します。USB ネットワークリンク経由で iPXE と KVM 上のイメージのメニュー、または LAN 上のプロキシ DHCP で netboot.xyz を提供します。',
+        addon: 'dnsmasq とブートファイル',
+        addonDesc:
+          '/data にインストールされます。dnsmasq は Alpine から、iPXE と netboot.xyz は各リリースから取得し、それぞれチェックサムで検証します。',
+        install: 'インストール',
+        installing: 'インストール中です。数分かかることがあります。',
+        uninstall: 'アンインストール',
+        uninstallConfirm:
+          'ネットワークブートをオフにして、dnsmasq とブートファイルを削除しますか？',
+        needsData:
+          'ネットワークブートには /data パーティションがマウントされた IronKVM イメージが必要です。',
+        usb: 'USB ネットワークリンク上',
+        usbDesc:
+          'USB ネットワークリンクがオンの間、udhcpd の代わりに dnsmasq が応答します。ホストはルーターも DNS サーバーもない 1 つのアドレス、アーキテクチャに合った iPXE、KVM 上の ISO イメージのメニューを受け取ります。',
+        linkOff:
+          'USB ネットワークリンクがオフです。デバイスの USB ネットワークでオンにしてください。',
+        menuUrl: 'メニュー',
+        leases: 'ホストのリース',
+        noLeases: 'まだありません',
+        netbootxyzNote:
+          'メニューの netboot.xyz はインターネットから読み込まれますが、USB リンクはインターネットに届きません。ホストの別のネットワークポートにインターネット接続が必要です。',
+        lan: 'LAN 上のプロキシ DHCP',
+        lanDesc:
+          'LAN 上の PXE クライアントに netboot.xyz を提供し、netboot.xyz はメニューをインターネットから読み込みます。アドレスは配布せず、KVM 上のイメージも提供しません。',
+        lanWarning:
+          'ホストだけでなく、この LAN 上のすべての PXE クライアントに netboot.xyz が提供されます。自分で管理しているネットワークでのみオンにしてください。',
+        lanConfirm: 'LAN 上のプロキシ DHCP をオンにしますか？',
+        lanInterface: 'LAN',
+        running: '実行中',
+        stopped: '停止中',
+        images: 'メニュー内のイメージ',
+        noImages: 'イメージディレクトリに ISO イメージがありません。',
+        boots: '最近のブート',
+        noBoots: 'ホストはまだ何も取得していません。',
+        log: 'dnsmasq ログ',
+        refresh: '更新',
+        okBtn: '確認',
+        cancelBtn: 'キャンセル',
+        failed: 'ネットワークブートの操作に失敗しました'
       },
       about: {
         title: 'NanoKVM について',

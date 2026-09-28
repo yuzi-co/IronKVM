@@ -347,7 +347,9 @@ const cz = {
       success: 'Stažení proběhlo úspěšně',
       checksumFailed: 'Stažení se nezdařilo: ověření SHA-256 selhalo',
       cancel: 'Zrušit',
-      cancelFailed: 'Stažení se nepodařilo zrušit'
+      cancelFailed: 'Stažení se nepodařilo zrušit',
+      bootMenu: 'Zaváděcí nabídka (netboot.xyz)',
+      bootMenuDesc: 'Stáhnout ISO netboot.xyz s ověřeným kontrolním součtem pro virtuální CD'
     },
     power: {
       title: 'Napájení',
@@ -454,6 +456,46 @@ const cz = {
         pressFailed: 'Stisk se nezdařil: {{error}}',
         noScreenshot: 'Bez snímku obrazovky',
         failed: 'Operace watchdogu selhala'
+      },
+      netboot: {
+        title: 'Síťové spuštění',
+        description:
+          'Spustit hostitele ze sítě: iPXE a nabídka obrazů na KVM přes síťové propojení USB, nebo netboot.xyz přes proxy DHCP v síti LAN.',
+        addon: 'dnsmasq a zaváděcí soubory',
+        addonDesc:
+          'Instalováno na /data: dnsmasq z Alpine, iPXE a netboot.xyz z jejich vydání, každý ověřený kontrolním součtem.',
+        install: 'Instalovat',
+        installing: 'Probíhá instalace. Může to trvat několik minut.',
+        uninstall: 'Odinstalovat',
+        uninstallConfirm: 'Vypnout síťové spuštění a odstranit dnsmasq a zaváděcí soubory?',
+        needsData: 'Síťové spuštění vyžaduje obraz IronKVM s připojeným oddílem /data.',
+        usb: 'Na síťovém propojení USB',
+        usbDesc:
+          'Dokud je síťové propojení USB zapnuté, obsluhuje ho dnsmasq místo udhcpd. Hostitel dostane svou jedinou adresu bez směrovače a bez serveru DNS, iPXE pro svou architekturu a nabídku obrazů ISO na KVM.',
+        linkOff: 'Síťové propojení USB je vypnuté. Zapněte ho v Zařízení, Síť USB.',
+        menuUrl: 'Nabídka',
+        leases: 'Zápůjčka hostitele',
+        noLeases: 'Zatím žádná',
+        netbootxyzNote:
+          'netboot.xyz v nabídce se načítá z internetu, kam propojení USB nedosáhne. Hostitel potřebuje internet na jiném síťovém portu.',
+        lan: 'Proxy DHCP v síti LAN',
+        lanDesc:
+          'Odpovídá klientům PXE v síti LAN nabídkou netboot.xyz, který si pak načte svou nabídku z internetu. Nikdy nepřiděluje adresy a nezpřístupňuje obrazy na KVM.',
+        lanWarning:
+          'netboot.xyz je nabídnut každému klientovi PXE v této síti LAN, nejen hostiteli. Zapínejte to jen v síti, kterou spravujete.',
+        lanConfirm: 'Zapnout proxy DHCP v síti LAN?',
+        lanInterface: 'LAN',
+        running: 'Běží',
+        stopped: 'Neběží',
+        images: 'Obrazy v nabídce',
+        noImages: 'V adresáři obrazů nejsou žádné obrazy ISO.',
+        boots: 'Nedávná spuštění',
+        noBoots: 'Hostitel zatím nic nestáhl.',
+        log: 'Protokol dnsmasq',
+        refresh: 'Obnovit',
+        okBtn: 'Potvrdit',
+        cancelBtn: 'Zrušit',
+        failed: 'Operace síťového spuštění selhala'
       },
       about: {
         title: 'O NanoKVM',

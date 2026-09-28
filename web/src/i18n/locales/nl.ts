@@ -350,7 +350,10 @@ const nl = {
       success: 'Download geslaagd',
       checksumFailed: 'Download mislukt: SHA-256-verificatie mislukt',
       cancel: 'Annuleren',
-      cancelFailed: 'Download annuleren mislukt'
+      cancelFailed: 'Download annuleren mislukt',
+      bootMenu: 'Opstartmenu (netboot.xyz)',
+      bootMenuDesc:
+        'De netboot.xyz-ISO downloaden, met gecontroleerde checksum, voor de virtuele cd'
     },
     power: {
       title: 'Aan/uit',
@@ -459,6 +462,46 @@ const nl = {
         pressFailed: 'De druk op de knop mislukte: {{error}}',
         noScreenshot: 'Geen schermafbeelding',
         failed: 'Watchdog-bewerking mislukt'
+      },
+      netboot: {
+        title: 'Netwerkboot',
+        description:
+          'De host via het netwerk opstarten: iPXE en een menu van de images op de KVM via de USB-netwerkverbinding, of netboot.xyz via proxy-DHCP op het LAN.',
+        addon: 'dnsmasq en opstartbestanden',
+        addonDesc:
+          'Geïnstalleerd op /data: dnsmasq uit Alpine, iPXE en netboot.xyz uit hun releases, elk gecontroleerd met de eigen checksum.',
+        install: 'Installeren',
+        installing: 'Bezig met installeren. Dit kan enkele minuten duren.',
+        uninstall: 'Verwijderen',
+        uninstallConfirm: 'Netwerkboot uitschakelen en dnsmasq en de opstartbestanden verwijderen?',
+        needsData: 'Netwerkboot vereist een IronKVM-image met de /data-partitie aangekoppeld.',
+        usb: 'Op de USB-netwerkverbinding',
+        usbDesc:
+          'Zolang de USB-netwerkverbinding aan staat, bedient dnsmasq die in plaats van udhcpd. De host krijgt zijn ene adres zonder router en zonder DNS-server, iPXE voor zijn architectuur en een menu van de ISO-images op de KVM.',
+        linkOff: 'De USB-netwerkverbinding staat uit. Zet die aan onder Apparaat, USB-netwerk.',
+        menuUrl: 'Menu',
+        leases: 'Lease van de host',
+        noLeases: 'Nog geen',
+        netbootxyzNote:
+          'netboot.xyz in het menu laadt van internet, dat de USB-verbinding niet bereikt. De host heeft daarvoor internet op een andere netwerkpoort nodig.',
+        lan: 'Proxy-DHCP op het LAN',
+        lanDesc:
+          'Beantwoordt PXE-clients op het LAN met netboot.xyz, dat daarna zijn menu van internet laadt. Het deelt nooit adressen uit en biedt de images op de KVM niet aan.',
+        lanWarning:
+          'Elke PXE-client op dit LAN krijgt netboot.xyz aangeboden, niet alleen de host. Zet dit alleen aan op een netwerk dat je beheert.',
+        lanConfirm: 'Proxy-DHCP op het LAN inschakelen?',
+        lanInterface: 'LAN',
+        running: 'Actief',
+        stopped: 'Niet actief',
+        images: 'Images in het menu',
+        noImages: 'Geen ISO-images in de imagemap.',
+        boots: 'Recente boots',
+        noBoots: 'De host heeft nog niets opgehaald.',
+        log: 'dnsmasq-logboek',
+        refresh: 'Vernieuwen',
+        okBtn: 'Bevestigen',
+        cancelBtn: 'Annuleren',
+        failed: 'Netwerkboot-bewerking mislukt'
       },
       about: {
         title: 'Over NanoKVM',

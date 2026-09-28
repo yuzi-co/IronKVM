@@ -347,7 +347,9 @@ const id = {
       success: 'Unduhan berhasil',
       checksumFailed: 'Unduhan gagal: verifikasi SHA-256 gagal',
       cancel: 'Batal',
-      cancelFailed: 'Gagal membatalkan unduhan'
+      cancelFailed: 'Gagal membatalkan unduhan',
+      bootMenu: 'Menu boot (netboot.xyz)',
+      bootMenuDesc: 'Unduh ISO netboot.xyz, checksum diperiksa, untuk CD virtual'
     },
     power: {
       title: 'Daya',
@@ -456,6 +458,46 @@ const id = {
         pressFailed: 'Penekanan gagal: {{error}}',
         noScreenshot: 'Tidak ada tangkapan layar',
         failed: 'Operasi watchdog gagal'
+      },
+      netboot: {
+        title: 'Boot jaringan',
+        description:
+          'Boot host dari jaringan: iPXE dan menu image di KVM lewat tautan jaringan USB, atau netboot.xyz lewat proxy DHCP di LAN.',
+        addon: 'dnsmasq dan file boot',
+        addonDesc:
+          'Dipasang di /data: dnsmasq dari Alpine, iPXE dan netboot.xyz dari rilisnya, masing-masing diperiksa dengan checksum-nya.',
+        install: 'Pasang',
+        installing: 'Sedang memasang. Ini bisa memakan waktu beberapa menit.',
+        uninstall: 'Copot',
+        uninstallConfirm: 'Matikan boot jaringan dan hapus dnsmasq serta file boot?',
+        needsData: 'Boot jaringan memerlukan image IronKVM dengan partisi /data terpasang.',
+        usb: 'Di tautan jaringan USB',
+        usbDesc:
+          'Selama tautan jaringan USB aktif, dnsmasq melayaninya menggantikan udhcpd. Host mendapat satu alamatnya tanpa router dan tanpa server DNS, iPXE untuk arsitekturnya, dan menu image ISO di KVM.',
+        linkOff: 'Tautan jaringan USB mati. Nyalakan di Perangkat, Jaringan USB.',
+        menuUrl: 'Menu',
+        leases: 'Lease host',
+        noLeases: 'Belum ada',
+        netbootxyzNote:
+          'netboot.xyz di menu dimuat dari internet, yang tidak dijangkau tautan USB. Host memerlukan internet di port jaringan lain.',
+        lan: 'Proxy DHCP di LAN',
+        lanDesc:
+          'Menjawab klien PXE di LAN dengan netboot.xyz, yang lalu memuat menunya dari internet. Tidak pernah membagikan alamat dan tidak menyajikan image di KVM.',
+        lanWarning:
+          'Setiap klien PXE di LAN ini ditawari netboot.xyz, bukan hanya host. Nyalakan ini hanya di jaringan yang Anda kendalikan.',
+        lanConfirm: 'Nyalakan proxy DHCP di LAN?',
+        lanInterface: 'LAN',
+        running: 'Berjalan',
+        stopped: 'Tidak berjalan',
+        images: 'Image di menu',
+        noImages: 'Tidak ada image ISO di direktori image.',
+        boots: 'Boot terbaru',
+        noBoots: 'Host belum mengambil apa pun.',
+        log: 'Log dnsmasq',
+        refresh: 'Muat ulang',
+        okBtn: 'Konfirmasi',
+        cancelBtn: 'Batal',
+        failed: 'Operasi boot jaringan gagal'
       },
       about: {
         title: 'Tentang NanoKVM',

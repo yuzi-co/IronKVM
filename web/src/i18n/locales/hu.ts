@@ -349,7 +349,9 @@ const hu = {
       success: 'Sikeres letöltés',
       checksumFailed: 'Sikertelen letöltés: a SHA-256 ellenőrzése sikertelen',
       cancel: 'Mégse',
-      cancelFailed: 'A letöltés megszakítása sikertelen'
+      cancelFailed: 'A letöltés megszakítása sikertelen',
+      bootMenu: 'Rendszerindító menü (netboot.xyz)',
+      bootMenuDesc: 'A netboot.xyz ISO letöltése ellenőrzött ellenőrzőösszeggel a virtuális CD-hez'
     },
     power: {
       title: 'Bekapcsolás',
@@ -458,6 +460,49 @@ const hu = {
         pressFailed: 'A gombnyomás nem sikerült: {{error}}',
         noScreenshot: 'Nincs képernyőkép',
         failed: 'A watchdog művelete nem sikerült'
+      },
+      netboot: {
+        title: 'Hálózati rendszerindítás',
+        description:
+          'A gazdagép indítása a hálózatról: iPXE és a KVM-en lévő lemezképek menüje az USB hálózati kapcsolaton, vagy netboot.xyz proxy DHCP-vel a LAN-on.',
+        addon: 'dnsmasq és rendszerindító fájlok',
+        addonDesc:
+          'A /data-ra telepítve: a dnsmasq az Alpine-ból, az iPXE és a netboot.xyz a kiadásaikból, mindegyik az ellenőrzőösszegével ellenőrizve.',
+        install: 'Telepítés',
+        installing: 'Telepítés folyamatban. Ez néhány percig is tarthat.',
+        uninstall: 'Eltávolítás',
+        uninstallConfirm:
+          'Kikapcsolja a hálózati rendszerindítást, és eltávolítja a dnsmasq-ot és a rendszerindító fájlokat?',
+        needsData:
+          'A hálózati rendszerindításhoz olyan IronKVM-lemezkép kell, amelyen a /data partíció csatolva van.',
+        usb: 'Az USB hálózati kapcsolaton',
+        usbDesc:
+          'Amíg az USB hálózati kapcsolat be van kapcsolva, a dnsmasq szolgálja ki az udhcpd helyett. A gazdagép megkapja egyetlen címét útválasztó és DNS-kiszolgáló nélkül, az architektúrájának megfelelő iPXE-t és a KVM-en lévő ISO-lemezképek menüjét.',
+        linkOff:
+          'Az USB hálózati kapcsolat ki van kapcsolva. Kapcsolja be az Eszköz, USB-hálózat alatt.',
+        menuUrl: 'Menü',
+        leases: 'A gazdagép bérlete',
+        noLeases: 'Még nincs',
+        netbootxyzNote:
+          'A menüben lévő netboot.xyz az internetről töltődik be, amelyet az USB-kapcsolat nem ér el. Ehhez a gazdagépnek egy másik hálózati porton kell internetet elérnie.',
+        lan: 'Proxy DHCP a LAN-on',
+        lanDesc:
+          'A LAN PXE-klienseinek a netboot.xyz-t kínálja, amely ezután az internetről tölti be a menüjét. Soha nem oszt ki címet, és nem szolgálja ki a KVM-en lévő lemezképeket.',
+        lanWarning:
+          'A netboot.xyz-t ezen a LAN-on minden PXE-kliens megkapja, nem csak a gazdagép. Csak olyan hálózaton kapcsolja be, amelyet Ön felügyel.',
+        lanConfirm: 'Bekapcsolja a proxy DHCP-t a LAN-on?',
+        lanInterface: 'LAN',
+        running: 'Fut',
+        stopped: 'Nem fut',
+        images: 'Lemezképek a menüben',
+        noImages: 'Nincs ISO-lemezkép a lemezképkönyvtárban.',
+        boots: 'Legutóbbi indítások',
+        noBoots: 'A gazdagép még semmit sem töltött le.',
+        log: 'dnsmasq-napló',
+        refresh: 'Frissítés',
+        okBtn: 'Megerősítés',
+        cancelBtn: 'Mégse',
+        failed: 'A hálózati rendszerindítási művelet sikertelen'
       },
       about: {
         title: 'NanoKVM Névjegy',

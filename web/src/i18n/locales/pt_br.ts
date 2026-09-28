@@ -347,7 +347,9 @@ const pt_br = {
       success: 'Download concluído',
       checksumFailed: 'Falha no download: a verificação SHA-256 falhou',
       cancel: 'Cancelar',
-      cancelFailed: 'Falha ao cancelar o download'
+      cancelFailed: 'Falha ao cancelar o download',
+      bootMenu: 'Menu de boot (netboot.xyz)',
+      bootMenuDesc: 'Baixar a ISO do netboot.xyz, com checksum conferido, para o CD virtual'
     },
     power: {
       title: 'Energia',
@@ -455,6 +457,46 @@ const pt_br = {
         pressFailed: 'O pressionamento falhou: {{error}}',
         noScreenshot: 'Sem captura de tela',
         failed: 'A operação do watchdog falhou'
+      },
+      netboot: {
+        title: 'Boot pela rede',
+        description:
+          'Inicializar o host pela rede: iPXE e um menu das imagens no KVM pelo link de rede USB, ou netboot.xyz por proxy DHCP na LAN.',
+        addon: 'dnsmasq e arquivos de boot',
+        addonDesc:
+          'Instalados em /data: dnsmasq do Alpine, iPXE e netboot.xyz das suas versões publicadas, cada um conferido pelo seu checksum.',
+        install: 'Instalar',
+        installing: 'Instalando. Isso pode levar alguns minutos.',
+        uninstall: 'Desinstalar',
+        uninstallConfirm: 'Desligar o boot pela rede e remover o dnsmasq e os arquivos de boot?',
+        needsData: 'O boot pela rede precisa de uma imagem IronKVM com a partição /data montada.',
+        usb: 'No link de rede USB',
+        usbDesc:
+          'Enquanto o link de rede USB está ligado, o dnsmasq o atende no lugar do udhcpd. O host recebe seu único endereço sem roteador e sem servidor DNS, o iPXE da sua arquitetura e um menu das imagens ISO no KVM.',
+        linkOff: 'O link de rede USB está desligado. Ligue-o em Dispositivo, Rede USB.',
+        menuUrl: 'Menu',
+        leases: 'Concessão do host',
+        noLeases: 'Nenhuma ainda',
+        netbootxyzNote:
+          'O netboot.xyz no menu carrega da internet, que o link USB não alcança. O host precisa de internet em outra porta de rede.',
+        lan: 'Proxy DHCP na LAN',
+        lanDesc:
+          'Responde aos clientes PXE da LAN com o netboot.xyz, que depois carrega seu menu da internet. Nunca distribui endereços e não serve as imagens do KVM.',
+        lanWarning:
+          'O netboot.xyz é oferecido a todo cliente PXE desta LAN, não só ao host. Ligue isto apenas em uma rede que você controla.',
+        lanConfirm: 'Ligar o proxy DHCP na LAN?',
+        lanInterface: 'LAN',
+        running: 'Em execução',
+        stopped: 'Parado',
+        images: 'Imagens no menu',
+        noImages: 'Nenhuma imagem ISO no diretório de imagens.',
+        boots: 'Boots recentes',
+        noBoots: 'O host ainda não buscou nada.',
+        log: 'Log do dnsmasq',
+        refresh: 'Atualizar',
+        okBtn: 'Confirmar',
+        cancelBtn: 'Cancelar',
+        failed: 'Falha na operação de boot pela rede'
       },
       about: {
         title: 'Sobre o NanoKVM',

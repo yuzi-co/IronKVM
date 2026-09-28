@@ -3,10 +3,16 @@ import { Button, Divider, Input } from 'antd';
 import type { InputRef } from 'antd';
 import clsx from 'clsx';
 import { useSetAtom } from 'jotai';
-import { DownloadIcon } from 'lucide-react';
+import { DiscIcon, DownloadIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { cancelDownloadImage, downloadImage, imageEnabled, statusImage } from '@/api/download.ts';
+import {
+  cancelDownloadImage,
+  downloadBootMenu,
+  downloadImage,
+  imageEnabled,
+  statusImage
+} from '@/api/download.ts';
 import { keyboardLockAtom } from '@/jotai/keyboard.ts';
 import { MenuItem } from '@/components/menu-item.tsx';
 
@@ -172,6 +178,16 @@ export const DownloadImage = () => {
     const checksum = getValidatedSHA256();
     if (checksum === null) return;
 
+    startRemoteDownload(url, () => downloadImage(url, checksum));
+  }
+
+  // The boot menu is netboot.xyz's ISO. The server holds its URL and its
+  // checksum, and stores it in the image directory for the virtual CD.
+  function downloadBootMenuImage() {
+    startRemoteDownload('netboot.xyz.iso', downloadBootMenu);
+  }
+
+  function startRemoteDownload(label: string, request: () => ReturnType<typeof downloadBootMenu>) {
     // Invalidate the status request started when the popover was opened.
     // Start polling only after the download request has created the server-side
     // download state, otherwise the first response can still be `idle`.
@@ -180,9 +196,9 @@ export const DownloadImage = () => {
     remoteDownloadActive.current = true;
     setIsRemoteDownloading(true);
     setStatus('in_progress');
-    setLog('Downloading: ' + url);
+    setLog('Downloading: ' + label);
 
-    downloadImage(url, checksum)
+    request()
       .then((rsp) => {
         if (requestGeneration !== downloadRequestGeneration.current) return;
 
@@ -348,6 +364,17 @@ export const DownloadImage = () => {
               maxLength={64}
               placeholder={t('download.sha256Placeholder')}
             />
+          </div>
+          <div>
+            <div className="mb-1 text-neutral-500">{t('download.bootMenuDesc')}</div>
+            <Button
+              className="h-10 w-full"
+              icon={<DiscIcon size={16} />}
+              onClick={downloadBootMenuImage}
+              disabled={isCancelling || status === 'in_progress'}
+            >
+              {t('download.bootMenu')}
+            </Button>
           </div>
           <div>
             <div className="mb-1 text-neutral-500">{t('download.inputfile')}</div>

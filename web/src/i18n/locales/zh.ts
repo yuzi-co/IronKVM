@@ -339,7 +339,9 @@ const zh = {
       success: '下载成功',
       checksumFailed: '下载失败：SHA-256 校验失败',
       cancel: '取消',
-      cancelFailed: '取消下载失败'
+      cancelFailed: '取消下载失败',
+      bootMenu: '启动菜单 (netboot.xyz)',
+      bootMenuDesc: '下载经过校验和验证的 netboot.xyz ISO，用于虚拟光驱'
     },
     power: {
       title: '电源',
@@ -443,6 +445,46 @@ const zh = {
         pressFailed: '按键失败：{{error}}',
         noScreenshot: '无截图',
         failed: '看门狗操作失败'
+      },
+      netboot: {
+        title: '网络启动',
+        description:
+          '从网络启动主机：通过 USB 网络链路提供 iPXE 和 KVM 上镜像的菜单，或在局域网上通过代理 DHCP 提供 netboot.xyz。',
+        addon: 'dnsmasq 和启动文件',
+        addonDesc:
+          '安装到 /data：dnsmasq 来自 Alpine，iPXE 和 netboot.xyz 来自各自的发布版本，均经过校验和验证。',
+        install: '安装',
+        installing: '正在安装，可能需要几分钟。',
+        uninstall: '卸载',
+        uninstallConfirm: '关闭网络启动并删除 dnsmasq 和启动文件？',
+        needsData: '网络启动需要挂载了 /data 分区的 IronKVM 镜像。',
+        usb: '在 USB 网络链路上',
+        usbDesc:
+          'USB 网络链路开启时，由 dnsmasq 代替 udhcpd 提供服务。主机获得唯一的地址，没有路由器也没有 DNS 服务器，并获得适合其架构的 iPXE 和 KVM 上 ISO 镜像的菜单。',
+        linkOff: 'USB 网络链路已关闭。请在 设备、USB 网络 中开启。',
+        menuUrl: '菜单',
+        leases: '主机租约',
+        noLeases: '暂无',
+        netbootxyzNote:
+          '菜单中的 netboot.xyz 从互联网加载，而 USB 链路无法访问互联网。主机需要通过另一个网络端口连接互联网。',
+        lan: '局域网代理 DHCP',
+        lanDesc:
+          '向局域网上的 PXE 客户端提供 netboot.xyz，netboot.xyz 随后从互联网加载菜单。它从不分配地址，也不提供 KVM 上的镜像。',
+        lanWarning:
+          '此局域网上的每个 PXE 客户端都会收到 netboot.xyz，而不仅是主机。请只在你管理的网络上开启。',
+        lanConfirm: '在局域网上开启代理 DHCP？',
+        lanInterface: '局域网',
+        running: '运行中',
+        stopped: '未运行',
+        images: '菜单中的镜像',
+        noImages: '镜像目录中没有 ISO 镜像。',
+        boots: '最近的启动',
+        noBoots: '主机尚未获取任何内容。',
+        log: 'dnsmasq 日志',
+        refresh: '刷新',
+        okBtn: '确认',
+        cancelBtn: '取消',
+        failed: '网络启动操作失败'
       },
       about: {
         title: '关于 NanoKVM',

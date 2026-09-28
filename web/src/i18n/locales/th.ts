@@ -340,7 +340,9 @@ const th = {
       success: 'ดาวน์โหลดสำเร็จ',
       checksumFailed: 'ดาวน์โหลดล้มเหลว: การตรวจสอบ SHA-256 ล้มเหลว',
       cancel: 'ยกเลิก',
-      cancelFailed: 'ยกเลิกการดาวน์โหลดไม่สำเร็จ'
+      cancelFailed: 'ยกเลิกการดาวน์โหลดไม่สำเร็จ',
+      bootMenu: 'เมนูบูต (netboot.xyz)',
+      bootMenuDesc: 'ดาวน์โหลด ISO ของ netboot.xyz ที่ตรวจสอบ checksum แล้วสำหรับ CD เสมือน'
     },
     power: {
       title: 'เปิด/ปิด',
@@ -446,6 +448,46 @@ const th = {
         pressFailed: 'กดปุ่มไม่สำเร็จ: {{error}}',
         noScreenshot: 'ไม่มีภาพหน้าจอ',
         failed: 'การทำงานของวอชด็อกล้มเหลว'
+      },
+      netboot: {
+        title: 'บูตผ่านเครือข่าย',
+        description:
+          'บูตโฮสต์จากเครือข่าย: iPXE และเมนูอิมเมจบน KVM ผ่านลิงก์เครือข่าย USB หรือ netboot.xyz ผ่าน proxy DHCP บน LAN',
+        addon: 'dnsmasq และไฟล์บูต',
+        addonDesc:
+          'ติดตั้งลงใน /data: dnsmasq จาก Alpine, iPXE และ netboot.xyz จากรุ่นที่เผยแพร่ แต่ละไฟล์ตรวจสอบด้วย checksum',
+        install: 'ติดตั้ง',
+        installing: 'กำลังติดตั้ง อาจใช้เวลาสักครู่',
+        uninstall: 'ถอนการติดตั้ง',
+        uninstallConfirm: 'ปิดการบูตผ่านเครือข่ายและลบ dnsmasq และไฟล์บูตหรือไม่',
+        needsData: 'การบูตผ่านเครือข่ายต้องใช้อิมเมจ IronKVM ที่เมานต์พาร์ติชัน /data แล้ว',
+        usb: 'บนลิงก์เครือข่าย USB',
+        usbDesc:
+          'ขณะที่ลิงก์เครือข่าย USB เปิดอยู่ dnsmasq จะให้บริการแทน udhcpd โฮสต์จะได้รับที่อยู่เดียวของตนโดยไม่มีเราเตอร์และไม่มีเซิร์ฟเวอร์ DNS ได้รับ iPXE ตามสถาปัตยกรรม และเมนูอิมเมจ ISO บน KVM',
+        linkOff: 'ลิงก์เครือข่าย USB ปิดอยู่ เปิดได้ที่ อุปกรณ์, เครือข่าย USB',
+        menuUrl: 'เมนู',
+        leases: 'การเช่าที่อยู่ของโฮสต์',
+        noLeases: 'ยังไม่มี',
+        netbootxyzNote:
+          'netboot.xyz ในเมนูโหลดจากอินเทอร์เน็ต ซึ่งลิงก์ USB เข้าไม่ถึง โฮสต์ต้องมีอินเทอร์เน็ตผ่านพอร์ตเครือข่ายอื่น',
+        lan: 'Proxy DHCP บน LAN',
+        lanDesc:
+          'ตอบไคลเอนต์ PXE บน LAN ด้วย netboot.xyz ซึ่งจะโหลดเมนูจากอินเทอร์เน็ต ไม่แจกที่อยู่ใด ๆ และไม่ให้บริการอิมเมจบน KVM',
+        lanWarning:
+          'ไคลเอนต์ PXE ทุกเครื่องบน LAN นี้จะได้รับ netboot.xyz ไม่ใช่เฉพาะโฮสต์ เปิดใช้เฉพาะบนเครือข่ายที่คุณควบคุมเท่านั้น',
+        lanConfirm: 'เปิด proxy DHCP บน LAN หรือไม่',
+        lanInterface: 'LAN',
+        running: 'กำลังทำงาน',
+        stopped: 'ไม่ได้ทำงาน',
+        images: 'อิมเมจในเมนู',
+        noImages: 'ไม่มีอิมเมจ ISO ในไดเรกทอรีอิมเมจ',
+        boots: 'การบูตล่าสุด',
+        noBoots: 'โฮสต์ยังไม่ได้ดึงข้อมูลใด ๆ',
+        log: 'บันทึกของ dnsmasq',
+        refresh: 'รีเฟรช',
+        okBtn: 'ยืนยัน',
+        cancelBtn: 'ยกเลิก',
+        failed: 'การดำเนินการบูตผ่านเครือข่ายล้มเหลว'
       },
       about: {
         title: 'เกี๋ยวกับ NanoKVM',
