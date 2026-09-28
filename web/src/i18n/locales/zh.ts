@@ -141,6 +141,16 @@ const zh = {
       dropdownGerman: '德语',
       dropdownFrench: '法语',
       dropdownRussian: '俄语',
+      mediaKeys: {
+        title: '媒体键',
+        mute: '静音',
+        volumeDown: '音量减',
+        volumeUp: '音量加',
+        previous: '上一曲',
+        playPause: '播放或暂停',
+        next: '下一曲',
+        stop: '停止'
+      },
       shortcut: {
         title: '快捷键',
         custom: '自定义',
@@ -305,7 +315,17 @@ const zh = {
       resetConfirm: '确认执行重启操作吗？',
       powerConfirm: '确认执行电源操作吗？',
       okBtn: '确认',
-      cancelBtn: '取消'
+      cancelBtn: '取消',
+      hostOs: '主机系统',
+      hostOsTip: '以 USB 按键发送，具体作用由主机决定。',
+      sleep: '睡眠',
+      wake: '唤醒',
+      wakeKey: '用 Shift 唤醒',
+      powerDown: '关机',
+      sleepConfirm: '让主机进入睡眠？',
+      powerDownConfirm: '向主机发送关机键？',
+      wakeTip:
+        '处于睡眠的主机常常忽略来自让它睡眠的设备的唤醒。“用 Shift 唤醒”会按下键盘按键，更多主机会响应。'
     },
     settings: {
       title: '设置',
@@ -800,6 +820,10 @@ const zh = {
     },
     fullscreen: {
       toggle: '切换全屏'
+    },
+    input: {
+      hidDisabled: '此设备已关闭 HID（/boot/disable_hid）。',
+      keyFailed: '按键发送失败。'
     },
     menu: {
       collapse: '收起',

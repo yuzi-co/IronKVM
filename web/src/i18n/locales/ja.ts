@@ -144,6 +144,16 @@ const ja = {
       dropdownGerman: 'ドイツ語',
       dropdownFrench: 'フランス語',
       dropdownRussian: 'ロシア語',
+      mediaKeys: {
+        title: 'メディアキー',
+        mute: 'ミュート',
+        volumeDown: '音量を下げる',
+        volumeUp: '音量を上げる',
+        previous: '前のトラック',
+        playPause: '再生または一時停止',
+        next: '次のトラック',
+        stop: '停止'
+      },
       shortcut: {
         title: 'ショートカット',
         custom: 'カスタム',
@@ -314,7 +324,17 @@ const ja = {
       resetConfirm: '再起動を実行しますか？',
       powerConfirm: '電源操作を実行しますか？',
       okBtn: 'はい',
-      cancelBtn: 'いいえ'
+      cancelBtn: 'いいえ',
+      hostOs: 'ホスト OS',
+      hostOsTip: 'USB キーとして送信されます。動作はホストが決めます。',
+      sleep: 'スリープ',
+      wake: 'スリープ解除',
+      wakeKey: 'Shift でスリープ解除',
+      powerDown: 'シャットダウン',
+      sleepConfirm: 'ホストをスリープさせますか？',
+      powerDownConfirm: '電源オフキーをホストに送信しますか？',
+      wakeTip:
+        'スリープ中のホストは、自分をスリープさせたデバイスからのスリープ解除を無視することがよくあります。「Shift でスリープ解除」はキーボードのキーを押すため、より多くのホストが応答します。'
     },
     settings: {
       title: '設定',
@@ -804,6 +824,10 @@ const ja = {
     },
     fullscreen: {
       toggle: '全画面表示切り替え'
+    },
+    input: {
+      hidDisabled: 'このデバイスでは HID が無効です（/boot/disable_hid）。',
+      keyFailed: 'キーを送信できませんでした。'
     },
     menu: {
       collapse: 'メニューを折りたたむ',

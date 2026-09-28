@@ -145,6 +145,16 @@ const uk = {
       dropdownGerman: 'нім',
       dropdownFrench: 'французька',
       dropdownRussian: 'рос',
+      mediaKeys: {
+        title: 'Мультимедійні клавіші',
+        mute: 'Без звуку',
+        volumeDown: 'Тихіше',
+        volumeUp: 'Гучніше',
+        previous: 'Попередній трек',
+        playPause: 'Відтворення або пауза',
+        next: 'Наступний трек',
+        stop: 'Стоп'
+      },
       shortcut: {
         title: 'Ярлики',
         custom: 'Custom',
@@ -314,7 +324,17 @@ const uk = {
       resetConfirm: 'Продовжити роботу зі скиданням?',
       powerConfirm: 'Продовжувати роботу живлення?',
       okBtn: 'Так',
-      cancelBtn: 'Ні'
+      cancelBtn: 'Ні',
+      hostOs: 'ОС хоста',
+      hostOsTip: 'Надсилаються як USB-клавіші. Що вони роблять, вирішує хост.',
+      sleep: 'Сон',
+      wake: 'Пробудження',
+      wakeKey: 'Розбудити клавішею Shift',
+      powerDown: 'Вимкнути',
+      sleepConfirm: 'Перевести хост у режим сну?',
+      powerDownConfirm: 'Надіслати хосту клавішу вимкнення?',
+      wakeTip:
+        'Сплячий хост часто ігнорує пробудження від пристрою, який його приспав. «Розбудити клавішею Shift» натискає клавішу на клавіатурі, і її приймає більше хостів.'
     },
     settings: {
       title: 'Налаштування',
@@ -798,6 +818,10 @@ const uk = {
     },
     fullscreen: {
       toggle: 'Перемикатися на повному екрані'
+    },
+    input: {
+      hidDisabled: 'HID на цьому пристрої вимкнено (/boot/disable_hid).',
+      keyFailed: 'Не вдалося надіслати клавішу.'
     },
     menu: {
       collapse: 'Згорнути меню',

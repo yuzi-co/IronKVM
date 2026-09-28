@@ -147,6 +147,16 @@ const nl = {
       dropdownGerman: 'Duits',
       dropdownFrench: 'Frans',
       dropdownRussian: 'Russisch',
+      mediaKeys: {
+        title: 'Mediatoetsen',
+        mute: 'Dempen',
+        volumeDown: 'Volume omlaag',
+        volumeUp: 'Volume omhoog',
+        previous: 'Vorige track',
+        playPause: 'Afspelen of pauzeren',
+        next: 'Volgende track',
+        stop: 'Stoppen'
+      },
       shortcut: {
         title: 'Snelkoppelingen',
         custom: 'Aangepast',
@@ -316,7 +326,17 @@ const nl = {
       resetConfirm: 'Doorgaan met resetten?',
       powerConfirm: 'Doorgaan met stroomvoorziening?',
       okBtn: 'Ja',
-      cancelBtn: 'Nee'
+      cancelBtn: 'Nee',
+      hostOs: 'Host-OS',
+      hostOsTip: 'Verzonden als USB-toetsen. De host bepaalt wat ze doen.',
+      sleep: 'Slaapstand',
+      wake: 'Wekken',
+      wakeKey: 'Wekken met Shift',
+      powerDown: 'Uitschakelen',
+      sleepConfirm: 'De host in slaapstand zetten?',
+      powerDownConfirm: 'De uitschakeltoets naar de host sturen?',
+      wakeTip:
+        'Een slapende host negeert Wekken vaak van het apparaat dat hem in slaap bracht. Wekken met Shift drukt een toets op het toetsenbord in, die meer hosts accepteren.'
     },
     settings: {
       title: 'Instellingen',
@@ -805,6 +825,10 @@ const nl = {
     },
     fullscreen: {
       toggle: 'Volledig scherm schakelen'
+    },
+    input: {
+      hidDisabled: 'HID is uitgeschakeld op dit apparaat (/boot/disable_hid).',
+      keyFailed: 'De toets kon niet worden verzonden.'
     },
     menu: {
       collapse: 'Menu samenvouwen',

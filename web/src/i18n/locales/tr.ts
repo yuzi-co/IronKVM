@@ -145,6 +145,16 @@ const tr = {
       dropdownGerman: 'Almanca',
       dropdownFrench: 'Fransızca',
       dropdownRussian: 'Rusça',
+      mediaKeys: {
+        title: 'Medya tuşları',
+        mute: 'Sessiz',
+        volumeDown: 'Sesi azalt',
+        volumeUp: 'Sesi artır',
+        previous: 'Önceki parça',
+        playPause: 'Oynat veya duraklat',
+        next: 'Sonraki parça',
+        stop: 'Durdur'
+      },
       shortcut: {
         title: 'Kısayollar',
         custom: 'Özel',
@@ -312,7 +322,17 @@ const tr = {
       resetConfirm: 'Sıfırlama işlemine devam etmek istediğinizden emin misiniz?',
       powerConfirm: 'Güç işlemine devam etmek istediğinizden emin misiniz?',
       okBtn: 'Evet',
-      cancelBtn: 'Hayır'
+      cancelBtn: 'Hayır',
+      hostOs: 'Ana makine işletim sistemi',
+      hostOsTip: 'USB tuşları olarak gönderilir. Ne yapacaklarına ana makine karar verir.',
+      sleep: 'Uyku',
+      wake: 'Uyandır',
+      wakeKey: 'Shift ile uyandır',
+      powerDown: 'Kapat',
+      sleepConfirm: 'Ana makine uyku moduna alınsın mı?',
+      powerDownConfirm: 'Kapatma tuşu ana makineye gönderilsin mi?',
+      wakeTip:
+        'Uykudaki bir ana makine, onu uyutan cihazdan gelen Uyandır komutunu çoğu zaman yok sayar. Shift ile uyandır klavyede bir tuşa basar ve bunu daha fazla ana makine kabul eder.'
     },
     settings: {
       title: 'Ayarlar',
@@ -799,6 +819,10 @@ const tr = {
     },
     fullscreen: {
       toggle: 'Tam ekrana geç'
+    },
+    input: {
+      hidDisabled: 'Bu cihazda HID kapalı (/boot/disable_hid).',
+      keyFailed: 'Tuş gönderilemedi.'
     },
     menu: {
       collapse: 'Menüyü küçült',

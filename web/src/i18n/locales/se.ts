@@ -141,6 +141,16 @@ const se = {
       dropdownGerman: 'Tyska',
       dropdownFrench: 'Franska',
       dropdownRussian: 'ryska',
+      mediaKeys: {
+        title: 'Medieknappar',
+        mute: 'Ljud av',
+        volumeDown: 'Sänk volymen',
+        volumeUp: 'Höj volymen',
+        previous: 'Föregående spår',
+        playPause: 'Spela upp eller pausa',
+        next: 'Nästa spår',
+        stop: 'Stopp'
+      },
       shortcut: {
         title: 'Genvägar',
         custom: 'Anpassad',
@@ -309,7 +319,17 @@ const se = {
       resetConfirm: 'Utföra omstart?',
       powerConfirm: 'Utföra strömåtgärd?',
       okBtn: 'Ja',
-      cancelBtn: 'Nej'
+      cancelBtn: 'Nej',
+      hostOs: 'Värdens OS',
+      hostOsTip: 'Skickas som USB-tangenter. Värden bestämmer vad de gör.',
+      sleep: 'Viloläge',
+      wake: 'Väck',
+      wakeKey: 'Väck med Shift',
+      powerDown: 'Stäng av',
+      sleepConfirm: 'Försätta värden i viloläge?',
+      powerDownConfirm: 'Skicka avstängningstangenten till värden?',
+      wakeTip:
+        'En värd i viloläge ignorerar ofta Väck från enheten som försatte den i viloläge. Väck med Shift trycker på en tangent på tangentbordet, vilket fler värdar godtar.'
     },
     settings: {
       title: 'Inställningar',
@@ -794,6 +814,10 @@ const se = {
     },
     fullscreen: {
       toggle: 'Växla fullskärm'
+    },
+    input: {
+      hidDisabled: 'HID är avstängt på den här enheten (/boot/disable_hid).',
+      keyFailed: 'Tangenten kunde inte skickas.'
     },
     menu: {
       collapse: 'Fäll ihop menyn',

@@ -145,6 +145,16 @@ const nb = {
       dropdownGerman: 'tysk',
       dropdownFrench: 'Fransk',
       dropdownRussian: 'russisk',
+      mediaKeys: {
+        title: 'Medietaster',
+        mute: 'Demp',
+        volumeDown: 'Lavere volum',
+        volumeUp: 'Høyere volum',
+        previous: 'Forrige spor',
+        playPause: 'Spill av eller pause',
+        next: 'Neste spor',
+        stop: 'Stopp'
+      },
       shortcut: {
         title: 'Snarveier',
         custom: 'Egendefinert',
@@ -313,7 +323,17 @@ const nb = {
       resetConfirm: 'Fortsette tilbakestilling?',
       powerConfirm: 'Fortsette strømdrift?',
       okBtn: 'Ja',
-      cancelBtn: 'Nei'
+      cancelBtn: 'Nei',
+      hostOs: 'Vertens OS',
+      hostOsTip: 'Sendes som USB-taster. Verten bestemmer hva de gjør.',
+      sleep: 'Hvilemodus',
+      wake: 'Vekk',
+      wakeKey: 'Vekk med Shift',
+      powerDown: 'Slå av',
+      sleepConfirm: 'Sette verten i hvilemodus?',
+      powerDownConfirm: 'Sende av-tasten til verten?',
+      wakeTip:
+        'En vert i hvilemodus ignorerer ofte Vekk fra enheten som satte den i hvile. Vekk med Shift trykker en tast på tastaturet, som flere verter godtar.'
     },
     settings: {
       title: 'Innstillinger',
@@ -797,6 +817,10 @@ const nb = {
     },
     fullscreen: {
       toggle: 'Veksle fullskjerm'
+    },
+    input: {
+      hidDisabled: 'HID er slått av på denne enheten (/boot/disable_hid).',
+      keyFailed: 'Tasten kunne ikke sendes.'
     },
     menu: {
       collapse: 'Skjul meny',

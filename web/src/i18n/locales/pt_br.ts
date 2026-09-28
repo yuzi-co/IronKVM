@@ -144,6 +144,16 @@ const pt_br = {
       dropdownGerman: 'Alemão',
       dropdownFrench: 'Francês',
       dropdownRussian: 'Russo',
+      mediaKeys: {
+        title: 'Teclas de mídia',
+        mute: 'Mudo',
+        volumeDown: 'Diminuir volume',
+        volumeUp: 'Aumentar volume',
+        previous: 'Faixa anterior',
+        playPause: 'Reproduzir ou pausar',
+        next: 'Próxima faixa',
+        stop: 'Parar'
+      },
       shortcut: {
         title: 'Atalhos',
         custom: 'Personalizado',
@@ -313,7 +323,17 @@ const pt_br = {
       resetConfirm: 'Prosseguir com a operação de redefinição?',
       powerConfirm: 'Prosseguir com a operação de energia?',
       okBtn: 'Sim',
-      cancelBtn: 'Não'
+      cancelBtn: 'Não',
+      hostOs: 'SO do host',
+      hostOsTip: 'Enviadas como teclas USB. O host decide o que elas fazem.',
+      sleep: 'Suspender',
+      wake: 'Despertar',
+      wakeKey: 'Despertar com Shift',
+      powerDown: 'Desligar',
+      sleepConfirm: 'Suspender o host?',
+      powerDownConfirm: 'Enviar a tecla de desligar ao host?',
+      wakeTip:
+        'Um host suspenso costuma ignorar Despertar vindo do dispositivo que o suspendeu. Despertar com Shift pressiona uma tecla do teclado, que mais hosts aceitam.'
     },
     settings: {
       title: 'Configurações',
@@ -799,6 +819,10 @@ const pt_br = {
     },
     fullscreen: {
       toggle: 'Alternar Tela Cheia'
+    },
+    input: {
+      hidDisabled: 'O HID está desativado neste dispositivo (/boot/disable_hid).',
+      keyFailed: 'Não foi possível enviar a tecla.'
     },
     menu: {
       collapse: 'Recolher Menu',

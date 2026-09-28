@@ -144,6 +144,16 @@ const id = {
       dropdownGerman: 'Jerman',
       dropdownFrench: 'Perancis',
       dropdownRussian: 'Rusia',
+      mediaKeys: {
+        title: 'Tombol media',
+        mute: 'Bisukan',
+        volumeDown: 'Kecilkan volume',
+        volumeUp: 'Besarkan volume',
+        previous: 'Lagu sebelumnya',
+        playPause: 'Putar atau jeda',
+        next: 'Lagu berikutnya',
+        stop: 'Hentikan'
+      },
       shortcut: {
         title: 'Pintasan',
         custom: 'Adat',
@@ -313,7 +323,17 @@ const id = {
       resetConfirm: 'Lanjutkan operasi penyetelan ulang?',
       powerConfirm: 'Lanjutkan pengoperasian listrik?',
       okBtn: 'Ya',
-      cancelBtn: 'Tidak'
+      cancelBtn: 'Tidak',
+      hostOs: 'OS host',
+      hostOsTip: 'Dikirim sebagai tombol USB. Host yang menentukan fungsinya.',
+      sleep: 'Tidur',
+      wake: 'Bangunkan',
+      wakeKey: 'Bangunkan dengan Shift',
+      powerDown: 'Matikan',
+      sleepConfirm: 'Tidurkan host?',
+      powerDownConfirm: 'Kirim tombol matikan ke host?',
+      wakeTip:
+        'Host yang sedang tidur sering mengabaikan Bangunkan dari perangkat yang menidurkannya. Bangunkan dengan Shift menekan tombol keyboard, yang diterima lebih banyak host.'
     },
     settings: {
       title: 'Pengaturan',
@@ -798,6 +818,10 @@ const id = {
     },
     fullscreen: {
       toggle: 'Beralih Layar Penuh'
+    },
+    input: {
+      hidDisabled: 'HID dinonaktifkan di perangkat ini (/boot/disable_hid).',
+      keyFailed: 'Tombol tidak dapat dikirim.'
     },
     menu: {
       collapse: 'Tutup Menu',

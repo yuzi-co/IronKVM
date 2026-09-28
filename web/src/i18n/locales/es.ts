@@ -145,6 +145,16 @@ const es = {
       dropdownGerman: 'Alemán',
       dropdownFrench: 'Francés',
       dropdownRussian: 'ruso',
+      mediaKeys: {
+        title: 'Teclas multimedia',
+        mute: 'Silenciar',
+        volumeDown: 'Bajar volumen',
+        volumeUp: 'Subir volumen',
+        previous: 'Pista anterior',
+        playPause: 'Reproducir o pausar',
+        next: 'Pista siguiente',
+        stop: 'Detener'
+      },
       shortcut: {
         title: 'Atajos',
         custom: 'Personalizado',
@@ -314,7 +324,17 @@ const es = {
       resetConfirm: '¿Desea proceder con la operación de reinicio?',
       powerConfirm: '¿Desea proceder con la operación de encendido?',
       okBtn: 'Sí',
-      cancelBtn: 'No'
+      cancelBtn: 'No',
+      hostOs: 'SO del host',
+      hostOsTip: 'Se envían como teclas USB. El host decide qué hacen.',
+      sleep: 'Suspender',
+      wake: 'Despertar',
+      wakeKey: 'Despertar con Mayús',
+      powerDown: 'Apagar',
+      sleepConfirm: '¿Suspender el host?',
+      powerDownConfirm: '¿Enviar la tecla de apagado al host?',
+      wakeTip:
+        'Un host suspendido suele ignorar Despertar del dispositivo que lo suspendió. Despertar con Mayús pulsa una tecla del teclado, que más hosts aceptan.'
     },
     settings: {
       title: 'Ajustes',
@@ -807,6 +827,10 @@ const es = {
     },
     fullscreen: {
       toggle: 'Activar/Desactivar pantalla completa'
+    },
+    input: {
+      hidDisabled: 'El HID está desactivado en este dispositivo (/boot/disable_hid).',
+      keyFailed: 'No se pudo enviar la tecla.'
     },
     menu: {
       collapse: 'Colapsar menú',

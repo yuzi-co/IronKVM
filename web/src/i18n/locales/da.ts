@@ -144,6 +144,16 @@ const da = {
       dropdownGerman: 'tysk',
       dropdownFrench: 'Fransk',
       dropdownRussian: 'russisk',
+      mediaKeys: {
+        title: 'Medietaster',
+        mute: 'Slå lyden fra',
+        volumeDown: 'Skru ned',
+        volumeUp: 'Skru op',
+        previous: 'Forrige nummer',
+        playPause: 'Afspil eller pause',
+        next: 'Næste nummer',
+        stop: 'Stop'
+      },
       shortcut: {
         title: 'Genveje',
         custom: 'Brugerdefineret',
@@ -312,7 +322,17 @@ const da = {
       resetConfirm: 'Fortsæt med nulstilling?',
       powerConfirm: 'Fortsæt strømdrift?',
       okBtn: 'Ja',
-      cancelBtn: 'Annuller'
+      cancelBtn: 'Annuller',
+      hostOs: 'Værtens OS',
+      hostOsTip: 'Sendes som USB-taster. Værten bestemmer, hvad de gør.',
+      sleep: 'Dvale',
+      wake: 'Væk',
+      wakeKey: 'Væk med Shift',
+      powerDown: 'Sluk',
+      sleepConfirm: 'Sæt værten i dvale?',
+      powerDownConfirm: 'Send sluk-tasten til værten?',
+      wakeTip:
+        'En vært i dvale ignorerer ofte Væk fra den enhed, der satte den i dvale. Væk med Shift trykker på en tast på tastaturet, som flere værter reagerer på.'
     },
     settings: {
       title: 'Indstillinger',
@@ -797,6 +817,10 @@ const da = {
     },
     fullscreen: {
       toggle: 'Skift fuldskærm'
+    },
+    input: {
+      hidDisabled: 'HID er slået fra på denne enhed (/boot/disable_hid).',
+      keyFailed: 'Tasten kunne ikke sendes.'
     },
     menu: {
       collapse: 'Skjul menu',

@@ -142,6 +142,16 @@ const ko = {
       dropdownGerman: '독일어',
       dropdownFrench: '프랑스어',
       dropdownRussian: '러시아어',
+      mediaKeys: {
+        title: '미디어 키',
+        mute: '음소거',
+        volumeDown: '볼륨 낮추기',
+        volumeUp: '볼륨 높이기',
+        previous: '이전 트랙',
+        playPause: '재생 또는 일시정지',
+        next: '다음 트랙',
+        stop: '정지'
+      },
       shortcut: {
         title: '바로가기',
         custom: '관습',
@@ -308,7 +318,17 @@ const ko = {
       resetConfirm: '리셋 작업을 진행하시겠습니까?',
       powerConfirm: '전원 작업을 진행하시겠습니까?',
       okBtn: '네',
-      cancelBtn: '아니오'
+      cancelBtn: '아니오',
+      hostOs: '호스트 OS',
+      hostOsTip: 'USB 키로 전송됩니다. 동작은 호스트가 결정합니다.',
+      sleep: '절전',
+      wake: '깨우기',
+      wakeKey: 'Shift로 깨우기',
+      powerDown: '전원 끄기',
+      sleepConfirm: '호스트를 절전 모드로 전환할까요?',
+      powerDownConfirm: '호스트에 전원 끄기 키를 보낼까요?',
+      wakeTip:
+        '절전 중인 호스트는 자신을 절전시킨 장치의 깨우기를 무시하는 경우가 많습니다. Shift로 깨우기는 키보드 키를 누르며, 더 많은 호스트가 이를 받아들입니다.'
     },
     settings: {
       title: '설정',
@@ -790,6 +810,10 @@ const ko = {
     },
     fullscreen: {
       toggle: '전체 화면 전환'
+    },
+    input: {
+      hidDisabled: '이 장치에서 HID가 꺼져 있습니다 (/boot/disable_hid).',
+      keyFailed: '키를 보내지 못했습니다.'
     },
     menu: {
       collapse: '메뉴 접기',

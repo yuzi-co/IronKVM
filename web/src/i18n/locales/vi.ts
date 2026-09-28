@@ -144,6 +144,16 @@ const vi = {
       dropdownGerman: 'Tiếng Đức',
       dropdownFrench: 'Tiếng Pháp',
       dropdownRussian: 'Tiếng Nga',
+      mediaKeys: {
+        title: 'Phím đa phương tiện',
+        mute: 'Tắt tiếng',
+        volumeDown: 'Giảm âm lượng',
+        volumeUp: 'Tăng âm lượng',
+        previous: 'Bài trước',
+        playPause: 'Phát hoặc tạm dừng',
+        next: 'Bài tiếp theo',
+        stop: 'Dừng'
+      },
       shortcut: {
         title: 'Phím tắt',
         custom: 'Tùy chỉnh',
@@ -311,7 +321,17 @@ const vi = {
       resetConfirm: 'Tiến hành thao tác đặt lại?',
       powerConfirm: 'Tiếp tục vận hành nguồn điện?',
       okBtn: 'Có',
-      cancelBtn: 'Không'
+      cancelBtn: 'Không',
+      hostOs: 'HĐH của máy chủ',
+      hostOsTip: 'Được gửi dưới dạng phím USB. Máy chủ quyết định chúng làm gì.',
+      sleep: 'Ngủ',
+      wake: 'Đánh thức',
+      wakeKey: 'Đánh thức bằng Shift',
+      powerDown: 'Tắt máy',
+      sleepConfirm: 'Cho máy chủ vào chế độ ngủ?',
+      powerDownConfirm: 'Gửi phím tắt nguồn đến máy chủ?',
+      wakeTip:
+        'Máy chủ đang ngủ thường bỏ qua lệnh Đánh thức từ thiết bị đã cho nó ngủ. Đánh thức bằng Shift nhấn một phím trên bàn phím, điều mà nhiều máy chủ chấp nhận hơn.'
     },
     settings: {
       title: 'Cài đặt',
@@ -798,6 +818,10 @@ const vi = {
     },
     fullscreen: {
       toggle: 'Chuyển đổi toàn màn hình'
+    },
+    input: {
+      hidDisabled: 'HID đã bị tắt trên thiết bị này (/boot/disable_hid).',
+      keyFailed: 'Không thể gửi phím.'
     },
     menu: {
       collapse: 'Thu gọn Menu',

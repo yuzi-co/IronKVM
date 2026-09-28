@@ -148,6 +148,16 @@ const de = {
       dropdownGerman: 'Deutsch',
       dropdownFrench: 'Französisch',
       dropdownRussian: 'Russisch',
+      mediaKeys: {
+        title: 'Medientasten',
+        mute: 'Stumm',
+        volumeDown: 'Leiser',
+        volumeUp: 'Lauter',
+        previous: 'Vorheriger Titel',
+        playPause: 'Wiedergabe oder Pause',
+        next: 'Nächster Titel',
+        stop: 'Stopp'
+      },
       shortcut: {
         title: 'Verknüpfungen',
         custom: 'Benutzerdefiniert',
@@ -318,7 +328,17 @@ const de = {
       resetConfirm: 'Reset-Aktion durchführen?',
       powerConfirm: 'Power-Aktion durchführen?',
       okBtn: 'Ja',
-      cancelBtn: 'Nein'
+      cancelBtn: 'Nein',
+      hostOs: 'Host-Betriebssystem',
+      hostOsTip: 'Werden als USB-Tasten gesendet. Was sie bewirken, entscheidet der Host.',
+      sleep: 'Ruhezustand',
+      wake: 'Aufwecken',
+      wakeKey: 'Mit Umschalttaste aufwecken',
+      powerDown: 'Herunterfahren',
+      sleepConfirm: 'Host in den Ruhezustand versetzen?',
+      powerDownConfirm: 'Die Ausschalttaste an den Host senden?',
+      wakeTip:
+        'Ein schlafender Host ignoriert Aufwecken oft von dem Gerät, das ihn schlafen gelegt hat. Mit Umschalttaste aufwecken drückt eine Taste auf der Tastatur, die mehr Hosts annehmen.'
     },
     settings: {
       title: 'Einstellungen',
@@ -811,6 +831,10 @@ const de = {
     },
     fullscreen: {
       toggle: 'Vollbild ein/aus'
+    },
+    input: {
+      hidDisabled: 'HID ist auf diesem Gerät ausgeschaltet (/boot/disable_hid).',
+      keyFailed: 'Die Taste konnte nicht gesendet werden.'
     },
     menu: {
       collapse: 'Menu einblenden',

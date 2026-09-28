@@ -146,6 +146,16 @@ const it = {
       dropdownGerman: 'Tedesco',
       dropdownFrench: 'Francese',
       dropdownRussian: 'Russo',
+      mediaKeys: {
+        title: 'Tasti multimediali',
+        mute: 'Muto',
+        volumeDown: 'Abbassa volume',
+        volumeUp: 'Alza volume',
+        previous: 'Traccia precedente',
+        playPause: 'Riproduci o pausa',
+        next: 'Traccia successiva',
+        stop: 'Stop'
+      },
       shortcut: {
         title: 'Scorciatoie',
         custom: 'Personalizzato',
@@ -315,7 +325,17 @@ const it = {
       resetConfirm: "Procedere con l'operazione di ripristino?",
       powerConfirm: "Procedere con l'operazione di accensione?",
       okBtn: 'Sì',
-      cancelBtn: 'No'
+      cancelBtn: 'No',
+      hostOs: "SO dell'host",
+      hostOsTip: "Inviati come tasti USB. È l'host a decidere cosa fanno.",
+      sleep: 'Sospendi',
+      wake: 'Riattiva',
+      wakeKey: 'Riattiva con Maiusc',
+      powerDown: 'Spegni',
+      sleepConfirm: "Sospendere l'host?",
+      powerDownConfirm: "Inviare il tasto di spegnimento all'host?",
+      wakeTip:
+        'Un host sospeso spesso ignora Riattiva dal dispositivo che lo ha sospeso. Riattiva con Maiusc preme un tasto della tastiera, che più host accettano.'
     },
     settings: {
       title: 'Impostazioni',
@@ -805,6 +825,10 @@ const it = {
     },
     fullscreen: {
       toggle: 'Attiva/disattiva schermo intero'
+    },
+    input: {
+      hidDisabled: "L'HID è disattivato su questo dispositivo (/boot/disable_hid).",
+      keyFailed: 'Impossibile inviare il tasto.'
     },
     menu: {
       collapse: 'Comprimi menu',
