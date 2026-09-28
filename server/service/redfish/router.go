@@ -72,6 +72,16 @@ type Deps struct {
 	UUID string
 	// Now is the clock the session timeout runs on. Nil means time.Now.
 	Now func() time.Time
+
+	// Enabled reports the redfish.enabled setting. It is read on every
+	// request, so the switch needs no restart. Nil means always on.
+	Enabled func() bool
+	// SetEnabled saves the setting and applies it: Enabled reports the new
+	// value once it returns nil.
+	SetEnabled func(on bool) error
+	// HTTPS reports whether the board serves over HTTPS, which most Redfish
+	// clients need.
+	HTTPS func() bool
 }
 
 // The buttons PressButton accepts. They are the names service/vm uses.
@@ -111,6 +121,8 @@ type Service struct {
 	// resetMu serializes Reset actions from the LED read to the settle time
 	// after the press.
 	resetMu sync.Mutex
+	// switchMu serializes changes to the enabled setting.
+	switchMu sync.Mutex
 }
 
 func New(deps Deps) *Service {
@@ -120,17 +132,24 @@ func New(deps Deps) *Service {
 	if deps.PowerLEDConnected == nil {
 		deps.PowerLEDConnected = func() bool { return true }
 	}
+	if deps.Enabled == nil {
+		deps.Enabled = func() bool { return true }
+	}
+	if deps.HTTPS == nil {
+		deps.HTTPS = func() bool { return false }
+	}
 
 	return &Service{deps: deps, sessions: newSessionStore(deps.Now), credentials: newCredentialCache(deps.Now)}
 }
 
 // Register adds the /redfish routes to r. It also sets r's NoRoute handler,
 // which answers unknown /redfish paths with a Redfish error and leaves every
-// other path to gin's default 404.
+// other path to gin's default 404. While the service is off, every /redfish
+// path answers a plain 404.
 func (s *Service) Register(r *gin.Engine) {
 	r.NoRoute(s.notFoundUnderRedfish)
 
-	g := r.Group("", s.authenticate)
+	g := r.Group("", s.whenEnabled, s.authenticate)
 
 	route(g, "/redfish", map[string]gin.HandlerFunc{http.MethodGet: versions})
 	route(g, "/redfish/v1", map[string]gin.HandlerFunc{http.MethodGet: s.serviceRoot})
@@ -239,11 +258,33 @@ func (s *Service) notFoundUnderRedfish(c *gin.Context) {
 	if p != "/redfish" && !strings.HasPrefix(p, "/redfish/") {
 		return
 	}
+	s.whenEnabled(c)
+	if c.IsAborted() {
+		return
+	}
 	s.authenticate(c)
 	if c.IsAborted() {
 		return
 	}
 	notFound(c)
+}
+
+func (s *Service) enabled() bool {
+	return s.deps.Enabled()
+}
+
+// whenEnabled answers 404 while the service is off, before any credential is
+// looked at. The body is gin's own, so an off service looks like none.
+func (s *Service) whenEnabled(c *gin.Context) {
+	if s.enabled() {
+		return
+	}
+	disabledNotFound(c)
+}
+
+func disabledNotFound(c *gin.Context) {
+	c.String(http.StatusNotFound, "404 page not found")
+	c.Abort()
 }
 
 func notFound(c *gin.Context) {

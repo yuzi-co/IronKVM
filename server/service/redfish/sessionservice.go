@@ -100,6 +100,14 @@ func (s *Service) createSession(c *gin.Context) {
 		writeError(c, http.StatusInternalServerError, "GeneralError", "could not create a session")
 		return
 	}
+	// The service may have been turned off during the password check, after
+	// its sessions were ended. Checked after the session exists, this cannot
+	// miss a switch: SetSettings turns the service off before it ends them.
+	if !s.enabled() {
+		s.sessions.remove(sess.id)
+		disabledNotFound(c)
+		return
+	}
 
 	c.Header("X-Auth-Token", token)
 	c.Header("Location", sessionsPath+"/"+sess.id)

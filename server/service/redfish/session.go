@@ -168,6 +168,14 @@ func (s *sessionStore) remove(id string) bool {
 	return false
 }
 
+// removeAll ends every session.
+func (s *sessionStore) removeAll() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.sessions = nil
+}
+
 func (s *sessionStore) pruneLocked(now time.Time) {
 	kept := s.sessions[:0]
 	for _, candidate := range s.sessions {
