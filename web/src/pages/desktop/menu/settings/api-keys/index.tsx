@@ -7,6 +7,10 @@ import { useTranslation } from 'react-i18next';
 import * as api from '@/api/auth.ts';
 import type { APIKey, CreatedAPIKey } from '@/api/auth.ts';
 import { writeClipboardText } from '@/lib/clipboard.ts';
+import { describeFailure } from '@/lib/feedback.ts';
+import { getBaseUrl, getHostname, getPort } from '@/lib/service.ts';
+
+import { CopyBlock, CopyRow } from '../components/copy-button.tsx';
 
 type CreateValues = {
   name: string;
@@ -19,6 +23,24 @@ function formatCreatedAt(createdAt: number) {
   return createdAt ? new Date(createdAt * 1000).toLocaleString() : '-';
 }
 
+// scrapeConfigFor is a Prometheus job for this board, as server/router/metrics.go
+// describes it: the key goes in the authorization block, which Prometheus sends
+// as a Bearer token. Over https the board's own certificate is self-signed, so
+// the job skips verification until a trusted one is installed.
+function scrapeConfigFor(https: boolean, target: string) {
+  const lines = [
+    'scrape_configs:',
+    '  - job_name: ironkvm',
+    `    scheme: ${https ? 'https' : 'http'}`,
+    '    metrics_path: /api/metrics',
+    '    authorization:',
+    '      credentials: <api key>'
+  ];
+  if (https) lines.push('    tls_config:', '      insecure_skip_verify: true');
+  lines.push('    static_configs:', `      - targets: ['${target}']`);
+  return lines.join('\n');
+}
+
 export const APIKeys = () => {
   const { t } = useTranslation();
   const { account } = useAuth();
@@ -27,6 +49,12 @@ export const APIKeys = () => {
   const isAdmin = account.role === 'admin';
 
   const [messageApi, messageHolder] = message.useMessage();
+
+  const metricsUrl = `${getBaseUrl('http')}/api/metrics`;
+  const scrapeConfig = scrapeConfigFor(
+    window.location.protocol === 'https:',
+    `${getHostname()}:${getPort()}`
+  );
   const [modal, modalHolder] = Modal.useModal();
   const [createForm] = Form.useForm<CreateValues>();
 
@@ -47,13 +75,13 @@ export const APIKeys = () => {
       api
         .getAPIKeys()
         .then((rsp) => {
-          if (rsp.code !== 0) throw new Error(rsp.msg);
+          if (rsp.code !== 0) throw rsp;
 
           const listed: APIKey[] = Array.isArray(rsp.data?.keys) ? rsp.data.keys : [];
           setKeys([...listed].sort((a, b) => b.createdAt - a.createdAt));
         })
-        .catch(() => {
-          messageApi.error(t('settings.apiKeys.loadFailed'));
+        .catch((err) => {
+          messageApi.error(describeFailure(err, t('settings.apiKeys.loadFailed')));
         })
         .finally(() => {
           setIsLoading(false);
@@ -69,14 +97,14 @@ export const APIKeys = () => {
     setIsCreating(true);
     try {
       const rsp = await api.createAPIKey(values.name.trim());
-      if (rsp.code !== 0) throw new Error(rsp.msg);
+      if (rsp.code !== 0) throw rsp;
 
       createForm.resetFields();
       setIsCopied(false);
       setCreatedKey(rsp.data as CreatedAPIKey);
       await loadKeys();
-    } catch {
-      messageApi.error(t('settings.apiKeys.createFailed'));
+    } catch (err) {
+      messageApi.error(describeFailure(err, t('settings.apiKeys.createFailed')));
     } finally {
       setIsCreating(false);
     }
@@ -98,10 +126,10 @@ export const APIKeys = () => {
       onOk: async () => {
         try {
           const rsp = await api.revokeAPIKey(key.id);
-          if (rsp.code !== 0) throw new Error(rsp.msg);
+          if (rsp.code !== 0) throw rsp;
           messageApi.success(t('settings.apiKeys.revoked'));
-        } catch {
-          messageApi.error(t('settings.apiKeys.revokeFailed'));
+        } catch (err) {
+          messageApi.error(describeFailure(err, t('settings.apiKeys.revokeFailed')));
         }
         await loadKeys();
       }
@@ -131,7 +159,10 @@ export const APIKeys = () => {
       <Divider className="opacity-50" />
 
       <div className="flex flex-col space-y-6">
-        <span className="text-sm text-neutral-400">{t('settings.apiKeys.description')}</span>
+        <div className="flex flex-col space-y-1">
+          <span className="text-sm text-neutral-400">{t('settings.apiKeys.description')}</span>
+          <span className="text-xs text-neutral-500">{t('settings.apiKeys.mcpNote')}</span>
+        </div>
 
         <Form<CreateValues>
           form={createForm}
@@ -191,6 +222,15 @@ export const APIKeys = () => {
               </div>
             ))
           )}
+        </div>
+
+        <div className="flex flex-col space-y-3">
+          <span className="text-sm font-medium">{t('settings.apiKeys.monitoring')}</span>
+          <span className="text-xs text-neutral-500">{t('settings.apiKeys.monitoringDesc')}</span>
+          <div className="rounded-xl border border-neutral-700/50 bg-neutral-800/40 px-4 py-3 text-sm">
+            <CopyRow label={t('settings.apiKeys.metricsUrl')} value={metricsUrl} />
+          </div>
+          <CopyBlock title={t('settings.apiKeys.scrapeConfig')} text={scrapeConfig} />
         </div>
       </div>
 

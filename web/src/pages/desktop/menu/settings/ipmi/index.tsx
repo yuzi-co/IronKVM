@@ -1,14 +1,21 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, Button, Divider, Input, message, Modal, Switch, Tag } from 'antd';
+import { useAuth } from '@/contexts/auth.ts';
+import { Alert, Button, Divider, Input, message, Modal, Switch, Tag, Tooltip } from 'antd';
 import { CheckIcon, CopyIcon, DicesIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/ipmi.ts';
 import type { IpmiSettings, IpmiUser } from '@/api/ipmi.ts';
 import { writeClipboardText } from '@/lib/clipboard.ts';
+import { describeFailure } from '@/lib/feedback.ts';
 import { getHostname } from '@/lib/service.ts';
 
 import { PowerLedSetting } from '../../power/power-led-setting.tsx';
+import { CopyBlock } from '../components/copy-button.tsx';
+import { StatusTag } from '../components/status-tag.tsx';
+
+// The port ipmitool assumes when -p is not given.
+const defaultPort = 623;
 
 const minPasswordLength = 12;
 const maxPasswordLength = 20;
@@ -48,17 +55,21 @@ function passwordError(password: string) {
 // power LED allows, and the IPMI password of each account.
 export const Ipmi = () => {
   const { t } = useTranslation();
+  const { account } = useAuth();
   const [modal, contextHolder] = Modal.useModal();
   const [settings, setSettings] = useState<IpmiSettings | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [isCopied, setIsCopied] = useState(false);
 
   const [editing, setEditing] = useState<IpmiUser | null>(null);
   const [password, setPassword] = useState('');
   const [isPasswordCopied, setIsPasswordCopied] = useState(false);
   const [isSavingPassword, setIsSavingPassword] = useState(false);
 
-  const example = `ipmitool -I lanplus -H ${getHostname()} -U <user> -P <password> power status`;
+  const port = settings?.port ?? defaultPort;
+  const portFlag = port !== defaultPort ? ` -p ${port}` : '';
+  const example = `ipmitool -I lanplus -H ${getHostname()}${portFlag} -U ${account.username} -P <password> power status`;
+  // An account IPMI can log in with: enabled, a name that fits, a password.
+  const canLogIn = (settings?.users ?? []).some((u) => u.enabled && u.nameFits && u.hasPassword);
   const error = password ? passwordError(password) : '';
 
   const getSettings = useCallback(() => {
@@ -66,12 +77,12 @@ export const Ipmi = () => {
       .getIpmiSettings()
       .then((rsp) => {
         if (rsp.code !== 0) {
-          message.error(rsp.msg || t('settings.ipmi.failed'));
+          message.error(describeFailure(rsp, t('settings.ipmi.failed')));
           return;
         }
         setSettings(rsp.data);
       })
-      .catch(() => message.error(t('settings.ipmi.failed')));
+      .catch((err) => message.error(describeFailure(err, t('settings.ipmi.failed'))));
   }, [t]);
 
   useEffect(() => {
@@ -84,23 +95,30 @@ export const Ipmi = () => {
       .setIpmiEnabled(enabled)
       .then((rsp) => {
         if (rsp.code !== 0) {
-          message.error(rsp.msg || t('settings.ipmi.failed'));
+          message.error(describeFailure(rsp, t('settings.ipmi.failed')));
           return;
         }
         setSettings((current) => (current ? { ...current, enabled } : current));
+        message.success(t(enabled ? 'feedback.enabled' : 'feedback.disabled', { name: 'IPMI' }));
       })
-      .catch(() => message.error(t('settings.ipmi.failed')))
+      .catch((err) => message.error(describeFailure(err, t('settings.ipmi.failed'))))
       .finally(() => setIsSaving(false));
   }
 
-  async function copy(text: string, setCopied: (copied: boolean) => void) {
+  // The copied mark stays until the password changes: it is what tells the
+  // operator the password they are about to save is on the clipboard.
+  async function copyPassword() {
     try {
-      await writeClipboardText(text);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
+      await writeClipboardText(password);
+      setIsPasswordCopied(true);
     } catch {
       message.error(t('settings.ipmi.copyFailed'));
     }
+  }
+
+  function changePassword(value: string) {
+    setPassword(value);
+    setIsPasswordCopied(false);
   }
 
   function openPassword(user: IpmiUser) {
@@ -116,7 +134,7 @@ export const Ipmi = () => {
       .setIpmiPassword(editing.username, password)
       .then((rsp) => {
         if (rsp.code !== 0) {
-          message.error(rsp.msg || t('settings.ipmi.failed'));
+          message.error(describeFailure(rsp, t('settings.ipmi.failed')));
           return;
         }
         message.success(t('settings.ipmi.saved'));
@@ -124,7 +142,7 @@ export const Ipmi = () => {
         setPassword('');
         getSettings();
       })
-      .catch(() => message.error(t('settings.ipmi.failed')))
+      .catch((err) => message.error(describeFailure(err, t('settings.ipmi.failed'))))
       .finally(() => setIsSavingPassword(false));
   }
 
@@ -140,10 +158,10 @@ export const Ipmi = () => {
         try {
           const rsp = await api.clearIpmiPassword(user.username);
           if (rsp.code !== 0) {
-            message.error(rsp.msg || t('settings.ipmi.failed'));
+            message.error(describeFailure(rsp, t('settings.ipmi.failed')));
           }
-        } catch {
-          message.error(t('settings.ipmi.failed'));
+        } catch (err) {
+          message.error(describeFailure(err, t('settings.ipmi.failed')));
         } finally {
           getSettings();
         }
@@ -160,7 +178,10 @@ export const Ipmi = () => {
   return (
     <>
       {contextHolder}
-      <div className="text-base">{t('settings.ipmi.title')}</div>
+      <div className="flex items-center justify-between">
+        <span className="text-base">{t('settings.ipmi.title')}</span>
+        {settings && <StatusTag running={settings.enabled} />}
+      </div>
       <Divider className="opacity-50" />
 
       <div className="flex flex-col space-y-6">
@@ -182,29 +203,9 @@ export const Ipmi = () => {
 
         {settings?.enabled && (
           <div className="flex flex-col space-y-3">
-            <div className="flex flex-col space-y-2 rounded-xl border border-neutral-700/50 bg-neutral-800/40 px-4 py-3.5">
-              <span className="text-sm font-medium text-neutral-400">
-                {t('settings.ipmi.example')}
-              </span>
-              <div className="flex min-w-0 items-center justify-between gap-2">
-                <span className="min-w-0 flex-1 font-mono text-sm break-all text-neutral-300 select-all">
-                  {example}
-                </span>
-                <Button
-                  type="text"
-                  size="small"
-                  className="text-neutral-400 hover:text-white"
-                  icon={
-                    isCopied ? (
-                      <CheckIcon size={15} className="text-green-500" />
-                    ) : (
-                      <CopyIcon size={15} />
-                    )
-                  }
-                  onClick={() => copy(example, setIsCopied)}
-                />
-              </div>
-            </div>
+            {!canLogIn && <Alert type="error" showIcon message={t('settings.ipmi.noLogin')} />}
+
+            <CopyBlock title={t('settings.ipmi.example')} text={example} />
 
             {settings.powerLed ? (
               <Alert type="success" showIcon message={t('settings.ipmi.ledOn')} />
@@ -274,14 +275,17 @@ export const Ipmi = () => {
               placeholder={t('settings.ipmi.passwordPlaceholder')}
               status={error ? 'error' : undefined}
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => changePassword(e.target.value)}
             />
+            <Tooltip title={t('settings.ipmi.generate')}>
+              <Button
+                icon={<DicesIcon size={15} />}
+                aria-label={t('settings.ipmi.generate')}
+                onClick={() => changePassword(generatePassword())}
+              />
+            </Tooltip>
             <Button
-              icon={<DicesIcon size={15} />}
-              title={t('settings.ipmi.generate')}
-              onClick={() => setPassword(generatePassword())}
-            />
-            <Button
+              type={isPasswordCopied ? 'default' : 'primary'}
               icon={
                 isPasswordCopied ? (
                   <CheckIcon size={15} className="text-green-500" />
@@ -289,12 +293,18 @@ export const Ipmi = () => {
                   <CopyIcon size={15} />
                 )
               }
-              title={t('settings.ipmi.copy')}
               disabled={!password}
-              onClick={() => copy(password, setIsPasswordCopied)}
-            />
+              onClick={copyPassword}
+            >
+              {isPasswordCopied ? t('common.copied') : t('settings.ipmi.copy')}
+            </Button>
           </div>
           {error && <span className="text-xs text-red-500">{t(error)}</span>}
+          <Alert
+            type={isPasswordCopied ? 'success' : 'warning'}
+            showIcon
+            message={t('settings.ipmi.copyBeforeSave')}
+          />
         </div>
       </Modal>
     </>

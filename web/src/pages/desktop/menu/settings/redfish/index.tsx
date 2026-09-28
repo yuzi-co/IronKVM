@@ -1,14 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useAuth } from '@/contexts/auth.ts';
 import { Alert, Button, Divider, message, Modal, Switch, Tag } from 'antd';
-import { CheckIcon, CopyIcon, RefreshCwIcon } from 'lucide-react';
+import { RefreshCwIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/redfish.ts';
 import type { RedfishSession, RedfishSettings } from '@/api/redfish.ts';
-import { writeClipboardText } from '@/lib/clipboard.ts';
+import { describeFailure } from '@/lib/feedback.ts';
 import { getBaseUrl } from '@/lib/service.ts';
 
 import { PowerLedSetting } from '../../power/power-led-setting.tsx';
+import { CopyBlock, CopyButton } from '../components/copy-button.tsx';
+import { StatusTag } from '../components/status-tag.tsx';
 
 function formatTime(value: string) {
   const date = new Date(value);
@@ -19,14 +22,18 @@ function formatTime(value: string) {
 // offers, and the open sessions.
 export const Redfish = () => {
   const { t } = useTranslation();
+  const { account } = useAuth();
   const [modal, contextHolder] = Modal.useModal();
   const [settings, setSettings] = useState<RedfishSettings | null>(null);
   const [sessions, setSessions] = useState<RedfishSession[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoadingSessions, setIsLoadingSessions] = useState(false);
-  const [isCopied, setIsCopied] = useState(false);
 
   const endpoint = settings ? `${getBaseUrl('http')}${settings.serviceRoot}` : '';
+  // -k because the board's certificate is self-signed until one is installed.
+  const example = settings
+    ? `curl -k -u ${account.username} ${getBaseUrl('http')}${settings.serviceRoot.replace(/\/$/, '')}/Systems/1`
+    : '';
 
   const getSettings = useCallback(() => {
     api
@@ -38,7 +45,7 @@ export const Redfish = () => {
         }
         setSettings(rsp.data);
       })
-      .catch(() => message.error(t('settings.redfish.failed')));
+      .catch((err) => message.error(describeFailure(err, t('settings.redfish.failed'))));
   }, [t]);
 
   // getSessions clears the loading flag; refreshSessions is what sets it.
@@ -52,7 +59,7 @@ export const Redfish = () => {
         }
         setSessions(rsp.data || []);
       })
-      .catch(() => message.error(t('settings.redfish.failed')))
+      .catch((err) => message.error(describeFailure(err, t('settings.redfish.failed'))))
       .finally(() => setIsLoadingSessions(false));
   }, [t]);
 
@@ -72,25 +79,15 @@ export const Redfish = () => {
       .setRedfishEnabled(enabled)
       .then((rsp) => {
         if (rsp.code !== 0) {
-          message.error(rsp.msg || t('settings.redfish.failed'));
+          message.error(describeFailure(rsp, t('settings.redfish.failed')));
           return;
         }
         setSettings((current) => (current ? { ...current, enabled } : current));
+        message.success(t(enabled ? 'feedback.enabled' : 'feedback.disabled', { name: 'Redfish' }));
         getSessions();
       })
-      .catch(() => message.error(t('settings.redfish.failed')))
+      .catch((err) => message.error(describeFailure(err, t('settings.redfish.failed'))))
       .finally(() => setIsSaving(false));
-  }
-
-  async function copyEndpoint() {
-    if (!endpoint) return;
-    try {
-      await writeClipboardText(endpoint);
-      setIsCopied(true);
-      window.setTimeout(() => setIsCopied(false), 2000);
-    } catch {
-      message.error(t('settings.redfish.copyFailed'));
-    }
   }
 
   function endSession(session: RedfishSession) {
@@ -105,10 +102,10 @@ export const Redfish = () => {
         try {
           const rsp = await api.endRedfishSession(session.id);
           if (rsp.code !== 0) {
-            message.error(rsp.msg || t('settings.redfish.failed'));
+            message.error(describeFailure(rsp, t('settings.redfish.failed')));
           }
-        } catch {
-          message.error(t('settings.redfish.failed'));
+        } catch (err) {
+          message.error(describeFailure(err, t('settings.redfish.failed')));
         } finally {
           getSessions();
         }
@@ -119,7 +116,10 @@ export const Redfish = () => {
   return (
     <>
       {contextHolder}
-      <div className="text-base">{t('settings.redfish.title')}</div>
+      <div className="flex items-center justify-between">
+        <span className="text-base">{t('settings.redfish.title')}</span>
+        {settings && <StatusTag running={settings.enabled} />}
+      </div>
       <Divider className="opacity-50" />
 
       <div className="flex flex-col space-y-6">
@@ -148,19 +148,7 @@ export const Redfish = () => {
                   <span className="min-w-0 flex-1 truncate font-mono text-sm text-neutral-300 select-all">
                     {endpoint}
                   </span>
-                  <Button
-                    type="text"
-                    size="small"
-                    className="text-neutral-400 hover:text-white"
-                    icon={
-                      isCopied ? (
-                        <CheckIcon size={15} className="text-green-500" />
-                      ) : (
-                        <CopyIcon size={15} />
-                      )
-                    }
-                    onClick={copyEndpoint}
-                  />
+                  <CopyButton text={endpoint} />
                 </div>
               </div>
 
@@ -171,6 +159,8 @@ export const Redfish = () => {
               )}
 
               <span className="text-xs text-neutral-500">{t('settings.redfish.credentials')}</span>
+
+              <CopyBlock title={t('settings.redfish.example')} text={example} />
             </div>
 
             <div className="flex flex-col space-y-2">

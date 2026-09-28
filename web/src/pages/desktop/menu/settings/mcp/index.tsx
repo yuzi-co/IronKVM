@@ -189,6 +189,7 @@ export const MCP = () => {
           <div className="flex flex-col space-y-1 pr-4">
             <span className="text-sm font-medium">{t('settings.mcp.service')}</span>
             <span className="text-xs text-neutral-500">{t('settings.mcp.serviceDesc')}</span>
+            <span className="text-xs text-neutral-500">{t('settings.mcp.keyNote')}</span>
           </div>
           <Switch
             checked={config.enabled}
