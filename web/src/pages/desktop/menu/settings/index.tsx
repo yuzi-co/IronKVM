@@ -279,8 +279,10 @@ export const Settings = () => {
   return (
     <>
       <Tooltip title={t('settings.title')} placement="bottom" mouseEnterDelay={0.6}>
-        <div
-          className="flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded hover:bg-neutral-700/80"
+        <button
+          type="button"
+          aria-label={t('settings.title')}
+          className="flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded p-0 hover:bg-neutral-700/80"
           onClick={openModal}
         >
           <Badge dot={isUpdateAvailable} color="blue" offset={[0, 2]}>
@@ -288,7 +290,7 @@ export const Settings = () => {
               <SettingsIcon size={18} />
             </div>
           </Badge>
-        </div>
+        </button>
       </Tooltip>
 
       <Modal
@@ -333,7 +335,7 @@ export const Settings = () => {
 
           <ScrollArea
             viewportRef={scrollViewportRef}
-            className="h-full w-full rounded-r-lg bg-neutral-900/50 px-3 [&_[data-slot=scroll-area-scrollbar]]:w-1.5 [&_[data-slot=scroll-area-scrollbar]]:p-0 [&_[data-slot=scroll-area-thumb]]:bg-neutral-500/30"
+            className="h-full w-full min-w-0 rounded-r-lg bg-neutral-900/50 px-3 [&_[data-slot=scroll-area-scrollbar]]:w-1.5 [&_[data-slot=scroll-area-scrollbar]]:p-0 [&_[data-slot=scroll-area-thumb]]:bg-neutral-500/30"
           >
             <div className="flex h-full w-full justify-center">
               <div className="w-full max-w-[600px] pt-14 pb-10">
