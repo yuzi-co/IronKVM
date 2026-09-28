@@ -129,6 +129,44 @@ func TestNormalUserPasswordNeverChangesSystemPassword(t *testing.T) {
 	}
 }
 
+func TestAccountReportsWhetherPasswordChangesRoot(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	store := authn.NewStore(filepath.Join(t.TempDir(), "pwd"))
+	restore := useTestStore(store)
+	defer restore()
+	if _, ok, err := store.Authenticate("admin", "admin"); err != nil || !ok {
+		t.Fatalf("default login: ok=%v err=%v", ok, err)
+	}
+	if err := store.Create("bob", "bob-password", authn.RoleAdmin); err != nil {
+		t.Fatal(err)
+	}
+
+	service := NewService()
+	router := gin.New()
+	router.POST("/login", service.Login)
+	router.Group("/").Use(middleware.CheckToken()).GET("/account", service.GetAccount)
+
+	for _, tc := range []struct {
+		username, password string
+		want               bool
+	}{
+		{"admin", "admin", true},
+		{"bob", "bob-password", false},
+	} {
+		cookie := loginCookie(t, router, tc.username, tc.password)
+		recorder := requestJSONRecorder(router, http.MethodGet, "/account", nil, cookie)
+		var body struct {
+			Data proto.GetAccountRsp `json:"data"`
+		}
+		if err := json.Unmarshal(recorder.Body.Bytes(), &body); err != nil {
+			t.Fatal(err)
+		}
+		if body.Data.SystemAccount != tc.want {
+			t.Fatalf("%s: systemAccount = %v, want %v", tc.username, body.Data.SystemAccount, tc.want)
+		}
+	}
+}
+
 func TestSelfPasswordChangeRequiresCurrentPassword(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	store := authn.NewStore(filepath.Join(t.TempDir(), "pwd"))

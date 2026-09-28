@@ -8,6 +8,9 @@ type LoginReq struct {
 type GetAccountRsp struct {
 	Username string `json:"username"`
 	Role     string `json:"role"`
+	// SystemAccount is true for the device owner, whose password change also
+	// sets the root password used by SSH and the console.
+	SystemAccount bool `json:"systemAccount"`
 }
 
 type ChangePasswordReq struct {

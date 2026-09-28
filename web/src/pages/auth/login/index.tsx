@@ -1,18 +1,24 @@
 import { ReactElement, useEffect, useState } from 'react';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import { Button, Form, Input } from 'antd';
+import { Alert, Button, Form, Input } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 
 import * as api from '@/api/auth.ts';
 import { encrypt } from '@/lib/encrypt.ts';
 import { Head } from '@/components/head.tsx';
 
+import { loginNotice, returnTo } from './return-to.ts';
 import { Tips } from './tips.tsx';
 
 export const Login = (): ReactElement => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
+
+  // Where to go once signed in, and what to say above the form.
+  const target = returnTo(location.state);
+  const notice = loginNotice(location.state);
 
   const [isLoading, setIsloading] = useState(false);
   const [msg, setMsg] = useState('');
@@ -22,11 +28,11 @@ export const Login = (): ReactElement => {
       .getAccount()
       .then((rsp) => {
         if (rsp.code === 0 && rsp.data?.username) {
-          navigate('/', { replace: true });
+          navigate(target, { replace: true });
         }
       })
       .catch(() => {});
-  }, [navigate]);
+  }, [navigate, target]);
 
   useEffect(() => {
     if (msg) {
@@ -69,7 +75,7 @@ export const Login = (): ReactElement => {
             }
 
             setMsg('');
-            navigate('/', { replace: true });
+            navigate(target, { replace: true });
           })
           .catch(() => {
             setMsg(t('auth.cookieRejected'));
@@ -107,6 +113,10 @@ export const Login = (): ReactElement => {
               }}
             />
           </div>
+          {notice === 'passwordChanged' && (
+            <Alert className="mb-4" type="success" showIcon message={t('auth.passwordChanged')} />
+          )}
+
           <Form.Item
             name="username"
             rules={[{ required: true, message: t('auth.noEmptyUsername'), min: 1 }]}

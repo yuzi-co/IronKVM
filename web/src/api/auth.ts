@@ -5,6 +5,8 @@ export type UserRole = 'admin' | 'user';
 export type Account = {
   username: string;
   role: UserRole;
+  // Whether a password change also sets the root password (SSH, console).
+  systemAccount?: boolean;
 };
 
 export type User = Account & {
