@@ -451,6 +451,48 @@ const cz = {
         okBtn: 'Potvrdit',
         cancelBtn: 'Zrušit'
       },
+      vnc: {
+        title: 'VNC',
+        service: 'Server VNC',
+        serviceDesc:
+          'Umožní klientovi VNC, například TigerVNC nebo Remmina, zobrazit a ovládat hostitele. Klient musí podporovat kódování Tight. Vždy jedna relace.',
+        credentials:
+          'Přihlaste se účtem KVM. Spojení je šifrováno certifikátem TLS desky (VeNCrypt X509Plain).',
+        port: 'Port',
+        portDesc: 'Port TCP, na kterém server naslouchá.',
+        maxFps: 'Limit snímků',
+        maxFpsDesc: 'Nejvyšší počet snímků za sekundu, který klient dostane.',
+        vncAuth: 'Jednoduché ověřování VNC',
+        vncAuthDesc: 'Pro klienty bez VeNCrypt. Kontroluje samostatné heslo VNC místo účtu.',
+        vncAuthWarning:
+          'Jednoduché ověřování VNC spojení nešifruje. Kdokoli na síťové cestě uvidí obrazovku i stisky kláves. Používejte ho jen v důvěryhodné síti.',
+        password: 'Heslo VNC',
+        passwordSet: 'Heslo je nastaveno. Pro změnu zadejte nové.',
+        passwordInvalid: 'Heslo VNC musí mít 6 až 8 znaků.',
+        save: 'Uložit',
+        saved: 'Nastavení uloženo',
+        state: 'Stav',
+        listening: 'Naslouchá na portu {{port}}',
+        notListening: 'Nenaslouchá',
+        noSession: 'Žádná otevřená relace',
+        client: 'Klient',
+        user: 'Uživatel',
+        method: 'Ověřování',
+        methodVencrypt: 'Účet přes TLS',
+        methodVnc: 'Heslo VNC',
+        since: 'Připojeno od',
+        resolution: 'Rozlišení',
+        framesSent: 'Odeslané snímky',
+        lastError: 'Poslední relace skončila: {{error}}',
+        refresh: 'Obnovit',
+        disconnect: 'Odpojit',
+        disconnectConfirmTitle: 'Ukončit relaci VNC?',
+        disconnectConfirmDesc:
+          'Klient se okamžitě odpojí a všechny držené klávesy a tlačítka se uvolní.',
+        failed: 'Operace VNC selhala',
+        okBtn: 'Potvrdit',
+        cancelBtn: 'Zrušit'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Watchdog hostitele',

@@ -12,6 +12,7 @@ import {
   MonitorDownIcon,
   NetworkIcon,
   PaletteIcon,
+  ScreenShareIcon,
   ServerCogIcon,
   SettingsIcon,
   SmartphoneIcon,
@@ -40,6 +41,7 @@ import { Network } from './network';
 import { Redfish } from './redfish';
 import { Tailscale } from './tailscale';
 import { Update } from './update';
+import { Vnc } from './vnc';
 import { Watchdog } from './watchdog';
 
 export const Settings = () => {
@@ -65,6 +67,7 @@ export const Settings = () => {
           { id: 'network', icon: <NetworkIcon size={16} />, component: <Network /> },
           { id: 'mcp', icon: <BotIcon size={16} />, component: <MCP /> },
           { id: 'redfish', icon: <ServerCogIcon size={16} />, component: <Redfish /> },
+          { id: 'vnc', icon: <ScreenShareIcon size={16} />, component: <Vnc /> },
           { id: 'watchdog', icon: <HeartPulseIcon size={16} />, component: <Watchdog /> },
           {
             id: 'netboot',

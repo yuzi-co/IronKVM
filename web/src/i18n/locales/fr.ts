@@ -454,6 +454,49 @@ const fr = {
         okBtn: 'Confirmer',
         cancelBtn: 'Annuler'
       },
+      vnc: {
+        title: 'VNC',
+        service: 'Serveur VNC',
+        serviceDesc:
+          "Permet à un client VNC, comme TigerVNC ou Remmina, d'afficher et de contrôler l'hôte. Le client doit prendre en charge l'encodage Tight. Une session à la fois.",
+        credentials:
+          'Connectez-vous avec un compte KVM. La connexion est chiffrée avec le certificat TLS de la carte (VeNCrypt X509Plain).',
+        port: 'Port',
+        portDesc: 'Le port TCP sur lequel le serveur écoute.',
+        maxFps: "Limite d'images par seconde",
+        maxFpsDesc: "Le nombre maximal d'images par seconde envoyées à un client.",
+        vncAuth: 'Authentification VNC simple',
+        vncAuthDesc:
+          "Pour les clients sans VeNCrypt. Elle vérifie un mot de passe VNC distinct au lieu d'un compte.",
+        vncAuthWarning:
+          "L'authentification VNC simple ne chiffre pas la connexion. Toute personne sur le chemin réseau peut voir l'écran et les frappes au clavier. Utilisez-la uniquement sur un réseau de confiance.",
+        password: 'Mot de passe VNC',
+        passwordSet: 'Un mot de passe est défini. Saisissez-en un nouveau pour le changer.',
+        passwordInvalid: 'Le mot de passe VNC doit comporter de 6 à 8 caractères.',
+        save: 'Enregistrer',
+        saved: 'Paramètres enregistrés',
+        state: 'État',
+        listening: "À l'écoute sur le port {{port}}",
+        notListening: "N'écoute pas",
+        noSession: 'Aucune session ouverte',
+        client: 'Client',
+        user: 'Utilisateur',
+        method: 'Authentification',
+        methodVencrypt: 'Compte via TLS',
+        methodVnc: 'Mot de passe VNC',
+        since: 'Connecté depuis',
+        resolution: 'Résolution',
+        framesSent: 'Images envoyées',
+        lastError: 'La dernière session a pris fin : {{error}}',
+        refresh: 'Actualiser',
+        disconnect: 'Déconnecter',
+        disconnectConfirmTitle: 'Mettre fin à la session VNC ?',
+        disconnectConfirmDesc:
+          'Le client est déconnecté immédiatement, et chaque touche et bouton maintenus sont relâchés.',
+        failed: "Échec de l'opération VNC",
+        okBtn: 'Confirmer',
+        cancelBtn: 'Annuler'
+      },
       watchdog: {
         title: 'Watchdog',
         service: "Watchdog de l'hôte",

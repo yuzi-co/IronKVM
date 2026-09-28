@@ -452,6 +452,48 @@ const pl = {
         okBtn: 'Potwierdź',
         cancelBtn: 'Anuluj'
       },
+      vnc: {
+        title: 'VNC',
+        service: 'Serwer VNC',
+        serviceDesc:
+          'Pozwala klientowi VNC, takiemu jak TigerVNC lub Remmina, wyświetlać i sterować hostem. Klient musi obsługiwać kodowanie Tight. Jedna sesja naraz.',
+        credentials:
+          'Zaloguj się kontem KVM. Połączenie jest szyfrowane certyfikatem TLS płytki (VeNCrypt X509Plain).',
+        port: 'Port',
+        portDesc: 'Port TCP, na którym nasłuchuje serwer.',
+        maxFps: 'Limit klatek',
+        maxFpsDesc: 'Największa liczba klatek na sekundę wysyłana do klienta.',
+        vncAuth: 'Proste uwierzytelnianie VNC',
+        vncAuthDesc: 'Dla klientów bez VeNCrypt. Sprawdza osobne hasło VNC zamiast konta.',
+        vncAuthWarning:
+          'Proste uwierzytelnianie VNC nie szyfruje połączenia. Każdy na ścieżce sieciowej może zobaczyć ekran i naciśnięcia klawiszy. Używaj go tylko w zaufanej sieci.',
+        password: 'Hasło VNC',
+        passwordSet: 'Hasło jest ustawione. Wpisz nowe, aby je zmienić.',
+        passwordInvalid: 'Hasło VNC musi mieć od 6 do 8 znaków.',
+        save: 'Zapisz',
+        saved: 'Ustawienia zapisane',
+        state: 'Stan',
+        listening: 'Nasłuchuje na porcie {{port}}',
+        notListening: 'Nie nasłuchuje',
+        noSession: 'Brak otwartej sesji',
+        client: 'Klient',
+        user: 'Użytkownik',
+        method: 'Uwierzytelnianie',
+        methodVencrypt: 'Konto przez TLS',
+        methodVnc: 'Hasło VNC',
+        since: 'Połączono od',
+        resolution: 'Rozdzielczość',
+        framesSent: 'Wysłane klatki',
+        lastError: 'Ostatnia sesja zakończyła się: {{error}}',
+        refresh: 'Odśwież',
+        disconnect: 'Rozłącz',
+        disconnectConfirmTitle: 'Zakończyć sesję VNC?',
+        disconnectConfirmDesc:
+          'Klient zostanie od razu rozłączony, a wszystkie przytrzymane klawisze i przyciski zostaną zwolnione.',
+        failed: 'Operacja VNC nie powiodła się',
+        okBtn: 'Potwierdź',
+        cancelBtn: 'Anuluj'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Watchdog hosta',

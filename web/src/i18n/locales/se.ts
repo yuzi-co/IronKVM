@@ -447,6 +447,49 @@ const se = {
         okBtn: 'Bekräfta',
         cancelBtn: 'Avbryt'
       },
+      vnc: {
+        title: 'VNC',
+        service: 'VNC-server',
+        serviceDesc:
+          'Låter en VNC-klient, till exempel TigerVNC eller Remmina, visa och styra värden. Klienten måste stödja Tight-kodning. En session i taget.',
+        credentials:
+          'Logga in med ett KVM-konto. Anslutningen krypteras med kortets TLS-certifikat (VeNCrypt X509Plain).',
+        port: 'Port',
+        portDesc: 'TCP-porten som servern lyssnar på.',
+        maxFps: 'Gräns för bildfrekvens',
+        maxFpsDesc: 'Det högsta antalet bilder per sekund som en klient får.',
+        vncAuth: 'Enkel VNC-autentisering',
+        vncAuthDesc:
+          'För klienter utan VeNCrypt. Den kontrollerar ett separat VNC-lösenord i stället för ett konto.',
+        vncAuthWarning:
+          'Enkel VNC-autentisering krypterar inte anslutningen. Alla på nätverksvägen kan se skärmen och tangenttryckningarna. Använd den bara i ett betrott nätverk.',
+        password: 'VNC-lösenord',
+        passwordSet: 'Ett lösenord är angivet. Skriv ett nytt för att ändra det.',
+        passwordInvalid: 'VNC-lösenordet måste vara 6 till 8 tecken.',
+        save: 'Spara',
+        saved: 'Inställningarna sparades',
+        state: 'Status',
+        listening: 'Lyssnar på port {{port}}',
+        notListening: 'Lyssnar inte',
+        noSession: 'Ingen öppen session',
+        client: 'Klient',
+        user: 'Användare',
+        method: 'Autentisering',
+        methodVencrypt: 'Konto över TLS',
+        methodVnc: 'VNC-lösenord',
+        since: 'Ansluten sedan',
+        resolution: 'Upplösning',
+        framesSent: 'Skickade bilder',
+        lastError: 'Den senaste sessionen avslutades: {{error}}',
+        refresh: 'Uppdatera',
+        disconnect: 'Koppla från',
+        disconnectConfirmTitle: 'Avsluta VNC-sessionen?',
+        disconnectConfirmDesc:
+          'Klienten kopplas från direkt, och alla tangenter och knappar som den håller ned släpps.',
+        failed: 'VNC-åtgärden misslyckades',
+        okBtn: 'Bekräfta',
+        cancelBtn: 'Avbryt'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Värd-watchdog',

@@ -458,6 +458,49 @@ const de = {
         okBtn: 'Bestätigen',
         cancelBtn: 'Abbrechen'
       },
+      vnc: {
+        title: 'VNC',
+        service: 'VNC-Server',
+        serviceDesc:
+          'Ein VNC-Client wie TigerVNC oder Remmina kann den Host anzeigen und steuern. Der Client muss die Tight-Kodierung unterstützen. Jeweils eine Sitzung.',
+        credentials:
+          'Melden Sie sich mit einem KVM-Konto an. Die Verbindung ist mit dem TLS-Zertifikat des Boards verschlüsselt (VeNCrypt X509Plain).',
+        port: 'Port',
+        portDesc: 'Der TCP-Port, auf dem der Server lauscht.',
+        maxFps: 'Bildratenlimit',
+        maxFpsDesc: 'Die höchste Zahl an Bildern pro Sekunde, die ein Client erhält.',
+        vncAuth: 'Einfache VNC-Authentifizierung',
+        vncAuthDesc:
+          'Für Clients ohne VeNCrypt. Sie prüft ein eigenes VNC-Passwort statt eines Kontos.',
+        vncAuthWarning:
+          'Die einfache VNC-Authentifizierung verschlüsselt die Verbindung nicht. Jeder auf dem Netzwerkpfad kann den Bildschirm und die Tastatureingaben sehen. Verwenden Sie sie nur in einem vertrauenswürdigen Netzwerk.',
+        password: 'VNC-Passwort',
+        passwordSet: 'Ein Passwort ist gesetzt. Geben Sie ein neues ein, um es zu ändern.',
+        passwordInvalid: 'Das VNC-Passwort muss 6 bis 8 Zeichen lang sein.',
+        save: 'Speichern',
+        saved: 'Einstellungen gespeichert',
+        state: 'Status',
+        listening: 'Lauscht auf Port {{port}}',
+        notListening: 'Lauscht nicht',
+        noSession: 'Keine offene Sitzung',
+        client: 'Client',
+        user: 'Benutzer',
+        method: 'Authentifizierung',
+        methodVencrypt: 'Konto über TLS',
+        methodVnc: 'VNC-Passwort',
+        since: 'Verbunden seit',
+        resolution: 'Auflösung',
+        framesSent: 'Gesendete Bilder',
+        lastError: 'Die letzte Sitzung endete: {{error}}',
+        refresh: 'Aktualisieren',
+        disconnect: 'Trennen',
+        disconnectConfirmTitle: 'VNC-Sitzung beenden?',
+        disconnectConfirmDesc:
+          'Der Client wird sofort getrennt, und jede gehaltene Taste und Maustaste wird losgelassen.',
+        failed: 'VNC-Vorgang fehlgeschlagen',
+        okBtn: 'Bestätigen',
+        cancelBtn: 'Abbrechen'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Host-Watchdog',

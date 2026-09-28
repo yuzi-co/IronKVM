@@ -449,6 +449,49 @@ const ca = {
         okBtn: 'Confirma',
         cancelBtn: 'Cancel·la'
       },
+      vnc: {
+        title: 'VNC',
+        service: 'Servidor VNC',
+        serviceDesc:
+          "Permet que un client VNC, com ara TigerVNC o Remmina, vegi i controli l'amfitrió. El client ha d'admetre la codificació Tight. Una sessió alhora.",
+        credentials:
+          'Inicieu la sessió amb un compte KVM. La connexió es xifra amb el certificat TLS de la placa (VeNCrypt X509Plain).',
+        port: 'Port',
+        portDesc: 'El port TCP on escolta el servidor.',
+        maxFps: 'Límit de fotogrames',
+        maxFpsDesc: 'El màxim de fotogrames per segon que rep un client.',
+        vncAuth: 'Autenticació VNC simple',
+        vncAuthDesc:
+          "Per a clients sense VeNCrypt. Comprova una contrasenya VNC a part en lloc d'un compte.",
+        vncAuthWarning:
+          "L'autenticació VNC simple no xifra la connexió. Qualsevol persona al camí de xarxa pot veure la pantalla i les pulsacions de tecles. Feu-la servir només en una xarxa de confiança.",
+        password: 'Contrasenya VNC',
+        passwordSet: 'Hi ha una contrasenya establerta. Escriviu-ne una de nova per canviar-la.',
+        passwordInvalid: 'La contrasenya VNC ha de tenir de 6 a 8 caràcters.',
+        save: 'Desa',
+        saved: 'Configuració desada',
+        state: 'Estat',
+        listening: 'Escoltant al port {{port}}',
+        notListening: 'No escolta',
+        noSession: 'Cap sessió oberta',
+        client: 'Client',
+        user: 'Usuari',
+        method: 'Autenticació',
+        methodVencrypt: 'Compte sobre TLS',
+        methodVnc: 'Contrasenya VNC',
+        since: 'Connectat des de',
+        resolution: 'Resolució',
+        framesSent: 'Fotogrames enviats',
+        lastError: "L'última sessió ha acabat: {{error}}",
+        refresh: 'Actualitza',
+        disconnect: 'Desconnecta',
+        disconnectConfirmTitle: 'Voleu acabar la sessió VNC?',
+        disconnectConfirmDesc:
+          'El client es desconnecta de seguida, i es deixen anar totes les tecles i botons que mantingui premuts.',
+        failed: "L'operació VNC ha fallat",
+        okBtn: 'Confirma',
+        cancelBtn: 'Cancel·la'
+      },
       watchdog: {
         title: 'Watchdog',
         service: "Watchdog de l'amfitrió",

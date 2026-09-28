@@ -453,6 +453,49 @@ const it = {
         okBtn: 'Conferma',
         cancelBtn: 'Annulla'
       },
+      vnc: {
+        title: 'VNC',
+        service: 'Server VNC',
+        serviceDesc:
+          "Consente a un client VNC, come TigerVNC o Remmina, di visualizzare e controllare l'host. Il client deve supportare la codifica Tight. Una sessione alla volta.",
+        credentials:
+          'Accedi con un account KVM. La connessione è cifrata con il certificato TLS della scheda (VeNCrypt X509Plain).',
+        port: 'Porta',
+        portDesc: 'La porta TCP su cui il server è in ascolto.',
+        maxFps: 'Limite di fotogrammi',
+        maxFpsDesc: 'Il numero massimo di fotogrammi al secondo inviati a un client.',
+        vncAuth: 'Autenticazione VNC semplice',
+        vncAuthDesc:
+          'Per i client senza VeNCrypt. Verifica una password VNC separata invece di un account.',
+        vncAuthWarning:
+          "L'autenticazione VNC semplice non cifra la connessione. Chiunque sul percorso di rete può vedere lo schermo e i tasti premuti. Usala solo su una rete fidata.",
+        password: 'Password VNC',
+        passwordSet: 'È impostata una password. Digitane una nuova per cambiarla.',
+        passwordInvalid: 'La password VNC deve essere di 6-8 caratteri.',
+        save: 'Salva',
+        saved: 'Impostazioni salvate',
+        state: 'Stato',
+        listening: 'In ascolto sulla porta {{port}}',
+        notListening: 'Non in ascolto',
+        noSession: 'Nessuna sessione aperta',
+        client: 'Client',
+        user: 'Utente',
+        method: 'Autenticazione',
+        methodVencrypt: 'Account su TLS',
+        methodVnc: 'Password VNC',
+        since: 'Connesso dal',
+        resolution: 'Risoluzione',
+        framesSent: 'Fotogrammi inviati',
+        lastError: "L'ultima sessione è terminata: {{error}}",
+        refresh: 'Aggiorna',
+        disconnect: 'Disconnetti',
+        disconnectConfirmTitle: 'Terminare la sessione VNC?',
+        disconnectConfirmDesc:
+          'Il client viene disconnesso subito, e ogni tasto e pulsante che tiene premuto viene rilasciato.',
+        failed: 'Operazione VNC non riuscita',
+        okBtn: 'Conferma',
+        cancelBtn: 'Annulla'
+      },
       watchdog: {
         title: 'Watchdog',
         service: "Watchdog dell'host",

@@ -453,6 +453,48 @@ const hu = {
         okBtn: 'Megerősítés',
         cancelBtn: 'Mégse'
       },
+      vnc: {
+        title: 'VNC',
+        service: 'VNC-kiszolgáló',
+        serviceDesc:
+          'Egy VNC-kliens, például a TigerVNC vagy a Remmina, láthatja és vezérelheti a gazdagépet. A kliensnek támogatnia kell a Tight kódolást. Egyszerre egy munkamenet.',
+        credentials:
+          'Jelentkezzen be egy KVM-fiókkal. A kapcsolatot a kártya TLS-tanúsítványa titkosítja (VeNCrypt X509Plain).',
+        port: 'Port',
+        portDesc: 'A TCP-port, amelyen a kiszolgáló figyel.',
+        maxFps: 'Képkocka-korlát',
+        maxFpsDesc: 'A kliensnek küldött képkockák legnagyobb száma másodpercenként.',
+        vncAuth: 'Egyszerű VNC-hitelesítés',
+        vncAuthDesc: 'VeNCrypt nélküli klienseknek. Fiók helyett egy külön VNC-jelszót ellenőriz.',
+        vncAuthWarning:
+          'Az egyszerű VNC-hitelesítés nem titkosítja a kapcsolatot. A hálózati útvonalon bárki láthatja a képernyőt és a billentyűleütéseket. Csak megbízható hálózaton használja.',
+        password: 'VNC-jelszó',
+        passwordSet: 'Van beállított jelszó. A módosításhoz írjon be egy újat.',
+        passwordInvalid: 'A VNC-jelszó hossza 6 és 8 karakter között legyen.',
+        save: 'Mentés',
+        saved: 'Beállítások mentve',
+        state: 'Állapot',
+        listening: 'Figyel a(z) {{port}} porton',
+        notListening: 'Nem figyel',
+        noSession: 'Nincs nyitott munkamenet',
+        client: 'Kliens',
+        user: 'Felhasználó',
+        method: 'Hitelesítés',
+        methodVencrypt: 'Fiók TLS-en keresztül',
+        methodVnc: 'VNC-jelszó',
+        since: 'Csatlakozva ekkor óta',
+        resolution: 'Felbontás',
+        framesSent: 'Elküldött képkockák',
+        lastError: 'Az utolsó munkamenet véget ért: {{error}}',
+        refresh: 'Frissítés',
+        disconnect: 'Bontás',
+        disconnectConfirmTitle: 'Befejezi a VNC-munkamenetet?',
+        disconnectConfirmDesc:
+          'A kliens kapcsolata azonnal megszakad, és minden lenyomva tartott billentyű és gomb felengedésre kerül.',
+        failed: 'A VNC-művelet sikertelen',
+        okBtn: 'Megerősítés',
+        cancelBtn: 'Mégse'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Gazdagép-watchdog',

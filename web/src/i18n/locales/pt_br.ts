@@ -451,6 +451,49 @@ const pt_br = {
         okBtn: 'Confirmar',
         cancelBtn: 'Cancelar'
       },
+      vnc: {
+        title: 'VNC',
+        service: 'Servidor VNC',
+        serviceDesc:
+          'Permite que um cliente VNC, como TigerVNC ou Remmina, veja e controle o host. O cliente precisa suportar a codificação Tight. Uma sessão por vez.',
+        credentials:
+          'Entre com uma conta KVM. A conexão é criptografada com o certificado TLS da placa (VeNCrypt X509Plain).',
+        port: 'Porta',
+        portDesc: 'A porta TCP em que o servidor escuta.',
+        maxFps: 'Limite de quadros',
+        maxFpsDesc: 'O máximo de quadros por segundo enviados a um cliente.',
+        vncAuth: 'Autenticação VNC simples',
+        vncAuthDesc:
+          'Para clientes sem VeNCrypt. Ela verifica uma senha VNC separada em vez de uma conta.',
+        vncAuthWarning:
+          'A autenticação VNC simples não criptografa a conexão. Qualquer pessoa no caminho da rede pode ver a tela e as teclas digitadas. Use-a apenas em uma rede confiável.',
+        password: 'Senha VNC',
+        passwordSet: 'Uma senha está definida. Digite uma nova para alterá-la.',
+        passwordInvalid: 'A senha VNC deve ter de 6 a 8 caracteres.',
+        save: 'Salvar',
+        saved: 'Configurações salvas',
+        state: 'Estado',
+        listening: 'Escutando na porta {{port}}',
+        notListening: 'Não está escutando',
+        noSession: 'Nenhuma sessão aberta',
+        client: 'Cliente',
+        user: 'Usuário',
+        method: 'Autenticação',
+        methodVencrypt: 'Conta sobre TLS',
+        methodVnc: 'Senha VNC',
+        since: 'Conectado desde',
+        resolution: 'Resolução',
+        framesSent: 'Quadros enviados',
+        lastError: 'A última sessão terminou: {{error}}',
+        refresh: 'Atualizar',
+        disconnect: 'Desconectar',
+        disconnectConfirmTitle: 'Encerrar a sessão VNC?',
+        disconnectConfirmDesc:
+          'O cliente é desconectado imediatamente, e todas as teclas e botões pressionados são soltos.',
+        failed: 'Falha na operação VNC',
+        okBtn: 'Confirmar',
+        cancelBtn: 'Cancelar'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Watchdog do host',

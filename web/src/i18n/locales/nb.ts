@@ -449,6 +449,49 @@ const nb = {
         okBtn: 'Bekreft',
         cancelBtn: 'Avbryt'
       },
+      vnc: {
+        title: 'VNC',
+        service: 'VNC-server',
+        serviceDesc:
+          'Lar en VNC-klient, for eksempel TigerVNC eller Remmina, se og styre verten. Klienten må støtte Tight-koding. Én økt om gangen.',
+        credentials:
+          'Logg inn med en KVM-konto. Tilkoblingen krypteres med kortets TLS-sertifikat (VeNCrypt X509Plain).',
+        port: 'Port',
+        portDesc: 'TCP-porten som serveren lytter på.',
+        maxFps: 'Grense for bildefrekvens',
+        maxFpsDesc: 'Det høyeste antallet bilder i sekundet som en klient får.',
+        vncAuth: 'Enkel VNC-autentisering',
+        vncAuthDesc:
+          'For klienter uten VeNCrypt. Den sjekker et eget VNC-passord i stedet for en konto.',
+        vncAuthWarning:
+          'Enkel VNC-autentisering krypterer ikke tilkoblingen. Alle på nettverksveien kan se skjermen og tastetrykkene. Bruk den bare på et klarert nettverk.',
+        password: 'VNC-passord',
+        passwordSet: 'Et passord er angitt. Skriv inn et nytt for å endre det.',
+        passwordInvalid: 'VNC-passordet må være 6 til 8 tegn.',
+        save: 'Lagre',
+        saved: 'Innstillinger lagret',
+        state: 'Status',
+        listening: 'Lytter på port {{port}}',
+        notListening: 'Lytter ikke',
+        noSession: 'Ingen åpen økt',
+        client: 'Klient',
+        user: 'Bruker',
+        method: 'Autentisering',
+        methodVencrypt: 'Konto over TLS',
+        methodVnc: 'VNC-passord',
+        since: 'Tilkoblet siden',
+        resolution: 'Oppløsning',
+        framesSent: 'Sendte bilder',
+        lastError: 'Den siste økten ble avsluttet: {{error}}',
+        refresh: 'Oppdater',
+        disconnect: 'Koble fra',
+        disconnectConfirmTitle: 'Avslutte VNC-økten?',
+        disconnectConfirmDesc:
+          'Klienten kobles fra med en gang, og alle taster og knapper den holder nede, slippes.',
+        failed: 'VNC-operasjonen mislyktes',
+        okBtn: 'Bekreft',
+        cancelBtn: 'Avbryt'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Vert-watchdog',
