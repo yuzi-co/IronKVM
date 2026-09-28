@@ -720,7 +720,10 @@ const vi = {
           Wired: 'Có dây',
           Wireless: 'Không dây',
           Other: 'Khác'
-        }
+        },
+        hostnameInvalid:
+          'Dùng chữ cái, chữ số và dấu gạch nối, tối đa 63 ký tự mỗi phần ngăn cách bởi dấu chấm. Không có dấu gạch nối ở đầu hoặc cuối phần.',
+        hostnameFailed: 'Không thể đổi tên máy chủ'
       },
       appearance: {
         title: 'Giao diện',

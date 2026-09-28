@@ -717,7 +717,10 @@ const ko = {
           Wired: '유선',
           Wireless: '무선',
           Other: '기타'
-        }
+        },
+        hostnameInvalid:
+          '문자, 숫자, 하이픈을 사용하고 점으로 구분된 각 부분은 63자 이하로 하세요. 각 부분의 시작과 끝에는 하이픈을 쓸 수 없습니다.',
+        hostnameFailed: '호스트 이름을 변경하지 못했습니다'
       },
       appearance: {
         title: '디자인',

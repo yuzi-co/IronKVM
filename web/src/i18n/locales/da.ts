@@ -724,7 +724,10 @@ const da = {
           Wired: 'Kablet',
           Wireless: 'Trådløs',
           Other: 'Andet'
-        }
+        },
+        hostnameInvalid:
+          'Brug bogstaver, tal og bindestreger, højst 63 pr. punktum-adskilt del. Ingen bindestreg i starten eller slutningen af en del.',
+        hostnameFailed: 'Værtsnavnet kunne ikke ændres'
       },
       appearance: {
         title: 'Udseende',

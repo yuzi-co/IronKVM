@@ -736,7 +736,10 @@ const de = {
           Wired: 'Kabel',
           Wireless: 'Drahtlos',
           Other: 'Andere'
-        }
+        },
+        hostnameInvalid:
+          'Buchstaben, Ziffern und Bindestriche verwenden, bis zu 63 pro durch Punkte getrenntem Teil. Kein Bindestrich am Anfang oder Ende eines Teils.',
+        hostnameFailed: 'Der Hostname konnte nicht geändert werden'
       },
       appearance: {
         title: 'Erscheinungsbild',

@@ -5,6 +5,7 @@ import { ClipboardPenIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/vm.ts';
+import { isValidHostname } from '@/lib/hostname.ts';
 
 export const Hostname = ({ editable = false }: { editable?: boolean }) => {
   const { t } = useTranslation();
@@ -14,6 +15,7 @@ export const Hostname = ({ editable = false }: { editable?: boolean }) => {
 
   const [editState, setEditState] = useState<'' | 'editing' | 'edited'>('');
   const [input, setInput] = useState('');
+  const [errMsg, setErrMsg] = useState('');
 
   useEffect(() => {
     api
@@ -30,29 +32,35 @@ export const Hostname = ({ editable = false }: { editable?: boolean }) => {
 
   function showInput() {
     setInput(hostname);
+    setErrMsg('');
     setEditState('editing');
   }
 
+  const name = input.trim();
+  const isValid = isValidHostname(name);
+
   function update() {
-    if (input === hostname) {
+    if (name === hostname) {
       setEditState('');
       return;
     }
 
-    if (isLoading) return;
+    if (isLoading || !isValid) return;
     setIsLoading(true);
+    setErrMsg('');
 
     api
-      .setHostname(input)
+      .setHostname(name)
       .then((rsp) => {
         if (rsp.code !== 0) {
-          console.log(rsp.msg);
+          setErrMsg(rsp.msg || t('settings.about.hostnameFailed'));
           return;
         }
 
-        setHostname(input);
+        setHostname(name);
         setEditState('edited');
       })
+      .catch(() => setErrMsg(t('settings.about.hostnameFailed')))
       .finally(() => {
         setIsLoading(false);
       });
@@ -69,9 +77,18 @@ export const Hostname = ({ editable = false }: { editable?: boolean }) => {
               disabled={isLoading}
               style={{ width: 150 }}
               value={input}
+              maxLength={64}
+              status={isValid ? undefined : 'error'}
               onChange={(e) => setInput(e.target.value)}
+              onPressEnter={update}
             />
-            <Button size="small" icon={<CheckOutlined />} onClick={update} />
+            <Button
+              size="small"
+              icon={<CheckOutlined />}
+              disabled={!isValid}
+              loading={isLoading}
+              onClick={update}
+            />
             <Button size="small" icon={<CloseOutlined />} onClick={() => setEditState('')} />
           </div>
         ) : (
@@ -88,6 +105,16 @@ export const Hostname = ({ editable = false }: { editable?: boolean }) => {
           </div>
         )}
       </div>
+
+      {editState === 'editing' && !isValid && (
+        <div className="flex w-full justify-end text-xs text-red-500">
+          {t('settings.about.hostnameInvalid')}
+        </div>
+      )}
+
+      {errMsg && (
+        <div className="flex w-full justify-end text-xs text-red-500">{errMsg}</div>
+      )}
 
       {editState === 'edited' && (
         <div className="flex w-full justify-end text-xs text-green-500">

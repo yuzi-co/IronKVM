@@ -697,7 +697,9 @@ const zh_tw = {
           Wired: '有線',
           Wireless: '無線',
           Other: '其他'
-        }
+        },
+        hostnameInvalid: '請使用字母、數字和連字號，每個以點分隔的部分最多 63 個字元，且不能以連字號開頭或結尾。',
+        hostnameFailed: '修改主機名稱失敗'
       },
       appearance: {
         title: '外觀',

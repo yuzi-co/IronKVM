@@ -697,7 +697,9 @@ const zh = {
           Wired: '有线',
           Wireless: '无线',
           Other: '其他'
-        }
+        },
+        hostnameInvalid: '请使用字母、数字和连字符，每个以点分隔的部分最多 63 个字符，且不能以连字符开头或结尾。',
+        hostnameFailed: '修改主机名失败'
       },
       appearance: {
         title: '外观',

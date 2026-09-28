@@ -729,7 +729,10 @@ const ca = {
           Wired: 'Cablejada',
           Wireless: 'Sense fil',
           Other: 'Altra'
-        }
+        },
+        hostnameInvalid:
+          "Feu servir lletres, xifres i guionets, fins a 63 per part separada per punts. Sense guionet a l'inici ni al final d'una part.",
+        hostnameFailed: "No s'ha pogut canviar el nom d'amfitrió"
       },
       appearance: {
         title: 'Aparença',

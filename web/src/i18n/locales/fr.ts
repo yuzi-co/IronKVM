@@ -736,7 +736,10 @@ const fr = {
           Wired: 'Filaire',
           Wireless: 'Sans fil',
           Other: 'Autre'
-        }
+        },
+        hostnameInvalid:
+          "Utilisez des lettres, des chiffres et des tirets, jusqu'à 63 par partie séparée par des points. Pas de tiret au début ni à la fin d'une partie.",
+        hostnameFailed: "Impossible de modifier le nom d'hôte"
       },
       appearance: {
         title: 'Apparence',

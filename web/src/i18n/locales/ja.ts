@@ -729,7 +729,9 @@ const ja = {
           Wired: '有線',
           Wireless: 'ワイヤレス',
           Other: 'その他'
-        }
+        },
+        hostnameInvalid: '英字、数字、ハイフンを使い、ドットで区切った各部分は 63 文字までにしてください。各部分の先頭と末尾にハイフンは使えません。',
+        hostnameFailed: 'ホスト名を変更できませんでした'
       },
       appearance: {
         title: '外観',

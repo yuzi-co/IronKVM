@@ -722,7 +722,10 @@ const cz = {
           Wired: 'Kabelové',
           Wireless: 'Bezdrátové',
           Other: 'Jiné'
-        }
+        },
+        hostnameInvalid:
+          'Použijte písmena, číslice a pomlčky, nejvýše 63 v každé části oddělené tečkou. Pomlčka nesmí být na začátku ani na konci části.',
+        hostnameFailed: 'Název hostitele se nepodařilo změnit'
       },
       appearance: {
         title: 'Vzhled',

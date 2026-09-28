@@ -722,7 +722,10 @@ const se = {
           Wired: 'Trådbundet',
           Wireless: 'Trådlöst',
           Other: 'Annat'
-        }
+        },
+        hostnameInvalid:
+          'Använd bokstäver, siffror och bindestreck, högst 63 per punktseparerad del. Inget bindestreck i början eller slutet av en del.',
+        hostnameFailed: 'Det gick inte att ändra värdnamnet'
       },
       appearance: {
         title: 'Utseende',

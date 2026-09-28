@@ -724,7 +724,10 @@ const tr = {
           Wired: 'Kablolu bağlantı',
           Wireless: 'Kablosuz bağlantı',
           Other: 'Diğer'
-        }
+        },
+        hostnameInvalid:
+          'Harf, rakam ve kısa çizgi kullanın; noktayla ayrılan her bölümde en fazla 63. Bir bölümün başında veya sonunda kısa çizgi olamaz.',
+        hostnameFailed: 'Ana bilgisayar adı değiştirilemedi'
       },
       appearance: {
         title: 'Görünüm',

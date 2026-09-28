@@ -733,7 +733,10 @@ const it = {
           Wired: 'Cablato',
           Wireless: 'Senza fili',
           Other: 'Altro'
-        }
+        },
+        hostnameInvalid:
+          "Usa lettere, cifre e trattini, fino a 63 per parte separata da punti. Nessun trattino all'inizio o alla fine di una parte.",
+        hostnameFailed: 'Impossibile modificare il nome host'
       },
       appearance: {
         title: 'Aspetto',

@@ -723,7 +723,10 @@ const nb = {
           Wired: 'Kablet',
           Wireless: 'Trådløs',
           Other: 'Annet'
-        }
+        },
+        hostnameInvalid:
+          'Bruk bokstaver, sifre og bindestreker, opptil 63 per punktumdelt del. Ingen bindestrek i starten eller slutten av en del.',
+        hostnameFailed: 'Kunne ikke endre vertsnavnet'
       },
       appearance: {
         title: 'Utseende',

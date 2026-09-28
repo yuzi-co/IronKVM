@@ -734,7 +734,10 @@ const es = {
           Wired: 'Cableada',
           Wireless: 'Inalámbrica',
           Other: 'Otra'
-        }
+        },
+        hostnameInvalid:
+          'Use letras, dígitos y guiones, hasta 63 por parte separada por puntos. Sin guion al principio ni al final de una parte.',
+        hostnameFailed: 'No se pudo cambiar el nombre de host'
       },
       appearance: {
         title: 'Apariencia',

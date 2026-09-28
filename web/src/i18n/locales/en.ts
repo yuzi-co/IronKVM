@@ -718,7 +718,10 @@ const en = {
           Wired: 'Wired',
           Wireless: 'Wireless',
           Other: 'Other'
-        }
+        },
+        hostnameInvalid:
+          'Use letters, digits and hyphens, up to 63 per dot-separated part. No hyphen at the start or end of a part.',
+        hostnameFailed: 'Failed to change the hostname'
       },
       appearance: {
         title: 'Appearance',

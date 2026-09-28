@@ -729,7 +729,10 @@ const pt_br = {
           Wired: 'Com Fio',
           Wireless: 'Sem Fio',
           Other: 'Outro'
-        }
+        },
+        hostnameInvalid:
+          'Use letras, dígitos e hifens, até 63 por parte separada por pontos. Sem hífen no início ou no fim de uma parte.',
+        hostnameFailed: 'Falha ao alterar o nome do host'
       },
       appearance: {
         title: 'Aparência',

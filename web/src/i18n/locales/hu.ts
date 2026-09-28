@@ -731,7 +731,10 @@ const hu = {
           Wired: 'Vezetékes',
           Wireless: 'Vezeték nélküli',
           Other: 'Egyéb'
-        }
+        },
+        hostnameInvalid:
+          'Betűket, számjegyeket és kötőjeleket használjon, pontokkal elválasztott részenként legfeljebb 63-at. Rész elején vagy végén nem lehet kötőjel.',
+        hostnameFailed: 'Nem sikerült módosítani a gépnevet'
       },
       appearance: {
         title: 'Megjelenés',

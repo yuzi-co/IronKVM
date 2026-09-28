@@ -726,7 +726,10 @@ const id = {
           Wired: 'Berkabel',
           Wireless: 'Nirkabel',
           Other: 'Lainnya'
-        }
+        },
+        hostnameInvalid:
+          'Gunakan huruf, angka, dan tanda hubung, maksimal 63 per bagian yang dipisah titik. Tanpa tanda hubung di awal atau akhir bagian.',
+        hostnameFailed: 'Gagal mengubah nama host'
       },
       appearance: {
         title: 'Tampilan',

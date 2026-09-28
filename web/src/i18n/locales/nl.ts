@@ -732,7 +732,10 @@ const nl = {
           Wired: 'Bedraad',
           Wireless: 'Draadloos',
           Other: 'Anders'
-        }
+        },
+        hostnameInvalid:
+          'Gebruik letters, cijfers en koppeltekens, maximaal 63 per door punten gescheiden deel. Geen koppelteken aan het begin of einde van een deel.',
+        hostnameFailed: 'De hostnaam kon niet worden gewijzigd'
       },
       appearance: {
         title: 'Uiterlijk',

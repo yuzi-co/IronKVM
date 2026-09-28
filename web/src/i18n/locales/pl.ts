@@ -729,7 +729,10 @@ const pl = {
           Wired: 'Przewodowy',
           Wireless: 'Bezprzewodowe',
           Other: 'Inne'
-        }
+        },
+        hostnameInvalid:
+          'Użyj liter, cyfr i łączników, do 63 w każdej części oddzielonej kropką. Bez łącznika na początku ani na końcu części.',
+        hostnameFailed: 'Nie udało się zmienić nazwy hosta'
       },
       appearance: {
         title: 'Wygląd',
