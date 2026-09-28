@@ -22,7 +22,24 @@ type Config struct {
 	// plain HTTP listener, which never speaks h2 here.
 	HTTP2 bool `yaml:"http2"`
 
-	Hardware Hardware `yaml:"-"`
+	// HardwareSettings is what the owner says about how the board is wired to
+	// the host, kept under "hardware" in server.yaml. A file without the
+	// block loads with every setting off.
+	HardwareSettings HardwareSettings `yaml:"hardware" mapstructure:"hardware"`
+
+	// Hardware holds the board's pins, derived from its version at start. It
+	// is never read from or written to server.yaml.
+	Hardware Hardware `yaml:"-" mapstructure:"-"`
+}
+
+// HardwareSettings are the wiring choices the owner makes.
+type HardwareSettings struct {
+	// PowerLED says the host's power LED header is connected to the board.
+	// Without it the LED line reads "off" whatever the host is doing, so the
+	// power state is unknown, and anything that decides from it, such as
+	// Redfish's On and ForceOff, must not press. Off by default: most boards
+	// are installed without that header.
+	PowerLED bool `yaml:"powerLed" mapstructure:"powerLed"`
 }
 
 type Logger struct {
