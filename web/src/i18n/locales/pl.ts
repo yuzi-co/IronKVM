@@ -70,6 +70,31 @@ const pl = {
       video: 'Tryb wideo',
       videoDirectTips: 'Włącz HTTPS w „Ustawienia > Urządzenie”, aby korzystać z tego trybu',
       resolution: 'Rozdzielczość',
+      ocr: {
+        title: 'Odczytaj tekst (OCR)',
+        tips: 'Tekst jest rozpoznawany w tej przeglądarce. Możesz go poprawić przed skopiowaniem.',
+        hint: 'Przeciągnij nad tekstem do odczytania. Naciśnij Esc, aby anulować.',
+        noPicture: 'Poczekaj na obraz, a następnie przeciągnij nad tekstem do odczytania.',
+        cancel: 'Anuluj',
+        language: 'Język',
+        languages: {
+          eng: 'Angielski'
+        },
+        preview: 'Zaznaczony obszar',
+        capturing: 'Przechwytywanie ekranu...',
+        loading: 'Wczytywanie rozpoznawania tekstu...',
+        recognizing: 'Odczytywanie tekstu...',
+        noText: 'Nie znaleziono tekstu w zaznaczonym obszarze.',
+        copy: 'Kopiuj',
+        copied: 'Skopiowano do schowka',
+        copyFailed: 'Nie udało się skopiować do schowka',
+        selectAgain: 'Zaznacz ponownie',
+        unsupported:
+          'Ta przeglądarka nie może uruchomić rozpoznawania tekstu. Wymaga ono WebAssembly SIMD, które obsługują obecne przeglądarki.',
+        captureFailed: 'Nie udało się przechwycić ekranu.',
+        outside: 'Zaznaczony obszar leży poza obrazem.',
+        recognizeFailed: 'Rozpoznawanie tekstu nie powiodło się.'
+      },
       controlRegion: {
         title: 'Kalibracja myszy',
         description:

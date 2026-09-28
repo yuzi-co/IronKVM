@@ -68,6 +68,31 @@ const ko = {
       video: '비디오 모드',
       videoDirectTips: '이 모드를 사용하려면 "설정 > 장치"에서 HTTPS를 활성화하세요',
       resolution: '해상도',
+      ocr: {
+        title: '텍스트 읽기 (OCR)',
+        tips: '텍스트는 이 브라우저에서 인식됩니다. 복사하기 전에 수정할 수 있습니다.',
+        hint: '읽을 텍스트 위로 드래그하세요. 취소하려면 Esc를 누르세요.',
+        noPicture: '영상이 나타날 때까지 기다린 후 읽을 텍스트 위로 드래그하세요.',
+        cancel: '취소',
+        language: '언어',
+        languages: {
+          eng: '영어'
+        },
+        preview: '선택한 영역',
+        capturing: '화면을 캡처하는 중...',
+        loading: '텍스트 인식을 불러오는 중...',
+        recognizing: '텍스트를 읽는 중...',
+        noText: '선택한 영역에서 텍스트를 찾지 못했습니다.',
+        copy: '복사',
+        copied: '클립보드에 복사했습니다',
+        copyFailed: '클립보드에 복사하지 못했습니다',
+        selectAgain: '다시 선택',
+        unsupported:
+          '이 브라우저에서는 텍스트 인식을 실행할 수 없습니다. 최신 브라우저가 지원하는 WebAssembly SIMD가 필요합니다.',
+        captureFailed: '화면을 캡처하지 못했습니다.',
+        outside: '선택한 영역이 화면 밖에 있습니다.',
+        recognizeFailed: '텍스트 인식에 실패했습니다.'
+      },
       controlRegion: {
         title: '마우스 보정',
         description:

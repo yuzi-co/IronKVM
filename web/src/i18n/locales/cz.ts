@@ -70,6 +70,31 @@ const cz = {
       video: 'Režim videa',
       videoDirectTips: 'Chcete-li používat tento režim, povolte HTTPS v "Nastavení > Zařízení"',
       resolution: 'Rozlišení',
+      ocr: {
+        title: 'Přečíst text (OCR)',
+        tips: 'Text se rozpoznává v tomto prohlížeči. Před zkopírováním jej můžete opravit.',
+        hint: 'Táhněte přes text, který chcete přečíst. Stisknutím Esc akci zrušíte.',
+        noPicture: 'Počkejte na video a pak táhněte přes text, který chcete přečíst.',
+        cancel: 'Zrušit',
+        language: 'Jazyk',
+        languages: {
+          eng: 'Angličtina'
+        },
+        preview: 'Vybraná oblast',
+        capturing: 'Zachytávání obrazovky...',
+        loading: 'Načítání rozpoznávání textu...',
+        recognizing: 'Čtení textu...',
+        noText: 'Ve vybrané oblasti nebyl nalezen žádný text.',
+        copy: 'Kopírovat',
+        copied: 'Zkopírováno do schránky',
+        copyFailed: 'Kopírování do schránky se nezdařilo',
+        selectAgain: 'Vybrat znovu',
+        unsupported:
+          'Tento prohlížeč nedokáže spustit rozpoznávání textu. Potřebuje WebAssembly SIMD, které mají současné prohlížeče.',
+        captureFailed: 'Obrazovku se nepodařilo zachytit.',
+        outside: 'Vybraná oblast je mimo obraz.',
+        recognizeFailed: 'Rozpoznávání textu selhalo.'
+      },
       controlRegion: {
         title: 'Kalibrace myši',
         description:

@@ -66,6 +66,31 @@ const zh_tw = {
       video: '編碼格式',
       videoDirectTips: '本模式需先啟用 HTTPS，請前往「設定 -> 設備」中開啟',
       resolution: '解析度',
+      ocr: {
+        title: '辨識文字 (OCR)',
+        tips: '文字在此瀏覽器中辨識，複製前可以修改。',
+        hint: '拖曳選取要辨識的文字，按 Esc 取消。',
+        noPicture: '請等待視訊畫面出現，然後拖曳選取要辨識的文字。',
+        cancel: '取消',
+        language: '語言',
+        languages: {
+          eng: '英文'
+        },
+        preview: '選取區域',
+        capturing: '正在擷取螢幕...',
+        loading: '正在載入文字辨識...',
+        recognizing: '正在辨識文字...',
+        noText: '選取區域內找不到文字。',
+        copy: '複製',
+        copied: '已複製到剪貼簿',
+        copyFailed: '無法複製到剪貼簿',
+        selectAgain: '重新選取',
+        unsupported:
+          '此瀏覽器無法執行文字辨識，需要 WebAssembly SIMD 支援，目前主流瀏覽器皆已支援。',
+        captureFailed: '無法擷取螢幕。',
+        outside: '選取區域在畫面之外。',
+        recognizeFailed: '文字辨識失敗。'
+      },
       controlRegion: {
         title: '滑鼠校正',
         description:

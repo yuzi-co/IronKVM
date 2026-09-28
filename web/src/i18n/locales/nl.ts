@@ -71,6 +71,31 @@ const nl = {
       video: 'Videomodus',
       videoDirectTips: 'Schakel HTTPS in "Instellingen > Apparaat" in om deze modus te gebruiken',
       resolution: 'Resolutie',
+      ocr: {
+        title: 'Tekst lezen (OCR)',
+        tips: 'De tekst wordt in deze browser herkend. U kunt hem verbeteren voordat u hem kopieert.',
+        hint: 'Sleep over de tekst die u wilt lezen. Druk op Esc om te annuleren.',
+        noPicture: 'Wacht op de video en sleep daarna over de tekst die u wilt lezen.',
+        cancel: 'Annuleren',
+        language: 'Taal',
+        languages: {
+          eng: 'Engels'
+        },
+        preview: 'Geselecteerd gebied',
+        capturing: 'Scherm vastleggen...',
+        loading: 'Tekstherkenning laden...',
+        recognizing: 'Tekst lezen...',
+        noText: 'Er is geen tekst gevonden in het geselecteerde gebied.',
+        copy: 'Kopiëren',
+        copied: 'Gekopieerd naar het klembord',
+        copyFailed: 'Kopiëren naar het klembord is mislukt',
+        selectAgain: 'Opnieuw selecteren',
+        unsupported:
+          'Deze browser kan geen tekstherkenning uitvoeren. Daarvoor is WebAssembly SIMD nodig, dat huidige browsers hebben.',
+        captureFailed: 'Het scherm kon niet worden vastgelegd.',
+        outside: 'Het geselecteerde gebied ligt buiten het beeld.',
+        recognizeFailed: 'Tekstherkenning is mislukt.'
+      },
       controlRegion: {
         title: 'Muiskalibratie',
         description:

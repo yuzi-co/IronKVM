@@ -72,6 +72,32 @@ const de = {
       videoDirectTips:
         'Aktivieren Sie HTTPS unter „Einstellungen > Gerät“, um diesen Modus zu verwenden',
       resolution: 'Auflösung',
+      ocr: {
+        title: 'Text lesen (OCR)',
+        tips: 'Der Text wird in diesem Browser erkannt. Sie können ihn vor dem Kopieren korrigieren.',
+        hint: 'Ziehen Sie über den Text, der gelesen werden soll. Mit Esc brechen Sie ab.',
+        noPicture:
+          'Warten Sie auf das Video und ziehen Sie dann über den Text, der gelesen werden soll.',
+        cancel: 'Abbrechen',
+        language: 'Sprache',
+        languages: {
+          eng: 'Englisch'
+        },
+        preview: 'Ausgewählter Bereich',
+        capturing: 'Bildschirm wird erfasst...',
+        loading: 'Texterkennung wird geladen...',
+        recognizing: 'Text wird gelesen...',
+        noText: 'Im ausgewählten Bereich wurde kein Text gefunden.',
+        copy: 'Kopieren',
+        copied: 'In die Zwischenablage kopiert',
+        copyFailed: 'Kopieren in die Zwischenablage fehlgeschlagen',
+        selectAgain: 'Erneut auswählen',
+        unsupported:
+          'Dieser Browser kann keine Texterkennung ausführen. Sie benötigt WebAssembly SIMD, das aktuelle Browser unterstützen.',
+        captureFailed: 'Der Bildschirm konnte nicht erfasst werden.',
+        outside: 'Der ausgewählte Bereich liegt außerhalb des Bildes.',
+        recognizeFailed: 'Die Texterkennung ist fehlgeschlagen.'
+      },
       controlRegion: {
         title: 'Mauskalibrierung',
         description:

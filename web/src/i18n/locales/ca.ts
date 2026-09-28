@@ -69,6 +69,31 @@ const ca = {
       video: 'Mode de vídeo',
       videoDirectTips: "Activa HTTPS a 'Configuració > Dispositiu' per utilitzar aquest mode",
       resolution: 'Resolució',
+      ocr: {
+        title: 'Llegeix text (OCR)',
+        tips: 'El text es reconeix en aquest navegador. El pots corregir abans de copiar-lo.',
+        hint: 'Arrossega sobre el text que vols llegir. Prem Esc per cancel·lar.',
+        noPicture: 'Espera el vídeo i després arrossega sobre el text que vols llegir.',
+        cancel: 'Cancel·la',
+        language: 'Idioma',
+        languages: {
+          eng: 'Anglès'
+        },
+        preview: 'Àrea seleccionada',
+        capturing: "S'està capturant la pantalla...",
+        loading: "S'està carregant el reconeixement de text...",
+        recognizing: "S'està llegint el text...",
+        noText: "No s'ha trobat cap text a l'àrea seleccionada.",
+        copy: 'Copia',
+        copied: 'Copiat al porta-retalls',
+        copyFailed: "No s'ha pogut copiar al porta-retalls",
+        selectAgain: 'Torna a seleccionar',
+        unsupported:
+          'Aquest navegador no pot executar el reconeixement de text. Necessita WebAssembly SIMD, que tenen els navegadors actuals.',
+        captureFailed: "No s'ha pogut capturar la pantalla.",
+        outside: "L'àrea seleccionada és fora de la imatge.",
+        recognizeFailed: 'Ha fallat el reconeixement de text.'
+      },
       controlRegion: {
         title: 'Calibratge del ratolí',
         description:

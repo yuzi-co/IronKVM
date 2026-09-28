@@ -72,6 +72,31 @@ const fr = {
       video: 'Mode vidéo',
       videoDirectTips: 'Activez HTTPS dans "Paramètres > Appareil" pour utiliser ce mode',
       resolution: 'Résolution',
+      ocr: {
+        title: 'Lire le texte (OCR)',
+        tips: 'Le texte est reconnu dans ce navigateur. Vous pouvez le corriger avant de le copier.',
+        hint: 'Faites glisser sur le texte à lire. Appuyez sur Échap pour annuler.',
+        noPicture: 'Attendez la vidéo, puis faites glisser sur le texte à lire.',
+        cancel: 'Annuler',
+        language: 'Langue',
+        languages: {
+          eng: 'Anglais'
+        },
+        preview: 'Zone sélectionnée',
+        capturing: "Capture de l'écran...",
+        loading: 'Chargement de la reconnaissance de texte...',
+        recognizing: 'Lecture du texte...',
+        noText: "Aucun texte n'a été trouvé dans la zone sélectionnée.",
+        copy: 'Copier',
+        copied: 'Copié dans le presse-papiers',
+        copyFailed: 'Impossible de copier dans le presse-papiers',
+        selectAgain: 'Sélectionner à nouveau',
+        unsupported:
+          'Ce navigateur ne peut pas exécuter la reconnaissance de texte. Elle nécessite WebAssembly SIMD, pris en charge par les navigateurs actuels.',
+        captureFailed: "Impossible de capturer l'écran.",
+        outside: "La zone sélectionnée est en dehors de l'image.",
+        recognizeFailed: 'La reconnaissance de texte a échoué.'
+      },
       controlRegion: {
         title: 'Étalonnage de la souris',
         description:

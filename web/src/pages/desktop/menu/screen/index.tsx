@@ -13,6 +13,7 @@ import { getQualityMap, getScreenType } from './constants.ts';
 import { Fps } from './fps';
 import { FrameDetect } from './frame-detect';
 import { Gop } from './gop.tsx';
+import { Ocr } from './ocr.tsx';
 import { Quality } from './quality';
 import { Reset } from './reset.tsx';
 import { Resolution } from './resolution';
@@ -99,6 +100,7 @@ export const Screen = () => {
         <Codec codec={current.codec} setCodec={(codec) => apply({ codec })} videoMode={videoMode} />
       )}
       {isMjpeg && <FrameDetect />}
+      <Ocr />
       <Reset />
     </div>
   );

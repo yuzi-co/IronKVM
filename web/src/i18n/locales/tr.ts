@@ -70,6 +70,31 @@ const tr = {
       video: 'Görüntü modu',
       videoDirectTips: 'kullanmak için "Ayarlar > Cihaz" HTTPS aktif edin',
       resolution: 'Çözünürlük',
+      ocr: {
+        title: 'Metni Oku (OCR)',
+        tips: 'Metin bu tarayıcıda tanınır. Kopyalamadan önce düzeltebilirsiniz.',
+        hint: 'Okunacak metnin üzerinde sürükleyin. İptal etmek için Esc tuşuna basın.',
+        noPicture: 'Görüntüyü bekleyin, ardından okunacak metnin üzerinde sürükleyin.',
+        cancel: 'İptal',
+        language: 'Dil',
+        languages: {
+          eng: 'İngilizce'
+        },
+        preview: 'Seçili alan',
+        capturing: 'Ekran yakalanıyor...',
+        loading: 'Metin tanıma yükleniyor...',
+        recognizing: 'Metin okunuyor...',
+        noText: 'Seçili alanda metin bulunamadı.',
+        copy: 'Kopyala',
+        copied: 'Panoya kopyalandı',
+        copyFailed: 'Panoya kopyalanamadı',
+        selectAgain: 'Yeniden Seç',
+        unsupported:
+          'Bu tarayıcı metin tanıma çalıştıramıyor. Güncel tarayıcılarda bulunan WebAssembly SIMD desteği gerekir.',
+        captureFailed: 'Ekran yakalanamadı.',
+        outside: 'Seçili alan görüntünün dışında.',
+        recognizeFailed: 'Metin tanıma başarısız oldu.'
+      },
       controlRegion: {
         title: 'Fare Kalibrasyonu',
         description:

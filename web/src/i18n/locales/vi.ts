@@ -69,6 +69,31 @@ const vi = {
       video: 'Chế độ video',
       videoDirectTips: 'Bật HTTPS trong "Cài đặt > Thiết bị" để sử dụng chế độ này',
       resolution: 'Độ phân giải',
+      ocr: {
+        title: 'Đọc văn bản (OCR)',
+        tips: 'Văn bản được nhận dạng trong trình duyệt này. Bạn có thể sửa trước khi sao chép.',
+        hint: 'Kéo qua đoạn văn bản cần đọc. Nhấn Esc để hủy.',
+        noPicture: 'Chờ video hiển thị, sau đó kéo qua đoạn văn bản cần đọc.',
+        cancel: 'Hủy',
+        language: 'Ngôn ngữ',
+        languages: {
+          eng: 'Tiếng Anh'
+        },
+        preview: 'Vùng đã chọn',
+        capturing: 'Đang chụp màn hình...',
+        loading: 'Đang tải tính năng nhận dạng văn bản...',
+        recognizing: 'Đang đọc văn bản...',
+        noText: 'Không tìm thấy văn bản trong vùng đã chọn.',
+        copy: 'Sao chép',
+        copied: 'Đã sao chép vào bộ nhớ tạm',
+        copyFailed: 'Không thể sao chép vào bộ nhớ tạm',
+        selectAgain: 'Chọn lại',
+        unsupported:
+          'Trình duyệt này không thể chạy nhận dạng văn bản. Tính năng này cần WebAssembly SIMD, có trên các trình duyệt hiện nay.',
+        captureFailed: 'Không thể chụp màn hình.',
+        outside: 'Vùng đã chọn nằm ngoài hình ảnh.',
+        recognizeFailed: 'Nhận dạng văn bản thất bại.'
+      },
       controlRegion: {
         title: 'Hiệu chỉnh chuột',
         description:

@@ -30,6 +30,7 @@ import { Keyboard } from './keyboard';
 import { Menu } from './menu';
 import { Mouse } from './mouse';
 import { H264ModeNotification, Notification } from './notification.tsx';
+import { Ocr } from './ocr';
 import { Paste } from './paste';
 import { Sidebar as PicoclawSidebar } from './picoclaw';
 import { ActionOverlay } from './picoclaw/action-overlay.tsx';
@@ -331,6 +332,10 @@ export const Desktop = () => {
 
       <OverlayBoundary name="paste">
         <Paste />
+      </OverlayBoundary>
+
+      <OverlayBoundary name="ocr">
+        <Ocr />
       </OverlayBoundary>
     </div>
   );
