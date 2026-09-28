@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Divider } from 'antd';
 import { LoaderCircleIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { describeFailure } from '@/lib/feedback.ts';
 import { useStableCallback } from '@/hooks/useStableCallback.ts';
 
+import { usePoll } from '../components/use-poll.ts';
 import { Boot } from './boot.tsx';
 import { Device } from './device.tsx';
 import { ErrorDetail } from './error-detail.tsx';
@@ -13,6 +15,8 @@ import { Install } from './install.tsx';
 import { Notice } from './notice.tsx';
 import { Run } from './run.tsx';
 import type { Status, VpnInfo } from './types.ts';
+
+const statusPollMs = 10 * 1000;
 
 type VpnPageProps = {
   vpn: VpnInfo;
@@ -27,31 +31,43 @@ export const VpnPage = ({ vpn, setIsLocked }: VpnPageProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<Status>();
   const [errMsg, setErrMsg] = useState('');
+  const isPolling = useRef(false);
 
-  const getStatus = useStableCallback(() => {
-    if (isLoading) return;
-    setIsLoading(true);
+  // quiet asks without the loading screen: the poll must not blank the page
+  // every few seconds, nor wipe an error the operator is reading.
+  const fetchStatus = useStableCallback((quiet: boolean) => {
+    // A poll never overlaps another request; an action's refresh always runs.
+    if (isLoading || (quiet && isPolling.current)) return;
+    if (quiet) isPolling.current = true;
+    else setIsLoading(true);
 
     vpn.api
       .getStatus()
       .then((rsp) => {
         if (rsp.code !== 0) {
-          setErrMsg(rsp.msg);
+          if (!quiet) setErrMsg(describeFailure(rsp));
           return;
         }
         setStatus(rsp.data);
       })
       .catch((err) => {
-        setErrMsg(err?.message || 'Failed to get status');
+        if (!quiet) setErrMsg(describeFailure(err));
       })
       .finally(() => {
-        setIsLoading(false);
+        if (quiet) isPolling.current = false;
+        else setIsLoading(false);
       });
   });
+  const getStatus = useStableCallback(() => fetchStatus(false));
 
   useEffect(() => {
     getStatus();
   }, [getStatus]);
+
+  // The address, peers and connection change on their own, so keep them
+  // current while the page is open. Not while installing: that has its own
+  // progress and holds the page.
+  usePoll(() => fetchStatus(true), statusPollMs, !!status && status.state !== 'notInstall');
 
   const blocked = !!status?.blockedBy;
   const installed = !!status && status.state !== 'notInstall';

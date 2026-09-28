@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Switch } from 'antd';
 import { useTranslation } from 'react-i18next';
 
+import { describeFailure } from '@/lib/feedback.ts';
+
 import type { VpnInfo } from './types.ts';
 
 type BootProps = {
@@ -32,7 +34,7 @@ export const Boot = ({ vpn, enabled, blocked, onChange, onError }: BootProps) =>
         }
         onChange();
       })
-      .catch((err) => onError(err?.message || 'Failed to set start at boot'))
+      .catch((err) => onError(describeFailure(err)))
       .finally(() => setIsLoading(false));
   }
 
