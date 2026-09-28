@@ -190,7 +190,7 @@ start_usb_dev(){
     # Symlinks only, never a function directory: `rmdir functions/acm.GS0`
     # blocks for ever because /etc/inittab respawns a getty on /dev/ttyGS0.
     rm -f configs/c.1/hid.GS0 configs/c.1/hid.GS1 configs/c.1/hid.GS2
-    rm -f configs/c.1/acm.GS0 configs/c.1/mass_storage.disk0           configs/c.1/rndis.usb0 configs/c.1/ncm.usb0 configs/c.1/uac1.usb0
+    rm -f configs/c.1/acm.GS0 configs/c.1/mass_storage.disk0           configs/c.1/rndis.usb0 configs/c.1/ncm.usb0 configs/c.1/ecm.usb0 configs/c.1/uac1.usb0
     rm -f os_desc/c.1
     echo 0 > os_desc/use
 
