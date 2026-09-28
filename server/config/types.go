@@ -39,6 +39,10 @@ type Config struct {
 	// server.yaml. A file without the block loads with both sides off.
 	NetBoot NetBoot `yaml:"netboot,omitempty" mapstructure:"netboot"`
 
+	// VNC configures the VNC server, kept under "vnc" in server.yaml. A file
+	// without the block loads with the server off.
+	VNC VNC `yaml:"vnc,omitempty" mapstructure:"vnc"`
+
 	// Hardware holds the board's pins, derived from its version at start. It
 	// is never read from or written to server.yaml.
 	Hardware Hardware `yaml:"-" mapstructure:"-"`
@@ -124,6 +128,39 @@ type NetBoot struct {
 	// LAN answers PXE clients on the LAN with proxy DHCP. It never hands out
 	// an address, and it offers a boot loader only.
 	LAN bool `yaml:"lan" mapstructure:"lan"`
+}
+
+// The VNC server's defaults. A zero value in server.yaml means the default.
+const (
+	DefaultVNCPort   = 5900
+	DefaultVNCMaxFPS = 15
+)
+
+// VNC configures the VNC server. Read it through WithDefaults.
+type VNC struct {
+	// Enabled listens for VNC clients. Off by default.
+	Enabled bool `yaml:"enabled" mapstructure:"enabled"`
+	// Port is the TCP port the server listens on.
+	Port int `yaml:"port,omitempty" mapstructure:"port"`
+	// MaxFPS caps the frames a second a client is sent, below the stream's
+	// own rate.
+	MaxFPS int `yaml:"maxFps,omitempty" mapstructure:"maxFps"`
+	// VNCAuth offers plain VNC authentication beside VeNCrypt. It sends the
+	// picture and the keystrokes without encryption, so it is off by default.
+	// The password it checks is kept outside server.yaml.
+	VNCAuth bool `yaml:"vncAuth,omitempty" mapstructure:"vncAuth"`
+}
+
+// WithDefaults returns the settings with every zero value replaced by its
+// default.
+func (v VNC) WithDefaults() VNC {
+	if v.Port <= 0 {
+		v.Port = DefaultVNCPort
+	}
+	if v.MaxFPS <= 0 {
+		v.MaxFPS = DefaultVNCMaxFPS
+	}
+	return v
 }
 
 type Logger struct {
