@@ -221,6 +221,9 @@ export const MCP = () => {
                       type="text"
                       size="small"
                       className="text-neutral-400 hover:text-white"
+                      aria-label={
+                        isKeyVisible ? t('settings.mcp.hideKey') : t('settings.mcp.showKey')
+                      }
                       icon={isKeyVisible ? <EyeOffIcon size={15} /> : <EyeIcon size={15} />}
                       disabled={!config.apiKey}
                       onClick={() => setIsKeyVisible((visible) => !visible)}
@@ -230,6 +233,7 @@ export const MCP = () => {
                       size="small"
                       className="text-neutral-400 hover:text-white"
                       loading={isLoading}
+                      aria-label={t('settings.mcp.regenerateKey')}
                       icon={<RefreshCcwIcon size={15} />}
                       onClick={regenerateKey}
                     />
@@ -260,26 +264,31 @@ const CredentialRow = ({
   onCopy,
   disabled = false,
   actions
-}: CredentialRowProps) => (
-  <div className="group flex flex-col space-y-2 px-4 py-3.5 transition-colors hover:bg-neutral-800/40 sm:flex-row sm:items-center sm:justify-between">
-    <span className="w-24 shrink-0 text-sm font-medium text-neutral-400">{label}</span>
-    <div className="flex min-w-0 items-center justify-between gap-2">
-      <span className="min-w-0 flex-1 select-all truncate font-mono text-sm text-neutral-300">
-        {value}
-      </span>
-      <div className="flex shrink-0 items-center space-x-1 opacity-40 transition-opacity group-hover:opacity-100 sm:ml-4">
-        {actions}
-        <Button
-          type="text"
-          size="small"
-          className="text-neutral-400 hover:text-white"
-          icon={
-            copied ? <CheckIcon size={15} className="text-green-500" /> : <CopyIcon size={15} />
-          }
-          disabled={disabled}
-          onClick={onCopy}
-        />
+}: CredentialRowProps) => {
+  const { t } = useTranslation();
+
+  return (
+    <div className="group flex flex-col space-y-2 px-4 py-3.5 transition-colors hover:bg-neutral-800/40 sm:flex-row sm:items-center sm:justify-between">
+      <span className="w-24 shrink-0 text-sm font-medium text-neutral-400">{label}</span>
+      <div className="flex min-w-0 items-center justify-between gap-2">
+        <span className="min-w-0 flex-1 truncate font-mono text-sm text-neutral-300 select-all">
+          {value}
+        </span>
+        <div className="flex shrink-0 items-center space-x-1 opacity-40 transition-opacity group-hover:opacity-100 sm:ml-4">
+          {actions}
+          <Button
+            type="text"
+            size="small"
+            className="text-neutral-400 hover:text-white"
+            aria-label={t('common.copy')}
+            icon={
+              copied ? <CheckIcon size={15} className="text-green-500" /> : <CopyIcon size={15} />
+            }
+            disabled={disabled}
+            onClick={onCopy}
+          />
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};

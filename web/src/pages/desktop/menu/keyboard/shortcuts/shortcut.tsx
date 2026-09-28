@@ -55,8 +55,9 @@ export const Shortcut = ({ shortcut }: ShortcutProps) => {
   }
 
   return (
-    <div
-      className="flex h-[32px] w-full cursor-pointer items-center space-x-1 rounded px-3 hover:bg-neutral-700/30"
+    <button
+      type="button"
+      className="flex h-[32px] w-full cursor-pointer items-center space-x-1 rounded p-0 px-3 text-left hover:bg-neutral-700/30"
       onClick={handleClick}
     >
       {shortcut.keys.map((key, index) => (
@@ -64,6 +65,6 @@ export const Shortcut = ({ shortcut }: ShortcutProps) => {
           <Kbd>{key.label}</Kbd>
         </KbdGroup>
       ))}
-    </div>
+    </button>
   );
 };

@@ -39,9 +39,12 @@ export const MediaKeys = () => {
       <div className="flex items-center space-x-1">
         {keys.map(({ usage, label, Icon }) => (
           <Tooltip key={usage} title={t(label)} placement="bottom">
-            <div
+            <button
+              type="button"
+              aria-label={t(label)}
+              aria-disabled={disabled}
               className={clsx(
-                'flex h-7 w-7 items-center justify-center rounded',
+                'flex h-7 w-7 items-center justify-center rounded p-0',
                 disabled
                   ? 'cursor-not-allowed text-neutral-500'
                   : 'cursor-pointer hover:bg-neutral-700/70'
@@ -49,7 +52,7 @@ export const MediaKeys = () => {
               onClick={disabled ? undefined : () => sendKey('consumer', usage)}
             >
               <Icon size={16} />
-            </div>
+            </button>
           </Tooltip>
         ))}
       </div>

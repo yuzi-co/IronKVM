@@ -14,12 +14,13 @@ export const PowerButton = ({ confirm, onPress, children }: PowerButtonProps) =>
   const { t } = useTranslation();
 
   const row = (
-    <div
-      className="flex cursor-pointer items-center space-x-2 rounded px-3 py-1.5 select-none hover:bg-neutral-700/70"
+    <button
+      type="button"
+      className="flex w-full cursor-pointer items-center space-x-2 rounded p-0 px-3 py-1.5 text-left select-none hover:bg-neutral-700/70"
       onClick={confirm ? undefined : onPress}
     >
       {children}
-    </div>
+    </button>
   );
 
   if (!confirm) return row;

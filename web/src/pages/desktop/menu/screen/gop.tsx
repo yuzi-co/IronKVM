@@ -30,16 +30,17 @@ export const Gop = ({ gop, setGop }: GopProps) => {
   const content = (
     <>
       {gopList.map((item) => (
-        <div
+        <button
+          type="button"
           key={item.key}
-          className="flex cursor-pointer items-center rounded py-1 pr-6 pl-1 select-none hover:bg-neutral-700/70"
+          className="flex w-full cursor-pointer items-center rounded p-0 py-1 pr-6 pl-1 text-left select-none hover:bg-neutral-700/70"
           onClick={() => update(item.key)}
         >
           <div className="flex h-[14px] w-[20px] items-end text-blue-500">
             {item.key === gop && <CheckIcon size={14} />}
           </div>
           <span>{item.label}</span>
-        </div>
+        </button>
       ))}
     </>
   );

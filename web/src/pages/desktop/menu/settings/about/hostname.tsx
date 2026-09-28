@@ -86,23 +86,31 @@ export const Hostname = ({ editable = false }: { editable?: boolean }) => {
             />
             <Button
               size="small"
+              aria-label={t('common.save')}
               icon={<CheckOutlined />}
               disabled={!isValid}
               loading={isLoading}
               onClick={update}
             />
-            <Button size="small" icon={<CloseOutlined />} onClick={() => setEditState('')} />
+            <Button
+              size="small"
+              aria-label={t('common.cancel')}
+              icon={<CloseOutlined />}
+              onClick={() => setEditState('')}
+            />
           </div>
         ) : (
           <div className="flex items-center space-x-2">
             <span>{hostname}</span>
             {editable && (
-              <div
-                className="size-[16px] cursor-pointer text-neutral-500 hover:text-blue-500"
+              <button
+                type="button"
+                aria-label={t('settings.about.editHostname')}
+                className="size-[16px] cursor-pointer p-0 text-neutral-500 hover:text-blue-500"
                 onClick={showInput}
               >
                 <ClipboardPenIcon size={16} />
-              </div>
+              </button>
             )}
           </div>
         )}

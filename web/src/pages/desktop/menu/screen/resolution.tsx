@@ -29,9 +29,10 @@ export const Resolution = () => {
   const content = (
     <>
       {resolutions.map((res) => (
-        <div
+        <button
+          type="button"
           key={res.height}
-          className="flex cursor-pointer items-center rounded py-1.5 pr-5 pl-1 select-none hover:bg-neutral-700/70"
+          className="flex w-full cursor-pointer items-center rounded p-0 py-1.5 pr-5 pl-1 text-left select-none hover:bg-neutral-700/70"
           onClick={() => update(res)}
         >
           <div className="flex h-[14px] w-[20px] items-end text-blue-500">
@@ -56,7 +57,7 @@ export const Resolution = () => {
               <span>{res.height}</span>
             </>
           )}
-        </div>
+        </button>
       ))}
     </>
   );

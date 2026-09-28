@@ -50,15 +50,16 @@ export const Uninstall = ({ vpn, onSuccess }: UninstallProps) => {
 
   return (
     <>
-      <div
-        className="flex h-[30px] cursor-pointer items-center space-x-1 rounded px-2 py-1 text-neutral-300 hover:bg-neutral-700/70"
+      <button
+        type="button"
+        className="flex h-[30px] cursor-pointer items-center space-x-1 rounded p-0 px-2 py-1 text-neutral-300 hover:bg-neutral-700/70"
         onClick={() => {
           setErrMsg('');
           setIsModalOpen(true);
         }}
       >
         <span>{t('settings.vpn.uninstall', { name: vpn.title })}</span>
-      </div>
+      </button>
 
       <Modal
         title={title}

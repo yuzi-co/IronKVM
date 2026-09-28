@@ -187,12 +187,13 @@ export const Recorder = ({
 
   return (
     <>
-      <div
-        className="flex h-[30px] cursor-pointer items-center space-x-1 rounded px-3 text-neutral-300 hover:bg-neutral-700/60"
+      <button
+        type="button"
+        className="flex h-[30px] w-full cursor-pointer items-center space-x-1 rounded p-0 px-3 text-left text-neutral-300 hover:bg-neutral-700/60"
         onClick={() => setIsModalOpen(true)}
       >
         <span>{t('keyboard.shortcut.custom')}</span>
-      </div>
+      </button>
 
       <Modal
         width={500}
@@ -204,9 +205,9 @@ export const Recorder = ({
       >
         <div>
           <span className="text-neutral-500">{t('keyboard.shortcut.captureTips')}</span>
-          <a className="px-1 text-blue-500/80" onClick={toggleFullscreen}>
+          <button type="button" className="p-0 px-1 text-blue-500/80" onClick={toggleFullscreen}>
             {t('keyboard.shortcut.enterFullScreen')}
-          </a>
+          </button>
         </div>
 
         <div className="flex items-center space-x-0.5 py-6">
@@ -246,12 +247,14 @@ export const Recorder = ({
                     ))}
                   </div>
 
-                  <div
-                    className="flex size-[20px] cursor-pointer items-center justify-center rounded-xs text-neutral-500 hover:text-red-500"
+                  <button
+                    type="button"
+                    aria-label={t('common.delete')}
+                    className="flex size-[20px] cursor-pointer items-center justify-center rounded-xs p-0 text-neutral-500 hover:text-red-500"
                     onClick={() => delShortcut(shortcut)}
                   >
                     <Trash2Icon size={16} />
-                  </div>
+                  </button>
                 </div>
               ))}
             </ScrollArea>

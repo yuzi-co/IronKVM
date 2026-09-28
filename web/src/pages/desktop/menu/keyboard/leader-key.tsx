@@ -108,13 +108,14 @@ export const LeaderKey = () => {
 
   return (
     <>
-      <div
-        className="flex cursor-pointer items-center space-x-2 rounded py-1 pr-5 pl-2 select-none hover:bg-neutral-700/70"
+      <button
+        type="button"
+        className="flex w-full cursor-pointer items-center space-x-2 rounded p-0 py-1 pr-5 pl-2 text-left select-none hover:bg-neutral-700/70"
         onClick={openModal}
       >
         <KeyIcon size={18} />
         <span>{t('keyboard.leaderKey.title')}</span>
-      </div>
+      </button>
 
       <Modal width={510} keyboard={false} footer={null} open={isModalOpen} onCancel={closeModal}>
         <div className="my-3 flex flex-col space-y-3">
@@ -126,8 +127,10 @@ export const LeaderKey = () => {
 
           {/* Document */}
           <div className="rounded-lg bg-neutral-800 py-3">
-            <div
-              className="flex cursor-pointer items-center justify-between px-5"
+            <button
+              type="button"
+              aria-expanded={!isDocCollapsed}
+              className="flex w-full cursor-pointer items-center justify-between p-0 px-5 text-left"
               onClick={() => setIsDocCollapsed((c) => !c)}
             >
               <span>{t('keyboard.leaderKey.howToUse')}</span>
@@ -139,7 +142,7 @@ export const LeaderKey = () => {
               >
                 <ChevronRightIcon size={18} />
               </div>
-            </div>
+            </button>
 
             {!isDocCollapsed && (
               <ul className="list-outside space-y-3">
@@ -181,10 +184,11 @@ export const LeaderKey = () => {
 
               <div className="flex items-center justify-center space-x-3">
                 {optionalKeys.map((key) => (
-                  <div
+                  <button
+                    type="button"
                     key={key.value}
                     className={clsx(
-                      'flex w-28 cursor-pointer items-center justify-center space-x-1 rounded py-1 shadow-lg shadow-neutral-800 outline',
+                      'flex w-28 cursor-pointer items-center justify-center space-x-1 rounded p-0 py-1 shadow-lg shadow-neutral-800 outline',
                       key.value === tempLeaderKey
                         ? 'text-neutral-300 outline-blue-500'
                         : 'text-neutral-500 outline-neutral-700 hover:shadow-xl hover:outline-neutral-600'
@@ -193,7 +197,7 @@ export const LeaderKey = () => {
                   >
                     {key.icon}
                     <span>{key.label}</span>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
