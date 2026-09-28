@@ -129,7 +129,7 @@ const se = {
     keyboard: {
       title: 'Tangentbord',
       paste: 'Klistra in',
-      tips: 'Endast standardbokstäver och symboler på tangentbordet stöds',
+      tips: 'Skriver texten på värden som tangenttryckningar. Välj den tangentbordslayout som värden använder.',
       placeholder: 'Ange text',
       submit: 'Skicka',
       virtual: 'Tangentbord',
@@ -137,10 +137,6 @@ const se = {
       clipboardPermissionDenied:
         'Behörighet till Urklipp nekad. Vänligen tillåt åtkomst till Urklipp i din webbläsare.',
       clipboardReadError: 'Misslyckades med att läsa Urklipp',
-      dropdownEnglish: 'Engelska',
-      dropdownGerman: 'Tyska',
-      dropdownFrench: 'Franska',
-      dropdownRussian: 'ryska',
       mediaKeys: {
         title: 'Medieknappar',
         mute: 'Ljud av',
@@ -150,6 +146,45 @@ const se = {
         playPause: 'Spela upp eller pausa',
         next: 'Nästa spår',
         stop: 'Stopp'
+      },
+      pasting: {
+        layout: 'Tangentbordslayout på värden',
+        layouts: {
+          us: 'Engelska (USA)',
+          uk: 'Engelska (Storbritannien)',
+          de: 'Tyska',
+          fr: 'Franska',
+          es: 'Spanska',
+          it: 'Italienska',
+          ptBr: 'Portugisiska (Brasilien)',
+          se: 'Svenska / finska',
+          ru: 'Ryska',
+          ja: 'Japanska',
+          ko: 'Koreanska'
+        },
+        speed: 'Skrivhastighet',
+        speeds: {
+          fast: 'Snabb',
+          normal: 'Normal',
+          slow: 'Långsam'
+        },
+        estimate: 'Skrivtid: ungefär {{duration}}',
+        untypeable: 'Tecken som den här layouten inte kan skriva: {{count}}',
+        untypeableAt: 'rad {{line}}, kolumn {{column}}',
+        skipUntypeable: 'Skriv resten',
+        shortcut: '{{shortcut}} skriver urklippet på värden direkt.',
+        clipboardUnavailable:
+          'Webbläsaren låter bara en sida läsa urklippet över HTTPS. Klistra in texten i rutan med Ctrl+V.',
+        clipboardEmpty: 'Urklippet innehåller ingen text.',
+        tooLong: 'Texten är för lång. Gränsen är {{max}} tecken.',
+        inProgress: 'En inklistring skrivs redan.',
+        typing: 'Skriver på värden',
+        done: 'Text skriven',
+        canceled: 'Inklistring avbruten',
+        failed: 'Inklistring misslyckades',
+        cancel: 'Avbryt',
+        controlBusy: 'En annan styrning använder tangentbordet.',
+        hidError: 'Tangenttryckningarna kunde inte skickas till värden.'
       },
       shortcut: {
         title: 'Genvägar',

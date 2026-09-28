@@ -94,3 +94,60 @@ type SetLeaderKeyReq struct {
 type GetLeaderKeyRsp struct {
 	Key string `json:"key"`
 }
+
+// PasteReq types Content on the target as key presses, in the background.
+//
+// Layout names the keyboard layout active on the target, because a key press
+// types whatever that layout puts on the key. Langue is the name an older web
+// client sends it under. Delay is the pause after each key press in
+// milliseconds, 0 for the default. A text holding characters the layout
+// cannot type is refused with the list of them, unless SkipUntypeable says to
+// type the rest.
+type PasteReq struct {
+	Content        string `json:"content" form:"content" validate:"required"`
+	Layout         string `json:"layout" form:"layout"`
+	Langue         string `json:"langue" form:"langue"`
+	Delay          int    `json:"delay" form:"delay"`
+	SkipUntypeable bool   `json:"skipUntypeable" form:"skipUntypeable"`
+}
+
+// PasteCheckReq asks what typing Content would take, without typing it.
+type PasteCheckReq struct {
+	Content string `json:"content" form:"content" validate:"required"`
+	Layout  string `json:"layout" form:"layout"`
+	Delay   int    `json:"delay" form:"delay"`
+}
+
+// PasteUntypeable is one character the layout cannot type. Index counts code
+// points from the start of the text; Line and Column count from 1, and a
+// CRLF ends one line.
+type PasteUntypeable struct {
+	Index  int    `json:"index"`
+	Line   int    `json:"line"`
+	Column int    `json:"column"`
+	Char   string `json:"char"`
+}
+
+// PasteCheckRsp describes what typing a text takes. Untypeable lists at most
+// the first hundred characters the layout cannot type, and UntypeableCount
+// counts all of them.
+type PasteCheckRsp struct {
+	Characters      int               `json:"characters"`
+	Keystrokes      int               `json:"keystrokes"`
+	DurationMs      int64             `json:"durationMs"`
+	Untypeable      []PasteUntypeable `json:"untypeable"`
+	UntypeableCount int               `json:"untypeableCount"`
+}
+
+// PasteStatusRsp reports the paste typing in the background, or the last one.
+//
+// Status is idle, typing, done, canceled or failed. Typed and Total count
+// characters. Error is a code the web UI translates, set when Status is
+// failed: control_busy when the keyboard could not be taken, hid_error when
+// a report could not be written.
+type PasteStatusRsp struct {
+	Status string `json:"status"`
+	Typed  int    `json:"typed"`
+	Total  int    `json:"total"`
+	Error  string `json:"error,omitempty"`
+}

@@ -127,17 +127,13 @@ const zh_tw = {
     keyboard: {
       title: '鍵盤',
       paste: '貼上',
-      tips: '僅支援標準鍵盤的字母和符號',
+      tips: '以按鍵方式在主機上輸入文字。請選擇主機使用的鍵盤配置。',
       placeholder: '請輸入內容',
       submit: '送出',
       virtual: '虛擬鍵盤',
       readClipboard: '從剪貼簿讀取',
       clipboardPermissionDenied: '剪貼簿權限被拒絕。請允許您的瀏覽器存取剪貼簿。',
       clipboardReadError: '無法讀取剪貼簿',
-      dropdownEnglish: '英語',
-      dropdownGerman: '德語',
-      dropdownFrench: '法語',
-      dropdownRussian: '俄語',
       mediaKeys: {
         title: '媒體鍵',
         mute: '靜音',
@@ -147,6 +143,45 @@ const zh_tw = {
         playPause: '播放或暫停',
         next: '下一首',
         stop: '停止'
+      },
+      pasting: {
+        layout: '主機鍵盤配置',
+        layouts: {
+          us: '英文（美國）',
+          uk: '英文（英國）',
+          de: '德文',
+          fr: '法文',
+          es: '西班牙文',
+          it: '義大利文',
+          ptBr: '葡萄牙文（巴西）',
+          se: '瑞典文 / 芬蘭文',
+          ru: '俄文',
+          ja: '日文',
+          ko: '韓文'
+        },
+        speed: '輸入速度',
+        speeds: {
+          fast: '快',
+          normal: '正常',
+          slow: '慢'
+        },
+        estimate: '輸入時間：約 {{duration}}',
+        untypeable: '此配置無法輸入的字元：{{count}}',
+        untypeableAt: '第 {{line}} 行，第 {{column}} 欄',
+        skipUntypeable: '輸入其餘部分',
+        shortcut: '{{shortcut}} 可直接將剪貼簿內容輸入到主機。',
+        clipboardUnavailable:
+          '瀏覽器只允許頁面透過 HTTPS 讀取剪貼簿。請用 Ctrl+V 將文字貼到輸入框。',
+        clipboardEmpty: '剪貼簿中沒有文字。',
+        tooLong: '文字過長，上限為 {{max}} 個字元。',
+        inProgress: '已有一段貼上內容正在輸入。',
+        typing: '正在主機上輸入',
+        done: '輸入完成',
+        canceled: '已取消貼上',
+        failed: '貼上失敗',
+        cancel: '取消',
+        controlBusy: '鍵盤正被另一個控制端使用。',
+        hidError: '無法將按鍵傳送到主機。'
       },
       shortcut: {
         title: '快捷鍵',

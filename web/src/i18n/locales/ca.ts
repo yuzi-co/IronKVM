@@ -132,7 +132,7 @@ const ca = {
     keyboard: {
       title: 'Teclat',
       paste: 'Enganxa',
-      tips: 'Només es permeten lletres i símbols estàndard',
+      tips: "Escriu el text a l'amfitrió com a pulsacions de tecles. Tria la distribució de teclat que fa servir l'amfitrió.",
       placeholder: 'Escriu aquí',
       submit: 'Envia',
       virtual: 'Teclat',
@@ -140,10 +140,6 @@ const ca = {
       clipboardPermissionDenied:
         "S'ha denegat el permís del porta-retalls. Permet l'accés al porta-retalls al teu navegador.",
       clipboardReadError: "No s'ha pogut llegir el porta-retalls",
-      dropdownEnglish: 'Anglès',
-      dropdownGerman: 'alemany',
-      dropdownFrench: 'francès',
-      dropdownRussian: 'rus',
       mediaKeys: {
         title: 'Tecles multimèdia',
         mute: 'Silenci',
@@ -153,6 +149,45 @@ const ca = {
         playPause: 'Reprodueix o posa en pausa',
         next: 'Pista següent',
         stop: 'Atura'
+      },
+      pasting: {
+        layout: "Distribució de teclat de l'amfitrió",
+        layouts: {
+          us: 'Anglès (EUA)',
+          uk: 'Anglès (Regne Unit)',
+          de: 'Alemany',
+          fr: 'Francès',
+          es: 'Espanyol',
+          it: 'Italià',
+          ptBr: 'Portuguès (Brasil)',
+          se: 'Suec / finès',
+          ru: 'Rus',
+          ja: 'Japonès',
+          ko: 'Coreà'
+        },
+        speed: "Velocitat d'escriptura",
+        speeds: {
+          fast: 'Ràpida',
+          normal: 'Normal',
+          slow: 'Lenta'
+        },
+        estimate: "Temps d'escriptura: uns {{duration}}",
+        untypeable: 'Caràcters que aquesta distribució no pot escriure: {{count}}',
+        untypeableAt: 'línia {{line}}, columna {{column}}',
+        skipUntypeable: 'Escriu la resta',
+        shortcut: "{{shortcut}} escriu el porta-retalls a l'amfitrió directament.",
+        clipboardUnavailable:
+          'El navegador només deixa que una pàgina llegeixi el porta-retalls per HTTPS. Enganxa el text al quadre amb Ctrl+V.',
+        clipboardEmpty: 'El porta-retalls no conté text.',
+        tooLong: 'El text és massa llarg. El límit és de {{max}} caràcters.',
+        inProgress: "Ja s'està escrivint un text enganxat.",
+        typing: "Escrivint a l'amfitrió",
+        done: 'Text escrit',
+        canceled: 'Enganxament cancel·lat',
+        failed: "L'enganxament ha fallat",
+        cancel: 'Cancel·la',
+        controlBusy: 'Un altre controlador està fent servir el teclat.',
+        hidError: "No s'han pogut enviar les pulsacions a l'amfitrió."
       },
       shortcut: {
         title: 'Dreceres',

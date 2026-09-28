@@ -135,7 +135,7 @@ const fr = {
     keyboard: {
       title: 'Clavier',
       paste: 'Coller',
-      tips: 'Seuls les caractères et symboles standard du clavier sont pris en charge',
+      tips: "Tape le texte sur l'hôte sous forme de frappes de touches. Choisissez la disposition de clavier de l'hôte.",
       placeholder: 'Veuillez saisir',
       submit: 'Soumettre',
       virtual: 'Clavier',
@@ -143,10 +143,6 @@ const fr = {
       clipboardPermissionDenied:
         "Accès au presse-papiers refusé. Veuillez autoriser l'accès dans votre navigateur.",
       clipboardReadError: 'Échec de la lecture du presse-papiers',
-      dropdownEnglish: 'Anglais',
-      dropdownGerman: 'Allemand',
-      dropdownFrench: 'Français',
-      dropdownRussian: 'Russe',
       mediaKeys: {
         title: 'Touches multimédia',
         mute: 'Muet',
@@ -156,6 +152,45 @@ const fr = {
         playPause: 'Lecture ou pause',
         next: 'Piste suivante',
         stop: 'Arrêt'
+      },
+      pasting: {
+        layout: "Disposition du clavier de l'hôte",
+        layouts: {
+          us: 'Anglais (États-Unis)',
+          uk: 'Anglais (Royaume-Uni)',
+          de: 'Allemand',
+          fr: 'Français',
+          es: 'Espagnol',
+          it: 'Italien',
+          ptBr: 'Portugais (Brésil)',
+          se: 'Suédois / finnois',
+          ru: 'Russe',
+          ja: 'Japonais',
+          ko: 'Coréen'
+        },
+        speed: 'Vitesse de frappe',
+        speeds: {
+          fast: 'Rapide',
+          normal: 'Normale',
+          slow: 'Lente'
+        },
+        estimate: 'Durée de frappe : environ {{duration}}',
+        untypeable: 'Caractères que cette disposition ne peut pas taper : {{count}}',
+        untypeableAt: 'ligne {{line}}, colonne {{column}}',
+        skipUntypeable: 'Taper le reste',
+        shortcut: "{{shortcut}} tape directement le presse-papiers sur l'hôte.",
+        clipboardUnavailable:
+          "Le navigateur ne laisse une page lire le presse-papiers qu'en HTTPS. Collez le texte dans la zone avec Ctrl+V.",
+        clipboardEmpty: 'Le presse-papiers ne contient pas de texte.',
+        tooLong: 'Le texte est trop long. La limite est de {{max}} caractères.',
+        inProgress: 'Un collage est déjà en cours de frappe.',
+        typing: "Frappe sur l'hôte",
+        done: 'Texte tapé',
+        canceled: 'Collage annulé',
+        failed: 'Échec du collage',
+        cancel: 'Annuler',
+        controlBusy: 'Un autre contrôleur utilise le clavier.',
+        hidError: "Les frappes n'ont pas pu être envoyées à l'hôte."
       },
       shortcut: {
         title: 'Raccourcis',

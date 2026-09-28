@@ -132,7 +132,7 @@ const id = {
     keyboard: {
       title: 'Keyboard',
       paste: 'Tempel',
-      tips: 'Hanya huruf dan simbol keyboard standar yang didukung',
+      tips: 'Mengetik teks di host sebagai penekanan tombol. Pilih tata letak keyboard yang dipakai host.',
       placeholder: 'Silahkan isi',
       submit: 'Kirimkan',
       virtual: 'Keyboard',
@@ -140,10 +140,6 @@ const id = {
       clipboardPermissionDenied:
         'Izin papan klip ditolak. Harap izinkan akses clipboard di browser Anda.',
       clipboardReadError: 'Gagal membaca papan klip',
-      dropdownEnglish: 'Bahasa Inggris',
-      dropdownGerman: 'Jerman',
-      dropdownFrench: 'Perancis',
-      dropdownRussian: 'Rusia',
       mediaKeys: {
         title: 'Tombol media',
         mute: 'Bisukan',
@@ -153,6 +149,45 @@ const id = {
         playPause: 'Putar atau jeda',
         next: 'Lagu berikutnya',
         stop: 'Hentikan'
+      },
+      pasting: {
+        layout: 'Tata letak keyboard di host',
+        layouts: {
+          us: 'Inggris (AS)',
+          uk: 'Inggris (Britania Raya)',
+          de: 'Jerman',
+          fr: 'Prancis',
+          es: 'Spanyol',
+          it: 'Italia',
+          ptBr: 'Portugis (Brasil)',
+          se: 'Swedia / Finlandia',
+          ru: 'Rusia',
+          ja: 'Jepang',
+          ko: 'Korea'
+        },
+        speed: 'Kecepatan mengetik',
+        speeds: {
+          fast: 'Cepat',
+          normal: 'Normal',
+          slow: 'Lambat'
+        },
+        estimate: 'Waktu mengetik: sekitar {{duration}}',
+        untypeable: 'Karakter yang tidak bisa diketik dengan tata letak ini: {{count}}',
+        untypeableAt: 'baris {{line}}, kolom {{column}}',
+        skipUntypeable: 'Ketik sisanya',
+        shortcut: '{{shortcut}} langsung mengetik isi clipboard di host.',
+        clipboardUnavailable:
+          'Browser hanya mengizinkan halaman membaca clipboard melalui HTTPS. Tempel teks ke kotak dengan Ctrl+V.',
+        clipboardEmpty: 'Clipboard tidak berisi teks.',
+        tooLong: 'Teks terlalu panjang. Batasnya {{max}} karakter.',
+        inProgress: 'Tempelan lain sedang diketik.',
+        typing: 'Mengetik di host',
+        done: 'Teks selesai diketik',
+        canceled: 'Tempel dibatalkan',
+        failed: 'Tempel gagal',
+        cancel: 'Batal',
+        controlBusy: 'Pengontrol lain sedang memakai keyboard.',
+        hidError: 'Penekanan tombol tidak dapat dikirim ke host.'
       },
       shortcut: {
         title: 'Pintasan',

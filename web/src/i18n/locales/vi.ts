@@ -132,7 +132,7 @@ const vi = {
     keyboard: {
       title: 'Bàn phím',
       paste: 'Dán',
-      tips: 'Chỉ hỗ trợ các chữ cái và ký hiệu bàn phím tiêu chuẩn',
+      tips: 'Gõ văn bản trên máy chủ dưới dạng các lần nhấn phím. Chọn bố cục bàn phím mà máy chủ đang dùng.',
       placeholder: 'Vui lòng nhập',
       submit: 'Gửi',
       virtual: 'Bàn phím',
@@ -140,10 +140,6 @@ const vi = {
       clipboardPermissionDenied:
         'Quyền bảng nhớ tạm bị từ chối. Vui lòng cho phép truy cập clipboard trong trình duyệt của bạn.',
       clipboardReadError: 'Không đọc được bảng nhớ tạm',
-      dropdownEnglish: 'Tiếng Anh',
-      dropdownGerman: 'Tiếng Đức',
-      dropdownFrench: 'Tiếng Pháp',
-      dropdownRussian: 'Tiếng Nga',
       mediaKeys: {
         title: 'Phím đa phương tiện',
         mute: 'Tắt tiếng',
@@ -153,6 +149,45 @@ const vi = {
         playPause: 'Phát hoặc tạm dừng',
         next: 'Bài tiếp theo',
         stop: 'Dừng'
+      },
+      pasting: {
+        layout: 'Bố cục bàn phím trên máy chủ',
+        layouts: {
+          us: 'Tiếng Anh (Mỹ)',
+          uk: 'Tiếng Anh (Anh)',
+          de: 'Tiếng Đức',
+          fr: 'Tiếng Pháp',
+          es: 'Tiếng Tây Ban Nha',
+          it: 'Tiếng Ý',
+          ptBr: 'Tiếng Bồ Đào Nha (Brazil)',
+          se: 'Tiếng Thụy Điển / Phần Lan',
+          ru: 'Tiếng Nga',
+          ja: 'Tiếng Nhật',
+          ko: 'Tiếng Hàn'
+        },
+        speed: 'Tốc độ gõ',
+        speeds: {
+          fast: 'Nhanh',
+          normal: 'Bình thường',
+          slow: 'Chậm'
+        },
+        estimate: 'Thời gian gõ: khoảng {{duration}}',
+        untypeable: 'Ký tự mà bố cục này không gõ được: {{count}}',
+        untypeableAt: 'dòng {{line}}, cột {{column}}',
+        skipUntypeable: 'Gõ phần còn lại',
+        shortcut: '{{shortcut}} gõ ngay nội dung bộ nhớ tạm lên máy chủ.',
+        clipboardUnavailable:
+          'Trình duyệt chỉ cho trang đọc bộ nhớ tạm qua HTTPS. Hãy dán văn bản vào ô bằng Ctrl+V.',
+        clipboardEmpty: 'Bộ nhớ tạm không có văn bản.',
+        tooLong: 'Văn bản quá dài. Giới hạn là {{max}} ký tự.',
+        inProgress: 'Đang gõ một nội dung dán khác.',
+        typing: 'Đang gõ trên máy chủ',
+        done: 'Đã gõ xong',
+        canceled: 'Đã hủy dán',
+        failed: 'Dán thất bại',
+        cancel: 'Hủy',
+        controlBusy: 'Một bộ điều khiển khác đang dùng bàn phím.',
+        hidError: 'Không gửi được các lần nhấn phím tới máy chủ.'
       },
       shortcut: {
         title: 'Phím tắt',

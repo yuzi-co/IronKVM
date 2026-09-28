@@ -133,7 +133,7 @@ const nb = {
     keyboard: {
       title: 'Åpne tastatur',
       paste: 'Lim inn',
-      tips: 'Kun vanlige tegn på tastatur er støttet',
+      tips: 'Skriver teksten på verten som tastetrykk. Velg tastaturoppsettet verten bruker.',
       placeholder: 'Vennligst angi teksten du vil lime inn',
       submit: 'Lim inn',
       virtual: 'Åpne tastatur',
@@ -141,10 +141,6 @@ const nb = {
       clipboardPermissionDenied:
         'Utklippstavle tillatelse nektet. Tillat utklippstavletilgang i nettleseren din.',
       clipboardReadError: 'Kunne ikke lese utklippstavlen',
-      dropdownEnglish: 'Engelsk',
-      dropdownGerman: 'tysk',
-      dropdownFrench: 'Fransk',
-      dropdownRussian: 'russisk',
       mediaKeys: {
         title: 'Medietaster',
         mute: 'Demp',
@@ -154,6 +150,45 @@ const nb = {
         playPause: 'Spill av eller pause',
         next: 'Neste spor',
         stop: 'Stopp'
+      },
+      pasting: {
+        layout: 'Tastaturoppsett på verten',
+        layouts: {
+          us: 'Engelsk (USA)',
+          uk: 'Engelsk (Storbritannia)',
+          de: 'Tysk',
+          fr: 'Fransk',
+          es: 'Spansk',
+          it: 'Italiensk',
+          ptBr: 'Portugisisk (Brasil)',
+          se: 'Svensk / finsk',
+          ru: 'Russisk',
+          ja: 'Japansk',
+          ko: 'Koreansk'
+        },
+        speed: 'Skrivehastighet',
+        speeds: {
+          fast: 'Rask',
+          normal: 'Normal',
+          slow: 'Sakte'
+        },
+        estimate: 'Skrivetid: omtrent {{duration}}',
+        untypeable: 'Tegn dette oppsettet ikke kan skrive: {{count}}',
+        untypeableAt: 'linje {{line}}, kolonne {{column}}',
+        skipUntypeable: 'Skriv resten',
+        shortcut: '{{shortcut}} skriver utklippstavlen på verten med en gang.',
+        clipboardUnavailable:
+          'Nettleseren lar bare en side lese utklippstavlen over HTTPS. Lim inn teksten i feltet med Ctrl+V.',
+        clipboardEmpty: 'Utklippstavlen inneholder ingen tekst.',
+        tooLong: 'Teksten er for lang. Grensen er {{max}} tegn.',
+        inProgress: 'En innliming skrives allerede.',
+        typing: 'Skriver på verten',
+        done: 'Tekst skrevet',
+        canceled: 'Innliming avbrutt',
+        failed: 'Innliming mislyktes',
+        cancel: 'Avbryt',
+        controlBusy: 'En annen kontroller bruker tastaturet.',
+        hidError: 'Tastetrykkene kunne ikke sendes til verten.'
       },
       shortcut: {
         title: 'Snarveier',

@@ -36,3 +36,25 @@ export async function writeClipboardText(text: string) {
     }
   }
 }
+
+export type ClipboardReadResult =
+  { ok: true; text: string } | { ok: false; reason: 'unavailable' | 'denied' | 'failed' };
+
+// readClipboardText reads the clipboard's text. Reading has no legacy path to
+// fall back to: outside a secure context, which a board on plain http is, the
+// browser offers no way to read the clipboard at all. The caller is told so,
+// and can offer a box to paste into instead.
+export async function readClipboardText(): Promise<ClipboardReadResult> {
+  if (window.isSecureContext !== true || !navigator.clipboard?.readText) {
+    return { ok: false, reason: 'unavailable' };
+  }
+
+  try {
+    return { ok: true, text: await navigator.clipboard.readText() };
+  } catch (error) {
+    if (error instanceof Error && error.name === 'NotAllowedError') {
+      return { ok: false, reason: 'denied' };
+    }
+    return { ok: false, reason: 'failed' };
+  }
+}

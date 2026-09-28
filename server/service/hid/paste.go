@@ -2,6 +2,9 @@ package hid
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -11,167 +14,266 @@ import (
 	"NanoKVM-Server/service/inputcontrol"
 )
 
-type Char struct {
-	Modifiers int
-	Code      int
-}
-
-type PasteReq struct {
-	Content string `form:"content" validate:"required"`
-	Langue  string `form:"langue"`
-}
-
 const (
-	defaultPasteDelay    = 30 * time.Millisecond
-	maxPasteDuration     = 25 * time.Second
-	maxPasteContentRunes = int(maxPasteDuration / defaultPasteDelay)
+	defaultPasteDelay = 30 * time.Millisecond
+	minPasteDelay     = 10 * time.Millisecond
+	maxPasteDelay     = 500 * time.Millisecond
+
+	// maxPasteRunes bounds a paste. At the default delay it takes about ten
+	// minutes, which the background job, its progress and its cancel make
+	// bearable; beyond it a file transfer is the better tool.
+	maxPasteRunes = 20000
+
+	// pasteCancelWait bounds how long a cancel waits for the job to stop. The
+	// job checks between key presses, so it stops within one delay.
+	pasteCancelWait = 5 * time.Second
 )
 
-func LangueSwitch(base map[rune]Char, lang string) map[rune]Char {
-	// if no language is specified → return base map
-	if lang == "" {
-		return base
-	}
+const (
+	pasteStatusIdle     = "idle"
+	pasteStatusTyping   = "typing"
+	pasteStatusDone     = "done"
+	pasteStatusCanceled = "canceled"
+	pasteStatusFailed   = "failed"
 
-	// always create a copy of the base map
-	m := copyMap(base)
+	pasteErrorControlBusy = "control_busy"
+	pasteErrorHID         = "hid_error"
+)
 
-	switch lang {
-	case "de":
-		// swap Y
-		m['y'] = Char{0, 29}
-		m['Y'] = Char{2, 29}
+var (
+	errPasteInProgress  = errors.New("a paste is already in progress")
+	errNoPaste          = errors.New("no paste in progress")
+	errPasteCanceled    = errors.New("paste canceled")
+	errPasteControlBusy = errors.New("HID control is busy")
+	errPasteCancelWait  = errors.New("cancel paste timed out")
+)
 
-		// swap Z
-		m['z'] = Char{0, 28}
-		m['Z'] = Char{2, 28}
+var keyUpReport = []byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 
-		// add German special characters or remap them
-		m['\u00E4'] = Char{0, 52} // ä
-		m['\u00C4'] = Char{2, 52} // Ä
-		m['\u00F6'] = Char{0, 51} // ö
-		m['\u00D6'] = Char{2, 51} // Ö
-		m['\u00FC'] = Char{0, 47} // ü
-		m['\u00DC'] = Char{2, 47} // Ü
-		m['\u00DF'] = Char{0, 45} // ß
-
-		// swap special characters
-		m['^'] = Char{0, 53}     // must be double
-		m['/'] = Char{2, 36}     // Shift + 7
-		m['('] = Char{2, 37}     // Shift + 8
-		m['&'] = Char{2, 35}     // Shift + 6
-		m[')'] = Char{2, 38}     // Shift + 9
-		m['`'] = Char{2, 46}     // Grave Accent / Backtick
-		m['"'] = Char{2, 31}     // Shift + 2
-		m['?'] = Char{2, 45}     // Shift + ß
-		m['{'] = Char{0x40, 36}  // ALt Gr + 7
-		m['['] = Char{0x40, 37}  // ALt Gr + 8
-		m[']'] = Char{0x40, 38}  // ALt Gr + 6
-		m['}'] = Char{0x40, 39}  // ALt Gr + 0
-		m['\\'] = Char{0x40, 45} // ALt Gr + ß
-		m['@'] = Char{0x40, 20}  // ALt Gr + q
-		m['+'] = Char{0, 48}     // Shift + +
-		m['*'] = Char{2, 48}     // Shift + +
-		m['~'] = Char{0x40, 48}  // Shift + +
-		m['#'] = Char{0, 49}     // Shift + #
-		m['\''] = Char{2, 49}    // Shift + #
-		m['<'] = Char{0, 100}    // Shift + <
-		m['>'] = Char{2, 100}    // Shift + <
-		m['|'] = Char{0x40, 100} // ALt Gr + <
-		m[';'] = Char{2, 54}     // Shift + ,
-		m[':'] = Char{2, 55}     // Shift + .
-		m['-'] = Char{0, 56}     // Shift + -
-		m['_'] = Char{2, 56}     // Shift + -
-
-		// new special characters
-		m['\u00B4'] = Char{0, 46}    // ´
-		m['\u00B0'] = Char{2, 53}    // °
-		m['\u00A7'] = Char{2, 32}    // §
-		m['\u20AC'] = Char{0x40, 8}  // €
-		m['\u00B2'] = Char{0x40, 31} // ²
-		m['\u00B3'] = Char{0x40, 32} // ³
-
-	case "fr":
-		// French AZERTY layout
-		// Letters: a↔q swap, z↔w swap, m moved to physical ; position
-		m['a'] = Char{0, 20} // a is at physical Q key (HID 20)
-		m['A'] = Char{2, 20}
-		m['q'] = Char{0, 4} // q is at physical A key (HID 4)
-		m['Q'] = Char{2, 4}
-		m['z'] = Char{0, 26} // z is at physical W key (HID 26)
-		m['Z'] = Char{2, 26}
-		m['w'] = Char{0, 29} // w is at physical Z key (HID 29)
-		m['W'] = Char{2, 29}
-		m['m'] = Char{0, 51} // m is at physical ; key (HID 51)
-		m['M'] = Char{2, 51}
-
-		// Numbers require Shift on AZERTY
-		m['1'] = Char{2, 30}
-		m['2'] = Char{2, 31}
-		m['3'] = Char{2, 32}
-		m['4'] = Char{2, 33}
-		m['5'] = Char{2, 34}
-		m['6'] = Char{2, 35}
-		m['7'] = Char{2, 36}
-		m['8'] = Char{2, 37}
-		m['9'] = Char{2, 38}
-		m['0'] = Char{2, 39}
-
-		// Unshifted number row → French/special characters
-		m['&'] = Char{0, 30}      // & at physical key 1
-		m['\u00E9'] = Char{0, 31} // é at physical key 2
-		m['"'] = Char{0, 32}      // " at physical key 3
-		m['\''] = Char{0, 33}     // ' at physical key 4
-		m['('] = Char{0, 34}      // ( at physical key 5
-		m['-'] = Char{0, 35}      // - at physical key 6
-		m['\u00E8'] = Char{0, 36} // è at physical key 7
-		m['_'] = Char{0, 37}      // _ at physical key 8
-		m['\u00E7'] = Char{0, 38} // ç at physical key 9
-		m['\u00E0'] = Char{0, 39} // à at physical key 0
-
-		// Physical - key (HID 45) → ) on AZERTY
-		m[')'] = Char{0, 45}      // ) at physical - key
-		m['\u00B0'] = Char{2, 45} // ° at shift+physical - key
-
-		// Letter-row bracket/special keys
-		m['^'] = Char{0, 47}      // ^ (dead) at physical [ key (HID 47)
-		m['\u00A8'] = Char{2, 47} // ¨ at shift+[
-		m['$'] = Char{0, 48}      // $ at physical ] key (HID 48)
-		m['\u00A3'] = Char{2, 48} // £ at shift+]
-		m['*'] = Char{0, 49}      // * at physical \ key (HID 49)
-		m['\u00B5'] = Char{2, 49} // µ at shift+\
-		m['\u00F9'] = Char{0, 52} // ù at physical ' key (HID 52)
-		m['%'] = Char{2, 52}      // % at shift+'
-
-		// Bottom row remappings
-		m[','] = Char{0, 16}      // , at physical M key (HID 16)
-		m['?'] = Char{2, 16}      // ? at shift+physical M
-		m[';'] = Char{0, 54}      // ; at physical , key (HID 54)
-		m['.'] = Char{2, 54}      // . at shift+physical ,
-		m[':'] = Char{0, 55}      // : at physical . key (HID 55)
-		m['/'] = Char{2, 55}      // / at shift+physical .
-		m['!'] = Char{0, 56}      // ! at physical / key (HID 56)
-		m['\u00A7'] = Char{2, 56} // § at shift+physical /
-
-		// AltGr combinations
-		m['~'] = Char{0x40, 31}     // AltGr+2
-		m['#'] = Char{0x40, 32}     // AltGr+3
-		m['{'] = Char{0x40, 33}     // AltGr+4
-		m['['] = Char{0x40, 34}     // AltGr+5
-		m['|'] = Char{0x40, 35}     // AltGr+6
-		m['`'] = Char{0x40, 36}     // AltGr+7
-		m['\\'] = Char{0x40, 37}    // AltGr+8
-		m[']'] = Char{0x40, 45}     // AltGr+physical -
-		m['}'] = Char{0x40, 46}     // AltGr+=
-		m['@'] = Char{0x40, 39}     // AltGr+0
-		m['\u20AC'] = Char{0x40, 8} // € AltGr+E
-
-	}
-	return m
+// pasteTyper presses keys for a paste job.
+type pasteTyper interface {
+	// typeStep presses and releases the keys of one character, waiting delay
+	// between them. It holds the keyboard only while it does, so a control
+	// mode switch waits at most one character, not the whole paste.
+	typeStep(ctx context.Context, strokes []Char, delay time.Duration) error
+	// close releases the keys and the keyboard at the end of the job.
+	close()
 }
 
+// pasteManager runs one paste at a time in the background and keeps its
+// progress for the status and cancel requests.
+type pasteManager struct {
+	mu     sync.Mutex
+	cancel context.CancelCauseFunc
+	done   chan struct{}
+	status proto.PasteStatusRsp
+}
+
+func newPasteManager() *pasteManager {
+	return &pasteManager{status: proto.PasteStatusRsp{Status: pasteStatusIdle}}
+}
+
+// start begins typing plan with typer, and returns once the job is running.
+func (m *pasteManager) start(plan pastePlan, delay time.Duration, typer pasteTyper) (proto.PasteStatusRsp, error) {
+	m.mu.Lock()
+	if m.done != nil {
+		status := m.status
+		m.mu.Unlock()
+		return status, errPasteInProgress
+	}
+
+	ctx, cancel := context.WithCancelCause(context.Background())
+	done := make(chan struct{})
+	m.cancel = cancel
+	m.done = done
+	m.status = proto.PasteStatusRsp{Status: pasteStatusTyping, Total: len(plan.steps)}
+	status := m.status
+	m.mu.Unlock()
+
+	go m.run(ctx, done, plan, delay, typer)
+	return status, nil
+}
+
+func (m *pasteManager) run(ctx context.Context, done chan struct{}, plan pastePlan, delay time.Duration, typer pasteTyper) {
+	var err error
+	for i, step := range plan.steps {
+		if i > 0 {
+			if err = sleepPasteContext(ctx, delay); err != nil {
+				break
+			}
+		}
+		if err = context.Cause(ctx); err != nil {
+			break
+		}
+		if err = typer.typeStep(ctx, step.strokes, delay); err != nil {
+			break
+		}
+		m.setTyped(done, i+1)
+	}
+	typer.close()
+	m.finish(done, err)
+}
+
+func (m *pasteManager) setTyped(done chan struct{}, typed int) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if m.done == done {
+		m.status.Typed = typed
+	}
+}
+
+func (m *pasteManager) finish(done chan struct{}, err error) {
+	m.mu.Lock()
+	if m.done != done {
+		m.mu.Unlock()
+		return
+	}
+
+	switch {
+	case err == nil:
+		m.status.Status = pasteStatusDone
+		log.Debugf("hid paste success, %d characters typed", m.status.Typed)
+	case errors.Is(err, errPasteCanceled):
+		m.status.Status = pasteStatusCanceled
+		log.Debugf("hid paste canceled after %d of %d characters", m.status.Typed, m.status.Total)
+	case errors.Is(err, errPasteControlBusy):
+		m.status.Status = pasteStatusFailed
+		m.status.Error = pasteErrorControlBusy
+		log.Errorf("hid paste failed: %v", err)
+	default:
+		m.status.Status = pasteStatusFailed
+		m.status.Error = pasteErrorHID
+		log.Errorf("hid paste failed: %v", err)
+	}
+	m.cancel(nil)
+	m.cancel = nil
+	m.done = nil
+	m.mu.Unlock()
+
+	close(done)
+}
+
+// stop cancels the running paste and waits for it to release the keyboard.
+func (m *pasteManager) stop(wait time.Duration) (proto.PasteStatusRsp, error) {
+	m.mu.Lock()
+	cancel := m.cancel
+	done := m.done
+	m.mu.Unlock()
+
+	if cancel == nil || done == nil {
+		return m.getStatus(), errNoPaste
+	}
+
+	cancel(errPasteCanceled)
+	select {
+	case <-done:
+		return m.getStatus(), nil
+	case <-time.After(wait):
+		return m.getStatus(), errPasteCancelWait
+	}
+}
+
+func (m *pasteManager) getStatus() proto.PasteStatusRsp {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return m.status
+}
+
+// manualTyper types through a manual input session, which is how the browser's
+// own key presses reach the target. It takes the keyboard for one character at
+// a time.
+type manualTyper struct {
+	session *inputcontrol.ManualSession
+	write   func(report []byte) error
+}
+
+func (s *Service) newPasteTyper() *manualTyper {
+	session := s.newManualSession()
+	return &manualTyper{
+		session: session,
+		write: func(report []byte) error {
+			return session.Execute(func() error {
+				return s.hid.WriteKeyboardReport(report)
+			})
+		},
+	}
+}
+
+func (t *manualTyper) typeStep(ctx context.Context, strokes []Char, delay time.Duration) error {
+	reservation, err := t.session.Reserve(ctx, inputcontrol.ManualKeyboard, false, nil)
+	if err != nil {
+		if cause := context.Cause(ctx); cause != nil {
+			return cause
+		}
+		return fmt.Errorf("%w: %w", errPasteControlBusy, err)
+	}
+
+	// The keys of one character go out together, even when a cancel arrives
+	// between them: a dead key left pending would put its accent on whatever
+	// the user types next.
+	for i, stroke := range strokes {
+		if i > 0 {
+			time.Sleep(delay)
+		}
+		keyDown := []byte{byte(stroke.Modifiers), 0x00, byte(stroke.Code), 0x00, 0x00, 0x00, 0x00, 0x00}
+		if err = t.write(keyDown); err != nil {
+			break
+		}
+		if err = t.write(keyUpReport); err != nil {
+			break
+		}
+	}
+	if err != nil {
+		_ = t.write(keyUpReport)
+	}
+	reservation.Complete(err == nil)
+	return err
+}
+
+func (t *manualTyper) close() {
+	t.session.Close()
+}
+
+// pasteLayout returns the layout a request names. Layout wins over the older
+// Langue.
+func pasteLayout(layout string, langue string) (*Layout, error) {
+	if layout == "" {
+		layout = langue
+	}
+	return GetLayout(layout)
+}
+
+// pasteDelay returns the delay a request asks for, or the default for 0.
+func pasteDelay(ms int) (time.Duration, error) {
+	if ms == 0 {
+		return defaultPasteDelay, nil
+	}
+	delay := time.Duration(ms) * time.Millisecond
+	if delay < minPasteDelay || delay > maxPasteDelay {
+		return 0, fmt.Errorf("delay must be between %d and %d ms", minPasteDelay.Milliseconds(), maxPasteDelay.Milliseconds())
+	}
+	return delay, nil
+}
+
+func checkRsp(plan pastePlan, delay time.Duration) *proto.PasteCheckRsp {
+	untypeable := plan.untypeable
+	if untypeable == nil {
+		untypeable = []proto.PasteUntypeable{}
+	}
+	return &proto.PasteCheckRsp{
+		Characters:      len(plan.steps),
+		Keystrokes:      plan.keystrokes,
+		DurationMs:      (time.Duration(plan.keystrokes) * delay).Milliseconds(),
+		Untypeable:      untypeable,
+		UntypeableCount: plan.untypeableCount,
+	}
+}
+
+// Paste starts typing a text on the target and answers at once. The status
+// request reports the progress, and the cancel request stops it.
 func (s *Service) Paste(c *gin.Context) {
-	var req PasteReq
+	var req proto.PasteReq
 	var rsp proto.Response
 
 	if err := proto.ParseFormRequest(c, &req); err != nil {
@@ -179,74 +281,91 @@ func (s *Service) Paste(c *gin.Context) {
 		return
 	}
 
-	contentRunes := []rune(req.Content)
-	if len(contentRunes) > maxPasteContentRunes {
-		rsp.ErrRsp(c, -2, "content too long")
-		return
-	}
-
-	charMapLocal := LangueSwitch(charMap, req.Langue)
-	typeableRunes := 0
-	for _, char := range contentRunes {
-		if _, ok := charMapLocal[char]; ok {
-			typeableRunes++
-		}
-	}
-	if time.Duration(typeableRunes)*defaultPasteDelay > maxPasteDuration {
-		rsp.ErrRsp(c, -2, "paste duration exceeds 25s")
-		return
-	}
-
-	keyUp := []byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
-	manual := s.newManualSession()
-	defer manual.Close()
-	reservation, err := manual.Reserve(c.Request.Context(), inputcontrol.ManualKeyboard, false, nil)
+	layout, err := pasteLayout(req.Layout, req.Langue)
 	if err != nil {
-		log.Errorf("manual paste failed to acquire HID control: %v", err)
-		rsp.ErrRsp(c, -3, "HID control is busy")
+		rsp.ErrRsp(c, -1, err.Error())
 		return
 	}
-
-	writeKeyboardReport := func(report []byte) error {
-		return manual.Execute(func() error {
-			return s.hid.WriteKeyboardReport(report)
-		})
-	}
-
-	for _, char := range contentRunes {
-		if err := context.Cause(c.Request.Context()); err != nil {
-			break
-		}
-		key, ok := charMapLocal[char]
-		if !ok {
-			log.Debugf("unknown key '%c' (rune: %d)", char, char)
-			continue
-		}
-
-		keyDown := []byte{byte(key.Modifiers), 0x00, byte(key.Code), 0x00, 0x00, 0x00, 0x00, 0x00}
-		if err = writeKeyboardReport(keyDown); err != nil {
-			break
-		}
-		if err = writeKeyboardReport(keyUp); err != nil {
-			break
-		}
-		if err = sleepPasteContext(c.Request.Context(), defaultPasteDelay); err != nil {
-			break
-		}
-	}
-	if err == nil {
-		err = context.Cause(c.Request.Context())
-	}
-	_ = writeKeyboardReport(keyUp)
-	reservation.Complete(err == nil)
+	delay, err := pasteDelay(req.Delay)
 	if err != nil {
-		log.Errorf("hid paste failed: %v", err)
-		rsp.ErrRsp(c, -3, "HID paste failed")
+		rsp.ErrRsp(c, -1, err.Error())
+		return
+	}
+	if len([]rune(req.Content)) > maxPasteRunes {
+		rsp.ErrRsp(c, -2, fmt.Sprintf("content too long, at most %d characters", maxPasteRunes))
 		return
 	}
 
-	rsp.OkRsp(c)
-	log.Debugf("hid paste success, total %d characters processed", len(contentRunes))
+	plan := planPaste(req.Content, layout)
+	if plan.untypeableCount > 0 && !req.SkipUntypeable {
+		rsp.Data = checkRsp(plan, delay)
+		rsp.ErrRsp(c, -4, "the layout cannot type some characters")
+		return
+	}
+	if len(plan.steps) == 0 {
+		rsp.ErrRsp(c, -4, "nothing to type")
+		return
+	}
+
+	typer := s.newPasteTyper()
+	status, err := s.paste.start(plan, delay, typer)
+	if err != nil {
+		typer.close()
+		rsp.Data = status
+		rsp.ErrRsp(c, -3, err.Error())
+		return
+	}
+
+	rsp.OkRspWithData(c, status)
+	log.Debugf("hid paste started, %d characters on layout %s", len(plan.steps), layout.ID)
+}
+
+// CheckPaste reports what typing a text would take on a layout: how long, and
+// which characters the layout cannot type.
+func (s *Service) CheckPaste(c *gin.Context) {
+	var req proto.PasteCheckReq
+	var rsp proto.Response
+
+	if err := proto.ParseFormRequest(c, &req); err != nil {
+		rsp.ErrRsp(c, -1, "invalid arguments")
+		return
+	}
+
+	layout, err := GetLayout(req.Layout)
+	if err != nil {
+		rsp.ErrRsp(c, -1, err.Error())
+		return
+	}
+	delay, err := pasteDelay(req.Delay)
+	if err != nil {
+		rsp.ErrRsp(c, -1, err.Error())
+		return
+	}
+	if len([]rune(req.Content)) > maxPasteRunes {
+		rsp.ErrRsp(c, -2, fmt.Sprintf("content too long, at most %d characters", maxPasteRunes))
+		return
+	}
+
+	rsp.OkRspWithData(c, checkRsp(planPaste(req.Content, layout), delay))
+}
+
+// GetPasteStatus reports the paste typing now, or the last one.
+func (s *Service) GetPasteStatus(c *gin.Context) {
+	var rsp proto.Response
+	rsp.OkRspWithData(c, s.paste.getStatus())
+}
+
+// CancelPaste stops the paste typing now.
+func (s *Service) CancelPaste(c *gin.Context) {
+	var rsp proto.Response
+
+	status, err := s.paste.stop(pasteCancelWait)
+	if err != nil {
+		rsp.Data = status
+		rsp.ErrRsp(c, -1, err.Error())
+		return
+	}
+	rsp.OkRspWithData(c, status)
 }
 
 func sleepPasteContext(ctx context.Context, delay time.Duration) error {
@@ -258,81 +377,4 @@ func sleepPasteContext(ctx context.Context, delay time.Duration) error {
 	case <-timer.C:
 		return nil
 	}
-}
-
-func copyMap(src map[rune]Char) map[rune]Char {
-	dst := make(map[rune]Char, len(src))
-	for k, v := range src {
-		dst[k] = v
-	}
-	return dst
-}
-
-func GetCharMap(lang string) map[rune]Char {
-	return LangueSwitch(charMap, lang)
-}
-
-var charMap = map[rune]Char{
-	// Lowercase letters
-	'a': {0, 4}, 'b': {0, 5}, 'c': {0, 6}, 'd': {0, 7}, 'e': {0, 8},
-	'f': {0, 9}, 'g': {0, 10}, 'h': {0, 11}, 'i': {0, 12}, 'j': {0, 13},
-	'k': {0, 14}, 'l': {0, 15}, 'm': {0, 16}, 'n': {0, 17}, 'o': {0, 18},
-	'p': {0, 19}, 'q': {0, 20}, 'r': {0, 21}, 's': {0, 22}, 't': {0, 23},
-	'u': {0, 24}, 'v': {0, 25}, 'w': {0, 26}, 'x': {0, 27}, 'y': {0, 28},
-	'z': {0, 29},
-
-	// Uppercase letters (Modifier 2 typically means Left Shift)
-	'A': {2, 4}, 'B': {2, 5}, 'C': {2, 6}, 'D': {2, 7}, 'E': {2, 8},
-	'F': {2, 9}, 'G': {2, 10}, 'H': {2, 11}, 'I': {2, 12}, 'J': {2, 13},
-	'K': {2, 14}, 'L': {2, 15}, 'M': {2, 16}, 'N': {2, 17}, 'O': {2, 18},
-	'P': {2, 19}, 'Q': {2, 20}, 'R': {2, 21}, 'S': {2, 22}, 'T': {2, 23},
-	'U': {2, 24}, 'V': {2, 25}, 'W': {2, 26}, 'X': {2, 27}, 'Y': {2, 28},
-	'Z': {2, 29},
-
-	// Numbers
-	'1': {0, 30}, '2': {0, 31}, '3': {0, 32}, '4': {0, 33}, '5': {0, 34},
-	'6': {0, 35}, '7': {0, 36}, '8': {0, 37}, '9': {0, 38}, '0': {0, 39},
-
-	// Shifted numbers / Symbols
-	'!': {2, 30}, // Shift + 1
-	'@': {2, 31}, // Shift + 2
-	'#': {2, 32}, // Shift + 3
-	'$': {2, 33}, // Shift + 4
-	'%': {2, 34}, // Shift + 5
-	'^': {2, 35}, // Shift + 6
-	'&': {2, 36}, // Shift + 7
-	'*': {2, 37}, // Shift + 8
-	'(': {2, 38}, // Shift + 9
-	')': {2, 39}, // Shift + 0
-
-	// Other common characters
-	'\n': {0, 40}, // Enter (Return)
-	'\t': {0, 43}, // Tab
-	' ':  {0, 44}, // Space
-	'-':  {0, 45}, // Hyphen / Minus
-	'=':  {0, 46}, // Equals
-	'[':  {0, 47}, // Left Square Bracket
-	']':  {0, 48}, // Right Square Bracket
-	'\\': {0, 49}, // Backslash
-
-	';':  {0, 51}, // Semicolon
-	'\'': {0, 52}, // Apostrophe / Single Quote
-	'`':  {0, 53}, // Grave Accent / Backtick
-	',':  {0, 54}, // Comma
-	'.':  {0, 55}, // Period / Dot
-	'/':  {0, 56}, // Slash
-
-	// Shifted symbols
-	'_': {2, 45}, // Underscore (Shift + Hyphen)
-	'+': {2, 46}, // Plus (Shift + Equals)
-	'{': {2, 47}, // Left Curly Brace (Shift + Left Square Bracket)
-	'}': {2, 48}, // Right Curly Brace (Shift + Right Square Bracket)
-	'|': {2, 49}, // Pipe (Shift + Backslash)
-
-	':': {2, 51}, // Colon (Shift + Semicolon)
-	'"': {2, 52}, // Double Quote (Shift + Apostrophe)
-	'~': {2, 53}, // Tilde (Shift + Grave Accent)
-	'<': {2, 54}, // Less Than (Shift + Comma)
-	'>': {2, 55}, // Greater Than (Shift + Period)
-	'?': {2, 56}, // Question Mark (Shift + Slash)
 }

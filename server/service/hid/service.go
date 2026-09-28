@@ -9,6 +9,7 @@ type Service struct {
 	hid         *Hid
 	control     *controlmode.Manager
 	coordinator *inputcontrol.Coordinator
+	paste       *pasteManager
 }
 
 func NewService() *Service {
@@ -16,6 +17,7 @@ func NewService() *Service {
 		hid:         GetHid(),
 		control:     controlmode.GetManager(),
 		coordinator: inputcontrol.GetCoordinator(),
+		paste:       newPasteManager(),
 	}
 }
 

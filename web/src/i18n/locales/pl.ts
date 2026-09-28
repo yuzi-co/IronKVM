@@ -133,7 +133,7 @@ const pl = {
     keyboard: {
       title: 'Klawiatura',
       paste: 'Wklej',
-      tips: 'Tylko standardowe klawiaturowe znaki i symbole są obsługiwane.',
+      tips: 'Wpisuje tekst na hoście jako naciśnięcia klawiszy. Wybierz układ klawiatury używany przez host.',
       placeholder: 'Proszę wprowadzić coś',
       submit: 'Prześlij',
       virtual: 'Klawiatura',
@@ -141,10 +141,6 @@ const pl = {
       clipboardPermissionDenied:
         'Odmowa dostępu do schowka. Zezwól na dostęp do schowka w przeglądarce.',
       clipboardReadError: 'Nie udało się odczytać schowka',
-      dropdownEnglish: 'Angielski',
-      dropdownGerman: 'niemiecki',
-      dropdownFrench: 'Francuski',
-      dropdownRussian: 'Rosyjski',
       mediaKeys: {
         title: 'Klawisze multimedialne',
         mute: 'Wycisz',
@@ -154,6 +150,45 @@ const pl = {
         playPause: 'Odtwórz lub wstrzymaj',
         next: 'Następny utwór',
         stop: 'Zatrzymaj'
+      },
+      pasting: {
+        layout: 'Układ klawiatury hosta',
+        layouts: {
+          us: 'Angielski (USA)',
+          uk: 'Angielski (Wielka Brytania)',
+          de: 'Niemiecki',
+          fr: 'Francuski',
+          es: 'Hiszpański',
+          it: 'Włoski',
+          ptBr: 'Portugalski (Brazylia)',
+          se: 'Szwedzki / fiński',
+          ru: 'Rosyjski',
+          ja: 'Japoński',
+          ko: 'Koreański'
+        },
+        speed: 'Szybkość pisania',
+        speeds: {
+          fast: 'Szybka',
+          normal: 'Normalna',
+          slow: 'Wolna'
+        },
+        estimate: 'Czas pisania: około {{duration}}',
+        untypeable: 'Znaki, których ten układ nie wpisze: {{count}}',
+        untypeableAt: 'wiersz {{line}}, kolumna {{column}}',
+        skipUntypeable: 'Wpisz resztę',
+        shortcut: '{{shortcut}} od razu wpisuje zawartość schowka na hoście.',
+        clipboardUnavailable:
+          'Przeglądarka pozwala stronie czytać schowek tylko przez HTTPS. Wklej tekst do pola za pomocą Ctrl+V.',
+        clipboardEmpty: 'Schowek nie zawiera tekstu.',
+        tooLong: 'Tekst jest za długi. Limit to {{max}} znaków.',
+        inProgress: 'Inny wklejony tekst jest już wpisywany.',
+        typing: 'Wpisywanie na hoście',
+        done: 'Tekst wpisany',
+        canceled: 'Wklejanie anulowane',
+        failed: 'Wklejanie nie powiodło się',
+        cancel: 'Anuluj',
+        controlBusy: 'Klawiatury używa inny kontroler.',
+        hidError: 'Nie udało się wysłać naciśnięć klawiszy do hosta.'
       },
       shortcut: {
         title: 'Skróty',

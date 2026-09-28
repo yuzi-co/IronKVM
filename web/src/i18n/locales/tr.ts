@@ -133,7 +133,7 @@ const tr = {
     keyboard: {
       title: 'Klavye',
       paste: 'Yapıştır',
-      tips: 'Sadece standart klavye harfleri ve sembolleri desteklenmektedir.',
+      tips: 'Metni ana makinede tuş basışları olarak yazar. Ana makinenin kullandığı klavye düzenini seçin.',
       placeholder: 'Girdi',
       submit: 'Gönder',
       virtual: 'Klavye',
@@ -141,10 +141,6 @@ const tr = {
       clipboardPermissionDenied:
         'Pano izni reddedildi. Lütfen tarayıcınızda pano erişimine izin verin.',
       clipboardReadError: 'Pano okunamadı',
-      dropdownEnglish: 'İngilizce',
-      dropdownGerman: 'Almanca',
-      dropdownFrench: 'Fransızca',
-      dropdownRussian: 'Rusça',
       mediaKeys: {
         title: 'Medya tuşları',
         mute: 'Sessiz',
@@ -154,6 +150,45 @@ const tr = {
         playPause: 'Oynat veya duraklat',
         next: 'Sonraki parça',
         stop: 'Durdur'
+      },
+      pasting: {
+        layout: 'Ana makinedeki klavye düzeni',
+        layouts: {
+          us: 'İngilizce (ABD)',
+          uk: 'İngilizce (Birleşik Krallık)',
+          de: 'Almanca',
+          fr: 'Fransızca',
+          es: 'İspanyolca',
+          it: 'İtalyanca',
+          ptBr: 'Portekizce (Brezilya)',
+          se: 'İsveççe / Fince',
+          ru: 'Rusça',
+          ja: 'Japonca',
+          ko: 'Korece'
+        },
+        speed: 'Yazma hızı',
+        speeds: {
+          fast: 'Hızlı',
+          normal: 'Normal',
+          slow: 'Yavaş'
+        },
+        estimate: 'Yazma süresi: yaklaşık {{duration}}',
+        untypeable: 'Bu düzenin yazamadığı karakterler: {{count}}',
+        untypeableAt: 'satır {{line}}, sütun {{column}}',
+        skipUntypeable: 'Kalanını yaz',
+        shortcut: '{{shortcut}} panodaki metni ana makineye hemen yazar.',
+        clipboardUnavailable:
+          'Tarayıcı bir sayfanın panoyu yalnızca HTTPS üzerinden okumasına izin verir. Metni Ctrl+V ile kutuya yapıştırın.',
+        clipboardEmpty: 'Panoda metin yok.',
+        tooLong: 'Metin çok uzun. Sınır {{max}} karakter.',
+        inProgress: 'Zaten bir yapıştırma yazılıyor.',
+        typing: 'Ana makinede yazılıyor',
+        done: 'Metin yazıldı',
+        canceled: 'Yapıştırma iptal edildi',
+        failed: 'Yapıştırma başarısız oldu',
+        cancel: 'İptal',
+        controlBusy: 'Klavyeyi başka bir denetleyici kullanıyor.',
+        hidError: 'Tuş basışları ana makineye gönderilemedi.'
       },
       shortcut: {
         title: 'Kısayollar',

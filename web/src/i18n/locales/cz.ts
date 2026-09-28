@@ -132,7 +132,7 @@ const cz = {
     keyboard: {
       title: 'Klávesnice',
       paste: 'Vložit',
-      tips: 'Podporovány jsou pouze standardní písmena a symboly klávesnice',
+      tips: 'Napíše text na hostiteli jako stisky kláves. Zvolte rozložení klávesnice, které hostitel používá.',
       placeholder: 'Zadejte text',
       submit: 'Odeslat',
       virtual: 'Klávesnice',
@@ -140,10 +140,6 @@ const cz = {
       clipboardPermissionDenied:
         'Oprávnění ke schránce odepřeno. Povolte prosím přístup do schránky ve svém prohlížeči.',
       clipboardReadError: 'Nepodařilo se přečíst schránku',
-      dropdownEnglish: 'anglicky',
-      dropdownGerman: 'německy',
-      dropdownFrench: 'francouzsky',
-      dropdownRussian: 'rusky',
       mediaKeys: {
         title: 'Multimediální klávesy',
         mute: 'Ztlumit',
@@ -153,6 +149,45 @@ const cz = {
         playPause: 'Přehrát nebo pozastavit',
         next: 'Další skladba',
         stop: 'Zastavit'
+      },
+      pasting: {
+        layout: 'Rozložení klávesnice na hostiteli',
+        layouts: {
+          us: 'Angličtina (USA)',
+          uk: 'Angličtina (Spojené království)',
+          de: 'Němčina',
+          fr: 'Francouzština',
+          es: 'Španělština',
+          it: 'Italština',
+          ptBr: 'Portugalština (Brazílie)',
+          se: 'Švédština / finština',
+          ru: 'Ruština',
+          ja: 'Japonština',
+          ko: 'Korejština'
+        },
+        speed: 'Rychlost psaní',
+        speeds: {
+          fast: 'Rychlá',
+          normal: 'Normální',
+          slow: 'Pomalá'
+        },
+        estimate: 'Doba psaní: asi {{duration}}',
+        untypeable: 'Znaky, které toto rozložení nenapíše: {{count}}',
+        untypeableAt: 'řádek {{line}}, sloupec {{column}}',
+        skipUntypeable: 'Napsat zbytek',
+        shortcut: '{{shortcut}} napíše obsah schránky na hostiteli hned.',
+        clipboardUnavailable:
+          'Prohlížeč dovolí stránce číst schránku jen přes HTTPS. Vložte text do pole pomocí Ctrl+V.',
+        clipboardEmpty: 'Schránka neobsahuje text.',
+        tooLong: 'Text je příliš dlouhý. Limit je {{max}} znaků.',
+        inProgress: 'Už se píše jiný vložený text.',
+        typing: 'Píše se na hostiteli',
+        done: 'Text napsán',
+        canceled: 'Vkládání zrušeno',
+        failed: 'Vkládání selhalo',
+        cancel: 'Zrušit',
+        controlBusy: 'Klávesnici používá jiný ovladač.',
+        hidError: 'Stisky kláves se nepodařilo odeslat hostiteli.'
       },
       shortcut: {
         title: 'Zkratky',
