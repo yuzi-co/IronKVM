@@ -377,6 +377,33 @@ const en = {
         okBtn: 'Confirm',
         cancelBtn: 'Cancel'
       },
+      redfish: {
+        title: 'Redfish',
+        service: 'Redfish service',
+        serviceDesc:
+          'The DMTF Redfish API, for power control, virtual media and status from tools such as redfishtool and Ansible. Turning it off ends every Redfish session.',
+        endpoint: 'Service root',
+        httpsOn: 'The board serves HTTPS, which most Redfish tools need.',
+        httpsOff:
+          'The board serves plain HTTP. Most Redfish tools need HTTPS: turn it on in "Settings > Network".',
+        credentials:
+          'Redfish takes the KVM accounts, with Basic authentication or a Redfish session, and API keys sent as X-Auth-Token. API keys are managed on the API keys page.',
+        powerActions: 'Power actions',
+        powerActionsDesc:
+          'The reset types offered now. On, ForceOff and GracefulShutdown need the power state, so they are offered only when "Power LED connected" is on in the power menu.',
+        sessions: 'Sessions',
+        noSessions: 'No open Redfish sessions',
+        created: 'Created',
+        lastUsed: 'Last used',
+        refresh: 'Refresh',
+        end: 'End',
+        endConfirmTitle: 'End this Redfish session?',
+        endConfirmDesc: 'Its token stops working at once. The client has to log in again.',
+        failed: 'Redfish operation failed',
+        copyFailed: 'Copy failed. Copy manually.',
+        okBtn: 'Confirm',
+        cancelBtn: 'Cancel'
+      },
       about: {
         title: 'About IronKVM',
         information: 'Information',

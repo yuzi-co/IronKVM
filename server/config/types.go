@@ -27,6 +27,10 @@ type Config struct {
 	// block loads with every setting off.
 	HardwareSettings HardwareSettings `yaml:"hardware" mapstructure:"hardware"`
 
+	// Redfish configures the Redfish service at /redfish, kept under
+	// "redfish" in server.yaml.
+	Redfish Redfish `yaml:"redfish,omitempty" mapstructure:"redfish"`
+
 	// Hardware holds the board's pins, derived from its version at start. It
 	// is never read from or written to server.yaml.
 	Hardware Hardware `yaml:"-" mapstructure:"-"`
@@ -40,6 +44,20 @@ type HardwareSettings struct {
 	// Redfish's On and ForceOff, must not press. Off by default: most boards
 	// are installed without that header.
 	PowerLED bool `yaml:"powerLed" mapstructure:"powerLed"`
+}
+
+// Redfish configures the Redfish service.
+type Redfish struct {
+	// Enabled serves /redfish. It is a pointer so that a server.yaml written
+	// before the setting existed, which has no key, keeps the service on as
+	// it always was. Read it through IsEnabled.
+	Enabled *bool `yaml:"enabled,omitempty" mapstructure:"enabled"`
+}
+
+// IsEnabled reports whether the Redfish service answers. A missing key means
+// on.
+func (r Redfish) IsEnabled() bool {
+	return r.Enabled == nil || *r.Enabled
 }
 
 type Logger struct {

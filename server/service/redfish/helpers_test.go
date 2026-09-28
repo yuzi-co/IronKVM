@@ -189,6 +189,14 @@ type harness struct {
 	ledWired bool
 	imageDir string
 	nics     []NIC
+
+	// enabled is the redfish.enabled setting; saved records what the
+	// settings route saved, and saveErr fails the save.
+	enabled bool
+	saved   []bool
+	saveErr error
+	// https is whether the board serves the web UI over HTTPS.
+	https bool
 }
 
 // newHarness builds a service on fakes, with two accounts in a real
@@ -220,6 +228,7 @@ func newHarness(t *testing.T) *harness {
 		clock:    time.Date(2026, 9, 27, 12, 0, 0, 0, time.UTC),
 		imageDir: t.TempDir(),
 		ledWired: true,
+		enabled:  true,
 		nics:     []NIC{{ID: "eth0", MAC: "48:da:35:6e:00:01", IPv4: "10.0.0.222"}},
 	}
 	h.host.drives = []proto.DriveInfo{
@@ -248,6 +257,16 @@ func newHarness(t *testing.T) *harness {
 		NICs:            func() []NIC { return h.nics },
 		UUID:            testUUID,
 		Now:             func() time.Time { return h.clock },
+		Enabled:         func() bool { return h.enabled },
+		SetEnabled: func(on bool) error {
+			h.saved = append(h.saved, on)
+			if h.saveErr != nil {
+				return h.saveErr
+			}
+			h.enabled = on
+			return nil
+		},
+		HTTPS: func() bool { return h.https },
 	})
 
 	h.engine = gin.New()

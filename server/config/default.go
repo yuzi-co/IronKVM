@@ -37,6 +37,13 @@ var defaultConfig = &Config{
 		ReserveFloor: 12582912,
 	},
 	HTTP2: false,
+	Redfish: Redfish{
+		Enabled: boolPtr(true),
+	},
+}
+
+func boolPtr(v bool) *bool {
+	return &v
 }
 
 func checkDefaultValue() {

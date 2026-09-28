@@ -1,3 +1,5 @@
+// writeClipboardText copies text. The Clipboard API needs a secure context,
+// and a board on plain http is not one, so it falls back to execCommand.
 export async function writeClipboardText(text: string) {
   if (window.isSecureContext === true && navigator.clipboard?.writeText) {
     try {

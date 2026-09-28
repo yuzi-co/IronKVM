@@ -2,12 +2,14 @@ package router
 
 import (
 	"net"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
 
 	"NanoKVM-Server/authn"
 	"NanoKVM-Server/config"
+	"NanoKVM-Server/middleware"
 	"NanoKVM-Server/service/apikey"
 	"NanoKVM-Server/service/redfish"
 	"NanoKVM-Server/service/storage"
@@ -41,9 +43,62 @@ func redfishRouter(r *gin.Engine) {
 		NICs:            redfishNICs,
 
 		UUID: redfish.LoadUUID(redfishUUIDFile),
+
+		Enabled:    redfishEnabled,
+		SetEnabled: setRedfishEnabled,
+		HTTPS: func() bool {
+			return config.GetInstance().Proto == "https"
+		},
 	})
 
 	service.Register(r)
+
+	// The web UI's Redfish page.
+	admin := r.Group("/api/redfish").Use(
+		middleware.CheckToken(),
+		middleware.RequireRole(authn.RoleAdmin),
+	)
+	admin.GET("/settings", service.GetSettings)
+	admin.POST("/settings", service.SetSettings)
+	admin.GET("/sessions", service.GetSessions)
+	admin.DELETE("/sessions/:id", service.EndSession)
+}
+
+// redfishSettingMu guards config's Redfish.Enabled, which the owner can
+// change while every Redfish request reads it.
+var redfishSettingMu sync.RWMutex
+
+// redfishEnabled reports the redfish.enabled setting.
+func redfishEnabled() bool {
+	redfishSettingMu.RLock()
+	defer redfishSettingMu.RUnlock()
+
+	return config.GetInstance().Redfish.IsEnabled()
+}
+
+// saveRedfishSetting writes the setting to server.yaml. Tests replace it.
+var saveRedfishSetting = func(enabled bool) error {
+	conf, err := config.Read()
+	if err != nil {
+		return err
+	}
+
+	conf.Redfish.Enabled = &enabled
+
+	return config.Write(conf)
+}
+
+// setRedfishEnabled saves the setting to server.yaml and applies it to the
+// running server.
+func setRedfishEnabled(enabled bool) error {
+	redfishSettingMu.Lock()
+	defer redfishSettingMu.Unlock()
+
+	if err := saveRedfishSetting(enabled); err != nil {
+		return err
+	}
+	config.GetInstance().Redfish.Enabled = &enabled
+	return nil
 }
 
 // redfishAPIKeyUser returns the account an API key belongs to. A key issued
