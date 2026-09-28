@@ -347,7 +347,15 @@ const en = {
       wake: 'Wake',
       powerDown: 'Power down',
       sleepConfirm: 'Put the host to sleep?',
-      powerDownConfirm: 'Send the power-down key to the host?'
+      powerDownConfirm: 'Send the power-down key to the host?',
+      led: 'Power LED',
+      ledOn: 'On',
+      ledOff: 'Off',
+      ledUnknown: 'Unknown',
+      ledConnected: 'Power LED connected',
+      ledConnectedTip:
+        "Turn on only if the host's power LED header is wired to the board. Without it the power state is unknown.",
+      ledConnectedFailed: 'Failed to save the power LED setting'
     },
     settings: {
       title: 'Settings',

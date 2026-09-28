@@ -9,6 +9,7 @@ import * as localstorage from '@/lib/localstorage.ts';
 import { MenuItem } from '@/components/menu-item.tsx';
 
 import { HostPower } from './host-power.tsx';
+import { PowerLed } from './power-led.tsx';
 import { PowerLong } from './power-long.tsx';
 import { PowerShort } from './power-short.tsx';
 import { Reset } from './reset.tsx';
@@ -17,6 +18,7 @@ export const Power = () => {
   const { t } = useTranslation();
 
   const [isPowerOn, setIsPowerOn] = useState(false);
+  const [ledConnected, setLedConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showConfirm, setShowConfirm] = useState(() => localstorage.getPowerConfirm());
 
@@ -26,6 +28,7 @@ export const Power = () => {
         const rsp = await api.getGpio();
         if (rsp.code === 0) {
           setIsPowerOn(rsp.data.pwr);
+          setLedConnected(rsp.data.ledConnected);
         }
       } catch (err) {
         console.log(err);
@@ -49,7 +52,7 @@ export const Power = () => {
     <div
       className={clsx(
         'h-[18px] w-[18px]',
-        isPowerOn ? 'text-green-600' : 'text-neutral-300 hover:text-white'
+        ledConnected && isPowerOn ? 'text-green-600' : 'text-neutral-300 hover:text-white'
       )}
     >
       {isLoading ? (
@@ -85,6 +88,10 @@ export const Power = () => {
       </div>
 
       <HostPower showConfirm={showConfirm} />
+
+      <Divider style={{ margin: '10px 0' }} />
+
+      <PowerLed isPowerOn={isPowerOn} connected={ledConnected} setConnected={setLedConnected} />
     </div>
   );
 
