@@ -66,12 +66,16 @@ const tr = {
       ssidRequired: 'Ağ adını girin, en fazla 32 karakter',
       passwordLength: 'Parola 8 ile 63 karakter arasındadır. Açık ağ için boş bırakın.',
       passwordOptional: 'Parola (açık ağ için boş)',
-      lost:
-        'Kart yanıt vermeyi bıraktı. Ağa katılıp kurulum erişim noktasını kapatmış olabilir. Erişim noktası geri gelirse katılma başarısız olmuştur: ona yeniden bağlanıp tekrar deneyin.',
-      done:
-        'Kurulum tamamlandı. Bu cihazı her zamanki ağınıza yeniden bağlayın ve kartı yeni adresinden açın.'
+      lost: 'Kart yanıt vermeyi bıraktı. Ağa katılıp kurulum erişim noktasını kapatmış olabilir. Erişim noktası geri gelirse katılma başarısız olmuştur: ona yeniden bağlanıp tekrar deneyin.',
+      done: 'Kurulum tamamlandı. Bu cihazı her zamanki ağınıza yeniden bağlayın ve kartı yeni adresinden açın.'
     },
     screen: {
+      codecNoWebrtcHevc: 'Bu tarayıcı WebRTC üzerinden H.265 alamıyor',
+      codecNoHevc: 'Bu tarayıcı H.265 çözemiyor',
+      codecNote:
+        'Kartta tek bir kodlayıcı var, bu yüzden bu tüm izleyicilerin yayınını değiştirir. Çalışan bir WebRTC oturumuna uygulamak için yeniden bağlanın.',
+      codec: 'Kodek',
+      updateFailed: 'Ayar uygulanmadı',
       scale: 'Ölçek',
       title: 'Ekran',
       video: 'Görüntü modu',
@@ -139,7 +143,7 @@ const tr = {
       fps: 'Saniyedeki kare sayısı',
       customizeFps: 'Kişiselleştir',
       quality: 'Kalite',
-      qualityLossless: 'Kayıpsız',
+      qualityLossless: 'En iyi',
       qualityHigh: 'Yüksek',
       qualityMedium: 'Orta',
       qualityLow: 'Düşük',
@@ -169,6 +173,7 @@ const tr = {
       directConnectionFailed: 'Video akışı bağlantısı başarısız'
     },
     keyboard: {
+      close: 'Kapat',
       title: 'Klavye',
       paste: 'Yapıştır',
       tips: 'Metni ana makinede tuş basışları olarak yazar. Ana makinenin kullandığı klavye düzenini seçin.',
@@ -229,6 +234,7 @@ const tr = {
         hidError: 'Tuş basışları ana makineye gönderilemedi.'
       },
       shortcut: {
+        sendFailed: 'Gönderilmedi: giriş bağlantısı kopuk',
         title: 'Kısayollar',
         custom: 'Özel',
         capture: 'Kısayolu yakalamak için burayı tıklayın',
@@ -239,6 +245,7 @@ const tr = {
         enterFullScreen: 'Tam ekran moduna geçiş yapın.'
       },
       leaderKey: {
+        saveFailed: 'Lider tuş kaydedilemedi',
         title: 'Leader Tuşu',
         desc: 'Tarayıcı kısıtlamalarını atlayın ve sistem kısayollarını doğrudan uzak ana bilgisayara gönderin.',
         howToUse: 'Nasıl Kullanılır',
@@ -287,14 +294,15 @@ const tr = {
         "Hedef cihaz mutlak fare raporlarını almayı bıraktı, bu yüzden imleç hareketleri kayboluyor. Klavye bundan etkilenmez. USB'yi kurtarmak genellikle sorunu giderir; bağıl mod farklı bir uç nokta kullanır.",
       useRelative: 'Bağıl moda geç',
       direction: 'Kaydırma tekerleği yönü',
-      scrollUp: 'Yukarı kaydır',
-      scrollDown: 'Aşağı kaydır',
+      scrollUp: 'Bu bilgisayardaki gibi',
+      scrollDown: 'Ters (doğal kaydırma)',
       speed: 'Kaydırma tekerleği hızı',
       fast: 'Hızlı',
       slow: 'Yavaş',
       requestPointer: 'Bağıl fare modu kullanılıyor. Masaüstüne tıklayarak imleç elde edinin.',
       resetHid: 'HID’yi sıfırla',
       hidOnly: {
+        switchFailed: 'Mod değiştirilemedi. Bağlantıyı kontrol edip yeniden deneyin.',
         title: 'Yalnızca HID modu',
         desc: 'Fare ve klavye yanıt vermeyi durdurursa ve HID sıfırlama yardımcı olmazsa, NanoKVM ile cihaz arasında bir uyumluluk sorunu olabilir. Daha iyi uyumluluk için yalnızca HID modunu etkinleştirmeyi deneyin.',
         tip1: 'Yalnızca HID modunu etkinleştirmek sanal U-disk’i ve sanal ağı ayırır',
@@ -307,6 +315,11 @@ const tr = {
       resetHidFailed: 'USB HID sıfırlanamadı'
     },
     image: {
+      delete: 'Sil',
+      inUse: 'Kullanımda. Silmeden önce çıkarın.',
+      retry: 'Yeniden dene',
+      loadFailed: 'İmaj listesi yüklenemedi',
+      readOnlyLocked: 'Değiştirmek için diski çıkarın. Bir imaj takıldığında geçerli olur.',
       title: 'Disk İmajları',
       loading: 'Yükleniyor...',
       empty: 'Hiçbir şey bulunamadı',
@@ -400,6 +413,10 @@ const tr = {
         'Betik {{minutes}} dakikadan uzun sürdü ve bu sayfa beklemeyi bıraktı. Kartta hâlâ çalışıyor olabilir.'
     },
     terminal: {
+      invalidBaud: 'Bu baud hızı desteklenmiyor.',
+      invalidPort: '/dev altında bir aygıt yolu girin, örneğin /dev/ttyS1.',
+      invalidSettings: 'Seri port ayarları geçersiz. Bu, kartın kendi kabuğu.',
+      disconnected: "Bağlantı kesildi. Yeniden bağlanmak için Enter'a basın.",
       title: 'Uçbirim',
       nanokvm: 'NanoKVM Uçbirimi',
       serial: 'Serial Port Uçbirimi',
@@ -419,6 +436,17 @@ const tr = {
       confirm: 'Tamam'
     },
     wol: {
+      no: 'Hayır',
+      yes: 'Evet',
+      deleteConfirm: 'Bu kayıtlı adres silinsin mi?',
+      delete: 'Sil',
+      wake: 'Uyandır',
+      rename: 'Yeniden adlandır',
+      showMac: 'MAC adresini göster',
+      showName: 'Adı göster',
+      requestFailed: 'Komutu göndermek için cihaza ulaşılamadı',
+      deleteFailed: 'Silinemedi',
+      renameFailed: 'Yeniden adlandırılamadı',
       title: 'Ağ Üzerinden Uyandırma (WOL)',
       sending: 'Komut gönderiliyor...',
       sent: 'Komut gönderildi',
@@ -426,6 +454,11 @@ const tr = {
       ok: 'Tamam'
     },
     download: {
+      uploadFailed: 'Yükleme başarısız',
+      uploadSuccess: 'Yükleme tamamlandı',
+      uploading: 'Yükleniyor: {{file}}',
+      downloadingPercent: 'İndiriliyor ({{percent}}): {{file}}',
+      downloading: 'İndiriliyor: {{file}}',
       title: 'Disk İmajı İndirici',
       input: 'Uzak imaj URL’sini girin',
       ok: 'Tamam',

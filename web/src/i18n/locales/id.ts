@@ -65,12 +65,16 @@ const id = {
       ssidRequired: 'Masukkan nama jaringan, maksimal 32 karakter',
       passwordLength: 'Kata sandi 8 sampai 63 karakter. Biarkan kosong untuk jaringan terbuka.',
       passwordOptional: 'Kata sandi (kosong untuk jaringan terbuka)',
-      lost:
-        'Papan berhenti merespons. Mungkin sudah bergabung ke jaringan dan menutup hotspot penyiapannya. Jika hotspot muncul lagi, penggabungan gagal: sambungkan lagi dan coba ulang.',
-      done:
-        'Penyiapan selesai. Sambungkan kembali perangkat ini ke jaringan biasa Anda dan buka papan di alamat barunya.'
+      lost: 'Papan berhenti merespons. Mungkin sudah bergabung ke jaringan dan menutup hotspot penyiapannya. Jika hotspot muncul lagi, penggabungan gagal: sambungkan lagi dan coba ulang.',
+      done: 'Penyiapan selesai. Sambungkan kembali perangkat ini ke jaringan biasa Anda dan buka papan di alamat barunya.'
     },
     screen: {
+      codecNoWebrtcHevc: 'Browser ini tidak dapat menerima H.265 melalui WebRTC',
+      codecNoHevc: 'Browser ini tidak dapat mendekode H.265',
+      codecNote:
+        'Papan hanya punya satu encoder, jadi ini mengubah stream untuk semua penonton. Sambungkan ulang agar berlaku pada sesi WebRTC yang berjalan.',
+      codec: 'Codec',
+      updateFailed: 'Pengaturan tidak diterapkan',
       scale: 'Skala',
       title: 'Layar',
       video: 'Mode Video',
@@ -138,7 +142,7 @@ const id = {
       fps: 'FPS',
       customizeFps: 'Sesuaikan',
       quality: 'Kualitas',
-      qualityLossless: 'Tanpa Kehilangan',
+      qualityLossless: 'Terbaik',
       qualityHigh: 'Tinggi',
       qualityMedium: 'Sedang',
       qualityLow: 'Rendah',
@@ -168,6 +172,7 @@ const id = {
       directConnectionFailed: 'Koneksi aliran video gagal'
     },
     keyboard: {
+      close: 'Tutup',
       title: 'Keyboard',
       paste: 'Tempel',
       tips: 'Mengetik teks di host sebagai penekanan tombol. Pilih tata letak keyboard yang dipakai host.',
@@ -228,6 +233,7 @@ const id = {
         hidError: 'Penekanan tombol tidak dapat dikirim ke host.'
       },
       shortcut: {
+        sendFailed: 'Tidak terkirim: koneksi input terputus',
         title: 'Pintasan',
         custom: 'Adat',
         capture: 'Klik di sini untuk mengambil pintasan',
@@ -238,6 +244,7 @@ const id = {
         enterFullScreen: 'Beralih ke mode layar penuh.'
       },
       leaderKey: {
+        saveFailed: 'Gagal menyimpan tombol leader',
         title: 'Tombol Leader',
         desc: 'Lewati batasan browser dan kirim pintasan sistem langsung ke host jarak jauh.',
         howToUse: 'Cara Menggunakan',
@@ -287,8 +294,8 @@ const id = {
         'Target berhenti menerima laporan tetikus absolut, sehingga gerakan penunjuk hilang. Keyboard tidak terpengaruh. Memulihkan USB biasanya mengatasinya; mode relatif menggunakan endpoint yang berbeda.',
       useRelative: 'Beralih ke mode relatif',
       direction: 'Arah roda gulir',
-      scrollUp: 'Gulir ke atas',
-      scrollDown: 'Gulir ke bawah',
+      scrollUp: 'Sama seperti komputer ini',
+      scrollDown: 'Terbalik (gulir alami)',
       speed: 'Kecepatan roda gulir',
       fast: 'Cepat',
       slow: 'Lambat',
@@ -296,6 +303,7 @@ const id = {
         'Menggunakan mode relatf. Silakan klik desktop untuk mendapatkan penunjuk tetikus.',
       resetHid: 'Setel ulang HID',
       hidOnly: {
+        switchFailed: 'Gagal mengganti mode. Periksa koneksi lalu coba lagi.',
         title: 'Mode hanya HID',
         desc: 'Jika mouse dan keyboard Anda berhenti merespons dan menyetel ulang HID tidak membantu, mungkin ada masalah kompatibilitas antara NanoKVM dan perangkat. Coba aktifkan mode HID-Only untuk kompatibilitas yang lebih baik.',
         tip1: 'Mengaktifkan mode HID-Hanya akan melepas U-disk virtual dan jaringan virtual',
@@ -308,6 +316,11 @@ const id = {
       resetHidFailed: 'Reset HID USB gagal'
     },
     image: {
+      delete: 'Hapus',
+      inUse: 'Sedang digunakan. Keluarkan sebelum menghapus.',
+      retry: 'Coba lagi',
+      loadFailed: 'Gagal memuat daftar image',
+      readOnlyLocked: 'Keluarkan disk untuk mengubah ini. Berlaku saat image dimasukkan.',
       title: 'Gambar',
       loading: 'Memuat...',
       empty: 'Tidak ada yang ditemukan',
@@ -401,6 +414,10 @@ const id = {
         'Skrip berjalan lebih dari {{minutes}} menit dan halaman ini berhenti menunggu. Skrip mungkin masih berjalan di papan.'
     },
     terminal: {
+      invalidBaud: 'Baud rate ini tidak didukung.',
+      invalidPort: 'Masukkan path perangkat di bawah /dev, misalnya /dev/ttyS1.',
+      invalidSettings: 'Pengaturan port serial tidak valid. Ini adalah shell papan sendiri.',
+      disconnected: 'Terputus. Tekan Enter untuk menyambung ulang.',
       title: 'Terminal',
       nanokvm: 'Terminal NanoKVM',
       serial: 'Terminal Port Serial',
@@ -420,6 +437,17 @@ const id = {
       confirm: 'Ok'
     },
     wol: {
+      no: 'Tidak',
+      yes: 'Ya',
+      deleteConfirm: 'Hapus alamat tersimpan ini?',
+      delete: 'Hapus',
+      wake: 'Bangunkan',
+      rename: 'Ganti nama',
+      showMac: 'Tampilkan alamat MAC',
+      showName: 'Tampilkan nama',
+      requestFailed: 'Tidak dapat menjangkau perangkat untuk mengirim perintah',
+      deleteFailed: 'Gagal menghapus',
+      renameFailed: 'Gagal mengganti nama',
       title: 'Wake-on-LAN',
       sending: 'Kirim perintah...',
       sent: 'Perintah terkirim',
@@ -427,6 +455,11 @@ const id = {
       ok: 'Ok'
     },
     download: {
+      uploadFailed: 'Unggahan gagal',
+      uploadSuccess: 'Unggahan selesai',
+      uploading: 'Mengunggah: {{file}}',
+      downloadingPercent: 'Mengunduh ({{percent}}): {{file}}',
+      downloading: 'Mengunduh: {{file}}',
       title: 'Pengunduh Gambar',
       input: 'Silakan masukkan gambar jarak jauh URL',
       ok: 'Ok',

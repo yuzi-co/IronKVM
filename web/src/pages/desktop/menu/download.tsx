@@ -1,5 +1,5 @@
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
-import { Button, Divider, Input } from 'antd';
+import { Button, Divider, Input, Progress } from 'antd';
 import type { InputRef } from 'antd';
 import clsx from 'clsx';
 import { useSetAtom } from 'jotai';
@@ -11,12 +11,18 @@ import {
   downloadBootMenu,
   downloadImage,
   imageEnabled,
-  statusImage
+  statusImage,
+  uploadImageFile
 } from '@/api/download.ts';
 import { keyboardLockAtom } from '@/jotai/keyboard.ts';
 import { MenuItem } from '@/components/menu-item.tsx';
 
 const imageUpdatedEvent = 'nanokvm:image-updated';
+
+// The server takes ISO 9660 images only; it checks the name and the content.
+function isISO(file: File) {
+  return file.name.toLowerCase().endsWith('.iso');
+}
 
 export const DownloadImage = () => {
   const { t } = useTranslation();
@@ -34,6 +40,8 @@ export const DownloadImage = () => {
   const inputRef = useRef<InputRef>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  // -1 while no upload runs; otherwise the share of the file sent so far.
+  const [uploadPercent, setUploadPercent] = useState(-1);
 
   const intervalId = useRef<NodeJS.Timeout | undefined>(undefined);
   const pollingGeneration = useRef(0);
@@ -111,13 +119,14 @@ export const DownloadImage = () => {
     intervalId.current = undefined;
   }
 
-  function finishImageTransfer(refreshImages: boolean) {
+  function finishImageTransfer(refreshImages: boolean, uploaded = false) {
     stopStatusPolling();
     remoteDownloadActive.current = false;
     fileUploadActive.current = false;
     setIsRemoteDownloading(false);
+    setUploadPercent(-1);
     setStatus('success');
-    setLog(t('download.success'));
+    setLog(t(uploaded ? 'download.uploadSuccess' : 'download.success'));
 
     if (refreshImages) {
       window.dispatchEvent(new Event(imageUpdatedEvent));
@@ -125,51 +134,57 @@ export const DownloadImage = () => {
   }
 
   function getDownloadStatus(generation = pollingGeneration.current) {
-    statusImage().then((rsp) => {
-      // Ignore a response from a previous polling session. This can happen when
-      // a download is started while the initial status request is still pending.
-      if (generation !== pollingGeneration.current) return;
+    statusImage()
+      .then((rsp) => {
+        // Ignore a response from a previous polling session. This can happen when
+        // a download is started while the initial status request is still pending.
+        if (generation !== pollingGeneration.current) return;
+        // An upload shows its own progress, measured in the browser, and its
+        // own result, from the upload request's answer.
+        if (fileUploadActive.current) return;
 
-      if (rsp.data.status) {
-        setStatus(rsp.data.status);
-        if (rsp.data.status === 'in_progress') {
-          const isRemoteDownload = /^https?:\/\//.test(rsp.data.file);
-          remoteDownloadActive.current = isRemoteDownload;
-          setIsRemoteDownloading(isRemoteDownload);
-          // Check if rsp has a percentage value
-          if (rsp.data.percentage) {
-            setLog('Downloading (' + rsp.data.percentage + ')' + ': ' + rsp.data.file);
-          } else {
-            setLog('Downloading' + ': ' + rsp.data.file);
+        if (rsp.data.status) {
+          setStatus(rsp.data.status);
+          if (rsp.data.status === 'in_progress') {
+            const isRemoteDownload = /^https?:\/\//.test(rsp.data.file);
+            remoteDownloadActive.current = isRemoteDownload;
+            setIsRemoteDownloading(isRemoteDownload);
+            setLog(
+              rsp.data.percentage
+                ? t('download.downloadingPercent', {
+                    file: rsp.data.file,
+                    percent: rsp.data.percentage
+                  })
+                : t('download.downloading', { file: rsp.data.file })
+            );
+            setInput(rsp.data.file);
           }
-          setInput(rsp.data.file);
+          if (rsp.data.status === 'checksum_failed') {
+            remoteDownloadActive.current = false;
+            setIsRemoteDownloading(false);
+            setLog(t('download.checksumFailed'));
+            stopStatusPolling();
+          }
+          if (rsp.data.status === 'failed') {
+            remoteDownloadActive.current = false;
+            setIsRemoteDownloading(false);
+            setLog(t('download.failed'));
+            stopStatusPolling();
+          }
+          if (rsp.data.status === 'success') {
+            const completedRemoteDownload = remoteDownloadActive.current;
+            finishImageTransfer(completedRemoteDownload);
+          }
+          if (rsp.data.status === 'idle') {
+            remoteDownloadActive.current = false;
+            setIsRemoteDownloading(false);
+            setLog('');
+            stopStatusPolling();
+          }
         }
-        if (rsp.data.status === 'checksum_failed') {
-          remoteDownloadActive.current = false;
-          setIsRemoteDownloading(false);
-          setLog(t('download.checksumFailed'));
-          stopStatusPolling();
-        }
-        if (rsp.data.status === 'failed') {
-          remoteDownloadActive.current = false;
-          setIsRemoteDownloading(false);
-          setLog(t('download.failed'));
-          stopStatusPolling();
-        }
-        if (rsp.data.status === 'success') {
-          const completedRemoteDownload = remoteDownloadActive.current;
-          finishImageTransfer(completedRemoteDownload);
-        }
-        if (rsp.data.status === 'idle') {
-          if (fileUploadActive.current) return;
-
-          remoteDownloadActive.current = false;
-          setIsRemoteDownloading(false);
-          setLog('');
-          stopStatusPolling();
-        }
-      }
-    });
+      })
+      // A missed poll is retried by the next tick.
+      .catch(() => {});
   }
 
   function download(url?: string) {
@@ -196,7 +211,7 @@ export const DownloadImage = () => {
     remoteDownloadActive.current = true;
     setIsRemoteDownloading(true);
     setStatus('in_progress');
-    setLog('Downloading: ' + label);
+    setLog(t('download.downloading', { file: label }));
 
     request()
       .then((rsp) => {
@@ -255,7 +270,7 @@ export const DownloadImage = () => {
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0] ?? null;
-    if (!file || !file.name.toLowerCase().endsWith('.iso')) {
+    if (!file || !isISO(file)) {
       setStatus('failed');
       setLog(t('download.NoISO'));
       return;
@@ -271,7 +286,7 @@ export const DownloadImage = () => {
   function upload(file: File | null) {
     if (!file) return;
 
-    if (!file || !file.name.toLowerCase().endsWith('.iso')) {
+    if (!isISO(file)) {
       setStatus('failed');
       setLog(t('download.NoISO'));
       return;
@@ -284,36 +299,37 @@ export const DownloadImage = () => {
     remoteDownloadActive.current = false;
     fileUploadActive.current = true;
     setIsRemoteDownloading(false);
-    setLog('Downloading: ' + file.name);
+    setUploadPercent(0);
+    setLog(t('download.uploading', { file: file.name }));
 
-    const formData = new FormData();
-    formData.append('file', file);
-
-    fetch('/api/download/file', {
-      method: 'POST',
-      headers: {
-        'X-SHA256-Sum': checksum
-      },
-      body: formData
-    })
-      .then(async (response) => {
-        const rsp = await response.json();
-        if (!response.ok || rsp.code !== 0) {
-          const message = rsp.msg === 'sha256 mismatch' ? t('download.checksumFailed') : rsp.msg;
-          throw new Error(message || t('download.failed'));
+    uploadImageFile(file, checksum, setUploadPercent)
+      .then((rsp) => {
+        if (rsp.code !== 0) {
+          throw new Error(uploadError(rsp.msg));
         }
 
-        finishImageTransfer(true);
+        finishImageTransfer(true, true);
         setSelectedFile(null);
       })
-      .catch((error: unknown) => {
+      .catch((error: any) => {
         fileUploadActive.current = false;
         stopStatusPolling();
+        setUploadPercent(-1);
         setStatus('failed');
-        setLog(error instanceof Error ? error.message : t('download.failed'));
+        // A rejected request may still carry the server's answer; a lost one
+        // has only axios's English text, which says less than ours.
+        if (error?.isAxiosError) {
+          setLog(uploadError(error.response?.data?.msg ?? ''));
+        } else {
+          setLog(error?.message || t('download.uploadFailed'));
+        }
       });
+  }
 
-    startStatusPolling();
+  function uploadError(msg: string) {
+    return msg === 'sha256 mismatch'
+      ? t('download.checksumFailed')
+      : msg || t('download.uploadFailed');
   }
 
   const content = (
@@ -392,7 +408,7 @@ export const DownloadImage = () => {
                   e.preventDefault();
                   setIsDragging(false);
                   const file = e.dataTransfer.files?.[0] ?? null;
-                  if (!file || !file.name.toLowerCase().endsWith('.iso')) {
+                  if (!file || !isISO(file)) {
                     setStatus('failed');
                     setLog(t('download.NoISO'));
                     return;
@@ -423,6 +439,7 @@ export const DownloadImage = () => {
                 <Input
                   id="file-upload"
                   type="file"
+                  accept=".iso"
                   onChange={handleFileChange}
                   disabled={status === 'in_progress'}
                   className="hidden"
@@ -444,7 +461,7 @@ export const DownloadImage = () => {
         {status && (
           <div
             className={clsx(
-              'max-w-[300px] wrap-break-word text-sm',
+              'max-w-[300px] text-sm wrap-break-word',
               status === 'failed' || status === 'checksum_failed'
                 ? 'text-red-500'
                 : 'text-green-500'
@@ -452,6 +469,9 @@ export const DownloadImage = () => {
           >
             {log}
           </div>
+        )}
+        {uploadPercent >= 0 && status === 'in_progress' && (
+          <Progress percent={uploadPercent} size="small" className="max-w-[300px]" />
         )}
       </div>
     </div>

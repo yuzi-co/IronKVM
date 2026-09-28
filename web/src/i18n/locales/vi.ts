@@ -65,12 +65,16 @@ const vi = {
       ssidRequired: 'Nhập tên mạng, tối đa 32 ký tự',
       passwordLength: 'Mật khẩu dài 8 đến 63 ký tự. Để trống nếu là mạng mở.',
       passwordOptional: 'Mật khẩu (để trống nếu là mạng mở)',
-      lost:
-        'Bo mạch đã ngừng phản hồi. Có thể nó đã vào mạng và tắt điểm phát cài đặt. Nếu điểm phát xuất hiện lại, việc kết nối đã thất bại: hãy kết nối lại và thử lại.',
-      done:
-        'Đã cài đặt xong. Hãy kết nối lại thiết bị này với mạng thường dùng và mở bo mạch tại địa chỉ mới.'
+      lost: 'Bo mạch đã ngừng phản hồi. Có thể nó đã vào mạng và tắt điểm phát cài đặt. Nếu điểm phát xuất hiện lại, việc kết nối đã thất bại: hãy kết nối lại và thử lại.',
+      done: 'Đã cài đặt xong. Hãy kết nối lại thiết bị này với mạng thường dùng và mở bo mạch tại địa chỉ mới.'
     },
     screen: {
+      codecNoWebrtcHevc: 'Trình duyệt này không nhận được H.265 qua WebRTC',
+      codecNoHevc: 'Trình duyệt này không giải mã được H.265',
+      codecNote:
+        'Bo mạch chỉ có một bộ mã hóa nên thay đổi này áp dụng cho mọi người xem. Kết nối lại để áp dụng cho phiên WebRTC đang chạy.',
+      codec: 'Codec',
+      updateFailed: 'Chưa áp dụng được cài đặt',
       scale: 'Quy mô',
       title: 'Màn hình',
       video: 'Chế độ video',
@@ -138,7 +142,7 @@ const vi = {
       fps: 'FPS',
       customizeFps: 'Tùy chỉnh',
       quality: 'Chất lượng',
-      qualityLossless: 'Không mất dữ liệu',
+      qualityLossless: 'Tốt nhất',
       qualityHigh: 'Cao',
       qualityMedium: 'Trung bình',
       qualityLow: 'Thấp',
@@ -168,6 +172,7 @@ const vi = {
       directConnectionFailed: 'Kết nối luồng video thất bại'
     },
     keyboard: {
+      close: 'Đóng',
       title: 'Bàn phím',
       paste: 'Dán',
       tips: 'Gõ văn bản trên máy chủ dưới dạng các lần nhấn phím. Chọn bố cục bàn phím mà máy chủ đang dùng.',
@@ -228,6 +233,7 @@ const vi = {
         hidError: 'Không gửi được các lần nhấn phím tới máy chủ.'
       },
       shortcut: {
+        sendFailed: 'Chưa gửi: kết nối nhập liệu bị ngắt',
         title: 'Phím tắt',
         custom: 'Tùy chỉnh',
         capture: 'Bấm vào đây để chụp phím tắt',
@@ -238,6 +244,7 @@ const vi = {
         enterFullScreen: 'Chuyển sang chế độ toàn màn hình.'
       },
       leaderKey: {
+        saveFailed: 'Không lưu được phím dẫn',
         title: 'Phím Leader',
         desc: 'Bỏ qua các hạn chế của trình duyệt và gửi các phím tắt hệ thống trực tiếp đến máy chủ từ xa.',
         howToUse: 'Cách sử dụng',
@@ -286,8 +293,8 @@ const vi = {
         'Máy đích đã ngừng nhận báo cáo chuột tuyệt đối, nên các chuyển động con trỏ bị mất. Bàn phím không bị ảnh hưởng. Khôi phục USB thường khắc phục được; chế độ tương đối dùng một endpoint khác.',
       useRelative: 'Chuyển sang chế độ tương đối',
       direction: 'Hướng bánh xe cuộn',
-      scrollUp: 'Cuộn lên',
-      scrollDown: 'Cuộn xuống',
+      scrollUp: 'Giống máy tính này',
+      scrollDown: 'Đảo ngược (cuộn tự nhiên)',
       speed: 'Tốc độ bánh xe cuộn',
       fast: 'Nhanh lên',
       slow: 'Chậm',
@@ -295,6 +302,7 @@ const vi = {
         'Đang sử dụng chế độ tương đối. Vui lòng nhấp vào màn hình để lấy con trỏ chuột.',
       resetHid: 'Đặt lại HID',
       hidOnly: {
+        switchFailed: 'Không chuyển được chế độ. Kiểm tra kết nối rồi thử lại.',
         title: 'Chế độ chỉ HID',
         desc: 'Nếu chuột và bàn phím của bạn ngừng phản hồi và việc đặt lại HID không có tác dụng thì đó có thể là sự cố tương thích giữa NanoKVM và thiết bị. Hãy thử bật chế độ HID-Only để tương thích tốt hơn.',
         tip1: 'Kích hoạt HID-Chế độ chỉ sẽ ngắt kết nối đĩa U ảo và mạng ảo',
@@ -307,6 +315,11 @@ const vi = {
       resetHidFailed: 'Đặt lại USB HID thất bại'
     },
     image: {
+      delete: 'Xóa',
+      inUse: 'Đang dùng. Hãy đẩy ra trước khi xóa.',
+      retry: 'Thử lại',
+      loadFailed: 'Không tải được danh sách ảnh đĩa',
+      readOnlyLocked: 'Hãy đẩy đĩa ra để thay đổi. Cài đặt áp dụng khi chèn ảnh đĩa.',
       title: 'Hình ảnh',
       loading: 'Đang tải...',
       empty: 'Không tìm thấy',
@@ -398,6 +411,10 @@ const vi = {
         'Script chạy lâu hơn {{minutes}} phút nên trang này đã ngừng chờ. Có thể script vẫn đang chạy trên bo mạch.'
     },
     terminal: {
+      invalidBaud: 'Tốc độ baud này không được hỗ trợ.',
+      invalidPort: 'Nhập đường dẫn thiết bị trong /dev, ví dụ /dev/ttyS1.',
+      invalidSettings: 'Cài đặt cổng nối tiếp không hợp lệ. Đây là shell của chính bo mạch.',
+      disconnected: 'Đã ngắt kết nối. Nhấn Enter để kết nối lại.',
       title: 'Terminal',
       nanokvm: 'Terminal NanoKVM',
       serial: 'Terminal Cổng Nối Tiếp',
@@ -417,6 +434,17 @@ const vi = {
       confirm: 'OK'
     },
     wol: {
+      no: 'Không',
+      yes: 'Có',
+      deleteConfirm: 'Xóa địa chỉ đã lưu này?',
+      delete: 'Xóa',
+      wake: 'Đánh thức',
+      rename: 'Đổi tên',
+      showMac: 'Hiện địa chỉ MAC',
+      showName: 'Hiện tên',
+      requestFailed: 'Không kết nối được tới thiết bị để gửi lệnh',
+      deleteFailed: 'Không xóa được',
+      renameFailed: 'Không đổi tên được',
       title: 'Wake-on-LAN',
       sending: 'Đang gửi lệnh...',
       sent: 'Đã gửi lệnh',
@@ -424,6 +452,11 @@ const vi = {
       ok: 'OK'
     },
     download: {
+      uploadFailed: 'Tải lên thất bại',
+      uploadSuccess: 'Đã tải lên xong',
+      uploading: 'Đang tải lên: {{file}}',
+      downloadingPercent: 'Đang tải xuống ({{percent}}): {{file}}',
+      downloading: 'Đang tải xuống: {{file}}',
       title: 'Trình tải xuống hình ảnh',
       input: 'Vui lòng nhập hình ảnh từ xa URL',
       ok: 'OK',

@@ -46,6 +46,7 @@ export const Images = ({
   const [notify, contextHolder] = notification.useNotification();
 
   const [isLoading, setIsLoading] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [images, setImages] = useState<string[]>([]);
   const [busyImage, setBusyImage] = useState('');
   const [targets, setTargets] = useState<Record<string, api.DriveId>>({});
@@ -83,14 +84,17 @@ export const Images = ({
       .getImages()
       .then((rsp) => {
         if (rsp.code !== 0) {
+          setLoadFailed(true);
           return;
         }
 
+        setLoadFailed(false);
         const files: string[] = rsp.data?.files?.length > 0 ? rsp.data.files : [];
         setImages(files);
         onImagesChanged(files);
         onDrivesChanged();
       })
+      .catch(() => setLoadFailed(true))
       .finally(() => {
         setIsLoading(false);
       });
@@ -137,6 +141,7 @@ export const Images = ({
           openNotification(!!loaded, rsp.msg);
         }
       })
+      .catch((err) => openNotification(!!loaded, err?.message ?? ''))
       .finally(() => {
         setBusyImage('');
         onDrivesChanged();
@@ -176,6 +181,9 @@ export const Images = ({
 
         setSelectedImage('');
       })
+      .catch((err) => {
+        notify.open({ message: t('image.deleteFailed'), description: err?.message, duration: 10 });
+      })
       .finally(() => {
         setDeletingImage('');
       });
@@ -196,6 +204,18 @@ export const Images = ({
       <div className="flex items-center justify-center space-x-2 py-5 text-neutral-400">
         <LoaderCircleIcon className="animate-spin" size={18} />
         <span className="text-sm">{t('image.loading')}</span>
+      </div>
+    );
+  }
+
+  // A list that could not be read is not an empty one.
+  if (loadFailed) {
+    return (
+      <div className="flex items-center justify-center space-x-2 py-5 text-red-500">
+        <span className="text-sm">{t('image.loadFailed')}</span>
+        <Button size="small" onClick={() => getImages()}>
+          {t('image.retry')}
+        </Button>
       </div>
     );
   }
@@ -247,15 +267,21 @@ export const Images = ({
                   }
                   mouseEnterDelay={0.6}
                 >
-                  <div
+                  <button
+                    type="button"
+                    aria-label={
+                      loaded
+                        ? t('image.loadedIn', { drive: driveName })
+                        : t('image.insertInto', { drive: driveName })
+                    }
                     className={clsx(
-                      'flex h-[24px] w-[24px] items-center justify-center rounded',
+                      'flex h-[24px] w-[24px] items-center justify-center rounded p-0',
                       !loaded && available.length > 1 && 'hover:bg-neutral-500/50'
                     )}
                     onClick={(e) => (loaded ? e.stopPropagation() : toggleTarget(e, image))}
                   >
                     <DriveIcon size={16} />
-                  </div>
+                  </button>
                 </Tooltip>
               )}
 
@@ -273,21 +299,29 @@ export const Images = ({
                 )}
               </div>
 
-              <div
-                className={clsx(
-                  'flex h-[24px] w-[24px] items-center justify-center rounded hover:bg-neutral-500/50',
-                  isLocked(image)
-                    ? 'cursor-not-allowed text-neutral-500'
-                    : 'text-neutral-300 hover:text-red-500'
-                )}
-                onClick={(e) => showDeleteModal(e, image)}
+              <Tooltip
+                title={isLocked(image) ? t('image.inUse') : t('image.delete')}
+                mouseEnterDelay={0.6}
               >
-                {deletingImage === image ? (
-                  <LoaderCircleIcon className="animate-spin text-red-500" size={16} />
-                ) : (
-                  <Trash2Icon size={16} />
-                )}
-              </div>
+                <button
+                  type="button"
+                  aria-label={isLocked(image) ? t('image.inUse') : t('image.delete')}
+                  aria-disabled={isLocked(image)}
+                  className={clsx(
+                    'flex h-[24px] w-[24px] items-center justify-center rounded p-0 hover:bg-neutral-500/50',
+                    isLocked(image)
+                      ? 'cursor-not-allowed text-neutral-500'
+                      : 'text-neutral-300 hover:text-red-500'
+                  )}
+                  onClick={(e) => showDeleteModal(e, image)}
+                >
+                  {deletingImage === image ? (
+                    <LoaderCircleIcon className="animate-spin text-red-500" size={16} />
+                  ) : (
+                    <Trash2Icon size={16} />
+                  )}
+                </button>
+              </Tooltip>
             </div>
           );
         })}

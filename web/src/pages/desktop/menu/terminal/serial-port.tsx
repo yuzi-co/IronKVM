@@ -1,64 +1,94 @@
 import { ChangeEvent, useState } from 'react';
 import { Button, Input, InputNumber, Modal, Radio, RadioChangeEvent, Select } from 'antd';
-import { useSetAtom } from 'jotai';
 import { SquareTerminalIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { keyboardLockAtom } from '@/jotai/keyboard.ts';
+import { getSerialSettings, setSerialSettings } from '@/lib/localstorage.ts';
+import { useKeyboardLock } from '@/hooks/useKeyboardLock.ts';
+import { isValidSerialPort, validatePicocomParameters } from '@/pages/terminal/validater.ts';
 
 export const SerialPort = () => {
   const { t } = useTranslation();
-  const setKeyboardLock = useSetAtom(keyboardLockAtom);
+
+  // The dialog opens with the settings last used, read once per mount.
+  const [saved] = useState(() => getSerialSettings() ?? {});
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [port, setPort] = useState('');
-  const [baudrate, setBaudrate] = useState(115200);
-  const [parity, setParity] = useState<string>('none');
-  const [flowControl, setFlowControl] = useState<string>('none');
-  const [dataBits, setDataBits] = useState(8);
-  const [stopBits, setStopBits] = useState(1);
+  const [port, setPort] = useState(saved.port ?? '');
+  const [baudrate, setBaudrate] = useState(saved.baudrate ?? 115200);
+  const [parity, setParity] = useState<string>(saved.parity ?? 'none');
+  const [flowControl, setFlowControl] = useState<string>(saved.flowControl ?? 'none');
+  const [dataBits, setDataBits] = useState(saved.dataBits ?? 8);
+  const [stopBits, setStopBits] = useState(saved.stopBits ?? 1);
+  const [error, setError] = useState<'' | 'invalidPort' | 'invalidBaud'>('');
+
+  useKeyboardLock('serial-port-modal', isModalOpen);
 
   function openModal() {
-    setKeyboardLock({ source: 'serial-port-modal', locked: true });
+    setError('');
     setIsModalOpen(true);
   }
 
   function closeModal() {
-    setKeyboardLock({ source: 'serial-port-modal', locked: false });
     setIsModalOpen(false);
   }
 
   function handleInputChange(e: ChangeEvent<HTMLInputElement>) {
     setPort(e.target.value);
+    setError('');
   }
 
   function handleRadioChange(e: RadioChangeEvent) {
     setPort(e.target.value);
+    setError('');
   }
 
   function onInputNumberChange(value: number | null) {
     if (value === null) return;
     setBaudrate(value);
+    setError('');
   }
 
+  // The terminal page runs the same check and, when it fails, opens a plain
+  // shell. Checking here says what is wrong instead.
   function submit() {
-    if (!port || !baudrate) {
-      closeModal();
+    const trimmed = port.trim();
+    if (!isValidSerialPort(trimmed)) {
+      setError('invalidPort');
       return;
     }
 
-    setKeyboardLock({ source: 'serial-port-modal', locked: false });
+    const valid = validatePicocomParameters({
+      port: trimmed,
+      baud: String(baudrate),
+      parity,
+      flowControl,
+      dataBits: String(dataBits),
+      stopBits: String(stopBits)
+    });
+    if (!valid) {
+      setError('invalidBaud');
+      return;
+    }
+
+    setSerialSettings({ port: trimmed, baudrate, parity, flowControl, dataBits, stopBits });
     setIsModalOpen(false);
-    window.open(
-      `/#terminal?port=${port}&baud=${baudrate}&parity=${parity}&flowControl=${flowControl}&dataBits=${dataBits}&stopBits=${stopBits}`,
-      '_blank'
-    );
+
+    const query = new URLSearchParams({
+      port: trimmed,
+      baud: String(baudrate),
+      parity,
+      flowControl,
+      dataBits: String(dataBits),
+      stopBits: String(stopBits)
+    });
+    window.open(`/#terminal?${query.toString()}`, '_blank');
   }
 
   return (
     <>
       <div
-        className="flex h-[28px] cursor-pointer select-none items-center space-x-1 rounded px-2 py-1 hover:bg-neutral-700/70"
+        className="flex h-[28px] cursor-pointer items-center space-x-1 rounded px-2 py-1 select-none hover:bg-neutral-700/70"
         onClick={openModal}
       >
         <SquareTerminalIcon size={14} />
@@ -73,13 +103,14 @@ export const SerialPort = () => {
           <div className="w-1/2">
             <Input
               value={port}
+              status={error === 'invalidPort' ? 'error' : undefined}
               placeholder={t('terminal.serialPortPlaceholder')}
               onChange={handleInputChange}
             />
           </div>
         </div>
         <div className="mt-3 pl-[100px]">
-          <Radio.Group size="large" onChange={handleRadioChange}>
+          <Radio.Group size="large" value={port.trim()} onChange={handleRadioChange}>
             <Radio value="/dev/ttyS1">
               <code>/dev/ttyS1</code>
             </Radio>
@@ -91,12 +122,7 @@ export const SerialPort = () => {
 
         <div className="mt-7 flex items-center space-x-[20px]">
           <div className="flex w-[80px] justify-end text-neutral-400">{t('terminal.baudrate')}</div>
-          <InputNumber
-            controls={false}
-            min={1}
-            defaultValue={115200}
-            onChange={onInputNumberChange}
-          />
+          <InputNumber controls={false} min={1} value={baudrate} onChange={onInputNumberChange} />
         </div>
 
         <div className="mt-7 flex items-center space-x-[20px]">
@@ -165,7 +191,11 @@ export const SerialPort = () => {
           </div>
         </div>
 
-        <div className="mb-3 mt-12 flex justify-center">
+        {error && (
+          <div className="mt-7 text-center text-sm text-red-500">{t(`terminal.${error}`)}</div>
+        )}
+
+        <div className="mt-12 mb-3 flex justify-center">
           <Button type="primary" onClick={submit}>
             {t('terminal.confirm')}
           </Button>

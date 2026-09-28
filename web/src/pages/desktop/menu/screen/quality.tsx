@@ -3,10 +3,10 @@ import { useAtomValue } from 'jotai';
 import { CheckIcon, SquareActivityIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { updateScreen } from '@/api/vm';
 import { videoModeAtom } from '@/jotai/screen.ts';
 
 import { getQualityMap } from './constants.ts';
+import { applyScreenSetting } from './update.ts';
 
 type QualityProps = {
   quality: number;
@@ -31,10 +31,7 @@ export const Quality = ({ quality, setQuality }: QualityProps) => {
       return;
     }
 
-    const rsp = await updateScreen('quality', value);
-    if (rsp.code !== 0) {
-      return;
-    }
+    if (!(await applyScreenSetting('quality', value, t))) return;
 
     setQuality(key);
   }
@@ -44,7 +41,7 @@ export const Quality = ({ quality, setQuality }: QualityProps) => {
       {qualityList.map((item) => (
         <div
           key={item.key}
-          className="flex h-[30px] cursor-pointer select-none items-center rounded pl-1 pr-5 hover:bg-neutral-700/70"
+          className="flex h-[30px] cursor-pointer items-center rounded pr-5 pl-1 select-none hover:bg-neutral-700/70"
           onClick={() => update(item.key)}
         >
           <div className="flex h-[14px] w-[20px] items-end text-blue-500">
@@ -60,7 +57,7 @@ export const Quality = ({ quality, setQuality }: QualityProps) => {
     <Popover content={content} placement="rightTop" arrow={false} align={{ offset: [14, 0] }}>
       <div className="flex h-[30px] cursor-pointer items-center space-x-2 rounded px-3 text-neutral-300 hover:bg-neutral-700/70">
         <SquareActivityIcon size={18} />
-        <span className="select-none text-sm">{t('screen.quality')}</span>
+        <span className="text-sm select-none">{t('screen.quality')}</span>
       </div>
     </Popover>
   );

@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { AttachAddon } from '@xterm/addon-attach';
 import { FitAddon } from '@xterm/addon-fit';
 import { Terminal as XtermTerminal } from '@xterm/xterm';
+import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
 
 import '@xterm/xterm/css/xterm.css';
@@ -29,24 +30,14 @@ export const Terminal = () => {
     fitAddon.fit();
 
     const url = `${getBaseUrl('ws')}/api/vm/terminal`;
-    const ws = new WebSocket(url);
+    let ws: WebSocket;
+    let attachAddon: AttachAddon | null = null;
     let isPicocomRunning = false;
-
-    ws.addEventListener('close', (event) => {
-      if (event.code === 4401) {
-        notifyAuthExpired();
-      }
-    });
-
-    ws.onopen = () => {
-      const attachAddon = new AttachAddon(ws);
-      terminal.loadAddon(attachAddon);
-
-      sendSize();
-      setTimeout(runPicocom, 300);
-    };
+    let isDisconnected = false;
+    let isDisposed = false;
 
     const sendSize = () => {
+      if (ws.readyState !== WebSocket.OPEN) return;
       const windowSize = { rows: terminal.rows, cols: terminal.cols };
       const blob = new Blob([JSON.stringify(windowSize)], { type: 'application/json' });
       ws.send(blob);
@@ -65,7 +56,9 @@ export const Terminal = () => {
       const stopBits = searchParams.get('stopBits');
       if (!port || !baud) return;
 
+      // The shell is already open; say why it is not the serial port.
       if (!validatePicocomParameters({ port, baud, parity, flowControl, dataBits, stopBits })) {
+        terminal.writeln(`\x1b[31m[${i18n.t('terminal.invalidSettings')}]\x1b[0m`);
         return;
       }
 
@@ -75,6 +68,48 @@ export const Terminal = () => {
 
       isPicocomRunning = true;
     };
+
+    // connect opens the shell socket. A dropped socket leaves the page with a
+    // note and waits for Enter, rather than a terminal that looks alive but
+    // swallows every key.
+    const connect = () => {
+      isDisconnected = false;
+      ws = new WebSocket(url);
+
+      ws.addEventListener('close', (event) => {
+        attachAddon?.dispose();
+        attachAddon = null;
+        isPicocomRunning = false;
+
+        if (isDisposed) return;
+
+        if (event.code === 4401) {
+          notifyAuthExpired();
+          return;
+        }
+
+        isDisconnected = true;
+        terminal.writeln('');
+        terminal.writeln(`\x1b[33m[${i18n.t('terminal.disconnected')}]\x1b[0m`);
+      });
+
+      ws.onopen = () => {
+        attachAddon = new AttachAddon(ws);
+        terminal.loadAddon(attachAddon);
+
+        sendSize();
+        setTimeout(runPicocom, 300);
+      };
+    };
+
+    const onData = terminal.onData((data) => {
+      if (isDisconnected && (data === '\r' || data === '\n')) {
+        terminal.writeln('');
+        connect();
+      }
+    });
+
+    connect();
 
     const exitPicocom = () => {
       if (ws.readyState === WebSocket.OPEN && isPicocomRunning) {
@@ -90,14 +125,16 @@ export const Terminal = () => {
 
     const cleanupConnection = () => {
       exitPicocom();
+      const socket = ws;
       setTimeout(() => {
-        if (ws.readyState === WebSocket.OPEN) {
-          ws.close();
+        if (socket.readyState === WebSocket.OPEN) {
+          socket.close();
         }
       }, 100);
     };
 
     const handleBeforeUnload = () => {
+      isDisposed = true;
       cleanupConnection();
     };
 
@@ -105,6 +142,8 @@ export const Terminal = () => {
     window.addEventListener('beforeunload', handleBeforeUnload);
 
     return () => {
+      isDisposed = true;
+      onData.dispose();
       terminal.dispose();
       cleanupConnection();
 

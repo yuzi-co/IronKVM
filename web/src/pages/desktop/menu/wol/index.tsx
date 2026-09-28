@@ -1,6 +1,6 @@
-import { ChangeEvent, useRef, useState } from 'react';
+import { ButtonHTMLAttributes, ChangeEvent, forwardRef, ReactNode, useRef, useState } from 'react';
 import { useAuth } from '@/contexts/auth.ts';
-import { Button, Divider, Input, List } from 'antd';
+import { Button, Divider, Input, List, message, Popconfirm, Tooltip } from 'antd';
 import type { InputRef } from 'antd';
 import clsx from 'clsx';
 import { useSetAtom } from 'jotai';
@@ -18,6 +18,33 @@ interface MacItem {
   isName: boolean;
   isEdit: boolean;
 }
+
+type IconButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+  label: string;
+  children: ReactNode;
+};
+
+// IconButton is a row action with its name as the tooltip and the accessible
+// label. It forwards its ref and the other props, so a Popconfirm can wrap it.
+const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
+  ({ label, className, children, ...rest }, ref) => (
+    <Tooltip title={label} mouseEnterDelay={0.6}>
+      <button
+        ref={ref}
+        type="button"
+        aria-label={label}
+        className={clsx(
+          'flex h-[24px] w-[24px] cursor-pointer items-center justify-center rounded p-0',
+          className
+        )}
+        {...rest}
+      >
+        {children}
+      </button>
+    </Tooltip>
+  )
+);
+IconButton.displayName = 'IconButton';
 
 export const Wol = () => {
   const { t } = useTranslation();
@@ -53,27 +80,30 @@ export const Wol = () => {
   }
 
   function getMacs() {
-    getWolMacs().then((rsp) => {
-      if (rsp.code !== 0) {
-        console.log(rsp.msg);
-        return;
-      }
+    getWolMacs()
+      .then((rsp) => {
+        if (rsp.code !== 0) {
+          console.log(rsp.msg);
+          return;
+        }
 
-      const isEdit = false;
-      const macList = rsp.data.macs
-        .map((item: string) => item.trim())
-        .filter((item: string) => item !== '')
-        .map((item: string) => {
-          const separator = item.search(/\s/);
-          const mac = separator === -1 ? item : item.slice(0, separator);
-          const name = separator === -1 ? '' : item.slice(separator).trim();
-          const isName = name !== '';
-          const isShow = !isName;
-          return { name, mac, isShow, isName, isEdit };
-        });
+        const isEdit = false;
+        const macList = rsp.data.macs
+          .map((item: string) => item.trim())
+          .filter((item: string) => item !== '')
+          .map((item: string) => {
+            const separator = item.search(/\s/);
+            const mac = separator === -1 ? item : item.slice(0, separator);
+            const name = separator === -1 ? '' : item.slice(separator).trim();
+            const isName = name !== '';
+            const isShow = !isName;
+            return { name, mac, isShow, isName, isEdit };
+          });
 
-      setMacList(macList);
-    });
+        setMacList(macList);
+      })
+      // The saved list is a convenience; the address field still works.
+      .catch(() => {});
   }
 
   function toggleShow(mac: string) {
@@ -92,20 +122,29 @@ export const Wol = () => {
     const value = e.currentTarget.value.trim();
     if (!value) return;
 
-    const rsp = await setWolMacName(mac, value);
-    if (rsp.code !== 0) {
-      console.log(rsp.msg);
+    try {
+      const rsp = await setWolMacName(mac, value);
+      if (rsp.code !== 0) {
+        message.error(rsp.msg ? `${t('wol.renameFailed')}: ${rsp.msg}` : t('wol.renameFailed'));
+        return;
+      }
+    } catch {
+      message.error(t('wol.renameFailed'));
       return;
     }
     getMacs();
   }
 
   function deleteMac(mac: string) {
-    deleteWolMac(mac).then((rsp) => {
-      if (rsp.code === 0) {
+    deleteWolMac(mac)
+      .then((rsp) => {
+        if (rsp.code !== 0) {
+          message.error(rsp.msg ? `${t('wol.deleteFailed')}: ${rsp.msg}` : t('wol.deleteFailed'));
+          return;
+        }
         getMacs();
-      }
-    });
+      })
+      .catch(() => message.error(t('wol.deleteFailed')));
   }
 
   function wake(mac?: string) {
@@ -132,7 +171,7 @@ export const Wol = () => {
       })
       .catch(() => {
         setStatus('failed');
-        setLog(t('auth.error'));
+        setLog(t('wol.requestFailed'));
       });
   }
 
@@ -194,34 +233,46 @@ export const Wol = () => {
 
               <div className="flex items-center space-x-1">
                 {item.isName && (
-                  <div
-                    className="text-500 flex h-[24px] w-[24px] cursor-pointer items-center justify-center rounded hover:bg-neutral-700/80"
+                  <IconButton
+                    label={item.isShow ? t('wol.showName') : t('wol.showMac')}
+                    className="text-neutral-400 hover:bg-neutral-700/80"
                     onClick={() => toggleShow(item.mac)}
                   >
                     {item.isShow ? <EyeClosed size={16} /> : <Eye size={16} />}
-                  </div>
+                  </IconButton>
                 )}
                 {isAdmin && (
-                  <div
-                    className="text-500 flex h-[24px] w-[24px] cursor-pointer items-center justify-center rounded hover:bg-neutral-700"
+                  <IconButton
+                    label={t('wol.rename')}
+                    className="text-neutral-400 hover:bg-neutral-700"
                     onClick={() => editMac(item.mac, item.isEdit)}
                   >
                     <Pencil size={16} />
-                  </div>
+                  </IconButton>
                 )}
-                <div
-                  className="flex h-[24px] w-[24px] cursor-pointer items-center justify-center rounded text-green-500 hover:bg-neutral-700/80"
+                <IconButton
+                  label={t('wol.wake')}
+                  className="text-green-500 hover:bg-neutral-700/80"
                   onClick={() => wake(item.mac)}
                 >
                   <SendIcon size={16} />
-                </div>
+                </IconButton>
                 {isAdmin && (
-                  <div
-                    className="flex h-[24px] w-[24px] cursor-pointer items-center justify-center rounded text-red-500 hover:bg-neutral-700"
-                    onClick={() => deleteMac(item.mac)}
+                  <Popconfirm
+                    title={t('wol.deleteConfirm')}
+                    description={item.isName ? `${item.name} (${item.mac})` : item.mac}
+                    okText={t('wol.yes')}
+                    cancelText={t('wol.no')}
+                    okButtonProps={{ danger: true }}
+                    onConfirm={() => deleteMac(item.mac)}
                   >
-                    <Trash2Icon size={16} />
-                  </div>
+                    <IconButton
+                      label={t('wol.delete')}
+                      className="text-red-500 hover:bg-neutral-700"
+                    >
+                      <Trash2Icon size={16} />
+                    </IconButton>
+                  </Popconfirm>
                 )}
               </div>
             </List.Item>

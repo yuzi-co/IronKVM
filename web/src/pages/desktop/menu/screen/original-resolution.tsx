@@ -40,6 +40,7 @@ import {
   selectedOriginalResolutionAtom
 } from '@/jotai/screen.ts';
 import { menuCloseSignalAtom } from '@/jotai/settings.ts';
+import { useKeyboardLock } from '@/hooks/useKeyboardLock.ts';
 import { isValidInputRegion } from '@/pages/desktop/screen/geometry.ts';
 
 const resolutionKey = ({ width, height }: ResolutionPreset) => `${width}x${height}`;
@@ -67,13 +68,10 @@ export const OriginalResolution = () => {
   useEffect(() => {
     return () => {
       setKeyboardLock({ source: 'control-region-popover', locked: false });
-      setKeyboardLock({ source: 'control-region-resolution-modal', locked: false });
     };
   }, [setKeyboardLock]);
 
-  useEffect(() => {
-    setKeyboardLock({ source: 'control-region-resolution-modal', locked: isAddOpen });
-  }, [isAddOpen, setKeyboardLock]);
+  useKeyboardLock('control-region-resolution-modal', isAddOpen);
 
   async function loadConfig() {
     const rsp = await getInputRegion();
@@ -350,7 +348,7 @@ export const OriginalResolution = () => {
       >
         <div className="flex h-[30px] cursor-pointer items-center space-x-2 rounded px-3 text-neutral-300 hover:bg-neutral-700/70">
           <ScanSearchIcon size={18} />
-          <span className="select-none text-sm">{t('screen.controlRegion.title')}</span>
+          <span className="text-sm select-none">{t('screen.controlRegion.title')}</span>
         </div>
       </Popover>
       <Modal

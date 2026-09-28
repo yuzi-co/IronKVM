@@ -66,12 +66,16 @@ const it = {
       ssidRequired: 'Inserisci il nome della rete, fino a 32 caratteri',
       passwordLength: 'La password è di 8-63 caratteri. Lasciala vuota per una rete aperta.',
       passwordOptional: 'Password (vuota per una rete aperta)',
-      lost:
-        "La scheda ha smesso di rispondere. Potrebbe essersi collegata alla rete e aver chiuso l'hotspot di configurazione. Se l'hotspot ricompare, la connessione non è riuscita: ricollegati e riprova.",
-      done:
-        'Configurazione completata. Ricollega questo dispositivo alla tua rete abituale e apri la scheda al suo nuovo indirizzo.'
+      lost: "La scheda ha smesso di rispondere. Potrebbe essersi collegata alla rete e aver chiuso l'hotspot di configurazione. Se l'hotspot ricompare, la connessione non è riuscita: ricollegati e riprova.",
+      done: 'Configurazione completata. Ricollega questo dispositivo alla tua rete abituale e apri la scheda al suo nuovo indirizzo.'
     },
     screen: {
+      codecNoWebrtcHevc: 'Questo browser non può ricevere H.265 tramite WebRTC',
+      codecNoHevc: 'Questo browser non può decodificare H.265',
+      codecNote:
+        'La scheda ha un solo encoder, quindi questo cambia lo stream per tutti gli spettatori. Riconnettiti per applicarlo a una sessione WebRTC in corso.',
+      codec: 'Codec',
+      updateFailed: "L'impostazione non è stata applicata",
       scale: 'Scala',
       title: 'Schermo',
       video: 'Modalità video',
@@ -140,7 +144,7 @@ const it = {
       fps: 'FPS',
       customizeFps: 'Personalizza',
       quality: 'Qualità',
-      qualityLossless: 'Senza perdita',
+      qualityLossless: 'Massima',
       qualityHigh: 'Alto',
       qualityMedium: 'Medio',
       qualityLow: 'Basso',
@@ -170,6 +174,7 @@ const it = {
       directConnectionFailed: 'Connessione al flusso video non riuscita'
     },
     keyboard: {
+      close: 'Chiudi',
       title: 'Tastiera',
       paste: 'Incolla',
       tips: "Digita il testo sull'host come pressioni di tasti. Scegli il layout di tastiera usato dall'host.",
@@ -230,6 +235,7 @@ const it = {
         hidError: "Impossibile inviare le pressioni dei tasti all'host."
       },
       shortcut: {
+        sendFailed: 'Non inviato: la connessione di input è interrotta',
         title: 'Scorciatoie',
         custom: 'Personalizzato',
         capture: 'Fai clic qui per acquisire il collegamento',
@@ -240,6 +246,7 @@ const it = {
         enterFullScreen: 'Attiva/disattiva la modalità a schermo intero.'
       },
       leaderKey: {
+        saveFailed: 'Impossibile salvare il tasto leader',
         title: 'Tasto Leader',
         desc: "Ignora le restrizioni del browser e invia collegamenti di sistema direttamente all'host remoto.",
         howToUse: 'Come usare',
@@ -289,8 +296,8 @@ const it = {
         "L'host ha smesso di raccogliere i report del mouse assoluto, quindi i movimenti del puntatore vanno persi. La tastiera non è interessata. Ripristinare l'USB di solito risolve; la modalità relativa usa un endpoint diverso.",
       useRelative: 'Passa alla modalità relativa',
       direction: 'Direzione della rotellina',
-      scrollUp: "Scorri verso l'alto",
-      scrollDown: 'Scorri verso il basso',
+      scrollUp: 'Come su questo computer',
+      scrollDown: 'Invertito (scorrimento naturale)',
       speed: 'Velocità della rotellina',
       fast: 'Veloce',
       slow: 'Lento',
@@ -298,6 +305,7 @@ const it = {
         'Usando la modalità relativa. Clicca sul desktop per ottenere il puntatore del mouse.',
       resetHid: 'Reimposta HID',
       hidOnly: {
+        switchFailed: 'Impossibile cambiare modalità. Controlla la connessione e riprova.',
         title: 'Modalità solo HID',
         desc: 'Se il mouse e la tastiera smettono di rispondere e il ripristino di HID non aiuta, potrebbe trattarsi di un problema di compatibilità tra NanoKVM e il dispositivo. Prova ad abilitare la modalità HID-Only per una migliore compatibilità.',
         tip1: "L'abilitazione della modalità HID-Solo smonterà il disco U virtuale e la rete virtuale",
@@ -310,6 +318,12 @@ const it = {
       resetHidFailed: 'Reimpostazione HID USB non riuscita'
     },
     image: {
+      delete: 'Elimina',
+      inUse: 'In uso. Espellila prima di eliminarla.',
+      retry: 'Riprova',
+      loadFailed: "Impossibile caricare l'elenco delle immagini",
+      readOnlyLocked:
+        "Espelli il disco per modificarlo. Si applica quando si inserisce un'immagine.",
       title: 'Immagini',
       loading: 'Caricamento...',
       empty: 'Nessun risultato',
@@ -403,6 +417,11 @@ const it = {
         'Lo script è durato più di {{minutes}} minuti e questa pagina ha smesso di attendere. Potrebbe essere ancora in esecuzione sulla scheda.'
     },
     terminal: {
+      invalidBaud: 'Questa velocità in baud non è supportata.',
+      invalidPort: 'Inserisci un percorso di dispositivo sotto /dev, ad esempio /dev/ttyS1.',
+      invalidSettings:
+        'Impostazioni della porta seriale non valide. Questa è la shell della scheda.',
+      disconnected: 'Disconnesso. Premi Invio per riconnetterti.',
       title: 'Terminale',
       nanokvm: 'Terminale NanoKVM',
       serial: 'Terminale Porta Seriale',
@@ -422,6 +441,17 @@ const it = {
       confirm: 'Ok'
     },
     wol: {
+      no: 'No',
+      yes: 'Sì',
+      deleteConfirm: 'Eliminare questo indirizzo salvato?',
+      delete: 'Elimina',
+      wake: 'Riattiva',
+      rename: 'Rinomina',
+      showMac: "Mostra l'indirizzo MAC",
+      showName: 'Mostra il nome',
+      requestFailed: 'Impossibile raggiungere il dispositivo per inviare il comando',
+      deleteFailed: 'Impossibile eliminare',
+      renameFailed: 'Impossibile rinominare',
       title: 'Wake-on-LAN',
       sending: 'Invio comando...',
       sent: 'Comando inviato',
@@ -429,6 +459,11 @@ const it = {
       ok: 'Ok'
     },
     download: {
+      uploadFailed: 'Caricamento non riuscito',
+      uploadSuccess: 'Caricamento completato',
+      uploading: 'Caricamento: {{file}}',
+      downloadingPercent: 'Download in corso ({{percent}}): {{file}}',
+      downloading: 'Download in corso: {{file}}',
       title: 'Scaricatore di immagini',
       input: "Inserisci un'immagine remota URL",
       ok: 'Ok',

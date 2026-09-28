@@ -66,12 +66,16 @@ const cz = {
       ssidRequired: 'Zadejte název sítě, nejvýše 32 znaků',
       passwordLength: 'Heslo má 8 až 63 znaků. U otevřené sítě ho nechte prázdné.',
       passwordOptional: 'Heslo (prázdné pro otevřenou síť)',
-      lost:
-        'Deska přestala odpovídat. Možná se připojila k síti a vypnula svůj konfigurační hotspot. Pokud se hotspot znovu objeví, připojení selhalo: připojte se k němu znovu a zkuste to znovu.',
-      done:
-        'Nastavení dokončeno. Připojte toto zařízení zpět k obvyklé síti a otevřete desku na její nové adrese.'
+      lost: 'Deska přestala odpovídat. Možná se připojila k síti a vypnula svůj konfigurační hotspot. Pokud se hotspot znovu objeví, připojení selhalo: připojte se k němu znovu a zkuste to znovu.',
+      done: 'Nastavení dokončeno. Připojte toto zařízení zpět k obvyklé síti a otevřete desku na její nové adrese.'
     },
     screen: {
+      codecNoWebrtcHevc: 'Tento prohlížeč neumí přijímat H.265 přes WebRTC',
+      codecNoHevc: 'Tento prohlížeč neumí dekódovat H.265',
+      codecNote:
+        'Deska má jediný kodér, takže se tím změní stream pro všechny diváky. Pro použití v běžící relaci WebRTC se znovu připojte.',
+      codec: 'Kodek',
+      updateFailed: 'Nastavení nebylo použito',
       scale: 'Měřítko',
       title: 'Obrazovka',
       video: 'Režim videa',
@@ -138,7 +142,7 @@ const cz = {
       fps: 'FPS',
       customizeFps: 'Přizpůsobit',
       quality: 'Kvalita',
-      qualityLossless: 'Bezeztrátový',
+      qualityLossless: 'Nejlepší',
       qualityHigh: 'Vysoký',
       qualityMedium: 'Střední',
       qualityLow: 'Nízký',
@@ -168,6 +172,7 @@ const cz = {
       directConnectionFailed: 'Připojení videostreamu selhalo'
     },
     keyboard: {
+      close: 'Zavřít',
       title: 'Klávesnice',
       paste: 'Vložit',
       tips: 'Napíše text na hostiteli jako stisky kláves. Zvolte rozložení klávesnice, které hostitel používá.',
@@ -228,6 +233,7 @@ const cz = {
         hidError: 'Stisky kláves se nepodařilo odeslat hostiteli.'
       },
       shortcut: {
+        sendFailed: 'Neodesláno: vstupní spojení není k dispozici',
         title: 'Zkratky',
         custom: 'Vlastní',
         capture: 'Kliknutím sem zachytíte zástupce',
@@ -238,6 +244,7 @@ const cz = {
         enterFullScreen: 'Přepnout režim celé obrazovky.'
       },
       leaderKey: {
+        saveFailed: 'Hlavní klávesu se nepodařilo uložit',
         title: 'Klávesa Leader',
         desc: 'Obejít omezení prohlížeče a odeslat systémové zkratky přímo vzdálenému hostiteli.',
         howToUse: 'Jak používat',
@@ -287,8 +294,8 @@ const cz = {
         'Cílové zařízení přestalo přijímat hlášení absolutní myši, takže se pohyby kurzoru ztrácejí. Klávesnice není dotčena. Často pomůže obnovení USB; relativní režim používá jiný koncový bod.',
       useRelative: 'Přepnout na relativní režim',
       direction: 'Směr kolečka',
-      scrollUp: 'Přejděte nahoru',
-      scrollDown: 'Přejděte dolů',
+      scrollUp: 'Stejně jako tento počítač',
+      scrollDown: 'Obrácené (přirozené posouvání)',
       speed: 'Rychlost kolečka',
       fast: 'Rychle',
       slow: 'Pomalu',
@@ -296,6 +303,7 @@ const cz = {
         'Používá se relativní režim. Klikněte prosím na plochu pro získání kurzoru myši.',
       resetHid: 'Resetovat HID',
       hidOnly: {
+        switchFailed: 'Režim se nepodařilo přepnout. Zkontrolujte připojení a zkuste to znovu.',
         title: 'Režim pouze HID',
         desc: 'Pokud vaše myš a klávesnice přestanou reagovat a resetování HID nepomůže, může jít o problém s kompatibilitou mezi NanoKVM a zařízením. Zkuste povolit režim HID-Only pro lepší kompatibilitu.',
         tip1: 'Povolení režimu HID-Only odpojí virtuální U-disk a virtuální síť',
@@ -308,6 +316,11 @@ const cz = {
       resetHidFailed: 'Reset USB HID se nezdařil'
     },
     image: {
+      delete: 'Smazat',
+      inUse: 'Používá se. Před smazáním jej vysuňte.',
+      retry: 'Zkusit znovu',
+      loadFailed: 'Seznam obrazů se nepodařilo načíst',
+      readOnlyLocked: 'Chcete-li to změnit, vysuňte disk. Uplatní se při vložení obrazu.',
       title: 'Obrázky',
       loading: 'Načítání...',
       empty: 'Nic nenalezeno',
@@ -400,6 +413,10 @@ const cz = {
         'Skript běžel déle než {{minutes}} minut a stránka přestala čekat. Na desce může stále běžet.'
     },
     terminal: {
+      invalidBaud: 'Tato přenosová rychlost není podporována.',
+      invalidPort: 'Zadejte cestu k zařízení v /dev, například /dev/ttyS1.',
+      invalidSettings: 'Neplatné nastavení sériového portu. Toto je vlastní shell desky.',
+      disconnected: 'Odpojeno. Stisknutím Enter se znovu připojíte.',
       title: 'Terminál',
       nanokvm: 'Terminál NanoKVM',
       serial: 'Terminál sériového portu',
@@ -419,6 +436,17 @@ const cz = {
       confirm: 'OK'
     },
     wol: {
+      no: 'Ne',
+      yes: 'Ano',
+      deleteConfirm: 'Smazat tuto uloženou adresu?',
+      delete: 'Smazat',
+      wake: 'Probudit',
+      rename: 'Přejmenovat',
+      showMac: 'Zobrazit adresu MAC',
+      showName: 'Zobrazit název',
+      requestFailed: 'Zařízení nebylo dostupné, příkaz nebyl odeslán',
+      deleteFailed: 'Smazání se nezdařilo',
+      renameFailed: 'Přejmenování se nezdařilo',
       title: 'Wake-on-LAN',
       sending: 'Odesílání příkazu...',
       sent: 'Příkaz odeslán',
@@ -426,6 +454,11 @@ const cz = {
       ok: 'OK'
     },
     download: {
+      uploadFailed: 'Nahrávání selhalo',
+      uploadSuccess: 'Nahrávání dokončeno',
+      uploading: 'Nahrávání: {{file}}',
+      downloadingPercent: 'Stahování ({{percent}}): {{file}}',
+      downloading: 'Stahování: {{file}}',
       title: 'Stahovač obrazů',
       input: 'Zadejte prosím vzdálený obrázek URL',
       ok: 'OK',

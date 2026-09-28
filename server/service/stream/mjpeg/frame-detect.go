@@ -44,7 +44,39 @@ var (
 	pauseMutex sync.Mutex
 	pauseTimer *time.Timer
 	pauseUntil time.Time
+
+	// detectEnabled is the operator's setting. It is board-wide, so it lives
+	// here rather than in one browser, and a pause returns to it rather than
+	// to on. The capture library starts with detection off.
+	detectEnabled bool
 )
+
+func framesFor(enabled bool) uint8 {
+	if enabled {
+		return FrameDetectInterval
+	}
+	return 0
+}
+
+// frameDetectEnabled reports the operator's setting.
+func frameDetectEnabled() bool {
+	pauseMutex.Lock()
+	defer pauseMutex.Unlock()
+
+	return detectEnabled
+}
+
+// setFrameDetectEnabled records the setting and applies it at once. It
+// overrides a pause still in flight, so the pause's timer must not come along
+// later and undo it.
+func setFrameDetectEnabled(enabled bool) {
+	pauseMutex.Lock()
+	defer pauseMutex.Unlock()
+
+	stopPauseLocked()
+	detectEnabled = enabled
+	setFrameDetect(framesFor(enabled))
+}
 
 // pauseFrameDetect switches detection off and schedules it back on, without
 // holding the request open for the duration.
@@ -54,6 +86,11 @@ var (
 func pauseFrameDetect(duration time.Duration) {
 	pauseMutex.Lock()
 	defer pauseMutex.Unlock()
+
+	// Detection that is off has nothing to pause.
+	if !detectEnabled {
+		return
+	}
 
 	deadline := time.Now().Add(duration)
 	if !deadline.After(pauseUntil) {
@@ -82,7 +119,15 @@ func resumeFrameDetect() {
 
 	pauseTimer = nil
 	pauseUntil = time.Time{}
-	setFrameDetect(FrameDetectInterval)
+	setFrameDetect(framesFor(detectEnabled))
+}
+
+func stopPauseLocked() {
+	if pauseTimer != nil {
+		pauseTimer.Stop()
+		pauseTimer = nil
+	}
+	pauseUntil = time.Time{}
 }
 
 // resetFrameDetectPause drops any pause in flight, for tests.
@@ -90,11 +135,14 @@ func resetFrameDetectPause() {
 	pauseMutex.Lock()
 	defer pauseMutex.Unlock()
 
-	if pauseTimer != nil {
-		pauseTimer.Stop()
-		pauseTimer = nil
-	}
-	pauseUntil = time.Time{}
+	stopPauseLocked()
+}
+
+// GetFrameDetect answers with the current setting, so every browser shows the
+// board's state instead of what it last chose itself.
+func GetFrameDetect(c *gin.Context) {
+	var rsp proto.Response
+	rsp.OkRspWithData(c, &proto.GetFrameDetectRsp{Enabled: frameDetectEnabled()})
 }
 
 func UpdateFrameDetect(c *gin.Context) {
@@ -106,15 +154,7 @@ func UpdateFrameDetect(c *gin.Context) {
 		return
 	}
 
-	var frame uint8 = 0
-	if req.Enabled {
-		frame = FrameDetectInterval
-	}
-
-	// An explicit setting overrides a pause still in flight, so its timer must
-	// not come along later and undo it.
-	resetFrameDetectPause()
-	setFrameDetect(frame)
+	setFrameDetectEnabled(req.Enabled)
 
 	rsp.OkRsp(c)
 	log.Debugf("update frame detect: %t", req.Enabled)

@@ -76,9 +76,13 @@ export const Ventoy = ({ status, images, onStatusChanged, onDrivesChanged }: Ven
   }
 
   function reload() {
-    api.getVentoyStatus().then((rsp) => {
-      if (rsp.code === 0) onStatusChanged(rsp.data);
-    });
+    api
+      .getVentoyStatus()
+      .then((rsp) => {
+        if (rsp.code === 0) onStatusChanged(rsp.data);
+      })
+      // The failure was already reported; the next open reads the state again.
+      .catch(() => {});
   }
 
   // toggle puts an image on the disk or takes it off. Selected paths that no
@@ -102,8 +106,10 @@ export const Ventoy = ({ status, images, onStatusChanged, onDrivesChanged }: Ven
   return (
     <>
       <div className="flex flex-col space-y-3">
-        <div
-          className="flex cursor-pointer items-center space-x-1 select-none"
+        <button
+          type="button"
+          aria-expanded={isExpanded}
+          className="flex w-full cursor-pointer items-center space-x-1 p-0 text-left select-none"
           onClick={() => setIsExpanded(!isExpanded)}
         >
           {isExpanded ? <ChevronDownIcon size={16} /> : <ChevronRightIcon size={16} />}
@@ -116,7 +122,7 @@ export const Ventoy = ({ status, images, onStatusChanged, onDrivesChanged }: Ven
           >
             {statusText()}
           </span>
-        </div>
+        </button>
 
         {isExpanded && (
           <div className="flex flex-col space-y-3 pl-5 text-sm">
@@ -172,13 +178,15 @@ export const Ventoy = ({ status, images, onStatusChanged, onDrivesChanged }: Ven
                       {t('image.ventoy.missing', { file: basename(image) })}
                     </span>
                     {!locked && (
-                      <div
-                        className="flex h-[20px] w-[20px] cursor-pointer items-center justify-center rounded text-neutral-400 hover:bg-neutral-500/50 hover:text-white"
+                      <button
+                        type="button"
+                        className="flex h-[20px] w-[20px] cursor-pointer items-center justify-center rounded p-0 text-neutral-400 hover:bg-neutral-500/50 hover:text-white"
                         title={t('image.ventoy.remove')}
+                        aria-label={t('image.ventoy.remove')}
                         onClick={() => toggle(image, false)}
                       >
                         <XIcon size={14} />
-                      </div>
+                      </button>
                     )}
                   </div>
                 ))}

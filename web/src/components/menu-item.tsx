@@ -82,15 +82,18 @@ export const MenuItem = ({
         open={isTooltipOpen}
         onOpenChange={toggleTooltip}
       >
-        <div
+        <button
+          type="button"
+          aria-label={title}
+          aria-expanded={isPopoverOpen}
           className={
             className
               ? className
-              : 'flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded text-neutral-300 hover:bg-neutral-700/80 hover:text-white'
+              : 'flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded p-0 text-neutral-300 hover:bg-neutral-700/80 hover:text-white'
           }
         >
           {icon}
-        </div>
+        </button>
       </Tooltip>
     </Popover>
   );

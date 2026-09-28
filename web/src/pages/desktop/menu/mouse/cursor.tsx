@@ -1,7 +1,13 @@
 import { Popover } from 'antd';
-import clsx from 'clsx';
 import { useAtom } from 'jotai';
-import { EyeOffIcon, HandIcon, MousePointerIcon, PlusIcon, TextCursorIcon } from 'lucide-react';
+import {
+  CheckIcon,
+  EyeOffIcon,
+  HandIcon,
+  MousePointerIcon,
+  PlusIcon,
+  TextCursorIcon
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as ls from '@/lib/localstorage.ts';
@@ -30,12 +36,13 @@ export const Cursor = () => {
       {mouseStyles.map((style) => (
         <div
           key={style.value}
-          className={clsx(
-            'flex cursor-pointer select-none items-center space-x-1 rounded py-1.5 pl-3 pr-6 hover:bg-neutral-700/70',
-            style.value === mouseStyle && 'text-green-500'
-          )}
+          className="flex cursor-pointer items-center space-x-1 rounded py-1.5 pr-6 pl-1 select-none hover:bg-neutral-700/70"
           onClick={() => updateMouseStyle(style.value)}
         >
+          {/* The same blue check as the other menus marks the choice. */}
+          <div className="flex h-[14px] w-[20px] items-end text-blue-500">
+            {style.value === mouseStyle && <CheckIcon size={14} />}
+          </div>
           <div className="flex h-[14px] w-[20px] items-end">{style.icon}</div>
           <span>{style.name}</span>
         </div>

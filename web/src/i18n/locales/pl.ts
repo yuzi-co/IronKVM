@@ -66,12 +66,16 @@ const pl = {
       ssidRequired: 'Wpisz nazwę sieci, maksymalnie 32 znaki',
       passwordLength: 'Hasło ma od 8 do 63 znaków. W przypadku sieci otwartej zostaw je puste.',
       passwordOptional: 'Hasło (puste dla sieci otwartej)',
-      lost:
-        'Płytka przestała odpowiadać. Mogła połączyć się z siecią i zamknąć swój hotspot konfiguracyjny. Jeśli hotspot pojawi się ponownie, połączenie się nie udało: połącz się z nim ponownie i spróbuj jeszcze raz.',
-      done:
-        'Konfiguracja zakończona. Połącz to urządzenie z powrotem ze swoją zwykłą siecią i otwórz płytkę pod jej nowym adresem.'
+      lost: 'Płytka przestała odpowiadać. Mogła połączyć się z siecią i zamknąć swój hotspot konfiguracyjny. Jeśli hotspot pojawi się ponownie, połączenie się nie udało: połącz się z nim ponownie i spróbuj jeszcze raz.',
+      done: 'Konfiguracja zakończona. Połącz to urządzenie z powrotem ze swoją zwykłą siecią i otwórz płytkę pod jej nowym adresem.'
     },
     screen: {
+      codecNoWebrtcHevc: 'Ta przeglądarka nie odbiera H.265 przez WebRTC',
+      codecNoHevc: 'Ta przeglądarka nie dekoduje H.265',
+      codecNote:
+        'Płytka ma jeden koder, więc zmienia to strumień dla wszystkich widzów. Połącz się ponownie, aby zastosować to w trwającej sesji WebRTC.',
+      codec: 'Kodek',
+      updateFailed: 'Ustawienie nie zostało zastosowane',
       scale: 'Skala',
       title: 'Ekran',
       video: 'Tryb wideo',
@@ -139,7 +143,7 @@ const pl = {
       fps: 'FPS',
       customizeFps: 'Personalizuj',
       quality: 'Jakość',
-      qualityLossless: 'Bezstratny',
+      qualityLossless: 'Najlepsza',
       qualityHigh: 'Wysoki',
       qualityMedium: 'Średni',
       qualityLow: 'Niski',
@@ -169,6 +173,7 @@ const pl = {
       directConnectionFailed: 'Nie udało się połączyć ze strumieniem wideo'
     },
     keyboard: {
+      close: 'Zamknij',
       title: 'Klawiatura',
       paste: 'Wklej',
       tips: 'Wpisuje tekst na hoście jako naciśnięcia klawiszy. Wybierz układ klawiatury używany przez host.',
@@ -229,6 +234,7 @@ const pl = {
         hidError: 'Nie udało się wysłać naciśnięć klawiszy do hosta.'
       },
       shortcut: {
+        sendFailed: 'Nie wysłano: połączenie wejścia jest przerwane',
         title: 'Skróty',
         custom: 'Niestandardowe',
         capture: 'Kliknij tutaj, aby przechwycić skrót',
@@ -239,6 +245,7 @@ const pl = {
         enterFullScreen: 'Przełącz tryb pełnoekranowy.'
       },
       leaderKey: {
+        saveFailed: 'Nie udało się zapisać klawisza wiodącego',
         title: 'Klawisz Leader',
         desc: 'Omiń ograniczenia przeglądarki i wyślij skróty systemowe bezpośrednio do zdalnego hosta.',
         howToUse: 'Jak używać',
@@ -289,14 +296,15 @@ const pl = {
         'Host przestał odbierać raporty myszy absolutnej, więc ruchy wskaźnika są tracone. Klawiatura działa normalnie. Zwykle pomaga odzyskanie USB; tryb względny używa innego punktu końcowego.',
       useRelative: 'Przełącz na tryb względny',
       direction: 'Kierunek kółka przewijania',
-      scrollUp: 'Przewiń w górę',
-      scrollDown: 'Przewiń w dół',
+      scrollUp: 'Tak jak na tym komputerze',
+      scrollDown: 'Odwrócone (naturalne przewijanie)',
       speed: 'Szybkość kółka przewijania',
       fast: 'Szybko',
       slow: 'Powoli',
       requestPointer: 'Korzystanie z trybu względnego. Kliknij pulpit, aby uzyskać wskaźnik myszy.',
       resetHid: 'Zresetuj HID',
       hidOnly: {
+        switchFailed: 'Nie udało się przełączyć trybu. Sprawdź połączenie i spróbuj ponownie.',
         title: 'Tryb tylko HID',
         desc: 'Jeśli mysz i klawiatura przestaną odpowiadać, a resetowanie HID nie pomoże, może to oznaczać problem ze zgodnością między NanoKVM a urządzeniem. Spróbuj włączyć tryb HID-Only, aby uzyskać lepszą kompatybilność.',
         tip1: 'Włączenie trybu HID-Only spowoduje odmontowanie wirtualnego dysku U i sieci wirtualnej',
@@ -309,6 +317,11 @@ const pl = {
       resetHidFailed: 'Nie udało się zresetować USB HID'
     },
     image: {
+      delete: 'Usuń',
+      inUse: 'W użyciu. Wysuń go przed usunięciem.',
+      retry: 'Ponów',
+      loadFailed: 'Nie udało się wczytać listy obrazów',
+      readOnlyLocked: 'Wysuń dysk, aby to zmienić. Ustawienie działa przy wkładaniu obrazu.',
       title: 'Obrazy',
       loading: 'Ładowanie...',
       empty: 'Nic nie znaleziono',
@@ -402,6 +415,10 @@ const pl = {
         'Skrypt działał dłużej niż {{minutes}} minut i strona przestała czekać. Może nadal działać na płytce.'
     },
     terminal: {
+      invalidBaud: 'Ta prędkość transmisji nie jest obsługiwana.',
+      invalidPort: 'Podaj ścieżkę urządzenia w /dev, na przykład /dev/ttyS1.',
+      invalidSettings: 'Nieprawidłowe ustawienia portu szeregowego. To jest powłoka samej płytki.',
+      disconnected: 'Rozłączono. Naciśnij Enter, aby połączyć ponownie.',
       title: 'Terminal',
       nanokvm: 'Terminal NanoKVM',
       serial: 'Terminal portu szeregowego',
@@ -421,6 +438,17 @@ const pl = {
       confirm: 'Ok'
     },
     wol: {
+      no: 'Nie',
+      yes: 'Tak',
+      deleteConfirm: 'Usunąć ten zapisany adres?',
+      delete: 'Usuń',
+      wake: 'Wybudź',
+      rename: 'Zmień nazwę',
+      showMac: 'Pokaż adres MAC',
+      showName: 'Pokaż nazwę',
+      requestFailed: 'Nie udało się połączyć z urządzeniem, aby wysłać polecenie',
+      deleteFailed: 'Nie udało się usunąć',
+      renameFailed: 'Nie udało się zmienić nazwy',
       title: 'Wake-on-LAN',
       sending: 'Wysyłanie komendy...',
       sent: 'Komenda wysłana',
@@ -428,6 +456,11 @@ const pl = {
       ok: 'Ok'
     },
     download: {
+      uploadFailed: 'Przesyłanie nie powiodło się',
+      uploadSuccess: 'Przesyłanie zakończone',
+      uploading: 'Przesyłanie: {{file}}',
+      downloadingPercent: 'Pobieranie ({{percent}}): {{file}}',
+      downloading: 'Pobieranie: {{file}}',
       title: 'Narzędzie do pobierania obrazów',
       input: 'Proszę wprowadzić zdalny obraz URL',
       ok: 'Ok',

@@ -1,7 +1,6 @@
 const LANGUAGE_KEY = 'nano-kvm-language';
 const VIDEO_MODE_KEY = 'nano-kvm-vide-mode';
 const VIDEO_SCALE_KEY = 'nano-kvm-video-scale';
-const FRAME_DETECT_KEY = 'nano-kvm-frame-detect';
 const MOUSE_STYLE_KEY = 'nano-kvm-mouse-style';
 const MOUSE_MODE_KEY = 'nano-kvm-mouse-mode';
 const MOUSE_SCROLL_DIRECTION_KEY = 'nano-kvm-mouse-scroll-direction';
@@ -106,15 +105,6 @@ export function getVideoScale(): number | null {
 
 export function setVideoScale(scale: number): void {
   localStorage.setItem(VIDEO_SCALE_KEY, String(scale));
-}
-
-export function getFrameDetect(): boolean {
-  const enabled = localStorage.getItem(FRAME_DETECT_KEY);
-  return enabled === 'true';
-}
-
-export function setFrameDetect(enabled: boolean) {
-  localStorage.setItem(FRAME_DETECT_KEY, String(enabled));
 }
 
 export function getMouseStyle() {
@@ -252,4 +242,59 @@ export function getPowerConfirm() {
 
 export function setPowerConfirm(enabled: boolean) {
   localStorage.setItem(POWER_CONFIRM_KEY, String(enabled));
+}
+
+// The serial terminal's last settings, so the dialog opens with the port and
+// line settings that worked last time. Storage that is blocked or holds
+// something else just means the defaults.
+const SERIAL_SETTINGS_KEY = 'nano-kvm-serial-settings';
+
+export type SerialSettings = {
+  port: string;
+  baudrate: number;
+  parity: string;
+  flowControl: string;
+  dataBits: number;
+  stopBits: number;
+};
+
+export function getSerialSettings(): Partial<SerialSettings> | null {
+  try {
+    return readItem(SERIAL_SETTINGS_KEY, (raw) => {
+      const parsed = JSON.parse(raw);
+      if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        throw new Error('not a settings object');
+      }
+      return parsed as Partial<SerialSettings>;
+    });
+  } catch {
+    return null;
+  }
+}
+
+export function setSerialSettings(settings: SerialSettings) {
+  try {
+    localStorage.setItem(SERIAL_SETTINGS_KEY, JSON.stringify(settings));
+  } catch {
+    // Not remembered; the dialog still works.
+  }
+}
+
+// The language the text recognition read last, so the next read uses it.
+const OCR_LANGUAGE_KEY = 'nano-kvm-ocr-language';
+
+export function getOcrLanguage(): string | null {
+  try {
+    return localStorage.getItem(OCR_LANGUAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setOcrLanguage(language: string) {
+  try {
+    localStorage.setItem(OCR_LANGUAGE_KEY, language);
+  } catch {
+    // Not remembered; the next read starts from the default.
+  }
 }

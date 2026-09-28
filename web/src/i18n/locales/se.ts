@@ -63,12 +63,16 @@ const se = {
       ssidRequired: 'Ange nätverksnamnet, högst 32 tecken',
       passwordLength: 'Lösenordet är 8 till 63 tecken. Lämna det tomt för ett öppet nätverk.',
       passwordOptional: 'Lösenord (tomt för ett öppet nätverk)',
-      lost:
-        'Kortet slutade svara. Det kan ha anslutit till nätverket och stängt sin konfigurationshotspot. Om hotspoten kommer tillbaka misslyckades anslutningen: anslut till den igen och försök på nytt.',
-      done:
-        'Konfigurationen är klar. Anslut den här enheten till ditt vanliga nätverk igen och öppna kortet på dess nya adress.'
+      lost: 'Kortet slutade svara. Det kan ha anslutit till nätverket och stängt sin konfigurationshotspot. Om hotspoten kommer tillbaka misslyckades anslutningen: anslut till den igen och försök på nytt.',
+      done: 'Konfigurationen är klar. Anslut den här enheten till ditt vanliga nätverk igen och öppna kortet på dess nya adress.'
     },
     screen: {
+      codecNoWebrtcHevc: 'Den här webbläsaren kan inte ta emot H.265 via WebRTC',
+      codecNoHevc: 'Den här webbläsaren kan inte avkoda H.265',
+      codecNote:
+        'Kortet har en kodare, så detta ändrar strömmen för alla tittare. Anslut igen för att tillämpa det på en pågående WebRTC-session.',
+      codec: 'Kodek',
+      updateFailed: 'Inställningen tillämpades inte',
       scale: 'Skala',
       title: 'Skärm',
       video: 'Videoläge',
@@ -135,7 +139,7 @@ const se = {
       fps: 'FPS',
       customizeFps: 'Anpassa',
       quality: 'Kvalitet',
-      qualityLossless: 'Förlustfri',
+      qualityLossless: 'Bäst',
       qualityHigh: 'Hög',
       qualityMedium: 'Medel',
       qualityLow: 'Låg',
@@ -165,6 +169,7 @@ const se = {
       directConnectionFailed: 'Anslutningen till videoströmmen misslyckades'
     },
     keyboard: {
+      close: 'Stäng',
       title: 'Tangentbord',
       paste: 'Klistra in',
       tips: 'Skriver texten på värden som tangenttryckningar. Välj den tangentbordslayout som värden använder.',
@@ -225,6 +230,7 @@ const se = {
         hidError: 'Tangenttryckningarna kunde inte skickas till värden.'
       },
       shortcut: {
+        sendFailed: 'Inte skickat: indataanslutningen är nere',
         title: 'Genvägar',
         custom: 'Anpassad',
         capture: 'Klicka här för att fånga genväg',
@@ -235,6 +241,7 @@ const se = {
         enterFullScreen: 'Växla helskärmsläge.'
       },
       leaderKey: {
+        saveFailed: 'Det gick inte att spara ledartangenten',
         title: 'Leader-tangent',
         desc: 'Gå förbi webbläsarbegränsningar och skicka systemgenvägar direkt till fjärrvärden.',
         howToUse: 'Hur man använder',
@@ -284,14 +291,15 @@ const se = {
         'Målet har slutat hämta absoluta musrapporter, så pekarens rörelser går förlorade. Tangentbordet påverkas inte. Att återställa USB brukar lösa det; relativt läge använder en annan slutpunkt.',
       useRelative: 'Byt till relativt läge',
       direction: 'Rullhjulsriktning',
-      scrollUp: 'Scrolla uppåt',
-      scrollDown: 'Scrolla ner',
+      scrollUp: 'Som på den här datorn',
+      scrollDown: 'Omvänd (naturlig rullning)',
       speed: 'Rullhjulshastighet',
       fast: 'Snabb',
       slow: 'Långsam',
       requestPointer: 'Använder relativt läge. Klicka på skrivbordet för att få muspekaren.',
       resetHid: 'Återställ HID',
       hidOnly: {
+        switchFailed: 'Det gick inte att byta läge. Kontrollera anslutningen och försök igen.',
         title: 'Endast HID-läge',
         desc: 'Om din mus och ditt tangentbord slutar svara och återställning av HID inte hjälper, kan det bero på kompatibilitetsproblem mellan NanoKVM och enheten. Prova att aktivera Endast-HID-läge för bättre kompatibilitet.',
         tip1: 'Aktivering av Endast-HID-läge avmonterar den virtuella U-disken och nätverket',
@@ -304,6 +312,11 @@ const se = {
       resetHidFailed: 'Återställning av USB HID misslyckades'
     },
     image: {
+      delete: 'Ta bort',
+      inUse: 'Används. Mata ut den innan du tar bort den.',
+      retry: 'Försök igen',
+      loadFailed: 'Det gick inte att läsa in listan över avbilder',
+      readOnlyLocked: 'Mata ut disken för att ändra detta. Det gäller när en avbild sätts in.',
       title: 'Avbildningar',
       loading: 'Laddar...',
       empty: 'Inget hittades',
@@ -397,6 +410,10 @@ const se = {
         'Skriptet körde längre än {{minutes}} minuter och sidan slutade vänta. Det kan fortfarande köras på kortet.'
     },
     terminal: {
+      invalidBaud: 'Den här baudhastigheten stöds inte.',
+      invalidPort: 'Ange en enhetssökväg under /dev, till exempel /dev/ttyS1.',
+      invalidSettings: 'Ogiltiga inställningar för serieporten. Detta är kortets eget skal.',
+      disconnected: 'Frånkopplad. Tryck på Enter för att ansluta igen.',
       title: 'Terminal',
       nanokvm: 'NanoKVM Terminal',
       serial: 'Serieport-terminal',
@@ -416,6 +433,17 @@ const se = {
       confirm: 'Ok'
     },
     wol: {
+      no: 'Nej',
+      yes: 'Ja',
+      deleteConfirm: 'Ta bort den här sparade adressen?',
+      delete: 'Ta bort',
+      wake: 'Väck',
+      rename: 'Byt namn',
+      showMac: 'Visa MAC-adress',
+      showName: 'Visa namn',
+      requestFailed: 'Kunde inte nå enheten för att skicka kommandot',
+      deleteFailed: 'Det gick inte att ta bort',
+      renameFailed: 'Det gick inte att byta namn',
       title: 'Wake-on-LAN',
       sending: 'Skickar kommando...',
       sent: 'Kommando skickat',
@@ -423,6 +451,11 @@ const se = {
       ok: 'Ok'
     },
     download: {
+      uploadFailed: 'Uppladdningen misslyckades',
+      uploadSuccess: 'Uppladdningen är klar',
+      uploading: 'Laddar upp: {{file}}',
+      downloadingPercent: 'Hämtar ({{percent}}): {{file}}',
+      downloading: 'Hämtar: {{file}}',
       title: 'Avbildningshämtare',
       input: 'Ange en fjärravbildnings-URL',
       ok: 'Ok',

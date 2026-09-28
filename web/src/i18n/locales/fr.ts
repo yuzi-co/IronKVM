@@ -69,12 +69,16 @@ const fr = {
       passwordLength:
         'Le mot de passe comporte 8 à 63 caractères. Laissez-le vide pour un réseau ouvert.',
       passwordOptional: 'Mot de passe (vide pour un réseau ouvert)',
-      lost:
-        "La carte ne répond plus. Elle a peut-être rejoint le réseau et fermé son point d'accès de configuration. Si le point d'accès réapparaît, la connexion a échoué : reconnectez-vous-y et réessayez.",
-      done:
-        'Configuration terminée. Reconnectez cet appareil à votre réseau habituel et ouvrez la carte à sa nouvelle adresse.'
+      lost: "La carte ne répond plus. Elle a peut-être rejoint le réseau et fermé son point d'accès de configuration. Si le point d'accès réapparaît, la connexion a échoué : reconnectez-vous-y et réessayez.",
+      done: 'Configuration terminée. Reconnectez cet appareil à votre réseau habituel et ouvrez la carte à sa nouvelle adresse.'
     },
     screen: {
+      codecNoWebrtcHevc: 'Ce navigateur ne peut pas recevoir le H.265 via WebRTC',
+      codecNoHevc: 'Ce navigateur ne peut pas décoder le H.265',
+      codecNote:
+        "La carte n'a qu'un encodeur : ce réglage change le flux pour tous les spectateurs. Reconnectez-vous pour l'appliquer à une session WebRTC en cours.",
+      codec: 'Codec',
+      updateFailed: "Le réglage n'a pas été appliqué",
       scale: 'Échelle',
       title: 'Écran',
       video: 'Mode vidéo',
@@ -142,7 +146,7 @@ const fr = {
       fps: 'FPS',
       customizeFps: 'Personnaliser',
       quality: 'Qualité',
-      qualityLossless: 'Sans perte',
+      qualityLossless: 'Maximale',
       qualityHigh: 'Élevé',
       qualityMedium: 'Moyen',
       qualityLow: 'Bas',
@@ -172,6 +176,7 @@ const fr = {
       directConnectionFailed: 'La connexion au flux vidéo a échoué'
     },
     keyboard: {
+      close: 'Fermer',
       title: 'Clavier',
       paste: 'Coller',
       tips: "Tape le texte sur l'hôte sous forme de frappes de touches. Choisissez la disposition de clavier de l'hôte.",
@@ -232,6 +237,7 @@ const fr = {
         hidError: "Les frappes n'ont pas pu être envoyées à l'hôte."
       },
       shortcut: {
+        sendFailed: "Non envoyé : la connexion d'entrée est coupée",
         title: 'Raccourcis',
         custom: 'Personnalisé',
         capture: 'Cliquez ici pour capturer le raccourci',
@@ -242,6 +248,7 @@ const fr = {
         enterFullScreen: 'Basculer en mode plein écran.'
       },
       leaderKey: {
+        saveFailed: "Impossible d'enregistrer la touche leader",
         title: 'Touche Leader',
         desc: "Contournez les restrictions du navigateur et envoyez les raccourcis système directement à l'hôte distant.",
         howToUse: 'Comment utiliser',
@@ -291,8 +298,8 @@ const fr = {
         "La cible ne lit plus les rapports de souris absolue, les déplacements du pointeur sont donc perdus. Le clavier n'est pas affecté. Réinitialiser l'USB règle souvent le problème ; le mode relatif utilise un autre endpoint.",
       useRelative: 'Passer en mode relatif',
       direction: 'Sens de la molette',
-      scrollUp: 'Faire défiler vers le haut',
-      scrollDown: 'Faites défiler vers le bas',
+      scrollUp: 'Comme sur cet ordinateur',
+      scrollDown: 'Inversé (défilement naturel)',
       speed: 'Vitesse de la molette',
       fast: 'Rapide',
       slow: 'Lent',
@@ -300,6 +307,7 @@ const fr = {
         'Pour utiliser le mode relatif, cliquez sur le bureau pour capturer le pointeur de la souris.',
       resetHid: 'Réinitialiser le périphérique HID',
       hidOnly: {
+        switchFailed: 'Impossible de changer de mode. Vérifiez la connexion et réessayez.',
         title: 'Mode HID uniquement',
         desc: "Si votre souris et votre clavier ne répondent plus et que la réinitialisation de HID ne vous aide pas, il peut s'agir d'un problème de compatibilité entre le NanoKVM et l'appareil. Essayez d'activer le mode HID-Only pour une meilleure compatibilité.",
         tip1: "L'activation du mode HID-Only démontera le disque U virtuel et le réseau virtuel",
@@ -312,6 +320,12 @@ const fr = {
       resetHidFailed: 'La réinitialisation du HID USB a échoué'
     },
     image: {
+      delete: 'Supprimer',
+      inUse: "En cours d'utilisation. Éjectez-la avant de la supprimer.",
+      retry: 'Réessayer',
+      loadFailed: 'Impossible de charger la liste des images',
+      readOnlyLocked:
+        "Éjectez le disque pour modifier ce réglage. Il s'applique à l'insertion d'une image.",
       title: 'Images',
       loading: 'Chargement',
       empty: 'Vide',
@@ -406,6 +420,10 @@ const fr = {
         "Le script a duré plus de {{minutes}} minutes et cette page a cessé d'attendre. Il est peut-être encore en cours sur la carte."
     },
     terminal: {
+      invalidBaud: "Ce débit en bauds n'est pas pris en charge.",
+      invalidPort: 'Saisissez un chemin de périphérique sous /dev, par exemple /dev/ttyS1.',
+      invalidSettings: 'Réglages du port série invalides. Ceci est le shell de la carte.',
+      disconnected: 'Déconnecté. Appuyez sur Entrée pour vous reconnecter.',
       title: 'Terminal',
       nanokvm: 'Terminal NanoKVM',
       serial: 'Terminal Port Série',
@@ -425,6 +443,17 @@ const fr = {
       confirm: 'Ok'
     },
     wol: {
+      no: 'Non',
+      yes: 'Oui',
+      deleteConfirm: 'Supprimer cette adresse enregistrée ?',
+      delete: 'Supprimer',
+      wake: 'Réveiller',
+      rename: 'Renommer',
+      showMac: "Afficher l'adresse MAC",
+      showName: 'Afficher le nom',
+      requestFailed: "Impossible de joindre l'appareil pour envoyer la commande",
+      deleteFailed: 'Échec de la suppression',
+      renameFailed: 'Échec du renommage',
       title: 'Wake-on-LAN',
       sending: 'Envoi de la commande...',
       sent: 'Commande envoyée',
@@ -432,6 +461,11 @@ const fr = {
       ok: 'Ok'
     },
     download: {
+      uploadFailed: "Échec de l'envoi",
+      uploadSuccess: 'Envoi terminé',
+      uploading: 'Envoi : {{file}}',
+      downloadingPercent: 'Téléchargement ({{percent}}) : {{file}}',
+      downloading: 'Téléchargement : {{file}}',
       title: 'Télécharger l’image',
       input: 'Veuillez entrer l’URL d’une image distante',
       ok: 'Ok',

@@ -63,13 +63,19 @@ const ja = {
         verifyBtn: '確認する'
       },
       ssidRequired: 'ネットワーク名を 32 文字以内で入力してください',
-      passwordLength: 'パスワードは 8〜63 文字です。オープンネットワークの場合は空欄のままにしてください。',
+      passwordLength:
+        'パスワードは 8〜63 文字です。オープンネットワークの場合は空欄のままにしてください。',
       passwordOptional: 'パスワード（オープンネットワークは空欄）',
-      lost:
-        'ボードが応答しなくなりました。ネットワークに接続してセットアップ用ホットスポットを閉じた可能性があります。ホットスポットが再び現れた場合は接続に失敗しています。再接続してやり直してください。',
+      lost: 'ボードが応答しなくなりました。ネットワークに接続してセットアップ用ホットスポットを閉じた可能性があります。ホットスポットが再び現れた場合は接続に失敗しています。再接続してやり直してください。',
       done: 'セットアップが完了しました。このデバイスを普段のネットワークに戻し、ボードの新しいアドレスを開いてください。'
     },
     screen: {
+      codecNoWebrtcHevc: 'このブラウザーは WebRTC で H.265 を受信できません',
+      codecNoHevc: 'このブラウザーは H.265 をデコードできません',
+      codecNote:
+        'ボードのエンコーダーは 1 つなので、この変更はすべての視聴者のストリームに影響します。実行中の WebRTC セッションに適用するには再接続してください。',
+      codec: 'コーデック',
+      updateFailed: '設定を適用できませんでした',
       scale: '倍率',
       title: '画面',
       video: 'ビデオモード',
@@ -137,7 +143,7 @@ const ja = {
       fps: 'フレームレート',
       customizeFps: 'カスタマイズ',
       quality: '画質',
-      qualityLossless: 'ロスレス',
+      qualityLossless: '最高',
       qualityHigh: '高',
       qualityMedium: '中',
       qualityLow: '低',
@@ -167,6 +173,7 @@ const ja = {
       directConnectionFailed: '映像ストリームの接続に失敗しました'
     },
     keyboard: {
+      close: '閉じる',
       title: 'キーボード',
       paste: '貼り付け',
       tips: 'テキストをキー入力としてホストに入力します。ホストで使われているキーボード配列を選んでください。',
@@ -227,6 +234,7 @@ const ja = {
         hidError: 'キー入力をホストに送信できませんでした。'
       },
       shortcut: {
+        sendFailed: '送信されませんでした: 入力接続が切断されています',
         title: 'ショートカット',
         custom: 'カスタム',
         capture: 'ショートカットをキャプチャするにはここをクリックしてください',
@@ -237,6 +245,7 @@ const ja = {
         enterFullScreen: '全画面モードに切り替えます。'
       },
       leaderKey: {
+        saveFailed: 'リーダーキーを保存できませんでした',
         title: 'リーダーキー',
         desc: 'ブラウザの制限を回避して、システムによってブロックされているショートカットキーをリモートホストに送信します。',
         howToUse: '使用方法',
@@ -286,8 +295,8 @@ const ja = {
         'ターゲットが絶対マウスのレポートを受け取らなくなったため、ポインターの移動が失われています。キーボードには影響ありません。USB を復旧すると解消することが多く、相対モードは別のエンドポイントを使用します。',
       useRelative: '相対モードに切り替え',
       direction: 'ホイール方向',
-      scrollUp: '上',
-      scrollDown: '下',
+      scrollUp: 'このコンピューターと同じ',
+      scrollDown: '逆 (ナチュラルスクロール)',
       speed: 'ホイール速度',
       fast: '速い',
       slow: '遅い',
@@ -295,6 +304,7 @@ const ja = {
         '相対モードを使用中です。マウスポインターを取得するには、デスクトップをクリックしてください。',
       resetHid: 'HID をリセット',
       hidOnly: {
+        switchFailed: 'モードを切り替えられませんでした。接続を確認して再試行してください。',
         title: 'HID-Only モード',
         desc: '使用中にマウスとキーボードが反応しなくなり、HID をリセットしても効果がない場合は、NanoKVM とデバイス間の互換性に問題がある可能性があります。互換性を向上させるために、HID-Only モードを有効にすることをお勧めします。',
         tip1: 'HID-Only モードを有効にすると、仮想 U ディスクと仮想ネットワークがアンマウントされます',
@@ -307,6 +317,12 @@ const ja = {
       resetHidFailed: 'USB HID をリセットできませんでした'
     },
     image: {
+      delete: '削除',
+      inUse: '使用中です。削除する前に取り出してください。',
+      retry: '再試行',
+      loadFailed: 'イメージ一覧を読み込めませんでした',
+      readOnlyLocked:
+        '変更するにはディスクを取り出してください。イメージを挿入したときに適用されます。',
       title: 'イメージ',
       loading: '読み込み中',
       empty: 'イメージファイルがありません',
@@ -389,16 +405,22 @@ const ja = {
       cancel: 'いいえ',
       delete: '削除',
       close: '閉じる',
-      empty: 'スクリプトはまだありません。.sh または .py ファイルをアップロードするとボードで実行できます。',
+      empty:
+        'スクリプトはまだありません。.sh または .py ファイルをアップロードするとボードで実行できます。',
       loadFailed: 'スクリプトを読み込めませんでした',
       uploaded: 'スクリプトをアップロードしました',
       uploadFailed: 'スクリプトをアップロードできませんでした',
       started: 'スクリプトをバックグラウンドで開始しました',
       deleteFailed: 'スクリプトを削除できませんでした',
       waitLimit: 'スクリプトの終了を最大 {{minutes}} 分待っています。',
-      timedOut: 'スクリプトが {{minutes}} 分を超えたため、このページは待機をやめました。ボード上ではまだ実行中の可能性があります。'
+      timedOut:
+        'スクリプトが {{minutes}} 分を超えたため、このページは待機をやめました。ボード上ではまだ実行中の可能性があります。'
     },
     terminal: {
+      invalidBaud: 'このボーレートはサポートされていません。',
+      invalidPort: '/dev 以下のデバイスパスを入力してください (例: /dev/ttyS1)。',
+      invalidSettings: 'シリアルポートの設定が無効です。これはボード自体のシェルです。',
+      disconnected: '切断されました。Enter キーで再接続します。',
       title: 'ターミナル',
       nanokvm: 'NanoKVM ターミナル',
       serial: 'シリアルポートターミナル',
@@ -418,6 +440,17 @@ const ja = {
       confirm: 'OK'
     },
     wol: {
+      no: 'いいえ',
+      yes: 'はい',
+      deleteConfirm: '保存したこのアドレスを削除しますか?',
+      delete: '削除',
+      wake: '起動',
+      rename: '名前を変更',
+      showMac: 'MAC アドレスを表示',
+      showName: '名前を表示',
+      requestFailed: 'コマンドを送信するためにデバイスに接続できませんでした',
+      deleteFailed: '削除できませんでした',
+      renameFailed: '名前を変更できませんでした',
       title: 'Wake-on-LAN',
       sending: 'コマンドを送信中...',
       sent: 'コマンドを送信しました',
@@ -425,6 +458,11 @@ const ja = {
       ok: 'OK'
     },
     download: {
+      uploadFailed: 'アップロードに失敗しました',
+      uploadSuccess: 'アップロードが完了しました',
+      uploading: 'アップロード中: {{file}}',
+      downloadingPercent: 'ダウンロード中 ({{percent}}): {{file}}',
+      downloading: 'ダウンロード中: {{file}}',
       title: 'イメージダウンローダー',
       input: 'リモートイメージの URL を入力してください',
       ok: 'OK',
@@ -474,7 +512,8 @@ const ja = {
       ledConnectedTip:
         'ホストの電源 LED ヘッダーがボードに配線されている場合のみオンにしてください。配線がないと電源状態は不明になります。',
       ledConnectedFailed: '電源 LED 設定の保存に失敗しました',
-      powerLongConfirm: '電源ボタンを {{seconds}} 秒押し続けますか？シャットダウンせずに電源が切れます。',
+      powerLongConfirm:
+        '電源ボタンを {{seconds}} 秒押し続けますか？シャットダウンせずに電源が切れます。',
       done: 'ボタンを押しました',
       failed: 'ボタンを押せませんでした'
     },
@@ -756,7 +795,8 @@ const ja = {
           Wireless: 'ワイヤレス',
           Other: 'その他'
         },
-        hostnameInvalid: '英字、数字、ハイフンを使い、ドットで区切った各部分は 63 文字までにしてください。各部分の先頭と末尾にハイフンは使えません。',
+        hostnameInvalid:
+          '英字、数字、ハイフンを使い、ドットで区切った各部分は 63 文字までにしてください。各部分の先頭と末尾にハイフンは使えません。',
         hostnameFailed: 'ホスト名を変更できませんでした'
       },
       appearance: {
@@ -957,7 +997,8 @@ const ja = {
           failed: 'HTTPS の設定を変更できませんでした',
           enableConfirm: 'HTTPS をオンにしますか？',
           disableConfirm: 'HTTPS をオフにしますか？',
-          confirmDesc: 'サインアウトしてデバイスのサーバーを再起動します。約 2 分かかります。その後 {{url}} を開きます。',
+          confirmDesc:
+            'サインアウトしてデバイスのサーバーを再起動します。約 2 分かかります。その後 {{url}} を開きます。',
           confirmOk: '続行',
           confirmCancel: 'キャンセル'
         },
@@ -1073,7 +1114,8 @@ const ja = {
         copyFailed: 'リンクをコピーできませんでした。選択して手動でコピーしてください。',
         open: '開く',
         checkAgain: '再確認',
-        notSignedIn: 'まだサインインしていません。リンクでサインインを完了してから再確認してください。',
+        notSignedIn:
+          'まだサインインしていません。リンクでサインインを完了してから再確認してください。',
         checkFailed: 'ログイン状態を確認できませんでした',
         loginWaiting: 'このページは数秒ごとに確認し、サインインが完了すると先に進みます。',
         uninstallFailed: 'アンインストールに失敗しました'
@@ -1151,7 +1193,8 @@ const ja = {
           updateFailed: 'アップデートに失敗しました。もう一度お試しください。'
         },
         updateTo: '{{version}} に更新',
-        updateConfirmDesc: 'デバイスは更新をインストールしてサーバーを再起動します。サーバーが戻るとこのページは再読み込みされます。'
+        updateConfirmDesc:
+          'デバイスは更新をインストールしてサーバーを再起動します。サーバーが戻るとこのページは再読み込みされます。'
       },
       account: {
         title: 'アカウント',

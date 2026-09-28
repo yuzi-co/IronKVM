@@ -67,12 +67,16 @@ const nl = {
       ssidRequired: 'Voer de netwerknaam in, maximaal 32 tekens',
       passwordLength: 'Het wachtwoord is 8 tot 63 tekens. Laat het leeg voor een open netwerk.',
       passwordOptional: 'Wachtwoord (leeg voor een open netwerk)',
-      lost:
-        'Het bord reageert niet meer. Het heeft zich misschien bij het netwerk aangesloten en zijn instellingshotspot gesloten. Komt de hotspot terug, dan is verbinden mislukt: maak opnieuw verbinding en probeer het nog eens.',
-      done:
-        'Instellen voltooid. Verbind dit apparaat weer met uw gebruikelijke netwerk en open het bord op zijn nieuwe adres.'
+      lost: 'Het bord reageert niet meer. Het heeft zich misschien bij het netwerk aangesloten en zijn instellingshotspot gesloten. Komt de hotspot terug, dan is verbinden mislukt: maak opnieuw verbinding en probeer het nog eens.',
+      done: 'Instellen voltooid. Verbind dit apparaat weer met uw gebruikelijke netwerk en open het bord op zijn nieuwe adres.'
     },
     screen: {
+      codecNoWebrtcHevc: 'Deze browser kan H.265 niet via WebRTC ontvangen',
+      codecNoHevc: 'Deze browser kan H.265 niet decoderen',
+      codecNote:
+        'Het bord heeft één encoder, dus dit wijzigt de stream voor alle kijkers. Maak opnieuw verbinding om het op een lopende WebRTC-sessie toe te passen.',
+      codec: 'Codec',
+      updateFailed: 'De instelling is niet toegepast',
       scale: 'Schaal',
       title: 'Scherm',
       video: 'Videomodus',
@@ -141,7 +145,7 @@ const nl = {
       fps: 'FPS',
       customizeFps: 'Aanpassen',
       quality: 'Kwaliteit',
-      qualityLossless: 'Verliesvrij',
+      qualityLossless: 'Beste',
       qualityHigh: 'Hoog',
       qualityMedium: 'Gemiddeld',
       qualityLow: 'Laag',
@@ -171,6 +175,7 @@ const nl = {
       directConnectionFailed: 'Verbinding met de videostream mislukt'
     },
     keyboard: {
+      close: 'Sluiten',
       title: 'Toetsenbord',
       paste: 'Plakken',
       tips: 'Typt de tekst op de host als toetsaanslagen. Kies de toetsenbordindeling die de host gebruikt.',
@@ -231,6 +236,7 @@ const nl = {
         hidError: 'De toetsaanslagen konden niet naar de host worden gestuurd.'
       },
       shortcut: {
+        sendFailed: 'Niet verzonden: de invoerverbinding is verbroken',
         title: 'Snelkoppelingen',
         custom: 'Aangepast',
         capture: 'Klik hier om de snelkoppeling vast te leggen',
@@ -241,6 +247,7 @@ const nl = {
         enterFullScreen: 'Schakelen naar volledig scherm.'
       },
       leaderKey: {
+        saveFailed: 'Leadertoets kon niet worden opgeslagen',
         title: 'Leader-toets',
         desc: 'Omzeil browserbeperkingen en stuur systeemsnelkoppelingen rechtstreeks naar de externe host.',
         howToUse: 'Hoe te gebruiken',
@@ -290,8 +297,8 @@ const nl = {
         'Het doelapparaat neemt geen absolute muisrapporten meer aan, dus aanwijzerbewegingen gaan verloren. Het toetsenbord werkt gewoon. Het herstellen van USB verhelpt dit vaak; de relatieve modus gebruikt een ander endpoint.',
       useRelative: 'Overschakelen naar relatieve modus',
       direction: 'Scrollwielrichting',
-      scrollUp: 'Scroll naar boven',
-      scrollDown: 'Scroll naar beneden',
+      scrollUp: 'Zoals op deze computer',
+      scrollDown: 'Omgekeerd (natuurlijk scrollen)',
       speed: 'Scrollwielsnelheid',
       fast: 'Snel',
       slow: 'Langzaam',
@@ -299,6 +306,7 @@ const nl = {
         'Relatieve modus wordt gebruikt. Klik op het bureaublad om de muisaanwijzer te krijgen.',
       resetHid: 'HID resetten',
       hidOnly: {
+        switchFailed: 'Modus wisselen mislukt. Controleer de verbinding en probeer het opnieuw.',
         title: 'Alleen HID-modus',
         desc: 'Als uw muis en toetsenbord niet meer reageren en het opnieuw instellen van HID niet helpt, kan er sprake zijn van een compatibiliteitsprobleem tussen de NanoKVM en het apparaat. Probeer de modus HID-Only in te schakelen voor betere compatibiliteit.',
         tip1: 'Als u de modus HID-Only inschakelt, worden de virtuele U-schijf en het virtuele netwerk ontkoppeld',
@@ -312,6 +320,12 @@ const nl = {
       resetHidFailed: 'USB-HID resetten mislukt'
     },
     image: {
+      delete: 'Verwijderen',
+      inUse: 'In gebruik. Werp het uit voordat u het verwijdert.',
+      retry: 'Opnieuw',
+      loadFailed: 'De lijst met images kon niet worden geladen',
+      readOnlyLocked:
+        'Werp de schijf uit om dit te wijzigen. Het geldt bij het plaatsen van een image.',
       title: 'Afbeeldingen',
       loading: 'Laden...',
       empty: 'Niets gevonden',
@@ -405,6 +419,11 @@ const nl = {
         'Het script liep langer dan {{minutes}} minuten en deze pagina wacht niet meer. Het draait mogelijk nog op het bord.'
     },
     terminal: {
+      invalidBaud: 'Deze baudrate wordt niet ondersteund.',
+      invalidPort: 'Voer een apparaatpad onder /dev in, zoals /dev/ttyS1.',
+      invalidSettings:
+        'Ongeldige instellingen voor de seriële poort. Dit is de shell van het bord.',
+      disconnected: 'Verbinding verbroken. Druk op Enter om opnieuw te verbinden.',
       title: 'Terminal',
       nanokvm: 'NanoKVM Terminal',
       serial: 'Seriële poort terminal',
@@ -424,6 +443,17 @@ const nl = {
       confirm: 'Ok'
     },
     wol: {
+      no: 'Nee',
+      yes: 'Ja',
+      deleteConfirm: 'Dit opgeslagen adres verwijderen?',
+      delete: 'Verwijderen',
+      wake: 'Wekken',
+      rename: 'Naam wijzigen',
+      showMac: 'MAC-adres tonen',
+      showName: 'Naam tonen',
+      requestFailed: 'Het apparaat was niet bereikbaar om de opdracht te versturen',
+      deleteFailed: 'Verwijderen mislukt',
+      renameFailed: 'Naam wijzigen mislukt',
       title: 'Wake-on-LAN',
       sending: 'Commando wordt verzonden...',
       sent: 'Commando verzonden',
@@ -431,6 +461,11 @@ const nl = {
       ok: 'Ok'
     },
     download: {
+      uploadFailed: 'Upload mislukt',
+      uploadSuccess: 'Upload voltooid',
+      uploading: 'Uploaden: {{file}}',
+      downloadingPercent: 'Downloaden ({{percent}}): {{file}}',
+      downloading: 'Downloaden: {{file}}',
       title: 'Afbeeldingdownloader',
       input: 'Voer een externe afbeelding in URL',
       ok: 'Ok',
@@ -958,7 +993,8 @@ const nl = {
           tip: 'Let op: HTTPS gebruiken kan de latentie verhogen, vooral in MJPEG-videomodus.',
           restarting: 'De apparaatserver wordt opnieuw gestart, dit duurt ongeveer twee minuten...',
           waiting: 'Wachten tot het apparaat weer reageert...',
-          waitingHttp: 'Terugschakelen naar http. Vernieuw deze pagina als deze niet vanzelf opent.',
+          waitingHttp:
+            'Terugschakelen naar http. Vernieuw deze pagina als deze niet vanzelf opent.',
           failed: 'De HTTPS-instelling kon niet worden gewijzigd',
           enableConfirm: 'HTTPS inschakelen?',
           disableConfirm: 'HTTPS uitschakelen?',

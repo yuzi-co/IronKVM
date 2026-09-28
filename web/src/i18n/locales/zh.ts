@@ -66,6 +66,12 @@ const zh = {
       done: '设置完成。请将此设备连回常用网络，并通过新地址打开板子。'
     },
     screen: {
+      codecNoWebrtcHevc: '此浏览器无法通过 WebRTC 接收 H.265',
+      codecNoHevc: '此浏览器无法解码 H.265',
+      codecNote:
+        '设备只有一个编码器，此更改会影响所有观看者的视频流。正在进行的 WebRTC 会话需重新连接后生效。',
+      codec: '编码格式',
+      updateFailed: '设置未生效',
       scale: '缩放',
       title: '屏幕',
       video: '视频模式',
@@ -132,7 +138,7 @@ const zh = {
       fps: '帧率',
       customizeFps: '自定义',
       quality: '图像质量',
-      qualityLossless: '无损',
+      qualityLossless: '最佳',
       qualityHigh: '高',
       qualityMedium: '中',
       qualityLow: '低',
@@ -161,6 +167,7 @@ const zh = {
       directConnectionFailed: '视频流连接失败'
     },
     keyboard: {
+      close: '关闭',
       title: '键盘',
       paste: '粘贴',
       tips: '以按键方式在主机上输入文本。请选择主机使用的键盘布局。',
@@ -220,6 +227,7 @@ const zh = {
         hidError: '无法将按键发送到主机。'
       },
       shortcut: {
+        sendFailed: '未发送：输入连接已断开',
         title: '快捷键',
         custom: '自定义',
         capture: '点击此处捕获快捷键',
@@ -229,6 +237,7 @@ const zh = {
         enterFullScreen: '切换全屏模式。'
       },
       leaderKey: {
+        saveFailed: '引导键保存失败',
         title: '引导键',
         desc: '绕过浏览器限制，向远程主机发送被系统拦截的快捷键。',
         howToUse: '使用方法',
@@ -277,14 +286,15 @@ const zh = {
         '目标主机已停止接收绝对模式鼠标报告，指针移动会丢失。键盘不受影响。恢复 USB 通常可以解决；相对模式使用另一个端点。',
       useRelative: '切换到相对模式',
       direction: '滚轮方向',
-      scrollUp: '向上',
-      scrollDown: '向下',
+      scrollUp: '与本机相同',
+      scrollDown: '反向（自然滚动）',
       speed: '滚轮速度',
       fast: '快',
       slow: '慢',
       requestPointer: '正在使用鼠标相对模式，请点击桌面获取鼠标指针。',
       resetHid: '重置 HID',
       hidOnly: {
+        switchFailed: '无法切换模式。请检查连接后重试。',
         title: 'HID-Only 模式',
         desc: '若使用过程中遇到鼠标键盘无响应，且重置 HID 无效，可能是 NanoKVM 与您的设备存在兼容性问题。建议尝试启用 HID-Only 模式以提升兼容性。',
         tip1: '启用 HID-Only 模式会卸载虚拟 U 盘和虚拟网络',
@@ -297,6 +307,11 @@ const zh = {
       resetHidFailed: 'USB HID 重置失败'
     },
     image: {
+      delete: '删除',
+      inUse: '正在使用。请先弹出再删除。',
+      retry: '重试',
+      loadFailed: '无法加载镜像列表',
+      readOnlyLocked: '弹出磁盘后才能更改。此设置在插入镜像时生效。',
       title: '镜像',
       loading: '加载中',
       empty: '无镜像文件',
@@ -384,6 +399,10 @@ const zh = {
       timedOut: '脚本运行超过 {{minutes}} 分钟，此页面已停止等待。脚本可能仍在板子上运行。'
     },
     terminal: {
+      invalidBaud: '不支持此波特率。',
+      invalidPort: '请输入 /dev 下的设备路径，例如 /dev/ttyS1。',
+      invalidSettings: '串口设置无效。这是设备自身的终端。',
+      disconnected: '连接已断开。按 Enter 重新连接。',
       title: '终端',
       nanokvm: 'NanoKVM 终端',
       serial: '串口终端',
@@ -403,6 +422,17 @@ const zh = {
       confirm: '确定'
     },
     wol: {
+      no: '否',
+      yes: '是',
+      deleteConfirm: '删除这个已保存的地址？',
+      delete: '删除',
+      wake: '唤醒',
+      rename: '重命名',
+      showMac: '显示 MAC 地址',
+      showName: '显示名称',
+      requestFailed: '无法连接设备，命令未发送',
+      deleteFailed: '删除失败',
+      renameFailed: '重命名失败',
       title: 'Wake-on-LAN',
       sending: '指令发送中...',
       sent: '指令已发送',
@@ -410,6 +440,11 @@ const zh = {
       ok: '确定'
     },
     download: {
+      uploadFailed: '上传失败',
+      uploadSuccess: '上传完成',
+      uploading: '正在上传：{{file}}',
+      downloadingPercent: '正在下载（{{percent}}）：{{file}}',
+      downloading: '正在下载：{{file}}',
       title: '下载镜像',
       input: '请输入远程镜像 URL',
       ok: '确定',
@@ -655,7 +690,8 @@ const zh = {
         failed: '看门狗操作失败',
         powerNeedsLed: '电源循环需要在电源菜单中开启“已连接电源 LED”。',
         noLedConfirmTitle: '在没有电源 LED 的情况下开启看门狗？',
-        noLedConfirmDesc: '板子无法看出主机何时关机，因此将主机视为一直开机。如果你关闭主机，超时后看门狗会按下复位。连接电源 LED 可以避免这种情况。',
+        noLedConfirmDesc:
+          '板子无法看出主机何时关机，因此将主机视为一直开机。如果你关闭主机，超时后看门狗会按下复位。连接电源 LED 可以避免这种情况。',
         noLedConfirmOk: '开启',
         cancel: '取消'
       },
@@ -723,7 +759,8 @@ const zh = {
           Wireless: '无线',
           Other: '其他'
         },
-        hostnameInvalid: '请使用字母、数字和连字符，每个以点分隔的部分最多 63 个字符，且不能以连字符开头或结尾。',
+        hostnameInvalid:
+          '请使用字母、数字和连字符，每个以点分隔的部分最多 63 个字符，且不能以连字符开头或结尾。',
         hostnameFailed: '修改主机名失败'
       },
       appearance: {

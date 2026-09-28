@@ -65,12 +65,16 @@ const pt_br = {
       ssidRequired: 'Digite o nome da rede, até 32 caracteres',
       passwordLength: 'A senha tem de 8 a 63 caracteres. Deixe vazia para uma rede aberta.',
       passwordOptional: 'Senha (vazia para uma rede aberta)',
-      lost:
-        'A placa parou de responder. Ela pode ter entrado na rede e fechado seu hotspot de configuração. Se o hotspot voltar, a conexão falhou: conecte-se a ele de novo e tente outra vez.',
-      done:
-        'Configuração concluída. Reconecte este dispositivo à sua rede habitual e abra a placa em seu novo endereço.'
+      lost: 'A placa parou de responder. Ela pode ter entrado na rede e fechado seu hotspot de configuração. Se o hotspot voltar, a conexão falhou: conecte-se a ele de novo e tente outra vez.',
+      done: 'Configuração concluída. Reconecte este dispositivo à sua rede habitual e abra a placa em seu novo endereço.'
     },
     screen: {
+      codecNoWebrtcHevc: 'Este navegador não recebe H.265 via WebRTC',
+      codecNoHevc: 'Este navegador não decodifica H.265',
+      codecNote:
+        'A placa tem um só codificador, então isso muda o stream para todos os espectadores. Reconecte para aplicar a uma sessão WebRTC em andamento.',
+      codec: 'Codec',
+      updateFailed: 'A configuração não foi aplicada',
       scale: 'Escala',
       title: 'Tela',
       video: 'Modo de Vídeo',
@@ -138,7 +142,7 @@ const pt_br = {
       fps: 'FPS',
       customizeFps: 'Personalizar',
       quality: 'Qualidade',
-      qualityLossless: 'Sem perdas',
+      qualityLossless: 'Máxima',
       qualityHigh: 'Alta',
       qualityMedium: 'Média',
       qualityLow: 'Baixa',
@@ -168,6 +172,7 @@ const pt_br = {
       directConnectionFailed: 'Falha na conexão do fluxo de vídeo'
     },
     keyboard: {
+      close: 'Fechar',
       title: 'Teclado',
       paste: 'Colar',
       tips: 'Digita o texto no host como pressionamentos de teclas. Escolha o layout de teclado que o host usa.',
@@ -228,6 +233,7 @@ const pt_br = {
         hidError: 'Não foi possível enviar os pressionamentos de teclas ao host.'
       },
       shortcut: {
+        sendFailed: 'Não enviado: a conexão de entrada caiu',
         title: 'Atalhos',
         custom: 'Personalizado',
         capture: 'Clique aqui para capturar o atalho',
@@ -238,6 +244,7 @@ const pt_br = {
         enterFullScreen: 'Alternar modo de tela cheia.'
       },
       leaderKey: {
+        saveFailed: 'Falha ao salvar a tecla líder',
         title: 'Tecla Leader',
         desc: 'Ignore as restrições do navegador e envie atalhos do sistema diretamente para o host remoto.',
         howToUse: 'Como usar',
@@ -287,8 +294,8 @@ const pt_br = {
         'O alvo parou de receber os relatórios do mouse absoluto, então os movimentos do ponteiro são perdidos. O teclado não é afetado. Recuperar o USB costuma resolver; o modo relativo usa outro endpoint.',
       useRelative: 'Mudar para modo relativo',
       direction: 'Direção da roda de rolagem',
-      scrollUp: 'Role para cima',
-      scrollDown: 'Role para baixo',
+      scrollUp: 'Igual a este computador',
+      scrollDown: 'Invertido (rolagem natural)',
       speed: 'Velocidade da roda de rolagem',
       fast: 'Rápido',
       slow: 'Lento',
@@ -296,6 +303,7 @@ const pt_br = {
         'Usando modo relativo. Por favor, clique na área de trabalho para obter o ponteiro do mouse.',
       resetHid: 'Redefinir HID',
       hidOnly: {
+        switchFailed: 'Não foi possível trocar o modo. Verifique a conexão e tente novamente.',
         title: 'Modo somente HID',
         desc: 'Se o seu mouse e teclado pararem de responder e a redefinição de HID não ajudar, pode ser um problema de compatibilidade entre o NanoKVM e o dispositivo. Tente habilitar o modo Somente-HID para melhor compatibilidade.',
         tip1: 'Habilitar o modo Somente-HID irá desmontar o U-disk virtual e a rede virtual',
@@ -308,6 +316,11 @@ const pt_br = {
       resetHidFailed: 'Falha ao redefinir o HID USB'
     },
     image: {
+      delete: 'Excluir',
+      inUse: 'Em uso. Ejete antes de excluir.',
+      retry: 'Tentar novamente',
+      loadFailed: 'Não foi possível carregar a lista de imagens',
+      readOnlyLocked: 'Ejete o disco para alterar isso. Vale quando uma imagem é inserida.',
       title: 'Imagens',
       loading: 'Carregando...',
       empty: 'Nada Encontrado',
@@ -401,6 +414,10 @@ const pt_br = {
         'O script levou mais de {{minutes}} minutos e esta página parou de esperar. Ele pode ainda estar em execução na placa.'
     },
     terminal: {
+      invalidBaud: 'Esta taxa de transmissão não é suportada.',
+      invalidPort: 'Informe um caminho de dispositivo em /dev, como /dev/ttyS1.',
+      invalidSettings: 'Configurações da porta serial inválidas. Este é o shell da própria placa.',
+      disconnected: 'Desconectado. Pressione Enter para reconectar.',
       title: 'Terminal',
       nanokvm: 'Terminal NanoKVM',
       serial: 'Terminal de Porta Serial',
@@ -420,6 +437,17 @@ const pt_br = {
       confirm: 'Ok'
     },
     wol: {
+      no: 'Não',
+      yes: 'Sim',
+      deleteConfirm: 'Excluir este endereço salvo?',
+      delete: 'Excluir',
+      wake: 'Acordar',
+      rename: 'Renomear',
+      showMac: 'Mostrar endereço MAC',
+      showName: 'Mostrar nome',
+      requestFailed: 'Não foi possível alcançar o dispositivo para enviar o comando',
+      deleteFailed: 'Falha ao excluir',
+      renameFailed: 'Falha ao renomear',
       title: 'Wake-on-LAN',
       sending: 'Enviando comando...',
       sent: 'Comando enviado',
@@ -427,6 +455,11 @@ const pt_br = {
       ok: 'Ok'
     },
     download: {
+      uploadFailed: 'Falha no envio',
+      uploadSuccess: 'Envio concluído',
+      uploading: 'Enviando: {{file}}',
+      downloadingPercent: 'Baixando ({{percent}}): {{file}}',
+      downloading: 'Baixando: {{file}}',
       title: 'Baixador de Imagens',
       input: 'Por favor, digite uma URL de imagem remota',
       ok: 'Ok',

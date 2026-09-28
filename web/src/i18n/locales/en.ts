@@ -64,12 +64,16 @@ const en = {
       ssidRequired: 'Enter the network name, up to 32 characters',
       passwordLength: 'The password is 8 to 63 characters. Leave it empty for an open network.',
       passwordOptional: 'Password (empty for an open network)',
-      lost:
-        'The board stopped answering. It may have joined the network and closed its setup hotspot. If the hotspot comes back, joining failed: connect to it again and retry.',
-      done:
-        'Setup finished. Connect this device back to your usual network and open the board at its new address.'
+      lost: 'The board stopped answering. It may have joined the network and closed its setup hotspot. If the hotspot comes back, joining failed: connect to it again and retry.',
+      done: 'Setup finished. Connect this device back to your usual network and open the board at its new address.'
     },
     screen: {
+      codecNoWebrtcHevc: 'This browser cannot receive H.265 over WebRTC',
+      codecNoHevc: 'This browser cannot decode H.265',
+      codecNote:
+        'The board has one encoder, so this changes the stream for every viewer. Reconnect to apply it to a running WebRTC session.',
+      codec: 'Codec',
+      updateFailed: 'The setting was not applied',
       scale: 'Scale',
       title: 'Screen',
       video: 'Video Mode',
@@ -136,7 +140,7 @@ const en = {
       fps: 'FPS',
       customizeFps: 'Customize',
       quality: 'Quality',
-      qualityLossless: 'Lossless',
+      qualityLossless: 'Best',
       qualityHigh: 'High',
       qualityMedium: 'Medium',
       qualityLow: 'Low',
@@ -166,6 +170,7 @@ const en = {
       directConnectionFailed: 'Video stream connection failed'
     },
     keyboard: {
+      close: 'Close',
       title: 'Keyboard',
       paste: 'Paste',
       tips: 'Types the text on the host as key presses. Pick the keyboard layout the host uses.',
@@ -226,6 +231,7 @@ const en = {
         stop: 'Stop'
       },
       shortcut: {
+        sendFailed: 'Not sent: the input connection is down',
         title: 'Shortcuts',
         custom: 'Custom',
         capture: 'Click here to capture shortcut',
@@ -236,6 +242,7 @@ const en = {
         enterFullScreen: 'Toggle full-screen mode.'
       },
       leaderKey: {
+        saveFailed: 'Failed to save the leader key',
         title: 'Leader Key',
         desc: 'Bypass browser restrictions and send system shortcuts directly to the remote host.',
         howToUse: 'How to Use',
@@ -285,14 +292,15 @@ const en = {
         'The target has stopped collecting absolute mouse reports, so pointer moves are lost. The keyboard is unaffected. Recovering USB often clears it; relative mode uses a different endpoint.',
       useRelative: 'Switch to relative mode',
       direction: 'Wheel direction',
-      scrollUp: 'Scroll up',
-      scrollDown: 'Scroll down',
+      scrollUp: 'Same as this computer',
+      scrollDown: 'Reversed (natural scrolling)',
       speed: 'Wheel speed',
       fast: 'Fast',
       slow: 'Slow',
       requestPointer: 'Using relative mode. Please click desktop to get mouse pointer.',
       resetHid: 'Reset HID',
       hidOnly: {
+        switchFailed: 'Could not switch the mode. Check the connection and try again.',
         title: 'HID-Only mode',
         desc: "If your mouse and keyboard stop responding and resetting HID doesn't help, it could be a compatibility issue between the NanoKVM and the device. Try to enable HID-Only mode for better compatibility.",
         tip1: 'Enabling HID-Only mode will unmount the virtual U-disk and virtual network',
@@ -305,6 +313,11 @@ const en = {
       resetHidFailed: 'USB HID reset failed'
     },
     image: {
+      delete: 'Delete',
+      inUse: 'In use. Eject it before deleting.',
+      retry: 'Retry',
+      loadFailed: 'Could not load the image list',
+      readOnlyLocked: 'Eject the disk to change this. It takes effect when an image is inserted.',
       title: 'Images',
       loading: 'Loading...',
       empty: 'Nothing Found',
@@ -397,6 +410,10 @@ const en = {
         'The script ran longer than {{minutes}} minutes and this page stopped waiting. It may still be running on the board.'
     },
     terminal: {
+      invalidBaud: 'This baud rate is not supported.',
+      invalidPort: 'Enter a device path under /dev, such as /dev/ttyS1.',
+      invalidSettings: "Invalid serial port settings. This is the board's own shell.",
+      disconnected: 'Disconnected. Press Enter to reconnect.',
       title: 'Terminal',
       nanokvm: 'IronKVM Terminal',
       serial: 'Serial Port Terminal',
@@ -416,6 +433,17 @@ const en = {
       confirm: 'Ok'
     },
     wol: {
+      no: 'No',
+      yes: 'Yes',
+      deleteConfirm: 'Delete this saved address?',
+      delete: 'Delete',
+      wake: 'Wake',
+      rename: 'Rename',
+      showMac: 'Show MAC address',
+      showName: 'Show name',
+      requestFailed: 'Could not reach the device to send the command',
+      deleteFailed: 'Failed to delete',
+      renameFailed: 'Failed to rename',
       title: 'Wake-on-LAN',
       sending: 'Sending command...',
       sent: 'Command sent',
@@ -423,6 +451,11 @@ const en = {
       ok: 'Ok'
     },
     download: {
+      uploadFailed: 'Upload failed',
+      uploadSuccess: 'Upload complete',
+      uploading: 'Uploading: {{file}}',
+      downloadingPercent: 'Downloading ({{percent}}): {{file}}',
+      downloading: 'Downloading: {{file}}',
       title: 'Image Downloader',
       input: 'Please enter a remote image URL',
       ok: 'Ok',
