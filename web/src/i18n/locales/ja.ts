@@ -8,18 +8,23 @@ const ja = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      cookieRejected:
+        'ブラウザーがセッションの保存を拒否しました。以前の HTTPS セッションで残った Cookie は、通常の http 接続では置き換えられません。このアドレスの Cookie を削除するか、プライベートウィンドウを開いてから、もう一度サインインしてください。',
       login: 'ログイン',
       placeholderUsername: 'ユーザー名を入力してください',
       placeholderPassword: 'パスワードを入力してください',
+      placeholderCurrentPassword: '現在のパスワード',
       placeholderPassword2: 'パスワードをもう一度入力してください',
       noEmptyUsername: 'ユーザー名は空にできません',
       noEmptyPassword: 'パスワードは空にできません',
+      passwordLength: 'パスワードは 8～72 文字で入力してください',
       noAccount:
         'ユーザー情報の取得に失敗しました。ページを更新してもう一度お試しいただくか、パスワードをリセットしてください。',
       invalidUser: 'ユーザー名またはパスワードが正しくありません',
       locked: 'ログインが多すぎます。後でもう一度お試しください。',
       globalLocked: 'システムは保護されています。後でもう一度試してください。',
       error: '不明なエラー',
+      invalidCurrentPassword: '現在のパスワードが正しくありません',
       changePassword: 'パスワード変更',
       changePasswordDesc: 'デバイスのセキュリティのために、パスワードを変更してください！',
       differentPassword: 'パスワードが一致しません',
@@ -242,6 +247,10 @@ const ja = {
       relative: '相対モード',
       absoluteShort: '絶対',
       relativeShort: '相対',
+      absoluteStalled: 'ターゲットが絶対マウスを無視しています',
+      absoluteStalledDesc:
+        'ターゲットが絶対マウスのレポートを受け取らなくなったため、ポインターの移動が失われています。キーボードには影響ありません。USB を復旧すると解消することが多く、相対モードは別のエンドポイントを使用します。',
+      useRelative: '相対モードに切り替え',
       direction: 'ホイール方向',
       scrollUp: '上',
       scrollDown: '下',
@@ -256,6 +265,7 @@ const ja = {
         desc: '使用中にマウスとキーボードが反応しなくなり、HID をリセットしても効果がない場合は、NanoKVM とデバイス間の互換性に問題がある可能性があります。互換性を向上させるために、HID-Only モードを有効にすることをお勧めします。',
         tip1: 'HID-Only モードを有効にすると、仮想 U ディスクと仮想ネットワークがアンマウントされます',
         tip2: 'HID-Only モードでは、イメージのマウントは無効になります',
+        rebuild: 'モードを切り替えると USB 接続が再構築されます。NanoKVM は再起動しません',
         enable: 'HID-Only モードを有効化',
         disable: 'HID-Only モードを無効化'
       }
@@ -272,6 +282,17 @@ const ja = {
       unmountDesc:
         '一部のシステムでは、イメージをアンマウントする前にリモートホストから手動で取り出す必要があります。',
       refresh: 'イメージリストを更新',
+      disk: 'ディスク',
+      cdrom: 'CD',
+      driveEmpty: '空',
+      eject: '取り出し',
+      readOnly: '読み取り専用',
+      readOnlyTip: '次にディスクに挿入するイメージに適用されます。',
+      noDrives: '仮想ドライブがありません。設定で仮想ディスクを有効にしてください。',
+      insertFailed: '挿入に失敗しました',
+      ejectFailed: '取り出しに失敗しました',
+      insertInto: '{{drive}} に挿入します。クリックして変更します。',
+      loadedIn: '{{drive}} ドライブに挿入済み',
       attention: '注意',
       deleteConfirm: 'このイメージを削除してもよろしいですか？',
       okBtn: 'はい',
@@ -370,7 +391,15 @@ const ja = {
       sleepConfirm: 'ホストをスリープさせますか？',
       powerDownConfirm: '電源オフキーをホストに送信しますか？',
       wakeTip:
-        'スリープ中のホストは、自分をスリープさせたデバイスからのスリープ解除を無視することがよくあります。「Shift でスリープ解除」はキーボードのキーを押すため、より多くのホストが応答します。'
+        'スリープ中のホストは、自分をスリープさせたデバイスからのスリープ解除を無視することがよくあります。「Shift でスリープ解除」はキーボードのキーを押すため、より多くのホストが応答します。',
+      led: '電源 LED',
+      ledOn: '点灯',
+      ledOff: '消灯',
+      ledUnknown: '不明',
+      ledConnected: '電源 LED 接続済み',
+      ledConnectedTip:
+        'ホストの電源 LED ヘッダーがボードに配線されている場合のみオンにしてください。配線がないと電源状態は不明になります。',
+      ledConnectedFailed: '電源 LED 設定の保存に失敗しました'
     },
     settings: {
       title: '設定',
@@ -393,6 +422,34 @@ const ja = {
         okBtn: '確認',
         cancelBtn: 'キャンセル'
       },
+      redfish: {
+        title: 'Redfish',
+        service: 'Redfish サービス',
+        serviceDesc:
+          'DMTF Redfish API です。redfishtool や Ansible などのツールから電源制御、仮想メディア、ステータスを利用できます。オフにすると、すべての Redfish セッションが終了します。',
+        endpoint: 'サービスルート',
+        httpsOn: 'ボードは HTTPS で提供しています。多くの Redfish ツールでは HTTPS が必要です。',
+        httpsOff:
+          'ボードは通常の HTTP で提供しています。多くの Redfish ツールでは HTTPS が必要です。「設定 > ネットワーク」で有効にしてください。',
+        credentials:
+          'Redfish では KVM のアカウント（Basic 認証または Redfish セッション）と、X-Auth-Token として送信する API キーを使用できます。API キーは API キーページで管理します。',
+        powerActions: '電源操作',
+        powerActionsDesc:
+          '現在提供されているリセットタイプです。On、ForceOff、GracefulShutdown は電源状態が必要なため、電源メニューで「電源 LED 接続済み」がオンの場合にのみ提供されます。',
+        sessions: 'セッション',
+        noSessions: '開いている Redfish セッションはありません',
+        created: '作成日時',
+        lastUsed: '最終使用',
+        refresh: '更新',
+        end: '終了',
+        endConfirmTitle: 'この Redfish セッションを終了しますか？',
+        endConfirmDesc:
+          'このセッションのトークンは直ちに使用できなくなります。クライアントは再度ログインする必要があります。',
+        failed: 'Redfish の操作に失敗しました',
+        copyFailed: 'コピーに失敗しました。手動でコピーしてください。',
+        okBtn: '確認',
+        cancelBtn: 'キャンセル'
+      },
       watchdog: {
         title: 'ウォッチドッグ',
         service: 'ホストウォッチドッグ',
@@ -401,7 +458,7 @@ const ja = {
         stillWarning:
           'ディスプレイがスリープするホストや、動作中も画面が静止しているホストは、ハングしているように見えます。ホストのディスプレイスリープをオフにするか、Ping アドレスを設定してください。',
         ledHint:
-          '電源メニューの「Power LED connected」がオフです。ウォッチドッグはホストの電源が切れていることを検出できないため、ホストを常にオンとして扱います。',
+          '電源メニューの「電源 LED 接続済み」がオフです。ウォッチドッグはホストの電源が切れていることを検出できないため、ホストを常にオンとして扱います。',
         timeout: 'タイムアウト',
         timeoutDesc: 'ウォッチドッグが動作するまで、ホストが生存の兆候を示さなくてもよい時間。',
         action: '動作',
@@ -464,7 +521,15 @@ const ja = {
         applicationTip: 'NanoKVM ウェブアプリケーションバージョン',
         image: 'イメージバージョン',
         imageTip: 'NanoKVM システムイメージバージョン',
+        kernel: 'カーネルバージョン',
+        kernelTip: '現在実行中の Linux カーネルのリリース',
         deviceKey: 'デバイスキー',
+        videoMemory: 'ビデオメモリ',
+        videoMemoryTip:
+          'ビデオキャプチャ用に予約されたメモリです。システムの他の部分とは共有されません。',
+        videoMemoryGenerations_other:
+          '以前の NanoKVM セッション {{count}} 件がビデオメモリを保持しています',
+        videoMemoryReboot: '再起動すると回収されます。',
         community: 'コミュニティ',
         hostname: 'ホスト名',
         hostnameUpdated: 'ホスト名は正常に変更され、再起動後に有効になります',
@@ -513,6 +578,16 @@ const ja = {
         oled: {
           title: 'OLED',
           description: 'OLED 画面の自動スリープ時間',
+          brightness: 'OLED の明るさ',
+          brightnessDescription: '明るさを下げるとパネルが長持ちします',
+          brightnessLevels: {
+            '64': '最低',
+            '96': '低',
+            '128': '中',
+            '160': '高',
+            '207': 'デフォルト',
+            '255': '最大'
+          },
           0: '無効',
           15: '15秒',
           30: '30秒',
@@ -528,11 +603,35 @@ const ja = {
           tip: '使用する前に必ず強力なパスワードを設定してください（アカウント - パスワードの変更）'
         },
         advanced: '詳細設定',
+        cpuFreq: {
+          title: 'CPU 周波数',
+          description: '次回起動時に適用する CPU クロックを設定する',
+          tip: 'CPU は 850 MHz で起動し、定格は 1000 MHz です。新しい値はシステムの動作中ではなく、次回起動時に適用されます。1000 MHz は仕様の範囲内で、どちらの設定でも温度は上限を十分に下回ります。',
+          running: '動作中: {{mhz}} MHz',
+          rebootToApply: '再起動して適用',
+          rebootConfirm: '今すぐ再起動して {{mhz}} MHz を適用しますか？'
+        },
         swap: {
           title: 'スワップ',
           disable: '無効',
           description: 'スワップファイルのサイズを設定する',
           tip: 'この機能を有効にすると、SD カードの寿命が短くなる可能性があります！'
+        },
+        zram: {
+          title: '圧縮スワップ（zram）',
+          description: 'SD カードではなく、圧縮した RAM 上でスワップする',
+          tip: 'zram はスワップを SD カードに置かないため、カードを消耗させません。背後にディスクのスワップはないため、zram がいっぱいになると、カーネルはゆっくりページングする代わりにプロセスを停止します。メモリ上限は zram が使用できる RAM の量を制限します。',
+          unavailable: 'このデバイスにはカーネルモジュールがインストールされていません',
+          inactive: '有効ですが、デバイスが起動しませんでした',
+          active: '動作中 - {{used}} / {{total}}、{{ratio}}x',
+          off: 'オフ',
+          detail: {
+            algorithm: 'アルゴリズム: {{algorithm}}',
+            memory: '使用メモリ: {{used}} / {{limit}}',
+            memoryNoLimit: '使用メモリ: {{used}}、上限なし',
+            counters:
+              'スワップイン {{in}} ページ、スワップアウト {{out}} ページ（全スワップデバイス、起動以降）'
+          }
         },
         mouseJiggler: {
           title: 'マウスジグラー',
@@ -589,7 +688,27 @@ const ja = {
           reenumerate:
             '適用すると USB 接続が再構築されます。ホストは数秒間、キーボード、マウス、仮想ディスクを使用できなくなります。'
         },
+        audio: '仮想スピーカー',
+        audioDesc:
+          'リモートホストに USB サウンドカードを提供し、ホストの音声を聞けるようにします。ホスト側で出力デバイスとして選択する必要があります。切り替えると USB 接続が再構築されます。',
+        audioNote:
+          '音声は H.264 の両モード（WebRTC と Direct）で利用でき、MJPEG では利用できません',
+        console: 'シリアルコンソール',
+        consoleDesc:
+          'リモートホストに USB シリアルポートを提供し、ネットワークに接続できないときにこの NanoKVM にログインできるようにします',
+        consoleTip:
+          'リモートホストを操作できる人は誰でも、この NanoKVM のログインプロンプトにアクセスできます。有効にする前に強力なパスワードを設定してください（アカウント - パスワードの変更）。',
         endpoints: {
+          title: 'USB エンドポイント',
+          used: '{{total}} 個中 {{used}} 個使用',
+          cost: '{{cost}} 個使用',
+          needs: '{{cost}} 個必要',
+          full: 'USB エンドポイントが不足しています。先に他の機能をオフにしてください。',
+          inactive:
+            'オンですが動作していません。USB コントローラーのエンドポイントが不足しています。他のデバイスをオフにすると、すぐに起動します。',
+          explain:
+            'USB コントローラーの入力エンドポイントの数は固定されており、ここではその数を数えています。収まる数より多くのデバイスが有効な場合、キーボードとマウスは維持され、残りはオフになります。',
+          error: 'デバイスに接続できませんでした。もう一度お試しください。',
           fitTogether: '同時に使用できる組み合わせ: {{sets}}'
         },
         reboot: '再起動',
@@ -616,7 +735,11 @@ const ja = {
         },
         tls: {
           description: 'HTTPS プロトコルを有効にする',
-          tip: '注意：HTTPS を使用すると、特に MJPEG ビデオモードで遅延が増加する可能性があります。'
+          tip: '注意：HTTPS を使用すると、特に MJPEG ビデオモードで遅延が増加する可能性があります。',
+          restarting: 'デバイスのサーバーを再起動しています。約 2 分かかります...',
+          waiting: 'デバイスの応答を待っています...',
+          waitingHttp:
+            'http に戻しています。自動的に開かない場合は、このページを再読み込みしてください。'
         },
         ethernet: {
           title: 'IPアドレス',
@@ -677,6 +800,54 @@ const ja = {
           none: 'なし'
         }
       },
+      vpn: {
+        loading: '読み込み中...',
+        okBtn: 'はい',
+        cancelBtn: 'いいえ',
+        restart: '{{name}} を再起動しますか？',
+        stop: '{{name}} を停止しますか？',
+        stopDesc:
+          'デーモンは今すぐ停止します。起動時に開始は別のスイッチで、現在の設定のまま変わりません。',
+        update: '{{name}} を {{version}} にアップデートしますか？',
+        updateDesc: 'デーモンが実行中の場合は再起動します。ログイン状態は保持されます。',
+        notInstall: '{{name}} がインストールされていません。',
+        install: 'インストール',
+        installing: 'インストール中',
+        installFailed: 'インストールに失敗しました',
+        retry: '再試行',
+        notRunning: '{{name}} が実行されていません。続行するには開始してください。',
+        run: '開始',
+        boot: '起動時に開始',
+        bootDesc: 'KVM の起動時に {{name}} を開始します。',
+        enable: '{{name}} を有効化',
+        control: 'コントロールサーバー',
+        connected: '接続済み',
+        disconnected: '未接続',
+        deviceName: 'デバイス名',
+        deviceIP: 'デバイス IP',
+        account: 'アカウント',
+        version: 'バージョン',
+        uptime: '稼働時間',
+        peers: 'ピア',
+        noPeers: 'ピアはまだありません。',
+        online: 'オンライン',
+        offline: 'オフライン',
+        memory: 'メモリ',
+        daemonRss: 'デーモン',
+        group: 'アドオングループ',
+        high: '{{size}} を超えると制限',
+        max: '{{size}} を超えるとカーネルが停止',
+        noGroup: 'このボードにはアドオン用のメモリグループがありません。',
+        uninstall: '{{name}} をアンインストール',
+        uninstallDesc:
+          '{{name}} をアンインストールしてもよろしいですか？ログイン情報はボードに残ります。',
+        blocked:
+          '{{other}} が実行中か、起動時に開始する設定になっています。同時に実行できる VPN は 1 つだけです。先に {{other}} を停止し、起動時の開始をオフにしてください。',
+        swap: {
+          title: 'スワップメモリ',
+          tip: 'デーモンのメモリが不足する場合は、スワップメモリを有効にしてみてください。スワップファイルのサイズはデフォルトで 256MB に設定され、「設定 > デバイス」で調整できます。'
+        }
+      },
       tailscale: {
         title: 'Tailscale',
         retry: 'ページを更新してもう一度お試しいただくか、手動でインストールしてください',
@@ -693,6 +864,21 @@ const ja = {
         loginSuccess: 'ログイン成功',
         logout: 'ログアウト',
         logoutDesc: 'ログアウトしてもよろしいですか？'
+      },
+      netbird: {
+        title: 'NetBird',
+        notLogin:
+          'このデバイスはまだ NetBird ネットワークに参加していません。セットアップキーで参加するか、SSO でログインしてください。',
+        setupKey: 'セットアップキー',
+        setupKeyPlaceholder: 'NetBird ダッシュボードのセットアップキーを貼り付けてください',
+        join: '参加',
+        or: 'または',
+        sso: 'SSO でログイン',
+        urlPeriod: 'この URL は 10 分間有効です',
+        loginSuccess: 'ログイン成功',
+        logout: '登録解除',
+        logoutDesc:
+          '登録を解除すると、このピアが NetBird アカウントから削除され、ここにある設定も削除されます。再度参加するにはセットアップキーまたは SSO ログインが必要で、ピアに新しい IP が割り当てられる場合があります。続行しますか？'
       },
       update: {
         title: 'アップデート',
@@ -720,6 +906,7 @@ const ja = {
           confirmDesc:
             'SHA-512 で確認できるのは、パッケージがこのサーバーから提供されたマニフェストと一致することだけです。そのパッケージが NanoKVM の公式リリースであることは保証されません。不具合のあるサーバーや悪意のあるサーバーを使用すると、デバイスが使用不能になったり、データが失われたり、システムが侵害されたりする可能性があります。',
           confirm: 'そのまま使用',
+          useSipeed: 'Sipeed 公式サーバーを使用',
           previewDisabled:
             'カスタム更新サーバーが有効な間は、プレビュー版アップデートを利用できません。'
         },
@@ -739,12 +926,59 @@ const ja = {
       account: {
         title: 'アカウント',
         webAccount: 'ウェブアカウント名',
+        role: 'ロール',
+        roles: { admin: '管理者', user: 'ユーザー' },
         password: 'パスワード',
         updateBtn: '変更',
         logoutBtn: 'ログアウト',
         logoutDesc: 'ログアウトしてもよろしいですか？',
         okBtn: 'はい',
-        cancelBtn: 'いいえ'
+        cancelBtn: 'いいえ',
+        users: {
+          title: 'ユーザー',
+          create: 'ユーザーを作成',
+          enabled: '有効',
+          disabled: '無効',
+          deviceOwner: 'デバイス所有者',
+          resetPassword: 'パスワードをリセット',
+          delete: '削除',
+          deleteConfirm: 'このユーザーを削除し、すべてのセッションを無効にしますか？',
+          created: 'ユーザーを作成しました',
+          deleted: 'ユーザーを削除しました',
+          passwordUpdated: 'パスワードを更新しました',
+          loadFailed: 'ユーザーの読み込みに失敗しました',
+          saveFailed: 'ユーザーの保存に失敗しました',
+          deleteFailed: 'ユーザーの削除に失敗しました'
+        }
+      },
+      apiKeys: {
+        title: 'API キー',
+        description:
+          'キーは所有者として、そのユーザーのロールで動作します。メトリクスと API には Authorization: Bearer <key> として、Redfish には X-Auth-Token として送信してください。',
+        name: '名前',
+        namePlaceholder: 'キーの用途（例: prometheus）',
+        nameRequired: 'キーに名前を付けてください',
+        nameTooLong: '名前は 64 文字以内にしてください',
+        unnamed: '（名前なし）',
+        create: 'キーを作成',
+        created: '作成日時',
+        owner: '所有者',
+        empty: 'API キーはありません',
+        newKeyTitle: '新しい API キー',
+        newKeyWarning:
+          '今すぐキーをコピーしてください。キーは保存されず、再表示できません。紛失した場合は、失効させて新しいキーを作成してください。',
+        copy: 'コピー',
+        copied: 'コピーしました',
+        copyFailed: 'コピーに失敗しました。手動でコピーしてください。',
+        done: '完了',
+        revoke: '失効',
+        revokeConfirmTitle: 'この API キーを失効させますか？',
+        revokeConfirmDesc: '「{{name}}」を使用しているものはすべて直ちに動作しなくなります。',
+        revoked: 'API キーを失効させました',
+        loadFailed: 'API キーの読み込みに失敗しました',
+        createFailed: 'API キーの作成に失敗しました',
+        revokeFailed: 'API キーの失効に失敗しました',
+        cancelBtn: 'キャンセル'
       }
     },
     picoclaw: {
@@ -913,18 +1147,38 @@ const ja = {
     },
     error: {
       title: 'エラーが発生しました',
-      refresh: '更新'
+      refresh: '更新',
+      panel: 'ページのこの部分が動作しなくなりました',
+      retry: '再試行'
     },
     fullscreen: {
       toggle: '全画面表示切り替え'
     },
     input: {
+      disconnected: 'キーボードとマウスが接続されていません',
+      disconnectedTls:
+        'キーボードとマウスを送る安全な接続を、ブラウザーが確認なしに拒否しました。このデバイスが生成した証明書がまだ信頼されていません。このアドレスを新しいタブで開いて証明書を受け入れ、再読み込みしてください。証明書をインストールするのが確実な解決方法です。',
+      disconnectedNever:
+        'キーボードとマウスを送る接続を開けませんでした。ページの他の部分はこの接続を使用しないため動作しています。お使いの環境とデバイスの間でこの接続がブロックされていないか確認してください。',
+      disconnectedDropped:
+        'キーボードとマウスを送る接続が切断され、復旧していません。再起動後は自動的に再接続します。この状態が続く場合は、ページを再読み込みしてください。',
       hidDisabled: 'このデバイスでは HID が無効です（/boot/disable_hid）。',
       keyFailed: 'キーを送信できませんでした。'
     },
+    speaker: { title: 'スピーカー', unmute: 'ミュート解除', mute: 'ミュート' },
     menu: {
       collapse: 'メニューを折りたたむ',
       expand: 'メニューを展開する'
+    },
+    ion: {
+      checking: 'ストリームを開始する前にビデオメモリを確認しています...',
+      warn: 'ビデオメモリが不足しています。サーバーをあと 1 回再起動すると使い切ってしまいます。都合のよいときに再起動してください。',
+      criticalTitle: 'ストリームを開始するためのビデオメモリが不足しています',
+      criticalBody:
+        'ビデオを開始すると予約メモリを使い切り、サーバーが停止します。電源制御や再起動を含む他のすべての機能は引き続き動作します。このメモリを回収できるのは NanoKVM の再起動だけです。',
+      criticalContinue: 'それでもビデオを開始',
+      criticalReboot: 'NanoKVM を再起動',
+      criticalRebooting: '再起動中...'
     }
   }
 };

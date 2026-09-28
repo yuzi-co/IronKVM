@@ -8,18 +8,23 @@ const ko = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      cookieRejected:
+        '브라우저가 세션 저장을 거부했습니다. 이전 HTTPS 세션에서 남은 쿠키는 일반 http 연결로 교체할 수 없습니다. 이 주소의 쿠키를 삭제하거나 개인 정보 보호 창을 연 다음 다시 로그인하세요.',
       login: '로그인',
       placeholderUsername: '사용자 이름을 입력하세요.',
       placeholderPassword: '비밀번호를 입력하세요.',
+      placeholderCurrentPassword: '현재 비밀번호',
       placeholderPassword2: '비밀번호를 다시 입력하세요.',
       noEmptyUsername: '사용자 이름은 비어있을 수 없습니다.',
       noEmptyPassword: '비밀번호는 비어있을 수 없습니다.',
+      passwordLength: '비밀번호는 8~72자여야 합니다',
       noAccount:
         '사용자 정보를 불러오는 데 실패했습니다. 페이지를 새로고침하거나 비밀번호를 초기화하세요.',
       invalidUser: '사용자 이름이나 비밀번호가 틀렸습니다.',
       locked: '로그인 횟수가 너무 많습니다. 나중에 다시 시도해 주세요.',
       globalLocked: '시스템이 보호 중입니다. 나중에 다시 시도해 주세요.',
       error: '알 수 없는 오류',
+      invalidCurrentPassword: '현재 비밀번호가 올바르지 않습니다',
       changePassword: '비밀번호 변경',
       changePasswordDesc: '보안을 위해 웹 로그인 비밀번호를 변경하세요.',
       differentPassword: '비밀번호가 서로 일치하지 않습니다.',
@@ -238,6 +243,10 @@ const ko = {
       relative: '상대값 모드',
       absoluteShort: '절대값',
       relativeShort: '상대값',
+      absoluteStalled: '대상이 절대값 마우스를 무시하고 있습니다',
+      absoluteStalledDesc:
+        '대상이 절대값 마우스 보고를 더 이상 받지 않아 포인터 이동이 손실되고 있습니다. 키보드는 영향을 받지 않습니다. USB를 복구하면 대개 해결되며, 상대값 모드는 다른 엔드포인트를 사용합니다.',
+      useRelative: '상대값 모드로 전환',
       direction: '스크롤 휠 방향',
       scrollUp: '위로 스크롤',
       scrollDown: '아래로 스크롤',
@@ -251,6 +260,7 @@ const ko = {
         desc: '마우스와 키보드가 응답하지 않고 HID 초기화도 도움이 되지 않는다면, NanoKVM과 장치 간의 호환성 문제일 수 있습니다. 더 나은 호환성을 위해 HID 전용 모드를 활성화해 보세요.',
         tip1: 'HID 전용 모드를 활성화하면 가상 USB와 가상 네트워크가 언마운트됩니다',
         tip2: 'HID 전용 모드에서는 이미지 마운트가 비활성화됩니다',
+        rebuild: '모드를 전환하면 USB 연결이 다시 구성됩니다. NanoKVM은 재부팅되지 않습니다',
         enable: 'HID 전용 모드 활성화',
         disable: 'HID 전용 모드 비활성화'
       }
@@ -267,6 +277,17 @@ const ko = {
       unmountDesc:
         '일부 시스템에서는 이미지를 언마운트하기 전에 원격 호스트에서 수동으로 제거하여야 합니다.',
       refresh: '이미지 목록 새로고침',
+      disk: '디스크',
+      cdrom: 'CD',
+      driveEmpty: '비어 있음',
+      eject: '꺼내기',
+      readOnly: '읽기 전용',
+      readOnlyTip: '다음에 디스크에 넣는 이미지에 적용됩니다.',
+      noDrives: '가상 드라이브가 없습니다. 설정에서 가상 디스크를 켜세요.',
+      insertFailed: '넣기 실패',
+      ejectFailed: '꺼내기 실패',
+      insertInto: '{{drive}}에 넣습니다. 클릭하여 변경하세요.',
+      loadedIn: '{{drive}} 드라이브에 있음',
       attention: '주의',
       deleteConfirm: '이 이미지를 제거하시겠습니까?',
       okBtn: '네',
@@ -364,7 +385,15 @@ const ko = {
       sleepConfirm: '호스트를 절전 모드로 전환할까요?',
       powerDownConfirm: '호스트에 전원 끄기 키를 보낼까요?',
       wakeTip:
-        '절전 중인 호스트는 자신을 절전시킨 장치의 깨우기를 무시하는 경우가 많습니다. Shift로 깨우기는 키보드 키를 누르며, 더 많은 호스트가 이를 받아들입니다.'
+        '절전 중인 호스트는 자신을 절전시킨 장치의 깨우기를 무시하는 경우가 많습니다. Shift로 깨우기는 키보드 키를 누르며, 더 많은 호스트가 이를 받아들입니다.',
+      led: '전원 LED',
+      ledOn: '켜짐',
+      ledOff: '꺼짐',
+      ledUnknown: '알 수 없음',
+      ledConnected: '전원 LED 연결됨',
+      ledConnectedTip:
+        '호스트의 전원 LED 헤더가 보드에 연결된 경우에만 켜세요. 연결되지 않으면 전원 상태를 알 수 없습니다.',
+      ledConnectedFailed: '전원 LED 설정을 저장하지 못했습니다'
     },
     settings: {
       title: '설정',
@@ -387,6 +416,34 @@ const ko = {
         okBtn: '확인',
         cancelBtn: '취소'
       },
+      redfish: {
+        title: 'Redfish',
+        service: 'Redfish 서비스',
+        serviceDesc:
+          'DMTF Redfish API로, redfishtool이나 Ansible 같은 도구에서 전원 제어, 가상 미디어, 상태 조회를 할 수 있습니다. 끄면 모든 Redfish 세션이 종료됩니다.',
+        endpoint: '서비스 루트',
+        httpsOn:
+          '보드가 HTTPS로 서비스하고 있습니다. 대부분의 Redfish 도구에는 HTTPS가 필요합니다.',
+        httpsOff:
+          '보드가 일반 HTTP로 서비스하고 있습니다. 대부분의 Redfish 도구에는 HTTPS가 필요합니다. "설정 > 네트워크"에서 켜세요.',
+        credentials:
+          'Redfish는 KVM 계정(Basic 인증 또는 Redfish 세션)과 X-Auth-Token으로 보내는 API 키를 사용합니다. API 키는 API 키 페이지에서 관리합니다.',
+        powerActions: '전원 작업',
+        powerActionsDesc:
+          '현재 제공되는 리셋 유형입니다. On, ForceOff, GracefulShutdown은 전원 상태가 필요하므로 전원 메뉴에서 "전원 LED 연결됨"이 켜져 있을 때만 제공됩니다.',
+        sessions: '세션',
+        noSessions: '열려 있는 Redfish 세션이 없습니다',
+        created: '생성',
+        lastUsed: '마지막 사용',
+        refresh: '새로 고침',
+        end: '종료',
+        endConfirmTitle: '이 Redfish 세션을 종료할까요?',
+        endConfirmDesc: '세션의 토큰이 즉시 작동을 멈춥니다. 클라이언트는 다시 로그인해야 합니다.',
+        failed: 'Redfish 작업에 실패했습니다',
+        copyFailed: '복사에 실패했습니다. 수동으로 복사하세요.',
+        okBtn: '확인',
+        cancelBtn: '취소'
+      },
       watchdog: {
         title: '워치독',
         service: '호스트 워치독',
@@ -395,7 +452,7 @@ const ko = {
         stillWarning:
           '디스플레이가 절전 모드로 들어가거나 작업 중에도 화면이 멈춰 있는 호스트는 멈춘 것처럼 보입니다. 호스트의 디스플레이 절전을 끄거나 Ping 주소를 설정하세요.',
         ledHint:
-          '전원 메뉴의 "Power LED connected"가 꺼져 있습니다. 워치독은 호스트가 꺼진 것을 알 수 없으므로 호스트를 항상 켜진 것으로 봅니다.',
+          '전원 메뉴의 "전원 LED 연결됨"가 꺼져 있습니다. 워치독은 호스트가 꺼진 것을 알 수 없으므로 호스트를 항상 켜진 것으로 봅니다.',
         timeout: '제한 시간',
         timeoutDesc: '워치독이 동작하기 전까지 호스트가 동작 신호를 보이지 않아도 되는 시간입니다.',
         action: '동작',
@@ -458,7 +515,15 @@ const ko = {
         applicationTip: 'NanoKVM 웹 애플리케이션 버전',
         image: '이미지 버전',
         imageTip: 'NanoKVM 시스템 이미지 버전',
+        kernel: '커널 버전',
+        kernelTip: '현재 실행 중인 Linux 커널의 릴리스',
         deviceKey: '장치 키',
+        videoMemory: '비디오 메모리',
+        videoMemoryTip:
+          '비디오 캡처용으로 예약된 메모리입니다. 시스템의 나머지 부분과 공유되지 않습니다.',
+        videoMemoryGenerations_other:
+          '이전 NanoKVM 세션 {{count}}개가 비디오 메모리를 점유하고 있습니다',
+        videoMemoryReboot: '재부팅하면 회수됩니다.',
         community: '커뮤니티',
         hostname: '호스트 이름',
         hostnameUpdated: '호스트 이름이 업데이트되었습니다. 적용하려면 재부팅하세요.',
@@ -506,6 +571,16 @@ const ko = {
         oled: {
           title: 'OLED',
           description: 'OLED 화면 자동 절전',
+          brightness: 'OLED 밝기',
+          brightnessDescription: '밝기를 낮추면 패널 수명이 길어집니다',
+          brightnessLevels: {
+            '64': '최저',
+            '96': '낮음',
+            '128': '중간',
+            '160': '높음',
+            '207': '기본값',
+            '255': '최대'
+          },
           0: '사용 안 함',
           15: '15초',
           30: '30초',
@@ -521,11 +596,34 @@ const ko = {
           tip: '활성화하기 전에 강력한 비밀번호를 설정하세요. (계정 - 비밀번호 변경)'
         },
         advanced: '고급 설정',
+        cpuFreq: {
+          title: 'CPU 주파수',
+          description: '다음 부팅 시 적용할 CPU 클럭 설정',
+          tip: 'CPU는 850 MHz로 부팅되며 정격은 1000 MHz입니다. 새 값은 시스템 실행 중이 아니라 다음 부팅 시 적용됩니다. 1000 MHz는 사양 범위 내이며, 어느 설정에서도 온도는 한계보다 충분히 낮습니다.',
+          running: '실행 중: {{mhz}} MHz',
+          rebootToApply: '재부팅하여 적용',
+          rebootConfirm: '지금 재부팅하여 {{mhz}} MHz를 적용할까요?'
+        },
         swap: {
           title: '스왑',
           disable: '비활성화',
           description: '스왑 파일 크기 설정',
           tip: '이 기능을 활성화하면 SD 카드의 수명이 단축될 수 있습니다!'
+        },
+        zram: {
+          title: '압축 스왑(zram)',
+          description: 'SD 카드 대신 압축된 RAM에서 스왑',
+          tip: 'zram은 스왑을 SD 카드에 두지 않으므로 카드 마모가 없습니다. 뒤에 디스크 스왑이 없으므로 zram이 가득 차면 커널은 느리게 페이징하는 대신 프로세스를 중지합니다. 메모리 제한은 zram이 사용할 수 있는 RAM 양을 제한합니다.',
+          unavailable: '이 장치에 커널 모듈이 설치되어 있지 않습니다',
+          inactive: '활성화되었지만 장치가 시작되지 않았습니다',
+          active: '활성 - {{used}} / {{total}}, {{ratio}}x',
+          off: '꺼짐',
+          detail: {
+            algorithm: '알고리즘: {{algorithm}}',
+            memory: '사용 메모리: {{used}} / {{limit}}',
+            memoryNoLimit: '사용 메모리: {{used}}, 제한 없음',
+            counters: '스왑 인 {{in}}페이지, 스왑 아웃 {{out}}페이지 (모든 스왑 장치, 부팅 이후)'
+          }
         },
         mouseJiggler: {
           title: '마우스 흔들기',
@@ -581,7 +679,27 @@ const ko = {
           reenumerate:
             '적용하면 USB 연결이 다시 구성됩니다. 호스트는 몇 초 동안 키보드, 마우스, 가상 디스크를 잃습니다.'
         },
+        audio: '가상 스피커',
+        audioDesc:
+          '원격 호스트에 USB 사운드 카드를 제공하여 호스트의 소리를 들을 수 있게 합니다. 호스트에서 출력 장치로 선택해야 합니다. 전환하면 USB 연결이 다시 구성됩니다.',
+        audioNote:
+          '오디오는 두 H.264 모드(WebRTC와 Direct)에서 사용할 수 있으며 MJPEG에서는 사용할 수 없습니다',
+        console: '시리얼 콘솔',
+        consoleDesc:
+          '원격 호스트에 USB 시리얼 포트를 제공하여, 네트워크에 연결할 수 없을 때 이 NanoKVM에 로그인할 수 있게 합니다',
+        consoleTip:
+          '원격 호스트를 제어하는 사람은 누구나 이 NanoKVM의 로그인 프롬프트를 얻게 됩니다. 활성화하기 전에 강력한 비밀번호를 설정하세요. (계정 - 비밀번호 변경)',
         endpoints: {
+          title: 'USB 엔드포인트',
+          used: '{{total}}개 중 {{used}}개 사용',
+          cost: '{{cost}}개 사용',
+          needs: '{{cost}}개 필요',
+          full: 'USB 엔드포인트가 부족합니다. 먼저 다른 기능을 끄세요.',
+          inactive:
+            '켜져 있지만 실행되지 않음: USB 컨트롤러의 엔드포인트가 부족합니다. 다른 장치를 끄면 바로 시작됩니다.',
+          explain:
+            'USB 컨트롤러의 입력 엔드포인트 수는 고정되어 있으며, 여기서는 그 수를 셉니다. 수용할 수 있는 것보다 많은 장치가 활성화되면 키보드와 마우스는 유지되고 나머지는 꺼집니다.',
+          error: '장치에 연결할 수 없습니다. 다시 시도하세요.',
           fitTogether: '함께 사용 가능: {{sets}}'
         },
         reboot: '재부팅',
@@ -608,7 +726,11 @@ const ko = {
         },
         tls: {
           description: 'HTTPS 프로토콜 활성화',
-          tip: '주의: HTTPS 사용 시 특히 MJPEG 비디오 모드에서 지연 시간이 증가할 수 있습니다.'
+          tip: '주의: HTTPS 사용 시 특히 MJPEG 비디오 모드에서 지연 시간이 증가할 수 있습니다.',
+          restarting: '장치 서버를 다시 시작하는 중입니다. 약 2분 정도 걸립니다...',
+          waiting: '장치가 다시 응답하기를 기다리는 중...',
+          waitingHttp:
+            'http로 다시 전환하는 중입니다. 자동으로 열리지 않으면 이 페이지를 새로 고치세요.'
         },
         ethernet: {
           title: 'IP 주소',
@@ -669,6 +791,52 @@ const ko = {
           none: '없음'
         }
       },
+      vpn: {
+        loading: '불러오는 중...',
+        okBtn: '네',
+        cancelBtn: '아니오',
+        restart: '{{name}}을(를) 다시 시작할까요?',
+        stop: '{{name}}을(를) 중지할까요?',
+        stopDesc: '데몬이 지금 중지됩니다. 부팅 시 시작은 별도의 스위치이며 그대로 유지됩니다.',
+        update: '{{name}}을(를) {{version}}(으)로 업데이트할까요?',
+        updateDesc: '데몬이 실행 중이면 다시 시작됩니다. 로그인은 유지됩니다.',
+        notInstall: '{{name}}이(가) 설치되어 있지 않습니다.',
+        install: '설치',
+        installing: '설치 중',
+        installFailed: '설치 실패',
+        retry: '다시 시도',
+        notRunning: '{{name}}이(가) 실행되고 있지 않습니다. 계속하려면 시작하세요.',
+        run: '시작',
+        boot: '부팅 시 시작',
+        bootDesc: 'KVM이 부팅될 때 {{name}}을(를) 시작합니다.',
+        enable: '{{name}} 활성화',
+        control: '제어 서버',
+        connected: '연결됨',
+        disconnected: '연결되지 않음',
+        deviceName: '장치 이름',
+        deviceIP: '장치 IP',
+        account: '계정',
+        version: '버전',
+        uptime: '가동 시간',
+        peers: '피어',
+        noPeers: '아직 피어가 없습니다.',
+        online: '온라인',
+        offline: '오프라인',
+        memory: '메모리',
+        daemonRss: '데몬',
+        group: '애드온 그룹',
+        high: '{{size}} 초과 시 제한',
+        max: '{{size}} 초과 시 커널이 중지',
+        noGroup: '이 보드에는 애드온 메모리 그룹이 없습니다.',
+        uninstall: '{{name}} 제거',
+        uninstallDesc: '{{name}}을(를) 제거하시겠습니까? 로그인 정보는 보드에 남습니다.',
+        blocked:
+          '{{other}}이(가) 실행 중이거나 부팅 시 시작됩니다. VPN은 한 번에 하나만 실행됩니다. 먼저 {{other}}을(를) 중지하고 부팅 시 시작을 끄세요.',
+        swap: {
+          title: '스왑 메모리',
+          tip: '데몬의 메모리가 부족하면 스왑 메모리를 활성화해 보세요. 스왑 파일 크기가 기본값 256MB로 설정되며, "설정 > 장치"에서 조정할 수 있습니다.'
+        }
+      },
       tailscale: {
         title: 'Tailscale',
         retry: '새로고침하고 다시 시도하거나, 수동으로 설치하세요',
@@ -684,6 +852,21 @@ const ko = {
         loginSuccess: '로그인 성공',
         logout: '로그아웃',
         logoutDesc: '정말로 로그아웃 하시겠습니까?'
+      },
+      netbird: {
+        title: 'NetBird',
+        notLogin:
+          '이 장치는 아직 NetBird 네트워크에 참여하지 않았습니다. 설정 키로 참여하거나 SSO로 로그인하세요.',
+        setupKey: '설정 키',
+        setupKeyPlaceholder: 'NetBird 대시보드의 설정 키를 붙여넣으세요',
+        join: '참여',
+        or: '또는',
+        sso: 'SSO로 로그인',
+        urlPeriod: '이 주소는 10분간 유효합니다.',
+        loginSuccess: '로그인 성공',
+        logout: '등록 해제',
+        logoutDesc:
+          '등록을 해제하면 NetBird 계정에서 이 피어가 제거되고 여기의 구성도 삭제됩니다. 다시 참여하려면 설정 키나 SSO 로그인이 필요하며, 피어가 새 IP를 받을 수 있습니다. 계속할까요?'
       },
       update: {
         title: '업데이트 확인',
@@ -710,6 +893,7 @@ const ko = {
           confirmDesc:
             'SHA-512는 패키지가 이 서버에서 제공한 매니페스트와 일치하는지만 확인합니다. 해당 패키지가 공식 NanoKVM 릴리스임을 보장하지는 않습니다. 결함이 있거나 악의적인 서버를 사용하면 장치를 사용할 수 없게 되거나, 데이터가 손실되거나, 시스템이 침해될 수 있습니다.',
           confirm: '그래도 사용',
+          useSipeed: 'Sipeed 공식 서버 사용',
           previewDisabled:
             '사용자 지정 업데이트 서버가 활성화되어 있는 동안에는 미리 보기 업데이트를 사용할 수 없습니다.'
         },
@@ -727,12 +911,59 @@ const ko = {
       account: {
         title: '계정',
         webAccount: '웹 계정',
+        role: '역할',
+        roles: { admin: '관리자', user: '사용자' },
         password: '비밀번호',
         updateBtn: '업데이트',
         logoutBtn: '로그아웃',
         logoutDesc: '정말로 로그아웃 하시겠습니까?',
         okBtn: '네',
-        cancelBtn: '아니오'
+        cancelBtn: '아니오',
+        users: {
+          title: '사용자',
+          create: '사용자 만들기',
+          enabled: '활성',
+          disabled: '비활성',
+          deviceOwner: '장치 소유자',
+          resetPassword: '비밀번호 재설정',
+          delete: '삭제',
+          deleteConfirm: '이 사용자를 삭제하고 모든 세션을 취소할까요?',
+          created: '사용자를 만들었습니다',
+          deleted: '사용자를 삭제했습니다',
+          passwordUpdated: '비밀번호가 업데이트되었습니다',
+          loadFailed: '사용자를 불러오지 못했습니다',
+          saveFailed: '사용자를 저장하지 못했습니다',
+          deleteFailed: '사용자를 삭제하지 못했습니다'
+        }
+      },
+      apiKeys: {
+        title: 'API 키',
+        description:
+          '키는 소유자로서 해당 사용자의 역할로 작동합니다. 메트릭과 API에는 Authorization: Bearer <key>로, Redfish에는 X-Auth-Token으로 보내세요.',
+        name: '이름',
+        namePlaceholder: '키의 용도 (예: prometheus)',
+        nameRequired: '키 이름을 입력하세요',
+        nameTooLong: '이름은 최대 64자입니다',
+        unnamed: '(이름 없음)',
+        create: '키 만들기',
+        created: '생성일',
+        owner: '소유자',
+        empty: 'API 키가 없습니다',
+        newKeyTitle: '새 API 키',
+        newKeyWarning:
+          '지금 키를 복사하세요. 키는 저장되지 않으며 다시 표시할 수 없습니다. 분실한 경우 키를 폐기하고 새로 만드세요.',
+        copy: '복사',
+        copied: '복사됨',
+        copyFailed: '복사에 실패했습니다. 수동으로 복사하세요.',
+        done: '완료',
+        revoke: '폐기',
+        revokeConfirmTitle: '이 API 키를 폐기할까요?',
+        revokeConfirmDesc: '"{{name}}"을(를) 사용하는 모든 항목이 즉시 작동을 멈춥니다.',
+        revoked: 'API 키를 폐기했습니다',
+        loadFailed: 'API 키를 불러오지 못했습니다',
+        createFailed: 'API 키를 만들지 못했습니다',
+        revokeFailed: 'API 키를 폐기하지 못했습니다',
+        cancelBtn: '취소'
       }
     },
     picoclaw: {
@@ -899,18 +1130,38 @@ const ko = {
     },
     error: {
       title: '문제가 발생했습니다.',
-      refresh: '새로고침'
+      refresh: '새로고침',
+      panel: '페이지의 이 부분이 작동을 멈췄습니다',
+      retry: '다시 시도'
     },
     fullscreen: {
       toggle: '전체 화면 전환'
     },
     input: {
+      disconnected: '키보드와 마우스가 연결되지 않았습니다',
+      disconnectedTls:
+        '브라우저가 키보드와 마우스를 전달하는 보안 연결을 묻지 않고 거부했습니다. 이 장치가 생성한 인증서를 아직 신뢰하지 않기 때문입니다. 새 탭에서 이 주소를 열어 인증서를 수락한 다음 새로 고치세요. 인증서를 설치하는 것이 확실한 해결 방법입니다.',
+      disconnectedNever:
+        '키보드와 마우스를 전달하는 연결을 열 수 없습니다. 페이지의 나머지 부분은 이 연결을 사용하지 않으므로 작동합니다. 사용자와 장치 사이에서 이 연결을 차단하는 것이 없는지 확인하세요.',
+      disconnectedDropped:
+        '키보드와 마우스를 전달하는 연결이 끊어졌으며 복구되지 않았습니다. 재시작 후에는 자동으로 다시 연결됩니다. 이 상태가 계속되면 페이지를 새로 고치세요.',
       hidDisabled: '이 장치에서 HID가 꺼져 있습니다 (/boot/disable_hid).',
       keyFailed: '키를 보내지 못했습니다.'
     },
+    speaker: { title: '스피커', unmute: '음소거 해제', mute: '음소거' },
     menu: {
       collapse: '메뉴 접기',
       expand: '메뉴 펼치기'
+    },
+    ion: {
+      checking: '스트림을 시작하기 전에 비디오 메모리를 확인하는 중...',
+      warn: '비디오 메모리가 부족합니다. 서버를 한 번 더 다시 시작하면 모두 소진됩니다. 편할 때 재부팅하세요.',
+      criticalTitle: '스트림을 시작하기에 비디오 메모리가 부족합니다',
+      criticalBody:
+        '비디오를 시작하면 예약된 메모리가 소진되어 서버가 중지됩니다. 전원 제어와 재부팅을 포함한 다른 모든 기능은 계속 작동합니다. 이 메모리는 NanoKVM을 재부팅해야만 회수됩니다.',
+      criticalContinue: '그래도 비디오 시작',
+      criticalReboot: 'NanoKVM 재부팅',
+      criticalRebooting: '재부팅 중...'
     }
   }
 };
