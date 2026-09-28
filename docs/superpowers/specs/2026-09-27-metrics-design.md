@@ -82,6 +82,12 @@ Server:
 | `ironkvm_process_resident_bytes` | gauge | `/proc/self/status` `VmRSS` |
 | `ironkvm_go_heap_bytes`, `ironkvm_go_goroutines` | gauge | `runtime.ReadMemStats`, `runtime.NumGoroutine` |
 
+Host watchdog:
+
+| Metric | Type | Source |
+| --- | --- | --- |
+| `ironkvm_watchdog_actions_total{action}` | counter | `watchdog.ActionCounts()`, `action` is `reset` or `power` |
+
 Supervisor actions are not in the first version. `S98supervise` is a shell script that only
 appends to `/data/supervise.log`. Counting them would mean parsing that log on every scrape, or
 giving the script a counter file. Restarts it causes already show in

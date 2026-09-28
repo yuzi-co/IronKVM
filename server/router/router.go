@@ -92,6 +92,7 @@ func server(r *gin.Engine) {
 	debugRouter(r)
 	metricsRouter(r)
 	redfishRouter(r)
+	watchdogRouter(r)
 }
 
 func LoopbackHTTPAllowedPaths() []string {
