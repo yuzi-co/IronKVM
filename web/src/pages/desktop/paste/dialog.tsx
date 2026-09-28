@@ -178,7 +178,7 @@ export const PasteDialog = () => {
     >
       <div className="flex flex-col">
         <span className="text-xl">{t('keyboard.paste')}</span>
-        <span className="text-sm text-neutral-600">{t('keyboard.tips')}</span>
+        <span className="text-sm text-neutral-400">{t('keyboard.tips')}</span>
       </div>
 
       <Divider style={{ margin: '14px 0' }} />

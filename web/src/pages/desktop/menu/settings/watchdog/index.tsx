@@ -415,7 +415,7 @@ export const Watchdog = () => {
                         alt={formatTime(entry.time)}
                       />
                     ) : (
-                      <span className="shrink-0 text-xs text-neutral-600">
+                      <span className="shrink-0 text-xs text-neutral-400">
                         {t('settings.watchdog.noScreenshot')}
                       </span>
                     )}
