@@ -1341,7 +1341,8 @@ const tr = {
     speaker: { title: 'Hoparlör', unmute: 'Sesi aç', mute: 'Sesi kapat' },
     menu: {
       collapse: 'Menüyü küçült',
-      expand: 'Menüyü genişlet'
+      expand: 'Menüyü genişlet',
+      more: 'Daha fazla'
     },
     ion: {
       checking: 'Akış başlatılmadan önce video belleği kontrol ediliyor...',

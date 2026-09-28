@@ -406,6 +406,39 @@ export const keyboardArrowsOptions = {
   }
 };
 
+// navigation and arrow keys in one pad, shown below the main keyboard when the
+// screen is too narrow for the two clusters beside it
+export const keyboardCompactPadOptions = {
+  theme: 'simple-keyboard hg-theme-default',
+  baseClass: 'simple-keyboard-pad',
+  layout: {
+    default: [
+      '{prtscr} {insert} {home} {pageup} {blankleft} {arrowup} {blankright}',
+      '{pause} {delete} {end} {pagedown} {arrowleft} {arrowdown} {arrowright}'
+    ]
+  },
+  display: {
+    ...keyboardControlPadOptions.display,
+    '{blankleft}': ' ',
+    '{blankright}': ' ',
+    '{arrowup}': '↑',
+    '{arrowleft}': '←',
+    '{arrowdown}': '↓',
+    '{arrowright}': '→'
+  },
+  buttonTheme: [{ class: 'emptySpace', buttons: '{blankleft} {blankright}' }]
+};
+
+// shorter labels for the wide keys, which get no more room than a letter in
+// the compact layout
+export const compactDisplay: Record<string, string> = {
+  '{backspace}': '⌫',
+  '{enter}': '↵',
+  '{capslock}': 'Caps',
+  '{shiftleft}': '⇧',
+  '{shiftright}': '⇧'
+};
+
 // keys require special mapping
 export const specialKeyMap = new Map([
   ['{escape}', 'Escape'],

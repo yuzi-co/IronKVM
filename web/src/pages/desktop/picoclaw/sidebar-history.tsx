@@ -55,7 +55,7 @@ export const SidebarHistory = ({
         <div className="flex flex-1 flex-col items-center justify-center gap-2 px-6 text-center">
           <Clock3Icon size={18} className="text-neutral-600" />
           <span className="text-sm text-neutral-400">{t('picoclaw.history.emptyTitle')}</span>
-          <span className="text-xs text-neutral-600">{t('picoclaw.history.emptyDescription')}</span>
+          <span className="text-xs text-neutral-400">{t('picoclaw.history.emptyDescription')}</span>
         </div>
       );
     }
@@ -123,7 +123,7 @@ export const SidebarHistory = ({
                       }}
                     />
                   </div>
-                  <div className="mt-2 flex items-center gap-3 text-[11px] text-neutral-600">
+                  <div className="mt-2 flex items-center gap-3 text-[11px] text-neutral-500">
                     <span>{formatSessionTime(session.updated)}</span>
                     <span>
                       {t('picoclaw.history.messageCount', { count: session.message_count })}

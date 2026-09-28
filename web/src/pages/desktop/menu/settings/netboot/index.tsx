@@ -194,15 +194,15 @@ export const Netboot = ({ setIsLocked }: NetbootProps) => {
                 <span className="text-neutral-400">dnsmasq</span>
                 {runningTag(status.usbRunning)}
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-x-3">
                 <span className="text-neutral-400">{t('settings.netboot.menuUrl')}</span>
-                <span className="font-mono text-xs text-neutral-300 select-all">
+                <span className="min-w-0 font-mono text-xs break-all text-neutral-300 select-all">
                   {status.menuUrl || '-'}
                 </span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-x-3">
                 <span className="text-neutral-400">{t('settings.netboot.leases')}</span>
-                <span className="font-mono text-xs text-neutral-300">
+                <span className="min-w-0 font-mono text-xs break-all text-neutral-300">
                   {leases.length === 0
                     ? t('settings.netboot.noLeases')
                     : leases.map((lease) => `${lease.ip} ${lease.mac}`).join(', ')}
@@ -280,11 +280,11 @@ export const Netboot = ({ setIsLocked }: NetbootProps) => {
                       key={`${boot.time}-${index}`}
                       className={
                         index > 0
-                          ? 'flex justify-between border-t border-neutral-800 px-4 py-2 text-xs'
-                          : 'flex justify-between px-4 py-2 text-xs'
+                          ? 'flex flex-wrap justify-between gap-x-3 border-t border-neutral-800 px-4 py-2 text-xs'
+                          : 'flex flex-wrap justify-between gap-x-3 px-4 py-2 text-xs'
                       }
                     >
-                      <span className="font-mono text-neutral-300">{boot.what}</span>
+                      <span className="min-w-0 font-mono break-all text-neutral-300">{boot.what}</span>
                       <span className="text-neutral-500">
                         {boot.client} · {formatTime(boot.time)}
                       </span>

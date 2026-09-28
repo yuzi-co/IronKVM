@@ -1362,7 +1362,8 @@ const de = {
     speaker: { title: 'Lautsprecher', unmute: 'Ton an', mute: 'Stummschalten' },
     menu: {
       collapse: 'Menu einblenden',
-      expand: 'Menu verbergen'
+      expand: 'Menu verbergen',
+      more: 'Mehr'
     },
     ion: {
       checking: 'Videospeicher wird vor dem Start des Streams geprüft...',

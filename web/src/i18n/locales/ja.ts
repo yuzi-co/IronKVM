@@ -1353,7 +1353,8 @@ const ja = {
     speaker: { title: 'スピーカー', unmute: 'ミュート解除', mute: 'ミュート' },
     menu: {
       collapse: 'メニューを折りたたむ',
-      expand: 'メニューを展開する'
+      expand: 'メニューを展開する',
+      more: 'その他'
     },
     ion: {
       checking: 'ストリームを開始する前にビデオメモリを確認しています...',

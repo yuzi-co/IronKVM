@@ -2,9 +2,10 @@ import { useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/auth.ts';
 import { Divider } from 'antd';
 import clsx from 'clsx';
-import { useAtomValue } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { GripVerticalIcon } from 'lucide-react';
 import Draggable, { DraggableData, DraggableEvent } from 'react-draggable';
+import { useMediaQuery } from 'react-responsive';
 
 import { hasAudioAtom } from '@/jotai/audio.ts';
 import {
@@ -21,6 +22,7 @@ import { DownloadImage } from './download.tsx';
 import { Fullscreen } from './fullscreen';
 import { Image } from './image';
 import { Keyboard } from './keyboard';
+import { More } from './more.tsx';
 import { Mouse } from './mouse';
 import { Collapse, Expand } from './operations';
 import { Picoclaw } from './picoclaw';
@@ -41,6 +43,11 @@ export const Menu = () => {
   const menuCloseSignal = useAtomValue(menuCloseSignalAtom);
   const isKeyboardLedStatusVisible = useAtomValue(keyboardLedStatusVisibleAtom);
   const hasAudio = useAtomValue(hasAudioAtom);
+  const requestMenuClose = useSetAtom(menuCloseSignalAtom);
+
+  // Below the sm breakpoint the full bar is wider than a phone. The entries
+  // used most stay on the bar and the rest move into the overflow popover.
+  const isNarrow = useMediaQuery({ maxWidth: 639 });
 
   const {
     isInitialized,
@@ -68,6 +75,75 @@ export const Menu = () => {
     return !menuDisabledItems.includes(item);
   }
 
+  const screen = (
+    <MenuBoundary name="screen">
+      <Screen />
+    </MenuBoundary>
+  );
+  const keyboard = (
+    <MenuBoundary name="keyboard">
+      <Keyboard />
+    </MenuBoundary>
+  );
+  const mouse = (
+    <MenuBoundary name="mouse">
+      <Mouse />
+    </MenuBoundary>
+  );
+  // hasAudio is set by the video path when sound arrives: the WebRTC audio
+  // track, or the first audio frame on H.264 direct. A device without the USB
+  // audio gadget sends neither, and the button would then unmute nothing.
+  const speaker = isEnabled('speaker') && hasAudio && (
+    <MenuBoundary name="speaker">
+      <Speaker />
+    </MenuBoundary>
+  );
+  const image = isAdmin && isEnabled('image') && (
+    <MenuBoundary name="image">
+      <Image />
+    </MenuBoundary>
+  );
+  const download = isAdmin && isEnabled('download') && (
+    <MenuBoundary name="download">
+      <DownloadImage />
+    </MenuBoundary>
+  );
+  const terminal = isAdmin && isEnabled('terminal') && (
+    <MenuBoundary name="terminal">
+      <Terminal />
+    </MenuBoundary>
+  );
+  const script = isAdmin && isEnabled('script') && (
+    <MenuBoundary name="script">
+      <Script />
+    </MenuBoundary>
+  );
+  const wol = isEnabled('wol') && (
+    <MenuBoundary name="wol">
+      <Wol />
+    </MenuBoundary>
+  );
+  const picoclaw = isAdmin && isEnabled('picoclaw') && (
+    <MenuBoundary name="picoclaw">
+      <Picoclaw />
+    </MenuBoundary>
+  );
+  const power = isEnabled('power') && (
+    <MenuBoundary name="power">
+      <Power />
+    </MenuBoundary>
+  );
+  const settings = (
+    <MenuBoundary name="settings">
+      <Settings />
+    </MenuBoundary>
+  );
+  const fullscreen = isEnabled('fullscreen') && (
+    <MenuBoundary name="fullscreen">
+      <Fullscreen />
+    </MenuBoundary>
+  );
+
   return (
     <Draggable
       nodeRef={nodeRef}
@@ -79,7 +155,7 @@ export const Menu = () => {
       <div
         ref={nodeRef}
         className={clsx(
-          'fixed top-[10px] left-1/2 z-1000 -translate-x-1/2 transition-opacity duration-300',
+          'fixed top-[10px] left-1/2 z-1000 transition-opacity duration-300',
           isInitialized ? 'opacity-100' : 'opacity-0'
         )}
         onMouseEnter={() => handleHovered(true)}
@@ -100,7 +176,7 @@ export const Menu = () => {
               isMenuHidden ? 'translate-y-[-110%] opacity-80' : 'translate-y-0 opacity-100'
             )}
           >
-            {isMenuExpanded && isKeyboardLedStatusVisible && (
+            {isMenuExpanded && isKeyboardLedStatusVisible && !isNarrow && (
               <div
                 className={clsx(
                   'absolute inset-y-0 right-full mr-1 transition-all duration-300',
@@ -119,87 +195,71 @@ export const Menu = () => {
             </strong>
             <Divider type="vertical" />
 
-            <MenuBoundary name="screen">
-              <Screen />
-            </MenuBoundary>
-            <MenuBoundary name="keyboard">
-              <Keyboard />
-            </MenuBoundary>
-            <MenuBoundary name="mouse">
-              <Mouse />
-            </MenuBoundary>
-            {/* hasAudio is set by the video path when sound arrives: the
-                WebRTC audio track, or the first audio frame on H.264 direct.
-                A device without the USB audio gadget sends neither, and the
-                button would then unmute nothing. */}
-            {isEnabled('speaker') && hasAudio && (
-              <MenuBoundary name="speaker">
-                <Speaker />
-              </MenuBoundary>
-            )}
-            <Divider type="vertical" />
-
-            {isAdmin && isEnabled('image') && (
-              <MenuBoundary name="image">
-                <Image />
-              </MenuBoundary>
-            )}
-            {isAdmin && isEnabled('download') && (
-              <MenuBoundary name="download">
-                <DownloadImage />
-              </MenuBoundary>
-            )}
-            {isAdmin && isEnabled('terminal') && (
-              <MenuBoundary name="terminal">
-                <Terminal />
-              </MenuBoundary>
-            )}
-            {isAdmin && isEnabled('script') && (
-              <MenuBoundary name="script">
-                <Script />
-              </MenuBoundary>
-            )}
-            {isEnabled('wol') && (
-              <MenuBoundary name="wol">
-                <Wol />
-              </MenuBoundary>
-            )}
-
-            {(isEnabled('wol') ||
-              (isAdmin && ['image', 'download', 'script', 'terminal'].some(isEnabled))) && (
-              <Divider type="vertical" />
-            )}
-
-            {isAdmin && isEnabled('picoclaw') && (
+            {isNarrow ? (
               <>
-                <MenuBoundary name="picoclaw">
-                  <Picoclaw />
-                </MenuBoundary>
+                {keyboard}
+                {mouse}
+                {speaker}
+                {image}
+                {power}
                 <Divider type="vertical" />
+                {settings}
+                {fullscreen}
+                <More>
+                  {screen}
+                  {download}
+                  {terminal}
+                  {script}
+                  {wol}
+                  {picoclaw}
+                  {isEnabled('collapse') && (
+                    <MenuBoundary name="collapse">
+                      <Collapse toggleMenu={() => requestMenuClose((signal) => signal + 1)} />
+                    </MenuBoundary>
+                  )}
+                </More>
               </>
-            )}
-
-            {isEnabled('power') && (
+            ) : (
               <>
-                <MenuBoundary name="power">
-                  <Power />
-                </MenuBoundary>
+                {screen}
+                {keyboard}
+                {mouse}
+                {speaker}
                 <Divider type="vertical" />
-              </>
-            )}
 
-            <MenuBoundary name="settings">
-              <Settings />
-            </MenuBoundary>
-            {isEnabled('fullscreen') && (
-              <MenuBoundary name="fullscreen">
-                <Fullscreen />
-              </MenuBoundary>
-            )}
-            {isEnabled('collapse') && (
-              <MenuBoundary name="collapse">
-                <Collapse toggleMenu={setIsMenuExpanded} />
-              </MenuBoundary>
+                {image}
+                {download}
+                {terminal}
+                {script}
+                {wol}
+
+                {(isEnabled('wol') ||
+                  (isAdmin && ['image', 'download', 'script', 'terminal'].some(isEnabled))) && (
+                  <Divider type="vertical" />
+                )}
+
+                {picoclaw && (
+                  <>
+                    {picoclaw}
+                    <Divider type="vertical" />
+                  </>
+                )}
+
+                {power && (
+                  <>
+                    {power}
+                    <Divider type="vertical" />
+                  </>
+                )}
+
+                {settings}
+                {fullscreen}
+                {isEnabled('collapse') && (
+                  <MenuBoundary name="collapse">
+                    <Collapse toggleMenu={setIsMenuExpanded} />
+                  </MenuBoundary>
+                )}
+              </>
             )}
           </div>
         </div>

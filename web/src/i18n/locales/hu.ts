@@ -1348,7 +1348,8 @@ const hu = {
     speaker: { title: 'Hangszóró', unmute: 'Némítás feloldása', mute: 'Némítás' },
     menu: {
       collapse: 'Menü összecsukása',
-      expand: 'Bontsa ki a menüt'
+      expand: 'Bontsa ki a menüt',
+      more: 'Továbbiak'
     },
     ion: {
       checking: 'Videomemória ellenőrzése az adatfolyam indítása előtt...',

@@ -146,7 +146,7 @@ const EditableServerRow = ({
           shape="circle"
           icon={<XIcon size={14} />}
           onClick={onRemove}
-          className="opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
+          className="transition-opacity pointer-fine:opacity-0 pointer-fine:group-focus-within:opacity-100 pointer-fine:group-hover:opacity-100"
         />
       </div>
     </div>

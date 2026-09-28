@@ -1348,7 +1348,8 @@ const pl = {
     speaker: { title: 'Głośnik', unmute: 'Włącz dźwięk', mute: 'Wycisz' },
     menu: {
       collapse: 'Zwiń menu',
-      expand: 'Rozwiń Menu'
+      expand: 'Rozwiń Menu',
+      more: 'Więcej'
     },
     ion: {
       checking: 'Sprawdzanie pamięci wideo przed uruchomieniem strumienia...',

@@ -1296,7 +1296,8 @@ const zh_tw = {
     speaker: { title: '喇叭', unmute: '取消靜音', mute: '靜音' },
     menu: {
       collapse: '收起選單',
-      expand: '展開選單'
+      expand: '展開選單',
+      more: '更多'
     },
     ion: {
       checking: '正在啟動串流前檢查視訊記憶體...',

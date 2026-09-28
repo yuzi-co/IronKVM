@@ -1329,7 +1329,8 @@ const ko = {
     speaker: { title: '스피커', unmute: '음소거 해제', mute: '음소거' },
     menu: {
       collapse: '메뉴 접기',
-      expand: '메뉴 펼치기'
+      expand: '메뉴 펼치기',
+      more: '더 보기'
     },
     ion: {
       checking: '스트림을 시작하기 전에 비디오 메모리를 확인하는 중...',

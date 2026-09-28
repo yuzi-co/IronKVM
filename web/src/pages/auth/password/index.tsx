@@ -127,7 +127,7 @@ export const Password = () => {
 
         {account.role === 'admin' && (
           <Card>
-            <div className="flex w-[450px] flex-col">
+            <div className="flex w-full max-w-[450px] flex-col">
               <div>{t('auth.tips.change1')}</div>
               <ul className="list-outside list-decimal">
                 <li>{t('auth.tips.change2')}</li>

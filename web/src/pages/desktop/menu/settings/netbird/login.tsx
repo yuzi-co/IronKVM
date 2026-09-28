@@ -113,7 +113,7 @@ export const Login = ({ onSuccess }: LoginProps) => {
             {loginUrl}
           </Button>
 
-          <span className="text-xs text-neutral-600">{t('settings.netbird.urlPeriod')}</span>
+          <span className="text-xs text-neutral-400">{t('settings.netbird.urlPeriod')}</span>
 
           <Button type="primary" size="large" shape="round" onClick={onSuccess}>
             {t('settings.netbird.loginSuccess')}

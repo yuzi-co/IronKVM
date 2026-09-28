@@ -9,7 +9,8 @@ import { Drawer } from 'vaul';
 import 'react-simple-keyboard/build/css/index.css';
 import '@/assets/styles/keyboard.css';
 
-import { ConfigProvider, Segmented, Select, theme } from 'antd';
+import { Segmented, Select } from 'antd';
+import { useTranslation } from 'react-i18next';
 import { useMediaQuery } from 'react-responsive';
 
 import { getKeycode, getModifierBit } from '@/lib/keymap.ts';
@@ -18,8 +19,10 @@ import { client, MessageEvent } from '@/lib/websocket.ts';
 import { isKeyboardOpenAtom } from '@/jotai/keyboard.ts';
 
 import {
+  compactDisplay,
   doubleKeys,
   keyboardArrowsOptions,
+  keyboardCompactPadOptions,
   keyboardControlPadOptions,
   keyboardOptions,
   modifierKeys,
@@ -34,6 +37,20 @@ const languages = [
   { value: 'ko', label: 'Korean' },
   { value: 'ja', label: 'Japanese' }
 ];
+
+// The layout names are shown in the UI language. The browser knows every
+// language's name in every other, so this needs no strings of our own; the
+// English label stays as the fallback for a browser without Intl.DisplayNames.
+function localizedLanguages(uiLanguage: string) {
+  let names: Intl.DisplayNames | undefined;
+  try {
+    names = new Intl.DisplayNames([uiLanguage, 'en'], { type: 'language' });
+  } catch {
+    names = undefined;
+  }
+
+  return languages.map((lng) => ({ ...lng, label: names?.of(lng.value) ?? lng.label }));
+}
 
 const layoutByLanguage = new Map([
   ['en', 'default'],
@@ -54,6 +71,7 @@ function layoutFor(system: string, language: string) {
 }
 
 export const VirtualKeyboard = () => {
+  const { i18n } = useTranslation();
   const isBigScreen = useMediaQuery({ minWidth: 850 });
 
   const [isKeyboardOpen, setIsKeyboardOpen] = useAtom(isKeyboardOpenAtom);
@@ -226,40 +244,34 @@ export const VirtualKeyboard = () => {
       <Drawer.Portal>
         <Drawer.Content
           className={clsx(
-            'fixed bottom-0 left-0 right-0 z-999 mx-auto overflow-hidden rounded bg-white outline-hidden',
-            isBigScreen ? 'w-[820px]' : 'w-[650px]'
+            'fixed right-0 bottom-0 left-0 z-999 mx-auto overflow-hidden rounded bg-neutral-900 outline-hidden',
+            isBigScreen ? 'w-[820px]' : 'w-full max-w-[650px]'
           )}
         >
           {/* header */}
           <div className="flex items-center justify-between px-3 py-1">
-            <ConfigProvider
-              theme={{
-                algorithm: theme.defaultAlgorithm
-              }}
-            >
-              <div className="flex items-center space-x-5">
-                <Select
+            <div className="flex items-center space-x-5">
+              <Select
+                size="small"
+                style={{ minWidth: 90 }}
+                defaultValue={keyboardLanguage}
+                options={localizedLanguages(i18n.language)}
+                onChange={selectLanguage}
+              />
+
+              {keyboardLanguage === 'en' && (
+                <Segmented
                   size="small"
-                  style={{ minWidth: 90 }}
-                  defaultValue={keyboardLanguage}
-                  options={languages}
-                  onChange={selectLanguage}
+                  options={systems}
+                  value={keyboardSystem}
+                  onChange={selectSystem}
                 />
+              )}
+            </div>
 
-                {keyboardLanguage === 'en' && (
-                  <Segmented
-                    size="small"
-                    options={systems}
-                    value={keyboardSystem}
-                    onChange={selectSystem}
-                  />
-                )}
-              </div>
-            </ConfigProvider>
-
-            <div className="flex w-[100px] items-center justify-end">
+            <div className="flex items-center justify-end">
               <div
-                className="flex h-[20px] w-[20px] cursor-pointer items-center justify-center rounded text-neutral-600 hover:bg-neutral-300 hover:text-white"
+                className="flex h-[24px] w-[24px] cursor-pointer items-center justify-center rounded text-neutral-400 hover:bg-neutral-700 hover:text-white"
                 onClick={() => setIsKeyboardOpen(false)}
               >
                 <XIcon size={18} />
@@ -267,9 +279,12 @@ export const VirtualKeyboard = () => {
             </div>
           </div>
 
-          <div className="h-px shrink-0 border-b bg-neutral-300" />
+          <div className="h-px shrink-0 bg-neutral-700" />
 
-          <div data-vaul-no-drag className="keyboardContainer w-full">
+          <div
+            data-vaul-no-drag
+            className={clsx('keyboardContainer w-full', !isBigScreen && 'keyboard-compact')}
+          >
             {/* main keyboard */}
             <Keyboard
               buttonTheme={getButtonTheme()}
@@ -278,10 +293,13 @@ export const VirtualKeyboard = () => {
               onKeyReleased={onKeyReleased}
               layoutName={keyboardLayout}
               {...keyboardOptions}
+              display={
+                isBigScreen ? keyboardOptions.display : { ...keyboardOptions.display, ...compactDisplay }
+              }
             />
 
             {/* control keyboard */}
-            {isBigScreen && (
+            {isBigScreen ? (
               <div className="controlArrows">
                 <Keyboard
                   onKeyPress={onKeyPress}
@@ -295,6 +313,12 @@ export const VirtualKeyboard = () => {
                   {...keyboardArrowsOptions}
                 />
               </div>
+            ) : (
+              <Keyboard
+                onKeyPress={onKeyPress}
+                onKeyReleased={onKeyReleased}
+                {...keyboardCompactPadOptions}
+              />
             )}
           </div>
         </Drawer.Content>

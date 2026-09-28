@@ -1340,7 +1340,8 @@ const id = {
     speaker: { title: 'Speaker', unmute: 'Bunyikan', mute: 'Bisukan' },
     menu: {
       collapse: 'Tutup Menu',
-      expand: 'Perluas Menu'
+      expand: 'Perluas Menu',
+      more: 'Lainnya'
     },
     ion: {
       checking: 'Memeriksa memori video sebelum memulai streaming...',

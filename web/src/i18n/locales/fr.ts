@@ -1356,7 +1356,8 @@ const fr = {
     speaker: { title: 'Haut-parleur', unmute: 'Réactiver le son', mute: 'Couper le son' },
     menu: {
       collapse: 'Réduire le menu',
-      expand: 'Développer le menu'
+      expand: 'Développer le menu',
+      more: 'Plus'
     },
     ion: {
       checking: 'Vérification de la mémoire vidéo avant de lancer le flux...',

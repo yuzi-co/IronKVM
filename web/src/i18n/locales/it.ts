@@ -1352,7 +1352,8 @@ const it = {
     speaker: { title: 'Altoparlante', unmute: 'Riattiva audio', mute: 'Disattiva audio' },
     menu: {
       collapse: 'Comprimi menu',
-      expand: 'Espandi il menu'
+      expand: 'Espandi il menu',
+      more: 'Altro'
     },
     ion: {
       checking: 'Controllo della memoria video prima di avviare lo streaming...',

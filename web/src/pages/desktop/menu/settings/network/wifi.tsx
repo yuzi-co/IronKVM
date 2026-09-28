@@ -170,9 +170,9 @@ export const Wifi = () => {
             </div>
           ) : (
             <div className="flex justify-center">
-              <div className="flex w-[300px] justify-between rounded-lg bg-neutral-800">
+              <div className="flex w-full max-w-[300px] justify-between rounded-lg bg-neutral-800">
                 <div className="flex w-full justify-between p-3">
-                  <span>{connectedWiFi}</span>
+                  <span className="min-w-0 break-all">{connectedWiFi}</span>
                   <Switch
                     value={!!connectedWiFi}
                     loading={status === 'disconnecting'}
@@ -188,14 +188,14 @@ export const Wifi = () => {
         <div className="flex flex-col items-center space-y-3 py-6">
           <Input
             value={ssid}
-            style={{ width: '300px' }}
+            style={{ width: '100%', maxWidth: '300px' }}
             prefix={<WifiOutlined />}
             placeholder={t('settings.network.wifi.ssid')}
             onChange={(e) => setSsid(e.target.value)}
           />
           <Input.Password
             value={password}
-            style={{ width: '300px' }}
+            style={{ width: '100%', maxWidth: '300px' }}
             prefix={<LockOutlined />}
             placeholder={t('settings.network.wifi.password')}
             onChange={(e) => setPassword(e.target.value)}

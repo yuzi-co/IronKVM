@@ -1344,7 +1344,8 @@ const ca = {
     speaker: { title: 'Altaveu', unmute: 'Activa el so', mute: 'Silencia' },
     menu: {
       collapse: 'Amaga menú',
-      expand: 'Mostra menú'
+      expand: 'Mostra menú',
+      more: 'Més'
     },
     ion: {
       checking: "S'està comprovant la memòria de vídeo abans d'iniciar la transmissió...",

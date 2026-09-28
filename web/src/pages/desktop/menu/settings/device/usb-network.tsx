@@ -99,7 +99,7 @@ export const UsbNetwork = ({ devices, onChanged }: Props) => {
 
   return (
     <div className="flex flex-col space-y-3">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-col space-y-1">
           <span>{t('settings.device.network')}</span>
           <span className="text-xs text-neutral-500">
@@ -121,7 +121,7 @@ export const UsbNetwork = ({ devices, onChanged }: Props) => {
           {blocked && <span className="text-xs text-amber-500">{state.refusal}</span>}
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-wrap items-center gap-3">
           <span id="endpoint-cost-network" className="text-xs text-neutral-500">
             {state.mode !== 'off'
               ? t('settings.device.endpoints.cost', { cost })
@@ -130,7 +130,7 @@ export const UsbNetwork = ({ devices, onChanged }: Props) => {
 
           <Tooltip title={blocked ? t('settings.device.endpoints.full') : ''}>
             <Select<UsbNetworkMode>
-              className="w-60"
+              className="w-60 max-w-full"
               value={mode}
               options={options}
               disabled={loading}
@@ -142,7 +142,7 @@ export const UsbNetwork = ({ devices, onChanged }: Props) => {
       </div>
 
       {mode !== 'off' && (
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-col space-y-1">
             <span>{t('settings.device.usbNetwork.subnet')}</span>
             <span className="text-xs text-neutral-500">
@@ -159,7 +159,7 @@ export const UsbNetwork = ({ devices, onChanged }: Props) => {
           </div>
 
           <Input
-            className="w-60"
+            className="w-60 max-w-full"
             value={subnet}
             status={subnetValid ? undefined : 'error'}
             disabled={loading}
