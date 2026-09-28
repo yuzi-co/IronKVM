@@ -1298,7 +1298,8 @@ const zh = {
     speaker: { title: '扬声器', unmute: '取消静音', mute: '静音' },
     menu: {
       collapse: '收起',
-      expand: '展开'
+      expand: '展开',
+      more: '更多'
     },
     ion: {
       checking: '正在启动视频流前检查视频内存...',

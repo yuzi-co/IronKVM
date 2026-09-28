@@ -1350,7 +1350,8 @@ const nl = {
     speaker: { title: 'Luidspreker', unmute: 'Geluid aan', mute: 'Dempen' },
     menu: {
       collapse: 'Menu samenvouwen',
-      expand: 'Menu uitvouwen'
+      expand: 'Menu uitvouwen',
+      more: 'Meer'
     },
     ion: {
       checking: 'Videogeheugen controleren voordat de stream start...',

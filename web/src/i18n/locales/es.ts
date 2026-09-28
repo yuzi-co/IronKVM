@@ -1353,7 +1353,8 @@ const es = {
     speaker: { title: 'Altavoz', unmute: 'Activar sonido', mute: 'Silenciar' },
     menu: {
       collapse: 'Colapsar menú',
-      expand: 'Expandir menú'
+      expand: 'Expandir menú',
+      more: 'Más'
     },
     ion: {
       checking: 'Comprobando la memoria de vídeo antes de iniciar la transmisión...',

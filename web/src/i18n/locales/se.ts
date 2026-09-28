@@ -1335,7 +1335,8 @@ const se = {
     speaker: { title: 'Högtalare', unmute: 'Slå på ljud', mute: 'Stäng av ljud' },
     menu: {
       collapse: 'Fäll ihop menyn',
-      expand: 'Expandera menyn'
+      expand: 'Expandera menyn',
+      more: 'Mer'
     },
     ion: {
       checking: 'Kontrollerar videominnet innan strömmen startar...',

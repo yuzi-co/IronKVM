@@ -1338,7 +1338,8 @@ const da = {
     speaker: { title: 'Højttaler', unmute: 'Slå lyd til', mute: 'Slå lyd fra' },
     menu: {
       collapse: 'Skjul menu',
-      expand: 'Udvid menu'
+      expand: 'Udvid menu',
+      more: 'Mere'
     },
     ion: {
       checking: 'Kontrollerer videohukommelsen, før streamen startes...',

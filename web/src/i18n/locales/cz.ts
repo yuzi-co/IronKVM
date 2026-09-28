@@ -1337,7 +1337,8 @@ const cz = {
     speaker: { title: 'Reproduktor', unmute: 'Zapnout zvuk', mute: 'Ztlumit' },
     menu: {
       collapse: 'Sbalit nabídku',
-      expand: 'Rozbalte nabídku'
+      expand: 'Rozbalte nabídku',
+      more: 'Více'
     },
     ion: {
       checking: 'Kontrola videopaměti před spuštěním streamu...',

@@ -1337,7 +1337,8 @@ const vi = {
     speaker: { title: 'Loa', unmute: 'Bật tiếng', mute: 'Tắt tiếng' },
     menu: {
       collapse: 'Thu gọn Menu',
-      expand: 'Mở rộng Menu'
+      expand: 'Mở rộng Menu',
+      more: 'Thêm'
     },
     ion: {
       checking: 'Đang kiểm tra bộ nhớ video trước khi bắt đầu luồng...',

@@ -1334,7 +1334,8 @@ const en = {
     },
     menu: {
       collapse: 'Collapse Menu',
-      expand: 'Expand Menu'
+      expand: 'Expand Menu',
+      more: 'More'
     },
     ion: {
       checking: 'Checking video memory before starting the stream...',

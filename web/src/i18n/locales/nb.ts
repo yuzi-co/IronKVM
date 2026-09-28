@@ -1336,7 +1336,8 @@ const nb = {
     speaker: { title: 'Høyttaler', unmute: 'Slå på lyd', mute: 'Demp' },
     menu: {
       collapse: 'Skjul meny',
-      expand: 'Utvid menyen'
+      expand: 'Utvid menyen',
+      more: 'Mer'
     },
     ion: {
       checking: 'Sjekker videominnet før strømmen starter...',

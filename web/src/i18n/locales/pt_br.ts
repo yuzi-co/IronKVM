@@ -1343,7 +1343,8 @@ const pt_br = {
     speaker: { title: 'Alto-falante', unmute: 'Ativar som', mute: 'Silenciar' },
     menu: {
       collapse: 'Recolher Menu',
-      expand: 'Expandir Menu'
+      expand: 'Expandir Menu',
+      more: 'Mais'
     },
     ion: {
       checking: 'Verificando a memória de vídeo antes de iniciar a transmissão...',

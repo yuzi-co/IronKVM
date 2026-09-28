@@ -36,10 +36,17 @@ export const Fullscreen = () => {
     }
   }
 
+  // Phones used to lose the button to a width breakpoint, though Android
+  // browsers go fullscreen fine. What decides it is whether the browser can:
+  // Safari on iPhone has no Fullscreen API for a page at all.
+  if (!document.fullscreenEnabled) {
+    return null;
+  }
+
   return (
     <Tooltip title={t('fullscreen.toggle')} placement="bottom" mouseEnterDelay={0.6}>
       <div
-        className="hidden h-[30px] w-[30px] cursor-pointer items-center justify-center rounded text-neutral-300 hover:bg-neutral-700/80 hover:text-white sm:flex"
+        className="flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded text-neutral-300 hover:bg-neutral-700/80 hover:text-white"
         onClick={handleFullscreen}
       >
         {isFullscreen ? <MinimizeIcon size={18} /> : <MaximizeIcon size={18} />}
