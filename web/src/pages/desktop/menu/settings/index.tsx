@@ -7,6 +7,7 @@ import {
   BadgeInfoIcon,
   BotIcon,
   CircleArrowUpIcon,
+  KeyRoundIcon,
   NetworkIcon,
   PaletteIcon,
   SettingsIcon,
@@ -26,6 +27,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 import { About } from './about';
 import { Account } from './account';
+import { APIKeys } from './api-keys';
 import { Appearance } from './appearance';
 import { Device } from './device';
 import { MCP } from './mcp';
@@ -73,6 +75,7 @@ export const Settings = () => {
           }
         ]
       : []),
+    { id: 'apiKeys', icon: <KeyRoundIcon size={16} />, component: <APIKeys /> },
     { id: 'account', icon: <UserRoundIcon size={18} />, component: <Account /> }
   ];
 

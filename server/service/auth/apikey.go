@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 
+	"NanoKVM-Server/authn"
 	"NanoKVM-Server/middleware"
 	"NanoKVM-Server/proto"
 	"NanoKVM-Server/service/apikey"
@@ -58,7 +59,16 @@ func (s *Service) GetAPIKeys(c *gin.Context) {
 		return
 	}
 
-	keys, err := apikey.List(principal.Username)
+	// An administrator sees every account's keys, with the owner of each, so a
+	// key can be found and revoked whoever issued it. Anyone else sees only
+	// their own.
+	var keys []apikey.Key
+	var err error
+	if principal.Role == authn.RoleAdmin {
+		keys, err = apikey.ListAll()
+	} else {
+		keys, err = apikey.List(principal.Username)
+	}
 	if err != nil {
 		rsp.ErrRsp(c, -2, "failed to read api keys")
 		return
@@ -70,6 +80,7 @@ func (s *Service) GetAPIKeys(c *gin.Context) {
 			ID:        key.ID,
 			Name:      key.Name,
 			CreatedAt: key.CreatedAt,
+			Username:  key.Username,
 		})
 	}
 
@@ -91,7 +102,13 @@ func (s *Service) DeleteAPIKey(c *gin.Context) {
 		return
 	}
 
-	if err := apikey.Revoke(id, principal.Username); err != nil {
+	var err error
+	if principal.Role == authn.RoleAdmin {
+		err = apikey.RevokeAny(id)
+	} else {
+		err = apikey.Revoke(id, principal.Username)
+	}
+	if err != nil {
 		if errors.Is(err, apikey.ErrNotFound) {
 			rsp.ErrRsp(c, -1, "api key not found")
 			return
@@ -102,5 +119,5 @@ func (s *Service) DeleteAPIKey(c *gin.Context) {
 	}
 
 	rsp.OkRsp(c)
-	log.Debugf("revoked api key %s", id)
+	log.Debugf("%s revoked api key %s", principal.Username, id)
 }
