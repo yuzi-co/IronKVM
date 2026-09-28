@@ -1,5 +1,21 @@
 const se = {
   translation: {
+    feedback: {
+      enabled: '{{name}} aktiverat',
+      disabled: '{{name}} inaktiverat',
+      failed: 'Begäran misslyckades. Försök igen.',
+      network: 'Kunde inte nå enheten. Kontrollera anslutningen och försök igen.',
+      saved: 'Sparat',
+      timeout: 'Enheten tog för lång tid att svara. Försök igen.'
+    },
+    common: {
+      copy: 'Kopiera',
+      copied: 'Kopierat',
+      copyFailed: 'Kunde inte kopiera. Markera texten och kopiera den manuellt.',
+      notUpdating: 'Uppdateras inte: den senaste uppdateringen misslyckades.',
+      off: 'Av',
+      running: 'Körs'
+    },
     head: {
       desktop: 'Fjärrskrivbord',
       login: 'Logga in',
@@ -8,6 +24,7 @@ const se = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      passwordChanged: 'Lösenordet har ändrats. Logga in med det nya lösenordet.',
       cookieRejected:
         'Webbläsaren vägrade spara sessionen. En cookie från en tidigare HTTPS-session kan inte ersättas över vanlig http. Rensa cookies för den här adressen, eller öppna ett privat fönster, och logga in igen.',
       login: 'Logga in',
@@ -490,6 +507,8 @@ const se = {
         vpnProvider: 'VPN-leverantör'
       },
       mcp: {
+        keyNote:
+          'MCP använder en egen API-nyckel, som visas nedan. Nycklar från sidan API-nycklar fungerar inte här.',
         title: 'MCP-tjänst',
         service: 'MCP-fjärrstyrning',
         serviceDesc:
@@ -509,6 +528,7 @@ const se = {
         cancelBtn: 'Avbryt'
       },
       redfish: {
+        example: 'Exempel',
         title: 'Redfish',
         service: 'Redfish-tjänst',
         serviceDesc:
@@ -536,6 +556,9 @@ const se = {
         cancelBtn: 'Avbryt'
       },
       ipmi: {
+        copyBeforeSave: 'Kopiera lösenordet nu. När det är sparat kan det inte visas igen.',
+        noLogin:
+          'IPMI är på, men inget aktivt konto har ett IPMI-lösenord, så ingen kan logga in. Ange ett nedan.',
         title: 'IPMI',
         warning:
           'IPMI-autentisering är svag till sin konstruktion. Den som når kortet och känner till ett användarnamn kan hämta en hash av användarens IPMI-lösenord och försöka knäcka den offline. Använd genererade lösenord, slå bara på IPMI i ett betrott nätverk och välj hellre Redfish över HTTPS där verktyget stöder det.',
@@ -575,6 +598,10 @@ const se = {
         cancelBtn: 'Avbryt'
       },
       vnc: {
+        address: 'Adress',
+        certHint:
+          'VeNCrypt X509Plain använder enhetens självsignerade certifikat, så klienten varnar vid första anslutningen. Godkänn det, eller spara certifikatet från den här sidans HTTPS-adress och ge det till TigerVNC med -X509CA=<fil>.',
+        example: 'Exempel',
         title: 'VNC',
         service: 'VNC-server',
         serviceDesc:
@@ -878,6 +905,8 @@ const se = {
         network: 'Virtuellt nätverk',
         networkDesc: 'Montera virtuell nätverkskort på fjärrvärden',
         usbNetwork: {
+          boardAddress: 'NanoKVM:',
+          hostAddress: 'Värd:',
           description:
             'En privat nätverkslänk till fjärrvärden via USB-kabeln. Värden får en adress utan gateway och utan DNS, så den kan inte nå ditt lokala nätverk genom NanoKVM.',
           off: 'Av',
@@ -888,7 +917,6 @@ const se = {
           subnet: 'Delnät',
           subnetDesc:
             'Ett privat IPv4-nätverk, /24 till /30. NanoKVM tar den första adressen, värden den andra.',
-          addresses: 'NanoKVM: {{board}}, värd: {{host}}',
           invalidSubnet: 'Ange ett delnät, till exempel 172.31.255.0/30.',
           apply: 'Verkställ',
           confirm: 'Återansluta USB-enheten?',
@@ -926,6 +954,10 @@ const se = {
       network: {
         title: 'Nätverk',
         wifi: {
+          disconnectBtn: 'Koppla från',
+          disconnectWarning:
+            'Om du når NanoKVM via det här Wi-Fi-nätverket tappar sidan anslutningen.',
+          disconnected: 'Wi-Fi frånkopplat',
           title: 'Wi-Fi',
           description: 'Konfigurera Wi-Fi',
           apMode: 'AP-läge är aktiverat, anslut till Wi-Fi genom att skanna QR-koden',
@@ -1014,6 +1046,13 @@ const se = {
         }
       },
       vpn: {
+        connect: 'Anslut',
+        connectDesc: 'Gå med i {{name}}-nätverket. Av kopplar från utan att stoppa tjänsten.',
+        kvmUrl: 'KVM-adress',
+        moreTip: 'Fler åtgärder',
+        restartTip: 'Starta om',
+        stopTip: 'Stoppa',
+        updateTip: 'Uppdatera till {{version}}',
         loading: 'Laddar...',
         okBtn: 'Ja',
         cancelBtn: 'Nej',
@@ -1032,7 +1071,6 @@ const se = {
         run: 'Starta',
         boot: 'Starta vid uppstart',
         bootDesc: 'Starta {{name}} när KVM:en startar.',
-        enable: 'Aktivera {{name}}',
         control: 'Kontrollserver',
         connected: 'Ansluten',
         disconnected: 'Inte ansluten',
@@ -1132,6 +1170,9 @@ const se = {
             'Förhandsuppdateringar är inte tillgängliga när en anpassad uppdateringsserver är aktiverad.'
         },
         offline: {
+          chooseFile: 'Välj fil',
+          installing: 'Uppladdningen är klar. Installerar...',
+          noFile: 'Ingen fil vald',
           title: 'Offlineuppdateringar',
           desc: 'Uppdatera genom lokalt installationspaket',
           upload: 'Ladda upp',
@@ -1174,6 +1215,12 @@ const se = {
         }
       },
       apiKeys: {
+        mcpNote: 'Dessa nycklar fungerar inte för MCP, som har en egen nyckel på MCP-sidan.',
+        metricsUrl: 'Mätvärdes-URL',
+        monitoring: 'Övervakning',
+        monitoringDesc:
+          'Prometheus läser mätvärdena med en API-nyckel från den här sidan, skickad som Bearer-token. Alla roller kan läsa dem.',
+        scrapeConfig: 'Prometheus scrape-konfiguration',
         title: 'API-nycklar',
         description:
           'En nyckel agerar som sin ägare, med den användarens roll. Skicka den som Authorization: Bearer <key> för mätvärden och API:t, eller som X-Auth-Token för Redfish.',

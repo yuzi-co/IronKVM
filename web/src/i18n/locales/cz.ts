@@ -1,5 +1,21 @@
 const cz = {
   translation: {
+    feedback: {
+      enabled: '{{name}} zapnuto',
+      disabled: '{{name}} vypnuto',
+      failed: 'Požadavek selhal. Zkuste to znovu.',
+      network: 'Zařízení není dostupné. Zkontrolujte připojení a zkuste to znovu.',
+      saved: 'Uloženo',
+      timeout: 'Zařízení odpovídalo příliš dlouho. Zkuste to znovu.'
+    },
+    common: {
+      copy: 'Kopírovat',
+      copied: 'Zkopírováno',
+      copyFailed: 'Kopírování se nezdařilo. Označte text a zkopírujte jej ručně.',
+      notUpdating: 'Neaktualizuje se: poslední obnovení selhalo.',
+      off: 'Vypnuto',
+      running: 'Běží'
+    },
     head: {
       desktop: 'Vzdálená plocha',
       login: 'Přihlášení',
@@ -8,6 +24,7 @@ const cz = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      passwordChanged: 'Heslo změněno. Přihlaste se novým heslem.',
       cookieRejected:
         'Prohlížeč odmítl uložit relaci. Cookie, které zůstalo z předchozí relace přes HTTPS, nelze přes nešifrované http nahradit. Vymažte cookies pro tuto adresu nebo otevřete anonymní okno a přihlaste se znovu.',
       login: 'Přihlášení',
@@ -491,6 +508,8 @@ const cz = {
         vpnProvider: 'Poskytovatel VPN'
       },
       mcp: {
+        keyNote:
+          'MCP používá vlastní API klíč, zobrazený níže. Klíče ze stránky API klíče zde nefungují.',
         title: 'Služba MCP',
         service: 'Vzdálené ovládání MCP',
         serviceDesc:
@@ -510,6 +529,7 @@ const cz = {
         cancelBtn: 'Zrušit'
       },
       redfish: {
+        example: 'Příklad',
         title: 'Redfish',
         service: 'Služba Redfish',
         serviceDesc:
@@ -538,6 +558,9 @@ const cz = {
         cancelBtn: 'Zrušit'
       },
       ipmi: {
+        copyBeforeSave: 'Zkopírujte heslo hned. Po uložení už jej nelze zobrazit.',
+        noLogin:
+          'IPMI je zapnuté, ale žádný aktivní účet nemá heslo IPMI, takže se nikdo nepřihlásí. Nastavte ho níže.',
         title: 'IPMI',
         warning:
           'Ověřování IPMI je ze své podstaty slabé. Kdokoli, kdo se k desce dostane a zná uživatelské jméno, může získat hash IPMI hesla tohoto uživatele a pokusit se ho prolomit offline. Používejte generovaná hesla, zapínejte IPMI jen v důvěryhodné síti a kde to nástroj umí, dejte přednost Redfish přes HTTPS.',
@@ -576,6 +599,10 @@ const cz = {
         cancelBtn: 'Zrušit'
       },
       vnc: {
+        address: 'Adresa',
+        certHint:
+          'VeNCrypt X509Plain používá certifikát zařízení podepsaný sám sebou, takže klient při prvním připojení varuje. Přijměte ho, nebo certifikát uložte z HTTPS adresy této stránky a předejte ho TigerVNC pomocí -X509CA=<soubor>.',
+        example: 'Příklad',
         title: 'VNC',
         service: 'Server VNC',
         serviceDesc:
@@ -876,6 +903,8 @@ const cz = {
         network: 'Virtuální síť',
         networkDesc: 'Připojit virtuální síťovou kartu na vzdáleném hostiteli',
         usbNetwork: {
+          boardAddress: 'NanoKVM:',
+          hostAddress: 'Hostitel:',
           description:
             'Soukromé síťové spojení se vzdáleným hostitelem přes kabel USB. Hostitel dostane adresu bez brány a bez DNS, takže se přes NanoKVM nedostane do vaší LAN.',
           off: 'Vypnuto',
@@ -886,7 +915,6 @@ const cz = {
           subnet: 'Podsíť',
           subnetDesc:
             'Soukromá síť IPv4, /24 až /30. NanoKVM použije první adresu, hostitel druhou.',
-          addresses: 'NanoKVM: {{board}}, hostitel: {{host}}',
           invalidSubnet: 'Zadejte podsíť, například 172.31.255.0/30.',
           apply: 'Použít',
           confirm: 'Znovu připojit zařízení USB?',
@@ -924,6 +952,10 @@ const cz = {
       network: {
         title: 'Síť',
         wifi: {
+          disconnectBtn: 'Odpojit',
+          disconnectWarning:
+            'Pokud k NanoKVM přistupujete přes tuto Wi-Fi síť, tato stránka ztratí spojení.',
+          disconnected: 'Wi-Fi odpojena',
           title: 'Wi-Fi',
           description: 'Nastavit Wi-Fi',
           apMode: 'Režim AP je povolen, připojte se k Wi-Fi naskenováním QR kódu',
@@ -1013,6 +1045,13 @@ const cz = {
         }
       },
       vpn: {
+        connect: 'Připojit',
+        connectDesc: 'Připojit se k síti {{name}}. Vypnuto odpojí bez zastavení služby.',
+        kvmUrl: 'Adresa KVM',
+        moreTip: 'Další akce',
+        restartTip: 'Restartovat',
+        stopTip: 'Zastavit',
+        updateTip: 'Aktualizovat na {{version}}',
         loading: 'Načítání...',
         okBtn: 'Ano',
         cancelBtn: 'Ne',
@@ -1031,7 +1070,6 @@ const cz = {
         run: 'Spustit',
         boot: 'Spouštět při startu',
         bootDesc: 'Spustit {{name}} při startu KVM.',
-        enable: 'Povolit {{name}}',
         control: 'Řídicí server',
         connected: 'Připojeno',
         disconnected: 'Nepřipojeno',
@@ -1130,6 +1168,9 @@ const cz = {
             'Testovací aktualizace nejsou při použití vlastního aktualizačního serveru dostupné.'
         },
         offline: {
+          chooseFile: 'Vybrat soubor',
+          installing: 'Nahráno. Instaluje se...',
+          noFile: 'Není vybrán žádný soubor',
           title: 'Offline aktualizace',
           desc: 'Aktualizace prostřednictvím místního instalačního balíčku',
           upload: 'Nahrát',
@@ -1172,6 +1213,12 @@ const cz = {
         }
       },
       apiKeys: {
+        mcpNote: 'Tyto klíče nefungují pro MCP, který má vlastní klíč na stránce MCP.',
+        metricsUrl: 'URL metrik',
+        monitoring: 'Monitorování',
+        monitoringDesc:
+          'Prometheus čte metriky pomocí API klíče z této stránky, odeslaného jako Bearer token. Číst je může jakákoli role.',
+        scrapeConfig: 'Konfigurace scrape pro Prometheus',
         title: 'Klíče API',
         description:
           'Klíč jedná jménem svého vlastníka s rolí tohoto uživatele. Posílejte ho jako Authorization: Bearer <key> pro metriky a API, nebo jako X-Auth-Token pro Redfish.',

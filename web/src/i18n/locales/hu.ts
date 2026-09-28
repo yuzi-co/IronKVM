@@ -1,5 +1,21 @@
 const hu = {
   translation: {
+    feedback: {
+      enabled: '{{name}} bekapcsolva',
+      disabled: '{{name}} kikapcsolva',
+      failed: 'A kérés sikertelen. Próbálja újra.',
+      network: 'Az eszköz nem érhető el. Ellenőrizze a kapcsolatot, és próbálja újra.',
+      saved: 'Mentve',
+      timeout: 'Az eszköz túl sokáig nem válaszolt. Próbálja újra.'
+    },
+    common: {
+      copy: 'Másolás',
+      copied: 'Másolva',
+      copyFailed: 'A másolás nem sikerült. Jelölje ki a szöveget, és másolja kézzel.',
+      notUpdating: 'Nem frissül: az utolsó lekérdezés sikertelen volt.',
+      off: 'Ki',
+      running: 'Fut'
+    },
     head: {
       desktop: 'Távoli Asztal',
       login: 'Bejelentkezés',
@@ -8,6 +24,7 @@ const hu = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      passwordChanged: 'A jelszó megváltozott. Jelentkezzen be az új jelszóval.',
       cookieRejected:
         'A böngésző nem tárolta el a munkamenetet. Egy korábbi HTTPS-munkamenetből visszamaradt cookie titkosítatlan http-kapcsolaton nem cserélhető le. Törölje a cookie-kat ehhez a címhez, vagy nyisson privát ablakot, és jelentkezzen be újra.',
       login: 'Bejelentkezés',
@@ -496,6 +513,8 @@ const hu = {
         vpnProvider: 'VPN-szolgáltató'
       },
       mcp: {
+        keyNote:
+          'Az MCP saját API-kulcsot használ, lent látható. Az API-kulcsok oldal kulcsai itt nem működnek.',
         title: 'MCP-szolgáltatás',
         service: 'MCP távoli vezérlés',
         serviceDesc:
@@ -515,6 +534,7 @@ const hu = {
         cancelBtn: 'Mégse'
       },
       redfish: {
+        example: 'Példa',
         title: 'Redfish',
         service: 'Redfish szolgáltatás',
         serviceDesc:
@@ -542,6 +562,9 @@ const hu = {
         cancelBtn: 'Mégse'
       },
       ipmi: {
+        copyBeforeSave: 'Másolja ki a jelszót most. Mentés után már nem jeleníthető meg.',
+        noLogin:
+          'Az IPMI be van kapcsolva, de egyetlen aktív fióknak sincs IPMI-jelszava, így senki sem tud bejelentkezni. Állítson be egyet lent.',
         title: 'IPMI',
         warning:
           'Az IPMI-hitelesítés a felépítéséből adódóan gyenge. Aki eléri a kártyát és ismer egy felhasználónevet, megszerezheti a felhasználó IPMI-jelszavának hash-ét, és offline megpróbálhatja feltörni. Használjon generált jelszavakat, csak megbízható hálózaton kapcsolja be az IPMI-t, és ahol az eszköz támogatja, inkább a HTTPS feletti Redfisht használja.',
@@ -581,6 +604,10 @@ const hu = {
         cancelBtn: 'Mégse'
       },
       vnc: {
+        address: 'Cím',
+        certHint:
+          'A VeNCrypt X509Plain az eszköz önaláírt tanúsítványát használja, ezért a kliens az első csatlakozáskor figyelmeztet. Fogadja el, vagy mentse a tanúsítványt az oldal HTTPS-címéről, és adja át a TigerVNC-nek a -X509CA=<fájl> kapcsolóval.',
+        example: 'Példa',
         title: 'VNC',
         service: 'VNC-kiszolgáló',
         serviceDesc:
@@ -888,6 +915,8 @@ const hu = {
         network: 'Virtuális hálózat',
         networkDesc: 'Virtuális hálózati kártya csatlakoztatása a távoli gazdagépen',
         usbNetwork: {
+          boardAddress: 'NanoKVM:',
+          hostAddress: 'Gazdagép:',
           description:
             'Privát hálózati kapcsolat a távoli gazdagéppel az USB-kábelen keresztül. A gazdagép átjáró és DNS nélküli címet kap, így a NanoKVM-en keresztül nem éri el a helyi hálózatot.',
           off: 'Ki',
@@ -899,7 +928,6 @@ const hu = {
           subnet: 'Alhálózat',
           subnetDesc:
             'Privát IPv4-hálózat, /24 és /30 között. A NanoKVM az első címet kapja, a gazdagép a másodikat.',
-          addresses: 'NanoKVM: {{board}}, gazdagép: {{host}}',
           invalidSubnet: 'Adjon meg egy alhálózatot, például 172.31.255.0/30.',
           apply: 'Alkalmaz',
           confirm: 'Újracsatlakoztatja az USB-eszközt?',
@@ -937,6 +965,10 @@ const hu = {
       network: {
         title: 'Hálózat',
         wifi: {
+          disconnectBtn: 'Leválasztás',
+          disconnectWarning:
+            'Ha ezen a Wi-Fi hálózaton éri el a NanoKVM-et, ez az oldal elveszíti a kapcsolatot.',
+          disconnected: 'Wi-Fi leválasztva',
           title: 'Wi-Fi',
           description: 'Wi-Fi beállítása',
           apMode: 'Az AP mód engedélyezve van, csatlakozzon a Wi-Fihez a QR-kód beolvasásával',
@@ -1025,6 +1057,14 @@ const hu = {
         }
       },
       vpn: {
+        connect: 'Csatlakozás',
+        connectDesc:
+          'Csatlakozás a(z) {{name}} hálózathoz. Kikapcsolva a szolgáltatás leállítása nélkül bontja a kapcsolatot.',
+        kvmUrl: 'KVM címe',
+        moreTip: 'További műveletek',
+        restartTip: 'Újraindítás',
+        stopTip: 'Leállítás',
+        updateTip: 'Frissítés erre: {{version}}',
         loading: 'Betöltés...',
         okBtn: 'Igen',
         cancelBtn: 'Nem',
@@ -1043,7 +1083,6 @@ const hu = {
         run: 'Indítás',
         boot: 'Indítás rendszerindításkor',
         bootDesc: '{{name}} indítása a KVM indulásakor.',
-        enable: '{{name}} engedélyezése',
         control: 'Vezérlőszerver',
         connected: 'Csatlakozva',
         disconnected: 'Nincs csatlakozva',
@@ -1144,6 +1183,9 @@ const hu = {
             'Az előzetes frissítések nem érhetők el, amíg egyéni frissítési kiszolgáló van engedélyezve.'
         },
         offline: {
+          chooseFile: 'Fájl kiválasztása',
+          installing: 'Feltöltés kész. Telepítés...',
+          noFile: 'Nincs kiválasztott fájl',
           title: 'Offline frissítések',
           desc: 'Frissítés helyi telepítőcsomaggal',
           upload: 'Feltöltés',
@@ -1186,6 +1228,13 @@ const hu = {
         }
       },
       apiKeys: {
+        mcpNote:
+          'Ezek a kulcsok nem működnek az MCP-hez, amelynek saját kulcsa van az MCP oldalon.',
+        metricsUrl: 'Metrikák URL-je',
+        monitoring: 'Megfigyelés',
+        monitoringDesc:
+          'A Prometheus az ezen az oldalon létrehozott API-kulccsal olvassa a metrikákat, Bearer tokenként küldve. Bármely szerepkör olvashatja őket.',
+        scrapeConfig: 'Prometheus scrape konfiguráció',
         title: 'API-kulcsok',
         description:
           'A kulcs a tulajdonosa nevében, annak szerepkörével működik. Küldje Authorization: Bearer <key> fejlécként a metrikákhoz és az API-hoz, vagy X-Auth-Token fejlécként a Redfish-hez.',

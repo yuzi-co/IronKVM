@@ -1,5 +1,22 @@
 const de = {
   translation: {
+    feedback: {
+      enabled: '{{name}} aktiviert',
+      disabled: '{{name}} deaktiviert',
+      failed: 'Die Anfrage ist fehlgeschlagen. Bitte erneut versuchen.',
+      network:
+        'Das Gerät ist nicht erreichbar. Prüfen Sie die Verbindung und versuchen Sie es erneut.',
+      saved: 'Gespeichert',
+      timeout: 'Das Gerät hat zu lange nicht geantwortet. Bitte erneut versuchen.'
+    },
+    common: {
+      copy: 'Kopieren',
+      copied: 'Kopiert',
+      copyFailed: 'Kopieren fehlgeschlagen. Markieren Sie den Text und kopieren Sie ihn manuell.',
+      notUpdating: 'Keine Aktualisierung: Die letzte Abfrage ist fehlgeschlagen.',
+      off: 'Aus',
+      running: 'Läuft'
+    },
     head: {
       desktop: 'Entfernter Desktop',
       login: 'Anmelden',
@@ -8,6 +25,7 @@ const de = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      passwordChanged: 'Passwort geändert. Melden Sie sich mit dem neuen Passwort an.',
       cookieRejected:
         'Der Browser hat das Speichern der Sitzung verweigert. Ein Cookie aus einer früheren HTTPS-Sitzung kann über unverschlüsseltes http nicht ersetzt werden. Löschen Sie die Cookies für diese Adresse oder öffnen Sie ein privates Fenster und melden Sie sich erneut an.',
       login: 'Anmelden',
@@ -503,6 +521,8 @@ const de = {
         vpnProvider: 'VPN-Anbieter'
       },
       mcp: {
+        keyNote:
+          'MCP verwendet einen eigenen API-Schlüssel, siehe unten. Schlüssel von der Seite API-Schlüssel funktionieren hier nicht.',
         title: 'MCP-Dienst',
         service: 'MCP-Fernsteuerung',
         serviceDesc:
@@ -522,6 +542,7 @@ const de = {
         cancelBtn: 'Abbrechen'
       },
       redfish: {
+        example: 'Beispiel',
         title: 'Redfish',
         service: 'Redfish-Dienst',
         serviceDesc:
@@ -550,6 +571,10 @@ const de = {
         cancelBtn: 'Abbrechen'
       },
       ipmi: {
+        copyBeforeSave:
+          'Kopieren Sie das Passwort jetzt. Nach dem Speichern kann es nicht mehr angezeigt werden.',
+        noLogin:
+          'IPMI ist an, aber kein aktives Konto hat ein IPMI-Passwort, daher kann sich niemand anmelden. Legen Sie unten eines fest.',
         title: 'IPMI',
         warning:
           'Die IPMI-Authentifizierung ist konstruktionsbedingt schwach. Wer das Board erreicht und einen Benutzernamen kennt, kann einen Hash des IPMI-Passworts dieses Benutzers abrufen und offline zu knacken versuchen. Verwenden Sie generierte Passwörter, schalten Sie IPMI nur in einem vertrauenswürdigen Netz ein und nutzen Sie lieber Redfish über HTTPS, wo ein Werkzeug es unterstützt.',
@@ -589,6 +614,10 @@ const de = {
         cancelBtn: 'Abbrechen'
       },
       vnc: {
+        address: 'Adresse',
+        certHint:
+          'VeNCrypt X509Plain verwendet das selbstsignierte Zertifikat des Geräts, daher warnt der Client beim ersten Verbinden. Akzeptieren Sie es, oder speichern Sie das Zertifikat über die HTTPS-Adresse dieser Seite und übergeben Sie es TigerVNC mit -X509CA=<Datei>.',
+        example: 'Beispiel',
         title: 'VNC',
         service: 'VNC-Server',
         serviceDesc:
@@ -895,6 +924,8 @@ const de = {
         network: 'Virtuelles Netzwerk',
         networkDesc: 'Binde die virtuelle Netzwerkkarte an den entfernten Host',
         usbNetwork: {
+          boardAddress: 'NanoKVM:',
+          hostAddress: 'Host:',
           description:
             'Eine private Netzwerkverbindung zum entfernten Host über das USB-Kabel. Der Host erhält eine Adresse ohne Gateway und ohne DNS und erreicht Ihr LAN daher nicht über NanoKVM.',
           off: 'Aus',
@@ -906,7 +937,6 @@ const de = {
           subnet: 'Subnetz',
           subnetDesc:
             'Ein privates IPv4-Netz, /24 bis /30. NanoKVM erhält die erste Adresse, der Host die zweite.',
-          addresses: 'NanoKVM: {{board}}, Host: {{host}}',
           invalidSubnet: 'Geben Sie ein Subnetz wie 172.31.255.0/30 ein.',
           apply: 'Übernehmen',
           confirm: 'USB-Gerät neu verbinden?',
@@ -944,6 +974,10 @@ const de = {
       network: {
         title: 'Netzwerk',
         wifi: {
+          disconnectBtn: 'Trennen',
+          disconnectWarning:
+            'Wenn Sie NanoKVM über dieses WLAN erreichen, verliert diese Seite ihre Verbindung.',
+          disconnected: 'WLAN getrennt',
           title: 'Wi-Fi',
           description: 'Wi-Fi konfigurieren',
           apMode: 'AP-Modus ist aktiviert, verbinden Sie sich per QR-Code mit dem Wi-Fi',
@@ -1035,6 +1069,14 @@ const de = {
         }
       },
       vpn: {
+        connect: 'Verbinden',
+        connectDesc:
+          'Mit dem {{name}}-Netzwerk verbinden. Aus trennt die Verbindung, ohne den Dienst zu beenden.',
+        kvmUrl: 'KVM-Adresse',
+        moreTip: 'Weitere Aktionen',
+        restartTip: 'Neu starten',
+        stopTip: 'Stoppen',
+        updateTip: 'Auf {{version}} aktualisieren',
         loading: 'Lädt...',
         okBtn: 'Ja',
         cancelBtn: 'Nein',
@@ -1053,7 +1095,6 @@ const de = {
         run: 'Starten',
         boot: 'Beim Systemstart starten',
         bootDesc: '{{name}} beim Hochfahren des KVM starten.',
-        enable: '{{name}} aktivieren',
         control: 'Steuerungsserver',
         connected: 'Verbunden',
         disconnected: 'Nicht verbunden',
@@ -1155,6 +1196,9 @@ const de = {
             'Vorschau-Updates sind nicht verfügbar, solange ein benutzerdefinierter Update-Server aktiviert ist.'
         },
         offline: {
+          chooseFile: 'Datei wählen',
+          installing: 'Hochgeladen. Wird installiert...',
+          noFile: 'Keine Datei gewählt',
           title: 'Offline Aktualisierung',
           desc: 'Über lokales Installationspaket aktualisieren',
           upload: 'Hochladen',
@@ -1199,6 +1243,13 @@ const de = {
         }
       },
       apiKeys: {
+        mcpNote:
+          'Diese Schlüssel funktionieren nicht für MCP. MCP hat einen eigenen Schlüssel auf der MCP-Seite.',
+        metricsUrl: 'Metrik-URL',
+        monitoring: 'Überwachung',
+        monitoringDesc:
+          'Prometheus liest die Metriken mit einem API-Schlüssel von dieser Seite, gesendet als Bearer-Token. Jede Rolle darf sie lesen.',
+        scrapeConfig: 'Prometheus-Scrape-Konfiguration',
         title: 'API-Schlüssel',
         description:
           'Ein Schlüssel handelt im Namen seines Besitzers, mit dessen Rolle. Senden Sie ihn als Authorization: Bearer <key> für Metriken und die API oder als X-Auth-Token für Redfish.',

@@ -1,5 +1,21 @@
 const id = {
   translation: {
+    feedback: {
+      enabled: '{{name}} diaktifkan',
+      disabled: '{{name}} dinonaktifkan',
+      failed: 'Permintaan gagal. Coba lagi.',
+      network: 'Perangkat tidak dapat dihubungi. Periksa koneksi dan coba lagi.',
+      saved: 'Tersimpan',
+      timeout: 'Perangkat terlalu lama menjawab. Coba lagi.'
+    },
+    common: {
+      copy: 'Salin',
+      copied: 'Tersalin',
+      copyFailed: 'Gagal menyalin. Pilih teks dan salin secara manual.',
+      notUpdating: 'Tidak diperbarui: penyegaran terakhir gagal.',
+      off: 'Mati',
+      running: 'Berjalan'
+    },
     head: {
       desktop: 'Desktop jarak jauh',
       login: 'Masuk',
@@ -8,6 +24,7 @@ const id = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      passwordChanged: 'Kata sandi diubah. Masuk dengan kata sandi baru.',
       cookieRejected:
         'Browser menolak menyimpan sesi. Cookie yang tertinggal dari sesi HTTPS sebelumnya tidak dapat diganti melalui http biasa. Hapus cookie untuk alamat ini, atau buka jendela pribadi, lalu masuk kembali.',
       login: 'Masuk',
@@ -494,6 +511,8 @@ const id = {
         vpnProvider: 'Penyedia VPN'
       },
       mcp: {
+        keyNote:
+          'MCP memakai kunci API sendiri, ditampilkan di bawah. Kunci dari halaman Kunci API tidak berlaku di sini.',
         title: 'Layanan MCP',
         service: 'Kontrol jarak jauh MCP',
         serviceDesc:
@@ -513,6 +532,7 @@ const id = {
         cancelBtn: 'Batal'
       },
       redfish: {
+        example: 'Contoh',
         title: 'Redfish',
         service: 'Layanan Redfish',
         serviceDesc:
@@ -540,6 +560,10 @@ const id = {
         cancelBtn: 'Batal'
       },
       ipmi: {
+        copyBeforeSave:
+          'Salin kata sandi sekarang. Setelah disimpan, kata sandi tidak dapat ditampilkan lagi.',
+        noLogin:
+          'IPMI aktif, tetapi tidak ada akun aktif yang memiliki kata sandi IPMI, sehingga tidak ada yang bisa masuk. Atur satu di bawah.',
         title: 'IPMI',
         warning:
           'Autentikasi IPMI memang lemah secara desain. Siapa pun yang dapat menjangkau board dan mengetahui nama pengguna dapat memperoleh hash kata sandi IPMI pengguna tersebut dan mencoba memecahkannya secara offline. Gunakan kata sandi yang dibuat otomatis, aktifkan IPMI hanya di jaringan tepercaya, dan utamakan Redfish lewat HTTPS jika alat mendukungnya.',
@@ -578,6 +602,10 @@ const id = {
         cancelBtn: 'Batal'
       },
       vnc: {
+        address: 'Alamat',
+        certHint:
+          'VeNCrypt X509Plain memakai sertifikat swatanda perangkat, jadi klien memberi peringatan saat koneksi pertama. Terima saja, atau simpan sertifikat dari alamat HTTPS halaman ini dan berikan ke TigerVNC dengan -X509CA=<file>.',
+        example: 'Contoh',
         title: 'VNC',
         service: 'Server VNC',
         serviceDesc:
@@ -881,6 +909,8 @@ const id = {
         network: 'Jaringan virtual',
         networkDesc: 'Pasang kartu jaringan virtual pada host jarak jauh',
         usbNetwork: {
+          boardAddress: 'NanoKVM:',
+          hostAddress: 'Host:',
           description:
             'Tautan jaringan privat ke host jarak jauh melalui kabel USB. Host mendapat alamat tanpa gateway dan tanpa DNS, sehingga tidak dapat menjangkau LAN Anda melalui NanoKVM.',
           off: 'Mati',
@@ -891,7 +921,6 @@ const id = {
           subnet: 'Subnet',
           subnetDesc:
             'Jaringan IPv4 privat, /24 hingga /30. NanoKVM memakai alamat pertama, host memakai alamat kedua.',
-          addresses: 'NanoKVM: {{board}}, host: {{host}}',
           invalidSubnet: 'Masukkan subnet seperti 172.31.255.0/30.',
           apply: 'Terapkan',
           confirm: 'Sambungkan ulang perangkat USB?',
@@ -929,6 +958,10 @@ const id = {
       network: {
         title: 'Jaringan',
         wifi: {
+          disconnectBtn: 'Putuskan',
+          disconnectWarning:
+            'Jika Anda mengakses NanoKVM melalui jaringan Wi-Fi ini, halaman ini akan kehilangan koneksi.',
+          disconnected: 'Wi-Fi terputus',
           title: 'Wi-Fi',
           description: 'Konfigurasi Wi-Fi',
           apMode: 'Mode AP aktif, sambungkan ke Wi-Fi dengan memindai kode QR',
@@ -1018,6 +1051,14 @@ const id = {
         }
       },
       vpn: {
+        connect: 'Hubungkan',
+        connectDesc:
+          'Bergabung ke jaringan {{name}}. Mati memutus koneksi tanpa menghentikan layanan.',
+        kvmUrl: 'Alamat KVM',
+        moreTip: 'Tindakan lain',
+        restartTip: 'Mulai ulang',
+        stopTip: 'Hentikan',
+        updateTip: 'Perbarui ke {{version}}',
         loading: 'Memuat...',
         okBtn: 'Ya',
         cancelBtn: 'Tidak',
@@ -1036,7 +1077,6 @@ const id = {
         run: 'Mulai',
         boot: 'Mulai saat boot',
         bootDesc: 'Jalankan {{name}} saat KVM melakukan boot.',
-        enable: 'Aktifkan {{name}}',
         control: 'Server kontrol',
         connected: 'Terhubung',
         disconnected: 'Tidak terhubung',
@@ -1135,6 +1175,9 @@ const id = {
             'Pembaruan Pratinjau tidak tersedia saat server pembaruan kustom diaktifkan.'
         },
         offline: {
+          chooseFile: 'Pilih file',
+          installing: 'Unggahan selesai. Memasang...',
+          noFile: 'Belum ada file dipilih',
           title: 'Pembaruan Offline',
           desc: 'Perbarui melalui paket instalasi lokal',
           upload: 'Mengunggah',
@@ -1177,6 +1220,13 @@ const id = {
         }
       },
       apiKeys: {
+        mcpNote:
+          'Kunci ini tidak berlaku untuk MCP, yang memiliki kuncinya sendiri di halaman MCP.',
+        metricsUrl: 'URL metrik',
+        monitoring: 'Pemantauan',
+        monitoringDesc:
+          'Prometheus membaca metrik dengan kunci API dari halaman ini, dikirim sebagai token Bearer. Semua peran dapat membacanya.',
+        scrapeConfig: 'Konfigurasi scrape Prometheus',
         title: 'Kunci API',
         description:
           'Kunci bertindak sebagai pemiliknya, dengan peran pengguna tersebut. Kirimkan sebagai Authorization: Bearer <key> untuk metrik dan API, atau sebagai X-Auth-Token untuk Redfish.',

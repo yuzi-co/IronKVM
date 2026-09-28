@@ -1,5 +1,21 @@
 const nb = {
   translation: {
+    feedback: {
+      enabled: '{{name}} slått på',
+      disabled: '{{name}} slått av',
+      failed: 'Forespørselen mislyktes. Prøv igjen.',
+      network: 'Fikk ikke kontakt med enheten. Sjekk tilkoblingen og prøv igjen.',
+      saved: 'Lagret',
+      timeout: 'Enheten brukte for lang tid på å svare. Prøv igjen.'
+    },
+    common: {
+      copy: 'Kopier',
+      copied: 'Kopiert',
+      copyFailed: 'Kunne ikke kopiere. Merk teksten og kopier den manuelt.',
+      notUpdating: 'Oppdateres ikke: siste oppdatering mislyktes.',
+      off: 'Av',
+      running: 'Kjører'
+    },
     head: {
       desktop: 'Eksternt skrivebord',
       login: 'Logg inn',
@@ -8,6 +24,7 @@ const nb = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      passwordChanged: 'Passordet er endret. Logg inn med det nye passordet.',
       cookieRejected:
         'Nettleseren nektet å lagre økten. En informasjonskapsel fra en tidligere HTTPS-økt kan ikke erstattes over vanlig http. Slett informasjonskapslene for denne adressen, eller åpne et privat vindu, og logg inn på nytt.',
       login: 'Logg inn',
@@ -494,6 +511,8 @@ const nb = {
         vpnProvider: 'VPN-leverandør'
       },
       mcp: {
+        keyNote:
+          'MCP bruker sin egen API-nøkkel, vist nedenfor. Nøkler fra siden API-nøkler virker ikke her.',
         title: 'MCP-tjeneste',
         service: 'MCP-fjernstyring',
         serviceDesc: 'La klarerte MCP-klienter styre tastatur og mus og ta skjermbilder',
@@ -512,6 +531,7 @@ const nb = {
         cancelBtn: 'Avbryt'
       },
       redfish: {
+        example: 'Eksempel',
         title: 'Redfish',
         service: 'Redfish-tjeneste',
         serviceDesc:
@@ -539,6 +559,9 @@ const nb = {
         cancelBtn: 'Avbryt'
       },
       ipmi: {
+        copyBeforeSave: 'Kopier passordet nå. Når det er lagret, kan det ikke vises igjen.',
+        noLogin:
+          'IPMI er på, men ingen aktiv konto har et IPMI-passord, så ingen kan logge inn. Angi et nedenfor.',
         title: 'IPMI',
         warning:
           'IPMI-autentisering er svak av konstruksjon. Alle som når kortet og kjenner et brukernavn, kan hente en hash av brukerens IPMI-passord og prøve å knekke den offline. Bruk genererte passord, slå på IPMI bare på et nettverk du stoler på, og velg heller Redfish over HTTPS der verktøyet støtter det.',
@@ -578,6 +601,10 @@ const nb = {
         cancelBtn: 'Avbryt'
       },
       vnc: {
+        address: 'Adresse',
+        certHint:
+          'VeNCrypt X509Plain bruker enhetens selvsignerte sertifikat, så klienten advarer ved første tilkobling. Godta det, eller lagre sertifikatet fra denne sidens HTTPS-adresse og gi det til TigerVNC med -X509CA=<fil>.',
+        example: 'Eksempel',
         title: 'VNC',
         service: 'VNC-server',
         serviceDesc:
@@ -877,6 +904,8 @@ const nb = {
         network: 'Virtuelt nettverk',
         networkDesc: 'Monter virtuelt nettverkskort på den eksterne verten',
         usbNetwork: {
+          boardAddress: 'NanoKVM:',
+          hostAddress: 'Vert:',
           description:
             'En privat nettverkstilkobling til den eksterne verten via USB-kabelen. Verten får en adresse uten gateway og uten DNS, så den kan ikke nå ditt lokalnett gjennom NanoKVM.',
           off: 'Av',
@@ -887,7 +916,6 @@ const nb = {
           subnet: 'Delnett',
           subnetDesc:
             'Et privat IPv4-nettverk, /24 til /30. NanoKVM tar den første adressen, verten den andre.',
-          addresses: 'NanoKVM: {{board}}, vert: {{host}}',
           invalidSubnet: 'Skriv inn et delnett, for eksempel 172.31.255.0/30.',
           apply: 'Bruk',
           confirm: 'Koble til USB-enheten på nytt?',
@@ -925,6 +953,10 @@ const nb = {
       network: {
         title: 'Nettverk',
         wifi: {
+          disconnectBtn: 'Koble fra',
+          disconnectWarning:
+            'Hvis du når NanoKVM via dette Wi-Fi-nettverket, mister denne siden tilkoblingen.',
+          disconnected: 'Wi-Fi frakoblet',
           title: 'Wi-Fi',
           description: 'Konfigurer Wi-Fi',
           apMode: 'AP-modus er aktivert, koble til Wi-Fi ved å skanne QR-koden',
@@ -1014,6 +1046,13 @@ const nb = {
         }
       },
       vpn: {
+        connect: 'Koble til',
+        connectDesc: 'Bli med i {{name}}-nettverket. Av kobler fra uten å stoppe tjenesten.',
+        kvmUrl: 'KVM-adresse',
+        moreTip: 'Flere handlinger',
+        restartTip: 'Start på nytt',
+        stopTip: 'Stopp',
+        updateTip: 'Oppdater til {{version}}',
         loading: 'Laster...',
         okBtn: 'Ja',
         cancelBtn: 'Nei',
@@ -1032,7 +1071,6 @@ const nb = {
         run: 'Start',
         boot: 'Start ved oppstart',
         bootDesc: 'Start {{name}} når KVM-en starter.',
-        enable: 'Aktiver {{name}}',
         control: 'Kontrollserver',
         connected: 'Tilkoblet',
         disconnected: 'Ikke tilkoblet',
@@ -1133,6 +1171,9 @@ const nb = {
             'Forhåndsvisningsoppdateringer er ikke tilgjengelige mens en egendefinert oppdateringsserver er aktivert.'
         },
         offline: {
+          chooseFile: 'Velg fil',
+          installing: 'Opplasting fullført. Installerer...',
+          noFile: 'Ingen fil valgt',
           title: 'Offline oppdateringer',
           desc: 'Oppdater gjennom lokal installasjonspakke',
           upload: 'Last opp',
@@ -1175,6 +1216,12 @@ const nb = {
         }
       },
       apiKeys: {
+        mcpNote: 'Disse nøklene virker ikke for MCP, som har sin egen nøkkel på MCP-siden.',
+        metricsUrl: 'Metrikk-URL',
+        monitoring: 'Overvåking',
+        monitoringDesc:
+          'Prometheus leser metrikkene med en API-nøkkel fra denne siden, sendt som Bearer-token. Alle roller kan lese dem.',
+        scrapeConfig: 'Prometheus scrape-konfigurasjon',
         title: 'API-nøkler',
         description:
           'En nøkkel opptrer som eieren sin, med den brukerens rolle. Send den som Authorization: Bearer <key> for målinger og API-et, eller som X-Auth-Token for Redfish.',

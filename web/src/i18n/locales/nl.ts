@@ -1,5 +1,21 @@
 const nl = {
   translation: {
+    feedback: {
+      enabled: '{{name}} ingeschakeld',
+      disabled: '{{name}} uitgeschakeld',
+      failed: 'Het verzoek is mislukt. Probeer het opnieuw.',
+      network: 'Het apparaat is niet bereikbaar. Controleer de verbinding en probeer het opnieuw.',
+      saved: 'Opgeslagen',
+      timeout: 'Het apparaat deed er te lang over om te antwoorden. Probeer het opnieuw.'
+    },
+    common: {
+      copy: 'Kopiëren',
+      copied: 'Gekopieerd',
+      copyFailed: 'Kopiëren mislukt. Selecteer de tekst en kopieer hem handmatig.',
+      notUpdating: 'Wordt niet bijgewerkt: de laatste verversing is mislukt.',
+      off: 'Uit',
+      running: 'Actief'
+    },
     head: {
       desktop: 'Extern bureaublad',
       login: 'Inloggen',
@@ -8,6 +24,7 @@ const nl = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      passwordChanged: 'Wachtwoord gewijzigd. Meld je aan met het nieuwe wachtwoord.',
       cookieRejected:
         'De browser weigerde de sessie op te slaan. Een cookie van een eerdere HTTPS-sessie kan niet via onversleuteld http worden vervangen. Wis de cookies voor dit adres of open een privévenster en log opnieuw in.',
       login: 'Inloggen',
@@ -499,6 +516,8 @@ const nl = {
         vpnProvider: 'VPN-aanbieder'
       },
       mcp: {
+        keyNote:
+          'MCP gebruikt een eigen API-sleutel, hieronder getoond. Sleutels van de pagina API-sleutels werken hier niet.',
         title: 'MCP-service',
         service: 'MCP-afstandsbediening',
         serviceDesc:
@@ -518,6 +537,7 @@ const nl = {
         cancelBtn: 'Annuleren'
       },
       redfish: {
+        example: 'Voorbeeld',
         title: 'Redfish',
         service: 'Redfish-service',
         serviceDesc:
@@ -545,6 +565,10 @@ const nl = {
         cancelBtn: 'Annuleren'
       },
       ipmi: {
+        copyBeforeSave:
+          'Kopieer het wachtwoord nu. Na het opslaan kan het niet meer worden getoond.',
+        noLogin:
+          'IPMI staat aan, maar geen actief account heeft een IPMI-wachtwoord, dus niemand kan inloggen. Stel er hieronder een in.',
         title: 'IPMI',
         warning:
           'IPMI-authenticatie is zwak door het ontwerp. Iedereen die het bord kan bereiken en een gebruikersnaam kent, kan een hash van het IPMI-wachtwoord van die gebruiker ophalen en offline proberen te kraken. Gebruik gegenereerde wachtwoorden, zet IPMI alleen aan op een vertrouwd netwerk en gebruik liever Redfish via HTTPS als een tool dat ondersteunt.',
@@ -584,6 +608,10 @@ const nl = {
         cancelBtn: 'Annuleren'
       },
       vnc: {
+        address: 'Adres',
+        certHint:
+          'VeNCrypt X509Plain gebruikt het zelfondertekende certificaat van het apparaat, dus de client waarschuwt bij de eerste verbinding. Accepteer het, of sla het certificaat op via het HTTPS-adres van deze pagina en geef het aan TigerVNC met -X509CA=<bestand>.',
+        example: 'Voorbeeld',
         title: 'VNC',
         service: 'VNC-server',
         serviceDesc:
@@ -890,6 +918,8 @@ const nl = {
         network: 'Virtueel Netwerk',
         networkDesc: 'Koppel virtueel netwerk kaart aan de externe host',
         usbNetwork: {
+          boardAddress: 'NanoKVM:',
+          hostAddress: 'Host:',
           description:
             'Een privé netwerkverbinding met de externe host via de USB-kabel. De host krijgt een adres zonder gateway en zonder DNS, en kan uw LAN dus niet via NanoKVM bereiken.',
           off: 'Uit',
@@ -901,7 +931,6 @@ const nl = {
           subnet: 'Subnet',
           subnetDesc:
             'Een privé IPv4-netwerk, /24 tot /30. NanoKVM neemt het eerste adres, de host het tweede.',
-          addresses: 'NanoKVM: {{board}}, host: {{host}}',
           invalidSubnet: 'Voer een subnet in, zoals 172.31.255.0/30.',
           apply: 'Toepassen',
           confirm: 'USB-apparaat opnieuw verbinden?',
@@ -939,6 +968,10 @@ const nl = {
       network: {
         title: 'Netwerk',
         wifi: {
+          disconnectBtn: 'Verbreken',
+          disconnectWarning:
+            'Als je NanoKVM via dit wifi-netwerk bereikt, verliest deze pagina de verbinding.',
+          disconnected: 'Wifi verbroken',
           title: 'Wi-Fi',
           description: 'Wi-Fi configureren',
           apMode: 'AP-modus is ingeschakeld, maak verbinding met Wi-Fi door de QR-code te scannen',
@@ -1027,6 +1060,14 @@ const nl = {
         }
       },
       vpn: {
+        connect: 'Verbinden',
+        connectDesc:
+          'Verbind met het {{name}}-netwerk. Uit verbreekt de verbinding zonder de dienst te stoppen.',
+        kvmUrl: 'KVM-adres',
+        moreTip: 'Meer acties',
+        restartTip: 'Herstarten',
+        stopTip: 'Stoppen',
+        updateTip: 'Bijwerken naar {{version}}',
         loading: 'Laden...',
         okBtn: 'Ja',
         cancelBtn: 'Nee',
@@ -1045,7 +1086,6 @@ const nl = {
         run: 'Starten',
         boot: 'Starten bij opstarten',
         bootDesc: '{{name}} starten wanneer de KVM opstart.',
-        enable: '{{name}} inschakelen',
         control: 'Controleserver',
         connected: 'Verbonden',
         disconnected: 'Niet verbonden',
@@ -1146,6 +1186,9 @@ const nl = {
             'Preview-updates zijn niet beschikbaar zolang een aangepaste updateserver is ingeschakeld.'
         },
         offline: {
+          chooseFile: 'Bestand kiezen',
+          installing: 'Upload voltooid. Installeren...',
+          noFile: 'Geen bestand gekozen',
           title: 'Offline-updates',
           desc: 'Update via lokaal installatiepakket',
           upload: 'Uploaden',
@@ -1188,6 +1231,13 @@ const nl = {
         }
       },
       apiKeys: {
+        mcpNote:
+          'Deze sleutels werken niet voor MCP, dat een eigen sleutel heeft op de MCP-pagina.',
+        metricsUrl: 'Metrics-URL',
+        monitoring: 'Monitoring',
+        monitoringDesc:
+          'Prometheus leest de metrics met een API-sleutel van deze pagina, verzonden als Bearer-token. Elke rol mag ze lezen.',
+        scrapeConfig: 'Prometheus-scrapeconfiguratie',
         title: 'API-sleutels',
         description:
           'Een sleutel handelt namens zijn eigenaar, met de rol van die gebruiker. Stuur hem als Authorization: Bearer <key> voor metrics en de API, of als X-Auth-Token voor Redfish.',

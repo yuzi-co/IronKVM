@@ -1,5 +1,21 @@
 const pl = {
   translation: {
+    feedback: {
+      enabled: '{{name}} włączone',
+      disabled: '{{name}} wyłączone',
+      failed: 'Żądanie nie powiodło się. Spróbuj ponownie.',
+      network: 'Nie można połączyć się z urządzeniem. Sprawdź połączenie i spróbuj ponownie.',
+      saved: 'Zapisano',
+      timeout: 'Urządzenie zbyt długo nie odpowiadało. Spróbuj ponownie.'
+    },
+    common: {
+      copy: 'Kopiuj',
+      copied: 'Skopiowano',
+      copyFailed: 'Nie udało się skopiować. Zaznacz tekst i skopiuj go ręcznie.',
+      notUpdating: 'Brak aktualizacji: ostatnie odświeżenie nie powiodło się.',
+      off: 'Wyłączone',
+      running: 'Działa'
+    },
     head: {
       desktop: 'Zdalny pulpit',
       login: 'Logowanie',
@@ -8,6 +24,7 @@ const pl = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      passwordChanged: 'Hasło zmienione. Zaloguj się nowym hasłem.',
       cookieRejected:
         'Przeglądarka odmówiła zapisania sesji. Pliku cookie pozostałego po poprzedniej sesji HTTPS nie można zastąpić przez zwykłe http. Wyczyść pliki cookie dla tego adresu lub otwórz okno prywatne i zaloguj się ponownie.',
       login: 'Logowanie',
@@ -494,6 +511,8 @@ const pl = {
         vpnProvider: 'Dostawca VPN'
       },
       mcp: {
+        keyNote:
+          'MCP używa własnego klucza API, pokazanego poniżej. Klucze ze strony Klucze API tu nie działają.',
         title: 'Usługa MCP',
         service: 'Zdalne sterowanie MCP',
         serviceDesc:
@@ -513,6 +532,7 @@ const pl = {
         cancelBtn: 'Anuluj'
       },
       redfish: {
+        example: 'Przykład',
         title: 'Redfish',
         service: 'Usługa Redfish',
         serviceDesc:
@@ -541,6 +561,9 @@ const pl = {
         cancelBtn: 'Anuluj'
       },
       ipmi: {
+        copyBeforeSave: 'Skopiuj hasło teraz. Po zapisaniu nie da się go ponownie wyświetlić.',
+        noLogin:
+          'IPMI jest włączone, ale żadne aktywne konto nie ma hasła IPMI, więc nikt się nie zaloguje. Ustaw je poniżej.',
         title: 'IPMI',
         warning:
           'Uwierzytelnianie IPMI jest z założenia słabe. Każdy, kto ma dostęp do płytki i zna nazwę użytkownika, może pobrać skrót hasła IPMI tego użytkownika i próbować złamać go offline. Używaj generowanych haseł, włączaj IPMI tylko w zaufanej sieci i tam, gdzie narzędzie to obsługuje, wybieraj Redfish przez HTTPS.',
@@ -580,6 +603,10 @@ const pl = {
         cancelBtn: 'Anuluj'
       },
       vnc: {
+        address: 'Adres',
+        certHint:
+          'VeNCrypt X509Plain używa samopodpisanego certyfikatu urządzenia, więc klient ostrzega przy pierwszym połączeniu. Zaakceptuj go albo zapisz certyfikat z adresu HTTPS tej strony i przekaż go TigerVNC opcją -X509CA=<plik>.',
+        example: 'Przykład',
         title: 'VNC',
         service: 'Serwer VNC',
         serviceDesc:
@@ -885,6 +912,8 @@ const pl = {
         network: 'Sieć wirtualna',
         networkDesc: 'Zamontuj wirtualną kartę sieciową na zdalnym hoście',
         usbNetwork: {
+          boardAddress: 'NanoKVM:',
+          hostAddress: 'Host:',
           description:
             'Prywatne połączenie sieciowe ze zdalnym hostem przez kabel USB. Host otrzymuje adres bez bramy i bez DNS, więc nie może dotrzeć do Twojej sieci LAN przez NanoKVM.',
           off: 'Wyłączone',
@@ -896,7 +925,6 @@ const pl = {
           subnet: 'Podsieć',
           subnetDesc:
             'Prywatna sieć IPv4, od /24 do /30. NanoKVM zajmuje pierwszy adres, host drugi.',
-          addresses: 'NanoKVM: {{board}}, host: {{host}}',
           invalidSubnet: 'Wpisz podsieć, na przykład 172.31.255.0/30.',
           apply: 'Zastosuj',
           confirm: 'Połączyć ponownie urządzenie USB?',
@@ -934,6 +962,10 @@ const pl = {
       network: {
         title: 'Sieć',
         wifi: {
+          disconnectBtn: 'Rozłącz',
+          disconnectWarning:
+            'Jeśli łączysz się z NanoKVM przez tę sieć Wi-Fi, ta strona straci połączenie.',
+          disconnected: 'Wi-Fi rozłączone',
           title: 'Wi-Fi',
           description: 'Skonfiguruj Wi-Fi',
           apMode: 'Tryb AP jest włączony, połącz z Wi-Fi skanując kod QR',
@@ -1022,6 +1054,13 @@ const pl = {
         }
       },
       vpn: {
+        connect: 'Połącz',
+        connectDesc: 'Dołącz do sieci {{name}}. Wyłączenie rozłącza bez zatrzymywania usługi.',
+        kvmUrl: 'Adres KVM',
+        moreTip: 'Więcej działań',
+        restartTip: 'Uruchom ponownie',
+        stopTip: 'Zatrzymaj',
+        updateTip: 'Aktualizuj do {{version}}',
         loading: 'Ładowanie...',
         okBtn: 'Tak',
         cancelBtn: 'Nie',
@@ -1040,7 +1079,6 @@ const pl = {
         run: 'Uruchom',
         boot: 'Uruchamiaj przy starcie',
         bootDesc: 'Uruchamiaj {{name}} przy starcie KVM.',
-        enable: 'Włącz {{name}}',
         control: 'Serwer sterujący',
         connected: 'Połączono',
         disconnected: 'Nie połączono',
@@ -1140,6 +1178,9 @@ const pl = {
             'Aktualizacje w wersji testowej są niedostępne, gdy włączony jest niestandardowy serwer aktualizacji.'
         },
         offline: {
+          chooseFile: 'Wybierz plik',
+          installing: 'Przesłano. Instalowanie...',
+          noFile: 'Nie wybrano pliku',
           title: 'Aktualizacje offline',
           desc: 'Aktualizacja poprzez lokalny pakiet instalacyjny',
           upload: 'Prześlij',
@@ -1182,6 +1223,12 @@ const pl = {
         }
       },
       apiKeys: {
+        mcpNote: 'Te klucze nie działają dla MCP, który ma własny klucz na stronie MCP.',
+        metricsUrl: 'URL metryk',
+        monitoring: 'Monitorowanie',
+        monitoringDesc:
+          'Prometheus odczytuje metryki kluczem API z tej strony, wysyłanym jako token Bearer. Może je czytać każda rola.',
+        scrapeConfig: 'Konfiguracja scrape dla Prometheus',
         title: 'Klucze API',
         description:
           'Klucz działa w imieniu swojego właściciela, z jego rolą. Wysyłaj go jako Authorization: Bearer <key> dla metryk i API lub jako X-Auth-Token dla Redfish.',

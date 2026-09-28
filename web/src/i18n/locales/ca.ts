@@ -1,5 +1,22 @@
 const ca = {
   translation: {
+    feedback: {
+      enabled: '{{name}} activat',
+      disabled: '{{name}} desactivat',
+      failed: 'La sol·licitud ha fallat. Torna-ho a provar.',
+      network:
+        "No s'ha pogut contactar amb el dispositiu. Comprova la connexió i torna-ho a provar.",
+      saved: 'Desat',
+      timeout: 'El dispositiu ha trigat massa a respondre. Torna-ho a provar.'
+    },
+    common: {
+      copy: 'Copia',
+      copied: 'Copiat',
+      copyFailed: "No s'ha pogut copiar. Selecciona el text i copia'l a mà.",
+      notUpdating: "Sense actualitzar: l'última consulta ha fallat.",
+      off: 'Aturat',
+      running: 'En marxa'
+    },
     head: {
       desktop: 'Escriptori remot',
       login: 'Inici de sessió',
@@ -8,6 +25,7 @@ const ca = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      passwordChanged: 'Contrasenya canviada. Inicia la sessió amb la contrasenya nova.',
       cookieRejected:
         "El navegador s'ha negat a desar la sessió. Una galeta que va deixar una sessió HTTPS anterior no es pot substituir per http sense xifrar. Esborreu les galetes d'aquesta adreça, o obriu una finestra privada, i torneu a iniciar la sessió.",
       login: 'Inici de sessió',
@@ -492,6 +510,8 @@ const ca = {
         vpnProvider: 'Proveïdor de VPN'
       },
       mcp: {
+        keyNote:
+          'MCP fa servir la seva pròpia clau API, que es mostra a sota. Les claus de la pàgina Claus API no funcionen aquí.',
         title: 'Servei MCP',
         service: 'Control remot MCP',
         serviceDesc:
@@ -511,6 +531,7 @@ const ca = {
         cancelBtn: 'Cancel·la'
       },
       redfish: {
+        example: 'Exemple',
         title: 'Redfish',
         service: 'Servei Redfish',
         serviceDesc:
@@ -539,6 +560,9 @@ const ca = {
         cancelBtn: 'Cancel·la'
       },
       ipmi: {
+        copyBeforeSave: 'Copia la contrasenya ara. Un cop desada, no es pot tornar a mostrar.',
+        noLogin:
+          'IPMI està activat, però cap compte actiu té contrasenya IPMI, així que ningú no pot iniciar la sessió. Defineix-ne una a sota.',
         title: 'IPMI',
         warning:
           "L'autenticació IPMI és feble per disseny. Qualsevol que pugui arribar a la placa i conegui un nom d'usuari pot obtenir un hash de la contrasenya IPMI d'aquest usuari i intentar desxifrar-la fora de línia. Feu servir contrasenyes generades, activeu IPMI només en una xarxa de confiança i preferiu Redfish per HTTPS quan l'eina ho admeti.",
@@ -578,6 +602,10 @@ const ca = {
         cancelBtn: 'Cancel·la'
       },
       vnc: {
+        address: 'Adreça',
+        certHint:
+          "VeNCrypt X509Plain fa servir el certificat autosignat del dispositiu, així que el client avisa en la primera connexió. Accepta'l, o desa el certificat des de l'adreça HTTPS d'aquesta pàgina i passa'l a TigerVNC amb -X509CA=<fitxer>.",
+        example: 'Exemple',
         title: 'VNC',
         service: 'Servidor VNC',
         serviceDesc:
@@ -887,6 +915,8 @@ const ca = {
         network: 'Xarxa virtual',
         networkDesc: 'Munta una targeta de xarxa virtual al dispositiu remot',
         usbNetwork: {
+          boardAddress: 'NanoKVM:',
+          hostAddress: 'Amfitrió:',
           description:
             "Un enllaç de xarxa privat amb l'amfitrió remot pel cable USB. L'amfitrió rep una adreça sense passarel·la ni DNS, de manera que no pot arribar a la vostra LAN a través del NanoKVM.",
           off: 'Desactivat',
@@ -897,7 +927,6 @@ const ca = {
           subnet: 'Subxarxa',
           subnetDesc:
             "Una xarxa IPv4 privada, de /24 a /30. El NanoKVM pren la primera adreça i l'amfitrió la segona.",
-          addresses: 'NanoKVM: {{board}}, amfitrió: {{host}}',
           invalidSubnet: 'Introduïu una subxarxa com ara 172.31.255.0/30.',
           apply: 'Aplica',
           confirm: 'Voleu tornar a connectar el dispositiu USB?',
@@ -935,6 +964,10 @@ const ca = {
       network: {
         title: 'Xarxa',
         wifi: {
+          disconnectBtn: 'Desconnecta',
+          disconnectWarning:
+            'Si accedeixes a NanoKVM per aquesta xarxa Wi-Fi, aquesta pàgina perdrà la connexió.',
+          disconnected: 'Wi-Fi desconnectada',
           title: 'Wi-Fi',
           description: 'Configura la xarxa Wi-Fi',
           apMode: "El mode AP està activat; connecta't al Wi-Fi escanejant el codi QR",
@@ -1023,6 +1056,13 @@ const ca = {
         }
       },
       vpn: {
+        connect: 'Connecta',
+        connectDesc: 'Uneix-te a la xarxa {{name}}. Desactivat desconnecta sense aturar el servei.',
+        kvmUrl: 'Adreça del KVM',
+        moreTip: 'Més accions',
+        restartTip: 'Reinicia',
+        stopTip: 'Atura',
+        updateTip: 'Actualitza a {{version}}',
         loading: "S'està carregant...",
         okBtn: 'Sí',
         cancelBtn: 'No',
@@ -1041,7 +1081,6 @@ const ca = {
         run: 'Inicia',
         boot: "Inicia a l'arrencada",
         bootDesc: 'Inicia {{name}} quan arrenca el KVM.',
-        enable: 'Activa {{name}}',
         control: 'Servidor de control',
         connected: 'Connectat',
         disconnected: 'No connectat',
@@ -1140,6 +1179,9 @@ const ca = {
             'Les actualitzacions de previsualització no estan disponibles mentre hi hagi activat un servidor d’actualitzacions personalitzat.'
         },
         offline: {
+          chooseFile: 'Tria un fitxer',
+          installing: 'Pujada completa. Instal·lant...',
+          noFile: "No s'ha triat cap fitxer",
           title: 'Actualitzacions fora de línia',
           desc: "Actualització mitjançant el paquet d'instal·lació local",
           upload: 'Puja',
@@ -1184,6 +1226,13 @@ const ca = {
         }
       },
       apiKeys: {
+        mcpNote:
+          'Aquestes claus no serveixen per a MCP, que té la seva pròpia clau a la pàgina de MCP.',
+        metricsUrl: 'URL de mètriques',
+        monitoring: 'Monitoratge',
+        monitoringDesc:
+          "Prometheus llegeix les mètriques amb una clau API d'aquesta pàgina, enviada com a token Bearer. Qualsevol rol les pot llegir.",
+        scrapeConfig: 'Configuració de scrape de Prometheus',
         title: 'Claus API',
         description:
           "Una clau actua com el seu propietari, amb el rol d'aquest usuari. Envieu-la com a Authorization: Bearer <key> per a les mètriques i l'API, o com a X-Auth-Token per a Redfish.",

@@ -1,5 +1,22 @@
 const es = {
   translation: {
+    feedback: {
+      enabled: '{{name}} activado',
+      disabled: '{{name}} desactivado',
+      failed: 'La solicitud falló. Inténtalo de nuevo.',
+      network:
+        'No se pudo contactar con el dispositivo. Comprueba la conexión e inténtalo de nuevo.',
+      saved: 'Guardado',
+      timeout: 'El dispositivo tardó demasiado en responder. Inténtalo de nuevo.'
+    },
+    common: {
+      copy: 'Copiar',
+      copied: 'Copiado',
+      copyFailed: 'No se pudo copiar. Selecciona el texto y cópialo a mano.',
+      notUpdating: 'Sin actualizar: la última consulta falló.',
+      off: 'Apagado',
+      running: 'En ejecución'
+    },
     head: {
       desktop: 'Escritorio remoto',
       login: 'Inicio de sesión',
@@ -8,6 +25,7 @@ const es = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      passwordChanged: 'Contraseña cambiada. Inicia sesión con la nueva contraseña.',
       cookieRejected:
         'El navegador se ha negado a guardar la sesión. Una cookie que dejó una sesión HTTPS anterior no puede sustituirse por http sin cifrar. Borra las cookies de esta dirección, o abre una ventana privada, y vuelve a iniciar sesión.',
       login: 'Iniciar sesión',
@@ -496,6 +514,8 @@ const es = {
         vpnProvider: 'Proveedor de VPN'
       },
       mcp: {
+        keyNote:
+          'MCP usa su propia clave API, mostrada abajo. Las claves de la página Claves API no funcionan aquí.',
         title: 'Servicio MCP',
         service: 'Control remoto MCP',
         serviceDesc:
@@ -515,6 +535,7 @@ const es = {
         cancelBtn: 'Cancelar'
       },
       redfish: {
+        example: 'Ejemplo',
         title: 'Redfish',
         service: 'Servicio Redfish',
         serviceDesc:
@@ -543,6 +564,10 @@ const es = {
         cancelBtn: 'Cancelar'
       },
       ipmi: {
+        copyBeforeSave:
+          'Copia la contraseña ahora. Una vez guardada, no se puede volver a mostrar.',
+        noLogin:
+          'IPMI está activado, pero ninguna cuenta activa tiene contraseña IPMI, así que nadie puede iniciar sesión. Define una abajo.',
         title: 'IPMI',
         warning:
           'La autenticación IPMI es débil por diseño. Cualquiera que llegue a la placa y conozca un nombre de usuario puede obtener un hash de la contraseña IPMI de ese usuario e intentar descifrarlo sin conexión. Use contraseñas generadas, active IPMI solo en una red de confianza y prefiera Redfish sobre HTTPS cuando la herramienta lo admita.',
@@ -582,6 +607,10 @@ const es = {
         cancelBtn: 'Cancelar'
       },
       vnc: {
+        address: 'Dirección',
+        certHint:
+          'VeNCrypt X509Plain usa el certificado autofirmado del dispositivo, así que el cliente avisa en la primera conexión. Acéptalo, o guarda el certificado desde la dirección HTTPS de esta página y pásalo a TigerVNC con -X509CA=<archivo>.',
+        example: 'Ejemplo',
         title: 'VNC',
         service: 'Servidor VNC',
         serviceDesc:
@@ -893,6 +922,8 @@ const es = {
         network: 'Red Virtual',
         networkDesc: 'Montar tarjeta de red virtual en el host remoto',
         usbNetwork: {
+          boardAddress: 'NanoKVM:',
+          hostAddress: 'Host:',
           description:
             'Un enlace de red privado con el host remoto a través del cable USB. El host recibe una dirección sin puerta de enlace ni DNS, así que no puede llegar a tu LAN a través de NanoKVM.',
           off: 'Desactivado',
@@ -903,7 +934,6 @@ const es = {
           subnet: 'Subred',
           subnetDesc:
             'Una red IPv4 privada, de /24 a /30. NanoKVM toma la primera dirección y el host la segunda.',
-          addresses: 'NanoKVM: {{board}}, host: {{host}}',
           invalidSubnet: 'Introduce una subred como 172.31.255.0/30.',
           apply: 'Aplicar',
           confirm: '¿Reconectar el dispositivo USB?',
@@ -941,6 +971,10 @@ const es = {
       network: {
         title: 'Red',
         wifi: {
+          disconnectBtn: 'Desconectar',
+          disconnectWarning:
+            'Si accedes a NanoKVM por esta red Wi-Fi, esta página perderá la conexión.',
+          disconnected: 'Wi-Fi desconectado',
           title: 'Wi-Fi',
           description: 'Configura el Wi-Fi',
           apMode: 'El modo AP está activado; conéctate al Wi-Fi escaneando el código QR',
@@ -1029,6 +1063,13 @@ const es = {
         }
       },
       vpn: {
+        connect: 'Conectar',
+        connectDesc: 'Unirse a la red {{name}}. Apagado desconecta sin detener el servicio.',
+        kvmUrl: 'Dirección del KVM',
+        moreTip: 'Más acciones',
+        restartTip: 'Reiniciar',
+        stopTip: 'Detener',
+        updateTip: 'Actualizar a {{version}}',
         loading: 'Cargando...',
         okBtn: 'Sí',
         cancelBtn: 'No',
@@ -1047,7 +1088,6 @@ const es = {
         run: 'Iniciar',
         boot: 'Iniciar al arrancar',
         bootDesc: 'Iniciar {{name}} cuando arranca el KVM.',
-        enable: 'Activar {{name}}',
         control: 'Servidor de control',
         connected: 'Conectado',
         disconnected: 'No conectado',
@@ -1149,6 +1189,9 @@ const es = {
             'Las actualizaciones preliminares no están disponibles mientras esté activado un servidor de actualizaciones personalizado.'
         },
         offline: {
+          chooseFile: 'Elegir archivo',
+          installing: 'Subida completa. Instalando...',
+          noFile: 'Ningún archivo elegido',
           title: 'Actualizaciones sin conexión',
           desc: 'Actualización a través del paquete de instalación local',
           upload: 'Subir',
@@ -1194,6 +1237,12 @@ const es = {
         }
       },
       apiKeys: {
+        mcpNote: 'Estas claves no sirven para MCP, que tiene su propia clave en la página de MCP.',
+        metricsUrl: 'URL de métricas',
+        monitoring: 'Monitorización',
+        monitoringDesc:
+          'Prometheus lee las métricas con una clave API de esta página, enviada como token Bearer. Cualquier rol puede leerlas.',
+        scrapeConfig: 'Configuración de scrape de Prometheus',
         title: 'Claves API',
         description:
           'Una clave actúa como su propietario, con el rol de ese usuario. Envíala como Authorization: Bearer <key> para las métricas y la API, o como X-Auth-Token para Redfish.',
