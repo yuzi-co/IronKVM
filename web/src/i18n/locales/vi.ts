@@ -8,18 +8,23 @@ const vi = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      cookieRejected:
+        'Trình duyệt từ chối lưu phiên. Cookie còn sót lại từ phiên HTTPS trước không thể bị thay thế qua http thường. Hãy xóa cookie của địa chỉ này, hoặc mở cửa sổ ẩn danh, rồi đăng nhập lại.',
       login: 'Đăng nhập',
       placeholderUsername: 'Vui lòng nhập tên người dùng',
       placeholderPassword: 'vui lòng nhập mật khẩu',
+      placeholderCurrentPassword: 'Mật khẩu hiện tại',
       placeholderPassword2: 'vui lòng nhập lại mật khẩu',
       noEmptyUsername: 'tên người dùng không được để trống',
       noEmptyPassword: 'mật khẩu không được để trống',
+      passwordLength: 'Mật khẩu phải dài từ 8 đến 72 ký tự',
       noAccount:
         'Không thể lấy thông tin người dùng, vui lòng làm mới trang web hoặc đặt lại mật khẩu',
       invalidUser: 'tên người dùng hoặc mật khẩu không hợp lệ',
       locked: 'Đăng nhập quá nhiều, vui lòng thử lại sau',
       globalLocked: 'Hệ thống đang được bảo vệ, vui lòng thử lại sau',
       error: 'lỗi không mong đợi',
+      invalidCurrentPassword: 'Mật khẩu hiện tại không đúng',
       changePassword: 'Đổi mật khẩu',
       changePasswordDesc: 'Để bảo mật thiết bị của bạn, vui lòng thay đổi mật khẩu đăng nhập web.',
       differentPassword: 'mật khẩu không khớp',
@@ -241,6 +246,10 @@ const vi = {
       relative: 'Chế độ tương đối',
       absoluteShort: 'Tuyệt đối',
       relativeShort: 'Tương đối',
+      absoluteStalled: 'Máy đích đang bỏ qua chuột tuyệt đối',
+      absoluteStalledDesc:
+        'Máy đích đã ngừng nhận báo cáo chuột tuyệt đối, nên các chuyển động con trỏ bị mất. Bàn phím không bị ảnh hưởng. Khôi phục USB thường khắc phục được; chế độ tương đối dùng một endpoint khác.',
+      useRelative: 'Chuyển sang chế độ tương đối',
       direction: 'Hướng bánh xe cuộn',
       scrollUp: 'Cuộn lên',
       scrollDown: 'Cuộn xuống',
@@ -255,6 +264,7 @@ const vi = {
         desc: 'Nếu chuột và bàn phím của bạn ngừng phản hồi và việc đặt lại HID không có tác dụng thì đó có thể là sự cố tương thích giữa NanoKVM và thiết bị. Hãy thử bật chế độ HID-Only để tương thích tốt hơn.',
         tip1: 'Kích hoạt HID-Chế độ chỉ sẽ ngắt kết nối đĩa U ảo và mạng ảo',
         tip2: 'Ở chế độ HID-Chỉ, tính năng gắn hình ảnh bị tắt',
+        rebuild: 'Chuyển chế độ sẽ dựng lại kết nối USB. NanoKVM không khởi động lại',
         enable: 'Bật chế độ HID-Chỉ',
         disable: 'Tắt chế độ HID-Chỉ'
       }
@@ -270,6 +280,17 @@ const vi = {
       unmountDesc:
         'Trên một số hệ thống, bạn cần đẩy hình ảnh ra khỏi máy chủ từ xa theo cách thủ công trước khi ngắt kết nối hình ảnh.',
       refresh: 'Làm mới danh sách hình ảnh',
+      disk: 'Đĩa',
+      cdrom: 'CD',
+      driveEmpty: 'Trống',
+      eject: 'Đẩy ra',
+      readOnly: 'Chỉ đọc',
+      readOnlyTip: 'Áp dụng cho hình ảnh tiếp theo được đưa vào đĩa.',
+      noDrives: 'Không có ổ đĩa ảo. Hãy bật đĩa ảo trong Cài đặt.',
+      insertFailed: 'Đưa vào thất bại',
+      ejectFailed: 'Đẩy ra thất bại',
+      insertInto: 'Đưa vào {{drive}}. Nhấp để thay đổi.',
+      loadedIn: 'Trong ổ {{drive}}',
       attention: 'Chú ý',
       deleteConfirm: 'Bạn có chắc chắn muốn xóa hình ảnh này không?',
       okBtn: 'Có',
@@ -367,7 +388,15 @@ const vi = {
       sleepConfirm: 'Cho máy chủ vào chế độ ngủ?',
       powerDownConfirm: 'Gửi phím tắt nguồn đến máy chủ?',
       wakeTip:
-        'Máy chủ đang ngủ thường bỏ qua lệnh Đánh thức từ thiết bị đã cho nó ngủ. Đánh thức bằng Shift nhấn một phím trên bàn phím, điều mà nhiều máy chủ chấp nhận hơn.'
+        'Máy chủ đang ngủ thường bỏ qua lệnh Đánh thức từ thiết bị đã cho nó ngủ. Đánh thức bằng Shift nhấn một phím trên bàn phím, điều mà nhiều máy chủ chấp nhận hơn.',
+      led: 'Đèn LED nguồn',
+      ledOn: 'Sáng',
+      ledOff: 'Tắt',
+      ledUnknown: 'Không xác định',
+      ledConnected: 'Đã nối đèn LED nguồn',
+      ledConnectedTip:
+        'Chỉ bật khi chân cắm đèn LED nguồn của máy chủ được nối dây vào bo mạch. Nếu không, trạng thái nguồn sẽ không xác định.',
+      ledConnectedFailed: 'Không lưu được cài đặt đèn LED nguồn'
     },
     settings: {
       title: 'Cài đặt',
@@ -389,6 +418,34 @@ const vi = {
         okBtn: 'Xác nhận',
         cancelBtn: 'Hủy'
       },
+      redfish: {
+        title: 'Redfish',
+        service: 'Dịch vụ Redfish',
+        serviceDesc:
+          'API Redfish của DMTF, dùng để điều khiển nguồn, phương tiện ảo và xem trạng thái từ các công cụ như redfishtool và Ansible. Tắt dịch vụ sẽ kết thúc mọi phiên Redfish.',
+        endpoint: 'Gốc dịch vụ',
+        httpsOn: 'Bo mạch đang phục vụ HTTPS, điều mà hầu hết công cụ Redfish cần.',
+        httpsOff:
+          'Bo mạch đang phục vụ HTTP thường. Hầu hết công cụ Redfish cần HTTPS: hãy bật nó trong "Cài đặt > Mạng".',
+        credentials:
+          'Redfish dùng các tài khoản KVM, với xác thực Basic hoặc phiên Redfish, và khóa API gửi dưới dạng X-Auth-Token. Khóa API được quản lý trên trang Khóa API.',
+        powerActions: 'Thao tác nguồn',
+        powerActionsDesc:
+          'Các kiểu reset hiện có. On, ForceOff và GracefulShutdown cần trạng thái nguồn, nên chỉ có khi "Đã nối đèn LED nguồn" được bật trong menu nguồn.',
+        sessions: 'Phiên',
+        noSessions: 'Không có phiên Redfish nào đang mở',
+        created: 'Tạo lúc',
+        lastUsed: 'Dùng lần cuối',
+        refresh: 'Làm mới',
+        end: 'Kết thúc',
+        endConfirmTitle: 'Kết thúc phiên Redfish này?',
+        endConfirmDesc:
+          'Token của phiên sẽ ngừng hoạt động ngay lập tức. Máy khách phải đăng nhập lại.',
+        failed: 'Thao tác Redfish thất bại',
+        copyFailed: 'Sao chép thất bại. Vui lòng sao chép thủ công.',
+        okBtn: 'Xác nhận',
+        cancelBtn: 'Hủy'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Watchdog máy chủ',
@@ -397,7 +454,7 @@ const vi = {
         stillWarning:
           'Máy chủ có màn hình chuyển sang chế độ ngủ, hoặc có hình ảnh đứng yên khi đang làm việc, trông giống như bị treo. Hãy tắt chế độ ngủ màn hình trên máy chủ, hoặc đặt một địa chỉ ping.',
         ledHint:
-          '"Power LED connected" đang tắt trong menu nguồn. Watchdog không biết khi nào máy chủ tắt, nên coi máy chủ luôn bật.',
+          '"Đã nối đèn LED nguồn" đang tắt trong menu nguồn. Watchdog không biết khi nào máy chủ tắt, nên coi máy chủ luôn bật.',
         timeout: 'Thời gian chờ',
         timeoutDesc:
           'Khoảng thời gian máy chủ có thể không có dấu hiệu hoạt động trước khi watchdog can thiệp.',
@@ -461,7 +518,14 @@ const vi = {
         applicationTip: 'Phiên bản ứng dụng web NanoKVM',
         image: 'Phiên bản Hình ảnh',
         imageTip: 'Phiên bản image hệ thống NanoKVM',
+        kernel: 'Phiên bản Kernel',
+        kernelTip: 'Bản phát hành của kernel Linux đang chạy',
         deviceKey: 'Khóa Thiết bị',
+        videoMemory: 'Bộ nhớ video',
+        videoMemoryTip:
+          'Bộ nhớ dành riêng cho việc thu video. Nó không được chia sẻ với phần còn lại của hệ thống.',
+        videoMemoryGenerations_other: '{{count}} phiên NanoKVM trước đó đang giữ bộ nhớ video',
+        videoMemoryReboot: 'Khởi động lại để thu hồi.',
         community: 'Cộng đồng',
         hostname: 'Tên máy chủ',
         hostnameUpdated: 'Đã cập nhật tên máy chủ. Khởi động lại để áp dụng.',
@@ -510,6 +574,16 @@ const vi = {
         oled: {
           title: 'OLED',
           description: 'OLED screen automatically sleep',
+          brightness: 'Độ sáng OLED',
+          brightnessDescription: 'Mức thấp hơn giúp màn hình bền hơn',
+          brightnessLevels: {
+            '64': 'Thấp nhất',
+            '96': 'Thấp',
+            '128': 'Trung bình',
+            '160': 'Cao',
+            '207': 'Mặc định',
+            '255': 'Tối đa'
+          },
           0: 'Không bao giờ',
           15: '15 sec',
           30: '30 sec',
@@ -525,11 +599,35 @@ const vi = {
           tip: 'Đặt mật khẩu mạnh trước khi kích hoạt (Tài khoản - Đổi mật khẩu)'
         },
         advanced: 'Cài đặt nâng cao',
+        cpuFreq: {
+          title: 'Tần số CPU',
+          description: 'Đặt xung nhịp CPU áp dụng ở lần khởi động tiếp theo',
+          tip: 'CPU khởi động ở 850 MHz và được định mức cho 1000 MHz. Giá trị mới được áp dụng ở lần khởi động tiếp theo, không phải khi hệ thống đang chạy. 1000 MHz nằm trong thông số; nhiệt độ vẫn thấp hơn nhiều so với giới hạn ở cả hai mức.',
+          running: 'Đang chạy: {{mhz}} MHz',
+          rebootToApply: 'khởi động lại để áp dụng',
+          rebootConfirm: 'Khởi động lại ngay để áp dụng {{mhz}} MHz?'
+        },
         swap: {
           title: 'Hoán đổi',
           disable: 'Tắt',
           description: 'Đặt kích thước tệp hoán đổi',
           tip: 'Kích hoạt tính năng này có thể rút ngắn thời gian sử dụng thẻ SD của bạn!'
+        },
+        zram: {
+          title: 'Hoán đổi nén (zram)',
+          description: 'Hoán đổi trong RAM nén, thay vì trên thẻ SD',
+          tip: 'zram giữ vùng hoán đổi ngoài thẻ SD, nên không gây hao mòn. Không có vùng hoán đổi trên đĩa phía sau: nếu zram đầy, kernel sẽ dừng một tiến trình thay vì phân trang chậm. Giới hạn bộ nhớ quy định lượng RAM tối đa zram có thể dùng.',
+          unavailable: 'Các module kernel chưa được cài trên thiết bị này',
+          inactive: 'Đã bật, nhưng thiết bị không khởi động',
+          active: 'Đang hoạt động - {{used}} / {{total}}, {{ratio}}x',
+          off: 'Tắt',
+          detail: {
+            algorithm: 'Thuật toán: {{algorithm}}',
+            memory: 'Bộ nhớ đã dùng: {{used}} / {{limit}}',
+            memoryNoLimit: 'Bộ nhớ đã dùng: {{used}}, không đặt giới hạn',
+            counters:
+              'Trang hoán đổi vào {{in}}, ra {{out}} (mọi thiết bị hoán đổi, từ lúc khởi động)'
+          }
         },
         mouseJiggler: {
           title: 'Máy lắc lư chuột',
@@ -584,7 +682,26 @@ const vi = {
           reenumerate:
             'Áp dụng sẽ dựng lại kết nối USB. Máy chủ mất bàn phím, chuột và ổ đĩa ảo trong vài giây.'
         },
+        audio: 'Loa ảo',
+        audioDesc:
+          'Cung cấp một card âm thanh USB cho máy chủ từ xa, để bạn có thể nghe âm thanh của nó. Máy chủ phải chọn nó làm thiết bị đầu ra. Thay đổi mục này sẽ dựng lại kết nối USB.',
+        audioNote: 'Âm thanh có trong cả hai chế độ H.264 (WebRTC và Direct), không có trong MJPEG',
+        console: 'Console nối tiếp',
+        consoleDesc:
+          'Cung cấp một cổng nối tiếp USB cho máy chủ từ xa, để đăng nhập vào NanoKVM này khi không truy cập được mạng',
+        consoleTip:
+          'Bất kỳ ai điều khiển máy chủ từ xa đều nhận được lời nhắc đăng nhập vào NanoKVM này. Đặt mật khẩu mạnh trước khi bật (Tài khoản - Đổi mật khẩu).',
         endpoints: {
+          title: 'Endpoint USB',
+          used: 'Đã dùng {{used}} / {{total}}',
+          cost: 'dùng {{cost}}',
+          needs: 'cần {{cost}}',
+          full: 'Không đủ endpoint USB. Hãy tắt một mục khác trước.',
+          inactive:
+            'Đã bật nhưng không chạy: bộ điều khiển USB đã hết endpoint. Tắt một thiết bị khác và thiết bị này sẽ khởi động ngay.',
+          explain:
+            'Bộ điều khiển USB có một số lượng endpoint đầu vào cố định, và đây là số đếm của chúng. Nếu số thiết bị được bật vượt quá sức chứa, bàn phím và chuột được giữ lại, phần còn lại bị tắt.',
+          error: 'Không kết nối được thiết bị. Hãy thử lại.',
           fitTogether: 'Có thể dùng cùng nhau: {{sets}}'
         },
         reboot: 'Khởi động lại',
@@ -611,7 +728,10 @@ const vi = {
         },
         tls: {
           description: 'Bật giao thức HTTPS',
-          tip: 'Lưu ý: Sử dụng HTTPS có thể tăng độ trễ, đặc biệt trong chế độ video MJPEG.'
+          tip: 'Lưu ý: Sử dụng HTTPS có thể tăng độ trễ, đặc biệt trong chế độ video MJPEG.',
+          restarting: 'Đang khởi động lại máy chủ của thiết bị, mất khoảng hai phút...',
+          waiting: 'Đang chờ thiết bị phản hồi lại...',
+          waitingHttp: 'Đang chuyển về http. Tải lại trang này nếu nó không tự mở.'
         },
         ethernet: {
           title: 'Địa chỉ IP',
@@ -672,6 +792,54 @@ const vi = {
           none: 'Không có'
         }
       },
+      vpn: {
+        loading: 'Đang tải...',
+        okBtn: 'Có',
+        cancelBtn: 'Không',
+        restart: 'Khởi động lại {{name}}?',
+        stop: 'Dừng {{name}}?',
+        stopDesc:
+          'Daemon sẽ dừng ngay. Khởi động cùng hệ thống là một công tắc riêng và vẫn giữ nguyên.',
+        update: 'Cập nhật {{name}} lên {{version}}?',
+        updateDesc: 'Daemon sẽ khởi động lại nếu đang chạy. Thông tin đăng nhập được giữ nguyên.',
+        notInstall: '{{name}} chưa được cài đặt.',
+        install: 'Cài đặt',
+        installing: 'Đang cài đặt',
+        installFailed: 'Cài đặt thất bại',
+        retry: 'Thử lại',
+        notRunning: '{{name}} không chạy. Hãy khởi động nó để tiếp tục.',
+        run: 'Khởi động',
+        boot: 'Khởi động cùng hệ thống',
+        bootDesc: 'Khởi động {{name}} khi KVM khởi động.',
+        enable: 'Bật {{name}}',
+        control: 'Máy chủ điều khiển',
+        connected: 'Đã kết nối',
+        disconnected: 'Chưa kết nối',
+        deviceName: 'Tên thiết bị',
+        deviceIP: 'IP thiết bị',
+        account: 'Tài khoản',
+        version: 'Phiên bản',
+        uptime: 'Thời gian hoạt động',
+        peers: 'Peer',
+        noPeers: 'Chưa có peer nào.',
+        online: 'Trực tuyến',
+        offline: 'Ngoại tuyến',
+        memory: 'Bộ nhớ',
+        daemonRss: 'Daemon',
+        group: 'Nhóm tiện ích bổ sung',
+        high: 'bị điều tiết khi vượt {{size}}',
+        max: 'bị kernel dừng khi vượt {{size}}',
+        noGroup: 'Bo mạch này không có nhóm bộ nhớ cho tiện ích bổ sung.',
+        uninstall: 'Gỡ cài đặt {{name}}',
+        uninstallDesc:
+          'Bạn có chắc chắn muốn gỡ cài đặt {{name}} không? Thông tin đăng nhập vẫn được giữ trên bo mạch.',
+        blocked:
+          '{{other}} đang chạy hoặc khởi động cùng hệ thống. Mỗi lúc chỉ chạy được một VPN: hãy dừng {{other}} và tắt khởi động cùng hệ thống của nó trước.',
+        swap: {
+          title: 'Bộ nhớ hoán đổi',
+          tip: 'Nếu daemon thiếu bộ nhớ, hãy thử bật bộ nhớ hoán đổi. Thao tác này đặt kích thước tệp hoán đổi mặc định là 256MB, có thể điều chỉnh trong "Cài đặt > Thiết bị".'
+        }
+      },
       tailscale: {
         title: 'Tailscale',
         retry: 'Vui lòng làm mới và thử lại. Hoặc thử cài đặt thủ công',
@@ -688,6 +856,21 @@ const vi = {
         loginSuccess: 'Đăng nhập thành công',
         logout: 'Đăng xuất',
         logoutDesc: 'Bạn có chắc chắn muốn đăng xuất không?'
+      },
+      netbird: {
+        title: 'NetBird',
+        notLogin:
+          'Thiết bị này chưa tham gia mạng NetBird nào. Hãy tham gia bằng setup key, hoặc đăng nhập bằng SSO.',
+        setupKey: 'Setup key',
+        setupKeyPlaceholder: 'Dán setup key từ bảng điều khiển NetBird',
+        join: 'Tham gia',
+        or: 'hoặc',
+        sso: 'Đăng nhập bằng SSO',
+        urlPeriod: 'URL này có hiệu lực trong 10 phút',
+        loginSuccess: 'Đăng nhập thành công',
+        logout: 'Hủy đăng ký',
+        logoutDesc:
+          'Hủy đăng ký sẽ xóa peer này khỏi tài khoản NetBird của bạn và xóa cấu hình của nó tại đây. Để tham gia lại cần setup key hoặc đăng nhập SSO, và peer có thể nhận IP mới. Tiếp tục?'
       },
       update: {
         title: 'Kiểm tra cập nhật',
@@ -715,6 +898,7 @@ const vi = {
           confirmDesc:
             'SHA-512 chỉ kiểm tra xem gói có khớp với tệp kê khai do máy chủ này cung cấp hay không. Điều này không chứng minh rằng gói đó là bản phát hành NanoKVM chính thức. Máy chủ bị lỗi hoặc độc hại có thể khiến thiết bị không thể sử dụng, gây mất dữ liệu hoặc xâm phạm hệ thống.',
           confirm: 'Vẫn sử dụng',
+          useSipeed: 'Dùng máy chủ chính thức của Sipeed',
           previewDisabled:
             'Không thể sử dụng Bản cập nhật xem trước khi máy chủ cập nhật tùy chỉnh đang được bật.'
         },
@@ -733,12 +917,59 @@ const vi = {
       account: {
         title: 'Tài khoản',
         webAccount: 'Tên tài khoản web',
+        role: 'Vai trò',
+        roles: { admin: 'Quản trị viên', user: 'Người dùng' },
         password: 'Mật khẩu',
         updateBtn: 'Update',
         logoutBtn: 'Đăng xuất',
         logoutDesc: 'Bạn có chắc chắn muốn đăng xuất không?',
         okBtn: 'Có',
-        cancelBtn: 'Không'
+        cancelBtn: 'Không',
+        users: {
+          title: 'Người dùng',
+          create: 'Tạo người dùng',
+          enabled: 'Đã bật',
+          disabled: 'Đã tắt',
+          deviceOwner: 'Chủ sở hữu thiết bị',
+          resetPassword: 'Đặt lại mật khẩu',
+          delete: 'Xóa',
+          deleteConfirm: 'Xóa người dùng này và thu hồi mọi phiên của họ?',
+          created: 'Đã tạo người dùng',
+          deleted: 'Đã xóa người dùng',
+          passwordUpdated: 'Đã cập nhật mật khẩu',
+          loadFailed: 'Không tải được danh sách người dùng',
+          saveFailed: 'Không lưu được người dùng',
+          deleteFailed: 'Không xóa được người dùng'
+        }
+      },
+      apiKeys: {
+        title: 'Khóa API',
+        description:
+          'Khóa hoạt động với tư cách chủ sở hữu, với vai trò của người dùng đó. Gửi nó dưới dạng Authorization: Bearer <key> cho metrics và API, hoặc dưới dạng X-Auth-Token cho Redfish.',
+        name: 'Tên',
+        namePlaceholder: 'Mục đích của khóa, ví dụ prometheus',
+        nameRequired: 'Hãy đặt tên cho khóa',
+        nameTooLong: 'Tên dài tối đa 64 ký tự',
+        unnamed: '(không tên)',
+        create: 'Tạo khóa',
+        created: 'Tạo lúc',
+        owner: 'Chủ sở hữu',
+        empty: 'Không có khóa API',
+        newKeyTitle: 'Khóa API mới của bạn',
+        newKeyWarning:
+          'Hãy sao chép khóa ngay. Khóa không được lưu và không thể hiển thị lại. Nếu làm mất, hãy thu hồi và tạo khóa khác.',
+        copy: 'Sao chép',
+        copied: 'Đã sao chép',
+        copyFailed: 'Sao chép thất bại. Vui lòng sao chép thủ công.',
+        done: 'Xong',
+        revoke: 'Thu hồi',
+        revokeConfirmTitle: 'Thu hồi khóa API này?',
+        revokeConfirmDesc: 'Mọi thứ đang dùng "{{name}}" sẽ ngừng hoạt động ngay lập tức.',
+        revoked: 'Đã thu hồi khóa API',
+        loadFailed: 'Không tải được khóa API',
+        createFailed: 'Không tạo được khóa API',
+        revokeFailed: 'Không thu hồi được khóa API',
+        cancelBtn: 'Hủy'
       }
     },
     picoclaw: {
@@ -907,18 +1138,38 @@ const vi = {
     },
     error: {
       title: 'Chúng tôi đã gặp sự cố',
-      refresh: 'Làm mới'
+      refresh: 'Làm mới',
+      panel: 'Phần này của trang đã ngừng hoạt động',
+      retry: 'Thử lại'
     },
     fullscreen: {
       toggle: 'Chuyển đổi toàn màn hình'
     },
     input: {
+      disconnected: 'Bàn phím và chuột chưa được kết nối',
+      disconnectedTls:
+        'Trình duyệt đã từ chối kết nối bảo mật truyền bàn phím và chuột, và nó làm vậy mà không hỏi. Chứng chỉ do thiết bị này tạo ra chưa được tin cậy. Hãy mở địa chỉ này trong tab mới, chấp nhận chứng chỉ, rồi tải lại. Cài đặt chứng chỉ là cách khắc phục đáng tin cậy.',
+      disconnectedNever:
+        'Không mở được kết nối truyền bàn phím và chuột. Phần còn lại của trang vẫn hoạt động vì không dùng kết nối này. Hãy kiểm tra xem có gì giữa bạn và thiết bị đang chặn nó không.',
+      disconnectedDropped:
+        'Kết nối truyền bàn phím và chuột đã bị mất và chưa khôi phục. Nó tự kết nối lại sau khi khởi động lại; nếu tình trạng này kéo dài, hãy tải lại trang.',
       hidDisabled: 'HID đã bị tắt trên thiết bị này (/boot/disable_hid).',
       keyFailed: 'Không thể gửi phím.'
     },
+    speaker: { title: 'Loa', unmute: 'Bật tiếng', mute: 'Tắt tiếng' },
     menu: {
       collapse: 'Thu gọn Menu',
       expand: 'Mở rộng Menu'
+    },
+    ion: {
+      checking: 'Đang kiểm tra bộ nhớ video trước khi bắt đầu luồng...',
+      warn: 'Bộ nhớ video sắp hết. Chỉ một lần khởi động lại máy chủ cũng sẽ làm cạn nó. Hãy khởi động lại khi thuận tiện.',
+      criticalTitle: 'Không đủ bộ nhớ video để bắt đầu luồng',
+      criticalBody:
+        'Bắt đầu video sẽ làm cạn bộ nhớ dành riêng và dừng máy chủ. Mọi chức năng khác vẫn hoạt động, bao gồm điều khiển nguồn và khởi động lại. Chỉ khởi động lại NanoKVM mới thu hồi được bộ nhớ này.',
+      criticalContinue: 'Vẫn bắt đầu video',
+      criticalReboot: 'Khởi động lại NanoKVM',
+      criticalRebooting: 'Đang khởi động lại...'
     }
   }
 };

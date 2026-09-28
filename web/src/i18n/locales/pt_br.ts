@@ -8,18 +8,23 @@ const pt_br = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      cookieRejected:
+        'O navegador se recusou a armazenar a sessão. Um cookie deixado por uma sessão HTTPS anterior não pode ser substituído por http simples. Limpe os cookies deste endereço, ou abra uma janela anônima, e entre novamente.',
       login: 'Login',
       placeholderUsername: 'Nome de usuário',
       placeholderPassword: 'Senha',
+      placeholderCurrentPassword: 'Senha atual',
       placeholderPassword2: 'Por favor, digite a senha novamente',
       noEmptyUsername: 'Nome de usuário é obrigatório',
       noEmptyPassword: 'Senha é obrigatória',
+      passwordLength: 'A senha deve ter entre 8 e 72 caracteres',
       noAccount:
         'Falha ao obter informações do usuário, por favor atualize a página ou redefina a senha',
       invalidUser: 'Nome de usuário ou senha inválidos',
       locked: 'Muitos logins, tente novamente mais tarde',
       globalLocked: 'Sistema sob proteção, tente novamente mais tarde',
       error: 'Erro inesperado',
+      invalidCurrentPassword: 'A senha atual está incorreta',
       changePassword: 'Mudar Senha',
       changePasswordDesc: 'Para a segurança do seu dispositivo, por favor, mude a senha!',
       differentPassword: 'Senhas não conferem',
@@ -242,6 +247,10 @@ const pt_br = {
       relative: 'Modo relativo',
       absoluteShort: 'Absoluto',
       relativeShort: 'Relativo',
+      absoluteStalled: 'O alvo está ignorando o mouse absoluto',
+      absoluteStalledDesc:
+        'O alvo parou de receber os relatórios do mouse absoluto, então os movimentos do ponteiro são perdidos. O teclado não é afetado. Recuperar o USB costuma resolver; o modo relativo usa outro endpoint.',
+      useRelative: 'Mudar para modo relativo',
       direction: 'Direção da roda de rolagem',
       scrollUp: 'Role para cima',
       scrollDown: 'Role para baixo',
@@ -256,6 +265,7 @@ const pt_br = {
         desc: 'Se o seu mouse e teclado pararem de responder e a redefinição de HID não ajudar, pode ser um problema de compatibilidade entre o NanoKVM e o dispositivo. Tente habilitar o modo Somente-HID para melhor compatibilidade.',
         tip1: 'Habilitar o modo Somente-HID irá desmontar o U-disk virtual e a rede virtual',
         tip2: 'No modo Somente-HID, a montagem de imagem está desativada',
+        rebuild: 'Trocar de modo reconstrói a conexão USB. O NanoKVM não reinicia',
         enable: 'Habilitar modo Somente-HID',
         disable: 'Desabilitar modo Somente-HID'
       }
@@ -272,6 +282,17 @@ const pt_br = {
       unmountDesc:
         'Em alguns sistemas, é necessário ejetar manualmente do host remoto antes de desmontar a imagem.',
       refresh: 'Atualizar a lista de imagens',
+      disk: 'Disco',
+      cdrom: 'CD',
+      driveEmpty: 'Vazio',
+      eject: 'Ejetar',
+      readOnly: 'Somente leitura',
+      readOnlyTip: 'Vale para a próxima imagem inserida no disco.',
+      noDrives: 'Nenhuma unidade virtual. Ative o disco virtual em Configurações.',
+      insertFailed: 'Falha ao inserir',
+      ejectFailed: 'Falha ao ejetar',
+      insertInto: 'Inserir em {{drive}}. Clique para alterar.',
+      loadedIn: 'Na unidade {{drive}}',
       attention: 'Atenção',
       deleteConfirm: 'Tem certeza que deseja excluir esta imagem?',
       okBtn: 'Sim',
@@ -369,7 +390,15 @@ const pt_br = {
       sleepConfirm: 'Suspender o host?',
       powerDownConfirm: 'Enviar a tecla de desligar ao host?',
       wakeTip:
-        'Um host suspenso costuma ignorar Despertar vindo do dispositivo que o suspendeu. Despertar com Shift pressiona uma tecla do teclado, que mais hosts aceitam.'
+        'Um host suspenso costuma ignorar Despertar vindo do dispositivo que o suspendeu. Despertar com Shift pressiona uma tecla do teclado, que mais hosts aceitam.',
+      led: 'LED de energia',
+      ledOn: 'Aceso',
+      ledOff: 'Apagado',
+      ledUnknown: 'Desconhecido',
+      ledConnected: 'LED de energia conectado',
+      ledConnectedTip:
+        'Ative somente se o conector do LED de energia do host estiver ligado à placa. Sem ele, o estado de energia é desconhecido.',
+      ledConnectedFailed: 'Falha ao salvar a configuração do LED de energia'
     },
     settings: {
       title: 'Configurações',
@@ -392,6 +421,34 @@ const pt_br = {
         okBtn: 'Confirmar',
         cancelBtn: 'Cancelar'
       },
+      redfish: {
+        title: 'Redfish',
+        service: 'Serviço Redfish',
+        serviceDesc:
+          'A API Redfish da DMTF, para controle de energia, mídia virtual e status a partir de ferramentas como redfishtool e Ansible. Desativá-la encerra todas as sessões Redfish.',
+        endpoint: 'Raiz do serviço',
+        httpsOn: 'A placa serve HTTPS, que a maioria das ferramentas Redfish exige.',
+        httpsOff:
+          'A placa serve HTTP simples. A maioria das ferramentas Redfish exige HTTPS: ative-o em "Configurações > Rede".',
+        credentials:
+          'O Redfish aceita as contas do KVM, com autenticação Basic ou uma sessão Redfish, e chaves de API enviadas como X-Auth-Token. As chaves de API são gerenciadas na página Chaves de API.',
+        powerActions: 'Ações de energia',
+        powerActionsDesc:
+          'Os tipos de reset oferecidos agora. On, ForceOff e GracefulShutdown precisam do estado de energia, então só são oferecidos quando "LED de energia conectado" está ativado no menu de energia.',
+        sessions: 'Sessões',
+        noSessions: 'Nenhuma sessão Redfish aberta',
+        created: 'Criada',
+        lastUsed: 'Último uso',
+        refresh: 'Atualizar',
+        end: 'Encerrar',
+        endConfirmTitle: 'Encerrar esta sessão Redfish?',
+        endConfirmDesc:
+          'O token dela para de funcionar imediatamente. O cliente precisa fazer login novamente.',
+        failed: 'Falha na operação Redfish',
+        copyFailed: 'Falha ao copiar. Copie manualmente.',
+        okBtn: 'Confirmar',
+        cancelBtn: 'Cancelar'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Watchdog do host',
@@ -400,7 +457,7 @@ const pt_br = {
         stillWarning:
           'Um host cuja tela entra em repouso, ou cuja imagem fica parada enquanto trabalha, parece travado. Desative o repouso da tela no host ou defina um endereço de ping.',
         ledHint:
-          '"Power LED connected" está desativado no menu de energia. O watchdog não vê quando o host está desligado, então o trata como sempre ligado.',
+          '"LED de energia conectado" está desativado no menu de energia. O watchdog não vê quando o host está desligado, então o trata como sempre ligado.',
         timeout: 'Tempo limite',
         timeoutDesc: 'Por quanto tempo o host pode não dar sinal de vida antes de o watchdog agir.',
         action: 'Ação',
@@ -464,7 +521,17 @@ const pt_br = {
         applicationTip: 'Versão do aplicativo web NanoKVM',
         image: 'Versão da Imagem',
         imageTip: 'Versão da imagem do sistema NanoKVM',
+        kernel: 'Versão do Kernel',
+        kernelTip: 'Versão do kernel Linux em execução agora',
         deviceKey: 'Chave do Dispositivo',
+        videoMemory: 'Memória de Vídeo',
+        videoMemoryTip:
+          'Memória reservada para a captura de vídeo. Ela não é compartilhada com o resto do sistema.',
+        videoMemoryGenerations_one:
+          '{{count}} sessão anterior do NanoKVM está retendo memória de vídeo',
+        videoMemoryGenerations_other:
+          '{{count}} sessões anteriores do NanoKVM estão retendo memória de vídeo',
+        videoMemoryReboot: 'Reinicie para recuperá-la.',
         community: 'Comunidade',
         hostname: 'Nome do Host',
         hostnameUpdated: 'Nome do host atualizado. Reinicie para aplicar.',
@@ -513,6 +580,16 @@ const pt_br = {
         oled: {
           title: 'OLED',
           description: 'Desligar tela OLED após',
+          brightness: 'Brilho do OLED',
+          brightnessDescription: 'Um nível mais baixo prolonga a vida útil da tela',
+          brightnessLevels: {
+            '64': 'Mínimo',
+            '96': 'Baixo',
+            '128': 'Médio',
+            '160': 'Alto',
+            '207': 'Padrão',
+            '255': 'Máximo'
+          },
           0: 'Nunca',
           15: '15 seg',
           30: '30 seg',
@@ -528,11 +605,35 @@ const pt_br = {
           tip: 'Defina uma senha forte antes de habilitar (Conta - Mudar Senha)'
         },
         advanced: 'Configurações Avançadas',
+        cpuFreq: {
+          title: 'Frequência da CPU',
+          description: 'Defina o clock da CPU aplicado na próxima inicialização',
+          tip: 'A CPU inicia a 850 MHz e é especificada para 1000 MHz. Um novo valor é aplicado na próxima inicialização, não com o sistema em execução. 1000 MHz está dentro da especificação; a temperatura fica bem dentro dos limites em qualquer uma das opções.',
+          running: 'Em execução: {{mhz}} MHz',
+          rebootToApply: 'reinicie para aplicar',
+          rebootConfirm: 'Reiniciar agora para aplicar {{mhz}} MHz?'
+        },
         swap: {
           title: 'Swap',
           disable: 'Desativar',
           description: 'Defina o tamanho do arquivo de swap',
           tip: 'Habilitar esta função pode encurtar a vida útil do seu cartão SD!'
+        },
+        zram: {
+          title: 'Swap comprimido (zram)',
+          description: 'Swap na RAM comprimida, em vez de no cartão SD',
+          tip: 'O zram mantém o swap fora do cartão SD, então não causa desgaste. Não há swap em disco por trás dele: se o zram encher, o kernel encerra um processo em vez de paginar lentamente. O limite de memória define quanta RAM o zram pode usar.',
+          unavailable: 'Os módulos do kernel não estão instalados neste dispositivo',
+          inactive: 'Habilitado, mas o dispositivo não iniciou',
+          active: 'Ativo - {{used}} de {{total}}, {{ratio}}x',
+          off: 'Desligado',
+          detail: {
+            algorithm: 'Algoritmo: {{algorithm}}',
+            memory: 'Memória usada: {{used}} de {{limit}}',
+            memoryNoLimit: 'Memória usada: {{used}}, sem limite definido',
+            counters:
+              'Páginas trocadas: entrada {{in}}, saída {{out}} (todos os dispositivos de swap, desde a inicialização)'
+          }
         },
         mouseJiggler: {
           title: 'Movimentador de Mouse',
@@ -587,7 +688,26 @@ const pt_br = {
           reenumerate:
             'Aplicar reconstrói a conexão USB. O host perde o teclado, o mouse e o disco virtual por alguns segundos.'
         },
+        audio: 'Alto-falante Virtual',
+        audioDesc:
+          'Apresenta uma placa de som USB ao host remoto, para que você possa ouvi-lo. O host deve selecioná-la como dispositivo de saída. Alterar isso reconstrói a conexão USB.',
+        audioNote: 'O áudio está disponível nos dois modos H.264 (WebRTC e Direto), não no MJPEG',
+        console: 'Console Serial',
+        consoleDesc:
+          'Apresenta uma porta serial USB ao host remoto, para entrar neste NanoKVM quando a rede estiver inacessível',
+        consoleTip:
+          'Quem controla o host remoto recebe um prompt de login deste NanoKVM. Defina uma senha forte antes de habilitar (Conta - Mudar Senha).',
         endpoints: {
+          title: 'Endpoints USB',
+          used: '{{used}} de {{total}} em uso',
+          cost: 'usa {{cost}}',
+          needs: 'precisa de {{cost}}',
+          full: 'Não há endpoints USB suficientes. Desative outra coisa primeiro.',
+          inactive:
+            'Ativado, mas sem funcionar: o controlador USB ficou sem endpoints. Desative outro dispositivo e este inicia na hora.',
+          explain:
+            'O controlador USB tem um número fixo de endpoints de entrada, e esta é a contagem deles. Se houver mais dispositivos habilitados do que cabem, o teclado e o mouse são mantidos e o resto é desativado.',
+          error: 'Não foi possível acessar o dispositivo. Tente novamente.',
           fitTogether: 'Cabem juntos: {{sets}}'
         },
         reboot: 'Reiniciar',
@@ -614,7 +734,10 @@ const pt_br = {
         },
         tls: {
           description: 'Habilitar protocolo HTTPS',
-          tip: 'Atenção: O uso de HTTPS pode aumentar a latência, especialmente com o modo de vídeo MJPEG.'
+          tip: 'Atenção: O uso de HTTPS pode aumentar a latência, especialmente com o modo de vídeo MJPEG.',
+          restarting: 'Reiniciando o servidor do dispositivo, isso leva cerca de dois minutos...',
+          waiting: 'Aguardando o dispositivo responder novamente...',
+          waitingHttp: 'Voltando para http. Recarregue esta página se ela não abrir sozinha.'
         },
         ethernet: {
           title: 'Endereço IP',
@@ -675,6 +798,54 @@ const pt_br = {
           none: 'Nenhum'
         }
       },
+      vpn: {
+        loading: 'Carregando...',
+        okBtn: 'Sim',
+        cancelBtn: 'Não',
+        restart: 'Reiniciar o {{name}}?',
+        stop: 'Parar o {{name}}?',
+        stopDesc:
+          'O daemon para agora. Iniciar na inicialização é uma opção separada e continua como está.',
+        update: 'Atualizar o {{name}} para {{version}}?',
+        updateDesc: 'O daemon reinicia se estiver em execução. O login é mantido.',
+        notInstall: 'O {{name}} não está instalado.',
+        install: 'Instalar',
+        installing: 'Instalando',
+        installFailed: 'Falha na instalação',
+        retry: 'Tentar novamente',
+        notRunning: 'O {{name}} não está em execução. Inicie-o para continuar.',
+        run: 'Iniciar',
+        boot: 'Iniciar na inicialização',
+        bootDesc: 'Inicia o {{name}} quando o KVM é ligado.',
+        enable: 'Habilitar {{name}}',
+        control: 'Servidor de controle',
+        connected: 'Conectado',
+        disconnected: 'Não conectado',
+        deviceName: 'Nome do dispositivo',
+        deviceIP: 'IP do dispositivo',
+        account: 'Conta',
+        version: 'Versão',
+        uptime: 'Tempo ativo',
+        peers: 'Peers',
+        noPeers: 'Nenhum peer ainda.',
+        online: 'Online',
+        offline: 'Offline',
+        memory: 'Memória',
+        daemonRss: 'Daemon',
+        group: 'Grupo de complementos',
+        high: 'limitado acima de {{size}}',
+        max: 'encerrado pelo kernel acima de {{size}}',
+        noGroup: 'Não há grupo de memória de complementos nesta placa.',
+        uninstall: 'Desinstalar {{name}}',
+        uninstallDesc:
+          'Tem certeza de que deseja desinstalar o {{name}}? O login permanece na placa.',
+        blocked:
+          'O {{other}} está em execução ou inicia na inicialização. Só uma VPN funciona por vez: pare o {{other}} e desative a inicialização automática dele primeiro.',
+        swap: {
+          title: 'Memória swap',
+          tip: 'Se faltar memória ao daemon, tente habilitar a memória swap. Isso define o tamanho do arquivo de swap como 256MB por padrão, o que pode ser ajustado em "Configurações > Dispositivo".'
+        }
+      },
       tailscale: {
         title: 'Tailscale',
         retry: 'Por favor, atualize e tente novamente. Ou tente instalar manualmente',
@@ -691,6 +862,21 @@ const pt_br = {
         loginSuccess: 'Login Bem-sucedido',
         logout: 'Sair',
         logoutDesc: 'Tem certeza de que deseja sair?'
+      },
+      netbird: {
+        title: 'NetBird',
+        notLogin:
+          'Este dispositivo ainda não entrou em uma rede NetBird. Entre com uma chave de configuração ou faça login com SSO.',
+        setupKey: 'Chave de configuração',
+        setupKeyPlaceholder: 'Cole uma chave de configuração do painel do NetBird',
+        join: 'Entrar',
+        or: 'ou',
+        sso: 'Login com SSO',
+        urlPeriod: 'Esta URL é válida por 10 minutos',
+        loginSuccess: 'Login Bem-sucedido',
+        logout: 'Cancelar registro',
+        logoutDesc:
+          'Cancelar o registro remove este peer da sua conta NetBird e apaga a configuração dele aqui. Para entrar de novo é preciso uma chave de configuração ou um login SSO, e o peer pode receber um novo IP. Continuar?'
       },
       update: {
         title: 'Verificar Atualizações',
@@ -718,6 +904,7 @@ const pt_br = {
           confirmDesc:
             'O SHA-512 apenas verifica se o pacote corresponde ao manifesto fornecido por este servidor. Ele não comprova que o pacote seja uma versão oficial do NanoKVM. Um servidor com falha ou mal-intencionado pode inutilizar o dispositivo, causar perda de dados ou comprometer o sistema.',
           confirm: 'Usar mesmo assim',
+          useSipeed: 'Usar o servidor oficial da Sipeed',
           previewDisabled:
             'As atualizações de prévia ficam indisponíveis enquanto um servidor de atualização personalizado estiver ativado.'
         },
@@ -735,12 +922,59 @@ const pt_br = {
       account: {
         title: 'Conta',
         webAccount: 'Nome da Conta Web',
+        role: 'Função',
+        roles: { admin: 'Administrador', user: 'Usuário' },
         password: 'Senha',
         updateBtn: 'Alterar',
         logoutBtn: 'Sair',
         logoutDesc: 'Tem certeza de que deseja sair?',
         okBtn: 'Sim',
-        cancelBtn: 'Não'
+        cancelBtn: 'Não',
+        users: {
+          title: 'Usuários',
+          create: 'Criar Usuário',
+          enabled: 'Habilitado',
+          disabled: 'Desabilitado',
+          deviceOwner: 'Dono do dispositivo',
+          resetPassword: 'Redefinir Senha',
+          delete: 'Excluir',
+          deleteConfirm: 'Excluir este usuário e revogar todas as sessões dele?',
+          created: 'Usuário criado',
+          deleted: 'Usuário excluído',
+          passwordUpdated: 'Senha atualizada',
+          loadFailed: 'Falha ao carregar os usuários',
+          saveFailed: 'Falha ao salvar o usuário',
+          deleteFailed: 'Falha ao excluir o usuário'
+        }
+      },
+      apiKeys: {
+        title: 'Chaves de API',
+        description:
+          'Uma chave age como o seu dono, com a função desse usuário. Envie-a como Authorization: Bearer <key> para métricas e a API, ou como X-Auth-Token para o Redfish.',
+        name: 'Nome',
+        namePlaceholder: 'Para que serve a chave, como prometheus',
+        nameRequired: 'Dê um nome à chave',
+        nameTooLong: 'O nome pode ter no máximo 64 caracteres',
+        unnamed: '(sem nome)',
+        create: 'Criar Chave',
+        created: 'Criada',
+        owner: 'Dono',
+        empty: 'Nenhuma chave de API',
+        newKeyTitle: 'Sua nova chave de API',
+        newKeyWarning:
+          'Copie a chave agora. Ela não é armazenada e não pode ser exibida novamente. Se você perdê-la, revogue-a e crie outra.',
+        copy: 'Copiar',
+        copied: 'Copiado',
+        copyFailed: 'Falha ao copiar. Copie manualmente.',
+        done: 'Concluído',
+        revoke: 'Revogar',
+        revokeConfirmTitle: 'Revogar esta chave de API?',
+        revokeConfirmDesc: 'Tudo o que usa "{{name}}" para de funcionar imediatamente.',
+        revoked: 'Chave de API revogada',
+        loadFailed: 'Falha ao carregar as chaves de API',
+        createFailed: 'Falha ao criar a chave de API',
+        revokeFailed: 'Falha ao revogar a chave de API',
+        cancelBtn: 'Cancelar'
       }
     },
     picoclaw: {
@@ -909,18 +1143,38 @@ const pt_br = {
     },
     error: {
       title: 'Encontramos um problema',
-      refresh: 'Atualizar'
+      refresh: 'Atualizar',
+      panel: 'Esta parte da página parou de funcionar',
+      retry: 'Tentar novamente'
     },
     fullscreen: {
       toggle: 'Alternar Tela Cheia'
     },
     input: {
+      disconnected: 'Teclado e mouse não estão conectados',
+      disconnectedTls:
+        'O navegador recusou a conexão segura que transporta o teclado e o mouse, e faz isso sem perguntar. O certificado gerado por este dispositivo ainda não é confiável. Abra este endereço em uma nova aba, aceite o certificado e recarregue. Instalar o certificado é a solução definitiva.',
+      disconnectedNever:
+        'Não foi possível abrir a conexão que transporta o teclado e o mouse. O resto da página funciona porque não a utiliza. Verifique se nada entre você e o dispositivo a está bloqueando.',
+      disconnectedDropped:
+        'A conexão que transporta o teclado e o mouse caiu e não voltou. Ela se reconecta sozinha após uma reinicialização; se isso persistir, recarregue a página.',
       hidDisabled: 'O HID está desativado neste dispositivo (/boot/disable_hid).',
       keyFailed: 'Não foi possível enviar a tecla.'
     },
+    speaker: { title: 'Alto-falante', unmute: 'Ativar som', mute: 'Silenciar' },
     menu: {
       collapse: 'Recolher Menu',
       expand: 'Expandir Menu'
+    },
+    ion: {
+      checking: 'Verificando a memória de vídeo antes de iniciar a transmissão...',
+      warn: 'A memória de vídeo está baixa. Uma única reinicialização do servidor a esgotaria. Reinicie quando for conveniente.',
+      criticalTitle: 'Memória de vídeo insuficiente para iniciar a transmissão',
+      criticalBody:
+        'Iniciar o vídeo esgotaria a memória reservada e pararia o servidor. Todas as outras funções continuam funcionando, incluindo o controle de energia e a reinicialização. Só uma reinicialização do NanoKVM recupera essa memória.',
+      criticalContinue: 'Iniciar o vídeo mesmo assim',
+      criticalReboot: 'Reiniciar o NanoKVM',
+      criticalRebooting: 'Reiniciando...'
     }
   }
 };
