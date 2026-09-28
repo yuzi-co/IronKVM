@@ -35,6 +35,10 @@ type Config struct {
 	// server.yaml. A file without the block loads with the watchdog off.
 	Watchdog Watchdog `yaml:"watchdog,omitempty" mapstructure:"watchdog"`
 
+	// NetBoot configures network boot of the host, kept under "netboot" in
+	// server.yaml. A file without the block loads with both sides off.
+	NetBoot NetBoot `yaml:"netboot,omitempty" mapstructure:"netboot"`
+
 	// Hardware holds the board's pins, derived from its version at start. It
 	// is never read from or written to server.yaml.
 	Hardware Hardware `yaml:"-" mapstructure:"-"`
@@ -108,6 +112,18 @@ func (w Watchdog) WithDefaults() Watchdog {
 		w.MaxPerHour = DefaultWatchdogMaxPerHour
 	}
 	return w
+}
+
+// NetBoot configures network boot of the host. Both sides are off by
+// default, and both need the netboot add-on, which carries dnsmasq and the
+// boot files.
+type NetBoot struct {
+	// USB serves PXE, iPXE and a menu of the images on /data to the host over
+	// the USB network link. It takes effect only while the link is on.
+	USB bool `yaml:"usb" mapstructure:"usb"`
+	// LAN answers PXE clients on the LAN with proxy DHCP. It never hands out
+	// an address, and it offers a boot loader only.
+	LAN bool `yaml:"lan" mapstructure:"lan"`
 }
 
 type Logger struct {

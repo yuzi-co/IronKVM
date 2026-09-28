@@ -284,6 +284,31 @@ func usbNetworkState(present func(string) bool, read func(string) ([]byte, error
 	}
 }
 
+// USBLink is the link as another service needs it, network boot among them:
+// the mode, the subnet with the board's and the host's address, and whether
+// the function is bound.
+type USBLink struct {
+	Mode   string
+	Prefix netip.Prefix
+	Board  netip.Addr
+	Host   netip.Addr
+	Active bool
+}
+
+// CurrentUSBLink reads the link as S03usbdev sets it up.
+func CurrentUSBLink() USBLink {
+	mode := usbNetworkMode(markerPresent)
+	subnet := readUSBSubnet(os.ReadFile)
+
+	return USBLink{
+		Mode:   mode,
+		Prefix: subnet.prefix,
+		Board:  subnet.board,
+		Host:   subnet.host,
+		Active: mode != usbNetworkOff && isFunctionActive("network"),
+	}
+}
+
 func markerPresent(marker string) bool {
 	exist, _ := isDeviceExist(marker)
 	return exist
