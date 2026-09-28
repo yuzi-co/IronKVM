@@ -3,9 +3,10 @@ import { useAtom } from 'jotai';
 import { CheckIcon, CircleHelpIcon, RatioIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { updateScreen } from '@/api/vm';
 import { Resolution as TypeResolution } from '@/types';
 import { resolutionAtom } from '@/jotai/screen.ts';
+
+import { applyScreenSetting } from './update.ts';
 
 const resolutions: TypeResolution[] = [
   { width: 0, height: 0 },
@@ -20,10 +21,7 @@ export const Resolution = () => {
   const [resolution, setResolution] = useAtom(resolutionAtom);
 
   async function update(item: TypeResolution) {
-    const rsp = await updateScreen('resolution', item.height);
-    if (rsp.code !== 0) {
-      return;
-    }
+    if (!(await applyScreenSetting('resolution', item.height, t))) return;
 
     setResolution(item);
   }
@@ -33,7 +31,7 @@ export const Resolution = () => {
       {resolutions.map((res) => (
         <div
           key={res.height}
-          className="flex cursor-pointer select-none items-center rounded py-1.5 pl-1 pr-5 hover:bg-neutral-700/70"
+          className="flex cursor-pointer items-center rounded py-1.5 pr-5 pl-1 select-none hover:bg-neutral-700/70"
           onClick={() => update(res)}
         >
           <div className="flex h-[14px] w-[20px] items-end text-blue-500">
@@ -67,7 +65,7 @@ export const Resolution = () => {
     <Popover content={content} placement="rightTop" arrow={false} align={{ offset: [14, 0] }}>
       <div className="flex h-[30px] cursor-pointer items-center space-x-2 rounded px-3 text-neutral-300 hover:bg-neutral-700/70">
         <RatioIcon size={18} />
-        <span className="select-none text-sm">{t('screen.resolution')}</span>
+        <span className="text-sm select-none">{t('screen.resolution')}</span>
       </div>
     </Popover>
   );

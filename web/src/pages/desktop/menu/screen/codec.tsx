@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Popover } from 'antd';
 import { CheckIcon, FilmIcon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
-import { updateScreen } from '@/api/vm.ts';
+import { applyScreenSetting } from './update.ts';
 
 type CodecProps = {
   codec: number;
@@ -74,6 +75,7 @@ async function hevcIsUsable(videoMode: string): Promise<boolean> {
 }
 
 export const Codec = ({ codec, setCodec, videoMode }: CodecProps) => {
+  const { t } = useTranslation();
   const [hevcSupported, setHevcSupported] = useState(false);
 
   useEffect(() => {
@@ -94,10 +96,7 @@ export const Codec = ({ codec, setCodec, videoMode }: CodecProps) => {
     if (value === codec) return;
     if (value === CODEC_H265 && !hevcSupported) return;
 
-    const rsp = await updateScreen('codec', value);
-    if (rsp.code !== 0) {
-      return;
-    }
+    if (!(await applyScreenSetting('codec', value, t))) return;
 
     setCodec(value);
   }
@@ -112,15 +111,15 @@ export const Codec = ({ codec, setCodec, videoMode }: CodecProps) => {
             key={item.key}
             className={
               disabled
-                ? 'flex select-none items-center rounded py-1 pl-1 pr-6 opacity-40'
-                : 'flex cursor-pointer select-none items-center rounded py-1 pl-1 pr-6 hover:bg-neutral-700/70'
+                ? 'flex items-center rounded py-1 pr-6 pl-1 opacity-40 select-none'
+                : 'flex cursor-pointer items-center rounded py-1 pr-6 pl-1 select-none hover:bg-neutral-700/70'
             }
             onClick={() => update(item.key)}
             title={
               disabled
                 ? videoMode === 'h264'
-                  ? 'This browser cannot receive H.265 over WebRTC'
-                  : 'This browser cannot decode H.265'
+                  ? t('screen.codecNoWebrtcHevc')
+                  : t('screen.codecNoHevc')
                 : undefined
             }
           >
@@ -132,8 +131,7 @@ export const Codec = ({ codec, setCodec, videoMode }: CodecProps) => {
         );
       })}
       <div className="max-w-[220px] px-1 pt-2 text-xs text-neutral-400">
-        The board has one encoder, so this changes the stream for every viewer.
-        Reconnect to apply it to a running WebRTC session.
+        {t('screen.codecNote')}
       </div>
     </>
   );
@@ -142,7 +140,7 @@ export const Codec = ({ codec, setCodec, videoMode }: CodecProps) => {
     <Popover content={content} placement="rightTop" arrow={false} align={{ offset: [14, 0] }}>
       <div className="flex h-[30px] cursor-pointer items-center space-x-2 rounded px-3 text-neutral-300 hover:bg-neutral-700/70">
         <FilmIcon size={18} />
-        <span className="select-none text-sm">Codec</span>
+        <span className="text-sm select-none">{t('screen.codec')}</span>
       </div>
     </Popover>
   );

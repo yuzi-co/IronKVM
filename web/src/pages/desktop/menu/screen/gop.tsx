@@ -1,7 +1,8 @@
 import { Popover } from 'antd';
 import { CheckIcon, SquareKanbanIcon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
-import { updateScreen } from '@/api/vm.ts';
+import { applyScreenSetting } from './update.ts';
 
 type GopProps = {
   gop: number;
@@ -16,13 +17,12 @@ const gopList = [
 ];
 
 export const Gop = ({ gop, setGop }: GopProps) => {
+  const { t } = useTranslation();
+
   async function update(value: number) {
     if (value === gop) return;
 
-    const rsp = await updateScreen('gop', value);
-    if (rsp.code !== 0) {
-      return;
-    }
+    if (!(await applyScreenSetting('gop', value, t))) return;
 
     setGop(value);
   }
@@ -32,7 +32,7 @@ export const Gop = ({ gop, setGop }: GopProps) => {
       {gopList.map((item) => (
         <div
           key={item.key}
-          className="flex cursor-pointer select-none items-center rounded py-1 pl-1 pr-6 hover:bg-neutral-700/70"
+          className="flex cursor-pointer items-center rounded py-1 pr-6 pl-1 select-none hover:bg-neutral-700/70"
           onClick={() => update(item.key)}
         >
           <div className="flex h-[14px] w-[20px] items-end text-blue-500">
@@ -48,7 +48,7 @@ export const Gop = ({ gop, setGop }: GopProps) => {
     <Popover content={content} placement="rightTop" arrow={false} align={{ offset: [14, 0] }}>
       <div className="flex h-[30px] cursor-pointer items-center space-x-2 rounded px-3 text-neutral-300 hover:bg-neutral-700/70">
         <SquareKanbanIcon size={18} />
-        <span className="select-none text-sm">GOP</span>
+        <span className="text-sm select-none">GOP</span>
       </div>
     </Popover>
   );

@@ -4,7 +4,7 @@ import { Button, InputNumber, Popover } from 'antd';
 import { CheckIcon, ScanBarcodeIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { updateScreen } from '@/api/vm';
+import { applyScreenSetting } from './update.ts';
 
 const fpsList = [
   { key: 60, label: '60Hz' },
@@ -42,10 +42,7 @@ export const Fps = ({ fps, setFps }: FpsProps) => {
       return;
     }
 
-    const rsp = await updateScreen('fps', value);
-    if (rsp.code !== 0) {
-      return;
-    }
+    if (!(await applyScreenSetting('fps', value, t))) return;
 
     setFps(value);
     if (isCustomize) {
@@ -59,7 +56,7 @@ export const Fps = ({ fps, setFps }: FpsProps) => {
       {fpsList.map((item) => (
         <div
           key={item.key}
-          className="flex cursor-pointer select-none items-center rounded py-1.5 pl-1 hover:bg-neutral-700/70"
+          className="flex cursor-pointer items-center rounded py-1.5 pl-1 select-none hover:bg-neutral-700/70"
           onClick={() => update(item.key)}
         >
           <div className="flex h-[14px] w-[20px] items-end text-blue-500">
@@ -71,7 +68,7 @@ export const Fps = ({ fps, setFps }: FpsProps) => {
 
       {/* customize fps */}
       <div
-        className="flex cursor-pointer select-none items-center rounded py-1.5 pl-1 pr-5 hover:bg-neutral-700/70"
+        className="flex cursor-pointer items-center rounded py-1.5 pr-5 pl-1 select-none hover:bg-neutral-700/70"
         onClick={showCustomize}
       >
         {defaultFps.includes(fps) ? (
@@ -84,7 +81,7 @@ export const Fps = ({ fps, setFps }: FpsProps) => {
             <div className="flex h-[14px] w-[20px] items-end text-blue-500">
               <CheckIcon size={14} />
             </div>
-            <span>Customize</span>
+            <span>{t('screen.customizeFps')}</span>
             <span className="text-xs">{`(${fps}Hz)`}</span>
           </>
         )}
@@ -108,7 +105,7 @@ export const Fps = ({ fps, setFps }: FpsProps) => {
     <Popover content={content} placement="rightTop" arrow={false} align={{ offset: [14, 0] }}>
       <div className="flex h-[30px] cursor-pointer items-center space-x-2 rounded px-3 text-neutral-300 hover:bg-neutral-700/70">
         <ScanBarcodeIcon size={18} />
-        <span className="select-none text-sm">{t('screen.fps')}</span>
+        <span className="text-sm select-none">{t('screen.fps')}</span>
       </div>
     </Popover>
   );
