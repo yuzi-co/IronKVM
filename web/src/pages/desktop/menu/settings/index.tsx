@@ -7,6 +7,7 @@ import {
   BadgeInfoIcon,
   BotIcon,
   CircleArrowUpIcon,
+  HeartPulseIcon,
   KeyRoundIcon,
   NetworkIcon,
   PaletteIcon,
@@ -37,6 +38,7 @@ import { Network } from './network';
 import { Redfish } from './redfish';
 import { Tailscale } from './tailscale';
 import { Update } from './update';
+import { Watchdog } from './watchdog';
 
 export const Settings = () => {
   const { t } = useTranslation();
@@ -61,6 +63,7 @@ export const Settings = () => {
           { id: 'network', icon: <NetworkIcon size={16} />, component: <Network /> },
           { id: 'mcp', icon: <BotIcon size={16} />, component: <MCP /> },
           { id: 'redfish', icon: <ServerCogIcon size={16} />, component: <Redfish /> },
+          { id: 'watchdog', icon: <HeartPulseIcon size={16} />, component: <Watchdog /> },
           {
             id: 'tailscale',
             icon: <TailscaleIcon />,
