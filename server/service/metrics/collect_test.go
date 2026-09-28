@@ -88,6 +88,7 @@ func useBareHost(t *testing.T) {
 	setVar(t, &procDir, root+"/proc")
 	setVar(t, &zramDir, root+"/zram0")
 	setVar(t, &cgroupDir, root+"/cgroup")
+	setVar(t, &sysDir, root+"/sys")
 	setVar(t, &readIon, func() (uint64, uint64, bool) { return 0, 0, false })
 	setVar(t, &usbLinkState, func() (string, error) { return "", errors.New("no controller") })
 }
@@ -104,6 +105,7 @@ func TestCollectServesTheRestOnABareHost(t *testing.T) {
 		`ironkvm_usb_recoveries_total{action="rebind"} `,
 		`ironkvm_build_info{`,
 		`ironkvm_go_goroutines `,
+		"node_time_seconds ",
 	} {
 		if !strings.Contains(got, present) {
 			t.Errorf("missing %q", present)
