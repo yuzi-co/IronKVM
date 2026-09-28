@@ -649,7 +649,13 @@ const se = {
         stuckFor: 'inga livstecken på {{duration}}',
         pressFailed: 'Knapptrycket misslyckades: {{error}}',
         noScreenshot: 'Ingen skärmbild',
-        failed: 'Watchdog-åtgärden misslyckades'
+        failed: 'Watchdog-åtgärden misslyckades',
+        powerNeedsLed: 'Strömcykel kräver "Ström-LED ansluten" i strömmenyn.',
+        noLedConfirmTitle: 'Slå på watchdog utan ström-LED?',
+        noLedConfirmDesc:
+          'Kortet kan inte se när värden är avstängd, så det behandlar värden som alltid på. Om du stänger av värden trycker watchdog på återställ när tidsgränsen har passerat. Anslut ström-LED:en för att undvika detta.',
+        noLedConfirmOk: 'Slå på',
+        cancel: 'Avbryt'
       },
       netboot: {
         title: 'Nätverksstart',

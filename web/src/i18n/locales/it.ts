@@ -657,7 +657,14 @@ const it = {
         stuckFor: 'nessun segno di vita per {{duration}}',
         pressFailed: 'La pressione non è riuscita: {{error}}',
         noScreenshot: 'Nessuno screenshot',
-        failed: 'Operazione del watchdog non riuscita'
+        failed: 'Operazione del watchdog non riuscita',
+        powerNeedsLed:
+          'Il ciclo di alimentazione richiede "LED di alimentazione collegato" nel menu di alimentazione.',
+        noLedConfirmTitle: 'Attivare il watchdog senza il LED di alimentazione?',
+        noLedConfirmDesc:
+          "La scheda non vede quando l'host è spento, quindi lo considera sempre acceso. Se spegni l'host, il watchdog preme reset allo scadere del timeout. Collega il LED di alimentazione per evitarlo.",
+        noLedConfirmOk: 'Attiva',
+        cancel: 'Annulla'
       },
       netboot: {
         title: 'Avvio di rete',

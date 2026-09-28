@@ -654,7 +654,14 @@ const hu = {
         stuckFor: '{{duration}} óta nincs életjel',
         pressFailed: 'A gombnyomás nem sikerült: {{error}}',
         noScreenshot: 'Nincs képernyőkép',
-        failed: 'A watchdog művelete nem sikerült'
+        failed: 'A watchdog művelete nem sikerült',
+        powerNeedsLed:
+          'A tápciklushoz be kell kapcsolni a „Táp LED csatlakoztatva” beállítást a tápmenüben.',
+        noLedConfirmTitle: 'Bekapcsolja a watchdogot táp LED nélkül?',
+        noLedConfirmDesc:
+          'A panel nem látja, mikor van kikapcsolva a gazdagép, ezért mindig bekapcsoltnak tekinti. Ha leállítja a gazdagépet, a watchdog az időkorlát után megnyomja az újraindítást. Ennek elkerüléséhez csatlakoztassa a táp LED-et.',
+        noLedConfirmOk: 'Bekapcsolás',
+        cancel: 'Mégse'
       },
       netboot: {
         title: 'Hálózati rendszerindítás',

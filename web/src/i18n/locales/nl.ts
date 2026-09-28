@@ -659,7 +659,13 @@ const nl = {
         stuckFor: 'geen teken van leven gedurende {{duration}}',
         pressFailed: 'De druk op de knop mislukte: {{error}}',
         noScreenshot: 'Geen schermafbeelding',
-        failed: 'Watchdog-bewerking mislukt'
+        failed: 'Watchdog-bewerking mislukt',
+        powerNeedsLed: 'Een stroomcyclus vereist "Aan/uit-LED aangesloten" in het aan/uit-menu.',
+        noLedConfirmTitle: 'Watchdog inschakelen zonder aan/uit-LED?',
+        noLedConfirmDesc:
+          'Het bord ziet niet wanneer de host uit staat en behandelt de host daarom als altijd aan. Als u de host afsluit, drukt de watchdog na de time-out op reset. Sluit de aan/uit-LED aan om dit te voorkomen.',
+        noLedConfirmOk: 'Inschakelen',
+        cancel: 'Annuleren'
       },
       netboot: {
         title: 'Netwerkboot',

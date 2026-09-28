@@ -644,7 +644,13 @@ const ko = {
         stuckFor: '{{duration}} 동안 동작 신호 없음',
         pressFailed: '버튼 누르기 실패: {{error}}',
         noScreenshot: '스크린샷 없음',
-        failed: '워치독 작업에 실패했습니다'
+        failed: '워치독 작업에 실패했습니다',
+        powerNeedsLed: '전원 재시작에는 전원 메뉴의 "전원 LED 연결됨"이 필요합니다.',
+        noLedConfirmTitle: '전원 LED 없이 워치독을 켜시겠습니까?',
+        noLedConfirmDesc:
+          '보드는 호스트가 꺼진 것을 알 수 없어 항상 켜져 있는 것으로 간주합니다. 호스트를 종료하면 시간 초과 후 워치독이 리셋을 누릅니다. 이를 피하려면 전원 LED를 연결하세요.',
+        noLedConfirmOk: '켜기',
+        cancel: '취소'
       },
       netboot: {
         title: '네트워크 부팅',

@@ -653,7 +653,13 @@ const id = {
         stuckFor: 'tidak ada tanda kehidupan selama {{duration}}',
         pressFailed: 'Penekanan gagal: {{error}}',
         noScreenshot: 'Tidak ada tangkapan layar',
-        failed: 'Operasi watchdog gagal'
+        failed: 'Operasi watchdog gagal',
+        powerNeedsLed: 'Siklus daya memerlukan "LED daya terhubung" di menu daya.',
+        noLedConfirmTitle: 'Aktifkan watchdog tanpa LED daya?',
+        noLedConfirmDesc:
+          'Papan tidak dapat melihat kapan host mati, sehingga host dianggap selalu menyala. Jika Anda mematikan host, watchdog menekan reset setelah batas waktu lewat. Hubungkan LED daya untuk menghindarinya.',
+        noLedConfirmOk: 'Aktifkan',
+        cancel: 'Batal'
       },
       netboot: {
         title: 'Boot jaringan',

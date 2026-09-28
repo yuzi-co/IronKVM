@@ -658,7 +658,14 @@ const fr = {
         stuckFor: 'aucun signe de vie depuis {{duration}}',
         pressFailed: "L'appui a échoué : {{error}}",
         noScreenshot: "Pas de capture d'écran",
-        failed: 'Échec de l’opération du watchdog'
+        failed: 'Échec de l’opération du watchdog',
+        powerNeedsLed:
+          "Le cycle d'alimentation nécessite « LED d'alimentation connectée » dans le menu d'alimentation.",
+        noLedConfirmTitle: "Activer le watchdog sans la LED d'alimentation ?",
+        noLedConfirmDesc:
+          "La carte ne voit pas quand l'hôte est éteint et le considère donc toujours allumé. Si vous éteignez l'hôte, le watchdog appuie sur reset une fois le délai écoulé. Branchez la LED d'alimentation pour l'éviter.",
+        noLedConfirmOk: 'Activer',
+        cancel: 'Annuler'
       },
       netboot: {
         title: 'Démarrage réseau',

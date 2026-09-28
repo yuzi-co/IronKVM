@@ -653,7 +653,14 @@ const pt_br = {
         stuckFor: 'sem sinal de vida por {{duration}}',
         pressFailed: 'O pressionamento falhou: {{error}}',
         noScreenshot: 'Sem captura de tela',
-        failed: 'A operação do watchdog falhou'
+        failed: 'A operação do watchdog falhou',
+        powerNeedsLed:
+          'O ciclo de energia precisa de "LED de energia conectado" no menu de energia.',
+        noLedConfirmTitle: 'Ativar o watchdog sem o LED de energia?',
+        noLedConfirmDesc:
+          'A placa não consegue ver quando o host está desligado, então o trata como sempre ligado. Se você desligar o host, o watchdog pressiona reset quando o tempo limite passar. Conecte o LED de energia para evitar isso.',
+        noLedConfirmOk: 'Ativar',
+        cancel: 'Cancelar'
       },
       netboot: {
         title: 'Boot pela rede',

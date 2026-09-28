@@ -651,7 +651,13 @@ const tr = {
         stuckFor: '{{duration}} boyunca yaşam belirtisi yok',
         pressFailed: 'Düğmeye basılamadı: {{error}}',
         noScreenshot: 'Ekran görüntüsü yok',
-        failed: 'Watchdog işlemi başarısız oldu'
+        failed: 'Watchdog işlemi başarısız oldu',
+        powerNeedsLed: 'Güç döngüsü için güç menüsünde "Güç LED\'i bağlı" gerekir.',
+        noLedConfirmTitle: "Watchdog güç LED'i olmadan açılsın mı?",
+        noLedConfirmDesc:
+          "Kart, ana makinenin ne zaman kapalı olduğunu göremez, bu yüzden onu hep açık sayar. Ana makineyi kapatırsanız, süre dolunca watchdog sıfırlamaya basar. Bunu önlemek için güç LED'ini bağlayın.",
+        noLedConfirmOk: 'Aç',
+        cancel: 'İptal'
       },
       netboot: {
         title: 'Ağdan önyükleme',

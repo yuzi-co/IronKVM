@@ -627,7 +627,12 @@ const zh_tw = {
         stuckFor: '{{duration}} 無活動跡象',
         pressFailed: '按鍵失敗：{{error}}',
         noScreenshot: '無截圖',
-        failed: '看門狗操作失敗'
+        failed: '看門狗操作失敗',
+        powerNeedsLed: '電源循環需要在電源選單中開啟「已連接電源 LED」。',
+        noLedConfirmTitle: '在沒有電源 LED 的情況下開啟看門狗？',
+        noLedConfirmDesc: '板子無法看出主機何時關機，因此將主機視為一直開機。如果你關閉主機，逾時後看門狗會按下重設。連接電源 LED 可以避免這種情況。',
+        noLedConfirmOk: '開啟',
+        cancel: '取消'
       },
       netboot: {
         title: '網路開機',

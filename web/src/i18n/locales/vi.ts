@@ -648,7 +648,13 @@ const vi = {
         stuckFor: 'không có dấu hiệu hoạt động trong {{duration}}',
         pressFailed: 'Nhấn nút thất bại: {{error}}',
         noScreenshot: 'Không có ảnh chụp màn hình',
-        failed: 'Thao tác watchdog thất bại'
+        failed: 'Thao tác watchdog thất bại',
+        powerNeedsLed: 'Chu kỳ nguồn cần bật "Đã nối đèn LED nguồn" trong menu nguồn.',
+        noLedConfirmTitle: 'Bật watchdog khi không có đèn LED nguồn?',
+        noLedConfirmDesc:
+          'Bo mạch không thấy khi nào máy chủ tắt, nên coi máy chủ luôn bật. Nếu bạn tắt máy chủ, watchdog sẽ nhấn reset khi hết thời gian chờ. Hãy nối đèn LED nguồn để tránh điều này.',
+        noLedConfirmOk: 'Bật',
+        cancel: 'Hủy'
       },
       netboot: {
         title: 'Khởi động qua mạng',

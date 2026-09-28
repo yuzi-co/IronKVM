@@ -651,7 +651,13 @@ const nb = {
         stuckFor: 'ingen livstegn på {{duration}}',
         pressFailed: 'Trykket mislyktes: {{error}}',
         noScreenshot: 'Ingen skjermbilde',
-        failed: 'Watchdog-handlingen mislyktes'
+        failed: 'Watchdog-handlingen mislyktes',
+        powerNeedsLed: 'Strømsyklus krever «Strøm-LED tilkoblet» i strømmenyen.',
+        noLedConfirmTitle: 'Slå på watchdog uten strøm-LED?',
+        noLedConfirmDesc:
+          'Kortet kan ikke se når verten er av, så det behandler verten som alltid på. Hvis du slår av verten, trykker watchdog på tilbakestill når tidsavbruddet har gått. Koble til strøm-LED-en for å unngå dette.',
+        noLedConfirmOk: 'Slå på',
+        cancel: 'Avbryt'
       },
       netboot: {
         title: 'Nettverksoppstart',

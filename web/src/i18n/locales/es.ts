@@ -656,7 +656,14 @@ const es = {
         stuckFor: 'sin señales de vida durante {{duration}}',
         pressFailed: 'La pulsación falló: {{error}}',
         noScreenshot: 'Sin captura',
-        failed: 'Error en la operación del watchdog'
+        failed: 'Error en la operación del watchdog',
+        powerNeedsLed:
+          'El ciclo de encendido necesita «LED de encendido conectado» en el menú de energía.',
+        noLedConfirmTitle: '¿Activar el watchdog sin el LED de encendido?',
+        noLedConfirmDesc:
+          'La placa no puede ver cuándo el host está apagado, así que lo trata como siempre encendido. Si apaga el host, el watchdog pulsa reinicio al pasar el tiempo de espera. Conecte el LED de encendido para evitarlo.',
+        noLedConfirmOk: 'Activar',
+        cancel: 'Cancelar'
       },
       netboot: {
         title: 'Arranque por red',

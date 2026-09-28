@@ -650,7 +650,13 @@ const da = {
         stuckFor: 'intet livstegn i {{duration}}',
         pressFailed: 'Tryk mislykkedes: {{error}}',
         noScreenshot: 'Intet skærmbillede',
-        failed: 'Watchdog-handlingen mislykkedes'
+        failed: 'Watchdog-handlingen mislykkedes',
+        powerNeedsLed: 'Strømcyklus kræver "Strøm-LED tilsluttet" i strømmenuen.',
+        noLedConfirmTitle: 'Slå watchdog til uden strøm-LED?',
+        noLedConfirmDesc:
+          "Kortet kan ikke se, når værten er slukket, så det behandler værten som altid tændt. Hvis du lukker værten ned, trykker watchdog på nulstil, når tidsgrænsen er gået. Tilslut strøm-LED'en for at undgå det.",
+        noLedConfirmOk: 'Slå til',
+        cancel: 'Annuller'
       },
       netboot: {
         title: 'Netværksboot',

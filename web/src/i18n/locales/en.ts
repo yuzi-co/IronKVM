@@ -645,7 +645,13 @@ const en = {
         stuckFor: 'no sign of life for {{duration}}',
         pressFailed: 'The press failed: {{error}}',
         noScreenshot: 'No screenshot',
-        failed: 'Watchdog operation failed'
+        failed: 'Watchdog operation failed',
+        powerNeedsLed: 'Power cycle needs "Power LED connected" in the power menu.',
+        noLedConfirmTitle: 'Turn on the watchdog without the power LED?',
+        noLedConfirmDesc:
+          'The board cannot see when the host is off, so it treats the host as always on. If you shut the host down, the watchdog presses reset once the timeout passes. Connect the power LED to avoid this.',
+        noLedConfirmOk: 'Turn on',
+        cancel: 'Cancel'
       },
       netboot: {
         title: 'Network boot',

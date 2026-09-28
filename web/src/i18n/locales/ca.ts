@@ -652,7 +652,14 @@ const ca = {
         stuckFor: 'sense senyals de vida durant {{duration}}',
         pressFailed: 'La pulsació ha fallat: {{error}}',
         noScreenshot: 'Sense captura',
-        failed: 'Ha fallat l’operació del watchdog'
+        failed: 'Ha fallat l’operació del watchdog',
+        powerNeedsLed:
+          "El cicle d'alimentació necessita «LED d'alimentació connectat» al menú d'alimentació.",
+        noLedConfirmTitle: "Activar el watchdog sense el LED d'alimentació?",
+        noLedConfirmDesc:
+          "La placa no pot veure quan l'amfitrió està apagat, així que el tracta com sempre engegat. Si apagueu l'amfitrió, el watchdog prem el reinici quan passi el temps d'espera. Connecteu el LED d'alimentació per evitar-ho.",
+        noLedConfirmOk: 'Activa',
+        cancel: 'Cancel·la'
       },
       netboot: {
         title: 'Arrencada per xarxa',

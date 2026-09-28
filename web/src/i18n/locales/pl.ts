@@ -654,7 +654,13 @@ const pl = {
         stuckFor: 'brak oznak życia przez {{duration}}',
         pressFailed: 'Naciśnięcie nie powiodło się: {{error}}',
         noScreenshot: 'Brak zrzutu ekranu',
-        failed: 'Operacja watchdoga nie powiodła się'
+        failed: 'Operacja watchdoga nie powiodła się',
+        powerNeedsLed: 'Cykl zasilania wymaga opcji „Dioda zasilania podłączona” w menu zasilania.',
+        noLedConfirmTitle: 'Włączyć watchdog bez diody zasilania?',
+        noLedConfirmDesc:
+          'Płytka nie widzi, kiedy host jest wyłączony, więc traktuje go jako zawsze włączony. Jeśli wyłączysz hosta, watchdog po upływie limitu czasu naciśnie reset. Podłącz diodę zasilania, aby tego uniknąć.',
+        noLedConfirmOk: 'Włącz',
+        cancel: 'Anuluj'
       },
       netboot: {
         title: 'Rozruch sieciowy',

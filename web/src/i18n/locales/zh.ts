@@ -627,7 +627,12 @@ const zh = {
         stuckFor: '{{duration}} 无活动迹象',
         pressFailed: '按键失败：{{error}}',
         noScreenshot: '无截图',
-        failed: '看门狗操作失败'
+        failed: '看门狗操作失败',
+        powerNeedsLed: '电源循环需要在电源菜单中开启“已连接电源 LED”。',
+        noLedConfirmTitle: '在没有电源 LED 的情况下开启看门狗？',
+        noLedConfirmDesc: '板子无法看出主机何时关机，因此将主机视为一直开机。如果你关闭主机，超时后看门狗会按下复位。连接电源 LED 可以避免这种情况。',
+        noLedConfirmOk: '开启',
+        cancel: '取消'
       },
       netboot: {
         title: '网络启动',

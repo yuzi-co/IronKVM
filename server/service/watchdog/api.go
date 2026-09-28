@@ -82,6 +82,14 @@ func (w *Watchdog) SetSettings(c *gin.Context) {
 		rsp.ErrRsp(c, -2, "the setting cannot be changed")
 		return
 	}
+	// Without the power LED the watchdog cannot tell a host that was shut
+	// down on purpose from a hung one, and a power cycle switches such a host
+	// back on. A reset does nothing to a host that is off, so only the power
+	// cycle is refused.
+	if *req.Enabled && req.Action == ActionPower && !w.deps.PowerLEDConnected() {
+		rsp.ErrRsp(c, -3, "a power cycle needs the power LED connected")
+		return
+	}
 
 	s := config.Watchdog{
 		Enabled:         *req.Enabled,

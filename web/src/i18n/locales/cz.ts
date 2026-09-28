@@ -649,7 +649,13 @@ const cz = {
         stuckFor: 'bez známek života po dobu {{duration}}',
         pressFailed: 'Stisk se nezdařil: {{error}}',
         noScreenshot: 'Bez snímku obrazovky',
-        failed: 'Operace watchdogu selhala'
+        failed: 'Operace watchdogu selhala',
+        powerNeedsLed: 'Cyklus napájení vyžaduje „LED napájení připojena“ v nabídce napájení.',
+        noLedConfirmTitle: 'Zapnout watchdog bez LED napájení?',
+        noLedConfirmDesc:
+          'Deska nevidí, kdy je hostitel vypnutý, takže ho považuje za stále zapnutý. Pokud hostitele vypnete, watchdog po uplynutí časového limitu stiskne reset. Abyste tomu předešli, připojte LED napájení.',
+        noLedConfirmOk: 'Zapnout',
+        cancel: 'Zrušit'
       },
       netboot: {
         title: 'Síťové spuštění',

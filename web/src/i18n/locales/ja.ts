@@ -653,7 +653,13 @@ const ja = {
         stuckFor: '{{duration}} 生存の兆候なし',
         pressFailed: 'ボタン操作に失敗しました: {{error}}',
         noScreenshot: 'スクリーンショットなし',
-        failed: 'ウォッチドッグの操作に失敗しました'
+        failed: 'ウォッチドッグの操作に失敗しました',
+        powerNeedsLed: '電源サイクルには電源メニューの「電源 LED 接続済み」が必要です。',
+        noLedConfirmTitle: '電源 LED なしでウォッチドッグをオンにしますか？',
+        noLedConfirmDesc:
+          'ボードはホストの電源が切れていることを検出できないため、ホストを常にオンとして扱います。ホストをシャットダウンすると、タイムアウト後にウォッチドッグがリセットを押します。これを避けるには電源 LED を接続してください。',
+        noLedConfirmOk: 'オンにする',
+        cancel: 'キャンセル'
       },
       netboot: {
         title: 'ネットワークブート',

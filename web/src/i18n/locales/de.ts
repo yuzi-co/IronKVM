@@ -663,7 +663,13 @@ const de = {
         stuckFor: 'kein Lebenszeichen seit {{duration}}',
         pressFailed: 'Der Tastendruck ist fehlgeschlagen: {{error}}',
         noScreenshot: 'Kein Screenshot',
-        failed: 'Watchdog-Vorgang fehlgeschlagen'
+        failed: 'Watchdog-Vorgang fehlgeschlagen',
+        powerNeedsLed: 'Ein Aus- und Einschalten braucht „Power-LED angeschlossen“ im Power-Menü.',
+        noLedConfirmTitle: 'Watchdog ohne Power-LED einschalten?',
+        noLedConfirmDesc:
+          'Das Board erkennt nicht, wann der Host aus ist, und behandelt ihn als immer eingeschaltet. Wenn Sie den Host herunterfahren, drückt der Watchdog nach Ablauf der Zeit Reset. Schließen Sie die Power-LED an, um das zu vermeiden.',
+        noLedConfirmOk: 'Einschalten',
+        cancel: 'Abbrechen'
       },
       netboot: {
         title: 'Netzwerkboot',
