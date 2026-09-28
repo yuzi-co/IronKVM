@@ -27,9 +27,9 @@ func TestUsedEndpointsCountsHidAndEachFunctionOnce(t *testing.T) {
 		{"hid and the console", []string{virtualConsole}, endpointUse{in: 5, out: 4}},
 		{"hid, console and audio", []string{virtualConsole, virtualAudio}, endpointUse{in: 5, out: 5}},
 		{"hid, console and disk", []string{virtualConsole, virtualDisk}, endpointUse{in: 6, out: 5}},
-		{"disk and network without the console", []string{virtualDisk, virtualNetwork}, endpointUse{in: 6, out: 5}},
-		{"hid, console and network", []string{virtualConsole, virtualNetwork}, endpointUse{in: 7, out: 5}},
-		{"everything at once", []string{virtualConsole, virtualDisk, virtualNetwork, virtualAudio}, endpointUse{in: 8, out: 7}},
+		{"disk and network without the console", []string{virtualDisk, virtualNetworkNCM}, endpointUse{in: 6, out: 5}},
+		{"hid, console and network", []string{virtualConsole, virtualNetworkNCM}, endpointUse{in: 7, out: 5}},
+		{"everything at once", []string{virtualConsole, virtualDisk, virtualNetworkNCM, virtualAudio}, endpointUse{in: 8, out: 7}},
 	} {
 		if got := usedEndpoints(presence(test.markers...)); got != test.want {
 			t.Errorf("%s: used %+v endpoints, want %+v", test.name, got, test.want)
@@ -52,15 +52,15 @@ func TestTheShippedConfigurationIsExactlyTheInboundBudget(t *testing.T) {
 	}
 }
 
-// usb.ncm and usb.rndis0 are alternatives for one function. Counting both
-// would reserve three endpoints that nothing uses, and the guard would then
-// refuse a function that fits.
+// usb.ncm, usb.ecm and usb.rndis0 are alternatives for one function. Counting
+// more than one would reserve endpoints that nothing uses, and the guard would
+// then refuse a function that fits.
 func TestUsedEndpointsCountsTheNetworkOnce(t *testing.T) {
-	both := usedEndpoints(presence(virtualNetworkNCM, virtualNetwork))
-	one := usedEndpoints(presence(virtualNetwork))
+	all := usedEndpoints(presence(virtualNetworkNCM, virtualNetworkECM, virtualNetworkRNDIS))
+	one := usedEndpoints(presence(virtualNetworkNCM))
 
-	if both != one {
-		t.Errorf("two network markers cost %d, one costs %d; want the same", both, one)
+	if all != one {
+		t.Errorf("three network markers cost %d, one costs %d; want the same", all, one)
 	}
 }
 
@@ -94,7 +94,7 @@ func TestCanEnableAlwaysAllowsTheSpeaker(t *testing.T) {
 		nil,
 		{virtualConsole},
 		{virtualConsole, virtualDisk},
-		{virtualDisk, virtualNetwork},
+		{virtualDisk, virtualNetworkNCM},
 	} {
 		if ok, free, _ := canEnable("audio", presence(markers...)); !ok {
 			t.Errorf("refused the speaker with %v enabled and %+v free", markers, free)
@@ -298,8 +298,9 @@ func TestEveryTogglableFunctionHasCommands(t *testing.T) {
 // The gadget path is what the API reports as active, so a wrong name would
 // report every function dead and the UI would warn about all of them. The
 // network's names come straight from the `ln -s` targets in S03usbdev: NCM is
-// the primary and RNDIS is the fallback S03usbdev builds when only the RNDIS
-// marker is set.
+// the primary, ECM is the fallback for a host with no NCM driver, and RNDIS is
+// what S03usbdev builds when only the RNDIS marker an older server wrote is
+// set.
 func TestEveryFunctionNamesItsGadgetDirectory(t *testing.T) {
 	want := map[string]string{
 		"console": "acm.GS0",
@@ -307,8 +308,8 @@ func TestEveryFunctionNamesItsGadgetDirectory(t *testing.T) {
 		"network": "ncm.usb0",
 		"audio":   "uac1.usb0",
 	}
-	wantAlt := map[string]string{
-		"network": "rndis.usb0",
+	wantAlts := map[string][]string{
+		"network": {"ecm.usb0", "rndis.usb0"},
 	}
 
 	seen := make(map[string]bool, len(usbFunctions))
@@ -325,8 +326,8 @@ func TestEveryFunctionNamesItsGadgetDirectory(t *testing.T) {
 			t.Errorf("%s links %q, want %q", function.name, function.gadget, gadget)
 		}
 
-		if alt, ok := wantAlt[function.name]; ok && function.gadgetAlt != alt {
-			t.Errorf("%s falls back to %q, want %q", function.name, function.gadgetAlt, alt)
+		if alts := wantAlts[function.name]; !reflect.DeepEqual(function.gadgetAlts, alts) {
+			t.Errorf("%s falls back to %q, want %q", function.name, function.gadgetAlts, alts)
 		}
 	}
 
@@ -342,9 +343,9 @@ func TestEveryFunctionNamesItsGadgetDirectory(t *testing.T) {
 // active takes an injected predicate specifically so it can be tested without
 // the real configfs tree. These three cases are the ones that matter: the
 // primary directory alone, only the alternate, and neither - which is the one
-// a deleted or mis-wired gadgetAlt branch would get wrong.
+// a deleted or mis-wired gadgetAlts loop would get wrong.
 func TestActiveIsTrueWithOnlyThePrimaryDirectoryLinked(t *testing.T) {
-	function := usbFunction{gadget: "ncm.usb0", gadgetAlt: "rndis.usb0"}
+	function := usbFunction{gadget: "ncm.usb0", gadgetAlts: []string{"ecm.usb0", "rndis.usb0"}}
 
 	if !function.active(presence("ncm.usb0")) {
 		t.Error("not active with the primary gadget directory linked")
@@ -352,7 +353,7 @@ func TestActiveIsTrueWithOnlyThePrimaryDirectoryLinked(t *testing.T) {
 }
 
 func TestActiveIsTrueWithOnlyTheAlternateDirectoryLinked(t *testing.T) {
-	function := usbFunction{gadget: "ncm.usb0", gadgetAlt: "rndis.usb0"}
+	function := usbFunction{gadget: "ncm.usb0", gadgetAlts: []string{"ecm.usb0", "rndis.usb0"}}
 
 	if !function.active(presence("rndis.usb0")) {
 		t.Error("not active with only the alternate gadget directory linked")
@@ -360,9 +361,106 @@ func TestActiveIsTrueWithOnlyTheAlternateDirectoryLinked(t *testing.T) {
 }
 
 func TestActiveIsFalseWithNeitherDirectoryLinked(t *testing.T) {
-	function := usbFunction{gadget: "ncm.usb0", gadgetAlt: "rndis.usb0"}
+	function := usbFunction{gadget: "ncm.usb0", gadgetAlts: []string{"ecm.usb0", "rndis.usb0"}}
 
 	if function.active(presence()) {
 		t.Error("active with neither gadget directory linked")
 	}
+}
+
+// ECM is the second of the network's alternates. A loop that stopped after the
+// first would report a board running ECM as having lost its network.
+func TestActiveIsTrueWithOnlyTheSecondAlternateLinked(t *testing.T) {
+	function := usbFunction{gadget: "ncm.usb0", gadgetAlts: []string{"ecm.usb0", "rndis.usb0"}}
+
+	if !function.active(presence("rndis.usb0")) {
+		t.Error("not active with only the second alternate gadget directory linked")
+	}
+
+	if !function.active(presence("ecm.usb0")) {
+		t.Error("not active with only the ECM gadget directory linked")
+	}
+}
+
+// With HID built there are three inbound endpoints to spend. The console and
+// the network take two each, so they never fit together, and each fits with
+// the disk and the speaker.
+func TestFittingSetsWithHid(t *testing.T) {
+	got := fittingSets(presence())
+	want := [][]string{
+		{"console", "disk", "audio"},
+		{"disk", "network", "audio"},
+	}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("fitting sets are %v, want %v", got, want)
+	}
+}
+
+// Without HID every optional function fits at once: five inbound of six and
+// four outbound of seven.
+func TestFittingSetsWithoutHid(t *testing.T) {
+	got := fittingSets(presence(disableHid))
+	want := [][]string{{"console", "disk", "network", "audio"}}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("fitting sets are %v, want %v", got, want)
+	}
+}
+
+// The list does not depend on what is switched on. It describes the budget,
+// and an operator reads it to decide what to switch next.
+func TestFittingSetsIgnoreWhatIsOn(t *testing.T) {
+	off := fittingSets(presence())
+	on := fittingSets(presence(virtualConsole, virtualDisk, virtualNetworkNCM, virtualAudio))
+
+	if !reflect.DeepEqual(off, on) {
+		t.Errorf("fitting sets changed with the markers: %v, then %v", off, on)
+	}
+}
+
+// Every set it names has to fit, and none may be inside another: a set that
+// fits inside a larger one adds nothing but length.
+func TestEveryFittingSetFitsAndIsLargest(t *testing.T) {
+	for _, hid := range [][]string{nil, {disableHid}} {
+		present := presence(hid...)
+		free := endpointBudget().sub(hidEndpointCost(present))
+		sets := fittingSets(present)
+
+		for i, set := range sets {
+			var used endpointUse
+			for _, name := range set {
+				cost, ok := endpointCost(name)
+				if !ok {
+					t.Fatalf("fittingSets named %q, which the table does not know", name)
+				}
+				used = used.add(cost)
+			}
+
+			if !used.fitsIn(free) {
+				t.Errorf("%v costs %+v, more than the %+v free", set, used, free)
+			}
+
+			for j, other := range sets {
+				if i != j && subset(set, other) {
+					t.Errorf("%v is inside %v", set, other)
+				}
+			}
+		}
+	}
+}
+
+func subset(small, large []string) bool {
+	in := make(map[string]bool, len(large))
+	for _, name := range large {
+		in[name] = true
+	}
+
+	for _, name := range small {
+		if !in[name] {
+			return false
+		}
+	}
+
+	return true
 }

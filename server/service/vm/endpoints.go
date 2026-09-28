@@ -108,48 +108,51 @@ func (u endpointUse) fitsIn(limit endpointUse) bool {
 	return u.in <= limit.in && u.out <= limit.out
 }
 
-// The markers that decide which functions the gadget carries. usb.ncm and
-// usb.rndis0 are alternatives for one function - S03usbdev prefers NCM - so
-// they belong to a single entry and are counted once.
+// The markers that decide which functions the gadget carries. usb.ncm, usb.ecm
+// and usb.rndis0 are alternatives for one function - S03usbdev builds NCM
+// first, then ECM, then RNDIS - so they belong to a single entry and are
+// counted once.
 const (
-	virtualConsole    = "/boot/usb.acm"
-	virtualNetworkNCM = "/boot/usb.ncm"
-	disableHid        = "/boot/disable_hid"
+	virtualConsole      = "/boot/usb.acm"
+	virtualNetworkNCM   = "/boot/usb.ncm"
+	virtualNetworkECM   = "/boot/usb.ecm"
+	virtualNetworkRNDIS = "/boot/usb.rndis0"
+	disableHid          = "/boot/disable_hid"
 )
 
 // usbFunction is one optional gadget function.
 //
 // device is the name the API accepts to switch it. gadget is the configfs
-// directory that proves the function actually linked; gadgetAlt is a second
-// accepted directory for a function with two forms (the network's NCM and
-// RNDIS). priority decides what survives when more is enabled than fits:
-// higher survives longer.
+// directory that proves the function actually linked; gadgetAlts are further
+// accepted directories for a function with more than one form (the network's
+// ECM and RNDIS beside NCM). priority decides what survives when more is
+// enabled than fits: higher survives longer.
 //
 // cost is what the function takes in each direction. The inbound half decides
 // nearly everything, because the controller has six inbound endpoints and
 // seven outbound ones.
 type usbFunction struct {
-	name      string
-	device    string
-	markers   []string
-	gadget    string
-	gadgetAlt string
-	cost      endpointUse
-	priority  int
+	name       string
+	device     string
+	markers    []string
+	gadget     string
+	gadgetAlts []string
+	cost       endpointUse
+	priority   int
 }
 
 // The console outranks everything except HID because it is the only way into a
 // board whose network is gone. Audio is last because it is the only entry that
 // costs nothing to lose.
 var usbFunctions = []usbFunction{
-	// f_acm and the two network functions each take a bulk pair and an
+	// f_acm and the three network functions each take a bulk pair and an
 	// interrupt IN for notifications, so two inbound and one outbound.
 	// f_mass_storage takes a bulk pair. The speaker is a playback stream
 	// alone, which is one isochronous OUT and no inbound endpoint at all, so
 	// it never competes for the scarce direction.
 	{name: "console", device: "console", markers: []string{virtualConsole}, gadget: "acm.GS0", cost: endpointUse{in: 2, out: 1}, priority: 40},
 	{name: "disk", device: "disk", markers: []string{virtualDisk}, gadget: "mass_storage.disk0", cost: endpointUse{in: 1, out: 1}, priority: 30},
-	{name: "network", device: "network", markers: []string{virtualNetworkNCM, virtualNetwork}, gadget: "ncm.usb0", gadgetAlt: "rndis.usb0", cost: endpointUse{in: 2, out: 1}, priority: 20},
+	{name: "network", device: "network", markers: []string{virtualNetworkNCM, virtualNetworkECM, virtualNetworkRNDIS}, gadget: "ncm.usb0", gadgetAlts: []string{"ecm.usb0", "rndis.usb0"}, cost: endpointUse{in: 2, out: 1}, priority: 20},
 	{name: "audio", device: "audio", markers: []string{virtualAudio}, gadget: "uac1.usb0", cost: endpointUse{in: 0, out: 1}, priority: 10},
 }
 
@@ -304,7 +307,20 @@ func (f usbFunction) active(linked func(string) bool) bool {
 		return true
 	}
 
-	return f.gadgetAlt != "" && linked(f.gadgetAlt)
+	for _, alt := range f.gadgetAlts {
+		if linked(alt) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// gadgetDirs is every configfs directory the function can be built as, the
+// primary first. It is what S03usbdev's usb_gadget_dirs prints for the same
+// function.
+func (f usbFunction) gadgetDirs() []string {
+	return append([]string{f.gadget}, f.gadgetAlts...)
 }
 
 // isFunctionActive answers the same question against the real configfs.
@@ -357,4 +373,71 @@ func refusalMessage(device string, free endpointUse, relief []string) string {
 	}
 
 	return message + " — turn off " + strings.Join(options, " or ") + " first"
+}
+
+// fittingSets lists every largest set of optional functions that fits beside
+// HID, each in priority order, highest first.
+//
+// A refusal tells the operator what to turn off after the fact. This tells them
+// before they try: with HID built, the console, the disk and the speaker fit,
+// and so do the disk, the network and the speaker, but the console and the
+// network never fit together. A set that fits inside a larger one that also
+// fits is left out, because the larger one already says it.
+//
+// Four functions make sixteen sets, so trying every one is cheaper than being
+// clever about it.
+func fittingSets(present func(string) bool) [][]string {
+	free := endpointBudget().sub(hidEndpointCost(present))
+	order := dropOrder()
+
+	// Highest priority first, so each set reads the way the boot script
+	// offers places.
+	for i, j := 0, len(order)-1; i < j; i, j = i+1, j-1 {
+		order[i], order[j] = order[j], order[i]
+	}
+
+	all := 1 << len(order)
+	fits := make([]bool, all)
+
+	for set := 0; set < all; set++ {
+		var used endpointUse
+		for i, function := range order {
+			if set&(1<<i) != 0 {
+				used = used.add(function.cost)
+			}
+		}
+
+		fits[set] = used.fitsIn(free)
+	}
+
+	var sets [][]string
+
+	for set := 1; set < all; set++ {
+		if !fits[set] {
+			continue
+		}
+
+		largest := true
+		for other := 0; other < all; other++ {
+			if other != set && fits[other] && other&set == set {
+				largest = false
+				break
+			}
+		}
+
+		if !largest {
+			continue
+		}
+
+		names := make([]string, 0, len(order))
+		for i, function := range order {
+			if set&(1<<i) != 0 {
+				names = append(names, function.name)
+			}
+		}
+
+		sets = append(sets, names)
+	}
+
+	return sets
 }
