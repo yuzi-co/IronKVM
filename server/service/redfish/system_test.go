@@ -202,3 +202,76 @@ func TestConcurrentResetsReadTheLEDAfterEachOther(t *testing.T) {
 		t.Fatalf("presses %v, want exactly one", h.host.presses)
 	}
 }
+
+// With the LED header not wired, the LED line says "off" whatever the host
+// does. The state-dependent types would then press power on a running host
+// for On, so they are refused, and press nothing, whatever the line reads.
+func TestWithTheLEDNotWiredOnlyTheBlindTypesPress(t *testing.T) {
+	for _, row := range resetTable {
+		for _, led := range []*bool{boolPtr(true), boolPtr(false)} {
+			h := newHarness(t)
+			h.ledWired = false
+			h.host.setLED(led)
+
+			w := h.do(http.MethodPost, resetURL, `{"ResetType":"`+row.resetType+`"}`, h.admin()...)
+
+			switch row.resetType {
+			case "ForceRestart", "PushPowerButton":
+				if w.Code != http.StatusNoContent {
+					t.Fatalf("%s: status %d: %s", row.resetType, w.Code, w.Body.String())
+				}
+				if got := strings.Join(h.host.presses, ","); got != row.led {
+					t.Fatalf("%s: pressed %q, want %q", row.resetType, got, row.led)
+				}
+			default:
+				expectError(t, w, http.StatusBadRequest, "ActionNotSupported")
+				if !strings.Contains(w.Body.String(), "power LED is not connected") {
+					t.Fatalf("%s: the message does not say why: %s", row.resetType, w.Body.String())
+				}
+				if len(h.host.presses) != 0 {
+					t.Fatalf("%s: pressed %v", row.resetType, h.host.presses)
+				}
+			}
+		}
+	}
+}
+
+func TestWithTheLEDNotWiredThePowerStateIsUnknown(t *testing.T) {
+	h := newHarness(t)
+	h.ledWired = false
+	h.host.setLED(boolPtr(false))
+
+	for _, path := range []string{"/redfish/v1/Systems/1", "/redfish/v1/Chassis/1"} {
+		body := decode(t, h.do(http.MethodGet, path, "", h.user()...))
+		if state, ok := body["PowerState"]; !ok || state != nil {
+			t.Fatalf("%s: PowerState is %v, want null", path, body["PowerState"])
+		}
+	}
+}
+
+func TestWithTheLEDNotWiredOnlyTheBlindTypesAreOffered(t *testing.T) {
+	h := newHarness(t)
+	h.ledWired = false
+
+	body := decode(t, h.do(http.MethodGet, "/redfish/v1/Systems/1", "", h.user()...))
+	reset := body["Actions"].(map[string]any)["#ComputerSystem.Reset"].(map[string]any)
+	var allowed []string
+	for _, v := range reset["ResetType@Redfish.AllowableValues"].([]any) {
+		allowed = append(allowed, v.(string))
+	}
+	if strings.Join(allowed, ",") != "ForceRestart,PushPowerButton" {
+		t.Fatalf("AllowableValues are %v", allowed)
+	}
+}
+
+func TestSystemETagFollowsTheLEDSetting(t *testing.T) {
+	h := newHarness(t)
+
+	wired := h.do(http.MethodGet, "/redfish/v1/Systems/1", "", h.user()...).Header().Get("ETag")
+	h.ledWired = false
+	notWired := h.do(http.MethodGet, "/redfish/v1/Systems/1", "", h.user()...).Header().Get("ETag")
+
+	if wired == "" || notWired == "" || wired == notWired {
+		t.Fatalf("ETags %q and %q", wired, notWired)
+	}
+}

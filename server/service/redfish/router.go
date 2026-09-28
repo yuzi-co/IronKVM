@@ -44,6 +44,10 @@ type Deps struct {
 	PressButton func(kind string, d time.Duration) error
 	// PowerLED reports whether the host's power LED is lit.
 	PowerLED func() (bool, error)
+	// PowerLEDConnected reports whether the owner has said the LED header is
+	// wired. When it is not, the LED is never read: the state is unknown.
+	// Nil means wired.
+	PowerLEDConnected func() bool
 
 	ListDrives  func() ([]proto.DriveInfo, error)
 	InsertDrive func(id string, file string, ro bool) error
@@ -112,6 +116,9 @@ type Service struct {
 func New(deps Deps) *Service {
 	if deps.Now == nil {
 		deps.Now = time.Now
+	}
+	if deps.PowerLEDConnected == nil {
+		deps.PowerLEDConnected = func() bool { return true }
 	}
 
 	return &Service{deps: deps, sessions: newSessionStore(deps.Now), credentials: newCredentialCache(deps.Now)}

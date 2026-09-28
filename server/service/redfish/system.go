@@ -21,6 +21,18 @@ const (
 // Nmi and GracefulRestart are left out: two buttons and an LED cannot do them.
 var resetTypes = []string{"On", "ForceOff", "GracefulShutdown", "ForceRestart", "PushPowerButton"}
 
+// blindResetTypes press the same button whatever the host's state, so they
+// are all a board without its power LED wired can offer.
+var blindResetTypes = []string{"ForceRestart", "PushPowerButton"}
+
+// offeredResetTypes are the ResetType values the system lists as allowed.
+func (s *Service) offeredResetTypes() []string {
+	if !s.deps.PowerLEDConnected() {
+		return blindResetTypes
+	}
+	return resetTypes
+}
+
 var (
 	errResetTypeNotAllowed = errors.New("reset type not allowed")
 	errPowerStateUnknown   = errors.New("the power state is unknown")
@@ -61,8 +73,13 @@ func planReset(resetType string, on *bool) (*press, error) {
 	return nil, nil
 }
 
-// powerLED reads the LED, or returns nil on a board that has none wired.
+// powerLED reads the LED, or returns nil when the state is unknown: the
+// owner has not said the LED is wired, or its line cannot be read. An LED
+// that is not wired reads "off" whatever the host does.
 func (s *Service) powerLED() *bool {
+	if !s.deps.PowerLEDConnected() {
+		return nil
+	}
 	on, err := s.deps.PowerLED()
 	if err != nil {
 		return nil
@@ -98,7 +115,7 @@ func (s *Service) system(c *gin.Context) {
 	body["Actions"] = object{
 		"#" + resetAction: object{
 			"target":                            resetPath,
-			"ResetType@Redfish.AllowableValues": resetTypes,
+			"ResetType@Redfish.AllowableValues": s.offeredResetTypes(),
 		},
 	}
 
@@ -140,6 +157,13 @@ func (s *Service) reset(c *gin.Context) {
 	defer s.resetMu.Unlock()
 
 	p, err := planReset(resetType, s.powerLED())
+	if errors.Is(err, errPowerStateUnknown) && !s.deps.PowerLEDConnected() {
+		writeError(c, http.StatusBadRequest, "ActionNotSupported",
+			"the power LED is not connected, so the power state is unknown and "+resetType+
+				" cannot tell whether to press; use PushPowerButton or ForceRestart, or, if the LED header is wired, "+
+				"turn on hardware.powerLed (Power LED connected, in the web UI's power menu)", resetAction)
+		return
+	}
 	switch {
 	case errors.Is(err, errResetTypeNotAllowed):
 		writeError(c, http.StatusBadRequest, "ActionParameterValueNotInList", "", resetType, "ResetType", resetAction)

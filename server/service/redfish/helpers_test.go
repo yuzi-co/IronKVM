@@ -185,8 +185,10 @@ type harness struct {
 	keys         map[string]string
 	clock        time.Time
 	authDisabled bool
-	imageDir     string
-	nics         []NIC
+	// ledWired is the power LED setting; true unless a test says otherwise.
+	ledWired bool
+	imageDir string
+	nics     []NIC
 }
 
 // newHarness builds a service on fakes, with two accounts in a real
@@ -217,6 +219,7 @@ func newHarness(t *testing.T) *harness {
 		keys:     map[string]string{},
 		clock:    time.Date(2026, 9, 27, 12, 0, 0, 0, time.UTC),
 		imageDir: t.TempDir(),
+		ledWired: true,
 		nics:     []NIC{{ID: "eth0", MAC: "48:da:35:6e:00:01", IPv4: "10.0.0.222"}},
 	}
 	h.host.drives = []proto.DriveInfo{
@@ -227,6 +230,9 @@ func newHarness(t *testing.T) *harness {
 	h.service = New(Deps{
 		PressButton: h.host.pressButton,
 		PowerLED:    h.host.powerLED,
+		PowerLEDConnected: func() bool {
+			return h.ledWired
+		},
 		ListDrives:  h.host.listDrives,
 		InsertDrive: h.host.insertDrive,
 		EjectDrive:  h.host.ejectDrive,

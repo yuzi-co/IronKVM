@@ -19,8 +19,9 @@ var redfishUUIDFile = redfish.UUIDFile
 
 func redfishRouter(r *gin.Engine) {
 	service := redfish.New(redfish.Deps{
-		PressButton: vm.PressButton,
-		PowerLED:    vm.PowerLED,
+		PressButton:       vm.PressButton,
+		PowerLED:          vm.PowerLED,
+		PowerLEDConnected: vm.PowerLEDConnected,
 
 		ListDrives:  storage.ListDrives,
 		InsertDrive: storage.InsertDrive,
