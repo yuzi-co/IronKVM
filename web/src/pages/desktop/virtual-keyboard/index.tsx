@@ -71,7 +71,7 @@ function layoutFor(system: string, language: string) {
 }
 
 export const VirtualKeyboard = () => {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const isBigScreen = useMediaQuery({ minWidth: 850 });
 
   const [isKeyboardOpen, setIsKeyboardOpen] = useAtom(isKeyboardOpenAtom);
@@ -270,12 +270,14 @@ export const VirtualKeyboard = () => {
             </div>
 
             <div className="flex items-center justify-end">
-              <div
-                className="flex h-[24px] w-[24px] cursor-pointer items-center justify-center rounded text-neutral-400 hover:bg-neutral-700 hover:text-white"
+              <button
+                type="button"
+                aria-label={t('keyboard.close')}
+                className="flex h-[24px] w-[24px] cursor-pointer items-center justify-center rounded p-0 text-neutral-400 hover:bg-neutral-700 hover:text-white"
                 onClick={() => setIsKeyboardOpen(false)}
               >
                 <XIcon size={18} />
-              </div>
+              </button>
             </div>
           </div>
 
@@ -294,7 +296,9 @@ export const VirtualKeyboard = () => {
               layoutName={keyboardLayout}
               {...keyboardOptions}
               display={
-                isBigScreen ? keyboardOptions.display : { ...keyboardOptions.display, ...compactDisplay }
+                isBigScreen
+                  ? keyboardOptions.display
+                  : { ...keyboardOptions.display, ...compactDisplay }
               }
             />
 

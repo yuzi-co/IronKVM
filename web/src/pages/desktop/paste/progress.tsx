@@ -61,11 +61,14 @@ export const PasteProgress = () => {
             {t('keyboard.pasting.cancel')}
           </Button>
         ) : (
-          <XIcon
-            size={16}
-            className="cursor-pointer text-neutral-400 hover:text-white"
+          <button
+            type="button"
+            aria-label={t('keyboard.close')}
+            className="flex cursor-pointer p-0 text-neutral-400 hover:text-white"
             onClick={() => setStatus(null)}
-          />
+          >
+            <XIcon size={16} />
+          </button>
         )}
       </div>
 
