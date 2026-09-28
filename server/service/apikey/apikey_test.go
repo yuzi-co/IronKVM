@@ -237,3 +237,52 @@ func TestAKeyWithNoAccountGoesToTheSystemAccount(t *testing.T) {
 		t.Fatalf("expected the key file to be left alone: %s", err)
 	}
 }
+
+func TestListAllShowsEveryAccountsKeysWithTheirOwner(t *testing.T) {
+	withTempKeyStore(t)
+
+	if _, _, err := Create("mine", owner); err != nil {
+		t.Fatalf("setup: %s", err)
+	}
+	if _, _, err := Create("theirs", "alice"); err != nil {
+		t.Fatalf("setup: %s", err)
+	}
+
+	keys, err := ListAll()
+	if err != nil {
+		t.Fatalf("expected the keys to be listed: %s", err)
+	}
+
+	owners := map[string]string{}
+	for _, key := range keys {
+		if key.Hash != "" {
+			t.Fatal("the stored digest must not be handed back to a client")
+		}
+		owners[key.Name] = key.Username
+	}
+
+	if len(keys) != 2 || owners["mine"] != owner || owners["theirs"] != "alice" {
+		t.Fatalf("listed %+v, want both keys with their owners", keys)
+	}
+}
+
+func TestRevokeAnyRemovesAKeyWhoeverHoldsIt(t *testing.T) {
+	withTempKeyStore(t)
+
+	secret, record, err := Create("theirs", "alice")
+	if err != nil {
+		t.Fatalf("setup: %s", err)
+	}
+
+	if err := RevokeAny(record.ID); err != nil {
+		t.Fatalf("expected the key to be revoked: %s", err)
+	}
+
+	if _, ok := Verify(secret); ok {
+		t.Fatal("expected the revoked key to stop working")
+	}
+
+	if err := RevokeAny(record.ID); err != ErrNotFound {
+		t.Fatalf("revoking a missing key returned %v, want ErrNotFound", err)
+	}
+}

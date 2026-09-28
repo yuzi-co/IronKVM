@@ -149,6 +149,22 @@ func List(username string) ([]Key, error) {
 	return listed, nil
 }
 
+// ListAll returns every issued key with its owner and without its digest.
+// It is for an administrator, who answers for every account on the device and
+// needs to find and revoke a key whoever issued it.
+func ListAll() ([]Key, error) {
+	keys, err := load()
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range keys {
+		keys[i].Hash = ""
+	}
+
+	return keys, nil
+}
+
 // Revoke removes a key the user holds. A key that belongs to another user
 // reports ErrNotFound rather than a refusal, so the call says nothing about
 // what identifiers exist.
@@ -158,9 +174,27 @@ func Revoke(id, username string) error {
 		return err
 	}
 
+	return remove(keys, func(key Key) bool {
+		return key.ID == id && key.Username == username
+	})
+}
+
+// RevokeAny removes a key whoever holds it. Only an administrator may ask.
+func RevokeAny(id string) error {
+	keys, err := load()
+	if err != nil {
+		return err
+	}
+
+	return remove(keys, func(key Key) bool { return key.ID == id })
+}
+
+// remove stores the keys that do not match, or reports ErrNotFound when none
+// did.
+func remove(keys []Key, match func(Key) bool) error {
 	kept := make([]Key, 0, len(keys))
 	for _, key := range keys {
-		if key.ID == id && key.Username == username {
+		if match(key) {
 			continue
 		}
 

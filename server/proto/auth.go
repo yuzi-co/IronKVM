@@ -51,6 +51,8 @@ type APIKey struct {
 	ID        string `json:"id"`
 	Name      string `json:"name"`
 	CreatedAt int64  `json:"createdAt"`
+	// Username is the account the key acts as.
+	Username string `json:"username"`
 }
 
 type CreateAPIKeyRsp struct {
