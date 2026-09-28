@@ -245,6 +245,8 @@ const en = {
       relative: 'Relative mode',
       absoluteShort: 'Absolute',
       relativeShort: 'Relative',
+      touch: 'Touch mode',
+      touchShort: 'Touch',
       absoluteStalled: 'The target is ignoring the absolute mouse',
       absoluteStalledDesc:
         'The target has stopped collecting absolute mouse reports, so pointer moves are lost. The keyboard is unaffected. Recovering USB often clears it; relative mode uses a different endpoint.',

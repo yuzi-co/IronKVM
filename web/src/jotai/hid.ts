@@ -6,6 +6,8 @@ export type HidMode = {
   mode: 'normal' | 'hid-only';
   // the gadget declares the Consumer and System Control reports
   extendedKeys: boolean;
+  // the gadget declares the touch screen (/boot/usb.touch)
+  touch: boolean;
   // /boot/disable_hid leaves the keyboard and both pointers out of the gadget
   hidDisabled: boolean;
 };
@@ -33,6 +35,7 @@ export const refreshHidModeAtom = atom(null, (_get, set, after?: boolean) => {
         set(hidModeAtom, {
           mode: rsp.data.mode,
           extendedKeys: rsp.data.extendedKeys === true,
+          touch: rsp.data.touch === true,
           hidDisabled: rsp.data.hidDisabled === true
         });
       })

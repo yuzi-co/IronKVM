@@ -249,6 +249,8 @@ const hu = {
       relative: 'Relatív mód',
       absoluteShort: 'Abszolút',
       relativeShort: 'Relatív',
+      touch: 'Érintőképernyős mód',
+      touchShort: 'Érintés',
       absoluteStalled: 'A célgép figyelmen kívül hagyja az abszolút egeret',
       absoluteStalledDesc:
         'A célgép már nem fogadja az abszolút egér jelentéseit, így a mutató mozgásai elvesznek. A billentyűzetet ez nem érinti. Az USB helyreállítása gyakran megoldja; a relatív mód másik végpontot használ.',

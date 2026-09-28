@@ -247,6 +247,8 @@ const tr = {
       relative: 'Bağıl fare modu',
       absoluteShort: 'Mutlak',
       relativeShort: 'Bağıl',
+      touch: 'Dokunmatik mod',
+      touchShort: 'Dokunmatik',
       absoluteStalled: 'Hedef cihaz mutlak fareyi yok sayıyor',
       absoluteStalledDesc:
         "Hedef cihaz mutlak fare raporlarını almayı bıraktı, bu yüzden imleç hareketleri kayboluyor. Klavye bundan etkilenmez. USB'yi kurtarmak genellikle sorunu giderir; bağıl mod farklı bir uç nokta kullanır.",

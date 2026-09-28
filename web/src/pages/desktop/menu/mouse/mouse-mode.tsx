@@ -5,16 +5,29 @@ import { useTranslation } from 'react-i18next';
 
 import { applyMouseMode } from '@/lib/mouse-mode.ts';
 import { mouseModeAtom } from '@/jotai/mouse.ts';
+import { useTouchAvailable } from '@/hooks/useTouchAvailable.ts';
 
 export const MouseMode = () => {
   const { t } = useTranslation();
 
   const [mouseMode, setMouseMode] = useAtom(mouseModeAtom);
+  const touchAvailable = useTouchAvailable();
 
   const mouseModes = [
     { name: t('mouse.absolute'), value: 'absolute' },
     { name: t('mouse.relative'), value: 'relative' }
   ];
+  // Touch is offered only when the gadget declares the touch screen, which
+  // takes /boot/usb.touch on the device.
+  if (touchAvailable) {
+    mouseModes.push({ name: t('mouse.touch'), value: 'touch' });
+  }
+
+  function shortName() {
+    if (mouseMode === 'relative') return t('mouse.relativeShort');
+    if (mouseMode === 'touch' && touchAvailable) return t('mouse.touchShort');
+    return t('mouse.absoluteShort');
+  }
 
   function updateMouseMode(mode: string) {
     applyMouseMode(mode, setMouseMode);
@@ -44,9 +57,7 @@ export const MouseMode = () => {
         <span>{t('mouse.mode')}</span>
         {/* The mode is kept in the browser, so a relative mode chosen once
             outlives the reason for it. Showing it here keeps that visible. */}
-        <span className="ml-auto pl-3 text-xs text-neutral-500">
-          {mouseMode === 'relative' ? t('mouse.relativeShort') : t('mouse.absoluteShort')}
-        </span>
+        <span className="ml-auto pl-3 text-xs text-neutral-500">{shortName()}</span>
       </div>
     </Popover>
   );

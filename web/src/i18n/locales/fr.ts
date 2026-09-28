@@ -250,6 +250,8 @@ const fr = {
       relative: 'Mode relatif',
       absoluteShort: 'Absolu',
       relativeShort: 'Relatif',
+      touch: 'Mode tactile',
+      touchShort: 'Tactile',
       absoluteStalled: 'La cible ignore la souris absolue',
       absoluteStalledDesc:
         "La cible ne lit plus les rapports de souris absolue, les déplacements du pointeur sont donc perdus. Le clavier n'est pas affecté. Réinitialiser l'USB règle souvent le problème ; le mode relatif utilise un autre endpoint.",

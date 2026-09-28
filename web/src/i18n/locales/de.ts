@@ -251,6 +251,8 @@ const de = {
       relative: 'Relativer Modus',
       absoluteShort: 'Absolut',
       relativeShort: 'Relativ',
+      touch: 'Touch-Modus',
+      touchShort: 'Touch',
       absoluteStalled: 'Das Zielgerät ignoriert die absolute Maus',
       absoluteStalledDesc:
         'Das Zielgerät nimmt keine absoluten Mausberichte mehr an, daher gehen Zeigerbewegungen verloren. Die Tastatur ist nicht betroffen. Ein Wiederherstellen der USB-Verbindung behebt das oft; der relative Modus nutzt einen anderen Endpunkt.',

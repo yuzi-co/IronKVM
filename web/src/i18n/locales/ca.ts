@@ -247,6 +247,8 @@ const ca = {
       relative: 'Mode relatiu',
       absoluteShort: 'Absolut',
       relativeShort: 'Relatiu',
+      touch: 'Mode tàctil',
+      touchShort: 'Tàctil',
       absoluteStalled: "L'amfitrió ignora el ratolí absolut",
       absoluteStalledDesc:
         "L'amfitrió ha deixat de recollir els informes del ratolí absolut, de manera que els moviments del punter es perden. El teclat no se'n veu afectat. Recuperar l'USB sol resoldre-ho; el mode relatiu fa servir un altre endpoint.",

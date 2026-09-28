@@ -250,6 +250,8 @@ const nl = {
       relative: 'Relatieve modus',
       absoluteShort: 'Absoluut',
       relativeShort: 'Relatief',
+      touch: 'Aanraakmodus',
+      touchShort: 'Aanraken',
       absoluteStalled: 'Het doelapparaat negeert de absolute muis',
       absoluteStalledDesc:
         'Het doelapparaat neemt geen absolute muisrapporten meer aan, dus aanwijzerbewegingen gaan verloren. Het toetsenbord werkt gewoon. Het herstellen van USB verhelpt dit vaak; de relatieve modus gebruikt een ander endpoint.',

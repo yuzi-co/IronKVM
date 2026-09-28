@@ -243,6 +243,8 @@ const ko = {
       relative: '상대값 모드',
       absoluteShort: '절대값',
       relativeShort: '상대값',
+      touch: '터치 모드',
+      touchShort: '터치',
       absoluteStalled: '대상이 절대값 마우스를 무시하고 있습니다',
       absoluteStalledDesc:
         '대상이 절대값 마우스 보고를 더 이상 받지 않아 포인터 이동이 손실되고 있습니다. 키보드는 영향을 받지 않습니다. USB를 복구하면 대개 해결되며, 상대값 모드는 다른 엔드포인트를 사용합니다.',

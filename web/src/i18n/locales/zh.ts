@@ -239,6 +239,8 @@ const zh = {
       relative: '相对模式',
       absoluteShort: '绝对',
       relativeShort: '相对',
+      touch: '触摸模式',
+      touchShort: '触摸',
       absoluteStalled: '目标主机未响应绝对模式鼠标',
       absoluteStalledDesc:
         '目标主机已停止接收绝对模式鼠标报告，指针移动会丢失。键盘不受影响。恢复 USB 通常可以解决；相对模式使用另一个端点。',

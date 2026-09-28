@@ -239,6 +239,8 @@ const zh_tw = {
       relative: '相對模式',
       absoluteShort: '絕對',
       relativeShort: '相對',
+      touch: '觸控模式',
+      touchShort: '觸控',
       absoluteStalled: '目標主機未回應絕對模式滑鼠',
       absoluteStalledDesc:
         '目標主機已停止接收絕對模式滑鼠報告，游標移動會遺失。鍵盤不受影響。恢復 USB 通常可以解決；相對模式使用另一個端點。',

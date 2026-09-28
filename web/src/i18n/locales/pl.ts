@@ -249,6 +249,8 @@ const pl = {
       relative: 'Tryb względny',
       absoluteShort: 'Bezwzględny',
       relativeShort: 'Względny',
+      touch: 'Tryb dotykowy',
+      touchShort: 'Dotykowy',
       absoluteStalled: 'Host ignoruje mysz absolutną',
       absoluteStalledDesc:
         'Host przestał odbierać raporty myszy absolutnej, więc ruchy wskaźnika są tracone. Klawiatura działa normalnie. Zwykle pomaga odzyskanie USB; tryb względny używa innego punktu końcowego.',

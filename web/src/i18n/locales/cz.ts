@@ -247,6 +247,8 @@ const cz = {
       relative: 'Relativní režim',
       absoluteShort: 'Absolutní',
       relativeShort: 'Relativní',
+      touch: 'Dotykový režim',
+      touchShort: 'Dotykový',
       absoluteStalled: 'Cílové zařízení ignoruje absolutní myš',
       absoluteStalledDesc:
         'Cílové zařízení přestalo přijímat hlášení absolutní myši, takže se pohyby kurzoru ztrácejí. Klávesnice není dotčena. Často pomůže obnovení USB; relativní režim používá jiný koncový bod.',

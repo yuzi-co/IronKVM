@@ -247,6 +247,8 @@ const da = {
       relative: 'Relativ tilstand',
       absoluteShort: 'Absolut',
       relativeShort: 'Relativ',
+      touch: 'Berøringstilstand',
+      touchShort: 'Berøring',
       absoluteStalled: 'Målenheden ignorerer den absolutte mus',
       absoluteStalledDesc:
         'Målenheden er holdt op med at modtage absolutte muserapporter, så markørbevægelser går tabt. Tastaturet er ikke påvirket. Gendannelse af USB løser det ofte; relativ tilstand bruger et andet endpoint.',

@@ -247,6 +247,8 @@ const ja = {
       relative: '相対モード',
       absoluteShort: '絶対',
       relativeShort: '相対',
+      touch: 'タッチモード',
+      touchShort: 'タッチ',
       absoluteStalled: 'ターゲットが絶対マウスを無視しています',
       absoluteStalledDesc:
         'ターゲットが絶対マウスのレポートを受け取らなくなったため、ポインターの移動が失われています。キーボードには影響ありません。USB を復旧すると解消することが多く、相対モードは別のエンドポイントを使用します。',

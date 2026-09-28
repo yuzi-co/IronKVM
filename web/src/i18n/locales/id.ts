@@ -247,6 +247,8 @@ const id = {
       relative: 'Mode relatif',
       absoluteShort: 'Absolut',
       relativeShort: 'Relatif',
+      touch: 'Mode sentuh',
+      touchShort: 'Sentuh',
       absoluteStalled: 'Target mengabaikan tetikus absolut',
       absoluteStalledDesc:
         'Target berhenti menerima laporan tetikus absolut, sehingga gerakan penunjuk hilang. Keyboard tidak terpengaruh. Memulihkan USB biasanya mengatasinya; mode relatif menggunakan endpoint yang berbeda.',
