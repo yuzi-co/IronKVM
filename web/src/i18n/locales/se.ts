@@ -8,17 +8,22 @@ const se = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      cookieRejected:
+        'Webbläsaren vägrade spara sessionen. En cookie från en tidigare HTTPS-session kan inte ersättas över vanlig http. Rensa cookies för den här adressen, eller öppna ett privat fönster, och logga in igen.',
       login: 'Logga in',
       placeholderUsername: 'Användarnamn',
       placeholderPassword: 'Lösenord',
+      placeholderCurrentPassword: 'Nuvarande lösenord',
       placeholderPassword2: 'Vänligen ange lösenordet igen',
       noEmptyUsername: 'Användarnamn krävs',
       noEmptyPassword: 'Lösenord krävs',
+      passwordLength: 'Lösenordet måste vara mellan 8 och 72 tecken',
       noAccount: 'Kunde inte hämta användarinformation, uppdatera sidan eller återställ lösenordet',
       invalidUser: 'Ogiltigt användarnamn eller lösenord',
       locked: 'För många inloggningar, försök igen senare',
       globalLocked: 'System under skydd, försök igen senare',
       error: 'Oväntat fel',
+      invalidCurrentPassword: 'Nuvarande lösenord är felaktigt',
       changePassword: 'Byt lösenord',
       changePasswordDesc: 'För din enhets säkerhet, byt lösenord!',
       differentPassword: 'Lösenorden matchar inte',
@@ -239,6 +244,10 @@ const se = {
       relative: 'Relativt läge',
       absoluteShort: 'Absolut',
       relativeShort: 'Relativ',
+      absoluteStalled: 'Målet ignorerar den absoluta musen',
+      absoluteStalledDesc:
+        'Målet har slutat hämta absoluta musrapporter, så pekarens rörelser går förlorade. Tangentbordet påverkas inte. Att återställa USB brukar lösa det; relativt läge använder en annan slutpunkt.',
+      useRelative: 'Byt till relativt läge',
       direction: 'Rullhjulsriktning',
       scrollUp: 'Scrolla uppåt',
       scrollDown: 'Scrolla ner',
@@ -252,6 +261,7 @@ const se = {
         desc: 'Om din mus och ditt tangentbord slutar svara och återställning av HID inte hjälper, kan det bero på kompatibilitetsproblem mellan NanoKVM och enheten. Prova att aktivera Endast-HID-läge för bättre kompatibilitet.',
         tip1: 'Aktivering av Endast-HID-läge avmonterar den virtuella U-disken och nätverket',
         tip2: 'I Endast-HID-läge är avbildningsmontering inaktiverat',
+        rebuild: 'Byte av läge bygger upp USB-anslutningen på nytt. NanoKVM startas inte om',
         enable: 'Aktivera Endast-HID-läge',
         disable: 'Inaktivera Endast-HID-läge'
       }
@@ -268,6 +278,17 @@ const se = {
       unmountDesc:
         'I vissa system måste du manuellt mata ut från fjärrvärden innan du avmonterar avbildningen.',
       refresh: 'Uppdatera avbildningslistan',
+      disk: 'Disk',
+      cdrom: 'CD',
+      driveEmpty: 'Tom',
+      eject: 'Mata ut',
+      readOnly: 'Skrivskyddad',
+      readOnlyTip: 'Gäller nästa avbildning som sätts in i disken.',
+      noDrives: 'Inga virtuella enheter. Aktivera den virtuella disken i Inställningar.',
+      insertFailed: 'Isättning misslyckades',
+      ejectFailed: 'Utmatning misslyckades',
+      insertInto: 'Sätts in i {{drive}}. Klicka för att ändra.',
+      loadedIn: 'Isatt i {{drive}}',
       attention: 'Observera',
       deleteConfirm: 'Är du säker på att du vill ta bort denna avbildning?',
       okBtn: 'Ja',
@@ -365,7 +386,15 @@ const se = {
       sleepConfirm: 'Försätta värden i viloläge?',
       powerDownConfirm: 'Skicka avstängningstangenten till värden?',
       wakeTip:
-        'En värd i viloläge ignorerar ofta Väck från enheten som försatte den i viloläge. Väck med Shift trycker på en tangent på tangentbordet, vilket fler värdar godtar.'
+        'En värd i viloläge ignorerar ofta Väck från enheten som försatte den i viloläge. Väck med Shift trycker på en tangent på tangentbordet, vilket fler värdar godtar.',
+      led: 'Ström-LED',
+      ledOn: 'På',
+      ledOff: 'Av',
+      ledUnknown: 'Okänd',
+      ledConnected: 'Ström-LED ansluten',
+      ledConnectedTip:
+        'Aktivera endast om värdens stiftlist för ström-LED är kopplad till kortet. Utan den är strömläget okänt.',
+      ledConnectedFailed: 'Det gick inte att spara inställningen för ström-LED'
     },
     settings: {
       title: 'Inställningar',
@@ -388,6 +417,33 @@ const se = {
         okBtn: 'Bekräfta',
         cancelBtn: 'Avbryt'
       },
+      redfish: {
+        title: 'Redfish',
+        service: 'Redfish-tjänst',
+        serviceDesc:
+          'DMTF Redfish API, för strömstyrning, virtuella medier och status från verktyg som redfishtool och Ansible. Om den stängs av avslutas alla Redfish-sessioner.',
+        endpoint: 'Tjänsterot',
+        httpsOn: 'Kortet använder HTTPS, vilket de flesta Redfish-verktyg kräver.',
+        httpsOff:
+          'Kortet använder vanlig HTTP. De flesta Redfish-verktyg kräver HTTPS: aktivera det i "Inställningar > Nätverk".',
+        credentials:
+          'Redfish använder KVM-kontona, med Basic-autentisering eller en Redfish-session, och API-nycklar som skickas som X-Auth-Token. API-nycklar hanteras på sidan API-nycklar.',
+        powerActions: 'Strömåtgärder',
+        powerActionsDesc:
+          'De återställningstyper som erbjuds just nu. On, ForceOff och GracefulShutdown kräver strömläget, så de erbjuds bara när "Ström-LED ansluten" är aktiverat i strömmenyn.',
+        sessions: 'Sessioner',
+        noSessions: 'Inga öppna Redfish-sessioner',
+        created: 'Skapad',
+        lastUsed: 'Senast använd',
+        refresh: 'Uppdatera',
+        end: 'Avsluta',
+        endConfirmTitle: 'Avsluta den här Redfish-sessionen?',
+        endConfirmDesc: 'Dess token slutar fungera direkt. Klienten måste logga in igen.',
+        failed: 'Redfish-åtgärden misslyckades',
+        copyFailed: 'Kopieringen misslyckades. Kopiera manuellt.',
+        okBtn: 'Bekräfta',
+        cancelBtn: 'Avbryt'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Värd-watchdog',
@@ -396,7 +452,7 @@ const se = {
         stillWarning:
           'En värd vars skärm går i viloläge, eller vars bild står still medan den arbetar, ser ut att ha hängt sig. Stäng av skärmvila på värden, eller ange en ping-adress.',
         ledHint:
-          '"Power LED connected" är avstängt i strömmenyn. Watchdogen ser inte när värden är avstängd, så den behandlar värden som alltid på.',
+          '"Ström-LED ansluten" är avstängt i strömmenyn. Watchdogen ser inte när värden är avstängd, så den behandlar värden som alltid på.',
         timeout: 'Tidsgräns',
         timeoutDesc: 'Hur länge värden får vara utan livstecken innan watchdogen ingriper.',
         action: 'Åtgärd',
@@ -460,7 +516,15 @@ const se = {
         applicationTip: 'NanoKVM webbapplikationsversion',
         image: 'Systemversion',
         imageTip: 'NanoKVM systemavbildningsversion',
+        kernel: 'Kärnversion',
+        kernelTip: 'Version av Linux-kärnan som körs nu',
         deviceKey: 'Enhetsnyckel',
+        videoMemory: 'Videominne',
+        videoMemoryTip:
+          'Minne reserverat för videoinspelning. Det delas inte med resten av systemet.',
+        videoMemoryGenerations_one: '{{count}} tidigare NanoKVM-session håller videominne',
+        videoMemoryGenerations_other: '{{count}} tidigare NanoKVM-sessioner håller videominne',
+        videoMemoryReboot: 'Starta om för att frigöra det.',
         community: 'Community',
         hostname: 'Värdnamn',
         hostnameUpdated: 'Värdnamn uppdaterat. Starta om för att tillämpa.',
@@ -509,6 +573,16 @@ const se = {
         oled: {
           title: 'OLED',
           description: 'Stäng av OLED-skärmen efter',
+          brightness: 'OLED-ljusstyrka',
+          brightnessDescription: 'En lägre nivå gör att skärmen håller längre',
+          brightnessLevels: {
+            '64': 'Lägst',
+            '96': 'Låg',
+            '128': 'Medel',
+            '160': 'Hög',
+            '207': 'Standard',
+            '255': 'Max'
+          },
           0: 'Aldrig',
           15: '15 sek',
           30: '30 sek',
@@ -524,11 +598,34 @@ const se = {
           tip: 'Ställ in ett starkt lösenord innan du aktiverar (Konto - Byt lösenord)'
         },
         advanced: 'Avancerade inställningar',
+        cpuFreq: {
+          title: 'CPU-frekvens',
+          description: 'Ange CPU-klockan som används vid nästa start',
+          tip: 'CPU:n startar på 850 MHz och är specificerad för 1000 MHz. Ett nytt värde tillämpas vid nästa start, inte medan systemet körs. 1000 MHz ligger inom specifikationen; temperaturen håller sig väl inom gränserna med båda inställningarna.',
+          running: 'Körs: {{mhz}} MHz',
+          rebootToApply: 'starta om för att tillämpa',
+          rebootConfirm: 'Starta om nu för att tillämpa {{mhz}} MHz?'
+        },
         swap: {
           title: 'Swap',
           disable: 'Inaktivera',
           description: 'Ange swap-filens storlek',
           tip: 'Aktivering av denna funktion kan förkorta livslängden på ditt SD-kort!'
+        },
+        zram: {
+          title: 'Komprimerad swap (zram)',
+          description: 'Swap i komprimerat RAM i stället för på SD-kortet',
+          tip: 'zram håller swap borta från SD-kortet, så det orsakar inget slitage. Det finns ingen disk-swap bakom: om zram blir fullt stoppar kärnan en process i stället för att växla långsamt. Minnesgränsen begränsar hur mycket RAM zram kan ta.',
+          unavailable: 'Kärnmodulerna är inte installerade på den här enheten',
+          inactive: 'Aktiverad, men enheten startade inte',
+          active: 'Aktiv - {{used}} av {{total}}, {{ratio}}x',
+          off: 'Av',
+          detail: {
+            algorithm: 'Algoritm: {{algorithm}}',
+            memory: 'Använt minne: {{used}} av {{limit}}',
+            memoryNoLimit: 'Använt minne: {{used}}, ingen gräns satt',
+            counters: 'Sidor växlade in {{in}}, ut {{out}} (alla swap-enheter, sedan start)'
+          }
         },
         mouseJiggler: {
           title: 'Musvickare',
@@ -583,7 +680,26 @@ const se = {
           reenumerate:
             'När du verkställer byggs USB-anslutningen upp på nytt. Värden förlorar tangentbord, mus och virtuell disk i några sekunder.'
         },
+        audio: 'Virtuell högtalare',
+        audioDesc:
+          'Visa ett USB-ljudkort för fjärrvärden, så att du kan höra den. Värden måste välja det som sin utenhet. Att ändra detta bygger upp USB-anslutningen på nytt.',
+        audioNote: 'Ljud finns i båda H.264-lägena (WebRTC och Direct), inte i MJPEG',
+        console: 'Seriell konsol',
+        consoleDesc:
+          'Visa en seriell USB-port för fjärrvärden, för att logga in på denna NanoKVM när nätverket inte går att nå',
+        consoleTip:
+          'Alla som styr fjärrvärden får en inloggningsprompt till denna NanoKVM. Ställ in ett starkt lösenord innan du aktiverar (Konto - Byt lösenord).',
         endpoints: {
+          title: 'USB-slutpunkter',
+          used: '{{used}} av {{total}} används',
+          cost: 'använder {{cost}}',
+          needs: 'behöver {{cost}}',
+          full: 'Inte tillräckligt med USB-slutpunkter. Stäng av något annat först.',
+          inactive:
+            'På, men körs inte: USB-styrenheten fick slut på slutpunkter. Stäng av en annan enhet så startar den här direkt.',
+          explain:
+            'USB-styrenheten har ett fast antal inkommande slutpunkter, och det är dem som räknas här. Om fler enheter är aktiverade än det finns plats för behålls tangentbord och mus, och resten stängs av.',
+          error: 'Kunde inte nå enheten. Försök igen.',
           fitTogether: 'Dessa ryms tillsammans: {{sets}}'
         },
         reboot: 'Starta om',
@@ -610,7 +726,10 @@ const se = {
         },
         tls: {
           description: 'Aktivera HTTPS-protokoll',
-          tip: 'Observera: Användning av HTTPS kan öka fördröjningen, särskilt med MJPEG-läge.'
+          tip: 'Observera: Användning av HTTPS kan öka fördröjningen, särskilt med MJPEG-läge.',
+          restarting: 'Startar om enhetens server, det tar ungefär två minuter...',
+          waiting: 'Väntar på att enheten svarar igen...',
+          waitingHttp: 'Byter tillbaka till http. Ladda om sidan om den inte öppnas av sig själv.'
         },
         ethernet: {
           title: 'IP-adress',
@@ -671,6 +790,54 @@ const se = {
           none: 'Ingen'
         }
       },
+      vpn: {
+        loading: 'Laddar...',
+        okBtn: 'Ja',
+        cancelBtn: 'Nej',
+        restart: 'Starta om {{name}}?',
+        stop: 'Stoppa {{name}}?',
+        stopDesc:
+          'Tjänsten stoppas nu. Starta vid uppstart är en separat inställning och förblir som den är.',
+        update: 'Uppdatera {{name}} till {{version}}?',
+        updateDesc: 'Tjänsten startas om om den körs. Inloggningen behålls.',
+        notInstall: '{{name}} är inte installerad.',
+        install: 'Installera',
+        installing: 'Installerar',
+        installFailed: 'Installationen misslyckades',
+        retry: 'Försök igen',
+        notRunning: '{{name}} körs inte. Starta den för att fortsätta.',
+        run: 'Starta',
+        boot: 'Starta vid uppstart',
+        bootDesc: 'Starta {{name}} när KVM:en startar.',
+        enable: 'Aktivera {{name}}',
+        control: 'Kontrollserver',
+        connected: 'Ansluten',
+        disconnected: 'Inte ansluten',
+        deviceName: 'Enhetsnamn',
+        deviceIP: 'Enhetens IP',
+        account: 'Konto',
+        version: 'Version',
+        uptime: 'Drifttid',
+        peers: 'Noder',
+        noPeers: 'Inga noder ännu.',
+        online: 'Online',
+        offline: 'Offline',
+        memory: 'Minne',
+        daemonRss: 'Tjänst',
+        group: 'Tilläggsgrupp',
+        high: 'stryps över {{size}}',
+        max: 'stoppas av kärnan över {{size}}',
+        noGroup: 'Ingen minnesgrupp för tillägg på det här kortet.',
+        uninstall: 'Avinstallera {{name}}',
+        uninstallDesc:
+          'Är du säker på att du vill avinstallera {{name}}? Inloggningen blir kvar på kortet.',
+        blocked:
+          '{{other}} körs eller startar vid uppstart. Bara ett VPN kan köras åt gången: stoppa {{other}} och stäng av dess start vid uppstart först.',
+        swap: {
+          title: 'Swap-minne',
+          tip: 'Om tjänsten får ont om minne kan du prova att aktivera swap-minne. Detta sätter swap-filens storlek till 256MB som standard, vilket kan justeras i "Inställningar > Enhet".'
+        }
+      },
       tailscale: {
         title: 'Tailscale',
         retry: 'Uppdatera sidan och försök igen. Eller installera manuellt',
@@ -686,6 +853,21 @@ const se = {
         loginSuccess: 'Inloggning lyckades',
         logout: 'Logga ut',
         logoutDesc: 'Är du säker på att du vill logga ut?'
+      },
+      netbird: {
+        title: 'NetBird',
+        notLogin:
+          'Den här enheten har inte anslutit till ett NetBird-nätverk ännu. Anslut med en installationsnyckel, eller logga in med SSO.',
+        setupKey: 'Installationsnyckel',
+        setupKeyPlaceholder: 'Klistra in en installationsnyckel från NetBird-instrumentpanelen',
+        join: 'Anslut',
+        or: 'eller',
+        sso: 'Logga in med SSO',
+        urlPeriod: 'Denna URL är giltig i 10 minuter',
+        loginSuccess: 'Inloggning lyckades',
+        logout: 'Avregistrera',
+        logoutDesc:
+          'Avregistrering tar bort den här noden från ditt NetBird-konto och raderar dess konfiguration här. För att ansluta igen krävs en installationsnyckel eller en SSO-inloggning, och noden kan få en ny IP. Fortsätta?'
       },
       update: {
         title: 'Sök efter uppdateringar',
@@ -713,6 +895,7 @@ const se = {
           confirmDesc:
             'SHA-512 kontrollerar endast att paketet överensstämmer med manifestet från den här servern. Det bevisar inte att paketet är en officiell NanoKVM-utgåva. En felaktig eller skadlig server kan göra enheten obrukbar, orsaka dataförlust eller äventyra systemets säkerhet.',
           confirm: 'Använd ändå',
+          useSipeed: 'Använd Sipeeds officiella server',
           previewDisabled:
             'Förhandsuppdateringar är inte tillgängliga när en anpassad uppdateringsserver är aktiverad.'
         },
@@ -730,12 +913,59 @@ const se = {
       account: {
         title: 'Konto',
         webAccount: 'Webbkonto-namn',
+        role: 'Roll',
+        roles: { admin: 'Administratör', user: 'Användare' },
         password: 'Lösenord',
         updateBtn: 'Byt',
         logoutBtn: 'Logga ut',
         logoutDesc: 'Är du säker på att du vill logga ut?',
         okBtn: 'Ja',
-        cancelBtn: 'Nej'
+        cancelBtn: 'Nej',
+        users: {
+          title: 'Användare',
+          create: 'Skapa användare',
+          enabled: 'Aktiverad',
+          disabled: 'Inaktiverad',
+          deviceOwner: 'Enhetens ägare',
+          resetPassword: 'Återställ lösenord',
+          delete: 'Ta bort',
+          deleteConfirm: 'Ta bort den här användaren och återkalla alla dess sessioner?',
+          created: 'Användaren skapades',
+          deleted: 'Användaren togs bort',
+          passwordUpdated: 'Lösenordet uppdaterades',
+          loadFailed: 'Det gick inte att läsa in användare',
+          saveFailed: 'Det gick inte att spara användaren',
+          deleteFailed: 'Det gick inte att ta bort användaren'
+        }
+      },
+      apiKeys: {
+        title: 'API-nycklar',
+        description:
+          'En nyckel agerar som sin ägare, med den användarens roll. Skicka den som Authorization: Bearer <key> för mätvärden och API:t, eller som X-Auth-Token för Redfish.',
+        name: 'Namn',
+        namePlaceholder: 'Vad nyckeln är till för, till exempel prometheus',
+        nameRequired: 'Ge nyckeln ett namn',
+        nameTooLong: 'Namnet får vara högst 64 tecken',
+        unnamed: '(namnlös)',
+        create: 'Skapa nyckel',
+        created: 'Skapad',
+        owner: 'Ägare',
+        empty: 'Inga API-nycklar',
+        newKeyTitle: 'Din nya API-nyckel',
+        newKeyWarning:
+          'Kopiera nyckeln nu. Den sparas inte och kan inte visas igen. Om du tappar bort den, återkalla den och skapa en ny.',
+        copy: 'Kopiera',
+        copied: 'Kopierad',
+        copyFailed: 'Kopieringen misslyckades. Kopiera manuellt.',
+        done: 'Klar',
+        revoke: 'Återkalla',
+        revokeConfirmTitle: 'Återkalla den här API-nyckeln?',
+        revokeConfirmDesc: 'Allt som använder "{{name}}" slutar fungera direkt.',
+        revoked: 'API-nyckeln återkallades',
+        loadFailed: 'Det gick inte att läsa in API-nycklar',
+        createFailed: 'Det gick inte att skapa API-nyckeln',
+        revokeFailed: 'Det gick inte att återkalla API-nyckeln',
+        cancelBtn: 'Avbryt'
       }
     },
     picoclaw: {
@@ -904,18 +1134,38 @@ const se = {
     },
     error: {
       title: 'Vi stötte på ett problem',
-      refresh: 'Uppdatera'
+      refresh: 'Uppdatera',
+      panel: 'Den här delen av sidan slutade fungera',
+      retry: 'Försök igen'
     },
     fullscreen: {
       toggle: 'Växla fullskärm'
     },
     input: {
+      disconnected: 'Tangentbord och mus är inte anslutna',
+      disconnectedTls:
+        'Webbläsaren avvisade den säkra anslutningen som bär tangentbord och mus, och det gör den utan att fråga. Certifikatet som den här enheten skapade är inte betrott ännu. Öppna den här adressen i en ny flik, godkänn certifikatet och ladda sedan om. Att installera certifikatet är den pålitliga lösningen.',
+      disconnectedNever:
+        'Anslutningen som bär tangentbord och mus kunde inte öppnas. Resten av sidan fungerar eftersom den inte använder den. Kontrollera att inget mellan dig och enheten blockerar den.',
+      disconnectedDropped:
+        'Anslutningen som bär tangentbord och mus bröts och har inte kommit tillbaka. Den återansluter av sig själv efter en omstart; om detta kvarstår, ladda om sidan.',
       hidDisabled: 'HID är avstängt på den här enheten (/boot/disable_hid).',
       keyFailed: 'Tangenten kunde inte skickas.'
     },
+    speaker: { title: 'Högtalare', unmute: 'Slå på ljud', mute: 'Stäng av ljud' },
     menu: {
       collapse: 'Fäll ihop menyn',
       expand: 'Expandera menyn'
+    },
+    ion: {
+      checking: 'Kontrollerar videominnet innan strömmen startar...',
+      warn: 'Lite videominne kvar. En omstart av servern skulle ta slut på det. Starta om när det passar.',
+      criticalTitle: 'Inte tillräckligt med videominne för att starta strömmen',
+      criticalBody:
+        'Att starta video skulle ta slut på det reserverade minnet och stoppa servern. Alla andra funktioner fungerar fortfarande, även strömstyrning och omstart. Endast en omstart av NanoKVM frigör detta minne.',
+      criticalContinue: 'Starta video ändå',
+      criticalReboot: 'Starta om NanoKVM',
+      criticalRebooting: 'Startar om...'
     }
   }
 };
