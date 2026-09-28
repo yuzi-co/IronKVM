@@ -17,6 +17,19 @@
 @source '../../../index.html';
 @source '../../**/*.{js,ts,jsx,tsx}';
 
+/* Without preflight a plain <button> keeps the browser's grey face, black text
+ * and border, which no utility class here expects. This resets only that; it
+ * sits in the base layer, so antd's own (unlayered) button styles and every
+ * utility still win over it. */
+@layer base {
+  button {
+    background: transparent;
+    border: 0;
+    color: inherit;
+    font: inherit;
+  }
+}
+
 html,
 body {
   padding: 0;
