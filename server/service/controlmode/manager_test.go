@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 )
@@ -24,6 +25,20 @@ func TestSwitchPreemptsBeforeWaitingForActiveWrite(t *testing.T) {
 	}
 
 	preempted := make(chan struct{})
+	blocked := make(chan struct{})
+	preemptedBeforeWait := false
+	var blockedOnce sync.Once
+	manager.activity.blocked = func() {
+		blockedOnce.Do(func() {
+			select {
+			case <-preempted:
+				preemptedBeforeWait = true
+			default:
+			}
+			close(blocked)
+		})
+	}
+
 	done := make(chan error, 1)
 	go func() {
 		done <- manager.Switch(ModePicoclaw, func() error {
@@ -32,9 +47,15 @@ func TestSwitchPreemptsBeforeWaitingForActiveWrite(t *testing.T) {
 		})
 	}()
 
+	// No deadline here. A switch that waited first would sit in the gate until
+	// its own activity timeout and then return an error, which the second case
+	// reports.
 	select {
-	case <-preempted:
-	case <-time.After(time.Second):
+	case <-blocked:
+	case err := <-done:
+		t.Fatalf("switch returned %v without waiting for the active write", err)
+	}
+	if !preemptedBeforeWait {
 		t.Fatal("preempt callback was not called before waiting")
 	}
 	if _, err := manager.AcquireWrite(ModeMCP); err == nil {
@@ -42,13 +63,8 @@ func TestSwitchPreemptsBeforeWaitingForActiveWrite(t *testing.T) {
 	}
 
 	release()
-	select {
-	case err := <-done:
-		if err != nil {
-			t.Fatal(err)
-		}
-	case <-time.After(time.Second):
-		t.Fatal("switch did not resume after active write was released")
+	if err := <-done; err != nil {
+		t.Fatalf("switch did not resume after active write was released: %v", err)
 	}
 	if got := manager.Current(); got != ModePicoclaw {
 		t.Fatalf("mode = %q, want picoclaw", got)
@@ -62,6 +78,12 @@ func TestSwitchRunsCleanupAfterActiveWritesDrain(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	blocked := make(chan struct{})
+	var blockedOnce sync.Once
+	manager.activity.blocked = func() {
+		blockedOnce.Do(func() { close(blocked) })
+	}
+
 	cleanupCalled := make(chan struct{})
 	done := make(chan error, 1)
 	go func() {
@@ -71,20 +93,22 @@ func TestSwitchRunsCleanupAfterActiveWritesDrain(t *testing.T) {
 		})
 	}()
 
+	// Once the switch is blocked in the gate, cleanup can only run after the
+	// release below, so the check that follows does not depend on timing.
+	select {
+	case <-blocked:
+	case err := <-done:
+		t.Fatalf("switch returned %v without waiting for the active write", err)
+	}
 	select {
 	case <-cleanupCalled:
 		t.Fatal("cleanup ran before active write drained")
-	case <-time.After(20 * time.Millisecond):
+	default:
 	}
 
 	release()
-	select {
-	case err := <-done:
-		if err != nil {
-			t.Fatal(err)
-		}
-	case <-time.After(time.Second):
-		t.Fatal("switch did not finish")
+	if err := <-done; err != nil {
+		t.Fatalf("switch did not finish: %v", err)
 	}
 	select {
 	case <-cleanupCalled:

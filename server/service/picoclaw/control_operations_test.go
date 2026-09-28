@@ -44,22 +44,16 @@ func TestControlModeSwitchCancelsActiveWait(t *testing.T) {
 		})
 	}()
 
-	select {
-	case err := <-switchDone:
-		if err != nil {
-			t.Fatal(err)
-		}
-	case <-time.After(time.Second):
-		t.Fatal("control mode switch did not cancel the active PicoClaw wait")
+	// No deadline on either receive. The wait runs for maxWaitDurationMS and
+	// the switch gives up on the activity gate after its own timeout, so a
+	// switch that failed to cancel the wait still ends, and the checks below
+	// tell that apart from a cancellation by the error each side returns.
+	if err := <-switchDone; err != nil {
+		t.Fatalf("control mode switch did not cancel the active PicoClaw wait: %v", err)
 	}
 
-	select {
-	case actionErr := <-actionDone:
-		if actionErr == nil || actionErr.Code != CodeControlModeConflict {
-			t.Fatalf("action error = %+v, want %s", actionErr, CodeControlModeConflict)
-		}
-	case <-time.After(time.Second):
-		t.Fatal("canceled PicoClaw action did not return")
+	if actionErr := <-actionDone; actionErr == nil || actionErr.Code != CodeControlModeConflict {
+		t.Fatalf("action error = %+v, want %s", actionErr, CodeControlModeConflict)
 	}
 
 	if got := control.Current(); got != controlmode.ModeMCP {
@@ -97,22 +91,15 @@ func TestControlModeSwitchCancelsRuntimeLifecycle(t *testing.T) {
 		})
 	}()
 
-	select {
-	case err := <-switchDone:
-		if err != nil {
-			t.Fatal(err)
-		}
-	case <-time.After(time.Second):
-		t.Fatal("control mode switch did not cancel the runtime lifecycle operation")
+	// No deadline here either. A switch that failed to cancel the operation
+	// would give up on the activity gate after its own timeout and return an
+	// error, and the operation would then never report a conflict.
+	if err := <-switchDone; err != nil {
+		t.Fatalf("control mode switch did not cancel the runtime lifecycle operation: %v", err)
 	}
 
-	select {
-	case lifecycleErr := <-lifecycleDone:
-		if lifecycleErr == nil || lifecycleErr.Code != CodeControlModeConflict {
-			t.Fatalf("lifecycle error = %+v, want %s", lifecycleErr, CodeControlModeConflict)
-		}
-	case <-time.After(time.Second):
-		t.Fatal("canceled runtime lifecycle operation did not return")
+	if lifecycleErr := <-lifecycleDone; lifecycleErr == nil || lifecycleErr.Code != CodeControlModeConflict {
+		t.Fatalf("lifecycle error = %+v, want %s", lifecycleErr, CodeControlModeConflict)
 	}
 
 	if got := control.Current(); got != controlmode.ModeMCP {

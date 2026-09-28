@@ -58,34 +58,24 @@ func TestHeartbeatTimeoutReleasesManualLease(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer conn.Close()
-	select {
-	case <-connected:
-	case <-time.After(time.Second):
-		t.Fatal("websocket client did not connect")
-	}
+	<-connected
 
+	// No deadline on the switch. A lease that the heartbeat timeout failed to
+	// release holds the switch in the activity gate until the manager's own
+	// timeout, and the switch then returns an error.
 	switchDone := make(chan error, 1)
 	go func() {
 		switchDone <- control.SwitchToPicoclaw(nil)
 	}()
 
-	select {
-	case err := <-switchDone:
-		if err != nil {
-			t.Fatalf("switch after heartbeat timeout failed: %v", err)
-		}
-	case <-time.After(time.Second):
-		t.Fatal("heartbeat timeout did not release the manual control lease")
+	if err := <-switchDone; err != nil {
+		t.Fatalf("heartbeat timeout did not release the manual control lease: %v", err)
 	}
 	if got := control.Current(); got != controlmode.ModePicoclaw {
 		t.Fatalf("mode = %q, want picoclaw", got)
 	}
 
-	select {
-	case <-serverDone:
-	case <-time.After(time.Second):
-		t.Fatal("websocket client did not close after heartbeat timeout")
-	}
+	<-serverDone
 }
 
 func TestMouseReportStartsCooldown(t *testing.T) {

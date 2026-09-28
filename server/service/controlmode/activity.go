@@ -17,6 +17,12 @@ type activityGate struct {
 	active    int
 	exclusive bool
 	changed   chan struct{}
+
+	// blocked is called, without the lock held, each time acquireExclusive is
+	// about to wait for shared holders to leave. It is nil outside the tests,
+	// which use it to know that a transition is waiting rather than sleep and
+	// hope that it is.
+	blocked func()
 }
 
 func (g *activityGate) acquireShared() func() {
@@ -72,6 +78,10 @@ func (g *activityGate) acquireExclusive(timeout time.Duration) (func(), error) {
 
 		changed := g.changedLocked()
 		g.mu.Unlock()
+
+		if g.blocked != nil {
+			g.blocked()
+		}
 
 		select {
 		case <-changed:
