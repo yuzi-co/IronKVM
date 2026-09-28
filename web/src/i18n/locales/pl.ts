@@ -62,7 +62,14 @@ const pl = {
         authFailed: 'Nieprawidłowe hasło AP',
         passPlaceholder: 'AP hasło',
         verifyBtn: 'Sprawdź'
-      }
+      },
+      ssidRequired: 'Wpisz nazwę sieci, maksymalnie 32 znaki',
+      passwordLength: 'Hasło ma od 8 do 63 znaków. W przypadku sieci otwartej zostaw je puste.',
+      passwordOptional: 'Hasło (puste dla sieci otwartej)',
+      lost:
+        'Płytka przestała odpowiadać. Mogła połączyć się z siecią i zamknąć swój hotspot konfiguracyjny. Jeśli hotspot pojawi się ponownie, połączenie się nie udało: połącz się z nim ponownie i spróbuj jeszcze raz.',
+      done:
+        'Konfiguracja zakończona. Połącz to urządzenie z powrotem ze swoją zwykłą siecią i otwórz płytkę pod jej nowym adresem.'
     },
     screen: {
       scale: 'Skala',

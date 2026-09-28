@@ -61,7 +61,14 @@ const id = {
         authFailed: 'Kata sandi AP tidak valid',
         passPlaceholder: 'AP kata sandi',
         verifyBtn: 'Verifikasi'
-      }
+      },
+      ssidRequired: 'Masukkan nama jaringan, maksimal 32 karakter',
+      passwordLength: 'Kata sandi 8 sampai 63 karakter. Biarkan kosong untuk jaringan terbuka.',
+      passwordOptional: 'Kata sandi (kosong untuk jaringan terbuka)',
+      lost:
+        'Papan berhenti merespons. Mungkin sudah bergabung ke jaringan dan menutup hotspot penyiapannya. Jika hotspot muncul lagi, penggabungan gagal: sambungkan lagi dan coba ulang.',
+      done:
+        'Penyiapan selesai. Sambungkan kembali perangkat ini ke jaringan biasa Anda dan buka papan di alamat barunya.'
     },
     screen: {
       scale: 'Skala',

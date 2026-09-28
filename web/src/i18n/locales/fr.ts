@@ -64,7 +64,15 @@ const fr = {
         authFailed: 'Mot de passe AP invalide',
         passPlaceholder: 'AP mot de passe',
         verifyBtn: 'Vérifier'
-      }
+      },
+      ssidRequired: 'Saisissez le nom du réseau, 32 caractères au maximum',
+      passwordLength:
+        'Le mot de passe comporte 8 à 63 caractères. Laissez-le vide pour un réseau ouvert.',
+      passwordOptional: 'Mot de passe (vide pour un réseau ouvert)',
+      lost:
+        "La carte ne répond plus. Elle a peut-être rejoint le réseau et fermé son point d'accès de configuration. Si le point d'accès réapparaît, la connexion a échoué : reconnectez-vous-y et réessayez.",
+      done:
+        'Configuration terminée. Reconnectez cet appareil à votre réseau habituel et ouvrez la carte à sa nouvelle adresse.'
     },
     screen: {
       scale: 'Échelle',

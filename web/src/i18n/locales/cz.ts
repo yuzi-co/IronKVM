@@ -62,7 +62,14 @@ const cz = {
         authFailed: 'Neplatné heslo AP',
         passPlaceholder: 'AP heslo',
         verifyBtn: 'Ověřte'
-      }
+      },
+      ssidRequired: 'Zadejte název sítě, nejvýše 32 znaků',
+      passwordLength: 'Heslo má 8 až 63 znaků. U otevřené sítě ho nechte prázdné.',
+      passwordOptional: 'Heslo (prázdné pro otevřenou síť)',
+      lost:
+        'Deska přestala odpovídat. Možná se připojila k síti a vypnula svůj konfigurační hotspot. Pokud se hotspot znovu objeví, připojení selhalo: připojte se k němu znovu a zkuste to znovu.',
+      done:
+        'Nastavení dokončeno. Připojte toto zařízení zpět k obvyklé síti a otevřete desku na její nové adrese.'
     },
     screen: {
       scale: 'Měřítko',

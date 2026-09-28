@@ -62,7 +62,15 @@ const es = {
         authFailed: 'Contraseña AP no válida',
         passPlaceholder: 'AP contraseña',
         verifyBtn: 'Verificar'
-      }
+      },
+      ssidRequired: 'Introduzca el nombre de la red, hasta 32 caracteres',
+      passwordLength:
+        'La contraseña tiene de 8 a 63 caracteres. Déjela vacía para una red abierta.',
+      passwordOptional: 'Contraseña (vacía para una red abierta)',
+      lost:
+        'La placa dejó de responder. Puede que se haya unido a la red y cerrado su punto de acceso de configuración. Si el punto de acceso vuelve a aparecer, la conexión falló: vuelva a conectarse a él e inténtelo de nuevo.',
+      done:
+        'Configuración terminada. Vuelva a conectar este dispositivo a su red habitual y abra la placa en su nueva dirección.'
     },
     screen: {
       scale: 'Escala',

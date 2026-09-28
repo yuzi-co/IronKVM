@@ -58,7 +58,12 @@ const zh_tw = {
         authFailed: 'AP 密碼無效',
         passPlaceholder: 'AP 密碼',
         verifyBtn: '驗證'
-      }
+      },
+      ssidRequired: '請輸入網路名稱，最多 32 個字元',
+      passwordLength: '密碼為 8 到 63 個字元。開放網路請留空。',
+      passwordOptional: '密碼（開放網路留空）',
+      lost: '板子不再回應。它可能已加入網路並關閉了設定熱點。如果熱點重新出現，表示連線失敗：請重新連上熱點後再試。',
+      done: '設定完成。請將此裝置連回常用網路，並透過新位址開啟板子。'
     },
     screen: {
       scale: '缩放',

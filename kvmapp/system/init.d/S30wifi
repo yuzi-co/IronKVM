@@ -86,6 +86,21 @@ gen_dnsmasq_conf() {
     echo "dhcp-authoritative"
 }
 
+# gen_wpa_conf writes the wpa_supplicant configuration for one network. An
+# empty password is an open network: wpa_passphrase refuses anything shorter
+# than 8 characters and printed nothing, which left a configuration with no
+# network in it.
+gen_wpa_conf() {
+    ssid="${1}"
+    pass="${2}"
+    echo "ctrl_interface=/var/run/wpa_supplicant"
+    if [ -z "$pass" ]; then
+        printf 'network={\n\tssid="%s"\n\tkey_mgmt=NONE\n}\n' "$ssid"
+    else
+        wpa_passphrase "$ssid" "$pass"
+    fi
+}
+
 start() {
     echo "wifi mode: sta"
     ssid=""
@@ -107,8 +122,7 @@ start() {
     if [ -e /etc/kvm/wifi.pass ]; then
         pass=$(cat /etc/kvm/wifi.pass)
     fi
-    echo "ctrl_interface=/var/run/wpa_supplicant" >/etc/wpa_supplicant.conf
-    wpa_passphrase "$ssid" "$pass" >>/etc/wpa_supplicant.conf
+    gen_wpa_conf "$ssid" "$pass" >/etc/wpa_supplicant.conf
     wpa_supplicant -B -i "$IF" -c /etc/wpa_supplicant.conf
     if [ ! -e /boot/wifi.nodhcp ]; then
         (udhcpc -i "$IF" -t 10 -T 1 -A 5 -O 121 -B -b -p "/run/udhcpc.$IF.pid") &

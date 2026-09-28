@@ -62,7 +62,14 @@ const tr = {
         authFailed: 'Geçersiz AP şifresi',
         passPlaceholder: 'AP şifre',
         verifyBtn: 'Doğrula'
-      }
+      },
+      ssidRequired: 'Ağ adını girin, en fazla 32 karakter',
+      passwordLength: 'Parola 8 ile 63 karakter arasındadır. Açık ağ için boş bırakın.',
+      passwordOptional: 'Parola (açık ağ için boş)',
+      lost:
+        'Kart yanıt vermeyi bıraktı. Ağa katılıp kurulum erişim noktasını kapatmış olabilir. Erişim noktası geri gelirse katılma başarısız olmuştur: ona yeniden bağlanıp tekrar deneyin.',
+      done:
+        'Kurulum tamamlandı. Bu cihazı her zamanki ağınıza yeniden bağlayın ve kartı yeni adresinden açın.'
     },
     screen: {
       scale: 'Ölçek',

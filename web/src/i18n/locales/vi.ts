@@ -61,7 +61,14 @@ const vi = {
         authFailed: 'Mật khẩu AP không hợp lệ',
         passPlaceholder: 'AP mật khẩu',
         verifyBtn: 'Xác minh'
-      }
+      },
+      ssidRequired: 'Nhập tên mạng, tối đa 32 ký tự',
+      passwordLength: 'Mật khẩu dài 8 đến 63 ký tự. Để trống nếu là mạng mở.',
+      passwordOptional: 'Mật khẩu (để trống nếu là mạng mở)',
+      lost:
+        'Bo mạch đã ngừng phản hồi. Có thể nó đã vào mạng và tắt điểm phát cài đặt. Nếu điểm phát xuất hiện lại, việc kết nối đã thất bại: hãy kết nối lại và thử lại.',
+      done:
+        'Đã cài đặt xong. Hãy kết nối lại thiết bị này với mạng thường dùng và mở bo mạch tại địa chỉ mới.'
     },
     screen: {
       scale: 'Quy mô',

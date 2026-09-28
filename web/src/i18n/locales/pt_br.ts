@@ -61,7 +61,14 @@ const pt_br = {
         authFailed: 'Senha AP inválida',
         passPlaceholder: 'AP senha',
         verifyBtn: 'Verificar'
-      }
+      },
+      ssidRequired: 'Digite o nome da rede, até 32 caracteres',
+      passwordLength: 'A senha tem de 8 a 63 caracteres. Deixe vazia para uma rede aberta.',
+      passwordOptional: 'Senha (vazia para uma rede aberta)',
+      lost:
+        'A placa parou de responder. Ela pode ter entrado na rede e fechado seu hotspot de configuração. Se o hotspot voltar, a conexão falhou: conecte-se a ele de novo e tente outra vez.',
+      done:
+        'Configuração concluída. Reconecte este dispositivo à sua rede habitual e abra a placa em seu novo endereço.'
     },
     screen: {
       scale: 'Escala',

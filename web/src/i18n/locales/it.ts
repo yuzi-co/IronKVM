@@ -62,7 +62,14 @@ const it = {
         authFailed: 'Password AP non valida',
         passPlaceholder: 'AP password',
         verifyBtn: 'Verifica'
-      }
+      },
+      ssidRequired: 'Inserisci il nome della rete, fino a 32 caratteri',
+      passwordLength: 'La password è di 8-63 caratteri. Lasciala vuota per una rete aperta.',
+      passwordOptional: 'Password (vuota per una rete aperta)',
+      lost:
+        "La scheda ha smesso di rispondere. Potrebbe essersi collegata alla rete e aver chiuso l'hotspot di configurazione. Se l'hotspot ricompare, la connessione non è riuscita: ricollegati e riprova.",
+      done:
+        'Configurazione completata. Ricollega questo dispositivo alla tua rete abituale e apri la scheda al suo nuovo indirizzo.'
     },
     screen: {
       scale: 'Scala',

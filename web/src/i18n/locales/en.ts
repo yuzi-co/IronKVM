@@ -60,7 +60,14 @@ const en = {
         authFailed: 'Invalid AP password',
         passPlaceholder: 'AP password',
         verifyBtn: 'Verify'
-      }
+      },
+      ssidRequired: 'Enter the network name, up to 32 characters',
+      passwordLength: 'The password is 8 to 63 characters. Leave it empty for an open network.',
+      passwordOptional: 'Password (empty for an open network)',
+      lost:
+        'The board stopped answering. It may have joined the network and closed its setup hotspot. If the hotspot comes back, joining failed: connect to it again and retry.',
+      done:
+        'Setup finished. Connect this device back to your usual network and open the board at its new address.'
     },
     screen: {
       scale: 'Scale',

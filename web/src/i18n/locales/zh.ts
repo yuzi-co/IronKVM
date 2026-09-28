@@ -58,7 +58,12 @@ const zh = {
         authFailed: '密码错误',
         passPlaceholder: 'AP 密码',
         verifyBtn: '验证'
-      }
+      },
+      ssidRequired: '请输入网络名称，最多 32 个字符',
+      passwordLength: '密码为 8 到 63 个字符。开放网络请留空。',
+      passwordOptional: '密码（开放网络留空）',
+      lost: '板子不再响应。它可能已加入网络并关闭了配置热点。如果热点重新出现，说明连接失败：请重新连接热点后再试。',
+      done: '设置完成。请将此设备连回常用网络，并通过新地址打开板子。'
     },
     screen: {
       scale: '缩放',

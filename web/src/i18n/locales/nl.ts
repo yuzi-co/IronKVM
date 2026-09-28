@@ -63,7 +63,14 @@ const nl = {
         authFailed: 'Ongeldig AP wachtwoord',
         passPlaceholder: 'AP wachtwoord',
         verifyBtn: 'Verifieer'
-      }
+      },
+      ssidRequired: 'Voer de netwerknaam in, maximaal 32 tekens',
+      passwordLength: 'Het wachtwoord is 8 tot 63 tekens. Laat het leeg voor een open netwerk.',
+      passwordOptional: 'Wachtwoord (leeg voor een open netwerk)',
+      lost:
+        'Het bord reageert niet meer. Het heeft zich misschien bij het netwerk aangesloten en zijn instellingshotspot gesloten. Komt de hotspot terug, dan is verbinden mislukt: maak opnieuw verbinding en probeer het nog eens.',
+      done:
+        'Instellen voltooid. Verbind dit apparaat weer met uw gebruikelijke netwerk en open het bord op zijn nieuwe adres.'
     },
     screen: {
       scale: 'Schaal',

@@ -62,7 +62,14 @@ const nb = {
         authFailed: 'Ugyldig AP passord',
         passPlaceholder: 'AP passord',
         verifyBtn: 'Bekreft'
-      }
+      },
+      ssidRequired: 'Skriv inn nettverksnavnet, opptil 32 tegn',
+      passwordLength: 'Passordet er 8 til 63 tegn. La det stå tomt for et åpent nettverk.',
+      passwordOptional: 'Passord (tomt for et åpent nettverk)',
+      lost:
+        'Kortet sluttet å svare. Det kan ha koblet seg til nettverket og lukket oppsettshotspoten. Hvis hotspoten kommer tilbake, mislyktes tilkoblingen: koble til den igjen og prøv på nytt.',
+      done:
+        'Oppsettet er ferdig. Koble denne enheten til ditt vanlige nettverk igjen og åpne kortet på den nye adressen.'
     },
     screen: {
       scale: 'Skala',

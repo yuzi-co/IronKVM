@@ -62,7 +62,14 @@ const hu = {
         authFailed: 'Érvénytelen AP jelszó',
         passPlaceholder: 'AP jelszót',
         verifyBtn: 'Ellenőrizze'
-      }
+      },
+      ssidRequired: 'Adja meg a hálózat nevét, legfeljebb 32 karakter',
+      passwordLength: 'A jelszó 8–63 karakter. Nyílt hálózatnál hagyja üresen.',
+      passwordOptional: 'Jelszó (nyílt hálózatnál üres)',
+      lost:
+        'A panel nem válaszol. Lehet, hogy csatlakozott a hálózathoz, és bezárta a beállító hotspotját. Ha a hotspot újra megjelenik, a csatlakozás sikertelen volt: csatlakozzon hozzá újra, és próbálja újra.',
+      done:
+        'A beállítás kész. Csatlakoztassa vissza ezt az eszközt a szokásos hálózathoz, és nyissa meg a panelt az új címén.'
     },
     screen: {
       scale: 'Skála',

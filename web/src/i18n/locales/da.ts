@@ -61,7 +61,14 @@ const da = {
         authFailed: 'Ugyldig AP adgangskode',
         passPlaceholder: 'AP adgangskode',
         verifyBtn: 'Bekræft'
-      }
+      },
+      ssidRequired: 'Angiv netværksnavnet, højst 32 tegn',
+      passwordLength: 'Adgangskoden er 8 til 63 tegn. Lad den stå tom for et åbent netværk.',
+      passwordOptional: 'Adgangskode (tom for et åbent netværk)',
+      lost:
+        'Kortet holdt op med at svare. Det har måske tilsluttet sig netværket og lukket sit opsætnings-hotspot. Hvis hotspottet kommer tilbage, mislykkedes tilslutningen: opret forbindelse til det igen og prøv igen.',
+      done:
+        'Opsætningen er færdig. Forbind denne enhed til dit sædvanlige netværk igen, og åbn kortet på dets nye adresse.'
     },
     screen: {
       scale: 'Skala',

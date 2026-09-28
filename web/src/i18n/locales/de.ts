@@ -63,7 +63,14 @@ const de = {
         authFailed: 'Ungültiges AP Passwort',
         passPlaceholder: 'AP Passwort',
         verifyBtn: 'Überprüfen'
-      }
+      },
+      ssidRequired: 'Netzwerknamen eingeben, bis zu 32 Zeichen',
+      passwordLength: 'Das Passwort hat 8 bis 63 Zeichen. Für ein offenes Netzwerk leer lassen.',
+      passwordOptional: 'Passwort (leer für ein offenes Netzwerk)',
+      lost:
+        'Das Board antwortet nicht mehr. Es hat sich vielleicht mit dem Netzwerk verbunden und seinen Einrichtungs-Hotspot geschlossen. Erscheint der Hotspot wieder, ist die Verbindung fehlgeschlagen: erneut mit ihm verbinden und noch einmal versuchen.',
+      done:
+        'Einrichtung abgeschlossen. Dieses Gerät wieder mit dem üblichen Netzwerk verbinden und das Board unter seiner neuen Adresse öffnen.'
     },
     screen: {
       scale: 'Skala',

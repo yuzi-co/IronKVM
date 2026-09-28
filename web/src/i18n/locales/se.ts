@@ -59,7 +59,14 @@ const se = {
         authFailed: 'Ogiltigt AP lösenord',
         passPlaceholder: 'AP lösenord',
         verifyBtn: 'Verifiera'
-      }
+      },
+      ssidRequired: 'Ange nätverksnamnet, högst 32 tecken',
+      passwordLength: 'Lösenordet är 8 till 63 tecken. Lämna det tomt för ett öppet nätverk.',
+      passwordOptional: 'Lösenord (tomt för ett öppet nätverk)',
+      lost:
+        'Kortet slutade svara. Det kan ha anslutit till nätverket och stängt sin konfigurationshotspot. Om hotspoten kommer tillbaka misslyckades anslutningen: anslut till den igen och försök på nytt.',
+      done:
+        'Konfigurationen är klar. Anslut den här enheten till ditt vanliga nätverk igen och öppna kortet på dess nya adress.'
     },
     screen: {
       scale: 'Skala',

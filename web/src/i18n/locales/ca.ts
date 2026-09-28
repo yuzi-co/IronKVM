@@ -61,7 +61,15 @@ const ca = {
         authFailed: 'Contrasenya AP no vàlida',
         passPlaceholder: 'AP contrasenya',
         verifyBtn: 'Verificar'
-      }
+      },
+      ssidRequired: 'Introduïu el nom de la xarxa, fins a 32 caràcters',
+      passwordLength:
+        'La contrasenya té de 8 a 63 caràcters. Deixeu-la buida per a una xarxa oberta.',
+      passwordOptional: 'Contrasenya (buida per a una xarxa oberta)',
+      lost:
+        "La placa ha deixat de respondre. Potser s'ha connectat a la xarxa i ha tancat el punt d'accés de configuració. Si el punt d'accés torna a aparèixer, la connexió ha fallat: torneu-vos-hi a connectar i torneu-ho a provar.",
+      done:
+        'Configuració acabada. Torneu a connectar aquest dispositiu a la vostra xarxa habitual i obriu la placa a la seva nova adreça.'
     },
     screen: {
       scale: 'Escala',
