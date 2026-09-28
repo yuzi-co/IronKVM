@@ -1,7 +1,8 @@
 import { PowerIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { press, PowerButton } from './button.tsx';
+import { PowerButton } from './button.tsx';
+import { press } from './press.ts';
 
 type PowerShortProps = {
   showConfirm: boolean;

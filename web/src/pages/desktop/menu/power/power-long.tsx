@@ -3,7 +3,8 @@ import { Slider } from 'antd';
 import { CirclePowerIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { MAX_PRESS_SECONDS, press, PowerButton } from './button.tsx';
+import { PowerButton } from './button.tsx';
+import { MAX_PRESS_SECONDS, press } from './press.ts';
 
 // Most boards force the power off after four seconds of holding the button.
 const DEFAULT_POWER_LONG_DURATION_SECONDS = 5;
