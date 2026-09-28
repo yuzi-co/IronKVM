@@ -14,7 +14,11 @@ const ko = {
       copyFailed: '복사하지 못했습니다. 텍스트를 선택해 직접 복사하세요.',
       notUpdating: '업데이트되지 않음: 마지막 새로 고침에 실패했습니다.',
       off: '꺼짐',
-      running: '실행 중'
+      running: '실행 중',
+      save: '저장',
+      cancel: '취소',
+      delete: '삭제',
+      remove: '제거'
     },
     head: {
       desktop: '원격 데스크톱',
@@ -52,20 +56,21 @@ const ko = {
       cancel: '취소',
       loginButtonText: '로그인',
       tips: {
-        reset1: '비밀번호를 재설정하려면 NanoKVM의 BOOT 버튼을 10초 동안 누르고 계세요.',
-        reset2: '자세한 절차는 이 문서를 참조하세요:',
+        reset1: '비밀번호를 재설정하려면 IronKVM의 BOOT 버튼을 10초 동안 누르고 계세요.',
         reset3: '웹 기본 계정:',
         reset4: 'SSH 기본 계정:',
         change1: '이 작업을 수행하면 다음 비밀번호가 변경됩니다:',
         change2: '웹 로그인 비밀번호',
         change3: '시스템 루트 비밀번호 (SSH 로그인 비밀번호)',
-        change4: '비밀번호를 재설정하려면 NanoKVM의 BOOT 버튼을 길게 누르세요.'
+        change4: '비밀번호를 재설정하려면 IronKVM의 BOOT 버튼을 길게 누르세요.',
+        resetDocs: '자세한 단계는 하드웨어 문서를 참조하세요:',
+        hardwareDocs: 'Sipeed NanoKVM 위키'
       }
     },
     wifi: {
       title: 'Wi-Fi',
-      description: 'NanoKVM Wi-Fi 설정',
-      success: 'NanoKVM의 네트워크 상태를 확인하고 새 IP 주소로 접속하세요.',
+      description: 'IronKVM Wi-Fi 설정',
+      success: 'IronKVM의 네트워크 상태를 확인하고 새 IP 주소로 접속하세요.',
       failed: '작업에 실패했습니다. 다시 시도하세요.',
       invalidMode:
         '현재 모드는 네트워크 설정을 지원하지 않습니다. 장치로 이동하여 Wi-Fi 구성 모드를 활성화하십시오.',
@@ -317,10 +322,10 @@ const ko = {
       hidOnly: {
         switchFailed: '모드를 전환하지 못했습니다. 연결을 확인하고 다시 시도하세요.',
         title: 'HID 전용 모드',
-        desc: '마우스와 키보드가 응답하지 않고 HID 초기화도 도움이 되지 않는다면, NanoKVM과 장치 간의 호환성 문제일 수 있습니다. 더 나은 호환성을 위해 HID 전용 모드를 활성화해 보세요.',
+        desc: '마우스와 키보드가 응답하지 않고 HID 초기화도 도움이 되지 않는다면, IronKVM과 장치 간의 호환성 문제일 수 있습니다. 더 나은 호환성을 위해 HID 전용 모드를 활성화해 보세요.',
         tip1: 'HID 전용 모드를 활성화하면 가상 USB와 가상 네트워크가 언마운트됩니다',
         tip2: 'HID 전용 모드에서는 이미지 마운트가 비활성화됩니다',
-        rebuild: '모드를 전환하면 USB 연결이 다시 구성됩니다. NanoKVM은 재부팅되지 않습니다',
+        rebuild: '모드를 전환하면 USB 연결이 다시 구성됩니다. IronKVM은 재부팅되지 않습니다',
         enable: 'HID 전용 모드 활성화',
         disable: 'HID 전용 모드 비활성화'
       },
@@ -388,18 +393,18 @@ const ko = {
       },
       tips: {
         title: '업로드 방법',
-        usb1: 'USB를 통해 NanoKVM을 컴퓨터에 연결하세요.',
+        usb1: 'USB를 통해 IronKVM을 컴퓨터에 연결하세요.',
         usb2: '가상 디스크가 마운트되었는지 확인하세요. (설정 - 가상 디스크).',
         usb3: '컴퓨터에서 가상 디스크를 열고 이미지 파일을 가상 디스크의 루트 디렉토리로 복사하세요.',
-        scp1: 'NanoKVM과 컴퓨터가 동일한 로컬 네트워크에 있는지 확인하세요.',
-        scp2: '컴퓨터에서 터미널을 열고 SCP 명령을 사용하여 이미지 파일을 NanoKVM의 /data 디렉터리에 업로드하세요.',
-        scp3: '예시: scp [이미지 파일 경로] root@[NanoKVM IP 주소]:/data',
+        scp1: 'IronKVM과 컴퓨터가 동일한 로컬 네트워크에 있는지 확인하세요.',
+        scp2: '컴퓨터에서 터미널을 열고 SCP 명령을 사용하여 이미지 파일을 IronKVM의 /data 디렉터리에 업로드하세요.',
+        scp3: '예시: scp [이미지 파일 경로] root@[IronKVM IP 주소]:/data',
         tfCard: 'TF 카드',
         tf1: '이 방법은 Linux 시스템에서 지원됩니다',
-        tf2: 'NanoKVM에서 TF 카드를 가져옵니다(전체 버전의 경우 먼저 케이스를 분해하세요).',
+        tf2: 'IronKVM에서 TF 카드를 가져옵니다(전체 버전의 경우 먼저 케이스를 분해하세요).',
         tf3: 'TF 카드를 카드 리더기에 삽입하고 컴퓨터에 연결하세요.',
         tf4: '이미지 파일을 TF 카드의 /data 디렉터리에 복사하세요.',
-        tf5: 'TF 카드를 NanoKVM에 삽입하세요.'
+        tf5: 'TF 카드를 IronKVM에 삽입하세요.'
       }
     },
     script: {
@@ -431,7 +436,7 @@ const ko = {
       invalidSettings: '시리얼 포트 설정이 잘못되었습니다. 이것은 보드 자체의 셸입니다.',
       disconnected: '연결이 끊겼습니다. 다시 연결하려면 Enter를 누르세요.',
       title: '터미널',
-      nanokvm: 'NanoKVM 터미널',
+      nanokvm: 'IronKVM 터미널',
       serial: '시리얼 포트 터미널',
       serialPort: '시리얼 포트',
       serialPortPlaceholder: '시리얼 포트를 입력하세요',
@@ -555,7 +560,10 @@ const ko = {
         failed: 'MCP 작업에 실패했습니다',
         copyFailed: '복사에 실패했습니다. 수동으로 복사하세요.',
         okBtn: '확인',
-        cancelBtn: '취소'
+        cancelBtn: '취소',
+        showKey: '키 표시',
+        hideKey: '키 숨기기',
+        regenerateKey: '키 다시 생성'
       },
       redfish: {
         example: '예시',
@@ -783,14 +791,14 @@ const ko = {
         failed: '네트워크 부팅 작업에 실패했습니다'
       },
       about: {
-        title: 'NanoKVM 정보',
+        title: 'IronKVM 정보',
         information: '정보',
         ip: 'IP',
         mdns: 'mDNS',
         application: '펌웨어 버전',
-        applicationTip: 'NanoKVM 웹 애플리케이션 버전',
+        applicationTip: 'IronKVM 웹 애플리케이션 버전',
         image: '이미지 버전',
-        imageTip: 'NanoKVM 시스템 이미지 버전',
+        imageTip: 'IronKVM 카드 이미지와 그 기반이 된 NanoKVM 시스템 이미지',
         kernel: '커널 버전',
         kernelTip: '현재 실행 중인 Linux 커널의 릴리스',
         deviceKey: '장치 키',
@@ -798,7 +806,7 @@ const ko = {
         videoMemoryTip:
           '비디오 캡처용으로 예약된 메모리입니다. 시스템의 나머지 부분과 공유되지 않습니다.',
         videoMemoryGenerations_other:
-          '이전 NanoKVM 세션 {{count}}개가 비디오 메모리를 점유하고 있습니다',
+          '이전 IronKVM 세션 {{count}}개가 비디오 메모리를 점유하고 있습니다',
         videoMemoryReboot: '재부팅하면 회수됩니다.',
         community: '커뮤니티',
         hostname: '호스트 이름',
@@ -810,7 +818,14 @@ const ko = {
         },
         hostnameInvalid:
           '문자, 숫자, 하이픈을 사용하고 점으로 구분된 각 부분은 63자 이하로 하세요. 각 부분의 시작과 끝에는 하이픈을 쓸 수 없습니다.',
-        hostnameFailed: '호스트 이름을 변경하지 못했습니다'
+        hostnameFailed: '호스트 이름을 변경하지 못했습니다',
+        editHostname: '호스트 이름 편집',
+        docs: '문서',
+        hardware: '하드웨어',
+        hardwareFaq: '하드웨어 FAQ',
+        disclaimer:
+          'IronKVM: Sipeed NanoKVM용 보안 강화 커뮤니티 펌웨어. Sipeed와 관련이 없습니다.',
+        basedOn: 'NanoKVM {{version}} 기반'
       },
       appearance: {
         title: '디자인',
@@ -932,10 +947,10 @@ const ko = {
         network: '가상 네트워크',
         networkDesc: '원격 호스트에서 가상 네트워크 카드를 마운트합니다.',
         usbNetwork: {
-          boardAddress: 'NanoKVM:',
+          boardAddress: 'IronKVM:',
           hostAddress: '호스트:',
           description:
-            'USB 케이블을 통한 원격 호스트와의 사설 네트워크 연결입니다. 호스트는 게이트웨이와 DNS 없이 주소를 받으므로 NanoKVM을 통해 LAN에 접근할 수 없습니다.',
+            'USB 케이블을 통한 원격 호스트와의 사설 네트워크 연결입니다. 호스트는 게이트웨이와 DNS 없이 주소를 받으므로 IronKVM을 통해 LAN에 접근할 수 없습니다.',
           off: '끄기',
           ncm: 'NCM (Linux, macOS, Windows 11)',
           ecm: 'ECM (NCM을 지원하지 않는 호스트용)',
@@ -944,7 +959,7 @@ const ko = {
             '이 연결은 더 이상 제공되지 않는 RNDIS를 사용합니다. NCM 또는 ECM을 선택하세요.',
           subnet: '서브넷',
           subnetDesc:
-            '/24에서 /30 사이의 사설 IPv4 네트워크입니다. NanoKVM이 첫 번째 주소를, 호스트가 두 번째 주소를 사용합니다.',
+            '/24에서 /30 사이의 사설 IPv4 네트워크입니다. IronKVM이 첫 번째 주소를, 호스트가 두 번째 주소를 사용합니다.',
           invalidSubnet: '172.31.255.0/30 같은 서브넷을 입력하세요.',
           apply: '적용',
           confirm: 'USB 장치를 다시 연결할까요?',
@@ -958,9 +973,9 @@ const ko = {
           '오디오는 두 H.264 모드(WebRTC와 Direct)에서 사용할 수 있으며 MJPEG에서는 사용할 수 없습니다',
         console: '시리얼 콘솔',
         consoleDesc:
-          '원격 호스트에 USB 시리얼 포트를 제공하여, 네트워크에 연결할 수 없을 때 이 NanoKVM에 로그인할 수 있게 합니다',
+          '원격 호스트에 USB 시리얼 포트를 제공하여, 네트워크에 연결할 수 없을 때 이 IronKVM에 로그인할 수 있게 합니다',
         consoleTip:
-          '원격 호스트를 제어하는 사람은 누구나 이 NanoKVM의 로그인 프롬프트를 얻게 됩니다. 활성화하기 전에 강력한 비밀번호를 설정하세요. (계정 - 비밀번호 변경)',
+          '원격 호스트를 제어하는 사람은 누구나 이 IronKVM의 로그인 프롬프트를 얻게 됩니다. 활성화하기 전에 강력한 비밀번호를 설정하세요. (계정 - 비밀번호 변경)',
         endpoints: {
           title: 'USB 엔드포인트',
           used: '{{total}}개 중 {{used}}개 사용',
@@ -975,7 +990,7 @@ const ko = {
           fitTogether: '함께 사용 가능: {{sets}}'
         },
         reboot: '재부팅',
-        rebootDesc: 'NanoKVM을 재부팅하시겠습니까?',
+        rebootDesc: 'IronKVM을 재부팅하시겠습니까?',
         okBtn: '네',
         cancelBtn: '아니오',
         rebootFailed: '재부팅에 실패했습니다'
@@ -985,7 +1000,7 @@ const ko = {
         wifi: {
           disconnectBtn: '연결 끊기',
           disconnectWarning:
-            '이 Wi-Fi 네트워크로 NanoKVM에 접속 중이라면 이 페이지의 연결이 끊깁니다.',
+            '이 Wi-Fi 네트워크로 IronKVM에 접속 중이라면 이 페이지의 연결이 끊깁니다.',
           disconnected: 'Wi-Fi 연결 끊김',
           title: 'Wi-Fi',
           description: 'Wi-Fi 설정',
@@ -1018,7 +1033,7 @@ const ko = {
         },
         ethernet: {
           title: 'IP 주소',
-          description: 'NanoKVM이 유선 네트워크에서 주소를 얻는 방식을 설정합니다',
+          description: 'IronKVM이 유선 네트워크에서 주소를 얻는 방식을 설정합니다',
           dhcp: 'DHCP',
           manual: '수동',
           networkDetails: '네트워크 세부 정보',
@@ -1032,17 +1047,17 @@ const ko = {
           invalidRouter: '올바른 라우터 주소를 입력하세요',
           addressRequired: 'IP 주소가 필요합니다',
           maskRequired: '서브넷 마스크가 필요합니다',
-          applyTitle: 'NanoKVM의 주소를 변경할까요?',
+          applyTitle: 'IronKVM의 주소를 변경할까요?',
           applyWarning:
-            '이 페이지와의 연결이 끊어집니다. NanoKVM이 새 주소를 적용한 뒤, 그 주소로 연결될 때까지 {{seconds}}초 동안 기다립니다. 연결되면 변경 사항이 유지됩니다. 아무것도 연결되지 않으면 NanoKVM이 이전 설정으로 되돌립니다.',
+            '이 페이지와의 연결이 끊어집니다. IronKVM이 새 주소를 적용한 뒤, 그 주소로 연결될 때까지 {{seconds}}초 동안 기다립니다. 연결되면 변경 사항이 유지됩니다. 아무것도 연결되지 않으면 IronKVM이 이전 설정으로 되돌립니다.',
           applyConfirm: '적용',
           applyCancel: '취소',
           applyFailed: '주소를 적용하지 못했습니다',
           trialTitle: '확인을 기다리는 중',
-          trialDhcp: 'NanoKVM이 DHCP에 주소를 요청하고 있습니다.',
-          trialStatic: 'NanoKVM이 이제 {{address}}에 있습니다.',
+          trialDhcp: 'IronKVM이 DHCP에 주소를 요청하고 있습니다.',
+          trialStatic: 'IronKVM이 이제 {{address}}에 있습니다.',
           trialInstruction:
-            '새 주소로 NanoKVM을 열고, 요청하면 로그인하세요. 그 주소로 연결되면 변경 사항이 유지됩니다. {{seconds}}초 안에 아무것도 연결되지 않으면 이전 설정으로 되돌립니다.',
+            '새 주소로 IronKVM을 열고, 요청하면 로그인하세요. 그 주소로 연결되면 변경 사항이 유지됩니다. {{seconds}}초 안에 아무것도 연결되지 않으면 이전 설정으로 되돌립니다.',
           trialOpen: '새 주소 열기',
           trialKeep: '이 설정 유지',
           trialKept: '새 주소가 저장되었습니다',
@@ -1052,7 +1067,7 @@ const ko = {
         },
         dns: {
           title: 'DNS',
-          description: 'NanoKVM의 DNS 서버 설정',
+          description: 'IronKVM의 DNS 서버 설정',
           mode: '모드',
           dhcp: 'DHCP',
           manual: '수동',
@@ -1135,22 +1150,23 @@ const ko = {
         notSignedIn: '아직 로그인되지 않았습니다. 링크에서 로그인을 마친 뒤 다시 확인하세요.',
         checkFailed: '로그인 상태를 확인하지 못했습니다',
         loginWaiting: '이 페이지는 몇 초마다 확인하며 로그인하면 계속 진행합니다.',
-        uninstallFailed: '제거하지 못했습니다'
+        uninstallFailed: '제거하지 못했습니다',
+        loginFailed: '로그인 실패'
       },
       tailscale: {
         title: 'Tailscale',
-        retry: '새로고침하고 다시 시도하거나, 수동으로 설치하세요',
         download: '다운로드 중 :',
         package: '패키지 설치',
         unzip: '압축 해제',
-        upTailscale: 'tailscale을 NanoKVM의 /usr/bin/ 경로에 업로드 했습니다.',
-        upTailscaled: 'tailscaled을 NanoKVM의 /usr/sbin/ 경로에 업로드 했습니다.',
-        refresh: '현재 페이지 새로고침',
         notLogin: '이 기기는 현재 연동 되지 않았습니다. 로그인해서 계정에 이 장치를 연동하세요.',
         urlPeriod: '이 주소는 10분간 유효합니다.',
         login: '로그인',
         logout: '로그아웃',
-        logoutDesc: '정말로 로그아웃 하시겠습니까?'
+        logoutDesc: '정말로 로그아웃 하시겠습니까?',
+        manualIntro: '또는 SSH로 직접 설치하세요:',
+        copyBinaries: 'tailscale과 tailscaled를 IronKVM의 {{dir}}에 복사합니다',
+        linksFile: '같은 디렉터리에 다음 두 줄이 담긴 links라는 파일을 만듭니다:',
+        rebootRefresh: 'IronKVM을 재부팅한 다음 이 페이지를 새로 고칩니다'
       },
       netbird: {
         title: 'NetBird',
@@ -1164,7 +1180,8 @@ const ko = {
         urlPeriod: '이 주소는 10분간 유효합니다.',
         logout: '등록 해제',
         logoutDesc:
-          '등록을 해제하면 NetBird 계정에서 이 피어가 제거되고 여기의 구성도 삭제됩니다. 다시 참여하려면 설정 키나 SSO 로그인이 필요하며, 피어가 새 IP를 받을 수 있습니다. 계속할까요?'
+          '등록을 해제하면 NetBird 계정에서 이 피어가 제거되고 여기의 구성도 삭제됩니다. 다시 참여하려면 설정 키나 SSO 로그인이 필요하며, 피어가 새 IP를 받을 수 있습니다. 계속할까요?',
+        joinFailed: '네트워크에 참여하지 못했습니다'
       },
       update: {
         title: '업데이트 확인',
@@ -1189,7 +1206,7 @@ const ko = {
           save: '저장',
           confirmTitle: '사용자 지정 업데이트 서버를 사용하시겠습니까?',
           confirmDesc:
-            'SHA-512는 패키지가 이 서버에서 제공한 매니페스트와 일치하는지만 확인합니다. 해당 패키지가 공식 NanoKVM 릴리스임을 보장하지는 않습니다. 결함이 있거나 악의적인 서버를 사용하면 장치를 사용할 수 없게 되거나, 데이터가 손실되거나, 시스템이 침해될 수 있습니다.',
+            'SHA-512는 패키지가 이 서버에서 제공한 매니페스트와 일치하는지만 확인합니다. 해당 패키지가 공식 IronKVM 릴리스임을 보장하지는 않습니다. 결함이 있거나 악의적인 서버를 사용하면 장치를 사용할 수 없게 되거나, 데이터가 손실되거나, 시스템이 침해될 수 있습니다.',
           confirm: '그래도 사용',
           useSipeed: 'Sipeed 공식 서버 사용',
           previewDisabled:
@@ -1210,7 +1227,8 @@ const ko = {
         },
         updateTo: '{{version}}(으)로 업데이트',
         updateConfirmDesc:
-          '장치가 업데이트를 설치하고 서버를 다시 시작합니다. 서버가 돌아오면 이 페이지가 새로 고쳐집니다.'
+          '장치가 업데이트를 설치하고 서버를 다시 시작합니다. 서버가 돌아오면 이 페이지가 새로 고쳐집니다.',
+        releaseNotes: '릴리스 노트'
       },
       account: {
         title: '계정',
@@ -1286,7 +1304,7 @@ const ko = {
         defaultTitle: '일반 어시스턴트',
         defaultDescription: '일반 대화, 검색, 작업 공간 지원.',
         kvmTitle: '원격 제어',
-        kvmDescription: 'NanoKVM을 통한 원격 호스트 제어.',
+        kvmDescription: 'IronKVM을 통한 원격 호스트 제어.',
         switched: '에이전트 역할 변경됨',
         switchFailed: '에이전트 역할 변경에 실패했습니다'
       },
@@ -1306,24 +1324,24 @@ const ko = {
       connection: {
         runtime: {
           checking: '확인 중',
-          restoring: 'Restoring PicoClaw',
+          restoring: 'PicoClaw 복원 중',
           ready: '런타임 준비됨',
           stopped: '런타임 중지됨',
           blockedByMCP: '외부 MCP 제어가 활성화되어 있습니다',
           readyBlockedByMCP:
-            'The runtime is running, but external MCP currently controls device input.',
+            '런타임은 실행 중이지만 현재 외부 MCP가 장치 입력을 제어하고 있습니다.',
           readyWithoutControl:
-            'The runtime is running. Grant PicoClaw device control before reconnecting.',
+            '런타임이 실행 중입니다. 다시 연결하기 전에 PicoClaw에 장치 제어 권한을 부여하세요.',
           unavailable: '런타임 사용 불가',
           configError: '구성 에러'
         },
         transport: {
           connecting: '연결 중',
           connected: '연결됨',
-          disconnected: 'Disconnected',
-          reconnect: 'Reconnect',
-          reconnectDescription: 'Reconnect to the running PicoClaw session.',
-          reconnectBlocked: 'PicoClaw needs device control before reconnecting.'
+          disconnected: '연결 끊김',
+          reconnect: '다시 연결',
+          reconnectDescription: '실행 중인 PicoClaw 세션에 다시 연결합니다.',
+          reconnectBlocked: 'PicoClaw가 다시 연결하려면 장치 제어 권한이 필요합니다.'
         },
         run: {
           idle: '대기',
@@ -1340,21 +1358,22 @@ const ko = {
       },
       control: {
         picoclaw: '장치 제어: PicoClaw',
-        picoclawDescription: 'PicoClaw can write keyboard and mouse input. Manual input may pause.',
+        picoclawDescription:
+          'PicoClaw가 키보드와 마우스 입력을 보낼 수 있습니다. 수동 입력이 일시 중지될 수 있습니다.',
         mcp: '장치 제어: 외부 MCP',
-        mcpDescription: 'External MCP can write to the device. PicoClaw will not take over input.',
+        mcpDescription: '외부 MCP가 장치에 쓸 수 있습니다. PicoClaw는 입력을 넘겨받지 않습니다.',
         off: '장치 제어: 꺼짐',
         offDescription:
-          'AI will not write keyboard or mouse input. Manual control remains available.',
-        transitioning: 'Device control: switching',
-        transitioningDescription: 'Device control is syncing. Please wait.',
+          'AI가 키보드나 마우스 입력을 보내지 않습니다. 수동 제어는 계속 사용할 수 있습니다.',
+        transitioning: '장치 제어: 전환 중',
+        transitioningDescription: '장치 제어를 동기화하고 있습니다. 잠시 기다려 주세요.',
         grant: '제어 권한 부여',
         release: '해제',
-        releasing: 'Releasing...',
-        switching: 'Switching...',
-        releasingLabel: 'Device control: releasing',
+        releasing: '해제 중...',
+        switching: '전환 중...',
+        releasingLabel: '장치 제어: 해제 중',
         releasingDescription:
-          'Device control is being returned. PicoClaw has stopped current writes.',
+          '장치 제어를 반환하고 있습니다. PicoClaw는 진행 중인 쓰기를 중지했습니다.',
         granted: 'PicoClaw 제어 권한이 부여되었습니다',
         released: 'PicoClaw 제어가 해제되었습니다',
         grantFailed: 'PicoClaw 제어 권한 부여에 실패했습니다',
@@ -1434,8 +1453,8 @@ const ko = {
         enableConfirmCancel: '취소',
         title: 'PicoClaw 시작',
         description: '런타임을 시작하여 PicoClaw 어시스턴트 사용을 시작하세요.',
-        switchFromMCP: 'Switch to PicoClaw and start',
-        takeoverAndStart: 'Take over and start'
+        switchFromMCP: 'PicoClaw로 전환하고 시작',
+        takeoverAndStart: '제어권을 가져와 시작'
       }
     },
     error: {
@@ -1469,9 +1488,9 @@ const ko = {
       warn: '비디오 메모리가 부족합니다. 서버를 한 번 더 다시 시작하면 모두 소진됩니다. 편할 때 재부팅하세요.',
       criticalTitle: '스트림을 시작하기에 비디오 메모리가 부족합니다',
       criticalBody:
-        '비디오를 시작하면 예약된 메모리가 소진되어 서버가 중지됩니다. 전원 제어와 재부팅을 포함한 다른 모든 기능은 계속 작동합니다. 이 메모리는 NanoKVM을 재부팅해야만 회수됩니다.',
+        '비디오를 시작하면 예약된 메모리가 소진되어 서버가 중지됩니다. 전원 제어와 재부팅을 포함한 다른 모든 기능은 계속 작동합니다. 이 메모리는 IronKVM을 재부팅해야만 회수됩니다.',
       criticalContinue: '그래도 비디오 시작',
-      criticalReboot: 'NanoKVM 재부팅',
+      criticalReboot: 'IronKVM 재부팅',
       criticalRebooting: '재부팅 중...'
     }
   }

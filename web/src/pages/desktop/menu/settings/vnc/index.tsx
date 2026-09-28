@@ -272,7 +272,7 @@ export const Vnc = () => {
                 max={maxFrameRate}
                 precision={0}
                 value={draft.maxFps}
-                addonAfter="fps"
+                addonAfter={t('screen.fps')}
                 onChange={(value) => update('maxFps', value ?? 1)}
               />
             </div>

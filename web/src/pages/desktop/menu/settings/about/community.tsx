@@ -11,7 +11,7 @@ export const Community = () => {
   // hardware links stay, because a hardware question still belongs to them.
   const communities = [
     {
-      name: 'Document',
+      name: t('settings.about.docs'),
       icon: <BookOpenIcon size={24} />,
       url: 'https://github.com/yuzi-co/IronKVM#readme'
     },
@@ -21,12 +21,12 @@ export const Community = () => {
       url: 'https://github.com/yuzi-co/IronKVM'
     },
     {
-      name: 'Hardware',
+      name: t('settings.about.hardware'),
       icon: <CpuIcon size={24} />,
       url: 'https://wiki.sipeed.com/nanokvm'
     },
     {
-      name: 'Hardware FAQ',
+      name: t('settings.about.hardwareFaq'),
       icon: <MessageCircleQuestionIcon size={24} />,
       url: 'https://wiki.sipeed.com/hardware/en/kvm/NanoKVM/faq.html'
     }
@@ -56,9 +56,7 @@ export const Community = () => {
         deliberately carries no "Nano" and no "Sipeed", and this is the second
         half of keeping that honest.
       */}
-      <div className="mt-4 text-xs text-neutral-500">
-        IronKVM: hardened community firmware for the Sipeed NanoKVM. Not affiliated with Sipeed.
-      </div>
+      <div className="mt-4 text-xs text-neutral-500">{t('settings.about.disclaimer')}</div>
     </>
   );
 };

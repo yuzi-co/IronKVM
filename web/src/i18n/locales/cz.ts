@@ -14,7 +14,11 @@ const cz = {
       copyFailed: 'Kopírování se nezdařilo. Označte text a zkopírujte jej ručně.',
       notUpdating: 'Neaktualizuje se: poslední obnovení selhalo.',
       off: 'Vypnuto',
-      running: 'Běží'
+      running: 'Běží',
+      save: 'Uložit',
+      cancel: 'Zrušit',
+      delete: 'Smazat',
+      remove: 'Odebrat'
     },
     head: {
       desktop: 'Vzdálená plocha',
@@ -54,20 +58,21 @@ const cz = {
       loginButtonText: 'Přihlášení',
       tips: {
         reset1:
-          'To reset the passwords, pressing and holding the BOOT button on the NanoKVM for 10 seconds.',
-        reset2: 'Podrobné kroky najdete v tomto dokumentu:',
+          'To reset the passwords, pressing and holding the BOOT button on the IronKVM for 10 seconds.',
         reset3: 'Výchozí webový účet:',
         reset4: 'Výchozí účet SSH:',
         change1: 'Upozorňujeme, že tato akce změní následující hesla:',
         change2: 'Heslo pro webové přihlášení',
         change3: 'Heslo systémového uživatele root (heslo pro přihlášení SSH)',
-        change4: 'Chcete-li hesla resetovat, podržte tlačítko BOOT na NanoKVM.'
+        change4: 'Chcete-li hesla resetovat, podržte tlačítko BOOT na IronKVM.',
+        resetDocs: 'Podrobný postup najdete v dokumentaci k hardwaru:',
+        hardwareDocs: 'Wiki Sipeed NanoKVM'
       }
     },
     wifi: {
       title: 'Wi-Fi',
-      description: 'Nastavit Wi-Fi pro NanoKVM',
-      success: 'Please check the network status of NanoKVM and visit the new IP address.',
+      description: 'Nastavit Wi-Fi pro IronKVM',
+      success: 'Please check the network status of IronKVM and visit the new IP address.',
       failed: 'Operace selhala, zkuste to znovu.',
       invalidMode:
         'Aktuální režim nepodporuje nastavení sítě. Přejděte do svého zařízení a povolte konfigurační režim Wi-Fi.',
@@ -322,10 +327,10 @@ const cz = {
       hidOnly: {
         switchFailed: 'Režim se nepodařilo přepnout. Zkontrolujte připojení a zkuste to znovu.',
         title: 'Režim pouze HID',
-        desc: 'Pokud vaše myš a klávesnice přestanou reagovat a resetování HID nepomůže, může jít o problém s kompatibilitou mezi NanoKVM a zařízením. Zkuste povolit režim HID-Only pro lepší kompatibilitu.',
+        desc: 'Pokud vaše myš a klávesnice přestanou reagovat a resetování HID nepomůže, může jít o problém s kompatibilitou mezi IronKVM a zařízením. Zkuste povolit režim HID-Only pro lepší kompatibilitu.',
         tip1: 'Povolení režimu HID-Only odpojí virtuální U-disk a virtuální síť',
         tip2: 'V režimu HID-Only je připojení obrazu zakázáno',
-        rebuild: 'Přepnutí režimu znovu sestaví připojení USB. NanoKVM se nerestartuje',
+        rebuild: 'Přepnutí režimu znovu sestaví připojení USB. IronKVM se nerestartuje',
         enable: 'Povolit režim HID-Only',
         disable: 'Zakázat režim HID-Only'
       },
@@ -393,18 +398,18 @@ const cz = {
       },
       tips: {
         title: 'Jak nahrát',
-        usb1: 'Připojte NanoKVM k vašemu počítači přes USB.',
+        usb1: 'Připojte IronKVM k vašemu počítači přes USB.',
         usb2: 'Ujistěte se, že je virtuální disk připojen (Nastavení - Virtuální disk).',
         usb3: 'Otevřete virtuální disk na vašem počítači a zkopírujte soubor s obrazem do kořenového adresáře virtuálního disku.',
-        scp1: 'Ujistěte se, že jsou NanoKVM a váš počítač ve stejné místní síti.',
-        scp2: 'Otevřete terminál na vašem počítači a použijte příkaz SCP pro nahrání souboru s obrazem do adresáře /data na zařízení NanoKVM.',
+        scp1: 'Ujistěte se, že jsou IronKVM a váš počítač ve stejné místní síti.',
+        scp2: 'Otevřete terminál na vašem počítači a použijte příkaz SCP pro nahrání souboru s obrazem do adresáře /data na zařízení IronKVM.',
         scp3: 'Příklad: scp cesta-k-vašemu-obrazu root@ip-nanokvm:/data',
         tfCard: 'SD Karta',
         tf1: 'Tato metoda je podporována na systémech Linux',
-        tf2: 'Vyjměte SD kartu z NanoKVM (u plné verze nejprve rozložte krabičku).',
+        tf2: 'Vyjměte SD kartu z IronKVM (u plné verze nejprve rozložte krabičku).',
         tf3: 'Vložte SD kartu do čtečky karet a připojte ji k vašemu počítači.',
         tf4: 'Zkopírujte soubor s obrazem do adresáře /data na SD kartě.',
-        tf5: 'Vložte SD kartu zpět do NanoKVM.'
+        tf5: 'Vložte SD kartu zpět do IronKVM.'
       }
     },
     script: {
@@ -435,7 +440,7 @@ const cz = {
       invalidSettings: 'Neplatné nastavení sériového portu. Toto je vlastní shell desky.',
       disconnected: 'Odpojeno. Stisknutím Enter se znovu připojíte.',
       title: 'Terminál',
-      nanokvm: 'Terminál NanoKVM',
+      nanokvm: 'Terminál IronKVM',
       serial: 'Terminál sériového portu',
       serialPort: 'Sériový port',
       serialPortPlaceholder: 'Zadejte prosím sériový port',
@@ -559,7 +564,10 @@ const cz = {
         failed: 'Operace MCP se nezdařila',
         copyFailed: 'Kopírování se nezdařilo. Zkopírujte ručně.',
         okBtn: 'Potvrdit',
-        cancelBtn: 'Zrušit'
+        cancelBtn: 'Zrušit',
+        showKey: 'Zobrazit klíč',
+        hideKey: 'Skrýt klíč',
+        regenerateKey: 'Vygenerovat nový klíč'
       },
       redfish: {
         example: 'Příklad',
@@ -690,7 +698,7 @@ const cz = {
         timeoutDesc: 'Jak dlouho smí hostitel nejevit známky života, než watchdog zasáhne.',
         action: 'Akce',
         actionDesc: 'Vypnutí a zapnutí drží tlačítko napájení 5 sekund a pak ho stiskne znovu.',
-        actionReset: 'Reset',
+        actionReset: 'Resetovat',
         actionPower: 'Vypnout a zapnout',
         cooldown: 'Prodleva',
         cooldownDesc: 'Nejkratší doba mezi dvěma akcemi.',
@@ -786,22 +794,22 @@ const cz = {
         failed: 'Operace síťového spuštění selhala'
       },
       about: {
-        title: 'O NanoKVM',
+        title: 'O IronKVM',
         information: 'Informace',
         ip: 'IP',
         mdns: 'mDNS',
         application: 'Verze aplikace',
-        applicationTip: 'Verze webové aplikace NanoKVM',
+        applicationTip: 'Verze webové aplikace IronKVM',
         image: 'Verze obrazu',
-        imageTip: 'Verze systémového obrazu NanoKVM',
+        imageTip: 'Obraz karty IronKVM a systémový obraz NanoKVM, na kterém je postaven',
         kernel: 'Verze jádra',
         kernelTip: 'Verze aktuálně běžícího jádra Linuxu',
         deviceKey: 'Klíč zařízení',
         videoMemory: 'Videopaměť',
         videoMemoryTip: 'Paměť vyhrazená pro snímání videa. Není sdílena se zbytkem systému.',
-        videoMemoryGenerations_one: '{{count}} dřívější relace NanoKVM drží videopaměť',
-        videoMemoryGenerations_few: '{{count}} dřívější relace NanoKVM drží videopaměť',
-        videoMemoryGenerations_other: '{{count}} dřívějších relací NanoKVM drží videopaměť',
+        videoMemoryGenerations_one: '{{count}} dřívější relace IronKVM drží videopaměť',
+        videoMemoryGenerations_few: '{{count}} dřívější relace IronKVM drží videopaměť',
+        videoMemoryGenerations_other: '{{count}} dřívějších relací IronKVM drží videopaměť',
         videoMemoryReboot: 'Pro její uvolnění restartujte.',
         community: 'Komunita',
         hostname: 'Název hostitele',
@@ -813,7 +821,14 @@ const cz = {
         },
         hostnameInvalid:
           'Použijte písmena, číslice a pomlčky, nejvýše 63 v každé části oddělené tečkou. Pomlčka nesmí být na začátku ani na konci části.',
-        hostnameFailed: 'Název hostitele se nepodařilo změnit'
+        hostnameFailed: 'Název hostitele se nepodařilo změnit',
+        editHostname: 'Upravit název hostitele',
+        docs: 'Dokumentace',
+        hardware: 'Hardware',
+        hardwareFaq: 'Časté dotazy k hardwaru',
+        disclaimer:
+          'IronKVM: zabezpečený komunitní firmware pro Sipeed NanoKVM. Bez vazby na společnost Sipeed.',
+        basedOn: 'založeno na NanoKVM {{version}}'
       },
       appearance: {
         title: 'Vzhled',
@@ -868,8 +883,8 @@ const cz = {
             '255': 'Maximální'
           },
           0: 'Nikdy',
-          15: '15 sec',
-          30: '30 sec',
+          15: '15 s',
+          30: '30 s',
           60: '1 min',
           180: '3 min',
           300: '5 min',
@@ -936,10 +951,10 @@ const cz = {
         network: 'Virtuální síť',
         networkDesc: 'Připojit virtuální síťovou kartu na vzdáleném hostiteli',
         usbNetwork: {
-          boardAddress: 'NanoKVM:',
+          boardAddress: 'IronKVM:',
           hostAddress: 'Hostitel:',
           description:
-            'Soukromé síťové spojení se vzdáleným hostitelem přes kabel USB. Hostitel dostane adresu bez brány a bez DNS, takže se přes NanoKVM nedostane do vaší LAN.',
+            'Soukromé síťové spojení se vzdáleným hostitelem přes kabel USB. Hostitel dostane adresu bez brány a bez DNS, takže se přes IronKVM nedostane do vaší LAN.',
           off: 'Vypnuto',
           ncm: 'NCM (Linux, macOS, Windows 11)',
           ecm: 'ECM (pro hostitele bez NCM)',
@@ -947,7 +962,7 @@ const cz = {
           rndisNote: 'Toto spojení používá RNDIS, které se již nenabízí. Zvolte NCM nebo ECM.',
           subnet: 'Podsíť',
           subnetDesc:
-            'Soukromá síť IPv4, /24 až /30. NanoKVM použije první adresu, hostitel druhou.',
+            'Soukromá síť IPv4, /24 až /30. IronKVM použije první adresu, hostitel druhou.',
           invalidSubnet: 'Zadejte podsíť, například 172.31.255.0/30.',
           apply: 'Použít',
           confirm: 'Znovu připojit zařízení USB?',
@@ -960,9 +975,9 @@ const cz = {
         audioNote: 'Zvuk je dostupný v obou režimech H.264 (WebRTC a Direct), ne v MJPEG',
         console: 'Sériová konzole',
         consoleDesc:
-          'Zpřístupní vzdálenému hostiteli sériový port USB pro přihlášení do tohoto NanoKVM, když je síť nedostupná',
+          'Zpřístupní vzdálenému hostiteli sériový port USB pro přihlášení do tohoto IronKVM, když je síť nedostupná',
         consoleTip:
-          'Kdokoli, kdo ovládá vzdáleného hostitele, dostane přihlašovací výzvu tohoto NanoKVM. Před povolením nastavte silné heslo (Účet – Změnit heslo).',
+          'Kdokoli, kdo ovládá vzdáleného hostitele, dostane přihlašovací výzvu tohoto IronKVM. Před povolením nastavte silné heslo (Účet – Změnit heslo).',
         endpoints: {
           title: 'Koncové body USB',
           used: 'Využito {{used}} z {{total}}',
@@ -977,7 +992,7 @@ const cz = {
           fitTogether: 'Společně se vejdou: {{sets}}'
         },
         reboot: 'Restartujte',
-        rebootDesc: 'Opravdu chcete restartovat NanoKVM?',
+        rebootDesc: 'Opravdu chcete restartovat IronKVM?',
         okBtn: 'Ano',
         cancelBtn: 'Ne',
         rebootFailed: 'Restart se nezdařil'
@@ -987,7 +1002,7 @@ const cz = {
         wifi: {
           disconnectBtn: 'Odpojit',
           disconnectWarning:
-            'Pokud k NanoKVM přistupujete přes tuto Wi-Fi síť, tato stránka ztratí spojení.',
+            'Pokud k IronKVM přistupujete přes tuto Wi-Fi síť, tato stránka ztratí spojení.',
           disconnected: 'Wi-Fi odpojena',
           title: 'Wi-Fi',
           description: 'Nastavit Wi-Fi',
@@ -1020,7 +1035,7 @@ const cz = {
         },
         ethernet: {
           title: 'IP adresa',
-          description: 'Nastavte, jak NanoKVM získává adresu v drátové síti',
+          description: 'Nastavte, jak IronKVM získává adresu v drátové síti',
           dhcp: 'DHCP',
           manual: 'Ručně',
           networkDetails: 'Podrobnosti o síti',
@@ -1034,17 +1049,17 @@ const cz = {
           invalidRouter: 'Zadejte platnou adresu routeru',
           addressRequired: 'IP adresa je povinná',
           maskRequired: 'Maska podsítě je povinná',
-          applyTitle: 'Změnit adresu NanoKVM?',
+          applyTitle: 'Změnit adresu IronKVM?',
           applyWarning:
-            'Spojení s touto stránkou se ztratí. NanoKVM použije novou adresu a čeká {{seconds}} sekund, než se k němu na této adrese dostanete. Tím se změna zachová. Pokud se k němu nic nedostane, NanoKVM obnoví předchozí nastavení.',
+            'Spojení s touto stránkou se ztratí. IronKVM použije novou adresu a čeká {{seconds}} sekund, než se k němu na této adrese dostanete. Tím se změna zachová. Pokud se k němu nic nedostane, IronKVM obnoví předchozí nastavení.',
           applyConfirm: 'Použít',
           applyCancel: 'Zrušit',
           applyFailed: 'Adresu se nepodařilo použít',
           trialTitle: 'Čeká se na potvrzení',
-          trialDhcp: 'NanoKVM žádá o adresu přes DHCP.',
-          trialStatic: 'NanoKVM je nyní na adrese {{address}}.',
+          trialDhcp: 'IronKVM žádá o adresu přes DHCP.',
+          trialStatic: 'IronKVM je nyní na adrese {{address}}.',
           trialInstruction:
-            'Otevřete NanoKVM na jeho nové adrese a přihlaste se, pokud o to požádá. Tím se změna zachová. Pokud se k NanoKVM nic do {{seconds}} sekund nedostane, obnoví předchozí nastavení.',
+            'Otevřete IronKVM na jeho nové adrese a přihlaste se, pokud o to požádá. Tím se změna zachová. Pokud se k IronKVM nic do {{seconds}} sekund nedostane, obnoví předchozí nastavení.',
           trialOpen: 'Otevřít novou adresu',
           trialKeep: 'Zachovat toto nastavení',
           trialKept: 'Nová adresa je uložena',
@@ -1054,7 +1069,7 @@ const cz = {
         },
         dns: {
           title: 'DNS',
-          description: 'Nastavit DNS servery pro NanoKVM',
+          description: 'Nastavit DNS servery pro IronKVM',
           mode: 'Režim',
           dhcp: 'DHCP',
           manual: 'Ručně',
@@ -1138,23 +1153,24 @@ const cz = {
         notSignedIn: 'Zatím nepřihlášeno. Dokončete přihlášení přes odkaz a zkontrolujte znovu.',
         checkFailed: 'Stav přihlášení se nepodařilo zjistit',
         loginWaiting: 'Stránka to kontroluje každých pár sekund a po přihlášení pokračuje.',
-        uninstallFailed: 'Odinstalace se nezdařila'
+        uninstallFailed: 'Odinstalace se nezdařila',
+        loginFailed: 'Přihlášení se nezdařilo'
       },
       tailscale: {
         title: 'Tailscale',
-        retry: 'Obnovte stránku a zkuste to znovu. Nebo zkuste instalaci manuálně',
         download: 'Stáhnout',
         package: 'instalační balíček',
         unzip: 'a rozbalit ho',
-        upTailscale: 'Nahrajte Tailscale do adresáře NanoKVM /usr/bin/',
-        upTailscaled: 'Nahrajte Tailscaled do adresáře NanoKVM /usr/sbin/',
-        refresh: 'Obnovit stránku',
         notLogin:
           'Zařízení nebylo dosud spárováno. Přihlaste se prosím a spárujte toto zařízení s vaším účtem.',
         urlPeriod: 'Tento odkaz je platný po dobu 10 minut',
         login: 'Přihlášení',
         logout: 'Odhlásit se',
-        logoutDesc: 'Opravdu se chcete odhlásit?'
+        logoutDesc: 'Opravdu se chcete odhlásit?',
+        manualIntro: 'Nebo jej nainstalujte ručně přes SSH:',
+        copyBinaries: 'Zkopírujte tailscale a tailscaled do {{dir}} na IronKVM',
+        linksFile: 'Ve stejném adresáři vytvořte soubor s názvem links s těmito dvěma řádky:',
+        rebootRefresh: 'Restartujte IronKVM a poté obnovte tuto stránku'
       },
       netbird: {
         title: 'NetBird',
@@ -1168,7 +1184,8 @@ const cz = {
         urlPeriod: 'Tento odkaz je platný 10 minut',
         logout: 'Odregistrovat',
         logoutDesc:
-          'Odregistrování odebere tento uzel z vašeho účtu NetBird a smaže zde jeho konfiguraci. Opětovné připojení vyžaduje instalační klíč nebo přihlášení přes SSO a uzel může dostat novou IP. Pokračovat?'
+          'Odregistrování odebere tento uzel z vašeho účtu NetBird a smaže zde jeho konfiguraci. Opětovné připojení vyžaduje instalační klíč nebo přihlášení přes SSO a uzel může dostat novou IP. Pokračovat?',
+        joinFailed: 'Nepodařilo se připojit k síti'
       },
       update: {
         title: 'Zkontrolovat aktualizaci',
@@ -1194,7 +1211,7 @@ const cz = {
           save: 'Uložit',
           confirmTitle: 'Použít vlastní aktualizační server?',
           confirmDesc:
-            'SHA-512 pouze ověřuje, že balíček odpovídá manifestu poskytnutému tímto serverem. Neprokazuje, že je balíček oficiálním vydáním NanoKVM. Vadný nebo škodlivý server může způsobit nefunkčnost zařízení, ztrátu dat nebo narušení zabezpečení systému.',
+            'SHA-512 pouze ověřuje, že balíček odpovídá manifestu poskytnutému tímto serverem. Neprokazuje, že je balíček oficiálním vydáním IronKVM. Vadný nebo škodlivý server může způsobit nefunkčnost zařízení, ztrátu dat nebo narušení zabezpečení systému.',
           confirm: 'Přesto použít',
           useSipeed: 'Použít oficiální server Sipeed',
           previewDisabled:
@@ -1215,7 +1232,8 @@ const cz = {
         },
         updateTo: 'Aktualizovat na {{version}}',
         updateConfirmDesc:
-          'Zařízení nainstaluje aktualizaci a restartuje svůj server. Stránka se znovu načte, až bude server zpět.'
+          'Zařízení nainstaluje aktualizaci a restartuje svůj server. Stránka se znovu načte, až bude server zpět.',
+        releaseNotes: 'Poznámky k vydání'
       },
       account: {
         title: 'Účet',
@@ -1291,7 +1309,7 @@ const cz = {
         defaultTitle: 'Obecný asistent',
         defaultDescription: 'Obecná nápověda pro chat, vyhledávání a pracovní prostor.',
         kvmTitle: 'Vzdálené ovládání',
-        kvmDescription: 'Ovládejte vzdáleného hostitele prostřednictvím NanoKVM.',
+        kvmDescription: 'Ovládejte vzdáleného hostitele prostřednictvím IronKVM.',
         switched: 'Role agenta změněna',
         switchFailed: 'Přepnutí role agenta se nezdařilo'
       },
@@ -1311,24 +1329,23 @@ const cz = {
       connection: {
         runtime: {
           checking: 'Kontrola',
-          restoring: 'Restoring PicoClaw',
+          restoring: 'Obnovování PicoClaw',
           ready: 'Běhové prostředí připraveno',
           stopped: 'Běhové prostředí zastaveno',
           blockedByMCP: 'Externí ovládání MCP je aktivní',
-          readyBlockedByMCP:
-            'The runtime is running, but external MCP currently controls device input.',
+          readyBlockedByMCP: 'Běhové prostředí běží, ale vstup zařízení nyní ovládá externí MCP.',
           readyWithoutControl:
-            'The runtime is running. Grant PicoClaw device control before reconnecting.',
+            'Běhové prostředí běží. Před opětovným připojením předejte PicoClaw ovládání zařízení.',
           unavailable: 'Běhové prostředí není k dispozici',
           configError: 'Chyba konfigurace'
         },
         transport: {
           connecting: 'Připojování',
           connected: 'Připojeno',
-          disconnected: 'Disconnected',
-          reconnect: 'Reconnect',
-          reconnectDescription: 'Reconnect to the running PicoClaw session.',
-          reconnectBlocked: 'PicoClaw needs device control before reconnecting.'
+          disconnected: 'Odpojeno',
+          reconnect: 'Znovu připojit',
+          reconnectDescription: 'Znovu se připojit k běžící relaci PicoClaw.',
+          reconnectBlocked: 'PicoClaw potřebuje před opětovným připojením ovládání zařízení.'
         },
         run: {
           idle: 'Nečinný',
@@ -1345,21 +1362,21 @@ const cz = {
       },
       control: {
         picoclaw: 'Ovládání zařízení: PicoClaw',
-        picoclawDescription: 'PicoClaw can write keyboard and mouse input. Manual input may pause.',
+        picoclawDescription:
+          'PicoClaw může zadávat vstup z klávesnice a myši. Ruční vstup se může pozastavit.',
         mcp: 'Ovládání zařízení: externí MCP',
-        mcpDescription: 'External MCP can write to the device. PicoClaw will not take over input.',
+        mcpDescription: 'Externí MCP může zapisovat do zařízení. PicoClaw vstup nepřevezme.',
         off: 'Ovládání zařízení: vypnuto',
         offDescription:
-          'AI will not write keyboard or mouse input. Manual control remains available.',
-        transitioning: 'Device control: switching',
-        transitioningDescription: 'Device control is syncing. Please wait.',
+          'AI nebude zadávat vstup z klávesnice ani myši. Ruční ovládání zůstává k dispozici.',
+        transitioning: 'Ovládání zařízení: přepínání',
+        transitioningDescription: 'Ovládání zařízení se synchronizuje. Počkejte prosím.',
         grant: 'Předat ovládání',
         release: 'Uvolnit',
-        releasing: 'Releasing...',
-        switching: 'Switching...',
-        releasingLabel: 'Device control: releasing',
-        releasingDescription:
-          'Device control is being returned. PicoClaw has stopped current writes.',
+        releasing: 'Uvolňování...',
+        switching: 'Přepínání...',
+        releasingLabel: 'Ovládání zařízení: uvolňování',
+        releasingDescription: 'Ovládání zařízení se vrací. PicoClaw zastavil probíhající zápisy.',
         granted: 'Ovládání PicoClaw povoleno',
         released: 'Ovládání PicoClaw uvolněno',
         grantFailed: 'Nepodařilo se předat ovládání PicoClaw',
@@ -1442,8 +1459,8 @@ const cz = {
         enableConfirmCancel: 'Zrušit',
         title: 'Spustit PicoClaw',
         description: 'Spusťte běhové prostředí a začněte používat asistenta PicoClaw.',
-        switchFromMCP: 'Switch to PicoClaw and start',
-        takeoverAndStart: 'Take over and start'
+        switchFromMCP: 'Přepnout na PicoClaw a spustit',
+        takeoverAndStart: 'Převzít a spustit'
       }
     },
     error: {
@@ -1477,9 +1494,9 @@ const cz = {
       warn: 'Videopaměti je málo. Jeden restart serveru by ji vyčerpal. Až se vám to bude hodit, restartujte.',
       criticalTitle: 'Nedostatek videopaměti ke spuštění streamu',
       criticalBody:
-        'Spuštění videa by vyčerpalo vyhrazenou paměť a zastavilo server. Všechny ostatní funkce fungují dál, včetně ovládání napájení a restartu. Tuto paměť uvolní jen restart NanoKVM.',
+        'Spuštění videa by vyčerpalo vyhrazenou paměť a zastavilo server. Všechny ostatní funkce fungují dál, včetně ovládání napájení a restartu. Tuto paměť uvolní jen restart IronKVM.',
       criticalContinue: 'Přesto spustit video',
-      criticalReboot: 'Restartovat NanoKVM',
+      criticalReboot: 'Restartovat IronKVM',
       criticalRebooting: 'Restartování...'
     }
   }

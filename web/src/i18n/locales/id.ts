@@ -14,7 +14,11 @@ const id = {
       copyFailed: 'Gagal menyalin. Pilih teks dan salin secara manual.',
       notUpdating: 'Tidak diperbarui: penyegaran terakhir gagal.',
       off: 'Mati',
-      running: 'Berjalan'
+      running: 'Berjalan',
+      save: 'Simpan',
+      cancel: 'Batal',
+      delete: 'Hapus',
+      remove: 'Buang'
     },
     head: {
       desktop: 'Desktop jarak jauh',
@@ -53,20 +57,21 @@ const id = {
       loginButtonText: 'Masuk',
       tips: {
         reset1:
-          'To reset the passwords, pressing and holding the BOOT button on the NanoKVM for 10 seconds.',
-        reset2: 'Untuk langkah-langkah rinci, lihat dokumen ini:',
+          'To reset the passwords, pressing and holding the BOOT button on the IronKVM for 10 seconds.',
         reset3: 'Akun web default:',
         reset4: 'Akun SSH default:',
         change1: 'Perhatikan bahwa tindakan ini akan mengubah kata sandi berikut:',
         change2: 'Kata sandi login web',
         change3: 'Kata sandi root sistem (kata sandi login SSH)',
-        change4: 'Untuk mengatur ulang kata sandi, tekan dan tahan tombol BOOT pada NanoKVM.'
+        change4: 'Untuk mengatur ulang kata sandi, tekan dan tahan tombol BOOT pada IronKVM.',
+        resetDocs: 'Untuk langkah terperinci, lihat dokumentasi perangkat keras:',
+        hardwareDocs: 'Wiki Sipeed NanoKVM'
       }
     },
     wifi: {
       title: 'Wi-Fi',
-      description: 'Konfigurasi Wi-Fi untuk NanoKVM',
-      success: 'Please check the network status of NanoKVM and visit the new IP address.',
+      description: 'Konfigurasi Wi-Fi untuk IronKVM',
+      success: 'Please check the network status of IronKVM and visit the new IP address.',
       failed: 'Operasi gagal, silakan coba lagi.',
       invalidMode:
         'Mode saat ini tidak mendukung pengaturan jaringan. Silakan buka perangkat Anda dan aktifkan mode konfigurasi Wi-Fi.',
@@ -322,10 +327,10 @@ const id = {
       hidOnly: {
         switchFailed: 'Gagal mengganti mode. Periksa koneksi lalu coba lagi.',
         title: 'Mode hanya HID',
-        desc: 'Jika mouse dan keyboard Anda berhenti merespons dan menyetel ulang HID tidak membantu, mungkin ada masalah kompatibilitas antara NanoKVM dan perangkat. Coba aktifkan mode HID-Only untuk kompatibilitas yang lebih baik.',
+        desc: 'Jika mouse dan keyboard Anda berhenti merespons dan menyetel ulang HID tidak membantu, mungkin ada masalah kompatibilitas antara IronKVM dan perangkat. Coba aktifkan mode HID-Only untuk kompatibilitas yang lebih baik.',
         tip1: 'Mengaktifkan mode HID-Hanya akan melepas U-disk virtual dan jaringan virtual',
         tip2: 'Dalam mode HID-Only, pemasangan gambar dinonaktifkan',
-        rebuild: 'Mengganti mode akan membangun ulang koneksi USB. NanoKVM tidak dimulai ulang',
+        rebuild: 'Mengganti mode akan membangun ulang koneksi USB. IronKVM tidak dimulai ulang',
         enable: 'Aktifkan mode HID-Hanya',
         disable: 'Nonaktifkan mode HID-Hanya'
       },
@@ -394,18 +399,18 @@ const id = {
       },
       tips: {
         title: 'Cara mengunggah',
-        usb1: 'Hubungkan NanoKVM ke komputer Anda melalui USB.',
+        usb1: 'Hubungkan IronKVM ke komputer Anda melalui USB.',
         usb2: 'Pastikan disk virtual telah terpasang (Pengaturan - Disk Virtual).',
         usb3: 'Buka disk virtual di komputer Anda dan salin file gambar ke direktori root disk virtual.',
-        scp1: 'Pastikan NanoKVM dan komputer Anda berada di jaringan lokal yang sama.',
-        scp2: 'Buka terminal di komputer Anda dan gunakan perintah SCP untuk mengunggah file gambar ke direktori /data di NanoKVM.',
+        scp1: 'Pastikan IronKVM dan komputer Anda berada di jaringan lokal yang sama.',
+        scp2: 'Buka terminal di komputer Anda dan gunakan perintah SCP untuk mengunggah file gambar ke direktori /data di IronKVM.',
         scp3: 'Contoh: scp jalur-gambar-anda root@ip-nanokvm-anda:/data',
         tfCard: 'Kartu TF',
         tf1: 'Metode ini didukung di sistem linux',
-        tf2: 'Dapatkan Kartu TF dari NanoKVM (untuk versi LENGKAP, bongkar casingnya terlebih dahulu).',
+        tf2: 'Dapatkan Kartu TF dari IronKVM (untuk versi LENGKAP, bongkar casingnya terlebih dahulu).',
         tf3: 'Masukkan Kartu TF ke pembaca kartu dan hubungkan ke komputer Anda.',
         tf4: 'Salin berkas gambar ke direktori /data pada Kartu TF.',
-        tf5: 'Masukkan Kartu TF ke dalam NanoKVM.'
+        tf5: 'Masukkan Kartu TF ke dalam IronKVM.'
       }
     },
     script: {
@@ -436,7 +441,7 @@ const id = {
       invalidSettings: 'Pengaturan port serial tidak valid. Ini adalah shell papan sendiri.',
       disconnected: 'Terputus. Tekan Enter untuk menyambung ulang.',
       title: 'Terminal',
-      nanokvm: 'Terminal NanoKVM',
+      nanokvm: 'Terminal IronKVM',
       serial: 'Terminal Port Serial',
       serialPort: 'Port Serial',
       serialPortPlaceholder: 'Silahkan masukkan port serial',
@@ -562,7 +567,10 @@ const id = {
         failed: 'Operasi MCP gagal',
         copyFailed: 'Gagal menyalin. Salin secara manual.',
         okBtn: 'Konfirmasi',
-        cancelBtn: 'Batal'
+        cancelBtn: 'Batal',
+        showKey: 'Tampilkan kunci',
+        hideKey: 'Sembunyikan kunci',
+        regenerateKey: 'Buat ulang kunci'
       },
       redfish: {
         example: 'Contoh',
@@ -696,7 +704,7 @@ const id = {
         action: 'Tindakan',
         actionDesc:
           'Matikan lalu nyalakan menahan tombol daya selama 5 detik, lalu menekannya lagi.',
-        actionReset: 'Reset',
+        actionReset: 'Mulai Ulang',
         actionPower: 'Matikan lalu nyalakan',
         cooldown: 'Jeda',
         cooldownDesc: 'Waktu terpendek di antara dua tindakan.',
@@ -792,14 +800,14 @@ const id = {
         failed: 'Operasi boot jaringan gagal'
       },
       about: {
-        title: 'Tentang NanoKVM',
+        title: 'Tentang IronKVM',
         information: 'Informasi',
         ip: 'IP',
         mdns: 'mDNS',
         application: 'Versi Aplikasi',
-        applicationTip: 'Versi aplikasi web NanoKVM',
+        applicationTip: 'Versi aplikasi web IronKVM',
         image: 'Version Gambar',
-        imageTip: 'Versi image sistem NanoKVM',
+        imageTip: 'Image kartu IronKVM, dan image sistem NanoKVM yang menjadi dasarnya',
         kernel: 'Versi Kernel',
         kernelTip: 'Rilis kernel Linux yang sedang berjalan',
         deviceKey: 'Kunci Perangkat',
@@ -807,7 +815,7 @@ const id = {
         videoMemoryTip:
           'Memori yang dicadangkan untuk penangkapan video. Memori ini tidak dibagi dengan bagian sistem lainnya.',
         videoMemoryGenerations_other:
-          '{{count}} sesi NanoKVM sebelumnya masih menahan memori video',
+          '{{count}} sesi IronKVM sebelumnya masih menahan memori video',
         videoMemoryReboot: 'Mulai ulang untuk mengambilnya kembali.',
         community: 'Komunitas',
         hostname: 'Nama Host',
@@ -819,7 +827,14 @@ const id = {
         },
         hostnameInvalid:
           'Gunakan huruf, angka, dan tanda hubung, maksimal 63 per bagian yang dipisah titik. Tanpa tanda hubung di awal atau akhir bagian.',
-        hostnameFailed: 'Gagal mengubah nama host'
+        hostnameFailed: 'Gagal mengubah nama host',
+        editHostname: 'Ubah nama host',
+        docs: 'Dokumentasi',
+        hardware: 'Perangkat keras',
+        hardwareFaq: 'FAQ perangkat keras',
+        disclaimer:
+          'IronKVM: firmware komunitas yang diperkuat untuk Sipeed NanoKVM. Tidak berafiliasi dengan Sipeed.',
+        basedOn: 'berbasis NanoKVM {{version}}'
       },
       appearance: {
         title: 'Tampilan',
@@ -875,13 +890,13 @@ const id = {
             '255': 'Maksimum'
           },
           0: 'Tidak pernah',
-          15: '15 sec',
-          30: '30 sec',
-          60: '1 min',
-          180: '3 min',
-          300: '5 min',
-          600: '10 min',
-          1800: '30 min',
+          15: '15 detik',
+          30: '30 detik',
+          60: '1 menit',
+          180: '3 menit',
+          300: '5 menit',
+          600: '10 menit',
+          1800: '30 menit',
           3600: '1 jam'
         },
         ssh: {
@@ -942,10 +957,10 @@ const id = {
         network: 'Jaringan virtual',
         networkDesc: 'Pasang kartu jaringan virtual pada host jarak jauh',
         usbNetwork: {
-          boardAddress: 'NanoKVM:',
+          boardAddress: 'IronKVM:',
           hostAddress: 'Host:',
           description:
-            'Tautan jaringan privat ke host jarak jauh melalui kabel USB. Host mendapat alamat tanpa gateway dan tanpa DNS, sehingga tidak dapat menjangkau LAN Anda melalui NanoKVM.',
+            'Tautan jaringan privat ke host jarak jauh melalui kabel USB. Host mendapat alamat tanpa gateway dan tanpa DNS, sehingga tidak dapat menjangkau LAN Anda melalui IronKVM.',
           off: 'Mati',
           ncm: 'NCM (Linux, macOS, Windows 11)',
           ecm: 'ECM (untuk host tanpa NCM)',
@@ -953,7 +968,7 @@ const id = {
           rndisNote: 'Tautan ini memakai RNDIS, yang tidak lagi ditawarkan. Pilih NCM atau ECM.',
           subnet: 'Subnet',
           subnetDesc:
-            'Jaringan IPv4 privat, /24 hingga /30. NanoKVM memakai alamat pertama, host memakai alamat kedua.',
+            'Jaringan IPv4 privat, /24 hingga /30. IronKVM memakai alamat pertama, host memakai alamat kedua.',
           invalidSubnet: 'Masukkan subnet seperti 172.31.255.0/30.',
           apply: 'Terapkan',
           confirm: 'Sambungkan ulang perangkat USB?',
@@ -966,9 +981,9 @@ const id = {
         audioNote: 'Audio tersedia di kedua mode H.264 (WebRTC dan Direct), tidak di MJPEG',
         console: 'Konsol Serial',
         consoleDesc:
-          'Menyediakan port serial USB untuk host jarak jauh, untuk masuk ke NanoKVM ini saat jaringan tidak dapat dijangkau',
+          'Menyediakan port serial USB untuk host jarak jauh, untuk masuk ke IronKVM ini saat jaringan tidak dapat dijangkau',
         consoleTip:
-          'Siapa pun yang mengendalikan host jarak jauh akan mendapatkan prompt login NanoKVM ini. Tetapkan kata sandi yang kuat sebelum mengaktifkan (Akun - Ubah Kata Sandi).',
+          'Siapa pun yang mengendalikan host jarak jauh akan mendapatkan prompt login IronKVM ini. Tetapkan kata sandi yang kuat sebelum mengaktifkan (Akun - Ubah Kata Sandi).',
         endpoints: {
           title: 'Endpoint USB',
           used: '{{used}} dari {{total}} terpakai',
@@ -983,7 +998,7 @@ const id = {
           fitTogether: 'Yang muat bersamaan: {{sets}}'
         },
         reboot: 'Mulai ulang',
-        rebootDesc: 'Apakah Anda yakin ingin me-reboot NanoKVM?',
+        rebootDesc: 'Apakah Anda yakin ingin me-reboot IronKVM?',
         okBtn: 'Ya',
         cancelBtn: 'Tidak',
         rebootFailed: 'Mulai ulang gagal'
@@ -993,7 +1008,7 @@ const id = {
         wifi: {
           disconnectBtn: 'Putuskan',
           disconnectWarning:
-            'Jika Anda mengakses NanoKVM melalui jaringan Wi-Fi ini, halaman ini akan kehilangan koneksi.',
+            'Jika Anda mengakses IronKVM melalui jaringan Wi-Fi ini, halaman ini akan kehilangan koneksi.',
           disconnected: 'Wi-Fi terputus',
           title: 'Wi-Fi',
           description: 'Konfigurasi Wi-Fi',
@@ -1026,7 +1041,7 @@ const id = {
         },
         ethernet: {
           title: 'Alamat IP',
-          description: 'Atur cara NanoKVM memperoleh alamatnya di jaringan kabel',
+          description: 'Atur cara IronKVM memperoleh alamatnya di jaringan kabel',
           dhcp: 'DHCP',
           manual: 'Manual',
           networkDetails: 'Detail Jaringan',
@@ -1040,17 +1055,17 @@ const id = {
           invalidRouter: 'Masukkan alamat router yang valid',
           addressRequired: 'Alamat IP wajib diisi',
           maskRequired: 'Subnet mask wajib diisi',
-          applyTitle: 'Ubah alamat NanoKVM?',
+          applyTitle: 'Ubah alamat IronKVM?',
           applyWarning:
-            'Koneksi ke halaman ini akan terputus. NanoKVM menerapkan alamat baru dan menunggu {{seconds}} detik sampai Anda menjangkaunya di sana. Menjangkaunya akan mempertahankan perubahan. Jika tidak ada yang menjangkaunya, NanoKVM mengembalikan pengaturan sebelumnya.',
+            'Koneksi ke halaman ini akan terputus. IronKVM menerapkan alamat baru dan menunggu {{seconds}} detik sampai Anda menjangkaunya di sana. Menjangkaunya akan mempertahankan perubahan. Jika tidak ada yang menjangkaunya, IronKVM mengembalikan pengaturan sebelumnya.',
           applyConfirm: 'Terapkan',
           applyCancel: 'Batal',
           applyFailed: 'Gagal menerapkan alamat',
           trialTitle: 'Menunggu konfirmasi',
-          trialDhcp: 'NanoKVM sedang meminta alamat melalui DHCP.',
-          trialStatic: 'NanoKVM sekarang berada di {{address}}.',
+          trialDhcp: 'IronKVM sedang meminta alamat melalui DHCP.',
+          trialStatic: 'IronKVM sekarang berada di {{address}}.',
           trialInstruction:
-            'Buka NanoKVM di alamat barunya dan masuk jika diminta. Menjangkaunya di sana akan mempertahankan perubahan. Jika tidak ada yang menjangkau NanoKVM dalam {{seconds}} detik, NanoKVM mengembalikan pengaturan sebelumnya.',
+            'Buka IronKVM di alamat barunya dan masuk jika diminta. Menjangkaunya di sana akan mempertahankan perubahan. Jika tidak ada yang menjangkau IronKVM dalam {{seconds}} detik, IronKVM mengembalikan pengaturan sebelumnya.',
           trialOpen: 'Buka alamat baru',
           trialKeep: 'Pertahankan pengaturan ini',
           trialKept: 'Alamat baru tersimpan',
@@ -1060,7 +1075,7 @@ const id = {
         },
         dns: {
           title: 'DNS',
-          description: 'Konfigurasi server DNS untuk NanoKVM',
+          description: 'Konfigurasi server DNS untuk IronKVM',
           mode: 'Mode',
           dhcp: 'DHCP',
           manual: 'Manual',
@@ -1145,29 +1160,30 @@ const id = {
         notSignedIn: 'Belum masuk. Selesaikan masuk melalui tautan, lalu periksa lagi.',
         checkFailed: 'Tidak dapat memeriksa status masuk',
         loginWaiting: 'Halaman ini memeriksa setiap beberapa detik dan lanjut setelah Anda masuk.',
-        uninstallFailed: 'Gagal menghapus instalasi'
+        uninstallFailed: 'Gagal menghapus instalasi',
+        loginFailed: 'Gagal masuk'
       },
       tailscale: {
         title: 'Tailscale',
-        retry: 'Harap segarkan dan coba lagi. Atau coba instal secara manual',
         download: 'Mengunduh',
         package: 'paket instalasi',
         unzip: 'dan unzip itu',
-        upTailscale: 'Unggah tailscale ke direktori NanoKVM /usr/bin/',
-        upTailscaled: 'Unggah tailscaled ke direktori NanoKVM /usr/sbin/',
-        refresh: 'Segarkan halaman ini',
         notLogin:
           'Perangkat belum ditautkan. Silakan masuk dan tautkan perangkat ini ke akun Anda.',
         urlPeriod: 'Url ini berlaku selama 10 menit',
         login: 'Masuk',
         logout: 'Keluar',
-        logoutDesc: 'Apakah Anda yakin ingin logout?'
+        logoutDesc: 'Apakah Anda yakin ingin logout?',
+        manualIntro: 'Atau instal secara manual lewat SSH:',
+        copyBinaries: 'Salin tailscale dan tailscaled ke {{dir}} di IronKVM',
+        linksFile: 'Di direktori yang sama, buat file bernama links berisi dua baris ini:',
+        rebootRefresh: 'Mulai ulang IronKVM, lalu muat ulang halaman ini'
       },
       netbird: {
         title: 'NetBird',
         notLogin:
           'Perangkat ini belum bergabung ke jaringan NetBird. Bergabunglah dengan setup key, atau masuk dengan SSO.',
-        setupKey: 'Setup key',
+        setupKey: 'Kunci penyiapan',
         setupKeyPlaceholder: 'Tempel setup key dari dasbor NetBird',
         join: 'Gabung',
         or: 'atau',
@@ -1175,7 +1191,8 @@ const id = {
         urlPeriod: 'Url ini berlaku selama 10 menit',
         logout: 'Batalkan pendaftaran',
         logoutDesc:
-          'Membatalkan pendaftaran akan menghapus peer ini dari akun NetBird Anda dan menghapus konfigurasinya di sini. Untuk bergabung lagi diperlukan setup key atau login SSO, dan peer mungkin mendapat IP baru. Lanjutkan?'
+          'Membatalkan pendaftaran akan menghapus peer ini dari akun NetBird Anda dan menghapus konfigurasinya di sini. Untuk bergabung lagi diperlukan setup key atau login SSO, dan peer mungkin mendapat IP baru. Lanjutkan?',
+        joinFailed: 'Tidak dapat bergabung ke jaringan'
       },
       update: {
         title: 'Periksa pembaruan',
@@ -1201,7 +1218,7 @@ const id = {
           save: 'Simpan',
           confirmTitle: 'Gunakan server pembaruan kustom?',
           confirmDesc:
-            'SHA-512 hanya memeriksa bahwa paket cocok dengan manifes yang disediakan oleh server ini. Pemeriksaan ini tidak membuktikan bahwa paket tersebut merupakan rilis resmi NanoKVM. Server yang bermasalah atau berbahaya dapat membuat perangkat tidak dapat digunakan, menyebabkan kehilangan data, atau membahayakan sistem.',
+            'SHA-512 hanya memeriksa bahwa paket cocok dengan manifes yang disediakan oleh server ini. Pemeriksaan ini tidak membuktikan bahwa paket tersebut merupakan rilis resmi IronKVM. Server yang bermasalah atau berbahaya dapat membuat perangkat tidak dapat digunakan, menyebabkan kehilangan data, atau membahayakan sistem.',
           confirm: 'Tetap Gunakan',
           useSipeed: 'Gunakan server resmi Sipeed',
           previewDisabled:
@@ -1222,7 +1239,8 @@ const id = {
         },
         updateTo: 'Perbarui ke {{version}}',
         updateConfirmDesc:
-          'Perangkat memasang pembaruan dan memulai ulang servernya. Halaman ini dimuat ulang saat server kembali.'
+          'Perangkat memasang pembaruan dan memulai ulang servernya. Halaman ini dimuat ulang saat server kembali.',
+        releaseNotes: 'Catatan rilis'
       },
       account: {
         title: 'Akun',
@@ -1299,7 +1317,7 @@ const id = {
         defaultTitle: 'Asisten umum',
         defaultDescription: 'Obrolan umum, pencarian, dan bantuan ruang kerja.',
         kvmTitle: 'Kontrol jarak jauh',
-        kvmDescription: 'Operasikan host jarak jauh melalui NanoKVM.',
+        kvmDescription: 'Operasikan host jarak jauh melalui IronKVM.',
         switched: 'Peran agen dialihkan',
         switchFailed: 'Gagal mengganti peran agen'
       },
@@ -1319,24 +1337,24 @@ const id = {
       connection: {
         runtime: {
           checking: 'Memeriksa',
-          restoring: 'Restoring PicoClaw',
+          restoring: 'Memulihkan PicoClaw',
           ready: 'Runtime siap',
           stopped: 'Runtime dihentikan',
           blockedByMCP: 'Kontrol MCP eksternal sedang aktif',
           readyBlockedByMCP:
-            'The runtime is running, but external MCP currently controls device input.',
+            'Runtime berjalan, tetapi MCP eksternal saat ini mengendalikan input perangkat.',
           readyWithoutControl:
-            'The runtime is running. Grant PicoClaw device control before reconnecting.',
+            'Runtime berjalan. Berikan kontrol perangkat ke PicoClaw sebelum menyambung ulang.',
           unavailable: 'Runtime tidak tersedia',
           configError: 'Kesalahan konfigurasi'
         },
         transport: {
           connecting: 'Menghubungkan',
           connected: 'Terhubung',
-          disconnected: 'Disconnected',
-          reconnect: 'Reconnect',
-          reconnectDescription: 'Reconnect to the running PicoClaw session.',
-          reconnectBlocked: 'PicoClaw needs device control before reconnecting.'
+          disconnected: 'Terputus',
+          reconnect: 'Sambungkan ulang',
+          reconnectDescription: 'Sambungkan ulang ke sesi PicoClaw yang sedang berjalan.',
+          reconnectBlocked: 'PicoClaw memerlukan kontrol perangkat sebelum menyambung ulang.'
         },
         run: {
           idle: 'Menganggur',
@@ -1353,21 +1371,23 @@ const id = {
       },
       control: {
         picoclaw: 'Kontrol perangkat: PicoClaw',
-        picoclawDescription: 'PicoClaw can write keyboard and mouse input. Manual input may pause.',
+        picoclawDescription:
+          'PicoClaw dapat mengirim input keyboard dan mouse. Input manual bisa dijeda.',
         mcp: 'Kontrol perangkat: MCP eksternal',
-        mcpDescription: 'External MCP can write to the device. PicoClaw will not take over input.',
+        mcpDescription:
+          'MCP eksternal dapat menulis ke perangkat. PicoClaw tidak akan mengambil alih input.',
         off: 'Kontrol perangkat: nonaktif',
         offDescription:
-          'AI will not write keyboard or mouse input. Manual control remains available.',
-        transitioning: 'Device control: switching',
-        transitioningDescription: 'Device control is syncing. Please wait.',
+          'AI tidak akan mengirim input keyboard atau mouse. Kontrol manual tetap tersedia.',
+        transitioning: 'Kontrol perangkat: beralih',
+        transitioningDescription: 'Kontrol perangkat sedang disinkronkan. Harap tunggu.',
         grant: 'Berikan kontrol',
         release: 'Lepaskan',
-        releasing: 'Releasing...',
-        switching: 'Switching...',
-        releasingLabel: 'Device control: releasing',
+        releasing: 'Melepaskan...',
+        switching: 'Beralih...',
+        releasingLabel: 'Kontrol perangkat: melepaskan',
         releasingDescription:
-          'Device control is being returned. PicoClaw has stopped current writes.',
+          'Kontrol perangkat sedang dikembalikan. PicoClaw telah menghentikan penulisan yang berjalan.',
         granted: 'Kontrol PicoClaw diberikan',
         released: 'Kontrol PicoClaw dilepaskan',
         grantFailed: 'Gagal memberikan kontrol PicoClaw',
@@ -1448,8 +1468,8 @@ const id = {
         enableConfirmCancel: 'Batal',
         title: 'Mulai PicoClaw',
         description: 'Mulai runtime untuk mulai menggunakan asisten PicoClaw.',
-        switchFromMCP: 'Switch to PicoClaw and start',
-        takeoverAndStart: 'Take over and start'
+        switchFromMCP: 'Beralih ke PicoClaw dan mulai',
+        takeoverAndStart: 'Ambil alih dan mulai'
       }
     },
     error: {
@@ -1483,9 +1503,9 @@ const id = {
       warn: 'Memori video hampir habis. Satu kali restart server akan menghabiskannya. Mulai ulang saat memungkinkan.',
       criticalTitle: 'Memori video tidak cukup untuk memulai streaming',
       criticalBody:
-        'Memulai video akan menghabiskan memori yang dicadangkan dan menghentikan server. Semua fungsi lain tetap berjalan, termasuk kontrol daya dan mulai ulang. Hanya memulai ulang NanoKVM yang dapat mengambil kembali memori ini.',
+        'Memulai video akan menghabiskan memori yang dicadangkan dan menghentikan server. Semua fungsi lain tetap berjalan, termasuk kontrol daya dan mulai ulang. Hanya memulai ulang IronKVM yang dapat mengambil kembali memori ini.',
       criticalContinue: 'Tetap mulai video',
-      criticalReboot: 'Mulai ulang NanoKVM',
+      criticalReboot: 'Mulai ulang IronKVM',
       criticalRebooting: 'Memulai ulang...'
     }
   }
