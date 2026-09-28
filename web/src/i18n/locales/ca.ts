@@ -903,7 +903,8 @@ const ca = {
         reboot: 'Reinicia',
         rebootDesc: 'Segur que vols reiniciar el NanoKVM?',
         okBtn: 'Sí',
-        cancelBtn: 'No'
+        cancelBtn: 'No',
+        rebootFailed: 'El reinici ha fallat'
       },
       network: {
         title: 'Xarxa',
@@ -1106,7 +1107,10 @@ const ca = {
             'La verificació SHA-256 ha fallat. És possible que el paquet estigui malmès.',
           invalidName: 'Format de nom de fitxer no vàlid. Baixeu-lo des de les versions de GitHub.',
           updateFailed: 'Error en actualitzar. Torna-ho a intentar.'
-        }
+        },
+        updateTo: 'Actualitza a {{version}}',
+        updateConfirmDesc:
+          "El dispositiu instal·la l'actualització i reinicia el servidor. Aquesta pàgina es recarrega quan el servidor torna a respondre."
       },
       account: {
         title: 'Compte',

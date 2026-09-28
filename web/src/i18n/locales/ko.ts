@@ -891,7 +891,8 @@ const ko = {
         reboot: '재부팅',
         rebootDesc: 'NanoKVM을 재부팅하시겠습니까?',
         okBtn: '네',
-        cancelBtn: '아니오'
+        cancelBtn: '아니오',
+        rebootFailed: '재부팅에 실패했습니다'
       },
       network: {
         title: '네트워크',
@@ -1092,7 +1093,9 @@ const ko = {
           checksumMismatch: 'SHA-256 검증에 실패했습니다. 패키지가 손상되었을 수 있습니다.',
           invalidName: '유효하지 않은 파일 이름 형식입니다. GitHub 릴리즈에서 다운로드하세요.',
           updateFailed: '업데이트에 실패했습니다. 재시도하세요.'
-        }
+        },
+        updateTo: '{{version}}(으)로 업데이트',
+        updateConfirmDesc: '장치가 업데이트를 설치하고 서버를 다시 시작합니다. 서버가 돌아오면 이 페이지가 새로 고쳐집니다.'
       },
       account: {
         title: '계정',

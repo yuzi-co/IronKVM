@@ -909,7 +909,8 @@ const nl = {
         reboot: 'Opnieuw opstarten',
         rebootDesc: 'Weet u zeker dat u NanoKVM opnieuw wilt opstarten?',
         okBtn: 'Ja',
-        cancelBtn: 'Nee'
+        cancelBtn: 'Nee',
+        rebootFailed: 'Herstarten mislukt'
       },
       network: {
         title: 'Netwerk',
@@ -1113,7 +1114,10 @@ const nl = {
           checksumMismatch: 'De SHA-256-verificatie is mislukt. Het pakket is mogelijk beschadigd.',
           invalidName: 'Ongeldig bestandsnaamformaat. Download de versie van GitHub-releases.',
           updateFailed: 'Update mislukt. Probeer het opnieuw.'
-        }
+        },
+        updateTo: 'Bijwerken naar {{version}}',
+        updateConfirmDesc:
+          'Het apparaat installeert de update en herstart zijn server. Deze pagina herlaadt zodra de server terug is.'
       },
       account: {
         title: 'Account',

@@ -895,7 +895,8 @@ const se = {
         reboot: 'Starta om',
         rebootDesc: 'Är du säker på att du vill starta om NanoKVM?',
         okBtn: 'Ja',
-        cancelBtn: 'Nej'
+        cancelBtn: 'Nej',
+        rebootFailed: 'Omstarten misslyckades'
       },
       network: {
         title: 'Nätverk',
@@ -1098,7 +1099,10 @@ const se = {
           checksumMismatch: 'SHA-256-verifieringen misslyckades. Paketet kan vara skadat.',
           invalidName: 'Ogiltigt filnamnsformat. Ladda ner från GitHub-versioner.',
           updateFailed: 'Uppdatering misslyckades. Försök igen.'
-        }
+        },
+        updateTo: 'Uppdatera till {{version}}',
+        updateConfirmDesc:
+          'Enheten installerar uppdateringen och startar om sin server. Sidan laddas om när servern är tillbaka.'
       },
       account: {
         title: 'Konto',

@@ -889,7 +889,8 @@ const en = {
         reboot: 'Reboot',
         rebootDesc: 'Are you sure you want to reboot NanoKVM?',
         okBtn: 'Yes',
-        cancelBtn: 'No'
+        cancelBtn: 'No',
+        rebootFailed: 'Reboot failed'
       },
       network: {
         title: 'Network',
@@ -1090,7 +1091,10 @@ const en = {
           checksumMismatch: 'SHA-256 verification failed. The package may be corrupted.',
           invalidName: 'Invalid filename format. Please download from GitHub releases.',
           updateFailed: 'Update failed. Please retry.'
-        }
+        },
+        updateTo: 'Update to {{version}}',
+        updateConfirmDesc:
+          'The device installs the update and restarts its server. This page reloads when the server is back.'
       },
       account: {
         title: 'Account',

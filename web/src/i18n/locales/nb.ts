@@ -895,7 +895,8 @@ const nb = {
         reboot: 'Start på nytt',
         rebootDesc: 'Er du sikker på at du vil starte NanoKVM på nytt?',
         okBtn: 'Ja',
-        cancelBtn: 'Nei'
+        cancelBtn: 'Nei',
+        rebootFailed: 'Omstart mislyktes'
       },
       network: {
         title: 'Nettverk',
@@ -1100,7 +1101,10 @@ const nb = {
           checksumMismatch: 'SHA-256-verifiseringen mislyktes. Pakken kan være skadet.',
           invalidName: 'Ugyldig filnavnformat. Last ned fra GitHub-utgivelser.',
           updateFailed: 'En feil oppstod under oppdatering. Vennligst forsøk igjen.'
-        }
+        },
+        updateTo: 'Oppdater til {{version}}',
+        updateConfirmDesc:
+          'Enheten installerer oppdateringen og starter serveren på nytt. Siden lastes inn på nytt når serveren er tilbake.'
       },
       account: {
         title: 'Konto',

@@ -905,7 +905,8 @@ const pl = {
         reboot: 'Uruchom ponownie',
         rebootDesc: 'Czy na pewno chcesz ponownie uruchomić NanoKVM?',
         okBtn: 'Tak',
-        cancelBtn: 'Nie'
+        cancelBtn: 'Nie',
+        rebootFailed: 'Ponowne uruchomienie nie powiodło się'
       },
       network: {
         title: 'Sieć',
@@ -1109,7 +1110,10 @@ const pl = {
           checksumMismatch: 'Weryfikacja SHA-256 nie powiodła się. Pakiet może być uszkodzony.',
           invalidName: 'Nieprawidłowy format nazwy pliku. Proszę pobrać z wydań GitHub.',
           updateFailed: 'Aktualizacja nie powiodła się. Spróbuj ponownie.'
-        }
+        },
+        updateTo: 'Aktualizuj do {{version}}',
+        updateConfirmDesc:
+          'Urządzenie zainstaluje aktualizację i uruchomi ponownie swój serwer. Strona przeładuje się, gdy serwer wróci.'
       },
       account: {
         title: 'Konto',

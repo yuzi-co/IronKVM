@@ -898,7 +898,8 @@ const da = {
         reboot: 'Genstart',
         rebootDesc: 'Er du sikker på, at du vil genstarte NanoKVM?',
         okBtn: 'Ja',
-        cancelBtn: 'Annuller'
+        cancelBtn: 'Annuller',
+        rebootFailed: 'Genstart mislykkedes'
       },
       network: {
         title: 'Netværk',
@@ -1102,7 +1103,10 @@ const da = {
           checksumMismatch: 'SHA-256-verificeringen mislykkedes. Pakken kan være beskadiget.',
           invalidName: 'Ugyldigt filnavnsformat. Download venligst fra GitHub-udgivelser.',
           updateFailed: 'Opdatering fejlede. Prøv igen.'
-        }
+        },
+        updateTo: 'Opdater til {{version}}',
+        updateConfirmDesc:
+          'Enheden installerer opdateringen og genstarter sin server. Siden genindlæses, når serveren er tilbage.'
       },
       account: {
         title: 'Konto',

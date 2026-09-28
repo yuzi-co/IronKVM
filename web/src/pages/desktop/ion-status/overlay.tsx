@@ -2,14 +2,9 @@ import { useState } from 'react';
 import { AlertCircle, AlertTriangle, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import * as api from '@/api/vm.ts';
+import { rebootAndReload } from '@/lib/reboot.ts';
 
 import type { IonStatus } from './model';
-
-// How long to wait before reloading the page after a reboot request. The board
-// takes about ten seconds to come back; Settings > Device waits 30s for the
-// same call, and this matches it rather than inventing a second number.
-const rebootReloadDelay = 30000;
 
 // Neutral, not a warning: this is the state before the ION check has an answer,
 // not a verdict about the answer. It must read as distinct from both the plain
@@ -45,35 +40,18 @@ export function IonCriticalGate({ onContinue }: { onContinue: () => void }) {
 
   const [isRebooting, setIsRebooting] = useState(false);
 
-  // The board stops answering the moment it reboots, so the request never
-  // resolves and nothing else would ever tell the operator the click landed.
-  // Hold the button in its pending state and reload once the board has had
-  // long enough to come back, the same way Settings > Device does it.
+  // The board stops answering the moment it reboots, so the request may never
+  // resolve and nothing else would tell the operator the click landed. Hold
+  // the button in its pending state and reload once the board is back, the
+  // same way Settings > Device does it.
   function reboot() {
     if (isRebooting) return;
     setIsRebooting(true);
 
-    const timeoutId = setTimeout(() => {
-      window.location.reload();
-    }, rebootReloadDelay);
-
-    function abort() {
+    rebootAndReload((msg) => {
+      console.log(msg);
       setIsRebooting(false);
-      clearTimeout(timeoutId);
-    }
-
-    api
-      .reboot()
-      .then((rsp) => {
-        if (rsp.code !== 0) {
-          console.log(rsp.msg);
-          abort();
-        }
-      })
-      .catch((err: unknown) => {
-        console.log(err);
-        abort();
-      });
+    });
   }
 
   return (

@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Popconfirm, Select, Tooltip } from 'antd';
+import { message, Popconfirm, Select, Tooltip } from 'antd';
 import { CircleAlertIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/vm.ts';
+import { rebootAndReload } from '@/lib/reboot.ts';
 
 type CpuFreqState = {
   running: number;
@@ -64,24 +65,10 @@ export const CpuFreq = () => {
     if (isRebooting) return;
     setIsRebooting(true);
 
-    const timeoutId = setTimeout(() => {
-      window.location.reload();
-    }, 30000);
-
-    api
-      .reboot()
-      .then((rsp) => {
-        if (rsp.code !== 0) {
-          console.log(rsp.msg);
-          setIsRebooting(false);
-          clearTimeout(timeoutId);
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-        setIsRebooting(false);
-        clearTimeout(timeoutId);
-      });
+    rebootAndReload((msg) => {
+      message.error(msg || t('settings.device.rebootFailed'));
+      setIsRebooting(false);
+    });
   }
 
   const options = (state?.options ?? []).map((mhz) => ({ value: mhz, label: `${mhz} MHz` }));

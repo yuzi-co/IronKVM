@@ -895,7 +895,8 @@ const cz = {
         reboot: 'Restartujte',
         rebootDesc: 'Opravdu chcete restartovat NanoKVM?',
         okBtn: 'Ano',
-        cancelBtn: 'Ne'
+        cancelBtn: 'Ne',
+        rebootFailed: 'Restart se nezdařil'
       },
       network: {
         title: 'Síť',
@@ -1099,7 +1100,10 @@ const cz = {
           checksumMismatch: 'Ověření SHA-256 se nezdařilo. Balíček může být poškozený.',
           invalidName: 'Neplatný formát souboru. Stáhněte si prosím z vydání GitHubu.',
           updateFailed: 'Aktualizace se nezdařila. Zkuste to prosím znovu.'
-        }
+        },
+        updateTo: 'Aktualizovat na {{version}}',
+        updateConfirmDesc:
+          'Zařízení nainstaluje aktualizaci a restartuje svůj server. Stránka se znovu načte, až bude server zpět.'
       },
       account: {
         title: 'Účet',

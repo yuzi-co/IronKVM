@@ -885,7 +885,8 @@ const th = {
         reboot: 'รีบูต',
         rebootDesc: 'คุณแน่ใจหรือไม่ว่าต้องการรีบูต NanoKVM',
         okBtn: 'ใช่',
-        cancelBtn: 'ไม่ใช่'
+        cancelBtn: 'ไม่ใช่',
+        rebootFailed: 'รีบูตไม่สำเร็จ'
       },
       network: {
         title: 'เครือข่าย',
@@ -1087,7 +1088,10 @@ const th = {
           checksumMismatch: 'การตรวจสอบ SHA-256 ล้มเหลว แพ็กเกจอาจเสียหาย',
           invalidName: 'รูปแบบชื่อไฟล์ไม่ถูกต้อง กรุณาดาวน์โหลดจากรุ่น GitHub',
           updateFailed: 'การอัปเดตล้มเหลว กรุณาลองใหม่'
-        }
+        },
+        updateTo: 'อัปเดตเป็น {{version}}',
+        updateConfirmDesc:
+          'อุปกรณ์จะติดตั้งการอัปเดตและรีสตาร์ทเซิร์ฟเวอร์ หน้านี้จะโหลดใหม่เมื่อเซิร์ฟเวอร์กลับมา'
       },
       account: {
         title: 'บัญชี',

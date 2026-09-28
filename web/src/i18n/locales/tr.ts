@@ -901,7 +901,8 @@ const tr = {
         reboot: 'Yeniden Başlat',
         rebootDesc: "NanoKVM'i yeniden başlatmak istediğinizden emin misiniz?",
         okBtn: 'Evet',
-        cancelBtn: 'Hayır'
+        cancelBtn: 'Hayır',
+        rebootFailed: 'Yeniden başlatma başarısız'
       },
       network: {
         title: 'Ağ',
@@ -1103,7 +1104,10 @@ const tr = {
           checksumMismatch: 'SHA-256 doğrulaması başarısız oldu. Paket bozulmuş olabilir.',
           invalidName: 'Geçersiz dosya adı biçimi. Lütfen GitHub sürümlerinden indirin.',
           updateFailed: 'Güncelleme başarısız oldu. Lütfen tekrar deneyin.'
-        }
+        },
+        updateTo: '{{version}} sürümüne güncelle',
+        updateConfirmDesc:
+          'Cihaz güncellemeyi kurar ve sunucusunu yeniden başlatır. Sunucu geri geldiğinde bu sayfa yeniden yüklenir.'
       },
       account: {
         title: 'Hesap',

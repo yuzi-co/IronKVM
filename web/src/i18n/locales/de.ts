@@ -912,7 +912,8 @@ const de = {
         reboot: 'Neustarten',
         rebootDesc: 'Sind Sie sicher dass Sie NanoKVM neustarten möchten?',
         okBtn: 'Ja',
-        cancelBtn: 'Nein'
+        cancelBtn: 'Nein',
+        rebootFailed: 'Neustart fehlgeschlagen'
       },
       network: {
         title: 'Netzwerk',
@@ -1121,7 +1122,10 @@ const de = {
           invalidName:
             'Ungültiges Dateinamenformat. Bitte laden Sie von den GitHub-Releases herunter.',
           updateFailed: 'Aktualisierung fehlgeschlagen. Bitte versuchen Sie es erneut.'
-        }
+        },
+        updateTo: 'Auf {{version}} aktualisieren',
+        updateConfirmDesc:
+          'Das Gerät installiert das Update und startet seinen Server neu. Diese Seite lädt neu, sobald der Server wieder da ist.'
       },
       account: {
         title: 'Konto',

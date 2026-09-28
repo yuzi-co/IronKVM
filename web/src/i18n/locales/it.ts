@@ -910,7 +910,8 @@ const it = {
         reboot: 'Riavvia',
         rebootDesc: 'Sei sicuro di voler riavviare NanoKVM?',
         okBtn: 'Sì',
-        cancelBtn: 'No'
+        cancelBtn: 'No',
+        rebootFailed: 'Riavvio non riuscito'
       },
       network: {
         title: 'Rete',
@@ -1114,7 +1115,10 @@ const it = {
             'La verifica SHA-256 non è riuscita. Il pacchetto potrebbe essere danneggiato.',
           invalidName: 'Formato nome file non valido. Si prega di scaricare dalle versioni GitHub.',
           updateFailed: 'Aggiornamento fallito. Riprova.'
-        }
+        },
+        updateTo: 'Aggiorna a {{version}}',
+        updateConfirmDesc:
+          "Il dispositivo installa l'aggiornamento e riavvia il server. La pagina si ricarica quando il server torna disponibile."
       },
       account: {
         title: 'Account',

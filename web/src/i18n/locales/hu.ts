@@ -906,7 +906,8 @@ const hu = {
         reboot: 'Újraindítás',
         rebootDesc: 'Biztos, hogy újra akarja indítani a NanoKVM-t?',
         okBtn: 'Igen',
-        cancelBtn: 'Nem'
+        cancelBtn: 'Nem',
+        rebootFailed: 'Az újraindítás sikertelen'
       },
       network: {
         title: 'Hálózat',
@@ -1109,7 +1110,10 @@ const hu = {
           checksumMismatch: 'Az SHA-256 ellenőrzése sikertelen. Lehet, hogy a csomag sérült.',
           invalidName: 'Érvénytelen fájlnévformátum. Kérjük, töltse le a GitHub kiadásaiból.',
           updateFailed: 'Frissítés sikertelen. Kérem, próbálja újra.'
-        }
+        },
+        updateTo: 'Frissítés erre: {{version}}',
+        updateConfirmDesc:
+          'Az eszköz telepíti a frissítést és újraindítja a szerverét. Az oldal újratöltődik, amikor a szerver ismét elérhető.'
       },
       account: {
         title: 'Fiók',

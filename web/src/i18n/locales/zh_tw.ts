@@ -864,7 +864,8 @@ const zh_tw = {
         reboot: '重新啟動',
         rebootDesc: '您確定要重新啟動 NanoKVM?',
         okBtn: '確定',
-        cancelBtn: '取消'
+        cancelBtn: '取消',
+        rebootFailed: '重新開機失敗'
       },
       network: {
         title: '網路',
@@ -1062,7 +1063,9 @@ const zh_tw = {
           checksumMismatch: 'SHA-256 驗證失敗。套件可能已損毀。',
           invalidName: '檔名格式錯誤，請前往 GitHub 釋出頁下載安裝包。',
           updateFailed: '更新失敗，請重試'
-        }
+        },
+        updateTo: '更新至 {{version}}',
+        updateConfirmDesc: '裝置將安裝更新並重新啟動服務。服務恢復後此頁面會自動重新載入。'
       },
       account: {
         title: '帳號',

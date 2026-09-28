@@ -864,7 +864,8 @@ const zh = {
         reboot: '重新启动',
         rebootDesc: '您确定要重新启动 NanoKVM 吗？',
         okBtn: '是',
-        cancelBtn: '否'
+        cancelBtn: '否',
+        rebootFailed: '重启失败'
       },
       network: {
         title: '网络',
@@ -1062,7 +1063,9 @@ const zh = {
           checksumMismatch: 'SHA-256 校验失败，安装包可能已损坏。',
           invalidName: '文件名格式错误，请前往 GitHub 发布页下载安装包。',
           updateFailed: '更新失败，请重试'
-        }
+        },
+        updateTo: '更新到 {{version}}',
+        updateConfirmDesc: '设备将安装更新并重启服务。服务恢复后此页面会自动重新加载。'
       },
       account: {
         title: '帐号',

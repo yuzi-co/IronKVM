@@ -4,6 +4,11 @@ import { ExternalLinkIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/application.ts';
+import {
+  reloadAfterRestart,
+  SERVER_RESTART_DOWN_MS,
+  SERVER_RESTART_UP_MS
+} from '@/lib/wait-server.ts';
 
 interface UpdateProps {
   status: string;
@@ -81,10 +86,9 @@ export const Offline = ({ status, setStatus, setIsLocked, setErrMsg }: UpdatePro
         }
       })
       .then(() => {
-        setTimeout(() => {
-          setIsLocked(false);
-          window.location.reload();
-        }, 12000);
+        // Installed: the server restarts on its own. The settings stay locked
+        // until the page reloads onto the new version.
+        reloadAfterRestart(SERVER_RESTART_DOWN_MS, SERVER_RESTART_UP_MS);
       })
       .catch((error: unknown) => {
         setIsLocked(false);

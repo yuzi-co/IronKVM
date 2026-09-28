@@ -903,7 +903,8 @@ const pt_br = {
         reboot: 'Reiniciar',
         rebootDesc: 'Tem certeza de que deseja reiniciar o NanoKVM?',
         okBtn: 'Sim',
-        cancelBtn: 'Não'
+        cancelBtn: 'Não',
+        rebootFailed: 'Falha ao reiniciar'
       },
       network: {
         title: 'Rede',
@@ -1107,7 +1108,10 @@ const pt_br = {
           checksumMismatch: 'A verificação SHA-256 falhou. O pacote pode estar corrompido.',
           invalidName: 'Formato de nome de arquivo inválido. Faça download das versões do GitHub.',
           updateFailed: 'Falha na atualização. Por favor, tente novamente.'
-        }
+        },
+        updateTo: 'Atualizar para {{version}}',
+        updateConfirmDesc:
+          'O dispositivo instala a atualização e reinicia seu servidor. Esta página recarrega quando o servidor voltar.'
       },
       account: {
         title: 'Conta',

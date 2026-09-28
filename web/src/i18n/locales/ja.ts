@@ -906,7 +906,8 @@ const ja = {
         reboot: '再起動',
         rebootDesc: 'NanoKVM を再起動してもよろしいですか?',
         okBtn: 'はい',
-        cancelBtn: 'いいえ'
+        cancelBtn: 'いいえ',
+        rebootFailed: '再起動に失敗しました'
       },
       network: {
         title: 'ネットワーク',
@@ -1113,7 +1114,9 @@ const ja = {
           invalidName:
             'ファイル名の形式が正しくありません。GitHub リリースページにアクセスしてインストールパッケージをダウンロードしてください。',
           updateFailed: 'アップデートに失敗しました。もう一度お試しください。'
-        }
+        },
+        updateTo: '{{version}} に更新',
+        updateConfirmDesc: 'デバイスは更新をインストールしてサーバーを再起動します。サーバーが戻るとこのページは再読み込みされます。'
       },
       account: {
         title: 'アカウント',

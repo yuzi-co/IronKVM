@@ -912,7 +912,8 @@ const fr = {
         reboot: 'Redémarrer',
         rebootDesc: 'Êtes-vous sûr de vouloir redémarrer NanoKVM?',
         okBtn: 'Oui',
-        cancelBtn: 'Non'
+        cancelBtn: 'Non',
+        rebootFailed: 'Le redémarrage a échoué'
       },
       network: {
         title: 'Réseau',
@@ -1118,7 +1119,10 @@ const fr = {
           invalidName:
             'Format de nom de fichier invalide. Veuillez télécharger à partir des versions de GitHub.',
           updateFailed: 'Mise à jour échouée. Veuillez réessayer.'
-        }
+        },
+        updateTo: 'Mettre à jour vers {{version}}',
+        updateConfirmDesc:
+          "L'appareil installe la mise à jour et redémarre son serveur. Cette page se recharge quand le serveur est de retour."
       },
       account: {
         title: 'Compte',

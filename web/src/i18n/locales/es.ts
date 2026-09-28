@@ -909,7 +909,8 @@ const es = {
         reboot: 'Reiniciar',
         rebootDesc: '¿Estás seguro de que deseas reiniciar el NanoKVM?',
         okBtn: 'Sí',
-        cancelBtn: 'No'
+        cancelBtn: 'No',
+        rebootFailed: 'El reinicio ha fallado'
       },
       network: {
         title: 'Red',
@@ -1116,7 +1117,10 @@ const es = {
           invalidName:
             'Formato de nombre de archivo no válido. Descargue desde las versiones de GitHub.',
           updateFailed: 'La actualización falló. Por favor, inténtalo de nuevo.'
-        }
+        },
+        updateTo: 'Actualizar a {{version}}',
+        updateConfirmDesc:
+          'El dispositivo instala la actualización y reinicia su servidor. Esta página se recarga cuando el servidor vuelve.'
       },
       account: {
         title: 'Cuenta',

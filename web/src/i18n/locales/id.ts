@@ -898,7 +898,8 @@ const id = {
         reboot: 'Mulai ulang',
         rebootDesc: 'Apakah Anda yakin ingin me-reboot NanoKVM?',
         okBtn: 'Ya',
-        cancelBtn: 'Tidak'
+        cancelBtn: 'Tidak',
+        rebootFailed: 'Mulai ulang gagal'
       },
       network: {
         title: 'Jaringan',
@@ -1102,7 +1103,10 @@ const id = {
           checksumMismatch: 'Verifikasi SHA-256 gagal. Paket mungkin rusak.',
           invalidName: 'Format nama file tidak valid. Silakan unduh dari rilis GitHub.',
           updateFailed: 'Gagal memperbarui, tolong coba lagi.'
-        }
+        },
+        updateTo: 'Perbarui ke {{version}}',
+        updateConfirmDesc:
+          'Perangkat memasang pembaruan dan memulai ulang servernya. Halaman ini dimuat ulang saat server kembali.'
       },
       account: {
         title: 'Akun',

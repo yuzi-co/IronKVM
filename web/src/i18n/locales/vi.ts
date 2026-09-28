@@ -894,7 +894,8 @@ const vi = {
         reboot: 'Khởi động lại',
         rebootDesc: 'Bạn có chắc chắn muốn khởi động lại NanoKVM không?',
         okBtn: 'Có',
-        cancelBtn: 'Không'
+        cancelBtn: 'Không',
+        rebootFailed: 'Khởi động lại thất bại'
       },
       network: {
         title: 'Mạng',
@@ -1099,7 +1100,10 @@ const vi = {
           invalidName:
             'Định dạng tên tệp không hợp lệ. Vui lòng tải xuống từ bản phát hành GitHub.',
           updateFailed: 'Cập nhật thất bại. Vui lòng thử lại.'
-        }
+        },
+        updateTo: 'Cập nhật lên {{version}}',
+        updateConfirmDesc:
+          'Thiết bị cài đặt bản cập nhật và khởi động lại máy chủ. Trang này sẽ tải lại khi máy chủ hoạt động trở lại.'
       },
       account: {
         title: 'Tài khoản',
