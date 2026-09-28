@@ -67,7 +67,12 @@ export const Netboot = ({ setIsLocked }: NetbootProps) => {
         }
         setStatus(rsp.data);
       })
-      .catch((err) => setError(err?.message || t('settings.netboot.failed')))
+      .catch((err) => {
+        // The change may have landed before the answer was lost, so the page
+        // asks for the state rather than keep showing the old one.
+        setError(err?.message || t('settings.netboot.failed'));
+        load();
+      })
       .finally(() => {
         setBusy('');
         if (kind === 'install') setIsLocked(false);
