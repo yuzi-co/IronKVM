@@ -33,11 +33,19 @@ var hidOnly = func() bool {
 // isMountableImage reports whether a client-supplied path may be handed to the
 // USB mass storage gadget. Without this check any file or block device on the
 // KVM - the raw eMMC, /etc/shadow - can be exported to the attached machine.
+// imageRoot is the image directory the drives check against. Tests point it
+// at a temporary one.
+var imageRoot = imageDirectory
+
 func isMountableImage(path string) bool {
-	if !utils.IsPathInside(imageDirectory, path) {
+	if !utils.IsPathInside(imageRoot, path) {
 		return false
 	}
 
+	return hasImageSuffix(path)
+}
+
+func hasImageSuffix(path string) bool {
 	name := strings.ToLower(path)
 
 	return strings.HasSuffix(name, ".iso") || strings.HasSuffix(name, ".img")

@@ -25,6 +25,16 @@ export function getGpio() {
   return http.get('/api/vm/gpio');
 }
 
+// get whether the host's power LED header is wired to the board
+export function getPowerLed() {
+  return http.get('/api/vm/gpio/power-led');
+}
+
+// set whether the host's power LED header is wired to the board
+export function setPowerLed(connected: boolean) {
+  return http.post('/api/vm/gpio/power-led', { connected });
+}
+
 // get the capture settings the server holds
 export function getScreen() {
   return http.get('/api/vm/screen');

@@ -1,0 +1,317 @@
+package redfish
+
+import (
+	"fmt"
+	"net/http"
+	"testing"
+	"time"
+
+	"github.com/gin-gonic/gin"
+
+	"NanoKVM-Server/authn"
+	"NanoKVM-Server/config"
+	"NanoKVM-Server/service/auth"
+)
+
+// withProbe adds a GET behind authenticate that reports who the request acts
+// as, and a POST behind adminOnly.
+func withProbe(h *harness) *harness {
+	g := h.engine.Group("", h.service.authenticate)
+	g.GET("/redfish/v1/Probe", func(c *gin.Context) {
+		p := currentPrincipal(c)
+		c.String(http.StatusOK, "%s admin=%t", p.username, p.admin)
+	})
+	g.POST("/redfish/v1/Probe", adminOnly(func(c *gin.Context) {
+		c.String(http.StatusOK, "done")
+	}))
+	return h
+}
+
+func TestNoCredentialsAnswer401WithABasicChallenge(t *testing.T) {
+	h := withProbe(newHarness(t))
+
+	w := h.do(http.MethodGet, "/redfish/v1/Probe", "")
+	expectError(t, w, http.StatusUnauthorized, "NoValidSession")
+	if got := w.Header().Get("WWW-Authenticate"); got != `Basic realm="IronKVM"` {
+		t.Fatalf("WWW-Authenticate is %q", got)
+	}
+}
+
+func TestBasicCredentialsActAsTheAccount(t *testing.T) {
+	h := withProbe(newHarness(t))
+
+	for _, tc := range []struct{ username, password, want string }{
+		{"admin", "admin", "admin admin=true"},
+		{"alice", "valid-password", "alice admin=false"},
+	} {
+		w := h.do(http.MethodGet, "/redfish/v1/Probe", "", "Authorization", basic(tc.username, tc.password))
+		if w.Code != http.StatusOK || w.Body.String() != tc.want {
+			t.Fatalf("%s: got %d %q, want %q", tc.username, w.Code, w.Body.String(), tc.want)
+		}
+	}
+	if len(h.limiter.succeeded) != 2 {
+		t.Fatalf("successes recorded: %v", h.limiter.succeeded)
+	}
+}
+
+func TestBadBasicCredentialsCountAsALoginFailure(t *testing.T) {
+	h := withProbe(newHarness(t))
+
+	w := h.do(http.MethodGet, "/redfish/v1/Probe", "", "Authorization", basic("admin", "wrong"))
+	expectError(t, w, http.StatusUnauthorized, "NoValidSession")
+	if len(h.limiter.failed) != 1 || h.limiter.failed[0] != clientIP+" admin" {
+		t.Fatalf("failures recorded: %v", h.limiter.failed)
+	}
+}
+
+func TestALockedOutAddressIsRefusedEvenWithTheRightPassword(t *testing.T) {
+	h := withProbe(newHarness(t))
+	h.limiter.lock(clientIP, "admin")
+
+	w := h.do(http.MethodGet, "/redfish/v1/Probe", "", "Authorization", basic("admin", "admin"))
+	expectError(t, w, http.StatusUnauthorized, "NoValidSession")
+}
+
+func TestASessionTokenActsAsItsAccount(t *testing.T) {
+	h := withProbe(newHarness(t))
+
+	w := h.do(http.MethodGet, "/redfish/v1/Probe", "", h.user()...)
+	if w.Code != http.StatusOK || w.Body.String() != "alice admin=false" {
+		t.Fatalf("got %d %q", w.Code, w.Body.String())
+	}
+}
+
+func TestAnUnknownTokenIsRefused(t *testing.T) {
+	h := withProbe(newHarness(t))
+
+	w := h.do(http.MethodGet, "/redfish/v1/Probe", "", "X-Auth-Token", "0123")
+	expectError(t, w, http.StatusUnauthorized, "NoValidSession")
+}
+
+func TestAnIdleSessionExpires(t *testing.T) {
+	h := withProbe(newHarness(t))
+	token := h.admin()
+
+	h.clock = h.clock.Add(31 * time.Minute)
+
+	w := h.do(http.MethodGet, "/redfish/v1/Probe", "", token...)
+	expectError(t, w, http.StatusUnauthorized, "NoValidSession")
+}
+
+// A password change or a revoke bumps the account's token version, which
+// ends its Redfish sessions as it ends its web ones.
+func TestARevokedAccountLosesItsSession(t *testing.T) {
+	h := withProbe(newHarness(t))
+	token := h.user()
+
+	if _, err := h.accounts.Revoke("alice"); err != nil {
+		t.Fatal(err)
+	}
+
+	w := h.do(http.MethodGet, "/redfish/v1/Probe", "", token...)
+	expectError(t, w, http.StatusUnauthorized, "NoValidSession")
+	if len(h.service.sessions.list()) != 0 {
+		t.Fatal("the revoked session is still in the store")
+	}
+}
+
+func TestAnAPIKeyInXAuthTokenActsAsItsAccount(t *testing.T) {
+	h := withProbe(newHarness(t))
+	h.keys["nkvm_secret"] = "alice"
+
+	w := h.do(http.MethodGet, "/redfish/v1/Probe", "", "X-Auth-Token", "nkvm_secret")
+	if w.Code != http.StatusOK || w.Body.String() != "alice admin=false" {
+		t.Fatalf("got %d %q", w.Code, w.Body.String())
+	}
+}
+
+func TestAnAPIKeyOfADisabledAccountIsRefused(t *testing.T) {
+	h := withProbe(newHarness(t))
+	h.keys["nkvm_secret"] = "alice"
+	disabled := false
+	if _, err := h.accounts.Update("admin", "alice", authn.UserPatch{Enabled: &disabled}); err != nil {
+		t.Fatal(err)
+	}
+
+	w := h.do(http.MethodGet, "/redfish/v1/Probe", "", "X-Auth-Token", "nkvm_secret")
+	expectError(t, w, http.StatusUnauthorized, "NoValidSession")
+}
+
+func TestWithAuthenticationDisabledEveryRequestIsAdmin(t *testing.T) {
+	h := withProbe(newHarness(t))
+	h.authDisabled = true
+
+	w := h.do(http.MethodGet, "/redfish/v1/Probe", "")
+	if w.Code != http.StatusOK || w.Body.String() != "admin admin=true" {
+		t.Fatalf("got %d %q", w.Code, w.Body.String())
+	}
+}
+
+// A browser that has cached Basic credentials for the board sends them on a
+// cross-site request too. The Origin header gives such a request away.
+func TestACrossOriginRequestIsRefused(t *testing.T) {
+	h := withProbe(newHarness(t))
+
+	w := h.do(http.MethodPost, "/redfish/v1/Probe", "",
+		"Authorization", basic("admin", "admin"), "Origin", "https://evil.example")
+	expectError(t, w, http.StatusForbidden, "InsufficientPrivilege")
+
+	// httptest requests are addressed to example.com.
+	w = h.do(http.MethodPost, "/redfish/v1/Probe", "",
+		"Authorization", basic("admin", "admin"), "Origin", "http://example.com")
+	if w.Code != http.StatusOK {
+		t.Fatalf("same-origin request: %d %s", w.Code, w.Body.String())
+	}
+}
+
+func TestAdminOnlyRefusesAUser(t *testing.T) {
+	h := withProbe(newHarness(t))
+
+	w := h.do(http.MethodPost, "/redfish/v1/Probe", "", h.user()...)
+	expectError(t, w, http.StatusForbidden, "InsufficientPrivilege")
+
+	w = h.do(http.MethodPost, "/redfish/v1/Probe", "", h.admin()...)
+	if w.Code != http.StatusOK {
+		t.Fatalf("admin: %d %s", w.Code, w.Body.String())
+	}
+}
+
+// LoginLimiter counts Redfish failures per address and account in the web
+// login's table, and honours a lockout the web login put on the address.
+func TestLoginLimiterUsesTheLoginsBruteForceLimit(t *testing.T) {
+	conf := config.GetInstance()
+	original := conf.Security
+	conf.Security.LoginLockoutDuration = 60
+	conf.Security.LoginMaxFailures = 2
+	t.Cleanup(func() { conf.Security = original })
+
+	ip := fmt.Sprintf("198.51.100.%d", time.Now().UnixNano()%250+1)
+	t.Cleanup(func() {
+		auth.ClearLoginAttempt(ip)
+		auth.ClearLoginAttempt(limiterKey(ip, "admin"))
+		auth.ClearLoginAttempt(limiterKey(ip, "alice"))
+	})
+
+	var limiter LoginLimiter
+	limiter.Failed(ip, "admin")
+	if limiter.Locked(ip, "admin") {
+		t.Fatal("locked after one failure")
+	}
+
+	// A success for another account on the same address must not wipe the
+	// count, or one valid account would buy unlimited guesses at another.
+	limiter.Succeeded(ip, "alice")
+	limiter.Failed(ip, "admin")
+	if !limiter.Locked(ip, "admin") {
+		t.Fatal("not locked after the second failure")
+	}
+	if limiter.Locked(ip, "alice") {
+		t.Fatal("another account on the address is locked too")
+	}
+
+	limiter.Succeeded(ip, "admin")
+	if limiter.Locked(ip, "admin") {
+		t.Fatal("still locked after a success cleared the record")
+	}
+
+	auth.RecordLoginFailure(ip)
+	auth.RecordLoginFailure(ip)
+	if !limiter.Locked(ip, "alice") {
+		t.Fatal("a lockout of the address by the web login does not apply")
+	}
+}
+
+// Guesses sent at once all pass the lockout check before any of them fails.
+// One that succeeds after the others locked the account must not get in.
+func TestASuccessAfterALockoutDuringTheCheckIsRefused(t *testing.T) {
+	h := withProbe(newHarness(t))
+	h.counted.during = func() { h.limiter.lock(clientIP, "admin") }
+
+	w := h.do(http.MethodGet, "/redfish/v1/Probe", "", "Authorization", basic("admin", "admin"))
+	expectError(t, w, http.StatusUnauthorized, "NoValidSession")
+	if len(h.limiter.succeeded) != 0 {
+		t.Fatalf("successes recorded: %v", h.limiter.succeeded)
+	}
+}
+
+// bcrypt is slow on the board, so a client that sends Basic credentials on
+// every request has them checked once a minute, not every time.
+func TestBasicCredentialsAreCheckedOnceAMinute(t *testing.T) {
+	h := withProbe(newHarness(t))
+	probe := func() {
+		t.Helper()
+		w := h.do(http.MethodGet, "/redfish/v1/Probe", "", "Authorization", basic("alice", "valid-password"))
+		if w.Code != http.StatusOK {
+			t.Fatalf("got %d %s", w.Code, w.Body.String())
+		}
+	}
+
+	probe()
+	probe()
+	if got := h.counted.passwordChecks(); got != 1 {
+		t.Fatalf("%d password checks for two requests, want 1", got)
+	}
+
+	h.clock = h.clock.Add(61 * time.Second)
+	probe()
+	if got := h.counted.passwordChecks(); got != 2 {
+		t.Fatalf("%d password checks after a minute, want 2", got)
+	}
+}
+
+func TestAWrongPasswordIsNeverRemembered(t *testing.T) {
+	h := withProbe(newHarness(t))
+
+	for i := 0; i < 2; i++ {
+		w := h.do(http.MethodGet, "/redfish/v1/Probe", "", "Authorization", basic("alice", "wrong"))
+		expectError(t, w, http.StatusUnauthorized, "NoValidSession")
+	}
+	if got := h.counted.passwordChecks(); got != 2 {
+		t.Fatalf("%d password checks, want 2", got)
+	}
+}
+
+func TestRememberedCredentialsEndWithAPasswordChange(t *testing.T) {
+	h := withProbe(newHarness(t))
+	old := basic("alice", "valid-password")
+
+	if w := h.do(http.MethodGet, "/redfish/v1/Probe", "", "Authorization", old); w.Code != http.StatusOK {
+		t.Fatalf("got %d", w.Code)
+	}
+	if _, err := h.accounts.SetPassword("alice", "another-password"); err != nil {
+		t.Fatal(err)
+	}
+
+	w := h.do(http.MethodGet, "/redfish/v1/Probe", "", "Authorization", old)
+	expectError(t, w, http.StatusUnauthorized, "NoValidSession")
+}
+
+func TestRememberedCredentialsEndWithARevoke(t *testing.T) {
+	h := withProbe(newHarness(t))
+	creds := basic("alice", "valid-password")
+
+	h.do(http.MethodGet, "/redfish/v1/Probe", "", "Authorization", creds)
+	if _, err := h.accounts.Revoke("alice"); err != nil {
+		t.Fatal(err)
+	}
+	if w := h.do(http.MethodGet, "/redfish/v1/Probe", "", "Authorization", creds); w.Code != http.StatusOK {
+		t.Fatalf("got %d", w.Code)
+	}
+	if got := h.counted.passwordChecks(); got != 2 {
+		t.Fatalf("%d password checks, want 2: the revoke did not forget the credentials", got)
+	}
+}
+
+func TestRememberedCredentialsEndWhenTheAccountIsDisabled(t *testing.T) {
+	h := withProbe(newHarness(t))
+	creds := basic("alice", "valid-password")
+
+	h.do(http.MethodGet, "/redfish/v1/Probe", "", "Authorization", creds)
+	disabled := false
+	if _, err := h.accounts.Update("admin", "alice", authn.UserPatch{Enabled: &disabled}); err != nil {
+		t.Fatal(err)
+	}
+
+	w := h.do(http.MethodGet, "/redfish/v1/Probe", "", "Authorization", creds)
+	expectError(t, w, http.StatusUnauthorized, "NoValidSession")
+}

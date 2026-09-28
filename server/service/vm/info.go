@@ -202,3 +202,16 @@ func (s *Service) GetHardware(c *gin.Context) {
 		Version: version,
 	})
 }
+
+// FirmwareVersion names the application and, when the board reports one, the
+// card image, in one string. Redfish shows it as the manager's firmware.
+func FirmwareVersion() string {
+	application := getApplicationVersion()
+
+	image := getImageVersion()
+	if image == "" {
+		return application
+	}
+
+	return fmt.Sprintf("%s (image %s)", application, image)
+}

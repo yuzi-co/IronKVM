@@ -32,8 +32,20 @@ func web(r *gin.Engine) {
 	r.Use(staticHandler(webPath))
 }
 
-// apiPrefix covers every route this server registers.
+// apiPrefix covers the routes of the web UI's own API.
 const apiPrefix = "/api/"
+
+// redfishPrefix is the Redfish service's root. It is registered on the same
+// engine, so it skips the static handler as the API does.
+const redfishPrefix = "/redfish"
+
+// skipsStatic reports whether a path belongs to a route handler rather than
+// to the built web UI.
+func skipsStatic(urlPath string) bool {
+	return strings.HasPrefix(urlPath, apiPrefix) ||
+		urlPath == redfishPrefix ||
+		strings.HasPrefix(urlPath, redfishPrefix+"/")
+}
 
 // staticHandler serves the built web UI. The static middleware runs before
 // routing and stats the filesystem for every request, so an API call or a
@@ -43,7 +55,7 @@ func staticHandler(webPath string) gin.HandlerFunc {
 	serve := static.Serve("/", static.LocalFile(webPath, true))
 
 	return func(c *gin.Context) {
-		if strings.HasPrefix(c.Request.URL.Path, apiPrefix) {
+		if skipsStatic(c.Request.URL.Path) {
 			return
 		}
 
@@ -79,6 +91,7 @@ func server(r *gin.Engine) {
 	extensionsRouter(r)
 	debugRouter(r)
 	metricsRouter(r)
+	redfishRouter(r)
 }
 
 func LoopbackHTTPAllowedPaths() []string {
