@@ -456,6 +456,15 @@ const vi = {
     },
     settings: {
       title: 'Cài đặt',
+      nav: {
+        general: 'Chung',
+        device: 'Thiết bị',
+        network: 'Mạng',
+        remote: 'Truy cập từ xa',
+        boot: 'Khởi động',
+        locked: 'Đang có thao tác chạy. Không thể chuyển trang hoặc đóng cho đến khi hoàn tất.',
+        vpnProvider: 'Nhà cung cấp VPN'
+      },
       mcp: {
         title: 'Dịch vụ MCP',
         service: 'Điều khiển từ xa MCP',
@@ -715,7 +724,10 @@ const vi = {
       },
       appearance: {
         title: 'Giao diện',
-        display: 'Hiển thị',
+        thisBrowser: 'Trình duyệt này',
+        thisBrowserDesc: 'Chỉ lưu trong trình duyệt này. Các trình duyệt khác có cài đặt riêng.',
+        deviceWide: 'Thiết bị',
+        deviceWideDesc: 'Lưu trên thiết bị. Áp dụng cho mọi người mở thiết bị.',
         language: 'Ngôn ngữ',
         languageDesc: 'Chọn ngôn ngữ cho giao diện',
         webTitle: 'Tiêu đề trang web',
@@ -824,17 +836,6 @@ const vi = {
           idleTimeoutDescription:
             'Dừng việc ghi hình HDMI sau khi không có người xem hoạt động trong',
           minutes: 'phút'
-        },
-        autostart: {
-          title: 'Cài đặt tập lệnh tự khởi động',
-          description: 'Quản lý các tập lệnh chạy tự động khi khởi động hệ thống',
-          new: 'Mới',
-          deleteConfirm: 'Bạn có chắc chắn muốn xóa tệp này không?',
-          yes: 'Có',
-          no: 'Không',
-          scriptName: 'Tên tập lệnh tự khởi động',
-          scriptContent: 'Nội dung tập lệnh tự khởi động',
-          settings: 'Cài đặt'
         },
         hidOnly: 'HID-Chế độ chỉ',
         hidOnlyDesc: 'Dừng mô phỏng các thiết bị ảo, chỉ giữ lại điều khiển HID cơ bản',

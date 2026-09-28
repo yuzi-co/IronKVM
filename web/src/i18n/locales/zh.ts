@@ -444,6 +444,15 @@ const zh = {
     },
     settings: {
       title: '设置',
+      nav: {
+        general: '通用',
+        device: '设备',
+        network: '网络',
+        remote: '远程访问',
+        boot: '启动',
+        locked: '操作进行中。完成前无法切换页面或关闭。',
+        vpnProvider: 'VPN 提供商'
+      },
       mcp: {
         title: 'MCP 服务',
         service: '远程控制 MCP',
@@ -693,7 +702,10 @@ const zh = {
       },
       appearance: {
         title: '外观',
-        display: '显示',
+        thisBrowser: '此浏览器',
+        thisBrowserDesc: '仅保存在此浏览器中，其他浏览器各自保存。',
+        deviceWide: '设备',
+        deviceWideDesc: '保存在设备上，对所有打开它的人生效。',
         language: '语言',
         languageDesc: '选择界面语言',
         webTitle: '网页标题',
@@ -799,17 +811,6 @@ const zh = {
           idleTimeoutTitle: '无观看者自动停止采集',
           idleTimeoutDescription: '没有活跃观看者后停止 HDMI 采集，0 表示永不停止',
           minutes: '分钟'
-        },
-        autostart: {
-          title: '自动启动脚本设置',
-          description: '管理能够在 NanoKVM 启动时自动运行的脚本文件',
-          new: '创建新脚本',
-          deleteConfirm: '确定要删除该文件吗？',
-          yes: '是',
-          no: '否',
-          scriptName: '自动启动脚本名称',
-          scriptContent: '自动启动脚本内容',
-          settings: '设置'
         },
         hidOnly: 'HID-Only 模式',
         hidOnlyDesc: '该模式下不再挂载虚拟设备，仅保留基础的 HID 控制功能。',

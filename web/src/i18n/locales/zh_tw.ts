@@ -444,6 +444,15 @@ const zh_tw = {
     },
     settings: {
       title: '設定',
+      nav: {
+        general: '一般',
+        device: '裝置',
+        network: '網路',
+        remote: '遠端存取',
+        boot: '開機',
+        locked: '操作進行中。完成前無法切換頁面或關閉。',
+        vpnProvider: 'VPN 供應商'
+      },
       mcp: {
         title: 'MCP 服務',
         service: 'MCP 遠端控制',
@@ -693,7 +702,10 @@ const zh_tw = {
       },
       appearance: {
         title: '外觀',
-        display: '顯示',
+        thisBrowser: '此瀏覽器',
+        thisBrowserDesc: '僅儲存在此瀏覽器中，其他瀏覽器各自儲存。',
+        deviceWide: '裝置',
+        deviceWideDesc: '儲存在裝置上，對所有開啟它的人生效。',
         language: '語言',
         languageDesc: '選擇介面語言',
         webTitle: '網頁標題',
@@ -799,17 +811,6 @@ const zh_tw = {
           idleTimeoutTitle: '擷取閒置逾時',
           idleTimeoutDescription: '沒有活躍觀看者時，在指定時間後停止 HDMI 擷取',
           minutes: '分鐘'
-        },
-        autostart: {
-          title: '啟動時指令碼設定',
-          description: '管理能夠在 NanoKVM 啟動時自動執行的相關指令碼',
-          new: '建立新指令碼',
-          deleteConfirm: '確定要刪除該檔案嗎？',
-          yes: '是',
-          no: '否',
-          scriptName: 'Script 名稱',
-          scriptContent: 'Script 內容',
-          settings: '設定'
         },
         hidOnly: 'HID-Only 模式',
         hidOnlyDesc: '停止模擬虛擬設備，僅保留基礎 HID 控制',

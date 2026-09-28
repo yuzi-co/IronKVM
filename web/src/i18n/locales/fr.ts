@@ -462,6 +462,16 @@ const fr = {
     },
     settings: {
       title: 'Paramètres',
+      nav: {
+        general: 'Général',
+        device: 'Appareil',
+        network: 'Réseau',
+        remote: 'Accès à distance',
+        boot: 'Démarrage',
+        locked:
+          "Une opération est en cours. Les autres pages et la fermeture sont indisponibles jusqu'à sa fin.",
+        vpnProvider: 'Fournisseur VPN'
+      },
       mcp: {
         title: 'Service MCP',
         service: 'Contrôle à distance MCP',
@@ -728,7 +738,11 @@ const fr = {
       },
       appearance: {
         title: 'Apparence',
-        display: 'Affichage',
+        thisBrowser: 'Ce navigateur',
+        thisBrowserDesc:
+          'Enregistré uniquement dans ce navigateur. Les autres navigateurs ont leurs propres réglages.',
+        deviceWide: 'Appareil',
+        deviceWideDesc: "Enregistré sur l'appareil. S'applique à tous ceux qui l'ouvrent.",
         language: 'Langue',
         languageDesc: "Sélectionnez la langue de l'interface",
         webTitle: 'Titre Web',
@@ -837,17 +851,6 @@ const fr = {
           idleTimeoutDescription:
             "Arrêter la capture HDMI lorsqu'il n'y a aucun spectateur actif pendant",
           minutes: 'min'
-        },
-        autostart: {
-          title: 'Paramètres des scripts de démarrage automatique',
-          description: "Gérer les scripts qui s'exécutent automatiquement au démarrage du système",
-          new: 'Nouveau',
-          deleteConfirm: 'Êtes-vous sûr de vouloir supprimer ce fichier ?',
-          yes: 'Oui',
-          no: 'Non',
-          scriptName: 'Nom du script de démarrage automatique',
-          scriptContent: 'Contenu du script de démarrage automatique',
-          settings: 'Paramètres'
         },
         hidOnly: 'HID-Mode uniquement',
         hidOnlyDesc:

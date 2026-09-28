@@ -467,6 +467,16 @@ const de = {
     },
     settings: {
       title: 'Einstellungen',
+      nav: {
+        general: 'Allgemein',
+        device: 'Gerät',
+        network: 'Netzwerk',
+        remote: 'Fernzugriff',
+        boot: 'Boot',
+        locked:
+          'Ein Vorgang läuft. Andere Seiten und das Schließen sind erst danach wieder möglich.',
+        vpnProvider: 'VPN-Anbieter'
+      },
       mcp: {
         title: 'MCP-Dienst',
         service: 'MCP-Fernsteuerung',
@@ -729,7 +739,11 @@ const de = {
       },
       appearance: {
         title: 'Erscheinungsbild',
-        display: 'Bildschirm',
+        thisBrowser: 'Dieser Browser',
+        thisBrowserDesc:
+          'Nur in diesem Browser gespeichert. Andere Browser haben eigene Einstellungen.',
+        deviceWide: 'Gerät',
+        deviceWideDesc: 'Auf dem Gerät gespeichert. Gilt für alle, die es öffnen.',
         language: 'Sprache',
         languageDesc: 'Wählen Sie die Sprache für die Benutzeroberfläche aus',
         webTitle: 'Web Titel',
@@ -838,17 +852,6 @@ const de = {
           idleTimeoutDescription:
             'HDMI-Aufnahme stoppen, wenn keine aktiven Zuschauer vorhanden sind für',
           minutes: 'Min.'
-        },
-        autostart: {
-          title: 'Autostart-Skripteinstellungen',
-          description: 'Skripte verwalten, die beim Systemstart automatisch ausgeführt werden',
-          new: 'Neu',
-          deleteConfirm: 'Möchten Sie diese Datei wirklich löschen?',
-          yes: 'Ja',
-          no: 'Nein',
-          scriptName: 'Name des Autostart-Skripts',
-          scriptContent: 'Inhalt des Autostart-Skripts',
-          settings: 'Einstellungen'
         },
         hidOnly: 'HID-Only Mode',
         hidOnlyDesc:

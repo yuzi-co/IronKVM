@@ -459,6 +459,16 @@ const id = {
     },
     settings: {
       title: 'Pengaturan',
+      nav: {
+        general: 'Umum',
+        device: 'Perangkat',
+        network: 'Jaringan',
+        remote: 'Akses jarak jauh',
+        boot: 'Boot',
+        locked:
+          'Sebuah operasi sedang berjalan. Halaman lain dan tombol tutup tidak tersedia sampai selesai.',
+        vpnProvider: 'Penyedia VPN'
+      },
       mcp: {
         title: 'Layanan MCP',
         service: 'Kontrol jarak jauh MCP',
@@ -719,7 +729,11 @@ const id = {
       },
       appearance: {
         title: 'Tampilan',
-        display: 'Layar',
+        thisBrowser: 'Browser ini',
+        thisBrowserDesc:
+          'Hanya disimpan di browser ini. Browser lain menyimpan pengaturannya sendiri.',
+        deviceWide: 'Perangkat',
+        deviceWideDesc: 'Disimpan di perangkat. Berlaku untuk semua orang yang membukanya.',
         language: 'Bahasa',
         languageDesc: 'Pilih bahasa untuk antarmuka',
         webTitle: 'Judul Web',
@@ -826,17 +840,6 @@ const id = {
           idleTimeoutTitle: 'Batas waktu tangkapan tidak aktif',
           idleTimeoutDescription: 'Hentikan tangkapan HDMI setelah tidak ada penonton aktif selama',
           minutes: 'mnt'
-        },
-        autostart: {
-          title: 'Pengaturan Skrip Mulai Otomatis',
-          description: 'Mengelola skrip yang berjalan secara otomatis saat startup sistem',
-          new: 'Baru',
-          deleteConfirm: 'Apa kamu yakin menghapus data ini?',
-          yes: 'Ya',
-          no: 'Tidak',
-          scriptName: 'Nama Skrip Mulai Otomatis',
-          scriptContent: 'Konten Skrip Mulai Otomatis',
-          settings: 'Pengaturan'
         },
         hidOnly: 'HID-Mode Hanya',
         hidOnlyDesc: 'Berhenti meniru perangkat virtual, hanya mempertahankan kontrol dasar HID',

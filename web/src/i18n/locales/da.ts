@@ -457,6 +457,16 @@ const da = {
     },
     settings: {
       title: 'Indstillinger',
+      nav: {
+        general: 'Generelt',
+        device: 'Enhed',
+        network: 'Netværk',
+        remote: 'Fjernadgang',
+        boot: 'Opstart',
+        locked:
+          'En handling er i gang. Andre sider og lukning er ikke tilgængelige, før den er færdig.',
+        vpnProvider: 'VPN-udbyder'
+      },
       mcp: {
         title: 'MCP-tjeneste',
         service: 'MCP-fjernbetjening',
@@ -717,7 +727,10 @@ const da = {
       },
       appearance: {
         title: 'Udseende',
-        display: 'Visning',
+        thisBrowser: 'Denne browser',
+        thisBrowserDesc: 'Gemmes kun i denne browser. Andre browsere har deres egne.',
+        deviceWide: 'Enhed',
+        deviceWideDesc: 'Gemmes på enheden. Gælder for alle, der åbner den.',
         language: 'Sprog',
         languageDesc: 'Vælg sproget til grænsefladen',
         webTitle: 'Webtitel',
@@ -824,17 +837,6 @@ const da = {
           idleTimeoutTitle: 'Timeout for inaktiv optagelse',
           idleTimeoutDescription: 'Stop HDMI-optagelse efter en periode uden aktive seere på',
           minutes: 'min'
-        },
-        autostart: {
-          title: 'Indstillinger for autostart scripts',
-          description: 'Administrer scripts, der kører automatisk ved systemstart',
-          new: 'Ny',
-          deleteConfirm: 'Er du sikker på at du vil slette denne fil?',
-          yes: 'Ja',
-          no: 'Annuller',
-          scriptName: 'Autostart scriptnavn',
-          scriptContent: 'Autostart scriptindhold',
-          settings: 'Indstillinger'
         },
         hidOnly: 'HID-Kun tilstand',
         hidOnlyDesc:

@@ -460,6 +460,15 @@ const pl = {
     },
     settings: {
       title: 'Ustawienia',
+      nav: {
+        general: 'Ogólne',
+        device: 'Urządzenie',
+        network: 'Sieć',
+        remote: 'Dostęp zdalny',
+        boot: 'Rozruch',
+        locked: 'Trwa operacja. Inne strony i zamknięcie są niedostępne do jej zakończenia.',
+        vpnProvider: 'Dostawca VPN'
+      },
       mcp: {
         title: 'Usługa MCP',
         service: 'Zdalne sterowanie MCP',
@@ -722,7 +731,11 @@ const pl = {
       },
       appearance: {
         title: 'Wygląd',
-        display: 'Ekran',
+        thisBrowser: 'Ta przeglądarka',
+        thisBrowserDesc:
+          'Zapisywane tylko w tej przeglądarce. Inne przeglądarki mają własne ustawienia.',
+        deviceWide: 'Urządzenie',
+        deviceWideDesc: 'Zapisywane na urządzeniu. Dotyczy każdego, kto je otworzy.',
         language: 'Język',
         languageDesc: 'Wybierz język interfejsu',
         webTitle: 'Tytuł strony internetowej',
@@ -830,18 +843,6 @@ const pl = {
           idleTimeoutTitle: 'Limit czasu bezczynności przechwytywania',
           idleTimeoutDescription: 'Zatrzymaj przechwytywanie HDMI po czasie bez aktywnych widzów:',
           minutes: 'min'
-        },
-        autostart: {
-          title: 'Ustawienia skryptów autostartu',
-          description:
-            'Zarządzaj skryptami uruchamianymi automatycznie podczas uruchamiania systemu',
-          new: 'Nowy',
-          deleteConfirm: 'Czy na pewno chcesz usunąć ten plik?',
-          yes: 'Tak',
-          no: 'Nie',
-          scriptName: 'Nazwa skryptu autostartu',
-          scriptContent: 'Treść skryptu autostartu',
-          settings: 'Ustawienia'
         },
         hidOnly: 'HID – tylko tryb',
         hidOnlyDesc:

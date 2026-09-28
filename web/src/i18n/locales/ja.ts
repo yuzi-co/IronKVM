@@ -460,6 +460,15 @@ const ja = {
     },
     settings: {
       title: '設定',
+      nav: {
+        general: '一般',
+        device: 'デバイス',
+        network: 'ネットワーク',
+        remote: 'リモートアクセス',
+        boot: 'ブート',
+        locked: '処理を実行中です。完了するまで他のページへの移動や閉じる操作はできません。',
+        vpnProvider: 'VPN プロバイダー'
+      },
       mcp: {
         title: 'MCP サービス',
         service: 'MCP リモート制御',
@@ -724,7 +733,11 @@ const ja = {
       },
       appearance: {
         title: '外観',
-        display: '表示',
+        thisBrowser: 'このブラウザー',
+        thisBrowserDesc:
+          'このブラウザーにのみ保存されます。他のブラウザーはそれぞれの設定を使います。',
+        deviceWide: 'デバイス',
+        deviceWideDesc: 'デバイスに保存されます。開くすべてのユーザーに適用されます。',
         language: '言語',
         languageDesc: 'インターフェース言語の選択',
         webTitle: 'ウェブページタイトル',
@@ -833,17 +846,6 @@ const ja = {
           idleTimeoutDescription:
             'アクティブな閲覧者がいない状態が次の時間続いたら HDMI キャプチャを停止',
           minutes: '分'
-        },
-        autostart: {
-          title: '自動起動スクリプト設定',
-          description: 'NanoKVM の起動時に自動的に実行されるスクリプトファイルを管理します',
-          new: '新しいスクリプトを作成する',
-          deleteConfirm: 'このファイルを削除してもよろしいですか？',
-          yes: 'はい',
-          no: 'いいえ',
-          scriptName: '自動起動スクリプト名',
-          scriptContent: '自動起動スクリプト内容',
-          settings: '設定'
         },
         hidOnly: 'HID-Only モード',
         hidOnlyDesc:

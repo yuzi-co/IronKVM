@@ -453,6 +453,15 @@ const ko = {
     },
     settings: {
       title: '설정',
+      nav: {
+        general: '일반',
+        device: '장치',
+        network: '네트워크',
+        remote: '원격 액세스',
+        boot: '부팅',
+        locked: '작업이 진행 중입니다. 완료될 때까지 다른 페이지로 이동하거나 닫을 수 없습니다.',
+        vpnProvider: 'VPN 제공자'
+      },
       mcp: {
         title: 'MCP 서비스',
         service: 'MCP 원격 제어',
@@ -712,7 +721,10 @@ const ko = {
       },
       appearance: {
         title: '디자인',
-        display: '표시',
+        thisBrowser: '이 브라우저',
+        thisBrowserDesc: '이 브라우저에만 저장됩니다. 다른 브라우저는 각자의 설정을 사용합니다.',
+        deviceWide: '장치',
+        deviceWideDesc: '장치에 저장됩니다. 장치를 여는 모든 사용자에게 적용됩니다.',
         language: '언어',
         languageDesc: '인터페이스 언어를 선택하세요',
         webTitle: '웹 제목',
@@ -819,17 +831,6 @@ const ko = {
           idleTimeoutDescription:
             '활성 시청자가 없는 상태가 다음 시간 동안 지속되면 HDMI 캡처 중지',
           minutes: '분'
-        },
-        autostart: {
-          title: '자동 시작 스크립트 설정',
-          description: '시스템 시작 시 자동으로 실행되는 스크립트를 관리합니다.',
-          new: '새로운',
-          deleteConfirm: '이 파일을 정말로 삭제합니까?',
-          yes: '네',
-          no: '아니오',
-          scriptName: '자동 시작 스크립트 이름',
-          scriptContent: '자동 시작 스크립트 내용',
-          settings: '설정'
         },
         hidOnly: 'HID 전용 모드',
         hidOnlyDesc: '가상 장치 에뮬레이션을 중지하고 기본 HID 제어만 유지합니다.',
