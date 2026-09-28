@@ -455,6 +455,45 @@ const nl = {
         okBtn: 'Bevestigen',
         cancelBtn: 'Annuleren'
       },
+      ipmi: {
+        title: 'IPMI',
+        warning:
+          'IPMI-authenticatie is zwak door het ontwerp. Iedereen die het bord kan bereiken en een gebruikersnaam kent, kan een hash van het IPMI-wachtwoord van die gebruiker ophalen en offline proberen te kraken. Gebruik gegenereerde wachtwoorden, zet IPMI alleen aan op een vertrouwd netwerk en gebruik liever Redfish via HTTPS als een tool dat ondersteunt.',
+        service: 'IPMI via LAN',
+        serviceDesc:
+          'IPMI 2.0 (RMCP+, ipmitool lanplus) op UDP-poort 623, voor de voeding en status van de host. IPMI 1.5 en cipher suite 0 worden geweigerd. Uitzetten beëindigt alle IPMI-sessies.',
+        example: 'Voorbeeld',
+        copyFailed: 'Kopiëren mislukt. Kopieer handmatig.',
+        ledOn: 'Voedingsstatus, on, off, soft, cycle en reset zijn beschikbaar.',
+        ledOff:
+          '"Power-LED aangesloten" staat uit in het voedingsmenu, dus de voedingstoestand is onbekend. Alleen "power reset" werkt: status, on, off, soft en cycle worden geweigerd.',
+        accounts: 'Accounts',
+        accountsDesc:
+          'IPMI meldt zich aan met de KVM-accounts, elk met een eigen IPMI-wachtwoord, los van het webwachtwoord. Beheerders krijgen ADMINISTRATOR. Gebruikers krijgen USER: ze kunnen de voedingstoestand lezen met "-L USER", maar niet wijzigen.',
+        passwordSet: 'IPMI-wachtwoord ingesteld',
+        passwordNotSet: 'Geen IPMI-wachtwoord: kan niet aanmelden via IPMI',
+        nameTooLong: 'De naam is langer dan 16 tekens, wat IPMI niet toestaat',
+        accountDisabled: 'Het account is uitgeschakeld',
+        setPassword: 'Wachtwoord instellen',
+        changePassword: 'Wachtwoord wijzigen',
+        remove: 'Verwijderen',
+        removeConfirmTitle: 'Het IPMI-wachtwoord van {{user}} verwijderen?',
+        removeConfirmDesc:
+          'Het account kan zich niet meer via IPMI aanmelden en de IPMI-sessies ervan worden beëindigd.',
+        passwordTitle: 'IPMI-wachtwoord voor {{user}}',
+        passwordDesc:
+          '12 tot 20 afdrukbare ASCII-tekens, anders dan het webwachtwoord. IPMI vereist dat het bord het wachtwoord bewaart in een vorm die het terug kan lezen, dus gebruik er een die nergens anders wordt gebruikt. Kopieer het voordat u opslaat: het wordt niet meer getoond.',
+        passwordPlaceholder: 'IPMI-wachtwoord',
+        generate: 'Genereren',
+        copy: 'Kopiëren',
+        save: 'Opslaan',
+        passwordLength: 'Gebruik 12 tot 20 tekens.',
+        passwordChars: 'Gebruik alleen afdrukbare ASCII-tekens.',
+        saved: 'IPMI-wachtwoord opgeslagen',
+        failed: 'IPMI-bewerking mislukt',
+        okBtn: 'Bevestigen',
+        cancelBtn: 'Annuleren'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Host-watchdog',

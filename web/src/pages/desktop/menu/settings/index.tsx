@@ -12,6 +12,7 @@ import {
   MonitorDownIcon,
   NetworkIcon,
   PaletteIcon,
+  PowerIcon,
   ServerCogIcon,
   SettingsIcon,
   SmartphoneIcon,
@@ -33,6 +34,7 @@ import { Account } from './account';
 import { APIKeys } from './api-keys';
 import { Appearance } from './appearance';
 import { Device } from './device';
+import { Ipmi } from './ipmi';
 import { MCP } from './mcp';
 import { Netbird } from './netbird';
 import { Netboot } from './netboot';
@@ -65,6 +67,7 @@ export const Settings = () => {
           { id: 'network', icon: <NetworkIcon size={16} />, component: <Network /> },
           { id: 'mcp', icon: <BotIcon size={16} />, component: <MCP /> },
           { id: 'redfish', icon: <ServerCogIcon size={16} />, component: <Redfish /> },
+          { id: 'ipmi', icon: <PowerIcon size={16} />, component: <Ipmi /> },
           { id: 'watchdog', icon: <HeartPulseIcon size={16} />, component: <Watchdog /> },
           {
             id: 'netboot',

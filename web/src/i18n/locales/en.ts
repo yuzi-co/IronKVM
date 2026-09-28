@@ -446,6 +446,44 @@ const en = {
         okBtn: 'Confirm',
         cancelBtn: 'Cancel'
       },
+      ipmi: {
+        title: 'IPMI',
+        warning:
+          'IPMI authentication is weak by design. Anyone who can reach the board and knows a user name can get a hash of the IPMI password of that user and try to crack it offline. Use generated passwords, turn IPMI on only on a trusted network, and prefer Redfish over HTTPS where a tool supports it.',
+        service: 'IPMI over LAN',
+        serviceDesc:
+          'IPMI 2.0 (RMCP+, ipmitool lanplus) on UDP port 623, for the power and status of the host. IPMI 1.5 and cipher suite 0 are refused. Turning it off ends every IPMI session.',
+        example: 'Example',
+        copyFailed: 'Copy failed. Copy manually.',
+        ledOn: 'Power status, on, off, soft, cycle and reset are available.',
+        ledOff:
+          '"Power LED connected" is off in the power menu, so the power state is unknown. Only "power reset" works: status, on, off, soft and cycle are refused.',
+        accounts: 'Accounts',
+        accountsDesc:
+          'IPMI logs in with the KVM accounts, each with its own IPMI password, separate from the web password. Administrators get ADMINISTRATOR. Users get USER: they can read the power state with "-L USER" but not change it.',
+        passwordSet: 'IPMI password set',
+        passwordNotSet: 'No IPMI password: cannot log in over IPMI',
+        nameTooLong: 'The name is longer than 16 characters, which IPMI does not allow',
+        accountDisabled: 'The account is disabled',
+        setPassword: 'Set password',
+        changePassword: 'Change password',
+        remove: 'Remove',
+        removeConfirmTitle: 'Remove the IPMI password of {{user}}?',
+        removeConfirmDesc: 'The account can no longer log in over IPMI, and its IPMI sessions end.',
+        passwordTitle: 'IPMI password for {{user}}',
+        passwordDesc:
+          '12 to 20 printable ASCII characters, different from the web password. IPMI needs the board to keep the password in a form it can read back, so use one that is used nowhere else. Copy it before you save: it is not shown again.',
+        passwordPlaceholder: 'IPMI password',
+        generate: 'Generate',
+        copy: 'Copy',
+        save: 'Save',
+        passwordLength: 'Use 12 to 20 characters.',
+        passwordChars: 'Use printable ASCII characters only.',
+        saved: 'IPMI password saved',
+        failed: 'IPMI operation failed',
+        okBtn: 'Confirm',
+        cancelBtn: 'Cancel'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Host watchdog',

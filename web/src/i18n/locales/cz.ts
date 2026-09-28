@@ -451,6 +451,44 @@ const cz = {
         okBtn: 'Potvrdit',
         cancelBtn: 'Zrušit'
       },
+      ipmi: {
+        title: 'IPMI',
+        warning:
+          'Ověřování IPMI je ze své podstaty slabé. Kdokoli, kdo se k desce dostane a zná uživatelské jméno, může získat hash IPMI hesla tohoto uživatele a pokusit se ho prolomit offline. Používejte generovaná hesla, zapínejte IPMI jen v důvěryhodné síti a kde to nástroj umí, dejte přednost Redfish přes HTTPS.',
+        service: 'IPMI přes LAN',
+        serviceDesc:
+          'IPMI 2.0 (RMCP+, ipmitool lanplus) na UDP portu 623 pro napájení a stav hostitele. IPMI 1.5 a cipher suite 0 jsou odmítnuty. Vypnutím se ukončí všechny relace IPMI.',
+        example: 'Příklad',
+        copyFailed: 'Kopírování selhalo. Zkopírujte ručně.',
+        ledOn: 'K dispozici jsou stav napájení, on, off, soft, cycle a reset.',
+        ledOff:
+          '"LED napájení připojena" je v nabídce napájení vypnutá, takže stav napájení není znám. Funguje jen "power reset": status, on, off, soft a cycle jsou odmítnuty.',
+        accounts: 'Účty',
+        accountsDesc:
+          'IPMI se přihlašuje účty KVM, každý s vlastním IPMI heslem, odlišným od webového hesla. Správci dostanou ADMINISTRATOR. Uživatelé dostanou USER: s "-L USER" mohou číst stav napájení, ale ne ho měnit.',
+        passwordSet: 'IPMI heslo nastaveno',
+        passwordNotSet: 'Bez IPMI hesla: nelze se přihlásit přes IPMI',
+        nameTooLong: 'Jméno je delší než 16 znaků, což IPMI nedovoluje',
+        accountDisabled: 'Účet je zakázán',
+        setPassword: 'Nastavit heslo',
+        changePassword: 'Změnit heslo',
+        remove: 'Odebrat',
+        removeConfirmTitle: 'Odebrat IPMI heslo účtu {{user}}?',
+        removeConfirmDesc: 'Účet se už nebude moci přihlásit přes IPMI a jeho relace IPMI skončí.',
+        passwordTitle: 'IPMI heslo pro {{user}}',
+        passwordDesc:
+          '12 až 20 tisknutelných znaků ASCII, odlišné od webového hesla. IPMI vyžaduje, aby deska uchovávala heslo v podobě, kterou dokáže znovu přečíst, proto použijte heslo, které nepoužíváte nikde jinde. Před uložením si ho zkopírujte: znovu se nezobrazí.',
+        passwordPlaceholder: 'IPMI heslo',
+        generate: 'Vygenerovat',
+        copy: 'Kopírovat',
+        save: 'Uložit',
+        passwordLength: 'Použijte 12 až 20 znaků.',
+        passwordChars: 'Použijte jen tisknutelné znaky ASCII.',
+        saved: 'IPMI heslo uloženo',
+        failed: 'Operace IPMI selhala',
+        okBtn: 'Potvrdit',
+        cancelBtn: 'Zrušit'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Watchdog hostitele',

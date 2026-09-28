@@ -450,6 +450,44 @@ const tr = {
         okBtn: 'Onayla',
         cancelBtn: 'İptal'
       },
+      ipmi: {
+        title: 'IPMI',
+        warning:
+          "IPMI kimlik doğrulaması tasarımı gereği zayıftır. Karta erişebilen ve bir kullanıcı adını bilen herkes, o kullanıcının IPMI parolasının karmasını alıp çevrimdışı kırmayı deneyebilir. Üretilmiş parolalar kullanın, IPMI'yi yalnızca güvenilir bir ağda açın ve araç destekliyorsa HTTPS üzerinden Redfish'i tercih edin.",
+        service: 'LAN üzerinden IPMI',
+        serviceDesc:
+          'Ana makinenin gücü ve durumu için UDP 623 numaralı bağlantı noktasında IPMI 2.0 (RMCP+, ipmitool lanplus). IPMI 1.5 ve 0 numaralı şifre takımı reddedilir. Kapatmak tüm IPMI oturumlarını sonlandırır.',
+        example: 'Örnek',
+        copyFailed: 'Kopyalama başarısız. Elle kopyalayın.',
+        ledOn: 'Güç durumu, on, off, soft, cycle ve reset kullanılabilir.',
+        ledOff:
+          'Güç menüsünde "Güç LED\'i bağlı" kapalı, bu yüzden güç durumu bilinmiyor. Yalnızca "power reset" çalışır: status, on, off, soft ve cycle reddedilir.',
+        accounts: 'Hesaplar',
+        accountsDesc:
+          'IPMI, KVM hesaplarıyla oturum açar; her hesabın web parolasından ayrı kendi IPMI parolası vardır. Yöneticiler ADMINISTRATOR alır. Kullanıcılar USER alır: "-L USER" ile güç durumunu okuyabilir ama değiştiremezler.',
+        passwordSet: 'IPMI parolası ayarlı',
+        passwordNotSet: 'IPMI parolası yok: IPMI ile oturum açamaz',
+        nameTooLong: 'Ad 16 karakterden uzun, IPMI buna izin vermez',
+        accountDisabled: 'Hesap devre dışı',
+        setPassword: 'Parola ayarla',
+        changePassword: 'Parolayı değiştir',
+        remove: 'Kaldır',
+        removeConfirmTitle: '{{user}} için IPMI parolası kaldırılsın mı?',
+        removeConfirmDesc: 'Hesap artık IPMI ile oturum açamaz ve IPMI oturumları sona erer.',
+        passwordTitle: '{{user}} için IPMI parolası',
+        passwordDesc:
+          'Web parolasından farklı, 12 ile 20 arası yazdırılabilir ASCII karakter. IPMI, kartın parolayı geri okuyabileceği bir biçimde saklamasını gerektirir, bu yüzden başka hiçbir yerde kullanılmayan bir parola seçin. Kaydetmeden önce kopyalayın: bir daha gösterilmez.',
+        passwordPlaceholder: 'IPMI parolası',
+        generate: 'Üret',
+        copy: 'Kopyala',
+        save: 'Kaydet',
+        passwordLength: '12 ile 20 arası karakter kullanın.',
+        passwordChars: 'Yalnızca yazdırılabilir ASCII karakterler kullanın.',
+        saved: 'IPMI parolası kaydedildi',
+        failed: 'IPMI işlemi başarısız oldu',
+        okBtn: 'Onayla',
+        cancelBtn: 'İptal'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Ana makine watchdog',

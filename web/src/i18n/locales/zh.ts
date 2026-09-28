@@ -435,6 +435,44 @@ const zh = {
         okBtn: '确认',
         cancelBtn: '取消'
       },
+      ipmi: {
+        title: 'IPMI',
+        warning:
+          'IPMI 的认证在设计上就很弱。任何能访问本板并知道用户名的人，都能拿到该用户 IPMI 密码的哈希并离线尝试破解。请使用生成的密码，只在可信网络中开启 IPMI，工具支持时优先使用基于 HTTPS 的 Redfish。',
+        service: 'IPMI over LAN',
+        serviceDesc:
+          'UDP 端口 623 上的 IPMI 2.0（RMCP+，ipmitool lanplus），用于主机的电源和状态。IPMI 1.5 和密码套件 0 会被拒绝。关闭后会结束所有 IPMI 会话。',
+        example: '示例',
+        copyFailed: '复制失败，请手动复制。',
+        ledOn: '可用电源状态、on、off、soft、cycle 和 reset。',
+        ledOff:
+          '电源菜单中“已连接电源指示灯”未开启，因此电源状态未知。只有 "power reset" 可用：status、on、off、soft 和 cycle 会被拒绝。',
+        accounts: '账户',
+        accountsDesc:
+          'IPMI 使用 KVM 账户登录，每个账户有自己的 IPMI 密码，与网页密码分开。管理员获得 ADMINISTRATOR。普通用户获得 USER：可以用 "-L USER" 读取电源状态，但不能更改。',
+        passwordSet: '已设置 IPMI 密码',
+        passwordNotSet: '无 IPMI 密码：无法通过 IPMI 登录',
+        nameTooLong: '名称超过 16 个字符，IPMI 不允许',
+        accountDisabled: '账户已禁用',
+        setPassword: '设置密码',
+        changePassword: '更改密码',
+        remove: '移除',
+        removeConfirmTitle: '移除 {{user}} 的 IPMI 密码？',
+        removeConfirmDesc: '该账户将无法再通过 IPMI 登录，其 IPMI 会话也会结束。',
+        passwordTitle: '{{user}} 的 IPMI 密码',
+        passwordDesc:
+          '12 到 20 个可打印 ASCII 字符，且与网页密码不同。IPMI 要求本板以可读回的形式保存密码，因此请使用一个别处都不用的密码。保存前请先复制：之后不会再显示。',
+        passwordPlaceholder: 'IPMI 密码',
+        generate: '生成',
+        copy: '复制',
+        save: '保存',
+        passwordLength: '请使用 12 到 20 个字符。',
+        passwordChars: '只能使用可打印 ASCII 字符。',
+        saved: 'IPMI 密码已保存',
+        failed: 'IPMI 操作失败',
+        okBtn: '确认',
+        cancelBtn: '取消'
+      },
       watchdog: {
         title: '看门狗',
         service: '主机看门狗',

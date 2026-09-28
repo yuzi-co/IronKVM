@@ -454,6 +454,45 @@ const fr = {
         okBtn: 'Confirmer',
         cancelBtn: 'Annuler'
       },
+      ipmi: {
+        title: 'IPMI',
+        warning:
+          "L'authentification IPMI est faible par conception. Quiconque peut joindre la carte et connaît un nom d'utilisateur peut obtenir un hash du mot de passe IPMI de cet utilisateur et tenter de le casser hors ligne. Utilisez des mots de passe générés, n'activez IPMI que sur un réseau de confiance et préférez Redfish en HTTPS quand l'outil le permet.",
+        service: 'IPMI sur LAN',
+        serviceDesc:
+          "IPMI 2.0 (RMCP+, ipmitool lanplus) sur le port UDP 623, pour l'alimentation et l'état de l'hôte. IPMI 1.5 et la suite de chiffrement 0 sont refusés. Le désactiver met fin à toutes les sessions IPMI.",
+        example: 'Exemple',
+        copyFailed: 'La copie a échoué. Copiez manuellement.',
+        ledOn: "L'état, on, off, soft, cycle et reset sont disponibles.",
+        ledOff:
+          '"LED d\'alimentation branchée" est désactivé dans le menu d\'alimentation, donc l\'état d\'alimentation est inconnu. Seul "power reset" fonctionne : status, on, off, soft et cycle sont refusés.',
+        accounts: 'Comptes',
+        accountsDesc:
+          'IPMI se connecte avec les comptes du KVM, chacun avec son propre mot de passe IPMI, distinct du mot de passe web. Les administrateurs obtiennent ADMINISTRATOR. Les utilisateurs obtiennent USER : ils peuvent lire l\'état d\'alimentation avec "-L USER" mais pas le modifier.',
+        passwordSet: 'Mot de passe IPMI défini',
+        passwordNotSet: 'Pas de mot de passe IPMI : connexion IPMI impossible',
+        nameTooLong: "Le nom dépasse 16 caractères, ce qu'IPMI n'autorise pas",
+        accountDisabled: 'Le compte est désactivé',
+        setPassword: 'Définir le mot de passe',
+        changePassword: 'Changer le mot de passe',
+        remove: 'Supprimer',
+        removeConfirmTitle: 'Supprimer le mot de passe IPMI de {{user}} ?',
+        removeConfirmDesc:
+          'Le compte ne pourra plus se connecter en IPMI, et ses sessions IPMI prennent fin.',
+        passwordTitle: 'Mot de passe IPMI de {{user}}',
+        passwordDesc:
+          "De 12 à 20 caractères ASCII imprimables, différent du mot de passe web. IPMI exige que la carte garde le mot de passe sous une forme qu'elle peut relire, utilisez donc un mot de passe qui ne sert nulle part ailleurs. Copiez-le avant d'enregistrer : il ne sera plus affiché.",
+        passwordPlaceholder: 'Mot de passe IPMI',
+        generate: 'Générer',
+        copy: 'Copier',
+        save: 'Enregistrer',
+        passwordLength: 'Utilisez de 12 à 20 caractères.',
+        passwordChars: 'Utilisez uniquement des caractères ASCII imprimables.',
+        saved: 'Mot de passe IPMI enregistré',
+        failed: "L'opération IPMI a échoué",
+        okBtn: 'Confirmer',
+        cancelBtn: 'Annuler'
+      },
       watchdog: {
         title: 'Watchdog',
         service: "Watchdog de l'hôte",

@@ -450,6 +450,44 @@ const id = {
         okBtn: 'Konfirmasi',
         cancelBtn: 'Batal'
       },
+      ipmi: {
+        title: 'IPMI',
+        warning:
+          'Autentikasi IPMI memang lemah secara desain. Siapa pun yang dapat menjangkau board dan mengetahui nama pengguna dapat memperoleh hash kata sandi IPMI pengguna tersebut dan mencoba memecahkannya secara offline. Gunakan kata sandi yang dibuat otomatis, aktifkan IPMI hanya di jaringan tepercaya, dan utamakan Redfish lewat HTTPS jika alat mendukungnya.',
+        service: 'IPMI melalui LAN',
+        serviceDesc:
+          'IPMI 2.0 (RMCP+, ipmitool lanplus) pada port UDP 623, untuk daya dan status host. IPMI 1.5 dan cipher suite 0 ditolak. Menonaktifkannya mengakhiri semua sesi IPMI.',
+        example: 'Contoh',
+        copyFailed: 'Gagal menyalin. Salin secara manual.',
+        ledOn: 'Status daya, on, off, soft, cycle, dan reset tersedia.',
+        ledOff:
+          '"LED daya terhubung" nonaktif di menu daya, sehingga status daya tidak diketahui. Hanya "power reset" yang berfungsi: status, on, off, soft, dan cycle ditolak.',
+        accounts: 'Akun',
+        accountsDesc:
+          'IPMI masuk dengan akun KVM, masing-masing dengan kata sandi IPMI sendiri yang terpisah dari kata sandi web. Administrator mendapat ADMINISTRATOR. Pengguna mendapat USER: mereka dapat membaca status daya dengan "-L USER" tetapi tidak dapat mengubahnya.',
+        passwordSet: 'Kata sandi IPMI sudah diatur',
+        passwordNotSet: 'Tanpa kata sandi IPMI: tidak dapat masuk lewat IPMI',
+        nameTooLong: 'Nama lebih dari 16 karakter, yang tidak diizinkan IPMI',
+        accountDisabled: 'Akun dinonaktifkan',
+        setPassword: 'Atur kata sandi',
+        changePassword: 'Ubah kata sandi',
+        remove: 'Hapus',
+        removeConfirmTitle: 'Hapus kata sandi IPMI milik {{user}}?',
+        removeConfirmDesc: 'Akun tidak dapat lagi masuk lewat IPMI, dan sesi IPMI-nya berakhir.',
+        passwordTitle: 'Kata sandi IPMI untuk {{user}}',
+        passwordDesc:
+          '12 hingga 20 karakter ASCII yang dapat dicetak, berbeda dari kata sandi web. IPMI mengharuskan board menyimpan kata sandi dalam bentuk yang dapat dibaca kembali, jadi gunakan kata sandi yang tidak dipakai di tempat lain. Salin sebelum menyimpan: kata sandi tidak ditampilkan lagi.',
+        passwordPlaceholder: 'Kata sandi IPMI',
+        generate: 'Buat',
+        copy: 'Salin',
+        save: 'Simpan',
+        passwordLength: 'Gunakan 12 hingga 20 karakter.',
+        passwordChars: 'Gunakan hanya karakter ASCII yang dapat dicetak.',
+        saved: 'Kata sandi IPMI disimpan',
+        failed: 'Operasi IPMI gagal',
+        okBtn: 'Konfirmasi',
+        cancelBtn: 'Batal'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Watchdog host',
