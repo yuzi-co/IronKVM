@@ -61,6 +61,15 @@ try() {
 # usage range, so the host stops seeing the highest key codes.
 m_desc() { sed -i 's|xE7|xE6|g' "$1/S03usbdev"; }
 
+# Contact Count Maximum on the touch screen. The host sizes its contact slots
+# from it, and f_hid answers the feature read with zeros, so Linux falls back
+# to this logical maximum.
+m_touchmax() { sed -i 's|\(x09..x55..x25..x\)02|\10a|' "$1/S03usbdev"; }
+
+# The touch descriptor's report length. The first report_length 7 in the
+# script is the touch branch.
+m_touchlen() { sed -i '0,/echo 7 > functions.hid.GS2.report_length/s//echo 8 > functions\/hid.GS2\/report_length/' "$1/S03usbdev"; }
+
 # The composite class triple. Wrong here and Windows binds one function.
 m_class() { sed -i 's|echo 0xEF > bDeviceClass|echo 0xEE > bDeviceClass|' "$1/S03usbdev"; }
 
@@ -146,6 +155,8 @@ m_noclass() { sed -i '/^    echo 0x00 > bDeviceClass$/d' "$1/S03usbhid"; }
 echo "===== every mutation must be caught ====="
 try "keyboard report descriptor bytes"      m_desc
 try "composite device class"                m_class
+try "touch contact count maximum"           m_touchmax
+try "touch report length"                   m_touchlen
 try "absolute pointer claims boot HID"      m_boot
 try "empty disk marker re-exports the eMMC" m_emmc
 try "host MAC stops differing from device"  m_mac
