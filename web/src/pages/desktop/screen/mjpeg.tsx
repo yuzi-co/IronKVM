@@ -3,7 +3,6 @@ import clsx from 'clsx';
 import { useAtomValue } from 'jotai';
 
 import { stopFrameDetect } from '@/api/stream.ts';
-import { getFrameDetect } from '@/lib/localstorage.ts';
 import { getBaseUrl } from '@/lib/service.ts';
 import { mouseStyleAtom } from '@/jotai/mouse.ts';
 import { resolutionAtom } from '@/jotai/screen.ts';
@@ -68,11 +67,9 @@ export const Mjpeg = () => {
   }
 
   useEffect(() => {
-    // stop frame detect for a while
-    const enabled = getFrameDetect();
-    if (enabled) {
-      stopFrameDetect(10);
-    }
+    // Pause frame detection for a while so the new stream gets a first frame.
+    // The board ignores this when detection is off.
+    stopFrameDetect(10).catch(() => {});
 
     clearRetry();
     retryDelay.current = retryDelayMs;

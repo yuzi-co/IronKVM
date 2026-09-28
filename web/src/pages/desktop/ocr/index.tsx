@@ -2,12 +2,19 @@ import { useCallback, useRef, useState } from 'react';
 import { useAtom } from 'jotai';
 
 import { getScreenshot } from '@/api/stream.ts';
+import { getOcrLanguage, setOcrLanguage } from '@/lib/localstorage.ts';
 import { ocrSelectingAtom } from '@/jotai/ocr.ts';
 
 import { selectionToFrame, upscaleFactor } from './crop.ts';
 import { OcrDialog, type OcrState } from './dialog.tsx';
-import { isOcrSupported, recognizeText, type OcrLanguage } from './engine.ts';
+import { isOcrSupported, ocrLanguages, recognizeText, type OcrLanguage } from './engine.ts';
 import { OcrSelection, type OcrSelectionResult } from './selection.tsx';
+
+// The language read last, if it is still one the build carries.
+function savedLanguage(): OcrLanguage {
+  const saved = getOcrLanguage();
+  return (ocrLanguages as readonly string[]).includes(saved ?? '') ? (saved as OcrLanguage) : 'eng';
+}
 
 function errorDetail(error: unknown) {
   return error instanceof Error ? error.message : String(error);
@@ -74,7 +81,7 @@ export const Ocr = () => {
   const [open, setOpen] = useState(false);
   const [state, setState] = useState<OcrState>({ phase: 'capturing' });
   const [image, setImage] = useState<Blob | null>(null);
-  const [language, setLanguage] = useState<OcrLanguage>('eng');
+  const [language, setLanguage] = useState<OcrLanguage>(savedLanguage);
 
   // Each capture or recognition takes a number, and only the latest one may
   // change the dialog. A slow one that the user abandoned then ends unseen.
@@ -130,6 +137,7 @@ export const Ocr = () => {
 
   function handleLanguageChange(next: OcrLanguage) {
     setLanguage(next);
+    setOcrLanguage(next);
     if (image) {
       void read(image, next);
     }

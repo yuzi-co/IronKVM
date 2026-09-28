@@ -1,25 +1,27 @@
 import { useEffect, useState } from 'react';
-import { Tooltip } from 'antd';
+import { message, Tooltip } from 'antd';
 import clsx from 'clsx';
 import { LoaderCircleIcon, Tally4Icon, Tally5Icon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/stream.ts';
-import * as ls from '@/lib/localstorage.ts';
 
 export const FrameDetect = () => {
   const { t } = useTranslation();
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [isEnabled, setIsEnabled] = useState(() => !!ls.getFrameDetect());
+  // The setting is board-wide, so it is read from the board rather than kept
+  // in this browser. It stays loading until the answer comes.
+  const [isLoading, setIsLoading] = useState(true);
+  const [isEnabled, setIsEnabled] = useState(false);
 
-  // The stored value initialises the state above, so the effect is left with
-  // the one part that is not state: telling the device when the stored value
-  // is off.
   useEffect(() => {
-    if (!ls.getFrameDetect()) {
-      api.updateFrameDetect(false);
-    }
+    api
+      .getFrameDetect()
+      .then((rsp) => {
+        if (rsp.code === 0) setIsEnabled(!!rsp.data?.enabled);
+      })
+      .catch(() => {})
+      .finally(() => setIsLoading(false));
   }, []);
 
   function update() {
@@ -31,11 +33,13 @@ export const FrameDetect = () => {
     api
       .updateFrameDetect(enabled)
       .then((rsp) => {
-        if (rsp.code === 0) {
-          setIsEnabled(enabled);
-          ls.setFrameDetect(enabled);
+        if (rsp.code !== 0) {
+          message.error(t('screen.updateFailed'));
+          return;
         }
+        setIsEnabled(enabled);
       })
+      .catch(() => message.error(t('screen.updateFailed')))
       .finally(() => {
         setIsLoading(false);
       });
@@ -55,7 +59,7 @@ export const FrameDetect = () => {
 
             <span
               className={clsx(
-                'select-none text-sm',
+                'text-sm select-none',
                 isEnabled ? 'group-hover:text-red-500' : 'group-hover:text-green-500'
               )}
             >

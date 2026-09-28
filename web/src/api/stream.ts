@@ -1,5 +1,10 @@
 import { http } from '@/lib/http.ts';
 
+// read the board-wide frame detect setting
+export function getFrameDetect() {
+  return http.get('/api/stream/mjpeg/detect');
+}
+
 // enable/disable frame detect
 export function updateFrameDetect(enabled: boolean) {
   const data = {
