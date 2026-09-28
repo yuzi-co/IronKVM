@@ -8,6 +8,8 @@ const zh = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      cookieRejected:
+        '浏览器拒绝保存会话。之前的 HTTPS 会话留下的 Cookie 无法通过普通 http 替换。请清除此地址的 Cookie，或打开无痕窗口，然后重新登录。',
       login: '登录',
       placeholderUsername: '请输入用户名',
       placeholderPassword: '请输入密码',
@@ -237,6 +239,10 @@ const zh = {
       relative: '相对模式',
       absoluteShort: '绝对',
       relativeShort: '相对',
+      absoluteStalled: '目标主机未响应绝对模式鼠标',
+      absoluteStalledDesc:
+        '目标主机已停止接收绝对模式鼠标报告，指针移动会丢失。键盘不受影响。恢复 USB 通常可以解决；相对模式使用另一个端点。',
+      useRelative: '切换到相对模式',
       direction: '滚轮方向',
       scrollUp: '向上',
       scrollDown: '向下',
@@ -250,7 +256,7 @@ const zh = {
         desc: '若使用过程中遇到鼠标键盘无响应，且重置 HID 无效，可能是 NanoKVM 与您的设备存在兼容性问题。建议尝试启用 HID-Only 模式以提升兼容性。',
         tip1: '启用 HID-Only 模式会卸载虚拟 U 盘和虚拟网络',
         tip2: 'HID-Only 模式下，镜像挂载将被禁用',
-        tip3: '切换模式后将自动重启 NanoKVM',
+        rebuild: '切换模式会重建 USB 连接，NanoKVM 不会重启',
         enable: '启用 HID-Only 模式',
         disable: '关闭 HID-Only 模式'
       }
@@ -265,6 +271,17 @@ const zh = {
       unmountFailed: '卸载失败',
       unmountDesc: '在某些系统中，需要在远程主机中手动弹出后再卸载镜像。',
       refresh: '刷新镜像列表',
+      disk: '磁盘',
+      cdrom: '光盘',
+      driveEmpty: '空',
+      eject: '弹出',
+      readOnly: '只读',
+      readOnlyTip: '对下一个插入磁盘的镜像生效。',
+      noDrives: '没有虚拟驱动器。请在设置中启用虚拟U盘。',
+      insertFailed: '插入失败',
+      ejectFailed: '弹出失败',
+      insertInto: '插入到{{drive}}，点击更改。',
+      loadedIn: '已在{{drive}}驱动器中',
       attention: '注意',
       deleteConfirm: '确定要删除该镜像吗？',
       okBtn: '确定',
@@ -362,7 +379,14 @@ const zh = {
       sleepConfirm: '让主机进入睡眠？',
       powerDownConfirm: '向主机发送关机键？',
       wakeTip:
-        '处于睡眠的主机常常忽略来自让它睡眠的设备的唤醒。“用 Shift 唤醒”会按下键盘按键，更多主机会响应。'
+        '处于睡眠的主机常常忽略来自让它睡眠的设备的唤醒。“用 Shift 唤醒”会按下键盘按键，更多主机会响应。',
+      led: '电源指示灯',
+      ledOn: '亮',
+      ledOff: '灭',
+      ledUnknown: '未知',
+      ledConnected: '已连接电源指示灯',
+      ledConnectedTip: '仅当主机的电源指示灯排针已接到开发板时才开启。未接时电源状态未知。',
+      ledConnectedFailed: '保存电源指示灯设置失败'
     },
     settings: {
       title: '设置',
@@ -383,6 +407,32 @@ const zh = {
         okBtn: '确认',
         cancelBtn: '取消'
       },
+      redfish: {
+        title: 'Redfish',
+        service: 'Redfish 服务',
+        serviceDesc:
+          'DMTF Redfish API，供 redfishtool、Ansible 等工具进行电源控制、虚拟介质和状态查询。关闭后将结束所有 Redfish 会话。',
+        endpoint: '服务根地址',
+        httpsOn: '开发板已启用 HTTPS，大多数 Redfish 工具需要它。',
+        httpsOff: '开发板使用普通 HTTP。大多数 Redfish 工具需要 HTTPS：请在“设置 > 网络”中开启。',
+        credentials:
+          'Redfish 使用 KVM 帐号，支持 Basic 认证或 Redfish 会话，也支持通过 X-Auth-Token 发送的 API Key。API Key 在 API Key 页面管理。',
+        powerActions: '电源操作',
+        powerActionsDesc:
+          '当前可用的复位类型。On、ForceOff 和 GracefulShutdown 需要知道电源状态，因此仅在电源菜单中开启“已连接电源指示灯”后才提供。',
+        sessions: '会话',
+        noSessions: '没有打开的 Redfish 会话',
+        created: '创建时间',
+        lastUsed: '最近使用',
+        refresh: '刷新',
+        end: '结束',
+        endConfirmTitle: '结束此 Redfish 会话？',
+        endConfirmDesc: '其令牌将立即失效，客户端需要重新登录。',
+        failed: 'Redfish 操作失败',
+        copyFailed: '复制失败，请手动复制。',
+        okBtn: '确认',
+        cancelBtn: '取消'
+      },
       watchdog: {
         title: '看门狗',
         service: '主机看门狗',
@@ -391,7 +441,7 @@ const zh = {
         stillWarning:
           '显示器进入睡眠、或工作时画面静止不动的主机看起来就像死机。请在主机上关闭显示器睡眠，或设置一个 Ping 地址。',
         ledHint:
-          '电源菜单中的“Power LED connected”已关闭。看门狗无法得知主机何时关机，因此将主机视为始终开机。',
+          '电源菜单中的“已连接电源指示灯”已关闭。看门狗无法得知主机何时关机，因此将主机视为始终开机。',
         timeout: '超时时间',
         timeoutDesc: '主机在看门狗动作之前可以没有活动迹象的时长。',
         action: '动作',
@@ -453,7 +503,13 @@ const zh = {
         applicationTip: 'NanoKVM 网页应用版本',
         image: '镜像版本',
         imageTip: 'NanoKVM 系统镜像版本',
+        kernel: '内核版本',
+        kernelTip: '当前运行的 Linux 内核版本',
         deviceKey: '设备码',
+        videoMemory: '视频内存',
+        videoMemoryTip: '为视频采集预留的内存，不与系统其他部分共享。',
+        videoMemoryGenerations_other: '之前的 {{count}} 个 NanoKVM 会话仍占用着视频内存',
+        videoMemoryReboot: '重启以回收。',
         community: '社区',
         hostname: '主机名',
         hostnameUpdated: '主机名修改成功，重启后生效',
@@ -501,6 +557,16 @@ const zh = {
         oled: {
           title: 'OLED',
           description: '设置 OLED 屏幕自动休眠时间',
+          brightness: 'OLED 亮度',
+          brightnessDescription: '亮度越低，屏幕寿命越长',
+          brightnessLevels: {
+            '64': '最低',
+            '96': '低',
+            '128': '中',
+            '160': '高',
+            '207': '默认',
+            '255': '最高'
+          },
           0: '永不',
           15: '15秒',
           30: '30秒',
@@ -516,11 +582,34 @@ const zh = {
           tip: '启用前请务必设置强密码（帐号 - 修改密码）'
         },
         advanced: '高级设置',
+        cpuFreq: {
+          title: 'CPU 频率',
+          description: '设置下次启动时使用的 CPU 频率',
+          tip: 'CPU 以 850 MHz 启动，额定频率为 1000 MHz。新值在下次启动时生效，系统运行期间不会改变。1000 MHz 在规格范围内；两种设置下温度都远低于限值。',
+          running: '当前：{{mhz}} MHz',
+          rebootToApply: '重启后生效',
+          rebootConfirm: '立即重启以应用 {{mhz}} MHz？'
+        },
         swap: {
           title: '交换',
           disable: '禁用',
           description: '设置交换文件大小',
           tip: '启用该功能可能会减少SD卡使用寿命！'
+        },
+        zram: {
+          title: '压缩交换（zram）',
+          description: '在压缩内存中进行交换，而不是在 SD 卡上',
+          tip: 'zram 让交换不经过 SD 卡，因此不会造成磨损。它背后没有磁盘交换：zram 写满时，内核会终止进程，而不是缓慢换页。内存上限决定 zram 最多能占用多少 RAM。',
+          unavailable: '此设备未安装所需的内核模块',
+          inactive: '已启用，但设备未能启动',
+          active: '运行中 - {{used}} / {{total}}，{{ratio}}x',
+          off: '关闭',
+          detail: {
+            algorithm: '算法：{{algorithm}}',
+            memory: '已用内存：{{used}} / {{limit}}',
+            memoryNoLimit: '已用内存：{{used}}，未设置上限',
+            counters: '换入 {{in}} 页，换出 {{out}} 页（所有交换设备，自启动以来）'
+          }
         },
         mouseJiggler: {
           title: '鼠标抖动',
@@ -572,7 +661,24 @@ const zh = {
           confirm: '重新连接 USB 设备？',
           reenumerate: '应用后将重建 USB 连接。主机会在几秒钟内失去键盘、鼠标和虚拟磁盘。'
         },
+        audio: '虚拟扬声器',
+        audioDesc:
+          '向远程主机提供一个 USB 声卡，以便听到其声音。主机需要将其选为输出设备。切换此项会重建 USB 连接。',
+        audioNote: '音频在两种 H.264 模式（WebRTC 和 Direct）下可用，MJPEG 下不可用',
+        console: '串口控制台',
+        consoleDesc: '向远程主机提供一个 USB 串口，用于在网络不可达时登录这台 NanoKVM',
+        consoleTip:
+          '任何能控制远程主机的人都会看到这台 NanoKVM 的登录提示。启用前请务必设置强密码（帐号 - 修改密码）。',
         endpoints: {
+          title: 'USB 端点',
+          used: '已用 {{used}} / {{total}}',
+          cost: '占用 {{cost}} 个',
+          needs: '需要 {{cost}} 个',
+          full: 'USB 端点不足，请先关闭其他功能。',
+          inactive: '已开启但未运行：USB 控制器的端点已用完。关闭其他设备后，此设备会立即启动。',
+          explain:
+            'USB 控制器的输入端点数量固定，这里统计的就是这些端点。如果启用的设备超出容量，会保留键盘和鼠标，其余设备将被关闭。',
+          error: '无法连接设备，请重试。',
           fitTogether: '可同时启用：{{sets}}'
         },
         reboot: '重新启动',
@@ -599,7 +705,10 @@ const zh = {
         },
         tls: {
           description: '启用 HTTPS 协议',
-          tip: '注意：使用 HTTPS 可能导致延迟增加，特别是在 MJPEG 视频模式下。'
+          tip: '注意：使用 HTTPS 可能导致延迟增加，特别是在 MJPEG 视频模式下。',
+          restarting: '正在重启设备服务，大约需要两分钟...',
+          waiting: '正在等待设备重新响应...',
+          waitingHttp: '正在切换回 http。如果页面没有自动打开，请刷新此页面。'
         },
         ethernet: {
           title: 'IP 地址',
@@ -660,24 +769,54 @@ const zh = {
           none: '无'
         }
       },
-      tailscale: {
-        title: 'Tailscale',
-        memory: {
-          title: '内存优化',
-          tip: '当内存占用超过限制时，会更积极地执行垃圾回收来尝试释放内存。需重启 Tailscale 后生效。'
-        },
-        swap: {
-          title: '交换内存',
-          tip: '如果启用内存优化后依然存在问题，可以尝试开启交换内存。启用后会将交换文件设置为256MB，可以在「设置 - 设备」中修改该选项。'
-        },
-        restart: '取定要重启 Tailscale 吗？',
-        stop: '确定要停止 Tailscale 吗？',
-        stopDesc: '退出 Tailscale 并禁用开机自动启动。',
+      vpn: {
         loading: '加载中...',
-        notInstall: '未检测到 Tailscale，请先安装',
+        okBtn: '是',
+        cancelBtn: '否',
+        restart: '重启 {{name}}？',
+        stop: '停止 {{name}}？',
+        stopDesc: '守护进程将立即停止。开机启动是单独的开关，保持不变。',
+        update: '将 {{name}} 更新到 {{version}}？',
+        updateDesc: '如果守护进程正在运行，它会重启。登录状态会保留。',
+        notInstall: '{{name}} 未安装。',
         install: '安装',
         installing: '安装中',
-        failed: '安装失败',
+        installFailed: '安装失败',
+        retry: '重试',
+        notRunning: '{{name}} 未运行，请启动后继续。',
+        run: '启动',
+        boot: '开机启动',
+        bootDesc: 'KVM 启动时自动启动 {{name}}。',
+        enable: '启用 {{name}}',
+        control: '控制服务器',
+        connected: '已连接',
+        disconnected: '未连接',
+        deviceName: '设备名称',
+        deviceIP: '设备 IP',
+        account: '帐号',
+        version: '版本',
+        uptime: '运行时间',
+        peers: '对等节点',
+        noPeers: '暂无对等节点。',
+        online: '在线',
+        offline: '离线',
+        memory: '内存',
+        daemonRss: '守护进程',
+        group: '插件组',
+        high: '超过 {{size}} 时限流',
+        max: '超过 {{size}} 时被内核终止',
+        noGroup: '此开发板上没有插件内存组。',
+        uninstall: '卸载 {{name}}',
+        uninstallDesc: '确定要卸载 {{name}} 吗？登录信息会保留在开发板上。',
+        blocked:
+          '{{other}} 正在运行或已设为开机启动。同一时间只能运行一个 VPN：请先停止 {{other}} 并关闭其开机启动。',
+        swap: {
+          title: '交换内存',
+          tip: '如果守护进程内存不足，请尝试启用交换内存。默认会将交换文件大小设为 256MB，可在“设置 > 设备”中调整。'
+        }
+      },
+      tailscale: {
+        title: 'Tailscale',
         retry: '请刷新后重试，或尝试手动安装',
         download: '下载',
         package: '安装包',
@@ -685,22 +824,26 @@ const zh = {
         upTailscale: '将 tailscale 上传到 NanoKVM 的 /usr/bin/ 目录',
         upTailscaled: '将 tailscaled 上传到 NanoKVM 的 /usr/sbin/ 目录',
         refresh: '刷新页面',
-        notRunning: 'Tailscale 尚未运行，请先执行启动操作',
-        run: '启动',
         notLogin: '该设备尚未绑定，请点击登录并将这台设备绑定到您的账号。',
         urlPeriod: '该链接10分钟内有效',
         login: '登录',
         loginSuccess: '登录完成',
-        enable: '启用 Tailscale',
-        deviceName: '设备名称',
-        deviceIP: '设备地址',
-        account: '账号',
         logout: '退出',
-        logoutDesc: '确定要退出吗？',
-        uninstall: '卸载 Tailscale',
-        uninstallDesc: '确定要卸载 Tailscale 吗？',
-        okBtn: '确认',
-        cancelBtn: '取消'
+        logoutDesc: '确定要退出吗？'
+      },
+      netbird: {
+        title: 'NetBird',
+        notLogin: '该设备尚未加入 NetBird 网络。请使用设置密钥加入，或通过 SSO 登录。',
+        setupKey: '设置密钥',
+        setupKeyPlaceholder: '粘贴 NetBird 控制台中的设置密钥',
+        join: '加入',
+        or: '或',
+        sso: '通过 SSO 登录',
+        urlPeriod: '该链接10分钟内有效',
+        loginSuccess: '登录完成',
+        logout: '注销',
+        logoutDesc:
+          '注销会将此节点从你的 NetBird 帐号中移除，并删除本机上的配置。重新加入需要设置密钥或 SSO 登录，节点可能会获得新的 IP。是否继续？'
       },
       update: {
         title: '检查更新',
@@ -727,6 +870,7 @@ const zh = {
           confirmDesc:
             'SHA-512 只能验证安装包与该服务器提供的清单一致，不能证明安装包来自 NanoKVM 官方。错误或恶意的服务器可能导致设备不可用、数据丢失或系统被接管。',
           confirm: '仍然使用',
+          useSipeed: '使用 Sipeed 官方服务器',
           previewDisabled: '启用自定义更新服务器时，预览更新不可用'
         },
         offline: {
@@ -770,6 +914,35 @@ const zh = {
           saveFailed: '保存用户失败',
           deleteFailed: '删除用户失败'
         }
+      },
+      apiKeys: {
+        title: 'API Key',
+        description:
+          'Key 以其所有者的身份和角色生效。访问 metrics 和 API 时以 Authorization: Bearer <key> 发送，访问 Redfish 时以 X-Auth-Token 发送。',
+        name: '名称',
+        namePlaceholder: 'Key 的用途，例如 prometheus',
+        nameRequired: '请为 Key 命名',
+        nameTooLong: '名称最多 64 个字符',
+        unnamed: '（未命名）',
+        create: '创建 Key',
+        created: '创建时间',
+        owner: '所有者',
+        empty: '暂无 API Key',
+        newKeyTitle: '新的 API Key',
+        newKeyWarning:
+          '请立即复制此 Key。它不会被保存，也无法再次显示。如果丢失，请撤销它并重新创建。',
+        copy: '复制',
+        copied: '已复制',
+        copyFailed: '复制失败，请手动复制。',
+        done: '完成',
+        revoke: '撤销',
+        revokeConfirmTitle: '撤销此 API Key？',
+        revokeConfirmDesc: '所有使用“{{name}}”的服务将立即失效。',
+        revoked: 'API Key 已撤销',
+        loadFailed: '加载 API Key 失败',
+        createFailed: '创建 API Key 失败',
+        revokeFailed: '撤销 API Key 失败',
+        cancelBtn: '取消'
       }
     },
     picoclaw: {
@@ -912,7 +1085,6 @@ const zh = {
         deleteConfirmContent: '确定要删除“{{title}}”吗？',
         deleteConfirmOk: '删除',
         deleteConfirmCancel: '取消',
-        messageCount_one: '{{count}} 条消息',
         messageCount_other: '{{count}} 条消息',
         messageCount: '{{count}} 条消息'
       },
@@ -933,18 +1105,38 @@ const zh = {
     },
     error: {
       title: '我们遇到了问题',
-      refresh: '刷新'
+      refresh: '刷新',
+      panel: '页面的这一部分已停止工作',
+      retry: '重试'
     },
     fullscreen: {
       toggle: '切换全屏'
     },
     input: {
+      disconnected: '键盘和鼠标未连接',
+      disconnectedTls:
+        '浏览器拒绝了传输键盘和鼠标的安全连接，而且不会提示。此设备生成的证书尚未被信任。请在新标签页中打开此地址并接受证书，然后刷新页面。安装该证书才是可靠的解决方法。',
+      disconnectedNever:
+        '无法建立传输键盘和鼠标的连接。页面其他部分不使用该连接，因此仍可正常工作。请检查你与设备之间是否有东西阻断了它。',
+      disconnectedDropped:
+        '传输键盘和鼠标的连接已断开，且尚未恢复。重启后它会自动重连；如果一直如此，请刷新页面。',
       hidDisabled: '此设备已关闭 HID（/boot/disable_hid）。',
       keyFailed: '按键发送失败。'
     },
+    speaker: { title: '扬声器', unmute: '取消静音', mute: '静音' },
     menu: {
       collapse: '收起',
       expand: '展开'
+    },
+    ion: {
+      checking: '正在启动视频流前检查视频内存...',
+      warn: '视频内存不足，再重启一次服务就会耗尽。请在方便时重启设备。',
+      criticalTitle: '视频内存不足，无法启动视频流',
+      criticalBody:
+        '启动视频会耗尽预留内存并导致服务停止。其他功能仍可正常使用，包括电源控制和重启。只有重启 NanoKVM 才能回收这部分内存。',
+      criticalContinue: '仍然启动视频',
+      criticalReboot: '重启 NanoKVM',
+      criticalRebooting: '正在重启...'
     }
   }
 };

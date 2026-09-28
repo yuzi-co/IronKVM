@@ -12,7 +12,8 @@
     "mocked": "vite --mode mocked",
     "build": "tsc && vite build && node scripts/precompress.mjs",
     "precompress": "node scripts/precompress.mjs",
-    "lint": "eslint . --report-unused-disable-directives",
+    "lint": "eslint . --report-unused-disable-directives && node --experimental-strip-types scripts/check-locales.mjs",
+    "check-locales": "node --experimental-strip-types scripts/check-locales.mjs",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
     "preview": "vite preview"
   },

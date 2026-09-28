@@ -8,18 +8,23 @@ const id = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      cookieRejected:
+        'Browser menolak menyimpan sesi. Cookie yang tertinggal dari sesi HTTPS sebelumnya tidak dapat diganti melalui http biasa. Hapus cookie untuk alamat ini, atau buka jendela pribadi, lalu masuk kembali.',
       login: 'Masuk',
       placeholderUsername: 'Silahkan masukkan username',
       placeholderPassword: 'Silahkan masukkan password',
+      placeholderCurrentPassword: 'Kata sandi saat ini',
       placeholderPassword2: 'Silahkan masukkan password again',
       noEmptyUsername: 'nama user tidak boleh kosong',
       noEmptyPassword: 'sandi  tidak boleh kosong',
+      passwordLength: 'Kata sandi harus terdiri dari 8 hingga 72 karakter',
       noAccount:
         'Gagal mendapatkan informasi user, silahkan segarkan halaman atau atur ulang sandi',
       invalidUser: 'invalid username or password',
       locked: 'Terlalu banyak login, silakan coba lagi nanti',
       globalLocked: 'Sistem dalam perlindungan, silakan coba lagi nanti',
       error: 'terjadi kesalahan tak terduga',
+      invalidCurrentPassword: 'Kata sandi saat ini salah',
       changePassword: 'Ganti Sandi',
       changePasswordDesc: 'Untuk keamanan perangkat Anda, silakan ubah kata sandi masuk web.',
       differentPassword: 'sandi tidak sesuai',
@@ -242,6 +247,10 @@ const id = {
       relative: 'Mode relatif',
       absoluteShort: 'Absolut',
       relativeShort: 'Relatif',
+      absoluteStalled: 'Target mengabaikan tetikus absolut',
+      absoluteStalledDesc:
+        'Target berhenti menerima laporan tetikus absolut, sehingga gerakan penunjuk hilang. Keyboard tidak terpengaruh. Memulihkan USB biasanya mengatasinya; mode relatif menggunakan endpoint yang berbeda.',
+      useRelative: 'Beralih ke mode relatif',
       direction: 'Arah roda gulir',
       scrollUp: 'Gulir ke atas',
       scrollDown: 'Gulir ke bawah',
@@ -256,7 +265,7 @@ const id = {
         desc: 'Jika mouse dan keyboard Anda berhenti merespons dan menyetel ulang HID tidak membantu, mungkin ada masalah kompatibilitas antara NanoKVM dan perangkat. Coba aktifkan mode HID-Only untuk kompatibilitas yang lebih baik.',
         tip1: 'Mengaktifkan mode HID-Hanya akan melepas U-disk virtual dan jaringan virtual',
         tip2: 'Dalam mode HID-Only, pemasangan gambar dinonaktifkan',
-        tip3: 'NanoKVM akan otomatis reboot setelah berpindah mode',
+        rebuild: 'Mengganti mode akan membangun ulang koneksi USB. NanoKVM tidak dimulai ulang',
         enable: 'Aktifkan mode HID-Hanya',
         disable: 'Nonaktifkan mode HID-Hanya'
       }
@@ -273,6 +282,17 @@ const id = {
       unmountDesc:
         'Pada beberapa sistem, Anda perlu mengeluarkan secara manual dari host jarak jauh sebelum melepas gambar.',
       refresh: 'Segarkan daftar gambar',
+      disk: 'Disk',
+      cdrom: 'CD',
+      driveEmpty: 'Kosong',
+      eject: 'Keluarkan',
+      readOnly: 'Hanya baca',
+      readOnlyTip: 'Berlaku untuk gambar berikutnya yang dimasukkan ke disk.',
+      noDrives: 'Tidak ada drive virtual. Aktifkan disk virtual di Pengaturan.',
+      insertFailed: 'Gagal memasukkan',
+      ejectFailed: 'Gagal mengeluarkan',
+      insertInto: 'Masukkan ke {{drive}}. Klik untuk mengubah.',
+      loadedIn: 'Di drive {{drive}}',
       attention: 'Perhatian',
       deleteConfirm: 'Apakah Anda yakin ingin menghapus gambar ini?',
       okBtn: 'Ya',
@@ -370,7 +390,15 @@ const id = {
       sleepConfirm: 'Tidurkan host?',
       powerDownConfirm: 'Kirim tombol matikan ke host?',
       wakeTip:
-        'Host yang sedang tidur sering mengabaikan Bangunkan dari perangkat yang menidurkannya. Bangunkan dengan Shift menekan tombol keyboard, yang diterima lebih banyak host.'
+        'Host yang sedang tidur sering mengabaikan Bangunkan dari perangkat yang menidurkannya. Bangunkan dengan Shift menekan tombol keyboard, yang diterima lebih banyak host.',
+      led: 'LED daya',
+      ledOn: 'Menyala',
+      ledOff: 'Mati',
+      ledUnknown: 'Tidak diketahui',
+      ledConnected: 'LED daya terhubung',
+      ledConnectedTip:
+        'Aktifkan hanya jika header LED daya host tersambung ke papan. Tanpa itu, status daya tidak diketahui.',
+      ledConnectedFailed: 'Gagal menyimpan pengaturan LED daya'
     },
     settings: {
       title: 'Pengaturan',
@@ -393,6 +421,33 @@ const id = {
         okBtn: 'Konfirmasi',
         cancelBtn: 'Batal'
       },
+      redfish: {
+        title: 'Redfish',
+        service: 'Layanan Redfish',
+        serviceDesc:
+          'API Redfish dari DMTF, untuk kontrol daya, media virtual, dan status dari alat seperti redfishtool dan Ansible. Menonaktifkannya akan mengakhiri semua sesi Redfish.',
+        endpoint: 'Root layanan',
+        httpsOn: 'Papan melayani HTTPS, yang dibutuhkan sebagian besar alat Redfish.',
+        httpsOff:
+          'Papan melayani HTTP biasa. Sebagian besar alat Redfish membutuhkan HTTPS: aktifkan di "Pengaturan > Jaringan".',
+        credentials:
+          'Redfish menerima akun KVM, dengan autentikasi Basic atau sesi Redfish, serta kunci API yang dikirim sebagai X-Auth-Token. Kunci API dikelola di halaman Kunci API.',
+        powerActions: 'Tindakan daya',
+        powerActionsDesc:
+          'Jenis reset yang tersedia saat ini. On, ForceOff, dan GracefulShutdown memerlukan status daya, sehingga hanya tersedia jika "LED daya terhubung" diaktifkan di menu daya.',
+        sessions: 'Sesi',
+        noSessions: 'Tidak ada sesi Redfish yang terbuka',
+        created: 'Dibuat',
+        lastUsed: 'Terakhir digunakan',
+        refresh: 'Segarkan',
+        end: 'Akhiri',
+        endConfirmTitle: 'Akhiri sesi Redfish ini?',
+        endConfirmDesc: 'Tokennya langsung berhenti berfungsi. Klien harus masuk kembali.',
+        failed: 'Operasi Redfish gagal',
+        copyFailed: 'Gagal menyalin. Salin secara manual.',
+        okBtn: 'Konfirmasi',
+        cancelBtn: 'Batal'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Watchdog host',
@@ -401,7 +456,7 @@ const id = {
         stillWarning:
           'Host yang layarnya masuk mode tidur, atau yang gambarnya diam saat bekerja, tampak macet. Matikan mode tidur layar di host, atau atur alamat ping.',
         ledHint:
-          '"Power LED connected" dimatikan di menu daya. Watchdog tidak bisa melihat kapan host mati, jadi menganggap host selalu menyala.',
+          '"LED daya terhubung" dimatikan di menu daya. Watchdog tidak bisa melihat kapan host mati, jadi menganggap host selalu menyala.',
         timeout: 'Batas waktu',
         timeoutDesc:
           'Berapa lama host boleh tidak menunjukkan tanda kehidupan sebelum watchdog bertindak.',
@@ -466,7 +521,15 @@ const id = {
         applicationTip: 'Versi aplikasi web NanoKVM',
         image: 'Version Gambar',
         imageTip: 'Versi image sistem NanoKVM',
+        kernel: 'Versi Kernel',
+        kernelTip: 'Rilis kernel Linux yang sedang berjalan',
         deviceKey: 'Kunci Perangkat',
+        videoMemory: 'Memori Video',
+        videoMemoryTip:
+          'Memori yang dicadangkan untuk penangkapan video. Memori ini tidak dibagi dengan bagian sistem lainnya.',
+        videoMemoryGenerations_other:
+          '{{count}} sesi NanoKVM sebelumnya masih menahan memori video',
+        videoMemoryReboot: 'Mulai ulang untuk mengambilnya kembali.',
         community: 'Komunitas',
         hostname: 'Nama Host',
         hostnameUpdated: 'Nama host diperbarui. Nyalakan ulang untuk menerapkan.',
@@ -515,6 +578,16 @@ const id = {
         oled: {
           title: 'OLED',
           description: 'OLED screen automatically sleep',
+          brightness: 'Kecerahan OLED',
+          brightnessDescription: 'Tingkat yang lebih rendah membuat layar lebih awet',
+          brightnessLevels: {
+            '64': 'Terendah',
+            '96': 'Rendah',
+            '128': 'Sedang',
+            '160': 'Tinggi',
+            '207': 'Default',
+            '255': 'Maksimum'
+          },
           0: 'Tidak pernah',
           15: '15 sec',
           30: '30 sec',
@@ -530,11 +603,34 @@ const id = {
           tip: 'Tetapkan kata sandi yang kuat sebelum mengaktifkan (Akun - Ubah Kata Sandi)'
         },
         advanced: 'Pengaturan Lanjutan',
+        cpuFreq: {
+          title: 'Frekuensi CPU',
+          description: 'Atur clock CPU yang diterapkan pada boot berikutnya',
+          tip: 'CPU melakukan boot pada 850 MHz dan dirancang untuk 1000 MHz. Nilai baru diterapkan pada boot berikutnya, bukan saat sistem berjalan. 1000 MHz masih sesuai spesifikasi; suhu tetap jauh di bawah batas pada kedua pengaturan.',
+          running: 'Berjalan: {{mhz}} MHz',
+          rebootToApply: 'mulai ulang untuk menerapkan',
+          rebootConfirm: 'Mulai ulang sekarang untuk menerapkan {{mhz}} MHz?'
+        },
         swap: {
           title: 'Tukar',
           disable: 'Nonaktifkan',
           description: 'Atur ukuran file swap',
           tip: 'Mengaktifkan fitur ini dapat mempersingkat masa pakai kartu SD Anda!'
+        },
+        zram: {
+          title: 'Swap terkompresi (zram)',
+          description: 'Swap di RAM terkompresi, bukan di kartu SD',
+          tip: 'zram menjauhkan swap dari kartu SD, sehingga tidak menyebabkan keausan. Tidak ada swap disk di belakangnya: jika zram penuh, kernel menghentikan sebuah proses alih-alih melakukan paging secara lambat. Batas memori membatasi seberapa banyak RAM yang dapat dipakai zram.',
+          unavailable: 'Modul kernel tidak terpasang di perangkat ini',
+          inactive: 'Diaktifkan, tetapi perangkat tidak berjalan',
+          active: 'Aktif - {{used}} dari {{total}}, {{ratio}}x',
+          off: 'Mati',
+          detail: {
+            algorithm: 'Algoritma: {{algorithm}}',
+            memory: 'Memori terpakai: {{used}} dari {{limit}}',
+            memoryNoLimit: 'Memori terpakai: {{used}}, tanpa batas',
+            counters: 'Halaman swap masuk {{in}}, keluar {{out}} (semua perangkat swap, sejak boot)'
+          }
         },
         mouseJiggler: {
           title: 'Tikus Jiggler',
@@ -588,7 +684,26 @@ const id = {
           reenumerate:
             'Menerapkan akan membangun ulang koneksi USB. Host kehilangan keyboard, mouse, dan disk virtual selama beberapa detik.'
         },
+        audio: 'Speaker Virtual',
+        audioDesc:
+          'Menyediakan kartu suara USB untuk host jarak jauh, sehingga Anda dapat mendengarnya. Host harus memilihnya sebagai perangkat output. Mengubah ini akan membangun ulang koneksi USB.',
+        audioNote: 'Audio tersedia di kedua mode H.264 (WebRTC dan Direct), tidak di MJPEG',
+        console: 'Konsol Serial',
+        consoleDesc:
+          'Menyediakan port serial USB untuk host jarak jauh, untuk masuk ke NanoKVM ini saat jaringan tidak dapat dijangkau',
+        consoleTip:
+          'Siapa pun yang mengendalikan host jarak jauh akan mendapatkan prompt login NanoKVM ini. Tetapkan kata sandi yang kuat sebelum mengaktifkan (Akun - Ubah Kata Sandi).',
         endpoints: {
+          title: 'Endpoint USB',
+          used: '{{used}} dari {{total}} terpakai',
+          cost: 'memakai {{cost}}',
+          needs: 'butuh {{cost}}',
+          full: 'Endpoint USB tidak cukup. Nonaktifkan yang lain terlebih dahulu.',
+          inactive:
+            'Aktif, tetapi tidak berjalan: pengontrol USB kehabisan endpoint. Nonaktifkan perangkat lain dan perangkat ini akan langsung berjalan.',
+          explain:
+            'Pengontrol USB memiliki jumlah endpoint masuk yang tetap, dan inilah hitungannya. Jika perangkat yang diaktifkan melebihi kapasitas, keyboard dan tetikus dipertahankan dan sisanya dinonaktifkan.',
+          error: 'Tidak dapat menjangkau perangkat. Coba lagi.',
           fitTogether: 'Yang muat bersamaan: {{sets}}'
         },
         reboot: 'Mulai ulang',
@@ -615,7 +730,11 @@ const id = {
         },
         tls: {
           description: 'Aktifkan protokol HTTPS',
-          tip: 'Perhatian: Menggunakan HTTPS dapat meningkatkan latensi, terutama pada mode video MJPEG.'
+          tip: 'Perhatian: Menggunakan HTTPS dapat meningkatkan latensi, terutama pada mode video MJPEG.',
+          restarting: 'Memulai ulang server perangkat, ini memakan waktu sekitar dua menit...',
+          waiting: 'Menunggu perangkat merespons kembali...',
+          waitingHttp:
+            'Beralih kembali ke http. Muat ulang halaman ini jika tidak terbuka dengan sendirinya.'
         },
         ethernet: {
           title: 'Alamat IP',
@@ -676,24 +795,55 @@ const id = {
           none: 'Tidak ada'
         }
       },
+      vpn: {
+        loading: 'Memuat...',
+        okBtn: 'Ya',
+        cancelBtn: 'Tidak',
+        restart: 'Mulai ulang {{name}}?',
+        stop: 'Hentikan {{name}}?',
+        stopDesc:
+          'Daemon berhenti sekarang. Mulai saat boot adalah pengaturan terpisah dan tetap seperti semula.',
+        update: 'Perbarui {{name}} ke {{version}}?',
+        updateDesc: 'Daemon dimulai ulang jika sedang berjalan. Login tetap tersimpan.',
+        notInstall: '{{name}} belum terinstal.',
+        install: 'Instal',
+        installing: 'Menginstal',
+        installFailed: 'Instalasi gagal',
+        retry: 'Coba lagi',
+        notRunning: '{{name}} tidak berjalan. Jalankan untuk melanjutkan.',
+        run: 'Mulai',
+        boot: 'Mulai saat boot',
+        bootDesc: 'Jalankan {{name}} saat KVM melakukan boot.',
+        enable: 'Aktifkan {{name}}',
+        control: 'Server kontrol',
+        connected: 'Terhubung',
+        disconnected: 'Tidak terhubung',
+        deviceName: 'Nama perangkat',
+        deviceIP: 'IP perangkat',
+        account: 'Akun',
+        version: 'Versi',
+        uptime: 'Waktu aktif',
+        peers: 'Peer',
+        noPeers: 'Belum ada peer.',
+        online: 'Online',
+        offline: 'Offline',
+        memory: 'Memori',
+        daemonRss: 'Daemon',
+        group: 'Grup add-on',
+        high: 'diperlambat di atas {{size}}',
+        max: 'dihentikan oleh kernel di atas {{size}}',
+        noGroup: 'Tidak ada grup memori add-on di papan ini.',
+        uninstall: 'Copot {{name}}',
+        uninstallDesc: 'Apakah Anda yakin ingin mencopot {{name}}? Login tetap tersimpan di papan.',
+        blocked:
+          '{{other}} sedang berjalan atau dimulai saat boot. Hanya satu VPN yang dapat berjalan dalam satu waktu: hentikan {{other}} dan nonaktifkan mulai saat boot-nya terlebih dahulu.',
+        swap: {
+          title: 'Memori swap',
+          tip: 'Jika daemon kekurangan memori, coba aktifkan memori swap. Ini mengatur ukuran file swap menjadi 256MB secara default, yang dapat diubah di "Pengaturan > Perangkat".'
+        }
+      },
       tailscale: {
         title: 'Tailscale',
-        memory: {
-          title: 'Optimasi memori',
-          tip: "When memory usage exceeds the limit, garbage collection is performed more aggressively to attempt to free up memory. it's recommended to set to 50MB if using Tailscale. A Tailscale restart is required for the change to take effect."
-        },
-        swap: {
-          title: 'Tukar memori',
-          tip: 'Jika masalah terus berlanjut setelah mengaktifkan pengoptimalan memori, coba aktifkan memori swap. Ini menetapkan ukuran file swap ke 256MB secara default, yang dapat disesuaikan di "Pengaturan > Perangkat".'
-        },
-        restart: 'Are you sure to restart Tailscale?',
-        stop: 'Are you sure to stop Tailscale?',
-        stopDesc: 'Log out Tailscale and disable its automatic startup on boot.',
-        loading: 'Memuat...',
-        notInstall: 'Tailscale tidak ditemukan! Silahkan pasang.',
-        install: 'Memasang',
-        installing: 'Memasangkan',
-        failed: 'Gagal memasangkan',
         retry: 'Harap segarkan dan coba lagi. Atau coba instal secara manual',
         download: 'Mengunduh',
         package: 'paket instalasi',
@@ -701,23 +851,28 @@ const id = {
         upTailscale: 'Unggah tailscale ke direktori NanoKVM /usr/bin/',
         upTailscaled: 'Unggah tailscaled ke direktori NanoKVM /usr/sbin/',
         refresh: 'Segarkan halaman ini',
-        notRunning: 'Tailscale tidak berjalan. Silakan mulai untuk melanjutkan.',
-        run: 'Mulai',
         notLogin:
           'Perangkat belum ditautkan. Silakan masuk dan tautkan perangkat ini ke akun Anda.',
         urlPeriod: 'Url ini berlaku selama 10 menit',
         login: 'Masuk',
         loginSuccess: 'Berhasil masuk',
-        enable: 'Aktifkan Tailscale',
-        deviceName: 'Nama Perangkat',
-        deviceIP: 'IP Perangkat',
-        account: 'Akun',
         logout: 'Keluar',
-        logoutDesc: 'Apakah Anda yakin ingin logout?',
-        uninstall: 'Copot pemasangan Tailscale',
-        uninstallDesc: 'Apakah Anda yakin ingin menghapus instalan Tailscale?',
-        okBtn: 'Yes',
-        cancelBtn: 'No'
+        logoutDesc: 'Apakah Anda yakin ingin logout?'
+      },
+      netbird: {
+        title: 'NetBird',
+        notLogin:
+          'Perangkat ini belum bergabung ke jaringan NetBird. Bergabunglah dengan setup key, atau masuk dengan SSO.',
+        setupKey: 'Setup key',
+        setupKeyPlaceholder: 'Tempel setup key dari dasbor NetBird',
+        join: 'Gabung',
+        or: 'atau',
+        sso: 'Masuk dengan SSO',
+        urlPeriod: 'Url ini berlaku selama 10 menit',
+        loginSuccess: 'Berhasil masuk',
+        logout: 'Batalkan pendaftaran',
+        logoutDesc:
+          'Membatalkan pendaftaran akan menghapus peer ini dari akun NetBird Anda dan menghapus konfigurasinya di sini. Untuk bergabung lagi diperlukan setup key atau login SSO, dan peer mungkin mendapat IP baru. Lanjutkan?'
       },
       update: {
         title: 'Periksa pembaruan',
@@ -745,6 +900,7 @@ const id = {
           confirmDesc:
             'SHA-512 hanya memeriksa bahwa paket cocok dengan manifes yang disediakan oleh server ini. Pemeriksaan ini tidak membuktikan bahwa paket tersebut merupakan rilis resmi NanoKVM. Server yang bermasalah atau berbahaya dapat membuat perangkat tidak dapat digunakan, menyebabkan kehilangan data, atau membahayakan sistem.',
           confirm: 'Tetap Gunakan',
+          useSipeed: 'Gunakan server resmi Sipeed',
           previewDisabled:
             'Pembaruan Pratinjau tidak tersedia saat server pembaruan kustom diaktifkan.'
         },
@@ -762,12 +918,59 @@ const id = {
       account: {
         title: 'Akun',
         webAccount: 'Nama akun web',
+        role: 'Peran',
+        roles: { admin: 'Administrator', user: 'Pengguna' },
         password: 'Kata sandi',
         updateBtn: 'Update',
         logoutBtn: 'Keluar',
         logoutDesc: 'Apakah Anda yakin ingin logout?',
         okBtn: 'Ya',
-        cancelBtn: 'Tidak'
+        cancelBtn: 'Tidak',
+        users: {
+          title: 'Pengguna',
+          create: 'Buat Pengguna',
+          enabled: 'Aktif',
+          disabled: 'Nonaktif',
+          deviceOwner: 'Pemilik perangkat',
+          resetPassword: 'Atur Ulang Kata Sandi',
+          delete: 'Hapus',
+          deleteConfirm: 'Hapus pengguna ini dan cabut semua sesinya?',
+          created: 'Pengguna dibuat',
+          deleted: 'Pengguna dihapus',
+          passwordUpdated: 'Kata sandi diperbarui',
+          loadFailed: 'Gagal memuat pengguna',
+          saveFailed: 'Gagal menyimpan pengguna',
+          deleteFailed: 'Gagal menghapus pengguna'
+        }
+      },
+      apiKeys: {
+        title: 'Kunci API',
+        description:
+          'Kunci bertindak sebagai pemiliknya, dengan peran pengguna tersebut. Kirimkan sebagai Authorization: Bearer <key> untuk metrik dan API, atau sebagai X-Auth-Token untuk Redfish.',
+        name: 'Nama',
+        namePlaceholder: 'Kegunaan kunci, misalnya prometheus',
+        nameRequired: 'Beri nama kunci ini',
+        nameTooLong: 'Nama maksimal 64 karakter',
+        unnamed: '(tanpa nama)',
+        create: 'Buat Kunci',
+        created: 'Dibuat',
+        owner: 'Pemilik',
+        empty: 'Tidak ada kunci API',
+        newKeyTitle: 'Kunci API baru Anda',
+        newKeyWarning:
+          'Salin kunci sekarang. Kunci tidak disimpan dan tidak dapat ditampilkan lagi. Jika hilang, cabut kunci tersebut dan buat yang baru.',
+        copy: 'Salin',
+        copied: 'Tersalin',
+        copyFailed: 'Gagal menyalin. Salin secara manual.',
+        done: 'Selesai',
+        revoke: 'Cabut',
+        revokeConfirmTitle: 'Cabut kunci API ini?',
+        revokeConfirmDesc: 'Semua yang menggunakan "{{name}}" langsung berhenti berfungsi.',
+        revoked: 'Kunci API dicabut',
+        loadFailed: 'Gagal memuat kunci API',
+        createFailed: 'Gagal membuat kunci API',
+        revokeFailed: 'Gagal mencabut kunci API',
+        cancelBtn: 'Batal'
       }
     },
     picoclaw: {
@@ -915,7 +1118,6 @@ const id = {
         deleteConfirmContent: 'Apakah Anda yakin ingin menghapus "{{title}}"?',
         deleteConfirmOk: 'Hapus',
         deleteConfirmCancel: 'Batalkan',
-        messageCount_one: '{{count}} pesan',
         messageCount_other: '{{count}} pesan',
         messageCount: '{{count}} pesan'
       },
@@ -936,18 +1138,38 @@ const id = {
     },
     error: {
       title: 'Kami mengalami masalah',
-      refresh: 'Segarkan'
+      refresh: 'Segarkan',
+      panel: 'Bagian halaman ini berhenti berfungsi',
+      retry: 'Coba lagi'
     },
     fullscreen: {
       toggle: 'Beralih Layar Penuh'
     },
     input: {
+      disconnected: 'Keyboard dan tetikus tidak terhubung',
+      disconnectedTls:
+        'Browser menolak koneksi aman yang membawa keyboard dan tetikus, dan melakukannya tanpa bertanya. Sertifikat yang dibuat perangkat ini belum dipercaya. Buka alamat ini di tab baru, terima sertifikatnya, lalu muat ulang. Memasang sertifikat adalah solusi yang andal.',
+      disconnectedNever:
+        'Koneksi yang membawa keyboard dan tetikus tidak dapat dibuka. Bagian lain halaman tetap berfungsi karena tidak menggunakannya. Pastikan tidak ada yang memblokirnya di antara Anda dan perangkat.',
+      disconnectedDropped:
+        'Koneksi yang membawa keyboard dan tetikus terputus dan belum pulih. Koneksi tersambung kembali sendiri setelah restart; jika tetap begini, muat ulang halaman.',
       hidDisabled: 'HID dinonaktifkan di perangkat ini (/boot/disable_hid).',
       keyFailed: 'Tombol tidak dapat dikirim.'
     },
+    speaker: { title: 'Speaker', unmute: 'Bunyikan', mute: 'Bisukan' },
     menu: {
       collapse: 'Tutup Menu',
       expand: 'Perluas Menu'
+    },
+    ion: {
+      checking: 'Memeriksa memori video sebelum memulai streaming...',
+      warn: 'Memori video hampir habis. Satu kali restart server akan menghabiskannya. Mulai ulang saat memungkinkan.',
+      criticalTitle: 'Memori video tidak cukup untuk memulai streaming',
+      criticalBody:
+        'Memulai video akan menghabiskan memori yang dicadangkan dan menghentikan server. Semua fungsi lain tetap berjalan, termasuk kontrol daya dan mulai ulang. Hanya memulai ulang NanoKVM yang dapat mengambil kembali memori ini.',
+      criticalContinue: 'Tetap mulai video',
+      criticalReboot: 'Mulai ulang NanoKVM',
+      criticalRebooting: 'Memulai ulang...'
     }
   }
 };

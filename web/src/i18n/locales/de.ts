@@ -8,18 +8,23 @@ const de = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      cookieRejected:
+        'Der Browser hat das Speichern der Sitzung verweigert. Ein Cookie aus einer früheren HTTPS-Sitzung kann über unverschlüsseltes http nicht ersetzt werden. Löschen Sie die Cookies für diese Adresse oder öffnen Sie ein privates Fenster und melden Sie sich erneut an.',
       login: 'Anmelden',
       placeholderUsername: 'Benutzername',
       placeholderPassword: 'Passwort',
+      placeholderCurrentPassword: 'Aktuelles Passwort',
       placeholderPassword2: 'Bitte Passwort erneut eingeben',
       noEmptyUsername: 'Benutzername benötigt',
       noEmptyPassword: 'Passwort benötigt',
+      passwordLength: 'Das Passwort muss zwischen 8 und 72 Zeichen lang sein',
       noAccount:
         'Abfragen der Benutzerdaten fehlgeschlagen, bitte die Seite neu laden oder Passwort zurücksetzen',
       invalidUser: 'Falscher Benutzername oder falsches Passwort',
       locked: 'Zu viele Anmeldungen, bitte versuchen Sie es später noch einmal',
       globalLocked: 'System wird geschützt, bitte versuchen Sie es später erneut',
       error: 'Unerwarteter Fehler',
+      invalidCurrentPassword: 'Das aktuelle Passwort ist falsch',
       changePassword: 'Passwort ändern',
       changePasswordDesc: 'Für die Sicherheit Ihres Geräts ändern Sie bitte das Passwort!',
       differentPassword: 'Passwörter stimmen nicht überein',
@@ -246,6 +251,10 @@ const de = {
       relative: 'Relativer Modus',
       absoluteShort: 'Absolut',
       relativeShort: 'Relativ',
+      absoluteStalled: 'Das Zielgerät ignoriert die absolute Maus',
+      absoluteStalledDesc:
+        'Das Zielgerät nimmt keine absoluten Mausberichte mehr an, daher gehen Zeigerbewegungen verloren. Die Tastatur ist nicht betroffen. Ein Wiederherstellen der USB-Verbindung behebt das oft; der relative Modus nutzt einen anderen Endpunkt.',
+      useRelative: 'Zum relativen Modus wechseln',
       direction: 'Scrollrichtung',
       scrollUp: 'Nach oben scrollen',
       scrollDown: 'Scrollen Sie nach unten',
@@ -260,7 +269,8 @@ const de = {
         desc: 'Wenn Ihre Maus und Tastatur nicht mehr reagieren und das Zurücksetzen der HID-Verbindung nicht hilft, könnte es sich um ein Kompatibilitätsproblem zwischen dem NanoKVM und dem Gerät handeln. Versuchen Sie, den HID-Only Modus zu aktivieren, um die Kompatibilität zu verbessern.',
         tip1: 'Die Aktivierung des HID-Only Modus entfernt das virtuelle U-Laufwerk und das virtuelle Netzwerk.',
         tip2: 'Im HID-Only Modus ist das Einbinden von Systemabbilder deaktiviert.',
-        tip3: 'NanoKVM wird nach dem Wechsel in den neuen Modus automatisch neu gestartet.',
+        rebuild:
+          'Beim Wechsel des Modus wird die USB-Verbindung neu aufgebaut. NanoKVM startet nicht neu',
         enable: 'HID-Only Modus aktivieren',
         disable: 'HID-Only Modus deaktivieren'
       }
@@ -277,6 +287,18 @@ const de = {
       unmountDesc:
         'Auf einigen Systemen müssen Sie das Image manuell vom Remote-Host auswerfen, bevor Sie die Bereitstellung aufheben.',
       refresh: 'Bilder aktualisieren',
+      disk: 'Festplatte',
+      cdrom: 'CD',
+      driveEmpty: 'Leer',
+      eject: 'Auswerfen',
+      readOnly: 'Schreibgeschützt',
+      readOnlyTip: 'Gilt für das nächste Image, das in das Laufwerk eingelegt wird.',
+      noDrives:
+        'Keine virtuellen Laufwerke. Aktivieren Sie die virtuelle Festplatte in den Einstellungen.',
+      insertFailed: 'Einlegen fehlgeschlagen',
+      ejectFailed: 'Auswerfen fehlgeschlagen',
+      insertInto: 'In {{drive}} einlegen. Zum Ändern klicken.',
+      loadedIn: 'Im Laufwerk {{drive}}',
       attention: 'Achtung',
       deleteConfirm: 'Sind Sie sicher, dass Sie dieses Bild löschen möchten?',
       okBtn: 'Ja',
@@ -375,7 +397,15 @@ const de = {
       sleepConfirm: 'Host in den Ruhezustand versetzen?',
       powerDownConfirm: 'Die Ausschalttaste an den Host senden?',
       wakeTip:
-        'Ein schlafender Host ignoriert Aufwecken oft von dem Gerät, das ihn schlafen gelegt hat. Mit Umschalttaste aufwecken drückt eine Taste auf der Tastatur, die mehr Hosts annehmen.'
+        'Ein schlafender Host ignoriert Aufwecken oft von dem Gerät, das ihn schlafen gelegt hat. Mit Umschalttaste aufwecken drückt eine Taste auf der Tastatur, die mehr Hosts annehmen.',
+      led: 'Power-LED',
+      ledOn: 'An',
+      ledOff: 'Aus',
+      ledUnknown: 'Unbekannt',
+      ledConnected: 'Power-LED angeschlossen',
+      ledConnectedTip:
+        'Nur aktivieren, wenn der Power-LED-Anschluss des Hosts mit dem Board verbunden ist. Ohne ihn ist der Einschaltzustand unbekannt.',
+      ledConnectedFailed: 'Die Power-LED-Einstellung konnte nicht gespeichert werden'
     },
     settings: {
       title: 'Einstellungen',
@@ -398,6 +428,34 @@ const de = {
         okBtn: 'Bestätigen',
         cancelBtn: 'Abbrechen'
       },
+      redfish: {
+        title: 'Redfish',
+        service: 'Redfish-Dienst',
+        serviceDesc:
+          'Die DMTF-Redfish-API für Stromsteuerung, virtuelle Medien und Status aus Werkzeugen wie redfishtool und Ansible. Beim Ausschalten werden alle Redfish-Sitzungen beendet.',
+        endpoint: 'Service-Root',
+        httpsOn: 'Das Board liefert HTTPS, was die meisten Redfish-Werkzeuge benötigen.',
+        httpsOff:
+          'Das Board liefert unverschlüsseltes HTTP. Die meisten Redfish-Werkzeuge benötigen HTTPS: Aktivieren Sie es unter „Einstellungen > Netzwerk“.',
+        credentials:
+          'Redfish akzeptiert die KVM-Konten per Basic-Authentifizierung oder Redfish-Sitzung sowie API-Schlüssel, die als X-Auth-Token gesendet werden. API-Schlüssel werden auf der Seite „API-Schlüssel“ verwaltet.',
+        powerActions: 'Power-Aktionen',
+        powerActionsDesc:
+          'Die derzeit angebotenen Reset-Typen. On, ForceOff und GracefulShutdown benötigen den Einschaltzustand und werden daher nur angeboten, wenn „Power-LED angeschlossen“ im Power-Menü aktiviert ist.',
+        sessions: 'Sitzungen',
+        noSessions: 'Keine offenen Redfish-Sitzungen',
+        created: 'Erstellt',
+        lastUsed: 'Zuletzt verwendet',
+        refresh: 'Aktualisieren',
+        end: 'Beenden',
+        endConfirmTitle: 'Diese Redfish-Sitzung beenden?',
+        endConfirmDesc:
+          'Ihr Token funktioniert sofort nicht mehr. Der Client muss sich erneut anmelden.',
+        failed: 'Redfish-Vorgang fehlgeschlagen',
+        copyFailed: 'Kopieren fehlgeschlagen. Bitte manuell kopieren.',
+        okBtn: 'Bestätigen',
+        cancelBtn: 'Abbrechen'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Host-Watchdog',
@@ -406,7 +464,7 @@ const de = {
         stillWarning:
           'Ein Host, dessen Bildschirm in den Ruhezustand geht oder dessen Bild bei der Arbeit stillsteht, wirkt aufgehängt. Schalten Sie den Bildschirm-Ruhezustand am Host aus oder geben Sie eine Ping-Adresse an.',
         ledHint:
-          '„Power LED connected“ ist im Power-Menü aus. Der Watchdog erkennt nicht, wann der Host aus ist, und behandelt ihn daher als immer eingeschaltet.',
+          '„Power-LED angeschlossen“ ist im Power-Menü aus. Der Watchdog erkennt nicht, wann der Host aus ist, und behandelt ihn daher als immer eingeschaltet.',
         timeout: 'Wartezeit',
         timeoutDesc:
           'Wie lange der Host kein Lebenszeichen zeigen darf, bevor der Watchdog handelt.',
@@ -471,7 +529,15 @@ const de = {
         applicationTip: 'NanoKVM Web Applikations-Version',
         image: 'Systemabbild-Version',
         imageTip: 'NanoKVM Systemabbild-Version',
+        kernel: 'Kernel-Version',
+        kernelTip: 'Version des derzeit laufenden Linux-Kernels',
         deviceKey: 'Geräteschlüssel',
+        videoMemory: 'Videospeicher',
+        videoMemoryTip:
+          'Für die Videoaufnahme reservierter Speicher. Er wird nicht mit dem restlichen System geteilt.',
+        videoMemoryGenerations_one: '{{count}} frühere NanoKVM-Sitzung belegt Videospeicher',
+        videoMemoryGenerations_other: '{{count}} frühere NanoKVM-Sitzungen belegen Videospeicher',
+        videoMemoryReboot: 'Neu starten, um ihn freizugeben.',
         community: 'Community',
         hostname: 'Hostname',
         hostnameUpdated: 'Hostname aktualisiert. Neustarten um zu übernehmen.',
@@ -520,6 +586,16 @@ const de = {
         oled: {
           title: 'OLED',
           description: 'Schalte OLED Bildschirm aus nach',
+          brightness: 'OLED-Helligkeit',
+          brightnessDescription: 'Eine niedrigere Stufe verlängert die Lebensdauer des Displays',
+          brightnessLevels: {
+            '64': 'Am niedrigsten',
+            '96': 'Niedrig',
+            '128': 'Mittel',
+            '160': 'Hoch',
+            '207': 'Standard',
+            '255': 'Maximal'
+          },
           0: 'Nie',
           15: '15 Sek',
           30: '30 Sek',
@@ -535,11 +611,35 @@ const de = {
           tip: 'Setzten Sie ein starkes Passwort vor dem aktivieren (Konto - Passwort ändern)'
         },
         advanced: 'Erweiterte Einstellungen',
+        cpuFreq: {
+          title: 'CPU-Frequenz',
+          description: 'CPU-Takt für den nächsten Start festlegen',
+          tip: 'Die CPU startet mit 850 MHz und ist für 1000 MHz spezifiziert. Ein neuer Wert wird beim nächsten Start übernommen, nicht im laufenden Betrieb. 1000 MHz liegt innerhalb der Spezifikation; die Temperatur bleibt bei beiden Einstellungen deutlich im zulässigen Bereich.',
+          running: 'Aktuell: {{mhz}} MHz',
+          rebootToApply: 'Neustart zum Übernehmen',
+          rebootConfirm: 'Jetzt neu starten, um {{mhz}} MHz zu übernehmen?'
+        },
         swap: {
           title: 'Swap',
           disable: 'Deaktivieren',
           description: 'Grösse der Swap-Datei festlegen',
           tip: 'Das Aktivieren dieser Funktion kann die Lebensdauer Ihrer SD-Karte verkürzen!'
+        },
+        zram: {
+          title: 'Komprimierter Swap (zram)',
+          description: 'Swap in komprimiertem RAM statt auf der SD-Karte',
+          tip: 'zram hält den Swap von der SD-Karte fern und verursacht daher keinen Verschleiß. Dahinter liegt kein Swap auf der Festplatte: Ist zram voll, beendet der Kernel einen Prozess, statt langsam auszulagern. Das Speicherlimit begrenzt, wie viel RAM zram belegen darf.',
+          unavailable: 'Die Kernel-Module sind auf diesem Gerät nicht installiert',
+          inactive: 'Aktiviert, aber das Gerät ist nicht gestartet',
+          active: 'Aktiv - {{used}} von {{total}}, {{ratio}}x',
+          off: 'Aus',
+          detail: {
+            algorithm: 'Algorithmus: {{algorithm}}',
+            memory: 'Belegter Speicher: {{used}} von {{limit}}',
+            memoryNoLimit: 'Belegter Speicher: {{used}}, kein Limit gesetzt',
+            counters:
+              'Seiten eingelagert {{in}}, ausgelagert {{out}} (alle Swap-Geräte, seit dem Start)'
+          }
         },
         mouseJiggler: {
           title: 'Mausaktivitäts-Simulator',
@@ -596,7 +696,26 @@ const de = {
           reenumerate:
             'Beim Übernehmen wird die USB-Verbindung neu aufgebaut. Der Host verliert Tastatur, Maus und virtuelle Festplatte für einige Sekunden.'
         },
+        audio: 'Virtueller Lautsprecher',
+        audioDesc:
+          'Stellt dem entfernten Host eine USB-Soundkarte bereit, damit Sie ihn hören können. Der Host muss sie als Ausgabegerät auswählen. Beim Umschalten wird die USB-Verbindung neu aufgebaut.',
+        audioNote: 'Audio ist in beiden H.264-Modi (WebRTC und Direct) verfügbar, nicht in MJPEG',
+        console: 'Serielle Konsole',
+        consoleDesc:
+          'Stellt dem entfernten Host eine serielle USB-Schnittstelle bereit, um sich bei diesem NanoKVM anzumelden, wenn das Netzwerk nicht erreichbar ist',
+        consoleTip:
+          'Jeder, der den entfernten Host kontrolliert, erhält eine Anmeldeaufforderung dieses NanoKVM. Setzen Sie vor dem Aktivieren ein starkes Passwort (Konto - Passwort ändern).',
         endpoints: {
+          title: 'USB-Endpunkte',
+          used: '{{used}} von {{total}} belegt',
+          cost: 'belegt {{cost}}',
+          needs: 'benötigt {{cost}}',
+          full: 'Nicht genügend USB-Endpunkte. Schalten Sie zuerst etwas anderes aus.',
+          inactive:
+            'Aktiviert, aber nicht aktiv: Dem USB-Controller sind die Endpunkte ausgegangen. Schalten Sie ein anderes Gerät aus, dann startet dieses sofort.',
+          explain:
+            'Der USB-Controller hat eine feste Anzahl eingehender Endpunkte, und diese werden hier gezählt. Sind mehr Geräte aktiviert als hineinpassen, bleiben Tastatur und Maus erhalten und der Rest wird ausgeschaltet.',
+          error: 'Das Gerät ist nicht erreichbar. Bitte erneut versuchen.',
           fitTogether: 'Diese passen zusammen: {{sets}}'
         },
         reboot: 'Neustarten',
@@ -623,7 +742,11 @@ const de = {
         },
         tls: {
           description: 'HTTPS-Protokoll aktivieren',
-          tip: 'Hinweis: Die Verwendung von HTTPS kann die Latenz erhöhen, besonders im MJPEG-Videomodus.'
+          tip: 'Hinweis: Die Verwendung von HTTPS kann die Latenz erhöhen, besonders im MJPEG-Videomodus.',
+          restarting: 'Der Geräteserver wird neu gestartet, das dauert etwa zwei Minuten...',
+          waiting: 'Warten, bis das Gerät wieder antwortet...',
+          waitingHttp:
+            'Wechsel zurück zu http. Laden Sie diese Seite neu, falls sie sich nicht von selbst öffnet.'
         },
         ethernet: {
           title: 'IP-Adresse',
@@ -686,24 +809,56 @@ const de = {
           none: 'Keine'
         }
       },
+      vpn: {
+        loading: 'Lädt...',
+        okBtn: 'Ja',
+        cancelBtn: 'Nein',
+        restart: '{{name}} neu starten?',
+        stop: '{{name}} stoppen?',
+        stopDesc:
+          'Der Dienst wird jetzt gestoppt. „Beim Systemstart starten“ ist ein eigener Schalter und bleibt unverändert.',
+        update: '{{name}} auf {{version}} aktualisieren?',
+        updateDesc: 'Der Dienst wird neu gestartet, falls er läuft. Die Anmeldung bleibt erhalten.',
+        notInstall: '{{name}} ist nicht installiert.',
+        install: 'Installieren',
+        installing: 'Wird installiert',
+        installFailed: 'Installation fehlgeschlagen',
+        retry: 'Erneut versuchen',
+        notRunning: '{{name}} läuft nicht. Starten Sie es, um fortzufahren.',
+        run: 'Starten',
+        boot: 'Beim Systemstart starten',
+        bootDesc: '{{name}} beim Hochfahren des KVM starten.',
+        enable: '{{name}} aktivieren',
+        control: 'Steuerungsserver',
+        connected: 'Verbunden',
+        disconnected: 'Nicht verbunden',
+        deviceName: 'Gerätename',
+        deviceIP: 'Geräte-IP',
+        account: 'Konto',
+        version: 'Version',
+        uptime: 'Laufzeit',
+        peers: 'Peers',
+        noPeers: 'Noch keine Peers.',
+        online: 'Online',
+        offline: 'Offline',
+        memory: 'Speicher',
+        daemonRss: 'Dienst',
+        group: 'Add-on-Gruppe',
+        high: 'gedrosselt über {{size}}',
+        max: 'vom Kernel beendet über {{size}}',
+        noGroup: 'Keine Speichergruppe für Add-ons auf diesem Board.',
+        uninstall: '{{name}} deinstallieren',
+        uninstallDesc:
+          'Möchten Sie {{name}} wirklich deinstallieren? Die Anmeldung bleibt auf dem Board gespeichert.',
+        blocked:
+          '{{other}} läuft oder startet beim Systemstart. Es kann nur ein VPN gleichzeitig laufen: Stoppen Sie zuerst {{other}} und deaktivieren Sie dessen Start beim Systemstart.',
+        swap: {
+          title: 'Swap-Speicher',
+          tip: 'Wenn dem Dienst der Speicher knapp wird, versuchen Sie, Swap-Speicher zu aktivieren. Dadurch wird die Swap-Datei standardmäßig auf 256MB gesetzt; die Größe lässt sich unter „Einstellungen > Gerät“ anpassen.'
+        }
+      },
       tailscale: {
         title: 'Tailscale',
-        memory: {
-          title: 'Speicher Optimierung',
-          tip: 'Wenn die Speichernutzung das Limit überschreitet, wird die Speicherbereinigung aggressiver durchgeführt, um Speicher freizugeben. Es wird empfohlen, den Wert auf 75 MB zu setzen, wenn Tailscale verwendet wird. Ein Neustart von Tailscale ist erforderlich, damit die Änderung wirksam wird.'
-        },
-        swap: {
-          title: 'Speicher austauschen',
-          tip: 'Wenn die Probleme nach der Aktivierung der Speicheroptimierung weiterhin bestehen, versuchen Sie, den Swap-Speicher zu aktivieren. Dadurch wird die Größe der Auslagerungsdatei standardmäßig auf 256MB festgelegt, was unter „Einstellungen > Gerät“ angepasst werden kann.'
-        },
-        restart: 'Tailscale neu starten?',
-        stop: 'Tailscale stoppen?',
-        stopDesc: 'Von Tailscale abmelden und automatischen Start beim Booten deaktivieren.',
-        loading: 'Lädt...',
-        notInstall: 'Tailscale nicht gefunden! Bitte installieren.',
-        install: 'Installieren',
-        installing: 'Installiere',
-        failed: 'Installation fehlgeschlagen',
         retry: 'Bitte Seite neu laden und erneut versuchen oder manuelle Installation versuchen.',
         download: 'Laden Sie das',
         package: 'Installations-Paket herunter',
@@ -711,23 +866,28 @@ const de = {
         upTailscale: 'Tailscale nach /usr/bin/ auf NanoKVM hochladen',
         upTailscaled: 'Tailscaled nach /usr/bin/ auf NanoKVM hochladen',
         refresh: 'Aktuelle Seite neu laden',
-        notRunning: 'Tailscale läuft nicht. Bitte starten Sie es, um fortzufahren.',
-        run: 'Start',
         notLogin:
           'Das Gerät konnte noch nicht gefunden werden. Bitte melden Sie sich an und verknüpfen Sie dieses Gerät mit Ihrem Konto.',
         urlPeriod: 'Diese URL ist für 10 Minuten gültig',
         login: 'Anmelden',
         loginSuccess: 'Anmeldung erfolgreich',
-        enable: 'Tailscale einschalten',
-        deviceName: 'Geräte Name',
-        deviceIP: 'Geräte IP',
-        account: 'Konto',
         logout: 'Abmelden',
-        logoutDesc: 'Möchten Sie sich wirklich abmelden?',
-        uninstall: 'Tailscale deinstallieren',
-        uninstallDesc: 'Sind Sie sicher, dass Sie Tailscale deinstallieren möchten?',
-        okBtn: 'Ja',
-        cancelBtn: 'Nein'
+        logoutDesc: 'Möchten Sie sich wirklich abmelden?'
+      },
+      netbird: {
+        title: 'NetBird',
+        notLogin:
+          'Dieses Gerät ist noch keinem NetBird-Netzwerk beigetreten. Treten Sie mit einem Setup-Key bei oder melden Sie sich per SSO an.',
+        setupKey: 'Setup-Key',
+        setupKeyPlaceholder: 'Setup-Key aus dem NetBird-Dashboard einfügen',
+        join: 'Beitreten',
+        or: 'oder',
+        sso: 'Mit SSO anmelden',
+        urlPeriod: 'Diese URL ist für 10 Minuten gültig',
+        loginSuccess: 'Anmeldung erfolgreich',
+        logout: 'Abmelden',
+        logoutDesc:
+          'Beim Abmelden wird dieser Peer aus Ihrem NetBird-Konto entfernt und seine Konfiguration hier gelöscht. Ein erneuter Beitritt erfordert einen Setup-Key oder eine SSO-Anmeldung, und der Peer erhält möglicherweise eine neue IP. Fortfahren?'
       },
       update: {
         title: 'Nach Aktualisierungen suchen',
@@ -755,6 +915,7 @@ const de = {
           confirmDesc:
             'SHA-512 bestätigt lediglich, dass das Paket mit dem von diesem Server bereitgestellten Manifest übereinstimmt. Es beweist nicht, dass das Paket eine offizielle NanoKVM-Version ist. Ein fehlerhafter oder bösartiger Server kann das Gerät unbrauchbar machen, Datenverlust verursachen oder das System kompromittieren.',
           confirm: 'Trotzdem verwenden',
+          useSipeed: 'Offiziellen Sipeed-Server verwenden',
           previewDisabled:
             'Vorschau-Updates sind nicht verfügbar, solange ein benutzerdefinierter Update-Server aktiviert ist.'
         },
@@ -774,12 +935,59 @@ const de = {
       account: {
         title: 'Konto',
         webAccount: 'Web Konto Name',
+        role: 'Rolle',
+        roles: { admin: 'Administrator', user: 'Benutzer' },
         password: 'Passwort',
         updateBtn: 'Ändern',
         logoutBtn: 'Abmelden',
         logoutDesc: 'Möchten Sie sich wirklich abmelden?',
         okBtn: 'Ja',
-        cancelBtn: 'Nein'
+        cancelBtn: 'Nein',
+        users: {
+          title: 'Benutzer',
+          create: 'Benutzer anlegen',
+          enabled: 'Aktiviert',
+          disabled: 'Deaktiviert',
+          deviceOwner: 'Gerätebesitzer',
+          resetPassword: 'Passwort zurücksetzen',
+          delete: 'Löschen',
+          deleteConfirm: 'Diesen Benutzer löschen und alle seine Sitzungen widerrufen?',
+          created: 'Benutzer angelegt',
+          deleted: 'Benutzer gelöscht',
+          passwordUpdated: 'Passwort aktualisiert',
+          loadFailed: 'Benutzer konnten nicht geladen werden',
+          saveFailed: 'Benutzer konnte nicht gespeichert werden',
+          deleteFailed: 'Benutzer konnte nicht gelöscht werden'
+        }
+      },
+      apiKeys: {
+        title: 'API-Schlüssel',
+        description:
+          'Ein Schlüssel handelt im Namen seines Besitzers, mit dessen Rolle. Senden Sie ihn als Authorization: Bearer <key> für Metriken und die API oder als X-Auth-Token für Redfish.',
+        name: 'Name',
+        namePlaceholder: 'Wofür der Schlüssel ist, z. B. prometheus',
+        nameRequired: 'Geben Sie dem Schlüssel einen Namen',
+        nameTooLong: 'Der Name darf höchstens 64 Zeichen lang sein',
+        unnamed: '(unbenannt)',
+        create: 'Schlüssel erstellen',
+        created: 'Erstellt',
+        owner: 'Besitzer',
+        empty: 'Keine API-Schlüssel',
+        newKeyTitle: 'Ihr neuer API-Schlüssel',
+        newKeyWarning:
+          'Kopieren Sie den Schlüssel jetzt. Er wird nicht gespeichert und kann nicht erneut angezeigt werden. Wenn Sie ihn verlieren, widerrufen Sie ihn und erstellen Sie einen neuen.',
+        copy: 'Kopieren',
+        copied: 'Kopiert',
+        copyFailed: 'Kopieren fehlgeschlagen. Bitte manuell kopieren.',
+        done: 'Fertig',
+        revoke: 'Widerrufen',
+        revokeConfirmTitle: 'Diesen API-Schlüssel widerrufen?',
+        revokeConfirmDesc: 'Alles, was „{{name}}“ verwendet, funktioniert sofort nicht mehr.',
+        revoked: 'API-Schlüssel widerrufen',
+        loadFailed: 'API-Schlüssel konnten nicht geladen werden',
+        createFailed: 'API-Schlüssel konnte nicht erstellt werden',
+        revokeFailed: 'API-Schlüssel konnte nicht widerrufen werden',
+        cancelBtn: 'Abbrechen'
       }
     },
     picoclaw: {
@@ -950,18 +1158,38 @@ const de = {
     },
     error: {
       title: 'Wir sind auf ein Problem gestossen',
-      refresh: 'Neuladen'
+      refresh: 'Neuladen',
+      panel: 'Dieser Teil der Seite funktioniert nicht mehr',
+      retry: 'Erneut versuchen'
     },
     fullscreen: {
       toggle: 'Vollbild ein/aus'
     },
     input: {
+      disconnected: 'Tastatur und Maus sind nicht verbunden',
+      disconnectedTls:
+        'Der Browser hat die sichere Verbindung für Tastatur und Maus abgelehnt, und zwar ohne nachzufragen. Das von diesem Gerät erzeugte Zertifikat wird noch nicht als vertrauenswürdig eingestuft. Öffnen Sie diese Adresse in einem neuen Tab, akzeptieren Sie das Zertifikat und laden Sie dann neu. Zuverlässig hilft nur die Installation des Zertifikats.',
+      disconnectedNever:
+        'Die Verbindung für Tastatur und Maus konnte nicht aufgebaut werden. Der Rest der Seite funktioniert, weil er sie nicht nutzt. Prüfen Sie, ob etwas zwischen Ihnen und dem Gerät sie blockiert.',
+      disconnectedDropped:
+        'Die Verbindung für Tastatur und Maus ist abgebrochen und nicht wiederhergestellt. Nach einem Neustart verbindet sie sich von selbst; bleibt diese Meldung bestehen, laden Sie die Seite neu.',
       hidDisabled: 'HID ist auf diesem Gerät ausgeschaltet (/boot/disable_hid).',
       keyFailed: 'Die Taste konnte nicht gesendet werden.'
     },
+    speaker: { title: 'Lautsprecher', unmute: 'Ton an', mute: 'Stummschalten' },
     menu: {
       collapse: 'Menu einblenden',
       expand: 'Menu verbergen'
+    },
+    ion: {
+      checking: 'Videospeicher wird vor dem Start des Streams geprüft...',
+      warn: 'Der Videospeicher wird knapp. Ein einziger Neustart des Servers würde ihn erschöpfen. Starten Sie bei Gelegenheit neu.',
+      criticalTitle: 'Nicht genug Videospeicher, um den Stream zu starten',
+      criticalBody:
+        'Das Starten des Videos würde den reservierten Speicher erschöpfen und den Server stoppen. Alle anderen Funktionen arbeiten weiterhin, einschließlich Stromsteuerung und Neustart. Nur ein Neustart des NanoKVM gibt diesen Speicher wieder frei.',
+      criticalContinue: 'Video trotzdem starten',
+      criticalReboot: 'NanoKVM neu starten',
+      criticalRebooting: 'Wird neu gestartet...'
     }
   }
 };

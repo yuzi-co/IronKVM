@@ -8,18 +8,23 @@ const hu = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      cookieRejected:
+        'A böngésző nem tárolta el a munkamenetet. Egy korábbi HTTPS-munkamenetből visszamaradt cookie titkosítatlan http-kapcsolaton nem cserélhető le. Törölje a cookie-kat ehhez a címhez, vagy nyisson privát ablakot, és jelentkezzen be újra.',
       login: 'Bejelentkezés',
       placeholderUsername: 'Adja meg a felhasználónevet',
       placeholderPassword: 'Adja meg a jelszót',
+      placeholderCurrentPassword: 'Jelenlegi jelszó',
       placeholderPassword2: 'Adja meg újra a jelszót',
       noEmptyUsername: 'A felhasználónév nem lehet üres',
       noEmptyPassword: 'A jelszó nem lehet üres',
+      passwordLength: 'A jelszónak 8 és 72 karakter között kell lennie',
       noAccount:
         'Nem sikerült megszerezni a felhasználói információkat, frissítse az oldalt vagy állítsa vissza a jelszót',
       invalidUser: 'Érvénytelen felhasználónév vagy jelszó',
       locked: 'Túl sok bejelentkezés, kérjük, próbálja újra később',
       globalLocked: 'A rendszer védelem alatt áll, próbálkozzon újra később',
       error: 'Váratlan hiba',
+      invalidCurrentPassword: 'A jelenlegi jelszó helytelen',
       changePassword: 'Jelszó megváltoztatása',
       changePasswordDesc:
         'Az eszköz biztonsága érdekében módosítsa a webes bejelentkezési jelszót.',
@@ -244,6 +249,10 @@ const hu = {
       relative: 'Relatív mód',
       absoluteShort: 'Abszolút',
       relativeShort: 'Relatív',
+      absoluteStalled: 'A célgép figyelmen kívül hagyja az abszolút egeret',
+      absoluteStalledDesc:
+        'A célgép már nem fogadja az abszolút egér jelentéseit, így a mutató mozgásai elvesznek. A billentyűzetet ez nem érinti. Az USB helyreállítása gyakran megoldja; a relatív mód másik végpontot használ.',
+      useRelative: 'Váltás relatív módra',
       direction: 'Görgő iránya',
       scrollUp: 'Görgessen felfelé',
       scrollDown: 'Görgessen le',
@@ -258,7 +267,7 @@ const hu = {
         desc: 'Ha az egér és a billentyűzet nem válaszol, és az HID alaphelyzetbe állítása nem segít, akkor az NanoKVM és az eszköz közötti kompatibilitási probléma lehet. Próbálja engedélyezni az HID-Csak módot a jobb kompatibilitás érdekében.',
         tip1: 'Az HID-Csak mód engedélyezése leválasztja a virtuális U-lemezt és a virtuális hálózatot',
         tip2: 'HID-Csak módban a képrögzítés le van tiltva',
-        tip3: 'A NanoKVM automatikusan újraindul az üzemmódváltás után',
+        rebuild: 'A módváltás újraépíti az USB-kapcsolatot. A NanoKVM nem indul újra',
         enable: 'Engedélyezze a HID-Csak módot',
         disable: 'A HID-Csak mód letiltása'
       }
@@ -275,6 +284,17 @@ const hu = {
       unmountDesc:
         'Egyes rendszereken manuálisan kell kiadnia a távoli gazdagépről a kép leválasztása előtt.',
       refresh: 'Frissítse a képlistát',
+      disk: 'Lemez',
+      cdrom: 'CD',
+      driveEmpty: 'Üres',
+      eject: 'Kiadás',
+      readOnly: 'Csak olvasható',
+      readOnlyTip: 'A lemezbe következőként behelyezett képfájlra vonatkozik.',
+      noDrives: 'Nincsenek virtuális meghajtók. Kapcsolja be a virtuális lemezt a Beállításokban.',
+      insertFailed: 'A behelyezés sikertelen',
+      ejectFailed: 'A kiadás sikertelen',
+      insertInto: 'Behelyezés ide: {{drive}}. Kattintson a módosításhoz.',
+      loadedIn: 'Ebben a meghajtóban: {{drive}}',
       attention: 'Figyelem',
       deleteConfirm: 'Biztosan törli ezt a képet?',
       okBtn: 'Igen',
@@ -373,7 +393,15 @@ const hu = {
       sleepConfirm: 'Alvó állapotba helyezi a gazdagépet?',
       powerDownConfirm: 'Elküldi a kikapcsoló billentyűt a gazdagépnek?',
       wakeTip:
-        'Az alvó gazdagép gyakran figyelmen kívül hagyja az Ébresztést attól az eszköztől, amely elaltatta. Az Ébresztés Shifttel egy billentyűt nyom le a billentyűzeten, amelyet több gazdagép elfogad.'
+        'Az alvó gazdagép gyakran figyelmen kívül hagyja az Ébresztést attól az eszköztől, amely elaltatta. Az Ébresztés Shifttel egy billentyűt nyom le a billentyűzeten, amelyet több gazdagép elfogad.',
+      led: 'Bekapcsolásjelző LED',
+      ledOn: 'Világít',
+      ledOff: 'Nem világít',
+      ledUnknown: 'Ismeretlen',
+      ledConnected: 'Bekapcsolásjelző LED csatlakoztatva',
+      ledConnectedTip:
+        'Csak akkor kapcsolja be, ha a gazdagép bekapcsolásjelző LED-csatlakozója be van kötve a kártyára. Enélkül a tápellátás állapota ismeretlen.',
+      ledConnectedFailed: 'Nem sikerült menteni a bekapcsolásjelző LED beállítását'
     },
     settings: {
       title: 'Beállítások',
@@ -396,6 +424,33 @@ const hu = {
         okBtn: 'Megerősítés',
         cancelBtn: 'Mégse'
       },
+      redfish: {
+        title: 'Redfish',
+        service: 'Redfish szolgáltatás',
+        serviceDesc:
+          'A DMTF Redfish API tápellátás-vezérléshez, virtuális adathordozókhoz és állapotlekérdezéshez olyan eszközökből, mint a redfishtool és az Ansible. Kikapcsolásakor minden Redfish-munkamenet megszűnik.',
+        endpoint: 'Szolgáltatás gyökere',
+        httpsOn: 'A kártya HTTPS-t szolgál ki, amelyre a legtöbb Redfish-eszköznek szüksége van.',
+        httpsOff:
+          'A kártya titkosítatlan HTTP-t szolgál ki. A legtöbb Redfish-eszköznek HTTPS kell: kapcsolja be a "Beállítások > Hálózat" alatt.',
+        credentials:
+          'A Redfish a KVM-fiókokat fogadja el Basic hitelesítéssel vagy Redfish-munkamenettel, valamint X-Auth-Token fejlécben küldött API-kulcsokat. Az API-kulcsokat az API-kulcsok oldalon kezelheti.',
+        powerActions: 'Tápellátási műveletek',
+        powerActionsDesc:
+          'A jelenleg elérhető reset típusok. Az On, a ForceOff és a GracefulShutdown művelethez ismerni kell a tápellátás állapotát, ezért ezek csak akkor érhetők el, ha a tápellátás menüben be van kapcsolva a "Bekapcsolásjelző LED csatlakoztatva".',
+        sessions: 'Munkamenetek',
+        noSessions: 'Nincs nyitott Redfish-munkamenet',
+        created: 'Létrehozva',
+        lastUsed: 'Utoljára használva',
+        refresh: 'Frissítés',
+        end: 'Befejezés',
+        endConfirmTitle: 'Befejezi ezt a Redfish-munkamenetet?',
+        endConfirmDesc: 'A tokenje azonnal érvényét veszti. A kliensnek újra be kell jelentkeznie.',
+        failed: 'A Redfish-művelet sikertelen',
+        copyFailed: 'A másolás sikertelen. Másolja kézzel.',
+        okBtn: 'Megerősítés',
+        cancelBtn: 'Mégse'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Gazdagép-watchdog',
@@ -404,7 +459,7 @@ const hu = {
         stillWarning:
           'Az a gazdagép, amelynek kijelzője alvó állapotba kerül, vagy amelynek képe munka közben mozdulatlan, lefagyottnak tűnik. Kapcsolja ki a kijelző alvását a gazdagépen, vagy adjon meg ping-címet.',
         ledHint:
-          'A "Power LED connected" kapcsoló ki van kapcsolva a tápellátás menüben. A watchdog nem látja, mikor van kikapcsolva a gazdagép, ezért mindig bekapcsoltnak tekinti.',
+          'A "Bekapcsolásjelző LED csatlakoztatva" kapcsoló ki van kapcsolva a tápellátás menüben. A watchdog nem látja, mikor van kikapcsolva a gazdagép, ezért mindig bekapcsoltnak tekinti.',
         timeout: 'Időkorlát',
         timeoutDesc: 'Mennyi ideig nem mutathat életjelet a gazdagép, mielőtt a watchdog közbelép.',
         action: 'Művelet',
@@ -468,7 +523,15 @@ const hu = {
         applicationTip: 'NanoKVM webalkalmazás verziója',
         image: 'Képfájl verzió',
         imageTip: 'NanoKVM rendszerkép verziója',
+        kernel: 'Kernelverzió',
+        kernelTip: 'A jelenleg futó Linux-kernel kiadása',
         deviceKey: 'Eszköz kulcs',
+        videoMemory: 'Videomemória',
+        videoMemoryTip:
+          'Videorögzítésre fenntartott memória. A rendszer többi része nem használja.',
+        videoMemoryGenerations_one: '{{count}} korábbi NanoKVM-munkamenet foglal videomemóriát',
+        videoMemoryGenerations_other: '{{count}} korábbi NanoKVM-munkamenet foglal videomemóriát',
+        videoMemoryReboot: 'A felszabadításhoz indítsa újra.',
         community: 'Közösség',
         hostname: 'Gazdanév',
         hostnameUpdated: 'Gazdanév frissítve. Az alkalmazáshoz indítsa újra.',
@@ -517,6 +580,16 @@ const hu = {
         oled: {
           title: 'OLED',
           description: 'OLED screen automatically sleep',
+          brightness: 'OLED fényerő',
+          brightnessDescription: 'Alacsonyabb szinten tovább bírja a kijelző',
+          brightnessLevels: {
+            '64': 'Legalacsonyabb',
+            '96': 'Alacsony',
+            '128': 'Közepes',
+            '160': 'Magas',
+            '207': 'Alapértelmezett',
+            '255': 'Maximális'
+          },
           0: 'Soha',
           15: '15 sec',
           30: '30 sec',
@@ -532,11 +605,35 @@ const hu = {
           tip: 'Az engedélyezés előtt állítson be erős jelszót (Fiók - Jelszó módosítása)'
         },
         advanced: 'Speciális beállítások',
+        cpuFreq: {
+          title: 'CPU-frekvencia',
+          description: 'A következő rendszerindításkor alkalmazott CPU-órajel beállítása',
+          tip: 'A CPU 850 MHz-en indul, és 1000 MHz-re van specifikálva. Az új érték a következő rendszerindításkor lép életbe, nem futás közben. Az 1000 MHz a specifikáción belül van; a hőmérséklet mindkét beállításnál jóval a határértékek alatt marad.',
+          running: 'Jelenleg: {{mhz}} MHz',
+          rebootToApply: 'az alkalmazáshoz újraindítás szükséges',
+          rebootConfirm: 'Újraindítja most, hogy a {{mhz}} MHz érvénybe lépjen?'
+        },
         swap: {
           title: 'Csere',
           disable: 'Letiltás',
           description: 'Állítsa be a swap fájl méretét',
           tip: 'Ennek a funkciónak az engedélyezése lerövidítheti az SD-kártya élettartamát!'
+        },
+        zram: {
+          title: 'Tömörített swap (zram)',
+          description: 'Swap tömörített RAM-ban az SD-kártya helyett',
+          tip: 'A zram távol tartja a swapot az SD-kártyától, így nem koptatja azt. Mögötte nincs lemezes swap: ha a zram megtelik, a kernel leállít egy folyamatot a lassú lapozás helyett. A memóriakorlát határozza meg, mennyi RAM-ot foglalhat a zram.',
+          unavailable: 'A kernelmodulok nincsenek telepítve ezen az eszközön',
+          inactive: 'Engedélyezve, de az eszköz nem indult el',
+          active: 'Aktív - {{used}} / {{total}}, {{ratio}}x',
+          off: 'Kikapcsolva',
+          detail: {
+            algorithm: 'Algoritmus: {{algorithm}}',
+            memory: 'Használt memória: {{used}} / {{limit}}',
+            memoryNoLimit: 'Használt memória: {{used}}, nincs korlát beállítva',
+            counters:
+              'Beolvasott lapok: {{in}}, kiírt lapok: {{out}} (minden swap eszköz, rendszerindítás óta)'
+          }
         },
         mouseJiggler: {
           title: 'Mouse Jiggler',
@@ -592,7 +689,26 @@ const hu = {
           reenumerate:
             'Az alkalmazás újraépíti az USB-kapcsolatot. A gazdagép néhány másodpercre elveszíti a billentyűzetet, az egeret és a virtuális lemezt.'
         },
+        audio: 'Virtuális hangszóró',
+        audioDesc:
+          'USB-hangkártyát jelenít meg a távoli gazdagépen, így hallhatja annak hangját. A gazdagépen ki kell választani kimeneti eszközként. A kapcsolása újraépíti az USB-kapcsolatot.',
+        audioNote: 'Hang mindkét H.264 módban (WebRTC és Direct) elérhető, MJPEG módban nem',
+        console: 'Soros konzol',
+        consoleDesc:
+          'USB soros portot jelenít meg a távoli gazdagépen, amelyen át bejelentkezhet erre a NanoKVM-re, ha a hálózat nem érhető el',
+        consoleTip:
+          'Bárki, aki a távoli gazdagépet vezérli, bejelentkezési promptot kap ehhez a NanoKVM-hez. Az engedélyezés előtt állítson be erős jelszót (Fiók - Jelszó módosítása).',
         endpoints: {
+          title: 'USB-végpontok',
+          used: '{{used}} / {{total}} használatban',
+          cost: '{{cost}} foglalt',
+          needs: '{{cost}} szükséges',
+          full: 'Nincs elég USB-végpont. Előbb kapcsoljon ki valami mást.',
+          inactive:
+            'Bekapcsolva, de nem fut: az USB-vezérlőnek elfogytak a végpontjai. Kapcsoljon ki egy másik eszközt, és ez azonnal elindul.',
+          explain:
+            'Az USB-vezérlőnek rögzített számú bemeneti végpontja van, ez a számláló ezeket mutatja. Ha több eszköz van engedélyezve, mint amennyi elfér, a billentyűzet és az egér megmarad, a többi kikapcsol.',
+          error: 'Az eszköz nem érhető el. Próbálja újra.',
           fitTogether: 'Ezek együtt elférnek: {{sets}}'
         },
         reboot: 'Újraindítás',
@@ -619,7 +735,10 @@ const hu = {
         },
         tls: {
           description: 'HTTPS protokoll engedélyezése',
-          tip: 'Figyelem: A HTTPS használata növelheti a késleltetést, különösen MJPEG videó módban.'
+          tip: 'Figyelem: A HTTPS használata növelheti a késleltetést, különösen MJPEG videó módban.',
+          restarting: 'Az eszköz szervere újraindul, ez körülbelül két percig tart...',
+          waiting: 'Várakozás, hogy az eszköz újra válaszoljon...',
+          waitingHttp: 'Visszaváltás http-re. Ha az oldal nem nyílik meg magától, töltse újra.'
         },
         ethernet: {
           title: 'IP-cím',
@@ -680,24 +799,55 @@ const hu = {
           none: 'Nincs'
         }
       },
-      tailscale: {
-        title: 'Tailscale',
-        memory: {
-          title: 'Memóriaoptimalizálás',
-          tip: "When memory usage exceeds the limit, garbage collection is performed more aggressively to attempt to free up memory. it's recommended to set to 50MB if using Tailscale. A Tailscale restart is required for the change to take effect."
-        },
-        swap: {
-          title: 'Memória csere',
-          tip: 'Ha a memóriaoptimalizálás engedélyezése után is fennállnak a problémák, próbálja meg engedélyezni a swap memóriát. Ez alapértelmezés szerint a swap fájl méretét 256MB értékre állítja be, amely a "Beállítások > Eszköz" menüpontban állítható be.'
-        },
-        restart: 'Are you sure to restart Tailscale?',
-        stop: 'Are you sure to stop Tailscale?',
-        stopDesc: 'Log out Tailscale and disable its automatic startup on boot.',
+      vpn: {
         loading: 'Betöltés...',
-        notInstall: 'Tailscale nem található! Kérem, telepítse.',
+        okBtn: 'Igen',
+        cancelBtn: 'Nem',
+        restart: '{{name}} újraindítása?',
+        stop: '{{name}} leállítása?',
+        stopDesc:
+          'A démon most leáll. Az indításkori automatikus indítás külön kapcsoló, és változatlan marad.',
+        update: '{{name}} frissítése erre: {{version}}?',
+        updateDesc: 'Ha a démon fut, újraindul. A bejelentkezés megmarad.',
+        notInstall: '{{name}} nincs telepítve.',
         install: 'Telepítés',
         installing: 'Telepítés folyamatban',
-        failed: 'Telepítés sikertelen',
+        installFailed: 'A telepítés sikertelen',
+        retry: 'Újrapróbálás',
+        notRunning: '{{name}} nem fut. A folytatáshoz indítsa el.',
+        run: 'Indítás',
+        boot: 'Indítás rendszerindításkor',
+        bootDesc: '{{name}} indítása a KVM indulásakor.',
+        enable: '{{name}} engedélyezése',
+        control: 'Vezérlőszerver',
+        connected: 'Csatlakozva',
+        disconnected: 'Nincs csatlakozva',
+        deviceName: 'Eszköznév',
+        deviceIP: 'Eszköz IP-címe',
+        account: 'Fiók',
+        version: 'Verzió',
+        uptime: 'Üzemidő',
+        peers: 'Társak',
+        noPeers: 'Még nincsenek társak.',
+        online: 'Online',
+        offline: 'Offline',
+        memory: 'Memória',
+        daemonRss: 'Démon',
+        group: 'Bővítménycsoport',
+        high: '{{size}} felett lassítva',
+        max: '{{size}} felett a kernel leállítja',
+        noGroup: 'Ezen a kártyán nincs bővítmény-memóriacsoport.',
+        uninstall: '{{name}} eltávolítása',
+        uninstallDesc: 'Biztosan eltávolítja ezt: {{name}}? A bejelentkezés megmarad a kártyán.',
+        blocked:
+          '{{other}} fut, vagy rendszerindításkor elindul. Egyszerre csak egy VPN futhat: előbb állítsa le ezt: {{other}}, és kapcsolja ki az automatikus indítását.',
+        swap: {
+          title: 'Swap memória',
+          tip: 'Ha a démonnak kevés a memóriája, próbálja engedélyezni a swap memóriát. Ez alapértelmezés szerint 256MB-ra állítja a swap fájl méretét, amely a "Beállítások > Eszköz" alatt módosítható.'
+        }
+      },
+      tailscale: {
+        title: 'Tailscale',
         retry: 'Frissítse az oldalt, majd próbálja újra. Vagy próbálja meg manuálisan telepíteni.',
         download: 'Letöltés a',
         package: 'telepítési csomag',
@@ -705,23 +855,28 @@ const hu = {
         upTailscale: 'Töltsön fel tailscale-t a NanoKVM /usr/bin/ könyvtárába',
         upTailscaled: 'Töltsön fel tailscaled-t a NanoKVM /usr/sbin/ könyvtárába',
         refresh: 'Frissítse az aktuális oldalt',
-        notRunning: 'Tailscale nem fut. Kérjük, indítsa el a folytatáshoz.',
-        run: 'Indítás',
         notLogin:
           'Az eszköz még nincs kötve. Kérem, jelentkezzen be és kösse az eszközt a fiókjához.',
         urlPeriod: 'Ez az url 10 percig érvényes',
         login: 'Bejelentkezés',
         loginSuccess: 'Sikeres bejelentkezés',
-        enable: 'Tailscale engedélyezése',
-        deviceName: 'Eszköz neve',
-        deviceIP: 'Eszköz IP',
-        account: 'Fiók',
         logout: 'Kijelentkezés',
-        logoutDesc: 'Biztos, hogy ki szeretne jelentkezni?',
-        uninstall: 'Eltávolítás Tailscale',
-        uninstallDesc: 'Biztosan eltávolítja a Tailscale alkalmazást?',
-        okBtn: 'Yes',
-        cancelBtn: 'No'
+        logoutDesc: 'Biztos, hogy ki szeretne jelentkezni?'
+      },
+      netbird: {
+        title: 'NetBird',
+        notLogin:
+          'Ez az eszköz még nem csatlakozott NetBird-hálózathoz. Csatlakozzon beállítókulccsal, vagy jelentkezzen be SSO-val.',
+        setupKey: 'Beállítókulcs',
+        setupKeyPlaceholder: 'Illesszen be egy beállítókulcsot a NetBird irányítópultjáról',
+        join: 'Csatlakozás',
+        or: 'vagy',
+        sso: 'Bejelentkezés SSO-val',
+        urlPeriod: 'Ez az url 10 percig érvényes',
+        loginSuccess: 'Sikeres bejelentkezés',
+        logout: 'Regisztráció törlése',
+        logoutDesc:
+          'A regisztráció törlése eltávolítja ezt a társat a NetBird-fiókjából, és törli itt a konfigurációját. Az újbóli csatlakozáshoz beállítókulcs vagy SSO-bejelentkezés kell, és a társ új IP-címet kaphat. Folytatja?'
       },
       update: {
         title: 'Frissítés keresése',
@@ -749,6 +904,7 @@ const hu = {
           confirmDesc:
             'Az SHA-512 csak azt ellenőrzi, hogy a csomag megfelel-e a kiszolgáló által biztosított jegyzéknek. Nem igazolja, hogy a csomag hivatalos NanoKVM-kiadás. Egy hibás vagy rosszindulatú kiszolgáló használhatatlanná teheti az eszközt, adatvesztést okozhat, vagy veszélyeztetheti a rendszert.',
           confirm: 'Használat mindenképpen',
+          useSipeed: 'A hivatalos Sipeed kiszolgáló használata',
           previewDisabled:
             'Az előzetes frissítések nem érhetők el, amíg egyéni frissítési kiszolgáló van engedélyezve.'
         },
@@ -766,12 +922,59 @@ const hu = {
       account: {
         title: 'Fiók',
         webAccount: 'Webes fiók neve',
+        role: 'Szerepkör',
+        roles: { admin: 'Rendszergazda', user: 'Felhasználó' },
         password: 'Jelszó',
         updateBtn: 'Update',
         logoutBtn: 'Kijelentkezés',
         logoutDesc: 'Biztos, hogy ki szeretne jelentkezni?',
         okBtn: 'Igen',
-        cancelBtn: 'Nem'
+        cancelBtn: 'Nem',
+        users: {
+          title: 'Felhasználók',
+          create: 'Felhasználó létrehozása',
+          enabled: 'Engedélyezve',
+          disabled: 'Letiltva',
+          deviceOwner: 'Eszköz tulajdonosa',
+          resetPassword: 'Jelszó visszaállítása',
+          delete: 'Törlés',
+          deleteConfirm: 'Törli ezt a felhasználót, és visszavonja az összes munkamenetét?',
+          created: 'Felhasználó létrehozva',
+          deleted: 'Felhasználó törölve',
+          passwordUpdated: 'Jelszó frissítve',
+          loadFailed: 'Nem sikerült betölteni a felhasználókat',
+          saveFailed: 'Nem sikerült menteni a felhasználót',
+          deleteFailed: 'Nem sikerült törölni a felhasználót'
+        }
+      },
+      apiKeys: {
+        title: 'API-kulcsok',
+        description:
+          'A kulcs a tulajdonosa nevében, annak szerepkörével működik. Küldje Authorization: Bearer <key> fejlécként a metrikákhoz és az API-hoz, vagy X-Auth-Token fejlécként a Redfish-hez.',
+        name: 'Név',
+        namePlaceholder: 'Mire szolgál a kulcs, például prometheus',
+        nameRequired: 'Adjon nevet a kulcsnak',
+        nameTooLong: 'A név legfeljebb 64 karakter lehet',
+        unnamed: '(névtelen)',
+        create: 'Kulcs létrehozása',
+        created: 'Létrehozva',
+        owner: 'Tulajdonos',
+        empty: 'Nincsenek API-kulcsok',
+        newKeyTitle: 'Az új API-kulcsa',
+        newKeyWarning:
+          'Másolja ki a kulcsot most. Nem kerül tárolásra, és később nem jeleníthető meg újra. Ha elveszíti, vonja vissza, és hozzon létre egy újat.',
+        copy: 'Másolás',
+        copied: 'Másolva',
+        copyFailed: 'A másolás sikertelen. Másolja kézzel.',
+        done: 'Kész',
+        revoke: 'Visszavonás',
+        revokeConfirmTitle: 'Visszavonja ezt az API-kulcsot?',
+        revokeConfirmDesc: 'Minden, ami a(z) "{{name}}" kulcsot használja, azonnal leáll.',
+        revoked: 'API-kulcs visszavonva',
+        loadFailed: 'Nem sikerült betölteni az API-kulcsokat',
+        createFailed: 'Nem sikerült létrehozni az API-kulcsot',
+        revokeFailed: 'Nem sikerült visszavonni az API-kulcsot',
+        cancelBtn: 'Mégse'
       }
     },
     picoclaw: {
@@ -941,18 +1144,38 @@ const hu = {
     },
     error: {
       title: 'Problémába ütköztünk',
-      refresh: 'Frissítés'
+      refresh: 'Frissítés',
+      panel: 'Az oldal ezen része nem működik',
+      retry: 'Újra'
     },
     fullscreen: {
       toggle: 'Teljes képernyő váltás'
     },
     input: {
+      disconnected: 'A billentyűzet és az egér nincs csatlakoztatva',
+      disconnectedTls:
+        'A böngésző kérdés nélkül elutasította a billentyűzetet és az egeret továbbító biztonságos kapcsolatot. Az eszköz által generált tanúsítvány még nem megbízható. Nyissa meg ezt a címet egy új lapon, fogadja el a tanúsítványt, majd töltse újra az oldalt. A megbízható megoldás a tanúsítvány telepítése.',
+      disconnectedNever:
+        'A billentyűzetet és az egeret továbbító kapcsolatot nem sikerült megnyitni. Az oldal többi része működik, mert nem használja ezt a kapcsolatot. Ellenőrizze, hogy semmi sem blokkolja Ön és az eszköz között.',
+      disconnectedDropped:
+        'A billentyűzetet és az egeret továbbító kapcsolat megszakadt, és nem állt helyre. Újraindítás után magától újracsatlakozik; ha ez az állapot megmarad, töltse újra az oldalt.',
       hidDisabled: 'A HID ki van kapcsolva ezen az eszközön (/boot/disable_hid).',
       keyFailed: 'A billentyűt nem sikerült elküldeni.'
     },
+    speaker: { title: 'Hangszóró', unmute: 'Némítás feloldása', mute: 'Némítás' },
     menu: {
       collapse: 'Menü összecsukása',
       expand: 'Bontsa ki a menüt'
+    },
+    ion: {
+      checking: 'Videomemória ellenőrzése az adatfolyam indítása előtt...',
+      warn: 'Kevés a videomemória. Egyetlen szerver-újraindítás elfogyasztaná. Indítsa újra, amikor alkalmas.',
+      criticalTitle: 'Nincs elég videomemória az adatfolyam indításához',
+      criticalBody:
+        'A videó indítása elfogyasztaná a fenntartott memóriát, és leállítaná a szervert. Minden más funkció továbbra is működik, beleértve a tápellátás-vezérlést és az újraindítást. Ezt a memóriát csak a NanoKVM újraindítása szabadítja fel.',
+      criticalContinue: 'Videó indítása mégis',
+      criticalReboot: 'NanoKVM újraindítása',
+      criticalRebooting: 'Újraindítás...'
     }
   }
 };
