@@ -194,6 +194,8 @@ const vi = {
       mode: 'Chế độ chuột',
       absolute: 'Chế độ tuyệt đối',
       relative: 'Chế độ tương đối',
+      absoluteShort: 'Tuyệt đối',
+      relativeShort: 'Tương đối',
       direction: 'Hướng bánh xe cuộn',
       scrollUp: 'Cuộn lên',
       scrollDown: 'Cuộn xuống',

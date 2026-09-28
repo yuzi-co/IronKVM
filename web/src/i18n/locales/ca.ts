@@ -195,6 +195,8 @@ const ca = {
       mode: 'Mode de ratolí',
       absolute: 'Mode absolut',
       relative: 'Mode relatiu',
+      absoluteShort: 'Absolut',
+      relativeShort: 'Relatiu',
       direction: 'Direcció de la roda de desplaçament',
       scrollUp: "Desplaça't cap amunt",
       scrollDown: "Desplaça't cap avall",

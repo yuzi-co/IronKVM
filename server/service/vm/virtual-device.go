@@ -200,6 +200,7 @@ func (s *Service) UpdateVirtualDevice(c *gin.Context) {
 	h := hid.GetHid()
 	h.Lock()
 	h.CloseNoLock()
+	h.ForgetAcceptingNoLock()
 	defer func() {
 		h.OpenNoLock()
 		h.Unlock()

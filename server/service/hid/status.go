@@ -166,6 +166,7 @@ func applyHidMode(mode string) error {
 	h := GetHid()
 	h.Lock()
 	h.CloseNoLock()
+	h.ForgetAcceptingNoLock()
 	defer h.Unlock()
 
 	err := switchGadget(mode, usbDevCommand, GetMode)
@@ -249,6 +250,7 @@ func ResetUSBPHY() error {
 	h := GetHid()
 	h.Lock()
 	h.CloseNoLock()
+	h.ForgetAcceptingNoLock()
 	defer h.Unlock()
 
 	if err := usbDevCommand("restart_phy"); err != nil {

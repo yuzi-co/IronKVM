@@ -195,6 +195,8 @@ const ja = {
       mode: 'マウスモード',
       absolute: '絶対モード',
       relative: '相対モード',
+      absoluteShort: '絶対',
+      relativeShort: '相対',
       direction: 'ホイール方向',
       scrollUp: '上',
       scrollDown: '下',

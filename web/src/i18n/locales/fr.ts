@@ -198,6 +198,8 @@ const fr = {
       mode: 'Mode de la souris',
       absolute: 'Mode absolu',
       relative: 'Mode relatif',
+      absoluteShort: 'Absolu',
+      relativeShort: 'Relatif',
       direction: 'Sens de la molette',
       scrollUp: 'Faire défiler vers le haut',
       scrollDown: 'Faites défiler vers le bas',

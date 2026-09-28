@@ -8,6 +8,9 @@ export type HidDeviceStatus = {
   detail?: string;
   stateForMs: number;
   observedMsAgo: number;
+  // wasAccepting says the target has fetched a report from this endpoint since
+  // the gadget last enumerated.
+  wasAccepting: boolean;
 };
 
 export const ABSOLUTE_MOUSE = 'mouse-absolute';
@@ -26,11 +29,17 @@ const FRESH_MS = 60_000;
 // Nothing else in the system reports this: the device node is present and the
 // USB gadget is bound, so every other signal reads healthy.
 //
+// Only an endpoint that was accepting and then stopped counts. A host with no
+// driver for the pointer, such as a text console or a BIOS without USB mouse
+// support, never polls it, so it reads stalled from the start. That is normal,
+// and warning about it steered operators into a USB recovery that fixes nothing
+// or a relative mode they then forgot about.
+//
 // Why a target does it is not knowable from here. Both remedies the UI offers
 // have been seen to work, which is why it offers both rather than picking one.
 export function isAbsoluteMouseStalled(devices: HidDeviceStatus[]): boolean {
   const absolute = devices.find((device) => device.name === ABSOLUTE_MOUSE);
   if (!absolute) return false;
 
-  return absolute.state === 'stalled' && absolute.observedMsAgo < FRESH_MS;
+  return absolute.state === 'stalled' && absolute.wasAccepting && absolute.observedMsAgo < FRESH_MS;
 }

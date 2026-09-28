@@ -192,6 +192,8 @@ const se = {
       mode: 'Musläge',
       absolute: 'Absolut läge',
       relative: 'Relativt läge',
+      absoluteShort: 'Absolut',
+      relativeShort: 'Relativ',
       direction: 'Rullhjulsriktning',
       scrollUp: 'Scrolla uppåt',
       scrollDown: 'Scrolla ner',

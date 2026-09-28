@@ -187,6 +187,8 @@ const zh_tw = {
       mode: '滑鼠模式',
       absolute: '絕對模式',
       relative: '相對模式',
+      absoluteShort: '絕對',
+      relativeShort: '相對',
       direction: '滾輪方向',
       scrollUp: '向上',
       scrollDown: '向下',

@@ -363,6 +363,21 @@ func (h *Hid) CloseNoLock() {
 	}
 }
 
+// ForgetAcceptingNoLock clears every endpoint's record of having been polled.
+// Call it with the HID locks held, around anything that makes the host
+// enumerate the gadget afresh: a rebuild, a rebind or a PHY reset. The host
+// decides again then which endpoints it polls, and a stall that follows is not
+// evidence that anything stopped.
+//
+// It is not part of CloseNoLock, because every websocket client reopens the
+// descriptors when it connects, and a browser reconnecting must not hide a
+// real stall.
+func (h *Hid) ForgetAcceptingNoLock() {
+	for _, device := range h.devices() {
+		device.health.forgetAccepting()
+	}
+}
+
 func (h *Hid) openDeviceNoLock(device hidDevice) error {
 	if device.get() != nil {
 		return nil

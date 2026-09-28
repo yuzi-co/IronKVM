@@ -44,6 +44,14 @@ type endpointHealth struct {
 	since    time.Time // when the current state began
 	observed time.Time // when the current state was last confirmed
 
+	// wasAccepting is set by the first write the target fetches and cleared
+	// when the gadget enumerates afresh. A stall means something different
+	// with and without it: an endpoint that took reports and then stopped has
+	// gone wrong, while one that never took any may belong to a host with no
+	// driver for it, such as a text console or a BIOS without USB mouse
+	// support, which never polls and is not at fault.
+	wasAccepting bool
+
 	// stalledWrites and detachedWrites count every write that failed each way
 	// since the server started, not only the changes of state. The metrics
 	// endpoint reads them without the lock.
@@ -79,6 +87,14 @@ func (h *endpointHealth) record(err error, now time.Time) hidTransition {
 	}
 
 	h.observed = now
+	switch state {
+	case hidStateAccepting:
+		h.wasAccepting = true
+	case hidStateDetached:
+		// The host will enumerate the gadget again when the link returns, and
+		// whether it polls this endpoint then is a new question.
+		h.wasAccepting = false
+	}
 	if h.state == state && h.detail == detail {
 		return hidTransition{Changed: false, From: from, To: state}
 	}
@@ -129,6 +145,16 @@ func (h *endpointHealth) linkFaultSince() time.Time {
 	return h.since
 }
 
+// forgetAccepting clears wasAccepting. Call it when the gadget is about to
+// enumerate afresh, because the host decides again then which endpoints it
+// polls.
+func (h *endpointHealth) forgetAccepting() {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	h.wasAccepting = false
+}
+
 func (h *endpointHealth) snapshot(now time.Time) proto.HidDeviceStatus {
 	h.mu.Lock()
 	defer h.mu.Unlock()
@@ -142,6 +168,7 @@ func (h *endpointHealth) snapshot(now time.Time) proto.HidDeviceStatus {
 		Detail:        h.detail,
 		StateForMs:    millisBetween(h.since, now),
 		ObservedMsAgo: millisBetween(h.observed, now),
+		WasAccepting:  h.wasAccepting,
 	}
 }
 

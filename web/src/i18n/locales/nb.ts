@@ -196,6 +196,8 @@ const nb = {
       mode: 'Modus',
       absolute: 'Absolutt',
       relative: 'Relativ',
+      absoluteShort: 'Absolutt',
+      relativeShort: 'Relativ',
       direction: 'Rullehjulretning',
       scrollUp: 'Rull opp',
       scrollDown: 'Rull ned',

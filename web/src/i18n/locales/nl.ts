@@ -198,6 +198,8 @@ const nl = {
       mode: 'Muismodus',
       absolute: 'Absolute modus',
       relative: 'Relatieve modus',
+      absoluteShort: 'Absoluut',
+      relativeShort: 'Relatief',
       direction: 'Scrollwielrichting',
       scrollUp: 'Scroll naar boven',
       scrollDown: 'Scroll naar beneden',

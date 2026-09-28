@@ -195,6 +195,8 @@ const tr = {
       mode: 'Fare modu',
       absolute: 'Mutlak fare modu',
       relative: 'Bağıl fare modu',
+      absoluteShort: 'Mutlak',
+      relativeShort: 'Bağıl',
       direction: 'Kaydırma tekerleği yönü',
       scrollUp: 'Yukarı kaydır',
       scrollDown: 'Aşağı kaydır',

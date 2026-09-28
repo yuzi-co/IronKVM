@@ -191,6 +191,8 @@ const ko = {
       mode: '마우스 모드',
       absolute: '절대값 모드',
       relative: '상대값 모드',
+      absoluteShort: '절대값',
+      relativeShort: '상대값',
       direction: '스크롤 휠 방향',
       scrollUp: '위로 스크롤',
       scrollDown: '아래로 스크롤',
