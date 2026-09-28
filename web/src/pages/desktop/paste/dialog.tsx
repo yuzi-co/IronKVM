@@ -1,13 +1,12 @@
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { Button, Divider, Input, Modal, Select } from 'antd';
 import type { TextAreaRef } from 'antd/es/input/TextArea';
-import { useAtom, useSetAtom } from 'jotai';
+import { useAtom } from 'jotai';
 import { ClipboardPasteIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { checkPaste, type PasteCheck, type PasteUntypeable } from '@/api/hid.ts';
 import { readClipboardText } from '@/lib/clipboard.ts';
-import { keyboardLockAtom } from '@/jotai/keyboard.ts';
 import {
   defaultPasteDelay,
   pasteDelayAtom,
@@ -16,6 +15,7 @@ import {
   pasteLayoutIds,
   pasteTextAtom
 } from '@/jotai/paste.ts';
+import { useKeyboardLock } from '@/hooks/useKeyboardLock.ts';
 
 import {
   formatDuration,
@@ -45,9 +45,9 @@ type LiveCheck = { key: string; check: PasteCheck };
 
 export const PasteDialog = () => {
   const { t } = useTranslation();
-  const setKeyboardLock = useSetAtom(keyboardLockAtom);
 
   const [dialog, setDialog] = useAtom(pasteDialogAtom);
+  useKeyboardLock('paste-modal', dialog.open);
   const [text, setText] = useAtom(pasteTextAtom);
   const [layout, setLayout] = useAtom(pasteLayoutAtom);
   const [delay, setDelay] = useAtom(pasteDelayAtom);
@@ -162,8 +162,6 @@ export const PasteDialog = () => {
     if (open) {
       textAreaRef.current?.focus();
     }
-
-    setKeyboardLock({ source: 'paste-modal', locked: open });
   }
 
   const notice = errMsg || dialog.notice;

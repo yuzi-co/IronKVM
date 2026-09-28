@@ -3,12 +3,11 @@ import { useAuth } from '@/contexts/auth.ts';
 import { Button, Divider, Input, List, message, Popconfirm, Tooltip } from 'antd';
 import type { InputRef } from 'antd';
 import clsx from 'clsx';
-import { useSetAtom } from 'jotai';
 import { Eye, EyeClosed, NetworkIcon, Pencil, SendIcon, Trash2Icon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { deleteWolMac, getWolMacs, setWolMacName, wol } from '@/api/network.ts';
-import { keyboardLockAtom } from '@/jotai/keyboard.ts';
+import { useKeyboardLock } from '@/hooks/useKeyboardLock.ts';
 import { MenuItem } from '@/components/menu-item.tsx';
 
 interface MacItem {
@@ -52,7 +51,9 @@ export const Wol = () => {
   // Renaming and deleting a saved address are admin actions on the server.
   const isAdmin = account.role === 'admin';
 
-  const setKeyboardLock = useSetAtom(keyboardLockAtom);
+  // The rename input lives in the popover, so this lock covers it too.
+  const [isOpen, setIsOpen] = useState(false);
+  useKeyboardLock('wol-popover', isOpen);
 
   const [input, setInput] = useState('');
   const [status, setStatus] = useState('');
@@ -63,15 +64,13 @@ export const Wol = () => {
   const inputRef = useRef<InputRef>(null);
 
   function handleOpenChange(open: boolean) {
+    setIsOpen(open);
     if (open) {
       getMacs();
-      setKeyboardLock({ source: 'wol-popover', locked: true });
     } else {
       setInput('');
       setStatus('');
       setLog('');
-      setKeyboardLock({ source: 'wol-popover', locked: false });
-      setKeyboardLock({ source: 'wol-edit-input', locked: false });
     }
   }
 
@@ -219,8 +218,6 @@ export const Wol = () => {
                 {item.isEdit ? (
                   <Input
                     placeholder={item.mac}
-                    onFocus={() => setKeyboardLock({ source: 'wol-edit-input', locked: true })}
-                    onBlur={() => setKeyboardLock({ source: 'wol-edit-input', locked: false })}
                     defaultValue={item.name}
                     onPressEnter={(e) => setMacName(e, item.mac)}
                   />
