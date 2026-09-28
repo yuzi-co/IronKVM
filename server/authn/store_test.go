@@ -210,3 +210,40 @@ func TestConcurrentCreatesDoNotLoseUsers(t *testing.T) {
 		t.Fatalf("got %d users, want %d", len(users), count+1)
 	}
 }
+
+// The IPMI password is stored as the caller sealed it, leaves the web
+// sessions alone, and goes with the account.
+func TestTheIPMIPasswordIsKeptWithTheAccount(t *testing.T) {
+	store := NewStore(filepath.Join(t.TempDir(), "pwd"))
+	if err := store.Create("alice", "password-123", RoleUser); err != nil {
+		t.Fatal(err)
+	}
+	before, err := store.Get("alice")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	after, err := store.SetIPMIPassword("alice", "v1:sealed")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if after.IPMIPassword != "v1:sealed" || after.TokenVersion != before.TokenVersion {
+		t.Fatalf("after setting: %+v", after)
+	}
+	if got, _ := store.Get("alice"); got.IPMIPassword != "v1:sealed" {
+		t.Fatalf("stored: %q", got.IPMIPassword)
+	}
+	if _, err := store.SetIPMIPassword("nobody", "v1:sealed"); !errors.Is(err, ErrUserNotFound) {
+		t.Fatalf("an unknown account: %v", err)
+	}
+
+	if err := store.Delete("admin", "alice"); err != nil {
+		t.Fatal(err)
+	}
+	if err := store.Create("alice", "password-456", RoleUser); err != nil {
+		t.Fatal(err)
+	}
+	if got, _ := store.Get("alice"); got.IPMIPassword != "" {
+		t.Fatal("a new account of the same name inherited the IPMI password")
+	}
+}

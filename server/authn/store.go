@@ -49,6 +49,11 @@ type User struct {
 	TokenVersion       uint64 `json:"tokenVersion"`
 	MustChangePassword bool   `json:"mustChangePassword,omitempty"`
 	SystemAccount      bool   `json:"systemAccount,omitempty"`
+	// IPMIPassword is the account's IPMI password, sealed by service/ipmi.
+	// IPMI's RAKP handshake needs the password itself, which the bcrypt hash
+	// above cannot give back, so it is a separate password. Empty means the
+	// account cannot log in over IPMI.
+	IPMIPassword string `json:"ipmiPassword,omitempty"`
 }
 
 type UserInfo struct {
@@ -410,6 +415,27 @@ func (s *Store) SetPasswordAndRun(username, password string, afterCommit func() 
 			}
 			return nil, err
 		}
+	}
+	return cloneUser(&db.Users[index]), nil
+}
+
+// SetIPMIPassword stores an account's sealed IPMI password, or removes it
+// when sealed is empty. The store does not look inside the value. Web
+// sessions are not revoked: the web password is unchanged.
+func (s *Store) SetIPMIPassword(username, sealed string) (*User, error) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	db, err := s.loadLocked(true)
+	if err != nil {
+		return nil, err
+	}
+	index := userIndex(db.Users, username)
+	if index < 0 {
+		return nil, ErrUserNotFound
+	}
+	db.Users[index].IPMIPassword = sealed
+	if err = s.saveLocked(db); err != nil {
+		return nil, err
 	}
 	return cloneUser(&db.Users[index]), nil
 }
