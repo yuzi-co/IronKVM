@@ -94,7 +94,7 @@ func TestTheLinkSideSwitchesTheLinksDHCPServer(t *testing.T) {
 		t.Fatal(err)
 	}
 	b, err := os.ReadFile(filepath.Join(ConfDir, "usb.conf"))
-	if err != nil || string(b) != linkConf(tftpRoot()) {
+	if err != nil || string(b) != linkConf(StagedTFTPRoot) {
 		t.Fatalf("usb.conf holds %q (%v)", b, err)
 	}
 	if got := f.takeCalls(); !slices.Equal(got, []string{"S03usbdev dhcp"}) {
@@ -148,7 +148,7 @@ func TestTheLANSideRunsProxyDHCPAndStartsAtBoot(t *testing.T) {
 	if err := f.svc.apply(config.NetBoot{LAN: true}); err != nil {
 		t.Fatal(err)
 	}
-	want, _ := lanConf(f.lan, tftpRoot())
+	want, _ := lanConf(f.lan, StagedTFTPRoot)
 	if b, err := os.ReadFile(filepath.Join(ConfDir, "lan.conf")); err != nil || string(b) != want {
 		t.Fatalf("lan.conf holds %q (%v)", b, err)
 	}

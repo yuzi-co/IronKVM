@@ -62,6 +62,14 @@ func dnsmasqPath() string { return filepath.Join(addonDir(), "dnsmasq") }
 
 func tftpRoot() string { return filepath.Join(addonDir(), "tftp") }
 
+// StagedTFTPRoot is the directory dnsmasq serves by TFTP. /data is exFAT,
+// mounted with fmask and dmask 0077, so everything on it is root's alone.
+// dnsmasq runs as nobody and checks its TFTP directory at startup, so pointed
+// at the add-on's own copy it refuses to start at all. S85netboot copies the
+// boot files here, on the slot's ext4, readable by everyone, before it starts
+// an instance. The server's HTTP menu runs as root and keeps reading tftpRoot.
+const StagedTFTPRoot = "/var/lib/netboot/tftp"
+
 func versionPath() string { return filepath.Join(addonDir(), "version") }
 
 // addonSpec is what the add-on needs from the root filesystem: only its boot

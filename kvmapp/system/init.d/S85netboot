@@ -25,6 +25,8 @@
 DNSMASQ=${DNSMASQ:-/data/ironkvm/addons/netboot/dnsmasq}
 CONFDIR=${CONFDIR:-/etc/kvm/netboot}
 RUN=${RUN:-/tmp/netboot}
+TFTP_SRC=${TFTP_SRC:-/data/ironkvm/addons/netboot/tftp}
+TFTP=${TFTP:-/var/lib/netboot/tftp}
 START_WAIT=${START_WAIT:-1}
 STOP_WAIT=${STOP_WAIT:-5}
 
@@ -110,6 +112,26 @@ start_instance() {
     return 1
 }
 
+# stage_tftp copies the boot files to where dnsmasq serves them. /data is
+# exFAT, mounted with fmask and dmask 0077, so its files are root's alone, and
+# dnsmasq, which drops to nobody, refuses to start at all when it cannot read
+# its TFTP directory. The copy lives on the slot's ext4, readable by everyone,
+# and is copied afresh on each start, so an add-on update is always what is
+# served. It copies over the files in place rather than making the directory
+# anew, because the other instance may be serving from it.
+stage_tftp() {
+    if [ ! -d "$TFTP_SRC" ]; then
+        echo "netboot: $TFTP_SRC not found, install network boot from the web UI"
+        return 1
+    fi
+    # The board's umask is 077, so mkdir alone would make both directories
+    # root's alone again.
+    mkdir -p "$TFTP" || return 1
+    chmod 755 "$(dirname "$TFTP")" "$TFTP" || return 1
+    cp -f "$TFTP_SRC"/* "$TFTP"/ || return 1
+    chmod 644 "$TFTP"/*
+}
+
 # installed says whether the add-on is there. S03usbdev falls back to udhcpd
 # on a failure, so a board without the add-on keeps its link.
 installed() {
@@ -149,6 +171,7 @@ case "$1" in
         fi
 
         stop_instance usb || { echo "netboot: the link's dnsmasq did not stop"; exit 1; }
+        stage_tftp || exit 1
 
         # One address, the host's, for ten days, as udhcpd leases it. The
         # rest of the rules, no router and no DNS server among them, are in
@@ -178,6 +201,8 @@ case "$1" in
             echo "netboot: proxy DHCP on the LAN is already running"
             exit 0
         fi
+
+        stage_tftp || exit 1
 
         # Proxy DHCP hands out no address, so it keeps no leases.
         printf "Starting dnsmasq for proxy DHCP on the LAN: "

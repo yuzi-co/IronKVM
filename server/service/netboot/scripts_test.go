@@ -32,6 +32,8 @@ func TestTheScriptsAndTheServerAgreeOnThePaths(t *testing.T) {
 		{netbootScript, "DNSMASQ", "/data/ironkvm/addons/" + AddonName + "/dnsmasq"},
 		{netbootScript, "CONFDIR", "/etc/kvm/netboot"},
 		{netbootScript, "RUN", "/tmp/netboot"},
+		{netbootScript, "TFTP_SRC", "/data/ironkvm/addons/" + AddonName + "/tftp"},
+		{netbootScript, "TFTP", StagedTFTPRoot},
 		{usbdevScript, "USB_NETBOOT", "/kvmapp/system/init.d/" + Initd},
 	} {
 		if got := scriptDefault(t, tc.script, tc.name); got != tc.want {

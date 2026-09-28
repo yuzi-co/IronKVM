@@ -48,7 +48,11 @@ chmod 755 "$work/bin/dnsmasq"
 reset_tree() {
     for p in $(pgrep -f "$work/bin/dnsmasq"); do kill -9 "$p" 2>/dev/null; done
     rm -rf "$work/root" "$work/stub.log"
-    mkdir -p "$work/root/conf" "$work/root/cgroup"
+    mkdir -p "$work/root/conf" "$work/root/cgroup" "$work/root/data/tftp"
+    # As on /data: exFAT with fmask 0077 makes every file root's alone.
+    echo boot > "$work/root/data/tftp/boot.ipxe"
+    chmod 600 "$work/root/data/tftp/boot.ipxe"
+    chmod 700 "$work/root/data/tftp"
     : > "$work/stub.log"
     for c in "$@"; do
         echo "# $c" > "$work/root/conf/$c.conf"
@@ -57,7 +61,7 @@ reset_tree() {
 
 run() {
     DNSMASQ="${DNSMASQ_BIN:-$work/bin/dnsmasq}" \
-    CONFDIR="$work/root/conf" RUN="$work/root/run" \
+    CONFDIR="$work/root/conf" RUN="$work/root/run"     TFTP_SRC="$work/root/data/tftp" TFTP="$work/root/var/netboot/tftp" \
     CGROUP_PROCS="$work/root/cgroup/cgroup.procs" \
     START_WAIT=1 STOP_WAIT=5 STUB_LOG="$work/stub.log" \
         sh "$S85" "$@" > "$work/out" 2>&1
@@ -223,6 +227,33 @@ LOG_MAX=262144 run start-usb usb0 172.31.255.2 255.255.255.252
     && note "a log over the limit is started afresh" OK \
     || note "a log over the limit is started afresh" FAIL
 run stop-usb
+
+echo
+echo "===== the boot files dnsmasq serves ====="
+# dnsmasq drops to nobody and will not start when it cannot read its TFTP
+# directory, so it serves a copy that everyone can read.
+reset_tree usb
+# The board's umask.
+umask 077
+run start-usb usb0 172.31.255.2 255.255.255.252
+umask 022
+[ "$(stat -c %a "$work/root/var/netboot/tftp/boot.ipxe" 2>/dev/null)" = 644 ]     && note "the link's start copies the boot files, readable by all" OK     || note "the link's start copies the boot files, readable by all" FAIL
+[ "$(stat -c %a "$work/root/var/netboot/tftp" 2>/dev/null)" = 755 ]     && [ "$(stat -c %a "$work/root/var/netboot" 2>/dev/null)" = 755 ]     && note "and their directory and its parent are open to all" OK     || note "and their directory and its parent are open to all" FAIL
+echo new > "$work/root/data/tftp/boot.ipxe"
+run start-usb usb0 172.31.255.2 255.255.255.252
+[ "$(cat "$work/root/var/netboot/tftp/boot.ipxe")" = new ]     && note "a restart serves what the add-on holds now" OK     || note "a restart serves what the add-on holds now" FAIL
+run stop-usb
+
+reset_tree lan
+run start
+[ -f "$work/root/var/netboot/tftp/boot.ipxe" ]     && note "the LAN's start copies them too" OK     || note "the LAN's start copies them too" FAIL
+run stop
+
+reset_tree usb
+rm -rf "$work/root/data/tftp"
+run start-usb usb0 172.31.255.2 255.255.255.252
+st=$?
+[ "$st" -ne 0 ] && [ "$(instances usb)" = 0 ]     && note "without the boot files the link does not start dnsmasq" OK     || note "without the boot files the link does not start dnsmasq" FAIL
 
 echo
 echo "===== the script still parses ====="

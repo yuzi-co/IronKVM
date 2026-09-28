@@ -161,7 +161,7 @@ func (s *Service) writeConfs(settings config.NetBoot) (usbChanged, lanChanged bo
 	lanFile := filepath.Join(ConfDir, "lan.conf")
 
 	if settings.USB {
-		usbChanged, err = replaceFile(usbFile, linkConf(tftpRoot()))
+		usbChanged, err = replaceFile(usbFile, linkConf(StagedTFTPRoot))
 	} else {
 		usbChanged, err = removeFile(usbFile)
 	}
@@ -175,7 +175,7 @@ func (s *Service) writeConfs(settings config.NetBoot) (usbChanged, lanChanged bo
 		var conf string
 		lan, err = s.deps.LAN()
 		if err == nil {
-			conf, err = lanConf(lan, tftpRoot())
+			conf, err = lanConf(lan, StagedTFTPRoot)
 		}
 		if err == nil {
 			lanChanged, err = replaceFile(lanFile, conf)
