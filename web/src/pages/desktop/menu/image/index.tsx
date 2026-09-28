@@ -9,12 +9,15 @@ import * as api from '@/api/storage.ts';
 import * as ventoyApi from '@/api/ventoy.ts';
 import type { VentoyStatus } from '@/api/ventoy.ts';
 import { submenuOpenCountAtom } from '@/jotai/settings.ts';
+import { useKeyboardLock } from '@/hooks/useKeyboardLock.ts';
 import { useStableCallback } from '@/hooks/useStableCallback.ts';
 
 import { Drives } from './drives.tsx';
 import { Images } from './images.tsx';
 import { Tips } from './tips.tsx';
 import { Ventoy } from './ventoy.tsx';
+
+const DRIVES_POLL_MS = 5000;
 
 export const Image = () => {
   const { t } = useTranslation();
@@ -29,24 +32,43 @@ export const Image = () => {
   const isMounted = drives.some((drive) => !!drive.file);
 
   const refreshDrives = useStableCallback(() => {
-    api.getDrives().then((rsp) => {
-      if (rsp.code !== 0) return;
+    api
+      .getDrives()
+      .then((rsp) => {
+        if (rsp.code !== 0) return;
 
-      const list: api.Drive[] = rsp.data?.drives ?? [];
-      setDrives(list);
+        const list: api.Drive[] = rsp.data?.drives ?? [];
+        // A poll that finds nothing new keeps the old array, so effects keyed on
+        // the list (the Ventoy status) do not run every few seconds.
+        setDrives((prev) => (JSON.stringify(prev) === JSON.stringify(list) ? prev : list));
 
-      // A loaded disk shows its real flag. An empty one keeps the operator's
-      // choice for the next insert.
-      const disk = list.find((drive) => drive.id === 'disk');
-      if (disk?.file) {
-        setDiskRo(disk.ro);
-      }
-    });
+        // A loaded disk shows its real flag. An empty one keeps the operator's
+        // choice for the next insert.
+        const disk = list.find((drive) => drive.id === 'disk');
+        if (disk?.file) {
+          setDiskRo(disk.ro);
+        }
+      })
+      // A failed poll keeps the last list; the next one tries again.
+      .catch(() => {});
   });
 
+  // The drive list is read once for the menu icon, then again on every open
+  // and every few seconds while the dialog is up, since a script, another tab
+  // or the host itself can change what a drive holds.
   useEffect(() => {
     refreshDrives();
   }, [refreshDrives]);
+
+  useEffect(() => {
+    if (!isModalOpen) return;
+
+    refreshDrives();
+    const timer = window.setInterval(refreshDrives, DRIVES_POLL_MS);
+    return () => window.clearInterval(timer);
+  }, [isModalOpen, refreshDrives]);
+
+  useKeyboardLock('image-modal', isModalOpen);
 
   // The Ventoy status follows the drive list while the modal is open, since an
   // eject from the drive list takes the Ventoy disk out too.
@@ -73,15 +95,17 @@ export const Image = () => {
   return (
     <>
       <Tooltip title={t('image.title')} placement="bottom" mouseEnterDelay={0.6}>
-        <div
+        <button
+          type="button"
+          aria-label={t('image.title')}
           className={clsx(
-            'flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded hover:bg-neutral-700',
+            'flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded p-0 hover:bg-neutral-700',
             isMounted ? 'text-blue-500' : 'text-neutral-300 hover:text-white'
           )}
           onClick={() => toggleModal(true)}
         >
           <DiscIcon size={18} />
-        </div>
+        </button>
       </Tooltip>
 
       <Modal open={isModalOpen} footer={null} onCancel={() => toggleModal(false)}>

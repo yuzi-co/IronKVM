@@ -67,11 +67,18 @@ export const Drives = ({ drives, diskRo, setDiskRo, onDrivesChanged }: DrivesPro
                 {drive.file ? driveLabel(drive.file) : t('image.driveEmpty')}
               </span>
 
+              {/* The flag is fixed while a disk is in: the gadget reads it at
+                  insert time, so the switch waits for the next insert. */}
               {drive.id === 'disk' && (
-                <Tooltip title={t('image.readOnlyTip')}>
+                <Tooltip title={t(drive.file ? 'image.readOnlyLocked' : 'image.readOnlyTip')}>
                   <div className="flex items-center space-x-1">
                     <span className="text-xs text-neutral-400">{t('image.readOnly')}</span>
-                    <Switch size="small" checked={diskRo} onChange={setDiskRo} />
+                    <Switch
+                      size="small"
+                      checked={diskRo}
+                      disabled={!!drive.file}
+                      onChange={setDiskRo}
+                    />
                   </div>
                 </Tooltip>
               )}
