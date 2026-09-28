@@ -29,6 +29,15 @@ type SetGpioReq struct {
 type GetGpioRsp struct {
 	PWR bool `json:"pwr"` // power led
 	HDD bool `json:"hdd"` // hdd led
+	// LEDConnected says the power LED header is wired. When it is not, PWR
+	// is always false and means nothing: the state is unknown.
+	LEDConnected bool `json:"ledConnected"`
+}
+
+// PowerLEDSetting is whether the host's power LED header is wired to the
+// board, as the owner set it.
+type PowerLEDSetting struct {
+	Connected bool `json:"connected" validate:"omitempty"`
 }
 
 type SetScreenReq struct {

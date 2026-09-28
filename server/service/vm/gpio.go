@@ -44,10 +44,17 @@ func (s *Service) GetGpio(c *gin.Context) {
 
 	conf := config.GetInstance().Hardware
 
-	pwr, err := PowerLED()
-	if err != nil {
-		rsp.ErrRsp(c, -2, fmt.Sprintf("failed to read power led: %s", err))
-		return
+	// An LED that is not wired reads "off" whatever the host does, so it is
+	// not read at all, and the UI shows the state as unknown.
+	connected := PowerLEDConnected()
+	pwr := false
+	var err error
+	if connected {
+		pwr, err = PowerLED()
+		if err != nil {
+			rsp.ErrRsp(c, -2, fmt.Sprintf("failed to read power led: %s", err))
+			return
+		}
 	}
 
 	hdd := false
@@ -60,8 +67,9 @@ func (s *Service) GetGpio(c *gin.Context) {
 	}
 
 	data := &proto.GetGpioRsp{
-		PWR: pwr,
-		HDD: hdd,
+		PWR:          pwr,
+		HDD:          hdd,
+		LEDConnected: connected,
 	}
 	rsp.OkRspWithData(c, data)
 }
