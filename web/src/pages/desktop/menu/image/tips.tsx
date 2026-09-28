@@ -4,9 +4,12 @@ import { Collapse, Modal } from 'antd';
 import { CircleHelpIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { useKeyboardLock } from '@/hooks/useKeyboardLock.ts';
+
 export const Tips = () => {
   const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  useKeyboardLock('image-tips', isModalOpen);
 
   const items: CollapseProps['items'] = [
     {
@@ -50,12 +53,14 @@ export const Tips = () => {
 
   return (
     <>
-      <div
-        className="flex cursor-pointer items-center space-x-1 text-neutral-500 hover:text-blue-500"
+      <button
+        type="button"
+        aria-label={t('image.tips.title')}
+        className="flex cursor-pointer items-center space-x-1 p-0 text-neutral-500 hover:text-blue-500"
         onClick={() => setIsModalOpen(true)}
       >
         <CircleHelpIcon size={16} />
-      </div>
+      </button>
 
       <Modal
         title={t('image.tips.title')}

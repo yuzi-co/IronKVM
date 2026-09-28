@@ -4,6 +4,7 @@ import { Button, Card, Modal, Spin } from 'antd';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/script';
+import { useKeyboardLock } from '@/hooks/useKeyboardLock.ts';
 
 type RunProps = {
   script: string;
@@ -16,6 +17,9 @@ export const Run = ({ script, setIsRunning }: RunProps) => {
   // should already show.
   const [state, setState] = useState('running');
   const [log, setLog] = useState('');
+
+  // The dialog is open for as long as it is mounted.
+  useKeyboardLock('script-run', true);
 
   useEffect(() => {
     api

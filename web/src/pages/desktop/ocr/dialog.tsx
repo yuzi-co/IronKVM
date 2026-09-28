@@ -1,11 +1,10 @@
 import { useEffect, useMemo } from 'react';
 import { Alert, Button, Input, message, Modal, Progress, Select, Spin } from 'antd';
-import { useSetAtom } from 'jotai';
 import { CopyIcon, ScanTextIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { writeClipboardText } from '@/lib/clipboard.ts';
-import { keyboardLockAtom } from '@/jotai/keyboard.ts';
+import { useKeyboardLock } from '@/hooks/useKeyboardLock.ts';
 
 import { ocrLanguages, type OcrLanguage } from './engine.ts';
 
@@ -47,7 +46,6 @@ export const OcrDialog = ({
   onClose
 }: OcrDialogProps) => {
   const { t } = useTranslation();
-  const setKeyboardLock = useSetAtom(keyboardLockAtom);
   const [messageApi, contextHolder] = message.useMessage();
 
   const isBusy =
@@ -55,12 +53,7 @@ export const OcrDialog = ({
 
   // The lock follows open rather than the end of the opening animation, so no
   // key reaches the host between the selection closing and the dialog opening.
-  useEffect(() => {
-    if (!open) return;
-
-    setKeyboardLock({ source: 'ocr-dialog', locked: true });
-    return () => setKeyboardLock({ source: 'ocr-dialog', locked: false });
-  }, [open, setKeyboardLock]);
+  useKeyboardLock('ocr-dialog', open);
 
   const previewUrl = useMemo(() => (image ? URL.createObjectURL(image) : ''), [image]);
   useEffect(() => {

@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import * as api from '@/api/hid.ts';
 import { refreshHidModeAtom } from '@/jotai/hid.ts';
 import { useHidMode } from '@/hooks/useHidMode.ts';
+import { useKeyboardLock } from '@/hooks/useKeyboardLock.ts';
 
 const { Paragraph } = Typography;
 
@@ -19,6 +20,8 @@ export const HidMode = () => {
   const [isSwitching, setIsSwitching] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [errMsg, setErrMsg] = useState('');
+
+  useKeyboardLock('hid-mode-modal', isModalOpen);
 
   const hidMode = current?.mode ?? 'normal';
   const isLoading = current === null || isSwitching;
@@ -57,6 +60,7 @@ export const HidMode = () => {
       })
       .catch((err) => {
         console.log(err);
+        setErrMsg(t('mouse.hidOnly.switchFailed'));
       })
       .finally(() => {
         setIsSwitching(false);
