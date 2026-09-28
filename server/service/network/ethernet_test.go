@@ -464,19 +464,20 @@ func TestAnUnconfirmedTrialReverts(t *testing.T) {
 
 	startTrial("token-d", ethModeStatic, ethernetConfig{Address: "10.0.0.99", Prefix: 24}, minTrialSeconds)
 
-	// Reach past the clamp rather than wait out a real trial.
+	// Reach past the clamp rather than wait out a real trial. The channel says
+	// when the revert has finished. Polling describeTrial is not enough: the
+	// trial is cleared before the boot script runs, so a poll that sees it gone
+	// can still check the commands too early.
+	reverted := make(chan struct{})
 	trialMutex.Lock()
 	pendingTrial.timer.Stop()
-	pendingTrial.timer = time.AfterFunc(20*time.Millisecond, revertNow)
+	pendingTrial.timer = time.AfterFunc(20*time.Millisecond, func() {
+		revertNow()
+		close(reverted)
+	})
 	trialMutex.Unlock()
 
-	deadline := time.Now().Add(2 * time.Second)
-	for time.Now().Before(deadline) {
-		if describeTrial() == nil {
-			break
-		}
-		time.Sleep(5 * time.Millisecond)
-	}
+	<-reverted
 
 	if describeTrial() != nil {
 		t.Fatal("the trial did not revert")

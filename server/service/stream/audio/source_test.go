@@ -33,6 +33,32 @@ func (c *collector) count() int {
 	return len(c.chunks)
 }
 
+// countedChild returns a newCmd that runs script under sh, and a channel that
+// closes once the child has been started n times. The logging tests wait on the
+// channel, so they judge a known number of attempts rather than however many a
+// loaded host fits into a fixed interval.
+func countedChild(n int, script string) (func() *exec.Cmd, <-chan struct{}) {
+	var mutex sync.Mutex
+	var starts int
+	reached := make(chan struct{})
+
+	return func() *exec.Cmd {
+		mutex.Lock()
+		starts++
+		if starts == n {
+			close(reached)
+		}
+		mutex.Unlock()
+
+		return exec.Command("sh", "-c", script)
+	}, reached
+}
+
+// steadyStateAttempts is how many failed starts the logging tests wait for.
+// It is several times quietAfterFailures, so a source that kept logging past
+// that point would write well over the limit those tests allow.
+const steadyStateAttempts = 30
+
 func TestRunDeliversFullChunks(t *testing.T) {
 	source := NewSource()
 	// Two chunks of zeros, then exit. head -c reads from /dev/zero.
@@ -41,14 +67,29 @@ func TestRunDeliversFullChunks(t *testing.T) {
 	}
 
 	got := &collector{}
+	delivered := make(chan struct{})
+	var deliveredOnce sync.Once
+	handle := func(chunk []byte) {
+		got.handle(chunk)
+		if got.count() >= 2 {
+			deliveredOnce.Do(func() { close(delivered) })
+		}
+	}
 
 	done := make(chan struct{})
 	go func() {
-		source.Run(got.handle)
+		source.Run(handle)
 		close(done)
 	}()
 
-	time.Sleep(500 * time.Millisecond)
+	// Stop once two chunks are in rather than after a fixed interval, which a
+	// loaded host can spend before the child has written anything. Run only
+	// returns on Stop, so done closing first means it gave up on its own.
+	select {
+	case <-delivered:
+	case <-done:
+		t.Fatalf("Run returned before Stop, after %d chunks", got.count())
+	}
 	source.Stop()
 
 	select {
@@ -101,12 +142,19 @@ func TestRunKeepsRetryingAFailingChild(t *testing.T) {
 	source.minBackoff = time.Millisecond
 	source.maxBackoff = 2 * time.Millisecond
 
+	// Far more attempts than the old eight-attempt budget.
+	const wantAtLeast = 20
+
 	var starts int
 	var mutex sync.Mutex
+	reached := make(chan struct{})
 
 	source.newCmd = func() *exec.Cmd {
 		mutex.Lock()
 		starts++
+		if starts == wantAtLeast {
+			close(reached)
+		}
 		mutex.Unlock()
 
 		return exec.Command("sh", "-c", "exit 1")
@@ -118,23 +166,23 @@ func TestRunKeepsRetryingAFailingChild(t *testing.T) {
 		close(done)
 	}()
 
-	// Long enough for far more attempts than the old eight-attempt budget.
-	time.Sleep(500 * time.Millisecond)
+	// Wait for the attempts themselves rather than for a stretch of time that
+	// is meant to hold them. A loaded host fits fewer into any fixed interval,
+	// and a Run that retires the child closes done before it gets there.
+	select {
+	case <-reached:
+	case <-done:
+		mutex.Lock()
+		got := starts
+		mutex.Unlock()
+
+		t.Fatalf("Run retired a failing child after %d starts instead of retrying it", got)
+	}
 
 	select {
 	case <-done:
 		t.Fatal("Run retired a failing child instead of retrying it")
 	default:
-	}
-
-	const wantAtLeast = 20
-
-	mutex.Lock()
-	got := starts
-	mutex.Unlock()
-
-	if got < wantAtLeast {
-		t.Errorf("started the child %d times, want at least %d", got, wantAtLeast)
 	}
 
 	source.Stop()
@@ -158,9 +206,8 @@ func TestRunStopsLoggingOnceFailureIsTheSteadyState(t *testing.T) {
 	source := NewSource()
 	source.minBackoff = time.Millisecond
 	source.maxBackoff = time.Millisecond
-	source.newCmd = func() *exec.Cmd {
-		return exec.Command("sh", "-c", "exit 1")
-	}
+	newCmd, attempted := countedChild(steadyStateAttempts, "exit 1")
+	source.newCmd = newCmd
 
 	done := make(chan struct{})
 	go func() {
@@ -168,7 +215,11 @@ func TestRunStopsLoggingOnceFailureIsTheSteadyState(t *testing.T) {
 		close(done)
 	}()
 
-	time.Sleep(500 * time.Millisecond)
+	select {
+	case <-attempted:
+	case <-done:
+		t.Fatal("Run returned before Stop")
+	}
 	source.Stop()
 
 	select {
@@ -177,8 +228,7 @@ func TestRunStopsLoggingOnceFailureIsTheSteadyState(t *testing.T) {
 		t.Fatal("Run did not return after Stop")
 	}
 
-	// Dozens of attempts fit in half a second. A handful of lines describes
-	// the fault; the rest only wear the card.
+	// A handful of lines describes the fault; the rest only wear the card.
 	const wantAtMost = 10
 
 	if lines := strings.Count(captured.String(), "audio capture"); lines > wantAtMost {
@@ -205,9 +255,9 @@ func TestRunStopsRepeatingTheChildsComplaint(t *testing.T) {
 	source := NewSource()
 	source.minBackoff = time.Millisecond
 	source.maxBackoff = time.Millisecond
-	source.newCmd = func() *exec.Cmd {
-		return exec.Command("sh", "-c", "echo 'pcm_read:2240: read error: I/O error' >&2; exit 1")
-	}
+	newCmd, attempted := countedChild(steadyStateAttempts,
+		"echo 'pcm_read:2240: read error: I/O error' >&2; exit 1")
+	source.newCmd = newCmd
 
 	done := make(chan struct{})
 	go func() {
@@ -215,7 +265,11 @@ func TestRunStopsRepeatingTheChildsComplaint(t *testing.T) {
 		close(done)
 	}()
 
-	time.Sleep(500 * time.Millisecond)
+	select {
+	case <-attempted:
+	case <-done:
+		t.Fatal("Run returned before Stop")
+	}
 	source.Stop()
 
 	select {
