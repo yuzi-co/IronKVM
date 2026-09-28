@@ -20,6 +20,7 @@ var sections = []section{
 	{name: "streams", collect: collectStreams},
 	{name: "usb", collect: collectUSB},
 	{name: "server", collect: collectServer},
+	{name: "watchdog", collect: collectWatchdog},
 }
 
 // Collect renders every section to out.
