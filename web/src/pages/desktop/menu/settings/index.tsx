@@ -9,6 +9,7 @@ import {
   CircleArrowUpIcon,
   NetworkIcon,
   PaletteIcon,
+  ServerCogIcon,
   SettingsIcon,
   SmartphoneIcon,
   UserRoundIcon
@@ -31,6 +32,7 @@ import { Device } from './device';
 import { MCP } from './mcp';
 import { Netbird } from './netbird';
 import { Network } from './network';
+import { Redfish } from './redfish';
 import { Tailscale } from './tailscale';
 import { Update } from './update';
 
@@ -56,6 +58,7 @@ export const Settings = () => {
           { id: 'device', icon: <SmartphoneIcon size={16} />, component: <Device /> },
           { id: 'network', icon: <NetworkIcon size={16} />, component: <Network /> },
           { id: 'mcp', icon: <BotIcon size={16} />, component: <MCP /> },
+          { id: 'redfish', icon: <ServerCogIcon size={16} />, component: <Redfish /> },
           {
             id: 'tailscale',
             icon: <TailscaleIcon />,
