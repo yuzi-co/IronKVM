@@ -138,6 +138,16 @@ const zh_tw = {
       dropdownGerman: '德語',
       dropdownFrench: '法語',
       dropdownRussian: '俄語',
+      mediaKeys: {
+        title: '媒體鍵',
+        mute: '靜音',
+        volumeDown: '音量減',
+        volumeUp: '音量加',
+        previous: '上一首',
+        playPause: '播放或暫停',
+        next: '下一首',
+        stop: '停止'
+      },
       shortcut: {
         title: '快捷鍵',
         custom: '自定義',
@@ -304,7 +314,17 @@ const zh_tw = {
       resetConfirm: '確認執行重新啟動的按鍵操作嗎？',
       powerConfirm: '確認執行電源的按鍵操作嗎？',
       okBtn: '確認',
-      cancelBtn: '取消'
+      cancelBtn: '取消',
+      hostOs: '主機系統',
+      hostOsTip: '以 USB 按鍵傳送，實際作用由主機決定。',
+      sleep: '睡眠',
+      wake: '喚醒',
+      wakeKey: '用 Shift 喚醒',
+      powerDown: '關機',
+      sleepConfirm: '讓主機進入睡眠？',
+      powerDownConfirm: '要向主機傳送關機鍵嗎？',
+      wakeTip:
+        '處於睡眠的主機常常忽略來自讓它睡眠的裝置的喚醒。「用 Shift 喚醒」會按下鍵盤按鍵，更多主機會回應。'
     },
     settings: {
       title: '設定',
@@ -778,6 +798,10 @@ const zh_tw = {
     },
     fullscreen: {
       toggle: '進入全螢幕模式'
+    },
+    input: {
+      hidDisabled: '此裝置已關閉 HID（/boot/disable_hid）。',
+      keyFailed: '按鍵傳送失敗。'
     },
     menu: {
       collapse: '收起選單',

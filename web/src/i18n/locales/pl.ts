@@ -145,6 +145,16 @@ const pl = {
       dropdownGerman: 'niemiecki',
       dropdownFrench: 'Francuski',
       dropdownRussian: 'Rosyjski',
+      mediaKeys: {
+        title: 'Klawisze multimedialne',
+        mute: 'Wycisz',
+        volumeDown: 'Ciszej',
+        volumeUp: 'Głośniej',
+        previous: 'Poprzedni utwór',
+        playPause: 'Odtwórz lub wstrzymaj',
+        next: 'Następny utwór',
+        stop: 'Zatrzymaj'
+      },
       shortcut: {
         title: 'Skróty',
         custom: 'Niestandardowe',
@@ -316,7 +326,17 @@ const pl = {
       resetConfirm: 'Kontynuować operację resetowania?',
       powerConfirm: 'Kontynuować zasilanie?',
       okBtn: 'Tak',
-      cancelBtn: 'Nie'
+      cancelBtn: 'Nie',
+      hostOs: 'System hosta',
+      hostOsTip: 'Wysyłane jako klawisze USB. O ich działaniu decyduje host.',
+      sleep: 'Uśpij',
+      wake: 'Wybudź',
+      wakeKey: 'Wybudź klawiszem Shift',
+      powerDown: 'Wyłącz',
+      sleepConfirm: 'Uśpić hosta?',
+      powerDownConfirm: 'Wysłać do hosta klawisz wyłączenia?',
+      wakeTip:
+        'Uśpiony host często ignoruje Wybudź od urządzenia, które go uśpiło. Wybudź klawiszem Shift naciska klawisz na klawiaturze, który akceptuje więcej hostów.'
     },
     settings: {
       title: 'Ustawienia',
@@ -803,6 +823,10 @@ const pl = {
     },
     fullscreen: {
       toggle: 'Przełącz tryb pełnoekranowy'
+    },
+    input: {
+      hidDisabled: 'HID jest wyłączone na tym urządzeniu (/boot/disable_hid).',
+      keyFailed: 'Nie udało się wysłać klawisza.'
     },
     menu: {
       collapse: 'Zwiń menu',

@@ -144,6 +144,16 @@ const cz = {
       dropdownGerman: 'německy',
       dropdownFrench: 'francouzsky',
       dropdownRussian: 'rusky',
+      mediaKeys: {
+        title: 'Multimediální klávesy',
+        mute: 'Ztlumit',
+        volumeDown: 'Snížit hlasitost',
+        volumeUp: 'Zvýšit hlasitost',
+        previous: 'Předchozí skladba',
+        playPause: 'Přehrát nebo pozastavit',
+        next: 'Další skladba',
+        stop: 'Zastavit'
+      },
       shortcut: {
         title: 'Zkratky',
         custom: 'Vlastní',
@@ -315,7 +325,17 @@ const cz = {
       resetConfirm: 'Pokračovat v operaci resetování?',
       powerConfirm: 'Pokračovat v napájení?',
       okBtn: 'Ano',
-      cancelBtn: 'Ne'
+      cancelBtn: 'Ne',
+      hostOs: 'OS hostitele',
+      hostOsTip: 'Odesílá se jako klávesy USB. Co udělají, rozhoduje hostitel.',
+      sleep: 'Uspat',
+      wake: 'Probudit',
+      wakeKey: 'Probudit klávesou Shift',
+      powerDown: 'Vypnout',
+      sleepConfirm: 'Uspat hostitele?',
+      powerDownConfirm: 'Odeslat hostiteli klávesu vypnutí?',
+      wakeTip:
+        'Uspaný hostitel často ignoruje Probudit od zařízení, které ho uspalo. Probudit klávesou Shift stiskne klávesu na klávesnici, kterou přijme více hostitelů.'
     },
     settings: {
       title: 'Nastavení',
@@ -800,6 +820,10 @@ const cz = {
     },
     fullscreen: {
       toggle: 'Přepnout na celou obrazovku'
+    },
+    input: {
+      hidDisabled: 'HID je na tomto zařízení vypnuto (/boot/disable_hid).',
+      keyFailed: 'Klávesu se nepodařilo odeslat.'
     },
     menu: {
       collapse: 'Sbalit nabídku',

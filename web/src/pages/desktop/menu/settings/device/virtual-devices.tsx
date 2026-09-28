@@ -3,18 +3,18 @@ import { Progress, Switch, Tooltip } from 'antd';
 import { Volume2Icon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { getHidMode } from '@/api/hid.ts';
 import * as api from '@/api/virtual-device.ts';
 import type {
   VirtualDeviceName,
   VirtualDevices as VirtualDevicesState
 } from '@/api/virtual-device.ts';
+import { useHidMode } from '@/hooks/useHidMode.ts';
 import { useStableCallback } from '@/hooks/useStableCallback.ts';
 
 export const VirtualDevices = () => {
   const { t } = useTranslation();
 
-  const [isHidOnlyMode, setIsHidOnlyMode] = useState(false);
+  const isHidOnlyMode = useHidMode()?.mode === 'hid-only';
   const [devices, setDevices] = useState<VirtualDevicesState | null>(null);
   const [loading, setLoading] = useState<'' | VirtualDeviceName>('');
   const [refusal, setRefusal] = useState('');
@@ -36,20 +36,6 @@ export const VirtualDevices = () => {
   });
 
   useEffect(() => {
-    async function getHidOnlyMode() {
-      try {
-        const rsp = await getHidMode();
-        if (rsp.code !== 0) {
-          console.log(rsp.msg);
-          return;
-        }
-        setIsHidOnlyMode(rsp.data.mode === 'hid-only');
-      } catch (err) {
-        console.log(err);
-      }
-    }
-
-    getHidOnlyMode();
     getVirtualDevice();
   }, [getVirtualDevice]);
 

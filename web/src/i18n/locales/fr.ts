@@ -147,6 +147,16 @@ const fr = {
       dropdownGerman: 'Allemand',
       dropdownFrench: 'Français',
       dropdownRussian: 'Russe',
+      mediaKeys: {
+        title: 'Touches multimédia',
+        mute: 'Muet',
+        volumeDown: 'Baisser le volume',
+        volumeUp: 'Monter le volume',
+        previous: 'Piste précédente',
+        playPause: 'Lecture ou pause',
+        next: 'Piste suivante',
+        stop: 'Arrêt'
+      },
       shortcut: {
         title: 'Raccourcis',
         custom: 'Personnalisé',
@@ -318,7 +328,17 @@ const fr = {
       resetConfirm: "Procéder à l'opération de réinitialisation?",
       powerConfirm: 'Continuer le fonctionnement électrique?',
       okBtn: 'Oui',
-      cancelBtn: 'Non'
+      cancelBtn: 'Non',
+      hostOs: "OS de l'hôte",
+      hostOsTip: "Envoyées comme touches USB. L'hôte décide de leur effet.",
+      sleep: 'Veille',
+      wake: 'Réveil',
+      wakeKey: 'Réveil avec Maj',
+      powerDown: 'Éteindre',
+      sleepConfirm: "Mettre l'hôte en veille ?",
+      powerDownConfirm: "Envoyer la touche d'extinction à l'hôte ?",
+      wakeTip:
+        "Un hôte en veille ignore souvent Réveil venant de l'appareil qui l'a mis en veille. Réveil avec Maj appuie sur une touche du clavier, que davantage d'hôtes acceptent."
     },
     settings: {
       title: 'Paramètres',
@@ -808,6 +828,10 @@ const fr = {
     },
     fullscreen: {
       toggle: 'Basculer vers le plein écran'
+    },
+    input: {
+      hidDisabled: 'Le HID est désactivé sur cet appareil (/boot/disable_hid).',
+      keyFailed: "La touche n'a pas pu être envoyée."
     },
     menu: {
       collapse: 'Réduire le menu',

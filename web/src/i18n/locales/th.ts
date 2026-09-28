@@ -141,6 +141,16 @@ const th = {
       dropdownGerman: 'เยอรมัน',
       dropdownFrench: 'ฝรั่งเศส',
       dropdownRussian: 'รัสเซีย',
+      mediaKeys: {
+        title: 'ปุ่มมีเดีย',
+        mute: 'ปิดเสียง',
+        volumeDown: 'ลดเสียง',
+        volumeUp: 'เพิ่มเสียง',
+        previous: 'เพลงก่อนหน้า',
+        playPause: 'เล่นหรือหยุดชั่วคราว',
+        next: 'เพลงถัดไป',
+        stop: 'หยุด'
+      },
       shortcut: {
         title: 'ทางลัด',
         custom: 'กำหนดเอง',
@@ -308,7 +318,17 @@ const th = {
       resetConfirm: 'ดำเนินการรีเซ็ตต่อไปหรือไม่',
       powerConfirm: 'ดำเนินการจ่ายไฟต่อหรือไม่',
       okBtn: 'ใช่',
-      cancelBtn: 'ไม่ใช่'
+      cancelBtn: 'ไม่ใช่',
+      hostOs: 'ระบบปฏิบัติการของโฮสต์',
+      hostOsTip: 'ส่งเป็นปุ่ม USB โฮสต์เป็นผู้กำหนดว่าจะทำอะไร',
+      sleep: 'พักเครื่อง',
+      wake: 'ปลุก',
+      wakeKey: 'ปลุกด้วย Shift',
+      powerDown: 'ปิดเครื่อง',
+      sleepConfirm: 'ให้โฮสต์พักเครื่องหรือไม่?',
+      powerDownConfirm: 'ส่งปุ่มปิดเครื่องไปยังโฮสต์หรือไม่?',
+      wakeTip:
+        'โฮสต์ที่พักเครื่องอยู่มักไม่สนใจคำสั่งปลุกจากอุปกรณ์ที่สั่งให้มันพักเครื่อง "ปลุกด้วย Shift" จะกดปุ่มบนคีย์บอร์ดแทน ซึ่งโฮสต์ส่วนใหญ่ยอมรับ'
     },
     settings: {
       title: 'การตั้งค่า',
@@ -791,6 +811,10 @@ const th = {
     },
     fullscreen: {
       toggle: 'โหมดเต็มหน้าจอ'
+    },
+    input: {
+      hidDisabled: 'HID ถูกปิดอยู่บนอุปกรณ์นี้ (/boot/disable_hid)',
+      keyFailed: 'ส่งปุ่มไม่สำเร็จ'
     },
     menu: {
       collapse: 'ย่อเมนู',

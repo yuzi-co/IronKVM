@@ -144,6 +144,16 @@ const ca = {
       dropdownGerman: 'alemany',
       dropdownFrench: 'francès',
       dropdownRussian: 'rus',
+      mediaKeys: {
+        title: 'Tecles multimèdia',
+        mute: 'Silenci',
+        volumeDown: 'Baixa el volum',
+        volumeUp: 'Puja el volum',
+        previous: 'Pista anterior',
+        playPause: 'Reprodueix o posa en pausa',
+        next: 'Pista següent',
+        stop: 'Atura'
+      },
       shortcut: {
         title: 'Dreceres',
         custom: 'Personalitzat',
@@ -313,7 +323,17 @@ const ca = {
       resetConfirm: 'Vols realment reiniciar?',
       powerConfirm: 'Vols realment encendre/apagar?',
       okBtn: 'Sí',
-      cancelBtn: 'No'
+      cancelBtn: 'No',
+      hostOs: "SO de l'amfitrió",
+      hostOsTip: "S'envien com a tecles USB. L'amfitrió decideix què fan.",
+      sleep: 'Suspèn',
+      wake: 'Desperta',
+      wakeKey: 'Desperta amb Maj',
+      powerDown: 'Apaga',
+      sleepConfirm: "Vols suspendre l'amfitrió?",
+      powerDownConfirm: "Vols enviar la tecla d'apagada a l'amfitrió?",
+      wakeTip:
+        "Un amfitrió suspès sovint ignora Desperta del dispositiu que l'ha suspès. Desperta amb Maj prem una tecla del teclat, que més amfitrions accepten."
     },
     settings: {
       title: 'Configuració',
@@ -799,6 +819,10 @@ const ca = {
     },
     fullscreen: {
       toggle: 'Pantalla completa'
+    },
+    input: {
+      hidDisabled: "L'HID està desactivat en aquest dispositiu (/boot/disable_hid).",
+      keyFailed: "No s'ha pogut enviar la tecla."
     },
     menu: {
       collapse: 'Amaga menú',

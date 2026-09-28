@@ -1,44 +1,45 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Button, Divider, Modal, Typography } from 'antd';
 import clsx from 'clsx';
+import { useSetAtom } from 'jotai';
 import { PenIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/hid.ts';
+import { refreshHidModeAtom } from '@/jotai/hid.ts';
+import { useHidMode } from '@/hooks/useHidMode.ts';
 
 const { Paragraph } = Typography;
 
 export const HidMode = () => {
   const { t } = useTranslation();
 
-  const [hidMode, setHidMode] = useState<'normal' | 'hid-only'>('normal');
-  const [isLoading, setIsLoading] = useState(true);
+  const current = useHidMode();
+  const refreshHidMode = useSetAtom(refreshHidModeAtom);
+  const [isSwitching, setIsSwitching] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [errMsg, setErrMsg] = useState('');
 
-  useEffect(() => {
-    api
-      .getHidMode()
-      .then((rsp) => {
-        if (rsp.code !== 0) {
-          setErrMsg(rsp.msg);
-          return;
-        }
+  const hidMode = current?.mode ?? 'normal';
+  const isLoading = current === null || isSwitching;
 
-        setHidMode(rsp.data.mode);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }, []);
+  // A first fetch that failed leaves the mode unknown, and the switch cannot
+  // offer the right direction. Opening the dialog asks again.
+  function openModal() {
+    if (current === null) {
+      refreshHidMode();
+    }
+    setIsModalOpen(true);
+  }
 
   // The switch used to reboot the board, so this waited thirty seconds and then
   // reloaded the page. It rebuilds the USB gadget instead, which takes about a
   // second and leaves the network, the video and this session alone, so the
-  // answer can simply be believed.
+  // answer can simply be believed. The media and power keys follow the mode,
+  // so the shared copy is fetched again for every menu that shows them.
   function updateHidMode() {
     if (isLoading) return;
-    setIsLoading(true);
+    setIsSwitching(true);
     setErrMsg('');
 
     const mode = hidMode === 'normal' ? 'hid-only' : 'normal';
@@ -51,14 +52,14 @@ export const HidMode = () => {
           return;
         }
 
-        setHidMode(mode);
         setIsModalOpen(false);
+        return refreshHidMode(true);
       })
       .catch((err) => {
         console.log(err);
       })
       .finally(() => {
-        setIsLoading(false);
+        setIsSwitching(false);
       });
   }
 
@@ -66,10 +67,10 @@ export const HidMode = () => {
     <>
       <div
         className={clsx(
-          'flex h-[30px] cursor-pointer select-none items-center space-x-2 rounded px-3 hover:bg-neutral-700/70',
+          'flex h-[30px] cursor-pointer items-center space-x-2 rounded px-3 select-none hover:bg-neutral-700/70',
           hidMode === 'hid-only' ? 'text-blue-500' : 'text-neutral-300'
         )}
-        onClick={() => setIsModalOpen(true)}
+        onClick={openModal}
       >
         <PenIcon size={18} />
         <span>{t('mouse.hidOnly.title')}</span>

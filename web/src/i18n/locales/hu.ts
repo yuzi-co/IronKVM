@@ -146,6 +146,16 @@ const hu = {
       dropdownGerman: 'német',
       dropdownFrench: 'francia',
       dropdownRussian: 'orosz',
+      mediaKeys: {
+        title: 'Médiabillentyűk',
+        mute: 'Némítás',
+        volumeDown: 'Hangerő le',
+        volumeUp: 'Hangerő fel',
+        previous: 'Előző szám',
+        playPause: 'Lejátszás vagy szünet',
+        next: 'Következő szám',
+        stop: 'Leállítás'
+      },
       shortcut: {
         title: 'Parancsikonok',
         custom: 'Egyedi',
@@ -317,7 +327,18 @@ const hu = {
       resetConfirm: 'Folytatja a visszaállítási műveletet?',
       powerConfirm: 'Folytatja az áramellátást?',
       okBtn: 'Igen',
-      cancelBtn: 'Nem'
+      cancelBtn: 'Nem',
+      hostOs: 'Gazdagép OS',
+      hostOsTip:
+        'USB-billentyűként kerülnek elküldésre. Hogy mit tesznek, azt a gazdagép dönti el.',
+      sleep: 'Alvó állapot',
+      wake: 'Ébresztés',
+      wakeKey: 'Ébresztés Shifttel',
+      powerDown: 'Leállítás',
+      sleepConfirm: 'Alvó állapotba helyezi a gazdagépet?',
+      powerDownConfirm: 'Elküldi a kikapcsoló billentyűt a gazdagépnek?',
+      wakeTip:
+        'Az alvó gazdagép gyakran figyelmen kívül hagyja az Ébresztést attól az eszköztől, amely elaltatta. Az Ébresztés Shifttel egy billentyűt nyom le a billentyűzeten, amelyet több gazdagép elfogad.'
     },
     settings: {
       title: 'Beállítások',
@@ -804,6 +825,10 @@ const hu = {
     },
     fullscreen: {
       toggle: 'Teljes képernyő váltás'
+    },
+    input: {
+      hidDisabled: 'A HID ki van kapcsolva ezen az eszközön (/boot/disable_hid).',
+      keyFailed: 'A billentyűt nem sikerült elküldeni.'
     },
     menu: {
       collapse: 'Menü összecsukása',
