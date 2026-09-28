@@ -8,18 +8,23 @@ const ca = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      cookieRejected:
+        "El navegador s'ha negat a desar la sessió. Una galeta que va deixar una sessió HTTPS anterior no es pot substituir per http sense xifrar. Esborreu les galetes d'aquesta adreça, o obriu una finestra privada, i torneu a iniciar la sessió.",
       login: 'Inici de sessió',
       placeholderUsername: "Nom d'usuari",
       placeholderPassword: 'Contrasenya',
+      placeholderCurrentPassword: 'Contrasenya actual',
       placeholderPassword2: 'Torna a introduir la contrasenya',
       noEmptyUsername: "Cal introduir el nom d'usuari",
       noEmptyPassword: 'Cal introduir la contrasenya',
+      passwordLength: 'La contrasenya ha de tenir entre 8 i 72 caràcters',
       noAccount:
         "No s'ha pogut obtenir la informació de l'usuari, actualitza la pàgina web o restableix la contrasenya",
       invalidUser: "Nom d'usuari o contrasenya invàlids",
       locked: 'Massa inicis de sessió, si us plau, torna-ho a provar més tard',
       globalLocked: 'Sistema sota protecció, torneu-ho a provar més tard',
       error: 'Error inesperat',
+      invalidCurrentPassword: 'La contrasenya actual no és correcta',
       changePassword: 'Canviar la contrasenya',
       changePasswordDesc: 'Per a la seguretat del dispositiu, canvia la contrasenya!',
       differentPassword: 'Les contrasenyes no coincideixen',
@@ -242,6 +247,10 @@ const ca = {
       relative: 'Mode relatiu',
       absoluteShort: 'Absolut',
       relativeShort: 'Relatiu',
+      absoluteStalled: "L'amfitrió ignora el ratolí absolut",
+      absoluteStalledDesc:
+        "L'amfitrió ha deixat de recollir els informes del ratolí absolut, de manera que els moviments del punter es perden. El teclat no se'n veu afectat. Recuperar l'USB sol resoldre-ho; el mode relatiu fa servir un altre endpoint.",
+      useRelative: 'Canvia al mode relatiu',
       direction: 'Direcció de la roda de desplaçament',
       scrollUp: "Desplaça't cap amunt",
       scrollDown: "Desplaça't cap avall",
@@ -255,6 +264,7 @@ const ca = {
         desc: 'Si el ratolí i el teclat deixen de respondre i restablir HID no ajuda, pot ser un problema de compatibilitat entre el NanoKVM i el dispositiu. Proveu d’activar el mode només HID per millorar la compatibilitat.',
         tip1: 'Activar el mode només HID desmuntarà el disc virtual i la xarxa virtual',
         tip2: 'En mode només HID, no es pot muntar imatges',
+        rebuild: 'Canviar de mode reconstrueix la connexió USB. El NanoKVM no es reinicia',
         enable: 'Activa mode només HID',
         disable: 'Desactiva mode només HID'
       }
@@ -270,6 +280,17 @@ const ca = {
       unmountDesc:
         "En alguns sistemes, cal expulsar manualment de l'amfitrió remot abans de desmuntar la imatge.",
       refresh: 'Actualitza la llista',
+      disk: 'Disc',
+      cdrom: 'CD',
+      driveEmpty: 'Buida',
+      eject: 'Expulsa',
+      readOnly: 'Només lectura',
+      readOnlyTip: "S'aplica a la propera imatge que s'insereixi al disc.",
+      noDrives: 'No hi ha unitats virtuals. Activeu el disc virtual a Configuració.',
+      insertFailed: "No s'ha pogut inserir",
+      ejectFailed: "No s'ha pogut expulsar",
+      insertInto: 'Insereix a {{drive}}. Feu clic per canviar-ho.',
+      loadedIn: 'A la unitat {{drive}}',
       attention: 'Atenció',
       deleteConfirm: 'Esteu segur que voleu suprimir aquesta imatge?',
       okBtn: 'Sí',
@@ -367,7 +388,15 @@ const ca = {
       sleepConfirm: "Vols suspendre l'amfitrió?",
       powerDownConfirm: "Vols enviar la tecla d'apagada a l'amfitrió?",
       wakeTip:
-        "Un amfitrió suspès sovint ignora Desperta del dispositiu que l'ha suspès. Desperta amb Maj prem una tecla del teclat, que més amfitrions accepten."
+        "Un amfitrió suspès sovint ignora Desperta del dispositiu que l'ha suspès. Desperta amb Maj prem una tecla del teclat, que més amfitrions accepten.",
+      led: "LED d'alimentació",
+      ledOn: 'Encès',
+      ledOff: 'Apagat',
+      ledUnknown: 'Desconegut',
+      ledConnected: "LED d'alimentació connectat",
+      ledConnectedTip:
+        "Activeu-ho només si el connector del LED d'alimentació de l'amfitrió està cablejat a la placa. Sense això, l'estat d'alimentació és desconegut.",
+      ledConnectedFailed: "No s'ha pogut desar la configuració del LED d'alimentació"
     },
     settings: {
       title: 'Configuració',
@@ -390,6 +419,34 @@ const ca = {
         okBtn: 'Confirma',
         cancelBtn: 'Cancel·la'
       },
+      redfish: {
+        title: 'Redfish',
+        service: 'Servei Redfish',
+        serviceDesc:
+          "L'API Redfish de la DMTF, per al control d'alimentació, els suports virtuals i l'estat des d'eines com redfishtool i Ansible. Desactivar-la tanca totes les sessions Redfish.",
+        endpoint: 'Arrel del servei',
+        httpsOn: "La placa serveix HTTPS, que la majoria d'eines Redfish necessiten.",
+        httpsOff:
+          'La placa serveix HTTP sense xifrar. La majoria d\'eines Redfish necessiten HTTPS: activeu-lo a "Configuració > Xarxa".',
+        credentials:
+          'Redfish accepta els comptes del KVM, amb autenticació Basic o una sessió Redfish, i claus API enviades com a X-Auth-Token. Les claus API es gestionen a la pàgina Claus API.',
+        powerActions: "Accions d'alimentació",
+        powerActionsDesc:
+          "Els tipus de reinici que s'ofereixen ara. On, ForceOff i GracefulShutdown necessiten l'estat d'alimentació, així que només s'ofereixen quan \"LED d'alimentació connectat\" està activat al menú d'alimentació.",
+        sessions: 'Sessions',
+        noSessions: 'No hi ha cap sessió Redfish oberta',
+        created: 'Creada',
+        lastUsed: 'Últim ús',
+        refresh: 'Actualitza',
+        end: 'Tanca',
+        endConfirmTitle: 'Voleu tancar aquesta sessió Redfish?',
+        endConfirmDesc:
+          'El seu testimoni deixa de funcionar immediatament. El client haurà de tornar a iniciar la sessió.',
+        failed: "L'operació Redfish ha fallat",
+        copyFailed: 'La còpia ha fallat. Copieu-ho manualment.',
+        okBtn: 'Confirma',
+        cancelBtn: 'Cancel·la'
+      },
       watchdog: {
         title: 'Watchdog',
         service: "Watchdog de l'amfitrió",
@@ -398,7 +455,7 @@ const ca = {
         stillWarning:
           "Un amfitrió amb la pantalla en repòs, o amb la imatge fixa mentre treballa, sembla penjat. Desactiveu el repòs de pantalla a l'amfitrió o indiqueu una adreça de ping.",
         ledHint:
-          '"Power LED connected" està desactivat al menú d\'alimentació. El watchdog no veu quan l\'amfitrió està apagat, així que el tracta com a sempre engegat.',
+          "\"LED d'alimentació connectat\" està desactivat al menú d'alimentació. El watchdog no veu quan l'amfitrió està apagat, així que el tracta com a sempre engegat.",
         timeout: "Temps d'espera",
         timeoutDesc:
           "Quant de temps pot l'amfitrió no donar senyals de vida abans que el watchdog actuï.",
@@ -463,7 +520,16 @@ const ca = {
         applicationTip: 'Versió de la interfície web de NanoKVM',
         image: 'Versió de la imatge',
         imageTip: 'Versió del sistema NanoKVM',
+        kernel: 'Versió del nucli',
+        kernelTip: "Versió del nucli Linux que s'executa ara",
         deviceKey: 'Clau del dispositiu',
+        videoMemory: 'Memòria de vídeo',
+        videoMemoryTip:
+          'Memòria reservada per a la captura de vídeo. No es comparteix amb la resta del sistema.',
+        videoMemoryGenerations_one: '{{count}} sessió anterior de NanoKVM reté memòria de vídeo',
+        videoMemoryGenerations_other:
+          '{{count}} sessions anteriors de NanoKVM retenen memòria de vídeo',
+        videoMemoryReboot: 'Reinicieu per recuperar-la.',
         community: 'Comunitat',
         hostname: 'Nom del dispositiu',
         hostnameUpdated: 'Nom actualitzat. Reinicia per aplicar.',
@@ -512,6 +578,16 @@ const ca = {
         oled: {
           title: 'OLED',
           description: 'Apagar pantalla OLED després de',
+          brightness: "Brillantor de l'OLED",
+          brightnessDescription: 'Un nivell més baix allarga la vida de la pantalla',
+          brightnessLevels: {
+            '64': 'Mínima',
+            '96': 'Baixa',
+            '128': 'Mitjana',
+            '160': 'Alta',
+            '207': 'Predeterminada',
+            '255': 'Màxima'
+          },
           0: 'Mai',
           15: '15 s',
           30: '30 s',
@@ -527,11 +603,35 @@ const ca = {
           tip: 'Configura una contrasenya segura abans (Compte - Canvia contrasenya)'
         },
         advanced: 'Configuració avançada',
+        cpuFreq: {
+          title: 'Freqüència de la CPU',
+          description: "Defineix la freqüència de la CPU que s'aplica a la propera arrencada",
+          tip: "La CPU arrenca a 850 MHz i està especificada per a 1000 MHz. Un valor nou s'aplica a la propera arrencada, no mentre el sistema funciona. 1000 MHz és dins de l'especificació; la temperatura queda molt per sota dels límits amb qualsevol dels dos valors.",
+          running: 'En ús: {{mhz}} MHz',
+          rebootToApply: 'reinicieu per aplicar-ho',
+          rebootConfirm: 'Voleu reiniciar ara per aplicar {{mhz}} MHz?'
+        },
         swap: {
           title: 'Swap',
           disable: 'Desactiva',
           description: 'Defineix la mida del fitxer swap',
           tip: 'Pot reduir la vida útil de la targeta SD!'
+        },
+        zram: {
+          title: 'Swap comprimida (zram)',
+          description: 'Swap a la RAM comprimida, en lloc de a la targeta SD',
+          tip: "zram manté la swap fora de la targeta SD, així que no la desgasta. No hi ha swap en disc al darrere: si zram s'omple, el nucli atura un procés en lloc de paginar lentament. El límit de memòria fixa quanta RAM pot ocupar zram.",
+          unavailable: 'Els mòduls del nucli no estan instal·lats en aquest dispositiu',
+          inactive: "Activada, però el dispositiu no s'ha iniciat",
+          active: 'Activa - {{used}} de {{total}}, {{ratio}}x',
+          off: 'Desactivada',
+          detail: {
+            algorithm: 'Algorisme: {{algorithm}}',
+            memory: 'Memòria usada: {{used}} de {{limit}}',
+            memoryNoLimit: 'Memòria usada: {{used}}, sense límit',
+            counters:
+              "Pàgines intercanviades: entrada {{in}}, sortida {{out}} (tots els dispositius swap, des de l'arrencada)"
+          }
         },
         mouseJiggler: {
           title: 'Mou-ratolí automàtic',
@@ -586,7 +686,26 @@ const ca = {
           reenumerate:
             "En aplicar-ho es reconstrueix la connexió USB. L'amfitrió perd el teclat, el ratolí i el disc virtual durant uns segons."
         },
+        audio: 'Altaveu virtual',
+        audioDesc:
+          "Presenta una targeta de so USB a l'amfitrió remot, perquè el pugueu sentir. L'amfitrió l'ha de seleccionar com a dispositiu de sortida. Canviar-ho reconstrueix la connexió USB.",
+        audioNote: "L'àudio està disponible en els dos modes H.264 (WebRTC i Direct), no en MJPEG",
+        console: 'Consola sèrie',
+        consoleDesc:
+          "Presenta un port sèrie USB a l'amfitrió remot, per iniciar la sessió en aquest NanoKVM quan la xarxa no és accessible",
+        consoleTip:
+          "Qualsevol que controli l'amfitrió remot obté una sol·licitud d'inici de sessió d'aquest NanoKVM. Configureu una contrasenya segura abans d'activar-ho (Compte - Canvia contrasenya).",
         endpoints: {
+          title: 'Endpoints USB',
+          used: '{{used}} de {{total}} en ús',
+          cost: 'en fa servir {{cost}}',
+          needs: 'en necessita {{cost}}',
+          full: 'No hi ha prou endpoints USB. Primer desactiveu alguna altra cosa.',
+          inactive:
+            "Activat, però no funciona: el controlador USB s'ha quedat sense endpoints. Desactiveu un altre dispositiu i aquest s'iniciarà immediatament.",
+          explain:
+            "El controlador USB té un nombre fix d'endpoints d'entrada, i això els compta. Si s'activen més dispositius dels que hi caben, es conserven el teclat i el ratolí i la resta es desactiven.",
+          error: "No s'ha pogut contactar amb el dispositiu. Torneu-ho a provar.",
           fitTogether: 'Caben junts: {{sets}}'
         },
         reboot: 'Reinicia',
@@ -613,7 +732,10 @@ const ca = {
         },
         tls: {
           description: 'Activa el protocol HTTPS',
-          tip: 'Atenció: Usar HTTPS pot augmentar la latència, sobretot amb vídeo MJPEG.'
+          tip: 'Atenció: Usar HTTPS pot augmentar la latència, sobretot amb vídeo MJPEG.',
+          restarting: "S'està reiniciant el servidor del dispositiu, triga uns dos minuts...",
+          waiting: "S'està esperant que el dispositiu torni a respondre...",
+          waitingHttp: "S'està tornant a http. Torneu a carregar aquesta pàgina si no s'obre sola."
         },
         ethernet: {
           title: 'Adreça IP',
@@ -674,6 +796,53 @@ const ca = {
           none: 'Cap'
         }
       },
+      vpn: {
+        loading: "S'està carregant...",
+        okBtn: 'Sí',
+        cancelBtn: 'No',
+        restart: 'Voleu reiniciar {{name}}?',
+        stop: 'Voleu aturar {{name}}?',
+        stopDesc:
+          "El dimoni s'atura ara. Inicia a l'arrencada és un interruptor a part i es queda com està.",
+        update: 'Voleu actualitzar {{name}} a {{version}}?',
+        updateDesc: "El dimoni es reinicia si s'està executant. La sessió es conserva.",
+        notInstall: '{{name}} no està instal·lat.',
+        install: 'Instal·la',
+        installing: "S'està instal·lant",
+        installFailed: 'La instal·lació ha fallat',
+        retry: 'Torna-ho a provar',
+        notRunning: "{{name}} no s'està executant. Inicieu-lo per continuar.",
+        run: 'Inicia',
+        boot: "Inicia a l'arrencada",
+        bootDesc: 'Inicia {{name}} quan arrenca el KVM.',
+        enable: 'Activa {{name}}',
+        control: 'Servidor de control',
+        connected: 'Connectat',
+        disconnected: 'No connectat',
+        deviceName: 'Nom del dispositiu',
+        deviceIP: 'IP del dispositiu',
+        account: 'Compte',
+        version: 'Versió',
+        uptime: 'Temps actiu',
+        peers: 'Iguals',
+        noPeers: 'Encara no hi ha iguals.',
+        online: 'En línia',
+        offline: 'Fora de línia',
+        memory: 'Memòria',
+        daemonRss: 'Dimoni',
+        group: 'Grup de complements',
+        high: 'limitat per sobre de {{size}}',
+        max: "el nucli l'atura per sobre de {{size}}",
+        noGroup: 'Aquesta placa no té grup de memòria per a complements.',
+        uninstall: 'Desinstal·la {{name}}',
+        uninstallDesc: 'Segur que voleu desinstal·lar {{name}}? La sessió es queda a la placa.',
+        blocked:
+          "{{other}} s'està executant o s'inicia a l'arrencada. Només pot funcionar una VPN alhora: primer atureu {{other}} i desactiveu-ne l'inici a l'arrencada.",
+        swap: {
+          title: 'Memòria swap',
+          tip: 'Si el dimoni es queda curt de memòria, proveu d\'activar la memòria swap. Això defineix la mida del fitxer swap a 256MB per defecte, que es pot ajustar a "Configuració > Dispositiu".'
+        }
+      },
       tailscale: {
         title: 'Tailscale',
         retry: 'Actualitza i torna-ho a provar. O instal·la manualment',
@@ -689,6 +858,21 @@ const ca = {
         loginSuccess: 'Sessió iniciada correctament',
         logout: 'Tanca sessió',
         logoutDesc: 'Segur que vols tancar sessió?'
+      },
+      netbird: {
+        title: 'NetBird',
+        notLogin:
+          "Aquest dispositiu encara no s'ha unit a cap xarxa NetBird. Uniu-vos-hi amb una clau de configuració o inicieu la sessió amb SSO.",
+        setupKey: 'Clau de configuració',
+        setupKeyPlaceholder: 'Enganxeu una clau de configuració del tauler de NetBird',
+        join: 'Uneix-te',
+        or: 'o',
+        sso: 'Inicia la sessió amb SSO',
+        urlPeriod: 'Aquesta URL és vàlida durant 10 minuts',
+        loginSuccess: 'Sessió iniciada correctament',
+        logout: 'Dona de baixa',
+        logoutDesc:
+          "Donar de baixa elimina aquest igual del vostre compte de NetBird i n'esborra aquí la configuració. Per tornar-vos a unir cal una clau de configuració o un inici de sessió amb SSO, i l'igual pot rebre una IP nova. Voleu continuar?"
       },
       update: {
         title: 'Comprova actualitzacions',
@@ -715,6 +899,7 @@ const ca = {
           confirmDesc:
             'SHA-512 només comprova que el paquet coincideixi amb el manifest proporcionat per aquest servidor. Això no demostra que el paquet sigui una versió oficial de NanoKVM. Un servidor defectuós o maliciós pot deixar el dispositiu inutilitzable, provocar la pèrdua de dades o comprometre el sistema.',
           confirm: 'Utilitza’l igualment',
+          useSipeed: 'Utilitza el servidor oficial de Sipeed',
           previewDisabled:
             'Les actualitzacions de previsualització no estan disponibles mentre hi hagi activat un servidor d’actualitzacions personalitzat.'
         },
@@ -734,12 +919,59 @@ const ca = {
       account: {
         title: 'Compte',
         webAccount: 'Nom del compte web',
+        role: 'Rol',
+        roles: { admin: 'Administrador', user: 'Usuari' },
         password: 'Contrasenya',
         updateBtn: 'Canvia',
         logoutBtn: 'Tanca sessió',
         logoutDesc: 'Segur que vols tancar sessió?',
         okBtn: 'Sí',
-        cancelBtn: 'No'
+        cancelBtn: 'No',
+        users: {
+          title: 'Usuaris',
+          create: 'Crea un usuari',
+          enabled: 'Activat',
+          disabled: 'Desactivat',
+          deviceOwner: 'Propietari del dispositiu',
+          resetPassword: 'Restableix la contrasenya',
+          delete: 'Suprimeix',
+          deleteConfirm: 'Voleu suprimir aquest usuari i revocar totes les seves sessions?',
+          created: "S'ha creat l'usuari",
+          deleted: "S'ha suprimit l'usuari",
+          passwordUpdated: "S'ha actualitzat la contrasenya",
+          loadFailed: "No s'han pogut carregar els usuaris",
+          saveFailed: "No s'ha pogut desar l'usuari",
+          deleteFailed: "No s'ha pogut suprimir l'usuari"
+        }
+      },
+      apiKeys: {
+        title: 'Claus API',
+        description:
+          "Una clau actua com el seu propietari, amb el rol d'aquest usuari. Envieu-la com a Authorization: Bearer <key> per a les mètriques i l'API, o com a X-Auth-Token per a Redfish.",
+        name: 'Nom',
+        namePlaceholder: 'Per a què és la clau, per exemple prometheus',
+        nameRequired: 'Poseu un nom a la clau',
+        nameTooLong: 'El nom pot tenir com a màxim 64 caràcters',
+        unnamed: '(sense nom)',
+        create: 'Crea una clau',
+        created: 'Creada',
+        owner: 'Propietari',
+        empty: 'No hi ha cap clau API',
+        newKeyTitle: 'La vostra clau API nova',
+        newKeyWarning:
+          'Copieu la clau ara. No es desa i no es pot tornar a mostrar. Si la perdeu, revoqueu-la i creeu-ne una altra.',
+        copy: 'Copia',
+        copied: 'Copiada',
+        copyFailed: 'La còpia ha fallat. Copieu-ho manualment.',
+        done: 'Fet',
+        revoke: 'Revoca',
+        revokeConfirmTitle: 'Voleu revocar aquesta clau API?',
+        revokeConfirmDesc: 'Tot el que utilitzi "{{name}}" deixarà de funcionar immediatament.',
+        revoked: "S'ha revocat la clau API",
+        loadFailed: "No s'han pogut carregar les claus API",
+        createFailed: "No s'ha pogut crear la clau API",
+        revokeFailed: "No s'ha pogut revocar la clau API",
+        cancelBtn: 'Cancel·la'
       }
     },
     picoclaw: {
@@ -908,18 +1140,38 @@ const ca = {
     },
     error: {
       title: 'Hi ha hagut un error',
-      refresh: 'Actualitza'
+      refresh: 'Actualitza',
+      panel: 'Aquesta part de la pàgina ha deixat de funcionar',
+      retry: 'Torna-ho a provar'
     },
     fullscreen: {
       toggle: 'Pantalla completa'
     },
     input: {
+      disconnected: 'El teclat i el ratolí no estan connectats',
+      disconnectedTls:
+        'El navegador ha rebutjat la connexió segura que transporta el teclat i el ratolí, cosa que fa sense preguntar. El certificat que ha generat aquest dispositiu encara no és de confiança. Obriu aquesta adreça en una pestanya nova, accepteu el certificat i torneu a carregar. Instal·lar el certificat és la solució fiable.',
+      disconnectedNever:
+        "No s'ha pogut obrir la connexió que transporta el teclat i el ratolí. La resta de la pàgina funciona perquè no la fa servir. Comproveu que res entre vosaltres i el dispositiu la bloquegi.",
+      disconnectedDropped:
+        "La connexió que transporta el teclat i el ratolí s'ha perdut i no s'ha recuperat. Es torna a connectar sola després d'un reinici; si continua així, torneu a carregar la pàgina.",
       hidDisabled: "L'HID està desactivat en aquest dispositiu (/boot/disable_hid).",
       keyFailed: "No s'ha pogut enviar la tecla."
     },
+    speaker: { title: 'Altaveu', unmute: 'Activa el so', mute: 'Silencia' },
     menu: {
       collapse: 'Amaga menú',
       expand: 'Mostra menú'
+    },
+    ion: {
+      checking: "S'està comprovant la memòria de vídeo abans d'iniciar la transmissió...",
+      warn: "Queda poca memòria de vídeo. Un sol reinici del servidor l'esgotaria. Reinicieu quan us vagi bé.",
+      criticalTitle: 'No hi ha prou memòria de vídeo per iniciar la transmissió',
+      criticalBody:
+        "Iniciar el vídeo esgotaria la memòria reservada i aturaria el servidor. Totes les altres funcions continuen funcionant, inclosos el control d'alimentació i el reinici. Només un reinici del NanoKVM recupera aquesta memòria.",
+      criticalContinue: 'Inicia el vídeo igualment',
+      criticalReboot: 'Reinicia el NanoKVM',
+      criticalRebooting: "S'està reiniciant..."
     }
   }
 };
