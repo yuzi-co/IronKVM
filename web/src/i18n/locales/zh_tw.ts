@@ -8,17 +8,22 @@ const zh_tw = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      cookieRejected:
+        '瀏覽器拒絕儲存工作階段。先前 HTTPS 工作階段留下的 Cookie 無法透過一般 http 取代。請清除此位址的 Cookie，或開啟無痕視窗，然後重新登入。',
       login: '登入',
       placeholderUsername: '使用者名稱',
       placeholderPassword: '密碼',
+      placeholderCurrentPassword: '目前密碼',
       placeholderPassword2: '請再次輸入密碼',
       noEmptyUsername: '使用者名稱不能為空',
       noEmptyPassword: '密碼不能為空',
+      passwordLength: '密碼長度必須為 8 到 72 個字元',
       noAccount: '找不到使用者，請重新整理網頁或重設密碼',
       invalidUser: '使用者名稱或密碼錯誤',
       locked: '登入次數過多，請稍後重試',
       globalLocked: '系統受保護，請稍後重試',
       error: '非預期性錯誤',
+      invalidCurrentPassword: '目前密碼不正確',
       changePassword: '更改密碼',
       changePasswordDesc: '為了您的裝置安全，請修改登入密碼。',
       differentPassword: '密碼不一致',
@@ -234,6 +239,10 @@ const zh_tw = {
       relative: '相對模式',
       absoluteShort: '絕對',
       relativeShort: '相對',
+      absoluteStalled: '目標主機未回應絕對模式滑鼠',
+      absoluteStalledDesc:
+        '目標主機已停止接收絕對模式滑鼠報告，游標移動會遺失。鍵盤不受影響。恢復 USB 通常可以解決；相對模式使用另一個端點。',
+      useRelative: '切換到相對模式',
       direction: '滾輪方向',
       scrollUp: '向上',
       scrollDown: '向下',
@@ -247,6 +256,7 @@ const zh_tw = {
         desc: '如果您的滑鼠和鍵盤沒有反應，且重設 HID 無效，可能是 NanoKVM 與您的裝置間有相容性問題。請嘗試啟用 HID-Only 模式以獲得更好的相容性。',
         tip1: '啟用 HID-Only 模式將會停用虛擬隨身碟和虛擬網卡的功能',
         tip2: '在 HID-Only 模式下，映像檔掛載功能將被停用',
+        rebuild: '切換模式會重建 USB 連線，NanoKVM 不會重新啟動',
         enable: '啟用 HID-Only 模式',
         disable: '停用 HID-Only 模式'
       }
@@ -261,6 +271,17 @@ const zh_tw = {
       unmountFailed: '解除安裝失敗',
       unmountDesc: '在某些系統中，需要在遠端主機中手動彈出後再解除安裝映像。',
       refresh: '重新整理映像檔列表',
+      disk: '磁碟',
+      cdrom: '光碟',
+      driveEmpty: '空',
+      eject: '退出',
+      readOnly: '唯讀',
+      readOnlyTip: '套用於下一個插入磁碟的映像檔。',
+      noDrives: '沒有虛擬磁碟機。請在設定中啟用虛擬隨身碟。',
+      insertFailed: '插入失敗',
+      ejectFailed: '退出失敗',
+      insertInto: '插入到{{drive}}，按一下以變更。',
+      loadedIn: '已在{{drive}}磁碟機中',
       attention: '注意',
       deleteConfirm: '確定要刪除該映像檔嗎？',
       okBtn: '確定',
@@ -358,7 +379,14 @@ const zh_tw = {
       sleepConfirm: '讓主機進入睡眠？',
       powerDownConfirm: '要向主機傳送關機鍵嗎？',
       wakeTip:
-        '處於睡眠的主機常常忽略來自讓它睡眠的裝置的喚醒。「用 Shift 喚醒」會按下鍵盤按鍵，更多主機會回應。'
+        '處於睡眠的主機常常忽略來自讓它睡眠的裝置的喚醒。「用 Shift 喚醒」會按下鍵盤按鍵，更多主機會回應。',
+      led: '電源指示燈',
+      ledOn: '亮',
+      ledOff: '滅',
+      ledUnknown: '未知',
+      ledConnected: '已連接電源指示燈',
+      ledConnectedTip: '僅在主機的電源指示燈針腳已接到開發板時才開啟。未連接時電源狀態未知。',
+      ledConnectedFailed: '儲存電源指示燈設定失敗'
     },
     settings: {
       title: '設定',
@@ -379,6 +407,32 @@ const zh_tw = {
         okBtn: '確認',
         cancelBtn: '取消'
       },
+      redfish: {
+        title: 'Redfish',
+        service: 'Redfish 服務',
+        serviceDesc:
+          'DMTF Redfish API，供 redfishtool、Ansible 等工具進行電源控制、虛擬媒體與狀態查詢。關閉後將結束所有 Redfish 工作階段。',
+        endpoint: '服務根位址',
+        httpsOn: '開發板已啟用 HTTPS，大多數 Redfish 工具需要它。',
+        httpsOff: '開發板使用一般 HTTP。大多數 Redfish 工具需要 HTTPS：請在「設定 > 網路」中開啟。',
+        credentials:
+          'Redfish 使用 KVM 帳號，支援 Basic 驗證或 Redfish 工作階段，也支援以 X-Auth-Token 傳送的 API Key。API Key 在 API Key 頁面管理。',
+        powerActions: '電源操作',
+        powerActionsDesc:
+          '目前提供的重設類型。On、ForceOff 和 GracefulShutdown 需要知道電源狀態，因此只有在電源選單中開啟「已連接電源指示燈」後才會提供。',
+        sessions: '工作階段',
+        noSessions: '沒有開啟的 Redfish 工作階段',
+        created: '建立時間',
+        lastUsed: '上次使用',
+        refresh: '重新整理',
+        end: '結束',
+        endConfirmTitle: '結束此 Redfish 工作階段？',
+        endConfirmDesc: '其權杖將立即失效，用戶端必須重新登入。',
+        failed: 'Redfish 操作失敗',
+        copyFailed: '複製失敗，請手動複製。',
+        okBtn: '確認',
+        cancelBtn: '取消'
+      },
       watchdog: {
         title: '看門狗',
         service: '主機看門狗',
@@ -387,7 +441,7 @@ const zh_tw = {
         stillWarning:
           '顯示器進入睡眠、或工作時畫面靜止不動的主機看起來就像當機。請在主機上關閉顯示器睡眠，或設定一個 Ping 位址。',
         ledHint:
-          '電源選單中的「Power LED connected」已關閉。看門狗無法得知主機何時關機，因此將主機視為始終開機。',
+          '電源選單中的「已連接電源指示燈」已關閉。看門狗無法得知主機何時關機，因此將主機視為始終開機。',
         timeout: '逾時時間',
         timeoutDesc: '主機在看門狗動作之前可以沒有活動跡象的時長。',
         action: '動作',
@@ -449,7 +503,13 @@ const zh_tw = {
         applicationTip: 'NanoKVM 網頁程式版本',
         image: '韌體版本',
         imageTip: 'NanoKVM 系统韌體版本',
+        kernel: '核心版本',
+        kernelTip: '目前執行中的 Linux 核心版本',
         deviceKey: '設備序號',
+        videoMemory: '視訊記憶體',
+        videoMemoryTip: '為視訊擷取保留的記憶體，不與系統其他部分共用。',
+        videoMemoryGenerations_other: '先前的 {{count}} 個 NanoKVM 工作階段仍佔用著視訊記憶體',
+        videoMemoryReboot: '重新啟動以回收。',
         community: '社群',
         hostname: '主機名稱',
         hostnameUpdated: '已更新主機名稱. 請重新啟動以生效',
@@ -497,6 +557,16 @@ const zh_tw = {
         oled: {
           title: 'OLED',
           description: '設定 OLED 螢幕自動睡眠時間',
+          brightness: 'OLED 亮度',
+          brightnessDescription: '亮度越低，螢幕壽命越長',
+          brightnessLevels: {
+            '64': '最低',
+            '96': '低',
+            '128': '中',
+            '160': '高',
+            '207': '預設',
+            '255': '最高'
+          },
           0: '永不',
           15: '15 秒',
           30: '30 秒',
@@ -512,11 +582,34 @@ const zh_tw = {
           tip: '啟用前請務必設定強密碼（帳號 - 更改密碼）'
         },
         advanced: '進階設定',
+        cpuFreq: {
+          title: 'CPU 時脈',
+          description: '設定下次開機時使用的 CPU 時脈',
+          tip: 'CPU 以 850 MHz 開機，額定時脈為 1000 MHz。新值會在下次開機時套用，系統執行期間不會改變。1000 MHz 在規格範圍內；兩種設定下溫度都遠低於上限。',
+          running: '目前：{{mhz}} MHz',
+          rebootToApply: '重新啟動後生效',
+          rebootConfirm: '立即重新啟動以套用 {{mhz}} MHz？'
+        },
         swap: {
           title: 'Swap',
           disable: '停用',
           description: '設定 Swap 檔大小',
           tip: '啟用此功能可能會減少SD卡的使用壽命！'
+        },
+        zram: {
+          title: '壓縮 Swap（zram）',
+          description: '在壓縮的記憶體中進行 Swap，而不是在 SD 卡上',
+          tip: 'zram 讓 Swap 不經過 SD 卡，因此不會造成磨損。它背後沒有磁碟 Swap：zram 用滿時，核心會終止處理程序，而不是緩慢地換頁。記憶體上限決定 zram 最多能使用多少 RAM。',
+          unavailable: '此裝置未安裝所需的核心模組',
+          inactive: '已啟用，但裝置未能啟動',
+          active: '運作中 - {{used}} / {{total}}，{{ratio}}x',
+          off: '關閉',
+          detail: {
+            algorithm: '演算法：{{algorithm}}',
+            memory: '已用記憶體：{{used}} / {{limit}}',
+            memoryNoLimit: '已用記憶體：{{used}}，未設定上限',
+            counters: '換入 {{in}} 頁，換出 {{out}} 頁（所有 Swap 裝置，自開機以來）'
+          }
         },
         mouseJiggler: {
           title: '滑鼠抖動模式 (Mouse Jiggler)',
@@ -568,7 +661,24 @@ const zh_tw = {
           confirm: '重新連接 USB 裝置？',
           reenumerate: '套用後將重建 USB 連線。主機會有幾秒鐘無法使用鍵盤、滑鼠和虛擬磁碟。'
         },
+        audio: '虛擬喇叭',
+        audioDesc:
+          '向遠端主機提供一張 USB 音效卡，讓您能聽到它的聲音。主機必須將其選為輸出裝置。切換此項會重建 USB 連線。',
+        audioNote: '音訊在兩種 H.264 模式（WebRTC 和 Direct）下可用，MJPEG 下不可用',
+        console: '序列主控台',
+        consoleDesc: '向遠端主機提供一個 USB 序列埠，用於在網路無法連線時登入這台 NanoKVM',
+        consoleTip:
+          '任何能控制遠端主機的人都會看到這台 NanoKVM 的登入提示。啟用前請務必設定強密碼（帳號 - 更改密碼）。',
         endpoints: {
+          title: 'USB 端點',
+          used: '已使用 {{used}} / {{total}}',
+          cost: '佔用 {{cost}} 個',
+          needs: '需要 {{cost}} 個',
+          full: 'USB 端點不足，請先關閉其他功能。',
+          inactive: '已開啟但未執行：USB 控制器的端點已用完。關閉其他裝置後，此裝置會立即啟動。',
+          explain:
+            'USB 控制器的輸入端點數量固定，這裡統計的就是這些端點。如果啟用的裝置超出容量，會保留鍵盤和滑鼠，其餘裝置將被關閉。',
+          error: '無法連線到裝置，請重試。',
           fitTogether: '可同時啟用：{{sets}}'
         },
         reboot: '重新啟動',
@@ -595,7 +705,10 @@ const zh_tw = {
         },
         tls: {
           description: '啟用 HTTPS 協議',
-          tip: '啟用 HTTPS 可以提高安全性，但可能會增加傳輸延遲，特別是使用 MJPEG 格式傳輸時。'
+          tip: '啟用 HTTPS 可以提高安全性，但可能會增加傳輸延遲，特別是使用 MJPEG 格式傳輸時。',
+          restarting: '正在重新啟動裝置伺服器，約需兩分鐘...',
+          waiting: '正在等待裝置重新回應...',
+          waitingHttp: '正在切換回 http。如果頁面沒有自動開啟，請重新載入此頁面。'
         },
         ethernet: {
           title: 'IP 位址',
@@ -656,6 +769,52 @@ const zh_tw = {
           none: '無'
         }
       },
+      vpn: {
+        loading: '載入中...',
+        okBtn: '是',
+        cancelBtn: '否',
+        restart: '重新啟動 {{name}}？',
+        stop: '停止 {{name}}？',
+        stopDesc: '背景服務會立即停止。開機啟動是獨立的開關，會維持原狀。',
+        update: '將 {{name}} 更新至 {{version}}？',
+        updateDesc: '如果背景服務正在執行，它會重新啟動。登入狀態會保留。',
+        notInstall: '{{name}} 尚未安裝。',
+        install: '安裝',
+        installing: '安裝中',
+        installFailed: '安裝失敗',
+        retry: '重試',
+        notRunning: '{{name}} 未執行，請啟動後繼續。',
+        run: '啟動',
+        boot: '開機啟動',
+        bootDesc: 'KVM 開機時自動啟動 {{name}}。',
+        enable: '啟用 {{name}}',
+        control: '控制伺服器',
+        connected: '已連線',
+        disconnected: '未連線',
+        deviceName: '裝置名稱',
+        deviceIP: '裝置 IP',
+        account: '帳號',
+        version: '版本',
+        uptime: '運作時間',
+        peers: '對等節點',
+        noPeers: '尚無對等節點。',
+        online: '線上',
+        offline: '離線',
+        memory: '記憶體',
+        daemonRss: '背景服務',
+        group: '附加元件群組',
+        high: '超過 {{size}} 時限速',
+        max: '超過 {{size}} 時由核心終止',
+        noGroup: '此開發板上沒有附加元件記憶體群組。',
+        uninstall: '解除安裝 {{name}}',
+        uninstallDesc: '確定要解除安裝 {{name}} 嗎？登入資訊會保留在開發板上。',
+        blocked:
+          '{{other}} 正在執行或已設為開機啟動。同一時間只能執行一個 VPN：請先停止 {{other}} 並關閉其開機啟動。',
+        swap: {
+          title: 'Swap 記憶體',
+          tip: '如果背景服務記憶體不足，請嘗試啟用 Swap 記憶體。預設會將 Swap 檔大小設為 256MB，可在「設定 > 設備」中調整。'
+        }
+      },
       tailscale: {
         title: 'Tailscale',
         retry: '請重新整理並重試。或嘗試手動安裝',
@@ -671,6 +830,20 @@ const zh_tw = {
         loginSuccess: '登入成功',
         logout: '登出',
         logoutDesc: '確認要登出嗎？'
+      },
+      netbird: {
+        title: 'NetBird',
+        notLogin: '此裝置尚未加入 NetBird 網路。請使用設定金鑰加入，或透過 SSO 登入。',
+        setupKey: '設定金鑰',
+        setupKeyPlaceholder: '貼上 NetBird 控制台中的設定金鑰',
+        join: '加入',
+        or: '或',
+        sso: '透過 SSO 登入',
+        urlPeriod: '此網址有效期限為 10 分鐘',
+        loginSuccess: '登入成功',
+        logout: '取消註冊',
+        logoutDesc:
+          '取消註冊會將此節點從您的 NetBird 帳號中移除，並刪除本機上的設定。重新加入需要設定金鑰或 SSO 登入，節點可能會取得新的 IP。是否繼續？'
       },
       update: {
         title: '檢查更新',
@@ -697,6 +870,7 @@ const zh_tw = {
           confirmDesc:
             'SHA-512 只能驗證安裝套件與該伺服器提供的清單一致，不能證明安裝套件來自 NanoKVM 官方。錯誤或惡意的伺服器可能導致裝置無法使用、資料遺失或系統遭到接管。',
           confirm: '仍然使用',
+          useSipeed: '使用 Sipeed 官方伺服器',
           previewDisabled: '啟用自訂更新伺服器時，預覽更新無法使用'
         },
         offline: {
@@ -713,11 +887,58 @@ const zh_tw = {
       account: {
         title: '帳號',
         webAccount: '網頁帳號',
+        role: '角色',
+        roles: { admin: '管理員', user: '一般使用者' },
         password: '密碼',
         updateBtn: '修改',
         logoutBtn: '登出',
         logoutDesc: '您確定要登出嗎?',
         okBtn: '確定',
+        cancelBtn: '取消',
+        users: {
+          title: '使用者管理',
+          create: '建立使用者',
+          enabled: '已啟用',
+          disabled: '已停用',
+          deviceOwner: '裝置擁有者',
+          resetPassword: '重設密碼',
+          delete: '刪除',
+          deleteConfirm: '刪除此使用者並撤銷其所有工作階段？',
+          created: '使用者已建立',
+          deleted: '使用者已刪除',
+          passwordUpdated: '密碼已更新',
+          loadFailed: '載入使用者失敗',
+          saveFailed: '儲存使用者失敗',
+          deleteFailed: '刪除使用者失敗'
+        }
+      },
+      apiKeys: {
+        title: 'API Key',
+        description:
+          'Key 以其擁有者的身分與角色運作。存取 metrics 和 API 時以 Authorization: Bearer <key> 傳送，存取 Redfish 時以 X-Auth-Token 傳送。',
+        name: '名稱',
+        namePlaceholder: 'Key 的用途，例如 prometheus',
+        nameRequired: '請為 Key 命名',
+        nameTooLong: '名稱最多 64 個字元',
+        unnamed: '（未命名）',
+        create: '建立 Key',
+        created: '建立時間',
+        owner: '擁有者',
+        empty: '尚無 API Key',
+        newKeyTitle: '新的 API Key',
+        newKeyWarning:
+          '請立即複製此 Key。它不會被儲存，也無法再次顯示。如果遺失，請撤銷它並重新建立。',
+        copy: '複製',
+        copied: '已複製',
+        copyFailed: '複製失敗，請手動複製。',
+        done: '完成',
+        revoke: '撤銷',
+        revokeConfirmTitle: '撤銷此 API Key？',
+        revokeConfirmDesc: '所有使用「{{name}}」的服務將立即失效。',
+        revoked: 'API Key 已撤銷',
+        loadFailed: '載入 API Key 失敗',
+        createFailed: '建立 API Key 失敗',
+        revokeFailed: '撤銷 API Key 失敗',
         cancelBtn: '取消'
       }
     },
@@ -881,18 +1102,38 @@ const zh_tw = {
     },
     error: {
       title: '我們遇到了一些問題',
-      refresh: '重新整理'
+      refresh: '重新整理',
+      panel: '頁面的這個部分已停止運作',
+      retry: '重試'
     },
     fullscreen: {
       toggle: '進入全螢幕模式'
     },
     input: {
+      disconnected: '鍵盤和滑鼠未連線',
+      disconnectedTls:
+        '瀏覽器拒絕了傳輸鍵盤和滑鼠的安全連線，而且不會詢問。此裝置產生的憑證尚未受信任。請在新分頁中開啟此位址並接受憑證，然後重新載入。安裝該憑證才是可靠的解決方法。',
+      disconnectedNever:
+        '無法建立傳輸鍵盤和滑鼠的連線。頁面其他部分不使用該連線，因此仍可正常運作。請檢查您與裝置之間是否有東西封鎖了它。',
+      disconnectedDropped:
+        '傳輸鍵盤和滑鼠的連線已中斷，且尚未恢復。重新啟動後它會自動重新連線；如果一直如此，請重新載入頁面。',
       hidDisabled: '此裝置已關閉 HID（/boot/disable_hid）。',
       keyFailed: '按鍵傳送失敗。'
     },
+    speaker: { title: '喇叭', unmute: '取消靜音', mute: '靜音' },
     menu: {
       collapse: '收起選單',
       expand: '展開選單'
+    },
+    ion: {
+      checking: '正在啟動串流前檢查視訊記憶體...',
+      warn: '視訊記憶體不足，再重新啟動一次伺服器就會耗盡。請在方便時重新啟動裝置。',
+      criticalTitle: '視訊記憶體不足，無法啟動串流',
+      criticalBody:
+        '啟動視訊會耗盡保留的記憶體並使伺服器停止。其他功能仍可正常使用，包括電源控制和重新啟動。只有重新啟動 NanoKVM 才能回收這部分記憶體。',
+      criticalContinue: '仍然啟動視訊',
+      criticalReboot: '重新啟動 NanoKVM',
+      criticalRebooting: '正在重新啟動...'
     }
   }
 };
