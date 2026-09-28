@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
-import { Button, Input } from 'antd';
+import { Button, Input, message } from 'antd';
 import { ClipboardPenIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/vm.ts';
+import { describeFailure } from '@/lib/feedback.ts';
 import { isValidHostname } from '@/lib/hostname.ts';
 
 export const Hostname = ({ editable = false }: { editable?: boolean }) => {
@@ -53,14 +54,15 @@ export const Hostname = ({ editable = false }: { editable?: boolean }) => {
       .setHostname(name)
       .then((rsp) => {
         if (rsp.code !== 0) {
-          setErrMsg(rsp.msg || t('settings.about.hostnameFailed'));
+          setErrMsg(describeFailure(rsp, t('settings.about.hostnameFailed')));
           return;
         }
 
         setHostname(name);
         setEditState('edited');
+        message.success(t('feedback.saved'));
       })
-      .catch(() => setErrMsg(t('settings.about.hostnameFailed')))
+      .catch((err) => setErrMsg(describeFailure(err, t('settings.about.hostnameFailed'))))
       .finally(() => {
         setIsLoading(false);
       });
@@ -112,9 +114,7 @@ export const Hostname = ({ editable = false }: { editable?: boolean }) => {
         </div>
       )}
 
-      {errMsg && (
-        <div className="flex w-full justify-end text-xs text-red-500">{errMsg}</div>
-      )}
+      {errMsg && <div className="flex w-full justify-end text-xs text-red-500">{errMsg}</div>}
 
       {editState === 'edited' && (
         <div className="flex w-full justify-end text-xs text-green-500">

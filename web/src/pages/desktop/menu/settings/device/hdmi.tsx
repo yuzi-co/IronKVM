@@ -4,6 +4,7 @@ import { useAtom } from 'jotai';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/vm.ts';
+import { showFailure, showResult } from '@/lib/feedback.ts';
 import { isHdmiEnabledAtom } from '@/jotai/screen.ts';
 
 export const Hdmi = () => {
@@ -19,24 +20,28 @@ export const Hdmi = () => {
 
   useEffect(() => {
     async function getHardware() {
-      const rsp = await api.getHardware();
-      if (rsp.code !== 0) {
-        return;
+      try {
+        const rsp = await api.getHardware();
+        if (rsp.code === 0) setIsPcie(rsp.data?.version === 'PCIE');
+      } catch {
+        // Not a PCIe board as far as this page knows; the section stays hidden.
       }
-
-      setIsPcie(rsp.data?.version === 'PCIE');
     }
 
     async function getHdmiState() {
-      const rsp = await api.getHdmiState();
-      if (rsp.code === 0) {
-        setIsHdmiEnabled(rsp.data.enabled);
-        const timeout = rsp.data.idleTimeout ?? 0;
-        setIdleTimeout(timeout);
-        setIdleTimeoutInput(timeout);
+      try {
+        const rsp = await api.getHdmiState();
+        if (rsp.code === 0) {
+          setIsHdmiEnabled(rsp.data.enabled);
+          const timeout = rsp.data.idleTimeout ?? 0;
+          setIdleTimeout(timeout);
+          setIdleTimeoutInput(timeout);
+        }
+      } catch (err) {
+        showFailure(err);
+      } finally {
+        setIsLoading(false);
       }
-
-      setIsLoading(false);
     }
 
     getHardware();
@@ -57,12 +62,16 @@ export const Hdmi = () => {
     api
       .setHdmiIdleTimeout(idleTimeoutInput)
       .then((rsp) => {
-        if (rsp.code !== 0) {
+        if (!showResult(rsp, { success: t('feedback.saved') })) {
           setIdleTimeoutInput(idleTimeout);
           return;
         }
 
         setIdleTimeout(idleTimeoutInput);
+      })
+      .catch((err) => {
+        setIdleTimeoutInput(idleTimeout);
+        showFailure(err);
       })
       .finally(() => {
         setIsIdleTimeoutLoading(false);
@@ -75,16 +84,23 @@ export const Hdmi = () => {
 
     const enabled = !isHdmiEnabled;
 
-    const rsp = await api.setHdmiState(enabled);
-    if (rsp.code !== 0) {
-      setIsLoading(false);
-      return;
-    }
+    // The switch spins until the answer, and a thrown request must stop it
+    // as surely as a refusal does.
+    let keepSpinning = false;
+    try {
+      const rsp = await api.setHdmiState(enabled);
+      if (!showResult(rsp)) return;
 
-    setTimeout(() => {
-      setIsHdmiEnabled(enabled);
-      setIsLoading(false);
-    }, 1000);
+      keepSpinning = true;
+      setTimeout(() => {
+        setIsHdmiEnabled(enabled);
+        setIsLoading(false);
+      }, 1000);
+    } catch (err) {
+      showFailure(err);
+    } finally {
+      if (!keepSpinning) setIsLoading(false);
+    }
   }
 
   return (

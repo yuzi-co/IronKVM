@@ -4,6 +4,7 @@ import { ScreenShareOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/vm.ts';
+import { showFailure, showResult } from '@/lib/feedback.ts';
 
 // The drive current for the panel, as SSD1306 command 0x81 takes it.
 //
@@ -27,7 +28,7 @@ export const Oled = () => {
   useEffect(() => {
     api.getOLED().then((rsp) => {
       if (rsp.code !== 0) {
-        console.log(rsp.msg);
+        showFailure(rsp);
         return;
       }
 
@@ -59,13 +60,11 @@ export const Oled = () => {
     api
       .setOLED({ sleep: parseInt(value) })
       .then((rsp) => {
-        if (rsp.code !== 0) {
-          console.log(rsp.msg);
-          return;
-        }
+        if (!showResult(rsp, { success: t('feedback.saved') })) return;
 
         setSleep(value);
       })
+      .catch((err) => showFailure(err))
       .finally(() => {
         setIsSleepLoading(false);
       });
@@ -78,13 +77,11 @@ export const Oled = () => {
     api
       .setOLED({ brightness: parseInt(value) })
       .then((rsp) => {
-        if (rsp.code !== 0) {
-          console.log(rsp.msg);
-          return;
-        }
+        if (!showResult(rsp, { success: t('feedback.saved') })) return;
 
         setBrightness(value);
       })
+      .catch((err) => showFailure(err))
       .finally(() => {
         setIsBrightnessLoading(false);
       });

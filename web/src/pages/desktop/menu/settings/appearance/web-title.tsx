@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Input } from 'antd';
 import { useAtom } from 'jotai';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/vm.ts';
+import { showFailure, showResult } from '@/lib/feedback.ts';
 import { webTitleAtom } from '@/jotai/settings.ts';
 
 export const WebTitle = () => {
@@ -14,6 +15,9 @@ export const WebTitle = () => {
   // Setting the flag inside the effect left one paint where the control was
   // interactive and the value behind it was not yet known.
   const [isLoading, setIsLoading] = useState(true);
+  // The title the server holds. Enter and then blur both submit, and neither
+  // should send a title that has not changed.
+  const saved = useRef('');
 
   useEffect(() => {
     api
@@ -21,6 +25,7 @@ export const WebTitle = () => {
       .then((rsp) => {
         if (rsp.data?.title) {
           setWebTitle(rsp.data.title);
+          saved.current = rsp.data.title;
         }
       })
       .finally(() => {
@@ -29,17 +34,18 @@ export const WebTitle = () => {
   }, [setWebTitle]);
 
   function submit() {
-    if (isLoading) return;
+    if (isLoading || webTitle === saved.current) return;
     setIsLoading(true);
 
+    const title = webTitle;
     api
-      .setWebTitle(webTitle)
+      .setWebTitle(title)
       .then((rsp) => {
-        if (rsp.code !== 0) {
-          console.log(rsp.msg);
-          return;
+        if (showResult(rsp, { success: t('feedback.saved') })) {
+          saved.current = title;
         }
       })
+      .catch((err) => showFailure(err))
       .finally(() => {
         setIsLoading(false);
       });
@@ -60,7 +66,7 @@ export const WebTitle = () => {
           onChange={(e) => setWebTitle(e.target.value)}
           onPressEnter={submit}
           onBlur={submit}
-          placeholder="NanoKVM"
+          placeholder="IronKVM"
         />
       </div>
     </div>
