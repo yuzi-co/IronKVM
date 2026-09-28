@@ -193,54 +193,78 @@ func eject(d driveDef) error {
 
 // ejectDrive removes the drive's medium. An empty drive is left alone.
 func ejectDrive(id string) error {
+	released, err := ejectLocked(id)
+	release(released)
+	return err
+}
+
+// ejectLocked is ejectDrive under the lock. It returns the file the drive
+// let go of, if any.
+func ejectLocked(id string) (string, error) {
 	driveMu.Lock()
 	defer driveMu.Unlock()
 
 	d, err := findDrive(id)
 	if err != nil {
-		return err
+		return "", err
 	}
 	info, err := readDrive(d)
 	if err != nil {
-		return err
+		return "", err
 	}
 	if info.File == "" {
-		return nil
+		return "", nil
 	}
-	return eject(d)
+	if err := eject(d); err != nil {
+		return "", err
+	}
+	return info.File, nil
 }
 
 // insertDrive loads file into the drive, replacing what it holds. ro applies
 // to the disk only; the CD drive is always read-only.
 func insertDrive(id string, file string, ro bool) error {
+	released, err := insertLocked(id, file, ro, resolveImage)
+	release(released)
+	return err
+}
+
+// insertLocked is an insert under the lock. resolve checks the file and
+// returns what the drive is to open. It returns the file the drive let go of
+// when that was a different one.
+func insertLocked(id string, file string, ro bool, resolve func(string) (string, error)) (string, error) {
 	driveMu.Lock()
 	defer driveMu.Unlock()
 
-	file, err := resolveImage(file)
+	file, err := resolve(file)
 	if err != nil {
-		return err
+		return "", err
 	}
 	d, err := findDrive(id)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	// A writable disk and a CD on one backing file would corrupt it.
 	holder, err := loadedDrive(file)
 	if err != nil {
-		return err
+		return "", err
 	}
 	if holder != "" && holder != id {
-		return errInOtherDrive
+		return "", errInOtherDrive
 	}
 
 	info, err := readDrive(d)
 	if err != nil {
-		return err
+		return "", err
 	}
+	released := ""
 	if info.File != "" {
 		if err := eject(d); err != nil {
-			return err
+			return "", err
+		}
+		if realPath(info.File) != realPath(file) {
+			released = info.File
 		}
 	}
 
@@ -251,11 +275,11 @@ func insertDrive(id string, file string, ro bool) error {
 			flag = "1"
 		}
 		if err := writeAttr(lunPath(d, "ro"), []byte(flag)); err != nil {
-			return err
+			return released, err
 		}
 	}
 
-	return writeAttr(lunPath(d, "file"), []byte(filepath.Clean(file)))
+	return released, writeAttr(lunPath(d, "file"), []byte(filepath.Clean(file)))
 }
 
 // errImageLoaded is wrapped with the drive that holds the image.
@@ -274,6 +298,13 @@ func removeImage(file string) error {
 	}
 	if holder != "" {
 		return fmt.Errorf("%w in the %s drive", errImageLoaded, holder)
+	}
+	dev, holder, err := deviceServing(file)
+	if err != nil {
+		return err
+	}
+	if holder != "" {
+		return fmt.Errorf("%w on the %s disk in the %s drive", errImageLoaded, dev.Name, holder)
 	}
 	return os.Remove(file)
 }
