@@ -62,7 +62,14 @@ const nb = {
         authFailed: 'Ugyldig AP passord',
         passPlaceholder: 'AP passord',
         verifyBtn: 'Bekreft'
-      }
+      },
+      ssidRequired: 'Skriv inn nettverksnavnet, opptil 32 tegn',
+      passwordLength: 'Passordet er 8 til 63 tegn. La det stå tomt for et åpent nettverk.',
+      passwordOptional: 'Passord (tomt for et åpent nettverk)',
+      lost:
+        'Kortet sluttet å svare. Det kan ha koblet seg til nettverket og lukket oppsettshotspoten. Hvis hotspoten kommer tilbake, mislyktes tilkoblingen: koble til den igjen og prøv på nytt.',
+      done:
+        'Oppsettet er ferdig. Koble denne enheten til ditt vanlige nettverk igjen og åpne kortet på den nye adressen.'
     },
     screen: {
       scale: 'Skala',
@@ -158,7 +165,8 @@ const nb = {
         videoError: 'Feil ved videovisning',
         noHdmi: 'Ingen HDMI-signal oppdaget',
         unavailable: 'Skjermen kan ikke vises akkurat nå'
-      }
+      },
+      directConnectionFailed: 'Tilkoblingen til videostrømmen mislyktes'
     },
     keyboard: {
       title: 'Åpne tastatur',
@@ -295,7 +303,9 @@ const nb = {
         rebuild: 'Bytte av modus bygger opp USB-tilkoblingen på nytt. NanoKVM starter ikke på nytt',
         enable: 'Aktiver HID-Only-modus',
         disable: 'Deaktiver HID-bare-modus'
-      }
+      },
+      resetHidDone: 'USB HID er tilbakestilt',
+      resetHidFailed: 'Tilbakestilling av USB HID mislyktes'
     },
     image: {
       title: 'Bilder',
@@ -379,7 +389,16 @@ const nb = {
       confirm: 'Ja',
       cancel: 'Nei',
       delete: 'Slett',
-      close: 'Lukk'
+      close: 'Lukk',
+      empty: 'Ingen skript ennå. Last opp en .sh- eller .py-fil for å kjøre den på kortet.',
+      loadFailed: 'Kunne ikke laste inn skriptene',
+      uploaded: 'Skript lastet opp',
+      uploadFailed: 'Kunne ikke laste opp skriptet',
+      started: 'Skriptet er startet i bakgrunnen',
+      deleteFailed: 'Kunne ikke slette skriptet',
+      waitLimit: 'Venter på at skriptet blir ferdig, i opptil {{minutes}} minutter.',
+      timedOut:
+        'Skriptet kjørte lenger enn {{minutes}} minutter, og siden sluttet å vente. Det kan fortsatt kjøre på kortet.'
     },
     terminal: {
       title: 'Terminal',
@@ -429,7 +448,8 @@ const nb = {
     power: {
       title: 'På-knapp',
       showConfirm: 'Bekreftelse',
-      showConfirmTip: 'Strømdrift krever en ekstra bekreftelse',
+      showConfirmTip:
+        'Spør før et kort trykk på av/på. Tilbakestilling og langt trykk spør alltid.',
       reset: 'Reset-knapp',
       power: 'På-knapp',
       powerShort: 'På-knapp (kort trykk)',
@@ -455,7 +475,11 @@ const nb = {
       ledConnected: 'Strøm-LED tilkoblet',
       ledConnectedTip:
         'Slå på bare hvis vertens strøm-LED-kontakt er koblet til kortet. Uten den er strømtilstanden ukjent.',
-      ledConnectedFailed: 'Kunne ikke lagre innstillingen for strøm-LED'
+      ledConnectedFailed: 'Kunne ikke lagre innstillingen for strøm-LED',
+      powerLongConfirm:
+        'Holde av/på-knappen i {{seconds}} s? Dette kutter strømmen uten avslutning.',
+      done: 'Knappen er trykket',
+      failed: 'Trykket på knappen mislyktes'
     },
     settings: {
       title: 'Innstillinger',
@@ -656,7 +680,13 @@ const nb = {
         stuckFor: 'ingen livstegn på {{duration}}',
         pressFailed: 'Trykket mislyktes: {{error}}',
         noScreenshot: 'Ingen skjermbilde',
-        failed: 'Watchdog-handlingen mislyktes'
+        failed: 'Watchdog-handlingen mislyktes',
+        powerNeedsLed: 'Strømsyklus krever «Strøm-LED tilkoblet» i strømmenyen.',
+        noLedConfirmTitle: 'Slå på watchdog uten strøm-LED?',
+        noLedConfirmDesc:
+          'Kortet kan ikke se når verten er av, så det behandler verten som alltid på. Hvis du slår av verten, trykker watchdog på tilbakestill når tidsavbruddet har gått. Koble til strøm-LED-en for å unngå dette.',
+        noLedConfirmOk: 'Slå på',
+        cancel: 'Avbryt'
       },
       netboot: {
         title: 'Nettverksoppstart',
@@ -722,7 +752,10 @@ const nb = {
           Wired: 'Kablet',
           Wireless: 'Trådløs',
           Other: 'Annet'
-        }
+        },
+        hostnameInvalid:
+          'Bruk bokstaver, sifre og bindestreker, opptil 63 per punktumdelt del. Ingen bindestrek i starten eller slutten av en del.',
+        hostnameFailed: 'Kunne ikke endre vertsnavnet'
       },
       appearance: {
         title: 'Utseende',
@@ -886,7 +919,8 @@ const nb = {
         reboot: 'Start på nytt',
         rebootDesc: 'Er du sikker på at du vil starte NanoKVM på nytt?',
         okBtn: 'Ja',
-        cancelBtn: 'Nei'
+        cancelBtn: 'Nei',
+        rebootFailed: 'Omstart mislyktes'
       },
       network: {
         title: 'Nettverk',
@@ -911,7 +945,14 @@ const nb = {
           restarting: 'Starter enhetsserveren på nytt, dette tar omtrent to minutter...',
           waiting: 'Venter på at enheten svarer igjen...',
           waitingHttp:
-            'Bytter tilbake til http. Last inn siden på nytt hvis den ikke åpnes av seg selv.'
+            'Bytter tilbake til http. Last inn siden på nytt hvis den ikke åpnes av seg selv.',
+          failed: 'Kunne ikke endre HTTPS-innstillingen',
+          enableConfirm: 'Slå på HTTPS?',
+          disableConfirm: 'Slå av HTTPS?',
+          confirmDesc:
+            'Dette logger deg ut og starter enhetens server på nytt, noe som tar omtrent to minutter. Siden åpner deretter {{url}}.',
+          confirmOk: 'Fortsett',
+          confirmCancel: 'Avbryt'
         },
         ethernet: {
           title: 'IP-adresse',
@@ -1017,8 +1058,19 @@ const nb = {
           '{{other}} kjører eller starter ved oppstart. Bare én VPN kan kjøre om gangen: stopp {{other}} og slå av start ved oppstart for den først.',
         swap: {
           title: 'Swap-minne',
-          tip: 'Hvis tjenesten får for lite minne, kan du prøve å aktivere swap-minne. Dette setter størrelsen på byttefilen til 256MB som standard, og den kan justeres i "Innstillinger > Enhet".'
-        }
+          tip: 'Hvis tjenesten får for lite minne, kan du prøve å aktivere swap-minne. Dette setter størrelsen på byttefilen til 256MB som standard, og den kan justeres i "Innstillinger > Enhet".',
+          failed: 'Kunne ikke endre vekselminnet'
+        },
+        copy: 'Kopier',
+        copied: 'Lenke kopiert',
+        copyFailed: 'Kunne ikke kopiere lenken. Merk den og kopier den manuelt.',
+        open: 'Åpne',
+        checkAgain: 'Sjekk igjen',
+        notSignedIn: 'Ikke logget inn ennå. Fullfør innloggingen via lenken, og sjekk igjen.',
+        checkFailed: 'Kunne ikke sjekke innloggingsstatus',
+        loginWaiting:
+          'Siden sjekker med noen sekunders mellomrom og fortsetter når du har logget inn.',
+        uninstallFailed: 'Avinstallering mislyktes'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1033,7 +1085,6 @@ const nb = {
           'Denne enheten er ikke knyttet til din konto enda. Vennligst logg inn og knytt den til kontoen din..',
         urlPeriod: 'Denne lenken er gyldig i 10 minutter',
         login: 'Logg inn',
-        loginSuccess: 'Logget inn',
         logout: 'Logg ut',
         logoutDesc: 'Er du sikker på at du vil logge ut?'
       },
@@ -1047,7 +1098,6 @@ const nb = {
         or: 'eller',
         sso: 'Logg inn med SSO',
         urlPeriod: 'Denne lenken er gyldig i 10 minutter',
-        loginSuccess: 'Logget inn',
         logout: 'Avregistrer',
         logoutDesc:
           'Avregistrering fjerner denne noden fra NetBird-kontoen din og sletter konfigurasjonen her. For å bli med igjen trengs en oppsettsnøkkel eller SSO-innlogging, og noden kan få en ny IP. Fortsette?'
@@ -1091,7 +1141,10 @@ const nb = {
           checksumMismatch: 'SHA-256-verifiseringen mislyktes. Pakken kan være skadet.',
           invalidName: 'Ugyldig filnavnformat. Last ned fra GitHub-utgivelser.',
           updateFailed: 'En feil oppstod under oppdatering. Vennligst forsøk igjen.'
-        }
+        },
+        updateTo: 'Oppdater til {{version}}',
+        updateConfirmDesc:
+          'Enheten installerer oppdateringen og starter serveren på nytt. Siden lastes inn på nytt når serveren er tilbake.'
       },
       account: {
         title: 'Konto',

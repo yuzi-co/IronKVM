@@ -64,7 +64,15 @@ const fr = {
         authFailed: 'Mot de passe AP invalide',
         passPlaceholder: 'AP mot de passe',
         verifyBtn: 'Vérifier'
-      }
+      },
+      ssidRequired: 'Saisissez le nom du réseau, 32 caractères au maximum',
+      passwordLength:
+        'Le mot de passe comporte 8 à 63 caractères. Laissez-le vide pour un réseau ouvert.',
+      passwordOptional: 'Mot de passe (vide pour un réseau ouvert)',
+      lost:
+        "La carte ne répond plus. Elle a peut-être rejoint le réseau et fermé son point d'accès de configuration. Si le point d'accès réapparaît, la connexion a échoué : reconnectez-vous-y et réessayez.",
+      done:
+        'Configuration terminée. Reconnectez cet appareil à votre réseau habituel et ouvrez la carte à sa nouvelle adresse.'
     },
     screen: {
       scale: 'Échelle',
@@ -160,7 +168,8 @@ const fr = {
         videoError: 'Erreur d’affichage vidéo',
         noHdmi: 'Aucun signal HDMI détecté',
         unavailable: 'L’image ne peut pas être affichée pour le moment'
-      }
+      },
+      directConnectionFailed: 'La connexion au flux vidéo a échoué'
     },
     keyboard: {
       title: 'Clavier',
@@ -298,7 +307,9 @@ const fr = {
         rebuild: 'Changer de mode reconstruit la connexion USB. NanoKVM ne redémarre pas',
         enable: 'Activer le mode HID uniquement',
         disable: 'Désactiver le mode HID uniquement'
-      }
+      },
+      resetHidDone: 'HID USB réinitialisé',
+      resetHidFailed: 'La réinitialisation du HID USB a échoué'
     },
     image: {
       title: 'Images',
@@ -382,7 +393,17 @@ const fr = {
       confirm: 'Oui',
       cancel: 'Non',
       delete: 'Supprimer',
-      close: 'Fermer'
+      close: 'Fermer',
+      empty:
+        "Aucun script pour l'instant. Téléversez un fichier .sh ou .py pour l'exécuter sur la carte.",
+      loadFailed: 'Impossible de charger les scripts',
+      uploaded: 'Script téléversé',
+      uploadFailed: 'Impossible de téléverser le script',
+      started: 'Script lancé en arrière-plan',
+      deleteFailed: 'Impossible de supprimer le script',
+      waitLimit: "Attente de la fin du script, jusqu'à {{minutes}} minutes.",
+      timedOut:
+        "Le script a duré plus de {{minutes}} minutes et cette page a cessé d'attendre. Il est peut-être encore en cours sur la carte."
     },
     terminal: {
       title: 'Terminal',
@@ -432,7 +453,8 @@ const fr = {
     power: {
       title: 'Power',
       showConfirm: 'Confirmation',
-      showConfirmTip: 'Les opérations électriques nécessitent une confirmation supplémentaire',
+      showConfirmTip:
+        "Demander avant un appui court. La réinitialisation et l'appui long demandent toujours.",
       reset: 'Réinitialiser',
       power: 'Power',
       powerShort: 'Power (appui court)',
@@ -458,7 +480,11 @@ const fr = {
       ledConnected: "LED d'alimentation branchée",
       ledConnectedTip:
         "N'activez cette option que si le connecteur de LED d'alimentation de l'hôte est câblé à la carte. Sans cela, l'état d'alimentation est inconnu.",
-      ledConnectedFailed: "Impossible d'enregistrer le réglage de la LED d'alimentation"
+      ledConnectedFailed: "Impossible d'enregistrer le réglage de la LED d'alimentation",
+      powerLongConfirm:
+        "Maintenir le bouton d'alimentation {{seconds}} s ? Cela coupe l'alimentation sans arrêt du système.",
+      done: 'Bouton appuyé',
+      failed: "L'appui sur le bouton a échoué"
     },
     settings: {
       title: 'Paramètres',
@@ -663,7 +689,14 @@ const fr = {
         stuckFor: 'aucun signe de vie depuis {{duration}}',
         pressFailed: "L'appui a échoué : {{error}}",
         noScreenshot: "Pas de capture d'écran",
-        failed: 'Échec de l’opération du watchdog'
+        failed: 'Échec de l’opération du watchdog',
+        powerNeedsLed:
+          "Le cycle d'alimentation nécessite « LED d'alimentation connectée » dans le menu d'alimentation.",
+        noLedConfirmTitle: "Activer le watchdog sans la LED d'alimentation ?",
+        noLedConfirmDesc:
+          "La carte ne voit pas quand l'hôte est éteint et le considère donc toujours allumé. Si vous éteignez l'hôte, le watchdog appuie sur reset une fois le délai écoulé. Branchez la LED d'alimentation pour l'éviter.",
+        noLedConfirmOk: 'Activer',
+        cancel: 'Annuler'
       },
       netboot: {
         title: 'Démarrage réseau',
@@ -734,7 +767,10 @@ const fr = {
           Wired: 'Filaire',
           Wireless: 'Sans fil',
           Other: 'Autre'
-        }
+        },
+        hostnameInvalid:
+          "Utilisez des lettres, des chiffres et des tirets, jusqu'à 63 par partie séparée par des points. Pas de tiret au début ni à la fin d'une partie.",
+        hostnameFailed: "Impossible de modifier le nom d'hôte"
       },
       appearance: {
         title: 'Apparence',
@@ -903,7 +939,8 @@ const fr = {
         reboot: 'Redémarrer',
         rebootDesc: 'Êtes-vous sûr de vouloir redémarrer NanoKVM?',
         okBtn: 'Oui',
-        cancelBtn: 'Non'
+        cancelBtn: 'Non',
+        rebootFailed: 'Le redémarrage a échoué'
       },
       network: {
         title: 'Réseau',
@@ -927,7 +964,14 @@ const fr = {
           tip: "Attention : l'utilisation de HTTPS peut augmenter la latence, surtout en mode vidéo MJPEG.",
           restarting: "Redémarrage du serveur de l'appareil, cela prend environ deux minutes...",
           waiting: "En attente d'une nouvelle réponse de l'appareil...",
-          waitingHttp: "Retour en http. Rechargez cette page si elle ne s'ouvre pas d'elle-même."
+          waitingHttp: "Retour en http. Rechargez cette page si elle ne s'ouvre pas d'elle-même.",
+          failed: 'Impossible de modifier le réglage HTTPS',
+          enableConfirm: 'Activer HTTPS ?',
+          disableConfirm: 'Désactiver HTTPS ?',
+          confirmDesc:
+            "Cela vous déconnecte et redémarre le serveur de l'appareil, ce qui prend environ deux minutes. La page ouvre ensuite {{url}}.",
+          confirmOk: 'Continuer',
+          confirmCancel: 'Annuler'
         },
         ethernet: {
           title: 'Adresse IP',
@@ -1034,8 +1078,20 @@ const fr = {
           "{{other}} est en cours d'exécution ou démarre automatiquement. Un seul VPN peut tourner à la fois : arrêtez d'abord {{other}} et désactivez son démarrage automatique.",
         swap: {
           title: "Mémoire d'échange",
-          tip: "Si le démon manque de mémoire, essayez d'activer la mémoire d'échange. La taille du fichier d'échange est alors fixée à 256MB par défaut, ce qui peut être modifié dans \"Paramètres > Appareil\"."
-        }
+          tip: "Si le démon manque de mémoire, essayez d'activer la mémoire d'échange. La taille du fichier d'échange est alors fixée à 256MB par défaut, ce qui peut être modifié dans \"Paramètres > Appareil\".",
+          failed: "Impossible de modifier la mémoire d'échange"
+        },
+        copy: 'Copier',
+        copied: 'Lien copié',
+        copyFailed: 'Impossible de copier le lien. Sélectionnez-le et copiez-le à la main.',
+        open: 'Ouvrir',
+        checkAgain: 'Vérifier à nouveau',
+        notSignedIn:
+          'Pas encore connecté. Terminez la connexion via le lien, puis vérifiez à nouveau.',
+        checkFailed: "Impossible de vérifier l'état de connexion",
+        loginWaiting:
+          'Cette page vérifie toutes les quelques secondes et continue une fois que vous êtes connecté.',
+        uninstallFailed: 'La désinstallation a échoué'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1049,7 +1105,6 @@ const fr = {
         notLogin: "L'appareil n'est pas relié. Connectez-vous et liez cet appareil à votre compte.",
         urlPeriod: "L'URL est valide pendant 10 minutes",
         login: 'Connexion',
-        loginSuccess: 'Connexion réussie',
         logout: 'Déconnexion',
         logoutDesc: 'Êtes-vous sûr de vouloir vous déconnecter?'
       },
@@ -1063,7 +1118,6 @@ const fr = {
         or: 'ou',
         sso: 'Se connecter via SSO',
         urlPeriod: 'Cette URL est valide pendant 10 minutes',
-        loginSuccess: 'Connexion réussie',
         logout: 'Désinscrire',
         logoutDesc:
           'La désinscription retire ce pair de votre compte NetBird et supprime sa configuration ici. Pour rejoindre à nouveau, il faudra une clé de configuration ou une connexion SSO, et le pair pourra recevoir une nouvelle IP. Continuer ?'
@@ -1109,7 +1163,10 @@ const fr = {
           invalidName:
             'Format de nom de fichier invalide. Veuillez télécharger à partir des versions de GitHub.',
           updateFailed: 'Mise à jour échouée. Veuillez réessayer.'
-        }
+        },
+        updateTo: 'Mettre à jour vers {{version}}',
+        updateConfirmDesc:
+          "L'appareil installe la mise à jour et redémarre son serveur. Cette page se recharge quand le serveur est de retour."
       },
       account: {
         title: 'Compte',

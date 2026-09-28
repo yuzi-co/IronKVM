@@ -135,7 +135,7 @@ export const Settings = () => {
             id: 'network',
             group: 'network',
             icon: <NetworkIcon {...icon16} />,
-            component: <Network />
+            component: <Network setIsLocked={setIsLocked} />
           },
           {
             id: 'vpn',

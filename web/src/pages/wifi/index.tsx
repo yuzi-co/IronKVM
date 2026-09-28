@@ -5,10 +5,11 @@ import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
 
 import * as api from '@/api/network.ts';
+import { wifiCredentialsError } from '@/lib/wifi.ts';
 import { useStableCallback } from '@/hooks/useStableCallback.ts';
 import { Head } from '@/components/head.tsx';
 
-type State = '' | 'loading' | 'success' | 'failed' | 'denied';
+type State = '' | 'loading' | 'success' | 'failed' | 'denied' | 'lost' | 'done';
 type VerifyState = '' | 'failed' | 'denied';
 
 export const Wifi = () => {
@@ -58,13 +59,15 @@ export const Wifi = () => {
   }
 
   async function connect(values: any) {
-    if (!values.ssid || !values.password) return;
+    const ssid: string = values.ssid ?? '';
+    const password: string = values.password ?? '';
+    if (wifiCredentialsError(ssid, password) !== '') return;
 
     if (state === 'loading') return;
     setState('loading');
 
     try {
-      const rsp = await api.connectWifiNoAuth(values.ssid, values.password, apPassword);
+      const rsp = await api.connectWifiNoAuth(ssid, password, apPassword);
 
       switch (rsp?.code) {
         case 0:
@@ -74,16 +77,25 @@ export const Wifi = () => {
         case -4:
           setState('denied');
           return;
-        case -2:
-        case -3:
+        default:
           setState('failed');
           return;
       }
     } catch (err) {
+      // Joining the network closes the setup hotspot this page talks through,
+      // and that can happen before the answer arrives. A lost connection is
+      // therefore not a failure, but it is not a success either.
       console.log(err);
+      setState('lost');
     }
+  }
 
-    setState('success');
+  // Finished: the board is on the new network and this page has nothing left
+  // to talk to. A tab the operator opened cannot always be closed by script,
+  // so the page also says what to do next.
+  function finish() {
+    setState('done');
+    window.close();
   }
 
   if (!isAuthenticated) {
@@ -145,17 +157,43 @@ export const Wifi = () => {
             <span className="text-center text-neutral-400">{t('wifi.description')}</span>
           </div>
 
-          <Form.Item name="ssid">
+          <Form.Item
+            name="ssid"
+            rules={[
+              {
+                validator: (_, value) =>
+                  wifiCredentialsError(value ?? '', '') === 'ssid'
+                    ? Promise.reject(new Error(t('wifi.ssidRequired')))
+                    : Promise.resolve()
+              }
+            ]}
+          >
             <Input prefix={<WifiOutlined />} placeholder="SSID" />
           </Form.Item>
 
-          <Form.Item name="password">
-            <Input.Password prefix={<LockOutlined />} placeholder="Password" />
+          <Form.Item
+            name="password"
+            rules={[
+              {
+                validator: (_, value) =>
+                  wifiCredentialsError('x', value ?? '') === 'password'
+                    ? Promise.reject(new Error(t('wifi.passwordLength')))
+                    : Promise.resolve()
+              }
+            ]}
+          >
+            <Input.Password prefix={<LockOutlined />} placeholder={t('wifi.passwordOptional')} />
           </Form.Item>
 
           <Form.Item>
-            {state === 'success' ? (
-              <Button className="w-full" type="primary" icon={<CheckOutlined />}>
+            {state === 'success' || state === 'done' ? (
+              <Button
+                className="w-full"
+                type="primary"
+                icon={<CheckOutlined />}
+                disabled={state === 'done'}
+                onClick={finish}
+              >
                 {t('wifi.finishBtn')}
               </Button>
             ) : (
@@ -176,6 +214,8 @@ export const Wifi = () => {
             <span className="text-sm text-green-500">{t('wifi.success')}</span>
           )}
 
+          {state === 'done' && <span className="text-sm text-green-500">{t('wifi.done')}</span>}
+          {state === 'lost' && <span className="text-sm text-amber-500">{t('wifi.lost')}</span>}
           {state === 'failed' && <span className="text-sm text-red-500">{t('wifi.failed')} </span>}
           {state === 'denied' && (
             <div className="flex flex-col items-center space-y-5">

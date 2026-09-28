@@ -3,6 +3,7 @@ import { Modal } from 'antd';
 import { Trash2Icon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { ErrorDetail } from './error-detail.tsx';
 import type { VpnInfo } from './types.ts';
 
 type UninstallProps = {
@@ -15,16 +16,27 @@ export const Uninstall = ({ vpn, onSuccess }: UninstallProps) => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [errMsg, setErrMsg] = useState('');
 
   function uninstall() {
     if (isLoading) return;
     setIsLoading(true);
 
-    vpn.api.uninstall().finally(() => {
-      setIsModalOpen(false);
-      setIsLoading(false);
-      onSuccess();
-    });
+    setErrMsg('');
+
+    // A refused uninstall keeps the dialog open with the reason in it.
+    vpn.api
+      .uninstall()
+      .then((rsp) => {
+        if (rsp.code !== 0) {
+          setErrMsg(rsp.msg || t('settings.vpn.uninstallFailed'));
+          return;
+        }
+        setIsModalOpen(false);
+        onSuccess();
+      })
+      .catch((err) => setErrMsg(err?.message || t('settings.vpn.uninstallFailed')))
+      .finally(() => setIsLoading(false));
   }
 
   const title = (
@@ -38,7 +50,10 @@ export const Uninstall = ({ vpn, onSuccess }: UninstallProps) => {
     <>
       <div
         className="flex h-[30px] cursor-pointer items-center space-x-1 rounded px-2 py-1 text-neutral-300 hover:bg-neutral-700/70"
-        onClick={() => setIsModalOpen(true)}
+        onClick={() => {
+          setErrMsg('');
+          setIsModalOpen(true);
+        }}
       >
         <span>{t('settings.vpn.uninstall', { name: vpn.title })}</span>
       </div>
@@ -56,6 +71,7 @@ export const Uninstall = ({ vpn, onSuccess }: UninstallProps) => {
       >
         <div className="py-5">
           <p className="text-base">{t('settings.vpn.uninstallDesc', { name: vpn.title })}</p>
+          <ErrorDetail message={errMsg} />
         </div>
       </Modal>
     </>

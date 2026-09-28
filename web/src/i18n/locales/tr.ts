@@ -62,7 +62,14 @@ const tr = {
         authFailed: 'Geçersiz AP şifresi',
         passPlaceholder: 'AP şifre',
         verifyBtn: 'Doğrula'
-      }
+      },
+      ssidRequired: 'Ağ adını girin, en fazla 32 karakter',
+      passwordLength: 'Parola 8 ile 63 karakter arasındadır. Açık ağ için boş bırakın.',
+      passwordOptional: 'Parola (açık ağ için boş)',
+      lost:
+        'Kart yanıt vermeyi bıraktı. Ağa katılıp kurulum erişim noktasını kapatmış olabilir. Erişim noktası geri gelirse katılma başarısız olmuştur: ona yeniden bağlanıp tekrar deneyin.',
+      done:
+        'Kurulum tamamlandı. Bu cihazı her zamanki ağınıza yeniden bağlayın ve kartı yeni adresinden açın.'
     },
     screen: {
       scale: 'Ölçek',
@@ -158,7 +165,8 @@ const tr = {
         videoError: 'Video görüntüleme hatası',
         noHdmi: 'HDMI sinyali algılanmadı',
         unavailable: 'Ekran şu anda gösterilemiyor'
-      }
+      },
+      directConnectionFailed: 'Video akışı bağlantısı başarısız'
     },
     keyboard: {
       title: 'Klavye',
@@ -294,7 +302,9 @@ const tr = {
         rebuild: 'Mod değiştirmek USB bağlantısını yeniden kurar. NanoKVM yeniden başlamaz',
         enable: 'Yalnızca HID modunu etkinleştir',
         disable: 'Yalnızca HID modunu devre dışı bırak'
-      }
+      },
+      resetHidDone: 'USB HID sıfırlandı',
+      resetHidFailed: 'USB HID sıfırlanamadı'
     },
     image: {
       title: 'Disk İmajları',
@@ -378,7 +388,16 @@ const tr = {
       confirm: 'Evet',
       cancel: 'Hayır',
       delete: 'Sil',
-      close: 'Kapat'
+      close: 'Kapat',
+      empty: 'Henüz betik yok. Kartta çalıştırmak için bir .sh veya .py dosyası yükleyin.',
+      loadFailed: 'Betikler yüklenemedi',
+      uploaded: 'Betik yüklendi',
+      uploadFailed: 'Betik yüklenemedi',
+      started: 'Betik arka planda başlatıldı',
+      deleteFailed: 'Betik silinemedi',
+      waitLimit: 'Betiğin bitmesi en fazla {{minutes}} dakika bekleniyor.',
+      timedOut:
+        'Betik {{minutes}} dakikadan uzun sürdü ve bu sayfa beklemeyi bıraktı. Kartta hâlâ çalışıyor olabilir.'
     },
     terminal: {
       title: 'Uçbirim',
@@ -428,7 +447,7 @@ const tr = {
     power: {
       title: 'Güç',
       showConfirm: 'Doğrulama',
-      showConfirmTip: 'Güç ile ilgili işlemler fazladan doğrulama gerektirir',
+      showConfirmTip: 'Kısa güç basışından önce sor. Sıfırlama ve uzun basış her zaman sorar.',
       reset: 'Sıfırla',
       power: 'Güç',
       powerShort: 'Güç tuşu (bas-çek)',
@@ -454,7 +473,11 @@ const tr = {
       ledConnected: "Güç LED'i bağlı",
       ledConnectedTip:
         "Yalnızca ana makinenin güç LED'i konnektörü karta bağlıysa açın. Bu bağlantı olmadan güç durumu bilinemez.",
-      ledConnectedFailed: "Güç LED'i ayarı kaydedilemedi"
+      ledConnectedFailed: "Güç LED'i ayarı kaydedilemedi",
+      powerLongConfirm:
+        'Güç düğmesi {{seconds}} sn basılı tutulsun mu? Bu, kapatma yapmadan gücü keser.',
+      done: 'Düğmeye basıldı',
+      failed: 'Düğmeye basılamadı'
     },
     settings: {
       title: 'Ayarlar',
@@ -656,7 +679,13 @@ const tr = {
         stuckFor: '{{duration}} boyunca yaşam belirtisi yok',
         pressFailed: 'Düğmeye basılamadı: {{error}}',
         noScreenshot: 'Ekran görüntüsü yok',
-        failed: 'Watchdog işlemi başarısız oldu'
+        failed: 'Watchdog işlemi başarısız oldu',
+        powerNeedsLed: 'Güç döngüsü için güç menüsünde "Güç LED\'i bağlı" gerekir.',
+        noLedConfirmTitle: "Watchdog güç LED'i olmadan açılsın mı?",
+        noLedConfirmDesc:
+          "Kart, ana makinenin ne zaman kapalı olduğunu göremez, bu yüzden onu hep açık sayar. Ana makineyi kapatırsanız, süre dolunca watchdog sıfırlamaya basar. Bunu önlemek için güç LED'ini bağlayın.",
+        noLedConfirmOk: 'Aç',
+        cancel: 'İptal'
       },
       netboot: {
         title: 'Ağdan önyükleme',
@@ -723,7 +752,10 @@ const tr = {
           Wired: 'Kablolu bağlantı',
           Wireless: 'Kablosuz bağlantı',
           Other: 'Diğer'
-        }
+        },
+        hostnameInvalid:
+          'Harf, rakam ve kısa çizgi kullanın; noktayla ayrılan her bölümde en fazla 63. Bir bölümün başında veya sonunda kısa çizgi olamaz.',
+        hostnameFailed: 'Ana bilgisayar adı değiştirilemedi'
       },
       appearance: {
         title: 'Görünüm',
@@ -892,7 +924,8 @@ const tr = {
         reboot: 'Yeniden Başlat',
         rebootDesc: "NanoKVM'i yeniden başlatmak istediğinizden emin misiniz?",
         okBtn: 'Evet',
-        cancelBtn: 'Hayır'
+        cancelBtn: 'Hayır',
+        rebootFailed: 'Yeniden başlatma başarısız'
       },
       network: {
         title: 'Ağ',
@@ -916,7 +949,14 @@ const tr = {
           tip: 'HTTPS protokolü bağlantıda gecikmeye sebep olabilir, özellikle MJPEG görüntü modu ile.',
           restarting: 'Cihaz sunucusu yeniden başlatılıyor, bu yaklaşık iki dakika sürer...',
           waiting: 'Cihazın yeniden yanıt vermesi bekleniyor...',
-          waitingHttp: "http'ye geri dönülüyor. Sayfa kendiliğinden açılmazsa yeniden yükleyin."
+          waitingHttp: "http'ye geri dönülüyor. Sayfa kendiliğinden açılmazsa yeniden yükleyin.",
+          failed: 'HTTPS ayarı değiştirilemedi',
+          enableConfirm: 'HTTPS açılsın mı?',
+          disableConfirm: 'HTTPS kapatılsın mı?',
+          confirmDesc:
+            'Bu, oturumunuzu kapatır ve cihaz sunucusunu yeniden başlatır; yaklaşık iki dakika sürer. Ardından sayfa {{url}} adresini açar.',
+          confirmOk: 'Devam',
+          confirmCancel: 'İptal'
         },
         ethernet: {
           title: 'IP Adresi',
@@ -1021,8 +1061,18 @@ const tr = {
           '{{other}} çalışıyor veya açılışta başlıyor. Aynı anda yalnızca bir VPN çalışabilir: önce {{other}} hizmetini durdurun ve açılışta başlatmayı kapatın.',
         swap: {
           title: 'Swap belleği',
-          tip: 'Hizmetin belleği yetmezse swap belleğini etkinleştirmeyi deneyin. Bu, swap dosyasının boyutunu varsayılan olarak 256MB yapar; boyut "Ayarlar > Cihaz" bölümünden değiştirilebilir.'
-        }
+          tip: 'Hizmetin belleği yetmezse swap belleğini etkinleştirmeyi deneyin. Bu, swap dosyasının boyutunu varsayılan olarak 256MB yapar; boyut "Ayarlar > Cihaz" bölümünden değiştirilebilir.',
+          failed: 'Takas belleği değiştirilemedi'
+        },
+        copy: 'Kopyala',
+        copied: 'Bağlantı kopyalandı',
+        copyFailed: 'Bağlantı kopyalanamadı. Seçip elle kopyalayın.',
+        open: 'Aç',
+        checkAgain: 'Yeniden denetle',
+        notSignedIn: 'Henüz oturum açılmadı. Bağlantıdan oturum açmayı bitirip yeniden denetleyin.',
+        checkFailed: 'Oturum durumu denetlenemedi',
+        loginWaiting: 'Bu sayfa birkaç saniyede bir denetler ve oturum açtığınızda devam eder.',
+        uninstallFailed: 'Kaldırma başarısız'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1036,7 +1086,6 @@ const tr = {
         notLogin: 'Cihaz bağlı değil. Lütfen giriş yapıp cihazınızı hesabınıza bağlayın.',
         urlPeriod: 'Adres sadece 10 ndakika boyunca geçerlidir',
         login: 'Giriş yap',
-        loginSuccess: 'Giriş yapıldı',
         logout: 'Çıkış yap',
         logoutDesc: 'Çıkış yapmak istediğinizden emin misiniz?'
       },
@@ -1050,7 +1099,6 @@ const tr = {
         or: 'veya',
         sso: 'SSO ile giriş yap',
         urlPeriod: 'Bu adres 10 dakika boyunca geçerlidir',
-        loginSuccess: 'Giriş yapıldı',
         logout: 'Kaydı sil',
         logoutDesc:
           'Kaydı silmek bu eşi NetBird hesabınızdan kaldırır ve buradaki yapılandırmasını siler. Yeniden katılmak için bir kurulum anahtarı veya SSO girişi gerekir ve eş yeni bir IP alabilir. Devam edilsin mi?'
@@ -1094,7 +1142,10 @@ const tr = {
           checksumMismatch: 'SHA-256 doğrulaması başarısız oldu. Paket bozulmuş olabilir.',
           invalidName: 'Geçersiz dosya adı biçimi. Lütfen GitHub sürümlerinden indirin.',
           updateFailed: 'Güncelleme başarısız oldu. Lütfen tekrar deneyin.'
-        }
+        },
+        updateTo: '{{version}} sürümüne güncelle',
+        updateConfirmDesc:
+          'Cihaz güncellemeyi kurar ve sunucusunu yeniden başlatır. Sunucu geri geldiğinde bu sayfa yeniden yüklenir.'
       },
       account: {
         title: 'Hesap',

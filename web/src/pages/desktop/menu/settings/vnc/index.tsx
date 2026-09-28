@@ -38,20 +38,29 @@ export const Vnc = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoadingState, setIsLoadingState] = useState(false);
 
-  const getSettings = useCallback(() => {
-    api
-      .getVncSettings()
-      .then((rsp) => {
-        if (rsp.code !== 0) {
-          message.error(t('settings.vnc.failed'));
-          return;
-        }
-        const next: VncSettings = rsp.data;
-        setSettings(next);
-        setDraft({ port: next.port, maxFps: next.maxFps, vncAuth: next.vncAuth, password: '' });
-      })
-      .catch(() => message.error(t('settings.vnc.failed')));
-  }, [t]);
+  // keepDraft leaves the fields being edited alone. The switch saves only
+  // enabled, and reading the settings back must not throw away the rest.
+  const getSettings = useCallback(
+    (keepDraft = false) => {
+      api
+        .getVncSettings()
+        .then((rsp) => {
+          if (rsp.code !== 0) {
+            message.error(t('settings.vnc.failed'));
+            return;
+          }
+          const next: VncSettings = rsp.data;
+          setSettings(next);
+          setDraft((current) =>
+            keepDraft && current
+              ? current
+              : { port: next.port, maxFps: next.maxFps, vncAuth: next.vncAuth, password: '' }
+          );
+        })
+        .catch(() => message.error(t('settings.vnc.failed')));
+    },
+    [t]
+  );
 
   // getState clears the loading flag; refreshState is what sets it.
   const getState = useCallback(() => {
@@ -77,7 +86,7 @@ export const Vnc = () => {
     getState();
   }
 
-  function save(request: api.VncSettingsRequest) {
+  function save(request: api.VncSettingsRequest, keepDraft = false) {
     setIsSaving(true);
     api
       .setVncSettings(request)
@@ -85,7 +94,7 @@ export const Vnc = () => {
         // -3 means the settings were saved but the server cannot listen, so
         // the page shows what the server holds now in that case as well.
         if (rsp.code === 0 || rsp.code === -3) {
-          getSettings();
+          getSettings(keepDraft);
         }
         if (rsp.code !== 0) {
           message.error(rsp.msg || t('settings.vnc.failed'));
@@ -103,12 +112,15 @@ export const Vnc = () => {
   // The switch saves at once, with the settings as they were last saved.
   function setEnabled(enabled: boolean) {
     if (!settings) return;
-    save({
-      enabled,
-      port: settings.port,
-      maxFps: settings.maxFps,
-      vncAuth: settings.vncAuth
-    });
+    save(
+      {
+        enabled,
+        port: settings.port,
+        maxFps: settings.maxFps,
+        vncAuth: settings.vncAuth
+      },
+      true
+    );
   }
 
   function update<K extends keyof Draft>(key: K, value: Draft[K]) {

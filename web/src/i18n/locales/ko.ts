@@ -60,7 +60,13 @@ const ko = {
         authFailed: '잘못된 AP 비밀번호',
         passPlaceholder: 'AP 비밀번호',
         verifyBtn: '확인'
-      }
+      },
+      ssidRequired: '네트워크 이름을 32자 이내로 입력하세요',
+      passwordLength: '비밀번호는 8~63자입니다. 개방형 네트워크는 비워 두세요.',
+      passwordOptional: '비밀번호 (개방형 네트워크는 비워 둠)',
+      lost:
+        '보드가 응답하지 않습니다. 네트워크에 연결되어 설정용 핫스팟을 닫았을 수 있습니다. 핫스팟이 다시 나타나면 연결에 실패한 것이니 다시 연결한 후 재시도하세요.',
+      done: '설정이 완료되었습니다. 이 기기를 평소 네트워크에 다시 연결하고 보드의 새 주소로 접속하세요.'
     },
     screen: {
       scale: '규모',
@@ -155,7 +161,8 @@ const ko = {
         videoError: '비디오 표시 오류',
         noHdmi: 'HDMI 신호가 감지되지 않았습니다',
         unavailable: '지금은 화면을 표시할 수 없습니다'
-      }
+      },
+      directConnectionFailed: '비디오 스트림 연결에 실패했습니다'
     },
     keyboard: {
       title: '키보드',
@@ -290,7 +297,9 @@ const ko = {
         rebuild: '모드를 전환하면 USB 연결이 다시 구성됩니다. NanoKVM은 재부팅되지 않습니다',
         enable: 'HID 전용 모드 활성화',
         disable: 'HID 전용 모드 비활성화'
-      }
+      },
+      resetHidDone: 'USB HID를 초기화했습니다',
+      resetHidFailed: 'USB HID를 초기화하지 못했습니다'
     },
     image: {
       title: '이미지',
@@ -373,7 +382,15 @@ const ko = {
       confirm: '네',
       cancel: '아니오',
       delete: '삭제',
-      close: '닫기'
+      close: '닫기',
+      empty: '아직 스크립트가 없습니다. .sh 또는 .py 파일을 업로드하면 보드에서 실행할 수 있습니다.',
+      loadFailed: '스크립트를 불러오지 못했습니다',
+      uploaded: '스크립트를 업로드했습니다',
+      uploadFailed: '스크립트를 업로드하지 못했습니다',
+      started: '스크립트를 백그라운드에서 시작했습니다',
+      deleteFailed: '스크립트를 삭제하지 못했습니다',
+      waitLimit: '스크립트가 끝나기를 최대 {{minutes}}분 동안 기다립니다.',
+      timedOut: '스크립트가 {{minutes}}분 넘게 실행되어 이 페이지는 기다리기를 멈췄습니다. 보드에서는 아직 실행 중일 수 있습니다.'
     },
     terminal: {
       title: '터미널',
@@ -423,7 +440,7 @@ const ko = {
     power: {
       title: '전원',
       showConfirm: '확인',
-      showConfirmTip: '전원 작업에는 추가 확인이 필요합니다',
+      showConfirmTip: '전원 짧게 누르기 전에 확인합니다. 리셋과 길게 누르기는 항상 확인합니다.',
       reset: '리셋',
       power: '전원',
       powerShort: '전원 (짧게 누르기)',
@@ -449,7 +466,10 @@ const ko = {
       ledConnected: '전원 LED 연결됨',
       ledConnectedTip:
         '호스트의 전원 LED 헤더가 보드에 연결된 경우에만 켜세요. 연결되지 않으면 전원 상태를 알 수 없습니다.',
-      ledConnectedFailed: '전원 LED 설정을 저장하지 못했습니다'
+      ledConnectedFailed: '전원 LED 설정을 저장하지 못했습니다',
+      powerLongConfirm: '전원 버튼을 {{seconds}}초 동안 누르시겠습니까? 종료 없이 전원이 차단됩니다.',
+      done: '버튼을 눌렀습니다',
+      failed: '버튼을 누르지 못했습니다'
     },
     settings: {
       title: '설정',
@@ -650,7 +670,13 @@ const ko = {
         stuckFor: '{{duration}} 동안 동작 신호 없음',
         pressFailed: '버튼 누르기 실패: {{error}}',
         noScreenshot: '스크린샷 없음',
-        failed: '워치독 작업에 실패했습니다'
+        failed: '워치독 작업에 실패했습니다',
+        powerNeedsLed: '전원 재시작에는 전원 메뉴의 "전원 LED 연결됨"이 필요합니다.',
+        noLedConfirmTitle: '전원 LED 없이 워치독을 켜시겠습니까?',
+        noLedConfirmDesc:
+          '보드는 호스트가 꺼진 것을 알 수 없어 항상 켜져 있는 것으로 간주합니다. 호스트를 종료하면 시간 초과 후 워치독이 리셋을 누릅니다. 이를 피하려면 전원 LED를 연결하세요.',
+        noLedConfirmOk: '켜기',
+        cancel: '취소'
       },
       netboot: {
         title: '네트워크 부팅',
@@ -717,7 +743,10 @@ const ko = {
           Wired: '유선',
           Wireless: '무선',
           Other: '기타'
-        }
+        },
+        hostnameInvalid:
+          '문자, 숫자, 하이픈을 사용하고 점으로 구분된 각 부분은 63자 이하로 하세요. 각 부분의 시작과 끝에는 하이픈을 쓸 수 없습니다.',
+        hostnameFailed: '호스트 이름을 변경하지 못했습니다'
       },
       appearance: {
         title: '디자인',
@@ -883,7 +912,8 @@ const ko = {
         reboot: '재부팅',
         rebootDesc: 'NanoKVM을 재부팅하시겠습니까?',
         okBtn: '네',
-        cancelBtn: '아니오'
+        cancelBtn: '아니오',
+        rebootFailed: '재부팅에 실패했습니다'
       },
       network: {
         title: '네트워크',
@@ -908,7 +938,13 @@ const ko = {
           restarting: '장치 서버를 다시 시작하는 중입니다. 약 2분 정도 걸립니다...',
           waiting: '장치가 다시 응답하기를 기다리는 중...',
           waitingHttp:
-            'http로 다시 전환하는 중입니다. 자동으로 열리지 않으면 이 페이지를 새로 고치세요.'
+            'http로 다시 전환하는 중입니다. 자동으로 열리지 않으면 이 페이지를 새로 고치세요.',
+          failed: 'HTTPS 설정을 변경하지 못했습니다',
+          enableConfirm: 'HTTPS를 켜시겠습니까?',
+          disableConfirm: 'HTTPS를 끄시겠습니까?',
+          confirmDesc: '로그아웃되고 장치 서버가 다시 시작되며 약 2분이 걸립니다. 그 후 페이지가 {{url}}을(를) 엽니다.',
+          confirmOk: '계속',
+          confirmCancel: '취소'
         },
         ethernet: {
           title: 'IP 주소',
@@ -1012,8 +1048,18 @@ const ko = {
           '{{other}}이(가) 실행 중이거나 부팅 시 시작됩니다. VPN은 한 번에 하나만 실행됩니다. 먼저 {{other}}을(를) 중지하고 부팅 시 시작을 끄세요.',
         swap: {
           title: '스왑 메모리',
-          tip: '데몬의 메모리가 부족하면 스왑 메모리를 활성화해 보세요. 스왑 파일 크기가 기본값 256MB로 설정되며, "설정 > 장치"에서 조정할 수 있습니다.'
-        }
+          tip: '데몬의 메모리가 부족하면 스왑 메모리를 활성화해 보세요. 스왑 파일 크기가 기본값 256MB로 설정되며, "설정 > 장치"에서 조정할 수 있습니다.',
+          failed: '스왑 메모리를 변경하지 못했습니다'
+        },
+        copy: '복사',
+        copied: '링크를 복사했습니다',
+        copyFailed: '링크를 복사하지 못했습니다. 선택해서 직접 복사하세요.',
+        open: '열기',
+        checkAgain: '다시 확인',
+        notSignedIn: '아직 로그인되지 않았습니다. 링크에서 로그인을 마친 뒤 다시 확인하세요.',
+        checkFailed: '로그인 상태를 확인하지 못했습니다',
+        loginWaiting: '이 페이지는 몇 초마다 확인하며 로그인하면 계속 진행합니다.',
+        uninstallFailed: '제거하지 못했습니다'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1027,7 +1073,6 @@ const ko = {
         notLogin: '이 기기는 현재 연동 되지 않았습니다. 로그인해서 계정에 이 장치를 연동하세요.',
         urlPeriod: '이 주소는 10분간 유효합니다.',
         login: '로그인',
-        loginSuccess: '로그인 성공',
         logout: '로그아웃',
         logoutDesc: '정말로 로그아웃 하시겠습니까?'
       },
@@ -1041,7 +1086,6 @@ const ko = {
         or: '또는',
         sso: 'SSO로 로그인',
         urlPeriod: '이 주소는 10분간 유효합니다.',
-        loginSuccess: '로그인 성공',
         logout: '등록 해제',
         logoutDesc:
           '등록을 해제하면 NetBird 계정에서 이 피어가 제거되고 여기의 구성도 삭제됩니다. 다시 참여하려면 설정 키나 SSO 로그인이 필요하며, 피어가 새 IP를 받을 수 있습니다. 계속할까요?'
@@ -1084,7 +1128,9 @@ const ko = {
           checksumMismatch: 'SHA-256 검증에 실패했습니다. 패키지가 손상되었을 수 있습니다.',
           invalidName: '유효하지 않은 파일 이름 형식입니다. GitHub 릴리즈에서 다운로드하세요.',
           updateFailed: '업데이트에 실패했습니다. 재시도하세요.'
-        }
+        },
+        updateTo: '{{version}}(으)로 업데이트',
+        updateConfirmDesc: '장치가 업데이트를 설치하고 서버를 다시 시작합니다. 서버가 돌아오면 이 페이지가 새로 고쳐집니다.'
       },
       account: {
         title: '계정',

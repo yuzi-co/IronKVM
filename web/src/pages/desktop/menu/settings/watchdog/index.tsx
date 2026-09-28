@@ -7,6 +7,7 @@ import {
   Input,
   InputNumber,
   message,
+  Modal,
   Select,
   Switch,
   Tag
@@ -61,6 +62,7 @@ const statusColors: Record<WatchdogStatus, string> = {
 // the actions it took, each with the screenshot saved before the press.
 export const Watchdog = () => {
   const { t } = useTranslation();
+  const [modal, contextHolder] = Modal.useModal();
   const [settings, setSettings] = useState<WatchdogSettings | null>(null);
   const [draft, setDraft] = useState<WatchdogSettings | null>(null);
   const [state, setState] = useState<WatchdogState | null>(null);
@@ -139,10 +141,35 @@ export const Watchdog = () => {
       .finally(() => setIsSaving(false));
   }
 
+  // Without the power LED the watchdog takes a host that was shut down on
+  // purpose for a hung one. Unknown counts as not connected.
+  const ledConnected = state?.ledConnected ?? false;
+
   // The switch saves at once, with the settings as they were last saved.
   function setEnabled(enabled: boolean) {
     if (!settings) return;
-    save({ ...settings, enabled });
+    if (!enabled || ledConnected) {
+      save({ ...settings, enabled });
+      return;
+    }
+
+    // A power cycle would switch such a host back on, and the server refuses
+    // it. A reset does nothing to a host that is off, so it may go ahead once
+    // the operator has read what it means.
+    if (settings.action === 'power') {
+      message.error(t('settings.watchdog.powerNeedsLed'));
+      return;
+    }
+    modal.confirm({
+      title: t('settings.watchdog.noLedConfirmTitle'),
+      content: (
+        <span className="text-sm text-neutral-400">{t('settings.watchdog.noLedConfirmDesc')}</span>
+      ),
+      okText: t('settings.watchdog.noLedConfirmOk'),
+      okButtonProps: { danger: true },
+      cancelText: t('settings.watchdog.cancel'),
+      onOk: () => save({ ...settings, enabled: true })
+    });
   }
 
   function update<K extends keyof WatchdogSettings>(key: K, value: WatchdogSettings[K]) {
@@ -162,6 +189,10 @@ export const Watchdog = () => {
 
   function saveDraft() {
     if (!draft || !settings || !isPingValid) return;
+    if (settings.enabled && draft.action === 'power' && !ledConnected) {
+      message.error(t('settings.watchdog.powerNeedsLed'));
+      return;
+    }
     save({ ...draft, enabled: settings.enabled, pingHost });
   }
 
@@ -206,6 +237,7 @@ export const Watchdog = () => {
 
   return (
     <>
+      {contextHolder}
       <div className="text-base">{t('settings.watchdog.title')}</div>
       <Divider className="opacity-50" />
 
@@ -261,11 +293,18 @@ export const Watchdog = () => {
                 value={draft.action}
                 options={[
                   { value: 'reset', label: t('settings.watchdog.actionReset') },
-                  { value: 'power', label: t('settings.watchdog.actionPower') }
+                  {
+                    value: 'power',
+                    label: t('settings.watchdog.actionPower'),
+                    disabled: !ledConnected && draft.action !== 'power'
+                  }
                 ]}
                 onChange={(value) => update('action', value)}
               />
             </div>
+            {!ledConnected && (
+              <span className="text-xs text-neutral-500">{t('settings.watchdog.powerNeedsLed')}</span>
+            )}
 
             <div className="flex items-center justify-between">
               <div className="flex flex-col space-y-1 pr-4">

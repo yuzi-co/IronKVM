@@ -63,7 +63,14 @@ const de = {
         authFailed: 'Ungültiges AP Passwort',
         passPlaceholder: 'AP Passwort',
         verifyBtn: 'Überprüfen'
-      }
+      },
+      ssidRequired: 'Netzwerknamen eingeben, bis zu 32 Zeichen',
+      passwordLength: 'Das Passwort hat 8 bis 63 Zeichen. Für ein offenes Netzwerk leer lassen.',
+      passwordOptional: 'Passwort (leer für ein offenes Netzwerk)',
+      lost:
+        'Das Board antwortet nicht mehr. Es hat sich vielleicht mit dem Netzwerk verbunden und seinen Einrichtungs-Hotspot geschlossen. Erscheint der Hotspot wieder, ist die Verbindung fehlgeschlagen: erneut mit ihm verbinden und noch einmal versuchen.',
+      done:
+        'Einrichtung abgeschlossen. Dieses Gerät wieder mit dem üblichen Netzwerk verbinden und das Board unter seiner neuen Adresse öffnen.'
     },
     screen: {
       scale: 'Skala',
@@ -162,7 +169,8 @@ const de = {
         videoError: 'Fehler bei der Videoanzeige',
         noHdmi: 'Kein HDMI-Signal erkannt',
         unavailable: 'Der Bildschirm kann derzeit nicht angezeigt werden'
-      }
+      },
+      directConnectionFailed: 'Verbindung zum Videostream fehlgeschlagen'
     },
     keyboard: {
       title: 'Tastatur',
@@ -301,7 +309,9 @@ const de = {
           'Beim Wechsel des Modus wird die USB-Verbindung neu aufgebaut. NanoKVM startet nicht neu',
         enable: 'HID-Only Modus aktivieren',
         disable: 'HID-Only Modus deaktivieren'
-      }
+      },
+      resetHidDone: 'USB-HID zurückgesetzt',
+      resetHidFailed: 'USB-HID konnte nicht zurückgesetzt werden'
     },
     image: {
       title: 'Bilder',
@@ -386,7 +396,17 @@ const de = {
       confirm: 'Ja',
       cancel: 'Nein',
       delete: 'Löschen',
-      close: 'Schliessen'
+      close: 'Schliessen',
+      empty:
+        'Noch keine Skripte. Eine .sh- oder .py-Datei hochladen, um sie auf dem Board auszuführen.',
+      loadFailed: 'Skripte konnten nicht geladen werden',
+      uploaded: 'Skript hochgeladen',
+      uploadFailed: 'Skript konnte nicht hochgeladen werden',
+      started: 'Skript im Hintergrund gestartet',
+      deleteFailed: 'Skript konnte nicht gelöscht werden',
+      waitLimit: 'Warte bis zu {{minutes}} Minuten, bis das Skript fertig ist.',
+      timedOut:
+        'Das Skript lief länger als {{minutes}} Minuten und die Seite wartet nicht mehr. Es läuft möglicherweise noch auf dem Board.'
     },
     terminal: {
       title: 'Terminal',
@@ -437,7 +457,8 @@ const de = {
     power: {
       title: 'Power',
       showConfirm: 'Bestätigung',
-      showConfirmTip: 'Diese Aktionen benötigen eine zusätzliche Bestätigung',
+      showConfirmTip:
+        'Vor einem kurzen Druck auf die Ein/Aus-Taste nachfragen. Reset und langer Druck fragen immer nach.',
       reset: 'Zurücksetzen',
       power: 'Power',
       powerShort: 'Power (Kurzer Klick)',
@@ -463,7 +484,11 @@ const de = {
       ledConnected: 'Power-LED angeschlossen',
       ledConnectedTip:
         'Nur aktivieren, wenn der Power-LED-Anschluss des Hosts mit dem Board verbunden ist. Ohne ihn ist der Einschaltzustand unbekannt.',
-      ledConnectedFailed: 'Die Power-LED-Einstellung konnte nicht gespeichert werden'
+      ledConnectedFailed: 'Die Power-LED-Einstellung konnte nicht gespeichert werden',
+      powerLongConfirm:
+        'Ein/Aus-Taste {{seconds}} s halten? Das schaltet den Strom ohne Herunterfahren ab.',
+      done: 'Taste gedrückt',
+      failed: 'Tastendruck fehlgeschlagen'
     },
     settings: {
       title: 'Einstellungen',
@@ -668,7 +693,13 @@ const de = {
         stuckFor: 'kein Lebenszeichen seit {{duration}}',
         pressFailed: 'Der Tastendruck ist fehlgeschlagen: {{error}}',
         noScreenshot: 'Kein Screenshot',
-        failed: 'Watchdog-Vorgang fehlgeschlagen'
+        failed: 'Watchdog-Vorgang fehlgeschlagen',
+        powerNeedsLed: 'Ein Aus- und Einschalten braucht „Power-LED angeschlossen“ im Power-Menü.',
+        noLedConfirmTitle: 'Watchdog ohne Power-LED einschalten?',
+        noLedConfirmDesc:
+          'Das Board erkennt nicht, wann der Host aus ist, und behandelt ihn als immer eingeschaltet. Wenn Sie den Host herunterfahren, drückt der Watchdog nach Ablauf der Zeit Reset. Schließen Sie die Power-LED an, um das zu vermeiden.',
+        noLedConfirmOk: 'Einschalten',
+        cancel: 'Abbrechen'
       },
       netboot: {
         title: 'Netzwerkboot',
@@ -735,7 +766,10 @@ const de = {
           Wired: 'Kabel',
           Wireless: 'Drahtlos',
           Other: 'Andere'
-        }
+        },
+        hostnameInvalid:
+          'Buchstaben, Ziffern und Bindestriche verwenden, bis zu 63 pro durch Punkte getrenntem Teil. Kein Bindestrich am Anfang oder Ende eines Teils.',
+        hostnameFailed: 'Der Hostname konnte nicht geändert werden'
       },
       appearance: {
         title: 'Erscheinungsbild',
@@ -904,7 +938,8 @@ const de = {
         reboot: 'Neustarten',
         rebootDesc: 'Sind Sie sicher dass Sie NanoKVM neustarten möchten?',
         okBtn: 'Ja',
-        cancelBtn: 'Nein'
+        cancelBtn: 'Nein',
+        rebootFailed: 'Neustart fehlgeschlagen'
       },
       network: {
         title: 'Netzwerk',
@@ -929,7 +964,14 @@ const de = {
           restarting: 'Der Geräteserver wird neu gestartet, das dauert etwa zwei Minuten...',
           waiting: 'Warten, bis das Gerät wieder antwortet...',
           waitingHttp:
-            'Wechsel zurück zu http. Laden Sie diese Seite neu, falls sie sich nicht von selbst öffnet.'
+            'Wechsel zurück zu http. Laden Sie diese Seite neu, falls sie sich nicht von selbst öffnet.',
+          failed: 'Die HTTPS-Einstellung konnte nicht geändert werden',
+          enableConfirm: 'HTTPS einschalten?',
+          disableConfirm: 'HTTPS ausschalten?',
+          confirmDesc:
+            'Sie werden abgemeldet und der Geräteserver startet neu, was etwa zwei Minuten dauert. Danach öffnet die Seite {{url}}.',
+          confirmOk: 'Fortfahren',
+          confirmCancel: 'Abbrechen'
         },
         ethernet: {
           title: 'IP-Adresse',
@@ -1037,8 +1079,20 @@ const de = {
           '{{other}} läuft oder startet beim Systemstart. Es kann nur ein VPN gleichzeitig laufen: Stoppen Sie zuerst {{other}} und deaktivieren Sie dessen Start beim Systemstart.',
         swap: {
           title: 'Swap-Speicher',
-          tip: 'Wenn dem Dienst der Speicher knapp wird, versuchen Sie, Swap-Speicher zu aktivieren. Dadurch wird die Swap-Datei standardmäßig auf 256MB gesetzt; die Größe lässt sich unter „Einstellungen > Gerät“ anpassen.'
-        }
+          tip: 'Wenn dem Dienst der Speicher knapp wird, versuchen Sie, Swap-Speicher zu aktivieren. Dadurch wird die Swap-Datei standardmäßig auf 256MB gesetzt; die Größe lässt sich unter „Einstellungen > Gerät“ anpassen.',
+          failed: 'Auslagerungsspeicher konnte nicht geändert werden'
+        },
+        copy: 'Kopieren',
+        copied: 'Link kopiert',
+        copyFailed: 'Link konnte nicht kopiert werden. Markieren und von Hand kopieren.',
+        open: 'Öffnen',
+        checkAgain: 'Erneut prüfen',
+        notSignedIn:
+          'Noch nicht angemeldet. Die Anmeldung über den Link abschließen und erneut prüfen.',
+        checkFailed: 'Anmeldestatus konnte nicht geprüft werden',
+        loginWaiting:
+          'Diese Seite prüft alle paar Sekunden und macht weiter, sobald Sie angemeldet sind.',
+        uninstallFailed: 'Deinstallation fehlgeschlagen'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1053,7 +1107,6 @@ const de = {
           'Das Gerät konnte noch nicht gefunden werden. Bitte melden Sie sich an und verknüpfen Sie dieses Gerät mit Ihrem Konto.',
         urlPeriod: 'Diese URL ist für 10 Minuten gültig',
         login: 'Anmelden',
-        loginSuccess: 'Anmeldung erfolgreich',
         logout: 'Abmelden',
         logoutDesc: 'Möchten Sie sich wirklich abmelden?'
       },
@@ -1067,7 +1120,6 @@ const de = {
         or: 'oder',
         sso: 'Mit SSO anmelden',
         urlPeriod: 'Diese URL ist für 10 Minuten gültig',
-        loginSuccess: 'Anmeldung erfolgreich',
         logout: 'Abmelden',
         logoutDesc:
           'Beim Abmelden wird dieser Peer aus Ihrem NetBird-Konto entfernt und seine Konfiguration hier gelöscht. Ein erneuter Beitritt erfordert einen Setup-Key oder eine SSO-Anmeldung, und der Peer erhält möglicherweise eine neue IP. Fortfahren?'
@@ -1113,7 +1165,10 @@ const de = {
           invalidName:
             'Ungültiges Dateinamenformat. Bitte laden Sie von den GitHub-Releases herunter.',
           updateFailed: 'Aktualisierung fehlgeschlagen. Bitte versuchen Sie es erneut.'
-        }
+        },
+        updateTo: 'Auf {{version}} aktualisieren',
+        updateConfirmDesc:
+          'Das Gerät installiert das Update und startet seinen Server neu. Diese Seite lädt neu, sobald der Server wieder da ist.'
       },
       account: {
         title: 'Konto',

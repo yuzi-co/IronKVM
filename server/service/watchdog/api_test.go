@@ -52,6 +52,7 @@ func call(t *testing.T, r *gin.Engine, method, path, body string) (*httptest.Res
 func TestTheSettingsAreSavedAndValidated(t *testing.T) {
 	h := newFakeHost()
 	h.settings.Enabled = false
+	h.ledConnected = true
 	r := newEngine(New(h.deps(t)))
 
 	good := `{"enabled":true,"timeoutMinutes":7,"action":"power","cooldownMinutes":30,"maxPerHour":2,"pingHost":"10.0.0.5"}`
@@ -82,6 +83,32 @@ func TestTheSettingsAreSavedAndValidated(t *testing.T) {
 	}
 	if h.settings != want.toConfig() {
 		t.Fatalf("a refused request changed the settings: %+v", h.settings)
+	}
+}
+
+// Without the power LED a power cycle would switch on a host that was shut
+// down on purpose, so it is refused. A reset, or a watchdog left off, is not.
+func TestAPowerCycleNeedsThePowerLED(t *testing.T) {
+	h := newFakeHost()
+	h.settings.Enabled = false
+	r := newEngine(New(h.deps(t)))
+	before := h.settings
+
+	power := `{"enabled":true,"timeoutMinutes":7,"action":"power","cooldownMinutes":30,"maxPerHour":2}`
+	if _, env := call(t, r, http.MethodPost, "/settings", power); env.Code == 0 {
+		t.Fatal("accepted a power cycle without the power LED")
+	}
+	if h.settings != before {
+		t.Fatalf("a refused request changed the settings: %+v", h.settings)
+	}
+
+	for _, ok := range []string{
+		`{"enabled":true,"timeoutMinutes":7,"action":"reset","cooldownMinutes":30,"maxPerHour":2}`,
+		`{"enabled":false,"timeoutMinutes":7,"action":"power","cooldownMinutes":30,"maxPerHour":2}`,
+	} {
+		if _, env := call(t, r, http.MethodPost, "/settings", ok); env.Code != 0 {
+			t.Errorf("refused %s: %+v", ok, env)
+		}
 	}
 }
 

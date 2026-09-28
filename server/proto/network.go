@@ -24,9 +24,12 @@ type GetWifiRsp struct {
 	Ssid      string `json:"ssid"`
 }
 
+// ConnectWifiReq names the network to join. An empty password joins an open
+// network; otherwise it is a WPA passphrase of 8 to 63 characters, which is
+// what wpa_passphrase in S30wifi takes.
 type ConnectWifiReq struct {
-	Ssid     string `validate:"required"`
-	Password string `validate:"required"`
+	Ssid     string `validate:"required,max=32"`
+	Password string `validate:"omitempty,min=8,max=63"`
 }
 
 type GetDNSRsp struct {

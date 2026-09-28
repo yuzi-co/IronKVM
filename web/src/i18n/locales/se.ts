@@ -59,7 +59,14 @@ const se = {
         authFailed: 'Ogiltigt AP lösenord',
         passPlaceholder: 'AP lösenord',
         verifyBtn: 'Verifiera'
-      }
+      },
+      ssidRequired: 'Ange nätverksnamnet, högst 32 tecken',
+      passwordLength: 'Lösenordet är 8 till 63 tecken. Lämna det tomt för ett öppet nätverk.',
+      passwordOptional: 'Lösenord (tomt för ett öppet nätverk)',
+      lost:
+        'Kortet slutade svara. Det kan ha anslutit till nätverket och stängt sin konfigurationshotspot. Om hotspoten kommer tillbaka misslyckades anslutningen: anslut till den igen och försök på nytt.',
+      done:
+        'Konfigurationen är klar. Anslut den här enheten till ditt vanliga nätverk igen och öppna kortet på dess nya adress.'
     },
     screen: {
       scale: 'Skala',
@@ -154,7 +161,8 @@ const se = {
         videoError: 'Videovisningsfel',
         noHdmi: 'Ingen HDMI-signal upptäcktes',
         unavailable: 'Skärmen kan inte visas just nu'
-      }
+      },
+      directConnectionFailed: 'Anslutningen till videoströmmen misslyckades'
     },
     keyboard: {
       title: 'Tangentbord',
@@ -291,7 +299,9 @@ const se = {
         rebuild: 'Byte av läge bygger upp USB-anslutningen på nytt. NanoKVM startas inte om',
         enable: 'Aktivera Endast-HID-läge',
         disable: 'Inaktivera Endast-HID-läge'
-      }
+      },
+      resetHidDone: 'USB HID återställt',
+      resetHidFailed: 'Återställning av USB HID misslyckades'
     },
     image: {
       title: 'Avbildningar',
@@ -375,7 +385,16 @@ const se = {
       confirm: 'Ja',
       cancel: 'Nej',
       delete: 'Ta bort',
-      close: 'Stäng'
+      close: 'Stäng',
+      empty: 'Inga skript ännu. Ladda upp en .sh- eller .py-fil för att köra den på kortet.',
+      loadFailed: 'Det gick inte att läsa in skripten',
+      uploaded: 'Skript uppladdat',
+      uploadFailed: 'Det gick inte att ladda upp skriptet',
+      started: 'Skriptet startades i bakgrunden',
+      deleteFailed: 'Det gick inte att ta bort skriptet',
+      waitLimit: 'Väntar på att skriptet blir klart, i upp till {{minutes}} minuter.',
+      timedOut:
+        'Skriptet körde längre än {{minutes}} minuter och sidan slutade vänta. Det kan fortfarande köras på kortet.'
     },
     terminal: {
       title: 'Terminal',
@@ -426,7 +445,8 @@ const se = {
     power: {
       title: 'Ström',
       showConfirm: 'Bekräftelse',
-      showConfirmTip: 'Strömätgärder kräver extra bekräftelse',
+      showConfirmTip:
+        'Fråga före ett kort tryck på strömknappen. Återställning och långt tryck frågar alltid.',
       reset: 'Starta om',
       power: 'Ström',
       powerShort: 'Ström (kort tryck)',
@@ -452,7 +472,10 @@ const se = {
       ledConnected: 'Ström-LED ansluten',
       ledConnectedTip:
         'Aktivera endast om värdens stiftlist för ström-LED är kopplad till kortet. Utan den är strömläget okänt.',
-      ledConnectedFailed: 'Det gick inte att spara inställningen för ström-LED'
+      ledConnectedFailed: 'Det gick inte att spara inställningen för ström-LED',
+      powerLongConfirm: 'Hålla strömknappen i {{seconds}} s? Det bryter strömmen utan avstängning.',
+      done: 'Knappen är tryckt',
+      failed: 'Knapptrycket misslyckades'
     },
     settings: {
       title: 'Inställningar',
@@ -655,7 +678,13 @@ const se = {
         stuckFor: 'inga livstecken på {{duration}}',
         pressFailed: 'Knapptrycket misslyckades: {{error}}',
         noScreenshot: 'Ingen skärmbild',
-        failed: 'Watchdog-åtgärden misslyckades'
+        failed: 'Watchdog-åtgärden misslyckades',
+        powerNeedsLed: 'Strömcykel kräver "Ström-LED ansluten" i strömmenyn.',
+        noLedConfirmTitle: 'Slå på watchdog utan ström-LED?',
+        noLedConfirmDesc:
+          'Kortet kan inte se när värden är avstängd, så det behandlar värden som alltid på. Om du stänger av värden trycker watchdog på återställ när tidsgränsen har passerat. Anslut ström-LED:en för att undvika detta.',
+        noLedConfirmOk: 'Slå på',
+        cancel: 'Avbryt'
       },
       netboot: {
         title: 'Nätverksstart',
@@ -722,7 +751,10 @@ const se = {
           Wired: 'Trådbundet',
           Wireless: 'Trådlöst',
           Other: 'Annat'
-        }
+        },
+        hostnameInvalid:
+          'Använd bokstäver, siffror och bindestreck, högst 63 per punktseparerad del. Inget bindestreck i början eller slutet av en del.',
+        hostnameFailed: 'Det gick inte att ändra värdnamnet'
       },
       appearance: {
         title: 'Utseende',
@@ -888,7 +920,8 @@ const se = {
         reboot: 'Starta om',
         rebootDesc: 'Är du säker på att du vill starta om NanoKVM?',
         okBtn: 'Ja',
-        cancelBtn: 'Nej'
+        cancelBtn: 'Nej',
+        rebootFailed: 'Omstarten misslyckades'
       },
       network: {
         title: 'Nätverk',
@@ -912,7 +945,14 @@ const se = {
           tip: 'Observera: Användning av HTTPS kan öka fördröjningen, särskilt med MJPEG-läge.',
           restarting: 'Startar om enhetens server, det tar ungefär två minuter...',
           waiting: 'Väntar på att enheten svarar igen...',
-          waitingHttp: 'Byter tillbaka till http. Ladda om sidan om den inte öppnas av sig själv.'
+          waitingHttp: 'Byter tillbaka till http. Ladda om sidan om den inte öppnas av sig själv.',
+          failed: 'Det gick inte att ändra HTTPS-inställningen',
+          enableConfirm: 'Slå på HTTPS?',
+          disableConfirm: 'Stäng av HTTPS?',
+          confirmDesc:
+            'Detta loggar ut dig och startar om enhetens server, vilket tar ungefär två minuter. Sidan öppnar sedan {{url}}.',
+          confirmOk: 'Fortsätt',
+          confirmCancel: 'Avbryt'
         },
         ethernet: {
           title: 'IP-adress',
@@ -1018,8 +1058,19 @@ const se = {
           '{{other}} körs eller startar vid uppstart. Bara ett VPN kan köras åt gången: stoppa {{other}} och stäng av dess start vid uppstart först.',
         swap: {
           title: 'Swap-minne',
-          tip: 'Om tjänsten får ont om minne kan du prova att aktivera swap-minne. Detta sätter swap-filens storlek till 256MB som standard, vilket kan justeras i "Inställningar > Enhet".'
-        }
+          tip: 'Om tjänsten får ont om minne kan du prova att aktivera swap-minne. Detta sätter swap-filens storlek till 256MB som standard, vilket kan justeras i "Inställningar > Enhet".',
+          failed: 'Det gick inte att ändra växlingsminnet'
+        },
+        copy: 'Kopiera',
+        copied: 'Länken kopierad',
+        copyFailed: 'Det gick inte att kopiera länken. Markera den och kopiera den för hand.',
+        open: 'Öppna',
+        checkAgain: 'Kontrollera igen',
+        notSignedIn: 'Inte inloggad än. Slutför inloggningen via länken och kontrollera igen.',
+        checkFailed: 'Det gick inte att kontrollera inloggningsstatus',
+        loginWaiting:
+          'Sidan kontrollerar med några sekunders mellanrum och fortsätter när du har loggat in.',
+        uninstallFailed: 'Avinstallationen misslyckades'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1033,7 +1084,6 @@ const se = {
         notLogin: 'Enheten är ännu inte bunden. Logga in och bind enheten till ditt konto.',
         urlPeriod: 'Denna URL är giltig i 10 minuter',
         login: 'Logga in',
-        loginSuccess: 'Inloggning lyckades',
         logout: 'Logga ut',
         logoutDesc: 'Är du säker på att du vill logga ut?'
       },
@@ -1047,7 +1097,6 @@ const se = {
         or: 'eller',
         sso: 'Logga in med SSO',
         urlPeriod: 'Denna URL är giltig i 10 minuter',
-        loginSuccess: 'Inloggning lyckades',
         logout: 'Avregistrera',
         logoutDesc:
           'Avregistrering tar bort den här noden från ditt NetBird-konto och raderar dess konfiguration här. För att ansluta igen krävs en installationsnyckel eller en SSO-inloggning, och noden kan få en ny IP. Fortsätta?'
@@ -1091,7 +1140,10 @@ const se = {
           checksumMismatch: 'SHA-256-verifieringen misslyckades. Paketet kan vara skadat.',
           invalidName: 'Ogiltigt filnamnsformat. Ladda ner från GitHub-versioner.',
           updateFailed: 'Uppdatering misslyckades. Försök igen.'
-        }
+        },
+        updateTo: 'Uppdatera till {{version}}',
+        updateConfirmDesc:
+          'Enheten installerar uppdateringen och startar om sin server. Sidan laddas om när servern är tillbaka.'
       },
       account: {
         title: 'Konto',

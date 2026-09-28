@@ -1,10 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { LoadingOutlined, RocketOutlined, SmileOutlined } from '@ant-design/icons';
-import { Button, Divider, Result, Spin } from 'antd';
+import { Button, Divider, Popconfirm, Result, Spin } from 'antd';
 import { useTranslation } from 'react-i18next';
 import semver from 'semver';
 
 import * as api from '@/api/application.ts';
+import {
+  reloadAfterRestart,
+  SERVER_RESTART_DOWN_MS,
+  SERVER_RESTART_UP_MS
+} from '@/lib/wait-server.ts';
 import { useStableCallback } from '@/hooks/useStableCallback.ts';
 
 import { CustomServer } from './custom-server.tsx';
@@ -67,22 +72,26 @@ export const Update = ({ setIsLocked }: UpdateProps) => {
     setIsLocked(true);
     setStatus('updating');
 
+    // The server answers once the new version is installed, and restarts
+    // itself a second later. A failure keeps its message on screen: reloading
+    // would only hide it.
     api
       .update()
       .then((rsp: any) => {
         if (rsp.code !== 0) {
-          setStatus('failed');
-          setErrMsg(t('settings.update.updateFailed'));
+          fail(rsp.msg);
+          return;
         }
+        reloadAfterRestart(SERVER_RESTART_DOWN_MS, SERVER_RESTART_UP_MS);
       })
-      .finally(() => {
-        setTimeout(() => {
-          setIsLocked(false);
-          setErrMsg('');
+      .catch((err: any) => fail(err?.message));
+  }
 
-          window.location.reload();
-        }, 12000);
-      });
+  function fail(detail?: string) {
+    setIsLocked(false);
+    setStatus('failed');
+    const failed = t('settings.update.updateFailed');
+    setErrMsg(detail ? `${failed} (${detail})` : failed);
   }
 
   return (
@@ -142,14 +151,22 @@ export const Update = ({ setIsLocked }: UpdateProps) => {
             title={`${currentVersion} -> ${latestVersion}`}
             subTitle={t('settings.update.available')}
             extra={[
-              <Button
+              <Popconfirm
                 key="confirm"
-                type="primary"
+                placement="bottom"
+                title={t('settings.update.updateTo', { version: latestVersion })}
+                description={
+                  <div className="max-w-[320px]">{t('settings.update.updateConfirmDesc')}</div>
+                }
+                okText={t('settings.update.confirm')}
+                cancelText={t('settings.update.cancel')}
                 disabled={isCustomServerPending}
-                onClick={update}
+                onConfirm={update}
               >
-                {t('settings.update.confirm')}
-              </Button>
+                <Button type="primary" disabled={isCustomServerPending}>
+                  {t('settings.update.updateTo', { version: latestVersion })}
+                </Button>
+              </Popconfirm>
             ]}
           />
         )}

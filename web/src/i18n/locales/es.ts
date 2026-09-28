@@ -62,7 +62,15 @@ const es = {
         authFailed: 'Contraseña AP no válida',
         passPlaceholder: 'AP contraseña',
         verifyBtn: 'Verificar'
-      }
+      },
+      ssidRequired: 'Introduzca el nombre de la red, hasta 32 caracteres',
+      passwordLength:
+        'La contraseña tiene de 8 a 63 caracteres. Déjela vacía para una red abierta.',
+      passwordOptional: 'Contraseña (vacía para una red abierta)',
+      lost:
+        'La placa dejó de responder. Puede que se haya unido a la red y cerrado su punto de acceso de configuración. Si el punto de acceso vuelve a aparecer, la conexión falló: vuelva a conectarse a él e inténtelo de nuevo.',
+      done:
+        'Configuración terminada. Vuelva a conectar este dispositivo a su red habitual y abra la placa en su nueva dirección.'
     },
     screen: {
       scale: 'Escala',
@@ -158,7 +166,8 @@ const es = {
         videoError: 'Error de visualización de video',
         noHdmi: 'No se detectó señal HDMI',
         unavailable: 'La pantalla no puede mostrarse ahora'
-      }
+      },
+      directConnectionFailed: 'Falló la conexión del flujo de vídeo'
     },
     keyboard: {
       title: 'Teclado',
@@ -296,7 +305,9 @@ const es = {
         rebuild: 'Cambiar de modo reconstruye la conexión USB. El NanoKVM no se reinicia',
         enable: 'Habilitar modo sólo HID',
         disable: 'Desactivar modo sólo HID'
-      }
+      },
+      resetHidDone: 'HID USB reiniciado',
+      resetHidFailed: 'No se pudo reiniciar el HID USB'
     },
     image: {
       title: 'Imágenes',
@@ -380,7 +391,16 @@ const es = {
       confirm: 'Sí',
       cancel: 'No',
       delete: 'Eliminar',
-      close: 'Cerrar'
+      close: 'Cerrar',
+      empty: 'Aún no hay scripts. Suba un archivo .sh o .py para ejecutarlo en la placa.',
+      loadFailed: 'No se pudieron cargar los scripts',
+      uploaded: 'Script subido',
+      uploadFailed: 'No se pudo subir el script',
+      started: 'Script iniciado en segundo plano',
+      deleteFailed: 'No se pudo eliminar el script',
+      waitLimit: 'Esperando a que termine el script, hasta {{minutes}} minutos.',
+      timedOut:
+        'El script tardó más de {{minutes}} minutos y esta página dejó de esperar. Puede que siga ejecutándose en la placa.'
     },
     terminal: {
       title: 'Consola',
@@ -430,7 +450,8 @@ const es = {
     power: {
       title: 'Encender / Apagar',
       showConfirm: 'Confirmación',
-      showConfirmTip: 'Las operaciones de encendido requieren confirmación adicional',
+      showConfirmTip:
+        'Preguntar antes de una pulsación corta. El reinicio y la pulsación larga siempre preguntan.',
       reset: 'Reiniciar',
       power: 'Encender / Apagar',
       powerShort: 'Encender / Apagar (pulsación corta)',
@@ -456,7 +477,11 @@ const es = {
       ledConnected: 'LED de encendido conectado',
       ledConnectedTip:
         'Actívalo solo si el conector del LED de encendido del host está cableado a la placa. Sin él, el estado de encendido es desconocido.',
-      ledConnectedFailed: 'No se pudo guardar el ajuste del LED de encendido'
+      ledConnectedFailed: 'No se pudo guardar el ajuste del LED de encendido',
+      powerLongConfirm:
+        '¿Mantener pulsado el botón de encendido {{seconds}} s? Corta la alimentación sin apagar el sistema.',
+      done: 'Botón pulsado',
+      failed: 'No se pudo pulsar el botón'
     },
     settings: {
       title: 'Ajustes',
@@ -661,7 +686,14 @@ const es = {
         stuckFor: 'sin señales de vida durante {{duration}}',
         pressFailed: 'La pulsación falló: {{error}}',
         noScreenshot: 'Sin captura',
-        failed: 'Error en la operación del watchdog'
+        failed: 'Error en la operación del watchdog',
+        powerNeedsLed:
+          'El ciclo de encendido necesita «LED de encendido conectado» en el menú de energía.',
+        noLedConfirmTitle: '¿Activar el watchdog sin el LED de encendido?',
+        noLedConfirmDesc:
+          'La placa no puede ver cuándo el host está apagado, así que lo trata como siempre encendido. Si apaga el host, el watchdog pulsa reinicio al pasar el tiempo de espera. Conecte el LED de encendido para evitarlo.',
+        noLedConfirmOk: 'Activar',
+        cancel: 'Cancelar'
       },
       netboot: {
         title: 'Arranque por red',
@@ -732,7 +764,10 @@ const es = {
           Wired: 'Cableada',
           Wireless: 'Inalámbrica',
           Other: 'Otra'
-        }
+        },
+        hostnameInvalid:
+          'Use letras, dígitos y guiones, hasta 63 por parte separada por puntos. Sin guion al principio ni al final de una parte.',
+        hostnameFailed: 'No se pudo cambiar el nombre de host'
       },
       appearance: {
         title: 'Apariencia',
@@ -900,7 +935,8 @@ const es = {
         reboot: 'Reiniciar',
         rebootDesc: '¿Estás seguro de que deseas reiniciar el NanoKVM?',
         okBtn: 'Sí',
-        cancelBtn: 'No'
+        cancelBtn: 'No',
+        rebootFailed: 'El reinicio ha fallado'
       },
       network: {
         title: 'Red',
@@ -924,7 +960,14 @@ const es = {
           tip: 'Aviso: Usar HTTPS puede aumentar la latencia, especialmente en modo de vídeo MJPEG.',
           restarting: 'Reiniciando el servidor del dispositivo, tardará unos dos minutos...',
           waiting: 'Esperando a que el dispositivo vuelva a responder...',
-          waitingHttp: 'Volviendo a http. Recarga esta página si no se abre sola.'
+          waitingHttp: 'Volviendo a http. Recarga esta página si no se abre sola.',
+          failed: 'No se pudo cambiar la configuración HTTPS',
+          enableConfirm: '¿Activar HTTPS?',
+          disableConfirm: '¿Desactivar HTTPS?',
+          confirmDesc:
+            'Esto cierra la sesión y reinicia el servidor del dispositivo, lo que tarda unos dos minutos. Después la página abre {{url}}.',
+          confirmOk: 'Continuar',
+          confirmCancel: 'Cancelar'
         },
         ethernet: {
           title: 'Dirección IP',
@@ -1029,8 +1072,20 @@ const es = {
           '{{other}} está en ejecución o se inicia al arrancar. Solo puede funcionar una VPN a la vez: detén {{other}} y desactiva antes su inicio al arrancar.',
         swap: {
           title: 'Memoria swap',
-          tip: 'Si al daemon le falta memoria, prueba a activar la memoria swap. Esto fija el tamaño del archivo swap en 256MB por defecto, que se puede ajustar en "Ajustes > Dispositivo".'
-        }
+          tip: 'Si al daemon le falta memoria, prueba a activar la memoria swap. Esto fija el tamaño del archivo swap en 256MB por defecto, que se puede ajustar en "Ajustes > Dispositivo".',
+          failed: 'No se pudo cambiar la memoria de intercambio'
+        },
+        copy: 'Copiar',
+        copied: 'Enlace copiado',
+        copyFailed: 'No se pudo copiar el enlace. Selecciónelo y cópielo a mano.',
+        open: 'Abrir',
+        checkAgain: 'Comprobar de nuevo',
+        notSignedIn:
+          'Aún no ha iniciado sesión. Termine de iniciarla en el enlace y vuelva a comprobar.',
+        checkFailed: 'No se pudo comprobar el estado de la sesión',
+        loginWaiting:
+          'Esta página lo comprueba cada pocos segundos y continúa cuando haya iniciado sesión.',
+        uninstallFailed: 'La desinstalación ha fallado'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1046,7 +1101,6 @@ const es = {
           'El dispositivo aún no ha sido vinculado. Por favor, inicia sesión y vincula este dispositivo a tu cuenta.',
         urlPeriod: 'Esta URL es válida por 10 minutos',
         login: 'Iniciar sesión',
-        loginSuccess: 'Inicio de sesión exitoso',
         logout: 'Cerrar sesión',
         logoutDesc: '¿Estás seguro de que deseas cerrar sesión?'
       },
@@ -1060,7 +1114,6 @@ const es = {
         or: 'o',
         sso: 'Iniciar sesión con SSO',
         urlPeriod: 'Esta URL es válida durante 10 minutos',
-        loginSuccess: 'Inicio de sesión correcto',
         logout: 'Dar de baja',
         logoutDesc:
           'Dar de baja elimina este par de tu cuenta de NetBird y borra aquí su configuración. Para volver a unirse hace falta una clave de configuración o un inicio de sesión con SSO, y el par puede recibir una IP nueva. ¿Continuar?'
@@ -1107,7 +1160,10 @@ const es = {
           invalidName:
             'Formato de nombre de archivo no válido. Descargue desde las versiones de GitHub.',
           updateFailed: 'La actualización falló. Por favor, inténtalo de nuevo.'
-        }
+        },
+        updateTo: 'Actualizar a {{version}}',
+        updateConfirmDesc:
+          'El dispositivo instala la actualización y reinicia su servidor. Esta página se recarga cuando el servidor vuelve.'
       },
       account: {
         title: 'Cuenta',

@@ -62,7 +62,14 @@ const hu = {
         authFailed: 'Érvénytelen AP jelszó',
         passPlaceholder: 'AP jelszót',
         verifyBtn: 'Ellenőrizze'
-      }
+      },
+      ssidRequired: 'Adja meg a hálózat nevét, legfeljebb 32 karakter',
+      passwordLength: 'A jelszó 8–63 karakter. Nyílt hálózatnál hagyja üresen.',
+      passwordOptional: 'Jelszó (nyílt hálózatnál üres)',
+      lost:
+        'A panel nem válaszol. Lehet, hogy csatlakozott a hálózathoz, és bezárta a beállító hotspotját. Ha a hotspot újra megjelenik, a csatlakozás sikertelen volt: csatlakozzon hozzá újra, és próbálja újra.',
+      done:
+        'A beállítás kész. Csatlakoztassa vissza ezt az eszközt a szokásos hálózathoz, és nyissa meg a panelt az új címén.'
     },
     screen: {
       scale: 'Skála',
@@ -159,7 +166,8 @@ const hu = {
         videoError: 'Videómegjelenítési hiba',
         noHdmi: 'Nem észlelhető HDMI-jel',
         unavailable: 'A kép jelenleg nem jeleníthető meg'
-      }
+      },
+      directConnectionFailed: 'A videófolyam kapcsolata sikertelen'
     },
     keyboard: {
       title: 'Billentyűzet',
@@ -297,7 +305,9 @@ const hu = {
         rebuild: 'A módváltás újraépíti az USB-kapcsolatot. A NanoKVM nem indul újra',
         enable: 'Engedélyezze a HID-Csak módot',
         disable: 'A HID-Csak mód letiltása'
-      }
+      },
+      resetHidDone: 'Az USB HID újraindítva',
+      resetHidFailed: 'Az USB HID újraindítása sikertelen'
     },
     image: {
       title: 'Képek',
@@ -380,7 +390,16 @@ const hu = {
       confirm: 'Igen',
       cancel: 'Nem',
       delete: 'Törlés',
-      close: 'Bezárás'
+      close: 'Bezárás',
+      empty: 'Még nincs szkript. Töltsön fel egy .sh vagy .py fájlt a panelen való futtatáshoz.',
+      loadFailed: 'Nem sikerült betölteni a szkripteket',
+      uploaded: 'Szkript feltöltve',
+      uploadFailed: 'Nem sikerült feltölteni a szkriptet',
+      started: 'A szkript elindult a háttérben',
+      deleteFailed: 'Nem sikerült törölni a szkriptet',
+      waitLimit: 'Várakozás a szkript befejezésére, legfeljebb {{minutes}} percig.',
+      timedOut:
+        'A szkript {{minutes}} percnél tovább futott, és az oldal abbahagyta a várakozást. Lehet, hogy még fut a panelen.'
     },
     terminal: {
       title: 'Terminál',
@@ -430,7 +449,8 @@ const hu = {
     power: {
       title: 'Bekapcsolás',
       showConfirm: 'Megerősítés',
-      showConfirmTip: 'Az áramellátási műveletekhez külön megerősítés szükséges',
+      showConfirmTip:
+        'Rövid bekapcsológomb-nyomás előtt kérdezzen. Az újraindítás és a hosszú nyomás mindig kérdez.',
       reset: 'Újraindítás',
       power: 'Bekapcsolás',
       powerShort: 'Bekapcsolás (rövid kattintás)',
@@ -457,7 +477,11 @@ const hu = {
       ledConnected: 'Bekapcsolásjelző LED csatlakoztatva',
       ledConnectedTip:
         'Csak akkor kapcsolja be, ha a gazdagép bekapcsolásjelző LED-csatlakozója be van kötve a kártyára. Enélkül a tápellátás állapota ismeretlen.',
-      ledConnectedFailed: 'Nem sikerült menteni a bekapcsolásjelző LED beállítását'
+      ledConnectedFailed: 'Nem sikerült menteni a bekapcsolásjelző LED beállítását',
+      powerLongConfirm:
+        'Nyomva tartja a bekapcsológombot {{seconds}} mp-ig? Ez leállítás nélkül kapcsolja ki a tápot.',
+      done: 'Gomb megnyomva',
+      failed: 'A gombnyomás sikertelen'
     },
     settings: {
       title: 'Beállítások',
@@ -659,7 +683,14 @@ const hu = {
         stuckFor: '{{duration}} óta nincs életjel',
         pressFailed: 'A gombnyomás nem sikerült: {{error}}',
         noScreenshot: 'Nincs képernyőkép',
-        failed: 'A watchdog művelete nem sikerült'
+        failed: 'A watchdog művelete nem sikerült',
+        powerNeedsLed:
+          'A tápciklushoz be kell kapcsolni a „Táp LED csatlakoztatva” beállítást a tápmenüben.',
+        noLedConfirmTitle: 'Bekapcsolja a watchdogot táp LED nélkül?',
+        noLedConfirmDesc:
+          'A panel nem látja, mikor van kikapcsolva a gazdagép, ezért mindig bekapcsoltnak tekinti. Ha leállítja a gazdagépet, a watchdog az időkorlát után megnyomja az újraindítást. Ennek elkerüléséhez csatlakoztassa a táp LED-et.',
+        noLedConfirmOk: 'Bekapcsolás',
+        cancel: 'Mégse'
       },
       netboot: {
         title: 'Hálózati rendszerindítás',
@@ -729,7 +760,10 @@ const hu = {
           Wired: 'Vezetékes',
           Wireless: 'Vezeték nélküli',
           Other: 'Egyéb'
-        }
+        },
+        hostnameInvalid:
+          'Betűket, számjegyeket és kötőjeleket használjon, pontokkal elválasztott részenként legfeljebb 63-at. Rész elején vagy végén nem lehet kötőjel.',
+        hostnameFailed: 'Nem sikerült módosítani a gépnevet'
       },
       appearance: {
         title: 'Megjelenés',
@@ -897,7 +931,8 @@ const hu = {
         reboot: 'Újraindítás',
         rebootDesc: 'Biztos, hogy újra akarja indítani a NanoKVM-t?',
         okBtn: 'Igen',
-        cancelBtn: 'Nem'
+        cancelBtn: 'Nem',
+        rebootFailed: 'Az újraindítás sikertelen'
       },
       network: {
         title: 'Hálózat',
@@ -921,7 +956,14 @@ const hu = {
           tip: 'Figyelem: A HTTPS használata növelheti a késleltetést, különösen MJPEG videó módban.',
           restarting: 'Az eszköz szervere újraindul, ez körülbelül két percig tart...',
           waiting: 'Várakozás, hogy az eszköz újra válaszoljon...',
-          waitingHttp: 'Visszaváltás http-re. Ha az oldal nem nyílik meg magától, töltse újra.'
+          waitingHttp: 'Visszaváltás http-re. Ha az oldal nem nyílik meg magától, töltse újra.',
+          failed: 'Nem sikerült módosítani a HTTPS beállítást',
+          enableConfirm: 'Bekapcsolja a HTTPS-t?',
+          disableConfirm: 'Kikapcsolja a HTTPS-t?',
+          confirmDesc:
+            'Ez kijelentkeztet, és újraindítja az eszköz szerverét, ami körülbelül két percig tart. Ezután az oldal megnyitja: {{url}}.',
+          confirmOk: 'Folytatás',
+          confirmCancel: 'Mégse'
         },
         ethernet: {
           title: 'IP-cím',
@@ -1026,8 +1068,20 @@ const hu = {
           '{{other}} fut, vagy rendszerindításkor elindul. Egyszerre csak egy VPN futhat: előbb állítsa le ezt: {{other}}, és kapcsolja ki az automatikus indítását.',
         swap: {
           title: 'Swap memória',
-          tip: 'Ha a démonnak kevés a memóriája, próbálja engedélyezni a swap memóriát. Ez alapértelmezés szerint 256MB-ra állítja a swap fájl méretét, amely a "Beállítások > Eszköz" alatt módosítható.'
-        }
+          tip: 'Ha a démonnak kevés a memóriája, próbálja engedélyezni a swap memóriát. Ez alapértelmezés szerint 256MB-ra állítja a swap fájl méretét, amely a "Beállítások > Eszköz" alatt módosítható.',
+          failed: 'Nem sikerült módosítani a cserememóriát'
+        },
+        copy: 'Másolás',
+        copied: 'Hivatkozás másolva',
+        copyFailed: 'Nem sikerült másolni a hivatkozást. Jelölje ki, és másolja kézzel.',
+        open: 'Megnyitás',
+        checkAgain: 'Ellenőrzés újra',
+        notSignedIn:
+          'Még nincs bejelentkezve. Fejezze be a bejelentkezést a hivatkozáson, majd ellenőrizze újra.',
+        checkFailed: 'Nem sikerült ellenőrizni a bejelentkezés állapotát',
+        loginWaiting:
+          'Az oldal néhány másodpercenként ellenőrzi, és a bejelentkezés után folytatja.',
+        uninstallFailed: 'Az eltávolítás sikertelen'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1042,7 +1096,6 @@ const hu = {
           'Az eszköz még nincs kötve. Kérem, jelentkezzen be és kösse az eszközt a fiókjához.',
         urlPeriod: 'Ez az url 10 percig érvényes',
         login: 'Bejelentkezés',
-        loginSuccess: 'Sikeres bejelentkezés',
         logout: 'Kijelentkezés',
         logoutDesc: 'Biztos, hogy ki szeretne jelentkezni?'
       },
@@ -1056,7 +1109,6 @@ const hu = {
         or: 'vagy',
         sso: 'Bejelentkezés SSO-val',
         urlPeriod: 'Ez az url 10 percig érvényes',
-        loginSuccess: 'Sikeres bejelentkezés',
         logout: 'Regisztráció törlése',
         logoutDesc:
           'A regisztráció törlése eltávolítja ezt a társat a NetBird-fiókjából, és törli itt a konfigurációját. Az újbóli csatlakozáshoz beállítókulcs vagy SSO-bejelentkezés kell, és a társ új IP-címet kaphat. Folytatja?'
@@ -1100,7 +1152,10 @@ const hu = {
           checksumMismatch: 'Az SHA-256 ellenőrzése sikertelen. Lehet, hogy a csomag sérült.',
           invalidName: 'Érvénytelen fájlnévformátum. Kérjük, töltse le a GitHub kiadásaiból.',
           updateFailed: 'Frissítés sikertelen. Kérem, próbálja újra.'
-        }
+        },
+        updateTo: 'Frissítés erre: {{version}}',
+        updateConfirmDesc:
+          'Az eszköz telepíti a frissítést és újraindítja a szerverét. Az oldal újratöltődik, amikor a szerver ismét elérhető.'
       },
       account: {
         title: 'Fiók',

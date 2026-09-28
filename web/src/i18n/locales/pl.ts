@@ -62,7 +62,14 @@ const pl = {
         authFailed: 'Nieprawidłowe hasło AP',
         passPlaceholder: 'AP hasło',
         verifyBtn: 'Sprawdź'
-      }
+      },
+      ssidRequired: 'Wpisz nazwę sieci, maksymalnie 32 znaki',
+      passwordLength: 'Hasło ma od 8 do 63 znaków. W przypadku sieci otwartej zostaw je puste.',
+      passwordOptional: 'Hasło (puste dla sieci otwartej)',
+      lost:
+        'Płytka przestała odpowiadać. Mogła połączyć się z siecią i zamknąć swój hotspot konfiguracyjny. Jeśli hotspot pojawi się ponownie, połączenie się nie udało: połącz się z nim ponownie i spróbuj jeszcze raz.',
+      done:
+        'Konfiguracja zakończona. Połącz to urządzenie z powrotem ze swoją zwykłą siecią i otwórz płytkę pod jej nowym adresem.'
     },
     screen: {
       scale: 'Skala',
@@ -158,7 +165,8 @@ const pl = {
         videoError: 'Błąd wyświetlania wideo',
         noHdmi: 'Nie wykryto sygnału HDMI',
         unavailable: 'Nie można teraz wyświetlić obrazu'
-      }
+      },
+      directConnectionFailed: 'Nie udało się połączyć ze strumieniem wideo'
     },
     keyboard: {
       title: 'Klawiatura',
@@ -296,7 +304,9 @@ const pl = {
         rebuild: 'Zmiana trybu odbudowuje połączenie USB. NanoKVM nie uruchamia się ponownie',
         enable: 'Włącz tryb HID-Only',
         disable: 'Wyłącz tryb HID-Tylko'
-      }
+      },
+      resetHidDone: 'Zresetowano USB HID',
+      resetHidFailed: 'Nie udało się zresetować USB HID'
     },
     image: {
       title: 'Obrazy',
@@ -380,7 +390,16 @@ const pl = {
       confirm: 'Tak',
       cancel: 'Nie',
       delete: 'Usuń',
-      close: 'Zamknij'
+      close: 'Zamknij',
+      empty: 'Brak skryptów. Prześlij plik .sh lub .py, aby uruchomić go na płytce.',
+      loadFailed: 'Nie udało się wczytać skryptów',
+      uploaded: 'Przesłano skrypt',
+      uploadFailed: 'Nie udało się przesłać skryptu',
+      started: 'Skrypt uruchomiony w tle',
+      deleteFailed: 'Nie udało się usunąć skryptu',
+      waitLimit: 'Oczekiwanie na zakończenie skryptu, maksymalnie {{minutes}} minut.',
+      timedOut:
+        'Skrypt działał dłużej niż {{minutes}} minut i strona przestała czekać. Może nadal działać na płytce.'
     },
     terminal: {
       title: 'Terminal',
@@ -430,7 +449,8 @@ const pl = {
     power: {
       title: 'Zasilanie',
       showConfirm: 'Potwierdzenie',
-      showConfirmTip: 'Operacje zasilania wymagają dodatkowego potwierdzenia',
+      showConfirmTip:
+        'Pytaj przed krótkim naciśnięciem zasilania. Reset i długie naciśnięcie pytają zawsze.',
       reset: 'Resetuj',
       power: 'Zasilanie',
       powerShort: 'Zasilanie (krótkie kliknięcie)',
@@ -456,7 +476,11 @@ const pl = {
       ledConnected: 'Dioda zasilania podłączona',
       ledConnectedTip:
         'Włącz tylko wtedy, gdy złącze diody zasilania hosta jest podłączone do płytki. Bez niego stan zasilania jest nieznany.',
-      ledConnectedFailed: 'Nie udało się zapisać ustawienia diody zasilania'
+      ledConnectedFailed: 'Nie udało się zapisać ustawienia diody zasilania',
+      powerLongConfirm:
+        'Przytrzymać przycisk zasilania przez {{seconds}} s? To odcina zasilanie bez zamknięcia systemu.',
+      done: 'Przycisk naciśnięty',
+      failed: 'Nie udało się nacisnąć przycisku'
     },
     settings: {
       title: 'Ustawienia',
@@ -658,7 +682,13 @@ const pl = {
         stuckFor: 'brak oznak życia przez {{duration}}',
         pressFailed: 'Naciśnięcie nie powiodło się: {{error}}',
         noScreenshot: 'Brak zrzutu ekranu',
-        failed: 'Operacja watchdoga nie powiodła się'
+        failed: 'Operacja watchdoga nie powiodła się',
+        powerNeedsLed: 'Cykl zasilania wymaga opcji „Dioda zasilania podłączona” w menu zasilania.',
+        noLedConfirmTitle: 'Włączyć watchdog bez diody zasilania?',
+        noLedConfirmDesc:
+          'Płytka nie widzi, kiedy host jest wyłączony, więc traktuje go jako zawsze włączony. Jeśli wyłączysz hosta, watchdog po upływie limitu czasu naciśnie reset. Podłącz diodę zasilania, aby tego uniknąć.',
+        noLedConfirmOk: 'Włącz',
+        cancel: 'Anuluj'
       },
       netboot: {
         title: 'Rozruch sieciowy',
@@ -727,7 +757,10 @@ const pl = {
           Wired: 'Przewodowy',
           Wireless: 'Bezprzewodowe',
           Other: 'Inne'
-        }
+        },
+        hostnameInvalid:
+          'Użyj liter, cyfr i łączników, do 63 w każdej części oddzielonej kropką. Bez łącznika na początku ani na końcu części.',
+        hostnameFailed: 'Nie udało się zmienić nazwy hosta'
       },
       appearance: {
         title: 'Wygląd',
@@ -895,7 +928,8 @@ const pl = {
         reboot: 'Uruchom ponownie',
         rebootDesc: 'Czy na pewno chcesz ponownie uruchomić NanoKVM?',
         okBtn: 'Tak',
-        cancelBtn: 'Nie'
+        cancelBtn: 'Nie',
+        rebootFailed: 'Ponowne uruchomienie nie powiodło się'
       },
       network: {
         title: 'Sieć',
@@ -919,7 +953,14 @@ const pl = {
           tip: 'Uwaga: użycie HTTPS może zwiększyć opóźnienie, szczególnie w trybie wideo MJPEG.',
           restarting: 'Ponowne uruchamianie serwera urządzenia, potrwa to około dwóch minut...',
           waiting: 'Oczekiwanie na odpowiedź urządzenia...',
-          waitingHttp: 'Powrót do http. Jeśli strona nie otworzy się sama, odśwież ją.'
+          waitingHttp: 'Powrót do http. Jeśli strona nie otworzy się sama, odśwież ją.',
+          failed: 'Nie udało się zmienić ustawienia HTTPS',
+          enableConfirm: 'Włączyć HTTPS?',
+          disableConfirm: 'Wyłączyć HTTPS?',
+          confirmDesc:
+            'Spowoduje to wylogowanie i ponowne uruchomienie serwera urządzenia, co trwa około dwóch minut. Następnie strona otworzy {{url}}.',
+          confirmOk: 'Kontynuuj',
+          confirmCancel: 'Anuluj'
         },
         ethernet: {
           title: 'Adres IP',
@@ -1025,8 +1066,18 @@ const pl = {
           '{{other}} działa lub uruchamia się przy starcie. Naraz może działać tylko jeden VPN: najpierw zatrzymaj {{other}} i wyłącz jego uruchamianie przy starcie.',
         swap: {
           title: 'Plik wymiany',
-          tip: 'Jeśli usłudze brakuje pamięci, spróbuj włączyć plik wymiany. Domyślnie ustawia to rozmiar pliku wymiany na 256MB; można go zmienić w „Ustawienia > Urządzenie”.'
-        }
+          tip: 'Jeśli usłudze brakuje pamięci, spróbuj włączyć plik wymiany. Domyślnie ustawia to rozmiar pliku wymiany na 256MB; można go zmienić w „Ustawienia > Urządzenie”.',
+          failed: 'Nie udało się zmienić pamięci wymiany'
+        },
+        copy: 'Kopiuj',
+        copied: 'Skopiowano link',
+        copyFailed: 'Nie udało się skopiować linku. Zaznacz go i skopiuj ręcznie.',
+        open: 'Otwórz',
+        checkAgain: 'Sprawdź ponownie',
+        notSignedIn: 'Jeszcze nie zalogowano. Dokończ logowanie przez link i sprawdź ponownie.',
+        checkFailed: 'Nie udało się sprawdzić stanu logowania',
+        loginWaiting: 'Strona sprawdza co kilka sekund i przejdzie dalej po zalogowaniu.',
+        uninstallFailed: 'Odinstalowanie nie powiodło się'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1041,7 +1092,6 @@ const pl = {
           'Urządzenie nie zostało jeszcze powiązane. Zaloguj się i powiąż to urządzenie ze swoim kontem.',
         urlPeriod: 'Ten URL jest ważny przez 10 minut',
         login: 'Zaloguj',
-        loginSuccess: 'Zalogowanie pomyślne',
         logout: 'Wyloguj',
         logoutDesc: 'Czy na pewno chcesz się wylogować?'
       },
@@ -1055,7 +1105,6 @@ const pl = {
         or: 'lub',
         sso: 'Zaloguj przez SSO',
         urlPeriod: 'Ten URL jest ważny przez 10 minut',
-        loginSuccess: 'Zalogowanie pomyślne',
         logout: 'Wyrejestruj',
         logoutDesc:
           'Wyrejestrowanie usuwa ten węzeł z konta NetBird i kasuje jego konfigurację na urządzeniu. Ponowne dołączenie wymaga klucza konfiguracyjnego lub logowania SSO, a węzeł może dostać nowy adres IP. Kontynuować?'
@@ -1099,7 +1148,10 @@ const pl = {
           checksumMismatch: 'Weryfikacja SHA-256 nie powiodła się. Pakiet może być uszkodzony.',
           invalidName: 'Nieprawidłowy format nazwy pliku. Proszę pobrać z wydań GitHub.',
           updateFailed: 'Aktualizacja nie powiodła się. Spróbuj ponownie.'
-        }
+        },
+        updateTo: 'Aktualizuj do {{version}}',
+        updateConfirmDesc:
+          'Urządzenie zainstaluje aktualizację i uruchomi ponownie swój serwer. Strona przeładuje się, gdy serwer wróci.'
       },
       account: {
         title: 'Konto',

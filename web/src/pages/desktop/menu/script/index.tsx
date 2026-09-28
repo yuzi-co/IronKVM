@@ -1,6 +1,6 @@
 import { ChangeEvent, useRef, useState } from 'react';
 import { UploadOutlined } from '@ant-design/icons';
-import { Button, Divider, Popconfirm } from 'antd';
+import { Button, Divider, message, Popconfirm } from 'antd';
 import clsx from 'clsx';
 import { ChevronRightIcon, FileJsonIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -50,14 +50,16 @@ export const Script = () => {
       .uploadScript(formData)
       .then((rsp) => {
         if (rsp.code !== 0) {
-          console.log(rsp.msg);
+          message.error(rsp.msg || t('script.uploadFailed'));
           return;
         }
 
         if (!scripts.includes(rsp.data.file)) {
           setScripts([...scripts, rsp.data.file]);
         }
+        message.success(t('script.uploaded'));
       })
+      .catch(() => message.error(t('script.uploadFailed')))
       .finally(() => {
         setIsUploading(false);
       });
@@ -69,39 +71,46 @@ export const Script = () => {
     if (type === 'foreground') {
       setIsRunning(true);
     } else {
-      api.runScript(currentScript, type).then((rsp) => {
-        if (rsp.code !== 0) {
-          console.log(rsp.msg);
-          return;
-        }
-      });
+      api
+        .runScript(currentScript, type)
+        .then((rsp) => {
+          if (rsp.code !== 0) {
+            message.error(rsp.msg || t('script.runFailed'));
+            return;
+          }
+          message.success(t('script.started'));
+        })
+        .catch(() => message.error(t('script.runFailed')));
     }
   }
 
   function getScripts() {
-    api.getScripts().then((rsp) => {
-      if (rsp.code !== 0) {
-        console.log(rsp.msg);
-        return;
-      }
-
-      if (rsp.data?.files?.length > 0) {
-        setScripts(rsp.data.files);
-      }
-    });
+    api
+      .getScripts()
+      .then((rsp) => {
+        if (rsp.code !== 0) {
+          message.error(rsp.msg || t('script.loadFailed'));
+          return;
+        }
+        setScripts(rsp.data?.files ?? []);
+      })
+      .catch(() => message.error(t('script.loadFailed')));
   }
 
   function deleteScript() {
     if (!currentScript) return;
 
-    api.deleteScript(currentScript).then((rsp) => {
-      if (rsp.code !== 0) {
-        console.log(rsp.msg);
-        return;
-      }
+    api
+      .deleteScript(currentScript)
+      .then((rsp) => {
+        if (rsp.code !== 0) {
+          message.error(rsp.msg || t('script.deleteFailed'));
+          return;
+        }
 
-      setScripts(scripts.filter((script) => script !== currentScript));
-    });
+        setScripts(scripts.filter((script) => script !== currentScript));
+      })
+      .catch(() => message.error(t('script.deleteFailed')));
   }
 
   function activate(script: string) {
@@ -133,6 +142,12 @@ export const Script = () => {
       </div>
       <Divider style={{ margin: '10px 0 15px 0' }} />
 
+      {scripts.length === 0 && (
+        <div className="max-w-[300px] px-2 py-1.5 text-sm text-neutral-500">
+          {t('script.empty')}
+        </div>
+      )}
+
       {scripts.map((script) => (
         <div
           key={script}
@@ -145,7 +160,7 @@ export const Script = () => {
             className="flex items-center justify-between space-x-5 px-2 py-1.5"
             onClick={() => activate(script)}
           >
-            <div className="max-w-[300px] select-none truncate">{script}</div>
+            <div className="max-w-[300px] truncate select-none">{script}</div>
             <div className={clsx('h-[16px] w-[16px]', script === currentScript && 'rotate-90')}>
               <ChevronRightIcon size={16} />
             </div>

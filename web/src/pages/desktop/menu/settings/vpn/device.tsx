@@ -43,6 +43,9 @@ export const Device = ({ vpn, status, onChange, onError }: DeviceProps) => {
         return;
       }
       setIsRunning(!isRunning);
+      // Up and down change the peers, the address and the connection, which
+      // the page only learns by asking again.
+      onChange();
     } catch (err: any) {
       onError(err?.message || 'Request failed');
     } finally {

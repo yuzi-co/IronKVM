@@ -240,8 +240,21 @@ func (w *Watchdog) tick(ctx context.Context) {
 	w.mu.Unlock()
 
 	if act {
-		w.act(ctx, now, s.Action, reason, stuck)
+		w.act(ctx, now, actionFor(s.Action, ledConnected), reason, stuck)
 	}
+}
+
+// actionFor is the action the watchdog may take. SetSettings refuses a power
+// cycle without the power LED, but the LED setting can be turned off later.
+// Without it a host shut down on purpose looks hung, and a power cycle would
+// switch it back on, so the watchdog resets instead: a reset does nothing to a
+// host that is off.
+func actionFor(action string, ledConnected bool) string {
+	if action == ActionPower && !ledConnected {
+		log.Warnf("watchdog: the power LED is not connected, resetting instead of a power cycle")
+		return ActionReset
+	}
+	return action
 }
 
 // pause records that the watchdog cannot judge the host now, and starts the

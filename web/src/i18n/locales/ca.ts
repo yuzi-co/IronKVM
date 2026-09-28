@@ -61,7 +61,15 @@ const ca = {
         authFailed: 'Contrasenya AP no vàlida',
         passPlaceholder: 'AP contrasenya',
         verifyBtn: 'Verificar'
-      }
+      },
+      ssidRequired: 'Introduïu el nom de la xarxa, fins a 32 caràcters',
+      passwordLength:
+        'La contrasenya té de 8 a 63 caràcters. Deixeu-la buida per a una xarxa oberta.',
+      passwordOptional: 'Contrasenya (buida per a una xarxa oberta)',
+      lost:
+        "La placa ha deixat de respondre. Potser s'ha connectat a la xarxa i ha tancat el punt d'accés de configuració. Si el punt d'accés torna a aparèixer, la connexió ha fallat: torneu-vos-hi a connectar i torneu-ho a provar.",
+      done:
+        'Configuració acabada. Torneu a connectar aquest dispositiu a la vostra xarxa habitual i obriu la placa a la seva nova adreça.'
     },
     screen: {
       scale: 'Escala',
@@ -157,7 +165,8 @@ const ca = {
         videoError: 'Error de visualització de vídeo',
         noHdmi: "No s'ha detectat cap senyal HDMI",
         unavailable: 'La pantalla no es pot mostrar ara'
-      }
+      },
+      directConnectionFailed: 'Ha fallat la connexió del flux de vídeo'
     },
     keyboard: {
       title: 'Teclat',
@@ -294,7 +303,9 @@ const ca = {
         rebuild: 'Canviar de mode reconstrueix la connexió USB. El NanoKVM no es reinicia',
         enable: 'Activa mode només HID',
         disable: 'Desactiva mode només HID'
-      }
+      },
+      resetHidDone: "S'ha reiniciat l'HID USB",
+      resetHidFailed: "No s'ha pogut reiniciar l'HID USB"
     },
     image: {
       title: 'Imatges',
@@ -376,7 +387,16 @@ const ca = {
       confirm: 'Sí',
       cancel: 'No',
       delete: 'Esborra',
-      close: 'Tanca'
+      close: 'Tanca',
+      empty: 'Encara no hi ha scripts. Pugeu un fitxer .sh o .py per executar-lo a la placa.',
+      loadFailed: "No s'han pogut carregar els scripts",
+      uploaded: 'Script pujat',
+      uploadFailed: "No s'ha pogut pujar l'script",
+      started: 'Script iniciat en segon pla',
+      deleteFailed: "No s'ha pogut suprimir l'script",
+      waitLimit: "S'espera que acabi l'script, fins a {{minutes}} minuts.",
+      timedOut:
+        "L'script ha trigat més de {{minutes}} minuts i aquesta pàgina ha deixat d'esperar. Potser encara s'està executant a la placa."
     },
     terminal: {
       title: 'Terminal',
@@ -426,7 +446,8 @@ const ca = {
     power: {
       title: 'Alimentació',
       showConfirm: 'Confirmació',
-      showConfirmTip: "Les operacions d'alimentació requereixen confirmació",
+      showConfirmTip:
+        "Demana confirmació abans d'una pulsació curta. El reinici i la pulsació llarga sempre la demanen.",
       reset: 'Reinicia',
       power: 'Encén',
       powerShort: 'Clic curt',
@@ -452,7 +473,11 @@ const ca = {
       ledConnected: "LED d'alimentació connectat",
       ledConnectedTip:
         "Activeu-ho només si el connector del LED d'alimentació de l'amfitrió està cablejat a la placa. Sense això, l'estat d'alimentació és desconegut.",
-      ledConnectedFailed: "No s'ha pogut desar la configuració del LED d'alimentació"
+      ledConnectedFailed: "No s'ha pogut desar la configuració del LED d'alimentació",
+      powerLongConfirm:
+        "Mantenir premut el botó d'engegada {{seconds}} s? Això talla l'alimentació sense apagar el sistema.",
+      done: 'Botó premut',
+      failed: "No s'ha pogut prémer el botó"
     },
     settings: {
       title: 'Configuració',
@@ -657,7 +682,14 @@ const ca = {
         stuckFor: 'sense senyals de vida durant {{duration}}',
         pressFailed: 'La pulsació ha fallat: {{error}}',
         noScreenshot: 'Sense captura',
-        failed: 'Ha fallat l’operació del watchdog'
+        failed: 'Ha fallat l’operació del watchdog',
+        powerNeedsLed:
+          "El cicle d'alimentació necessita «LED d'alimentació connectat» al menú d'alimentació.",
+        noLedConfirmTitle: "Activar el watchdog sense el LED d'alimentació?",
+        noLedConfirmDesc:
+          "La placa no pot veure quan l'amfitrió està apagat, així que el tracta com sempre engegat. Si apagueu l'amfitrió, el watchdog prem el reinici quan passi el temps d'espera. Connecteu el LED d'alimentació per evitar-ho.",
+        noLedConfirmOk: 'Activa',
+        cancel: 'Cancel·la'
       },
       netboot: {
         title: 'Arrencada per xarxa',
@@ -727,7 +759,10 @@ const ca = {
           Wired: 'Cablejada',
           Wireless: 'Sense fil',
           Other: 'Altra'
-        }
+        },
+        hostnameInvalid:
+          "Feu servir lletres, xifres i guionets, fins a 63 per part separada per punts. Sense guionet a l'inici ni al final d'una part.",
+        hostnameFailed: "No s'ha pogut canviar el nom d'amfitrió"
       },
       appearance: {
         title: 'Aparença',
@@ -894,7 +929,8 @@ const ca = {
         reboot: 'Reinicia',
         rebootDesc: 'Segur que vols reiniciar el NanoKVM?',
         okBtn: 'Sí',
-        cancelBtn: 'No'
+        cancelBtn: 'No',
+        rebootFailed: 'El reinici ha fallat'
       },
       network: {
         title: 'Xarxa',
@@ -918,7 +954,14 @@ const ca = {
           tip: 'Atenció: Usar HTTPS pot augmentar la latència, sobretot amb vídeo MJPEG.',
           restarting: "S'està reiniciant el servidor del dispositiu, triga uns dos minuts...",
           waiting: "S'està esperant que el dispositiu torni a respondre...",
-          waitingHttp: "S'està tornant a http. Torneu a carregar aquesta pàgina si no s'obre sola."
+          waitingHttp: "S'està tornant a http. Torneu a carregar aquesta pàgina si no s'obre sola.",
+          failed: "No s'ha pogut canviar la configuració HTTPS",
+          enableConfirm: 'Activar HTTPS?',
+          disableConfirm: 'Desactivar HTTPS?',
+          confirmDesc:
+            'Això tanca la sessió i reinicia el servidor del dispositiu, cosa que triga uns dos minuts. Després la pàgina obre {{url}}.',
+          confirmOk: 'Continua',
+          confirmCancel: 'Cancel·la'
         },
         ethernet: {
           title: 'Adreça IP',
@@ -1023,8 +1066,20 @@ const ca = {
           "{{other}} s'està executant o s'inicia a l'arrencada. Només pot funcionar una VPN alhora: primer atureu {{other}} i desactiveu-ne l'inici a l'arrencada.",
         swap: {
           title: 'Memòria swap',
-          tip: 'Si el dimoni es queda curt de memòria, proveu d\'activar la memòria swap. Això defineix la mida del fitxer swap a 256MB per defecte, que es pot ajustar a "Configuració > Dispositiu".'
-        }
+          tip: 'Si el dimoni es queda curt de memòria, proveu d\'activar la memòria swap. Això defineix la mida del fitxer swap a 256MB per defecte, que es pot ajustar a "Configuració > Dispositiu".',
+          failed: "No s'ha pogut canviar la memòria d'intercanvi"
+        },
+        copy: 'Copia',
+        copied: 'Enllaç copiat',
+        copyFailed: "No s'ha pogut copiar l'enllaç. Seleccioneu-lo i copieu-lo a mà.",
+        open: 'Obre',
+        checkAgain: 'Comprova de nou',
+        notSignedIn:
+          "Encara no s'ha iniciat la sessió. Acabeu d'iniciar-la a l'enllaç i torneu-ho a comprovar.",
+        checkFailed: "No s'ha pogut comprovar l'estat de la sessió",
+        loginWaiting:
+          'Aquesta pàgina ho comprova cada pocs segons i continua quan hàgiu iniciat la sessió.',
+        uninstallFailed: 'La desinstal·lació ha fallat'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1038,7 +1093,6 @@ const ca = {
         notLogin: 'El dispositiu no està vinculat. Inicia sessió per vincular-lo.',
         urlPeriod: 'Aquesta URL és vàlida durant 10 minuts',
         login: 'Inicia sessió',
-        loginSuccess: 'Sessió iniciada correctament',
         logout: 'Tanca sessió',
         logoutDesc: 'Segur que vols tancar sessió?'
       },
@@ -1052,7 +1106,6 @@ const ca = {
         or: 'o',
         sso: 'Inicia la sessió amb SSO',
         urlPeriod: 'Aquesta URL és vàlida durant 10 minuts',
-        loginSuccess: 'Sessió iniciada correctament',
         logout: 'Dona de baixa',
         logoutDesc:
           "Donar de baixa elimina aquest igual del vostre compte de NetBird i n'esborra aquí la configuració. Per tornar-vos a unir cal una clau de configuració o un inici de sessió amb SSO, i l'igual pot rebre una IP nova. Voleu continuar?"
@@ -1097,7 +1150,10 @@ const ca = {
             'La verificació SHA-256 ha fallat. És possible que el paquet estigui malmès.',
           invalidName: 'Format de nom de fitxer no vàlid. Baixeu-lo des de les versions de GitHub.',
           updateFailed: 'Error en actualitzar. Torna-ho a intentar.'
-        }
+        },
+        updateTo: 'Actualitza a {{version}}',
+        updateConfirmDesc:
+          "El dispositiu instal·la l'actualització i reinicia el servidor. Aquesta pàgina es recarrega quan el servidor torna a respondre."
       },
       account: {
         title: 'Compte',

@@ -61,7 +61,14 @@ const da = {
         authFailed: 'Ugyldig AP adgangskode',
         passPlaceholder: 'AP adgangskode',
         verifyBtn: 'Bekræft'
-      }
+      },
+      ssidRequired: 'Angiv netværksnavnet, højst 32 tegn',
+      passwordLength: 'Adgangskoden er 8 til 63 tegn. Lad den stå tom for et åbent netværk.',
+      passwordOptional: 'Adgangskode (tom for et åbent netværk)',
+      lost:
+        'Kortet holdt op med at svare. Det har måske tilsluttet sig netværket og lukket sit opsætnings-hotspot. Hvis hotspottet kommer tilbage, mislykkedes tilslutningen: opret forbindelse til det igen og prøv igen.',
+      done:
+        'Opsætningen er færdig. Forbind denne enhed til dit sædvanlige netværk igen, og åbn kortet på dets nye adresse.'
     },
     screen: {
       scale: 'Skala',
@@ -157,7 +164,8 @@ const da = {
         videoError: 'Fejl i videovisning',
         noHdmi: 'Intet HDMI-signal registreret',
         unavailable: 'Skærmbilledet kan ikke vises lige nu'
-      }
+      },
+      directConnectionFailed: 'Forbindelsen til videostrømmen mislykkedes'
     },
     keyboard: {
       title: 'Tastatur',
@@ -294,7 +302,9 @@ const da = {
         rebuild: 'Skift af tilstand genopbygger USB-forbindelsen. NanoKVM genstarter ikke',
         enable: 'Aktiver HID-kun tilstand',
         disable: 'Deaktiver HID-kun tilstand'
-      }
+      },
+      resetHidDone: 'USB HID er nulstillet',
+      resetHidFailed: 'Nulstilling af USB HID mislykkedes'
     },
     image: {
       title: 'Diskbilleder',
@@ -377,7 +387,16 @@ const da = {
       confirm: 'Ja',
       cancel: 'Annuller',
       delete: 'Slet',
-      close: 'Luk'
+      close: 'Luk',
+      empty: 'Ingen scripts endnu. Upload en .sh- eller .py-fil for at køre den på kortet.',
+      loadFailed: 'Kunne ikke indlæse scripts',
+      uploaded: 'Script uploadet',
+      uploadFailed: 'Kunne ikke uploade scriptet',
+      started: 'Scriptet er startet i baggrunden',
+      deleteFailed: 'Kunne ikke slette scriptet',
+      waitLimit: 'Venter på, at scriptet bliver færdigt, i op til {{minutes}} minutter.',
+      timedOut:
+        'Scriptet kørte i mere end {{minutes}} minutter, og siden holdt op med at vente. Det kører måske stadig på kortet.'
     },
     terminal: {
       title: 'Terminal',
@@ -427,7 +446,8 @@ const da = {
     power: {
       title: 'Tænd/sluk-knap',
       showConfirm: 'Bekræftelse',
-      showConfirmTip: 'Strømdrift kræver en ekstra bekræftelse',
+      showConfirmTip:
+        'Spørg før et kort tryk på tænd/sluk. Nulstil og et langt tryk spørger altid.',
       reset: 'Nulstillingsknap',
       power: 'Tænd/sluk-knap',
       powerShort: 'Tænd/sluk-knap (kort tryk)',
@@ -453,7 +473,11 @@ const da = {
       ledConnected: 'Strøm-LED tilsluttet',
       ledConnectedTip:
         "Slå kun til, hvis værtens stikben til strøm-LED'en er forbundet til kortet. Uden den er strømtilstanden ukendt.",
-      ledConnectedFailed: 'Kunne ikke gemme indstillingen for strøm-LED'
+      ledConnectedFailed: 'Kunne ikke gemme indstillingen for strøm-LED',
+      powerLongConfirm:
+        'Hold tænd/sluk-knappen i {{seconds}} s? Det afbryder strømmen uden nedlukning.',
+      done: 'Knappen er trykket',
+      failed: 'Tryk på knappen mislykkedes'
     },
     settings: {
       title: 'Indstillinger',
@@ -655,7 +679,13 @@ const da = {
         stuckFor: 'intet livstegn i {{duration}}',
         pressFailed: 'Tryk mislykkedes: {{error}}',
         noScreenshot: 'Intet skærmbillede',
-        failed: 'Watchdog-handlingen mislykkedes'
+        failed: 'Watchdog-handlingen mislykkedes',
+        powerNeedsLed: 'Strømcyklus kræver "Strøm-LED tilsluttet" i strømmenuen.',
+        noLedConfirmTitle: 'Slå watchdog til uden strøm-LED?',
+        noLedConfirmDesc:
+          "Kortet kan ikke se, når værten er slukket, så det behandler værten som altid tændt. Hvis du lukker værten ned, trykker watchdog på nulstil, når tidsgrænsen er gået. Tilslut strøm-LED'en for at undgå det.",
+        noLedConfirmOk: 'Slå til',
+        cancel: 'Annuller'
       },
       netboot: {
         title: 'Netværksboot',
@@ -723,7 +753,10 @@ const da = {
           Wired: 'Kablet',
           Wireless: 'Trådløs',
           Other: 'Andet'
-        }
+        },
+        hostnameInvalid:
+          'Brug bogstaver, tal og bindestreger, højst 63 pr. punktum-adskilt del. Ingen bindestreg i starten eller slutningen af en del.',
+        hostnameFailed: 'Værtsnavnet kunne ikke ændres'
       },
       appearance: {
         title: 'Udseende',
@@ -889,7 +922,8 @@ const da = {
         reboot: 'Genstart',
         rebootDesc: 'Er du sikker på, at du vil genstarte NanoKVM?',
         okBtn: 'Ja',
-        cancelBtn: 'Annuller'
+        cancelBtn: 'Annuller',
+        rebootFailed: 'Genstart mislykkedes'
       },
       network: {
         title: 'Netværk',
@@ -913,7 +947,14 @@ const da = {
           tip: 'Bemærk: Brug af HTTPS kan øge forsinkelsen, især med MJPEG-videotilstand.',
           restarting: 'Enhedens server genstarter, det tager cirka to minutter...',
           waiting: 'Venter på, at enheden svarer igen...',
-          waitingHttp: 'Skifter tilbage til http. Genindlæs siden, hvis den ikke åbner af sig selv.'
+          waitingHttp: 'Skifter tilbage til http. Genindlæs siden, hvis den ikke åbner af sig selv.',
+          failed: 'HTTPS-indstillingen kunne ikke ændres',
+          enableConfirm: 'Slå HTTPS til?',
+          disableConfirm: 'Slå HTTPS fra?',
+          confirmDesc:
+            'Dette logger dig ud og genstarter enhedens server, hvilket tager omkring to minutter. Siden åbner derefter {{url}}.',
+          confirmOk: 'Fortsæt',
+          confirmCancel: 'Annuller'
         },
         ethernet: {
           title: 'IP-adresse',
@@ -1019,8 +1060,19 @@ const da = {
           '{{other}} kører eller starter ved opstart. Der kan kun køre ét VPN ad gangen: stop {{other}} og slå først dens start ved opstart fra.',
         swap: {
           title: 'Swap-hukommelse',
-          tip: 'Hvis dæmonen mangler hukommelse, så prøv at aktivere swap-hukommelse. Det sætter som standard swap-filen til 256MB, hvilket kan justeres under "Indstillinger > Enhed".'
-        }
+          tip: 'Hvis dæmonen mangler hukommelse, så prøv at aktivere swap-hukommelse. Det sætter som standard swap-filen til 256MB, hvilket kan justeres under "Indstillinger > Enhed".',
+          failed: 'Swap-hukommelsen kunne ikke ændres'
+        },
+        copy: 'Kopiér',
+        copied: 'Link kopieret',
+        copyFailed: 'Linket kunne ikke kopieres. Markér det, og kopiér det manuelt.',
+        open: 'Åbn',
+        checkAgain: 'Tjek igen',
+        notSignedIn: 'Endnu ikke logget ind. Gør login færdigt via linket, og tjek igen.',
+        checkFailed: 'Kunne ikke tjekke loginstatus',
+        loginWaiting:
+          'Siden tjekker med få sekunders mellemrum og fortsætter, når du er logget ind.',
+        uninstallFailed: 'Afinstallation mislykkedes'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1035,7 +1087,6 @@ const da = {
           'Enheden er ikke tilknyttet en Tailscale-konto endnu. Log ind for at fuldføre tilknytningen til din konto.',
         urlPeriod: 'Denne URL er gyldig i 10 minutter',
         login: 'Log ind',
-        loginSuccess: 'Log ind lykkedes',
         logout: 'Log ud',
         logoutDesc: 'Er du sikker på, at du vil logge ud?'
       },
@@ -1049,7 +1100,6 @@ const da = {
         or: 'eller',
         sso: 'Log ind med SSO',
         urlPeriod: 'Denne URL er gyldig i 10 minutter',
-        loginSuccess: 'Log ind lykkedes',
         logout: 'Afregistrer',
         logoutDesc:
           'Afregistrering fjerner denne peer fra din NetBird-konto og sletter dens konfiguration her. For at tilslutte igen skal du bruge en opsætningsnøgle eller et SSO-login, og peeren kan få en ny IP. Fortsæt?'
@@ -1093,7 +1143,10 @@ const da = {
           checksumMismatch: 'SHA-256-verificeringen mislykkedes. Pakken kan være beskadiget.',
           invalidName: 'Ugyldigt filnavnsformat. Download venligst fra GitHub-udgivelser.',
           updateFailed: 'Opdatering fejlede. Prøv igen.'
-        }
+        },
+        updateTo: 'Opdater til {{version}}',
+        updateConfirmDesc:
+          'Enheden installerer opdateringen og genstarter sin server. Siden genindlæses, når serveren er tilbage.'
       },
       account: {
         title: 'Konto',

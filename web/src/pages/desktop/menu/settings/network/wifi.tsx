@@ -5,6 +5,7 @@ import { WifiIcon, WifiPenIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/network.ts';
+import { wifiCredentialsError } from '@/lib/wifi.ts';
 
 export const Wifi = () => {
   const { t } = useTranslation();
@@ -47,7 +48,15 @@ export const Wifi = () => {
   async function connect() {
     setMessage('');
 
-    if (!ssid || !password) return;
+    const invalid = wifiCredentialsError(ssid, password);
+    if (invalid === 'ssid') {
+      setMessage(t('wifi.ssidRequired'));
+      return;
+    }
+    if (invalid === 'password') {
+      setMessage(t('wifi.passwordLength'));
+      return;
+    }
 
     if (status !== '') return;
     setStatus('connecting');
@@ -65,6 +74,7 @@ export const Wifi = () => {
       setIsModalOpen(false);
     } catch (err) {
       console.log(err);
+      setMessage(t('settings.network.wifi.failed'));
     } finally {
       setStatus('');
     }
@@ -197,7 +207,7 @@ export const Wifi = () => {
             value={password}
             style={{ width: '100%', maxWidth: '300px' }}
             prefix={<LockOutlined />}
-            placeholder={t('settings.network.wifi.password')}
+            placeholder={t('wifi.passwordOptional')}
             onChange={(e) => setPassword(e.target.value)}
           />
 

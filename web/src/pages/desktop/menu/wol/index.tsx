@@ -1,4 +1,5 @@
 import { ChangeEvent, useRef, useState } from 'react';
+import { useAuth } from '@/contexts/auth.ts';
 import { Button, Divider, Input, List } from 'antd';
 import type { InputRef } from 'antd';
 import clsx from 'clsx';
@@ -20,6 +21,9 @@ interface MacItem {
 
 export const Wol = () => {
   const { t } = useTranslation();
+  const { account } = useAuth();
+  // Renaming and deleting a saved address are admin actions on the server.
+  const isAdmin = account.role === 'admin';
 
   const setKeyboardLock = useSetAtom(keyboardLockAtom);
 
@@ -157,7 +161,7 @@ export const Wol = () => {
         {status && (
           <div
             className={clsx(
-              'max-w-[300px] wrap-break-word text-sm',
+              'max-w-[300px] text-sm wrap-break-word',
               status === 'failed' ? 'text-red-500' : 'text-green-500'
             )}
           >
@@ -197,24 +201,28 @@ export const Wol = () => {
                     {item.isShow ? <EyeClosed size={16} /> : <Eye size={16} />}
                   </div>
                 )}
-                <div
-                  className="text-500 flex h-[24px] w-[24px] cursor-pointer items-center justify-center rounded hover:bg-neutral-700"
-                  onClick={() => editMac(item.mac, item.isEdit)}
-                >
-                  <Pencil size={16} />
-                </div>
+                {isAdmin && (
+                  <div
+                    className="text-500 flex h-[24px] w-[24px] cursor-pointer items-center justify-center rounded hover:bg-neutral-700"
+                    onClick={() => editMac(item.mac, item.isEdit)}
+                  >
+                    <Pencil size={16} />
+                  </div>
+                )}
                 <div
                   className="flex h-[24px] w-[24px] cursor-pointer items-center justify-center rounded text-green-500 hover:bg-neutral-700/80"
                   onClick={() => wake(item.mac)}
                 >
                   <SendIcon size={16} />
                 </div>
-                <div
-                  className="flex h-[24px] w-[24px] cursor-pointer items-center justify-center rounded text-red-500 hover:bg-neutral-700"
-                  onClick={() => deleteMac(item.mac)}
-                >
-                  <Trash2Icon size={16} />
-                </div>
+                {isAdmin && (
+                  <div
+                    className="flex h-[24px] w-[24px] cursor-pointer items-center justify-center rounded text-red-500 hover:bg-neutral-700"
+                    onClick={() => deleteMac(item.mac)}
+                  >
+                    <Trash2Icon size={16} />
+                  </div>
+                )}
               </div>
             </List.Item>
           )}

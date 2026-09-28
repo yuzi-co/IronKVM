@@ -61,7 +61,14 @@ const vi = {
         authFailed: 'Mật khẩu AP không hợp lệ',
         passPlaceholder: 'AP mật khẩu',
         verifyBtn: 'Xác minh'
-      }
+      },
+      ssidRequired: 'Nhập tên mạng, tối đa 32 ký tự',
+      passwordLength: 'Mật khẩu dài 8 đến 63 ký tự. Để trống nếu là mạng mở.',
+      passwordOptional: 'Mật khẩu (để trống nếu là mạng mở)',
+      lost:
+        'Bo mạch đã ngừng phản hồi. Có thể nó đã vào mạng và tắt điểm phát cài đặt. Nếu điểm phát xuất hiện lại, việc kết nối đã thất bại: hãy kết nối lại và thử lại.',
+      done:
+        'Đã cài đặt xong. Hãy kết nối lại thiết bị này với mạng thường dùng và mở bo mạch tại địa chỉ mới.'
     },
     screen: {
       scale: 'Quy mô',
@@ -157,7 +164,8 @@ const vi = {
         videoError: 'Lỗi hiển thị video',
         noHdmi: 'Không phát hiện tín hiệu HDMI',
         unavailable: 'Hiện không thể hiển thị màn hình'
-      }
+      },
+      directConnectionFailed: 'Kết nối luồng video thất bại'
     },
     keyboard: {
       title: 'Bàn phím',
@@ -294,7 +302,9 @@ const vi = {
         rebuild: 'Chuyển chế độ sẽ dựng lại kết nối USB. NanoKVM không khởi động lại',
         enable: 'Bật chế độ HID-Chỉ',
         disable: 'Tắt chế độ HID-Chỉ'
-      }
+      },
+      resetHidDone: 'Đã đặt lại USB HID',
+      resetHidFailed: 'Đặt lại USB HID thất bại'
     },
     image: {
       title: 'Hình ảnh',
@@ -376,7 +386,16 @@ const vi = {
       confirm: 'Có',
       cancel: 'Không',
       delete: 'Xóa',
-      close: 'Đóng'
+      close: 'Đóng',
+      empty: 'Chưa có script nào. Tải lên tệp .sh hoặc .py để chạy trên bo mạch.',
+      loadFailed: 'Không thể tải danh sách script',
+      uploaded: 'Đã tải lên script',
+      uploadFailed: 'Không thể tải lên script',
+      started: 'Đã chạy script trong nền',
+      deleteFailed: 'Không thể xóa script',
+      waitLimit: 'Đang chờ script chạy xong, tối đa {{minutes}} phút.',
+      timedOut:
+        'Script chạy lâu hơn {{minutes}} phút nên trang này đã ngừng chờ. Có thể script vẫn đang chạy trên bo mạch.'
     },
     terminal: {
       title: 'Terminal',
@@ -426,7 +445,7 @@ const vi = {
     power: {
       title: 'Nguồn',
       showConfirm: 'Xác nhận',
-      showConfirmTip: 'Hoạt động cấp nguồn yêu cầu xác nhận bổ sung',
+      showConfirmTip: 'Hỏi trước khi nhấn nguồn ngắn. Reset và nhấn giữ luôn hỏi.',
       reset: 'Đặt lại',
       power: 'Nguồn',
       powerShort: 'Nguồn (nhấp ngắn)',
@@ -452,7 +471,10 @@ const vi = {
       ledConnected: 'Đã nối đèn LED nguồn',
       ledConnectedTip:
         'Chỉ bật khi chân cắm đèn LED nguồn của máy chủ được nối dây vào bo mạch. Nếu không, trạng thái nguồn sẽ không xác định.',
-      ledConnectedFailed: 'Không lưu được cài đặt đèn LED nguồn'
+      ledConnectedFailed: 'Không lưu được cài đặt đèn LED nguồn',
+      powerLongConfirm: 'Giữ nút nguồn {{seconds}} giây? Thao tác này ngắt điện mà không tắt máy.',
+      done: 'Đã nhấn nút',
+      failed: 'Nhấn nút thất bại'
     },
     settings: {
       title: 'Cài đặt',
@@ -654,7 +676,13 @@ const vi = {
         stuckFor: 'không có dấu hiệu hoạt động trong {{duration}}',
         pressFailed: 'Nhấn nút thất bại: {{error}}',
         noScreenshot: 'Không có ảnh chụp màn hình',
-        failed: 'Thao tác watchdog thất bại'
+        failed: 'Thao tác watchdog thất bại',
+        powerNeedsLed: 'Chu kỳ nguồn cần bật "Đã nối đèn LED nguồn" trong menu nguồn.',
+        noLedConfirmTitle: 'Bật watchdog khi không có đèn LED nguồn?',
+        noLedConfirmDesc:
+          'Bo mạch không thấy khi nào máy chủ tắt, nên coi máy chủ luôn bật. Nếu bạn tắt máy chủ, watchdog sẽ nhấn reset khi hết thời gian chờ. Hãy nối đèn LED nguồn để tránh điều này.',
+        noLedConfirmOk: 'Bật',
+        cancel: 'Hủy'
       },
       netboot: {
         title: 'Khởi động qua mạng',
@@ -720,7 +748,10 @@ const vi = {
           Wired: 'Có dây',
           Wireless: 'Không dây',
           Other: 'Khác'
-        }
+        },
+        hostnameInvalid:
+          'Dùng chữ cái, chữ số và dấu gạch nối, tối đa 63 ký tự mỗi phần ngăn cách bởi dấu chấm. Không có dấu gạch nối ở đầu hoặc cuối phần.',
+        hostnameFailed: 'Không thể đổi tên máy chủ'
       },
       appearance: {
         title: 'Giao diện',
@@ -886,7 +917,8 @@ const vi = {
         reboot: 'Khởi động lại',
         rebootDesc: 'Bạn có chắc chắn muốn khởi động lại NanoKVM không?',
         okBtn: 'Có',
-        cancelBtn: 'Không'
+        cancelBtn: 'Không',
+        rebootFailed: 'Khởi động lại thất bại'
       },
       network: {
         title: 'Mạng',
@@ -910,7 +942,14 @@ const vi = {
           tip: 'Lưu ý: Sử dụng HTTPS có thể tăng độ trễ, đặc biệt trong chế độ video MJPEG.',
           restarting: 'Đang khởi động lại máy chủ của thiết bị, mất khoảng hai phút...',
           waiting: 'Đang chờ thiết bị phản hồi lại...',
-          waitingHttp: 'Đang chuyển về http. Tải lại trang này nếu nó không tự mở.'
+          waitingHttp: 'Đang chuyển về http. Tải lại trang này nếu nó không tự mở.',
+          failed: 'Không thể thay đổi cài đặt HTTPS',
+          enableConfirm: 'Bật HTTPS?',
+          disableConfirm: 'Tắt HTTPS?',
+          confirmDesc:
+            'Thao tác này đăng xuất bạn và khởi động lại máy chủ của thiết bị, mất khoảng hai phút. Sau đó trang sẽ mở {{url}}.',
+          confirmOk: 'Tiếp tục',
+          confirmCancel: 'Hủy'
         },
         ethernet: {
           title: 'Địa chỉ IP',
@@ -1016,8 +1055,18 @@ const vi = {
           '{{other}} đang chạy hoặc khởi động cùng hệ thống. Mỗi lúc chỉ chạy được một VPN: hãy dừng {{other}} và tắt khởi động cùng hệ thống của nó trước.',
         swap: {
           title: 'Bộ nhớ hoán đổi',
-          tip: 'Nếu daemon thiếu bộ nhớ, hãy thử bật bộ nhớ hoán đổi. Thao tác này đặt kích thước tệp hoán đổi mặc định là 256MB, có thể điều chỉnh trong "Cài đặt > Thiết bị".'
-        }
+          tip: 'Nếu daemon thiếu bộ nhớ, hãy thử bật bộ nhớ hoán đổi. Thao tác này đặt kích thước tệp hoán đổi mặc định là 256MB, có thể điều chỉnh trong "Cài đặt > Thiết bị".',
+          failed: 'Không thể thay đổi bộ nhớ swap'
+        },
+        copy: 'Sao chép',
+        copied: 'Đã sao chép liên kết',
+        copyFailed: 'Không thể sao chép liên kết. Hãy chọn và sao chép thủ công.',
+        open: 'Mở',
+        checkAgain: 'Kiểm tra lại',
+        notSignedIn: 'Chưa đăng nhập. Hãy hoàn tất đăng nhập qua liên kết rồi kiểm tra lại.',
+        checkFailed: 'Không thể kiểm tra trạng thái đăng nhập',
+        loginWaiting: 'Trang này kiểm tra vài giây một lần và sẽ tiếp tục khi bạn đã đăng nhập.',
+        uninstallFailed: 'Gỡ cài đặt thất bại'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1032,7 +1081,6 @@ const vi = {
           'Thiết bị chưa được liên kết. Vui lòng đăng nhập và liên kết thiết bị này với tài khoản của bạn.',
         urlPeriod: 'URL này có hiệu lực trong 10 phút',
         login: 'Đăng nhập',
-        loginSuccess: 'Đăng nhập thành công',
         logout: 'Đăng xuất',
         logoutDesc: 'Bạn có chắc chắn muốn đăng xuất không?'
       },
@@ -1046,7 +1094,6 @@ const vi = {
         or: 'hoặc',
         sso: 'Đăng nhập bằng SSO',
         urlPeriod: 'URL này có hiệu lực trong 10 phút',
-        loginSuccess: 'Đăng nhập thành công',
         logout: 'Hủy đăng ký',
         logoutDesc:
           'Hủy đăng ký sẽ xóa peer này khỏi tài khoản NetBird của bạn và xóa cấu hình của nó tại đây. Để tham gia lại cần setup key hoặc đăng nhập SSO, và peer có thể nhận IP mới. Tiếp tục?'
@@ -1091,7 +1138,10 @@ const vi = {
           invalidName:
             'Định dạng tên tệp không hợp lệ. Vui lòng tải xuống từ bản phát hành GitHub.',
           updateFailed: 'Cập nhật thất bại. Vui lòng thử lại.'
-        }
+        },
+        updateTo: 'Cập nhật lên {{version}}',
+        updateConfirmDesc:
+          'Thiết bị cài đặt bản cập nhật và khởi động lại máy chủ. Trang này sẽ tải lại khi máy chủ hoạt động trở lại.'
       },
       account: {
         title: 'Tài khoản',

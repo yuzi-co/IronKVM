@@ -61,7 +61,14 @@ const pt_br = {
         authFailed: 'Senha AP inválida',
         passPlaceholder: 'AP senha',
         verifyBtn: 'Verificar'
-      }
+      },
+      ssidRequired: 'Digite o nome da rede, até 32 caracteres',
+      passwordLength: 'A senha tem de 8 a 63 caracteres. Deixe vazia para uma rede aberta.',
+      passwordOptional: 'Senha (vazia para uma rede aberta)',
+      lost:
+        'A placa parou de responder. Ela pode ter entrado na rede e fechado seu hotspot de configuração. Se o hotspot voltar, a conexão falhou: conecte-se a ele de novo e tente outra vez.',
+      done:
+        'Configuração concluída. Reconecte este dispositivo à sua rede habitual e abra a placa em seu novo endereço.'
     },
     screen: {
       scale: 'Escala',
@@ -157,7 +164,8 @@ const pt_br = {
         videoError: 'Erro na exibição de vídeo',
         noHdmi: 'Nenhum sinal HDMI detectado',
         unavailable: 'A tela não pode ser exibida agora'
-      }
+      },
+      directConnectionFailed: 'Falha na conexão do fluxo de vídeo'
     },
     keyboard: {
       title: 'Teclado',
@@ -295,7 +303,9 @@ const pt_br = {
         rebuild: 'Trocar de modo reconstrói a conexão USB. O NanoKVM não reinicia',
         enable: 'Habilitar modo Somente-HID',
         disable: 'Desabilitar modo Somente-HID'
-      }
+      },
+      resetHidDone: 'HID USB redefinido',
+      resetHidFailed: 'Falha ao redefinir o HID USB'
     },
     image: {
       title: 'Imagens',
@@ -379,7 +389,16 @@ const pt_br = {
       confirm: 'Sim',
       cancel: 'Não',
       delete: 'Excluir',
-      close: 'Fechar'
+      close: 'Fechar',
+      empty: 'Nenhum script ainda. Envie um arquivo .sh ou .py para executá-lo na placa.',
+      loadFailed: 'Falha ao carregar os scripts',
+      uploaded: 'Script enviado',
+      uploadFailed: 'Falha ao enviar o script',
+      started: 'Script iniciado em segundo plano',
+      deleteFailed: 'Falha ao excluir o script',
+      waitLimit: 'Aguardando o script terminar, por até {{minutes}} minutos.',
+      timedOut:
+        'O script levou mais de {{minutes}} minutos e esta página parou de esperar. Ele pode ainda estar em execução na placa.'
     },
     terminal: {
       title: 'Terminal',
@@ -429,7 +448,7 @@ const pt_br = {
     power: {
       title: 'Energia',
       showConfirm: 'Confirmação',
-      showConfirmTip: 'Operações de energia requerem uma confirmação extra',
+      showConfirmTip: 'Perguntar antes de um toque curto. Reset e toque longo sempre perguntam.',
       reset: 'Redefinir',
       power: 'Energia',
       powerShort: 'Energia (clique curto)',
@@ -455,7 +474,11 @@ const pt_br = {
       ledConnected: 'LED de energia conectado',
       ledConnectedTip:
         'Ative somente se o conector do LED de energia do host estiver ligado à placa. Sem ele, o estado de energia é desconhecido.',
-      ledConnectedFailed: 'Falha ao salvar a configuração do LED de energia'
+      ledConnectedFailed: 'Falha ao salvar a configuração do LED de energia',
+      powerLongConfirm:
+        'Segurar o botão de energia por {{seconds}} s? Isso corta a energia sem desligar o sistema.',
+      done: 'Botão pressionado',
+      failed: 'Falha ao pressionar o botão'
     },
     settings: {
       title: 'Configurações',
@@ -659,7 +682,14 @@ const pt_br = {
         stuckFor: 'sem sinal de vida por {{duration}}',
         pressFailed: 'O pressionamento falhou: {{error}}',
         noScreenshot: 'Sem captura de tela',
-        failed: 'A operação do watchdog falhou'
+        failed: 'A operação do watchdog falhou',
+        powerNeedsLed:
+          'O ciclo de energia precisa de "LED de energia conectado" no menu de energia.',
+        noLedConfirmTitle: 'Ativar o watchdog sem o LED de energia?',
+        noLedConfirmDesc:
+          'A placa não consegue ver quando o host está desligado, então o trata como sempre ligado. Se você desligar o host, o watchdog pressiona reset quando o tempo limite passar. Conecte o LED de energia para evitar isso.',
+        noLedConfirmOk: 'Ativar',
+        cancel: 'Cancelar'
       },
       netboot: {
         title: 'Boot pela rede',
@@ -728,7 +758,10 @@ const pt_br = {
           Wired: 'Com Fio',
           Wireless: 'Sem Fio',
           Other: 'Outro'
-        }
+        },
+        hostnameInvalid:
+          'Use letras, dígitos e hifens, até 63 por parte separada por pontos. Sem hífen no início ou no fim de uma parte.',
+        hostnameFailed: 'Falha ao alterar o nome do host'
       },
       appearance: {
         title: 'Aparência',
@@ -894,7 +927,8 @@ const pt_br = {
         reboot: 'Reiniciar',
         rebootDesc: 'Tem certeza de que deseja reiniciar o NanoKVM?',
         okBtn: 'Sim',
-        cancelBtn: 'Não'
+        cancelBtn: 'Não',
+        rebootFailed: 'Falha ao reiniciar'
       },
       network: {
         title: 'Rede',
@@ -918,7 +952,14 @@ const pt_br = {
           tip: 'Atenção: O uso de HTTPS pode aumentar a latência, especialmente com o modo de vídeo MJPEG.',
           restarting: 'Reiniciando o servidor do dispositivo, isso leva cerca de dois minutos...',
           waiting: 'Aguardando o dispositivo responder novamente...',
-          waitingHttp: 'Voltando para http. Recarregue esta página se ela não abrir sozinha.'
+          waitingHttp: 'Voltando para http. Recarregue esta página se ela não abrir sozinha.',
+          failed: 'Não foi possível alterar a configuração HTTPS',
+          enableConfirm: 'Ativar HTTPS?',
+          disableConfirm: 'Desativar HTTPS?',
+          confirmDesc:
+            'Isso encerra sua sessão e reinicia o servidor do dispositivo, o que leva cerca de dois minutos. Depois a página abre {{url}}.',
+          confirmOk: 'Continuar',
+          confirmCancel: 'Cancelar'
         },
         ethernet: {
           title: 'Endereço IP',
@@ -1024,8 +1065,18 @@ const pt_br = {
           'O {{other}} está em execução ou inicia na inicialização. Só uma VPN funciona por vez: pare o {{other}} e desative a inicialização automática dele primeiro.',
         swap: {
           title: 'Memória swap',
-          tip: 'Se faltar memória ao daemon, tente habilitar a memória swap. Isso define o tamanho do arquivo de swap como 256MB por padrão, o que pode ser ajustado em "Configurações > Dispositivo".'
-        }
+          tip: 'Se faltar memória ao daemon, tente habilitar a memória swap. Isso define o tamanho do arquivo de swap como 256MB por padrão, o que pode ser ajustado em "Configurações > Dispositivo".',
+          failed: 'Falha ao alterar a memória swap'
+        },
+        copy: 'Copiar',
+        copied: 'Link copiado',
+        copyFailed: 'Não foi possível copiar o link. Selecione-o e copie manualmente.',
+        open: 'Abrir',
+        checkAgain: 'Verificar novamente',
+        notSignedIn: 'Ainda não conectado. Termine de entrar pelo link e verifique novamente.',
+        checkFailed: 'Não foi possível verificar o status de login',
+        loginWaiting: 'Esta página verifica a cada poucos segundos e continua quando você entrar.',
+        uninstallFailed: 'Falha ao desinstalar'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1040,7 +1091,6 @@ const pt_br = {
           'O dispositivo ainda não foi vinculado. Por favor, faça login e vincule este dispositivo à sua conta.',
         urlPeriod: 'Esta URL é válida por 10 minutos',
         login: 'Login',
-        loginSuccess: 'Login Bem-sucedido',
         logout: 'Sair',
         logoutDesc: 'Tem certeza de que deseja sair?'
       },
@@ -1054,7 +1104,6 @@ const pt_br = {
         or: 'ou',
         sso: 'Login com SSO',
         urlPeriod: 'Esta URL é válida por 10 minutos',
-        loginSuccess: 'Login Bem-sucedido',
         logout: 'Cancelar registro',
         logoutDesc:
           'Cancelar o registro remove este peer da sua conta NetBird e apaga a configuração dele aqui. Para entrar de novo é preciso uma chave de configuração ou um login SSO, e o peer pode receber um novo IP. Continuar?'
@@ -1098,7 +1147,10 @@ const pt_br = {
           checksumMismatch: 'A verificação SHA-256 falhou. O pacote pode estar corrompido.',
           invalidName: 'Formato de nome de arquivo inválido. Faça download das versões do GitHub.',
           updateFailed: 'Falha na atualização. Por favor, tente novamente.'
-        }
+        },
+        updateTo: 'Atualizar para {{version}}',
+        updateConfirmDesc:
+          'O dispositivo instala a atualização e reinicia seu servidor. Esta página recarrega quando o servidor voltar.'
       },
       account: {
         title: 'Conta',

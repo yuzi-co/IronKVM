@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import * as api from '@/api/extensions/tailscale.ts';
 
 import { ErrorDetail } from '../vpn/error-detail.tsx';
+import { LoginUrl } from '../vpn/login-url.tsx';
 
 type LoginProps = {
   onSuccess: () => void;
@@ -38,7 +39,6 @@ export const Login = ({ onSuccess }: LoginProps) => {
         }
 
         setLoginUrl(url);
-        window.open(url, '_blank');
         setTimeout(() => setLoginUrl(''), 10 * 60 * 1000);
       })
       .catch((err) => {
@@ -65,17 +65,12 @@ export const Login = ({ onSuccess }: LoginProps) => {
           {t('settings.tailscale.login')}
         </Button>
       ) : (
-        <div className="flex w-full flex-col items-center justify-center space-y-5">
-          <Button type="link" href={loginUrl} target="_blank">
-            {loginUrl}
-          </Button>
-
-          <span className="text-xs text-neutral-400">{t('settings.tailscale.urlPeriod')}</span>
-
-          <Button type="primary" size="large" shape="round" onClick={onSuccess}>
-            {t('settings.tailscale.loginSuccess')}
-          </Button>
-        </div>
+        <LoginUrl
+          url={loginUrl}
+          period={t('settings.tailscale.urlPeriod')}
+          getStatus={api.getStatus}
+          onSuccess={onSuccess}
+        />
       )}
 
       <ErrorDetail message={errMsg} />

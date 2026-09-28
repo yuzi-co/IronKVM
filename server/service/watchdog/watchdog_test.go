@@ -405,6 +405,7 @@ func TestNothingIsPressedOverTheHourlyCap(t *testing.T) {
 func TestThePowerActionIsAPowerCycle(t *testing.T) {
 	h := newFakeHost()
 	h.settings.Action = ActionPower
+	h.ledConnected, h.ledOn = true, true
 	w := New(h.deps(t))
 
 	run(w, h, 5*time.Minute, nil)
@@ -419,6 +420,21 @@ func TestThePowerActionIsAPowerCycle(t *testing.T) {
 	reset, power := ActionCounts()
 	if power == 0 {
 		t.Fatalf("counted reset=%d power=%d", reset, power)
+	}
+}
+
+// The LED setting can be turned off after a power cycle was chosen. A host
+// shut down on purpose then looks hung, so the watchdog resets instead.
+func TestWithoutThePowerLEDAPowerCycleBecomesAReset(t *testing.T) {
+	h := newFakeHost()
+	h.settings.Action = ActionPower
+	w := New(h.deps(t))
+
+	run(w, h, 5*time.Minute, nil)
+
+	got := strings.Join(h.pressed(), ", ")
+	if got != "reset "+resetPress.String() {
+		t.Fatalf("pressed %s", got)
 	}
 }
 

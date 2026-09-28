@@ -62,7 +62,14 @@ const it = {
         authFailed: 'Password AP non valida',
         passPlaceholder: 'AP password',
         verifyBtn: 'Verifica'
-      }
+      },
+      ssidRequired: 'Inserisci il nome della rete, fino a 32 caratteri',
+      passwordLength: 'La password è di 8-63 caratteri. Lasciala vuota per una rete aperta.',
+      passwordOptional: 'Password (vuota per una rete aperta)',
+      lost:
+        "La scheda ha smesso di rispondere. Potrebbe essersi collegata alla rete e aver chiuso l'hotspot di configurazione. Se l'hotspot ricompare, la connessione non è riuscita: ricollegati e riprova.",
+      done:
+        'Configurazione completata. Ricollega questo dispositivo alla tua rete abituale e apri la scheda al suo nuovo indirizzo.'
     },
     screen: {
       scale: 'Scala',
@@ -159,7 +166,8 @@ const it = {
         videoError: 'Errore di visualizzazione video',
         noHdmi: 'Nessun segnale HDMI rilevato',
         unavailable: 'Lo schermo non può essere visualizzato al momento'
-      }
+      },
+      directConnectionFailed: 'Connessione al flusso video non riuscita'
     },
     keyboard: {
       title: 'Tastiera',
@@ -297,7 +305,9 @@ const it = {
         rebuild: 'Cambiare modalità ricostruisce la connessione USB. NanoKVM non si riavvia',
         enable: 'Abilita la modalità HID-Solo',
         disable: 'Disabilita la modalità HID-Solo'
-      }
+      },
+      resetHidDone: 'HID USB reimpostato',
+      resetHidFailed: 'Reimpostazione HID USB non riuscita'
     },
     image: {
       title: 'Immagini',
@@ -381,7 +391,16 @@ const it = {
       confirm: 'Sì',
       cancel: 'No',
       delete: 'Elimina',
-      close: 'Chiudi'
+      close: 'Chiudi',
+      empty: 'Nessuno script. Carica un file .sh o .py per eseguirlo sulla scheda.',
+      loadFailed: 'Impossibile caricare gli script',
+      uploaded: 'Script caricato',
+      uploadFailed: 'Impossibile caricare lo script',
+      started: 'Script avviato in background',
+      deleteFailed: 'Impossibile eliminare lo script',
+      waitLimit: 'In attesa che lo script finisca, fino a {{minutes}} minuti.',
+      timedOut:
+        'Lo script è durato più di {{minutes}} minuti e questa pagina ha smesso di attendere. Potrebbe essere ancora in esecuzione sulla scheda.'
     },
     terminal: {
       title: 'Terminale',
@@ -431,7 +450,8 @@ const it = {
     power: {
       title: 'Accensione',
       showConfirm: 'Conferma',
-      showConfirmTip: 'Le operazioni di alimentazione richiedono una conferma aggiuntiva',
+      showConfirmTip:
+        'Chiedi prima di una pressione breve. Il reset e la pressione lunga chiedono sempre.',
       reset: 'Reimposta',
       power: 'Accensione',
       powerShort: 'Accensione (clic breve)',
@@ -457,7 +477,11 @@ const it = {
       ledConnected: 'LED di accensione collegato',
       ledConnectedTip:
         "Attivalo solo se il connettore del LED di accensione dell'host è cablato alla scheda. Senza, lo stato di alimentazione è sconosciuto.",
-      ledConnectedFailed: "Impossibile salvare l'impostazione del LED di accensione"
+      ledConnectedFailed: "Impossibile salvare l'impostazione del LED di accensione",
+      powerLongConfirm:
+        "Tenere premuto il pulsante di accensione per {{seconds}} s? Toglie l'alimentazione senza spegnimento.",
+      done: 'Pulsante premuto',
+      failed: 'Pressione del pulsante non riuscita'
     },
     settings: {
       title: 'Impostazioni',
@@ -662,7 +686,14 @@ const it = {
         stuckFor: 'nessun segno di vita per {{duration}}',
         pressFailed: 'La pressione non è riuscita: {{error}}',
         noScreenshot: 'Nessuno screenshot',
-        failed: 'Operazione del watchdog non riuscita'
+        failed: 'Operazione del watchdog non riuscita',
+        powerNeedsLed:
+          'Il ciclo di alimentazione richiede "LED di alimentazione collegato" nel menu di alimentazione.',
+        noLedConfirmTitle: 'Attivare il watchdog senza il LED di alimentazione?',
+        noLedConfirmDesc:
+          "La scheda non vede quando l'host è spento, quindi lo considera sempre acceso. Se spegni l'host, il watchdog preme reset allo scadere del timeout. Collega il LED di alimentazione per evitarlo.",
+        noLedConfirmOk: 'Attiva',
+        cancel: 'Annulla'
       },
       netboot: {
         title: 'Avvio di rete',
@@ -731,7 +762,10 @@ const it = {
           Wired: 'Cablato',
           Wireless: 'Senza fili',
           Other: 'Altro'
-        }
+        },
+        hostnameInvalid:
+          "Usa lettere, cifre e trattini, fino a 63 per parte separata da punti. Nessun trattino all'inizio o alla fine di una parte.",
+        hostnameFailed: 'Impossibile modificare il nome host'
       },
       appearance: {
         title: 'Aspetto',
@@ -900,7 +934,8 @@ const it = {
         reboot: 'Riavvia',
         rebootDesc: 'Sei sicuro di voler riavviare NanoKVM?',
         okBtn: 'Sì',
-        cancelBtn: 'No'
+        cancelBtn: 'No',
+        rebootFailed: 'Riavvio non riuscito'
       },
       network: {
         title: 'Rete',
@@ -924,7 +959,14 @@ const it = {
           tip: "Attenzione: l'uso di HTTPS può aumentare la latenza, soprattutto in modalità video MJPEG.",
           restarting: 'Riavvio del server del dispositivo, ci vorranno circa due minuti...',
           waiting: 'In attesa che il dispositivo risponda di nuovo...',
-          waitingHttp: 'Ritorno a http. Ricarica questa pagina se non si apre da sola.'
+          waitingHttp: 'Ritorno a http. Ricarica questa pagina se non si apre da sola.',
+          failed: "Impossibile modificare l'impostazione HTTPS",
+          enableConfirm: 'Attivare HTTPS?',
+          disableConfirm: 'Disattivare HTTPS?',
+          confirmDesc:
+            'Questo ti disconnette e riavvia il server del dispositivo, operazione che richiede circa due minuti. Poi la pagina apre {{url}}.',
+          confirmOk: 'Continua',
+          confirmCancel: 'Annulla'
         },
         ethernet: {
           title: 'Indirizzo IP',
@@ -1029,8 +1071,19 @@ const it = {
           "{{other}} è in esecuzione o si avvia all'accensione. Può funzionare una sola VPN alla volta: prima arresta {{other}} e disattivane l'avvio all'accensione.",
         swap: {
           title: 'Memoria di swap',
-          tip: 'Se il demone resta a corto di memoria, prova ad abilitare la memoria di swap. Imposta la dimensione del file di swap a 256MB per impostazione predefinita, modificabile in "Impostazioni > Dispositivo".'
-        }
+          tip: 'Se il demone resta a corto di memoria, prova ad abilitare la memoria di swap. Imposta la dimensione del file di swap a 256MB per impostazione predefinita, modificabile in "Impostazioni > Dispositivo".',
+          failed: 'Impossibile modificare la memoria di swap'
+        },
+        copy: 'Copia',
+        copied: 'Link copiato',
+        copyFailed: 'Impossibile copiare il link. Selezionalo e copialo a mano.',
+        open: 'Apri',
+        checkAgain: 'Controlla di nuovo',
+        notSignedIn:
+          "Accesso non ancora eseguito. Completa l'accesso dal link, poi controlla di nuovo.",
+        checkFailed: 'Impossibile verificare lo stato di accesso',
+        loginWaiting: "Questa pagina controlla ogni pochi secondi e prosegue dopo l'accesso.",
+        uninstallFailed: 'Disinstallazione non riuscita'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1045,7 +1098,6 @@ const it = {
           'Il dispositivo non è ancora stato associato. Effettua il login e associa questo dispositivo al tuo account.',
         urlPeriod: 'Questo URL è valido per 10 minuti',
         login: 'Accedi',
-        loginSuccess: 'Accesso riuscito',
         logout: 'Disconnetti',
         logoutDesc: 'Sei sicuro di voler uscire?'
       },
@@ -1059,7 +1111,6 @@ const it = {
         or: 'oppure',
         sso: 'Accedi con SSO',
         urlPeriod: 'Questo URL è valido per 10 minuti',
-        loginSuccess: 'Accesso riuscito',
         logout: 'Rimuovi registrazione',
         logoutDesc:
           'Rimuovere la registrazione elimina questo peer dal tuo account NetBird e ne cancella qui la configurazione. Per unirti di nuovo serve una chiave di configurazione o un accesso SSO, e il peer potrebbe ricevere un nuovo IP. Continuare?'
@@ -1104,7 +1155,10 @@ const it = {
             'La verifica SHA-256 non è riuscita. Il pacchetto potrebbe essere danneggiato.',
           invalidName: 'Formato nome file non valido. Si prega di scaricare dalle versioni GitHub.',
           updateFailed: 'Aggiornamento fallito. Riprova.'
-        }
+        },
+        updateTo: 'Aggiorna a {{version}}',
+        updateConfirmDesc:
+          "Il dispositivo installa l'aggiornamento e riavvia il server. La pagina si ricarica quando il server torna disponibile."
       },
       account: {
         title: 'Account',

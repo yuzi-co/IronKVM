@@ -58,7 +58,12 @@ const zh_tw = {
         authFailed: 'AP 密碼無效',
         passPlaceholder: 'AP 密碼',
         verifyBtn: '驗證'
-      }
+      },
+      ssidRequired: '請輸入網路名稱，最多 32 個字元',
+      passwordLength: '密碼為 8 到 63 個字元。開放網路請留空。',
+      passwordOptional: '密碼（開放網路留空）',
+      lost: '板子不再回應。它可能已加入網路並關閉了設定熱點。如果熱點重新出現，表示連線失敗：請重新連上熱點後再試。',
+      done: '設定完成。請將此裝置連回常用網路，並透過新位址開啟板子。'
     },
     screen: {
       scale: '缩放',
@@ -152,7 +157,8 @@ const zh_tw = {
         videoError: '影片顯示異常',
         noHdmi: '未偵測到 HDMI 訊號',
         unavailable: '畫面暫時無法顯示'
-      }
+      },
+      directConnectionFailed: '視訊串流連線失敗'
     },
     keyboard: {
       title: '鍵盤',
@@ -286,7 +292,9 @@ const zh_tw = {
         rebuild: '切換模式會重建 USB 連線，NanoKVM 不會重新啟動',
         enable: '啟用 HID-Only 模式',
         disable: '停用 HID-Only 模式'
-      }
+      },
+      resetHidDone: 'USB HID 已重設',
+      resetHidFailed: 'USB HID 重設失敗'
     },
     image: {
       title: '映像檔',
@@ -365,7 +373,15 @@ const zh_tw = {
       confirm: '確定',
       cancel: '取消',
       delete: '刪除',
-      close: '關閉'
+      close: '關閉',
+      empty: '還沒有腳本。上傳 .sh 或 .py 檔案即可在板子上執行。',
+      loadFailed: '載入腳本失敗',
+      uploaded: '腳本已上傳',
+      uploadFailed: '上傳腳本失敗',
+      started: '腳本已在背景啟動',
+      deleteFailed: '刪除腳本失敗',
+      waitLimit: '正在等待腳本完成，最多 {{minutes}} 分鐘。',
+      timedOut: '腳本執行超過 {{minutes}} 分鐘，此頁面已停止等待。腳本可能仍在板子上執行。'
     },
     terminal: {
       title: '終端機',
@@ -415,7 +431,7 @@ const zh_tw = {
     power: {
       title: '電源控制',
       showConfirm: '顯示確認框',
-      showConfirmTip: '電源操作需要二次確認',
+      showConfirmTip: '短按電源前先確認。重設和長按一律需要確認。',
       reset: '重新啟動',
       power: '電源',
       powerShort: '電源 (短按)',
@@ -440,7 +456,10 @@ const zh_tw = {
       ledUnknown: '未知',
       ledConnected: '已連接電源指示燈',
       ledConnectedTip: '僅在主機的電源指示燈針腳已接到開發板時才開啟。未連接時電源狀態未知。',
-      ledConnectedFailed: '儲存電源指示燈設定失敗'
+      ledConnectedFailed: '儲存電源指示燈設定失敗',
+      powerLongConfirm: '按住電源鍵 {{seconds}} 秒？這會直接斷電，不會正常關機。',
+      done: '已按下按鍵',
+      failed: '按鍵失敗'
     },
     settings: {
       title: '設定',
@@ -633,7 +652,12 @@ const zh_tw = {
         stuckFor: '{{duration}} 無活動跡象',
         pressFailed: '按鍵失敗：{{error}}',
         noScreenshot: '無截圖',
-        failed: '看門狗操作失敗'
+        failed: '看門狗操作失敗',
+        powerNeedsLed: '電源循環需要在電源選單中開啟「已連接電源 LED」。',
+        noLedConfirmTitle: '在沒有電源 LED 的情況下開啟看門狗？',
+        noLedConfirmDesc: '板子無法看出主機何時關機，因此將主機視為一直開機。如果你關閉主機，逾時後看門狗會按下重設。連接電源 LED 可以避免這種情況。',
+        noLedConfirmOk: '開啟',
+        cancel: '取消'
       },
       netboot: {
         title: '網路開機',
@@ -698,7 +722,9 @@ const zh_tw = {
           Wired: '有線',
           Wireless: '無線',
           Other: '其他'
-        }
+        },
+        hostnameInvalid: '請使用字母、數字和連字號，每個以點分隔的部分最多 63 個字元，且不能以連字號開頭或結尾。',
+        hostnameFailed: '修改主機名稱失敗'
       },
       appearance: {
         title: '外觀',
@@ -857,7 +883,8 @@ const zh_tw = {
         reboot: '重新啟動',
         rebootDesc: '您確定要重新啟動 NanoKVM?',
         okBtn: '確定',
-        cancelBtn: '取消'
+        cancelBtn: '取消',
+        rebootFailed: '重新開機失敗'
       },
       network: {
         title: '網路',
@@ -881,7 +908,13 @@ const zh_tw = {
           tip: '啟用 HTTPS 可以提高安全性，但可能會增加傳輸延遲，特別是使用 MJPEG 格式傳輸時。',
           restarting: '正在重新啟動裝置伺服器，約需兩分鐘...',
           waiting: '正在等待裝置重新回應...',
-          waitingHttp: '正在切換回 http。如果頁面沒有自動開啟，請重新載入此頁面。'
+          waitingHttp: '正在切換回 http。如果頁面沒有自動開啟，請重新載入此頁面。',
+          failed: '無法變更 HTTPS 設定',
+          enableConfirm: '開啟 HTTPS？',
+          disableConfirm: '關閉 HTTPS？',
+          confirmDesc: '這會讓你登出並重新啟動裝置服務，大約需要兩分鐘。之後頁面將開啟 {{url}}。',
+          confirmOk: '繼續',
+          confirmCancel: '取消'
         },
         ethernet: {
           title: 'IP 位址',
@@ -985,8 +1018,18 @@ const zh_tw = {
           '{{other}} 正在執行或已設為開機啟動。同一時間只能執行一個 VPN：請先停止 {{other}} 並關閉其開機啟動。',
         swap: {
           title: 'Swap 記憶體',
-          tip: '如果背景服務記憶體不足，請嘗試啟用 Swap 記憶體。預設會將 Swap 檔大小設為 256MB，可在「設定 > 設備」中調整。'
-        }
+          tip: '如果背景服務記憶體不足，請嘗試啟用 Swap 記憶體。預設會將 Swap 檔大小設為 256MB，可在「設定 > 設備」中調整。',
+          failed: '修改交換記憶體失敗'
+        },
+        copy: '複製',
+        copied: '連結已複製',
+        copyFailed: '無法複製連結。請選取後手動複製。',
+        open: '開啟',
+        checkAgain: '再次檢查',
+        notSignedIn: '尚未登入。請在連結中完成登入後再檢查。',
+        checkFailed: '無法檢查登入狀態',
+        loginWaiting: '此頁面每隔幾秒檢查一次，登入完成後自動繼續。',
+        uninstallFailed: '解除安裝失敗'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1000,7 +1043,6 @@ const zh_tw = {
         notLogin: '設備尚未綁定。請登入並將該裝置綁定到您的帳戶。',
         urlPeriod: '此網址有效期限為 10 分鐘',
         login: '登入',
-        loginSuccess: '登入成功',
         logout: '登出',
         logoutDesc: '確認要登出嗎？'
       },
@@ -1013,7 +1055,6 @@ const zh_tw = {
         or: '或',
         sso: '透過 SSO 登入',
         urlPeriod: '此網址有效期限為 10 分鐘',
-        loginSuccess: '登入成功',
         logout: '取消註冊',
         logoutDesc:
           '取消註冊會將此節點從您的 NetBird 帳號中移除，並刪除本機上的設定。重新加入需要設定金鑰或 SSO 登入，節點可能會取得新的 IP。是否繼續？'
@@ -1055,7 +1096,9 @@ const zh_tw = {
           checksumMismatch: 'SHA-256 驗證失敗。套件可能已損毀。',
           invalidName: '檔名格式錯誤，請前往 GitHub 釋出頁下載安裝包。',
           updateFailed: '更新失敗，請重試'
-        }
+        },
+        updateTo: '更新至 {{version}}',
+        updateConfirmDesc: '裝置將安裝更新並重新啟動服務。服務恢復後此頁面會自動重新載入。'
       },
       account: {
         title: '帳號',

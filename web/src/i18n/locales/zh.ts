@@ -58,7 +58,12 @@ const zh = {
         authFailed: '密码错误',
         passPlaceholder: 'AP 密码',
         verifyBtn: '验证'
-      }
+      },
+      ssidRequired: '请输入网络名称，最多 32 个字符',
+      passwordLength: '密码为 8 到 63 个字符。开放网络请留空。',
+      passwordOptional: '密码（开放网络留空）',
+      lost: '板子不再响应。它可能已加入网络并关闭了配置热点。如果热点重新出现，说明连接失败：请重新连接热点后再试。',
+      done: '设置完成。请将此设备连回常用网络，并通过新地址打开板子。'
     },
     screen: {
       scale: '缩放',
@@ -152,7 +157,8 @@ const zh = {
         videoError: '视频显示异常',
         noHdmi: '未检测到 HDMI 信号',
         unavailable: '画面暂时无法显示'
-      }
+      },
+      directConnectionFailed: '视频流连接失败'
     },
     keyboard: {
       title: '键盘',
@@ -286,7 +292,9 @@ const zh = {
         rebuild: '切换模式会重建 USB 连接，NanoKVM 不会重启',
         enable: '启用 HID-Only 模式',
         disable: '关闭 HID-Only 模式'
-      }
+      },
+      resetHidDone: 'USB HID 已重置',
+      resetHidFailed: 'USB HID 重置失败'
     },
     image: {
       title: '镜像',
@@ -365,7 +373,15 @@ const zh = {
       confirm: '确定',
       cancel: '取消',
       delete: '删除',
-      close: '关闭'
+      close: '关闭',
+      empty: '还没有脚本。上传 .sh 或 .py 文件即可在板子上运行。',
+      loadFailed: '加载脚本失败',
+      uploaded: '脚本已上传',
+      uploadFailed: '上传脚本失败',
+      started: '脚本已在后台启动',
+      deleteFailed: '删除脚本失败',
+      waitLimit: '正在等待脚本完成，最多 {{minutes}} 分钟。',
+      timedOut: '脚本运行超过 {{minutes}} 分钟，此页面已停止等待。脚本可能仍在板子上运行。'
     },
     terminal: {
       title: '终端',
@@ -415,7 +431,7 @@ const zh = {
     power: {
       title: '电源',
       showConfirm: '显示确认框',
-      showConfirmTip: '电源操作需要二次确认',
+      showConfirmTip: '短按电源前先确认。复位和长按始终需要确认。',
       reset: '重启',
       power: '电源',
       powerShort: '电源（短按）',
@@ -440,7 +456,10 @@ const zh = {
       ledUnknown: '未知',
       ledConnected: '已连接电源指示灯',
       ledConnectedTip: '仅当主机的电源指示灯排针已接到开发板时才开启。未接时电源状态未知。',
-      ledConnectedFailed: '保存电源指示灯设置失败'
+      ledConnectedFailed: '保存电源指示灯设置失败',
+      powerLongConfirm: '按住电源键 {{seconds}} 秒？这会直接断电，不会正常关机。',
+      done: '已按下按键',
+      failed: '按键失败'
     },
     settings: {
       title: '设置',
@@ -633,7 +652,12 @@ const zh = {
         stuckFor: '{{duration}} 无活动迹象',
         pressFailed: '按键失败：{{error}}',
         noScreenshot: '无截图',
-        failed: '看门狗操作失败'
+        failed: '看门狗操作失败',
+        powerNeedsLed: '电源循环需要在电源菜单中开启“已连接电源 LED”。',
+        noLedConfirmTitle: '在没有电源 LED 的情况下开启看门狗？',
+        noLedConfirmDesc: '板子无法看出主机何时关机，因此将主机视为一直开机。如果你关闭主机，超时后看门狗会按下复位。连接电源 LED 可以避免这种情况。',
+        noLedConfirmOk: '开启',
+        cancel: '取消'
       },
       netboot: {
         title: '网络启动',
@@ -698,7 +722,9 @@ const zh = {
           Wired: '有线',
           Wireless: '无线',
           Other: '其他'
-        }
+        },
+        hostnameInvalid: '请使用字母、数字和连字符，每个以点分隔的部分最多 63 个字符，且不能以连字符开头或结尾。',
+        hostnameFailed: '修改主机名失败'
       },
       appearance: {
         title: '外观',
@@ -857,7 +883,8 @@ const zh = {
         reboot: '重新启动',
         rebootDesc: '您确定要重新启动 NanoKVM 吗？',
         okBtn: '是',
-        cancelBtn: '否'
+        cancelBtn: '否',
+        rebootFailed: '重启失败'
       },
       network: {
         title: '网络',
@@ -881,7 +908,13 @@ const zh = {
           tip: '注意：使用 HTTPS 可能导致延迟增加，特别是在 MJPEG 视频模式下。',
           restarting: '正在重启设备服务，大约需要两分钟...',
           waiting: '正在等待设备重新响应...',
-          waitingHttp: '正在切换回 http。如果页面没有自动打开，请刷新此页面。'
+          waitingHttp: '正在切换回 http。如果页面没有自动打开，请刷新此页面。',
+          failed: '无法更改 HTTPS 设置',
+          enableConfirm: '开启 HTTPS？',
+          disableConfirm: '关闭 HTTPS？',
+          confirmDesc: '这会让你退出登录并重启设备服务，大约需要两分钟。之后页面将打开 {{url}}。',
+          confirmOk: '继续',
+          confirmCancel: '取消'
         },
         ethernet: {
           title: 'IP 地址',
@@ -985,8 +1018,18 @@ const zh = {
           '{{other}} 正在运行或已设为开机启动。同一时间只能运行一个 VPN：请先停止 {{other}} 并关闭其开机启动。',
         swap: {
           title: '交换内存',
-          tip: '如果守护进程内存不足，请尝试启用交换内存。默认会将交换文件大小设为 256MB，可在“设置 > 设备”中调整。'
-        }
+          tip: '如果守护进程内存不足，请尝试启用交换内存。默认会将交换文件大小设为 256MB，可在“设置 > 设备”中调整。',
+          failed: '修改交换内存失败'
+        },
+        copy: '复制',
+        copied: '链接已复制',
+        copyFailed: '无法复制链接。请选中后手动复制。',
+        open: '打开',
+        checkAgain: '再次检查',
+        notSignedIn: '尚未登录。请在链接中完成登录后再检查。',
+        checkFailed: '无法检查登录状态',
+        loginWaiting: '此页面每隔几秒检查一次，登录完成后自动继续。',
+        uninstallFailed: '卸载失败'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1000,7 +1043,6 @@ const zh = {
         notLogin: '该设备尚未绑定，请点击登录并将这台设备绑定到您的账号。',
         urlPeriod: '该链接10分钟内有效',
         login: '登录',
-        loginSuccess: '登录完成',
         logout: '退出',
         logoutDesc: '确定要退出吗？'
       },
@@ -1013,7 +1055,6 @@ const zh = {
         or: '或',
         sso: '通过 SSO 登录',
         urlPeriod: '该链接10分钟内有效',
-        loginSuccess: '登录完成',
         logout: '注销',
         logoutDesc:
           '注销会将此节点从你的 NetBird 帐号中移除，并删除本机上的配置。重新加入需要设置密钥或 SSO 登录，节点可能会获得新的 IP。是否继续？'
@@ -1055,7 +1096,9 @@ const zh = {
           checksumMismatch: 'SHA-256 校验失败，安装包可能已损坏。',
           invalidName: '文件名格式错误，请前往 GitHub 发布页下载安装包。',
           updateFailed: '更新失败，请重试'
-        }
+        },
+        updateTo: '更新到 {{version}}',
+        updateConfirmDesc: '设备将安装更新并重启服务。服务恢复后此页面会自动重新加载。'
       },
       account: {
         title: '帐号',

@@ -1,6 +1,10 @@
 package vm
 
 import (
+	"errors"
+	"fmt"
+	"io/fs"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -13,12 +17,13 @@ import (
 	"NanoKVM-Server/utils"
 )
 
-const ScriptDirectory = "/etc/kvm/scripts"
+// ScriptDirectory is a variable so tests can point it somewhere else.
+var ScriptDirectory = "/etc/kvm/scripts"
 
 func (s *Service) GetScripts(c *gin.Context) {
 	var rsp proto.Response
 
-	var files []string
+	files := []string{}
 	err := filepath.Walk(ScriptDirectory, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -30,7 +35,9 @@ func (s *Service) GetScripts(c *gin.Context) {
 
 		return nil
 	})
-	if err != nil {
+	// Upload creates the directory, so a board that never had a script has
+	// none. That is an empty list, not an error.
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		rsp.ErrRsp(c, -1, "get scripts failed")
 		return
 	}
@@ -112,7 +119,11 @@ func (s *Service) RunScript(c *gin.Context) {
 
 	if err != nil {
 		log.Errorf("run script %s failed: %s", req.Name, err.Error())
-		rsp.ErrRsp(c, -2, "run script failed")
+		// The output of a script that failed is what says why, so it goes
+		// back with the error.
+		rsp.Err(-2, fmt.Sprintf("run script failed: %s", err))
+		rsp.Data = &proto.RunScriptRsp{Log: string(output)}
+		c.JSON(http.StatusOK, &rsp)
 		return
 	}
 

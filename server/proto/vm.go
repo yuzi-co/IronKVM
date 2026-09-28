@@ -287,6 +287,10 @@ type SetTlsReq struct {
 	Enabled bool `validate:"omitempty"`
 }
 
+type GetTlsRsp struct {
+	Enabled bool `json:"enabled"`
+}
+
 type InputRegion struct {
 	Mode               string               `json:"mode"`
 	FrameWidth         int                  `json:"frameWidth"`

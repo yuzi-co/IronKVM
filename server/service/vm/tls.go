@@ -13,6 +13,32 @@ import (
 	"NanoKVM-Server/utils"
 )
 
+// GetTls reports whether HTTPS is configured. The page cannot learn this from
+// its own URL: a proxy in front of the board, or a switch that has not
+// restarted the server yet, both make the address bar say something else.
+func (s *Service) GetTls(c *gin.Context) {
+	var rsp proto.Response
+
+	enabled, err := tlsConfigured()
+	if err != nil {
+		log.Errorf("failed to read the TLS setting: %s", err)
+		rsp.ErrRsp(c, -1, "failed to read the TLS setting")
+		return
+	}
+
+	rsp.OkRspWithData(c, &proto.GetTlsRsp{Enabled: enabled})
+}
+
+// tlsConfigured is a variable so a test can answer without the real
+// configuration file.
+var tlsConfigured = func() (bool, error) {
+	conf, err := config.Read()
+	if err != nil {
+		return false, err
+	}
+	return conf.Proto == "https", nil
+}
+
 func (s *Service) SetTls(c *gin.Context) {
 	var req proto.SetTlsReq
 	var rsp proto.Response

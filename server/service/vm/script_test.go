@@ -1,8 +1,15 @@
 package vm
 
 import (
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/gin-gonic/gin"
 )
 
 func TestScriptCommandRunsShellScriptsThroughSh(t *testing.T) {
@@ -37,5 +44,56 @@ func TestScriptCommandNeverPassesTheNameToAShell(t *testing.T) {
 	}
 	if cmd.Args[len(cmd.Args)-1] != "/etc/kvm/scripts/a.sh; reboot" {
 		t.Fatalf("the path must stay one argument, got %q", cmd.Args)
+	}
+}
+
+func scriptRequest(t *testing.T, method, body string, handler gin.HandlerFunc) string {
+	t.Helper()
+
+	gin.SetMode(gin.TestMode)
+	recorder := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(recorder)
+	c.Request = httptest.NewRequest(method, "/api/vm/script", strings.NewReader(body))
+	if body != "" {
+		c.Request.Header.Set("Content-Type", "application/json")
+	}
+	handler(c)
+	return recorder.Body.String()
+}
+
+// Upload creates the script directory, so a board that never had a script
+// has none, and that is an empty list.
+func TestNoScriptDirectoryIsAnEmptyList(t *testing.T) {
+	original := ScriptDirectory
+	t.Cleanup(func() { ScriptDirectory = original })
+	ScriptDirectory = filepath.Join(t.TempDir(), "scripts")
+
+	body := scriptRequest(t, http.MethodGet, "", (&Service{}).GetScripts)
+	if !strings.Contains(body, `"code":0`) || !strings.Contains(body, `"files":[]`) {
+		t.Fatalf("GetScripts answered %s", body)
+	}
+}
+
+// A script that fails says why in its output, so the output comes back with
+// the error.
+func TestAFailedScriptReturnsItsOutput(t *testing.T) {
+	if _, err := exec.LookPath("sh"); err != nil {
+		t.Skip("no sh")
+	}
+	original := ScriptDirectory
+	t.Cleanup(func() { ScriptDirectory = original })
+	ScriptDirectory = t.TempDir()
+
+	script := "echo disk full\nexit 3\n"
+	if err := os.WriteFile(filepath.Join(ScriptDirectory, "fail.sh"), []byte(script), 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	body := scriptRequest(t, http.MethodPost, `{"name":"fail.sh","type":"foreground"}`, (&Service{}).RunScript)
+	if strings.Contains(body, `"code":0`) {
+		t.Fatalf("a failing script reported success: %s", body)
+	}
+	if !strings.Contains(body, "disk full") {
+		t.Fatalf("the output was lost: %s", body)
 	}
 }

@@ -82,9 +82,9 @@ export const Power = () => {
       <Divider style={{ margin: '10px 0 15px 0' }} />
 
       <div className="flex flex-col space-y-1">
-        <Reset showConfirm={showConfirm} isLoading={isLoading} setIsLoading={setIsLoading} />
+        <Reset isLoading={isLoading} setIsLoading={setIsLoading} />
         <PowerShort showConfirm={showConfirm} isLoading={isLoading} setIsLoading={setIsLoading} />
-        <PowerLong showConfirm={showConfirm} isLoading={isLoading} setIsLoading={setIsLoading} />
+        <PowerLong isLoading={isLoading} setIsLoading={setIsLoading} />
       </div>
 
       <HostPower showConfirm={showConfirm} />

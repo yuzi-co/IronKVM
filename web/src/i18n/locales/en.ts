@@ -60,7 +60,14 @@ const en = {
         authFailed: 'Invalid AP password',
         passPlaceholder: 'AP password',
         verifyBtn: 'Verify'
-      }
+      },
+      ssidRequired: 'Enter the network name, up to 32 characters',
+      passwordLength: 'The password is 8 to 63 characters. Leave it empty for an open network.',
+      passwordOptional: 'Password (empty for an open network)',
+      lost:
+        'The board stopped answering. It may have joined the network and closed its setup hotspot. If the hotspot comes back, joining failed: connect to it again and retry.',
+      done:
+        'Setup finished. Connect this device back to your usual network and open the board at its new address.'
     },
     screen: {
       scale: 'Scale',
@@ -155,7 +162,8 @@ const en = {
         videoError: 'Video display error',
         noHdmi: 'No HDMI signal detected',
         unavailable: 'Screen cannot be displayed right now'
-      }
+      },
+      directConnectionFailed: 'Video stream connection failed'
     },
     keyboard: {
       title: 'Keyboard',
@@ -292,7 +300,9 @@ const en = {
         rebuild: 'Switching modes rebuilds the USB connection. NanoKVM does not reboot',
         enable: 'Enable HID-Only mode',
         disable: 'Disable HID-Only mode'
-      }
+      },
+      resetHidDone: 'USB HID reset',
+      resetHidFailed: 'USB HID reset failed'
     },
     image: {
       title: 'Images',
@@ -375,7 +385,16 @@ const en = {
       confirm: 'Yes',
       cancel: 'No',
       delete: 'Delete',
-      close: 'Close'
+      close: 'Close',
+      empty: 'No scripts yet. Upload a .sh or .py file to run it on the board.',
+      loadFailed: 'Failed to load the scripts',
+      uploaded: 'Script uploaded',
+      uploadFailed: 'Failed to upload the script',
+      started: 'Script started in the background',
+      deleteFailed: 'Failed to delete the script',
+      waitLimit: 'Waiting for the script to finish, for up to {{minutes}} minutes.',
+      timedOut:
+        'The script ran longer than {{minutes}} minutes and this page stopped waiting. It may still be running on the board.'
     },
     terminal: {
       title: 'Terminal',
@@ -425,7 +444,7 @@ const en = {
     power: {
       title: 'Power',
       showConfirm: 'Confirmation',
-      showConfirmTip: 'Power operations require an extra confirmation',
+      showConfirmTip: 'Ask before a short power press. Reset and a long press always ask.',
       reset: 'Reset',
       power: 'Power',
       powerShort: 'Power (short click)',
@@ -451,7 +470,11 @@ const en = {
       ledConnected: 'Power LED connected',
       ledConnectedTip:
         "Turn on only if the host's power LED header is wired to the board. Without it the power state is unknown.",
-      ledConnectedFailed: 'Failed to save the power LED setting'
+      ledConnectedFailed: 'Failed to save the power LED setting',
+      powerLongConfirm:
+        'Hold the power button for {{seconds}} s? This cuts the power without a shutdown.',
+      done: 'Button pressed',
+      failed: 'The button press failed'
     },
     settings: {
       title: 'Settings',
@@ -651,7 +674,13 @@ const en = {
         stuckFor: 'no sign of life for {{duration}}',
         pressFailed: 'The press failed: {{error}}',
         noScreenshot: 'No screenshot',
-        failed: 'Watchdog operation failed'
+        failed: 'Watchdog operation failed',
+        powerNeedsLed: 'Power cycle needs "Power LED connected" in the power menu.',
+        noLedConfirmTitle: 'Turn on the watchdog without the power LED?',
+        noLedConfirmDesc:
+          'The board cannot see when the host is off, so it treats the host as always on. If you shut the host down, the watchdog presses reset once the timeout passes. Connect the power LED to avoid this.',
+        noLedConfirmOk: 'Turn on',
+        cancel: 'Cancel'
       },
       netboot: {
         title: 'Network boot',
@@ -718,7 +747,10 @@ const en = {
           Wired: 'Wired',
           Wireless: 'Wireless',
           Other: 'Other'
-        }
+        },
+        hostnameInvalid:
+          'Use letters, digits and hyphens, up to 63 per dot-separated part. No hyphen at the start or end of a part.',
+        hostnameFailed: 'Failed to change the hostname'
       },
       appearance: {
         title: 'Appearance',
@@ -881,7 +913,8 @@ const en = {
         reboot: 'Reboot',
         rebootDesc: 'Are you sure you want to reboot NanoKVM?',
         okBtn: 'Yes',
-        cancelBtn: 'No'
+        cancelBtn: 'No',
+        rebootFailed: 'Reboot failed'
       },
       network: {
         title: 'Network',
@@ -905,7 +938,14 @@ const en = {
           tip: 'Be aware: Using HTTPS can increase latency, especially with MJPEG video mode. Switching signs you out, and the browser will ask you to trust the certificate the device generates for itself.',
           restarting: 'Restarting the device server, this takes about two minutes...',
           waiting: 'Waiting for the device to answer again...',
-          waitingHttp: 'Switching back to http. Reload this page if it does not open on its own.'
+          waitingHttp: 'Switching back to http. Reload this page if it does not open on its own.',
+          failed: 'Could not change the HTTPS setting',
+          enableConfirm: 'Turn on HTTPS?',
+          disableConfirm: 'Turn off HTTPS?',
+          confirmDesc:
+            'This signs you out and restarts the device server, which takes about two minutes. The page then opens {{url}}.',
+          confirmOk: 'Continue',
+          confirmCancel: 'Cancel'
         },
         ethernet: {
           title: 'IP Address',
@@ -1009,8 +1049,18 @@ const en = {
           '{{other}} is running or starts at boot. Only one VPN runs at a time: stop {{other}} and turn off its start at boot first.',
         swap: {
           title: 'Swap memory',
-          tip: 'If the daemon runs short of memory, try enabling swap memory. This sets the swap file size to 256MB by default, which can be adjusted in "Settings > Device".'
-        }
+          tip: 'If the daemon runs short of memory, try enabling swap memory. This sets the swap file size to 256MB by default, which can be adjusted in "Settings > Device".',
+          failed: 'Failed to change swap memory'
+        },
+        copy: 'Copy',
+        copied: 'Link copied',
+        copyFailed: 'Could not copy the link. Select it and copy it by hand.',
+        open: 'Open',
+        checkAgain: 'Check again',
+        notSignedIn: 'Not signed in yet. Finish signing in at the link, then check again.',
+        checkFailed: 'Could not check the login status',
+        loginWaiting: 'This page checks every few seconds and continues once you have signed in.',
+        uninstallFailed: 'Uninstall failed'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1025,7 +1075,6 @@ const en = {
           'The device has not been bound yet. Please login and bind this device to your account.',
         urlPeriod: 'This url is valid for 10 minutes',
         login: 'Login',
-        loginSuccess: 'Login Success',
         logout: 'Logout',
         logoutDesc: 'Are you sure you want to logout?'
       },
@@ -1039,7 +1088,6 @@ const en = {
         or: 'or',
         sso: 'Log in with SSO',
         urlPeriod: 'This url is valid for 10 minutes',
-        loginSuccess: 'Login Success',
         logout: 'Deregister',
         logoutDesc:
           'Deregister removes this peer from your NetBird account and deletes its configuration here. Joining again needs a setup key or an SSO login, and the peer may get a new IP. Continue?'
@@ -1082,7 +1130,10 @@ const en = {
           checksumMismatch: 'SHA-256 verification failed. The package may be corrupted.',
           invalidName: 'Invalid filename format. Please download from GitHub releases.',
           updateFailed: 'Update failed. Please retry.'
-        }
+        },
+        updateTo: 'Update to {{version}}',
+        updateConfirmDesc:
+          'The device installs the update and restarts its server. This page reloads when the server is back.'
       },
       account: {
         title: 'Account',

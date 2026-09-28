@@ -22,7 +22,9 @@ export const Run = ({ script, setIsRunning }: RunProps) => {
       .runScript(script, 'foreground')
       .then((rsp) => {
         if (rsp.code !== 0) {
-          setLog(rsp.msg);
+          // A script that exits with an error still printed why.
+          const output = rsp.data?.log;
+          setLog(output ? `${rsp.msg}\n\n${output}` : rsp.msg);
           setState('failed');
           return;
         }
@@ -30,10 +32,10 @@ export const Run = ({ script, setIsRunning }: RunProps) => {
         setState('success');
         setLog(rsp.data.log);
       })
-      .catch(() => {
+      .catch((err) => {
         // The sentence is chosen at render, so the effect does not depend on
         // t. A language change must not run the script a second time.
-        setState('unreachable');
+        setState(err?.code === 'ECONNABORTED' ? 'timedOut' : 'unreachable');
       });
   }, [script]);
 
@@ -47,12 +49,19 @@ export const Run = ({ script, setIsRunning }: RunProps) => {
       open={true}
     >
       {state === 'running' ? (
-        <div className="flex h-[300px] items-center justify-center">
+        <div className="flex h-[300px] flex-col items-center justify-center space-y-6">
           <Spin indicator={<LoadingOutlined spin />} size="large" />
+          <span className="text-xs text-neutral-500">
+            {t('script.waitLimit', { minutes: api.FOREGROUND_TIMEOUT_MINUTES })}
+          </span>
         </div>
       ) : (
-        <Card className="h-[600px] overflow-auto whitespace-pre-line font-mono">
-          {state === 'unreachable' ? t('script.runFailed') : log}
+        <Card className="h-[600px] overflow-auto font-mono whitespace-pre-line">
+          {state === 'unreachable'
+            ? t('script.runFailed')
+            : state === 'timedOut'
+              ? t('script.timedOut', { minutes: api.FOREGROUND_TIMEOUT_MINUTES })
+              : log}
         </Card>
       )}
 

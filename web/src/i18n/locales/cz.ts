@@ -62,7 +62,14 @@ const cz = {
         authFailed: 'Neplatné heslo AP',
         passPlaceholder: 'AP heslo',
         verifyBtn: 'Ověřte'
-      }
+      },
+      ssidRequired: 'Zadejte název sítě, nejvýše 32 znaků',
+      passwordLength: 'Heslo má 8 až 63 znaků. U otevřené sítě ho nechte prázdné.',
+      passwordOptional: 'Heslo (prázdné pro otevřenou síť)',
+      lost:
+        'Deska přestala odpovídat. Možná se připojila k síti a vypnula svůj konfigurační hotspot. Pokud se hotspot znovu objeví, připojení selhalo: připojte se k němu znovu a zkuste to znovu.',
+      done:
+        'Nastavení dokončeno. Připojte toto zařízení zpět k obvyklé síti a otevřete desku na její nové adrese.'
     },
     screen: {
       scale: 'Měřítko',
@@ -157,7 +164,8 @@ const cz = {
         videoError: 'Chyba zobrazení videa',
         noHdmi: 'Nebyl zjištěn signál HDMI',
         unavailable: 'Obraz teď nelze zobrazit'
-      }
+      },
+      directConnectionFailed: 'Připojení videostreamu selhalo'
     },
     keyboard: {
       title: 'Klávesnice',
@@ -295,7 +303,9 @@ const cz = {
         rebuild: 'Přepnutí režimu znovu sestaví připojení USB. NanoKVM se nerestartuje',
         enable: 'Povolit režim HID-Only',
         disable: 'Zakázat režim HID-Only'
-      }
+      },
+      resetHidDone: 'USB HID bylo resetováno',
+      resetHidFailed: 'Reset USB HID se nezdařil'
     },
     image: {
       title: 'Obrázky',
@@ -378,7 +388,16 @@ const cz = {
       confirm: 'Ano',
       cancel: 'Ne',
       delete: 'Smazat',
-      close: 'Zavřít'
+      close: 'Zavřít',
+      empty: 'Zatím žádné skripty. Nahrajte soubor .sh nebo .py a spusťte ho na desce.',
+      loadFailed: 'Skripty se nepodařilo načíst',
+      uploaded: 'Skript nahrán',
+      uploadFailed: 'Skript se nepodařilo nahrát',
+      started: 'Skript spuštěn na pozadí',
+      deleteFailed: 'Skript se nepodařilo smazat',
+      waitLimit: 'Čeká se na dokončení skriptu, nejvýše {{minutes}} minut.',
+      timedOut:
+        'Skript běžel déle než {{minutes}} minut a stránka přestala čekat. Na desce může stále běžet.'
     },
     terminal: {
       title: 'Terminál',
@@ -428,7 +447,7 @@ const cz = {
     power: {
       title: 'Napájení',
       showConfirm: 'Potvrzení',
-      showConfirmTip: 'Výkonové operace vyžadují další potvrzení',
+      showConfirmTip: 'Ptát se před krátkým stiskem napájení. Reset a dlouhý stisk se ptají vždy.',
       reset: 'Resetovat',
       power: 'Napájení',
       powerShort: 'Napájení (krátký stisk)',
@@ -454,7 +473,11 @@ const cz = {
       ledConnected: 'LED napájení připojena',
       ledConnectedTip:
         'Zapněte, jen pokud je konektor LED napájení hostitele propojen s deskou. Bez něj je stav napájení neznámý.',
-      ledConnectedFailed: 'Nastavení LED napájení se nepodařilo uložit'
+      ledConnectedFailed: 'Nastavení LED napájení se nepodařilo uložit',
+      powerLongConfirm:
+        'Držet tlačítko napájení {{seconds}} s? Tím se vypne napájení bez vypnutí systému.',
+      done: 'Tlačítko stisknuto',
+      failed: 'Stisk tlačítka se nezdařil'
     },
     settings: {
       title: 'Nastavení',
@@ -654,7 +677,13 @@ const cz = {
         stuckFor: 'bez známek života po dobu {{duration}}',
         pressFailed: 'Stisk se nezdařil: {{error}}',
         noScreenshot: 'Bez snímku obrazovky',
-        failed: 'Operace watchdogu selhala'
+        failed: 'Operace watchdogu selhala',
+        powerNeedsLed: 'Cyklus napájení vyžaduje „LED napájení připojena“ v nabídce napájení.',
+        noLedConfirmTitle: 'Zapnout watchdog bez LED napájení?',
+        noLedConfirmDesc:
+          'Deska nevidí, kdy je hostitel vypnutý, takže ho považuje za stále zapnutý. Pokud hostitele vypnete, watchdog po uplynutí časového limitu stiskne reset. Abyste tomu předešli, připojte LED napájení.',
+        noLedConfirmOk: 'Zapnout',
+        cancel: 'Zrušit'
       },
       netboot: {
         title: 'Síťové spuštění',
@@ -721,7 +750,10 @@ const cz = {
           Wired: 'Kabelové',
           Wireless: 'Bezdrátové',
           Other: 'Jiné'
-        }
+        },
+        hostnameInvalid:
+          'Použijte písmena, číslice a pomlčky, nejvýše 63 v každé části oddělené tečkou. Pomlčka nesmí být na začátku ani na konci části.',
+        hostnameFailed: 'Název hostitele se nepodařilo změnit'
       },
       appearance: {
         title: 'Vzhled',
@@ -886,7 +918,8 @@ const cz = {
         reboot: 'Restartujte',
         rebootDesc: 'Opravdu chcete restartovat NanoKVM?',
         okBtn: 'Ano',
-        cancelBtn: 'Ne'
+        cancelBtn: 'Ne',
+        rebootFailed: 'Restart se nezdařil'
       },
       network: {
         title: 'Síť',
@@ -911,7 +944,14 @@ const cz = {
           restarting: 'Restartuje se server zařízení, potrvá to asi dvě minuty...',
           waiting: 'Čeká se, až zařízení znovu odpoví...',
           waitingHttp:
-            'Přepíná se zpět na http. Pokud se tato stránka neotevře sama, načtěte ji znovu.'
+            'Přepíná se zpět na http. Pokud se tato stránka neotevře sama, načtěte ji znovu.',
+          failed: 'Nastavení HTTPS se nepodařilo změnit',
+          enableConfirm: 'Zapnout HTTPS?',
+          disableConfirm: 'Vypnout HTTPS?',
+          confirmDesc:
+            'Tím se odhlásíte a server zařízení se restartuje, což trvá asi dvě minuty. Stránka pak otevře {{url}}.',
+          confirmOk: 'Pokračovat',
+          confirmCancel: 'Zrušit'
         },
         ethernet: {
           title: 'IP adresa',
@@ -1016,8 +1056,18 @@ const cz = {
           '{{other}} běží nebo se spouští při startu. Současně může běžet jen jedna VPN: nejprve zastavte {{other}} a vypněte jeho spouštění při startu.',
         swap: {
           title: 'Odkládací paměť',
-          tip: 'Pokud démonu dochází paměť, zkuste povolit odkládací paměť. Výchozí velikost odkládacího souboru je 256MB a lze ji upravit v "Nastavení > Zařízení".'
-        }
+          tip: 'Pokud démonu dochází paměť, zkuste povolit odkládací paměť. Výchozí velikost odkládacího souboru je 256MB a lze ji upravit v "Nastavení > Zařízení".',
+          failed: 'Odkládací paměť se nepodařilo změnit'
+        },
+        copy: 'Kopírovat',
+        copied: 'Odkaz zkopírován',
+        copyFailed: 'Odkaz se nepodařilo zkopírovat. Označte ho a zkopírujte ručně.',
+        open: 'Otevřít',
+        checkAgain: 'Zkontrolovat znovu',
+        notSignedIn: 'Zatím nepřihlášeno. Dokončete přihlášení přes odkaz a zkontrolujte znovu.',
+        checkFailed: 'Stav přihlášení se nepodařilo zjistit',
+        loginWaiting: 'Stránka to kontroluje každých pár sekund a po přihlášení pokračuje.',
+        uninstallFailed: 'Odinstalace se nezdařila'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1032,7 +1082,6 @@ const cz = {
           'Zařízení nebylo dosud spárováno. Přihlaste se prosím a spárujte toto zařízení s vaším účtem.',
         urlPeriod: 'Tento odkaz je platný po dobu 10 minut',
         login: 'Přihlášení',
-        loginSuccess: 'Přihlášení úspěšné',
         logout: 'Odhlásit se',
         logoutDesc: 'Opravdu se chcete odhlásit?'
       },
@@ -1046,7 +1095,6 @@ const cz = {
         or: 'nebo',
         sso: 'Přihlásit přes SSO',
         urlPeriod: 'Tento odkaz je platný 10 minut',
-        loginSuccess: 'Přihlášení úspěšné',
         logout: 'Odregistrovat',
         logoutDesc:
           'Odregistrování odebere tento uzel z vašeho účtu NetBird a smaže zde jeho konfiguraci. Opětovné připojení vyžaduje instalační klíč nebo přihlášení přes SSO a uzel může dostat novou IP. Pokračovat?'
@@ -1090,7 +1138,10 @@ const cz = {
           checksumMismatch: 'Ověření SHA-256 se nezdařilo. Balíček může být poškozený.',
           invalidName: 'Neplatný formát souboru. Stáhněte si prosím z vydání GitHubu.',
           updateFailed: 'Aktualizace se nezdařila. Zkuste to prosím znovu.'
-        }
+        },
+        updateTo: 'Aktualizovat na {{version}}',
+        updateConfirmDesc:
+          'Zařízení nainstaluje aktualizaci a restartuje svůj server. Stránka se znovu načte, až bude server zpět.'
       },
       account: {
         title: 'Účet',

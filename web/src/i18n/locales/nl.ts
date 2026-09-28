@@ -63,7 +63,14 @@ const nl = {
         authFailed: 'Ongeldig AP wachtwoord',
         passPlaceholder: 'AP wachtwoord',
         verifyBtn: 'Verifieer'
-      }
+      },
+      ssidRequired: 'Voer de netwerknaam in, maximaal 32 tekens',
+      passwordLength: 'Het wachtwoord is 8 tot 63 tekens. Laat het leeg voor een open netwerk.',
+      passwordOptional: 'Wachtwoord (leeg voor een open netwerk)',
+      lost:
+        'Het bord reageert niet meer. Het heeft zich misschien bij het netwerk aangesloten en zijn instellingshotspot gesloten. Komt de hotspot terug, dan is verbinden mislukt: maak opnieuw verbinding en probeer het nog eens.',
+      done:
+        'Instellen voltooid. Verbind dit apparaat weer met uw gebruikelijke netwerk en open het bord op zijn nieuwe adres.'
     },
     screen: {
       scale: 'Schaal',
@@ -160,7 +167,8 @@ const nl = {
         videoError: 'Fout bij videoweergave',
         noHdmi: 'Geen HDMI-signaal gedetecteerd',
         unavailable: 'Het scherm kan nu niet worden weergegeven'
-      }
+      },
+      directConnectionFailed: 'Verbinding met de videostream mislukt'
     },
     keyboard: {
       title: 'Toetsenbord',
@@ -299,7 +307,9 @@ const nl = {
           'Bij het wisselen van modus wordt de USB-verbinding opnieuw opgebouwd. NanoKVM start niet opnieuw op',
         enable: 'Schakel de modus HID-Alleen in',
         disable: 'Schakel de modus HID-Alleen uit'
-      }
+      },
+      resetHidDone: 'USB-HID gereset',
+      resetHidFailed: 'USB-HID resetten mislukt'
     },
     image: {
       title: 'Afbeeldingen',
@@ -383,7 +393,16 @@ const nl = {
       confirm: 'Ja',
       cancel: 'Nee',
       delete: 'Verwijderen',
-      close: 'Sluiten'
+      close: 'Sluiten',
+      empty: 'Nog geen scripts. Upload een .sh- of .py-bestand om het op het bord uit te voeren.',
+      loadFailed: 'Scripts laden mislukt',
+      uploaded: 'Script geüpload',
+      uploadFailed: 'Script uploaden mislukt',
+      started: 'Script op de achtergrond gestart',
+      deleteFailed: 'Script verwijderen mislukt',
+      waitLimit: 'Wachten tot het script klaar is, maximaal {{minutes}} minuten.',
+      timedOut:
+        'Het script liep langer dan {{minutes}} minuten en deze pagina wacht niet meer. Het draait mogelijk nog op het bord.'
     },
     terminal: {
       title: 'Terminal',
@@ -434,7 +453,8 @@ const nl = {
     power: {
       title: 'Aan/uit',
       showConfirm: 'Bevestiging',
-      showConfirmTip: 'Stroombedieningen vereisen een extra bevestiging',
+      showConfirmTip:
+        'Vragen voor een korte druk op de aan/uit-knop. Reset en lang drukken vragen altijd.',
       reset: 'Resetten',
       power: 'Aan/uit',
       powerShort: 'Aan/uit (kort indrukken)',
@@ -460,7 +480,11 @@ const nl = {
       ledConnected: 'Power-LED aangesloten',
       ledConnectedTip:
         'Schakel dit alleen in als de power-LED-aansluiting van de host met het bord is verbonden. Zonder die aansluiting is de stroomstatus onbekend.',
-      ledConnectedFailed: 'Opslaan van de Power-LED-instelling mislukt'
+      ledConnectedFailed: 'Opslaan van de Power-LED-instelling mislukt',
+      powerLongConfirm:
+        'Aan/uit-knop {{seconds}} s ingedrukt houden? Dit schakelt de stroom uit zonder afsluiten.',
+      done: 'Knop ingedrukt',
+      failed: 'Knop indrukken mislukt'
     },
     settings: {
       title: 'Instellingen',
@@ -664,7 +688,13 @@ const nl = {
         stuckFor: 'geen teken van leven gedurende {{duration}}',
         pressFailed: 'De druk op de knop mislukte: {{error}}',
         noScreenshot: 'Geen schermafbeelding',
-        failed: 'Watchdog-bewerking mislukt'
+        failed: 'Watchdog-bewerking mislukt',
+        powerNeedsLed: 'Een stroomcyclus vereist "Aan/uit-LED aangesloten" in het aan/uit-menu.',
+        noLedConfirmTitle: 'Watchdog inschakelen zonder aan/uit-LED?',
+        noLedConfirmDesc:
+          'Het bord ziet niet wanneer de host uit staat en behandelt de host daarom als altijd aan. Als u de host afsluit, drukt de watchdog na de time-out op reset. Sluit de aan/uit-LED aan om dit te voorkomen.',
+        noLedConfirmOk: 'Inschakelen',
+        cancel: 'Annuleren'
       },
       netboot: {
         title: 'Netwerkboot',
@@ -731,7 +761,10 @@ const nl = {
           Wired: 'Bedraad',
           Wireless: 'Draadloos',
           Other: 'Anders'
-        }
+        },
+        hostnameInvalid:
+          'Gebruik letters, cijfers en koppeltekens, maximaal 63 per door punten gescheiden deel. Geen koppelteken aan het begin of einde van een deel.',
+        hostnameFailed: 'De hostnaam kon niet worden gewijzigd'
       },
       appearance: {
         title: 'Uiterlijk',
@@ -900,7 +933,8 @@ const nl = {
         reboot: 'Opnieuw opstarten',
         rebootDesc: 'Weet u zeker dat u NanoKVM opnieuw wilt opstarten?',
         okBtn: 'Ja',
-        cancelBtn: 'Nee'
+        cancelBtn: 'Nee',
+        rebootFailed: 'Herstarten mislukt'
       },
       network: {
         title: 'Netwerk',
@@ -924,7 +958,14 @@ const nl = {
           tip: 'Let op: HTTPS gebruiken kan de latentie verhogen, vooral in MJPEG-videomodus.',
           restarting: 'De apparaatserver wordt opnieuw gestart, dit duurt ongeveer twee minuten...',
           waiting: 'Wachten tot het apparaat weer reageert...',
-          waitingHttp: 'Terugschakelen naar http. Vernieuw deze pagina als deze niet vanzelf opent.'
+          waitingHttp: 'Terugschakelen naar http. Vernieuw deze pagina als deze niet vanzelf opent.',
+          failed: 'De HTTPS-instelling kon niet worden gewijzigd',
+          enableConfirm: 'HTTPS inschakelen?',
+          disableConfirm: 'HTTPS uitschakelen?',
+          confirmDesc:
+            'Dit meldt u af en herstart de server van het apparaat, wat ongeveer twee minuten duurt. Daarna opent de pagina {{url}}.',
+          confirmOk: 'Doorgaan',
+          confirmCancel: 'Annuleren'
         },
         ethernet: {
           title: 'IP-adres',
@@ -1030,8 +1071,19 @@ const nl = {
           '{{other}} draait of start bij het opstarten. Er kan maar één VPN tegelijk draaien: stop eerst {{other}} en schakel het starten bij opstarten ervan uit.',
         swap: {
           title: 'Swapgeheugen',
-          tip: 'Als de daemon te weinig geheugen heeft, probeer dan swapgeheugen in te schakelen. Dit stelt het wisselbestand standaard in op 256MB; de grootte kunt u aanpassen in "Instellingen > Apparaat".'
-        }
+          tip: 'Als de daemon te weinig geheugen heeft, probeer dan swapgeheugen in te schakelen. Dit stelt het wisselbestand standaard in op 256MB; de grootte kunt u aanpassen in "Instellingen > Apparaat".',
+          failed: 'Swapgeheugen wijzigen mislukt'
+        },
+        copy: 'Kopiëren',
+        copied: 'Link gekopieerd',
+        copyFailed: 'Link kopiëren mislukt. Selecteer hem en kopieer hem handmatig.',
+        open: 'Openen',
+        checkAgain: 'Opnieuw controleren',
+        notSignedIn: 'Nog niet aangemeld. Rond het aanmelden via de link af en controleer opnieuw.',
+        checkFailed: 'Aanmeldstatus controleren mislukt',
+        loginWaiting:
+          'Deze pagina controleert om de paar seconden en gaat verder zodra u bent aangemeld.',
+        uninstallFailed: 'Verwijderen mislukt'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1046,7 +1098,6 @@ const nl = {
           'Het apparaat is nog niet gekoppeld. Log in en koppel dit apparaat aan uw account.',
         urlPeriod: 'Deze url is 10 minuten geldig',
         login: 'Inloggen',
-        loginSuccess: 'Inloggen gelukt',
         logout: 'Uitloggen',
         logoutDesc: 'Weet u zeker dat u wilt uitloggen?'
       },
@@ -1060,7 +1111,6 @@ const nl = {
         or: 'of',
         sso: 'Inloggen met SSO',
         urlPeriod: 'Deze url is 10 minuten geldig',
-        loginSuccess: 'Inloggen gelukt',
         logout: 'Afmelden',
         logoutDesc:
           'Afmelden verwijdert deze peer uit uw NetBird-account en wist de configuratie hier. Opnieuw lid worden vereist een setup key of een SSO-login, en de peer kan een nieuw IP-adres krijgen. Doorgaan?'
@@ -1104,7 +1154,10 @@ const nl = {
           checksumMismatch: 'De SHA-256-verificatie is mislukt. Het pakket is mogelijk beschadigd.',
           invalidName: 'Ongeldig bestandsnaamformaat. Download de versie van GitHub-releases.',
           updateFailed: 'Update mislukt. Probeer het opnieuw.'
-        }
+        },
+        updateTo: 'Bijwerken naar {{version}}',
+        updateConfirmDesc:
+          'Het apparaat installeert de update en herstart zijn server. Deze pagina herlaadt zodra de server terug is.'
       },
       account: {
         title: 'Account',

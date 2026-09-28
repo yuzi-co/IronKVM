@@ -61,7 +61,13 @@ const ja = {
         authFailed: '無効な AP パスワード',
         passPlaceholder: 'AP パスワード',
         verifyBtn: '確認する'
-      }
+      },
+      ssidRequired: 'ネットワーク名を 32 文字以内で入力してください',
+      passwordLength: 'パスワードは 8〜63 文字です。オープンネットワークの場合は空欄のままにしてください。',
+      passwordOptional: 'パスワード（オープンネットワークは空欄）',
+      lost:
+        'ボードが応答しなくなりました。ネットワークに接続してセットアップ用ホットスポットを閉じた可能性があります。ホットスポットが再び現れた場合は接続に失敗しています。再接続してやり直してください。',
+      done: 'セットアップが完了しました。このデバイスを普段のネットワークに戻し、ボードの新しいアドレスを開いてください。'
     },
     screen: {
       scale: '倍率',
@@ -157,7 +163,8 @@ const ja = {
         videoError: '映像表示エラー',
         noHdmi: 'HDMI 信号が検出されません',
         unavailable: '現在、画面を表示できません'
-      }
+      },
+      directConnectionFailed: '映像ストリームの接続に失敗しました'
     },
     keyboard: {
       title: 'キーボード',
@@ -295,7 +302,9 @@ const ja = {
         rebuild: 'モードを切り替えると USB 接続が再構築されます。NanoKVM は再起動しません',
         enable: 'HID-Only モードを有効化',
         disable: 'HID-Only モードを無効化'
-      }
+      },
+      resetHidDone: 'USB HID をリセットしました',
+      resetHidFailed: 'USB HID をリセットできませんでした'
     },
     image: {
       title: 'イメージ',
@@ -379,7 +388,15 @@ const ja = {
       confirm: 'はい',
       cancel: 'いいえ',
       delete: '削除',
-      close: '閉じる'
+      close: '閉じる',
+      empty: 'スクリプトはまだありません。.sh または .py ファイルをアップロードするとボードで実行できます。',
+      loadFailed: 'スクリプトを読み込めませんでした',
+      uploaded: 'スクリプトをアップロードしました',
+      uploadFailed: 'スクリプトをアップロードできませんでした',
+      started: 'スクリプトをバックグラウンドで開始しました',
+      deleteFailed: 'スクリプトを削除できませんでした',
+      waitLimit: 'スクリプトの終了を最大 {{minutes}} 分待っています。',
+      timedOut: 'スクリプトが {{minutes}} 分を超えたため、このページは待機をやめました。ボード上ではまだ実行中の可能性があります。'
     },
     terminal: {
       title: 'ターミナル',
@@ -430,7 +447,7 @@ const ja = {
     power: {
       title: '電源',
       showConfirm: '確認メッセージ',
-      showConfirmTip: '電源操作の確認メッセージを表示する',
+      showConfirmTip: '電源の短押しの前に確認します。リセットと長押しは常に確認します。',
       reset: 'リセット',
       power: '電源',
       powerShort: '電源（クリック）',
@@ -456,7 +473,10 @@ const ja = {
       ledConnected: '電源 LED 接続済み',
       ledConnectedTip:
         'ホストの電源 LED ヘッダーがボードに配線されている場合のみオンにしてください。配線がないと電源状態は不明になります。',
-      ledConnectedFailed: '電源 LED 設定の保存に失敗しました'
+      ledConnectedFailed: '電源 LED 設定の保存に失敗しました',
+      powerLongConfirm: '電源ボタンを {{seconds}} 秒押し続けますか？シャットダウンせずに電源が切れます。',
+      done: 'ボタンを押しました',
+      failed: 'ボタンを押せませんでした'
     },
     settings: {
       title: '設定',
@@ -659,7 +679,13 @@ const ja = {
         stuckFor: '{{duration}} 生存の兆候なし',
         pressFailed: 'ボタン操作に失敗しました: {{error}}',
         noScreenshot: 'スクリーンショットなし',
-        failed: 'ウォッチドッグの操作に失敗しました'
+        failed: 'ウォッチドッグの操作に失敗しました',
+        powerNeedsLed: '電源サイクルには電源メニューの「電源 LED 接続済み」が必要です。',
+        noLedConfirmTitle: '電源 LED なしでウォッチドッグをオンにしますか？',
+        noLedConfirmDesc:
+          'ボードはホストの電源が切れていることを検出できないため、ホストを常にオンとして扱います。ホストをシャットダウンすると、タイムアウト後にウォッチドッグがリセットを押します。これを避けるには電源 LED を接続してください。',
+        noLedConfirmOk: 'オンにする',
+        cancel: 'キャンセル'
       },
       netboot: {
         title: 'ネットワークブート',
@@ -729,7 +755,9 @@ const ja = {
           Wired: '有線',
           Wireless: 'ワイヤレス',
           Other: 'その他'
-        }
+        },
+        hostnameInvalid: '英字、数字、ハイフンを使い、ドットで区切った各部分は 63 文字までにしてください。各部分の先頭と末尾にハイフンは使えません。',
+        hostnameFailed: 'ホスト名を変更できませんでした'
       },
       appearance: {
         title: '外観',
@@ -899,7 +927,8 @@ const ja = {
         reboot: '再起動',
         rebootDesc: 'NanoKVM を再起動してもよろしいですか?',
         okBtn: 'はい',
-        cancelBtn: 'いいえ'
+        cancelBtn: 'いいえ',
+        rebootFailed: '再起動に失敗しました'
       },
       network: {
         title: 'ネットワーク',
@@ -924,7 +953,13 @@ const ja = {
           restarting: 'デバイスのサーバーを再起動しています。約 2 分かかります...',
           waiting: 'デバイスの応答を待っています...',
           waitingHttp:
-            'http に戻しています。自動的に開かない場合は、このページを再読み込みしてください。'
+            'http に戻しています。自動的に開かない場合は、このページを再読み込みしてください。',
+          failed: 'HTTPS の設定を変更できませんでした',
+          enableConfirm: 'HTTPS をオンにしますか？',
+          disableConfirm: 'HTTPS をオフにしますか？',
+          confirmDesc: 'サインアウトしてデバイスのサーバーを再起動します。約 2 分かかります。その後 {{url}} を開きます。',
+          confirmOk: '続行',
+          confirmCancel: 'キャンセル'
         },
         ethernet: {
           title: 'IPアドレス',
@@ -1030,8 +1065,18 @@ const ja = {
           '{{other}} が実行中か、起動時に開始する設定になっています。同時に実行できる VPN は 1 つだけです。先に {{other}} を停止し、起動時の開始をオフにしてください。',
         swap: {
           title: 'スワップメモリ',
-          tip: 'デーモンのメモリが不足する場合は、スワップメモリを有効にしてみてください。スワップファイルのサイズはデフォルトで 256MB に設定され、「設定 > デバイス」で調整できます。'
-        }
+          tip: 'デーモンのメモリが不足する場合は、スワップメモリを有効にしてみてください。スワップファイルのサイズはデフォルトで 256MB に設定され、「設定 > デバイス」で調整できます。',
+          failed: 'スワップメモリを変更できませんでした'
+        },
+        copy: 'コピー',
+        copied: 'リンクをコピーしました',
+        copyFailed: 'リンクをコピーできませんでした。選択して手動でコピーしてください。',
+        open: '開く',
+        checkAgain: '再確認',
+        notSignedIn: 'まだサインインしていません。リンクでサインインを完了してから再確認してください。',
+        checkFailed: 'ログイン状態を確認できませんでした',
+        loginWaiting: 'このページは数秒ごとに確認し、サインインが完了すると先に進みます。',
+        uninstallFailed: 'アンインストールに失敗しました'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1046,7 +1091,6 @@ const ja = {
           'このデバイスはまだバインドされていません。ログインしてデバイスをアカウントにバインドしてください。',
         urlPeriod: 'この URL は 10 分間有効です',
         login: 'ログイン',
-        loginSuccess: 'ログイン成功',
         logout: 'ログアウト',
         logoutDesc: 'ログアウトしてもよろしいですか？'
       },
@@ -1060,7 +1104,6 @@ const ja = {
         or: 'または',
         sso: 'SSO でログイン',
         urlPeriod: 'この URL は 10 分間有効です',
-        loginSuccess: 'ログイン成功',
         logout: '登録解除',
         logoutDesc:
           '登録を解除すると、このピアが NetBird アカウントから削除され、ここにある設定も削除されます。再度参加するにはセットアップキーまたは SSO ログインが必要で、ピアに新しい IP が割り当てられる場合があります。続行しますか？'
@@ -1106,7 +1149,9 @@ const ja = {
           invalidName:
             'ファイル名の形式が正しくありません。GitHub リリースページにアクセスしてインストールパッケージをダウンロードしてください。',
           updateFailed: 'アップデートに失敗しました。もう一度お試しください。'
-        }
+        },
+        updateTo: '{{version}} に更新',
+        updateConfirmDesc: 'デバイスは更新をインストールしてサーバーを再起動します。サーバーが戻るとこのページは再読み込みされます。'
       },
       account: {
         title: 'アカウント',

@@ -61,7 +61,14 @@ const id = {
         authFailed: 'Kata sandi AP tidak valid',
         passPlaceholder: 'AP kata sandi',
         verifyBtn: 'Verifikasi'
-      }
+      },
+      ssidRequired: 'Masukkan nama jaringan, maksimal 32 karakter',
+      passwordLength: 'Kata sandi 8 sampai 63 karakter. Biarkan kosong untuk jaringan terbuka.',
+      passwordOptional: 'Kata sandi (kosong untuk jaringan terbuka)',
+      lost:
+        'Papan berhenti merespons. Mungkin sudah bergabung ke jaringan dan menutup hotspot penyiapannya. Jika hotspot muncul lagi, penggabungan gagal: sambungkan lagi dan coba ulang.',
+      done:
+        'Penyiapan selesai. Sambungkan kembali perangkat ini ke jaringan biasa Anda dan buka papan di alamat barunya.'
     },
     screen: {
       scale: 'Skala',
@@ -157,7 +164,8 @@ const id = {
         videoError: 'Kesalahan tampilan video',
         noHdmi: 'Sinyal HDMI tidak terdeteksi',
         unavailable: 'Layar tidak dapat ditampilkan saat ini'
-      }
+      },
+      directConnectionFailed: 'Koneksi aliran video gagal'
     },
     keyboard: {
       title: 'Keyboard',
@@ -295,7 +303,9 @@ const id = {
         rebuild: 'Mengganti mode akan membangun ulang koneksi USB. NanoKVM tidak dimulai ulang',
         enable: 'Aktifkan mode HID-Hanya',
         disable: 'Nonaktifkan mode HID-Hanya'
-      }
+      },
+      resetHidDone: 'HID USB telah direset',
+      resetHidFailed: 'Reset HID USB gagal'
     },
     image: {
       title: 'Gambar',
@@ -379,7 +389,16 @@ const id = {
       confirm: 'Ya',
       cancel: 'Tidak',
       delete: 'Hapus',
-      close: 'Tutup'
+      close: 'Tutup',
+      empty: 'Belum ada skrip. Unggah berkas .sh atau .py untuk menjalankannya di papan.',
+      loadFailed: 'Gagal memuat skrip',
+      uploaded: 'Skrip diunggah',
+      uploadFailed: 'Gagal mengunggah skrip',
+      started: 'Skrip dijalankan di latar belakang',
+      deleteFailed: 'Gagal menghapus skrip',
+      waitLimit: 'Menunggu skrip selesai, hingga {{minutes}} menit.',
+      timedOut:
+        'Skrip berjalan lebih dari {{minutes}} menit dan halaman ini berhenti menunggu. Skrip mungkin masih berjalan di papan.'
     },
     terminal: {
       title: 'Terminal',
@@ -429,7 +448,8 @@ const id = {
     power: {
       title: 'Daya',
       showConfirm: 'Konfirmasi',
-      showConfirmTip: 'Pengoperasian listrik memerlukan konfirmasi tambahan',
+      showConfirmTip:
+        'Tanyakan sebelum tekan singkat tombol daya. Reset dan tekan lama selalu bertanya.',
       reset: 'Mulai Ulang',
       power: 'Daya',
       powerShort: 'Data (tekan sebentar)',
@@ -455,7 +475,11 @@ const id = {
       ledConnected: 'LED daya terhubung',
       ledConnectedTip:
         'Aktifkan hanya jika header LED daya host tersambung ke papan. Tanpa itu, status daya tidak diketahui.',
-      ledConnectedFailed: 'Gagal menyimpan pengaturan LED daya'
+      ledConnectedFailed: 'Gagal menyimpan pengaturan LED daya',
+      powerLongConfirm:
+        'Tahan tombol daya selama {{seconds}} dtk? Ini memutus daya tanpa mematikan sistem.',
+      done: 'Tombol ditekan',
+      failed: 'Gagal menekan tombol'
     },
     settings: {
       title: 'Pengaturan',
@@ -658,7 +682,13 @@ const id = {
         stuckFor: 'tidak ada tanda kehidupan selama {{duration}}',
         pressFailed: 'Penekanan gagal: {{error}}',
         noScreenshot: 'Tidak ada tangkapan layar',
-        failed: 'Operasi watchdog gagal'
+        failed: 'Operasi watchdog gagal',
+        powerNeedsLed: 'Siklus daya memerlukan "LED daya terhubung" di menu daya.',
+        noLedConfirmTitle: 'Aktifkan watchdog tanpa LED daya?',
+        noLedConfirmDesc:
+          'Papan tidak dapat melihat kapan host mati, sehingga host dianggap selalu menyala. Jika Anda mematikan host, watchdog menekan reset setelah batas waktu lewat. Hubungkan LED daya untuk menghindarinya.',
+        noLedConfirmOk: 'Aktifkan',
+        cancel: 'Batal'
       },
       netboot: {
         title: 'Boot jaringan',
@@ -725,7 +755,10 @@ const id = {
           Wired: 'Berkabel',
           Wireless: 'Nirkabel',
           Other: 'Lainnya'
-        }
+        },
+        hostnameInvalid:
+          'Gunakan huruf, angka, dan tanda hubung, maksimal 63 per bagian yang dipisah titik. Tanpa tanda hubung di awal atau akhir bagian.',
+        hostnameFailed: 'Gagal mengubah nama host'
       },
       appearance: {
         title: 'Tampilan',
@@ -890,7 +923,8 @@ const id = {
         reboot: 'Mulai ulang',
         rebootDesc: 'Apakah Anda yakin ingin me-reboot NanoKVM?',
         okBtn: 'Ya',
-        cancelBtn: 'Tidak'
+        cancelBtn: 'Tidak',
+        rebootFailed: 'Mulai ulang gagal'
       },
       network: {
         title: 'Jaringan',
@@ -915,7 +949,14 @@ const id = {
           restarting: 'Memulai ulang server perangkat, ini memakan waktu sekitar dua menit...',
           waiting: 'Menunggu perangkat merespons kembali...',
           waitingHttp:
-            'Beralih kembali ke http. Muat ulang halaman ini jika tidak terbuka dengan sendirinya.'
+            'Beralih kembali ke http. Muat ulang halaman ini jika tidak terbuka dengan sendirinya.',
+          failed: 'Tidak dapat mengubah pengaturan HTTPS',
+          enableConfirm: 'Aktifkan HTTPS?',
+          disableConfirm: 'Nonaktifkan HTTPS?',
+          confirmDesc:
+            'Ini mengeluarkan Anda dan memulai ulang server perangkat, yang memakan waktu sekitar dua menit. Halaman lalu membuka {{url}}.',
+          confirmOk: 'Lanjutkan',
+          confirmCancel: 'Batal'
         },
         ethernet: {
           title: 'Alamat IP',
@@ -1020,8 +1061,18 @@ const id = {
           '{{other}} sedang berjalan atau dimulai saat boot. Hanya satu VPN yang dapat berjalan dalam satu waktu: hentikan {{other}} dan nonaktifkan mulai saat boot-nya terlebih dahulu.',
         swap: {
           title: 'Memori swap',
-          tip: 'Jika daemon kekurangan memori, coba aktifkan memori swap. Ini mengatur ukuran file swap menjadi 256MB secara default, yang dapat diubah di "Pengaturan > Perangkat".'
-        }
+          tip: 'Jika daemon kekurangan memori, coba aktifkan memori swap. Ini mengatur ukuran file swap menjadi 256MB secara default, yang dapat diubah di "Pengaturan > Perangkat".',
+          failed: 'Gagal mengubah memori swap'
+        },
+        copy: 'Salin',
+        copied: 'Tautan disalin',
+        copyFailed: 'Tidak dapat menyalin tautan. Pilih lalu salin secara manual.',
+        open: 'Buka',
+        checkAgain: 'Periksa lagi',
+        notSignedIn: 'Belum masuk. Selesaikan masuk melalui tautan, lalu periksa lagi.',
+        checkFailed: 'Tidak dapat memeriksa status masuk',
+        loginWaiting: 'Halaman ini memeriksa setiap beberapa detik dan lanjut setelah Anda masuk.',
+        uninstallFailed: 'Gagal menghapus instalasi'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1036,7 +1087,6 @@ const id = {
           'Perangkat belum ditautkan. Silakan masuk dan tautkan perangkat ini ke akun Anda.',
         urlPeriod: 'Url ini berlaku selama 10 menit',
         login: 'Masuk',
-        loginSuccess: 'Berhasil masuk',
         logout: 'Keluar',
         logoutDesc: 'Apakah Anda yakin ingin logout?'
       },
@@ -1050,7 +1100,6 @@ const id = {
         or: 'atau',
         sso: 'Masuk dengan SSO',
         urlPeriod: 'Url ini berlaku selama 10 menit',
-        loginSuccess: 'Berhasil masuk',
         logout: 'Batalkan pendaftaran',
         logoutDesc:
           'Membatalkan pendaftaran akan menghapus peer ini dari akun NetBird Anda dan menghapus konfigurasinya di sini. Untuk bergabung lagi diperlukan setup key atau login SSO, dan peer mungkin mendapat IP baru. Lanjutkan?'
@@ -1094,7 +1143,10 @@ const id = {
           checksumMismatch: 'Verifikasi SHA-256 gagal. Paket mungkin rusak.',
           invalidName: 'Format nama file tidak valid. Silakan unduh dari rilis GitHub.',
           updateFailed: 'Gagal memperbarui, tolong coba lagi.'
-        }
+        },
+        updateTo: 'Perbarui ke {{version}}',
+        updateConfirmDesc:
+          'Perangkat memasang pembaruan dan memulai ulang servernya. Halaman ini dimuat ulang saat server kembali.'
       },
       account: {
         title: 'Akun',
