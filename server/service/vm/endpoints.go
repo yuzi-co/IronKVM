@@ -372,7 +372,7 @@ func refusalMessage(device string, free endpointUse, relief []string) string {
 		options = append(options, fmt.Sprintf("%s (%d)", name, frees))
 	}
 
-	return message + " — turn off " + strings.Join(options, " or ") + " first"
+	return message + ": turn off " + strings.Join(options, " or ") + " first"
 }
 
 // fittingSets lists every largest set of optional functions that fits beside
