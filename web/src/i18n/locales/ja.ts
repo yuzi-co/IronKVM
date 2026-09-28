@@ -518,6 +518,50 @@ const ja = {
         okBtn: '確認',
         cancelBtn: 'キャンセル'
       },
+      vnc: {
+        title: 'VNC',
+        service: 'VNC サーバー',
+        serviceDesc:
+          'TigerVNC や Remmina などの VNC クライアントでホストを表示、操作できます。クライアントは Tight エンコーディングに対応している必要があります。同時に 1 セッションのみです。',
+        credentials:
+          'KVM アカウントでログインします。接続はボードの TLS 証明書で暗号化されます（VeNCrypt X509Plain）。',
+        port: 'ポート',
+        portDesc: 'サーバーが待ち受ける TCP ポートです。',
+        maxFps: 'フレームレート上限',
+        maxFpsDesc: 'クライアントに送る 1 秒あたりの最大フレーム数です。',
+        vncAuth: '通常の VNC 認証',
+        vncAuthDesc:
+          'VeNCrypt に対応しないクライアント向けです。アカウントの代わりに専用の VNC パスワードを確認します。',
+        vncAuthWarning:
+          '通常の VNC 認証は接続を暗号化しません。ネットワーク経路上の誰でも画面とキー入力を見ることができます。信頼できるネットワークでのみ使用してください。',
+        password: 'VNC パスワード',
+        passwordSet:
+          'パスワードが設定されています。変更するには新しいパスワードを入力してください。',
+        passwordInvalid: 'VNC パスワードは 6～8 文字にしてください。',
+        save: '保存',
+        saved: '設定を保存しました',
+        state: '状態',
+        listening: 'ポート {{port}} で待ち受け中',
+        notListening: '待ち受けていません',
+        noSession: '開いているセッションはありません',
+        client: 'クライアント',
+        user: 'ユーザー',
+        method: '認証',
+        methodVencrypt: 'TLS 経由のアカウント',
+        methodVnc: 'VNC パスワード',
+        since: '接続開始',
+        resolution: '解像度',
+        framesSent: '送信フレーム数',
+        lastError: '前回のセッションの終了理由: {{error}}',
+        refresh: '更新',
+        disconnect: '切断',
+        disconnectConfirmTitle: 'VNC セッションを終了しますか？',
+        disconnectConfirmDesc:
+          'クライアントはすぐに切断され、押されたままのキーとボタンはすべて離されます。',
+        failed: 'VNC の操作に失敗しました',
+        okBtn: '確認',
+        cancelBtn: 'キャンセル'
+      },
       watchdog: {
         title: 'ウォッチドッグ',
         service: 'ホストウォッチドッグ',

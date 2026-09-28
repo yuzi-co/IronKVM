@@ -518,6 +518,49 @@ const es = {
         okBtn: 'Confirmar',
         cancelBtn: 'Cancelar'
       },
+      vnc: {
+        title: 'VNC',
+        service: 'Servidor VNC',
+        serviceDesc:
+          'Permite que un cliente VNC, como TigerVNC o Remmina, vea y controle el host. El cliente debe admitir la codificación Tight. Una sesión a la vez.',
+        credentials:
+          'Inicie sesión con una cuenta KVM. La conexión se cifra con el certificado TLS de la placa (VeNCrypt X509Plain).',
+        port: 'Puerto',
+        portDesc: 'El puerto TCP en el que escucha el servidor.',
+        maxFps: 'Límite de fotogramas',
+        maxFpsDesc: 'El máximo de fotogramas por segundo que se envían a un cliente.',
+        vncAuth: 'Autenticación VNC simple',
+        vncAuthDesc:
+          'Para clientes sin VeNCrypt. Comprueba una contraseña VNC aparte en lugar de una cuenta.',
+        vncAuthWarning:
+          'La autenticación VNC simple no cifra la conexión. Cualquiera en la ruta de red puede ver la pantalla y las pulsaciones de teclas. Úsela solo en una red de confianza.',
+        password: 'Contraseña VNC',
+        passwordSet: 'Hay una contraseña establecida. Escriba una nueva para cambiarla.',
+        passwordInvalid: 'La contraseña VNC debe tener de 6 a 8 caracteres.',
+        save: 'Guardar',
+        saved: 'Ajustes guardados',
+        state: 'Estado',
+        listening: 'Escuchando en el puerto {{port}}',
+        notListening: 'No escucha',
+        noSession: 'No hay ninguna sesión abierta',
+        client: 'Cliente',
+        user: 'Usuario',
+        method: 'Autenticación',
+        methodVencrypt: 'Cuenta sobre TLS',
+        methodVnc: 'Contraseña VNC',
+        since: 'Conectado desde',
+        resolution: 'Resolución',
+        framesSent: 'Fotogramas enviados',
+        lastError: 'La última sesión terminó: {{error}}',
+        refresh: 'Actualizar',
+        disconnect: 'Desconectar',
+        disconnectConfirmTitle: '¿Terminar la sesión VNC?',
+        disconnectConfirmDesc:
+          'El cliente se desconecta de inmediato y se sueltan todas las teclas y botones que mantenga pulsados.',
+        failed: 'La operación VNC falló',
+        okBtn: 'Confirmar',
+        cancelBtn: 'Cancelar'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Watchdog del host',

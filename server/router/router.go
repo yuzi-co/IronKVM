@@ -95,6 +95,7 @@ func server(r *gin.Engine) {
 	ipmiRouter(r)
 	watchdogRouter(r)
 	netbootRouter(r)
+	vncRouter(r)
 }
 
 func LoopbackHTTPAllowedPaths() []string {

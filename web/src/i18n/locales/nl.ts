@@ -521,6 +521,49 @@ const nl = {
         okBtn: 'Bevestigen',
         cancelBtn: 'Annuleren'
       },
+      vnc: {
+        title: 'VNC',
+        service: 'VNC-server',
+        serviceDesc:
+          'Laat een VNC-client, zoals TigerVNC of Remmina, de host bekijken en bedienen. De client moet Tight-codering ondersteunen. Eén sessie tegelijk.',
+        credentials:
+          'Meld u aan met een KVM-account. De verbinding is versleuteld met het TLS-certificaat van het bord (VeNCrypt X509Plain).',
+        port: 'Poort',
+        portDesc: 'De TCP-poort waarop de server luistert.',
+        maxFps: 'Limiet beeldsnelheid',
+        maxFpsDesc: 'Het maximale aantal beelden per seconde dat een client ontvangt.',
+        vncAuth: 'Eenvoudige VNC-authenticatie',
+        vncAuthDesc:
+          'Voor clients zonder VeNCrypt. Deze controleert een apart VNC-wachtwoord in plaats van een account.',
+        vncAuthWarning:
+          'Eenvoudige VNC-authenticatie versleutelt de verbinding niet. Iedereen op het netwerkpad kan het scherm en de toetsaanslagen zien. Gebruik deze alleen op een vertrouwd netwerk.',
+        password: 'VNC-wachtwoord',
+        passwordSet: 'Er is een wachtwoord ingesteld. Typ een nieuw wachtwoord om het te wijzigen.',
+        passwordInvalid: 'Het VNC-wachtwoord moet 6 tot 8 tekens lang zijn.',
+        save: 'Opslaan',
+        saved: 'Instellingen opgeslagen',
+        state: 'Status',
+        listening: 'Luistert op poort {{port}}',
+        notListening: 'Luistert niet',
+        noSession: 'Geen open sessie',
+        client: 'Client',
+        user: 'Gebruiker',
+        method: 'Authenticatie',
+        methodVencrypt: 'Account via TLS',
+        methodVnc: 'VNC-wachtwoord',
+        since: 'Verbonden sinds',
+        resolution: 'Resolutie',
+        framesSent: 'Verzonden beelden',
+        lastError: 'De laatste sessie eindigde: {{error}}',
+        refresh: 'Vernieuwen',
+        disconnect: 'Verbreken',
+        disconnectConfirmTitle: 'De VNC-sessie beëindigen?',
+        disconnectConfirmDesc:
+          'De client wordt meteen losgekoppeld, en elke ingedrukte toets en knop wordt losgelaten.',
+        failed: 'VNC-bewerking mislukt',
+        okBtn: 'Bevestigen',
+        cancelBtn: 'Annuleren'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Host-watchdog',

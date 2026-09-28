@@ -515,6 +515,49 @@ const tr = {
         okBtn: 'Onayla',
         cancelBtn: 'İptal'
       },
+      vnc: {
+        title: 'VNC',
+        service: 'VNC sunucusu',
+        serviceDesc:
+          'TigerVNC veya Remmina gibi bir VNC istemcisinin ana bilgisayarı görmesini ve denetlemesini sağlar. İstemci Tight kodlamasını desteklemelidir. Aynı anda tek oturum.',
+        credentials:
+          'Bir KVM hesabıyla oturum açın. Bağlantı, kartın TLS sertifikasıyla şifrelenir (VeNCrypt X509Plain).',
+        port: 'Bağlantı noktası',
+        portDesc: 'Sunucunun dinlediği TCP bağlantı noktası.',
+        maxFps: 'Kare hızı sınırı',
+        maxFpsDesc: 'Bir istemciye gönderilen en fazla saniyedeki kare sayısı.',
+        vncAuth: 'Basit VNC kimlik doğrulaması',
+        vncAuthDesc:
+          'VeNCrypt desteği olmayan istemciler için. Hesap yerine ayrı bir VNC parolasını denetler.',
+        vncAuthWarning:
+          'Basit VNC kimlik doğrulaması bağlantıyı şifrelemez. Ağ yolundaki herkes ekranı ve tuş vuruşlarını görebilir. Yalnızca güvenilir bir ağda kullanın.',
+        password: 'VNC parolası',
+        passwordSet: 'Bir parola ayarlı. Değiştirmek için yenisini yazın.',
+        passwordInvalid: 'VNC parolası 6 ile 8 karakter arasında olmalıdır.',
+        save: 'Kaydet',
+        saved: 'Ayarlar kaydedildi',
+        state: 'Durum',
+        listening: '{{port}} numaralı bağlantı noktasında dinliyor',
+        notListening: 'Dinlemiyor',
+        noSession: 'Açık oturum yok',
+        client: 'İstemci',
+        user: 'Kullanıcı',
+        method: 'Kimlik doğrulama',
+        methodVencrypt: 'TLS üzerinden hesap',
+        methodVnc: 'VNC parolası',
+        since: 'Bağlantı zamanı',
+        resolution: 'Çözünürlük',
+        framesSent: 'Gönderilen kareler',
+        lastError: 'Son oturum sona erdi: {{error}}',
+        refresh: 'Yenile',
+        disconnect: 'Bağlantıyı kes',
+        disconnectConfirmTitle: 'VNC oturumu sonlandırılsın mı?',
+        disconnectConfirmDesc:
+          'İstemcinin bağlantısı hemen kesilir ve basılı tuttuğu tüm tuşlar ve düğmeler bırakılır.',
+        failed: 'VNC işlemi başarısız oldu',
+        okBtn: 'Onayla',
+        cancelBtn: 'İptal'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Ana makine watchdog',

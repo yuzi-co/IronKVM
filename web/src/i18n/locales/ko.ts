@@ -511,6 +511,49 @@ const ko = {
         okBtn: '확인',
         cancelBtn: '취소'
       },
+      vnc: {
+        title: 'VNC',
+        service: 'VNC 서버',
+        serviceDesc:
+          'TigerVNC나 Remmina 같은 VNC 클라이언트로 호스트를 보고 제어할 수 있습니다. 클라이언트는 Tight 인코딩을 지원해야 합니다. 한 번에 하나의 세션만 가능합니다.',
+        credentials:
+          'KVM 계정으로 로그인합니다. 연결은 보드의 TLS 인증서로 암호화됩니다(VeNCrypt X509Plain).',
+        port: '포트',
+        portDesc: '서버가 수신 대기하는 TCP 포트입니다.',
+        maxFps: '프레임 속도 제한',
+        maxFpsDesc: '클라이언트에 보내는 초당 최대 프레임 수입니다.',
+        vncAuth: '일반 VNC 인증',
+        vncAuthDesc:
+          'VeNCrypt를 지원하지 않는 클라이언트용입니다. 계정 대신 별도의 VNC 비밀번호를 확인합니다.',
+        vncAuthWarning:
+          '일반 VNC 인증은 연결을 암호화하지 않습니다. 네트워크 경로상의 누구나 화면과 키 입력을 볼 수 있습니다. 신뢰할 수 있는 네트워크에서만 사용하세요.',
+        password: 'VNC 비밀번호',
+        passwordSet: '비밀번호가 설정되어 있습니다. 변경하려면 새 비밀번호를 입력하세요.',
+        passwordInvalid: 'VNC 비밀번호는 6~8자여야 합니다.',
+        save: '저장',
+        saved: '설정이 저장되었습니다',
+        state: '상태',
+        listening: '포트 {{port}}에서 수신 대기 중',
+        notListening: '수신 대기하지 않음',
+        noSession: '열린 세션이 없습니다',
+        client: '클라이언트',
+        user: '사용자',
+        method: '인증',
+        methodVencrypt: 'TLS를 통한 계정',
+        methodVnc: 'VNC 비밀번호',
+        since: '연결 시작',
+        resolution: '해상도',
+        framesSent: '보낸 프레임',
+        lastError: '마지막 세션 종료: {{error}}',
+        refresh: '새로 고침',
+        disconnect: '연결 끊기',
+        disconnectConfirmTitle: 'VNC 세션을 종료할까요?',
+        disconnectConfirmDesc:
+          '클라이언트 연결이 즉시 끊기고, 누르고 있던 모든 키와 버튼이 해제됩니다.',
+        failed: 'VNC 작업에 실패했습니다',
+        okBtn: '확인',
+        cancelBtn: '취소'
+      },
       watchdog: {
         title: '워치독',
         service: '호스트 워치독',

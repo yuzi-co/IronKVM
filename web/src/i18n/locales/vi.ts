@@ -514,6 +514,49 @@ const vi = {
         okBtn: 'Xác nhận',
         cancelBtn: 'Hủy'
       },
+      vnc: {
+        title: 'VNC',
+        service: 'Máy chủ VNC',
+        serviceDesc:
+          'Cho phép một trình khách VNC, như TigerVNC hoặc Remmina, xem và điều khiển máy chủ đích. Trình khách phải hỗ trợ mã hóa Tight. Mỗi lần một phiên.',
+        credentials:
+          'Đăng nhập bằng tài khoản KVM. Kết nối được mã hóa bằng chứng chỉ TLS của bo mạch (VeNCrypt X509Plain).',
+        port: 'Cổng',
+        portDesc: 'Cổng TCP mà máy chủ lắng nghe.',
+        maxFps: 'Giới hạn tốc độ khung hình',
+        maxFpsDesc: 'Số khung hình mỗi giây tối đa gửi cho một trình khách.',
+        vncAuth: 'Xác thực VNC đơn giản',
+        vncAuthDesc:
+          'Dành cho trình khách không có VeNCrypt. Cách này kiểm tra một mật khẩu VNC riêng thay vì tài khoản.',
+        vncAuthWarning:
+          'Xác thực VNC đơn giản không mã hóa kết nối. Bất kỳ ai trên đường mạng đều có thể thấy màn hình và các phím đã gõ. Chỉ dùng trên mạng tin cậy.',
+        password: 'Mật khẩu VNC',
+        passwordSet: 'Đã đặt mật khẩu. Nhập mật khẩu mới để thay đổi.',
+        passwordInvalid: 'Mật khẩu VNC phải có từ 6 đến 8 ký tự.',
+        save: 'Lưu',
+        saved: 'Đã lưu cài đặt',
+        state: 'Trạng thái',
+        listening: 'Đang lắng nghe trên cổng {{port}}',
+        notListening: 'Không lắng nghe',
+        noSession: 'Không có phiên nào đang mở',
+        client: 'Trình khách',
+        user: 'Người dùng',
+        method: 'Xác thực',
+        methodVencrypt: 'Tài khoản qua TLS',
+        methodVnc: 'Mật khẩu VNC',
+        since: 'Đã kết nối từ',
+        resolution: 'Độ phân giải',
+        framesSent: 'Khung hình đã gửi',
+        lastError: 'Phiên gần nhất đã kết thúc: {{error}}',
+        refresh: 'Làm mới',
+        disconnect: 'Ngắt kết nối',
+        disconnectConfirmTitle: 'Kết thúc phiên VNC?',
+        disconnectConfirmDesc:
+          'Trình khách bị ngắt ngay, và mọi phím và nút đang giữ đều được nhả ra.',
+        failed: 'Thao tác VNC thất bại',
+        okBtn: 'Xác nhận',
+        cancelBtn: 'Hủy'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Watchdog máy chủ',

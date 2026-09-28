@@ -41,8 +41,10 @@ var readMjpeg = func(width uint16, height uint16, quality uint16) ([]byte, int) 
 var refreshInterval = 5 * time.Second
 
 type Streamer struct {
-	mutex          sync.Mutex
-	clients        map[*gin.Context]*client
+	mutex sync.Mutex
+	// clients is keyed by the viewer's *gin.Context, or by the Subscription
+	// of a viewer inside this process.
+	clients        map[any]*client
 	clientSnapshot atomic.Pointer[[]*client]
 	running        int32
 	frameMutex     sync.RWMutex
@@ -67,7 +69,7 @@ type Streamer struct {
 
 func NewStreamer() *Streamer {
 	s := &Streamer{
-		clients: make(map[*gin.Context]*client),
+		clients: make(map[any]*client),
 	}
 	s.updateClientSnapshotLocked()
 
@@ -78,8 +80,14 @@ func (s *Streamer) AddClient(c *gin.Context) *client {
 	client := newClient(c)
 	go client.write()
 
+	s.addClient(c, client)
+
+	return client
+}
+
+func (s *Streamer) addClient(key any, client *client) {
 	s.mutex.Lock()
-	s.clients[c] = client
+	s.clients[key] = client
 	count := s.updateClientSnapshotLocked()
 	s.viewerVersion++
 	version := s.viewerVersion
@@ -94,14 +102,16 @@ func (s *Streamer) AddClient(c *gin.Context) *client {
 		go s.run()
 		log.Debug("mjpeg stream started")
 	}
-
-	return client
 }
 
 func (s *Streamer) RemoveClient(c *gin.Context) {
+	s.removeClient(c)
+}
+
+func (s *Streamer) removeClient(key any) {
 	s.mutex.Lock()
-	client, exists := s.clients[c]
-	delete(s.clients, c)
+	client, exists := s.clients[key]
+	delete(s.clients, key)
 	count := s.updateClientSnapshotLocked()
 	s.viewerVersion++
 	version := s.viewerVersion

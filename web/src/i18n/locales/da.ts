@@ -514,6 +514,49 @@ const da = {
         okBtn: 'Bekræft',
         cancelBtn: 'Annuller'
       },
+      vnc: {
+        title: 'VNC',
+        service: 'VNC-server',
+        serviceDesc:
+          'Lader en VNC-klient, f.eks. TigerVNC eller Remmina, se og styre værten. Klienten skal understøtte Tight-kodning. Én session ad gangen.',
+        credentials:
+          'Log ind med en KVM-konto. Forbindelsen krypteres med kortets TLS-certifikat (VeNCrypt X509Plain).',
+        port: 'Port',
+        portDesc: 'Den TCP-port, som serveren lytter på.',
+        maxFps: 'Grænse for billedhastighed',
+        maxFpsDesc: 'Det højeste antal billeder i sekundet, som en klient får.',
+        vncAuth: 'Simpel VNC-godkendelse',
+        vncAuthDesc:
+          'Til klienter uden VeNCrypt. Den tjekker en separat VNC-adgangskode i stedet for en konto.',
+        vncAuthWarning:
+          'Simpel VNC-godkendelse krypterer ikke forbindelsen. Alle på netværksvejen kan se skærmen og tastetrykkene. Brug den kun på et netværk, du stoler på.',
+        password: 'VNC-adgangskode',
+        passwordSet: 'Der er angivet en adgangskode. Skriv en ny for at ændre den.',
+        passwordInvalid: 'VNC-adgangskoden skal være på 6 til 8 tegn.',
+        save: 'Gem',
+        saved: 'Indstillinger gemt',
+        state: 'Status',
+        listening: 'Lytter på port {{port}}',
+        notListening: 'Lytter ikke',
+        noSession: 'Ingen åben session',
+        client: 'Klient',
+        user: 'Bruger',
+        method: 'Godkendelse',
+        methodVencrypt: 'Konto over TLS',
+        methodVnc: 'VNC-adgangskode',
+        since: 'Forbundet siden',
+        resolution: 'Opløsning',
+        framesSent: 'Sendte billeder',
+        lastError: 'Den seneste session sluttede: {{error}}',
+        refresh: 'Opdater',
+        disconnect: 'Afbryd',
+        disconnectConfirmTitle: 'Afslut VNC-sessionen?',
+        disconnectConfirmDesc:
+          'Klienten afbrydes med det samme, og alle taster og knapper, den holder nede, slippes.',
+        failed: 'VNC-handlingen mislykkedes',
+        okBtn: 'Bekræft',
+        cancelBtn: 'Annuller'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Værts-watchdog',

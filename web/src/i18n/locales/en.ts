@@ -511,6 +511,49 @@ const en = {
         okBtn: 'Confirm',
         cancelBtn: 'Cancel'
       },
+      vnc: {
+        title: 'VNC',
+        service: 'VNC server',
+        serviceDesc:
+          'Lets a VNC client, such as TigerVNC or Remmina, view and control the host. The client must support Tight encoding. One session at a time.',
+        credentials:
+          "Log in with a KVM account. The connection is encrypted with the board's TLS certificate (VeNCrypt X509Plain).",
+        port: 'Port',
+        portDesc: 'The TCP port that the server listens on.',
+        maxFps: 'Frame rate limit',
+        maxFpsDesc: 'The most frames a second that a client is sent.',
+        vncAuth: 'Plain VNC authentication',
+        vncAuthDesc:
+          'For clients without VeNCrypt. It checks a separate VNC password instead of an account.',
+        vncAuthWarning:
+          'Plain VNC authentication does not encrypt the connection. Anyone on the network path can see the screen and the keystrokes. Use it only on a trusted network.',
+        password: 'VNC password',
+        passwordSet: 'A password is set. Type a new one to change it.',
+        passwordInvalid: 'The VNC password must be 6 to 8 characters.',
+        save: 'Save',
+        saved: 'Settings saved',
+        state: 'State',
+        listening: 'Listening on port {{port}}',
+        notListening: 'Not listening',
+        noSession: 'No open session',
+        client: 'Client',
+        user: 'User',
+        method: 'Authentication',
+        methodVencrypt: 'Account over TLS',
+        methodVnc: 'VNC password',
+        since: 'Connected since',
+        resolution: 'Resolution',
+        framesSent: 'Frames sent',
+        lastError: 'The last session ended: {{error}}',
+        refresh: 'Refresh',
+        disconnect: 'Disconnect',
+        disconnectConfirmTitle: 'End the VNC session?',
+        disconnectConfirmDesc:
+          'The client is disconnected at once, and every key and button it holds is released.',
+        failed: 'VNC operation failed',
+        okBtn: 'Confirm',
+        cancelBtn: 'Cancel'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Host watchdog',

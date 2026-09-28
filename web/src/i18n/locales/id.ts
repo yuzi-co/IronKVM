@@ -515,6 +515,49 @@ const id = {
         okBtn: 'Konfirmasi',
         cancelBtn: 'Batal'
       },
+      vnc: {
+        title: 'VNC',
+        service: 'Server VNC',
+        serviceDesc:
+          'Memungkinkan klien VNC, seperti TigerVNC atau Remmina, melihat dan mengendalikan host. Klien harus mendukung encoding Tight. Satu sesi pada satu waktu.',
+        credentials:
+          'Masuk dengan akun KVM. Koneksi dienkripsi dengan sertifikat TLS papan (VeNCrypt X509Plain).',
+        port: 'Port',
+        portDesc: 'Port TCP tempat server mendengarkan.',
+        maxFps: 'Batas frame rate',
+        maxFpsDesc: 'Jumlah frame per detik terbanyak yang dikirim ke klien.',
+        vncAuth: 'Autentikasi VNC biasa',
+        vncAuthDesc:
+          'Untuk klien tanpa VeNCrypt. Autentikasi ini memeriksa kata sandi VNC tersendiri, bukan akun.',
+        vncAuthWarning:
+          'Autentikasi VNC biasa tidak mengenkripsi koneksi. Siapa pun di jalur jaringan dapat melihat layar dan ketikan. Gunakan hanya di jaringan tepercaya.',
+        password: 'Kata sandi VNC',
+        passwordSet: 'Kata sandi sudah diatur. Ketik yang baru untuk mengubahnya.',
+        passwordInvalid: 'Kata sandi VNC harus 6 sampai 8 karakter.',
+        save: 'Simpan',
+        saved: 'Pengaturan disimpan',
+        state: 'Status',
+        listening: 'Mendengarkan di port {{port}}',
+        notListening: 'Tidak mendengarkan',
+        noSession: 'Tidak ada sesi terbuka',
+        client: 'Klien',
+        user: 'Pengguna',
+        method: 'Autentikasi',
+        methodVencrypt: 'Akun melalui TLS',
+        methodVnc: 'Kata sandi VNC',
+        since: 'Terhubung sejak',
+        resolution: 'Resolusi',
+        framesSent: 'Frame terkirim',
+        lastError: 'Sesi terakhir berakhir: {{error}}',
+        refresh: 'Segarkan',
+        disconnect: 'Putuskan',
+        disconnectConfirmTitle: 'Akhiri sesi VNC?',
+        disconnectConfirmDesc:
+          'Klien langsung diputus, dan setiap tombol serta tombol mouse yang ditahannya dilepas.',
+        failed: 'Operasi VNC gagal',
+        okBtn: 'Konfirmasi',
+        cancelBtn: 'Batal'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Watchdog host',
