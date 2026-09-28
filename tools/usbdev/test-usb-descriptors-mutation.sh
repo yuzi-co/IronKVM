@@ -66,9 +66,9 @@ m_desc() { sed -i 's|xE7|xE6|g' "$1/S03usbdev"; }
 # to this logical maximum.
 m_touchmax() { sed -i 's|\(x09..x55..x25..x\)02|\10a|' "$1/S03usbdev"; }
 
-# The touch descriptor's report length. The first report_length 7 in the
-# script is the touch branch.
-m_touchlen() { sed -i '0,/echo 7 > functions.hid.GS2.report_length/s//echo 8 > functions\/hid.GS2\/report_length/' "$1/S03usbdev"; }
+# The touch descriptor's report length, from the marker test to the first
+# report_length after it.
+m_touchlen() { sed -i '/-e \/boot\/usb.touch \]/,/report_length/s/echo 7 >/echo 8 >/' "$1/S03usbdev"; }
 
 # The composite class triple. Wrong here and Windows binds one function.
 m_class() { sed -i 's|echo 0xEF > bDeviceClass|echo 0xEE > bDeviceClass|' "$1/S03usbdev"; }

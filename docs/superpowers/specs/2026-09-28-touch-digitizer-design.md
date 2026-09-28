@@ -141,4 +141,6 @@ once more with Tip Switch clear each contact that has just lifted.
 - Windows: Device Manager shows a HID-compliant touch screen without an error, and Pen and
   Touch in Settings reports touch input with 2 touch points. Tap, drag, two-finger scroll
   and press-and-hold work.
-- Android and iPadOS: taps and scrolling.
+- Android: taps and scrolling.
+- iPadOS: whether it takes a USB touch screen at all is not known. Test it before the
+  issue's premise is taken as met.
