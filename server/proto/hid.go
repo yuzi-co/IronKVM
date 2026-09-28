@@ -34,6 +34,11 @@ type GetKeyboardLedStatusRsp struct {
 // operator has switched away from, so a stalled state goes stale rather than
 // clearing, and a consumer must be able to tell the two apart.
 //
+// WasAccepting says the target has fetched a report from this endpoint since
+// the gadget last enumerated. A stall without it is most likely a host with no
+// driver for the endpoint, which never polls it and is not at fault, and the
+// web UI does not warn about that one.
+//
 // "stalled" and "detached" are different faults and want different answers.
 // Stalled is one endpoint the target has stopped polling on a working link, and
 // the operator's remedies are a different mouse mode or a USB reset. Detached
@@ -46,6 +51,7 @@ type HidDeviceStatus struct {
 	Detail        string `json:"detail,omitempty"`
 	StateForMs    int64  `json:"stateForMs"`
 	ObservedMsAgo int64  `json:"observedMsAgo"`
+	WasAccepting  bool   `json:"wasAccepting"`
 }
 
 type GetHidStatusRsp struct {

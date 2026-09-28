@@ -310,3 +310,87 @@ func TestEndpointStatesCoversEveryStateStatusReports(t *testing.T) {
 		t.Errorf("EndpointStates() lacks %q", hidStateUnknown)
 	}
 }
+
+// A host with no driver for an endpoint, such as a text console with no mouse
+// driver, never polls it, so every write to it stalls from the first. That is
+// not a fault, and the status must let a consumer tell it from one.
+func TestHealthAStallThatWasNeverAcceptingSaysSo(t *testing.T) {
+	var h endpointHealth
+
+	h.record(os.ErrDeadlineExceeded, at(0))
+	h.record(os.ErrDeadlineExceeded, at(3600))
+
+	got := h.snapshot(at(3600))
+	if got.State != hidStateStalled {
+		t.Fatalf("state = %q, want %q", got.State, hidStateStalled)
+	}
+	if got.WasAccepting {
+		t.Fatal("an endpoint that never took a report reports wasAccepting")
+	}
+}
+
+// The stall worth a warning: the target took reports and then stopped.
+func TestHealthAStallAfterAcceptingRemembersIt(t *testing.T) {
+	var h endpointHealth
+
+	h.record(nil, at(0))
+	h.record(os.ErrDeadlineExceeded, at(1))
+	h.record(os.ErrDeadlineExceeded, at(2))
+
+	got := h.snapshot(at(2))
+	if got.State != hidStateStalled {
+		t.Fatalf("state = %q, want %q", got.State, hidStateStalled)
+	}
+	if !got.WasAccepting {
+		t.Fatal("a stall after accepting lost wasAccepting")
+	}
+}
+
+func TestHealthStartsNotAccepting(t *testing.T) {
+	var h endpointHealth
+
+	if h.snapshot(at(0)).WasAccepting {
+		t.Fatal("an endpoint nothing was written to reports wasAccepting")
+	}
+}
+
+// A detached gadget enumerates afresh when the link returns, and the host
+// decides again then whether to poll the endpoint.
+func TestHealthDetachingForgetsAccepting(t *testing.T) {
+	var h endpointHealth
+
+	h.record(nil, at(0))
+	h.record(syscall.ESHUTDOWN, at(1))
+	h.record(os.ErrDeadlineExceeded, at(2))
+
+	if h.snapshot(at(2)).WasAccepting {
+		t.Fatal("a stall after the gadget detached still reports wasAccepting")
+	}
+}
+
+// Recovery re-enumerates the gadget, so what the host polled before it says
+// nothing about what it polls after.
+func TestForgetAcceptingNoLockClearsEveryEndpoint(t *testing.T) {
+	var h Hid
+
+	h.kbHealth.record(nil, at(0))
+	h.relHealth.record(nil, at(0))
+	h.absHealth.record(nil, at(0))
+	h.absHealth.record(os.ErrDeadlineExceeded, at(1))
+
+	h.ForgetAcceptingNoLock()
+
+	for _, device := range h.Status() {
+		if device.WasAccepting {
+			t.Fatalf("%s still reports wasAccepting", device.Name)
+		}
+	}
+	if got := statusFor(t, &h, NameAbsoluteMouse).State; got != hidStateStalled {
+		t.Fatalf("forgetting changed the state to %q, want %q", got, hidStateStalled)
+	}
+
+	h.absHealth.record(nil, at(2))
+	if !statusFor(t, &h, NameAbsoluteMouse).WasAccepting {
+		t.Fatal("a report taken after recovery did not set wasAccepting")
+	}
+}

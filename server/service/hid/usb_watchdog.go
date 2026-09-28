@@ -281,6 +281,7 @@ func (w *usbWatchdog) recover(run func() error, what string) {
 	h := GetHid()
 	h.Lock()
 	h.CloseNoLock()
+	h.ForgetAcceptingNoLock()
 	defer func() {
 		if err := h.OpenNoLockWithRetry(hidReopenTimeout, hidReopenRetryDelay); err != nil {
 			log.Errorf("usb watchdog: reopen the HID devices after %s: %s", what, err)

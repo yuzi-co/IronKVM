@@ -263,3 +263,70 @@ func countEntries(hook *test.Hook, level log.Level, substring string) int {
 	}
 	return count
 }
+
+// The warning in the web UI rests on this: on a host that never polls the
+// absolute pointer, the status says stalled but not that it was accepting.
+func TestANeverPolledEndpointIsNotReportedAsAccepting(t *testing.T) {
+	stallWrites(t)
+
+	h := &Hid{}
+	device := h.absoluteMouseDevice(HID2)
+	openDevice(t, device)
+
+	_ = h.writeHID(device, make([]byte, 6))
+
+	got := statusFor(t, h, NameAbsoluteMouse)
+	if got.State != hidStateStalled {
+		t.Fatalf("state = %q, want %q", got.State, hidStateStalled)
+	}
+	if got.WasAccepting {
+		t.Fatal("an endpoint that never took a report reports wasAccepting")
+	}
+}
+
+func TestAStallAfterAcceptingIsReportedAsSuch(t *testing.T) {
+	restore := writeReport
+	t.Cleanup(func() { writeReport = restore })
+
+	var stalled bool
+	writeReport = func(_ string, _ *os.File, _ []byte, _ time.Duration) error {
+		if stalled {
+			return fmt.Errorf("write timed out: %w", os.ErrDeadlineExceeded)
+		}
+		return nil
+	}
+
+	h := &Hid{}
+	device := h.absoluteMouseDevice(HID2)
+	openDevice(t, device)
+
+	if err := h.writeHID(device, make([]byte, 6)); err != nil {
+		t.Fatalf("write failed: %s", err)
+	}
+	stalled = true
+	_ = h.writeHID(device, make([]byte, 6))
+
+	got := statusFor(t, h, NameAbsoluteMouse)
+	if got.State != hidStateStalled {
+		t.Fatalf("state = %q, want %q", got.State, hidStateStalled)
+	}
+	if !got.WasAccepting {
+		t.Fatal("a stall after accepting is not reported as one")
+	}
+}
+
+// Every websocket client reopens the descriptors when it connects. A browser
+// reconnecting must not make a real stall look like a host that never polled.
+func TestReopeningTheDescriptorsKeepsWasAccepting(t *testing.T) {
+	h := &Hid{}
+	h.absHealth.record(nil, at(0))
+	h.absHealth.record(os.ErrDeadlineExceeded, at(1))
+
+	h.Lock()
+	h.CloseNoLock()
+	h.Unlock()
+
+	if !statusFor(t, h, NameAbsoluteMouse).WasAccepting {
+		t.Fatal("closing the descriptors cleared wasAccepting")
+	}
+}
