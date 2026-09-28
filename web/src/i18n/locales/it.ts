@@ -480,6 +480,45 @@ const it = {
         okBtn: 'Conferma',
         cancelBtn: 'Annulla'
       },
+      ipmi: {
+        title: 'IPMI',
+        warning:
+          "L'autenticazione IPMI è debole per progettazione. Chiunque raggiunga la scheda e conosca un nome utente può ottenere un hash della password IPMI di quell'utente e tentare di violarla offline. Usate password generate, attivate IPMI solo su una rete fidata e preferite Redfish su HTTPS quando lo strumento lo supporta.",
+        service: 'IPMI su LAN',
+        serviceDesc:
+          "IPMI 2.0 (RMCP+, ipmitool lanplus) sulla porta UDP 623, per l'alimentazione e lo stato dell'host. IPMI 1.5 e la cipher suite 0 sono rifiutati. Disattivarlo chiude tutte le sessioni IPMI.",
+        example: 'Esempio',
+        copyFailed: 'Copia non riuscita. Copiare manualmente.',
+        ledOn: 'Sono disponibili stato, on, off, soft, cycle e reset.',
+        ledOff:
+          '"LED di accensione collegato" è disattivato nel menu di alimentazione, quindi lo stato di alimentazione è sconosciuto. Funziona solo "power reset": status, on, off, soft e cycle sono rifiutati.',
+        accounts: 'Account',
+        accountsDesc:
+          'IPMI accede con gli account del KVM, ciascuno con la propria password IPMI, distinta dalla password web. Gli amministratori ottengono ADMINISTRATOR. Gli utenti ottengono USER: possono leggere lo stato di alimentazione con "-L USER" ma non modificarlo.',
+        passwordSet: 'Password IPMI impostata',
+        passwordNotSet: 'Nessuna password IPMI: accesso IPMI impossibile',
+        nameTooLong: 'Il nome supera i 16 caratteri, cosa che IPMI non consente',
+        accountDisabled: "L'account è disattivato",
+        setPassword: 'Imposta password',
+        changePassword: 'Cambia password',
+        remove: 'Rimuovi',
+        removeConfirmTitle: 'Rimuovere la password IPMI di {{user}}?',
+        removeConfirmDesc:
+          "L'account non potrà più accedere tramite IPMI e le sue sessioni IPMI terminano.",
+        passwordTitle: 'Password IPMI per {{user}}',
+        passwordDesc:
+          'Da 12 a 20 caratteri ASCII stampabili, diversa dalla password web. IPMI richiede che la scheda conservi la password in una forma rileggibile, quindi usatene una che non sia usata altrove. Copiatela prima di salvare: non verrà più mostrata.',
+        passwordPlaceholder: 'Password IPMI',
+        generate: 'Genera',
+        copy: 'Copia',
+        save: 'Salva',
+        passwordLength: 'Usare da 12 a 20 caratteri.',
+        passwordChars: 'Usare solo caratteri ASCII stampabili.',
+        saved: 'Password IPMI salvata',
+        failed: 'Operazione IPMI non riuscita',
+        okBtn: 'Conferma',
+        cancelBtn: 'Annulla'
+      },
       watchdog: {
         title: 'Watchdog',
         service: "Watchdog dell'host",

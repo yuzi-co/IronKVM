@@ -35,6 +35,10 @@ type Config struct {
 	// server.yaml. A file without the block loads with the watchdog off.
 	Watchdog Watchdog `yaml:"watchdog,omitempty" mapstructure:"watchdog"`
 
+	// IPMI configures IPMI over LAN, kept under "ipmi" in server.yaml. A
+	// file without the block loads with the service off.
+	IPMI IPMI `yaml:"ipmi,omitempty" mapstructure:"ipmi"`
+
 	// NetBoot configures network boot of the host, kept under "netboot" in
 	// server.yaml. A file without the block loads with both sides off.
 	NetBoot NetBoot `yaml:"netboot,omitempty" mapstructure:"netboot"`
@@ -66,6 +70,14 @@ type Redfish struct {
 // on.
 func (r Redfish) IsEnabled() bool {
 	return r.Enabled == nil || *r.Enabled
+}
+
+// IPMI configures IPMI over LAN.
+type IPMI struct {
+	// Enabled answers IPMI on UDP port 623. Off by default, because IPMI
+	// 2.0 authentication is weak by design: anyone who knows a user name
+	// can get a hash of that user's IPMI password to crack offline.
+	Enabled bool `yaml:"enabled" mapstructure:"enabled"`
 }
 
 // The host watchdog's defaults. A zero value in server.yaml means the default.

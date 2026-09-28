@@ -478,6 +478,45 @@ const pt_br = {
         okBtn: 'Confirmar',
         cancelBtn: 'Cancelar'
       },
+      ipmi: {
+        title: 'IPMI',
+        warning:
+          'A autenticação IPMI é fraca por design. Qualquer pessoa que alcance a placa e conheça um nome de usuário pode obter um hash da senha IPMI desse usuário e tentar quebrá-lo offline. Use senhas geradas, ative o IPMI apenas em uma rede confiável e prefira Redfish sobre HTTPS quando a ferramenta suportar.',
+        service: 'IPMI sobre LAN',
+        serviceDesc:
+          'IPMI 2.0 (RMCP+, ipmitool lanplus) na porta UDP 623, para a energia e o estado do host. IPMI 1.5 e o cipher suite 0 são recusados. Desativá-lo encerra todas as sessões IPMI.',
+        example: 'Exemplo',
+        copyFailed: 'Falha ao copiar. Copie manualmente.',
+        ledOn: 'Estado de energia, on, off, soft, cycle e reset estão disponíveis.',
+        ledOff:
+          '"LED de energia conectado" está desligado no menu de energia, então o estado de energia é desconhecido. Só "power reset" funciona: status, on, off, soft e cycle são recusados.',
+        accounts: 'Contas',
+        accountsDesc:
+          'O IPMI faz login com as contas do KVM, cada uma com sua própria senha IPMI, separada da senha web. Administradores recebem ADMINISTRATOR. Usuários recebem USER: podem ler o estado de energia com "-L USER", mas não alterá-lo.',
+        passwordSet: 'Senha IPMI definida',
+        passwordNotSet: 'Sem senha IPMI: não pode fazer login via IPMI',
+        nameTooLong: 'O nome tem mais de 16 caracteres, o que o IPMI não permite',
+        accountDisabled: 'A conta está desativada',
+        setPassword: 'Definir senha',
+        changePassword: 'Alterar senha',
+        remove: 'Remover',
+        removeConfirmTitle: 'Remover a senha IPMI de {{user}}?',
+        removeConfirmDesc:
+          'A conta não poderá mais fazer login via IPMI, e suas sessões IPMI serão encerradas.',
+        passwordTitle: 'Senha IPMI de {{user}}',
+        passwordDesc:
+          'De 12 a 20 caracteres ASCII imprimíveis, diferente da senha web. O IPMI exige que a placa guarde a senha de forma que possa lê-la de volta, então use uma que não seja usada em nenhum outro lugar. Copie-a antes de salvar: ela não será mostrada novamente.',
+        passwordPlaceholder: 'Senha IPMI',
+        generate: 'Gerar',
+        copy: 'Copiar',
+        save: 'Salvar',
+        passwordLength: 'Use de 12 a 20 caracteres.',
+        passwordChars: 'Use apenas caracteres ASCII imprimíveis.',
+        saved: 'Senha IPMI salva',
+        failed: 'A operação IPMI falhou',
+        okBtn: 'Confirmar',
+        cancelBtn: 'Cancelar'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Watchdog do host',

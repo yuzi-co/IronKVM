@@ -479,6 +479,45 @@ const pl = {
         okBtn: 'Potwierdź',
         cancelBtn: 'Anuluj'
       },
+      ipmi: {
+        title: 'IPMI',
+        warning:
+          'Uwierzytelnianie IPMI jest z założenia słabe. Każdy, kto ma dostęp do płytki i zna nazwę użytkownika, może pobrać skrót hasła IPMI tego użytkownika i próbować złamać go offline. Używaj generowanych haseł, włączaj IPMI tylko w zaufanej sieci i tam, gdzie narzędzie to obsługuje, wybieraj Redfish przez HTTPS.',
+        service: 'IPMI przez LAN',
+        serviceDesc:
+          'IPMI 2.0 (RMCP+, ipmitool lanplus) na porcie UDP 623 do zasilania i stanu hosta. IPMI 1.5 i zestaw szyfrów 0 są odrzucane. Wyłączenie kończy wszystkie sesje IPMI.',
+        example: 'Przykład',
+        copyFailed: 'Kopiowanie nie powiodło się. Skopiuj ręcznie.',
+        ledOn: 'Dostępne są stan zasilania, on, off, soft, cycle i reset.',
+        ledOff:
+          '„Dioda zasilania podłączona” jest wyłączona w menu zasilania, więc stan zasilania jest nieznany. Działa tylko „power reset”: status, on, off, soft i cycle są odrzucane.',
+        accounts: 'Konta',
+        accountsDesc:
+          'IPMI loguje się kontami KVM, każde z własnym hasłem IPMI, odrębnym od hasła webowego. Administratorzy dostają ADMINISTRATOR. Użytkownicy dostają USER: z „-L USER” mogą odczytać stan zasilania, ale nie mogą go zmienić.',
+        passwordSet: 'Hasło IPMI ustawione',
+        passwordNotSet: 'Brak hasła IPMI: logowanie przez IPMI niemożliwe',
+        nameTooLong: 'Nazwa ma więcej niż 16 znaków, na co IPMI nie pozwala',
+        accountDisabled: 'Konto jest wyłączone',
+        setPassword: 'Ustaw hasło',
+        changePassword: 'Zmień hasło',
+        remove: 'Usuń',
+        removeConfirmTitle: 'Usunąć hasło IPMI konta {{user}}?',
+        removeConfirmDesc:
+          'Konto nie będzie mogło logować się przez IPMI, a jego sesje IPMI zostaną zakończone.',
+        passwordTitle: 'Hasło IPMI dla {{user}}',
+        passwordDesc:
+          'Od 12 do 20 drukowalnych znaków ASCII, inne niż hasło webowe. IPMI wymaga, by płytka przechowywała hasło w postaci, którą może odczytać, więc użyj hasła, którego nie używasz nigdzie indziej. Skopiuj je przed zapisaniem: nie zostanie pokazane ponownie.',
+        passwordPlaceholder: 'Hasło IPMI',
+        generate: 'Generuj',
+        copy: 'Kopiuj',
+        save: 'Zapisz',
+        passwordLength: 'Użyj od 12 do 20 znaków.',
+        passwordChars: 'Używaj tylko drukowalnych znaków ASCII.',
+        saved: 'Hasło IPMI zapisane',
+        failed: 'Operacja IPMI nie powiodła się',
+        okBtn: 'Potwierdź',
+        cancelBtn: 'Anuluj'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Watchdog hosta',

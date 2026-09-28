@@ -475,6 +475,45 @@ const vi = {
         okBtn: 'Xác nhận',
         cancelBtn: 'Hủy'
       },
+      ipmi: {
+        title: 'IPMI',
+        warning:
+          'Xác thực IPMI vốn yếu do thiết kế. Bất kỳ ai truy cập được bo mạch và biết một tên người dùng đều có thể lấy hash mật khẩu IPMI của người dùng đó và thử bẻ khóa ngoại tuyến. Hãy dùng mật khẩu được tạo tự động, chỉ bật IPMI trong mạng tin cậy và ưu tiên Redfish qua HTTPS khi công cụ hỗ trợ.',
+        service: 'IPMI qua LAN',
+        serviceDesc:
+          'IPMI 2.0 (RMCP+, ipmitool lanplus) trên cổng UDP 623, cho nguồn và trạng thái của máy chủ. IPMI 1.5 và cipher suite 0 bị từ chối. Tắt đi sẽ kết thúc mọi phiên IPMI.',
+        example: 'Ví dụ',
+        copyFailed: 'Sao chép thất bại. Hãy sao chép thủ công.',
+        ledOn: 'Có sẵn trạng thái nguồn, on, off, soft, cycle và reset.',
+        ledOff:
+          '"Đã nối đèn LED nguồn" đang tắt trong menu nguồn, nên không biết trạng thái nguồn. Chỉ "power reset" hoạt động: status, on, off, soft và cycle bị từ chối.',
+        accounts: 'Tài khoản',
+        accountsDesc:
+          'IPMI đăng nhập bằng các tài khoản KVM, mỗi tài khoản có mật khẩu IPMI riêng, tách biệt với mật khẩu web. Quản trị viên nhận ADMINISTRATOR. Người dùng nhận USER: họ có thể đọc trạng thái nguồn với "-L USER" nhưng không thể thay đổi.',
+        passwordSet: 'Đã đặt mật khẩu IPMI',
+        passwordNotSet: 'Chưa có mật khẩu IPMI: không thể đăng nhập qua IPMI',
+        nameTooLong: 'Tên dài hơn 16 ký tự, điều mà IPMI không cho phép',
+        accountDisabled: 'Tài khoản đã bị vô hiệu hóa',
+        setPassword: 'Đặt mật khẩu',
+        changePassword: 'Đổi mật khẩu',
+        remove: 'Xóa',
+        removeConfirmTitle: 'Xóa mật khẩu IPMI của {{user}}?',
+        removeConfirmDesc:
+          'Tài khoản sẽ không thể đăng nhập qua IPMI nữa, và các phiên IPMI của nó sẽ kết thúc.',
+        passwordTitle: 'Mật khẩu IPMI cho {{user}}',
+        passwordDesc:
+          'Từ 12 đến 20 ký tự ASCII in được, khác với mật khẩu web. IPMI yêu cầu bo mạch lưu mật khẩu ở dạng có thể đọc lại, vì vậy hãy dùng mật khẩu không dùng ở nơi nào khác. Hãy sao chép trước khi lưu: mật khẩu sẽ không hiển thị lại.',
+        passwordPlaceholder: 'Mật khẩu IPMI',
+        generate: 'Tạo',
+        copy: 'Sao chép',
+        save: 'Lưu',
+        passwordLength: 'Dùng từ 12 đến 20 ký tự.',
+        passwordChars: 'Chỉ dùng ký tự ASCII in được.',
+        saved: 'Đã lưu mật khẩu IPMI',
+        failed: 'Thao tác IPMI thất bại',
+        okBtn: 'Xác nhận',
+        cancelBtn: 'Hủy'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Watchdog máy chủ',

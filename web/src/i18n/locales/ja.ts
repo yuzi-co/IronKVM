@@ -479,6 +479,45 @@ const ja = {
         okBtn: '確認',
         cancelBtn: 'キャンセル'
       },
+      ipmi: {
+        title: 'IPMI',
+        warning:
+          'IPMI の認証は設計上弱いものです。ボードに到達でき、ユーザー名を知っている人は誰でも、そのユーザーの IPMI パスワードのハッシュを取得してオフラインで解読を試みることができます。生成したパスワードを使い、IPMI は信頼できるネットワークでのみオンにし、ツールが対応していれば HTTPS 経由の Redfish を使ってください。',
+        service: 'IPMI over LAN',
+        serviceDesc:
+          'UDP ポート 623 での IPMI 2.0 (RMCP+、ipmitool lanplus) で、ホストの電源と状態を扱います。IPMI 1.5 と暗号スイート 0 は拒否されます。オフにするとすべての IPMI セッションが終了します。',
+        example: '例',
+        copyFailed: 'コピーに失敗しました。手動でコピーしてください。',
+        ledOn: '電源状態、on、off、soft、cycle、reset が使えます。',
+        ledOff:
+          '電源メニューで「電源 LED 接続済み」がオフのため、電源状態が不明です。使えるのは "power reset" だけで、status、on、off、soft、cycle は拒否されます。',
+        accounts: 'アカウント',
+        accountsDesc:
+          'IPMI は KVM のアカウントでログインします。各アカウントには Web パスワードとは別の IPMI パスワードがあります。管理者には ADMINISTRATOR が与えられます。ユーザーには USER が与えられ、"-L USER" で電源状態を読めますが変更はできません。',
+        passwordSet: 'IPMI パスワード設定済み',
+        passwordNotSet: 'IPMI パスワードなし: IPMI でログインできません',
+        nameTooLong: '名前が 16 文字を超えており、IPMI では使えません',
+        accountDisabled: 'アカウントは無効です',
+        setPassword: 'パスワードを設定',
+        changePassword: 'パスワードを変更',
+        remove: '削除',
+        removeConfirmTitle: '{{user}} の IPMI パスワードを削除しますか?',
+        removeConfirmDesc:
+          'このアカウントは IPMI でログインできなくなり、IPMI セッションは終了します。',
+        passwordTitle: '{{user}} の IPMI パスワード',
+        passwordDesc:
+          '12 から 20 文字の印字可能な ASCII 文字で、Web パスワードとは異なるもの。IPMI ではボードがパスワードを読み戻せる形で保存する必要があるため、他で使っていないパスワードにしてください。保存する前にコピーしてください。再表示されません。',
+        passwordPlaceholder: 'IPMI パスワード',
+        generate: '生成',
+        copy: 'コピー',
+        save: '保存',
+        passwordLength: '12 から 20 文字にしてください。',
+        passwordChars: '印字可能な ASCII 文字だけを使ってください。',
+        saved: 'IPMI パスワードを保存しました',
+        failed: 'IPMI の操作に失敗しました',
+        okBtn: '確認',
+        cancelBtn: 'キャンセル'
+      },
       watchdog: {
         title: 'ウォッチドッグ',
         service: 'ホストウォッチドッグ',

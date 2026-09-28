@@ -486,6 +486,45 @@ const de = {
         okBtn: 'Bestätigen',
         cancelBtn: 'Abbrechen'
       },
+      ipmi: {
+        title: 'IPMI',
+        warning:
+          'Die IPMI-Authentifizierung ist konstruktionsbedingt schwach. Wer das Board erreicht und einen Benutzernamen kennt, kann einen Hash des IPMI-Passworts dieses Benutzers abrufen und offline zu knacken versuchen. Verwenden Sie generierte Passwörter, schalten Sie IPMI nur in einem vertrauenswürdigen Netz ein und nutzen Sie lieber Redfish über HTTPS, wo ein Werkzeug es unterstützt.',
+        service: 'IPMI über LAN',
+        serviceDesc:
+          'IPMI 2.0 (RMCP+, ipmitool lanplus) auf UDP-Port 623 für Stromversorgung und Status des Hosts. IPMI 1.5 und Cipher Suite 0 werden abgelehnt. Ausschalten beendet alle IPMI-Sitzungen.',
+        example: 'Beispiel',
+        copyFailed: 'Kopieren fehlgeschlagen. Bitte manuell kopieren.',
+        ledOn: 'Power status, on, off, soft, cycle und reset sind verfügbar.',
+        ledOff:
+          '„Power-LED angeschlossen“ ist im Power-Menü aus, daher ist der Einschaltzustand unbekannt. Nur „power reset“ funktioniert: status, on, off, soft und cycle werden abgelehnt.',
+        accounts: 'Konten',
+        accountsDesc:
+          'IPMI meldet sich mit den KVM-Konten an, jedes mit eigenem IPMI-Passwort, getrennt vom Web-Passwort. Administratoren erhalten ADMINISTRATOR. Benutzer erhalten USER: Sie können den Einschaltzustand mit „-L USER“ lesen, aber nicht ändern.',
+        passwordSet: 'IPMI-Passwort gesetzt',
+        passwordNotSet: 'Kein IPMI-Passwort: keine Anmeldung über IPMI möglich',
+        nameTooLong: 'Der Name ist länger als 16 Zeichen, was IPMI nicht erlaubt',
+        accountDisabled: 'Das Konto ist deaktiviert',
+        setPassword: 'Passwort setzen',
+        changePassword: 'Passwort ändern',
+        remove: 'Entfernen',
+        removeConfirmTitle: 'IPMI-Passwort von {{user}} entfernen?',
+        removeConfirmDesc:
+          'Das Konto kann sich nicht mehr über IPMI anmelden, und seine IPMI-Sitzungen werden beendet.',
+        passwordTitle: 'IPMI-Passwort für {{user}}',
+        passwordDesc:
+          '12 bis 20 druckbare ASCII-Zeichen, verschieden vom Web-Passwort. IPMI verlangt, dass das Board das Passwort in lesbarer Form speichert, verwenden Sie also eines, das nirgends sonst benutzt wird. Kopieren Sie es vor dem Speichern: Es wird nicht erneut angezeigt.',
+        passwordPlaceholder: 'IPMI-Passwort',
+        generate: 'Generieren',
+        copy: 'Kopieren',
+        save: 'Speichern',
+        passwordLength: 'Verwenden Sie 12 bis 20 Zeichen.',
+        passwordChars: 'Verwenden Sie nur druckbare ASCII-Zeichen.',
+        saved: 'IPMI-Passwort gespeichert',
+        failed: 'IPMI-Vorgang fehlgeschlagen',
+        okBtn: 'Bestätigen',
+        cancelBtn: 'Abbrechen'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Host-Watchdog',

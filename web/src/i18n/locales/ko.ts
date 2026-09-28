@@ -473,6 +473,44 @@ const ko = {
         okBtn: '확인',
         cancelBtn: '취소'
       },
+      ipmi: {
+        title: 'IPMI',
+        warning:
+          'IPMI 인증은 설계상 약합니다. 보드에 접근할 수 있고 사용자 이름을 아는 사람은 누구나 해당 사용자의 IPMI 비밀번호 해시를 얻어 오프라인으로 해독을 시도할 수 있습니다. 생성된 비밀번호를 사용하고, 신뢰할 수 있는 네트워크에서만 IPMI를 켜고, 도구가 지원하면 HTTPS를 통한 Redfish를 사용하세요.',
+        service: 'IPMI over LAN',
+        serviceDesc:
+          'UDP 포트 623의 IPMI 2.0(RMCP+, ipmitool lanplus)으로 호스트의 전원과 상태를 다룹니다. IPMI 1.5와 암호 스위트 0은 거부됩니다. 끄면 모든 IPMI 세션이 종료됩니다.',
+        example: '예시',
+        copyFailed: '복사하지 못했습니다. 직접 복사하세요.',
+        ledOn: '전원 상태, on, off, soft, cycle, reset을 사용할 수 있습니다.',
+        ledOff:
+          '전원 메뉴에서 "전원 LED 연결됨"이 꺼져 있어 전원 상태를 알 수 없습니다. "power reset"만 동작하며 status, on, off, soft, cycle은 거부됩니다.',
+        accounts: '계정',
+        accountsDesc:
+          'IPMI는 KVM 계정으로 로그인하며, 각 계정은 웹 비밀번호와 별도인 자체 IPMI 비밀번호를 가집니다. 관리자는 ADMINISTRATOR를 받습니다. 사용자는 USER를 받아 "-L USER"로 전원 상태를 읽을 수 있지만 바꿀 수는 없습니다.',
+        passwordSet: 'IPMI 비밀번호 설정됨',
+        passwordNotSet: 'IPMI 비밀번호 없음: IPMI로 로그인할 수 없음',
+        nameTooLong: '이름이 16자를 넘어 IPMI에서 사용할 수 없습니다',
+        accountDisabled: '계정이 비활성화되었습니다',
+        setPassword: '비밀번호 설정',
+        changePassword: '비밀번호 변경',
+        remove: '제거',
+        removeConfirmTitle: '{{user}}의 IPMI 비밀번호를 제거할까요?',
+        removeConfirmDesc: '이 계정은 더 이상 IPMI로 로그인할 수 없고 IPMI 세션이 종료됩니다.',
+        passwordTitle: '{{user}}의 IPMI 비밀번호',
+        passwordDesc:
+          '웹 비밀번호와 다른, 인쇄 가능한 ASCII 문자 12~20자. IPMI는 보드가 비밀번호를 다시 읽을 수 있는 형태로 보관해야 하므로 다른 곳에서 쓰지 않는 비밀번호를 사용하세요. 저장하기 전에 복사하세요. 다시 표시되지 않습니다.',
+        passwordPlaceholder: 'IPMI 비밀번호',
+        generate: '생성',
+        copy: '복사',
+        save: '저장',
+        passwordLength: '12~20자를 사용하세요.',
+        passwordChars: '인쇄 가능한 ASCII 문자만 사용하세요.',
+        saved: 'IPMI 비밀번호를 저장했습니다',
+        failed: 'IPMI 작업에 실패했습니다',
+        okBtn: '확인',
+        cancelBtn: '취소'
+      },
       watchdog: {
         title: '워치독',
         service: '호스트 워치독',

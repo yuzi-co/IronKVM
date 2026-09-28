@@ -480,6 +480,45 @@ const hu = {
         okBtn: 'Megerősítés',
         cancelBtn: 'Mégse'
       },
+      ipmi: {
+        title: 'IPMI',
+        warning:
+          'Az IPMI-hitelesítés a felépítéséből adódóan gyenge. Aki eléri a kártyát és ismer egy felhasználónevet, megszerezheti a felhasználó IPMI-jelszavának hash-ét, és offline megpróbálhatja feltörni. Használjon generált jelszavakat, csak megbízható hálózaton kapcsolja be az IPMI-t, és ahol az eszköz támogatja, inkább a HTTPS feletti Redfisht használja.',
+        service: 'IPMI LAN-on',
+        serviceDesc:
+          'IPMI 2.0 (RMCP+, ipmitool lanplus) az UDP 623-as porton a gazdagép tápellátásához és állapotához. Az IPMI 1.5 és a 0-s cipher suite el van utasítva. Kikapcsolása minden IPMI-munkamenetet lezár.',
+        example: 'Példa',
+        copyFailed: 'A másolás nem sikerült. Másolja kézzel.',
+        ledOn: 'Elérhető az állapot, on, off, soft, cycle és reset.',
+        ledOff:
+          'A "Bekapcsolásjelző LED csatlakoztatva" ki van kapcsolva a tápellátás menüben, ezért a tápállapot ismeretlen. Csak a "power reset" működik: a status, on, off, soft és cycle el van utasítva.',
+        accounts: 'Fiókok',
+        accountsDesc:
+          'Az IPMI a KVM-fiókokkal jelentkezik be, mindegyik saját, a webes jelszótól különböző IPMI-jelszóval. A rendszergazdák ADMINISTRATOR szintet kapnak. A felhasználók USER szintet: a "-L USER" kapcsolóval olvashatják a tápállapotot, de nem módosíthatják.',
+        passwordSet: 'IPMI-jelszó beállítva',
+        passwordNotSet: 'Nincs IPMI-jelszó: IPMI-n nem tud bejelentkezni',
+        nameTooLong: 'A név hosszabb 16 karakternél, amit az IPMI nem enged',
+        accountDisabled: 'A fiók le van tiltva',
+        setPassword: 'Jelszó beállítása',
+        changePassword: 'Jelszó módosítása',
+        remove: 'Eltávolítás',
+        removeConfirmTitle: 'Eltávolítja {{user}} IPMI-jelszavát?',
+        removeConfirmDesc:
+          'A fiók többé nem tud IPMI-n bejelentkezni, és IPMI-munkamenetei véget érnek.',
+        passwordTitle: '{{user}} IPMI-jelszava',
+        passwordDesc:
+          '12 és 20 közötti számú nyomtatható ASCII-karakter, eltérő a webes jelszótól. Az IPMI megköveteli, hogy a kártya visszaolvasható formában tárolja a jelszót, ezért olyat használjon, amelyet sehol máshol nem használ. Mentés előtt másolja ki: többé nem jelenik meg.',
+        passwordPlaceholder: 'IPMI-jelszó',
+        generate: 'Generálás',
+        copy: 'Másolás',
+        save: 'Mentés',
+        passwordLength: 'Használjon 12 és 20 közötti számú karaktert.',
+        passwordChars: 'Csak nyomtatható ASCII-karaktereket használjon.',
+        saved: 'IPMI-jelszó mentve',
+        failed: 'Az IPMI-művelet nem sikerült',
+        okBtn: 'Megerősítés',
+        cancelBtn: 'Mégse'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Gazdagép-watchdog',

@@ -476,6 +476,45 @@ const nb = {
         okBtn: 'Bekreft',
         cancelBtn: 'Avbryt'
       },
+      ipmi: {
+        title: 'IPMI',
+        warning:
+          'IPMI-autentisering er svak av konstruksjon. Alle som når kortet og kjenner et brukernavn, kan hente en hash av brukerens IPMI-passord og prøve å knekke den offline. Bruk genererte passord, slå på IPMI bare på et nettverk du stoler på, og velg heller Redfish over HTTPS der verktøyet støtter det.',
+        service: 'IPMI over LAN',
+        serviceDesc:
+          'IPMI 2.0 (RMCP+, ipmitool lanplus) på UDP-port 623, for strøm og status på verten. IPMI 1.5 og cipher suite 0 avvises. Når det slås av, avsluttes alle IPMI-økter.',
+        example: 'Eksempel',
+        copyFailed: 'Kopiering mislyktes. Kopier manuelt.',
+        ledOn: 'Strømstatus, on, off, soft, cycle og reset er tilgjengelige.',
+        ledOff:
+          '"Strøm-LED tilkoblet" er av i strømmenyen, så strømtilstanden er ukjent. Bare "power reset" virker: status, on, off, soft og cycle avvises.',
+        accounts: 'Kontoer',
+        accountsDesc:
+          'IPMI logger inn med KVM-kontoene, hver med sitt eget IPMI-passord, atskilt fra nettpassordet. Administratorer får ADMINISTRATOR. Brukere får USER: de kan lese strømtilstanden med "-L USER", men ikke endre den.',
+        passwordSet: 'IPMI-passord satt',
+        passwordNotSet: 'Intet IPMI-passord: kan ikke logge inn over IPMI',
+        nameTooLong: 'Navnet er lengre enn 16 tegn, noe IPMI ikke tillater',
+        accountDisabled: 'Kontoen er deaktivert',
+        setPassword: 'Angi passord',
+        changePassword: 'Endre passord',
+        remove: 'Fjern',
+        removeConfirmTitle: 'Fjerne IPMI-passordet til {{user}}?',
+        removeConfirmDesc:
+          'Kontoen kan ikke lenger logge inn over IPMI, og IPMI-øktene dens avsluttes.',
+        passwordTitle: 'IPMI-passord for {{user}}',
+        passwordDesc:
+          '12 til 20 skrivbare ASCII-tegn, forskjellig fra nettpassordet. IPMI krever at kortet lagrer passordet i en form det kan lese igjen, så bruk et som ikke brukes noe annet sted. Kopier det før du lagrer: det vises ikke igjen.',
+        passwordPlaceholder: 'IPMI-passord',
+        generate: 'Generer',
+        copy: 'Kopier',
+        save: 'Lagre',
+        passwordLength: 'Bruk 12 til 20 tegn.',
+        passwordChars: 'Bruk bare skrivbare ASCII-tegn.',
+        saved: 'IPMI-passord lagret',
+        failed: 'IPMI-operasjonen mislyktes',
+        okBtn: 'Bekreft',
+        cancelBtn: 'Avbryt'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Vert-watchdog',

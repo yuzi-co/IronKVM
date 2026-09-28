@@ -476,6 +476,45 @@ const ca = {
         okBtn: 'Confirma',
         cancelBtn: 'Cancel·la'
       },
+      ipmi: {
+        title: 'IPMI',
+        warning:
+          "L'autenticació IPMI és feble per disseny. Qualsevol que pugui arribar a la placa i conegui un nom d'usuari pot obtenir un hash de la contrasenya IPMI d'aquest usuari i intentar desxifrar-la fora de línia. Feu servir contrasenyes generades, activeu IPMI només en una xarxa de confiança i preferiu Redfish per HTTPS quan l'eina ho admeti.",
+        service: 'IPMI per LAN',
+        serviceDesc:
+          "IPMI 2.0 (RMCP+, ipmitool lanplus) al port UDP 623, per a l'alimentació i l'estat de l'amfitrió. IPMI 1.5 i el conjunt de xifratge 0 es rebutgen. Desactivar-lo tanca totes les sessions IPMI.",
+        example: 'Exemple',
+        copyFailed: 'La còpia ha fallat. Copieu-ho manualment.',
+        ledOn: "Estan disponibles l'estat, l'encesa, l'apagada, soft, cycle i reset.",
+        ledOff:
+          '"LED d\'alimentació connectat" està desactivat al menú d\'alimentació, de manera que l\'estat d\'alimentació és desconegut. Només funciona "power reset": status, on, off, soft i cycle es rebutgen.',
+        accounts: 'Comptes',
+        accountsDesc:
+          'IPMI inicia la sessió amb els comptes del KVM, cadascun amb la seva pròpia contrasenya IPMI, diferent de la contrasenya web. Els administradors obtenen ADMINISTRATOR. Els usuaris obtenen USER: poden llegir l\'estat d\'alimentació amb "-L USER" però no canviar-lo.',
+        passwordSet: 'Contrasenya IPMI definida',
+        passwordNotSet: 'Sense contrasenya IPMI: no pot iniciar la sessió per IPMI',
+        nameTooLong: 'El nom té més de 16 caràcters, cosa que IPMI no permet',
+        accountDisabled: 'El compte està desactivat',
+        setPassword: 'Defineix la contrasenya',
+        changePassword: 'Canvia la contrasenya',
+        remove: 'Elimina',
+        removeConfirmTitle: 'Voleu eliminar la contrasenya IPMI de {{user}}?',
+        removeConfirmDesc:
+          'El compte ja no podrà iniciar la sessió per IPMI, i les seves sessions IPMI es tanquen.',
+        passwordTitle: 'Contrasenya IPMI de {{user}}',
+        passwordDesc:
+          "De 12 a 20 caràcters ASCII imprimibles, diferent de la contrasenya web. IPMI necessita que la placa guardi la contrasenya en una forma que pugui tornar a llegir, així que feu-ne servir una que no s'utilitzi enlloc més. Copieu-la abans de desar: no es tornarà a mostrar.",
+        passwordPlaceholder: 'Contrasenya IPMI',
+        generate: 'Genera',
+        copy: 'Copia',
+        save: 'Desa',
+        passwordLength: 'Feu servir de 12 a 20 caràcters.',
+        passwordChars: 'Feu servir només caràcters ASCII imprimibles.',
+        saved: 'Contrasenya IPMI desada',
+        failed: "L'operació IPMI ha fallat",
+        okBtn: 'Confirma',
+        cancelBtn: 'Cancel·la'
+      },
       watchdog: {
         title: 'Watchdog',
         service: "Watchdog de l'amfitrió",

@@ -474,6 +474,45 @@ const se = {
         okBtn: 'Bekräfta',
         cancelBtn: 'Avbryt'
       },
+      ipmi: {
+        title: 'IPMI',
+        warning:
+          'IPMI-autentisering är svag till sin konstruktion. Den som når kortet och känner till ett användarnamn kan hämta en hash av användarens IPMI-lösenord och försöka knäcka den offline. Använd genererade lösenord, slå bara på IPMI i ett betrott nätverk och välj hellre Redfish över HTTPS där verktyget stöder det.',
+        service: 'IPMI över LAN',
+        serviceDesc:
+          'IPMI 2.0 (RMCP+, ipmitool lanplus) på UDP-port 623, för värdens ström och status. IPMI 1.5 och cipher suite 0 avvisas. När det stängs av avslutas alla IPMI-sessioner.',
+        example: 'Exempel',
+        copyFailed: 'Kopieringen misslyckades. Kopiera manuellt.',
+        ledOn: 'Strömstatus, on, off, soft, cycle och reset är tillgängliga.',
+        ledOff:
+          '"Ström-LED ansluten" är av i strömmenyn, så strömtillståndet är okänt. Bara "power reset" fungerar: status, on, off, soft och cycle avvisas.',
+        accounts: 'Konton',
+        accountsDesc:
+          'IPMI loggar in med KVM-kontona, vart och ett med sitt eget IPMI-lösenord, skilt från webblösenordet. Administratörer får ADMINISTRATOR. Användare får USER: de kan läsa strömtillståndet med "-L USER" men inte ändra det.',
+        passwordSet: 'IPMI-lösenord angivet',
+        passwordNotSet: 'Inget IPMI-lösenord: kan inte logga in över IPMI',
+        nameTooLong: 'Namnet är längre än 16 tecken, vilket IPMI inte tillåter',
+        accountDisabled: 'Kontot är inaktiverat',
+        setPassword: 'Ange lösenord',
+        changePassword: 'Byt lösenord',
+        remove: 'Ta bort',
+        removeConfirmTitle: 'Ta bort IPMI-lösenordet för {{user}}?',
+        removeConfirmDesc:
+          'Kontot kan inte längre logga in över IPMI, och dess IPMI-sessioner avslutas.',
+        passwordTitle: 'IPMI-lösenord för {{user}}',
+        passwordDesc:
+          '12 till 20 skrivbara ASCII-tecken, skilt från webblösenordet. IPMI kräver att kortet sparar lösenordet i en form som det kan läsa tillbaka, så använd ett som inte används någon annanstans. Kopiera det innan du sparar: det visas inte igen.',
+        passwordPlaceholder: 'IPMI-lösenord',
+        generate: 'Generera',
+        copy: 'Kopiera',
+        save: 'Spara',
+        passwordLength: 'Använd 12 till 20 tecken.',
+        passwordChars: 'Använd bara skrivbara ASCII-tecken.',
+        saved: 'IPMI-lösenordet sparat',
+        failed: 'IPMI-åtgärden misslyckades',
+        okBtn: 'Bekräfta',
+        cancelBtn: 'Avbryt'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Värd-watchdog',

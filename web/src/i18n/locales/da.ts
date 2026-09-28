@@ -475,6 +475,45 @@ const da = {
         okBtn: 'Bekræft',
         cancelBtn: 'Annuller'
       },
+      ipmi: {
+        title: 'IPMI',
+        warning:
+          'IPMI-godkendelse er svag af design. Enhver, der kan nå kortet og kender et brugernavn, kan få et hash af brugerens IPMI-adgangskode og forsøge at knække det offline. Brug genererede adgangskoder, slå kun IPMI til på et netværk, du stoler på, og foretræk Redfish over HTTPS, hvor værktøjet understøtter det.',
+        service: 'IPMI over LAN',
+        serviceDesc:
+          'IPMI 2.0 (RMCP+, ipmitool lanplus) på UDP-port 623 til værtens strøm og status. IPMI 1.5 og cipher suite 0 afvises. Når det slås fra, afsluttes alle IPMI-sessioner.',
+        example: 'Eksempel',
+        copyFailed: 'Kopiering mislykkedes. Kopiér manuelt.',
+        ledOn: 'Strømstatus, on, off, soft, cycle og reset er tilgængelige.',
+        ledOff:
+          '"Strøm-LED tilsluttet" er slået fra i strømmenuen, så strømtilstanden er ukendt. Kun "power reset" virker: status, on, off, soft og cycle afvises.',
+        accounts: 'Konti',
+        accountsDesc:
+          'IPMI logger ind med KVM-kontiene, hver med sin egen IPMI-adgangskode, adskilt fra webadgangskoden. Administratorer får ADMINISTRATOR. Brugere får USER: de kan læse strømtilstanden med "-L USER", men ikke ændre den.',
+        passwordSet: 'IPMI-adgangskode angivet',
+        passwordNotSet: 'Ingen IPMI-adgangskode: kan ikke logge ind over IPMI',
+        nameTooLong: 'Navnet er længere end 16 tegn, hvilket IPMI ikke tillader',
+        accountDisabled: 'Kontoen er deaktiveret',
+        setPassword: 'Angiv adgangskode',
+        changePassword: 'Skift adgangskode',
+        remove: 'Fjern',
+        removeConfirmTitle: 'Fjern IPMI-adgangskoden for {{user}}?',
+        removeConfirmDesc:
+          'Kontoen kan ikke længere logge ind over IPMI, og dens IPMI-sessioner afsluttes.',
+        passwordTitle: 'IPMI-adgangskode for {{user}}',
+        passwordDesc:
+          '12 til 20 skrivbare ASCII-tegn, forskellig fra webadgangskoden. IPMI kræver, at kortet gemmer adgangskoden i en form, det kan læse igen, så brug en, der ikke bruges andre steder. Kopiér den, før du gemmer: den vises ikke igen.',
+        passwordPlaceholder: 'IPMI-adgangskode',
+        generate: 'Generér',
+        copy: 'Kopiér',
+        save: 'Gem',
+        passwordLength: 'Brug 12 til 20 tegn.',
+        passwordChars: 'Brug kun skrivbare ASCII-tegn.',
+        saved: 'IPMI-adgangskode gemt',
+        failed: 'IPMI-handling mislykkedes',
+        okBtn: 'Bekræft',
+        cancelBtn: 'Annuller'
+      },
       watchdog: {
         title: 'Watchdog',
         service: 'Værts-watchdog',
