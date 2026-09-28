@@ -296,7 +296,9 @@ const ko = {
         rebuild: '모드를 전환하면 USB 연결이 다시 구성됩니다. NanoKVM은 재부팅되지 않습니다',
         enable: 'HID 전용 모드 활성화',
         disable: 'HID 전용 모드 비활성화'
-      }
+      },
+      resetHidDone: 'USB HID를 초기화했습니다',
+      resetHidFailed: 'USB HID를 초기화하지 못했습니다'
     },
     image: {
       title: '이미지',

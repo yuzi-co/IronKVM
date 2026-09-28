@@ -299,7 +299,9 @@ const en = {
         rebuild: 'Switching modes rebuilds the USB connection. NanoKVM does not reboot',
         enable: 'Enable HID-Only mode',
         disable: 'Disable HID-Only mode'
-      }
+      },
+      resetHidDone: 'USB HID reset',
+      resetHidFailed: 'USB HID reset failed'
     },
     image: {
       title: 'Images',

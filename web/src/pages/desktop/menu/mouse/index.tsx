@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useAuth } from '@/contexts/auth.ts';
 import { Divider } from 'antd';
 import { useSetAtom } from 'jotai';
 import { MouseIcon } from 'lucide-react';
@@ -23,6 +24,9 @@ import { Speed } from './speed.tsx';
 
 export const Mouse = () => {
   const { t } = useTranslation();
+  const { account } = useAuth();
+  // The server takes HID mode changes and resets from admins only.
+  const isAdmin = account.role === 'admin';
 
   const setMouseStyle = useSetAtom(mouseStyleAtom);
   const setMouseMode = useSetAtom(mouseModeAtom);
@@ -60,8 +64,8 @@ export const Mouse = () => {
       <Divider style={{ margin: '10px 0' }} />
 
       <OriginalResolution />
-      <HidMode />
-      <ResetHid />
+      {isAdmin && <HidMode />}
+      {isAdmin && <ResetHid />}
     </div>
   );
 

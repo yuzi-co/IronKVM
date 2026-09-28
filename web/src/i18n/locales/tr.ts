@@ -301,7 +301,9 @@ const tr = {
         rebuild: 'Mod değiştirmek USB bağlantısını yeniden kurar. NanoKVM yeniden başlamaz',
         enable: 'Yalnızca HID modunu etkinleştir',
         disable: 'Yalnızca HID modunu devre dışı bırak'
-      }
+      },
+      resetHidDone: 'USB HID sıfırlandı',
+      resetHidFailed: 'USB HID sıfırlanamadı'
     },
     image: {
       title: 'Disk İmajları',

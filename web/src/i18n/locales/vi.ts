@@ -301,7 +301,9 @@ const vi = {
         rebuild: 'Chuyển chế độ sẽ dựng lại kết nối USB. NanoKVM không khởi động lại',
         enable: 'Bật chế độ HID-Chỉ',
         disable: 'Tắt chế độ HID-Chỉ'
-      }
+      },
+      resetHidDone: 'Đã đặt lại USB HID',
+      resetHidFailed: 'Đặt lại USB HID thất bại'
     },
     image: {
       title: 'Hình ảnh',

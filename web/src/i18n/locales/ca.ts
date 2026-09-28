@@ -302,7 +302,9 @@ const ca = {
         rebuild: 'Canviar de mode reconstrueix la connexió USB. El NanoKVM no es reinicia',
         enable: 'Activa mode només HID',
         disable: 'Desactiva mode només HID'
-      }
+      },
+      resetHidDone: "S'ha reiniciat l'HID USB",
+      resetHidFailed: "No s'ha pogut reiniciar l'HID USB"
     },
     image: {
       title: 'Imatges',

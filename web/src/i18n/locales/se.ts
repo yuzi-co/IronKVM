@@ -298,7 +298,9 @@ const se = {
         rebuild: 'Byte av läge bygger upp USB-anslutningen på nytt. NanoKVM startas inte om',
         enable: 'Aktivera Endast-HID-läge',
         disable: 'Inaktivera Endast-HID-läge'
-      }
+      },
+      resetHidDone: 'USB HID återställt',
+      resetHidFailed: 'Återställning av USB HID misslyckades'
     },
     image: {
       title: 'Avbildningar',

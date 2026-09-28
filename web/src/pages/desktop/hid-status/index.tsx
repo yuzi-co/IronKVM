@@ -1,11 +1,12 @@
-import { useEffect, useRef } from 'react';
-import { Button, notification } from 'antd';
+import { useEffect, useRef, useState } from 'react';
+import { useAuth } from '@/contexts/auth.ts';
+import { Button, message, notification } from 'antd';
 import { useAtom } from 'jotai';
 import { useTranslation } from 'react-i18next';
 
-import { getHidStatus, reset as resetHid } from '@/api/hid.ts';
+import { getHidStatus } from '@/api/hid.ts';
+import { resetHid } from '@/lib/hid-reset.ts';
 import { applyMouseMode } from '@/lib/mouse-mode.ts';
-import { client } from '@/lib/websocket.ts';
 import { mouseModeAtom } from '@/jotai/mouse.ts';
 
 import { HidDeviceStatus, isAbsoluteMouseStalled } from './model.ts';
@@ -25,8 +26,10 @@ export const AbsoluteMouseWarning = () => {
   const { t } = useTranslation();
   const [api, contextHolder] = notification.useNotification();
   const [mouseMode, setMouseMode] = useAtom(mouseModeAtom);
+  const { account } = useAuth();
+  // Resetting USB is an admin action on the server.
+  const isAdmin = account.role === 'admin';
   const isOpen = useRef(false);
-  const isRecovering = useRef(false);
 
   useEffect(() => {
     // Only absolute and touch mode use the endpoint that stalls, so relative
@@ -75,9 +78,7 @@ export const AbsoluteMouseWarning = () => {
         // mouse mode the operator chose.
         btn: (
           <div className="flex gap-2">
-            <Button onClick={recoverUsb} loading={isRecovering.current}>
-              {t('mouse.resetHid')}
-            </Button>
+            {isAdmin && <RecoverUsbButton onDone={close} />}
             <Button type="primary" onClick={switchToRelative}>
               {t('mouse.useRelative')}
             </Button>
@@ -95,20 +96,9 @@ export const AbsoluteMouseWarning = () => {
       applyMouseMode('relative', setMouseMode);
     }
 
-    // The same recovery the mouse menu offers: re-enumerate the USB gadget and
-    // let the target bind its HID interfaces again. The websocket goes down
-    // with it, so it closes first and reconnects after.
-    function recoverUsb() {
-      if (isRecovering.current) return;
-      isRecovering.current = true;
-
-      client.close();
-      resetHid().finally(() => {
-        client.connect();
-        isRecovering.current = false;
-        api.destroy(NOTIFICATION_KEY);
-        isOpen.current = false;
-      });
+    function close() {
+      api.destroy(NOTIFICATION_KEY);
+      isOpen.current = false;
     }
 
     check();
@@ -118,7 +108,35 @@ export const AbsoluteMouseWarning = () => {
       cancelled = true;
       clearInterval(timer);
     };
-  }, [mouseMode, api, t, setMouseMode]);
+  }, [mouseMode, api, t, setMouseMode, isAdmin]);
 
   return <>{contextHolder}</>;
+};
+
+// RecoverUsbButton offers the recovery the mouse menu offers. It keeps its own
+// state because the notification renders its buttons once: a flag read from a
+// ref there never repaints, and the spinner never showed.
+const RecoverUsbButton = ({ onDone }: { onDone: () => void }) => {
+  const { t } = useTranslation();
+  const [isRecovering, setIsRecovering] = useState(false);
+
+  async function recover() {
+    if (isRecovering) return;
+    setIsRecovering(true);
+
+    const result = await resetHid();
+    setIsRecovering(false);
+    if (!result.ok) {
+      message.error(result.msg || t('mouse.resetHidFailed'));
+      return;
+    }
+    message.success(t('mouse.resetHidDone'));
+    onDone();
+  }
+
+  return (
+    <Button onClick={recover} loading={isRecovering}>
+      {t('mouse.resetHid')}
+    </Button>
+  );
 };

@@ -302,7 +302,9 @@ const nb = {
         rebuild: 'Bytte av modus bygger opp USB-tilkoblingen på nytt. NanoKVM starter ikke på nytt',
         enable: 'Aktiver HID-Only-modus',
         disable: 'Deaktiver HID-bare-modus'
-      }
+      },
+      resetHidDone: 'USB HID er tilbakestilt',
+      resetHidFailed: 'Tilbakestilling av USB HID mislyktes'
     },
     image: {
       title: 'Bilder',

@@ -302,7 +302,9 @@ const pt_br = {
         rebuild: 'Trocar de modo reconstrói a conexão USB. O NanoKVM não reinicia',
         enable: 'Habilitar modo Somente-HID',
         disable: 'Desabilitar modo Somente-HID'
-      }
+      },
+      resetHidDone: 'HID USB redefinido',
+      resetHidFailed: 'Falha ao redefinir o HID USB'
     },
     image: {
       title: 'Imagens',

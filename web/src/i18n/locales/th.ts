@@ -296,7 +296,9 @@ const th = {
         rebuild: 'การสลับโหมดจะสร้างการเชื่อมต่อ USB ใหม่ NanoKVM จะไม่รีบูต',
         enable: 'เปิดใช้งานโหมด HID-Only',
         disable: 'ปิดใช้งานโหมด HID-Only'
-      }
+      },
+      resetHidDone: 'รีเซ็ต USB HID แล้ว',
+      resetHidFailed: 'รีเซ็ต USB HID ไม่สำเร็จ'
     },
     image: {
       title: 'ดิสก์จำลอง',

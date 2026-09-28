@@ -304,7 +304,9 @@ const it = {
         rebuild: 'Cambiare modalità ricostruisce la connessione USB. NanoKVM non si riavvia',
         enable: 'Abilita la modalità HID-Solo',
         disable: 'Disabilita la modalità HID-Solo'
-      }
+      },
+      resetHidDone: 'HID USB reimpostato',
+      resetHidFailed: 'Reimpostazione HID USB non riuscita'
     },
     image: {
       title: 'Immagini',

@@ -306,7 +306,9 @@ const nl = {
           'Bij het wisselen van modus wordt de USB-verbinding opnieuw opgebouwd. NanoKVM start niet opnieuw op',
         enable: 'Schakel de modus HID-Alleen in',
         disable: 'Schakel de modus HID-Alleen uit'
-      }
+      },
+      resetHidDone: 'USB-HID gereset',
+      resetHidFailed: 'USB-HID resetten mislukt'
     },
     image: {
       title: 'Afbeeldingen',

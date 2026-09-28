@@ -303,7 +303,9 @@ const pl = {
         rebuild: 'Zmiana trybu odbudowuje połączenie USB. NanoKVM nie uruchamia się ponownie',
         enable: 'Włącz tryb HID-Only',
         disable: 'Wyłącz tryb HID-Tylko'
-      }
+      },
+      resetHidDone: 'Zresetowano USB HID',
+      resetHidFailed: 'Nie udało się zresetować USB HID'
     },
     image: {
       title: 'Obrazy',

@@ -291,7 +291,9 @@ const zh_tw = {
         rebuild: '切換模式會重建 USB 連線，NanoKVM 不會重新啟動',
         enable: '啟用 HID-Only 模式',
         disable: '停用 HID-Only 模式'
-      }
+      },
+      resetHidDone: 'USB HID 已重設',
+      resetHidFailed: 'USB HID 重設失敗'
     },
     image: {
       title: '映像檔',

@@ -308,7 +308,9 @@ const de = {
           'Beim Wechsel des Modus wird die USB-Verbindung neu aufgebaut. NanoKVM startet nicht neu',
         enable: 'HID-Only Modus aktivieren',
         disable: 'HID-Only Modus deaktivieren'
-      }
+      },
+      resetHidDone: 'USB-HID zurückgesetzt',
+      resetHidFailed: 'USB-HID konnte nicht zurückgesetzt werden'
     },
     image: {
       title: 'Bilder',

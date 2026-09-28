@@ -301,7 +301,9 @@ const da = {
         rebuild: 'Skift af tilstand genopbygger USB-forbindelsen. NanoKVM genstarter ikke',
         enable: 'Aktiver HID-kun tilstand',
         disable: 'Deaktiver HID-kun tilstand'
-      }
+      },
+      resetHidDone: 'USB HID er nulstillet',
+      resetHidFailed: 'Nulstilling af USB HID mislykkedes'
     },
     image: {
       title: 'Diskbilleder',

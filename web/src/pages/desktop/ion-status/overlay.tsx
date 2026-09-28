@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAuth } from '@/contexts/auth.ts';
 import { AlertCircle, AlertTriangle, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -28,7 +29,7 @@ export function IonWarningBadge({ status }: { status: IonStatus | null }) {
   }
 
   return (
-    <div className="pointer-events-none absolute left-1/2 top-4 z-10 flex max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-2.5 rounded-lg border border-amber-500/50 bg-neutral-900/90 px-4 py-2.5 text-sm font-medium text-amber-400 shadow-xl shadow-amber-900/20 backdrop-blur-md">
+    <div className="pointer-events-none absolute top-4 left-1/2 z-10 flex max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-2.5 rounded-lg border border-amber-500/50 bg-neutral-900/90 px-4 py-2.5 text-sm font-medium text-amber-400 shadow-xl shadow-amber-900/20 backdrop-blur-md">
       <AlertTriangle className="h-5 w-5 shrink-0" />
       <span className="min-w-0">{t('ion.warn')}</span>
     </div>
@@ -38,6 +39,9 @@ export function IonWarningBadge({ status }: { status: IonStatus | null }) {
 export function IonCriticalGate({ onContinue }: { onContinue: () => void }) {
   const { t } = useTranslation();
 
+  const { account } = useAuth();
+  // Rebooting the board is an admin action on the server.
+  const isAdmin = account.role === 'admin';
   const [isRebooting, setIsRebooting] = useState(false);
 
   // The board stops answering the moment it reboots, so the request may never
@@ -72,14 +76,16 @@ export function IonCriticalGate({ onContinue }: { onContinue: () => void }) {
           >
             {t('ion.criticalContinue')}
           </button>
-          <button
-            className="flex items-center gap-2 rounded bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-500 disabled:cursor-default disabled:bg-red-600/60"
-            disabled={isRebooting}
-            onClick={reboot}
-          >
-            {isRebooting && <Loader2 className="h-4 w-4 shrink-0 animate-spin" />}
-            {isRebooting ? t('ion.criticalRebooting') : t('ion.criticalReboot')}
-          </button>
+          {isAdmin && (
+            <button
+              className="flex items-center gap-2 rounded bg-red-600 px-3 py-1.5 text-sm text-white hover:bg-red-500 disabled:cursor-default disabled:bg-red-600/60"
+              disabled={isRebooting}
+              onClick={reboot}
+            >
+              {isRebooting && <Loader2 className="h-4 w-4 shrink-0 animate-spin" />}
+              {isRebooting ? t('ion.criticalRebooting') : t('ion.criticalReboot')}
+            </button>
+          )}
         </div>
       </div>
     </div>

@@ -302,7 +302,9 @@ const ru = {
         rebuild: 'Переключение режима пересоздаёт соединение USB. NanoKVM не перезагружается',
         enable: 'Включить режим только HID',
         disable: 'Выключить режим только HID'
-      }
+      },
+      resetHidDone: 'USB HID сброшен',
+      resetHidFailed: 'Не удалось сбросить USB HID'
     },
     image: {
       title: 'Образы',

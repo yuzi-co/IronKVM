@@ -304,7 +304,9 @@ const hu = {
         rebuild: 'A módváltás újraépíti az USB-kapcsolatot. A NanoKVM nem indul újra',
         enable: 'Engedélyezze a HID-Csak módot',
         disable: 'A HID-Csak mód letiltása'
-      }
+      },
+      resetHidDone: 'Az USB HID újraindítva',
+      resetHidFailed: 'Az USB HID újraindítása sikertelen'
     },
     image: {
       title: 'Képek',

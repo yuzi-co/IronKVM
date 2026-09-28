@@ -1,36 +1,33 @@
 import { useState } from 'react';
+import { message } from 'antd';
 import clsx from 'clsx';
 import { RefreshCwIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import * as api from '@/api/hid.ts';
-import { client, MessageEvent } from '@/lib/websocket.ts';
+import { resetHid } from '@/lib/hid-reset.ts';
 
 export const ResetHid = () => {
   const { t } = useTranslation();
 
   const [isResetting, setIsResetting] = useState(false);
 
-  function resetHid() {
+  async function reset() {
     if (isResetting) return;
     setIsResetting(true);
 
-    // Release keyboard keys
-    const data = new Uint8Array([MessageEvent.Keyboard, 0, 0, 0, 0, 0, 0, 0, 0]);
-    client.send(data);
-
-    client.close();
-
-    api.reset().finally(() => {
-      client.connect();
-      setIsResetting(false);
-    });
+    const result = await resetHid();
+    if (result.ok) {
+      message.success(t('mouse.resetHidDone'));
+    } else {
+      message.error(result.msg || t('mouse.resetHidFailed'));
+    }
+    setIsResetting(false);
   }
 
   return (
     <div
-      className="flex h-[30px] cursor-pointer select-none items-center space-x-2 rounded px-3 text-neutral-300 hover:bg-neutral-700/70"
-      onClick={resetHid}
+      className="flex h-[30px] cursor-pointer items-center space-x-2 rounded px-3 text-neutral-300 select-none hover:bg-neutral-700/70"
+      onClick={reset}
     >
       <RefreshCwIcon className={clsx({ 'animate-spin text-blue-500': isResetting })} size={18} />
       <span>{t('mouse.resetHid')}</span>

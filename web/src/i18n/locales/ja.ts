@@ -301,7 +301,9 @@ const ja = {
         rebuild: 'モードを切り替えると USB 接続が再構築されます。NanoKVM は再起動しません',
         enable: 'HID-Only モードを有効化',
         disable: 'HID-Only モードを無効化'
-      }
+      },
+      resetHidDone: 'USB HID をリセットしました',
+      resetHidFailed: 'USB HID をリセットできませんでした'
     },
     image: {
       title: 'イメージ',

@@ -302,7 +302,9 @@ const cz = {
         rebuild: 'Přepnutí režimu znovu sestaví připojení USB. NanoKVM se nerestartuje',
         enable: 'Povolit režim HID-Only',
         disable: 'Zakázat režim HID-Only'
-      }
+      },
+      resetHidDone: 'USB HID bylo resetováno',
+      resetHidFailed: 'Reset USB HID se nezdařil'
     },
     image: {
       title: 'Obrázky',

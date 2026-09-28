@@ -303,7 +303,9 @@ const uk = {
         rebuild: 'Перемикання режиму створює з’єднання USB заново. NanoKVM не перезавантажується',
         enable: 'Увімкнути режим "лише HID"',
         disable: 'Ввимкнути режим "лише HID"'
-      }
+      },
+      resetHidDone: 'USB HID скинуто',
+      resetHidFailed: 'Не вдалося скинути USB HID'
     },
     image: {
       title: 'Образи',

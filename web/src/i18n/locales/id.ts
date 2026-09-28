@@ -302,7 +302,9 @@ const id = {
         rebuild: 'Mengganti mode akan membangun ulang koneksi USB. NanoKVM tidak dimulai ulang',
         enable: 'Aktifkan mode HID-Hanya',
         disable: 'Nonaktifkan mode HID-Hanya'
-      }
+      },
+      resetHidDone: 'HID USB telah direset',
+      resetHidFailed: 'Reset HID USB gagal'
     },
     image: {
       title: 'Gambar',
