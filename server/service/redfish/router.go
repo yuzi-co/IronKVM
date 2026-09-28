@@ -30,7 +30,8 @@ const (
 	managersPath       = "/redfish/v1/Managers"
 	managerPath        = "/redfish/v1/Managers/1"
 	nicsPath           = managerPath + "/EthernetInterfaces"
-	mediaPath          = managerPath + "/VirtualMedia"
+	managerMediaPath   = managerPath + "/VirtualMedia"
+	systemMediaPath    = systemPath + "/VirtualMedia"
 	sessionServicePath = "/redfish/v1/SessionService"
 	sessionsPath       = sessionServicePath + "/Sessions"
 	metadataPath       = "/redfish/v1/$metadata"
@@ -178,10 +179,15 @@ func (s *Service) Register(r *gin.Engine) {
 	route(g, nicsPath, map[string]gin.HandlerFunc{http.MethodGet: s.nics})
 	route(g, nicsPath+"/:id", map[string]gin.HandlerFunc{http.MethodGet: s.nic})
 
-	route(g, mediaPath, map[string]gin.HandlerFunc{http.MethodGet: s.virtualMedia})
-	route(g, mediaPath+"/:id", map[string]gin.HandlerFunc{http.MethodGet: s.medium})
-	route(g, mediaPath+"/:id/Actions/"+insertAction, map[string]gin.HandlerFunc{http.MethodPost: adminOnly(s.insertMedia)})
-	route(g, mediaPath+"/:id/Actions/"+ejectAction, map[string]gin.HandlerFunc{http.MethodPost: adminOnly(s.ejectMedia)})
+	// The same two drives answer under the manager, where Ansible and sushy
+	// look, and under the system, where Redfish 2020.3 moved virtual media
+	// and where newer clients look first.
+	for _, base := range []string{managerMediaPath, systemMediaPath} {
+		route(g, base, map[string]gin.HandlerFunc{http.MethodGet: s.virtualMedia(base)})
+		route(g, base+"/:id", map[string]gin.HandlerFunc{http.MethodGet: s.medium(base)})
+		route(g, base+"/:id/Actions/"+insertAction, map[string]gin.HandlerFunc{http.MethodPost: adminOnly(s.insertMedia)})
+		route(g, base+"/:id/Actions/"+ejectAction, map[string]gin.HandlerFunc{http.MethodPost: adminOnly(s.ejectMedia)})
+	}
 }
 
 // publicRoutes answer without credentials, as the Redfish specification

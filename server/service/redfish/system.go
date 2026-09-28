@@ -108,6 +108,7 @@ func (s *Service) system(c *gin.Context) {
 	body["Name"] = "Managed host"
 	body["SystemType"] = "Physical"
 	body["PowerState"] = powerState(s.powerLED())
+	body["VirtualMedia"] = link(systemMediaPath)
 	body["Links"] = object{
 		"Chassis":   links(chassisPath),
 		"ManagedBy": links(managerPath),

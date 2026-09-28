@@ -275,3 +275,15 @@ func TestSystemETagFollowsTheLEDSetting(t *testing.T) {
 		t.Fatalf("ETags %q and %q", wired, notWired)
 	}
 }
+
+// Redfish 2020.3 moved virtual media from the manager to the system, and
+// newer clients look for it there.
+func TestSystemLinksItsVirtualMedia(t *testing.T) {
+	h := newHarness(t)
+
+	body := decode(t, h.do(http.MethodGet, "/redfish/v1/Systems/1", "", h.user()...))
+	media, _ := body["VirtualMedia"].(map[string]any)
+	if media["@odata.id"] != "/redfish/v1/Systems/1/VirtualMedia" {
+		t.Fatalf("VirtualMedia is %v", body["VirtualMedia"])
+	}
+}
