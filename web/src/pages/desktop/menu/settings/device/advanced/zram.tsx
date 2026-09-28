@@ -4,6 +4,7 @@ import { CircleAlertIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/vm.ts';
+import { showFailure } from '@/lib/feedback.ts';
 
 type ZramState = {
   available: boolean;
@@ -70,10 +71,9 @@ export const Zram = () => {
     api
       .setZram(enabled)
       .then((rsp) => {
-        if (rsp.code !== 0) {
-          console.log(rsp.msg);
-        }
+        if (rsp.code !== 0) showFailure(rsp);
       })
+      .catch((err) => showFailure(err))
       .finally(() => {
         // Read the state back either way. The server rolls a failed enable
         // back, so what it reports is the only trustworthy answer.

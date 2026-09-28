@@ -136,7 +136,10 @@ export const Information = () => {
           <span>
             {information ? information.application : '-'}
             {information?.base && (
-              <span className="text-neutral-500"> (based on NanoKVM {information.base})</span>
+              <span className="text-neutral-500">
+                {' '}
+                ({t('settings.about.basedOn', { version: information.base })})
+              </span>
             )}
           </span>
         </div>

@@ -14,7 +14,11 @@ const se = {
       copyFailed: 'Kunde inte kopiera. Markera texten och kopiera den manuellt.',
       notUpdating: 'Uppdateras inte: den senaste uppdateringen misslyckades.',
       off: 'Av',
-      running: 'Körs'
+      running: 'Körs',
+      save: 'Spara',
+      cancel: 'Avbryt',
+      delete: 'Ta bort',
+      remove: 'Ta bort'
     },
     head: {
       desktop: 'Fjärrskrivbord',
@@ -51,20 +55,21 @@ const se = {
       cancel: 'Avbryt',
       loginButtonText: 'Logga in',
       tips: {
-        reset1: 'För att återställa lösenordet, håll in BOOT-knappen på NanoKVM i 10 sekunder.',
-        reset2: 'För detaljerade steg, se detta dokument:',
+        reset1: 'För att återställa lösenordet, håll in BOOT-knappen på IronKVM i 10 sekunder.',
         reset3: 'Standardkonto för webben:',
         reset4: 'Standardkonto för SSH:',
         change1: 'Observera att denna åtgärd ändrar följande lösenord:',
         change2: 'Webbinloggningslösenord',
         change3: 'Systemets root-lösenord (SSH-lösenord)',
-        change4: 'För att återställa lösenordet, håll in BOOT-knappen på NanoKVM.'
+        change4: 'För att återställa lösenordet, håll in BOOT-knappen på IronKVM.',
+        resetDocs: 'Detaljerade steg finns i hårdvarudokumentationen:',
+        hardwareDocs: 'Sipeed NanoKVM-wiki'
       }
     },
     wifi: {
       title: 'Wi-Fi',
-      description: 'Konfigurera Wi-Fi för NanoKVM',
-      success: 'Kontrollera nätverksstatusen för NanoKVM och besök den nya IP-adressen.',
+      description: 'Konfigurera Wi-Fi för IronKVM',
+      success: 'Kontrollera nätverksstatusen för IronKVM och besök den nya IP-adressen.',
       failed: 'Åtgärden misslyckades, försök igen.',
       invalidMode:
         'Det aktuella läget stöder inte nätverksinstallation. Gå till din enhet och aktivera Wi-Fi konfigurationsläge.',
@@ -318,10 +323,10 @@ const se = {
       hidOnly: {
         switchFailed: 'Det gick inte att byta läge. Kontrollera anslutningen och försök igen.',
         title: 'Endast HID-läge',
-        desc: 'Om din mus och ditt tangentbord slutar svara och återställning av HID inte hjälper, kan det bero på kompatibilitetsproblem mellan NanoKVM och enheten. Prova att aktivera Endast-HID-läge för bättre kompatibilitet.',
+        desc: 'Om din mus och ditt tangentbord slutar svara och återställning av HID inte hjälper, kan det bero på kompatibilitetsproblem mellan IronKVM och enheten. Prova att aktivera Endast-HID-läge för bättre kompatibilitet.',
         tip1: 'Aktivering av Endast-HID-läge avmonterar den virtuella U-disken och nätverket',
         tip2: 'I Endast-HID-läge är avbildningsmontering inaktiverat',
-        rebuild: 'Byte av läge bygger upp USB-anslutningen på nytt. NanoKVM startas inte om',
+        rebuild: 'Byte av läge bygger upp USB-anslutningen på nytt. IronKVM startas inte om',
         enable: 'Aktivera Endast-HID-läge',
         disable: 'Inaktivera Endast-HID-läge'
       },
@@ -390,18 +395,18 @@ const se = {
       },
       tips: {
         title: 'Hur man laddar upp',
-        usb1: 'Anslut NanoKVM till din dator via USB.',
+        usb1: 'Anslut IronKVM till din dator via USB.',
         usb2: 'Säkerställ att den virtuella disken är monterad (Inställningar - Virtuell Disk).',
         usb3: 'Öppna den virtuella disken på din dator och kopiera avbildningsfilen till rotkatalogen.',
-        scp1: 'Säkerställ att NanoKVM och din dator är på samma lokala nätverk.',
-        scp2: 'Öppna en terminal på din dator och använd SCP-kommandot för att ladda upp avbildningen till /data på NanoKVM.',
+        scp1: 'Säkerställ att IronKVM och din dator är på samma lokala nätverk.',
+        scp2: 'Öppna en terminal på din dator och använd SCP-kommandot för att ladda upp avbildningen till /data på IronKVM.',
         scp3: 'Exempel: scp din-avbildningssökväg root@din-nanokvm-ip:/data',
         tfCard: 'TF-kort',
         tf1: 'Denna metod stöds på Linux-system',
-        tf2: 'Ta ut TF-kortet från NanoKVM (för FULL-versionen, öppna chassit först).',
+        tf2: 'Ta ut TF-kortet från IronKVM (för FULL-versionen, öppna chassit först).',
         tf3: 'Sätt in TF-kortet i en kortläsare och anslut till din dator.',
         tf4: 'Kopiera avbildningsfilen till /data på TF-kortet.',
-        tf5: 'Sätt in TF-kortet i NanoKVM.'
+        tf5: 'Sätt in TF-kortet i IronKVM.'
       }
     },
     script: {
@@ -432,7 +437,7 @@ const se = {
       invalidSettings: 'Ogiltiga inställningar för serieporten. Detta är kortets eget skal.',
       disconnected: 'Frånkopplad. Tryck på Enter för att ansluta igen.',
       title: 'Terminal',
-      nanokvm: 'NanoKVM Terminal',
+      nanokvm: 'IronKVM Terminal',
       serial: 'Serieport-terminal',
       serialPort: 'Serieport',
       serialPortPlaceholder: 'Ange serieport',
@@ -558,7 +563,10 @@ const se = {
         failed: 'MCP-åtgärden misslyckades',
         copyFailed: 'Kopiering misslyckades. Kopiera manuellt.',
         okBtn: 'Bekräfta',
-        cancelBtn: 'Avbryt'
+        cancelBtn: 'Avbryt',
+        showKey: 'Visa nyckel',
+        hideKey: 'Dölj nyckel',
+        regenerateKey: 'Skapa ny nyckel'
       },
       redfish: {
         example: 'Exempel',
@@ -691,7 +699,7 @@ const se = {
         action: 'Åtgärd',
         actionDesc:
           'Av och på håller strömknappen intryckt i 5 sekunder och trycker sedan på den igen.',
-        actionReset: 'Reset',
+        actionReset: 'Starta om',
         actionPower: 'Av och på',
         cooldown: 'Paus',
         cooldownDesc: 'Den kortaste tiden mellan två åtgärder.',
@@ -787,24 +795,24 @@ const se = {
         failed: 'Nätverksstartsåtgärden misslyckades'
       },
       about: {
-        title: 'Om NanoKVM',
+        title: 'Om IronKVM',
         information: 'Information',
         ip: 'IP',
         mdns: 'mDNS',
         application: 'Applikationsversion',
-        applicationTip: 'NanoKVM webbapplikationsversion',
+        applicationTip: 'IronKVM webbapplikationsversion',
         image: 'Systemversion',
-        imageTip: 'NanoKVM systemavbildningsversion',
+        imageTip: 'IronKVM-kortavbild och NanoKVM-systemavbilden den bygger på',
         kernel: 'Kärnversion',
         kernelTip: 'Version av Linux-kärnan som körs nu',
         deviceKey: 'Enhetsnyckel',
         videoMemory: 'Videominne',
         videoMemoryTip:
           'Minne reserverat för videoinspelning. Det delas inte med resten av systemet.',
-        videoMemoryGenerations_one: '{{count}} tidigare NanoKVM-session håller videominne',
-        videoMemoryGenerations_other: '{{count}} tidigare NanoKVM-sessioner håller videominne',
+        videoMemoryGenerations_one: '{{count}} tidigare IronKVM-session håller videominne',
+        videoMemoryGenerations_other: '{{count}} tidigare IronKVM-sessioner håller videominne',
         videoMemoryReboot: 'Starta om för att frigöra det.',
-        community: 'Community',
+        community: 'Gemenskap',
         hostname: 'Värdnamn',
         hostnameUpdated: 'Värdnamn uppdaterat. Starta om för att tillämpa.',
         ipType: {
@@ -814,7 +822,14 @@ const se = {
         },
         hostnameInvalid:
           'Använd bokstäver, siffror och bindestreck, högst 63 per punktseparerad del. Inget bindestreck i början eller slutet av en del.',
-        hostnameFailed: 'Det gick inte att ändra värdnamnet'
+        hostnameFailed: 'Det gick inte att ändra värdnamnet',
+        editHostname: 'Redigera värdnamn',
+        docs: 'Dokumentation',
+        hardware: 'Hårdvara',
+        hardwareFaq: 'Vanliga frågor om hårdvaran',
+        disclaimer:
+          'IronKVM: härdad gemenskapsfirmware för Sipeed NanoKVM. Inte knuten till Sipeed.',
+        basedOn: 'baserad på NanoKVM {{version}}'
       },
       appearance: {
         title: 'Utseende',
@@ -938,10 +953,10 @@ const se = {
         network: 'Virtuellt nätverk',
         networkDesc: 'Montera virtuell nätverkskort på fjärrvärden',
         usbNetwork: {
-          boardAddress: 'NanoKVM:',
+          boardAddress: 'IronKVM:',
           hostAddress: 'Värd:',
           description:
-            'En privat nätverkslänk till fjärrvärden via USB-kabeln. Värden får en adress utan gateway och utan DNS, så den kan inte nå ditt lokala nätverk genom NanoKVM.',
+            'En privat nätverkslänk till fjärrvärden via USB-kabeln. Värden får en adress utan gateway och utan DNS, så den kan inte nå ditt lokala nätverk genom IronKVM.',
           off: 'Av',
           ncm: 'NCM (Linux, macOS, Windows 11)',
           ecm: 'ECM (för värdar utan NCM)',
@@ -949,7 +964,7 @@ const se = {
           rndisNote: 'Den här länken använder RNDIS, som inte längre erbjuds. Välj NCM eller ECM.',
           subnet: 'Delnät',
           subnetDesc:
-            'Ett privat IPv4-nätverk, /24 till /30. NanoKVM tar den första adressen, värden den andra.',
+            'Ett privat IPv4-nätverk, /24 till /30. IronKVM tar den första adressen, värden den andra.',
           invalidSubnet: 'Ange ett delnät, till exempel 172.31.255.0/30.',
           apply: 'Verkställ',
           confirm: 'Återansluta USB-enheten?',
@@ -962,9 +977,9 @@ const se = {
         audioNote: 'Ljud finns i båda H.264-lägena (WebRTC och Direct), inte i MJPEG',
         console: 'Seriell konsol',
         consoleDesc:
-          'Visa en seriell USB-port för fjärrvärden, för att logga in på denna NanoKVM när nätverket inte går att nå',
+          'Visa en seriell USB-port för fjärrvärden, för att logga in på denna IronKVM när nätverket inte går att nå',
         consoleTip:
-          'Alla som styr fjärrvärden får en inloggningsprompt till denna NanoKVM. Ställ in ett starkt lösenord innan du aktiverar (Konto - Byt lösenord).',
+          'Alla som styr fjärrvärden får en inloggningsprompt till denna IronKVM. Ställ in ett starkt lösenord innan du aktiverar (Konto - Byt lösenord).',
         endpoints: {
           title: 'USB-slutpunkter',
           used: '{{used}} av {{total}} används',
@@ -979,7 +994,7 @@ const se = {
           fitTogether: 'Dessa ryms tillsammans: {{sets}}'
         },
         reboot: 'Starta om',
-        rebootDesc: 'Är du säker på att du vill starta om NanoKVM?',
+        rebootDesc: 'Är du säker på att du vill starta om IronKVM?',
         okBtn: 'Ja',
         cancelBtn: 'Nej',
         rebootFailed: 'Omstarten misslyckades'
@@ -989,7 +1004,7 @@ const se = {
         wifi: {
           disconnectBtn: 'Koppla från',
           disconnectWarning:
-            'Om du når NanoKVM via det här Wi-Fi-nätverket tappar sidan anslutningen.',
+            'Om du når IronKVM via det här Wi-Fi-nätverket tappar sidan anslutningen.',
           disconnected: 'Wi-Fi frånkopplat',
           title: 'Wi-Fi',
           description: 'Konfigurera Wi-Fi',
@@ -1021,7 +1036,7 @@ const se = {
         },
         ethernet: {
           title: 'IP-adress',
-          description: 'Ställ in hur NanoKVM får sin adress i det trådbundna nätverket',
+          description: 'Ställ in hur IronKVM får sin adress i det trådbundna nätverket',
           dhcp: 'DHCP',
           manual: 'Manuell',
           networkDetails: 'Nätverksinformation',
@@ -1035,17 +1050,17 @@ const se = {
           invalidRouter: 'Ange en giltig routeradress',
           addressRequired: 'En IP-adress krävs',
           maskRequired: 'En nätmask krävs',
-          applyTitle: 'Vill du ändra adressen för NanoKVM?',
+          applyTitle: 'Vill du ändra adressen för IronKVM?',
           applyWarning:
-            'Anslutningen till den här sidan går förlorad. NanoKVM tillämpar den nya adressen och väntar {{seconds}} sekunder på att du når den där. Att nå den behåller ändringen. Om ingenting når den återställer NanoKVM de tidigare inställningarna.',
+            'Anslutningen till den här sidan går förlorad. IronKVM tillämpar den nya adressen och väntar {{seconds}} sekunder på att du når den där. Att nå den behåller ändringen. Om ingenting når den återställer IronKVM de tidigare inställningarna.',
           applyConfirm: 'Tillämpa',
           applyCancel: 'Avbryt',
           applyFailed: 'Adressen kunde inte tillämpas',
           trialTitle: 'Väntar på bekräftelse',
-          trialDhcp: 'NanoKVM begär en adress via DHCP.',
-          trialStatic: 'NanoKVM finns nu på {{address}}.',
+          trialDhcp: 'IronKVM begär en adress via DHCP.',
+          trialStatic: 'IronKVM finns nu på {{address}}.',
           trialInstruction:
-            'Öppna NanoKVM på dess nya adress och logga in om den ber om det. Att nå den där behåller ändringen. Om ingenting når NanoKVM inom {{seconds}} sekunder återställs de tidigare inställningarna.',
+            'Öppna IronKVM på dess nya adress och logga in om den ber om det. Att nå den där behåller ändringen. Om ingenting når IronKVM inom {{seconds}} sekunder återställs de tidigare inställningarna.',
           trialOpen: 'Öppna den nya adressen',
           trialKeep: 'Behåll dessa inställningar',
           trialKept: 'Den nya adressen är sparad',
@@ -1055,7 +1070,7 @@ const se = {
         },
         dns: {
           title: 'DNS',
-          description: 'Konfigurera DNS-servrar för NanoKVM',
+          description: 'Konfigurera DNS-servrar för IronKVM',
           mode: 'Läge',
           dhcp: 'DHCP',
           manual: 'Manuell',
@@ -1141,22 +1156,23 @@ const se = {
         checkFailed: 'Det gick inte att kontrollera inloggningsstatus',
         loginWaiting:
           'Sidan kontrollerar med några sekunders mellanrum och fortsätter när du har loggat in.',
-        uninstallFailed: 'Avinstallationen misslyckades'
+        uninstallFailed: 'Avinstallationen misslyckades',
+        loginFailed: 'Inloggningen misslyckades'
       },
       tailscale: {
         title: 'Tailscale',
-        retry: 'Uppdatera sidan och försök igen. Eller installera manuellt',
         download: 'Ladda ner',
         package: 'installationspaketet',
         unzip: 'och packa upp det',
-        upTailscale: 'Ladda upp tailscale till NanoKVM-katalogen /usr/bin/',
-        upTailscaled: 'Ladda upp tailscaled till NanoKVM-katalogen /usr/sbin/',
-        refresh: 'Uppdatera sidan',
         notLogin: 'Enheten är ännu inte bunden. Logga in och bind enheten till ditt konto.',
         urlPeriod: 'Denna URL är giltig i 10 minuter',
         login: 'Logga in',
         logout: 'Logga ut',
-        logoutDesc: 'Är du säker på att du vill logga ut?'
+        logoutDesc: 'Är du säker på att du vill logga ut?',
+        manualIntro: 'Eller installera det manuellt över SSH:',
+        copyBinaries: 'Kopiera tailscale och tailscaled till {{dir}} på IronKVM',
+        linksFile: 'Skapa i samma katalog en fil som heter links med de här två raderna:',
+        rebootRefresh: 'Starta om IronKVM och uppdatera sedan den här sidan'
       },
       netbird: {
         title: 'NetBird',
@@ -1170,7 +1186,8 @@ const se = {
         urlPeriod: 'Denna URL är giltig i 10 minuter',
         logout: 'Avregistrera',
         logoutDesc:
-          'Avregistrering tar bort den här noden från ditt NetBird-konto och raderar dess konfiguration här. För att ansluta igen krävs en installationsnyckel eller en SSO-inloggning, och noden kan få en ny IP. Fortsätta?'
+          'Avregistrering tar bort den här noden från ditt NetBird-konto och raderar dess konfiguration här. För att ansluta igen krävs en installationsnyckel eller en SSO-inloggning, och noden kan få en ny IP. Fortsätta?',
+        joinFailed: 'Kunde inte ansluta till nätverket'
       },
       update: {
         title: 'Sök efter uppdateringar',
@@ -1196,7 +1213,7 @@ const se = {
           save: 'Spara',
           confirmTitle: 'Vill du använda en anpassad uppdateringsserver?',
           confirmDesc:
-            'SHA-512 kontrollerar endast att paketet överensstämmer med manifestet från den här servern. Det bevisar inte att paketet är en officiell NanoKVM-utgåva. En felaktig eller skadlig server kan göra enheten obrukbar, orsaka dataförlust eller äventyra systemets säkerhet.',
+            'SHA-512 kontrollerar endast att paketet överensstämmer med manifestet från den här servern. Det bevisar inte att paketet är en officiell IronKVM-utgåva. En felaktig eller skadlig server kan göra enheten obrukbar, orsaka dataförlust eller äventyra systemets säkerhet.',
           confirm: 'Använd ändå',
           useSipeed: 'Använd Sipeeds officiella server',
           previewDisabled:
@@ -1217,7 +1234,8 @@ const se = {
         },
         updateTo: 'Uppdatera till {{version}}',
         updateConfirmDesc:
-          'Enheten installerar uppdateringen och startar om sin server. Sidan laddas om när servern är tillbaka.'
+          'Enheten installerar uppdateringen och startar om sin server. Sidan laddas om när servern är tillbaka.',
+        releaseNotes: 'Versionsinformation'
       },
       account: {
         title: 'Konto',
@@ -1293,7 +1311,7 @@ const se = {
         defaultTitle: 'Allmän assistent',
         defaultDescription: 'Allmän hjälp för chatt, sökning och arbetsyta.',
         kvmTitle: 'Fjärrstyrning',
-        kvmDescription: 'Manövrera fjärrvärden genom NanoKVM.',
+        kvmDescription: 'Manövrera fjärrvärden genom IronKVM.',
         switched: 'Agentroll bytte',
         switchFailed: 'Det gick inte att byta agentroll'
       },
@@ -1313,24 +1331,22 @@ const se = {
       connection: {
         runtime: {
           checking: 'Kontrollerar',
-          restoring: 'Restoring PicoClaw',
+          restoring: 'Återställer PicoClaw',
           ready: 'Runtime klar',
           stopped: 'Runtime stoppad',
           blockedByMCP: 'Extern MCP-styrning är aktiv',
-          readyBlockedByMCP:
-            'The runtime is running, but external MCP currently controls device input.',
-          readyWithoutControl:
-            'The runtime is running. Grant PicoClaw device control before reconnecting.',
+          readyBlockedByMCP: 'Runtime körs, men extern MCP styr just nu enhetens inmatning.',
+          readyWithoutControl: 'Runtime körs. Ge PicoClaw enhetsstyrning innan du ansluter igen.',
           unavailable: 'Runtime inte tillgänglig',
           configError: 'Konfigurationsfel'
         },
         transport: {
           connecting: 'Ansluter',
           connected: 'Ansluten',
-          disconnected: 'Disconnected',
-          reconnect: 'Reconnect',
-          reconnectDescription: 'Reconnect to the running PicoClaw session.',
-          reconnectBlocked: 'PicoClaw needs device control before reconnecting.'
+          disconnected: 'Frånkopplad',
+          reconnect: 'Anslut igen',
+          reconnectDescription: 'Anslut igen till den pågående PicoClaw-sessionen.',
+          reconnectBlocked: 'PicoClaw behöver enhetsstyrning innan den kan ansluta igen.'
         },
         run: {
           idle: 'Inaktiv',
@@ -1347,21 +1363,22 @@ const se = {
       },
       control: {
         picoclaw: 'Enhetsstyrning: PicoClaw',
-        picoclawDescription: 'PicoClaw can write keyboard and mouse input. Manual input may pause.',
+        picoclawDescription:
+          'PicoClaw kan skicka tangentbords- och musinmatning. Manuell inmatning kan pausas.',
         mcp: 'Enhetsstyrning: extern MCP',
-        mcpDescription: 'External MCP can write to the device. PicoClaw will not take over input.',
+        mcpDescription: 'Extern MCP kan skriva till enheten. PicoClaw tar inte över inmatningen.',
         off: 'Enhetsstyrning: av',
         offDescription:
-          'AI will not write keyboard or mouse input. Manual control remains available.',
-        transitioning: 'Device control: switching',
-        transitioningDescription: 'Device control is syncing. Please wait.',
+          'AI skickar ingen tangentbords- eller musinmatning. Manuell styrning finns kvar.',
+        transitioning: 'Enhetsstyrning: byter',
+        transitioningDescription: 'Enhetsstyrningen synkroniseras. Vänta.',
         grant: 'Ge styrning',
         release: 'Släpp',
-        releasing: 'Releasing...',
-        switching: 'Switching...',
-        releasingLabel: 'Device control: releasing',
+        releasing: 'Släpper...',
+        switching: 'Byter...',
+        releasingLabel: 'Enhetsstyrning: släpper',
         releasingDescription:
-          'Device control is being returned. PicoClaw has stopped current writes.',
+          'Enhetsstyrningen lämnas tillbaka. PicoClaw har stoppat pågående inmatning.',
         granted: 'PicoClaw-styrning beviljad',
         released: 'PicoClaw-styrning släppt',
         grantFailed: 'Det gick inte att ge PicoClaw styrning',
@@ -1443,8 +1460,8 @@ const se = {
         enableConfirmCancel: 'Avbryt',
         title: 'Starta PicoClaw',
         description: 'Starta runtime för att börja använda PicoClaw-assistenten.',
-        switchFromMCP: 'Switch to PicoClaw and start',
-        takeoverAndStart: 'Take over and start'
+        switchFromMCP: 'Byt till PicoClaw och starta',
+        takeoverAndStart: 'Ta över och starta'
       }
     },
     error: {
@@ -1478,9 +1495,9 @@ const se = {
       warn: 'Lite videominne kvar. En omstart av servern skulle ta slut på det. Starta om när det passar.',
       criticalTitle: 'Inte tillräckligt med videominne för att starta strömmen',
       criticalBody:
-        'Att starta video skulle ta slut på det reserverade minnet och stoppa servern. Alla andra funktioner fungerar fortfarande, även strömstyrning och omstart. Endast en omstart av NanoKVM frigör detta minne.',
+        'Att starta video skulle ta slut på det reserverade minnet och stoppa servern. Alla andra funktioner fungerar fortfarande, även strömstyrning och omstart. Endast en omstart av IronKVM frigör detta minne.',
       criticalContinue: 'Starta video ändå',
-      criticalReboot: 'Starta om NanoKVM',
+      criticalReboot: 'Starta om IronKVM',
       criticalRebooting: 'Startar om...'
     }
   }

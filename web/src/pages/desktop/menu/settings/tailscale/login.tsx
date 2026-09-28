@@ -4,6 +4,7 @@ import { Button, Card } from 'antd';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/extensions/tailscale.ts';
+import { describeFailure } from '@/lib/feedback.ts';
 
 import { ErrorDetail } from '../vpn/error-detail.tsx';
 import { LoginUrl } from '../vpn/login-url.tsx';
@@ -42,7 +43,7 @@ export const Login = ({ onSuccess }: LoginProps) => {
         setTimeout(() => setLoginUrl(''), 10 * 60 * 1000);
       })
       .catch((err) => {
-        setErrMsg(err?.message || 'Failed to login');
+        setErrMsg(describeFailure(err, t('settings.vpn.loginFailed')));
       })
       .finally(() => {
         setIsLoading(false);

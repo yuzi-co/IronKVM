@@ -41,9 +41,11 @@ export const HostPower = ({ showConfirm }: HostPowerProps) => {
 
   const item = (Icon: LucideIcon, label: string, action: () => void, confirm?: string) => {
     const row = (
-      <div
+      <button
+        type="button"
+        aria-disabled={disabled}
         className={clsx(
-          'flex items-center space-x-2 rounded px-3 py-1.5 select-none',
+          'flex w-full items-center space-x-2 rounded p-0 px-3 py-1.5 text-left select-none',
           disabled
             ? 'cursor-not-allowed text-neutral-500'
             : 'cursor-pointer hover:bg-neutral-700/70'
@@ -52,7 +54,7 @@ export const HostPower = ({ showConfirm }: HostPowerProps) => {
       >
         <Icon size={16} />
         <span>{label}</span>
-      </div>
+      </button>
     );
 
     if (disabled || !showConfirm || !confirm) return row;

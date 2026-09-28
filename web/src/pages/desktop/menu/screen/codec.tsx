@@ -107,12 +107,14 @@ export const Codec = ({ codec, setCodec, videoMode }: CodecProps) => {
         const disabled = item.key === CODEC_H265 && !hevcSupported;
 
         return (
-          <div
+          <button
+            type="button"
+            aria-disabled={disabled}
             key={item.key}
             className={
               disabled
-                ? 'flex items-center rounded py-1 pr-6 pl-1 opacity-40 select-none'
-                : 'flex cursor-pointer items-center rounded py-1 pr-6 pl-1 select-none hover:bg-neutral-700/70'
+                ? 'flex w-full items-center rounded p-0 py-1 pr-6 pl-1 text-left opacity-40 select-none'
+                : 'flex w-full cursor-pointer items-center rounded p-0 py-1 pr-6 pl-1 text-left select-none hover:bg-neutral-700/70'
             }
             onClick={() => update(item.key)}
             title={
@@ -127,7 +129,7 @@ export const Codec = ({ codec, setCodec, videoMode }: CodecProps) => {
               {item.key === codec && <CheckIcon size={14} />}
             </div>
             <span>{item.label}</span>
-          </div>
+          </button>
         );
       })}
       <div className="max-w-[220px] px-1 pt-2 text-xs text-neutral-400">

@@ -88,6 +88,7 @@ const EditableServerRow = ({
   onChange: (value: string) => void;
   onRemove: () => void;
 }) => {
+  const { t } = useTranslation();
   const inputRef = useRef<any>(null);
   const normalized = normalizeServer(value);
   const isInvalid = normalized !== '' && !isValidIP(normalized);
@@ -111,6 +112,7 @@ const EditableServerRow = ({
         <Button
           size="small"
           shape="circle"
+          aria-label={t('common.remove')}
           icon={<XIcon size={14} />}
           onClick={onRemove}
           className="transition-opacity pointer-fine:opacity-0 pointer-fine:group-focus-within:opacity-100 pointer-fine:group-hover:opacity-100"
@@ -307,6 +309,8 @@ export const DNS = () => {
                       type="text"
                       size="small"
                       className="invisible shrink-0"
+                      aria-hidden={true}
+                      tabIndex={-1}
                       icon={<XIcon size={14} />}
                     />
                   </div>

@@ -30,7 +30,7 @@ export const Head = ({ title = '', description = '' }: HeadProps = {}) => {
   return (
     <Helmet
       helmetData={helmetData}
-      title={webTitle ? webTitle : title ? `${title} - NanoKVM` : undefined}
+      title={webTitle ? webTitle : title ? `${title} - IronKVM` : undefined}
       defaultTitle={webTitle}
     >
       <meta name="description" content={description} />

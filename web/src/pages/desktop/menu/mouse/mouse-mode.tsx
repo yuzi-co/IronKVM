@@ -36,16 +36,17 @@ export const MouseMode = () => {
   const content = (
     <>
       {mouseModes.map((mode) => (
-        <div
+        <button
+          type="button"
           key={mode.value}
-          className="flex cursor-pointer items-center space-x-1 rounded py-1.5 pl-2 pr-5 hover:bg-neutral-700/70"
+          className="flex w-full cursor-pointer items-center space-x-1 rounded p-0 py-1.5 pr-5 pl-2 text-left hover:bg-neutral-700/70"
           onClick={() => updateMouseMode(mode.value)}
         >
           <div className="flex h-[16px] w-[16px] items-end text-blue-500">
             {mode.value === mouseMode && <CheckIcon strokeWidth={3} size={16} />}
           </div>
           <span>{mode.name}</span>
-        </div>
+        </button>
       ))}
     </>
   );

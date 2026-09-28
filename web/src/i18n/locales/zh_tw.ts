@@ -14,7 +14,11 @@ const zh_tw = {
       copyFailed: '複製失敗。請選取文字後手動複製。',
       notUpdating: '未在更新：上次重新整理失敗。',
       off: '關閉',
-      running: '執行中'
+      running: '執行中',
+      save: '儲存',
+      cancel: '取消',
+      delete: '刪除',
+      remove: '移除'
     },
     head: {
       desktop: '遠端桌面',
@@ -51,20 +55,21 @@ const zh_tw = {
       cancel: '取消',
       loginButtonText: '登入',
       tips: {
-        reset1: '長按 NanoKVM 上的 BOOT 按鍵 10 秒鐘來重設帳號。',
-        reset2: '詳細操作方法可參閱本文件：',
+        reset1: '長按 IronKVM 上的 BOOT 按鍵 10 秒鐘來重設帳號。',
         reset3: '網頁預設帳號：',
         reset4: 'SSH 預設帳號：',
         change1: '請注意，此操作將同時更新下列密碼：',
         change2: '網頁登入密碼',
         change3: 'root user 密碼 (SSH登入密碼)',
-        change4: '如果您忘記密碼，需要長按 NanoKVM 上的 BOOT 按鍵來重設密碼。'
+        change4: '如果您忘記密碼，需要長按 IronKVM 上的 BOOT 按鍵來重設密碼。',
+        resetDocs: '詳細步驟請參閱硬體文件：',
+        hardwareDocs: 'Sipeed NanoKVM 維基'
       }
     },
     wifi: {
       title: 'Wi-Fi',
-      description: '設定 NanoKVM Wi-Fi',
-      success: '請檢查 NanoKVM 的網路狀態，並存取新的 IP 位址。',
+      description: '設定 IronKVM Wi-Fi',
+      success: '請檢查 IronKVM 的網路狀態，並存取新的 IP 位址。',
       failed: '操作失敗，請重試。',
       invalidMode: '目前模式不支援設定網路。請先前往裝置啟用 Wi-Fi 配置模式。',
       confirmBtn: '確定',
@@ -313,10 +318,10 @@ const zh_tw = {
       hidOnly: {
         switchFailed: '無法切換模式。請檢查連線後重試。',
         title: 'HID-Only 模式',
-        desc: '如果您的滑鼠和鍵盤沒有反應，且重設 HID 無效，可能是 NanoKVM 與您的裝置間有相容性問題。請嘗試啟用 HID-Only 模式以獲得更好的相容性。',
+        desc: '如果您的滑鼠和鍵盤沒有反應，且重設 HID 無效，可能是 IronKVM 與您的裝置間有相容性問題。請嘗試啟用 HID-Only 模式以獲得更好的相容性。',
         tip1: '啟用 HID-Only 模式將會停用虛擬隨身碟和虛擬網卡的功能',
         tip2: '在 HID-Only 模式下，映像檔掛載功能將被停用',
-        rebuild: '切換模式會重建 USB 連線，NanoKVM 不會重新啟動',
+        rebuild: '切換模式會重建 USB 連線，IronKVM 不會重新啟動',
         enable: '啟用 HID-Only 模式',
         disable: '停用 HID-Only 模式'
       },
@@ -380,18 +385,18 @@ const zh_tw = {
       },
       tips: {
         title: '如何上傳',
-        usb1: '透過 USB 將 NanoKVM 連接到您的電腦。',
+        usb1: '透過 USB 將 IronKVM 連接到您的電腦。',
         usb2: '確保已安裝虛擬磁碟（設定 - 虛擬磁碟）。',
         usb3: '開啟電腦上的虛擬磁碟，將映象檔案複製到虛擬磁碟的根目錄下。',
-        scp1: '確保 NanoKVM 和您的電腦位於同一區域網路。',
-        scp2: '開啟電腦上的終端機，使用 SCP 指令將映像檔案上傳到 NanoKVM 的 /data 目錄下。',
-        scp3: '範例：scp your-image-path root@your-nanokvm-ip:/data',
+        scp1: '確保 IronKVM 和您的電腦位於同一區域網路。',
+        scp2: '開啟電腦上的終端機，使用 SCP 指令將映像檔案上傳到 IronKVM 的 /data 目錄下。',
+        scp3: '範例：scp your-image-path root@your-ironkvm-ip:/data',
         tfCard: 'microSD 卡',
         tf1: '此方法適用於 Linux 系統',
-        tf2: '從 NanoKVM 拔出 microSD 卡（FULL 版本請先拆開外殼）。',
+        tf2: '從 IronKVM 拔出 microSD 卡（FULL 版本請先拆開外殼）。',
         tf3: '使用 USB 讀卡機將 microSD 卡連接至電腦。',
         tf4: '將映像檔複製到 microSD 卡的 /data 目錄下。',
-        tf5: '將 microSD 卡重新插回 NanoKVM。'
+        tf5: '將 microSD 卡重新插回 IronKVM。'
       }
     },
     script: {
@@ -421,17 +426,17 @@ const zh_tw = {
       invalidSettings: '序列埠設定無效。這是裝置本身的終端機。',
       disconnected: '連線已中斷。按 Enter 重新連線。',
       title: '終端機',
-      nanokvm: 'NanoKVM 終端機',
+      nanokvm: 'IronKVM 終端機',
       serial: 'Serial Port 終端機',
       serialPort: '序列埠',
       serialPortPlaceholder: '請輸入 Serial Port',
       baudrate: '鮑率',
       parity: '同位檢查',
-      parityNone: 'None',
+      parityNone: '無',
       parityEven: '偶同位',
       parityOdd: '奇同位',
       flowControl: '流量控制',
-      flowControlNone: 'None',
+      flowControlNone: '無',
       flowControlSoft: '軟體',
       flowControlHard: '硬體',
       dataBits: '資料位元',
@@ -540,7 +545,10 @@ const zh_tw = {
         failed: 'MCP 操作失敗',
         copyFailed: '複製失敗，請手動複製。',
         okBtn: '確認',
-        cancelBtn: '取消'
+        cancelBtn: '取消',
+        showKey: '顯示金鑰',
+        hideKey: '隱藏金鑰',
+        regenerateKey: '重新產生金鑰'
       },
       redfish: {
         example: '範例',
@@ -761,20 +769,20 @@ const zh_tw = {
         failed: '網路開機操作失敗'
       },
       about: {
-        title: '關於 NanoKVM',
+        title: '關於 IronKVM',
         information: '資訊',
         ip: 'IP',
         mdns: 'mDNS',
         application: '應用程式版本',
-        applicationTip: 'NanoKVM 網頁程式版本',
+        applicationTip: 'IronKVM 網頁程式版本',
         image: '韌體版本',
-        imageTip: 'NanoKVM 系统韌體版本',
+        imageTip: 'IronKVM 卡映像檔，以及它所依據的 NanoKVM 系統映像檔',
         kernel: '核心版本',
         kernelTip: '目前執行中的 Linux 核心版本',
         deviceKey: '設備序號',
         videoMemory: '視訊記憶體',
         videoMemoryTip: '為視訊擷取保留的記憶體，不與系統其他部分共用。',
-        videoMemoryGenerations_other: '先前的 {{count}} 個 NanoKVM 工作階段仍佔用著視訊記憶體',
+        videoMemoryGenerations_other: '先前的 {{count}} 個 IronKVM 工作階段仍佔用著視訊記憶體',
         videoMemoryReboot: '重新啟動以回收。',
         community: '社群',
         hostname: '主機名稱',
@@ -786,7 +794,13 @@ const zh_tw = {
         },
         hostnameInvalid:
           '請使用字母、數字和連字號，每個以點分隔的部分最多 63 個字元，且不能以連字號開頭或結尾。',
-        hostnameFailed: '修改主機名稱失敗'
+        hostnameFailed: '修改主機名稱失敗',
+        editHostname: '編輯主機名稱',
+        docs: '文件',
+        hardware: '硬體',
+        hardwareFaq: '硬體常見問題',
+        disclaimer: 'IronKVM：為 Sipeed NanoKVM 打造的強化社群韌體。與 Sipeed 無關。',
+        basedOn: '基於 NanoKVM {{version}}'
       },
       appearance: {
         title: '外觀',
@@ -907,17 +921,17 @@ const zh_tw = {
         network: '虛擬網卡',
         networkDesc: '在遠端主機上新增虛擬網卡',
         usbNetwork: {
-          boardAddress: 'NanoKVM：',
+          boardAddress: 'IronKVM：',
           hostAddress: '主機：',
           description:
-            '透過 USB 線與遠端主機建立的私人網路連線。主機取得的位址不含閘道與 DNS，因此無法透過 NanoKVM 連到您的區域網路。',
+            '透過 USB 線與遠端主機建立的私人網路連線。主機取得的位址不含閘道與 DNS，因此無法透過 IronKVM 連到您的區域網路。',
           off: '關閉',
           ncm: 'NCM（Linux、macOS、Windows 11）',
           ecm: 'ECM（適用於不支援 NCM 的主機）',
           rndis: 'RNDIS（已不再提供）',
           rndisNote: '此連線使用已不再提供的 RNDIS。請選擇 NCM 或 ECM。',
           subnet: '子網路',
-          subnetDesc: '/24 到 /30 的私人 IPv4 網路。NanoKVM 使用第一個位址，主機使用第二個位址。',
+          subnetDesc: '/24 到 /30 的私人 IPv4 網路。IronKVM 使用第一個位址，主機使用第二個位址。',
           invalidSubnet: '請輸入子網路，例如 172.31.255.0/30。',
           apply: '套用',
           confirm: '重新連接 USB 裝置？',
@@ -928,9 +942,9 @@ const zh_tw = {
           '向遠端主機提供一張 USB 音效卡，讓您能聽到它的聲音。主機必須將其選為輸出裝置。切換此項會重建 USB 連線。',
         audioNote: '音訊在兩種 H.264 模式（WebRTC 和 Direct）下可用，MJPEG 下不可用',
         console: '序列主控台',
-        consoleDesc: '向遠端主機提供一個 USB 序列埠，用於在網路無法連線時登入這台 NanoKVM',
+        consoleDesc: '向遠端主機提供一個 USB 序列埠，用於在網路無法連線時登入這台 IronKVM',
         consoleTip:
-          '任何能控制遠端主機的人都會看到這台 NanoKVM 的登入提示。啟用前請務必設定強密碼（帳號 - 更改密碼）。',
+          '任何能控制遠端主機的人都會看到這台 IronKVM 的登入提示。啟用前請務必設定強密碼（帳號 - 更改密碼）。',
         endpoints: {
           title: 'USB 端點',
           used: '已使用 {{used}} / {{total}}',
@@ -944,7 +958,7 @@ const zh_tw = {
           fitTogether: '可同時啟用：{{sets}}'
         },
         reboot: '重新啟動',
-        rebootDesc: '您確定要重新啟動 NanoKVM?',
+        rebootDesc: '您確定要重新啟動 IronKVM?',
         okBtn: '確定',
         cancelBtn: '取消',
         rebootFailed: '重新開機失敗'
@@ -953,7 +967,7 @@ const zh_tw = {
         title: '網路',
         wifi: {
           disconnectBtn: '中斷連線',
-          disconnectWarning: '如果你透過此 Wi-Fi 網路存取 NanoKVM，此頁面將會斷線。',
+          disconnectWarning: '如果你透過此 Wi-Fi 網路存取 IronKVM，此頁面將會斷線。',
           disconnected: 'Wi-Fi 已中斷連線',
           title: 'Wi-Fi',
           description: '設定 Wi-Fi',
@@ -984,7 +998,7 @@ const zh_tw = {
         },
         ethernet: {
           title: 'IP 位址',
-          description: '設定 NanoKVM 在有線網路中取得位址的方式',
+          description: '設定 IronKVM 在有線網路中取得位址的方式',
           dhcp: 'DHCP',
           manual: '手動',
           networkDetails: '網路詳細資料',
@@ -998,17 +1012,17 @@ const zh_tw = {
           invalidRouter: '請輸入有效的路由器位址',
           addressRequired: '請填寫 IP 位址',
           maskRequired: '請填寫子網路遮罩',
-          applyTitle: '要變更 NanoKVM 的位址嗎？',
+          applyTitle: '要變更 IronKVM 的位址嗎？',
           applyWarning:
-            '與此頁面的連線將中斷。NanoKVM 套用新位址後，會等待 {{seconds}} 秒，等你在該位址連上它。連上即可保留此變更。如果沒有任何連線到達，NanoKVM 會還原先前的設定。',
+            '與此頁面的連線將中斷。IronKVM 套用新位址後，會等待 {{seconds}} 秒，等你在該位址連上它。連上即可保留此變更。如果沒有任何連線到達，IronKVM 會還原先前的設定。',
           applyConfirm: '套用',
           applyCancel: '取消',
           applyFailed: '位址套用失敗',
           trialTitle: '等待確認',
-          trialDhcp: 'NanoKVM 正在透過 DHCP 要求位址。',
-          trialStatic: 'NanoKVM 現在位於 {{address}}。',
+          trialDhcp: 'IronKVM 正在透過 DHCP 要求位址。',
+          trialStatic: 'IronKVM 現在位於 {{address}}。',
           trialInstruction:
-            '在新位址開啟 NanoKVM，如果它要求登入就登入。連上它即可保留此變更。如果 {{seconds}} 秒內沒有任何連線到達 NanoKVM，它會還原先前的設定。',
+            '在新位址開啟 IronKVM，如果它要求登入就登入。連上它即可保留此變更。如果 {{seconds}} 秒內沒有任何連線到達 IronKVM，它會還原先前的設定。',
           trialOpen: '開啟新位址',
           trialKeep: '保留這些設定',
           trialKept: '新位址已儲存',
@@ -1018,7 +1032,7 @@ const zh_tw = {
         },
         dns: {
           title: 'DNS',
-          description: '設定 NanoKVM 使用的 DNS 伺服器',
+          description: '設定 IronKVM 使用的 DNS 伺服器',
           mode: '模式',
           dhcp: 'DHCP',
           manual: '手動',
@@ -1101,22 +1115,23 @@ const zh_tw = {
         notSignedIn: '尚未登入。請在連結中完成登入後再檢查。',
         checkFailed: '無法檢查登入狀態',
         loginWaiting: '此頁面每隔幾秒檢查一次，登入完成後自動繼續。',
-        uninstallFailed: '解除安裝失敗'
+        uninstallFailed: '解除安裝失敗',
+        loginFailed: '登入失敗'
       },
       tailscale: {
         title: 'Tailscale',
-        retry: '請重新整理並重試。或嘗試手動安裝',
         download: '下載',
         package: '安裝包',
         unzip: '並解壓縮它',
-        upTailscale: '將 Tailscale 上傳到 NanoKVM 的 /usr/bin/ 資料夾',
-        upTailscaled: '將 Tailscale 上傳到 NanoKVM 的 /usr/sbin/ 資料夾',
-        refresh: '重新整理頁面',
         notLogin: '設備尚未綁定。請登入並將該裝置綁定到您的帳戶。',
         urlPeriod: '此網址有效期限為 10 分鐘',
         login: '登入',
         logout: '登出',
-        logoutDesc: '確認要登出嗎？'
+        logoutDesc: '確認要登出嗎？',
+        manualIntro: '或透過 SSH 手動安裝：',
+        copyBinaries: '將 tailscale 和 tailscaled 複製到 IronKVM 上的 {{dir}}',
+        linksFile: '在同一目錄中建立名為 links 的檔案，寫入以下兩行：',
+        rebootRefresh: '重新啟動 IronKVM，然後重新整理此頁面'
       },
       netbird: {
         title: 'NetBird',
@@ -1129,7 +1144,8 @@ const zh_tw = {
         urlPeriod: '此網址有效期限為 10 分鐘',
         logout: '取消註冊',
         logoutDesc:
-          '取消註冊會將此節點從您的 NetBird 帳號中移除，並刪除本機上的設定。重新加入需要設定金鑰或 SSO 登入，節點可能會取得新的 IP。是否繼續？'
+          '取消註冊會將此節點從您的 NetBird 帳號中移除，並刪除本機上的設定。重新加入需要設定金鑰或 SSO 登入，節點可能會取得新的 IP。是否繼續？',
+        joinFailed: '無法加入網路'
       },
       update: {
         title: '檢查更新',
@@ -1154,7 +1170,7 @@ const zh_tw = {
           save: '儲存',
           confirmTitle: '使用自訂更新伺服器？',
           confirmDesc:
-            'SHA-512 只能驗證安裝套件與該伺服器提供的清單一致，不能證明安裝套件來自 NanoKVM 官方。錯誤或惡意的伺服器可能導致裝置無法使用、資料遺失或系統遭到接管。',
+            'SHA-512 只能驗證安裝套件與該伺服器提供的清單一致，不能證明安裝套件來自 IronKVM 官方。錯誤或惡意的伺服器可能導致裝置無法使用、資料遺失或系統遭到接管。',
           confirm: '仍然使用',
           useSipeed: '使用 Sipeed 官方伺服器',
           previewDisabled: '啟用自訂更新伺服器時，預覽更新無法使用'
@@ -1173,7 +1189,8 @@ const zh_tw = {
           updateFailed: '更新失敗，請重試'
         },
         updateTo: '更新至 {{version}}',
-        updateConfirmDesc: '裝置將安裝更新並重新啟動服務。服務恢復後此頁面會自動重新載入。'
+        updateConfirmDesc: '裝置將安裝更新並重新啟動服務。服務恢復後此頁面會自動重新載入。',
+        releaseNotes: '版本說明'
       },
       account: {
         title: '帳號',
@@ -1249,7 +1266,7 @@ const zh_tw = {
         defaultTitle: '通用助理',
         defaultDescription: '一般聊天、搜尋和工作區域幫助。',
         kvmTitle: '遠端控制',
-        kvmDescription: '透過 NanoKVM 操作遠端主機。',
+        kvmDescription: '透過 IronKVM 操作遠端主機。',
         switched: '代理角色已切換',
         switchFailed: '代理角色切換失敗'
       },
@@ -1428,9 +1445,9 @@ const zh_tw = {
       warn: '視訊記憶體不足，再重新啟動一次伺服器就會耗盡。請在方便時重新啟動裝置。',
       criticalTitle: '視訊記憶體不足，無法啟動串流',
       criticalBody:
-        '啟動視訊會耗盡保留的記憶體並使伺服器停止。其他功能仍可正常使用，包括電源控制和重新啟動。只有重新啟動 NanoKVM 才能回收這部分記憶體。',
+        '啟動視訊會耗盡保留的記憶體並使伺服器停止。其他功能仍可正常使用，包括電源控制和重新啟動。只有重新啟動 IronKVM 才能回收這部分記憶體。',
       criticalContinue: '仍然啟動視訊',
-      criticalReboot: '重新啟動 NanoKVM',
+      criticalReboot: '重新啟動 IronKVM',
       criticalRebooting: '正在重新啟動...'
     }
   }

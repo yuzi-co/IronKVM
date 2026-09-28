@@ -10,14 +10,15 @@ export const VirtualKeyboard = () => {
   const setIsKeyboardOpen = useSetAtom(isKeyboardOpenAtom);
 
   return (
-    <div
+    <button
+      type="button"
       className={clsx(
-        'flex cursor-pointer select-none items-center space-x-2 rounded py-1 pl-2 pr-5 hover:bg-neutral-700/70'
+        'flex w-full cursor-pointer items-center space-x-2 rounded p-0 py-1 pr-5 pl-2 text-left select-none hover:bg-neutral-700/70'
       )}
       onClick={() => setIsKeyboardOpen((o) => !o)}
     >
       <KeyboardIcon size={18} />
       <span>{t('keyboard.virtual')}</span>
-    </div>
+    </button>
   );
 };

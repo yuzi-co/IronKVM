@@ -111,6 +111,7 @@ export const SidebarHistory = ({
                       size="small"
                       danger
                       disabled={isDeleting || isSwitching}
+                      aria-label={t('picoclaw.history.deleteConfirmTitle')}
                       icon={<Trash2Icon size={14} />}
                       className={[
                         '!mt-0.5 hidden! items-center! justify-center! !text-neutral-500 hover:!bg-red-500/10 hover:!text-red-300',

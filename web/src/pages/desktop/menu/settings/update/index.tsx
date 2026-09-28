@@ -124,7 +124,7 @@ export const Update = ({ setIsLocked }: UpdateProps) => {
         )}
 
         {status === 'updating' && (
-          <div className="flex flex-col items-center justify-center space-y-10 pb-10 pt-24">
+          <div className="flex flex-col items-center justify-center space-y-10 pt-24 pb-10">
             <Spin size="large" />
             <span className="text-neutral-500">{t('settings.update.updating')}</span>
           </div>
@@ -177,10 +177,10 @@ export const Update = ({ setIsLocked }: UpdateProps) => {
           <Button
             type="link"
             size="small"
-            href="https://github.com/sipeed/NanoKVM/blob/main/CHANGELOG.md"
+            href="https://github.com/yuzi-co/IronKVM/releases"
             target="_blank"
           >
-            CHANGELOG
+            {t('settings.update.releaseNotes')}
           </Button>
         </div>
       </div>

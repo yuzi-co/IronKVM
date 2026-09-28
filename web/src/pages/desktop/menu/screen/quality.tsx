@@ -39,16 +39,17 @@ export const Quality = ({ quality, setQuality }: QualityProps) => {
   const content = (
     <>
       {qualityList.map((item) => (
-        <div
+        <button
+          type="button"
           key={item.key}
-          className="flex h-[30px] cursor-pointer items-center rounded pr-5 pl-1 select-none hover:bg-neutral-700/70"
+          className="flex h-[30px] w-full cursor-pointer items-center rounded p-0 pr-5 pl-1 text-left select-none hover:bg-neutral-700/70"
           onClick={() => update(item.key)}
         >
           <div className="flex h-[14px] w-[20px] items-end text-blue-500">
             {item.key === quality && <CheckIcon size={14} />}
           </div>
           <span className="flex w-[50px]">{item.label}</span>
-        </div>
+        </button>
       ))}
     </>
   );

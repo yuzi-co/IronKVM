@@ -54,21 +54,23 @@ export const Fps = ({ fps, setFps }: FpsProps) => {
     <>
       {/* default fps list */}
       {fpsList.map((item) => (
-        <div
+        <button
+          type="button"
           key={item.key}
-          className="flex cursor-pointer items-center rounded py-1.5 pl-1 select-none hover:bg-neutral-700/70"
+          className="flex w-full cursor-pointer items-center rounded p-0 py-1.5 pl-1 text-left select-none hover:bg-neutral-700/70"
           onClick={() => update(item.key)}
         >
           <div className="flex h-[14px] w-[20px] items-end text-blue-500">
             {item.key === fps && <CheckIcon size={14} />}
           </div>
           <span>{item.label}</span>
-        </div>
+        </button>
       ))}
 
       {/* customize fps */}
-      <div
-        className="flex cursor-pointer items-center rounded py-1.5 pr-5 pl-1 select-none hover:bg-neutral-700/70"
+      <button
+        type="button"
+        className="flex w-full cursor-pointer items-center rounded p-0 py-1.5 pr-5 pl-1 text-left select-none hover:bg-neutral-700/70"
         onClick={showCustomize}
       >
         {defaultFps.includes(fps) ? (
@@ -85,17 +87,23 @@ export const Fps = ({ fps, setFps }: FpsProps) => {
             <span className="text-xs">{`(${fps}Hz)`}</span>
           </>
         )}
-      </div>
+      </button>
 
       {isCustomize && (
         <div className="flex w-[140px] items-center space-x-1 py-1">
           <InputNumber<number> defaultValue={fps} min={1} max={60} onChange={onChange} />
           <Button
             size="small"
+            aria-label={t('common.save')}
             icon={<CheckOutlined />}
             onClick={() => update(customizeRef.current)}
           />
-          <Button size="small" icon={<CloseOutlined />} onClick={() => setIsCustomize(false)} />
+          <Button
+            size="small"
+            aria-label={t('common.cancel')}
+            icon={<CloseOutlined />}
+            onClick={() => setIsCustomize(false)}
+          />
         </div>
       )}
     </>

@@ -11,12 +11,14 @@ export const Picoclaw = () => {
 
   return (
     <Tooltip title={t('picoclaw.title')} mouseEnterDelay={0.6} placement="bottom">
-      <div
-        className="flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded text-neutral-300 hover:bg-neutral-700/80 hover:text-white"
+      <button
+        type="button"
+        aria-label={t('picoclaw.title')}
+        className="flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded p-0 text-neutral-300 hover:bg-neutral-700/80 hover:text-white"
         onClick={() => setIsChatOpen((open) => !open)}
       >
         <Robot size={18} />
-      </div>
+      </button>
     </Tooltip>
   );
 };

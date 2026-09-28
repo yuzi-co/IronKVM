@@ -14,7 +14,11 @@ const nl = {
       copyFailed: 'Kopiëren mislukt. Selecteer de tekst en kopieer hem handmatig.',
       notUpdating: 'Wordt niet bijgewerkt: de laatste verversing is mislukt.',
       off: 'Uit',
-      running: 'Actief'
+      running: 'Actief',
+      save: 'Opslaan',
+      cancel: 'Annuleren',
+      delete: 'Verwijderen',
+      remove: 'Weghalen'
     },
     head: {
       desktop: 'Extern bureaublad',
@@ -54,21 +58,22 @@ const nl = {
       loginButtonText: 'Inloggen',
       tips: {
         reset1:
-          'Om de wachtwoorden opnieuw in te stellen, houdt u de BOOT-knop op de NanoKVM 10 seconden lang ingedrukt.',
-        reset2: 'Voor gedetailleerde stappen kunt u dit document raadplegen:',
+          'Om de wachtwoorden opnieuw in te stellen, houdt u de BOOT-knop op de IronKVM 10 seconden lang ingedrukt.',
         reset3: 'Standaard webaccount:',
         reset4: 'Standaard SSH-account:',
         change1: 'Houd er rekening mee dat deze actie de volgende wachtwoorden zal wijzigen:',
         change2: 'Web login wachtwoord',
         change3: 'Systeem root-wachtwoord (SSH-inlogwachtwoord)',
         change4:
-          'Om de wachtwoorden opnieuw in te stellen, houdt u de BOOT-knop op de NanoKVM ingedrukt.'
+          'Om de wachtwoorden opnieuw in te stellen, houdt u de BOOT-knop op de IronKVM ingedrukt.',
+        resetDocs: 'Zie de hardwaredocumentatie voor de stappen in detail:',
+        hardwareDocs: 'Sipeed NanoKVM-wiki'
       }
     },
     wifi: {
       title: 'Wi-Fi',
-      description: 'Wi-Fi configureren voor NanoKVM',
-      success: 'Controleer de netwerkstatus van NanoKVM en bezoek het nieuwe IP-adres.',
+      description: 'Wi-Fi configureren voor IronKVM',
+      success: 'Controleer de netwerkstatus van IronKVM en bezoek het nieuwe IP-adres.',
       failed: 'De bewerking is mislukt. Probeer het opnieuw.',
       invalidMode:
         'De huidige modus ondersteunt geen netwerkconfiguratie. Ga naar uw apparaat en schakel de configuratiemodus Wi-Fi in.',
@@ -325,11 +330,11 @@ const nl = {
       hidOnly: {
         switchFailed: 'Modus wisselen mislukt. Controleer de verbinding en probeer het opnieuw.',
         title: 'Alleen HID-modus',
-        desc: 'Als uw muis en toetsenbord niet meer reageren en het opnieuw instellen van HID niet helpt, kan er sprake zijn van een compatibiliteitsprobleem tussen de NanoKVM en het apparaat. Probeer de modus HID-Only in te schakelen voor betere compatibiliteit.',
+        desc: 'Als uw muis en toetsenbord niet meer reageren en het opnieuw instellen van HID niet helpt, kan er sprake zijn van een compatibiliteitsprobleem tussen de IronKVM en het apparaat. Probeer de modus HID-Only in te schakelen voor betere compatibiliteit.',
         tip1: 'Als u de modus HID-Only inschakelt, worden de virtuele U-schijf en het virtuele netwerk ontkoppeld',
         tip2: 'In de modus HID-Alleen is beeldmontage uitgeschakeld',
         rebuild:
-          'Bij het wisselen van modus wordt de USB-verbinding opnieuw opgebouwd. NanoKVM start niet opnieuw op',
+          'Bij het wisselen van modus wordt de USB-verbinding opnieuw opgebouwd. IronKVM start niet opnieuw op',
         enable: 'Schakel de modus HID-Alleen in',
         disable: 'Schakel de modus HID-Alleen uit'
       },
@@ -399,18 +404,18 @@ const nl = {
       },
       tips: {
         title: 'Hoe te uploaden',
-        usb1: 'Verbind de NanoKVM met uw computer via USB.',
+        usb1: 'Verbind de IronKVM met uw computer via USB.',
         usb2: 'Zorg ervoor dat de virtuele schijf is gekoppeld (Instellingen - Virtuele schijf).',
         usb3: 'Open de virtuele schijf op uw computer en kopieer het imagebestand naar de hoofdmap van de virtuele schijf.',
-        scp1: 'Zorg ervoor dat de NanoKVM en uw computer zich in hetzelfde lokale netwerk bevinden.',
-        scp2: 'Open een terminal op uw computer en gebruik het SCP-commando om het imagebestand te uploaden naar de /data directory op de NanoKVM.',
+        scp1: 'Zorg ervoor dat de IronKVM en uw computer zich in hetzelfde lokale netwerk bevinden.',
+        scp2: 'Open een terminal op uw computer en gebruik het SCP-commando om het imagebestand te uploaden naar de /data directory op de IronKVM.',
         scp3: 'Voorbeeld: scp uw-image-pad root@uw-nanokvm-ip:/data',
         tfCard: 'TF-kaart',
         tf1: 'Deze methode wordt ondersteund op Linux-systemen',
-        tf2: 'Haal de TF-kaart uit de NanoKVM (voor de VOLLEDIGE versie, demonteer eerst de behuizing).',
+        tf2: 'Haal de TF-kaart uit de IronKVM (voor de VOLLEDIGE versie, demonteer eerst de behuizing).',
         tf3: 'Plaats de TF-kaart in een kaartlezer en verbind deze met uw computer.',
         tf4: 'Kopieer het imagebestand naar de /data directory op de TF-kaart.',
-        tf5: 'Plaats de TF-kaart terug in de NanoKVM.'
+        tf5: 'Plaats de TF-kaart terug in de IronKVM.'
       }
     },
     script: {
@@ -442,7 +447,7 @@ const nl = {
         'Ongeldige instellingen voor de seriële poort. Dit is de shell van het bord.',
       disconnected: 'Verbinding verbroken. Druk op Enter om opnieuw te verbinden.',
       title: 'Terminal',
-      nanokvm: 'NanoKVM Terminal',
+      nanokvm: 'IronKVM Terminal',
       serial: 'Seriële poort terminal',
       serialPort: 'Seriële poort',
       serialPortPlaceholder: 'Voer de seriële poort in',
@@ -569,7 +574,10 @@ const nl = {
         failed: 'MCP-bewerking mislukt',
         copyFailed: 'Kopiëren mislukt. Kopieer handmatig.',
         okBtn: 'Bevestigen',
-        cancelBtn: 'Annuleren'
+        cancelBtn: 'Annuleren',
+        showKey: 'Sleutel tonen',
+        hideKey: 'Sleutel verbergen',
+        regenerateKey: 'Nieuwe sleutel maken'
       },
       redfish: {
         example: 'Voorbeeld',
@@ -704,7 +712,7 @@ const nl = {
         action: 'Actie',
         actionDesc:
           'Uit en aan houdt de aan/uit-knop 5 seconden ingedrukt en drukt er daarna opnieuw op.',
-        actionReset: 'Reset',
+        actionReset: 'Resetten',
         actionPower: 'Uit en aan',
         cooldown: 'Wachttijd',
         cooldownDesc: 'De kortste tijd tussen twee acties.',
@@ -800,22 +808,22 @@ const nl = {
         failed: 'Netwerkboot-bewerking mislukt'
       },
       about: {
-        title: 'Over NanoKVM',
+        title: 'Over IronKVM',
         information: 'Informatie',
         ip: 'IP',
         mdns: 'mDNS',
         application: 'Applicatie versie',
-        applicationTip: 'Versie van de NanoKVM-webapplicatie',
+        applicationTip: 'Versie van de IronKVM-webapplicatie',
         image: 'Image versie',
-        imageTip: 'Versie van de NanoKVM-systeemimage',
+        imageTip: 'IronKVM-kaartimage en de NanoKVM-systeemimage waarop het is gebouwd',
         kernel: 'Kernelversie',
         kernelTip: 'Versie van de Linux-kernel die nu draait',
         deviceKey: 'Apparaat sleutel',
         videoMemory: 'Videogeheugen',
         videoMemoryTip:
           'Geheugen gereserveerd voor video-opname. Het wordt niet gedeeld met de rest van het systeem.',
-        videoMemoryGenerations_one: '{{count}} eerdere NanoKVM-sessie houdt videogeheugen vast',
-        videoMemoryGenerations_other: '{{count}} eerdere NanoKVM-sessies houden videogeheugen vast',
+        videoMemoryGenerations_one: '{{count}} eerdere IronKVM-sessie houdt videogeheugen vast',
+        videoMemoryGenerations_other: '{{count}} eerdere IronKVM-sessies houden videogeheugen vast',
         videoMemoryReboot: 'Start opnieuw op om het vrij te maken.',
         community: 'Community',
         hostname: 'Hostnaam',
@@ -827,7 +835,14 @@ const nl = {
         },
         hostnameInvalid:
           'Gebruik letters, cijfers en koppeltekens, maximaal 63 per door punten gescheiden deel. Geen koppelteken aan het begin of einde van een deel.',
-        hostnameFailed: 'De hostnaam kon niet worden gewijzigd'
+        hostnameFailed: 'De hostnaam kon niet worden gewijzigd',
+        editHostname: 'Hostnaam bewerken',
+        docs: 'Documentatie',
+        hardware: 'Hardware',
+        hardwareFaq: 'Hardware-FAQ',
+        disclaimer:
+          'IronKVM: geharde community-firmware voor de Sipeed NanoKVM. Niet verbonden aan Sipeed.',
+        basedOn: 'gebaseerd op NanoKVM {{version}}'
       },
       appearance: {
         title: 'Uiterlijk',
@@ -953,10 +968,10 @@ const nl = {
         network: 'Virtueel Netwerk',
         networkDesc: 'Koppel virtueel netwerk kaart aan de externe host',
         usbNetwork: {
-          boardAddress: 'NanoKVM:',
+          boardAddress: 'IronKVM:',
           hostAddress: 'Host:',
           description:
-            'Een privé netwerkverbinding met de externe host via de USB-kabel. De host krijgt een adres zonder gateway en zonder DNS, en kan uw LAN dus niet via NanoKVM bereiken.',
+            'Een privé netwerkverbinding met de externe host via de USB-kabel. De host krijgt een adres zonder gateway en zonder DNS, en kan uw LAN dus niet via IronKVM bereiken.',
           off: 'Uit',
           ncm: 'NCM (Linux, macOS, Windows 11)',
           ecm: 'ECM (voor hosts zonder NCM)',
@@ -965,7 +980,7 @@ const nl = {
             'Deze verbinding gebruikt RNDIS, dat niet meer wordt aangeboden. Kies NCM of ECM.',
           subnet: 'Subnet',
           subnetDesc:
-            'Een privé IPv4-netwerk, /24 tot /30. NanoKVM neemt het eerste adres, de host het tweede.',
+            'Een privé IPv4-netwerk, /24 tot /30. IronKVM neemt het eerste adres, de host het tweede.',
           invalidSubnet: 'Voer een subnet in, zoals 172.31.255.0/30.',
           apply: 'Toepassen',
           confirm: 'USB-apparaat opnieuw verbinden?',
@@ -978,9 +993,9 @@ const nl = {
         audioNote: 'Audio is beschikbaar in beide H.264-modi (WebRTC en Direct), niet in MJPEG',
         console: 'Seriële console',
         consoleDesc:
-          'Biedt de externe host een seriële USB-poort aan, om op deze NanoKVM in te loggen als het netwerk onbereikbaar is',
+          'Biedt de externe host een seriële USB-poort aan, om op deze IronKVM in te loggen als het netwerk onbereikbaar is',
         consoleTip:
-          'Iedereen die de externe host bedient, krijgt een inlogprompt van deze NanoKVM. Stel een sterk wachtwoord in voordat u dit inschakelt (Account - Wachtwoord wijzigen).',
+          'Iedereen die de externe host bedient, krijgt een inlogprompt van deze IronKVM. Stel een sterk wachtwoord in voordat u dit inschakelt (Account - Wachtwoord wijzigen).',
         endpoints: {
           title: 'USB-endpoints',
           used: '{{used}} van {{total}} gebruikt',
@@ -995,7 +1010,7 @@ const nl = {
           fitTogether: 'Deze passen samen: {{sets}}'
         },
         reboot: 'Opnieuw opstarten',
-        rebootDesc: 'Weet u zeker dat u NanoKVM opnieuw wilt opstarten?',
+        rebootDesc: 'Weet u zeker dat u IronKVM opnieuw wilt opstarten?',
         okBtn: 'Ja',
         cancelBtn: 'Nee',
         rebootFailed: 'Herstarten mislukt'
@@ -1005,7 +1020,7 @@ const nl = {
         wifi: {
           disconnectBtn: 'Verbreken',
           disconnectWarning:
-            'Als je NanoKVM via dit wifi-netwerk bereikt, verliest deze pagina de verbinding.',
+            'Als je IronKVM via dit wifi-netwerk bereikt, verliest deze pagina de verbinding.',
           disconnected: 'Wifi verbroken',
           title: 'Wi-Fi',
           description: 'Wi-Fi configureren',
@@ -1038,7 +1053,7 @@ const nl = {
         },
         ethernet: {
           title: 'IP-adres',
-          description: 'Stel in hoe NanoKVM zijn adres op het bekabelde netwerk krijgt',
+          description: 'Stel in hoe IronKVM zijn adres op het bekabelde netwerk krijgt',
           dhcp: 'DHCP',
           manual: 'Handmatig',
           networkDetails: 'Netwerkgegevens',
@@ -1052,17 +1067,17 @@ const nl = {
           invalidRouter: 'Voer een geldig routeradres in',
           addressRequired: 'Een IP-adres is vereist',
           maskRequired: 'Een subnetmasker is vereist',
-          applyTitle: 'Het adres van NanoKVM wijzigen?',
+          applyTitle: 'Het adres van IronKVM wijzigen?',
           applyWarning:
-            'De verbinding met deze pagina gaat verloren. NanoKVM past het nieuwe adres toe en wacht {{seconds}} seconden tot u het daar bereikt. Bereiken behoudt de wijziging. Bereikt niets het, dan zet NanoKVM de vorige instellingen terug.',
+            'De verbinding met deze pagina gaat verloren. IronKVM past het nieuwe adres toe en wacht {{seconds}} seconden tot u het daar bereikt. Bereiken behoudt de wijziging. Bereikt niets het, dan zet IronKVM de vorige instellingen terug.',
           applyConfirm: 'Toepassen',
           applyCancel: 'Annuleren',
           applyFailed: 'Het adres kon niet worden toegepast',
           trialTitle: 'Wacht op bevestiging',
-          trialDhcp: 'NanoKVM vraagt een adres aan via DHCP.',
-          trialStatic: 'NanoKVM is nu bereikbaar op {{address}}.',
+          trialDhcp: 'IronKVM vraagt een adres aan via DHCP.',
+          trialStatic: 'IronKVM is nu bereikbaar op {{address}}.',
           trialInstruction:
-            'Open NanoKVM op zijn nieuwe adres en meld u aan als daarom wordt gevraagd. Daar bereiken behoudt de wijziging. Bereikt niets NanoKVM binnen {{seconds}} seconden, dan zet het de vorige instellingen terug.',
+            'Open IronKVM op zijn nieuwe adres en meld u aan als daarom wordt gevraagd. Daar bereiken behoudt de wijziging. Bereikt niets IronKVM binnen {{seconds}} seconden, dan zet het de vorige instellingen terug.',
           trialOpen: 'Het nieuwe adres openen',
           trialKeep: 'Deze instellingen behouden',
           trialKept: 'Het nieuwe adres is opgeslagen',
@@ -1072,7 +1087,7 @@ const nl = {
         },
         dns: {
           title: 'DNS',
-          description: 'Configureer DNS-servers voor NanoKVM',
+          description: 'Configureer DNS-servers voor IronKVM',
           mode: 'Modus',
           dhcp: 'DHCP',
           manual: 'Handmatig',
@@ -1159,29 +1174,30 @@ const nl = {
         checkFailed: 'Aanmeldstatus controleren mislukt',
         loginWaiting:
           'Deze pagina controleert om de paar seconden en gaat verder zodra u bent aangemeld.',
-        uninstallFailed: 'Verwijderen mislukt'
+        uninstallFailed: 'Verwijderen mislukt',
+        loginFailed: 'Inloggen mislukt'
       },
       tailscale: {
         title: 'Tailscale',
-        retry: 'Vernieuw en probeer opnieuw. Of probeer handmatig te installeren',
         download: 'Download het',
         package: 'installatiepakket',
         unzip: 'en pak het uit',
-        upTailscale: 'Upload tailscale naar NanoKVM directory /usr/bin/',
-        upTailscaled: 'Upload tailscaled naar NanoKVM directory /usr/sbin/',
-        refresh: 'Vernieuw huidige pagina',
         notLogin:
           'Het apparaat is nog niet gekoppeld. Log in en koppel dit apparaat aan uw account.',
         urlPeriod: 'Deze url is 10 minuten geldig',
         login: 'Inloggen',
         logout: 'Uitloggen',
-        logoutDesc: 'Weet u zeker dat u wilt uitloggen?'
+        logoutDesc: 'Weet u zeker dat u wilt uitloggen?',
+        manualIntro: 'Of installeer het handmatig via SSH:',
+        copyBinaries: 'Kopieer tailscale en tailscaled naar {{dir}} op de IronKVM',
+        linksFile: 'Maak in dezelfde map een bestand met de naam links met deze twee regels:',
+        rebootRefresh: 'Herstart de IronKVM en vernieuw daarna deze pagina'
       },
       netbird: {
         title: 'NetBird',
         notLogin:
           'Dit apparaat is nog niet lid van een NetBird-netwerk. Word lid met een setup key of log in met SSO.',
-        setupKey: 'Setup key',
+        setupKey: 'Setup-sleutel',
         setupKeyPlaceholder: 'Plak een setup key uit het NetBird-dashboard',
         join: 'Lid worden',
         or: 'of',
@@ -1189,7 +1205,8 @@ const nl = {
         urlPeriod: 'Deze url is 10 minuten geldig',
         logout: 'Afmelden',
         logoutDesc:
-          'Afmelden verwijdert deze peer uit uw NetBird-account en wist de configuratie hier. Opnieuw lid worden vereist een setup key of een SSO-login, en de peer kan een nieuw IP-adres krijgen. Doorgaan?'
+          'Afmelden verwijdert deze peer uit uw NetBird-account en wist de configuratie hier. Opnieuw lid worden vereist een setup key of een SSO-login, en de peer kan een nieuw IP-adres krijgen. Doorgaan?',
+        joinFailed: 'Kon niet aan het netwerk deelnemen'
       },
       update: {
         title: 'Controleren op updates',
@@ -1215,7 +1232,7 @@ const nl = {
           save: 'Opslaan',
           confirmTitle: 'Een aangepaste updateserver gebruiken?',
           confirmDesc:
-            'SHA-512 controleert alleen of het pakket overeenkomt met het manifest dat door deze server wordt verstrekt. Het bewijst niet dat het pakket een officiële NanoKVM-release is. Een defecte of kwaadwillende server kan het apparaat onbruikbaar maken, gegevensverlies veroorzaken of het systeem compromitteren.',
+            'SHA-512 controleert alleen of het pakket overeenkomt met het manifest dat door deze server wordt verstrekt. Het bewijst niet dat het pakket een officiële IronKVM-release is. Een defecte of kwaadwillende server kan het apparaat onbruikbaar maken, gegevensverlies veroorzaken of het systeem compromitteren.',
           confirm: 'Toch gebruiken',
           useSipeed: 'De officiële Sipeed-server gebruiken',
           previewDisabled:
@@ -1236,7 +1253,8 @@ const nl = {
         },
         updateTo: 'Bijwerken naar {{version}}',
         updateConfirmDesc:
-          'Het apparaat installeert de update en herstart zijn server. Deze pagina herlaadt zodra de server terug is.'
+          'Het apparaat installeert de update en herstart zijn server. Deze pagina herlaadt zodra de server terug is.',
+        releaseNotes: 'Release-opmerkingen'
       },
       account: {
         title: 'Account',
@@ -1313,7 +1331,7 @@ const nl = {
         defaultTitle: 'Algemene assistent',
         defaultDescription: 'Algemene hulp bij chatten, zoeken en werkruimte.',
         kvmTitle: 'Bediening op afstand',
-        kvmDescription: 'Bedien de externe host via NanoKVM.',
+        kvmDescription: 'Bedien de externe host via IronKVM.',
         switched: 'Agentrol gewijzigd',
         switchFailed: 'Kan agentrol niet wisselen'
       },
@@ -1333,24 +1351,24 @@ const nl = {
       connection: {
         runtime: {
           checking: 'Controleren',
-          restoring: 'Restoring PicoClaw',
+          restoring: 'PicoClaw herstellen',
           ready: 'Runtime gereed',
           stopped: 'Runtime gestopt',
           blockedByMCP: 'Externe MCP-bediening is actief',
           readyBlockedByMCP:
-            'The runtime is running, but external MCP currently controls device input.',
+            'De runtime draait, maar externe MCP bedient nu de invoer van het apparaat.',
           readyWithoutControl:
-            'The runtime is running. Grant PicoClaw device control before reconnecting.',
+            'De runtime draait. Geef PicoClaw apparaatbediening voordat je opnieuw verbindt.',
           unavailable: 'Runtime niet beschikbaar',
           configError: 'Configuratiefout'
         },
         transport: {
           connecting: 'Verbinden',
           connected: 'Verbonden',
-          disconnected: 'Disconnected',
-          reconnect: 'Reconnect',
-          reconnectDescription: 'Reconnect to the running PicoClaw session.',
-          reconnectBlocked: 'PicoClaw needs device control before reconnecting.'
+          disconnected: 'Verbinding verbroken',
+          reconnect: 'Opnieuw verbinden',
+          reconnectDescription: 'Opnieuw verbinden met de lopende PicoClaw-sessie.',
+          reconnectBlocked: 'PicoClaw heeft apparaatbediening nodig om opnieuw te verbinden.'
         },
         run: {
           idle: 'Inactief',
@@ -1367,21 +1385,23 @@ const nl = {
       },
       control: {
         picoclaw: 'Apparaatbediening: PicoClaw',
-        picoclawDescription: 'PicoClaw can write keyboard and mouse input. Manual input may pause.',
+        picoclawDescription:
+          'PicoClaw kan toetsenbord- en muisinvoer sturen. Handmatige invoer kan pauzeren.',
         mcp: 'Apparaatbediening: externe MCP',
-        mcpDescription: 'External MCP can write to the device. PicoClaw will not take over input.',
+        mcpDescription:
+          'Externe MCP kan naar het apparaat schrijven. PicoClaw neemt de invoer niet over.',
         off: 'Apparaatbediening: uit',
         offDescription:
-          'AI will not write keyboard or mouse input. Manual control remains available.',
-        transitioning: 'Device control: switching',
-        transitioningDescription: 'Device control is syncing. Please wait.',
+          'De AI stuurt geen toetsenbord- of muisinvoer. Handmatige bediening blijft beschikbaar.',
+        transitioning: 'Apparaatbediening: wisselen',
+        transitioningDescription: 'De apparaatbediening wordt gesynchroniseerd. Even geduld.',
         grant: 'Bediening geven',
         release: 'Vrijgeven',
-        releasing: 'Releasing...',
-        switching: 'Switching...',
-        releasingLabel: 'Device control: releasing',
+        releasing: 'Vrijgeven...',
+        switching: 'Wisselen...',
+        releasingLabel: 'Apparaatbediening: vrijgeven',
         releasingDescription:
-          'Device control is being returned. PicoClaw has stopped current writes.',
+          'De apparaatbediening wordt teruggegeven. PicoClaw is gestopt met lopende invoer.',
         granted: 'PicoClaw-bediening gegeven',
         released: 'PicoClaw-bediening vrijgegeven',
         grantFailed: 'Kan PicoClaw-bediening niet geven',
@@ -1464,8 +1484,8 @@ const nl = {
         enableConfirmCancel: 'Annuleren',
         title: 'Start PicoClaw',
         description: 'Start de runtime om de PicoClaw assistent te gaan gebruiken.',
-        switchFromMCP: 'Switch to PicoClaw and start',
-        takeoverAndStart: 'Take over and start'
+        switchFromMCP: 'Overschakelen naar PicoClaw en starten',
+        takeoverAndStart: 'Overnemen en starten'
       }
     },
     error: {
@@ -1499,9 +1519,9 @@ const nl = {
       warn: 'Het videogeheugen raakt op. Eén herstart van de server zou het uitputten. Start opnieuw op wanneer het u uitkomt.',
       criticalTitle: 'Niet genoeg videogeheugen om de stream te starten',
       criticalBody:
-        'Video starten zou het gereserveerde geheugen uitputten en de server stoppen. Alle andere functies blijven werken, inclusief stroombeheer en opnieuw opstarten. Alleen opnieuw opstarten van de NanoKVM maakt dit geheugen vrij.',
+        'Video starten zou het gereserveerde geheugen uitputten en de server stoppen. Alle andere functies blijven werken, inclusief stroombeheer en opnieuw opstarten. Alleen opnieuw opstarten van de IronKVM maakt dit geheugen vrij.',
       criticalContinue: 'Video toch starten',
-      criticalReboot: 'NanoKVM opnieuw opstarten',
+      criticalReboot: 'IronKVM opnieuw opstarten',
       criticalRebooting: 'Opnieuw opstarten...'
     }
   }

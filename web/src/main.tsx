@@ -43,11 +43,11 @@ const renderApp = () => {
   );
 };
 
+// In mocked mode the app waits for the mock service worker, so its first
+// requests are answered by the mocks, and renders once.
 if (import.meta.env.MODE === 'mocked') {
   const { worker } = await import('./mocks/browser');
-  worker.start().then(() => {
-    return renderApp();
-  });
+  await worker.start();
 }
 
 renderApp();

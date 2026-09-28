@@ -103,7 +103,7 @@ export const Login = (): ReactElement => {
             <img
               id="logo"
               src="/ironkvm.ico"
-              alt="Sipeed"
+              alt="IronKVM"
               onClick={(evt) => {
                 evt.preventDefault();
                 (evt.target as HTMLImageElement).classList.add('animate-spin');

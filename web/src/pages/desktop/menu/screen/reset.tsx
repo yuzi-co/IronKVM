@@ -33,16 +33,17 @@ export const Reset = () => {
   return (
     <>
       {isPcie && (
-        <div
-          className="flex h-[30px] cursor-pointer items-center space-x-2 rounded px-3 text-neutral-300 hover:bg-neutral-700/70"
+        <button
+          type="button"
+          className="flex h-[30px] w-full cursor-pointer items-center space-x-2 rounded p-0 px-3 text-left text-neutral-300 hover:bg-neutral-700/70"
           onClick={reset}
         >
           <RefreshCwIcon
             className={clsx({ 'animate-spin text-blue-500': isResetting })}
             size={18}
           />
-          <span className="select-none text-sm">{t('screen.resetHdmi')}</span>
-        </div>
+          <span className="text-sm select-none">{t('screen.resetHdmi')}</span>
+        </button>
       )}
     </>
   );

@@ -15,12 +15,14 @@ export const Speaker = () => {
       placement="bottom"
       mouseEnterDelay={0.6}
     >
-      <div
-        className="flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded text-neutral-300 hover:bg-neutral-700/80 hover:text-white"
+      <button
+        type="button"
+        aria-label={isMuted ? t('speaker.unmute') : t('speaker.mute')}
+        className="flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded p-0 text-neutral-300 hover:bg-neutral-700/80 hover:text-white"
         onClick={() => setIsMuted(!isMuted)}
       >
         {isMuted ? <VolumeXIcon size={18} /> : <Volume2Icon size={18} />}
-      </div>
+      </button>
     </Tooltip>
   );
 };

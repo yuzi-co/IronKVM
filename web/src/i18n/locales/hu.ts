@@ -14,7 +14,11 @@ const hu = {
       copyFailed: 'A másolás nem sikerült. Jelölje ki a szöveget, és másolja kézzel.',
       notUpdating: 'Nem frissül: az utolsó lekérdezés sikertelen volt.',
       off: 'Ki',
-      running: 'Fut'
+      running: 'Fut',
+      save: 'Mentés',
+      cancel: 'Mégse',
+      delete: 'Törlés',
+      remove: 'Eltávolítás'
     },
     head: {
       desktop: 'Távoli Asztal',
@@ -54,20 +58,21 @@ const hu = {
       loginButtonText: 'Bejelentkezés',
       tips: {
         reset1:
-          'To reset the passwords, pressing and holding the BOOT button on the NanoKVM for 10 seconds.',
-        reset2: 'A részletes lépésekért tekintse meg ezt a dokumentumot:',
+          'To reset the passwords, pressing and holding the BOOT button on the IronKVM for 10 seconds.',
         reset3: 'Alapértelmezett webes fiók:',
         reset4: 'Alapértelmezett SSH-fiók:',
         change1: 'Vegye figyelembe, hogy ez a művelet a következő jelszavakat módosítja:',
         change2: 'Webes bejelentkezési jelszó',
         change3: 'Rendszer root jelszava (SSH bejelentkezési jelszó)',
-        change4: 'A jelszavak visszaállításához tartsa lenyomva a BOOT gombot a NanoKVM-en.'
+        change4: 'A jelszavak visszaállításához tartsa lenyomva a BOOT gombot a IronKVM-en.',
+        resetDocs: 'A részletes lépéseket a hardver dokumentációjában találod:',
+        hardwareDocs: 'Sipeed NanoKVM wiki'
       }
     },
     wifi: {
       title: 'Wi-Fi',
-      description: 'Wi-Fi beállítása a NanoKVM-hez',
-      success: 'Please check the network status of NanoKVM and visit the new IP address.',
+      description: 'Wi-Fi beállítása a IronKVM-hez',
+      success: 'Please check the network status of IronKVM and visit the new IP address.',
       failed: 'A művelet sikertelen, próbálja újra.',
       invalidMode:
         'Az aktuális mód nem támogatja a hálózat beállítását. Kérjük, lépjen az eszközére, és engedélyezze a Wi-Fi konfigurációs módot.',
@@ -324,10 +329,10 @@ const hu = {
       hidOnly: {
         switchFailed: 'Nem sikerült módot váltani. Ellenőrizze a kapcsolatot, és próbálja újra.',
         title: 'Csak HID mód',
-        desc: 'Ha az egér és a billentyűzet nem válaszol, és az HID alaphelyzetbe állítása nem segít, akkor az NanoKVM és az eszköz közötti kompatibilitási probléma lehet. Próbálja engedélyezni az HID-Csak módot a jobb kompatibilitás érdekében.',
+        desc: 'Ha az egér és a billentyűzet nem válaszol, és az HID alaphelyzetbe állítása nem segít, akkor az IronKVM és az eszköz közötti kompatibilitási probléma lehet. Próbálja engedélyezni az HID-Csak módot a jobb kompatibilitás érdekében.',
         tip1: 'Az HID-Csak mód engedélyezése leválasztja a virtuális U-lemezt és a virtuális hálózatot',
         tip2: 'HID-Csak módban a képrögzítés le van tiltva',
-        rebuild: 'A módváltás újraépíti az USB-kapcsolatot. A NanoKVM nem indul újra',
+        rebuild: 'A módváltás újraépíti az USB-kapcsolatot. A IronKVM nem indul újra',
         enable: 'Engedélyezze a HID-Csak módot',
         disable: 'A HID-Csak mód letiltása'
       },
@@ -395,18 +400,18 @@ const hu = {
       },
       tips: {
         title: 'Hogyan tölts fel képeket',
-        usb1: 'Csatlakoztassa a NanoKVM-t a számítógépéhez USB-n keresztül.',
+        usb1: 'Csatlakoztassa a IronKVM-t a számítógépéhez USB-n keresztül.',
         usb2: 'Győződjön meg róla, hogy a virtuális lemez csatlakoztatva van (Beállítások - Virtuális lemez).',
         usb3: 'Nyissa meg a virtuális lemezt a számítógépén, és másolja a kép fájlt a virtuális lemez gyökérkönyvtárába.',
-        scp1: 'Győződjön meg róla, hogy a NanoKVM és a számítógépe ugyanazon a helyi hálózaton van.',
-        scp2: 'Nyisson meg egy terminált a számítógépén, és használja az SCP parancsot a kép fájl feltöltésére a /data könyvtárba a NanoKVM-en.',
-        scp3: 'Példa: scp your-image-path root@your-nanokvm-ip:/data',
+        scp1: 'Győződjön meg róla, hogy a IronKVM és a számítógépe ugyanazon a helyi hálózaton van.',
+        scp2: 'Nyisson meg egy terminált a számítógépén, és használja az SCP parancsot a kép fájl feltöltésére a /data könyvtárba a IronKVM-en.',
+        scp3: 'Példa: scp your-image-path root@your-ironkvm-ip:/data',
         tfCard: 'TF Kártya',
         tf1: 'Ez a módszer támogatott Linux rendszeren',
-        tf2: 'Vegye ki a TF kártyát a NanoKVM-ből (a TELJES verzióhoz, először szedje szét a házat).',
+        tf2: 'Vegye ki a TF kártyát a IronKVM-ből (a TELJES verzióhoz, először szedje szét a házat).',
         tf3: 'Helyezze a TF kártyát egy kártyaolvasóba, és csatlakoztassa a számítógépéhez.',
         tf4: 'Másolja a képfájlt a TF kártya /data könyvtárába.',
-        tf5: 'Helyezze vissza a TF kártyát a NanoKVM-be.'
+        tf5: 'Helyezze vissza a TF kártyát a IronKVM-be.'
       }
     },
     script: {
@@ -437,7 +442,7 @@ const hu = {
       invalidSettings: 'Érvénytelen soros port beállítások. Ez az eszköz saját shellje.',
       disconnected: 'A kapcsolat megszakadt. Az újracsatlakozáshoz nyomja meg az Entert.',
       title: 'Terminál',
-      nanokvm: 'NanoKVM Terminál',
+      nanokvm: 'IronKVM Terminál',
       serial: 'Soros port terminál',
       serialPort: 'Soros port',
       serialPortPlaceholder: 'Adja meg a soros portot',
@@ -564,7 +569,10 @@ const hu = {
         failed: 'Az MCP-művelet sikertelen',
         copyFailed: 'A másolás sikertelen. Másolja kézzel.',
         okBtn: 'Megerősítés',
-        cancelBtn: 'Mégse'
+        cancelBtn: 'Mégse',
+        showKey: 'Kulcs megjelenítése',
+        hideKey: 'Kulcs elrejtése',
+        regenerateKey: 'Új kulcs generálása'
       },
       redfish: {
         example: 'Példa',
@@ -696,7 +704,7 @@ const hu = {
         action: 'Művelet',
         actionDesc:
           'A ki- és bekapcsolás 5 másodpercig nyomva tartja a bekapcsológombot, majd újra megnyomja.',
-        actionReset: 'Reset',
+        actionReset: 'Újraindítás',
         actionPower: 'Ki- és bekapcsolás',
         cooldown: 'Várakozási idő',
         cooldownDesc: 'A legrövidebb idő két művelet között.',
@@ -796,22 +804,22 @@ const hu = {
         failed: 'A hálózati rendszerindítási művelet sikertelen'
       },
       about: {
-        title: 'NanoKVM Névjegy',
+        title: 'IronKVM Névjegy',
         information: 'Információ',
         ip: 'IP',
         mdns: 'mDNS',
         application: 'Alkalmazás verzió',
-        applicationTip: 'NanoKVM webalkalmazás verziója',
+        applicationTip: 'IronKVM webalkalmazás verziója',
         image: 'Képfájl verzió',
-        imageTip: 'NanoKVM rendszerkép verziója',
+        imageTip: 'IronKVM kártyakép és a NanoKVM rendszerkép, amelyre épül',
         kernel: 'Kernelverzió',
         kernelTip: 'A jelenleg futó Linux-kernel kiadása',
         deviceKey: 'Eszköz kulcs',
         videoMemory: 'Videomemória',
         videoMemoryTip:
           'Videorögzítésre fenntartott memória. A rendszer többi része nem használja.',
-        videoMemoryGenerations_one: '{{count}} korábbi NanoKVM-munkamenet foglal videomemóriát',
-        videoMemoryGenerations_other: '{{count}} korábbi NanoKVM-munkamenet foglal videomemóriát',
+        videoMemoryGenerations_one: '{{count}} korábbi IronKVM-munkamenet foglal videomemóriát',
+        videoMemoryGenerations_other: '{{count}} korábbi IronKVM-munkamenet foglal videomemóriát',
         videoMemoryReboot: 'A felszabadításhoz indítsa újra.',
         community: 'Közösség',
         hostname: 'Gazdanév',
@@ -823,7 +831,14 @@ const hu = {
         },
         hostnameInvalid:
           'Betűket, számjegyeket és kötőjeleket használjon, pontokkal elválasztott részenként legfeljebb 63-at. Rész elején vagy végén nem lehet kötőjel.',
-        hostnameFailed: 'Nem sikerült módosítani a gépnevet'
+        hostnameFailed: 'Nem sikerült módosítani a gépnevet',
+        editHostname: 'Gépnév szerkesztése',
+        docs: 'Dokumentáció',
+        hardware: 'Hardver',
+        hardwareFaq: 'Hardver GYIK',
+        disclaimer:
+          'IronKVM: megerősített közösségi firmware a Sipeed NanoKVM-hez. Nem áll kapcsolatban a Sipeeddel.',
+        basedOn: 'NanoKVM {{version}} alapján'
       },
       appearance: {
         title: 'Megjelenés',
@@ -879,13 +894,13 @@ const hu = {
             '255': 'Maximális'
           },
           0: 'Soha',
-          15: '15 sec',
-          30: '30 sec',
-          60: '1 min',
-          180: '3 min',
-          300: '5 min',
-          600: '10 min',
-          1800: '30 min',
+          15: '15 mp',
+          30: '30 mp',
+          60: '1 perc',
+          180: '3 perc',
+          300: '5 perc',
+          600: '10 perc',
+          1800: '30 perc',
           3600: '1 óra'
         },
         ssh: {
@@ -948,10 +963,10 @@ const hu = {
         network: 'Virtuális hálózat',
         networkDesc: 'Virtuális hálózati kártya csatlakoztatása a távoli gazdagépen',
         usbNetwork: {
-          boardAddress: 'NanoKVM:',
+          boardAddress: 'IronKVM:',
           hostAddress: 'Gazdagép:',
           description:
-            'Privát hálózati kapcsolat a távoli gazdagéppel az USB-kábelen keresztül. A gazdagép átjáró és DNS nélküli címet kap, így a NanoKVM-en keresztül nem éri el a helyi hálózatot.',
+            'Privát hálózati kapcsolat a távoli gazdagéppel az USB-kábelen keresztül. A gazdagép átjáró és DNS nélküli címet kap, így a IronKVM-en keresztül nem éri el a helyi hálózatot.',
           off: 'Ki',
           ncm: 'NCM (Linux, macOS, Windows 11)',
           ecm: 'ECM (NCM nélküli gazdagépekhez)',
@@ -960,7 +975,7 @@ const hu = {
             'Ez a kapcsolat RNDIS-t használ, amely már nem választható. Válassza az NCM-et vagy az ECM-et.',
           subnet: 'Alhálózat',
           subnetDesc:
-            'Privát IPv4-hálózat, /24 és /30 között. A NanoKVM az első címet kapja, a gazdagép a másodikat.',
+            'Privát IPv4-hálózat, /24 és /30 között. A IronKVM az első címet kapja, a gazdagép a másodikat.',
           invalidSubnet: 'Adjon meg egy alhálózatot, például 172.31.255.0/30.',
           apply: 'Alkalmaz',
           confirm: 'Újracsatlakoztatja az USB-eszközt?',
@@ -973,9 +988,9 @@ const hu = {
         audioNote: 'Hang mindkét H.264 módban (WebRTC és Direct) elérhető, MJPEG módban nem',
         console: 'Soros konzol',
         consoleDesc:
-          'USB soros portot jelenít meg a távoli gazdagépen, amelyen át bejelentkezhet erre a NanoKVM-re, ha a hálózat nem érhető el',
+          'USB soros portot jelenít meg a távoli gazdagépen, amelyen át bejelentkezhet erre a IronKVM-re, ha a hálózat nem érhető el',
         consoleTip:
-          'Bárki, aki a távoli gazdagépet vezérli, bejelentkezési promptot kap ehhez a NanoKVM-hez. Az engedélyezés előtt állítson be erős jelszót (Fiók - Jelszó módosítása).',
+          'Bárki, aki a távoli gazdagépet vezérli, bejelentkezési promptot kap ehhez a IronKVM-hez. Az engedélyezés előtt állítson be erős jelszót (Fiók - Jelszó módosítása).',
         endpoints: {
           title: 'USB-végpontok',
           used: '{{used}} / {{total}} használatban',
@@ -990,7 +1005,7 @@ const hu = {
           fitTogether: 'Ezek együtt elférnek: {{sets}}'
         },
         reboot: 'Újraindítás',
-        rebootDesc: 'Biztos, hogy újra akarja indítani a NanoKVM-t?',
+        rebootDesc: 'Biztos, hogy újra akarja indítani a IronKVM-t?',
         okBtn: 'Igen',
         cancelBtn: 'Nem',
         rebootFailed: 'Az újraindítás sikertelen'
@@ -1000,7 +1015,7 @@ const hu = {
         wifi: {
           disconnectBtn: 'Leválasztás',
           disconnectWarning:
-            'Ha ezen a Wi-Fi hálózaton éri el a NanoKVM-et, ez az oldal elveszíti a kapcsolatot.',
+            'Ha ezen a Wi-Fi hálózaton éri el a IronKVM-et, ez az oldal elveszíti a kapcsolatot.',
           disconnected: 'Wi-Fi leválasztva',
           title: 'Wi-Fi',
           description: 'Wi-Fi beállítása',
@@ -1032,7 +1047,7 @@ const hu = {
         },
         ethernet: {
           title: 'IP-cím',
-          description: 'Állítsa be, hogyan kapja a NanoKVM a címét a vezetékes hálózaton',
+          description: 'Állítsa be, hogyan kapja a IronKVM a címét a vezetékes hálózaton',
           dhcp: 'DHCP',
           manual: 'Kézi',
           networkDetails: 'Hálózati adatok',
@@ -1046,17 +1061,17 @@ const hu = {
           invalidRouter: 'Adjon meg egy érvényes útválasztócímet',
           addressRequired: 'IP-cím megadása kötelező',
           maskRequired: 'Alhálózati maszk megadása kötelező',
-          applyTitle: 'Megváltoztatja a NanoKVM címét?',
+          applyTitle: 'Megváltoztatja a IronKVM címét?',
           applyWarning:
-            'A kapcsolat ezzel az oldallal megszakad. A NanoKVM alkalmazza az új címet, és {{seconds}} másodpercet vár arra, hogy elérje azon a címen. Az elérés megtartja a módosítást. Ha semmi sem éri el, a NanoKVM visszaállítja a korábbi beállításokat.',
+            'A kapcsolat ezzel az oldallal megszakad. A IronKVM alkalmazza az új címet, és {{seconds}} másodpercet vár arra, hogy elérje azon a címen. Az elérés megtartja a módosítást. Ha semmi sem éri el, a IronKVM visszaállítja a korábbi beállításokat.',
           applyConfirm: 'Alkalmaz',
           applyCancel: 'Mégse',
           applyFailed: 'A cím alkalmazása nem sikerült',
           trialTitle: 'Várakozás a megerősítésre',
-          trialDhcp: 'A NanoKVM címet kér a DHCP-től.',
-          trialStatic: 'A NanoKVM most a következő címen érhető el: {{address}}.',
+          trialDhcp: 'A IronKVM címet kér a DHCP-től.',
+          trialStatic: 'A IronKVM most a következő címen érhető el: {{address}}.',
           trialInstruction:
-            'Nyissa meg a NanoKVM-et az új címén, és jelentkezzen be, ha kéri. Az elérés megtartja a módosítást. Ha {{seconds}} másodpercen belül semmi sem éri el a NanoKVM-et, visszaállítja a korábbi beállításokat.',
+            'Nyissa meg a IronKVM-et az új címén, és jelentkezzen be, ha kéri. Az elérés megtartja a módosítást. Ha {{seconds}} másodpercen belül semmi sem éri el a IronKVM-et, visszaállítja a korábbi beállításokat.',
           trialOpen: 'Az új cím megnyitása',
           trialKeep: 'Beállítások megtartása',
           trialKept: 'Az új cím mentve',
@@ -1066,7 +1081,7 @@ const hu = {
         },
         dns: {
           title: 'DNS',
-          description: 'DNS-kiszolgálók beállítása a NanoKVM számára',
+          description: 'DNS-kiszolgálók beállítása a IronKVM számára',
           mode: 'Mód',
           dhcp: 'DHCP',
           manual: 'Kézi',
@@ -1153,23 +1168,24 @@ const hu = {
         checkFailed: 'Nem sikerült ellenőrizni a bejelentkezés állapotát',
         loginWaiting:
           'Az oldal néhány másodpercenként ellenőrzi, és a bejelentkezés után folytatja.',
-        uninstallFailed: 'Az eltávolítás sikertelen'
+        uninstallFailed: 'Az eltávolítás sikertelen',
+        loginFailed: 'A bejelentkezés sikertelen'
       },
       tailscale: {
         title: 'Tailscale',
-        retry: 'Frissítse az oldalt, majd próbálja újra. Vagy próbálja meg manuálisan telepíteni.',
         download: 'Letöltés a',
         package: 'telepítési csomag',
         unzip: 'és kicsomagolás',
-        upTailscale: 'Töltsön fel tailscale-t a NanoKVM /usr/bin/ könyvtárába',
-        upTailscaled: 'Töltsön fel tailscaled-t a NanoKVM /usr/sbin/ könyvtárába',
-        refresh: 'Frissítse az aktuális oldalt',
         notLogin:
           'Az eszköz még nincs kötve. Kérem, jelentkezzen be és kösse az eszközt a fiókjához.',
         urlPeriod: 'Ez az url 10 percig érvényes',
         login: 'Bejelentkezés',
         logout: 'Kijelentkezés',
-        logoutDesc: 'Biztos, hogy ki szeretne jelentkezni?'
+        logoutDesc: 'Biztos, hogy ki szeretne jelentkezni?',
+        manualIntro: 'Vagy telepítsd kézzel SSH-n keresztül:',
+        copyBinaries: 'Másold a tailscale és tailscaled fájlt az IronKVM {{dir}} könyvtárába',
+        linksFile: 'Ugyanebben a könyvtárban hozz létre egy links nevű fájlt ezzel a két sorral:',
+        rebootRefresh: 'Indítsd újra az IronKVM-et, majd frissítsd ezt az oldalt'
       },
       netbird: {
         title: 'NetBird',
@@ -1183,7 +1199,8 @@ const hu = {
         urlPeriod: 'Ez az url 10 percig érvényes',
         logout: 'Regisztráció törlése',
         logoutDesc:
-          'A regisztráció törlése eltávolítja ezt a társat a NetBird-fiókjából, és törli itt a konfigurációját. Az újbóli csatlakozáshoz beállítókulcs vagy SSO-bejelentkezés kell, és a társ új IP-címet kaphat. Folytatja?'
+          'A regisztráció törlése eltávolítja ezt a társat a NetBird-fiókjából, és törli itt a konfigurációját. Az újbóli csatlakozáshoz beállítókulcs vagy SSO-bejelentkezés kell, és a társ új IP-címet kaphat. Folytatja?',
+        joinFailed: 'Nem sikerült csatlakozni a hálózathoz'
       },
       update: {
         title: 'Frissítés keresése',
@@ -1209,7 +1226,7 @@ const hu = {
           save: 'Mentés',
           confirmTitle: 'Egyéni frissítési kiszolgálót használ?',
           confirmDesc:
-            'Az SHA-512 csak azt ellenőrzi, hogy a csomag megfelel-e a kiszolgáló által biztosított jegyzéknek. Nem igazolja, hogy a csomag hivatalos NanoKVM-kiadás. Egy hibás vagy rosszindulatú kiszolgáló használhatatlanná teheti az eszközt, adatvesztést okozhat, vagy veszélyeztetheti a rendszert.',
+            'Az SHA-512 csak azt ellenőrzi, hogy a csomag megfelel-e a kiszolgáló által biztosított jegyzéknek. Nem igazolja, hogy a csomag hivatalos IronKVM-kiadás. Egy hibás vagy rosszindulatú kiszolgáló használhatatlanná teheti az eszközt, adatvesztést okozhat, vagy veszélyeztetheti a rendszert.',
           confirm: 'Használat mindenképpen',
           useSipeed: 'A hivatalos Sipeed kiszolgáló használata',
           previewDisabled:
@@ -1230,7 +1247,8 @@ const hu = {
         },
         updateTo: 'Frissítés erre: {{version}}',
         updateConfirmDesc:
-          'Az eszköz telepíti a frissítést és újraindítja a szerverét. Az oldal újratöltődik, amikor a szerver ismét elérhető.'
+          'Az eszköz telepíti a frissítést és újraindítja a szerverét. Az oldal újratöltődik, amikor a szerver ismét elérhető.',
+        releaseNotes: 'Kiadási megjegyzések'
       },
       account: {
         title: 'Fiók',
@@ -1307,7 +1325,7 @@ const hu = {
         defaultTitle: 'Általános asszisztens',
         defaultDescription: 'Általános csevegési, keresési és munkaterületi súgó.',
         kvmTitle: 'Távoli vezérlés',
-        kvmDescription: 'Működtesse a távoli gazdagépet az NanoKVM segítségével.',
+        kvmDescription: 'Működtesse a távoli gazdagépet az IronKVM segítségével.',
         switched: 'Ügynöki szerepkör megváltozott',
         switchFailed: 'Nem sikerült váltani az ügynöki szerepkört'
       },
@@ -1327,24 +1345,23 @@ const hu = {
       connection: {
         runtime: {
           checking: 'Ellenőrzés',
-          restoring: 'Restoring PicoClaw',
+          restoring: 'PicoClaw visszaállítása',
           ready: 'Runtime kész',
           stopped: 'Runtime leállt',
           blockedByMCP: 'A külső MCP-vezérlés aktív',
-          readyBlockedByMCP:
-            'The runtime is running, but external MCP currently controls device input.',
+          readyBlockedByMCP: 'A runtime fut, de jelenleg külső MCP vezérli az eszköz bevitelét.',
           readyWithoutControl:
-            'The runtime is running. Grant PicoClaw device control before reconnecting.',
+            'A runtime fut. Újracsatlakozás előtt add át az eszközvezérlést a PicoClaw-nak.',
           unavailable: 'Runtime nem érhető el',
           configError: 'Konfigurációs hiba'
         },
         transport: {
           connecting: 'Csatlakozás',
           connected: 'Csatlakoztatva',
-          disconnected: 'Disconnected',
-          reconnect: 'Reconnect',
-          reconnectDescription: 'Reconnect to the running PicoClaw session.',
-          reconnectBlocked: 'PicoClaw needs device control before reconnecting.'
+          disconnected: 'Leválasztva',
+          reconnect: 'Újracsatlakozás',
+          reconnectDescription: 'Újracsatlakozás a futó PicoClaw-munkamenethez.',
+          reconnectBlocked: 'A PicoClaw-nak eszközvezérlés kell az újracsatlakozáshoz.'
         },
         run: {
           idle: 'Üresjárat',
@@ -1361,21 +1378,22 @@ const hu = {
       },
       control: {
         picoclaw: 'Eszközvezérlés: PicoClaw',
-        picoclawDescription: 'PicoClaw can write keyboard and mouse input. Manual input may pause.',
+        picoclawDescription:
+          'A PicoClaw billentyűzet- és egérbevitelt küldhet. A kézi bevitel szünetelhet.',
         mcp: 'Eszközvezérlés: külső MCP',
-        mcpDescription: 'External MCP can write to the device. PicoClaw will not take over input.',
+        mcpDescription: 'A külső MCP írhat az eszközre. A PicoClaw nem veszi át a bevitelt.',
         off: 'Eszközvezérlés: kikapcsolva',
         offDescription:
-          'AI will not write keyboard or mouse input. Manual control remains available.',
-        transitioning: 'Device control: switching',
-        transitioningDescription: 'Device control is syncing. Please wait.',
+          'Az MI nem küld billentyűzet- vagy egérbevitelt. A kézi vezérlés továbbra is elérhető.',
+        transitioning: 'Eszközvezérlés: váltás',
+        transitioningDescription: 'Az eszközvezérlés szinkronizálódik. Kérlek, várj.',
         grant: 'Vezérlés átadása',
         release: 'Vezérlés feloldása',
-        releasing: 'Releasing...',
-        switching: 'Switching...',
-        releasingLabel: 'Device control: releasing',
+        releasing: 'Feloldás...',
+        switching: 'Váltás...',
+        releasingLabel: 'Eszközvezérlés: feloldás',
         releasingDescription:
-          'Device control is being returned. PicoClaw has stopped current writes.',
+          'Az eszközvezérlés visszaadása folyamatban. A PicoClaw leállította a folyamatban lévő bevitelt.',
         granted: 'PicoClaw-vezérlés megadva',
         released: 'PicoClaw-vezérlés feloldva',
         grantFailed: 'Nem sikerült megadni a PicoClaw-vezérlést',
@@ -1458,8 +1476,8 @@ const hu = {
         enableConfirmCancel: 'Mégse',
         title: 'PicoClaw indítása',
         description: 'Indítsa el a Runtime-ot a PicoClaw segéd használatának megkezdéséhez.',
-        switchFromMCP: 'Switch to PicoClaw and start',
-        takeoverAndStart: 'Take over and start'
+        switchFromMCP: 'Váltás PicoClaw-ra és indítás',
+        takeoverAndStart: 'Átvétel és indítás'
       }
     },
     error: {
@@ -1493,9 +1511,9 @@ const hu = {
       warn: 'Kevés a videomemória. Egyetlen szerver-újraindítás elfogyasztaná. Indítsa újra, amikor alkalmas.',
       criticalTitle: 'Nincs elég videomemória az adatfolyam indításához',
       criticalBody:
-        'A videó indítása elfogyasztaná a fenntartott memóriát, és leállítaná a szervert. Minden más funkció továbbra is működik, beleértve a tápellátás-vezérlést és az újraindítást. Ezt a memóriát csak a NanoKVM újraindítása szabadítja fel.',
+        'A videó indítása elfogyasztaná a fenntartott memóriát, és leállítaná a szervert. Minden más funkció továbbra is működik, beleértve a tápellátás-vezérlést és az újraindítást. Ezt a memóriát csak a IronKVM újraindítása szabadítja fel.',
       criticalContinue: 'Videó indítása mégis',
-      criticalReboot: 'NanoKVM újraindítása',
+      criticalReboot: 'IronKVM újraindítása',
       criticalRebooting: 'Újraindítás...'
     }
   }

@@ -156,15 +156,17 @@ export const Script = () => {
             script === currentScript ? 'bg-neutral-700/50' : 'hover:bg-neutral-700/70'
           )}
         >
-          <div
-            className="flex items-center justify-between space-x-5 px-2 py-1.5"
+          <button
+            type="button"
+            aria-expanded={script === currentScript}
+            className="flex w-full items-center justify-between space-x-5 p-0 px-2 py-1.5 text-left"
             onClick={() => activate(script)}
           >
             <div className="max-w-[300px] truncate select-none">{script}</div>
             <div className={clsx('h-[16px] w-[16px]', script === currentScript && 'rotate-90')}>
               <ChevronRightIcon size={16} />
             </div>
-          </div>
+          </button>
 
           {script === currentScript && (
             <div className="flex items-center justify-end space-x-2 p-3">

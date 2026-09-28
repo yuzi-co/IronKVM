@@ -265,6 +265,7 @@ export const OriginalResolution = () => {
                       type="text"
                       danger
                       size="small"
+                      aria-label={t('common.delete')}
                       icon={<DeleteOutlined />}
                       onMouseDown={(event) => {
                         event.preventDefault();
@@ -306,6 +307,7 @@ export const OriginalResolution = () => {
                         type="text"
                         danger
                         size="small"
+                        aria-label={t('common.delete')}
                         icon={<DeleteOutlined />}
                         onMouseDown={(event) => {
                           event.preventDefault();
@@ -326,7 +328,11 @@ export const OriginalResolution = () => {
                 onChange={applyOriginalResolution}
               />
               <Tooltip title={t('screen.controlRegion.addResolution')}>
-                <Button icon={<PlusOutlined />} onClick={() => setIsAddOpen(true)} />
+                <Button
+                  aria-label={t('screen.controlRegion.addResolution')}
+                  icon={<PlusOutlined />}
+                  onClick={() => setIsAddOpen(true)}
+                />
               </Tooltip>
             </Space.Compact>
           </>

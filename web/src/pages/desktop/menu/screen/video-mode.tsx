@@ -49,16 +49,17 @@ export const VideoMode = () => {
       {videoModes.map(
         (mode) =>
           (isDirectSupported || mode.key !== 'direct') && (
-            <div
+            <button
+              type="button"
               key={mode.key}
-              className="flex cursor-pointer items-center rounded py-1.5 pr-5 pl-1 select-none hover:bg-neutral-700/70"
+              className="flex w-full cursor-pointer items-center rounded p-0 py-1.5 pr-5 pl-1 text-left select-none hover:bg-neutral-700/70"
               onClick={() => update(mode.key)}
             >
               <div className="flex h-[14px] w-[20px] items-end text-blue-500">
                 {mode.key === videoMode && <CheckIcon size={15} />}
               </div>
               <span>{mode.name}</span>
-            </div>
+            </button>
           )
       )}
     </>

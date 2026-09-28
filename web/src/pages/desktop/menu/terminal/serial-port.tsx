@@ -87,13 +87,14 @@ export const SerialPort = () => {
 
   return (
     <>
-      <div
-        className="flex h-[28px] cursor-pointer items-center space-x-1 rounded px-2 py-1 select-none hover:bg-neutral-700/70"
+      <button
+        type="button"
+        className="flex h-[28px] w-full cursor-pointer items-center space-x-1 rounded p-0 px-2 py-1 text-left select-none hover:bg-neutral-700/70"
         onClick={openModal}
       >
         <SquareTerminalIcon size={14} />
         <span>{t('terminal.serial')}</span>
-      </div>
+      </button>
 
       <Modal open={isModalOpen} title={t('terminal.serial')} footer={null} onCancel={closeModal}>
         <div className="mt-10 flex items-center space-x-[20px]">

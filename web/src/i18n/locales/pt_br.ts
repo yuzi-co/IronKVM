@@ -14,7 +14,11 @@ const pt_br = {
       copyFailed: 'Não foi possível copiar. Selecione o texto e copie manualmente.',
       notUpdating: 'Sem atualização: a última consulta falhou.',
       off: 'Desligado',
-      running: 'Em execução'
+      running: 'Em execução',
+      save: 'Salvar',
+      cancel: 'Cancelar',
+      delete: 'Excluir',
+      remove: 'Remover'
     },
     head: {
       desktop: 'Área de Trabalho Remota',
@@ -53,20 +57,21 @@ const pt_br = {
       loginButtonText: 'Login',
       tips: {
         reset1:
-          'Para redefinir as senhas, pressione e segure o botão BOOT no NanoKVM por 10 segundos.',
-        reset2: 'Para etapas detalhadas, por favor, consulte este documento:',
+          'Para redefinir as senhas, pressione e segure o botão BOOT no IronKVM por 10 segundos.',
         reset3: 'Conta padrão da Web:',
         reset4: 'Conta padrão SSH:',
         change1: 'Por favor, note que esta ação irá alterar as seguintes senhas:',
         change2: 'Senha de login da Web',
         change3: 'Senha root do sistema (senha de login SSH)',
-        change4: 'Para redefinir as senhas, pressione e segure o botão BOOT no NanoKVM.'
+        change4: 'Para redefinir as senhas, pressione e segure o botão BOOT no IronKVM.',
+        resetDocs: 'Para ver o passo a passo, consulte a documentação do hardware:',
+        hardwareDocs: 'Wiki do Sipeed NanoKVM'
       }
     },
     wifi: {
       title: 'Wi-Fi',
-      description: 'Configurar Wi-Fi para o NanoKVM',
-      success: 'Por favor, verifique o status da rede do NanoKVM e visite o novo endereço IP.',
+      description: 'Configurar Wi-Fi para o IronKVM',
+      success: 'Por favor, verifique o status da rede do IronKVM e visite o novo endereço IP.',
       failed: 'Operação falhou, por favor, tente novamente.',
       invalidMode:
         'O modo atual não suporta configuração de rede. Vá para o seu dispositivo e ative o modo de configuração Wi-Fi.',
@@ -322,10 +327,10 @@ const pt_br = {
       hidOnly: {
         switchFailed: 'Não foi possível trocar o modo. Verifique a conexão e tente novamente.',
         title: 'Modo somente HID',
-        desc: 'Se o seu mouse e teclado pararem de responder e a redefinição de HID não ajudar, pode ser um problema de compatibilidade entre o NanoKVM e o dispositivo. Tente habilitar o modo Somente-HID para melhor compatibilidade.',
+        desc: 'Se o seu mouse e teclado pararem de responder e a redefinição de HID não ajudar, pode ser um problema de compatibilidade entre o IronKVM e o dispositivo. Tente habilitar o modo Somente-HID para melhor compatibilidade.',
         tip1: 'Habilitar o modo Somente-HID irá desmontar o U-disk virtual e a rede virtual',
         tip2: 'No modo Somente-HID, a montagem de imagem está desativada',
-        rebuild: 'Trocar de modo reconstrói a conexão USB. O NanoKVM não reinicia',
+        rebuild: 'Trocar de modo reconstrói a conexão USB. O IronKVM não reinicia',
         enable: 'Habilitar modo Somente-HID',
         disable: 'Desabilitar modo Somente-HID'
       },
@@ -394,18 +399,18 @@ const pt_br = {
       },
       tips: {
         title: 'Como fazer upload',
-        usb1: 'Conecte o NanoKVM ao seu computador via USB.',
+        usb1: 'Conecte o IronKVM ao seu computador via USB.',
         usb2: 'Certifique-se de que o disco virtual está montado (Configurações - Disco Virtual).',
         usb3: 'Abra o disco virtual no seu computador e copie o arquivo de imagem para o diretório raiz do disco virtual.',
-        scp1: 'Certifique-se de que o NanoKVM e seu computador estão na mesma rede local.',
-        scp2: 'Abra um terminal no seu computador e use o comando SCP para fazer upload do arquivo de imagem para o diretório /data no NanoKVM.',
+        scp1: 'Certifique-se de que o IronKVM e seu computador estão na mesma rede local.',
+        scp2: 'Abra um terminal no seu computador e use o comando SCP para fazer upload do arquivo de imagem para o diretório /data no IronKVM.',
         scp3: 'Exemplo: scp seu-caminho-da-imagem root@seu-ip-nanokvm:/data',
         tfCard: 'Cartão TF',
         tf1: 'Este método é suportado em sistemas Linux',
-        tf2: 'Remova o cartão TF do NanoKVM (para a versão FULL, desmonte a caixa primeiro).',
+        tf2: 'Remova o cartão TF do IronKVM (para a versão FULL, desmonte a caixa primeiro).',
         tf3: 'Insira o cartão TF em um leitor de cartão e conecte-o ao seu computador.',
         tf4: 'Copie o arquivo de imagem para o diretório /data no cartão TF.',
-        tf5: 'Insira o cartão TF no NanoKVM.'
+        tf5: 'Insira o cartão TF no IronKVM.'
       }
     },
     script: {
@@ -436,7 +441,7 @@ const pt_br = {
       invalidSettings: 'Configurações da porta serial inválidas. Este é o shell da própria placa.',
       disconnected: 'Desconectado. Pressione Enter para reconectar.',
       title: 'Terminal',
-      nanokvm: 'Terminal NanoKVM',
+      nanokvm: 'Terminal IronKVM',
       serial: 'Terminal de Porta Serial',
       serialPort: 'Porta Serial',
       serialPortPlaceholder: 'Por favor, digite a porta serial',
@@ -561,7 +566,10 @@ const pt_br = {
         failed: 'Falha na operação MCP',
         copyFailed: 'Falha ao copiar. Copie manualmente.',
         okBtn: 'Confirmar',
-        cancelBtn: 'Cancelar'
+        cancelBtn: 'Cancelar',
+        showKey: 'Mostrar chave',
+        hideKey: 'Ocultar chave',
+        regenerateKey: 'Gerar nova chave'
       },
       redfish: {
         example: 'Exemplo',
@@ -695,7 +703,7 @@ const pt_br = {
         action: 'Ação',
         actionDesc:
           'O ciclo de energia segura o botão de energia por 5 segundos e depois o pressiona de novo.',
-        actionReset: 'Reset',
+        actionReset: 'Redefinir',
         actionPower: 'Ciclo de energia',
         cooldown: 'Intervalo',
         cooldownDesc: 'O tempo mínimo entre duas ações.',
@@ -792,14 +800,15 @@ const pt_br = {
         failed: 'Falha na operação de boot pela rede'
       },
       about: {
-        title: 'Sobre o NanoKVM',
+        title: 'Sobre o IronKVM',
         information: 'Informação',
         ip: 'IP',
         mdns: 'mDNS',
         application: 'Versão do Aplicativo',
-        applicationTip: 'Versão do aplicativo web NanoKVM',
+        applicationTip: 'Versão do aplicativo web IronKVM',
         image: 'Versão da Imagem',
-        imageTip: 'Versão da imagem do sistema NanoKVM',
+        imageTip:
+          'Imagem de cartão do IronKVM e a imagem de sistema do NanoKVM na qual ela se baseia',
         kernel: 'Versão do Kernel',
         kernelTip: 'Versão do kernel Linux em execução agora',
         deviceKey: 'Chave do Dispositivo',
@@ -807,9 +816,9 @@ const pt_br = {
         videoMemoryTip:
           'Memória reservada para a captura de vídeo. Ela não é compartilhada com o resto do sistema.',
         videoMemoryGenerations_one:
-          '{{count}} sessão anterior do NanoKVM está retendo memória de vídeo',
+          '{{count}} sessão anterior do IronKVM está retendo memória de vídeo',
         videoMemoryGenerations_other:
-          '{{count}} sessões anteriores do NanoKVM estão retendo memória de vídeo',
+          '{{count}} sessões anteriores do IronKVM estão retendo memória de vídeo',
         videoMemoryReboot: 'Reinicie para recuperá-la.',
         community: 'Comunidade',
         hostname: 'Nome do Host',
@@ -821,7 +830,14 @@ const pt_br = {
         },
         hostnameInvalid:
           'Use letras, dígitos e hifens, até 63 por parte separada por pontos. Sem hífen no início ou no fim de uma parte.',
-        hostnameFailed: 'Falha ao alterar o nome do host'
+        hostnameFailed: 'Falha ao alterar o nome do host',
+        editHostname: 'Editar nome do host',
+        docs: 'Documentação',
+        hardware: 'Hardware',
+        hardwareFaq: 'Perguntas frequentes do hardware',
+        disclaimer:
+          'IronKVM: firmware comunitário reforçado para o Sipeed NanoKVM. Sem vínculo com a Sipeed.',
+        basedOn: 'baseado no NanoKVM {{version}}'
       },
       appearance: {
         title: 'Aparência',
@@ -945,10 +961,10 @@ const pt_br = {
         network: 'Rede Virtual',
         networkDesc: 'Montar placa de rede virtual no host remoto',
         usbNetwork: {
-          boardAddress: 'NanoKVM:',
+          boardAddress: 'IronKVM:',
           hostAddress: 'Host:',
           description:
-            'Um link de rede privado com o host remoto pelo cabo USB. O host recebe um endereço sem gateway e sem DNS, então não consegue alcançar sua LAN pelo NanoKVM.',
+            'Um link de rede privado com o host remoto pelo cabo USB. O host recebe um endereço sem gateway e sem DNS, então não consegue alcançar sua LAN pelo IronKVM.',
           off: 'Desligado',
           ncm: 'NCM (Linux, macOS, Windows 11)',
           ecm: 'ECM (para hosts sem NCM)',
@@ -956,7 +972,7 @@ const pt_br = {
           rndisNote: 'Este link usa RNDIS, que não é mais oferecido. Escolha NCM ou ECM.',
           subnet: 'Sub-rede',
           subnetDesc:
-            'Uma rede IPv4 privada, de /24 a /30. O NanoKVM usa o primeiro endereço e o host o segundo.',
+            'Uma rede IPv4 privada, de /24 a /30. O IronKVM usa o primeiro endereço e o host o segundo.',
           invalidSubnet: 'Digite uma sub-rede como 172.31.255.0/30.',
           apply: 'Aplicar',
           confirm: 'Reconectar o dispositivo USB?',
@@ -969,9 +985,9 @@ const pt_br = {
         audioNote: 'O áudio está disponível nos dois modos H.264 (WebRTC e Direto), não no MJPEG',
         console: 'Console Serial',
         consoleDesc:
-          'Apresenta uma porta serial USB ao host remoto, para entrar neste NanoKVM quando a rede estiver inacessível',
+          'Apresenta uma porta serial USB ao host remoto, para entrar neste IronKVM quando a rede estiver inacessível',
         consoleTip:
-          'Quem controla o host remoto recebe um prompt de login deste NanoKVM. Defina uma senha forte antes de habilitar (Conta - Mudar Senha).',
+          'Quem controla o host remoto recebe um prompt de login deste IronKVM. Defina uma senha forte antes de habilitar (Conta - Mudar Senha).',
         endpoints: {
           title: 'Endpoints USB',
           used: '{{used}} de {{total}} em uso',
@@ -986,7 +1002,7 @@ const pt_br = {
           fitTogether: 'Cabem juntos: {{sets}}'
         },
         reboot: 'Reiniciar',
-        rebootDesc: 'Tem certeza de que deseja reiniciar o NanoKVM?',
+        rebootDesc: 'Tem certeza de que deseja reiniciar o IronKVM?',
         okBtn: 'Sim',
         cancelBtn: 'Não',
         rebootFailed: 'Falha ao reiniciar'
@@ -996,7 +1012,7 @@ const pt_br = {
         wifi: {
           disconnectBtn: 'Desconectar',
           disconnectWarning:
-            'Se você acessa o NanoKVM por esta rede Wi-Fi, esta página perderá a conexão.',
+            'Se você acessa o IronKVM por esta rede Wi-Fi, esta página perderá a conexão.',
           disconnected: 'Wi-Fi desconectado',
           title: 'Wi-Fi',
           description: 'Configurar Wi-Fi',
@@ -1028,7 +1044,7 @@ const pt_br = {
         },
         ethernet: {
           title: 'Endereço IP',
-          description: 'Configure como o NanoKVM obtém seu endereço na rede cabeada',
+          description: 'Configure como o IronKVM obtém seu endereço na rede cabeada',
           dhcp: 'DHCP',
           manual: 'Manual',
           networkDetails: 'Detalhes da rede',
@@ -1042,17 +1058,17 @@ const pt_br = {
           invalidRouter: 'Informe um endereço de roteador válido',
           addressRequired: 'Um endereço IP é obrigatório',
           maskRequired: 'Uma máscara de sub-rede é obrigatória',
-          applyTitle: 'Alterar o endereço do NanoKVM?',
+          applyTitle: 'Alterar o endereço do IronKVM?',
           applyWarning:
-            'A conexão com esta página será perdida. O NanoKVM aplica o novo endereço e espera {{seconds}} segundos para você alcançá-lo nesse endereço. Alcançá-lo mantém a alteração. Se nada o alcançar, o NanoKVM restaura as configurações anteriores.',
+            'A conexão com esta página será perdida. O IronKVM aplica o novo endereço e espera {{seconds}} segundos para você alcançá-lo nesse endereço. Alcançá-lo mantém a alteração. Se nada o alcançar, o IronKVM restaura as configurações anteriores.',
           applyConfirm: 'Aplicar',
           applyCancel: 'Cancelar',
           applyFailed: 'Falha ao aplicar o endereço',
           trialTitle: 'Aguardando confirmação',
-          trialDhcp: 'O NanoKVM está solicitando um endereço por DHCP.',
-          trialStatic: 'O NanoKVM agora está em {{address}}.',
+          trialDhcp: 'O IronKVM está solicitando um endereço por DHCP.',
+          trialStatic: 'O IronKVM agora está em {{address}}.',
           trialInstruction:
-            'Abra o NanoKVM no novo endereço e entre, se ele pedir. Alcançá-lo ali mantém a alteração. Se nada alcançar o NanoKVM em {{seconds}} segundos, ele restaura as configurações anteriores.',
+            'Abra o IronKVM no novo endereço e entre, se ele pedir. Alcançá-lo ali mantém a alteração. Se nada alcançar o IronKVM em {{seconds}} segundos, ele restaura as configurações anteriores.',
           trialOpen: 'Abrir o novo endereço',
           trialKeep: 'Manter estas configurações',
           trialKept: 'O novo endereço está salvo',
@@ -1062,7 +1078,7 @@ const pt_br = {
         },
         dns: {
           title: 'DNS',
-          description: 'Configurar servidores DNS para o NanoKVM',
+          description: 'Configurar servidores DNS para o IronKVM',
           mode: 'Modo',
           dhcp: 'DHCP',
           manual: 'Manual',
@@ -1147,23 +1163,24 @@ const pt_br = {
         notSignedIn: 'Ainda não conectado. Termine de entrar pelo link e verifique novamente.',
         checkFailed: 'Não foi possível verificar o status de login',
         loginWaiting: 'Esta página verifica a cada poucos segundos e continua quando você entrar.',
-        uninstallFailed: 'Falha ao desinstalar'
+        uninstallFailed: 'Falha ao desinstalar',
+        loginFailed: 'Falha no login'
       },
       tailscale: {
         title: 'Tailscale',
-        retry: 'Por favor, atualize e tente novamente. Ou tente instalar manualmente',
         download: 'Baixar o',
         package: 'pacote de instalação',
         unzip: 'e descompacte-o',
-        upTailscale: 'Fazer upload do tailscale para o diretório NanoKVM /usr/bin/',
-        upTailscaled: 'Fazer upload do tailscaled para o diretório NanoKVM /usr/sbin/',
-        refresh: 'Atualizar página atual',
         notLogin:
           'O dispositivo ainda não foi vinculado. Por favor, faça login e vincule este dispositivo à sua conta.',
         urlPeriod: 'Esta URL é válida por 10 minutos',
         login: 'Login',
         logout: 'Sair',
-        logoutDesc: 'Tem certeza de que deseja sair?'
+        logoutDesc: 'Tem certeza de que deseja sair?',
+        manualIntro: 'Ou instale manualmente via SSH:',
+        copyBinaries: 'Copie tailscale e tailscaled para {{dir}} no IronKVM',
+        linksFile: 'No mesmo diretório, crie um arquivo chamado links com estas duas linhas:',
+        rebootRefresh: 'Reinicie o IronKVM e depois atualize esta página'
       },
       netbird: {
         title: 'NetBird',
@@ -1177,7 +1194,8 @@ const pt_br = {
         urlPeriod: 'Esta URL é válida por 10 minutos',
         logout: 'Cancelar registro',
         logoutDesc:
-          'Cancelar o registro remove este peer da sua conta NetBird e apaga a configuração dele aqui. Para entrar de novo é preciso uma chave de configuração ou um login SSO, e o peer pode receber um novo IP. Continuar?'
+          'Cancelar o registro remove este peer da sua conta NetBird e apaga a configuração dele aqui. Para entrar de novo é preciso uma chave de configuração ou um login SSO, e o peer pode receber um novo IP. Continuar?',
+        joinFailed: 'Não foi possível entrar na rede'
       },
       update: {
         title: 'Verificar Atualizações',
@@ -1203,7 +1221,7 @@ const pt_br = {
           save: 'Salvar',
           confirmTitle: 'Usar um servidor de atualização personalizado?',
           confirmDesc:
-            'O SHA-512 apenas verifica se o pacote corresponde ao manifesto fornecido por este servidor. Ele não comprova que o pacote seja uma versão oficial do NanoKVM. Um servidor com falha ou mal-intencionado pode inutilizar o dispositivo, causar perda de dados ou comprometer o sistema.',
+            'O SHA-512 apenas verifica se o pacote corresponde ao manifesto fornecido por este servidor. Ele não comprova que o pacote seja uma versão oficial do IronKVM. Um servidor com falha ou mal-intencionado pode inutilizar o dispositivo, causar perda de dados ou comprometer o sistema.',
           confirm: 'Usar mesmo assim',
           useSipeed: 'Usar o servidor oficial da Sipeed',
           previewDisabled:
@@ -1224,7 +1242,8 @@ const pt_br = {
         },
         updateTo: 'Atualizar para {{version}}',
         updateConfirmDesc:
-          'O dispositivo instala a atualização e reinicia seu servidor. Esta página recarrega quando o servidor voltar.'
+          'O dispositivo instala a atualização e reinicia seu servidor. Esta página recarrega quando o servidor voltar.',
+        releaseNotes: 'Notas de versão'
       },
       account: {
         title: 'Conta',
@@ -1300,7 +1319,7 @@ const pt_br = {
         defaultTitle: 'Assistente geral',
         defaultDescription: 'Ajuda geral sobre bate-papo, pesquisa e espaço de trabalho.',
         kvmTitle: 'Controle remoto',
-        kvmDescription: 'Opera o host remoto por meio de NanoKVM.',
+        kvmDescription: 'Opera o host remoto por meio de IronKVM.',
         switched: 'Função de agente trocada',
         switchFailed: 'Falha ao mudar de função de agente'
       },
@@ -1320,24 +1339,24 @@ const pt_br = {
       connection: {
         runtime: {
           checking: 'Verificando',
-          restoring: 'Restoring PicoClaw',
+          restoring: 'Restaurando o PicoClaw',
           ready: 'Runtime pronto',
           stopped: 'Runtime interrompido',
           blockedByMCP: 'O controle MCP externo está ativo',
           readyBlockedByMCP:
-            'The runtime is running, but external MCP currently controls device input.',
+            'O runtime está em execução, mas um MCP externo controla agora a entrada do dispositivo.',
           readyWithoutControl:
-            'The runtime is running. Grant PicoClaw device control before reconnecting.',
+            'O runtime está em execução. Conceda ao PicoClaw o controle do dispositivo antes de reconectar.',
           unavailable: 'Runtime indisponível',
           configError: 'Erro de configuração'
         },
         transport: {
           connecting: 'Conectando',
           connected: 'Conectado',
-          disconnected: 'Disconnected',
-          reconnect: 'Reconnect',
-          reconnectDescription: 'Reconnect to the running PicoClaw session.',
-          reconnectBlocked: 'PicoClaw needs device control before reconnecting.'
+          disconnected: 'Desconectado',
+          reconnect: 'Reconectar',
+          reconnectDescription: 'Reconectar à sessão do PicoClaw em execução.',
+          reconnectBlocked: 'O PicoClaw precisa do controle do dispositivo antes de reconectar.'
         },
         run: {
           idle: 'Inativo',
@@ -1354,21 +1373,23 @@ const pt_br = {
       },
       control: {
         picoclaw: 'Controle do dispositivo: PicoClaw',
-        picoclawDescription: 'PicoClaw can write keyboard and mouse input. Manual input may pause.',
+        picoclawDescription:
+          'O PicoClaw pode enviar entrada de teclado e mouse. A entrada manual pode ser pausada.',
         mcp: 'Controle do dispositivo: MCP externo',
-        mcpDescription: 'External MCP can write to the device. PicoClaw will not take over input.',
+        mcpDescription:
+          'O MCP externo pode escrever no dispositivo. O PicoClaw não assumirá a entrada.',
         off: 'Controle do dispositivo: desativado',
         offDescription:
-          'AI will not write keyboard or mouse input. Manual control remains available.',
-        transitioning: 'Device control: switching',
-        transitioningDescription: 'Device control is syncing. Please wait.',
+          'A IA não enviará entrada de teclado ou mouse. O controle manual continua disponível.',
+        transitioning: 'Controle do dispositivo: alternando',
+        transitioningDescription: 'O controle do dispositivo está sincronizando. Aguarde.',
         grant: 'Conceder controle',
         release: 'Liberar',
-        releasing: 'Releasing...',
-        switching: 'Switching...',
-        releasingLabel: 'Device control: releasing',
+        releasing: 'Liberando...',
+        switching: 'Alternando...',
+        releasingLabel: 'Controle do dispositivo: liberando',
         releasingDescription:
-          'Device control is being returned. PicoClaw has stopped current writes.',
+          'O controle do dispositivo está sendo devolvido. O PicoClaw parou as escritas em andamento.',
         granted: 'Controle do PicoClaw concedido',
         released: 'Controle do PicoClaw liberado',
         grantFailed: 'Falha ao conceder controle ao PicoClaw',
@@ -1450,8 +1471,8 @@ const pt_br = {
         enableConfirmCancel: 'Cancelar',
         title: 'Iniciar PicoClaw',
         description: 'Inicie o runtime para começar a usar o assistente PicoClaw.',
-        switchFromMCP: 'Switch to PicoClaw and start',
-        takeoverAndStart: 'Take over and start'
+        switchFromMCP: 'Mudar para o PicoClaw e iniciar',
+        takeoverAndStart: 'Assumir e iniciar'
       }
     },
     error: {
@@ -1485,9 +1506,9 @@ const pt_br = {
       warn: 'A memória de vídeo está baixa. Uma única reinicialização do servidor a esgotaria. Reinicie quando for conveniente.',
       criticalTitle: 'Memória de vídeo insuficiente para iniciar a transmissão',
       criticalBody:
-        'Iniciar o vídeo esgotaria a memória reservada e pararia o servidor. Todas as outras funções continuam funcionando, incluindo o controle de energia e a reinicialização. Só uma reinicialização do NanoKVM recupera essa memória.',
+        'Iniciar o vídeo esgotaria a memória reservada e pararia o servidor. Todas as outras funções continuam funcionando, incluindo o controle de energia e a reinicialização. Só uma reinicialização do IronKVM recupera essa memória.',
       criticalContinue: 'Iniciar o vídeo mesmo assim',
-      criticalReboot: 'Reiniciar o NanoKVM',
+      criticalReboot: 'Reiniciar o IronKVM',
       criticalRebooting: 'Reiniciando...'
     }
   }

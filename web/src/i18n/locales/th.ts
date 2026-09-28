@@ -14,13 +14,17 @@ const th = {
       copyFailed: 'คัดลอกไม่สำเร็จ เลือกข้อความแล้วคัดลอกด้วยตนเอง',
       notUpdating: 'ไม่อัปเดต: การรีเฟรชครั้งล่าสุดล้มเหลว',
       off: 'ปิด',
-      running: 'กำลังทำงาน'
+      running: 'กำลังทำงาน',
+      save: 'บันทึก',
+      cancel: 'ยกเลิก',
+      delete: 'ลบ',
+      remove: 'นำออก'
     },
     head: {
       desktop: 'เดสก์ท็อประยะไกล',
       login: 'เข้าสู่ระบบ',
       changePassword: 'เปลี่ยนรหัสผ่าน',
-      terminal: 'Terminal',
+      terminal: 'เทอร์มินัล',
       wifi: 'Wi-Fi'
     },
     auth: {
@@ -51,20 +55,21 @@ const th = {
       cancel: 'ยกเลิก',
       loginButtonText: 'เข้าสู่ระบบ',
       tips: {
-        reset1: 'หากต้องการรีเซ็ตรหัสผ่าน ให้กดปุ่ม BOOT บน NanoKVM ค้างไว้ 10 วินาที',
-        reset2: 'สำหรับวิธีแบบลงลึก โปรดอ่าน::',
+        reset1: 'หากต้องการรีเซ็ตรหัสผ่าน ให้กดปุ่ม BOOT บน IronKVM ค้างไว้ 10 วินาที',
         reset3: 'ค่าเริ่มต้นบัญชีเว็บ:',
         reset4: 'ค่าเริ่มต้นบัญชี SSH:',
         change1: 'โปรดทราบ การกระทำนี้จะเปลี่ยนรหัสดีงกล่าว:',
         change2: 'รหัสผ่านเว็บไชต์',
         change3: 'รหัส Root ของระบบ (ใช้เข้า SSH)',
-        change4: 'เพื่อรีเช็ทรหัสผ่าน, กรุณากดปุ่ม BOOT บนอุปกรณ์ NanoKVM ค้างไว้.'
+        change4: 'เพื่อรีเช็ทรหัสผ่าน, กรุณากดปุ่ม BOOT บนอุปกรณ์ IronKVM ค้างไว้.',
+        resetDocs: 'ดูขั้นตอนโดยละเอียดได้ในเอกสารฮาร์ดแวร์:',
+        hardwareDocs: 'วิกิ Sipeed NanoKVM'
       }
     },
     wifi: {
       title: 'Wi-Fi',
-      description: 'ตั้งค้า Wi-Fi สำหรับ NanoKVM',
-      success: 'กรุณาตรวจสอบสถานะเครื่องข่ายของ NanoKVM และไปที่ IP address ใหม่',
+      description: 'ตั้งค้า Wi-Fi สำหรับ IronKVM',
+      success: 'กรุณาตรวจสอบสถานะเครื่องข่ายของ IronKVM และไปที่ IP address ใหม่',
       failed: 'เกิดข้อผิดพลาด กรุณาลองใหม่.',
       invalidMode:
         'โหมดปัจจุบันไม่รองรับการตั้งค่าเครือข่าย โปรดไปที่อุปกรณ์ของคุณและเปิดใช้งานโหมดการกำหนดค่า Wi-Fi',
@@ -316,10 +321,10 @@ const th = {
       hidOnly: {
         switchFailed: 'สลับโหมดไม่สำเร็จ ตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง',
         title: 'โหมด HID เท่านั้น',
-        desc: 'หากเมาส์และคีย์บอร์ดของคุณหยุดตอบสนองและการรีเซ็ต HID ไม่ช่วย อาจเป็นปัญหาความเข้ากันได้ระหว่าง NanoKVM และอุปกรณ์ ลองเปิดโหมด HID-Only เพื่อความเข้ากันได้ที่ดีขึ้น',
+        desc: 'หากเมาส์และคีย์บอร์ดของคุณหยุดตอบสนองและการรีเซ็ต HID ไม่ช่วย อาจเป็นปัญหาความเข้ากันได้ระหว่าง IronKVM และอุปกรณ์ ลองเปิดโหมด HID-Only เพื่อความเข้ากันได้ที่ดีขึ้น',
         tip1: 'การเปิดโหมด HID-Only จะปิดการทำงานดิสก์จำลองและ NIC จำลอง',
         tip2: 'ในโหมด HID-Only ดิสก์จะลองจะถูกปิดใช้งาน',
-        rebuild: 'การสลับโหมดจะสร้างการเชื่อมต่อ USB ใหม่ NanoKVM จะไม่รีบูต',
+        rebuild: 'การสลับโหมดจะสร้างการเชื่อมต่อ USB ใหม่ IronKVM จะไม่รีบูต',
         enable: 'เปิดใช้งานโหมด HID-Only',
         disable: 'ปิดใช้งานโหมด HID-Only'
       },
@@ -386,18 +391,18 @@ const th = {
       },
       tips: {
         title: 'วิธีการอัปโหลด',
-        usb1: 'เชื่อมต่อ NanoKVM กับคอมพิวเตอร์ของคุณผ่าน USB',
+        usb1: 'เชื่อมต่อ IronKVM กับคอมพิวเตอร์ของคุณผ่าน USB',
         usb2: 'ตรวจสอบให้แน่ใจว่าได้เปิดใช้งานดิสก์เสมือนแล้ว (ตั้งค่า - ดิสก์เสมือน)',
         usb3: 'เปิดดิสก์บนคอมพิวเตอร์ของคุณและคัดลอกไฟล์อิมเมจไปยังไดเรกทอรีหลักของดิสก์',
-        scp1: 'ตรวจสอบให้แน่ใจว่า NanoKVM และคอมพิวเตอร์ของคุณอยู่ในเครือข่ายเดียวกัน',
-        scp2: 'เปิดเทอร์มินัลบนคอมพิวเตอร์ของคุณและใช้คำสั่ง SCP เพื่ออัปโหลดไฟล์อิมเมจไปยังไดเรกทอรี /data บน NanoKVM',
+        scp1: 'ตรวจสอบให้แน่ใจว่า IronKVM และคอมพิวเตอร์ของคุณอยู่ในเครือข่ายเดียวกัน',
+        scp2: 'เปิดเทอร์มินัลบนคอมพิวเตอร์ของคุณและใช้คำสั่ง SCP เพื่ออัปโหลดไฟล์อิมเมจไปยังไดเรกทอรี /data บน IronKVM',
         scp3: 'ตัวอย่าง: scp <ที่อยู่ของไฟล์> root@<ip อุปกรณ์>:/data',
         tfCard: 'การ์ด TF',
         tf1: 'วิธีนี้รองรับแค่บนระบบปฏิบัติการ Linux',
-        tf2: 'นำการ์ด TF ออกจาก NanoKVM',
+        tf2: 'นำการ์ด TF ออกจาก IronKVM',
         tf3: 'ใส่การ์ด TF ลงในเครื่องอ่านการ์ดและเชื่อมต่อกับคอมพิวเตอร์ของคุณ',
         tf4: 'คัดลอกไฟล์อิมเมจไปยังไดเรกทอรี /data บนการ์ด TF',
-        tf5: 'ใส่การ์ด TF กลับเข้า NanoKVM'
+        tf5: 'ใส่การ์ด TF กลับเข้า IronKVM'
       }
     },
     script: {
@@ -428,7 +433,7 @@ const th = {
       invalidSettings: 'การตั้งค่าพอร์ตอนุกรมไม่ถูกต้อง นี่คือเชลล์ของบอร์ดเอง',
       disconnected: 'การเชื่อมต่อขาด กด Enter เพื่อเชื่อมต่อใหม่',
       title: 'เทอร์มินอล',
-      nanokvm: 'เทอร์มินอลของ NanoKVM',
+      nanokvm: 'เทอร์มินอลของ IronKVM',
       serial: 'เทอร์มินอลของ Serial Port',
       serialPort: 'พอร์ตอนุกรม',
       serialPortPlaceholder: 'กรุณาเลือก serial port',
@@ -549,7 +554,10 @@ const th = {
         failed: 'การดำเนินการ MCP ล้มเหลว',
         copyFailed: 'คัดลอกไม่สำเร็จ โปรดคัดลอกด้วยตนเอง',
         okBtn: 'ยืนยัน',
-        cancelBtn: 'ยกเลิก'
+        cancelBtn: 'ยกเลิก',
+        showKey: 'แสดงคีย์',
+        hideKey: 'ซ่อนคีย์',
+        regenerateKey: 'สร้างคีย์ใหม่'
       },
       redfish: {
         example: 'ตัวอย่าง',
@@ -557,7 +565,7 @@ const th = {
         service: 'บริการ Redfish',
         serviceDesc:
           'DMTF Redfish API สำหรับควบคุมพลังงาน สื่อเสมือน และดูสถานะจากเครื่องมือเช่น redfishtool และ Ansible การปิดจะสิ้นสุดเซสชัน Redfish ทั้งหมด',
-        endpoint: 'Service root',
+        endpoint: 'รูทของบริการ',
         httpsOn: 'บอร์ดให้บริการผ่าน HTTPS ซึ่งเครื่องมือ Redfish ส่วนใหญ่ต้องใช้',
         httpsOff:
           'บอร์ดให้บริการผ่าน HTTP ธรรมดา เครื่องมือ Redfish ส่วนใหญ่ต้องใช้ HTTPS: เปิดได้ใน "การตั้งค่า > เครือข่าย"',
@@ -776,14 +784,14 @@ const th = {
         failed: 'การดำเนินการบูตผ่านเครือข่ายล้มเหลว'
       },
       about: {
-        title: 'เกี๋ยวกับ NanoKVM',
+        title: 'เกี๋ยวกับ IronKVM',
         information: 'ข้อมูล',
         ip: 'IP',
         mdns: 'mDNS',
         application: 'เวอร์ชั่นแอปพิเคชั่น',
-        applicationTip: 'เวอร์ชั่นเว็บ NanoKVM',
+        applicationTip: 'เวอร์ชั่นเว็บ IronKVM',
         image: 'เวอร์ชั่น Image ระบบ',
-        imageTip: 'เวอร์ชั่น Image ระบบ NanoKVM',
+        imageTip: 'อิมเมจการ์ด IronKVM และอิมเมจระบบ NanoKVM ที่ใช้เป็นฐาน',
         kernel: 'เวอร์ชันเคอร์เนล',
         kernelTip: 'รุ่นของเคอร์เนล Linux ที่กำลังทำงานอยู่',
         deviceKey: 'คีย์อุปกรณ์',
@@ -791,7 +799,7 @@ const th = {
         videoMemoryTip:
           'หน่วยความจำที่สงวนไว้สำหรับการจับภาพวิดีโอ ไม่ได้ใช้ร่วมกับส่วนอื่นของระบบ',
         videoMemoryGenerations_other:
-          'เซสชัน NanoKVM ก่อนหน้า {{count}} เซสชันกำลังครอบครองหน่วยความจำวิดีโอ',
+          'เซสชัน IronKVM ก่อนหน้า {{count}} เซสชันกำลังครอบครองหน่วยความจำวิดีโอ',
         videoMemoryReboot: 'รีบูตเพื่อเรียกคืน',
         community: 'ชุมชน',
         hostname: 'ชื่อโฮสต์',
@@ -803,7 +811,14 @@ const th = {
         },
         hostnameInvalid:
           'ใช้ตัวอักษร ตัวเลข และขีดกลาง ไม่เกิน 63 ตัวต่อส่วนที่คั่นด้วยจุด และห้ามมีขีดกลางที่ต้นหรือท้ายส่วน',
-        hostnameFailed: 'เปลี่ยนชื่อโฮสต์ไม่สำเร็จ'
+        hostnameFailed: 'เปลี่ยนชื่อโฮสต์ไม่สำเร็จ',
+        editHostname: 'แก้ไขชื่อโฮสต์',
+        docs: 'เอกสาร',
+        hardware: 'ฮาร์ดแวร์',
+        hardwareFaq: 'คำถามที่พบบ่อยเกี่ยวกับฮาร์ดแวร์',
+        disclaimer:
+          'IronKVM: เฟิร์มแวร์ชุมชนที่เสริมความปลอดภัยสำหรับ Sipeed NanoKVM ไม่มีส่วนเกี่ยวข้องกับ Sipeed',
+        basedOn: 'อิงจาก NanoKVM {{version}}'
       },
       appearance: {
         title: 'ลักษณะการแสดงผล',
@@ -925,10 +940,10 @@ const th = {
         network: 'เครือข่ายจำลอง',
         networkDesc: 'เปิดใช้งานอุปกรณ์เครือข่ายจำลอง',
         usbNetwork: {
-          boardAddress: 'NanoKVM:',
+          boardAddress: 'IronKVM:',
           hostAddress: 'โฮสต์:',
           description:
-            'ลิงก์เครือข่ายส่วนตัวกับโฮสต์ระยะไกลผ่านสาย USB โฮสต์จะได้รับที่อยู่ที่ไม่มีเกตเวย์และไม่มี DNS จึงไม่สามารถเข้าถึง LAN ของคุณผ่าน NanoKVM ได้',
+            'ลิงก์เครือข่ายส่วนตัวกับโฮสต์ระยะไกลผ่านสาย USB โฮสต์จะได้รับที่อยู่ที่ไม่มีเกตเวย์และไม่มี DNS จึงไม่สามารถเข้าถึง LAN ของคุณผ่าน IronKVM ได้',
           off: 'ปิด',
           ncm: 'NCM (Linux, macOS, Windows 11)',
           ecm: 'ECM (สำหรับโฮสต์ที่ไม่รองรับ NCM)',
@@ -936,7 +951,7 @@ const th = {
           rndisNote: 'ลิงก์นี้ใช้ RNDIS ซึ่งไม่มีให้เลือกแล้ว โปรดเลือก NCM หรือ ECM',
           subnet: 'ซับเน็ต',
           subnetDesc:
-            'เครือข่าย IPv4 ส่วนตัว ตั้งแต่ /24 ถึง /30 NanoKVM ใช้ที่อยู่แรก และโฮสต์ใช้ที่อยู่ที่สอง',
+            'เครือข่าย IPv4 ส่วนตัว ตั้งแต่ /24 ถึง /30 IronKVM ใช้ที่อยู่แรก และโฮสต์ใช้ที่อยู่ที่สอง',
           invalidSubnet: 'ป้อนซับเน็ต เช่น 172.31.255.0/30',
           apply: 'นำไปใช้',
           confirm: 'เชื่อมต่ออุปกรณ์ USB ใหม่หรือไม่?',
@@ -949,9 +964,9 @@ const th = {
         audioNote: 'เสียงใช้ได้ในโหมด H.264 ทั้งสองแบบ (WebRTC และ Direct) แต่ใช้ไม่ได้ใน MJPEG',
         console: 'คอนโซลซีเรียล',
         consoleDesc:
-          'นำเสนอพอร์ตซีเรียล USB ให้โฮสต์ระยะไกล เพื่อเข้าสู่ระบบ NanoKVM นี้เมื่อเครือข่ายเข้าถึงไม่ได้',
+          'นำเสนอพอร์ตซีเรียล USB ให้โฮสต์ระยะไกล เพื่อเข้าสู่ระบบ IronKVM นี้เมื่อเครือข่ายเข้าถึงไม่ได้',
         consoleTip:
-          'ใครก็ตามที่ควบคุมโฮสต์ระยะไกลจะได้หน้าจอเข้าสู่ระบบของ NanoKVM นี้ ตั้งรหัสผ่านที่ปลอดภัยก่อนเปิดใช้งาน (บัญชี - เปลี่ยนรหัสผ่าน)',
+          'ใครก็ตามที่ควบคุมโฮสต์ระยะไกลจะได้หน้าจอเข้าสู่ระบบของ IronKVM นี้ ตั้งรหัสผ่านที่ปลอดภัยก่อนเปิดใช้งาน (บัญชี - เปลี่ยนรหัสผ่าน)',
         endpoints: {
           title: 'ปลายทาง USB',
           used: 'ใช้ไป {{used}} จาก {{total}}',
@@ -966,7 +981,7 @@ const th = {
           fitTogether: 'ใช้ร่วมกันได้: {{sets}}'
         },
         reboot: 'รีบูต',
-        rebootDesc: 'คุณแน่ใจหรือไม่ว่าต้องการรีบูต NanoKVM',
+        rebootDesc: 'คุณแน่ใจหรือไม่ว่าต้องการรีบูต IronKVM',
         okBtn: 'ใช่',
         cancelBtn: 'ไม่ใช่',
         rebootFailed: 'รีบูตไม่สำเร็จ'
@@ -976,7 +991,7 @@ const th = {
         wifi: {
           disconnectBtn: 'ตัดการเชื่อมต่อ',
           disconnectWarning:
-            'หากคุณเข้าถึง NanoKVM ผ่านเครือข่าย Wi-Fi นี้ หน้านี้จะขาดการเชื่อมต่อ',
+            'หากคุณเข้าถึง IronKVM ผ่านเครือข่าย Wi-Fi นี้ หน้านี้จะขาดการเชื่อมต่อ',
           disconnected: 'ตัดการเชื่อมต่อ Wi-Fi แล้ว',
           title: 'Wi-Fi',
           description: 'ตั้งค่า Wi-Fi',
@@ -1008,7 +1023,7 @@ const th = {
         },
         ethernet: {
           title: 'ที่อยู่ IP',
-          description: 'ตั้งค่าวิธีที่ NanoKVM รับที่อยู่บนเครือข่ายแบบใช้สาย',
+          description: 'ตั้งค่าวิธีที่ IronKVM รับที่อยู่บนเครือข่ายแบบใช้สาย',
           dhcp: 'DHCP',
           manual: 'กำหนดเอง',
           networkDetails: 'รายละเอียดเครือข่าย',
@@ -1022,17 +1037,17 @@ const th = {
           invalidRouter: 'โปรดป้อนที่อยู่เราเตอร์ที่ถูกต้อง',
           addressRequired: 'ต้องระบุที่อยู่ IP',
           maskRequired: 'ต้องระบุซับเน็ตมาสก์',
-          applyTitle: 'เปลี่ยนที่อยู่ของ NanoKVM หรือไม่',
+          applyTitle: 'เปลี่ยนที่อยู่ของ IronKVM หรือไม่',
           applyWarning:
-            'การเชื่อมต่อกับหน้านี้จะขาดหาย NanoKVM จะใช้ที่อยู่ใหม่ แล้วรอ {{seconds}} วินาทีให้คุณเข้าถึงที่อยู่นั้น การเข้าถึงจะเก็บการเปลี่ยนแปลงไว้ หากไม่มีสิ่งใดเข้าถึง NanoKVM จะคืนค่าการตั้งค่าก่อนหน้า',
+            'การเชื่อมต่อกับหน้านี้จะขาดหาย IronKVM จะใช้ที่อยู่ใหม่ แล้วรอ {{seconds}} วินาทีให้คุณเข้าถึงที่อยู่นั้น การเข้าถึงจะเก็บการเปลี่ยนแปลงไว้ หากไม่มีสิ่งใดเข้าถึง IronKVM จะคืนค่าการตั้งค่าก่อนหน้า',
           applyConfirm: 'ใช้งาน',
           applyCancel: 'ยกเลิก',
           applyFailed: 'ใช้ที่อยู่ไม่สำเร็จ',
           trialTitle: 'กำลังรอการยืนยัน',
-          trialDhcp: 'NanoKVM กำลังขอที่อยู่จาก DHCP',
-          trialStatic: 'ขณะนี้ NanoKVM อยู่ที่ {{address}}',
+          trialDhcp: 'IronKVM กำลังขอที่อยู่จาก DHCP',
+          trialStatic: 'ขณะนี้ IronKVM อยู่ที่ {{address}}',
           trialInstruction:
-            'เปิด NanoKVM ที่อยู่ใหม่ และลงชื่อเข้าใช้หากระบบขอ การเข้าถึงที่นั่นจะเก็บการเปลี่ยนแปลงไว้ หากไม่มีสิ่งใดเข้าถึง NanoKVM ภายใน {{seconds}} วินาที ระบบจะคืนค่าการตั้งค่าก่อนหน้า',
+            'เปิด IronKVM ที่อยู่ใหม่ และลงชื่อเข้าใช้หากระบบขอ การเข้าถึงที่นั่นจะเก็บการเปลี่ยนแปลงไว้ หากไม่มีสิ่งใดเข้าถึง IronKVM ภายใน {{seconds}} วินาที ระบบจะคืนค่าการตั้งค่าก่อนหน้า',
           trialOpen: 'เปิดที่อยู่ใหม่',
           trialKeep: 'เก็บการตั้งค่านี้ไว้',
           trialKept: 'บันทึกที่อยู่ใหม่แล้ว',
@@ -1042,7 +1057,7 @@ const th = {
         },
         dns: {
           title: 'DNS',
-          description: 'ตั้งค่าเซิร์ฟเวอร์ DNS สำหรับ NanoKVM',
+          description: 'ตั้งค่าเซิร์ฟเวอร์ DNS สำหรับ IronKVM',
           mode: 'โหมด',
           dhcp: 'DHCP',
           manual: 'กำหนดเอง',
@@ -1126,22 +1141,23 @@ const th = {
         notSignedIn: 'ยังไม่ได้ลงชื่อเข้าใช้ ลงชื่อเข้าใช้ผ่านลิงก์ให้เสร็จ แล้วตรวจสอบอีกครั้ง',
         checkFailed: 'ตรวจสอบสถานะการเข้าสู่ระบบไม่ได้',
         loginWaiting: 'หน้านี้ตรวจสอบทุกไม่กี่วินาทีและจะดำเนินการต่อเมื่อคุณลงชื่อเข้าใช้แล้ว',
-        uninstallFailed: 'ถอนการติดตั้งไม่สำเร็จ'
+        uninstallFailed: 'ถอนการติดตั้งไม่สำเร็จ',
+        loginFailed: 'เข้าสู่ระบบไม่สำเร็จ'
       },
       tailscale: {
         title: 'Tailscale',
-        retry: 'กรุณารีเฟรชและลองใหม่ หรือพยายามติดตั้งด้วยตนเอง',
         download: 'ดาวน์โหลด',
         package: 'แพ็กเกจการติดตั้ง',
         unzip: 'และแตกไฟล์',
-        upTailscale: 'อัปโหลด tailscale ไปยังไดเรกทอรี /usr/bin/ ของ NanoKVM',
-        upTailscaled: 'อัปโหลด tailscaled ไปยังไดเรกทอรี /usr/sbin/ ของ NanoKVM',
-        refresh: 'รีเฟรชหน้าปัจจุบัน',
         notLogin: 'อุปกรณ์ยังไม่ได้ผูกบัญชี กรุณาล็อกอินและผูกอุปกรณ์นี้กับบัญชีของคุณ',
         urlPeriod: 'ลิงก์นี้ใช้ได้ 10 นาที',
         login: 'ล็อกอิน',
         logout: 'ออกจากระบบ',
-        logoutDesc: 'คุณแน่ใจที่จะออกจากระบบหรือไม่?'
+        logoutDesc: 'คุณแน่ใจที่จะออกจากระบบหรือไม่?',
+        manualIntro: 'หรือติดตั้งเองผ่าน SSH:',
+        copyBinaries: 'คัดลอก tailscale และ tailscaled ไปที่ {{dir}} บน IronKVM',
+        linksFile: 'ในไดเรกทอรีเดียวกัน สร้างไฟล์ชื่อ links ที่มีสองบรรทัดนี้:',
+        rebootRefresh: 'รีบูต IronKVM แล้วรีเฟรชหน้านี้'
       },
       netbird: {
         title: 'NetBird',
@@ -1155,7 +1171,8 @@ const th = {
         urlPeriod: 'ลิงก์นี้ใช้ได้ 10 นาที',
         logout: 'ยกเลิกการลงทะเบียน',
         logoutDesc:
-          'การยกเลิกการลงทะเบียนจะลบเพียร์นี้ออกจากบัญชี NetBird ของคุณ และลบการกำหนดค่าบนอุปกรณ์นี้ การเข้าร่วมอีกครั้งต้องใช้คีย์ตั้งค่าหรือการเข้าสู่ระบบด้วย SSO และเพียร์อาจได้ IP ใหม่ ดำเนินการต่อหรือไม่?'
+          'การยกเลิกการลงทะเบียนจะลบเพียร์นี้ออกจากบัญชี NetBird ของคุณ และลบการกำหนดค่าบนอุปกรณ์นี้ การเข้าร่วมอีกครั้งต้องใช้คีย์ตั้งค่าหรือการเข้าสู่ระบบด้วย SSO และเพียร์อาจได้ IP ใหม่ ดำเนินการต่อหรือไม่?',
+        joinFailed: 'เข้าร่วมเครือข่ายไม่สำเร็จ'
       },
       update: {
         title: 'ตรวจสอบการอัปเดต',
@@ -1181,7 +1198,7 @@ const th = {
           save: 'บันทึก',
           confirmTitle: 'ใช้เซิร์ฟเวอร์อัปเดตแบบกำหนดเองหรือไม่',
           confirmDesc:
-            'SHA-512 ตรวจสอบเพียงว่าแพ็กเกจตรงกับไฟล์ Manifest ที่เซิร์ฟเวอร์นี้จัดเตรียมไว้เท่านั้น ไม่ได้ยืนยันว่าแพ็กเกจดังกล่าวเป็นรุ่นอย่างเป็นทางการของ NanoKVM เซิร์ฟเวอร์ที่มีข้อผิดพลาดหรือเป็นอันตรายอาจทำให้อุปกรณ์ใช้งานไม่ได้ ทำให้ข้อมูลสูญหาย หรือทำให้ระบบถูกบุกรุก',
+            'SHA-512 ตรวจสอบเพียงว่าแพ็กเกจตรงกับไฟล์ Manifest ที่เซิร์ฟเวอร์นี้จัดเตรียมไว้เท่านั้น ไม่ได้ยืนยันว่าแพ็กเกจดังกล่าวเป็นรุ่นอย่างเป็นทางการของ IronKVM เซิร์ฟเวอร์ที่มีข้อผิดพลาดหรือเป็นอันตรายอาจทำให้อุปกรณ์ใช้งานไม่ได้ ทำให้ข้อมูลสูญหาย หรือทำให้ระบบถูกบุกรุก',
           confirm: 'ใช้ต่อไป',
           useSipeed: 'ใช้เซิร์ฟเวอร์ทางการของ Sipeed',
           previewDisabled:
@@ -1202,7 +1219,8 @@ const th = {
         },
         updateTo: 'อัปเดตเป็น {{version}}',
         updateConfirmDesc:
-          'อุปกรณ์จะติดตั้งการอัปเดตและรีสตาร์ทเซิร์ฟเวอร์ หน้านี้จะโหลดใหม่เมื่อเซิร์ฟเวอร์กลับมา'
+          'อุปกรณ์จะติดตั้งการอัปเดตและรีสตาร์ทเซิร์ฟเวอร์ หน้านี้จะโหลดใหม่เมื่อเซิร์ฟเวอร์กลับมา',
+        releaseNotes: 'บันทึกประจำรุ่น'
       },
       account: {
         title: 'บัญชี',
@@ -1278,7 +1296,7 @@ const th = {
         defaultTitle: 'ผู้ช่วยทั่วไป',
         defaultDescription: 'แชททั่วไป การค้นหา และพื้นที่ช่วยเหลือ',
         kvmTitle: 'การควบคุมระยะไกล',
-        kvmDescription: 'ใช้งานโฮสต์ระยะไกลผ่าน NanoKVM',
+        kvmDescription: 'ใช้งานโฮสต์ระยะไกลผ่าน IronKVM',
         switched: 'เปลี่ยนบทบาทตัวแทนแล้ว',
         switchFailed: 'ไม่สามารถเปลี่ยนบทบาทตัวแทนได้'
       },
@@ -1298,24 +1316,23 @@ const th = {
       connection: {
         runtime: {
           checking: 'กำลังตรวจสอบ',
-          restoring: 'Restoring PicoClaw',
+          restoring: 'กำลังกู้คืน PicoClaw',
           ready: 'Runtime พร้อมใช้งาน',
           stopped: 'หยุด Runtime แล้ว',
           blockedByMCP: 'การควบคุม MCP ภายนอกกำลังทำงาน',
-          readyBlockedByMCP:
-            'The runtime is running, but external MCP currently controls device input.',
+          readyBlockedByMCP: 'Runtime ทำงานอยู่ แต่ขณะนี้ MCP ภายนอกควบคุมอินพุตของอุปกรณ์',
           readyWithoutControl:
-            'The runtime is running. Grant PicoClaw device control before reconnecting.',
+            'Runtime ทำงานอยู่ มอบการควบคุมอุปกรณ์ให้ PicoClaw ก่อนเชื่อมต่อใหม่',
           unavailable: 'Runtime ไม่พร้อมใช้งาน',
           configError: 'ข้อผิดพลาดในการกำหนดค่า'
         },
         transport: {
           connecting: 'กำลังเชื่อมต่อ',
           connected: 'เชื่อมต่อแล้ว',
-          disconnected: 'Disconnected',
-          reconnect: 'Reconnect',
-          reconnectDescription: 'Reconnect to the running PicoClaw session.',
-          reconnectBlocked: 'PicoClaw needs device control before reconnecting.'
+          disconnected: 'ตัดการเชื่อมต่อแล้ว',
+          reconnect: 'เชื่อมต่อใหม่',
+          reconnectDescription: 'เชื่อมต่อใหม่กับเซสชัน PicoClaw ที่กำลังทำงาน',
+          reconnectBlocked: 'PicoClaw ต้องได้รับการควบคุมอุปกรณ์ก่อนเชื่อมต่อใหม่'
         },
         run: {
           idle: 'ไม่ได้ใช้งาน',
@@ -1332,21 +1349,20 @@ const th = {
       },
       control: {
         picoclaw: 'การควบคุมอุปกรณ์: PicoClaw',
-        picoclawDescription: 'PicoClaw can write keyboard and mouse input. Manual input may pause.',
+        picoclawDescription:
+          'PicoClaw ส่งอินพุตคีย์บอร์ดและเมาส์ได้ อินพุตที่ป้อนเองอาจหยุดชั่วคราว',
         mcp: 'การควบคุมอุปกรณ์: MCP ภายนอก',
-        mcpDescription: 'External MCP can write to the device. PicoClaw will not take over input.',
+        mcpDescription: 'MCP ภายนอกเขียนไปยังอุปกรณ์ได้ PicoClaw จะไม่เข้าควบคุมอินพุต',
         off: 'การควบคุมอุปกรณ์: ปิด',
-        offDescription:
-          'AI will not write keyboard or mouse input. Manual control remains available.',
-        transitioning: 'Device control: switching',
-        transitioningDescription: 'Device control is syncing. Please wait.',
+        offDescription: 'AI จะไม่ส่งอินพุตคีย์บอร์ดหรือเมาส์ ยังควบคุมเองได้ตามปกติ',
+        transitioning: 'การควบคุมอุปกรณ์: กำลังสลับ',
+        transitioningDescription: 'กำลังซิงค์การควบคุมอุปกรณ์ โปรดรอสักครู่',
         grant: 'มอบการควบคุม',
         release: 'ปล่อย',
-        releasing: 'Releasing...',
-        switching: 'Switching...',
-        releasingLabel: 'Device control: releasing',
-        releasingDescription:
-          'Device control is being returned. PicoClaw has stopped current writes.',
+        releasing: 'กำลังปล่อย...',
+        switching: 'กำลังสลับ...',
+        releasingLabel: 'การควบคุมอุปกรณ์: กำลังปล่อย',
+        releasingDescription: 'กำลังคืนการควบคุมอุปกรณ์ PicoClaw หยุดการเขียนที่ค้างอยู่แล้ว',
         granted: 'มอบการควบคุม PicoClaw แล้ว',
         released: 'ปล่อยการควบคุม PicoClaw แล้ว',
         grantFailed: 'ไม่สามารถมอบการควบคุม PicoClaw ได้',
@@ -1427,8 +1443,8 @@ const th = {
         enableConfirmCancel: 'ยกเลิก',
         title: 'เริ่ม PicoClaw',
         description: 'เริ่ม Runtime เพื่อเริ่มใช้ผู้ช่วย PicoClaw',
-        switchFromMCP: 'Switch to PicoClaw and start',
-        takeoverAndStart: 'Take over and start'
+        switchFromMCP: 'สลับไปใช้ PicoClaw แล้วเริ่ม',
+        takeoverAndStart: 'เข้าควบคุมแล้วเริ่ม'
       }
     },
     error: {
@@ -1462,9 +1478,9 @@ const th = {
       warn: 'หน่วยความจำวิดีโอเหลือน้อย การรีสตาร์ทเซิร์ฟเวอร์อีกครั้งเดียวจะใช้จนหมด โปรดรีบูตเมื่อสะดวก',
       criticalTitle: 'หน่วยความจำวิดีโอไม่พอสำหรับเริ่มสตรีม',
       criticalBody:
-        'การเริ่มวิดีโอจะใช้หน่วยความจำที่สงวนไว้จนหมดและทำให้เซิร์ฟเวอร์หยุดทำงาน ฟังก์ชันอื่นทั้งหมดยังทำงานได้ รวมถึงการควบคุมพลังงานและการรีบูต มีเพียงการรีบูต NanoKVM เท่านั้นที่เรียกคืนหน่วยความจำนี้ได้',
+        'การเริ่มวิดีโอจะใช้หน่วยความจำที่สงวนไว้จนหมดและทำให้เซิร์ฟเวอร์หยุดทำงาน ฟังก์ชันอื่นทั้งหมดยังทำงานได้ รวมถึงการควบคุมพลังงานและการรีบูต มีเพียงการรีบูต IronKVM เท่านั้นที่เรียกคืนหน่วยความจำนี้ได้',
       criticalContinue: 'เริ่มวิดีโอต่อไป',
-      criticalReboot: 'รีบูต NanoKVM',
+      criticalReboot: 'รีบูต IronKVM',
       criticalRebooting: 'กำลังรีบูต...'
     }
   }

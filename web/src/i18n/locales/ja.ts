@@ -14,7 +14,11 @@ const ja = {
       copyFailed: 'コピーできませんでした。テキストを選択して手動でコピーしてください。',
       notUpdating: '更新されていません: 最後の更新に失敗しました。',
       off: 'オフ',
-      running: '実行中'
+      running: '実行中',
+      save: '保存',
+      cancel: 'キャンセル',
+      delete: '削除',
+      remove: '取り除く'
     },
     head: {
       desktop: 'リモートデスクトップ',
@@ -52,21 +56,22 @@ const ja = {
       cancel: 'キャンセル',
       loginButtonText: 'ログイン',
       tips: {
-        reset1: 'パスワードをリセットするには、NanoKVM の BOOT ボタンを 10 秒間押し続けます。',
-        reset2: '詳細な手順については、次のドキュメントを参照してください：',
+        reset1: 'パスワードをリセットするには、IronKVM の BOOT ボタンを 10 秒間押し続けます。',
         reset3: 'ウェブデフォルトアカウント：',
         reset4: 'SSH デフォルトアカウント：',
         change1: 'この操作により、以下のパスワードも更新されることに注意してください：',
         change2: 'ウェブログインパスワード',
         change3: 'システム root パスワード（SSH ログインパスワード）',
         change4:
-          'パスワードを忘れた場合は、NanoKVM の BOOT ボタンを長押ししてパスワードをリセットする必要があります。'
+          'パスワードを忘れた場合は、IronKVM の BOOT ボタンを長押ししてパスワードをリセットする必要があります。',
+        resetDocs: '詳しい手順はハードウェアのドキュメントを参照してください:',
+        hardwareDocs: 'Sipeed NanoKVM Wiki'
       }
     },
     wifi: {
       title: 'Wi-Fi',
-      description: 'NanoKVM の Wi-Fi を設定する',
-      success: 'NanoKVM のネットワークステータスを確認するにはデバイスにアクセスしてください。',
+      description: 'IronKVM の Wi-Fi を設定する',
+      success: 'IronKVM のネットワークステータスを確認するにはデバイスにアクセスしてください。',
       failed: '操作に失敗しました。もう一度お試しください。',
       invalidMode:
         '現在のモードではネットワーク設定はサポートされていません。デバイスで Wi-Fi 設定モードを有効にしてください。',
@@ -323,10 +328,10 @@ const ja = {
       hidOnly: {
         switchFailed: 'モードを切り替えられませんでした。接続を確認して再試行してください。',
         title: 'HID-Only モード',
-        desc: '使用中にマウスとキーボードが反応しなくなり、HID をリセットしても効果がない場合は、NanoKVM とデバイス間の互換性に問題がある可能性があります。互換性を向上させるために、HID-Only モードを有効にすることをお勧めします。',
+        desc: '使用中にマウスとキーボードが反応しなくなり、HID をリセットしても効果がない場合は、IronKVM とデバイス間の互換性に問題がある可能性があります。互換性を向上させるために、HID-Only モードを有効にすることをお勧めします。',
         tip1: 'HID-Only モードを有効にすると、仮想 U ディスクと仮想ネットワークがアンマウントされます',
         tip2: 'HID-Only モードでは、イメージのマウントは無効になります',
-        rebuild: 'モードを切り替えると USB 接続が再構築されます。NanoKVM は再起動しません',
+        rebuild: 'モードを切り替えると USB 接続が再構築されます。IronKVM は再起動しません',
         enable: 'HID-Only モードを有効化',
         disable: 'HID-Only モードを無効化'
       },
@@ -396,18 +401,18 @@ const ja = {
       },
       tips: {
         title: 'アップロード方法',
-        usb1: 'NanoKVM を USB 経由でコンピュータに接続します；',
+        usb1: 'IronKVM を USB 経由でコンピュータに接続します；',
         usb2: '仮想ディスクがマウントされていることを確認します（設定 - 仮想ディスク）；',
         usb3: 'コンピュータ上で仮想ディスクを開き、イメージファイルを仮想ディスクのルートディレクトリにコピーします。',
-        scp1: 'NanoKVM とコンピュータが同じローカルエリアネットワークに接続されていることを確認します；',
-        scp2: 'コンピュータでターミナルを開き、SCP コマンドを使用してイメージファイルを NanoKVM の /data ディレクトリにアップロードします。',
-        scp3: '例：scp your-image-path root@your-nanokvm-ip:/data',
+        scp1: 'IronKVM とコンピュータが同じローカルエリアネットワークに接続されていることを確認します；',
+        scp2: 'コンピュータでターミナルを開き、SCP コマンドを使用してイメージファイルを IronKVM の /data ディレクトリにアップロードします。',
+        scp3: '例：scp your-image-path root@your-ironkvm-ip:/data',
         tfCard: 'TF カード',
         tf1: 'この方法は Linux システムでサポートされています',
-        tf2: 'NanoKVM から TF カードを取り出します（フルバージョンでは、まずケースを分解してください）；',
+        tf2: 'IronKVM から TF カードを取り出します（フルバージョンでは、まずケースを分解してください）；',
         tf3: 'TF カードをカードリーダーに挿入してコンピュータに接続します；',
         tf4: 'コンピューターから TF カードの /data ディレクトリにイメージファイルをコピーします；',
-        tf5: 'TF カードを NanoKVM に挿入します。'
+        tf5: 'TF カードを IronKVM に挿入します。'
       }
     },
     script: {
@@ -439,7 +444,7 @@ const ja = {
       invalidSettings: 'シリアルポートの設定が無効です。これはボード自体のシェルです。',
       disconnected: '切断されました。Enter キーで再接続します。',
       title: 'ターミナル',
-      nanokvm: 'NanoKVM ターミナル',
+      nanokvm: 'IronKVM ターミナル',
       serial: 'シリアルポートターミナル',
       serialPort: 'シリアルポート',
       serialPortPlaceholder: 'シリアルポートを入力してください',
@@ -564,7 +569,10 @@ const ja = {
         failed: 'MCP 操作に失敗しました',
         copyFailed: 'コピーに失敗しました。手動でコピーしてください。',
         okBtn: '確認',
-        cancelBtn: 'キャンセル'
+        cancelBtn: 'キャンセル',
+        showKey: 'キーを表示',
+        hideKey: 'キーを隠す',
+        regenerateKey: 'キーを再生成'
       },
       redfish: {
         example: '例',
@@ -797,14 +805,14 @@ const ja = {
         failed: 'ネットワークブートの操作に失敗しました'
       },
       about: {
-        title: 'NanoKVM について',
+        title: 'IronKVM について',
         information: '情報',
         ip: 'IP',
         mdns: 'mDNS',
         application: 'アプリケーションバージョン',
-        applicationTip: 'NanoKVM ウェブアプリケーションバージョン',
+        applicationTip: 'IronKVM ウェブアプリケーションバージョン',
         image: 'イメージバージョン',
-        imageTip: 'NanoKVM システムイメージバージョン',
+        imageTip: 'IronKVM カードイメージと、その元になった NanoKVM システムイメージ',
         kernel: 'カーネルバージョン',
         kernelTip: '現在実行中の Linux カーネルのリリース',
         deviceKey: 'デバイスキー',
@@ -812,7 +820,7 @@ const ja = {
         videoMemoryTip:
           'ビデオキャプチャ用に予約されたメモリです。システムの他の部分とは共有されません。',
         videoMemoryGenerations_other:
-          '以前の NanoKVM セッション {{count}} 件がビデオメモリを保持しています',
+          '以前の IronKVM セッション {{count}} 件がビデオメモリを保持しています',
         videoMemoryReboot: '再起動すると回収されます。',
         community: 'コミュニティ',
         hostname: 'ホスト名',
@@ -824,7 +832,14 @@ const ja = {
         },
         hostnameInvalid:
           '英字、数字、ハイフンを使い、ドットで区切った各部分は 63 文字までにしてください。各部分の先頭と末尾にハイフンは使えません。',
-        hostnameFailed: 'ホスト名を変更できませんでした'
+        hostnameFailed: 'ホスト名を変更できませんでした',
+        editHostname: 'ホスト名を編集',
+        docs: 'ドキュメント',
+        hardware: 'ハードウェア',
+        hardwareFaq: 'ハードウェア FAQ',
+        disclaimer:
+          'IronKVM: Sipeed NanoKVM 向けの堅牢化されたコミュニティファームウェア。Sipeed とは無関係です。',
+        basedOn: 'NanoKVM {{version}} ベース'
       },
       appearance: {
         title: '外観',
@@ -950,10 +965,10 @@ const ja = {
         network: '仮想ネットワークカード',
         networkDesc: 'リモートホストに仮想ネットワークカードをマウントする',
         usbNetwork: {
-          boardAddress: 'NanoKVM:',
+          boardAddress: 'IronKVM:',
           hostAddress: 'ホスト:',
           description:
-            'USB ケーブル経由でリモートホストと結ぶプライベートネットワークです。ホストにはゲートウェイと DNS のないアドレスが割り当てられるため、NanoKVM を経由して LAN に到達することはできません。',
+            'USB ケーブル経由でリモートホストと結ぶプライベートネットワークです。ホストにはゲートウェイと DNS のないアドレスが割り当てられるため、IronKVM を経由して LAN に到達することはできません。',
           off: 'オフ',
           ncm: 'NCM (Linux、macOS、Windows 11)',
           ecm: 'ECM (NCM 非対応のホスト向け)',
@@ -962,7 +977,7 @@ const ja = {
             'この接続は提供を終了した RNDIS を使用しています。NCM または ECM を選択してください。',
           subnet: 'サブネット',
           subnetDesc:
-            '/24 から /30 のプライベート IPv4 ネットワーク。NanoKVM が最初のアドレスを、ホストが 2 番目のアドレスを使用します。',
+            '/24 から /30 のプライベート IPv4 ネットワーク。IronKVM が最初のアドレスを、ホストが 2 番目のアドレスを使用します。',
           invalidSubnet: '172.31.255.0/30 のようなサブネットを入力してください。',
           apply: '適用',
           confirm: 'USB デバイスを再接続しますか?',
@@ -976,9 +991,9 @@ const ja = {
           '音声は H.264 の両モード（WebRTC と Direct）で利用でき、MJPEG では利用できません',
         console: 'シリアルコンソール',
         consoleDesc:
-          'リモートホストに USB シリアルポートを提供し、ネットワークに接続できないときにこの NanoKVM にログインできるようにします',
+          'リモートホストに USB シリアルポートを提供し、ネットワークに接続できないときにこの IronKVM にログインできるようにします',
         consoleTip:
-          'リモートホストを操作できる人は誰でも、この NanoKVM のログインプロンプトにアクセスできます。有効にする前に強力なパスワードを設定してください（アカウント - パスワードの変更）。',
+          'リモートホストを操作できる人は誰でも、この IronKVM のログインプロンプトにアクセスできます。有効にする前に強力なパスワードを設定してください（アカウント - パスワードの変更）。',
         endpoints: {
           title: 'USB エンドポイント',
           used: '{{total}} 個中 {{used}} 個使用',
@@ -993,7 +1008,7 @@ const ja = {
           fitTogether: '同時に使用できる組み合わせ: {{sets}}'
         },
         reboot: '再起動',
-        rebootDesc: 'NanoKVM を再起動してもよろしいですか?',
+        rebootDesc: 'IronKVM を再起動してもよろしいですか?',
         okBtn: 'はい',
         cancelBtn: 'いいえ',
         rebootFailed: '再起動に失敗しました'
@@ -1003,7 +1018,7 @@ const ja = {
         wifi: {
           disconnectBtn: '切断',
           disconnectWarning:
-            'この Wi-Fi ネットワーク経由で NanoKVM にアクセスしている場合、このページの接続が切れます。',
+            'この Wi-Fi ネットワーク経由で IronKVM にアクセスしている場合、このページの接続が切れます。',
           disconnected: 'Wi-Fi を切断しました',
           title: 'Wi-Fi',
           description: 'Wi-Fi 設定',
@@ -1036,7 +1051,7 @@ const ja = {
         },
         ethernet: {
           title: 'IPアドレス',
-          description: 'NanoKVM が有線ネットワークでアドレスを取得する方法を設定します',
+          description: 'IronKVM が有線ネットワークでアドレスを取得する方法を設定します',
           dhcp: 'DHCP',
           manual: '手動',
           networkDetails: 'ネットワークの詳細',
@@ -1050,17 +1065,17 @@ const ja = {
           invalidRouter: '有効なルーターアドレスを入力してください',
           addressRequired: 'IPアドレスが必要です',
           maskRequired: 'サブネットマスクが必要です',
-          applyTitle: 'NanoKVM のアドレスを変更しますか?',
+          applyTitle: 'IronKVM のアドレスを変更しますか?',
           applyWarning:
-            'このページとの接続は失われます。NanoKVM は新しいアドレスを適用し、そこに到達するのを {{seconds}} 秒間待ちます。到達すれば変更が保持されます。何も到達しない場合、NanoKVM は以前の設定に戻します。',
+            'このページとの接続は失われます。IronKVM は新しいアドレスを適用し、そこに到達するのを {{seconds}} 秒間待ちます。到達すれば変更が保持されます。何も到達しない場合、IronKVM は以前の設定に戻します。',
           applyConfirm: '適用',
           applyCancel: 'キャンセル',
           applyFailed: 'アドレスを適用できませんでした',
           trialTitle: '確認を待っています',
-          trialDhcp: 'NanoKVM は DHCP にアドレスを要求しています。',
-          trialStatic: 'NanoKVM は現在 {{address}} にあります。',
+          trialDhcp: 'IronKVM は DHCP にアドレスを要求しています。',
+          trialStatic: 'IronKVM は現在 {{address}} にあります。',
           trialInstruction:
-            '新しいアドレスで NanoKVM を開き、求められたらサインインしてください。そこに到達すれば変更が保持されます。{{seconds}} 秒以内に何も到達しない場合、以前の設定に戻ります。',
+            '新しいアドレスで IronKVM を開き、求められたらサインインしてください。そこに到達すれば変更が保持されます。{{seconds}} 秒以内に何も到達しない場合、以前の設定に戻ります。',
           trialOpen: '新しいアドレスを開く',
           trialKeep: 'この設定を保持',
           trialKept: '新しいアドレスを保存しました',
@@ -1070,7 +1085,7 @@ const ja = {
         },
         dns: {
           title: 'DNS',
-          description: 'NanoKVM の DNS サーバーを設定',
+          description: 'IronKVM の DNS サーバーを設定',
           mode: 'モード',
           dhcp: 'DHCP',
           manual: '手動',
@@ -1157,23 +1172,24 @@ const ja = {
           'まだサインインしていません。リンクでサインインを完了してから再確認してください。',
         checkFailed: 'ログイン状態を確認できませんでした',
         loginWaiting: 'このページは数秒ごとに確認し、サインインが完了すると先に進みます。',
-        uninstallFailed: 'アンインストールに失敗しました'
+        uninstallFailed: 'アンインストールに失敗しました',
+        loginFailed: 'ログインに失敗しました'
       },
       tailscale: {
         title: 'Tailscale',
-        retry: 'ページを更新してもう一度お試しいただくか、手動でインストールしてください',
         download: 'ダウンロードして',
         package: 'インストールパッケージを',
         unzip: '解凍してください',
-        upTailscale: 'tailscale ファイルを NanoKVM の /usr/bin ディレクトリにアップロードします',
-        upTailscaled: 'tailscaled ファイルを NanoKVM の /usr/sbin ディレクトリにアップロードします',
-        refresh: 'ページを更新します',
         notLogin:
           'このデバイスはまだバインドされていません。ログインしてデバイスをアカウントにバインドしてください。',
         urlPeriod: 'この URL は 10 分間有効です',
         login: 'ログイン',
         logout: 'ログアウト',
-        logoutDesc: 'ログアウトしてもよろしいですか？'
+        logoutDesc: 'ログアウトしてもよろしいですか？',
+        manualIntro: 'または SSH で手動インストールします:',
+        copyBinaries: 'tailscale と tailscaled を IronKVM の {{dir}} にコピーします',
+        linksFile: '同じディレクトリに、次の 2 行を書いた links という名前のファイルを作成します:',
+        rebootRefresh: 'IronKVM を再起動してから、このページを再読み込みします'
       },
       netbird: {
         title: 'NetBird',
@@ -1187,7 +1203,8 @@ const ja = {
         urlPeriod: 'この URL は 10 分間有効です',
         logout: '登録解除',
         logoutDesc:
-          '登録を解除すると、このピアが NetBird アカウントから削除され、ここにある設定も削除されます。再度参加するにはセットアップキーまたは SSO ログインが必要で、ピアに新しい IP が割り当てられる場合があります。続行しますか？'
+          '登録を解除すると、このピアが NetBird アカウントから削除され、ここにある設定も削除されます。再度参加するにはセットアップキーまたは SSO ログインが必要で、ピアに新しい IP が割り当てられる場合があります。続行しますか？',
+        joinFailed: 'ネットワークに参加できませんでした'
       },
       update: {
         title: 'アップデート',
@@ -1213,7 +1230,7 @@ const ja = {
           save: '保存',
           confirmTitle: 'カスタム更新サーバーを使用しますか？',
           confirmDesc:
-            'SHA-512 で確認できるのは、パッケージがこのサーバーから提供されたマニフェストと一致することだけです。そのパッケージが NanoKVM の公式リリースであることは保証されません。不具合のあるサーバーや悪意のあるサーバーを使用すると、デバイスが使用不能になったり、データが失われたり、システムが侵害されたりする可能性があります。',
+            'SHA-512 で確認できるのは、パッケージがこのサーバーから提供されたマニフェストと一致することだけです。そのパッケージが IronKVM の公式リリースであることは保証されません。不具合のあるサーバーや悪意のあるサーバーを使用すると、デバイスが使用不能になったり、データが失われたり、システムが侵害されたりする可能性があります。',
           confirm: 'そのまま使用',
           useSipeed: 'Sipeed 公式サーバーを使用',
           previewDisabled:
@@ -1236,7 +1253,8 @@ const ja = {
         },
         updateTo: '{{version}} に更新',
         updateConfirmDesc:
-          'デバイスは更新をインストールしてサーバーを再起動します。サーバーが戻るとこのページは再読み込みされます。'
+          'デバイスは更新をインストールしてサーバーを再起動します。サーバーが戻るとこのページは再読み込みされます。',
+        releaseNotes: 'リリースノート'
       },
       account: {
         title: 'アカウント',
@@ -1312,7 +1330,7 @@ const ja = {
         defaultTitle: '一般アシスタント',
         defaultDescription: '一般的なチャット、検索、およびワークスペースのヘルプ。',
         kvmTitle: 'リモート操作',
-        kvmDescription: 'NanoKVM を通じてリモート ホストを操作します。',
+        kvmDescription: 'IronKVM を通じてリモート ホストを操作します。',
         switched: 'エージェントの役割が切り替わりました',
         switchFailed: 'エージェントの役割を切り替えることができませんでした'
       },
@@ -1332,24 +1350,24 @@ const ja = {
       connection: {
         runtime: {
           checking: 'チェック中',
-          restoring: 'Restoring PicoClaw',
+          restoring: 'PicoClaw を復元しています',
           ready: 'ランタイムの準備が完了しました',
           stopped: 'ランタイムが停止しました',
           blockedByMCP: '外部 MCP 制御が有効です',
           readyBlockedByMCP:
-            'The runtime is running, but external MCP currently controls device input.',
+            'ランタイムは実行中ですが、現在は外部 MCP がデバイス入力を制御しています。',
           readyWithoutControl:
-            'The runtime is running. Grant PicoClaw device control before reconnecting.',
+            'ランタイムは実行中です。再接続の前に PicoClaw にデバイス制御を付与してください。',
           unavailable: 'ランタイムが使用できません',
           configError: '構成エラー'
         },
         transport: {
           connecting: '接続中',
           connected: '接続されました',
-          disconnected: 'Disconnected',
-          reconnect: 'Reconnect',
-          reconnectDescription: 'Reconnect to the running PicoClaw session.',
-          reconnectBlocked: 'PicoClaw needs device control before reconnecting.'
+          disconnected: '切断されました',
+          reconnect: '再接続',
+          reconnectDescription: '実行中の PicoClaw セッションに再接続します。',
+          reconnectBlocked: 'PicoClaw の再接続にはデバイス制御が必要です。'
         },
         run: {
           idle: 'アイドル状態',
@@ -1366,21 +1384,21 @@ const ja = {
       },
       control: {
         picoclaw: 'デバイス制御: PicoClaw',
-        picoclawDescription: 'PicoClaw can write keyboard and mouse input. Manual input may pause.',
+        picoclawDescription:
+          'PicoClaw はキーボードとマウスの入力を送信できます。手動入力が一時停止することがあります。',
         mcp: 'デバイス制御: 外部 MCP',
-        mcpDescription: 'External MCP can write to the device. PicoClaw will not take over input.',
+        mcpDescription: '外部 MCP がデバイスに書き込めます。PicoClaw は入力を引き継ぎません。',
         off: 'デバイス制御: オフ',
-        offDescription:
-          'AI will not write keyboard or mouse input. Manual control remains available.',
-        transitioning: 'Device control: switching',
-        transitioningDescription: 'Device control is syncing. Please wait.',
+        offDescription: 'AI はキーボードやマウスの入力を送信しません。手動操作は引き続き使えます。',
+        transitioning: 'デバイス制御: 切り替え中',
+        transitioningDescription: 'デバイス制御を同期しています。お待ちください。',
         grant: '制御を付与',
         release: '解除',
-        releasing: 'Releasing...',
-        switching: 'Switching...',
-        releasingLabel: 'Device control: releasing',
+        releasing: '解除中...',
+        switching: '切り替え中...',
+        releasingLabel: 'デバイス制御: 解除中',
         releasingDescription:
-          'Device control is being returned. PicoClaw has stopped current writes.',
+          'デバイス制御を返しています。PicoClaw は実行中の書き込みを停止しました。',
         granted: 'PicoClaw 制御を付与しました',
         released: 'PicoClaw 制御を解除しました',
         grantFailed: 'PicoClaw 制御の付与に失敗しました',
@@ -1462,8 +1480,8 @@ const ja = {
         enableConfirmCancel: 'キャンセル',
         title: 'PicoClaw を開始',
         description: 'ランタイムを起動して、PicoClaw アシスタントの使用を開始します。',
-        switchFromMCP: 'Switch to PicoClaw and start',
-        takeoverAndStart: 'Take over and start'
+        switchFromMCP: 'PicoClaw に切り替えて開始',
+        takeoverAndStart: '制御を引き継いで開始'
       }
     },
     error: {
@@ -1497,9 +1515,9 @@ const ja = {
       warn: 'ビデオメモリが不足しています。サーバーをあと 1 回再起動すると使い切ってしまいます。都合のよいときに再起動してください。',
       criticalTitle: 'ストリームを開始するためのビデオメモリが不足しています',
       criticalBody:
-        'ビデオを開始すると予約メモリを使い切り、サーバーが停止します。電源制御や再起動を含む他のすべての機能は引き続き動作します。このメモリを回収できるのは NanoKVM の再起動だけです。',
+        'ビデオを開始すると予約メモリを使い切り、サーバーが停止します。電源制御や再起動を含む他のすべての機能は引き続き動作します。このメモリを回収できるのは IronKVM の再起動だけです。',
       criticalContinue: 'それでもビデオを開始',
-      criticalReboot: 'NanoKVM を再起動',
+      criticalReboot: 'IronKVM を再起動',
       criticalRebooting: '再起動中...'
     }
   }

@@ -14,7 +14,11 @@ const tr = {
       copyFailed: 'Kopyalanamadı. Metni seçip elle kopyalayın.',
       notUpdating: 'Güncellenmiyor: son yenileme başarısız oldu.',
       off: 'Kapalı',
-      running: 'Çalışıyor'
+      running: 'Çalışıyor',
+      save: 'Kaydet',
+      cancel: 'İptal',
+      delete: 'Sil',
+      remove: 'Kaldır'
     },
     head: {
       desktop: 'Uzak masaüstü',
@@ -53,21 +57,22 @@ const tr = {
       loginButtonText: 'Giriş',
       tips: {
         reset1:
-          'Şifreleri sıfırlamak için NanoKVM üzerinde bulunan BOOT tuşuna 10 saniye boyunca basılı tutun.',
-        reset2: 'Ayrıntılı adımlar için dökümana göz atın:',
+          'Şifreleri sıfırlamak için IronKVM üzerinde bulunan BOOT tuşuna 10 saniye boyunca basılı tutun.',
         reset3: 'Arayüz varsayılan hesap:',
         reset4: 'Güvenli Kabuk Bağlantısı (SSH) varsayılan hesap:',
         change1: 'Bu işlem şu şifreleri değiştiricektir:',
         change2: 'Arayüz giriş şifresi',
         change3: 'Sistem yöneticisi şifresi (Güvenli Kabuk Bağlantısı (SSH) giriş şifresi)',
         change4:
-          'Şifreleri sıfırlamak için NanoKVM üzerinde bulunan BOOT tuşuna 10 saniye boyunca basılı tutun.'
+          'Şifreleri sıfırlamak için IronKVM üzerinde bulunan BOOT tuşuna 10 saniye boyunca basılı tutun.',
+        resetDocs: 'Ayrıntılı adımlar için donanım belgelerine bakın:',
+        hardwareDocs: 'Sipeed NanoKVM wiki'
       }
     },
     wifi: {
       title: 'Wi-Fi',
-      description: 'NanoKVM için Wi-Fi ayarlarını ayarlayın',
-      success: "NanoKVM'in bağlantı durumunu kontrol edin ve yeni IP adresini ziyaret edin.",
+      description: 'IronKVM için Wi-Fi ayarlarını ayarlayın',
+      success: "IronKVM'in bağlantı durumunu kontrol edin ve yeni IP adresini ziyaret edin.",
       failed: 'İşlem başarısız oldu, lütfen tekrar deneyiniz.',
       invalidMode:
         'Geçerli mod ağ kurulumunu desteklemiyor. Lütfen cihazınıza gidin ve Wi-Fi yapılandırma modunu etkinleştirin.',
@@ -321,10 +326,10 @@ const tr = {
       hidOnly: {
         switchFailed: 'Mod değiştirilemedi. Bağlantıyı kontrol edip yeniden deneyin.',
         title: 'Yalnızca HID modu',
-        desc: 'Fare ve klavye yanıt vermeyi durdurursa ve HID sıfırlama yardımcı olmazsa, NanoKVM ile cihaz arasında bir uyumluluk sorunu olabilir. Daha iyi uyumluluk için yalnızca HID modunu etkinleştirmeyi deneyin.',
+        desc: 'Fare ve klavye yanıt vermeyi durdurursa ve HID sıfırlama yardımcı olmazsa, IronKVM ile cihaz arasında bir uyumluluk sorunu olabilir. Daha iyi uyumluluk için yalnızca HID modunu etkinleştirmeyi deneyin.',
         tip1: 'Yalnızca HID modunu etkinleştirmek sanal U-disk’i ve sanal ağı ayırır',
         tip2: 'Yalnızca HID modunda imaj bağlama devre dışıdır',
-        rebuild: 'Mod değiştirmek USB bağlantısını yeniden kurar. NanoKVM yeniden başlamaz',
+        rebuild: 'Mod değiştirmek USB bağlantısını yeniden kurar. IronKVM yeniden başlamaz',
         enable: 'Yalnızca HID modunu etkinleştir',
         disable: 'Yalnızca HID modunu devre dışı bırak'
       },
@@ -393,18 +398,18 @@ const tr = {
       },
       tips: {
         title: 'Nasıl yüklenir',
-        usb1: "NanoKVM'i bilgisayarınıza USB ile bağlayın.",
+        usb1: "IronKVM'i bilgisayarınıza USB ile bağlayın.",
         usb2: 'Sanal diskin bağlı olduğundan emin olun (Ayarlar - Sanal Disk).',
         usb3: 'Sanal diski bilgisayarınızda açın ve disk imajı dosyanızı sanal diskin kök dizinine kopyalayın.',
-        scp1: 'NanoKVM ve bilgisayarınızın aynı yerel ağda bulunduğundan emin olun.',
-        scp2: "Bilgisayarınızda uçbirimi açın ve disk imajı dosyanını SCP komudunu kullanarak NanoKVM'in /data dizinine yükleyin.",
+        scp1: 'IronKVM ve bilgisayarınızın aynı yerel ağda bulunduğundan emin olun.',
+        scp2: "Bilgisayarınızda uçbirimi açın ve disk imajı dosyanını SCP komudunu kullanarak IronKVM'in /data dizinine yükleyin.",
         scp3: 'Örnek: scp senin-disk-imajı-dizinin root@senin-nanokvm-ip:/data',
         tfCard: 'micro SD kart',
         tf1: 'Bu yöntem Linux sistemlerde desteklenmektedir.',
-        tf2: "NanoKVM'den micro SD kartı çıkartın(TAM sürüm için öncelikle kutuyu sökün).",
+        tf2: "IronKVM'den micro SD kartı çıkartın(TAM sürüm için öncelikle kutuyu sökün).",
         tf3: 'micro SD kartı kart okuyucusuna takın ve bilgisayarınıza bağlayın.',
         tf4: 'Disk imajı dosyanını micro SD kartın /data dizinine kopyalayın.',
-        tf5: "micro SD kartı NanoKVM'e geri yerleştirin."
+        tf5: "micro SD kartı IronKVM'e geri yerleştirin."
       }
     },
     script: {
@@ -435,7 +440,7 @@ const tr = {
       invalidSettings: 'Seri port ayarları geçersiz. Bu, kartın kendi kabuğu.',
       disconnected: "Bağlantı kesildi. Yeniden bağlanmak için Enter'a basın.",
       title: 'Uçbirim',
-      nanokvm: 'NanoKVM Uçbirimi',
+      nanokvm: 'IronKVM Uçbirimi',
       serial: 'Serial Port Uçbirimi',
       serialPort: 'Seri port',
       serialPortPlaceholder: 'Lütfen serial portunu giriniz',
@@ -559,7 +564,10 @@ const tr = {
         failed: 'MCP işlemi başarısız oldu',
         copyFailed: 'Kopyalama başarısız. Elle kopyalayın.',
         okBtn: 'Onayla',
-        cancelBtn: 'İptal'
+        cancelBtn: 'İptal',
+        showKey: 'Anahtarı göster',
+        hideKey: 'Anahtarı gizle',
+        regenerateKey: 'Anahtarı yeniden oluştur'
       },
       redfish: {
         example: 'Örnek',
@@ -692,7 +700,7 @@ const tr = {
           'Watchdog devreye girmeden önce ana makinenin ne kadar süre yaşam belirtisi göstermeyebileceği.',
         action: 'Eylem',
         actionDesc: 'Güç döngüsü güç düğmesini 5 saniye basılı tutar, ardından yeniden basar.',
-        actionReset: 'Reset',
+        actionReset: 'Sıfırla',
         actionPower: 'Güç döngüsü',
         cooldown: 'Bekleme süresi',
         cooldownDesc: 'İki eylem arasındaki en kısa süre.',
@@ -789,21 +797,21 @@ const tr = {
         failed: 'Ağdan önyükleme işlemi başarısız oldu'
       },
       about: {
-        title: 'NanoKVM Hakkında',
+        title: 'IronKVM Hakkında',
         information: 'Bilgi',
         ip: 'IP',
         mdns: 'mDNS',
         application: 'Uygulama sürümü',
-        applicationTip: 'NanoKVM web uygulaması sürümü',
+        applicationTip: 'IronKVM web uygulaması sürümü',
         image: 'İmaj Sürümü',
-        imageTip: 'NanoKVM sistem imajı sürümü',
+        imageTip: 'IronKVM kart görüntüsü ve üzerine kurulduğu NanoKVM sistem görüntüsü',
         kernel: 'Çekirdek Sürümü',
         kernelTip: 'Şu anda çalışan Linux çekirdeğinin sürümü',
         deviceKey: 'Cihaz Anahtarı',
         videoMemory: 'Video Belleği',
         videoMemoryTip: 'Video yakalama için ayrılmış bellek. Sistemin geri kalanıyla paylaşılmaz.',
-        videoMemoryGenerations_one: '{{count}} önceki NanoKVM oturumu video belleğini tutuyor',
-        videoMemoryGenerations_other: '{{count}} önceki NanoKVM oturumu video belleğini tutuyor',
+        videoMemoryGenerations_one: '{{count}} önceki IronKVM oturumu video belleğini tutuyor',
+        videoMemoryGenerations_other: '{{count}} önceki IronKVM oturumu video belleğini tutuyor',
         videoMemoryReboot: 'Geri kazanmak için yeniden başlatın.',
         community: 'Topluluk',
         hostname: 'Ana makine adı',
@@ -815,7 +823,14 @@ const tr = {
         },
         hostnameInvalid:
           'Harf, rakam ve kısa çizgi kullanın; noktayla ayrılan her bölümde en fazla 63. Bir bölümün başında veya sonunda kısa çizgi olamaz.',
-        hostnameFailed: 'Ana bilgisayar adı değiştirilemedi'
+        hostnameFailed: 'Ana bilgisayar adı değiştirilemedi',
+        editHostname: 'Ana bilgisayar adını düzenle',
+        docs: 'Belgeler',
+        hardware: 'Donanım',
+        hardwareFaq: 'Donanım SSS',
+        disclaimer:
+          'IronKVM: Sipeed NanoKVM için sağlamlaştırılmış topluluk yazılımı. Sipeed ile bağlantılı değildir.',
+        basedOn: 'NanoKVM {{version}} tabanlı'
       },
       appearance: {
         title: 'Görünüm',
@@ -941,10 +956,10 @@ const tr = {
         network: 'Sanal Ağ',
         networkDesc: 'Sanal ağ kartını uzak ana bilgisayara bağla',
         usbNetwork: {
-          boardAddress: 'NanoKVM:',
+          boardAddress: 'IronKVM:',
           hostAddress: 'Ana makine:',
           description:
-            'USB kablosu üzerinden uzak ana bilgisayarla özel bir ağ bağlantısı. Ana bilgisayar ağ geçidi ve DNS olmadan bir adres alır, bu yüzden NanoKVM üzerinden yerel ağınıza ulaşamaz.',
+            'USB kablosu üzerinden uzak ana bilgisayarla özel bir ağ bağlantısı. Ana bilgisayar ağ geçidi ve DNS olmadan bir adres alır, bu yüzden IronKVM üzerinden yerel ağınıza ulaşamaz.',
           off: 'Kapalı',
           ncm: 'NCM (Linux, macOS, Windows 11)',
           ecm: 'ECM (NCM desteği olmayan ana bilgisayarlar için)',
@@ -952,7 +967,7 @@ const tr = {
           rndisNote: 'Bu bağlantı artık sunulmayan RNDIS kullanıyor. NCM veya ECM seçin.',
           subnet: 'Alt ağ',
           subnetDesc:
-            '/24 ile /30 arasında özel bir IPv4 ağı. NanoKVM ilk adresi, ana bilgisayar ikinci adresi alır.',
+            '/24 ile /30 arasında özel bir IPv4 ağı. IronKVM ilk adresi, ana bilgisayar ikinci adresi alır.',
           invalidSubnet: '172.31.255.0/30 gibi bir alt ağ girin.',
           apply: 'Uygula',
           confirm: 'USB aygıtı yeniden bağlansın mı?',
@@ -966,9 +981,9 @@ const tr = {
           "Ses her iki H.264 modunda (WebRTC ve Direct) kullanılabilir, MJPEG'de kullanılamaz",
         console: 'Seri Konsol',
         consoleDesc:
-          "Ağa erişilemediğinde bu NanoKVM'e giriş yapabilmek için uzak ana bilgisayara bir USB seri port sunar",
+          "Ağa erişilemediğinde bu IronKVM'e giriş yapabilmek için uzak ana bilgisayara bir USB seri port sunar",
         consoleTip:
-          'Uzak ana bilgisayarı kontrol eden herkes bu NanoKVM için bir giriş istemi görür. Etkinleştirmeden önce güçlü bir şifre belirleyin (Hesap - Şifremi Değiştir).',
+          'Uzak ana bilgisayarı kontrol eden herkes bu IronKVM için bir giriş istemi görür. Etkinleştirmeden önce güçlü bir şifre belirleyin (Hesap - Şifremi Değiştir).',
         endpoints: {
           title: 'USB uç noktaları',
           used: '{{used}} / {{total}} kullanımda',
@@ -983,7 +998,7 @@ const tr = {
           fitTogether: 'Birlikte sığanlar: {{sets}}'
         },
         reboot: 'Yeniden Başlat',
-        rebootDesc: "NanoKVM'i yeniden başlatmak istediğinizden emin misiniz?",
+        rebootDesc: "IronKVM'i yeniden başlatmak istediğinizden emin misiniz?",
         okBtn: 'Evet',
         cancelBtn: 'Hayır',
         rebootFailed: 'Yeniden başlatma başarısız'
@@ -993,7 +1008,7 @@ const tr = {
         wifi: {
           disconnectBtn: 'Bağlantıyı kes',
           disconnectWarning:
-            "NanoKVM'e bu Wi-Fi ağı üzerinden erişiyorsanız bu sayfanın bağlantısı kesilir.",
+            "IronKVM'e bu Wi-Fi ağı üzerinden erişiyorsanız bu sayfanın bağlantısı kesilir.",
           disconnected: 'Wi-Fi bağlantısı kesildi',
           title: 'Wi-Fi',
           description: 'Wi-Fi ayarlayın',
@@ -1025,7 +1040,7 @@ const tr = {
         },
         ethernet: {
           title: 'IP Adresi',
-          description: 'NanoKVM cihazının kablolu ağdaki adresini nasıl aldığını yapılandırın',
+          description: 'IronKVM cihazının kablolu ağdaki adresini nasıl aldığını yapılandırın',
           dhcp: 'DHCP',
           manual: 'Manuel',
           networkDetails: 'Ağ Ayrıntıları',
@@ -1039,17 +1054,17 @@ const tr = {
           invalidRouter: 'Geçerli bir yönlendirici adresi girin',
           addressRequired: 'IP adresi gereklidir',
           maskRequired: 'Alt ağ maskesi gereklidir',
-          applyTitle: 'NanoKVM adresi değiştirilsin mi?',
+          applyTitle: 'IronKVM adresi değiştirilsin mi?',
           applyWarning:
-            'Bu sayfayla bağlantı kesilecek. NanoKVM yeni adresi uygular ve ona bu adresten ulaşmanız için {{seconds}} saniye bekler. Ona ulaşmak değişikliği korur. Ona hiçbir şey ulaşmazsa NanoKVM önceki ayarları geri yükler.',
+            'Bu sayfayla bağlantı kesilecek. IronKVM yeni adresi uygular ve ona bu adresten ulaşmanız için {{seconds}} saniye bekler. Ona ulaşmak değişikliği korur. Ona hiçbir şey ulaşmazsa IronKVM önceki ayarları geri yükler.',
           applyConfirm: 'Uygula',
           applyCancel: 'İptal',
           applyFailed: 'Adres uygulanamadı',
           trialTitle: 'Onay bekleniyor',
-          trialDhcp: 'NanoKVM, DHCP üzerinden adres istiyor.',
-          trialStatic: 'NanoKVM şimdi {{address}} adresinde.',
+          trialDhcp: 'IronKVM, DHCP üzerinden adres istiyor.',
+          trialStatic: 'IronKVM şimdi {{address}} adresinde.',
           trialInstruction:
-            "NanoKVM'i yeni adresinde açın ve isterse oturum açın. Ona orada ulaşmak değişikliği korur. {{seconds}} saniye içinde NanoKVM'e hiçbir şey ulaşmazsa önceki ayarlar geri yüklenir.",
+            "IronKVM'i yeni adresinde açın ve isterse oturum açın. Ona orada ulaşmak değişikliği korur. {{seconds}} saniye içinde IronKVM'e hiçbir şey ulaşmazsa önceki ayarlar geri yüklenir.",
           trialOpen: 'Yeni adresi aç',
           trialKeep: 'Bu ayarları koru',
           trialKept: 'Yeni adres kaydedildi',
@@ -1059,7 +1074,7 @@ const tr = {
         },
         dns: {
           title: 'DNS',
-          description: 'NanoKVM için DNS sunucularını yapılandır',
+          description: 'IronKVM için DNS sunucularını yapılandır',
           mode: 'Mod',
           dhcp: 'DHCP',
           manual: 'Manuel',
@@ -1143,22 +1158,24 @@ const tr = {
         notSignedIn: 'Henüz oturum açılmadı. Bağlantıdan oturum açmayı bitirip yeniden denetleyin.',
         checkFailed: 'Oturum durumu denetlenemedi',
         loginWaiting: 'Bu sayfa birkaç saniyede bir denetler ve oturum açtığınızda devam eder.',
-        uninstallFailed: 'Kaldırma başarısız'
+        uninstallFailed: 'Kaldırma başarısız',
+        loginFailed: 'Oturum açılamadı'
       },
       tailscale: {
         title: 'Tailscale',
-        retry: 'Lütfen sayfayı yenileyin ve tekrar deneyin, ya da manuel indirin',
         download: 'İndir',
         package: 'yükleme paketi',
         unzip: 'sıkışmış dosyayı açın',
-        upTailscale: "tailscale dosyasını NanoKVM'in /usr/bin dizinine yükleyin",
-        upTailscaled: "tailscaled dosyasını NanoKVM'in /usr/sbin dizinine yükleyin",
-        refresh: 'İçinde bulunduğunuz sayfayı yenileyin',
         notLogin: 'Cihaz bağlı değil. Lütfen giriş yapıp cihazınızı hesabınıza bağlayın.',
         urlPeriod: 'Adres sadece 10 ndakika boyunca geçerlidir',
         login: 'Giriş yap',
         logout: 'Çıkış yap',
-        logoutDesc: 'Çıkış yapmak istediğinizden emin misiniz?'
+        logoutDesc: 'Çıkış yapmak istediğinizden emin misiniz?',
+        manualIntro: 'Ya da SSH üzerinden elle kurun:',
+        copyBinaries:
+          "tailscale ve tailscaled dosyalarını IronKVM'deki {{dir}} dizinine kopyalayın",
+        linksFile: 'Aynı dizinde, şu iki satırı içeren links adlı bir dosya oluşturun:',
+        rebootRefresh: "IronKVM'yi yeniden başlatın, ardından bu sayfayı yenileyin"
       },
       netbird: {
         title: 'NetBird',
@@ -1172,7 +1189,8 @@ const tr = {
         urlPeriod: 'Bu adres 10 dakika boyunca geçerlidir',
         logout: 'Kaydı sil',
         logoutDesc:
-          'Kaydı silmek bu eşi NetBird hesabınızdan kaldırır ve buradaki yapılandırmasını siler. Yeniden katılmak için bir kurulum anahtarı veya SSO girişi gerekir ve eş yeni bir IP alabilir. Devam edilsin mi?'
+          'Kaydı silmek bu eşi NetBird hesabınızdan kaldırır ve buradaki yapılandırmasını siler. Yeniden katılmak için bir kurulum anahtarı veya SSO girişi gerekir ve eş yeni bir IP alabilir. Devam edilsin mi?',
+        joinFailed: 'Ağa katılınamadı'
       },
       update: {
         title: 'Güncelleştirmeleri kontrol et',
@@ -1198,7 +1216,7 @@ const tr = {
           save: 'Kaydet',
           confirmTitle: 'Özel bir güncelleme sunucusu kullanılsın mı?',
           confirmDesc:
-            'SHA-512 yalnızca paketin bu sunucunun sağladığı bildirimle eşleştiğini doğrular. Paketin resmi bir NanoKVM sürümü olduğunu kanıtlamaz. Hatalı veya kötü amaçlı bir sunucu cihazı kullanılamaz hâle getirebilir, veri kaybına yol açabilir ya da sistem güvenliğini tehlikeye atabilir.',
+            'SHA-512 yalnızca paketin bu sunucunun sağladığı bildirimle eşleştiğini doğrular. Paketin resmi bir IronKVM sürümü olduğunu kanıtlamaz. Hatalı veya kötü amaçlı bir sunucu cihazı kullanılamaz hâle getirebilir, veri kaybına yol açabilir ya da sistem güvenliğini tehlikeye atabilir.',
           confirm: 'Yine de kullan',
           useSipeed: 'Resmi Sipeed sunucusunu kullan',
           previewDisabled:
@@ -1219,7 +1237,8 @@ const tr = {
         },
         updateTo: '{{version}} sürümüne güncelle',
         updateConfirmDesc:
-          'Cihaz güncellemeyi kurar ve sunucusunu yeniden başlatır. Sunucu geri geldiğinde bu sayfa yeniden yüklenir.'
+          'Cihaz güncellemeyi kurar ve sunucusunu yeniden başlatır. Sunucu geri geldiğinde bu sayfa yeniden yüklenir.',
+        releaseNotes: 'Sürüm notları'
       },
       account: {
         title: 'Hesap',
@@ -1295,7 +1314,7 @@ const tr = {
         defaultTitle: 'Genel Asistan',
         defaultDescription: 'Genel sohbet, arama ve çalışma alanı yardımı.',
         kvmTitle: 'Uzaktan Kontrol',
-        kvmDescription: 'Uzak ana bilgisayarı NanoKVM aracılığıyla çalıştırın.',
+        kvmDescription: 'Uzak ana bilgisayarı IronKVM aracılığıyla çalıştırın.',
         switched: 'Temsilci rolü değiştirildi',
         switchFailed: 'Temsilci rolü değiştirilemedi'
       },
@@ -1315,24 +1334,24 @@ const tr = {
       connection: {
         runtime: {
           checking: 'Kontrol ediliyor',
-          restoring: 'Restoring PicoClaw',
+          restoring: 'PicoClaw geri yükleniyor',
           ready: 'Runtime hazır',
           stopped: 'Runtime durduruldu',
           blockedByMCP: 'Harici MCP kontrolü etkin',
           readyBlockedByMCP:
-            'The runtime is running, but external MCP currently controls device input.',
+            'Runtime çalışıyor, ancak cihaz girişini şu anda harici MCP kontrol ediyor.',
           readyWithoutControl:
-            'The runtime is running. Grant PicoClaw device control before reconnecting.',
+            "Runtime çalışıyor. Yeniden bağlanmadan önce PicoClaw'a cihaz kontrolü verin.",
           unavailable: 'Runtime mevcut değil',
           configError: 'Yapılandırma hatası'
         },
         transport: {
           connecting: 'Bağlanıyor',
           connected: 'Bağlandı',
-          disconnected: 'Disconnected',
-          reconnect: 'Reconnect',
-          reconnectDescription: 'Reconnect to the running PicoClaw session.',
-          reconnectBlocked: 'PicoClaw needs device control before reconnecting.'
+          disconnected: 'Bağlantı kesildi',
+          reconnect: 'Yeniden bağlan',
+          reconnectDescription: 'Çalışan PicoClaw oturumuna yeniden bağlan.',
+          reconnectBlocked: "PicoClaw'ın yeniden bağlanmak için cihaz kontrolüne ihtiyacı var."
         },
         run: {
           idle: 'Boşta',
@@ -1349,21 +1368,21 @@ const tr = {
       },
       control: {
         picoclaw: 'Cihaz kontrolü: PicoClaw',
-        picoclawDescription: 'PicoClaw can write keyboard and mouse input. Manual input may pause.',
+        picoclawDescription:
+          'PicoClaw klavye ve fare girişi gönderebilir. Elle giriş duraklayabilir.',
         mcp: 'Cihaz kontrolü: harici MCP',
-        mcpDescription: 'External MCP can write to the device. PicoClaw will not take over input.',
+        mcpDescription: 'Harici MCP cihaza yazabilir. PicoClaw girişi devralmaz.',
         off: 'Cihaz kontrolü: kapalı',
         offDescription:
-          'AI will not write keyboard or mouse input. Manual control remains available.',
-        transitioning: 'Device control: switching',
-        transitioningDescription: 'Device control is syncing. Please wait.',
+          'Yapay zekâ klavye veya fare girişi göndermez. Elle kontrol kullanılabilir kalır.',
+        transitioning: 'Cihaz kontrolü: geçiş yapılıyor',
+        transitioningDescription: 'Cihaz kontrolü eşitleniyor. Lütfen bekleyin.',
         grant: 'Kontrol ver',
         release: 'Bırak',
-        releasing: 'Releasing...',
-        switching: 'Switching...',
-        releasingLabel: 'Device control: releasing',
-        releasingDescription:
-          'Device control is being returned. PicoClaw has stopped current writes.',
+        releasing: 'Bırakılıyor...',
+        switching: 'Geçiş yapılıyor...',
+        releasingLabel: 'Cihaz kontrolü: bırakılıyor',
+        releasingDescription: 'Cihaz kontrolü geri veriliyor. PicoClaw süren yazmaları durdurdu.',
         granted: 'PicoClaw kontrolü verildi',
         released: 'PicoClaw kontrolü bırakıldı',
         grantFailed: 'PicoClaw kontrolü verilemedi',
@@ -1445,8 +1464,8 @@ const tr = {
         enableConfirmCancel: 'İptal',
         title: "PicoClaw'ı Başlat",
         description: "PicoClaw yardımcısını kullanmaya başlamak için runtime'ı başlatın.",
-        switchFromMCP: 'Switch to PicoClaw and start',
-        takeoverAndStart: 'Take over and start'
+        switchFromMCP: "PicoClaw'a geç ve başlat",
+        takeoverAndStart: 'Devral ve başlat'
       }
     },
     error: {
@@ -1480,9 +1499,9 @@ const tr = {
       warn: 'Video belleği az. Tek bir sunucu yeniden başlatması belleği tüketir. Uygun olduğunda yeniden başlatın.',
       criticalTitle: 'Akışı başlatmak için yeterli video belleği yok',
       criticalBody:
-        "Videoyu başlatmak ayrılmış belleği tüketir ve sunucuyu durdurur. Güç kontrolü ve yeniden başlatma dahil diğer tüm işlevler çalışmaya devam eder. Bu belleği yalnızca NanoKVM'i yeniden başlatmak geri kazandırır.",
+        "Videoyu başlatmak ayrılmış belleği tüketir ve sunucuyu durdurur. Güç kontrolü ve yeniden başlatma dahil diğer tüm işlevler çalışmaya devam eder. Bu belleği yalnızca IronKVM'i yeniden başlatmak geri kazandırır.",
       criticalContinue: 'Videoyu yine de başlat',
-      criticalReboot: "NanoKVM'i Yeniden Başlat",
+      criticalReboot: "IronKVM'i Yeniden Başlat",
       criticalRebooting: 'Yeniden başlatılıyor...'
     }
   }

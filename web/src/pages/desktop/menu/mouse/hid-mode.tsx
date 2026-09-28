@@ -69,16 +69,17 @@ export const HidMode = () => {
 
   return (
     <>
-      <div
+      <button
+        type="button"
         className={clsx(
-          'flex h-[30px] cursor-pointer items-center space-x-2 rounded px-3 select-none hover:bg-neutral-700/70',
+          'flex h-[30px] w-full cursor-pointer items-center space-x-2 rounded p-0 px-3 text-left select-none hover:bg-neutral-700/70',
           hidMode === 'hid-only' ? 'text-blue-500' : 'text-neutral-300'
         )}
         onClick={openModal}
       >
         <PenIcon size={18} />
         <span>{t('mouse.hidOnly.title')}</span>
-      </div>
+      </button>
 
       <Modal
         open={isModalOpen}

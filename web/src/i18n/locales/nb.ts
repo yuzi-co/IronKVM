@@ -14,7 +14,11 @@ const nb = {
       copyFailed: 'Kunne ikke kopiere. Merk teksten og kopier den manuelt.',
       notUpdating: 'Oppdateres ikke: siste oppdatering mislyktes.',
       off: 'Av',
-      running: 'Kjører'
+      running: 'Kjører',
+      save: 'Lagre',
+      cancel: 'Avbryt',
+      delete: 'Slett',
+      remove: 'Fjern'
     },
     head: {
       desktop: 'Eksternt skrivebord',
@@ -54,20 +58,21 @@ const nb = {
       loginButtonText: 'Logg inn',
       tips: {
         reset1:
-          'To reset the passwords, pressing and holding the BOOT button on the NanoKVM for 10 seconds.',
-        reset2: 'Se dette dokumentet for detaljerte trinn:',
+          'To reset the passwords, pressing and holding the BOOT button on the IronKVM for 10 seconds.',
         reset3: 'Standard webkonto:',
         reset4: 'Standard SSH-konto:',
         change1: 'Merk at denne handlingen endrer følgende passord:',
         change2: 'Passord for webinnlogging',
         change3: 'Systemets root-passord (SSH-innloggingspassord)',
-        change4: 'For å tilbakestille passordene holder du BOOT-knappen på NanoKVM inne.'
+        change4: 'For å tilbakestille passordene holder du BOOT-knappen på IronKVM inne.',
+        resetDocs: 'Se maskinvaredokumentasjonen for detaljerte trinn:',
+        hardwareDocs: 'Sipeed NanoKVM-wiki'
       }
     },
     wifi: {
       title: 'Wi-Fi',
-      description: 'Konfigurer Wi-Fi for NanoKVM',
-      success: 'Please check the network status of NanoKVM and visit the new IP address.',
+      description: 'Konfigurer Wi-Fi for IronKVM',
+      success: 'Please check the network status of IronKVM and visit the new IP address.',
       failed: 'Operasjonen mislyktes, prøv igjen.',
       invalidMode:
         'Gjeldende modus støtter ikke nettverksoppsett. Gå til enheten din og aktiver Wi-Fi konfigurasjonsmodus.',
@@ -322,10 +327,10 @@ const nb = {
       hidOnly: {
         switchFailed: 'Kunne ikke bytte modus. Sjekk tilkoblingen og prøv igjen.',
         title: 'Kun HID-modus',
-        desc: 'Hvis musen og tastaturet slutter å svare og tilbakestilling av HID ikke hjelper, kan det være et kompatibilitetsproblem mellom NanoKVM og enheten. Prøv å aktivere HID-Only-modus for bedre kompatibilitet.',
+        desc: 'Hvis musen og tastaturet slutter å svare og tilbakestilling av HID ikke hjelper, kan det være et kompatibilitetsproblem mellom IronKVM og enheten. Prøv å aktivere HID-Only-modus for bedre kompatibilitet.',
         tip1: 'Aktivering av HID-Only-modus vil demontere den virtuelle U-disken og det virtuelle nettverket',
         tip2: 'I HID-Only-modus er bildemontering deaktivert',
-        rebuild: 'Bytte av modus bygger opp USB-tilkoblingen på nytt. NanoKVM starter ikke på nytt',
+        rebuild: 'Bytte av modus bygger opp USB-tilkoblingen på nytt. IronKVM starter ikke på nytt',
         enable: 'Aktiver HID-Only-modus',
         disable: 'Deaktiver HID-bare-modus'
       },
@@ -394,18 +399,18 @@ const nb = {
       },
       tips: {
         title: 'Hvordan laste opp',
-        usb1: 'Koble til NanoKVM-enheten til din datamaskin med USB.',
+        usb1: 'Koble til IronKVM-enheten til din datamaskin med USB.',
         usb2: 'Sikre at den virtuelle disken er montert (Innstillinger - Virtuell disk).',
         usb3: 'Åpne den virtuelle disken på datamaskinen din og kopier arkivfilen til rot-mappen på den virtuelle disken.',
-        scp1: 'Sikre at NanoKVM-enheten og datamaskinen din er tilkoblet det samme lokale nettverket.',
-        scp2: 'Åpne en terminal på datamaskinen din og bruk SCP-kommandoen til å laste opp arkivfilen til mappen /data på NanoKVM-enheten.',
+        scp1: 'Sikre at IronKVM-enheten og datamaskinen din er tilkoblet det samme lokale nettverket.',
+        scp2: 'Åpne en terminal på datamaskinen din og bruk SCP-kommandoen til å laste opp arkivfilen til mappen /data på IronKVM-enheten.',
         scp3: 'Eksempel: scp sti-til-din-arkivfil root@din-nanokvm-ip:/data',
         tfCard: 'TF-kort',
         tf1: 'Denne metoden er støttet på datamskiner med Linux',
-        tf2: 'Ta TF-kortet ut av NanoKVM-enheten (hvis du har FULL-versjonen, demonter kabinettet først).',
+        tf2: 'Ta TF-kortet ut av IronKVM-enheten (hvis du har FULL-versjonen, demonter kabinettet først).',
         tf3: 'Sett inn TF-kortet i en kortleser og koble den til datamaskinen din.',
         tf4: 'Kopiér arkivfilen til mappen /data på TF-kortet.',
-        tf5: 'Sett inn TF-kortet i NanoKVM-enheten.'
+        tf5: 'Sett inn TF-kortet i IronKVM-enheten.'
       }
     },
     script: {
@@ -436,7 +441,7 @@ const nb = {
       invalidSettings: 'Ugyldige innstillinger for seriellport. Dette er kortets eget skall.',
       disconnected: 'Frakoblet. Trykk Enter for å koble til igjen.',
       title: 'Terminal',
-      nanokvm: 'NanoKVM',
+      nanokvm: 'IronKVM',
       serial: 'Seriell port',
       serialPort: 'Seriell port',
       serialPortPlaceholder: 'Vennligst angi den serielle porten',
@@ -561,7 +566,10 @@ const nb = {
         failed: 'MCP-operasjonen mislyktes',
         copyFailed: 'Kopiering mislyktes. Kopier manuelt.',
         okBtn: 'Bekreft',
-        cancelBtn: 'Avbryt'
+        cancelBtn: 'Avbryt',
+        showKey: 'Vis nøkkel',
+        hideKey: 'Skjul nøkkel',
+        regenerateKey: 'Lag ny nøkkel'
       },
       redfish: {
         example: 'Eksempel',
@@ -693,7 +701,7 @@ const nb = {
         timeoutDesc: 'Hvor lenge verten kan være uten livstegn før watchdogen griper inn.',
         action: 'Handling',
         actionDesc: 'Av og på holder av/på-knappen inne i 5 sekunder og trykker den så inn igjen.',
-        actionReset: 'Reset',
+        actionReset: 'Reset-knapp',
         actionPower: 'Av og på',
         cooldown: 'Pause',
         cooldownDesc: 'Den korteste tiden mellom to handlinger.',
@@ -789,21 +797,21 @@ const nb = {
         failed: 'Nettverksoppstart-operasjonen mislyktes'
       },
       about: {
-        title: 'Om NanoKVM',
+        title: 'Om IronKVM',
         information: 'Informasjon',
         ip: 'IP',
         mdns: 'mDNS',
         application: 'Applikasjonsversjon',
-        applicationTip: 'Versjon av NanoKVM-webapplikasjonen',
+        applicationTip: 'Versjon av IronKVM-webapplikasjonen',
         image: 'Arkivfil-versjon',
-        imageTip: 'Versjon av NanoKVM-systemavbildningen',
+        imageTip: 'IronKVM-kortbilde og NanoKVM-systembildet det bygger på',
         kernel: 'Kjerneversjon',
         kernelTip: 'Versjonen av Linux-kjernen som kjører nå',
         deviceKey: 'Enhetsnøkkel',
         videoMemory: 'Videominne',
         videoMemoryTip: 'Minne reservert for videoopptak. Det deles ikke med resten av systemet.',
-        videoMemoryGenerations_one: '{{count}} tidligere NanoKVM-økt holder på videominne',
-        videoMemoryGenerations_other: '{{count}} tidligere NanoKVM-økter holder på videominne',
+        videoMemoryGenerations_one: '{{count}} tidligere IronKVM-økt holder på videominne',
+        videoMemoryGenerations_other: '{{count}} tidligere IronKVM-økter holder på videominne',
         videoMemoryReboot: 'Start på nytt for å frigjøre det.',
         community: 'Fellesskap',
         hostname: 'Vertsnavn',
@@ -815,7 +823,14 @@ const nb = {
         },
         hostnameInvalid:
           'Bruk bokstaver, sifre og bindestreker, opptil 63 per punktumdelt del. Ingen bindestrek i starten eller slutten av en del.',
-        hostnameFailed: 'Kunne ikke endre vertsnavnet'
+        hostnameFailed: 'Kunne ikke endre vertsnavnet',
+        editHostname: 'Rediger vertsnavn',
+        docs: 'Dokumentasjon',
+        hardware: 'Maskinvare',
+        hardwareFaq: 'Maskinvare-FAQ',
+        disclaimer:
+          'IronKVM: herdet fellesskapsfastvare for Sipeed NanoKVM. Ikke tilknyttet Sipeed.',
+        basedOn: 'basert på NanoKVM {{version}}'
       },
       appearance: {
         title: 'Utseende',
@@ -870,8 +885,8 @@ const nb = {
             '255': 'Maksimal'
           },
           0: 'Aldri',
-          15: '15 sec',
-          30: '30 sec',
+          15: '15 sek',
+          30: '30 sek',
           60: '1 min',
           180: '3 min',
           300: '5 min',
@@ -937,10 +952,10 @@ const nb = {
         network: 'Virtuelt nettverk',
         networkDesc: 'Monter virtuelt nettverkskort på den eksterne verten',
         usbNetwork: {
-          boardAddress: 'NanoKVM:',
+          boardAddress: 'IronKVM:',
           hostAddress: 'Vert:',
           description:
-            'En privat nettverkstilkobling til den eksterne verten via USB-kabelen. Verten får en adresse uten gateway og uten DNS, så den kan ikke nå ditt lokalnett gjennom NanoKVM.',
+            'En privat nettverkstilkobling til den eksterne verten via USB-kabelen. Verten får en adresse uten gateway og uten DNS, så den kan ikke nå ditt lokalnett gjennom IronKVM.',
           off: 'Av',
           ncm: 'NCM (Linux, macOS, Windows 11)',
           ecm: 'ECM (for verter uten NCM)',
@@ -948,7 +963,7 @@ const nb = {
           rndisNote: 'Denne tilkoblingen bruker RNDIS, som ikke tilbys lenger. Velg NCM eller ECM.',
           subnet: 'Delnett',
           subnetDesc:
-            'Et privat IPv4-nettverk, /24 til /30. NanoKVM tar den første adressen, verten den andre.',
+            'Et privat IPv4-nettverk, /24 til /30. IronKVM tar den første adressen, verten den andre.',
           invalidSubnet: 'Skriv inn et delnett, for eksempel 172.31.255.0/30.',
           apply: 'Bruk',
           confirm: 'Koble til USB-enheten på nytt?',
@@ -961,9 +976,9 @@ const nb = {
         audioNote: 'Lyd er tilgjengelig i begge H.264-modusene (WebRTC og Direct), ikke i MJPEG',
         console: 'Seriekonsoll',
         consoleDesc:
-          'Vis en USB-serieport for den eksterne verten, for å logge inn på denne NanoKVM når nettverket ikke er tilgjengelig',
+          'Vis en USB-serieport for den eksterne verten, for å logge inn på denne IronKVM når nettverket ikke er tilgjengelig',
         consoleTip:
-          'Alle som kontrollerer den eksterne verten får en innloggingsforespørsel til denne NanoKVM. Angi et sterkt passord før du aktiverer (Konto - Endre passord).',
+          'Alle som kontrollerer den eksterne verten får en innloggingsforespørsel til denne IronKVM. Angi et sterkt passord før du aktiverer (Konto - Endre passord).',
         endpoints: {
           title: 'USB-endepunkter',
           used: '{{used}} av {{total}} brukt',
@@ -978,7 +993,7 @@ const nb = {
           fitTogether: 'Disse passer sammen: {{sets}}'
         },
         reboot: 'Start på nytt',
-        rebootDesc: 'Er du sikker på at du vil starte NanoKVM på nytt?',
+        rebootDesc: 'Er du sikker på at du vil starte IronKVM på nytt?',
         okBtn: 'Ja',
         cancelBtn: 'Nei',
         rebootFailed: 'Omstart mislyktes'
@@ -988,7 +1003,7 @@ const nb = {
         wifi: {
           disconnectBtn: 'Koble fra',
           disconnectWarning:
-            'Hvis du når NanoKVM via dette Wi-Fi-nettverket, mister denne siden tilkoblingen.',
+            'Hvis du når IronKVM via dette Wi-Fi-nettverket, mister denne siden tilkoblingen.',
           disconnected: 'Wi-Fi frakoblet',
           title: 'Wi-Fi',
           description: 'Konfigurer Wi-Fi',
@@ -1021,7 +1036,7 @@ const nb = {
         },
         ethernet: {
           title: 'IP-adresse',
-          description: 'Konfigurer hvordan NanoKVM får adressen sin på det kablede nettverket',
+          description: 'Konfigurer hvordan IronKVM får adressen sin på det kablede nettverket',
           dhcp: 'DHCP',
           manual: 'Manuell',
           networkDetails: 'Nettverksdetaljer',
@@ -1035,17 +1050,17 @@ const nb = {
           invalidRouter: 'Skriv inn en gyldig ruteradresse',
           addressRequired: 'En IP-adresse er påkrevd',
           maskRequired: 'En nettverksmaske er påkrevd',
-          applyTitle: 'Vil du endre adressen til NanoKVM?',
+          applyTitle: 'Vil du endre adressen til IronKVM?',
           applyWarning:
-            'Forbindelsen til denne siden går tapt. NanoKVM tar i bruk den nye adressen og venter {{seconds}} sekunder på at du når den der. Å nå den beholder endringen. Hvis ingenting når den, gjenoppretter NanoKVM de forrige innstillingene.',
+            'Forbindelsen til denne siden går tapt. IronKVM tar i bruk den nye adressen og venter {{seconds}} sekunder på at du når den der. Å nå den beholder endringen. Hvis ingenting når den, gjenoppretter IronKVM de forrige innstillingene.',
           applyConfirm: 'Bruk',
           applyCancel: 'Avbryt',
           applyFailed: 'Adressen kunne ikke tas i bruk',
           trialTitle: 'Venter på bekreftelse',
-          trialDhcp: 'NanoKVM ber om en adresse via DHCP.',
-          trialStatic: 'NanoKVM er nå på {{address}}.',
+          trialDhcp: 'IronKVM ber om en adresse via DHCP.',
+          trialStatic: 'IronKVM er nå på {{address}}.',
           trialInstruction:
-            'Åpne NanoKVM på den nye adressen, og logg inn hvis den ber om det. Å nå den der beholder endringen. Hvis ingenting når NanoKVM innen {{seconds}} sekunder, gjenoppretter den de forrige innstillingene.',
+            'Åpne IronKVM på den nye adressen, og logg inn hvis den ber om det. Å nå den der beholder endringen. Hvis ingenting når IronKVM innen {{seconds}} sekunder, gjenoppretter den de forrige innstillingene.',
           trialOpen: 'Åpne den nye adressen',
           trialKeep: 'Behold disse innstillingene',
           trialKept: 'Den nye adressen er lagret',
@@ -1055,7 +1070,7 @@ const nb = {
         },
         dns: {
           title: 'DNS',
-          description: 'Konfigurer DNS-servere for NanoKVM',
+          description: 'Konfigurer DNS-servere for IronKVM',
           mode: 'Modus',
           dhcp: 'DHCP',
           manual: 'Manuell',
@@ -1141,23 +1156,24 @@ const nb = {
         checkFailed: 'Kunne ikke sjekke innloggingsstatus',
         loginWaiting:
           'Siden sjekker med noen sekunders mellomrom og fortsetter når du har logget inn.',
-        uninstallFailed: 'Avinstallering mislyktes'
+        uninstallFailed: 'Avinstallering mislyktes',
+        loginFailed: 'Innlogging mislyktes'
       },
       tailscale: {
         title: 'Tailscale',
-        retry: 'Vennligst last inn siden på nytt og forsøk igjen eller installer manuelt',
         download: 'Last ned',
         package: 'installasjonspakken',
         unzip: 'og pakk den ut',
-        upTailscale: 'Last opp Tailscale til NanoKVM-enhetens mappe /usr/bin/',
-        upTailscaled: 'Last opp tailscaled til NanoKVM-enhetens mappe /usr/sbin/',
-        refresh: 'Last inn denne siden på nytt',
         notLogin:
           'Denne enheten er ikke knyttet til din konto enda. Vennligst logg inn og knytt den til kontoen din..',
         urlPeriod: 'Denne lenken er gyldig i 10 minutter',
         login: 'Logg inn',
         logout: 'Logg ut',
-        logoutDesc: 'Er du sikker på at du vil logge ut?'
+        logoutDesc: 'Er du sikker på at du vil logge ut?',
+        manualIntro: 'Eller installer manuelt over SSH:',
+        copyBinaries: 'Kopier tailscale og tailscaled til {{dir}} på IronKVM',
+        linksFile: 'Lag en fil som heter links i samme mappe, med disse to linjene:',
+        rebootRefresh: 'Start IronKVM på nytt, og oppdater deretter denne siden'
       },
       netbird: {
         title: 'NetBird',
@@ -1171,7 +1187,8 @@ const nb = {
         urlPeriod: 'Denne lenken er gyldig i 10 minutter',
         logout: 'Avregistrer',
         logoutDesc:
-          'Avregistrering fjerner denne noden fra NetBird-kontoen din og sletter konfigurasjonen her. For å bli med igjen trengs en oppsettsnøkkel eller SSO-innlogging, og noden kan få en ny IP. Fortsette?'
+          'Avregistrering fjerner denne noden fra NetBird-kontoen din og sletter konfigurasjonen her. For å bli med igjen trengs en oppsettsnøkkel eller SSO-innlogging, og noden kan få en ny IP. Fortsette?',
+        joinFailed: 'Kunne ikke bli med i nettverket'
       },
       update: {
         title: 'Se etter oppdatering',
@@ -1197,7 +1214,7 @@ const nb = {
           save: 'Lagre',
           confirmTitle: 'Vil du bruke en egendefinert oppdateringsserver?',
           confirmDesc:
-            'SHA-512 kontrollerer bare at pakken samsvarer med manifestet fra denne serveren. Det beviser ikke at pakken er en offisiell NanoKVM-utgivelse. En feilkonfigurert eller ondsinnet server kan gjøre enheten ubrukelig, føre til tap av data eller kompromittere systemet.',
+            'SHA-512 kontrollerer bare at pakken samsvarer med manifestet fra denne serveren. Det beviser ikke at pakken er en offisiell IronKVM-utgivelse. En feilkonfigurert eller ondsinnet server kan gjøre enheten ubrukelig, føre til tap av data eller kompromittere systemet.',
           confirm: 'Bruk likevel',
           useSipeed: 'Bruk den offisielle Sipeed-serveren',
           previewDisabled:
@@ -1218,7 +1235,8 @@ const nb = {
         },
         updateTo: 'Oppdater til {{version}}',
         updateConfirmDesc:
-          'Enheten installerer oppdateringen og starter serveren på nytt. Siden lastes inn på nytt når serveren er tilbake.'
+          'Enheten installerer oppdateringen og starter serveren på nytt. Siden lastes inn på nytt når serveren er tilbake.',
+        releaseNotes: 'Utgivelsesnotater'
       },
       account: {
         title: 'Konto',
@@ -1294,7 +1312,7 @@ const nb = {
         defaultTitle: 'Generell assistent',
         defaultDescription: 'Generell chat-, søk- og arbeidsområdehjelp.',
         kvmTitle: 'Fjernstyring',
-        kvmDescription: 'Betjen den eksterne verten gjennom NanoKVM.',
+        kvmDescription: 'Betjen den eksterne verten gjennom IronKVM.',
         switched: 'Agentrolle byttet',
         switchFailed: 'Kunne ikke bytte agentrolle'
       },
@@ -1314,24 +1332,23 @@ const nb = {
       connection: {
         runtime: {
           checking: 'Kontrollerer',
-          restoring: 'Restoring PicoClaw',
+          restoring: 'Gjenoppretter PicoClaw',
           ready: 'Runtime klar',
           stopped: 'Runtime stoppet',
           blockedByMCP: 'Ekstern MCP-styring er aktiv',
-          readyBlockedByMCP:
-            'The runtime is running, but external MCP currently controls device input.',
+          readyBlockedByMCP: 'Runtime kjører, men ekstern MCP styrer nå enhetens inndata.',
           readyWithoutControl:
-            'The runtime is running. Grant PicoClaw device control before reconnecting.',
+            'Runtime kjører. Gi PicoClaw enhetsstyring før du kobler til på nytt.',
           unavailable: 'Runtime utilgjengelig',
           configError: 'Konfigurasjonsfeil'
         },
         transport: {
           connecting: 'Kobler til',
           connected: 'Tilkoblet',
-          disconnected: 'Disconnected',
-          reconnect: 'Reconnect',
-          reconnectDescription: 'Reconnect to the running PicoClaw session.',
-          reconnectBlocked: 'PicoClaw needs device control before reconnecting.'
+          disconnected: 'Frakoblet',
+          reconnect: 'Koble til på nytt',
+          reconnectDescription: 'Koble til den kjørende PicoClaw-økten på nytt.',
+          reconnectBlocked: 'PicoClaw trenger enhetsstyring før den kan koble til på nytt.'
         },
         run: {
           idle: 'Inaktiv',
@@ -1348,21 +1365,21 @@ const nb = {
       },
       control: {
         picoclaw: 'Enhetsstyring: PicoClaw',
-        picoclawDescription: 'PicoClaw can write keyboard and mouse input. Manual input may pause.',
+        picoclawDescription:
+          'PicoClaw kan sende tastatur- og musinndata. Manuell inndata kan bli satt på pause.',
         mcp: 'Enhetsstyring: ekstern MCP',
-        mcpDescription: 'External MCP can write to the device. PicoClaw will not take over input.',
+        mcpDescription: 'Ekstern MCP kan skrive til enheten. PicoClaw tar ikke over inndata.',
         off: 'Enhetsstyring: av',
         offDescription:
-          'AI will not write keyboard or mouse input. Manual control remains available.',
-        transitioning: 'Device control: switching',
-        transitioningDescription: 'Device control is syncing. Please wait.',
+          'KI sender ikke tastatur- eller musinndata. Manuell styring er fortsatt tilgjengelig.',
+        transitioning: 'Enhetsstyring: bytter',
+        transitioningDescription: 'Enhetsstyringen synkroniseres. Vent litt.',
         grant: 'Gi styring',
         release: 'Frigi',
-        releasing: 'Releasing...',
-        switching: 'Switching...',
-        releasingLabel: 'Device control: releasing',
-        releasingDescription:
-          'Device control is being returned. PicoClaw has stopped current writes.',
+        releasing: 'Frigir...',
+        switching: 'Bytter...',
+        releasingLabel: 'Enhetsstyring: frigir',
+        releasingDescription: 'Enhetsstyringen gis tilbake. PicoClaw har stoppet pågående inndata.',
         granted: 'PicoClaw-styring gitt',
         released: 'PicoClaw-styring frigitt',
         grantFailed: 'Kunne ikke gi PicoClaw styring',
@@ -1444,8 +1461,8 @@ const nb = {
         enableConfirmCancel: 'Avbryt',
         title: 'Start PicoClaw',
         description: 'Start runtime for å begynne å bruke PicoClaw-assistenten.',
-        switchFromMCP: 'Switch to PicoClaw and start',
-        takeoverAndStart: 'Take over and start'
+        switchFromMCP: 'Bytt til PicoClaw og start',
+        takeoverAndStart: 'Ta over og start'
       }
     },
     error: {
@@ -1479,9 +1496,9 @@ const nb = {
       warn: 'Lite videominne. Én omstart av serveren ville bruke det opp. Start på nytt når det passer.',
       criticalTitle: 'Ikke nok videominne til å starte strømmen',
       criticalBody:
-        'Å starte video ville bruke opp det reserverte minnet og stoppe serveren. Alle andre funksjoner virker fortsatt, også strømstyring og omstart. Bare en omstart av NanoKVM frigjør dette minnet.',
+        'Å starte video ville bruke opp det reserverte minnet og stoppe serveren. Alle andre funksjoner virker fortsatt, også strømstyring og omstart. Bare en omstart av IronKVM frigjør dette minnet.',
       criticalContinue: 'Start video likevel',
-      criticalReboot: 'Start NanoKVM på nytt',
+      criticalReboot: 'Start IronKVM på nytt',
       criticalRebooting: 'Starter på nytt...'
     }
   }

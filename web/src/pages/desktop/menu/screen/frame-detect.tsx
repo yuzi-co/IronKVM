@@ -47,8 +47,9 @@ export const FrameDetect = () => {
 
   return (
     <Tooltip placement="rightTop" title={t('screen.frameDetectTip')} color="#262626" arrow>
-      <div
-        className="group flex h-[30px] cursor-pointer items-center space-x-2 rounded px-3 text-neutral-300 hover:bg-neutral-700"
+      <button
+        type="button"
+        className="group flex h-[30px] w-full cursor-pointer items-center space-x-2 rounded p-0 px-3 text-left text-neutral-300 hover:bg-neutral-700"
         onClick={update}
       >
         {isLoading ? (
@@ -67,7 +68,7 @@ export const FrameDetect = () => {
             </span>
           </>
         )}
-      </div>
+      </button>
     </Tooltip>
   );
 };

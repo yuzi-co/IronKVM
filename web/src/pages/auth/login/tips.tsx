@@ -18,12 +18,13 @@ export const Tips = () => {
 
   return (
     <>
-      <span
-        className="cursor-pointer text-neutral-300 underline underline-offset-4"
+      <button
+        type="button"
+        className="cursor-pointer p-0 text-neutral-300 underline underline-offset-4"
         onClick={showModal}
       >
         {t('auth.forgetPassword')}
-      </span>
+      </button>
 
       <Modal
         title={t('auth.forgetPassword')}
@@ -38,9 +39,9 @@ export const Tips = () => {
             <div>{t('auth.tips.reset1')}</div>
 
             <div className="flex items-center space-x-1">
-              <span>{t('auth.tips.reset2')}</span>
+              <span>{t('auth.tips.resetDocs')}</span>
               <a href="https://wiki.sipeed.com/hardware/en/kvm/NanoKVM/reset.html" target="_blank">
-                wiki
+                {t('auth.tips.hardwareDocs')}
               </a>
             </div>
 
@@ -57,7 +58,7 @@ export const Tips = () => {
           </div>
         </Card>
 
-        <div className="flex justify-center pb-3 pt-10">
+        <div className="flex justify-center pt-10 pb-3">
           <Button type="primary" className="w-24" onClick={hideModal}>
             {t('auth.ok')}
           </Button>

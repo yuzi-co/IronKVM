@@ -26,16 +26,17 @@ export const Direction = () => {
   const content = (
     <>
       {directions.map((direction) => (
-        <div
+        <button
+          type="button"
           key={direction.value}
-          className="flex cursor-pointer items-center space-x-1 rounded py-1.5 pl-2 pr-5 hover:bg-neutral-700/70"
+          className="flex w-full cursor-pointer items-center space-x-1 rounded p-0 py-1.5 pr-5 pl-2 text-left hover:bg-neutral-700/70"
           onClick={() => update(direction.value)}
         >
           <div className="flex h-[16px] w-[16px] items-end text-blue-500">
             {direction.value === scrollDirection && <CheckIcon strokeWidth={3} size={16} />}
           </div>
           <span>{direction.name}</span>
-        </div>
+        </button>
       ))}
     </>
   );

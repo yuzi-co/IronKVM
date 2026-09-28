@@ -315,7 +315,9 @@ export const Watchdog = () => {
               />
             </div>
             {!ledConnected && (
-              <span className="text-xs text-neutral-500">{t('settings.watchdog.powerNeedsLed')}</span>
+              <span className="text-xs text-neutral-500">
+                {t('settings.watchdog.powerNeedsLed')}
+              </span>
             )}
 
             <div className="flex items-center justify-between">

@@ -34,9 +34,10 @@ export const Cursor = () => {
   const content = (
     <>
       {mouseStyles.map((style) => (
-        <div
+        <button
+          type="button"
           key={style.value}
-          className="flex cursor-pointer items-center space-x-1 rounded py-1.5 pr-6 pl-1 select-none hover:bg-neutral-700/70"
+          className="flex w-full cursor-pointer items-center space-x-1 rounded p-0 py-1.5 pr-6 pl-1 text-left select-none hover:bg-neutral-700/70"
           onClick={() => updateMouseStyle(style.value)}
         >
           {/* The same blue check as the other menus marks the choice. */}
@@ -45,7 +46,7 @@ export const Cursor = () => {
           </div>
           <div className="flex h-[14px] w-[20px] items-end">{style.icon}</div>
           <span>{style.name}</span>
-        </div>
+        </button>
       ))}
     </>
   );

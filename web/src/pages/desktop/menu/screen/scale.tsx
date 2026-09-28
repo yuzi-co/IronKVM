@@ -35,9 +35,10 @@ export const Scale = (): ReactElement => {
   const content = (
     <>
       {ScaleList.map((scale) => (
-        <div
+        <button
+          type="button"
           key={scale.value}
-          className="flex h-[30px] cursor-pointer select-none items-center rounded pl-1 pr-5 hover:bg-neutral-700/70"
+          className="flex h-[30px] w-full cursor-pointer items-center rounded p-0 pr-5 pl-1 text-left select-none hover:bg-neutral-700/70"
           onClick={() => update(scale.value)}
         >
           <div className="flex h-[14px] w-[20px] items-end text-blue-500">
@@ -47,7 +48,7 @@ export const Scale = (): ReactElement => {
             <span>{scale.label}</span>
             <PercentIcon size={12} />
           </div>
-        </div>
+        </button>
       ))}
     </>
   );

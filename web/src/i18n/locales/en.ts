@@ -14,7 +14,11 @@ const en = {
       copyFailed: 'Could not copy. Select the text and copy it by hand.',
       notUpdating: 'Not updating: the last refresh failed.',
       off: 'Off',
-      running: 'Running'
+      running: 'Running',
+      save: 'Save',
+      cancel: 'Cancel',
+      delete: 'Delete',
+      remove: 'Remove'
     },
     head: {
       desktop: 'Remote Desktop',
@@ -52,20 +56,21 @@ const en = {
       loginButtonText: 'Login',
       tips: {
         reset1:
-          'To reset the passwords, press and hold the BOOT button on the NanoKVM for 10 seconds.',
-        reset2: 'For detailed steps, please consult this document:',
+          'To reset the passwords, press and hold the BOOT button on the IronKVM for 10 seconds.',
         reset3: 'Web default account:',
         reset4: 'SSH default account:',
         change1: 'Please note that this action will change the following passwords:',
         change2: 'Web login password',
         change3: 'System root password (SSH login password)',
-        change4: 'To reset the passwords, press and hold the BOOT button on the NanoKVM.'
+        change4: 'To reset the passwords, press and hold the BOOT button on the IronKVM.',
+        resetDocs: 'For detailed steps, see the hardware documentation:',
+        hardwareDocs: 'Sipeed NanoKVM wiki'
       }
     },
     wifi: {
       title: 'Wi-Fi',
-      description: 'Configure Wi-Fi for NanoKVM',
-      success: 'Please go to the device to check the network status of NanoKVM.',
+      description: 'Configure Wi-Fi for IronKVM',
+      success: 'Please go to the device to check the network status of IronKVM.',
       failed: 'Operation failed, please try again.',
       invalidMode:
         'The current mode does not support network setup. Please go to your device and enable Wi-Fi configuration mode.',
@@ -319,10 +324,10 @@ const en = {
       hidOnly: {
         switchFailed: 'Could not switch the mode. Check the connection and try again.',
         title: 'HID-Only mode',
-        desc: "If your mouse and keyboard stop responding and resetting HID doesn't help, it could be a compatibility issue between the NanoKVM and the device. Try to enable HID-Only mode for better compatibility.",
+        desc: "If your mouse and keyboard stop responding and resetting HID doesn't help, it could be a compatibility issue between the IronKVM and the device. Try to enable HID-Only mode for better compatibility.",
         tip1: 'Enabling HID-Only mode will unmount the virtual U-disk and virtual network',
         tip2: 'In HID-Only mode, image mounting is disabled',
-        rebuild: 'Switching modes rebuilds the USB connection. NanoKVM does not reboot',
+        rebuild: 'Switching modes rebuilds the USB connection. IronKVM does not reboot',
         enable: 'Enable HID-Only mode',
         disable: 'Disable HID-Only mode'
       },
@@ -390,18 +395,18 @@ const en = {
       },
       tips: {
         title: 'How to upload',
-        usb1: 'Connect the NanoKVM to your computer via USB.',
+        usb1: 'Connect the IronKVM to your computer via USB.',
         usb2: 'Ensure that the virtual disk is mounted (Settings - Virtual Disk).',
         usb3: 'Open the virtual disk on your computer and copy the image file to the root directory of the virtual disk.',
-        scp1: 'Make sure the NanoKVM and your computer are on the same local network.',
-        scp2: 'Open a terminal on your computer and use the SCP command to upload the image file to the /data directory on the NanoKVM.',
-        scp3: 'Example: scp your-image-path root@your-nanokvm-ip:/data',
+        scp1: 'Make sure the IronKVM and your computer are on the same local network.',
+        scp2: 'Open a terminal on your computer and use the SCP command to upload the image file to the /data directory on the IronKVM.',
+        scp3: 'Example: scp your-image-path root@your-ironkvm-ip:/data',
         tfCard: 'TF Card',
         tf1: 'This method is supported on Linux system',
-        tf2: 'Get TF card from the NanoKVM (for the FULL version, disassemble the case first).',
+        tf2: 'Get TF card from the IronKVM (for the FULL version, disassemble the case first).',
         tf3: 'Insert the TF card into a card reader and connect it to your computer.',
         tf4: 'Copy the image file to the /data directory on the TF card.',
-        tf5: 'Insert the TF card into the NanoKVM.'
+        tf5: 'Insert the TF card into the IronKVM.'
       }
     },
     script: {
@@ -556,7 +561,10 @@ const en = {
         failed: 'MCP operation failed',
         copyFailed: 'Copy failed. Copy manually.',
         okBtn: 'Confirm',
-        cancelBtn: 'Cancel'
+        cancelBtn: 'Cancel',
+        showKey: 'Show key',
+        hideKey: 'Hide key',
+        regenerateKey: 'Regenerate key'
       },
       redfish: {
         example: 'Example',
@@ -797,8 +805,8 @@ const en = {
         videoMemory: 'Video Memory',
         videoMemoryTip:
           'Memory reserved for video capture. It is not shared with the rest of the system.',
-        videoMemoryGenerations_one: '{{count}} earlier NanoKVM session is holding video memory',
-        videoMemoryGenerations_other: '{{count}} earlier NanoKVM sessions are holding video memory',
+        videoMemoryGenerations_one: '{{count}} earlier IronKVM session is holding video memory',
+        videoMemoryGenerations_other: '{{count}} earlier IronKVM sessions are holding video memory',
         videoMemoryReboot: 'Reboot to reclaim it.',
         community: 'Community',
         hostname: 'Hostname',
@@ -810,7 +818,14 @@ const en = {
         },
         hostnameInvalid:
           'Use letters, digits and hyphens, up to 63 per dot-separated part. No hyphen at the start or end of a part.',
-        hostnameFailed: 'Failed to change the hostname'
+        hostnameFailed: 'Failed to change the hostname',
+        editHostname: 'Edit hostname',
+        docs: 'Documentation',
+        hardware: 'Hardware',
+        hardwareFaq: 'Hardware FAQ',
+        disclaimer:
+          'IronKVM: hardened community firmware for the Sipeed NanoKVM. Not affiliated with Sipeed.',
+        basedOn: 'based on NanoKVM {{version}}'
       },
       appearance: {
         title: 'Appearance',
@@ -931,10 +946,10 @@ const en = {
         network: 'Virtual Network',
         networkDesc: 'Mount virtual network card on the remote host',
         usbNetwork: {
-          boardAddress: 'NanoKVM:',
+          boardAddress: 'IronKVM:',
           hostAddress: 'Host:',
           description:
-            'A private network link to the remote host over the USB cable. The host gets an address with no gateway and no DNS, so it cannot reach your LAN through NanoKVM.',
+            'A private network link to the remote host over the USB cable. The host gets an address with no gateway and no DNS, so it cannot reach your LAN through IronKVM.',
           off: 'Off',
           ncm: 'NCM (Linux, macOS, Windows 11)',
           ecm: 'ECM (for hosts without NCM)',
@@ -942,7 +957,7 @@ const en = {
           rndisNote: 'This link runs RNDIS, which is no longer offered. Choose NCM or ECM.',
           subnet: 'Subnet',
           subnetDesc:
-            'A private IPv4 network, /24 to /30. NanoKVM takes the first address, the host the second.',
+            'A private IPv4 network, /24 to /30. IronKVM takes the first address, the host the second.',
           invalidSubnet: 'Enter a subnet such as 172.31.255.0/30.',
           apply: 'Apply',
           confirm: 'Reconnect the USB device?',
@@ -955,9 +970,9 @@ const en = {
         audioNote: 'Audio is available in both H.264 modes (WebRTC and Direct), not in MJPEG',
         console: 'Serial Console',
         consoleDesc:
-          'Present a USB serial port to the remote host, for logging in to this NanoKVM when the network is unreachable',
+          'Present a USB serial port to the remote host, for logging in to this IronKVM when the network is unreachable',
         consoleTip:
-          'Anyone who controls the remote host gets a login prompt on this NanoKVM. Set a strong password before enabling (Account - Change Password).',
+          'Anyone who controls the remote host gets a login prompt on this IronKVM. Set a strong password before enabling (Account - Change Password).',
         endpoints: {
           title: 'USB endpoints',
           used: '{{used}} of {{total}} used',
@@ -972,7 +987,7 @@ const en = {
           fitTogether: 'These fit together: {{sets}}'
         },
         reboot: 'Reboot',
-        rebootDesc: 'Are you sure you want to reboot NanoKVM?',
+        rebootDesc: 'Are you sure you want to reboot IronKVM?',
         okBtn: 'Yes',
         cancelBtn: 'No',
         rebootFailed: 'Reboot failed'
@@ -982,7 +997,7 @@ const en = {
         wifi: {
           disconnectBtn: 'Disconnect',
           disconnectWarning:
-            'If you reach NanoKVM over this Wi-Fi network, this page loses its connection.',
+            'If you reach IronKVM over this Wi-Fi network, this page loses its connection.',
           disconnected: 'Wi-Fi disconnected',
           title: 'Wi-Fi',
           description: 'Configure Wi-Fi',
@@ -1014,7 +1029,7 @@ const en = {
         },
         ethernet: {
           title: 'IP Address',
-          description: 'Configure how NanoKVM gets its address on the wired network',
+          description: 'Configure how IronKVM gets its address on the wired network',
           dhcp: 'DHCP',
           manual: 'Manual',
           networkDetails: 'Network Details',
@@ -1028,17 +1043,17 @@ const en = {
           invalidRouter: 'Please enter a valid router address',
           addressRequired: 'An IP address is required',
           maskRequired: 'A subnet mask is required',
-          applyTitle: 'Change the address of NanoKVM?',
+          applyTitle: 'Change the address of IronKVM?',
           applyWarning:
-            'The connection to this page will be lost. NanoKVM applies the new address and waits {{seconds}} seconds for you to reach it there. Reaching it keeps the change. If nothing reaches it, NanoKVM puts the previous settings back.',
+            'The connection to this page will be lost. IronKVM applies the new address and waits {{seconds}} seconds for you to reach it there. Reaching it keeps the change. If nothing reaches it, IronKVM puts the previous settings back.',
           applyConfirm: 'Apply',
           applyCancel: 'Cancel',
           applyFailed: 'Failed to apply the address',
           trialTitle: 'Waiting for confirmation',
-          trialDhcp: 'NanoKVM is asking DHCP for an address.',
-          trialStatic: 'NanoKVM is now at {{address}}.',
+          trialDhcp: 'IronKVM is asking DHCP for an address.',
+          trialStatic: 'IronKVM is now at {{address}}.',
           trialInstruction:
-            'Open NanoKVM at its new address and sign in if it asks. Reaching it there keeps the change. If nothing reaches NanoKVM in {{seconds}} seconds, it puts the previous settings back.',
+            'Open IronKVM at its new address and sign in if it asks. Reaching it there keeps the change. If nothing reaches IronKVM in {{seconds}} seconds, it puts the previous settings back.',
           trialOpen: 'Open the new address',
           trialKeep: 'Keep these settings',
           trialKept: 'The new address is saved',
@@ -1048,7 +1063,7 @@ const en = {
         },
         dns: {
           title: 'DNS',
-          description: 'Configure DNS servers for NanoKVM',
+          description: 'Configure DNS servers for IronKVM',
           mode: 'Mode',
           dhcp: 'DHCP',
           manual: 'Manual',
@@ -1131,23 +1146,24 @@ const en = {
         notSignedIn: 'Not signed in yet. Finish signing in at the link, then check again.',
         checkFailed: 'Could not check the login status',
         loginWaiting: 'This page checks every few seconds and continues once you have signed in.',
-        uninstallFailed: 'Uninstall failed'
+        uninstallFailed: 'Uninstall failed',
+        loginFailed: 'Login failed'
       },
       tailscale: {
         title: 'Tailscale',
-        retry: 'Please refresh and try again. Or try to install manually',
         download: 'Download the',
         package: 'installation package',
         unzip: 'and unzip it',
-        upTailscale: 'Upload tailscale to NanoKVM directory /usr/bin/',
-        upTailscaled: 'Upload tailscaled to NanoKVM directory /usr/sbin/',
-        refresh: 'Refresh current page',
         notLogin:
           'The device has not been bound yet. Please login and bind this device to your account.',
         urlPeriod: 'This url is valid for 10 minutes',
         login: 'Login',
         logout: 'Logout',
-        logoutDesc: 'Are you sure you want to logout?'
+        logoutDesc: 'Are you sure you want to logout?',
+        manualIntro: 'Or install it by hand over SSH:',
+        copyBinaries: 'Copy tailscale and tailscaled to {{dir}} on the IronKVM',
+        linksFile: 'In the same directory, create a file named links with these two lines:',
+        rebootRefresh: 'Reboot the IronKVM, then refresh this page'
       },
       netbird: {
         title: 'NetBird',
@@ -1161,7 +1177,8 @@ const en = {
         urlPeriod: 'This url is valid for 10 minutes',
         logout: 'Deregister',
         logoutDesc:
-          'Deregister removes this peer from your NetBird account and deletes its configuration here. Joining again needs a setup key or an SSO login, and the peer may get a new IP. Continue?'
+          'Deregister removes this peer from your NetBird account and deletes its configuration here. Joining again needs a setup key or an SSO login, and the peer may get a new IP. Continue?',
+        joinFailed: 'Could not join the network'
       },
       update: {
         title: 'Check for Updates',
@@ -1207,7 +1224,8 @@ const en = {
         },
         updateTo: 'Update to {{version}}',
         updateConfirmDesc:
-          'The device installs the update and restarts its server. This page reloads when the server is back.'
+          'The device installs the update and restarts its server. This page reloads when the server is back.',
+        releaseNotes: 'Release notes'
       },
       account: {
         title: 'Account',
@@ -1286,7 +1304,7 @@ const en = {
         defaultTitle: 'General Assistant',
         defaultDescription: 'General chat, search, and workspace help.',
         kvmTitle: 'Remote Control',
-        kvmDescription: 'Operate the remote host through NanoKVM.',
+        kvmDescription: 'Operate the remote host through IronKVM.',
         switched: 'Agent role switched',
         switchFailed: 'Failed to switch agent role'
       },
@@ -1475,9 +1493,9 @@ const en = {
       warn: 'Video memory is low. One server restart would exhaust it. Reboot when convenient.',
       criticalTitle: 'Not enough video memory to start the stream',
       criticalBody:
-        'Starting video would exhaust the reserved memory and stop the server. Every other function still works, including power control and reboot. Only a reboot of NanoKVM reclaims this memory.',
+        'Starting video would exhaust the reserved memory and stop the server. Every other function still works, including power control and reboot. Only a reboot of IronKVM reclaims this memory.',
       criticalContinue: 'Start video anyway',
-      criticalReboot: 'Reboot NanoKVM',
+      criticalReboot: 'Reboot IronKVM',
       criticalRebooting: 'Rebooting...'
     }
   }

@@ -2,7 +2,6 @@ import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { Button, Divider, Input, Progress } from 'antd';
 import type { InputRef } from 'antd';
 import clsx from 'clsx';
-import { useSetAtom } from 'jotai';
 import { DiscIcon, DownloadIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -14,7 +13,7 @@ import {
   statusImage,
   uploadImageFile
 } from '@/api/download.ts';
-import { keyboardLockAtom } from '@/jotai/keyboard.ts';
+import { useKeyboardLock } from '@/hooks/useKeyboardLock.ts';
 import { MenuItem } from '@/components/menu-item.tsx';
 
 const imageUpdatedEvent = 'nanokvm:image-updated';
@@ -26,7 +25,8 @@ function isISO(file: File) {
 
 export const DownloadImage = () => {
   const { t } = useTranslation();
-  const setKeyboardLock = useSetAtom(keyboardLockAtom);
+  const [isOpen, setIsOpen] = useState(false);
+  useKeyboardLock('download-popover', isOpen);
 
   const [input, setInput] = useState('');
   const [sha256sum, setSha256sum] = useState('');
@@ -64,14 +64,12 @@ export const DownloadImage = () => {
   }
 
   function handleOpenChange(open: boolean) {
+    setIsOpen(open);
     if (open) {
       checkDiskEnabled();
       startStatusPolling();
-      setKeyboardLock({ source: 'download-popover', locked: true });
       setPopoverKey((prevKey) => prevKey + 1); // Force re-render
     } else {
-      setKeyboardLock({ source: 'download-popover', locked: false });
-
       // Keep monitoring an active remote download after the popover closes so
       // completion can still refresh an already-open image list.
       const transferActive = remoteDownloadActive.current || fileUploadActive.current;
@@ -395,9 +393,10 @@ export const DownloadImage = () => {
           <div>
             <div className="mb-1 text-neutral-500">{t('download.inputfile')}</div>
             <div className="flex items-center gap-1">
-              <div
+              <button
+                type="button"
                 className={clsx(
-                  'flex h-10 min-w-0 flex-1 flex-col items-center justify-center rounded-xl border-2 border-solid transition',
+                  'flex h-10 min-w-0 flex-1 flex-col items-center justify-center rounded-xl border-2 border-solid p-0 transition',
                   isDragging ? 'border-blue-500 bg-neutral-500' : 'border-neutral-600',
                   status === 'in_progress'
                     ? 'cursor-not-allowed bg-neutral-700 opacity-50'
@@ -444,7 +443,7 @@ export const DownloadImage = () => {
                   disabled={status === 'in_progress'}
                   className="hidden"
                 />
-              </div>
+              </button>
               <Button
                 type="primary"
                 className="h-10 w-16 shrink-0 border-2 px-0"

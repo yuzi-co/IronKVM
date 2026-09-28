@@ -4,6 +4,7 @@ import { Button, Card, Divider, Input } from 'antd';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/extensions/netbird.ts';
+import { describeFailure } from '@/lib/feedback.ts';
 
 import { ErrorDetail } from '../vpn/error-detail.tsx';
 import { LoginUrl } from '../vpn/login-url.tsx';
@@ -38,7 +39,7 @@ export const Login = ({ onSuccess }: LoginProps) => {
         setSetupKey('');
         onSuccess();
       })
-      .catch((err) => setErrMsg(err?.message || 'Failed to join'))
+      .catch((err) => setErrMsg(describeFailure(err, t('settings.netbird.joinFailed'))))
       .finally(() => setLoading(''));
   }
 
@@ -64,7 +65,7 @@ export const Login = ({ onSuccess }: LoginProps) => {
         setLoginUrl(url);
         setTimeout(() => setLoginUrl(''), 10 * 60 * 1000);
       })
-      .catch((err) => setErrMsg(err?.message || 'Failed to login'))
+      .catch((err) => setErrMsg(describeFailure(err, t('settings.vpn.loginFailed'))))
       .finally(() => setLoading(''));
   }
 

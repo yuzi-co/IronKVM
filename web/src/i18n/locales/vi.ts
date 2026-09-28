@@ -14,7 +14,11 @@ const vi = {
       copyFailed: 'Không sao chép được. Hãy chọn văn bản và sao chép thủ công.',
       notUpdating: 'Không cập nhật: lần làm mới gần nhất thất bại.',
       off: 'Tắt',
-      running: 'Đang chạy'
+      running: 'Đang chạy',
+      save: 'Lưu',
+      cancel: 'Hủy',
+      delete: 'Xóa',
+      remove: 'Gỡ bỏ'
     },
     head: {
       desktop: 'Màn hình từ xa',
@@ -53,20 +57,21 @@ const vi = {
       loginButtonText: 'Đăng nhập',
       tips: {
         reset1:
-          'To reset the passwords, pressing and holding the BOOT button on the NanoKVM for 10 seconds.',
-        reset2: 'Để biết các bước chi tiết, vui lòng xem tài liệu này:',
+          'To reset the passwords, pressing and holding the BOOT button on the IronKVM for 10 seconds.',
         reset3: 'Tài khoản web mặc định:',
         reset4: 'Tài khoản SSH mặc định:',
         change1: 'Lưu ý rằng thao tác này sẽ thay đổi các mật khẩu sau:',
         change2: 'Mật khẩu đăng nhập web',
         change3: 'Mật khẩu root hệ thống (mật khẩu đăng nhập SSH)',
-        change4: 'Để đặt lại mật khẩu, hãy nhấn và giữ nút BOOT trên NanoKVM.'
+        change4: 'Để đặt lại mật khẩu, hãy nhấn và giữ nút BOOT trên IronKVM.',
+        resetDocs: 'Xem các bước chi tiết trong tài liệu phần cứng:',
+        hardwareDocs: 'Wiki Sipeed NanoKVM'
       }
     },
     wifi: {
       title: 'Wi-Fi',
-      description: 'Cấu hình Wi-Fi cho NanoKVM',
-      success: 'Please check the network status of NanoKVM and visit the new IP address.',
+      description: 'Cấu hình Wi-Fi cho IronKVM',
+      success: 'Please check the network status of IronKVM and visit the new IP address.',
       failed: 'Thao tác thất bại, vui lòng thử lại.',
       invalidMode:
         'Chế độ hiện tại không hỗ trợ thiết lập mạng. Vui lòng truy cập thiết bị của bạn và bật chế độ cấu hình Wi-Fi.',
@@ -321,10 +326,10 @@ const vi = {
       hidOnly: {
         switchFailed: 'Không chuyển được chế độ. Kiểm tra kết nối rồi thử lại.',
         title: 'Chế độ chỉ HID',
-        desc: 'Nếu chuột và bàn phím của bạn ngừng phản hồi và việc đặt lại HID không có tác dụng thì đó có thể là sự cố tương thích giữa NanoKVM và thiết bị. Hãy thử bật chế độ HID-Only để tương thích tốt hơn.',
+        desc: 'Nếu chuột và bàn phím của bạn ngừng phản hồi và việc đặt lại HID không có tác dụng thì đó có thể là sự cố tương thích giữa IronKVM và thiết bị. Hãy thử bật chế độ HID-Only để tương thích tốt hơn.',
         tip1: 'Kích hoạt HID-Chế độ chỉ sẽ ngắt kết nối đĩa U ảo và mạng ảo',
         tip2: 'Ở chế độ HID-Chỉ, tính năng gắn hình ảnh bị tắt',
-        rebuild: 'Chuyển chế độ sẽ dựng lại kết nối USB. NanoKVM không khởi động lại',
+        rebuild: 'Chuyển chế độ sẽ dựng lại kết nối USB. IronKVM không khởi động lại',
         enable: 'Bật chế độ HID-Chỉ',
         disable: 'Tắt chế độ HID-Chỉ'
       },
@@ -391,18 +396,18 @@ const vi = {
       },
       tips: {
         title: 'Cách tải lên',
-        usb1: 'Kết nối NanoKVM với máy tính của bạn qua USB.',
+        usb1: 'Kết nối IronKVM với máy tính của bạn qua USB.',
         usb2: 'Đảm bảo rằng đĩa ảo đã được gắn kết (Cài đặt - Đĩa ảo).',
         usb3: 'Mở đĩa ảo trên máy tính của bạn và sao chép vào thư mục gốc của đĩa ảo.',
-        scp1: 'Đảm bảo NanoKVM và máy tính của bạn đang trên cùng một mạng nội bộ.',
-        scp2: 'Mở terminal trên máy tính và sử dụng lệnh SCP để tải đĩa ảo lên thư mục /data trên NanoKVM.',
+        scp1: 'Đảm bảo IronKVM và máy tính của bạn đang trên cùng một mạng nội bộ.',
+        scp2: 'Mở terminal trên máy tính và sử dụng lệnh SCP để tải đĩa ảo lên thư mục /data trên IronKVM.',
         scp3: 'Ví dụ: scp đường-dẫn-image root@ip-của-nanokvm:/data',
         tfCard: 'Thẻ TF',
         tf1: 'Phương pháp này được hỗ trợ trên hệ thống Linux',
-        tf2: 'Lấy thẻ TF từ NanoKVM (với phiên bản FULL, hãy tháo vỏ trước).',
+        tf2: 'Lấy thẻ TF từ IronKVM (với phiên bản FULL, hãy tháo vỏ trước).',
         tf3: 'Chèn thẻ TF vào đầu đọc thẻ và kết nối với máy tính của bạn.',
         tf4: 'Sao chép tệp hình ảnh vào thư mục /data trên thẻ TF.',
-        tf5: 'Chèn thẻ TF vào NanoKVM.'
+        tf5: 'Chèn thẻ TF vào IronKVM.'
       }
     },
     script: {
@@ -433,7 +438,7 @@ const vi = {
       invalidSettings: 'Cài đặt cổng nối tiếp không hợp lệ. Đây là shell của chính bo mạch.',
       disconnected: 'Đã ngắt kết nối. Nhấn Enter để kết nối lại.',
       title: 'Terminal',
-      nanokvm: 'Terminal NanoKVM',
+      nanokvm: 'Terminal IronKVM',
       serial: 'Terminal Cổng Nối Tiếp',
       serialPort: 'Cổng Nối Tiếp',
       serialPortPlaceholder: 'Vui lòng nhập cổng nối tiếp',
@@ -555,7 +560,10 @@ const vi = {
         failed: 'Thao tác MCP không thành công',
         copyFailed: 'Sao chép thất bại. Vui lòng sao chép thủ công.',
         okBtn: 'Xác nhận',
-        cancelBtn: 'Hủy'
+        cancelBtn: 'Hủy',
+        showKey: 'Hiện khóa',
+        hideKey: 'Ẩn khóa',
+        regenerateKey: 'Tạo lại khóa'
       },
       redfish: {
         example: 'Ví dụ',
@@ -689,7 +697,7 @@ const vi = {
           'Khoảng thời gian máy chủ có thể không có dấu hiệu hoạt động trước khi watchdog can thiệp.',
         action: 'Hành động',
         actionDesc: 'Tắt rồi bật giữ nút nguồn trong 5 giây, sau đó nhấn lại.',
-        actionReset: 'Reset',
+        actionReset: 'Đặt lại',
         actionPower: 'Tắt rồi bật',
         cooldown: 'Thời gian nghỉ',
         cooldownDesc: 'Khoảng thời gian ngắn nhất giữa hai hành động.',
@@ -785,21 +793,21 @@ const vi = {
         failed: 'Thao tác khởi động qua mạng thất bại'
       },
       about: {
-        title: 'Giới thiệu về NanoKVM',
+        title: 'Giới thiệu về IronKVM',
         information: 'Thông tin',
         ip: 'IP',
         mdns: 'mDNS',
         application: 'Phiên bản Ứng dụng',
-        applicationTip: 'Phiên bản ứng dụng web NanoKVM',
+        applicationTip: 'Phiên bản ứng dụng web IronKVM',
         image: 'Phiên bản Hình ảnh',
-        imageTip: 'Phiên bản image hệ thống NanoKVM',
+        imageTip: 'Ảnh thẻ IronKVM và ảnh hệ thống NanoKVM mà nó dựa trên',
         kernel: 'Phiên bản Kernel',
         kernelTip: 'Bản phát hành của kernel Linux đang chạy',
         deviceKey: 'Khóa Thiết bị',
         videoMemory: 'Bộ nhớ video',
         videoMemoryTip:
           'Bộ nhớ dành riêng cho việc thu video. Nó không được chia sẻ với phần còn lại của hệ thống.',
-        videoMemoryGenerations_other: '{{count}} phiên NanoKVM trước đó đang giữ bộ nhớ video',
+        videoMemoryGenerations_other: '{{count}} phiên IronKVM trước đó đang giữ bộ nhớ video',
         videoMemoryReboot: 'Khởi động lại để thu hồi.',
         community: 'Cộng đồng',
         hostname: 'Tên máy chủ',
@@ -811,7 +819,14 @@ const vi = {
         },
         hostnameInvalid:
           'Dùng chữ cái, chữ số và dấu gạch nối, tối đa 63 ký tự mỗi phần ngăn cách bởi dấu chấm. Không có dấu gạch nối ở đầu hoặc cuối phần.',
-        hostnameFailed: 'Không thể đổi tên máy chủ'
+        hostnameFailed: 'Không thể đổi tên máy chủ',
+        editHostname: 'Sửa tên máy chủ',
+        docs: 'Tài liệu',
+        hardware: 'Phần cứng',
+        hardwareFaq: 'Câu hỏi thường gặp về phần cứng',
+        disclaimer:
+          'IronKVM: firmware cộng đồng được gia cố cho Sipeed NanoKVM. Không liên kết với Sipeed.',
+        basedOn: 'dựa trên NanoKVM {{version}}'
       },
       appearance: {
         title: 'Giao diện',
@@ -866,13 +881,13 @@ const vi = {
             '255': 'Tối đa'
           },
           0: 'Không bao giờ',
-          15: '15 sec',
-          30: '30 sec',
-          60: '1 min',
-          180: '3 min',
-          300: '5 min',
-          600: '10 min',
-          1800: '30 min',
+          15: '15 giây',
+          30: '30 giây',
+          60: '1 phút',
+          180: '3 phút',
+          300: '5 phút',
+          600: '10 phút',
+          1800: '30 phút',
           3600: '1 giờ'
         },
         ssh: {
@@ -935,10 +950,10 @@ const vi = {
         network: 'Mạng ảo',
         networkDesc: 'Gắn card mạng ảo trên máy chủ từ xa',
         usbNetwork: {
-          boardAddress: 'NanoKVM:',
+          boardAddress: 'IronKVM:',
           hostAddress: 'Máy chủ:',
           description:
-            'Liên kết mạng riêng với máy chủ từ xa qua cáp USB. Máy chủ nhận một địa chỉ không có gateway và không có DNS, nên không thể truy cập mạng LAN của bạn thông qua NanoKVM.',
+            'Liên kết mạng riêng với máy chủ từ xa qua cáp USB. Máy chủ nhận một địa chỉ không có gateway và không có DNS, nên không thể truy cập mạng LAN của bạn thông qua IronKVM.',
           off: 'Tắt',
           ncm: 'NCM (Linux, macOS, Windows 11)',
           ecm: 'ECM (cho máy chủ không hỗ trợ NCM)',
@@ -946,7 +961,7 @@ const vi = {
           rndisNote: 'Liên kết này dùng RNDIS, không còn được cung cấp. Hãy chọn NCM hoặc ECM.',
           subnet: 'Mạng con',
           subnetDesc:
-            'Một mạng IPv4 riêng, từ /24 đến /30. NanoKVM dùng địa chỉ đầu tiên, máy chủ dùng địa chỉ thứ hai.',
+            'Một mạng IPv4 riêng, từ /24 đến /30. IronKVM dùng địa chỉ đầu tiên, máy chủ dùng địa chỉ thứ hai.',
           invalidSubnet: 'Nhập một mạng con, ví dụ 172.31.255.0/30.',
           apply: 'Áp dụng',
           confirm: 'Kết nối lại thiết bị USB?',
@@ -959,9 +974,9 @@ const vi = {
         audioNote: 'Âm thanh có trong cả hai chế độ H.264 (WebRTC và Direct), không có trong MJPEG',
         console: 'Console nối tiếp',
         consoleDesc:
-          'Cung cấp một cổng nối tiếp USB cho máy chủ từ xa, để đăng nhập vào NanoKVM này khi không truy cập được mạng',
+          'Cung cấp một cổng nối tiếp USB cho máy chủ từ xa, để đăng nhập vào IronKVM này khi không truy cập được mạng',
         consoleTip:
-          'Bất kỳ ai điều khiển máy chủ từ xa đều nhận được lời nhắc đăng nhập vào NanoKVM này. Đặt mật khẩu mạnh trước khi bật (Tài khoản - Đổi mật khẩu).',
+          'Bất kỳ ai điều khiển máy chủ từ xa đều nhận được lời nhắc đăng nhập vào IronKVM này. Đặt mật khẩu mạnh trước khi bật (Tài khoản - Đổi mật khẩu).',
         endpoints: {
           title: 'Endpoint USB',
           used: 'Đã dùng {{used}} / {{total}}',
@@ -976,7 +991,7 @@ const vi = {
           fitTogether: 'Có thể dùng cùng nhau: {{sets}}'
         },
         reboot: 'Khởi động lại',
-        rebootDesc: 'Bạn có chắc chắn muốn khởi động lại NanoKVM không?',
+        rebootDesc: 'Bạn có chắc chắn muốn khởi động lại IronKVM không?',
         okBtn: 'Có',
         cancelBtn: 'Không',
         rebootFailed: 'Khởi động lại thất bại'
@@ -986,7 +1001,7 @@ const vi = {
         wifi: {
           disconnectBtn: 'Ngắt kết nối',
           disconnectWarning:
-            'Nếu bạn truy cập NanoKVM qua mạng Wi-Fi này, trang này sẽ mất kết nối.',
+            'Nếu bạn truy cập IronKVM qua mạng Wi-Fi này, trang này sẽ mất kết nối.',
           disconnected: 'Đã ngắt Wi-Fi',
           title: 'Wi-Fi',
           description: 'Cấu hình Wi-Fi',
@@ -1018,7 +1033,7 @@ const vi = {
         },
         ethernet: {
           title: 'Địa chỉ IP',
-          description: 'Cấu hình cách NanoKVM nhận địa chỉ trên mạng có dây',
+          description: 'Cấu hình cách IronKVM nhận địa chỉ trên mạng có dây',
           dhcp: 'DHCP',
           manual: 'Thủ công',
           networkDetails: 'Chi tiết mạng',
@@ -1032,17 +1047,17 @@ const vi = {
           invalidRouter: 'Vui lòng nhập địa chỉ bộ định tuyến hợp lệ',
           addressRequired: 'Cần có địa chỉ IP',
           maskRequired: 'Cần có mặt nạ mạng con',
-          applyTitle: 'Thay đổi địa chỉ của NanoKVM?',
+          applyTitle: 'Thay đổi địa chỉ của IronKVM?',
           applyWarning:
-            'Kết nối tới trang này sẽ mất. NanoKVM áp dụng địa chỉ mới và chờ {{seconds}} giây để bạn kết nối tới nó tại địa chỉ đó. Kết nối được sẽ giữ lại thay đổi. Nếu không có gì kết nối tới nó, NanoKVM khôi phục các cài đặt trước đó.',
+            'Kết nối tới trang này sẽ mất. IronKVM áp dụng địa chỉ mới và chờ {{seconds}} giây để bạn kết nối tới nó tại địa chỉ đó. Kết nối được sẽ giữ lại thay đổi. Nếu không có gì kết nối tới nó, IronKVM khôi phục các cài đặt trước đó.',
           applyConfirm: 'Áp dụng',
           applyCancel: 'Hủy',
           applyFailed: 'Không áp dụng được địa chỉ',
           trialTitle: 'Đang chờ xác nhận',
-          trialDhcp: 'NanoKVM đang yêu cầu địa chỉ qua DHCP.',
-          trialStatic: 'NanoKVM hiện ở {{address}}.',
+          trialDhcp: 'IronKVM đang yêu cầu địa chỉ qua DHCP.',
+          trialStatic: 'IronKVM hiện ở {{address}}.',
           trialInstruction:
-            'Mở NanoKVM tại địa chỉ mới và đăng nhập nếu được yêu cầu. Kết nối tới nó ở đó sẽ giữ lại thay đổi. Nếu không có gì kết nối tới NanoKVM trong {{seconds}} giây, nó khôi phục các cài đặt trước đó.',
+            'Mở IronKVM tại địa chỉ mới và đăng nhập nếu được yêu cầu. Kết nối tới nó ở đó sẽ giữ lại thay đổi. Nếu không có gì kết nối tới IronKVM trong {{seconds}} giây, nó khôi phục các cài đặt trước đó.',
           trialOpen: 'Mở địa chỉ mới',
           trialKeep: 'Giữ các cài đặt này',
           trialKept: 'Địa chỉ mới đã được lưu',
@@ -1052,7 +1067,7 @@ const vi = {
         },
         dns: {
           title: 'DNS',
-          description: 'Cấu hình máy chủ DNS cho NanoKVM',
+          description: 'Cấu hình máy chủ DNS cho IronKVM',
           mode: 'Chế độ',
           dhcp: 'DHCP',
           manual: 'Thủ công',
@@ -1137,29 +1152,30 @@ const vi = {
         notSignedIn: 'Chưa đăng nhập. Hãy hoàn tất đăng nhập qua liên kết rồi kiểm tra lại.',
         checkFailed: 'Không thể kiểm tra trạng thái đăng nhập',
         loginWaiting: 'Trang này kiểm tra vài giây một lần và sẽ tiếp tục khi bạn đã đăng nhập.',
-        uninstallFailed: 'Gỡ cài đặt thất bại'
+        uninstallFailed: 'Gỡ cài đặt thất bại',
+        loginFailed: 'Đăng nhập thất bại'
       },
       tailscale: {
         title: 'Tailscale',
-        retry: 'Vui lòng làm mới và thử lại. Hoặc thử cài đặt thủ công',
         download: 'Tải xuống',
         package: 'gói cài đặt',
         unzip: 'và giải nén nó',
-        upTailscale: 'Tải tailscale lên thư mục /usr/bin/ của NanoKVM',
-        upTailscaled: 'Tải tailscaled lên thư mục /usr/sbin/ của NanoKVM',
-        refresh: 'Làm mới trang hiện tại',
         notLogin:
           'Thiết bị chưa được liên kết. Vui lòng đăng nhập và liên kết thiết bị này với tài khoản của bạn.',
         urlPeriod: 'URL này có hiệu lực trong 10 phút',
         login: 'Đăng nhập',
         logout: 'Đăng xuất',
-        logoutDesc: 'Bạn có chắc chắn muốn đăng xuất không?'
+        logoutDesc: 'Bạn có chắc chắn muốn đăng xuất không?',
+        manualIntro: 'Hoặc cài đặt thủ công qua SSH:',
+        copyBinaries: 'Sao chép tailscale và tailscaled vào {{dir}} trên IronKVM',
+        linksFile: 'Trong cùng thư mục, tạo một tệp tên links chứa hai dòng sau:',
+        rebootRefresh: 'Khởi động lại IronKVM, rồi làm mới trang này'
       },
       netbird: {
         title: 'NetBird',
         notLogin:
           'Thiết bị này chưa tham gia mạng NetBird nào. Hãy tham gia bằng setup key, hoặc đăng nhập bằng SSO.',
-        setupKey: 'Setup key',
+        setupKey: 'Khóa thiết lập',
         setupKeyPlaceholder: 'Dán setup key từ bảng điều khiển NetBird',
         join: 'Tham gia',
         or: 'hoặc',
@@ -1167,7 +1183,8 @@ const vi = {
         urlPeriod: 'URL này có hiệu lực trong 10 phút',
         logout: 'Hủy đăng ký',
         logoutDesc:
-          'Hủy đăng ký sẽ xóa peer này khỏi tài khoản NetBird của bạn và xóa cấu hình của nó tại đây. Để tham gia lại cần setup key hoặc đăng nhập SSO, và peer có thể nhận IP mới. Tiếp tục?'
+          'Hủy đăng ký sẽ xóa peer này khỏi tài khoản NetBird của bạn và xóa cấu hình của nó tại đây. Để tham gia lại cần setup key hoặc đăng nhập SSO, và peer có thể nhận IP mới. Tiếp tục?',
+        joinFailed: 'Không thể tham gia mạng'
       },
       update: {
         title: 'Kiểm tra cập nhật',
@@ -1193,7 +1210,7 @@ const vi = {
           save: 'Lưu',
           confirmTitle: 'Sử dụng máy chủ cập nhật tùy chỉnh?',
           confirmDesc:
-            'SHA-512 chỉ kiểm tra xem gói có khớp với tệp kê khai do máy chủ này cung cấp hay không. Điều này không chứng minh rằng gói đó là bản phát hành NanoKVM chính thức. Máy chủ bị lỗi hoặc độc hại có thể khiến thiết bị không thể sử dụng, gây mất dữ liệu hoặc xâm phạm hệ thống.',
+            'SHA-512 chỉ kiểm tra xem gói có khớp với tệp kê khai do máy chủ này cung cấp hay không. Điều này không chứng minh rằng gói đó là bản phát hành IronKVM chính thức. Máy chủ bị lỗi hoặc độc hại có thể khiến thiết bị không thể sử dụng, gây mất dữ liệu hoặc xâm phạm hệ thống.',
           confirm: 'Vẫn sử dụng',
           useSipeed: 'Dùng máy chủ chính thức của Sipeed',
           previewDisabled:
@@ -1215,7 +1232,8 @@ const vi = {
         },
         updateTo: 'Cập nhật lên {{version}}',
         updateConfirmDesc:
-          'Thiết bị cài đặt bản cập nhật và khởi động lại máy chủ. Trang này sẽ tải lại khi máy chủ hoạt động trở lại.'
+          'Thiết bị cài đặt bản cập nhật và khởi động lại máy chủ. Trang này sẽ tải lại khi máy chủ hoạt động trở lại.',
+        releaseNotes: 'Ghi chú phát hành'
       },
       account: {
         title: 'Tài khoản',
@@ -1291,7 +1309,7 @@ const vi = {
         defaultTitle: 'Trợ lý chung',
         defaultDescription: 'Trợ giúp chung về trò chuyện, tìm kiếm và không gian làm việc.',
         kvmTitle: 'Điều khiển từ xa',
-        kvmDescription: 'Vận hành máy chủ từ xa thông qua NanoKVM.',
+        kvmDescription: 'Vận hành máy chủ từ xa thông qua IronKVM.',
         switched: 'Vai trò đại lý đã chuyển đổi',
         switchFailed: 'Chuyển đổi vai trò đại lý không thành công'
       },
@@ -1311,24 +1329,24 @@ const vi = {
       connection: {
         runtime: {
           checking: 'Đang kiểm tra',
-          restoring: 'Restoring PicoClaw',
+          restoring: 'Đang khôi phục PicoClaw',
           ready: 'Runtime đã sẵn sàng',
           stopped: 'Đã dừng runtime',
           blockedByMCP: 'Điều khiển MCP bên ngoài đang hoạt động',
           readyBlockedByMCP:
-            'The runtime is running, but external MCP currently controls device input.',
+            'Runtime đang chạy, nhưng MCP bên ngoài hiện đang điều khiển đầu vào thiết bị.',
           readyWithoutControl:
-            'The runtime is running. Grant PicoClaw device control before reconnecting.',
+            'Runtime đang chạy. Hãy cấp quyền điều khiển thiết bị cho PicoClaw trước khi kết nối lại.',
           unavailable: 'Runtime không khả dụng',
           configError: 'Lỗi cấu hình'
         },
         transport: {
           connecting: 'Đang kết nối',
           connected: 'Đã kết nối',
-          disconnected: 'Disconnected',
-          reconnect: 'Reconnect',
-          reconnectDescription: 'Reconnect to the running PicoClaw session.',
-          reconnectBlocked: 'PicoClaw needs device control before reconnecting.'
+          disconnected: 'Đã ngắt kết nối',
+          reconnect: 'Kết nối lại',
+          reconnectDescription: 'Kết nối lại với phiên PicoClaw đang chạy.',
+          reconnectBlocked: 'PicoClaw cần quyền điều khiển thiết bị trước khi kết nối lại.'
         },
         run: {
           idle: 'Nhàn rỗi',
@@ -1345,21 +1363,23 @@ const vi = {
       },
       control: {
         picoclaw: 'Điều khiển thiết bị: PicoClaw',
-        picoclawDescription: 'PicoClaw can write keyboard and mouse input. Manual input may pause.',
+        picoclawDescription:
+          'PicoClaw có thể gửi thao tác bàn phím và chuột. Thao tác thủ công có thể bị tạm dừng.',
         mcp: 'Điều khiển thiết bị: MCP bên ngoài',
-        mcpDescription: 'External MCP can write to the device. PicoClaw will not take over input.',
+        mcpDescription:
+          'MCP bên ngoài có thể ghi vào thiết bị. PicoClaw sẽ không tiếp quản đầu vào.',
         off: 'Điều khiển thiết bị: tắt',
         offDescription:
-          'AI will not write keyboard or mouse input. Manual control remains available.',
-        transitioning: 'Device control: switching',
-        transitioningDescription: 'Device control is syncing. Please wait.',
+          'AI sẽ không gửi thao tác bàn phím hay chuột. Điều khiển thủ công vẫn dùng được.',
+        transitioning: 'Điều khiển thiết bị: đang chuyển',
+        transitioningDescription: 'Đang đồng bộ quyền điều khiển thiết bị. Vui lòng chờ.',
         grant: 'Cấp quyền điều khiển',
         release: 'Nhả',
-        releasing: 'Releasing...',
-        switching: 'Switching...',
-        releasingLabel: 'Device control: releasing',
+        releasing: 'Đang nhả...',
+        switching: 'Đang chuyển...',
+        releasingLabel: 'Điều khiển thiết bị: đang nhả',
         releasingDescription:
-          'Device control is being returned. PicoClaw has stopped current writes.',
+          'Đang trả lại quyền điều khiển thiết bị. PicoClaw đã dừng các thao tác ghi đang chạy.',
         granted: 'Đã cấp quyền điều khiển PicoClaw',
         released: 'Đã nhả quyền điều khiển PicoClaw',
         grantFailed: 'Không thể cấp quyền điều khiển PicoClaw',
@@ -1441,8 +1461,8 @@ const vi = {
         enableConfirmCancel: 'Hủy',
         title: 'Bắt đầu PicoClaw',
         description: 'Bắt đầu runtime để sử dụng trợ lý PicoClaw.',
-        switchFromMCP: 'Switch to PicoClaw and start',
-        takeoverAndStart: 'Take over and start'
+        switchFromMCP: 'Chuyển sang PicoClaw và bắt đầu',
+        takeoverAndStart: 'Tiếp quản và bắt đầu'
       }
     },
     error: {
@@ -1476,9 +1496,9 @@ const vi = {
       warn: 'Bộ nhớ video sắp hết. Chỉ một lần khởi động lại máy chủ cũng sẽ làm cạn nó. Hãy khởi động lại khi thuận tiện.',
       criticalTitle: 'Không đủ bộ nhớ video để bắt đầu luồng',
       criticalBody:
-        'Bắt đầu video sẽ làm cạn bộ nhớ dành riêng và dừng máy chủ. Mọi chức năng khác vẫn hoạt động, bao gồm điều khiển nguồn và khởi động lại. Chỉ khởi động lại NanoKVM mới thu hồi được bộ nhớ này.',
+        'Bắt đầu video sẽ làm cạn bộ nhớ dành riêng và dừng máy chủ. Mọi chức năng khác vẫn hoạt động, bao gồm điều khiển nguồn và khởi động lại. Chỉ khởi động lại IronKVM mới thu hồi được bộ nhớ này.',
       criticalContinue: 'Vẫn bắt đầu video',
-      criticalReboot: 'Khởi động lại NanoKVM',
+      criticalReboot: 'Khởi động lại IronKVM',
       criticalRebooting: 'Đang khởi động lại...'
     }
   }

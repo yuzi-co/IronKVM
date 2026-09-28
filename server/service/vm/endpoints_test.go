@@ -252,6 +252,19 @@ func TestRefusalMessageNamesTheNumbersAndTheWayOut(t *testing.T) {
 	}
 }
 
+// The refusal is shown as it is in the web UI, which uses no em dashes.
+func TestRefusalMessageReadsAsOneSentence(t *testing.T) {
+	message := refusalMessage("network", endpointUse{in: 0, out: 1}, []string{"console"})
+
+	want := "network needs 2 inbound USB endpoints, 0 free: turn off console (2) first"
+	if message != want {
+		t.Errorf("refusal is %q, want %q", message, want)
+	}
+	if strings.ContainsRune(message, '—') {
+		t.Errorf("refusal %q carries an em dash", message)
+	}
+}
+
 // A function that fits inbound and not outbound has to be told so, or the
 // operator reads the inbound bar, sees room, and cannot explain the refusal.
 func TestRefusalMessageNamesTheOutboundDirectionWhenThatIsWhatIsShort(t *testing.T) {
