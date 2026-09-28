@@ -92,6 +92,7 @@ func server(r *gin.Engine) {
 	debugRouter(r)
 	metricsRouter(r)
 	redfishRouter(r)
+	ipmiRouter(r)
 	watchdogRouter(r)
 	netbootRouter(r)
 }
