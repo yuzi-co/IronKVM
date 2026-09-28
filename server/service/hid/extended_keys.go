@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	"NanoKVM-Server/proto"
@@ -27,6 +28,20 @@ const (
 )
 
 var errExtendedKeysUnavailable = errors.New("the USB gadget has no Consumer or System Control reports")
+
+// disableHidPath is the marker that makes S03usbdev leave the keyboard, the
+// relative mouse and the absolute pointer out of the gadget. A variable so
+// tests can point it at a scratch file.
+var disableHidPath = "/boot/disable_hid"
+
+// HidDisabled reports whether the owner has switched HID off. The UI needs it
+// apart from ExtendedKeysAvailable: S03usbdev removes only the links and keeps
+// the function directories, so hid.GS2's report_length can still read 7 while
+// nothing is linked, and the keys would be offered with nowhere to go.
+func HidDisabled() bool {
+	_, err := os.Stat(disableHidPath)
+	return err == nil
+}
 
 // extendedKeyReports builds the press and release reports for one key.
 func extendedKeyReports(page string, usage int) (press, release []byte, err error) {
@@ -97,6 +112,11 @@ func (s *Service) SendKey(c *gin.Context) {
 	press, release, err := extendedKeyReports(req.Page, req.Usage)
 	if err != nil {
 		rsp.ErrRsp(c, -1, err.Error())
+		return
+	}
+
+	if HidDisabled() {
+		rsp.ErrRsp(c, -4, "HID is disabled")
 		return
 	}
 

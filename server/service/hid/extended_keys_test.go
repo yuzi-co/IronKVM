@@ -3,9 +3,19 @@ package hid
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 	"time"
+
+	"NanoKVM-Server/proto"
+
+	"github.com/gin-gonic/gin"
 )
 
 func TestExtendedKeyReports(t *testing.T) {
@@ -203,5 +213,66 @@ func TestPressExtendedKeyRetriesAFailedRelease(t *testing.T) {
 	}
 	if len(got) != 3 || !bytes.Equal(got[2], release) {
 		t.Fatalf("wrote %x, want press, release, release", got)
+	}
+}
+
+// hidDisabledMarker points disableHidPath at a scratch file, created when
+// present is true.
+func hidDisabledMarker(t *testing.T, present bool) {
+	t.Helper()
+
+	restore := disableHidPath
+	t.Cleanup(func() { disableHidPath = restore })
+
+	path := filepath.Join(t.TempDir(), "disable_hid")
+	if present {
+		if err := os.WriteFile(path, nil, 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	disableHidPath = path
+}
+
+func TestHidDisabledFollowsTheMarker(t *testing.T) {
+	hidDisabledMarker(t, false)
+	if HidDisabled() {
+		t.Error("HidDisabled is true without the marker")
+	}
+
+	hidDisabledMarker(t, true)
+	if !HidDisabled() {
+		t.Error("HidDisabled is false with the marker")
+	}
+}
+
+// With HID switched off, the functions are unlinked but hid.GS2 can still say
+// it declares the key reports. The route must refuse on the marker, not on
+// the report length, and write nothing.
+func TestSendKeyIsRefusedWhenHidIsDisabled(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	hidDisabledMarker(t, true)
+	gadgetReportLength(t, "7\n")
+	got := recordWrites(t)
+
+	h := &Hid{}
+	openDevice(t, h.extendedKeyDevice())
+	s := &Service{hid: h}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest(http.MethodPost, "/api/hid/key", strings.NewReader(`{"page":"consumer","usage":233}`))
+	c.Request.Header.Set("Content-Type", "application/json")
+
+	s.SendKey(c)
+
+	var rsp proto.Response
+	if err := json.Unmarshal(w.Body.Bytes(), &rsp); err != nil {
+		t.Fatal(err)
+	}
+	if rsp.Code != -4 {
+		t.Errorf("code %d, want -4", rsp.Code)
+	}
+	if len(*got) != 0 {
+		t.Errorf("wrote %x, want nothing", *got)
 	}
 }

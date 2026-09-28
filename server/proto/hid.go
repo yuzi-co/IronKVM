@@ -5,6 +5,9 @@ type GetHidModeRsp struct {
 	// ExtendedKeys is true when the gadget carries the Consumer and System
 	// Control reports, which only normal mode's descriptor declares.
 	ExtendedKeys bool `json:"extendedKeys"`
+	// HidDisabled is true when /boot/disable_hid leaves the keyboard and both
+	// pointers out of the gadget.
+	HidDisabled bool `json:"hidDisabled"`
 }
 
 // SendHidKeyReq presses and releases one key outside the keyboard: a
