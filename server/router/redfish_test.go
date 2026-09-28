@@ -3,12 +3,14 @@ package router
 import (
 	"encoding/json"
 	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 
+	"NanoKVM-Server/config"
 	"NanoKVM-Server/service/redfish"
 	"NanoKVM-Server/service/vm"
 )
@@ -78,5 +80,66 @@ func TestAFileThatMerelyStartsWithRedfishIsStillServed(t *testing.T) {
 
 	if body := get(t, r, "/redfish-help.html").Body.String(); body != "help" {
 		t.Fatalf("got %q", body)
+	}
+}
+
+// useRedfishSetting sets redfish.enabled for one test and records what the
+// switch saves instead of writing /etc/kvm/server.yaml.
+func useRedfishSetting(t *testing.T, enabled bool) *[]bool {
+	t.Helper()
+
+	conf := config.GetInstance()
+	original := conf.Redfish
+	conf.Redfish.Enabled = &enabled
+
+	var saved []bool
+	originalSave := saveRedfishSetting
+	saveRedfishSetting = func(on bool) error {
+		saved = append(saved, on)
+		return nil
+	}
+
+	t.Cleanup(func() {
+		conf.Redfish = original
+		saveRedfishSetting = originalSave
+	})
+	return &saved
+}
+
+// The service reads redfish.enabled from the running configuration, and the
+// switch saves it and applies it there, without a restart.
+func TestRedfishFollowsTheEnabledSetting(t *testing.T) {
+	saved := useRedfishSetting(t, false)
+	r := newRedfishEngine(t, t.TempDir())
+
+	if w := get(t, r, "/redfish/v1/"); w.Code != http.StatusNotFound {
+		t.Fatalf("off: GET /redfish/v1/ answered %d", w.Code)
+	}
+
+	if err := setRedfishEnabled(true); err != nil {
+		t.Fatal(err)
+	}
+	if w := get(t, r, "/redfish/v1/"); w.Code != http.StatusOK {
+		t.Fatalf("on: GET /redfish/v1/ answered %d", w.Code)
+	}
+	if !redfishEnabled() || len(*saved) != 1 || !(*saved)[0] {
+		t.Fatalf("enabled=%t saved=%v", redfishEnabled(), *saved)
+	}
+}
+
+// The page's routes need a web UI login; the Redfish credentials do not
+// reach them.
+func TestTheRedfishSettingsNeedAWebLogin(t *testing.T) {
+	useRedfishSetting(t, true)
+	r := newRedfishEngine(t, t.TempDir())
+
+	for _, path := range []string{"/api/redfish/settings", "/api/redfish/sessions"} {
+		w := httptest.NewRecorder()
+		request := httptest.NewRequest(http.MethodGet, path, nil)
+		request.SetBasicAuth("admin", "admin")
+		r.ServeHTTP(w, request)
+		if w.Code != http.StatusUnauthorized {
+			t.Errorf("GET %s without a login answered %d %s", path, w.Code, w.Body.String())
+		}
 	}
 }

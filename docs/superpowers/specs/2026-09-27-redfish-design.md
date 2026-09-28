@@ -99,6 +99,15 @@ apply as they do from the UI.
 - On a board with authentication disabled, every request acts as admin, as the rest of the API
   does.
 
+## Switching it off
+
+`redfish.enabled` in `server.yaml`, default true; a file without the key keeps the service on.
+While it is false every `/redfish` path answers a plain 404, before any credential is checked.
+The web UI's Redfish page under Settings changes it without a restart through the admin-only
+`/api/redfish/settings`, and turning it off ends every Redfish session. The same page lists the
+sessions (`GET /api/redfish/sessions`, never with a token) and ends one
+(`DELETE /api/redfish/sessions/:id`).
+
 ## Protocol details
 
 `OData-Version: 4.0` on every response, `@odata.id`, `@odata.type` and `@odata.context` on
