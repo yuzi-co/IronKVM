@@ -1,6 +1,8 @@
 package hid
 
 import (
+	"errors"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -26,7 +28,35 @@ func (h *Hid) mouseReports(queue <-chan QueuedReport, relativePath string, absol
 	relativeButtonsActive := false
 	absoluteButtonsActive := false
 	absoluteReleaseReport := absoluteMouseReleaseReport(nil)
+	// heldContacts are the touch contacts the host may still see down. They
+	// are lifted wherever held buttons are released.
+	var heldContacts []TouchContact
+	liftTouches := func() error {
+		for _, frame := range touchLiftFrames(heldContacts) {
+			err := runCleanup(execute, func() error {
+				return h.writeTouchFrame(h.touchDeviceAt(absolutePath), frame)
+			})
+			if errors.Is(err, errTouchUnavailable) {
+				// The gadget was rebuilt without the touch screen, and the
+				// host lost the contacts with it.
+				break
+			}
+			if err != nil {
+				return err
+			}
+		}
+		heldContacts = nil
+		if resetAbsoluteMouse != nil {
+			resetAbsoluteMouse()
+		}
+		return nil
+	}
 	defer func() {
+		if len(heldContacts) > 0 {
+			if err := liftTouches(); err != nil {
+				reportWriteFailure("lift touch contacts on queue close failed", err)
+			}
+		}
 		if relativeButtonsActive {
 			if err := runCleanup(execute, func() error {
 				return h.writeHID(h.relativeMouseDevice(relativePath), relativeMouseReleaseReport())
@@ -65,6 +95,14 @@ func (h *Hid) mouseReports(queue <-chan QueuedReport, relativePath string, absol
 				absoluteButtonsActive = true
 				absoluteReleaseReport = absoluteMouseReleaseReport(event.Data)
 			}
+			if event.Touch != nil {
+				heldContacts = heldTouches(heldContacts, event.Touch)
+			}
+			if len(heldContacts) > 0 {
+				if err := liftTouches(); err != nil {
+					reportWriteFailure("lift touch contacts after write failure failed", err)
+				}
+			}
 
 			if relativeButtonsActive || len(event.Data) == RelativeMouseReportLen {
 				if err := runCleanup(execute, func() error {
@@ -97,6 +135,52 @@ func (h *Hid) mouseReports(queue <-chan QueuedReport, relativePath string, absol
 			}
 
 			event.complete(false)
+		}
+
+		// A touch frame goes to the absolute pointer's endpoint like an
+		// absolute report, so buttons held on either mouse are released
+		// first, the same way a switch between the two mice does.
+		if event.Touch != nil {
+			if relativeButtonsActive {
+				if err := runCleanup(execute, func() error {
+					return h.writeHID(h.relativeMouseDevice(relativePath), relativeMouseReleaseReport())
+				}); err != nil {
+					cleanupFailure(err)
+					continue
+				}
+				relativeButtonsActive = false
+				if resetRelativeMouse != nil {
+					resetRelativeMouse()
+				}
+			}
+			if absoluteButtonsActive {
+				if err := runCleanup(execute, func() error {
+					return h.writeHID(h.absoluteMouseDevice(absolutePath), absoluteReleaseReport)
+				}); err != nil {
+					cleanupFailure(err)
+					continue
+				}
+				absoluteButtonsActive = false
+			}
+
+			if err := event.run(func() error {
+				return h.writeTouchFrame(h.touchDeviceAt(absolutePath), event.Touch)
+			}); err != nil {
+				cleanupFailure(err)
+				continue
+			}
+			heldContacts = heldTouches(heldContacts, event.Touch)
+			event.complete(true)
+			continue
+		}
+
+		// A mouse report after touch lifts the fingers first. A finger left
+		// down on the host would hold its touch while the pointer moves.
+		if len(heldContacts) > 0 && isMouseReportLen(len(event.Data)) {
+			if err := liftTouches(); err != nil {
+				cleanupFailure(err)
+				continue
+			}
 		}
 
 		switch len(event.Data) {
@@ -150,6 +234,10 @@ func (h *Hid) mouseReports(queue <-chan QueuedReport, relativePath string, absol
 			log.Debugf("invalid mouse event: %v", event.Data)
 		}
 	}
+}
+
+func isMouseReportLen(length int) bool {
+	return length == RelativeMouseReportLen || length == AbsoluteMouseReportLen
 }
 
 func relativeMouseReleaseReport() []byte {

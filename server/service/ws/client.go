@@ -24,6 +24,7 @@ const (
 	Heartbeat = iota
 	KeyboardEvent
 	MouseEvent
+	TouchEvent
 )
 
 const (
@@ -107,11 +108,33 @@ func (c *Client) Read() error {
 				kind = inputcontrol.ManualAbsoluteMouse
 			}
 			c.queueManualReport(c.mouse, kind, report, report[0] != 0, mouseReportStartsCooldown(report))
+		case TouchEvent:
+			contacts, err := decodeTouchFrame(data[1:])
+			if err != nil {
+				log.Debugf("invalid touch frame: %s", err)
+				continue
+			}
+			c.queueManualTouch(contacts)
 		}
 	}
 }
 
 func (c *Client) queueManualReport(queue chan hid.QueuedReport, kind inputcontrol.ManualReportKind, report []byte, held bool, startCooldown bool) {
+	c.queueManual(queue, kind, hid.QueuedReport{Data: append([]byte(nil), report...)}, held, startCooldown)
+}
+
+// queueManualTouch queues one touch frame. Touch uses the absolute pointer's
+// endpoint, so it takes the absolute mouse's control lease, and every frame is
+// real input that suspends the jiggler.
+func (c *Client) queueManualTouch(contacts []hid.TouchContact) {
+	held := false
+	for _, contact := range contacts {
+		held = held || contact.Down
+	}
+	c.queueManual(c.mouse, inputcontrol.ManualAbsoluteMouse, hid.QueuedReport{Touch: contacts}, held, true)
+}
+
+func (c *Client) queueManual(queue chan hid.QueuedReport, kind inputcontrol.ManualReportKind, queued hid.QueuedReport, held bool, startCooldown bool) {
 	ctx, cancel := context.WithTimeout(context.Background(), manualPreemptTimeout)
 	defer cancel()
 
@@ -127,14 +150,11 @@ func (c *Client) queueManualReport(queue chan hid.QueuedReport, kind inputcontro
 		return
 	}
 
-	queued := hid.QueuedReport{
-		Data:               append([]byte(nil), report...),
-		Execute:            c.manual.Execute,
-		Complete:           reservation.Complete,
-		ResetKeyboard:      func() { c.manual.Reset(inputcontrol.ManualKeyboard) },
-		ResetRelativeMouse: func() { c.manual.Reset(inputcontrol.ManualRelativeMouse) },
-		ResetAbsoluteMouse: func() { c.manual.Reset(inputcontrol.ManualAbsoluteMouse) },
-	}
+	queued.Execute = c.manual.Execute
+	queued.Complete = reservation.Complete
+	queued.ResetKeyboard = func() { c.manual.Reset(inputcontrol.ManualKeyboard) }
+	queued.ResetRelativeMouse = func() { c.manual.Reset(inputcontrol.ManualRelativeMouse) }
+	queued.ResetAbsoluteMouse = func() { c.manual.Reset(inputcontrol.ManualAbsoluteMouse) }
 	if !writeQueue(queue, queued) {
 		return
 	}

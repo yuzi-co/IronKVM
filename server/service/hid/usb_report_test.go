@@ -32,9 +32,9 @@ var initScripts = []string{
 
 // hidFunctions maps each script to the report lengths each configfs instance
 // may be given, in the order the script writes them. The absolute pointer in
-// S03usbdev has two: with /boot/usb.extkeys one report ID byte in front of the
-// report, and without it the plain report. S03usbhid, the mode for hosts that
-// are picky about the gadget, keeps the plain report.
+// S03usbdev has two: with /boot/usb.extkeys or /boot/usb.touch one report ID
+// byte in front of the report, and without either the plain report. S03usbhid,
+// the mode for hosts that are picky about the gadget, keeps the plain report.
 var hidFunctions = map[string]map[string][]int{
 	"../../../kvmapp/system/init.d/S03usbdev": {
 		"hid.GS0": {KeyboardReportLen},
@@ -297,9 +297,9 @@ func absoluteDescriptors(t *testing.T, path string, script string) [][]byte {
 	return descriptors
 }
 
-// S03usbdev writes two absolute descriptors: the plain one, which is the
-// default, and the one with the key reports, which only /boot/usb.extkeys
-// selects. The server puts AbsolutePointerReportID in front of every pointer
+// S03usbdev writes three absolute descriptors: the one with the touch screen,
+// which only /boot/usb.touch selects, the one with the key reports, which
+// /boot/usb.extkeys selects, and the plain one, which is the default. The server puts AbsolutePointerReportID in front of every pointer
 // report and sends the keys under the other two IDs, so a descriptor that
 // declared different numbers would have the host read clicks as volume keys.
 func TestTheNormalModePointerDeclaresTheThreeReportIDsOnlyWhenAsked(t *testing.T) {
@@ -307,10 +307,10 @@ func TestTheNormalModePointerDeclaresTheThreeReportIDsOnlyWhenAsked(t *testing.T
 	script := readScript(t, path)
 	descriptors := absoluteDescriptors(t, path, script)
 
-	if len(descriptors) != 2 {
-		t.Fatalf("%s writes %d absolute descriptors, want 2", path, len(descriptors))
+	if len(descriptors) != 3 {
+		t.Fatalf("%s writes %d absolute descriptors, want 3", path, len(descriptors))
 	}
-	withIDs, plain := descriptors[0], descriptors[1]
+	withIDs, plain := descriptors[1], descriptors[2]
 
 	// 85 NN = Report ID (NN), each right after its application collection.
 	for _, want := range [][]byte{
