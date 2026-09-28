@@ -427,7 +427,8 @@ const da = {
     power: {
       title: 'Tænd/sluk-knap',
       showConfirm: 'Bekræftelse',
-      showConfirmTip: 'Strømdrift kræver en ekstra bekræftelse',
+      showConfirmTip:
+        'Spørg før et kort tryk på tænd/sluk. Nulstil og et langt tryk spørger altid.',
       reset: 'Nulstillingsknap',
       power: 'Tænd/sluk-knap',
       powerShort: 'Tænd/sluk-knap (kort tryk)',
@@ -453,7 +454,11 @@ const da = {
       ledConnected: 'Strøm-LED tilsluttet',
       ledConnectedTip:
         "Slå kun til, hvis værtens stikben til strøm-LED'en er forbundet til kortet. Uden den er strømtilstanden ukendt.",
-      ledConnectedFailed: 'Kunne ikke gemme indstillingen for strøm-LED'
+      ledConnectedFailed: 'Kunne ikke gemme indstillingen for strøm-LED',
+      powerLongConfirm:
+        'Hold tænd/sluk-knappen i {{seconds}} s? Det afbryder strømmen uden nedlukning.',
+      done: 'Knappen er trykket',
+      failed: 'Tryk på knappen mislykkedes'
     },
     settings: {
       title: 'Indstillinger',

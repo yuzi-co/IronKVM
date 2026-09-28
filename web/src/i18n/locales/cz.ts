@@ -428,7 +428,7 @@ const cz = {
     power: {
       title: 'Napájení',
       showConfirm: 'Potvrzení',
-      showConfirmTip: 'Výkonové operace vyžadují další potvrzení',
+      showConfirmTip: 'Ptát se před krátkým stiskem napájení. Reset a dlouhý stisk se ptají vždy.',
       reset: 'Resetovat',
       power: 'Napájení',
       powerShort: 'Napájení (krátký stisk)',
@@ -454,7 +454,11 @@ const cz = {
       ledConnected: 'LED napájení připojena',
       ledConnectedTip:
         'Zapněte, jen pokud je konektor LED napájení hostitele propojen s deskou. Bez něj je stav napájení neznámý.',
-      ledConnectedFailed: 'Nastavení LED napájení se nepodařilo uložit'
+      ledConnectedFailed: 'Nastavení LED napájení se nepodařilo uložit',
+      powerLongConfirm:
+        'Držet tlačítko napájení {{seconds}} s? Tím se vypne napájení bez vypnutí systému.',
+      done: 'Tlačítko stisknuto',
+      failed: 'Stisk tlačítka se nezdařil'
     },
     settings: {
       title: 'Nastavení',

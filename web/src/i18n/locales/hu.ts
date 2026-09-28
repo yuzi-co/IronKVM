@@ -430,7 +430,8 @@ const hu = {
     power: {
       title: 'Bekapcsolás',
       showConfirm: 'Megerősítés',
-      showConfirmTip: 'Az áramellátási műveletekhez külön megerősítés szükséges',
+      showConfirmTip:
+        'Rövid bekapcsológomb-nyomás előtt kérdezzen. Az újraindítás és a hosszú nyomás mindig kérdez.',
       reset: 'Újraindítás',
       power: 'Bekapcsolás',
       powerShort: 'Bekapcsolás (rövid kattintás)',
@@ -457,7 +458,11 @@ const hu = {
       ledConnected: 'Bekapcsolásjelző LED csatlakoztatva',
       ledConnectedTip:
         'Csak akkor kapcsolja be, ha a gazdagép bekapcsolásjelző LED-csatlakozója be van kötve a kártyára. Enélkül a tápellátás állapota ismeretlen.',
-      ledConnectedFailed: 'Nem sikerült menteni a bekapcsolásjelző LED beállítását'
+      ledConnectedFailed: 'Nem sikerült menteni a bekapcsolásjelző LED beállítását',
+      powerLongConfirm:
+        'Nyomva tartja a bekapcsológombot {{seconds}} mp-ig? Ez leállítás nélkül kapcsolja ki a tápot.',
+      done: 'Gomb megnyomva',
+      failed: 'A gombnyomás sikertelen'
     },
     settings: {
       title: 'Beállítások',

@@ -415,7 +415,7 @@ const zh_tw = {
     power: {
       title: '電源控制',
       showConfirm: '顯示確認框',
-      showConfirmTip: '電源操作需要二次確認',
+      showConfirmTip: '短按電源前先確認。重設和長按一律需要確認。',
       reset: '重新啟動',
       power: '電源',
       powerShort: '電源 (短按)',
@@ -440,7 +440,10 @@ const zh_tw = {
       ledUnknown: '未知',
       ledConnected: '已連接電源指示燈',
       ledConnectedTip: '僅在主機的電源指示燈針腳已接到開發板時才開啟。未連接時電源狀態未知。',
-      ledConnectedFailed: '儲存電源指示燈設定失敗'
+      ledConnectedFailed: '儲存電源指示燈設定失敗',
+      powerLongConfirm: '按住電源鍵 {{seconds}} 秒？這會直接斷電，不會正常關機。',
+      done: '已按下按鍵',
+      failed: '按鍵失敗'
     },
     settings: {
       title: '設定',

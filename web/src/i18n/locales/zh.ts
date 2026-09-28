@@ -415,7 +415,7 @@ const zh = {
     power: {
       title: '电源',
       showConfirm: '显示确认框',
-      showConfirmTip: '电源操作需要二次确认',
+      showConfirmTip: '短按电源前先确认。复位和长按始终需要确认。',
       reset: '重启',
       power: '电源',
       powerShort: '电源（短按）',
@@ -440,7 +440,10 @@ const zh = {
       ledUnknown: '未知',
       ledConnected: '已连接电源指示灯',
       ledConnectedTip: '仅当主机的电源指示灯排针已接到开发板时才开启。未接时电源状态未知。',
-      ledConnectedFailed: '保存电源指示灯设置失败'
+      ledConnectedFailed: '保存电源指示灯设置失败',
+      powerLongConfirm: '按住电源键 {{seconds}} 秒？这会直接断电，不会正常关机。',
+      done: '已按下按键',
+      failed: '按键失败'
     },
     settings: {
       title: '设置',

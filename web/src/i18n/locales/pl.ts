@@ -430,7 +430,8 @@ const pl = {
     power: {
       title: 'Zasilanie',
       showConfirm: 'Potwierdzenie',
-      showConfirmTip: 'Operacje zasilania wymagają dodatkowego potwierdzenia',
+      showConfirmTip:
+        'Pytaj przed krótkim naciśnięciem zasilania. Reset i długie naciśnięcie pytają zawsze.',
       reset: 'Resetuj',
       power: 'Zasilanie',
       powerShort: 'Zasilanie (krótkie kliknięcie)',
@@ -456,7 +457,11 @@ const pl = {
       ledConnected: 'Dioda zasilania podłączona',
       ledConnectedTip:
         'Włącz tylko wtedy, gdy złącze diody zasilania hosta jest podłączone do płytki. Bez niego stan zasilania jest nieznany.',
-      ledConnectedFailed: 'Nie udało się zapisać ustawienia diody zasilania'
+      ledConnectedFailed: 'Nie udało się zapisać ustawienia diody zasilania',
+      powerLongConfirm:
+        'Przytrzymać przycisk zasilania przez {{seconds}} s? To odcina zasilanie bez zamknięcia systemu.',
+      done: 'Przycisk naciśnięty',
+      failed: 'Nie udało się nacisnąć przycisku'
     },
     settings: {
       title: 'Ustawienia',

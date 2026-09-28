@@ -432,7 +432,8 @@ const fr = {
     power: {
       title: 'Power',
       showConfirm: 'Confirmation',
-      showConfirmTip: 'Les opérations électriques nécessitent une confirmation supplémentaire',
+      showConfirmTip:
+        "Demander avant un appui court. La réinitialisation et l'appui long demandent toujours.",
       reset: 'Réinitialiser',
       power: 'Power',
       powerShort: 'Power (appui court)',
@@ -458,7 +459,11 @@ const fr = {
       ledConnected: "LED d'alimentation branchée",
       ledConnectedTip:
         "N'activez cette option que si le connecteur de LED d'alimentation de l'hôte est câblé à la carte. Sans cela, l'état d'alimentation est inconnu.",
-      ledConnectedFailed: "Impossible d'enregistrer le réglage de la LED d'alimentation"
+      ledConnectedFailed: "Impossible d'enregistrer le réglage de la LED d'alimentation",
+      powerLongConfirm:
+        "Maintenir le bouton d'alimentation {{seconds}} s ? Cela coupe l'alimentation sans arrêt du système.",
+      done: 'Bouton appuyé',
+      failed: "L'appui sur le bouton a échoué"
     },
     settings: {
       title: 'Paramètres',

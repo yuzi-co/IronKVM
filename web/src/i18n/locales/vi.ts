@@ -426,7 +426,7 @@ const vi = {
     power: {
       title: 'Nguồn',
       showConfirm: 'Xác nhận',
-      showConfirmTip: 'Hoạt động cấp nguồn yêu cầu xác nhận bổ sung',
+      showConfirmTip: 'Hỏi trước khi nhấn nguồn ngắn. Reset và nhấn giữ luôn hỏi.',
       reset: 'Đặt lại',
       power: 'Nguồn',
       powerShort: 'Nguồn (nhấp ngắn)',
@@ -452,7 +452,10 @@ const vi = {
       ledConnected: 'Đã nối đèn LED nguồn',
       ledConnectedTip:
         'Chỉ bật khi chân cắm đèn LED nguồn của máy chủ được nối dây vào bo mạch. Nếu không, trạng thái nguồn sẽ không xác định.',
-      ledConnectedFailed: 'Không lưu được cài đặt đèn LED nguồn'
+      ledConnectedFailed: 'Không lưu được cài đặt đèn LED nguồn',
+      powerLongConfirm: 'Giữ nút nguồn {{seconds}} giây? Thao tác này ngắt điện mà không tắt máy.',
+      done: 'Đã nhấn nút',
+      failed: 'Nhấn nút thất bại'
     },
     settings: {
       title: 'Cài đặt',

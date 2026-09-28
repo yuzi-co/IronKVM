@@ -426,7 +426,8 @@ const ca = {
     power: {
       title: 'Alimentació',
       showConfirm: 'Confirmació',
-      showConfirmTip: "Les operacions d'alimentació requereixen confirmació",
+      showConfirmTip:
+        "Demana confirmació abans d'una pulsació curta. El reinici i la pulsació llarga sempre la demanen.",
       reset: 'Reinicia',
       power: 'Encén',
       powerShort: 'Clic curt',
@@ -452,7 +453,11 @@ const ca = {
       ledConnected: "LED d'alimentació connectat",
       ledConnectedTip:
         "Activeu-ho només si el connector del LED d'alimentació de l'amfitrió està cablejat a la placa. Sense això, l'estat d'alimentació és desconegut.",
-      ledConnectedFailed: "No s'ha pogut desar la configuració del LED d'alimentació"
+      ledConnectedFailed: "No s'ha pogut desar la configuració del LED d'alimentació",
+      powerLongConfirm:
+        "Mantenir premut el botó d'engegada {{seconds}} s? Això talla l'alimentació sense apagar el sistema.",
+      done: 'Botó premut',
+      failed: "No s'ha pogut prémer el botó"
     },
     settings: {
       title: 'Configuració',

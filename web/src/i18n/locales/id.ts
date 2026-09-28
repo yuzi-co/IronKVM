@@ -429,7 +429,8 @@ const id = {
     power: {
       title: 'Daya',
       showConfirm: 'Konfirmasi',
-      showConfirmTip: 'Pengoperasian listrik memerlukan konfirmasi tambahan',
+      showConfirmTip:
+        'Tanyakan sebelum tekan singkat tombol daya. Reset dan tekan lama selalu bertanya.',
       reset: 'Mulai Ulang',
       power: 'Daya',
       powerShort: 'Data (tekan sebentar)',
@@ -455,7 +456,11 @@ const id = {
       ledConnected: 'LED daya terhubung',
       ledConnectedTip:
         'Aktifkan hanya jika header LED daya host tersambung ke papan. Tanpa itu, status daya tidak diketahui.',
-      ledConnectedFailed: 'Gagal menyimpan pengaturan LED daya'
+      ledConnectedFailed: 'Gagal menyimpan pengaturan LED daya',
+      powerLongConfirm:
+        'Tahan tombol daya selama {{seconds}} dtk? Ini memutus daya tanpa mematikan sistem.',
+      done: 'Tombol ditekan',
+      failed: 'Gagal menekan tombol'
     },
     settings: {
       title: 'Pengaturan',

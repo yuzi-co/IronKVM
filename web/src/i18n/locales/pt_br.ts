@@ -429,7 +429,7 @@ const pt_br = {
     power: {
       title: 'Energia',
       showConfirm: 'Confirmação',
-      showConfirmTip: 'Operações de energia requerem uma confirmação extra',
+      showConfirmTip: 'Perguntar antes de um toque curto. Reset e toque longo sempre perguntam.',
       reset: 'Redefinir',
       power: 'Energia',
       powerShort: 'Energia (clique curto)',
@@ -455,7 +455,11 @@ const pt_br = {
       ledConnected: 'LED de energia conectado',
       ledConnectedTip:
         'Ative somente se o conector do LED de energia do host estiver ligado à placa. Sem ele, o estado de energia é desconhecido.',
-      ledConnectedFailed: 'Falha ao salvar a configuração do LED de energia'
+      ledConnectedFailed: 'Falha ao salvar a configuração do LED de energia',
+      powerLongConfirm:
+        'Segurar o botão de energia por {{seconds}} s? Isso corta a energia sem desligar o sistema.',
+      done: 'Botão pressionado',
+      failed: 'Falha ao pressionar o botão'
     },
     settings: {
       title: 'Configurações',

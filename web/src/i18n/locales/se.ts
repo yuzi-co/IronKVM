@@ -426,7 +426,8 @@ const se = {
     power: {
       title: 'Ström',
       showConfirm: 'Bekräftelse',
-      showConfirmTip: 'Strömätgärder kräver extra bekräftelse',
+      showConfirmTip:
+        'Fråga före ett kort tryck på strömknappen. Återställning och långt tryck frågar alltid.',
       reset: 'Starta om',
       power: 'Ström',
       powerShort: 'Ström (kort tryck)',
@@ -452,7 +453,10 @@ const se = {
       ledConnected: 'Ström-LED ansluten',
       ledConnectedTip:
         'Aktivera endast om värdens stiftlist för ström-LED är kopplad till kortet. Utan den är strömläget okänt.',
-      ledConnectedFailed: 'Det gick inte att spara inställningen för ström-LED'
+      ledConnectedFailed: 'Det gick inte att spara inställningen för ström-LED',
+      powerLongConfirm: 'Hålla strömknappen i {{seconds}} s? Det bryter strömmen utan avstängning.',
+      done: 'Knappen är tryckt',
+      failed: 'Knapptrycket misslyckades'
     },
     settings: {
       title: 'Inställningar',

@@ -429,7 +429,8 @@ const nb = {
     power: {
       title: 'På-knapp',
       showConfirm: 'Bekreftelse',
-      showConfirmTip: 'Strømdrift krever en ekstra bekreftelse',
+      showConfirmTip:
+        'Spør før et kort trykk på av/på. Tilbakestilling og langt trykk spør alltid.',
       reset: 'Reset-knapp',
       power: 'På-knapp',
       powerShort: 'På-knapp (kort trykk)',
@@ -455,7 +456,11 @@ const nb = {
       ledConnected: 'Strøm-LED tilkoblet',
       ledConnectedTip:
         'Slå på bare hvis vertens strøm-LED-kontakt er koblet til kortet. Uten den er strømtilstanden ukjent.',
-      ledConnectedFailed: 'Kunne ikke lagre innstillingen for strøm-LED'
+      ledConnectedFailed: 'Kunne ikke lagre innstillingen for strøm-LED',
+      powerLongConfirm:
+        'Holde av/på-knappen i {{seconds}} s? Dette kutter strømmen uten avslutning.',
+      done: 'Knappen er trykket',
+      failed: 'Trykket på knappen mislyktes'
     },
     settings: {
       title: 'Innstillinger',

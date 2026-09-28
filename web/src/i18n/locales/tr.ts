@@ -428,7 +428,7 @@ const tr = {
     power: {
       title: 'Güç',
       showConfirm: 'Doğrulama',
-      showConfirmTip: 'Güç ile ilgili işlemler fazladan doğrulama gerektirir',
+      showConfirmTip: 'Kısa güç basışından önce sor. Sıfırlama ve uzun basış her zaman sorar.',
       reset: 'Sıfırla',
       power: 'Güç',
       powerShort: 'Güç tuşu (bas-çek)',
@@ -454,7 +454,11 @@ const tr = {
       ledConnected: "Güç LED'i bağlı",
       ledConnectedTip:
         "Yalnızca ana makinenin güç LED'i konnektörü karta bağlıysa açın. Bu bağlantı olmadan güç durumu bilinemez.",
-      ledConnectedFailed: "Güç LED'i ayarı kaydedilemedi"
+      ledConnectedFailed: "Güç LED'i ayarı kaydedilemedi",
+      powerLongConfirm:
+        'Güç düğmesi {{seconds}} sn basılı tutulsun mu? Bu, kapatma yapmadan gücü keser.',
+      done: 'Düğmeye basıldı',
+      failed: 'Düğmeye basılamadı'
     },
     settings: {
       title: 'Ayarlar',

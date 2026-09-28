@@ -423,7 +423,7 @@ const ko = {
     power: {
       title: '전원',
       showConfirm: '확인',
-      showConfirmTip: '전원 작업에는 추가 확인이 필요합니다',
+      showConfirmTip: '전원 짧게 누르기 전에 확인합니다. 리셋과 길게 누르기는 항상 확인합니다.',
       reset: '리셋',
       power: '전원',
       powerShort: '전원 (짧게 누르기)',
@@ -449,7 +449,10 @@ const ko = {
       ledConnected: '전원 LED 연결됨',
       ledConnectedTip:
         '호스트의 전원 LED 헤더가 보드에 연결된 경우에만 켜세요. 연결되지 않으면 전원 상태를 알 수 없습니다.',
-      ledConnectedFailed: '전원 LED 설정을 저장하지 못했습니다'
+      ledConnectedFailed: '전원 LED 설정을 저장하지 못했습니다',
+      powerLongConfirm: '전원 버튼을 {{seconds}}초 동안 누르시겠습니까? 종료 없이 전원이 차단됩니다.',
+      done: '버튼을 눌렀습니다',
+      failed: '버튼을 누르지 못했습니다'
     },
     settings: {
       title: '설정',

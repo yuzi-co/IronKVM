@@ -431,7 +431,8 @@ const it = {
     power: {
       title: 'Accensione',
       showConfirm: 'Conferma',
-      showConfirmTip: 'Le operazioni di alimentazione richiedono una conferma aggiuntiva',
+      showConfirmTip:
+        'Chiedi prima di una pressione breve. Il reset e la pressione lunga chiedono sempre.',
       reset: 'Reimposta',
       power: 'Accensione',
       powerShort: 'Accensione (clic breve)',
@@ -457,7 +458,11 @@ const it = {
       ledConnected: 'LED di accensione collegato',
       ledConnectedTip:
         "Attivalo solo se il connettore del LED di accensione dell'host è cablato alla scheda. Senza, lo stato di alimentazione è sconosciuto.",
-      ledConnectedFailed: "Impossibile salvare l'impostazione del LED di accensione"
+      ledConnectedFailed: "Impossibile salvare l'impostazione del LED di accensione",
+      powerLongConfirm:
+        "Tenere premuto il pulsante di accensione per {{seconds}} s? Toglie l'alimentazione senza spegnimento.",
+      done: 'Pulsante premuto',
+      failed: 'Pressione del pulsante non riuscita'
     },
     settings: {
       title: 'Impostazioni',

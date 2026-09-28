@@ -430,7 +430,7 @@ const ja = {
     power: {
       title: '電源',
       showConfirm: '確認メッセージ',
-      showConfirmTip: '電源操作の確認メッセージを表示する',
+      showConfirmTip: '電源の短押しの前に確認します。リセットと長押しは常に確認します。',
       reset: 'リセット',
       power: '電源',
       powerShort: '電源（クリック）',
@@ -456,7 +456,10 @@ const ja = {
       ledConnected: '電源 LED 接続済み',
       ledConnectedTip:
         'ホストの電源 LED ヘッダーがボードに配線されている場合のみオンにしてください。配線がないと電源状態は不明になります。',
-      ledConnectedFailed: '電源 LED 設定の保存に失敗しました'
+      ledConnectedFailed: '電源 LED 設定の保存に失敗しました',
+      powerLongConfirm: '電源ボタンを {{seconds}} 秒押し続けますか？シャットダウンせずに電源が切れます。',
+      done: 'ボタンを押しました',
+      failed: 'ボタンを押せませんでした'
     },
     settings: {
       title: '設定',

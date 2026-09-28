@@ -425,7 +425,7 @@ const en = {
     power: {
       title: 'Power',
       showConfirm: 'Confirmation',
-      showConfirmTip: 'Power operations require an extra confirmation',
+      showConfirmTip: 'Ask before a short power press. Reset and a long press always ask.',
       reset: 'Reset',
       power: 'Power',
       powerShort: 'Power (short click)',
@@ -451,7 +451,11 @@ const en = {
       ledConnected: 'Power LED connected',
       ledConnectedTip:
         "Turn on only if the host's power LED header is wired to the board. Without it the power state is unknown.",
-      ledConnectedFailed: 'Failed to save the power LED setting'
+      ledConnectedFailed: 'Failed to save the power LED setting',
+      powerLongConfirm:
+        'Hold the power button for {{seconds}} s? This cuts the power without a shutdown.',
+      done: 'Button pressed',
+      failed: 'The button press failed'
     },
     settings: {
       title: 'Settings',

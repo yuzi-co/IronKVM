@@ -430,7 +430,8 @@ const es = {
     power: {
       title: 'Encender / Apagar',
       showConfirm: 'Confirmación',
-      showConfirmTip: 'Las operaciones de encendido requieren confirmación adicional',
+      showConfirmTip:
+        'Preguntar antes de una pulsación corta. El reinicio y la pulsación larga siempre preguntan.',
       reset: 'Reiniciar',
       power: 'Encender / Apagar',
       powerShort: 'Encender / Apagar (pulsación corta)',
@@ -456,7 +457,11 @@ const es = {
       ledConnected: 'LED de encendido conectado',
       ledConnectedTip:
         'Actívalo solo si el conector del LED de encendido del host está cableado a la placa. Sin él, el estado de encendido es desconocido.',
-      ledConnectedFailed: 'No se pudo guardar el ajuste del LED de encendido'
+      ledConnectedFailed: 'No se pudo guardar el ajuste del LED de encendido',
+      powerLongConfirm:
+        '¿Mantener pulsado el botón de encendido {{seconds}} s? Corta la alimentación sin apagar el sistema.',
+      done: 'Botón pulsado',
+      failed: 'No se pudo pulsar el botón'
     },
     settings: {
       title: 'Ajustes',

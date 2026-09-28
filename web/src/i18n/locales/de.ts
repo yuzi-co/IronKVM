@@ -437,7 +437,8 @@ const de = {
     power: {
       title: 'Power',
       showConfirm: 'Bestätigung',
-      showConfirmTip: 'Diese Aktionen benötigen eine zusätzliche Bestätigung',
+      showConfirmTip:
+        'Vor einem kurzen Druck auf die Ein/Aus-Taste nachfragen. Reset und langer Druck fragen immer nach.',
       reset: 'Zurücksetzen',
       power: 'Power',
       powerShort: 'Power (Kurzer Klick)',
@@ -463,7 +464,11 @@ const de = {
       ledConnected: 'Power-LED angeschlossen',
       ledConnectedTip:
         'Nur aktivieren, wenn der Power-LED-Anschluss des Hosts mit dem Board verbunden ist. Ohne ihn ist der Einschaltzustand unbekannt.',
-      ledConnectedFailed: 'Die Power-LED-Einstellung konnte nicht gespeichert werden'
+      ledConnectedFailed: 'Die Power-LED-Einstellung konnte nicht gespeichert werden',
+      powerLongConfirm:
+        'Ein/Aus-Taste {{seconds}} s halten? Das schaltet den Strom ohne Herunterfahren ab.',
+      done: 'Taste gedrückt',
+      failed: 'Tastendruck fehlgeschlagen'
     },
     settings: {
       title: 'Einstellungen',

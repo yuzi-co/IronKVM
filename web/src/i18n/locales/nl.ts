@@ -434,7 +434,8 @@ const nl = {
     power: {
       title: 'Aan/uit',
       showConfirm: 'Bevestiging',
-      showConfirmTip: 'Stroombedieningen vereisen een extra bevestiging',
+      showConfirmTip:
+        'Vragen voor een korte druk op de aan/uit-knop. Reset en lang drukken vragen altijd.',
       reset: 'Resetten',
       power: 'Aan/uit',
       powerShort: 'Aan/uit (kort indrukken)',
@@ -460,7 +461,11 @@ const nl = {
       ledConnected: 'Power-LED aangesloten',
       ledConnectedTip:
         'Schakel dit alleen in als de power-LED-aansluiting van de host met het bord is verbonden. Zonder die aansluiting is de stroomstatus onbekend.',
-      ledConnectedFailed: 'Opslaan van de Power-LED-instelling mislukt'
+      ledConnectedFailed: 'Opslaan van de Power-LED-instelling mislukt',
+      powerLongConfirm:
+        'Aan/uit-knop {{seconds}} s ingedrukt houden? Dit schakelt de stroom uit zonder afsluiten.',
+      done: 'Knop ingedrukt',
+      failed: 'Knop indrukken mislukt'
     },
     settings: {
       title: 'Instellingen',

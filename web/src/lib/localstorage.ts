@@ -242,9 +242,12 @@ export function setKeyboardLedStatusVisible(visible: boolean) {
   localStorage.setItem(KEYBOARD_LED_STATUS_VISIBLE_KEY, String(visible));
 }
 
+// Power buttons ask before they act unless the operator turned that off. No
+// stored value means the operator never chose, and a stray click must not
+// switch a host off, so the default is to ask.
 export function getPowerConfirm() {
   const enabled = localStorage.getItem(POWER_CONFIRM_KEY);
-  return enabled === 'true';
+  return enabled !== 'false';
 }
 
 export function setPowerConfirm(enabled: boolean) {
