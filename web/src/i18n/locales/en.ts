@@ -557,6 +557,24 @@ const en = {
         diskDesc: 'Mount SD card on the remote host',
         network: 'Virtual Network',
         networkDesc: 'Mount virtual network card on the remote host',
+        usbNetwork: {
+          description:
+            'A private network link to the remote host over the USB cable. The host gets an address with no gateway and no DNS, so it cannot reach your LAN through NanoKVM.',
+          off: 'Off',
+          ncm: 'NCM (Linux, macOS, Windows 11)',
+          ecm: 'ECM (for hosts without NCM)',
+          rndis: 'RNDIS (no longer offered)',
+          rndisNote: 'This link runs RNDIS, which is no longer offered. Choose NCM or ECM.',
+          subnet: 'Subnet',
+          subnetDesc:
+            'A private IPv4 network, /24 to /30. NanoKVM takes the first address, the host the second.',
+          addresses: 'NanoKVM: {{board}}, host: {{host}}',
+          invalidSubnet: 'Enter a subnet such as 172.31.255.0/30.',
+          apply: 'Apply',
+          confirm: 'Reconnect the USB device?',
+          reenumerate:
+            'Applying rebuilds the USB connection. The host loses the keyboard, mouse and virtual disk for a few seconds.'
+        },
         audio: 'Virtual Speaker',
         audioDesc:
           'Present a USB sound card to the remote host, so you can hear it. The host must select it as its output device. Switching this rebuilds the USB connection.',
@@ -576,7 +594,8 @@ const en = {
             'On, but not running: the USB controller ran out of endpoints. Turn another device off and this one starts straight away.',
           explain:
             'The USB controller has a fixed number of inbound endpoints, and this counts those. If more devices are enabled than fit, the keyboard and mouse are kept and the rest are turned off.',
-          error: 'Could not reach the device. Try again.'
+          error: 'Could not reach the device. Try again.',
+          fitTogether: 'These fit together: {{sets}}'
         },
         reboot: 'Reboot',
         rebootDesc: 'Are you sure you want to reboot NanoKVM?',

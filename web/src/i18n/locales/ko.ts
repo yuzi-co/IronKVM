@@ -444,6 +444,28 @@ const ko = {
         diskDesc: '원격 호스트에서 가상 USB를 마운트합니다.',
         network: '가상 네트워크',
         networkDesc: '원격 호스트에서 가상 네트워크 카드를 마운트합니다.',
+        usbNetwork: {
+          description:
+            'USB 케이블을 통한 원격 호스트와의 사설 네트워크 연결입니다. 호스트는 게이트웨이와 DNS 없이 주소를 받으므로 NanoKVM을 통해 LAN에 접근할 수 없습니다.',
+          off: '끄기',
+          ncm: 'NCM (Linux, macOS, Windows 11)',
+          ecm: 'ECM (NCM을 지원하지 않는 호스트용)',
+          rndis: 'RNDIS (더 이상 제공되지 않음)',
+          rndisNote:
+            '이 연결은 더 이상 제공되지 않는 RNDIS를 사용합니다. NCM 또는 ECM을 선택하세요.',
+          subnet: '서브넷',
+          subnetDesc:
+            '/24에서 /30 사이의 사설 IPv4 네트워크입니다. NanoKVM이 첫 번째 주소를, 호스트가 두 번째 주소를 사용합니다.',
+          addresses: 'NanoKVM: {{board}}, 호스트: {{host}}',
+          invalidSubnet: '172.31.255.0/30 같은 서브넷을 입력하세요.',
+          apply: '적용',
+          confirm: 'USB 장치를 다시 연결할까요?',
+          reenumerate:
+            '적용하면 USB 연결이 다시 구성됩니다. 호스트는 몇 초 동안 키보드, 마우스, 가상 디스크를 잃습니다.'
+        },
+        endpoints: {
+          fitTogether: '함께 사용 가능: {{sets}}'
+        },
         reboot: '재부팅',
         rebootDesc: 'NanoKVM을 재부팅하시겠습니까?',
         okBtn: '네',

@@ -454,6 +454,27 @@ const it = {
         diskDesc: 'Mount virtual U-disk on the remote host',
         network: 'Rete virtuale',
         networkDesc: 'Monta la scheda di rete virtuale sull’host remoto',
+        usbNetwork: {
+          description:
+            "Un collegamento di rete privato con l'host remoto tramite il cavo USB. L'host riceve un indirizzo senza gateway né DNS, quindi non può raggiungere la tua LAN tramite NanoKVM.",
+          off: 'Disattivato',
+          ncm: 'NCM (Linux, macOS, Windows 11)',
+          ecm: 'ECM (per host senza NCM)',
+          rndis: 'RNDIS (non più offerto)',
+          rndisNote: 'Questo collegamento usa RNDIS, che non è più offerto. Scegli NCM o ECM.',
+          subnet: 'Sottorete',
+          subnetDesc:
+            "Una rete IPv4 privata, da /24 a /30. NanoKVM prende il primo indirizzo, l'host il secondo.",
+          addresses: 'NanoKVM: {{board}}, host: {{host}}',
+          invalidSubnet: 'Inserisci una sottorete come 172.31.255.0/30.',
+          apply: 'Applica',
+          confirm: 'Ricollegare il dispositivo USB?',
+          reenumerate:
+            "Applicando si ricostruisce la connessione USB. L'host perde tastiera, mouse e disco virtuale per alcuni secondi."
+        },
+        endpoints: {
+          fitTogether: 'Stanno insieme: {{sets}}'
+        },
         reboot: 'Riavvia',
         rebootDesc: 'Sei sicuro di voler riavviare NanoKVM?',
         okBtn: 'Sì',

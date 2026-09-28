@@ -438,6 +438,25 @@ const zh = {
         diskDesc: '在远程主机中挂载虚拟U盘',
         network: '虚拟网卡',
         networkDesc: '在远程主机中挂载虚拟网卡',
+        usbNetwork: {
+          description:
+            '通过 USB 线缆与远程主机建立的私有网络连接。主机获得的地址不带网关和 DNS，因此无法通过 NanoKVM 访问你的局域网。',
+          off: '关闭',
+          ncm: 'NCM（Linux、macOS、Windows 11）',
+          ecm: 'ECM（适用于不支持 NCM 的主机）',
+          rndis: 'RNDIS（已不再提供）',
+          rndisNote: '此连接使用已不再提供的 RNDIS。请选择 NCM 或 ECM。',
+          subnet: '子网',
+          subnetDesc: '/24 到 /30 的私有 IPv4 网络。NanoKVM 使用第一个地址，主机使用第二个地址。',
+          addresses: 'NanoKVM：{{board}}，主机：{{host}}',
+          invalidSubnet: '请输入子网，例如 172.31.255.0/30。',
+          apply: '应用',
+          confirm: '重新连接 USB 设备？',
+          reenumerate: '应用后将重建 USB 连接。主机会在几秒钟内失去键盘、鼠标和虚拟磁盘。'
+        },
+        endpoints: {
+          fitTogether: '可同时启用：{{sets}}'
+        },
         reboot: '重新启动',
         rebootDesc: '您确定要重新启动 NanoKVM 吗？',
         okBtn: '是',

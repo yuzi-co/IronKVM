@@ -452,6 +452,28 @@ const ja = {
         diskDesc: 'リモートホストに仮想 USB ドライブをマウントする',
         network: '仮想ネットワークカード',
         networkDesc: 'リモートホストに仮想ネットワークカードをマウントする',
+        usbNetwork: {
+          description:
+            'USB ケーブル経由でリモートホストと結ぶプライベートネットワークです。ホストにはゲートウェイと DNS のないアドレスが割り当てられるため、NanoKVM を経由して LAN に到達することはできません。',
+          off: 'オフ',
+          ncm: 'NCM (Linux、macOS、Windows 11)',
+          ecm: 'ECM (NCM 非対応のホスト向け)',
+          rndis: 'RNDIS (提供終了)',
+          rndisNote:
+            'この接続は提供を終了した RNDIS を使用しています。NCM または ECM を選択してください。',
+          subnet: 'サブネット',
+          subnetDesc:
+            '/24 から /30 のプライベート IPv4 ネットワーク。NanoKVM が最初のアドレスを、ホストが 2 番目のアドレスを使用します。',
+          addresses: 'NanoKVM: {{board}}、ホスト: {{host}}',
+          invalidSubnet: '172.31.255.0/30 のようなサブネットを入力してください。',
+          apply: '適用',
+          confirm: 'USB デバイスを再接続しますか?',
+          reenumerate:
+            '適用すると USB 接続が再構築されます。ホストは数秒間、キーボード、マウス、仮想ディスクを使用できなくなります。'
+        },
+        endpoints: {
+          fitTogether: '同時に使用できる組み合わせ: {{sets}}'
+        },
         reboot: '再起動',
         rebootDesc: 'NanoKVM を再起動してもよろしいですか?',
         okBtn: 'はい',

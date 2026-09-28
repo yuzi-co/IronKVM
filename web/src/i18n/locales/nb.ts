@@ -448,6 +448,27 @@ const nb = {
         diskDesc: 'Mount virtual U-disk on the remote host',
         network: 'Virtuelt nettverk',
         networkDesc: 'Monter virtuelt nettverkskort på den eksterne verten',
+        usbNetwork: {
+          description:
+            'En privat nettverkstilkobling til den eksterne verten via USB-kabelen. Verten får en adresse uten gateway og uten DNS, så den kan ikke nå ditt lokalnett gjennom NanoKVM.',
+          off: 'Av',
+          ncm: 'NCM (Linux, macOS, Windows 11)',
+          ecm: 'ECM (for verter uten NCM)',
+          rndis: 'RNDIS (tilbys ikke lenger)',
+          rndisNote: 'Denne tilkoblingen bruker RNDIS, som ikke tilbys lenger. Velg NCM eller ECM.',
+          subnet: 'Delnett',
+          subnetDesc:
+            'Et privat IPv4-nettverk, /24 til /30. NanoKVM tar den første adressen, verten den andre.',
+          addresses: 'NanoKVM: {{board}}, vert: {{host}}',
+          invalidSubnet: 'Skriv inn et delnett, for eksempel 172.31.255.0/30.',
+          apply: 'Bruk',
+          confirm: 'Koble til USB-enheten på nytt?',
+          reenumerate:
+            'Når du bruker endringen, bygges USB-tilkoblingen opp på nytt. Verten mister tastatur, mus og virtuell disk i noen sekunder.'
+        },
+        endpoints: {
+          fitTogether: 'Disse passer sammen: {{sets}}'
+        },
         reboot: 'Start på nytt',
         rebootDesc: 'Er du sikker på at du vil starte NanoKVM på nytt?',
         okBtn: 'Ja',

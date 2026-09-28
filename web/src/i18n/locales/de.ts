@@ -456,6 +456,28 @@ const de = {
         diskDesc: 'Binde das virtuelle U-Laufwerk an den entfernten Host',
         network: 'Virtuelles Netzwerk',
         networkDesc: 'Binde die virtuelle Netzwerkkarte an den entfernten Host',
+        usbNetwork: {
+          description:
+            'Eine private Netzwerkverbindung zum entfernten Host über das USB-Kabel. Der Host erhält eine Adresse ohne Gateway und ohne DNS und erreicht Ihr LAN daher nicht über NanoKVM.',
+          off: 'Aus',
+          ncm: 'NCM (Linux, macOS, Windows 11)',
+          ecm: 'ECM (für Hosts ohne NCM)',
+          rndis: 'RNDIS (nicht mehr angeboten)',
+          rndisNote:
+            'Diese Verbindung nutzt RNDIS, das nicht mehr angeboten wird. Wählen Sie NCM oder ECM.',
+          subnet: 'Subnetz',
+          subnetDesc:
+            'Ein privates IPv4-Netz, /24 bis /30. NanoKVM erhält die erste Adresse, der Host die zweite.',
+          addresses: 'NanoKVM: {{board}}, Host: {{host}}',
+          invalidSubnet: 'Geben Sie ein Subnetz wie 172.31.255.0/30 ein.',
+          apply: 'Übernehmen',
+          confirm: 'USB-Gerät neu verbinden?',
+          reenumerate:
+            'Beim Übernehmen wird die USB-Verbindung neu aufgebaut. Der Host verliert Tastatur, Maus und virtuelle Festplatte für einige Sekunden.'
+        },
+        endpoints: {
+          fitTogether: 'Diese passen zusammen: {{sets}}'
+        },
         reboot: 'Neustarten',
         rebootDesc: 'Sind Sie sicher dass Sie NanoKVM neustarten möchten?',
         okBtn: 'Ja',
