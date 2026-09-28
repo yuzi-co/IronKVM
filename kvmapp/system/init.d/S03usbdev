@@ -512,10 +512,16 @@ usb_net_no_forward() {
     return 0
 }
 
-# usb_net_stop stops the link's DHCP server and takes the address off every
-# network function except the one named in $1, so that two interfaces never
-# hold the same subnet after a switch between NCM and ECM.
-usb_net_stop() {
+# usb_net_netboot prints the script that runs dnsmasq for network boot of the
+# host. It is an add-on's script and lives in /kvmapp, not in /etc/init.d.
+usb_net_netboot() {
+    echo "${USB_NETBOOT:-/kvmapp/system/init.d/S85netboot}"
+}
+
+# usb_net_dhcp_stop stops whichever DHCP server serves the link: the udhcpd
+# this script starts, and dnsmasq when network boot had it instead. Both, every
+# time, because two servers on one link would both answer the host.
+usb_net_dhcp_stop() {
     run=${USB_NET_RUN:-/tmp/usb-network}
 
     if [ -r "$run/udhcpd.pid" ]
@@ -523,6 +529,76 @@ usb_net_stop() {
         kill "$(cat "$run/udhcpd.pid")" 2>/dev/null
         rm -f "$run/udhcpd.pid"
     fi
+
+    netboot=$(usb_net_netboot)
+    if [ -f "$netboot" ]
+    then
+        sh "$netboot" stop-usb > /dev/null 2>&1
+    fi
+
+    return 0
+}
+
+# usb_net_dhcp_start starts the link's DHCP server. It takes the interface,
+# the host address, the netmask and the run directory.
+#
+# Network boot goes first: S85netboot runs dnsmasq when the server has turned
+# network boot on for the link and the add-on is installed, and fails
+# otherwise. Then, or when dnsmasq does not start, udhcpd serves the link as it
+# always has, so the host keeps its address whatever happens to the add-on.
+usb_net_dhcp_start() {
+    netboot=$(usb_net_netboot)
+    if [ -f "$netboot" ] && sh "$netboot" start-usb "$1" "$2" "$3" > /dev/null 2>&1
+    then
+        echo "usb: network boot for the host on $1, dnsmasq serves $2"
+        return 0
+    fi
+
+    mkdir -p "$4"
+    usb_net_udhcpd_conf "$1" "$2" "$3" "$4" > "$4/udhcpd.conf"
+    : > "$4/udhcpd.leases"
+
+    if udhcpd -S "$4/udhcpd.conf"
+    then
+        echo "usb: udhcpd serves $2 on $1"
+    else
+        echo "usb: udhcpd did not start on $1, the host has to set $2 itself"
+    fi
+
+    return 0
+}
+
+# usb_net_dhcp restarts only the link's DHCP server, for the server to switch
+# between udhcpd and dnsmasq when network boot is turned on or off. It leaves
+# the gadget bound, so the host keeps its keyboard and the link its address.
+usb_net_dhcp() {
+    run=${USB_NET_RUN:-/tmp/usb-network}
+
+    usb_net_fn=$(usb_net_function)
+    if [ -z "$usb_net_fn" ]
+    then
+        echo "usb: the network to the host is off, no DHCP server to restart"
+        return 0
+    fi
+
+    usb_net_if=$(usb_net_ifname "$usb_net_fn.usb0")
+    if [ -z "$usb_net_if" ]
+    then
+        echo "usb: $usb_net_fn.usb0 has no interface, no DHCP server to restart"
+        return 1
+    fi
+
+    set -- $(usb_net_parse "$(usb_net_subnet)")
+
+    usb_net_dhcp_stop
+    usb_net_dhcp_start "$usb_net_if" "$2" "$4" "$run"
+}
+
+# usb_net_stop stops the link's DHCP server and takes the address off every
+# network function except the one named in $1, so that two interfaces never
+# hold the same subnet after a switch between NCM and ECM.
+usb_net_stop() {
+    usb_net_dhcp_stop
 
     for dir in ncm.usb0 ecm.usb0 rndis.usb0
     do
@@ -565,18 +641,8 @@ usb_net_start() {
 
     usb_net_no_forward "$usb_net_if"
 
-    mkdir -p "$run"
-    usb_net_udhcpd_conf "$usb_net_if" "$2" "$4" "$run" > "$run/udhcpd.conf"
-    : > "$run/udhcpd.leases"
-
-    if udhcpd -S "$run/udhcpd.conf"
-    then
-        echo "usb: network to the host on $usb_net_if, board $1/$3, host $2"
-    else
-        echo "usb: udhcpd did not start on $usb_net_if, the host has to set $2/$3 itself"
-    fi
-
-    return 0
+    echo "usb: network to the host on $usb_net_if, board $1/$3, host $2"
+    usb_net_dhcp_start "$usb_net_if" "$2" "$4" "$run"
 }
 # --- end usb network ---
 
@@ -1418,5 +1484,8 @@ case "$1" in
   ;;
    restart_phy)
     restart_phy
+  ;;
+  dhcp)
+    usb_net_dhcp
   ;;
 esac

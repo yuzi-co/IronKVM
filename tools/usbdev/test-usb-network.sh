@@ -305,6 +305,80 @@ else
 fi
 
 echo
+echo "===== network boot takes the link from udhcpd ====="
+# A stub S85netboot records what it is asked. NETBOOT_STATUS is what start-usb
+# answers: 0 when network boot is on and dnsmasq started, 1 otherwise.
+cat > "$WORK/S85netboot" <<'STUB'
+echo "netboot $*" >> "$CALLS"
+[ "$1" = start-usb ] && exit "${NETBOOT_STATUS:-0}"
+exit 0
+STUB
+netboot_run() {
+    rm -rf "$WORK/run" "$WORK/proc"
+    mkdir -p "$WORK/proc/sys/net/ipv4/conf/usb1" "$WORK/proc/sys/net/ipv6/conf/usb1"
+    : > "$WORK/calls"
+    WORK="$WORK" CALLS="$WORK/calls" USB_GADGET_DIR="$G" USB_NET_RUN="$WORK/run" \
+        USB_NET_SUBNET_FILE="$WORK/no-such-file" USB_NETBOOT="$WORK/S85netboot" \
+        NETBOOT_STATUS="$2" BOOT="$WORK/boot-dhcp" \
+        sh -c '. "$WORK/net.sh"; . "$WORK/stubs.sh"
+               usb_marker() { [ -e "$BOOT/$1" ]; }
+               '"$1"'; echo "status=$?"' > "$WORK/out" 2>&1
+}
+line_of() { grep -nxF "$1" "$WORK/calls" | head -n 1 | cut -d: -f1; }
+
+netboot_run "usb_net_start ecm" 0
+called "netboot start-usb usb1 172.31.255.2 255.255.255.252" \
+    "network boot is asked first, with the interface, the host and the mask"
+if grep -q '^udhcpd' "$WORK/calls"
+then
+    note "udhcpd started beside dnsmasq" FAIL
+else
+    note "udhcpd stays off while dnsmasq serves the link" OK
+fi
+called "netboot stop-usb" "a start stops the dnsmasq an earlier start left"
+stop_at=$(line_of "netboot stop-usb")
+start_at=$(line_of "netboot start-usb usb1 172.31.255.2 255.255.255.252")
+add_at=$(line_of "ip addr add 172.31.255.1/30 dev usb1")
+[ -n "$stop_at" ] && [ -n "$start_at" ] && [ "$stop_at" -lt "$start_at" ] \
+    && note "the old dnsmasq stops before the new one starts" OK \
+    || note "dnsmasq stopped at [$stop_at], started at [$start_at]" FAIL
+[ -n "$add_at" ] && [ -n "$start_at" ] && [ "$add_at" -lt "$start_at" ] \
+    && note "the address is in place before dnsmasq binds to it" OK \
+    || note "dnsmasq started at [$start_at], the address at [$add_at]" FAIL
+called "iptables -I FORWARD -i usb+ -j DROP" "forwarding stays dropped under network boot"
+grep -q "status=0" "$WORK/out" && note "a start with network boot returns 0" OK \
+    || note "a start with network boot returned [$(cat "$WORK/out")]" FAIL
+
+netboot_run "usb_net_start ecm" 1
+called "udhcpd -S $WORK/run/udhcpd.conf" "udhcpd serves the link when network boot is off or fails"
+grep -qx "interface usb1" "$WORK/run/udhcpd.conf" 2>/dev/null \
+    && note "the fallback udhcpd serves usb1" OK || note "the fallback udhcpd does not serve usb1" FAIL
+
+netboot_run 'usb_net_stop ""' 0
+called "netboot stop-usb" "stop stops dnsmasq on the link too"
+
+# S03usbdev dhcp swaps the server alone: no address comes off and none goes on,
+# so the host keeps its lease and the gadget stays bound.
+mkdir -p "$WORK/boot-dhcp"
+: > "$WORK/boot-dhcp/usb.ecm"
+netboot_run usb_net_dhcp 0
+called "netboot stop-usb" "dhcp stops the server that runs"
+called "netboot start-usb usb1 172.31.255.2 255.255.255.252" "dhcp starts dnsmasq on the ECM interface"
+if grep -q '^ip addr' "$WORK/calls"
+then
+    note "dhcp touched the link's address" FAIL
+else
+    note "dhcp leaves the link's address alone" OK
+fi
+netboot_run usb_net_dhcp 1
+called "udhcpd -S $WORK/run/udhcpd.conf" "dhcp falls back to udhcpd when network boot is off"
+rm -f "$WORK/boot-dhcp/usb.ecm"
+netboot_run usb_net_dhcp 0
+grep -q "status=0" "$WORK/out" && [ ! -s "$WORK/calls" ] \
+    && note "dhcp with the network off does nothing and succeeds" OK \
+    || note "dhcp with the network off: [$(cat "$WORK/out")] [$(cat "$WORK/calls")]" FAIL
+
+echo
 echo "===== wiring in start_usb_dev ====="
 sh -n "$SV" && note "S03usbdev is valid shell" OK || note "S03usbdev does not parse" FAIL
 
@@ -323,6 +397,10 @@ stop_line=$(printf '%s\n' "$body" | grep -nE '^        usb_net_stop ""$' | cut -
 sed -n '/^start_usb_host(){$/,/^}$/p' "$SV" | grep -qE '^    usb_net_stop ""$' \
     && note "stop takes the link down with the gadget" OK \
     || note "stop leaves udhcpd serving an unbound gadget" FAIL
+
+sed -n '/^case "\$1" in$/,/^esac$/p' "$SV" | grep -A1 -E '^  dhcp\)$' | grep -qE '^    usb_net_dhcp$' \
+    && note "S03usbdev dhcp restarts the link's DHCP server" OK \
+    || note "S03usbdev has no dhcp action" FAIL
 
 # Nothing in the script may turn forwarding on.
 if grep -qE 'ip_forward|forwarding' "$SV" && grep -E 'ip_forward|forwarding' "$SV" | grep -qE 'echo 1'
