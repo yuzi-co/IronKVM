@@ -21,6 +21,13 @@ var sections = []section{
 	{name: "usb", collect: collectUSB},
 	{name: "server", collect: collectServer},
 	{name: "watchdog", collect: collectWatchdog},
+	{name: "node_system", collect: collectNodeSystem},
+	{name: "node_memory", collect: collectNodeMemory},
+	{name: "node_pressure", collect: collectNodePressure},
+	{name: "node_filesystem", collect: collectNodeFilesystem},
+	{name: "node_network", collect: collectNodeNetwork},
+	{name: "node_disk", collect: collectNodeDisk},
+	{name: "node_thermal", collect: collectNodeThermal},
 }
 
 // Collect renders every section to out.

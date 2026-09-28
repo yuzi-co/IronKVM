@@ -28,7 +28,7 @@ ships.
 
 ## Metrics
 
-All names start with `ironkvm_`. Types follow the Prometheus conventions: `_total` counters,
+All names start with `ironkvm_`, except the node_exporter families at the end of this section. Types follow the Prometheus conventions: `_total` counters,
 `_bytes` and `_seconds` units.
 
 Memory, from `/proc/meminfo`, `/proc/vmstat`, `/proc/pressure/memory` and `/sys/block/zram0`:
@@ -87,6 +87,38 @@ Host watchdog:
 | Metric | Type | Source |
 | --- | --- | --- |
 | `ironkvm_watchdog_actions_total{action}` | counter | `watchdog.ActionCounts()`, `action` is `reset` or `power` |
+
+### The node_exporter families
+
+The endpoint also writes a subset of what node_exporter's default collectors write. The names,
+the labels and the units are the same as node_exporter's, so a dashboard made for node_exporter
+(for example "Node Exporter Full") reads this endpoint unchanged. The board then needs no
+separate node_exporter process. These families are the only ones without the `ironkvm_` prefix.
+
+| Section | Families | Source |
+| --- | --- | --- |
+| `node_system` | `node_uname_info`, `node_time_seconds`, `node_boot_time_seconds`, `node_cpu_seconds_total{cpu,mode}`, `node_context_switches_total`, `node_intr_total`, `node_forks_total`, `node_procs_running`, `node_procs_blocked`, `node_load1`, `node_load5`, `node_load15` | `/proc/sys/kernel`, `/proc/stat` (USER_HZ 100), `/proc/loadavg` |
+| `node_memory` | `node_memory_<field>_bytes` for each kB field, `node_memory_<field>` for a count such as `HugePages_Total` | `/proc/meminfo` |
+| `node_pressure` | `node_pressure_{cpu,io,memory}_waiting_seconds_total` (the `some` line), `..._stalled_seconds_total` (the `full` line) | `/proc/pressure` |
+| `node_filesystem` | `node_filesystem_{size,free,avail}_bytes`, `node_filesystem_files`, `node_filesystem_files_free`, `node_filesystem_readonly`, labels `device`, `fstype`, `mountpoint` | `/proc/1/mounts` and `statfs(2)` |
+| `node_network` | the sixteen `node_network_{receive,transmit}_*_total{device}` counters, `node_network_up{device}` | `/proc/net/dev`, `/sys/class/net/<device>/operstate` |
+| `node_disk` | `node_disk_{reads,writes}_completed_total`, `..._merged_total`, `node_disk_read_bytes_total`, `node_disk_written_bytes_total`, `node_disk_{read,write}_time_seconds_total`, `node_disk_io_now`, `node_disk_io_time_seconds_total`, `node_disk_io_time_weighted_seconds_total` | `/proc/diskstats` |
+| `node_thermal` | `node_hwmon_temp_celsius{chip,sensor}`, `node_hwmon_chip_names{chip,chip_name}`, `node_thermal_zone_temp{type,zone}` | `/sys/class/hwmon`, `/sys/class/thermal` |
+
+The filters are node_exporter's defaults, with three differences:
+
+- The filesystem section also leaves out `tmpfs` and `ramfs`. They hold RAM, which
+  `node_memory_Shmem_bytes` already reports, and the board has several of them.
+- The network section leaves out `lo`.
+- `node_uname_info` reads the `machine` label from `/proc/sys/kernel/arch`. A kernel before 6.1
+  does not have that file, and then the label is the architecture the server was built for.
+
+The disk section keeps node_exporter's default exclusion, `^(z?ram|loop|fd|(h|s|v|xv)d[a-z]|nvme\d+n\d+p)\d+$`.
+That expression does not match an `mmcblk0pN` partition, so each partition has its own series
+beside `mmcblk0`, as on node_exporter.
+
+`promtool check metrics` reports the `node_memory_*` names as camelCase. node_exporter's names
+get the same warning, and a dashboard needs those names.
 
 Supervisor actions are not in the first version. `S98supervise` is a shell script that only
 appends to `/data/supervise.log`. Counting them would mean parsing that log on every scrape, or
