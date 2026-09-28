@@ -30,8 +30,29 @@ export const Shortcuts = () => {
       keys: [
         { code: 'ControlLeft', label: 'Ctrl' },
         { code: 'AltLeft', label: 'Alt' },
-        { code: 'Delete', label: '⌫' }
+        { code: 'Delete', label: 'Del' }
       ]
+    },
+    {
+      keys: [
+        { code: 'AltLeft', label: 'Alt' },
+        { code: 'Tab', label: 'Tab' }
+      ]
+    },
+    {
+      keys: [
+        { code: 'AltLeft', label: 'Alt' },
+        { code: 'F4', label: 'F4' }
+      ]
+    },
+    {
+      keys: [
+        { code: 'MetaLeft', label: 'Win' },
+        { code: 'KeyL', label: 'L' }
+      ]
+    },
+    {
+      keys: [{ code: 'PrintScreen', label: 'PrtSc' }]
     }
   ];
 
@@ -135,7 +156,7 @@ export const Shortcuts = () => {
       onOpenChange={handleOpenChange}
       arrow={false}
     >
-      <div className="flex cursor-pointer select-none items-center space-x-2 rounded py-1 pl-2 pr-5 hover:bg-neutral-700/70">
+      <div className="flex cursor-pointer items-center space-x-2 rounded py-1 pr-5 pl-2 select-none hover:bg-neutral-700/70">
         <CommandIcon size={18} />
         <span>{t('keyboard.shortcut.title')}</span>
       </div>

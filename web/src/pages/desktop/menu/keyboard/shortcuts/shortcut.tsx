@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { message } from 'antd';
+import { useTranslation } from 'react-i18next';
 
 import { KeyboardReport } from '@/lib/keyboard.ts';
 import { client, MessageEvent } from '@/lib/websocket.ts';
@@ -11,23 +13,29 @@ type ShortcutProps = {
 };
 
 export const Shortcut = ({ shortcut }: ShortcutProps) => {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
 
+  // sendShortcut reports whether every report went out. With the input
+  // connection down nothing reaches the host, and the click must say so.
   async function sendShortcut() {
     const keyboard = new KeyboardReport();
 
+    let sent = true;
     shortcut.keys.forEach((key) => {
       const report = keyboard.keyDown(key.code);
-      send(report);
+      sent = send(report) && sent;
     });
 
+    // The release goes out even after a failure, so no key is left held.
     const report = keyboard.reset();
-    send(report);
+    sent = send(report) && sent;
+    return sent;
   }
 
   function send(report: Uint8Array) {
     const data = new Uint8Array([MessageEvent.Keyboard, ...report]);
-    client.send(data);
+    return client.send(data);
   }
 
   async function handleClick(): Promise<void> {
@@ -35,9 +43,12 @@ export const Shortcut = ({ shortcut }: ShortcutProps) => {
     setIsLoading(true);
 
     try {
-      await sendShortcut();
+      if (!(await sendShortcut())) {
+        message.error(t('keyboard.shortcut.sendFailed'));
+      }
     } catch (err) {
       console.log(err);
+      message.error(t('keyboard.shortcut.sendFailed'));
     } finally {
       setIsLoading(false);
     }

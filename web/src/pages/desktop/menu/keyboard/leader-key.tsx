@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Button, Input, Modal, Switch } from 'antd';
 import clsx from 'clsx';
-import { useAtom, useSetAtom } from 'jotai';
+import { useAtom } from 'jotai';
 import {
   ArrowBigUpIcon,
   ChevronRightIcon,
@@ -13,12 +13,12 @@ import {
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/hid.ts';
-import { keyboardLockAtom, leaderKeyAtom } from '@/jotai/keyboard.ts';
+import { leaderKeyAtom } from '@/jotai/keyboard.ts';
+import { useKeyboardLock } from '@/hooks/useKeyboardLock.ts';
 
 export const LeaderKey = () => {
   const { t } = useTranslation();
 
-  const setKeyboardLock = useSetAtom(keyboardLockAtom);
   const [leaderKey, setLeaderKey] = useAtom(leaderKeyAtom);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -27,6 +27,9 @@ export const LeaderKey = () => {
   const [isFocused, setIsFocused] = useState(false);
   const [isDocCollapsed, setIsDocCollapsed] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [errMsg, setErrMsg] = useState('');
+
+  useKeyboardLock('leader-key-recorder', isModalOpen);
 
   const optionalKeys = [
     {
@@ -64,7 +67,7 @@ export const LeaderKey = () => {
   }, [isFocused]);
 
   function openModal() {
-    setKeyboardLock({ source: 'leader-key-recorder', locked: true });
+    setErrMsg('');
     setIsLeaderKeyEnable(!!leaderKey);
     setTempLeaderKey(leaderKey);
     setIsDocCollapsed(true);
@@ -72,7 +75,6 @@ export const LeaderKey = () => {
   }
 
   function closeModal() {
-    setKeyboardLock({ source: 'leader-key-recorder', locked: false });
     setIsModalOpen(false);
   }
 
@@ -86,15 +88,19 @@ export const LeaderKey = () => {
     }
 
     setIsLoading(true);
+    setErrMsg('');
 
     api
       .setLeaderKey(key)
       .then((rsp) => {
-        if (rsp.code === 0) {
-          setLeaderKey(key);
-          closeModal();
+        if (rsp.code !== 0) {
+          setErrMsg(rsp.msg || t('keyboard.leaderKey.saveFailed'));
+          return;
         }
+        setLeaderKey(key);
+        closeModal();
       })
+      .catch(() => setErrMsg(t('keyboard.leaderKey.saveFailed')))
       .finally(() => {
         setIsLoading(false);
       });
@@ -103,7 +109,7 @@ export const LeaderKey = () => {
   return (
     <>
       <div
-        className="flex cursor-pointer select-none items-center space-x-2 rounded py-1 pl-2 pr-5 hover:bg-neutral-700/70"
+        className="flex cursor-pointer items-center space-x-2 rounded py-1 pr-5 pl-2 select-none hover:bg-neutral-700/70"
         onClick={openModal}
       >
         <KeyIcon size={18} />
@@ -138,7 +144,7 @@ export const LeaderKey = () => {
             {!isDocCollapsed && (
               <ul className="list-outside space-y-3">
                 {['simultaneous', 'sequential'].map((key) => (
-                  <li>
+                  <li key={key}>
                     <div className="flex flex-col space-y-2 pr-1">
                       <span className="">{t(`keyboard.leaderKey.${key}.title`)}</span>
                       <span className="text-sm text-neutral-400">
@@ -192,6 +198,8 @@ export const LeaderKey = () => {
               </div>
             </div>
           )}
+
+          {errMsg && <div className="text-center text-sm text-red-500">{errMsg}</div>}
 
           <div className="flex w-full justify-center pt-5">
             <Button className="w-24" type="primary" loading={isLoading} onClick={submit}>
