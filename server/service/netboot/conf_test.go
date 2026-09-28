@@ -55,7 +55,7 @@ func TestTheLinkOffersNoRouterAndNoDNS(t *testing.T) {
 func TestTheLinkLeasesOneAddressAndHoldsNoRange(t *testing.T) {
 	lines := confLines(linkConf("/tftp"))
 
-	for _, want := range []string{"dhcp-lease-max=1", "dhcp-authoritative", "bind-interfaces"} {
+	for _, want := range []string{"dhcp-lease-max=1", "dhcp-authoritative", "bind-interfaces", "except-interface=lo"} {
 		if !slices.Contains(lines, want) {
 			t.Errorf("no %q", want)
 		}
@@ -142,7 +142,9 @@ func TestTheLANIsProxyOnlyAndNeverHasAnAddressRange(t *testing.T) {
 				t.Errorf("%s: the LAN side has %q", tc.prefix, got)
 			}
 		}
-		for _, want := range []string{"port=0", "interface=eth0", "bind-interfaces", "enable-tftp", "tftp-root=/tftp"} {
+		for _, want := range []string{
+			"port=0", "interface=eth0", "bind-interfaces", "except-interface=lo", "enable-tftp", "tftp-root=/tftp",
+		} {
 			if !slices.Contains(lines, want) {
 				t.Errorf("%s: no %q", tc.prefix, want)
 			}

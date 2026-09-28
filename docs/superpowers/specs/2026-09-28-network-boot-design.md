@@ -84,7 +84,9 @@ one too: `kvmapp/system/init.d/S85netboot`, which never decides, only starts and
   and its log to `/tmp/netboot`.
 - Two instances, one per side, each with one `--interface` and `bind-interfaces`. With exactly one
   interface dnsmasq binds its DHCP socket to the device, which is also how the Wi-Fi access
-  point's `udhcpd` and the link's `udhcpd` already share port 67.
+  point's `udhcpd` and the link's `udhcpd` already share port 67. `except-interface=lo` keeps
+  dnsmasq off the loopback interface, which it adds to any `--interface` on its own; otherwise
+  both instances would open TFTP on 127.0.0.1:69 and the second would not start.
 
 ### The configuration
 
@@ -195,7 +197,10 @@ building only if the owner needs it.
 
 - Install from the page: `/data/ironkvm/addons/netboot/dnsmasq --version` runs, the six boot files
   and `boot.ipxe` are in `tftp/`.
-- dnsmasq drops to `nobody` and still reads the TFTP root on the exFAT `/data`.
+- dnsmasq drops to `nobody` and still reads the TFTP root on the exFAT `/data`, and writes
+  `/tmp/netboot/usb.leases` and `usb.log`. If `nobody` is missing from the image, dnsmasq exits
+  and `S03usbdev` falls back to `udhcpd`, which the page shows as "not running".
+- Both instances run at once (link and LAN), and neither holds 127.0.0.1:69.
 - With the link on (NCM) and network boot on: `S03usbdev dhcp` stops the link's `udhcpd` and
   starts dnsmasq in the `addons` cgroup; the Wi-Fi AP's `udhcpd` keeps running.
 - A UEFI x86-64 host PXE boots from the USB NIC (the firmware must offer PXE on a USB NIC), gets
@@ -206,3 +211,9 @@ building only if the owner needs it.
 - LAN proxy on: a PXE client on the LAN keeps its address from the LAN's DHCP server, gets
   netboot.xyz by TFTP, and loads the netboot.xyz menu. Turning it off stops dnsmasq on the LAN.
 - A reboot with network boot on the link comes up with dnsmasq, not `udhcpd`, on the link.
+
+## Left for the next image
+
+`baseline/sipeed-nanokvm.listing` in ironkvm-dist needs `/kvmapp/system/init.d/S85netboot` at the
+next image. `/etc/init.d` does not list it: `S04addons` copies it there only while proxy DHCP on the
+LAN is on.

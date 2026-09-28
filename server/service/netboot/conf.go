@@ -107,9 +107,14 @@ func lanConf(lan lanNetwork, tftpRoot string) (string, error) {
 // device, so the two instances and the Wi-Fi access point's udhcpd each keep
 // their own; root dropped for nobody once the sockets are bound; TFTP from the
 // add-on's boot files; and the iPXE tag by user class.
+//
+// dnsmasq adds the loopback interface to any --interface on its own, and would
+// open its TFTP port there too. Two instances would then both want
+// 127.0.0.1:69, and the second would not start, so loopback is left out.
 func commonConf(b *strings.Builder, tftpRoot string) {
 	b.WriteString("port=0\n")
 	b.WriteString("bind-interfaces\n")
+	b.WriteString("except-interface=lo\n")
 	b.WriteString("user=nobody\n")
 	b.WriteString("enable-tftp\n")
 	b.WriteString("tftp-root=" + tftpRoot + "\n")
