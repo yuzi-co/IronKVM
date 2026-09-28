@@ -66,12 +66,16 @@ const ca = {
       passwordLength:
         'La contrasenya té de 8 a 63 caràcters. Deixeu-la buida per a una xarxa oberta.',
       passwordOptional: 'Contrasenya (buida per a una xarxa oberta)',
-      lost:
-        "La placa ha deixat de respondre. Potser s'ha connectat a la xarxa i ha tancat el punt d'accés de configuració. Si el punt d'accés torna a aparèixer, la connexió ha fallat: torneu-vos-hi a connectar i torneu-ho a provar.",
-      done:
-        'Configuració acabada. Torneu a connectar aquest dispositiu a la vostra xarxa habitual i obriu la placa a la seva nova adreça.'
+      lost: "La placa ha deixat de respondre. Potser s'ha connectat a la xarxa i ha tancat el punt d'accés de configuració. Si el punt d'accés torna a aparèixer, la connexió ha fallat: torneu-vos-hi a connectar i torneu-ho a provar.",
+      done: 'Configuració acabada. Torneu a connectar aquest dispositiu a la vostra xarxa habitual i obriu la placa a la seva nova adreça.'
     },
     screen: {
+      codecNoWebrtcHevc: 'Aquest navegador no pot rebre H.265 per WebRTC',
+      codecNoHevc: 'Aquest navegador no pot descodificar H.265',
+      codecNote:
+        'La placa té un sol codificador, així que això canvia el flux per a tots els espectadors. Torneu a connectar per aplicar-ho a una sessió WebRTC en curs.',
+      codec: 'Còdec',
+      updateFailed: "No s'ha aplicat la configuració",
       scale: 'Escala',
       title: 'Pantalla',
       video: 'Mode de vídeo',
@@ -139,7 +143,7 @@ const ca = {
       fps: 'FPS',
       customizeFps: 'Personalitzat',
       quality: 'Qualitat',
-      qualityLossless: 'Sense pèrdua',
+      qualityLossless: 'Màxima',
       qualityHigh: 'Alta',
       qualityMedium: 'Mitjana',
       qualityLow: 'Baixa',
@@ -169,6 +173,7 @@ const ca = {
       directConnectionFailed: 'Ha fallat la connexió del flux de vídeo'
     },
     keyboard: {
+      close: 'Tanca',
       title: 'Teclat',
       paste: 'Enganxa',
       tips: "Escriu el text a l'amfitrió com a pulsacions de tecles. Tria la distribució de teclat que fa servir l'amfitrió.",
@@ -229,6 +234,7 @@ const ca = {
         hidError: "No s'han pogut enviar les pulsacions a l'amfitrió."
       },
       shortcut: {
+        sendFailed: "No s'ha enviat: la connexió d'entrada no està disponible",
         title: 'Dreceres',
         custom: 'Personalitzat',
         capture: 'Feu clic aquí per capturar la drecera',
@@ -239,6 +245,7 @@ const ca = {
         enterFullScreen: 'Canvia el mode de pantalla completa.'
       },
       leaderKey: {
+        saveFailed: "No s'ha pogut desar la tecla líder",
         title: 'Tecla líder',
         desc: "Evita les restriccions del navegador i envia dreceres del sistema directament a l'amfitrió remot.",
         howToUse: "Com s'utilitza",
@@ -288,14 +295,15 @@ const ca = {
         "L'amfitrió ha deixat de recollir els informes del ratolí absolut, de manera que els moviments del punter es perden. El teclat no se'n veu afectat. Recuperar l'USB sol resoldre-ho; el mode relatiu fa servir un altre endpoint.",
       useRelative: 'Canvia al mode relatiu',
       direction: 'Direcció de la roda de desplaçament',
-      scrollUp: "Desplaça't cap amunt",
-      scrollDown: "Desplaça't cap avall",
+      scrollUp: 'Igual que aquest ordinador',
+      scrollDown: 'Invertit (desplaçament natural)',
       speed: 'Velocitat de desplaçament',
       fast: 'Ràpida',
       slow: 'Lenta',
       requestPointer: "Estàs usant el mode relatiu. Fes clic a l'escriptori per obtenir el punter.",
       resetHid: 'Restablir HID',
       hidOnly: {
+        switchFailed: "No s'ha pogut canviar el mode. Comproveu la connexió i torneu-ho a provar.",
         title: 'Mode només HID',
         desc: 'Si el ratolí i el teclat deixen de respondre i restablir HID no ajuda, pot ser un problema de compatibilitat entre el NanoKVM i el dispositiu. Proveu d’activar el mode només HID per millorar la compatibilitat.',
         tip1: 'Activar el mode només HID desmuntarà el disc virtual i la xarxa virtual',
@@ -308,6 +316,11 @@ const ca = {
       resetHidFailed: "No s'ha pogut reiniciar l'HID USB"
     },
     image: {
+      delete: 'Elimina',
+      inUse: "En ús. Expulseu-la abans d'eliminar-la.",
+      retry: 'Torna-ho a provar',
+      loadFailed: "No s'ha pogut carregar la llista d'imatges",
+      readOnlyLocked: "Expulseu el disc per canviar-ho. S'aplica quan s'insereix una imatge.",
       title: 'Imatges',
       loading: 'Carregant...',
       empty: "No s'ha trobat res",
@@ -399,6 +412,10 @@ const ca = {
         "L'script ha trigat més de {{minutes}} minuts i aquesta pàgina ha deixat d'esperar. Potser encara s'està executant a la placa."
     },
     terminal: {
+      invalidBaud: 'Aquesta velocitat en bauds no és compatible.',
+      invalidPort: 'Introduïu un camí de dispositiu a /dev, com ara /dev/ttyS1.',
+      invalidSettings: 'Configuració del port sèrie no vàlida. Aquest és el terminal de la placa.',
+      disconnected: 'Desconnectat. Premeu Retorn per tornar a connectar.',
       title: 'Terminal',
       nanokvm: 'Terminal NanoKVM',
       serial: 'Terminal de port sèrie',
@@ -418,6 +435,17 @@ const ca = {
       confirm: "D'acord"
     },
     wol: {
+      no: 'No',
+      yes: 'Sí',
+      deleteConfirm: 'Voleu eliminar aquesta adreça desada?',
+      delete: 'Elimina',
+      wake: 'Desperta',
+      rename: 'Canvia el nom',
+      showMac: "Mostra l'adreça MAC",
+      showName: 'Mostra el nom',
+      requestFailed: "No s'ha pogut contactar amb el dispositiu per enviar l'ordre",
+      deleteFailed: "No s'ha pogut eliminar",
+      renameFailed: "No s'ha pogut canviar el nom",
       title: 'Wake-on-LAN',
       sending: 'Enviant comanda...',
       sent: 'Comanda enviada',
@@ -425,6 +453,11 @@ const ca = {
       ok: "D'acord"
     },
     download: {
+      uploadFailed: 'La pujada ha fallat',
+      uploadSuccess: 'Pujada completada',
+      uploading: "S'està pujant: {{file}}",
+      downloadingPercent: "S'està baixant ({{percent}}): {{file}}",
+      downloading: "S'està baixant: {{file}}",
       title: "Descarregador d'imatges",
       input: 'Introdueix la URL de la imatge',
       ok: "D'acord",

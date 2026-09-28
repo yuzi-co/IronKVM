@@ -67,12 +67,16 @@ const es = {
       passwordLength:
         'La contraseña tiene de 8 a 63 caracteres. Déjela vacía para una red abierta.',
       passwordOptional: 'Contraseña (vacía para una red abierta)',
-      lost:
-        'La placa dejó de responder. Puede que se haya unido a la red y cerrado su punto de acceso de configuración. Si el punto de acceso vuelve a aparecer, la conexión falló: vuelva a conectarse a él e inténtelo de nuevo.',
-      done:
-        'Configuración terminada. Vuelva a conectar este dispositivo a su red habitual y abra la placa en su nueva dirección.'
+      lost: 'La placa dejó de responder. Puede que se haya unido a la red y cerrado su punto de acceso de configuración. Si el punto de acceso vuelve a aparecer, la conexión falló: vuelva a conectarse a él e inténtelo de nuevo.',
+      done: 'Configuración terminada. Vuelva a conectar este dispositivo a su red habitual y abra la placa en su nueva dirección.'
     },
     screen: {
+      codecNoWebrtcHevc: 'Este navegador no puede recibir H.265 por WebRTC',
+      codecNoHevc: 'Este navegador no puede decodificar H.265',
+      codecNote:
+        'La placa tiene un solo codificador, así que esto cambia el flujo para todos los espectadores. Vuelva a conectar para aplicarlo a una sesión WebRTC en curso.',
+      codec: 'Códec',
+      updateFailed: 'No se aplicó el ajuste',
       scale: 'Escala',
       title: 'Pantalla',
       video: 'Modo de vídeo',
@@ -140,7 +144,7 @@ const es = {
       fps: 'FPS',
       customizeFps: 'Personalizar',
       quality: 'Calidad',
-      qualityLossless: 'Sin pérdida',
+      qualityLossless: 'Máxima',
       qualityHigh: 'Alto',
       qualityMedium: 'Medio',
       qualityLow: 'Bajo',
@@ -170,6 +174,7 @@ const es = {
       directConnectionFailed: 'Falló la conexión del flujo de vídeo'
     },
     keyboard: {
+      close: 'Cerrar',
       title: 'Teclado',
       paste: 'Pegar',
       tips: 'Escribe el texto en el host como pulsaciones de teclas. Elige la distribución de teclado que usa el host.',
@@ -230,6 +235,7 @@ const es = {
         hidError: 'No se pudieron enviar las pulsaciones al host.'
       },
       shortcut: {
+        sendFailed: 'No enviado: la conexión de entrada no está disponible',
         title: 'Atajos',
         custom: 'Personalizado',
         capture: 'Haga clic aquí para capturar el acceso directo',
@@ -240,6 +246,7 @@ const es = {
         enterFullScreen: 'Alternar el modo de pantalla completa.'
       },
       leaderKey: {
+        saveFailed: 'No se pudo guardar la tecla líder',
         title: 'Tecla líder',
         desc: 'Omite las restricciones del navegador y envía accesos directos al sistema directamente al host remoto.',
         howToUse: 'Cómo utilizar',
@@ -289,8 +296,8 @@ const es = {
         'El host ha dejado de recoger los informes del ratón absoluto, así que los movimientos del puntero se pierden. El teclado no se ve afectado. Restablecer el USB suele solucionarlo; el modo relativo usa otro endpoint.',
       useRelative: 'Cambiar a modo relativo',
       direction: 'Dirección de la rueda de desplazamiento',
-      scrollUp: 'Desplazarse hacia arriba',
-      scrollDown: 'Desplácese hacia abajo',
+      scrollUp: 'Igual que este equipo',
+      scrollDown: 'Invertido (desplazamiento natural)',
       speed: 'Velocidad de la rueda de desplazamiento',
       fast: 'Rápida',
       slow: 'Lenta',
@@ -298,6 +305,7 @@ const es = {
         'Usando modo relativo. Por favor, haz clic en el escritorio para obtener el cursor del ratón.',
       resetHid: 'Restablecer HID',
       hidOnly: {
+        switchFailed: 'No se pudo cambiar el modo. Compruebe la conexión e inténtelo de nuevo.',
         title: 'Modo solo HID',
         desc: 'Si tu ratón y teclado dejan de responder y restablecer el HID no ayuda, podría ser un problema de compatibilidad entre el NanoKVM y el dispositivo. Prueba a habilitar el modo sólo HID para mejorar la compatibilidad.',
         tip1: 'Habilitar el modo sólo HID desmontará el disco virtual y la red virtual',
@@ -310,6 +318,11 @@ const es = {
       resetHidFailed: 'No se pudo reiniciar el HID USB'
     },
     image: {
+      delete: 'Eliminar',
+      inUse: 'En uso. Expúlsela antes de eliminarla.',
+      retry: 'Reintentar',
+      loadFailed: 'No se pudo cargar la lista de imágenes',
+      readOnlyLocked: 'Expulse el disco para cambiarlo. Se aplica al insertar una imagen.',
       title: 'Imágenes',
       loading: 'Cargando...',
       empty: 'No se ha encontrado nada',
@@ -403,6 +416,10 @@ const es = {
         'El script tardó más de {{minutes}} minutos y esta página dejó de esperar. Puede que siga ejecutándose en la placa.'
     },
     terminal: {
+      invalidBaud: 'Esta velocidad en baudios no es compatible.',
+      invalidPort: 'Introduzca una ruta de dispositivo en /dev, como /dev/ttyS1.',
+      invalidSettings: 'Ajustes del puerto serie no válidos. Esta es la consola de la placa.',
+      disconnected: 'Desconectado. Pulse Intro para volver a conectar.',
       title: 'Consola',
       nanokvm: 'Consola del NanoKVM',
       serial: 'Consola del Puerto Serie',
@@ -422,6 +439,17 @@ const es = {
       confirm: 'Confirmar'
     },
     wol: {
+      no: 'No',
+      yes: 'Sí',
+      deleteConfirm: '¿Eliminar esta dirección guardada?',
+      delete: 'Eliminar',
+      wake: 'Despertar',
+      rename: 'Cambiar nombre',
+      showMac: 'Mostrar dirección MAC',
+      showName: 'Mostrar nombre',
+      requestFailed: 'No se pudo contactar con el dispositivo para enviar la orden',
+      deleteFailed: 'No se pudo eliminar',
+      renameFailed: 'No se pudo cambiar el nombre',
       title: 'Wake-on-LAN',
       sending: 'Enviando comando...',
       sent: 'Comando enviado',
@@ -429,6 +457,11 @@ const es = {
       ok: 'Aceptar'
     },
     download: {
+      uploadFailed: 'La subida falló',
+      uploadSuccess: 'Subida completada',
+      uploading: 'Subiendo: {{file}}',
+      downloadingPercent: 'Descargando ({{percent}}): {{file}}',
+      downloading: 'Descargando: {{file}}',
       title: 'Descargador de imágenes',
       input: 'Por favor, introduce la URL de una imagen remota',
       ok: 'Aceptar',

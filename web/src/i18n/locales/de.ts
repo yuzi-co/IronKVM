@@ -67,12 +67,16 @@ const de = {
       ssidRequired: 'Netzwerknamen eingeben, bis zu 32 Zeichen',
       passwordLength: 'Das Passwort hat 8 bis 63 Zeichen. Für ein offenes Netzwerk leer lassen.',
       passwordOptional: 'Passwort (leer für ein offenes Netzwerk)',
-      lost:
-        'Das Board antwortet nicht mehr. Es hat sich vielleicht mit dem Netzwerk verbunden und seinen Einrichtungs-Hotspot geschlossen. Erscheint der Hotspot wieder, ist die Verbindung fehlgeschlagen: erneut mit ihm verbinden und noch einmal versuchen.',
-      done:
-        'Einrichtung abgeschlossen. Dieses Gerät wieder mit dem üblichen Netzwerk verbinden und das Board unter seiner neuen Adresse öffnen.'
+      lost: 'Das Board antwortet nicht mehr. Es hat sich vielleicht mit dem Netzwerk verbunden und seinen Einrichtungs-Hotspot geschlossen. Erscheint der Hotspot wieder, ist die Verbindung fehlgeschlagen: erneut mit ihm verbinden und noch einmal versuchen.',
+      done: 'Einrichtung abgeschlossen. Dieses Gerät wieder mit dem üblichen Netzwerk verbinden und das Board unter seiner neuen Adresse öffnen.'
     },
     screen: {
+      codecNoWebrtcHevc: 'Dieser Browser kann H.265 nicht über WebRTC empfangen',
+      codecNoHevc: 'Dieser Browser kann H.265 nicht dekodieren',
+      codecNote:
+        'Das Board hat einen Encoder, daher ändert dies den Stream für alle Zuschauer. Für eine laufende WebRTC-Sitzung neu verbinden.',
+      codec: 'Codec',
+      updateFailed: 'Die Einstellung wurde nicht übernommen',
       scale: 'Skala',
       title: 'Bildschirm',
       video: 'Video Modus',
@@ -143,7 +147,7 @@ const de = {
       fps: 'FPS',
       customizeFps: 'Anpassen',
       quality: 'Qualität',
-      qualityLossless: 'Verlustfrei',
+      qualityLossless: 'Beste',
       qualityHigh: 'Hoch',
       qualityMedium: 'Mittel',
       qualityLow: 'Niedrig',
@@ -173,6 +177,7 @@ const de = {
       directConnectionFailed: 'Verbindung zum Videostream fehlgeschlagen'
     },
     keyboard: {
+      close: 'Schließen',
       title: 'Tastatur',
       paste: 'Einfügen',
       tips: 'Tippt den Text auf dem Host als Tastendrücke. Wählen Sie das Tastaturlayout des Hosts.',
@@ -233,6 +238,7 @@ const de = {
         hidError: 'Die Tastendrücke konnten nicht an den Host gesendet werden.'
       },
       shortcut: {
+        sendFailed: 'Nicht gesendet: Die Eingabeverbindung ist unterbrochen',
         title: 'Verknüpfungen',
         custom: 'Benutzerdefiniert',
         capture: 'Klicken Sie hier, um die Verknüpfung zu erfassen',
@@ -243,6 +249,7 @@ const de = {
         enterFullScreen: 'Vollbildmodus umschalten.'
       },
       leaderKey: {
+        saveFailed: 'Leader-Taste konnte nicht gespeichert werden',
         title: 'Leader-Taste',
         desc: 'Browserbeschränkungen umgehen und Systemverknüpfungen direkt an den Remote-Host senden.',
         howToUse: 'Verwendung',
@@ -292,8 +299,8 @@ const de = {
         'Das Zielgerät nimmt keine absoluten Mausberichte mehr an, daher gehen Zeigerbewegungen verloren. Die Tastatur ist nicht betroffen. Ein Wiederherstellen der USB-Verbindung behebt das oft; der relative Modus nutzt einen anderen Endpunkt.',
       useRelative: 'Zum relativen Modus wechseln',
       direction: 'Scrollrichtung',
-      scrollUp: 'Nach oben scrollen',
-      scrollDown: 'Scrollen Sie nach unten',
+      scrollUp: 'Wie auf diesem Computer',
+      scrollDown: 'Umgekehrt (natürliches Scrollen)',
       speed: 'Scrollgeschwindigkeit',
       fast: 'Schnell',
       slow: 'Langsam',
@@ -301,6 +308,8 @@ const de = {
         'Relativer Modus aktiv. Klicken Sie auf den Desktop um den Mauszeiger zu sehen.',
       resetHid: 'HID zurücksetzen',
       hidOnly: {
+        switchFailed:
+          'Der Modus konnte nicht gewechselt werden. Verbindung prüfen und erneut versuchen.',
         title: 'HID-Only-Modus',
         desc: 'Wenn Ihre Maus und Tastatur nicht mehr reagieren und das Zurücksetzen der HID-Verbindung nicht hilft, könnte es sich um ein Kompatibilitätsproblem zwischen dem NanoKVM und dem Gerät handeln. Versuchen Sie, den HID-Only Modus zu aktivieren, um die Kompatibilität zu verbessern.',
         tip1: 'Die Aktivierung des HID-Only Modus entfernt das virtuelle U-Laufwerk und das virtuelle Netzwerk.',
@@ -314,6 +323,12 @@ const de = {
       resetHidFailed: 'USB-HID konnte nicht zurückgesetzt werden'
     },
     image: {
+      delete: 'Löschen',
+      inUse: 'In Verwendung. Vor dem Löschen auswerfen.',
+      retry: 'Erneut versuchen',
+      loadFailed: 'Die Image-Liste konnte nicht geladen werden',
+      readOnlyLocked:
+        'Zum Ändern die Disk auswerfen. Die Einstellung gilt beim Einlegen eines Images.',
       title: 'Bilder',
       loading: 'Lädt...',
       empty: 'Nichts gefunden',
@@ -409,6 +424,11 @@ const de = {
         'Das Skript lief länger als {{minutes}} Minuten und die Seite wartet nicht mehr. Es läuft möglicherweise noch auf dem Board.'
     },
     terminal: {
+      invalidBaud: 'Diese Baudrate wird nicht unterstützt.',
+      invalidPort: 'Einen Gerätepfad unter /dev eingeben, zum Beispiel /dev/ttyS1.',
+      invalidSettings:
+        'Ungültige Einstellungen für den seriellen Port. Dies ist die Shell des Boards.',
+      disconnected: 'Getrennt. Enter drücken, um neu zu verbinden.',
       title: 'Terminal',
       nanokvm: 'NanoKVM Terminal',
       serial: 'Serieller Anschluss Terminal',
@@ -428,6 +448,17 @@ const de = {
       confirm: 'Ok'
     },
     wol: {
+      no: 'Nein',
+      yes: 'Ja',
+      deleteConfirm: 'Diese gespeicherte Adresse löschen?',
+      delete: 'Löschen',
+      wake: 'Aufwecken',
+      rename: 'Umbenennen',
+      showMac: 'MAC-Adresse anzeigen',
+      showName: 'Namen anzeigen',
+      requestFailed: 'Das Gerät war nicht erreichbar, der Befehl wurde nicht gesendet',
+      deleteFailed: 'Löschen fehlgeschlagen',
+      renameFailed: 'Umbenennen fehlgeschlagen',
       title: 'Wake-on-LAN',
       sending: 'Sende Befehl...',
       sent: 'Befehl gesendet',
@@ -435,6 +466,11 @@ const de = {
       ok: 'Ok'
     },
     download: {
+      uploadFailed: 'Hochladen fehlgeschlagen',
+      uploadSuccess: 'Hochladen abgeschlossen',
+      uploading: 'Wird hochgeladen: {{file}}',
+      downloadingPercent: 'Wird heruntergeladen ({{percent}}): {{file}}',
+      downloading: 'Wird heruntergeladen: {{file}}',
       title: 'Systemabbild Downloader',
       input: 'Bitte geben Sie die URL für das Remote-Systemabbild ein',
       ok: 'Ok',
@@ -1416,8 +1452,8 @@ const de = {
     },
     speaker: { title: 'Lautsprecher', unmute: 'Ton an', mute: 'Stummschalten' },
     menu: {
-      collapse: 'Menu einblenden',
-      expand: 'Menu verbergen',
+      collapse: 'Menü einklappen',
+      expand: 'Menü ausklappen',
       more: 'Mehr'
     },
     ion: {

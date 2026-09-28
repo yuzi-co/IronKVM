@@ -66,12 +66,16 @@ const hu = {
       ssidRequired: 'Adja meg a hálózat nevét, legfeljebb 32 karakter',
       passwordLength: 'A jelszó 8–63 karakter. Nyílt hálózatnál hagyja üresen.',
       passwordOptional: 'Jelszó (nyílt hálózatnál üres)',
-      lost:
-        'A panel nem válaszol. Lehet, hogy csatlakozott a hálózathoz, és bezárta a beállító hotspotját. Ha a hotspot újra megjelenik, a csatlakozás sikertelen volt: csatlakozzon hozzá újra, és próbálja újra.',
-      done:
-        'A beállítás kész. Csatlakoztassa vissza ezt az eszközt a szokásos hálózathoz, és nyissa meg a panelt az új címén.'
+      lost: 'A panel nem válaszol. Lehet, hogy csatlakozott a hálózathoz, és bezárta a beállító hotspotját. Ha a hotspot újra megjelenik, a csatlakozás sikertelen volt: csatlakozzon hozzá újra, és próbálja újra.',
+      done: 'A beállítás kész. Csatlakoztassa vissza ezt az eszközt a szokásos hálózathoz, és nyissa meg a panelt az új címén.'
     },
     screen: {
+      codecNoWebrtcHevc: 'Ez a böngésző nem tud H.265-öt fogadni WebRTC-n keresztül',
+      codecNoHevc: 'Ez a böngésző nem tudja dekódolni a H.265-öt',
+      codecNote:
+        'Az eszköznek egy kódolója van, így ez minden néző számára megváltoztatja a streamet. Futó WebRTC-munkamenetnél csatlakozzon újra.',
+      codec: 'Kodek',
+      updateFailed: 'A beállítás nem lépett érvénybe',
       scale: 'Skála',
       title: 'Képernyő',
       video: 'Videó mód',
@@ -140,7 +144,7 @@ const hu = {
       fps: 'FPS',
       customizeFps: 'Testreszabás',
       quality: 'Minőség',
-      qualityLossless: 'Veszteségmentes',
+      qualityLossless: 'Legjobb',
       qualityHigh: 'Magas',
       qualityMedium: 'Közepes',
       qualityLow: 'Alacsony',
@@ -170,6 +174,7 @@ const hu = {
       directConnectionFailed: 'A videófolyam kapcsolata sikertelen'
     },
     keyboard: {
+      close: 'Bezárás',
       title: 'Billentyűzet',
       paste: 'Beillesztés',
       tips: 'A szöveget billentyűleütésekként gépeli be a gazdagépen. Válassza ki a gazdagép billentyűzetkiosztását.',
@@ -230,6 +235,7 @@ const hu = {
         hidError: 'A billentyűleütéseket nem sikerült elküldeni a gazdagépnek.'
       },
       shortcut: {
+        sendFailed: 'Nem lett elküldve: a bemeneti kapcsolat megszakadt',
         title: 'Parancsikonok',
         custom: 'Egyedi',
         capture: 'Kattintson ide a parancsikon rögzítéséhez',
@@ -240,6 +246,7 @@ const hu = {
         enterFullScreen: 'Teljes képernyős mód váltása.'
       },
       leaderKey: {
+        saveFailed: 'Nem sikerült menteni a vezérbillentyűt',
         title: 'Leader billentyű',
         desc: 'Kerülje ki a böngésző korlátozásait, és küldje el a rendszer parancsikonjait közvetlenül a távoli gazdagépnek.',
         howToUse: 'Használat',
@@ -289,8 +296,8 @@ const hu = {
         'A célgép már nem fogadja az abszolút egér jelentéseit, így a mutató mozgásai elvesznek. A billentyűzetet ez nem érinti. Az USB helyreállítása gyakran megoldja; a relatív mód másik végpontot használ.',
       useRelative: 'Váltás relatív módra',
       direction: 'Görgő iránya',
-      scrollUp: 'Görgessen felfelé',
-      scrollDown: 'Görgessen le',
+      scrollUp: 'Mint ezen a számítógépen',
+      scrollDown: 'Fordított (természetes görgetés)',
       speed: 'Görgő sebessége',
       fast: 'Gyors',
       slow: 'Lassú',
@@ -298,6 +305,7 @@ const hu = {
         'Relatív mód használata. Kattintson az asztalra, hogy megjelenjen az egérmutató.',
       resetHid: 'HID alaphelyzetbe állítása',
       hidOnly: {
+        switchFailed: 'Nem sikerült módot váltani. Ellenőrizze a kapcsolatot, és próbálja újra.',
         title: 'Csak HID mód',
         desc: 'Ha az egér és a billentyűzet nem válaszol, és az HID alaphelyzetbe állítása nem segít, akkor az NanoKVM és az eszköz közötti kompatibilitási probléma lehet. Próbálja engedélyezni az HID-Csak módot a jobb kompatibilitás érdekében.',
         tip1: 'Az HID-Csak mód engedélyezése leválasztja a virtuális U-lemezt és a virtuális hálózatot',
@@ -310,6 +318,11 @@ const hu = {
       resetHidFailed: 'Az USB HID újraindítása sikertelen'
     },
     image: {
+      delete: 'Törlés',
+      inUse: 'Használatban van. Törlés előtt adja ki.',
+      retry: 'Újra',
+      loadFailed: 'Nem sikerült betölteni a képek listáját',
+      readOnlyLocked: 'A módosításhoz adja ki a lemezt. Kép behelyezésekor lép érvénybe.',
       title: 'Képek',
       loading: 'Betöltés...',
       empty: 'Nem található semmi',
@@ -402,6 +415,10 @@ const hu = {
         'A szkript {{minutes}} percnél tovább futott, és az oldal abbahagyta a várakozást. Lehet, hogy még fut a panelen.'
     },
     terminal: {
+      invalidBaud: 'Ez az átviteli sebesség nem támogatott.',
+      invalidPort: 'Adjon meg egy /dev alatti eszközútvonalat, például /dev/ttyS1.',
+      invalidSettings: 'Érvénytelen soros port beállítások. Ez az eszköz saját shellje.',
+      disconnected: 'A kapcsolat megszakadt. Az újracsatlakozáshoz nyomja meg az Entert.',
       title: 'Terminál',
       nanokvm: 'NanoKVM Terminál',
       serial: 'Soros port terminál',
@@ -421,6 +438,17 @@ const hu = {
       confirm: 'Ok'
     },
     wol: {
+      no: 'Nem',
+      yes: 'Igen',
+      deleteConfirm: 'Törli ezt a mentett címet?',
+      delete: 'Törlés',
+      wake: 'Ébresztés',
+      rename: 'Átnevezés',
+      showMac: 'MAC-cím megjelenítése',
+      showName: 'Név megjelenítése',
+      requestFailed: 'Nem sikerült elérni az eszközt a parancs küldéséhez',
+      deleteFailed: 'A törlés sikertelen',
+      renameFailed: 'Az átnevezés sikertelen',
       title: 'Wake-on-LAN',
       sending: 'Parancs küldése...',
       sent: 'Parancs elküldve',
@@ -428,6 +456,11 @@ const hu = {
       ok: 'Ok'
     },
     download: {
+      uploadFailed: 'A feltöltés sikertelen',
+      uploadSuccess: 'Feltöltés kész',
+      uploading: 'Feltöltés: {{file}}',
+      downloadingPercent: 'Letöltés ({{percent}}): {{file}}',
+      downloading: 'Letöltés: {{file}}',
       title: 'Képletöltő',
       input: 'Adjon meg egy távoli képet URL',
       ok: 'Ok',

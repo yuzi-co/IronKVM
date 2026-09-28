@@ -66,12 +66,16 @@ const nb = {
       ssidRequired: 'Skriv inn nettverksnavnet, opptil 32 tegn',
       passwordLength: 'Passordet er 8 til 63 tegn. La det stå tomt for et åpent nettverk.',
       passwordOptional: 'Passord (tomt for et åpent nettverk)',
-      lost:
-        'Kortet sluttet å svare. Det kan ha koblet seg til nettverket og lukket oppsettshotspoten. Hvis hotspoten kommer tilbake, mislyktes tilkoblingen: koble til den igjen og prøv på nytt.',
-      done:
-        'Oppsettet er ferdig. Koble denne enheten til ditt vanlige nettverk igjen og åpne kortet på den nye adressen.'
+      lost: 'Kortet sluttet å svare. Det kan ha koblet seg til nettverket og lukket oppsettshotspoten. Hvis hotspoten kommer tilbake, mislyktes tilkoblingen: koble til den igjen og prøv på nytt.',
+      done: 'Oppsettet er ferdig. Koble denne enheten til ditt vanlige nettverk igjen og åpne kortet på den nye adressen.'
     },
     screen: {
+      codecNoWebrtcHevc: 'Denne nettleseren kan ikke motta H.265 over WebRTC',
+      codecNoHevc: 'Denne nettleseren kan ikke dekode H.265',
+      codecNote:
+        'Kortet har én koder, så dette endrer strømmen for alle seere. Koble til på nytt for å bruke det i en pågående WebRTC-økt.',
+      codec: 'Kodek',
+      updateFailed: 'Innstillingen ble ikke brukt',
       scale: 'Skala',
       title: 'Skjerm',
       video: 'Video-kodek',
@@ -139,7 +143,7 @@ const nb = {
       fps: 'FPS',
       customizeFps: 'Tilpass',
       quality: 'Kvalitet',
-      qualityLossless: 'Tapsfri',
+      qualityLossless: 'Best',
       qualityHigh: 'Høy',
       qualityMedium: 'Middels',
       qualityLow: 'Lav',
@@ -169,6 +173,7 @@ const nb = {
       directConnectionFailed: 'Tilkoblingen til videostrømmen mislyktes'
     },
     keyboard: {
+      close: 'Lukk',
       title: 'Åpne tastatur',
       paste: 'Lim inn',
       tips: 'Skriver teksten på verten som tastetrykk. Velg tastaturoppsettet verten bruker.',
@@ -229,6 +234,7 @@ const nb = {
         hidError: 'Tastetrykkene kunne ikke sendes til verten.'
       },
       shortcut: {
+        sendFailed: 'Ikke sendt: inndatatilkoblingen er nede',
         title: 'Snarveier',
         custom: 'Egendefinert',
         capture: 'Klikk her for å ta en snarvei',
@@ -239,6 +245,7 @@ const nb = {
         enterFullScreen: 'Veksle fullskjermmodus.'
       },
       leaderKey: {
+        saveFailed: 'Kunne ikke lagre ledertasten',
         title: 'Leader-tast',
         desc: 'Omgå nettleserrestriksjoner og send systemsnarveier direkte til den eksterne verten.',
         howToUse: 'Hvordan bruke',
@@ -288,14 +295,15 @@ const nb = {
         'Målmaskinen har sluttet å hente absolutte muserapporter, så pekerbevegelser går tapt. Tastaturet påvirkes ikke. Gjenoppretting av USB løser det ofte; relativ modus bruker et annet endepunkt.',
       useRelative: 'Bytt til relativ modus',
       direction: 'Rullehjulretning',
-      scrollUp: 'Rull opp',
-      scrollDown: 'Rull ned',
+      scrollUp: 'Som på denne datamaskinen',
+      scrollDown: 'Omvendt (naturlig rulling)',
       speed: 'Rullehjulhastighet',
       fast: 'Rask',
       slow: 'Sakte',
       requestPointer: 'Bruker relativ modus. Vennligsk klikk på skrivebordet for vise musepeker.',
       resetHid: 'Gjenopprett HID',
       hidOnly: {
+        switchFailed: 'Kunne ikke bytte modus. Sjekk tilkoblingen og prøv igjen.',
         title: 'Kun HID-modus',
         desc: 'Hvis musen og tastaturet slutter å svare og tilbakestilling av HID ikke hjelper, kan det være et kompatibilitetsproblem mellom NanoKVM og enheten. Prøv å aktivere HID-Only-modus for bedre kompatibilitet.',
         tip1: 'Aktivering av HID-Only-modus vil demontere den virtuelle U-disken og det virtuelle nettverket',
@@ -308,6 +316,11 @@ const nb = {
       resetHidFailed: 'Tilbakestilling av USB HID mislyktes'
     },
     image: {
+      delete: 'Slett',
+      inUse: 'I bruk. Løs det ut før du sletter det.',
+      retry: 'Prøv igjen',
+      loadFailed: 'Kunne ikke laste listen over image',
+      readOnlyLocked: 'Løs ut disken for å endre dette. Det gjelder når et image settes inn.',
       title: 'Bilder',
       loading: 'Laster...',
       empty: 'Ingen funnet',
@@ -401,6 +414,10 @@ const nb = {
         'Skriptet kjørte lenger enn {{minutes}} minutter, og siden sluttet å vente. Det kan fortsatt kjøre på kortet.'
     },
     terminal: {
+      invalidBaud: 'Denne baudhastigheten støttes ikke.',
+      invalidPort: 'Skriv inn en enhetsbane under /dev, for eksempel /dev/ttyS1.',
+      invalidSettings: 'Ugyldige innstillinger for seriellport. Dette er kortets eget skall.',
+      disconnected: 'Frakoblet. Trykk Enter for å koble til igjen.',
       title: 'Terminal',
       nanokvm: 'NanoKVM',
       serial: 'Seriell port',
@@ -420,6 +437,17 @@ const nb = {
       confirm: 'Ok'
     },
     wol: {
+      no: 'Nei',
+      yes: 'Ja',
+      deleteConfirm: 'Slette denne lagrede adressen?',
+      delete: 'Slett',
+      wake: 'Vekk',
+      rename: 'Gi nytt navn',
+      showMac: 'Vis MAC-adresse',
+      showName: 'Vis navn',
+      requestFailed: 'Fikk ikke kontakt med enheten for å sende kommandoen',
+      deleteFailed: 'Kunne ikke slette',
+      renameFailed: 'Kunne ikke gi nytt navn',
       title: 'Wake-on-LAN',
       sending: 'Sender kommando...',
       sent: 'Kommando sendt',
@@ -427,6 +455,11 @@ const nb = {
       ok: 'Ok'
     },
     download: {
+      uploadFailed: 'Opplastingen mislyktes',
+      uploadSuccess: 'Opplasting fullført',
+      uploading: 'Laster opp: {{file}}',
+      downloadingPercent: 'Laster ned ({{percent}}): {{file}}',
+      downloading: 'Laster ned: {{file}}',
       title: 'Bildedaster',
       input: 'Vennligst skriv inn et eksternt bilde URL',
       ok: 'Ok',

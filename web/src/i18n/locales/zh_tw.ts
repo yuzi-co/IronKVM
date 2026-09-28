@@ -66,6 +66,12 @@ const zh_tw = {
       done: '設定完成。請將此裝置連回常用網路，並透過新位址開啟板子。'
     },
     screen: {
+      codecNoWebrtcHevc: '此瀏覽器無法透過 WebRTC 接收 H.265',
+      codecNoHevc: '此瀏覽器無法解碼 H.265',
+      codecNote:
+        '裝置只有一個編碼器，此變更會影響所有觀看者的影像串流。進行中的 WebRTC 工作階段需重新連線後生效。',
+      codec: '編碼格式',
+      updateFailed: '設定未套用',
       scale: '缩放',
       title: '螢幕',
       video: '編碼格式',
@@ -132,7 +138,7 @@ const zh_tw = {
       fps: '更新頻率',
       customizeFps: '自定義',
       quality: '品質',
-      qualityLossless: '無損',
+      qualityLossless: '最佳',
       qualityHigh: '高',
       qualityMedium: '中',
       qualityLow: '低',
@@ -161,6 +167,7 @@ const zh_tw = {
       directConnectionFailed: '視訊串流連線失敗'
     },
     keyboard: {
+      close: '關閉',
       title: '鍵盤',
       paste: '貼上',
       tips: '以按鍵方式在主機上輸入文字。請選擇主機使用的鍵盤配置。',
@@ -220,6 +227,7 @@ const zh_tw = {
         hidError: '無法將按鍵傳送到主機。'
       },
       shortcut: {
+        sendFailed: '未傳送：輸入連線已中斷',
         title: '快捷鍵',
         custom: '自定義',
         capture: '點選此處錄製快捷鍵',
@@ -229,6 +237,7 @@ const zh_tw = {
         enterFullScreen: '切換全螢幕模式。'
       },
       leaderKey: {
+        saveFailed: '引導鍵儲存失敗',
         title: '引導鍵',
         desc: '繞過瀏覽器限制並將系統捷徑直接傳送到遠端主機。',
         howToUse: '如何使用',
@@ -277,14 +286,15 @@ const zh_tw = {
         '目標主機已停止接收絕對模式滑鼠報告，游標移動會遺失。鍵盤不受影響。恢復 USB 通常可以解決；相對模式使用另一個端點。',
       useRelative: '切換到相對模式',
       direction: '滾輪方向',
-      scrollUp: '向上',
-      scrollDown: '向下',
+      scrollUp: '與本機相同',
+      scrollDown: '反向（自然捲動）',
       speed: '滾輪速度',
       fast: '快',
       slow: '慢',
       requestPointer: '正在使用滑鼠相對模式。請按一下桌面以取得滑鼠游標。',
       resetHid: '重設 HID',
       hidOnly: {
+        switchFailed: '無法切換模式。請檢查連線後重試。',
         title: 'HID-Only 模式',
         desc: '如果您的滑鼠和鍵盤沒有反應，且重設 HID 無效，可能是 NanoKVM 與您的裝置間有相容性問題。請嘗試啟用 HID-Only 模式以獲得更好的相容性。',
         tip1: '啟用 HID-Only 模式將會停用虛擬隨身碟和虛擬網卡的功能',
@@ -297,6 +307,11 @@ const zh_tw = {
       resetHidFailed: 'USB HID 重設失敗'
     },
     image: {
+      delete: '刪除',
+      inUse: '使用中。請先退出再刪除。',
+      retry: '重試',
+      loadFailed: '無法載入映像清單',
+      readOnlyLocked: '退出磁碟後才能變更。此設定在插入映像時生效。',
       title: '映像檔',
       loading: '載入中...',
       empty: '未找到任何內容',
@@ -384,6 +399,10 @@ const zh_tw = {
       timedOut: '腳本執行超過 {{minutes}} 分鐘，此頁面已停止等待。腳本可能仍在板子上執行。'
     },
     terminal: {
+      invalidBaud: '不支援此鮑率。',
+      invalidPort: '請輸入 /dev 下的裝置路徑，例如 /dev/ttyS1。',
+      invalidSettings: '序列埠設定無效。這是裝置本身的終端機。',
+      disconnected: '連線已中斷。按 Enter 重新連線。',
       title: '終端機',
       nanokvm: 'NanoKVM 終端機',
       serial: 'Serial Port 終端機',
@@ -403,6 +422,17 @@ const zh_tw = {
       confirm: '確定'
     },
     wol: {
+      no: '否',
+      yes: '是',
+      deleteConfirm: '刪除這個已儲存的位址？',
+      delete: '刪除',
+      wake: '喚醒',
+      rename: '重新命名',
+      showMac: '顯示 MAC 位址',
+      showName: '顯示名稱',
+      requestFailed: '無法連線到裝置，指令未送出',
+      deleteFailed: '刪除失敗',
+      renameFailed: '重新命名失敗',
       title: 'Wake-on-LAN',
       sending: '發送指令中...',
       sent: '指令已發送',
@@ -410,6 +440,11 @@ const zh_tw = {
       ok: '確定'
     },
     download: {
+      uploadFailed: '上傳失敗',
+      uploadSuccess: '上傳完成',
+      uploading: '正在上傳：{{file}}',
+      downloadingPercent: '正在下載（{{percent}}）：{{file}}',
+      downloading: '正在下載：{{file}}',
       title: '下载映像檔',
       input: '請輸入映像檔的下載 URL',
       ok: '確定',
@@ -655,7 +690,8 @@ const zh_tw = {
         failed: '看門狗操作失敗',
         powerNeedsLed: '電源循環需要在電源選單中開啟「已連接電源 LED」。',
         noLedConfirmTitle: '在沒有電源 LED 的情況下開啟看門狗？',
-        noLedConfirmDesc: '板子無法看出主機何時關機，因此將主機視為一直開機。如果你關閉主機，逾時後看門狗會按下重設。連接電源 LED 可以避免這種情況。',
+        noLedConfirmDesc:
+          '板子無法看出主機何時關機，因此將主機視為一直開機。如果你關閉主機，逾時後看門狗會按下重設。連接電源 LED 可以避免這種情況。',
         noLedConfirmOk: '開啟',
         cancel: '取消'
       },
@@ -723,7 +759,8 @@ const zh_tw = {
           Wireless: '無線',
           Other: '其他'
         },
-        hostnameInvalid: '請使用字母、數字和連字號，每個以點分隔的部分最多 63 個字元，且不能以連字號開頭或結尾。',
+        hostnameInvalid:
+          '請使用字母、數字和連字號，每個以點分隔的部分最多 63 個字元，且不能以連字號開頭或結尾。',
         hostnameFailed: '修改主機名稱失敗'
       },
       appearance: {

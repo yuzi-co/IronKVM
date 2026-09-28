@@ -65,12 +65,16 @@ const da = {
       ssidRequired: 'Angiv netværksnavnet, højst 32 tegn',
       passwordLength: 'Adgangskoden er 8 til 63 tegn. Lad den stå tom for et åbent netværk.',
       passwordOptional: 'Adgangskode (tom for et åbent netværk)',
-      lost:
-        'Kortet holdt op med at svare. Det har måske tilsluttet sig netværket og lukket sit opsætnings-hotspot. Hvis hotspottet kommer tilbage, mislykkedes tilslutningen: opret forbindelse til det igen og prøv igen.',
-      done:
-        'Opsætningen er færdig. Forbind denne enhed til dit sædvanlige netværk igen, og åbn kortet på dets nye adresse.'
+      lost: 'Kortet holdt op med at svare. Det har måske tilsluttet sig netværket og lukket sit opsætnings-hotspot. Hvis hotspottet kommer tilbage, mislykkedes tilslutningen: opret forbindelse til det igen og prøv igen.',
+      done: 'Opsætningen er færdig. Forbind denne enhed til dit sædvanlige netværk igen, og åbn kortet på dets nye adresse.'
     },
     screen: {
+      codecNoWebrtcHevc: 'Denne browser kan ikke modtage H.265 via WebRTC',
+      codecNoHevc: 'Denne browser kan ikke afkode H.265',
+      codecNote:
+        'Kortet har én encoder, så dette ændrer streamen for alle seere. Forbind igen for at anvende det på en kørende WebRTC-session.',
+      codec: 'Codec',
+      updateFailed: 'Indstillingen blev ikke anvendt',
       scale: 'Skala',
       title: 'Skærm',
       video: 'Videotilstand',
@@ -138,7 +142,7 @@ const da = {
       fps: 'FPS',
       customizeFps: 'Tilpas',
       quality: 'Kvalitet',
-      qualityLossless: 'Tabsfri',
+      qualityLossless: 'Bedst',
       qualityHigh: 'Høj',
       qualityMedium: 'Mellem',
       qualityLow: 'Lav',
@@ -168,6 +172,7 @@ const da = {
       directConnectionFailed: 'Forbindelsen til videostrømmen mislykkedes'
     },
     keyboard: {
+      close: 'Luk',
       title: 'Tastatur',
       paste: 'Indsæt',
       tips: 'Skriver teksten på værten som tastetryk. Vælg det tastaturlayout, værten bruger.',
@@ -228,6 +233,7 @@ const da = {
         hidError: 'Tastetrykkene kunne ikke sendes til værten.'
       },
       shortcut: {
+        sendFailed: 'Ikke sendt: inputforbindelsen er afbrudt',
         title: 'Genveje',
         custom: 'Brugerdefineret',
         capture: 'Klik her for at fange genvej',
@@ -238,6 +244,7 @@ const da = {
         enterFullScreen: 'Skift fuldskærmstilstand.'
       },
       leaderKey: {
+        saveFailed: 'Kunne ikke gemme leader-tasten',
         title: 'Leader-tast',
         desc: 'Omgå browserbegrænsninger og send systemgenveje direkte til fjernværten.',
         howToUse: 'Sådan bruges',
@@ -287,14 +294,15 @@ const da = {
         'Målenheden er holdt op med at modtage absolutte muserapporter, så markørbevægelser går tabt. Tastaturet er ikke påvirket. Gendannelse af USB løser det ofte; relativ tilstand bruger et andet endpoint.',
       useRelative: 'Skift til relativ tilstand',
       direction: 'Rullehjulsretning',
-      scrollUp: 'Rul op',
-      scrollDown: 'Rul ned',
+      scrollUp: 'Som på denne computer',
+      scrollDown: 'Omvendt (naturlig rulning)',
       speed: 'Rullehjulshastighed',
       fast: 'Hurtigt',
       slow: 'Langsomt',
       requestPointer: 'Bruger relativ-tilstand. Klik på skrivebordet for at få musemarkør.',
       resetHid: 'Nulstil HID',
       hidOnly: {
+        switchFailed: 'Kunne ikke skifte tilstand. Tjek forbindelsen, og prøv igen.',
         title: 'Kun HID-tilstand',
         desc: 'Hvis din mus og tastatur holder op med at reagere, og nulstilling af HID ikke hjælper, kan det være et kompatibilitetsproblem mellem NanoKVM og enheden. Prøv at aktivere HID-Only-tilstand for bedre kompatibilitet.',
         tip1: 'Aktivering af HID-Only-tilstand vil afmontere den virtuelle U-disk og det virtuelle netværk',
@@ -307,6 +315,11 @@ const da = {
       resetHidFailed: 'Nulstilling af USB HID mislykkedes'
     },
     image: {
+      delete: 'Slet',
+      inUse: 'I brug. Skub det ud, før du sletter det.',
+      retry: 'Prøv igen',
+      loadFailed: 'Kunne ikke indlæse listen over images',
+      readOnlyLocked: 'Skub disken ud for at ændre dette. Det gælder, når et image indsættes.',
       title: 'Diskbilleder',
       loading: 'Kontrollerer...',
       empty: 'Ingen fundet',
@@ -399,6 +412,10 @@ const da = {
         'Scriptet kørte i mere end {{minutes}} minutter, og siden holdt op med at vente. Det kører måske stadig på kortet.'
     },
     terminal: {
+      invalidBaud: 'Denne baudrate understøttes ikke.',
+      invalidPort: 'Angiv en enhedssti under /dev, f.eks. /dev/ttyS1.',
+      invalidSettings: 'Ugyldige indstillinger for seriel port. Dette er kortets egen shell.',
+      disconnected: 'Afbrudt. Tryk på Enter for at forbinde igen.',
       title: 'Terminal',
       nanokvm: 'Terminal til NanoKVM',
       serial: 'Terminal til seriel port',
@@ -418,6 +435,17 @@ const da = {
       confirm: 'OK'
     },
     wol: {
+      no: 'Nej',
+      yes: 'Ja',
+      deleteConfirm: 'Slet denne gemte adresse?',
+      delete: 'Slet',
+      wake: 'Væk',
+      rename: 'Omdøb',
+      showMac: 'Vis MAC-adresse',
+      showName: 'Vis navn',
+      requestFailed: 'Kunne ikke nå enheden for at sende kommandoen',
+      deleteFailed: 'Kunne ikke slette',
+      renameFailed: 'Kunne ikke omdøbe',
       title: 'Wake-on-LAN',
       sending: 'Sender Wake-on-LAN magic packet',
       sent: 'Wake-on-LAN magic packet sendt',
@@ -425,6 +453,11 @@ const da = {
       ok: 'OK'
     },
     download: {
+      uploadFailed: 'Upload mislykkedes',
+      uploadSuccess: 'Upload fuldført',
+      uploading: 'Uploader: {{file}}',
+      downloadingPercent: 'Henter ({{percent}}): {{file}}',
+      downloading: 'Henter: {{file}}',
       title: 'Billedhenter',
       input: 'Indtast venligst et fjernbillede URL',
       ok: 'OK',
@@ -947,7 +980,8 @@ const da = {
           tip: 'Bemærk: Brug af HTTPS kan øge forsinkelsen, især med MJPEG-videotilstand.',
           restarting: 'Enhedens server genstarter, det tager cirka to minutter...',
           waiting: 'Venter på, at enheden svarer igen...',
-          waitingHttp: 'Skifter tilbage til http. Genindlæs siden, hvis den ikke åbner af sig selv.',
+          waitingHttp:
+            'Skifter tilbage til http. Genindlæs siden, hvis den ikke åbner af sig selv.',
           failed: 'HTTPS-indstillingen kunne ikke ændres',
           enableConfirm: 'Slå HTTPS til?',
           disableConfirm: 'Slå HTTPS fra?',

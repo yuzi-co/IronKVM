@@ -64,11 +64,16 @@ const ko = {
       ssidRequired: '네트워크 이름을 32자 이내로 입력하세요',
       passwordLength: '비밀번호는 8~63자입니다. 개방형 네트워크는 비워 두세요.',
       passwordOptional: '비밀번호 (개방형 네트워크는 비워 둠)',
-      lost:
-        '보드가 응답하지 않습니다. 네트워크에 연결되어 설정용 핫스팟을 닫았을 수 있습니다. 핫스팟이 다시 나타나면 연결에 실패한 것이니 다시 연결한 후 재시도하세요.',
+      lost: '보드가 응답하지 않습니다. 네트워크에 연결되어 설정용 핫스팟을 닫았을 수 있습니다. 핫스팟이 다시 나타나면 연결에 실패한 것이니 다시 연결한 후 재시도하세요.',
       done: '설정이 완료되었습니다. 이 기기를 평소 네트워크에 다시 연결하고 보드의 새 주소로 접속하세요.'
     },
     screen: {
+      codecNoWebrtcHevc: '이 브라우저는 WebRTC로 H.265를 받을 수 없습니다',
+      codecNoHevc: '이 브라우저는 H.265를 디코딩할 수 없습니다',
+      codecNote:
+        '보드에는 인코더가 하나뿐이므로 모든 시청자의 스트림이 바뀝니다. 실행 중인 WebRTC 세션에 적용하려면 다시 연결하세요.',
+      codec: '코덱',
+      updateFailed: '설정이 적용되지 않았습니다',
       scale: '규모',
       title: '화면',
       video: '비디오 모드',
@@ -135,7 +140,7 @@ const ko = {
       fps: 'FPS',
       customizeFps: '사용자 지정',
       quality: '품질',
-      qualityLossless: '무손실',
+      qualityLossless: '최고',
       qualityHigh: '높음',
       qualityMedium: '중간',
       qualityLow: '낮음',
@@ -165,6 +170,7 @@ const ko = {
       directConnectionFailed: '비디오 스트림 연결에 실패했습니다'
     },
     keyboard: {
+      close: '닫기',
       title: '키보드',
       paste: '붙여넣기',
       tips: '텍스트를 키 입력으로 호스트에 입력합니다. 호스트가 사용하는 키보드 레이아웃을 선택하세요.',
@@ -225,6 +231,7 @@ const ko = {
         hidError: '키 입력을 호스트로 보내지 못했습니다.'
       },
       shortcut: {
+        sendFailed: '전송되지 않음: 입력 연결이 끊겼습니다',
         title: '바로가기',
         custom: '관습',
         capture: '바로가기를 캡처하려면 여기를 클릭하세요',
@@ -234,6 +241,7 @@ const ko = {
         enterFullScreen: '전체 화면 모드를 전환합니다.'
       },
       leaderKey: {
+        saveFailed: '리더 키를 저장하지 못했습니다',
         title: '리더 키',
         desc: '브라우저 제한을 우회하고 시스템 바로가기를 원격 호스트에 직접 보냅니다.',
         howToUse: '사용방법',
@@ -282,14 +290,15 @@ const ko = {
         '대상이 절대값 마우스 보고를 더 이상 받지 않아 포인터 이동이 손실되고 있습니다. 키보드는 영향을 받지 않습니다. USB를 복구하면 대개 해결되며, 상대값 모드는 다른 엔드포인트를 사용합니다.',
       useRelative: '상대값 모드로 전환',
       direction: '스크롤 휠 방향',
-      scrollUp: '위로 스크롤',
-      scrollDown: '아래로 스크롤',
+      scrollUp: '이 컴퓨터와 동일',
+      scrollDown: '반대 (자연스러운 스크롤)',
       speed: '스크롤 휠 속도',
       fast: '빠름',
       slow: '느림',
       requestPointer: '상대값 모드를 사용 중입니다. 커서를 찾으려면 데스크톱을 클릭하세요.',
       resetHid: 'HID 초기화',
       hidOnly: {
+        switchFailed: '모드를 전환하지 못했습니다. 연결을 확인하고 다시 시도하세요.',
         title: 'HID 전용 모드',
         desc: '마우스와 키보드가 응답하지 않고 HID 초기화도 도움이 되지 않는다면, NanoKVM과 장치 간의 호환성 문제일 수 있습니다. 더 나은 호환성을 위해 HID 전용 모드를 활성화해 보세요.',
         tip1: 'HID 전용 모드를 활성화하면 가상 USB와 가상 네트워크가 언마운트됩니다',
@@ -302,6 +311,11 @@ const ko = {
       resetHidFailed: 'USB HID를 초기화하지 못했습니다'
     },
     image: {
+      delete: '삭제',
+      inUse: '사용 중입니다. 삭제하기 전에 꺼내세요.',
+      retry: '다시 시도',
+      loadFailed: '이미지 목록을 불러오지 못했습니다',
+      readOnlyLocked: '변경하려면 디스크를 꺼내세요. 이미지를 넣을 때 적용됩니다.',
       title: '이미지',
       loading: '불러오는 중...',
       empty: '아무것도 없습니다.',
@@ -383,16 +397,22 @@ const ko = {
       cancel: '아니오',
       delete: '삭제',
       close: '닫기',
-      empty: '아직 스크립트가 없습니다. .sh 또는 .py 파일을 업로드하면 보드에서 실행할 수 있습니다.',
+      empty:
+        '아직 스크립트가 없습니다. .sh 또는 .py 파일을 업로드하면 보드에서 실행할 수 있습니다.',
       loadFailed: '스크립트를 불러오지 못했습니다',
       uploaded: '스크립트를 업로드했습니다',
       uploadFailed: '스크립트를 업로드하지 못했습니다',
       started: '스크립트를 백그라운드에서 시작했습니다',
       deleteFailed: '스크립트를 삭제하지 못했습니다',
       waitLimit: '스크립트가 끝나기를 최대 {{minutes}}분 동안 기다립니다.',
-      timedOut: '스크립트가 {{minutes}}분 넘게 실행되어 이 페이지는 기다리기를 멈췄습니다. 보드에서는 아직 실행 중일 수 있습니다.'
+      timedOut:
+        '스크립트가 {{minutes}}분 넘게 실행되어 이 페이지는 기다리기를 멈췄습니다. 보드에서는 아직 실행 중일 수 있습니다.'
     },
     terminal: {
+      invalidBaud: '지원하지 않는 전송 속도입니다.',
+      invalidPort: '/dev 아래의 장치 경로를 입력하세요. 예: /dev/ttyS1',
+      invalidSettings: '시리얼 포트 설정이 잘못되었습니다. 이것은 보드 자체의 셸입니다.',
+      disconnected: '연결이 끊겼습니다. 다시 연결하려면 Enter를 누르세요.',
       title: '터미널',
       nanokvm: 'NanoKVM 터미널',
       serial: '시리얼 포트 터미널',
@@ -412,6 +432,17 @@ const ko = {
       confirm: '확인'
     },
     wol: {
+      no: '아니요',
+      yes: '예',
+      deleteConfirm: '저장된 이 주소를 삭제할까요?',
+      delete: '삭제',
+      wake: '깨우기',
+      rename: '이름 바꾸기',
+      showMac: 'MAC 주소 표시',
+      showName: '이름 표시',
+      requestFailed: '명령을 보내려고 장치에 연결하지 못했습니다',
+      deleteFailed: '삭제하지 못했습니다',
+      renameFailed: '이름을 바꾸지 못했습니다',
       title: 'Wake-on-LAN',
       sending: '패킷 전송 중...',
       sent: '패킷 전송 완료',
@@ -419,6 +450,11 @@ const ko = {
       ok: '확인'
     },
     download: {
+      uploadFailed: '업로드 실패',
+      uploadSuccess: '업로드 완료',
+      uploading: '업로드 중: {{file}}',
+      downloadingPercent: '다운로드 중 ({{percent}}): {{file}}',
+      downloading: '다운로드 중: {{file}}',
       title: '이미지 다운로드',
       input: '원격 이미지 URL을 입력하세요.',
       ok: '확인',
@@ -467,7 +503,8 @@ const ko = {
       ledConnectedTip:
         '호스트의 전원 LED 헤더가 보드에 연결된 경우에만 켜세요. 연결되지 않으면 전원 상태를 알 수 없습니다.',
       ledConnectedFailed: '전원 LED 설정을 저장하지 못했습니다',
-      powerLongConfirm: '전원 버튼을 {{seconds}}초 동안 누르시겠습니까? 종료 없이 전원이 차단됩니다.',
+      powerLongConfirm:
+        '전원 버튼을 {{seconds}}초 동안 누르시겠습니까? 종료 없이 전원이 차단됩니다.',
       done: '버튼을 눌렀습니다',
       failed: '버튼을 누르지 못했습니다'
     },
@@ -942,7 +979,8 @@ const ko = {
           failed: 'HTTPS 설정을 변경하지 못했습니다',
           enableConfirm: 'HTTPS를 켜시겠습니까?',
           disableConfirm: 'HTTPS를 끄시겠습니까?',
-          confirmDesc: '로그아웃되고 장치 서버가 다시 시작되며 약 2분이 걸립니다. 그 후 페이지가 {{url}}을(를) 엽니다.',
+          confirmDesc:
+            '로그아웃되고 장치 서버가 다시 시작되며 약 2분이 걸립니다. 그 후 페이지가 {{url}}을(를) 엽니다.',
           confirmOk: '계속',
           confirmCancel: '취소'
         },
@@ -1130,7 +1168,8 @@ const ko = {
           updateFailed: '업데이트에 실패했습니다. 재시도하세요.'
         },
         updateTo: '{{version}}(으)로 업데이트',
-        updateConfirmDesc: '장치가 업데이트를 설치하고 서버를 다시 시작합니다. 서버가 돌아오면 이 페이지가 새로 고쳐집니다.'
+        updateConfirmDesc:
+          '장치가 업데이트를 설치하고 서버를 다시 시작합니다. 서버가 돌아오면 이 페이지가 새로 고쳐집니다.'
       },
       account: {
         title: '계정',
