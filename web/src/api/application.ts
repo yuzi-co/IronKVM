@@ -20,14 +20,45 @@ export function update() {
   });
 }
 
-// offline update application
-export function offlineUpdate(data: FormData, sha256Checksum = '') {
+export type OfflineUpdateResult = {
+  status: number;
+  ok: boolean;
+  // The parsed JSON reply, or null when the body was not JSON.
+  body: { code: number; msg?: string } | null;
+};
+
+// offlineUpdate uploads an update package. It uses XMLHttpRequest rather than
+// fetch because fetch reports no upload progress, and a package is large
+// enough on a slow link that a bar is the only sign the upload is moving.
+export function offlineUpdate(
+  data: FormData,
+  sha256Checksum = '',
+  onProgress?: (percent: number) => void
+): Promise<OfflineUpdateResult> {
   const baseUrl = getBaseUrl('http');
   const url = `${baseUrl}/api/application/update/offline`;
-  return fetch(url, {
-    method: 'POST',
-    headers: sha256Checksum ? { 'X-SHA256-Checksum': sha256Checksum } : undefined,
-    body: data
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', url);
+    if (sha256Checksum) xhr.setRequestHeader('X-SHA256-Checksum', sha256Checksum);
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable && onProgress) {
+        onProgress(Math.round((event.loaded / event.total) * 100));
+      }
+    };
+    xhr.onload = () => {
+      let body: OfflineUpdateResult['body'];
+      try {
+        body = JSON.parse(xhr.responseText);
+      } catch {
+        body = null;
+      }
+      resolve({ status: xhr.status, ok: xhr.status >= 200 && xhr.status < 300, body });
+    };
+    // Shaped like an axios network error, so the page words it the same way.
+    xhr.onerror = () => reject(Object.assign(new Error('Network Error'), { code: 'ERR_NETWORK' }));
+    xhr.send(data);
   });
 }
 
