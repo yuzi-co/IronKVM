@@ -126,9 +126,13 @@ Without a local Go toolchain, a plain `golang` image is enough for this — the
 heavy MaixCDK builder is only needed for an actual device build:
 
 ```shell
-docker run --rm -v "$PWD:/repo" -v nanokvm-gomod:/go/pkg/mod -w /repo/server \
+docker run --rm --cpus=1 -v "$PWD:/repo" -v nanokvm-gomod:/go/pkg/mod -w /repo/server \
   -e CGO_ENABLED=0 golang:1.25 go test -tags novision ./...
 ```
+
+`--cpus=1` is deliberate. The board has one core, and a suite that passes only with spare CPU hides
+tests that wait on wall-clock deadlines instead of events. Those tests failed under load before
+(yuzi-co/ironkvm-dist#26), so keep the limit when running the suite as a check.
 
 Mount the repository root, not `server/`. `service/vm/endpoints_shell_test.go` reads
 `kvmapp/system/init.d/S03usbdev` and holds the Go code against what that script does. A mount of
