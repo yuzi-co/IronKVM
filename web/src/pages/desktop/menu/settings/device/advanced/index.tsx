@@ -10,7 +10,6 @@ const children = (
     <CpuFreq />
     <Zram />
     <Swap />
-    {/*<Autostart />*/}
   </div>
 );
 
