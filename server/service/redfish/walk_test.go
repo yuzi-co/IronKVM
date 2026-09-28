@@ -97,6 +97,8 @@ func TestEveryLinkResolvesToAnAnnotatedResource(t *testing.T) {
 		"/redfish/v1/Managers/1/EthernetInterfaces/eth0",
 		"/redfish/v1/Managers/1/VirtualMedia/Cd",
 		"/redfish/v1/Managers/1/VirtualMedia/Disk",
+		"/redfish/v1/Systems/1/VirtualMedia/Cd",
+		"/redfish/v1/Systems/1/VirtualMedia/Disk",
 		"/redfish/v1/SessionService",
 	} {
 		if !seen[want] {

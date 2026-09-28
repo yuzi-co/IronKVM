@@ -18,7 +18,9 @@ func (s *Service) manager(c *gin.Context) {
 	body["ManagerType"] = "BMC"
 	body["FirmwareVersion"] = s.deps.FirmwareVersion()
 	body["UUID"] = s.deps.UUID
-	body["VirtualMedia"] = link(mediaPath)
+	// Manager.v1_10_0 deprecates this link in favor of the system's. It
+	// stays for the clients that only look here.
+	body["VirtualMedia"] = link(managerMediaPath)
 	body["EthernetInterfaces"] = link(nicsPath)
 	body["Links"] = object{
 		"ManagerForServers": links(systemPath),

@@ -255,3 +255,98 @@ func TestMediaActionsNeedAnAdmin(t *testing.T) {
 		t.Fatal("a user changed the media")
 	}
 }
+
+const systemMediaURL = "/redfish/v1/Systems/1/VirtualMedia"
+
+// members returns the member links of the collection at path.
+func (h *harness) members(path string) []string {
+	h.t.Helper()
+
+	var got []string
+	for _, member := range decode(h.t, h.do(http.MethodGet, path, "", h.user()...))["Members"].([]any) {
+		got = append(got, member.(map[string]any)["@odata.id"].(string))
+	}
+	return got
+}
+
+// Both collections list the same drives, each under its own path.
+func TestBothVirtualMediaCollectionsListTheSameDrives(t *testing.T) {
+	for _, drives := range [][]proto.DriveInfo{
+		{{ID: "disk"}, {ID: "cdrom", Ro: true}},
+		{{ID: "disk"}},
+		{},
+	} {
+		h := newHarness(t)
+		h.host.drives = drives
+
+		manager := h.members(mediaURL)
+		system := h.members(systemMediaURL)
+		if len(manager) != len(system) {
+			t.Fatalf("manager lists %v, system lists %v", manager, system)
+		}
+		for i := range manager {
+			if strings.TrimPrefix(manager[i], mediaURL) != strings.TrimPrefix(system[i], systemMediaURL) ||
+				!strings.HasPrefix(system[i], systemMediaURL+"/") {
+				t.Fatalf("manager lists %v, system lists %v", manager, system)
+			}
+		}
+	}
+}
+
+// A medium found under the system names itself and its actions there.
+func TestAMediumUnderTheSystemLinksItsOwnPath(t *testing.T) {
+	h := newHarness(t)
+
+	body := decode(t, h.do(http.MethodGet, systemMediaURL+"/Cd", "", h.user()...))
+	if body["@odata.id"] != systemMediaURL+"/Cd" {
+		t.Fatalf("@odata.id is %v", body["@odata.id"])
+	}
+	actions := body["Actions"].(map[string]any)
+	for _, action := range []string{"VirtualMedia.InsertMedia", "VirtualMedia.EjectMedia"} {
+		target := actions["#"+action].(map[string]any)["target"]
+		if target != systemMediaURL+"/Cd/Actions/"+action {
+			t.Fatalf("%s target is %v", action, target)
+		}
+	}
+}
+
+// The two paths are views of one drive: what goes in through one shows in
+// the other, and either can take it out.
+func TestMediaInsertedThroughOnePathShowsInTheOther(t *testing.T) {
+	h := newHarness(t)
+	path := h.image("win11.iso")
+
+	w := h.do(http.MethodPost, systemMediaURL+"/Cd/Actions/VirtualMedia.InsertMedia", `{"Image":"win11.iso"}`, h.admin()...)
+	if w.Code != http.StatusNoContent {
+		t.Fatalf("insert: %d %s", w.Code, w.Body.String())
+	}
+	body := decode(t, h.do(http.MethodGet, mediaURL+"/Cd", "", h.user()...))
+	if body["Inserted"] != true || body["Image"] != path {
+		t.Fatalf("manager's CD is %v", body)
+	}
+
+	w = h.do(http.MethodPost, cdEject, "", h.admin()...)
+	if w.Code != http.StatusNoContent {
+		t.Fatalf("eject: %d %s", w.Code, w.Body.String())
+	}
+	body = decode(t, h.do(http.MethodGet, systemMediaURL+"/Cd", "", h.user()...))
+	if body["Inserted"] != false || body["Image"] != nil {
+		t.Fatalf("system's CD is %v", body)
+	}
+}
+
+func TestMediaUnderTheSystemNeedsTheSameCredentials(t *testing.T) {
+	h := newHarness(t)
+	h.image("win11.iso")
+	insert := systemMediaURL + "/Cd/Actions/VirtualMedia.InsertMedia"
+	eject := systemMediaURL + "/Cd/Actions/VirtualMedia.EjectMedia"
+
+	expectError(t, h.do(http.MethodGet, systemMediaURL, ""), http.StatusUnauthorized, "NoValidSession")
+	expectError(t, h.do(http.MethodGet, systemMediaURL+"/Cd", ""), http.StatusUnauthorized, "NoValidSession")
+	expectError(t, h.do(http.MethodPost, insert, `{"Image":"win11.iso"}`), http.StatusUnauthorized, "NoValidSession")
+	expectError(t, h.do(http.MethodPost, insert, `{"Image":"win11.iso"}`, h.user()...), http.StatusForbidden, "InsufficientPrivilege")
+	expectError(t, h.do(http.MethodPost, eject, `{}`, h.user()...), http.StatusForbidden, "InsufficientPrivilege")
+	if len(h.host.inserts) != 0 || len(h.host.ejects) != 0 {
+		t.Fatal("the media changed without an admin")
+	}
+}

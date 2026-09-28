@@ -33,7 +33,7 @@ against the implemented subset.
 | `/redfish` | `{"v1": "/redfish/v1/"}` |
 | `/redfish/v1/` | ServiceRoot: `Systems`, `Managers`, `Chassis`, `SessionService`, `Links.Sessions`, `UUID`, `RedfishVersion` |
 | `/redfish/v1/odata`, `/redfish/v1/$metadata` | Service document and a minimal CSDL that references the DMTF schemas used |
-| `/redfish/v1/Systems`, `/Systems/1` | ComputerSystem: `PowerState` from the power LED, `Actions.#ComputerSystem.Reset` with `ResetType@Redfish.AllowableValues` |
+| `/redfish/v1/Systems`, `/Systems/1` | ComputerSystem: `PowerState` from the power LED, `VirtualMedia`, `Actions.#ComputerSystem.Reset` with `ResetType@Redfish.AllowableValues` |
 | `/redfish/v1/Chassis`, `/Chassis/1` | Chassis: `PowerState`, links to the system and manager. sushy and the validator expect one. |
 | `/redfish/v1/Managers`, `/Managers/1` | Manager: `FirmwareVersion` (the app and image versions), `ManagerType: "BMC"`, `VirtualMedia`, `EthernetInterfaces` |
 | `/redfish/v1/Managers/1/EthernetInterfaces`, `/…/eth0` | MAC and IPv4 addresses from `GetInterfaceInfos()` |
@@ -68,7 +68,13 @@ a mutex, so a Redfish reset and a UI press never overlap.
 
 ## Virtual media
 
-`Cd` maps to the `cdrom` drive and `Disk` to the `disk` drive. `storage` gets exported wrappers
+`Cd` maps to the `cdrom` drive and `Disk` to the `disk` drive. The two resources answer at two
+paths, `Managers/1/VirtualMedia` and `Systems/1/VirtualMedia` (#28). Manager.v1_10_0 deprecates
+the manager's link, and the DMTF validator warns about it, but Ansible and sushy still look
+there; newer clients look under the system first, which ComputerSystem.v1_13_0 links. Both paths
+run the same handlers over the same drives, with the same authentication and the same
+admin-only actions, so a medium inserted through one shows in the other. Each resource names
+itself and its action targets under the path it was fetched at. `storage` gets exported wrappers
 over the functions from #8: `ListDrives`, `InsertDrive(id, file, ro)` and `EjectDrive(id)`. The
 drive lock, the check that one image is never in both drives, and the forced eject from #25 all
 apply as they do from the UI.

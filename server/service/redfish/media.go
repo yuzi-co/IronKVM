@@ -68,54 +68,62 @@ func (s *Service) driveFor(c *gin.Context) (mediaDef, proto.DriveInfo, bool) {
 	return mediaDef{}, proto.DriveInfo{}, false
 }
 
-// virtualMedia lists the drives the gadget has. With the virtual disk
-// function off it has none, and the collection is empty.
-func (s *Service) virtualMedia(c *gin.Context) {
-	drives, err := s.deps.ListDrives()
-	if err != nil {
-		log.Errorf("redfish: list drives: %s", err)
-		writeError(c, http.StatusInternalServerError, "GeneralError", "could not read the drives")
-		return
-	}
+// virtualMedia lists the drives the gadget has under base, the collection's
+// path. With the virtual disk function off it has none, and the collection is
+// empty.
+func (s *Service) virtualMedia(base string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		drives, err := s.deps.ListDrives()
+		if err != nil {
+			log.Errorf("redfish: list drives: %s", err)
+			writeError(c, http.StatusInternalServerError, "GeneralError", "could not read the drives")
+			return
+		}
 
-	var members []string
-	for _, def := range mediaDefs {
-		for _, drive := range drives {
-			if drive.ID == def.drive {
-				members = append(members, mediaPath+"/"+def.id)
+		var members []string
+		for _, def := range mediaDefs {
+			for _, drive := range drives {
+				if drive.ID == def.drive {
+					members = append(members, base+"/"+def.id)
+				}
 			}
 		}
-	}
 
-	writeJSON(c, http.StatusOK, newCollection(mediaPath, "VirtualMediaCollection", "Virtual Media Services", members))
+		writeJSON(c, http.StatusOK, newCollection(base, "VirtualMediaCollection", "Virtual Media Services", members))
+	}
 }
 
-func (s *Service) medium(c *gin.Context) {
-	def, drive, ok := s.driveFor(c)
-	if !ok {
-		return
-	}
+// medium is one drive as a VirtualMedia resource under base. Its links and
+// action targets stay under base, so a client that found it under the system
+// never has to know the manager path.
+func (s *Service) medium(base string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		def, drive, ok := s.driveFor(c)
+		if !ok {
+			return
+		}
 
-	path := mediaPath + "/" + def.id
-	body := newResource(path, "VirtualMedia.v1_3_0.VirtualMedia")
-	body["Id"] = def.id
-	body["Name"] = def.name
-	body["MediaTypes"] = def.types
-	body["ConnectedVia"] = "Applet"
-	body["Inserted"] = drive.File != ""
-	body["WriteProtected"] = drive.Ro
-	body["Image"] = nil
-	body["ImageName"] = nil
-	if drive.File != "" {
-		body["Image"] = drive.File
-		body["ImageName"] = filepath.Base(drive.File)
-	}
-	body["Actions"] = object{
-		"#" + insertAction: object{"target": path + "/Actions/" + insertAction},
-		"#" + ejectAction:  object{"target": path + "/Actions/" + ejectAction},
-	}
+		path := base + "/" + def.id
+		body := newResource(path, "VirtualMedia.v1_3_0.VirtualMedia")
+		body["Id"] = def.id
+		body["Name"] = def.name
+		body["MediaTypes"] = def.types
+		body["ConnectedVia"] = "Applet"
+		body["Inserted"] = drive.File != ""
+		body["WriteProtected"] = drive.Ro
+		body["Image"] = nil
+		body["ImageName"] = nil
+		if drive.File != "" {
+			body["Image"] = drive.File
+			body["ImageName"] = filepath.Base(drive.File)
+		}
+		body["Actions"] = object{
+			"#" + insertAction: object{"target": path + "/Actions/" + insertAction},
+			"#" + ejectAction:  object{"target": path + "/Actions/" + ejectAction},
+		}
 
-	writeTagged(c, body)
+		writeTagged(c, body)
+	}
 }
 
 // insertMedia loads a local image. Image is a path under the image directory
