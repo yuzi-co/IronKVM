@@ -8,6 +8,8 @@ import type { IpmiSettings, IpmiUser } from '@/api/ipmi.ts';
 import { writeClipboardText } from '@/lib/clipboard.ts';
 import { getHostname } from '@/lib/service.ts';
 
+import { PowerLedSetting } from '../../power/power-led-setting.tsx';
+
 const minPasswordLength = 12;
 const maxPasswordLength = 20;
 
@@ -175,6 +177,8 @@ export const Ipmi = () => {
             onChange={setEnabled}
           />
         </div>
+
+        <PowerLedSetting />
 
         {settings?.enabled && (
           <div className="flex flex-col space-y-3">

@@ -22,6 +22,8 @@ import type {
   WatchdogStatus
 } from '@/api/watchdog.ts';
 
+import { PowerLedSetting } from '../../power/power-led-setting.tsx';
+
 // The detector state changes with every sample, which the server takes every
 // 10 seconds.
 const statePollMs = 10 * 1000;
@@ -208,6 +210,8 @@ export const Watchdog = () => {
       <Divider className="opacity-50" />
 
       <div className="flex flex-col space-y-6">
+        <PowerLedSetting />
+
         <div className="flex items-center justify-between">
           <div className="flex flex-col space-y-1 pr-4">
             <span className="text-sm font-medium">{t('settings.watchdog.service')}</span>
