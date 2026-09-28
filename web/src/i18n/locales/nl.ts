@@ -934,7 +934,14 @@ const nl = {
           tip: 'Let op: HTTPS gebruiken kan de latentie verhogen, vooral in MJPEG-videomodus.',
           restarting: 'De apparaatserver wordt opnieuw gestart, dit duurt ongeveer twee minuten...',
           waiting: 'Wachten tot het apparaat weer reageert...',
-          waitingHttp: 'Terugschakelen naar http. Vernieuw deze pagina als deze niet vanzelf opent.'
+          waitingHttp: 'Terugschakelen naar http. Vernieuw deze pagina als deze niet vanzelf opent.',
+          failed: 'De HTTPS-instelling kon niet worden gewijzigd',
+          enableConfirm: 'HTTPS inschakelen?',
+          disableConfirm: 'HTTPS uitschakelen?',
+          confirmDesc:
+            'Dit meldt u af en herstart de server van het apparaat, wat ongeveer twee minuten duurt. Daarna opent de pagina {{url}}.',
+          confirmOk: 'Doorgaan',
+          confirmCancel: 'Annuleren'
         },
         ethernet: {
           title: 'IP-adres',

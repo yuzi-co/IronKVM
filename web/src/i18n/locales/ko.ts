@@ -917,7 +917,13 @@ const ko = {
           restarting: '장치 서버를 다시 시작하는 중입니다. 약 2분 정도 걸립니다...',
           waiting: '장치가 다시 응답하기를 기다리는 중...',
           waitingHttp:
-            'http로 다시 전환하는 중입니다. 자동으로 열리지 않으면 이 페이지를 새로 고치세요.'
+            'http로 다시 전환하는 중입니다. 자동으로 열리지 않으면 이 페이지를 새로 고치세요.',
+          failed: 'HTTPS 설정을 변경하지 못했습니다',
+          enableConfirm: 'HTTPS를 켜시겠습니까?',
+          disableConfirm: 'HTTPS를 끄시겠습니까?',
+          confirmDesc: '로그아웃되고 장치 서버가 다시 시작되며 약 2분이 걸립니다. 그 후 페이지가 {{url}}을(를) 엽니다.',
+          confirmOk: '계속',
+          confirmCancel: '취소'
         },
         ethernet: {
           title: 'IP 주소',

@@ -928,7 +928,14 @@ const pt_br = {
           tip: 'Atenção: O uso de HTTPS pode aumentar a latência, especialmente com o modo de vídeo MJPEG.',
           restarting: 'Reiniciando o servidor do dispositivo, isso leva cerca de dois minutos...',
           waiting: 'Aguardando o dispositivo responder novamente...',
-          waitingHttp: 'Voltando para http. Recarregue esta página se ela não abrir sozinha.'
+          waitingHttp: 'Voltando para http. Recarregue esta página se ela não abrir sozinha.',
+          failed: 'Não foi possível alterar a configuração HTTPS',
+          enableConfirm: 'Ativar HTTPS?',
+          disableConfirm: 'Desativar HTTPS?',
+          confirmDesc:
+            'Isso encerra sua sessão e reinicia o servidor do dispositivo, o que leva cerca de dois minutos. Depois a página abre {{url}}.',
+          confirmOk: 'Continuar',
+          confirmCancel: 'Cancelar'
         },
         ethernet: {
           title: 'Endereço IP',

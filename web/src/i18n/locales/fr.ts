@@ -937,7 +937,14 @@ const fr = {
           tip: "Attention : l'utilisation de HTTPS peut augmenter la latence, surtout en mode vidéo MJPEG.",
           restarting: "Redémarrage du serveur de l'appareil, cela prend environ deux minutes...",
           waiting: "En attente d'une nouvelle réponse de l'appareil...",
-          waitingHttp: "Retour en http. Rechargez cette page si elle ne s'ouvre pas d'elle-même."
+          waitingHttp: "Retour en http. Rechargez cette page si elle ne s'ouvre pas d'elle-même.",
+          failed: 'Impossible de modifier le réglage HTTPS',
+          enableConfirm: 'Activer HTTPS ?',
+          disableConfirm: 'Désactiver HTTPS ?',
+          confirmDesc:
+            "Cela vous déconnecte et redémarre le serveur de l'appareil, ce qui prend environ deux minutes. La page ouvre ensuite {{url}}.",
+          confirmOk: 'Continuer',
+          confirmCancel: 'Annuler'
         },
         ethernet: {
           title: 'Adresse IP',

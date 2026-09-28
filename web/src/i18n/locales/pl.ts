@@ -930,7 +930,14 @@ const pl = {
           tip: 'Uwaga: użycie HTTPS może zwiększyć opóźnienie, szczególnie w trybie wideo MJPEG.',
           restarting: 'Ponowne uruchamianie serwera urządzenia, potrwa to około dwóch minut...',
           waiting: 'Oczekiwanie na odpowiedź urządzenia...',
-          waitingHttp: 'Powrót do http. Jeśli strona nie otworzy się sama, odśwież ją.'
+          waitingHttp: 'Powrót do http. Jeśli strona nie otworzy się sama, odśwież ją.',
+          failed: 'Nie udało się zmienić ustawienia HTTPS',
+          enableConfirm: 'Włączyć HTTPS?',
+          disableConfirm: 'Wyłączyć HTTPS?',
+          confirmDesc:
+            'Spowoduje to wylogowanie i ponowne uruchomienie serwera urządzenia, co trwa około dwóch minut. Następnie strona otworzy {{url}}.',
+          confirmOk: 'Kontynuuj',
+          confirmCancel: 'Anuluj'
         },
         ethernet: {
           title: 'Adres IP',

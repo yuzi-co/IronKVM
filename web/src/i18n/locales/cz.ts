@@ -921,7 +921,14 @@ const cz = {
           restarting: 'Restartuje se server zařízení, potrvá to asi dvě minuty...',
           waiting: 'Čeká se, až zařízení znovu odpoví...',
           waitingHttp:
-            'Přepíná se zpět na http. Pokud se tato stránka neotevře sama, načtěte ji znovu.'
+            'Přepíná se zpět na http. Pokud se tato stránka neotevře sama, načtěte ji znovu.',
+          failed: 'Nastavení HTTPS se nepodařilo změnit',
+          enableConfirm: 'Zapnout HTTPS?',
+          disableConfirm: 'Vypnout HTTPS?',
+          confirmDesc:
+            'Tím se odhlásíte a server zařízení se restartuje, což trvá asi dvě minuty. Stránka pak otevře {{url}}.',
+          confirmOk: 'Pokračovat',
+          confirmCancel: 'Zrušit'
         },
         ethernet: {
           title: 'IP adresa',

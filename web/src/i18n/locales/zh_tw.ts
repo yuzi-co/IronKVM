@@ -889,7 +889,13 @@ const zh_tw = {
           tip: '啟用 HTTPS 可以提高安全性，但可能會增加傳輸延遲，特別是使用 MJPEG 格式傳輸時。',
           restarting: '正在重新啟動裝置伺服器，約需兩分鐘...',
           waiting: '正在等待裝置重新回應...',
-          waitingHttp: '正在切換回 http。如果頁面沒有自動開啟，請重新載入此頁面。'
+          waitingHttp: '正在切換回 http。如果頁面沒有自動開啟，請重新載入此頁面。',
+          failed: '無法變更 HTTPS 設定',
+          enableConfirm: '開啟 HTTPS？',
+          disableConfirm: '關閉 HTTPS？',
+          confirmDesc: '這會讓你登出並重新啟動裝置服務，大約需要兩分鐘。之後頁面將開啟 {{url}}。',
+          confirmOk: '繼續',
+          confirmCancel: '取消'
         },
         ethernet: {
           title: 'IP 位址',

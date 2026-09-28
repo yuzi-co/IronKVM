@@ -921,7 +921,14 @@ const nb = {
           restarting: 'Starter enhetsserveren på nytt, dette tar omtrent to minutter...',
           waiting: 'Venter på at enheten svarer igjen...',
           waitingHttp:
-            'Bytter tilbake til http. Last inn siden på nytt hvis den ikke åpnes av seg selv.'
+            'Bytter tilbake til http. Last inn siden på nytt hvis den ikke åpnes av seg selv.',
+          failed: 'Kunne ikke endre HTTPS-innstillingen',
+          enableConfirm: 'Slå på HTTPS?',
+          disableConfirm: 'Slå av HTTPS?',
+          confirmDesc:
+            'Dette logger deg ut og starter enhetens server på nytt, noe som tar omtrent to minutter. Siden åpner deretter {{url}}.',
+          confirmOk: 'Fortsett',
+          confirmCancel: 'Avbryt'
         },
         ethernet: {
           title: 'IP-adresse',

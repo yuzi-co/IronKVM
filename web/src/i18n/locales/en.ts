@@ -914,7 +914,14 @@ const en = {
           tip: 'Be aware: Using HTTPS can increase latency, especially with MJPEG video mode. Switching signs you out, and the browser will ask you to trust the certificate the device generates for itself.',
           restarting: 'Restarting the device server, this takes about two minutes...',
           waiting: 'Waiting for the device to answer again...',
-          waitingHttp: 'Switching back to http. Reload this page if it does not open on its own.'
+          waitingHttp: 'Switching back to http. Reload this page if it does not open on its own.',
+          failed: 'Could not change the HTTPS setting',
+          enableConfirm: 'Turn on HTTPS?',
+          disableConfirm: 'Turn off HTTPS?',
+          confirmDesc:
+            'This signs you out and restarts the device server, which takes about two minutes. The page then opens {{url}}.',
+          confirmOk: 'Continue',
+          confirmCancel: 'Cancel'
         },
         ethernet: {
           title: 'IP Address',

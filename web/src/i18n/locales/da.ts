@@ -923,7 +923,14 @@ const da = {
           tip: 'Bemærk: Brug af HTTPS kan øge forsinkelsen, især med MJPEG-videotilstand.',
           restarting: 'Enhedens server genstarter, det tager cirka to minutter...',
           waiting: 'Venter på, at enheden svarer igen...',
-          waitingHttp: 'Skifter tilbage til http. Genindlæs siden, hvis den ikke åbner af sig selv.'
+          waitingHttp: 'Skifter tilbage til http. Genindlæs siden, hvis den ikke åbner af sig selv.',
+          failed: 'HTTPS-indstillingen kunne ikke ændres',
+          enableConfirm: 'Slå HTTPS til?',
+          disableConfirm: 'Slå HTTPS fra?',
+          confirmDesc:
+            'Dette logger dig ud og genstarter enhedens server, hvilket tager omkring to minutter. Siden åbner derefter {{url}}.',
+          confirmOk: 'Fortsæt',
+          confirmCancel: 'Annuller'
         },
         ethernet: {
           title: 'IP-adresse',

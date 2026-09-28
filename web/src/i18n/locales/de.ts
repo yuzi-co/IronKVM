@@ -938,7 +938,14 @@ const de = {
           restarting: 'Der Geräteserver wird neu gestartet, das dauert etwa zwei Minuten...',
           waiting: 'Warten, bis das Gerät wieder antwortet...',
           waitingHttp:
-            'Wechsel zurück zu http. Laden Sie diese Seite neu, falls sie sich nicht von selbst öffnet.'
+            'Wechsel zurück zu http. Laden Sie diese Seite neu, falls sie sich nicht von selbst öffnet.',
+          failed: 'Die HTTPS-Einstellung konnte nicht geändert werden',
+          enableConfirm: 'HTTPS einschalten?',
+          disableConfirm: 'HTTPS ausschalten?',
+          confirmDesc:
+            'Sie werden abgemeldet und der Geräteserver startet neu, was etwa zwei Minuten dauert. Danach öffnet die Seite {{url}}.',
+          confirmOk: 'Fortfahren',
+          confirmCancel: 'Abbrechen'
         },
         ethernet: {
           title: 'IP-Adresse',

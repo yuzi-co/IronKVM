@@ -932,7 +932,13 @@ const ja = {
           restarting: 'デバイスのサーバーを再起動しています。約 2 分かかります...',
           waiting: 'デバイスの応答を待っています...',
           waitingHttp:
-            'http に戻しています。自動的に開かない場合は、このページを再読み込みしてください。'
+            'http に戻しています。自動的に開かない場合は、このページを再読み込みしてください。',
+          failed: 'HTTPS の設定を変更できませんでした',
+          enableConfirm: 'HTTPS をオンにしますか？',
+          disableConfirm: 'HTTPS をオフにしますか？',
+          confirmDesc: 'サインアウトしてデバイスのサーバーを再起動します。約 2 分かかります。その後 {{url}} を開きます。',
+          confirmOk: '続行',
+          confirmCancel: 'キャンセル'
         },
         ethernet: {
           title: 'IPアドレス',

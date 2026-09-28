@@ -926,7 +926,14 @@ const tr = {
           tip: 'HTTPS protokolü bağlantıda gecikmeye sebep olabilir, özellikle MJPEG görüntü modu ile.',
           restarting: 'Cihaz sunucusu yeniden başlatılıyor, bu yaklaşık iki dakika sürer...',
           waiting: 'Cihazın yeniden yanıt vermesi bekleniyor...',
-          waitingHttp: "http'ye geri dönülüyor. Sayfa kendiliğinden açılmazsa yeniden yükleyin."
+          waitingHttp: "http'ye geri dönülüyor. Sayfa kendiliğinden açılmazsa yeniden yükleyin.",
+          failed: 'HTTPS ayarı değiştirilemedi',
+          enableConfirm: 'HTTPS açılsın mı?',
+          disableConfirm: 'HTTPS kapatılsın mı?',
+          confirmDesc:
+            'Bu, oturumunuzu kapatır ve cihaz sunucusunu yeniden başlatır; yaklaşık iki dakika sürer. Ardından sayfa {{url}} adresini açar.',
+          confirmOk: 'Devam',
+          confirmCancel: 'İptal'
         },
         ethernet: {
           title: 'IP Adresi',

@@ -919,7 +919,14 @@ const vi = {
           tip: 'Lưu ý: Sử dụng HTTPS có thể tăng độ trễ, đặc biệt trong chế độ video MJPEG.',
           restarting: 'Đang khởi động lại máy chủ của thiết bị, mất khoảng hai phút...',
           waiting: 'Đang chờ thiết bị phản hồi lại...',
-          waitingHttp: 'Đang chuyển về http. Tải lại trang này nếu nó không tự mở.'
+          waitingHttp: 'Đang chuyển về http. Tải lại trang này nếu nó không tự mở.',
+          failed: 'Không thể thay đổi cài đặt HTTPS',
+          enableConfirm: 'Bật HTTPS?',
+          disableConfirm: 'Tắt HTTPS?',
+          confirmDesc:
+            'Thao tác này đăng xuất bạn và khởi động lại máy chủ của thiết bị, mất khoảng hai phút. Sau đó trang sẽ mở {{url}}.',
+          confirmOk: 'Tiếp tục',
+          confirmCancel: 'Hủy'
         },
         ethernet: {
           title: 'Địa chỉ IP',

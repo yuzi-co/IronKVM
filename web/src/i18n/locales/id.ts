@@ -924,7 +924,14 @@ const id = {
           restarting: 'Memulai ulang server perangkat, ini memakan waktu sekitar dua menit...',
           waiting: 'Menunggu perangkat merespons kembali...',
           waitingHttp:
-            'Beralih kembali ke http. Muat ulang halaman ini jika tidak terbuka dengan sendirinya.'
+            'Beralih kembali ke http. Muat ulang halaman ini jika tidak terbuka dengan sendirinya.',
+          failed: 'Tidak dapat mengubah pengaturan HTTPS',
+          enableConfirm: 'Aktifkan HTTPS?',
+          disableConfirm: 'Nonaktifkan HTTPS?',
+          confirmDesc:
+            'Ini mengeluarkan Anda dan memulai ulang server perangkat, yang memakan waktu sekitar dua menit. Halaman lalu membuka {{url}}.',
+          confirmOk: 'Lanjutkan',
+          confirmCancel: 'Batal'
         },
         ethernet: {
           title: 'Alamat IP',

@@ -889,7 +889,13 @@ const zh = {
           tip: '注意：使用 HTTPS 可能导致延迟增加，特别是在 MJPEG 视频模式下。',
           restarting: '正在重启设备服务，大约需要两分钟...',
           waiting: '正在等待设备重新响应...',
-          waitingHttp: '正在切换回 http。如果页面没有自动打开，请刷新此页面。'
+          waitingHttp: '正在切换回 http。如果页面没有自动打开，请刷新此页面。',
+          failed: '无法更改 HTTPS 设置',
+          enableConfirm: '开启 HTTPS？',
+          disableConfirm: '关闭 HTTPS？',
+          confirmDesc: '这会让你退出登录并重启设备服务，大约需要两分钟。之后页面将打开 {{url}}。',
+          confirmOk: '继续',
+          confirmCancel: '取消'
         },
         ethernet: {
           title: 'IP 地址',

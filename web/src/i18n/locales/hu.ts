@@ -931,7 +931,14 @@ const hu = {
           tip: 'Figyelem: A HTTPS használata növelheti a késleltetést, különösen MJPEG videó módban.',
           restarting: 'Az eszköz szervere újraindul, ez körülbelül két percig tart...',
           waiting: 'Várakozás, hogy az eszköz újra válaszoljon...',
-          waitingHttp: 'Visszaváltás http-re. Ha az oldal nem nyílik meg magától, töltse újra.'
+          waitingHttp: 'Visszaváltás http-re. Ha az oldal nem nyílik meg magától, töltse újra.',
+          failed: 'Nem sikerült módosítani a HTTPS beállítást',
+          enableConfirm: 'Bekapcsolja a HTTPS-t?',
+          disableConfirm: 'Kikapcsolja a HTTPS-t?',
+          confirmDesc:
+            'Ez kijelentkeztet, és újraindítja az eszköz szerverét, ami körülbelül két percig tart. Ezután az oldal megnyitja: {{url}}.',
+          confirmOk: 'Folytatás',
+          confirmCancel: 'Mégse'
         },
         ethernet: {
           title: 'IP-cím',

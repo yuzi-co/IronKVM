@@ -920,7 +920,14 @@ const se = {
           tip: 'Observera: Användning av HTTPS kan öka fördröjningen, särskilt med MJPEG-läge.',
           restarting: 'Startar om enhetens server, det tar ungefär två minuter...',
           waiting: 'Väntar på att enheten svarar igen...',
-          waitingHttp: 'Byter tillbaka till http. Ladda om sidan om den inte öppnas av sig själv.'
+          waitingHttp: 'Byter tillbaka till http. Ladda om sidan om den inte öppnas av sig själv.',
+          failed: 'Det gick inte att ändra HTTPS-inställningen',
+          enableConfirm: 'Slå på HTTPS?',
+          disableConfirm: 'Stäng av HTTPS?',
+          confirmDesc:
+            'Detta loggar ut dig och startar om enhetens server, vilket tar ungefär två minuter. Sidan öppnar sedan {{url}}.',
+          confirmOk: 'Fortsätt',
+          confirmCancel: 'Avbryt'
         },
         ethernet: {
           title: 'IP-adress',

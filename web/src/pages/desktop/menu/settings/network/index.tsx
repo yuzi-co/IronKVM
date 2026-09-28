@@ -6,7 +6,11 @@ import { Ethernet } from './ethernet.tsx';
 import { Tls } from './tls.tsx';
 import { Wifi } from './wifi.tsx';
 
-export const Network = () => {
+type NetworkProps = {
+  setIsLocked: (isLocked: boolean) => void;
+};
+
+export const Network = ({ setIsLocked }: NetworkProps) => {
   const { t } = useTranslation();
 
   return (
@@ -15,7 +19,7 @@ export const Network = () => {
       <Divider className="opacity-50" />
 
       <div className="flex flex-col space-y-8">
-        <Tls />
+        <Tls setIsLocked={setIsLocked} />
         <Wifi />
       </div>
 

@@ -928,7 +928,14 @@ const ca = {
           tip: 'Atenció: Usar HTTPS pot augmentar la latència, sobretot amb vídeo MJPEG.',
           restarting: "S'està reiniciant el servidor del dispositiu, triga uns dos minuts...",
           waiting: "S'està esperant que el dispositiu torni a respondre...",
-          waitingHttp: "S'està tornant a http. Torneu a carregar aquesta pàgina si no s'obre sola."
+          waitingHttp: "S'està tornant a http. Torneu a carregar aquesta pàgina si no s'obre sola.",
+          failed: "No s'ha pogut canviar la configuració HTTPS",
+          enableConfirm: 'Activar HTTPS?',
+          disableConfirm: 'Desactivar HTTPS?',
+          confirmDesc:
+            'Això tanca la sessió i reinicia el servidor del dispositiu, cosa que triga uns dos minuts. Després la pàgina obre {{url}}.',
+          confirmOk: 'Continua',
+          confirmCancel: 'Cancel·la'
         },
         ethernet: {
           title: 'Adreça IP',

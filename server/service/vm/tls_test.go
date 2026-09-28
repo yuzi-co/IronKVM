@@ -141,3 +141,43 @@ func setTlsAndReadSessionCookie(t *testing.T, enabled bool) *http.Cookie {
 
 	return nil
 }
+
+// The settings page shows the configured scheme, not the one in its address
+// bar, which a proxy or a pending restart can make disagree.
+func TestGetTlsReportsTheConfiguredScheme(t *testing.T) {
+	original := tlsConfigured
+	t.Cleanup(func() { tlsConfigured = original })
+
+	for _, want := range []bool{true, false} {
+		tlsConfigured = func() (bool, error) { return want, nil }
+
+		gin.SetMode(gin.TestMode)
+		recorder := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(recorder)
+		c.Request = httptest.NewRequest(http.MethodGet, "/api/vm/tls", nil)
+
+		(&Service{}).GetTls(c)
+
+		wantBody := fmt.Sprintf(`"data":{"enabled":%t}`, want)
+		if !strings.Contains(recorder.Body.String(), wantBody) {
+			t.Errorf("GetTls answered %s, want %s", recorder.Body.String(), wantBody)
+		}
+	}
+}
+
+func TestGetTlsReportsAConfigurationItCannotRead(t *testing.T) {
+	original := tlsConfigured
+	t.Cleanup(func() { tlsConfigured = original })
+	tlsConfigured = func() (bool, error) { return false, errors.New("unreadable") }
+
+	gin.SetMode(gin.TestMode)
+	recorder := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(recorder)
+	c.Request = httptest.NewRequest(http.MethodGet, "/api/vm/tls", nil)
+
+	(&Service{}).GetTls(c)
+
+	if strings.Contains(recorder.Body.String(), `"code":0`) {
+		t.Errorf("GetTls reported success: %s", recorder.Body.String())
+	}
+}

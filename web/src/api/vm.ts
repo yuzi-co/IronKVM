@@ -275,6 +275,11 @@ export function disableMdns() {
   return http.post('/api/vm/mdns/disable');
 }
 
+// get whether TLS is configured
+export function getTLS() {
+  return http.get('/api/vm/tls');
+}
+
 // enable / disable TLS
 export function setTLS(enabled: boolean) {
   return http.post('/api/vm/tls', { enabled });

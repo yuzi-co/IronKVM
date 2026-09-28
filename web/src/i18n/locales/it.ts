@@ -935,7 +935,14 @@ const it = {
           tip: "Attenzione: l'uso di HTTPS può aumentare la latenza, soprattutto in modalità video MJPEG.",
           restarting: 'Riavvio del server del dispositivo, ci vorranno circa due minuti...',
           waiting: 'In attesa che il dispositivo risponda di nuovo...',
-          waitingHttp: 'Ritorno a http. Ricarica questa pagina se non si apre da sola.'
+          waitingHttp: 'Ritorno a http. Ricarica questa pagina se non si apre da sola.',
+          failed: "Impossibile modificare l'impostazione HTTPS",
+          enableConfirm: 'Attivare HTTPS?',
+          disableConfirm: 'Disattivare HTTPS?',
+          confirmDesc:
+            'Questo ti disconnette e riavvia il server del dispositivo, operazione che richiede circa due minuti. Poi la pagina apre {{url}}.',
+          confirmOk: 'Continua',
+          confirmCancel: 'Annulla'
         },
         ethernet: {
           title: 'Indirizzo IP',

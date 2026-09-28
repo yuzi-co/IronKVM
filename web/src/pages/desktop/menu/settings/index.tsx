@@ -66,7 +66,11 @@ export const Settings = () => {
     ...(isAdmin
       ? [
           { id: 'device', icon: <SmartphoneIcon size={16} />, component: <Device /> },
-          { id: 'network', icon: <NetworkIcon size={16} />, component: <Network /> },
+          {
+            id: 'network',
+            icon: <NetworkIcon size={16} />,
+            component: <Network setIsLocked={setIsLocked} />
+          },
           { id: 'mcp', icon: <BotIcon size={16} />, component: <MCP /> },
           { id: 'redfish', icon: <ServerCogIcon size={16} />, component: <Redfish /> },
           { id: 'ipmi', icon: <PowerIcon size={16} />, component: <Ipmi /> },
