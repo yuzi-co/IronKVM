@@ -572,6 +572,28 @@ const pl = {
         diskDesc: 'Mount virtual U-disk on the remote host',
         network: 'Sieć wirtualna',
         networkDesc: 'Zamontuj wirtualną kartę sieciową na zdalnym hoście',
+        usbNetwork: {
+          description:
+            'Prywatne połączenie sieciowe ze zdalnym hostem przez kabel USB. Host otrzymuje adres bez bramy i bez DNS, więc nie może dotrzeć do Twojej sieci LAN przez NanoKVM.',
+          off: 'Wyłączone',
+          ncm: 'NCM (Linux, macOS, Windows 11)',
+          ecm: 'ECM (dla hostów bez NCM)',
+          rndis: 'RNDIS (już niedostępne)',
+          rndisNote:
+            'To połączenie używa RNDIS, które nie jest już oferowane. Wybierz NCM lub ECM.',
+          subnet: 'Podsieć',
+          subnetDesc:
+            'Prywatna sieć IPv4, od /24 do /30. NanoKVM zajmuje pierwszy adres, host drugi.',
+          addresses: 'NanoKVM: {{board}}, host: {{host}}',
+          invalidSubnet: 'Wpisz podsieć, na przykład 172.31.255.0/30.',
+          apply: 'Zastosuj',
+          confirm: 'Połączyć ponownie urządzenie USB?',
+          reenumerate:
+            'Zastosowanie odbudowuje połączenie USB. Host na kilka sekund traci klawiaturę, mysz i dysk wirtualny.'
+        },
+        endpoints: {
+          fitTogether: 'Razem mieszczą się: {{sets}}'
+        },
         reboot: 'Uruchom ponownie',
         rebootDesc: 'Czy na pewno chcesz ponownie uruchomić NanoKVM?',
         okBtn: 'Tak',

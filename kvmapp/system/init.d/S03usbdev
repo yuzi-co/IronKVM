@@ -168,13 +168,14 @@ usb_drop_order() {
     echo "audio network disk console"
 }
 
-# usb_enabled prints the functions the markers ask for. usb.ncm and usb.rndis0
-# are alternatives for one function, so they produce one name, not two.
+# usb_enabled prints the functions the markers ask for. usb.ncm, usb.ecm and
+# usb.rndis0 are alternatives for one function, so they produce one name, not
+# three.
 usb_enabled() {
     set=""
 
     usb_marker usb.acm && set="$set console"
-    { usb_marker usb.ncm || usb_marker usb.rndis0; } && set="$set network"
+    { usb_marker usb.ncm || usb_marker usb.ecm || usb_marker usb.rndis0; } && set="$set network"
     usb_marker usb.disk0 && set="$set disk"
     usb_marker usb.uac && set="$set audio"
 
@@ -261,8 +262,8 @@ usb_dropped() {
 }
 
 # usb_gadget_dirs prints the configfs directory names that one optional function
-# can be built as. The network has two, because this script prefers ncm and
-# falls back to rndis, and only one of the two is ever linked.
+# can be built as. The network has three, because this script builds ncm, ecm
+# or rndis, whichever marker ranks first, and only one of them is ever linked.
 #
 # HID is deliberately absent. hid.GS0, hid.GS1 and hid.GS2 are gated on
 # /boot/disable_hid alone and never enter the keep set, so a caller that read
@@ -271,7 +272,7 @@ usb_dropped() {
 usb_gadget_dirs() {
     case "$1" in
         console) echo "acm.GS0" ;;
-        network) echo "ncm.usb0 rndis.usb0" ;;
+        network) echo "ncm.usb0 ecm.usb0 rndis.usb0" ;;
         disk)    echo "mass_storage.disk0" ;;
         audio)   echo "uac1.usb0" ;;
         *)       echo "" ;;
@@ -333,6 +334,251 @@ usb_report() {
     done
 }
 # --- end endpoint budget ---
+
+# --- usb network ---
+# The network function is a private link between the board and the managed
+# host, and nothing more. The board takes the first address of a small subnet
+# and hands the second to the host over DHCP. The lease carries a subnet mask
+# and no router and no DNS server, and the board forwards nothing that arrives
+# on the link, so the host never reaches the LAN through the KVM.
+#
+# This image carries no dnsmasq binary: S80dnsmasq exits at once because
+# /etc/dnsmasq.conf is absent. udhcpd is there, from busybox-extras, because
+# S30wifi serves its access point with it. The link runs a second udhcpd with a
+# configuration and a pid file of its own, so neither instance can stop the
+# other.
+#
+# Every path below has a default inside the function and not at the top of the
+# file, for the reason usb_record_link gives: the test suites lift function
+# bodies out of this script and source them.
+
+# usb_net_function prints which network function the markers ask for, or
+# nothing. The server writes one marker. A board with more than one takes NCM
+# first, then ECM, then RNDIS, which an older server wrote and the web UI no
+# longer offers.
+usb_net_function() {
+    if usb_marker usb.ncm
+    then
+        echo ncm
+    elif usb_marker usb.ecm
+    then
+        echo ecm
+    elif usb_marker usb.rndis0
+    then
+        echo rndis
+    fi
+}
+
+# usb_net_parse reads a subnet in CIDR form and prints the board address, the
+# host address, the prefix length and the netmask, or fails.
+#
+# The prefix is /24 to /30, so the network part of the last octet is all that
+# varies and the arithmetic stays inside one byte. /30 is the smallest subnet
+# with two usable addresses. The network has to be private, because the host
+# takes the lease as a real route and an address on the internet would shadow
+# a real one. The server applies the same rules; this copy exists because the
+# file can be edited by hand.
+#
+# An octet with a leading zero is refused. ash reads 010 as octal.
+usb_net_parse() {
+    case "$1" in
+        */*) ;;
+        *) return 1 ;;
+    esac
+
+    usb_net_prefix=${1#*/}
+    case "$usb_net_prefix" in
+        24|25|26|27|28|29|30) ;;
+        *) return 1 ;;
+    esac
+
+    usb_net_ifs=$IFS
+    IFS=.
+    set -- ${1%/*}
+    IFS=$usb_net_ifs
+
+    [ $# -eq 4 ] || return 1
+    for usb_net_octet in "$@"
+    do
+        case "$usb_net_octet" in
+            ''|*[!0-9]*|0?*|????*) return 1 ;;
+        esac
+        [ "$usb_net_octet" -le 255 ] || return 1
+    done
+
+    if [ "$1" -eq 10 ]
+    then
+        :
+    elif [ "$1" -eq 172 ] && [ "$2" -ge 16 ] && [ "$2" -le 31 ]
+    then
+        :
+    elif [ "$1" -eq 192 ] && [ "$2" -eq 168 ]
+    then
+        :
+    else
+        return 1
+    fi
+
+    usb_net_size=$((1 << (32 - usb_net_prefix)))
+    [ $(($4 % usb_net_size)) -eq 0 ] || return 1
+
+    echo "$1.$2.$3.$(($4 + 1)) $1.$2.$3.$(($4 + 2)) $usb_net_prefix 255.255.255.$((256 - usb_net_size))"
+}
+
+# usb_net_subnet prints the subnet the link uses. The server writes it to
+# /etc/kvm, which is on /data and survives an update of this script. A board
+# with no file uses the default, and so does a board whose file this script
+# cannot read, with a line on the console that says so.
+usb_net_subnet() {
+    file=${USB_NET_SUBNET_FILE:-/etc/kvm/usb-network.subnet}
+    fallback=172.31.255.0/30
+
+    if [ ! -r "$file" ]
+    then
+        echo "$fallback"
+        return 0
+    fi
+
+    subnet=$(head -n 1 "$file" | tr -d ' \t\r')
+    if usb_net_parse "$subnet" > /dev/null
+    then
+        echo "$subnet"
+    else
+        echo "usb: $file holds '$subnet', which is not a private /24 to /30, using $fallback" >&2
+        echo "$fallback"
+    fi
+}
+
+# usb_net_udhcpd_conf writes the configuration of the link's DHCP server. It
+# takes the interface, the host address, the netmask and the run directory.
+#
+# One address and one lease: the host is the only client a USB link can have.
+# There is no "option router" and no "option dns" line, and udhcpd sends
+# neither unless it is told to, so the host gets no default route and keeps its
+# own resolvers.
+usb_net_udhcpd_conf() {
+    echo "interface $1"
+    echo "start $2"
+    echo "end $2"
+    echo "max_leases 1"
+    echo "pidfile $4/udhcpd.pid"
+    echo "lease_file $4/udhcpd.leases"
+    echo "option subnet $3"
+    echo "option lease 864000"
+}
+
+# usb_net_ifname prints the interface a network function registered, or
+# nothing.
+#
+# The name is not always usb0. u_ether registers the net device when the
+# function first binds and keeps it until the function directory is removed,
+# and this script never removes one. A board that switched from NCM to ECM
+# without a reboot therefore has usb0 on ncm.usb0 and usb1 on ecm.usb0. Before
+# the first bind the attribute reads the template, usb%d, which names nothing.
+usb_net_ifname() {
+    gadget=${USB_GADGET_DIR:-/sys/kernel/config/usb_gadget/g0}
+
+    name=$(cat "$gadget/functions/$1/ifname" 2>/dev/null)
+    case "$name" in
+        ''|*%*|*/*|*' '*) return 1 ;;
+    esac
+
+    echo "$name"
+}
+
+# usb_net_no_forward keeps the board from routing the host anywhere.
+#
+# The interface's own forwarding switch is written first, but it does not hold:
+# a write to net.ipv4.ip_forward copies itself into every interface, and
+# NetBird makes that write on a routing peer. So the FORWARD chain also drops
+# anything in or out of a usb interface. The rules are inserted once and left
+# in place, because they cost nothing while the link is off. A board without
+# iptables, or a kernel without the filter table, keeps the switch alone.
+usb_net_no_forward() {
+    echo 0 > "/proc/sys/net/ipv4/conf/$1/forwarding" 2>/dev/null
+    echo 0 > "/proc/sys/net/ipv6/conf/$1/forwarding" 2>/dev/null
+
+    for tool in iptables ip6tables
+    do
+        command -v "$tool" > /dev/null 2>&1 || continue
+
+        for side in -i -o
+        do
+            "$tool" -C FORWARD "$side" usb+ -j DROP 2> /dev/null \
+                || "$tool" -I FORWARD "$side" usb+ -j DROP 2> /dev/null
+        done
+    done
+
+    return 0
+}
+
+# usb_net_stop stops the link's DHCP server and takes the address off every
+# network function except the one named in $1, so that two interfaces never
+# hold the same subnet after a switch between NCM and ECM.
+usb_net_stop() {
+    run=${USB_NET_RUN:-/tmp/usb-network}
+
+    if [ -r "$run/udhcpd.pid" ]
+    then
+        kill "$(cat "$run/udhcpd.pid")" 2>/dev/null
+        rm -f "$run/udhcpd.pid"
+    fi
+
+    for dir in ncm.usb0 ecm.usb0 rndis.usb0
+    do
+        [ "$dir" = "$1" ] && continue
+
+        name=$(usb_net_ifname "$dir") || continue
+        ip addr flush dev "$name" 2>/dev/null
+    done
+
+    return 0
+}
+
+# usb_net_start gives the network function named in $1 its address and starts
+# the DHCP server on it. It runs after the gadget is bound, because u_ether
+# registers the interface at bind time.
+#
+# A failure here costs the link and nothing else. The keyboard and the mice
+# are already bound, so this reports and returns rather than stopping the boot.
+usb_net_start() {
+    run=${USB_NET_RUN:-/tmp/usb-network}
+
+    usb_net_stop "$1.usb0"
+
+    usb_net_if=$(usb_net_ifname "$1.usb0")
+    if [ -z "$usb_net_if" ]
+    then
+        echo "usb: $1.usb0 has no interface, no network to the host"
+        return 1
+    fi
+
+    set -- $(usb_net_parse "$(usb_net_subnet)")
+
+    ip addr flush dev "$usb_net_if" 2>/dev/null
+    if ! ip addr add "$1/$3" dev "$usb_net_if"
+    then
+        echo "usb: could not put $1/$3 on $usb_net_if, no network to the host"
+        return 1
+    fi
+    ip link set "$usb_net_if" up
+
+    usb_net_no_forward "$usb_net_if"
+
+    mkdir -p "$run"
+    usb_net_udhcpd_conf "$usb_net_if" "$2" "$4" "$run" > "$run/udhcpd.conf"
+    : > "$run/udhcpd.leases"
+
+    if udhcpd -S "$run/udhcpd.conf"
+    then
+        echo "usb: network to the host on $usb_net_if, board $1/$3, host $2"
+    else
+        echo "usb: udhcpd did not start on $usb_net_if, the host has to set $2/$3 itself"
+    fi
+
+    return 0
+}
+# --- end usb network ---
 
 # usb_unbind empties the UDC and then reads it back.
 #
@@ -792,29 +1038,52 @@ start_usb_dev(){
         usb_host_mac="48:da:35:6d:${usb_uid%??}:${usb_uid#??}"
     fi
 
-    if usb_kept network && [ -e /boot/usb.ncm ]
+    # Which of the three network functions to build, if the budget kept the
+    # network at all. The prune above keeps all three links whenever the
+    # network is kept, so the two that were not chosen lose theirs here: a
+    # board switched from NCM to ECM would otherwise carry both, and ask for two
+    # more inbound endpoints than the budget allowed. The symlink only, as in
+    # the prune.
+    usb_net=""
+    if usb_kept network
+    then
+        usb_net=$(usb_net_function)
+    fi
+    for usb_net_dir in ncm.usb0 ecm.usb0 rndis.usb0
+    do
+        [ "$usb_net_dir" = "$usb_net.usb0" ] || rm -f "configs/c.1/$usb_net_dir"
+    done
+
+    if [ "$usb_net" = ncm ]
     then
         mkdir functions/ncm.usb0
         [ -n "$usb_dev_mac" ]  && echo "$usb_dev_mac"  > functions/ncm.usb0/dev_addr
         [ -n "$usb_host_mac" ] && echo "$usb_host_mac" > functions/ncm.usb0/host_addr
         echo WINNCM > functions/ncm.usb0/os_desc/interface.ncm/compatible_id
         ln -s functions/ncm.usb0 configs/c.1/
-    else
-        if usb_kept network && [ -e /boot/usb.rndis0 ]
-        then
-                mkdir functions/rndis.usb0
-                [ -n "$usb_dev_mac" ]  && echo "$usb_dev_mac"  > functions/rndis.usb0/dev_addr
-                [ -n "$usb_host_mac" ] && echo "$usb_host_mac" > functions/rndis.usb0/host_addr
-                echo e0 > functions/rndis.usb0/class
-                echo 01 > functions/rndis.usb0/subclass
-                echo 03 > functions/rndis.usb0/protocol
-                echo RNDIS > functions/rndis.usb0/os_desc/interface.rndis/compatible_id
-                echo 5162001 > functions/rndis.usb0/os_desc/interface.rndis/sub_compatible_id
-                ln -s functions/rndis.usb0 configs/c.1/
-        fi
+    elif [ "$usb_net" = ecm ]
+    then
+        # ECM is the fallback for a host with no NCM driver. Linux and macOS
+        # drive it with their own class driver. Windows has none, so there is
+        # no Microsoft OS descriptor to offer for it.
+        mkdir functions/ecm.usb0
+        [ -n "$usb_dev_mac" ]  && echo "$usb_dev_mac"  > functions/ecm.usb0/dev_addr
+        [ -n "$usb_host_mac" ] && echo "$usb_host_mac" > functions/ecm.usb0/host_addr
+        ln -s functions/ecm.usb0 configs/c.1/
+    elif [ "$usb_net" = rndis ]
+    then
+        mkdir functions/rndis.usb0
+        [ -n "$usb_dev_mac" ]  && echo "$usb_dev_mac"  > functions/rndis.usb0/dev_addr
+        [ -n "$usb_host_mac" ] && echo "$usb_host_mac" > functions/rndis.usb0/host_addr
+        echo e0 > functions/rndis.usb0/class
+        echo 01 > functions/rndis.usb0/subclass
+        echo 03 > functions/rndis.usb0/protocol
+        echo RNDIS > functions/rndis.usb0/os_desc/interface.rndis/compatible_id
+        echo 5162001 > functions/rndis.usb0/os_desc/interface.rndis/sub_compatible_id
+        ln -s functions/rndis.usb0 configs/c.1/
     fi
 
-    if usb_kept network
+    if [ "$usb_net" = ncm ] || [ "$usb_net" = rndis ]
     then
         # Microsoft OS 2.0 Descriptor
         echo 1 > os_desc/use
@@ -1049,11 +1318,25 @@ start_usb_dev(){
     fi
 
     usb_bind
+
+    # After the bind, because that is when u_ether registers the interface. A
+    # start that dropped the network still stops the DHCP server and clears
+    # the address an earlier start put on the link. Before the role call,
+    # because start_usb_dev has to end with it: its status is what stop_start
+    # reports to the supervisor.
+    if [ -n "$usb_net" ]
+    then
+        usb_net_start "$usb_net"
+    else
+        usb_net_stop ""
+    fi
+
     set_otg_role device
 }
 
 start_usb_host(){
     usb_unbind || return 1
+    usb_net_stop ""
     set_otg_role host
 }
 

@@ -566,6 +566,27 @@ const se = {
         diskDesc: 'Montera virtuell U-disk på fjärrvärden',
         network: 'Virtuellt nätverk',
         networkDesc: 'Montera virtuell nätverkskort på fjärrvärden',
+        usbNetwork: {
+          description:
+            'En privat nätverkslänk till fjärrvärden via USB-kabeln. Värden får en adress utan gateway och utan DNS, så den kan inte nå ditt lokala nätverk genom NanoKVM.',
+          off: 'Av',
+          ncm: 'NCM (Linux, macOS, Windows 11)',
+          ecm: 'ECM (för värdar utan NCM)',
+          rndis: 'RNDIS (erbjuds inte längre)',
+          rndisNote: 'Den här länken använder RNDIS, som inte längre erbjuds. Välj NCM eller ECM.',
+          subnet: 'Delnät',
+          subnetDesc:
+            'Ett privat IPv4-nätverk, /24 till /30. NanoKVM tar den första adressen, värden den andra.',
+          addresses: 'NanoKVM: {{board}}, värd: {{host}}',
+          invalidSubnet: 'Ange ett delnät, till exempel 172.31.255.0/30.',
+          apply: 'Verkställ',
+          confirm: 'Återansluta USB-enheten?',
+          reenumerate:
+            'När du verkställer byggs USB-anslutningen upp på nytt. Värden förlorar tangentbord, mus och virtuell disk i några sekunder.'
+        },
+        endpoints: {
+          fitTogether: 'Dessa ryms tillsammans: {{sets}}'
+        },
         reboot: 'Starta om',
         rebootDesc: 'Är du säker på att du vill starta om NanoKVM?',
         okBtn: 'Ja',

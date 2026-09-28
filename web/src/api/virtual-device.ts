@@ -17,6 +17,9 @@ export type VirtualDevices = {
   audio: VirtualDeviceState;
   used: number;
   total: number;
+  // Every largest set of optional devices that fits beside the keyboard and
+  // mouse, highest priority first.
+  fits: VirtualDeviceName[][];
 };
 
 // get virtual devices status
@@ -31,4 +34,27 @@ export function updateVirtualDevice(device: VirtualDeviceName) {
   };
 
   return http.post('/api/vm/device/virtual', data);
+}
+
+// The USB network link to the host. rndis is only ever read back, from a board
+// an older server set up; the settings page offers off, ncm and ecm.
+export type UsbNetworkMode = 'off' | 'ncm' | 'ecm' | 'rndis';
+
+export type UsbNetwork = {
+  mode: UsbNetworkMode;
+  subnet: string;
+  board: string;
+  host: string;
+  active: boolean;
+  fits: boolean;
+  refusal: string;
+};
+
+export function getUsbNetwork() {
+  return http.get('/api/vm/device/usb-network');
+}
+
+// An empty subnet keeps the one in use.
+export function setUsbNetwork(mode: Exclude<UsbNetworkMode, 'rndis'>, subnet: string) {
+  return http.post('/api/vm/device/usb-network', { mode, subnet });
 }

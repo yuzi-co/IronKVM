@@ -11,6 +11,8 @@ import type {
 import { useHidMode } from '@/hooks/useHidMode.ts';
 import { useStableCallback } from '@/hooks/useStableCallback.ts';
 
+import { UsbNetwork } from './usb-network.tsx';
+
 export const VirtualDevices = () => {
   const { t } = useTranslation();
 
@@ -173,6 +175,18 @@ export const VirtualDevices = () => {
           />
 
           <span className="text-xs text-neutral-500">{t('settings.device.endpoints.explain')}</span>
+
+          {/* Said before anything is switched, so the operator learns which
+              devices go together from the list rather than from a refusal. */}
+          {devices.fits?.length > 0 && (
+            <span className="text-xs text-neutral-500">
+              {t('settings.device.endpoints.fitTogether', {
+                sets: devices.fits
+                  .map((set) => set.map((name) => t(`settings.device.${name}`)).join(' + '))
+                  .join('; ')
+              })}
+            </span>
+          )}
         </div>
       )}
 
@@ -180,7 +194,7 @@ export const VirtualDevices = () => {
 
       {row('console')}
       {row('disk')}
-      {row('network')}
+      {devices && <UsbNetwork devices={devices} onChanged={getVirtualDevice} />}
       {row('audio')}
     </>
   );

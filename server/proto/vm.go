@@ -111,6 +111,29 @@ type GetVirtualDeviceRsp struct {
 	Audio   VirtualDeviceState `json:"audio"`
 	Used    int                `json:"used"`
 	Total   int                `json:"total"`
+	// Fits lists every largest set of optional functions that fits beside
+	// HID, so the UI can say which functions go together before a refusal.
+	Fits [][]string `json:"fits"`
+}
+
+// GetUSBNetworkRsp is the USB network link to the managed host. Mode is off,
+// ncm or ecm, or rndis on a board an older server set up. Fits answers whether
+// the network can be turned on now, and Refusal says why when it cannot.
+type GetUSBNetworkRsp struct {
+	Mode    string `json:"mode"`
+	Subnet  string `json:"subnet"`
+	Board   string `json:"board"`
+	Host    string `json:"host"`
+	Active  bool   `json:"active"`
+	Fits    bool   `json:"fits"`
+	Refusal string `json:"refusal"`
+}
+
+// SetUSBNetworkReq picks the mode and, optionally, the subnet. An empty
+// subnet keeps the one in use.
+type SetUSBNetworkReq struct {
+	Mode   string `validate:"required,oneof=off ncm ecm"`
+	Subnet string `validate:"omitempty,max=18"`
 }
 
 type UpdateVirtualDeviceReq struct {

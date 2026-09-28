@@ -55,7 +55,7 @@ func TestCommandsForRejectsUnknownDevices(t *testing.T) {
 
 // Audio became a third case in commandsFor, and the point of that refactor was
 // that network and disk still behave exactly as they did. Checking only that
-// the lookup succeeds does not show it: a swap of virtualNetwork and
+// the lookup succeeds does not show it: a swap of virtualNetworkNCM and
 // virtualDisk inside commandsFor would pass, and the settings switch would
 // then rebuild the USB gadget for the wrong device.
 func TestCommandsForStillHandlesNetworkAndDisk(t *testing.T) {
@@ -65,7 +65,7 @@ func TestCommandsForStillHandlesNetworkAndDisk(t *testing.T) {
 		mount   string
 		unmount string
 	}{
-		{"network", virtualNetwork, "touch /boot/usb.rndis0", "rndis.usb0"},
+		{"network", virtualNetworkNCM, "touch /boot/usb.ncm", "ncm.usb0"},
 		{"disk", virtualDisk, "touch /boot/usb.disk0", "mass_storage.disk0"},
 	} {
 		marker, mount, unmount, ok := commandsFor(want.device)
@@ -98,10 +98,10 @@ func TestCommandsForStillHandlesNetworkAndDisk(t *testing.T) {
 	}
 }
 
-// The network has two markers - usb.ncm and usb.rndis0 - because S03usbdev
-// prefers NCM and falls back to RNDIS. Clearing only one would leave the
-// other on disk, and the function would come straight back at the next boot.
-func TestCommandsForNetworkUnmountClearsBothMarkers(t *testing.T) {
+// The network has three markers - usb.ncm, usb.ecm and usb.rndis0 - because
+// S03usbdev builds whichever ranks first. Clearing only one would leave the
+// others on disk, and the function would come straight back at the next boot.
+func TestCommandsForNetworkUnmountClearsEveryMarker(t *testing.T) {
 	_, _, unmount, ok := commandsFor("network")
 	if !ok {
 		t.Fatal("commandsFor rejected the network device")
@@ -113,7 +113,7 @@ func TestCommandsForNetworkUnmountClearsBothMarkers(t *testing.T) {
 		}
 	}
 
-	for _, marker := range []string{"/boot/usb.ncm", "/boot/usb.rndis0"} {
+	for _, marker := range []string{"/boot/usb.ncm", "/boot/usb.ecm", "/boot/usb.rndis0"} {
 		var removed bool
 		for _, command := range unmount {
 			if strings.Contains(command, marker) {
@@ -125,7 +125,7 @@ func TestCommandsForNetworkUnmountClearsBothMarkers(t *testing.T) {
 		}
 	}
 
-	for _, dir := range []string{"configs/c.1/ncm.usb0", "configs/c.1/rndis.usb0"} {
+	for _, dir := range []string{"configs/c.1/ncm.usb0", "configs/c.1/ecm.usb0", "configs/c.1/rndis.usb0"} {
 		var removed bool
 		for _, command := range unmount {
 			if strings.Contains(command, dir) {
@@ -185,14 +185,18 @@ func TestEveryUnmountRemovesItsMarkersWithForce(t *testing.T) {
 }
 
 // enabledForToggle is what UpdateVirtualDevice asks before picking mount or
-// unmount. It has to recognise a board enabled through either of the
-// network's two markers, not just the one its own mount command creates.
-func TestEnabledForToggleRecognisesEitherNetworkMarker(t *testing.T) {
+// unmount. It has to recognise a board enabled through any of the network's
+// three markers, not just the one its own mount command creates.
+func TestEnabledForToggleRecognisesEveryNetworkMarker(t *testing.T) {
 	if !enabledForToggle("network", presence(virtualNetworkNCM)) {
 		t.Error("an NCM-only board was not recognised as having the network on")
 	}
 
-	if !enabledForToggle("network", presence(virtualNetwork)) {
+	if !enabledForToggle("network", presence(virtualNetworkECM)) {
+		t.Error("an ECM-only board was not recognised as having the network on")
+	}
+
+	if !enabledForToggle("network", presence(virtualNetworkRNDIS)) {
 		t.Error("an RNDIS-only board was not recognised as having the network on")
 	}
 }
@@ -203,19 +207,19 @@ func TestEnabledForToggleIsFalseWhenNeitherNetworkMarkerIsSet(t *testing.T) {
 	}
 }
 
-// This is the bug finding 3 in fix round 1 describes end to end: on an
-// NCM-only board, deciding mount-or-unmount from the single marker
-// commandsFor returns (virtualNetwork, the RNDIS flavour) reads false and
-// takes the mount branch - it touches /boot/usb.rndis0, restarts the gadget,
-// and the network stays on with a stray second marker left behind.
+// This is the bug finding 3 in fix round 1 describes end to end, restated for
+// the markers of today: on an ECM-only board, deciding mount-or-unmount from
+// the single marker commandsFor returns (virtualNetworkNCM) reads false and
+// takes the mount branch - it touches /boot/usb.ncm, restarts the gadget, and
+// the network stays on with a stray second marker left behind.
 // enabledForToggle has to send this case down the unmount path instead.
-func TestNetworkToggleOnAnNCMOnlyBoardChoosesUnmount(t *testing.T) {
+func TestNetworkToggleOnAnECMOnlyBoardChoosesUnmount(t *testing.T) {
 	_, mount, unmount, ok := commandsFor("network")
 	if !ok {
 		t.Fatal("commandsFor rejected the network device")
 	}
 
-	present := presence(virtualNetworkNCM)
+	present := presence(virtualNetworkECM)
 
 	commands := mount
 	if enabledForToggle("network", present) {
@@ -224,19 +228,19 @@ func TestNetworkToggleOnAnNCMOnlyBoardChoosesUnmount(t *testing.T) {
 
 	var choseMount, choseUnmount bool
 	for _, command := range commands {
-		if strings.Contains(command, "touch /boot/usb.rndis0") {
+		if strings.Contains(command, "touch /boot/usb.ncm") {
 			choseMount = true
 		}
-		if strings.Contains(command, "rm -f /boot/usb.ncm") {
+		if strings.Contains(command, "rm -f /boot/usb.ecm") {
 			choseUnmount = true
 		}
 	}
 
 	if choseMount {
-		t.Error("an NCM-only board chose the mount commands - it would stay on and gain a second marker")
+		t.Error("an ECM-only board chose the mount commands - it would stay on and gain a second marker")
 	}
 
 	if !choseUnmount {
-		t.Error("an NCM-only board did not choose the unmount commands")
+		t.Error("an ECM-only board did not choose the unmount commands")
 	}
 }

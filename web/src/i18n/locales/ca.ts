@@ -569,6 +569,27 @@ const ca = {
         diskDesc: 'Munta un disc U virtual al dispositiu remot',
         network: 'Xarxa virtual',
         networkDesc: 'Munta una targeta de xarxa virtual al dispositiu remot',
+        usbNetwork: {
+          description:
+            "Un enllaç de xarxa privat amb l'amfitrió remot pel cable USB. L'amfitrió rep una adreça sense passarel·la ni DNS, de manera que no pot arribar a la vostra LAN a través del NanoKVM.",
+          off: 'Desactivat',
+          ncm: 'NCM (Linux, macOS, Windows 11)',
+          ecm: 'ECM (per a amfitrions sense NCM)',
+          rndis: "RNDIS (ja no s'ofereix)",
+          rndisNote: "Aquest enllaç fa servir RNDIS, que ja no s'ofereix. Trieu NCM o ECM.",
+          subnet: 'Subxarxa',
+          subnetDesc:
+            "Una xarxa IPv4 privada, de /24 a /30. El NanoKVM pren la primera adreça i l'amfitrió la segona.",
+          addresses: 'NanoKVM: {{board}}, amfitrió: {{host}}',
+          invalidSubnet: 'Introduïu una subxarxa com ara 172.31.255.0/30.',
+          apply: 'Aplica',
+          confirm: 'Voleu tornar a connectar el dispositiu USB?',
+          reenumerate:
+            "En aplicar-ho es reconstrueix la connexió USB. L'amfitrió perd el teclat, el ratolí i el disc virtual durant uns segons."
+        },
+        endpoints: {
+          fitTogether: 'Caben junts: {{sets}}'
+        },
         reboot: 'Reinicia',
         rebootDesc: 'Segur que vols reiniciar el NanoKVM?',
         okBtn: 'Sí',

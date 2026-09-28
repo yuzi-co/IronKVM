@@ -571,6 +571,27 @@ const tr = {
         diskDesc: "Sanal U-disk'i uzak ana bilgisayara bağla",
         network: 'Sanal Ağ',
         networkDesc: 'Sanal ağ kartını uzak ana bilgisayara bağla',
+        usbNetwork: {
+          description:
+            'USB kablosu üzerinden uzak ana bilgisayarla özel bir ağ bağlantısı. Ana bilgisayar ağ geçidi ve DNS olmadan bir adres alır, bu yüzden NanoKVM üzerinden yerel ağınıza ulaşamaz.',
+          off: 'Kapalı',
+          ncm: 'NCM (Linux, macOS, Windows 11)',
+          ecm: 'ECM (NCM desteği olmayan ana bilgisayarlar için)',
+          rndis: 'RNDIS (artık sunulmuyor)',
+          rndisNote: 'Bu bağlantı artık sunulmayan RNDIS kullanıyor. NCM veya ECM seçin.',
+          subnet: 'Alt ağ',
+          subnetDesc:
+            '/24 ile /30 arasında özel bir IPv4 ağı. NanoKVM ilk adresi, ana bilgisayar ikinci adresi alır.',
+          addresses: 'NanoKVM: {{board}}, ana bilgisayar: {{host}}',
+          invalidSubnet: '172.31.255.0/30 gibi bir alt ağ girin.',
+          apply: 'Uygula',
+          confirm: 'USB aygıtı yeniden bağlansın mı?',
+          reenumerate:
+            'Uygulamak USB bağlantısını yeniden kurar. Ana bilgisayar birkaç saniye boyunca klavyeyi, fareyi ve sanal diski kaybeder.'
+        },
+        endpoints: {
+          fitTogether: 'Birlikte sığanlar: {{sets}}'
+        },
         reboot: 'Yeniden Başlat',
         rebootDesc: "NanoKVM'i yeniden başlatmak istediğinizden emin misiniz?",
         okBtn: 'Evet',

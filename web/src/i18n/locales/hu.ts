@@ -573,6 +573,28 @@ const hu = {
         diskDesc: 'Mount virtual U-disk on the remote host',
         network: 'Virtuális hálózat',
         networkDesc: 'Virtuális hálózati kártya csatlakoztatása a távoli gazdagépen',
+        usbNetwork: {
+          description:
+            'Privát hálózati kapcsolat a távoli gazdagéppel az USB-kábelen keresztül. A gazdagép átjáró és DNS nélküli címet kap, így a NanoKVM-en keresztül nem éri el a helyi hálózatot.',
+          off: 'Ki',
+          ncm: 'NCM (Linux, macOS, Windows 11)',
+          ecm: 'ECM (NCM nélküli gazdagépekhez)',
+          rndis: 'RNDIS (már nem választható)',
+          rndisNote:
+            'Ez a kapcsolat RNDIS-t használ, amely már nem választható. Válassza az NCM-et vagy az ECM-et.',
+          subnet: 'Alhálózat',
+          subnetDesc:
+            'Privát IPv4-hálózat, /24 és /30 között. A NanoKVM az első címet kapja, a gazdagép a másodikat.',
+          addresses: 'NanoKVM: {{board}}, gazdagép: {{host}}',
+          invalidSubnet: 'Adjon meg egy alhálózatot, például 172.31.255.0/30.',
+          apply: 'Alkalmaz',
+          confirm: 'Újracsatlakoztatja az USB-eszközt?',
+          reenumerate:
+            'Az alkalmazás újraépíti az USB-kapcsolatot. A gazdagép néhány másodpercre elveszíti a billentyűzetet, az egeret és a virtuális lemezt.'
+        },
+        endpoints: {
+          fitTogether: 'Ezek együtt elférnek: {{sets}}'
+        },
         reboot: 'Újraindítás',
         rebootDesc: 'Biztos, hogy újra akarja indítani a NanoKVM-t?',
         okBtn: 'Igen',

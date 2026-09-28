@@ -163,17 +163,17 @@ prune_case() {
     [ "$got" = "$want" ] && note "$desc -> [$got]" OK || note "$desc -> [$got], want [$want]" FAIL
 }
 prune_case "an empty keep set drops all four"          "" \
-    "acm.GS0 mass_storage.disk0 ncm.usb0 rndis.usb0 uac1.usb0"
+    "acm.GS0 mass_storage.disk0 ncm.usb0 ecm.usb0 rndis.usb0 uac1.usb0"
 prune_case "a full keep set drops none"                "console disk network audio" ""
 prune_case "console + network drops disk and audio"    "console network" \
     "mass_storage.disk0 uac1.usb0"
-prune_case "the boot set drops both network flavours"  "console disk audio" \
-    "ncm.usb0 rndis.usb0"
+prune_case "the boot set drops all three network flavours"  "console disk audio" \
+    "ncm.usb0 ecm.usb0 rndis.usb0"
 # A name the table does not know keeps nothing, so everything is pruned. The
 # keep set is produced by usb_resolve, but a typo there must fail closed - link
 # nothing extra - rather than leave a dropped function linked.
 prune_case "an unknown keep name keeps nothing"        "nonsense" \
-    "acm.GS0 mass_storage.disk0 ncm.usb0 rndis.usb0 uac1.usb0"
+    "acm.GS0 mass_storage.disk0 ncm.usb0 ecm.usb0 rndis.usb0 uac1.usb0"
 
 # The rule with no exception, restated against the prune. hid.GS0, hid.GS1 and
 # hid.GS2 are gated on /boot/disable_hid alone and never enter the keep set, so
@@ -253,6 +253,7 @@ sim=$(WORK="$WORK" sh -c '
     do
         for dir in $(usb_gadget_dirs "$name")
         do
+            [ "$dir" = ecm.usb0 ] && continue
             [ "$dir" = rndis.usb0 ] && continue
             link "$dir"
         done
@@ -277,6 +278,7 @@ sim=$(WORK="$WORK" sh -c '
     do
         for dir in $(usb_gadget_dirs "$name")
         do
+            [ "$dir" = ecm.usb0 ] && continue
             [ "$dir" = rndis.usb0 ] && continue
             link "$dir"
         done
@@ -352,17 +354,18 @@ got=$(WORK="$WORK" sh -c '. "$WORK/budget.sh"; dmesg() { echo "dwc2 4340000.usb:
 
 echo
 echo "===== the network is one function, whichever marker names it ====="
-# usb.ncm and usb.rndis0 are alternatives. Counting both would reserve three
-# endpoints nothing uses, and the guard would refuse a function that fits.
+# usb.ncm, usb.ecm and usb.rndis0 are alternatives. Counting more than one
+# would reserve endpoints nothing uses, and the guard would refuse a function
+# that fits.
 got=$(WORK="$WORK" sh -c '
     . "$WORK/budget.sh"
     BOOT="$WORK/boot"; mkdir -p "$BOOT"
-    : > "$BOOT/usb.ncm"; : > "$BOOT/usb.rndis0"
+    : > "$BOOT/usb.ncm"; : > "$BOOT/usb.ecm"; : > "$BOOT/usb.rndis0"
     usb_marker() { [ -e "$BOOT/$1" ]; }
     usb_enabled
 ')
 got=$(echo $got)
-[ "$got" = "network" ] && note "two network markers name one function" OK \
+[ "$got" = "network" ] && note "three network markers name one function" OK \
                        || note "gave [$got], want [network]" FAIL
 
 echo
@@ -386,9 +389,12 @@ enabled_case() {
     got=$(echo $got)
     [ "$got" = "$want" ] && note "$marker enables [$want]" OK || note "$marker gave [$got], want [$want]" FAIL
 }
-enabled_case usb.acm   console
-enabled_case usb.disk0 disk
-enabled_case usb.uac   audio
+enabled_case usb.acm    console
+enabled_case usb.disk0  disk
+enabled_case usb.uac    audio
+enabled_case usb.ncm    network
+enabled_case usb.ecm    network
+enabled_case usb.rndis0 network
 
 echo
 echo "===== the script still parses ====="
@@ -412,10 +418,31 @@ gate_case() {
 }
 gate_case "the console"        '^    if usb_kept console$'
 gate_case "the disk"           '^    if usb_kept disk$'
-gate_case "ncm"                '^    if usb_kept network && \[ -e /boot/usb\.ncm \]$'
-gate_case "rndis0"             '^        if usb_kept network && \[ -e /boot/usb\.rndis0 \]$'
-gate_case "the os_desc block"  '^    if usb_kept network$'
+gate_case "the network choice" '^    if usb_kept network$'
 gate_case "audio"              '^    if usb_kept audio$'
+
+# The three network functions are gated on usb_net, which is empty unless the
+# network was kept. Each one tests the choice, never its own marker, so a
+# network the budget dropped cannot come back through a marker test.
+net_gate_case() {
+    desc="$1"; pattern="$2"
+    grep -qE "$pattern" "$SV" \
+        && note "$desc is gated on the network choice" OK \
+        || note "$desc is not gated on the network choice" FAIL
+}
+net_gate_case "ncm"               '^    if \[ "\$usb_net" = ncm \]$'
+net_gate_case "ecm"               '^    elif \[ "\$usb_net" = ecm \]$'
+net_gate_case "rndis0"            '^    elif \[ "\$usb_net" = rndis \]$'
+net_gate_case "the os_desc block" '^    if \[ "\$usb_net" = ncm \] \|\| \[ "\$usb_net" = rndis \]$'
+if grep -qE '^ *if .*-e /boot/usb\.(ncm|ecm|rndis0)' "$SV"
+then
+    note "a network function still tests its marker directly" FAIL
+else
+    note "no network function tests its marker directly" OK
+fi
+grep -qE '^        usb_net=\$\(usb_net_function\)$' "$SV" \
+    && note "the choice comes from usb_net_function inside the usb_kept gate" OK \
+    || note "usb_net is not set from usb_net_function under usb_kept" FAIL
 
 # The one gate that must never appear. HID is the one function with no
 # exception - a "usb_kept hid" here would always be false, because hid never

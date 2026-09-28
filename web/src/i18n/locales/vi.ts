@@ -567,6 +567,27 @@ const vi = {
         diskDesc: 'Mount virtual U-disk on the remote host',
         network: 'Mạng ảo',
         networkDesc: 'Gắn card mạng ảo trên máy chủ từ xa',
+        usbNetwork: {
+          description:
+            'Liên kết mạng riêng với máy chủ từ xa qua cáp USB. Máy chủ nhận một địa chỉ không có gateway và không có DNS, nên không thể truy cập mạng LAN của bạn thông qua NanoKVM.',
+          off: 'Tắt',
+          ncm: 'NCM (Linux, macOS, Windows 11)',
+          ecm: 'ECM (cho máy chủ không hỗ trợ NCM)',
+          rndis: 'RNDIS (không còn được cung cấp)',
+          rndisNote: 'Liên kết này dùng RNDIS, không còn được cung cấp. Hãy chọn NCM hoặc ECM.',
+          subnet: 'Mạng con',
+          subnetDesc:
+            'Một mạng IPv4 riêng, từ /24 đến /30. NanoKVM dùng địa chỉ đầu tiên, máy chủ dùng địa chỉ thứ hai.',
+          addresses: 'NanoKVM: {{board}}, máy chủ: {{host}}',
+          invalidSubnet: 'Nhập một mạng con, ví dụ 172.31.255.0/30.',
+          apply: 'Áp dụng',
+          confirm: 'Kết nối lại thiết bị USB?',
+          reenumerate:
+            'Áp dụng sẽ dựng lại kết nối USB. Máy chủ mất bàn phím, chuột và ổ đĩa ảo trong vài giây.'
+        },
+        endpoints: {
+          fitTogether: 'Có thể dùng cùng nhau: {{sets}}'
+        },
         reboot: 'Khởi động lại',
         rebootDesc: 'Bạn có chắc chắn muốn khởi động lại NanoKVM không?',
         okBtn: 'Có',

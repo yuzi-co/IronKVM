@@ -568,6 +568,27 @@ const cz = {
         diskDesc: 'Mount virtual U-disk on the remote host',
         network: 'Virtuální síť',
         networkDesc: 'Připojit virtuální síťovou kartu na vzdáleném hostiteli',
+        usbNetwork: {
+          description:
+            'Soukromé síťové spojení se vzdáleným hostitelem přes kabel USB. Hostitel dostane adresu bez brány a bez DNS, takže se přes NanoKVM nedostane do vaší LAN.',
+          off: 'Vypnuto',
+          ncm: 'NCM (Linux, macOS, Windows 11)',
+          ecm: 'ECM (pro hostitele bez NCM)',
+          rndis: 'RNDIS (již se nenabízí)',
+          rndisNote: 'Toto spojení používá RNDIS, které se již nenabízí. Zvolte NCM nebo ECM.',
+          subnet: 'Podsíť',
+          subnetDesc:
+            'Soukromá síť IPv4, /24 až /30. NanoKVM použije první adresu, hostitel druhou.',
+          addresses: 'NanoKVM: {{board}}, hostitel: {{host}}',
+          invalidSubnet: 'Zadejte podsíť, například 172.31.255.0/30.',
+          apply: 'Použít',
+          confirm: 'Znovu připojit zařízení USB?',
+          reenumerate:
+            'Použití znovu sestaví připojení USB. Hostitel na několik sekund ztratí klávesnici, myš a virtuální disk.'
+        },
+        endpoints: {
+          fitTogether: 'Společně se vejdou: {{sets}}'
+        },
         reboot: 'Restartujte',
         rebootDesc: 'Opravdu chcete restartovat NanoKVM?',
         okBtn: 'Ano',

@@ -570,6 +570,27 @@ const id = {
         diskDesc: 'Mount virtual U-disk on the remote host',
         network: 'Jaringan virtual',
         networkDesc: 'Pasang kartu jaringan virtual pada host jarak jauh',
+        usbNetwork: {
+          description:
+            'Tautan jaringan privat ke host jarak jauh melalui kabel USB. Host mendapat alamat tanpa gateway dan tanpa DNS, sehingga tidak dapat menjangkau LAN Anda melalui NanoKVM.',
+          off: 'Mati',
+          ncm: 'NCM (Linux, macOS, Windows 11)',
+          ecm: 'ECM (untuk host tanpa NCM)',
+          rndis: 'RNDIS (tidak lagi ditawarkan)',
+          rndisNote: 'Tautan ini memakai RNDIS, yang tidak lagi ditawarkan. Pilih NCM atau ECM.',
+          subnet: 'Subnet',
+          subnetDesc:
+            'Jaringan IPv4 privat, /24 hingga /30. NanoKVM memakai alamat pertama, host memakai alamat kedua.',
+          addresses: 'NanoKVM: {{board}}, host: {{host}}',
+          invalidSubnet: 'Masukkan subnet seperti 172.31.255.0/30.',
+          apply: 'Terapkan',
+          confirm: 'Sambungkan ulang perangkat USB?',
+          reenumerate:
+            'Menerapkan akan membangun ulang koneksi USB. Host kehilangan keyboard, mouse, dan disk virtual selama beberapa detik.'
+        },
+        endpoints: {
+          fitTogether: 'Yang muat bersamaan: {{sets}}'
+        },
         reboot: 'Mulai ulang',
         rebootDesc: 'Apakah Anda yakin ingin me-reboot NanoKVM?',
         okBtn: 'Ya',

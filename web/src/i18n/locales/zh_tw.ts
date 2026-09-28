@@ -553,6 +553,25 @@ const zh_tw = {
         diskDesc: '在遠端主機上連接虛擬隨身碟',
         network: '虛擬網卡',
         networkDesc: '在遠端主機上新增虛擬網卡',
+        usbNetwork: {
+          description:
+            '透過 USB 線與遠端主機建立的私人網路連線。主機取得的位址不含閘道與 DNS，因此無法透過 NanoKVM 連到您的區域網路。',
+          off: '關閉',
+          ncm: 'NCM（Linux、macOS、Windows 11）',
+          ecm: 'ECM（適用於不支援 NCM 的主機）',
+          rndis: 'RNDIS（已不再提供）',
+          rndisNote: '此連線使用已不再提供的 RNDIS。請選擇 NCM 或 ECM。',
+          subnet: '子網路',
+          subnetDesc: '/24 到 /30 的私人 IPv4 網路。NanoKVM 使用第一個位址，主機使用第二個位址。',
+          addresses: 'NanoKVM：{{board}}，主機：{{host}}',
+          invalidSubnet: '請輸入子網路，例如 172.31.255.0/30。',
+          apply: '套用',
+          confirm: '重新連接 USB 裝置？',
+          reenumerate: '套用後將重建 USB 連線。主機會有幾秒鐘無法使用鍵盤、滑鼠和虛擬磁碟。'
+        },
+        endpoints: {
+          fitTogether: '可同時啟用：{{sets}}'
+        },
         reboot: '重新啟動',
         rebootDesc: '您確定要重新啟動 NanoKVM?',
         okBtn: '確定',

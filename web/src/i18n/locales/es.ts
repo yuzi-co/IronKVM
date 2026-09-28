@@ -573,6 +573,27 @@ const es = {
         diskDesc: 'Montar disco virtual en el host remoto',
         network: 'Red Virtual',
         networkDesc: 'Montar tarjeta de red virtual en el host remoto',
+        usbNetwork: {
+          description:
+            'Un enlace de red privado con el host remoto a través del cable USB. El host recibe una dirección sin puerta de enlace ni DNS, así que no puede llegar a tu LAN a través de NanoKVM.',
+          off: 'Desactivado',
+          ncm: 'NCM (Linux, macOS, Windows 11)',
+          ecm: 'ECM (para hosts sin NCM)',
+          rndis: 'RNDIS (ya no se ofrece)',
+          rndisNote: 'Este enlace usa RNDIS, que ya no se ofrece. Elige NCM o ECM.',
+          subnet: 'Subred',
+          subnetDesc:
+            'Una red IPv4 privada, de /24 a /30. NanoKVM toma la primera dirección y el host la segunda.',
+          addresses: 'NanoKVM: {{board}}, host: {{host}}',
+          invalidSubnet: 'Introduce una subred como 172.31.255.0/30.',
+          apply: 'Aplicar',
+          confirm: '¿Reconectar el dispositivo USB?',
+          reenumerate:
+            'Al aplicar se reconstruye la conexión USB. El host pierde el teclado, el ratón y el disco virtual durante unos segundos.'
+        },
+        endpoints: {
+          fitTogether: 'Caben juntos: {{sets}}'
+        },
         reboot: 'Reiniciar',
         rebootDesc: '¿Estás seguro de que deseas reiniciar el NanoKVM?',
         okBtn: 'Sí',

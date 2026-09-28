@@ -112,9 +112,9 @@ HID_OUTPUTS=usb-gadget
 # here as in devices/sipeed-nanokvm/deviceinfo.
 #
 # virtual-media and usb-audio-gadget are the mass_storage.disk0 and uac1.usb0
-# functions that S03usbdev builds. atx-gpio is the power and reset lines that
-# S15kvmhwd exports, and every variant has both. oled is the panel kvm_system
-# drives.
+# functions that S03usbdev builds, and usb-network is its ncm.usb0 or
+# ecm.usb0. atx-gpio is the power and reset lines that S15kvmhwd exports, and
+# every variant has both. oled is the panel kvm_system drives.
 #
 # wifi is declared although the beta variant has no radio, for the same reason
 # WLAN_IF above states the name and not the presence: one description covers
@@ -124,7 +124,7 @@ HID_OUTPUTS=usb-gadget
 # description declares has to be in this copy as well, or a board on Sipeed's
 # firmware would answer a question differently from the same board on an
 # IronKVM image.
-CAPABILITIES="virtual-media usb-audio-gadget atx-gpio oled wifi"
+CAPABILITIES="virtual-media usb-audio-gadget usb-network atx-gpio oled wifi"
 
 # What the real time clock is worth. A device fact too, so it is the same here
 # as in devices/sipeed-nanokvm/deviceinfo.

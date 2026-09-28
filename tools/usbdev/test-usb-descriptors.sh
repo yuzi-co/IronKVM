@@ -303,6 +303,7 @@ absent functions/hid.GS0/wakeup_on_write "no wake on write without /boot/usb.wak
 absent configs/c.1/mass_storage.disk0 "no mass storage without /boot/usb.disk0"
 absent configs/c.1/rndis.usb0 "no RNDIS without /boot/usb.rndis0"
 absent configs/c.1/ncm.usb0   "no NCM without /boot/usb.ncm"
+absent configs/c.1/ecm.usb0   "no ECM without /boot/usb.ecm"
 absent configs/c.1/acm.GS0    "no serial console without /boot/usb.acm"
 absent configs/c.1/uac1.usb0  "no sound card without /boot/usb.uac"
 absent os_desc/c.1            "no OS descriptor link when no network function is built"
@@ -435,6 +436,42 @@ absent  configs/c.1/rndis.usb0 "RNDIS is not built beside NCM"
 is functions/ncm.usb0/os_desc/interface.ncm/compatible_id WINNCM "NCM compatible id"
 is functions/ncm.usb0/dev_addr  "$(mac_of 6e)" "the NCM device MAC follows the chip UID"
 is functions/ncm.usb0/host_addr "$(mac_of 6d)" "the NCM host MAC follows the chip UID"
+
+# ECM is the fallback for a host with no NCM driver. Windows has no ECM driver
+# to point a Microsoft OS descriptor at, so the gadget offers none.
+build_env
+: > "$work/boot/usb.ecm"
+run "$S03" start_usb_dev
+present configs/c.1/ecm.usb0 "ECM is linked into the config"
+absent  configs/c.1/ncm.usb0 "NCM is not built beside ECM"
+is functions/ecm.usb0/dev_addr  "$(mac_of 6e)" "the ECM device MAC follows the chip UID"
+is functions/ecm.usb0/host_addr "$(mac_of 6d)" "the ECM host MAC follows the chip UID"
+absent os_desc/c.1 "no OS descriptor link for ECM"
+
+build_env
+: > "$work/boot/usb.ncm"
+: > "$work/boot/usb.ecm"
+run "$S03" start_usb_dev
+present configs/c.1/ncm.usb0 "NCM wins over ECM"
+absent  configs/c.1/ecm.usb0 "ECM is not built beside NCM"
+
+# The server switches the mode by swapping one marker for another and running
+# stop and start. The function linked by the first start stays linked through
+# stop, so the second start has to take it out, or the gadget carries two
+# network functions and two more inbound endpoints than the budget allowed.
+build_env
+: > "$work/boot/usb.ncm"
+run "$S03" start_usb_dev
+present configs/c.1/ncm.usb0 "a board starts out on NCM"
+present os_desc/c.1 "NCM has its OS descriptor link"
+rm -f "$work/boot/usb.ncm"
+: > "$work/boot/usb.ecm"
+run "$S03" start_usb_host
+run "$S03" start_usb_dev
+present configs/c.1/ecm.usb0 "after the switch ECM is linked"
+absent  configs/c.1/ncm.usb0 "after the switch NCM is no longer linked"
+absent  os_desc/c.1 "after the switch the OS descriptor link is gone"
+is UDC 4340000.usb "the gadget binds again after the switch"
 
 # --- stop and restart ----------------------------------------------------
 

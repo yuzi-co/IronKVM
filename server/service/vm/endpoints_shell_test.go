@@ -205,7 +205,7 @@ func TestShellAndGoAgreeOnWhatHidCosts(t *testing.T) {
 
 // shellGadgetDirs pulls the case arms out of usb_gadget_dirs:
 //
-//	network) echo "ncm.usb0 rndis.usb0" ;;
+//	network) echo "ncm.usb0 ecm.usb0 rndis.usb0" ;;
 func shellGadgetDirs(t *testing.T, script string) map[string][]string {
 	t.Helper()
 
@@ -230,8 +230,8 @@ func shellGadgetDirs(t *testing.T, script string) map[string][]string {
 }
 
 // usb_gadget_dirs is what the boot script's prune reads to decide which config
-// symlinks to remove, and the Go table's gadget/gadgetAlt is what the UI reads
-// to decide whether a function is actually running. They are two hand-kept
+// symlinks to remove, and the Go table's gadget and gadgetAlts are what the UI
+// reads to decide whether a function is actually running. They are two hand-kept
 // copies of the same names. If the shell copy loses one, the prune stops
 // removing it: a function the budget dropped stays linked from an earlier
 // start, the total goes back over 9, and the gadget refuses to bind with every
@@ -245,10 +245,7 @@ func TestShellAndGoAgreeOnEveryGadgetDirectory(t *testing.T) {
 	}
 
 	for _, function := range usbFunctions {
-		want := []string{function.gadget}
-		if function.gadgetAlt != "" {
-			want = append(want, function.gadgetAlt)
-		}
+		want := function.gadgetDirs()
 
 		shell, ok := dirs[function.name]
 		if !ok {

@@ -576,6 +576,28 @@ const nl = {
         diskDesc: 'Koppel virtuele U-schijf aan de externe host',
         network: 'Virtueel Netwerk',
         networkDesc: 'Koppel virtueel netwerk kaart aan de externe host',
+        usbNetwork: {
+          description:
+            'Een privé netwerkverbinding met de externe host via de USB-kabel. De host krijgt een adres zonder gateway en zonder DNS, en kan uw LAN dus niet via NanoKVM bereiken.',
+          off: 'Uit',
+          ncm: 'NCM (Linux, macOS, Windows 11)',
+          ecm: 'ECM (voor hosts zonder NCM)',
+          rndis: 'RNDIS (niet meer aangeboden)',
+          rndisNote:
+            'Deze verbinding gebruikt RNDIS, dat niet meer wordt aangeboden. Kies NCM of ECM.',
+          subnet: 'Subnet',
+          subnetDesc:
+            'Een privé IPv4-netwerk, /24 tot /30. NanoKVM neemt het eerste adres, de host het tweede.',
+          addresses: 'NanoKVM: {{board}}, host: {{host}}',
+          invalidSubnet: 'Voer een subnet in, zoals 172.31.255.0/30.',
+          apply: 'Toepassen',
+          confirm: 'USB-apparaat opnieuw verbinden?',
+          reenumerate:
+            'Toepassen bouwt de USB-verbinding opnieuw op. De host verliest het toetsenbord, de muis en de virtuele schijf enkele seconden.'
+        },
+        endpoints: {
+          fitTogether: 'Deze passen samen: {{sets}}'
+        },
         reboot: 'Opnieuw opstarten',
         rebootDesc: 'Weet u zeker dat u NanoKVM opnieuw wilt opstarten?',
         okBtn: 'Ja',
