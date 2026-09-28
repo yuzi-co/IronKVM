@@ -1016,8 +1016,18 @@ const zh = {
           '{{other}} 正在运行或已设为开机启动。同一时间只能运行一个 VPN：请先停止 {{other}} 并关闭其开机启动。',
         swap: {
           title: '交换内存',
-          tip: '如果守护进程内存不足，请尝试启用交换内存。默认会将交换文件大小设为 256MB，可在“设置 > 设备”中调整。'
-        }
+          tip: '如果守护进程内存不足，请尝试启用交换内存。默认会将交换文件大小设为 256MB，可在“设置 > 设备”中调整。',
+          failed: '修改交换内存失败'
+        },
+        copy: '复制',
+        copied: '链接已复制',
+        copyFailed: '无法复制链接。请选中后手动复制。',
+        open: '打开',
+        checkAgain: '再次检查',
+        notSignedIn: '尚未登录。请在链接中完成登录后再检查。',
+        checkFailed: '无法检查登录状态',
+        loginWaiting: '此页面每隔几秒检查一次，登录完成后自动继续。',
+        uninstallFailed: '卸载失败'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1031,7 +1041,6 @@ const zh = {
         notLogin: '该设备尚未绑定，请点击登录并将这台设备绑定到您的账号。',
         urlPeriod: '该链接10分钟内有效',
         login: '登录',
-        loginSuccess: '登录完成',
         logout: '退出',
         logoutDesc: '确定要退出吗？'
       },
@@ -1044,7 +1053,6 @@ const zh = {
         or: '或',
         sso: '通过 SSO 登录',
         urlPeriod: '该链接10分钟内有效',
-        loginSuccess: '登录完成',
         logout: '注销',
         logoutDesc:
           '注销会将此节点从你的 NetBird 帐号中移除，并删除本机上的配置。重新加入需要设置密钥或 SSO 登录，节点可能会获得新的 IP。是否继续？'

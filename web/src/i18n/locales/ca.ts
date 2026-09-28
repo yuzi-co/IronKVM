@@ -1062,8 +1062,20 @@ const ca = {
           "{{other}} s'està executant o s'inicia a l'arrencada. Només pot funcionar una VPN alhora: primer atureu {{other}} i desactiveu-ne l'inici a l'arrencada.",
         swap: {
           title: 'Memòria swap',
-          tip: 'Si el dimoni es queda curt de memòria, proveu d\'activar la memòria swap. Això defineix la mida del fitxer swap a 256MB per defecte, que es pot ajustar a "Configuració > Dispositiu".'
-        }
+          tip: 'Si el dimoni es queda curt de memòria, proveu d\'activar la memòria swap. Això defineix la mida del fitxer swap a 256MB per defecte, que es pot ajustar a "Configuració > Dispositiu".',
+          failed: "No s'ha pogut canviar la memòria d'intercanvi"
+        },
+        copy: 'Copia',
+        copied: 'Enllaç copiat',
+        copyFailed: "No s'ha pogut copiar l'enllaç. Seleccioneu-lo i copieu-lo a mà.",
+        open: 'Obre',
+        checkAgain: 'Comprova de nou',
+        notSignedIn:
+          "Encara no s'ha iniciat la sessió. Acabeu d'iniciar-la a l'enllaç i torneu-ho a comprovar.",
+        checkFailed: "No s'ha pogut comprovar l'estat de la sessió",
+        loginWaiting:
+          'Aquesta pàgina ho comprova cada pocs segons i continua quan hàgiu iniciat la sessió.',
+        uninstallFailed: 'La desinstal·lació ha fallat'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1077,7 +1089,6 @@ const ca = {
         notLogin: 'El dispositiu no està vinculat. Inicia sessió per vincular-lo.',
         urlPeriod: 'Aquesta URL és vàlida durant 10 minuts',
         login: 'Inicia sessió',
-        loginSuccess: 'Sessió iniciada correctament',
         logout: 'Tanca sessió',
         logoutDesc: 'Segur que vols tancar sessió?'
       },
@@ -1091,7 +1102,6 @@ const ca = {
         or: 'o',
         sso: 'Inicia la sessió amb SSO',
         urlPeriod: 'Aquesta URL és vàlida durant 10 minuts',
-        loginSuccess: 'Sessió iniciada correctament',
         logout: 'Dona de baixa',
         logoutDesc:
           "Donar de baixa elimina aquest igual del vostre compte de NetBird i n'esborra aquí la configuració. Per tornar-vos a unir cal una clau de configuració o un inici de sessió amb SSO, i l'igual pot rebre una IP nova. Voleu continuar?"

@@ -1075,8 +1075,20 @@ const de = {
           '{{other}} läuft oder startet beim Systemstart. Es kann nur ein VPN gleichzeitig laufen: Stoppen Sie zuerst {{other}} und deaktivieren Sie dessen Start beim Systemstart.',
         swap: {
           title: 'Swap-Speicher',
-          tip: 'Wenn dem Dienst der Speicher knapp wird, versuchen Sie, Swap-Speicher zu aktivieren. Dadurch wird die Swap-Datei standardmäßig auf 256MB gesetzt; die Größe lässt sich unter „Einstellungen > Gerät“ anpassen.'
-        }
+          tip: 'Wenn dem Dienst der Speicher knapp wird, versuchen Sie, Swap-Speicher zu aktivieren. Dadurch wird die Swap-Datei standardmäßig auf 256MB gesetzt; die Größe lässt sich unter „Einstellungen > Gerät“ anpassen.',
+          failed: 'Auslagerungsspeicher konnte nicht geändert werden'
+        },
+        copy: 'Kopieren',
+        copied: 'Link kopiert',
+        copyFailed: 'Link konnte nicht kopiert werden. Markieren und von Hand kopieren.',
+        open: 'Öffnen',
+        checkAgain: 'Erneut prüfen',
+        notSignedIn:
+          'Noch nicht angemeldet. Die Anmeldung über den Link abschließen und erneut prüfen.',
+        checkFailed: 'Anmeldestatus konnte nicht geprüft werden',
+        loginWaiting:
+          'Diese Seite prüft alle paar Sekunden und macht weiter, sobald Sie angemeldet sind.',
+        uninstallFailed: 'Deinstallation fehlgeschlagen'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1091,7 +1103,6 @@ const de = {
           'Das Gerät konnte noch nicht gefunden werden. Bitte melden Sie sich an und verknüpfen Sie dieses Gerät mit Ihrem Konto.',
         urlPeriod: 'Diese URL ist für 10 Minuten gültig',
         login: 'Anmelden',
-        loginSuccess: 'Anmeldung erfolgreich',
         logout: 'Abmelden',
         logoutDesc: 'Möchten Sie sich wirklich abmelden?'
       },
@@ -1105,7 +1116,6 @@ const de = {
         or: 'oder',
         sso: 'Mit SSO anmelden',
         urlPeriod: 'Diese URL ist für 10 Minuten gültig',
-        loginSuccess: 'Anmeldung erfolgreich',
         logout: 'Abmelden',
         logoutDesc:
           'Beim Abmelden wird dieser Peer aus Ihrem NetBird-Konto entfernt und seine Konfiguration hier gelöscht. Ein erneuter Beitritt erfordert einen Setup-Key oder eine SSO-Anmeldung, und der Peer erhält möglicherweise eine neue IP. Fortfahren?'

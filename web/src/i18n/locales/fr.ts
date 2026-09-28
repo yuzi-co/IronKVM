@@ -1074,8 +1074,20 @@ const fr = {
           "{{other}} est en cours d'exécution ou démarre automatiquement. Un seul VPN peut tourner à la fois : arrêtez d'abord {{other}} et désactivez son démarrage automatique.",
         swap: {
           title: "Mémoire d'échange",
-          tip: "Si le démon manque de mémoire, essayez d'activer la mémoire d'échange. La taille du fichier d'échange est alors fixée à 256MB par défaut, ce qui peut être modifié dans \"Paramètres > Appareil\"."
-        }
+          tip: "Si le démon manque de mémoire, essayez d'activer la mémoire d'échange. La taille du fichier d'échange est alors fixée à 256MB par défaut, ce qui peut être modifié dans \"Paramètres > Appareil\".",
+          failed: "Impossible de modifier la mémoire d'échange"
+        },
+        copy: 'Copier',
+        copied: 'Lien copié',
+        copyFailed: 'Impossible de copier le lien. Sélectionnez-le et copiez-le à la main.',
+        open: 'Ouvrir',
+        checkAgain: 'Vérifier à nouveau',
+        notSignedIn:
+          'Pas encore connecté. Terminez la connexion via le lien, puis vérifiez à nouveau.',
+        checkFailed: "Impossible de vérifier l'état de connexion",
+        loginWaiting:
+          'Cette page vérifie toutes les quelques secondes et continue une fois que vous êtes connecté.',
+        uninstallFailed: 'La désinstallation a échoué'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1089,7 +1101,6 @@ const fr = {
         notLogin: "L'appareil n'est pas relié. Connectez-vous et liez cet appareil à votre compte.",
         urlPeriod: "L'URL est valide pendant 10 minutes",
         login: 'Connexion',
-        loginSuccess: 'Connexion réussie',
         logout: 'Déconnexion',
         logoutDesc: 'Êtes-vous sûr de vouloir vous déconnecter?'
       },
@@ -1103,7 +1114,6 @@ const fr = {
         or: 'ou',
         sso: 'Se connecter via SSO',
         urlPeriod: 'Cette URL est valide pendant 10 minutes',
-        loginSuccess: 'Connexion réussie',
         logout: 'Désinscrire',
         logoutDesc:
           'La désinscription retire ce pair de votre compte NetBird et supprime sa configuration ici. Pour rejoindre à nouveau, il faudra une clé de configuration ou une connexion SSO, et le pair pourra recevoir une nouvelle IP. Continuer ?'

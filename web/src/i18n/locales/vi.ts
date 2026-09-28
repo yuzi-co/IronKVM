@@ -1053,8 +1053,18 @@ const vi = {
           '{{other}} đang chạy hoặc khởi động cùng hệ thống. Mỗi lúc chỉ chạy được một VPN: hãy dừng {{other}} và tắt khởi động cùng hệ thống của nó trước.',
         swap: {
           title: 'Bộ nhớ hoán đổi',
-          tip: 'Nếu daemon thiếu bộ nhớ, hãy thử bật bộ nhớ hoán đổi. Thao tác này đặt kích thước tệp hoán đổi mặc định là 256MB, có thể điều chỉnh trong "Cài đặt > Thiết bị".'
-        }
+          tip: 'Nếu daemon thiếu bộ nhớ, hãy thử bật bộ nhớ hoán đổi. Thao tác này đặt kích thước tệp hoán đổi mặc định là 256MB, có thể điều chỉnh trong "Cài đặt > Thiết bị".',
+          failed: 'Không thể thay đổi bộ nhớ swap'
+        },
+        copy: 'Sao chép',
+        copied: 'Đã sao chép liên kết',
+        copyFailed: 'Không thể sao chép liên kết. Hãy chọn và sao chép thủ công.',
+        open: 'Mở',
+        checkAgain: 'Kiểm tra lại',
+        notSignedIn: 'Chưa đăng nhập. Hãy hoàn tất đăng nhập qua liên kết rồi kiểm tra lại.',
+        checkFailed: 'Không thể kiểm tra trạng thái đăng nhập',
+        loginWaiting: 'Trang này kiểm tra vài giây một lần và sẽ tiếp tục khi bạn đã đăng nhập.',
+        uninstallFailed: 'Gỡ cài đặt thất bại'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1069,7 +1079,6 @@ const vi = {
           'Thiết bị chưa được liên kết. Vui lòng đăng nhập và liên kết thiết bị này với tài khoản của bạn.',
         urlPeriod: 'URL này có hiệu lực trong 10 phút',
         login: 'Đăng nhập',
-        loginSuccess: 'Đăng nhập thành công',
         logout: 'Đăng xuất',
         logoutDesc: 'Bạn có chắc chắn muốn đăng xuất không?'
       },
@@ -1083,7 +1092,6 @@ const vi = {
         or: 'hoặc',
         sso: 'Đăng nhập bằng SSO',
         urlPeriod: 'URL này có hiệu lực trong 10 phút',
-        loginSuccess: 'Đăng nhập thành công',
         logout: 'Hủy đăng ký',
         logoutDesc:
           'Hủy đăng ký sẽ xóa peer này khỏi tài khoản NetBird của bạn và xóa cấu hình của nó tại đây. Để tham gia lại cần setup key hoặc đăng nhập SSO, và peer có thể nhận IP mới. Tiếp tục?'

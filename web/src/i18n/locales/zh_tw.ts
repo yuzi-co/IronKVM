@@ -1016,8 +1016,18 @@ const zh_tw = {
           '{{other}} 正在執行或已設為開機啟動。同一時間只能執行一個 VPN：請先停止 {{other}} 並關閉其開機啟動。',
         swap: {
           title: 'Swap 記憶體',
-          tip: '如果背景服務記憶體不足，請嘗試啟用 Swap 記憶體。預設會將 Swap 檔大小設為 256MB，可在「設定 > 設備」中調整。'
-        }
+          tip: '如果背景服務記憶體不足，請嘗試啟用 Swap 記憶體。預設會將 Swap 檔大小設為 256MB，可在「設定 > 設備」中調整。',
+          failed: '修改交換記憶體失敗'
+        },
+        copy: '複製',
+        copied: '連結已複製',
+        copyFailed: '無法複製連結。請選取後手動複製。',
+        open: '開啟',
+        checkAgain: '再次檢查',
+        notSignedIn: '尚未登入。請在連結中完成登入後再檢查。',
+        checkFailed: '無法檢查登入狀態',
+        loginWaiting: '此頁面每隔幾秒檢查一次，登入完成後自動繼續。',
+        uninstallFailed: '解除安裝失敗'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1031,7 +1041,6 @@ const zh_tw = {
         notLogin: '設備尚未綁定。請登入並將該裝置綁定到您的帳戶。',
         urlPeriod: '此網址有效期限為 10 分鐘',
         login: '登入',
-        loginSuccess: '登入成功',
         logout: '登出',
         logoutDesc: '確認要登出嗎？'
       },
@@ -1044,7 +1053,6 @@ const zh_tw = {
         or: '或',
         sso: '透過 SSO 登入',
         urlPeriod: '此網址有效期限為 10 分鐘',
-        loginSuccess: '登入成功',
         logout: '取消註冊',
         logoutDesc:
           '取消註冊會將此節點從您的 NetBird 帳號中移除，並刪除本機上的設定。重新加入需要設定金鑰或 SSO 登入，節點可能會取得新的 IP。是否繼續？'

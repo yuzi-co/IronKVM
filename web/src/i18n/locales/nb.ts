@@ -1055,8 +1055,19 @@ const nb = {
           '{{other}} kjører eller starter ved oppstart. Bare én VPN kan kjøre om gangen: stopp {{other}} og slå av start ved oppstart for den først.',
         swap: {
           title: 'Swap-minne',
-          tip: 'Hvis tjenesten får for lite minne, kan du prøve å aktivere swap-minne. Dette setter størrelsen på byttefilen til 256MB som standard, og den kan justeres i "Innstillinger > Enhet".'
-        }
+          tip: 'Hvis tjenesten får for lite minne, kan du prøve å aktivere swap-minne. Dette setter størrelsen på byttefilen til 256MB som standard, og den kan justeres i "Innstillinger > Enhet".',
+          failed: 'Kunne ikke endre vekselminnet'
+        },
+        copy: 'Kopier',
+        copied: 'Lenke kopiert',
+        copyFailed: 'Kunne ikke kopiere lenken. Merk den og kopier den manuelt.',
+        open: 'Åpne',
+        checkAgain: 'Sjekk igjen',
+        notSignedIn: 'Ikke logget inn ennå. Fullfør innloggingen via lenken, og sjekk igjen.',
+        checkFailed: 'Kunne ikke sjekke innloggingsstatus',
+        loginWaiting:
+          'Siden sjekker med noen sekunders mellomrom og fortsetter når du har logget inn.',
+        uninstallFailed: 'Avinstallering mislyktes'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1071,7 +1082,6 @@ const nb = {
           'Denne enheten er ikke knyttet til din konto enda. Vennligst logg inn og knytt den til kontoen din..',
         urlPeriod: 'Denne lenken er gyldig i 10 minutter',
         login: 'Logg inn',
-        loginSuccess: 'Logget inn',
         logout: 'Logg ut',
         logoutDesc: 'Er du sikker på at du vil logge ut?'
       },
@@ -1085,7 +1095,6 @@ const nb = {
         or: 'eller',
         sso: 'Logg inn med SSO',
         urlPeriod: 'Denne lenken er gyldig i 10 minutter',
-        loginSuccess: 'Logget inn',
         logout: 'Avregistrer',
         logoutDesc:
           'Avregistrering fjerner denne noden fra NetBird-kontoen din og sletter konfigurasjonen her. For å bli med igjen trengs en oppsettsnøkkel eller SSO-innlogging, og noden kan få en ny IP. Fortsette?'

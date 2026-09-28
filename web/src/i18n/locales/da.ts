@@ -1057,8 +1057,19 @@ const da = {
           '{{other}} kører eller starter ved opstart. Der kan kun køre ét VPN ad gangen: stop {{other}} og slå først dens start ved opstart fra.',
         swap: {
           title: 'Swap-hukommelse',
-          tip: 'Hvis dæmonen mangler hukommelse, så prøv at aktivere swap-hukommelse. Det sætter som standard swap-filen til 256MB, hvilket kan justeres under "Indstillinger > Enhed".'
-        }
+          tip: 'Hvis dæmonen mangler hukommelse, så prøv at aktivere swap-hukommelse. Det sætter som standard swap-filen til 256MB, hvilket kan justeres under "Indstillinger > Enhed".',
+          failed: 'Swap-hukommelsen kunne ikke ændres'
+        },
+        copy: 'Kopiér',
+        copied: 'Link kopieret',
+        copyFailed: 'Linket kunne ikke kopieres. Markér det, og kopiér det manuelt.',
+        open: 'Åbn',
+        checkAgain: 'Tjek igen',
+        notSignedIn: 'Endnu ikke logget ind. Gør login færdigt via linket, og tjek igen.',
+        checkFailed: 'Kunne ikke tjekke loginstatus',
+        loginWaiting:
+          'Siden tjekker med få sekunders mellemrum og fortsætter, når du er logget ind.',
+        uninstallFailed: 'Afinstallation mislykkedes'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1073,7 +1084,6 @@ const da = {
           'Enheden er ikke tilknyttet en Tailscale-konto endnu. Log ind for at fuldføre tilknytningen til din konto.',
         urlPeriod: 'Denne URL er gyldig i 10 minutter',
         login: 'Log ind',
-        loginSuccess: 'Log ind lykkedes',
         logout: 'Log ud',
         logoutDesc: 'Er du sikker på, at du vil logge ud?'
       },
@@ -1087,7 +1097,6 @@ const da = {
         or: 'eller',
         sso: 'Log ind med SSO',
         urlPeriod: 'Denne URL er gyldig i 10 minutter',
-        loginSuccess: 'Log ind lykkedes',
         logout: 'Afregistrer',
         logoutDesc:
           'Afregistrering fjerner denne peer fra din NetBird-konto og sletter dens konfiguration her. For at tilslutte igen skal du bruge en opsætningsnøgle eller et SSO-login, og peeren kan få en ny IP. Fortsæt?'

@@ -1062,8 +1062,18 @@ const pt_br = {
           'O {{other}} está em execução ou inicia na inicialização. Só uma VPN funciona por vez: pare o {{other}} e desative a inicialização automática dele primeiro.',
         swap: {
           title: 'Memória swap',
-          tip: 'Se faltar memória ao daemon, tente habilitar a memória swap. Isso define o tamanho do arquivo de swap como 256MB por padrão, o que pode ser ajustado em "Configurações > Dispositivo".'
-        }
+          tip: 'Se faltar memória ao daemon, tente habilitar a memória swap. Isso define o tamanho do arquivo de swap como 256MB por padrão, o que pode ser ajustado em "Configurações > Dispositivo".',
+          failed: 'Falha ao alterar a memória swap'
+        },
+        copy: 'Copiar',
+        copied: 'Link copiado',
+        copyFailed: 'Não foi possível copiar o link. Selecione-o e copie manualmente.',
+        open: 'Abrir',
+        checkAgain: 'Verificar novamente',
+        notSignedIn: 'Ainda não conectado. Termine de entrar pelo link e verifique novamente.',
+        checkFailed: 'Não foi possível verificar o status de login',
+        loginWaiting: 'Esta página verifica a cada poucos segundos e continua quando você entrar.',
+        uninstallFailed: 'Falha ao desinstalar'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1078,7 +1088,6 @@ const pt_br = {
           'O dispositivo ainda não foi vinculado. Por favor, faça login e vincule este dispositivo à sua conta.',
         urlPeriod: 'Esta URL é válida por 10 minutos',
         login: 'Login',
-        loginSuccess: 'Login Bem-sucedido',
         logout: 'Sair',
         logoutDesc: 'Tem certeza de que deseja sair?'
       },
@@ -1092,7 +1101,6 @@ const pt_br = {
         or: 'ou',
         sso: 'Login com SSO',
         urlPeriod: 'Esta URL é válida por 10 minutos',
-        loginSuccess: 'Login Bem-sucedido',
         logout: 'Cancelar registro',
         logoutDesc:
           'Cancelar o registro remove este peer da sua conta NetBird e apaga a configuração dele aqui. Para entrar de novo é preciso uma chave de configuração ou um login SSO, e o peer pode receber um novo IP. Continuar?'

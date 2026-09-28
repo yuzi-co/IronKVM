@@ -1059,8 +1059,18 @@ const tr = {
           '{{other}} çalışıyor veya açılışta başlıyor. Aynı anda yalnızca bir VPN çalışabilir: önce {{other}} hizmetini durdurun ve açılışta başlatmayı kapatın.',
         swap: {
           title: 'Swap belleği',
-          tip: 'Hizmetin belleği yetmezse swap belleğini etkinleştirmeyi deneyin. Bu, swap dosyasının boyutunu varsayılan olarak 256MB yapar; boyut "Ayarlar > Cihaz" bölümünden değiştirilebilir.'
-        }
+          tip: 'Hizmetin belleği yetmezse swap belleğini etkinleştirmeyi deneyin. Bu, swap dosyasının boyutunu varsayılan olarak 256MB yapar; boyut "Ayarlar > Cihaz" bölümünden değiştirilebilir.',
+          failed: 'Takas belleği değiştirilemedi'
+        },
+        copy: 'Kopyala',
+        copied: 'Bağlantı kopyalandı',
+        copyFailed: 'Bağlantı kopyalanamadı. Seçip elle kopyalayın.',
+        open: 'Aç',
+        checkAgain: 'Yeniden denetle',
+        notSignedIn: 'Henüz oturum açılmadı. Bağlantıdan oturum açmayı bitirip yeniden denetleyin.',
+        checkFailed: 'Oturum durumu denetlenemedi',
+        loginWaiting: 'Bu sayfa birkaç saniyede bir denetler ve oturum açtığınızda devam eder.',
+        uninstallFailed: 'Kaldırma başarısız'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1074,7 +1084,6 @@ const tr = {
         notLogin: 'Cihaz bağlı değil. Lütfen giriş yapıp cihazınızı hesabınıza bağlayın.',
         urlPeriod: 'Adres sadece 10 ndakika boyunca geçerlidir',
         login: 'Giriş yap',
-        loginSuccess: 'Giriş yapıldı',
         logout: 'Çıkış yap',
         logoutDesc: 'Çıkış yapmak istediğinizden emin misiniz?'
       },
@@ -1088,7 +1097,6 @@ const tr = {
         or: 'veya',
         sso: 'SSO ile giriş yap',
         urlPeriod: 'Bu adres 10 dakika boyunca geçerlidir',
-        loginSuccess: 'Giriş yapıldı',
         logout: 'Kaydı sil',
         logoutDesc:
           'Kaydı silmek bu eşi NetBird hesabınızdan kaldırır ve buradaki yapılandırmasını siler. Yeniden katılmak için bir kurulum anahtarı veya SSO girişi gerekir ve eş yeni bir IP alabilir. Devam edilsin mi?'

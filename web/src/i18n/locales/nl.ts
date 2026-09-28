@@ -1068,8 +1068,19 @@ const nl = {
           '{{other}} draait of start bij het opstarten. Er kan maar één VPN tegelijk draaien: stop eerst {{other}} en schakel het starten bij opstarten ervan uit.',
         swap: {
           title: 'Swapgeheugen',
-          tip: 'Als de daemon te weinig geheugen heeft, probeer dan swapgeheugen in te schakelen. Dit stelt het wisselbestand standaard in op 256MB; de grootte kunt u aanpassen in "Instellingen > Apparaat".'
-        }
+          tip: 'Als de daemon te weinig geheugen heeft, probeer dan swapgeheugen in te schakelen. Dit stelt het wisselbestand standaard in op 256MB; de grootte kunt u aanpassen in "Instellingen > Apparaat".',
+          failed: 'Swapgeheugen wijzigen mislukt'
+        },
+        copy: 'Kopiëren',
+        copied: 'Link gekopieerd',
+        copyFailed: 'Link kopiëren mislukt. Selecteer hem en kopieer hem handmatig.',
+        open: 'Openen',
+        checkAgain: 'Opnieuw controleren',
+        notSignedIn: 'Nog niet aangemeld. Rond het aanmelden via de link af en controleer opnieuw.',
+        checkFailed: 'Aanmeldstatus controleren mislukt',
+        loginWaiting:
+          'Deze pagina controleert om de paar seconden en gaat verder zodra u bent aangemeld.',
+        uninstallFailed: 'Verwijderen mislukt'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1084,7 +1095,6 @@ const nl = {
           'Het apparaat is nog niet gekoppeld. Log in en koppel dit apparaat aan uw account.',
         urlPeriod: 'Deze url is 10 minuten geldig',
         login: 'Inloggen',
-        loginSuccess: 'Inloggen gelukt',
         logout: 'Uitloggen',
         logoutDesc: 'Weet u zeker dat u wilt uitloggen?'
       },
@@ -1098,7 +1108,6 @@ const nl = {
         or: 'of',
         sso: 'Inloggen met SSO',
         urlPeriod: 'Deze url is 10 minuten geldig',
-        loginSuccess: 'Inloggen gelukt',
         logout: 'Afmelden',
         logoutDesc:
           'Afmelden verwijdert deze peer uit uw NetBird-account en wist de configuratie hier. Opnieuw lid worden vereist een setup key of een SSO-login, en de peer kan een nieuw IP-adres krijgen. Doorgaan?'

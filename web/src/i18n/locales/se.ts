@@ -1054,8 +1054,19 @@ const se = {
           '{{other}} körs eller startar vid uppstart. Bara ett VPN kan köras åt gången: stoppa {{other}} och stäng av dess start vid uppstart först.',
         swap: {
           title: 'Swap-minne',
-          tip: 'Om tjänsten får ont om minne kan du prova att aktivera swap-minne. Detta sätter swap-filens storlek till 256MB som standard, vilket kan justeras i "Inställningar > Enhet".'
-        }
+          tip: 'Om tjänsten får ont om minne kan du prova att aktivera swap-minne. Detta sätter swap-filens storlek till 256MB som standard, vilket kan justeras i "Inställningar > Enhet".',
+          failed: 'Det gick inte att ändra växlingsminnet'
+        },
+        copy: 'Kopiera',
+        copied: 'Länken kopierad',
+        copyFailed: 'Det gick inte att kopiera länken. Markera den och kopiera den för hand.',
+        open: 'Öppna',
+        checkAgain: 'Kontrollera igen',
+        notSignedIn: 'Inte inloggad än. Slutför inloggningen via länken och kontrollera igen.',
+        checkFailed: 'Det gick inte att kontrollera inloggningsstatus',
+        loginWaiting:
+          'Sidan kontrollerar med några sekunders mellanrum och fortsätter när du har loggat in.',
+        uninstallFailed: 'Avinstallationen misslyckades'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1069,7 +1080,6 @@ const se = {
         notLogin: 'Enheten är ännu inte bunden. Logga in och bind enheten till ditt konto.',
         urlPeriod: 'Denna URL är giltig i 10 minuter',
         login: 'Logga in',
-        loginSuccess: 'Inloggning lyckades',
         logout: 'Logga ut',
         logoutDesc: 'Är du säker på att du vill logga ut?'
       },
@@ -1083,7 +1093,6 @@ const se = {
         or: 'eller',
         sso: 'Logga in med SSO',
         urlPeriod: 'Denna URL är giltig i 10 minuter',
-        loginSuccess: 'Inloggning lyckades',
         logout: 'Avregistrera',
         logoutDesc:
           'Avregistrering tar bort den här noden från ditt NetBird-konto och raderar dess konfiguration här. För att ansluta igen krävs en installationsnyckel eller en SSO-inloggning, och noden kan få en ny IP. Fortsätta?'

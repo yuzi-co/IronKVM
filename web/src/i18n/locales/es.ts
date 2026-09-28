@@ -1068,8 +1068,20 @@ const es = {
           '{{other}} está en ejecución o se inicia al arrancar. Solo puede funcionar una VPN a la vez: detén {{other}} y desactiva antes su inicio al arrancar.',
         swap: {
           title: 'Memoria swap',
-          tip: 'Si al daemon le falta memoria, prueba a activar la memoria swap. Esto fija el tamaño del archivo swap en 256MB por defecto, que se puede ajustar en "Ajustes > Dispositivo".'
-        }
+          tip: 'Si al daemon le falta memoria, prueba a activar la memoria swap. Esto fija el tamaño del archivo swap en 256MB por defecto, que se puede ajustar en "Ajustes > Dispositivo".',
+          failed: 'No se pudo cambiar la memoria de intercambio'
+        },
+        copy: 'Copiar',
+        copied: 'Enlace copiado',
+        copyFailed: 'No se pudo copiar el enlace. Selecciónelo y cópielo a mano.',
+        open: 'Abrir',
+        checkAgain: 'Comprobar de nuevo',
+        notSignedIn:
+          'Aún no ha iniciado sesión. Termine de iniciarla en el enlace y vuelva a comprobar.',
+        checkFailed: 'No se pudo comprobar el estado de la sesión',
+        loginWaiting:
+          'Esta página lo comprueba cada pocos segundos y continúa cuando haya iniciado sesión.',
+        uninstallFailed: 'La desinstalación ha fallado'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1085,7 +1097,6 @@ const es = {
           'El dispositivo aún no ha sido vinculado. Por favor, inicia sesión y vincula este dispositivo a tu cuenta.',
         urlPeriod: 'Esta URL es válida por 10 minutos',
         login: 'Iniciar sesión',
-        loginSuccess: 'Inicio de sesión exitoso',
         logout: 'Cerrar sesión',
         logoutDesc: '¿Estás seguro de que deseas cerrar sesión?'
       },
@@ -1099,7 +1110,6 @@ const es = {
         or: 'o',
         sso: 'Iniciar sesión con SSO',
         urlPeriod: 'Esta URL es válida durante 10 minutos',
-        loginSuccess: 'Inicio de sesión correcto',
         logout: 'Dar de baja',
         logoutDesc:
           'Dar de baja elimina este par de tu cuenta de NetBird y borra aquí su configuración. Para volver a unirse hace falta una clave de configuración o un inicio de sesión con SSO, y el par puede recibir una IP nueva. ¿Continuar?'

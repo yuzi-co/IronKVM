@@ -1064,8 +1064,18 @@ const pl = {
           '{{other}} działa lub uruchamia się przy starcie. Naraz może działać tylko jeden VPN: najpierw zatrzymaj {{other}} i wyłącz jego uruchamianie przy starcie.',
         swap: {
           title: 'Plik wymiany',
-          tip: 'Jeśli usłudze brakuje pamięci, spróbuj włączyć plik wymiany. Domyślnie ustawia to rozmiar pliku wymiany na 256MB; można go zmienić w „Ustawienia > Urządzenie”.'
-        }
+          tip: 'Jeśli usłudze brakuje pamięci, spróbuj włączyć plik wymiany. Domyślnie ustawia to rozmiar pliku wymiany na 256MB; można go zmienić w „Ustawienia > Urządzenie”.',
+          failed: 'Nie udało się zmienić pamięci wymiany'
+        },
+        copy: 'Kopiuj',
+        copied: 'Skopiowano link',
+        copyFailed: 'Nie udało się skopiować linku. Zaznacz go i skopiuj ręcznie.',
+        open: 'Otwórz',
+        checkAgain: 'Sprawdź ponownie',
+        notSignedIn: 'Jeszcze nie zalogowano. Dokończ logowanie przez link i sprawdź ponownie.',
+        checkFailed: 'Nie udało się sprawdzić stanu logowania',
+        loginWaiting: 'Strona sprawdza co kilka sekund i przejdzie dalej po zalogowaniu.',
+        uninstallFailed: 'Odinstalowanie nie powiodło się'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1080,7 +1090,6 @@ const pl = {
           'Urządzenie nie zostało jeszcze powiązane. Zaloguj się i powiąż to urządzenie ze swoim kontem.',
         urlPeriod: 'Ten URL jest ważny przez 10 minut',
         login: 'Zaloguj',
-        loginSuccess: 'Zalogowanie pomyślne',
         logout: 'Wyloguj',
         logoutDesc: 'Czy na pewno chcesz się wylogować?'
       },
@@ -1094,7 +1103,6 @@ const pl = {
         or: 'lub',
         sso: 'Zaloguj przez SSO',
         urlPeriod: 'Ten URL jest ważny przez 10 minut',
-        loginSuccess: 'Zalogowanie pomyślne',
         logout: 'Wyrejestruj',
         logoutDesc:
           'Wyrejestrowanie usuwa ten węzeł z konta NetBird i kasuje jego konfigurację na urządzeniu. Ponowne dołączenie wymaga klucza konfiguracyjnego lub logowania SSO, a węzeł może dostać nowy adres IP. Kontynuować?'

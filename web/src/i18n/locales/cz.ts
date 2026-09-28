@@ -1054,8 +1054,18 @@ const cz = {
           '{{other}} běží nebo se spouští při startu. Současně může běžet jen jedna VPN: nejprve zastavte {{other}} a vypněte jeho spouštění při startu.',
         swap: {
           title: 'Odkládací paměť',
-          tip: 'Pokud démonu dochází paměť, zkuste povolit odkládací paměť. Výchozí velikost odkládacího souboru je 256MB a lze ji upravit v "Nastavení > Zařízení".'
-        }
+          tip: 'Pokud démonu dochází paměť, zkuste povolit odkládací paměť. Výchozí velikost odkládacího souboru je 256MB a lze ji upravit v "Nastavení > Zařízení".',
+          failed: 'Odkládací paměť se nepodařilo změnit'
+        },
+        copy: 'Kopírovat',
+        copied: 'Odkaz zkopírován',
+        copyFailed: 'Odkaz se nepodařilo zkopírovat. Označte ho a zkopírujte ručně.',
+        open: 'Otevřít',
+        checkAgain: 'Zkontrolovat znovu',
+        notSignedIn: 'Zatím nepřihlášeno. Dokončete přihlášení přes odkaz a zkontrolujte znovu.',
+        checkFailed: 'Stav přihlášení se nepodařilo zjistit',
+        loginWaiting: 'Stránka to kontroluje každých pár sekund a po přihlášení pokračuje.',
+        uninstallFailed: 'Odinstalace se nezdařila'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1070,7 +1080,6 @@ const cz = {
           'Zařízení nebylo dosud spárováno. Přihlaste se prosím a spárujte toto zařízení s vaším účtem.',
         urlPeriod: 'Tento odkaz je platný po dobu 10 minut',
         login: 'Přihlášení',
-        loginSuccess: 'Přihlášení úspěšné',
         logout: 'Odhlásit se',
         logoutDesc: 'Opravdu se chcete odhlásit?'
       },
@@ -1084,7 +1093,6 @@ const cz = {
         or: 'nebo',
         sso: 'Přihlásit přes SSO',
         urlPeriod: 'Tento odkaz je platný 10 minut',
-        loginSuccess: 'Přihlášení úspěšné',
         logout: 'Odregistrovat',
         logoutDesc:
           'Odregistrování odebere tento uzel z vašeho účtu NetBird a smaže zde jeho konfiguraci. Opětovné připojení vyžaduje instalační klíč nebo přihlášení přes SSO a uzel může dostat novou IP. Pokračovat?'

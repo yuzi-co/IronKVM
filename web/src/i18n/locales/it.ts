@@ -1068,8 +1068,19 @@ const it = {
           "{{other}} è in esecuzione o si avvia all'accensione. Può funzionare una sola VPN alla volta: prima arresta {{other}} e disattivane l'avvio all'accensione.",
         swap: {
           title: 'Memoria di swap',
-          tip: 'Se il demone resta a corto di memoria, prova ad abilitare la memoria di swap. Imposta la dimensione del file di swap a 256MB per impostazione predefinita, modificabile in "Impostazioni > Dispositivo".'
-        }
+          tip: 'Se il demone resta a corto di memoria, prova ad abilitare la memoria di swap. Imposta la dimensione del file di swap a 256MB per impostazione predefinita, modificabile in "Impostazioni > Dispositivo".',
+          failed: 'Impossibile modificare la memoria di swap'
+        },
+        copy: 'Copia',
+        copied: 'Link copiato',
+        copyFailed: 'Impossibile copiare il link. Selezionalo e copialo a mano.',
+        open: 'Apri',
+        checkAgain: 'Controlla di nuovo',
+        notSignedIn:
+          "Accesso non ancora eseguito. Completa l'accesso dal link, poi controlla di nuovo.",
+        checkFailed: 'Impossibile verificare lo stato di accesso',
+        loginWaiting: "Questa pagina controlla ogni pochi secondi e prosegue dopo l'accesso.",
+        uninstallFailed: 'Disinstallazione non riuscita'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1084,7 +1095,6 @@ const it = {
           'Il dispositivo non è ancora stato associato. Effettua il login e associa questo dispositivo al tuo account.',
         urlPeriod: 'Questo URL è valido per 10 minuti',
         login: 'Accedi',
-        loginSuccess: 'Accesso riuscito',
         logout: 'Disconnetti',
         logoutDesc: 'Sei sicuro di voler uscire?'
       },
@@ -1098,7 +1108,6 @@ const it = {
         or: 'oppure',
         sso: 'Accedi con SSO',
         urlPeriod: 'Questo URL è valido per 10 minuti',
-        loginSuccess: 'Accesso riuscito',
         logout: 'Rimuovi registrazione',
         logoutDesc:
           'Rimuovere la registrazione elimina questo peer dal tuo account NetBird e ne cancella qui la configurazione. Per unirti di nuovo serve una chiave di configurazione o un accesso SSO, e il peer potrebbe ricevere un nuovo IP. Continuare?'

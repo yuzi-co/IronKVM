@@ -1064,8 +1064,20 @@ const hu = {
           '{{other}} fut, vagy rendszerindításkor elindul. Egyszerre csak egy VPN futhat: előbb állítsa le ezt: {{other}}, és kapcsolja ki az automatikus indítását.',
         swap: {
           title: 'Swap memória',
-          tip: 'Ha a démonnak kevés a memóriája, próbálja engedélyezni a swap memóriát. Ez alapértelmezés szerint 256MB-ra állítja a swap fájl méretét, amely a "Beállítások > Eszköz" alatt módosítható.'
-        }
+          tip: 'Ha a démonnak kevés a memóriája, próbálja engedélyezni a swap memóriát. Ez alapértelmezés szerint 256MB-ra állítja a swap fájl méretét, amely a "Beállítások > Eszköz" alatt módosítható.',
+          failed: 'Nem sikerült módosítani a cserememóriát'
+        },
+        copy: 'Másolás',
+        copied: 'Hivatkozás másolva',
+        copyFailed: 'Nem sikerült másolni a hivatkozást. Jelölje ki, és másolja kézzel.',
+        open: 'Megnyitás',
+        checkAgain: 'Ellenőrzés újra',
+        notSignedIn:
+          'Még nincs bejelentkezve. Fejezze be a bejelentkezést a hivatkozáson, majd ellenőrizze újra.',
+        checkFailed: 'Nem sikerült ellenőrizni a bejelentkezés állapotát',
+        loginWaiting:
+          'Az oldal néhány másodpercenként ellenőrzi, és a bejelentkezés után folytatja.',
+        uninstallFailed: 'Az eltávolítás sikertelen'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1080,7 +1092,6 @@ const hu = {
           'Az eszköz még nincs kötve. Kérem, jelentkezzen be és kösse az eszközt a fiókjához.',
         urlPeriod: 'Ez az url 10 percig érvényes',
         login: 'Bejelentkezés',
-        loginSuccess: 'Sikeres bejelentkezés',
         logout: 'Kijelentkezés',
         logoutDesc: 'Biztos, hogy ki szeretne jelentkezni?'
       },
@@ -1094,7 +1105,6 @@ const hu = {
         or: 'vagy',
         sso: 'Bejelentkezés SSO-val',
         urlPeriod: 'Ez az url 10 percig érvényes',
-        loginSuccess: 'Sikeres bejelentkezés',
         logout: 'Regisztráció törlése',
         logoutDesc:
           'A regisztráció törlése eltávolítja ezt a társat a NetBird-fiókjából, és törli itt a konfigurációját. Az újbóli csatlakozáshoz beállítókulcs vagy SSO-bejelentkezés kell, és a társ új IP-címet kaphat. Folytatja?'

@@ -1057,8 +1057,18 @@ const id = {
           '{{other}} sedang berjalan atau dimulai saat boot. Hanya satu VPN yang dapat berjalan dalam satu waktu: hentikan {{other}} dan nonaktifkan mulai saat boot-nya terlebih dahulu.',
         swap: {
           title: 'Memori swap',
-          tip: 'Jika daemon kekurangan memori, coba aktifkan memori swap. Ini mengatur ukuran file swap menjadi 256MB secara default, yang dapat diubah di "Pengaturan > Perangkat".'
-        }
+          tip: 'Jika daemon kekurangan memori, coba aktifkan memori swap. Ini mengatur ukuran file swap menjadi 256MB secara default, yang dapat diubah di "Pengaturan > Perangkat".',
+          failed: 'Gagal mengubah memori swap'
+        },
+        copy: 'Salin',
+        copied: 'Tautan disalin',
+        copyFailed: 'Tidak dapat menyalin tautan. Pilih lalu salin secara manual.',
+        open: 'Buka',
+        checkAgain: 'Periksa lagi',
+        notSignedIn: 'Belum masuk. Selesaikan masuk melalui tautan, lalu periksa lagi.',
+        checkFailed: 'Tidak dapat memeriksa status masuk',
+        loginWaiting: 'Halaman ini memeriksa setiap beberapa detik dan lanjut setelah Anda masuk.',
+        uninstallFailed: 'Gagal menghapus instalasi'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1073,7 +1083,6 @@ const id = {
           'Perangkat belum ditautkan. Silakan masuk dan tautkan perangkat ini ke akun Anda.',
         urlPeriod: 'Url ini berlaku selama 10 menit',
         login: 'Masuk',
-        loginSuccess: 'Berhasil masuk',
         logout: 'Keluar',
         logoutDesc: 'Apakah Anda yakin ingin logout?'
       },
@@ -1087,7 +1096,6 @@ const id = {
         or: 'atau',
         sso: 'Masuk dengan SSO',
         urlPeriod: 'Url ini berlaku selama 10 menit',
-        loginSuccess: 'Berhasil masuk',
         logout: 'Batalkan pendaftaran',
         logoutDesc:
           'Membatalkan pendaftaran akan menghapus peer ini dari akun NetBird Anda dan menghapus konfigurasinya di sini. Untuk bergabung lagi diperlukan setup key atau login SSO, dan peer mungkin mendapat IP baru. Lanjutkan?'

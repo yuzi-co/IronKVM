@@ -1046,8 +1046,18 @@ const en = {
           '{{other}} is running or starts at boot. Only one VPN runs at a time: stop {{other}} and turn off its start at boot first.',
         swap: {
           title: 'Swap memory',
-          tip: 'If the daemon runs short of memory, try enabling swap memory. This sets the swap file size to 256MB by default, which can be adjusted in "Settings > Device".'
-        }
+          tip: 'If the daemon runs short of memory, try enabling swap memory. This sets the swap file size to 256MB by default, which can be adjusted in "Settings > Device".',
+          failed: 'Failed to change swap memory'
+        },
+        copy: 'Copy',
+        copied: 'Link copied',
+        copyFailed: 'Could not copy the link. Select it and copy it by hand.',
+        open: 'Open',
+        checkAgain: 'Check again',
+        notSignedIn: 'Not signed in yet. Finish signing in at the link, then check again.',
+        checkFailed: 'Could not check the login status',
+        loginWaiting: 'This page checks every few seconds and continues once you have signed in.',
+        uninstallFailed: 'Uninstall failed'
       },
       tailscale: {
         title: 'Tailscale',
@@ -1062,7 +1072,6 @@ const en = {
           'The device has not been bound yet. Please login and bind this device to your account.',
         urlPeriod: 'This url is valid for 10 minutes',
         login: 'Login',
-        loginSuccess: 'Login Success',
         logout: 'Logout',
         logoutDesc: 'Are you sure you want to logout?'
       },
@@ -1076,7 +1085,6 @@ const en = {
         or: 'or',
         sso: 'Log in with SSO',
         urlPeriod: 'This url is valid for 10 minutes',
-        loginSuccess: 'Login Success',
         logout: 'Deregister',
         logoutDesc:
           'Deregister removes this peer from your NetBird account and deletes its configuration here. Joining again needs a setup key or an SSO login, and the peer may get a new IP. Continue?'

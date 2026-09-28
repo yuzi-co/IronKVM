@@ -1,15 +1,22 @@
 import { useEffect, useState } from 'react';
-import { Switch, Tooltip } from 'antd';
+import { message, Switch, Tooltip } from 'antd';
 import { CircleHelpIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/vm.ts';
+
+// The size this switch turns swap on with when the board has none, the one
+// its tooltip names. A size chosen in Settings > Device is kept.
+const DEFAULT_SIZE_MB = 256;
 
 export const Swap = () => {
   const { t } = useTranslation();
 
   const [isLoading, setIsLoading] = useState(true);
   const [isEnabled, setIsEnabled] = useState(false);
+  // The size last seen, so turning swap off and on here does not replace the
+  // size chosen in Settings > Device.
+  const [size, setSize] = useState(DEFAULT_SIZE_MB);
 
   useEffect(() => {
     api
@@ -17,6 +24,7 @@ export const Swap = () => {
       .then((rsp) => {
         if (rsp.data?.size > 0) {
           setIsEnabled(true);
+          setSize(rsp.data.size);
         }
       })
       .finally(() => {
@@ -28,18 +36,17 @@ export const Swap = () => {
     if (isLoading) return;
     setIsLoading(true);
 
-    const size = enable ? 256 : 0;
-
     api
-      .setSwap(size)
+      .setSwap(enable ? size : 0)
       .then((rsp) => {
         if (rsp.code !== 0) {
-          console.log(rsp.msg);
+          message.error(rsp.msg || t('settings.vpn.swap.failed'));
           return;
         }
 
         setIsEnabled(enable);
       })
+      .catch(() => message.error(t('settings.vpn.swap.failed')))
       .finally(() => {
         setIsLoading(false);
       });
