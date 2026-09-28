@@ -271,6 +271,8 @@ const vi = {
       relative: 'Chế độ tương đối',
       absoluteShort: 'Tuyệt đối',
       relativeShort: 'Tương đối',
+      touch: 'Chế độ cảm ứng',
+      touchShort: 'Cảm ứng',
       absoluteStalled: 'Máy đích đang bỏ qua chuột tuyệt đối',
       absoluteStalledDesc:
         'Máy đích đã ngừng nhận báo cáo chuột tuyệt đối, nên các chuyển động con trỏ bị mất. Bàn phím không bị ảnh hưởng. Khôi phục USB thường khắc phục được; chế độ tương đối dùng một endpoint khác.',

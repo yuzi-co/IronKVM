@@ -1,7 +1,11 @@
 package hid
 
 type QueuedReport struct {
-	Data               []byte
+	Data []byte
+	// Touch, when set, is a touch frame for the absolute pointer's endpoint,
+	// and Data is ignored. A frame is one or two reports, so it does not fit
+	// the one report per event that Data carries.
+	Touch              []TouchContact
 	Execute            func(func() error) error
 	Complete           func(bool)
 	ResetKeyboard      func()

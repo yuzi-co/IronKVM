@@ -274,6 +274,8 @@ const it = {
       relative: 'Modalità relativa',
       absoluteShort: 'Assoluta',
       relativeShort: 'Relativa',
+      touch: 'Modalità touch',
+      touchShort: 'Touch',
       absoluteStalled: "L'host sta ignorando il mouse assoluto",
       absoluteStalledDesc:
         "L'host ha smesso di raccogliere i report del mouse assoluto, quindi i movimenti del puntatore vanno persi. La tastiera non è interessata. Ripristinare l'USB di solito risolve; la modalità relativa usa un endpoint diverso.",

@@ -273,6 +273,8 @@ const es = {
       relative: 'Modo relativo',
       absoluteShort: 'Absoluto',
       relativeShort: 'Relativo',
+      touch: 'Modo táctil',
+      touchShort: 'Táctil',
       absoluteStalled: 'El host está ignorando el ratón absoluto',
       absoluteStalledDesc:
         'El host ha dejado de recoger los informes del ratón absoluto, así que los movimientos del puntero se pierden. El teclado no se ve afectado. Restablecer el USB suele solucionarlo; el modo relativo usa otro endpoint.',

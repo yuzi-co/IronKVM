@@ -96,6 +96,12 @@ ABSOLUTE_MOUSE_DESC=05010902a1010901a1000509190129051500250195057501810295017503
 # the boot protocol and must never carry an ID; this interface does not, so it
 # carries the keys.
 EXTKEYS_ABSOLUTE_DESC=05010902a10185010901a10005091901290515002501950575018102950175038101050109300931150026ff7f350046ff7f751095028102050109381581257f35004500750895018106c0c0050c0901a1018502150026ff0319002aff03751095018100c005010980a1018503150026ff00190029ff750895018100c0
+# With /boot/usb.touch: the same three IDs, byte for byte, then a touch screen
+# under ID 4 (Tip Switch, Contact ID, X, Y, Contact Count), its Contact Count
+# Maximum feature under ID 5 and the 256-byte Windows certification blob under
+# ID 6. The prefix is written out rather than taken from the variable above,
+# like every value here: each is the whole descriptor a host reads.
+TOUCH_ABSOLUTE_DESC=05010902a10185010901a10005091901290515002501950575018102950175038101050109300931150026ff7f350046ff7f751095028102050109381581257f35004500750895018106c0c0050c0901a1018502150026ff0319002aff03751095018100c005010980a1018503150026ff00190029ff750895018100c0050d0904a10185040922a1020942150025017501950181020951257f75079501810205010930093126ff7f350046ff7f75109502810235004500c0050d0954250275089501810285050955250275089501b1020600ff850609c5150026ff007508960001b102c0
 HID_ONLY_ABSOLUTE_DESC=05010902a1010901a10005091901290315002501950375018102950175058101050109300931150026ff7f350046ff7f751095028102050109381581257f35004500750895018106c0c0
 
 BASE_UID="uid 0123456789ABCDEF_0123456789ABCDEF"
@@ -344,6 +350,19 @@ build_env
 : > "$work/boot/usb.extkeys"
 run "$S03" start_usb_dev
 hid_is hid.GS2 "" 2 7 "$EXTKEYS_ABSOLUTE_DESC" "/boot/usb.extkeys gives the absolute pointer the key reports"
+
+build_env
+: > "$work/boot/usb.touch"
+run "$S03" start_usb_dev
+hid_is hid.GS2 "" 2 7 "$TOUCH_ABSOLUTE_DESC" "/boot/usb.touch adds the touch screen"
+is functions/hid.GS0/report_length 8 "/boot/usb.touch leaves the keyboard alone"
+hex_is functions/hid.GS1/report_desc "$RELATIVE_MOUSE_DESC" "/boot/usb.touch leaves the relative mouse alone"
+
+build_env
+: > "$work/boot/usb.touch"
+: > "$work/boot/usb.extkeys"
+run "$S03" start_usb_dev
+hex_is functions/hid.GS2/report_desc "$TOUCH_ABSOLUTE_DESC" "/boot/usb.touch wins over /boot/usb.extkeys"
 
 build_env
 : > "$work/boot/disable_hid"

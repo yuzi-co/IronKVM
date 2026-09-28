@@ -269,6 +269,8 @@ const se = {
       relative: 'Relativt läge',
       absoluteShort: 'Absolut',
       relativeShort: 'Relativ',
+      touch: 'Pekskärmsläge',
+      touchShort: 'Pekskärm',
       absoluteStalled: 'Målet ignorerar den absoluta musen',
       absoluteStalledDesc:
         'Målet har slutat hämta absoluta musrapporter, så pekarens rörelser går förlorade. Tangentbordet påverkas inte. Att återställa USB brukar lösa det; relativt läge använder en annan slutpunkt.',

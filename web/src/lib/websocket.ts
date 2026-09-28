@@ -9,7 +9,8 @@ type SendData = number[] | ArrayBuffer | Uint8Array;
 export enum MessageEvent {
   Heartbeat = 0,
   Keyboard = 1,
-  Mouse = 2
+  Mouse = 2,
+  Touch = 3
 }
 
 // Keyboard and mouse travel over this socket and nothing else carries them, so

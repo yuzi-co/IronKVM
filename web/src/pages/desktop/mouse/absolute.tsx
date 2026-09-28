@@ -6,14 +6,7 @@ import { client, MessageEvent } from '@/lib/websocket.ts';
 import { scrollDirectionAtom, scrollIntervalAtom } from '@/jotai/mouse.ts';
 import { inputRegionAtom, resolutionAtom } from '@/jotai/screen.ts';
 
-import {
-  FrameContent,
-  fullFrameContent,
-  getConfiguredFrameContent,
-  getMediaSize,
-  getRenderedMediaRect,
-  MediaSize
-} from '../screen/geometry.ts';
+import { getScreenPosition } from './position.ts';
 import { MouseAbsoluteEvent } from './types.ts';
 
 enum MouseButton {
@@ -407,69 +400,7 @@ export const Absolute = () => {
     }
 
     function getCorrectedCoords(clientX: number, clientY: number): { x: number; y: number } | null {
-      const viewport = target.parentElement;
-      if (viewport?.id === 'screen-viewport' && viewport.dataset.cropped === 'true') {
-        const viewportRect = viewport.getBoundingClientRect();
-        if (
-          viewportRect.width <= 0 ||
-          viewportRect.height <= 0 ||
-          clientX < viewportRect.left ||
-          clientX > viewportRect.right ||
-          clientY < viewportRect.top ||
-          clientY > viewportRect.bottom
-        ) {
-          return null;
-        }
-
-        return {
-          x: (clientX - viewportRect.left) / viewportRect.width,
-          y: (clientY - viewportRect.top) / viewportRect.height
-        };
-      }
-
-      const rect = target.getBoundingClientRect();
-      if (rect.width <= 0 || rect.height <= 0) {
-        return null;
-      }
-
-      const mediaSize =
-        getMediaSize(target) ||
-        (resolution && resolution.width > 0 && resolution.height > 0 ? resolution : null);
-      if (!mediaSize) {
-        const x = (clientX - rect.left) / rect.width;
-        const y = (clientY - rect.top) / rect.height;
-        return { x, y };
-      }
-
-      const renderedMediaRect = getRenderedMediaRect(rect, mediaSize);
-      const frameContent = getEffectiveFrameContent(mediaSize);
-      const frameScaleX = renderedMediaRect.width / mediaSize.width;
-      const frameScaleY = renderedMediaRect.height / mediaSize.height;
-      const contentLeft = renderedMediaRect.left + frameContent.left * frameScaleX;
-      const contentTop = renderedMediaRect.top + frameContent.top * frameScaleY;
-      const contentWidth = frameContent.width * frameScaleX;
-      const contentHeight = frameContent.height * frameScaleY;
-
-      if (
-        clientX < contentLeft ||
-        clientX > contentLeft + contentWidth ||
-        clientY < contentTop ||
-        clientY > contentTop + contentHeight
-      ) {
-        return null;
-      }
-
-      const x = (clientX - contentLeft) / contentWidth;
-      const y = (clientY - contentTop) / contentHeight;
-
-      return { x, y };
-    }
-
-    function getEffectiveFrameContent(mediaSize: MediaSize): FrameContent {
-      return (
-        (inputRegion && getConfiguredFrameContent(inputRegion, mediaSize)) ||
-        fullFrameContent(mediaSize)
-      );
+      return getScreenPosition(target, clientX, clientY, resolution, inputRegion);
     }
 
     function queueMouseMove(x: number, y: number) {

@@ -272,6 +272,8 @@ const pt_br = {
       relative: 'Modo relativo',
       absoluteShort: 'Absoluto',
       relativeShort: 'Relativo',
+      touch: 'Modo toque',
+      touchShort: 'Toque',
       absoluteStalled: 'O alvo está ignorando o mouse absoluto',
       absoluteStalledDesc:
         'O alvo parou de receber os relatórios do mouse absoluto, então os movimentos do ponteiro são perdidos. O teclado não é afetado. Recuperar o USB costuma resolver; o modo relativo usa outro endpoint.',

@@ -3,7 +3,7 @@ import { atom } from 'jotai';
 // mouse cursor style
 export const mouseStyleAtom = atom('cursor-default');
 
-// mouse mode: absolute or relative
+// mouse mode: absolute, relative or touch
 export const mouseModeAtom = atom('absolute');
 
 // mouse scroll direction: -1 or 1

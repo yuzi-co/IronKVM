@@ -29,9 +29,9 @@ export const AbsoluteMouseWarning = () => {
   const isRecovering = useRef(false);
 
   useEffect(() => {
-    // Only absolute mode uses the endpoint that stalls, so relative mode has
-    // nothing to poll for and should cost the device nothing.
-    if (mouseMode !== 'absolute') {
+    // Only absolute and touch mode use the endpoint that stalls, so relative
+    // mode has nothing to poll for and should cost the device nothing.
+    if (mouseMode !== 'absolute' && mouseMode !== 'touch') {
       if (isOpen.current) {
         api.destroy(NOTIFICATION_KEY);
         isOpen.current = false;

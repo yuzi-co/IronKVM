@@ -273,6 +273,8 @@ const nb = {
       relative: 'Relativ',
       absoluteShort: 'Absolutt',
       relativeShort: 'Relativ',
+      touch: 'Berøring',
+      touchShort: 'Berøring',
       absoluteStalled: 'Målmaskinen ignorerer den absolutte musen',
       absoluteStalledDesc:
         'Målmaskinen har sluttet å hente absolutte muserapporter, så pekerbevegelser går tapt. Tastaturet påvirkes ikke. Gjenoppretting av USB løser det ofte; relativ modus bruker et annet endepunkt.',

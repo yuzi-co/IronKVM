@@ -5,6 +5,9 @@ type GetHidModeRsp struct {
 	// ExtendedKeys is true when the gadget carries the Consumer and System
 	// Control reports, which only normal mode's descriptor declares.
 	ExtendedKeys bool `json:"extendedKeys"`
+	// Touch is true when the gadget carries the touch screen, which only
+	// normal mode's descriptor with /boot/usb.touch declares.
+	Touch bool `json:"touch"`
 	// HidDisabled is true when /boot/disable_hid leaves the keyboard and both
 	// pointers out of the gadget.
 	HidDisabled bool `json:"hidDisabled"`

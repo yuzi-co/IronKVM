@@ -42,6 +42,10 @@ type Hid struct {
 	// write to 6, and a host expecting an ID misreads a 6-byte report.
 	// Guarded by mouseMutex.
 	absReportID byte
+	// absTouch says the gadget declares the touch screen under
+	// TouchReportID. It is read with absReportID, for the same reason.
+	// Guarded by mouseMutex.
+	absTouch bool
 	// absBuf holds one prefixed pointer report, so the prefix costs no
 	// allocation on the hottest path in the server. Guarded by mouseMutex.
 	absBuf [AbsoluteMouseReportLenWithID]byte
@@ -138,11 +142,15 @@ func (h *Hid) RefreshAbsoluteReportID() bool {
 		return false
 	}
 	id := readAbsoluteReportID()
-	if id == h.absReportID {
+	touch := id != 0 && readAbsoluteTouch()
+	if id == h.absReportID && touch == h.absTouch {
 		return false
 	}
 
-	log.Infof("%s: the pointer report ID changed from %d to %d, reopening", HID2, h.absReportID, id)
+	// The touch screen can come or go with report_length staying 7, so the
+	// descriptor is compared as well as the length.
+	log.Infof("%s: the pointer report ID changed from %d to %d and touch from %t to %t, reopening",
+		HID2, h.absReportID, id, h.absTouch, touch)
 	h.closeDeviceNoLock(h.absoluteMouseDevice(HID2))
 	return true
 }
@@ -168,6 +176,9 @@ type hidDevice struct {
 	// report IDs. The keys set it: without IDs their first byte would reach
 	// the host as the pointer's buttons.
 	needsID bool
+	// needsTouch refuses the write when the open handle's gadget declares no
+	// touch screen. The touch frames set it.
+	needsTouch bool
 }
 
 func (d hidDevice) get() *os.File {
@@ -391,6 +402,7 @@ func (h *Hid) openDeviceNoLock(device hidDevice) error {
 	device.set(file)
 	if device.file == &h.g2 {
 		h.absReportID = readAbsoluteReportID()
+		h.absTouch = h.absReportID != 0 && readAbsoluteTouch()
 	}
 	return nil
 }
@@ -601,7 +613,7 @@ func (h *Hid) writeHID(device hidDevice, data []byte) error {
 	defer device.mu.Unlock()
 
 	err := h.writeHIDLocked(device, data)
-	if errors.Is(err, errExtendedKeysUnavailable) {
+	if errors.Is(err, errExtendedKeysUnavailable) || errors.Is(err, errTouchUnavailable) {
 		// Nothing reached the endpoint, so it says nothing about its health.
 		return err
 	}
@@ -697,6 +709,9 @@ func (h *Hid) writeHIDLocked(device hidDevice, data []byte) error {
 	// deleted the node, and the reopen above read the ID again.
 	if device.needsID && h.absReportID == 0 {
 		return errExtendedKeysUnavailable
+	}
+	if device.needsTouch && !h.absTouch {
+		return errTouchUnavailable
 	}
 	if device.idPrefix && h.absReportID != 0 {
 		if len(data) != AbsoluteMouseReportLen {
