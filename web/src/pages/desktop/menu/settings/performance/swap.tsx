@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import * as api from '@/api/vm.ts';
 import { showFailure, showResult } from '@/lib/feedback.ts';
 
-import { formatBytes } from './zram.tsx';
+import { formatBytes } from './format.ts';
 
 type SwapState = { size: number; active: boolean; total: number; used: number };
 

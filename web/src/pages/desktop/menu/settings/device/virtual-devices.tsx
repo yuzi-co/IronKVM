@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Popconfirm, Progress, Switch, Tooltip } from 'antd';
+import { useSetAtom } from 'jotai';
 import { Volume2Icon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -9,6 +10,7 @@ import type {
   VirtualDevices as VirtualDevicesState
 } from '@/api/virtual-device.ts';
 import { describeFailure } from '@/lib/feedback.ts';
+import { virtualDiskEnabledAtom } from '@/jotai/settings.ts';
 import { useHidMode } from '@/hooks/useHidMode.ts';
 import { useStableCallback } from '@/hooks/useStableCallback.ts';
 
@@ -19,6 +21,7 @@ export const VirtualDevices = () => {
 
   const isHidOnlyMode = useHidMode()?.mode === 'hid-only';
   const [devices, setDevices] = useState<VirtualDevicesState | null>(null);
+  const setIsVirtualDiskEnabled = useSetAtom(virtualDiskEnabledAtom);
   const [loading, setLoading] = useState<'' | VirtualDeviceName>('');
   const [refusal, setRefusal] = useState('');
 
@@ -31,6 +34,7 @@ export const VirtualDevices = () => {
       }
 
       setDevices(rsp.data);
+      setIsVirtualDiskEnabled(rsp.data.disk.enabled);
     } catch (err) {
       setRefusal(describeFailure(err, t('settings.device.endpoints.error')));
     }

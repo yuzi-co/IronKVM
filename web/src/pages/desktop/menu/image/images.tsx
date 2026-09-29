@@ -84,26 +84,16 @@ export const Images = ({
   // A failed first try is retried once after a second, quietly: the list is
   // often asked for right as the server restarts, and a Retry button for
   // that is noise.
-  const getImages = useStableCallback((force = false, retry = true) => {
+  const getImages = useStableCallback((force = false) => {
     if (isLoading && !force) return;
     setIsLoading(true);
 
-    const fail = () => {
-      if (retry) {
-        setTimeout(() => getImages(true, false), 1000);
-        return;
-      }
-      setLoadFailed(true);
-    };
+    const fetchList = () =>
+      api.getImages().then((rsp) => (rsp.code === 0 ? rsp : Promise.reject(rsp)));
 
-    api
-      .getImages()
+    fetchList()
+      .catch(() => new Promise((resolve) => setTimeout(resolve, 1000)).then(fetchList))
       .then((rsp) => {
-        if (rsp.code !== 0) {
-          fail();
-          return;
-        }
-
         setLoadFailed(false);
         const files: string[] = rsp.data?.files?.length > 0 ? rsp.data.files : [];
         setImages(files);
@@ -111,7 +101,7 @@ export const Images = ({
         onImagesChanged(files);
         onDrivesChanged();
       })
-      .catch(fail)
+      .catch(() => setLoadFailed(true))
       .finally(() => {
         setIsLoading(false);
       });

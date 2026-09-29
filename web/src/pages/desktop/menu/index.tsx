@@ -2,18 +2,20 @@ import { Fragment, ReactNode, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/auth.ts';
 import { Divider } from 'antd';
 import clsx from 'clsx';
-import { useAtomValue, useSetAtom } from 'jotai';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { GripVerticalIcon } from 'lucide-react';
 import Draggable, { DraggableData, DraggableEvent } from 'react-draggable';
 import { useMediaQuery } from 'react-responsive';
 
+import { getVirtualDevice } from '@/api/virtual-device.ts';
 import { hasAudioAtom } from '@/jotai/audio.ts';
 import { ocrSelectingAtom } from '@/jotai/ocr.ts';
 import { inputRegionSelectingAtom } from '@/jotai/screen.ts';
 import {
   keyboardLedStatusVisibleAtom,
   menuCloseSignalAtom,
-  menuDisabledItemsAtom
+  menuDisabledItemsAtom,
+  virtualDiskEnabledAtom
 } from '@/jotai/settings.ts';
 import { useMenuBounds } from '@/hooks/useMenuBounds.ts';
 import { useMenuVisibility } from '@/hooks/useMenuVisibility.ts';
@@ -42,6 +44,20 @@ export const Menu = () => {
   const nodeRef = useRef<HTMLDivElement | null>(null);
   const { account } = useAuth();
   const isAdmin = account.role === 'admin';
+  const [isVirtualDiskEnabled, setIsVirtualDiskEnabled] = useAtom(virtualDiskEnabledAtom);
+
+  // Media only works with the Virtual Disk on. Settings keeps the atom current
+  // after that; this is the first read.
+  useEffect(() => {
+    if (!isAdmin) return;
+    getVirtualDevice()
+      .then((rsp) => {
+        if (rsp.code === 0) setIsVirtualDiskEnabled(rsp.data.disk.enabled);
+      })
+      .catch(() => {
+        // Unknown leaves Media showing, as before this check existed.
+      });
+  }, [isAdmin, setIsVirtualDiskEnabled]);
 
   const menuDisabledItems = useAtomValue(menuDisabledItemsAtom);
   const menuCloseSignal = useAtomValue(menuCloseSignalAtom);
@@ -126,7 +142,7 @@ export const Menu = () => {
       <Speaker />
     </MenuBoundary>
   );
-  const media = isAdmin && isEnabled('media') && (
+  const media = isAdmin && isEnabled('media') && isVirtualDiskEnabled !== false && (
     <MenuBoundary key="media" name="media">
       <Media />
     </MenuBoundary>
