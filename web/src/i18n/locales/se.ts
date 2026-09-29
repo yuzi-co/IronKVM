@@ -735,7 +735,17 @@ const se = {
         reloadFailed:
           'Sparat, men sshd kunde inte läsas in på nytt. Det gäller nästa gång sshd startar.',
         notApplied:
-          'sshd godtar fortfarande lösenord. Stäng av och slå på SSH-servern för att tillämpa inställningen.'
+          'sshd godtar fortfarande lösenord. Stäng av och slå på SSH-servern för att tillämpa inställningen.',
+        changePort: 'Ändra',
+        portConfirm: 'Ändra SSH-porten till {{port}}?',
+        portConfirmDesc:
+          'Dina nuvarande SSH-sessioner förblir öppna. Nya anslutningar måste använda port {{port}}. Se till att brandväggen tillåter det.',
+        portChanged: 'SSH-porten ändrad till {{port}}',
+        portInvalid: 'Ange en port från 1 till 65535.',
+        portReserved: 'IronKVM använder själv den här porten. Välj en annan.',
+        portInUse: 'Ett annat program på IronKVM lyssnar redan på den här porten.',
+        portNotHonoured:
+          'sshd i den här avbildningen läser inte inställningen, så porten är oförändrad.'
       },
       vnc: {
         address: 'Adress',

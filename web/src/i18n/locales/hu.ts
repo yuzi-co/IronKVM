@@ -745,7 +745,17 @@ const hu = {
         reloadFailed:
           'Mentve, de az sshd nem tölthető újra. Az sshd következő indításakor lép érvénybe.',
         notApplied:
-          'Az sshd még elfogad jelszavakat. A beállítás alkalmazásához kapcsolja ki, majd be az SSH-kiszolgálót.'
+          'Az sshd még elfogad jelszavakat. A beállítás alkalmazásához kapcsolja ki, majd be az SSH-kiszolgálót.',
+        changePort: 'Módosítás',
+        portConfirm: 'Módosítja az SSH-portot erre: {{port}}?',
+        portConfirmDesc:
+          'A jelenlegi SSH-munkamenetek nyitva maradnak. Az új kapcsolatoknak a(z) {{port}} portot kell használniuk. Győződjön meg róla, hogy a tűzfal engedi.',
+        portChanged: 'Az SSH-port új értéke: {{port}}',
+        portInvalid: 'Adjon meg egy portot 1 és 65535 között.',
+        portReserved: 'Ezt a portot maga az IronKVM használja. Válasszon másikat.',
+        portInUse: 'Ezen a porton már egy másik program figyel az IronKVM-en.',
+        portNotHonoured:
+          'Ennek a képfájlnak az sshd-je nem olvassa ezt a beállítást, így a port nem változik.'
       },
       vnc: {
         address: 'Cím',

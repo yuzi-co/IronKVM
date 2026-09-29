@@ -226,6 +226,11 @@ export function setSSHKeysOnly(enabled: boolean) {
   return http.post('/api/vm/ssh/keys-only', { enabled });
 }
 
+// change the port sshd listens on; 22 removes the setting
+export function setSSHPort(port: number) {
+  return http.post('/api/vm/ssh/port', { port });
+}
+
 // get swap file size
 export function getSwap() {
   return http.get('/api/vm/swap');

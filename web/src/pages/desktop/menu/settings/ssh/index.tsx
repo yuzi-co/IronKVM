@@ -112,7 +112,7 @@ export const Ssh = () => {
 
         {state && (
           <>
-            <Connection state={state} />
+            <Connection state={state} onChange={loadState} />
             <HostKeys keys={state.hostKeys ?? []} />
             <AuthorizedKeys keys={keys} keysOnly={state.keysOnly} onChange={reload} />
             <KeysOnly state={state} keyCount={keys?.length ?? state.keyCount} onChange={reload} />

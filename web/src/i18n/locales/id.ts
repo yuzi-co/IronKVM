@@ -737,7 +737,17 @@ const id = {
         reloadFailed:
           'Tersimpan, tetapi sshd tidak dapat dimuat ulang. Berlaku saat sshd berikutnya dijalankan.',
         notApplied:
-          'sshd masih menerima kata sandi. Matikan lalu nyalakan server SSH untuk menerapkan pengaturan.'
+          'sshd masih menerima kata sandi. Matikan lalu nyalakan server SSH untuk menerapkan pengaturan.',
+        changePort: 'Ubah',
+        portConfirm: 'Ubah port SSH menjadi {{port}}?',
+        portConfirmDesc:
+          'Sesi SSH Anda yang sedang berjalan tetap terbuka. Koneksi baru harus memakai port {{port}}. Pastikan firewall Anda mengizinkannya.',
+        portChanged: 'Port SSH diubah menjadi {{port}}',
+        portInvalid: 'Masukkan port dari 1 sampai 65535.',
+        portReserved: 'IronKVM sendiri memakai port ini. Pilih port lain.',
+        portInUse: 'Program lain di IronKVM sudah mendengarkan di port ini.',
+        portNotHonoured:
+          'sshd pada image ini tidak membaca pengaturan ini, jadi port tetap seperti semula.'
       },
       vnc: {
         address: 'Alamat',

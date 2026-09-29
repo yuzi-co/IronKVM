@@ -732,7 +732,16 @@ const da = {
           'sshd i dette image læser ikke denne indstilling, så login med adgangskode forbliver slået til.',
         reloadFailed: 'Gemt, men sshd kunne ikke genindlæses. Det gælder, næste gang sshd starter.',
         notApplied:
-          'sshd accepterer stadig adgangskoder. Slå SSH-serveren fra og til for at anvende indstillingen.'
+          'sshd accepterer stadig adgangskoder. Slå SSH-serveren fra og til for at anvende indstillingen.',
+        changePort: 'Skift',
+        portConfirm: 'Skift SSH-porten til {{port}}?',
+        portConfirmDesc:
+          'Dine nuværende SSH-sessioner forbliver åbne. Nye forbindelser skal bruge port {{port}}. Sørg for, at din firewall tillader det.',
+        portChanged: 'SSH-porten er ændret til {{port}}',
+        portInvalid: 'Angiv en port fra 1 til 65535.',
+        portReserved: 'IronKVM bruger selv denne port. Vælg en anden.',
+        portInUse: 'Et andet program på IronKVM lytter allerede på denne port.',
+        portNotHonoured: 'sshd på dette image læser ikke denne indstilling, så porten er uændret.'
       },
       vnc: {
         address: 'Adresse',

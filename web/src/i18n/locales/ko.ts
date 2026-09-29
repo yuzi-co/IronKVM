@@ -729,7 +729,16 @@ const ko = {
         reloadFailed:
           '저장했지만 sshd를 다시 불러오지 못했습니다. 다음에 sshd가 시작될 때 적용됩니다.',
         notApplied:
-          'sshd가 아직 비밀번호를 받습니다. 설정을 적용하려면 SSH 서버를 껐다가 다시 켜세요.'
+          'sshd가 아직 비밀번호를 받습니다. 설정을 적용하려면 SSH 서버를 껐다가 다시 켜세요.',
+        changePort: '변경',
+        portConfirm: 'SSH 포트를 {{port}}(으)로 변경할까요?',
+        portConfirmDesc:
+          '현재 SSH 세션은 열린 채로 유지됩니다. 새 연결은 포트 {{port}}을(를) 사용해야 합니다. 방화벽에서 허용하는지 확인하세요.',
+        portChanged: 'SSH 포트를 {{port}}(으)로 변경했습니다',
+        portInvalid: '1에서 65535 사이의 포트를 입력하세요.',
+        portReserved: 'IronKVM이 이미 이 포트를 사용합니다. 다른 포트를 선택하세요.',
+        portInUse: 'IronKVM의 다른 프로그램이 이미 이 포트에서 수신 대기 중입니다.',
+        portNotHonoured: '이 이미지의 sshd는 이 설정을 읽지 않으므로 포트가 바뀌지 않습니다.'
       },
       vnc: {
         address: '주소',

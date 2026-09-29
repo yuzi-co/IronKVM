@@ -761,7 +761,17 @@ const de = {
         reloadFailed:
           'Gespeichert, aber sshd konnte nicht neu geladen werden. Es gilt beim nächsten Start von sshd.',
         notApplied:
-          'sshd nimmt noch Passwörter an. Schalten Sie den SSH-Server aus und wieder ein, um die Einstellung anzuwenden.'
+          'sshd nimmt noch Passwörter an. Schalten Sie den SSH-Server aus und wieder ein, um die Einstellung anzuwenden.',
+        changePort: 'Ändern',
+        portConfirm: 'SSH-Port auf {{port}} ändern?',
+        portConfirmDesc:
+          'Ihre bestehenden SSH-Sitzungen bleiben offen. Neue Verbindungen müssen Port {{port}} verwenden. Stellen Sie sicher, dass Ihre Firewall das zulässt.',
+        portChanged: 'SSH-Port auf {{port}} geändert',
+        portInvalid: 'Geben Sie einen Port von 1 bis 65535 ein.',
+        portReserved: 'IronKVM selbst verwendet diesen Port. Wählen Sie einen anderen.',
+        portInUse: 'Ein anderes Programm auf dem IronKVM lauscht bereits auf diesem Port.',
+        portNotHonoured:
+          'Der sshd dieses Images liest diese Einstellung nicht, der Port bleibt unverändert.'
       },
       vnc: {
         address: 'Adresse',

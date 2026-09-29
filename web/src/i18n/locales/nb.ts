@@ -737,7 +737,16 @@ const nb = {
         reloadFailed:
           'Lagret, men sshd kunne ikke lastes inn på nytt. Det gjelder neste gang sshd starter.',
         notApplied:
-          'sshd godtar fortsatt passord. Slå SSH-serveren av og på for å ta i bruk innstillingen.'
+          'sshd godtar fortsatt passord. Slå SSH-serveren av og på for å ta i bruk innstillingen.',
+        changePort: 'Endre',
+        portConfirm: 'Endre SSH-porten til {{port}}?',
+        portConfirmDesc:
+          'De nåværende SSH-øktene dine forblir åpne. Nye tilkoblinger må bruke port {{port}}. Sørg for at brannmuren tillater det.',
+        portChanged: 'SSH-porten er endret til {{port}}',
+        portInvalid: 'Oppgi en port fra 1 til 65535.',
+        portReserved: 'IronKVM bruker selv denne porten. Velg en annen.',
+        portInUse: 'Et annet program på IronKVM lytter allerede på denne porten.',
+        portNotHonoured: 'sshd i dette bildet leser ikke denne innstillingen, så porten er uendret.'
       },
       vnc: {
         address: 'Adresse',

@@ -733,7 +733,16 @@ const tr = {
         reloadFailed:
           'Kaydedildi, ancak sshd yeniden yüklenemedi. sshd bir sonraki başlatılışında uygulanır.',
         notApplied:
-          'sshd hâlâ parola kabul ediyor. Ayarı uygulamak için SSH sunucusunu kapatıp açın.'
+          'sshd hâlâ parola kabul ediyor. Ayarı uygulamak için SSH sunucusunu kapatıp açın.',
+        changePort: 'Değiştir',
+        portConfirm: 'SSH bağlantı noktası {{port}} olarak değiştirilsin mi?',
+        portConfirmDesc:
+          'Mevcut SSH oturumlarınız açık kalır. Yeni bağlantılar {{port}} bağlantı noktasını kullanmalıdır. Güvenlik duvarınızın buna izin verdiğinden emin olun.',
+        portChanged: 'SSH bağlantı noktası {{port}} olarak değiştirildi',
+        portInvalid: '1 ile 65535 arasında bir bağlantı noktası girin.',
+        portReserved: "Bu bağlantı noktasını IronKVM'in kendisi kullanıyor. Başka birini seçin.",
+        portInUse: 'IronKVM üzerindeki başka bir program bu bağlantı noktasını zaten dinliyor.',
+        portNotHonoured: 'Bu imajdaki sshd bu ayarı okumuyor, bu yüzden bağlantı noktası değişmedi.'
       },
       vnc: {
         address: 'Adres',

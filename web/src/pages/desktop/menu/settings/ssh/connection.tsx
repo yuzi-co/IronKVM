@@ -7,6 +7,7 @@ import { getHostname } from '@/lib/service.ts';
 
 import { CopyBlock, CopyRow } from '../components/copy-button.tsx';
 import { sshCommand } from './command.ts';
+import { PortRow } from './port.tsx';
 import { Box, Section } from './section.tsx';
 import type { SshState } from './types.ts';
 
@@ -32,9 +33,16 @@ async function vpnAddresses(): Promise<VpnAddress[]> {
   );
 }
 
+type ConnectionProps = {
+  state: SshState;
+  // Reads the state again after the port changes.
+  onChange: () => Promise<unknown>;
+};
+
 // Connection says how to reach sshd: the command for the address this page
-// was opened on, the port, and the VPN addresses when a VPN is up.
-export const Connection = ({ state }: { state: SshState }) => {
+// was opened on, the port, which can be changed here, and the VPN addresses
+// when a VPN is up.
+export const Connection = ({ state, onChange }: ConnectionProps) => {
   const { t } = useTranslation();
   const [addresses, setAddresses] = useState<VpnAddress[]>([]);
 
@@ -56,7 +64,7 @@ export const Connection = ({ state }: { state: SshState }) => {
         <>
           <CopyBlock title={t('settings.ssh.command')} text={sshCommand(host, state.port)} />
           <Box>
-            <CopyRow label={t('settings.ssh.port')} value={String(state.port)} />
+            <PortRow port={state.port} onChange={onChange} />
             {addresses.map(({ name, ip }) => (
               <CopyRow
                 key={name}
