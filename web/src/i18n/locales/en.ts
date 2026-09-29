@@ -635,6 +635,48 @@ const en = {
         okBtn: 'Confirm',
         cancelBtn: 'Cancel'
       },
+      ssh: {
+        service: 'SSH server',
+        serviceDesc: 'Start sshd now and at every boot',
+        failed: 'Could not load the SSH settings',
+        rootDefault: 'root still has the factory password',
+        rootEmpty: 'root has no password',
+        rootWarning:
+          'Anyone who reaches the console or SSH can log in as root. Set a password under {{account}} > {{password}}: for the device owner it sets the root password too.',
+        connection: 'Connection',
+        command: 'Log in as root',
+        port: 'Port',
+        viaVpn: 'Over {{name}}',
+        notRunning: 'sshd is not running. Turn the SSH server on to connect.',
+        hostKeys: 'Host key fingerprints',
+        hostKeysDesc: 'Check these against what ssh shows the first time it connects.',
+        noHostKeys: 'No host keys yet. sshd creates them when it first starts.',
+        keys: 'Authorized keys',
+        keysDesc:
+          'Public keys that can log in as root. They are kept on the data partition, so updates keep them.',
+        noKeys: 'No authorized keys yet.',
+        noComment: 'no comment',
+        addPlaceholder: 'Paste one public key, such as the contents of ~/.ssh/id_ed25519.pub',
+        add: 'Add key',
+        added: 'Key added',
+        removed: 'Key removed',
+        deleteConfirm: 'Remove this key?',
+        deleteConfirmDesc: 'It can no longer log in. Open sessions stay open.',
+        invalidKey: 'This is not a public key. Paste a single line from a .pub file.',
+        keyOptions: 'Keys with options such as command= or from= are not accepted here.',
+        duplicateKey: 'This key is already authorized.',
+        lastKey: 'The last key cannot be removed while keys-only login is on.',
+        keysOnly: 'Keys only',
+        keysOnlyDesc: 'Turn off password and keyboard-interactive login. Open sessions stay open.',
+        keysOnlyNeedsKey: 'Add an authorized key first, or nobody could log in.',
+        keysOnlyOn: 'Password login turned off',
+        keysOnlyOff: 'Password login turned on',
+        notHonoured:
+          'The sshd on this image does not read this setting, so password login stays on.',
+        reloadFailed: 'Saved, but sshd could not be reloaded. It applies when sshd next starts.',
+        notApplied:
+          'sshd still accepts passwords. Turn the SSH server off and on to apply the setting.'
+      },
       vnc: {
         address: 'Address',
         certHint:
@@ -887,10 +929,6 @@ const en = {
             207: 'Default',
             255: 'Maximum'
           }
-        },
-        ssh: {
-          description: 'Enable SSH remote access',
-          tip: 'Set a strong password before enabling (Account - Change Password)'
         },
         advanced: 'Advanced Settings',
         cpuFreq: {

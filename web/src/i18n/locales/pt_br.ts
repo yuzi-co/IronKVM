@@ -642,6 +642,52 @@ const pt_br = {
         okBtn: 'Confirmar',
         cancelBtn: 'Cancelar'
       },
+      ssh: {
+        service: 'Servidor SSH',
+        serviceDesc: 'Iniciar o sshd agora e a cada inicialização',
+        failed: 'Não foi possível carregar as configurações de SSH',
+        rootDefault: 'root ainda tem a senha de fábrica',
+        rootEmpty: 'root não tem senha',
+        rootWarning:
+          'Qualquer pessoa que chegue ao console ou ao SSH pode entrar como root. Defina uma senha em {{account}} > {{password}}: para o dono do dispositivo ela também define a senha do root.',
+        connection: 'Conexão',
+        command: 'Entrar como root',
+        port: 'Porta',
+        viaVpn: 'Via {{name}}',
+        notRunning: 'O sshd não está em execução. Ative o servidor SSH para se conectar.',
+        hostKeys: 'Impressões digitais das chaves de host',
+        hostKeysDesc: 'Compare-as com o que o ssh mostra na primeira conexão.',
+        noHostKeys: 'Ainda não há chaves de host. O sshd as cria na primeira inicialização.',
+        keys: 'Chaves autorizadas',
+        keysDesc:
+          'Chaves públicas que podem entrar como root. Ficam na partição de dados, então as atualizações as mantêm.',
+        noKeys: 'Nenhuma chave autorizada ainda.',
+        noComment: 'sem comentário',
+        addPlaceholder: 'Cole uma chave pública, como o conteúdo de ~/.ssh/id_ed25519.pub',
+        add: 'Adicionar chave',
+        added: 'Chave adicionada',
+        removed: 'Chave removida',
+        deleteConfirm: 'Remover esta chave?',
+        deleteConfirmDesc: 'Ela não poderá mais entrar. Sessões abertas continuam abertas.',
+        invalidKey: 'Isto não é uma chave pública. Cole uma única linha de um arquivo .pub.',
+        keyOptions: 'Chaves com opções como command= ou from= não são aceitas aqui.',
+        duplicateKey: 'Esta chave já está autorizada.',
+        lastKey:
+          'A última chave não pode ser removida enquanto o acesso somente por chave estiver ativo.',
+        keysOnly: 'Somente chaves',
+        keysOnlyDesc:
+          'Desativar o login por senha e keyboard-interactive. Sessões abertas continuam abertas.',
+        keysOnlyNeedsKey:
+          'Adicione primeiro uma chave autorizada, senão ninguém conseguiria entrar.',
+        keysOnlyOn: 'Login por senha desativado',
+        keysOnlyOff: 'Login por senha ativado',
+        notHonoured:
+          'O sshd desta imagem não lê esta configuração, então o login por senha continua ativo.',
+        reloadFailed:
+          'Salvo, mas não foi possível recarregar o sshd. Vale na próxima vez que o sshd iniciar.',
+        notApplied:
+          'O sshd ainda aceita senhas. Desligue e ligue o servidor SSH para aplicar a configuração.'
+      },
       vnc: {
         address: 'Endereço',
         certHint:
@@ -901,10 +947,6 @@ const pt_br = {
           600: '10 min',
           1800: '30 min',
           3600: '1 hora'
-        },
-        ssh: {
-          description: 'Habilitar acesso remoto SSH',
-          tip: 'Defina uma senha forte antes de habilitar (Conta - Mudar Senha)'
         },
         advanced: 'Configurações Avançadas',
         cpuFreq: {

@@ -647,6 +647,53 @@ const it = {
         okBtn: 'Conferma',
         cancelBtn: 'Annulla'
       },
+      ssh: {
+        service: 'Server SSH',
+        serviceDesc: 'Avvia sshd ora e a ogni avvio',
+        failed: 'Impossibile caricare le impostazioni SSH',
+        rootDefault: 'root ha ancora la password di fabbrica',
+        rootEmpty: 'root non ha una password',
+        rootWarning:
+          'Chiunque raggiunga la console o SSH può accedere come root. Imposta una password in {{account}} > {{password}}: per il proprietario del dispositivo imposta anche quella di root.',
+        connection: 'Connessione',
+        command: 'Accedi come root',
+        port: 'Porta',
+        viaVpn: 'Tramite {{name}}',
+        notRunning: 'sshd non è in esecuzione. Attiva il server SSH per collegarti.',
+        hostKeys: 'Impronte delle chiavi host',
+        hostKeysDesc: 'Confrontale con ciò che ssh mostra alla prima connessione.',
+        noHostKeys: 'Nessuna chiave host ancora. sshd le crea al primo avvio.',
+        keys: 'Chiavi autorizzate',
+        keysDesc:
+          'Chiavi pubbliche che possono accedere come root. Sono salvate sulla partizione dati, quindi gli aggiornamenti le conservano.',
+        noKeys: 'Ancora nessuna chiave autorizzata.',
+        noComment: 'nessun commento',
+        addPlaceholder:
+          'Incolla una chiave pubblica, ad esempio il contenuto di ~/.ssh/id_ed25519.pub',
+        add: 'Aggiungi chiave',
+        added: 'Chiave aggiunta',
+        removed: 'Chiave rimossa',
+        deleteConfirm: 'Rimuovere questa chiave?',
+        deleteConfirmDesc: 'Non potrà più accedere. Le sessioni aperte restano aperte.',
+        invalidKey: 'Questa non è una chiave pubblica. Incolla una sola riga da un file .pub.',
+        keyOptions: 'Qui non sono accettate chiavi con opzioni come command= o from=.',
+        duplicateKey: 'Questa chiave è già autorizzata.',
+        lastKey:
+          "L'ultima chiave non può essere rimossa mentre l'accesso solo con chiavi è attivo.",
+        keysOnly: 'Solo chiavi',
+        keysOnlyDesc:
+          "Disattiva l'accesso con password e keyboard-interactive. Le sessioni aperte restano aperte.",
+        keysOnlyNeedsKey:
+          'Aggiungi prima una chiave autorizzata, altrimenti nessuno potrebbe accedere.',
+        keysOnlyOn: 'Accesso con password disattivato',
+        keysOnlyOff: 'Accesso con password attivato',
+        notHonoured:
+          "Lo sshd di questa immagine non legge questa impostazione, quindi l'accesso con password resta attivo.",
+        reloadFailed:
+          'Salvato, ma non è stato possibile ricaricare sshd. Verrà applicato al prossimo avvio di sshd.',
+        notApplied:
+          "sshd accetta ancora le password. Spegni e riaccendi il server SSH per applicare l'impostazione."
+      },
       vnc: {
         address: 'Indirizzo',
         certHint:
@@ -906,10 +953,6 @@ const it = {
           600: '10 min',
           1800: '30 min',
           3600: '1 ora'
-        },
-        ssh: {
-          description: 'Abilita SSH accesso remoto',
-          tip: "Imposta una password complessa prima dell'abilitazione (Account - Modifica password)"
         },
         advanced: 'Impostazioni avanzate',
         cpuFreq: {

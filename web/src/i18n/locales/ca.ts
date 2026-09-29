@@ -642,6 +642,52 @@ const ca = {
         okBtn: 'Confirma',
         cancelBtn: 'Cancel·la'
       },
+      ssh: {
+        service: 'Servidor SSH',
+        serviceDesc: 'Iniciar sshd ara i a cada arrencada',
+        failed: "No s'ha pogut carregar la configuració SSH",
+        rootDefault: 'root encara té la contrasenya de fàbrica',
+        rootEmpty: 'root no té contrasenya',
+        rootWarning:
+          'Qualsevol que arribi a la consola o a SSH pot entrar com a root. Definiu una contrasenya a {{account}} > {{password}}: per al propietari del dispositiu també canvia la de root.',
+        connection: 'Connexió',
+        command: 'Entrar com a root',
+        port: 'Port',
+        viaVpn: 'Per {{name}}',
+        notRunning: "sshd no s'està executant. Activeu el servidor SSH per connectar-vos.",
+        hostKeys: "Empremtes de les claus d'amfitrió",
+        hostKeysDesc: 'Compareu-les amb el que mostra ssh a la primera connexió.',
+        noHostKeys:
+          "Encara no hi ha claus d'amfitrió. sshd les crea la primera vegada que arrenca.",
+        keys: 'Claus autoritzades',
+        keysDesc:
+          'Claus públiques que poden entrar com a root. Es desen a la partició de dades, així que les actualitzacions les conserven.',
+        noKeys: 'Encara no hi ha claus autoritzades.',
+        noComment: 'sense comentari',
+        addPlaceholder:
+          'Enganxeu una clau pública, per exemple el contingut de ~/.ssh/id_ed25519.pub',
+        add: 'Afegeix la clau',
+        added: 'Clau afegida',
+        removed: 'Clau eliminada',
+        deleteConfirm: 'Voleu eliminar aquesta clau?',
+        deleteConfirmDesc: 'Ja no podrà entrar. Les sessions obertes continuen obertes.',
+        invalidKey: "Això no és una clau pública. Enganxeu una sola línia d'un fitxer .pub.",
+        keyOptions: "Aquí no s'accepten claus amb opcions com command= o from=.",
+        duplicateKey: 'Aquesta clau ja està autoritzada.',
+        lastKey: "L'última clau no es pot eliminar mentre l'accés només amb claus estigui activat.",
+        keysOnly: 'Només claus',
+        keysOnlyDesc:
+          "Desactiva l'accés amb contrasenya i keyboard-interactive. Les sessions obertes continuen obertes.",
+        keysOnlyNeedsKey: 'Afegiu primer una clau autoritzada, o ningú no podria entrar.',
+        keysOnlyOn: 'Accés amb contrasenya desactivat',
+        keysOnlyOff: 'Accés amb contrasenya activat',
+        notHonoured:
+          "El sshd d'aquesta imatge no llegeix aquest paràmetre, així que l'accés amb contrasenya continua actiu.",
+        reloadFailed:
+          "Desat, però no s'ha pogut recarregar sshd. S'aplicarà la propera vegada que arrenqui sshd.",
+        notApplied:
+          'sshd encara accepta contrasenyes. Apagueu i engegueu el servidor SSH per aplicar el paràmetre.'
+      },
       vnc: {
         address: 'Adreça',
         certHint:
@@ -902,10 +948,6 @@ const ca = {
           600: '10 min',
           1800: '30 min',
           3600: '1 h'
-        },
-        ssh: {
-          description: 'Activa accés remot per SSH',
-          tip: 'Configura una contrasenya segura abans (Compte - Canvia contrasenya)'
         },
         advanced: 'Configuració avançada',
         cpuFreq: {

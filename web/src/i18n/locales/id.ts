@@ -642,6 +642,50 @@ const id = {
         okBtn: 'Konfirmasi',
         cancelBtn: 'Batal'
       },
+      ssh: {
+        service: 'Server SSH',
+        serviceDesc: 'Jalankan sshd sekarang dan setiap kali boot',
+        failed: 'Tidak dapat memuat pengaturan SSH',
+        rootDefault: 'root masih memakai kata sandi pabrik',
+        rootEmpty: 'root tidak punya kata sandi',
+        rootWarning:
+          'Siapa pun yang mencapai konsol atau SSH dapat masuk sebagai root. Atur kata sandi di {{account}} > {{password}}: untuk pemilik perangkat, ini juga mengatur kata sandi root.',
+        connection: 'Koneksi',
+        command: 'Masuk sebagai root',
+        port: 'Port',
+        viaVpn: 'Melalui {{name}}',
+        notRunning: 'sshd tidak berjalan. Nyalakan server SSH untuk terhubung.',
+        hostKeys: 'Sidik jari kunci host',
+        hostKeysDesc: 'Cocokkan dengan yang ditampilkan ssh saat pertama kali terhubung.',
+        noHostKeys: 'Belum ada kunci host. sshd membuatnya saat pertama kali berjalan.',
+        keys: 'Kunci resmi',
+        keysDesc:
+          'Kunci publik yang dapat masuk sebagai root. Disimpan di partisi data, jadi pembaruan tetap menyimpannya.',
+        noKeys: 'Belum ada kunci resmi.',
+        noComment: 'tanpa komentar',
+        addPlaceholder: 'Tempel satu kunci publik, misalnya isi ~/.ssh/id_ed25519.pub',
+        add: 'Tambah kunci',
+        added: 'Kunci ditambahkan',
+        removed: 'Kunci dihapus',
+        deleteConfirm: 'Hapus kunci ini?',
+        deleteConfirmDesc: 'Kunci ini tidak bisa lagi masuk. Sesi yang terbuka tetap terbuka.',
+        invalidKey: 'Ini bukan kunci publik. Tempel satu baris dari berkas .pub.',
+        keyOptions: 'Kunci dengan opsi seperti command= atau from= tidak diterima di sini.',
+        duplicateKey: 'Kunci ini sudah diizinkan.',
+        lastKey: 'Kunci terakhir tidak dapat dihapus selama login hanya dengan kunci aktif.',
+        keysOnly: 'Hanya kunci',
+        keysOnlyDesc:
+          'Matikan login dengan kata sandi dan keyboard-interactive. Sesi yang terbuka tetap terbuka.',
+        keysOnlyNeedsKey: 'Tambahkan kunci resmi dulu, atau tidak ada yang bisa masuk.',
+        keysOnlyOn: 'Login dengan kata sandi dimatikan',
+        keysOnlyOff: 'Login dengan kata sandi dinyalakan',
+        notHonoured:
+          'sshd pada image ini tidak membaca pengaturan ini, jadi login dengan kata sandi tetap aktif.',
+        reloadFailed:
+          'Tersimpan, tetapi sshd tidak dapat dimuat ulang. Berlaku saat sshd berikutnya dijalankan.',
+        notApplied:
+          'sshd masih menerima kata sandi. Matikan lalu nyalakan server SSH untuk menerapkan pengaturan.'
+      },
       vnc: {
         address: 'Alamat',
         certHint:
@@ -898,10 +942,6 @@ const id = {
           600: '10 menit',
           1800: '30 menit',
           3600: '1 jam'
-        },
-        ssh: {
-          description: 'Aktifkan akses jarak jauh SSH',
-          tip: 'Tetapkan kata sandi yang kuat sebelum mengaktifkan (Akun - Ubah Kata Sandi)'
         },
         advanced: 'Pengaturan Lanjutan',
         cpuFreq: {

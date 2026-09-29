@@ -639,6 +639,50 @@ const cz = {
         okBtn: 'Potvrdit',
         cancelBtn: 'Zrušit'
       },
+      ssh: {
+        service: 'SSH server',
+        serviceDesc: 'Spustit sshd nyní a při každém startu',
+        failed: 'Nastavení SSH se nepodařilo načíst',
+        rootDefault: 'root má stále tovární heslo',
+        rootEmpty: 'root nemá heslo',
+        rootWarning:
+          'Kdokoli se dostane ke konzoli nebo SSH, se může přihlásit jako root. Nastavte heslo v {{account}} > {{password}}: pro vlastníka zařízení nastaví i heslo uživatele root.',
+        connection: 'Připojení',
+        command: 'Přihlásit se jako root',
+        port: 'Port',
+        viaVpn: 'Přes {{name}}',
+        notRunning: 'sshd neběží. Pro připojení zapněte SSH server.',
+        hostKeys: 'Otisky klíčů hostitele',
+        hostKeysDesc: 'Porovnejte je s tím, co ssh ukáže při prvním připojení.',
+        noHostKeys: 'Zatím žádné klíče hostitele. sshd je vytvoří při prvním spuštění.',
+        keys: 'Autorizované klíče',
+        keysDesc:
+          'Veřejné klíče, které se mohou přihlásit jako root. Jsou uložené na datovém oddílu, takže přežijí aktualizace.',
+        noKeys: 'Zatím žádné autorizované klíče.',
+        noComment: 'bez komentáře',
+        addPlaceholder: 'Vložte jeden veřejný klíč, například obsah ~/.ssh/id_ed25519.pub',
+        add: 'Přidat klíč',
+        added: 'Klíč přidán',
+        removed: 'Klíč odebrán',
+        deleteConfirm: 'Odebrat tento klíč?',
+        deleteConfirmDesc: 'Už se nebude moci přihlásit. Otevřené relace zůstanou otevřené.',
+        invalidKey: 'Toto není veřejný klíč. Vložte jeden řádek ze souboru .pub.',
+        keyOptions: 'Klíče s volbami jako command= nebo from= zde nejsou přijímány.',
+        duplicateKey: 'Tento klíč už je autorizován.',
+        lastKey: 'Poslední klíč nelze odebrat, dokud je zapnuté přihlašování pouze klíči.',
+        keysOnly: 'Pouze klíče',
+        keysOnlyDesc:
+          'Vypnout přihlašování heslem a keyboard-interactive. Otevřené relace zůstanou otevřené.',
+        keysOnlyNeedsKey: 'Nejprve přidejte autorizovaný klíč, jinak by se nikdo nepřihlásil.',
+        keysOnlyOn: 'Přihlašování heslem vypnuto',
+        keysOnlyOff: 'Přihlašování heslem zapnuto',
+        notHonoured:
+          'sshd v tomto obrazu toto nastavení nečte, přihlašování heslem tedy zůstává zapnuté.',
+        reloadFailed:
+          'Uloženo, ale sshd se nepodařilo znovu načíst. Projeví se při příštím spuštění sshd.',
+        notApplied:
+          'sshd stále přijímá hesla. Vypněte a zapněte SSH server, aby se nastavení projevilo.'
+      },
       vnc: {
         address: 'Adresa',
         certHint:
@@ -891,10 +935,6 @@ const cz = {
           600: '10 min',
           1800: '30 min',
           3600: '1 hodina'
-        },
-        ssh: {
-          description: 'Povolit vzdálený přístup SSH',
-          tip: 'Před povolením nastavte silné heslo (Účet – Změnit heslo)'
         },
         advanced: 'Pokročilá nastavení',
         cpuFreq: {

@@ -635,6 +635,50 @@ const ko = {
         okBtn: '확인',
         cancelBtn: '취소'
       },
+      ssh: {
+        service: 'SSH 서버',
+        serviceDesc: '지금 그리고 부팅할 때마다 sshd 시작',
+        failed: 'SSH 설정을 불러오지 못했습니다',
+        rootDefault: 'root가 아직 공장 초기 비밀번호를 사용합니다',
+        rootEmpty: 'root에 비밀번호가 없습니다',
+        rootWarning:
+          '콘솔이나 SSH에 접근할 수 있는 누구나 root로 로그인할 수 있습니다. {{account}} > {{password}}에서 비밀번호를 설정하세요. 기기 소유자의 경우 root 비밀번호도 함께 설정됩니다.',
+        connection: '연결',
+        command: 'root로 로그인',
+        port: '포트',
+        viaVpn: '{{name}} 경유',
+        notRunning: 'sshd가 실행 중이 아닙니다. 연결하려면 SSH 서버를 켜세요.',
+        hostKeys: '호스트 키 지문',
+        hostKeysDesc: '처음 연결할 때 ssh가 보여 주는 값과 비교하세요.',
+        noHostKeys: '아직 호스트 키가 없습니다. sshd가 처음 시작할 때 만듭니다.',
+        keys: '승인된 키',
+        keysDesc:
+          'root로 로그인할 수 있는 공개 키입니다. 데이터 파티션에 저장되므로 업데이트 후에도 유지됩니다.',
+        noKeys: '아직 승인된 키가 없습니다.',
+        noComment: '설명 없음',
+        addPlaceholder: '공개 키 하나를 붙여 넣으세요. 예: ~/.ssh/id_ed25519.pub 내용',
+        add: '키 추가',
+        added: '키를 추가했습니다',
+        removed: '키를 제거했습니다',
+        deleteConfirm: '이 키를 제거할까요?',
+        deleteConfirmDesc: '이 키로 더 이상 로그인할 수 없습니다. 열려 있는 세션은 유지됩니다.',
+        invalidKey: '공개 키가 아닙니다. .pub 파일의 한 줄을 붙여 넣으세요.',
+        keyOptions: 'command= 또는 from= 같은 옵션이 있는 키는 여기서 받지 않습니다.',
+        duplicateKey: '이미 승인된 키입니다.',
+        lastKey: '키 전용 로그인이 켜져 있는 동안에는 마지막 키를 제거할 수 없습니다.',
+        keysOnly: '키 전용',
+        keysOnlyDesc:
+          '비밀번호 및 keyboard-interactive 로그인을 끕니다. 열려 있는 세션은 유지됩니다.',
+        keysOnlyNeedsKey: '먼저 승인된 키를 추가하세요. 그렇지 않으면 아무도 로그인할 수 없습니다.',
+        keysOnlyOn: '비밀번호 로그인을 껐습니다',
+        keysOnlyOff: '비밀번호 로그인을 켰습니다',
+        notHonoured:
+          '이 이미지의 sshd는 이 설정을 읽지 않으므로 비밀번호 로그인이 계속 켜져 있습니다.',
+        reloadFailed:
+          '저장했지만 sshd를 다시 불러오지 못했습니다. 다음에 sshd가 시작될 때 적용됩니다.',
+        notApplied:
+          'sshd가 아직 비밀번호를 받습니다. 설정을 적용하려면 SSH 서버를 껐다가 다시 켜세요.'
+      },
       vnc: {
         address: '주소',
         certHint:
@@ -887,10 +931,6 @@ const ko = {
           600: '10분',
           1800: '30분',
           3600: '1시간'
-        },
-        ssh: {
-          description: 'SSH 원격 접속 활성화',
-          tip: '활성화하기 전에 강력한 비밀번호를 설정하세요. (계정 - 비밀번호 변경)'
         },
         advanced: '고급 설정',
         cpuFreq: {

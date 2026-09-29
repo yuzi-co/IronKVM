@@ -638,6 +638,51 @@ const se = {
         okBtn: 'Bekräfta',
         cancelBtn: 'Avbryt'
       },
+      ssh: {
+        service: 'SSH-server',
+        serviceDesc: 'Starta sshd nu och vid varje uppstart',
+        failed: 'Det gick inte att läsa in SSH-inställningarna',
+        rootDefault: 'root har fortfarande fabrikslösenordet',
+        rootEmpty: 'root har inget lösenord',
+        rootWarning:
+          'Alla som når konsolen eller SSH kan logga in som root. Ange ett lösenord under {{account}} > {{password}}: för enhetens ägare sätter det även roots lösenord.',
+        connection: 'Anslutning',
+        command: 'Logga in som root',
+        port: 'Port',
+        viaVpn: 'Via {{name}}',
+        notRunning: 'sshd körs inte. Slå på SSH-servern för att ansluta.',
+        hostKeys: 'Fingeravtryck för värdnycklar',
+        hostKeysDesc: 'Jämför dem med det ssh visar vid första anslutningen.',
+        noHostKeys: 'Inga värdnycklar ännu. sshd skapar dem första gången den startar.',
+        keys: 'Auktoriserade nycklar',
+        keysDesc:
+          'Publika nycklar som kan logga in som root. De sparas på datapartitionen, så uppdateringar behåller dem.',
+        noKeys: 'Inga auktoriserade nycklar ännu.',
+        noComment: 'ingen kommentar',
+        addPlaceholder:
+          'Klistra in en publik nyckel, till exempel innehållet i ~/.ssh/id_ed25519.pub',
+        add: 'Lägg till nyckel',
+        added: 'Nyckel tillagd',
+        removed: 'Nyckel borttagen',
+        deleteConfirm: 'Ta bort den här nyckeln?',
+        deleteConfirmDesc: 'Den kan inte längre logga in. Öppna sessioner förblir öppna.',
+        invalidKey: 'Det här är ingen publik nyckel. Klistra in en enda rad från en .pub-fil.',
+        keyOptions: 'Nycklar med alternativ som command= eller from= godtas inte här.',
+        duplicateKey: 'Den här nyckeln är redan auktoriserad.',
+        lastKey: 'Den sista nyckeln kan inte tas bort medan inloggning endast med nycklar är på.',
+        keysOnly: 'Endast nycklar',
+        keysOnlyDesc:
+          'Stäng av inloggning med lösenord och keyboard-interactive. Öppna sessioner förblir öppna.',
+        keysOnlyNeedsKey: 'Lägg först till en auktoriserad nyckel, annars kan ingen logga in.',
+        keysOnlyOn: 'Inloggning med lösenord avstängd',
+        keysOnlyOff: 'Inloggning med lösenord påslagen',
+        notHonoured:
+          'sshd i den här avbilden läser inte inställningen, så inloggning med lösenord förblir på.',
+        reloadFailed:
+          'Sparat, men sshd kunde inte läsas in på nytt. Det gäller nästa gång sshd startar.',
+        notApplied:
+          'sshd godtar fortfarande lösenord. Stäng av och slå på SSH-servern för att tillämpa inställningen.'
+      },
       vnc: {
         address: 'Adress',
         certHint:
@@ -893,10 +938,6 @@ const se = {
           600: '10 min',
           1800: '30 min',
           3600: '1 timme'
-        },
-        ssh: {
-          description: 'Aktivera SSH-fjärråtkomst',
-          tip: 'Ställ in ett starkt lösenord innan du aktiverar (Konto - Byt lösenord)'
         },
         advanced: 'Avancerade inställningar',
         cpuFreq: {

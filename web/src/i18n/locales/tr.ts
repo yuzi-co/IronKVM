@@ -639,6 +639,49 @@ const tr = {
         okBtn: 'Onayla',
         cancelBtn: 'İptal'
       },
+      ssh: {
+        service: 'SSH sunucusu',
+        serviceDesc: "sshd'yi şimdi ve her açılışta başlat",
+        failed: 'SSH ayarları yüklenemedi',
+        rootDefault: 'root hâlâ fabrika parolasını kullanıyor',
+        rootEmpty: "root'un parolası yok",
+        rootWarning:
+          "Konsola veya SSH'ye erişen herkes root olarak girebilir. {{account}} > {{password}} altında bir parola belirleyin: cihaz sahibi için bu, root parolasını da belirler.",
+        connection: 'Bağlantı',
+        command: 'root olarak giriş yap',
+        port: 'Port',
+        viaVpn: '{{name}} üzerinden',
+        notRunning: 'sshd çalışmıyor. Bağlanmak için SSH sunucusunu açın.',
+        hostKeys: 'Ana makine anahtarı parmak izleri',
+        hostKeysDesc: 'Bunları ssh ilk bağlantıda gösterdiğiyle karşılaştırın.',
+        noHostKeys: 'Henüz ana makine anahtarı yok. sshd bunları ilk açılışta oluşturur.',
+        keys: 'Yetkili anahtarlar',
+        keysDesc:
+          'root olarak girebilen açık anahtarlar. Veri bölümünde saklanırlar, bu yüzden güncellemeler onları korur.',
+        noKeys: 'Henüz yetkili anahtar yok.',
+        noComment: 'yorum yok',
+        addPlaceholder: 'Bir açık anahtar yapıştırın, örneğin ~/.ssh/id_ed25519.pub içeriği',
+        add: 'Anahtar ekle',
+        added: 'Anahtar eklendi',
+        removed: 'Anahtar kaldırıldı',
+        deleteConfirm: 'Bu anahtar kaldırılsın mı?',
+        deleteConfirmDesc: 'Artık giriş yapamaz. Açık oturumlar açık kalır.',
+        invalidKey: 'Bu bir açık anahtar değil. Bir .pub dosyasından tek bir satır yapıştırın.',
+        keyOptions: 'command= veya from= gibi seçenekler içeren anahtarlar burada kabul edilmez.',
+        duplicateKey: 'Bu anahtar zaten yetkili.',
+        lastKey: 'Yalnızca anahtarla giriş açıkken son anahtar kaldırılamaz.',
+        keysOnly: 'Yalnızca anahtarlar',
+        keysOnlyDesc:
+          'Parola ve keyboard-interactive ile girişi kapatın. Açık oturumlar açık kalır.',
+        keysOnlyNeedsKey: 'Önce yetkili bir anahtar ekleyin, yoksa kimse giriş yapamaz.',
+        keysOnlyOn: 'Parolayla giriş kapatıldı',
+        keysOnlyOff: 'Parolayla giriş açıldı',
+        notHonoured: 'Bu imajdaki sshd bu ayarı okumuyor, bu yüzden parolayla giriş açık kalıyor.',
+        reloadFailed:
+          'Kaydedildi, ancak sshd yeniden yüklenemedi. sshd bir sonraki başlatılışında uygulanır.',
+        notApplied:
+          'sshd hâlâ parola kabul ediyor. Ayarı uygulamak için SSH sunucusunu kapatıp açın.'
+      },
       vnc: {
         address: 'Adres',
         certHint:
@@ -894,10 +937,6 @@ const tr = {
           600: '10 dakika',
           1800: '30 dakika',
           3600: '1 saat'
-        },
-        ssh: {
-          description: 'Güvenli Kabuk Bağlantısı (SSH) aktif et',
-          tip: 'Aktifleştirmeden önce güçlü bir şifreye sahip olduğunuzdan emin olun (Hesap - Şifremi Değiştir)'
         },
         advanced: 'Gelişmiş Ayarlar',
         cpuFreq: {

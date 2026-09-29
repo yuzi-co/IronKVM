@@ -617,6 +617,45 @@ const zh_tw = {
         okBtn: '確認',
         cancelBtn: '取消'
       },
+      ssh: {
+        service: 'SSH 伺服器',
+        serviceDesc: '立即啟動 sshd，並在每次開機時啟動',
+        failed: '無法載入 SSH 設定',
+        rootDefault: 'root 仍在使用出廠密碼',
+        rootEmpty: 'root 沒有密碼',
+        rootWarning:
+          '任何能存取主控台或 SSH 的人都能以 root 登入。請在 {{account}} > {{password}} 中設定密碼：對裝置擁有者而言，這也會設定 root 密碼。',
+        connection: '連線',
+        command: '以 root 登入',
+        port: '連接埠',
+        viaVpn: '透過 {{name}}',
+        notRunning: 'sshd 未執行。請開啟 SSH 伺服器後再連線。',
+        hostKeys: '主機金鑰指紋',
+        hostKeysDesc: '首次連線時，請與 ssh 顯示的指紋核對。',
+        noHostKeys: '尚無主機金鑰。sshd 首次啟動時會產生。',
+        keys: '已授權金鑰',
+        keysDesc: '可以以 root 登入的公開金鑰。它們儲存在資料分割區，更新後仍會保留。',
+        noKeys: '尚無已授權金鑰。',
+        noComment: '無註解',
+        addPlaceholder: '貼上一個公開金鑰，例如 ~/.ssh/id_ed25519.pub 的內容',
+        add: '新增金鑰',
+        added: '已新增金鑰',
+        removed: '已移除金鑰',
+        deleteConfirm: '移除此金鑰？',
+        deleteConfirmDesc: '它將無法再登入。已開啟的工作階段維持不變。',
+        invalidKey: '這不是公開金鑰。請貼上 .pub 檔案中的一行。',
+        keyOptions: '此處不接受帶有 command= 或 from= 等選項的金鑰。',
+        duplicateKey: '此金鑰已獲授權。',
+        lastKey: '僅金鑰登入開啟時，無法移除最後一個金鑰。',
+        keysOnly: '僅金鑰',
+        keysOnlyDesc: '關閉密碼與 keyboard-interactive 登入。已開啟的工作階段維持不變。',
+        keysOnlyNeedsKey: '請先新增一個已授權金鑰，否則將無人能登入。',
+        keysOnlyOn: '已關閉密碼登入',
+        keysOnlyOff: '已開啟密碼登入',
+        notHonoured: '此映像中的 sshd 不會讀取此設定，因此密碼登入仍然開啟。',
+        reloadFailed: '已儲存，但無法重新載入 sshd。將在 sshd 下次啟動時生效。',
+        notApplied: 'sshd 仍接受密碼。請關閉再開啟 SSH 伺服器以套用此設定。'
+      },
       vnc: {
         address: '位址',
         certHint:
@@ -862,10 +901,6 @@ const zh_tw = {
           600: '10 分鐘',
           1800: '30 分鐘',
           3600: '1 小時'
-        },
-        ssh: {
-          description: '啟用 SSH 伺服器',
-          tip: '啟用前請務必設定強密碼（帳號 - 更改密碼）'
         },
         advanced: '進階設定',
         cpuFreq: {
