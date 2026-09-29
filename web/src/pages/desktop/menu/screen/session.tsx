@@ -9,7 +9,7 @@ import { getScreenshot } from '@/api/stream.ts';
 import { pauseWhenHiddenAtom, viewOnlyAtom } from '@/jotai/screen.ts';
 
 const rowClass =
-  'flex h-[30px] w-full items-center space-x-2 rounded p-0 px-3 text-left text-neutral-300';
+  'flex h-[30px] w-full items-center space-x-2 rounded p-0 pr-5 pl-3 text-left text-neutral-300';
 
 // toPng re-encodes the board's JPEG as PNG, so a screenshot edited and saved
 // again loses nothing more.
@@ -64,7 +64,7 @@ const ToggleRow = ({ icon: Icon, label, tip, checked, onChange }: ToggleRowProps
     <label className={`${rowClass} cursor-pointer hover:bg-neutral-700/70`}>
       <Icon size={18} className={checked ? 'text-amber-400' : undefined} />
       <span className="flex-1 text-sm select-none">{label}</span>
-      <Switch size="small" checked={checked} onChange={onChange} />
+      <Switch size="small" className="ml-6!" checked={checked} onChange={onChange} />
     </label>
   </Tooltip>
 );
