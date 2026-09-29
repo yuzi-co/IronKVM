@@ -504,6 +504,13 @@ const hu = {
       bootMenuDesc: 'A netboot.xyz ISO letöltése ellenőrzött ellenőrzőösszeggel a virtuális CD-hez'
     },
     power: {
+      resetDesc: 'Azonnal újraindítja a gazdagépet. A mentetlen munka elvész.',
+      powerShortDesc:
+        'Bekapcsolja a gazdagépet, vagy leállásra kéri az operációs rendszerét (ACPI).',
+      powerLongDesc: 'Leállítás nélkül kényszeríti ki a gazdagép kikapcsolását.',
+      hddLed: 'Lemez LED',
+      hddActive: 'Aktív',
+      hddIdle: 'Tétlen',
       title: 'Bekapcsolás',
       showConfirm: 'Megerősítés',
       showConfirmTip:

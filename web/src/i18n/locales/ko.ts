@@ -498,6 +498,12 @@ const ko = {
       bootMenuDesc: '가상 CD용 netboot.xyz ISO를 체크섬 검증과 함께 다운로드'
     },
     power: {
+      resetDesc: '호스트를 즉시 다시 시작합니다. 저장하지 않은 작업은 사라집니다.',
+      powerShortDesc: '호스트를 켜거나 OS에 종료를 요청합니다 (ACPI).',
+      powerLongDesc: '종료 절차 없이 호스트 전원을 강제로 끕니다.',
+      hddLed: 'HDD LED',
+      hddActive: '활동',
+      hddIdle: '대기',
       title: '전원',
       showConfirm: '확인',
       showConfirmTip: '전원 짧게 누르기 전에 확인합니다. 리셋과 길게 누르기는 항상 확인합니다.',

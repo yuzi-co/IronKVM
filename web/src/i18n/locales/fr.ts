@@ -509,6 +509,12 @@ const fr = {
       bootMenuDesc: "Télécharger l'ISO netboot.xyz, somme de contrôle vérifiée, pour le CD virtuel"
     },
     power: {
+      resetDesc: "Redémarre l'hôte immédiatement. Le travail non enregistré est perdu.",
+      powerShortDesc: "Allume l'hôte, ou demande à son système de s'éteindre (ACPI).",
+      powerLongDesc: "Force l'arrêt de l'hôte sans extinction propre.",
+      hddLed: 'LED disque',
+      hddActive: 'Active',
+      hddIdle: 'Inactive',
       title: 'Alimentation',
       showConfirm: 'Confirmation',
       showConfirmTip:

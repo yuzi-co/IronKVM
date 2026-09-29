@@ -503,6 +503,12 @@ const nb = {
       bootMenuDesc: 'Last ned netboot.xyz-ISO-en, med kontrollert sjekksum, til den virtuelle CD-en'
     },
     power: {
+      resetDesc: 'Starter verten på nytt med en gang. Ulagret arbeid går tapt.',
+      powerShortDesc: 'Slår på verten, eller ber operativsystemet slå seg av (ACPI).',
+      powerLongDesc: 'Tvinger verten av uten avslutning.',
+      hddLed: 'Disk-LED',
+      hddActive: 'Aktiv',
+      hddIdle: 'Inaktiv',
       title: 'På-knapp',
       showConfirm: 'Bekreftelse',
       showConfirmTip:

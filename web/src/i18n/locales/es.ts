@@ -506,6 +506,12 @@ const es = {
       bootMenuDesc: 'Descargar la ISO de netboot.xyz, con la suma comprobada, para el CD virtual'
     },
     power: {
+      resetDesc: 'Reinicia el host al instante. Se pierde el trabajo sin guardar.',
+      powerShortDesc: 'Enciende el host o pide a su sistema operativo que se apague (ACPI).',
+      powerLongDesc: 'Fuerza el apagado del host sin cerrar el sistema.',
+      hddLed: 'LED de disco',
+      hddActive: 'Activo',
+      hddIdle: 'Inactivo',
       title: 'Encender / Apagar',
       showConfirm: 'Confirmación',
       showConfirmTip:

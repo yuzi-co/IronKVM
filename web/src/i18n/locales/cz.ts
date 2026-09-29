@@ -502,6 +502,12 @@ const cz = {
       bootMenuDesc: 'Stáhnout ISO netboot.xyz s ověřeným kontrolním součtem pro virtuální CD'
     },
     power: {
+      resetDesc: 'Okamžitě restartuje hostitele. Neuložená práce se ztratí.',
+      powerShortDesc: 'Zapne hostitele, nebo požádá jeho OS o vypnutí (ACPI).',
+      powerLongDesc: 'Vynutí vypnutí hostitele bez řádného ukončení.',
+      hddLed: 'LED disku',
+      hddActive: 'Aktivní',
+      hddIdle: 'Nečinný',
       title: 'Napájení',
       showConfirm: 'Potvrzení',
       showConfirmTip: 'Ptát se před krátkým stiskem napájení. Reset a dlouhý stisk se ptají vždy.',

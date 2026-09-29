@@ -28,7 +28,11 @@ export const PowerLong = ({ isLoading, setIsLoading }: PowerLongProps) => {
 
   return (
     <>
-      <PowerButton confirm={t('power.powerLongConfirm', { seconds: duration })} onPress={power}>
+      <PowerButton
+        confirm={t('power.powerLongConfirm', { seconds: duration })}
+        onPress={power}
+        description={t('power.powerLongDesc')}
+      >
         <CirclePowerIcon size={16} />
         <span>{t('power.powerLong')}</span>
         <div className="flex h-full items-start text-xs text-neutral-500">{`${duration}s`}</div>

@@ -502,6 +502,12 @@ const tr = {
       bootMenuDesc: "Sanal CD için netboot.xyz ISO'sunu sağlama toplamı doğrulanmış olarak indirin"
     },
     power: {
+      resetDesc: 'Ana bilgisayarı hemen yeniden başlatır. Kaydedilmemiş iş kaybolur.',
+      powerShortDesc: 'Ana bilgisayarı açar veya işletim sisteminden kapanmasını ister (ACPI).',
+      powerLongDesc: 'Ana bilgisayarı düzgün kapatmadan zorla kapatır.',
+      hddLed: 'Disk LED',
+      hddActive: 'Etkin',
+      hddIdle: 'Boşta',
       title: 'Güç',
       showConfirm: 'Doğrulama',
       showConfirmTip: 'Kısa güç basışından önce sor. Sıfırlama ve uzun basış her zaman sorar.',

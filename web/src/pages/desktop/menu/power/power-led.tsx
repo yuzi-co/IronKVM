@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/auth.ts';
 import { message, Switch, Tooltip } from 'antd';
-import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/vm';
+
+import { PowerLedState } from './power-led-state.tsx';
 
 type PowerLedProps = {
   isPowerOn: boolean;
@@ -13,8 +14,8 @@ type PowerLedProps = {
 };
 
 // The host's power LED as the board sees it, and the switch that says whether
-// the LED header is wired at all. Without it the line reads "off" whatever the
-// host does, so the state is shown as unknown rather than off.
+// the LED header is wired at all. The switch is a setting; the power menu shows
+// only the state line.
 export const PowerLed = ({ isPowerOn, connected, setConnected }: PowerLedProps) => {
   const { t } = useTranslation();
   const { account } = useAuth();
@@ -37,27 +38,9 @@ export const PowerLed = ({ isPowerOn, connected, setConnected }: PowerLedProps) 
     }
   }
 
-  let state = t('power.ledUnknown');
-  if (connected) {
-    state = isPowerOn ? t('power.ledOn') : t('power.ledOff');
-  }
-
   return (
     <div className="flex flex-col space-y-2 px-1">
-      <div className="flex items-center justify-between">
-        <span className="text-xs text-neutral-400">{t('power.led')}</span>
-        <div className="flex items-center space-x-1.5">
-          <span
-            className={clsx(
-              'h-2 w-2 rounded-full',
-              !connected && 'border border-neutral-500',
-              connected && isPowerOn && 'bg-green-600',
-              connected && !isPowerOn && 'bg-neutral-600'
-            )}
-          />
-          <span className="text-xs text-neutral-300">{state}</span>
-        </div>
-      </div>
+      <PowerLedState isPowerOn={isPowerOn} connected={connected} />
 
       <Tooltip title={t('power.ledConnectedTip')} placement="right">
         <div className="flex items-center justify-between">

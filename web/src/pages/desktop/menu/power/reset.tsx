@@ -20,7 +20,11 @@ export const Reset = ({ isLoading, setIsLoading }: ResetProps) => {
   }
 
   return (
-    <PowerButton confirm={t('power.resetConfirm')} onPress={reset}>
+    <PowerButton
+      confirm={t('power.resetConfirm')}
+      onPress={reset}
+      description={t('power.resetDesc')}
+    >
       <RotateCcwIcon size={16} />
       <span>{t('power.reset')}</span>
     </PowerButton>

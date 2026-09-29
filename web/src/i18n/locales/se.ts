@@ -500,6 +500,12 @@ const se = {
         'Ladda ner netboot.xyz-ISO:n, med kontrollerad kontrollsumma, till den virtuella cd:n'
     },
     power: {
+      resetDesc: 'Startar om värden direkt. Osparat arbete går förlorat.',
+      powerShortDesc: 'Startar värden, eller ber dess OS att stänga av (ACPI).',
+      powerLongDesc: 'Tvingar av värden utan avstängning.',
+      hddLed: 'Disk-LED',
+      hddActive: 'Aktiv',
+      hddIdle: 'Inaktiv',
       title: 'Ström',
       showConfirm: 'Bekräftelse',
       showConfirmTip:

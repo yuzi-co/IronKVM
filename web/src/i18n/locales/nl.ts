@@ -510,6 +510,12 @@ const nl = {
         'De netboot.xyz-ISO downloaden, met gecontroleerde checksum, voor de virtuele cd'
     },
     power: {
+      resetDesc: 'Herstart de host meteen. Niet-opgeslagen werk gaat verloren.',
+      powerShortDesc: 'Zet de host aan, of vraagt het besturingssysteem af te sluiten (ACPI).',
+      powerLongDesc: 'Zet de host geforceerd uit zonder af te sluiten.',
+      hddLed: 'Schijf-LED',
+      hddActive: 'Actief',
+      hddIdle: 'Rust',
       title: 'Aan/uit',
       showConfirm: 'Bevestiging',
       showConfirmTip:

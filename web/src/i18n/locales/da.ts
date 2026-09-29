@@ -501,6 +501,12 @@ const da = {
       bootMenuDesc: "Hent netboot.xyz-ISO'en, med kontrolleret checksum, til den virtuelle cd"
     },
     power: {
+      resetDesc: 'Genstarter værten med det samme. Ikke-gemt arbejde går tabt.',
+      powerShortDesc: 'Tænder værten eller beder dens OS om at lukke ned (ACPI).',
+      powerLongDesc: 'Tvinger værten slukket uden nedlukning.',
+      hddLed: 'Disk-LED',
+      hddActive: 'Aktiv',
+      hddIdle: 'Inaktiv',
       title: 'Tænd/sluk-knap',
       showConfirm: 'Bekræftelse',
       showConfirmTip:

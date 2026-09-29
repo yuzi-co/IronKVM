@@ -488,6 +488,12 @@ const zh_tw = {
       bootMenuDesc: '下載經檢查碼驗證的 netboot.xyz ISO，用於虛擬光碟'
     },
     power: {
+      resetDesc: '立即重新啟動主機，未儲存的工作會遺失。',
+      powerShortDesc: '開啟主機，或請求其作業系統關機 (ACPI)。',
+      powerLongDesc: '不經關機直接強制關閉主機電源。',
+      hddLed: '硬碟指示燈',
+      hddActive: '活動',
+      hddIdle: '閒置',
       title: '電源控制',
       showConfirm: '顯示確認框',
       showConfirmTip: '短按電源前先確認。重設和長按一律需要確認。',

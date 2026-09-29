@@ -499,6 +499,12 @@ const en = {
       bootMenuDesc: 'Download the netboot.xyz ISO, checksum checked, for the virtual CD'
     },
     power: {
+      resetDesc: 'Restarts the host at once. Unsaved work is lost.',
+      powerShortDesc: 'Turns the host on, or asks its OS to shut down (ACPI).',
+      powerLongDesc: 'Forces the host off without a shutdown.',
+      hddLed: 'HDD LED',
+      hddActive: 'Active',
+      hddIdle: 'Idle',
       title: 'Power',
       showConfirm: 'Confirmation',
       showConfirmTip: 'Ask before a short power press. Reset and a long press always ask.',

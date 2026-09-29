@@ -500,6 +500,12 @@ const vi = {
       bootMenuDesc: 'Tải ISO netboot.xyz, đã kiểm tra checksum, cho CD ảo'
     },
     power: {
+      resetDesc: 'Khởi động lại máy chủ ngay. Công việc chưa lưu sẽ mất.',
+      powerShortDesc: 'Bật máy chủ, hoặc yêu cầu hệ điều hành tắt máy (ACPI).',
+      powerLongDesc: 'Buộc tắt máy chủ mà không tắt hệ thống.',
+      hddLed: 'Đèn ổ đĩa',
+      hddActive: 'Hoạt động',
+      hddIdle: 'Nghỉ',
       title: 'Nguồn',
       showConfirm: 'Xác nhận',
       showConfirmTip: 'Hỏi trước khi nhấn nguồn ngắn. Reset và nhấn giữ luôn hỏi.',

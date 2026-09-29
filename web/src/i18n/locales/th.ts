@@ -495,6 +495,12 @@ const th = {
       bootMenuDesc: 'ดาวน์โหลด ISO ของ netboot.xyz ที่ตรวจสอบ checksum แล้วสำหรับ CD เสมือน'
     },
     power: {
+      resetDesc: 'รีสตาร์ตโฮสต์ทันที งานที่ยังไม่บันทึกจะหายไป',
+      powerShortDesc: 'เปิดโฮสต์ หรือขอให้ระบบปฏิบัติการปิดเครื่อง (ACPI)',
+      powerLongDesc: 'บังคับปิดโฮสต์โดยไม่ผ่านการปิดระบบ',
+      hddLed: 'ไฟ LED ดิสก์',
+      hddActive: 'ทำงาน',
+      hddIdle: 'ว่าง',
       title: 'เปิด/ปิด',
       showConfirm: 'การยืนยัน',
       showConfirmTip: 'ถามก่อนกดปุ่มเปิดปิดสั้น ๆ การรีเซ็ตและการกดค้างจะถามเสมอ',

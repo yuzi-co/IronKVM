@@ -507,6 +507,12 @@ const it = {
       bootMenuDesc: "Scarica l'ISO di netboot.xyz, con checksum verificato, per il CD virtuale"
     },
     power: {
+      resetDesc: "Riavvia subito l'host. Il lavoro non salvato va perso.",
+      powerShortDesc: "Accende l'host o chiede al suo sistema operativo di spegnersi (ACPI).",
+      powerLongDesc: "Forza lo spegnimento dell'host senza arresto.",
+      hddLed: 'LED disco',
+      hddActive: 'Attivo',
+      hddIdle: 'Inattivo',
       title: 'Accensione',
       showConfirm: 'Conferma',
       showConfirmTip:

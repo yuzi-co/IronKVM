@@ -516,6 +516,13 @@ const de = {
       bootMenuDesc: 'Das netboot.xyz-ISO mit geprüfter Prüfsumme für die virtuelle CD herunterladen'
     },
     power: {
+      resetDesc: 'Startet den Host sofort neu. Nicht gespeicherte Arbeit geht verloren.',
+      powerShortDesc:
+        'Schaltet den Host ein oder bittet sein Betriebssystem, herunterzufahren (ACPI).',
+      powerLongDesc: 'Schaltet den Host ohne Herunterfahren hart aus.',
+      hddLed: 'HDD-LED',
+      hddActive: 'Aktiv',
+      hddIdle: 'Ruhig',
       title: 'Power',
       showConfirm: 'Bestätigung',
       showConfirmTip:

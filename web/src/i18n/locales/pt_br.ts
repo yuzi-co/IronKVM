@@ -503,6 +503,12 @@ const pt_br = {
       bootMenuDesc: 'Baixar a ISO do netboot.xyz, com checksum conferido, para o CD virtual'
     },
     power: {
+      resetDesc: 'Reinicia o host na hora. O trabalho não salvo é perdido.',
+      powerShortDesc: 'Liga o host, ou pede ao sistema operacional que desligue (ACPI).',
+      powerLongDesc: 'Força o desligamento do host sem encerrar o sistema.',
+      hddLed: 'LED do disco',
+      hddActive: 'Ativo',
+      hddIdle: 'Inativo',
       title: 'Energia',
       showConfirm: 'Confirmação',
       showConfirmTip: 'Perguntar antes de um toque curto. Reset e toque longo sempre perguntam.',

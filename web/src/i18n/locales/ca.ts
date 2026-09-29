@@ -502,6 +502,12 @@ const ca = {
       bootMenuDesc: 'Baixa la ISO de netboot.xyz, amb la suma comprovada, per al CD virtual'
     },
     power: {
+      resetDesc: "Reinicia l'amfitrió a l'instant. Es perd la feina no desada.",
+      powerShortDesc: "Engega l'amfitrió o demana al seu sistema operatiu que s'apagui (ACPI).",
+      powerLongDesc: "Força l'apagada de l'amfitrió sense tancar el sistema.",
+      hddLed: 'LED de disc',
+      hddActive: 'Actiu',
+      hddIdle: 'Inactiu',
       title: 'Alimentació',
       showConfirm: 'Confirmació',
       showConfirmTip:

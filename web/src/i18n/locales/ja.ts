@@ -507,6 +507,12 @@ const ja = {
       bootMenuDesc: '仮想 CD 用に netboot.xyz の ISO をチェックサム検証付きでダウンロード'
     },
     power: {
+      resetDesc: 'ホストをすぐに再起動します。保存していない作業は失われます。',
+      powerShortDesc: 'ホストの電源を入れるか、OS にシャットダウンを要求します (ACPI)。',
+      powerLongDesc: 'シャットダウンせずにホストの電源を強制的に切ります。',
+      hddLed: 'HDD LED',
+      hddActive: '動作中',
+      hddIdle: '待機',
       title: '電源',
       showConfirm: '確認メッセージ',
       showConfirmTip: '電源の短押しの前に確認します。リセットと長押しは常に確認します。',

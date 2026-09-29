@@ -503,6 +503,12 @@ const id = {
       bootMenuDesc: 'Unduh ISO netboot.xyz, checksum diperiksa, untuk CD virtual'
     },
     power: {
+      resetDesc: 'Memulai ulang host seketika. Pekerjaan yang belum disimpan hilang.',
+      powerShortDesc: 'Menyalakan host, atau meminta OS-nya untuk mati (ACPI).',
+      powerLongDesc: 'Memaksa host mati tanpa shutdown.',
+      hddLed: 'LED disk',
+      hddActive: 'Aktif',
+      hddIdle: 'Diam',
       title: 'Daya',
       showConfirm: 'Konfirmasi',
       showConfirmTip:

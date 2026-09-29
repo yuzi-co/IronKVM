@@ -504,6 +504,12 @@ const pl = {
       bootMenuDesc: 'Pobierz obraz ISO netboot.xyz ze sprawdzoną sumą kontrolną do wirtualnego CD'
     },
     power: {
+      resetDesc: 'Natychmiast restartuje hosta. Niezapisana praca przepada.',
+      powerShortDesc: 'Włącza hosta albo prosi jego system o wyłączenie (ACPI).',
+      powerLongDesc: 'Wymusza wyłączenie hosta bez zamknięcia systemu.',
+      hddLed: 'Dioda dysku',
+      hddActive: 'Aktywna',
+      hddIdle: 'Bezczynna',
       title: 'Zasilanie',
       showConfirm: 'Potwierdzenie',
       showConfirmTip:

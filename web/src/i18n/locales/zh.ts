@@ -488,6 +488,12 @@ const zh = {
       bootMenuDesc: '下载经过校验和验证的 netboot.xyz ISO，用于虚拟光驱'
     },
     power: {
+      resetDesc: '立即重启主机，未保存的工作会丢失。',
+      powerShortDesc: '开启主机，或请求其操作系统关机 (ACPI)。',
+      powerLongDesc: '不经关机直接强制关闭主机电源。',
+      hddLed: '硬盘指示灯',
+      hddActive: '活动',
+      hddIdle: '空闲',
       title: '电源',
       showConfirm: '显示确认框',
       showConfirmTip: '短按电源前先确认。复位和长按始终需要确认。',
