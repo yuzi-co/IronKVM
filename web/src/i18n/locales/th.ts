@@ -1469,6 +1469,22 @@ const th = {
       keyFailed: 'ส่งปุ่มไม่สำเร็จ'
     },
     speaker: { title: 'ลำโพง', unmute: 'เปิดเสียง', mute: 'ปิดเสียง' },
+    upstream: {
+      check: 'ตรวจหาอัปเดต',
+      updateTo: 'อัปเดตเป็น {{version}}',
+      confirm: 'อัปเดต {{name}} เป็น {{version}} หรือไม่',
+      confirmDesc:
+        'รุ่นใหม่จะดาวน์โหลดจาก GitHub และตรวจสอบกับ checksum ที่เผยแพร่ไว้ หากมีสิ่งใดล้มเหลว จะยังคงใช้เวอร์ชันปัจจุบัน',
+      ok: 'อัปเดต',
+      upToDate: 'เป็นเวอร์ชันล่าสุด',
+      builtIn: 'ในตัว',
+      checkFailed: 'ตรวจหาอัปเดตไม่ได้: {{error}}',
+      unverifiable: 'ไม่มีเวอร์ชัน {{version}} ให้อัปเดต: {{reason}}',
+      inUse: 'อัปเดตตอนนี้ไม่ได้: {{reason}}',
+      running: 'กำลังอัปเดตเป็น {{version}}...',
+      done: 'อัปเดต {{name}} เป็น {{version}} แล้ว',
+      failed: 'การอัปเดตครั้งล่าสุดล้มเหลว: {{error}}'
+    },
     menu: {
       collapse: 'ย่อเมนู',
       expand: 'ขยายเมนู',

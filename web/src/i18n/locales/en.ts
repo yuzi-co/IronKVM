@@ -1484,6 +1484,22 @@ const en = {
       unmute: 'Unmute',
       mute: 'Mute'
     },
+    upstream: {
+      check: 'Check for updates',
+      updateTo: 'Update to {{version}}',
+      confirm: 'Update {{name}} to {{version}}?',
+      confirmDesc:
+        'The new release is downloaded from GitHub and checked against the checksums it publishes. If anything fails, the current version stays.',
+      ok: 'Update',
+      upToDate: 'Up to date',
+      builtIn: 'built-in',
+      checkFailed: 'Could not check for updates: {{error}}',
+      unverifiable: 'Version {{version}} is not offered: {{reason}}',
+      inUse: 'Cannot update now: {{reason}}',
+      running: 'Updating to {{version}}...',
+      done: '{{name}} updated to {{version}}',
+      failed: 'The last update failed: {{error}}'
+    },
     menu: {
       collapse: 'Collapse Menu',
       expand: 'Expand Menu',

@@ -1502,6 +1502,22 @@ const hu = {
       keyFailed: 'A billentyűt nem sikerült elküldeni.'
     },
     speaker: { title: 'Hangszóró', unmute: 'Némítás feloldása', mute: 'Némítás' },
+    upstream: {
+      check: 'Frissítések keresése',
+      updateTo: 'Frissítés erre: {{version}}',
+      confirm: 'Frissíted a(z) {{name}} összetevőt erre: {{version}}?',
+      confirmDesc:
+        'Az új kiadás a GitHubról töltődik le, és az általa közzétett ellenőrzőösszegekkel ellenőrizzük. Ha valami hibázik, a jelenlegi verzió marad.',
+      ok: 'Frissítés',
+      upToDate: 'Naprakész',
+      builtIn: 'beépített',
+      checkFailed: 'Nem sikerült frissítéseket keresni: {{error}}',
+      unverifiable: 'A(z) {{version}} verzió nem érhető el: {{reason}}',
+      inUse: 'Most nem frissíthető: {{reason}}',
+      running: 'Frissítés erre: {{version}}...',
+      done: '{{name}} frissítve erre: {{version}}',
+      failed: 'Az utolsó frissítés sikertelen volt: {{error}}'
+    },
     menu: {
       collapse: 'Menü összecsukása',
       expand: 'Bontsa ki a menüt',

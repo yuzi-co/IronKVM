@@ -1499,6 +1499,22 @@ const pl = {
       keyFailed: 'Nie udało się wysłać klawisza.'
     },
     speaker: { title: 'Głośnik', unmute: 'Włącz dźwięk', mute: 'Wycisz' },
+    upstream: {
+      check: 'Sprawdź aktualizacje',
+      updateTo: 'Zaktualizuj do {{version}}',
+      confirm: 'Zaktualizować {{name}} do {{version}}?',
+      confirmDesc:
+        'Nowe wydanie jest pobierane z GitHuba i sprawdzane z opublikowanymi sumami kontrolnymi. Jeśli coś się nie powiedzie, zostaje obecna wersja.',
+      ok: 'Zaktualizuj',
+      upToDate: 'Aktualne',
+      builtIn: 'wbudowana',
+      checkFailed: 'Nie udało się sprawdzić aktualizacji: {{error}}',
+      unverifiable: 'Wersja {{version}} nie jest oferowana: {{reason}}',
+      inUse: 'Nie można teraz zaktualizować: {{reason}}',
+      running: 'Aktualizacja do {{version}}...',
+      done: 'Zaktualizowano {{name}} do {{version}}',
+      failed: 'Ostatnia aktualizacja nie powiodła się: {{error}}'
+    },
     menu: {
       collapse: 'Zwiń menu',
       expand: 'Rozwiń Menu',

@@ -1523,6 +1523,22 @@ const de = {
       keyFailed: 'Die Taste konnte nicht gesendet werden.'
     },
     speaker: { title: 'Lautsprecher', unmute: 'Ton an', mute: 'Stummschalten' },
+    upstream: {
+      check: 'Nach Updates suchen',
+      updateTo: 'Auf {{version}} aktualisieren',
+      confirm: '{{name}} auf {{version}} aktualisieren?',
+      confirmDesc:
+        'Die neue Version wird von GitHub geladen und mit den dort veröffentlichten Prüfsummen geprüft. Schlägt etwas fehl, bleibt die aktuelle Version erhalten.',
+      ok: 'Aktualisieren',
+      upToDate: 'Aktuell',
+      builtIn: 'mitgeliefert',
+      checkFailed: 'Suche nach Updates fehlgeschlagen: {{error}}',
+      unverifiable: 'Version {{version}} wird nicht angeboten: {{reason}}',
+      inUse: 'Aktualisierung gerade nicht möglich: {{reason}}',
+      running: 'Aktualisiere auf {{version}}...',
+      done: '{{name}} auf {{version}} aktualisiert',
+      failed: 'Die letzte Aktualisierung ist fehlgeschlagen: {{error}}'
+    },
     menu: {
       collapse: 'Menü einklappen',
       expand: 'Menü ausklappen',

@@ -1436,6 +1436,22 @@ const zh_tw = {
       keyFailed: '按鍵傳送失敗。'
     },
     speaker: { title: '喇叭', unmute: '取消靜音', mute: '靜音' },
+    upstream: {
+      check: '檢查更新',
+      updateTo: '更新至 {{version}}',
+      confirm: '要將 {{name}} 更新至 {{version}} 嗎？',
+      confirmDesc:
+        '新版本從 GitHub 下載，並以其發布的校驗碼驗證。任何一步失敗，都會保留目前的版本。',
+      ok: '更新',
+      upToDate: '已是最新',
+      builtIn: '內建',
+      checkFailed: '無法檢查更新：{{error}}',
+      unverifiable: '不提供版本 {{version}}：{{reason}}',
+      inUse: '目前無法更新：{{reason}}',
+      running: '正在更新至 {{version}}...',
+      done: '{{name}} 已更新至 {{version}}',
+      failed: '上次更新失敗：{{error}}'
+    },
     menu: {
       collapse: '收起選單',
       expand: '展開選單',

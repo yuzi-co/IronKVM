@@ -1510,6 +1510,22 @@ const nl = {
       keyFailed: 'De toets kon niet worden verzonden.'
     },
     speaker: { title: 'Luidspreker', unmute: 'Geluid aan', mute: 'Dempen' },
+    upstream: {
+      check: 'Controleren op updates',
+      updateTo: 'Bijwerken naar {{version}}',
+      confirm: '{{name}} bijwerken naar {{version}}?',
+      confirmDesc:
+        'De nieuwe release wordt van GitHub gedownload en gecontroleerd met de checksums die erbij gepubliceerd zijn. Als er iets misgaat, blijft de huidige versie staan.',
+      ok: 'Bijwerken',
+      upToDate: 'Up-to-date',
+      builtIn: 'ingebouwd',
+      checkFailed: 'Kon niet op updates controleren: {{error}}',
+      unverifiable: 'Versie {{version}} wordt niet aangeboden: {{reason}}',
+      inUse: 'Bijwerken kan nu niet: {{reason}}',
+      running: 'Bijwerken naar {{version}}...',
+      done: '{{name}} bijgewerkt naar {{version}}',
+      failed: 'De laatste update is mislukt: {{error}}'
+    },
     menu: {
       collapse: 'Menu samenvouwen',
       expand: 'Menu uitvouwen',

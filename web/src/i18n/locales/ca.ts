@@ -1502,6 +1502,22 @@ const ca = {
       keyFailed: "No s'ha pogut enviar la tecla."
     },
     speaker: { title: 'Altaveu', unmute: 'Activa el so', mute: 'Silencia' },
+    upstream: {
+      check: 'Cerca actualitzacions',
+      updateTo: 'Actualitza a {{version}}',
+      confirm: 'Vols actualitzar {{name}} a {{version}}?',
+      confirmDesc:
+        'La nova versió es baixa de GitHub i es comprova amb les sumes de verificació que publica. Si alguna cosa falla, es manté la versió actual.',
+      ok: 'Actualitza',
+      upToDate: 'Actualitzat',
+      builtIn: 'integrada',
+      checkFailed: "No s'han pogut cercar actualitzacions: {{error}}",
+      unverifiable: "La versió {{version}} no s'ofereix: {{reason}}",
+      inUse: 'Ara no es pot actualitzar: {{reason}}',
+      running: 'Actualitzant a {{version}}...',
+      done: '{{name}} actualitzat a {{version}}',
+      failed: "L'última actualització ha fallat: {{error}}"
+    },
     menu: {
       collapse: 'Amaga menú',
       expand: 'Mostra menú',

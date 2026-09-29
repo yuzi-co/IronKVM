@@ -1487,6 +1487,22 @@ const nb = {
       keyFailed: 'Tasten kunne ikke sendes.'
     },
     speaker: { title: 'Høyttaler', unmute: 'Slå på lyd', mute: 'Demp' },
+    upstream: {
+      check: 'Se etter oppdateringer',
+      updateTo: 'Oppdater til {{version}}',
+      confirm: 'Oppdatere {{name}} til {{version}}?',
+      confirmDesc:
+        'Den nye utgivelsen lastes ned fra GitHub og kontrolleres mot sjekksummene den publiserer. Hvis noe feiler, beholdes nåværende versjon.',
+      ok: 'Oppdater',
+      upToDate: 'Oppdatert',
+      builtIn: 'innebygd',
+      checkFailed: 'Kunne ikke se etter oppdateringer: {{error}}',
+      unverifiable: 'Versjon {{version}} tilbys ikke: {{reason}}',
+      inUse: 'Kan ikke oppdatere nå: {{reason}}',
+      running: 'Oppdaterer til {{version}}...',
+      done: '{{name}} oppdatert til {{version}}',
+      failed: 'Den siste oppdateringen mislyktes: {{error}}'
+    },
     menu: {
       collapse: 'Skjul meny',
       expand: 'Utvid menyen',

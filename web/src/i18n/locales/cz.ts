@@ -1485,6 +1485,22 @@ const cz = {
       keyFailed: 'Klávesu se nepodařilo odeslat.'
     },
     speaker: { title: 'Reproduktor', unmute: 'Zapnout zvuk', mute: 'Ztlumit' },
+    upstream: {
+      check: 'Zkontrolovat aktualizace',
+      updateTo: 'Aktualizovat na {{version}}',
+      confirm: 'Aktualizovat {{name}} na {{version}}?',
+      confirmDesc:
+        'Nové vydání se stáhne z GitHubu a ověří podle kontrolních součtů, které zveřejňuje. Pokud cokoli selže, zůstane současná verze.',
+      ok: 'Aktualizovat',
+      upToDate: 'Aktuální',
+      builtIn: 'vestavěná',
+      checkFailed: 'Aktualizace nelze zkontrolovat: {{error}}',
+      unverifiable: 'Verze {{version}} není nabízena: {{reason}}',
+      inUse: 'Nyní nelze aktualizovat: {{reason}}',
+      running: 'Aktualizace na {{version}}...',
+      done: '{{name}} aktualizováno na {{version}}',
+      failed: 'Poslední aktualizace selhala: {{error}}'
+    },
     menu: {
       collapse: 'Sbalit nabídku',
       expand: 'Rozbalte nabídku',

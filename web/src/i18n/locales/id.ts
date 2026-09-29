@@ -1494,6 +1494,22 @@ const id = {
       keyFailed: 'Tombol tidak dapat dikirim.'
     },
     speaker: { title: 'Speaker', unmute: 'Bunyikan', mute: 'Bisukan' },
+    upstream: {
+      check: 'Periksa pembaruan',
+      updateTo: 'Perbarui ke {{version}}',
+      confirm: 'Perbarui {{name}} ke {{version}}?',
+      confirmDesc:
+        'Rilis baru diunduh dari GitHub dan diperiksa dengan checksum yang diterbitkannya. Jika ada yang gagal, versi saat ini tetap dipakai.',
+      ok: 'Perbarui',
+      upToDate: 'Sudah terbaru',
+      builtIn: 'bawaan',
+      checkFailed: 'Tidak dapat memeriksa pembaruan: {{error}}',
+      unverifiable: 'Versi {{version}} tidak ditawarkan: {{reason}}',
+      inUse: 'Tidak dapat memperbarui sekarang: {{reason}}',
+      running: 'Memperbarui ke {{version}}...',
+      done: '{{name}} diperbarui ke {{version}}',
+      failed: 'Pembaruan terakhir gagal: {{error}}'
+    },
     menu: {
       collapse: 'Tutup Menu',
       expand: 'Perluas Menu',

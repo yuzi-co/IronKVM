@@ -1487,6 +1487,22 @@ const vi = {
       keyFailed: 'Không thể gửi phím.'
     },
     speaker: { title: 'Loa', unmute: 'Bật tiếng', mute: 'Tắt tiếng' },
+    upstream: {
+      check: 'Kiểm tra cập nhật',
+      updateTo: 'Cập nhật lên {{version}}',
+      confirm: 'Cập nhật {{name}} lên {{version}}?',
+      confirmDesc:
+        'Bản phát hành mới được tải từ GitHub và kiểm tra bằng checksum mà nó công bố. Nếu có lỗi, phiên bản hiện tại vẫn được giữ.',
+      ok: 'Cập nhật',
+      upToDate: 'Đã là mới nhất',
+      builtIn: 'tích hợp',
+      checkFailed: 'Không thể kiểm tra cập nhật: {{error}}',
+      unverifiable: 'Phiên bản {{version}} không được cung cấp: {{reason}}',
+      inUse: 'Hiện không thể cập nhật: {{reason}}',
+      running: 'Đang cập nhật lên {{version}}...',
+      done: 'Đã cập nhật {{name}} lên {{version}}',
+      failed: 'Lần cập nhật gần nhất thất bại: {{error}}'
+    },
     menu: {
       collapse: 'Thu gọn Menu',
       expand: 'Mở rộng Menu',
