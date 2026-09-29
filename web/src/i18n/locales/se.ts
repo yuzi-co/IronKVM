@@ -1103,6 +1103,11 @@ const se = {
           'Visa en seriell USB-port för fjärrvärden, för att logga in på denna IronKVM när nätverket inte går att nå',
         consoleTip:
           'Alla som styr fjärrvärden får en inloggningsprompt till denna IronKVM. Ställ in ett starkt lösenord innan du aktiverar (Konto - Byt lösenord).',
+        usbApply: {
+          changed: 'Ändrad',
+          discard: 'Ignorera',
+          pending: 'Ändringarna har inte tillämpats än.'
+        },
         endpoints: {
           title: 'USB-slutpunkter',
           used: '{{used}} av {{total}} används',

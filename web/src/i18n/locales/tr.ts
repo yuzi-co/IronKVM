@@ -1102,6 +1102,11 @@ const tr = {
           "Ağa erişilemediğinde bu IronKVM'e giriş yapabilmek için uzak ana bilgisayara bir USB seri port sunar",
         consoleTip:
           'Uzak ana bilgisayarı kontrol eden herkes bu IronKVM için bir giriş istemi görür. Etkinleştirmeden önce güçlü bir şifre belirleyin (Hesap - Şifremi Değiştir).',
+        usbApply: {
+          changed: 'Değiştirildi',
+          discard: 'Vazgeç',
+          pending: 'Değişiklikler henüz uygulanmadı.'
+        },
         endpoints: {
           title: 'USB uç noktaları',
           used: '{{used}} / {{total}} kullanımda',

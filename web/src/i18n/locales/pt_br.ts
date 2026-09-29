@@ -1112,6 +1112,11 @@ const pt_br = {
           'Apresenta uma porta serial USB ao host remoto, para entrar neste IronKVM quando a rede estiver inacessível',
         consoleTip:
           'Quem controla o host remoto recebe um prompt de login deste IronKVM. Defina uma senha forte antes de habilitar (Conta - Mudar Senha).',
+        usbApply: {
+          changed: 'Alterado',
+          discard: 'Descartar',
+          pending: 'As alterações ainda não foram aplicadas.'
+        },
         endpoints: {
           title: 'Endpoints USB',
           used: '{{used}} de {{total}} em uso',

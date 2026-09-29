@@ -1126,6 +1126,11 @@ const fr = {
           "Présenter un port série USB à l'hôte distant, pour se connecter à ce IronKVM quand le réseau est inaccessible",
         consoleTip:
           "Quiconque contrôle l'hôte distant obtient une invite de connexion sur ce IronKVM. Définissez un mot de passe fort avant d'activer (Compte - Modifier le mot de passe).",
+        usbApply: {
+          changed: 'Modifié',
+          discard: 'Annuler',
+          pending: 'Les modifications ne sont pas encore appliquées.'
+        },
         endpoints: {
           title: 'Endpoints USB',
           used: '{{used}} sur {{total}} utilisés',

@@ -1118,6 +1118,11 @@ const hu = {
           'USB soros portot jelenít meg a távoli gazdagépen, amelyen át bejelentkezhet erre a IronKVM-re, ha a hálózat nem érhető el',
         consoleTip:
           'Bárki, aki a távoli gazdagépet vezérli, bejelentkezési promptot kap ehhez a IronKVM-hez. Az engedélyezés előtt állítson be erős jelszót (Fiók - Jelszó módosítása).',
+        usbApply: {
+          changed: 'Módosítva',
+          discard: 'Elvetés',
+          pending: 'A módosítások még nincsenek alkalmazva.'
+        },
         endpoints: {
           title: 'USB-végpontok',
           used: '{{used}} / {{total}} használatban',

@@ -1099,6 +1099,11 @@ const da = {
           'Giv fjernværten en seriel USB-port, så du kan logge ind på denne IronKVM, når netværket ikke kan nås',
         consoleTip:
           'Alle, der styrer fjernværten, får en login-prompt på denne IronKVM. Indstil en stærk adgangskode før aktivering (Konto - Skift adgangskode).',
+        usbApply: {
+          changed: 'Ændret',
+          discard: 'Kassér',
+          pending: 'Ændringerne er ikke anvendt endnu.'
+        },
         endpoints: {
           title: 'USB-endpoints',
           used: '{{used}} af {{total}} brugt',

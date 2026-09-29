@@ -1117,6 +1117,11 @@ const nl = {
           'Biedt de externe host een seriële USB-poort aan, om op deze IronKVM in te loggen als het netwerk onbereikbaar is',
         consoleTip:
           'Iedereen die de externe host bedient, krijgt een inlogprompt van deze IronKVM. Stel een sterk wachtwoord in voordat u dit inschakelt (Account - Wachtwoord wijzigen).',
+        usbApply: {
+          changed: 'Gewijzigd',
+          discard: 'Verwerpen',
+          pending: 'De wijzigingen zijn nog niet toegepast.'
+        },
         endpoints: {
           title: 'USB-endpoints',
           used: '{{used}} van {{total}} gebruikt',

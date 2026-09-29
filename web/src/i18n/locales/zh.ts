@@ -1056,6 +1056,11 @@ const zh = {
         consoleDesc: '向远程主机提供一个 USB 串口，用于在网络不可达时登录这台 IronKVM',
         consoleTip:
           '任何能控制远程主机的人都会看到这台 IronKVM 的登录提示。启用前请务必设置强密码（帐号 - 修改密码）。',
+        usbApply: {
+          changed: '已更改',
+          discard: '放弃',
+          pending: '更改尚未应用。'
+        },
         endpoints: {
           title: 'USB 端点',
           used: '已用 {{used}} / {{total}}',

@@ -1055,6 +1055,11 @@ const zh_tw = {
         consoleDesc: '向遠端主機提供一個 USB 序列埠，用於在網路無法連線時登入這台 IronKVM',
         consoleTip:
           '任何能控制遠端主機的人都會看到這台 IronKVM 的登入提示。啟用前請務必設定強密碼（帳號 - 更改密碼）。',
+        usbApply: {
+          changed: '已變更',
+          discard: '捨棄',
+          pending: '變更尚未套用。'
+        },
         endpoints: {
           title: 'USB 端點',
           used: '已使用 {{used}} / {{total}}',

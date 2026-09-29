@@ -1133,6 +1133,11 @@ const de = {
           'Stellt dem entfernten Host eine serielle USB-Schnittstelle bereit, um sich bei diesem IronKVM anzumelden, wenn das Netzwerk nicht erreichbar ist',
         consoleTip:
           'Jeder, der den entfernten Host kontrolliert, erhält eine Anmeldeaufforderung dieses IronKVM. Setzen Sie vor dem Aktivieren ein starkes Passwort (Konto - Passwort ändern).',
+        usbApply: {
+          changed: 'Geändert',
+          discard: 'Verwerfen',
+          pending: 'Die Änderungen sind noch nicht übernommen.'
+        },
         endpoints: {
           title: 'USB-Endpunkte',
           used: '{{used}} von {{total}} belegt',

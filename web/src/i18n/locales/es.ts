@@ -1122,6 +1122,11 @@ const es = {
           'Presenta un puerto serie USB al host remoto, para iniciar sesión en este IronKVM cuando la red no está disponible',
         consoleTip:
           'Quien controle el host remoto obtiene un aviso de inicio de sesión de este IronKVM. Establece una contraseña segura antes de habilitarlo (Cuenta - Cambiar contraseña).',
+        usbApply: {
+          changed: 'Modificado',
+          discard: 'Descartar',
+          pending: 'Los cambios aún no se han aplicado.'
+        },
         endpoints: {
           title: 'Endpoints USB',
           used: '{{used}} de {{total}} en uso',
