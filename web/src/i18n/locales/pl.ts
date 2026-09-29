@@ -1118,7 +1118,6 @@ const pl = {
           title: 'Gniazda USB',
           free: 'Wolne: {{free}} z {{total}}',
           slots: 'Gniazda: {{count}}',
-          short: 'Za mało wolnych gniazd (wolne: {{free}})',
           full: 'Za mało wolnych gniazd USB. Najpierw wyłącz coś innego.',
           inactive: 'Włączone, ale nie działa: kontrolerowi USB zabrakło gniazd. Wyłącz inne urządzenie, a to uruchomi się od razu.',
           explain: 'Kontroler USB ma stałą liczbę gniazd (wejściowych endpointów), a klawiatura i mysz zawsze zajmują część z nich. Jeśli włączonych urządzeń jest więcej, niż się mieści, klawiatura i mysz zostają, a reszta zostaje wyłączona.',

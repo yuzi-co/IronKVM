@@ -1127,7 +1127,6 @@ const hu = {
           title: 'USB-helyek',
           free: '{{free}} / {{total}} szabad',
           slots: 'Helyek: {{count}}',
-          short: 'Nincs elég szabad hely ({{free}} szabad)',
           full: 'Nincs elég szabad USB-hely. Először kapcsolj ki valami mást.',
           inactive: 'Bekapcsolva, de nem fut: az USB-vezérlő kifogyott a helyekből. Kapcsolj ki egy másik eszközt, és ez azonnal elindul.',
           explain: 'Az USB-vezérlőnek rögzített számú helye (bejövő endpointja) van, és a billentyűzet meg az egér mindig foglal belőlük. Ha több eszköz van bekapcsolva, mint amennyi elfér, a billentyűzet és az egér megmarad, a többi kikapcsol.',

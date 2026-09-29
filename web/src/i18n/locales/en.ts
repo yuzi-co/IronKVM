@@ -1100,7 +1100,6 @@ const en = {
           title: 'USB slots',
           free: '{{free}} of {{total}} free',
           slots: 'Slots: {{count}}',
-          short: 'Not enough free slots ({{free}} free)',
           full: 'Not enough free USB slots. Turn something else off first.',
           inactive: 'On, but not running: the USB controller ran out of slots. Turn another device off and this one starts straight away.',
           explain: 'The USB controller has a fixed number of slots (inbound endpoints), and the keyboard and mouse always take some. If more devices are on than fit, the keyboard and mouse are kept and the rest are turned off.',

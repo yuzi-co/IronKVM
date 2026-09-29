@@ -1114,7 +1114,6 @@ const id = {
           title: 'Slot USB',
           free: '{{free}} dari {{total}} kosong',
           slots: 'Slot: {{count}}',
-          short: 'Slot kosong tidak cukup ({{free}} kosong)',
           full: 'Slot USB kosong tidak cukup. Matikan hal lain terlebih dahulu.',
           inactive: 'Aktif, tetapi tidak berjalan: pengontrol USB kehabisan slot. Matikan perangkat lain dan perangkat ini langsung berjalan.',
           explain: 'Pengontrol USB memiliki jumlah slot (endpoint masuk) yang tetap, dan keyboard serta mouse selalu memakai sebagian. Jika perangkat yang aktif lebih banyak dari yang muat, keyboard dan mouse dipertahankan dan sisanya dimatikan.',

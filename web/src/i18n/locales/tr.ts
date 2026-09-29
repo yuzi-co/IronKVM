@@ -1111,7 +1111,6 @@ const tr = {
           title: 'USB yuvaları',
           free: '{{total}} yuvadan {{free}} boş',
           slots: 'Yuva: {{count}}',
-          short: 'Yeterli boş yuva yok ({{free}} boş)',
           full: 'Yeterli boş USB yuvası yok. Önce başka bir şeyi kapatın.',
           inactive: 'Açık ama çalışmıyor: USB denetleyicisinin yuvaları bitti. Başka bir aygıtı kapatın, bu hemen başlar.',
           explain: 'USB denetleyicisinin sabit sayıda yuvası (giriş uç noktası) vardır ve klavye ile fare her zaman bir kısmını kullanır. Sığabilecek olandan fazla aygıt açıksa klavye ve fare kalır, geri kalanı kapatılır.',

@@ -1126,7 +1126,6 @@ const nl = {
           title: 'USB-plaatsen',
           free: '{{free}} van {{total}} vrij',
           slots: 'Plaatsen: {{count}}',
-          short: 'Niet genoeg vrije plaatsen ({{free}} vrij)',
           full: 'Niet genoeg vrije USB-plaatsen. Zet eerst iets anders uit.',
           inactive: 'Aan, maar draait niet: de USB-controller heeft geen plaatsen meer. Zet een ander apparaat uit en dit start meteen.',
           explain: 'De USB-controller heeft een vast aantal plaatsen (inkomende endpoints), en toetsenbord en muis nemen er altijd een paar. Staan er meer apparaten aan dan er passen, dan blijven toetsenbord en muis en gaat de rest uit.',

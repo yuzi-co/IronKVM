@@ -1124,7 +1124,6 @@ const ca = {
           title: 'Ranures USB',
           free: '{{free}} de {{total}} lliures',
           slots: 'Ranures: {{count}}',
-          short: 'No hi ha prou ranures lliures ({{free}} lliures)',
           full: 'No hi ha prou ranures USB lliures. Apagueu primer una altra cosa.',
           inactive: "Activat, però no funciona: el controlador USB s'ha quedat sense ranures. Apagueu un altre dispositiu i aquest s'iniciarà de seguida.",
           explain: "El controlador USB té un nombre fix de ranures (endpoints d'entrada), i el teclat i el ratolí sempre n'ocupen algunes. Si hi ha més dispositius activats dels que hi caben, es mantenen el teclat i el ratolí i la resta s'apaguen.",

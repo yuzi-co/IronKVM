@@ -1108,7 +1108,6 @@ const da = {
           title: 'USB-pladser',
           free: '{{free}} af {{total}} ledige',
           slots: 'Pladser: {{count}}',
-          short: 'Ikke nok ledige pladser ({{free}} ledige)',
           full: 'Ikke nok ledige USB-pladser. Slå noget andet fra først.',
           inactive: 'Tændt, men kører ikke: USB-controlleren løb tør for pladser. Slå en anden enhed fra, så starter denne med det samme.',
           explain: 'USB-controlleren har et fast antal pladser (indgående endpoints), og tastatur og mus optager altid nogle. Er flere enheder tændt, end der er plads til, beholdes tastatur og mus, og resten slås fra.',

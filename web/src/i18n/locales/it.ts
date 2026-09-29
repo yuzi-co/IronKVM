@@ -1130,7 +1130,6 @@ const it = {
           title: 'Slot USB',
           free: '{{free}} di {{total}} liberi',
           slots: 'Slot: {{count}}',
-          short: 'Slot liberi insufficienti ({{free}} liberi)',
           full: "Slot USB liberi insufficienti. Disattiva prima qualcos'altro.",
           inactive: 'Attivo, ma non in funzione: il controller USB ha esaurito gli slot. Disattiva un altro dispositivo e questo si avvia subito.',
           explain: 'Il controller USB ha un numero fisso di slot (endpoint in ingresso), e tastiera e mouse ne occupano sempre alcuni. Se sono attivi più dispositivi di quanti ne entrino, tastiera e mouse restano e gli altri vengono disattivati.',

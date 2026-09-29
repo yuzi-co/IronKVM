@@ -1106,7 +1106,6 @@ const vi = {
           title: 'Khe USB',
           free: 'Còn trống {{free}}/{{total}}',
           slots: 'Khe: {{count}}',
-          short: 'Không đủ khe trống (còn {{free}})',
           full: 'Không đủ khe USB trống. Hãy tắt thứ khác trước.',
           inactive: 'Đang bật nhưng không chạy: bộ điều khiển USB đã hết khe. Tắt một thiết bị khác và thiết bị này sẽ chạy ngay.',
           explain: 'Bộ điều khiển USB có số khe (endpoint vào) cố định, và bàn phím cùng chuột luôn dùng một phần. Nếu bật nhiều thiết bị hơn số khe có, bàn phím và chuột được giữ lại, phần còn lại bị tắt.',

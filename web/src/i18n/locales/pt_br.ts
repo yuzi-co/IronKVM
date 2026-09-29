@@ -1121,7 +1121,6 @@ const pt_br = {
           title: 'Slots USB',
           free: '{{free}} de {{total}} livres',
           slots: 'Slots: {{count}}',
-          short: 'Slots livres insuficientes ({{free}} livres)',
           full: 'Slots USB livres insuficientes. Desligue outra coisa primeiro.',
           inactive: 'Ligado, mas sem funcionar: o controlador USB ficou sem slots. Desligue outro dispositivo e este inicia na hora.',
           explain: 'O controlador USB tem um número fixo de slots (endpoints de entrada), e o teclado e o mouse sempre ocupam alguns. Se houver mais dispositivos ligados do que cabem, o teclado e o mouse são mantidos e o resto é desligado.',

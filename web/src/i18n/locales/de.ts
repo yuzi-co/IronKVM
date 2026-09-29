@@ -1142,7 +1142,6 @@ const de = {
           title: 'USB-Plätze',
           free: '{{free}} von {{total}} frei',
           slots: 'Plätze: {{count}}',
-          short: 'Nicht genug freie Plätze ({{free}} frei)',
           full: 'Nicht genug freie USB-Plätze. Schalte zuerst etwas anderes aus.',
           inactive: 'Eingeschaltet, läuft aber nicht: Dem USB-Controller sind die Plätze ausgegangen. Schalte ein anderes Gerät aus, dann startet dieses sofort.',
           explain: 'Der USB-Controller hat eine feste Zahl an Plätzen (eingehende Endpoints), und Tastatur und Maus belegen immer einige. Sind mehr Geräte an, als Platz haben, bleiben Tastatur und Maus, und der Rest wird ausgeschaltet.',

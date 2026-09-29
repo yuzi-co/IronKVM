@@ -1135,7 +1135,6 @@ const fr = {
           title: 'Emplacements USB',
           free: '{{free}} sur {{total}} libres',
           slots: 'Emplacements : {{count}}',
-          short: "Pas assez d'emplacements libres ({{free}} libres)",
           full: "Pas assez d'emplacements USB libres. Désactivez d'abord autre chose.",
           inactive: "Activé, mais ne tourne pas : le contrôleur USB n'a plus d'emplacements. Désactivez un autre périphérique et celui-ci démarre aussitôt.",
           explain: "Le contrôleur USB a un nombre fixe d'emplacements (endpoints entrants), et le clavier et la souris en prennent toujours quelques-uns. Si plus de périphériques sont activés qu'il n'y a de place, le clavier et la souris sont gardés et les autres désactivés.",

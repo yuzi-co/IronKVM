@@ -1131,7 +1131,6 @@ const es = {
           title: 'Ranuras USB',
           free: '{{free}} de {{total}} libres',
           slots: 'Ranuras: {{count}}',
-          short: 'No hay suficientes ranuras libres ({{free}} libres)',
           full: 'No hay suficientes ranuras USB libres. Apague primero otra cosa.',
           inactive: 'Activado, pero sin funcionar: el controlador USB se quedó sin ranuras. Apague otro dispositivo y este arrancará al momento.',
           explain: 'El controlador USB tiene un número fijo de ranuras (endpoints de entrada), y el teclado y el ratón siempre ocupan algunas. Si hay más dispositivos activados de los que caben, se mantienen el teclado y el ratón y el resto se apaga.',

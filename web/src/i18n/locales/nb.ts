@@ -1109,7 +1109,6 @@ const nb = {
           title: 'USB-plasser',
           free: '{{free}} av {{total}} ledige',
           slots: 'Plasser: {{count}}',
-          short: 'Ikke nok ledige plasser ({{free}} ledige)',
           full: 'Ikke nok ledige USB-plasser. Slå av noe annet først.',
           inactive: 'På, men kjører ikke: USB-kontrolleren gikk tom for plasser. Slå av en annen enhet, så starter denne med en gang.',
           explain: 'USB-kontrolleren har et fast antall plasser (inngående endepunkter), og tastatur og mus tar alltid noen. Er flere enheter på enn det er plass til, beholdes tastatur og mus, og resten slås av.',
