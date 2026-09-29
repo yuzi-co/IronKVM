@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/auth.ts';
 import { Divider } from 'antd';
 import { useSetAtom } from 'jotai';
@@ -14,19 +14,21 @@ import {
 } from '@/jotai/mouse';
 import { MenuItem } from '@/components/menu-item.tsx';
 
-import { OriginalResolution } from '../screen/original-resolution.tsx';
 import { Cursor } from './cursor.tsx';
 import { Direction } from './direction.tsx';
-import { HidMode } from './hid-mode.tsx';
+import { Jiggler } from './jiggler.tsx';
 import { MouseMode } from './mouse-mode.tsx';
-import { ResetHid } from './reset-hid.tsx';
 import { Speed } from './speed.tsx';
 
+// HID mode and Reset HID are device-wide and can drop input, so they are
+// settings rather than menu entries; their components stay in this folder.
+// Original resolution changes what you see, so it sits in the Screen menu.
 export const Mouse = () => {
   const { t } = useTranslation();
   const { account } = useAuth();
-  // The server takes HID mode changes and resets from admins only.
+  // The server takes jiggler changes from admins only.
   const isAdmin = account.role === 'admin';
+  const [openCount, setOpenCount] = useState(0);
 
   const setMouseStyle = useSetAtom(mouseStyleAtom);
   const setMouseMode = useSetAtom(mouseModeAtom);
@@ -61,13 +63,21 @@ export const Mouse = () => {
       <MouseMode />
       <Direction />
       <Speed />
-      <Divider style={{ margin: '10px 0' }} />
-
-      <OriginalResolution />
-      {isAdmin && <HidMode />}
-      {isAdmin && <ResetHid />}
+      {isAdmin && (
+        <>
+          <Divider style={{ margin: '10px 0' }} />
+          <Jiggler refreshKey={openCount} />
+        </>
+      )}
     </div>
   );
 
-  return <MenuItem title={t('mouse.title')} icon={<MouseIcon size={18} />} content={content} />;
+  return (
+    <MenuItem
+      title={t('mouse.title')}
+      icon={<MouseIcon size={18} />}
+      content={content}
+      onOpenChange={(open) => open && setOpenCount((count) => count + 1)}
+    />
+  );
 };

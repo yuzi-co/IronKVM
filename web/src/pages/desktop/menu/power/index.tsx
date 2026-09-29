@@ -9,11 +9,13 @@ import * as localstorage from '@/lib/localstorage.ts';
 import { MenuItem } from '@/components/menu-item.tsx';
 
 import { HostPower } from './host-power.tsx';
-import { PowerLed } from './power-led.tsx';
 import { PowerLong } from './power-long.tsx';
 import { PowerShort } from './power-short.tsx';
 import { Reset } from './reset.tsx';
 
+// The "power LED connected" switch is set once per wiring, so it is a
+// setting rather than a menu entry. The icon still turns green while the
+// host's LED is lit, when the LED header is wired.
 export const Power = () => {
   const { t } = useTranslation();
 
@@ -88,10 +90,6 @@ export const Power = () => {
       </div>
 
       <HostPower showConfirm={showConfirm} />
-
-      <Divider style={{ margin: '10px 0' }} />
-
-      <PowerLed isPowerOn={isPowerOn} connected={ledConnected} setConnected={setLedConnected} />
     </div>
   );
 

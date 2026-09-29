@@ -12,14 +12,20 @@ import { submenuOpenCountAtom } from '@/jotai/settings.ts';
 import { useKeyboardLock } from '@/hooks/useKeyboardLock.ts';
 import { useStableCallback } from '@/hooks/useStableCallback.ts';
 
-import { Drives } from './drives.tsx';
-import { Images } from './images.tsx';
-import { Tips } from './tips.tsx';
-import { Ventoy } from './ventoy.tsx';
+import { Drives } from '../image/drives.tsx';
+import { Images } from '../image/images.tsx';
+import { Tips } from '../image/tips.tsx';
+import { Ventoy } from '../image/ventoy.tsx';
+import { BootMenu, LibraryTransfer } from './transfer.tsx';
+import { useImageTransfer } from './use-image-transfer.ts';
 
 const DRIVES_POLL_MS = 5000;
 
-export const Image = () => {
+// Media is one place for the images the virtual drives boot from: what is
+// mounted now, the library on the device and the ways to add to it, and the
+// boot menu download. It replaced separate Image and Download buttons, which
+// both worked on the same library.
+export const Media = () => {
   const { t } = useTranslation();
   const setSubmenuOpenCount = useSetAtom(submenuOpenCountAtom);
 
@@ -28,6 +34,7 @@ export const Image = () => {
   const [diskRo, setDiskRo] = useState(false);
   const [images, setImages] = useState<string[]>([]);
   const [ventoy, setVentoy] = useState<VentoyStatus | null>(null);
+  const transfer = useImageTransfer();
 
   const isMounted = drives.some((drive) => !!drive.file);
 
@@ -68,7 +75,7 @@ export const Image = () => {
     return () => window.clearInterval(timer);
   }, [isModalOpen, refreshDrives]);
 
-  useKeyboardLock('image-modal', isModalOpen);
+  useKeyboardLock('media-modal', isModalOpen);
 
   // The Ventoy status follows the drive list while the modal is open, since an
   // eject from the drive list takes the Ventoy disk out too.
@@ -87,17 +94,20 @@ export const Image = () => {
   // cannot be deleted, as an image in a drive cannot.
   const ventoyInUse = ventoy?.inDrive ? (ventoy.images ?? []) : [];
 
+  const heading = 'text-xs font-medium tracking-wide text-neutral-500 uppercase select-none';
+
   function toggleModal(open: boolean) {
     setIsModalOpen(open);
+    transfer.handleOpenChange(open);
     setSubmenuOpenCount((count) => (open ? count + 1 : Math.max(0, count - 1)));
   }
 
   return (
     <>
-      <Tooltip title={t('image.title')} placement="bottom" mouseEnterDelay={0.6}>
+      <Tooltip title={t('menu.media')} placement="bottom" mouseEnterDelay={0.6}>
         <button
           type="button"
-          aria-label={t('image.title')}
+          aria-label={t('menu.media')}
           className={clsx(
             'flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded p-0 hover:bg-neutral-700',
             isMounted ? 'text-blue-500' : 'text-neutral-300 hover:text-white'
@@ -110,13 +120,14 @@ export const Image = () => {
 
       <Modal open={isModalOpen} footer={null} onCancel={() => toggleModal(false)}>
         <div className="flex items-center space-x-1">
-          <span className="text-xl font-bold">{t('image.title')}</span>
+          <span className="text-xl font-bold">{t('menu.media')}</span>
           <Tips />
         </div>
 
-        <Divider style={{ margin: '24px 0' }} />
+        <Divider style={{ margin: '24px 0 16px 0' }} />
 
-        <div className="flex flex-col space-y-6">
+        <div className="flex flex-col space-y-4">
+          <span className={heading}>{t('menu.mediaMounted')}</span>
           <Drives
             drives={drives}
             diskRo={diskRo}
@@ -124,8 +135,19 @@ export const Image = () => {
             onDrivesChanged={refreshDrives}
           />
 
-          <Divider style={{ margin: '24px 0 0 0' }} />
+          {/* The status stays empty for an account that may not use Ventoy. */}
+          {ventoy && (
+            <Ventoy
+              status={ventoy}
+              images={images}
+              onStatusChanged={setVentoy}
+              onDrivesChanged={refreshDrives}
+            />
+          )}
 
+          <Divider style={{ margin: '8px 0 0 0' }} />
+
+          <span className={heading}>{t('menu.mediaLibrary')}</span>
           <Images
             isOpen={isModalOpen}
             drives={drives}
@@ -134,18 +156,14 @@ export const Image = () => {
             onImagesChanged={setImages}
             onDrivesChanged={refreshDrives}
           />
+          <LibraryTransfer transfer={transfer} />
 
-          {/* The status stays empty for an account that may not use Ventoy. */}
-          {ventoy && (
+          {transfer.diskEnabled && (
             <>
-              <Divider style={{ margin: '24px 0 0 0' }} />
+              <Divider style={{ margin: '8px 0 0 0' }} />
 
-              <Ventoy
-                status={ventoy}
-                images={images}
-                onStatusChanged={setVentoy}
-                onDrivesChanged={refreshDrives}
-              />
+              <span className={heading}>{t('menu.mediaBoot')}</span>
+              <BootMenu transfer={transfer} />
             </>
           )}
         </div>

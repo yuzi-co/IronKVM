@@ -1,24 +1,23 @@
-import { Tooltip } from 'antd';
 import { useSetAtom } from 'jotai';
 import { useTranslation } from 'react-i18next';
 
 import { picoclawChatOpenAtom } from '@/jotai/picoclaw.ts';
 import { Robot } from '@/components/icons/robot.tsx';
+import { menuRowClassName } from '@/components/menu-item.tsx';
 
+// Picoclaw is a row of the Tools menu that opens and closes the chat.
 export const Picoclaw = () => {
   const { t } = useTranslation();
   const setIsChatOpen = useSetAtom(picoclawChatOpenAtom);
 
   return (
-    <Tooltip title={t('picoclaw.title')} mouseEnterDelay={0.6} placement="bottom">
-      <button
-        type="button"
-        aria-label={t('picoclaw.title')}
-        className="flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded p-0 text-neutral-300 hover:bg-neutral-700/80 hover:text-white"
-        onClick={() => setIsChatOpen((open) => !open)}
-      >
-        <Robot size={18} />
-      </button>
-    </Tooltip>
+    <button
+      type="button"
+      className={menuRowClassName}
+      onClick={() => setIsChatOpen((open) => !open)}
+    >
+      <Robot size={18} />
+      <span className="text-sm select-none">{t('picoclaw.title')}</span>
+    </button>
   );
 };
