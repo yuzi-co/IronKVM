@@ -1539,6 +1539,22 @@ const pt_br = {
       keyFailed: 'Não foi possível enviar a tecla.'
     },
     speaker: { title: 'Alto-falante', unmute: 'Ativar som', mute: 'Silenciar' },
+    upstream: {
+      check: 'Verificar atualizações',
+      updateTo: 'Atualizar para {{version}}',
+      confirm: 'Atualizar {{name}} para {{version}}?',
+      confirmDesc:
+        'A nova versão é baixada do GitHub e verificada com os checksums que ela publica. Se algo falhar, a versão atual permanece.',
+      ok: 'Atualizar',
+      upToDate: 'Atualizado',
+      builtIn: 'embutida',
+      checkFailed: 'Não foi possível verificar atualizações: {{error}}',
+      unverifiable: 'A versão {{version}} não é oferecida: {{reason}}',
+      inUse: 'Não é possível atualizar agora: {{reason}}',
+      running: 'Atualizando para {{version}}...',
+      done: '{{name}} atualizado para {{version}}',
+      failed: 'A última atualização falhou: {{error}}'
+    },
     menu: {
       collapse: 'Recolher Menu',
       expand: 'Expandir Menu',

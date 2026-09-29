@@ -1,6 +1,10 @@
 package storage
 
-import "NanoKVM-Server/proto"
+import (
+	"os"
+
+	"NanoKVM-Server/proto"
+)
 
 // ImageDirectory is where every image a drive may serve lives.
 const ImageDirectory = imageDirectory
@@ -13,7 +17,29 @@ var (
 	ErrInvalidImage = errInvalidImage
 	ErrInOtherDrive = errInOtherDrive
 	ErrMediumLocked = errMediumLocked
+	ErrImageLoaded  = errImageLoaded
 )
+
+// ImageInUse returns ErrImageLoaded, saying where, while a drive serves the
+// image, directly or on a disk the server assembled.
+func ImageInUse(file string) error {
+	if hidOnly() {
+		return nil
+	}
+	driveMu.Lock()
+	defer driveMu.Unlock()
+	return imageInUse(file)
+}
+
+// ReplaceImage renames src over the image file, and refuses with
+// ErrImageLoaded while a drive serves file: the host would see its medium
+// change under it.
+func ReplaceImage(src, file string) error {
+	if hidOnly() {
+		return os.Rename(src, file)
+	}
+	return replaceImage(src, file)
+}
 
 // ListDrives returns the drives the gadget has, in LUN order. A gadget in
 // HID-only mode has none.

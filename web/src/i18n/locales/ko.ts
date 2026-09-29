@@ -1519,6 +1519,22 @@ const ko = {
       keyFailed: '키를 보내지 못했습니다.'
     },
     speaker: { title: '스피커', unmute: '음소거 해제', mute: '음소거' },
+    upstream: {
+      check: '업데이트 확인',
+      updateTo: '{{version}}(으)로 업데이트',
+      confirm: '{{name}}을(를) {{version}}(으)로 업데이트할까요?',
+      confirmDesc:
+        '새 릴리스를 GitHub에서 내려받아 공개된 체크섬으로 검증합니다. 실패하면 현재 버전이 유지됩니다.',
+      ok: '업데이트',
+      upToDate: '최신 상태',
+      builtIn: '기본 제공',
+      checkFailed: '업데이트를 확인할 수 없습니다: {{error}}',
+      unverifiable: '버전 {{version}}은(는) 제공되지 않습니다: {{reason}}',
+      inUse: '지금은 업데이트할 수 없습니다: {{reason}}',
+      running: '{{version}}(으)로 업데이트 중...',
+      done: '{{name}}이(가) {{version}}(으)로 업데이트됨',
+      failed: '마지막 업데이트가 실패했습니다: {{error}}'
+    },
     menu: {
       collapse: '메뉴 접기',
       expand: '메뉴 펼치기',

@@ -1527,6 +1527,22 @@ const se = {
       keyFailed: 'Tangenten kunde inte skickas.'
     },
     speaker: { title: 'Högtalare', unmute: 'Slå på ljud', mute: 'Stäng av ljud' },
+    upstream: {
+      check: 'Sök efter uppdateringar',
+      updateTo: 'Uppdatera till {{version}}',
+      confirm: 'Uppdatera {{name}} till {{version}}?',
+      confirmDesc:
+        'Den nya utgåvan hämtas från GitHub och kontrolleras mot de kontrollsummor den publicerar. Om något misslyckas behålls den nuvarande versionen.',
+      ok: 'Uppdatera',
+      upToDate: 'Uppdaterad',
+      builtIn: 'inbyggd',
+      checkFailed: 'Kunde inte söka efter uppdateringar: {{error}}',
+      unverifiable: 'Version {{version}} erbjuds inte: {{reason}}',
+      inUse: 'Kan inte uppdatera nu: {{reason}}',
+      running: 'Uppdaterar till {{version}}...',
+      done: '{{name}} uppdaterad till {{version}}',
+      failed: 'Den senaste uppdateringen misslyckades: {{error}}'
+    },
     menu: {
       collapse: 'Fäll ihop menyn',
       expand: 'Expandera menyn',

@@ -1475,6 +1475,22 @@ const zh = {
       keyFailed: '按键发送失败。'
     },
     speaker: { title: '扬声器', unmute: '取消静音', mute: '静音' },
+    upstream: {
+      check: '检查更新',
+      updateTo: '更新到 {{version}}',
+      confirm: '将 {{name}} 更新到 {{version}}？',
+      confirmDesc:
+        '新版本从 GitHub 下载，并用其发布的校验和进行验证。任何一步失败，都会保留当前版本。',
+      ok: '更新',
+      upToDate: '已是最新',
+      builtIn: '内置',
+      checkFailed: '无法检查更新：{{error}}',
+      unverifiable: '不提供版本 {{version}}：{{reason}}',
+      inUse: '现在无法更新：{{reason}}',
+      running: '正在更新到 {{version}}...',
+      done: '{{name}} 已更新到 {{version}}',
+      failed: '上次更新失败：{{error}}'
+    },
     menu: {
       collapse: '收起',
       expand: '展开',

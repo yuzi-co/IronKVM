@@ -1556,6 +1556,22 @@ const es = {
       keyFailed: 'No se pudo enviar la tecla.'
     },
     speaker: { title: 'Altavoz', unmute: 'Activar sonido', mute: 'Silenciar' },
+    upstream: {
+      check: 'Buscar actualizaciones',
+      updateTo: 'Actualizar a {{version}}',
+      confirm: '¿Actualizar {{name}} a {{version}}?',
+      confirmDesc:
+        'La nueva versión se descarga de GitHub y se comprueba con las sumas de verificación que publica. Si algo falla, se conserva la versión actual.',
+      ok: 'Actualizar',
+      upToDate: 'Actualizado',
+      builtIn: 'integrada',
+      checkFailed: 'No se pudieron buscar actualizaciones: {{error}}',
+      unverifiable: 'La versión {{version}} no se ofrece: {{reason}}',
+      inUse: 'No se puede actualizar ahora: {{reason}}',
+      running: 'Actualizando a {{version}}...',
+      done: '{{name}} actualizado a {{version}}',
+      failed: 'La última actualización falló: {{error}}'
+    },
     menu: {
       collapse: 'Colapsar menú',
       expand: 'Expandir menú',

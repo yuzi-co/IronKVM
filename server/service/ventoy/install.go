@@ -72,10 +72,11 @@ func install() error {
 	return extractMembers(archive, releaseMembers, ws, Dir)
 }
 
-// uninstall removes the release's files and the head. The state stays, so
-// the owner's selection survives a reinstall.
+// uninstall removes the release's files, the head and the record of an
+// update, so a reinstall is the pinned release. The state stays, so the
+// owner's selection survives a reinstall.
 func uninstall() error {
-	names := []string{headName}
+	names := []string{headName, releaseName}
 	for _, m := range releaseMembers {
 		names = append(names, m.Name)
 	}
@@ -134,15 +135,34 @@ func fetchPinned(f pinnedFile, dst string) error {
 // Nothing else in the archive is written, so a member's path never becomes
 // a path on the board. A member the archive lacks is an error.
 func extractMembers(archive string, members []releaseMember, ws, dir string) error {
+	if _, err := extractChecked(archive, members, ws); err != nil {
+		return err
+	}
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return err
+	}
+	for _, m := range members {
+		if err := os.Rename(filepath.Join(ws, m.Name), filepath.Join(dir, m.Name)); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// extractChecked takes the named members out of the archive into ws under
+// their saved names, decompressed and checked, and returns their sums. A
+// member with no pinned sum, from a release newer than the pin, is checked
+// by the archive's sum alone.
+func extractChecked(archive string, members []releaseMember, ws string) (map[string]string, error) {
 	f, err := os.Open(archive)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer func() { _ = f.Close() }()
 
 	gz, err := gzip.NewReader(f)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	want := map[string]releaseMember{}
 	for _, m := range members {
@@ -157,58 +177,54 @@ func extractMembers(archive string, members []releaseMember, ws, dir string) err
 			break
 		}
 		if err != nil {
-			return err
+			return nil, err
 		}
 		m, ok := want[hdr.Name]
 		if !ok || hdr.Typeflag != tar.TypeReg {
 			continue
 		}
 		if hdr.Size > memberMax {
-			return fmt.Errorf("%s: larger than %d bytes", m.Member, memberMax)
+			return nil, fmt.Errorf("%s: larger than %d bytes", m.Member, memberMax)
 		}
 		tmp := filepath.Join(ws, m.Name+".raw")
 		out, err := os.Create(tmp)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		_, copyErr := io.Copy(out, io.LimitReader(tr, hdr.Size))
 		closeErr := out.Close()
 		if copyErr != nil {
-			return copyErr
+			return nil, copyErr
 		}
 		if closeErr != nil {
-			return closeErr
+			return nil, closeErr
 		}
 		raw[m.Member] = tmp
 	}
 
+	sums := map[string]string{}
 	for _, m := range members {
 		src, ok := raw[m.Member]
 		if !ok {
-			return fmt.Errorf("the release has no %s", m.Member)
+			return nil, fmt.Errorf("the release has no %s", m.Member)
 		}
-		checked := filepath.Join(ws, m.Name)
-		if err := writeChecked(src, checked, m); err != nil {
-			return err
+		sum, err := writeChecked(src, filepath.Join(ws, m.Name), m)
+		if err != nil {
+			return nil, err
 		}
+		_ = os.Remove(src)
+		sums[m.Name] = sum
 	}
-	if err := os.MkdirAll(dir, 0o755); err != nil {
-		return err
-	}
-	for _, m := range members {
-		if err := os.Rename(filepath.Join(ws, m.Name), filepath.Join(dir, m.Name)); err != nil {
-			return err
-		}
-	}
-	return nil
+	return sums, nil
 }
 
 // writeChecked writes the member at src to dst, decompressed when it is xz,
-// and keeps it only when its sum is the pinned one.
-func writeChecked(src, dst string, m releaseMember) error {
+// and keeps it only when its sum is the pinned one, if it has one. It
+// returns the sum.
+func writeChecked(src, dst string, m releaseMember) (string, error) {
 	out, err := os.Create(dst)
 	if err != nil {
-		return err
+		return "", err
 	}
 	hasher := sha256.New()
 	w := io.MultiWriter(out, hasher)
@@ -228,22 +244,23 @@ func writeChecked(src, dst string, m releaseMember) error {
 		in, err := os.Open(src)
 		if err != nil {
 			_ = out.Close()
-			return err
+			return "", err
 		}
 		_, copyErr = io.Copy(w, in)
 		_ = in.Close()
 	}
 	closeErr := out.Close()
 	if copyErr != nil {
-		return copyErr
+		return "", copyErr
 	}
 	if closeErr != nil {
-		return closeErr
+		return "", closeErr
 	}
-	if got := hex.EncodeToString(hasher.Sum(nil)); got != m.SHA256 {
-		return fmt.Errorf("%s: sha256 %s, want %s", m.Member, got, m.SHA256)
+	got := hex.EncodeToString(hasher.Sum(nil))
+	if m.SHA256 != "" && got != m.SHA256 {
+		return "", fmt.Errorf("%s: sha256 %s, want %s", m.Member, got, m.SHA256)
 	}
-	return nil
+	return got, nil
 }
 
 // limitWriter fails a write past its limit, so a member that decompresses

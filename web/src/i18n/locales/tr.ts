@@ -1529,6 +1529,22 @@ const tr = {
       keyFailed: 'Tuş gönderilemedi.'
     },
     speaker: { title: 'Hoparlör', unmute: 'Sesi aç', mute: 'Sesi kapat' },
+    upstream: {
+      check: 'Güncellemeleri denetle',
+      updateTo: '{{version}} sürümüne güncelle',
+      confirm: '{{name}}, {{version}} sürümüne güncellensin mi?',
+      confirmDesc:
+        "Yeni sürüm GitHub'dan indirilir ve yayımladığı sağlama toplamlarıyla doğrulanır. Bir şey başarısız olursa mevcut sürüm kalır.",
+      ok: 'Güncelle',
+      upToDate: 'Güncel',
+      builtIn: 'yerleşik',
+      checkFailed: 'Güncellemeler denetlenemedi: {{error}}',
+      unverifiable: '{{version}} sürümü sunulmuyor: {{reason}}',
+      inUse: 'Şu anda güncellenemiyor: {{reason}}',
+      running: '{{version}} sürümüne güncelleniyor...',
+      done: '{{name}}, {{version}} sürümüne güncellendi',
+      failed: 'Son güncelleme başarısız oldu: {{error}}'
+    },
     menu: {
       collapse: 'Menüyü küçült',
       expand: 'Menüyü genişlet',

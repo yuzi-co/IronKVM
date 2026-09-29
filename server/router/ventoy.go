@@ -28,4 +28,6 @@ func ventoyRouter(r *gin.Engine) {
 	admin.POST("/uninstall", service.Uninstall)
 	admin.POST("/insert", service.Insert)
 	admin.POST("/eject", service.Eject)
+	// The release's updates: GET, POST /check, POST.
+	service.Updater(nil).Routes(admin, "/update")
 }

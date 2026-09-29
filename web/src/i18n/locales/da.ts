@@ -1531,6 +1531,22 @@ const da = {
       keyFailed: 'Tasten kunne ikke sendes.'
     },
     speaker: { title: 'Højttaler', unmute: 'Slå lyd til', mute: 'Slå lyd fra' },
+    upstream: {
+      check: 'Søg efter opdateringer',
+      updateTo: 'Opdater til {{version}}',
+      confirm: 'Opdater {{name}} til {{version}}?',
+      confirmDesc:
+        'Den nye udgivelse hentes fra GitHub og kontrolleres mod de kontrolsummer, den offentliggør. Hvis noget fejler, beholdes den nuværende version.',
+      ok: 'Opdater',
+      upToDate: 'Opdateret',
+      builtIn: 'indbygget',
+      checkFailed: 'Kunne ikke søge efter opdateringer: {{error}}',
+      unverifiable: 'Version {{version}} tilbydes ikke: {{reason}}',
+      inUse: 'Kan ikke opdatere nu: {{reason}}',
+      running: 'Opdaterer til {{version}}...',
+      done: '{{name}} opdateret til {{version}}',
+      failed: 'Den seneste opdatering mislykkedes: {{error}}'
+    },
     menu: {
       collapse: 'Skjul menu',
       expand: 'Udvid menu',

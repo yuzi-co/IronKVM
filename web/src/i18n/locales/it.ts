@@ -1551,6 +1551,22 @@ const it = {
       keyFailed: 'Impossibile inviare il tasto.'
     },
     speaker: { title: 'Altoparlante', unmute: 'Riattiva audio', mute: 'Disattiva audio' },
+    upstream: {
+      check: 'Cerca aggiornamenti',
+      updateTo: 'Aggiorna a {{version}}',
+      confirm: 'Aggiornare {{name}} a {{version}}?',
+      confirmDesc:
+        'La nuova versione viene scaricata da GitHub e verificata con i checksum che pubblica. Se qualcosa non va, resta la versione attuale.',
+      ok: 'Aggiorna',
+      upToDate: 'Aggiornato',
+      builtIn: 'integrata',
+      checkFailed: 'Impossibile cercare aggiornamenti: {{error}}',
+      unverifiable: 'La versione {{version}} non viene offerta: {{reason}}',
+      inUse: 'Impossibile aggiornare ora: {{reason}}',
+      running: 'Aggiornamento a {{version}}...',
+      done: '{{name}} aggiornato a {{version}}',
+      failed: "L'ultimo aggiornamento non è riuscito: {{error}}"
+    },
     menu: {
       collapse: 'Comprimi menu',
       expand: 'Espandi il menu',

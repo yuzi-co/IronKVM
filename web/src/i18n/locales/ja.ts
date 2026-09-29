@@ -1548,6 +1548,22 @@ const ja = {
       keyFailed: 'キーを送信できませんでした。'
     },
     speaker: { title: 'スピーカー', unmute: 'ミュート解除', mute: 'ミュート' },
+    upstream: {
+      check: '更新を確認',
+      updateTo: '{{version}} に更新',
+      confirm: '{{name}} を {{version}} に更新しますか？',
+      confirmDesc:
+        '新しいリリースを GitHub からダウンロードし、公開されているチェックサムで検証します。失敗した場合は現在のバージョンのままです。',
+      ok: '更新',
+      upToDate: '最新です',
+      builtIn: '内蔵',
+      checkFailed: '更新を確認できませんでした: {{error}}',
+      unverifiable: 'バージョン {{version}} は提供されません: {{reason}}',
+      inUse: '現在は更新できません: {{reason}}',
+      running: '{{version}} に更新中...',
+      done: '{{name}} を {{version}} に更新しました',
+      failed: '前回の更新に失敗しました: {{error}}'
+    },
     menu: {
       collapse: 'メニューを折りたたむ',
       expand: 'メニューを展開する',

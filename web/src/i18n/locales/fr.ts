@@ -1559,6 +1559,22 @@ const fr = {
       keyFailed: "La touche n'a pas pu être envoyée."
     },
     speaker: { title: 'Haut-parleur', unmute: 'Réactiver le son', mute: 'Couper le son' },
+    upstream: {
+      check: 'Rechercher des mises à jour',
+      updateTo: 'Mettre à jour vers {{version}}',
+      confirm: 'Mettre à jour {{name}} vers {{version}} ?',
+      confirmDesc:
+        'La nouvelle version est téléchargée depuis GitHub et vérifiée avec les sommes de contrôle qu’elle publie. En cas d’échec, la version actuelle est conservée.',
+      ok: 'Mettre à jour',
+      upToDate: 'À jour',
+      builtIn: 'intégrée',
+      checkFailed: 'Impossible de rechercher des mises à jour : {{error}}',
+      unverifiable: 'La version {{version}} n’est pas proposée : {{reason}}',
+      inUse: 'Mise à jour impossible pour le moment : {{reason}}',
+      running: 'Mise à jour vers {{version}}...',
+      done: '{{name}} mis à jour vers {{version}}',
+      failed: 'La dernière mise à jour a échoué : {{error}}'
+    },
     menu: {
       collapse: 'Réduire le menu',
       expand: 'Développer le menu',
