@@ -735,7 +735,6 @@ const ko = {
         address: '주소',
         certHint:
           'VeNCrypt X509Plain은 장치의 자체 서명 인증서를 사용하므로 첫 연결 시 클라이언트가 경고합니다. 수락하거나, 이 페이지의 HTTPS 주소에서 인증서를 저장해 TigerVNC에 -X509CA=<파일>로 전달하세요.',
-        example: '예시',
         title: 'VNC',
         service: 'VNC 서버',
         serviceDesc:

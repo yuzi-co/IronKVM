@@ -756,7 +756,6 @@ const fr = {
         address: 'Adresse',
         certHint:
           "VeNCrypt X509Plain utilise le certificat auto-signé de l'appareil, le client affiche donc un avertissement à la première connexion. Acceptez-le, ou enregistrez le certificat depuis l'adresse HTTPS de cette page et passez-le à TigerVNC avec -X509CA=<fichier>.",
-        example: 'Exemple',
         title: 'VNC',
         service: 'Serveur VNC',
         serviceDesc:

@@ -739,7 +739,6 @@ const tr = {
         address: 'Adres',
         certHint:
           "VeNCrypt X509Plain cihazın kendinden imzalı sertifikasını kullanır, bu yüzden istemci ilk bağlantıda uyarır. Kabul edin ya da sertifikayı bu sayfanın HTTPS adresinden kaydedip TigerVNC'ye -X509CA=<dosya> ile verin.",
-        example: 'Örnek',
         title: 'VNC',
         service: 'VNC sunucusu',
         serviceDesc:

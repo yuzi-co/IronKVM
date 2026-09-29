@@ -739,7 +739,6 @@ const cz = {
         address: 'Adresa',
         certHint:
           'VeNCrypt X509Plain používá certifikát zařízení podepsaný sám sebou, takže klient při prvním připojení varuje. Přijměte ho, nebo certifikát uložte z HTTPS adresy této stránky a předejte ho TigerVNC pomocí -X509CA=<soubor>.',
-        example: 'Příklad',
         title: 'VNC',
         service: 'Server VNC',
         serviceDesc:

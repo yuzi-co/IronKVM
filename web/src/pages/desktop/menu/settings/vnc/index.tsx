@@ -8,7 +8,7 @@ import type { VncSettings, VncState } from '@/api/vnc.ts';
 import { describeFailure } from '@/lib/feedback.ts';
 import { getHostname } from '@/lib/service.ts';
 
-import { CopyBlock, CopyRow } from '../components/copy-button.tsx';
+import { CopyRow } from '../components/copy-button.tsx';
 import { StaleNote, StatusTag } from '../components/status-tag.tsx';
 
 // The session state changes when a client connects, which nothing announces.
@@ -188,12 +188,10 @@ export const Vnc = () => {
     });
   }
 
-  // What a client connects to. TigerVNC reads host::port as a TCP port; a
-  // single colon would be a display number.
+  // What a client connects to.
   const host = getHostname();
   const vncPort = settings?.port ?? 5900;
   const target = `${host}:${vncPort}`;
-  const example = `vncviewer ${host}::${vncPort}`;
 
   const session = state?.session;
   const sessionRows: [string, string][] = session
@@ -239,7 +237,6 @@ export const Vnc = () => {
             <div className="rounded-xl border border-neutral-700/50 bg-neutral-800/40 px-4 py-3 text-sm">
               <CopyRow label={t('settings.vnc.address')} value={target} />
             </div>
-            <CopyBlock title={t('settings.vnc.example')} text={example} />
             <span className="text-xs text-neutral-500">{t('settings.vnc.certHint')}</span>
           </div>
         )}

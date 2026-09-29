@@ -710,7 +710,6 @@ const zh = {
         address: '地址',
         certHint:
           'VeNCrypt X509Plain 使用设备的自签名证书，因此客户端首次连接时会警告。可以接受该证书，或从本页的 HTTPS 地址保存证书，并通过 -X509CA=<文件> 传给 TigerVNC。',
-        example: '示例',
         title: 'VNC',
         service: 'VNC 服务器',
         serviceDesc:

@@ -743,7 +743,6 @@ const nb = {
         address: 'Adresse',
         certHint:
           'VeNCrypt X509Plain bruker enhetens selvsignerte sertifikat, så klienten advarer ved første tilkobling. Godta det, eller lagre sertifikatet fra denne sidens HTTPS-adresse og gi det til TigerVNC med -X509CA=<fil>.',
-        example: 'Eksempel',
         title: 'VNC',
         service: 'VNC-server',
         serviceDesc:

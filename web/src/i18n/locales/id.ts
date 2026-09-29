@@ -743,7 +743,6 @@ const id = {
         address: 'Alamat',
         certHint:
           'VeNCrypt X509Plain memakai sertifikat swatanda perangkat, jadi klien memberi peringatan saat koneksi pertama. Terima saja, atau simpan sertifikat dari alamat HTTPS halaman ini dan berikan ke TigerVNC dengan -X509CA=<file>.',
-        example: 'Contoh',
         title: 'VNC',
         service: 'Server VNC',
         serviceDesc:

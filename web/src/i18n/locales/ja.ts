@@ -749,7 +749,6 @@ const ja = {
         address: 'アドレス',
         certHint:
           'VeNCrypt X509Plain はデバイスの自己署名証明書を使うため、初回接続時にクライアントが警告します。受け入れるか、このページの HTTPS アドレスから証明書を保存し、TigerVNC に -X509CA=<ファイル> で渡してください。',
-        example: '例',
         title: 'VNC',
         service: 'VNC サーバー',
         serviceDesc:

@@ -737,7 +737,6 @@ const vi = {
         address: 'Địa chỉ',
         certHint:
           'VeNCrypt X509Plain dùng chứng chỉ tự ký của thiết bị, nên máy khách sẽ cảnh báo ở lần kết nối đầu. Hãy chấp nhận, hoặc lưu chứng chỉ từ địa chỉ HTTPS của trang này và đưa cho TigerVNC bằng -X509CA=<tệp>.',
-        example: 'Ví dụ',
         title: 'VNC',
         service: 'Máy chủ VNC',
         serviceDesc:

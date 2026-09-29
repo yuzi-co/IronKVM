@@ -751,7 +751,6 @@ const hu = {
         address: 'Cím',
         certHint:
           'A VeNCrypt X509Plain az eszköz önaláírt tanúsítványát használja, ezért a kliens az első csatlakozáskor figyelmeztet. Fogadja el, vagy mentse a tanúsítványt az oldal HTTPS-címéről, és adja át a TigerVNC-nek a -X509CA=<fájl> kapcsolóval.',
-        example: 'Példa',
         title: 'VNC',
         service: 'VNC-kiszolgáló',
         serviceDesc:

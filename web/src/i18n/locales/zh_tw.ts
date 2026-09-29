@@ -709,7 +709,6 @@ const zh_tw = {
         address: '位址',
         certHint:
           'VeNCrypt X509Plain 使用裝置的自簽憑證，因此用戶端首次連線時會警告。可以接受該憑證，或從本頁的 HTTPS 位址儲存憑證，並透過 -X509CA=<檔案> 傳給 TigerVNC。',
-        example: '範例',
         title: 'VNC',
         service: 'VNC 伺服器',
         serviceDesc:

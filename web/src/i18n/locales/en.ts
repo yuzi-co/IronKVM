@@ -734,7 +734,6 @@ const en = {
         address: 'Address',
         certHint:
           "VeNCrypt X509Plain uses the board's self-signed certificate, so the client warns on first connect. Accept it, or save the certificate from this page's HTTPS address and give it to TigerVNC with -X509CA=<file>.",
-        example: 'Example',
         title: 'VNC',
         service: 'VNC server',
         serviceDesc:
