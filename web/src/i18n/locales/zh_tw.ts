@@ -522,11 +522,14 @@ const zh_tw = {
     settings: {
       title: '設定',
       nav: {
-        general: '一般',
-        device: '裝置',
+        system: '系統',
         network: '網路',
-        remote: '遠端存取',
+        access: '存取',
+        integrations: '整合',
         boot: '開機',
+        browser: '此瀏覽器',
+        search: '尋找設定',
+        noMatch: '沒有符合的設定',
         locked: '操作進行中。完成前無法切換頁面或關閉。',
         vpnProvider: 'VPN 供應商'
       },
@@ -842,8 +845,13 @@ const zh_tw = {
         disclaimer: 'IronKVM：為 Sipeed NanoKVM 打造的強化社群韌體。與 Sipeed 無關。',
         basedOn: '基於 NanoKVM {{version}}'
       },
+      preferences: {
+        title: '偏好設定'
+      },
+      performance: {
+        title: '效能'
+      },
       appearance: {
-        title: '外觀',
         thisBrowser: '此瀏覽器',
         thisBrowserDesc: '僅儲存在此瀏覽器中，其他瀏覽器各自儲存。',
         deviceWide: '裝置',
@@ -903,7 +911,13 @@ const zh_tw = {
           1800: '30 分鐘',
           3600: '1 小時'
         },
-        advanced: '進階設定',
+        sections: {
+          video: '視訊',
+          usb: 'USB',
+          frontPanel: '前面板'
+        },
+        hidModeDesc: '如果主機不接受鍵盤和滑鼠，請嘗試 HID-Only 模式。它會關閉虛擬磁碟機和網路。',
+        resetHidDesc: '將鍵盤和滑鼠重新連接到主機。輸入失效時使用。',
         cpuFreq: {
           title: 'CPU 時脈',
           description: '設定下次開機時使用的 CPU 時脈',
@@ -1140,8 +1154,7 @@ const zh_tw = {
           '{{other}} 正在執行或已設為開機啟動。同一時間只能執行一個 VPN：請先停止 {{other}} 並關閉其開機啟動。',
         swap: {
           title: 'Swap 記憶體',
-          tip: '如果背景服務記憶體不足，請嘗試啟用 Swap 記憶體。預設會將 Swap 檔大小設為 256MB，可在「設定 > 設備」中調整。',
-          failed: '修改交換記憶體失敗'
+          tip: '如果背景服務記憶體不足，請嘗試啟用 Swap。可在「設定 > 效能」中設定。'
         },
         copy: '複製',
         copied: '連結已複製',

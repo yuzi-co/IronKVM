@@ -542,11 +542,14 @@ const hu = {
     settings: {
       title: 'Beállítások',
       nav: {
-        general: 'Általános',
-        device: 'Eszköz',
+        system: 'Rendszer',
         network: 'Hálózat',
-        remote: 'Távoli elérés',
+        access: 'Hozzáférés',
+        integrations: 'Integrációk',
         boot: 'Rendszerindítás',
+        browser: 'Ez a böngésző',
+        search: 'Beállítás keresése',
+        noMatch: 'Nincs egyező beállítás',
         locked:
           'Egy művelet folyamatban van. A többi oldal és a bezárás a befejezéséig nem érhető el.',
         vpnProvider: 'VPN-szolgáltató'
@@ -889,8 +892,13 @@ const hu = {
           'IronKVM: megerősített közösségi firmware a Sipeed NanoKVM-hez. Nem áll kapcsolatban a Sipeeddel.',
         basedOn: 'NanoKVM {{version}} alapján'
       },
+      preferences: {
+        title: 'Preferenciák'
+      },
+      performance: {
+        title: 'Teljesítmény'
+      },
       appearance: {
-        title: 'Megjelenés',
         thisBrowser: 'Ez a böngésző',
         thisBrowserDesc:
           'Csak ebben a böngészőben tárolva. A többi böngésző saját beállítást használ.',
@@ -952,7 +960,15 @@ const hu = {
           1800: '30 perc',
           3600: '1 óra'
         },
-        advanced: 'Speciális beállítások',
+        sections: {
+          video: 'Videó',
+          usb: 'USB',
+          frontPanel: 'Előlap'
+        },
+        hidModeDesc:
+          'Ha a gazdagép nem fogadja a billentyűzetet és az egeret, próbálja a csak HID módot. Kikapcsolja a virtuális meghajtókat és a hálózatot.',
+        resetHidDesc:
+          'Újracsatlakoztatja a billentyűzetet és az egeret a gazdagéphez. Akkor használja, ha a bevitel leáll.',
         cpuFreq: {
           title: 'CPU-frekvencia',
           description: 'A következő rendszerindításkor alkalmazott CPU-órajel beállítása',
@@ -1200,8 +1216,7 @@ const hu = {
           '{{other}} fut, vagy rendszerindításkor elindul. Egyszerre csak egy VPN futhat: előbb állítsa le ezt: {{other}}, és kapcsolja ki az automatikus indítását.',
         swap: {
           title: 'Swap memória',
-          tip: 'Ha a démonnak kevés a memóriája, próbálja engedélyezni a swap memóriát. Ez alapértelmezés szerint 256MB-ra állítja a swap fájl méretét, amely a "Beállítások > Eszköz" alatt módosítható.',
-          failed: 'Nem sikerült módosítani a cserememóriát'
+          tip: 'Ha a démonnak kevés a memóriája, próbálja bekapcsolni a swapot. Ezt a "Beállítások > Teljesítmény" alatt lehet megadni.'
         },
         copy: 'Másolás',
         copied: 'Hivatkozás másolva',

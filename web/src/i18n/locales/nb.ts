@@ -540,11 +540,14 @@ const nb = {
     settings: {
       title: 'Innstillinger',
       nav: {
-        general: 'Generelt',
-        device: 'Enhet',
+        system: 'System',
         network: 'Nettverk',
-        remote: 'Fjerntilgang',
+        access: 'Tilgang',
+        integrations: 'Integrasjoner',
         boot: 'Oppstart',
+        browser: 'Denne nettleseren',
+        search: 'Finn en innstilling',
+        noMatch: 'Ingen innstillinger passer',
         locked:
           'En operasjon pågår. Andre sider og lukking er ikke tilgjengelig før den er ferdig.',
         vpnProvider: 'VPN-leverandør'
@@ -878,8 +881,13 @@ const nb = {
           'IronKVM: herdet fellesskapsfastvare for Sipeed NanoKVM. Ikke tilknyttet Sipeed.',
         basedOn: 'basert på NanoKVM {{version}}'
       },
+      preferences: {
+        title: 'Preferanser'
+      },
+      performance: {
+        title: 'Ytelse'
+      },
       appearance: {
-        title: 'Utseende',
         thisBrowser: 'Denne nettleseren',
         thisBrowserDesc: 'Lagres bare i denne nettleseren. Andre nettlesere har sine egne.',
         deviceWide: 'Enhet',
@@ -940,7 +948,15 @@ const nb = {
           1800: '30 min',
           3600: '1 time'
         },
-        advanced: 'Avanserte innstillinger',
+        sections: {
+          video: 'Video',
+          usb: 'USB',
+          frontPanel: 'Frontpanel'
+        },
+        hidModeDesc:
+          'Prøv kun HID-modus hvis verten ikke godtar tastatur og mus. Den slår av de virtuelle stasjonene og nettverket.',
+        resetHidDesc:
+          'Kobler tastatur og mus til verten på nytt. Bruk den hvis inndata slutter å virke.',
         cpuFreq: {
           title: 'CPU-frekvens',
           description: 'Angi CPU-klokken som brukes ved neste oppstart',
@@ -1186,8 +1202,7 @@ const nb = {
           '{{other}} kjører eller starter ved oppstart. Bare én VPN kan kjøre om gangen: stopp {{other}} og slå av start ved oppstart for den først.',
         swap: {
           title: 'Swap-minne',
-          tip: 'Hvis tjenesten får for lite minne, kan du prøve å aktivere swap-minne. Dette setter størrelsen på byttefilen til 256MB som standard, og den kan justeres i "Innstillinger > Enhet".',
-          failed: 'Kunne ikke endre vekselminnet'
+          tip: 'Hvis tjenesten får for lite minne, kan du prøve å slå på swap. Det stilles inn i "Innstillinger > Ytelse".'
         },
         copy: 'Kopier',
         copied: 'Lenke kopiert',

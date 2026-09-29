@@ -543,11 +543,14 @@ const es = {
     settings: {
       title: 'Ajustes',
       nav: {
-        general: 'General',
-        device: 'Dispositivo',
+        system: 'Sistema',
         network: 'Red',
-        remote: 'Acceso remoto',
+        access: 'Acceso',
+        integrations: 'Integraciones',
         boot: 'Arranque',
+        browser: 'Este navegador',
+        search: 'Buscar un ajuste',
+        noMatch: 'Ningún ajuste coincide',
         locked:
           'Hay una operación en curso. Las demás páginas y el cierre no están disponibles hasta que termine.',
         vpnProvider: 'Proveedor de VPN'
@@ -894,8 +897,13 @@ const es = {
           'IronKVM: firmware comunitario reforzado para el Sipeed NanoKVM. Sin relación con Sipeed.',
         basedOn: 'basado en NanoKVM {{version}}'
       },
+      preferences: {
+        title: 'Preferencias'
+      },
+      performance: {
+        title: 'Rendimiento'
+      },
       appearance: {
-        title: 'Apariencia',
         thisBrowser: 'Este navegador',
         thisBrowserDesc:
           'Se guarda solo en este navegador. Los demás navegadores conservan la suya.',
@@ -957,7 +965,15 @@ const es = {
           1800: '30 min',
           3600: '1 hora'
         },
-        advanced: 'Ajustes avanzados',
+        sections: {
+          video: 'Vídeo',
+          usb: 'USB',
+          frontPanel: 'Panel frontal'
+        },
+        hidModeDesc:
+          'Prueba el modo solo HID si el host no acepta el teclado y el ratón. Desactiva las unidades virtuales y la red.',
+        resetHidDesc:
+          'Vuelve a conectar el teclado y el ratón al host. Úsalo si la entrada deja de funcionar.',
         cpuFreq: {
           title: 'Frecuencia de la CPU',
           description: 'Establece la frecuencia de la CPU que se aplica en el próximo arranque',
@@ -1204,8 +1220,7 @@ const es = {
           '{{other}} está en ejecución o se inicia al arrancar. Solo puede funcionar una VPN a la vez: detén {{other}} y desactiva antes su inicio al arrancar.',
         swap: {
           title: 'Memoria swap',
-          tip: 'Si al daemon le falta memoria, prueba a activar la memoria swap. Esto fija el tamaño del archivo swap en 256MB por defecto, que se puede ajustar en "Ajustes > Dispositivo".',
-          failed: 'No se pudo cambiar la memoria de intercambio'
+          tip: 'Si al daemon le falta memoria, prueba a activar la memoria swap. Se configura en "Ajustes > Rendimiento".'
         },
         copy: 'Copiar',
         copied: 'Enlace copiado',

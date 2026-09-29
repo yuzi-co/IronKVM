@@ -541,11 +541,14 @@ const pl = {
     settings: {
       title: 'Ustawienia',
       nav: {
-        general: 'Ogólne',
-        device: 'Urządzenie',
+        system: 'System',
         network: 'Sieć',
-        remote: 'Dostęp zdalny',
+        access: 'Dostęp',
+        integrations: 'Integracje',
         boot: 'Rozruch',
+        browser: 'Ta przeglądarka',
+        search: 'Znajdź ustawienie',
+        noMatch: 'Brak pasujących ustawień',
         locked: 'Trwa operacja. Inne strony i zamknięcie są niedostępne do jej zakończenia.',
         vpnProvider: 'Dostawca VPN'
       },
@@ -883,8 +886,13 @@ const pl = {
           'IronKVM: wzmocnione firmware społeczności dla Sipeed NanoKVM. Niezwiązane z firmą Sipeed.',
         basedOn: 'na bazie NanoKVM {{version}}'
       },
+      preferences: {
+        title: 'Preferencje'
+      },
+      performance: {
+        title: 'Wydajność'
+      },
       appearance: {
-        title: 'Wygląd',
         thisBrowser: 'Ta przeglądarka',
         thisBrowserDesc:
           'Zapisywane tylko w tej przeglądarce. Inne przeglądarki mają własne ustawienia.',
@@ -946,7 +954,15 @@ const pl = {
           1800: '30 min',
           3600: '1 godzina'
         },
-        advanced: 'Ustawienia zaawansowane',
+        sections: {
+          video: 'Wideo',
+          usb: 'USB',
+          frontPanel: 'Panel przedni'
+        },
+        hidModeDesc:
+          'Jeśli host nie przyjmuje klawiatury i myszy, spróbuj trybu tylko HID. Wyłącza on napędy wirtualne i sieć.',
+        resetHidDesc:
+          'Ponownie podłącza klawiaturę i mysz do hosta. Użyj, gdy wprowadzanie przestanie działać.',
         cpuFreq: {
           title: 'Częstotliwość CPU',
           description: 'Ustaw taktowanie CPU stosowane przy następnym uruchomieniu',
@@ -1194,8 +1210,7 @@ const pl = {
           '{{other}} działa lub uruchamia się przy starcie. Naraz może działać tylko jeden VPN: najpierw zatrzymaj {{other}} i wyłącz jego uruchamianie przy starcie.',
         swap: {
           title: 'Plik wymiany',
-          tip: 'Jeśli usłudze brakuje pamięci, spróbuj włączyć plik wymiany. Domyślnie ustawia to rozmiar pliku wymiany na 256MB; można go zmienić w „Ustawienia > Urządzenie”.',
-          failed: 'Nie udało się zmienić pamięci wymiany'
+          tip: 'Jeśli usłudze brakuje pamięci, spróbuj włączyć plik wymiany. Ustawia się go w „Ustawienia > Wydajność”.'
         },
         copy: 'Kopiuj',
         copied: 'Skopiowano link',

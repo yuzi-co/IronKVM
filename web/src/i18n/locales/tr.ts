@@ -538,11 +538,14 @@ const tr = {
     settings: {
       title: 'Ayarlar',
       nav: {
-        general: 'Genel',
-        device: 'Cihaz',
+        system: 'Sistem',
         network: 'Ağ',
-        remote: 'Uzaktan erişim',
+        access: 'Erişim',
+        integrations: 'Entegrasyonlar',
         boot: 'Önyükleme',
+        browser: 'Bu tarayıcı',
+        search: 'Ayar bul',
+        noMatch: 'Eşleşen ayar yok',
         locked: 'Bir işlem sürüyor. Bitene kadar diğer sayfalar ve kapatma kullanılamaz.',
         vpnProvider: 'VPN sağlayıcısı'
       },
@@ -876,8 +879,13 @@ const tr = {
           'IronKVM: Sipeed NanoKVM için sağlamlaştırılmış topluluk yazılımı. Sipeed ile bağlantılı değildir.',
         basedOn: 'NanoKVM {{version}} tabanlı'
       },
+      preferences: {
+        title: 'Tercihler'
+      },
+      performance: {
+        title: 'Performans'
+      },
       appearance: {
-        title: 'Görünüm',
         thisBrowser: 'Bu tarayıcı',
         thisBrowserDesc:
           'Yalnızca bu tarayıcıda saklanır. Diğer tarayıcılar kendi ayarlarını kullanır.',
@@ -939,7 +947,15 @@ const tr = {
           1800: '30 dakika',
           3600: '1 saat'
         },
-        advanced: 'Gelişmiş Ayarlar',
+        sections: {
+          video: 'Video',
+          usb: 'USB',
+          frontPanel: 'Ön panel'
+        },
+        hidModeDesc:
+          'Ana bilgisayar klavye ve fareyi kabul etmiyorsa yalnızca HID modunu deneyin. Sanal sürücüleri ve ağı kapatır.',
+        resetHidDesc:
+          'Klavye ve fareyi ana bilgisayara yeniden bağlar. Giriş çalışmayı bırakırsa kullanın.',
         cpuFreq: {
           title: 'CPU Frekansı',
           description: 'Bir sonraki açılışta uygulanacak CPU saat hızını ayarlayın',
@@ -1187,8 +1203,7 @@ const tr = {
           '{{other}} çalışıyor veya açılışta başlıyor. Aynı anda yalnızca bir VPN çalışabilir: önce {{other}} hizmetini durdurun ve açılışta başlatmayı kapatın.',
         swap: {
           title: 'Swap belleği',
-          tip: 'Hizmetin belleği yetmezse swap belleğini etkinleştirmeyi deneyin. Bu, swap dosyasının boyutunu varsayılan olarak 256MB yapar; boyut "Ayarlar > Cihaz" bölümünden değiştirilebilir.',
-          failed: 'Takas belleği değiştirilemedi'
+          tip: 'Hizmetin belleği yetmezse swap açmayı deneyin. Bu ayar "Ayarlar > Performans" bölümündedir.'
         },
         copy: 'Kopyala',
         copied: 'Bağlantı kopyalandı',

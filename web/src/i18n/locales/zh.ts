@@ -522,11 +522,14 @@ const zh = {
     settings: {
       title: '设置',
       nav: {
-        general: '通用',
-        device: '设备',
+        system: '系统',
         network: '网络',
-        remote: '远程访问',
+        access: '访问',
+        integrations: '集成',
         boot: '启动',
+        browser: '此浏览器',
+        search: '查找设置',
+        noMatch: '没有匹配的设置',
         locked: '操作进行中。完成前无法切换页面或关闭。',
         vpnProvider: 'VPN 提供商'
       },
@@ -843,8 +846,13 @@ const zh = {
         disclaimer: 'IronKVM：面向 Sipeed NanoKVM 的加固社区固件。与 Sipeed 无关。',
         basedOn: '基于 NanoKVM {{version}}'
       },
+      preferences: {
+        title: '偏好设置'
+      },
+      performance: {
+        title: '性能'
+      },
       appearance: {
-        title: '外观',
         thisBrowser: '此浏览器',
         thisBrowserDesc: '仅保存在此浏览器中，其他浏览器各自保存。',
         deviceWide: '设备',
@@ -904,7 +912,13 @@ const zh = {
           1800: '30分钟',
           3600: '1小时'
         },
-        advanced: '高级设置',
+        sections: {
+          video: '视频',
+          usb: 'USB',
+          frontPanel: '前面板'
+        },
+        hidModeDesc: '如果主机不接受键盘和鼠标，请尝试 HID-Only 模式。它会关闭虚拟驱动器和网络。',
+        resetHidDesc: '将键盘和鼠标重新连接到主机。输入失灵时使用。',
         cpuFreq: {
           title: 'CPU 频率',
           description: '设置下次启动时使用的 CPU 频率',
@@ -1141,8 +1155,7 @@ const zh = {
           '{{other}} 正在运行或已设为开机启动。同一时间只能运行一个 VPN：请先停止 {{other}} 并关闭其开机启动。',
         swap: {
           title: '交换内存',
-          tip: '如果守护进程内存不足，请尝试启用交换内存。默认会将交换文件大小设为 256MB，可在“设置 > 设备”中调整。',
-          failed: '修改交换内存失败'
+          tip: '如果守护进程内存不足，请尝试启用交换内存。可在“设置 > 性能”中设置。'
         },
         copy: '复制',
         copied: '链接已复制',

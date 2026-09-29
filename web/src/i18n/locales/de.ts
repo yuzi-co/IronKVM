@@ -553,11 +553,14 @@ const de = {
     settings: {
       title: 'Einstellungen',
       nav: {
-        general: 'Allgemein',
-        device: 'Gerät',
+        system: 'System',
         network: 'Netzwerk',
-        remote: 'Fernzugriff',
+        access: 'Zugang',
+        integrations: 'Integrationen',
         boot: 'Boot',
+        browser: 'Dieser Browser',
+        search: 'Einstellung suchen',
+        noMatch: 'Keine Einstellung gefunden',
         locked:
           'Ein Vorgang läuft. Andere Seiten und das Schließen sind erst danach wieder möglich.',
         vpnProvider: 'VPN-Anbieter'
@@ -900,8 +903,13 @@ const de = {
           'IronKVM: gehärtete Community-Firmware für den Sipeed NanoKVM. Nicht mit Sipeed verbunden.',
         basedOn: 'basiert auf NanoKVM {{version}}'
       },
+      preferences: {
+        title: 'Präferenzen'
+      },
+      performance: {
+        title: 'Leistung'
+      },
       appearance: {
-        title: 'Erscheinungsbild',
         thisBrowser: 'Dieser Browser',
         thisBrowserDesc:
           'Nur in diesem Browser gespeichert. Andere Browser haben eigene Einstellungen.',
@@ -963,7 +971,15 @@ const de = {
           1800: '30 Min',
           3600: '1 Stunde'
         },
-        advanced: 'Erweiterte Einstellungen',
+        sections: {
+          video: 'Video',
+          usb: 'USB',
+          frontPanel: 'Frontpanel'
+        },
+        hidModeDesc:
+          'Nimmt der Host Tastatur und Maus nicht an, versuchen Sie den Nur-HID-Modus. Er schaltet die virtuellen Laufwerke und das Netzwerk ab.',
+        resetHidDesc:
+          'Verbindet Tastatur und Maus neu mit dem Host. Hilft, wenn die Eingabe nicht mehr funktioniert.',
         cpuFreq: {
           title: 'CPU-Frequenz',
           description: 'CPU-Takt für den nächsten Start festlegen',
@@ -1216,8 +1232,7 @@ const de = {
           '{{other}} läuft oder startet beim Systemstart. Es kann nur ein VPN gleichzeitig laufen: Stoppen Sie zuerst {{other}} und deaktivieren Sie dessen Start beim Systemstart.',
         swap: {
           title: 'Swap-Speicher',
-          tip: 'Wenn dem Dienst der Speicher knapp wird, versuchen Sie, Swap-Speicher zu aktivieren. Dadurch wird die Swap-Datei standardmäßig auf 256MB gesetzt; die Größe lässt sich unter „Einstellungen > Gerät“ anpassen.',
-          failed: 'Auslagerungsspeicher konnte nicht geändert werden'
+          tip: 'Wenn dem Dienst der Speicher knapp wird, versuchen Sie, Swap zu aktivieren. Das geht unter „Einstellungen > Leistung“.'
         },
         copy: 'Kopieren',
         copied: 'Link kopiert',

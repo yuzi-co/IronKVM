@@ -544,11 +544,14 @@ const it = {
     settings: {
       title: 'Impostazioni',
       nav: {
-        general: 'Generale',
-        device: 'Dispositivo',
+        system: 'Sistema',
         network: 'Rete',
-        remote: 'Accesso remoto',
+        access: 'Accesso',
+        integrations: 'Integrazioni',
         boot: 'Avvio',
+        browser: 'Questo browser',
+        search: "Cerca un'impostazione",
+        noMatch: 'Nessuna impostazione corrisponde',
         locked:
           "Un'operazione è in corso. Le altre pagine e la chiusura non sono disponibili finché non termina.",
         vpnProvider: 'Provider VPN'
@@ -892,8 +895,13 @@ const it = {
           'IronKVM: firmware comunitario rafforzato per il Sipeed NanoKVM. Non affiliato a Sipeed.',
         basedOn: 'basato su NanoKVM {{version}}'
       },
+      preferences: {
+        title: 'Preferenze'
+      },
+      performance: {
+        title: 'Prestazioni'
+      },
       appearance: {
-        title: 'Aspetto',
         thisBrowser: 'Questo browser',
         thisBrowserDesc:
           'Salvato solo in questo browser. Gli altri browser hanno le proprie impostazioni.',
@@ -955,7 +963,14 @@ const it = {
           1800: '30 min',
           3600: '1 ora'
         },
-        advanced: 'Impostazioni avanzate',
+        sections: {
+          video: 'Video',
+          usb: 'USB',
+          frontPanel: 'Pannello frontale'
+        },
+        hidModeDesc:
+          "Prova la modalità solo HID se l'host non accetta tastiera e mouse. Disattiva le unità virtuali e la rete.",
+        resetHidDesc: "Ricollega tastiera e mouse all'host. Usalo se l'input smette di funzionare.",
         cpuFreq: {
           title: 'Frequenza CPU',
           description: 'Imposta la frequenza della CPU applicata al prossimo avvio',
@@ -1203,8 +1218,7 @@ const it = {
           "{{other}} è in esecuzione o si avvia all'accensione. Può funzionare una sola VPN alla volta: prima arresta {{other}} e disattivane l'avvio all'accensione.",
         swap: {
           title: 'Memoria di swap',
-          tip: 'Se il demone resta a corto di memoria, prova ad abilitare la memoria di swap. Imposta la dimensione del file di swap a 256MB per impostazione predefinita, modificabile in "Impostazioni > Dispositivo".',
-          failed: 'Impossibile modificare la memoria di swap'
+          tip: 'Se il demone resta a corto di memoria, prova ad attivare lo swap. Si imposta in "Impostazioni > Prestazioni".'
         },
         copy: 'Copia',
         copied: 'Link copiato',

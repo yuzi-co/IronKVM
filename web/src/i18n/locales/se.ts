@@ -536,11 +536,14 @@ const se = {
     settings: {
       title: 'Inställningar',
       nav: {
-        general: 'Allmänt',
-        device: 'Enhet',
+        system: 'System',
         network: 'Nätverk',
-        remote: 'Fjärråtkomst',
+        access: 'Åtkomst',
+        integrations: 'Integrationer',
         boot: 'Uppstart',
+        browser: 'Den här webbläsaren',
+        search: 'Sök en inställning',
+        noMatch: 'Inga inställningar matchar',
         locked:
           'En åtgärd pågår. Andra sidor och stängning är inte tillgängliga förrän den är klar.',
         vpnProvider: 'VPN-leverantör'
@@ -877,8 +880,13 @@ const se = {
           'IronKVM: härdad gemenskapsfirmware för Sipeed NanoKVM. Inte knuten till Sipeed.',
         basedOn: 'baserad på NanoKVM {{version}}'
       },
+      preferences: {
+        title: 'Preferenser'
+      },
+      performance: {
+        title: 'Prestanda'
+      },
       appearance: {
-        title: 'Utseende',
         thisBrowser: 'Den här webbläsaren',
         thisBrowserDesc:
           'Sparas bara i den här webbläsaren. Andra webbläsare har egna inställningar.',
@@ -940,7 +948,15 @@ const se = {
           1800: '30 min',
           3600: '1 timme'
         },
-        advanced: 'Avancerade inställningar',
+        sections: {
+          video: 'Video',
+          usb: 'USB',
+          frontPanel: 'Frontpanel'
+        },
+        hidModeDesc:
+          'Prova endast HID-läge om värden inte tar emot tangentbord och mus. Det stänger av de virtuella enheterna och nätverket.',
+        resetHidDesc:
+          'Ansluter tangentbord och mus till värden igen. Använd om inmatningen slutar fungera.',
         cpuFreq: {
           title: 'CPU-frekvens',
           description: 'Ange CPU-klockan som används vid nästa start',
@@ -1186,8 +1202,7 @@ const se = {
           '{{other}} körs eller startar vid uppstart. Bara ett VPN kan köras åt gången: stoppa {{other}} och stäng av dess start vid uppstart först.',
         swap: {
           title: 'Swap-minne',
-          tip: 'Om tjänsten får ont om minne kan du prova att aktivera swap-minne. Detta sätter swap-filens storlek till 256MB som standard, vilket kan justeras i "Inställningar > Enhet".',
-          failed: 'Det gick inte att ändra växlingsminnet'
+          tip: 'Om tjänsten får ont om minne kan du prova att slå på swap. Det ställs in under "Inställningar > Prestanda".'
         },
         copy: 'Kopiera',
         copied: 'Länken kopierad',

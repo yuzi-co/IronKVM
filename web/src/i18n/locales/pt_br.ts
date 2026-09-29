@@ -539,11 +539,14 @@ const pt_br = {
     settings: {
       title: 'Configurações',
       nav: {
-        general: 'Geral',
-        device: 'Dispositivo',
+        system: 'Sistema',
         network: 'Rede',
-        remote: 'Acesso remoto',
+        access: 'Acesso',
+        integrations: 'Integrações',
         boot: 'Inicialização',
+        browser: 'Este navegador',
+        search: 'Buscar uma configuração',
+        noMatch: 'Nenhuma configuração encontrada',
         locked:
           'Uma operação está em andamento. Outras páginas e o fechamento ficam indisponíveis até ela terminar.',
         vpnProvider: 'Provedor de VPN'
@@ -886,8 +889,13 @@ const pt_br = {
           'IronKVM: firmware comunitário reforçado para o Sipeed NanoKVM. Sem vínculo com a Sipeed.',
         basedOn: 'baseado no NanoKVM {{version}}'
       },
+      preferences: {
+        title: 'Preferências'
+      },
+      performance: {
+        title: 'Desempenho'
+      },
       appearance: {
-        title: 'Aparência',
         thisBrowser: 'Este navegador',
         thisBrowserDesc:
           'Salvo apenas neste navegador. Outros navegadores mantêm as próprias configurações.',
@@ -949,7 +957,14 @@ const pt_br = {
           1800: '30 min',
           3600: '1 hora'
         },
-        advanced: 'Configurações Avançadas',
+        sections: {
+          video: 'Vídeo',
+          usb: 'USB',
+          frontPanel: 'Painel frontal'
+        },
+        hidModeDesc:
+          'Tente o modo somente HID se o host não aceitar o teclado e o mouse. Ele desliga as unidades virtuais e a rede.',
+        resetHidDesc: 'Reconecta o teclado e o mouse ao host. Use se a entrada parar de funcionar.',
         cpuFreq: {
           title: 'Frequência da CPU',
           description: 'Defina o clock da CPU aplicado na próxima inicialização',
@@ -1195,8 +1210,7 @@ const pt_br = {
           'O {{other}} está em execução ou inicia na inicialização. Só uma VPN funciona por vez: pare o {{other}} e desative a inicialização automática dele primeiro.',
         swap: {
           title: 'Memória swap',
-          tip: 'Se faltar memória ao daemon, tente habilitar a memória swap. Isso define o tamanho do arquivo de swap como 256MB por padrão, o que pode ser ajustado em "Configurações > Dispositivo".',
-          failed: 'Falha ao alterar a memória swap'
+          tip: 'Se faltar memória ao daemon, tente ativar o swap. Ele é configurado em "Configurações > Desempenho".'
         },
         copy: 'Copiar',
         copied: 'Link copiado',
