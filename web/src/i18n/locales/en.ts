@@ -1091,6 +1091,11 @@ const en = {
           'Present a USB serial port to the remote host, for logging in to this IronKVM when the network is unreachable',
         consoleTip:
           'Anyone who controls the remote host gets a login prompt on this IronKVM. Set a strong password before enabling (Account - Change Password).',
+        usbApply: {
+          changed: 'Changed',
+          discard: 'Discard',
+          pending: 'Changes are not applied yet.'
+        },
         endpoints: {
           title: 'USB endpoints',
           used: '{{used}} of {{total}} used',

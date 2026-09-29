@@ -58,3 +58,21 @@ export function getUsbNetwork() {
 export function setUsbNetwork(mode: Exclude<UsbNetworkMode, 'rndis'>, subnet: string) {
   return http.post('/api/vm/device/usb-network', { mode, subnet });
 }
+
+// What an apply answers: the virtual devices as GET reports them, and the USB
+// network link beside them.
+export type UsbApplied = VirtualDevices & { usbNetwork: UsbNetwork };
+
+// Apply every USB device at once. The board checks the whole set against its
+// endpoint budget and rebuilds the gadget once. An empty subnet keeps the one
+// in use; rndis is accepted only on a board that already runs it.
+export type UsbApplyRequest = {
+  console: boolean;
+  disk: boolean;
+  audio: boolean;
+  network: { mode: UsbNetworkMode; subnet: string };
+};
+
+export function applyUsbDevices(request: UsbApplyRequest) {
+  return http.post('/api/vm/device/virtual/apply', request);
+}

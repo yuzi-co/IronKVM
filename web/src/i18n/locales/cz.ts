@@ -1096,6 +1096,11 @@ const cz = {
           'Zpřístupní vzdálenému hostiteli sériový port USB pro přihlášení do tohoto IronKVM, když je síť nedostupná',
         consoleTip:
           'Kdokoli, kdo ovládá vzdáleného hostitele, dostane přihlašovací výzvu tohoto IronKVM. Před povolením nastavte silné heslo (Účet – Změnit heslo).',
+        usbApply: {
+          changed: 'Změněno',
+          discard: 'Zahodit',
+          pending: 'Změny zatím nejsou použity.'
+        },
         endpoints: {
           title: 'Koncové body USB',
           used: 'Využito {{used}} z {{total}}',

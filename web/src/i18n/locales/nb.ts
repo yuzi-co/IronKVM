@@ -1100,6 +1100,11 @@ const nb = {
           'Vis en USB-serieport for den eksterne verten, for å logge inn på denne IronKVM når nettverket ikke er tilgjengelig',
         consoleTip:
           'Alle som kontrollerer den eksterne verten får en innloggingsforespørsel til denne IronKVM. Angi et sterkt passord før du aktiverer (Konto - Endre passord).',
+        usbApply: {
+          changed: 'Endret',
+          discard: 'Forkast',
+          pending: 'Endringene er ikke tatt i bruk ennå.'
+        },
         endpoints: {
           title: 'USB-endepunkter',
           used: '{{used}} av {{total}} brukt',

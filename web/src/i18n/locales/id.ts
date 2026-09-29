@@ -1105,6 +1105,11 @@ const id = {
           'Menyediakan port serial USB untuk host jarak jauh, untuk masuk ke IronKVM ini saat jaringan tidak dapat dijangkau',
         consoleTip:
           'Siapa pun yang mengendalikan host jarak jauh akan mendapatkan prompt login IronKVM ini. Tetapkan kata sandi yang kuat sebelum mengaktifkan (Akun - Ubah Kata Sandi).',
+        usbApply: {
+          changed: 'Diubah',
+          discard: 'Buang',
+          pending: 'Perubahan belum diterapkan.'
+        },
         endpoints: {
           title: 'Endpoint USB',
           used: '{{used}} dari {{total}} terpakai',

@@ -1115,6 +1115,11 @@ const ca = {
           "Presenta un port sèrie USB a l'amfitrió remot, per iniciar la sessió en aquest IronKVM quan la xarxa no és accessible",
         consoleTip:
           "Qualsevol que controli l'amfitrió remot obté una sol·licitud d'inici de sessió d'aquest IronKVM. Configureu una contrasenya segura abans d'activar-ho (Compte - Canvia contrasenya).",
+        usbApply: {
+          changed: 'Canviat',
+          discard: 'Descarta',
+          pending: "Els canvis encara no s'han aplicat."
+        },
         endpoints: {
           title: 'Endpoints USB',
           used: '{{used}} de {{total}} en ús',

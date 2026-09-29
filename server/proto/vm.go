@@ -147,6 +147,30 @@ type UpdateVirtualDeviceRsp struct {
 	On bool `json:"on"`
 }
 
+// ApplyVirtualDeviceReq is every optional USB function the gadget should carry,
+// all at once, so that one rebuild applies them together. Network.Mode may be
+// rndis only on a board that already runs it, which keeps the link as it is.
+type ApplyVirtualDeviceReq struct {
+	Console bool                   `json:"console"`
+	Disk    bool                   `json:"disk"`
+	Audio   bool                   `json:"audio"`
+	Network ApplyUSBNetworkRequest `json:"network"`
+}
+
+// ApplyUSBNetworkRequest is the link part of ApplyVirtualDeviceReq. An empty
+// subnet keeps the one in use.
+type ApplyUSBNetworkRequest struct {
+	Mode   string `json:"mode" validate:"required,oneof=off ncm ecm rndis"`
+	Subnet string `json:"subnet" validate:"omitempty,max=18"`
+}
+
+// ApplyVirtualDeviceRsp is the state after an apply: what GET
+// /api/vm/device/virtual returns, with the USB network link beside it.
+type ApplyVirtualDeviceRsp struct {
+	GetVirtualDeviceRsp
+	USBNetwork GetUSBNetworkRsp `json:"usbNetwork"`
+}
+
 type SetMemoryLimitReq struct {
 	Enabled bool  `validate:"omitempty"`
 	Limit   int64 `validate:"omitempty"`

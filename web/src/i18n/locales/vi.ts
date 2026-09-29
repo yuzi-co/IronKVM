@@ -1097,6 +1097,11 @@ const vi = {
           'Cung cấp một cổng nối tiếp USB cho máy chủ từ xa, để đăng nhập vào IronKVM này khi không truy cập được mạng',
         consoleTip:
           'Bất kỳ ai điều khiển máy chủ từ xa đều nhận được lời nhắc đăng nhập vào IronKVM này. Đặt mật khẩu mạnh trước khi bật (Tài khoản - Đổi mật khẩu).',
+        usbApply: {
+          changed: 'Đã thay đổi',
+          discard: 'Hủy bỏ',
+          pending: 'Các thay đổi chưa được áp dụng.'
+        },
         endpoints: {
           title: 'Endpoint USB',
           used: 'Đã dùng {{used}} / {{total}}',

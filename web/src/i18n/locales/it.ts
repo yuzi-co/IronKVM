@@ -1121,6 +1121,11 @@ const it = {
           "Presenta una porta seriale USB all'host remoto, per accedere a questo IronKVM quando la rete non è raggiungibile",
         consoleTip:
           "Chiunque controlli l'host remoto ottiene un prompt di accesso a questo IronKVM. Imposta una password complessa prima dell'abilitazione (Account - Modifica password).",
+        usbApply: {
+          changed: 'Modificato',
+          discard: 'Annulla',
+          pending: 'Le modifiche non sono ancora state applicate.'
+        },
         endpoints: {
           title: 'Endpoint USB',
           used: '{{used}} di {{total}} in uso',

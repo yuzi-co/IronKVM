@@ -1095,6 +1095,11 @@ const ko = {
           '원격 호스트에 USB 시리얼 포트를 제공하여, 네트워크에 연결할 수 없을 때 이 IronKVM에 로그인할 수 있게 합니다',
         consoleTip:
           '원격 호스트를 제어하는 사람은 누구나 이 IronKVM의 로그인 프롬프트를 얻게 됩니다. 활성화하기 전에 강력한 비밀번호를 설정하세요. (계정 - 비밀번호 변경)',
+        usbApply: {
+          changed: '변경됨',
+          discard: '취소',
+          pending: '변경 사항이 아직 적용되지 않았습니다.'
+        },
         endpoints: {
           title: 'USB 엔드포인트',
           used: '{{total}}개 중 {{used}}개 사용',

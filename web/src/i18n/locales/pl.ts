@@ -1109,6 +1109,11 @@ const pl = {
           'Udostępnij zdalnemu hostowi port szeregowy USB do logowania do tego IronKVM, gdy sieć jest niedostępna',
         consoleTip:
           'Każdy, kto kontroluje zdalny host, zobaczy monit logowania do tego IronKVM. Ustaw silne hasło przed włączeniem (Konto - Zmień hasło).',
+        usbApply: {
+          changed: 'Zmieniono',
+          discard: 'Odrzuć',
+          pending: 'Zmiany nie zostały jeszcze zastosowane.'
+        },
         endpoints: {
           title: 'Punkty końcowe USB',
           used: 'Użyto {{used}} z {{total}}',
