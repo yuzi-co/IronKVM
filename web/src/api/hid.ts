@@ -1,4 +1,16 @@
+import i18n from '@/i18n/index.ts';
 import { http } from '@/lib/http.ts';
+import { isViewOnly, VIEW_ONLY_CODE } from '@/lib/view-only.ts';
+
+// viewOnlyRefusal answers a request that would type or press on the host
+// while this tab is in view only, without sending it.
+function viewOnlyRefusal() {
+  return Promise.resolve({
+    code: VIEW_ONLY_CODE,
+    msg: i18n.t('screen.viewOnlyBlocked'),
+    data: null
+  });
+}
 
 export type PasteUntypeable = {
   index: number; // offset in the text, in code points
@@ -26,6 +38,7 @@ export type PasteStatus = {
 // text with characters the layout cannot type, code -4 with a PasteCheck,
 // unless skipUntypeable says to type the rest.
 export function paste(content: string, layout: string, delay: number, skipUntypeable = false) {
+  if (isViewOnly()) return viewOnlyRefusal();
   return http.post('/api/hid/paste', { content, layout, delay, skipUntypeable });
 }
 
@@ -56,6 +69,7 @@ export function getHidMode() {
 
 // press and release one Consumer Control (media) or System Control (power) key
 export function sendKey(page: 'consumer' | 'system', usage: number) {
+  if (isViewOnly()) return viewOnlyRefusal();
   return http.post('/api/hid/key', { page, usage });
 }
 

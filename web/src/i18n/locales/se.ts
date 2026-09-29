@@ -89,6 +89,22 @@ const se = {
       done: 'Konfigurationen är klar. Anslut den här enheten till ditt vanliga nätverk igen och öppna kortet på dess nya adress.'
     },
     screen: {
+      viewOnly: 'Endast visning',
+      viewOnlyTip:
+        'Den här fliken slutar skicka tangentbord och mus till värden. Skript, musjigglern och andra tittare påverkas inte.',
+      viewOnlyOff: 'Stäng av endast visning',
+      viewOnlyBlocked: 'Endast visning är på, så inget skickades till värden',
+      pauseHidden: 'Pausa när fliken är dold',
+      pauseHiddenTip:
+        'Stoppar video och ljud några sekunder efter att fliken döljs och startar dem igen när du kommer tillbaka.',
+      screenshot: 'Skärmbild',
+      screenshotTip: 'Sparar värdens skärm som PNG i full inspelningsstorlek.',
+      screenshotFailed: 'Skärmbilden misslyckades',
+      stream: {
+        ok: 'bild OK',
+        noSignal: 'ingen signal',
+        failed: 'strömmen misslyckades'
+      },
       codecNoWebrtcHevc: 'Den här webbläsaren kan inte ta emot H.265 via WebRTC',
       codecNoHevc: 'Den här webbläsaren kan inte avkoda H.265',
       codecNote:

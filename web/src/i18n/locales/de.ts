@@ -94,6 +94,22 @@ const de = {
       done: 'Einrichtung abgeschlossen. Dieses Gerät wieder mit dem üblichen Netzwerk verbinden und das Board unter seiner neuen Adresse öffnen.'
     },
     screen: {
+      viewOnly: 'Nur ansehen',
+      viewOnlyTip:
+        'Dieser Tab sendet keine Tastatur- und Mauseingaben mehr an den Host. Skripte, der Maus-Jiggler und andere Zuschauer sind nicht betroffen.',
+      viewOnlyOff: 'Nur ansehen ausschalten',
+      viewOnlyBlocked: 'Nur ansehen ist aktiv, daher wurde nichts an den Host gesendet',
+      pauseHidden: 'Pausieren, wenn Tab verborgen',
+      pauseHiddenTip:
+        'Stoppt Video und Ton einige Sekunden nachdem dieser Tab verborgen wurde und startet sie wieder, wenn Sie zurückkehren.',
+      screenshot: 'Bildschirmfoto',
+      screenshotTip: 'Speichert den Bildschirm des Hosts als PNG-Datei in voller Aufnahmegröße.',
+      screenshotFailed: 'Bildschirmfoto fehlgeschlagen',
+      stream: {
+        ok: 'Bild OK',
+        noSignal: 'kein Signal',
+        failed: 'Stream fehlgeschlagen'
+      },
       codecNoWebrtcHevc: 'Dieser Browser kann H.265 nicht über WebRTC empfangen',
       codecNoHevc: 'Dieser Browser kann H.265 nicht dekodieren',
       codecNote:

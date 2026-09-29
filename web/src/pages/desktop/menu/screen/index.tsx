@@ -7,6 +7,7 @@ import { updateScreen } from '@/api/vm';
 import { ScreenSettings } from '@/types';
 import { defaultScreenSettings, screenSettingsAtom, videoModeAtom } from '@/jotai/screen.ts';
 import { MenuItem } from '@/components/menu-item.tsx';
+import { StatusDot, type DotTone } from '@/components/status-dot.tsx';
 
 import { Codec } from './codec.tsx';
 import { getQualityMap, getScreenType } from './constants.ts';
@@ -18,6 +19,8 @@ import { Quality } from './quality';
 import { Reset } from './reset.tsx';
 import { Resolution } from './resolution';
 import { Scale } from './scale';
+import { Session } from './session.tsx';
+import { useStreamState } from './use-stream-state.ts';
 import { VideoMode } from './video-mode.tsx';
 
 // The quality item offers four steps rather than a value, and what those steps
@@ -58,8 +61,11 @@ function qualityKey(videoMode: string, settings: ScreenSettings): number {
 // answer. Nothing is mirrored into component state: every item below is drawn
 // from the atom and writes back to it, so there is one copy of each setting in
 // the browser and it is the one the server reported.
+const streamTone: Record<string, DotTone> = { ok: 'ok', noSignal: 'warning', failed: 'error' };
+
 export const Screen = () => {
   const { t } = useTranslation();
+  const stream = useStreamState();
 
   const videoMode = useAtomValue(videoModeAtom);
   const [settings, setSettings] = useAtom(screenSettingsAtom);
@@ -100,6 +106,10 @@ export const Screen = () => {
       <Scale />
       <OriginalResolution />
 
+      <div className="border-t border-neutral-700 pt-1">
+        <Session />
+      </div>
+
       <button
         type="button"
         aria-expanded={isAdvancedOpen}
@@ -127,5 +137,16 @@ export const Screen = () => {
     </div>
   );
 
-  return <MenuItem title={t('screen.title')} icon={<MonitorIcon size={18} />} content={content} />;
+  // The dot shows whether the picture arrives. It stays off until something
+  // says either way, and while the stream is paused.
+  const tone = streamTone[stream];
+  const title = tone ? `${t('screen.title')}: ${t(`screen.stream.${stream}`)}` : t('screen.title');
+  const icon = (
+    <div className="relative">
+      <MonitorIcon size={18} />
+      {tone && <StatusDot tone={tone} />}
+    </div>
+  );
+
+  return <MenuItem title={title} icon={icon} content={content} />;
 };

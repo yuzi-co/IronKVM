@@ -93,6 +93,22 @@ const nl = {
       done: 'Instellen voltooid. Verbind dit apparaat weer met uw gebruikelijke netwerk en open het bord op zijn nieuwe adres.'
     },
     screen: {
+      viewOnly: 'Alleen kijken',
+      viewOnlyTip:
+        'Dit tabblad stuurt geen toetsenbord- en muisinvoer meer naar de host. Scripts, de muis-jiggler en andere kijkers merken er niets van.',
+      viewOnlyOff: 'Alleen kijken uitzetten',
+      viewOnlyBlocked: 'Alleen kijken staat aan, er is niets naar de host gestuurd',
+      pauseHidden: 'Pauzeren als tabblad verborgen is',
+      pauseHiddenTip:
+        'Stopt beeld en geluid enkele seconden nadat dit tabblad verborgen is en start ze weer als u terugkomt.',
+      screenshot: 'Schermafbeelding',
+      screenshotTip: 'Slaat het scherm van de host op als PNG op volle opnamegrootte.',
+      screenshotFailed: 'Schermafbeelding mislukt',
+      stream: {
+        ok: 'beeld OK',
+        noSignal: 'geen signaal',
+        failed: 'stream mislukt'
+      },
       codecNoWebrtcHevc: 'Deze browser kan H.265 niet via WebRTC ontvangen',
       codecNoHevc: 'Deze browser kan H.265 niet decoderen',
       codecNote:

@@ -91,6 +91,22 @@ const pt_br = {
       done: 'Configuração concluída. Reconecte este dispositivo à sua rede habitual e abra a placa em seu novo endereço.'
     },
     screen: {
+      viewOnly: 'Somente visualizar',
+      viewOnlyTip:
+        'Esta aba deixa de enviar teclado e mouse ao host. Scripts, o jiggler do mouse e outros espectadores não são afetados.',
+      viewOnlyOff: 'Desativar somente visualizar',
+      viewOnlyBlocked: 'Somente visualizar está ativo, nada foi enviado ao host',
+      pauseHidden: 'Pausar com a aba oculta',
+      pauseHiddenTip:
+        'Para o vídeo e o som alguns segundos depois que esta aba é ocultada e os retoma quando você volta.',
+      screenshot: 'Captura de tela',
+      screenshotTip: 'Salva a tela do host como PNG no tamanho total de captura.',
+      screenshotFailed: 'Falha na captura de tela',
+      stream: {
+        ok: 'imagem OK',
+        noSignal: 'sem sinal',
+        failed: 'falha no stream'
+      },
       codecNoWebrtcHevc: 'Este navegador não recebe H.265 via WebRTC',
       codecNoHevc: 'Este navegador não decodifica H.265',
       codecNote:

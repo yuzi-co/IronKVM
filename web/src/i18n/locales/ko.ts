@@ -90,6 +90,21 @@ const ko = {
       done: '설정이 완료되었습니다. 이 기기를 평소 네트워크에 다시 연결하고 보드의 새 주소로 접속하세요.'
     },
     screen: {
+      viewOnly: '보기 전용',
+      viewOnlyTip:
+        '이 탭은 호스트에 키보드와 마우스 입력을 보내지 않습니다. 스크립트, 마우스 지글러, 다른 시청자에게는 영향이 없습니다.',
+      viewOnlyOff: '보기 전용 끄기',
+      viewOnlyBlocked: '보기 전용이 켜져 있어 호스트에 아무것도 보내지 않았습니다',
+      pauseHidden: '탭이 숨겨지면 일시 정지',
+      pauseHiddenTip: '이 탭이 숨겨지고 몇 초 뒤 영상과 소리를 멈추고, 돌아오면 다시 시작합니다.',
+      screenshot: '스크린샷',
+      screenshotTip: '호스트 화면을 전체 캡처 크기의 PNG로 저장합니다.',
+      screenshotFailed: '스크린샷 실패',
+      stream: {
+        ok: '화면 정상',
+        noSignal: '신호 없음',
+        failed: '스트림 실패'
+      },
       codecNoWebrtcHevc: '이 브라우저는 WebRTC로 H.265를 받을 수 없습니다',
       codecNoHevc: '이 브라우저는 H.265를 디코딩할 수 없습니다',
       codecNote:

@@ -10,6 +10,7 @@ import * as storage from '@/lib/localstorage.ts';
 import { client } from '@/lib/websocket.ts';
 import { picoclawChatOpenAtom } from '@/jotai/picoclaw.ts';
 import {
+  captureStatusAtom,
   controlRegionModeAtom,
   inputRegionAtom,
   manualInputRegionAtom,
@@ -44,6 +45,8 @@ import {
 } from './screen/geometry.ts';
 import { InputRegionOverlay } from './screen/input-region-overlay.tsx';
 import { ManualRegion } from './screen/manual-region.tsx';
+import { usePauseWhenHidden } from './screen/use-pause-when-hidden.ts';
+import { ViewOnlyBadge } from './view-only-badge.tsx';
 import { VirtualKeyboard } from './virtual-keyboard';
 
 // H.264 direct is the default where the browser can decode both its video and
@@ -78,6 +81,13 @@ export const Desktop = () => {
   const [picoclawSidebarWidth, setPicoclawSidebarWidth] = useState(420);
   const captureStatus = useCaptureStatus(activeVideoMode);
   const ion = useIonStatus();
+  const isStreamPaused = usePauseWhenHidden();
+  const setCaptureStatus = useSetAtom(captureStatusAtom);
+
+  // The toolbar's Screen dot and alert icon read the same status.
+  useEffect(() => {
+    setCaptureStatus(captureStatus);
+  }, [captureStatus, setCaptureStatus]);
 
   const [videoMode, setVideoMode] = useAtom(videoModeAtom);
   const [resolution, setResolution] = useAtom(resolutionAtom);
@@ -253,6 +263,7 @@ export const Desktop = () => {
         <H264ModeNotification />
         <AbsoluteMouseWarning />
         <InputDisconnectedWarning />
+        <ViewOnlyBadge />
       </OverlayBoundary>
 
       {videoMode && resolution && (
@@ -276,9 +287,7 @@ export const Desktop = () => {
                     )
                   ) : (
                     <>
-                      <PanelBoundary name="screen">
-                        <Screen />
-                      </PanelBoundary>
+                      <PanelBoundary name="screen">{!isStreamPaused && <Screen />}</PanelBoundary>
                       <OverlayBoundary name="capture-status">
                         <CaptureStatusOverlay status={captureStatus} />
                       </OverlayBoundary>

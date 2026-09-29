@@ -88,6 +88,20 @@ const zh = {
       done: '设置完成。请将此设备连回常用网络，并通过新地址打开板子。'
     },
     screen: {
+      viewOnly: '仅查看',
+      viewOnlyTip: '此标签页不再向主机发送键盘和鼠标输入。脚本、鼠标防休眠和其他查看者不受影响。',
+      viewOnlyOff: '关闭仅查看',
+      viewOnlyBlocked: '仅查看已开启，未向主机发送任何内容',
+      pauseHidden: '标签页隐藏时暂停',
+      pauseHiddenTip: '此标签页隐藏几秒后停止视频和声音，返回时重新开始。',
+      screenshot: '截图',
+      screenshotTip: '将主机屏幕以完整采集尺寸保存为 PNG 文件。',
+      screenshotFailed: '截图失败',
+      stream: {
+        ok: '画面正常',
+        noSignal: '无信号',
+        failed: '视频流失败'
+      },
       codecNoWebrtcHevc: '此浏览器无法通过 WebRTC 接收 H.265',
       codecNoHevc: '此浏览器无法解码 H.265',
       codecNote:

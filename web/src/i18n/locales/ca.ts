@@ -93,6 +93,22 @@ const ca = {
       done: 'Configuració acabada. Torneu a connectar aquest dispositiu a la vostra xarxa habitual i obriu la placa a la seva nova adreça.'
     },
     screen: {
+      viewOnly: 'Només veure',
+      viewOnlyTip:
+        "Aquesta pestanya deixa d'enviar teclat i ratolí a l'amfitrió. Els scripts, el jiggler del ratolí i altres espectadors no es veuen afectats.",
+      viewOnlyOff: 'Desactiva només veure',
+      viewOnlyBlocked: "Només veure és actiu, no s'ha enviat res a l'amfitrió",
+      pauseHidden: 'Pausa amb la pestanya amagada',
+      pauseHiddenTip:
+        "Atura el vídeo i el so uns segons després d'amagar aquesta pestanya, i els reprèn quan hi tornes.",
+      screenshot: 'Captura de pantalla',
+      screenshotTip: "Desa la pantalla de l'amfitrió com a PNG a mida completa de captura.",
+      screenshotFailed: 'Ha fallat la captura de pantalla',
+      stream: {
+        ok: 'imatge correcta',
+        noSignal: 'sense senyal',
+        failed: 'error del flux'
+      },
       codecNoWebrtcHevc: 'Aquest navegador no pot rebre H.265 per WebRTC',
       codecNoHevc: 'Aquest navegador no pot descodificar H.265',
       codecNote:

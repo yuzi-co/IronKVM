@@ -92,6 +92,22 @@ const hu = {
       done: 'A beállítás kész. Csatlakoztassa vissza ezt az eszközt a szokásos hálózathoz, és nyissa meg a panelt az új címén.'
     },
     screen: {
+      viewOnly: 'Csak nézet',
+      viewOnlyTip:
+        'Ez a lap nem küld több billentyűzet- és egérbemenetet a gazdagépnek. A szkripteket, az egérmozgatót és a többi nézőt ez nem érinti.',
+      viewOnlyOff: 'Csak nézet kikapcsolása',
+      viewOnlyBlocked: 'A csak nézet be van kapcsolva, semmi sem ment a gazdagépre',
+      pauseHidden: 'Szünet, ha a lap rejtett',
+      pauseHiddenTip:
+        'Néhány másodperccel a lap elrejtése után leállítja a képet és a hangot, és visszatéréskor újraindítja.',
+      screenshot: 'Képernyőkép',
+      screenshotTip: 'A gazdagép képernyőjét PNG-fájlba menti teljes rögzítési méretben.',
+      screenshotFailed: 'A képernyőkép nem sikerült',
+      stream: {
+        ok: 'kép rendben',
+        noSignal: 'nincs jel',
+        failed: 'stream hiba'
+      },
       codecNoWebrtcHevc: 'Ez a böngésző nem tud H.265-öt fogadni WebRTC-n keresztül',
       codecNoHevc: 'Ez a böngésző nem tudja dekódolni a H.265-öt',
       codecNote:

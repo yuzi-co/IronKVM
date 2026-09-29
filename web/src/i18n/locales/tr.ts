@@ -92,6 +92,22 @@ const tr = {
       done: 'Kurulum tamamlandı. Bu cihazı her zamanki ağınıza yeniden bağlayın ve kartı yeni adresinden açın.'
     },
     screen: {
+      viewOnly: 'Yalnızca izle',
+      viewOnlyTip:
+        'Bu sekme ana bilgisayara klavye ve fare girdisi göndermeyi bırakır. Betikler, fare titreştirici ve diğer izleyiciler etkilenmez.',
+      viewOnlyOff: 'Yalnızca izlemeyi kapat',
+      viewOnlyBlocked: 'Yalnızca izle açık, ana bilgisayara hiçbir şey gönderilmedi',
+      pauseHidden: 'Sekme gizliyken duraklat',
+      pauseHiddenTip:
+        'Bu sekme gizlendikten birkaç saniye sonra görüntüyü ve sesi durdurur, döndüğünüzde yeniden başlatır.',
+      screenshot: 'Ekran görüntüsü',
+      screenshotTip: 'Ana bilgisayar ekranını tam yakalama boyutunda PNG olarak kaydeder.',
+      screenshotFailed: 'Ekran görüntüsü alınamadı',
+      stream: {
+        ok: 'görüntü tamam',
+        noSignal: 'sinyal yok',
+        failed: 'akış başarısız'
+      },
       codecNoWebrtcHevc: 'Bu tarayıcı WebRTC üzerinden H.265 alamıyor',
       codecNoHevc: 'Bu tarayıcı H.265 çözemiyor',
       codecNote:

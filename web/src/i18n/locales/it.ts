@@ -92,6 +92,22 @@ const it = {
       done: 'Configurazione completata. Ricollega questo dispositivo alla tua rete abituale e apri la scheda al suo nuovo indirizzo.'
     },
     screen: {
+      viewOnly: 'Solo visione',
+      viewOnlyTip:
+        "Questa scheda smette di inviare tastiera e mouse all'host. Script, jiggler del mouse e altri spettatori non sono interessati.",
+      viewOnlyOff: 'Disattiva solo visione',
+      viewOnlyBlocked: "Solo visione è attivo, non è stato inviato nulla all'host",
+      pauseHidden: 'Pausa con scheda nascosta',
+      pauseHiddenTip:
+        'Ferma video e audio pochi secondi dopo che questa scheda viene nascosta e li riavvia al tuo ritorno.',
+      screenshot: 'Screenshot',
+      screenshotTip: "Salva lo schermo dell'host come PNG alla piena dimensione di acquisizione.",
+      screenshotFailed: 'Screenshot non riuscito',
+      stream: {
+        ok: 'immagine OK',
+        noSignal: 'nessun segnale',
+        failed: 'stream non riuscito'
+      },
       codecNoWebrtcHevc: 'Questo browser non può ricevere H.265 tramite WebRTC',
       codecNoHevc: 'Questo browser non può decodificare H.265',
       codecNote:

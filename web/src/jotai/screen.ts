@@ -1,6 +1,11 @@
 import { atom } from 'jotai';
 
 import { ControlRegionMode, InputRegion, Resolution, ScreenSettings } from '@/types';
+import type { CaptureReport } from '@/lib/health.ts';
+import { KeyboardReport } from '@/lib/keyboard.ts';
+import { getPauseWhenHidden, setPauseWhenHidden } from '@/lib/localstorage.ts';
+import { setViewOnly } from '@/lib/view-only.ts';
+import { client, MessageEvent } from '@/lib/websocket.ts';
 
 export const isHdmiEnabledAtom = atom(true);
 
@@ -46,3 +51,38 @@ export const controlRegionModeAtom = atom<ControlRegionMode>('off');
 
 // show the live input-region selection overlay
 export const inputRegionSelectingAtom = atom(false);
+
+// The capture status the board last reported for this viewer's video mode,
+// or null while the stream is fine. The desktop keeps it; the toolbar's
+// Screen dot and alert icon read it.
+export const captureStatusAtom = atom<CaptureReport>(null);
+
+// True while the stream is stopped because the tab is hidden.
+export const streamPausedAtom = atom(false);
+
+const pauseWhenHiddenBaseAtom = atom(getPauseWhenHidden());
+
+// Whether to stop the stream while the tab is hidden, remembered per browser.
+export const pauseWhenHiddenAtom = atom(
+  (get) => get(pauseWhenHiddenBaseAtom),
+  (_get, set, enabled: boolean) => {
+    set(pauseWhenHiddenBaseAtom, enabled);
+    setPauseWhenHidden(enabled);
+  }
+);
+
+const viewOnlyBaseAtom = atom(false);
+
+// View only: this tab sends the host no keyboard or mouse input. Turning it
+// on first releases every key, so a key held at that moment is not left down
+// on the host with nothing to let it go.
+export const viewOnlyAtom = atom(
+  (get) => get(viewOnlyBaseAtom),
+  (_get, set, enabled: boolean) => {
+    if (enabled) {
+      client.send(new Uint8Array([MessageEvent.Keyboard, ...new KeyboardReport().reset()]));
+    }
+    setViewOnly(enabled);
+    set(viewOnlyBaseAtom, enabled);
+  }
+);

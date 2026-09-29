@@ -92,6 +92,22 @@ const cz = {
       done: 'Nastavení dokončeno. Připojte toto zařízení zpět k obvyklé síti a otevřete desku na její nové adrese.'
     },
     screen: {
+      viewOnly: 'Jen sledovat',
+      viewOnlyTip:
+        'Tato karta přestane posílat hostiteli klávesnici a myš. Skripty, jiggler myši a ostatní diváci nejsou ovlivněni.',
+      viewOnlyOff: 'Vypnout jen sledování',
+      viewOnlyBlocked: 'Je zapnuto jen sledování, hostiteli nebylo nic odesláno',
+      pauseHidden: 'Pozastavit při skryté kartě',
+      pauseHiddenTip:
+        'Zastaví video i zvuk několik sekund po skrytí této karty a po návratu je znovu spustí.',
+      screenshot: 'Snímek obrazovky',
+      screenshotTip: 'Uloží obrazovku hostitele jako PNG v plné velikosti záznamu.',
+      screenshotFailed: 'Snímek obrazovky se nezdařil',
+      stream: {
+        ok: 'obraz v pořádku',
+        noSignal: 'bez signálu',
+        failed: 'stream selhal'
+      },
       codecNoWebrtcHevc: 'Tento prohlížeč neumí přijímat H.265 přes WebRTC',
       codecNoHevc: 'Tento prohlížeč neumí dekódovat H.265',
       codecNote:

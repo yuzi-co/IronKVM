@@ -2,6 +2,7 @@ import { ICloseEvent, IMessageEvent, w3cwebsocket as W3cWebSocket } from 'websoc
 
 import { notifyAuthExpired } from '@/lib/auth-events.ts';
 import { getBaseUrl } from '@/lib/service.ts';
+import { isViewOnly } from '@/lib/view-only.ts';
 
 type MessageHandler = (message: IMessageEvent) => void;
 type SendData = number[] | ArrayBuffer | Uint8Array;
@@ -35,6 +36,15 @@ export type WsStatus = {
 };
 
 type StatusHandler = (status: WsStatus) => void;
+
+// isInputReport says whether a message carries keyboard, mouse or touch input
+// for the host. The event type is its first byte.
+function isInputReport(data: SendData): boolean {
+  const first = data instanceof ArrayBuffer ? new Uint8Array(data)[0] : data[0];
+  return (
+    first === MessageEvent.Keyboard || first === MessageEvent.Mouse || first === MessageEvent.Touch
+  );
+}
 
 interface WsClientOptions {
   url?: string;
@@ -112,6 +122,12 @@ export class WsClient {
 
   public send(data: SendData): boolean {
     if (!this.instance || !this.isConnected) {
+      return false;
+    }
+
+    // View only holds back every keyboard, mouse and touch report here, the
+    // one place they all pass, so no input path can forget to check.
+    if (isViewOnly() && isInputReport(data)) {
       return false;
     }
 

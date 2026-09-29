@@ -91,6 +91,22 @@ const id = {
       done: 'Penyiapan selesai. Sambungkan kembali perangkat ini ke jaringan biasa Anda dan buka papan di alamat barunya.'
     },
     screen: {
+      viewOnly: 'Hanya lihat',
+      viewOnlyTip:
+        'Tab ini berhenti mengirim keyboard dan mouse ke host. Skrip, jiggler mouse, dan penonton lain tidak terpengaruh.',
+      viewOnlyOff: 'Matikan hanya lihat',
+      viewOnlyBlocked: 'Hanya lihat aktif, jadi tidak ada yang dikirim ke host',
+      pauseHidden: 'Jeda saat tab tersembunyi',
+      pauseHiddenTip:
+        'Menghentikan video dan suaranya beberapa detik setelah tab ini disembunyikan, dan memulainya lagi saat Anda kembali.',
+      screenshot: 'Tangkapan layar',
+      screenshotTip: 'Menyimpan layar host sebagai PNG dalam ukuran tangkapan penuh.',
+      screenshotFailed: 'Tangkapan layar gagal',
+      stream: {
+        ok: 'gambar OK',
+        noSignal: 'tidak ada sinyal',
+        failed: 'stream gagal'
+      },
       codecNoWebrtcHevc: 'Browser ini tidak dapat menerima H.265 melalui WebRTC',
       codecNoHevc: 'Browser ini tidak dapat mendekode H.265',
       codecNote:

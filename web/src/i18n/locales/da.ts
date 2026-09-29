@@ -91,6 +91,22 @@ const da = {
       done: 'Opsætningen er færdig. Forbind denne enhed til dit sædvanlige netværk igen, og åbn kortet på dets nye adresse.'
     },
     screen: {
+      viewOnly: 'Kun visning',
+      viewOnlyTip:
+        'Denne fane holder op med at sende tastatur og mus til værten. Scripts, muse-jiggleren og andre seere påvirkes ikke.',
+      viewOnlyOff: 'Slå kun visning fra',
+      viewOnlyBlocked: 'Kun visning er slået til, så intet blev sendt til værten',
+      pauseHidden: 'Pause når fanen er skjult',
+      pauseHiddenTip:
+        'Stopper video og lyd et par sekunder efter at fanen skjules, og starter dem igen når du vender tilbage.',
+      screenshot: 'Skærmbillede',
+      screenshotTip: 'Gemmer værtens skærm som PNG i fuld optagestørrelse.',
+      screenshotFailed: 'Skærmbillede mislykkedes',
+      stream: {
+        ok: 'billede OK',
+        noSignal: 'intet signal',
+        failed: 'stream fejlet'
+      },
       codecNoWebrtcHevc: 'Denne browser kan ikke modtage H.265 via WebRTC',
       codecNoHevc: 'Denne browser kan ikke afkode H.265',
       codecNote:

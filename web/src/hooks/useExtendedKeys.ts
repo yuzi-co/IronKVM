@@ -2,6 +2,7 @@ import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 
 import { sendKey } from '@/api/hid.ts';
+import { VIEW_ONLY_CODE } from '@/lib/view-only.ts';
 import { useHidMode } from '@/hooks/useHidMode.ts';
 
 export type ExtendedKeysState = 'hidden' | 'disabled' | 'available';
@@ -31,7 +32,7 @@ export function useSendKey() {
       const rsp = await sendKey(page, usage);
       if (rsp.code !== 0) {
         console.log(rsp.msg);
-        message.error(t('input.keyFailed'));
+        message.error(rsp.code === VIEW_ONLY_CODE ? rsp.msg : t('input.keyFailed'));
       }
     } catch (err) {
       console.log(err);

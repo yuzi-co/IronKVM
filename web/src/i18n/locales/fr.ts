@@ -95,6 +95,22 @@ const fr = {
       done: 'Configuration terminée. Reconnectez cet appareil à votre réseau habituel et ouvrez la carte à sa nouvelle adresse.'
     },
     screen: {
+      viewOnly: 'Lecture seule',
+      viewOnlyTip:
+        "Cet onglet n'envoie plus le clavier ni la souris à l'hôte. Les scripts, le jiggler de souris et les autres spectateurs ne sont pas concernés.",
+      viewOnlyOff: 'Désactiver la lecture seule',
+      viewOnlyBlocked: "La lecture seule est active, rien n'a été envoyé à l'hôte",
+      pauseHidden: "Pause quand l'onglet est masqué",
+      pauseHiddenTip:
+        'Arrête la vidéo et le son quelques secondes après que cet onglet est masqué, et les relance à votre retour.',
+      screenshot: "Capture d'écran",
+      screenshotTip: "Enregistre l'écran de l'hôte en PNG, à la taille de capture complète.",
+      screenshotFailed: "Échec de la capture d'écran",
+      stream: {
+        ok: 'image OK',
+        noSignal: 'pas de signal',
+        failed: 'flux en échec'
+      },
       codecNoWebrtcHevc: 'Ce navigateur ne peut pas recevoir le H.265 via WebRTC',
       codecNoHevc: 'Ce navigateur ne peut pas décoder le H.265',
       codecNote:

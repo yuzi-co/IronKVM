@@ -92,6 +92,21 @@ const ja = {
       done: 'セットアップが完了しました。このデバイスを普段のネットワークに戻し、ボードの新しいアドレスを開いてください。'
     },
     screen: {
+      viewOnly: '閲覧のみ',
+      viewOnlyTip:
+        'このタブはホストへのキーボードとマウスの入力を送らなくなります。スクリプト、マウスジグラー、他の閲覧者には影響しません。',
+      viewOnlyOff: '閲覧のみをオフにする',
+      viewOnlyBlocked: '閲覧のみがオンのため、ホストには何も送信されませんでした',
+      pauseHidden: 'タブが隠れたら一時停止',
+      pauseHiddenTip: 'このタブが隠れて数秒後に映像と音声を止め、戻ったときに再開します。',
+      screenshot: 'スクリーンショット',
+      screenshotTip: 'ホストの画面をキャプチャの原寸で PNG として保存します。',
+      screenshotFailed: 'スクリーンショットに失敗しました',
+      stream: {
+        ok: '映像は正常',
+        noSignal: '信号なし',
+        failed: 'ストリーム失敗'
+      },
       codecNoWebrtcHevc: 'このブラウザーは WebRTC で H.265 を受信できません',
       codecNoHevc: 'このブラウザーは H.265 をデコードできません',
       codecNote:

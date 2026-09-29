@@ -88,6 +88,20 @@ const zh_tw = {
       done: '設定完成。請將此裝置連回常用網路，並透過新位址開啟板子。'
     },
     screen: {
+      viewOnly: '僅檢視',
+      viewOnlyTip: '此分頁不再向主機傳送鍵盤和滑鼠輸入。指令碼、滑鼠防休眠和其他檢視者不受影響。',
+      viewOnlyOff: '關閉僅檢視',
+      viewOnlyBlocked: '僅檢視已開啟，未向主機傳送任何內容',
+      pauseHidden: '分頁隱藏時暫停',
+      pauseHiddenTip: '此分頁隱藏幾秒後停止影像和聲音，返回時重新開始。',
+      screenshot: '螢幕截圖',
+      screenshotTip: '將主機螢幕以完整擷取尺寸儲存為 PNG 檔案。',
+      screenshotFailed: '螢幕截圖失敗',
+      stream: {
+        ok: '畫面正常',
+        noSignal: '無訊號',
+        failed: '串流失敗'
+      },
       codecNoWebrtcHevc: '此瀏覽器無法透過 WebRTC 接收 H.265',
       codecNoHevc: '此瀏覽器無法解碼 H.265',
       codecNote:

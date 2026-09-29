@@ -91,6 +91,22 @@ const vi = {
       done: 'Đã cài đặt xong. Hãy kết nối lại thiết bị này với mạng thường dùng và mở bo mạch tại địa chỉ mới.'
     },
     screen: {
+      viewOnly: 'Chỉ xem',
+      viewOnlyTip:
+        'Tab này ngừng gửi bàn phím và chuột tới máy chủ. Script, trình rung chuột và người xem khác không bị ảnh hưởng.',
+      viewOnlyOff: 'Tắt chỉ xem',
+      viewOnlyBlocked: 'Đang bật chỉ xem nên không có gì được gửi tới máy chủ',
+      pauseHidden: 'Tạm dừng khi tab bị ẩn',
+      pauseHiddenTip:
+        'Dừng hình và tiếng vài giây sau khi tab này bị ẩn, và phát lại khi bạn quay lại.',
+      screenshot: 'Chụp màn hình',
+      screenshotTip: 'Lưu màn hình máy chủ thành tệp PNG ở kích thước chụp đầy đủ.',
+      screenshotFailed: 'Chụp màn hình thất bại',
+      stream: {
+        ok: 'hình ảnh ổn',
+        noSignal: 'không có tín hiệu',
+        failed: 'luồng bị lỗi'
+      },
       codecNoWebrtcHevc: 'Trình duyệt này không nhận được H.265 qua WebRTC',
       codecNoHevc: 'Trình duyệt này không giải mã được H.265',
       codecNote:

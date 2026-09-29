@@ -92,6 +92,22 @@ const pl = {
       done: 'Konfiguracja zakończona. Połącz to urządzenie z powrotem ze swoją zwykłą siecią i otwórz płytkę pod jej nowym adresem.'
     },
     screen: {
+      viewOnly: 'Tylko podgląd',
+      viewOnlyTip:
+        'Ta karta przestaje wysyłać do hosta klawiaturę i mysz. Skrypty, jiggler myszy i inni widzowie nie są objęci.',
+      viewOnlyOff: 'Wyłącz tylko podgląd',
+      viewOnlyBlocked: 'Włączony jest tylko podgląd, do hosta nic nie wysłano',
+      pauseHidden: 'Wstrzymaj, gdy karta ukryta',
+      pauseHiddenTip:
+        'Zatrzymuje obraz i dźwięk kilka sekund po ukryciu tej karty i wznawia je po powrocie.',
+      screenshot: 'Zrzut ekranu',
+      screenshotTip: 'Zapisuje ekran hosta jako PNG w pełnym rozmiarze przechwytywania.',
+      screenshotFailed: 'Zrzut ekranu nie powiódł się',
+      stream: {
+        ok: 'obraz OK',
+        noSignal: 'brak sygnału',
+        failed: 'błąd strumienia'
+      },
       codecNoWebrtcHevc: 'Ta przeglądarka nie odbiera H.265 przez WebRTC',
       codecNoHevc: 'Ta przeglądarka nie dekoduje H.265',
       codecNote:

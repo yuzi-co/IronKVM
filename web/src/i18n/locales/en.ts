@@ -90,6 +90,22 @@ const en = {
       done: 'Setup finished. Connect this device back to your usual network and open the board at its new address.'
     },
     screen: {
+      viewOnly: 'View only',
+      viewOnlyTip:
+        'This tab stops sending keyboard and mouse input to the host. Scripts, the mouse jiggler and other viewers are not affected.',
+      viewOnlyOff: 'Turn off view only',
+      viewOnlyBlocked: 'View only is on, so nothing was sent to the host',
+      pauseHidden: 'Pause when tab is hidden',
+      pauseHiddenTip:
+        'Stops the video and its sound a few seconds after this tab is hidden, and starts it again when you return.',
+      screenshot: 'Screenshot',
+      screenshotTip: 'Saves the host screen as a PNG file at full capture size.',
+      screenshotFailed: 'Screenshot failed',
+      stream: {
+        ok: 'picture OK',
+        noSignal: 'no signal',
+        failed: 'stream failed'
+      },
       codecNoWebrtcHevc: 'This browser cannot receive H.265 over WebRTC',
       codecNoHevc: 'This browser cannot decode H.265',
       codecNote:
