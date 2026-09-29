@@ -201,7 +201,54 @@ type SetHdmiIdleTimeoutReq struct {
 }
 
 type GetSSHStateRsp struct {
+	// Enabled is the owner's setting: sshd starts at boot.
 	Enabled bool `json:"enabled"`
+
+	// Running is whether sshd is up now.
+	Running bool `json:"running"`
+
+	// Port is the first port sshd listens on, 22 when it cannot be read.
+	Port int `json:"port"`
+
+	// KeysOnly is the owner's setting that turns password logins off.
+	KeysOnly bool `json:"keysOnly"`
+
+	// PasswordAuth is what sshd itself reports: "yes", "no", or "" when
+	// sshd could not be asked. It differs from KeysOnly when the image's sshd
+	// does not read the drop-in.
+	PasswordAuth string `json:"passwordAuth"`
+
+	// KeyCount is the number of usable authorized keys for root.
+	KeyCount int `json:"keyCount"`
+
+	HostKeys []SSHKey `json:"hostKeys"`
+
+	// RootPassword is "default" (a factory password), "empty" (no password
+	// at all), "set", or "unknown". The hash itself is never returned.
+	RootPassword string `json:"rootPassword"`
+}
+
+// SSHKey describes a public key. Comment is empty for host keys.
+type SSHKey struct {
+	Type        string `json:"type"`
+	Comment     string `json:"comment"`
+	Fingerprint string `json:"fingerprint"`
+}
+
+type GetSSHKeysRsp struct {
+	Keys []SSHKey `json:"keys"`
+}
+
+type AddSSHKeyReq struct {
+	Key string `json:"key" validate:"required"`
+}
+
+type DeleteSSHKeyReq struct {
+	Fingerprint string `json:"fingerprint" validate:"required"`
+}
+
+type SetSSHKeysOnlyReq struct {
+	Enabled bool `json:"enabled" validate:"omitempty"`
 }
 
 type GetSwapRsp struct {
