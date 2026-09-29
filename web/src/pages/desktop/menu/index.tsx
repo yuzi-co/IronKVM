@@ -8,6 +8,8 @@ import Draggable, { DraggableData, DraggableEvent } from 'react-draggable';
 import { useMediaQuery } from 'react-responsive';
 
 import { hasAudioAtom } from '@/jotai/audio.ts';
+import { ocrSelectingAtom } from '@/jotai/ocr.ts';
+import { inputRegionSelectingAtom } from '@/jotai/screen.ts';
 import {
   keyboardLedStatusVisibleAtom,
   menuCloseSignalAtom,
@@ -65,6 +67,25 @@ export const Menu = () => {
       setIsMenuExpanded(false);
     }
   }, [menuCloseSignal, setIsMenuExpanded]);
+
+  // OCR and the input region selection collapse the bar so it is out of the
+  // way of the drag. The bar comes back once the selection ends, if it was
+  // open when the selection began; the collapse above alone left it folded.
+  const isOcrSelecting = useAtomValue(ocrSelectingAtom);
+  const isRegionSelecting = useAtomValue(inputRegionSelectingAtom);
+  const isSelecting = isOcrSelecting || isRegionSelecting;
+  const collapsedForSelection = useRef(false);
+  useEffect(() => {
+    if (isSelecting) {
+      if (isMenuExpanded) collapsedForSelection.current = true;
+      setIsMenuExpanded(false);
+    } else if (collapsedForSelection.current) {
+      collapsedForSelection.current = false;
+      setIsMenuExpanded(true);
+    }
+    // Only the start and end of a selection matter here, not later toggles.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSelecting]);
 
   function onDragStop(_e: DraggableEvent, data: DraggableData) {
     if (data.x === 0 && data.y === 0) return;
