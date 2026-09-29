@@ -292,6 +292,16 @@ func removeImage(file string) error {
 	driveMu.Lock()
 	defer driveMu.Unlock()
 
+	if err := imageInUse(file); err != nil {
+		return err
+	}
+	return os.Remove(file)
+}
+
+// imageInUse returns errImageLoaded, with where, when a drive serves file
+// itself or through a device such as the Ventoy disk. The caller holds
+// driveMu.
+func imageInUse(file string) error {
 	holder, err := loadedDrive(file)
 	if err != nil {
 		return err
@@ -306,5 +316,17 @@ func removeImage(file string) error {
 	if holder != "" {
 		return fmt.Errorf("%w on the %s disk in the %s drive", errImageLoaded, dev.Name, holder)
 	}
-	return os.Remove(file)
+	return nil
+}
+
+// replaceImage renames src over the image file unless a drive serves file.
+// The lock keeps an insert from loading it between the check and the rename.
+func replaceImage(src, file string) error {
+	driveMu.Lock()
+	defer driveMu.Unlock()
+
+	if err := imageInUse(file); err != nil {
+		return err
+	}
+	return os.Rename(src, file)
 }
