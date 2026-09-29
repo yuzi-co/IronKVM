@@ -88,6 +88,20 @@ const zh = {
       done: '设置完成。请将此设备连回常用网络，并通过新地址打开板子。'
     },
     screen: {
+      viewOnly: '仅查看',
+      viewOnlyTip: '此标签页不再向主机发送键盘和鼠标输入。脚本、鼠标防休眠和其他查看者不受影响。',
+      viewOnlyOff: '关闭仅查看',
+      viewOnlyBlocked: '仅查看已开启，未向主机发送任何内容',
+      pauseHidden: '标签页隐藏时暂停',
+      pauseHiddenTip: '此标签页隐藏几秒后停止视频和声音，返回时重新开始。',
+      screenshot: '截图',
+      screenshotTip: '将主机屏幕以完整采集尺寸保存为 PNG 文件。',
+      screenshotFailed: '截图失败',
+      stream: {
+        ok: '画面正常',
+        noSignal: '无信号',
+        failed: '视频流失败'
+      },
       codecNoWebrtcHevc: '此浏览器无法通过 WebRTC 接收 H.265',
       codecNoHevc: '此浏览器无法解码 H.265',
       codecNote:
@@ -330,6 +344,15 @@ const zh = {
       resetHidFailed: 'USB HID 重置失败'
     },
     image: {
+      driveLoaded: '已插入镜像',
+      driveWarning: '请查看警告',
+      warning: {
+        missing: '镜像文件已被删除。弹出之前，主机仍读取旧副本。',
+        writable: '可读写：主机可以修改此镜像。',
+        tooBigForCd: '对光驱来说太大（{{size}}，上限 {{max}}）。请使用磁盘。',
+        tooSmallForCd: '对光驱来说太小（{{size}}）。请使用磁盘。',
+        empty: '文件为空，可能是上传或下载失败所致。'
+      },
       delete: '删除',
       inUse: '正在使用。请先弹出再删除。',
       retry: '重试',
@@ -487,7 +510,28 @@ const zh = {
       bootMenuPresent: '{{file}} 已在设备上，校验和正确',
       bootMenuDesc: '下载经过校验和验证的 netboot.xyz ISO，用于虚拟光驱'
     },
+    alerts: {
+      title: '需要注意',
+      temperature: {
+        warning: '板子温度为 {{celsius}} °C。请检查通风是否良好。',
+        critical: '板子温度为 {{celsius}} °C，过热。请加强通风或关机。'
+      },
+      storage: {
+        warning: '{{path}} 仅剩 {{available}}（共 {{total}}）。大镜像可能放不下。',
+        critical:
+          '{{path}} 仅剩 {{available}}。上传、下载和插件安装都会失败。请删除不再需要的镜像。'
+      },
+      vpn: '{{name}} 已设为开机启动，但没有运行，因此通过它的远程访问已中断。',
+      openVpn: '打开 VPN 设置',
+      stream: '视频流失败。请在屏幕菜单中尝试其他视频模式，或刷新页面。'
+    },
     power: {
+      resetDesc: '立即重启主机，未保存的工作会丢失。',
+      powerShortDesc: '开启主机，或请求其操作系统关机 (ACPI)。',
+      powerLongDesc: '不经关机直接强制关闭主机电源。',
+      hddLed: '硬盘指示灯',
+      hddActive: '活动',
+      hddIdle: '空闲',
       title: '电源',
       showConfirm: '显示确认框',
       showConfirmTip: '短按电源前先确认。复位和长按始终需要确认。',
@@ -1506,6 +1550,7 @@ const zh = {
       failed: '上次更新失败：{{error}}'
     },
     menu: {
+      mediaNetboot: '网络启动设置',
       collapse: '收起',
       expand: '展开',
       more: '更多',

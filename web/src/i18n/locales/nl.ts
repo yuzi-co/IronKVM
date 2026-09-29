@@ -93,6 +93,22 @@ const nl = {
       done: 'Instellen voltooid. Verbind dit apparaat weer met uw gebruikelijke netwerk en open het bord op zijn nieuwe adres.'
     },
     screen: {
+      viewOnly: 'Alleen kijken',
+      viewOnlyTip:
+        'Dit tabblad stuurt geen toetsenbord- en muisinvoer meer naar de host. Scripts, de muis-jiggler en andere kijkers merken er niets van.',
+      viewOnlyOff: 'Alleen kijken uitzetten',
+      viewOnlyBlocked: 'Alleen kijken staat aan, er is niets naar de host gestuurd',
+      pauseHidden: 'Pauzeren als tabblad verborgen is',
+      pauseHiddenTip:
+        'Stopt beeld en geluid enkele seconden nadat dit tabblad verborgen is en start ze weer als u terugkomt.',
+      screenshot: 'Schermafbeelding',
+      screenshotTip: 'Slaat het scherm van de host op als PNG op volle opnamegrootte.',
+      screenshotFailed: 'Schermafbeelding mislukt',
+      stream: {
+        ok: 'beeld OK',
+        noSignal: 'geen signaal',
+        failed: 'stream mislukt'
+      },
       codecNoWebrtcHevc: 'Deze browser kan H.265 niet via WebRTC ontvangen',
       codecNoHevc: 'Deze browser kan H.265 niet decoderen',
       codecNote:
@@ -343,6 +359,15 @@ const nl = {
       resetHidFailed: 'USB-HID resetten mislukt'
     },
     image: {
+      driveLoaded: 'image geladen',
+      driveWarning: 'bekijk de waarschuwingen',
+      warning: {
+        missing: 'Het imagebestand is verwijderd. De host leest de oude kopie tot u die uitwerpt.',
+        writable: 'Lezen en schrijven: de host kan dit image wijzigen.',
+        tooBigForCd: 'Te groot voor het cd-station ({{size}}, limiet {{max}}). Gebruik de schijf.',
+        tooSmallForCd: 'Te klein voor het cd-station ({{size}}). Gebruik de schijf.',
+        empty: 'Het bestand is leeg, waarschijnlijk door een mislukte upload of download.'
+      },
       delete: 'Verwijderen',
       inUse: 'In gebruik. Werp het uit voordat u het verwijdert.',
       retry: 'Opnieuw',
@@ -509,7 +534,30 @@ const nl = {
       bootMenuDesc:
         'De netboot.xyz-ISO downloaden, met gecontroleerde checksum, voor de virtuele cd'
     },
+    alerts: {
+      title: 'Vraagt aandacht',
+      temperature: {
+        warning: 'Het bord is {{celsius}} °C. Controleer of er lucht bij kan.',
+        critical: 'Het bord is {{celsius}} °C, te heet. Geef het lucht of zet het uit.'
+      },
+      storage: {
+        warning:
+          'Nog maar {{available}} van {{total}} vrij op {{path}}. Grote images passen misschien niet.',
+        critical:
+          'Nog maar {{available}} vrij op {{path}}. Uploads, downloads en installaties van add-ons mislukken. Verwijder images die u niet meer nodig hebt.'
+      },
+      vpn: '{{name}} moet bij het opstarten starten maar draait niet, dus toegang op afstand via deze VPN ligt eruit.',
+      openVpn: 'VPN-instellingen openen',
+      stream:
+        'De videostream is mislukt. Probeer een andere videomodus in het menu Scherm of herlaad de pagina.'
+    },
     power: {
+      resetDesc: 'Herstart de host meteen. Niet-opgeslagen werk gaat verloren.',
+      powerShortDesc: 'Zet de host aan, of vraagt het besturingssysteem af te sluiten (ACPI).',
+      powerLongDesc: 'Zet de host geforceerd uit zonder af te sluiten.',
+      hddLed: 'Schijf-LED',
+      hddActive: 'Actief',
+      hddIdle: 'Rust',
       title: 'Aan/uit',
       showConfirm: 'Bevestiging',
       showConfirmTip:
@@ -1583,6 +1631,7 @@ const nl = {
       failed: 'De laatste update is mislukt: {{error}}'
     },
     menu: {
+      mediaNetboot: 'Instellingen voor netwerkboot',
       collapse: 'Menu samenvouwen',
       expand: 'Menu uitvouwen',
       more: 'Meer',

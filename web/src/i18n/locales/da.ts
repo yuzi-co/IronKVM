@@ -91,6 +91,22 @@ const da = {
       done: 'Opsætningen er færdig. Forbind denne enhed til dit sædvanlige netværk igen, og åbn kortet på dets nye adresse.'
     },
     screen: {
+      viewOnly: 'Kun visning',
+      viewOnlyTip:
+        'Denne fane holder op med at sende tastatur og mus til værten. Scripts, muse-jiggleren og andre seere påvirkes ikke.',
+      viewOnlyOff: 'Slå kun visning fra',
+      viewOnlyBlocked: 'Kun visning er slået til, så intet blev sendt til værten',
+      pauseHidden: 'Pause når fanen er skjult',
+      pauseHiddenTip:
+        'Stopper video og lyd et par sekunder efter at fanen skjules, og starter dem igen når du vender tilbage.',
+      screenshot: 'Skærmbillede',
+      screenshotTip: 'Gemmer værtens skærm som PNG i fuld optagestørrelse.',
+      screenshotFailed: 'Skærmbillede mislykkedes',
+      stream: {
+        ok: 'billede OK',
+        noSignal: 'intet signal',
+        failed: 'stream fejlet'
+      },
       codecNoWebrtcHevc: 'Denne browser kan ikke modtage H.265 via WebRTC',
       codecNoHevc: 'Denne browser kan ikke afkode H.265',
       codecNote:
@@ -338,6 +354,15 @@ const da = {
       resetHidFailed: 'Nulstilling af USB HID mislykkedes'
     },
     image: {
+      driveLoaded: 'image indsat',
+      driveWarning: 'se advarslerne',
+      warning: {
+        missing: 'Image-filen er slettet. Værten læser den gamle kopi, indtil du skubber den ud.',
+        writable: 'Læse-skrive: værten kan ændre dette image.',
+        tooBigForCd: 'For stor til cd-drevet ({{size}}, grænse {{max}}). Brug disken.',
+        tooSmallForCd: 'For lille til cd-drevet ({{size}}). Brug disken.',
+        empty: 'Filen er tom, sandsynligvis efter en mislykket upload eller download.'
+      },
       delete: 'Slet',
       inUse: 'I brug. Skub det ud, før du sletter det.',
       retry: 'Prøv igen',
@@ -500,7 +525,29 @@ const da = {
       bootMenuPresent: '{{file}} ligger allerede på enheden med korrekt checksum',
       bootMenuDesc: "Hent netboot.xyz-ISO'en, med kontrolleret checksum, til den virtuelle cd"
     },
+    alerts: {
+      title: 'Kræver opmærksomhed',
+      temperature: {
+        warning: 'Kortet er på {{celsius}} °C. Tjek at der kommer luft til det.',
+        critical: 'Kortet er på {{celsius}} °C, hvilket er for varmt. Giv det luft eller sluk det.'
+      },
+      storage: {
+        warning: 'Kun {{available}} af {{total}} fri på {{path}}. Store images passer måske ikke.',
+        critical:
+          'Kun {{available}} fri på {{path}}. Upload, download og installation af tilføjelser vil fejle. Slet images, du ikke bruger.'
+      },
+      vpn: '{{name}} skal starte ved boot, men kører ikke, så fjernadgang gennem den er nede.',
+      openVpn: 'Åbn VPN-indstillinger',
+      stream:
+        'Videostreamen er fejlet. Prøv en anden videotilstand i menuen Skærm, eller genindlæs siden.'
+    },
     power: {
+      resetDesc: 'Genstarter værten med det samme. Ikke-gemt arbejde går tabt.',
+      powerShortDesc: 'Tænder værten eller beder dens OS om at lukke ned (ACPI).',
+      powerLongDesc: 'Tvinger værten slukket uden nedlukning.',
+      hddLed: 'Disk-LED',
+      hddActive: 'Aktiv',
+      hddIdle: 'Inaktiv',
       title: 'Tænd/sluk-knap',
       showConfirm: 'Bekræftelse',
       showConfirmTip:
@@ -1564,6 +1611,7 @@ const da = {
       failed: 'Den seneste opdatering mislykkedes: {{error}}'
     },
     menu: {
+      mediaNetboot: 'Indstillinger for netværksboot',
       collapse: 'Skjul menu',
       expand: 'Udvid menu',
       more: 'Mere',

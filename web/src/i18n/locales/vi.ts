@@ -91,6 +91,22 @@ const vi = {
       done: 'Đã cài đặt xong. Hãy kết nối lại thiết bị này với mạng thường dùng và mở bo mạch tại địa chỉ mới.'
     },
     screen: {
+      viewOnly: 'Chỉ xem',
+      viewOnlyTip:
+        'Tab này ngừng gửi bàn phím và chuột tới máy chủ. Script, trình rung chuột và người xem khác không bị ảnh hưởng.',
+      viewOnlyOff: 'Tắt chỉ xem',
+      viewOnlyBlocked: 'Đang bật chỉ xem nên không có gì được gửi tới máy chủ',
+      pauseHidden: 'Tạm dừng khi tab bị ẩn',
+      pauseHiddenTip:
+        'Dừng hình và tiếng vài giây sau khi tab này bị ẩn, và phát lại khi bạn quay lại.',
+      screenshot: 'Chụp màn hình',
+      screenshotTip: 'Lưu màn hình máy chủ thành tệp PNG ở kích thước chụp đầy đủ.',
+      screenshotFailed: 'Chụp màn hình thất bại',
+      stream: {
+        ok: 'hình ảnh ổn',
+        noSignal: 'không có tín hiệu',
+        failed: 'luồng bị lỗi'
+      },
       codecNoWebrtcHevc: 'Trình duyệt này không nhận được H.265 qua WebRTC',
       codecNoHevc: 'Trình duyệt này không giải mã được H.265',
       codecNote:
@@ -338,6 +354,15 @@ const vi = {
       resetHidFailed: 'Đặt lại USB HID thất bại'
     },
     image: {
+      driveLoaded: 'đã nạp ảnh đĩa',
+      driveWarning: 'xem các cảnh báo',
+      warning: {
+        missing: 'Tệp ảnh đĩa đã bị xóa. Máy chủ vẫn đọc bản cũ cho tới khi bạn đẩy ra.',
+        writable: 'Đọc-ghi: máy chủ có thể thay đổi ảnh đĩa này.',
+        tooBigForCd: 'Quá lớn cho ổ CD ({{size}}, giới hạn {{max}}). Hãy dùng ổ đĩa.',
+        tooSmallForCd: 'Quá nhỏ cho ổ CD ({{size}}). Hãy dùng ổ đĩa.',
+        empty: 'Tệp rỗng, có lẽ do tải lên hoặc tải xuống thất bại.'
+      },
       delete: 'Xóa',
       inUse: 'Đang dùng. Hãy đẩy ra trước khi xóa.',
       retry: 'Thử lại',
@@ -499,7 +524,30 @@ const vi = {
       bootMenuPresent: '{{file}} đã có trên thiết bị, checksum đúng',
       bootMenuDesc: 'Tải ISO netboot.xyz, đã kiểm tra checksum, cho CD ảo'
     },
+    alerts: {
+      title: 'Cần chú ý',
+      temperature: {
+        warning: 'Bo mạch đang ở {{celsius}} °C. Hãy kiểm tra xem có thông gió không.',
+        critical: 'Bo mạch đang ở {{celsius}} °C, quá nóng. Hãy làm mát hoặc tắt nó.'
+      },
+      storage: {
+        warning:
+          'Chỉ còn trống {{available}} trên {{total}} tại {{path}}. Ảnh đĩa lớn có thể không vừa.',
+        critical:
+          'Chỉ còn trống {{available}} tại {{path}}. Tải lên, tải xuống và cài tiện ích bổ sung sẽ thất bại. Hãy xóa ảnh đĩa không cần.'
+      },
+      vpn: '{{name}} được đặt khởi động cùng hệ thống nhưng không chạy, nên truy cập từ xa qua nó đang gián đoạn.',
+      openVpn: 'Mở cài đặt VPN',
+      stream:
+        'Luồng video bị lỗi. Hãy thử chế độ video khác trong menu Màn hình hoặc tải lại trang.'
+    },
     power: {
+      resetDesc: 'Khởi động lại máy chủ ngay. Công việc chưa lưu sẽ mất.',
+      powerShortDesc: 'Bật máy chủ, hoặc yêu cầu hệ điều hành tắt máy (ACPI).',
+      powerLongDesc: 'Buộc tắt máy chủ mà không tắt hệ thống.',
+      hddLed: 'Đèn ổ đĩa',
+      hddActive: 'Hoạt động',
+      hddIdle: 'Nghỉ',
       title: 'Nguồn',
       showConfirm: 'Xác nhận',
       showConfirmTip: 'Hỏi trước khi nhấn nguồn ngắn. Reset và nhấn giữ luôn hỏi.',
@@ -1560,6 +1608,7 @@ const vi = {
       failed: 'Lần cập nhật gần nhất thất bại: {{error}}'
     },
     menu: {
+      mediaNetboot: 'Cài đặt khởi động qua mạng',
       collapse: 'Thu gọn Menu',
       expand: 'Mở rộng Menu',
       more: 'Thêm',

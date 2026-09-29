@@ -7,6 +7,10 @@ export type Drive = {
   type: DriveId;
   file: string;
   ro: boolean;
+  // Bytes of the served file; 0 for a device. Absent from an older server.
+  size?: number;
+  // The served file's path is gone: deleted or renamed while in the drive.
+  missing?: boolean;
 };
 
 // get image list

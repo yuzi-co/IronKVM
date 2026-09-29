@@ -90,6 +90,22 @@ const en = {
       done: 'Setup finished. Connect this device back to your usual network and open the board at its new address.'
     },
     screen: {
+      viewOnly: 'View only',
+      viewOnlyTip:
+        'This tab stops sending keyboard and mouse input to the host. Scripts, the mouse jiggler and other viewers are not affected.',
+      viewOnlyOff: 'Turn off view only',
+      viewOnlyBlocked: 'View only is on, so nothing was sent to the host',
+      pauseHidden: 'Pause when tab is hidden',
+      pauseHiddenTip:
+        'Stops the video and its sound a few seconds after this tab is hidden, and starts it again when you return.',
+      screenshot: 'Screenshot',
+      screenshotTip: 'Saves the host screen as a PNG file at full capture size.',
+      screenshotFailed: 'Screenshot failed',
+      stream: {
+        ok: 'picture OK',
+        noSignal: 'no signal',
+        failed: 'stream failed'
+      },
       codecNoWebrtcHevc: 'This browser cannot receive H.265 over WebRTC',
       codecNoHevc: 'This browser cannot decode H.265',
       codecNote:
@@ -336,6 +352,16 @@ const en = {
       resetHidFailed: 'USB HID reset failed'
     },
     image: {
+      driveLoaded: 'image loaded',
+      driveWarning: 'check the warnings',
+      warning: {
+        missing:
+          'The image file was deleted. The host keeps reading the old copy until you eject it.',
+        writable: 'Read-write: the host can change this image.',
+        tooBigForCd: 'Too big for the CD drive ({{size}}, limit {{max}}). Use the disk drive.',
+        tooSmallForCd: 'Too small for the CD drive ({{size}}). Use the disk drive.',
+        empty: 'The file is empty, probably from a failed upload or download.'
+      },
       delete: 'Delete',
       inUse: 'In use. Eject it before deleting.',
       retry: 'Retry',
@@ -498,7 +524,29 @@ const en = {
       bootMenuPresent: '{{file}} is already on the device, with the right checksum',
       bootMenuDesc: 'Download the netboot.xyz ISO, checksum checked, for the virtual CD'
     },
+    alerts: {
+      title: 'Needs attention',
+      temperature: {
+        warning: 'The board is at {{celsius}} °C. Check that air can reach it.',
+        critical: 'The board is at {{celsius}} °C, which is too hot. Give it air or turn it off.'
+      },
+      storage: {
+        warning: 'Only {{available}} of {{total}} is free on {{path}}. Large images may not fit.',
+        critical:
+          'Only {{available}} is free on {{path}}. Uploads, downloads and add-on installs will fail. Delete images you no longer need.'
+      },
+      vpn: '{{name}} is set to start at boot but is not running, so remote access through it is down.',
+      openVpn: 'Open VPN settings',
+      stream:
+        'The video stream has failed. Try another video mode in the Screen menu, or reload the page.'
+    },
     power: {
+      resetDesc: 'Restarts the host at once. Unsaved work is lost.',
+      powerShortDesc: 'Turns the host on, or asks its OS to shut down (ACPI).',
+      powerLongDesc: 'Forces the host off without a shutdown.',
+      hddLed: 'HDD LED',
+      hddActive: 'Active',
+      hddIdle: 'Idle',
       title: 'Power',
       showConfirm: 'Confirmation',
       showConfirmTip: 'Ask before a short power press. Reset and a long press always ask.',
@@ -1555,6 +1603,7 @@ const en = {
       failed: 'The last update failed: {{error}}'
     },
     menu: {
+      mediaNetboot: 'Network boot settings',
       collapse: 'Collapse Menu',
       expand: 'Expand Menu',
       more: 'More',

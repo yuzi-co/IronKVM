@@ -92,6 +92,22 @@ const hu = {
       done: 'A beállítás kész. Csatlakoztassa vissza ezt az eszközt a szokásos hálózathoz, és nyissa meg a panelt az új címén.'
     },
     screen: {
+      viewOnly: 'Csak nézet',
+      viewOnlyTip:
+        'Ez a lap nem küld több billentyűzet- és egérbemenetet a gazdagépnek. A szkripteket, az egérmozgatót és a többi nézőt ez nem érinti.',
+      viewOnlyOff: 'Csak nézet kikapcsolása',
+      viewOnlyBlocked: 'A csak nézet be van kapcsolva, semmi sem ment a gazdagépre',
+      pauseHidden: 'Szünet, ha a lap rejtett',
+      pauseHiddenTip:
+        'Néhány másodperccel a lap elrejtése után leállítja a képet és a hangot, és visszatéréskor újraindítja.',
+      screenshot: 'Képernyőkép',
+      screenshotTip: 'A gazdagép képernyőjét PNG-fájlba menti teljes rögzítési méretben.',
+      screenshotFailed: 'A képernyőkép nem sikerült',
+      stream: {
+        ok: 'kép rendben',
+        noSignal: 'nincs jel',
+        failed: 'stream hiba'
+      },
       codecNoWebrtcHevc: 'Ez a böngésző nem tud H.265-öt fogadni WebRTC-n keresztül',
       codecNoHevc: 'Ez a böngésző nem tudja dekódolni a H.265-öt',
       codecNote:
@@ -341,6 +357,15 @@ const hu = {
       resetHidFailed: 'Az USB HID újraindítása sikertelen'
     },
     image: {
+      driveLoaded: 'lemezkép betöltve',
+      driveWarning: 'nézze meg a figyelmeztetéseket',
+      warning: {
+        missing: 'A lemezképfájlt törölték. A gazdagép a régi másolatot olvassa, amíg ki nem adja.',
+        writable: 'Írható: a gazdagép módosíthatja ezt a lemezképet.',
+        tooBigForCd: 'Túl nagy a CD-meghajtóhoz ({{size}}, korlát {{max}}). Használja a lemezt.',
+        tooSmallForCd: 'Túl kicsi a CD-meghajtóhoz ({{size}}). Használja a lemezt.',
+        empty: 'A fájl üres, valószínűleg sikertelen feltöltés vagy letöltés miatt.'
+      },
       delete: 'Törlés',
       inUse: 'Használatban van. Törlés előtt adja ki.',
       retry: 'Újra',
@@ -503,7 +528,32 @@ const hu = {
       bootMenuPresent: 'A(z) {{file}} már az eszközön van, helyes ellenőrzőösszeggel',
       bootMenuDesc: 'A netboot.xyz ISO letöltése ellenőrzött ellenőrzőösszeggel a virtuális CD-hez'
     },
+    alerts: {
+      title: 'Figyelmet igényel',
+      temperature: {
+        warning: 'A panel {{celsius}} °C-os. Ellenőrizze, hogy kap-e levegőt.',
+        critical:
+          'A panel {{celsius}} °C-os, ez túl meleg. Biztosítson szellőzést vagy kapcsolja ki.'
+      },
+      storage: {
+        warning:
+          'Csak {{available}} szabad a(z) {{total}} méretből itt: {{path}}. Nagy lemezképek nem biztos, hogy elférnek.',
+        critical:
+          'Csak {{available}} szabad itt: {{path}}. A feltöltések, letöltések és bővítménytelepítések sikertelenek lesznek. Törölje a felesleges lemezképeket.'
+      },
+      vpn: 'A(z) {{name}} indításkor indulna, de nem fut, így a távoli elérés rajta keresztül nem működik.',
+      openVpn: 'VPN-beállítások megnyitása',
+      stream:
+        'A videostream leállt. Próbáljon másik videómódot a Képernyő menüben, vagy töltse újra az oldalt.'
+    },
     power: {
+      resetDesc: 'Azonnal újraindítja a gazdagépet. A mentetlen munka elvész.',
+      powerShortDesc:
+        'Bekapcsolja a gazdagépet, vagy leállásra kéri az operációs rendszerét (ACPI).',
+      powerLongDesc: 'Leállítás nélkül kényszeríti ki a gazdagép kikapcsolását.',
+      hddLed: 'Lemez LED',
+      hddActive: 'Aktív',
+      hddIdle: 'Tétlen',
       title: 'Bekapcsolás',
       showConfirm: 'Megerősítés',
       showConfirmTip:
@@ -1579,6 +1629,7 @@ const hu = {
       failed: 'Az utolsó frissítés sikertelen volt: {{error}}'
     },
     menu: {
+      mediaNetboot: 'Hálózati rendszerindítás beállításai',
       collapse: 'Menü összecsukása',
       expand: 'Bontsa ki a menüt',
       more: 'Továbbiak',

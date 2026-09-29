@@ -19,7 +19,11 @@ export const PowerShort = ({ showConfirm, isLoading, setIsLoading }: PowerShortP
   }
 
   return (
-    <PowerButton confirm={showConfirm ? t('power.powerConfirm') : null} onPress={power}>
+    <PowerButton
+      confirm={showConfirm ? t('power.powerConfirm') : null}
+      onPress={power}
+      description={t('power.powerShortDesc')}
+    >
       <PowerIcon size={16} />
       <span>{t('power.powerShort')}</span>
     </PowerButton>

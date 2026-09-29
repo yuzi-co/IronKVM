@@ -531,3 +531,30 @@ func TestRemoveImageDeletesAnUnloadedImage(t *testing.T) {
 		t.Fatalf("the image is still there: %v", err)
 	}
 }
+
+// The list says how big the served image is, and whether its path is gone,
+// so the UI can warn about an image deleted while in a drive.
+func TestListDrivesDescribesTheServedFile(t *testing.T) {
+	dir := fakeGadget(t, "lun.0", "lun.1")
+	image := filepath.Join(t.TempDir(), "x.iso")
+	if err := os.WriteFile(image, make([]byte, 4096), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	gone := filepath.Join(t.TempDir(), "gone.img")
+	for lun, file := range map[string]string{"lun.0": gone, "lun.1": image} {
+		if err := os.WriteFile(filepath.Join(dir, lun, "file"), []byte(file+"\n"), 0o666); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	drives, err := listDrives()
+	if err != nil {
+		t.Fatalf("listDrives: %s", err)
+	}
+	if drives[0].File != gone || !drives[0].Missing || drives[0].Size != 0 {
+		t.Errorf("disk is %+v, want %s missing", drives[0], gone)
+	}
+	if drives[1].File != image || drives[1].Missing || drives[1].Size != 4096 {
+		t.Errorf("cdrom is %+v, want %s of 4096 bytes", drives[1], image)
+	}
+}

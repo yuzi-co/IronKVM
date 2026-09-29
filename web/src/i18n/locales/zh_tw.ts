@@ -88,6 +88,20 @@ const zh_tw = {
       done: '設定完成。請將此裝置連回常用網路，並透過新位址開啟板子。'
     },
     screen: {
+      viewOnly: '僅檢視',
+      viewOnlyTip: '此分頁不再向主機傳送鍵盤和滑鼠輸入。指令碼、滑鼠防休眠和其他檢視者不受影響。',
+      viewOnlyOff: '關閉僅檢視',
+      viewOnlyBlocked: '僅檢視已開啟，未向主機傳送任何內容',
+      pauseHidden: '分頁隱藏時暫停',
+      pauseHiddenTip: '此分頁隱藏幾秒後停止影像和聲音，返回時重新開始。',
+      screenshot: '螢幕截圖',
+      screenshotTip: '將主機螢幕以完整擷取尺寸儲存為 PNG 檔案。',
+      screenshotFailed: '螢幕截圖失敗',
+      stream: {
+        ok: '畫面正常',
+        noSignal: '無訊號',
+        failed: '串流失敗'
+      },
       codecNoWebrtcHevc: '此瀏覽器無法透過 WebRTC 接收 H.265',
       codecNoHevc: '此瀏覽器無法解碼 H.265',
       codecNote:
@@ -330,6 +344,15 @@ const zh_tw = {
       resetHidFailed: 'USB HID 重設失敗'
     },
     image: {
+      driveLoaded: '已插入映像',
+      driveWarning: '請查看警告',
+      warning: {
+        missing: '映像檔已被刪除。退出之前，主機仍讀取舊副本。',
+        writable: '可讀寫：主機可以修改此映像。',
+        tooBigForCd: '對光碟機來說太大（{{size}}，上限 {{max}}）。請使用磁碟。',
+        tooSmallForCd: '對光碟機來說太小（{{size}}）。請使用磁碟。',
+        empty: '檔案是空的，可能是上傳或下載失敗所致。'
+      },
       delete: '刪除',
       inUse: '使用中。請先退出再刪除。',
       retry: '重試',
@@ -487,7 +510,28 @@ const zh_tw = {
       bootMenuPresent: '{{file}} 已在裝置上，檢查碼正確',
       bootMenuDesc: '下載經檢查碼驗證的 netboot.xyz ISO，用於虛擬光碟'
     },
+    alerts: {
+      title: '需要注意',
+      temperature: {
+        warning: '板子溫度為 {{celsius}} °C。請檢查通風是否良好。',
+        critical: '板子溫度為 {{celsius}} °C，過熱。請加強通風或關機。'
+      },
+      storage: {
+        warning: '{{path}} 僅剩 {{available}}（共 {{total}}）。大型映像可能放不下。',
+        critical:
+          '{{path}} 僅剩 {{available}}。上傳、下載和外掛安裝都會失敗。請刪除不再需要的映像。'
+      },
+      vpn: '{{name}} 已設為開機啟動，但沒有執行，因此透過它的遠端存取已中斷。',
+      openVpn: '開啟 VPN 設定',
+      stream: '影像串流失敗。請在螢幕選單中嘗試其他影像模式，或重新整理頁面。'
+    },
     power: {
+      resetDesc: '立即重新啟動主機，未儲存的工作會遺失。',
+      powerShortDesc: '開啟主機，或請求其作業系統關機 (ACPI)。',
+      powerLongDesc: '不經關機直接強制關閉主機電源。',
+      hddLed: '硬碟指示燈',
+      hddActive: '活動',
+      hddIdle: '閒置',
       title: '電源控制',
       showConfirm: '顯示確認框',
       showConfirmTip: '短按電源前先確認。重設和長按一律需要確認。',
@@ -1502,6 +1546,7 @@ const zh_tw = {
       failed: '上次更新失敗：{{error}}'
     },
     menu: {
+      mediaNetboot: '網路開機設定',
       collapse: '收起選單',
       expand: '展開選單',
       more: '更多',

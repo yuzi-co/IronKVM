@@ -11,6 +11,12 @@ export function getHardware() {
   return http.get('/api/vm/hardware');
 }
 
+// get the readings the toolbar's alert icon needs: SoC temperature, space
+// left for images, and the VPNs set to start at boot
+export function getHealth() {
+  return http.get('/api/vm/health');
+}
+
 // set gpio value
 export function setGpio(type: string, duration: number) {
   const data = {

@@ -89,6 +89,22 @@ const se = {
       done: 'Konfigurationen är klar. Anslut den här enheten till ditt vanliga nätverk igen och öppna kortet på dess nya adress.'
     },
     screen: {
+      viewOnly: 'Endast visning',
+      viewOnlyTip:
+        'Den här fliken slutar skicka tangentbord och mus till värden. Skript, musjigglern och andra tittare påverkas inte.',
+      viewOnlyOff: 'Stäng av endast visning',
+      viewOnlyBlocked: 'Endast visning är på, så inget skickades till värden',
+      pauseHidden: 'Pausa när fliken är dold',
+      pauseHiddenTip:
+        'Stoppar video och ljud några sekunder efter att fliken döljs och startar dem igen när du kommer tillbaka.',
+      screenshot: 'Skärmbild',
+      screenshotTip: 'Sparar värdens skärm som PNG i full inspelningsstorlek.',
+      screenshotFailed: 'Skärmbilden misslyckades',
+      stream: {
+        ok: 'bild OK',
+        noSignal: 'ingen signal',
+        failed: 'strömmen misslyckades'
+      },
       codecNoWebrtcHevc: 'Den här webbläsaren kan inte ta emot H.265 via WebRTC',
       codecNoHevc: 'Den här webbläsaren kan inte avkoda H.265',
       codecNote:
@@ -335,6 +351,15 @@ const se = {
       resetHidFailed: 'Återställning av USB HID misslyckades'
     },
     image: {
+      driveLoaded: 'avbild isatt',
+      driveWarning: 'se varningarna',
+      warning: {
+        missing: 'Avbildsfilen har raderats. Värden läser den gamla kopian tills du matar ut den.',
+        writable: 'Läs och skriv: värden kan ändra den här avbilden.',
+        tooBigForCd: 'För stor för cd-enheten ({{size}}, gräns {{max}}). Använd disken.',
+        tooSmallForCd: 'För liten för cd-enheten ({{size}}). Använd disken.',
+        empty: 'Filen är tom, troligen efter en misslyckad uppladdning eller nedladdning.'
+      },
       delete: 'Ta bort',
       inUse: 'Används. Mata ut den innan du tar bort den.',
       retry: 'Försök igen',
@@ -499,7 +524,31 @@ const se = {
       bootMenuDesc:
         'Ladda ner netboot.xyz-ISO:n, med kontrollerad kontrollsumma, till den virtuella cd:n'
     },
+    alerts: {
+      title: 'Behöver åtgärd',
+      temperature: {
+        warning: 'Kortet håller {{celsius}} °C. Kontrollera att det får luft.',
+        critical:
+          'Kortet håller {{celsius}} °C, vilket är för varmt. Ge det luft eller stäng av det.'
+      },
+      storage: {
+        warning:
+          'Bara {{available}} av {{total}} ledigt på {{path}}. Stora avbilder kanske inte får plats.',
+        critical:
+          'Bara {{available}} ledigt på {{path}}. Uppladdningar, nedladdningar och installation av tillägg kommer att misslyckas. Radera avbilder du inte behöver.'
+      },
+      vpn: '{{name}} ska starta vid uppstart men körs inte, så fjärråtkomst via den fungerar inte.',
+      openVpn: 'Öppna VPN-inställningar',
+      stream:
+        'Videoströmmen har misslyckats. Prova ett annat videoläge i menyn Skärm eller ladda om sidan.'
+    },
     power: {
+      resetDesc: 'Startar om värden direkt. Osparat arbete går förlorat.',
+      powerShortDesc: 'Startar värden, eller ber dess OS att stänga av (ACPI).',
+      powerLongDesc: 'Tvingar av värden utan avstängning.',
+      hddLed: 'Disk-LED',
+      hddActive: 'Aktiv',
+      hddIdle: 'Inaktiv',
       title: 'Ström',
       showConfirm: 'Bekräftelse',
       showConfirmTip:
@@ -1560,6 +1609,7 @@ const se = {
       failed: 'Den senaste uppdateringen misslyckades: {{error}}'
     },
     menu: {
+      mediaNetboot: 'Inställningar för nätverksstart',
       collapse: 'Fäll ihop menyn',
       expand: 'Expandera menyn',
       more: 'Mer',

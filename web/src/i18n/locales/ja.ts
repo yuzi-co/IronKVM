@@ -92,6 +92,21 @@ const ja = {
       done: 'セットアップが完了しました。このデバイスを普段のネットワークに戻し、ボードの新しいアドレスを開いてください。'
     },
     screen: {
+      viewOnly: '閲覧のみ',
+      viewOnlyTip:
+        'このタブはホストへのキーボードとマウスの入力を送らなくなります。スクリプト、マウスジグラー、他の閲覧者には影響しません。',
+      viewOnlyOff: '閲覧のみをオフにする',
+      viewOnlyBlocked: '閲覧のみがオンのため、ホストには何も送信されませんでした',
+      pauseHidden: 'タブが隠れたら一時停止',
+      pauseHiddenTip: 'このタブが隠れて数秒後に映像と音声を止め、戻ったときに再開します。',
+      screenshot: 'スクリーンショット',
+      screenshotTip: 'ホストの画面をキャプチャの原寸で PNG として保存します。',
+      screenshotFailed: 'スクリーンショットに失敗しました',
+      stream: {
+        ok: '映像は正常',
+        noSignal: '信号なし',
+        failed: 'ストリーム失敗'
+      },
       codecNoWebrtcHevc: 'このブラウザーは WebRTC で H.265 を受信できません',
       codecNoHevc: 'このブラウザーは H.265 をデコードできません',
       codecNote:
@@ -340,6 +355,17 @@ const ja = {
       resetHidFailed: 'USB HID をリセットできませんでした'
     },
     image: {
+      driveLoaded: 'イメージ挿入済み',
+      driveWarning: '警告を確認してください',
+      warning: {
+        missing:
+          'イメージファイルは削除されています。取り出すまでホストは古いコピーを読み続けます。',
+        writable: '読み書き可能: ホストがこのイメージを変更できます。',
+        tooBigForCd:
+          'CD ドライブには大きすぎます ({{size}}、上限 {{max}})。ディスクを使ってください。',
+        tooSmallForCd: 'CD ドライブには小さすぎます ({{size}})。ディスクを使ってください。',
+        empty: 'ファイルが空です。アップロードかダウンロードの失敗によるものと思われます。'
+      },
       delete: '削除',
       inUse: '使用中です。削除する前に取り出してください。',
       retry: '再試行',
@@ -506,7 +532,30 @@ const ja = {
       bootMenuPresent: '{{file}} は正しいチェックサムで既にデバイス上にあります',
       bootMenuDesc: '仮想 CD 用に netboot.xyz の ISO をチェックサム検証付きでダウンロード'
     },
+    alerts: {
+      title: '要確認',
+      temperature: {
+        warning: 'ボードが {{celsius}} °C です。空気が届いているか確認してください。',
+        critical: 'ボードが {{celsius}} °C で、熱すぎます。風を通すか電源を切ってください。'
+      },
+      storage: {
+        warning:
+          '{{path}} の空きは {{total}} 中 {{available}} だけです。大きなイメージは入らない可能性があります。',
+        critical:
+          '{{path}} の空きは {{available}} だけです。アップロード、ダウンロード、アドオンのインストールは失敗します。不要なイメージを削除してください。'
+      },
+      vpn: '{{name}} は起動時に開始する設定ですが動作していないため、これを使ったリモートアクセスは利用できません。',
+      openVpn: 'VPN 設定を開く',
+      stream:
+        'ビデオストリームが失敗しました。画面メニューで別のビデオモードを試すか、ページを再読み込みしてください。'
+    },
     power: {
+      resetDesc: 'ホストをすぐに再起動します。保存していない作業は失われます。',
+      powerShortDesc: 'ホストの電源を入れるか、OS にシャットダウンを要求します (ACPI)。',
+      powerLongDesc: 'シャットダウンせずにホストの電源を強制的に切ります。',
+      hddLed: 'HDD LED',
+      hddActive: '動作中',
+      hddIdle: '待機',
       title: '電源',
       showConfirm: '確認メッセージ',
       showConfirmTip: '電源の短押しの前に確認します。リセットと長押しは常に確認します。',
@@ -1581,6 +1630,7 @@ const ja = {
       failed: '前回の更新に失敗しました: {{error}}'
     },
     menu: {
+      mediaNetboot: 'ネットワークブートの設定',
       collapse: 'メニューを折りたたむ',
       expand: 'メニューを展開する',
       more: 'その他',

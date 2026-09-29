@@ -91,6 +91,22 @@ const id = {
       done: 'Penyiapan selesai. Sambungkan kembali perangkat ini ke jaringan biasa Anda dan buka papan di alamat barunya.'
     },
     screen: {
+      viewOnly: 'Hanya lihat',
+      viewOnlyTip:
+        'Tab ini berhenti mengirim keyboard dan mouse ke host. Skrip, jiggler mouse, dan penonton lain tidak terpengaruh.',
+      viewOnlyOff: 'Matikan hanya lihat',
+      viewOnlyBlocked: 'Hanya lihat aktif, jadi tidak ada yang dikirim ke host',
+      pauseHidden: 'Jeda saat tab tersembunyi',
+      pauseHiddenTip:
+        'Menghentikan video dan suaranya beberapa detik setelah tab ini disembunyikan, dan memulainya lagi saat Anda kembali.',
+      screenshot: 'Tangkapan layar',
+      screenshotTip: 'Menyimpan layar host sebagai PNG dalam ukuran tangkapan penuh.',
+      screenshotFailed: 'Tangkapan layar gagal',
+      stream: {
+        ok: 'gambar OK',
+        noSignal: 'tidak ada sinyal',
+        failed: 'stream gagal'
+      },
       codecNoWebrtcHevc: 'Browser ini tidak dapat menerima H.265 melalui WebRTC',
       codecNoHevc: 'Browser ini tidak dapat mendekode H.265',
       codecNote:
@@ -339,6 +355,16 @@ const id = {
       resetHidFailed: 'Reset HID USB gagal'
     },
     image: {
+      driveLoaded: 'image dimuat',
+      driveWarning: 'periksa peringatannya',
+      warning: {
+        missing:
+          'File image telah dihapus. Host tetap membaca salinan lama sampai Anda mengeluarkannya.',
+        writable: 'Baca-tulis: host dapat mengubah image ini.',
+        tooBigForCd: 'Terlalu besar untuk drive CD ({{size}}, batas {{max}}). Gunakan disk.',
+        tooSmallForCd: 'Terlalu kecil untuk drive CD ({{size}}). Gunakan disk.',
+        empty: 'File kosong, mungkin karena unggahan atau unduhan yang gagal.'
+      },
       delete: 'Hapus',
       inUse: 'Sedang digunakan. Keluarkan sebelum menghapus.',
       retry: 'Coba lagi',
@@ -502,7 +528,29 @@ const id = {
       bootMenuPresent: '{{file}} sudah ada di perangkat, dengan checksum yang benar',
       bootMenuDesc: 'Unduh ISO netboot.xyz, checksum diperiksa, untuk CD virtual'
     },
+    alerts: {
+      title: 'Perlu perhatian',
+      temperature: {
+        warning: 'Papan bersuhu {{celsius}} °C. Pastikan udara dapat mencapainya.',
+        critical: 'Papan bersuhu {{celsius}} °C, terlalu panas. Beri aliran udara atau matikan.'
+      },
+      storage: {
+        warning:
+          'Hanya {{available}} dari {{total}} yang kosong di {{path}}. Image besar mungkin tidak muat.',
+        critical:
+          'Hanya {{available}} yang kosong di {{path}}. Unggahan, unduhan, dan pemasangan add-on akan gagal. Hapus image yang tidak diperlukan.'
+      },
+      vpn: '{{name}} diatur untuk mulai saat boot tetapi tidak berjalan, jadi akses jarak jauh melaluinya terputus.',
+      openVpn: 'Buka pengaturan VPN',
+      stream: 'Stream video gagal. Coba mode video lain di menu Layar, atau muat ulang halaman.'
+    },
     power: {
+      resetDesc: 'Memulai ulang host seketika. Pekerjaan yang belum disimpan hilang.',
+      powerShortDesc: 'Menyalakan host, atau meminta OS-nya untuk mati (ACPI).',
+      powerLongDesc: 'Memaksa host mati tanpa shutdown.',
+      hddLed: 'LED disk',
+      hddActive: 'Aktif',
+      hddIdle: 'Diam',
       title: 'Daya',
       showConfirm: 'Konfirmasi',
       showConfirmTip:
@@ -1567,6 +1615,7 @@ const id = {
       failed: 'Pembaruan terakhir gagal: {{error}}'
     },
     menu: {
+      mediaNetboot: 'Pengaturan boot jaringan',
       collapse: 'Tutup Menu',
       expand: 'Perluas Menu',
       more: 'Lainnya',

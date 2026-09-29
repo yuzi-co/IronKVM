@@ -1,25 +1,29 @@
 import { useEffect, useState } from 'react';
-import { Divider, Modal, Tooltip } from 'antd';
-import clsx from 'clsx';
+import { Button, Divider, Modal, Tooltip } from 'antd';
 import { useSetAtom } from 'jotai';
-import { DiscIcon } from 'lucide-react';
+import { DiscIcon, NetworkIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/storage.ts';
 import * as ventoyApi from '@/api/ventoy.ts';
 import type { VentoyStatus } from '@/api/ventoy.ts';
-import { submenuOpenCountAtom } from '@/jotai/settings.ts';
+import { settingsOpenRequestAtom, submenuOpenCountAtom } from '@/jotai/settings.ts';
 import { useKeyboardLock } from '@/hooks/useKeyboardLock.ts';
 import { useStableCallback } from '@/hooks/useStableCallback.ts';
+import { StatusDot } from '@/components/status-dot.tsx';
 
 import { Drives } from '../image/drives.tsx';
 import { Images } from '../image/images.tsx';
 import { Tips } from '../image/tips.tsx';
 import { Ventoy } from '../image/ventoy.tsx';
+import { driveWarnings } from '../image/warnings.ts';
 import { BootMenu, LibraryTransfer } from './transfer.tsx';
 import { useImageTransfer } from './use-image-transfer.ts';
 
 const DRIVES_POLL_MS = 5000;
+// While the dialog is closed the list is read only for the icon's light, so
+// slowly: a read is a few configfs files and a stat.
+const DRIVES_IDLE_POLL_MS = 15000;
 
 // Media is one place for the images the virtual drives boot from: what is
 // mounted now, the library on the device and the ways to add to it, and the
@@ -28,6 +32,7 @@ const DRIVES_POLL_MS = 5000;
 export const Media = () => {
   const { t } = useTranslation();
   const setSubmenuOpenCount = useSetAtom(submenuOpenCountAtom);
+  const requestSettings = useSetAtom(settingsOpenRequestAtom);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [drives, setDrives] = useState<api.Drive[]>([]);
@@ -37,6 +42,7 @@ export const Media = () => {
   const transfer = useImageTransfer();
 
   const isMounted = drives.some((drive) => !!drive.file);
+  const hasWarning = drives.some((drive) => driveWarnings(drive).length > 0);
 
   const refreshDrives = useStableCallback(() => {
     api
@@ -60,18 +66,15 @@ export const Media = () => {
       .catch(() => {});
   });
 
-  // The drive list is read once for the menu icon, then again on every open
+  // The drive list is read for the menu icon's light, and again on every open
   // and every few seconds while the dialog is up, since a script, another tab
   // or the host itself can change what a drive holds.
   useEffect(() => {
     refreshDrives();
-  }, [refreshDrives]);
-
-  useEffect(() => {
-    if (!isModalOpen) return;
-
-    refreshDrives();
-    const timer = window.setInterval(refreshDrives, DRIVES_POLL_MS);
+    const timer = window.setInterval(
+      refreshDrives,
+      isModalOpen ? DRIVES_POLL_MS : DRIVES_IDLE_POLL_MS
+    );
     return () => window.clearInterval(timer);
   }, [isModalOpen, refreshDrives]);
 
@@ -96,6 +99,20 @@ export const Media = () => {
 
   const heading = 'text-xs font-medium tracking-wide text-neutral-500 uppercase select-none';
 
+  // The light on the icon: blue while an image is in a drive, amber when the
+  // dialog has a warning about it.
+  let title = t('menu.media');
+  if (isMounted) {
+    title = `${title}: ${hasWarning ? t('image.driveWarning') : t('image.driveLoaded')}`;
+  }
+
+  // The network boot settings live in Settings; the link closes this dialog
+  // and opens that page.
+  function openNetbootSettings() {
+    toggleModal(false);
+    requestSettings('netboot');
+  }
+
   function toggleModal(open: boolean) {
     setIsModalOpen(open);
     transfer.handleOpenChange(open);
@@ -104,17 +121,17 @@ export const Media = () => {
 
   return (
     <>
-      <Tooltip title={t('menu.media')} placement="bottom" mouseEnterDelay={0.6}>
+      <Tooltip title={title} placement="bottom" mouseEnterDelay={0.6}>
         <button
           type="button"
-          aria-label={t('menu.media')}
-          className={clsx(
-            'flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded p-0 hover:bg-neutral-700',
-            isMounted ? 'text-blue-500' : 'text-neutral-300 hover:text-white'
-          )}
+          aria-label={title}
+          className="flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded p-0 text-neutral-300 hover:bg-neutral-700 hover:text-white"
           onClick={() => toggleModal(true)}
         >
-          <DiscIcon size={18} />
+          <div className="relative">
+            <DiscIcon size={18} />
+            {isMounted && <StatusDot tone={hasWarning ? 'warning' : 'active'} />}
+          </div>
         </button>
       </Tooltip>
 
@@ -158,14 +175,18 @@ export const Media = () => {
           />
           <LibraryTransfer transfer={transfer} />
 
-          {transfer.diskEnabled && (
-            <>
-              <Divider style={{ margin: '8px 0 0 0' }} />
+          <Divider style={{ margin: '8px 0 0 0' }} />
 
-              <span className={heading}>{t('menu.mediaBoot')}</span>
-              <BootMenu transfer={transfer} />
-            </>
-          )}
+          <span className={heading}>{t('menu.mediaBoot')}</span>
+          {transfer.diskEnabled && <BootMenu transfer={transfer} />}
+          <Button
+            type="link"
+            className="self-start px-0"
+            icon={<NetworkIcon size={16} />}
+            onClick={openNetbootSettings}
+          >
+            {t('menu.mediaNetboot')}
+          </Button>
         </div>
       </Modal>
     </>

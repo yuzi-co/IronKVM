@@ -91,6 +91,22 @@ const pt_br = {
       done: 'Configuração concluída. Reconecte este dispositivo à sua rede habitual e abra a placa em seu novo endereço.'
     },
     screen: {
+      viewOnly: 'Somente visualizar',
+      viewOnlyTip:
+        'Esta aba deixa de enviar teclado e mouse ao host. Scripts, o jiggler do mouse e outros espectadores não são afetados.',
+      viewOnlyOff: 'Desativar somente visualizar',
+      viewOnlyBlocked: 'Somente visualizar está ativo, nada foi enviado ao host',
+      pauseHidden: 'Pausar com a aba oculta',
+      pauseHiddenTip:
+        'Para o vídeo e o som alguns segundos depois que esta aba é ocultada e os retoma quando você volta.',
+      screenshot: 'Captura de tela',
+      screenshotTip: 'Salva a tela do host como PNG no tamanho total de captura.',
+      screenshotFailed: 'Falha na captura de tela',
+      stream: {
+        ok: 'imagem OK',
+        noSignal: 'sem sinal',
+        failed: 'falha no stream'
+      },
       codecNoWebrtcHevc: 'Este navegador não recebe H.265 via WebRTC',
       codecNoHevc: 'Este navegador não decodifica H.265',
       codecNote:
@@ -339,6 +355,16 @@ const pt_br = {
       resetHidFailed: 'Falha ao redefinir o HID USB'
     },
     image: {
+      driveLoaded: 'imagem carregada',
+      driveWarning: 'veja os avisos',
+      warning: {
+        missing:
+          'O arquivo de imagem foi apagado. O host continua lendo a cópia antiga até você ejetá-la.',
+        writable: 'Leitura e gravação: o host pode alterar esta imagem.',
+        tooBigForCd: 'Grande demais para a unidade de CD ({{size}}, limite {{max}}). Use o disco.',
+        tooSmallForCd: 'Pequena demais para a unidade de CD ({{size}}). Use o disco.',
+        empty: 'O arquivo está vazio, provavelmente por um upload ou download que falhou.'
+      },
       delete: 'Excluir',
       inUse: 'Em uso. Ejete antes de excluir.',
       retry: 'Tentar novamente',
@@ -502,7 +528,30 @@ const pt_br = {
       bootMenuPresent: '{{file}} já está no dispositivo, com o checksum correto',
       bootMenuDesc: 'Baixar a ISO do netboot.xyz, com checksum conferido, para o CD virtual'
     },
+    alerts: {
+      title: 'Requer atenção',
+      temperature: {
+        warning: 'A placa está a {{celsius}} °C. Verifique se o ar chega até ela.',
+        critical: 'A placa está a {{celsius}} °C, quente demais. Dê ventilação ou desligue-a.'
+      },
+      storage: {
+        warning:
+          'Apenas {{available}} livres de {{total}} em {{path}}. Imagens grandes podem não caber.',
+        critical:
+          'Apenas {{available}} livres em {{path}}. Uploads, downloads e instalações de complementos vão falhar. Apague imagens de que não precisa.'
+      },
+      vpn: '{{name}} deve iniciar no boot, mas não está em execução, então o acesso remoto por ele está fora.',
+      openVpn: 'Abrir configurações de VPN',
+      stream:
+        'O stream de vídeo falhou. Tente outro modo de vídeo no menu Tela ou recarregue a página.'
+    },
     power: {
+      resetDesc: 'Reinicia o host na hora. O trabalho não salvo é perdido.',
+      powerShortDesc: 'Liga o host, ou pede ao sistema operacional que desligue (ACPI).',
+      powerLongDesc: 'Força o desligamento do host sem encerrar o sistema.',
+      hddLed: 'LED do disco',
+      hddActive: 'Ativo',
+      hddIdle: 'Inativo',
       title: 'Energia',
       showConfirm: 'Confirmação',
       showConfirmTip: 'Perguntar antes de um toque curto. Reset e toque longo sempre perguntam.',
@@ -1571,6 +1620,7 @@ const pt_br = {
       failed: 'A última atualização falhou: {{error}}'
     },
     menu: {
+      mediaNetboot: 'Configurações de boot pela rede',
       collapse: 'Recolher Menu',
       expand: 'Expandir Menu',
       more: 'Mais',

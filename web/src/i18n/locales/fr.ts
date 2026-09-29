@@ -95,6 +95,22 @@ const fr = {
       done: 'Configuration terminée. Reconnectez cet appareil à votre réseau habituel et ouvrez la carte à sa nouvelle adresse.'
     },
     screen: {
+      viewOnly: 'Lecture seule',
+      viewOnlyTip:
+        "Cet onglet n'envoie plus le clavier ni la souris à l'hôte. Les scripts, le jiggler de souris et les autres spectateurs ne sont pas concernés.",
+      viewOnlyOff: 'Désactiver la lecture seule',
+      viewOnlyBlocked: "La lecture seule est active, rien n'a été envoyé à l'hôte",
+      pauseHidden: "Pause quand l'onglet est masqué",
+      pauseHiddenTip:
+        'Arrête la vidéo et le son quelques secondes après que cet onglet est masqué, et les relance à votre retour.',
+      screenshot: "Capture d'écran",
+      screenshotTip: "Enregistre l'écran de l'hôte en PNG, à la taille de capture complète.",
+      screenshotFailed: "Échec de la capture d'écran",
+      stream: {
+        ok: 'image OK',
+        noSignal: 'pas de signal',
+        failed: 'flux en échec'
+      },
       codecNoWebrtcHevc: 'Ce navigateur ne peut pas recevoir le H.265 via WebRTC',
       codecNoHevc: 'Ce navigateur ne peut pas décoder le H.265',
       codecNote:
@@ -343,6 +359,17 @@ const fr = {
       resetHidFailed: 'La réinitialisation du HID USB a échoué'
     },
     image: {
+      driveLoaded: 'image chargée',
+      driveWarning: 'voir les avertissements',
+      warning: {
+        missing: "Le fichier image a été supprimé. L'hôte lit l'ancienne copie jusqu'à l'éjection.",
+        writable: "Lecture-écriture : l'hôte peut modifier cette image.",
+        tooBigForCd:
+          'Trop grande pour le lecteur CD ({{size}}, limite {{max}}). Utilisez le disque.',
+        tooSmallForCd: 'Trop petite pour le lecteur CD ({{size}}). Utilisez le disque.',
+        empty:
+          "Le fichier est vide, sans doute à la suite d'un envoi ou d'un téléchargement échoué."
+      },
       delete: 'Supprimer',
       inUse: "En cours d'utilisation. Éjectez-la avant de la supprimer.",
       retry: 'Réessayer',
@@ -508,7 +535,30 @@ const fr = {
       bootMenuPresent: "{{file}} est déjà sur l'appareil, avec la bonne somme de contrôle",
       bootMenuDesc: "Télécharger l'ISO netboot.xyz, somme de contrôle vérifiée, pour le CD virtuel"
     },
+    alerts: {
+      title: 'À vérifier',
+      temperature: {
+        warning: "La carte est à {{celsius}} °C. Vérifiez que l'air circule autour.",
+        critical: "La carte est à {{celsius}} °C, c'est trop chaud. Aérez-la ou éteignez-la."
+      },
+      storage: {
+        warning:
+          'Seulement {{available}} libres sur {{total}} dans {{path}}. Les grandes images risquent de ne pas tenir.',
+        critical:
+          'Seulement {{available}} libres dans {{path}}. Envois, téléchargements et installations de modules échoueront. Supprimez les images inutiles.'
+      },
+      vpn: "{{name}} doit démarrer au boot mais ne tourne pas : l'accès à distance par ce biais est coupé.",
+      openVpn: 'Ouvrir les paramètres VPN',
+      stream:
+        'Le flux vidéo a échoué. Essayez un autre mode vidéo dans le menu Écran, ou rechargez la page.'
+    },
     power: {
+      resetDesc: "Redémarre l'hôte immédiatement. Le travail non enregistré est perdu.",
+      powerShortDesc: "Allume l'hôte, ou demande à son système de s'éteindre (ACPI).",
+      powerLongDesc: "Force l'arrêt de l'hôte sans extinction propre.",
+      hddLed: 'LED disque',
+      hddActive: 'Active',
+      hddIdle: 'Inactive',
       title: 'Alimentation',
       showConfirm: 'Confirmation',
       showConfirmTip:
@@ -1592,6 +1642,7 @@ const fr = {
       failed: 'La dernière mise à jour a échoué : {{error}}'
     },
     menu: {
+      mediaNetboot: 'Paramètres du démarrage réseau',
       collapse: 'Réduire le menu',
       expand: 'Développer le menu',
       more: 'Plus',

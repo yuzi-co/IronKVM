@@ -92,6 +92,22 @@ const nb = {
       done: 'Oppsettet er ferdig. Koble denne enheten til ditt vanlige nettverk igjen og åpne kortet på den nye adressen.'
     },
     screen: {
+      viewOnly: 'Bare visning',
+      viewOnlyTip:
+        'Denne fanen slutter å sende tastatur og mus til verten. Skript, mus-jiggleren og andre seere påvirkes ikke.',
+      viewOnlyOff: 'Slå av bare visning',
+      viewOnlyBlocked: 'Bare visning er på, så ingenting ble sendt til verten',
+      pauseHidden: 'Pause når fanen er skjult',
+      pauseHiddenTip:
+        'Stopper video og lyd noen sekunder etter at fanen skjules, og starter dem igjen når du kommer tilbake.',
+      screenshot: 'Skjermbilde',
+      screenshotTip: 'Lagrer vertens skjerm som PNG i full opptaksstørrelse.',
+      screenshotFailed: 'Skjermbilde mislyktes',
+      stream: {
+        ok: 'bilde OK',
+        noSignal: 'ingen signal',
+        failed: 'strømmen feilet'
+      },
       codecNoWebrtcHevc: 'Denne nettleseren kan ikke motta H.265 over WebRTC',
       codecNoHevc: 'Denne nettleseren kan ikke dekode H.265',
       codecNote:
@@ -339,6 +355,15 @@ const nb = {
       resetHidFailed: 'Tilbakestilling av USB HID mislyktes'
     },
     image: {
+      driveLoaded: 'avbildning satt inn',
+      driveWarning: 'se advarslene',
+      warning: {
+        missing: 'Avbildningsfilen er slettet. Verten leser den gamle kopien til du løser den ut.',
+        writable: 'Lese-skrive: verten kan endre denne avbildningen.',
+        tooBigForCd: 'For stor for CD-stasjonen ({{size}}, grense {{max}}). Bruk disken.',
+        tooSmallForCd: 'For liten for CD-stasjonen ({{size}}). Bruk disken.',
+        empty: 'Filen er tom, trolig etter en mislykket opplasting eller nedlasting.'
+      },
       delete: 'Slett',
       inUse: 'I bruk. Løs det ut før du sletter det.',
       retry: 'Prøv igjen',
@@ -502,7 +527,30 @@ const nb = {
       bootMenuPresent: '{{file}} ligger allerede på enheten med riktig sjekksum',
       bootMenuDesc: 'Last ned netboot.xyz-ISO-en, med kontrollert sjekksum, til den virtuelle CD-en'
     },
+    alerts: {
+      title: 'Trenger oppmerksomhet',
+      temperature: {
+        warning: 'Kortet er på {{celsius}} °C. Sjekk at det får luft.',
+        critical: 'Kortet er på {{celsius}} °C, som er for varmt. Gi det luft eller slå det av.'
+      },
+      storage: {
+        warning:
+          'Bare {{available}} av {{total}} ledig på {{path}}. Store avbildninger får kanskje ikke plass.',
+        critical:
+          'Bare {{available}} ledig på {{path}}. Opplasting, nedlasting og installasjon av tillegg vil feile. Slett avbildninger du ikke trenger.'
+      },
+      vpn: '{{name}} skal starte ved oppstart, men kjører ikke, så fjerntilgang gjennom den er nede.',
+      openVpn: 'Åpne VPN-innstillinger',
+      stream:
+        'Videostrømmen har feilet. Prøv en annen videomodus i Skjerm-menyen, eller last inn siden på nytt.'
+    },
     power: {
+      resetDesc: 'Starter verten på nytt med en gang. Ulagret arbeid går tapt.',
+      powerShortDesc: 'Slår på verten, eller ber operativsystemet slå seg av (ACPI).',
+      powerLongDesc: 'Tvinger verten av uten avslutning.',
+      hddLed: 'Disk-LED',
+      hddActive: 'Aktiv',
+      hddIdle: 'Inaktiv',
       title: 'På-knapp',
       showConfirm: 'Bekreftelse',
       showConfirmTip:
@@ -1561,6 +1609,7 @@ const nb = {
       failed: 'Den siste oppdateringen mislyktes: {{error}}'
     },
     menu: {
+      mediaNetboot: 'Innstillinger for nettverksoppstart',
       collapse: 'Skjul meny',
       expand: 'Utvid menyen',
       more: 'Mer',

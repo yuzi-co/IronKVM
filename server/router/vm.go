@@ -19,6 +19,7 @@ func vmRouter(r *gin.Engine) {
 
 	api.GET("/vm/info", service.GetInfo)         // get device information
 	api.GET("/vm/hardware", service.GetHardware) // get hardware version
+	api.GET("/vm/health", service.GetHealth)     // temperature, image space, VPNs for the alert icon
 
 	api.POST("/vm/gpio", service.SetGpio) // update gpio
 	api.GET("/vm/gpio", service.GetGpio)  // get gpio

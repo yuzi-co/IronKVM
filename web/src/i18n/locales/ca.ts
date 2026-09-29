@@ -93,6 +93,22 @@ const ca = {
       done: 'Configuració acabada. Torneu a connectar aquest dispositiu a la vostra xarxa habitual i obriu la placa a la seva nova adreça.'
     },
     screen: {
+      viewOnly: 'Només veure',
+      viewOnlyTip:
+        "Aquesta pestanya deixa d'enviar teclat i ratolí a l'amfitrió. Els scripts, el jiggler del ratolí i altres espectadors no es veuen afectats.",
+      viewOnlyOff: 'Desactiva només veure',
+      viewOnlyBlocked: "Només veure és actiu, no s'ha enviat res a l'amfitrió",
+      pauseHidden: 'Pausa amb la pestanya amagada',
+      pauseHiddenTip:
+        "Atura el vídeo i el so uns segons després d'amagar aquesta pestanya, i els reprèn quan hi tornes.",
+      screenshot: 'Captura de pantalla',
+      screenshotTip: "Desa la pantalla de l'amfitrió com a PNG a mida completa de captura.",
+      screenshotFailed: 'Ha fallat la captura de pantalla',
+      stream: {
+        ok: 'imatge correcta',
+        noSignal: 'sense senyal',
+        failed: 'error del flux'
+      },
       codecNoWebrtcHevc: 'Aquest navegador no pot rebre H.265 per WebRTC',
       codecNoHevc: 'Aquest navegador no pot descodificar H.265',
       codecNote:
@@ -340,6 +356,17 @@ const ca = {
       resetHidFailed: "No s'ha pogut reiniciar l'HID USB"
     },
     image: {
+      driveLoaded: 'imatge carregada',
+      driveWarning: 'revisa els avisos',
+      warning: {
+        missing:
+          "El fitxer d'imatge s'ha esborrat. L'amfitrió continua llegint la còpia antiga fins que l'expulsis.",
+        writable: "Lectura i escriptura: l'amfitrió pot modificar aquesta imatge.",
+        tooBigForCd:
+          'Massa gran per a la unitat de CD ({{size}}, límit {{max}}). Fes servir el disc.',
+        tooSmallForCd: 'Massa petita per a la unitat de CD ({{size}}). Fes servir el disc.',
+        empty: 'El fitxer és buit, probablement per una pujada o baixada fallida.'
+      },
       delete: 'Elimina',
       inUse: "En ús. Expulseu-la abans d'eliminar-la.",
       retry: 'Torna-ho a provar',
@@ -501,7 +528,30 @@ const ca = {
       bootMenuPresent: '{{file}} ja és a la placa, amb la suma correcta',
       bootMenuDesc: 'Baixa la ISO de netboot.xyz, amb la suma comprovada, per al CD virtual'
     },
+    alerts: {
+      title: 'Cal atenció',
+      temperature: {
+        warning: 'La placa és a {{celsius}} °C. Comprova que li arribi aire.',
+        critical: 'La placa és a {{celsius}} °C, massa calenta. Dona-li aire o apaga-la.'
+      },
+      storage: {
+        warning:
+          'Només queden {{available}} lliures de {{total}} a {{path}}. Les imatges grans potser no hi cabran.',
+        critical:
+          'Només queden {{available}} lliures a {{path}}. Fallaran pujades, baixades i instal·lacions de complements. Esborra les imatges que ja no necessitis.'
+      },
+      vpn: "{{name}} s'ha d'iniciar en arrencar però no s'executa, així que l'accés remot a través seu no funciona.",
+      openVpn: 'Obre la configuració de VPN',
+      stream:
+        'El flux de vídeo ha fallat. Prova un altre mode de vídeo al menú Pantalla o torna a carregar la pàgina.'
+    },
     power: {
+      resetDesc: "Reinicia l'amfitrió a l'instant. Es perd la feina no desada.",
+      powerShortDesc: "Engega l'amfitrió o demana al seu sistema operatiu que s'apagui (ACPI).",
+      powerLongDesc: "Força l'apagada de l'amfitrió sense tancar el sistema.",
+      hddLed: 'LED de disc',
+      hddActive: 'Actiu',
+      hddIdle: 'Inactiu',
       title: 'Alimentació',
       showConfirm: 'Confirmació',
       showConfirmTip:
@@ -1577,6 +1627,7 @@ const ca = {
       failed: "L'última actualització ha fallat: {{error}}"
     },
     menu: {
+      mediaNetboot: "Configuració d'arrencada per xarxa",
       collapse: 'Amaga menú',
       expand: 'Mostra menú',
       more: 'Més',

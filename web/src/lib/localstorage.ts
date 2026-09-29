@@ -306,3 +306,23 @@ export function setOcrLanguage(language: string) {
     // Not remembered; the next read starts from the default.
   }
 }
+
+// Whether the video stops while this tab is hidden. Off by default: pausing
+// also stops the host's sound, which a viewer may want to keep hearing.
+const PAUSE_WHEN_HIDDEN_KEY = 'nano-kvm-pause-when-hidden';
+
+export function getPauseWhenHidden(): boolean {
+  try {
+    return localStorage.getItem(PAUSE_WHEN_HIDDEN_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+export function setPauseWhenHidden(enabled: boolean) {
+  try {
+    localStorage.setItem(PAUSE_WHEN_HIDDEN_KEY, String(enabled));
+  } catch {
+    // Not remembered; the switch holds for this tab.
+  }
+}

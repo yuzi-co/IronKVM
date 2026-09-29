@@ -94,6 +94,22 @@ const de = {
       done: 'Einrichtung abgeschlossen. Dieses Gerät wieder mit dem üblichen Netzwerk verbinden und das Board unter seiner neuen Adresse öffnen.'
     },
     screen: {
+      viewOnly: 'Nur ansehen',
+      viewOnlyTip:
+        'Dieser Tab sendet keine Tastatur- und Mauseingaben mehr an den Host. Skripte, der Maus-Jiggler und andere Zuschauer sind nicht betroffen.',
+      viewOnlyOff: 'Nur ansehen ausschalten',
+      viewOnlyBlocked: 'Nur ansehen ist aktiv, daher wurde nichts an den Host gesendet',
+      pauseHidden: 'Pausieren, wenn Tab verborgen',
+      pauseHiddenTip:
+        'Stoppt Video und Ton einige Sekunden nachdem dieser Tab verborgen wurde und startet sie wieder, wenn Sie zurückkehren.',
+      screenshot: 'Bildschirmfoto',
+      screenshotTip: 'Speichert den Bildschirm des Hosts als PNG-Datei in voller Aufnahmegröße.',
+      screenshotFailed: 'Bildschirmfoto fehlgeschlagen',
+      stream: {
+        ok: 'Bild OK',
+        noSignal: 'kein Signal',
+        failed: 'Stream fehlgeschlagen'
+      },
       codecNoWebrtcHevc: 'Dieser Browser kann H.265 nicht über WebRTC empfangen',
       codecNoHevc: 'Dieser Browser kann H.265 nicht dekodieren',
       codecNote:
@@ -347,6 +363,18 @@ const de = {
       resetHidFailed: 'USB-HID konnte nicht zurückgesetzt werden'
     },
     image: {
+      driveLoaded: 'Image eingelegt',
+      driveWarning: 'Warnungen beachten',
+      warning: {
+        missing:
+          'Die Image-Datei wurde gelöscht. Der Host liest die alte Kopie weiter, bis Sie sie auswerfen.',
+        writable: 'Lesen und Schreiben: Der Host kann dieses Image verändern.',
+        tooBigForCd:
+          'Zu groß für das CD-Laufwerk ({{size}}, Grenze {{max}}). Verwenden Sie das Festplattenlaufwerk.',
+        tooSmallForCd:
+          'Zu klein für das CD-Laufwerk ({{size}}). Verwenden Sie das Festplattenlaufwerk.',
+        empty: 'Die Datei ist leer, vermutlich nach einem fehlgeschlagenen Upload oder Download.'
+      },
       delete: 'Löschen',
       inUse: 'In Verwendung. Vor dem Löschen auswerfen.',
       retry: 'Erneut versuchen',
@@ -515,7 +543,32 @@ const de = {
       bootMenuPresent: '{{file}} liegt bereits mit korrekter Prüfsumme auf dem Gerät',
       bootMenuDesc: 'Das netboot.xyz-ISO mit geprüfter Prüfsumme für die virtuelle CD herunterladen'
     },
+    alerts: {
+      title: 'Braucht Aufmerksamkeit',
+      temperature: {
+        warning: 'Die Platine hat {{celsius}} °C. Prüfen Sie, ob Luft an sie herankommt.',
+        critical:
+          'Die Platine hat {{celsius}} °C und ist zu heiß. Sorgen Sie für Luft oder schalten Sie sie aus.'
+      },
+      storage: {
+        warning:
+          'Nur {{available}} von {{total}} frei auf {{path}}. Große Images passen eventuell nicht.',
+        critical:
+          'Nur {{available}} frei auf {{path}}. Uploads, Downloads und Add-on-Installationen schlagen fehl. Löschen Sie nicht mehr benötigte Images.'
+      },
+      vpn: '{{name}} soll beim Booten starten, läuft aber nicht. Der Fernzugriff darüber ist unterbrochen.',
+      openVpn: 'VPN-Einstellungen öffnen',
+      stream:
+        'Der Videostream ist ausgefallen. Versuchen Sie im Menü Bildschirm einen anderen Videomodus oder laden Sie die Seite neu.'
+    },
     power: {
+      resetDesc: 'Startet den Host sofort neu. Nicht gespeicherte Arbeit geht verloren.',
+      powerShortDesc:
+        'Schaltet den Host ein oder bittet sein Betriebssystem, herunterzufahren (ACPI).',
+      powerLongDesc: 'Schaltet den Host ohne Herunterfahren hart aus.',
+      hddLed: 'HDD-LED',
+      hddActive: 'Aktiv',
+      hddIdle: 'Ruhig',
       title: 'Power',
       showConfirm: 'Bestätigung',
       showConfirmTip:
@@ -1600,6 +1653,7 @@ const de = {
       failed: 'Die letzte Aktualisierung ist fehlgeschlagen: {{error}}'
     },
     menu: {
+      mediaNetboot: 'Netzwerk-Boot-Einstellungen',
       collapse: 'Menü einklappen',
       expand: 'Menü ausklappen',
       more: 'Mehr',

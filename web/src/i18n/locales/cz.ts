@@ -92,6 +92,22 @@ const cz = {
       done: 'Nastavení dokončeno. Připojte toto zařízení zpět k obvyklé síti a otevřete desku na její nové adrese.'
     },
     screen: {
+      viewOnly: 'Jen sledovat',
+      viewOnlyTip:
+        'Tato karta přestane posílat hostiteli klávesnici a myš. Skripty, jiggler myši a ostatní diváci nejsou ovlivněni.',
+      viewOnlyOff: 'Vypnout jen sledování',
+      viewOnlyBlocked: 'Je zapnuto jen sledování, hostiteli nebylo nic odesláno',
+      pauseHidden: 'Pozastavit při skryté kartě',
+      pauseHiddenTip:
+        'Zastaví video i zvuk několik sekund po skrytí této karty a po návratu je znovu spustí.',
+      screenshot: 'Snímek obrazovky',
+      screenshotTip: 'Uloží obrazovku hostitele jako PNG v plné velikosti záznamu.',
+      screenshotFailed: 'Snímek obrazovky se nezdařil',
+      stream: {
+        ok: 'obraz v pořádku',
+        noSignal: 'bez signálu',
+        failed: 'stream selhal'
+      },
       codecNoWebrtcHevc: 'Tento prohlížeč neumí přijímat H.265 přes WebRTC',
       codecNoHevc: 'Tento prohlížeč neumí dekódovat H.265',
       codecNote:
@@ -339,6 +355,15 @@ const cz = {
       resetHidFailed: 'Reset USB HID se nezdařil'
     },
     image: {
+      driveLoaded: 'obraz vložen',
+      driveWarning: 'zkontrolujte varování',
+      warning: {
+        missing: 'Soubor obrazu byl smazán. Hostitel čte starou kopii, dokud ji nevysunete.',
+        writable: 'Čtení i zápis: hostitel může tento obraz měnit.',
+        tooBigForCd: 'Příliš velký pro CD mechaniku ({{size}}, limit {{max}}). Použijte disk.',
+        tooSmallForCd: 'Příliš malý pro CD mechaniku ({{size}}). Použijte disk.',
+        empty: 'Soubor je prázdný, nejspíš po nezdařeném nahrání nebo stažení.'
+      },
       delete: 'Smazat',
       inUse: 'Používá se. Před smazáním jej vysuňte.',
       retry: 'Zkusit znovu',
@@ -501,7 +526,29 @@ const cz = {
       bootMenuPresent: '{{file}} už je v zařízení se správným kontrolním součtem',
       bootMenuDesc: 'Stáhnout ISO netboot.xyz s ověřeným kontrolním součtem pro virtuální CD'
     },
+    alerts: {
+      title: 'Vyžaduje pozornost',
+      temperature: {
+        warning: 'Deska má {{celsius}} °C. Zkontrolujte, zda k ní proudí vzduch.',
+        critical: 'Deska má {{celsius}} °C, to je příliš. Zajistěte chlazení nebo ji vypněte.'
+      },
+      storage: {
+        warning: 'Na {{path}} zbývá jen {{available}} z {{total}}. Velké obrazy se nemusí vejít.',
+        critical:
+          'Na {{path}} zbývá jen {{available}}. Nahrávání, stahování a instalace doplňků selžou. Smažte nepotřebné obrazy.'
+      },
+      vpn: '{{name}} se má spouštět při startu, ale neběží, takže vzdálený přístup přes něj nefunguje.',
+      openVpn: 'Otevřít nastavení VPN',
+      stream:
+        'Videostream selhal. Zkuste jiný režim videa v nabídce Obrazovka nebo obnovte stránku.'
+    },
     power: {
+      resetDesc: 'Okamžitě restartuje hostitele. Neuložená práce se ztratí.',
+      powerShortDesc: 'Zapne hostitele, nebo požádá jeho OS o vypnutí (ACPI).',
+      powerLongDesc: 'Vynutí vypnutí hostitele bez řádného ukončení.',
+      hddLed: 'LED disku',
+      hddActive: 'Aktivní',
+      hddIdle: 'Nečinný',
       title: 'Napájení',
       showConfirm: 'Potvrzení',
       showConfirmTip: 'Ptát se před krátkým stiskem napájení. Reset a dlouhý stisk se ptají vždy.',
@@ -1558,6 +1605,7 @@ const cz = {
       failed: 'Poslední aktualizace selhala: {{error}}'
     },
     menu: {
+      mediaNetboot: 'Nastavení síťového bootu',
       collapse: 'Sbalit nabídku',
       expand: 'Rozbalte nabídku',
       more: 'Více',

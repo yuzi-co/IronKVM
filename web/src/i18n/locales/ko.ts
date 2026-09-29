@@ -90,6 +90,21 @@ const ko = {
       done: '설정이 완료되었습니다. 이 기기를 평소 네트워크에 다시 연결하고 보드의 새 주소로 접속하세요.'
     },
     screen: {
+      viewOnly: '보기 전용',
+      viewOnlyTip:
+        '이 탭은 호스트에 키보드와 마우스 입력을 보내지 않습니다. 스크립트, 마우스 지글러, 다른 시청자에게는 영향이 없습니다.',
+      viewOnlyOff: '보기 전용 끄기',
+      viewOnlyBlocked: '보기 전용이 켜져 있어 호스트에 아무것도 보내지 않았습니다',
+      pauseHidden: '탭이 숨겨지면 일시 정지',
+      pauseHiddenTip: '이 탭이 숨겨지고 몇 초 뒤 영상과 소리를 멈추고, 돌아오면 다시 시작합니다.',
+      screenshot: '스크린샷',
+      screenshotTip: '호스트 화면을 전체 캡처 크기의 PNG로 저장합니다.',
+      screenshotFailed: '스크린샷 실패',
+      stream: {
+        ok: '화면 정상',
+        noSignal: '신호 없음',
+        failed: '스트림 실패'
+      },
       codecNoWebrtcHevc: '이 브라우저는 WebRTC로 H.265를 받을 수 없습니다',
       codecNoHevc: '이 브라우저는 H.265를 디코딩할 수 없습니다',
       codecNote:
@@ -334,6 +349,15 @@ const ko = {
       resetHidFailed: 'USB HID를 초기화하지 못했습니다'
     },
     image: {
+      driveLoaded: '이미지 삽입됨',
+      driveWarning: '경고를 확인하세요',
+      warning: {
+        missing: '이미지 파일이 삭제되었습니다. 꺼낼 때까지 호스트는 이전 사본을 계속 읽습니다.',
+        writable: '읽기-쓰기: 호스트가 이 이미지를 변경할 수 있습니다.',
+        tooBigForCd: 'CD 드라이브에 너무 큽니다 ({{size}}, 한도 {{max}}). 디스크를 사용하세요.',
+        tooSmallForCd: 'CD 드라이브에 너무 작습니다 ({{size}}). 디스크를 사용하세요.',
+        empty: '파일이 비어 있습니다. 업로드나 다운로드가 실패한 것으로 보입니다.'
+      },
       delete: '삭제',
       inUse: '사용 중입니다. 삭제하기 전에 꺼내세요.',
       retry: '다시 시도',
@@ -497,7 +521,30 @@ const ko = {
       bootMenuPresent: '{{file}} 파일이 올바른 체크섬으로 이미 장치에 있습니다',
       bootMenuDesc: '가상 CD용 netboot.xyz ISO를 체크섬 검증과 함께 다운로드'
     },
+    alerts: {
+      title: '확인 필요',
+      temperature: {
+        warning: '보드 온도가 {{celsius}} °C입니다. 공기가 통하는지 확인하세요.',
+        critical: '보드 온도가 {{celsius}} °C로 너무 뜨겁습니다. 통풍시키거나 전원을 끄세요.'
+      },
+      storage: {
+        warning:
+          '{{path}}의 여유 공간이 {{total}} 중 {{available}}뿐입니다. 큰 이미지는 들어가지 않을 수 있습니다.',
+        critical:
+          '{{path}}의 여유 공간이 {{available}}뿐입니다. 업로드, 다운로드, 애드온 설치가 실패합니다. 필요 없는 이미지를 삭제하세요.'
+      },
+      vpn: '{{name}}은(는) 부팅 시 시작하도록 설정되어 있지만 실행 중이 아니어서 이를 통한 원격 접속이 끊겼습니다.',
+      openVpn: 'VPN 설정 열기',
+      stream:
+        '비디오 스트림이 실패했습니다. 화면 메뉴에서 다른 비디오 모드를 시도하거나 페이지를 새로 고치세요.'
+    },
     power: {
+      resetDesc: '호스트를 즉시 다시 시작합니다. 저장하지 않은 작업은 사라집니다.',
+      powerShortDesc: '호스트를 켜거나 OS에 종료를 요청합니다 (ACPI).',
+      powerLongDesc: '종료 절차 없이 호스트 전원을 강제로 끕니다.',
+      hddLed: 'HDD LED',
+      hddActive: '활동',
+      hddIdle: '대기',
       title: '전원',
       showConfirm: '확인',
       showConfirmTip: '전원 짧게 누르기 전에 확인합니다. 리셋과 길게 누르기는 항상 확인합니다.',
@@ -1551,6 +1598,7 @@ const ko = {
       failed: '마지막 업데이트가 실패했습니다: {{error}}'
     },
     menu: {
+      mediaNetboot: '네트워크 부팅 설정',
       collapse: '메뉴 접기',
       expand: '메뉴 펼치기',
       more: '더 보기',

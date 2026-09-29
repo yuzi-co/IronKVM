@@ -92,6 +92,22 @@ const tr = {
       done: 'Kurulum tamamlandı. Bu cihazı her zamanki ağınıza yeniden bağlayın ve kartı yeni adresinden açın.'
     },
     screen: {
+      viewOnly: 'Yalnızca izle',
+      viewOnlyTip:
+        'Bu sekme ana bilgisayara klavye ve fare girdisi göndermeyi bırakır. Betikler, fare titreştirici ve diğer izleyiciler etkilenmez.',
+      viewOnlyOff: 'Yalnızca izlemeyi kapat',
+      viewOnlyBlocked: 'Yalnızca izle açık, ana bilgisayara hiçbir şey gönderilmedi',
+      pauseHidden: 'Sekme gizliyken duraklat',
+      pauseHiddenTip:
+        'Bu sekme gizlendikten birkaç saniye sonra görüntüyü ve sesi durdurur, döndüğünüzde yeniden başlatır.',
+      screenshot: 'Ekran görüntüsü',
+      screenshotTip: 'Ana bilgisayar ekranını tam yakalama boyutunda PNG olarak kaydeder.',
+      screenshotFailed: 'Ekran görüntüsü alınamadı',
+      stream: {
+        ok: 'görüntü tamam',
+        noSignal: 'sinyal yok',
+        failed: 'akış başarısız'
+      },
       codecNoWebrtcHevc: 'Bu tarayıcı WebRTC üzerinden H.265 alamıyor',
       codecNoHevc: 'Bu tarayıcı H.265 çözemiyor',
       codecNote:
@@ -338,6 +354,15 @@ const tr = {
       resetHidFailed: 'USB HID sıfırlanamadı'
     },
     image: {
+      driveLoaded: 'imaj takılı',
+      driveWarning: 'uyarılara bakın',
+      warning: {
+        missing: 'İmaj dosyası silindi. Siz çıkarana kadar ana bilgisayar eski kopyayı okur.',
+        writable: 'Okuma-yazma: ana bilgisayar bu imajı değiştirebilir.',
+        tooBigForCd: 'CD sürücüsü için çok büyük ({{size}}, sınır {{max}}). Diski kullanın.',
+        tooSmallForCd: 'CD sürücüsü için çok küçük ({{size}}). Diski kullanın.',
+        empty: 'Dosya boş, büyük olasılıkla başarısız bir yükleme veya indirme yüzünden.'
+      },
       delete: 'Sil',
       inUse: 'Kullanımda. Silmeden önce çıkarın.',
       retry: 'Yeniden dene',
@@ -501,7 +526,30 @@ const tr = {
       bootMenuPresent: '{{file}} doğru sağlama toplamıyla zaten cihazda',
       bootMenuDesc: "Sanal CD için netboot.xyz ISO'sunu sağlama toplamı doğrulanmış olarak indirin"
     },
+    alerts: {
+      title: 'Dikkat gerekiyor',
+      temperature: {
+        warning: 'Kart {{celsius}} °C. Havanın ona ulaşabildiğini kontrol edin.',
+        critical: 'Kart {{celsius}} °C, bu çok sıcak. Havalandırın veya kapatın.'
+      },
+      storage: {
+        warning:
+          '{{path}} üzerinde {{total}} alanın yalnızca {{available}} kadarı boş. Büyük imajlar sığmayabilir.',
+        critical:
+          '{{path}} üzerinde yalnızca {{available}} boş. Yüklemeler, indirmeler ve eklenti kurulumları başarısız olacak. Gerekmeyen imajları silin.'
+      },
+      vpn: '{{name}} açılışta başlayacak şekilde ayarlı ama çalışmıyor, bu yüzden onun üzerinden uzaktan erişim kesik.',
+      openVpn: 'VPN ayarlarını aç',
+      stream:
+        'Video akışı başarısız oldu. Ekran menüsünde başka bir video modu deneyin veya sayfayı yenileyin.'
+    },
     power: {
+      resetDesc: 'Ana bilgisayarı hemen yeniden başlatır. Kaydedilmemiş iş kaybolur.',
+      powerShortDesc: 'Ana bilgisayarı açar veya işletim sisteminden kapanmasını ister (ACPI).',
+      powerLongDesc: 'Ana bilgisayarı düzgün kapatmadan zorla kapatır.',
+      hddLed: 'Disk LED',
+      hddActive: 'Etkin',
+      hddIdle: 'Boşta',
       title: 'Güç',
       showConfirm: 'Doğrulama',
       showConfirmTip: 'Kısa güç basışından önce sor. Sıfırlama ve uzun basış her zaman sorar.',
@@ -1562,6 +1610,7 @@ const tr = {
       failed: 'Son güncelleme başarısız oldu: {{error}}'
     },
     menu: {
+      mediaNetboot: 'Ağdan önyükleme ayarları',
       collapse: 'Menüyü küçült',
       expand: 'Menüyü genişlet',
       more: 'Daha fazla',

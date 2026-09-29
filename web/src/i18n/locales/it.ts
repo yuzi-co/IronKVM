@@ -92,6 +92,22 @@ const it = {
       done: 'Configurazione completata. Ricollega questo dispositivo alla tua rete abituale e apri la scheda al suo nuovo indirizzo.'
     },
     screen: {
+      viewOnly: 'Solo visione',
+      viewOnlyTip:
+        "Questa scheda smette di inviare tastiera e mouse all'host. Script, jiggler del mouse e altri spettatori non sono interessati.",
+      viewOnlyOff: 'Disattiva solo visione',
+      viewOnlyBlocked: "Solo visione è attivo, non è stato inviato nulla all'host",
+      pauseHidden: 'Pausa con scheda nascosta',
+      pauseHiddenTip:
+        'Ferma video e audio pochi secondi dopo che questa scheda viene nascosta e li riavvia al tuo ritorno.',
+      screenshot: 'Screenshot',
+      screenshotTip: "Salva lo schermo dell'host come PNG alla piena dimensione di acquisizione.",
+      screenshotFailed: 'Screenshot non riuscito',
+      stream: {
+        ok: 'immagine OK',
+        noSignal: 'nessun segnale',
+        failed: 'stream non riuscito'
+      },
       codecNoWebrtcHevc: 'Questo browser non può ricevere H.265 tramite WebRTC',
       codecNoHevc: 'Questo browser non può decodificare H.265',
       codecNote:
@@ -341,6 +357,16 @@ const it = {
       resetHidFailed: 'Reimpostazione HID USB non riuscita'
     },
     image: {
+      driveLoaded: 'immagine caricata',
+      driveWarning: 'vedi gli avvisi',
+      warning: {
+        missing:
+          "Il file immagine è stato eliminato. L'host legge la vecchia copia finché non la espelli.",
+        writable: "Lettura e scrittura: l'host può modificare questa immagine.",
+        tooBigForCd: "Troppo grande per l'unità CD ({{size}}, limite {{max}}). Usa il disco.",
+        tooSmallForCd: "Troppo piccola per l'unità CD ({{size}}). Usa il disco.",
+        empty: 'Il file è vuoto, probabilmente per un caricamento o download non riuscito.'
+      },
       delete: 'Elimina',
       inUse: 'In uso. Espellila prima di eliminarla.',
       retry: 'Riprova',
@@ -506,7 +532,30 @@ const it = {
       bootMenuPresent: '{{file}} è già sul dispositivo, con il checksum corretto',
       bootMenuDesc: "Scarica l'ISO di netboot.xyz, con checksum verificato, per il CD virtuale"
     },
+    alerts: {
+      title: 'Richiede attenzione',
+      temperature: {
+        warning: "La scheda è a {{celsius}} °C. Controlla che l'aria possa raggiungerla.",
+        critical: 'La scheda è a {{celsius}} °C, troppo calda. Dalle aria o spegnila.'
+      },
+      storage: {
+        warning:
+          'Solo {{available}} liberi su {{total}} in {{path}}. Le immagini grandi potrebbero non entrare.',
+        critical:
+          'Solo {{available}} liberi in {{path}}. Caricamenti, download e installazioni di componenti aggiuntivi falliranno. Elimina le immagini che non ti servono.'
+      },
+      vpn: "{{name}} deve avviarsi al boot ma non è in esecuzione, quindi l'accesso remoto tramite esso non funziona.",
+      openVpn: 'Apri impostazioni VPN',
+      stream:
+        "Lo stream video non è riuscito. Prova un'altra modalità video nel menu Schermo o ricarica la pagina."
+    },
     power: {
+      resetDesc: "Riavvia subito l'host. Il lavoro non salvato va perso.",
+      powerShortDesc: "Accende l'host o chiede al suo sistema operativo di spegnersi (ACPI).",
+      powerLongDesc: "Forza lo spegnimento dell'host senza arresto.",
+      hddLed: 'LED disco',
+      hddActive: 'Attivo',
+      hddIdle: 'Inattivo',
       title: 'Accensione',
       showConfirm: 'Conferma',
       showConfirmTip:
@@ -1583,6 +1632,7 @@ const it = {
       failed: "L'ultimo aggiornamento non è riuscito: {{error}}"
     },
     menu: {
+      mediaNetboot: 'Impostazioni avvio di rete',
       collapse: 'Comprimi menu',
       expand: 'Espandi il menu',
       more: 'Altro',

@@ -92,6 +92,22 @@ const pl = {
       done: 'Konfiguracja zakończona. Połącz to urządzenie z powrotem ze swoją zwykłą siecią i otwórz płytkę pod jej nowym adresem.'
     },
     screen: {
+      viewOnly: 'Tylko podgląd',
+      viewOnlyTip:
+        'Ta karta przestaje wysyłać do hosta klawiaturę i mysz. Skrypty, jiggler myszy i inni widzowie nie są objęci.',
+      viewOnlyOff: 'Wyłącz tylko podgląd',
+      viewOnlyBlocked: 'Włączony jest tylko podgląd, do hosta nic nie wysłano',
+      pauseHidden: 'Wstrzymaj, gdy karta ukryta',
+      pauseHiddenTip:
+        'Zatrzymuje obraz i dźwięk kilka sekund po ukryciu tej karty i wznawia je po powrocie.',
+      screenshot: 'Zrzut ekranu',
+      screenshotTip: 'Zapisuje ekran hosta jako PNG w pełnym rozmiarze przechwytywania.',
+      screenshotFailed: 'Zrzut ekranu nie powiódł się',
+      stream: {
+        ok: 'obraz OK',
+        noSignal: 'brak sygnału',
+        failed: 'błąd strumienia'
+      },
       codecNoWebrtcHevc: 'Ta przeglądarka nie odbiera H.265 przez WebRTC',
       codecNoHevc: 'Ta przeglądarka nie dekoduje H.265',
       codecNote:
@@ -340,6 +356,15 @@ const pl = {
       resetHidFailed: 'Nie udało się zresetować USB HID'
     },
     image: {
+      driveLoaded: 'obraz załadowany',
+      driveWarning: 'sprawdź ostrzeżenia',
+      warning: {
+        missing: 'Plik obrazu został usunięty. Host czyta starą kopię, dopóki jej nie wysuniesz.',
+        writable: 'Odczyt i zapis: host może zmieniać ten obraz.',
+        tooBigForCd: 'Za duży dla napędu CD ({{size}}, limit {{max}}). Użyj dysku.',
+        tooSmallForCd: 'Za mały dla napędu CD ({{size}}). Użyj dysku.',
+        empty: 'Plik jest pusty, zapewne po nieudanym wysyłaniu lub pobieraniu.'
+      },
       delete: 'Usuń',
       inUse: 'W użyciu. Wysuń go przed usunięciem.',
       retry: 'Ponów',
@@ -503,7 +528,30 @@ const pl = {
       bootMenuPresent: '{{file}} jest już na urządzeniu, z poprawną sumą kontrolną',
       bootMenuDesc: 'Pobierz obraz ISO netboot.xyz ze sprawdzoną sumą kontrolną do wirtualnego CD'
     },
+    alerts: {
+      title: 'Wymaga uwagi',
+      temperature: {
+        warning: 'Płytka ma {{celsius}} °C. Sprawdź, czy dociera do niej powietrze.',
+        critical: 'Płytka ma {{celsius}} °C, to za gorąco. Zapewnij jej przewiew albo ją wyłącz.'
+      },
+      storage: {
+        warning:
+          'Na {{path}} wolne tylko {{available}} z {{total}}. Duże obrazy mogą się nie zmieścić.',
+        critical:
+          'Na {{path}} wolne tylko {{available}}. Wysyłanie, pobieranie i instalacja dodatków się nie powiodą. Usuń niepotrzebne obrazy.'
+      },
+      vpn: '{{name}} ma startować przy rozruchu, ale nie działa, więc dostęp zdalny przez niego nie działa.',
+      openVpn: 'Otwórz ustawienia VPN',
+      stream:
+        'Strumień wideo przestał działać. Wypróbuj inny tryb wideo w menu Ekran lub odśwież stronę.'
+    },
     power: {
+      resetDesc: 'Natychmiast restartuje hosta. Niezapisana praca przepada.',
+      powerShortDesc: 'Włącza hosta albo prosi jego system o wyłączenie (ACPI).',
+      powerLongDesc: 'Wymusza wyłączenie hosta bez zamknięcia systemu.',
+      hddLed: 'Dioda dysku',
+      hddActive: 'Aktywna',
+      hddIdle: 'Bezczynna',
       title: 'Zasilanie',
       showConfirm: 'Potwierdzenie',
       showConfirmTip:
@@ -1573,6 +1621,7 @@ const pl = {
       failed: 'Ostatnia aktualizacja nie powiodła się: {{error}}'
     },
     menu: {
+      mediaNetboot: 'Ustawienia rozruchu sieciowego',
       collapse: 'Zwiń menu',
       expand: 'Rozwiń Menu',
       more: 'Więcej',
