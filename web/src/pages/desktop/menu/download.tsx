@@ -38,6 +38,7 @@ export const DownloadImage = () => {
   const [popoverKey, setPopoverKey] = useState(0);
 
   const inputRef = useRef<InputRef>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   // -1 while no upload runs; otherwise the share of the file sent so far.
@@ -268,6 +269,8 @@ export const DownloadImage = () => {
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0] ?? null;
+    // Clear the picker so choosing the same file again still fires onChange.
+    e.target.value = '';
     if (!file || !isISO(file)) {
       setStatus('failed');
       setLog(t('download.NoISO'));
@@ -428,22 +431,23 @@ export const DownloadImage = () => {
                 }}
                 onClick={() => {
                   if (status === 'in_progress') return; // deaktiviert
-                  document.getElementById('file-upload')?.click();
+                  fileInputRef.current?.click();
                 }}
               >
                 <span className="w-full truncate px-2 text-center text-sm text-neutral-100">
                   {selectedFile ? selectedFile.name : t('download.uploadbox')}
                 </span>
-
-                <Input
-                  id="file-upload"
-                  type="file"
-                  accept=".iso"
-                  onChange={handleFileChange}
-                  disabled={status === 'in_progress'}
-                  className="hidden"
-                />
               </button>
+              {/* A plain input: antd's Input styles beat Tailwind's `hidden`,
+                  which left the native picker showing under the drop zone. */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".iso"
+                hidden
+                onChange={handleFileChange}
+                disabled={status === 'in_progress'}
+              />
               <Button
                 type="primary"
                 className="h-10 w-16 shrink-0 border-2 px-0"
