@@ -13,8 +13,10 @@ import {
   statusImage,
   uploadImageFile
 } from '@/api/download.ts';
+import { UPDATE_PATHS } from '@/api/updates.ts';
 import { useKeyboardLock } from '@/hooks/useKeyboardLock.ts';
 import { MenuItem } from '@/components/menu-item.tsx';
+import { UpstreamUpdate } from '@/components/upstream-update.tsx';
 
 const imageUpdatedEvent = 'nanokvm:image-updated';
 
@@ -402,6 +404,13 @@ export const DownloadImage = () => {
             >
               {t('download.bootMenu')}
             </Button>
+            <div className="mt-1">
+              <UpstreamUpdate
+                path={UPDATE_PATHS.bootMenu}
+                name="netboot.xyz.iso"
+                onUpdated={() => window.dispatchEvent(new Event(imageUpdatedEvent))}
+              />
+            </div>
           </div>
           <div>
             <div className="mb-1 text-neutral-500">{t('download.inputfile')}</div>

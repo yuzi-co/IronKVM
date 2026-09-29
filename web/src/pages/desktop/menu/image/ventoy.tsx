@@ -4,8 +4,10 @@ import clsx from 'clsx';
 import { ChevronDownIcon, ChevronRightIcon, TriangleAlertIcon, XIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { UPDATE_PATHS } from '@/api/updates.ts';
 import * as api from '@/api/ventoy.ts';
 import type { VentoyStatus } from '@/api/ventoy.ts';
+import { UpstreamUpdate } from '@/components/upstream-update.tsx';
 
 type VentoyProps = {
   status: VentoyStatus | null;
@@ -195,9 +197,10 @@ export const Ventoy = ({ status, images, onStatusChanged, onDrivesChanged }: Ven
                   <span className="text-xs text-neutral-500">{t('image.ventoy.setHint')}</span>
                 )}
 
+                <UpstreamUpdate path={UPDATE_PATHS.ventoy} name="Ventoy" onUpdated={reload} />
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-1">
-                    <span className="font-mono text-xs text-neutral-500">{status.version}</span>
                     <Popconfirm
                       title={t('image.ventoy.uninstallConfirm')}
                       okText={t('image.okBtn')}

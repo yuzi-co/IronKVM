@@ -5,8 +5,10 @@ import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/netboot.ts';
 import type { NetbootStatus } from '@/api/netboot.ts';
+import { UPDATE_PATHS } from '@/api/updates.ts';
 import { getUsbNetwork } from '@/api/virtual-device.ts';
 import { describeFailure } from '@/lib/feedback.ts';
+import { UpstreamUpdate } from '@/components/upstream-update.tsx';
 
 import { CopyRow } from '../components/copy-button.tsx';
 import { usePoll } from '../components/use-poll.ts';
@@ -208,6 +210,13 @@ export const Netboot = ({ setIsLocked }: NetbootProps) => {
             </Button>
           )}
         </div>
+        {status?.installed && (
+          <UpstreamUpdate
+            path={UPDATE_PATHS.netbootxyz}
+            name="netboot.xyz"
+            onUpdated={() => load(true)}
+          />
+        )}
         {status && !status.onData && !status.installed && (
           <Alert type="info" showIcon message={t('settings.netboot.needsData')} />
         )}
