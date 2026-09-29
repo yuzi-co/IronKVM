@@ -299,6 +299,7 @@ const es = {
       }
     },
     mouse: {
+      jiggler: 'Movimiento automático del ratón',
       title: 'Ratón',
       cursor: 'Estilo de cursor',
       default: 'Cursor por defecto',
@@ -1575,7 +1576,16 @@ const es = {
     menu: {
       collapse: 'Colapsar menú',
       expand: 'Expandir menú',
-      more: 'Más'
+      more: 'Más',
+      media: 'Medios',
+      tools: 'Herramientas',
+      text: 'Texto',
+      advanced: 'Avanzado',
+      mediaMounted: 'Montado',
+      mediaLibrary: 'Biblioteca',
+      mediaBoot: 'Arranque',
+      textToHost: 'Hacia el host',
+      textFromHost: 'Desde el host'
     },
     ion: {
       checking: 'Comprobando la memoria de vídeo antes de iniciar la transmisión...',

@@ -300,6 +300,7 @@ const fr = {
       }
     },
     mouse: {
+      jiggler: 'Agitateur de souris',
       title: 'Souris',
       cursor: 'Style de curseur',
       default: 'Curseur par défaut',
@@ -1578,7 +1579,16 @@ const fr = {
     menu: {
       collapse: 'Réduire le menu',
       expand: 'Développer le menu',
-      more: 'Plus'
+      more: 'Plus',
+      media: 'Médias',
+      tools: 'Outils',
+      text: 'Texte',
+      advanced: 'Avancé',
+      mediaMounted: 'Monté',
+      mediaLibrary: 'Bibliothèque',
+      mediaBoot: 'Démarrage',
+      textToHost: "Vers l'hôte",
+      textFromHost: "Depuis l'hôte"
     },
     ion: {
       checking: 'Vérification de la mémoire vidéo avant de lancer le flux...',

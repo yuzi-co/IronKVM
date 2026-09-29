@@ -288,6 +288,7 @@ const zh = {
       }
     },
     mouse: {
+      jiggler: '鼠标防休眠',
       title: '鼠标',
       cursor: '光标样式',
       default: '默认光标',
@@ -1494,7 +1495,16 @@ const zh = {
     menu: {
       collapse: '收起',
       expand: '展开',
-      more: '更多'
+      more: '更多',
+      media: '媒体',
+      tools: '工具',
+      text: '文本',
+      advanced: '高级',
+      mediaMounted: '已挂载',
+      mediaLibrary: '镜像库',
+      mediaBoot: '启动',
+      textToHost: '发送到主机',
+      textFromHost: '从主机读取'
     },
     ion: {
       checking: '正在启动视频流前检查视频内存...',

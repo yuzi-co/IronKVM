@@ -297,6 +297,7 @@ const uk = {
       }
     },
     mouse: {
+      jiggler: 'Імітація руху миші',
       title: 'Миша',
       cursor: 'Стиль курсору',
       default: 'Курсор за замовчуванням',
@@ -1561,7 +1562,16 @@ const uk = {
     menu: {
       collapse: 'Згорнути меню',
       expand: 'Розгорнути меню',
-      more: 'Більше'
+      more: 'Більше',
+      media: 'Носії',
+      tools: 'Інструменти',
+      text: 'Текст',
+      advanced: 'Додатково',
+      mediaMounted: 'Підключено',
+      mediaLibrary: 'Бібліотека',
+      mediaBoot: 'Завантаження',
+      textToHost: 'На хост',
+      textFromHost: 'З хоста'
     },
     ion: {
       checking: 'Перевірка відеопам’яті перед запуском потоку...',

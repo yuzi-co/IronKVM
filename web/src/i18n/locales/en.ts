@@ -294,6 +294,7 @@ const en = {
       }
     },
     mouse: {
+      jiggler: 'Mouse jiggler',
       title: 'Mouse',
       cursor: 'Cursor style',
       default: 'Default cursor',
@@ -1541,7 +1542,16 @@ const en = {
     menu: {
       collapse: 'Collapse Menu',
       expand: 'Expand Menu',
-      more: 'More'
+      more: 'More',
+      media: 'Media',
+      tools: 'Tools',
+      text: 'Text',
+      advanced: 'Advanced',
+      mediaMounted: 'Mounted',
+      mediaLibrary: 'Library',
+      mediaBoot: 'Boot',
+      textToHost: 'To the host',
+      textFromHost: 'From the host'
     },
     ion: {
       checking: 'Checking video memory before starting the stream...',

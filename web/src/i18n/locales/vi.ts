@@ -295,6 +295,7 @@ const vi = {
       }
     },
     mouse: {
+      jiggler: 'Tự động di chuột',
       title: 'Chuột',
       cursor: 'Kiểu con trỏ',
       default: 'Con trỏ mặc định',
@@ -1546,7 +1547,16 @@ const vi = {
     menu: {
       collapse: 'Thu gọn Menu',
       expand: 'Mở rộng Menu',
-      more: 'Thêm'
+      more: 'Thêm',
+      media: 'Phương tiện',
+      tools: 'Công cụ',
+      text: 'Văn bản',
+      advanced: 'Nâng cao',
+      mediaMounted: 'Đã gắn',
+      mediaLibrary: 'Thư viện',
+      mediaBoot: 'Khởi động',
+      textToHost: 'Đến máy chủ',
+      textFromHost: 'Từ máy chủ'
     },
     ion: {
       checking: 'Đang kiểm tra bộ nhớ video trước khi bắt đầu luồng...',

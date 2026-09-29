@@ -298,6 +298,7 @@ const hu = {
       }
     },
     mouse: {
+      jiggler: 'Egérmozgató',
       title: 'Egér',
       cursor: 'Kurzorstílus',
       default: 'Alapértelmezett kurzor',
@@ -1565,7 +1566,16 @@ const hu = {
     menu: {
       collapse: 'Menü összecsukása',
       expand: 'Bontsa ki a menüt',
-      more: 'Továbbiak'
+      more: 'Továbbiak',
+      media: 'Média',
+      tools: 'Eszközök',
+      text: 'Szöveg',
+      advanced: 'Speciális',
+      mediaMounted: 'Csatolva',
+      mediaLibrary: 'Könyvtár',
+      mediaBoot: 'Rendszerindítás',
+      textToHost: 'A gazdagép felé',
+      textFromHost: 'A gazdagéptől'
     },
     ion: {
       checking: 'Videomemória ellenőrzése az adatfolyam indítása előtt...',

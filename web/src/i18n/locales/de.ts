@@ -302,6 +302,7 @@ const de = {
       }
     },
     mouse: {
+      jiggler: 'Maus-Jiggler',
       title: 'Maus',
       cursor: 'Cursor',
       default: 'Standard Cursor',
@@ -1586,7 +1587,16 @@ const de = {
     menu: {
       collapse: 'Menü einklappen',
       expand: 'Menü ausklappen',
-      more: 'Mehr'
+      more: 'Mehr',
+      media: 'Medien',
+      tools: 'Werkzeuge',
+      text: 'Text',
+      advanced: 'Erweitert',
+      mediaMounted: 'Eingebunden',
+      mediaLibrary: 'Bibliothek',
+      mediaBoot: 'Booten',
+      textToHost: 'Zum Host',
+      textFromHost: 'Vom Host'
     },
     ion: {
       checking: 'Videospeicher wird vor dem Start des Streams geprüft...',

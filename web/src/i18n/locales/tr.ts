@@ -296,6 +296,7 @@ const tr = {
       }
     },
     mouse: {
+      jiggler: 'Fare kıpırdatıcı',
       title: 'Fare',
       cursor: 'İmleç sitili',
       default: 'Varsayılan imleç',
@@ -1548,7 +1549,16 @@ const tr = {
     menu: {
       collapse: 'Menüyü küçült',
       expand: 'Menüyü genişlet',
-      more: 'Daha fazla'
+      more: 'Daha fazla',
+      media: 'Medya',
+      tools: 'Araçlar',
+      text: 'Metin',
+      advanced: 'Gelişmiş',
+      mediaMounted: 'Bağlı',
+      mediaLibrary: 'Kitaplık',
+      mediaBoot: 'Önyükleme',
+      textToHost: 'Ana makineye',
+      textFromHost: 'Ana makineden'
     },
     ion: {
       checking: 'Akış başlatılmadan önce video belleği kontrol ediliyor...',

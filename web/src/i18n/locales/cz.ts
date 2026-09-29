@@ -296,6 +296,7 @@ const cz = {
       }
     },
     mouse: {
+      jiggler: 'Pohyb myši proti uspání',
       title: 'Myš',
       cursor: 'Styl kurzoru',
       default: 'Výchozí kurzor',
@@ -1544,7 +1545,16 @@ const cz = {
     menu: {
       collapse: 'Sbalit nabídku',
       expand: 'Rozbalte nabídku',
-      more: 'Více'
+      more: 'Více',
+      media: 'Média',
+      tools: 'Nástroje',
+      text: 'Text',
+      advanced: 'Pokročilé',
+      mediaMounted: 'Připojeno',
+      mediaLibrary: 'Knihovna',
+      mediaBoot: 'Spouštění',
+      textToHost: 'Do hostitele',
+      textFromHost: 'Z hostitele'
     },
     ion: {
       checking: 'Kontrola videopaměti před spuštěním streamu...',

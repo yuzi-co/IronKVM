@@ -298,6 +298,7 @@ const ca = {
       }
     },
     mouse: {
+      jiggler: 'Moviment automàtic del ratolí',
       title: 'Ratolí',
       cursor: 'Estil del cursor',
       default: 'Cursor per defecte',
@@ -1563,7 +1564,16 @@ const ca = {
     menu: {
       collapse: 'Amaga menú',
       expand: 'Mostra menú',
-      more: 'Més'
+      more: 'Més',
+      media: 'Mitjans',
+      tools: 'Eines',
+      text: 'Text',
+      advanced: 'Avançat',
+      mediaMounted: 'Muntat',
+      mediaLibrary: 'Biblioteca',
+      mediaBoot: 'Arrencada',
+      textToHost: "Cap a l'amfitrió",
+      textFromHost: "Des de l'amfitrió"
     },
     ion: {
       checking: "S'està comprovant la memòria de vídeo abans d'iniciar la transmissió...",
