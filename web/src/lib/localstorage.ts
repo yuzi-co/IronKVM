@@ -1,3 +1,5 @@
+import { migrateMenuDisabledItems } from './menu-items.ts';
+
 const LANGUAGE_KEY = 'nano-kvm-language';
 const VIDEO_MODE_KEY = 'nano-kvm-vide-mode';
 const VIDEO_SCALE_KEY = 'nano-kvm-video-scale';
@@ -210,8 +212,14 @@ export function getMenuDisabledItems(): string[] {
     }
     return parsed as string[];
   });
+  if (!items) return [];
 
-  return items ?? [];
+  // A list saved before the menu bar was regrouped names buttons that no
+  // longer exist. It is rewritten once, so the switches read it as saved.
+  const migrated = migrateMenuDisabledItems(items);
+  if (migrated !== items) setMenuDisabledItems(migrated);
+
+  return migrated;
 }
 
 export function getMenuDisplayMode(): string {
