@@ -3,6 +3,7 @@ package download
 import (
 	"NanoKVM-Server/proto"
 	"NanoKVM-Server/service/netboot"
+	"NanoKVM-Server/service/storage"
 	"NanoKVM-Server/utils"
 	"bytes"
 	"context"
@@ -339,36 +340,38 @@ func (s *Service) DownloadImage(c *gin.Context) {
 		return
 	}
 
-	s.startRemoteDownload(c, req.File, expectedSHA256)
+	s.startRemoteDownload(c, req.File, expectedSHA256, os.Rename)
 }
 
 // DownloadBootMenu downloads the netboot.xyz ISO into the image directory, for
-// the virtual CD. The URL and its SHA-256 are pinned in the server, so the
-// request carries neither.
+// the virtual CD. The release is the one an update recorded, or the pinned
+// one, with its SHA-256, so the request carries neither.
 func (s *Service) DownloadBootMenu(c *gin.Context) {
 	var rsp proto.Response
 
 	log.Debug("DownloadBootMenu")
 
-	expectedSHA256, err := parseSHA256(netboot.BootMenuISOSHA256)
+	want := currentBootMenu()
+	expectedSHA256, err := parseSHA256(want.SHA256)
 	if err != nil {
 		rsp.ErrRsp(c, -1, err.Error())
 		return
 	}
 
-	// The ISO is pinned, so a copy with the pinned checksum is the file a new
-	// download would write. Answer at once instead of fetching it again and
-	// replacing a file that may be in the virtual CD.
-	if filename, err := imageFilenameFromURL(netboot.BootMenuISOURL); err == nil &&
-		fileHasSHA256(filepath.Join(imageDir, filename), expectedSHA256) {
+	// A copy with the expected checksum is the file a new download would
+	// write. Answer at once instead of fetching it again and replacing a
+	// file that may be in the virtual CD.
+	if fileHasSHA256(bootMenuPath(), expectedSHA256) {
 		rsp.OkRspWithData(c, &proto.StatusImageRsp{
 			Status: string(downloadStatusPresent),
-			File:   filename,
+			File:   netboot.BootMenuISOName,
 		})
 		return
 	}
 
-	s.startRemoteDownload(c, netboot.BootMenuISOURL, expectedSHA256)
+	// A different file under the ISO's name is replaced only while no
+	// drive serves it.
+	s.startRemoteDownload(c, want.URL, expectedSHA256, storage.ReplaceImage)
 }
 
 // fileHasSHA256 reports whether path is a regular file whose SHA-256 is want.
@@ -393,7 +396,8 @@ func fileHasSHA256(path string, want []byte) bool {
 
 // startRemoteDownload starts the download of an image in the background and
 // answers with its status, which the page then polls.
-func (s *Service) startRemoteDownload(c *gin.Context, rawURL string, expectedSHA256 []byte) {
+// install moves the verified download to its name.
+func (s *Service) startRemoteDownload(c *gin.Context, rawURL string, expectedSHA256 []byte, install func(tmp, dest string) error) {
 	var rsp proto.Response
 
 	filename, err := imageFilenameFromURL(rawURL)
@@ -415,7 +419,7 @@ func (s *Service) startRemoteDownload(c *gin.Context, rawURL string, expectedSHA
 
 		if err := s.downloadRemoteImage(ctx, rawURL, expectedSHA256, filename, func(percentage string) {
 			s.setDownloadProgress(done, percentage)
-		}); err != nil {
+		}, install); err != nil {
 			if errors.Is(err, context.Canceled) {
 				log.Debug("Image download canceled")
 				s.finishDownload(done, downloadStatusIdle)
@@ -460,6 +464,7 @@ func (s *Service) downloadRemoteImage(
 	expectedSHA256 []byte,
 	filename string,
 	onProgress func(string),
+	install func(tmp, dest string) error,
 ) error {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, rawURL, nil)
 	if err != nil {
@@ -524,7 +529,7 @@ func (s *Service) downloadRemoteImage(
 	}
 
 	destPath := filepath.Join(imageDir, filename)
-	if err := os.Rename(tempPath, destPath); err != nil {
+	if err := install(tempPath, destPath); err != nil {
 		return fmt.Errorf("install downloaded image failed: %w", err)
 	}
 

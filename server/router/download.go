@@ -18,4 +18,6 @@ func downloadRouter(r *gin.Engine) {
 	api.GET("/download/image/status", service.StatusImage)          // download image
 	api.GET("/download/image/enabled", service.ImageEnabled)        // download image
 	api.POST("/download/file", service.DownloadImageFile)           // download image
+	// The netboot.xyz ISO's updates: GET, POST /check, POST.
+	service.BootMenuUpdater(nil).Routes(api, "/download/image/netboot/update")
 }
