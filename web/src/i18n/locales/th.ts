@@ -291,6 +291,7 @@ const th = {
       }
     },
     mouse: {
+      jiggler: 'ขยับเมาส์อัตโนมัติ',
       title: 'เมาส์',
       cursor: 'รูปแบบเคอร์เซอร์',
       default: 'ตัวชี้เริ่มต้น',
@@ -1540,7 +1541,16 @@ const th = {
     menu: {
       collapse: 'ย่อเมนู',
       expand: 'ขยายเมนู',
-      more: 'เพิ่มเติม'
+      more: 'เพิ่มเติม',
+      media: 'สื่อ',
+      tools: 'เครื่องมือ',
+      text: 'ข้อความ',
+      advanced: 'ขั้นสูง',
+      mediaMounted: 'เมานต์อยู่',
+      mediaLibrary: 'คลัง',
+      mediaBoot: 'บูต',
+      textToHost: 'ไปยังโฮสต์',
+      textFromHost: 'จากโฮสต์'
     },
     ion: {
       checking: 'กำลังตรวจสอบหน่วยความจำวิดีโอก่อนเริ่มสตรีม...',

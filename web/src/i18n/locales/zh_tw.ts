@@ -288,6 +288,7 @@ const zh_tw = {
       }
     },
     mouse: {
+      jiggler: '滑鼠防休眠',
       title: '滑鼠',
       cursor: '游標樣式',
       default: '預設游標',
@@ -1503,7 +1504,16 @@ const zh_tw = {
     menu: {
       collapse: '收起選單',
       expand: '展開選單',
-      more: '更多'
+      more: '更多',
+      media: '媒體',
+      tools: '工具',
+      text: '文字',
+      advanced: '進階',
+      mediaMounted: '已掛載',
+      mediaLibrary: '映像庫',
+      mediaBoot: '開機',
+      textToHost: '傳送到主機',
+      textFromHost: '從主機讀取'
     },
     ion: {
       checking: '正在啟動串流前檢查視訊記憶體...',

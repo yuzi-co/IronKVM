@@ -298,6 +298,7 @@ const it = {
       }
     },
     mouse: {
+      jiggler: 'Movimento automatico del mouse',
       title: 'Mouse',
       cursor: 'Stile cursore',
       default: 'Cursore predefinito',
@@ -1584,7 +1585,16 @@ const it = {
     menu: {
       collapse: 'Comprimi menu',
       expand: 'Espandi il menu',
-      more: 'Altro'
+      more: 'Altro',
+      media: 'Supporti',
+      tools: 'Strumenti',
+      text: 'Testo',
+      advanced: 'Avanzate',
+      mediaMounted: 'Montato',
+      mediaLibrary: 'Libreria',
+      mediaBoot: 'Avvio',
+      textToHost: "Verso l'host",
+      textFromHost: "Dall'host"
     },
     ion: {
       checking: 'Controllo della memoria video prima di avviare lo streaming...',

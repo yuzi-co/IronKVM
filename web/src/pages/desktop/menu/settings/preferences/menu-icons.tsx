@@ -1,15 +1,17 @@
 import { useAuth } from '@/contexts/auth.ts';
 import { Switch } from 'antd';
+import clsx from 'clsx';
 import { useAtom } from 'jotai';
 import {
   DiscIcon,
-  DownloadIcon,
   FileJsonIcon,
   MaximizeIcon,
   NetworkIcon,
   PowerIcon,
   TerminalSquareIcon,
+  TypeIcon,
   Volume2Icon,
+  WrenchIcon,
   XIcon
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -24,24 +26,27 @@ export const MenuIcons = () => {
 
   const [menuDisabledItems, setMenuDisabledItems] = useAtom(menuDisabledItemsAtom);
 
+  // In bar order. Scripts, Wake on LAN and PicoClaw are entries of the Tools
+  // menu, so they are indented under it; Tools leaves the bar on its own once
+  // all of them are hidden.
   const items = [
     // The speaker also needs an audio track before it appears. This switch
     // hides it on a device that has one, the way every other icon can be
     // hidden.
     { key: 'speaker', icon: <Volume2Icon size={16} /> },
-    { key: 'image', icon: <DiscIcon size={16} /> },
-    { key: 'download', icon: <DownloadIcon size={16} /> },
+    { key: 'text', icon: <TypeIcon size={16} />, label: 'menu.text' },
+    { key: 'media', icon: <DiscIcon size={16} />, label: 'menu.media' },
     { key: 'terminal', icon: <TerminalSquareIcon size={16} /> },
-    { key: 'script', icon: <FileJsonIcon size={16} /> },
-    { key: 'wol', icon: <NetworkIcon size={16} /> },
-    { key: 'picoclaw', icon: <Robot size={16} /> },
+    { key: 'tools', icon: <WrenchIcon size={16} />, label: 'menu.tools' },
+    { key: 'script', icon: <FileJsonIcon size={16} />, inTools: true },
+    { key: 'wol', icon: <NetworkIcon size={16} />, inTools: true },
+    { key: 'picoclaw', icon: <Robot size={16} />, inTools: true },
     { key: 'power', icon: <PowerIcon size={16} /> },
     { key: 'fullscreen', icon: <MaximizeIcon size={16} />, label: 'fullscreen.toggle' },
     { key: 'collapse', icon: <XIcon size={16} />, label: 'menu.collapse' }
   ].filter(
     (item) =>
-      account.role === 'admin' ||
-      !['image', 'download', 'terminal', 'script', 'picoclaw'].includes(item.key)
+      account.role === 'admin' || !['media', 'terminal', 'script', 'picoclaw'].includes(item.key)
   );
 
   function updateItems(key: string) {
@@ -67,7 +72,12 @@ export const MenuIcons = () => {
       <div className="mt-5 flex flex-col space-y-5">
         {items.map((item) => (
           <div key={item.key} className="flex items-center justify-between">
-            <div className="flex items-center space-x-2 text-neutral-400">
+            <div
+              className={clsx(
+                'flex items-center space-x-2 text-neutral-400',
+                item.inTools && 'pl-6'
+              )}
+            >
               {item.icon}
               <span className="text-neutral-300">
                 {item.label ? t(item.label) : t(`${item.key}.title`)}

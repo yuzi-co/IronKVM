@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAtom, useAtomValue } from 'jotai';
-import { MonitorIcon } from 'lucide-react';
+import { ChevronDownIcon, ChevronRightIcon, MonitorIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { updateScreen } from '@/api/vm';
@@ -13,7 +13,7 @@ import { getQualityMap, getScreenType } from './constants.ts';
 import { Fps } from './fps';
 import { FrameDetect } from './frame-detect';
 import { Gop } from './gop.tsx';
-import { Ocr } from './ocr.tsx';
+import { OriginalResolution } from './original-resolution.tsx';
 import { Quality } from './quality';
 import { Reset } from './reset.tsx';
 import { Resolution } from './resolution';
@@ -66,6 +66,9 @@ export const Screen = () => {
   const isMjpeg = videoMode === 'mjpeg';
 
   const current = settings ?? defaultScreenSettings;
+  // Codec, GOP, frame detection and the stream reset are rarely changed and
+  // easy to break the stream with, so they stay folded until asked for.
+  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
 
   // The capture mode follows this viewer's delivery path, so it is the one
   // setting the browser still pushes. Two viewers on different paths do fight
@@ -95,13 +98,32 @@ export const Screen = () => {
       <Quality quality={qualityKey(videoMode, current)} setQuality={setQuality} />
       <Fps fps={current.fps} setFps={(fps) => apply({ fps })} />
       <Scale />
-      {!isMjpeg && <Gop gop={current.gop} setGop={(gop) => apply({ gop })} />}
-      {!isMjpeg && (
-        <Codec codec={current.codec} setCodec={(codec) => apply({ codec })} videoMode={videoMode} />
+      <OriginalResolution />
+
+      <button
+        type="button"
+        aria-expanded={isAdvancedOpen}
+        className="flex h-[30px] w-full cursor-pointer items-center space-x-2 rounded border-t border-dashed border-neutral-700 p-0 px-3 text-left text-neutral-400 hover:bg-neutral-700/70"
+        onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
+      >
+        {isAdvancedOpen ? <ChevronDownIcon size={18} /> : <ChevronRightIcon size={18} />}
+        <span className="text-sm select-none">{t('menu.advanced')}</span>
+      </button>
+
+      {isAdvancedOpen && (
+        <div className="ml-3 flex flex-col space-y-1 border-l border-neutral-700 pl-1">
+          {!isMjpeg && (
+            <Codec
+              codec={current.codec}
+              setCodec={(codec) => apply({ codec })}
+              videoMode={videoMode}
+            />
+          )}
+          {!isMjpeg && <Gop gop={current.gop} setGop={(gop) => apply({ gop })} />}
+          {isMjpeg && <FrameDetect />}
+          <Reset />
+        </div>
       )}
-      {isMjpeg && <FrameDetect />}
-      <Ocr />
-      <Reset />
     </div>
   );
 

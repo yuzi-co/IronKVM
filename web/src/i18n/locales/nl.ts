@@ -299,6 +299,7 @@ const nl = {
       }
     },
     mouse: {
+      jiggler: 'Muisbeweger',
       title: 'Muis',
       cursor: 'Cursorstijl',
       default: 'Standaard cursor',
@@ -1584,7 +1585,16 @@ const nl = {
     menu: {
       collapse: 'Menu samenvouwen',
       expand: 'Menu uitvouwen',
-      more: 'Meer'
+      more: 'Meer',
+      media: 'Media',
+      tools: 'Hulpmiddelen',
+      text: 'Tekst',
+      advanced: 'Geavanceerd',
+      mediaMounted: 'Gekoppeld',
+      mediaLibrary: 'Bibliotheek',
+      mediaBoot: 'Opstarten',
+      textToHost: 'Naar de host',
+      textFromHost: 'Van de host'
     },
     ion: {
       checking: 'Videogeheugen controleren voordat de stream start...',

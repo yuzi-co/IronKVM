@@ -297,6 +297,7 @@ const ja = {
       }
     },
     mouse: {
+      jiggler: 'マウスジグラー',
       title: 'マウス',
       cursor: 'ポインター形状',
       default: 'デフォルトポインター',
@@ -1582,7 +1583,16 @@ const ja = {
     menu: {
       collapse: 'メニューを折りたたむ',
       expand: 'メニューを展開する',
-      more: 'その他'
+      more: 'その他',
+      media: 'メディア',
+      tools: 'ツール',
+      text: 'テキスト',
+      advanced: '詳細設定',
+      mediaMounted: 'マウント中',
+      mediaLibrary: 'ライブラリ',
+      mediaBoot: 'ブート',
+      textToHost: 'ホストへ',
+      textFromHost: 'ホストから'
     },
     ion: {
       checking: 'ストリームを開始する前にビデオメモリを確認しています...',

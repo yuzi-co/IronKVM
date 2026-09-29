@@ -296,6 +296,7 @@ const pt_br = {
       }
     },
     mouse: {
+      jiggler: 'Movimentador de mouse',
       title: 'Mouse',
       cursor: 'Estilo do cursor',
       default: 'Cursor padrão',
@@ -1572,7 +1573,16 @@ const pt_br = {
     menu: {
       collapse: 'Recolher Menu',
       expand: 'Expandir Menu',
-      more: 'Mais'
+      more: 'Mais',
+      media: 'Mídia',
+      tools: 'Ferramentas',
+      text: 'Texto',
+      advanced: 'Avançado',
+      mediaMounted: 'Montado',
+      mediaLibrary: 'Biblioteca',
+      mediaBoot: 'Inicialização',
+      textToHost: 'Para o host',
+      textFromHost: 'Do host'
     },
     ion: {
       checking: 'Verificando a memória de vídeo antes de iniciar a transmissão...',

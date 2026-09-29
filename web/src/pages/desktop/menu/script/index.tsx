@@ -10,6 +10,7 @@ import { MenuItem } from '@/components/menu-item.tsx';
 
 import { Run } from './run';
 
+// Script is a row of the Tools menu, with its own popover to the side.
 export const Script = () => {
   const { t } = useTranslation();
 
@@ -203,6 +204,7 @@ export const Script = () => {
         title={t('script.title')}
         icon={<FileJsonIcon size={18} />}
         content={content}
+        asRow
         onOpenChange={handleOpenChange}
       />
 

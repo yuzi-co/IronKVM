@@ -293,6 +293,7 @@ const se = {
       }
     },
     mouse: {
+      jiggler: 'Musrörare',
       title: 'Mus',
       cursor: 'Markörstil',
       default: 'Standardmarkör',
@@ -1561,7 +1562,16 @@ const se = {
     menu: {
       collapse: 'Fäll ihop menyn',
       expand: 'Expandera menyn',
-      more: 'Mer'
+      more: 'Mer',
+      media: 'Media',
+      tools: 'Verktyg',
+      text: 'Text',
+      advanced: 'Avancerat',
+      mediaMounted: 'Monterad',
+      mediaLibrary: 'Bibliotek',
+      mediaBoot: 'Uppstart',
+      textToHost: 'Till värden',
+      textFromHost: 'Från värden'
     },
     ion: {
       checking: 'Kontrollerar videominnet innan strömmen startar...',

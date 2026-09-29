@@ -45,6 +45,7 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
 );
 IconButton.displayName = 'IconButton';
 
+// Wol is a row of the Tools menu, with its own popover to the side.
 export const Wol = () => {
   const { t } = useTranslation();
   const { account } = useAuth();
@@ -284,6 +285,7 @@ export const Wol = () => {
       title={t('wol.title')}
       icon={<NetworkIcon size={18} />}
       content={content}
+      asRow
       onOpenChange={handleOpenChange}
     />
   );

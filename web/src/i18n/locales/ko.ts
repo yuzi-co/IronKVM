@@ -292,6 +292,7 @@ const ko = {
       }
     },
     mouse: {
+      jiggler: '마우스 지글러',
       title: '마우스',
       cursor: '커서 스타일',
       default: '기본 커서',
@@ -1552,7 +1553,16 @@ const ko = {
     menu: {
       collapse: '메뉴 접기',
       expand: '메뉴 펼치기',
-      more: '더 보기'
+      more: '더 보기',
+      media: '미디어',
+      tools: '도구',
+      text: '텍스트',
+      advanced: '고급',
+      mediaMounted: '마운트됨',
+      mediaLibrary: '라이브러리',
+      mediaBoot: '부팅',
+      textToHost: '호스트로',
+      textFromHost: '호스트에서'
     },
     ion: {
       checking: '스트림을 시작하기 전에 비디오 메모리를 확인하는 중...',

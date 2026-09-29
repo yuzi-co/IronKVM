@@ -297,6 +297,7 @@ const ru = {
       }
     },
     mouse: {
+      jiggler: 'Имитация движения мыши',
       title: 'Мышь',
       cursor: 'Стиль курсора',
       default: 'Курсор по умолчанию',
@@ -1572,7 +1573,16 @@ const ru = {
     menu: {
       collapse: 'Свернуть меню',
       expand: 'Развернуть меню',
-      more: 'Ещё'
+      more: 'Ещё',
+      media: 'Носители',
+      tools: 'Инструменты',
+      text: 'Текст',
+      advanced: 'Дополнительно',
+      mediaMounted: 'Подключено',
+      mediaLibrary: 'Библиотека',
+      mediaBoot: 'Загрузка',
+      textToHost: 'На хост',
+      textFromHost: 'С хоста'
     },
     ion: {
       checking: 'Проверка видеопамяти перед запуском потока...',

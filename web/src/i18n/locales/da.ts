@@ -296,6 +296,7 @@ const da = {
       }
     },
     mouse: {
+      jiggler: 'Musebevæger',
       title: 'Mus',
       cursor: 'Markørstil',
       default: 'Standard-markør',
@@ -1565,7 +1566,16 @@ const da = {
     menu: {
       collapse: 'Skjul menu',
       expand: 'Udvid menu',
-      more: 'Mere'
+      more: 'Mere',
+      media: 'Medier',
+      tools: 'Værktøjer',
+      text: 'Tekst',
+      advanced: 'Avanceret',
+      mediaMounted: 'Monteret',
+      mediaLibrary: 'Bibliotek',
+      mediaBoot: 'Opstart',
+      textToHost: 'Til værten',
+      textFromHost: 'Fra værten'
     },
     ion: {
       checking: 'Kontrollerer videohukommelsen, før streamen startes...',

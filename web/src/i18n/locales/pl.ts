@@ -298,6 +298,7 @@ const pl = {
       }
     },
     mouse: {
+      jiggler: 'Poruszanie myszą',
       title: 'Mysz',
       cursor: 'Styl kursora',
       default: 'Domyślny kursor',
@@ -1574,7 +1575,16 @@ const pl = {
     menu: {
       collapse: 'Zwiń menu',
       expand: 'Rozwiń Menu',
-      more: 'Więcej'
+      more: 'Więcej',
+      media: 'Nośniki',
+      tools: 'Narzędzia',
+      text: 'Tekst',
+      advanced: 'Zaawansowane',
+      mediaMounted: 'Zamontowane',
+      mediaLibrary: 'Biblioteka',
+      mediaBoot: 'Rozruch',
+      textToHost: 'Do hosta',
+      textFromHost: 'Z hosta'
     },
     ion: {
       checking: 'Sprawdzanie pamięci wideo przed uruchomieniem strumienia...',

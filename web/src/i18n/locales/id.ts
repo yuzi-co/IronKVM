@@ -296,6 +296,7 @@ const id = {
       }
     },
     mouse: {
+      jiggler: 'Penggerak mouse',
       title: 'Tikus',
       cursor: 'Gaya kursor',
       default: 'Kursor bawaan',
@@ -1568,7 +1569,16 @@ const id = {
     menu: {
       collapse: 'Tutup Menu',
       expand: 'Perluas Menu',
-      more: 'Lainnya'
+      more: 'Lainnya',
+      media: 'Media',
+      tools: 'Alat',
+      text: 'Teks',
+      advanced: 'Lanjutan',
+      mediaMounted: 'Terpasang',
+      mediaLibrary: 'Pustaka',
+      mediaBoot: 'Boot',
+      textToHost: 'Ke host',
+      textFromHost: 'Dari host'
     },
     ion: {
       checking: 'Memeriksa memori video sebelum memulai streaming...',

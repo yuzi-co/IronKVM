@@ -1,8 +1,5 @@
-import { ChangeEvent, useEffect, useRef, useState } from 'react';
-import { Button, Divider, Input, Progress } from 'antd';
-import type { InputRef } from 'antd';
-import clsx from 'clsx';
-import { DiscIcon, DownloadIcon } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import type { ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -13,34 +10,35 @@ import {
   statusImage,
   uploadImageFile
 } from '@/api/download.ts';
-import { UPDATE_PATHS } from '@/api/updates.ts';
-import { useKeyboardLock } from '@/hooks/useKeyboardLock.ts';
-import { MenuItem } from '@/components/menu-item.tsx';
-import { UpstreamUpdate } from '@/components/upstream-update.tsx';
 
-const imageUpdatedEvent = 'nanokvm:image-updated';
+export const imageUpdatedEvent = 'nanokvm:image-updated';
 
 // The server takes ISO 9660 images only; it checks the name and the content.
 function isISO(file: File) {
   return file.name.toLowerCase().endsWith('.iso');
 }
 
-export const DownloadImage = () => {
+// Where a transfer was started from. The Media dialog shows the progress next
+// to the control that started it: the library form or the boot menu button.
+export type Origin = 'library' | 'boot';
+
+export type ImageTransfer = ReturnType<typeof useImageTransfer>;
+
+// useImageTransfer holds the one image transfer the server runs at a time: a
+// download from a URL, the boot menu download, or an upload from this browser.
+// The Media dialog calls handleOpenChange as it opens and closes.
+export function useImageTransfer() {
   const { t } = useTranslation();
-  const [isOpen, setIsOpen] = useState(false);
-  useKeyboardLock('download-popover', isOpen);
 
   const [input, setInput] = useState('');
   const [sha256sum, setSha256sum] = useState('');
   const [status, setStatus] = useState('');
   const [log, setLog] = useState('');
+  const [origin, setOrigin] = useState<Origin>('library');
   const [isCancelling, setIsCancelling] = useState(false);
   const [isRemoteDownloading, setIsRemoteDownloading] = useState(false);
   const [diskEnabled, setDiskEnabled] = useState(false);
-  const [popoverKey, setPopoverKey] = useState(0);
 
-  const inputRef = useRef<InputRef>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   // -1 while no upload runs; otherwise the share of the file sent so far.
@@ -67,13 +65,11 @@ export const DownloadImage = () => {
   }
 
   function handleOpenChange(open: boolean) {
-    setIsOpen(open);
     if (open) {
       checkDiskEnabled();
       startStatusPolling();
-      setPopoverKey((prevKey) => prevKey + 1); // Force re-render
     } else {
-      // Keep monitoring an active remote download after the popover closes so
+      // Keep monitoring an active remote download after the dialog closes so
       // completion can still refresh an already-open image list.
       const transferActive = remoteDownloadActive.current || fileUploadActive.current;
       if (!transferActive) {
@@ -88,19 +84,16 @@ export const DownloadImage = () => {
     }
   }
 
-  function handleChange(e: ChangeEvent<HTMLInputElement>) {
-    setInput(e.target.value);
-  }
-
-  function handleSha256Change(e: ChangeEvent<HTMLInputElement>) {
-    setSha256sum(e.target.value);
+  function fail(text: string, from: Origin = 'library') {
+    setOrigin(from);
+    setStatus('failed');
+    setLog(text);
   }
 
   function getValidatedSHA256() {
     const checksum = sha256sum.trim();
     if (checksum && !/^[a-fA-F0-9]{64}$/.test(checksum)) {
-      setStatus('failed');
-      setLog(t('download.invalidSHA256'));
+      fail(t('download.invalidSHA256'));
       return null;
     }
 
@@ -194,22 +187,27 @@ export const DownloadImage = () => {
     const checksum = getValidatedSHA256();
     if (checksum === null) return;
 
-    startRemoteDownload(url, () => downloadImage(url, checksum));
+    startRemoteDownload('library', url, () => downloadImage(url, checksum));
   }
 
   // The boot menu is netboot.xyz's ISO. The server holds its URL and its
   // checksum, and stores it in the image directory for the virtual CD.
   function downloadBootMenuImage() {
-    startRemoteDownload('netboot.xyz.iso', downloadBootMenu);
+    startRemoteDownload('boot', 'netboot.xyz.iso', downloadBootMenu);
   }
 
-  function startRemoteDownload(label: string, request: () => ReturnType<typeof downloadBootMenu>) {
-    // Invalidate the status request started when the popover was opened.
+  function startRemoteDownload(
+    from: Origin,
+    label: string,
+    request: () => ReturnType<typeof downloadBootMenu>
+  ) {
+    // Invalidate the status request started when the dialog was opened.
     // Start polling only after the download request has created the server-side
     // download state, otherwise the first response can still be `idle`.
     stopStatusPolling();
     const requestGeneration = ++downloadRequestGeneration.current;
     remoteDownloadActive.current = true;
+    setOrigin(from);
     setIsRemoteDownloading(true);
     setStatus('in_progress');
     setLog(t('download.downloading', { file: label }));
@@ -279,35 +277,43 @@ export const DownloadImage = () => {
       });
   }
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0] ?? null;
-    // Clear the picker so choosing the same file again still fires onChange.
-    e.target.value = '';
+  // selectFile takes a file picked or dropped for upload. Picking a file also
+  // stops watching a remote download; a drop leaves that alone.
+  function selectFile(file: File | null, picked: boolean) {
     if (!file || !isISO(file)) {
-      setStatus('failed');
-      setLog(t('download.NoISO'));
+      fail(t('download.NoISO'));
       return;
     }
-    setIsRemoteDownloading(false);
-    remoteDownloadActive.current = false;
+    if (picked) {
+      setIsRemoteDownloading(false);
+      remoteDownloadActive.current = false;
+      stopStatusPolling();
+    }
+    setOrigin('library');
     setStatus('idle');
     setLog('');
     setSelectedFile(file);
-    stopStatusPolling();
+  }
+
+  function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0] ?? null;
+    // Clear the picker so choosing the same file again still fires onChange.
+    e.target.value = '';
+    selectFile(file, true);
   }
 
   function upload(file: File | null) {
     if (!file) return;
 
     if (!isISO(file)) {
-      setStatus('failed');
-      setLog(t('download.NoISO'));
+      fail(t('download.NoISO'));
       return;
     }
 
     const checksum = getValidatedSHA256();
     if (checksum === null) return;
 
+    setOrigin('library');
     setStatus('in_progress');
     remoteDownloadActive.current = false;
     fileUploadActive.current = true;
@@ -345,166 +351,27 @@ export const DownloadImage = () => {
       : msg || t('download.uploadFailed');
   }
 
-  const content = (
-    <div key={popoverKey} className="min-w-[300px]">
-      <div className="flex items-center justify-between px-1">
-        <span className="text-base font-bold text-neutral-300">{t('download.title')}</span>
-      </div>
-
-      <Divider style={{ margin: '10px 0 10px 0' }} />
-
-      {!diskEnabled ? (
-        <div className="text-red-500">{t('download.disabled')}</div>
-      ) : (
-        <div className="space-y-2">
-          <div>
-            <div className="mb-1 text-neutral-500">{t('download.input')}</div>
-            <div className="flex items-center gap-1">
-              <Input
-                ref={inputRef}
-                value={input}
-                onChange={handleChange}
-                disabled={status === 'in_progress'}
-                className="min-w-0 flex-1"
-              />
-              <Button
-                type="primary"
-                className="h-10 w-16 shrink-0 px-0"
-                danger={isRemoteDownloading && status === 'in_progress'}
-                onClick={() =>
-                  isRemoteDownloading && status === 'in_progress'
-                    ? cancelDownload()
-                    : download(input)
-                }
-                disabled={isCancelling || (status === 'in_progress' && !isRemoteDownloading)}
-              >
-                {isRemoteDownloading && status === 'in_progress'
-                  ? t('download.cancel')
-                  : t('download.ok')}
-              </Button>
-            </div>
-          </div>
-          <div>
-            <div className="mb-1 text-neutral-500">{t('download.sha256')}</div>
-            <Input
-              value={sha256sum}
-              onChange={handleSha256Change}
-              disabled={status === 'in_progress'}
-              maxLength={64}
-              placeholder={t('download.sha256Placeholder')}
-            />
-          </div>
-          <div>
-            <div className="mb-1 text-neutral-500">{t('download.bootMenuDesc')}</div>
-            <Button
-              className="h-10 w-full"
-              icon={<DiscIcon size={16} />}
-              onClick={downloadBootMenuImage}
-              disabled={isCancelling || status === 'in_progress'}
-            >
-              {t('download.bootMenu')}
-            </Button>
-            <div className="mt-1">
-              <UpstreamUpdate
-                path={UPDATE_PATHS.bootMenu}
-                name="netboot.xyz.iso"
-                onUpdated={() => window.dispatchEvent(new Event(imageUpdatedEvent))}
-              />
-            </div>
-          </div>
-          <div>
-            <div className="mb-1 text-neutral-500">{t('download.inputfile')}</div>
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                className={clsx(
-                  'flex h-10 min-w-0 flex-1 flex-col items-center justify-center rounded-xl border-2 border-solid p-0 transition',
-                  isDragging ? 'border-blue-500 bg-neutral-500' : 'border-neutral-600',
-                  status === 'in_progress'
-                    ? 'cursor-not-allowed bg-neutral-700 opacity-50'
-                    : 'cursor-pointer hover:bg-neutral-500'
-                )}
-                onDrop={(e) => {
-                  if (status === 'in_progress') return; // deaktiviert
-                  e.preventDefault();
-                  setIsDragging(false);
-                  const file = e.dataTransfer.files?.[0] ?? null;
-                  if (!file || !isISO(file)) {
-                    setStatus('failed');
-                    setLog(t('download.NoISO'));
-                    return;
-                  }
-                  setStatus('idle');
-                  setLog('');
-                  setSelectedFile(file);
-                }}
-                onDragOver={(e) => {
-                  if (status === 'in_progress') return; // deaktiviert
-                  e.preventDefault();
-                  setIsDragging(true); // Datei wird über den Bereich gezogen
-                }}
-                onDragLeave={(e) => {
-                  if (status === 'in_progress') return; // deaktiviert
-                  e.preventDefault();
-                  setIsDragging(false); // Maus verlässt Bereich
-                }}
-                onClick={() => {
-                  if (status === 'in_progress') return; // deaktiviert
-                  fileInputRef.current?.click();
-                }}
-              >
-                <span className="w-full truncate px-2 text-center text-sm text-neutral-100">
-                  {selectedFile ? selectedFile.name : t('download.uploadbox')}
-                </span>
-              </button>
-              {/* A plain input: antd's Input styles beat Tailwind's `hidden`,
-                  which left the native picker showing under the drop zone. */}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".iso"
-                hidden
-                onChange={handleFileChange}
-                disabled={status === 'in_progress'}
-              />
-              <Button
-                type="primary"
-                className="h-10 w-16 shrink-0 border-2 px-0"
-                onClick={() => upload(selectedFile)}
-                disabled={status === 'in_progress' || !selectedFile}
-              >
-                {t('download.ok')}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-      <div className={clsx('min-h-8 pt-2')}>
-        {status && (
-          <div
-            className={clsx(
-              'max-w-[300px] text-sm wrap-break-word',
-              status === 'failed' || status === 'checksum_failed'
-                ? 'text-red-500'
-                : 'text-green-500'
-            )}
-          >
-            {log}
-          </div>
-        )}
-        {uploadPercent >= 0 && status === 'in_progress' && (
-          <Progress percent={uploadPercent} size="small" className="max-w-[300px]" />
-        )}
-      </div>
-    </div>
-  );
-
-  return (
-    <MenuItem
-      title={t('download.title')}
-      icon={<DownloadIcon size={18} />}
-      content={content}
-      onOpenChange={handleOpenChange}
-    />
-  );
-};
+  return {
+    input,
+    setInput,
+    sha256sum,
+    setSha256sum,
+    status,
+    log,
+    origin,
+    isCancelling,
+    isRemoteDownloading,
+    diskEnabled,
+    selectedFile,
+    isDragging,
+    setIsDragging,
+    uploadPercent,
+    handleOpenChange,
+    download,
+    downloadBootMenuImage,
+    cancelDownload,
+    selectFile,
+    handleFileChange,
+    upload
+  };
+}

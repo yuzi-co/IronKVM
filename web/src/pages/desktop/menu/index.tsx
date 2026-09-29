@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { Fragment, ReactNode, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/auth.ts';
 import { Divider } from 'antd';
 import clsx from 'clsx';
@@ -20,10 +20,9 @@ import { useMenuVisibility } from '@/hooks/useMenuVisibility.ts';
 import { MenuBoundary } from '@/components/error-boundary';
 
 import { KeyboardLedStatus } from '../keyboard-led-status';
-import { DownloadImage } from './download.tsx';
 import { Fullscreen } from './fullscreen';
-import { Image } from './image';
 import { Keyboard } from './keyboard';
+import { Media } from './media';
 import { More } from './more.tsx';
 import { Mouse } from './mouse';
 import { Collapse, Expand } from './operations';
@@ -34,6 +33,8 @@ import { Script } from './script';
 import { Settings } from './settings';
 import { Speaker } from './speaker';
 import { Terminal } from './terminal';
+import { Text } from './text';
+import { Tools } from './tools';
 import { Wol } from './wol';
 
 export const Menu = () => {
@@ -97,43 +98,46 @@ export const Menu = () => {
   }
 
   const screen = (
-    <MenuBoundary name="screen">
+    <MenuBoundary key="screen" name="screen">
       <Screen />
     </MenuBoundary>
   );
   const keyboard = (
-    <MenuBoundary name="keyboard">
+    <MenuBoundary key="keyboard" name="keyboard">
       <Keyboard />
     </MenuBoundary>
   );
   const mouse = (
-    <MenuBoundary name="mouse">
+    <MenuBoundary key="mouse" name="mouse">
       <Mouse />
+    </MenuBoundary>
+  );
+  const text = isEnabled('text') && (
+    <MenuBoundary key="text" name="text">
+      <Text />
     </MenuBoundary>
   );
   // hasAudio is set by the video path when sound arrives: the WebRTC audio
   // track, or the first audio frame on H.264 direct. A device without the USB
   // audio gadget sends neither, and the button would then unmute nothing.
   const speaker = isEnabled('speaker') && hasAudio && (
-    <MenuBoundary name="speaker">
+    <MenuBoundary key="speaker" name="speaker">
       <Speaker />
     </MenuBoundary>
   );
-  const image = isAdmin && isEnabled('image') && (
-    <MenuBoundary name="image">
-      <Image />
-    </MenuBoundary>
-  );
-  const download = isAdmin && isEnabled('download') && (
-    <MenuBoundary name="download">
-      <DownloadImage />
+  const media = isAdmin && isEnabled('media') && (
+    <MenuBoundary key="media" name="media">
+      <Media />
     </MenuBoundary>
   );
   const terminal = isAdmin && isEnabled('terminal') && (
-    <MenuBoundary name="terminal">
+    <MenuBoundary key="terminal" name="terminal">
       <Terminal />
     </MenuBoundary>
   );
+
+  // The Tools menu shows the entries this account may use and has not hidden,
+  // and leaves the bar when none is left.
   const script = isAdmin && isEnabled('script') && (
     <MenuBoundary name="script">
       <Script />
@@ -149,21 +153,50 @@ export const Menu = () => {
       <Picoclaw />
     </MenuBoundary>
   );
+  const tools = isEnabled('tools') && (script || wol || picoclaw) && (
+    <MenuBoundary key="tools" name="tools">
+      <Tools>
+        {script}
+        {wol}
+        {picoclaw}
+      </Tools>
+    </MenuBoundary>
+  );
+
   const power = isEnabled('power') && (
-    <MenuBoundary name="power">
+    <MenuBoundary key="power" name="power">
       <Power />
     </MenuBoundary>
   );
   const settings = (
-    <MenuBoundary name="settings">
+    <MenuBoundary key="settings" name="settings">
       <Settings />
     </MenuBoundary>
   );
   const fullscreen = isEnabled('fullscreen') && (
-    <MenuBoundary name="fullscreen">
+    <MenuBoundary key="fullscreen" name="fullscreen">
       <Fullscreen />
     </MenuBoundary>
   );
+  const collapse = (toggleMenu: (expanded: boolean) => void) =>
+    isEnabled('collapse') && (
+      <MenuBoundary key="collapse" name="collapse">
+        <Collapse toggleMenu={toggleMenu} />
+      </MenuBoundary>
+    );
+
+  // The wide bar in groups: the picture, input, media and tools, the host's
+  // power, and the bar itself. A separator stands between two groups that
+  // both have something to show.
+  const groups: ReactNode[][] = [
+    [screen, speaker],
+    [keyboard, mouse, text],
+    [media, terminal, tools],
+    [power],
+    [settings, fullscreen, collapse(setIsMenuExpanded)]
+  ]
+    .map((group) => group.filter(Boolean))
+    .filter((group) => group.length > 0);
 
   return (
     <Draggable
@@ -220,67 +253,27 @@ export const Menu = () => {
               <>
                 {keyboard}
                 {mouse}
-                {speaker}
-                {image}
+                {media}
                 {power}
                 <Divider type="vertical" />
                 {settings}
-                {fullscreen}
                 <More>
                   {screen}
-                  {download}
+                  {speaker}
                   {terminal}
-                  {script}
-                  {wol}
-                  {picoclaw}
-                  {isEnabled('collapse') && (
-                    <MenuBoundary name="collapse">
-                      <Collapse toggleMenu={() => requestMenuClose((signal) => signal + 1)} />
-                    </MenuBoundary>
-                  )}
+                  {text}
+                  {tools}
+                  {fullscreen}
+                  {collapse(() => requestMenuClose((signal) => signal + 1))}
                 </More>
               </>
             ) : (
-              <>
-                {screen}
-                {keyboard}
-                {mouse}
-                {speaker}
-                <Divider type="vertical" />
-
-                {image}
-                {download}
-                {terminal}
-                {script}
-                {wol}
-
-                {(isEnabled('wol') ||
-                  (isAdmin && ['image', 'download', 'script', 'terminal'].some(isEnabled))) && (
-                  <Divider type="vertical" />
-                )}
-
-                {picoclaw && (
-                  <>
-                    {picoclaw}
-                    <Divider type="vertical" />
-                  </>
-                )}
-
-                {power && (
-                  <>
-                    {power}
-                    <Divider type="vertical" />
-                  </>
-                )}
-
-                {settings}
-                {fullscreen}
-                {isEnabled('collapse') && (
-                  <MenuBoundary name="collapse">
-                    <Collapse toggleMenu={setIsMenuExpanded} />
-                  </MenuBoundary>
-                )}
-              </>
+              groups.map((group, index) => (
+                <Fragment key={index}>
+                  {index > 0 && <Divider type="vertical" />}
+                  {group}
+                </Fragment>
+              ))
             )}
           </div>
         </div>

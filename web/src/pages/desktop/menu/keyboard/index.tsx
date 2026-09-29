@@ -1,26 +1,22 @@
-import { useAuth } from '@/contexts/auth.ts';
 import { KeyboardIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { MenuItem } from '@/components/menu-item.tsx';
 
-import { LeaderKey } from './leader-key.tsx';
 import { MediaKeys } from './media-keys.tsx';
-import { Paste } from './paste.tsx';
 import { Shortcuts } from './shortcuts';
 import { VirtualKeyboard } from './virtual-keyboard.tsx';
 
+// Paste moved to the Text menu. The leader key is set once, so it is a
+// setting rather than a menu entry; its component stays in this folder.
 export const Keyboard = () => {
   const { t } = useTranslation();
-  const { account } = useAuth();
 
   const content = (
     <div className="flex flex-col space-y-1">
-      <Paste />
       <VirtualKeyboard />
       <Shortcuts />
       <MediaKeys />
-      {account.role === 'admin' && <LeaderKey />}
     </div>
   );
 

@@ -297,6 +297,7 @@ const nb = {
       }
     },
     mouse: {
+      jiggler: 'Musebeveger',
       title: 'Mus',
       cursor: 'Markørstil',
       default: 'Vanlig',
@@ -1562,7 +1563,16 @@ const nb = {
     menu: {
       collapse: 'Skjul meny',
       expand: 'Utvid menyen',
-      more: 'Mer'
+      more: 'Mer',
+      media: 'Medier',
+      tools: 'Verktøy',
+      text: 'Tekst',
+      advanced: 'Avansert',
+      mediaMounted: 'Montert',
+      mediaLibrary: 'Bibliotek',
+      mediaBoot: 'Oppstart',
+      textToHost: 'Til verten',
+      textFromHost: 'Fra verten'
     },
     ion: {
       checking: 'Sjekker videominnet før strømmen starter...',
