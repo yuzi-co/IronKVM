@@ -594,7 +594,7 @@ const ca = {
         network: 'Xarxa',
         access: 'Accés',
         integrations: 'Integracions',
-        boot: 'Arrencada',
+        boot: 'Arrencada i mitjans',
         browser: 'Aquest navegador',
         search: 'Cerca un ajust',
         noMatch: 'Cap ajust coincideix',
@@ -861,8 +861,16 @@ const ca = {
         noLedConfirmOk: 'Activa',
         cancel: 'Cancel·la'
       },
+      media: {
+        title: 'Mitjans virtuals',
+        description:
+          "Configuració del diàleg Mitjans de la barra d'eines. Muntar imatges, afegir-les i triar el conjunt de Ventoy es fa al diàleg.",
+        ejectFirst:
+          'El disc de Ventoy és en una unitat. Expulseu-lo al diàleg Mitjans per desinstal·lar-lo.'
+      },
       netboot: {
         title: 'Arrencada per xarxa',
+        isoDownload: 'Baixa',
         description:
           "Arrencar l'amfitrió des de la xarxa: iPXE i un menú de les imatges del KVM per l'enllaç de xarxa USB, o netboot.xyz per proxy DHCP a la LAN.",
         addon: "dnsmasq i fitxers d'arrencada",
@@ -1627,7 +1635,9 @@ const ca = {
       failed: "L'última actualització ha fallat: {{error}}"
     },
     menu: {
-      mediaNetboot: "Configuració d'arrencada per xarxa",
+      mediaAdd: 'Afegeix una imatge',
+      mediaMoreOptions: 'Més opcions',
+      mediaSettings: 'Configuració de mitjans',
       collapse: 'Amaga menú',
       expand: 'Mostra menú',
       more: 'Més',
@@ -1637,7 +1647,6 @@ const ca = {
       advanced: 'Avançat',
       mediaMounted: 'Muntat',
       mediaLibrary: 'Biblioteca',
-      mediaBoot: 'Arrencada',
       textToHost: "Cap a l'amfitrió",
       textFromHost: "Des de l'amfitrió"
     },

@@ -593,7 +593,7 @@ const ru = {
         network: 'Сеть',
         access: 'Доступ',
         integrations: 'Интеграции',
-        boot: 'Загрузка',
+        boot: 'Загрузка и носители',
         browser: 'Этот браузер',
         search: 'Найти настройку',
         noMatch: 'Нет подходящих настроек',
@@ -856,8 +856,16 @@ const ru = {
         noLedConfirmOk: 'Включить',
         cancel: 'Отмена'
       },
+      media: {
+        title: 'Виртуальные носители',
+        description:
+          'Настройка окна «Носители» на панели инструментов. Подключение образов, их добавление и выбор набора Ventoy выполняются в окне.',
+        ejectFirst:
+          'Диск Ventoy находится в приводе. Чтобы удалить Ventoy, извлеките его в окне «Носители».'
+      },
       netboot: {
         title: 'Сетевая загрузка',
+        isoDownload: 'Скачать',
         description:
           'Загрузка хоста по сети: iPXE и меню образов на KVM через сетевое подключение USB или netboot.xyz через прокси-DHCP в локальной сети.',
         addon: 'dnsmasq и загрузочные файлы',
@@ -1620,7 +1628,9 @@ const ru = {
       failed: 'Последнее обновление не удалось: {{error}}'
     },
     menu: {
-      mediaNetboot: 'Настройки сетевой загрузки',
+      mediaAdd: 'Добавить образ',
+      mediaMoreOptions: 'Дополнительно',
+      mediaSettings: 'Настройки носителей',
       collapse: 'Свернуть меню',
       expand: 'Развернуть меню',
       more: 'Ещё',
@@ -1630,7 +1640,6 @@ const ru = {
       advanced: 'Дополнительно',
       mediaMounted: 'Подключено',
       mediaLibrary: 'Библиотека',
-      mediaBoot: 'Загрузка',
       textToHost: 'На хост',
       textFromHost: 'С хоста'
     },

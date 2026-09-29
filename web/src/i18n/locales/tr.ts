@@ -591,7 +591,7 @@ const tr = {
         network: 'Ağ',
         access: 'Erişim',
         integrations: 'Entegrasyonlar',
-        boot: 'Önyükleme',
+        boot: 'Önyükleme ve medya',
         browser: 'Bu tarayıcı',
         search: 'Ayar bul',
         noMatch: 'Eşleşen ayar yok',
@@ -851,8 +851,15 @@ const tr = {
         noLedConfirmOk: 'Aç',
         cancel: 'İptal'
       },
+      media: {
+        title: 'Sanal medya',
+        description:
+          'Araç çubuğundaki Medya penceresinin kurulumu. Kalıpları bağlama, ekleme ve Ventoy kümesini seçme pencerede yapılır.',
+        ejectFirst: 'Ventoy diski bir sürücüde. Kaldırmak için Medya penceresinden çıkarın.'
+      },
       netboot: {
         title: 'Ağdan önyükleme',
+        isoDownload: 'İndir',
         description:
           "Ana makineyi ağdan başlatın: USB ağ bağlantısı üzerinden iPXE ve KVM'deki görüntülerin menüsü ya da LAN'da proxy DHCP ile netboot.xyz.",
         addon: 'dnsmasq ve önyükleme dosyaları',
@@ -1610,7 +1617,9 @@ const tr = {
       failed: 'Son güncelleme başarısız oldu: {{error}}'
     },
     menu: {
-      mediaNetboot: 'Ağdan önyükleme ayarları',
+      mediaAdd: 'Kalıp ekle',
+      mediaMoreOptions: 'Diğer seçenekler',
+      mediaSettings: 'Medya ayarları',
       collapse: 'Menüyü küçült',
       expand: 'Menüyü genişlet',
       more: 'Daha fazla',
@@ -1620,7 +1629,6 @@ const tr = {
       advanced: 'Gelişmiş',
       mediaMounted: 'Bağlı',
       mediaLibrary: 'Kitaplık',
-      mediaBoot: 'Önyükleme',
       textToHost: 'Ana makineye',
       textFromHost: 'Ana makineden'
     },

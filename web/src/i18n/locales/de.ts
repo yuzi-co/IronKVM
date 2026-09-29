@@ -611,7 +611,7 @@ const de = {
         network: 'Netzwerk',
         access: 'Zugang',
         integrations: 'Integrationen',
-        boot: 'Boot',
+        boot: 'Boot und Medien',
         browser: 'Dieser Browser',
         search: 'Einstellung suchen',
         noMatch: 'Keine Einstellung gefunden',
@@ -880,8 +880,16 @@ const de = {
         noLedConfirmOk: 'Einschalten',
         cancel: 'Abbrechen'
       },
+      media: {
+        title: 'Virtuelle Medien',
+        description:
+          'Einrichtung für den Dialog Medien in der Werkzeugleiste. Images einbinden, hinzufügen und die Ventoy-Auswahl treffen geschieht im Dialog.',
+        ejectFirst:
+          'Der Ventoy-Datenträger steckt in einem Laufwerk. Werfen Sie ihn im Dialog Medien aus, um zu deinstallieren.'
+      },
       netboot: {
         title: 'Netzwerkboot',
+        isoDownload: 'Herunterladen',
         description:
           'Den Host über das Netzwerk booten: iPXE und ein Menü der Images auf dem KVM über die USB-Netzwerkverbindung, oder netboot.xyz per Proxy-DHCP im LAN.',
         addon: 'dnsmasq und Boot-Dateien',
@@ -1653,7 +1661,9 @@ const de = {
       failed: 'Die letzte Aktualisierung ist fehlgeschlagen: {{error}}'
     },
     menu: {
-      mediaNetboot: 'Netzwerk-Boot-Einstellungen',
+      mediaAdd: 'Image hinzufügen',
+      mediaMoreOptions: 'Weitere Optionen',
+      mediaSettings: 'Medien-Einstellungen',
       collapse: 'Menü einklappen',
       expand: 'Menü ausklappen',
       more: 'Mehr',
@@ -1663,7 +1673,6 @@ const de = {
       advanced: 'Erweitert',
       mediaMounted: 'Eingebunden',
       mediaLibrary: 'Bibliothek',
-      mediaBoot: 'Booten',
       textToHost: 'Zum Host',
       textFromHost: 'Vom Host'
     },

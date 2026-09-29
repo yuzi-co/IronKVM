@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Button, Divider, Modal, Tooltip } from 'antd';
 import { useSetAtom } from 'jotai';
-import { DiscIcon, NetworkIcon } from 'lucide-react';
+import { DiscIcon, SettingsIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/storage.ts';
@@ -15,9 +15,10 @@ import { StatusDot } from '@/components/status-dot.tsx';
 import { Drives } from '../image/drives.tsx';
 import { Images } from '../image/images.tsx';
 import { Tips } from '../image/tips.tsx';
+import { ventoyUsable } from '../image/ventoy-status.ts';
 import { Ventoy } from '../image/ventoy.tsx';
 import { driveWarnings } from '../image/warnings.ts';
-import { BootMenu, LibraryTransfer } from './transfer.tsx';
+import { AddImage } from './transfer.tsx';
 import { useImageTransfer } from './use-image-transfer.ts';
 
 const DRIVES_POLL_MS = 5000;
@@ -25,10 +26,11 @@ const DRIVES_POLL_MS = 5000;
 // slowly: a read is a few configfs files and a stat.
 const DRIVES_IDLE_POLL_MS = 15000;
 
-// Media is one place for the images the virtual drives boot from: what is
-// mounted now, the library on the device and the ways to add to it, and the
-// boot menu download. It replaced separate Image and Download buttons, which
-// both worked on the same library.
+// Media is one place for the images the virtual drives boot from, during a
+// session: what is mounted now, the library on the device, the Ventoy set, and
+// adding an image. It replaced separate Image and Download buttons, which both
+// worked on the same library. Setup lives in Settings: Ventoy on the Virtual
+// media page, the netboot.xyz ISO on the Network boot page.
 export const Media = () => {
   const { t } = useTranslation();
   const setSubmenuOpenCount = useSetAtom(submenuOpenCountAtom);
@@ -106,11 +108,10 @@ export const Media = () => {
     title = `${title}: ${hasWarning ? t('image.driveWarning') : t('image.driveLoaded')}`;
   }
 
-  // The network boot settings live in Settings; the link closes this dialog
-  // and opens that page.
-  function openNetbootSettings() {
+  // The link closes this dialog and opens the Virtual media settings page.
+  function openMediaSettings() {
     toggleModal(false);
-    requestSettings('netboot');
+    requestSettings('media');
   }
 
   function toggleModal(open: boolean) {
@@ -152,16 +153,6 @@ export const Media = () => {
             onDrivesChanged={refreshDrives}
           />
 
-          {/* The status stays empty for an account that may not use Ventoy. */}
-          {ventoy && (
-            <Ventoy
-              status={ventoy}
-              images={images}
-              onStatusChanged={setVentoy}
-              onDrivesChanged={refreshDrives}
-            />
-          )}
-
           <Divider style={{ margin: '8px 0 0 0' }} />
 
           <span className={heading}>{t('menu.mediaLibrary')}</span>
@@ -173,21 +164,28 @@ export const Media = () => {
             onImagesChanged={setImages}
             onDrivesChanged={refreshDrives}
           />
-          <LibraryTransfer transfer={transfer} />
-
-          <Divider style={{ margin: '8px 0 0 0' }} />
-
-          <span className={heading}>{t('menu.mediaBoot')}</span>
-          {transfer.diskEnabled && <BootMenu transfer={transfer} />}
-          <Button
-            type="link"
-            className="self-start px-0"
-            icon={<NetworkIcon size={16} />}
-            onClick={openNetbootSettings}
-          >
-            {t('menu.mediaNetboot')}
-          </Button>
+          {/* Ventoy shows once it is installed; Settings sets it up. */}
+          {ventoyUsable(ventoy) && (
+            <Ventoy
+              status={ventoy}
+              images={images}
+              onStatusChanged={setVentoy}
+              onDrivesChanged={refreshDrives}
+            />
+          )}
+          <AddImage transfer={transfer} />
         </div>
+
+        <Divider style={{ margin: '8px 0 8px 0' }} />
+        <Button
+          type="link"
+          size="small"
+          className="px-0 text-neutral-400"
+          icon={<SettingsIcon size={14} />}
+          onClick={openMediaSettings}
+        >
+          {t('menu.mediaSettings')}
+        </Button>
       </Modal>
     </>
   );

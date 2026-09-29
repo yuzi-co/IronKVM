@@ -590,7 +590,7 @@ const se = {
         network: 'Nätverk',
         access: 'Åtkomst',
         integrations: 'Integrationer',
-        boot: 'Uppstart',
+        boot: 'Uppstart och media',
         browser: 'Den här webbläsaren',
         search: 'Sök en inställning',
         noMatch: 'Inga inställningar matchar',
@@ -853,8 +853,16 @@ const se = {
         noLedConfirmOk: 'Slå på',
         cancel: 'Avbryt'
       },
+      media: {
+        title: 'Virtuella media',
+        description:
+          'Inställningar för dialogen Media i verktygsfältet. Montering av avbilder, att lägga till dem och val av Ventoy-uppsättningen görs i dialogen.',
+        ejectFirst:
+          'Ventoy-disken sitter i en enhet. Mata ut den i dialogen Media för att avinstallera.'
+      },
       netboot: {
         title: 'Nätverksstart',
+        isoDownload: 'Ladda ned',
         description:
           'Starta värden från nätverket: iPXE och en meny med avbildningarna på KVM:en över USB-nätverkslänken, eller netboot.xyz via proxy-DHCP på LAN:et.',
         addon: 'dnsmasq och startfiler',
@@ -1609,7 +1617,9 @@ const se = {
       failed: 'Den senaste uppdateringen misslyckades: {{error}}'
     },
     menu: {
-      mediaNetboot: 'Inställningar för nätverksstart',
+      mediaAdd: 'Lägg till avbild',
+      mediaMoreOptions: 'Fler alternativ',
+      mediaSettings: 'Mediainställningar',
       collapse: 'Fäll ihop menyn',
       expand: 'Expandera menyn',
       more: 'Mer',
@@ -1619,7 +1629,6 @@ const se = {
       advanced: 'Avancerat',
       mediaMounted: 'Monterad',
       mediaLibrary: 'Bibliotek',
-      mediaBoot: 'Uppstart',
       textToHost: 'Till värden',
       textFromHost: 'Från värden'
     },

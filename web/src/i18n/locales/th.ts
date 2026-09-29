@@ -581,7 +581,7 @@ const th = {
         network: 'เครือข่าย',
         access: 'การเข้าถึง',
         integrations: 'การผสานรวม',
-        boot: 'บูต',
+        boot: 'การบูตและสื่อ',
         browser: 'เบราว์เซอร์นี้',
         search: 'ค้นหาการตั้งค่า',
         noMatch: 'ไม่พบการตั้งค่าที่ตรงกัน',
@@ -836,8 +836,15 @@ const th = {
         noLedConfirmOk: 'เปิด',
         cancel: 'ยกเลิก'
       },
+      media: {
+        title: 'สื่อเสมือน',
+        description:
+          'การตั้งค่าสำหรับหน้าต่างสื่อในแถบเครื่องมือ การเมานต์อิมเมจ การเพิ่มอิมเมจ และการเลือกชุด Ventoy ทำในหน้าต่างนั้น',
+        ejectFirst: 'ดิสก์ Ventoy อยู่ในไดรฟ์ ให้นำออกในหน้าต่างสื่อก่อนถอนการติดตั้ง'
+      },
       netboot: {
         title: 'บูตผ่านเครือข่าย',
+        isoDownload: 'ดาวน์โหลด',
         description:
           'บูตโฮสต์จากเครือข่าย: iPXE และเมนูอิมเมจบน KVM ผ่านลิงก์เครือข่าย USB หรือ netboot.xyz ผ่าน proxy DHCP บน LAN',
         addon: 'dnsmasq และไฟล์บูต',
@@ -1585,7 +1592,9 @@ const th = {
       failed: 'การอัปเดตครั้งล่าสุดล้มเหลว: {{error}}'
     },
     menu: {
-      mediaNetboot: 'การตั้งค่าบูตผ่านเครือข่าย',
+      mediaAdd: 'เพิ่มอิมเมจ',
+      mediaMoreOptions: 'ตัวเลือกเพิ่มเติม',
+      mediaSettings: 'การตั้งค่าสื่อ',
       collapse: 'ย่อเมนู',
       expand: 'ขยายเมนู',
       more: 'เพิ่มเติม',
@@ -1595,7 +1604,6 @@ const th = {
       advanced: 'ขั้นสูง',
       mediaMounted: 'เมานต์อยู่',
       mediaLibrary: 'คลัง',
-      mediaBoot: 'บูต',
       textToHost: 'ไปยังโฮสต์',
       textFromHost: 'จากโฮสต์'
     },

@@ -571,7 +571,7 @@ const zh = {
         network: '网络',
         access: '访问',
         integrations: '集成',
-        boot: '启动',
+        boot: '启动与介质',
         browser: '此浏览器',
         search: '查找设置',
         noMatch: '没有匹配的设置',
@@ -817,8 +817,15 @@ const zh = {
         noLedConfirmOk: '开启',
         cancel: '取消'
       },
+      media: {
+        title: '虚拟介质',
+        description:
+          '工具栏中介质对话框的设置。挂载镜像、添加镜像和选择 Ventoy 镜像集都在对话框中完成。',
+        ejectFirst: 'Ventoy 磁盘正在驱动器中。请先在介质对话框中弹出，再卸载。'
+      },
       netboot: {
         title: '网络启动',
+        isoDownload: '下载',
         description:
           '从网络启动主机：通过 USB 网络链路提供 iPXE 和 KVM 上镜像的菜单，或在局域网上通过代理 DHCP 提供 netboot.xyz。',
         addon: 'dnsmasq 和启动文件',
@@ -1550,7 +1557,9 @@ const zh = {
       failed: '上次更新失败：{{error}}'
     },
     menu: {
-      mediaNetboot: '网络启动设置',
+      mediaAdd: '添加镜像',
+      mediaMoreOptions: '更多选项',
+      mediaSettings: '介质设置',
       collapse: '收起',
       expand: '展开',
       more: '更多',
@@ -1560,7 +1569,6 @@ const zh = {
       advanced: '高级',
       mediaMounted: '已挂载',
       mediaLibrary: '镜像库',
-      mediaBoot: '启动',
       textToHost: '发送到主机',
       textFromHost: '从主机读取'
     },

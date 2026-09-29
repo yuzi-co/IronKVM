@@ -598,7 +598,7 @@ const it = {
         network: 'Rete',
         access: 'Accesso',
         integrations: 'Integrazioni',
-        boot: 'Avvio',
+        boot: 'Avvio e supporti',
         browser: 'Questo browser',
         search: "Cerca un'impostazione",
         noMatch: 'Nessuna impostazione corrisponde',
@@ -866,8 +866,16 @@ const it = {
         noLedConfirmOk: 'Attiva',
         cancel: 'Annulla'
       },
+      media: {
+        title: 'Supporti virtuali',
+        description:
+          'Configurazione della finestra Supporti nella barra degli strumenti. Montare le immagini, aggiungerle e scegliere il set di Ventoy si fa nella finestra.',
+        ejectFirst:
+          "Il disco Ventoy è in un'unità. Espellilo nella finestra Supporti per disinstallare."
+      },
       netboot: {
         title: 'Avvio di rete',
+        isoDownload: 'Scarica',
         description:
           "Avviare l'host dalla rete: iPXE e un menu delle immagini sul KVM tramite il collegamento di rete USB, oppure netboot.xyz tramite proxy DHCP sulla LAN.",
         addon: 'dnsmasq e file di avvio',
@@ -1632,7 +1640,9 @@ const it = {
       failed: "L'ultimo aggiornamento non è riuscito: {{error}}"
     },
     menu: {
-      mediaNetboot: 'Impostazioni avvio di rete',
+      mediaAdd: 'Aggiungi immagine',
+      mediaMoreOptions: 'Altre opzioni',
+      mediaSettings: 'Impostazioni supporti',
       collapse: 'Comprimi menu',
       expand: 'Espandi il menu',
       more: 'Altro',
@@ -1642,7 +1652,6 @@ const it = {
       advanced: 'Avanzate',
       mediaMounted: 'Montato',
       mediaLibrary: 'Libreria',
-      mediaBoot: 'Avvio',
       textToHost: "Verso l'host",
       textFromHost: "Dall'host"
     },

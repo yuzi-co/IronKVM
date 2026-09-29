@@ -588,7 +588,7 @@ const en = {
         network: 'Network',
         access: 'Access',
         integrations: 'Integrations',
-        boot: 'Boot',
+        boot: 'Boot and media',
         browser: 'This browser',
         search: 'Find a setting',
         noMatch: 'No settings match',
@@ -845,8 +845,15 @@ const en = {
         noLedConfirmOk: 'Turn on',
         cancel: 'Cancel'
       },
+      media: {
+        title: 'Virtual media',
+        description:
+          'Setup for the Media dialog in the toolbar. Mounting images, adding them and choosing the Ventoy set happen in the dialog.',
+        ejectFirst: 'The Ventoy disk is in a drive. Eject it in the Media dialog to uninstall.'
+      },
       netboot: {
         title: 'Network boot',
+        isoDownload: 'Download',
         description:
           'Boot the host from the network: iPXE and a menu of the images on the KVM over the USB network link, or netboot.xyz by proxy DHCP on the LAN.',
         addon: 'dnsmasq and boot files',
@@ -1603,7 +1610,9 @@ const en = {
       failed: 'The last update failed: {{error}}'
     },
     menu: {
-      mediaNetboot: 'Network boot settings',
+      mediaAdd: 'Add image',
+      mediaMoreOptions: 'More options',
+      mediaSettings: 'Media settings',
       collapse: 'Collapse Menu',
       expand: 'Expand Menu',
       more: 'More',
@@ -1613,7 +1622,6 @@ const en = {
       advanced: 'Advanced',
       mediaMounted: 'Mounted',
       mediaLibrary: 'Library',
-      mediaBoot: 'Boot',
       textToHost: 'To the host',
       textFromHost: 'From the host'
     },

@@ -597,7 +597,7 @@ const hu = {
         network: 'Hálózat',
         access: 'Hozzáférés',
         integrations: 'Integrációk',
-        boot: 'Rendszerindítás',
+        boot: 'Rendszerindítás és média',
         browser: 'Ez a böngésző',
         search: 'Beállítás keresése',
         noMatch: 'Nincs egyező beállítás',
@@ -863,8 +863,16 @@ const hu = {
         noLedConfirmOk: 'Bekapcsolás',
         cancel: 'Mégse'
       },
+      media: {
+        title: 'Virtuális média',
+        description:
+          'Az eszköztár Média párbeszédablakának beállítása. A képfájlok csatolása, hozzáadása és a Ventoy-készlet kiválasztása a párbeszédablakban történik.',
+        ejectFirst:
+          'A Ventoy-lemez egy meghajtóban van. Az eltávolításhoz adja ki a Média párbeszédablakban.'
+      },
       netboot: {
         title: 'Hálózati rendszerindítás',
+        isoDownload: 'Letöltés',
         description:
           'A gazdagép indítása a hálózatról: iPXE és a KVM-en lévő lemezképek menüje az USB hálózati kapcsolaton, vagy netboot.xyz proxy DHCP-vel a LAN-on.',
         addon: 'dnsmasq és rendszerindító fájlok',
@@ -1629,7 +1637,9 @@ const hu = {
       failed: 'Az utolsó frissítés sikertelen volt: {{error}}'
     },
     menu: {
-      mediaNetboot: 'Hálózati rendszerindítás beállításai',
+      mediaAdd: 'Képfájl hozzáadása',
+      mediaMoreOptions: 'További beállítások',
+      mediaSettings: 'Média beállításai',
       collapse: 'Menü összecsukása',
       expand: 'Bontsa ki a menüt',
       more: 'Továbbiak',
@@ -1639,7 +1649,6 @@ const hu = {
       advanced: 'Speciális',
       mediaMounted: 'Csatolva',
       mediaLibrary: 'Könyvtár',
-      mediaBoot: 'Rendszerindítás',
       textToHost: 'A gazdagép felé',
       textFromHost: 'A gazdagéptől'
     },

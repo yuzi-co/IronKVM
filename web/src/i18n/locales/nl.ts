@@ -600,7 +600,7 @@ const nl = {
         network: 'Netwerk',
         access: 'Toegang',
         integrations: 'Integraties',
-        boot: 'Opstarten',
+        boot: 'Opstarten en media',
         browser: 'Deze browser',
         search: 'Instelling zoeken',
         noMatch: 'Geen instellingen gevonden',
@@ -864,8 +864,16 @@ const nl = {
         noLedConfirmOk: 'Inschakelen',
         cancel: 'Annuleren'
       },
+      media: {
+        title: 'Virtuele media',
+        description:
+          'Instellingen voor het venster Media in de werkbalk. Images koppelen, toevoegen en de Ventoy-set kiezen gebeurt in het venster.',
+        ejectFirst:
+          'De Ventoy-schijf zit in een station. Werp hem uit in het venster Media om te verwijderen.'
+      },
       netboot: {
         title: 'Netwerkboot',
+        isoDownload: 'Downloaden',
         description:
           'De host via het netwerk opstarten: iPXE en een menu van de images op de KVM via de USB-netwerkverbinding, of netboot.xyz via proxy-DHCP op het LAN.',
         addon: 'dnsmasq en opstartbestanden',
@@ -1631,7 +1639,9 @@ const nl = {
       failed: 'De laatste update is mislukt: {{error}}'
     },
     menu: {
-      mediaNetboot: 'Instellingen voor netwerkboot',
+      mediaAdd: 'Image toevoegen',
+      mediaMoreOptions: 'Meer opties',
+      mediaSettings: 'Media-instellingen',
       collapse: 'Menu samenvouwen',
       expand: 'Menu uitvouwen',
       more: 'Meer',
@@ -1641,7 +1651,6 @@ const nl = {
       advanced: 'Geavanceerd',
       mediaMounted: 'Gekoppeld',
       mediaLibrary: 'Bibliotheek',
-      mediaBoot: 'Opstarten',
       textToHost: 'Naar de host',
       textFromHost: 'Van de host'
     },

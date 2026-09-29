@@ -87,6 +87,17 @@ describe('filterTabs', () => {
     assert.deepEqual(ids('mdns'), ['network']);
   });
 
+  it('finds Ventoy on the Virtual media page and the boot menu ISO on Network boot', () => {
+    const boot = [
+      { id: 'netboot', label: 'Network boot' },
+      { id: 'media', label: 'Virtual media' }
+    ];
+    const bootIds = (query: string) => filterTabs(boot, query).map((t) => t.id);
+    assert.deepEqual(bootIds('ventoy'), ['media']);
+    assert.deepEqual(bootIds('netboot.xyz'), ['netboot']);
+    assert.deepEqual(bootIds('iso'), ['netboot', 'media']);
+  });
+
   it('needs every word of the query', () => {
     assert.deepEqual(ids('power led'), ['device']);
     assert.deepEqual(ids('oled swap'), []);

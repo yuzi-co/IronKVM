@@ -13,6 +13,7 @@ import { UpstreamUpdate } from '@/components/upstream-update.tsx';
 import { CopyRow } from '../components/copy-button.tsx';
 import { usePoll } from '../components/use-poll.ts';
 import { ErrorDetail } from '../vpn/error-detail.tsx';
+import { BootMenu } from './boot-menu.tsx';
 
 // Leases, boots and the log change while a host boots, which takes seconds.
 const statusPollMs = 5 * 1000;
@@ -27,7 +28,8 @@ function formatTime(value: string) {
 }
 
 // Network boot of the host: the add-on (dnsmasq and the boot files), the USB
-// link side, proxy DHCP on the LAN, and what the host fetched.
+// link side, proxy DHCP on the LAN, the netboot.xyz ISO for the virtual CD,
+// and what the host fetched.
 export const Netboot = ({ setIsLocked }: NetbootProps) => {
   const { t } = useTranslation();
   const [modal, contextHolder] = Modal.useModal();
@@ -314,6 +316,9 @@ export const Netboot = ({ setIsLocked }: NetbootProps) => {
             </>
           )}
         </div>
+
+        {/* The boot menu ISO, for the virtual CD */}
+        <BootMenu />
 
         {/* What the host sees and fetched */}
         {status?.installed && (

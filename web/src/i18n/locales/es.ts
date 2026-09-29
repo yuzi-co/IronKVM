@@ -598,7 +598,7 @@ const es = {
         network: 'Red',
         access: 'Acceso',
         integrations: 'Integraciones',
-        boot: 'Arranque',
+        boot: 'Arranque y medios',
         browser: 'Este navegador',
         search: 'Buscar un ajuste',
         noMatch: 'Ningún ajuste coincide',
@@ -866,8 +866,16 @@ const es = {
         noLedConfirmOk: 'Activar',
         cancel: 'Cancelar'
       },
+      media: {
+        title: 'Medios virtuales',
+        description:
+          'Configuración del diálogo Medios de la barra de herramientas. Montar imágenes, añadirlas y elegir el conjunto de Ventoy se hace en el diálogo.',
+        ejectFirst:
+          'El disco de Ventoy está en una unidad. Expúlselo en el diálogo Medios para desinstalar.'
+      },
       netboot: {
         title: 'Arranque por red',
+        isoDownload: 'Descargar',
         description:
           'Arrancar el host desde la red: iPXE y un menú de las imágenes del KVM por el enlace de red USB, o netboot.xyz por proxy DHCP en la LAN.',
         addon: 'dnsmasq y archivos de arranque',
@@ -1639,7 +1647,9 @@ const es = {
       failed: 'La última actualización falló: {{error}}'
     },
     menu: {
-      mediaNetboot: 'Ajustes de arranque por red',
+      mediaAdd: 'Añadir imagen',
+      mediaMoreOptions: 'Más opciones',
+      mediaSettings: 'Ajustes de medios',
       collapse: 'Colapsar menú',
       expand: 'Expandir menú',
       more: 'Más',
@@ -1649,7 +1659,6 @@ const es = {
       advanced: 'Avanzado',
       mediaMounted: 'Montado',
       mediaLibrary: 'Biblioteca',
-      mediaBoot: 'Arranque',
       textToHost: 'Hacia el host',
       textFromHost: 'Desde el host'
     },

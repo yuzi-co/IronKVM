@@ -593,7 +593,7 @@ const nb = {
         network: 'Nettverk',
         access: 'Tilgang',
         integrations: 'Integrasjoner',
-        boot: 'Oppstart',
+        boot: 'Oppstart og medier',
         browser: 'Denne nettleseren',
         search: 'Finn en innstilling',
         noMatch: 'Ingen innstillinger passer',
@@ -854,8 +854,16 @@ const nb = {
         noLedConfirmOk: 'Slå på',
         cancel: 'Avbryt'
       },
+      media: {
+        title: 'Virtuelle medier',
+        description:
+          'Oppsett for dialogen Medier i verktøylinjen. Montering av avbildninger, å legge dem til og valg av Ventoy-settet skjer i dialogen.',
+        ejectFirst:
+          'Ventoy-disken står i en stasjon. Løs den ut i dialogen Medier for å avinstallere.'
+      },
       netboot: {
         title: 'Nettverksoppstart',
+        isoDownload: 'Last ned',
         description:
           'Start verten fra nettverket: iPXE og en meny med avbildningene på KVM-en over USB-nettverkstilkoblingen, eller netboot.xyz via proxy-DHCP på LAN-et.',
         addon: 'dnsmasq og oppstartsfiler',
@@ -1609,7 +1617,9 @@ const nb = {
       failed: 'Den siste oppdateringen mislyktes: {{error}}'
     },
     menu: {
-      mediaNetboot: 'Innstillinger for nettverksoppstart',
+      mediaAdd: 'Legg til avbildning',
+      mediaMoreOptions: 'Flere valg',
+      mediaSettings: 'Medieinnstillinger',
       collapse: 'Skjul meny',
       expand: 'Utvid menyen',
       more: 'Mer',
@@ -1619,7 +1629,6 @@ const nb = {
       advanced: 'Avansert',
       mediaMounted: 'Montert',
       mediaLibrary: 'Bibliotek',
-      mediaBoot: 'Oppstart',
       textToHost: 'Til verten',
       textFromHost: 'Fra verten'
     },

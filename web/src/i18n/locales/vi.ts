@@ -588,7 +588,7 @@ const vi = {
         network: 'Mạng',
         access: 'Truy cập',
         integrations: 'Tích hợp',
-        boot: 'Khởi động',
+        boot: 'Khởi động và phương tiện',
         browser: 'Trình duyệt này',
         search: 'Tìm cài đặt',
         noMatch: 'Không có cài đặt phù hợp',
@@ -849,8 +849,16 @@ const vi = {
         noLedConfirmOk: 'Bật',
         cancel: 'Hủy'
       },
+      media: {
+        title: 'Phương tiện ảo',
+        description:
+          'Thiết lập cho hộp thoại Phương tiện trên thanh công cụ. Gắn ảnh đĩa, thêm ảnh đĩa và chọn bộ Ventoy được thực hiện trong hộp thoại.',
+        ejectFirst:
+          'Đĩa Ventoy đang ở trong ổ. Hãy đẩy nó ra trong hộp thoại Phương tiện để gỡ cài đặt.'
+      },
       netboot: {
         title: 'Khởi động qua mạng',
+        isoDownload: 'Tải xuống',
         description:
           'Khởi động máy chủ từ mạng: iPXE và menu các ảnh đĩa trên KVM qua liên kết mạng USB, hoặc netboot.xyz qua proxy DHCP trên LAN.',
         addon: 'dnsmasq và tệp khởi động',
@@ -1608,7 +1616,9 @@ const vi = {
       failed: 'Lần cập nhật gần nhất thất bại: {{error}}'
     },
     menu: {
-      mediaNetboot: 'Cài đặt khởi động qua mạng',
+      mediaAdd: 'Thêm ảnh đĩa',
+      mediaMoreOptions: 'Tùy chọn khác',
+      mediaSettings: 'Cài đặt phương tiện',
       collapse: 'Thu gọn Menu',
       expand: 'Mở rộng Menu',
       more: 'Thêm',
@@ -1618,7 +1628,6 @@ const vi = {
       advanced: 'Nâng cao',
       mediaMounted: 'Đã gắn',
       mediaLibrary: 'Thư viện',
-      mediaBoot: 'Khởi động',
       textToHost: 'Đến máy chủ',
       textFromHost: 'Từ máy chủ'
     },

@@ -586,7 +586,7 @@ const ko = {
         network: '네트워크',
         access: '액세스',
         integrations: '통합',
-        boot: '부팅',
+        boot: '부팅 및 미디어',
         browser: '이 브라우저',
         search: '설정 찾기',
         noMatch: '일치하는 설정이 없습니다',
@@ -846,8 +846,16 @@ const ko = {
         noLedConfirmOk: '켜기',
         cancel: '취소'
       },
+      media: {
+        title: '가상 미디어',
+        description:
+          '도구 모음의 미디어 대화 상자 설정입니다. 이미지 마운트, 추가 및 Ventoy 세트 선택은 대화 상자에서 합니다.',
+        ejectFirst:
+          'Ventoy 디스크가 드라이브에 있습니다. 제거하려면 미디어 대화 상자에서 꺼내십시오.'
+      },
       netboot: {
         title: '네트워크 부팅',
+        isoDownload: '다운로드',
         description:
           '호스트를 네트워크에서 부팅합니다. USB 네트워크 링크로 iPXE와 KVM의 이미지 메뉴를 제공하거나, LAN에서 프록시 DHCP로 netboot.xyz를 제공합니다.',
         addon: 'dnsmasq 및 부팅 파일',
@@ -1598,7 +1606,9 @@ const ko = {
       failed: '마지막 업데이트가 실패했습니다: {{error}}'
     },
     menu: {
-      mediaNetboot: '네트워크 부팅 설정',
+      mediaAdd: '이미지 추가',
+      mediaMoreOptions: '추가 옵션',
+      mediaSettings: '미디어 설정',
       collapse: '메뉴 접기',
       expand: '메뉴 펼치기',
       more: '더 보기',
@@ -1608,7 +1618,6 @@ const ko = {
       advanced: '고급',
       mediaMounted: '마운트됨',
       mediaLibrary: '라이브러리',
-      mediaBoot: '부팅',
       textToHost: '호스트로',
       textFromHost: '호스트에서'
     },

@@ -597,7 +597,7 @@ const ja = {
         network: 'ネットワーク',
         access: 'アクセス',
         integrations: '連携',
-        boot: 'ブート',
+        boot: 'ブートとメディア',
         browser: 'このブラウザー',
         search: '設定を検索',
         noMatch: '一致する設定はありません',
@@ -861,8 +861,16 @@ const ja = {
         noLedConfirmOk: 'オンにする',
         cancel: 'キャンセル'
       },
+      media: {
+        title: '仮想メディア',
+        description:
+          'ツールバーのメディアダイアログの設定です。イメージのマウント、追加、Ventoy のセットの選択はダイアログで行います。',
+        ejectFirst:
+          'Ventoy ディスクがドライブに入っています。アンインストールするには、メディアダイアログで取り出してください。'
+      },
       netboot: {
         title: 'ネットワークブート',
+        isoDownload: 'ダウンロード',
         description:
           'ホストをネットワークから起動します。USB ネットワークリンク経由で iPXE と KVM 上のイメージのメニュー、または LAN 上のプロキシ DHCP で netboot.xyz を提供します。',
         addon: 'dnsmasq とブートファイル',
@@ -1630,7 +1638,9 @@ const ja = {
       failed: '前回の更新に失敗しました: {{error}}'
     },
     menu: {
-      mediaNetboot: 'ネットワークブートの設定',
+      mediaAdd: 'イメージを追加',
+      mediaMoreOptions: 'その他のオプション',
+      mediaSettings: 'メディアの設定',
       collapse: 'メニューを折りたたむ',
       expand: 'メニューを展開する',
       more: 'その他',
@@ -1640,7 +1650,6 @@ const ja = {
       advanced: '詳細設定',
       mediaMounted: 'マウント中',
       mediaLibrary: 'ライブラリ',
-      mediaBoot: 'ブート',
       textToHost: 'ホストへ',
       textFromHost: 'ホストから'
     },
