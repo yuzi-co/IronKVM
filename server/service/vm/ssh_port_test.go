@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -215,5 +216,39 @@ func TestSSHPortEndpoint(t *testing.T) {
 	data := serve(r, http.MethodGet, "/api/vm/ssh", "")["data"].(map[string]any)
 	if data["port"] != float64(2222) {
 		t.Errorf("state port = %v", data["port"])
+	}
+}
+
+func TestSetSSHPortMovesTheMDNSAnnouncement(t *testing.T) {
+	f := useSSHFixture(t)
+	service := `<service>
+    <type>_ssh._tcp</type>
+    <port>22</port>
+  </service>
+`
+	if err := os.MkdirAll(filepath.Dir(avahiSSHServices[0]), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(avahiSSHServices[0], []byte(service), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	// The sftp file is missing, as on an image without it: skipped, no error.
+
+	if err := setSSHPort(2222); err != nil {
+		t.Fatal(err)
+	}
+	if got := readFile(t, avahiSSHServices[0]); !strings.Contains(got, "<port>2222</port>") || strings.Contains(got, "<port>22</port>") {
+		t.Errorf("service = %q", got)
+	}
+	if f.avahiReloads != 1 {
+		t.Errorf("avahi reloads = %d", f.avahiReloads)
+	}
+
+	f.listening[2222] = true
+	if err := setSSHPort(22); err != nil {
+		t.Fatal(err)
+	}
+	if got := readFile(t, avahiSSHServices[0]); got != service {
+		t.Errorf("back to 22, service = %q", got)
 	}
 }

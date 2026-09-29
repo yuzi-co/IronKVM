@@ -46,14 +46,29 @@ apply_keys_only() {
     fi
 }
 
+# advertise_port points avahi's SSH services at the port sshd listens on; the
+# package ships them with 22 written in. avahi-daemon started before this
+# script, so it is told to read them again when one changed.
+advertise_port() {
+    changed=
+    for f in /etc/avahi/services/ssh.service /etc/avahi/services/sftp-ssh.service; do
+        [ -f "$f" ] || continue
+        grep -q "<port>$1</port>" "$f" && continue
+        sed -i "s|<port>[0-9]*</port>|<port>$1</port>|" "$f" && changed=1
+    done
+    [ -n "$changed" ] && avahi-daemon -r 2>/dev/null
+    return 0
+}
+
 apply_port() {
     port=$(cat "$PORT_FILE" 2>/dev/null)
     # Digits only and no leading zero, which the shell would read as octal.
     case "$port" in
-        ''|0*|*[!0-9]*) rm -f "$PORT_DROPIN"; return ;;
+        ''|0*|*[!0-9]*) rm -f "$PORT_DROPIN"; advertise_port 22; return ;;
     esac
     if [ "$port" -gt 65535 ] || [ "$port" -eq 22 ]; then
         rm -f "$PORT_DROPIN"
+        advertise_port 22
         return
     fi
     mkdir -p "${PORT_DROPIN%/*}"
@@ -64,7 +79,9 @@ apply_port() {
     if ! /usr/sbin/sshd -t 2>/dev/null; then
         rm -f "$PORT_DROPIN"
         echo "sshd: port $port rejected, listening on 22"
+        port=22
     fi
+    advertise_port "$port"
 }
 
 startssh() {

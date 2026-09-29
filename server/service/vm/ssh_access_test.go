@@ -32,6 +32,8 @@ type sshFixture struct {
 	reloadFn func() error
 	// listening is what /proc/net/tcp would say listens.
 	listening map[int]bool
+	// avahiReloads counts avahi-daemon -r.
+	avahiReloads int
 }
 
 func useSSHFixture(t *testing.T) *sshFixture {
@@ -45,7 +47,9 @@ func useSSHFixture(t *testing.T) *sshFixture {
 		sshPortFile, sshPortDropIn}
 	originalConfig, originalReload, originalSave := sshdEffectiveConfig, reloadSSHD, saveSSHIdentity
 	originalListeners, originalReserved := tcpListeners, reservedPorts
+	originalAvahi, originalAvahiReload := avahiSSHServices, reloadAvahi
 	t.Cleanup(func() {
+		avahiSSHServices, reloadAvahi = originalAvahi, originalAvahiReload
 		authorizedKeysPath, sshKeysOnlyFlag, sshKeysOnlyDropIn = originals[0], originals[1], originals[2]
 		sshHostKeyGlob, shadowPath, sshdPidFile = originals[3], originals[4], originals[5]
 		sshPortFile, sshPortDropIn = originals[6], originals[7]
@@ -61,6 +65,11 @@ func useSSHFixture(t *testing.T) *sshFixture {
 	sshdPidFile = filepath.Join(f.root, "run", "sshd.pid")
 	sshPortFile = filepath.Join(f.root, "etc", "kvm", "ssh_port")
 	sshPortDropIn = filepath.Join(f.root, "etc", "ssh", "sshd_config.d", "ironkvm-port.conf")
+	avahiSSHServices = []string{
+		filepath.Join(f.root, "etc", "avahi", "services", "ssh.service"),
+		filepath.Join(f.root, "etc", "avahi", "services", "sftp-ssh.service"),
+	}
+	reloadAvahi = func() error { f.avahiReloads++; return nil }
 	f.listening = map[int]bool{80: true, 443: true}
 	tcpListeners = func() (map[int]bool, error) { return f.listening, nil }
 	reservedPorts = func() []int { return []int{80, 443, 5900, 8069} }

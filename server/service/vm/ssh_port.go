@@ -6,7 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -242,7 +244,49 @@ func setSSHPort(port int) error {
 		log.Errorf("failed to reload sshd: %s", err)
 		return errReloadFailed
 	}
+	advertiseSSHPort(port)
 	return nil
+}
+
+// The avahi package ships _ssh._tcp and _sftp-ssh._tcp services with port 22
+// written into them, so mDNS would keep sending clients to the old port.
+// S50sshd rewrites them the same way at boot.
+var (
+	avahiSSHServices = []string{"/etc/avahi/services/ssh.service", "/etc/avahi/services/sftp-ssh.service"}
+	reloadAvahi      = func() error { return exec.Command("avahi-daemon", "-r").Run() }
+	avahiPortRe      = regexp.MustCompile(`<port>[0-9]+</port>`)
+)
+
+// withAdvertisedPort returns the service file with every port set to port.
+func withAdvertisedPort(data []byte, port int) []byte {
+	return avahiPortRe.ReplaceAll(data, []byte(fmt.Sprintf("<port>%d</port>", port)))
+}
+
+// advertiseSSHPort points the avahi SSH services at port. A missing file
+// (mDNS not installed) is skipped, and a failure only costs the announcement,
+// so it is logged rather than returned.
+func advertiseSSHPort(port int) {
+	changed := false
+	for _, path := range avahiSSHServices {
+		data, err := os.ReadFile(path)
+		if err != nil {
+			continue
+		}
+		updated := withAdvertisedPort(data, port)
+		if bytes.Equal(updated, data) {
+			continue
+		}
+		if err := writeFileAtomic(path, updated, 0o644); err != nil {
+			log.Errorf("failed to update %s: %s", path, err)
+			continue
+		}
+		changed = true
+	}
+	if changed {
+		// avahi-daemon -r fails when mDNS is off, which is fine: it reads the
+		// files when it starts.
+		_ = reloadAvahi()
+	}
 }
 
 func (s *Service) SetSSHPort(c *gin.Context) {
