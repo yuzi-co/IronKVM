@@ -135,11 +135,14 @@ func commandsFor(device string) (marker string, mount []string, unmount []string
 func (s *Service) GetVirtualDevice(c *gin.Context) {
 	var rsp proto.Response
 
-	present := func(marker string) bool {
-		exist, _ := isDeviceExist(marker)
-		return exist
-	}
+	rsp.OkRspWithData(c, virtualDeviceState(markerPresent))
 
+	log.Debugf("get virtual device success")
+}
+
+// virtualDeviceState is what GET /api/vm/device/virtual reports, and what an
+// apply returns beside the USB network link.
+func virtualDeviceState(present func(string) bool) *proto.GetVirtualDeviceRsp {
 	state := func(device string) proto.VirtualDeviceState {
 		function, ok := functionForDevice(device)
 		if !ok {
@@ -153,7 +156,7 @@ func (s *Service) GetVirtualDevice(c *gin.Context) {
 		}
 	}
 
-	rsp.OkRspWithData(c, &proto.GetVirtualDeviceRsp{
+	return &proto.GetVirtualDeviceRsp{
 		Console: state("console"),
 		Network: state("network"),
 		Disk:    state("disk"),
@@ -164,9 +167,7 @@ func (s *Service) GetVirtualDevice(c *gin.Context) {
 		Used:  usedEndpoints(present).in,
 		Total: endpointBudget().in,
 		Fits:  fittingSets(present),
-	})
-
-	log.Debugf("get virtual device success")
+	}
 }
 
 func (s *Service) UpdateVirtualDevice(c *gin.Context) {

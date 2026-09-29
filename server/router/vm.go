@@ -40,8 +40,9 @@ func vmRouter(r *gin.Engine) {
 	admin.POST("/vm/script/run", service.RunScript)       // run script
 	admin.DELETE("/vm/script", service.DeleteScript)      // delete script
 
-	admin.GET("/vm/device/virtual", service.GetVirtualDevice)     // get virtual device
-	admin.POST("/vm/device/virtual", service.UpdateVirtualDevice) // update virtual device
+	admin.GET("/vm/device/virtual", service.GetVirtualDevice)          // get virtual device
+	admin.POST("/vm/device/virtual", service.UpdateVirtualDevice)      // update virtual device
+	admin.POST("/vm/device/virtual/apply", service.ApplyVirtualDevice) // apply every USB device at once, one rebuild
 
 	admin.GET("/vm/device/usb-network", service.GetUSBNetwork)  // get the USB network link to the host
 	admin.POST("/vm/device/usb-network", service.SetUSBNetwork) // set the USB network link to the host
