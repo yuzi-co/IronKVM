@@ -27,10 +27,12 @@ import (
 type downloadStatus string
 
 const (
-	transferSentinelPath                        = utils.TransferSentinelPath
-	downloadStatusIdle           downloadStatus = "idle"
-	downloadStatusInProgress     downloadStatus = "in_progress"
-	downloadStatusSuccess        downloadStatus = "success"
+	transferSentinelPath                    = utils.TransferSentinelPath
+	downloadStatusIdle       downloadStatus = "idle"
+	downloadStatusInProgress downloadStatus = "in_progress"
+	downloadStatusSuccess    downloadStatus = "success"
+	// downloadStatusPresent answers a request for a file already on the board.
+	downloadStatusPresent        downloadStatus = "present"
 	downloadStatusFailed         downloadStatus = "failed"
 	downloadStatusChecksumFailed downloadStatus = "checksum_failed"
 )
@@ -354,7 +356,39 @@ func (s *Service) DownloadBootMenu(c *gin.Context) {
 		return
 	}
 
+	// The ISO is pinned, so a copy with the pinned checksum is the file a new
+	// download would write. Answer at once instead of fetching it again and
+	// replacing a file that may be in the virtual CD.
+	if filename, err := imageFilenameFromURL(netboot.BootMenuISOURL); err == nil &&
+		fileHasSHA256(filepath.Join(imageDir, filename), expectedSHA256) {
+		rsp.OkRspWithData(c, &proto.StatusImageRsp{
+			Status: string(downloadStatusPresent),
+			File:   filename,
+		})
+		return
+	}
+
 	s.startRemoteDownload(c, netboot.BootMenuISOURL, expectedSHA256)
+}
+
+// fileHasSHA256 reports whether path is a regular file whose SHA-256 is want.
+func fileHasSHA256(path string, want []byte) bool {
+	if len(want) == 0 {
+		return false
+	}
+	f, err := os.Open(path)
+	if err != nil {
+		return false
+	}
+	defer f.Close()
+	if info, err := f.Stat(); err != nil || !info.Mode().IsRegular() {
+		return false
+	}
+	h := sha256.New()
+	if _, err := io.Copy(h, f); err != nil {
+		return false
+	}
+	return bytes.Equal(h.Sum(nil), want)
 }
 
 // startRemoteDownload starts the download of an image in the background and

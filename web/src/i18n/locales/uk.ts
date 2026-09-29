@@ -499,6 +499,7 @@ const uk = {
       cancel: 'Скасувати',
       cancelFailed: 'Не вдалося скасувати завантаження',
       bootMenu: 'Завантажувальне меню (netboot.xyz)',
+      bootMenuPresent: '{{file}} уже є на пристрої, контрольна сума правильна',
       bootMenuDesc: 'Завантажити ISO netboot.xyz із перевіркою контрольної суми для віртуального CD'
     },
     power: {

@@ -497,6 +497,7 @@ const cz = {
       cancel: 'Zrušit',
       cancelFailed: 'Stažení se nepodařilo zrušit',
       bootMenu: 'Zaváděcí nabídka (netboot.xyz)',
+      bootMenuPresent: '{{file}} už je v zařízení se správným kontrolním součtem',
       bootMenuDesc: 'Stáhnout ISO netboot.xyz s ověřeným kontrolním součtem pro virtuální CD'
     },
     power: {

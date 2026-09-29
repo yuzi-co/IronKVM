@@ -490,6 +490,7 @@ const th = {
       cancel: 'ยกเลิก',
       cancelFailed: 'ยกเลิกการดาวน์โหลดไม่สำเร็จ',
       bootMenu: 'เมนูบูต (netboot.xyz)',
+      bootMenuPresent: '{{file}} อยู่บนอุปกรณ์แล้ว และ checksum ถูกต้อง',
       bootMenuDesc: 'ดาวน์โหลด ISO ของ netboot.xyz ที่ตรวจสอบ checksum แล้วสำหรับ CD เสมือน'
     },
     power: {

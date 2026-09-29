@@ -497,6 +497,7 @@ const tr = {
       cancel: 'İptal',
       cancelFailed: 'İndirme iptal edilemedi',
       bootMenu: 'Önyükleme menüsü (netboot.xyz)',
+      bootMenuPresent: '{{file}} doğru sağlama toplamıyla zaten cihazda',
       bootMenuDesc: "Sanal CD için netboot.xyz ISO'sunu sağlama toplamı doğrulanmış olarak indirin"
     },
     power: {

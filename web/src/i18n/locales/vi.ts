@@ -495,6 +495,7 @@ const vi = {
       cancel: 'Hủy',
       cancelFailed: 'Không thể hủy tải xuống',
       bootMenu: 'Menu khởi động (netboot.xyz)',
+      bootMenuPresent: '{{file}} đã có trên thiết bị, checksum đúng',
       bootMenuDesc: 'Tải ISO netboot.xyz, đã kiểm tra checksum, cho CD ảo'
     },
     power: {

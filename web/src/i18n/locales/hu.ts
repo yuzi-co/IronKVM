@@ -499,6 +499,7 @@ const hu = {
       cancel: 'Mégse',
       cancelFailed: 'A letöltés megszakítása sikertelen',
       bootMenu: 'Rendszerindító menü (netboot.xyz)',
+      bootMenuPresent: 'A(z) {{file}} már az eszközön van, helyes ellenőrzőösszeggel',
       bootMenuDesc: 'A netboot.xyz ISO letöltése ellenőrzött ellenőrzőösszeggel a virtuális CD-hez'
     },
     power: {

@@ -504,6 +504,7 @@ const nl = {
       cancel: 'Annuleren',
       cancelFailed: 'Download annuleren mislukt',
       bootMenu: 'Opstartmenu (netboot.xyz)',
+      bootMenuPresent: '{{file}} staat al op het apparaat, met de juiste checksum',
       bootMenuDesc:
         'De netboot.xyz-ISO downloaden, met gecontroleerde checksum, voor de virtuele cd'
     },

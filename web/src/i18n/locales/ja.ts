@@ -502,6 +502,7 @@ const ja = {
       cancel: 'キャンセル',
       cancelFailed: 'ダウンロードのキャンセルに失敗しました',
       bootMenu: 'ブートメニュー (netboot.xyz)',
+      bootMenuPresent: '{{file}} は正しいチェックサムで既にデバイス上にあります',
       bootMenuDesc: '仮想 CD 用に netboot.xyz の ISO をチェックサム検証付きでダウンロード'
     },
     power: {

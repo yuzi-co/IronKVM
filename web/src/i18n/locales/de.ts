@@ -511,6 +511,7 @@ const de = {
       cancel: 'Abbrechen',
       cancelFailed: 'Download konnte nicht abgebrochen werden',
       bootMenu: 'Bootmenü (netboot.xyz)',
+      bootMenuPresent: '{{file}} liegt bereits mit korrekter Prüfsumme auf dem Gerät',
       bootMenuDesc: 'Das netboot.xyz-ISO mit geprüfter Prüfsumme für die virtuelle CD herunterladen'
     },
     power: {

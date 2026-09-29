@@ -225,6 +225,16 @@ export const DownloadImage = () => {
           return;
         }
 
+        // The boot menu ISO is already there with its pinned checksum, so
+        // nothing was started.
+        if (rsp.data?.status === 'present') {
+          remoteDownloadActive.current = false;
+          setIsRemoteDownloading(false);
+          setStatus('success');
+          setLog(t('download.bootMenuPresent', { file: rsp.data.file }));
+          return;
+        }
+
         startStatusPolling();
       })
       .catch(() => {

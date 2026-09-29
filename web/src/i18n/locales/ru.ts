@@ -497,6 +497,7 @@ const ru = {
       cancel: 'Отмена',
       cancelFailed: 'Не удалось отменить загрузку',
       bootMenu: 'Загрузочное меню (netboot.xyz)',
+      bootMenuPresent: '{{file}} уже есть на устройстве, контрольная сумма верна',
       bootMenuDesc: 'Скачать ISO netboot.xyz с проверкой контрольной суммы для виртуального CD'
     },
     power: {

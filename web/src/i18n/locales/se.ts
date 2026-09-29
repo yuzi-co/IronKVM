@@ -494,6 +494,7 @@ const se = {
       cancel: 'Avbryt',
       cancelFailed: 'Kunne ikke avbryte nedlastingen',
       bootMenu: 'Startmeny (netboot.xyz)',
+      bootMenuPresent: '{{file}} finns redan på enheten med rätt kontrollsumma',
       bootMenuDesc:
         'Ladda ner netboot.xyz-ISO:n, med kontrollerad kontrollsumma, till den virtuella cd:n'
     },

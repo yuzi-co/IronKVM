@@ -498,6 +498,7 @@ const pt_br = {
       cancel: 'Cancelar',
       cancelFailed: 'Falha ao cancelar o download',
       bootMenu: 'Menu de boot (netboot.xyz)',
+      bootMenuPresent: '{{file}} já está no dispositivo, com o checksum correto',
       bootMenuDesc: 'Baixar a ISO do netboot.xyz, com checksum conferido, para o CD virtual'
     },
     power: {

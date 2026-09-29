@@ -1,6 +1,9 @@
 package download
 
 import (
+	"crypto/sha256"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"NanoKVM-Server/service/netboot"
@@ -79,5 +82,31 @@ func TestTheBootMenuISOIsAnImageTheDownloaderAccepts(t *testing.T) {
 	sum, err := parseSHA256(netboot.BootMenuISOSHA256)
 	if err != nil || len(sum) != 32 {
 		t.Fatalf("the pinned sum does not parse: %v", err)
+	}
+}
+
+func TestFileHasSHA256(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "netboot.xyz.iso")
+	if err := os.WriteFile(path, []byte("menu"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	sum := sha256.Sum256([]byte("menu"))
+	other := sha256.Sum256([]byte("other"))
+
+	if !fileHasSHA256(path, sum[:]) {
+		t.Error("a file with the pinned checksum should count as present")
+	}
+	if fileHasSHA256(path, other[:]) {
+		t.Error("a file with another checksum must be downloaded again")
+	}
+	if fileHasSHA256(filepath.Join(dir, "missing.iso"), sum[:]) {
+		t.Error("a missing file is not present")
+	}
+	if fileHasSHA256(dir, sum[:]) {
+		t.Error("a directory is not an image")
+	}
+	if fileHasSHA256(path, nil) {
+		t.Error("without a checksum nothing can be trusted as present")
 	}
 }

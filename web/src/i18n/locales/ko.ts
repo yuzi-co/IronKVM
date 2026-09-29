@@ -493,6 +493,7 @@ const ko = {
       cancel: '취소',
       cancelFailed: '다운로드 취소 실패',
       bootMenu: '부팅 메뉴 (netboot.xyz)',
+      bootMenuPresent: '{{file}} 파일이 올바른 체크섬으로 이미 장치에 있습니다',
       bootMenuDesc: '가상 CD용 netboot.xyz ISO를 체크섬 검증과 함께 다운로드'
     },
     power: {

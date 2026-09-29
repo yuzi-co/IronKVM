@@ -483,6 +483,7 @@ const zh_tw = {
       cancel: '取消',
       cancelFailed: '取消下載失敗',
       bootMenu: '開機選單 (netboot.xyz)',
+      bootMenuPresent: '{{file}} 已在裝置上，檢查碼正確',
       bootMenuDesc: '下載經檢查碼驗證的 netboot.xyz ISO，用於虛擬光碟'
     },
     power: {

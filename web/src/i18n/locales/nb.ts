@@ -498,6 +498,7 @@ const nb = {
       cancel: 'Avbryt',
       cancelFailed: 'Kunne ikke avbryte nedlastingen',
       bootMenu: 'Oppstartsmeny (netboot.xyz)',
+      bootMenuPresent: '{{file}} ligger allerede på enheten med riktig sjekksum',
       bootMenuDesc: 'Last ned netboot.xyz-ISO-en, med kontrollert sjekksum, til den virtuelle CD-en'
     },
     power: {

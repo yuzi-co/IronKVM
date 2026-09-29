@@ -16,8 +16,9 @@ import (
 // the download.
 const reservedFreeBytes = 256 * 1024 * 1024
 
-// imageDir is where mountable images live.
-const imageDir = "/data"
+// imageDir is where mountable images live. It is a variable so tests can
+// point it at a temporary directory.
+var imageDir = "/data"
 
 var errNotEnoughSpace = errors.New("not enough free space for this image")
 

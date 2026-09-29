@@ -502,6 +502,7 @@ const it = {
       cancel: 'Annulla',
       cancelFailed: 'Impossibile annullare il download',
       bootMenu: 'Menu di avvio (netboot.xyz)',
+      bootMenuPresent: '{{file}} è già sul dispositivo, con il checksum corretto',
       bootMenuDesc: "Scarica l'ISO di netboot.xyz, con checksum verificato, per il CD virtuale"
     },
     power: {

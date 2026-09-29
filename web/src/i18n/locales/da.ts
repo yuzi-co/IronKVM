@@ -496,6 +496,7 @@ const da = {
       cancel: 'Annuller',
       cancelFailed: 'Kunne ikke annullere download',
       bootMenu: 'Bootmenu (netboot.xyz)',
+      bootMenuPresent: '{{file}} ligger allerede på enheden med korrekt checksum',
       bootMenuDesc: "Hent netboot.xyz-ISO'en, med kontrolleret checksum, til den virtuelle cd"
     },
     power: {

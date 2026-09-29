@@ -483,6 +483,7 @@ const zh = {
       cancel: '取消',
       cancelFailed: '取消下载失败',
       bootMenu: '启动菜单 (netboot.xyz)',
+      bootMenuPresent: '{{file}} 已在设备上，校验和正确',
       bootMenuDesc: '下载经过校验和验证的 netboot.xyz ISO，用于虚拟光驱'
     },
     power: {

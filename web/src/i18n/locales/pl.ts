@@ -499,6 +499,7 @@ const pl = {
       cancel: 'Anuluj',
       cancelFailed: 'Nie udało się anulować pobierania',
       bootMenu: 'Menu rozruchowe (netboot.xyz)',
+      bootMenuPresent: '{{file}} jest już na urządzeniu, z poprawną sumą kontrolną',
       bootMenuDesc: 'Pobierz obraz ISO netboot.xyz ze sprawdzoną sumą kontrolną do wirtualnego CD'
     },
     power: {

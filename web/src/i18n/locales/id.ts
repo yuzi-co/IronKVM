@@ -498,6 +498,7 @@ const id = {
       cancel: 'Batal',
       cancelFailed: 'Gagal membatalkan unduhan',
       bootMenu: 'Menu boot (netboot.xyz)',
+      bootMenuPresent: '{{file}} sudah ada di perangkat, dengan checksum yang benar',
       bootMenuDesc: 'Unduh ISO netboot.xyz, checksum diperiksa, untuk CD virtual'
     },
     power: {

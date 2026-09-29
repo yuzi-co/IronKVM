@@ -504,6 +504,7 @@ const fr = {
       cancel: 'Annuler',
       cancelFailed: 'Impossible d’annuler le téléchargement',
       bootMenu: 'Menu de démarrage (netboot.xyz)',
+      bootMenuPresent: "{{file}} est déjà sur l'appareil, avec la bonne somme de contrôle",
       bootMenuDesc: "Télécharger l'ISO netboot.xyz, somme de contrôle vérifiée, pour le CD virtuel"
     },
     power: {

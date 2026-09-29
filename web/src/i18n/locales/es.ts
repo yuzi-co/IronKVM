@@ -501,6 +501,7 @@ const es = {
       cancel: 'Cancelar',
       cancelFailed: 'No se pudo cancelar la descarga',
       bootMenu: 'Menú de arranque (netboot.xyz)',
+      bootMenuPresent: '{{file}} ya está en el dispositivo, con la suma correcta',
       bootMenuDesc: 'Descargar la ISO de netboot.xyz, con la suma comprobada, para el CD virtual'
     },
     power: {

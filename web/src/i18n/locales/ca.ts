@@ -497,6 +497,7 @@ const ca = {
       cancel: 'Cancel·la',
       cancelFailed: 'No sha pogut cancel·lar la descàrrega',
       bootMenu: "Menú d'arrencada (netboot.xyz)",
+      bootMenuPresent: '{{file}} ja és a la placa, amb la suma correcta',
       bootMenuDesc: 'Baixa la ISO de netboot.xyz, amb la suma comprovada, per al CD virtual'
     },
     power: {
