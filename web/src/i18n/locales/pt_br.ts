@@ -528,6 +528,23 @@ const pt_br = {
       bootMenuPresent: '{{file}} já está no dispositivo, com o checksum correto',
       bootMenuDesc: 'Baixar a ISO do netboot.xyz, com checksum conferido, para o CD virtual'
     },
+    alerts: {
+      title: 'Requer atenção',
+      temperature: {
+        warning: 'A placa está a {{celsius}} °C. Verifique se o ar chega até ela.',
+        critical: 'A placa está a {{celsius}} °C, quente demais. Dê ventilação ou desligue-a.'
+      },
+      storage: {
+        warning:
+          'Apenas {{available}} livres de {{total}} em {{path}}. Imagens grandes podem não caber.',
+        critical:
+          'Apenas {{available}} livres em {{path}}. Uploads, downloads e instalações de complementos vão falhar. Apague imagens de que não precisa.'
+      },
+      vpn: '{{name}} deve iniciar no boot, mas não está em execução, então o acesso remoto por ele está fora.',
+      openVpn: 'Abrir configurações de VPN',
+      stream:
+        'O stream de vídeo falhou. Tente outro modo de vídeo no menu Tela ou recarregue a página.'
+    },
     power: {
       resetDesc: 'Reinicia o host na hora. O trabalho não salvo é perdido.',
       powerShortDesc: 'Liga o host, ou pede ao sistema operacional que desligue (ACPI).',

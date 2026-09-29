@@ -535,6 +535,23 @@ const fr = {
       bootMenuPresent: "{{file}} est déjà sur l'appareil, avec la bonne somme de contrôle",
       bootMenuDesc: "Télécharger l'ISO netboot.xyz, somme de contrôle vérifiée, pour le CD virtuel"
     },
+    alerts: {
+      title: 'À vérifier',
+      temperature: {
+        warning: "La carte est à {{celsius}} °C. Vérifiez que l'air circule autour.",
+        critical: "La carte est à {{celsius}} °C, c'est trop chaud. Aérez-la ou éteignez-la."
+      },
+      storage: {
+        warning:
+          'Seulement {{available}} libres sur {{total}} dans {{path}}. Les grandes images risquent de ne pas tenir.',
+        critical:
+          'Seulement {{available}} libres dans {{path}}. Envois, téléchargements et installations de modules échoueront. Supprimez les images inutiles.'
+      },
+      vpn: "{{name}} doit démarrer au boot mais ne tourne pas : l'accès à distance par ce biais est coupé.",
+      openVpn: 'Ouvrir les paramètres VPN',
+      stream:
+        'Le flux vidéo a échoué. Essayez un autre mode vidéo dans le menu Écran, ou rechargez la page.'
+    },
     power: {
       resetDesc: "Redémarre l'hôte immédiatement. Le travail non enregistré est perdu.",
       powerShortDesc: "Allume l'hôte, ou demande à son système de s'éteindre (ACPI).",

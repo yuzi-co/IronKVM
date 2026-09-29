@@ -528,6 +528,23 @@ const pl = {
       bootMenuPresent: '{{file}} jest już na urządzeniu, z poprawną sumą kontrolną',
       bootMenuDesc: 'Pobierz obraz ISO netboot.xyz ze sprawdzoną sumą kontrolną do wirtualnego CD'
     },
+    alerts: {
+      title: 'Wymaga uwagi',
+      temperature: {
+        warning: 'Płytka ma {{celsius}} °C. Sprawdź, czy dociera do niej powietrze.',
+        critical: 'Płytka ma {{celsius}} °C, to za gorąco. Zapewnij jej przewiew albo ją wyłącz.'
+      },
+      storage: {
+        warning:
+          'Na {{path}} wolne tylko {{available}} z {{total}}. Duże obrazy mogą się nie zmieścić.',
+        critical:
+          'Na {{path}} wolne tylko {{available}}. Wysyłanie, pobieranie i instalacja dodatków się nie powiodą. Usuń niepotrzebne obrazy.'
+      },
+      vpn: '{{name}} ma startować przy rozruchu, ale nie działa, więc dostęp zdalny przez niego nie działa.',
+      openVpn: 'Otwórz ustawienia VPN',
+      stream:
+        'Strumień wideo przestał działać. Wypróbuj inny tryb wideo w menu Ekran lub odśwież stronę.'
+    },
     power: {
       resetDesc: 'Natychmiast restartuje hosta. Niezapisana praca przepada.',
       powerShortDesc: 'Włącza hosta albo prosi jego system o wyłączenie (ACPI).',

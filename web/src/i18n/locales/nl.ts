@@ -534,6 +534,23 @@ const nl = {
       bootMenuDesc:
         'De netboot.xyz-ISO downloaden, met gecontroleerde checksum, voor de virtuele cd'
     },
+    alerts: {
+      title: 'Vraagt aandacht',
+      temperature: {
+        warning: 'Het bord is {{celsius}} °C. Controleer of er lucht bij kan.',
+        critical: 'Het bord is {{celsius}} °C, te heet. Geef het lucht of zet het uit.'
+      },
+      storage: {
+        warning:
+          'Nog maar {{available}} van {{total}} vrij op {{path}}. Grote images passen misschien niet.',
+        critical:
+          'Nog maar {{available}} vrij op {{path}}. Uploads, downloads en installaties van add-ons mislukken. Verwijder images die u niet meer nodig hebt.'
+      },
+      vpn: '{{name}} moet bij het opstarten starten maar draait niet, dus toegang op afstand via deze VPN ligt eruit.',
+      openVpn: 'VPN-instellingen openen',
+      stream:
+        'De videostream is mislukt. Probeer een andere videomodus in het menu Scherm of herlaad de pagina.'
+    },
     power: {
       resetDesc: 'Herstart de host meteen. Niet-opgeslagen werk gaat verloren.',
       powerShortDesc: 'Zet de host aan, of vraagt het besturingssysteem af te sluiten (ACPI).',

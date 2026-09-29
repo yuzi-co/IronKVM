@@ -524,6 +524,24 @@ const se = {
       bootMenuDesc:
         'Ladda ner netboot.xyz-ISO:n, med kontrollerad kontrollsumma, till den virtuella cd:n'
     },
+    alerts: {
+      title: 'Behöver åtgärd',
+      temperature: {
+        warning: 'Kortet håller {{celsius}} °C. Kontrollera att det får luft.',
+        critical:
+          'Kortet håller {{celsius}} °C, vilket är för varmt. Ge det luft eller stäng av det.'
+      },
+      storage: {
+        warning:
+          'Bara {{available}} av {{total}} ledigt på {{path}}. Stora avbilder kanske inte får plats.',
+        critical:
+          'Bara {{available}} ledigt på {{path}}. Uppladdningar, nedladdningar och installation av tillägg kommer att misslyckas. Radera avbilder du inte behöver.'
+      },
+      vpn: '{{name}} ska starta vid uppstart men körs inte, så fjärråtkomst via den fungerar inte.',
+      openVpn: 'Öppna VPN-inställningar',
+      stream:
+        'Videoströmmen har misslyckats. Prova ett annat videoläge i menyn Skärm eller ladda om sidan.'
+    },
     power: {
       resetDesc: 'Startar om värden direkt. Osparat arbete går förlorat.',
       powerShortDesc: 'Startar värden, eller ber dess OS att stänga av (ACPI).',

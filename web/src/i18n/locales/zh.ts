@@ -510,6 +510,21 @@ const zh = {
       bootMenuPresent: '{{file}} 已在设备上，校验和正确',
       bootMenuDesc: '下载经过校验和验证的 netboot.xyz ISO，用于虚拟光驱'
     },
+    alerts: {
+      title: '需要注意',
+      temperature: {
+        warning: '板子温度为 {{celsius}} °C。请检查通风是否良好。',
+        critical: '板子温度为 {{celsius}} °C，过热。请加强通风或关机。'
+      },
+      storage: {
+        warning: '{{path}} 仅剩 {{available}}（共 {{total}}）。大镜像可能放不下。',
+        critical:
+          '{{path}} 仅剩 {{available}}。上传、下载和插件安装都会失败。请删除不再需要的镜像。'
+      },
+      vpn: '{{name}} 已设为开机启动，但没有运行，因此通过它的远程访问已中断。',
+      openVpn: '打开 VPN 设置',
+      stream: '视频流失败。请在屏幕菜单中尝试其他视频模式，或刷新页面。'
+    },
     power: {
       resetDesc: '立即重启主机，未保存的工作会丢失。',
       powerShortDesc: '开启主机，或请求其操作系统关机 (ACPI)。',

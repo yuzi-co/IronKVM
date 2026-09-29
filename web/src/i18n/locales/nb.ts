@@ -527,6 +527,23 @@ const nb = {
       bootMenuPresent: '{{file}} ligger allerede på enheten med riktig sjekksum',
       bootMenuDesc: 'Last ned netboot.xyz-ISO-en, med kontrollert sjekksum, til den virtuelle CD-en'
     },
+    alerts: {
+      title: 'Trenger oppmerksomhet',
+      temperature: {
+        warning: 'Kortet er på {{celsius}} °C. Sjekk at det får luft.',
+        critical: 'Kortet er på {{celsius}} °C, som er for varmt. Gi det luft eller slå det av.'
+      },
+      storage: {
+        warning:
+          'Bare {{available}} av {{total}} ledig på {{path}}. Store avbildninger får kanskje ikke plass.',
+        critical:
+          'Bare {{available}} ledig på {{path}}. Opplasting, nedlasting og installasjon av tillegg vil feile. Slett avbildninger du ikke trenger.'
+      },
+      vpn: '{{name}} skal starte ved oppstart, men kjører ikke, så fjerntilgang gjennom den er nede.',
+      openVpn: 'Åpne VPN-innstillinger',
+      stream:
+        'Videostrømmen har feilet. Prøv en annen videomodus i Skjerm-menyen, eller last inn siden på nytt.'
+    },
     power: {
       resetDesc: 'Starter verten på nytt med en gang. Ulagret arbeid går tapt.',
       powerShortDesc: 'Slår på verten, eller ber operativsystemet slå seg av (ACPI).',

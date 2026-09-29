@@ -528,6 +528,22 @@ const id = {
       bootMenuPresent: '{{file}} sudah ada di perangkat, dengan checksum yang benar',
       bootMenuDesc: 'Unduh ISO netboot.xyz, checksum diperiksa, untuk CD virtual'
     },
+    alerts: {
+      title: 'Perlu perhatian',
+      temperature: {
+        warning: 'Papan bersuhu {{celsius}} °C. Pastikan udara dapat mencapainya.',
+        critical: 'Papan bersuhu {{celsius}} °C, terlalu panas. Beri aliran udara atau matikan.'
+      },
+      storage: {
+        warning:
+          'Hanya {{available}} dari {{total}} yang kosong di {{path}}. Image besar mungkin tidak muat.',
+        critical:
+          'Hanya {{available}} yang kosong di {{path}}. Unggahan, unduhan, dan pemasangan add-on akan gagal. Hapus image yang tidak diperlukan.'
+      },
+      vpn: '{{name}} diatur untuk mulai saat boot tetapi tidak berjalan, jadi akses jarak jauh melaluinya terputus.',
+      openVpn: 'Buka pengaturan VPN',
+      stream: 'Stream video gagal. Coba mode video lain di menu Layar, atau muat ulang halaman.'
+    },
     power: {
       resetDesc: 'Memulai ulang host seketika. Pekerjaan yang belum disimpan hilang.',
       powerShortDesc: 'Menyalakan host, atau meminta OS-nya untuk mati (ACPI).',

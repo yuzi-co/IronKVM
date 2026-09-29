@@ -532,6 +532,23 @@ const ja = {
       bootMenuPresent: '{{file}} は正しいチェックサムで既にデバイス上にあります',
       bootMenuDesc: '仮想 CD 用に netboot.xyz の ISO をチェックサム検証付きでダウンロード'
     },
+    alerts: {
+      title: '要確認',
+      temperature: {
+        warning: 'ボードが {{celsius}} °C です。空気が届いているか確認してください。',
+        critical: 'ボードが {{celsius}} °C で、熱すぎます。風を通すか電源を切ってください。'
+      },
+      storage: {
+        warning:
+          '{{path}} の空きは {{total}} 中 {{available}} だけです。大きなイメージは入らない可能性があります。',
+        critical:
+          '{{path}} の空きは {{available}} だけです。アップロード、ダウンロード、アドオンのインストールは失敗します。不要なイメージを削除してください。'
+      },
+      vpn: '{{name}} は起動時に開始する設定ですが動作していないため、これを使ったリモートアクセスは利用できません。',
+      openVpn: 'VPN 設定を開く',
+      stream:
+        'ビデオストリームが失敗しました。画面メニューで別のビデオモードを試すか、ページを再読み込みしてください。'
+    },
     power: {
       resetDesc: 'ホストをすぐに再起動します。保存していない作業は失われます。',
       powerShortDesc: 'ホストの電源を入れるか、OS にシャットダウンを要求します (ACPI)。',

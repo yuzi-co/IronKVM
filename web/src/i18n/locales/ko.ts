@@ -521,6 +521,23 @@ const ko = {
       bootMenuPresent: '{{file}} 파일이 올바른 체크섬으로 이미 장치에 있습니다',
       bootMenuDesc: '가상 CD용 netboot.xyz ISO를 체크섬 검증과 함께 다운로드'
     },
+    alerts: {
+      title: '확인 필요',
+      temperature: {
+        warning: '보드 온도가 {{celsius}} °C입니다. 공기가 통하는지 확인하세요.',
+        critical: '보드 온도가 {{celsius}} °C로 너무 뜨겁습니다. 통풍시키거나 전원을 끄세요.'
+      },
+      storage: {
+        warning:
+          '{{path}}의 여유 공간이 {{total}} 중 {{available}}뿐입니다. 큰 이미지는 들어가지 않을 수 있습니다.',
+        critical:
+          '{{path}}의 여유 공간이 {{available}}뿐입니다. 업로드, 다운로드, 애드온 설치가 실패합니다. 필요 없는 이미지를 삭제하세요.'
+      },
+      vpn: '{{name}}은(는) 부팅 시 시작하도록 설정되어 있지만 실행 중이 아니어서 이를 통한 원격 접속이 끊겼습니다.',
+      openVpn: 'VPN 설정 열기',
+      stream:
+        '비디오 스트림이 실패했습니다. 화면 메뉴에서 다른 비디오 모드를 시도하거나 페이지를 새로 고치세요.'
+    },
     power: {
       resetDesc: '호스트를 즉시 다시 시작합니다. 저장하지 않은 작업은 사라집니다.',
       powerShortDesc: '호스트를 켜거나 OS에 종료를 요청합니다 (ACPI).',

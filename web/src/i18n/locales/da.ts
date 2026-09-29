@@ -525,6 +525,22 @@ const da = {
       bootMenuPresent: '{{file}} ligger allerede på enheden med korrekt checksum',
       bootMenuDesc: "Hent netboot.xyz-ISO'en, med kontrolleret checksum, til den virtuelle cd"
     },
+    alerts: {
+      title: 'Kræver opmærksomhed',
+      temperature: {
+        warning: 'Kortet er på {{celsius}} °C. Tjek at der kommer luft til det.',
+        critical: 'Kortet er på {{celsius}} °C, hvilket er for varmt. Giv det luft eller sluk det.'
+      },
+      storage: {
+        warning: 'Kun {{available}} af {{total}} fri på {{path}}. Store images passer måske ikke.',
+        critical:
+          'Kun {{available}} fri på {{path}}. Upload, download og installation af tilføjelser vil fejle. Slet images, du ikke bruger.'
+      },
+      vpn: '{{name}} skal starte ved boot, men kører ikke, så fjernadgang gennem den er nede.',
+      openVpn: 'Åbn VPN-indstillinger',
+      stream:
+        'Videostreamen er fejlet. Prøv en anden videotilstand i menuen Skærm, eller genindlæs siden.'
+    },
     power: {
       resetDesc: 'Genstarter værten med det samme. Ikke-gemt arbejde går tabt.',
       powerShortDesc: 'Tænder værten eller beder dens OS om at lukke ned (ACPI).',

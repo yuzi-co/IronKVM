@@ -524,6 +524,22 @@ const en = {
       bootMenuPresent: '{{file}} is already on the device, with the right checksum',
       bootMenuDesc: 'Download the netboot.xyz ISO, checksum checked, for the virtual CD'
     },
+    alerts: {
+      title: 'Needs attention',
+      temperature: {
+        warning: 'The board is at {{celsius}} °C. Check that air can reach it.',
+        critical: 'The board is at {{celsius}} °C, which is too hot. Give it air or turn it off.'
+      },
+      storage: {
+        warning: 'Only {{available}} of {{total}} is free on {{path}}. Large images may not fit.',
+        critical:
+          'Only {{available}} is free on {{path}}. Uploads, downloads and add-on installs will fail. Delete images you no longer need.'
+      },
+      vpn: '{{name}} is set to start at boot but is not running, so remote access through it is down.',
+      openVpn: 'Open VPN settings',
+      stream:
+        'The video stream has failed. Try another video mode in the Screen menu, or reload the page.'
+    },
     power: {
       resetDesc: 'Restarts the host at once. Unsaved work is lost.',
       powerShortDesc: 'Turns the host on, or asks its OS to shut down (ACPI).',

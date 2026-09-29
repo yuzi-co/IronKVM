@@ -526,6 +526,23 @@ const tr = {
       bootMenuPresent: '{{file}} doğru sağlama toplamıyla zaten cihazda',
       bootMenuDesc: "Sanal CD için netboot.xyz ISO'sunu sağlama toplamı doğrulanmış olarak indirin"
     },
+    alerts: {
+      title: 'Dikkat gerekiyor',
+      temperature: {
+        warning: 'Kart {{celsius}} °C. Havanın ona ulaşabildiğini kontrol edin.',
+        critical: 'Kart {{celsius}} °C, bu çok sıcak. Havalandırın veya kapatın.'
+      },
+      storage: {
+        warning:
+          '{{path}} üzerinde {{total}} alanın yalnızca {{available}} kadarı boş. Büyük imajlar sığmayabilir.',
+        critical:
+          '{{path}} üzerinde yalnızca {{available}} boş. Yüklemeler, indirmeler ve eklenti kurulumları başarısız olacak. Gerekmeyen imajları silin.'
+      },
+      vpn: '{{name}} açılışta başlayacak şekilde ayarlı ama çalışmıyor, bu yüzden onun üzerinden uzaktan erişim kesik.',
+      openVpn: 'VPN ayarlarını aç',
+      stream:
+        'Video akışı başarısız oldu. Ekran menüsünde başka bir video modu deneyin veya sayfayı yenileyin.'
+    },
     power: {
       resetDesc: 'Ana bilgisayarı hemen yeniden başlatır. Kaydedilmemiş iş kaybolur.',
       powerShortDesc: 'Ana bilgisayarı açar veya işletim sisteminden kapanmasını ister (ACPI).',

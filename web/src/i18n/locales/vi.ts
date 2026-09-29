@@ -524,6 +524,23 @@ const vi = {
       bootMenuPresent: '{{file}} đã có trên thiết bị, checksum đúng',
       bootMenuDesc: 'Tải ISO netboot.xyz, đã kiểm tra checksum, cho CD ảo'
     },
+    alerts: {
+      title: 'Cần chú ý',
+      temperature: {
+        warning: 'Bo mạch đang ở {{celsius}} °C. Hãy kiểm tra xem có thông gió không.',
+        critical: 'Bo mạch đang ở {{celsius}} °C, quá nóng. Hãy làm mát hoặc tắt nó.'
+      },
+      storage: {
+        warning:
+          'Chỉ còn trống {{available}} trên {{total}} tại {{path}}. Ảnh đĩa lớn có thể không vừa.',
+        critical:
+          'Chỉ còn trống {{available}} tại {{path}}. Tải lên, tải xuống và cài tiện ích bổ sung sẽ thất bại. Hãy xóa ảnh đĩa không cần.'
+      },
+      vpn: '{{name}} được đặt khởi động cùng hệ thống nhưng không chạy, nên truy cập từ xa qua nó đang gián đoạn.',
+      openVpn: 'Mở cài đặt VPN',
+      stream:
+        'Luồng video bị lỗi. Hãy thử chế độ video khác trong menu Màn hình hoặc tải lại trang.'
+    },
     power: {
       resetDesc: 'Khởi động lại máy chủ ngay. Công việc chưa lưu sẽ mất.',
       powerShortDesc: 'Bật máy chủ, hoặc yêu cầu hệ điều hành tắt máy (ACPI).',

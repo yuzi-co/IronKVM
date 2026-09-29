@@ -543,6 +543,24 @@ const de = {
       bootMenuPresent: '{{file}} liegt bereits mit korrekter Prüfsumme auf dem Gerät',
       bootMenuDesc: 'Das netboot.xyz-ISO mit geprüfter Prüfsumme für die virtuelle CD herunterladen'
     },
+    alerts: {
+      title: 'Braucht Aufmerksamkeit',
+      temperature: {
+        warning: 'Die Platine hat {{celsius}} °C. Prüfen Sie, ob Luft an sie herankommt.',
+        critical:
+          'Die Platine hat {{celsius}} °C und ist zu heiß. Sorgen Sie für Luft oder schalten Sie sie aus.'
+      },
+      storage: {
+        warning:
+          'Nur {{available}} von {{total}} frei auf {{path}}. Große Images passen eventuell nicht.',
+        critical:
+          'Nur {{available}} frei auf {{path}}. Uploads, Downloads und Add-on-Installationen schlagen fehl. Löschen Sie nicht mehr benötigte Images.'
+      },
+      vpn: '{{name}} soll beim Booten starten, läuft aber nicht. Der Fernzugriff darüber ist unterbrochen.',
+      openVpn: 'VPN-Einstellungen öffnen',
+      stream:
+        'Der Videostream ist ausgefallen. Versuchen Sie im Menü Bildschirm einen anderen Videomodus oder laden Sie die Seite neu.'
+    },
     power: {
       resetDesc: 'Startet den Host sofort neu. Nicht gespeicherte Arbeit geht verloren.',
       powerShortDesc:

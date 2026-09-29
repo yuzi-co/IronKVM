@@ -528,6 +528,23 @@ const ca = {
       bootMenuPresent: '{{file}} ja és a la placa, amb la suma correcta',
       bootMenuDesc: 'Baixa la ISO de netboot.xyz, amb la suma comprovada, per al CD virtual'
     },
+    alerts: {
+      title: 'Cal atenció',
+      temperature: {
+        warning: 'La placa és a {{celsius}} °C. Comprova que li arribi aire.',
+        critical: 'La placa és a {{celsius}} °C, massa calenta. Dona-li aire o apaga-la.'
+      },
+      storage: {
+        warning:
+          'Només queden {{available}} lliures de {{total}} a {{path}}. Les imatges grans potser no hi cabran.',
+        critical:
+          'Només queden {{available}} lliures a {{path}}. Fallaran pujades, baixades i instal·lacions de complements. Esborra les imatges que ja no necessitis.'
+      },
+      vpn: "{{name}} s'ha d'iniciar en arrencar però no s'executa, així que l'accés remot a través seu no funciona.",
+      openVpn: 'Obre la configuració de VPN',
+      stream:
+        'El flux de vídeo ha fallat. Prova un altre mode de vídeo al menú Pantalla o torna a carregar la pàgina.'
+    },
     power: {
       resetDesc: "Reinicia l'amfitrió a l'instant. Es perd la feina no desada.",
       powerShortDesc: "Engega l'amfitrió o demana al seu sistema operatiu que s'apagui (ACPI).",

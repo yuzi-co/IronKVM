@@ -526,6 +526,22 @@ const cz = {
       bootMenuPresent: '{{file}} už je v zařízení se správným kontrolním součtem',
       bootMenuDesc: 'Stáhnout ISO netboot.xyz s ověřeným kontrolním součtem pro virtuální CD'
     },
+    alerts: {
+      title: 'Vyžaduje pozornost',
+      temperature: {
+        warning: 'Deska má {{celsius}} °C. Zkontrolujte, zda k ní proudí vzduch.',
+        critical: 'Deska má {{celsius}} °C, to je příliš. Zajistěte chlazení nebo ji vypněte.'
+      },
+      storage: {
+        warning: 'Na {{path}} zbývá jen {{available}} z {{total}}. Velké obrazy se nemusí vejít.',
+        critical:
+          'Na {{path}} zbývá jen {{available}}. Nahrávání, stahování a instalace doplňků selžou. Smažte nepotřebné obrazy.'
+      },
+      vpn: '{{name}} se má spouštět při startu, ale neběží, takže vzdálený přístup přes něj nefunguje.',
+      openVpn: 'Otevřít nastavení VPN',
+      stream:
+        'Videostream selhal. Zkuste jiný režim videa v nabídce Obrazovka nebo obnovte stránku.'
+    },
     power: {
       resetDesc: 'Okamžitě restartuje hostitele. Neuložená práce se ztratí.',
       powerShortDesc: 'Zapne hostitele, nebo požádá jeho OS o vypnutí (ACPI).',

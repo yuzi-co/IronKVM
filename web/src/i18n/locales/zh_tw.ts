@@ -510,6 +510,21 @@ const zh_tw = {
       bootMenuPresent: '{{file}} 已在裝置上，檢查碼正確',
       bootMenuDesc: '下載經檢查碼驗證的 netboot.xyz ISO，用於虛擬光碟'
     },
+    alerts: {
+      title: '需要注意',
+      temperature: {
+        warning: '板子溫度為 {{celsius}} °C。請檢查通風是否良好。',
+        critical: '板子溫度為 {{celsius}} °C，過熱。請加強通風或關機。'
+      },
+      storage: {
+        warning: '{{path}} 僅剩 {{available}}（共 {{total}}）。大型映像可能放不下。',
+        critical:
+          '{{path}} 僅剩 {{available}}。上傳、下載和外掛安裝都會失敗。請刪除不再需要的映像。'
+      },
+      vpn: '{{name}} 已設為開機啟動，但沒有執行，因此透過它的遠端存取已中斷。',
+      openVpn: '開啟 VPN 設定',
+      stream: '影像串流失敗。請在螢幕選單中嘗試其他影像模式，或重新整理頁面。'
+    },
     power: {
       resetDesc: '立即重新啟動主機，未儲存的工作會遺失。',
       powerShortDesc: '開啟主機，或請求其作業系統關機 (ACPI)。',

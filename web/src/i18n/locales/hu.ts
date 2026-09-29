@@ -528,6 +528,24 @@ const hu = {
       bootMenuPresent: 'A(z) {{file}} már az eszközön van, helyes ellenőrzőösszeggel',
       bootMenuDesc: 'A netboot.xyz ISO letöltése ellenőrzött ellenőrzőösszeggel a virtuális CD-hez'
     },
+    alerts: {
+      title: 'Figyelmet igényel',
+      temperature: {
+        warning: 'A panel {{celsius}} °C-os. Ellenőrizze, hogy kap-e levegőt.',
+        critical:
+          'A panel {{celsius}} °C-os, ez túl meleg. Biztosítson szellőzést vagy kapcsolja ki.'
+      },
+      storage: {
+        warning:
+          'Csak {{available}} szabad a(z) {{total}} méretből itt: {{path}}. Nagy lemezképek nem biztos, hogy elférnek.',
+        critical:
+          'Csak {{available}} szabad itt: {{path}}. A feltöltések, letöltések és bővítménytelepítések sikertelenek lesznek. Törölje a felesleges lemezképeket.'
+      },
+      vpn: 'A(z) {{name}} indításkor indulna, de nem fut, így a távoli elérés rajta keresztül nem működik.',
+      openVpn: 'VPN-beállítások megnyitása',
+      stream:
+        'A videostream leállt. Próbáljon másik videómódot a Képernyő menüben, vagy töltse újra az oldalt.'
+    },
     power: {
       resetDesc: 'Azonnal újraindítja a gazdagépet. A mentetlen munka elvész.',
       powerShortDesc:

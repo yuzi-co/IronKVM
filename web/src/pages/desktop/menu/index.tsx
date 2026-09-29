@@ -20,6 +20,7 @@ import { useMenuVisibility } from '@/hooks/useMenuVisibility.ts';
 import { MenuBoundary } from '@/components/error-boundary';
 
 import { KeyboardLedStatus } from '../keyboard-led-status';
+import { Alerts } from './alerts';
 import { Fullscreen } from './fullscreen';
 import { Keyboard } from './keyboard';
 import { Media } from './media';
@@ -242,6 +243,10 @@ export const Menu = () => {
                 </MenuBoundary>
               </div>
             )}
+            {/* Shown only while something is wrong. */}
+            <MenuBoundary name="alerts">
+              <Alerts />
+            </MenuBoundary>
             <strong>
               <div className="flex h-[30px] cursor-move items-center justify-center pl-1 text-neutral-500 select-none">
                 <GripVerticalIcon size={18} />
