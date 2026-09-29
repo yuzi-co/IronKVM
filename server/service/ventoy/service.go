@@ -297,7 +297,7 @@ func (s *Service) status() Status {
 		Kernel:    kernelSupport(),
 		OnData:    s.deps.OnData(),
 		Installed: installed(),
-		Version:   Version,
+		Version:   installedVersion(),
 		Images:    []string{},
 		Missing:   []string{},
 		Device:    DevicePath,
