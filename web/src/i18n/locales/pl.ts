@@ -594,7 +594,7 @@ const pl = {
         network: 'Sieć',
         access: 'Dostęp',
         integrations: 'Integracje',
-        boot: 'Rozruch',
+        boot: 'Rozruch i nośniki',
         browser: 'Ta przeglądarka',
         search: 'Znajdź ustawienie',
         noMatch: 'Brak pasujących ustawień',
@@ -855,8 +855,15 @@ const pl = {
         noLedConfirmOk: 'Włącz',
         cancel: 'Anuluj'
       },
+      media: {
+        title: 'Nośniki wirtualne',
+        description:
+          'Konfiguracja okna Nośniki na pasku narzędzi. Montowanie obrazów, ich dodawanie i wybór zestawu Ventoy odbywa się w oknie.',
+        ejectFirst: 'Dysk Ventoy jest w napędzie. Wysuń go w oknie Nośniki, aby odinstalować.'
+      },
       netboot: {
         title: 'Rozruch sieciowy',
+        isoDownload: 'Pobierz',
         description:
           'Uruchom hosta z sieci: iPXE i menu obrazów z KVM przez sieciowe łącze USB albo netboot.xyz przez proxy DHCP w sieci LAN.',
         addon: 'dnsmasq i pliki rozruchowe',
@@ -1620,7 +1627,9 @@ const pl = {
       failed: 'Ostatnia aktualizacja nie powiodła się: {{error}}'
     },
     menu: {
-      mediaNetboot: 'Ustawienia rozruchu sieciowego',
+      mediaAdd: 'Dodaj obraz',
+      mediaMoreOptions: 'Więcej opcji',
+      mediaSettings: 'Ustawienia nośników',
       collapse: 'Zwiń menu',
       expand: 'Rozwiń Menu',
       more: 'Więcej',
@@ -1630,7 +1639,6 @@ const pl = {
       advanced: 'Zaawansowane',
       mediaMounted: 'Zamontowane',
       mediaLibrary: 'Biblioteka',
-      mediaBoot: 'Rozruch',
       textToHost: 'Do hosta',
       textFromHost: 'Z hosta'
     },

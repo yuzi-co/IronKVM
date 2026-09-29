@@ -590,7 +590,7 @@ const da = {
         network: 'Netværk',
         access: 'Adgang',
         integrations: 'Integrationer',
-        boot: 'Opstart',
+        boot: 'Opstart og medier',
         browser: 'Denne browser',
         search: 'Find en indstilling',
         noMatch: 'Ingen indstillinger matcher',
@@ -849,8 +849,15 @@ const da = {
         noLedConfirmOk: 'Slå til',
         cancel: 'Annuller'
       },
+      media: {
+        title: 'Virtuelle medier',
+        description:
+          'Opsætning af dialogen Medier i værktøjslinjen. Montering af billeder, tilføjelse af dem og valg af Ventoy-sættet sker i dialogen.',
+        ejectFirst: 'Ventoy-disken er i et drev. Skub den ud i dialogen Medier for at afinstallere.'
+      },
       netboot: {
         title: 'Netværksboot',
+        isoDownload: 'Hent',
         description:
           "Boot værten fra netværket: iPXE og en menu med billederne på KVM'en over USB-netværksforbindelsen, eller netboot.xyz via proxy-DHCP på LAN'et.",
         addon: 'dnsmasq og bootfiler',
@@ -1610,7 +1617,9 @@ const da = {
       failed: 'Den seneste opdatering mislykkedes: {{error}}'
     },
     menu: {
-      mediaNetboot: 'Indstillinger for netværksboot',
+      mediaAdd: 'Tilføj billede',
+      mediaMoreOptions: 'Flere indstillinger',
+      mediaSettings: 'Medieindstillinger',
       collapse: 'Skjul menu',
       expand: 'Udvid menu',
       more: 'Mere',
@@ -1620,7 +1629,6 @@ const da = {
       advanced: 'Avanceret',
       mediaMounted: 'Monteret',
       mediaLibrary: 'Bibliotek',
-      mediaBoot: 'Opstart',
       textToHost: 'Til værten',
       textFromHost: 'Fra værten'
     },

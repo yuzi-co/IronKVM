@@ -601,7 +601,7 @@ const fr = {
         network: 'Réseau',
         access: 'Accès',
         integrations: 'Intégrations',
-        boot: 'Démarrage',
+        boot: 'Démarrage et médias',
         browser: 'Ce navigateur',
         search: 'Rechercher un réglage',
         noMatch: 'Aucun réglage ne correspond',
@@ -869,8 +869,16 @@ const fr = {
         noLedConfirmOk: 'Activer',
         cancel: 'Annuler'
       },
+      media: {
+        title: 'Médias virtuels',
+        description:
+          "Configuration de la boîte Médias de la barre d'outils. Le montage des images, leur ajout et le choix de l'ensemble Ventoy se font dans la boîte.",
+        ejectFirst:
+          'Le disque Ventoy est dans un lecteur. Éjectez-le dans la boîte Médias pour désinstaller.'
+      },
       netboot: {
         title: 'Démarrage réseau',
+        isoDownload: 'Télécharger',
         description:
           "Démarrer l'hôte depuis le réseau : iPXE et un menu des images du KVM par la liaison réseau USB, ou netboot.xyz par proxy DHCP sur le LAN.",
         addon: 'dnsmasq et fichiers de démarrage',
@@ -1641,7 +1649,9 @@ const fr = {
       failed: 'La dernière mise à jour a échoué : {{error}}'
     },
     menu: {
-      mediaNetboot: 'Paramètres du démarrage réseau',
+      mediaAdd: 'Ajouter une image',
+      mediaMoreOptions: "Plus d'options",
+      mediaSettings: 'Paramètres des médias',
       collapse: 'Réduire le menu',
       expand: 'Développer le menu',
       more: 'Plus',
@@ -1651,7 +1661,6 @@ const fr = {
       advanced: 'Avancé',
       mediaMounted: 'Monté',
       mediaLibrary: 'Bibliothèque',
-      mediaBoot: 'Démarrage',
       textToHost: "Vers l'hôte",
       textFromHost: "Depuis l'hôte"
     },

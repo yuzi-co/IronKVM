@@ -19,6 +19,6 @@ export const menuDisplayModeAtom = atom<string>('auto');
 export const keyboardLedStatusVisibleAtom = atom(true);
 
 // A request, from elsewhere in the UI, to open Settings on a given tab: the
-// Media dialog's network boot link uses it. The Settings button answers it and
+// Media dialog's settings link uses it. The Settings button answers it and
 // clears it. A tab this account cannot see opens the default one instead.
 export const settingsOpenRequestAtom = atom<string | null>(null);

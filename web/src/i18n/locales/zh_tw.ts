@@ -571,7 +571,7 @@ const zh_tw = {
         network: '網路',
         access: '存取',
         integrations: '整合',
-        boot: '開機',
+        boot: '開機與媒體',
         browser: '此瀏覽器',
         search: '尋找設定',
         noMatch: '沒有符合的設定',
@@ -815,8 +815,15 @@ const zh_tw = {
         noLedConfirmOk: '開啟',
         cancel: '取消'
       },
+      media: {
+        title: '虛擬媒體',
+        description:
+          '工具列中媒體對話框的設定。掛載映像、新增映像和選擇 Ventoy 映像集都在對話框中進行。',
+        ejectFirst: 'Ventoy 磁碟正在光碟機中。請先在媒體對話框中退出，再解除安裝。'
+      },
       netboot: {
         title: '網路開機',
+        isoDownload: '下載',
         description:
           '從網路開機主機：透過 USB 網路連結提供 iPXE 與 KVM 上映像檔的選單，或在區域網路上透過代理 DHCP 提供 netboot.xyz。',
         addon: 'dnsmasq 與開機檔案',
@@ -1545,7 +1552,9 @@ const zh_tw = {
       failed: '上次更新失敗：{{error}}'
     },
     menu: {
-      mediaNetboot: '網路開機設定',
+      mediaAdd: '新增映像',
+      mediaMoreOptions: '更多選項',
+      mediaSettings: '媒體設定',
       collapse: '收起選單',
       expand: '展開選單',
       more: '更多',
@@ -1555,7 +1564,6 @@ const zh_tw = {
       advanced: '進階',
       mediaMounted: '已掛載',
       mediaLibrary: '映像庫',
-      mediaBoot: '開機',
       textToHost: '傳送到主機',
       textFromHost: '從主機讀取'
     },

@@ -18,15 +18,17 @@ function isISO(file: File) {
   return file.name.toLowerCase().endsWith('.iso');
 }
 
-// Where a transfer was started from. The Media dialog shows the progress next
-// to the control that started it: the library form or the boot menu button.
+// Where a transfer was started from. The progress shows next to the control
+// that started it: the Media dialog's add image form, or the boot menu button
+// on the Network boot settings page.
 export type Origin = 'library' | 'boot';
 
 export type ImageTransfer = ReturnType<typeof useImageTransfer>;
 
 // useImageTransfer holds the one image transfer the server runs at a time: a
 // download from a URL, the boot menu download, or an upload from this browser.
-// The Media dialog calls handleOpenChange as it opens and closes.
+// The Media dialog calls handleOpenChange as it opens and closes; the Network
+// boot settings page calls it as it opens.
 export function useImageTransfer() {
   const { t } = useTranslation();
 
@@ -52,6 +54,17 @@ export function useImageTransfer() {
 
   useEffect(() => {
     checkDiskEnabled();
+  }, []);
+
+  // A page that goes away stops watching the transfer. The Media dialog never
+  // does; the Network boot settings page does when another tab is chosen.
+  useEffect(() => {
+    const generation = pollingGeneration;
+    const timer = intervalId;
+    return () => {
+      generation.current += 1;
+      clearInterval(timer.current);
+    };
   }, []);
 
   function checkDiskEnabled() {

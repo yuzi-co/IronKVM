@@ -593,7 +593,7 @@ const id = {
         network: 'Jaringan',
         access: 'Akses',
         integrations: 'Integrasi',
-        boot: 'Boot',
+        boot: 'Boot dan media',
         browser: 'Browser ini',
         search: 'Cari pengaturan',
         noMatch: 'Tidak ada pengaturan yang cocok',
@@ -855,8 +855,16 @@ const id = {
         noLedConfirmOk: 'Aktifkan',
         cancel: 'Batal'
       },
+      media: {
+        title: 'Media virtual',
+        description:
+          'Penyiapan untuk dialog Media di bilah alat. Memasang image, menambahkannya, dan memilih set Ventoy dilakukan di dialog.',
+        ejectFirst:
+          'Disk Ventoy ada di dalam drive. Keluarkan di dialog Media untuk mencopot pemasangan.'
+      },
       netboot: {
         title: 'Boot jaringan',
+        isoDownload: 'Unduh',
         description:
           'Boot host dari jaringan: iPXE dan menu image di KVM lewat tautan jaringan USB, atau netboot.xyz lewat proxy DHCP di LAN.',
         addon: 'dnsmasq dan file boot',
@@ -1614,7 +1622,9 @@ const id = {
       failed: 'Pembaruan terakhir gagal: {{error}}'
     },
     menu: {
-      mediaNetboot: 'Pengaturan boot jaringan',
+      mediaAdd: 'Tambah image',
+      mediaMoreOptions: 'Opsi lainnya',
+      mediaSettings: 'Pengaturan media',
       collapse: 'Tutup Menu',
       expand: 'Perluas Menu',
       more: 'Lainnya',
@@ -1624,7 +1634,6 @@ const id = {
       advanced: 'Lanjutan',
       mediaMounted: 'Terpasang',
       mediaLibrary: 'Pustaka',
-      mediaBoot: 'Boot',
       textToHost: 'Ke host',
       textFromHost: 'Dari host'
     },

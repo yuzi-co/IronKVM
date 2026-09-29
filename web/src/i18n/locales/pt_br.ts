@@ -593,7 +593,7 @@ const pt_br = {
         network: 'Rede',
         access: 'Acesso',
         integrations: 'Integrações',
-        boot: 'Inicialização',
+        boot: 'Inicialização e mídia',
         browser: 'Este navegador',
         search: 'Buscar uma configuração',
         noMatch: 'Nenhuma configuração encontrada',
@@ -858,8 +858,16 @@ const pt_br = {
         noLedConfirmOk: 'Ativar',
         cancel: 'Cancelar'
       },
+      media: {
+        title: 'Mídia virtual',
+        description:
+          'Configuração da janela Mídia da barra de ferramentas. Montar imagens, adicioná-las e escolher o conjunto do Ventoy é feito na janela.',
+        ejectFirst:
+          'O disco do Ventoy está em uma unidade. Ejete-o na janela Mídia para desinstalar.'
+      },
       netboot: {
         title: 'Boot pela rede',
+        isoDownload: 'Baixar',
         description:
           'Inicializar o host pela rede: iPXE e um menu das imagens no KVM pelo link de rede USB, ou netboot.xyz por proxy DHCP na LAN.',
         addon: 'dnsmasq e arquivos de boot',
@@ -1619,7 +1627,9 @@ const pt_br = {
       failed: 'A última atualização falhou: {{error}}'
     },
     menu: {
-      mediaNetboot: 'Configurações de boot pela rede',
+      mediaAdd: 'Adicionar imagem',
+      mediaMoreOptions: 'Mais opções',
+      mediaSettings: 'Configurações de mídia',
       collapse: 'Recolher Menu',
       expand: 'Expandir Menu',
       more: 'Mais',
@@ -1629,7 +1639,6 @@ const pt_br = {
       advanced: 'Avançado',
       mediaMounted: 'Montado',
       mediaLibrary: 'Biblioteca',
-      mediaBoot: 'Inicialização',
       textToHost: 'Para o host',
       textFromHost: 'Do host'
     },

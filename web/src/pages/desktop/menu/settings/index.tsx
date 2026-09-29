@@ -8,6 +8,7 @@ import {
   BadgeInfoIcon,
   BotIcon,
   CircleArrowUpIcon,
+  DiscIcon,
   GaugeIcon,
   HeartPulseIcon,
   KeyRoundIcon,
@@ -42,6 +43,7 @@ import { APIKeys } from './api-keys';
 import { Device } from './device';
 import { Ipmi } from './ipmi';
 import { MCP } from './mcp';
+import { VirtualMedia } from './media';
 import { SettingsNav } from './nav-context.ts';
 import {
   browserStorage,
@@ -195,6 +197,12 @@ export const Settings = () => {
             group: 'boot',
             icon: <MonitorDownIcon {...icon16} />,
             component: <Netboot setIsLocked={setIsLocked} />
+          },
+          {
+            id: 'media',
+            group: 'boot',
+            icon: <DiscIcon {...icon16} />,
+            component: <VirtualMedia setIsLocked={setIsLocked} />
           }
         ] satisfies Tab[])
       : [])

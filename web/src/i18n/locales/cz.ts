@@ -590,7 +590,7 @@ const cz = {
         network: 'Síť',
         access: 'Přístup',
         integrations: 'Integrace',
-        boot: 'Spouštění',
+        boot: 'Spouštění a média',
         browser: 'Tento prohlížeč',
         search: 'Najít nastavení',
         noMatch: 'Žádné nastavení neodpovídá',
@@ -848,8 +848,15 @@ const cz = {
         noLedConfirmOk: 'Zapnout',
         cancel: 'Zrušit'
       },
+      media: {
+        title: 'Virtuální média',
+        description:
+          'Nastavení dialogu Média na panelu nástrojů. Připojení obrazů, jejich přidání a výběr sady pro Ventoy probíhá v dialogu.',
+        ejectFirst: 'Disk Ventoy je v jednotce. Pro odinstalaci jej vysuňte v dialogu Média.'
+      },
       netboot: {
         title: 'Síťové spuštění',
+        isoDownload: 'Stáhnout',
         description:
           'Spustit hostitele ze sítě: iPXE a nabídka obrazů na KVM přes síťové propojení USB, nebo netboot.xyz přes proxy DHCP v síti LAN.',
         addon: 'dnsmasq a zaváděcí soubory',
@@ -1604,7 +1611,9 @@ const cz = {
       failed: 'Poslední aktualizace selhala: {{error}}'
     },
     menu: {
-      mediaNetboot: 'Nastavení síťového bootu',
+      mediaAdd: 'Přidat obraz',
+      mediaMoreOptions: 'Další možnosti',
+      mediaSettings: 'Nastavení médií',
       collapse: 'Sbalit nabídku',
       expand: 'Rozbalte nabídku',
       more: 'Více',
@@ -1614,7 +1623,6 @@ const cz = {
       advanced: 'Pokročilé',
       mediaMounted: 'Připojeno',
       mediaLibrary: 'Knihovna',
-      mediaBoot: 'Spouštění',
       textToHost: 'Do hostitele',
       textFromHost: 'Z hostitele'
     },
