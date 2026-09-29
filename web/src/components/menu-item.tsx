@@ -19,7 +19,7 @@ type MenuItemProps = {
 
 // The row look shared by entries that sit inside a menu rather than on the bar.
 export const menuRowClassName =
-  'flex h-[30px] w-full cursor-pointer items-center space-x-2 rounded p-0 px-3 text-left text-neutral-300 hover:bg-neutral-700/70';
+  'box-border flex h-[30px] w-full cursor-pointer items-center space-x-2 rounded p-0 px-3 text-left text-neutral-300 hover:bg-neutral-700/70';
 
 export const MenuItem = ({
   title,

@@ -142,7 +142,7 @@ export const Screen = () => {
   const tone = streamTone[stream];
   const title = tone ? `${t('screen.title')}: ${t(`screen.stream.${stream}`)}` : t('screen.title');
   const icon = (
-    <div className="relative">
+    <div className="relative flex h-[18px] w-[18px]">
       <MonitorIcon size={18} />
       {tone && <StatusDot tone={tone} />}
     </div>

@@ -129,7 +129,7 @@ export const Media = () => {
           className="flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded p-0 text-neutral-300 hover:bg-neutral-700 hover:text-white"
           onClick={() => toggleModal(true)}
         >
-          <div className="relative">
+          <div className="relative flex h-[18px] w-[18px]">
             <DiscIcon size={18} />
             {isMounted && <StatusDot tone={hasWarning ? 'warning' : 'active'} />}
           </div>

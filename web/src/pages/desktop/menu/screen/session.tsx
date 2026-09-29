@@ -9,7 +9,7 @@ import { getScreenshot } from '@/api/stream.ts';
 import { pauseWhenHiddenAtom, viewOnlyAtom } from '@/jotai/screen.ts';
 
 const rowClass =
-  'flex h-[30px] w-full items-center space-x-2 rounded p-0 pr-5 pl-3 text-left text-neutral-300';
+  'box-border flex h-[30px] w-full items-center space-x-2 rounded p-0 pr-5 pl-3 text-left text-neutral-300';
 
 // toPng re-encodes the board's JPEG as PNG, so a screenshot edited and saved
 // again loses nothing more.

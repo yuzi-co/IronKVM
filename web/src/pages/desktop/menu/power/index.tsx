@@ -63,7 +63,7 @@ export const Power = () => {
   const showHdd = hasHdd && ledConnected;
 
   const icon = (
-    <div className="relative h-[18px] w-[18px]">
+    <div className="relative flex h-[18px] w-[18px]">
       {isLoading ? (
         <LoaderCircleIcon className="animate-spin" size={18} />
       ) : (
