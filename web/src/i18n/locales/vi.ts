@@ -1103,15 +1103,13 @@ const vi = {
           pending: 'Các thay đổi chưa được áp dụng.'
         },
         endpoints: {
-          title: 'Endpoint USB',
-          used: 'Đã dùng {{used}} / {{total}}',
-          cost: 'dùng {{cost}}',
-          needs: 'cần {{cost}}',
-          full: 'Không đủ endpoint USB. Hãy tắt một mục khác trước.',
-          inactive:
-            'Đã bật nhưng không chạy: bộ điều khiển USB đã hết endpoint. Tắt một thiết bị khác và thiết bị này sẽ khởi động ngay.',
-          explain:
-            'Bộ điều khiển USB có một số lượng endpoint đầu vào cố định, và đây là số đếm của chúng. Nếu số thiết bị được bật vượt quá sức chứa, bàn phím và chuột được giữ lại, phần còn lại bị tắt.',
+          title: 'Khe USB',
+          free: 'Còn trống {{free}}/{{total}}',
+          slots: 'Khe: {{count}}',
+          short: 'Không đủ khe trống (còn {{free}})',
+          full: 'Không đủ khe USB trống. Hãy tắt thứ khác trước.',
+          inactive: 'Đang bật nhưng không chạy: bộ điều khiển USB đã hết khe. Tắt một thiết bị khác và thiết bị này sẽ chạy ngay.',
+          explain: 'Bộ điều khiển USB có số khe (endpoint vào) cố định, và bàn phím cùng chuột luôn dùng một phần. Nếu bật nhiều thiết bị hơn số khe có, bàn phím và chuột được giữ lại, phần còn lại bị tắt.',
           error: 'Không kết nối được thiết bị. Hãy thử lại.',
           fitTogether: 'Có thể dùng cùng nhau: {{sets}}'
         },

@@ -1127,15 +1127,13 @@ const it = {
           pending: 'Le modifiche non sono ancora state applicate.'
         },
         endpoints: {
-          title: 'Endpoint USB',
-          used: '{{used}} di {{total}} in uso',
-          cost: 'ne usa {{cost}}',
-          needs: 'ne richiede {{cost}}',
-          full: "Endpoint USB insufficienti. Disattiva prima qualcos'altro.",
-          inactive:
-            'Attivo, ma non in funzione: il controller USB ha esaurito gli endpoint. Disattiva un altro dispositivo e questo si avvia subito.',
-          explain:
-            'Il controller USB ha un numero fisso di endpoint in ingresso, e questo li conta. Se sono abilitati più dispositivi di quanti ne entrino, tastiera e mouse vengono mantenuti e gli altri disattivati.',
+          title: 'Slot USB',
+          free: '{{free}} di {{total}} liberi',
+          slots: 'Slot: {{count}}',
+          short: 'Slot liberi insufficienti ({{free}} liberi)',
+          full: "Slot USB liberi insufficienti. Disattiva prima qualcos'altro.",
+          inactive: 'Attivo, ma non in funzione: il controller USB ha esaurito gli slot. Disattiva un altro dispositivo e questo si avvia subito.',
+          explain: 'Il controller USB ha un numero fisso di slot (endpoint in ingresso), e tastiera e mouse ne occupano sempre alcuni. Se sono attivi più dispositivi di quanti ne entrino, tastiera e mouse restano e gli altri vengono disattivati.',
           error: 'Impossibile raggiungere il dispositivo. Riprova.',
           fitTogether: 'Stanno insieme: {{sets}}'
         },

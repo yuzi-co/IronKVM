@@ -1123,15 +1123,13 @@ const nl = {
           pending: 'De wijzigingen zijn nog niet toegepast.'
         },
         endpoints: {
-          title: 'USB-endpoints',
-          used: '{{used}} van {{total}} gebruikt',
-          cost: 'gebruikt {{cost}}',
-          needs: 'heeft {{cost}} nodig',
-          full: 'Niet genoeg USB-endpoints. Schakel eerst iets anders uit.',
-          inactive:
-            'Aan, maar niet actief: de USB-controller heeft geen endpoints meer. Schakel een ander apparaat uit en dit apparaat start meteen.',
-          explain:
-            'De USB-controller heeft een vast aantal inkomende endpoints, en die worden hier geteld. Als er meer apparaten zijn ingeschakeld dan er passen, blijven toetsenbord en muis behouden en wordt de rest uitgeschakeld.',
+          title: 'USB-plaatsen',
+          free: '{{free}} van {{total}} vrij',
+          slots: 'Plaatsen: {{count}}',
+          short: 'Niet genoeg vrije plaatsen ({{free}} vrij)',
+          full: 'Niet genoeg vrije USB-plaatsen. Zet eerst iets anders uit.',
+          inactive: 'Aan, maar draait niet: de USB-controller heeft geen plaatsen meer. Zet een ander apparaat uit en dit start meteen.',
+          explain: 'De USB-controller heeft een vast aantal plaatsen (inkomende endpoints), en toetsenbord en muis nemen er altijd een paar. Staan er meer apparaten aan dan er passen, dan blijven toetsenbord en muis en gaat de rest uit.',
           error: 'Kan het apparaat niet bereiken. Probeer het opnieuw.',
           fitTogether: 'Deze passen samen: {{sets}}'
         },

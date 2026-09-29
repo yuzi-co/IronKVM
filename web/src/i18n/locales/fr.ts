@@ -1132,15 +1132,13 @@ const fr = {
           pending: 'Les modifications ne sont pas encore appliquées.'
         },
         endpoints: {
-          title: 'Endpoints USB',
-          used: '{{used}} sur {{total}} utilisés',
-          cost: 'utilise {{cost}}',
-          needs: 'nécessite {{cost}}',
-          full: "Pas assez d'endpoints USB. Désactivez d'abord autre chose.",
-          inactive:
-            "Activé, mais inactif : le contrôleur USB n'a plus d'endpoints. Désactivez un autre périphérique et celui-ci démarre aussitôt.",
-          explain:
-            "Le contrôleur USB dispose d'un nombre fixe d'endpoints entrants, et c'est eux que l'on compte ici. Si plus de périphériques sont activés qu'il n'y a de place, le clavier et la souris sont conservés et le reste est désactivé.",
+          title: 'Emplacements USB',
+          free: '{{free}} sur {{total}} libres',
+          slots: 'Emplacements : {{count}}',
+          short: "Pas assez d'emplacements libres ({{free}} libres)",
+          full: "Pas assez d'emplacements USB libres. Désactivez d'abord autre chose.",
+          inactive: "Activé, mais ne tourne pas : le contrôleur USB n'a plus d'emplacements. Désactivez un autre périphérique et celui-ci démarre aussitôt.",
+          explain: "Le contrôleur USB a un nombre fixe d'emplacements (endpoints entrants), et le clavier et la souris en prennent toujours quelques-uns. Si plus de périphériques sont activés qu'il n'y a de place, le clavier et la souris sont gardés et les autres désactivés.",
           error: "Impossible de joindre l'appareil. Réessayez.",
           fitTogether: 'Compatibles ensemble : {{sets}}'
         },

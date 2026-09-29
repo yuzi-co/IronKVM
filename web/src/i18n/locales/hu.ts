@@ -1124,15 +1124,13 @@ const hu = {
           pending: 'A módosítások még nincsenek alkalmazva.'
         },
         endpoints: {
-          title: 'USB-végpontok',
-          used: '{{used}} / {{total}} használatban',
-          cost: '{{cost}} foglalt',
-          needs: '{{cost}} szükséges',
-          full: 'Nincs elég USB-végpont. Előbb kapcsoljon ki valami mást.',
-          inactive:
-            'Bekapcsolva, de nem fut: az USB-vezérlőnek elfogytak a végpontjai. Kapcsoljon ki egy másik eszközt, és ez azonnal elindul.',
-          explain:
-            'Az USB-vezérlőnek rögzített számú bemeneti végpontja van, ez a számláló ezeket mutatja. Ha több eszköz van engedélyezve, mint amennyi elfér, a billentyűzet és az egér megmarad, a többi kikapcsol.',
+          title: 'USB-helyek',
+          free: '{{free}} / {{total}} szabad',
+          slots: 'Helyek: {{count}}',
+          short: 'Nincs elég szabad hely ({{free}} szabad)',
+          full: 'Nincs elég szabad USB-hely. Először kapcsolj ki valami mást.',
+          inactive: 'Bekapcsolva, de nem fut: az USB-vezérlő kifogyott a helyekből. Kapcsolj ki egy másik eszközt, és ez azonnal elindul.',
+          explain: 'Az USB-vezérlőnek rögzített számú helye (bejövő endpointja) van, és a billentyűzet meg az egér mindig foglal belőlük. Ha több eszköz van bekapcsolva, mint amennyi elfér, a billentyűzet és az egér megmarad, a többi kikapcsol.',
           error: 'Az eszköz nem érhető el. Próbálja újra.',
           fitTogether: 'Ezek együtt elférnek: {{sets}}'
         },

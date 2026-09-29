@@ -27,6 +27,8 @@ type Props = {
   subnet: string;
   // Whether the link can be switched on beside the rest of the draft.
   fits: boolean;
+  // Free slots beside the rest of the draft, for the row that does not fit.
+  free: number;
   changed: boolean;
   disabled: boolean;
   onChange: (mode: UsbNetworkMode, subnet: string) => void;
@@ -40,6 +42,7 @@ export const UsbNetwork = ({
   mode,
   subnet,
   fits,
+  free,
   changed,
   disabled,
   onChange
@@ -95,10 +98,15 @@ export const UsbNetwork = ({
         </div>
 
         <div className="flex items-center space-x-3">
-          <span id="endpoint-cost-network" className="text-xs text-neutral-500">
-            {mode !== 'off'
-              ? t('settings.device.endpoints.cost', { cost })
-              : t('settings.device.endpoints.needs', { cost })}
+          <span
+            id="endpoint-cost-network"
+            className={
+              mode !== 'off' || fits ? 'text-xs text-neutral-500' : 'text-xs text-amber-500'
+            }
+          >
+            {mode !== 'off' || fits
+              ? t('settings.device.endpoints.slots', { count: cost })
+              : t('settings.device.endpoints.short', { free })}
           </span>
 
           {/* The span keeps the tooltip working over a disabled switch; see

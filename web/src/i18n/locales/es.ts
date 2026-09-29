@@ -1128,15 +1128,13 @@ const es = {
           pending: 'Los cambios aún no se han aplicado.'
         },
         endpoints: {
-          title: 'Endpoints USB',
-          used: '{{used}} de {{total}} en uso',
-          cost: 'usa {{cost}}',
-          needs: 'necesita {{cost}}',
-          full: 'No hay suficientes endpoints USB. Desactiva otra cosa primero.',
-          inactive:
-            'Activado, pero sin funcionar: el controlador USB se quedó sin endpoints. Desactiva otro dispositivo y este arrancará de inmediato.',
-          explain:
-            'El controlador USB tiene un número fijo de endpoints de entrada, y esto los cuenta. Si se activan más dispositivos de los que caben, se conservan el teclado y el ratón y el resto se desactiva.',
+          title: 'Ranuras USB',
+          free: '{{free}} de {{total}} libres',
+          slots: 'Ranuras: {{count}}',
+          short: 'No hay suficientes ranuras libres ({{free}} libres)',
+          full: 'No hay suficientes ranuras USB libres. Apague primero otra cosa.',
+          inactive: 'Activado, pero sin funcionar: el controlador USB se quedó sin ranuras. Apague otro dispositivo y este arrancará al momento.',
+          explain: 'El controlador USB tiene un número fijo de ranuras (endpoints de entrada), y el teclado y el ratón siempre ocupan algunas. Si hay más dispositivos activados de los que caben, se mantienen el teclado y el ratón y el resto se apaga.',
           error: 'No se pudo contactar con el dispositivo. Inténtalo de nuevo.',
           fitTogether: 'Caben juntos: {{sets}}'
         },

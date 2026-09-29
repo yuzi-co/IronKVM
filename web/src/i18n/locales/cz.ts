@@ -1102,15 +1102,13 @@ const cz = {
           pending: 'Změny zatím nejsou použity.'
         },
         endpoints: {
-          title: 'Koncové body USB',
-          used: 'Využito {{used}} z {{total}}',
-          cost: 'využívá {{cost}}',
-          needs: 'potřebuje {{cost}}',
-          full: 'Nedostatek koncových bodů USB. Nejprve vypněte něco jiného.',
-          inactive:
-            'Zapnuto, ale neběží: řadiči USB došly koncové body. Vypněte jiné zařízení a toto se ihned spustí.',
-          explain:
-            'Řadič USB má pevný počet vstupních koncových bodů a tento údaj je počítá. Pokud je povoleno více zařízení, než se vejde, klávesnice a myš zůstanou zachovány a ostatní se vypnou.',
+          title: 'USB sloty',
+          free: '{{free}} z {{total}} volných',
+          slots: 'Sloty: {{count}}',
+          short: 'Nedostatek volných slotů (volné: {{free}})',
+          full: 'Nedostatek volných USB slotů. Nejprve vypněte něco jiného.',
+          inactive: 'Zapnuto, ale neběží: USB řadiči došly sloty. Vypněte jiné zařízení a toto se hned spustí.',
+          explain: 'USB řadič má pevný počet slotů (vstupních endpointů) a klávesnice s myší vždy některé zabírají. Pokud je zapnuto více zařízení, než se vejde, klávesnice a myš zůstanou a ostatní se vypnou.',
           error: 'Zařízení nelze kontaktovat. Zkuste to znovu.',
           fitTogether: 'Společně se vejdou: {{sets}}'
         },

@@ -172,10 +172,13 @@ export const VirtualDevices = () => {
         </div>
 
         <div className="flex items-center space-x-3">
-          <span id={`endpoint-cost-${device}`} className="text-xs text-neutral-500">
-            {on
-              ? t('settings.device.endpoints.cost', { cost: state.cost })
-              : t('settings.device.endpoints.needs', { cost: state.cost })}
+          <span
+            id={`endpoint-cost-${device}`}
+            className={on || fits ? 'text-xs text-neutral-500' : 'text-xs text-amber-500'}
+          >
+            {on || fits
+              ? t('settings.device.endpoints.slots', { count: state.cost })
+              : t('settings.device.endpoints.short', { free: Math.max(0, free) })}
           </span>
 
           {/* antd clones the Tooltip child directly, and a disabled native
@@ -203,7 +206,10 @@ export const VirtualDevices = () => {
         <div className="flex items-center justify-between">
           <span>{t('settings.device.endpoints.title')}</span>
           <span className="text-xs text-neutral-500">
-            {t('settings.device.endpoints.used', { used, total: devices.total })}
+            {t('settings.device.endpoints.free', {
+              free: Math.max(0, free),
+              total: devices.total
+            })}
           </span>
         </div>
 
@@ -241,6 +247,7 @@ export const VirtualDevices = () => {
         mode={draft.network}
         subnet={draft.subnet}
         fits={fitsInDraft(draft, devices, 'network')}
+        free={Math.max(0, free)}
         changed={changed.includes('network')}
         disabled={applying}
         onChange={(mode, subnet) => setDraft({ ...draft, network: mode, subnet })}

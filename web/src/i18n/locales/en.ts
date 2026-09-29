@@ -1097,15 +1097,13 @@ const en = {
           pending: 'Changes are not applied yet.'
         },
         endpoints: {
-          title: 'USB endpoints',
-          used: '{{used}} of {{total}} used',
-          cost: 'uses {{cost}}',
-          needs: 'needs {{cost}}',
-          full: 'Not enough USB endpoints. Turn something else off first.',
-          inactive:
-            'On, but not running: the USB controller ran out of endpoints. Turn another device off and this one starts straight away.',
-          explain:
-            'The USB controller has a fixed number of inbound endpoints, and this counts those. If more devices are enabled than fit, the keyboard and mouse are kept and the rest are turned off.',
+          title: 'USB slots',
+          free: '{{free}} of {{total}} free',
+          slots: 'Slots: {{count}}',
+          short: 'Not enough free slots ({{free}} free)',
+          full: 'Not enough free USB slots. Turn something else off first.',
+          inactive: 'On, but not running: the USB controller ran out of slots. Turn another device off and this one starts straight away.',
+          explain: 'The USB controller has a fixed number of slots (inbound endpoints), and the keyboard and mouse always take some. If more devices are on than fit, the keyboard and mouse are kept and the rest are turned off.',
           error: 'Could not reach the device. Try again.',
           fitTogether: 'These fit together: {{sets}}'
         },

@@ -1108,15 +1108,13 @@ const tr = {
           pending: 'Değişiklikler henüz uygulanmadı.'
         },
         endpoints: {
-          title: 'USB uç noktaları',
-          used: '{{used}} / {{total}} kullanımda',
-          cost: '{{cost}} kullanıyor',
-          needs: '{{cost}} gerekli',
-          full: 'Yeterli USB uç noktası yok. Önce başka bir şeyi kapatın.',
-          inactive:
-            'Açık, ancak çalışmıyor: USB denetleyicisinin uç noktaları tükendi. Başka bir aygıtı kapatın, bu aygıt hemen başlar.',
-          explain:
-            'USB denetleyicisinin sabit sayıda giriş uç noktası vardır ve bu sayaç onları sayar. Sığabilecek olandan fazla aygıt etkinse klavye ve fare korunur, diğerleri kapatılır.',
+          title: 'USB yuvaları',
+          free: '{{total}} yuvadan {{free}} boş',
+          slots: 'Yuva: {{count}}',
+          short: 'Yeterli boş yuva yok ({{free}} boş)',
+          full: 'Yeterli boş USB yuvası yok. Önce başka bir şeyi kapatın.',
+          inactive: 'Açık ama çalışmıyor: USB denetleyicisinin yuvaları bitti. Başka bir aygıtı kapatın, bu hemen başlar.',
+          explain: 'USB denetleyicisinin sabit sayıda yuvası (giriş uç noktası) vardır ve klavye ile fare her zaman bir kısmını kullanır. Sığabilecek olandan fazla aygıt açıksa klavye ve fare kalır, geri kalanı kapatılır.',
           error: 'Cihaza ulaşılamadı. Tekrar deneyin.',
           fitTogether: 'Birlikte sığanlar: {{sets}}'
         },

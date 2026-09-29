@@ -1105,15 +1105,13 @@ const da = {
           pending: 'Ændringerne er ikke anvendt endnu.'
         },
         endpoints: {
-          title: 'USB-endpoints',
-          used: '{{used}} af {{total}} brugt',
-          cost: 'bruger {{cost}}',
-          needs: 'kræver {{cost}}',
-          full: 'Ikke nok USB-endpoints. Slå noget andet fra først.',
-          inactive:
-            'Slået til, men kører ikke: USB-controlleren løb tør for endpoints. Slå en anden enhed fra, så starter denne med det samme.',
-          explain:
-            'USB-controlleren har et fast antal indgående endpoints, og det er dem, der tælles her. Hvis flere enheder er slået til, end der er plads til, beholdes tastatur og mus, og resten slås fra.',
+          title: 'USB-pladser',
+          free: '{{free}} af {{total}} ledige',
+          slots: 'Pladser: {{count}}',
+          short: 'Ikke nok ledige pladser ({{free}} ledige)',
+          full: 'Ikke nok ledige USB-pladser. Slå noget andet fra først.',
+          inactive: 'Tændt, men kører ikke: USB-controlleren løb tør for pladser. Slå en anden enhed fra, så starter denne med det samme.',
+          explain: 'USB-controlleren har et fast antal pladser (indgående endpoints), og tastatur og mus optager altid nogle. Er flere enheder tændt, end der er plads til, beholdes tastatur og mus, og resten slås fra.',
           error: 'Kunne ikke nå enheden. Prøv igen.',
           fitTogether: 'Disse passer sammen: {{sets}}'
         },

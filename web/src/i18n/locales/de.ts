@@ -1139,15 +1139,13 @@ const de = {
           pending: 'Die Änderungen sind noch nicht übernommen.'
         },
         endpoints: {
-          title: 'USB-Endpunkte',
-          used: '{{used}} von {{total}} belegt',
-          cost: 'belegt {{cost}}',
-          needs: 'benötigt {{cost}}',
-          full: 'Nicht genügend USB-Endpunkte. Schalten Sie zuerst etwas anderes aus.',
-          inactive:
-            'Aktiviert, aber nicht aktiv: Dem USB-Controller sind die Endpunkte ausgegangen. Schalten Sie ein anderes Gerät aus, dann startet dieses sofort.',
-          explain:
-            'Der USB-Controller hat eine feste Anzahl eingehender Endpunkte, und diese werden hier gezählt. Sind mehr Geräte aktiviert als hineinpassen, bleiben Tastatur und Maus erhalten und der Rest wird ausgeschaltet.',
+          title: 'USB-Plätze',
+          free: '{{free}} von {{total}} frei',
+          slots: 'Plätze: {{count}}',
+          short: 'Nicht genug freie Plätze ({{free}} frei)',
+          full: 'Nicht genug freie USB-Plätze. Schalte zuerst etwas anderes aus.',
+          inactive: 'Eingeschaltet, läuft aber nicht: Dem USB-Controller sind die Plätze ausgegangen. Schalte ein anderes Gerät aus, dann startet dieses sofort.',
+          explain: 'Der USB-Controller hat eine feste Zahl an Plätzen (eingehende Endpoints), und Tastatur und Maus belegen immer einige. Sind mehr Geräte an, als Platz haben, bleiben Tastatur und Maus, und der Rest wird ausgeschaltet.',
           error: 'Das Gerät ist nicht erreichbar. Bitte erneut versuchen.',
           fitTogether: 'Diese passen zusammen: {{sets}}'
         },

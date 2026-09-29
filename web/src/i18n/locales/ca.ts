@@ -1121,15 +1121,13 @@ const ca = {
           pending: "Els canvis encara no s'han aplicat."
         },
         endpoints: {
-          title: 'Endpoints USB',
-          used: '{{used}} de {{total}} en ús',
-          cost: 'en fa servir {{cost}}',
-          needs: 'en necessita {{cost}}',
-          full: 'No hi ha prou endpoints USB. Primer desactiveu alguna altra cosa.',
-          inactive:
-            "Activat, però no funciona: el controlador USB s'ha quedat sense endpoints. Desactiveu un altre dispositiu i aquest s'iniciarà immediatament.",
-          explain:
-            "El controlador USB té un nombre fix d'endpoints d'entrada, i això els compta. Si s'activen més dispositius dels que hi caben, es conserven el teclat i el ratolí i la resta es desactiven.",
+          title: 'Ranures USB',
+          free: '{{free}} de {{total}} lliures',
+          slots: 'Ranures: {{count}}',
+          short: 'No hi ha prou ranures lliures ({{free}} lliures)',
+          full: 'No hi ha prou ranures USB lliures. Apagueu primer una altra cosa.',
+          inactive: "Activat, però no funciona: el controlador USB s'ha quedat sense ranures. Apagueu un altre dispositiu i aquest s'iniciarà de seguida.",
+          explain: "El controlador USB té un nombre fix de ranures (endpoints d'entrada), i el teclat i el ratolí sempre n'ocupen algunes. Si hi ha més dispositius activats dels que hi caben, es mantenen el teclat i el ratolí i la resta s'apaguen.",
           error: "No s'ha pogut contactar amb el dispositiu. Torneu-ho a provar.",
           fitTogether: 'Caben junts: {{sets}}'
         },

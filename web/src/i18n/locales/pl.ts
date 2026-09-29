@@ -1115,15 +1115,13 @@ const pl = {
           pending: 'Zmiany nie zostały jeszcze zastosowane.'
         },
         endpoints: {
-          title: 'Punkty końcowe USB',
-          used: 'Użyto {{used}} z {{total}}',
-          cost: 'używa {{cost}}',
-          needs: 'wymaga {{cost}}',
-          full: 'Za mało punktów końcowych USB. Najpierw wyłącz coś innego.',
-          inactive:
-            'Włączone, ale nie działa: kontrolerowi USB zabrakło punktów końcowych. Wyłącz inne urządzenie, a to uruchomi się od razu.',
-          explain:
-            'Kontroler USB ma stałą liczbę wejściowych punktów końcowych i to one są tu liczone. Jeśli włączono więcej urządzeń, niż się mieści, klawiatura i mysz zostają, a reszta jest wyłączana.',
+          title: 'Gniazda USB',
+          free: 'Wolne: {{free}} z {{total}}',
+          slots: 'Gniazda: {{count}}',
+          short: 'Za mało wolnych gniazd (wolne: {{free}})',
+          full: 'Za mało wolnych gniazd USB. Najpierw wyłącz coś innego.',
+          inactive: 'Włączone, ale nie działa: kontrolerowi USB zabrakło gniazd. Wyłącz inne urządzenie, a to uruchomi się od razu.',
+          explain: 'Kontroler USB ma stałą liczbę gniazd (wejściowych endpointów), a klawiatura i mysz zawsze zajmują część z nich. Jeśli włączonych urządzeń jest więcej, niż się mieści, klawiatura i mysz zostają, a reszta zostaje wyłączona.',
           error: 'Nie udało się połączyć z urządzeniem. Spróbuj ponownie.',
           fitTogether: 'Razem mieszczą się: {{sets}}'
         },

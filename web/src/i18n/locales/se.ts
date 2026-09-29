@@ -1109,15 +1109,13 @@ const se = {
           pending: 'Ändringarna har inte tillämpats än.'
         },
         endpoints: {
-          title: 'USB-slutpunkter',
-          used: '{{used}} av {{total}} används',
-          cost: 'använder {{cost}}',
-          needs: 'behöver {{cost}}',
-          full: 'Inte tillräckligt med USB-slutpunkter. Stäng av något annat först.',
-          inactive:
-            'På, men körs inte: USB-styrenheten fick slut på slutpunkter. Stäng av en annan enhet så startar den här direkt.',
-          explain:
-            'USB-styrenheten har ett fast antal inkommande slutpunkter, och det är dem som räknas här. Om fler enheter är aktiverade än det finns plats för behålls tangentbord och mus, och resten stängs av.',
+          title: 'USB-platser',
+          free: '{{free}} av {{total}} lediga',
+          slots: 'Platser: {{count}}',
+          short: 'Inte tillräckligt med lediga platser ({{free}} lediga)',
+          full: 'Inte tillräckligt med lediga USB-platser. Stäng av något annat först.',
+          inactive: 'På, men körs inte: USB-styrenheten fick slut på platser. Stäng av en annan enhet så startar den här direkt.',
+          explain: 'USB-styrenheten har ett fast antal platser (inkommande endpoints), och tangentbord och mus tar alltid några. Är fler enheter på än det finns plats för behålls tangentbord och mus, och resten stängs av.',
           error: 'Kunde inte nå enheten. Försök igen.',
           fitTogether: 'Dessa ryms tillsammans: {{sets}}'
         },

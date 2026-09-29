@@ -1118,15 +1118,13 @@ const pt_br = {
           pending: 'As alterações ainda não foram aplicadas.'
         },
         endpoints: {
-          title: 'Endpoints USB',
-          used: '{{used}} de {{total}} em uso',
-          cost: 'usa {{cost}}',
-          needs: 'precisa de {{cost}}',
-          full: 'Não há endpoints USB suficientes. Desative outra coisa primeiro.',
-          inactive:
-            'Ativado, mas sem funcionar: o controlador USB ficou sem endpoints. Desative outro dispositivo e este inicia na hora.',
-          explain:
-            'O controlador USB tem um número fixo de endpoints de entrada, e esta é a contagem deles. Se houver mais dispositivos habilitados do que cabem, o teclado e o mouse são mantidos e o resto é desativado.',
+          title: 'Slots USB',
+          free: '{{free}} de {{total}} livres',
+          slots: 'Slots: {{count}}',
+          short: 'Slots livres insuficientes ({{free}} livres)',
+          full: 'Slots USB livres insuficientes. Desligue outra coisa primeiro.',
+          inactive: 'Ligado, mas sem funcionar: o controlador USB ficou sem slots. Desligue outro dispositivo e este inicia na hora.',
+          explain: 'O controlador USB tem um número fixo de slots (endpoints de entrada), e o teclado e o mouse sempre ocupam alguns. Se houver mais dispositivos ligados do que cabem, o teclado e o mouse são mantidos e o resto é desligado.',
           error: 'Não foi possível acessar o dispositivo. Tente novamente.',
           fitTogether: 'Cabem juntos: {{sets}}'
         },
