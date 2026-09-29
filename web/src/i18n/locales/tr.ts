@@ -1016,10 +1016,6 @@ const tr = {
           usb: 'USB',
           frontPanel: 'Ön panel'
         },
-        hidModeDesc:
-          'Ana bilgisayar klavye ve fareyi kabul etmiyorsa yalnızca HID modunu deneyin. Sanal sürücüleri ve ağı kapatır.',
-        resetHidDesc:
-          'Klavye ve fareyi ana bilgisayara yeniden bağlar. Giriş çalışmayı bırakırsa kullanın.',
         cpuFreq: {
           title: 'CPU Frekansı',
           description: 'Bir sonraki açılışta uygulanacak CPU saat hızını ayarlayın',

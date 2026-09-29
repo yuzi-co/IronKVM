@@ -1029,9 +1029,6 @@ const pt_br = {
           usb: 'USB',
           frontPanel: 'Painel frontal'
         },
-        hidModeDesc:
-          'Tente o modo somente HID se o host não aceitar o teclado e o mouse. Ele desliga as unidades virtuais e a rede.',
-        resetHidDesc: 'Reconecta o teclado e o mouse ao host. Use se a entrada parar de funcionar.',
         cpuFreq: {
           title: 'Frequência da CPU',
           description: 'Defina o clock da CPU aplicado na próxima inicialização',

@@ -1015,10 +1015,6 @@ const da = {
           usb: 'USB',
           frontPanel: 'Frontpanel'
         },
-        hidModeDesc:
-          'Prøv kun HID-tilstand, hvis værten ikke accepterer tastatur og mus. Den slår de virtuelle drev og netværket fra.',
-        resetHidDesc:
-          'Tilslutter tastatur og mus til værten igen. Brug den, hvis input holder op med at virke.',
         cpuFreq: {
           title: 'CPU-frekvens',
           description: 'Indstil den CPU-takt, der bruges ved næste opstart',

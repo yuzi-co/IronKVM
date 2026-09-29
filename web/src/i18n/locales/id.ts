@@ -1023,10 +1023,6 @@ const id = {
           usb: 'USB',
           frontPanel: 'Panel depan'
         },
-        hidModeDesc:
-          'Coba mode hanya HID jika host tidak menerima keyboard dan mouse. Mode ini mematikan drive virtual dan jaringan.',
-        resetHidDesc:
-          'Menyambungkan ulang keyboard dan mouse ke host. Gunakan jika input berhenti bekerja.',
         cpuFreq: {
           title: 'Frekuensi CPU',
           description: 'Atur clock CPU yang diterapkan pada boot berikutnya',

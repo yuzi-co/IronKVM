@@ -1033,10 +1033,6 @@ const hu = {
           usb: 'USB',
           frontPanel: 'Előlap'
         },
-        hidModeDesc:
-          'Ha a gazdagép nem fogadja a billentyűzetet és az egeret, próbálja a csak HID módot. Kikapcsolja a virtuális meghajtókat és a hálózatot.',
-        resetHidDesc:
-          'Újracsatlakoztatja a billentyűzetet és az egeret a gazdagéphez. Akkor használja, ha a bevitel leáll.',
         cpuFreq: {
           title: 'CPU-frekvencia',
           description: 'A következő rendszerindításkor alkalmazott CPU-órajel beállítása',

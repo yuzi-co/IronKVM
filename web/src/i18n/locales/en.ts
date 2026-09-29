@@ -1009,10 +1009,6 @@ const en = {
           usb: 'USB',
           frontPanel: 'Front panel'
         },
-        hidModeDesc:
-          'Try HID-only mode if the host does not accept the keyboard and mouse. It turns off the virtual drives and network.',
-        resetHidDesc:
-          'Reconnects the keyboard and mouse to the host. Use it if input stops working.',
         cpuFreq: {
           title: 'CPU Frequency',
           description: 'Set the CPU clock applied at the next boot',

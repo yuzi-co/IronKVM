@@ -1013,10 +1013,6 @@ const vi = {
           usb: 'USB',
           frontPanel: 'Mặt trước'
         },
-        hidModeDesc:
-          'Hãy thử chế độ chỉ HID nếu máy chủ không nhận bàn phím và chuột. Chế độ này tắt ổ đĩa ảo và mạng.',
-        resetHidDesc:
-          'Kết nối lại bàn phím và chuột với máy chủ. Dùng khi thao tác nhập ngừng hoạt động.',
         cpuFreq: {
           title: 'Tần số CPU',
           description: 'Đặt xung nhịp CPU áp dụng ở lần khởi động tiếp theo',

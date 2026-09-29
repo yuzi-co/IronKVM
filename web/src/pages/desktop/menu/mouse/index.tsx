@@ -16,13 +16,14 @@ import { MenuItem } from '@/components/menu-item.tsx';
 
 import { Cursor } from './cursor.tsx';
 import { Direction } from './direction.tsx';
+import { HidMode } from './hid-mode.tsx';
 import { Jiggler } from './jiggler.tsx';
 import { MouseMode } from './mouse-mode.tsx';
+import { ResetHid } from './reset-hid.tsx';
 import { Speed } from './speed.tsx';
 
-// HID mode and Reset HID are device-wide and can drop input, so they are
-// settings rather than menu entries; their components stay in this folder.
-// Original resolution changes what you see, so it sits in the Screen menu.
+// HID mode and Reset HID are admin only: they change or restart the USB
+// devices every viewer's input goes through. Original resolution changes what you see, so it sits in the Screen menu.
 export const Mouse = () => {
   const { t } = useTranslation();
   const { account } = useAuth();
@@ -67,6 +68,8 @@ export const Mouse = () => {
         <>
           <Divider style={{ margin: '10px 0' }} />
           <Jiggler refreshKey={openCount} />
+          <HidMode />
+          <ResetHid />
         </>
       )}
     </div>

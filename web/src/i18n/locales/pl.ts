@@ -1024,10 +1024,6 @@ const pl = {
           usb: 'USB',
           frontPanel: 'Panel przedni'
         },
-        hidModeDesc:
-          'Jeśli host nie przyjmuje klawiatury i myszy, spróbuj trybu tylko HID. Wyłącza on napędy wirtualne i sieć.',
-        resetHidDesc:
-          'Ponownie podłącza klawiaturę i mysz do hosta. Użyj, gdy wprowadzanie przestanie działać.',
         cpuFreq: {
           title: 'Częstotliwość CPU',
           description: 'Ustaw taktowanie CPU stosowane przy następnym uruchomieniu',

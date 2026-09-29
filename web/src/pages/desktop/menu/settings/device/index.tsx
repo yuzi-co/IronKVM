@@ -1,10 +1,7 @@
 import { Divider } from 'antd';
 import { useTranslation } from 'react-i18next';
 
-import { HidMode } from '../../mouse/hid-mode.tsx';
-import { ResetHid } from '../../mouse/reset-hid.tsx';
 import { PowerLedSetting } from '../../power/power-led-setting.tsx';
-import { MenuAction } from '../components/menu-action.tsx';
 import { Hdmi } from './hdmi.tsx';
 import { Oled } from './oled.tsx';
 import { Reboot } from './reboot.tsx';
@@ -27,12 +24,6 @@ export const Device = () => {
 
         <Section title={t('settings.device.sections.usb')}>
           <VirtualDevices />
-          <MenuAction description={t('settings.device.hidModeDesc')}>
-            <HidMode />
-          </MenuAction>
-          <MenuAction description={t('settings.device.resetHidDesc')}>
-            <ResetHid />
-          </MenuAction>
         </Section>
         <Divider className="opacity-50" style={{ margin: 0 }} />
 

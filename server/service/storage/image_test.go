@@ -2,6 +2,8 @@ package storage
 
 import (
 	"errors"
+	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -167,5 +169,33 @@ func TestLegacyCdromOnAnOldGadgetIsZero(t *testing.T) {
 
 	if got, err := legacyCdrom(); err != nil || got != 0 {
 		t.Fatalf("got %d, %v, want 0", got, err)
+	}
+}
+
+func TestListImagesFindsImagesAndNeedsItsRoot(t *testing.T) {
+	root := t.TempDir()
+	write := func(name string) {
+		path := filepath.Join(root, name)
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte("x"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("a.iso")
+	write("sub/b.IMG")
+	write("notes.txt")
+
+	images, sizes, err := listImages(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(images) != 2 || sizes[filepath.Join(root, "a.iso")] != 1 {
+		t.Errorf("images = %v, sizes = %v", images, sizes)
+	}
+
+	if _, _, err := listImages(filepath.Join(root, "missing")); err == nil {
+		t.Error("a missing image directory listed without an error")
 	}
 }

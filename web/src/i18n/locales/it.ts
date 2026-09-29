@@ -1035,9 +1035,6 @@ const it = {
           usb: 'USB',
           frontPanel: 'Pannello frontale'
         },
-        hidModeDesc:
-          "Prova la modalità solo HID se l'host non accetta tastiera e mouse. Disattiva le unità virtuali e la rete.",
-        resetHidDesc: "Ricollega tastiera e mouse all'host. Usalo se l'input smette di funzionare.",
         cpuFreq: {
           title: 'Frequenza CPU',
           description: 'Imposta la frequenza della CPU applicata al prossimo avvio',

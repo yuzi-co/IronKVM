@@ -1018,10 +1018,6 @@ const nb = {
           usb: 'USB',
           frontPanel: 'Frontpanel'
         },
-        hidModeDesc:
-          'Prøv kun HID-modus hvis verten ikke godtar tastatur og mus. Den slår av de virtuelle stasjonene og nettverket.',
-        resetHidDesc:
-          'Kobler tastatur og mus til verten på nytt. Bruk den hvis inndata slutter å virke.',
         cpuFreq: {
           title: 'CPU-frekvens',
           description: 'Angi CPU-klokken som brukes ved neste oppstart',

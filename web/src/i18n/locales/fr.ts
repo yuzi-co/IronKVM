@@ -1040,10 +1040,6 @@ const fr = {
           usb: 'USB',
           frontPanel: 'Façade'
         },
-        hidModeDesc:
-          "Essayez le mode HID uniquement si l'hôte n'accepte pas le clavier et la souris. Il désactive les lecteurs virtuels et le réseau.",
-        resetHidDesc:
-          "Reconnecte le clavier et la souris à l'hôte. À utiliser si la saisie ne fonctionne plus.",
         cpuFreq: {
           title: 'Fréquence du CPU',
           description: 'Définir la fréquence du CPU appliquée au prochain démarrage',

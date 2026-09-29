@@ -1013,10 +1013,6 @@ const cz = {
           usb: 'USB',
           frontPanel: 'Přední panel'
         },
-        hidModeDesc:
-          'Pokud hostitel nepřijímá klávesnici a myš, zkuste režim pouze HID. Vypne virtuální jednotky a síť.',
-        resetHidDesc:
-          'Znovu připojí klávesnici a myš k hostiteli. Použijte, když vstup přestane fungovat.',
         cpuFreq: {
           title: 'Frekvence CPU',
           description: 'Nastavte takt CPU použitý při příštím spuštění',

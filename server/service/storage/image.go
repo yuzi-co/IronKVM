@@ -51,14 +51,23 @@ func hasImageSuffix(path string) bool {
 	return strings.HasSuffix(name, ".iso") || strings.HasSuffix(name, ".img")
 }
 
-func (s *Service) GetImages(c *gin.Context) {
-	var rsp proto.Response
+// listImages finds the .iso and .img files under root, with their sizes.
+func listImages(root string) ([]string, map[string]int64, error) {
 	var images []string
 	sizes := map[string]int64{}
 
-	err := filepath.Walk(imageDirectory, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			return err
+			// Only an unreadable image directory fails the list. /data also
+			// holds deploy and download files that come and go, and one of
+			// them vanishing mid-walk must not hide every image.
+			if path == root {
+				return err
+			}
+			if info != nil && info.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
 		}
 
 		if !info.IsDir() {
@@ -78,6 +87,13 @@ func (s *Service) GetImages(c *gin.Context) {
 
 		return nil
 	})
+	return images, sizes, err
+}
+
+func (s *Service) GetImages(c *gin.Context) {
+	var rsp proto.Response
+
+	images, sizes, err := listImages(imageDirectory)
 	if err != nil {
 		rsp.ErrRsp(c, -2, "get images failed")
 		return

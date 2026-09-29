@@ -1031,10 +1031,6 @@ const ja = {
           usb: 'USB',
           frontPanel: 'フロントパネル'
         },
-        hidModeDesc:
-          'ホストがキーボードとマウスを受け付けない場合は、HID-Only モードを試してください。仮想ドライブとネットワークはオフになります。',
-        resetHidDesc:
-          'キーボードとマウスをホストに再接続します。入力が効かなくなったときに使います。',
         cpuFreq: {
           title: 'CPU 周波数',
           description: '次回起動時に適用する CPU クロックを設定する',

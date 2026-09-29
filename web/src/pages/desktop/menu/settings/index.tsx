@@ -376,7 +376,7 @@ export const Settings = () => {
         <div className="flex h-[80vh] max-h-[700px] rounded-lg outline outline-1 outline-neutral-700">
           <nav
             aria-label={t('settings.title')}
-            className="flex h-full max-w-[260px] shrink-0 flex-col overflow-y-auto rounded-l-lg bg-neutral-800/90 px-1 pb-4 sm:w-1/5 md:w-1/4 md:px-2"
+            className="box-border flex h-full max-w-[260px] shrink-0 flex-col overflow-y-auto rounded-l-lg bg-neutral-800/90 px-1 pb-4 sm:w-1/5 md:w-1/4 md:px-2"
           >
             <div className="hidden shrink-0 px-3 pt-10 text-xl sm:block">{t('settings.title')}</div>
             <div className="h-10 shrink-0 sm:h-2" />
@@ -437,7 +437,7 @@ export const Settings = () => {
 
           <ScrollArea
             viewportRef={scrollViewportRef}
-            className="h-full w-full min-w-0 rounded-r-lg bg-neutral-900/50 px-3 [&_[data-slot=scroll-area-scrollbar]]:w-1.5 [&_[data-slot=scroll-area-scrollbar]]:p-0 [&_[data-slot=scroll-area-thumb]]:bg-neutral-500/30"
+            className="box-border h-full w-full min-w-0 rounded-r-lg bg-neutral-900/50 px-3 [&_[data-slot=scroll-area-scrollbar]]:w-1.5 [&_[data-slot=scroll-area-scrollbar]]:p-0 [&_[data-slot=scroll-area-thumb]]:bg-neutral-500/30"
           >
             <div className="flex h-full w-full justify-center">
               <div className="w-full max-w-[600px] pt-14 pb-10">

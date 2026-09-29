@@ -977,8 +977,6 @@ const zh = {
           usb: 'USB',
           frontPanel: '前面板'
         },
-        hidModeDesc: '如果主机不接受键盘和鼠标，请尝试 HID-Only 模式。它会关闭虚拟驱动器和网络。',
-        resetHidDesc: '将键盘和鼠标重新连接到主机。输入失灵时使用。',
         cpuFreq: {
           title: 'CPU 频率',
           description: '设置下次启动时使用的 CPU 频率',

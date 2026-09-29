@@ -1031,10 +1031,6 @@ const ca = {
           usb: 'USB',
           frontPanel: 'Panell frontal'
         },
-        hidModeDesc:
-          "Proveu el mode només HID si l'amfitrió no accepta el teclat i el ratolí. Desactiva les unitats virtuals i la xarxa.",
-        resetHidDesc:
-          "Torna a connectar el teclat i el ratolí a l'amfitrió. Useu-ho si l'entrada deixa de funcionar.",
         cpuFreq: {
           title: 'Freqüència de la CPU',
           description: "Defineix la freqüència de la CPU que s'aplica a la propera arrencada",

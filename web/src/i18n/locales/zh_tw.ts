@@ -976,8 +976,6 @@ const zh_tw = {
           usb: 'USB',
           frontPanel: '前面板'
         },
-        hidModeDesc: '如果主機不接受鍵盤和滑鼠，請嘗試 HID-Only 模式。它會關閉虛擬磁碟機和網路。',
-        resetHidDesc: '將鍵盤和滑鼠重新連接到主機。輸入失效時使用。',
         cpuFreq: {
           title: 'CPU 時脈',
           description: '設定下次開機時使用的 CPU 時脈',

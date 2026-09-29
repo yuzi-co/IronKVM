@@ -1031,10 +1031,6 @@ const nl = {
           usb: 'USB',
           frontPanel: 'Voorpaneel'
         },
-        hidModeDesc:
-          'Probeer de alleen-HID-modus als de host het toetsenbord en de muis niet accepteert. Die schakelt de virtuele stations en het netwerk uit.',
-        resetHidDesc:
-          'Verbindt het toetsenbord en de muis opnieuw met de host. Gebruik dit als invoer niet meer werkt.',
         cpuFreq: {
           title: 'CPU-frequentie',
           description: 'Stel de CPU-kloksnelheid in voor de volgende keer opstarten',

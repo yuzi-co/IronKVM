@@ -1037,10 +1037,6 @@ const es = {
           usb: 'USB',
           frontPanel: 'Panel frontal'
         },
-        hidModeDesc:
-          'Prueba el modo solo HID si el host no acepta el teclado y el ratón. Desactiva las unidades virtuales y la red.',
-        resetHidDesc:
-          'Vuelve a conectar el teclado y el ratón al host. Úsalo si la entrada deja de funcionar.',
         cpuFreq: {
           title: 'Frecuencia de la CPU',
           description: 'Establece la frecuencia de la CPU que se aplica en el próximo arranque',

@@ -1020,10 +1020,6 @@ const se = {
           usb: 'USB',
           frontPanel: 'Frontpanel'
         },
-        hidModeDesc:
-          'Prova endast HID-läge om värden inte tar emot tangentbord och mus. Det stänger av de virtuella enheterna och nätverket.',
-        resetHidDesc:
-          'Ansluter tangentbord och mus till värden igen. Använd om inmatningen slutar fungera.',
         cpuFreq: {
           title: 'CPU-frekvens',
           description: 'Ange CPU-klockan som används vid nästa start',

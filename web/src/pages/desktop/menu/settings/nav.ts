@@ -25,8 +25,6 @@ export const KEYWORDS: Record<string, string[]> = {
     'hdmi',
     'video',
     'usb',
-    'hid',
-    'reset hid',
     'virtual',
     'cdrom',
     'disk',

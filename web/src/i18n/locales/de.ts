@@ -1047,10 +1047,6 @@ const de = {
           usb: 'USB',
           frontPanel: 'Frontpanel'
         },
-        hidModeDesc:
-          'Nimmt der Host Tastatur und Maus nicht an, versuchen Sie den Nur-HID-Modus. Er schaltet die virtuellen Laufwerke und das Netzwerk ab.',
-        resetHidDesc:
-          'Verbindet Tastatur und Maus neu mit dem Host. Hilft, wenn die Eingabe nicht mehr funktioniert.',
         cpuFreq: {
           title: 'CPU-Frequenz',
           description: 'CPU-Takt für den nächsten Start festlegen',

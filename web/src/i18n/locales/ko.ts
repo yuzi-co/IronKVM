@@ -1010,9 +1010,6 @@ const ko = {
           usb: 'USB',
           frontPanel: '전면 패널'
         },
-        hidModeDesc:
-          '호스트가 키보드와 마우스를 인식하지 않으면 HID 전용 모드를 사용해 보세요. 가상 드라이브와 네트워크가 꺼집니다.',
-        resetHidDesc: '키보드와 마우스를 호스트에 다시 연결합니다. 입력이 멈췄을 때 사용하세요.',
         cpuFreq: {
           title: 'CPU 주파수',
           description: '다음 부팅 시 적용할 CPU 클럭 설정',

@@ -81,15 +81,26 @@ export const Images = ({
   // force skips the in-flight guard. The effect below passes it: an update event
   // can arrive while an earlier request is still out, and that request may have
   // been answered before the change it announces.
-  const getImages = useStableCallback((force = false) => {
+  // A failed first try is retried once after a second, quietly: the list is
+  // often asked for right as the server restarts, and a Retry button for
+  // that is noise.
+  const getImages = useStableCallback((force = false, retry = true) => {
     if (isLoading && !force) return;
     setIsLoading(true);
+
+    const fail = () => {
+      if (retry) {
+        setTimeout(() => getImages(true, false), 1000);
+        return;
+      }
+      setLoadFailed(true);
+    };
 
     api
       .getImages()
       .then((rsp) => {
         if (rsp.code !== 0) {
-          setLoadFailed(true);
+          fail();
           return;
         }
 
@@ -100,7 +111,7 @@ export const Images = ({
         onImagesChanged(files);
         onDrivesChanged();
       })
-      .catch(() => setLoadFailed(true))
+      .catch(fail)
       .finally(() => {
         setIsLoading(false);
       });
