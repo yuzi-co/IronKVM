@@ -1059,7 +1059,9 @@ const de = {
           title: 'Swap',
           disable: 'Deaktivieren',
           description: 'Grösse der Swap-Datei festlegen',
-          tip: 'Das Aktivieren dieser Funktion kann die Lebensdauer Ihrer SD-Karte verkürzen!'
+          tip: 'Das Aktivieren dieser Funktion kann die Lebensdauer Ihrer SD-Karte verkürzen!',
+          active: 'Aktiv - {{used}} von {{total}}',
+          inactive: 'Eingerichtet, aber nicht in Gebrauch'
         },
         zram: {
           title: 'Komprimierter Swap (zram)',

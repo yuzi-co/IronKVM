@@ -1049,7 +1049,9 @@ const es = {
           title: 'Memoria Swap',
           disable: 'Desactivar',
           description: 'Establece el tamaño del archivo swap',
-          tip: 'Habilitar esta función podría acortar la vida útil de tu tarjeta SD.'
+          tip: 'Habilitar esta función podría acortar la vida útil de tu tarjeta SD.',
+          active: 'Activa - {{used}} de {{total}}',
+          inactive: 'Configurado, pero sin usar'
         },
         zram: {
           title: 'Swap comprimida (zram)',

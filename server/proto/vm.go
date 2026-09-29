@@ -261,7 +261,10 @@ type SetSSHPortReq struct {
 }
 
 type GetSwapRsp struct {
-	Size int64 `json:"size"` // unit: MB
+	Size   int64 `json:"size"`   // unit: MB, the swap file's size on disk
+	Active bool  `json:"active"` // the kernel swaps to the file now
+	Total  int64 `json:"total"`  // unit: bytes, as /proc/swaps reports it
+	Used   int64 `json:"used"`   // unit: bytes
 }
 
 type SetSwapReq struct {

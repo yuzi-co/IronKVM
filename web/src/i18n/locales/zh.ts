@@ -989,7 +989,9 @@ const zh = {
           title: '交换',
           disable: '禁用',
           description: '设置交换文件大小',
-          tip: '启用该功能可能会减少SD卡使用寿命！'
+          tip: '启用该功能可能会减少SD卡使用寿命！',
+          active: '运行中 - {{used}} / {{total}}',
+          inactive: '已设置，但未使用'
         },
         zram: {
           title: '压缩交换（zram）',

@@ -1045,7 +1045,9 @@ const hu = {
           title: 'Csere',
           disable: 'Letiltás',
           description: 'Állítsa be a swap fájl méretét',
-          tip: 'Ennek a funkciónak az engedélyezése lerövidítheti az SD-kártya élettartamát!'
+          tip: 'Ennek a funkciónak az engedélyezése lerövidítheti az SD-kártya élettartamát!',
+          active: 'Aktív - {{used}} / {{total}}',
+          inactive: 'Beállítva, de nincs használatban'
         },
         zram: {
           title: 'Tömörített swap (zram)',

@@ -1030,7 +1030,9 @@ const nb = {
           title: 'Bytt',
           disable: 'Deaktiver',
           description: 'Angi størrelsen på byttefilen',
-          tip: 'Aktivering av denne funksjonen kan forkorte SD-kortets brukbare levetid!'
+          tip: 'Aktivering av denne funksjonen kan forkorte SD-kortets brukbare levetid!',
+          active: 'Aktiv - {{used}} av {{total}}',
+          inactive: 'Satt opp, men ikke i bruk'
         },
         zram: {
           title: 'Komprimert swap (zram)',

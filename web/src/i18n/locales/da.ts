@@ -1027,7 +1027,9 @@ const da = {
           title: 'Byt',
           disable: 'Deaktiver',
           description: 'Indstil swap-filstørrelsen',
-          tip: 'Aktivering af denne funktion kan forkorte dit SD-korts brugbare levetid!'
+          tip: 'Aktivering af denne funktion kan forkorte dit SD-korts brugbare levetid!',
+          active: 'Aktiv - {{used}} af {{total}}',
+          inactive: 'Sat op, men ikke i brug'
         },
         zram: {
           title: 'Komprimeret swap (zram)',

@@ -1032,7 +1032,9 @@ const se = {
           title: 'Swap',
           disable: 'Inaktivera',
           description: 'Ange swap-filens storlek',
-          tip: 'Aktivering av denna funktion kan förkorta livslängden på ditt SD-kort!'
+          tip: 'Aktivering av denna funktion kan förkorta livslängden på ditt SD-kort!',
+          active: 'Aktiv - {{used}} av {{total}}',
+          inactive: 'Inställt, men används inte'
         },
         zram: {
           title: 'Komprimerad swap (zram)',

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"time"
 
@@ -31,9 +32,29 @@ var runShellCommand = func(command string) error {
 func (s *Service) GetSwap(c *gin.Context) {
 	var rsp proto.Response
 
-	rsp.OkRspWithData(c, &proto.GetSwapRsp{
-		Size: getSwapSize(),
-	})
+	data := &proto.GetSwapRsp{Size: getSwapSize()}
+	if total, used, ok := parseSwapsEntry(readFileString(procSwapsPath), SwapFile); ok {
+		data.Active, data.Total, data.Used = true, total, used
+	}
+	rsp.OkRspWithData(c, data)
+}
+
+// parseSwapsEntry reads one device's size and use from /proc/swaps, which
+// gives both in KiB, and returns them in bytes.
+func parseSwapsEntry(content string, device string) (total int64, used int64, ok bool) {
+	for _, line := range strings.Split(content, "\n") {
+		fields := strings.Fields(line)
+		if len(fields) < 4 || fields[0] != device {
+			continue
+		}
+		size, err1 := strconv.ParseInt(fields[2], 10, 64)
+		inUse, err2 := strconv.ParseInt(fields[3], 10, 64)
+		if err1 != nil || err2 != nil {
+			return 0, 0, false
+		}
+		return size * 1024, inUse * 1024, true
+	}
+	return 0, 0, false
 }
 
 func (s *Service) SetSwap(c *gin.Context) {

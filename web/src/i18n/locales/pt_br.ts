@@ -1041,7 +1041,9 @@ const pt_br = {
           title: 'Swap',
           disable: 'Desativar',
           description: 'Defina o tamanho do arquivo de swap',
-          tip: 'Habilitar esta função pode encurtar a vida útil do seu cartão SD!'
+          tip: 'Habilitar esta função pode encurtar a vida útil do seu cartão SD!',
+          active: 'Ativo - {{used}} de {{total}}',
+          inactive: 'Configurado, mas sem uso'
         },
         zram: {
           title: 'Swap comprimido (zram)',

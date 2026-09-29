@@ -1035,7 +1035,9 @@ const id = {
           title: 'Tukar',
           disable: 'Nonaktifkan',
           description: 'Atur ukuran file swap',
-          tip: 'Mengaktifkan fitur ini dapat mempersingkat masa pakai kartu SD Anda!'
+          tip: 'Mengaktifkan fitur ini dapat mempersingkat masa pakai kartu SD Anda!',
+          active: 'Aktif - {{used}} dari {{total}}',
+          inactive: 'Diatur, tetapi tidak dipakai'
         },
         zram: {
           title: 'Swap terkompresi (zram)',

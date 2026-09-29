@@ -124,3 +124,21 @@ func TestDisableSwapSucceedsWithNoSwapFile(t *testing.T) {
 		t.Errorf("ran %v, want no commands", *commands)
 	}
 }
+
+func TestParseSwapsEntry(t *testing.T) {
+	header := "Filename\tType\tSize\tUsed\tPriority\n"
+	swaps := header +
+		"/dev/zram0\tpartition\t98300\t1792\t100\n" +
+		"/swapfile\tfile\t131068\t512\t-2\n"
+
+	total, used, ok := parseSwapsEntry(swaps, "/swapfile")
+	if !ok || total != 131068*1024 || used != 512*1024 {
+		t.Errorf("swapfile = %d, %d, %v", total, used, ok)
+	}
+	if _, _, ok := parseSwapsEntry(swaps, "/swap"); ok {
+		t.Error("a prefix of the file name matched")
+	}
+	if _, _, ok := parseSwapsEntry(header, "/swapfile"); ok {
+		t.Error("a file that is not swapped on reads as active")
+	}
+}

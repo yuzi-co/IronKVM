@@ -1025,7 +1025,9 @@ const cz = {
           title: 'Vyměnit',
           disable: 'Zakázat',
           description: 'Nastavte velikost odkládacího souboru',
-          tip: 'Povolení této funkce může zkrátit životnost vaší SD karty!'
+          tip: 'Povolení této funkce může zkrátit životnost vaší SD karty!',
+          active: 'Aktivní - {{used}} z {{total}}',
+          inactive: 'Nastaveno, ale nepoužívá se'
         },
         zram: {
           title: 'Komprimovaný swap (zram)',

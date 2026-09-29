@@ -1022,7 +1022,9 @@ const ko = {
           title: '스왑',
           disable: '비활성화',
           description: '스왑 파일 크기 설정',
-          tip: '이 기능을 활성화하면 SD 카드의 수명이 단축될 수 있습니다!'
+          tip: '이 기능을 활성화하면 SD 카드의 수명이 단축될 수 있습니다!',
+          active: '활성 - {{used}} / {{total}}',
+          inactive: '설정되었지만 사용 중이 아님'
         },
         zram: {
           title: '압축 스왑(zram)',

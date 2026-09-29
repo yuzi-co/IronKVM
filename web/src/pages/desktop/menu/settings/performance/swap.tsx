@@ -6,11 +6,16 @@ import { useTranslation } from 'react-i18next';
 import * as api from '@/api/vm.ts';
 import { showFailure, showResult } from '@/lib/feedback.ts';
 
+import { formatBytes } from './zram.tsx';
+
+type SwapState = { size: number; active: boolean; total: number; used: number };
+
 export const Swap = () => {
   const { t } = useTranslation();
 
   const [isLoading, setIsLoading] = useState(true);
   const [size, setSize] = useState('0');
+  const [state, setState] = useState<SwapState | null>(null);
 
   const options = [
     { value: '0', label: t('settings.device.swap.disable') },
@@ -21,18 +26,23 @@ export const Swap = () => {
   ];
 
   useEffect(() => {
+    getSwap();
+  }, []);
+
+  function getSwap() {
+    setIsLoading(true);
     api
       .getSwap()
       .then((rsp) => {
-        if (rsp.data?.size) {
-          setSize(rsp.data.size.toString());
-        }
+        if (rsp.code !== 0) return;
+        setState(rsp.data);
+        setSize((rsp.data?.size ?? 0).toString());
       })
       .catch((err) => showFailure(err))
       .finally(() => {
         setIsLoading(false);
       });
-  }, []);
+  }
 
   function update(value: string) {
     if (isLoading) return;
@@ -46,7 +56,8 @@ export const Swap = () => {
         setSize(value);
       })
       .finally(() => {
-        setIsLoading(false);
+        // What the kernel now swaps to is read back, as zram does.
+        getSwap();
       });
   }
 
@@ -66,6 +77,18 @@ export const Swap = () => {
           </Tooltip>
         </div>
         <span className="text-xs text-neutral-500">{t('settings.device.swap.description')}</span>
+
+        {/* Shown only when a swap file is set, like the zram line beside it. */}
+        {state && state.size > 0 && (
+          <span className={state.active ? 'text-xs text-neutral-400' : 'text-xs text-amber-500'}>
+            {state.active
+              ? t('settings.device.swap.active', {
+                  used: formatBytes(state.used),
+                  total: formatBytes(state.total)
+                })
+              : t('settings.device.swap.inactive')}
+          </span>
+        )}
       </div>
 
       <Select

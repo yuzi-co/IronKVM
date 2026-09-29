@@ -1025,7 +1025,9 @@ const vi = {
           title: 'Hoán đổi',
           disable: 'Tắt',
           description: 'Đặt kích thước tệp hoán đổi',
-          tip: 'Kích hoạt tính năng này có thể rút ngắn thời gian sử dụng thẻ SD của bạn!'
+          tip: 'Kích hoạt tính năng này có thể rút ngắn thời gian sử dụng thẻ SD của bạn!',
+          active: 'Đang hoạt động - {{used}} / {{total}}',
+          inactive: 'Đã thiết lập nhưng chưa dùng'
         },
         zram: {
           title: 'Hoán đổi nén (zram)',

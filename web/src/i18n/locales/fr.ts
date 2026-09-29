@@ -1052,7 +1052,9 @@ const fr = {
           title: 'Échange',
           disable: 'Désactiver',
           description: "Définir la taille du fichier d'échange",
-          tip: "L'activation de cette fonctionnalité pourrait réduire la durée de vie de votre carte SD!"
+          tip: "L'activation de cette fonctionnalité pourrait réduire la durée de vie de votre carte SD!",
+          active: 'Actif - {{used}} sur {{total}}',
+          inactive: 'Configuré, mais inutilisé'
         },
         zram: {
           title: 'Échange compressé (zram)',

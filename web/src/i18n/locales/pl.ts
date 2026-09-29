@@ -1036,7 +1036,9 @@ const pl = {
           title: 'Zamień',
           disable: 'Wyłącz',
           description: 'Ustaw rozmiar pliku wymiany',
-          tip: 'Włączenie tej funkcji może skrócić żywotność karty SD!'
+          tip: 'Włączenie tej funkcji może skrócić żywotność karty SD!',
+          active: 'Aktywne - {{used}} z {{total}}',
+          inactive: 'Skonfigurowane, ale nieużywane'
         },
         zram: {
           title: 'Skompresowana pamięć wymiany (zram)',

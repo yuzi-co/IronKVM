@@ -988,7 +988,9 @@ const zh_tw = {
           title: 'Swap',
           disable: '停用',
           description: '設定 Swap 檔大小',
-          tip: '啟用此功能可能會減少SD卡的使用壽命！'
+          tip: '啟用此功能可能會減少SD卡的使用壽命！',
+          active: '運作中 - {{used}} / {{total}}',
+          inactive: '已設定，但未使用'
         },
         zram: {
           title: '壓縮 Swap（zram）',

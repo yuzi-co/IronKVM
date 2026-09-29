@@ -1047,7 +1047,9 @@ const it = {
           title: 'Scambia',
           disable: 'Disabilita',
           description: 'Imposta la dimensione del file di scambio',
-          tip: 'Abilitare questa funzione potrebbe ridurre la durata utile della tua scheda SD!'
+          tip: 'Abilitare questa funzione potrebbe ridurre la durata utile della tua scheda SD!',
+          active: 'Attivo - {{used}} di {{total}}',
+          inactive: 'Configurato, ma non in uso'
         },
         zram: {
           title: 'Swap compresso (zram)',

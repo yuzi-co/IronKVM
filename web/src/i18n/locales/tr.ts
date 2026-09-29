@@ -1028,7 +1028,9 @@ const tr = {
           title: 'Swap',
           disable: 'Aktifleştir',
           description: 'Swap dosyasının boyutunu belirle',
-          tip: 'Bu özelliği aktifleştirmek micro SD kartınızın ömrünü kısaltabilir!'
+          tip: 'Bu özelliği aktifleştirmek micro SD kartınızın ömrünü kısaltabilir!',
+          active: 'Aktif - {{used}} / {{total}}',
+          inactive: 'Ayarlandı, ancak kullanılmıyor'
         },
         zram: {
           title: 'Sıkıştırılmış swap (zram)',

@@ -1043,7 +1043,9 @@ const ja = {
           title: 'スワップ',
           disable: '無効',
           description: 'スワップファイルのサイズを設定する',
-          tip: 'この機能を有効にすると、SD カードの寿命が短くなる可能性があります！'
+          tip: 'この機能を有効にすると、SD カードの寿命が短くなる可能性があります！',
+          active: '動作中 - {{used}} / {{total}}',
+          inactive: '設定済みですが未使用'
         },
         zram: {
           title: '圧縮スワップ（zram）',

@@ -1021,7 +1021,9 @@ const en = {
           title: 'Swap',
           disable: 'Disable',
           description: 'Set the swap file size',
-          tip: "Enabling this feature could shorten your SD card's usable life!"
+          tip: "Enabling this feature could shorten your SD card's usable life!",
+          active: 'Active - {{used}} of {{total}}',
+          inactive: 'Set up, but not in use'
         },
         zram: {
           title: 'Compressed swap (zram)',

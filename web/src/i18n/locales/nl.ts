@@ -1043,7 +1043,9 @@ const nl = {
           title: 'Wisselen',
           disable: 'Uitschakelen',
           description: 'Stel de grootte van het wisselbestand in',
-          tip: 'Het inschakelen van deze functie kan de bruikbare levensduur van uw SD-kaart verkorten!'
+          tip: 'Het inschakelen van deze functie kan de bruikbare levensduur van uw SD-kaart verkorten!',
+          active: 'Actief - {{used}} van {{total}}',
+          inactive: 'Ingesteld, maar niet in gebruik'
         },
         zram: {
           title: 'Gecomprimeerde swap (zram)',

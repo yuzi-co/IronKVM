@@ -1043,7 +1043,9 @@ const ca = {
           title: 'Swap',
           disable: 'Desactiva',
           description: 'Defineix la mida del fitxer swap',
-          tip: 'Pot reduir la vida útil de la targeta SD!'
+          tip: 'Pot reduir la vida útil de la targeta SD!',
+          active: 'Activa - {{used}} de {{total}}',
+          inactive: 'Configurat, però no en ús'
         },
         zram: {
           title: 'Swap comprimida (zram)',
