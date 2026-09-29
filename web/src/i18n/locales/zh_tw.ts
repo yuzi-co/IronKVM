@@ -1035,7 +1035,7 @@ const zh_tw = {
           hostAddress: '主機：',
           description:
             '透過 USB 線與遠端主機建立的私人網路連線。主機取得的位址不含閘道與 DNS，因此無法透過 IronKVM 連到您的區域網路。',
-          off: '關閉',
+          mode: '協定',
           ncm: 'NCM（Linux、macOS、Windows 11）',
           ecm: 'ECM（適用於不支援 NCM 的主機）',
           rndis: 'RNDIS（已不再提供）',

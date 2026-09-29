@@ -1109,7 +1109,7 @@ const de = {
           hostAddress: 'Host:',
           description:
             'Eine private Netzwerkverbindung zum entfernten Host über das USB-Kabel. Der Host erhält eine Adresse ohne Gateway und ohne DNS und erreicht Ihr LAN daher nicht über IronKVM.',
-          off: 'Aus',
+          mode: 'Protokoll',
           ncm: 'NCM (Linux, macOS, Windows 11)',
           ecm: 'ECM (für Hosts ohne NCM)',
           rndis: 'RNDIS (nicht mehr angeboten)',

@@ -1036,7 +1036,7 @@ const zh = {
           hostAddress: '主机：',
           description:
             '通过 USB 线缆与远程主机建立的私有网络连接。主机获得的地址不带网关和 DNS，因此无法通过 IronKVM 访问你的局域网。',
-          off: '关闭',
+          mode: '协议',
           ncm: 'NCM（Linux、macOS、Windows 11）',
           ecm: 'ECM（适用于不支持 NCM 的主机）',
           rndis: 'RNDIS（已不再提供）',

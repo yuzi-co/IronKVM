@@ -1085,7 +1085,7 @@ const pl = {
           hostAddress: 'Host:',
           description:
             'Prywatne połączenie sieciowe ze zdalnym hostem przez kabel USB. Host otrzymuje adres bez bramy i bez DNS, więc nie może dotrzeć do Twojej sieci LAN przez IronKVM.',
-          off: 'Wyłączone',
+          mode: 'Protokół',
           ncm: 'NCM (Linux, macOS, Windows 11)',
           ecm: 'ECM (dla hostów bez NCM)',
           rndis: 'RNDIS (już niedostępne)',

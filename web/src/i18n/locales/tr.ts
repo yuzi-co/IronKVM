@@ -1078,7 +1078,7 @@ const tr = {
           hostAddress: 'Ana makine:',
           description:
             'USB kablosu üzerinden uzak ana bilgisayarla özel bir ağ bağlantısı. Ana bilgisayar ağ geçidi ve DNS olmadan bir adres alır, bu yüzden IronKVM üzerinden yerel ağınıza ulaşamaz.',
-          off: 'Kapalı',
+          mode: 'Protokol',
           ncm: 'NCM (Linux, macOS, Windows 11)',
           ecm: 'ECM (NCM desteği olmayan ana bilgisayarlar için)',
           rndis: 'RNDIS (artık sunulmuyor)',

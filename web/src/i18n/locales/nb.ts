@@ -1077,7 +1077,7 @@ const nb = {
           hostAddress: 'Vert:',
           description:
             'En privat nettverkstilkobling til den eksterne verten via USB-kabelen. Verten får en adresse uten gateway og uten DNS, så den kan ikke nå ditt lokalnett gjennom IronKVM.',
-          off: 'Av',
+          mode: 'Protokoll',
           ncm: 'NCM (Linux, macOS, Windows 11)',
           ecm: 'ECM (for verter uten NCM)',
           rndis: 'RNDIS (tilbys ikke lenger)',

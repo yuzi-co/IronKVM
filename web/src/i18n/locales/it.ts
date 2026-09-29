@@ -1097,7 +1097,7 @@ const it = {
           hostAddress: 'Host:',
           description:
             "Un collegamento di rete privato con l'host remoto tramite il cavo USB. L'host riceve un indirizzo senza gateway né DNS, quindi non può raggiungere la tua LAN tramite IronKVM.",
-          off: 'Disattivato',
+          mode: 'Protocollo',
           ncm: 'NCM (Linux, macOS, Windows 11)',
           ecm: 'ECM (per host senza NCM)',
           rndis: 'RNDIS (non più offerto)',

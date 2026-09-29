@@ -1093,7 +1093,7 @@ const nl = {
           hostAddress: 'Host:',
           description:
             'Een privé netwerkverbinding met de externe host via de USB-kabel. De host krijgt een adres zonder gateway en zonder DNS, en kan uw LAN dus niet via IronKVM bereiken.',
-          off: 'Uit',
+          mode: 'Protocol',
           ncm: 'NCM (Linux, macOS, Windows 11)',
           ecm: 'ECM (voor hosts zonder NCM)',
           rndis: 'RNDIS (niet meer aangeboden)',

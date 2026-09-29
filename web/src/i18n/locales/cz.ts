@@ -1073,7 +1073,7 @@ const cz = {
           hostAddress: 'Hostitel:',
           description:
             'Soukromé síťové spojení se vzdáleným hostitelem přes kabel USB. Hostitel dostane adresu bez brány a bez DNS, takže se přes IronKVM nedostane do vaší LAN.',
-          off: 'Vypnuto',
+          mode: 'Protokol',
           ncm: 'NCM (Linux, macOS, Windows 11)',
           ecm: 'ECM (pro hostitele bez NCM)',
           rndis: 'RNDIS (již se nenabízí)',

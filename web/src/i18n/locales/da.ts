@@ -1075,7 +1075,7 @@ const da = {
           hostAddress: 'Vært:',
           description:
             'En privat netværksforbindelse til den eksterne vært via USB-kablet. Værten får en adresse uden gateway og uden DNS, så den kan ikke nå dit LAN gennem IronKVM.',
-          off: 'Fra',
+          mode: 'Protokol',
           ncm: 'NCM (Linux, macOS, Windows 11)',
           ecm: 'ECM (til værter uden NCM)',
           rndis: 'RNDIS (tilbydes ikke længere)',

@@ -1082,7 +1082,7 @@ const id = {
           hostAddress: 'Host:',
           description:
             'Tautan jaringan privat ke host jarak jauh melalui kabel USB. Host mendapat alamat tanpa gateway dan tanpa DNS, sehingga tidak dapat menjangkau LAN Anda melalui IronKVM.',
-          off: 'Mati',
+          mode: 'Protokol',
           ncm: 'NCM (Linux, macOS, Windows 11)',
           ecm: 'ECM (untuk host tanpa NCM)',
           rndis: 'RNDIS (tidak lagi ditawarkan)',

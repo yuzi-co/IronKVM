@@ -1068,7 +1068,7 @@ const en = {
           hostAddress: 'Host:',
           description:
             'A private network link to the remote host over the USB cable. The host gets an address with no gateway and no DNS, so it cannot reach your LAN through IronKVM.',
-          off: 'Off',
+          mode: 'Protocol',
           ncm: 'NCM (Linux, macOS, Windows 11)',
           ecm: 'ECM (for hosts without NCM)',
           rndis: 'RNDIS (no longer offered)',

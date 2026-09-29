@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, Input, Popconfirm, Select, Tooltip } from 'antd';
+import { Button, Input, Popconfirm, Select, Switch, Tooltip } from 'antd';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/virtual-device.ts';
@@ -27,6 +27,9 @@ export const UsbNetwork = ({ devices, onChanged }: Props) => {
 
   const [state, setState] = useState<UsbNetworkState | null>(null);
   const [mode, setMode] = useState<UsbNetworkMode>('off');
+  // The protocol the switch turns back on with: the last one chosen, NCM
+  // before that.
+  const [lastMode, setLastMode] = useState<UsbNetworkMode>('ncm');
   const [subnet, setSubnet] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -41,6 +44,7 @@ export const UsbNetwork = ({ devices, onChanged }: Props) => {
 
       setState(rsp.data);
       setMode(rsp.data.mode);
+      if (rsp.data.mode === 'ncm' || rsp.data.mode === 'ecm') setLastMode(rsp.data.mode);
       setSubnet(rsp.data.subnet);
     } catch (err) {
       setError(describeFailure(err, t('settings.device.endpoints.error')));
@@ -88,10 +92,18 @@ export const UsbNetwork = ({ devices, onChanged }: Props) => {
     }
   }
 
+  function toggle(on: boolean) {
+    setMode(on ? lastMode : 'off');
+  }
+
+  function chooseMode(next: UsbNetworkMode) {
+    setMode(next);
+    setLastMode(next);
+  }
+
   const options: { value: UsbNetworkMode; label: string; disabled?: boolean }[] = [
-    { value: 'off', label: t('settings.device.usbNetwork.off') },
-    { value: 'ncm', label: t('settings.device.usbNetwork.ncm'), disabled: blocked },
-    { value: 'ecm', label: t('settings.device.usbNetwork.ecm'), disabled: blocked }
+    { value: 'ncm', label: t('settings.device.usbNetwork.ncm') },
+    { value: 'ecm', label: t('settings.device.usbNetwork.ecm') }
   ];
   if (state.mode === 'rndis') {
     options.push({ value: 'rndis', label: t('settings.device.usbNetwork.rndis'), disabled: true });
@@ -129,17 +141,28 @@ export const UsbNetwork = ({ devices, onChanged }: Props) => {
           </span>
 
           <Tooltip title={blocked ? t('settings.device.endpoints.full') : ''}>
-            <Select<UsbNetworkMode>
-              className="w-60 max-w-full"
-              value={mode}
-              options={options}
-              disabled={loading}
-              onChange={setMode}
+            <Switch
+              checked={mode !== 'off'}
+              disabled={loading || (blocked && mode === 'off')}
+              onChange={toggle}
               aria-describedby="endpoint-cost-network"
             />
           </Tooltip>
         </div>
       </div>
+
+      {mode !== 'off' && (
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <span>{t('settings.device.usbNetwork.mode')}</span>
+          <Select<UsbNetworkMode>
+            className="w-60 max-w-full"
+            value={mode}
+            options={options}
+            disabled={loading || mode === 'rndis'}
+            onChange={chooseMode}
+          />
+        </div>
+      )}
 
       {mode !== 'off' && (
         <div className="flex flex-wrap items-center justify-between gap-3">

@@ -1102,7 +1102,7 @@ const fr = {
           hostAddress: 'Hôte :',
           description:
             "Une liaison réseau privée avec l'hôte distant par le câble USB. L'hôte reçoit une adresse sans passerelle ni DNS, il ne peut donc pas atteindre votre réseau local via IronKVM.",
-          off: 'Désactivé',
+          mode: 'Protocole',
           ncm: 'NCM (Linux, macOS, Windows 11)',
           ecm: 'ECM (pour les hôtes sans NCM)',
           rndis: "RNDIS (n'est plus proposé)",

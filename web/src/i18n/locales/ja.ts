@@ -1093,7 +1093,7 @@ const ja = {
           hostAddress: 'ホスト:',
           description:
             'USB ケーブル経由でリモートホストと結ぶプライベートネットワークです。ホストにはゲートウェイと DNS のないアドレスが割り当てられるため、IronKVM を経由して LAN に到達することはできません。',
-          off: 'オフ',
+          mode: 'プロトコル',
           ncm: 'NCM (Linux、macOS、Windows 11)',
           ecm: 'ECM (NCM 非対応のホスト向け)',
           rndis: 'RNDIS (提供終了)',

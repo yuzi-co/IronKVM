@@ -1070,7 +1070,7 @@ const ko = {
           hostAddress: '호스트:',
           description:
             'USB 케이블을 통한 원격 호스트와의 사설 네트워크 연결입니다. 호스트는 게이트웨이와 DNS 없이 주소를 받으므로 IronKVM을 통해 LAN에 접근할 수 없습니다.',
-          off: '끄기',
+          mode: '프로토콜',
           ncm: 'NCM (Linux, macOS, Windows 11)',
           ecm: 'ECM (NCM을 지원하지 않는 호스트용)',
           rndis: 'RNDIS (더 이상 제공되지 않음)',

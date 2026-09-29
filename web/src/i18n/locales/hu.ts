@@ -1094,7 +1094,7 @@ const hu = {
           hostAddress: 'Gazdagép:',
           description:
             'Privát hálózati kapcsolat a távoli gazdagéppel az USB-kábelen keresztül. A gazdagép átjáró és DNS nélküli címet kap, így a IronKVM-en keresztül nem éri el a helyi hálózatot.',
-          off: 'Ki',
+          mode: 'Protokoll',
           ncm: 'NCM (Linux, macOS, Windows 11)',
           ecm: 'ECM (NCM nélküli gazdagépekhez)',
           rndis: 'RNDIS (már nem választható)',

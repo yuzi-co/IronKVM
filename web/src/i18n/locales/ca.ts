@@ -1092,7 +1092,7 @@ const ca = {
           hostAddress: 'Amfitrió:',
           description:
             "Un enllaç de xarxa privat amb l'amfitrió remot pel cable USB. L'amfitrió rep una adreça sense passarel·la ni DNS, de manera que no pot arribar a la vostra LAN a través del IronKVM.",
-          off: 'Desactivat',
+          mode: 'Protocol',
           ncm: 'NCM (Linux, macOS, Windows 11)',
           ecm: 'ECM (per a amfitrions sense NCM)',
           rndis: "RNDIS (ja no s'ofereix)",

@@ -1080,7 +1080,7 @@ const se = {
           hostAddress: 'Värd:',
           description:
             'En privat nätverkslänk till fjärrvärden via USB-kabeln. Värden får en adress utan gateway och utan DNS, så den kan inte nå ditt lokala nätverk genom IronKVM.',
-          off: 'Av',
+          mode: 'Protokoll',
           ncm: 'NCM (Linux, macOS, Windows 11)',
           ecm: 'ECM (för värdar utan NCM)',
           rndis: 'RNDIS (erbjuds inte längre)',

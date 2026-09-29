@@ -1074,7 +1074,7 @@ const vi = {
           hostAddress: 'Máy chủ:',
           description:
             'Liên kết mạng riêng với máy chủ từ xa qua cáp USB. Máy chủ nhận một địa chỉ không có gateway và không có DNS, nên không thể truy cập mạng LAN của bạn thông qua IronKVM.',
-          off: 'Tắt',
+          mode: 'Giao thức',
           ncm: 'NCM (Linux, macOS, Windows 11)',
           ecm: 'ECM (cho máy chủ không hỗ trợ NCM)',
           rndis: 'RNDIS (không còn được cung cấp)',

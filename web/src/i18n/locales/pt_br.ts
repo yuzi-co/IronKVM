@@ -1089,7 +1089,7 @@ const pt_br = {
           hostAddress: 'Host:',
           description:
             'Um link de rede privado com o host remoto pelo cabo USB. O host recebe um endereço sem gateway e sem DNS, então não consegue alcançar sua LAN pelo IronKVM.',
-          off: 'Desligado',
+          mode: 'Protocolo',
           ncm: 'NCM (Linux, macOS, Windows 11)',
           ecm: 'ECM (para hosts sem NCM)',
           rndis: 'RNDIS (não é mais oferecido)',
