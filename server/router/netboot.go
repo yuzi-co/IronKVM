@@ -29,6 +29,8 @@ func netbootRouter(r *gin.Engine) {
 	admin.POST("/settings", service.SetSettings)
 	admin.POST("/install", service.Install)
 	admin.POST("/uninstall", service.Uninstall)
+	// The netboot.xyz boot files' updates: GET, POST /check, POST.
+	service.Updater(nil).Routes(admin, "/update")
 }
 
 func netbootLink() netboot.Link {
