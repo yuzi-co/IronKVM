@@ -257,16 +257,23 @@ func parseDevmemValue(s string) (uint32, bool) {
 // millidegrees. An unreadable sensor returns 0, which the UI shows as no
 // reading rather than a fault.
 func readCpuTempC() float64 {
+	celsius, _ := readCpuTemp()
+	return celsius
+}
+
+// readCpuTemp reads the SoC temperature, and says whether there was one to
+// read, so a caller can tell a missing sensor from zero degrees.
+func readCpuTemp() (float64, bool) {
 	data, err := os.ReadFile(cpuTempPath)
 	if err != nil {
-		return 0
+		return 0, false
 	}
 
 	milli, err := strconv.ParseInt(strings.TrimSpace(string(data)), 10, 64)
 	if err != nil {
-		return 0
+		return 0, false
 	}
-	return float64(milli) / 1000.0
+	return float64(milli) / 1000.0, true
 }
 
 // installCpuFreqInitScript copies the packaged boot script into /etc/init.d.

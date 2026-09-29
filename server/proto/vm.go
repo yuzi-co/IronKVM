@@ -29,6 +29,9 @@ type SetGpioReq struct {
 type GetGpioRsp struct {
 	PWR bool `json:"pwr"` // power led
 	HDD bool `json:"hdd"` // hdd led
+	// HasHDD says the board has an HDD LED input at all. Only the alpha board
+	// does; on the others HDD is always false and means nothing.
+	HasHDD bool `json:"hasHdd"`
 	// LEDConnected says the power LED header is wired. When it is not, PWR
 	// is always false and means nothing: the state is unknown.
 	LEDConnected bool `json:"ledConnected"`
@@ -294,6 +297,32 @@ type GetCpuFreqRsp struct {
 	Temperature    float64 `json:"temperature"`    // CPU temperature, degrees C, 0 when unavailable
 	Options        []int   `json:"options"`        // selectable frequencies, MHz
 	RebootRequired bool    `json:"rebootRequired"` // Running differs from Target, so a reboot is due
+}
+
+// GetHealthRsp is what the toolbar's alert icon needs, read in one cheap
+// request: no command is run and nothing is fetched from the network.
+type GetHealthRsp struct {
+	// Temperature is the SoC temperature in degrees C, or null when the board
+	// has no sensor to read.
+	Temperature *float64 `json:"temperature"`
+	// Storage is the filesystem that holds the images, or null when it cannot
+	// be read.
+	Storage *HealthStorage `json:"storage"`
+	// Vpn lists the VPN add-ons set to start at boot, which are the ones the
+	// owner expects to be up.
+	Vpn []HealthVpn `json:"vpn"`
+}
+
+type HealthStorage struct {
+	Path      string `json:"path"`
+	Total     uint64 `json:"total"`     // bytes
+	Available uint64 `json:"available"` // bytes an unprivileged writer may still use
+}
+
+type HealthVpn struct {
+	Name    string `json:"name"`
+	Title   string `json:"title"`
+	Running bool   `json:"running"`
 }
 
 type SetCpuFreqReq struct {

@@ -58,7 +58,8 @@ func (s *Service) GetGpio(c *gin.Context) {
 	}
 
 	hdd := false
-	if conf.Version == config.HWVersionAlpha {
+	hasHDD := hasHDDLed(conf)
+	if hasHDD {
 		hdd, err = readGpio(conf.GPIOHDDLed)
 		if err != nil {
 			rsp.ErrRsp(c, -2, fmt.Sprintf("failed to read hdd led: %s", err))
@@ -69,9 +70,16 @@ func (s *Service) GetGpio(c *gin.Context) {
 	data := &proto.GetGpioRsp{
 		PWR:          pwr,
 		HDD:          hdd,
+		HasHDD:       hasHDD,
 		LEDConnected: connected,
 	}
 	rsp.OkRspWithData(c, data)
+}
+
+// hasHDDLed reports whether the board has an HDD LED input. Only the alpha
+// board wires one to a GPIO; beta and PCIe leave the path empty.
+func hasHDDLed(conf config.Hardware) bool {
+	return conf.Version == config.HWVersionAlpha && conf.GPIOHDDLed != ""
 }
 
 const (
