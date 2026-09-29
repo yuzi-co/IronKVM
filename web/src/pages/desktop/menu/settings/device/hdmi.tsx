@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
-import { InputNumber, Switch } from 'antd';
+import { Divider, InputNumber, Switch } from 'antd';
 import { useAtom } from 'jotai';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/vm.ts';
 import { showFailure, showResult } from '@/lib/feedback.ts';
 import { isHdmiEnabledAtom } from '@/jotai/screen.ts';
+
+import { Section } from './section.tsx';
 
 export const Hdmi = () => {
   const { t } = useTranslation();
@@ -103,9 +105,11 @@ export const Hdmi = () => {
     }
   }
 
+  if (!isPcie) return null;
+
   return (
     <>
-      {isPcie && (
+      <Section title={t('settings.device.sections.video')}>
         <div className="flex flex-col space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex flex-col space-y-1">
@@ -141,7 +145,8 @@ export const Hdmi = () => {
             />
           </div>
         </div>
-      )}
+      </Section>
+      <Divider className="opacity-50" style={{ margin: 0 }} />
     </>
   );
 };

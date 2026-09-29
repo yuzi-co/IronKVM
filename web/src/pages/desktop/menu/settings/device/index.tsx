@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react';
 import { Divider } from 'antd';
 import { useTranslation } from 'react-i18next';
 
@@ -9,22 +8,12 @@ import { MenuAction } from '../components/menu-action.tsx';
 import { Hdmi } from './hdmi.tsx';
 import { Oled } from './oled.tsx';
 import { Reboot } from './reboot.tsx';
+import { Section } from './section.tsx';
 import { VirtualDevices } from './virtual-devices.tsx';
 
-type SectionProps = {
-  title: string;
-  children: ReactNode;
-};
-
-const Section = ({ title, children }: SectionProps) => (
-  <section className="flex flex-col space-y-6">
-    <div className="text-sm text-neutral-400">{title}</div>
-    {children}
-  </section>
-);
-
-// The board's hardware, by what it faces: the video it takes in, the USB
-// devices it presents to the host, and its own front panel.
+// The board's hardware, by what it faces: the video it takes in (PCIe boards
+// only, so Hdmi draws its own section), the USB devices it presents to the
+// host, and its own front panel.
 export const Device = () => {
   const { t } = useTranslation();
 
@@ -34,10 +23,7 @@ export const Device = () => {
       <Divider className="opacity-50" />
 
       <div className="flex flex-col space-y-8">
-        <Section title={t('settings.device.sections.video')}>
-          <Hdmi />
-        </Section>
-        <Divider className="opacity-50" style={{ margin: 0 }} />
+        <Hdmi />
 
         <Section title={t('settings.device.sections.usb')}>
           <VirtualDevices />
