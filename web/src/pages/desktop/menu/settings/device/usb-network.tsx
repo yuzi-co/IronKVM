@@ -111,7 +111,7 @@ export const UsbNetwork = ({ devices, onChanged }: Props) => {
 
   return (
     <div className="flex flex-col space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex items-center justify-between">
         <div className="flex flex-col space-y-1">
           <span>{t('settings.device.network')}</span>
           <span className="text-xs text-neutral-500">
@@ -133,7 +133,7 @@ export const UsbNetwork = ({ devices, onChanged }: Props) => {
           {blocked && <span className="text-xs text-amber-500">{state.refusal}</span>}
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center space-x-3">
           <span id="endpoint-cost-network" className="text-xs text-neutral-500">
             {state.mode !== 'off'
               ? t('settings.device.endpoints.cost', { cost })

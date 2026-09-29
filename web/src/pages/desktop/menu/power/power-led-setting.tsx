@@ -8,7 +8,9 @@ import { PowerLed } from './power-led.tsx';
 // switch, for the settings pages that depend on it (watchdog, IPMI, Redfish).
 // The setting lives on the device, so this and the power menu stay in step
 // through the same API; each reads it on its own.
-export const PowerLedSetting = () => {
+// framed draws it as a box of its own, for pages where it stands apart from
+// the rows around it; the Device page lists it as one of its rows instead.
+export const PowerLedSetting = ({ framed = true }: { framed?: boolean }) => {
   const [isPowerOn, setIsPowerOn] = useState(false);
   const [connected, setConnected] = useState(false);
 
@@ -36,9 +38,10 @@ export const PowerLedSetting = () => {
     };
   }, []);
 
-  return (
-    <div className="rounded-lg border border-neutral-700/60 px-2 py-3">
-      <PowerLed isPowerOn={isPowerOn} connected={connected} setConnected={setConnected} />
-    </div>
-  );
+  const led = <PowerLed isPowerOn={isPowerOn} connected={connected} setConnected={setConnected} />;
+  // PowerLed pads itself for the box; unframed, the row lines up with the
+  // rows around it.
+  if (!framed) return <div className="-mx-1">{led}</div>;
+
+  return <div className="rounded-lg border border-neutral-700/60 px-2 py-3">{led}</div>;
 };

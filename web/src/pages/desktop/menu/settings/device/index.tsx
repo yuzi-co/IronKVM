@@ -29,7 +29,7 @@ export const Device = () => {
 
         <Section title={t('settings.device.sections.frontPanel')}>
           <Oled />
-          <PowerLedSetting />
+          <PowerLedSetting framed={false} />
         </Section>
       </div>
 
