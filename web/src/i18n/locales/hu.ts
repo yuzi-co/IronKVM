@@ -357,6 +357,15 @@ const hu = {
       resetHidFailed: 'Az USB HID újraindítása sikertelen'
     },
     image: {
+      driveLoaded: 'lemezkép betöltve',
+      driveWarning: 'nézze meg a figyelmeztetéseket',
+      warning: {
+        missing: 'A lemezképfájlt törölték. A gazdagép a régi másolatot olvassa, amíg ki nem adja.',
+        writable: 'Írható: a gazdagép módosíthatja ezt a lemezképet.',
+        tooBigForCd: 'Túl nagy a CD-meghajtóhoz ({{size}}, korlát {{max}}). Használja a lemezt.',
+        tooSmallForCd: 'Túl kicsi a CD-meghajtóhoz ({{size}}). Használja a lemezt.',
+        empty: 'A fájl üres, valószínűleg sikertelen feltöltés vagy letöltés miatt.'
+      },
       delete: 'Törlés',
       inUse: 'Használatban van. Törlés előtt adja ki.',
       retry: 'Újra',
@@ -1602,6 +1611,7 @@ const hu = {
       failed: 'Az utolsó frissítés sikertelen volt: {{error}}'
     },
     menu: {
+      mediaNetboot: 'Hálózati rendszerindítás beállításai',
       collapse: 'Menü összecsukása',
       expand: 'Bontsa ki a menüt',
       more: 'Továbbiak',

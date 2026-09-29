@@ -363,6 +363,18 @@ const de = {
       resetHidFailed: 'USB-HID konnte nicht zurückgesetzt werden'
     },
     image: {
+      driveLoaded: 'Image eingelegt',
+      driveWarning: 'Warnungen beachten',
+      warning: {
+        missing:
+          'Die Image-Datei wurde gelöscht. Der Host liest die alte Kopie weiter, bis Sie sie auswerfen.',
+        writable: 'Lesen und Schreiben: Der Host kann dieses Image verändern.',
+        tooBigForCd:
+          'Zu groß für das CD-Laufwerk ({{size}}, Grenze {{max}}). Verwenden Sie das Festplattenlaufwerk.',
+        tooSmallForCd:
+          'Zu klein für das CD-Laufwerk ({{size}}). Verwenden Sie das Festplattenlaufwerk.',
+        empty: 'Die Datei ist leer, vermutlich nach einem fehlgeschlagenen Upload oder Download.'
+      },
       delete: 'Löschen',
       inUse: 'In Verwendung. Vor dem Löschen auswerfen.',
       retry: 'Erneut versuchen',
@@ -1623,6 +1635,7 @@ const de = {
       failed: 'Die letzte Aktualisierung ist fehlgeschlagen: {{error}}'
     },
     menu: {
+      mediaNetboot: 'Netzwerk-Boot-Einstellungen',
       collapse: 'Menü einklappen',
       expand: 'Menü ausklappen',
       more: 'Mehr',

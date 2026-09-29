@@ -355,6 +355,15 @@ const cz = {
       resetHidFailed: 'Reset USB HID se nezdařil'
     },
     image: {
+      driveLoaded: 'obraz vložen',
+      driveWarning: 'zkontrolujte varování',
+      warning: {
+        missing: 'Soubor obrazu byl smazán. Hostitel čte starou kopii, dokud ji nevysunete.',
+        writable: 'Čtení i zápis: hostitel může tento obraz měnit.',
+        tooBigForCd: 'Příliš velký pro CD mechaniku ({{size}}, limit {{max}}). Použijte disk.',
+        tooSmallForCd: 'Příliš malý pro CD mechaniku ({{size}}). Použijte disk.',
+        empty: 'Soubor je prázdný, nejspíš po nezdařeném nahrání nebo stažení.'
+      },
       delete: 'Smazat',
       inUse: 'Používá se. Před smazáním jej vysuňte.',
       retry: 'Zkusit znovu',
@@ -1580,6 +1589,7 @@ const cz = {
       failed: 'Poslední aktualizace selhala: {{error}}'
     },
     menu: {
+      mediaNetboot: 'Nastavení síťového bootu',
       collapse: 'Sbalit nabídku',
       expand: 'Rozbalte nabídku',
       more: 'Více',

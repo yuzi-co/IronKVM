@@ -344,6 +344,15 @@ const zh = {
       resetHidFailed: 'USB HID 重置失败'
     },
     image: {
+      driveLoaded: '已插入镜像',
+      driveWarning: '请查看警告',
+      warning: {
+        missing: '镜像文件已被删除。弹出之前，主机仍读取旧副本。',
+        writable: '可读写：主机可以修改此镜像。',
+        tooBigForCd: '对光驱来说太大（{{size}}，上限 {{max}}）。请使用磁盘。',
+        tooSmallForCd: '对光驱来说太小（{{size}}）。请使用磁盘。',
+        empty: '文件为空，可能是上传或下载失败所致。'
+      },
       delete: '删除',
       inUse: '正在使用。请先弹出再删除。',
       retry: '重试',
@@ -1526,6 +1535,7 @@ const zh = {
       failed: '上次更新失败：{{error}}'
     },
     menu: {
+      mediaNetboot: '网络启动设置',
       collapse: '收起',
       expand: '展开',
       more: '更多',

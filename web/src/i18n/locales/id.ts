@@ -355,6 +355,16 @@ const id = {
       resetHidFailed: 'Reset HID USB gagal'
     },
     image: {
+      driveLoaded: 'image dimuat',
+      driveWarning: 'periksa peringatannya',
+      warning: {
+        missing:
+          'File image telah dihapus. Host tetap membaca salinan lama sampai Anda mengeluarkannya.',
+        writable: 'Baca-tulis: host dapat mengubah image ini.',
+        tooBigForCd: 'Terlalu besar untuk drive CD ({{size}}, batas {{max}}). Gunakan disk.',
+        tooSmallForCd: 'Terlalu kecil untuk drive CD ({{size}}). Gunakan disk.',
+        empty: 'File kosong, mungkin karena unggahan atau unduhan yang gagal.'
+      },
       delete: 'Hapus',
       inUse: 'Sedang digunakan. Keluarkan sebelum menghapus.',
       retry: 'Coba lagi',
@@ -1589,6 +1599,7 @@ const id = {
       failed: 'Pembaruan terakhir gagal: {{error}}'
     },
     menu: {
+      mediaNetboot: 'Pengaturan boot jaringan',
       collapse: 'Tutup Menu',
       expand: 'Perluas Menu',
       more: 'Lainnya',

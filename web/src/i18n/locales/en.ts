@@ -352,6 +352,16 @@ const en = {
       resetHidFailed: 'USB HID reset failed'
     },
     image: {
+      driveLoaded: 'image loaded',
+      driveWarning: 'check the warnings',
+      warning: {
+        missing:
+          'The image file was deleted. The host keeps reading the old copy until you eject it.',
+        writable: 'Read-write: the host can change this image.',
+        tooBigForCd: 'Too big for the CD drive ({{size}}, limit {{max}}). Use the disk drive.',
+        tooSmallForCd: 'Too small for the CD drive ({{size}}). Use the disk drive.',
+        empty: 'The file is empty, probably from a failed upload or download.'
+      },
       delete: 'Delete',
       inUse: 'In use. Eject it before deleting.',
       retry: 'Retry',
@@ -1577,6 +1587,7 @@ const en = {
       failed: 'The last update failed: {{error}}'
     },
     menu: {
+      mediaNetboot: 'Network boot settings',
       collapse: 'Collapse Menu',
       expand: 'Expand Menu',
       more: 'More',

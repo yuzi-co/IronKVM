@@ -354,6 +354,15 @@ const vi = {
       resetHidFailed: 'Đặt lại USB HID thất bại'
     },
     image: {
+      driveLoaded: 'đã nạp ảnh đĩa',
+      driveWarning: 'xem các cảnh báo',
+      warning: {
+        missing: 'Tệp ảnh đĩa đã bị xóa. Máy chủ vẫn đọc bản cũ cho tới khi bạn đẩy ra.',
+        writable: 'Đọc-ghi: máy chủ có thể thay đổi ảnh đĩa này.',
+        tooBigForCd: 'Quá lớn cho ổ CD ({{size}}, giới hạn {{max}}). Hãy dùng ổ đĩa.',
+        tooSmallForCd: 'Quá nhỏ cho ổ CD ({{size}}). Hãy dùng ổ đĩa.',
+        empty: 'Tệp rỗng, có lẽ do tải lên hoặc tải xuống thất bại.'
+      },
       delete: 'Xóa',
       inUse: 'Đang dùng. Hãy đẩy ra trước khi xóa.',
       retry: 'Thử lại',
@@ -1582,6 +1591,7 @@ const vi = {
       failed: 'Lần cập nhật gần nhất thất bại: {{error}}'
     },
     menu: {
+      mediaNetboot: 'Cài đặt khởi động qua mạng',
       collapse: 'Thu gọn Menu',
       expand: 'Mở rộng Menu',
       more: 'Thêm',

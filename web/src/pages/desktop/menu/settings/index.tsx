@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { useAuth } from '@/contexts/auth.ts';
 import { Badge, Input, Modal, Tooltip } from 'antd';
 import clsx from 'clsx';
-import { useSetAtom } from 'jotai';
+import { useAtom, useSetAtom } from 'jotai';
 import {
   BadgeInfoIcon,
   BotIcon,
@@ -32,7 +32,8 @@ import semver from 'semver';
 import * as api from '@/api/application.ts';
 import * as ls from '@/lib/localstorage.ts';
 import { keyboardLockAtom } from '@/jotai/keyboard.ts';
-import { submenuOpenCountAtom } from '@/jotai/settings.ts';
+import { settingsOpenRequestAtom, submenuOpenCountAtom } from '@/jotai/settings.ts';
+import { useStableCallback } from '@/hooks/useStableCallback.ts';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 import { About } from './about';
@@ -256,15 +257,30 @@ export const Settings = () => {
     writeStored(browserStorage(), LAST_TAB_KEY, tab);
   }
 
-  function openModal() {
+  // openModal opens on the tab asked for, when this account has it, and
+  // otherwise on the one initialTab picks.
+  function openModal(requested?: string) {
     const ids = tabs.map((tab) => tab.id);
     setQuery('');
-    showTab(initialTab(ids, readStored(browserStorage(), LAST_TAB_KEY), isUpdateAvailable));
+    if (requested && ids.includes(requested)) {
+      changeTab(requested);
+    } else {
+      showTab(initialTab(ids, readStored(browserStorage(), LAST_TAB_KEY), isUpdateAvailable));
+    }
 
     setIsModalOpen(true);
     setKeyboardLock({ source: 'settings-modal', locked: true });
     setSubmenuOpenCount((count) => count + 1);
   }
+
+  // Another part of the UI asked for a settings page.
+  const [openRequest, setOpenRequest] = useAtom(settingsOpenRequestAtom);
+  const openModalStable = useStableCallback(openModal);
+  useEffect(() => {
+    if (!openRequest) return;
+    setOpenRequest(null);
+    if (!isModalOpen) openModalStable(openRequest);
+  }, [openRequest, setOpenRequest, isModalOpen, openModalStable]);
 
   function closeModal() {
     if (isLocked) {
@@ -326,7 +342,7 @@ export const Settings = () => {
           type="button"
           aria-label={t('settings.title')}
           className="flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded p-0 hover:bg-neutral-700/80"
-          onClick={openModal}
+          onClick={() => openModal()}
         >
           <Badge dot={isUpdateAvailable} color="blue" offset={[0, 2]}>
             <div className="pt-[3px] text-neutral-300 hover:text-white">

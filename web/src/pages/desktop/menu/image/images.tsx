@@ -9,12 +9,16 @@ import {
   LoaderCircleIcon,
   PackageIcon,
   PackageSearchIcon,
-  Trash2Icon
+  Trash2Icon,
+  TriangleAlertIcon
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/storage.ts';
+import { formatBytes } from '@/lib/health.ts';
 import { useStableCallback } from '@/hooks/useStableCallback.ts';
+
+import { CD_MAX_BYTES, imageWarnings } from './warnings.ts';
 
 const imageUpdatedEvent = 'nanokvm:image-updated';
 
@@ -48,6 +52,7 @@ export const Images = ({
   const [isLoading, setIsLoading] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
   const [images, setImages] = useState<string[]>([]);
+  const [sizes, setSizes] = useState<Record<string, number>>({});
   const [busyImage, setBusyImage] = useState('');
   const [targets, setTargets] = useState<Record<string, api.DriveId>>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -91,6 +96,7 @@ export const Images = ({
         setLoadFailed(false);
         const files: string[] = rsp.data?.files?.length > 0 ? rsp.data.files : [];
         setImages(files);
+        setSizes(rsp.data?.sizes ?? {});
         onImagesChanged(files);
         onDrivesChanged();
       })
@@ -238,6 +244,17 @@ export const Images = ({
           const drive = loaded ?? targetOf(image);
           const DriveIcon = drive === 'cdrom' ? DiscIcon : HardDriveIcon;
           const driveName = t(`image.${drive}`);
+          // Warnings for the drive a click would insert into; a loaded image's
+          // warnings show under its drive above.
+          const warnings = loaded ? [] : imageWarnings(sizes[image], drive);
+          const warningText = warnings
+            .map((warning) =>
+              t(`image.warning.${warning}`, {
+                max: formatBytes(CD_MAX_BYTES),
+                size: formatBytes(sizes[image] ?? 0)
+              })
+            )
+            .join(' ');
 
           return (
             <div
@@ -257,6 +274,16 @@ export const Images = ({
               </div>
 
               <div className="flex-1 truncate">{image.replace(/^.*[\\/]/, '')}</div>
+
+              {warnings.length > 0 && (
+                <Tooltip title={warningText}>
+                  <TriangleAlertIcon
+                    size={16}
+                    aria-label={warningText}
+                    className="shrink-0 text-amber-400"
+                  />
+                </Tooltip>
+              )}
 
               {available.length > 0 && (
                 <Tooltip

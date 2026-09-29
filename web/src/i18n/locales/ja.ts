@@ -355,6 +355,17 @@ const ja = {
       resetHidFailed: 'USB HID をリセットできませんでした'
     },
     image: {
+      driveLoaded: 'イメージ挿入済み',
+      driveWarning: '警告を確認してください',
+      warning: {
+        missing:
+          'イメージファイルは削除されています。取り出すまでホストは古いコピーを読み続けます。',
+        writable: '読み書き可能: ホストがこのイメージを変更できます。',
+        tooBigForCd:
+          'CD ドライブには大きすぎます ({{size}}、上限 {{max}})。ディスクを使ってください。',
+        tooSmallForCd: 'CD ドライブには小さすぎます ({{size}})。ディスクを使ってください。',
+        empty: 'ファイルが空です。アップロードかダウンロードの失敗によるものと思われます。'
+      },
       delete: '削除',
       inUse: '使用中です。削除する前に取り出してください。',
       retry: '再試行',
@@ -1602,6 +1613,7 @@ const ja = {
       failed: '前回の更新に失敗しました: {{error}}'
     },
     menu: {
+      mediaNetboot: 'ネットワークブートの設定',
       collapse: 'メニューを折りたたむ',
       expand: 'メニューを展開する',
       more: 'その他',

@@ -354,6 +354,15 @@ const da = {
       resetHidFailed: 'Nulstilling af USB HID mislykkedes'
     },
     image: {
+      driveLoaded: 'image indsat',
+      driveWarning: 'se advarslerne',
+      warning: {
+        missing: 'Image-filen er slettet. Værten læser den gamle kopi, indtil du skubber den ud.',
+        writable: 'Læse-skrive: værten kan ændre dette image.',
+        tooBigForCd: 'For stor til cd-drevet ({{size}}, grænse {{max}}). Brug disken.',
+        tooSmallForCd: 'For lille til cd-drevet ({{size}}). Brug disken.',
+        empty: 'Filen er tom, sandsynligvis efter en mislykket upload eller download.'
+      },
       delete: 'Slet',
       inUse: 'I brug. Skub det ud, før du sletter det.',
       retry: 'Prøv igen',
@@ -1586,6 +1595,7 @@ const da = {
       failed: 'Den seneste opdatering mislykkedes: {{error}}'
     },
     menu: {
+      mediaNetboot: 'Indstillinger for netværksboot',
       collapse: 'Skjul menu',
       expand: 'Udvid menu',
       more: 'Mere',

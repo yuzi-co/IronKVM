@@ -359,6 +359,17 @@ const fr = {
       resetHidFailed: 'La réinitialisation du HID USB a échoué'
     },
     image: {
+      driveLoaded: 'image chargée',
+      driveWarning: 'voir les avertissements',
+      warning: {
+        missing: "Le fichier image a été supprimé. L'hôte lit l'ancienne copie jusqu'à l'éjection.",
+        writable: "Lecture-écriture : l'hôte peut modifier cette image.",
+        tooBigForCd:
+          'Trop grande pour le lecteur CD ({{size}}, limite {{max}}). Utilisez le disque.',
+        tooSmallForCd: 'Trop petite pour le lecteur CD ({{size}}). Utilisez le disque.',
+        empty:
+          "Le fichier est vide, sans doute à la suite d'un envoi ou d'un téléchargement échoué."
+      },
       delete: 'Supprimer',
       inUse: "En cours d'utilisation. Éjectez-la avant de la supprimer.",
       retry: 'Réessayer',
@@ -1614,6 +1625,7 @@ const fr = {
       failed: 'La dernière mise à jour a échoué : {{error}}'
     },
     menu: {
+      mediaNetboot: 'Paramètres du démarrage réseau',
       collapse: 'Réduire le menu',
       expand: 'Développer le menu',
       more: 'Plus',

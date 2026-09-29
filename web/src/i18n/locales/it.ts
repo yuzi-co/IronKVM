@@ -357,6 +357,16 @@ const it = {
       resetHidFailed: 'Reimpostazione HID USB non riuscita'
     },
     image: {
+      driveLoaded: 'immagine caricata',
+      driveWarning: 'vedi gli avvisi',
+      warning: {
+        missing:
+          "Il file immagine è stato eliminato. L'host legge la vecchia copia finché non la espelli.",
+        writable: "Lettura e scrittura: l'host può modificare questa immagine.",
+        tooBigForCd: "Troppo grande per l'unità CD ({{size}}, limite {{max}}). Usa il disco.",
+        tooSmallForCd: "Troppo piccola per l'unità CD ({{size}}). Usa il disco.",
+        empty: 'Il file è vuoto, probabilmente per un caricamento o download non riuscito.'
+      },
       delete: 'Elimina',
       inUse: 'In uso. Espellila prima di eliminarla.',
       retry: 'Riprova',
@@ -1605,6 +1615,7 @@ const it = {
       failed: "L'ultimo aggiornamento non è riuscito: {{error}}"
     },
     menu: {
+      mediaNetboot: 'Impostazioni avvio di rete',
       collapse: 'Comprimi menu',
       expand: 'Espandi il menu',
       more: 'Altro',

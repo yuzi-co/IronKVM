@@ -355,6 +355,16 @@ const pt_br = {
       resetHidFailed: 'Falha ao redefinir o HID USB'
     },
     image: {
+      driveLoaded: 'imagem carregada',
+      driveWarning: 'veja os avisos',
+      warning: {
+        missing:
+          'O arquivo de imagem foi apagado. O host continua lendo a cópia antiga até você ejetá-la.',
+        writable: 'Leitura e gravação: o host pode alterar esta imagem.',
+        tooBigForCd: 'Grande demais para a unidade de CD ({{size}}, limite {{max}}). Use o disco.',
+        tooSmallForCd: 'Pequena demais para a unidade de CD ({{size}}). Use o disco.',
+        empty: 'O arquivo está vazio, provavelmente por um upload ou download que falhou.'
+      },
       delete: 'Excluir',
       inUse: 'Em uso. Ejete antes de excluir.',
       retry: 'Tentar novamente',
@@ -1593,6 +1603,7 @@ const pt_br = {
       failed: 'A última atualização falhou: {{error}}'
     },
     menu: {
+      mediaNetboot: 'Configurações de boot pela rede',
       collapse: 'Recolher Menu',
       expand: 'Expandir Menu',
       more: 'Mais',

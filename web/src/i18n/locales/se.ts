@@ -351,6 +351,15 @@ const se = {
       resetHidFailed: 'Återställning av USB HID misslyckades'
     },
     image: {
+      driveLoaded: 'avbild isatt',
+      driveWarning: 'se varningarna',
+      warning: {
+        missing: 'Avbildsfilen har raderats. Värden läser den gamla kopian tills du matar ut den.',
+        writable: 'Läs och skriv: värden kan ändra den här avbilden.',
+        tooBigForCd: 'För stor för cd-enheten ({{size}}, gräns {{max}}). Använd disken.',
+        tooSmallForCd: 'För liten för cd-enheten ({{size}}). Använd disken.',
+        empty: 'Filen är tom, troligen efter en misslyckad uppladdning eller nedladdning.'
+      },
       delete: 'Ta bort',
       inUse: 'Används. Mata ut den innan du tar bort den.',
       retry: 'Försök igen',
@@ -1582,6 +1591,7 @@ const se = {
       failed: 'Den senaste uppdateringen misslyckades: {{error}}'
     },
     menu: {
+      mediaNetboot: 'Inställningar för nätverksstart',
       collapse: 'Fäll ihop menyn',
       expand: 'Expandera menyn',
       more: 'Mer',

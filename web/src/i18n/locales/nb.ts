@@ -355,6 +355,15 @@ const nb = {
       resetHidFailed: 'Tilbakestilling av USB HID mislyktes'
     },
     image: {
+      driveLoaded: 'avbildning satt inn',
+      driveWarning: 'se advarslene',
+      warning: {
+        missing: 'Avbildningsfilen er slettet. Verten leser den gamle kopien til du løser den ut.',
+        writable: 'Lese-skrive: verten kan endre denne avbildningen.',
+        tooBigForCd: 'For stor for CD-stasjonen ({{size}}, grense {{max}}). Bruk disken.',
+        tooSmallForCd: 'For liten for CD-stasjonen ({{size}}). Bruk disken.',
+        empty: 'Filen er tom, trolig etter en mislykket opplasting eller nedlasting.'
+      },
       delete: 'Slett',
       inUse: 'I bruk. Løs det ut før du sletter det.',
       retry: 'Prøv igjen',
@@ -1583,6 +1592,7 @@ const nb = {
       failed: 'Den siste oppdateringen mislyktes: {{error}}'
     },
     menu: {
+      mediaNetboot: 'Innstillinger for nettverksoppstart',
       collapse: 'Skjul meny',
       expand: 'Utvid menyen',
       more: 'Mer',

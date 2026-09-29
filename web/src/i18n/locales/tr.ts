@@ -354,6 +354,15 @@ const tr = {
       resetHidFailed: 'USB HID sıfırlanamadı'
     },
     image: {
+      driveLoaded: 'imaj takılı',
+      driveWarning: 'uyarılara bakın',
+      warning: {
+        missing: 'İmaj dosyası silindi. Siz çıkarana kadar ana bilgisayar eski kopyayı okur.',
+        writable: 'Okuma-yazma: ana bilgisayar bu imajı değiştirebilir.',
+        tooBigForCd: 'CD sürücüsü için çok büyük ({{size}}, sınır {{max}}). Diski kullanın.',
+        tooSmallForCd: 'CD sürücüsü için çok küçük ({{size}}). Diski kullanın.',
+        empty: 'Dosya boş, büyük olasılıkla başarısız bir yükleme veya indirme yüzünden.'
+      },
       delete: 'Sil',
       inUse: 'Kullanımda. Silmeden önce çıkarın.',
       retry: 'Yeniden dene',
@@ -1584,6 +1593,7 @@ const tr = {
       failed: 'Son güncelleme başarısız oldu: {{error}}'
     },
     menu: {
+      mediaNetboot: 'Ağdan önyükleme ayarları',
       collapse: 'Menüyü küçült',
       expand: 'Menüyü genişlet',
       more: 'Daha fazla',

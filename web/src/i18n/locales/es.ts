@@ -358,6 +358,17 @@ const es = {
       resetHidFailed: 'No se pudo reiniciar el HID USB'
     },
     image: {
+      driveLoaded: 'imagen cargada',
+      driveWarning: 'revise los avisos',
+      warning: {
+        missing:
+          'El archivo de imagen se borró. El host sigue leyendo la copia antigua hasta que la expulse.',
+        writable: 'Lectura y escritura: el host puede modificar esta imagen.',
+        tooBigForCd:
+          'Demasiado grande para la unidad de CD ({{size}}, límite {{max}}). Use el disco.',
+        tooSmallForCd: 'Demasiado pequeña para la unidad de CD ({{size}}). Use el disco.',
+        empty: 'El archivo está vacío, probablemente por una subida o descarga fallida.'
+      },
       delete: 'Eliminar',
       inUse: 'En uso. Expúlsela antes de eliminarla.',
       retry: 'Reintentar',
@@ -1611,6 +1622,7 @@ const es = {
       failed: 'La última actualización falló: {{error}}'
     },
     menu: {
+      mediaNetboot: 'Ajustes de arranque por red',
       collapse: 'Colapsar menú',
       expand: 'Expandir menú',
       more: 'Más',

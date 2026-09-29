@@ -356,6 +356,17 @@ const ca = {
       resetHidFailed: "No s'ha pogut reiniciar l'HID USB"
     },
     image: {
+      driveLoaded: 'imatge carregada',
+      driveWarning: 'revisa els avisos',
+      warning: {
+        missing:
+          "El fitxer d'imatge s'ha esborrat. L'amfitrió continua llegint la còpia antiga fins que l'expulsis.",
+        writable: "Lectura i escriptura: l'amfitrió pot modificar aquesta imatge.",
+        tooBigForCd:
+          'Massa gran per a la unitat de CD ({{size}}, límit {{max}}). Fes servir el disc.',
+        tooSmallForCd: 'Massa petita per a la unitat de CD ({{size}}). Fes servir el disc.',
+        empty: 'El fitxer és buit, probablement per una pujada o baixada fallida.'
+      },
       delete: 'Elimina',
       inUse: "En ús. Expulseu-la abans d'eliminar-la.",
       retry: 'Torna-ho a provar',
@@ -1599,6 +1610,7 @@ const ca = {
       failed: "L'última actualització ha fallat: {{error}}"
     },
     menu: {
+      mediaNetboot: "Configuració d'arrencada per xarxa",
       collapse: 'Amaga menú',
       expand: 'Mostra menú',
       more: 'Més',

@@ -349,6 +349,15 @@ const ko = {
       resetHidFailed: 'USB HID를 초기화하지 못했습니다'
     },
     image: {
+      driveLoaded: '이미지 삽입됨',
+      driveWarning: '경고를 확인하세요',
+      warning: {
+        missing: '이미지 파일이 삭제되었습니다. 꺼낼 때까지 호스트는 이전 사본을 계속 읽습니다.',
+        writable: '읽기-쓰기: 호스트가 이 이미지를 변경할 수 있습니다.',
+        tooBigForCd: 'CD 드라이브에 너무 큽니다 ({{size}}, 한도 {{max}}). 디스크를 사용하세요.',
+        tooSmallForCd: 'CD 드라이브에 너무 작습니다 ({{size}}). 디스크를 사용하세요.',
+        empty: '파일이 비어 있습니다. 업로드나 다운로드가 실패한 것으로 보입니다.'
+      },
       delete: '삭제',
       inUse: '사용 중입니다. 삭제하기 전에 꺼내세요.',
       retry: '다시 시도',
@@ -1572,6 +1581,7 @@ const ko = {
       failed: '마지막 업데이트가 실패했습니다: {{error}}'
     },
     menu: {
+      mediaNetboot: '네트워크 부팅 설정',
       collapse: '메뉴 접기',
       expand: '메뉴 펼치기',
       more: '더 보기',

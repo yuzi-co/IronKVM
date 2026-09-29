@@ -344,6 +344,15 @@ const zh_tw = {
       resetHidFailed: 'USB HID 重設失敗'
     },
     image: {
+      driveLoaded: '已插入映像',
+      driveWarning: '請查看警告',
+      warning: {
+        missing: '映像檔已被刪除。退出之前，主機仍讀取舊副本。',
+        writable: '可讀寫：主機可以修改此映像。',
+        tooBigForCd: '對光碟機來說太大（{{size}}，上限 {{max}}）。請使用磁碟。',
+        tooSmallForCd: '對光碟機來說太小（{{size}}）。請使用磁碟。',
+        empty: '檔案是空的，可能是上傳或下載失敗所致。'
+      },
       delete: '刪除',
       inUse: '使用中。請先退出再刪除。',
       retry: '重試',
@@ -1522,6 +1531,7 @@ const zh_tw = {
       failed: '上次更新失敗：{{error}}'
     },
     menu: {
+      mediaNetboot: '網路開機設定',
       collapse: '收起選單',
       expand: '展開選單',
       more: '更多',

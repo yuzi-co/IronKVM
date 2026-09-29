@@ -359,6 +359,15 @@ const nl = {
       resetHidFailed: 'USB-HID resetten mislukt'
     },
     image: {
+      driveLoaded: 'image geladen',
+      driveWarning: 'bekijk de waarschuwingen',
+      warning: {
+        missing: 'Het imagebestand is verwijderd. De host leest de oude kopie tot u die uitwerpt.',
+        writable: 'Lezen en schrijven: de host kan dit image wijzigen.',
+        tooBigForCd: 'Te groot voor het cd-station ({{size}}, limiet {{max}}). Gebruik de schijf.',
+        tooSmallForCd: 'Te klein voor het cd-station ({{size}}). Gebruik de schijf.',
+        empty: 'Het bestand is leeg, waarschijnlijk door een mislukte upload of download.'
+      },
       delete: 'Verwijderen',
       inUse: 'In gebruik. Werp het uit voordat u het verwijdert.',
       retry: 'Opnieuw',
@@ -1605,6 +1614,7 @@ const nl = {
       failed: 'De laatste update is mislukt: {{error}}'
     },
     menu: {
+      mediaNetboot: 'Instellingen voor netwerkboot',
       collapse: 'Menu samenvouwen',
       expand: 'Menu uitvouwen',
       more: 'Meer',
