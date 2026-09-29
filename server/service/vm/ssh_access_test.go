@@ -6,10 +6,12 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -28,6 +30,8 @@ type sshFixture struct {
 	sshdSays map[string]string
 	sshdErr  error
 	reloadFn func() error
+	// listening is what /proc/net/tcp would say listens.
+	listening map[int]bool
 }
 
 func useSSHFixture(t *testing.T) *sshFixture {
@@ -37,12 +41,16 @@ func useSSHFixture(t *testing.T) *sshFixture {
 		sshdSays: map[string]string{"port": "22", "passwordauthentication": "yes"},
 	}
 
-	originals := []string{authorizedKeysPath, sshKeysOnlyFlag, sshKeysOnlyDropIn, sshHostKeyGlob, shadowPath, sshdPidFile}
+	originals := []string{authorizedKeysPath, sshKeysOnlyFlag, sshKeysOnlyDropIn, sshHostKeyGlob, shadowPath, sshdPidFile,
+		sshPortFile, sshPortDropIn}
 	originalConfig, originalReload, originalSave := sshdEffectiveConfig, reloadSSHD, saveSSHIdentity
+	originalListeners, originalReserved := tcpListeners, reservedPorts
 	t.Cleanup(func() {
 		authorizedKeysPath, sshKeysOnlyFlag, sshKeysOnlyDropIn = originals[0], originals[1], originals[2]
 		sshHostKeyGlob, shadowPath, sshdPidFile = originals[3], originals[4], originals[5]
+		sshPortFile, sshPortDropIn = originals[6], originals[7]
 		sshdEffectiveConfig, reloadSSHD, saveSSHIdentity = originalConfig, originalReload, originalSave
+		tcpListeners, reservedPorts = originalListeners, originalReserved
 	})
 
 	authorizedKeysPath = filepath.Join(f.root, "root", ".ssh", "authorized_keys")
@@ -51,6 +59,11 @@ func useSSHFixture(t *testing.T) *sshFixture {
 	sshHostKeyGlob = filepath.Join(f.root, "etc", "ssh", "ssh_host_*_key.pub")
 	shadowPath = filepath.Join(f.root, "etc", "shadow")
 	sshdPidFile = filepath.Join(f.root, "run", "sshd.pid")
+	sshPortFile = filepath.Join(f.root, "etc", "kvm", "ssh_port")
+	sshPortDropIn = filepath.Join(f.root, "etc", "ssh", "sshd_config.d", "ironkvm-port.conf")
+	f.listening = map[int]bool{80: true, 443: true}
+	tcpListeners = func() (map[int]bool, error) { return f.listening, nil }
+	reservedPorts = func() []int { return []int{80, 443, 5900, 8069} }
 	if err := os.MkdirAll(filepath.Join(f.root, "etc", "kvm"), 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -66,6 +79,21 @@ func useSSHFixture(t *testing.T) *sshFixture {
 		}
 		if _, err := os.Stat(sshKeysOnlyDropIn); err == nil && f.sshdSays["honoursDropIn"] != "no" {
 			out["passwordauthentication"] = "no"
+		}
+		// The drop-in's Port line comes first, since the Include heads
+		// sshd_config; a main file with its own Port line adds a second.
+		if data, err := os.ReadFile(sshPortDropIn); err == nil && f.sshdSays["honoursDropIn"] != "no" {
+			var port int
+			for _, line := range strings.Split(string(data), "\n") {
+				if _, err := fmt.Sscanf(line, "Port %d", &port); err == nil {
+					break
+				}
+			}
+			if f.sshdSays["mainPort"] != "" {
+				out["port"] = fmt.Sprintf("%d,%s", port, f.sshdSays["mainPort"])
+			} else {
+				out["port"] = strconv.Itoa(port)
+			}
 		}
 		return out, nil
 	}
@@ -403,7 +431,7 @@ func TestHangUpSSHDWithNoListenerDoesNothing(t *testing.T) {
 
 func TestParseSSHDConfigTakesTheFirstValue(t *testing.T) {
 	config := parseSSHDConfig([]byte("port 2222\nport 22\nPasswordAuthentication no\nlistenaddress 0.0.0.0:2222\n"))
-	if config["port"] != "2222" || sshPort(config) != 2222 {
+	if config["port"] != "2222,22" || sshPort(config) != 2222 {
 		t.Errorf("port = %q", config["port"])
 	}
 	if config["passwordauthentication"] != "no" {
@@ -479,6 +507,7 @@ func sshEngine() *gin.Engine {
 	r.POST("/api/vm/ssh/keys", service.AddSSHKey)
 	r.DELETE("/api/vm/ssh/keys", service.DeleteSSHKey)
 	r.POST("/api/vm/ssh/keys-only", service.SetSSHKeysOnly)
+	r.POST("/api/vm/ssh/port", service.SetSSHPort)
 	return r
 }
 

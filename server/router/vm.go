@@ -66,6 +66,7 @@ func vmRouter(r *gin.Engine) {
 	admin.POST("/vm/ssh/keys", service.AddSSHKey)           // add an authorized key
 	admin.DELETE("/vm/ssh/keys", service.DeleteSSHKey)      // remove an authorized key by fingerprint
 	admin.POST("/vm/ssh/keys-only", service.SetSSHKeysOnly) // turn password login off or on
+	admin.POST("/vm/ssh/port", service.SetSSHPort)          // change the port sshd listens on
 
 	admin.GET("/vm/swap", service.GetSwap)  // get swap file size
 	admin.POST("/vm/swap", service.SetSwap) // set swap file size

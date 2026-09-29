@@ -355,7 +355,8 @@ func setKeysOnly(enabled bool) error {
 }
 
 // readSSHDConfig asks sshd for its effective configuration. Keys come back
-// lower case; for a keyword given more than once, such as port, the first.
+// lower case, each with its first value, except the keywords sshd repeats once
+// per listener: port and listenaddress keep every value, comma-separated.
 func readSSHDConfig() (map[string]string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -375,8 +376,13 @@ func parseSSHDConfig(out []byte) map[string]string {
 			continue
 		}
 		key = strings.ToLower(key)
-		if _, seen := config[key]; !seen {
-			config[key] = strings.TrimSpace(value)
+		value = strings.TrimSpace(value)
+		seen, ok := config[key]
+		switch {
+		case !ok:
+			config[key] = value
+		case key == "port" || key == "listenaddress":
+			config[key] = seen + "," + value
 		}
 	}
 	return config
@@ -463,11 +469,12 @@ func classifyRootHash(hash string) string {
 	return "set"
 }
 
+// sshPort is the first port sshd listens on, 22 when it cannot be read.
 func sshPort(config map[string]string) int {
-	if port, err := strconv.Atoi(config["port"]); err == nil && port > 0 {
-		return port
+	if ports := sshdPorts(config); len(ports) > 0 {
+		return ports[0]
 	}
-	return 22
+	return defaultSSHPort
 }
 
 func (s *Service) GetSSHKeys(c *gin.Context) {
