@@ -115,9 +115,28 @@ func listDrives() ([]proto.DriveInfo, error) {
 		if err != nil {
 			return nil, err
 		}
+		describeFile(&info)
 		drives = append(drives, info)
 	}
 	return drives, nil
+}
+
+// describeFile fills in what the UI warns about for the file a drive serves:
+// its size, and whether its path is gone. The kernel keeps a deleted file open
+// and the host goes on reading it, so a drive can serve an image the library
+// no longer lists.
+func describeFile(info *proto.DriveInfo) {
+	if info.File == "" {
+		return
+	}
+	st, err := os.Stat(info.File)
+	if errors.Is(err, fs.ErrNotExist) {
+		info.Missing = true
+		return
+	}
+	if err == nil && st.Mode().IsRegular() {
+		info.Size = st.Size()
+	}
 }
 
 // loadedDrive returns the id of the drive holding file, or "" if none does.

@@ -54,6 +54,7 @@ func hasImageSuffix(path string) bool {
 func (s *Service) GetImages(c *gin.Context) {
 	var rsp proto.Response
 	var images []string
+	sizes := map[string]int64{}
 
 	err := filepath.Walk(imageDirectory, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -64,6 +65,14 @@ func (s *Service) GetImages(c *gin.Context) {
 			name := strings.ToLower(info.Name())
 			if strings.HasSuffix(name, ".iso") || strings.HasSuffix(name, ".img") {
 				images = append(images, path)
+				sizes[path] = info.Size()
+				// Walk does not follow links; the size that matters is
+				// the image's, not the link's.
+				if info.Mode()&os.ModeSymlink != 0 {
+					if target, err := os.Stat(path); err == nil {
+						sizes[path] = target.Size()
+					}
+				}
 			}
 		}
 
@@ -76,6 +85,7 @@ func (s *Service) GetImages(c *gin.Context) {
 
 	rsp.OkRspWithData(c, &proto.GetImagesRsp{
 		Files: images,
+		Sizes: sizes,
 	})
 	log.Debugf("get images success, total %d", len(images))
 }
