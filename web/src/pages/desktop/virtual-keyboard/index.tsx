@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AppleOutlined, WindowsOutlined } from '@ant-design/icons';
 import clsx from 'clsx';
 import { useAtom } from 'jotai';
@@ -75,6 +75,27 @@ export const VirtualKeyboard = () => {
   const isBigScreen = useMediaQuery({ minWidth: 850 });
 
   const [isKeyboardOpen, setIsKeyboardOpen] = useAtom(isKeyboardOpenAtom);
+
+  // The drawer is non-modal, so the menu bar and the screen stay usable while
+  // it is open. vaul undoes the dialog's pointer-events: none on the body only
+  // when it opens itself; opened from the Keyboard menu, the body kept it and
+  // nothing outside the keyboard took a click. Clear it for as long as the
+  // keyboard is open, whenever it comes back.
+  useEffect(() => {
+    if (!isKeyboardOpen) return;
+
+    const release = () => {
+      if (document.body.style.pointerEvents === 'none') document.body.style.pointerEvents = '';
+    };
+    const frame = requestAnimationFrame(release);
+    const observer = new MutationObserver(release);
+    observer.observe(document.body, { attributes: true, attributeFilter: ['style'] });
+
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
+  }, [isKeyboardOpen]);
 
   // Read on the first render. Set from an effect, the stored language never
   // reached the Select below, because its `defaultValue` only applies on mount.
