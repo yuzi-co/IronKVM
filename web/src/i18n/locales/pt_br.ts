@@ -740,7 +740,17 @@ const pt_br = {
         reloadFailed:
           'Salvo, mas não foi possível recarregar o sshd. Vale na próxima vez que o sshd iniciar.',
         notApplied:
-          'O sshd ainda aceita senhas. Desligue e ligue o servidor SSH para aplicar a configuração.'
+          'O sshd ainda aceita senhas. Desligue e ligue o servidor SSH para aplicar a configuração.',
+        changePort: 'Alterar',
+        portConfirm: 'Alterar a porta SSH para {{port}}?',
+        portConfirmDesc:
+          'Suas sessões SSH atuais continuam abertas. Novas conexões precisam usar a porta {{port}}. Verifique se o firewall permite.',
+        portChanged: 'Porta SSH alterada para {{port}}',
+        portInvalid: 'Informe uma porta de 1 a 65535.',
+        portReserved: 'O próprio IronKVM usa esta porta. Escolha outra.',
+        portInUse: 'Outro programa no IronKVM já escuta nesta porta.',
+        portNotHonoured:
+          'O sshd desta imagem não lê esta configuração, então a porta continua a mesma.'
       },
       vnc: {
         address: 'Endereço',

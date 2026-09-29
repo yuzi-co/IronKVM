@@ -741,7 +741,17 @@ const ca = {
         reloadFailed:
           "Desat, però no s'ha pogut recarregar sshd. S'aplicarà la propera vegada que arrenqui sshd.",
         notApplied:
-          'sshd encara accepta contrasenyes. Apagueu i engegueu el servidor SSH per aplicar el paràmetre.'
+          'sshd encara accepta contrasenyes. Apagueu i engegueu el servidor SSH per aplicar el paràmetre.',
+        changePort: 'Canvia',
+        portConfirm: 'Voleu canviar el port SSH a {{port}}?',
+        portConfirmDesc:
+          'Les sessions SSH actuals continuen obertes. Les connexions noves han de fer servir el port {{port}}. Assegureu-vos que el tallafoc ho permet.',
+        portChanged: 'Port SSH canviat a {{port}}',
+        portInvalid: "Introduïu un port de l'1 al 65535.",
+        portReserved: 'IronKVM ja fa servir aquest port. Trieu-ne un altre.',
+        portInUse: "Un altre programa de l'IronKVM ja escolta en aquest port.",
+        portNotHonoured:
+          "L'sshd d'aquesta imatge no llegeix aquest paràmetre, així que el port no canvia."
       },
       vnc: {
         address: 'Adreça',

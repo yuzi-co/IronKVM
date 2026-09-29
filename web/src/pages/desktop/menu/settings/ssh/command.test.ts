@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { keyLabel, sshCommand } from './command.ts';
+import { isPortChange, keyLabel, sshCommand } from './command.ts';
 
 test('leaves the default port out', () => {
   assert.equal(sshCommand('10.0.0.5', 22), 'ssh root@10.0.0.5');
@@ -23,4 +23,17 @@ test('labels key types the way ssh-keygen does', () => {
   assert.equal(keyLabel('sk-ssh-ed25519@openssh.com'), 'ED25519-SK');
   assert.equal(keyLabel('sk-ecdsa-sha2-nistp256@openssh.com'), 'ECDSA-SK');
   assert.equal(keyLabel('ssh-ed25519-cert-v01@openssh.com'), 'ED25519-CERT');
+});
+
+test('takes a new port in range only', () => {
+  assert.equal(isPortChange(2222, 22), true);
+  assert.equal(isPortChange(22, 2222), true);
+  assert.equal(isPortChange(1, 22), true);
+  assert.equal(isPortChange(65535, 22), true);
+  assert.equal(isPortChange(22, 22), false);
+  assert.equal(isPortChange(0, 22), false);
+  assert.equal(isPortChange(65536, 22), false);
+  assert.equal(isPortChange(22.5, 22), false);
+  assert.equal(isPortChange(null, 22), false);
+  assert.equal(isPortChange(undefined, 22), false);
 });

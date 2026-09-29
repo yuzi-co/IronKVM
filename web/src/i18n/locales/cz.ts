@@ -733,7 +733,16 @@ const cz = {
         reloadFailed:
           'Uloženo, ale sshd se nepodařilo znovu načíst. Projeví se při příštím spuštění sshd.',
         notApplied:
-          'sshd stále přijímá hesla. Vypněte a zapněte SSH server, aby se nastavení projevilo.'
+          'sshd stále přijímá hesla. Vypněte a zapněte SSH server, aby se nastavení projevilo.',
+        changePort: 'Změnit',
+        portConfirm: 'Změnit port SSH na {{port}}?',
+        portConfirmDesc:
+          'Aktuální relace SSH zůstanou otevřené. Nová připojení musí používat port {{port}}. Ověřte, že to firewall povoluje.',
+        portChanged: 'Port SSH změněn na {{port}}',
+        portInvalid: 'Zadejte port od 1 do 65535.',
+        portReserved: 'Tento port používá samotné IronKVM. Zvolte jiný.',
+        portInUse: 'Na tomto portu už na IronKVM naslouchá jiný program.',
+        portNotHonoured: 'sshd v tomto obrazu toto nastavení nečte, port zůstává beze změny.'
       },
       vnc: {
         address: 'Adresa',

@@ -704,7 +704,16 @@ const zh = {
         keysOnlyOff: '已开启密码登录',
         notHonoured: '此镜像中的 sshd 不读取此设置，因此密码登录仍然开启。',
         reloadFailed: '已保存，但无法重新加载 sshd。将在 sshd 下次启动时生效。',
-        notApplied: 'sshd 仍接受密码。请关闭再打开 SSH 服务器以应用此设置。'
+        notApplied: 'sshd 仍接受密码。请关闭再打开 SSH 服务器以应用此设置。',
+        changePort: '更改',
+        portConfirm: '将 SSH 端口改为 {{port}}？',
+        portConfirmDesc:
+          '当前的 SSH 会话保持打开。新连接必须使用端口 {{port}}。请确认防火墙允许该端口。',
+        portChanged: 'SSH 端口已改为 {{port}}',
+        portInvalid: '请输入 1 到 65535 之间的端口。',
+        portReserved: 'IronKVM 自身在使用此端口，请选择其他端口。',
+        portInUse: 'IronKVM 上已有其他程序在监听此端口。',
+        portNotHonoured: '此镜像的 sshd 不读取此设置，端口保持不变。'
       },
       vnc: {
         address: '地址',

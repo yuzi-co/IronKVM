@@ -743,7 +743,17 @@ const ja = {
         reloadFailed:
           '保存しましたが、sshd を再読み込みできませんでした。次に sshd が起動したときに適用されます。',
         notApplied:
-          'sshd はまだパスワードを受け付けています。設定を適用するには SSH サーバーをオフにしてからオンにしてください。'
+          'sshd はまだパスワードを受け付けています。設定を適用するには SSH サーバーをオフにしてからオンにしてください。',
+        changePort: '変更',
+        portConfirm: 'SSH ポートを {{port}} に変更しますか?',
+        portConfirmDesc:
+          '現在の SSH セッションはそのまま開いています。新しい接続にはポート {{port}} を使う必要があります。ファイアウォールで許可されていることを確認してください。',
+        portChanged: 'SSH ポートを {{port}} に変更しました',
+        portInvalid: '1 から 65535 までのポートを入力してください。',
+        portReserved: 'このポートは IronKVM 自身が使用しています。別のポートを選んでください。',
+        portInUse: 'IronKVM 上の別のプログラムがすでにこのポートで待ち受けています。',
+        portNotHonoured:
+          'このイメージの sshd はこの設定を読み込まないため、ポートは変更されません。'
       },
       vnc: {
         address: 'アドレス',

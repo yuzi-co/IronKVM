@@ -745,7 +745,17 @@ const nl = {
         reloadFailed:
           'Opgeslagen, maar sshd kon niet opnieuw worden geladen. Het geldt bij de volgende start van sshd.',
         notApplied:
-          'sshd accepteert nog wachtwoorden. Zet de SSH-server uit en weer aan om de instelling toe te passen.'
+          'sshd accepteert nog wachtwoorden. Zet de SSH-server uit en weer aan om de instelling toe te passen.',
+        changePort: 'Wijzigen',
+        portConfirm: 'SSH-poort wijzigen naar {{port}}?',
+        portConfirmDesc:
+          'Je huidige SSH-sessies blijven open. Nieuwe verbindingen moeten poort {{port}} gebruiken. Zorg dat je firewall dat toestaat.',
+        portChanged: 'SSH-poort gewijzigd naar {{port}}',
+        portInvalid: 'Voer een poort van 1 tot 65535 in.',
+        portReserved: 'IronKVM gebruikt deze poort zelf. Kies een andere.',
+        portInUse: 'Een ander programma op de IronKVM luistert al op deze poort.',
+        portNotHonoured:
+          'De sshd van deze image leest deze instelling niet, dus de poort blijft ongewijzigd.'
       },
       vnc: {
         address: 'Adres',

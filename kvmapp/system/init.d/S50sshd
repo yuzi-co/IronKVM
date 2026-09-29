@@ -18,6 +18,12 @@ KEYS_ONLY_FLAG=/etc/kvm/ssh_keys_only
 KEYS_ONLY_DROPIN=/etc/ssh/sshd_config.d/ironkvm-keys-only.conf
 AUTHORIZED_KEYS=/root/.ssh/authorized_keys
 
+# Settings > SSH > Port, kept the same way: the number in /etc/kvm/ssh_port is
+# the setting, absent for 22, and the drop-in is written from it at every
+# start. The server writes the same lines when the owner changes the port.
+PORT_FILE=/etc/kvm/ssh_port
+PORT_DROPIN=/etc/ssh/sshd_config.d/ironkvm-port.conf
+
 umask 077
 
 apply_keys_only() {
@@ -40,10 +46,32 @@ apply_keys_only() {
     fi
 }
 
+apply_port() {
+    port=$(cat "$PORT_FILE" 2>/dev/null)
+    # Digits only and no leading zero, which the shell would read as octal.
+    case "$port" in
+        ''|0*|*[!0-9]*) rm -f "$PORT_DROPIN"; return ;;
+    esac
+    if [ "$port" -gt 65535 ] || [ "$port" -eq 22 ]; then
+        rm -f "$PORT_DROPIN"
+        return
+    fi
+    mkdir -p "${PORT_DROPIN%/*}"
+    printf '%s\n' '# Written by IronKVM: Settings > SSH > Port.' "Port $port" > "$PORT_DROPIN"
+    chmod 644 "$PORT_DROPIN"
+    # As for keys-only: a drop-in sshd cannot parse would keep it from
+    # starting, so it is taken back and sshd listens on 22.
+    if ! /usr/sbin/sshd -t 2>/dev/null; then
+        rm -f "$PORT_DROPIN"
+        echo "sshd: port $port rejected, listening on 22"
+    fi
+}
+
 startssh() {
     # Generate SSH keys if they do not exist
     [ ! -f /etc/ssh/ssh_host_rsa_key ] && /usr/bin/ssh-keygen -A
 
+    apply_port
     apply_keys_only
 
         printf "Starting sshd: "

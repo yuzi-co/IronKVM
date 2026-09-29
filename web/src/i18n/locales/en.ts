@@ -728,7 +728,17 @@ const en = {
           'The sshd on this image does not read this setting, so password login stays on.',
         reloadFailed: 'Saved, but sshd could not be reloaded. It applies when sshd next starts.',
         notApplied:
-          'sshd still accepts passwords. Turn the SSH server off and on to apply the setting.'
+          'sshd still accepts passwords. Turn the SSH server off and on to apply the setting.',
+        changePort: 'Change',
+        portConfirm: 'Change the SSH port to {{port}}?',
+        portConfirmDesc:
+          'Your current SSH sessions stay open. New connections must use port {{port}}. Make sure your firewall allows it.',
+        portChanged: 'SSH port changed to {{port}}',
+        portInvalid: 'Enter a port from 1 to 65535.',
+        portReserved: 'IronKVM itself uses this port. Choose another one.',
+        portInUse: 'Another program on the IronKVM already listens on this port.',
+        portNotHonoured:
+          'The sshd on this image does not take this setting, so the port stays as it was.'
       },
       vnc: {
         address: 'Address',

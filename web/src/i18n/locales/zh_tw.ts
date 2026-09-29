@@ -703,7 +703,16 @@ const zh_tw = {
         keysOnlyOff: '已開啟密碼登入',
         notHonoured: '此映像中的 sshd 不會讀取此設定，因此密碼登入仍然開啟。',
         reloadFailed: '已儲存，但無法重新載入 sshd。將在 sshd 下次啟動時生效。',
-        notApplied: 'sshd 仍接受密碼。請關閉再開啟 SSH 伺服器以套用此設定。'
+        notApplied: 'sshd 仍接受密碼。請關閉再開啟 SSH 伺服器以套用此設定。',
+        changePort: '變更',
+        portConfirm: '將 SSH 連接埠改為 {{port}}？',
+        portConfirmDesc:
+          '目前的 SSH 工作階段會保持開啟。新連線必須使用連接埠 {{port}}。請確認防火牆允許此連接埠。',
+        portChanged: 'SSH 連接埠已改為 {{port}}',
+        portInvalid: '請輸入 1 到 65535 之間的連接埠。',
+        portReserved: 'IronKVM 本身在使用此連接埠，請選擇其他連接埠。',
+        portInUse: 'IronKVM 上已有其他程式在監聽此連接埠。',
+        portNotHonoured: '此映像的 sshd 不讀取此設定，連接埠維持不變。'
       },
       vnc: {
         address: '位址',

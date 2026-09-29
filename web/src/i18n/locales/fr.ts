@@ -750,7 +750,16 @@ const fr = {
         reloadFailed:
           "Enregistré, mais sshd n'a pas pu être rechargé. Le réglage s'appliquera au prochain démarrage de sshd.",
         notApplied:
-          'sshd accepte encore les mots de passe. Désactivez puis réactivez le serveur SSH pour appliquer le réglage.'
+          'sshd accepte encore les mots de passe. Désactivez puis réactivez le serveur SSH pour appliquer le réglage.',
+        changePort: 'Modifier',
+        portConfirm: 'Changer le port SSH en {{port}} ?',
+        portConfirmDesc:
+          "Vos sessions SSH en cours restent ouvertes. Les nouvelles connexions devront utiliser le port {{port}}. Vérifiez que votre pare-feu l'autorise.",
+        portChanged: 'Port SSH changé en {{port}}',
+        portInvalid: 'Saisissez un port de 1 à 65535.',
+        portReserved: 'IronKVM utilise déjà ce port. Choisissez-en un autre.',
+        portInUse: "Un autre programme de l'IronKVM écoute déjà sur ce port.",
+        portNotHonoured: 'Le sshd de cette image ne lit pas ce réglage, le port reste inchangé.'
       },
       vnc: {
         address: 'Adresse',

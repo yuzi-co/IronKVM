@@ -739,7 +739,17 @@ const pl = {
         reloadFailed:
           'Zapisano, ale nie udało się przeładować sshd. Zadziała przy następnym starcie sshd.',
         notApplied:
-          'sshd nadal przyjmuje hasła. Wyłącz i włącz serwer SSH, aby zastosować ustawienie.'
+          'sshd nadal przyjmuje hasła. Wyłącz i włącz serwer SSH, aby zastosować ustawienie.',
+        changePort: 'Zmień',
+        portConfirm: 'Zmienić port SSH na {{port}}?',
+        portConfirmDesc:
+          'Bieżące sesje SSH pozostaną otwarte. Nowe połączenia muszą używać portu {{port}}. Upewnij się, że zapora na to pozwala.',
+        portChanged: 'Port SSH zmieniony na {{port}}',
+        portInvalid: 'Podaj port od 1 do 65535.',
+        portReserved: 'Tego portu używa samo IronKVM. Wybierz inny.',
+        portInUse: 'Inny program na IronKVM już nasłuchuje na tym porcie.',
+        portNotHonoured:
+          'sshd w tym obrazie nie odczytuje tego ustawienia, więc port pozostaje bez zmian.'
       },
       vnc: {
         address: 'Adres',

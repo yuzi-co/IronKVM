@@ -254,6 +254,12 @@ type SetSSHKeysOnlyReq struct {
 	Enabled bool `json:"enabled" validate:"omitempty"`
 }
 
+// SetSSHPortReq changes the port sshd listens on. The range is checked by the
+// service, which answers an out-of-range port with its own code.
+type SetSSHPortReq struct {
+	Port int `json:"port" validate:"omitempty"`
+}
+
 type GetSwapRsp struct {
 	Size int64 `json:"size"` // unit: MB
 }

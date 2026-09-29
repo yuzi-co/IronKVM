@@ -731,7 +731,16 @@ const vi = {
           'sshd trong image này không đọc cài đặt này, nên đăng nhập bằng mật khẩu vẫn bật.',
         reloadFailed:
           'Đã lưu, nhưng không tải lại được sshd. Cài đặt sẽ áp dụng khi sshd khởi động lần tới.',
-        notApplied: 'sshd vẫn chấp nhận mật khẩu. Tắt rồi bật lại máy chủ SSH để áp dụng cài đặt.'
+        notApplied: 'sshd vẫn chấp nhận mật khẩu. Tắt rồi bật lại máy chủ SSH để áp dụng cài đặt.',
+        changePort: 'Đổi',
+        portConfirm: 'Đổi cổng SSH thành {{port}}?',
+        portConfirmDesc:
+          'Các phiên SSH hiện tại vẫn mở. Kết nối mới phải dùng cổng {{port}}. Hãy chắc chắn tường lửa cho phép cổng này.',
+        portChanged: 'Đã đổi cổng SSH thành {{port}}',
+        portInvalid: 'Nhập cổng từ 1 đến 65535.',
+        portReserved: 'Chính IronKVM đang dùng cổng này. Hãy chọn cổng khác.',
+        portInUse: 'Một chương trình khác trên IronKVM đã lắng nghe ở cổng này.',
+        portNotHonoured: 'sshd trong image này không đọc cài đặt này, nên cổng vẫn giữ nguyên.'
       },
       vnc: {
         address: 'Địa chỉ',
