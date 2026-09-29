@@ -637,6 +637,50 @@ const vi = {
         okBtn: 'Xác nhận',
         cancelBtn: 'Hủy'
       },
+      ssh: {
+        service: 'Máy chủ SSH',
+        serviceDesc: 'Chạy sshd ngay bây giờ và mỗi lần khởi động',
+        failed: 'Không tải được cài đặt SSH',
+        rootDefault: 'root vẫn dùng mật khẩu mặc định của nhà sản xuất',
+        rootEmpty: 'root chưa có mật khẩu',
+        rootWarning:
+          'Bất kỳ ai truy cập được console hoặc SSH đều có thể đăng nhập bằng root. Đặt mật khẩu tại {{account}} > {{password}}: với chủ thiết bị, thao tác này cũng đặt mật khẩu root.',
+        connection: 'Kết nối',
+        command: 'Đăng nhập bằng root',
+        port: 'Cổng',
+        viaVpn: 'Qua {{name}}',
+        notRunning: 'sshd không chạy. Bật máy chủ SSH để kết nối.',
+        hostKeys: 'Dấu vân tay khóa máy chủ',
+        hostKeysDesc: 'Đối chiếu với thông tin ssh hiển thị ở lần kết nối đầu tiên.',
+        noHostKeys: 'Chưa có khóa máy chủ. sshd tạo chúng khi khởi động lần đầu.',
+        keys: 'Khóa được ủy quyền',
+        keysDesc:
+          'Các khóa công khai có thể đăng nhập bằng root. Chúng được lưu trên phân vùng dữ liệu nên vẫn còn sau khi cập nhật.',
+        noKeys: 'Chưa có khóa được ủy quyền.',
+        noComment: 'không có ghi chú',
+        addPlaceholder: 'Dán một khóa công khai, ví dụ nội dung của ~/.ssh/id_ed25519.pub',
+        add: 'Thêm khóa',
+        added: 'Đã thêm khóa',
+        removed: 'Đã xóa khóa',
+        deleteConfirm: 'Xóa khóa này?',
+        deleteConfirmDesc: 'Khóa này sẽ không thể đăng nhập nữa. Các phiên đang mở vẫn giữ nguyên.',
+        invalidKey: 'Đây không phải khóa công khai. Hãy dán một dòng duy nhất từ tệp .pub.',
+        keyOptions: 'Không chấp nhận khóa có tùy chọn như command= hoặc from= ở đây.',
+        duplicateKey: 'Khóa này đã được ủy quyền.',
+        lastKey: 'Không thể xóa khóa cuối cùng khi chế độ chỉ dùng khóa đang bật.',
+        keysOnly: 'Chỉ dùng khóa',
+        keysOnlyDesc:
+          'Tắt đăng nhập bằng mật khẩu và keyboard-interactive. Các phiên đang mở vẫn giữ nguyên.',
+        keysOnlyNeedsKey:
+          'Hãy thêm một khóa được ủy quyền trước, nếu không sẽ không ai đăng nhập được.',
+        keysOnlyOn: 'Đã tắt đăng nhập bằng mật khẩu',
+        keysOnlyOff: 'Đã bật đăng nhập bằng mật khẩu',
+        notHonoured:
+          'sshd trong image này không đọc cài đặt này, nên đăng nhập bằng mật khẩu vẫn bật.',
+        reloadFailed:
+          'Đã lưu, nhưng không tải lại được sshd. Cài đặt sẽ áp dụng khi sshd khởi động lần tới.',
+        notApplied: 'sshd vẫn chấp nhận mật khẩu. Tắt rồi bật lại máy chủ SSH để áp dụng cài đặt.'
+      },
       vnc: {
         address: 'Địa chỉ',
         certHint:
@@ -890,10 +934,6 @@ const vi = {
           600: '10 phút',
           1800: '30 phút',
           3600: '1 giờ'
-        },
-        ssh: {
-          description: 'Kích hoạt SSH truy cập từ xa',
-          tip: 'Đặt mật khẩu mạnh trước khi kích hoạt (Tài khoản - Đổi mật khẩu)'
         },
         advanced: 'Cài đặt nâng cao',
         cpuFreq: {

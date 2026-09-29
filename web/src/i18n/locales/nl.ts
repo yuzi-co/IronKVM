@@ -651,6 +651,50 @@ const nl = {
         okBtn: 'Bevestigen',
         cancelBtn: 'Annuleren'
       },
+      ssh: {
+        service: 'SSH-server',
+        serviceDesc: 'sshd nu en bij elke start starten',
+        failed: 'De SSH-instellingen konden niet worden geladen',
+        rootDefault: 'root heeft nog het fabriekswachtwoord',
+        rootEmpty: 'root heeft geen wachtwoord',
+        rootWarning:
+          'Iedereen die de console of SSH bereikt, kan als root inloggen. Stel een wachtwoord in onder {{account}} > {{password}}: voor de eigenaar van het apparaat stelt het ook het root-wachtwoord in.',
+        connection: 'Verbinding',
+        command: 'Inloggen als root',
+        port: 'Poort',
+        viaVpn: 'Via {{name}}',
+        notRunning: 'sshd draait niet. Zet de SSH-server aan om te verbinden.',
+        hostKeys: 'Vingerafdrukken van de hostsleutels',
+        hostKeysDesc: 'Vergelijk ze met wat ssh bij de eerste verbinding toont.',
+        noHostKeys: 'Nog geen hostsleutels. sshd maakt ze bij de eerste start.',
+        keys: 'Geautoriseerde sleutels',
+        keysDesc:
+          'Publieke sleutels die als root kunnen inloggen. Ze staan op de datapartitie, dus updates bewaren ze.',
+        noKeys: 'Nog geen geautoriseerde sleutels.',
+        noComment: 'geen opmerking',
+        addPlaceholder: 'Plak één publieke sleutel, zoals de inhoud van ~/.ssh/id_ed25519.pub',
+        add: 'Sleutel toevoegen',
+        added: 'Sleutel toegevoegd',
+        removed: 'Sleutel verwijderd',
+        deleteConfirm: 'Deze sleutel verwijderen?',
+        deleteConfirmDesc: 'Hij kan niet meer inloggen. Open sessies blijven open.',
+        invalidKey: 'Dit is geen publieke sleutel. Plak één regel uit een .pub-bestand.',
+        keyOptions: 'Sleutels met opties zoals command= of from= worden hier niet geaccepteerd.',
+        duplicateKey: 'Deze sleutel is al geautoriseerd.',
+        lastKey: 'De laatste sleutel kan niet worden verwijderd zolang alleen-sleutels aan staat.',
+        keysOnly: 'Alleen sleutels',
+        keysOnlyDesc:
+          'Inloggen met wachtwoord en keyboard-interactive uitzetten. Open sessies blijven open.',
+        keysOnlyNeedsKey: 'Voeg eerst een geautoriseerde sleutel toe, anders kan niemand inloggen.',
+        keysOnlyOn: 'Inloggen met wachtwoord uitgezet',
+        keysOnlyOff: 'Inloggen met wachtwoord aangezet',
+        notHonoured:
+          'De sshd van deze image leest deze instelling niet, dus inloggen met wachtwoord blijft aan.',
+        reloadFailed:
+          'Opgeslagen, maar sshd kon niet opnieuw worden geladen. Het geldt bij de volgende start van sshd.',
+        notApplied:
+          'sshd accepteert nog wachtwoorden. Zet de SSH-server uit en weer aan om de instelling toe te passen.'
+      },
       vnc: {
         address: 'Adres',
         certHint:
@@ -907,10 +951,6 @@ const nl = {
           600: '10 min',
           1800: '30 min',
           3600: '1 uur'
-        },
-        ssh: {
-          description: 'Schakel SSH externe toegang in',
-          tip: 'Stel een sterk wachtwoord in voordat u (Account - Wachtwoord wijzigen) inschakelt'
         },
         advanced: 'Geavanceerde instellingen',
         cpuFreq: {

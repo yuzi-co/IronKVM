@@ -651,6 +651,53 @@ const fr = {
         okBtn: 'Confirmer',
         cancelBtn: 'Annuler'
       },
+      ssh: {
+        service: 'Serveur SSH',
+        serviceDesc: 'Démarrer sshd maintenant et à chaque démarrage',
+        failed: 'Impossible de charger les réglages SSH',
+        rootDefault: "root a encore le mot de passe d'usine",
+        rootEmpty: "root n'a pas de mot de passe",
+        rootWarning:
+          "Toute personne qui accède à la console ou à SSH peut se connecter en root. Définissez un mot de passe dans {{account}} > {{password}} : pour le propriétaire de l'appareil, il définit aussi celui de root.",
+        connection: 'Connexion',
+        command: 'Se connecter en root',
+        port: 'Port',
+        viaVpn: 'Via {{name}}',
+        notRunning: 'sshd ne tourne pas. Activez le serveur SSH pour vous connecter.',
+        hostKeys: "Empreintes des clés d'hôte",
+        hostKeysDesc: 'Comparez-les à ce que ssh affiche à la première connexion.',
+        noHostKeys: "Pas encore de clés d'hôte. sshd les crée à son premier démarrage.",
+        keys: 'Clés autorisées',
+        keysDesc:
+          'Clés publiques autorisées à se connecter en root. Elles sont conservées sur la partition de données et survivent aux mises à jour.',
+        noKeys: 'Aucune clé autorisée pour le moment.',
+        noComment: 'sans commentaire',
+        addPlaceholder: 'Collez une clé publique, par exemple le contenu de ~/.ssh/id_ed25519.pub',
+        add: 'Ajouter la clé',
+        added: 'Clé ajoutée',
+        removed: 'Clé retirée',
+        deleteConfirm: 'Retirer cette clé ?',
+        deleteConfirmDesc:
+          'Elle ne pourra plus se connecter. Les sessions ouvertes restent ouvertes.',
+        invalidKey: "Ce n'est pas une clé publique. Collez une seule ligne d'un fichier .pub.",
+        keyOptions: 'Les clés avec options comme command= ou from= ne sont pas acceptées ici.',
+        duplicateKey: 'Cette clé est déjà autorisée.',
+        lastKey:
+          'La dernière clé ne peut pas être retirée tant que la connexion par clé seule est active.',
+        keysOnly: 'Clés uniquement',
+        keysOnlyDesc:
+          'Désactiver la connexion par mot de passe et keyboard-interactive. Les sessions ouvertes restent ouvertes.',
+        keysOnlyNeedsKey:
+          "Ajoutez d'abord une clé autorisée, sinon personne ne pourrait se connecter.",
+        keysOnlyOn: 'Connexion par mot de passe désactivée',
+        keysOnlyOff: 'Connexion par mot de passe activée',
+        notHonoured:
+          'Le sshd de cette image ne lit pas ce réglage : la connexion par mot de passe reste active.',
+        reloadFailed:
+          "Enregistré, mais sshd n'a pas pu être rechargé. Le réglage s'appliquera au prochain démarrage de sshd.",
+        notApplied:
+          'sshd accepte encore les mots de passe. Désactivez puis réactivez le serveur SSH pour appliquer le réglage.'
+      },
       vnc: {
         address: 'Adresse',
         certHint:
@@ -912,10 +959,6 @@ const fr = {
           600: '10 min',
           1800: '30 min',
           3600: '1 heure'
-        },
-        ssh: {
-          description: "Activer l'accès à distance SSH",
-          tip: "Définissez un mot de passe fort avant d'activer (Compte - Modifier le mot de passe)"
         },
         advanced: 'Paramètres avancés',
         cpuFreq: {

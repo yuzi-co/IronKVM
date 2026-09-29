@@ -644,6 +644,51 @@ const pl = {
         okBtn: 'Potwierdź',
         cancelBtn: 'Anuluj'
       },
+      ssh: {
+        service: 'Serwer SSH',
+        serviceDesc: 'Uruchom sshd teraz i przy każdym starcie',
+        failed: 'Nie udało się wczytać ustawień SSH',
+        rootDefault: 'root nadal ma hasło fabryczne',
+        rootEmpty: 'root nie ma hasła',
+        rootWarning:
+          'Każdy, kto dotrze do konsoli lub SSH, może zalogować się jako root. Ustaw hasło w {{account}} > {{password}}: dla właściciela urządzenia ustawia ono też hasło roota.',
+        connection: 'Połączenie',
+        command: 'Zaloguj się jako root',
+        port: 'Port',
+        viaVpn: 'Przez {{name}}',
+        notRunning: 'sshd nie działa. Włącz serwer SSH, aby się połączyć.',
+        hostKeys: 'Odciski kluczy hosta',
+        hostKeysDesc: 'Porównaj je z tym, co ssh pokaże przy pierwszym połączeniu.',
+        noHostKeys: 'Brak kluczy hosta. sshd tworzy je przy pierwszym uruchomieniu.',
+        keys: 'Autoryzowane klucze',
+        keysDesc:
+          'Klucze publiczne, które mogą logować się jako root. Są przechowywane na partycji danych, więc aktualizacje je zachowują.',
+        noKeys: 'Brak autoryzowanych kluczy.',
+        noComment: 'bez komentarza',
+        addPlaceholder: 'Wklej jeden klucz publiczny, np. zawartość ~/.ssh/id_ed25519.pub',
+        add: 'Dodaj klucz',
+        added: 'Klucz dodany',
+        removed: 'Klucz usunięty',
+        deleteConfirm: 'Usunąć ten klucz?',
+        deleteConfirmDesc: 'Nie będzie mógł się już zalogować. Otwarte sesje pozostają otwarte.',
+        invalidKey: 'To nie jest klucz publiczny. Wklej jeden wiersz z pliku .pub.',
+        keyOptions: 'Klucze z opcjami, takimi jak command= lub from=, nie są tu przyjmowane.',
+        duplicateKey: 'Ten klucz jest już autoryzowany.',
+        lastKey: 'Ostatniego klucza nie można usunąć, gdy włączone jest logowanie tylko kluczem.',
+        keysOnly: 'Tylko klucze',
+        keysOnlyDesc:
+          'Wyłącz logowanie hasłem i keyboard-interactive. Otwarte sesje pozostają otwarte.',
+        keysOnlyNeedsKey:
+          'Najpierw dodaj autoryzowany klucz, inaczej nikt nie mógłby się zalogować.',
+        keysOnlyOn: 'Logowanie hasłem wyłączone',
+        keysOnlyOff: 'Logowanie hasłem włączone',
+        notHonoured:
+          'sshd w tym obrazie nie czyta tego ustawienia, więc logowanie hasłem pozostaje włączone.',
+        reloadFailed:
+          'Zapisano, ale nie udało się przeładować sshd. Zadziała przy następnym starcie sshd.',
+        notApplied:
+          'sshd nadal przyjmuje hasła. Wyłącz i włącz serwer SSH, aby zastosować ustawienie.'
+      },
       vnc: {
         address: 'Adres',
         certHint:
@@ -900,10 +945,6 @@ const pl = {
           600: '10 min',
           1800: '30 min',
           3600: '1 godzina'
-        },
-        ssh: {
-          description: 'Włącz SSH zdalny dostęp',
-          tip: 'Ustaw silne hasło przed włączeniem (Konto - Zmień hasło)'
         },
         advanced: 'Ustawienia zaawansowane',
         cpuFreq: {

@@ -658,6 +658,54 @@ const de = {
         okBtn: 'Bestätigen',
         cancelBtn: 'Abbrechen'
       },
+      ssh: {
+        service: 'SSH-Server',
+        serviceDesc: 'sshd jetzt und bei jedem Start ausführen',
+        failed: 'SSH-Einstellungen konnten nicht geladen werden',
+        rootDefault: 'root hat noch das Werkspasswort',
+        rootEmpty: 'root hat kein Passwort',
+        rootWarning:
+          'Wer die Konsole oder SSH erreicht, kann sich als root anmelden. Legen Sie unter {{account}} > {{password}} ein Passwort fest: Für den Gerätebesitzer setzt es auch das root-Passwort.',
+        connection: 'Verbindung',
+        command: 'Als root anmelden',
+        port: 'Port',
+        viaVpn: 'Über {{name}}',
+        notRunning: 'sshd läuft nicht. Schalten Sie den SSH-Server ein, um sich zu verbinden.',
+        hostKeys: 'Fingerabdrücke der Host-Schlüssel',
+        hostKeysDesc: 'Vergleichen Sie diese mit der Anzeige von ssh bei der ersten Verbindung.',
+        noHostKeys: 'Noch keine Host-Schlüssel. sshd erzeugt sie beim ersten Start.',
+        keys: 'Autorisierte Schlüssel',
+        keysDesc:
+          'Öffentliche Schlüssel, die sich als root anmelden dürfen. Sie liegen auf der Datenpartition und bleiben bei Updates erhalten.',
+        noKeys: 'Noch keine autorisierten Schlüssel.',
+        noComment: 'kein Kommentar',
+        addPlaceholder:
+          'Einen öffentlichen Schlüssel einfügen, etwa den Inhalt von ~/.ssh/id_ed25519.pub',
+        add: 'Schlüssel hinzufügen',
+        added: 'Schlüssel hinzugefügt',
+        removed: 'Schlüssel entfernt',
+        deleteConfirm: 'Diesen Schlüssel entfernen?',
+        deleteConfirmDesc: 'Er kann sich nicht mehr anmelden. Offene Sitzungen bleiben bestehen.',
+        invalidKey:
+          'Das ist kein öffentlicher Schlüssel. Fügen Sie eine einzelne Zeile aus einer .pub-Datei ein.',
+        keyOptions: 'Schlüssel mit Optionen wie command= oder from= werden hier nicht angenommen.',
+        duplicateKey: 'Dieser Schlüssel ist bereits autorisiert.',
+        lastKey:
+          'Der letzte Schlüssel kann nicht entfernt werden, solange nur Schlüssel erlaubt sind.',
+        keysOnly: 'Nur Schlüssel',
+        keysOnlyDesc:
+          'Anmeldung per Passwort und Keyboard-Interactive abschalten. Offene Sitzungen bleiben bestehen.',
+        keysOnlyNeedsKey:
+          'Fügen Sie zuerst einen autorisierten Schlüssel hinzu, sonst könnte sich niemand anmelden.',
+        keysOnlyOn: 'Passwort-Anmeldung ausgeschaltet',
+        keysOnlyOff: 'Passwort-Anmeldung eingeschaltet',
+        notHonoured:
+          'Der sshd dieses Images liest diese Einstellung nicht, die Passwort-Anmeldung bleibt aktiv.',
+        reloadFailed:
+          'Gespeichert, aber sshd konnte nicht neu geladen werden. Es gilt beim nächsten Start von sshd.',
+        notApplied:
+          'sshd nimmt noch Passwörter an. Schalten Sie den SSH-Server aus und wieder ein, um die Einstellung anzuwenden.'
+      },
       vnc: {
         address: 'Adresse',
         certHint:
@@ -914,10 +962,6 @@ const de = {
           600: '10 Min',
           1800: '30 Min',
           3600: '1 Stunde'
-        },
-        ssh: {
-          description: 'Aktiviere entfernten SSH-Zugang',
-          tip: 'Setzten Sie ein starkes Passwort vor dem aktivieren (Konto - Passwort ändern)'
         },
         advanced: 'Erweiterte Einstellungen',
         cpuFreq: {

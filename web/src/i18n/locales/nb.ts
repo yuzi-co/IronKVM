@@ -642,6 +642,51 @@ const nb = {
         okBtn: 'Bekreft',
         cancelBtn: 'Avbryt'
       },
+      ssh: {
+        service: 'SSH-server',
+        serviceDesc: 'Start sshd nå og ved hver oppstart',
+        failed: 'Kunne ikke laste SSH-innstillingene',
+        rootDefault: 'root har fortsatt fabrikkpassordet',
+        rootEmpty: 'root har ikke noe passord',
+        rootWarning:
+          'Alle som når konsollen eller SSH, kan logge inn som root. Angi et passord under {{account}} > {{password}}: for enhetens eier setter det også passordet til root.',
+        connection: 'Tilkobling',
+        command: 'Logg inn som root',
+        port: 'Port',
+        viaVpn: 'Via {{name}}',
+        notRunning: 'sshd kjører ikke. Slå på SSH-serveren for å koble til.',
+        hostKeys: 'Fingeravtrykk for vertsnøkler',
+        hostKeysDesc: 'Sammenlign dem med det ssh viser ved første tilkobling.',
+        noHostKeys: 'Ingen vertsnøkler ennå. sshd lager dem første gang den starter.',
+        keys: 'Autoriserte nøkler',
+        keysDesc:
+          'Offentlige nøkler som kan logge inn som root. De lagres på datapartisjonen, så oppdateringer beholder dem.',
+        noKeys: 'Ingen autoriserte nøkler ennå.',
+        noComment: 'ingen kommentar',
+        addPlaceholder:
+          'Lim inn én offentlig nøkkel, for eksempel innholdet i ~/.ssh/id_ed25519.pub',
+        add: 'Legg til nøkkel',
+        added: 'Nøkkel lagt til',
+        removed: 'Nøkkel fjernet',
+        deleteConfirm: 'Fjerne denne nøkkelen?',
+        deleteConfirmDesc: 'Den kan ikke lenger logge inn. Åpne økter forblir åpne.',
+        invalidKey: 'Dette er ikke en offentlig nøkkel. Lim inn én linje fra en .pub-fil.',
+        keyOptions: 'Nøkler med valg som command= eller from= godtas ikke her.',
+        duplicateKey: 'Denne nøkkelen er allerede autorisert.',
+        lastKey: 'Den siste nøkkelen kan ikke fjernes mens innlogging kun med nøkler er på.',
+        keysOnly: 'Kun nøkler',
+        keysOnlyDesc:
+          'Slå av innlogging med passord og keyboard-interactive. Åpne økter forblir åpne.',
+        keysOnlyNeedsKey: 'Legg til en autorisert nøkkel først, ellers kunne ingen logge inn.',
+        keysOnlyOn: 'Innlogging med passord slått av',
+        keysOnlyOff: 'Innlogging med passord slått på',
+        notHonoured:
+          'sshd i dette bildet leser ikke denne innstillingen, så innlogging med passord forblir på.',
+        reloadFailed:
+          'Lagret, men sshd kunne ikke lastes inn på nytt. Det gjelder neste gang sshd starter.',
+        notApplied:
+          'sshd godtar fortsatt passord. Slå SSH-serveren av og på for å ta i bruk innstillingen.'
+      },
       vnc: {
         address: 'Adresse',
         certHint:
@@ -894,10 +939,6 @@ const nb = {
           600: '10 min',
           1800: '30 min',
           3600: '1 time'
-        },
-        ssh: {
-          description: 'Aktiver SSH ekstern tilgang',
-          tip: 'Angi et sterkt passord før du aktiverer (Konto - Endre passord)'
         },
         advanced: 'Avanserte innstillinger',
         cpuFreq: {

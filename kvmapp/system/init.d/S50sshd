@@ -9,11 +9,42 @@
 
 PIDFILE="/var/run/sshd.pid"
 
+# Settings > SSH > Keys only. The flag is on /data through the /etc/kvm bind,
+# so it outlives an update and a slot switch. The drop-in is on this slot's
+# root filesystem, which the next image replaces, so it is written again from
+# the flag at every start. The server writes the same lines when the owner
+# flips the switch.
+KEYS_ONLY_FLAG=/etc/kvm/ssh_keys_only
+KEYS_ONLY_DROPIN=/etc/ssh/sshd_config.d/ironkvm-keys-only.conf
+AUTHORIZED_KEYS=/root/.ssh/authorized_keys
+
 umask 077
+
+apply_keys_only() {
+    # Only with a key to log in with. The server refuses to set the flag
+    # without one, and this is the same guard at boot: a board whose keys file
+    # went missing keeps its password login rather than locking everyone out.
+    if [ -e "$KEYS_ONLY_FLAG" ] && grep -q '^[^#]' "$AUTHORIZED_KEYS" 2>/dev/null; then
+        mkdir -p "${KEYS_ONLY_DROPIN%/*}"
+        printf '%s\n' '# Written by IronKVM: Settings > SSH > Keys only.' \
+            'PasswordAuthentication no' 'KbdInteractiveAuthentication no' > "$KEYS_ONLY_DROPIN"
+        chmod 644 "$KEYS_ONLY_DROPIN"
+        # An sshd that cannot parse its configuration does not start. Take the
+        # drop-in back rather than leave the board without sshd.
+        if ! /usr/sbin/sshd -t 2>/dev/null; then
+            rm -f "$KEYS_ONLY_DROPIN"
+            echo "sshd: keys-only drop-in rejected, password login stays on"
+        fi
+    else
+        rm -f "$KEYS_ONLY_DROPIN"
+    fi
+}
 
 startssh() {
     # Generate SSH keys if they do not exist
     [ ! -f /etc/ssh/ssh_host_rsa_key ] && /usr/bin/ssh-keygen -A
+
+    apply_keys_only
 
         printf "Starting sshd: "
         /usr/sbin/sshd

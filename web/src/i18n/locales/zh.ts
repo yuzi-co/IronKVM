@@ -619,6 +619,45 @@ const zh = {
         okBtn: '确认',
         cancelBtn: '取消'
       },
+      ssh: {
+        service: 'SSH 服务器',
+        serviceDesc: '立即启动 sshd，并在每次开机时启动',
+        failed: '无法加载 SSH 设置',
+        rootDefault: 'root 仍在使用出厂密码',
+        rootEmpty: 'root 没有密码',
+        rootWarning:
+          '任何能访问控制台或 SSH 的人都能以 root 登录。请在 {{account}} > {{password}} 中设置密码：对设备所有者而言，这也会设置 root 密码。',
+        connection: '连接',
+        command: '以 root 登录',
+        port: '端口',
+        viaVpn: '通过 {{name}}',
+        notRunning: 'sshd 未运行。请打开 SSH 服务器后再连接。',
+        hostKeys: '主机密钥指纹',
+        hostKeysDesc: '首次连接时，请与 ssh 显示的指纹核对。',
+        noHostKeys: '尚无主机密钥。sshd 首次启动时会生成。',
+        keys: '已授权密钥',
+        keysDesc: '可以以 root 登录的公钥。它们保存在数据分区，更新后仍会保留。',
+        noKeys: '尚无已授权密钥。',
+        noComment: '无注释',
+        addPlaceholder: '粘贴一个公钥，例如 ~/.ssh/id_ed25519.pub 的内容',
+        add: '添加密钥',
+        added: '已添加密钥',
+        removed: '已移除密钥',
+        deleteConfirm: '移除此密钥？',
+        deleteConfirmDesc: '它将无法再登录。已打开的会话保持不变。',
+        invalidKey: '这不是公钥。请粘贴 .pub 文件中的一行。',
+        keyOptions: '此处不接受带有 command= 或 from= 等选项的密钥。',
+        duplicateKey: '此密钥已获授权。',
+        lastKey: '仅密钥登录开启时，无法移除最后一个密钥。',
+        keysOnly: '仅密钥',
+        keysOnlyDesc: '关闭密码和 keyboard-interactive 登录。已打开的会话保持不变。',
+        keysOnlyNeedsKey: '请先添加一个已授权密钥，否则将无人能登录。',
+        keysOnlyOn: '已关闭密码登录',
+        keysOnlyOff: '已开启密码登录',
+        notHonoured: '此镜像中的 sshd 不读取此设置，因此密码登录仍然开启。',
+        reloadFailed: '已保存，但无法重新加载 sshd。将在 sshd 下次启动时生效。',
+        notApplied: 'sshd 仍接受密码。请关闭再打开 SSH 服务器以应用此设置。'
+      },
       vnc: {
         address: '地址',
         certHint:
@@ -864,10 +903,6 @@ const zh = {
           600: '10分钟',
           1800: '30分钟',
           3600: '1小时'
-        },
-        ssh: {
-          description: '启用 SSH 远程访问',
-          tip: '启用前请务必设置强密码（帐号 - 修改密码）'
         },
         advanced: '高级设置',
         cpuFreq: {

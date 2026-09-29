@@ -645,6 +645,54 @@ const hu = {
         okBtn: 'Megerősítés',
         cancelBtn: 'Mégse'
       },
+      ssh: {
+        service: 'SSH-kiszolgáló',
+        serviceDesc: 'Az sshd indítása most és minden rendszerindításkor',
+        failed: 'Az SSH-beállítások nem tölthetők be',
+        rootDefault: 'A root még mindig a gyári jelszót használja',
+        rootEmpty: 'A rootnak nincs jelszava',
+        rootWarning:
+          'Aki eléri a konzolt vagy az SSH-t, root-ként beléphet. Állítson be jelszót itt: {{account}} > {{password}}. Az eszköz tulajdonosánál ez a root jelszavát is beállítja.',
+        connection: 'Kapcsolat',
+        command: 'Belépés root-ként',
+        port: 'Port',
+        viaVpn: '{{name}} útján',
+        notRunning: 'Az sshd nem fut. A csatlakozáshoz kapcsolja be az SSH-kiszolgálót.',
+        hostKeys: 'Gépkulcs-ujjlenyomatok',
+        hostKeysDesc: 'Vesse össze őket azzal, amit az ssh az első kapcsolódáskor mutat.',
+        noHostKeys: 'Még nincsenek gépkulcsok. Az sshd az első indításkor hozza létre őket.',
+        keys: 'Engedélyezett kulcsok',
+        keysDesc:
+          'Nyilvános kulcsok, amelyekkel root-ként be lehet lépni. Az adatpartíción tárolódnak, így a frissítések megtartják őket.',
+        noKeys: 'Még nincsenek engedélyezett kulcsok.',
+        noComment: 'nincs megjegyzés',
+        addPlaceholder:
+          'Illesszen be egy nyilvános kulcsot, például a ~/.ssh/id_ed25519.pub tartalmát',
+        add: 'Kulcs hozzáadása',
+        added: 'Kulcs hozzáadva',
+        removed: 'Kulcs eltávolítva',
+        deleteConfirm: 'Eltávolítja ezt a kulcsot?',
+        deleteConfirmDesc: 'Többé nem tud belépni. A nyitott munkamenetek nyitva maradnak.',
+        invalidKey: 'Ez nem nyilvános kulcs. Illesszen be egyetlen sort egy .pub fájlból.',
+        keyOptions:
+          'Az olyan beállításokat tartalmazó kulcsok, mint a command= vagy a from=, itt nem fogadhatók el.',
+        duplicateKey: 'Ez a kulcs már engedélyezett.',
+        lastKey:
+          'Az utolsó kulcs nem távolítható el, amíg a csak kulcsos belépés be van kapcsolva.',
+        keysOnly: 'Csak kulcsok',
+        keysOnlyDesc:
+          'A jelszavas és a keyboard-interactive belépés kikapcsolása. A nyitott munkamenetek nyitva maradnak.',
+        keysOnlyNeedsKey:
+          'Előbb adjon hozzá egy engedélyezett kulcsot, különben senki sem tudna belépni.',
+        keysOnlyOn: 'Jelszavas belépés kikapcsolva',
+        keysOnlyOff: 'Jelszavas belépés bekapcsolva',
+        notHonoured:
+          'Ennek a képfájlnak az sshd-je nem olvassa ezt a beállítást, így a jelszavas belépés bekapcsolva marad.',
+        reloadFailed:
+          'Mentve, de az sshd nem tölthető újra. Az sshd következő indításakor lép érvénybe.',
+        notApplied:
+          'Az sshd még elfogad jelszavakat. A beállítás alkalmazásához kapcsolja ki, majd be az SSH-kiszolgálót.'
+      },
       vnc: {
         address: 'Cím',
         certHint:
@@ -903,10 +951,6 @@ const hu = {
           600: '10 perc',
           1800: '30 perc',
           3600: '1 óra'
-        },
-        ssh: {
-          description: 'Engedélyezze a SSH távoli hozzáférést',
-          tip: 'Az engedélyezés előtt állítson be erős jelszót (Fiók - Jelszó módosítása)'
         },
         advanced: 'Speciális beállítások',
         cpuFreq: {

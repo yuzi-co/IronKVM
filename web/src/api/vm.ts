@@ -200,6 +200,26 @@ export function disableSSH() {
   return http.post('/api/vm/ssh/disable');
 }
 
+// list root's authorized keys
+export function getSSHKeys() {
+  return http.get('/api/vm/ssh/keys');
+}
+
+// add one authorized key, as an authorized_keys line
+export function addSSHKey(key: string) {
+  return http.post('/api/vm/ssh/keys', { key });
+}
+
+// remove an authorized key by its SHA256 fingerprint
+export function deleteSSHKey(fingerprint: string) {
+  return http.delete('/api/vm/ssh/keys', { fingerprint });
+}
+
+// turn password login off (keys only) or back on
+export function setSSHKeysOnly(enabled: boolean) {
+  return http.post('/api/vm/ssh/keys-only', { enabled });
+}
+
 // get swap file size
 export function getSwap() {
   return http.get('/api/vm/swap');

@@ -646,6 +646,52 @@ const ja = {
         okBtn: '確認',
         cancelBtn: 'キャンセル'
       },
+      ssh: {
+        service: 'SSH サーバー',
+        serviceDesc: '今すぐ、および起動のたびに sshd を開始します',
+        failed: 'SSH 設定を読み込めませんでした',
+        rootDefault: 'root のパスワードが工場出荷時のままです',
+        rootEmpty: 'root にパスワードがありません',
+        rootWarning:
+          'コンソールまたは SSH に到達できる人は誰でも root としてログインできます。{{account}} > {{password}} でパスワードを設定してください。デバイスの所有者の場合、root のパスワードも設定されます。',
+        connection: '接続',
+        command: 'root としてログイン',
+        port: 'ポート',
+        viaVpn: '{{name}} 経由',
+        notRunning: 'sshd が動作していません。接続するには SSH サーバーをオンにしてください。',
+        hostKeys: 'ホスト鍵のフィンガープリント',
+        hostKeysDesc: '初回接続時に ssh が表示する値と照合してください。',
+        noHostKeys: 'ホスト鍵はまだありません。sshd が初回起動時に作成します。',
+        keys: '許可された鍵',
+        keysDesc:
+          'root としてログインできる公開鍵です。データパーティションに保存されるため、アップデート後も残ります。',
+        noKeys: '許可された鍵はまだありません。',
+        noComment: 'コメントなし',
+        addPlaceholder: '公開鍵を 1 つ貼り付けてください (例: ~/.ssh/id_ed25519.pub の内容)',
+        add: '鍵を追加',
+        added: '鍵を追加しました',
+        removed: '鍵を削除しました',
+        deleteConfirm: 'この鍵を削除しますか？',
+        deleteConfirmDesc:
+          'この鍵ではログインできなくなります。開いているセッションはそのまま残ります。',
+        invalidKey: '公開鍵ではありません。.pub ファイルの 1 行を貼り付けてください。',
+        keyOptions: 'command= や from= などのオプション付きの鍵はここでは受け付けません。',
+        duplicateKey: 'この鍵はすでに許可されています。',
+        lastKey: '鍵のみのログインがオンの間は、最後の鍵を削除できません。',
+        keysOnly: '鍵のみ',
+        keysOnlyDesc:
+          'パスワードと keyboard-interactive によるログインをオフにします。開いているセッションはそのまま残ります。',
+        keysOnlyNeedsKey:
+          '先に許可された鍵を追加してください。そうしないと誰もログインできなくなります。',
+        keysOnlyOn: 'パスワードログインをオフにしました',
+        keysOnlyOff: 'パスワードログインをオンにしました',
+        notHonoured:
+          'このイメージの sshd はこの設定を読み込まないため、パスワードログインはオンのままです。',
+        reloadFailed:
+          '保存しましたが、sshd を再読み込みできませんでした。次に sshd が起動したときに適用されます。',
+        notApplied:
+          'sshd はまだパスワードを受け付けています。設定を適用するには SSH サーバーをオフにしてからオンにしてください。'
+      },
       vnc: {
         address: 'アドレス',
         certHint:
@@ -904,10 +950,6 @@ const ja = {
           600: '10分',
           1800: '30分',
           3600: '1時間'
-        },
-        ssh: {
-          description: 'SSH リモートアクセスを有効にする',
-          tip: '使用する前に必ず強力なパスワードを設定してください（アカウント - パスワードの変更）'
         },
         advanced: '詳細設定',
         cpuFreq: {

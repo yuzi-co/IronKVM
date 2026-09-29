@@ -640,6 +640,49 @@ const da = {
         okBtn: 'Bekræft',
         cancelBtn: 'Annuller'
       },
+      ssh: {
+        service: 'SSH-server',
+        serviceDesc: 'Start sshd nu og ved hver opstart',
+        failed: 'SSH-indstillingerne kunne ikke indlæses',
+        rootDefault: 'root har stadig fabriksadgangskoden',
+        rootEmpty: 'root har ingen adgangskode',
+        rootWarning:
+          'Alle, der når konsollen eller SSH, kan logge ind som root. Angiv en adgangskode under {{account}} > {{password}}: for enhedens ejer sætter den også roots adgangskode.',
+        connection: 'Forbindelse',
+        command: 'Log ind som root',
+        port: 'Port',
+        viaVpn: 'Via {{name}}',
+        notRunning: 'sshd kører ikke. Slå SSH-serveren til for at forbinde.',
+        hostKeys: 'Fingeraftryk for værtsnøgler',
+        hostKeysDesc: 'Sammenlign dem med det, ssh viser ved første forbindelse.',
+        noHostKeys: 'Ingen værtsnøgler endnu. sshd laver dem første gang den starter.',
+        keys: 'Autoriserede nøgler',
+        keysDesc:
+          'Offentlige nøgler, der kan logge ind som root. De gemmes på datapartitionen, så opdateringer beholder dem.',
+        noKeys: 'Ingen autoriserede nøgler endnu.',
+        noComment: 'ingen kommentar',
+        addPlaceholder: 'Indsæt én offentlig nøgle, fx indholdet af ~/.ssh/id_ed25519.pub',
+        add: 'Tilføj nøgle',
+        added: 'Nøgle tilføjet',
+        removed: 'Nøgle fjernet',
+        deleteConfirm: 'Fjern denne nøgle?',
+        deleteConfirmDesc: 'Den kan ikke længere logge ind. Åbne sessioner forbliver åbne.',
+        invalidKey: 'Dette er ikke en offentlig nøgle. Indsæt én linje fra en .pub-fil.',
+        keyOptions: 'Nøgler med valgmuligheder som command= eller from= accepteres ikke her.',
+        duplicateKey: 'Denne nøgle er allerede autoriseret.',
+        lastKey: 'Den sidste nøgle kan ikke fjernes, mens kun-nøgler-login er slået til.',
+        keysOnly: 'Kun nøgler',
+        keysOnlyDesc:
+          'Slå login med adgangskode og keyboard-interactive fra. Åbne sessioner forbliver åbne.',
+        keysOnlyNeedsKey: 'Tilføj først en autoriseret nøgle, ellers kunne ingen logge ind.',
+        keysOnlyOn: 'Login med adgangskode slået fra',
+        keysOnlyOff: 'Login med adgangskode slået til',
+        notHonoured:
+          'sshd i dette image læser ikke denne indstilling, så login med adgangskode forbliver slået til.',
+        reloadFailed: 'Gemt, men sshd kunne ikke genindlæses. Det gælder, næste gang sshd starter.',
+        notApplied:
+          'sshd accepterer stadig adgangskoder. Slå SSH-serveren fra og til for at anvende indstillingen.'
+      },
       vnc: {
         address: 'Adresse',
         certHint:
@@ -895,10 +938,6 @@ const da = {
           600: '10 min',
           1800: '30 min',
           3600: '1 time'
-        },
-        ssh: {
-          description: 'Aktiver SSH fjernadgang',
-          tip: 'Indstil en stærk adgangskode før aktivering (Konto - Skift adgangskode)'
         },
         advanced: 'Avancerede indstillinger',
         cpuFreq: {

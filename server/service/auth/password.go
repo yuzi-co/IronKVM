@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"errors"
 	"io"
 	"os"
 	"os/exec"
@@ -19,13 +18,10 @@ import (
 
 var systemPasswordUpdater = changeRootPassword
 
-// saveIdentity is a variable so a test can stand in for the write-back.
-var saveIdentity = writeBackIdentity
-
-// identityScript carries the board's identity between slots. It is absent on an
-// upstream image, and on a board that has one this is the only thing that makes
-// a password change outlive the slot it was set on.
-const identityScript = "/etc/init.d/S02identity"
+// saveIdentity is a variable so a test can stand in for the write-back. On a
+// board with slots it is the only thing that makes a password change outlive
+// the slot it was set on.
+var saveIdentity = utils.SaveIdentity
 
 func (s *Service) ChangePassword(c *gin.Context) {
 	var req proto.ChangePasswordReq
@@ -132,22 +128,6 @@ func changesSystemPassword(username string) bool {
 		return false
 	}
 	return isSystemPasswordOwner(user)
-}
-
-// writeBackIdentity copies the credentials the board just changed to /data, so
-// the next boot of any slot restores them rather than the ones it replaced.
-//
-// A board without the script is an upstream image with no slot layout, where
-// there is nothing to write back to and nothing to lose. That is not an error.
-func writeBackIdentity() error {
-	if _, err := os.Stat(identityScript); err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return nil
-		}
-		return err
-	}
-
-	return exec.Command(identityScript, "save").Run()
 }
 
 func changeRootPassword(password string) error {
