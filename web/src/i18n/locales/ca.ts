@@ -539,11 +539,14 @@ const ca = {
     settings: {
       title: 'Configuració',
       nav: {
-        general: 'General',
-        device: 'Dispositiu',
+        system: 'Sistema',
         network: 'Xarxa',
-        remote: 'Accés remot',
+        access: 'Accés',
+        integrations: 'Integracions',
         boot: 'Arrencada',
+        browser: 'Aquest navegador',
+        search: 'Cerca un ajust',
+        noMatch: 'Cap ajust coincideix',
         locked:
           'Hi ha una operació en curs. Les altres pàgines i el tancament no estan disponibles fins que acabi.',
         vpnProvider: 'Proveïdor de VPN'
@@ -887,8 +890,13 @@ const ca = {
           'IronKVM: firmware comunitari reforçat per al Sipeed NanoKVM. Sense cap vinculació amb Sipeed.',
         basedOn: 'basat en NanoKVM {{version}}'
       },
+      preferences: {
+        title: 'Preferències'
+      },
+      performance: {
+        title: 'Rendiment'
+      },
       appearance: {
-        title: 'Aparença',
         thisBrowser: 'Aquest navegador',
         thisBrowserDesc:
           'Es desa només en aquest navegador. Els altres navegadors conserven la seva.',
@@ -950,7 +958,15 @@ const ca = {
           1800: '30 min',
           3600: '1 h'
         },
-        advanced: 'Configuració avançada',
+        sections: {
+          video: 'Vídeo',
+          usb: 'USB',
+          frontPanel: 'Panell frontal'
+        },
+        hidModeDesc:
+          "Proveu el mode només HID si l'amfitrió no accepta el teclat i el ratolí. Desactiva les unitats virtuals i la xarxa.",
+        resetHidDesc:
+          "Torna a connectar el teclat i el ratolí a l'amfitrió. Useu-ho si l'entrada deixa de funcionar.",
         cpuFreq: {
           title: 'Freqüència de la CPU',
           description: "Defineix la freqüència de la CPU que s'aplica a la propera arrencada",
@@ -1196,8 +1212,7 @@ const ca = {
           "{{other}} s'està executant o s'inicia a l'arrencada. Només pot funcionar una VPN alhora: primer atureu {{other}} i desactiveu-ne l'inici a l'arrencada.",
         swap: {
           title: 'Memòria swap',
-          tip: 'Si el dimoni es queda curt de memòria, proveu d\'activar la memòria swap. Això defineix la mida del fitxer swap a 256MB per defecte, que es pot ajustar a "Configuració > Dispositiu".',
-          failed: "No s'ha pogut canviar la memòria d'intercanvi"
+          tip: 'Si el dimoni es queda curt de memòria, proveu d\'activar la memòria swap. Es configura a "Configuració > Rendiment".'
         },
         copy: 'Copia',
         copied: 'Enllaç copiat',

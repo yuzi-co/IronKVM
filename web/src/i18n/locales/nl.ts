@@ -547,11 +547,14 @@ const nl = {
     settings: {
       title: 'Instellingen',
       nav: {
-        general: 'Algemeen',
-        device: 'Apparaat',
+        system: 'Systeem',
         network: 'Netwerk',
-        remote: 'Toegang op afstand',
+        access: 'Toegang',
+        integrations: 'Integraties',
         boot: 'Opstarten',
+        browser: 'Deze browser',
+        search: 'Instelling zoeken',
+        noMatch: 'Geen instellingen gevonden',
         locked:
           "Er loopt een bewerking. Andere pagina's en sluiten zijn pas weer beschikbaar als die klaar is.",
         vpnProvider: 'VPN-aanbieder'
@@ -889,8 +892,13 @@ const nl = {
           'IronKVM: geharde community-firmware voor de Sipeed NanoKVM. Niet verbonden aan Sipeed.',
         basedOn: 'gebaseerd op NanoKVM {{version}}'
       },
+      preferences: {
+        title: 'Voorkeuren'
+      },
+      performance: {
+        title: 'Prestaties'
+      },
       appearance: {
-        title: 'Uiterlijk',
         thisBrowser: 'Deze browser',
         thisBrowserDesc:
           'Alleen in deze browser opgeslagen. Andere browsers hebben hun eigen instellingen.',
@@ -952,7 +960,15 @@ const nl = {
           1800: '30 min',
           3600: '1 uur'
         },
-        advanced: 'Geavanceerde instellingen',
+        sections: {
+          video: 'Video',
+          usb: 'USB',
+          frontPanel: 'Voorpaneel'
+        },
+        hidModeDesc:
+          'Probeer de alleen-HID-modus als de host het toetsenbord en de muis niet accepteert. Die schakelt de virtuele stations en het netwerk uit.',
+        resetHidDesc:
+          'Verbindt het toetsenbord en de muis opnieuw met de host. Gebruik dit als invoer niet meer werkt.',
         cpuFreq: {
           title: 'CPU-frequentie',
           description: 'Stel de CPU-kloksnelheid in voor de volgende keer opstarten',
@@ -1203,8 +1219,7 @@ const nl = {
           '{{other}} draait of start bij het opstarten. Er kan maar één VPN tegelijk draaien: stop eerst {{other}} en schakel het starten bij opstarten ervan uit.',
         swap: {
           title: 'Swapgeheugen',
-          tip: 'Als de daemon te weinig geheugen heeft, probeer dan swapgeheugen in te schakelen. Dit stelt het wisselbestand standaard in op 256MB; de grootte kunt u aanpassen in "Instellingen > Apparaat".',
-          failed: 'Swapgeheugen wijzigen mislukt'
+          tip: 'Als de daemon te weinig geheugen heeft, probeer dan swap in te schakelen. Dat stelt u in bij "Instellingen > Prestaties".'
         },
         copy: 'Kopiëren',
         copied: 'Link gekopieerd',

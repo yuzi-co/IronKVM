@@ -538,11 +538,14 @@ const da = {
     settings: {
       title: 'Indstillinger',
       nav: {
-        general: 'Generelt',
-        device: 'Enhed',
+        system: 'System',
         network: 'Netværk',
-        remote: 'Fjernadgang',
+        access: 'Adgang',
+        integrations: 'Integrationer',
         boot: 'Opstart',
+        browser: 'Denne browser',
+        search: 'Find en indstilling',
+        noMatch: 'Ingen indstillinger matcher',
         locked:
           'En handling er i gang. Andre sider og lukning er ikke tilgængelige, før den er færdig.',
         vpnProvider: 'VPN-udbyder'
@@ -877,8 +880,13 @@ const da = {
           'IronKVM: hærdet community-firmware til Sipeed NanoKVM. Ikke tilknyttet Sipeed.',
         basedOn: 'baseret på NanoKVM {{version}}'
       },
+      preferences: {
+        title: 'Præferencer'
+      },
+      performance: {
+        title: 'Ydeevne'
+      },
       appearance: {
-        title: 'Udseende',
         thisBrowser: 'Denne browser',
         thisBrowserDesc: 'Gemmes kun i denne browser. Andre browsere har deres egne.',
         deviceWide: 'Enhed',
@@ -939,7 +947,15 @@ const da = {
           1800: '30 min',
           3600: '1 time'
         },
-        advanced: 'Avancerede indstillinger',
+        sections: {
+          video: 'Video',
+          usb: 'USB',
+          frontPanel: 'Frontpanel'
+        },
+        hidModeDesc:
+          'Prøv kun HID-tilstand, hvis værten ikke accepterer tastatur og mus. Den slår de virtuelle drev og netværket fra.',
+        resetHidDesc:
+          'Tilslutter tastatur og mus til værten igen. Brug den, hvis input holder op med at virke.',
         cpuFreq: {
           title: 'CPU-frekvens',
           description: 'Indstil den CPU-takt, der bruges ved næste opstart',
@@ -1187,8 +1203,7 @@ const da = {
           '{{other}} kører eller starter ved opstart. Der kan kun køre ét VPN ad gangen: stop {{other}} og slå først dens start ved opstart fra.',
         swap: {
           title: 'Swap-hukommelse',
-          tip: 'Hvis dæmonen mangler hukommelse, så prøv at aktivere swap-hukommelse. Det sætter som standard swap-filen til 256MB, hvilket kan justeres under "Indstillinger > Enhed".',
-          failed: 'Swap-hukommelsen kunne ikke ændres'
+          tip: 'Hvis dæmonen mangler hukommelse, så prøv at slå swap til. Det indstilles under "Indstillinger > Ydeevne".'
         },
         copy: 'Kopiér',
         copied: 'Link kopieret',

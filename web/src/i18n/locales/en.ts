@@ -535,11 +535,14 @@ const en = {
     settings: {
       title: 'Settings',
       nav: {
-        general: 'General',
-        device: 'Device',
+        system: 'System',
         network: 'Network',
-        remote: 'Remote access',
+        access: 'Access',
+        integrations: 'Integrations',
         boot: 'Boot',
+        browser: 'This browser',
+        search: 'Find a setting',
+        noMatch: 'No settings match',
         locked:
           'An operation is in progress. Other pages and closing are unavailable until it finishes.',
         vpnProvider: 'VPN provider'
@@ -870,8 +873,13 @@ const en = {
           'IronKVM: hardened community firmware for the Sipeed NanoKVM. Not affiliated with Sipeed.',
         basedOn: 'based on NanoKVM {{version}}'
       },
+      preferences: {
+        title: 'Preferences'
+      },
+      performance: {
+        title: 'Performance'
+      },
       appearance: {
-        title: 'Appearance',
         thisBrowser: 'This browser',
         thisBrowserDesc: 'Saved in this browser only. Other browsers keep their own.',
         deviceWide: 'Device',
@@ -931,7 +939,15 @@ const en = {
             255: 'Maximum'
           }
         },
-        advanced: 'Advanced Settings',
+        sections: {
+          video: 'Video',
+          usb: 'USB',
+          frontPanel: 'Front panel'
+        },
+        hidModeDesc:
+          'Try HID-only mode if the host does not accept the keyboard and mouse. It turns off the virtual drives and network.',
+        resetHidDesc:
+          'Reconnects the keyboard and mouse to the host. Use it if input stops working.',
         cpuFreq: {
           title: 'CPU Frequency',
           description: 'Set the CPU clock applied at the next boot',
@@ -1174,8 +1190,7 @@ const en = {
           '{{other}} is running or starts at boot. Only one VPN runs at a time: stop {{other}} and turn off its start at boot first.',
         swap: {
           title: 'Swap memory',
-          tip: 'If the daemon runs short of memory, try enabling swap memory. This sets the swap file size to 256MB by default, which can be adjusted in "Settings > Device".',
-          failed: 'Failed to change swap memory'
+          tip: 'If the daemon runs short of memory, try turning on swap. It is set in "Settings > Performance".'
         },
         copy: 'Copy',
         copied: 'Link copied',

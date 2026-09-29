@@ -538,11 +538,14 @@ const cz = {
     settings: {
       title: 'Nastavení',
       nav: {
-        general: 'Obecné',
-        device: 'Zařízení',
+        system: 'Systém',
         network: 'Síť',
-        remote: 'Vzdálený přístup',
+        access: 'Přístup',
+        integrations: 'Integrace',
         boot: 'Spouštění',
+        browser: 'Tento prohlížeč',
+        search: 'Najít nastavení',
+        noMatch: 'Žádné nastavení neodpovídá',
         locked: 'Probíhá operace. Ostatní stránky ani zavření nejsou dostupné, dokud neskončí.',
         vpnProvider: 'Poskytovatel VPN'
       },
@@ -875,8 +878,13 @@ const cz = {
           'IronKVM: zabezpečený komunitní firmware pro Sipeed NanoKVM. Bez vazby na společnost Sipeed.',
         basedOn: 'založeno na NanoKVM {{version}}'
       },
+      preferences: {
+        title: 'Předvolby'
+      },
+      performance: {
+        title: 'Výkon'
+      },
       appearance: {
-        title: 'Vzhled',
         thisBrowser: 'Tento prohlížeč',
         thisBrowserDesc: 'Uloženo pouze v tomto prohlížeči. Ostatní prohlížeče mají vlastní.',
         deviceWide: 'Zařízení',
@@ -937,7 +945,15 @@ const cz = {
           1800: '30 min',
           3600: '1 hodina'
         },
-        advanced: 'Pokročilá nastavení',
+        sections: {
+          video: 'Video',
+          usb: 'USB',
+          frontPanel: 'Přední panel'
+        },
+        hidModeDesc:
+          'Pokud hostitel nepřijímá klávesnici a myš, zkuste režim pouze HID. Vypne virtuální jednotky a síť.',
+        resetHidDesc:
+          'Znovu připojí klávesnici a myš k hostiteli. Použijte, když vstup přestane fungovat.',
         cpuFreq: {
           title: 'Frekvence CPU',
           description: 'Nastavte takt CPU použitý při příštím spuštění',
@@ -1183,8 +1199,7 @@ const cz = {
           '{{other}} běží nebo se spouští při startu. Současně může běžet jen jedna VPN: nejprve zastavte {{other}} a vypněte jeho spouštění při startu.',
         swap: {
           title: 'Odkládací paměť',
-          tip: 'Pokud démonu dochází paměť, zkuste povolit odkládací paměť. Výchozí velikost odkládacího souboru je 256MB a lze ji upravit v "Nastavení > Zařízení".',
-          failed: 'Odkládací paměť se nepodařilo změnit'
+          tip: 'Pokud démonu dochází paměť, zkuste zapnout odkládací paměť. Nastavuje se v "Nastavení > Výkon".'
         },
         copy: 'Kopírovat',
         copied: 'Odkaz zkopírován',

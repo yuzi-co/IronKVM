@@ -543,11 +543,14 @@ const ja = {
     settings: {
       title: '設定',
       nav: {
-        general: '一般',
-        device: 'デバイス',
+        system: 'システム',
         network: 'ネットワーク',
-        remote: 'リモートアクセス',
+        access: 'アクセス',
+        integrations: '連携',
         boot: 'ブート',
+        browser: 'このブラウザー',
+        search: '設定を検索',
+        noMatch: '一致する設定はありません',
         locked: '処理を実行中です。完了するまで他のページへの移動や閉じる操作はできません。',
         vpnProvider: 'VPN プロバイダー'
       },
@@ -888,8 +891,13 @@ const ja = {
           'IronKVM: Sipeed NanoKVM 向けの堅牢化されたコミュニティファームウェア。Sipeed とは無関係です。',
         basedOn: 'NanoKVM {{version}} ベース'
       },
+      preferences: {
+        title: '環境設定'
+      },
+      performance: {
+        title: 'パフォーマンス'
+      },
       appearance: {
-        title: '外観',
         thisBrowser: 'このブラウザー',
         thisBrowserDesc:
           'このブラウザーにのみ保存されます。他のブラウザーはそれぞれの設定を使います。',
@@ -951,7 +959,15 @@ const ja = {
           1800: '30分',
           3600: '1時間'
         },
-        advanced: '詳細設定',
+        sections: {
+          video: 'ビデオ',
+          usb: 'USB',
+          frontPanel: 'フロントパネル'
+        },
+        hidModeDesc:
+          'ホストがキーボードとマウスを受け付けない場合は、HID-Only モードを試してください。仮想ドライブとネットワークはオフになります。',
+        resetHidDesc:
+          'キーボードとマウスをホストに再接続します。入力が効かなくなったときに使います。',
         cpuFreq: {
           title: 'CPU 周波数',
           description: '次回起動時に適用する CPU クロックを設定する',
@@ -1203,8 +1219,7 @@ const ja = {
           '{{other}} が実行中か、起動時に開始する設定になっています。同時に実行できる VPN は 1 つだけです。先に {{other}} を停止し、起動時の開始をオフにしてください。',
         swap: {
           title: 'スワップメモリ',
-          tip: 'デーモンのメモリが不足する場合は、スワップメモリを有効にしてみてください。スワップファイルのサイズはデフォルトで 256MB に設定され、「設定 > デバイス」で調整できます。',
-          failed: 'スワップメモリを変更できませんでした'
+          tip: 'デーモンのメモリが不足する場合は、スワップを有効にしてみてください。「設定 > パフォーマンス」で設定できます。'
         },
         copy: 'コピー',
         copied: 'リンクをコピーしました',

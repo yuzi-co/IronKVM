@@ -546,11 +546,14 @@ const fr = {
     settings: {
       title: 'Paramètres',
       nav: {
-        general: 'Général',
-        device: 'Appareil',
+        system: 'Système',
         network: 'Réseau',
-        remote: 'Accès à distance',
+        access: 'Accès',
+        integrations: 'Intégrations',
         boot: 'Démarrage',
+        browser: 'Ce navigateur',
+        search: 'Rechercher un réglage',
+        noMatch: 'Aucun réglage ne correspond',
         locked:
           "Une opération est en cours. Les autres pages et la fermeture sont indisponibles jusqu'à sa fin.",
         vpnProvider: 'Fournisseur VPN'
@@ -897,8 +900,13 @@ const fr = {
           'IronKVM : firmware communautaire renforcé pour le Sipeed NanoKVM. Sans lien avec Sipeed.',
         basedOn: 'basé sur NanoKVM {{version}}'
       },
+      preferences: {
+        title: 'Préférences'
+      },
+      performance: {
+        title: 'Performances'
+      },
       appearance: {
-        title: 'Apparence',
         thisBrowser: 'Ce navigateur',
         thisBrowserDesc:
           'Enregistré uniquement dans ce navigateur. Les autres navigateurs ont leurs propres réglages.',
@@ -960,7 +968,15 @@ const fr = {
           1800: '30 min',
           3600: '1 heure'
         },
-        advanced: 'Paramètres avancés',
+        sections: {
+          video: 'Vidéo',
+          usb: 'USB',
+          frontPanel: 'Façade'
+        },
+        hidModeDesc:
+          "Essayez le mode HID uniquement si l'hôte n'accepte pas le clavier et la souris. Il désactive les lecteurs virtuels et le réseau.",
+        resetHidDesc:
+          "Reconnecte le clavier et la souris à l'hôte. À utiliser si la saisie ne fonctionne plus.",
         cpuFreq: {
           title: 'Fréquence du CPU',
           description: 'Définir la fréquence du CPU appliquée au prochain démarrage',
@@ -1211,8 +1227,7 @@ const fr = {
           "{{other}} est en cours d'exécution ou démarre automatiquement. Un seul VPN peut tourner à la fois : arrêtez d'abord {{other}} et désactivez son démarrage automatique.",
         swap: {
           title: "Mémoire d'échange",
-          tip: "Si le démon manque de mémoire, essayez d'activer la mémoire d'échange. La taille du fichier d'échange est alors fixée à 256MB par défaut, ce qui peut être modifié dans \"Paramètres > Appareil\".",
-          failed: "Impossible de modifier la mémoire d'échange"
+          tip: "Si le démon manque de mémoire, essayez d'activer le swap. Il se règle dans « Paramètres > Performances »."
         },
         copy: 'Copier',
         copied: 'Lien copié',

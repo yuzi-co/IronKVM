@@ -540,11 +540,14 @@ const id = {
     settings: {
       title: 'Pengaturan',
       nav: {
-        general: 'Umum',
-        device: 'Perangkat',
+        system: 'Sistem',
         network: 'Jaringan',
-        remote: 'Akses jarak jauh',
+        access: 'Akses',
+        integrations: 'Integrasi',
         boot: 'Boot',
+        browser: 'Browser ini',
+        search: 'Cari pengaturan',
+        noMatch: 'Tidak ada pengaturan yang cocok',
         locked:
           'Sebuah operasi sedang berjalan. Halaman lain dan tombol tutup tidak tersedia sampai selesai.',
         vpnProvider: 'Penyedia VPN'
@@ -881,8 +884,13 @@ const id = {
           'IronKVM: firmware komunitas yang diperkuat untuk Sipeed NanoKVM. Tidak berafiliasi dengan Sipeed.',
         basedOn: 'berbasis NanoKVM {{version}}'
       },
+      preferences: {
+        title: 'Preferensi'
+      },
+      performance: {
+        title: 'Performa'
+      },
       appearance: {
-        title: 'Tampilan',
         thisBrowser: 'Browser ini',
         thisBrowserDesc:
           'Hanya disimpan di browser ini. Browser lain menyimpan pengaturannya sendiri.',
@@ -944,7 +952,15 @@ const id = {
           1800: '30 menit',
           3600: '1 jam'
         },
-        advanced: 'Pengaturan Lanjutan',
+        sections: {
+          video: 'Video',
+          usb: 'USB',
+          frontPanel: 'Panel depan'
+        },
+        hidModeDesc:
+          'Coba mode hanya HID jika host tidak menerima keyboard dan mouse. Mode ini mematikan drive virtual dan jaringan.',
+        resetHidDesc:
+          'Menyambungkan ulang keyboard dan mouse ke host. Gunakan jika input berhenti bekerja.',
         cpuFreq: {
           title: 'Frekuensi CPU',
           description: 'Atur clock CPU yang diterapkan pada boot berikutnya',
@@ -1190,8 +1206,7 @@ const id = {
           '{{other}} sedang berjalan atau dimulai saat boot. Hanya satu VPN yang dapat berjalan dalam satu waktu: hentikan {{other}} dan nonaktifkan mulai saat boot-nya terlebih dahulu.',
         swap: {
           title: 'Memori swap',
-          tip: 'Jika daemon kekurangan memori, coba aktifkan memori swap. Ini mengatur ukuran file swap menjadi 256MB secara default, yang dapat diubah di "Pengaturan > Perangkat".',
-          failed: 'Gagal mengubah memori swap'
+          tip: 'Jika daemon kekurangan memori, coba aktifkan swap. Swap diatur di "Pengaturan > Performa".'
         },
         copy: 'Salin',
         copied: 'Tautan disalin',

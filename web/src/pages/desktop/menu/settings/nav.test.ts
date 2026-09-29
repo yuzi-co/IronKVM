@@ -3,30 +3,45 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { groupTabs, initialTab, readStored, writeStored } from './nav.ts';
+import { filterTabs, groupTabs, initialTab, readStored, writeStored } from './nav.ts';
 
 describe('groupTabs', () => {
   it('orders groups by the sidebar and drops empty ones', () => {
     const got = groupTabs([
+      { id: 'preferences', group: 'browser' },
       { id: 'netboot', group: 'boot' },
-      { id: 'about', group: 'general' },
-      { id: 'account', group: 'general' }
+      { id: 'account', group: 'access' },
+      { id: 'tls', group: 'access' },
+      { id: 'device', group: 'system' }
     ]);
     assert.deepEqual(
       got.map((g) => [g.group, g.tabs.map((t) => t.id)]),
       [
-        ['general', ['about', 'account']],
-        ['boot', ['netboot']]
+        ['system', ['device']],
+        ['access', ['account', 'tls']],
+        ['boot', ['netboot']],
+        ['browser', ['preferences']]
       ]
+    );
+  });
+
+  it('leaves footer tabs out of the groups', () => {
+    const got = groupTabs([
+      { id: 'about', group: 'footer' },
+      { id: 'account', group: 'access' }
+    ]);
+    assert.deepEqual(
+      got.map((g) => g.group),
+      ['access']
     );
   });
 });
 
 describe('initialTab', () => {
-  const ids = ['about', 'appearance', 'update'];
+  const ids = ['about', 'preferences', 'update'];
 
   it('opens the update tab when an update is waiting', () => {
-    assert.equal(initialTab(ids, 'appearance', true), 'update');
+    assert.equal(initialTab(ids, 'preferences', true), 'update');
   });
 
   it('ignores a waiting update the account cannot see', () => {
@@ -34,12 +49,51 @@ describe('initialTab', () => {
   });
 
   it('returns to the tab used last', () => {
-    assert.equal(initialTab(ids, 'appearance', false), 'appearance');
+    assert.equal(initialTab(ids, 'preferences', false), 'preferences');
+  });
+
+  it('maps a remembered tab that was renamed', () => {
+    assert.equal(initialTab(ids, 'appearance', false), 'preferences');
   });
 
   it('falls back to the first tab for an unknown or missing one', () => {
     assert.equal(initialTab(ids, 'tailscale', false), 'about');
     assert.equal(initialTab(ids, null, false), 'about');
+  });
+});
+
+describe('filterTabs', () => {
+  const tabs = [
+    { id: 'device', label: 'Device' },
+    { id: 'performance', label: 'Performance' },
+    { id: 'network', label: 'Réseau' },
+    { id: 'tls', label: 'TLS' }
+  ];
+  const ids = (query: string) => filterTabs(tabs, query).map((t) => t.id);
+
+  it('matches everything on an empty query', () => {
+    assert.deepEqual(ids('  '), ['device', 'performance', 'network', 'tls']);
+  });
+
+  it('matches the tab name, ignoring case', () => {
+    assert.deepEqual(ids('PERF'), ['performance']);
+    assert.deepEqual(ids('rés'), ['network']);
+  });
+
+  it('matches search words', () => {
+    assert.deepEqual(ids('oled'), ['device']);
+    assert.deepEqual(ids('swap'), ['performance']);
+    assert.deepEqual(ids('https'), ['tls']);
+    assert.deepEqual(ids('mdns'), ['network']);
+  });
+
+  it('needs every word of the query', () => {
+    assert.deepEqual(ids('power led'), ['device']);
+    assert.deepEqual(ids('oled swap'), []);
+  });
+
+  it('matches nothing for an unknown word', () => {
+    assert.deepEqual(ids('bluetooth'), []);
   });
 });
 

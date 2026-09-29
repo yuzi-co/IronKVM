@@ -534,11 +534,14 @@ const ko = {
     settings: {
       title: '설정',
       nav: {
-        general: '일반',
-        device: '장치',
+        system: '시스템',
         network: '네트워크',
-        remote: '원격 액세스',
+        access: '액세스',
+        integrations: '통합',
         boot: '부팅',
+        browser: '이 브라우저',
+        search: '설정 찾기',
+        noMatch: '일치하는 설정이 없습니다',
         locked: '작업이 진행 중입니다. 완료될 때까지 다른 페이지로 이동하거나 닫을 수 없습니다.',
         vpnProvider: 'VPN 제공자'
       },
@@ -872,8 +875,13 @@ const ko = {
           'IronKVM: Sipeed NanoKVM용 보안 강화 커뮤니티 펌웨어. Sipeed와 관련이 없습니다.',
         basedOn: 'NanoKVM {{version}} 기반'
       },
+      preferences: {
+        title: '환경설정'
+      },
+      performance: {
+        title: '성능'
+      },
       appearance: {
-        title: '디자인',
         thisBrowser: '이 브라우저',
         thisBrowserDesc: '이 브라우저에만 저장됩니다. 다른 브라우저는 각자의 설정을 사용합니다.',
         deviceWide: '장치',
@@ -933,7 +941,14 @@ const ko = {
           1800: '30분',
           3600: '1시간'
         },
-        advanced: '고급 설정',
+        sections: {
+          video: '비디오',
+          usb: 'USB',
+          frontPanel: '전면 패널'
+        },
+        hidModeDesc:
+          '호스트가 키보드와 마우스를 인식하지 않으면 HID 전용 모드를 사용해 보세요. 가상 드라이브와 네트워크가 꺼집니다.',
+        resetHidDesc: '키보드와 마우스를 호스트에 다시 연결합니다. 입력이 멈췄을 때 사용하세요.',
         cpuFreq: {
           title: 'CPU 주파수',
           description: '다음 부팅 시 적용할 CPU 클럭 설정',
@@ -1180,8 +1195,7 @@ const ko = {
           '{{other}}이(가) 실행 중이거나 부팅 시 시작됩니다. VPN은 한 번에 하나만 실행됩니다. 먼저 {{other}}을(를) 중지하고 부팅 시 시작을 끄세요.',
         swap: {
           title: '스왑 메모리',
-          tip: '데몬의 메모리가 부족하면 스왑 메모리를 활성화해 보세요. 스왑 파일 크기가 기본값 256MB로 설정되며, "설정 > 장치"에서 조정할 수 있습니다.',
-          failed: '스왑 메모리를 변경하지 못했습니다'
+          tip: '데몬의 메모리가 부족하면 스왑을 켜 보세요. "설정 > 성능"에서 설정합니다.'
         },
         copy: '복사',
         copied: '링크를 복사했습니다',

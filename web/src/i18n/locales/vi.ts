@@ -535,11 +535,14 @@ const vi = {
     settings: {
       title: 'Cài đặt',
       nav: {
-        general: 'Chung',
-        device: 'Thiết bị',
+        system: 'Hệ thống',
         network: 'Mạng',
-        remote: 'Truy cập từ xa',
+        access: 'Truy cập',
+        integrations: 'Tích hợp',
         boot: 'Khởi động',
+        browser: 'Trình duyệt này',
+        search: 'Tìm cài đặt',
+        noMatch: 'Không có cài đặt phù hợp',
         locked: 'Đang có thao tác chạy. Không thể chuyển trang hoặc đóng cho đến khi hoàn tất.',
         vpnProvider: 'Nhà cung cấp VPN'
       },
@@ -873,8 +876,13 @@ const vi = {
           'IronKVM: firmware cộng đồng được gia cố cho Sipeed NanoKVM. Không liên kết với Sipeed.',
         basedOn: 'dựa trên NanoKVM {{version}}'
       },
+      preferences: {
+        title: 'Tùy chọn'
+      },
+      performance: {
+        title: 'Hiệu năng'
+      },
       appearance: {
-        title: 'Giao diện',
         thisBrowser: 'Trình duyệt này',
         thisBrowserDesc: 'Chỉ lưu trong trình duyệt này. Các trình duyệt khác có cài đặt riêng.',
         deviceWide: 'Thiết bị',
@@ -935,7 +943,15 @@ const vi = {
           1800: '30 phút',
           3600: '1 giờ'
         },
-        advanced: 'Cài đặt nâng cao',
+        sections: {
+          video: 'Video',
+          usb: 'USB',
+          frontPanel: 'Mặt trước'
+        },
+        hidModeDesc:
+          'Hãy thử chế độ chỉ HID nếu máy chủ không nhận bàn phím và chuột. Chế độ này tắt ổ đĩa ảo và mạng.',
+        resetHidDesc:
+          'Kết nối lại bàn phím và chuột với máy chủ. Dùng khi thao tác nhập ngừng hoạt động.',
         cpuFreq: {
           title: 'Tần số CPU',
           description: 'Đặt xung nhịp CPU áp dụng ở lần khởi động tiếp theo',
@@ -1182,8 +1198,7 @@ const vi = {
           '{{other}} đang chạy hoặc khởi động cùng hệ thống. Mỗi lúc chỉ chạy được một VPN: hãy dừng {{other}} và tắt khởi động cùng hệ thống của nó trước.',
         swap: {
           title: 'Bộ nhớ hoán đổi',
-          tip: 'Nếu daemon thiếu bộ nhớ, hãy thử bật bộ nhớ hoán đổi. Thao tác này đặt kích thước tệp hoán đổi mặc định là 256MB, có thể điều chỉnh trong "Cài đặt > Thiết bị".',
-          failed: 'Không thể thay đổi bộ nhớ swap'
+          tip: 'Nếu daemon thiếu bộ nhớ, hãy thử bật bộ nhớ hoán đổi. Thiết lập trong "Cài đặt > Hiệu năng".'
         },
         copy: 'Sao chép',
         copied: 'Đã sao chép liên kết',

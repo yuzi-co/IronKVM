@@ -1,64 +1,27 @@
-import { useEffect, useState } from 'react';
-import { message, Switch, Tooltip } from 'antd';
-import { CircleHelpIcon } from 'lucide-react';
+import { Tooltip } from 'antd';
+import { ArrowRightIcon, CircleHelpIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import * as api from '@/api/vm.ts';
+import { useSettingsNav } from '../nav-context.ts';
 
-// The size this switch turns swap on with when the board has none, the one
-// its tooltip names. A size chosen in Settings > Device is kept.
-const DEFAULT_SIZE_MB = 256;
-
+// Swap is one setting for the whole board, set under Performance. The daemon
+// is what most often runs short of memory, so this menu points there rather
+// than keeping a second switch that could disagree with the first.
 export const Swap = () => {
   const { t } = useTranslation();
-
-  const [isLoading, setIsLoading] = useState(true);
-  const [isEnabled, setIsEnabled] = useState(false);
-  // The size last seen, so turning swap off and on here does not replace the
-  // size chosen in Settings > Device.
-  const [size, setSize] = useState(DEFAULT_SIZE_MB);
-
-  useEffect(() => {
-    api
-      .getSwap()
-      .then((rsp) => {
-        if (rsp.data?.size > 0) {
-          setIsEnabled(true);
-          setSize(rsp.data.size);
-        }
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }, []);
-
-  function update(enable: boolean) {
-    if (isLoading) return;
-    setIsLoading(true);
-
-    api
-      .setSwap(enable ? size : 0)
-      .then((rsp) => {
-        if (rsp.code !== 0) {
-          message.error(rsp.msg || t('settings.vpn.swap.failed'));
-          return;
-        }
-
-        setIsEnabled(enable);
-      })
-      .catch(() => message.error(t('settings.vpn.swap.failed')))
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }
+  const { openTab } = useSettingsNav();
 
   return (
-    <div className="flex h-[40px] cursor-pointer items-center justify-between space-x-6 rounded px-2 text-neutral-300 hover:bg-neutral-700/70">
+    <button
+      type="button"
+      className="flex h-[40px] w-full cursor-pointer items-center justify-between space-x-6 rounded p-0 px-2 text-left text-neutral-300 hover:bg-neutral-700/70"
+      onClick={() => openTab('performance')}
+    >
       <div className="flex items-center space-x-1">
         <span>{t('settings.vpn.swap.title')}</span>
         <Tooltip
           title={t('settings.vpn.swap.tip')}
-          className="cursor-pointer text-neutral-500"
+          className="text-neutral-500"
           placement="top"
           styles={{ root: { maxWidth: '400px' } }}
         >
@@ -66,7 +29,7 @@ export const Swap = () => {
         </Tooltip>
       </div>
 
-      <Switch value={isEnabled} loading={isLoading} size="small" onChange={update} />
-    </div>
+      <ArrowRightIcon size={15} className="text-neutral-500" />
+    </button>
   );
 };

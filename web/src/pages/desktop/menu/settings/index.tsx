@@ -1,21 +1,24 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { ReactNode } from 'react';
 import { useAuth } from '@/contexts/auth.ts';
-import { Badge, Modal, Tooltip } from 'antd';
+import { Badge, Input, Modal, Tooltip } from 'antd';
 import clsx from 'clsx';
 import { useSetAtom } from 'jotai';
 import {
   BadgeInfoIcon,
   BotIcon,
   CircleArrowUpIcon,
+  GaugeIcon,
   HeartPulseIcon,
   KeyRoundIcon,
   LockIcon,
+  LockKeyholeIcon,
   MonitorDownIcon,
   NetworkIcon,
   PaletteIcon,
   PowerIcon,
   ScreenShareIcon,
+  SearchIcon,
   ServerCogIcon,
   SettingsIcon,
   ShieldIcon,
@@ -35,12 +38,13 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { About } from './about';
 import { Account } from './account';
 import { APIKeys } from './api-keys';
-import { Appearance } from './appearance';
 import { Device } from './device';
 import { Ipmi } from './ipmi';
 import { MCP } from './mcp';
+import { SettingsNav } from './nav-context.ts';
 import {
   browserStorage,
+  filterTabs,
   groupTabs,
   initialTab,
   LAST_TAB_KEY,
@@ -50,8 +54,11 @@ import {
 import type { Group } from './nav.ts';
 import { Netboot } from './netboot';
 import { Network } from './network';
+import { Performance } from './performance';
+import { Preferences } from './preferences';
 import { Redfish } from './redfish';
 import { Ssh } from './ssh';
+import { Tls } from './tls';
 import { Update } from './update';
 import { Vnc } from './vnc';
 import { VpnTab } from './vpn/tab.tsx';
@@ -89,6 +96,7 @@ export const Settings = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   const [currentTab, setCurrentTab] = useState('about');
+  const [query, setQuery] = useState('');
   const scrollViewportRef = useRef<HTMLDivElement>(null);
 
   const [isUpdateAvailable, setIsUpdateAvailable] = useState(false);
@@ -96,38 +104,47 @@ export const Settings = () => {
   const setSubmenuOpenCount = useSetAtom(submenuOpenCountAtom);
 
   const icon16 = { size: 16 };
+  // The sidebar orders tabs by group, and within a group by this list. About
+  // comes first so that a first visit opens on it, though the sidebar shows
+  // it last, in the footer.
   const tabs: Tab[] = [
-    { id: 'about', group: 'general', icon: <BadgeInfoIcon {...icon16} />, component: <About /> },
-    {
-      id: 'appearance',
-      group: 'general',
-      icon: <PaletteIcon {...icon16} />,
-      component: <Appearance />
-    },
+    { id: 'about', group: 'footer', icon: <BadgeInfoIcon {...icon16} />, component: <About /> },
     {
       id: 'account',
-      group: 'general',
+      group: 'access',
       icon: <UserRoundIcon {...icon16} />,
       component: <Account />
     },
-    { id: 'apiKeys', group: 'general', icon: <KeyRoundIcon {...icon16} />, component: <APIKeys /> },
+    { id: 'apiKeys', group: 'access', icon: <KeyRoundIcon {...icon16} />, component: <APIKeys /> },
+    {
+      id: 'preferences',
+      group: 'browser',
+      icon: <PaletteIcon {...icon16} />,
+      component: <Preferences />
+    },
     ...(isAdmin
       ? ([
           {
             id: 'device',
-            group: 'device',
+            group: 'system',
             icon: <SmartphoneIcon {...icon16} />,
             component: <Device />
           },
           {
+            id: 'performance',
+            group: 'system',
+            icon: <GaugeIcon {...icon16} />,
+            component: <Performance />
+          },
+          {
             id: 'watchdog',
-            group: 'device',
+            group: 'system',
             icon: <HeartPulseIcon {...icon16} />,
             component: <Watchdog />
           },
           {
             id: 'update',
-            group: 'device',
+            group: 'system',
             icon: <CircleArrowUpIcon {...icon16} />,
             component: <Update setIsLocked={setIsLocked} />
           },
@@ -135,7 +152,7 @@ export const Settings = () => {
             id: 'network',
             group: 'network',
             icon: <NetworkIcon {...icon16} />,
-            component: <Network setIsLocked={setIsLocked} />
+            component: <Network />
           },
           {
             id: 'vpn',
@@ -146,20 +163,32 @@ export const Settings = () => {
           },
           {
             id: 'ssh',
-            group: 'remote',
+            group: 'access',
             icon: <TerminalIcon {...icon16} />,
             label: 'SSH',
             component: <Ssh />
           },
-          { id: 'vnc', group: 'remote', icon: <ScreenShareIcon {...icon16} />, component: <Vnc /> },
-          { id: 'ipmi', group: 'remote', icon: <PowerIcon {...icon16} />, component: <Ipmi /> },
+          { id: 'vnc', group: 'access', icon: <ScreenShareIcon {...icon16} />, component: <Vnc /> },
+          {
+            id: 'tls',
+            group: 'access',
+            icon: <LockKeyholeIcon {...icon16} />,
+            label: 'TLS',
+            component: <Tls setIsLocked={setIsLocked} />
+          },
+          {
+            id: 'ipmi',
+            group: 'integrations',
+            icon: <PowerIcon {...icon16} />,
+            component: <Ipmi />
+          },
           {
             id: 'redfish',
-            group: 'remote',
+            group: 'integrations',
             icon: <ServerCogIcon {...icon16} />,
             component: <Redfish />
           },
-          { id: 'mcp', group: 'remote', icon: <BotIcon {...icon16} />, component: <MCP /> },
+          { id: 'mcp', group: 'integrations', icon: <BotIcon {...icon16} />, component: <MCP /> },
           {
             id: 'netboot',
             group: 'boot',
@@ -170,6 +199,19 @@ export const Settings = () => {
       : [])
   ];
   const groups = groupTabs(tabs);
+  const footer = tabs.filter((tab) => tab.group === 'footer');
+  const labelOf = (tab: Tab) => tab.label ?? t(`settings.${tab.id}.title`);
+  // While searching, the sidebar is one flat list of the matches, in sidebar
+  // order.
+  const matches = query.trim()
+    ? filterTabs(
+        [...groups.flatMap((entry) => entry.tabs), ...footer].map((tab) => ({
+          ...tab,
+          label: labelOf(tab)
+        })),
+        query
+      )
+    : null;
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -216,6 +258,7 @@ export const Settings = () => {
 
   function openModal() {
     const ids = tabs.map((tab) => tab.id);
+    setQuery('');
     showTab(initialTab(ids, readStored(browserStorage(), LAST_TAB_KEY), isUpdateAvailable));
 
     setIsModalOpen(true);
@@ -234,7 +277,7 @@ export const Settings = () => {
   }
 
   function renderItem(tab: Tab) {
-    const label = tab.label ?? t(`settings.${tab.id}.title`);
+    const label = labelOf(tab);
     const isCurrent = currentTab === tab.id;
     const isDisabled = isLocked && !isCurrent;
 
@@ -321,16 +364,51 @@ export const Settings = () => {
               </div>
             )}
 
-            {groups.map(({ group, tabs: groupItems }, index) => (
-              <div key={group} role="group" aria-label={t(`settings.nav.${group}`)}>
-                {/* Icon-only below sm: a rule stands in for the heading. */}
-                {index > 0 && <div className="mx-2 my-2 border-t border-neutral-700 sm:hidden" />}
-                <div className="hidden px-3 pt-4 pb-1 text-xs font-medium tracking-wide text-neutral-500 uppercase sm:block">
-                  {t(`settings.nav.${group}`)}
-                </div>
-                <div className="flex flex-col space-y-0.5">{groupItems.map(renderItem)}</div>
+            {/* Below sm the sidebar is icons only: too narrow for a field. */}
+            <div className="mx-1 hidden shrink-0 sm:block">
+              <Input
+                size="small"
+                allowClear
+                value={query}
+                placeholder={t('settings.nav.search')}
+                aria-label={t('settings.nav.search')}
+                prefix={<SearchIcon size={14} className="text-neutral-500" />}
+                onChange={(e) => setQuery(e.target.value)}
+                onPressEnter={() => matches?.[0] && changeTab(matches[0].id)}
+              />
+            </div>
+
+            {matches ? (
+              <div className="flex flex-col space-y-0.5 pt-3">
+                {matches.length > 0 ? (
+                  matches.map(renderItem)
+                ) : (
+                  <div className="px-3 text-xs text-neutral-500">{t('settings.nav.noMatch')}</div>
+                )}
               </div>
-            ))}
+            ) : (
+              <>
+                {groups.map(({ group, tabs: groupItems }, index) => (
+                  <div key={group} role="group" aria-label={t(`settings.nav.${group}`)}>
+                    {/* Icon-only below sm: a rule stands in for the heading. */}
+                    {index > 0 && (
+                      <div className="mx-2 my-2 border-t border-neutral-700 sm:hidden" />
+                    )}
+                    <div className="hidden px-3 pt-4 pb-1 text-xs font-medium tracking-wide text-neutral-500 uppercase sm:block">
+                      {t(`settings.nav.${group}`)}
+                    </div>
+                    <div className="flex flex-col space-y-0.5">{groupItems.map(renderItem)}</div>
+                  </div>
+                ))}
+
+                {/* About is reference rather than a setting, so it sits apart
+                    at the foot of the sidebar. */}
+                <div className="mt-auto flex shrink-0 flex-col space-y-0.5 pt-6">
+                  <div className="mx-2 mb-2 border-t border-neutral-700" />
+                  {footer.map(renderItem)}
+                </div>
+              </>
+            )}
           </nav>
 
           <ScrollArea
@@ -339,7 +417,9 @@ export const Settings = () => {
           >
             <div className="flex h-full w-full justify-center">
               <div className="w-full max-w-[600px] pt-14 pb-10">
-                <>{tabs.find((tab) => tab.id === currentTab)?.component}</>
+                <SettingsNav.Provider value={{ openTab: changeTab }}>
+                  {tabs.find((tab) => tab.id === currentTab)?.component}
+                </SettingsNav.Provider>
               </div>
             </div>
           </ScrollArea>

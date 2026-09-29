@@ -5,14 +5,9 @@ import { Hostname } from '../about/hostname.tsx';
 import { Mdns } from '../device/mdns.tsx';
 import { DNS } from './dns.tsx';
 import { Ethernet } from './ethernet.tsx';
-import { Tls } from './tls.tsx';
 import { Wifi } from './wifi.tsx';
 
-type NetworkProps = {
-  setIsLocked: (isLocked: boolean) => void;
-};
-
-export const Network = ({ setIsLocked }: NetworkProps) => {
+export const Network = () => {
   const { t } = useTranslation();
 
   return (
@@ -27,14 +22,12 @@ export const Network = ({ setIsLocked }: NetworkProps) => {
 
       <Divider className="opacity-50" style={{ margin: '32px 0' }} />
 
+      {/* Wi-Fi renders nothing on boards without it, so it shares a block
+          with Ethernet rather than getting dividers of its own. */}
       <div className="flex flex-col space-y-8">
-        <Tls setIsLocked={setIsLocked} />
         <Wifi />
+        <Ethernet />
       </div>
-
-      <Divider className="opacity-50" style={{ margin: '32px 0' }} />
-
-      <Ethernet />
 
       <Divider className="opacity-50" style={{ margin: '32px 0' }} />
 
