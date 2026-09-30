@@ -325,14 +325,23 @@ export const Settings = () => {
     setSubmenuOpenCount((count) => count + 1);
   }
 
-  // Another part of the UI asked for a settings page.
+  // Another part of the UI asked for a settings page. With Settings already
+  // open, a link on one page moves to the other.
+  function answerRequest(requested: string) {
+    if (!isModalOpen) {
+      openModal(requested);
+    } else if (tabs.some((tab) => tab.id === requested)) {
+      changeTab(requested);
+    }
+  }
+
   const [openRequest, setOpenRequest] = useAtom(settingsOpenRequestAtom);
-  const openModalStable = useStableCallback(openModal);
+  const answerRequestStable = useStableCallback(answerRequest);
   useEffect(() => {
     if (!openRequest) return;
     setOpenRequest(null);
-    if (!isModalOpen) openModalStable(openRequest);
-  }, [openRequest, setOpenRequest, isModalOpen, openModalStable]);
+    answerRequestStable(openRequest);
+  }, [openRequest, setOpenRequest, answerRequestStable]);
 
   function closeModal() {
     if (isLocked) {
