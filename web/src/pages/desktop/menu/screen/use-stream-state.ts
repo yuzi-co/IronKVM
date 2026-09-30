@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import { useAtomValue } from 'jotai';
+import { atom, useAtomValue } from 'jotai';
 
 import { streamState, type StreamState } from '@/lib/health.ts';
+import { pollWhileVisible } from '@/lib/visible-poll.ts';
 import { captureStatusAtom, streamPausedAtom } from '@/jotai/screen.ts';
 
 import { isMediaReady } from '../../screen/geometry.ts';
@@ -15,6 +15,17 @@ function isPictureShown() {
   return !!screen && isMediaReady(screen);
 }
 
+// pictureShownAtom is one DOM check for every reader (the Screen menu and the
+// alert icon), made while anything reads it and the tab is visible. A timer
+// rather than a MutationObserver, since readiness also follows the video's
+// readyState and the image's load, which change no attribute.
+const pictureShownAtom = atom(false);
+pictureShownAtom.onMount = (set) => {
+  const check = () => set(isPictureShown());
+  check();
+  return pollWhileVisible(check, PICTURE_CHECK_MS);
+};
+
 // useStreamState is the picture as the Screen dot and the alert icon show it.
 // A failure comes from the capture status the board pushes; "ok" needs a
 // picture on the page as well, since the board sends no status while all is
@@ -22,15 +33,7 @@ function isPictureShown() {
 export function useStreamState(): StreamState {
   const report = useAtomValue(captureStatusAtom);
   const paused = useAtomValue(streamPausedAtom);
-  const [pictureShown, setPictureShown] = useState(isPictureShown);
-
-  useEffect(() => {
-    if (paused) return;
-    const check = () => setPictureShown(isPictureShown());
-    check();
-    const timer = window.setInterval(check, PICTURE_CHECK_MS);
-    return () => window.clearInterval(timer);
-  }, [paused]);
+  const pictureShown = useAtomValue(pictureShownAtom);
 
   if (paused) return 'unknown';
   return streamState(report, pictureShown);

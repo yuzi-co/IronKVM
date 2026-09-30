@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 
+import { pollWhileVisible } from '@/lib/visible-poll.ts';
 import { useStableCallback } from '@/hooks/useStableCallback.ts';
 
 // usePoll calls fn every ms while active and the tab is visible. A hidden tab
@@ -10,18 +11,6 @@ export function usePoll(fn: () => void, ms: number, active = true) {
 
   useEffect(() => {
     if (!active) return;
-
-    const timer = window.setInterval(() => {
-      if (document.visibilityState === 'visible') tick();
-    }, ms);
-    const onVisible = () => {
-      if (document.visibilityState === 'visible') tick();
-    };
-    document.addEventListener('visibilitychange', onVisible);
-
-    return () => {
-      window.clearInterval(timer);
-      document.removeEventListener('visibilitychange', onVisible);
-    };
+    return pollWhileVisible(tick, ms);
   }, [tick, ms, active]);
 }

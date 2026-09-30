@@ -23,6 +23,7 @@ import type {
   WatchdogStatus
 } from '@/api/watchdog.ts';
 import { describeFailure } from '@/lib/feedback.ts';
+import { pollWhileVisible } from '@/lib/visible-poll.ts';
 
 import { PowerLedSetting } from '../../power/power-led-setting.tsx';
 import { StaleNote, StatusTag } from '../components/status-tag.tsx';
@@ -122,8 +123,7 @@ export const Watchdog = () => {
     getState();
     getLog();
 
-    const timer = window.setInterval(getState, statePollMs);
-    return () => window.clearInterval(timer);
+    return pollWhileVisible(getState, statePollMs);
   }, [getSettings, getState, getLog]);
 
   function refreshLog() {

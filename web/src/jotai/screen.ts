@@ -2,6 +2,7 @@ import { atom } from 'jotai';
 
 import { ControlRegionMode, InputRegion, Resolution, ScreenSettings } from '@/types';
 import type { CaptureReport } from '@/lib/health.ts';
+import { sameInputRegion } from '@/lib/input-region.ts';
 import { KeyboardReport } from '@/lib/keyboard.ts';
 import { getPauseWhenHidden, setPauseWhenHidden } from '@/lib/localstorage.ts';
 import { setViewOnly } from '@/lib/view-only.ts';
@@ -39,8 +40,16 @@ export const defaultScreenSettings: ScreenSettings = {
   codec: 1
 };
 
-// currently effective absolute mouse input region
-export const inputRegionAtom = atom<InputRegion | null>(null);
+// currently effective absolute mouse input region. Timers recompute it, so a
+// write that brings the same numbers keeps the current object: readers do not
+// re-render and the mouse handlers are left alone.
+const baseInputRegionAtom = atom<InputRegion | null>(null);
+export const inputRegionAtom = atom(
+  (get) => get(baseInputRegionAtom),
+  (get, set, next: InputRegion | null) => {
+    if (!sameInputRegion(get(baseInputRegionAtom), next)) set(baseInputRegionAtom, next);
+  }
+);
 export const manualInputRegionAtom = atom<InputRegion | null>(null);
 export const manualRegionsAtom = atom<InputRegion[]>([]);
 export const selectedManualRegionAtom = atom<string>('');

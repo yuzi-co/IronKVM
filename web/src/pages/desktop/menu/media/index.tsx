@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import * as api from '@/api/storage.ts';
 import * as ventoyApi from '@/api/ventoy.ts';
 import type { VentoyStatus } from '@/api/ventoy.ts';
+import { pollWhileVisible } from '@/lib/visible-poll.ts';
 import { settingsOpenRequestAtom, submenuOpenCountAtom } from '@/jotai/settings.ts';
 import { useKeyboardLock } from '@/hooks/useKeyboardLock.ts';
 import { useStableCallback } from '@/hooks/useStableCallback.ts';
@@ -73,11 +74,7 @@ export const Media = () => {
   // or the host itself can change what a drive holds.
   useEffect(() => {
     refreshDrives();
-    const timer = window.setInterval(
-      refreshDrives,
-      isModalOpen ? DRIVES_POLL_MS : DRIVES_IDLE_POLL_MS
-    );
-    return () => window.clearInterval(timer);
+    return pollWhileVisible(refreshDrives, isModalOpen ? DRIVES_POLL_MS : DRIVES_IDLE_POLL_MS);
   }, [isModalOpen, refreshDrives]);
 
   useKeyboardLock('media-modal', isModalOpen);

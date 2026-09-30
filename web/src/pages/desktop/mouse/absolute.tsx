@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useAtomValue } from 'jotai';
 
 import { MouseReportAbsolute } from '@/lib/mouse.ts';
@@ -26,6 +26,13 @@ function disableEvent(event: Event) {
 export const Absolute = () => {
   const resolution = useAtomValue(resolutionAtom);
   const inputRegion = useAtomValue(inputRegionAtom);
+  // The region is read through a ref: it can change while a button is held
+  // (a resize, a new manual or auto region), and re-registering the handlers
+  // then would drop the pending move and let go of the button on the host.
+  const inputRegionRef = useRef(inputRegion);
+  useLayoutEffect(() => {
+    inputRegionRef.current = inputRegion;
+  }, [inputRegion]);
   const scrollDirection = useAtomValue(scrollDirectionAtom);
   const scrollInterval = useAtomValue(scrollIntervalAtom);
 
@@ -400,7 +407,7 @@ export const Absolute = () => {
     }
 
     function getCorrectedCoords(clientX: number, clientY: number): { x: number; y: number } | null {
-      return getScreenPosition(target, clientX, clientY, resolution, inputRegion);
+      return getScreenPosition(target, clientX, clientY, resolution, inputRegionRef.current);
     }
 
     function queueMouseMove(x: number, y: number) {
@@ -468,7 +475,7 @@ export const Absolute = () => {
         clearTimeout(longPressTimerRef.current);
       }
     };
-  }, [inputRegion, resolution, scrollDirection, scrollInterval]);
+  }, [resolution, scrollDirection, scrollInterval]);
 
   return <></>;
 };

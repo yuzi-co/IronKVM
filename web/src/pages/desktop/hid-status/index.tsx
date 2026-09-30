@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { getHidStatus } from '@/api/hid.ts';
 import { resetHid } from '@/lib/hid-reset.ts';
 import { applyMouseMode } from '@/lib/mouse-mode.ts';
+import { pollWhileVisible } from '@/lib/visible-poll.ts';
 import { mouseModeAtom } from '@/jotai/mouse.ts';
 
 import { HidDeviceStatus, isAbsoluteMouseStalled } from './model.ts';
@@ -102,11 +103,11 @@ export const AbsoluteMouseWarning = () => {
     }
 
     check();
-    const timer = setInterval(check, POLL_INTERVAL_MS);
+    const stopPoll = pollWhileVisible(check, POLL_INTERVAL_MS);
 
     return () => {
       cancelled = true;
-      clearInterval(timer);
+      stopPoll();
     };
   }, [mouseMode, api, t, setMouseMode, isAdmin]);
 

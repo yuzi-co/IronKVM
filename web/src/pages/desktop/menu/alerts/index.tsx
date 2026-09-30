@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { getHealth } from '@/api/vm.ts';
 import { formatBytes, healthAlerts, worstSeverity } from '@/lib/health.ts';
 import type { Alert, Health } from '@/lib/health.ts';
+import { pollWhileVisible } from '@/lib/visible-poll.ts';
 import { settingsOpenRequestAtom } from '@/jotai/settings.ts';
 
 import { useStreamState } from '../screen/use-stream-state.ts';
@@ -39,7 +40,6 @@ function useHealth(): Health | null {
     let active = true;
 
     function read() {
-      if (document.visibilityState === 'hidden') return;
       getHealth()
         .then((rsp) => {
           if (active && rsp.code === 0 && rsp.data) setHealth(rsp.data as Health);
@@ -48,12 +48,10 @@ function useHealth(): Health | null {
     }
 
     read();
-    const timer = window.setInterval(read, HEALTH_POLL_MS);
-    document.addEventListener('visibilitychange', read);
+    const stopPoll = pollWhileVisible(read, HEALTH_POLL_MS);
     return () => {
       active = false;
-      window.clearInterval(timer);
-      document.removeEventListener('visibilitychange', read);
+      stopPoll();
     };
   }, []);
 

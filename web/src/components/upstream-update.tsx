@@ -6,6 +6,7 @@ import * as api from '@/api/updates.ts';
 import type { UpdateStatus } from '@/api/updates.ts';
 import { showFailure } from '@/lib/feedback.ts';
 import { updateView } from '@/lib/upstream-update.ts';
+import { pollWhileVisible } from '@/lib/visible-poll.ts';
 import { useStableCallback } from '@/hooks/useStableCallback.ts';
 
 // A running update is followed closely: it takes seconds to a minute.
@@ -60,8 +61,7 @@ export const UpstreamUpdate = ({ path, name, onUpdated }: UpstreamUpdateProps) =
   const running = status?.job.state === 'running';
   useEffect(() => {
     if (!running) return;
-    const timer = window.setInterval(load, runningPollMs);
-    return () => window.clearInterval(timer);
+    return pollWhileVisible(load, runningPollMs);
   }, [running, load]);
 
   function check() {

@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Divider, Switch, Tooltip } from 'antd';
+import { useAtomValue } from 'jotai';
 import { LoaderCircleIcon, PowerIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import * as api from '@/api/vm';
 import * as localstorage from '@/lib/localstorage.ts';
+import { gpioAtom } from '@/jotai/power.ts';
 import { MenuItem } from '@/components/menu-item.tsx';
 import { StatusDot } from '@/components/status-dot.tsx';
 
@@ -23,35 +24,13 @@ import { Reset } from './reset.tsx';
 export const Power = () => {
   const { t } = useTranslation();
 
-  const [isPowerOn, setIsPowerOn] = useState(false);
-  const [ledConnected, setLedConnected] = useState(false);
-  const [hasHdd, setHasHdd] = useState(false);
-  const [isHddOn, setIsHddOn] = useState(false);
+  const gpio = useAtomValue(gpioAtom);
+  const isPowerOn = gpio?.pwr ?? false;
+  const ledConnected = gpio?.ledConnected ?? false;
+  const hasHdd = gpio?.hasHdd ?? false;
+  const isHddOn = gpio?.hdd ?? false;
   const [isLoading, setIsLoading] = useState(false);
   const [showConfirm, setShowConfirm] = useState(() => localstorage.getPowerConfirm());
-
-  useEffect(() => {
-    async function getLed() {
-      try {
-        const rsp = await api.getGpio();
-        if (rsp.code === 0) {
-          setIsPowerOn(rsp.data.pwr);
-          setLedConnected(rsp.data.ledConnected);
-          setHasHdd(!!rsp.data.hasHdd);
-          setIsHddOn(!!rsp.data.hdd);
-        }
-      } catch (err) {
-        console.log(err);
-      }
-    }
-
-    getLed();
-    const interval = setInterval(getLed, 5000);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, []);
 
   function updateShowConfirm(value: boolean) {
     setShowConfirm(value);
