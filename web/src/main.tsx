@@ -14,6 +14,10 @@ import './assets/styles/index.css';
 const renderApp = () => {
   const themeConfig = {
     algorithm: theme.darkAlgorithm,
+    token: {
+      // Defined once, in src/assets/styles/index.css, for html/body too.
+      fontFamily: 'var(--app-font-family)'
+    },
     components: {
       Collapse: {
         headerPadding: 0,
