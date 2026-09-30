@@ -134,16 +134,27 @@ func readAbsoluteReportID() byte {
 // valid while the descriptor under it changes. The server then sends plain
 // reports to a gadget that declares IDs, and the host drops every one of them.
 // The USB watchdog calls this on each poll.
+//
+// configfs is read without mouseMutex, which every pointer report takes: the
+// watchdog's poll would otherwise stall the mouse for the length of two file
+// reads. The lock is taken to compare and, rarely, to close.
 func (h *Hid) RefreshAbsoluteReportID() bool {
 	h.mouseMutex.Lock()
-	defer h.mouseMutex.Unlock()
-
-	if h.g2 == nil {
+	open := h.g2 != nil
+	h.mouseMutex.Unlock()
+	if !open {
 		return false
 	}
+
 	id := readAbsoluteReportID()
 	touch := id != 0 && readAbsoluteTouch()
-	if id == h.absReportID && touch == h.absTouch {
+
+	h.mouseMutex.Lock()
+	defer h.mouseMutex.Unlock()
+	// The handle may have been closed, or closed and reopened with a fresh
+	// read, while configfs was read. A reopened handle that disagrees with
+	// this read is closed once more and reopens with the current values.
+	if h.g2 == nil || (id == h.absReportID && touch == h.absTouch) {
 		return false
 	}
 
