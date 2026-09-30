@@ -329,3 +329,67 @@ func TestChangesWaitForNothing(t *testing.T) {
 		t.Fatalf("install while busy: %v", err)
 	}
 }
+
+// countDeps wraps the fixture's Settings and Link and counts calls to either.
+func (f *serviceFixture) countDeps() *int {
+	calls := 0
+	settings, link := f.svc.deps.Settings, f.svc.deps.Link
+	f.svc.deps.Settings = func() config.NetBoot { calls++; return settings() }
+	f.svc.deps.Link = func() Link { calls++; return link() }
+	return &calls
+}
+
+// Without the add-on, the first sync cleans up and later ones do nothing: no
+// settings read, no link read, no file removed.
+func TestSyncWithoutTheAddonIdlesAfterCleaningUp(t *testing.T) {
+	f := newServiceFixture(t)
+	calls := f.countDeps()
+
+	// A file left behind by an earlier install is removed once.
+	if err := os.MkdirAll(ConfDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(ConfDir, "usb.conf"), []byte("x"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	f.svc.sync(true)
+	if confExists("usb.conf") {
+		t.Fatal("the first sync left usb.conf behind")
+	}
+	if *calls == 0 {
+		t.Fatal("the first sync did not look at the settings or the link")
+	}
+
+	*calls = 0
+	f.takeCalls()
+	f.svc.sync(false)
+	f.svc.sync(false)
+	if *calls != 0 {
+		t.Fatalf("idle syncs made %d dependency calls, want 0", *calls)
+	}
+	if got := f.takeCalls(); len(got) != 0 {
+		t.Fatalf("idle syncs ran scripts: %v", got)
+	}
+}
+
+// An install that appears after the service went idle is picked up by the
+// next sync, and a settings change always gets a full sync after it.
+func TestSyncLeavesIdleWhenTheAddonAppears(t *testing.T) {
+	f := newServiceFixture(t)
+	f.link.Mode = "off"
+	f.svc.sync(true)
+	if !f.svc.idle {
+		t.Fatal("the service did not go idle without the add-on")
+	}
+
+	fakeInstall(t)
+	f.settings.current = config.NetBoot{USB: true}
+	f.svc.sync(false)
+	if !confExists("usb.conf") {
+		t.Fatal("the sync after an install did not write usb.conf")
+	}
+	if f.svc.idle {
+		t.Fatal("the service stayed idle with the add-on installed")
+	}
+}

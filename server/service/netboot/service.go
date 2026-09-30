@@ -100,6 +100,11 @@ type Service struct {
 	serving  netip.AddrPort
 	subnet   netip.Prefix
 	lanError string
+
+	// idle is set when a sync found network boot not installed and left no
+	// file and no listener behind, so the next sync has nothing to do. Only
+	// sync reads and writes it, under busy.
+	idle bool
 }
 
 func New(deps Deps) *Service {
@@ -132,8 +137,20 @@ func (s *Service) sync(starting bool) {
 	}
 	defer s.busy.Unlock()
 
+	isInstalled := installed()
+
+	// Most boards never install network boot. Once a sync has found it
+	// absent and left nothing behind, every later sync would only remove
+	// files that are not there and read the link to close a listener that
+	// is not open, so skip that until an install shows up. installed() is
+	// a single stat of dnsmasq when it is absent.
+	if !isInstalled && s.idle {
+		return
+	}
+	s.idle = false
+
 	settings := s.deps.Settings()
-	if !installed() {
+	if !isInstalled {
 		settings = config.NetBoot{}
 	}
 
@@ -141,6 +158,14 @@ func (s *Service) sync(starting bool) {
 	if err != nil {
 		log.Errorf("netboot: %s", err)
 	}
+	defer func() {
+		if isInstalled || err != nil {
+			return
+		}
+		s.mu.Lock()
+		s.idle = s.server == nil
+		s.mu.Unlock()
+	}()
 	if usbChanged && s.deps.Link().on() {
 		if err := runScript(USBScript, "dhcp"); err != nil {
 			log.Errorf("netboot: restart the link's DHCP server: %s", err)
@@ -219,6 +244,9 @@ func (s *Service) apply(next config.NetBoot) error {
 }
 
 func (s *Service) applyLocked(next config.NetBoot) error {
+	// Whatever this changes, the next sync looks at it in full.
+	s.idle = false
+
 	if (next.USB || next.LAN) && !installed() {
 		return errNotInstalled
 	}

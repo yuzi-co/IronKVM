@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/pion/dtls/v3"
+	"github.com/pion/ice/v4"
 	"github.com/pion/interceptor"
 	"github.com/pion/interceptor/pkg/nack"
 	"github.com/pion/webrtc/v4"
@@ -37,8 +38,11 @@ const maxSignalingSize = 256 * 1024
 const nackResponderSize = 256
 
 var (
+	// Signaling carries small JSON (SDP, candidates, ICE servers). A write
+	// buffer only has to hold one frame fragment, and a larger message is
+	// simply split, so the buffer does not need to fit maxSignalingSize.
 	upgrader = websocket.Upgrader{
-		WriteBufferSize: 256 * 1024,
+		WriteBufferSize: 16 * 1024,
 		CheckOrigin:     middleware.SameOrigin,
 	}
 	globalManager *WebRTCManager
@@ -75,13 +79,7 @@ func Connect(c *gin.Context) {
 	// create video connection
 	iceServers := createICEServers()
 
-	mediaEngine, err := createMediaEngine()
-	if err != nil {
-		log.Errorf("failed to create h264 media engine: %s", err)
-		return
-	}
-
-	videoConn, err := createPeerConnection(iceServers, mediaEngine)
+	videoConn, err := createPeerConnection(iceServers)
 	if err != nil {
 		log.Errorf("failed to create h264 video peer connection: %s", err)
 		return
@@ -234,30 +232,65 @@ func createInterceptorRegistry() (*interceptor.Registry, error) {
 	return registry, nil
 }
 
-func createPeerConnection(iceServers []webrtc.ICEServer, mediaEngine *webrtc.MediaEngine) (*webrtc.PeerConnection, error) {
+// sharedAPI is built on first use and serves every viewer after that.
+//
+// Building an API per connection was pure overhead: nothing in it is per
+// connection. NewPeerConnection copies the MediaEngine, so codecs and header
+// extension IDs negotiated with one browser never leak into another, and the
+// interceptor registry holds factories, so each connection gets its own NACK
+// history and sender reports from Build. The SettingEngine is only read.
+var sharedAPI = sync.OnceValues(newAPI)
+
+func newAPI() (*webrtc.API, error) {
+	mediaEngine, err := createMediaEngine()
+	if err != nil {
+		return nil, err
+	}
+
+	registry, err := createInterceptorRegistry()
+	if err != nil {
+		log.Errorf("failed to create interceptor registry: %s", err)
+		return nil, err
+	}
+
+	return webrtc.NewAPI(
+		webrtc.WithSettingEngine(newSettingEngine()),
+		webrtc.WithMediaEngine(mediaEngine),
+		webrtc.WithInterceptorRegistry(registry),
+	), nil
+}
+
+func newSettingEngine() webrtc.SettingEngine {
 	settingEngine := webrtc.SettingEngine{}
+
+	// Go has no riscv64 assembly for AES, GHASH or SHA-1, and in pure Go
+	// AES_CM_128_HMAC_SHA1_80 encrypts a full RTP packet 10-25% cheaper than
+	// AEAD_AES_128_GCM. Reordering this list would not buy that, though: the
+	// browser offers, pion answers as the DTLS client, and the DTLS server
+	// (the browser) picks the profile by its own preference, which is GCM.
 	settingEngine.SetSRTPProtectionProfiles(
 		dtls.SRTP_AEAD_AES_128_GCM,
 		dtls.SRTP_AES128_CM_HMAC_SHA1_80,
 	)
 
-	apiOptions := []func(api *webrtc.API){
-		webrtc.WithSettingEngine(settingEngine),
-	}
-	if mediaEngine != nil {
-		registry, err := createInterceptorRegistry()
-		if err != nil {
-			log.Errorf("failed to create interceptor registry: %s", err)
-			return nil, err
-		}
+	// pion's default mode resolves the browser's obfuscated ".local" host
+	// candidates, which costs a multicast socket and a listener goroutine per
+	// viewer. This server answers, and it advertises its own candidates, so
+	// the browser's connectivity checks reach it and pion learns the browser's
+	// real address as a peer-reflexive candidate. Nothing here needs mDNS.
+	//
+	// Network types and interfaces are left alone on purpose: viewers arrive
+	// over Tailscale, usb0 and Wi-Fi as well as Ethernet.
+	settingEngine.SetICEMulticastDNSMode(ice.MulticastDNSModeDisabled)
 
-		apiOptions = append(apiOptions,
-			webrtc.WithMediaEngine(mediaEngine),
-			webrtc.WithInterceptorRegistry(registry),
-		)
-	}
+	return settingEngine
+}
 
-	api := webrtc.NewAPI(apiOptions...)
+func createPeerConnection(iceServers []webrtc.ICEServer) (*webrtc.PeerConnection, error) {
+	api, err := sharedAPI()
+	if err != nil {
+		return nil, err
+	}
 
 	return api.NewPeerConnection(webrtc.Configuration{
 		ICEServers:   iceServers,

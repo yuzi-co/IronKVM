@@ -235,3 +235,32 @@ func TestTracingAMessageCostsNothingWhenDebugIsOff(t *testing.T) {
 		t.Fatalf("expected no allocations while debug logging is off, got %v", allocs)
 	}
 }
+
+// queueManual runs once per keystroke and mouse move. Beyond the control mode
+// check, the reservation and its Complete callback, it must not allocate: no
+// timer, no per-event closures, no copy of the report. It was 14 allocations.
+func TestQueueManualReportAllocations(t *testing.T) {
+	control := controlmode.NewManager(filepath.Join(t.TempDir(), "mode"), controlmode.ModeMCP)
+	manual := inputcontrol.NewManualSession(control, &inputcontrol.Coordinator{})
+	defer manual.Close()
+
+	client := &Client{manual: manual, keyboard: make(chan hid.QueuedReport, 1)}
+	report := []byte{0, 0, 4, 0, 0, 0, 0, 0} // "a" held
+
+	queueAndComplete := func() {
+		client.queueManualReport(client.keyboard, inputcontrol.ManualKeyboard, report, true, true)
+		queued := <-client.keyboard
+		queued.Complete(true)
+	}
+	queueAndComplete()
+	hooks := client.hooks
+
+	allocs := testing.AllocsPerRun(100, queueAndComplete)
+	statusAllocs := testing.AllocsPerRun(100, func() { _, _ = control.Status() })
+	if allocs > statusAllocs+2 {
+		t.Fatalf("allocs per event = %v, want at most %v (control status) + 2", allocs, statusAllocs)
+	}
+	if client.hooks != hooks {
+		t.Fatal("the per-client callbacks were rebuilt")
+	}
+}

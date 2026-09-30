@@ -33,6 +33,7 @@ type Client struct {
 	keyboardLedWorkers sync.WaitGroup
 	closeOnce          sync.Once
 	workers            sync.WaitGroup
+	hooks              *manualHooks
 }
 
 type Message struct {

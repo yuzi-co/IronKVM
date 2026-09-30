@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"sync"
 
 	"NanoKVM-Server/proto"
 
@@ -78,7 +79,7 @@ var readRegister = func(addr uint32) (uint32, bool) {
 func (s *Service) GetCpuFreq(c *gin.Context) {
 	var rsp proto.Response
 
-	running, measured := readRunningMHz()
+	running, measured := runningMHz()
 	target := readTargetFreq()
 
 	rsp.OkRspWithData(c, &proto.GetCpuFreqRsp{
@@ -181,6 +182,41 @@ func readTargetFreq() int {
 // writeTargetFreq stores the target for S00cpufreq to read at boot.
 func writeTargetFreq(mhz int) error {
 	return os.WriteFile(cpuFreqConfigPath, []byte(strconv.Itoa(mhz)+"\n"), 0o644)
+}
+
+// runningClock caches the first successful register decode. The live clock is
+// set once at boot and this feature never switches it, so it cannot change
+// until the next reboot restarts the server too. Caching saves two devmem forks
+// per GET /api/vm/cpufreq. A failed read is not cached: devmem can fail for a
+// passing reason, such as a fork under memory pressure, and the next request
+// should get to try again.
+var runningClock struct {
+	sync.Mutex
+	mhz      int
+	measured bool
+}
+
+// runningMHz is readRunningMHz behind runningClock.
+func runningMHz() (int, bool) {
+	runningClock.Lock()
+	defer runningClock.Unlock()
+
+	if runningClock.measured {
+		return runningClock.mhz, true
+	}
+
+	mhz, measured := readRunningMHz()
+	if measured {
+		runningClock.mhz, runningClock.measured = mhz, true
+	}
+	return mhz, measured
+}
+
+// resetRunningClock forgets the cached clock. Only tests need it.
+func resetRunningClock() {
+	runningClock.Lock()
+	defer runningClock.Unlock()
+	runningClock.mhz, runningClock.measured = 0, false
 }
 
 // readRunningMHz decodes the clock the core runs now from the mux and PLL

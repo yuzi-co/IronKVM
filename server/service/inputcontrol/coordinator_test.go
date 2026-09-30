@@ -472,3 +472,56 @@ func TestManualWritesAreSerialized(t *testing.T) {
 	close(releaseFirst)
 	wg.Wait()
 }
+
+// The bound on the wait for an MCP operation still holds when the reservation
+// builds its deadline only on the waiting path.
+func TestReserveWithinGivesUpOnAnMCPOperationThatNeverYields(t *testing.T) {
+	coordinator := newCoordinator(defaultManualCooldown, time.Now)
+	control := controlmode.NewManager(filepath.Join(t.TempDir(), "mode"), controlmode.ModeMCP)
+	_, releaseOperation, err := coordinator.BeginMCP(context.Background(), OperationHID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer releaseOperation()
+
+	manual := NewManualSession(control, coordinator)
+	defer manual.Close()
+
+	start := time.Now()
+	_, err = manual.ReserveWithCooldownWithin(50*time.Millisecond, ManualKeyboard, true, true, nil)
+	if !errors.Is(err, context.DeadlineExceeded) {
+		t.Fatalf("error = %v, want %v", err, context.DeadlineExceeded)
+	}
+	if elapsed := time.Since(start); elapsed > time.Second {
+		t.Fatalf("gave up after %s, want about 50ms", elapsed)
+	}
+}
+
+// Reserving for an event while the session already holds control is the path
+// every keystroke and mouse move takes. Beyond what the control mode check
+// costs, it allocates the reservation and nothing else: no context, no timer.
+func TestReserveWithinAllocatesOnlyTheReservation(t *testing.T) {
+	coordinator := newCoordinator(defaultManualCooldown, time.Now)
+	control := controlmode.NewManager(filepath.Join(t.TempDir(), "mode"), controlmode.ModeMCP)
+	manual := NewManualSession(control, coordinator)
+	defer manual.Close()
+
+	// A held key keeps the session active between events.
+	first, err := manual.ReserveWithCooldownWithin(time.Second, ManualKeyboard, true, true, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer first.Complete(true)
+
+	allocs := testing.AllocsPerRun(100, func() {
+		reservation, err := manual.ReserveWithCooldownWithin(time.Second, ManualKeyboard, true, true, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		reservation.Complete(true)
+	})
+	statusAllocs := testing.AllocsPerRun(100, func() { _, _ = control.Status() })
+	if allocs > statusAllocs+1 {
+		t.Fatalf("allocs per reservation = %v, want at most %v (control status) + 1", allocs, statusAllocs)
+	}
+}

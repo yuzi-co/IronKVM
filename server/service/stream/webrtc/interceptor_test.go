@@ -14,12 +14,7 @@ import (
 func offerFor(t *testing.T) string {
 	t.Helper()
 
-	mediaEngine, err := createMediaEngine()
-	if err != nil {
-		t.Fatalf("create media engine: %s", err)
-	}
-
-	connection, err := createPeerConnection(nil, mediaEngine)
+	connection, err := createPeerConnection(nil)
 	if err != nil {
 		t.Fatalf("create peer connection: %s", err)
 	}
@@ -67,7 +62,7 @@ func TestNackResponderSizeIsAccepted(t *testing.T) {
 	}
 }
 
-// The registry is built once per connection and a failure there must not be
+// The registry is built once for the shared API and a failure there must not be
 // answered with a peer connection that silently has no interceptors.
 func TestInterceptorRegistryIsPopulated(t *testing.T) {
 	registry, err := createInterceptorRegistry()

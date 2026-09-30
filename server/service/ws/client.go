@@ -1,7 +1,6 @@
 package ws
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"time"
@@ -120,7 +119,10 @@ func (c *Client) Read() error {
 }
 
 func (c *Client) queueManualReport(queue chan hid.QueuedReport, kind inputcontrol.ManualReportKind, report []byte, held bool, startCooldown bool) {
-	c.queueManual(queue, kind, hid.QueuedReport{Data: append([]byte(nil), report...)}, held, startCooldown)
+	// report is handed to the HID writer as is. It is a slice of the message
+	// ReadMessage returned, and ReadMessage reads every message into a new
+	// buffer, so nothing overwrites it while it waits in the queue.
+	c.queueManual(queue, kind, hid.QueuedReport{Data: report}, held, startCooldown)
 }
 
 // queueManualTouch queues one touch frame. Touch uses the absolute pointer's
@@ -134,13 +136,40 @@ func (c *Client) queueManualTouch(contacts []hid.TouchContact) {
 	c.queueManual(c.mouse, inputcontrol.ManualAbsoluteMouse, hid.QueuedReport{Touch: contacts}, held, true)
 }
 
-func (c *Client) queueManual(queue chan hid.QueuedReport, kind inputcontrol.ManualReportKind, queued hid.QueuedReport, held bool, startCooldown bool) {
-	ctx, cancel := context.WithTimeout(context.Background(), manualPreemptTimeout)
-	defer cancel()
+// allowManualInput is the reservation's mode check. It is a package function
+// rather than a literal at the call site so the per-event path plainly holds no
+// closure.
+func allowManualInput(mode controlmode.Mode) bool {
+	return mode != controlmode.ModePicoclaw || !picoclaw.GetSessionLock().BlocksManualInput()
+}
 
-	reservation, err := c.manual.ReserveWithCooldown(ctx, kind, held, startCooldown, func(mode controlmode.Mode) bool {
-		return mode != controlmode.ModePicoclaw || !picoclaw.GetSessionLock().BlocksManualInput()
-	})
+// manualHooks are the callbacks every queued report carries. They depend only
+// on the client, so they are built on the first event rather than per event.
+// Only the read loop queues input, so the lazy build needs no lock.
+type manualHooks struct {
+	execute            func(func() error) error
+	resetKeyboard      func()
+	resetRelativeMouse func()
+	resetAbsoluteMouse func()
+}
+
+func (c *Client) manualHooks() *manualHooks {
+	if c.hooks == nil {
+		manual := c.manual
+		c.hooks = &manualHooks{
+			execute:            manual.Execute,
+			resetKeyboard:      func() { manual.Reset(inputcontrol.ManualKeyboard) },
+			resetRelativeMouse: func() { manual.Reset(inputcontrol.ManualRelativeMouse) },
+			resetAbsoluteMouse: func() { manual.Reset(inputcontrol.ManualAbsoluteMouse) },
+		}
+	}
+	return c.hooks
+}
+
+func (c *Client) queueManual(queue chan hid.QueuedReport, kind inputcontrol.ManualReportKind, queued hid.QueuedReport, held bool, startCooldown bool) {
+	// The timeout only bounds a wait for an MCP operation to yield; with none
+	// running, the reservation succeeds without building a timer.
+	reservation, err := c.manual.ReserveWithCooldownWithin(manualPreemptTimeout, kind, held, startCooldown, allowManualInput)
 	if err != nil {
 		if errors.Is(err, inputcontrol.ErrManualInputBlocked) {
 			log.Debug("manual HID input dropped while PicoClaw session holds control")
@@ -150,11 +179,12 @@ func (c *Client) queueManual(queue chan hid.QueuedReport, kind inputcontrol.Manu
 		return
 	}
 
-	queued.Execute = c.manual.Execute
+	hooks := c.manualHooks()
+	queued.Execute = hooks.execute
 	queued.Complete = reservation.Complete
-	queued.ResetKeyboard = func() { c.manual.Reset(inputcontrol.ManualKeyboard) }
-	queued.ResetRelativeMouse = func() { c.manual.Reset(inputcontrol.ManualRelativeMouse) }
-	queued.ResetAbsoluteMouse = func() { c.manual.Reset(inputcontrol.ManualAbsoluteMouse) }
+	queued.ResetKeyboard = hooks.resetKeyboard
+	queued.ResetRelativeMouse = hooks.resetRelativeMouse
+	queued.ResetAbsoluteMouse = hooks.resetAbsoluteMouse
 	if !writeQueue(queue, queued) {
 		return
 	}

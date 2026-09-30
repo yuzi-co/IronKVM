@@ -47,6 +47,20 @@ for file in Makefile server/build.sh tools/build/build-app.sh; do
         || note "$file passes -s -w on every build line ($stripped/$lines)" FAIL
 done
 
+# -trimpath keeps build machine paths out of the binary. Every build line of
+# every entry point carries it, release.sh included. The Makefile carries it on
+# GO_BUILD_CMD, the line that runs go build.
+for file in server/build.sh tools/build/build-app.sh tools/release/release.sh; do
+    lines=$(grep -n "[^a-z]go build " "$ROOT/$file" | grep -v "^[0-9]*:[[:space:]]*#" | grep -v echo | grep -c . || true)
+    trimmed=$(grep -n "[^a-z]go build " "$ROOT/$file" | grep -v "^[0-9]*:[[:space:]]*#" | grep -v echo | grep -c -- "-trimpath" || true)
+    [ "$lines" -gt 0 ] && [ "$trimmed" = "$lines" ] \
+        && note "$file passes -trimpath on every build line" OK \
+        || note "$file passes -trimpath on every build line ($trimmed/$lines)" FAIL
+done
+grep -q "^GO_BUILD_CMD.*go build .*-trimpath" "$ROOT/Makefile" \
+    && note "the Makefile passes -trimpath" OK \
+    || note "the Makefile passes -trimpath" FAIL
+
 # A build with no stamp must still strip. The Makefile expresses the stamp as
 # an optional fragment, so -s -w has to sit outside that fragment.
 grep -q 'ldflags "-s -w' "$ROOT/Makefile" \
