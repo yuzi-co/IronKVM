@@ -94,14 +94,23 @@ SERVER_LOG=/tmp/nanokvm-server.log
 # reboot. This logs on events only, so a logger fork per line costs nothing;
 # without logger the line goes to the file alone. SUPERVISE_LOGGER names
 # another logger, or none when empty.
+#
+# Two priorities. warn is for what this script does to the board: a reboot or
+# the decision to reboot, and killing or restarting a process. A collector that
+# alerts on daemon.warning then sees those and nothing else. log is everything
+# else: starting and stopping, the update stand-off, the carveout.
 LOGGER=${SUPERVISE_LOGGER-$(command -v logger 2>/dev/null)}
-log() {
+say() {   # $1 = syslog priority, then the line
+    pri=$1
+    shift
     echo "$(date '+%Y-%m-%d %H:%M:%S') $*" >> "$LOG"
     if [ -n "$LOGGER" ]; then
-        "$LOGGER" -t supervise -p daemon.notice -- "$*" 2>/dev/null
+        "$LOGGER" -t supervise -p "daemon.$pri" -- "$*" 2>/dev/null
     fi
     return 0
 }
+log()  { say notice "$@"; }
+warn() { say warning "$@"; }
 # --- end log ---
 
 # --- decide ---
@@ -464,7 +473,7 @@ capture_bounded() {   # $1 = reason
     # wedged dmesg or tail is a grandchild and survives. The reboot proceeds
     # anyway, which is the property that matters, and the survivor leaves with
     # the board.
-    log "the evidence capture did not finish, rebooting without it"
+    warn "the evidence capture did not finish, rebooting without it"
     kill -9 "$pid" 2>/dev/null
     return 0
 }
@@ -503,11 +512,11 @@ ion_line() {
 
 escalate() {   # $1 = reason
     if [ "${NO_REBOOT:-0}" = 1 ]; then
-        log "would reboot ($1), but SUPERVISE_NO_REBOOT is set"
+        warn "would reboot ($1), but SUPERVISE_NO_REBOOT is set"
         return 0
     fi
 
-    log "rebooting: $1"
+    warn "rebooting: $1"
     capture_bounded "$1"
     sync
     reboot
@@ -870,7 +879,7 @@ watch_loop() {
                 # guard refused" from "the threshold was never met", and the
                 # counter is the only thing that says which.
                 failed_cures=$(next_failed_cures "$cures" "$failed_cures")
-                log "NanoKVM-Server is up but has not answered for ${stuck}s (failed_cures=$failed_cures), killing and restarting it"
+                warn "NanoKVM-Server is up but has not answered for ${stuck}s (failed_cures=$failed_cures), killing and restarting it"
 
                 if cure_hung; then
                     cures=$(( cures + 1 ))
@@ -878,7 +887,7 @@ watch_loop() {
                 else
                     # SIGKILL cannot clear uninterruptible sleep, and no later
                     # cure does better. Go straight to the threshold.
-                    log "the process did not leave after SIGKILL"
+                    warn "the process did not leave after SIGKILL"
                     failed_cures=${HANG_CURES_K:-2}
                     hang_reason="hung: the process did not leave after SIGKILL"
                 fi
@@ -908,7 +917,7 @@ watch_loop() {
                 # timed by the poll and the backoff instead.
                 ran=$(( NOW - started ))
                 short_runs=$(next_short_runs "$ran" "$short_runs")
-                log "NanoKVM-Server is gone after ${ran}s (short_runs=$short_runs), restarting in ${delay}s"
+                warn "NanoKVM-Server is gone after ${ran}s (short_runs=$short_runs), restarting in ${delay}s"
 
                 if [ "$(should_reboot restart "$short_runs" 0 "$NOW" "$served_ever")" = yes ]; then
                     escalate "crash loop: $short_runs runs shorter than ${SHORT_RUN:-30}s"
@@ -929,7 +938,7 @@ watch_loop() {
                     # often.
                     ion_line
                     "$SERVER_BIN" < /dev/null >> "$SERVER_LOG" 2>&1 &
-                    log "started $SERVER_BIN as pid $!"
+                    warn "started $SERVER_BIN as pid $!"
                 fi
 
                 delay=$(delay_after_run "$ran" "$delay")
@@ -957,7 +966,7 @@ watch_loop() {
         if [ "$state" != updating ] && ! system_running && system_binary_present; then
             "$SYSTEM_BIN" < /dev/null > /dev/null 2>&1 &
             SYS_PID=$!
-            log "kvm_system was gone, started it as pid $!"
+            warn "kvm_system was gone, started it as pid $!"
         fi
 
         # The other door. An update replaces the boot scripts, so restarting one
@@ -978,7 +987,7 @@ watch_loop() {
 
             if ssh_action "$ssh_answered" "$ssh_down_for" "$since_ssh_cure"
             then
-                log "nothing has listened on port $SSH_PORT for ${ssh_down_for}s, restarting $SSHD_INIT"
+                warn "nothing has listened on port $SSH_PORT for ${ssh_down_for}s, restarting $SSHD_INIT"
                 cure_ssh
                 ssh_cured_at=$NOW
             fi

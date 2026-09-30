@@ -228,7 +228,13 @@ mutate "the cure runs only during an update" 's/"$state" != updating \]; then/"$
 # Event lines reach syslog as well as the file.
 mutate "the log line never reaches syslog"  's/^        "\$LOGGER" -t supervise/        : "$LOGGER" -t supervise/'
 mutate "the syslog tag is lost"             's/-t supervise -p/-p/'
-mutate "log fails without logger"           '/^log() {$/,/^}$/s/return 0/return 1/'
+mutate "log fails without logger"           '/^say() {/,/^}$/s/return 0/return 1/'
+# Reboots and restarts are warnings, the rest notices.
+mutate "warn logs at notice"                's/^warn() { say warning/warn() { say notice/'
+mutate "log logs at warning"                's/^log()  { say notice/log()  { say warning/'
+mutate "the priority is not passed on"      's/-p "daemon.\$pri"/-p daemon.notice/'
+mutate "a reboot is logged at notice"       's/^    warn "rebooting: /    log "rebooting: /'
+mutate "a hang cure is logged at notice"    's/^                warn "NanoKVM-Server is up/                log "NanoKVM-Server is up/'
 
 echo
 if [ "$fails" -eq 0 ]; then

@@ -509,20 +509,23 @@ got=$(WORK="$WORK" sh -c '
     NO_REBOOT=1
     . "$WORK/act.sh"
     log()             { echo "LOG: $*"; }
+    warn()            { echo "WARN: $*"; }
     capture_bounded() { echo "captured"; }
     sync()            { echo "synced"; }
     reboot()          { echo "REBOOTED"; }
     sleep()           { :; }
     escalate "test"
 ' | tr '\n' ' ')
-want="LOG: would reboot (test), but SUPERVISE_NO_REBOOT is set "
+# A reboot decision is a warning, whether or not it is carried out.
+want="WARN: would reboot (test), but SUPERVISE_NO_REBOOT is set "
 [ "$got" = "$want" ] && note "SUPERVISE_NO_REBOOT=1 records the decision and does nothing else" OK \
                      || note "SUPERVISE_NO_REBOOT=1 did [$got], want [$want]" FAIL
 
 got=$(WORK="$WORK" sh -c '
     NO_REBOOT=0
     . "$WORK/act.sh"
-    log()             { :; }
+    log()             { echo "LOG: $*"; }
+    warn()            { :; }
     capture_bounded() { echo "captured"; }
     sync()            { echo "synced"; }
     reboot()          { echo "REBOOTED"; }
@@ -542,6 +545,7 @@ start=$(date +%s)
 WORK="$WORK" sh -c '
     . "$WORK/act.sh"
     log()              { :; }
+    warn()             { :; }
     capture_evidence() { sleep 60; }
     capture_bounded "test"
 ' > /dev/null 2>&1
@@ -932,7 +936,7 @@ probe_case "no socket tables: the probe could not run"     p-none      absent  2
 
 # The log line names the port that was probed, or an owner on 2222 reads that
 # 22 was down and goes looking for the wrong fault.
-grep -q 'log "nothing has listened on port \$SSH_PORT for ' "$SV" \
+grep -q 'warn "nothing has listened on port \$SSH_PORT for ' "$SV" \
     && note "the restart line names the probed port" OK \
     || note "the restart line does not name the probed port" FAIL
 
@@ -1046,6 +1050,52 @@ if [ "$(cat "$WORK/logger.out" 2>/dev/null)" = "-t|supervise|-p|daemon.notice|--
 else
     note "syslog got: $(cat "$WORK/logger.out" 2>/dev/null)" FAIL
 fi
+
+# warn is the same line at daemon.warning, so a collector can alert on what
+# this script does to the board without the routine lines.
+rm -f "$WORK/events.log" "$WORK/logger.out"
+LOGGER_OUT="$WORK/logger.out" SUPERVISE_LOGGER="$WORK/logger" LOG="$WORK/events.log" sh -c '
+    . "$0"
+    warn "rebooting: crash loop"
+' "$WORK/log.sh"
+if grep -q ' rebooting: crash loop$' "$WORK/events.log" 2>/dev/null; then
+    note "a warning is in the file" OK
+else
+    note "a warning is not in the file" FAIL
+fi
+if [ "$(cat "$WORK/logger.out" 2>/dev/null)" = "-t|supervise|-p|daemon.warning|--|rebooting: crash loop|" ]; then
+    note "a warning goes to syslog at daemon.warning" OK
+else
+    note "syslog got: $(cat "$WORK/logger.out" 2>/dev/null)" FAIL
+fi
+
+# Which lines are warnings. Each of these reboots the board, decides to, or
+# kills or restarts a process; everything else stays at notice.
+for line in \
+    'warn "the evidence capture did not finish' \
+    'warn "would reboot (' \
+    'warn "rebooting: ' \
+    'warn "NanoKVM-Server is up but has not answered' \
+    'warn "the process did not leave after SIGKILL"' \
+    'warn "NanoKVM-Server is gone after' \
+    'warn "started $SERVER_BIN as pid' \
+    'warn "kvm_system was gone' \
+    'warn "nothing has listened on port' \
+    'log "ion ' \
+    'log "an update is in progress' \
+    'log "no update in progress any more' \
+    'log "supervisor started' \
+    'log "supervisor stopped"'
+do
+    if grep -qF "$line" "$SV"; then
+        note "${line%% *} ${line#* }" OK
+    else
+        note "missing: $line" FAIL
+    fi
+done
+n_warn=$(grep -c '^[[:space:]]*warn "' "$SV")
+[ "$n_warn" -eq 9 ] && note "nine lines are warnings" OK \
+                    || note "$n_warn lines are warnings, want 9" FAIL
 
 rm -f "$WORK/events.log"
 SUPERVISE_LOGGER= LOG="$WORK/events.log" sh -c '
