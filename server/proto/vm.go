@@ -358,6 +358,41 @@ type HealthVpn struct {
 	Running bool   `json:"running"`
 }
 
+// GetMemoryRsp is the board's memory at a glance, for the Performance page.
+// Every size is in bytes.
+type GetMemoryRsp struct {
+	Total     int64 `json:"total"`     // MemTotal
+	Available int64 `json:"available"` // MemAvailable: what can be had without swapping
+	Free      int64 `json:"free"`      // MemFree
+
+	Swaps []MemorySwap `json:"swaps"` // each device in /proc/swaps
+	// ZramMemUsed is the RAM zram holds for what it stores, its own overhead
+	// included. 0 without zram.
+	ZramMemUsed int64 `json:"zramMemUsed"`
+
+	Processes []MemoryProcess `json:"processes"` // the main consumers that run now
+	Addons    *MemoryGroup    `json:"addons"`    // the add-ons' cgroup, null when absent
+}
+
+type MemorySwap struct {
+	Name string `json:"name"` // as /proc/swaps names it: /swapfile, /dev/zram0
+	Kind string `json:"kind"` // "zram", "file" or "partition"
+	Size int64  `json:"size"`
+	Used int64  `json:"used"`
+}
+
+type MemoryProcess struct {
+	Name string `json:"name"`
+	RSS  int64  `json:"rss"` // VmRSS
+}
+
+// MemoryGroup is a memory cgroup's use and its limits. A limit is 0 when unset.
+type MemoryGroup struct {
+	Current int64 `json:"current"`
+	High    int64 `json:"high"`
+	Max     int64 `json:"max"`
+}
+
 type SetCpuFreqReq struct {
 	Target int `validate:"required"` // MHz, must be one of GetCpuFreqRsp.Options
 }

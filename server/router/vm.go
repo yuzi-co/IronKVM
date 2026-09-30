@@ -47,6 +47,7 @@ func vmRouter(r *gin.Engine) {
 	admin.GET("/vm/device/usb-network", service.GetUSBNetwork)  // get the USB network link to the host
 	admin.POST("/vm/device/usb-network", service.SetUSBNetwork) // set the USB network link to the host
 
+	admin.GET("/vm/memory", service.GetMemory)             // RAM, swap and the main consumers
 	admin.GET("/vm/memory/limit", service.GetMemoryLimit)  // get memory limit
 	admin.POST("/vm/memory/limit", service.SetMemoryLimit) // set memory limit
 
