@@ -37,8 +37,11 @@ const maxSignalingSize = 256 * 1024
 const nackResponderSize = 256
 
 var (
+	// Signaling carries small JSON (SDP, candidates, ICE servers). A write
+	// buffer only has to hold one frame fragment, and a larger message is
+	// simply split, so the buffer does not need to fit maxSignalingSize.
 	upgrader = websocket.Upgrader{
-		WriteBufferSize: 256 * 1024,
+		WriteBufferSize: 16 * 1024,
 		CheckOrigin:     middleware.SameOrigin,
 	}
 	globalManager *WebRTCManager
