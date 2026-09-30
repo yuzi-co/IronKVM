@@ -27,7 +27,8 @@
 #   SUPERVISE_CRASH_LOOP_N  short runs that trigger a reboot     (default 5)
 #   SUPERVISE_HANG_CURES    failed cures that trigger a reboot   (default 2)
 #   SUPERVISE_NO_REBOOT     1 logs the decision and does not act (default 0)
-#   SSH_DOWN_AFTER       seconds with no listener on 22 before a restart (60)
+#   SSH_DOWN_AFTER       seconds with no ssh listener before a restart   (60)
+#   SSH_PORT_FILE        the owner's ssh port, 22 if unusable (/etc/kvm/ssh_port)
 #   SSH_CURE_BACKOFF     seconds between two sshd restarts               (300)
 #   SSHD_INIT            the init script to restart (default /etc/init.d/S50sshd)
 #   SSH_STOP_FLAG        present when the owner turned SSH off (/etc/kvm/ssh_stop)
@@ -106,26 +107,33 @@ log() {
 # The threshold is deliberately generous and the default is inaction. A probe that
 # cannot run, a slow start under heavy IO, a moment of SD contention - none of
 # those is worth killing a working KVM for.
-action() {
+#
+# The probe is run by the caller and its answer passed in, because the loop
+# needs that answer too and a second curl every pass is a second fork for
+# nothing. The verdict comes back in ACTION rather than on stdout for the same
+# reason: `$(action)` is a subshell on every pass.
+action() {   # $1 = what serving said this pass: 0 answered, 1 did not, 2 could not run
+    answered=$1
+
     # Before anything else. An update stops the server and then replaces
     # /kvmapp underneath it, and every other verdict below reads a board in
     # that state as a fault.
     if updating; then
-        echo updating
+        ACTION=updating
         return
     fi
 
-    if process_running; then
-        serving
-        answered=$?
-
+    # An answer is proof the process is up: something bound the port and
+    # replied. pidof is a fork and a walk of /proc, so it is asked only when
+    # the probe did not settle the question.
+    if [ "$answered" = 0 ] || process_running; then
         # Anything but a clear "no" counts as serving. A probe that cannot run
         # is not evidence that the server is down, and killing a working KVM
         # because curl is missing is the worst trade this script can make: it
         # would report hung on every poll and restart a healthy server once a
         # minute, forever.
         if [ "$answered" -ne 1 ]; then
-            echo healthy
+            ACTION=healthy
             return
         fi
 
@@ -133,18 +141,18 @@ action() {
         # block stands alone when the test extracts it - and so the test measures
         # the threshold that actually ships.
         if [ "$(unhealthy_for)" -ge "${HANG_AFTER:-60}" ]; then
-            echo hung
+            ACTION=hung
         else
-            echo healthy
+            ACTION=healthy
         fi
 
         return
     fi
 
     if binary_present; then
-        echo restart
+        ACTION=restart
     else
-        echo stopped
+        ACTION=stopped
     fi
 }
 # --- end decide ---
@@ -255,8 +263,8 @@ should_reboot() {
     # -lt 600 ]` is an error rather than a false comparison: the `if` is false,
     # the floor is skipped, and the board reboots at whatever uptime it has -
     # thirty seconds included. A guard that inverts its own meaning on bad input
-    # is not a guard. `up` comes from `cut -d. -f1 /proc/uptime`, so any failure
-    # to fork gives an empty string, and a typo in SUPERVISE_REBOOT_FLOOR opens
+    # is not a guard. `up` is read from /proc/uptime, so any failure
+    # to read gives an empty string, and a typo in SUPERVISE_REBOOT_FLOOR opens
     # the same hole from the other side.
     #
     # The floor is the comparison whose failure is dangerous; a bad short_runs
@@ -349,17 +357,16 @@ next_failed_cures() {   # $1 = cures attempted so far, $2 = current count
 # Nothing is lost by refusing. An operator who stops the server and brings it
 # back produces an answering healthy poll, and that clears the counters through
 # the arm no cure can be mistaken for.
+#
+# The answer is the return status, 0 to clear, so the loop asks without a
+# subshell.
 should_clear() {   # $1 = verdict, $2 = did the probe answer this pass, yes or no
     case "$1" in
         healthy)
-            if [ "$2" = yes ]; then
-                echo yes
-            else
-                echo no
-            fi
+            [ "$2" = yes ]
             ;;
         *)
-            echo no
+            return 1
             ;;
     esac
 }
@@ -538,37 +545,84 @@ delay_after_run() {
 # reach, because a wedged sshd keeps its pid and its port. S00awatchdog tests
 # the same door the same way, for the same reason.
 #
+# The owner can move sshd off 22 in Settings > SSH, which keeps the choice in
+# /etc/kvm/ssh_port. S50sshd falls back to 22 for anything it cannot use, and
+# so does this: a missing or unreadable file, anything that is not plain
+# digits, a leading zero, or a number past 65535. S50sshd also falls back when
+# sshd rejects the drop-in, which this cannot see, so a listener on 22 counts
+# as the door whatever the file says. Otherwise that board would have its
+# working sshd restarted every SSH_CURE_BACKOFF, for ever.
+ssh_port() {   # sets SSH_PORT
+    port=
+    [ -r "${SSH_PORT_FILE:-/etc/kvm/ssh_port}" ] &&
+        read -r port < "${SSH_PORT_FILE:-/etc/kvm/ssh_port}"
+    case "$port" in
+        ''|0*|*[!0-9]*) port=22 ;;
+    esac
+    # The length first, because busybox `[` errors on a value too wide to
+    # compare, and an error here would keep the number rather than drop it.
+    { [ "${#port}" -le 5 ] && [ "$port" -le 65535 ]; } || port=22
+    SSH_PORT=$port
+}
+
+# The kernel's own socket tables, read with the shell's read builtin. netstat
+# and grep were two forks and a PATH lookup on every pass, on a single core;
+# this is none. A line is `sl local rem st ...`, the local address ends in the
+# port as four hex digits, and 0A is LISTEN. The header's fields are words, so
+# the hex guard skips it. tcp6 as well as tcp, as `netstat -lnt` did, because
+# sshd may bind either.
+#
 # Three answers, exactly like serving(). A probe that could not run is not a
 # report that the door is shut:
 #
-#   0  something is listening on 22
+#   0  something is listening on the ssh port
 #   1  nothing is
 #   2  the probe could not run, so nothing was measured
 ssh_listening() {
-    [ -x "$(command -v netstat)" ] || return 2
+    ssh_port
+    probed=no
 
-    netstat -lnt 2>/dev/null | grep -q ':22 ' || return 1
-    return 0
+    for table in "${PROC:-/proc}/net/tcp" "${PROC:-/proc}/net/tcp6"
+    do
+        [ -r "$table" ] || continue
+        probed=yes
+
+        while read -r _ laddr _ st _
+        do
+            [ "$st" = 0A ] || continue
+            hex=${laddr##*:}
+            case "$hex" in ''|*[!0-9A-Fa-f]*) continue ;; esac
+            case "$(( 0x$hex ))" in
+                "$SSH_PORT"|22) return 0 ;;
+            esac
+        done < "$table"
+    done
+
+    [ "$probed" = yes ] || return 2
+    return 1
 }
 
 # Every input is passed in. Nothing here reads a clock, a file or a process.
 #
 # The backoff is what keeps this from becoming a loop against a fault it cannot
 # fix. An sshd with an unreadable host key never starts, and retrying that every
-# five seconds would spend the only core this board has. It never gives up
-# either, for the reason first_delay gives: this is the thing you reach for when
-# nothing else answers.
+# poll would spend the only core this board has. It never gives up either, for
+# the reason first_delay gives: this is the thing you reach for when nothing
+# else answers.
+#
+# The answer is the return status, 0 to restart, so the loop asks without a
+# subshell.
 ssh_action() {   # $1 = probe answer, $2 = seconds down, $3 = seconds since the last cure
     answered=$1; down_for=$2; since_cure=$3
 
-    # Anything that is not a clear "no" is not evidence. A board without netstat
-    # would otherwise restart sshd on every poll, for ever.
-    [ "$answered" = 1 ] || { echo none; return; }
+    # Anything that is not a clear "no" is not evidence. A board whose socket
+    # tables cannot be read would otherwise restart sshd on every poll, for ever.
+    [ "$answered" = 1 ] || return 1
 
     # The owner turned SSH off in the web UI, so no listener is the setting and
     # not a fault. S50sshd would refuse to start anyway, and a restart every
     # backoff for as long as the switch stays off only writes the log.
-    [ -e "${SSH_STOP_FLAG:-/etc/kvm/ssh_stop}" ] && { echo none; return; }
+    [ -e "${SSH_STOP_FLAG:-/etc/kvm/ssh_stop}" ] && return 1
 
     # Fail closed on anything that is not a plain non-negative integer, and on
     # anything wider than busybox `[` compares without erroring. An error is not
@@ -576,14 +630,14 @@ ssh_action() {   # $1 = probe answer, $2 = seconds down, $3 = seconds since the 
     # same hole should_reboot documents.
     for num in "$down_for" "$since_cure" "${SSH_DOWN_AFTER:-60}" "${SSH_CURE_BACKOFF:-300}"
     do
-        case "$num" in ''|*[!0-9]*) echo none; return ;; esac
-        [ "${#num}" -le 10 ] || { echo none; return; }
+        case "$num" in ''|*[!0-9]*) return 1 ;; esac
+        [ "${#num}" -le 10 ] || return 1
     done
 
-    [ "$down_for"   -ge "${SSH_DOWN_AFTER:-60}" ]    || { echo none; return; }
-    [ "$since_cure" -ge "${SSH_CURE_BACKOFF:-300}" ] || { echo none; return; }
+    [ "$down_for"   -ge "${SSH_DOWN_AFTER:-60}" ]    || return 1
+    [ "$since_cure" -ge "${SSH_CURE_BACKOFF:-300}" ] || return 1
 
-    echo restart
+    return 0
 }
 
 # setsid for the reason start() gives: the init script holds stdio through its
@@ -606,9 +660,30 @@ system_binary_present() {
     [ -x "$SYSTEM_BIN" ]
 }
 
-system_running() {
-    pidof kvm_system > /dev/null 2>&1
+# --- procs ---
+# kvm_system is checked on every pass and is nearly always there, so its pid is
+# remembered and the next pass reads /proc/$pid/comm with the read builtin
+# instead of forking pidof to walk all of /proc. The name is compared too,
+# because a pid is reused once its process is gone. Anything short of a match -
+# no pid yet, a gone process, a reused pid - falls back to pidof, which sees
+# every kvm_system, including one S95nanokvm started behind this script's back.
+#
+# comm holds the first fifteen bytes of the name, and kvm_system fits.
+comm_is() {   # $1 = pid, $2 = process name
+    [ -n "$1" ] || return 1
+    comm=
+    { read -r comm < "${PROC:-/proc}/$1/comm"; } 2>/dev/null
+    [ "$comm" = "$2" ]
 }
+
+system_running() {   # uses and refreshes SYS_PID
+    comm_is "$SYS_PID" kvm_system && return 0
+
+    SYS_PID=$(pidof kvm_system 2>/dev/null)
+    SYS_PID=${SYS_PID%% *}
+    [ -n "$SYS_PID" ]
+}
+# --- end procs ---
 
 # A 401 counts as serving: the process is up, has bound its port and read its
 # config.
@@ -625,18 +700,28 @@ system_running() {
 # never ran is no evidence of that: on a board without curl a fault present from
 # boot would latch on the first poll and reboot the board every REBOOT_FLOOR
 # seconds, which is exactly the cycle the latch exists to prevent.
+#
+# Where curl lives is looked up once and kept: `command -v` in a `$(...)` is a
+# fork on every pass. A curl that later goes away fails the -x test and reads
+# as a probe that could not run, exactly as before.
 serving() {
-    [ -x "$(command -v curl)" ] || return 2
+    [ -x "$CURL_BIN" ] || CURL_BIN=$(command -v curl)
+    [ -x "$CURL_BIN" ] || return 2
 
-    code=$(curl -sSk -o /dev/null -w '%{http_code}' --max-time 4 "$HEALTH_URL" 2>/dev/null)
+    code=$("$CURL_BIN" -sSk -o /dev/null -w '%{http_code}' --max-time 4 "$HEALTH_URL" 2>/dev/null)
     case "$code" in
         2??|3??|401) return 0 ;;
     esac
     return 1
 }
 
-now() {
-    cut -d. -f1 /proc/uptime
+# Seconds since boot, into NOW. read is a builtin, so this costs no fork where
+# `$(cut -d. -f1 /proc/uptime)` cost two, four times a pass. The loop calls it
+# once after each sleep, and every decision in that pass reads the same NOW.
+tick() {
+    NOW=
+    read -r NOW _ < /proc/uptime
+    NOW=${NOW%.*}
 }
 
 force_kill() {
@@ -662,13 +747,17 @@ full_restart() {
 # How long the server has been alive without answering. LAST_OK is maintained by
 # the watch loop.
 unhealthy_for() {
-    echo $(( $(now) - LAST_OK ))
+    echo $(( NOW - LAST_OK ))
 }
 
 watch_loop() {
     delay=$(first_delay)
-    started=$(now)
-    LAST_OK=$(now)
+    tick
+    started=$NOW
+    LAST_OK=$NOW
+
+    # The last kvm_system pid seen. Empty means ask pidof.
+    SYS_PID=
 
     # short_runs and failed_cures are what should_reboot judges. cures counts
     # attempts, so a hung verdict can tell "the first hang" from "the cure did
@@ -693,11 +782,12 @@ watch_loop() {
     # which the backoff must read as "long enough ago" and not as uptime zero: a
     # board whose sshd dies in the first five minutes would otherwise wait out a
     # backoff it never earned.
-    SSH_LAST_OK=$(now)
+    SSH_LAST_OK=$NOW
     ssh_cured_at=
 
     while :; do
         sleep "$INTERVAL"
+        tick
 
         serving
         answered=$?
@@ -706,7 +796,7 @@ watch_loop() {
         # said no" counts as serving, so a board that loses curl keeps behaving
         # exactly as it does today.
         if [ "$answered" -ne 1 ]; then
-            LAST_OK=$(now)
+            LAST_OK=$NOW
             served=yes
         else
             served=no
@@ -722,9 +812,10 @@ watch_loop() {
             served_ever=yes
         fi
 
-        state=$(action)
+        action "$answered"
+        state=$ACTION
 
-        if [ "$(should_clear "$state" "$served")" = yes ]; then
+        if should_clear "$state" "$served"; then
             short_runs=0
             failed_cures=0
             cures=0
@@ -750,7 +841,7 @@ watch_loop() {
                 ;;
 
             healthy)
-                started=$(now)
+                started=$NOW
                 ;;
 
             hung)
@@ -774,15 +865,18 @@ watch_loop() {
                     hang_reason="hung: the process did not leave after SIGKILL"
                 fi
 
-                if [ "$(should_reboot hung 0 "$failed_cures" "$(now)" "$served_ever")" = yes ]; then
+                # cure_hung can wait ten seconds for the process to go.
+                tick
+                if [ "$(should_reboot hung 0 "$failed_cures" "$NOW" "$served_ever")" = yes ]; then
                     escalate "$hang_reason"
                 fi
 
                 # Give it room to come up before judging again, or a slow start
                 # would be read as another hang.
                 sleep 30
-                LAST_OK=$(now)
-                started=$(now)
+                tick
+                LAST_OK=$NOW
+                started=$NOW
                 ;;
             stopped)
                 : # someone asked for this
@@ -794,19 +888,22 @@ watch_loop() {
                 # SHORT_RUN therefore does not discriminate inside this loop -
                 # every value it sees is about INTERVAL - and the crash loop is
                 # timed by the poll and the backoff instead.
-                ran=$(( $(now) - started ))
+                ran=$(( NOW - started ))
                 short_runs=$(next_short_runs "$ran" "$short_runs")
                 log "NanoKVM-Server is gone after ${ran}s (short_runs=$short_runs), restarting in ${delay}s"
 
-                if [ "$(should_reboot restart "$short_runs" 0 "$(now)" "$served_ever")" = yes ]; then
+                if [ "$(should_reboot restart "$short_runs" 0 "$NOW" "$served_ever")" = yes ]; then
                     escalate "crash loop: $short_runs runs shorter than ${SHORT_RUN:-30}s"
                 fi
 
                 sleep "$delay"
 
                 # Check again: a restart in progress may have started it while
-                # this was waiting.
-                if [ "$(action)" = restart ]; then
+                # this was waiting. A fresh probe, because the one this pass
+                # began with is a delay old.
+                serving
+                action $?
+                if [ "$ACTION" = restart ]; then
                     # The ordinary case, not the hang cure - a dead process
                     # keeps its whole ION working set however its replacement
                     # is started, so this path erodes the carveout exactly
@@ -818,8 +915,9 @@ watch_loop() {
                 fi
 
                 delay=$(delay_after_run "$ran" "$delay")
-                started=$(now)
-                LAST_OK=$(now)
+                tick
+                started=$NOW
+                LAST_OK=$NOW
                 ;;
         esac
 
@@ -840,6 +938,7 @@ watch_loop() {
         # poll's process is running returns ETXTBSY and the old binary stays.
         if [ "$state" != updating ] && ! system_running && system_binary_present; then
             "$SYSTEM_BIN" < /dev/null > /dev/null 2>&1 &
+            SYS_PID=$!
             log "kvm_system was gone, started it as pid $!"
         fi
 
@@ -850,20 +949,20 @@ watch_loop() {
             ssh_listening
             ssh_answered=$?
 
-            [ "$ssh_answered" -eq 1 ] || SSH_LAST_OK=$(now)
+            [ "$ssh_answered" -eq 1 ] || SSH_LAST_OK=$NOW
 
             if [ -z "$ssh_cured_at" ]; then
                 since_ssh_cure=${SSH_CURE_BACKOFF:-300}
             else
-                since_ssh_cure=$(( $(now) - ssh_cured_at ))
+                since_ssh_cure=$(( NOW - ssh_cured_at ))
             fi
-            ssh_down_for=$(( $(now) - SSH_LAST_OK ))
+            ssh_down_for=$(( NOW - SSH_LAST_OK ))
 
-            if [ "$(ssh_action "$ssh_answered" "$ssh_down_for" "$since_ssh_cure")" = restart ]
+            if ssh_action "$ssh_answered" "$ssh_down_for" "$since_ssh_cure"
             then
-                log "nothing has listened on port 22 for ${ssh_down_for}s, restarting $SSHD_INIT"
+                log "nothing has listened on port $SSH_PORT for ${ssh_down_for}s, restarting $SSHD_INIT"
                 cure_ssh
-                ssh_cured_at=$(now)
+                ssh_cured_at=$NOW
             fi
         fi
     done
@@ -935,9 +1034,11 @@ case "$1" in
         # says so rather than reporting the server down: `answering : no` beside
         # `verdict : healthy` would read as a contradiction, and the operator
         # needs to know it is curl that is missing, not the server.
-        LAST_OK=$(now)
+        tick
+        LAST_OK=$NOW
         [ "$answered" -eq 1 ] && LAST_OK=0
-        echo "verdict    : $(action)"
+        action "$answered"
+        echo "verdict    : $ACTION"
         case "$answered" in
             0) echo "answering  : yes" ;;
             1) echo "answering  : no" ;;
@@ -947,9 +1048,9 @@ case "$1" in
         echo "kvm_system : $(system_running && echo up || echo down)"
         ssh_listening
         case $? in
-            0) echo "ssh door   : listening" ;;
-            1) echo "ssh door   : NOT listening" ;;
-            *) echo "ssh door   : unknown (netstat is missing)" ;;
+            0) echo "ssh door   : listening on $SSH_PORT" ;;
+            1) echo "ssh door   : NOT listening on $SSH_PORT" ;;
+            *) echo "ssh door   : unknown (/proc/net/tcp is unreadable)" ;;
         esac
         echo "recent     :"
         tail -5 "$LOG" 2>/dev/null | sed 's/^/  /'

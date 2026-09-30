@@ -133,13 +133,25 @@ echo "== clearing the counters"
 # and not answering yet, and the hang branch resets LAST_OK after every cure -
 # so clearing on the verdict name alone would wipe the counters before the
 # counted hang escalation could ever reach its threshold.
-mutate "any healthy verdict clears the counters" 's/if \[ "\$2" = yes \]/if true/'
+mutate "any healthy verdict clears the counters" 's/^            \[ "\$2" = yes \]$/            true/'
 # The other direction on the arm that now carries the whole decision. A single
 # s/// cannot reach across the arm and its body, so this matches the fallthrough
 # label and pulls the next line into the pattern space with N before
 # substituting - portable to busybox sed as well as GNU. The eight leading
-# spaces keep it off the two other `*)` arms in the file, which sit at four.
-mutate "a verdict other than healthy clears" '/^        \*)/{N;s/echo no/echo yes/}'
+# spaces keep it off the other `*)` arms in the file, which sit at four or at
+# twelve.
+mutate "a verdict other than healthy clears" '/^        \*)$/{N;s/return 1/return 0/}'
+
+echo
+echo "== the forks a healthy pass no longer makes"
+# An answer proves the process is up, so pidof is skipped. Only an answer: a
+# shortcut that fires on anything would read a crash as healthy.
+mutate "pidof is asked even after an answer" 's/if \[ "\$answered" = 0 \] || process_running; then/if process_running; then/'
+mutate "pidof is never asked"                's/if \[ "\$answered" = 0 \] || process_running; then/if true; then/'
+# kvm_system's remembered pid is only as good as the name check behind it: pids
+# are reused, and a reused one would hide a dead kvm_system for ever.
+mutate "a tracked pid is trusted without its name" 's/\[ "\$comm" = "\$2" \]/[ -n "$1" ]/'
+mutate "the pid pidof found is not kept"           's/SYS_PID=\${SYS_PID%% \*}/SYS_PID=${SYS_PID%% *}; SYS_PID=/'
 
 echo
 echo "== the ion line, which is the only record of what a restart erodes"
@@ -194,9 +206,19 @@ mutate "the backoff is off by one" 's/-ge "${SSH_CURE_BACKOFF/-gt "${SSH_CURE_BA
 # Anything that is not a clear "no" has to mean do nothing. A board with no
 # netstat would otherwise restart sshd on every poll, for ever.
 mutate "any probe answer is taken as the door being shut" 's/\[ "$answered" = 1 \]/[ 1 = 1 ]/'
-# The port needs its trailing space or a listener on 2222 reads as the ssh
-# door, and a board with no sshd would look reachable.
-mutate "the port match loses its boundary" "s/:22 '/:22'/"
+# Only the ssh port is the door. Any listener at all would pass the web
+# server's own port 80 as a reachable sshd.
+mutate "any listener counts as the door" 's/"\$SSH_PORT"|22) return 0 ;;/*) return 0 ;;/'
+# A connection is not a listener: the session that was open when sshd died
+# stays up until it ends.
+mutate "the listen state is not checked" 's/\[ "\$st" = 0A \] || continue/:/'
+mutate "tcp6 is not read" 's| "\${PROC:-/proc}/net/tcp6"||'
+# The owner's port, with S50sshd's fallbacks.
+mutate "the owner's port is ignored"      's/SSH_PORT=\$port/SSH_PORT=22/'
+mutate "a port past 65535 is kept"        's/-le 65535/-le 99999/'
+mutate "a leading zero is kept"           "s/''|0\*|\*\[!0-9\]\*) port=22/''|*[!0-9]*) port=22/"
+mutate "a sshd that fell back to 22 is not the door" 's/"\$SSH_PORT"|22) return 0 ;;/"$SSH_PORT") return 0 ;;/'
+mutate "unreadable socket tables read as a shut door" 's/\[ "\$probed" = yes \] || return 2/:/'
 # The cure has to stay inside the update stand-off: an update replaces the boot
 # scripts, and restarting one in the middle of that is the fault the stand-off
 # was written after. Anchored on the whole guard line, because the stand-off log
