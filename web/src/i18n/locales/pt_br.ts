@@ -1312,6 +1312,7 @@ const pt_br = {
         memoryPressed:
           'O grupo de memória dos complementos está perto do limite. Ativar a swap pode ajudar.',
         peersSummary: 'Peers: {{online}} online de {{total}}',
+        peersSummaryIdle: 'Pares: {{online}} online, {{idle}} sob demanda, de {{total}}',
         showOffline: 'Mostrar offline ({{offline}})',
         hideOffline: 'Ocultar offline',
         blocked:
@@ -1324,6 +1325,7 @@ const pt_br = {
         noPeers: 'Nenhum peer ainda.',
         online: 'Online',
         offline: 'Offline',
+        idle: 'Sob demanda: o NetBird conecta quando o tráfego precisa',
         memory: 'Memória',
         uninstall: 'Desinstalar {{name}}',
         uninstallDesc:

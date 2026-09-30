@@ -2,7 +2,9 @@ import type { ReactNode } from 'react';
 
 export type State = 'notInstall' | 'notRunning' | 'notLogin' | 'stopped' | 'running';
 
-export type Peer = { name: string; ip: string; online: boolean };
+// idle is a NetBird peer with no tunnel yet under lazy connections: NetBird
+// opens one when traffic needs it, so the peer is not known to be down.
+export type Peer = { name: string; ip: string; online: boolean; idle?: boolean };
 
 // Bytes. groupHigh and groupMax are 0 when the group sets no limit.
 export type Memory = {

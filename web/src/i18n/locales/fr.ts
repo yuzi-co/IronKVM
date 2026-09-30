@@ -1329,6 +1329,7 @@ const fr = {
         memoryPressed:
           'Le groupe mémoire des modules approche de sa limite. Activer le swap peut aider.',
         peersSummary: 'Pairs : {{online}} en ligne sur {{total}}',
+        peersSummaryIdle: 'Pairs : {{online}} en ligne, {{idle}} à la demande, sur {{total}}',
         showOffline: 'Afficher hors ligne ({{offline}})',
         hideOffline: 'Masquer hors ligne',
         blocked:
@@ -1341,6 +1342,7 @@ const fr = {
         noPeers: "Aucun pair pour l'instant.",
         online: 'En ligne',
         offline: 'Hors ligne',
+        idle: 'À la demande : NetBird se connecte quand le trafic le demande',
         memory: 'Mémoire',
         uninstall: 'Désinstaller {{name}}',
         uninstallDesc:

@@ -1322,6 +1322,7 @@ const it = {
         memoryPressed:
           'Il gruppo di memoria dei componenti aggiuntivi è vicino al limite. Attivare lo swap può aiutare.',
         peersSummary: 'Peer: {{online}} online su {{total}}',
+        peersSummaryIdle: 'Peer: {{online}} online, {{idle}} su richiesta, di {{total}}',
         showOffline: 'Mostra offline ({{offline}})',
         hideOffline: 'Nascondi offline',
         blocked:
@@ -1334,6 +1335,7 @@ const it = {
         noPeers: 'Ancora nessun peer.',
         online: 'Online',
         offline: 'Offline',
+        idle: 'Su richiesta: NetBird si connette quando il traffico lo richiede',
         memory: 'Memoria',
         uninstall: 'Disinstalla {{name}}',
         uninstallDesc: "Sei sicuro di voler disinstallare {{name}}? L'accesso resta sulla scheda.",

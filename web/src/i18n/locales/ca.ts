@@ -1317,6 +1317,7 @@ const ca = {
         memoryPressed:
           "El grup de memòria dels complements és a prop del límit. Activar l'intercanvi (swap) pot ajudar.",
         peersSummary: 'Iguals: {{online}} en línia de {{total}}',
+        peersSummaryIdle: 'Parells: {{online}} en línia, {{idle}} a demanda, de {{total}}',
         showOffline: 'Mostra els fora de línia ({{offline}})',
         hideOffline: 'Amaga els fora de línia',
         blocked:
@@ -1329,6 +1330,7 @@ const ca = {
         noPeers: 'Encara no hi ha iguals.',
         online: 'En línia',
         offline: 'Fora de línia',
+        idle: 'A demanda: NetBird es connecta quan el trànsit ho necessita',
         memory: 'Memòria',
         uninstall: 'Desinstal·la {{name}}',
         uninstallDesc: 'Segur que voleu desinstal·lar {{name}}? La sessió es queda a la placa.',

@@ -30,6 +30,10 @@ type VpnPeer struct {
 	Name   string `json:"name"`
 	IP     string `json:"ip"`
 	Online bool   `json:"online"`
+	// Idle is a NetBird peer with no tunnel yet under lazy connections: the
+	// daemon opens one when traffic needs it, and cannot tell whether the
+	// peer is up until then.
+	Idle bool `json:"idle,omitempty"`
 }
 
 // VpnMemory is in bytes. GroupHigh and GroupMax are 0 when the group sets no

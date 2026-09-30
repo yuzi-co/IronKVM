@@ -1320,6 +1320,7 @@ const nl = {
         memoryPressed:
           'De geheugengroep van de add-ons zit dicht bij de limiet. Swap inschakelen kan helpen.',
         peersSummary: 'Peers: {{online}} van {{total}} online',
+        peersSummaryIdle: 'Peers: {{online}} online, {{idle}} op aanvraag, van {{total}}',
         showOffline: 'Offline tonen ({{offline}})',
         hideOffline: 'Offline verbergen',
         blocked:
@@ -1332,6 +1333,7 @@ const nl = {
         noPeers: 'Nog geen peers.',
         online: 'Online',
         offline: 'Offline',
+        idle: 'Op aanvraag: NetBird maakt verbinding zodra verkeer dat nodig heeft',
         memory: 'Geheugen',
         uninstall: '{{name}} verwijderen',
         uninstallDesc:

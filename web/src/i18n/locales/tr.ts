@@ -1301,6 +1301,7 @@ const tr = {
         memoryOf: '{{used}} (eklenti sınırı {{limit}})',
         memoryPressed: 'Eklentilerin bellek grubu sınırına yakın. Swap açmak yardımcı olabilir.',
         peersSummary: 'Eşler: {{total}} eşten {{online}} çevrimiçi',
+        peersSummaryIdle: 'Eşler: {{online}} çevrimiçi, {{idle}} isteğe bağlı, toplam {{total}}',
         showOffline: 'Çevrimdışıları göster ({{offline}})',
         hideOffline: 'Çevrimdışıları gizle',
         blocked:
@@ -1313,6 +1314,7 @@ const tr = {
         noPeers: 'Henüz eş yok.',
         online: 'Çevrimiçi',
         offline: 'Çevrimdışı',
+        idle: 'İsteğe bağlı: NetBird, trafik gerektirdiğinde bağlanır',
         memory: 'Bellek',
         uninstall: '{{name}} kaldır',
         uninstallDesc: '{{name}} kaldırılsın mı? Oturum bilgisi kartta kalır.',

@@ -1305,6 +1305,7 @@ const id = {
         memoryPressed:
           'Grup memori add-on hampir mencapai batasnya. Mengaktifkan swap mungkin membantu.',
         peersSummary: 'Peer: {{online}} online dari {{total}}',
+        peersSummaryIdle: 'Peer: {{online}} online, {{idle}} sesuai permintaan, dari {{total}}',
         showOffline: 'Tampilkan yang offline ({{offline}})',
         hideOffline: 'Sembunyikan yang offline',
         blocked:
@@ -1317,6 +1318,7 @@ const id = {
         noPeers: 'Belum ada peer.',
         online: 'Online',
         offline: 'Offline',
+        idle: 'Sesuai permintaan: NetBird tersambung saat lalu lintas membutuhkannya',
         memory: 'Memori',
         uninstall: 'Copot {{name}}',
         uninstallDesc: 'Apakah Anda yakin ingin mencopot {{name}}? Login tetap tersimpan di papan.',

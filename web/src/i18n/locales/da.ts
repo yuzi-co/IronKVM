@@ -1299,6 +1299,7 @@ const da = {
         memoryPressed:
           'Hukommelsesgruppen for tilføjelser er tæt på sin grænse. Det kan hjælpe at slå swap til.',
         peersSummary: 'Peers: {{online}} online af {{total}}',
+        peersSummaryIdle: 'Peers: {{online}} online, {{idle}} efter behov, af {{total}}',
         showOffline: 'Vis offline ({{offline}})',
         hideOffline: 'Skjul offline',
         blocked:
@@ -1311,6 +1312,7 @@ const da = {
         noPeers: 'Ingen peers endnu.',
         online: 'Online',
         offline: 'Offline',
+        idle: 'Efter behov: NetBird forbinder, når trafikken kræver det',
         memory: 'Hukommelse',
         uninstall: 'Afinstaller {{name}}',
         uninstallDesc:

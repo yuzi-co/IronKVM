@@ -1304,6 +1304,7 @@ const se = {
         memoryPressed:
           'Minnesgruppen för tillägg är nära sin gräns. Det kan hjälpa att slå på swap.',
         peersSummary: 'Noder: {{online}} online av {{total}}',
+        peersSummaryIdle: 'Noder: {{online}} online, {{idle}} vid behov, av {{total}}',
         showOffline: 'Visa offline ({{offline}})',
         hideOffline: 'Dölj offline',
         blocked:
@@ -1316,6 +1317,7 @@ const se = {
         noPeers: 'Inga noder ännu.',
         online: 'Online',
         offline: 'Offline',
+        idle: 'Vid behov: NetBird ansluter när trafiken kräver det',
         memory: 'Minne',
         uninstall: 'Avinstallera {{name}}',
         uninstallDesc:

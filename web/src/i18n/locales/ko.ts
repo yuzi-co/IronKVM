@@ -1289,6 +1289,7 @@ const ko = {
         memoryOf: '{{used}} (애드온 한도 {{limit}})',
         memoryPressed: '애드온 메모리 그룹이 한도에 가깝습니다. 스왑을 켜면 도움이 될 수 있습니다.',
         peersSummary: '피어: {{total}}개 중 {{online}}개 온라인',
+        peersSummaryIdle: '피어: 온라인 {{online}}, 필요 시 연결 {{idle}}, 전체 {{total}}',
         showOffline: '오프라인 표시 ({{offline}})',
         hideOffline: '오프라인 숨기기',
         blocked:
@@ -1301,6 +1302,7 @@ const ko = {
         noPeers: '아직 피어가 없습니다.',
         online: '온라인',
         offline: '오프라인',
+        idle: '필요 시 연결: 트래픽이 필요할 때 NetBird가 연결합니다',
         memory: '메모리',
         uninstall: '{{name}} 제거',
         uninstallDesc: '{{name}}을(를) 제거하시겠습니까? 로그인 정보는 보드에 남습니다.',

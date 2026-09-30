@@ -1298,6 +1298,7 @@ const nb = {
         memoryOf: '{{used}} (grense for tillegg {{limit}})',
         memoryPressed: 'Minnegruppen for tillegg er nær grensen. Det kan hjelpe å slå på swap.',
         peersSummary: 'Noder: {{online}} tilkoblet av {{total}}',
+        peersSummaryIdle: 'Noder: {{online}} tilkoblet, {{idle}} ved behov, av {{total}}',
         showOffline: 'Vis frakoblede ({{offline}})',
         hideOffline: 'Skjul frakoblede',
         blocked:
@@ -1310,6 +1311,7 @@ const nb = {
         noPeers: 'Ingen noder ennå.',
         online: 'Tilkoblet',
         offline: 'Frakoblet',
+        idle: 'Ved behov: NetBird kobler til når trafikken trenger det',
         memory: 'Minne',
         uninstall: 'Avinstaller {{name}}',
         uninstallDesc:

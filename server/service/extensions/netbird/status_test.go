@@ -48,7 +48,7 @@ func TestParsePeers(t *testing.T) {
 	}
 	want := []proto.VpnPeer{
 		{Name: "laptop", IP: "100.73.10.20", Online: true},
-		{Name: "phone", IP: "100.73.10.21", Online: false},
+		{Name: "phone", IP: "100.73.10.21", Online: false, Idle: true},
 	}
 	if !reflect.DeepEqual(got.Peers, want) {
 		t.Fatalf("got %+v", got.Peers)

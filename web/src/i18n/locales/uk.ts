@@ -1309,6 +1309,7 @@ const uk = {
         memoryOf: '{{used}} (ліміт доповнень {{limit}})',
         memoryPressed: 'Група пам’яті доповнень близька до ліміту. Увімкнення swap може допомогти.',
         peersSummary: 'Вузли: {{online}} у мережі з {{total}}',
+        peersSummaryIdle: 'Вузли: {{online}} у мережі, {{idle}} на вимогу, з {{total}}',
         showOffline: 'Показати не в мережі ({{offline}})',
         hideOffline: 'Сховати не в мережі',
         blocked:
@@ -1321,6 +1322,7 @@ const uk = {
         noPeers: 'Вузлів поки немає.',
         online: 'У мережі',
         offline: 'Не в мережі',
+        idle: 'На вимогу: NetBird підключається, коли цього потребує трафік',
         memory: 'Пам’ять',
         uninstall: 'Видалити {{name}}',
         uninstallDesc: 'Ви впевнені, що хочете видалити {{name}}? Дані входу залишаться на платі.',

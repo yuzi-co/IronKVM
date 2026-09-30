@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
+  countIdle,
   countOnline,
   hasDaemon,
   hasSettled,
@@ -94,6 +95,11 @@ describe('hasSettled', () => {
     assert.equal(hasSettled('stopped', '', []), false);
   });
 
+  it('settles on a NetBird peer on demand, which lazy connections leave idle', () => {
+    const idle = [{ name: 'nas', ip: '100.64.0.2', online: false, idle: true }];
+    assert.equal(hasSettled('running', '100.64.0.1', idle), true);
+  });
+
   it('has nothing to wait for while a login is needed', () => {
     assert.equal(hasSettled('notLogin', '', []), true);
     assert.equal(hasSettled('notInstall', '', []), true);
@@ -124,6 +130,26 @@ describe('memoryUse', () => {
     assert.equal(
       memoryUse({ daemonRss: 30e6, groupCurrent: 0, groupHigh: 0, groupMax: 0 }).limit,
       0
+    );
+  });
+});
+
+describe('peers on demand', () => {
+  const peers = [
+    { name: 'old', ip: '100.64.0.9', online: false },
+    { name: 'nas', ip: '100.64.0.2', online: false, idle: true },
+    { name: 'pc', ip: '100.64.0.3', online: true }
+  ];
+
+  it('counts only the idle peers that are not online', () => {
+    assert.equal(countIdle(peers), 1);
+    assert.equal(countOnline(peers), 1);
+  });
+
+  it('sorts online, then on demand, then offline', () => {
+    assert.deepEqual(
+      sortPeers(peers).map((p) => p.name),
+      ['pc', 'nas', 'old']
     );
   });
 });

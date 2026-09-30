@@ -1307,6 +1307,7 @@ const pl = {
         memoryOf: '{{used}} (limit dodatków {{limit}})',
         memoryPressed: 'Grupa pamięci dodatków jest blisko limitu. Włączenie swap może pomóc.',
         peersSummary: 'Węzły: {{online}} online z {{total}}',
+        peersSummaryIdle: 'Węzły: {{online}} online, {{idle}} na żądanie, z {{total}}',
         showOffline: 'Pokaż offline ({{offline}})',
         hideOffline: 'Ukryj offline',
         blocked:
@@ -1319,6 +1320,7 @@ const pl = {
         noPeers: 'Brak węzłów.',
         online: 'Online',
         offline: 'Offline',
+        idle: 'Na żądanie: NetBird łączy się, gdy ruch tego wymaga',
         memory: 'Pamięć',
         uninstall: 'Odinstaluj {{name}}',
         uninstallDesc:

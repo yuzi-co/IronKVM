@@ -1339,6 +1339,7 @@ const de = {
         memoryPressed:
           'Die Speichergruppe der Add-ons ist fast am Limit. Swap zu aktivieren kann helfen.',
         peersSummary: 'Peers: {{online}} von {{total}} online',
+        peersSummaryIdle: 'Peers: {{online}} online, {{idle}} bei Bedarf, von {{total}}',
         showOffline: 'Offline anzeigen ({{offline}})',
         hideOffline: 'Offline ausblenden',
         blocked:
@@ -1351,6 +1352,7 @@ const de = {
         noPeers: 'Noch keine Peers.',
         online: 'Online',
         offline: 'Offline',
+        idle: 'Bei Bedarf: NetBird verbindet sich, sobald Verkehr es erfordert',
         memory: 'Speicher',
         uninstall: '{{name}} deinstallieren',
         uninstallDesc:

@@ -4,14 +4,15 @@ import { ChevronDownIcon, ChevronRightIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import type { Peer } from './types.ts';
-import { countOnline, sortPeers } from './view.ts';
+import { countIdle, countOnline, sortPeers } from './view.ts';
 
 type PeersProps = {
   peers: Peer[];
 };
 
-// Peers is folded by default under a count. Open, it lists the online peers;
-// the offline ones, often many old machines, wait behind a link.
+// Peers is folded by default under a count. Open, it lists the online peers
+// and NetBird's peers on demand; the offline ones, often many old machines,
+// wait behind a link.
 export const Peers = ({ peers }: PeersProps) => {
   const { t } = useTranslation();
 
@@ -19,8 +20,9 @@ export const Peers = ({ peers }: PeersProps) => {
   const [showOffline, setShowOffline] = useState(false);
 
   const online = countOnline(peers);
-  const offline = peers.length - online;
-  const shown = sortPeers(peers).filter((p) => p.online || showOffline);
+  const idle = countIdle(peers);
+  const offline = peers.length - online - idle;
+  const shown = sortPeers(peers).filter((p) => p.online || p.idle || showOffline);
 
   return (
     <section className="flex flex-col space-y-3">
@@ -31,7 +33,11 @@ export const Peers = ({ peers }: PeersProps) => {
         onClick={() => setIsOpen(!isOpen)}
       >
         {isOpen ? <ChevronDownIcon size={16} /> : <ChevronRightIcon size={16} />}
-        <span>{t('settings.vpn.peersSummary', { online, total: peers.length })}</span>
+        <span>
+          {idle > 0
+            ? t('settings.vpn.peersSummaryIdle', { online, idle, total: peers.length })
+            : t('settings.vpn.peersSummary', { online, total: peers.length })}
+        </span>
       </button>
 
       {isOpen && (
@@ -42,28 +48,39 @@ export const Peers = ({ peers }: PeersProps) => {
 
           {shown.length > 0 && (
             <ul className="flex flex-col space-y-1">
-              {shown.map((peer) => (
-                <li
-                  key={`${peer.name}-${peer.ip}`}
-                  className="flex items-center justify-between text-sm"
-                >
-                  <span className="flex items-center space-x-2">
-                    <span
-                      role="img"
-                      aria-label={
-                        peer.online ? t('settings.vpn.online') : t('settings.vpn.offline')
-                      }
-                      title={peer.online ? t('settings.vpn.online') : t('settings.vpn.offline')}
-                      className={clsx(
-                        'inline-block h-2 w-2 rounded-full',
-                        peer.online ? 'bg-green-500' : 'bg-neutral-600'
-                      )}
-                    />
-                    <span className={clsx(!peer.online && 'text-neutral-500')}>{peer.name}</span>
-                  </span>
-                  <span className="font-mono text-neutral-400">{peer.ip}</span>
-                </li>
-              ))}
+              {shown.map((peer) => {
+                const state = peer.online
+                  ? t('settings.vpn.online')
+                  : peer.idle
+                    ? t('settings.vpn.idle')
+                    : t('settings.vpn.offline');
+                return (
+                  <li
+                    key={`${peer.name}-${peer.ip}`}
+                    className="flex items-center justify-between text-sm"
+                  >
+                    <span className="flex items-center space-x-2">
+                      <span
+                        role="img"
+                        aria-label={state}
+                        title={state}
+                        className={clsx(
+                          'inline-block h-2 w-2 rounded-full',
+                          peer.online
+                            ? 'bg-green-500'
+                            : peer.idle
+                              ? 'border border-green-500'
+                              : 'bg-neutral-600'
+                        )}
+                      />
+                      <span className={clsx(!peer.online && !peer.idle && 'text-neutral-500')}>
+                        {peer.name}
+                      </span>
+                    </span>
+                    <span className="font-mono text-neutral-400">{peer.ip}</span>
+                  </li>
+                );
+              })}
             </ul>
           )}
 

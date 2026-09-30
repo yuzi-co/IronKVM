@@ -1308,6 +1308,7 @@ const ru = {
         memoryOf: '{{used}} (лимит дополнений {{limit}})',
         memoryPressed: 'Группа памяти дополнений близка к лимиту. Включение swap может помочь.',
         peersSummary: 'Узлы: {{online}} в сети из {{total}}',
+        peersSummaryIdle: 'Узлы: {{online}} в сети, {{idle}} по запросу, из {{total}}',
         showOffline: 'Показать не в сети ({{offline}})',
         hideOffline: 'Скрыть не в сети',
         blocked:
@@ -1320,6 +1321,7 @@ const ru = {
         noPeers: 'Узлов пока нет.',
         online: 'В сети',
         offline: 'Не в сети',
+        idle: 'По запросу: NetBird подключается, когда это нужно трафику',
         memory: 'Память',
         uninstall: 'Удалить {{name}}',
         uninstallDesc: 'Вы уверены, что хотите удалить {{name}}? Данные входа останутся на плате.',

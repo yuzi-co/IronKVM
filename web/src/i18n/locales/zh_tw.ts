@@ -1244,6 +1244,7 @@ const zh_tw = {
         memoryOf: '{{used}}（附加元件上限 {{limit}}）',
         memoryPressed: '附加元件記憶體群組已接近上限。開啟交換空間可能有幫助。',
         peersSummary: '對等節點：{{online}} 線上，共 {{total}}',
+        peersSummaryIdle: '對等節點：{{online}} 在線，{{idle}} 按需連線，共 {{total}}',
         showOffline: '顯示離線 ({{offline}})',
         hideOffline: '隱藏離線',
         blocked:
@@ -1256,6 +1257,7 @@ const zh_tw = {
         noPeers: '尚無對等節點。',
         online: '線上',
         offline: '離線',
+        idle: '按需連線：有流量需要時 NetBird 才會連線',
         memory: '記憶體',
         uninstall: '解除安裝 {{name}}',
         uninstallDesc: '確定要解除安裝 {{name}} 嗎？登入資訊會保留在開發板上。',

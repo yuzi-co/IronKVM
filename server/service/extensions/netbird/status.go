@@ -91,6 +91,7 @@ func toVpnStatus(nb *NbStatus) (proto.VpnStatus, error) {
 			Name:   peerName(p.FQDN),
 			IP:     stripPrefix(p.IP),
 			Online: p.Status == "Connected",
+			Idle:   p.Status == "Idle",
 		})
 	}
 	sort.Slice(st.Peers, func(i, j int) bool { return st.Peers[i].Name < st.Peers[j].Name })

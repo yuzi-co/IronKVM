@@ -1313,6 +1313,7 @@ const ja = {
         memoryPressed:
           'アドオンのメモリグループが上限に近づいています。スワップを有効にすると改善する場合があります。',
         peersSummary: 'ピア: {{total}} 台中 {{online}} 台がオンライン',
+        peersSummaryIdle: 'ピア: オンライン {{online}}、オンデマンド {{idle}}、合計 {{total}}',
         showOffline: 'オフラインを表示 ({{offline}})',
         hideOffline: 'オフラインを隠す',
         blocked:
@@ -1325,6 +1326,7 @@ const ja = {
         noPeers: 'ピアはまだありません。',
         online: 'オンライン',
         offline: 'オフライン',
+        idle: 'オンデマンド: 通信が必要になったときに NetBird が接続します',
         memory: 'メモリ',
         uninstall: '{{name}} をアンインストール',
         uninstallDesc:

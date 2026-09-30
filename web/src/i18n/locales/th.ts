@@ -1277,6 +1277,7 @@ const th = {
         memoryOf: '{{used}} (ขีดจำกัดส่วนเสริม {{limit}})',
         memoryPressed: 'กลุ่มหน่วยความจำของส่วนเสริมใกล้ถึงขีดจำกัด การเปิด swap อาจช่วยได้',
         peersSummary: 'เพียร์: ออนไลน์ {{online}} จาก {{total}}',
+        peersSummaryIdle: 'เพียร์: ออนไลน์ {{online}}, ตามต้องการ {{idle}}, จาก {{total}}',
         showOffline: 'แสดงที่ออฟไลน์ ({{offline}})',
         hideOffline: 'ซ่อนที่ออฟไลน์',
         blocked:
@@ -1289,6 +1290,7 @@ const th = {
         noPeers: 'ยังไม่มีเพียร์',
         online: 'ออนไลน์',
         offline: 'ออฟไลน์',
+        idle: 'ตามต้องการ: NetBird จะเชื่อมต่อเมื่อมีทราฟฟิกที่ต้องใช้',
         memory: 'หน่วยความจำ',
         uninstall: 'ถอนการติดตั้ง {{name}}',
         uninstallDesc:

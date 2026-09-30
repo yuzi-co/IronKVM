@@ -1292,6 +1292,7 @@ const cz = {
         memoryOf: '{{used}} (limit doplňků {{limit}})',
         memoryPressed: 'Paměťová skupina doplňků je blízko svého limitu. Může pomoci zapnout swap.',
         peersSummary: 'Uzly: {{online}} online z {{total}}',
+        peersSummaryIdle: 'Protějšky: {{online}} online, {{idle}} na vyžádání, z {{total}}',
         showOffline: 'Zobrazit offline ({{offline}})',
         hideOffline: 'Skrýt offline',
         blocked:
@@ -1304,6 +1305,7 @@ const cz = {
         noPeers: 'Zatím žádné uzly.',
         online: 'Online',
         offline: 'Offline',
+        idle: 'Na vyžádání: NetBird se připojí, až to provoz bude potřebovat',
         memory: 'Paměť',
         uninstall: 'Odinstalovat {{name}}',
         uninstallDesc: 'Opravdu chcete odinstalovat {{name}}? Přihlášení na desce zůstane.',

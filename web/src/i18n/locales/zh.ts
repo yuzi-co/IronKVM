@@ -1245,6 +1245,7 @@ const zh = {
         memoryOf: '{{used}}（插件上限 {{limit}}）',
         memoryPressed: '插件内存组已接近上限。开启交换空间可能有帮助。',
         peersSummary: '对等节点：{{online}} 在线，共 {{total}}',
+        peersSummaryIdle: '对等节点：{{online}} 在线，{{idle}} 按需连接，共 {{total}}',
         showOffline: '显示离线 ({{offline}})',
         hideOffline: '隐藏离线',
         blocked:
@@ -1257,6 +1258,7 @@ const zh = {
         noPeers: '暂无对等节点。',
         online: '在线',
         offline: '离线',
+        idle: '按需连接：有流量需要时 NetBird 才会连接',
         memory: '内存',
         uninstall: '卸载 {{name}}',
         uninstallDesc: '确定要卸载 {{name}} 吗？登录信息会保留在开发板上。',

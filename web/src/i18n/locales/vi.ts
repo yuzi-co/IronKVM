@@ -1297,6 +1297,7 @@ const vi = {
         memoryPressed:
           'Nhóm bộ nhớ của tiện ích bổ sung gần đạt giới hạn. Bật swap có thể giúp ích.',
         peersSummary: 'Peer: {{online}} trực tuyến trên {{total}}',
+        peersSummaryIdle: 'Thiết bị ngang hàng: {{online}} trực tuyến, {{idle}} theo yêu cầu, trên {{total}}',
         showOffline: 'Hiện ngoại tuyến ({{offline}})',
         hideOffline: 'Ẩn ngoại tuyến',
         blocked:
@@ -1309,6 +1310,7 @@ const vi = {
         noPeers: 'Chưa có peer nào.',
         online: 'Trực tuyến',
         offline: 'Ngoại tuyến',
+        idle: 'Theo yêu cầu: NetBird kết nối khi có lưu lượng cần đến',
         memory: 'Bộ nhớ',
         uninstall: 'Gỡ cài đặt {{name}}',
         uninstallDesc:

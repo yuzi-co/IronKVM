@@ -1287,6 +1287,7 @@ const en = {
         memoryOf: '{{used}} (add-ons limit {{limit}})',
         memoryPressed: 'The add-ons memory group is near its limit. Turning on swap may help.',
         peersSummary: 'Peers: {{online}} online of {{total}}',
+        peersSummaryIdle: 'Peers: {{online}} online, {{idle}} on demand, of {{total}}',
         showOffline: 'Show offline ({{offline}})',
         hideOffline: 'Hide offline',
         blocked:
@@ -1299,6 +1300,7 @@ const en = {
         noPeers: 'No peers yet.',
         online: 'Online',
         offline: 'Offline',
+        idle: 'On demand: NetBird connects when traffic needs it',
         memory: 'Memory',
         uninstall: 'Uninstall {{name}}',
         uninstallDesc: 'Are you sure you want to uninstall {{name}}? The login stays on the board.',

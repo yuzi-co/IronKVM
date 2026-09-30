@@ -1319,6 +1319,7 @@ const hu = {
         memoryPressed:
           'A bővítmények memóriacsoportja a korlátja közelében van. A swap bekapcsolása segíthet.',
         peersSummary: 'Társak: {{online}} online / {{total}}',
+        peersSummaryIdle: 'Társak: {{online}} online, {{idle}} igény szerint, összesen {{total}}',
         showOffline: 'Offline társak mutatása ({{offline}})',
         hideOffline: 'Offline társak elrejtése',
         blocked:
@@ -1331,6 +1332,7 @@ const hu = {
         noPeers: 'Még nincsenek társak.',
         online: 'Online',
         offline: 'Offline',
+        idle: 'Igény szerint: a NetBird akkor kapcsolódik, amikor a forgalom megkívánja',
         memory: 'Memória',
         uninstall: '{{name}} eltávolítása',
         uninstallDesc: 'Biztosan eltávolítja ezt: {{name}}? A bejelentkezés megmarad a kártyán.',
