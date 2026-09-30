@@ -84,6 +84,10 @@ const resizeHandles: Array<{
   }
 ];
 
+function sameRect(a: RenderedMediaRect, b: RenderedMediaRect) {
+  return a.left === b.left && a.top === b.top && a.width === b.width && a.height === b.height;
+}
+
 const minimumSelectionSize = 4;
 const edgeSnapDistance = 8;
 
@@ -188,13 +192,7 @@ export const InputRegionOverlay = () => {
 
       const nextFrameRect = getRenderedMediaRect(bounds, nextMediaSize);
       const previousFrameRect = frameRectRef.current;
-      if (
-        previousFrameRect &&
-        (previousFrameRect.left !== nextFrameRect.left ||
-          previousFrameRect.top !== nextFrameRect.top ||
-          previousFrameRect.width !== nextFrameRect.width ||
-          previousFrameRect.height !== nextFrameRect.height)
-      ) {
+      if (previousFrameRect && !sameRect(previousFrameRect, nextFrameRect)) {
         dragStartRef.current = null;
         resizeRef.current = null;
         moveRef.current = null;
@@ -202,8 +200,14 @@ export const InputRegionOverlay = () => {
         setSelection(null);
       }
 
-      setMediaSize(nextMediaSize);
-      setFrameRect(nextFrameRect);
+      // The frame is measured every 250ms; unchanged numbers keep the old
+      // objects so the overlay does not re-render for nothing.
+      setMediaSize((prev) =>
+        prev && prev.width === nextMediaSize.width && prev.height === nextMediaSize.height
+          ? prev
+          : nextMediaSize
+      );
+      setFrameRect((prev) => (prev && sameRect(prev, nextFrameRect) ? prev : nextFrameRect));
       frameRectRef.current = nextFrameRect;
     }
 
@@ -249,13 +253,11 @@ export const InputRegionOverlay = () => {
       return;
     }
 
-    if (
-      !(
-        screen instanceof HTMLVideoElement ||
-        screen instanceof HTMLImageElement ||
-        screen instanceof HTMLCanvasElement
-      )
-    ) {
+    if (!(
+      screen instanceof HTMLVideoElement ||
+      screen instanceof HTMLImageElement ||
+      screen instanceof HTMLCanvasElement
+    )) {
       return;
     }
 
@@ -728,7 +730,7 @@ export const InputRegionOverlay = () => {
       >
         <div
           ref={promptRef}
-          className="fixed left-1/2 top-5 z-1120 max-w-[calc(100%-1rem)]"
+          className="fixed top-5 left-1/2 z-1120 max-w-[calc(100%-1rem)]"
           onPointerDown={(event) => event.stopPropagation()}
         >
           <Card

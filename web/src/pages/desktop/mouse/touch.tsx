@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useAtomValue } from 'jotai';
 
 import { client, MessageEvent } from '@/lib/websocket.ts';
@@ -38,6 +38,12 @@ function disableEvent(event: Event) {
 export const Touch = () => {
   const resolution = useAtomValue(resolutionAtom);
   const inputRegion = useAtomValue(inputRegionAtom);
+  // Read through a ref so a region change does not lift the fingers on the
+  // host by re-registering the handlers mid-gesture.
+  const inputRegionRef = useRef(inputRegion);
+  useLayoutEffect(() => {
+    inputRegionRef.current = inputRegion;
+  }, [inputRegion]);
 
   useEffect(() => {
     const screen = document.getElementById('screen');
@@ -67,7 +73,7 @@ export const Touch = () => {
         e.clientX,
         e.clientY,
         resolution,
-        inputRegion,
+        inputRegionRef.current,
         clamp
       );
       if (!position) return null;
@@ -203,7 +209,7 @@ export const Touch = () => {
       target.removeEventListener('contextmenu', disableEvent);
       target.removeEventListener('click', disableEvent);
     };
-  }, [inputRegion, resolution]);
+  }, [resolution]);
 
   return <></>;
 };
