@@ -406,6 +406,18 @@ void kvm_update_eth_state(void)
 	}
 }
 
+// The server reads this file to tell whether WiFi is up. It is written every
+// pass, as it was by "echo N > ..." through a shell, but without the fork. It
+// is a link into tmpfs (S95nanokvm), and fopen follows the link as the shell's
+// redirect did.
+static void write_wifi_state_file(int state)
+{
+	FILE *fp = fopen("/kvmapp/kvm/wifi_state", "w");
+	if (fp == NULL) return;
+	fprintf(fp, "%d\n", state);
+	fclose(fp);
+}
+
 void kvm_update_wifi_state(void)
 {	
 	// No WiFi module (check for existence?) -> Module exists & not connected (check if connected) ->
@@ -429,7 +441,7 @@ void kvm_update_wifi_state(void)
 			// break;	// Start checking the connection directly.
 		case 0:
 		// WiFi is available but not connected.
-			system("echo 0 > /kvmapp/kvm/wifi_state");
+			write_wifi_state_file(0);
 			if (get_ip_addr(WiFi_IP) && get_ip_addr(WiFi_ROUTE)){
 				// IP+Route has been acquired
 				if(kvm_sys_state.ping_allow){
@@ -449,7 +461,7 @@ void kvm_update_wifi_state(void)
 			break;
 		case 1:
 		// Connected to the network & continuously checking if it can ping successfully.
-			system("echo 1 > /kvmapp/kvm/wifi_state");
+			write_wifi_state_file(1);
 			get_ip_addr(WiFi_IP);
 			if(kvm_sys_state.ping_allow){
 				uint32_t now = probe_now_ms();
