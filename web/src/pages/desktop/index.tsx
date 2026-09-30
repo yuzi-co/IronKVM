@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Splitter } from 'antd';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import { LoaderCircleIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useMediaQuery } from 'react-responsive';
 
@@ -8,6 +9,7 @@ import { getInputRegion, getScreen, setControlRegionMode } from '@/api/vm.ts';
 import { ControlRegionConfig, InputRegion, ScreenSettings } from '@/types';
 import * as storage from '@/lib/localstorage.ts';
 import { client } from '@/lib/websocket.ts';
+import { isKeyboardOpenAtom } from '@/jotai/keyboard.ts';
 import { picoclawChatOpenAtom } from '@/jotai/picoclaw.ts';
 import {
   captureStatusAtom,
@@ -33,7 +35,6 @@ import { Mouse } from './mouse';
 import { H264ModeNotification, Notification } from './notification.tsx';
 import { Ocr } from './ocr';
 import { Paste } from './paste';
-import { Sidebar as PicoclawSidebar } from './picoclaw';
 import { ActionOverlay } from './picoclaw/action-overlay.tsx';
 import { Screen } from './screen';
 import { AutoRegion } from './screen/auto-region.tsx';
@@ -47,7 +48,6 @@ import { InputRegionOverlay } from './screen/input-region-overlay.tsx';
 import { ManualRegion } from './screen/manual-region.tsx';
 import { usePauseWhenHidden } from './screen/use-pause-when-hidden.ts';
 import { ViewOnlyBadge } from './view-only-badge.tsx';
-import { VirtualKeyboard } from './virtual-keyboard';
 
 // H.264 direct is the default where the browser can decode both its video and
 // its audio. Measured on 2026-09-23 at 1080p30, it held the board at 17% busy
@@ -73,6 +73,34 @@ function getVideoMode() {
 
   return ['direct', 'h264', 'mjpeg'].includes(cookieVideoMode) ? cookieVideoMode : defaultVideoMode;
 }
+
+// The PicoClaw chat, with its markdown renderer, and the virtual keyboard are
+// opened in few sessions, so each loads the first time it is asked for.
+const PicoclawSidebar = lazy(() => import('./picoclaw').then((m) => ({ default: m.Sidebar })));
+const VirtualKeyboard = lazy(() =>
+  import('./virtual-keyboard').then((m) => ({ default: m.VirtualKeyboard }))
+);
+
+const PicoclawLoading = () => (
+  <div className="flex h-full w-full items-center justify-center text-neutral-500">
+    <LoaderCircleIcon className="animate-spin" size={18} />
+  </div>
+);
+
+// Mounted from the first open on, and kept mounted after, so that closing
+// the keyboard still plays the drawer's exit and its layout choice survives.
+const LazyVirtualKeyboard = () => {
+  const isKeyboardOpen = useAtomValue(isKeyboardOpenAtom);
+  const [wanted, setWanted] = useState(isKeyboardOpen);
+  if (isKeyboardOpen && !wanted) setWanted(true);
+
+  if (!wanted) return null;
+  return (
+    <Suspense fallback={null}>
+      <VirtualKeyboard />
+    </Suspense>
+  );
+};
 
 export const Desktop = () => {
   const { t } = useTranslation();
@@ -306,7 +334,9 @@ export const Desktop = () => {
               >
                 {isBigScreen && isPicoclawChatOpen ? (
                   <PanelBoundary name="picoclaw-sidebar">
-                    <PicoclawSidebar />
+                    <Suspense fallback={<PicoclawLoading />}>
+                      <PicoclawSidebar />
+                    </Suspense>
                   </PanelBoundary>
                 ) : null}
               </Splitter.Panel>
@@ -330,13 +360,15 @@ export const Desktop = () => {
       {!isBigScreen && isPicoclawChatOpen ? (
         <div className="fixed inset-x-0 top-14 bottom-0 z-980 overflow-hidden bg-[#0d0d0f] shadow-2xl">
           <PanelBoundary name="picoclaw-sidebar">
-            <PicoclawSidebar />
+            <Suspense fallback={<PicoclawLoading />}>
+              <PicoclawSidebar />
+            </Suspense>
           </PanelBoundary>
         </div>
       ) : null}
 
       <OverlayBoundary name="virtual-keyboard">
-        <VirtualKeyboard />
+        <LazyVirtualKeyboard />
       </OverlayBoundary>
 
       <OverlayBoundary name="paste">
