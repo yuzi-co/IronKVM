@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/auth.ts';
-import { AlertCircle, AlertTriangle, Loader2 } from 'lucide-react';
+import { AlertCircle, AlertTriangle, LoaderCircleIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { rebootAndReload } from '@/lib/reboot.ts';
@@ -15,7 +15,7 @@ export function IonCheckingIndicator() {
 
   return (
     <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2.5 bg-black/60 text-neutral-400">
-      <Loader2 className="h-5 w-5 shrink-0 animate-spin" />
+      <LoaderCircleIcon size={20} className="shrink-0 animate-spin" />
       <span className="text-sm">{t('ion.checking')}</span>
     </div>
   );
@@ -82,7 +82,7 @@ export function IonCriticalGate({ onContinue }: { onContinue: () => void }) {
               disabled={isRebooting}
               onClick={reboot}
             >
-              {isRebooting && <Loader2 className="h-4 w-4 shrink-0 animate-spin" />}
+              {isRebooting && <LoaderCircleIcon size={16} className="shrink-0 animate-spin" />}
               {isRebooting ? t('ion.criticalRebooting') : t('ion.criticalReboot')}
             </button>
           )}

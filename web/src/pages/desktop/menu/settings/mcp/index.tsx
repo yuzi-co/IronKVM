@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Alert, Button, Divider, message, Modal, Switch } from 'antd';
 import { useSetAtom } from 'jotai';
-import { CheckIcon, CopyIcon, EyeIcon, EyeOffIcon, RefreshCcwIcon } from 'lucide-react';
+import { CheckIcon, CopyIcon, EyeIcon, EyeOffIcon, RefreshCwIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/mcp.ts';
@@ -234,7 +234,7 @@ export const MCP = () => {
                       className="text-neutral-400 hover:text-white"
                       loading={isLoading}
                       aria-label={t('settings.mcp.regenerateKey')}
-                      icon={<RefreshCcwIcon size={15} />}
+                      icon={<RefreshCwIcon size={15} />}
                       onClick={regenerateKey}
                     />
                   </>

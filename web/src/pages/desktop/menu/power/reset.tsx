@@ -1,4 +1,4 @@
-import { RotateCcwIcon } from 'lucide-react';
+import { RotateCwIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { PowerButton } from './button.tsx';
@@ -25,7 +25,7 @@ export const Reset = ({ isLoading, setIsLoading }: ResetProps) => {
       onPress={reset}
       description={t('power.resetDesc')}
     >
-      <RotateCcwIcon size={18} />
+      <RotateCwIcon size={18} />
       <span>{t('power.reset')}</span>
     </PowerButton>
   );

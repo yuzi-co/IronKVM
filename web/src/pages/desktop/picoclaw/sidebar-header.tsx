@@ -6,7 +6,7 @@ import {
   PlayIcon,
   PowerIcon,
   SlidersHorizontalIcon,
-  TrashIcon
+  Trash2Icon
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -96,7 +96,7 @@ export const SidebarHeader = ({
       key: 'uninstall',
       danger: true,
       label: <span className="text-xs">{t('picoclaw.uninstall.menuLabel')}</span>,
-      icon: <TrashIcon size={15} />,
+      icon: <Trash2Icon size={15} />,
       onClick: handleUninstallClick,
       disabled: areActionsDisabled || isUninstallingRuntime || isTogglingRuntime
     }

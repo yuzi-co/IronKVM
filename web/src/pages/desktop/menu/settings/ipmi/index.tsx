@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/auth.ts';
 import { Alert, Button, Divider, Input, message, Modal, Switch, Tag, Tooltip } from 'antd';
-import { CheckIcon, CopyIcon, DicesIcon } from 'lucide-react';
+import { CheckIcon, CopyIcon, RefreshCwIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/ipmi.ts';
@@ -279,7 +279,7 @@ export const Ipmi = () => {
             />
             <Tooltip title={t('settings.ipmi.generate')}>
               <Button
-                icon={<DicesIcon size={15} />}
+                icon={<RefreshCwIcon size={15} />}
                 aria-label={t('settings.ipmi.generate')}
                 onClick={() => changePassword(generatePassword())}
               />

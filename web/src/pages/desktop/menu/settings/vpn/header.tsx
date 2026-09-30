@@ -5,7 +5,7 @@ import {
   CircleArrowUpIcon,
   CircleStopIcon,
   EllipsisIcon,
-  LoaderIcon,
+  LoaderCircleIcon,
   RotateCwIcon
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -122,7 +122,7 @@ export const Header = ({ vpn, state, setIsLocked, onChange, onError }: HeaderPro
               className="text-blue-500 hover:!text-blue-500/80"
               icon={
                 loading === 'updating' ? (
-                  <LoaderIcon className="animate-spin" size={18} />
+                  <LoaderCircleIcon className="animate-spin" size={18} />
                 ) : (
                   <CircleArrowUpIcon size={18} />
                 )
@@ -146,7 +146,7 @@ export const Header = ({ vpn, state, setIsLocked, onChange, onError }: HeaderPro
                 className="text-green-500 hover:!text-green-500/80"
                 icon={
                   loading === 'restarting' ? (
-                    <LoaderIcon className="animate-spin" size={18} />
+                    <LoaderCircleIcon className="animate-spin" size={18} />
                   ) : (
                     <RotateCwIcon size={18} />
                   )
@@ -168,7 +168,7 @@ export const Header = ({ vpn, state, setIsLocked, onChange, onError }: HeaderPro
                 className="text-red-500 hover:!text-red-500/80"
                 icon={
                   loading === 'stopping' ? (
-                    <LoaderIcon className="animate-spin" size={18} />
+                    <LoaderCircleIcon className="animate-spin" size={18} />
                   ) : (
                     <CircleStopIcon size={18} />
                   )

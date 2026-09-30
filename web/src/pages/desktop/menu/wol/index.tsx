@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/auth.ts';
 import { Button, Divider, Input, List, message, Popconfirm, Tooltip } from 'antd';
 import type { InputRef } from 'antd';
 import clsx from 'clsx';
-import { Eye, EyeClosed, NetworkIcon, Pencil, SendIcon, Trash2Icon } from 'lucide-react';
+import { EyeIcon, EyeOffIcon, NetworkIcon, Pencil, SendIcon, Trash2Icon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { deleteWolMac, getWolMacs, setWolMacName, wol } from '@/api/network.ts';
@@ -236,7 +236,7 @@ export const Wol = () => {
                     className="text-neutral-400 hover:bg-neutral-700/80"
                     onClick={() => toggleShow(item.mac)}
                   >
-                    {item.isShow ? <EyeClosed size={15} /> : <Eye size={15} />}
+                    {item.isShow ? <EyeOffIcon size={15} /> : <EyeIcon size={15} />}
                   </IconButton>
                 )}
                 {isAdmin && (

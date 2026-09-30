@@ -1,7 +1,7 @@
 import { Button, message, Modal } from 'antd';
 import { useSetAtom } from 'jotai';
 import {
-  Loader2Icon,
+  LoaderCircleIcon,
   PlayIcon,
   RefreshCwIcon,
   ShieldCheckIcon,
@@ -216,7 +216,7 @@ export const Sidebar = () => {
         <div className="min-w-0 text-xs">
           <div className="flex min-w-0 items-center gap-2 text-neutral-300">
             {controlView.isTransitioning ? (
-              <Loader2Icon size={15} className={`shrink-0 animate-spin ${controlIconClass}`} />
+              <LoaderCircleIcon size={15} className={`shrink-0 animate-spin ${controlIconClass}`} />
             ) : controlView.canDeviceWrite ? (
               <ShieldCheckIcon size={15} className={`shrink-0 ${controlIconClass}`} />
             ) : (
@@ -292,7 +292,7 @@ export const Sidebar = () => {
         {sidebarMode === 'loading' ? (
           <div className="flex flex-1 flex-col items-center pt-10">
             <div className="flex flex-col items-center gap-3">
-              <Loader2Icon className="animate-spin text-neutral-500" size={22} />
+              <LoaderCircleIcon className="animate-spin text-neutral-500" size={22} />
               <span className="text-xs text-neutral-500">{connectionLabel}</span>
             </div>
           </div>
@@ -392,7 +392,7 @@ export const Sidebar = () => {
                 <div className="flex flex-col items-center gap-4">
                   <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.04]">
                     {isGatewayConnecting ? (
-                      <Loader2Icon className="animate-spin text-sky-400" size={22} />
+                      <LoaderCircleIcon className="animate-spin text-sky-400" size={22} />
                     ) : (
                       <WifiOffIcon className="text-amber-400" size={22} />
                     )}
