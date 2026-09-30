@@ -1,5 +1,7 @@
 import { atom } from 'jotai';
 
+import type { AudioState } from '@/lib/audio-state.ts';
+
 // Audio starts muted. Browsers refuse to autoplay sound before the user acts,
 // so the first unmute has to be a click.
 export const audioMutedAtom = atom(true);
@@ -15,3 +17,8 @@ export const audioMutedAtom = atom(true);
 // clicking unmute sets muted = false on an <audio> with no srcObject and
 // produces silence with nothing to explain it.
 export const hasAudioAtom = atom(false);
+
+// audioState is what the server says capture is doing. 'idle' means the host
+// plays nothing to the KVM, which otherwise looks exactly like broken audio:
+// the speaker is there, unmuted, and silent.
+export const audioStateAtom = atom<AudioState>('unknown');

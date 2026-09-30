@@ -38,6 +38,9 @@ const frameAckMessage = 2;
 // audio message with a value video never sends, and sends audio only because
 // this worker asks for it in the URL.
 const audioMessage = 0x10;
+// A state message is this marker and one byte of the server's audio state. It
+// is two bytes long, shorter than any audio or video message.
+const audioStateMessage = 0x11;
 const streamResyncMessage = 3;
 const flowControlWindow = 8;
 const decoderHighWatermark = 6;
@@ -213,11 +216,16 @@ function detectCodec(data: Uint8Array): 'avc' | 'hevc' | null {
 
 function handleWsMessage(message: ArrayBuffer) {
   try {
-    if (message.byteLength < 9) {
+    const view = new DataView(message);
+
+    if (message.byteLength === 2 && view.getUint8(0) === audioStateMessage) {
+      self.postMessage({ type: 'audio-state', value: view.getUint8(1) });
       return;
     }
 
-    const view = new DataView(message);
+    if (message.byteLength < 9) {
+      return;
+    }
 
     // The worker cannot play sound, so an audio frame goes to the page as it
     // arrived. The slice is a copy, which the transfer then moves rather than

@@ -5,9 +5,10 @@ import { useAtomValue, useSetAtom } from 'jotai';
 import { useTranslation } from 'react-i18next';
 import { w3cwebsocket as W3cWebSocket } from 'websocket';
 
+import { audioStateFromName } from '@/lib/audio-state.ts';
 import { withStereoOpus } from '@/lib/sdp-opus.ts';
 import { getBaseUrl } from '@/lib/service.ts';
-import { audioMutedAtom, hasAudioAtom } from '@/jotai/audio.ts';
+import { audioMutedAtom, audioStateAtom, hasAudioAtom } from '@/jotai/audio.ts';
 import { mouseStyleAtom } from '@/jotai/mouse.ts';
 
 import { ScreenViewport } from './viewport.tsx';
@@ -37,6 +38,7 @@ export const H264Webrtc = () => {
   const [notificationApi, contextHolder] = notification.useNotification();
   const isMuted = useAtomValue(audioMutedAtom);
   const setHasAudio = useSetAtom(hasAudioAtom);
+  const setAudioState = useSetAtom(audioStateAtom);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -276,6 +278,9 @@ export const H264Webrtc = () => {
             }
             break;
           }
+          case 'audio-state':
+            setAudioState(audioStateFromName(msg.data));
+            break;
           case 'heartbeat':
             break;
           default:
@@ -321,6 +326,7 @@ export const H264Webrtc = () => {
       // The track goes with the peer connection, so the speaker button goes
       // with it. A reconnect sets this again if a track still arrives.
       setHasAudio(false);
+      setAudioState('unknown');
       videoOfferSent.current = false;
       videoIceCandidates.current = [];
 
@@ -330,7 +336,7 @@ export const H264Webrtc = () => {
       clearTimeout(loadingTimer);
       clearTimeout(connectionTimeoutTimer);
     };
-  }, [connectionAttempt, notificationApi, setHasAudio]);
+  }, [connectionAttempt, notificationApi, setHasAudio, setAudioState]);
 
   useEffect(() => {
     return () => {

@@ -134,9 +134,10 @@ export const Menu = () => {
       <Text />
     </MenuBoundary>
   );
-  // hasAudio is set by the video path when sound arrives: the WebRTC audio
-  // track, or the first audio frame on H.264 direct. A device without the USB
-  // audio gadget sends neither, and the button would then unmute nothing.
+  // hasAudio is set by the video path when audio is on offer: the WebRTC audio
+  // track, or the first audio frame or state notice on H.264 direct. A device
+  // without the USB audio gadget sends none, and the button would then unmute
+  // nothing.
   const speaker = isEnabled('speaker') && hasAudio && (
     <MenuBoundary key="speaker" name="speaker">
       <Speaker />

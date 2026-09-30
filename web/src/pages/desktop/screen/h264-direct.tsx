@@ -4,8 +4,9 @@ import clsx from 'clsx';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { useTranslation } from 'react-i18next';
 
+import { audioStateFromByte } from '@/lib/audio-state.ts';
 import { getBaseUrl } from '@/lib/service.ts';
-import { audioMutedAtom, hasAudioAtom } from '@/jotai/audio.ts';
+import { audioMutedAtom, audioStateAtom, hasAudioAtom } from '@/jotai/audio.ts';
 import { mouseStyleAtom } from '@/jotai/mouse';
 
 import { DirectAudioPlayer } from './direct-audio.ts';
@@ -24,6 +25,7 @@ type WorkerEvent = {
   height?: number;
   seq?: number;
   data?: ArrayBuffer;
+  value?: number;
 };
 
 export const H264Direct = () => {
@@ -31,6 +33,7 @@ export const H264Direct = () => {
   const mouseStyle = useAtomValue(mouseStyleAtom);
   const isMuted = useAtomValue(audioMutedAtom);
   const setHasAudio = useSetAtom(hasAudioAtom);
+  const setAudioState = useSetAtom(audioStateAtom);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const workerRef = useRef<Worker | null>(null);
@@ -63,6 +66,7 @@ export const H264Direct = () => {
     playerRef.current = player;
     player?.setMuted(isMutedRef.current);
     let reportedAudio = false;
+    let playing = false;
 
     // The worker reconnects by itself. The page shows a spinner until a frame
     // is drawn, and a notice when none has been for the grace period, which
@@ -88,7 +92,7 @@ export const H264Direct = () => {
     const offscreen = canvasRef.current.transferControlToOffscreen();
     const url = `${getBaseUrl('ws')}/api/stream/h264/direct`;
     worker.onmessage = (event: MessageEvent<WorkerEvent>) => {
-      const { type, state, width, height, seq, data } = event.data;
+      const { type, state, width, height, seq, data, value } = event.data;
 
       if (type === 'playing') {
         if (failTimer) {
@@ -116,7 +120,27 @@ export const H264Direct = () => {
           reportedAudio = true;
           setHasAudio(true);
         }
+        // Sound arriving says the host plays, even if the notice saying so
+        // was lost on the way.
+        if (!playing) {
+          playing = true;
+          setAudioState('playing');
+        }
         player.push(seq, data);
+        return;
+      }
+
+      // The server says what capture is doing. It sends this only to a viewer
+      // that asked for audio on a board that has it, so it also means there is
+      // a speaker to show, before the host has played anything.
+      if (type === 'audio-state' && player && value !== undefined) {
+        if (!reportedAudio) {
+          reportedAudio = true;
+          setHasAudio(true);
+        }
+        const next = audioStateFromByte(value);
+        playing = next === 'playing';
+        setAudioState(next);
         return;
       }
 
@@ -139,8 +163,9 @@ export const H264Direct = () => {
       player?.close();
       playerRef.current = null;
       setHasAudio(false);
+      setAudioState('unknown');
     };
-  }, [setHasAudio, notificationApi]);
+  }, [setHasAudio, setAudioState, notificationApi]);
 
   // The unmute click is the user act the browser requires before it plays
   // sound, so the player makes its AudioContext here and not before.
