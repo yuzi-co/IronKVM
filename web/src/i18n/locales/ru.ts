@@ -929,14 +929,6 @@ const ru = {
         kernel: 'Версия ядра',
         kernelTip: 'Выпуск ядра Linux, работающего сейчас',
         deviceKey: 'Ключ устройства',
-        videoMemory: 'Видеопамять',
-        videoMemoryTip:
-          'Память, зарезервированная для захвата видео. Она не используется остальной системой.',
-        videoMemoryGenerations_one: '{{count}} предыдущий сеанс IronKVM удерживает видеопамять',
-        videoMemoryGenerations_few: '{{count}} предыдущих сеанса IronKVM удерживают видеопамять',
-        videoMemoryGenerations_many: '{{count}} предыдущих сеансов IronKVM удерживают видеопамять',
-        videoMemoryGenerations_other: '{{count}} предыдущего сеанса IronKVM удерживают видеопамять',
-        videoMemoryReboot: 'Перезагрузите, чтобы освободить её.',
         community: 'Сообщество',
         hostname: 'Имя хоста',
         hostnameUpdated:
@@ -961,7 +953,32 @@ const ru = {
         title: 'Предпочтения'
       },
       performance: {
-        title: 'Производительность'
+        title: 'Производительность',
+        memory: {
+          title: 'Память',
+          description: 'ОЗУ, подкачка и то, что их занимает. Обновляется каждые несколько секунд.',
+          ram: 'ОЗУ',
+          of: '{{used}} из {{total}}',
+          available: 'Доступно {{available}}',
+          availableLow:
+            'Доступно всего {{available}}. Службы могут замедлиться или быть остановлены.',
+          swap: 'Подкачка',
+          swapFile: 'Файл подкачки',
+          zram: 'Сжатая подкачка',
+          zramRam: '{{ram}} в ОЗУ',
+          consumers: 'Основные потребители',
+          addons: 'Дополнения',
+          addonsTip:
+            'Группа памяти, в которой работают Tailscale и NetBird, относительно её лимита.',
+          video: 'Видеопамять',
+          videoTip:
+            'Память, зарезервированная для захвата видео. Она не используется остальной системой.',
+          videoGenerations_one: '{{count}} предыдущий сеанс IronKVM удерживает видеопамять',
+          videoGenerations_few: '{{count}} предыдущих сеанса IronKVM удерживают видеопамять',
+          videoGenerations_many: '{{count}} предыдущих сеансов IronKVM удерживают видеопамять',
+          videoGenerations_other: '{{count}} предыдущего сеанса IronKVM удерживают видеопамять',
+          videoReboot: 'Перезагрузите, чтобы освободить её.'
+        }
       },
       appearance: {
         thisBrowser: 'Этот браузер',

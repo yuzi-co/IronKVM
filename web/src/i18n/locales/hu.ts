@@ -940,12 +940,6 @@ const hu = {
         kernel: 'Kernelverzió',
         kernelTip: 'A jelenleg futó Linux-kernel kiadása',
         deviceKey: 'Eszköz kulcs',
-        videoMemory: 'Videomemória',
-        videoMemoryTip:
-          'Videorögzítésre fenntartott memória. A rendszer többi része nem használja.',
-        videoMemoryGenerations_one: '{{count}} korábbi IronKVM-munkamenet foglal videomemóriát',
-        videoMemoryGenerations_other: '{{count}} korábbi IronKVM-munkamenet foglal videomemóriát',
-        videoMemoryReboot: 'A felszabadításhoz indítsa újra.',
         community: 'Közösség',
         hostname: 'Gazdanév',
         hostnameUpdated: 'Gazdanév frissítve. Az alkalmazáshoz indítsa újra.',
@@ -969,7 +963,30 @@ const hu = {
         title: 'Preferenciák'
       },
       performance: {
-        title: 'Teljesítmény'
+        title: 'Teljesítmény',
+        memory: {
+          title: 'Memória',
+          description: 'RAM, swap és ami használja őket. Néhány másodpercenként frissül.',
+          ram: 'RAM',
+          of: '{{used}} / {{total}}',
+          available: '{{available}} szabad',
+          availableLow:
+            'Csak {{available}} szabad. A szolgáltatások lelassulhatnak vagy leállhatnak.',
+          swap: 'Swap',
+          swapFile: 'Swap fájl',
+          zram: 'Tömörített swap',
+          zramRam: '{{ram}} a RAM-ban',
+          consumers: 'Fő fogyasztók',
+          addons: 'Bővítmények',
+          addonsTip:
+            'A memóriacsoport, amelyben a Tailscale és a NetBird fut, a korlátjához mérve.',
+          video: 'Videomemória',
+          videoTip:
+            'Videorögzítésre fenntartott memória. A rendszer többi része nem használja.',
+          videoGenerations_one: '{{count}} korábbi IronKVM-munkamenet foglal videomemóriát',
+          videoGenerations_other: '{{count}} korábbi IronKVM-munkamenet foglal videomemóriát',
+          videoReboot: 'A felszabadításhoz indítsa újra.'
+        }
       },
       appearance: {
         thisBrowser: 'Ez a böngésző',

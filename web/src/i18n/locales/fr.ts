@@ -945,14 +945,6 @@ const fr = {
         kernel: 'Version du noyau',
         kernelTip: "Version du noyau Linux en cours d'exécution",
         deviceKey: "Clé de l'appareil",
-        videoMemory: 'Mémoire vidéo',
-        videoMemoryTip:
-          "Mémoire réservée à la capture vidéo. Elle n'est pas partagée avec le reste du système.",
-        videoMemoryGenerations_one:
-          '{{count}} session IronKVM précédente occupe de la mémoire vidéo',
-        videoMemoryGenerations_other:
-          '{{count}} sessions IronKVM précédentes occupent de la mémoire vidéo',
-        videoMemoryReboot: 'Redémarrez pour la récupérer.',
         community: 'Communauté',
         hostname: "Nom d'hôte",
         hostnameUpdated: "Nom d'hôte mis à jour. Redémarrez pour appliquer.",
@@ -976,7 +968,31 @@ const fr = {
         title: 'Préférences'
       },
       performance: {
-        title: 'Performances'
+        title: 'Performances',
+        memory: {
+          title: 'Mémoire',
+          description: 'RAM, swap et ce qui les utilise. Mis à jour toutes les quelques secondes.',
+          ram: 'RAM',
+          of: '{{used}} sur {{total}}',
+          available: '{{available}} disponibles',
+          availableLow:
+            'Seulement {{available}} disponibles. Des services peuvent ralentir ou être arrêtés.',
+          swap: 'Swap',
+          swapFile: "Fichier d'échange",
+          zram: 'Swap compressé',
+          zramRam: '{{ram}} en RAM',
+          consumers: 'Principaux consommateurs',
+          addons: 'Modules',
+          addonsTip: 'Le groupe mémoire où tournent Tailscale et NetBird, par rapport à sa limite.',
+          video: 'Mémoire vidéo',
+          videoTip:
+            "Mémoire réservée à la capture vidéo. Elle n'est pas partagée avec le reste du système.",
+          videoGenerations_one:
+            '{{count}} session IronKVM précédente occupe de la mémoire vidéo',
+          videoGenerations_other:
+            '{{count}} sessions IronKVM précédentes occupent de la mémoire vidéo',
+          videoReboot: 'Redémarrez pour la récupérer.'
+        }
       },
       appearance: {
         thisBrowser: 'Ce navigateur',

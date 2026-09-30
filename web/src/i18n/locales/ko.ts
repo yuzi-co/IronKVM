@@ -919,12 +919,6 @@ const ko = {
         kernel: '커널 버전',
         kernelTip: '현재 실행 중인 Linux 커널의 릴리스',
         deviceKey: '장치 키',
-        videoMemory: '비디오 메모리',
-        videoMemoryTip:
-          '비디오 캡처용으로 예약된 메모리입니다. 시스템의 나머지 부분과 공유되지 않습니다.',
-        videoMemoryGenerations_other:
-          '이전 IronKVM 세션 {{count}}개가 비디오 메모리를 점유하고 있습니다',
-        videoMemoryReboot: '재부팅하면 회수됩니다.',
         community: '커뮤니티',
         hostname: '호스트 이름',
         hostnameUpdated: '호스트 이름이 업데이트되었습니다. 적용하려면 재부팅하세요.',
@@ -948,7 +942,28 @@ const ko = {
         title: '환경설정'
       },
       performance: {
-        title: '성능'
+        title: '성능',
+        memory: {
+          title: '메모리',
+          description: 'RAM, 스왑 및 사용 중인 항목. 몇 초마다 갱신됩니다.',
+          ram: 'RAM',
+          of: '{{used}} / {{total}}',
+          available: '{{available}} 사용 가능',
+          availableLow: '사용 가능한 메모리가 {{available}}뿐입니다. 서비스가 느려지거나 중지될 수 있습니다.',
+          swap: '스왑',
+          swapFile: '스왑 파일',
+          zram: '압축 스왑',
+          zramRam: 'RAM {{ram}}',
+          consumers: '주요 사용 프로세스',
+          addons: '애드온',
+          addonsTip: 'Tailscale과 NetBird가 실행되는 메모리 그룹의 사용량과 한도.',
+          video: '비디오 메모리',
+          videoTip:
+            '비디오 캡처용으로 예약된 메모리입니다. 시스템의 나머지 부분과 공유되지 않습니다.',
+          videoGenerations_other:
+            '이전 IronKVM 세션 {{count}}개가 비디오 메모리를 점유하고 있습니다',
+          videoReboot: '재부팅하면 회수됩니다.'
+        }
       },
       appearance: {
         thisBrowser: '이 브라우저',

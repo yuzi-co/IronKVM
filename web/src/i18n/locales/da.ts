@@ -922,13 +922,6 @@ const da = {
         kernel: 'Kerneversion',
         kernelTip: 'Udgaven af den Linux-kerne, der kører nu',
         deviceKey: 'Enhedsnøgle',
-        videoMemory: 'Videohukommelse',
-        videoMemoryTip:
-          'Hukommelse reserveret til videooptagelse. Den deles ikke med resten af systemet.',
-        videoMemoryGenerations_one: '{{count}} tidligere IronKVM-session optager videohukommelse',
-        videoMemoryGenerations_other:
-          '{{count}} tidligere IronKVM-sessioner optager videohukommelse',
-        videoMemoryReboot: 'Genstart for at frigøre den.',
         community: 'Fællesskab',
         hostname: 'Værtsnavn',
         hostnameUpdated: 'Værtsnavn opdateret. Genstart for at anvende.',
@@ -952,7 +945,30 @@ const da = {
         title: 'Præferencer'
       },
       performance: {
-        title: 'Ydeevne'
+        title: 'Ydeevne',
+        memory: {
+          title: 'Hukommelse',
+          description: 'RAM, swap og hvad der bruger dem. Opdateres med få sekunders mellemrum.',
+          ram: 'RAM',
+          of: '{{used}} af {{total}}',
+          available: '{{available}} ledig',
+          availableLow:
+            'Kun {{available}} ledig. Tjenester kan blive langsomme eller blive stoppet.',
+          swap: 'Swap',
+          swapFile: 'Swapfil',
+          zram: 'Komprimeret swap',
+          zramRam: '{{ram}} i RAM',
+          consumers: 'Største forbrugere',
+          addons: 'Tilføjelser',
+          addonsTip: 'Hukommelsesgruppen, som Tailscale og NetBird kører i, målt mod dens grænse.',
+          video: 'Videohukommelse',
+          videoTip:
+            'Hukommelse reserveret til videooptagelse. Den deles ikke med resten af systemet.',
+          videoGenerations_one: '{{count}} tidligere IronKVM-session optager videohukommelse',
+          videoGenerations_other:
+            '{{count}} tidligere IronKVM-sessioner optager videohukommelse',
+          videoReboot: 'Genstart for at frigøre den.'
+        }
       },
       appearance: {
         thisBrowser: 'Denne browser',

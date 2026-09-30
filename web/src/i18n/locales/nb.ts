@@ -927,11 +927,6 @@ const nb = {
         kernel: 'Kjerneversjon',
         kernelTip: 'Versjonen av Linux-kjernen som kjører nå',
         deviceKey: 'Enhetsnøkkel',
-        videoMemory: 'Videominne',
-        videoMemoryTip: 'Minne reservert for videoopptak. Det deles ikke med resten av systemet.',
-        videoMemoryGenerations_one: '{{count}} tidligere IronKVM-økt holder på videominne',
-        videoMemoryGenerations_other: '{{count}} tidligere IronKVM-økter holder på videominne',
-        videoMemoryReboot: 'Start på nytt for å frigjøre det.',
         community: 'Fellesskap',
         hostname: 'Vertsnavn',
         hostnameUpdated: 'Vertsnavn oppdatert. Start på nytt for å søke.',
@@ -955,7 +950,27 @@ const nb = {
         title: 'Preferanser'
       },
       performance: {
-        title: 'Ytelse'
+        title: 'Ytelse',
+        memory: {
+          title: 'Minne',
+          description: 'RAM, swap og hva som bruker dem. Oppdateres med noen sekunders mellomrom.',
+          ram: 'RAM',
+          of: '{{used}} av {{total}}',
+          available: '{{available}} ledig',
+          availableLow: 'Bare {{available}} ledig. Tjenester kan bli trege eller bli stoppet.',
+          swap: 'Swap',
+          swapFile: 'Swapfil',
+          zram: 'Komprimert swap',
+          zramRam: '{{ram}} i RAM',
+          consumers: 'Største forbrukere',
+          addons: 'Tillegg',
+          addonsTip: 'Minnegruppen Tailscale og NetBird kjører i, målt mot grensen.',
+          video: 'Videominne',
+          videoTip: 'Minne reservert for videoopptak. Det deles ikke med resten av systemet.',
+          videoGenerations_one: '{{count}} tidligere IronKVM-økt holder på videominne',
+          videoGenerations_other: '{{count}} tidligere IronKVM-økter holder på videominne',
+          videoReboot: 'Start på nytt for å frigjøre det.'
+        }
       },
       appearance: {
         thisBrowser: 'Denne nettleseren',

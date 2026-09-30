@@ -45,6 +45,28 @@ export const handlers = [
       }
     });
   }),
+  http.get('/api/vm/memory', () => {
+    const MiB = 1024 * 1024;
+    return HttpResponse.json({
+      code: 0,
+      data: {
+        total: 180 * MiB,
+        available: 52 * MiB,
+        free: 9 * MiB,
+        swaps: [
+          { name: '/dev/zram0', kind: 'zram', size: 64 * MiB, used: 12 * MiB },
+          { name: '/swapfile', kind: 'file', size: 128 * MiB, used: 0 }
+        ],
+        zramMemUsed: 4 * MiB,
+        processes: [
+          { name: 'NanoKVM-Server', rss: 38 * MiB },
+          { name: 'kvm_system', rss: 11 * MiB },
+          { name: 'tailscaled', rss: 29 * MiB }
+        ],
+        addons: { current: 41 * MiB, high: 60 * MiB, max: 72 * MiB }
+      }
+    });
+  }),
   http.get('/api/vm/ion', () => {
     return HttpResponse.json({
       code: 0,

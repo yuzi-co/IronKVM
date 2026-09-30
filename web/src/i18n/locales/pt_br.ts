@@ -934,14 +934,6 @@ const pt_br = {
         kernel: 'Versão do Kernel',
         kernelTip: 'Versão do kernel Linux em execução agora',
         deviceKey: 'Chave do Dispositivo',
-        videoMemory: 'Memória de Vídeo',
-        videoMemoryTip:
-          'Memória reservada para a captura de vídeo. Ela não é compartilhada com o resto do sistema.',
-        videoMemoryGenerations_one:
-          '{{count}} sessão anterior do IronKVM está retendo memória de vídeo',
-        videoMemoryGenerations_other:
-          '{{count}} sessões anteriores do IronKVM estão retendo memória de vídeo',
-        videoMemoryReboot: 'Reinicie para recuperá-la.',
         community: 'Comunidade',
         hostname: 'Nome do Host',
         hostnameUpdated: 'Nome do host atualizado. Reinicie para aplicar.',
@@ -965,7 +957,32 @@ const pt_br = {
         title: 'Preferências'
       },
       performance: {
-        title: 'Desempenho'
+        title: 'Desempenho',
+        memory: {
+          title: 'Memória',
+          description: 'RAM, swap e o que os usa. Atualiza a cada poucos segundos.',
+          ram: 'RAM',
+          of: '{{used}} de {{total}}',
+          available: '{{available}} disponíveis',
+          availableLow:
+            'Apenas {{available}} disponíveis. Serviços podem ficar lentos ou ser parados.',
+          swap: 'Swap',
+          swapFile: 'Arquivo de swap',
+          zram: 'Swap comprimido',
+          zramRam: '{{ram}} na RAM',
+          consumers: 'Principais consumidores',
+          addons: 'Complementos',
+          addonsTip:
+            'O grupo de memória em que o Tailscale e o NetBird rodam, em relação ao seu limite.',
+          video: 'Memória de Vídeo',
+          videoTip:
+            'Memória reservada para a captura de vídeo. Ela não é compartilhada com o resto do sistema.',
+          videoGenerations_one:
+            '{{count}} sessão anterior do IronKVM está retendo memória de vídeo',
+          videoGenerations_other:
+            '{{count}} sessões anteriores do IronKVM estão retendo memória de vídeo',
+          videoReboot: 'Reinicie para recuperá-la.'
+        }
       },
       appearance: {
         thisBrowser: 'Este navegador',

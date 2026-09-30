@@ -942,14 +942,6 @@ const es = {
         kernel: 'Versión del kernel',
         kernelTip: 'Versión del kernel de Linux en ejecución',
         deviceKey: 'Clave del dispositivo',
-        videoMemory: 'Memoria de vídeo',
-        videoMemoryTip:
-          'Memoria reservada para la captura de vídeo. No se comparte con el resto del sistema.',
-        videoMemoryGenerations_one:
-          '{{count}} sesión anterior de IronKVM está reteniendo memoria de vídeo',
-        videoMemoryGenerations_other:
-          '{{count}} sesiones anteriores de IronKVM están reteniendo memoria de vídeo',
-        videoMemoryReboot: 'Reinicia para recuperarla.',
         community: 'Comunidad',
         hostname: 'Nombre del host',
         hostnameUpdated: 'Nombre del host actualizado. Reinicia para aplicar.',
@@ -973,7 +965,32 @@ const es = {
         title: 'Preferencias'
       },
       performance: {
-        title: 'Rendimiento'
+        title: 'Rendimiento',
+        memory: {
+          title: 'Memoria',
+          description: 'RAM, swap y qué los usa. Se actualiza cada pocos segundos.',
+          ram: 'RAM',
+          of: '{{used}} de {{total}}',
+          available: '{{available}} disponibles',
+          availableLow:
+            'Solo {{available}} disponibles. Los servicios pueden ralentizarse o detenerse.',
+          swap: 'Swap',
+          swapFile: 'Archivo de swap',
+          zram: 'Swap comprimido',
+          zramRam: '{{ram}} en RAM',
+          consumers: 'Principales consumidores',
+          addons: 'Complementos',
+          addonsTip:
+            'El grupo de memoria en el que se ejecutan Tailscale y NetBird, frente a su límite.',
+          video: 'Memoria de vídeo',
+          videoTip:
+            'Memoria reservada para la captura de vídeo. No se comparte con el resto del sistema.',
+          videoGenerations_one:
+            '{{count}} sesión anterior de IronKVM está reteniendo memoria de vídeo',
+          videoGenerations_other:
+            '{{count}} sesiones anteriores de IronKVM están reteniendo memoria de vídeo',
+          videoReboot: 'Reinicia para recuperarla.'
+        }
       },
       appearance: {
         thisBrowser: 'Este navegador',

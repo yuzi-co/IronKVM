@@ -938,12 +938,6 @@ const nl = {
         kernel: 'Kernelversie',
         kernelTip: 'Versie van de Linux-kernel die nu draait',
         deviceKey: 'Apparaat sleutel',
-        videoMemory: 'Videogeheugen',
-        videoMemoryTip:
-          'Geheugen gereserveerd voor video-opname. Het wordt niet gedeeld met de rest van het systeem.',
-        videoMemoryGenerations_one: '{{count}} eerdere IronKVM-sessie houdt videogeheugen vast',
-        videoMemoryGenerations_other: '{{count}} eerdere IronKVM-sessies houden videogeheugen vast',
-        videoMemoryReboot: 'Start opnieuw op om het vrij te maken.',
         community: 'Community',
         hostname: 'Hostnaam',
         hostnameUpdated: 'Hostnaam bijgewerkt. Start opnieuw op om toe te passen.',
@@ -967,7 +961,30 @@ const nl = {
         title: 'Voorkeuren'
       },
       performance: {
-        title: 'Prestaties'
+        title: 'Prestaties',
+        memory: {
+          title: 'Geheugen',
+          description: 'RAM, swap en wat ze gebruikt. Wordt elke paar seconden bijgewerkt.',
+          ram: 'RAM',
+          of: '{{used}} van {{total}}',
+          available: '{{available}} beschikbaar',
+          availableLow:
+            'Slechts {{available}} beschikbaar. Diensten kunnen trager worden of worden gestopt.',
+          swap: 'Swap',
+          swapFile: 'Swapbestand',
+          zram: 'Gecomprimeerde swap',
+          zramRam: '{{ram}} in RAM',
+          consumers: 'Grootste verbruikers',
+          addons: 'Add-ons',
+          addonsTip:
+            'De geheugengroep waarin Tailscale en NetBird draaien, afgezet tegen de limiet.',
+          video: 'Videogeheugen',
+          videoTip:
+            'Geheugen gereserveerd voor video-opname. Het wordt niet gedeeld met de rest van het systeem.',
+          videoGenerations_one: '{{count}} eerdere IronKVM-sessie houdt videogeheugen vast',
+          videoGenerations_other: '{{count}} eerdere IronKVM-sessies houden videogeheugen vast',
+          videoReboot: 'Start opnieuw op om het vrij te maken.'
+        }
       },
       appearance: {
         thisBrowser: 'Deze browser',

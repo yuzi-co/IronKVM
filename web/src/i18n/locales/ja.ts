@@ -938,12 +938,6 @@ const ja = {
         kernel: 'カーネルバージョン',
         kernelTip: '現在実行中の Linux カーネルのリリース',
         deviceKey: 'デバイスキー',
-        videoMemory: 'ビデオメモリ',
-        videoMemoryTip:
-          'ビデオキャプチャ用に予約されたメモリです。システムの他の部分とは共有されません。',
-        videoMemoryGenerations_other:
-          '以前の IronKVM セッション {{count}} 件がビデオメモリを保持しています',
-        videoMemoryReboot: '再起動すると回収されます。',
         community: 'コミュニティ',
         hostname: 'ホスト名',
         hostnameUpdated: 'ホスト名は正常に変更され、再起動後に有効になります',
@@ -967,7 +961,28 @@ const ja = {
         title: '環境設定'
       },
       performance: {
-        title: 'パフォーマンス'
+        title: 'パフォーマンス',
+        memory: {
+          title: 'メモリ',
+          description: 'RAM、スワップとその使用状況。数秒ごとに更新されます。',
+          ram: 'RAM',
+          of: '{{used}} / {{total}}',
+          available: '空き {{available}}',
+          availableLow: '空きは {{available}} のみです。サービスが遅くなるか停止する可能性があります。',
+          swap: 'スワップ',
+          swapFile: 'スワップファイル',
+          zram: '圧縮スワップ',
+          zramRam: 'RAM 上 {{ram}}',
+          consumers: '主な使用元',
+          addons: 'アドオン',
+          addonsTip: 'Tailscale と NetBird が動作するメモリグループの使用量と上限。',
+          video: 'ビデオメモリ',
+          videoTip:
+            'ビデオキャプチャ用に予約されたメモリです。システムの他の部分とは共有されません。',
+          videoGenerations_other:
+            '以前の IronKVM セッション {{count}} 件がビデオメモリを保持しています',
+          videoReboot: '再起動すると回収されます。'
+        }
       },
       appearance: {
         thisBrowser: 'このブラウザー',

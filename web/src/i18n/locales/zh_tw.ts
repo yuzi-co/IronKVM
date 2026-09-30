@@ -888,10 +888,6 @@ const zh_tw = {
         kernel: '核心版本',
         kernelTip: '目前執行中的 Linux 核心版本',
         deviceKey: '設備序號',
-        videoMemory: '視訊記憶體',
-        videoMemoryTip: '為視訊擷取保留的記憶體，不與系統其他部分共用。',
-        videoMemoryGenerations_other: '先前的 {{count}} 個 IronKVM 工作階段仍佔用著視訊記憶體',
-        videoMemoryReboot: '重新啟動以回收。',
         community: '社群',
         hostname: '主機名稱',
         hostnameUpdated: '已更新主機名稱. 請重新啟動以生效',
@@ -914,7 +910,26 @@ const zh_tw = {
         title: '偏好設定'
       },
       performance: {
-        title: '效能'
+        title: '效能',
+        memory: {
+          title: '記憶體',
+          description: 'RAM、交換空間及其使用者。每隔幾秒更新一次。',
+          ram: 'RAM',
+          of: '{{used}} / {{total}}',
+          available: '可用 {{available}}',
+          availableLow: '僅剩 {{available}} 可用。服務可能變慢或被停止。',
+          swap: '交換空間',
+          swapFile: '交換檔案',
+          zram: '壓縮交換',
+          zramRam: '佔用 RAM {{ram}}',
+          consumers: '主要佔用者',
+          addons: '附加元件',
+          addonsTip: 'Tailscale 與 NetBird 所在記憶體群組的用量及其上限。',
+          video: '視訊記憶體',
+          videoTip: '為視訊擷取保留的記憶體，不與系統其他部分共用。',
+          videoGenerations_other: '先前的 {{count}} 個 IronKVM 工作階段仍佔用著視訊記憶體',
+          videoReboot: '重新啟動以回收。'
+        }
       },
       appearance: {
         thisBrowser: '此瀏覽器',

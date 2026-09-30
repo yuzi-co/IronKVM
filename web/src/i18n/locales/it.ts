@@ -940,14 +940,6 @@ const it = {
         kernel: 'Versione del kernel',
         kernelTip: 'Versione del kernel Linux attualmente in esecuzione',
         deviceKey: 'Chiave Dispositivo',
-        videoMemory: 'Memoria video',
-        videoMemoryTip:
-          'Memoria riservata alla cattura video. Non è condivisa con il resto del sistema.',
-        videoMemoryGenerations_one:
-          '{{count}} sessione precedente di IronKVM sta trattenendo memoria video',
-        videoMemoryGenerations_other:
-          '{{count}} sessioni precedenti di IronKVM stanno trattenendo memoria video',
-        videoMemoryReboot: 'Riavvia per recuperarla.',
         community: 'Comunità',
         hostname: 'Nome host',
         hostnameUpdated: 'Nome host aggiornato. Riavviare per applicare.',
@@ -971,7 +963,32 @@ const it = {
         title: 'Preferenze'
       },
       performance: {
-        title: 'Prestazioni'
+        title: 'Prestazioni',
+        memory: {
+          title: 'Memoria',
+          description: 'RAM, swap e cosa li usa. Si aggiorna ogni pochi secondi.',
+          ram: 'RAM',
+          of: '{{used}} di {{total}}',
+          available: '{{available}} disponibili',
+          availableLow:
+            'Solo {{available}} disponibili. I servizi possono rallentare o essere fermati.',
+          swap: 'Swap',
+          swapFile: 'File di swap',
+          zram: 'Swap compresso',
+          zramRam: '{{ram}} in RAM',
+          consumers: 'Principali consumatori',
+          addons: 'Componenti aggiuntivi',
+          addonsTip:
+            'Il gruppo di memoria in cui girano Tailscale e NetBird, rispetto al suo limite.',
+          video: 'Memoria video',
+          videoTip:
+            'Memoria riservata alla cattura video. Non è condivisa con il resto del sistema.',
+          videoGenerations_one:
+            '{{count}} sessione precedente di IronKVM sta trattenendo memoria video',
+          videoGenerations_other:
+            '{{count}} sessioni precedenti di IronKVM stanno trattenendo memoria video',
+          videoReboot: 'Riavvia per recuperarla.'
+        }
       },
       appearance: {
         thisBrowser: 'Questo browser',

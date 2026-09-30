@@ -927,12 +927,6 @@ const se = {
         kernel: 'Kärnversion',
         kernelTip: 'Version av Linux-kärnan som körs nu',
         deviceKey: 'Enhetsnyckel',
-        videoMemory: 'Videominne',
-        videoMemoryTip:
-          'Minne reserverat för videoinspelning. Det delas inte med resten av systemet.',
-        videoMemoryGenerations_one: '{{count}} tidigare IronKVM-session håller videominne',
-        videoMemoryGenerations_other: '{{count}} tidigare IronKVM-sessioner håller videominne',
-        videoMemoryReboot: 'Starta om för att frigöra det.',
         community: 'Gemenskap',
         hostname: 'Värdnamn',
         hostnameUpdated: 'Värdnamn uppdaterat. Starta om för att tillämpa.',
@@ -956,7 +950,29 @@ const se = {
         title: 'Preferenser'
       },
       performance: {
-        title: 'Prestanda'
+        title: 'Prestanda',
+        memory: {
+          title: 'Minne',
+          description:
+            'RAM, swap och vad som använder dem. Uppdateras med några sekunders mellanrum.',
+          ram: 'RAM',
+          of: '{{used}} av {{total}}',
+          available: '{{available}} ledigt',
+          availableLow: 'Bara {{available}} ledigt. Tjänster kan bli långsamma eller stoppas.',
+          swap: 'Swap',
+          swapFile: 'Swapfil',
+          zram: 'Komprimerad swap',
+          zramRam: '{{ram}} i RAM',
+          consumers: 'Största förbrukare',
+          addons: 'Tillägg',
+          addonsTip: 'Minnesgruppen som Tailscale och NetBird körs i, jämfört med dess gräns.',
+          video: 'Videominne',
+          videoTip:
+            'Minne reserverat för videoinspelning. Det delas inte med resten av systemet.',
+          videoGenerations_one: '{{count}} tidigare IronKVM-session håller videominne',
+          videoGenerations_other: '{{count}} tidigare IronKVM-sessioner håller videominne',
+          videoReboot: 'Starta om för att frigöra det.'
+        }
       },
       appearance: {
         thisBrowser: 'Den här webbläsaren',

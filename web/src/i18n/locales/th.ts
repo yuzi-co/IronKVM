@@ -908,12 +908,6 @@ const th = {
         kernel: 'เวอร์ชันเคอร์เนล',
         kernelTip: 'รุ่นของเคอร์เนล Linux ที่กำลังทำงานอยู่',
         deviceKey: 'คีย์อุปกรณ์',
-        videoMemory: 'หน่วยความจำวิดีโอ',
-        videoMemoryTip:
-          'หน่วยความจำที่สงวนไว้สำหรับการจับภาพวิดีโอ ไม่ได้ใช้ร่วมกับส่วนอื่นของระบบ',
-        videoMemoryGenerations_other:
-          'เซสชัน IronKVM ก่อนหน้า {{count}} เซสชันกำลังครอบครองหน่วยความจำวิดีโอ',
-        videoMemoryReboot: 'รีบูตเพื่อเรียกคืน',
         community: 'ชุมชน',
         hostname: 'ชื่อโฮสต์',
         hostnameUpdated: 'อัปเดตชื่อโฮสต์แล้ว รีบูตเพื่อใช้',
@@ -937,7 +931,28 @@ const th = {
         title: 'การกำหนดลักษณะ'
       },
       performance: {
-        title: 'ประสิทธิภาพ'
+        title: 'ประสิทธิภาพ',
+        memory: {
+          title: 'หน่วยความจำ',
+          description: 'RAM, swap และสิ่งที่ใช้งานอยู่ อัปเดตทุกไม่กี่วินาที',
+          ram: 'RAM',
+          of: '{{used}} จาก {{total}}',
+          available: 'ว่าง {{available}}',
+          availableLow: 'ว่างเพียง {{available}} บริการอาจทำงานช้าลงหรือถูกหยุด',
+          swap: 'Swap',
+          swapFile: 'ไฟล์ swap',
+          zram: 'Swap แบบบีบอัด',
+          zramRam: '{{ram}} ใน RAM',
+          consumers: 'ผู้ใช้หน่วยความจำหลัก',
+          addons: 'ส่วนเสริม',
+          addonsTip: 'กลุ่มหน่วยความจำที่ Tailscale และ NetBird ทำงานอยู่ เทียบกับขีดจำกัด',
+          video: 'หน่วยความจำวิดีโอ',
+          videoTip:
+            'หน่วยความจำที่สงวนไว้สำหรับการจับภาพวิดีโอ ไม่ได้ใช้ร่วมกับส่วนอื่นของระบบ',
+          videoGenerations_other:
+            'เซสชัน IronKVM ก่อนหน้า {{count}} เซสชันกำลังครอบครองหน่วยความจำวิดีโอ',
+          videoReboot: 'รีบูตเพื่อเรียกคืน'
+        }
       },
       appearance: {
         thisBrowser: 'เบราว์เซอร์นี้',

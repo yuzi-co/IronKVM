@@ -954,12 +954,6 @@ const de = {
         kernel: 'Kernel-Version',
         kernelTip: 'Version des derzeit laufenden Linux-Kernels',
         deviceKey: 'Geräteschlüssel',
-        videoMemory: 'Videospeicher',
-        videoMemoryTip:
-          'Für die Videoaufnahme reservierter Speicher. Er wird nicht mit dem restlichen System geteilt.',
-        videoMemoryGenerations_one: '{{count}} frühere IronKVM-Sitzung belegt Videospeicher',
-        videoMemoryGenerations_other: '{{count}} frühere IronKVM-Sitzungen belegen Videospeicher',
-        videoMemoryReboot: 'Neu starten, um ihn freizugeben.',
         community: 'Community',
         hostname: 'Hostname',
         hostnameUpdated: 'Hostname aktualisiert. Neustarten um zu übernehmen.',
@@ -983,7 +977,30 @@ const de = {
         title: 'Präferenzen'
       },
       performance: {
-        title: 'Leistung'
+        title: 'Leistung',
+        memory: {
+          title: 'Arbeitsspeicher',
+          description: 'RAM, Swap und was sie belegt. Wird alle paar Sekunden aktualisiert.',
+          ram: 'RAM',
+          of: '{{used}} von {{total}}',
+          available: '{{available}} verfügbar',
+          availableLow:
+            'Nur {{available}} verfügbar. Dienste können langsamer werden oder beendet werden.',
+          swap: 'Swap',
+          swapFile: 'Swap-Datei',
+          zram: 'Komprimierter Swap',
+          zramRam: '{{ram}} im RAM',
+          consumers: 'Größte Verbraucher',
+          addons: 'Add-ons',
+          addonsTip:
+            'Die Speichergruppe, in der Tailscale und NetBird laufen, gemessen an ihrem Limit.',
+          video: 'Videospeicher',
+          videoTip:
+            'Für die Videoaufnahme reservierter Speicher. Er wird nicht mit dem restlichen System geteilt.',
+          videoGenerations_one: '{{count}} frühere IronKVM-Sitzung belegt Videospeicher',
+          videoGenerations_other: '{{count}} frühere IronKVM-Sitzungen belegen Videospeicher',
+          videoReboot: 'Neu starten, um ihn freizugeben.'
+        }
       },
       appearance: {
         thisBrowser: 'Dieser Browser',

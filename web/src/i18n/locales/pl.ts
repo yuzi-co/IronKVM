@@ -929,14 +929,6 @@ const pl = {
         kernel: 'Wersja jądra',
         kernelTip: 'Wydanie aktualnie działającego jądra Linux',
         deviceKey: 'Klucz urządzenia',
-        videoMemory: 'Pamięć wideo',
-        videoMemoryTip:
-          'Pamięć zarezerwowana na przechwytywanie wideo. Nie jest współdzielona z resztą systemu.',
-        videoMemoryGenerations_one: '{{count}} wcześniejsza sesja IronKVM zajmuje pamięć wideo',
-        videoMemoryGenerations_few: '{{count}} wcześniejsze sesje IronKVM zajmują pamięć wideo',
-        videoMemoryGenerations_many: '{{count}} wcześniejszych sesji IronKVM zajmuje pamięć wideo',
-        videoMemoryGenerations_other: '{{count}} wcześniejszej sesji IronKVM zajmuje pamięć wideo',
-        videoMemoryReboot: 'Uruchom ponownie, aby ją odzyskać.',
         community: 'Społeczność',
         hostname: 'Nazwa hosta',
         hostnameUpdated: 'Zaktualizowano nazwę hosta. Uruchom ponownie, aby zastosować.',
@@ -960,7 +952,30 @@ const pl = {
         title: 'Preferencje'
       },
       performance: {
-        title: 'Wydajność'
+        title: 'Wydajność',
+        memory: {
+          title: 'Pamięć',
+          description: 'RAM, swap i to, co z nich korzysta. Odświeżane co kilka sekund.',
+          ram: 'RAM',
+          of: '{{used}} z {{total}}',
+          available: '{{available}} dostępne',
+          availableLow: 'Dostępne tylko {{available}}. Usługi mogą zwolnić lub zostać zatrzymane.',
+          swap: 'Swap',
+          swapFile: 'Plik wymiany',
+          zram: 'Skompresowany swap',
+          zramRam: '{{ram}} w RAM',
+          consumers: 'Główni użytkownicy',
+          addons: 'Dodatki',
+          addonsTip: 'Grupa pamięci, w której działają Tailscale i NetBird, względem jej limitu.',
+          video: 'Pamięć wideo',
+          videoTip:
+            'Pamięć zarezerwowana na przechwytywanie wideo. Nie jest współdzielona z resztą systemu.',
+          videoGenerations_one: '{{count}} wcześniejsza sesja IronKVM zajmuje pamięć wideo',
+          videoGenerations_few: '{{count}} wcześniejsze sesje IronKVM zajmują pamięć wideo',
+          videoGenerations_many: '{{count}} wcześniejszych sesji IronKVM zajmuje pamięć wideo',
+          videoGenerations_other: '{{count}} wcześniejszej sesji IronKVM zajmuje pamięć wideo',
+          videoReboot: 'Uruchom ponownie, aby ją odzyskać.'
+        }
       },
       appearance: {
         thisBrowser: 'Ta przeglądarka',

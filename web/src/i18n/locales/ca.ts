@@ -937,13 +937,6 @@ const ca = {
         kernel: 'Versió del nucli',
         kernelTip: "Versió del nucli Linux que s'executa ara",
         deviceKey: 'Clau del dispositiu',
-        videoMemory: 'Memòria de vídeo',
-        videoMemoryTip:
-          'Memòria reservada per a la captura de vídeo. No es comparteix amb la resta del sistema.',
-        videoMemoryGenerations_one: '{{count}} sessió anterior de IronKVM reté memòria de vídeo',
-        videoMemoryGenerations_other:
-          '{{count}} sessions anteriors de IronKVM retenen memòria de vídeo',
-        videoMemoryReboot: 'Reinicieu per recuperar-la.',
         community: 'Comunitat',
         hostname: 'Nom del dispositiu',
         hostnameUpdated: 'Nom actualitzat. Reinicia per aplicar.',
@@ -967,7 +960,30 @@ const ca = {
         title: 'Preferències'
       },
       performance: {
-        title: 'Rendiment'
+        title: 'Rendiment',
+        memory: {
+          title: 'Memòria',
+          description: "RAM, intercanvi i què les fa servir. S'actualitza cada pocs segons.",
+          ram: 'RAM',
+          of: '{{used}} de {{total}}',
+          available: '{{available}} disponibles',
+          availableLow:
+            'Només {{available}} disponibles. Els serveis poden alentir-se o aturar-se.',
+          swap: 'Intercanvi',
+          swapFile: "Fitxer d'intercanvi",
+          zram: 'Intercanvi comprimit',
+          zramRam: '{{ram}} a la RAM',
+          consumers: 'Principals consumidors',
+          addons: 'Complements',
+          addonsTip: "El grup de memòria on s'executen Tailscale i NetBird, respecte al seu límit.",
+          video: 'Memòria de vídeo',
+          videoTip:
+            'Memòria reservada per a la captura de vídeo. No es comparteix amb la resta del sistema.',
+          videoGenerations_one: '{{count}} sessió anterior de IronKVM reté memòria de vídeo',
+          videoGenerations_other:
+            '{{count}} sessions anteriors de IronKVM retenen memòria de vídeo',
+          videoReboot: 'Reinicieu per recuperar-la.'
+        }
       },
       appearance: {
         thisBrowser: 'Aquest navegador',

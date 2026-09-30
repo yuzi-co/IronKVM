@@ -921,12 +921,6 @@ const cz = {
         kernel: 'Verze jádra',
         kernelTip: 'Verze aktuálně běžícího jádra Linuxu',
         deviceKey: 'Klíč zařízení',
-        videoMemory: 'Videopaměť',
-        videoMemoryTip: 'Paměť vyhrazená pro snímání videa. Není sdílena se zbytkem systému.',
-        videoMemoryGenerations_one: '{{count}} dřívější relace IronKVM drží videopaměť',
-        videoMemoryGenerations_few: '{{count}} dřívější relace IronKVM drží videopaměť',
-        videoMemoryGenerations_other: '{{count}} dřívějších relací IronKVM drží videopaměť',
-        videoMemoryReboot: 'Pro její uvolnění restartujte.',
         community: 'Komunita',
         hostname: 'Název hostitele',
         hostnameUpdated: 'Název hostitele byl aktualizován. Pro použití restartujte.',
@@ -950,7 +944,28 @@ const cz = {
         title: 'Předvolby'
       },
       performance: {
-        title: 'Výkon'
+        title: 'Výkon',
+        memory: {
+          title: 'Paměť',
+          description: 'RAM, swap a co je využívá. Aktualizuje se každých pár sekund.',
+          ram: 'RAM',
+          of: '{{used}} z {{total}}',
+          available: '{{available}} k dispozici',
+          availableLow: 'K dispozici jen {{available}}. Služby se mohou zpomalit nebo zastavit.',
+          swap: 'Swap',
+          swapFile: 'Swapovací soubor',
+          zram: 'Komprimovaný swap',
+          zramRam: '{{ram}} v RAM',
+          consumers: 'Hlavní spotřebitelé',
+          addons: 'Doplňky',
+          addonsTip: 'Paměťová skupina, ve které běží Tailscale a NetBird, vůči jejímu limitu.',
+          video: 'Videopaměť',
+          videoTip: 'Paměť vyhrazená pro snímání videa. Není sdílena se zbytkem systému.',
+          videoGenerations_one: '{{count}} dřívější relace IronKVM drží videopaměť',
+          videoGenerations_few: '{{count}} dřívější relace IronKVM drží videopaměť',
+          videoGenerations_other: '{{count}} dřívějších relací IronKVM drží videopaměť',
+          videoReboot: 'Pro její uvolnění restartujte.'
+        }
       },
       appearance: {
         thisBrowser: 'Tento prohlížeč',

@@ -918,12 +918,6 @@ const en = {
         kernel: 'Kernel Version',
         kernelTip: 'Release of the Linux kernel that is running now',
         deviceKey: 'Device Key',
-        videoMemory: 'Video Memory',
-        videoMemoryTip:
-          'Memory reserved for video capture. It is not shared with the rest of the system.',
-        videoMemoryGenerations_one: '{{count}} earlier IronKVM session is holding video memory',
-        videoMemoryGenerations_other: '{{count}} earlier IronKVM sessions are holding video memory',
-        videoMemoryReboot: 'Reboot to reclaim it.',
         community: 'Community',
         hostname: 'Hostname',
         hostnameUpdated: 'Hostname updated. Reboot to apply.',
@@ -947,7 +941,28 @@ const en = {
         title: 'Preferences'
       },
       performance: {
-        title: 'Performance'
+        title: 'Performance',
+        memory: {
+          title: 'Memory',
+          description: 'RAM, swap and what uses them. Updates every few seconds.',
+          ram: 'RAM',
+          of: '{{used}} of {{total}}',
+          available: '{{available}} available',
+          availableLow: 'Only {{available}} available. Services may slow down or be stopped.',
+          swap: 'Swap',
+          swapFile: 'Swap file',
+          zram: 'Compressed swap',
+          zramRam: '{{ram}} in RAM',
+          consumers: 'Main consumers',
+          addons: 'Add-ons',
+          addonsTip: 'The memory group Tailscale and NetBird run in, against its limit.',
+          video: 'Video Memory',
+          videoTip:
+            'Memory reserved for video capture. It is not shared with the rest of the system.',
+          videoGenerations_one: '{{count}} earlier IronKVM session is holding video memory',
+          videoGenerations_other: '{{count}} earlier IronKVM sessions are holding video memory',
+          videoReboot: 'Reboot to reclaim it.'
+        }
       },
       appearance: {
         thisBrowser: 'This browser',

@@ -130,6 +130,11 @@ export function getMemoryLimit() {
   return http.get('/api/vm/memory/limit');
 }
 
+// RAM, swap and the main consumers of memory
+export function getMemory() {
+  return http.get('/api/vm/memory');
+}
+
 // get ION carveout state
 export function getIon() {
   return http.get('/api/vm/ion');

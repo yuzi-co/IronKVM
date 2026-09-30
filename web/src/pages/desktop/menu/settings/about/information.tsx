@@ -8,7 +8,6 @@ import * as api from '@/api/vm.ts';
 
 import { SectionHeader } from '../components/section.tsx';
 import { Hostname } from './hostname.tsx';
-import { VideoMemory } from './video-memory.tsx';
 
 type IP = {
   name: string;
@@ -149,8 +148,6 @@ export const Information = () => {
 
         {/* An admin edits the hostname under Network; others only see it here. */}
         {account.role !== 'admin' && <Hostname />}
-
-        <VideoMemory />
       </div>
     </>
   );

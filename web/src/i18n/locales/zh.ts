@@ -889,10 +889,6 @@ const zh = {
         kernel: '内核版本',
         kernelTip: '当前运行的 Linux 内核版本',
         deviceKey: '设备码',
-        videoMemory: '视频内存',
-        videoMemoryTip: '为视频采集预留的内存，不与系统其他部分共享。',
-        videoMemoryGenerations_other: '之前的 {{count}} 个 IronKVM 会话仍占用着视频内存',
-        videoMemoryReboot: '重启以回收。',
         community: '社区',
         hostname: '主机名',
         hostnameUpdated: '主机名修改成功，重启后生效',
@@ -915,7 +911,26 @@ const zh = {
         title: '偏好设置'
       },
       performance: {
-        title: '性能'
+        title: '性能',
+        memory: {
+          title: '内存',
+          description: 'RAM、交换空间及其使用者。每隔几秒刷新一次。',
+          ram: 'RAM',
+          of: '{{used}} / {{total}}',
+          available: '可用 {{available}}',
+          availableLow: '仅剩 {{available}} 可用。服务可能变慢或被停止。',
+          swap: '交换空间',
+          swapFile: '交换文件',
+          zram: '压缩交换',
+          zramRam: '占用 RAM {{ram}}',
+          consumers: '主要占用者',
+          addons: '附加组件',
+          addonsTip: 'Tailscale 和 NetBird 所在内存组的用量及其上限。',
+          video: '视频内存',
+          videoTip: '为视频采集预留的内存，不与系统其他部分共享。',
+          videoGenerations_other: '之前的 {{count}} 个 IronKVM 会话仍占用着视频内存',
+          videoReboot: '重启以回收。'
+        }
       },
       appearance: {
         thisBrowser: '此浏览器',

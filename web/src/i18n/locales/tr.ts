@@ -924,11 +924,6 @@ const tr = {
         kernel: 'Çekirdek Sürümü',
         kernelTip: 'Şu anda çalışan Linux çekirdeğinin sürümü',
         deviceKey: 'Cihaz Anahtarı',
-        videoMemory: 'Video Belleği',
-        videoMemoryTip: 'Video yakalama için ayrılmış bellek. Sistemin geri kalanıyla paylaşılmaz.',
-        videoMemoryGenerations_one: '{{count}} önceki IronKVM oturumu video belleğini tutuyor',
-        videoMemoryGenerations_other: '{{count}} önceki IronKVM oturumu video belleğini tutuyor',
-        videoMemoryReboot: 'Geri kazanmak için yeniden başlatın.',
         community: 'Topluluk',
         hostname: 'Ana makine adı',
         hostnameUpdated: 'Hostname güncellendi. Uygulamak için yeniden başlatın.',
@@ -952,7 +947,28 @@ const tr = {
         title: 'Tercihler'
       },
       performance: {
-        title: 'Performans'
+        title: 'Performans',
+        memory: {
+          title: 'Bellek',
+          description: 'RAM, takas alanı ve bunları kullananlar. Birkaç saniyede bir güncellenir.',
+          ram: 'RAM',
+          of: '{{used}} / {{total}}',
+          available: '{{available}} kullanılabilir',
+          availableLow:
+            'Yalnızca {{available}} kullanılabilir. Hizmetler yavaşlayabilir veya durdurulabilir.',
+          swap: 'Takas alanı',
+          swapFile: 'Takas dosyası',
+          zram: 'Sıkıştırılmış takas',
+          zramRam: "RAM'de {{ram}}",
+          consumers: 'Başlıca tüketiciler',
+          addons: 'Eklentiler',
+          addonsTip: "Tailscale ve NetBird'ün çalıştığı bellek grubu, sınırına göre.",
+          video: 'Video Belleği',
+          videoTip: 'Video yakalama için ayrılmış bellek. Sistemin geri kalanıyla paylaşılmaz.',
+          videoGenerations_one: '{{count}} önceki IronKVM oturumu video belleğini tutuyor',
+          videoGenerations_other: '{{count}} önceki IronKVM oturumu video belleğini tutuyor',
+          videoReboot: 'Geri kazanmak için yeniden başlatın.'
+        }
       },
       appearance: {
         thisBrowser: 'Bu tarayıcı',

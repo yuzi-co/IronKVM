@@ -930,12 +930,6 @@ const id = {
         kernel: 'Versi Kernel',
         kernelTip: 'Rilis kernel Linux yang sedang berjalan',
         deviceKey: 'Kunci Perangkat',
-        videoMemory: 'Memori Video',
-        videoMemoryTip:
-          'Memori yang dicadangkan untuk penangkapan video. Memori ini tidak dibagi dengan bagian sistem lainnya.',
-        videoMemoryGenerations_other:
-          '{{count}} sesi IronKVM sebelumnya masih menahan memori video',
-        videoMemoryReboot: 'Mulai ulang untuk mengambilnya kembali.',
         community: 'Komunitas',
         hostname: 'Nama Host',
         hostnameUpdated: 'Nama host diperbarui. Nyalakan ulang untuk menerapkan.',
@@ -959,7 +953,28 @@ const id = {
         title: 'Preferensi'
       },
       performance: {
-        title: 'Performa'
+        title: 'Performa',
+        memory: {
+          title: 'Memori',
+          description: 'RAM, swap, dan apa yang memakainya. Diperbarui setiap beberapa detik.',
+          ram: 'RAM',
+          of: '{{used}} dari {{total}}',
+          available: '{{available}} tersedia',
+          availableLow: 'Hanya {{available}} tersedia. Layanan bisa melambat atau dihentikan.',
+          swap: 'Swap',
+          swapFile: 'Berkas swap',
+          zram: 'Swap terkompresi',
+          zramRam: '{{ram}} di RAM',
+          consumers: 'Pemakai utama',
+          addons: 'Add-on',
+          addonsTip: 'Grup memori tempat Tailscale dan NetBird berjalan, dibandingkan batasnya.',
+          video: 'Memori Video',
+          videoTip:
+            'Memori yang dicadangkan untuk penangkapan video. Memori ini tidak dibagi dengan bagian sistem lainnya.',
+          videoGenerations_other:
+            '{{count}} sesi IronKVM sebelumnya masih menahan memori video',
+          videoReboot: 'Mulai ulang untuk mengambilnya kembali.'
+        }
       },
       appearance: {
         thisBrowser: 'Browser ini',

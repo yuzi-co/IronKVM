@@ -922,11 +922,6 @@ const vi = {
         kernel: 'Phiên bản Kernel',
         kernelTip: 'Bản phát hành của kernel Linux đang chạy',
         deviceKey: 'Khóa Thiết bị',
-        videoMemory: 'Bộ nhớ video',
-        videoMemoryTip:
-          'Bộ nhớ dành riêng cho việc thu video. Nó không được chia sẻ với phần còn lại của hệ thống.',
-        videoMemoryGenerations_other: '{{count}} phiên IronKVM trước đó đang giữ bộ nhớ video',
-        videoMemoryReboot: 'Khởi động lại để thu hồi.',
         community: 'Cộng đồng',
         hostname: 'Tên máy chủ',
         hostnameUpdated: 'Đã cập nhật tên máy chủ. Khởi động lại để áp dụng.',
@@ -950,7 +945,27 @@ const vi = {
         title: 'Tùy chọn'
       },
       performance: {
-        title: 'Hiệu năng'
+        title: 'Hiệu năng',
+        memory: {
+          title: 'Bộ nhớ',
+          description: 'RAM, swap và những gì đang dùng chúng. Cập nhật vài giây một lần.',
+          ram: 'RAM',
+          of: '{{used}} / {{total}}',
+          available: 'Còn trống {{available}}',
+          availableLow: 'Chỉ còn trống {{available}}. Các dịch vụ có thể chậm lại hoặc bị dừng.',
+          swap: 'Swap',
+          swapFile: 'Tệp swap',
+          zram: 'Swap nén',
+          zramRam: '{{ram}} trong RAM',
+          consumers: 'Tiến trình dùng nhiều nhất',
+          addons: 'Tiện ích bổ sung',
+          addonsTip: 'Nhóm bộ nhớ mà Tailscale và NetBird chạy trong đó, so với giới hạn của nhóm.',
+          video: 'Bộ nhớ video',
+          videoTip:
+            'Bộ nhớ dành riêng cho việc thu video. Nó không được chia sẻ với phần còn lại của hệ thống.',
+          videoGenerations_other: '{{count}} phiên IronKVM trước đó đang giữ bộ nhớ video',
+          videoReboot: 'Khởi động lại để thu hồi.'
+        }
       },
       appearance: {
         thisBrowser: 'Trình duyệt này',
