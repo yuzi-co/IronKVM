@@ -1,8 +1,7 @@
 import { ChangeEvent, useRef, useState } from 'react';
-import { UploadOutlined } from '@ant-design/icons';
 import { Button, Divider, message, Popconfirm } from 'antd';
 import clsx from 'clsx';
-import { ChevronRightIcon, FileJsonIcon } from 'lucide-react';
+import { ChevronRightIcon, FileJsonIcon, UploadIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/script.ts';
@@ -134,7 +133,7 @@ export const Script = () => {
           ghost
           type="primary"
           size="small"
-          icon={<UploadOutlined />}
+          icon={<UploadIcon size={15} />}
           loading={isUploading}
           onClick={selectFile}
         >

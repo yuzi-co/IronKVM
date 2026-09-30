@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { KeyOutlined, UserSwitchOutlined } from '@ant-design/icons';
 import { Button, Card, Divider, Input } from 'antd';
+import { KeyRoundIcon, LogInIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/extensions/netbird.ts';
@@ -86,7 +86,7 @@ export const Login = ({ onSuccess }: LoginProps) => {
             />
             <Button
               type="primary"
-              icon={<KeyOutlined />}
+              icon={<KeyRoundIcon size={15} />}
               loading={loading === 'key'}
               disabled={!setupKey.trim() || loading === 'sso'}
               onClick={join}
@@ -100,7 +100,7 @@ export const Login = ({ onSuccess }: LoginProps) => {
           <Button
             size="large"
             shape="round"
-            icon={<UserSwitchOutlined />}
+            icon={<LogInIcon size={15} />}
             loading={loading === 'sso'}
             disabled={loading === 'key'}
             onClick={sso}

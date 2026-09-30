@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { CheckOutlined, KeyOutlined, LockOutlined, WifiOutlined } from '@ant-design/icons';
 import { Button, Form, Input } from 'antd';
+import { CheckIcon, KeyRoundIcon, LockIcon, WifiIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
 
@@ -117,7 +117,10 @@ export const Wifi = () => {
             </div>
 
             <Form.Item name="apPassword">
-              <Input.Password prefix={<KeyOutlined />} placeholder={t('wifi.ap.passPlaceholder')} />
+              <Input.Password
+                prefix={<KeyRoundIcon size={15} />}
+                placeholder={t('wifi.ap.passPlaceholder')}
+              />
             </Form.Item>
 
             <Form.Item>
@@ -168,7 +171,7 @@ export const Wifi = () => {
               }
             ]}
           >
-            <Input prefix={<WifiOutlined />} placeholder="SSID" />
+            <Input prefix={<WifiIcon size={15} />} placeholder="SSID" />
           </Form.Item>
 
           <Form.Item
@@ -182,7 +185,10 @@ export const Wifi = () => {
               }
             ]}
           >
-            <Input.Password prefix={<LockOutlined />} placeholder={t('wifi.passwordOptional')} />
+            <Input.Password
+              prefix={<LockIcon size={15} />}
+              placeholder={t('wifi.passwordOptional')}
+            />
           </Form.Item>
 
           <Form.Item>
@@ -190,7 +196,7 @@ export const Wifi = () => {
               <Button
                 className="w-full"
                 type="primary"
-                icon={<CheckOutlined />}
+                icon={<CheckIcon size={15} />}
                 disabled={state === 'done'}
                 onClick={finish}
               >

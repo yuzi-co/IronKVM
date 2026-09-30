@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { LoadingOutlined } from '@ant-design/icons';
 import { Button, Card, Modal, Spin } from 'antd';
+import { LoaderCircleIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/script';
@@ -54,7 +54,7 @@ export const Run = ({ script, setIsRunning }: RunProps) => {
     >
       {state === 'running' ? (
         <div className="flex h-[300px] flex-col items-center justify-center space-y-6">
-          <Spin indicator={<LoadingOutlined spin />} size="large" />
+          <Spin indicator={<LoaderCircleIcon size={32} className="animate-spin" />} size="large" />
           <span className="text-xs text-neutral-500">
             {t('script.waitLimit', { minutes: api.FOREGROUND_TIMEOUT_MINUTES })}
           </span>

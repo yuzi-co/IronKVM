@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import {
   Button,
   InputNumber,
@@ -13,7 +12,7 @@ import {
   Typography
 } from 'antd';
 import { useAtom, useSetAtom } from 'jotai';
-import { ScanSearchIcon } from 'lucide-react';
+import { PlusIcon, ScanSearchIcon, Trash2Icon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -266,7 +265,7 @@ export const OriginalResolution = () => {
                       danger
                       size="small"
                       aria-label={t('common.delete')}
-                      icon={<DeleteOutlined />}
+                      icon={<Trash2Icon size={15} />}
                       onMouseDown={(event) => {
                         event.preventDefault();
                         event.stopPropagation();
@@ -308,7 +307,7 @@ export const OriginalResolution = () => {
                         danger
                         size="small"
                         aria-label={t('common.delete')}
-                        icon={<DeleteOutlined />}
+                        icon={<Trash2Icon size={15} />}
                         onMouseDown={(event) => {
                           event.preventDefault();
                           event.stopPropagation();
@@ -330,7 +329,7 @@ export const OriginalResolution = () => {
               <Tooltip title={t('screen.controlRegion.addResolution')}>
                 <Button
                   aria-label={t('screen.controlRegion.addResolution')}
-                  icon={<PlusOutlined />}
+                  icon={<PlusIcon size={15} />}
                   onClick={() => setIsAddOpen(true)}
                 />
               </Tooltip>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/auth.ts';
-import { LockOutlined } from '@ant-design/icons';
 import { Button, Card, Form, Input } from 'antd';
+import { LockIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
@@ -83,7 +83,7 @@ export const Password = () => {
             rules={[{ required: true, message: t('auth.noEmptyPassword') }]}
           >
             <Input
-              prefix={<LockOutlined />}
+              prefix={<LockIcon size={15} />}
               type="password"
               autoComplete="current-password"
               placeholder={t('auth.placeholderCurrentPassword')}
@@ -98,7 +98,7 @@ export const Password = () => {
             ]}
           >
             <Input
-              prefix={<LockOutlined />}
+              prefix={<LockIcon size={15} />}
               type="password"
               autoComplete="new-password"
               placeholder={t('auth.placeholderPassword')}
@@ -113,7 +113,7 @@ export const Password = () => {
             ]}
           >
             <Input
-              prefix={<LockOutlined />}
+              prefix={<LockIcon size={15} />}
               type="password"
               autoComplete="new-password"
               placeholder={t('auth.placeholderPassword2')}

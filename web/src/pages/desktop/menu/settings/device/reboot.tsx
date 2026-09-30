@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { ReloadOutlined } from '@ant-design/icons';
 import { Button, message, Popconfirm } from 'antd';
+import { RotateCwIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { rebootAndReload } from '@/lib/reboot.ts';
@@ -35,7 +35,7 @@ export const Reboot = () => {
           size="large"
           shape="round"
           loading={isLoading}
-          icon={<ReloadOutlined />}
+          icon={<RotateCwIcon size={15} />}
         >
           {t('settings.device.reboot')}
         </Button>

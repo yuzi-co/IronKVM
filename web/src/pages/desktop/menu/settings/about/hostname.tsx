@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import { Button, Input, message } from 'antd';
-import { ClipboardPenIcon } from 'lucide-react';
+import { CheckIcon, ClipboardPenIcon, XIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/vm.ts';
@@ -87,7 +86,7 @@ export const Hostname = ({ editable = false }: { editable?: boolean }) => {
             <Button
               size="small"
               aria-label={t('common.save')}
-              icon={<CheckOutlined />}
+              icon={<CheckIcon size={15} />}
               disabled={!isValid}
               loading={isLoading}
               onClick={update}
@@ -95,7 +94,7 @@ export const Hostname = ({ editable = false }: { editable?: boolean }) => {
             <Button
               size="small"
               aria-label={t('common.cancel')}
-              icon={<CloseOutlined />}
+              icon={<XIcon size={15} />}
               onClick={() => setEditState('')}
             />
           </div>

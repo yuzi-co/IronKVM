@@ -1,5 +1,5 @@
-import { LogoutOutlined } from '@ant-design/icons';
 import { Button, Popconfirm } from 'antd';
+import { LogOutIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
@@ -35,7 +35,7 @@ export const Logout = () => {
         cancelText={t('settings.account.cancelBtn')}
         onConfirm={logout}
       >
-        <Button danger type="primary" size="large" shape="round" icon={<LogoutOutlined />}>
+        <Button danger type="primary" size="large" shape="round" icon={<LogOutIcon size={15} />}>
           {t('settings.account.logoutBtn')}
         </Button>
       </Popconfirm>

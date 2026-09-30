@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { LoadingOutlined, RocketOutlined, SmileOutlined } from '@ant-design/icons';
 import { Button, Divider, Popconfirm, Result, Spin } from 'antd';
+import { LoaderCircleIcon, RocketIcon, SmileIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/application.ts';
@@ -119,7 +119,10 @@ export const Update = ({ setIsLocked }: UpdateProps) => {
       <div className="flex min-h-[320px] flex-col justify-between">
         {status === 'loading' && (
           <div className="flex justify-center pt-24">
-            <Spin indicator={<LoadingOutlined spin />} size="large" />
+            <Spin
+              indicator={<LoaderCircleIcon size={32} className="animate-spin" />}
+              size="large"
+            />
           </div>
         )}
 
@@ -133,7 +136,7 @@ export const Update = ({ setIsLocked }: UpdateProps) => {
         {status === 'latest' && (
           <Result
             status="success"
-            icon={<SmileOutlined />}
+            icon={<SmileIcon size={72} />}
             title={currentVersion}
             subTitle={t('settings.update.isLatest')}
             extra={[
@@ -147,7 +150,7 @@ export const Update = ({ setIsLocked }: UpdateProps) => {
         {status === 'outdated' && (
           <Result
             status="warning"
-            icon={<RocketOutlined />}
+            icon={<RocketIcon size={72} />}
             title={`${currentVersion} -> ${latestVersion}`}
             subTitle={t('settings.update.available')}
             extra={[

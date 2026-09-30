@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { PauseCircleOutlined } from '@ant-design/icons';
 import { Button, Card, Result } from 'antd';
+import { CirclePauseIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { describeFailure } from '@/lib/feedback.ts';
@@ -40,7 +40,7 @@ export const Run = ({ vpn, blocked, onSuccess, onError }: RunProps) => {
   return (
     <Card>
       <Result
-        icon={<PauseCircleOutlined />}
+        icon={<CirclePauseIcon size={72} />}
         subTitle={t('settings.vpn.notRunning', { name: vpn.title })}
         extra={
           <Button key="run" type="primary" loading={isLoading} disabled={blocked} onClick={run}>

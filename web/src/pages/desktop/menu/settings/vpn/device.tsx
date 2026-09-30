@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { LogoutOutlined } from '@ant-design/icons';
 import { Button, Divider, Popconfirm, Switch } from 'antd';
+import { LogOutIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { describeFailure } from '@/lib/feedback.ts';
@@ -105,7 +105,7 @@ export const Device = ({ vpn, status, onChange, onError }: DeviceProps) => {
             type="primary"
             size="large"
             shape="round"
-            icon={<LogoutOutlined />}
+            icon={<LogOutIcon size={15} />}
             loading={isLogging}
           >
             {vpn.logoutLabel}

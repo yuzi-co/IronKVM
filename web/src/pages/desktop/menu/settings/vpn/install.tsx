@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { DownloadOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { Button, Card, Result } from 'antd';
+import { DownloadIcon, InfoIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { describeFailure } from '@/lib/feedback.ts';
@@ -52,7 +52,7 @@ export const Install = ({ vpn, blocked, setIsLocked, onSuccess, onError }: Insta
       <Result
         status="warning"
         title={t('settings.vpn.installFailed')}
-        icon={<InfoCircleOutlined />}
+        icon={<InfoIcon size={72} />}
         extra={
           <div className="flex flex-col items-center space-y-4">
             <Button onClick={() => setState('')}>{t('settings.vpn.retry')}</Button>
@@ -66,7 +66,7 @@ export const Install = ({ vpn, blocked, setIsLocked, onSuccess, onError }: Insta
   return (
     <Card>
       <Result
-        icon={<DownloadOutlined />}
+        icon={<DownloadIcon size={72} />}
         subTitle={t('settings.vpn.notInstall', { name: vpn.title })}
         extra={
           <Button
