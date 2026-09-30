@@ -858,36 +858,58 @@ uint8_t auto_try_res()
     return 0;
 }
 
+// The percentage on the "usage rate:" line of the carveout heap summary, which
+// reads, on this board:
+//
+//   Summary:
+//   [0] carveout heap size:78643200 bytes, used:31010816 bytes
+//   usage rate:40%, memory usage peak 31010816 bytes
+//
+// -1 when the line is not there or carries no number.
+int ion_usage_rate_from_summary(const char *text)
+{
+    static const char key[] = "usage rate:";
+    if(text == NULL){
+        return -1;
+    }
+    const char *p = strstr(text, key);
+    if(p == NULL){
+        return -1;
+    }
+    int rate = -1;
+    if(sscanf(p + sizeof(key) - 1, "%d", &rate) != 1 || rate < 0){
+        return -1;
+    }
+    return rate;
+}
+
 /* return :
  * 0 : error
  * 1 : out of mem
  * 2 : normal
+ *
+ * This used to popen "cat summary | grep | awk", which is a fork of a shell
+ * and three programs every 500ms on the one core for as long as the watchdog
+ * is on. It also misread the number: it took two characters after "rate:",
+ * so 100% read as 10 and never reached the threshold, and it tested for '&'
+ * where the text has '%'. A missing line left the buffer uninitialised.
 */
 uint8_t chack_ion()
 {
-    // cat /sys/kernel/debug/ion/cvi_carveout_heap_dump/summary | grep "usage rate:" | awk -F '[:%]' '{print $2}'
-	uint8_t RW_Data[10];
-    uint8_t ATOI_Data[3] = {0};
-    uint8_t ion_usage_rate;
-    char Cmd[150]={0};
-    // sprintf( Cmd, "cat /sys/kernel/debug/ion/cvi_carveout_heap_dump/summary | grep \"usage rate:\" | awk -F '[:%]' '{print $2}'");
-    sprintf( Cmd, "cat /sys/kernel/debug/ion/cvi_carveout_heap_dump/summary | grep \"usage rate:\" | awk '{print $2}'");
-    FILE* fp = popen( Cmd, "r" );
-    if ( NULL == fp )
-    {
-        pclose(fp);
+    // The rate is on the third line, well inside the first few hundred bytes.
+    // The rest of the file is a per-buffer table that can run long, and a
+    // short read of debugfs stops generating it.
+    char text[512];
+    FILE *fp = fopen(ion_summary_path, "r");
+    if(fp == NULL){
         return 0;
     }
-    fgets((char*)RW_Data, 8, fp);
-    pclose(fp);
-    RW_Data[8] = 0;
-    if (RW_Data[6] == '&') return 1;
-    else {
-        ATOI_Data[0] = RW_Data[5];
-        ATOI_Data[1] = RW_Data[6];
-    }
-    ion_usage_rate = atoi((char*)ATOI_Data);
+    size_t n = fread(text, 1, sizeof(text) - 1, fp);
+    fclose(fp);
+    text[n] = 0;
 
+    int ion_usage_rate = ion_usage_rate_from_summary(text);
+    if(ion_usage_rate < 0) return 0;
     if(ion_usage_rate >= 95) return 1;
     else return 2;
 }
