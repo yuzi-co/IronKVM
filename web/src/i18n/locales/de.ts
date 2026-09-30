@@ -1148,8 +1148,10 @@ const de = {
           free: '{{free}} von {{total}} frei',
           slots: 'Plätze: {{count}}',
           full: 'Nicht genug freie USB-Plätze. Schalte zuerst etwas anderes aus.',
-          inactive: 'Eingeschaltet, läuft aber nicht: Dem USB-Controller sind die Plätze ausgegangen. Schalte ein anderes Gerät aus, dann startet dieses sofort.',
-          explain: 'Der USB-Controller hat eine feste Zahl an Plätzen (eingehende Endpoints), und Tastatur und Maus belegen immer einige. Sind mehr Geräte an, als Platz haben, bleiben Tastatur und Maus, und der Rest wird ausgeschaltet.',
+          inactive:
+            'Eingeschaltet, läuft aber nicht: Dem USB-Controller sind die Plätze ausgegangen. Schalte ein anderes Gerät aus, dann startet dieses sofort.',
+          explain:
+            'Der USB-Controller hat eine feste Zahl an Plätzen (eingehende Endpoints), und Tastatur und Maus belegen immer einige. Sind mehr Geräte an, als Platz haben, bleiben Tastatur und Maus, und der Rest wird ausgeschaltet.',
           error: 'Das Gerät ist nicht erreichbar. Bitte erneut versuchen.',
           fitTogether: 'Diese passen zusammen: {{sets}}'
         },
@@ -1257,21 +1259,13 @@ const de = {
         }
       },
       vpn: {
-        connect: 'Verbinden',
-        connectDesc:
-          'Mit dem {{name}}-Netzwerk verbinden. Aus trennt die Verbindung, ohne den Dienst zu beenden.',
         kvmUrl: 'KVM-Adresse',
         moreTip: 'Weitere Aktionen',
-        restartTip: 'Neu starten',
-        stopTip: 'Stoppen',
         updateTip: 'Auf {{version}} aktualisieren',
         loading: 'Lädt...',
         okBtn: 'Ja',
         cancelBtn: 'Nein',
         restart: '{{name}} neu starten?',
-        stop: '{{name}} stoppen?',
-        stopDesc:
-          'Der Dienst wird jetzt gestoppt. „Beim Systemstart starten“ ist ein eigener Schalter und bleibt unverändert.',
         update: '{{name}} auf {{version}} aktualisieren?',
         updateDesc: 'Der Dienst wird neu gestartet, falls er läuft. Die Anmeldung bleibt erhalten.',
         notInstall: '{{name}} ist nicht installiert.',
@@ -1279,33 +1273,35 @@ const de = {
         installing: 'Wird installiert',
         installFailed: 'Installation fehlgeschlagen',
         retry: 'Erneut versuchen',
-        notRunning: '{{name}} läuft nicht. Starten Sie es, um fortzufahren.',
-        run: 'Starten',
-        boot: 'Beim Systemstart starten',
-        bootDesc: '{{name}} beim Hochfahren des KVM starten.',
-        control: 'Steuerungsserver',
         connected: 'Verbunden',
-        disconnected: 'Nicht verbunden',
+        connectedDesc:
+          'Ein verbindet mit dem {{name}}-Netzwerk. Aus trennt die Verbindung und beendet {{name}}, um Speicher freizugeben.',
+        connectAtBoot: 'Beim Systemstart verbinden',
+        connectAtBootDesc: 'Beim Hochfahren des KVM mit dem {{name}}-Netzwerk verbinden.',
+        restartService: 'Dienst neu starten',
+        needsLogin: 'Anmeldung nötig',
+        error: 'Fehler',
+        thisDevice: 'Dieses Gerät',
+        memoryOf: '{{used}} (Add-on-Limit {{limit}})',
+        memoryPressed:
+          'Die Speichergruppe der Add-ons ist fast am Limit. Swap zu aktivieren kann helfen.',
+        peersSummary: 'Peers: {{online}} von {{total}} online',
+        showOffline: 'Offline anzeigen ({{offline}})',
+        hideOffline: 'Offline ausblenden',
+        blocked:
+          '{{other}} ist eingeschaltet oder verbindet sich beim Systemstart. Es kann nur ein VPN gleichzeitig laufen: Schalten Sie bei {{other}} zuerst „Verbunden“ und „Beim Systemstart verbinden“ aus.',
         deviceName: 'Gerätename',
         deviceIP: 'Geräte-IP',
         account: 'Konto',
         version: 'Version',
         uptime: 'Laufzeit',
-        peers: 'Peers',
         noPeers: 'Noch keine Peers.',
         online: 'Online',
         offline: 'Offline',
         memory: 'Speicher',
-        daemonRss: 'Dienst',
-        group: 'Add-on-Gruppe',
-        high: 'gedrosselt über {{size}}',
-        max: 'vom Kernel beendet über {{size}}',
-        noGroup: 'Keine Speichergruppe für Add-ons auf diesem Board.',
         uninstall: '{{name}} deinstallieren',
         uninstallDesc:
           'Möchten Sie {{name}} wirklich deinstallieren? Die Anmeldung bleibt auf dem Board gespeichert.',
-        blocked:
-          '{{other}} läuft oder startet beim Systemstart. Es kann nur ein VPN gleichzeitig laufen: Stoppen Sie zuerst {{other}} und deaktivieren Sie dessen Start beim Systemstart.',
         swap: {
           title: 'Swap-Speicher',
           tip: 'Wenn dem Dienst der Speicher knapp wird, versuchen Sie, Swap zu aktivieren. Das geht unter „Einstellungen > Leistung“.'

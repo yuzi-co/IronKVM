@@ -1118,8 +1118,10 @@ const se = {
           free: '{{free}} av {{total}} lediga',
           slots: 'Platser: {{count}}',
           full: 'Inte tillräckligt med lediga USB-platser. Stäng av något annat först.',
-          inactive: 'På, men körs inte: USB-styrenheten fick slut på platser. Stäng av en annan enhet så startar den här direkt.',
-          explain: 'USB-styrenheten har ett fast antal platser (inkommande endpoints), och tangentbord och mus tar alltid några. Är fler enheter på än det finns plats för behålls tangentbord och mus, och resten stängs av.',
+          inactive:
+            'På, men körs inte: USB-styrenheten fick slut på platser. Stäng av en annan enhet så startar den här direkt.',
+          explain:
+            'USB-styrenheten har ett fast antal platser (inkommande endpoints), och tangentbord och mus tar alltid några. Är fler enheter på än det finns plats för behålls tangentbord och mus, och resten stängs av.',
           error: 'Kunde inte nå enheten. Försök igen.',
           fitTogether: 'Dessa ryms tillsammans: {{sets}}'
         },
@@ -1224,20 +1226,13 @@ const se = {
         }
       },
       vpn: {
-        connect: 'Anslut',
-        connectDesc: 'Gå med i {{name}}-nätverket. Av kopplar från utan att stoppa tjänsten.',
         kvmUrl: 'KVM-adress',
         moreTip: 'Fler åtgärder',
-        restartTip: 'Starta om',
-        stopTip: 'Stoppa',
         updateTip: 'Uppdatera till {{version}}',
         loading: 'Laddar...',
         okBtn: 'Ja',
         cancelBtn: 'Nej',
         restart: 'Starta om {{name}}?',
-        stop: 'Stoppa {{name}}?',
-        stopDesc:
-          'Tjänsten stoppas nu. Starta vid uppstart är en separat inställning och förblir som den är.',
         update: 'Uppdatera {{name}} till {{version}}?',
         updateDesc: 'Tjänsten startas om om den körs. Inloggningen behålls.',
         notInstall: '{{name}} är inte installerad.',
@@ -1245,33 +1240,35 @@ const se = {
         installing: 'Installerar',
         installFailed: 'Installationen misslyckades',
         retry: 'Försök igen',
-        notRunning: '{{name}} körs inte. Starta den för att fortsätta.',
-        run: 'Starta',
-        boot: 'Starta vid uppstart',
-        bootDesc: 'Starta {{name}} när KVM:en startar.',
-        control: 'Kontrollserver',
         connected: 'Ansluten',
-        disconnected: 'Inte ansluten',
+        connectedDesc:
+          'På ansluter till {{name}}-nätverket. Av kopplar från och stoppar {{name}} för att frigöra minne.',
+        connectAtBoot: 'Anslut vid uppstart',
+        connectAtBootDesc: 'Anslut till {{name}}-nätverket när KVM startar.',
+        restartService: 'Starta om tjänsten',
+        needsLogin: 'Kräver inloggning',
+        error: 'Fel',
+        thisDevice: 'Den här enheten',
+        memoryOf: '{{used}} (gräns för tillägg {{limit}})',
+        memoryPressed:
+          'Minnesgruppen för tillägg är nära sin gräns. Det kan hjälpa att slå på swap.',
+        peersSummary: 'Noder: {{online}} online av {{total}}',
+        showOffline: 'Visa offline ({{offline}})',
+        hideOffline: 'Dölj offline',
+        blocked:
+          '{{other}} är på eller ansluter vid uppstart. Bara ett VPN kan köras åt gången: stäng först av Ansluten och Anslut vid uppstart för {{other}}.',
         deviceName: 'Enhetsnamn',
         deviceIP: 'Enhetens IP',
         account: 'Konto',
         version: 'Version',
         uptime: 'Drifttid',
-        peers: 'Noder',
         noPeers: 'Inga noder ännu.',
         online: 'Online',
         offline: 'Offline',
         memory: 'Minne',
-        daemonRss: 'Tjänst',
-        group: 'Tilläggsgrupp',
-        high: 'stryps över {{size}}',
-        max: 'stoppas av kärnan över {{size}}',
-        noGroup: 'Ingen minnesgrupp för tillägg på det här kortet.',
         uninstall: 'Avinstallera {{name}}',
         uninstallDesc:
           'Är du säker på att du vill avinstallera {{name}}? Inloggningen blir kvar på kortet.',
-        blocked:
-          '{{other}} körs eller startar vid uppstart. Bara ett VPN kan köras åt gången: stoppa {{other}} och stäng av dess start vid uppstart först.',
         swap: {
           title: 'Swap-minne',
           tip: 'Om tjänsten får ont om minne kan du prova att slå på swap. Det ställs in under "Inställningar > Prestanda".'

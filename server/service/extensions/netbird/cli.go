@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"NanoKVM-Server/proto"
 	"NanoKVM-Server/service/extensions/addon"
 	"NanoKVM-Server/service/extensions/vpn"
 	"NanoKVM-Server/utils"
@@ -110,6 +111,16 @@ func (c *Cli) Status() (*NbStatus, error) {
 		return nil, err
 	}
 	return parseStatus(out)
+}
+
+// State is the daemon's state as the page shows it.
+func (c *Cli) State() (proto.VpnState, error) {
+	nb, err := c.Status()
+	if err != nil {
+		return "", err
+	}
+	st, err := toVpnStatus(nb)
+	return st.State, err
 }
 
 // Version is the installed CLI's version, the first line of `netbird version`.

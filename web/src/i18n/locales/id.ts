@@ -1120,8 +1120,10 @@ const id = {
           free: '{{free}} dari {{total}} kosong',
           slots: 'Slot: {{count}}',
           full: 'Slot USB kosong tidak cukup. Matikan hal lain terlebih dahulu.',
-          inactive: 'Aktif, tetapi tidak berjalan: pengontrol USB kehabisan slot. Matikan perangkat lain dan perangkat ini langsung berjalan.',
-          explain: 'Pengontrol USB memiliki jumlah slot (endpoint masuk) yang tetap, dan keyboard serta mouse selalu memakai sebagian. Jika perangkat yang aktif lebih banyak dari yang muat, keyboard dan mouse dipertahankan dan sisanya dimatikan.',
+          inactive:
+            'Aktif, tetapi tidak berjalan: pengontrol USB kehabisan slot. Matikan perangkat lain dan perangkat ini langsung berjalan.',
+          explain:
+            'Pengontrol USB memiliki jumlah slot (endpoint masuk) yang tetap, dan keyboard serta mouse selalu memakai sebagian. Jika perangkat yang aktif lebih banyak dari yang muat, keyboard dan mouse dipertahankan dan sisanya dimatikan.',
           error: 'Tidak dapat menjangkau perangkat. Coba lagi.',
           fitTogether: 'Yang muat bersamaan: {{sets}}'
         },
@@ -1227,21 +1229,13 @@ const id = {
         }
       },
       vpn: {
-        connect: 'Hubungkan',
-        connectDesc:
-          'Bergabung ke jaringan {{name}}. Mati memutus koneksi tanpa menghentikan layanan.',
         kvmUrl: 'Alamat KVM',
         moreTip: 'Tindakan lain',
-        restartTip: 'Mulai ulang',
-        stopTip: 'Hentikan',
         updateTip: 'Perbarui ke {{version}}',
         loading: 'Memuat...',
         okBtn: 'Ya',
         cancelBtn: 'Tidak',
         restart: 'Mulai ulang {{name}}?',
-        stop: 'Hentikan {{name}}?',
-        stopDesc:
-          'Daemon berhenti sekarang. Mulai saat boot adalah pengaturan terpisah dan tetap seperti semula.',
         update: 'Perbarui {{name}} ke {{version}}?',
         updateDesc: 'Daemon dimulai ulang jika sedang berjalan. Login tetap tersimpan.',
         notInstall: '{{name}} belum terinstal.',
@@ -1249,32 +1243,34 @@ const id = {
         installing: 'Menginstal',
         installFailed: 'Instalasi gagal',
         retry: 'Coba lagi',
-        notRunning: '{{name}} tidak berjalan. Jalankan untuk melanjutkan.',
-        run: 'Mulai',
-        boot: 'Mulai saat boot',
-        bootDesc: 'Jalankan {{name}} saat KVM melakukan boot.',
-        control: 'Server kontrol',
         connected: 'Terhubung',
-        disconnected: 'Tidak terhubung',
+        connectedDesc:
+          'Aktif bergabung ke jaringan {{name}}. Nonaktif memutus koneksi dan menghentikan {{name}} untuk membebaskan memori.',
+        connectAtBoot: 'Hubungkan saat boot',
+        connectAtBootDesc: 'Bergabung ke jaringan {{name}} saat KVM menyala.',
+        restartService: 'Mulai ulang layanan',
+        needsLogin: 'Perlu login',
+        error: 'Galat',
+        thisDevice: 'Perangkat ini',
+        memoryOf: '{{used}} (batas add-on {{limit}})',
+        memoryPressed:
+          'Grup memori add-on hampir mencapai batasnya. Mengaktifkan swap mungkin membantu.',
+        peersSummary: 'Peer: {{online}} online dari {{total}}',
+        showOffline: 'Tampilkan yang offline ({{offline}})',
+        hideOffline: 'Sembunyikan yang offline',
+        blocked:
+          '{{other}} aktif atau terhubung saat boot. Hanya satu VPN yang dapat berjalan dalam satu waktu: matikan dulu Terhubung dan Hubungkan saat boot pada {{other}}.',
         deviceName: 'Nama perangkat',
         deviceIP: 'IP perangkat',
         account: 'Akun',
         version: 'Versi',
         uptime: 'Waktu aktif',
-        peers: 'Peer',
         noPeers: 'Belum ada peer.',
         online: 'Online',
         offline: 'Offline',
         memory: 'Memori',
-        daemonRss: 'Daemon',
-        group: 'Grup add-on',
-        high: 'diperlambat di atas {{size}}',
-        max: 'dihentikan oleh kernel di atas {{size}}',
-        noGroup: 'Tidak ada grup memori add-on di papan ini.',
         uninstall: 'Copot {{name}}',
         uninstallDesc: 'Apakah Anda yakin ingin mencopot {{name}}? Login tetap tersimpan di papan.',
-        blocked:
-          '{{other}} sedang berjalan atau dimulai saat boot. Hanya satu VPN yang dapat berjalan dalam satu waktu: hentikan {{other}} dan nonaktifkan mulai saat boot-nya terlebih dahulu.',
         swap: {
           title: 'Memori swap',
           tip: 'Jika daemon kekurangan memori, coba aktifkan swap. Swap diatur di "Pengaturan > Performa".'

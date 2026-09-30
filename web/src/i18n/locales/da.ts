@@ -1114,8 +1114,10 @@ const da = {
           free: '{{free}} af {{total}} ledige',
           slots: 'Pladser: {{count}}',
           full: 'Ikke nok ledige USB-pladser. Slå noget andet fra først.',
-          inactive: 'Tændt, men kører ikke: USB-controlleren løb tør for pladser. Slå en anden enhed fra, så starter denne med det samme.',
-          explain: 'USB-controlleren har et fast antal pladser (indgående endpoints), og tastatur og mus optager altid nogle. Er flere enheder tændt, end der er plads til, beholdes tastatur og mus, og resten slås fra.',
+          inactive:
+            'Tændt, men kører ikke: USB-controlleren løb tør for pladser. Slå en anden enhed fra, så starter denne med det samme.',
+          explain:
+            'USB-controlleren har et fast antal pladser (indgående endpoints), og tastatur og mus optager altid nogle. Er flere enheder tændt, end der er plads til, beholdes tastatur og mus, og resten slås fra.',
           error: 'Kunne ikke nå enheden. Prøv igen.',
           fitTogether: 'Disse passer sammen: {{sets}}'
         },
@@ -1221,20 +1223,13 @@ const da = {
         }
       },
       vpn: {
-        connect: 'Forbind',
-        connectDesc: 'Tilslut {{name}}-netværket. Fra afbryder uden at stoppe tjenesten.',
         kvmUrl: 'KVM-adresse',
         moreTip: 'Flere handlinger',
-        restartTip: 'Genstart',
-        stopTip: 'Stop',
         updateTip: 'Opdater til {{version}}',
         loading: 'Indlæser...',
         okBtn: 'Ja',
         cancelBtn: 'Nej',
         restart: 'Genstart {{name}}?',
-        stop: 'Stop {{name}}?',
-        stopDesc:
-          'Dæmonen stopper nu. "Start ved opstart" er en separat kontakt og forbliver uændret.',
         update: 'Opdater {{name}} til {{version}}?',
         updateDesc: 'Dæmonen genstarter, hvis den kører. Login bevares.',
         notInstall: '{{name}} er ikke installeret.',
@@ -1242,33 +1237,35 @@ const da = {
         installing: 'Installerer',
         installFailed: 'Installation mislykkedes',
         retry: 'Prøv igen',
-        notRunning: '{{name}} kører ikke. Start den for at fortsætte.',
-        run: 'Start',
-        boot: 'Start ved opstart',
-        bootDesc: "Start {{name}}, når KVM'en starter op.",
-        control: 'Kontrolserver',
         connected: 'Forbundet',
-        disconnected: 'Ikke forbundet',
+        connectedDesc:
+          'Til forbinder til {{name}}-netværket. Fra afbryder og stopper {{name}} for at frigøre hukommelse.',
+        connectAtBoot: 'Forbind ved opstart',
+        connectAtBootDesc: 'Forbind til {{name}}-netværket, når KVM starter.',
+        restartService: 'Genstart tjenesten',
+        needsLogin: 'Kræver login',
+        error: 'Fejl',
+        thisDevice: 'Denne enhed',
+        memoryOf: '{{used}} (grænse for tilføjelser {{limit}})',
+        memoryPressed:
+          'Hukommelsesgruppen for tilføjelser er tæt på sin grænse. Det kan hjælpe at slå swap til.',
+        peersSummary: 'Peers: {{online}} online af {{total}}',
+        showOffline: 'Vis offline ({{offline}})',
+        hideOffline: 'Skjul offline',
+        blocked:
+          '{{other}} er slået til eller forbinder ved opstart. Kun én VPN kan køre ad gangen: slå først Forbundet og Forbind ved opstart fra for {{other}}.',
         deviceName: 'Enhedsnavn',
         deviceIP: 'Enhedens IP',
         account: 'Konto',
         version: 'Version',
         uptime: 'Oppetid',
-        peers: 'Peers',
         noPeers: 'Ingen peers endnu.',
         online: 'Online',
         offline: 'Offline',
         memory: 'Hukommelse',
-        daemonRss: 'Dæmon',
-        group: 'Tilføjelsesgruppe',
-        high: 'begrænses over {{size}}',
-        max: 'stoppes af kernen over {{size}}',
-        noGroup: 'Ingen hukommelsesgruppe til tilføjelser på dette kort.',
         uninstall: 'Afinstaller {{name}}',
         uninstallDesc:
           'Er du sikker på, at du vil afinstallere {{name}}? Login forbliver på kortet.',
-        blocked:
-          '{{other}} kører eller starter ved opstart. Der kan kun køre ét VPN ad gangen: stop {{other}} og slå først dens start ved opstart fra.',
         swap: {
           title: 'Swap-hukommelse',
           tip: 'Hvis dæmonen mangler hukommelse, så prøv at slå swap til. Det indstilles under "Indstillinger > Ydeevne".'

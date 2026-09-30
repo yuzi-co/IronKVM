@@ -152,6 +152,44 @@ func (s *Service) Down(c *gin.Context) {
 	rsp.OkRsp(c)
 }
 
+// Connect is the page's switch turned on: start the daemon if it is not
+// running, then bring the network up.
+func (s *Service) Connect(c *gin.Context) {
+	var rsp proto.Response
+
+	if !vpn.Guard(c, addon.NetBird, "connect failed", func() error {
+		return vpn.Connect(addon.NetBird, steps())
+	}) {
+		return
+	}
+	rsp.OkRsp(c)
+}
+
+// Disconnect is the switch turned off: down, then stop the daemon.
+func (s *Service) Disconnect(c *gin.Context) {
+	var rsp proto.Response
+
+	if err := vpn.Disconnect(addon.NetBird, steps()); err != nil {
+		log.Errorf("failed to disconnect netbird: %s", err)
+		rsp.ErrRsp(c, -1, vpn.Message("disconnect failed", err))
+		return
+	}
+	rsp.OkRsp(c)
+}
+
+// ConnectAtBoot brings NetBird up after a boot that started it; see
+// vpn.ConnectAtBoot.
+func ConnectAtBoot() {
+	if isInstalled() {
+		vpn.ConnectAtBoot(addon.NetBird, steps())
+	}
+}
+
+func steps() vpn.Steps {
+	cli := NewCli()
+	return vpn.Steps{Start: cli.Start, Stop: cli.Stop, Up: cli.Up, Down: cli.Down, State: cli.State}
+}
+
 // Login joins with {setupKey}, or with an empty body starts an SSO login and
 // returns its URL. The key is never logged.
 func (s *Service) Login(c *gin.Context) {

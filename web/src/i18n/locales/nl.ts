@@ -1132,8 +1132,10 @@ const nl = {
           free: '{{free}} van {{total}} vrij',
           slots: 'Plaatsen: {{count}}',
           full: 'Niet genoeg vrije USB-plaatsen. Zet eerst iets anders uit.',
-          inactive: 'Aan, maar draait niet: de USB-controller heeft geen plaatsen meer. Zet een ander apparaat uit en dit start meteen.',
-          explain: 'De USB-controller heeft een vast aantal plaatsen (inkomende endpoints), en toetsenbord en muis nemen er altijd een paar. Staan er meer apparaten aan dan er passen, dan blijven toetsenbord en muis en gaat de rest uit.',
+          inactive:
+            'Aan, maar draait niet: de USB-controller heeft geen plaatsen meer. Zet een ander apparaat uit en dit start meteen.',
+          explain:
+            'De USB-controller heeft een vast aantal plaatsen (inkomende endpoints), en toetsenbord en muis nemen er altijd een paar. Staan er meer apparaten aan dan er passen, dan blijven toetsenbord en muis en gaat de rest uit.',
           error: 'Kan het apparaat niet bereiken. Probeer het opnieuw.',
           fitTogether: 'Deze passen samen: {{sets}}'
         },
@@ -1239,21 +1241,13 @@ const nl = {
         }
       },
       vpn: {
-        connect: 'Verbinden',
-        connectDesc:
-          'Verbind met het {{name}}-netwerk. Uit verbreekt de verbinding zonder de dienst te stoppen.',
         kvmUrl: 'KVM-adres',
         moreTip: 'Meer acties',
-        restartTip: 'Herstarten',
-        stopTip: 'Stoppen',
         updateTip: 'Bijwerken naar {{version}}',
         loading: 'Laden...',
         okBtn: 'Ja',
         cancelBtn: 'Nee',
         restart: '{{name}} opnieuw starten?',
-        stop: '{{name}} stoppen?',
-        stopDesc:
-          'De daemon stopt nu. "Starten bij opstarten" is een aparte schakelaar en blijft zoals hij is.',
         update: '{{name}} bijwerken naar {{version}}?',
         updateDesc: 'De daemon herstart als deze draait. De aanmelding blijft behouden.',
         notInstall: '{{name}} is niet geïnstalleerd.',
@@ -1261,33 +1255,35 @@ const nl = {
         installing: 'Installeren',
         installFailed: 'Installatie mislukt',
         retry: 'Opnieuw proberen',
-        notRunning: '{{name}} draait niet. Start het om verder te gaan.',
-        run: 'Starten',
-        boot: 'Starten bij opstarten',
-        bootDesc: '{{name}} starten wanneer de KVM opstart.',
-        control: 'Controleserver',
         connected: 'Verbonden',
-        disconnected: 'Niet verbonden',
+        connectedDesc:
+          'Aan verbindt met het {{name}}-netwerk. Uit verbreekt de verbinding en stopt {{name}} om geheugen vrij te maken.',
+        connectAtBoot: 'Verbinden bij opstarten',
+        connectAtBootDesc: 'Verbinden met het {{name}}-netwerk wanneer de KVM opstart.',
+        restartService: 'Dienst herstarten',
+        needsLogin: 'Inloggen vereist',
+        error: 'Fout',
+        thisDevice: 'Dit apparaat',
+        memoryOf: '{{used}} (limiet add-ons {{limit}})',
+        memoryPressed:
+          'De geheugengroep van de add-ons zit dicht bij de limiet. Swap inschakelen kan helpen.',
+        peersSummary: 'Peers: {{online}} van {{total}} online',
+        showOffline: 'Offline tonen ({{offline}})',
+        hideOffline: 'Offline verbergen',
+        blocked:
+          '{{other}} staat aan of verbindt bij opstarten. Er kan maar één VPN tegelijk draaien: zet eerst Verbonden en Verbinden bij opstarten uit voor {{other}}.',
         deviceName: 'Apparaatnaam',
         deviceIP: 'Apparaat-IP',
         account: 'Account',
         version: 'Versie',
         uptime: 'Uptime',
-        peers: 'Peers',
         noPeers: 'Nog geen peers.',
         online: 'Online',
         offline: 'Offline',
         memory: 'Geheugen',
-        daemonRss: 'Daemon',
-        group: 'Add-ongroep',
-        high: 'afgeremd boven {{size}}',
-        max: 'gestopt door de kernel boven {{size}}',
-        noGroup: 'Geen geheugengroep voor add-ons op dit bord.',
         uninstall: '{{name}} verwijderen',
         uninstallDesc:
           'Weet u zeker dat u {{name}} wilt verwijderen? De aanmelding blijft op het bord bewaard.',
-        blocked:
-          '{{other}} draait of start bij het opstarten. Er kan maar één VPN tegelijk draaien: stop eerst {{other}} en schakel het starten bij opstarten ervan uit.',
         swap: {
           title: 'Swapgeheugen',
           tip: 'Als de daemon te weinig geheugen heeft, probeer dan swap in te schakelen. Dat stelt u in bij "Instellingen > Prestaties".'

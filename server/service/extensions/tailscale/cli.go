@@ -1,10 +1,12 @@
 package tailscale
 
 import (
+	"fmt"
 	"os/exec"
 	"strings"
 	"time"
 
+	"NanoKVM-Server/proto"
 	"NanoKVM-Server/service/extensions/addon"
 	"NanoKVM-Server/service/extensions/vpn"
 	"NanoKVM-Server/utils"
@@ -61,6 +63,19 @@ func (c *Cli) Status() (*TsStatus, error) {
 		return nil, err
 	}
 	return parseStatus(output)
+}
+
+// State is the daemon's state as the page shows it.
+func (c *Cli) State() (proto.VpnState, error) {
+	ts, err := c.Status()
+	if err != nil {
+		return "", err
+	}
+	st, ok := StateMap[ts.BackendState]
+	if !ok {
+		return "", fmt.Errorf("unknown tailscale state: %s", ts.BackendState)
+	}
+	return st, nil
 }
 
 func (c *Cli) Login() (string, error) {

@@ -37,11 +37,11 @@ export type VpnApi = {
   install: () => Promise<Rsp>;
   uninstall: () => Promise<Rsp>;
   getStatus: () => Promise<Rsp>;
-  start: () => Promise<Rsp>;
-  stop: () => Promise<Rsp>;
+  // Start the daemon if needed, then bring the network up.
+  connect: () => Promise<Rsp>;
+  // Bring the network down, then stop the daemon.
+  disconnect: () => Promise<Rsp>;
   restart: () => Promise<Rsp>;
-  up: () => Promise<Rsp>;
-  down: () => Promise<Rsp>;
   logout: () => Promise<Rsp>;
   setBoot: (enabled: boolean) => Promise<Rsp>;
   getUpdate: () => Promise<Rsp>;

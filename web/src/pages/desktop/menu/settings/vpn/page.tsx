@@ -8,12 +8,13 @@ import { useStableCallback } from '@/hooks/useStableCallback.ts';
 
 import { usePoll } from '../components/use-poll.ts';
 import { Boot } from './boot.tsx';
+import { Connection } from './connection.tsx';
 import { Device } from './device.tsx';
 import { ErrorDetail } from './error-detail.tsx';
 import { Header } from './header.tsx';
 import { Install } from './install.tsx';
 import { Notice } from './notice.tsx';
-import { Run } from './run.tsx';
+import { Peers } from './peers.tsx';
 import type { Status, VpnInfo } from './types.ts';
 
 const statusPollMs = 10 * 1000;
@@ -23,6 +24,12 @@ type VpnPageProps = {
   setIsLocked: (isLocked: boolean) => void;
 };
 
+// How a status request is made. load blanks the page with a spinner, as on
+// the first visit; refresh follows an action and always runs; poll is the
+// timer's, which never overlaps another request and never shows an error
+// over one the operator is reading.
+type Fetch = 'load' | 'refresh' | 'poll';
+
 // VpnPage is the settings page of Tailscale and of NetBird. Each gives it its
 // API module and its login form; the rest is the same for both.
 export const VpnPage = ({ vpn, setIsLocked }: VpnPageProps) => {
@@ -30,35 +37,38 @@ export const VpnPage = ({ vpn, setIsLocked }: VpnPageProps) => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<Status>();
+  const [failed, setFailed] = useState(false);
   const [errMsg, setErrMsg] = useState('');
   const isPolling = useRef(false);
 
-  // quiet asks without the loading screen: the poll must not blank the page
-  // every few seconds, nor wipe an error the operator is reading.
-  const fetchStatus = useStableCallback((quiet: boolean) => {
-    // A poll never overlaps another request; an action's refresh always runs.
-    if (isLoading || (quiet && isPolling.current)) return;
-    if (quiet) isPolling.current = true;
-    else setIsLoading(true);
+  const fetchStatus = useStableCallback((how: Fetch) => {
+    if (isLoading || (how === 'poll' && isPolling.current)) return;
+    if (how === 'poll') isPolling.current = true;
+    if (how === 'load') setIsLoading(true);
+
+    const fail = (msg: string) => {
+      setFailed(true);
+      if (how !== 'poll') setErrMsg(msg);
+    };
 
     vpn.api
       .getStatus()
       .then((rsp) => {
         if (rsp.code !== 0) {
-          if (!quiet) setErrMsg(describeFailure(rsp));
+          fail(describeFailure(rsp));
           return;
         }
+        setFailed(false);
         setStatus(rsp.data);
       })
-      .catch((err) => {
-        if (!quiet) setErrMsg(describeFailure(err));
-      })
+      .catch((err) => fail(describeFailure(err)))
       .finally(() => {
-        if (quiet) isPolling.current = false;
-        else setIsLoading(false);
+        if (how === 'poll') isPolling.current = false;
+        if (how === 'load') setIsLoading(false);
       });
   });
-  const getStatus = useStableCallback(() => fetchStatus(false));
+  const getStatus = useStableCallback(() => fetchStatus('load'));
+  const refresh = useStableCallback(() => fetchStatus('refresh'));
 
   useEffect(() => {
     getStatus();
@@ -67,18 +77,20 @@ export const VpnPage = ({ vpn, setIsLocked }: VpnPageProps) => {
   // The address, peers and connection change on their own, so keep them
   // current while the page is open. Not while installing: that has its own
   // progress and holds the page.
-  usePoll(() => fetchStatus(true), statusPollMs, !!status && status.state !== 'notInstall');
+  usePoll(() => fetchStatus('poll'), statusPollMs, !!status && status.state !== 'notInstall');
 
   const blocked = !!status?.blockedBy;
-  const installed = !!status && status.state !== 'notInstall';
+  const state = status?.state;
+  const installed = !!status && state !== 'notInstall';
 
   return (
     <>
       <Header
         vpn={vpn}
-        state={status?.state}
+        state={state}
+        failed={failed}
         setIsLocked={setIsLocked}
-        onChange={getStatus}
+        onChange={refresh}
         onError={setErrMsg}
       />
       <Divider className="opacity-50" />
@@ -92,7 +104,7 @@ export const VpnPage = ({ vpn, setIsLocked }: VpnPageProps) => {
         <>
           <Notice blockedBy={status?.blockedBy ?? ''} />
 
-          {status?.state === 'notInstall' && (
+          {state === 'notInstall' && (
             <Install
               vpn={vpn}
               blocked={blocked}
@@ -102,25 +114,32 @@ export const VpnPage = ({ vpn, setIsLocked }: VpnPageProps) => {
             />
           )}
 
-          {status?.state === 'notRunning' && (
-            <Run vpn={vpn} blocked={blocked} onSuccess={getStatus} onError={setErrMsg} />
-          )}
-
-          {status?.state === 'notLogin' && vpn.renderLogin(getStatus)}
-
-          {(status?.state === 'stopped' || status?.state === 'running') && (
-            <Device vpn={vpn} status={status} onChange={getStatus} onError={setErrMsg} />
-          )}
-
           {installed && status && (
-            <div className="pt-6">
+            <div className="flex flex-col space-y-6 pt-5">
+              <Connection
+                vpn={vpn}
+                status={status}
+                blocked={blocked}
+                onChange={refresh}
+                onError={setErrMsg}
+              />
               <Boot
                 vpn={vpn}
                 enabled={status.bootEnabled}
                 blocked={blocked}
-                onChange={getStatus}
+                onChange={refresh}
                 onError={setErrMsg}
               />
+
+              {state === 'notLogin' && vpn.renderLogin(refresh)}
+
+              {(state === 'stopped' || state === 'running') && (
+                <>
+                  <Divider className="my-0!" />
+                  <Device status={status} />
+                  <Peers peers={status.peers ?? []} />
+                </>
+              )}
             </div>
           )}
 

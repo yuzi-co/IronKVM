@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { describeFailure } from '@/lib/feedback.ts';
 
 import { ErrorDetail } from './error-detail.tsx';
+import { MenuRow } from './menu-row.tsx';
 import type { VpnInfo } from './types.ts';
 
 type UninstallProps = {
@@ -50,16 +51,14 @@ export const Uninstall = ({ vpn, onSuccess }: UninstallProps) => {
 
   return (
     <>
-      <button
-        type="button"
-        className="flex h-[30px] cursor-pointer items-center space-x-1 rounded p-0 px-2 py-1 text-neutral-300 hover:bg-neutral-700/70"
+      <MenuRow
+        icon={<Trash2Icon size={18} />}
+        label={t('settings.vpn.uninstall', { name: vpn.title })}
         onClick={() => {
           setErrMsg('');
           setIsModalOpen(true);
         }}
-      >
-        <span>{t('settings.vpn.uninstall', { name: vpn.title })}</span>
-      </button>
+      />
 
       <Modal
         title={title}

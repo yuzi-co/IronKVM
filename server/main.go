@@ -14,6 +14,8 @@ import (
 	"NanoKVM-Server/middleware"
 	"NanoKVM-Server/router"
 	"NanoKVM-Server/service/application"
+	"NanoKVM-Server/service/extensions/netbird"
+	"NanoKVM-Server/service/extensions/tailscale"
 	"NanoKVM-Server/service/hid"
 	"NanoKVM-Server/service/ion"
 	"NanoKVM-Server/service/stream/webrtc"
@@ -95,6 +97,13 @@ func initialize() {
 	// usb_watchdog.go, which also says why the escalation stops short of
 	// restart_phy.
 	hid.StartUSBWatchdog()
+
+	// Connect at boot means connected. The boot scripts only start the
+	// daemons, which can remember a disconnect; these bring the network up
+	// once the daemon answers. Each returns at once unless the board has only
+	// just booted and the VPN connects at boot.
+	go tailscale.ConnectAtBoot()
+	go netbird.ConnectAtBoot()
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)

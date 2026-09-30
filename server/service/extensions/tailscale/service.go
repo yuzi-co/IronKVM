@@ -182,6 +182,48 @@ func (s *Service) Down(c *gin.Context) {
 	log.Debugf("run tailscale down successfully")
 }
 
+// Connect is the page's switch turned on: start the daemon if it is not
+// running, then bring the network up.
+func (s *Service) Connect(c *gin.Context) {
+	var rsp proto.Response
+
+	if !vpn.Guard(c, addon.Tailscale, "connect failed", func() error {
+		return vpn.Connect(addon.Tailscale, steps())
+	}) {
+		return
+	}
+
+	rsp.OkRsp(c)
+	log.Debugf("tailscale connect successfully")
+}
+
+// Disconnect is the switch turned off: down, then stop the daemon.
+func (s *Service) Disconnect(c *gin.Context) {
+	var rsp proto.Response
+
+	if err := vpn.Disconnect(addon.Tailscale, steps()); err != nil {
+		log.Errorf("failed to disconnect tailscale: %s", err)
+		rsp.ErrRsp(c, -1, vpn.Message("disconnect failed", err))
+		return
+	}
+
+	rsp.OkRsp(c)
+	log.Debugf("tailscale disconnect successfully")
+}
+
+// ConnectAtBoot brings Tailscale up after a boot that started it; see
+// vpn.ConnectAtBoot.
+func ConnectAtBoot() {
+	if isInstalled() {
+		vpn.ConnectAtBoot(addon.Tailscale, steps())
+	}
+}
+
+func steps() vpn.Steps {
+	cli := NewCli()
+	return vpn.Steps{Start: cli.Start, Stop: cli.Stop, Up: cli.Up, Down: cli.Down, State: cli.State}
+}
+
 func (s *Service) Login(c *gin.Context) {
 	var rsp proto.Response
 
