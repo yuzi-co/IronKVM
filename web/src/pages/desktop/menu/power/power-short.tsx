@@ -24,7 +24,7 @@ export const PowerShort = ({ showConfirm, isLoading, setIsLoading }: PowerShortP
       onPress={power}
       description={t('power.powerShortDesc')}
     >
-      <PowerIcon size={16} />
+      <PowerIcon size={18} />
       <span>{t('power.powerShort')}</span>
     </PowerButton>
   );

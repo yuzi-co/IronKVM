@@ -93,7 +93,7 @@ export const Information = () => {
               className="cursor-pointer text-neutral-500"
               placement="right"
             >
-              <CircleHelpIcon size={15} />
+              <CircleHelpIcon className="text-neutral-500" size={14} />
             </Tooltip>
           </div>
 
@@ -111,7 +111,7 @@ export const Information = () => {
               className="cursor-pointer text-neutral-500"
               placement="right"
             >
-              <CircleHelpIcon size={15} />
+              <CircleHelpIcon className="text-neutral-500" size={14} />
             </Tooltip>
           </div>
 
@@ -127,7 +127,7 @@ export const Information = () => {
               className="cursor-pointer text-neutral-500"
               placement="right"
             >
-              <CircleHelpIcon size={15} />
+              <CircleHelpIcon className="text-neutral-500" size={14} />
             </Tooltip>
           </div>
 

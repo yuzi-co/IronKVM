@@ -236,7 +236,7 @@ export const Wol = () => {
                     className="text-neutral-400 hover:bg-neutral-700/80"
                     onClick={() => toggleShow(item.mac)}
                   >
-                    {item.isShow ? <EyeClosed size={16} /> : <Eye size={16} />}
+                    {item.isShow ? <EyeClosed size={15} /> : <Eye size={15} />}
                   </IconButton>
                 )}
                 {isAdmin && (
@@ -245,7 +245,7 @@ export const Wol = () => {
                     className="text-neutral-400 hover:bg-neutral-700"
                     onClick={() => editMac(item.mac, item.isEdit)}
                   >
-                    <Pencil size={16} />
+                    <Pencil size={15} />
                   </IconButton>
                 )}
                 <IconButton
@@ -253,7 +253,7 @@ export const Wol = () => {
                   className="text-green-500 hover:bg-neutral-700/80"
                   onClick={() => wake(item.mac)}
                 >
-                  <SendIcon size={16} />
+                  <SendIcon size={15} />
                 </IconButton>
                 {isAdmin && (
                   <Popconfirm
@@ -268,7 +268,7 @@ export const Wol = () => {
                       label={t('wol.delete')}
                       className="text-red-500 hover:bg-neutral-700"
                     >
-                      <Trash2Icon size={16} />
+                      <Trash2Icon size={15} />
                     </IconButton>
                   </Popconfirm>
                 )}

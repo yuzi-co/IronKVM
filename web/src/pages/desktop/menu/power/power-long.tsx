@@ -33,7 +33,7 @@ export const PowerLong = ({ isLoading, setIsLoading }: PowerLongProps) => {
         onPress={power}
         description={t('power.powerLongDesc')}
       >
-        <CirclePowerIcon size={16} />
+        <CirclePowerIcon size={18} />
         <span>{t('power.powerLong')}</span>
         <div className="flex h-full items-start text-xs text-neutral-500">{`${duration}s`}</div>
       </PowerButton>

@@ -33,7 +33,7 @@ export const Direction = () => {
           onClick={() => update(direction.value)}
         >
           <div className="flex h-[16px] w-[16px] items-end text-blue-500">
-            {direction.value === scrollDirection && <CheckIcon strokeWidth={3} size={16} />}
+            {direction.value === scrollDirection && <CheckIcon size={14} />}
           </div>
           <span>{direction.name}</span>
         </button>

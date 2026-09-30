@@ -59,7 +59,7 @@ export const Tips = () => {
         className="flex cursor-pointer items-center space-x-1 p-0 text-neutral-500 hover:text-blue-500"
         onClick={() => setIsModalOpen(true)}
       >
-        <CircleHelpIcon size={16} />
+        <CircleHelpIcon size={14} />
       </button>
 
       <Modal

@@ -25,7 +25,7 @@ export const Reset = ({ isLoading, setIsLoading }: ResetProps) => {
       onPress={reset}
       description={t('power.resetDesc')}
     >
-      <RotateCcwIcon size={16} />
+      <RotateCcwIcon size={18} />
       <span>{t('power.reset')}</span>
     </PowerButton>
   );

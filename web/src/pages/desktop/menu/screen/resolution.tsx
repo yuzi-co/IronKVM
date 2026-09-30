@@ -36,7 +36,7 @@ export const Resolution = () => {
           onClick={() => update(res)}
         >
           <div className="flex h-[14px] w-[20px] items-end text-blue-500">
-            {res.height === resolution?.height && <CheckIcon size={15} />}
+            {res.height === resolution?.height && <CheckIcon size={14} />}
           </div>
 
           {res.height === 0 ? (
@@ -47,7 +47,7 @@ export const Resolution = () => {
                 placement="right"
                 overlayInnerStyle={{ width: '300px' }}
               >
-                <CircleHelpIcon size={14} />
+                <CircleHelpIcon className="text-neutral-500" size={14} />
               </Tooltip>
             </div>
           ) : (

@@ -159,7 +159,7 @@ export const OcrDialog = ({
         </Button>
         <Button
           type="primary"
-          icon={<CopyIcon size={16} />}
+          icon={<CopyIcon size={15} />}
           disabled={state.phase !== 'done' || !state.text}
           onClick={copy}
         >

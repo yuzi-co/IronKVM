@@ -92,7 +92,7 @@ export const SerialPort = () => {
         className="flex h-[28px] w-full cursor-pointer items-center space-x-1 rounded p-0 px-2 py-1 text-left select-none hover:bg-neutral-700/70"
         onClick={openModal}
       >
-        <SquareTerminalIcon size={14} />
+        <SquareTerminalIcon size={18} />
         <span>{t('terminal.serial')}</span>
       </button>
 

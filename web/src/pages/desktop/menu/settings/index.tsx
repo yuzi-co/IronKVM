@@ -441,7 +441,7 @@ export const Settings = () => {
                 value={query}
                 placeholder={t('settings.nav.search')}
                 aria-label={t('settings.nav.search')}
-                prefix={<SearchIcon size={14} className="text-neutral-500" />}
+                prefix={<SearchIcon size={15} className="text-neutral-500" />}
                 onChange={(e) => setQuery(e.target.value)}
                 onPressEnter={() => matches?.[0] && changeTab(matches[0].id)}
               />

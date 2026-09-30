@@ -62,7 +62,7 @@ export const Drives = ({ drives, diskRo, setDiskRo, onDrivesChanged }: DrivesPro
           return (
             <div key={drive.id} className="flex flex-col space-y-1">
               <div className="flex items-center space-x-2">
-                <Icon size={16} />
+                <Icon size={18} />
                 <span className="w-[48px]">{t(`image.${drive.id}`)}</span>
                 <span
                   className={clsx(

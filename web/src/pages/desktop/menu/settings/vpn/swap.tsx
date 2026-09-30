@@ -25,7 +25,7 @@ export const Swap = () => {
           placement="top"
           styles={{ root: { maxWidth: '400px' } }}
         >
-          <CircleHelpIcon size={15} />
+          <CircleHelpIcon className="text-neutral-500" size={14} />
         </Tooltip>
       </div>
 

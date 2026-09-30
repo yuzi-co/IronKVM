@@ -253,7 +253,7 @@ export const Recorder = ({
                     className="flex size-[20px] cursor-pointer items-center justify-center rounded-xs p-0 text-neutral-500 hover:text-red-500"
                     onClick={() => delShortcut(shortcut)}
                   >
-                    <Trash2Icon size={16} />
+                    <Trash2Icon size={15} />
                   </button>
                 </div>
               ))}

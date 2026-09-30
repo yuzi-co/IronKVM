@@ -51,7 +51,7 @@ export const MediaKeys = () => {
               )}
               onClick={disabled ? undefined : () => sendKey('consumer', usage)}
             >
-              <Icon size={16} />
+              <Icon size={18} />
             </button>
           </Tooltip>
         ))}

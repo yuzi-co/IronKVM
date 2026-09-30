@@ -52,7 +52,7 @@ export const HostPower = ({ showConfirm }: HostPowerProps) => {
         )}
         onClick={disabled || (showConfirm && confirm) ? undefined : action}
       >
-        <Icon size={16} />
+        <Icon size={18} />
         <span>{label}</span>
       </button>
     );

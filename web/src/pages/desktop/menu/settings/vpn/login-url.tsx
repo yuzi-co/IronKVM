@@ -85,12 +85,12 @@ export const LoginUrl = ({ url, period, getStatus, onSuccess }: LoginUrlProps) =
       </div>
 
       <div className="flex items-center space-x-2">
-        <Button icon={<CopyIcon size={14} />} onClick={copy}>
+        <Button icon={<CopyIcon size={15} />} onClick={copy}>
           {t('settings.vpn.copy')}
         </Button>
         <Button
           type="primary"
-          icon={<ExternalLinkIcon size={14} />}
+          icon={<ExternalLinkIcon size={15} />}
           href={url}
           target="_blank"
           rel="noopener noreferrer"

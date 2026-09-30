@@ -43,7 +43,7 @@ export const MouseMode = () => {
           onClick={() => updateMouseMode(mode.value)}
         >
           <div className="flex h-[16px] w-[16px] items-end text-blue-500">
-            {mode.value === mouseMode && <CheckIcon strokeWidth={3} size={16} />}
+            {mode.value === mouseMode && <CheckIcon size={14} />}
           </div>
           <span>{mode.name}</span>
         </button>

@@ -56,7 +56,7 @@ export const VideoMode = () => {
               onClick={() => update(mode.key)}
             >
               <div className="flex h-[14px] w-[20px] items-end text-blue-500">
-                {mode.key === videoMode && <CheckIcon size={15} />}
+                {mode.key === videoMode && <CheckIcon size={14} />}
               </div>
               <span>{mode.name}</span>
             </button>

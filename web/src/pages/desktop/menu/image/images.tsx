@@ -346,7 +346,7 @@ export const Images = ({
                   {deletingImage === image ? (
                     <LoaderCircleIcon className="animate-spin text-red-500" size={16} />
                   ) : (
-                    <Trash2Icon size={16} />
+                    <Trash2Icon size={15} />
                   )}
                 </button>
               </Tooltip>

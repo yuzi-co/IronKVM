@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Popconfirm, Switch, Tooltip } from 'antd';
-import { CircleAlertIcon } from 'lucide-react';
+import { CircleHelpIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { logout } from '@/api/auth.ts';
@@ -118,7 +118,7 @@ export const Tls = ({ setIsLocked }: TlsProps) => {
             placement="right"
             styles={{ root: { maxWidth: '400px' } }}
           >
-            <CircleAlertIcon className="text-neutral-500" size={14} />
+            <CircleHelpIcon className="text-neutral-500" size={14} />
           </Tooltip>
         </div>
         <span className="text-xs text-neutral-500">

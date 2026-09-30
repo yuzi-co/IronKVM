@@ -398,7 +398,7 @@ export const Ethernet = () => {
           <div className="mt-3 flex items-center gap-2">
             {newAddressUrl && (
               <Button
-                icon={<ExternalLinkIcon size={14} />}
+                icon={<ExternalLinkIcon size={15} />}
                 href={newAddressUrl}
                 target="_blank"
                 rel="noreferrer"
