@@ -956,7 +956,7 @@ const en = {
           consumers: 'Main consumers',
           addons: 'Add-ons',
           addonsTip: 'The memory group Tailscale and NetBird run in, against its limit.',
-          video: 'Video Memory',
+          video: 'Video memory',
           videoTip:
             'Memory reserved for video capture. It is not shared with the rest of the system.',
           videoGenerations_one: '{{count}} earlier IronKVM session is holding video memory',
