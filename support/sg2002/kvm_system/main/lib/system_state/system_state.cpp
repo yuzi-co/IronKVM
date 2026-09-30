@@ -1,6 +1,7 @@
 #include "config.h"
 #include "system_state.h"
 #include "vi_state_shared.hpp"
+#include "net_probe.h"
 #include <sys/socket.h>
 #include <net/if.h>
 #include <sys/ioctl.h>
@@ -185,10 +186,23 @@ int get_ip_addr(ip_addr_t ip_type)
 
 int chack_net_state(ip_addr_t use_ip_type)
 {
-	char Cmd[100]={0};
-	if		(use_ip_type == ETH_ROUTE)  sprintf( Cmd,"ping -I eth0 -w 1 %s > /dev/null", kvm_sys_state.eth_route);
-	else if	(use_ip_type == WiFi_ROUTE) sprintf( Cmd,"ping -I wlan0 -w 1 %s > /dev/null", kvm_sys_state.wifi_route);
+	const char* ifname;
+	const uint8_t* route;
+	if		(use_ip_type == ETH_ROUTE)  { ifname = "eth0";  route = kvm_sys_state.eth_route; }
+	else if	(use_ip_type == WiFi_ROUTE) { ifname = "wlan0"; route = kvm_sys_state.wifi_route; }
 	else return -1;	// 不支持的端口
+
+	// Probe in-process when the gateway is an address. A name in
+	// /etc/kvm/gateway, or a process that may not open a raw socket, falls
+	// through to ping, which is what every probe used to cost.
+	struct in_addr gateway;
+	if (parse_gateway((const char*)route, sizeof(kvm_sys_state.eth_route), &gateway)) {
+		int ret = icmp_probe(ifname, gateway, GATEWAY_PROBE_TIMEOUT_MS);
+		if (ret >= 0) return ret;
+	}
+
+	char Cmd[100]={0};
+	sprintf( Cmd,"ping -I %s -w 1 %s > /dev/null", ifname, (const char*)route);
 	if(system(Cmd) == 0){	// 256：不通； = 0：通
 		return 1;
 	}
