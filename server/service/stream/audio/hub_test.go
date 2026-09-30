@@ -308,3 +308,21 @@ func TestHubIgnoresStateFromACaptureItStopped(t *testing.T) {
 	case <-time.After(50 * time.Millisecond):
 	}
 }
+
+func TestHubStateIsTheRunningCapturesLastReport(t *testing.T) {
+	hub, captures := newReportingHub()
+	if got := hub.State(); got != StateUnknown {
+		t.Fatalf("with no capture the state is %s, want unknown", got)
+	}
+
+	sub := hub.Subscribe()
+	captures()[0].report(StateFailing)
+	if got := hub.State(); got != StateFailing {
+		t.Fatalf("got %s, want failing", got)
+	}
+
+	sub.Close()
+	if got := hub.State(); got != StateUnknown {
+		t.Fatalf("after the last listener left the state is %s, want unknown", got)
+	}
+}

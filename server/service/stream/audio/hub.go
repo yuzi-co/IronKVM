@@ -155,6 +155,18 @@ func (h *Hub) fanOut(capture Capture) {
 	h.mutex.Unlock()
 }
 
+// State is what the running capture last reported, or StateUnknown when no
+// capture runs or it has not reported yet. The metrics endpoint reads it.
+func (h *Hub) State() State {
+	h.mutex.Lock()
+	defer h.mutex.Unlock()
+
+	if h.current == nil {
+		return StateUnknown
+	}
+	return h.state
+}
+
 // publishState records a capture's new state and tells every listener. A
 // capture that has been replaced or stopped is ignored.
 func (h *Hub) publishState(capture Capture, state State) {

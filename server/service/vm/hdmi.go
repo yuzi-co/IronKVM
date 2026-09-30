@@ -78,6 +78,12 @@ func (s *Service) GetHdmiState(c *gin.Context) {
 	log.Debug("get hdmi state")
 }
 
+// HdmiSignal is the page's answer to "is there an HDMI signal", read the same
+// way GetHdmiState reads it. The metrics endpoint reads it.
+func HdmiSignal() bool {
+	return !isHdmiDisabled() && getHdmiSignal()
+}
+
 func EnableHdmiCapture() {
 	hdmiMutex.Lock()
 	defer hdmiMutex.Unlock()
