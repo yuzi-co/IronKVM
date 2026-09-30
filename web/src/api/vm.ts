@@ -266,10 +266,19 @@ export function getMouseJiggler() {
   return http.get('/api/vm/mouse-jiggler');
 }
 
-// set mouse jiggler. method is 'mouse' or 'key'; key is 'f15', 'shift' or
-// 'ctrl' for the key method.
-export function setMouseJiggler(enabled: boolean, mode: string, method: string, key: string) {
-  return http.post('/api/vm/mouse-jiggler', { enabled, mode, method, key });
+// set mouse jiggler
+export function setMouseJiggler(enabled: boolean, mode: string) {
+  return http.post('/api/vm/mouse-jiggler', { enabled, mode });
+}
+
+// get key jiggler: enabled, and the key it presses ('f15', 'shift' or 'ctrl')
+export function getKeyJiggler() {
+  return http.get('/api/vm/key-jiggler');
+}
+
+// set key jiggler. The key is saved even when turning it off.
+export function setKeyJiggler(enabled: boolean, key: string) {
+  return http.post('/api/vm/key-jiggler', { enabled, key });
 }
 
 // get Hostname

@@ -18,6 +18,7 @@ import { Cursor } from './cursor.tsx';
 import { Direction } from './direction.tsx';
 import { HidMode } from './hid-mode.tsx';
 import { Jiggler } from './jiggler.tsx';
+import { KeyJiggler } from './key-jiggler.tsx';
 import { MouseMode } from './mouse-mode.tsx';
 import { ResetHid } from './reset-hid.tsx';
 import { Speed } from './speed.tsx';
@@ -68,6 +69,7 @@ export const Mouse = () => {
         <>
           <Divider style={{ margin: '10px 0' }} />
           <Jiggler refreshKey={openCount} />
+          <KeyJiggler refreshKey={openCount} />
           <HidMode />
           <ResetHid />
         </>
