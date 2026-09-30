@@ -4,6 +4,7 @@ import { CopyIcon, ExternalLinkIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { writeClipboardText } from '@/lib/clipboard.ts';
+import { pollWhileVisible } from '@/lib/visible-poll.ts';
 
 import type { Rsp } from './types.ts';
 
@@ -33,7 +34,7 @@ export const LoginUrl = ({ url, period, getStatus, onSuccess }: LoginUrlProps) =
   useEffect(() => {
     let stopped = false;
 
-    const timer = window.setInterval(() => {
+    const stopPoll = pollWhileVisible(() => {
       getStatus()
         .then((rsp) => {
           if (!stopped && rsp.code === 0 && rsp.data?.state !== 'notLogin') {
@@ -48,7 +49,7 @@ export const LoginUrl = ({ url, period, getStatus, onSuccess }: LoginUrlProps) =
 
     return () => {
       stopped = true;
-      window.clearInterval(timer);
+      stopPoll();
     };
   }, [getStatus, onSuccess]);
 

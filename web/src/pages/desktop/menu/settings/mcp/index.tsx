@@ -9,6 +9,7 @@ import * as api from '@/api/mcp.ts';
 import type { MCPConfig } from '@/api/mcp.ts';
 import { writeClipboardText } from '@/lib/clipboard.ts';
 import { getBaseUrl } from '@/lib/service.ts';
+import { pollWhileVisible } from '@/lib/visible-poll.ts';
 import { aiControlStatusAtom, normalizeAIControlStatus } from '@/jotai/ai-control.ts';
 
 function maskKey(key: string) {
@@ -92,8 +93,7 @@ export const MCP = () => {
 
   useEffect(() => {
     getConfig();
-    const timer = window.setInterval(() => getConfig(true), 3000);
-    return () => window.clearInterval(timer);
+    return pollWhileVisible(() => getConfig(true), 3000);
   }, [getConfig]);
 
   function updateEnabled(enabled: boolean) {

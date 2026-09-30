@@ -7,6 +7,7 @@ import * as api from '@/api/vnc.ts';
 import type { VncSettings, VncState } from '@/api/vnc.ts';
 import { describeFailure } from '@/lib/feedback.ts';
 import { getHostname } from '@/lib/service.ts';
+import { pollWhileVisible } from '@/lib/visible-poll.ts';
 
 import { CopyRow } from '../components/copy-button.tsx';
 import { StaleNote, StatusTag } from '../components/status-tag.tsx';
@@ -89,8 +90,7 @@ export const Vnc = () => {
     getSettings();
     getState();
 
-    const timer = window.setInterval(getState, statePollMs);
-    return () => window.clearInterval(timer);
+    return pollWhileVisible(getState, statePollMs);
   }, [getSettings, getState]);
 
   function refreshState() {

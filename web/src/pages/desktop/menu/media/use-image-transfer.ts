@@ -10,6 +10,7 @@ import {
   statusImage,
   uploadImageFile
 } from '@/api/download.ts';
+import { pollWhileVisible } from '@/lib/visible-poll.ts';
 
 export const imageUpdatedEvent = 'nanokvm:image-updated';
 
@@ -46,7 +47,7 @@ export function useImageTransfer() {
   // -1 while no upload runs; otherwise the share of the file sent so far.
   const [uploadPercent, setUploadPercent] = useState(-1);
 
-  const intervalId = useRef<NodeJS.Timeout | undefined>(undefined);
+  const stopPoll = useRef<(() => void) | undefined>(undefined);
   const pollingGeneration = useRef(0);
   const remoteDownloadActive = useRef(false);
   const fileUploadActive = useRef(false);
@@ -60,10 +61,10 @@ export function useImageTransfer() {
   // does; the Network boot settings page does when another tab is chosen.
   useEffect(() => {
     const generation = pollingGeneration;
-    const timer = intervalId;
+    const stop = stopPoll;
     return () => {
       generation.current += 1;
-      clearInterval(timer.current);
+      stop.current?.();
     };
   }, []);
 
@@ -117,13 +118,13 @@ export function useImageTransfer() {
     stopStatusPolling();
     const generation = pollingGeneration.current;
     getDownloadStatus(generation);
-    intervalId.current = setInterval(() => getDownloadStatus(generation), 2500);
+    stopPoll.current = pollWhileVisible(() => getDownloadStatus(generation), 2500);
   }
 
   function stopStatusPolling() {
     pollingGeneration.current += 1;
-    clearInterval(intervalId.current);
-    intervalId.current = undefined;
+    stopPoll.current?.();
+    stopPoll.current = undefined;
   }
 
   function finishImageTransfer(refreshImages: boolean, uploaded = false) {

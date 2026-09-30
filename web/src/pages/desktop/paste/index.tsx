@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useAtom } from 'jotai';
 
 import { getPasteStatus } from '@/api/hid.ts';
+import { pollWhileVisible } from '@/lib/visible-poll.ts';
 import { pasteStatusAtom } from '@/jotai/paste.ts';
 
 import { PasteDialog } from './dialog.tsx';
@@ -32,7 +33,7 @@ export const Paste = () => {
   useEffect(() => {
     if (!isTyping) return;
 
-    const timer = setInterval(() => {
+    return pollWhileVisible(() => {
       getPasteStatus()
         .then((rsp) => {
           if (rsp.code === 0 && rsp.data) {
@@ -41,8 +42,6 @@ export const Paste = () => {
         })
         .catch(() => {});
     }, pollIntervalMs);
-
-    return () => clearInterval(timer);
   }, [isTyping, setStatus]);
 
   return (
