@@ -62,13 +62,19 @@ func CheckToken() gin.HandlerFunc {
 			return
 		}
 
-		requestContext, cancel := context.WithCancel(c.Request.Context())
+		// The deadline ends the request when the token expires. Revocation
+		// ends it through the registry: at once for a change made through the
+		// server, and within sessionRecheckDelay for one made to the account
+		// file behind its back.
+		requestContext, cancel := context.WithDeadline(c.Request.Context(), token.ExpiresAt.Time)
 		c.Request = c.Request.WithContext(requestContext)
-		unregister := activeSessions.register(principal.Username, cancel)
-		timer := time.AfterFunc(time.Until(token.ExpiresAt.Time), cancel)
-		go watchSessionState(requestContext, cancel, principal.Username, token.TokenVersion, sessionRecheckDelay)
+		unregister := activeSessions.register(session{
+			username:     principal.Username,
+			tokenVersion: token.TokenVersion,
+			store:        authn.DefaultStore,
+			cancel:       cancel,
+		})
 		defer func() {
-			timer.Stop()
 			unregister()
 			cancel()
 		}()
@@ -97,22 +103,6 @@ func CheckSession() gin.HandlerFunc {
 		c.Set(principalContextKey, principal)
 		c.Set(tokenContextKey, token)
 		c.Next()
-	}
-}
-
-func watchSessionState(ctx context.Context, cancel context.CancelFunc, username string, tokenVersion uint64, interval time.Duration) {
-	ticker := time.NewTicker(interval)
-	defer ticker.Stop()
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-ticker.C:
-			if _, err := authn.DefaultStore.ValidateToken(username, tokenVersion); err != nil {
-				cancel()
-				return
-			}
-		}
 	}
 }
 

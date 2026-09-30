@@ -1,9 +1,11 @@
 package hid
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"os"
+	"sync"
 )
 
 // The touch screen shares the absolute pointer's endpoint under report ID 4.
@@ -171,7 +173,32 @@ func readAbsoluteTouch() bool {
 	if err != nil {
 		return false
 	}
-	return touchDeclared(raw)
+	return absoluteDescriptor.touch(raw)
+}
+
+// descriptorMemo keeps the answer for the last descriptor parsed. The USB
+// watchdog asks every two seconds and the descriptor almost never changes, so
+// the bytes are compared and parsed only when they differ.
+type descriptorMemo struct {
+	mutex sync.Mutex
+	parse func([]byte) bool
+	raw   []byte
+	known bool
+	value bool
+}
+
+var absoluteDescriptor = &descriptorMemo{parse: touchDeclared}
+
+func (m *descriptorMemo) touch(raw []byte) bool {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	if m.known && bytes.Equal(raw, m.raw) {
+		return m.value
+	}
+	m.value = m.parse(raw)
+	m.raw = append(m.raw[:0], raw...)
+	m.known = true
+	return m.value
 }
 
 // touchDeclared reports whether a report descriptor has a Touch Screen
