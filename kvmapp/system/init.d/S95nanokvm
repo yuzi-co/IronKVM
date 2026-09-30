@@ -469,7 +469,7 @@ server_gogc() {
 }
 # --- end Go tuning ---
 
-# S98supervise starts NanoKVM-Server and kvm_system again within five seconds
+# S98supervise starts NanoKVM-Server and kvm_system again within ten seconds
 # of finding either gone. That is what it is for, and it is wrong while this
 # script is deliberately stopping them: it fills the gap between a stop and the
 # start that follows, and then two of the same program run.
@@ -508,7 +508,7 @@ release_standoff() {
 # running the previous binary while the deploy reports success.
 #
 # The process that has to be gone is not always the one this script stopped.
-# S98supervise starts kvm_system within five seconds of finding none, so during
+# S98supervise starts kvm_system within ten seconds of finding none, so during
 # a restart it can put one back before this runs.
 refresh_kvm_system() {
     if pidof kvm_system > /dev/null 2>&1; then

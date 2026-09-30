@@ -21,6 +21,8 @@ sed -n '/^# --- act ---$/,/^# --- end act ---$/p' "$SV" > "$WORK/act.sh"
 sed -n '/^# --- ion ---$/,/^# --- end ion ---$/p' "$SV" > "$WORK/ion.sh"
 sed -n '/^# --- updating ---$/,/^# --- end updating ---$/p' "$SV" > "$WORK/updating.sh"
 sed -n '/^# --- ssh door ---$/,/^# --- end ssh door ---$/p' "$SV" > "$WORK/sshdoor.sh"
+sed -n '/^# --- procs ---$/,/^# --- end procs ---$/p' "$SV" > "$WORK/procs.sh"
+[ -s "$WORK/procs.sh" ] || { echo "could not extract the procs block"; exit 1; }
 [ -s "$WORK/sshdoor.sh" ] || { echo "could not extract the ssh door block"; exit 1; }
 [ -s "$WORK/updating.sh" ] || { echo "could not extract the updating block"; exit 1; }
 [ -s "$WORK/decide.sh" ]  || { echo "could not extract the decide block"; exit 1; }
@@ -38,18 +40,20 @@ echo "===== crashed, or stopped on purpose? ====="
 # The distinction costs nothing to make: `S95nanokvm stop` removes /tmp/server
 # after killing the process, so the binary's presence is the operator's intent.
 # Without this the supervisor would fight every deliberate stop.
-# serving has three answers, so the stub has three values. Anything that is not
-# yes or no stands for "the probe could not run at all", which is what the
-# shipped serving reports when curl is missing.
+# serving has three answers, so the probe column has three values. Anything
+# that is not yes or no stands for "the probe could not run at all", which is
+# what the shipped serving reports when curl is missing. The loop runs the probe
+# and hands action its status.
 decide_case() {
     desc="$1"; binary="$2"; running="$3"; serving="$4"; unhealthy="$5"; want="$6"
     got=$(BIN="$binary" RUN="$running" SRV="$serving" UNW="$unhealthy" WORK="$WORK" sh -c '
         binary_present()  { [ "$BIN" = yes ]; }
         process_running() { [ "$RUN" = yes ]; }
-        serving()         { case "$SRV" in yes) return 0 ;; no) return 1 ;; *) return 2 ;; esac }
         unhealthy_for()   { echo "$UNW"; }
         . "$WORK/decide.sh"
-        action
+        case "$SRV" in yes) ans=0 ;; no) ans=1 ;; *) ans=2 ;; esac
+        action "$ans"
+        echo "$ACTION"
     ')
     [ "$got" = "$want" ] && note "$desc -> $got" OK || note "$desc -> $got, want $want" FAIL
 }
@@ -79,6 +83,36 @@ decide_case "not answering for a long time"              yes yes no 600 hung
 # under heavy IO - none of those are worth killing a working KVM for, so the
 # grace period has to be generous and the default has to be inaction.
 decide_case "answering again before the threshold"       yes yes yes 59  healthy
+
+echo
+echo "  --- an answer makes pidof unnecessary"
+# The healthy pass is the one that runs every INTERVAL for the life of the board,
+# and pidof is a fork and a walk of /proc. When the probe answered, the process
+# is up, so action must not ask. A pidof that would say otherwise cannot change
+# the verdict: something answered on the port.
+pidof_asked() {   # $1 = probe status handed to action; prints verdict and pidof count
+    PS="$1" WORK="$WORK" sh -c '
+        : > "$WORK/pidof.calls"
+        binary_present()  { true; }
+        process_running() { echo x >> "$WORK/pidof.calls"; true; }
+        unhealthy_for()   { echo 0; }
+        . "$WORK/decide.sh"
+        action "$PS"
+        echo "$ACTION $(wc -l < "$WORK/pidof.calls" | tr -d " ")"
+    '
+}
+got=$(pidof_asked 0)
+[ "$got" = "healthy 0" ] && note "answered: healthy, pidof not asked -> $got" OK \
+                         || note "answered: [$got], want [healthy 0]" FAIL
+got=$(pidof_asked 1)
+[ "$got" = "healthy 1" ] && note "silent: pidof still decides -> $got" OK \
+                         || note "silent: [$got], want [healthy 1]" FAIL
+got=$(pidof_asked 2)
+[ "$got" = "healthy 1" ] && note "probe could not run: pidof still decides -> $got" OK \
+                         || note "probe could not run: [$got], want [healthy 1]" FAIL
+# The shortcut is for an answer only. Nothing answered and nothing is running is
+# a crash, and it must still read as one.
+decide_case "silent and no process: pidof is what says so" yes no no 0 restart
 
 echo
 echo "===== standing off while an update is in progress ====="
@@ -177,11 +211,11 @@ updating_decides() {
         export UPDATE_MARKER UPDATE_STANDOFF
         binary_present()  { true; }
         process_running() { false; }
-        serving()         { return 1; }
         unhealthy_for()   { echo 0; }
         . "$WORK/updating.sh"
         . "$WORK/decide.sh"
-        action
+        action 1
+        echo "$ACTION"
     ' 2>/dev/null)
     [ "$got" = "$want" ] && note "$desc -> $got" OK || note "$desc -> $got, want $want" FAIL
 }
@@ -440,7 +474,7 @@ echo "===== clearing the counters needs an answer, not just a verdict ====="
 # follow it, and the counted hang escalation could never reach its threshold.
 clear_case() {
     desc="$1"; verdict="$2"; answered="$3"; want="$4"
-    got=$(WORK="$WORK" sh -c ". \"\$WORK/count.sh\"; should_clear $verdict $answered")
+    got=$(WORK="$WORK" sh -c ". \"\$WORK/count.sh\"; should_clear $verdict $answered && echo yes || echo no")
     [ "$got" = "$want" ] && note "$desc -> $got" OK || note "$desc -> $got, want $want" FAIL
 }
 
@@ -629,7 +663,7 @@ got=$(sed -n '/^full_restart()/,/^}/p' "$SV" | grep -c '^[[:space:]]*ion_line$')
 # logged no ion line at all. Anchored to the "if action = restart" guard
 # around the direct launch, not to the function name, so this cannot be
 # satisfied by full_restart's own call or by the definition.
-got=$(sed -n '/^[[:space:]]*if \[ "\$(action)" = restart \]; then$/,/^[[:space:]]*fi$/p' "$SV" | grep -c '^[[:space:]]*ion_line$')
+got=$(sed -n '/^[[:space:]]*if \[ "\$ACTION" = restart \]; then$/,/^[[:space:]]*fi$/p' "$SV" | grep -c '^[[:space:]]*ion_line$')
 [ "$got" = "1" ] && note "the inline restart branch actually calls ion_line" OK \
                  || note "the inline restart branch calls ion_line $got times, want 1" FAIL
 
@@ -693,7 +727,7 @@ grep -qE '^[[:space:]]+short_runs=\$\(next_short_runs ' "$SV" \
 grep -qE '^[[:space:]]+failed_cures=\$\(next_failed_cures ' "$SV" \
     && note "the hang branch actually updates failed_cures" OK \
     || note "next_failed_cures is defined and never called" FAIL
-grep -qE '^[[:space:]]+if \[ "\$\(should_clear ' "$SV" \
+grep -qE '^[[:space:]]+if should_clear ' "$SV" \
     && note "the loop actually asks should_clear before wiping the counters" OK \
     || note "should_clear is defined and never called" FAIL
 
@@ -702,7 +736,7 @@ grep -qE '^[[:space:]]+if \[ "\$\(should_clear ' "$SV" \
 # probe could not run" is recorded as "the server answered" and a board without
 # curl gets the reboot cycle the latch exists to prevent. Three answers, and
 # only 0 means the server answered.
-grep -qE '^[[:space:]]+\[ -x "\$\(command -v curl\)" \] \|\| return 2$' "$SV" \
+grep -qE '^[[:space:]]+\[ -x "\$CURL_BIN" \] \|\| return 2$' "$SV" \
     && note "a probe that cannot run says so, rather than saying success" OK \
     || note "a missing curl is indistinguishable from an answering server" FAIL
 
@@ -754,7 +788,7 @@ ssh_case() {
     # on a board whose owner turned SSH off still tests the table.
     got=$(WORK="$WORK" SSH_STOP_FLAG="$WORK/no-ssh-stop" sh -c '
         . "$WORK/sshdoor.sh"
-        ssh_action "$1" "$2" "$3"
+        ssh_action "$1" "$2" "$3" && echo restart || echo none
     ' sh "$answered" "$down" "$since")
     if [ "$got" = "$want" ]; then
         note "$desc -> $got" OK
@@ -789,7 +823,7 @@ ssh_case "a seconds-down too wide to compare"      1     99999999999 999 none
 touch "$WORK/ssh-stop"
 got=$(WORK="$WORK" SSH_STOP_FLAG="$WORK/ssh-stop" sh -c '
     . "$WORK/sshdoor.sh"
-    ssh_action 1 600 999
+    ssh_action 1 600 999 && echo restart || echo none
 ')
 [ "$got" = none ] && note "down, and the owner turned SSH off -> $got" OK \
     || note "down, and the owner turned SSH off -> $got, want none" FAIL
@@ -797,45 +831,165 @@ got=$(WORK="$WORK" SSH_STOP_FLAG="$WORK/ssh-stop" sh -c '
 echo
 echo "===== the door is a listener, not a process ====="
 # `pidof sshd` passes on a board nobody can reach: a wedged sshd keeps its pid
-# and its port. This tests the shipped probe against a stub netstat.
-mkdir -p "$WORK/bin"
-printf '#!/bin/sh\ncat "$LISTENERS"\n' > "$WORK/bin/netstat"
-chmod 755 "$WORK/bin/netstat"
+# and its port. This tests the shipped probe against socket tables laid out the
+# way the kernel writes /proc/net/tcp and tcp6: local address, remote address,
+# state, with the port in hex and 0A meaning LISTEN.
+HDR='  sl  local_address rem_address   st tx_queue rx_queue tr tm->when retrnsmt   uid  timeout inode'
+TAIL='00000000:00000000 00:00000000 00000000     0        0 1234 1 0000000000000000 100 0 0 10 0'
+V6ANY=00000000000000000000000000000000
 
-printf 'tcp 0 0 0.0.0.0:22 0.0.0.0:* LISTEN\n' > "$WORK/listening"
-printf 'tcp 0 0 :::80 :::* LISTEN\n'           > "$WORK/shut"
-printf 'tcp 0 0 0.0.0.0:2222 0.0.0.0:* LISTEN\n' > "$WORK/nearly"
+# table <proc dir> <tcp|tcp6> <local port hex> <state hex> ...
+table() {
+    dir=$1; name=$2; shift 2
+    mkdir -p "$dir/net"
+    echo "$HDR" > "$dir/net/$name"
+    n=0
+    while [ "$#" -ge 2 ]; do
+        if [ "$name" = tcp6 ]; then addr=$V6ANY; else addr=00000000; fi
+        echo "   $n: $addr:$1 $addr:0000 $2 $TAIL" >> "$dir/net/$name"
+        n=$(( n + 1 )); shift 2
+    done
+}
 
+# 0x0016 is 22, 0x0050 is 80, 0x08AE is 2222. 01 is ESTABLISHED.
+table "$WORK/p-open"      tcp  0050 0A 0016 0A
+table "$WORK/p-open"      tcp6
+table "$WORK/p-open6"     tcp  0050 0A
+table "$WORK/p-open6"     tcp6 0016 0A
+table "$WORK/p-shut"      tcp  0050 0A
+table "$WORK/p-shut"      tcp6 0050 0A
+table "$WORK/p-connected" tcp  0050 0A 0016 01
+table "$WORK/p-2222"      tcp  0050 0A 08AE 0A
+table "$WORK/p-only4"     tcp  0016 0A
+mkdir -p "$WORK/p-none"
+
+# probe <proc dir> <ssh_port contents, or absent>
 probe() {
     (
-        PATH="$WORK/bin:$PATH"
-        LISTENERS="$WORK/$1"
-        export PATH LISTENERS
+        PROC="$WORK/$1"
+        SSH_PORT_FILE="$WORK/ssh_port"
+        rm -f "$SSH_PORT_FILE"
+        [ "$2" = absent ] || printf '%s\n' "$2" > "$SSH_PORT_FILE"
         . "$WORK/sshdoor.sh"
         ssh_listening
         echo $?
     )
 }
 
-[ "$(probe listening)" = 0 ] \
-    && note "a listener on 22 reads as open" OK \
-    || note "a listener on 22 reads as $(probe listening)" FAIL
+probe_case() {   # description, proc dir, port file, want
+    got=$(probe "$2" "$3")
+    [ "$got" = "$4" ] && note "$1 -> $got" OK || note "$1 -> $got, want $4" FAIL
+}
 
-[ "$(probe shut)" = 1 ] \
-    && note "no listener on 22 reads as shut" OK \
-    || note "no listener on 22 reads as $(probe shut)" FAIL
-
+#          description                                     proc        port    want
+probe_case "a listener on 22 reads as open"                p-open      absent  0
+probe_case "a listener on 22 in tcp6 alone reads as open"  p-open6     absent  0
+probe_case "a listener in tcp alone, tcp6 missing, is open" p-only4    absent  0
+probe_case "no listener on 22 reads as shut"               p-shut      absent  1
+# A connection on 22 is not a listener: a board whose sshd died keeps the
+# session that was open when it did until that session ends.
+probe_case "an established connection on 22 is not the door" p-connected absent 1
 # 2222 is a listener that contains the digits and is not the door.
-[ "$(probe nearly)" = 1 ] \
-    && note "a listener on 2222 is not mistaken for 22" OK \
-    || note "a listener on 2222 is read as the ssh door" FAIL
+probe_case "a listener on 2222 is not mistaken for 22"     p-2222      absent  1
 
-# PATH is emptied inside the shell, not in front of it: emptying it in front
-# leaves no sh to run.
-no_netstat=$(WORK="$WORK" sh -c 'PATH=/nonexistent; . "$WORK/sshdoor.sh"; ssh_listening; echo $?')
-[ "$no_netstat" = 2 ] \
-    && note "a probe that cannot run says so instead of reporting the door shut" OK \
-    || note "a missing netstat reads as $no_netstat, not as unknown" FAIL
+echo
+echo "  --- the owner's port"
+# Settings > SSH can move sshd off 22. A probe fixed at 22 reads that board's
+# working door as shut and restarts its sshd every SSH_CURE_BACKOFF, for ever.
+probe_case "port 2222 chosen, sshd on 2222"                p-2222      2222    0
+probe_case "port 2222 chosen, nothing on 2222 or 22"       p-shut      2222    1
+# S50sshd falls back to 22 when sshd rejects the drop-in, which the file does
+# not record. The door is open, so it must read as open.
+probe_case "port 2222 chosen, sshd fell back to 22"        p-only4     2222    0
+
+# ssh_port applies S50sshd's rules: anything it would not use means 22.
+port_case() {   # description, file contents or absent, want
+    got=$(
+        SSH_PORT_FILE="$WORK/ssh_port"
+        rm -f "$SSH_PORT_FILE"
+        [ "$2" = absent ] || printf '%s\n' "$2" > "$SSH_PORT_FILE"
+        . "$WORK/sshdoor.sh"
+        ssh_port
+        echo "$SSH_PORT"
+    )
+    [ "$got" = "$3" ] && note "$1 -> $got" OK || note "$1 -> $got, want $3" FAIL
+}
+
+port_case "no port file"                        absent                22
+port_case "an empty port file"                  ""                    22
+port_case "a chosen port"                       2222                  2222
+port_case "the highest port"                    65535                 65535
+port_case "one past the highest port"           65536                 22
+port_case "a number too wide to compare"        99999999999999999999  22
+port_case "a leading zero, which sh reads as octal" 022               22
+port_case "zero"                                0                     22
+port_case "not a number"                        ssh                   22
+port_case "a negative number"                   -22                   22
+
+# A board whose socket tables cannot be read measured nothing, and must say so
+# rather than report the door shut.
+probe_case "no socket tables: the probe could not run"     p-none      absent  2
+
+# The log line names the port that was probed, or an owner on 2222 reads that
+# 22 was down and goes looking for the wrong fault.
+grep -q 'log "nothing has listened on port \$SSH_PORT for ' "$SV" \
+    && note "the restart line names the probed port" OK \
+    || note "the restart line does not name the probed port" FAIL
+
+echo
+echo "===== kvm_system is tracked by pid, not found by pidof every pass ====="
+# pidof forks and walks all of /proc, every pass, for a process that is almost
+# always there. The loop remembers the pid and reads /proc/<pid>/comm; the name
+# check is what keeps a reused pid from passing for kvm_system.
+mkdir -p "$WORK/pp/123" "$WORK/pp/124" "$WORK/pp/456"
+echo kvm_system > "$WORK/pp/123/comm"
+echo sh         > "$WORK/pp/124/comm"
+echo kvm_system > "$WORK/pp/456/comm"
+
+# sys_case <description> <SYS_PID before> <what pidof prints> <want: rc pid pidof-calls>
+sys_case() {
+    got=$(SP="$2" OUT="$3" WORK="$WORK" sh -c '
+        PROC=$WORK/pp
+        : > "$WORK/sys.calls"
+        pidof() { echo x >> "$WORK/sys.calls"; [ -n "$OUT" ] && echo "$OUT"; }
+        . "$WORK/procs.sh"
+        SYS_PID=$SP
+        system_running; rc=$?
+        echo "$rc ${SYS_PID:--} $(wc -l < "$WORK/sys.calls" | tr -d " ")"
+    ')
+    [ "$got" = "$4" ] && note "$1 -> $got" OK || note "$1 -> [$got], want [$4]" FAIL
+}
+
+#        description                                 before  pidof      want
+sys_case "first pass: pidof finds it and it is kept" ""      "123"      "0 123 1"
+sys_case "tracked and alive: pidof is not asked"     123     ""         "0 123 0"
+sys_case "the pid was reused by something else"      124     ""         "1 - 1"
+sys_case "reused, and pidof finds the real one"      124     "456"      "0 456 1"
+sys_case "gone, and pidof reports several"           999     "456 789"  "0 456 1"
+sys_case "never seen and not running"                ""      ""         "1 - 1"
+
+# The pid the loop starts is the pid it tracks, or the next pass asks pidof for
+# a process it started itself.
+grep -A1 '^[[:space:]]*"\$SYSTEM_BIN" < /dev/null > /dev/null 2>&1 &$' "$SV" \
+    | grep -q '^[[:space:]]*SYS_PID=\$!$' \
+    && note "a kvm_system this starts is tracked from the start" OK \
+    || note "a kvm_system this starts is not tracked" FAIL
+
+echo
+echo "===== a healthy pass costs a sleep and a curl ====="
+# The loop runs every INTERVAL for the life of the board, on one core. Each of
+# these used to fork on every pass: measured on the board at about 3.5% CPU and
+# 3.6 forks a second at idle. What is asserted is that none has come back into
+# watch_loop; comments are stripped so the reasons can still be written down.
+loop_code=$(sed -n '/^watch_loop() {$/,/^}$/p' "$SV" | grep -v '^[[:space:]]*#')
+[ -n "$loop_code" ] || note "could not find watch_loop" FAIL
+for pat in '$(now)' '$(action)' '$(should_clear' '$(ssh_action' 'netstat' 'command -v' 'pidof' '/proc/uptime'
+do
+    case "$loop_code" in
+        *"$pat"*) note "watch_loop no longer uses $pat" FAIL ;;
+        *)        note "watch_loop does not use $pat" OK ;;
+    esac
+done
 
 echo
 echo "===== the ssh door never reaches the reboot ladder ====="
