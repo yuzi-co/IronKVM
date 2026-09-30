@@ -12,10 +12,11 @@ export const Language = () => {
     label: language.name
   }));
 
-  function changeLanguage(value: string) {
+  async function changeLanguage(value: string) {
     if (i18n.language === value) return;
 
-    i18n.changeLanguage(value);
+    // Resolves after the locale chunk has loaded, so the switch is one repaint.
+    await i18n.changeLanguage(value);
     setLanguage(value);
   }
 

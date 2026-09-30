@@ -8,7 +8,7 @@ import { RouterProvider } from 'react-router';
 import { MainError } from './components/main-error.tsx';
 import { router } from './router';
 
-import './i18n';
+import { i18nReady } from './i18n';
 import './assets/styles/index.css';
 
 const renderApp = () => {
@@ -49,5 +49,8 @@ if (import.meta.env.MODE === 'mocked') {
   const { worker } = await import('./mocks/browser');
   await worker.start();
 }
+
+// The chosen locale is its own chunk; render once it is in, not with raw keys.
+await i18nReady;
 
 renderApp();
