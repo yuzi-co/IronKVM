@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { ReactNode } from 'react';
 import { useAuth } from '@/contexts/auth.ts';
 import { Badge, Input, Modal, Tooltip } from 'antd';
@@ -12,6 +12,7 @@ import {
   GaugeIcon,
   HeartPulseIcon,
   KeyRoundIcon,
+  LoaderCircleIcon,
   LockIcon,
   LockKeyholeIcon,
   MonitorDownIcon,
@@ -28,22 +29,16 @@ import {
   UserRoundIcon
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { versionGt } from '@/lib/version.ts';
 
 import * as api from '@/api/application.ts';
 import * as ls from '@/lib/localstorage.ts';
+import { versionGt } from '@/lib/version.ts';
 import { keyboardLockAtom } from '@/jotai/keyboard.ts';
 import { settingsOpenRequestAtom, submenuOpenCountAtom } from '@/jotai/settings.ts';
 import { useStableCallback } from '@/hooks/useStableCallback.ts';
+import { PanelBoundary } from '@/components/error-boundary';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-import { About } from './about';
-import { Account } from './account';
-import { APIKeys } from './api-keys';
-import { Device } from './device';
-import { Ipmi } from './ipmi';
-import { MCP } from './mcp';
-import { VirtualMedia } from './media';
 import { SettingsNav } from './nav-context.ts';
 import {
   browserStorage,
@@ -55,17 +50,66 @@ import {
   writeStored
 } from './nav.ts';
 import type { Group } from './nav.ts';
-import { Netboot } from './netboot';
-import { Network } from './network';
-import { Performance } from './performance';
-import { Preferences } from './preferences';
-import { Redfish } from './redfish';
-import { Ssh } from './ssh';
-import { Tls } from './tls';
-import { Update } from './update';
-import { Vnc } from './vnc';
-import { VpnTab } from './vpn/tab.tsx';
-import { Watchdog } from './watchdog';
+
+// The pages load on demand: most sessions never open settings, and together
+// they are a large share of the desktop bundle. Keyed by tab id so that
+// opening the modal can fetch the pages this account will see. The keyword
+// index search uses lives in nav.ts, so searching needs none of them.
+const pageModules = {
+  about: () => import('./about'),
+  account: () => import('./account'),
+  apiKeys: () => import('./api-keys'),
+  preferences: () => import('./preferences'),
+  device: () => import('./device'),
+  performance: () => import('./performance'),
+  watchdog: () => import('./watchdog'),
+  update: () => import('./update'),
+  network: () => import('./network'),
+  vpn: () => import('./vpn/tab.tsx'),
+  ssh: () => import('./ssh'),
+  vnc: () => import('./vnc'),
+  tls: () => import('./tls'),
+  ipmi: () => import('./ipmi'),
+  redfish: () => import('./redfish'),
+  mcp: () => import('./mcp'),
+  netboot: () => import('./netboot'),
+  media: () => import('./media')
+};
+
+const About = lazy(() => pageModules.about().then((m) => ({ default: m.About })));
+const Account = lazy(() => pageModules.account().then((m) => ({ default: m.Account })));
+const APIKeys = lazy(() => pageModules.apiKeys().then((m) => ({ default: m.APIKeys })));
+const Preferences = lazy(() => pageModules.preferences().then((m) => ({ default: m.Preferences })));
+const Device = lazy(() => pageModules.device().then((m) => ({ default: m.Device })));
+const Performance = lazy(() => pageModules.performance().then((m) => ({ default: m.Performance })));
+const Watchdog = lazy(() => pageModules.watchdog().then((m) => ({ default: m.Watchdog })));
+const Update = lazy(() => pageModules.update().then((m) => ({ default: m.Update })));
+const Network = lazy(() => pageModules.network().then((m) => ({ default: m.Network })));
+const VpnTab = lazy(() => pageModules.vpn().then((m) => ({ default: m.VpnTab })));
+const Ssh = lazy(() => pageModules.ssh().then((m) => ({ default: m.Ssh })));
+const Vnc = lazy(() => pageModules.vnc().then((m) => ({ default: m.Vnc })));
+const Tls = lazy(() => pageModules.tls().then((m) => ({ default: m.Tls })));
+const Ipmi = lazy(() => pageModules.ipmi().then((m) => ({ default: m.Ipmi })));
+const Redfish = lazy(() => pageModules.redfish().then((m) => ({ default: m.Redfish })));
+const MCP = lazy(() => pageModules.mcp().then((m) => ({ default: m.MCP })));
+const Netboot = lazy(() => pageModules.netboot().then((m) => ({ default: m.Netboot })));
+const VirtualMedia = lazy(() => pageModules.media().then((m) => ({ default: m.VirtualMedia })));
+
+// prefetchPages starts loading the given pages. A failed fetch is left for
+// the page's own lazy() to retry and report when it is shown.
+function prefetchPages(ids: string[]) {
+  for (const id of ids) {
+    pageModules[id as keyof typeof pageModules]?.().catch(() => {});
+  }
+}
+
+function PageLoading() {
+  return (
+    <div className="flex justify-center pt-10 text-neutral-500">
+      <LoaderCircleIcon className="animate-spin" size={18} />
+    </div>
+  );
+}
 
 type Tab = {
   id: string;
@@ -270,6 +314,7 @@ export const Settings = () => {
   function openModal(requested?: string) {
     const ids = tabs.map((tab) => tab.id);
     setQuery('');
+    prefetchPages(ids);
     if (requested && ids.includes(requested)) {
       changeTab(requested);
     } else {
@@ -442,7 +487,13 @@ export const Settings = () => {
             <div className="flex h-full w-full justify-center">
               <div className="w-full max-w-[600px] pt-14 pb-10">
                 <SettingsNav.Provider value={{ openTab: changeTab }}>
-                  {tabs.find((tab) => tab.id === currentTab)?.component}
+                  {/* A page that fails to load or render stays inside the
+                      modal, and picking another tab clears it. */}
+                  <PanelBoundary key={currentTab} name={`settings-${currentTab}`}>
+                    <Suspense fallback={<PageLoading />}>
+                      {tabs.find((tab) => tab.id === currentTab)?.component}
+                    </Suspense>
+                  </PanelBoundary>
                 </SettingsNav.Provider>
               </div>
             </div>
