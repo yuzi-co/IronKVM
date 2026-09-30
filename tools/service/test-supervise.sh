@@ -1017,6 +1017,49 @@ else
 fi
 
 echo
+echo "===== each event line goes to the file and to syslog ====="
+# The file on /data survives a reboot; syslog is what reaches the owner's
+# collector. A line must land in both, and a board without logger must still
+# get the file and a zero status, since callers chain on log.
+sed -n '/^# --- log ---$/,/^# --- end log ---$/p' "$SV" > "$WORK/log.sh"
+[ -s "$WORK/log.sh" ] || { echo "could not extract the log block"; exit 1; }
+
+cat > "$WORK/logger" <<'STUB'
+#!/bin/sh
+printf '%s|' "$@" >> "$LOGGER_OUT"
+echo >> "$LOGGER_OUT"
+STUB
+chmod +x "$WORK/logger"
+
+rm -f "$WORK/events.log" "$WORK/logger.out"
+LOGGER_OUT="$WORK/logger.out" SUPERVISE_LOGGER="$WORK/logger" LOG="$WORK/events.log" sh -c '
+    . "$0"
+    log "-n rebooting: crash loop"
+' "$WORK/log.sh"
+if grep -q ' -n rebooting: crash loop$' "$WORK/events.log" 2>/dev/null; then
+    note "the line is in the file" OK
+else
+    note "the line is not in the file" FAIL
+fi
+if [ "$(cat "$WORK/logger.out" 2>/dev/null)" = "-t|supervise|-p|daemon.notice|--|-n rebooting: crash loop|" ]; then
+    note "the line goes to syslog tagged supervise" OK
+else
+    note "syslog got: $(cat "$WORK/logger.out" 2>/dev/null)" FAIL
+fi
+
+rm -f "$WORK/events.log"
+SUPERVISE_LOGGER= LOG="$WORK/events.log" sh -c '
+    . "$0"
+    log "no logger here"
+' "$WORK/log.sh"
+status=$?
+if [ "$status" -eq 0 ] && grep -q ' no logger here$' "$WORK/events.log" 2>/dev/null; then
+    note "without logger the line still reaches the file" OK
+else
+    note "without logger: status $status, file $(cat "$WORK/events.log" 2>/dev/null)" FAIL
+fi
+
+echo
 if [ "$fails" -eq 0 ]; then
     echo "===== all supervisor cases pass ====="
 else

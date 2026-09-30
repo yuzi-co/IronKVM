@@ -225,6 +225,10 @@ mutate "unreadable socket tables read as a shut door" 's/\[ "\$probed" = yes \] 
 # line above tests the same variable and a looser pattern would mutate that one
 # instead and report the gap in the wrong place.
 mutate "the cure runs only during an update" 's/"$state" != updating \]; then/"$state" = updating ]; then/'
+# Event lines reach syslog as well as the file.
+mutate "the log line never reaches syslog"  's/^        "\$LOGGER" -t supervise/        : "$LOGGER" -t supervise/'
+mutate "the syslog tag is lost"             's/-t supervise -p/-p/'
+mutate "log fails without logger"           '/^log() {$/,/^}$/s/return 0/return 1/'
 
 echo
 if [ "$fails" -eq 0 ]; then

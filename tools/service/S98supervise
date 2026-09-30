@@ -85,11 +85,24 @@ SSHD_INIT=${SSHD_INIT:-/etc/init.d/S50sshd}
 # file when it passes 128KB.
 SERVER_LOG=/tmp/nanokvm-server.log
 
+# --- log ---
 # /data survives a reboot, which matters: the reason a board restarted itself is
 # worth having after the fact, and /var/log is a symlink into tmpfs.
+#
+# Each line also goes to syslog, tagged supervise, which forwards it to the
+# owner's collector when one is set. The file stays the record that survives a
+# reboot. This logs on events only, so a logger fork per line costs nothing;
+# without logger the line goes to the file alone. SUPERVISE_LOGGER names
+# another logger, or none when empty.
+LOGGER=${SUPERVISE_LOGGER-$(command -v logger 2>/dev/null)}
 log() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') $*" >> "$LOG"
+    if [ -n "$LOGGER" ]; then
+        "$LOGGER" -t supervise -p daemon.notice -- "$*" 2>/dev/null
+    fi
+    return 0
 }
+# --- end log ---
 
 # --- decide ---
 # binary_present and process_running are the two questions. The binary being
