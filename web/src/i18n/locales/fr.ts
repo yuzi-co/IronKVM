@@ -321,7 +321,8 @@ const fr = {
       jigglerF15: 'Touche F15',
       jigglerShift: 'Touche Maj',
       jigglerCtrl: 'Touche Ctrl',
-      jigglerF15Tip: "F15 est la moins intrusive : aucun système ni application courant ne l'utilise",
+      jigglerF15Tip:
+        "F15 est la moins intrusive : aucun système ni application courant ne l'utilise",
       title: 'Souris',
       cursor: 'Style de curseur',
       default: 'Curseur par défaut',
@@ -1141,8 +1142,10 @@ const fr = {
           free: '{{free}} sur {{total}} libres',
           slots: 'Emplacements : {{count}}',
           full: "Pas assez d'emplacements USB libres. Désactivez d'abord autre chose.",
-          inactive: "Activé, mais ne tourne pas : le contrôleur USB n'a plus d'emplacements. Désactivez un autre périphérique et celui-ci démarre aussitôt.",
-          explain: "Le contrôleur USB a un nombre fixe d'emplacements (endpoints entrants), et le clavier et la souris en prennent toujours quelques-uns. Si plus de périphériques sont activés qu'il n'y a de place, le clavier et la souris sont gardés et les autres désactivés.",
+          inactive:
+            "Activé, mais ne tourne pas : le contrôleur USB n'a plus d'emplacements. Désactivez un autre périphérique et celui-ci démarre aussitôt.",
+          explain:
+            "Le contrôleur USB a un nombre fixe d'emplacements (endpoints entrants), et le clavier et la souris en prennent toujours quelques-uns. Si plus de périphériques sont activés qu'il n'y a de place, le clavier et la souris sont gardés et les autres désactivés.",
           error: "Impossible de joindre l'appareil. Réessayez.",
           fitTogether: 'Compatibles ensemble : {{sets}}'
         },
@@ -1248,21 +1251,13 @@ const fr = {
         }
       },
       vpn: {
-        connect: 'Connecter',
-        connectDesc:
-          'Rejoindre le réseau {{name}}. Désactivé, la connexion est coupée sans arrêter le service.',
         kvmUrl: 'Adresse du KVM',
         moreTip: "Plus d'actions",
-        restartTip: 'Redémarrer',
-        stopTip: 'Arrêter',
         updateTip: 'Mettre à jour vers {{version}}',
         loading: 'Chargement...',
         okBtn: 'Oui',
         cancelBtn: 'Non',
         restart: 'Redémarrer {{name}} ?',
-        stop: 'Arrêter {{name}} ?',
-        stopDesc:
-          "Le démon s'arrête maintenant. Le démarrage automatique est un réglage distinct et reste inchangé.",
         update: 'Mettre à jour {{name}} vers {{version}} ?',
         updateDesc: "Le démon redémarre s'il est en cours d'exécution. La connexion est conservée.",
         notInstall: "{{name}} n'est pas installé.",
@@ -1270,33 +1265,35 @@ const fr = {
         installing: 'Installation',
         installFailed: "Échec de l'installation",
         retry: 'Réessayer',
-        notRunning: "{{name}} n'est pas en cours d'exécution. Démarrez-le pour continuer.",
-        run: 'Démarrer',
-        boot: 'Démarrage automatique',
-        bootDesc: 'Démarrer {{name}} au démarrage du KVM.',
-        control: 'Serveur de contrôle',
         connected: 'Connecté',
-        disconnected: 'Non connecté',
+        connectedDesc:
+          'Activé, rejoint le réseau {{name}}. Désactivé, déconnecte et arrête {{name}} pour libérer sa mémoire.',
+        connectAtBoot: 'Connexion au démarrage',
+        connectAtBootDesc: 'Rejoindre le réseau {{name}} au démarrage du KVM.',
+        restartService: 'Redémarrer le service',
+        needsLogin: 'Connexion requise',
+        error: 'Erreur',
+        thisDevice: 'Cet appareil',
+        memoryOf: '{{used}} (limite des modules {{limit}})',
+        memoryPressed:
+          'Le groupe mémoire des modules approche de sa limite. Activer le swap peut aider.',
+        peersSummary: 'Pairs : {{online}} en ligne sur {{total}}',
+        showOffline: 'Afficher hors ligne ({{offline}})',
+        hideOffline: 'Masquer hors ligne',
+        blocked:
+          "{{other}} est activé ou se connecte au démarrage. Un seul VPN peut fonctionner à la fois : désactivez d'abord Connecté et Connexion au démarrage pour {{other}}.",
         deviceName: "Nom de l'appareil",
         deviceIP: "IP de l'appareil",
         account: 'Compte',
         version: 'Version',
         uptime: 'Temps de fonctionnement',
-        peers: 'Pairs',
         noPeers: "Aucun pair pour l'instant.",
         online: 'En ligne',
         offline: 'Hors ligne',
         memory: 'Mémoire',
-        daemonRss: 'Démon',
-        group: 'Groupe des modules',
-        high: 'ralenti au-delà de {{size}}',
-        max: 'arrêté par le noyau au-delà de {{size}}',
-        noGroup: 'Aucun groupe de mémoire pour les modules sur cette carte.',
         uninstall: 'Désinstaller {{name}}',
         uninstallDesc:
           'Êtes-vous sûr de vouloir désinstaller {{name}} ? La connexion reste enregistrée sur la carte.',
-        blocked:
-          "{{other}} est en cours d'exécution ou démarre automatiquement. Un seul VPN peut tourner à la fois : arrêtez d'abord {{other}} et désactivez son démarrage automatique.",
         swap: {
           title: "Mémoire d'échange",
           tip: "Si le démon manque de mémoire, essayez d'activer le swap. Il se règle dans « Paramètres > Performances »."

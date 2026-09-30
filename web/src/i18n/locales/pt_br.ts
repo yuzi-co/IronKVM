@@ -1127,8 +1127,10 @@ const pt_br = {
           free: '{{free}} de {{total}} livres',
           slots: 'Slots: {{count}}',
           full: 'Slots USB livres insuficientes. Desligue outra coisa primeiro.',
-          inactive: 'Ligado, mas sem funcionar: o controlador USB ficou sem slots. Desligue outro dispositivo e este inicia na hora.',
-          explain: 'O controlador USB tem um número fixo de slots (endpoints de entrada), e o teclado e o mouse sempre ocupam alguns. Se houver mais dispositivos ligados do que cabem, o teclado e o mouse são mantidos e o resto é desligado.',
+          inactive:
+            'Ligado, mas sem funcionar: o controlador USB ficou sem slots. Desligue outro dispositivo e este inicia na hora.',
+          explain:
+            'O controlador USB tem um número fixo de slots (endpoints de entrada), e o teclado e o mouse sempre ocupam alguns. Se houver mais dispositivos ligados do que cabem, o teclado e o mouse são mantidos e o resto é desligado.',
           error: 'Não foi possível acessar o dispositivo. Tente novamente.',
           fitTogether: 'Cabem juntos: {{sets}}'
         },
@@ -1233,20 +1235,13 @@ const pt_br = {
         }
       },
       vpn: {
-        connect: 'Conectar',
-        connectDesc: 'Entrar na rede {{name}}. Desligado desconecta sem parar o serviço.',
         kvmUrl: 'Endereço do KVM',
         moreTip: 'Mais ações',
-        restartTip: 'Reiniciar',
-        stopTip: 'Parar',
         updateTip: 'Atualizar para {{version}}',
         loading: 'Carregando...',
         okBtn: 'Sim',
         cancelBtn: 'Não',
         restart: 'Reiniciar o {{name}}?',
-        stop: 'Parar o {{name}}?',
-        stopDesc:
-          'O daemon para agora. Iniciar na inicialização é uma opção separada e continua como está.',
         update: 'Atualizar o {{name}} para {{version}}?',
         updateDesc: 'O daemon reinicia se estiver em execução. O login é mantido.',
         notInstall: 'O {{name}} não está instalado.',
@@ -1254,33 +1249,35 @@ const pt_br = {
         installing: 'Instalando',
         installFailed: 'Falha na instalação',
         retry: 'Tentar novamente',
-        notRunning: 'O {{name}} não está em execução. Inicie-o para continuar.',
-        run: 'Iniciar',
-        boot: 'Iniciar na inicialização',
-        bootDesc: 'Inicia o {{name}} quando o KVM é ligado.',
-        control: 'Servidor de controle',
         connected: 'Conectado',
-        disconnected: 'Não conectado',
+        connectedDesc:
+          'Ligado entra na rede {{name}}. Desligado desconecta e para o {{name}} para liberar memória.',
+        connectAtBoot: 'Conectar na inicialização',
+        connectAtBootDesc: 'Entrar na rede {{name}} quando o KVM iniciar.',
+        restartService: 'Reiniciar serviço',
+        needsLogin: 'Requer login',
+        error: 'Erro',
+        thisDevice: 'Este dispositivo',
+        memoryOf: '{{used}} (limite dos complementos {{limit}})',
+        memoryPressed:
+          'O grupo de memória dos complementos está perto do limite. Ativar a swap pode ajudar.',
+        peersSummary: 'Peers: {{online}} online de {{total}}',
+        showOffline: 'Mostrar offline ({{offline}})',
+        hideOffline: 'Ocultar offline',
+        blocked:
+          '{{other}} está ligado ou conecta na inicialização. Só uma VPN pode funcionar por vez: desligue primeiro Conectado e Conectar na inicialização em {{other}}.',
         deviceName: 'Nome do dispositivo',
         deviceIP: 'IP do dispositivo',
         account: 'Conta',
         version: 'Versão',
         uptime: 'Tempo ativo',
-        peers: 'Peers',
         noPeers: 'Nenhum peer ainda.',
         online: 'Online',
         offline: 'Offline',
         memory: 'Memória',
-        daemonRss: 'Daemon',
-        group: 'Grupo de complementos',
-        high: 'limitado acima de {{size}}',
-        max: 'encerrado pelo kernel acima de {{size}}',
-        noGroup: 'Não há grupo de memória de complementos nesta placa.',
         uninstall: 'Desinstalar {{name}}',
         uninstallDesc:
           'Tem certeza de que deseja desinstalar o {{name}}? O login permanece na placa.',
-        blocked:
-          'O {{other}} está em execução ou inicia na inicialização. Só uma VPN funciona por vez: pare o {{other}} e desative a inicialização automática dele primeiro.',
         swap: {
           title: 'Memória swap',
           tip: 'Se faltar memória ao daemon, tente ativar o swap. Ele é configurado em "Configurações > Desempenho".'

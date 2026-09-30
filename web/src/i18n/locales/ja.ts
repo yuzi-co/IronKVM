@@ -1133,8 +1133,10 @@ const ja = {
           free: '{{total}} 中 {{free}} 空き',
           slots: 'スロット: {{count}}',
           full: '空き USB スロットが足りません。先にほかのものをオフにしてください。',
-          inactive: 'オンですが動作していません: USB コントローラーのスロットが足りません。ほかのデバイスをオフにすると、すぐに起動します。',
-          explain: 'USB コントローラーのスロット (入力エンドポイント) の数は決まっていて、キーボードとマウスが常にいくつか使います。収まる数より多くのデバイスがオンの場合、キーボードとマウスを残し、残りはオフになります。',
+          inactive:
+            'オンですが動作していません: USB コントローラーのスロットが足りません。ほかのデバイスをオフにすると、すぐに起動します。',
+          explain:
+            'USB コントローラーのスロット (入力エンドポイント) の数は決まっていて、キーボードとマウスが常にいくつか使います。収まる数より多くのデバイスがオンの場合、キーボードとマウスを残し、残りはオフになります。',
           error: 'デバイスに接続できませんでした。もう一度お試しください。',
           fitTogether: '同時に使用できる組み合わせ: {{sets}}'
         },
@@ -1240,21 +1242,13 @@ const ja = {
         }
       },
       vpn: {
-        connect: '接続',
-        connectDesc:
-          '{{name}} ネットワークに参加します。オフにするとデーモンを止めずに切断します。',
         kvmUrl: 'KVM アドレス',
         moreTip: 'その他の操作',
-        restartTip: '再起動',
-        stopTip: '停止',
         updateTip: '{{version}} に更新',
         loading: '読み込み中...',
         okBtn: 'はい',
         cancelBtn: 'いいえ',
         restart: '{{name}} を再起動しますか？',
-        stop: '{{name}} を停止しますか？',
-        stopDesc:
-          'デーモンは今すぐ停止します。起動時に開始は別のスイッチで、現在の設定のまま変わりません。',
         update: '{{name}} を {{version}} にアップデートしますか？',
         updateDesc: 'デーモンが実行中の場合は再起動します。ログイン状態は保持されます。',
         notInstall: '{{name}} がインストールされていません。',
@@ -1262,33 +1256,35 @@ const ja = {
         installing: 'インストール中',
         installFailed: 'インストールに失敗しました',
         retry: '再試行',
-        notRunning: '{{name}} が実行されていません。続行するには開始してください。',
-        run: '開始',
-        boot: '起動時に開始',
-        bootDesc: 'KVM の起動時に {{name}} を開始します。',
-        control: 'コントロールサーバー',
         connected: '接続済み',
-        disconnected: '未接続',
+        connectedDesc:
+          'オンで {{name}} ネットワークに参加します。オフで切断し、メモリを解放するため {{name}} を停止します。',
+        connectAtBoot: '起動時に接続',
+        connectAtBootDesc: 'KVM の起動時に {{name}} ネットワークに参加します。',
+        restartService: 'サービスを再起動',
+        needsLogin: 'ログインが必要',
+        error: 'エラー',
+        thisDevice: 'このデバイス',
+        memoryOf: '{{used}}（アドオン上限 {{limit}}）',
+        memoryPressed:
+          'アドオンのメモリグループが上限に近づいています。スワップを有効にすると改善する場合があります。',
+        peersSummary: 'ピア: {{total}} 台中 {{online}} 台がオンライン',
+        showOffline: 'オフラインを表示 ({{offline}})',
+        hideOffline: 'オフラインを隠す',
+        blocked:
+          '{{other}} がオンになっているか、起動時に接続します。VPN は同時に 1 つしか実行できません。先に {{other}} の「接続済み」と「起動時に接続」をオフにしてください。',
         deviceName: 'デバイス名',
         deviceIP: 'デバイス IP',
         account: 'アカウント',
         version: 'バージョン',
         uptime: '稼働時間',
-        peers: 'ピア',
         noPeers: 'ピアはまだありません。',
         online: 'オンライン',
         offline: 'オフライン',
         memory: 'メモリ',
-        daemonRss: 'デーモン',
-        group: 'アドオングループ',
-        high: '{{size}} を超えると制限',
-        max: '{{size}} を超えるとカーネルが停止',
-        noGroup: 'このボードにはアドオン用のメモリグループがありません。',
         uninstall: '{{name}} をアンインストール',
         uninstallDesc:
           '{{name}} をアンインストールしてもよろしいですか？ログイン情報はボードに残ります。',
-        blocked:
-          '{{other}} が実行中か、起動時に開始する設定になっています。同時に実行できる VPN は 1 つだけです。先に {{other}} を停止し、起動時の開始をオフにしてください。',
         swap: {
           title: 'スワップメモリ',
           tip: 'デーモンのメモリが不足する場合は、スワップを有効にしてみてください。「設定 > パフォーマンス」で設定できます。'

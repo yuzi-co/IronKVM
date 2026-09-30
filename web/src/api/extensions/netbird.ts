@@ -19,29 +19,20 @@ export function getStatus() {
   return http.get('/api/extensions/netbird/status');
 }
 
-// start netbird
-export function start() {
-  return http.post('/api/extensions/netbird/start');
+// start the daemon if it is not running, then netbird up. Up talks to the
+// management server, which the server allows two minutes.
+export function connect() {
+  return http.post('/api/extensions/netbird/connect', undefined, { timeout: 3 * 60 * 1000 });
+}
+
+// netbird down, then stop the daemon
+export function disconnect() {
+  return http.post('/api/extensions/netbird/disconnect');
 }
 
 // restart netbird
 export function restart() {
   return http.post('/api/extensions/netbird/restart');
-}
-
-// stop netbird
-export function stop() {
-  return http.post('/api/extensions/netbird/stop');
-}
-
-// run netbird up
-export function up() {
-  return http.post('/api/extensions/netbird/up');
-}
-
-// run netbird down
-export function down() {
-  return http.post('/api/extensions/netbird/down');
 }
 
 // join with a setup key, or, without one, start an SSO login and get its URL

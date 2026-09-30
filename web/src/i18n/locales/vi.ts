@@ -316,7 +316,8 @@ const vi = {
       jigglerF15: 'Phím F15',
       jigglerShift: 'Phím Shift',
       jigglerCtrl: 'Phím Ctrl',
-      jigglerF15Tip: 'F15 ít gây ảnh hưởng nhất: không hệ điều hành hay ứng dụng phổ biến nào dùng phím này',
+      jigglerF15Tip:
+        'F15 ít gây ảnh hưởng nhất: không hệ điều hành hay ứng dụng phổ biến nào dùng phím này',
       title: 'Chuột',
       cursor: 'Kiểu con trỏ',
       default: 'Con trỏ mặc định',
@@ -1112,8 +1113,10 @@ const vi = {
           free: 'Còn trống {{free}}/{{total}}',
           slots: 'Khe: {{count}}',
           full: 'Không đủ khe USB trống. Hãy tắt thứ khác trước.',
-          inactive: 'Đang bật nhưng không chạy: bộ điều khiển USB đã hết khe. Tắt một thiết bị khác và thiết bị này sẽ chạy ngay.',
-          explain: 'Bộ điều khiển USB có số khe (endpoint vào) cố định, và bàn phím cùng chuột luôn dùng một phần. Nếu bật nhiều thiết bị hơn số khe có, bàn phím và chuột được giữ lại, phần còn lại bị tắt.',
+          inactive:
+            'Đang bật nhưng không chạy: bộ điều khiển USB đã hết khe. Tắt một thiết bị khác và thiết bị này sẽ chạy ngay.',
+          explain:
+            'Bộ điều khiển USB có số khe (endpoint vào) cố định, và bàn phím cùng chuột luôn dùng một phần. Nếu bật nhiều thiết bị hơn số khe có, bàn phím và chuột được giữ lại, phần còn lại bị tắt.',
           error: 'Không kết nối được thiết bị. Hãy thử lại.',
           fitTogether: 'Có thể dùng cùng nhau: {{sets}}'
         },
@@ -1218,20 +1221,13 @@ const vi = {
         }
       },
       vpn: {
-        connect: 'Kết nối',
-        connectDesc: 'Tham gia mạng {{name}}. Tắt sẽ ngắt kết nối mà không dừng dịch vụ.',
         kvmUrl: 'Địa chỉ KVM',
         moreTip: 'Thao tác khác',
-        restartTip: 'Khởi động lại',
-        stopTip: 'Dừng',
         updateTip: 'Cập nhật lên {{version}}',
         loading: 'Đang tải...',
         okBtn: 'Có',
         cancelBtn: 'Không',
         restart: 'Khởi động lại {{name}}?',
-        stop: 'Dừng {{name}}?',
-        stopDesc:
-          'Daemon sẽ dừng ngay. Khởi động cùng hệ thống là một công tắc riêng và vẫn giữ nguyên.',
         update: 'Cập nhật {{name}} lên {{version}}?',
         updateDesc: 'Daemon sẽ khởi động lại nếu đang chạy. Thông tin đăng nhập được giữ nguyên.',
         notInstall: '{{name}} chưa được cài đặt.',
@@ -1239,33 +1235,35 @@ const vi = {
         installing: 'Đang cài đặt',
         installFailed: 'Cài đặt thất bại',
         retry: 'Thử lại',
-        notRunning: '{{name}} không chạy. Hãy khởi động nó để tiếp tục.',
-        run: 'Khởi động',
-        boot: 'Khởi động cùng hệ thống',
-        bootDesc: 'Khởi động {{name}} khi KVM khởi động.',
-        control: 'Máy chủ điều khiển',
         connected: 'Đã kết nối',
-        disconnected: 'Chưa kết nối',
+        connectedDesc:
+          'Bật để tham gia mạng {{name}}. Tắt để ngắt kết nối và dừng {{name}} nhằm giải phóng bộ nhớ.',
+        connectAtBoot: 'Kết nối khi khởi động',
+        connectAtBootDesc: 'Tham gia mạng {{name}} khi KVM khởi động.',
+        restartService: 'Khởi động lại dịch vụ',
+        needsLogin: 'Cần đăng nhập',
+        error: 'Lỗi',
+        thisDevice: 'Thiết bị này',
+        memoryOf: '{{used}} (giới hạn tiện ích bổ sung {{limit}})',
+        memoryPressed:
+          'Nhóm bộ nhớ của tiện ích bổ sung gần đạt giới hạn. Bật swap có thể giúp ích.',
+        peersSummary: 'Peer: {{online}} trực tuyến trên {{total}}',
+        showOffline: 'Hiện ngoại tuyến ({{offline}})',
+        hideOffline: 'Ẩn ngoại tuyến',
+        blocked:
+          '{{other}} đang bật hoặc kết nối khi khởi động. Chỉ một VPN chạy tại một thời điểm: trước tiên hãy tắt Đã kết nối và Kết nối khi khởi động của {{other}}.',
         deviceName: 'Tên thiết bị',
         deviceIP: 'IP thiết bị',
         account: 'Tài khoản',
         version: 'Phiên bản',
         uptime: 'Thời gian hoạt động',
-        peers: 'Peer',
         noPeers: 'Chưa có peer nào.',
         online: 'Trực tuyến',
         offline: 'Ngoại tuyến',
         memory: 'Bộ nhớ',
-        daemonRss: 'Daemon',
-        group: 'Nhóm tiện ích bổ sung',
-        high: 'bị điều tiết khi vượt {{size}}',
-        max: 'bị kernel dừng khi vượt {{size}}',
-        noGroup: 'Bo mạch này không có nhóm bộ nhớ cho tiện ích bổ sung.',
         uninstall: 'Gỡ cài đặt {{name}}',
         uninstallDesc:
           'Bạn có chắc chắn muốn gỡ cài đặt {{name}} không? Thông tin đăng nhập vẫn được giữ trên bo mạch.',
-        blocked:
-          '{{other}} đang chạy hoặc khởi động cùng hệ thống. Mỗi lúc chỉ chạy được một VPN: hãy dừng {{other}} và tắt khởi động cùng hệ thống của nó trước.',
         swap: {
           title: 'Bộ nhớ hoán đổi',
           tip: 'Nếu daemon thiếu bộ nhớ, hãy thử bật bộ nhớ hoán đổi. Thiết lập trong "Cài đặt > Hiệu năng".'

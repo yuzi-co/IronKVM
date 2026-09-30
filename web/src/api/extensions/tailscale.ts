@@ -19,29 +19,19 @@ export function getStatus() {
   return http.get('/api/extensions/tailscale/status');
 }
 
-// start tailscale
-export function start() {
-  return http.post('/api/extensions/tailscale/start');
+// start the daemon if it is not running, then tailscale up
+export function connect() {
+  return http.post('/api/extensions/tailscale/connect', undefined, { timeout: 3 * 60 * 1000 });
+}
+
+// tailscale down, then stop the daemon
+export function disconnect() {
+  return http.post('/api/extensions/tailscale/disconnect');
 }
 
 // restart tailscale
 export function restart() {
   return http.post('/api/extensions/tailscale/restart');
-}
-
-// stop tailscale
-export function stop() {
-  return http.post('/api/extensions/tailscale/stop');
-}
-
-// run tailscale up
-export function up() {
-  return http.post('/api/extensions/tailscale/up');
-}
-
-// run tailscale down
-export function down() {
-  return http.post('/api/extensions/tailscale/down');
 }
 
 // login tailscale

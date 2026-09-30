@@ -319,7 +319,8 @@ const hu = {
       jigglerF15: 'F15 billentyű',
       jigglerShift: 'Shift billentyű',
       jigglerCtrl: 'Ctrl billentyű',
-      jigglerF15Tip: 'Az F15 a legkevésbé zavaró: egyetlen elterjedt rendszer vagy alkalmazás sem használja',
+      jigglerF15Tip:
+        'Az F15 a legkevésbé zavaró: egyetlen elterjedt rendszer vagy alkalmazás sem használja',
       title: 'Egér',
       cursor: 'Kurzorstílus',
       default: 'Alapértelmezett kurzor',
@@ -1133,8 +1134,10 @@ const hu = {
           free: '{{free}} / {{total}} szabad',
           slots: 'Helyek: {{count}}',
           full: 'Nincs elég szabad USB-hely. Először kapcsolj ki valami mást.',
-          inactive: 'Bekapcsolva, de nem fut: az USB-vezérlő kifogyott a helyekből. Kapcsolj ki egy másik eszközt, és ez azonnal elindul.',
-          explain: 'Az USB-vezérlőnek rögzített számú helye (bejövő endpointja) van, és a billentyűzet meg az egér mindig foglal belőlük. Ha több eszköz van bekapcsolva, mint amennyi elfér, a billentyűzet és az egér megmarad, a többi kikapcsol.',
+          inactive:
+            'Bekapcsolva, de nem fut: az USB-vezérlő kifogyott a helyekből. Kapcsolj ki egy másik eszközt, és ez azonnal elindul.',
+          explain:
+            'Az USB-vezérlőnek rögzített számú helye (bejövő endpointja) van, és a billentyűzet meg az egér mindig foglal belőlük. Ha több eszköz van bekapcsolva, mint amennyi elfér, a billentyűzet és az egér megmarad, a többi kikapcsol.',
           error: 'Az eszköz nem érhető el. Próbálja újra.',
           fitTogether: 'Ezek együtt elférnek: {{sets}}'
         },
@@ -1239,21 +1242,13 @@ const hu = {
         }
       },
       vpn: {
-        connect: 'Csatlakozás',
-        connectDesc:
-          'Csatlakozás a(z) {{name}} hálózathoz. Kikapcsolva a szolgáltatás leállítása nélkül bontja a kapcsolatot.',
         kvmUrl: 'KVM címe',
         moreTip: 'További műveletek',
-        restartTip: 'Újraindítás',
-        stopTip: 'Leállítás',
         updateTip: 'Frissítés erre: {{version}}',
         loading: 'Betöltés...',
         okBtn: 'Igen',
         cancelBtn: 'Nem',
         restart: '{{name}} újraindítása?',
-        stop: '{{name}} leállítása?',
-        stopDesc:
-          'A démon most leáll. Az indításkori automatikus indítás külön kapcsoló, és változatlan marad.',
         update: '{{name}} frissítése erre: {{version}}?',
         updateDesc: 'Ha a démon fut, újraindul. A bejelentkezés megmarad.',
         notInstall: '{{name}} nincs telepítve.',
@@ -1261,32 +1256,34 @@ const hu = {
         installing: 'Telepítés folyamatban',
         installFailed: 'A telepítés sikertelen',
         retry: 'Újrapróbálás',
-        notRunning: '{{name}} nem fut. A folytatáshoz indítsa el.',
-        run: 'Indítás',
-        boot: 'Indítás rendszerindításkor',
-        bootDesc: '{{name}} indítása a KVM indulásakor.',
-        control: 'Vezérlőszerver',
         connected: 'Csatlakozva',
-        disconnected: 'Nincs csatlakozva',
+        connectedDesc:
+          'Bekapcsolva csatlakozik a(z) {{name}} hálózathoz. Kikapcsolva bontja a kapcsolatot és leállítja a(z) {{name}} szolgáltatást a memória felszabadításához.',
+        connectAtBoot: 'Csatlakozás rendszerindításkor',
+        connectAtBootDesc: 'Csatlakozás a(z) {{name}} hálózathoz a KVM indulásakor.',
+        restartService: 'Szolgáltatás újraindítása',
+        needsLogin: 'Bejelentkezés szükséges',
+        error: 'Hiba',
+        thisDevice: 'Ez az eszköz',
+        memoryOf: '{{used}} (bővítmények korlátja {{limit}})',
+        memoryPressed:
+          'A bővítmények memóriacsoportja a korlátja közelében van. A swap bekapcsolása segíthet.',
+        peersSummary: 'Társak: {{online}} online / {{total}}',
+        showOffline: 'Offline társak mutatása ({{offline}})',
+        hideOffline: 'Offline társak elrejtése',
+        blocked:
+          'A(z) {{other}} be van kapcsolva vagy rendszerindításkor csatlakozik. Egyszerre csak egy VPN futhat: előbb kapcsolja ki a(z) {{other}} Csatlakozva és Csatlakozás rendszerindításkor kapcsolóját.',
         deviceName: 'Eszköznév',
         deviceIP: 'Eszköz IP-címe',
         account: 'Fiók',
         version: 'Verzió',
         uptime: 'Üzemidő',
-        peers: 'Társak',
         noPeers: 'Még nincsenek társak.',
         online: 'Online',
         offline: 'Offline',
         memory: 'Memória',
-        daemonRss: 'Démon',
-        group: 'Bővítménycsoport',
-        high: '{{size}} felett lassítva',
-        max: '{{size}} felett a kernel leállítja',
-        noGroup: 'Ezen a kártyán nincs bővítmény-memóriacsoport.',
         uninstall: '{{name}} eltávolítása',
         uninstallDesc: 'Biztosan eltávolítja ezt: {{name}}? A bejelentkezés megmarad a kártyán.',
-        blocked:
-          '{{other}} fut, vagy rendszerindításkor elindul. Egyszerre csak egy VPN futhat: előbb állítsa le ezt: {{other}}, és kapcsolja ki az automatikus indítását.',
         swap: {
           title: 'Swap memória',
           tip: 'Ha a démonnak kevés a memóriája, próbálja bekapcsolni a swapot. Ezt a "Beállítások > Teljesítmény" alatt lehet megadni.'

@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { getPort } from '@/lib/service.ts';
 
 import { CopyButton } from '../components/copy-button.tsx';
-import { formatUptime } from './format.ts';
 import type { Status } from './types.ts';
 
 type DetailsProps = {
@@ -22,6 +21,7 @@ function kvmUrl(ip: string) {
   return `${protocol}//${host}${isDefault ? '' : `:${port}`}`;
 }
 
+// Details are this device's name, addresses and account on the VPN.
 export const Details = ({ status }: DetailsProps) => {
   const { t } = useTranslation();
 
@@ -38,14 +38,6 @@ export const Details = ({ status }: DetailsProps) => {
   const url = status.ip ? kvmUrl(status.ip) : '';
 
   const rows: [string, ReactNode][] = [
-    [
-      t('settings.vpn.control'),
-      status.control ? (
-        <span className="text-green-500">{t('settings.vpn.connected')}</span>
-      ) : (
-        <span className="text-red-400">{t('settings.vpn.disconnected')}</span>
-      )
-    ],
     [t('settings.vpn.deviceName'), copyable(status.name, t('settings.vpn.deviceName'))],
     [t('settings.vpn.deviceIP'), copyable(status.ip, t('settings.vpn.deviceIP'))],
     [
@@ -61,15 +53,13 @@ export const Details = ({ status }: DetailsProps) => {
         '-'
       )
     ],
-    [t('settings.vpn.account'), status.account || '-'],
-    [t('settings.vpn.version'), status.version || '-'],
-    [t('settings.vpn.uptime'), formatUptime(status.uptimeSec)]
+    [t('settings.vpn.account'), status.account || '-']
   ];
 
   return (
-    <div className="flex flex-col space-y-3">
+    <div className="flex flex-col space-y-2">
       {rows.map(([label, value]) => (
-        <div key={label} className="flex min-h-[24px] items-center justify-between gap-3">
+        <div key={label} className="flex min-h-[24px] items-center justify-between gap-3 text-sm">
           <span>{label}</span>
           <span className="min-w-0 text-right break-all text-neutral-300">{value}</span>
         </div>

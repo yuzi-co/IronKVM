@@ -1,32 +1,36 @@
 import { useEffect, useState } from 'react';
-import type { ReactNode } from 'react';
 import { Button, Popconfirm, Popover, Tooltip } from 'antd';
 import {
   CircleArrowUpIcon,
-  CircleStopIcon,
   EllipsisIcon,
   LoaderCircleIcon,
+  LogOutIcon,
   RotateCwIcon
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { describeFailure } from '@/lib/feedback.ts';
 import { isValidVersion, versionGt } from '@/lib/version.ts';
+import { StatusDot } from '@/components/status-dot.tsx';
 
-import { StatusTag } from '../components/status-tag.tsx';
+import { StateTag } from '../components/status-tag.tsx';
+import { MenuRow } from './menu-row.tsx';
 import { Swap } from './swap.tsx';
 import type { Rsp, State, UpdateInfo, VpnInfo } from './types.ts';
 import { Uninstall } from './uninstall.tsx';
+import { hasDaemon, statusTag, type Tag } from './view.ts';
 
 type HeaderProps = {
   vpn: VpnInfo;
   state: State | undefined;
+  // The last status request failed.
+  failed: boolean;
   setIsLocked: (isLocked: boolean) => void;
   onChange: () => void;
   onError: (msg: string) => void;
 };
 
-type Loading = '' | 'restarting' | 'stopping' | 'updating';
+type Loading = '' | 'restarting' | 'updating' | 'loggingOut';
 
 function isNewer(latest: string, current: string) {
   if (!latest || !current) return false;
@@ -34,27 +38,23 @@ function isNewer(latest: string, current: string) {
   return latest !== current;
 }
 
-type IconButtonProps = {
-  label: string;
-  icon: ReactNode;
-  className?: string;
+const tagColor: Record<Tag, 'green' | 'gold' | 'red' | 'default'> = {
+  connected: 'green',
+  needsLogin: 'gold',
+  off: 'default',
+  error: 'red'
 };
 
-// IconButton is a header action: a real button, named for screen readers, with
-// the name as a tooltip. Popconfirm and Popover attach their handlers to it,
-// and the Tooltip is inside them so both work.
-const IconButton = ({ label, icon, className = '' }: IconButtonProps) => (
-  <Tooltip title={label}>
-    <Button type="text" size="small" aria-label={label} className={className} icon={icon} />
-  </Tooltip>
-);
-
-export const Header = ({ vpn, state, setIsLocked, onChange, onError }: HeaderProps) => {
+// Header is the title, the badge saying where the VPN stands, and the menu of
+// the actions an operator needs now and then.
+export const Header = ({ vpn, state, failed, setIsLocked, onChange, onError }: HeaderProps) => {
   const { t } = useTranslation();
 
   const [loading, setLoading] = useState<Loading>('');
   const [update, setUpdate] = useState<UpdateInfo>();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const installed = !!state && state !== 'notInstall';
+  const tag = statusTag(state, failed);
 
   // The server caches the answer for an hour, so asking on every visit is cheap.
   useEffect(() => {
@@ -71,6 +71,7 @@ export const Header = ({ vpn, state, setIsLocked, onChange, onError }: HeaderPro
 
   function act(kind: Loading, request: () => Promise<Rsp>, lock = false) {
     if (loading !== '') return;
+    setIsMenuOpen(false);
     setLoading(kind);
     if (lock) setIsLocked(true);
     onError('');
@@ -99,100 +100,103 @@ export const Header = ({ vpn, state, setIsLocked, onChange, onError }: HeaderPro
     );
   }
 
+  const busy = loading !== '';
+  const tagLabel: Record<Tag, string> = {
+    connected: t('settings.vpn.connected'),
+    needsLogin: t('settings.vpn.needsLogin'),
+    off: t('common.off'),
+    error: t('settings.vpn.error')
+  };
+
+  const menu = (
+    <div className="flex min-w-[240px] flex-col">
+      {hasUpdate && update && (
+        <Popconfirm
+          title={t('settings.vpn.update', { name: vpn.title, version: update.latest })}
+          description={t('settings.vpn.updateDesc')}
+          onConfirm={runUpdate}
+          okText={t('settings.vpn.okBtn')}
+          cancelText={t('settings.vpn.cancelBtn')}
+          placement="left"
+          disabled={busy}
+        >
+          <MenuRow
+            icon={<CircleArrowUpIcon className="text-blue-500" size={18} />}
+            label={t('settings.vpn.updateTip', { version: update.latest })}
+            disabled={busy}
+          />
+        </Popconfirm>
+      )}
+
+      {hasDaemon(state) && (
+        <Popconfirm
+          title={t('settings.vpn.restart', { name: vpn.title })}
+          onConfirm={() => act('restarting', vpn.api.restart)}
+          okText={t('settings.vpn.okBtn')}
+          cancelText={t('settings.vpn.cancelBtn')}
+          placement="left"
+          disabled={busy}
+        >
+          <MenuRow
+            icon={<RotateCwIcon size={18} />}
+            label={t('settings.vpn.restartService')}
+            disabled={busy}
+          />
+        </Popconfirm>
+      )}
+
+      {(state === 'stopped' || state === 'running') && (
+        <Popconfirm
+          title={<div className="max-w-[320px]">{vpn.logoutWarning}</div>}
+          onConfirm={() => act('loggingOut', vpn.api.logout)}
+          okText={t('settings.vpn.okBtn')}
+          cancelText={t('settings.vpn.cancelBtn')}
+          placement="left"
+          disabled={busy}
+        >
+          <MenuRow icon={<LogOutIcon size={18} />} label={vpn.logoutLabel} disabled={busy} />
+        </Popconfirm>
+      )}
+
+      <Swap />
+      <Uninstall vpn={vpn} onSuccess={onChange} />
+    </div>
+  );
+
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center space-x-2">
         <span className="text-base">{vpn.title}</span>
-        {installed && <StatusTag running={state === 'running'} />}
+        {tag && <StateTag color={tagColor[tag]} label={tagLabel[tag]} />}
       </div>
 
-      <div className="flex items-center space-x-2">
-        {hasUpdate && update && (
-          <Popconfirm
-            title={t('settings.vpn.update', { name: vpn.title, version: update.latest })}
-            description={t('settings.vpn.updateDesc')}
-            onConfirm={runUpdate}
-            okText={t('settings.vpn.okBtn')}
-            cancelText={t('settings.vpn.cancelBtn')}
-            placement="bottom"
-            disabled={loading !== ''}
-          >
-            <IconButton
-              label={t('settings.vpn.updateTip', { version: update.latest })}
-              className="text-blue-500 hover:!text-blue-500/80"
+      {installed && (
+        <Popover
+          content={menu}
+          placement="bottomRight"
+          trigger="click"
+          open={isMenuOpen}
+          onOpenChange={setIsMenuOpen}
+        >
+          <Tooltip title={t('settings.vpn.moreTip')}>
+            <Button
+              type="text"
+              size="small"
+              aria-label={t('settings.vpn.moreTip')}
               icon={
-                loading === 'updating' ? (
-                  <LoaderCircleIcon className="animate-spin" size={18} />
-                ) : (
-                  <CircleArrowUpIcon size={18} />
-                )
+                <span className="relative flex h-[18px] w-[18px]">
+                  {busy ? (
+                    <LoaderCircleIcon className="animate-spin" size={18} />
+                  ) : (
+                    <EllipsisIcon size={18} />
+                  )}
+                  {hasUpdate && !busy && <StatusDot tone="active" />}
+                </span>
               }
             />
-          </Popconfirm>
-        )}
-
-        {state && ['notLogin', 'stopped', 'running'].includes(state) && (
-          <>
-            <Popconfirm
-              title={t('settings.vpn.restart', { name: vpn.title })}
-              onConfirm={() => act('restarting', vpn.api.restart)}
-              okText={t('settings.vpn.okBtn')}
-              cancelText={t('settings.vpn.cancelBtn')}
-              placement="bottom"
-              disabled={loading !== ''}
-            >
-              <IconButton
-                label={t('settings.vpn.restartTip')}
-                className="text-green-500 hover:!text-green-500/80"
-                icon={
-                  loading === 'restarting' ? (
-                    <LoaderCircleIcon className="animate-spin" size={18} />
-                  ) : (
-                    <RotateCwIcon size={18} />
-                  )
-                }
-              />
-            </Popconfirm>
-
-            <Popconfirm
-              title={t('settings.vpn.stop', { name: vpn.title })}
-              description={t('settings.vpn.stopDesc')}
-              onConfirm={() => act('stopping', vpn.api.stop)}
-              okText={t('settings.vpn.okBtn')}
-              cancelText={t('settings.vpn.cancelBtn')}
-              placement="bottom"
-              disabled={loading !== ''}
-            >
-              <IconButton
-                label={t('settings.vpn.stopTip')}
-                className="text-red-500 hover:!text-red-500/80"
-                icon={
-                  loading === 'stopping' ? (
-                    <LoaderCircleIcon className="animate-spin" size={18} />
-                  ) : (
-                    <CircleStopIcon size={18} />
-                  )
-                }
-              />
-            </Popconfirm>
-          </>
-        )}
-
-        {installed && (
-          <Popover
-            content={
-              <div className="flex min-w-[250px] flex-col">
-                <Swap />
-                <Uninstall vpn={vpn} onSuccess={onChange} />
-              </div>
-            }
-            placement="bottom"
-            trigger="click"
-          >
-            <IconButton label={t('settings.vpn.moreTip')} icon={<EllipsisIcon size={18} />} />
-          </Popover>
-        )}
-      </div>
+          </Tooltip>
+        </Popover>
+      )}
     </div>
   );
 };
