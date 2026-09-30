@@ -107,107 +107,193 @@ func TestPressKeyRetriesAFailedRelease(t *testing.T) {
 	}
 }
 
-func TestParseConfig(t *testing.T) {
+func TestParseKeyConfig(t *testing.T) {
 	cases := []struct {
-		content, mode, key string
+		content string
+		enabled bool
+		key     string
 	}{
-		// Files older builds wrote: the mode alone, with or without a newline.
-		{"relative", "relative", ""},
-		{"absolute\n", "absolute", ""},
-		{"", "", ""},
-		{"relative\nf15", "relative", KeyF15},
-		{"absolute\r\nshift\r\n", "absolute", KeyShift},
-		{"relative\nctrl\n", "relative", KeyControl},
-		// A key this build does not know falls back to the mouse.
-		{"relative\nhyper", "relative", ""},
+		{"on\nf15\n", true, KeyF15},
+		{"on\r\nshift\r\n", true, KeyShift},
+		{"off\nctrl\n", false, KeyControl},
+		// A key this build does not know, or none at all, reads as F15.
+		{"on\nhyper\n", true, KeyF15},
+		{"on", true, KeyF15},
+		{"off\n", false, KeyF15},
+		// Anything but "on" is off, so a damaged file never presses keys.
+		{"", false, KeyF15},
+		{"yes\nshift\n", false, KeyShift},
 	}
 	for _, c := range cases {
-		mode, key := parseConfig(c.content)
-		if mode != c.mode || key != c.key {
-			t.Fatalf("%q: got (%q, %q), want (%q, %q)", c.content, mode, key, c.mode, c.key)
+		enabled, key := parseKeyConfig(c.content)
+		if enabled != c.enabled || key != c.key {
+			t.Fatalf("%q: got (%t, %q), want (%t, %q)", c.content, enabled, key, c.enabled, c.key)
 		}
 	}
 }
 
-func TestEnableWritesTheKeyAndReadsItBack(t *testing.T) {
+func TestReadKeyConfigWithoutAFileIsOffWithF15(t *testing.T) {
+	newJiggler(t)
+
+	enabled, key := readKeyConfig()
+	if enabled || key != KeyF15 {
+		t.Fatalf("got (%t, %q), want off with f15", enabled, key)
+	}
+}
+
+// The key jiggler keeps its file while off, so the chosen key is what the next
+// boot reads back.
+func TestSetKeyJigglerPersistsTheKeyWhileOff(t *testing.T) {
 	j := newJiggler(t)
 
-	if err := j.Enable("absolute", KeyShift); err != nil {
-		t.Fatalf("failed to enable: %s", err)
-	}
-	content, err := os.ReadFile(ConfigFile)
-	if err != nil {
+	if err := j.SetKeyJiggler(true, KeyShift); err != nil {
 		t.Fatal(err)
 	}
-	if mode, key := parseConfig(string(content)); mode != "absolute" || key != KeyShift {
-		t.Fatalf("got (%q, %q) back from %q", mode, key, content)
+	if enabled, key := readKeyConfig(); !enabled || key != KeyShift {
+		t.Fatalf("got (%t, %q) back, want on with shift", enabled, key)
 	}
 
-	// The mouse method writes exactly what older builds wrote.
-	if err := j.Enable("relative", ""); err != nil {
-		t.Fatalf("failed to enable: %s", err)
+	if err := j.SetKeyJiggler(false, KeyControl); err != nil {
+		t.Fatal(err)
 	}
-	content, _ = os.ReadFile(ConfigFile)
-	if string(content) != "relative" {
-		t.Fatalf("expected the old format, got %q", content)
+	if enabled, key := readKeyConfig(); enabled || key != KeyControl {
+		t.Fatalf("got (%t, %q) back, want off with ctrl", enabled, key)
+	}
+	if enabled, key := j.KeyJiggler(); enabled || key != KeyControl {
+		t.Fatalf("got (%t, %q), want off with ctrl", enabled, key)
 	}
 
-	if err := j.Enable("relative", "hyper"); err == nil {
+	if err := j.SetKeyJiggler(true, "hyper"); err == nil {
 		t.Fatal("expected an unknown key to be refused")
 	}
+	if err := j.SetKeyJiggler(true, ""); err == nil {
+		t.Fatal("expected an empty key to be refused")
+	}
+	if enabled, key := j.KeyJiggler(); enabled || key != KeyControl {
+		t.Fatalf("a refused key changed the state to (%t, %q)", enabled, key)
+	}
 }
 
-// The key survives a Disable, so the menu shows the method the jiggler resumes
-// with, and a second Disable is not an error.
-func TestDisableKeepsTheKey(t *testing.T) {
+// The two jigglers are independent: turning one on or off leaves the other and
+// its file alone.
+func TestKeyAndMouseJigglersAreIndependent(t *testing.T) {
 	j := newJiggler(t)
 
-	if err := j.Enable("relative", KeyF15); err != nil {
+	if err := j.Enable("absolute"); err != nil {
+		t.Fatal(err)
+	}
+	if err := j.SetKeyJiggler(true, KeyF15); err != nil {
 		t.Fatal(err)
 	}
 	if err := j.Disable(); err != nil {
 		t.Fatal(err)
 	}
-	if err := j.Disable(); err != nil {
-		t.Fatalf("expected a second disable to succeed, got %s", err)
+	if enabled, _ := j.KeyJiggler(); !enabled {
+		t.Fatal("disabling the mouse jiggler turned the key jiggler off")
 	}
-	if j.GetKey() != KeyF15 {
-		t.Fatalf("expected the key to be kept, got %q", j.GetKey())
+
+	if err := j.Enable("relative"); err != nil {
+		t.Fatal(err)
+	}
+	if err := j.SetKeyJiggler(false, KeyF15); err != nil {
+		t.Fatal(err)
+	}
+	if !j.IsEnabled() {
+		t.Fatal("disabling the key jiggler turned the mouse jiggler off")
+	}
+	content, _ := os.ReadFile(ConfigFile)
+	if string(content) != "relative" {
+		t.Fatalf("mouse jiggler file changed to %q", content)
 	}
 }
 
-// The loop presses the key rather than moving the mouse when one is set.
-func TestLoopPressesTheKey(t *testing.T) {
-	j := newJiggler(t)
-	j.key = KeyControl
+// recordActions makes j's loop report its moves and presses instead of
+// sending them. Only for tests that call step themselves, with no loop running.
+func recordActions(j *Jiggler) (moves, presses *[]string) {
+	moves, presses = &[]string{}, &[]string{}
+	j.move = func(mode string) { *moves = append(*moves, mode) }
+	j.press = func(key string) { *presses = append(*presses, key) }
+	return moves, presses
+}
 
-	pressed := make(chan string, 1)
-	j.press = func(key string) {
-		select {
-		case pressed <- key:
-		default:
+func TestStepRunsWhicheverJigglersAreOn(t *testing.T) {
+	cases := []struct {
+		mouse, key             bool
+		wantMoves, wantPresses int
+	}{
+		{true, false, 1, 0},
+		{false, true, 0, 1},
+		{true, true, 1, 1},
+	}
+	for _, c := range cases {
+		j := newJiggler(t)
+		j.enabled = c.mouse
+		j.keyEnabled = c.key
+		j.key = KeyControl
+		moves, presses := recordActions(j)
+		j.lastUpdated = time.Now().Add(-time.Hour)
+
+		if !j.step() {
+			t.Fatalf("%+v: expected the loop to keep running", c)
+		}
+		if len(*moves) != c.wantMoves || len(*presses) != c.wantPresses {
+			t.Fatalf("%+v: got moves %v presses %v", c, *moves, *presses)
+		}
+		if c.key && (*presses)[0] != KeyControl {
+			t.Fatalf("pressed %q", (*presses)[0])
 		}
 	}
-	j.move = func(string) { t.Error("expected no mouse move") }
-	j.lastUpdated = time.Now().Add(-time.Hour)
+}
+
+// Real input holds the key jiggler off exactly as it holds the mouse off.
+func TestStepWaitsForIdleBeforePressing(t *testing.T) {
+	j := newJiggler(t)
+	j.enabled = false
+	j.keyEnabled = true
+	j.interval = time.Hour
+	_, presses := recordActions(j)
+	j.running = true
+	j.Update()
 
 	if !j.step() {
 		t.Fatal("expected the loop to keep running")
 	}
-	select {
-	case key := <-pressed:
-		if key != KeyControl {
-			t.Fatalf("pressed %q", key)
-		}
-	default:
-		t.Fatal("expected a press")
+	if len(*presses) != 0 {
+		t.Fatalf("pressed %v while the target was busy", *presses)
+	}
+}
+
+// The loop starts for the key jiggler alone and stops once neither is on.
+func TestLoopRunsForTheKeyJigglerAlone(t *testing.T) {
+	j := newJiggler(t)
+	j.enabled = false
+
+	if j.Run() {
+		t.Fatal("expected no loop with both jigglers off")
+	}
+	if err := j.SetKeyJiggler(true, KeyF15); err != nil {
+		t.Fatal(err)
+	}
+	j.mutex.Lock()
+	running := j.running
+	j.mutex.Unlock()
+	if !running {
+		t.Fatal("expected enabling the key jiggler to start the loop")
+	}
+
+	if err := j.SetKeyJiggler(false, KeyF15); err != nil {
+		t.Fatal(err)
+	}
+	if _, running := j.tick(); running {
+		t.Fatal("expected the loop to stop with both jigglers off")
 	}
 }
 
 // Shutdown waits for a press in flight, and nothing starts the loop after it.
 func TestShutdownWaitsForAPressInFlight(t *testing.T) {
 	j := newJiggler(t)
-	j.key = KeyF15
+	j.enabled = false
+	j.keyEnabled = true
 	j.lastUpdated = time.Now().Add(-time.Hour)
 
 	inPress := make(chan struct{})
@@ -232,5 +318,14 @@ func TestShutdownWaitsForAPressInFlight(t *testing.T) {
 	}
 	if j.Run() {
 		t.Fatal("expected no loop to start after Shutdown")
+	}
+	if err := j.SetKeyJiggler(true, KeyF15); err != nil {
+		t.Fatal(err)
+	}
+	j.mutex.Lock()
+	running := j.running
+	j.mutex.Unlock()
+	if running {
+		t.Fatal("expected enabling after Shutdown to start no loop")
 	}
 }

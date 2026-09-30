@@ -18,12 +18,16 @@ func newJiggler(t *testing.T) *Jiggler {
 	restoreConfig := ConfigFile
 	t.Cleanup(func() { ConfigFile = restoreConfig })
 	ConfigFile = filepath.Join(t.TempDir(), "mouse-jiggler")
+	restoreKeyConfig := KeyConfigFile
+	t.Cleanup(func() { KeyConfigFile = restoreKeyConfig })
+	KeyConfigFile = filepath.Join(t.TempDir(), "key-jiggler")
 
 	j := &Jiggler{
 		enabled:     true,
 		mode:        "relative",
 		lastUpdated: time.Now(),
 		interval:    time.Millisecond,
+		key:         DefaultKey,
 		move:        func(string) {},
 		press:       func(string) {},
 	}
@@ -129,7 +133,7 @@ func TestJigglerEnableAndDisableAreSafeWhileItsLoopRuns(t *testing.T) {
 	go func() {
 		defer wg.Done()
 		for range 200 {
-			_ = j.Enable("absolute", "")
+			_ = j.Enable("absolute")
 			_ = j.Disable()
 		}
 	}()
@@ -152,7 +156,7 @@ func TestJigglerEnableAndDisableAreSafeWhileItsLoopRuns(t *testing.T) {
 func TestJigglerDisableClearsTheConfigFile(t *testing.T) {
 	j := newJiggler(t)
 
-	if err := j.Enable("absolute", ""); err != nil {
+	if err := j.Enable("absolute"); err != nil {
 		t.Fatalf("failed to enable: %s", err)
 	}
 	if _, err := os.Stat(ConfigFile); err != nil {
