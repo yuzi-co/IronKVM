@@ -319,6 +319,11 @@ const de = {
     },
     mouse: {
       jiggler: 'Maus-Jiggler',
+      jigglerMouse: 'Maus',
+      jigglerF15: 'Taste F15',
+      jigglerShift: 'Umschalttaste',
+      jigglerCtrl: 'Strg-Taste',
+      jigglerF15Tip: 'F15 stört am wenigsten: kein gängiges System und keine gängige App nutzt sie',
       title: 'Maus',
       cursor: 'Cursor',
       default: 'Standard Cursor',

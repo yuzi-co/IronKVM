@@ -313,6 +313,11 @@ const pt_br = {
     },
     mouse: {
       jiggler: 'Movimentador de mouse',
+      jigglerMouse: 'Mouse',
+      jigglerF15: 'Tecla F15',
+      jigglerShift: 'Tecla Shift',
+      jigglerCtrl: 'Tecla Ctrl',
+      jigglerF15Tip: 'F15 é a menos intrusiva: nenhum sistema ou app comum a usa',
       title: 'Mouse',
       cursor: 'Estilo do cursor',
       default: 'Cursor padrão',

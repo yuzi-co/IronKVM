@@ -313,6 +313,11 @@ const tr = {
     },
     mouse: {
       jiggler: 'Fare kıpırdatıcı',
+      jigglerMouse: 'Fare',
+      jigglerF15: 'F15 tuşu',
+      jigglerShift: 'Shift tuşu',
+      jigglerCtrl: 'Ctrl tuşu',
+      jigglerF15Tip: 'F15 en az rahatsız edendir: yaygın hiçbir sistem veya uygulama onu kullanmaz',
       title: 'Fare',
       cursor: 'İmleç sitili',
       default: 'Varsayılan imleç',

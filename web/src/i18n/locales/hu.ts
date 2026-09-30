@@ -315,6 +315,11 @@ const hu = {
     },
     mouse: {
       jiggler: 'Egérmozgató',
+      jigglerMouse: 'Egér',
+      jigglerF15: 'F15 billentyű',
+      jigglerShift: 'Shift billentyű',
+      jigglerCtrl: 'Ctrl billentyű',
+      jigglerF15Tip: 'Az F15 a legkevésbé zavaró: egyetlen elterjedt rendszer vagy alkalmazás sem használja',
       title: 'Egér',
       cursor: 'Kurzorstílus',
       default: 'Alapértelmezett kurzor',

@@ -314,6 +314,11 @@ const ru = {
     },
     mouse: {
       jiggler: 'Имитация движения мыши',
+      jigglerMouse: 'Мышь',
+      jigglerF15: 'Клавиша F15',
+      jigglerShift: 'Клавиша Shift',
+      jigglerCtrl: 'Клавиша Ctrl',
+      jigglerF15Tip: 'F15 мешает меньше всего: её не использует ни одна распространённая система или программа',
       title: 'Мышь',
       cursor: 'Стиль курсора',
       default: 'Курсор по умолчанию',

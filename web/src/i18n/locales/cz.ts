@@ -313,6 +313,11 @@ const cz = {
     },
     mouse: {
       jiggler: 'Pohyb myši proti uspání',
+      jigglerMouse: 'Myš',
+      jigglerF15: 'Klávesa F15',
+      jigglerShift: 'Klávesa Shift',
+      jigglerCtrl: 'Klávesa Ctrl',
+      jigglerF15Tip: 'F15 je nejméně rušivá: žádný běžný systém ani aplikace ji nepoužívá',
       title: 'Myš',
       cursor: 'Styl kurzoru',
       default: 'Výchozí kurzor',
