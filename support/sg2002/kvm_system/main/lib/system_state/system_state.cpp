@@ -111,35 +111,11 @@ int get_ip_addr(ip_addr_t ip_type)
 		case ETH_ROUTE: // eth_route
 			if(access("/etc/kvm/gateway", F_OK) != 0){
 				// 不存在gateway文件
-				memset( kvm_sys_state.eth_route, 0, sizeof( kvm_sys_state.eth_route ) );
-				char Cmd[100]={0};
-				memset( Cmd, 0, sizeof( Cmd ) );
-				sprintf( Cmd,"ip route | grep -i '^default' | grep -i 'eth0' | awk '{print $3}'");
-				FILE* fp = popen( Cmd, "r" );
-				if ( NULL == fp )
-				{
-					pclose(fp);
-					return 0;
-				}
-				memset( kvm_sys_state.eth_route, 0, sizeof( kvm_sys_state.eth_route ) );
-				while ( NULL != fgets( (char*)kvm_sys_state.eth_route,sizeof( kvm_sys_state.eth_route ),fp ))
-				{
-					// printf("ip=%s\n",kvm_sys_state.eth_route);
-					break;
-				}
-				if(kvm_sys_state.eth_route[0] == 0){
-					// 开机时未插入ETH
-					pclose(fp);
-					return 0;
-				}
-				for(int i = 0; i < 40; i++){
-					if(kvm_sys_state.eth_route[i] == 10){
-						kvm_sys_state.eth_route[i] = ' ';
-						break;
-					}
-				}
-				pclose(fp);
-				return 1;
+				// Read from /proc/net/route rather than a shell pipeline of
+				// ip, grep and awk: this runs every pass until a default route
+				// appears, which on a port with none is every pass for ever.
+				// 开机时未插入ETH: nothing is found and eth_route stays empty.
+				return route_gateway("eth0", (char*)kvm_sys_state.eth_route, sizeof( kvm_sys_state.eth_route ));
 			} else {
 				int file_size;
 				FILE *fp = fopen("/etc/kvm/gateway", "r");
@@ -151,35 +127,9 @@ int get_ip_addr(ip_addr_t ip_type)
 				return 1;
 			}
 		case WiFi_ROUTE: // wifi_route
-			memset( kvm_sys_state.wifi_route, 0, sizeof( kvm_sys_state.wifi_route ) );
-			char Cmd[100]={0};
-			memset( Cmd, 0, sizeof( Cmd ) );
-			sprintf( Cmd,"ip route | grep -i '^default' | grep -i 'wlan0' | awk '{print $3}'");
-			FILE* fp = popen( Cmd, "r" );
-			if ( NULL == fp )
-			{
-				pclose(fp);
-				return 0;
-			}
-			memset( kvm_sys_state.wifi_route, 0, sizeof( kvm_sys_state.wifi_route ) );
-			while ( NULL != fgets( (char*)kvm_sys_state.wifi_route,sizeof( kvm_sys_state.wifi_route ),fp ))
-			{
-				// printf("ip=%s\n",kvm_sys_state.wifi_route);
-				break;
-			}
-			if(kvm_sys_state.wifi_route[0] == 0){
-				// 开机时未插入ETH
-				pclose(fp);
-				return 0;
-			}
-			for(int i = 0; i < 40; i++){
-				if(kvm_sys_state.wifi_route[i] == 10){
-					kvm_sys_state.wifi_route[i] = ' ';
-					break;
-				}
-			}
-			pclose(fp);
-			return 1;
+			// Every pass while wlan0 has an address and is not yet up, so no
+			// shell here either.
+			return route_gateway("wlan0", (char*)kvm_sys_state.wifi_route, sizeof( kvm_sys_state.wifi_route ));
 	}
 	return 0;
 }
