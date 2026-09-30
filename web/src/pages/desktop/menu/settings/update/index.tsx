@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { LoadingOutlined, RocketOutlined, SmileOutlined } from '@ant-design/icons';
 import { Button, Divider, Popconfirm, Result, Spin } from 'antd';
 import { useTranslation } from 'react-i18next';
-import semver from 'semver';
 
 import * as api from '@/api/application.ts';
+import { versionGte } from '@/lib/version.ts';
 import {
   reloadAfterRestart,
   SERVER_RESTART_DOWN_MS,
@@ -49,7 +49,7 @@ export const Update = ({ setIsLocked }: UpdateProps) => {
 
         if (rsp.data?.latest) {
           setLatestVersion(rsp.data.latest);
-          const isLatest = semver.gte(rsp.data.current, rsp.data.latest);
+          const isLatest = versionGte(rsp.data.current, rsp.data.latest);
           setStatus(isLatest ? 'latest' : 'outdated');
         } else {
           setStatus('latest');

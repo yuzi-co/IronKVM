@@ -9,9 +9,9 @@ import {
   RotateCwIcon
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import semver from 'semver';
 
 import { describeFailure } from '@/lib/feedback.ts';
+import { isValidVersion, versionGt } from '@/lib/version.ts';
 
 import { StatusTag } from '../components/status-tag.tsx';
 import { Swap } from './swap.tsx';
@@ -30,7 +30,7 @@ type Loading = '' | 'restarting' | 'stopping' | 'updating';
 
 function isNewer(latest: string, current: string) {
   if (!latest || !current) return false;
-  if (semver.valid(latest) && semver.valid(current)) return semver.gt(latest, current);
+  if (isValidVersion(latest) && isValidVersion(current)) return versionGt(latest, current);
   return latest !== current;
 }
 
