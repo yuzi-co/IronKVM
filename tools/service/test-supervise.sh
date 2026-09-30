@@ -320,10 +320,13 @@ else
     note "the supervisor says $sv_log, S95nanokvm says $s95_log" FAIL
 fi
 
-# kvm_system drives the OLED. It prints nothing anybody reads, and pointing it
-# at the server's log would mix two programs into one record.
-if grep -q '"\$SYSTEM_BIN" < /dev/null > /dev/null 2>&1 &' "$SV"; then
-    note "kvm_system keeps its output on /dev/null" OK
+# kvm_system drives the OLED. Pointing it at the server's log would mix two
+# programs into one record, so its output goes to syslog under its own tag,
+# and to /dev/null on a board without logger. See "kvm_system's output goes to
+# syslog" below for how it behaves.
+if grep -q '"\$SYSTEM_BIN" < /dev/null > /dev/null 2>&1 &' "$SV" &&
+   grep -q '"\$SYSTEM_BIN" < /dev/null >&8 2>&8 8>&- &' "$SV"; then
+    note "kvm_system writes to syslog, or to /dev/null without it" OK
 else
     note "kvm_system no longer starts the way it did" FAIL
 fi
@@ -509,20 +512,23 @@ got=$(WORK="$WORK" sh -c '
     NO_REBOOT=1
     . "$WORK/act.sh"
     log()             { echo "LOG: $*"; }
+    warn()            { echo "WARN: $*"; }
     capture_bounded() { echo "captured"; }
     sync()            { echo "synced"; }
     reboot()          { echo "REBOOTED"; }
     sleep()           { :; }
     escalate "test"
 ' | tr '\n' ' ')
-want="LOG: would reboot (test), but SUPERVISE_NO_REBOOT is set "
+# A reboot decision is a warning, whether or not it is carried out.
+want="WARN: would reboot (test), but SUPERVISE_NO_REBOOT is set "
 [ "$got" = "$want" ] && note "SUPERVISE_NO_REBOOT=1 records the decision and does nothing else" OK \
                      || note "SUPERVISE_NO_REBOOT=1 did [$got], want [$want]" FAIL
 
 got=$(WORK="$WORK" sh -c '
     NO_REBOOT=0
     . "$WORK/act.sh"
-    log()             { :; }
+    log()             { echo "LOG: $*"; }
+    warn()            { :; }
     capture_bounded() { echo "captured"; }
     sync()            { echo "synced"; }
     reboot()          { echo "REBOOTED"; }
@@ -542,6 +548,7 @@ start=$(date +%s)
 WORK="$WORK" sh -c '
     . "$WORK/act.sh"
     log()              { :; }
+    warn()             { :; }
     capture_evidence() { sleep 60; }
     capture_bounded "test"
 ' > /dev/null 2>&1
@@ -863,21 +870,30 @@ table "$WORK/p-2222"      tcp  0050 0A 08AE 0A
 table "$WORK/p-only4"     tcp  0016 0A
 mkdir -p "$WORK/p-none"
 
-# probe <proc dir> <ssh_port contents, or absent>
+# port_files <ssh_port contents, or absent> <drop-in: yes or no>
+# S50sshd writes the drop-in for any port it accepted, so it is there unless a
+# case says otherwise.
+port_files() {
+    SSH_PORT_FILE="$WORK/ssh_port"
+    SSH_PORT_DROPIN="$WORK/ironkvm-port.conf"
+    rm -f "$SSH_PORT_FILE" "$SSH_PORT_DROPIN"
+    [ "$1" = absent ] || printf '%s\n' "$1" > "$SSH_PORT_FILE"
+    [ "${2:-yes}" = no ] || printf 'Port %s\n' "$1" > "$SSH_PORT_DROPIN"
+}
+
+# probe <proc dir> <ssh_port contents, or absent> [drop-in: yes or no]
 probe() {
     (
         PROC="$WORK/$1"
-        SSH_PORT_FILE="$WORK/ssh_port"
-        rm -f "$SSH_PORT_FILE"
-        [ "$2" = absent ] || printf '%s\n' "$2" > "$SSH_PORT_FILE"
+        port_files "$2" "$3"
         . "$WORK/sshdoor.sh"
         ssh_listening
         echo $?
     )
 }
 
-probe_case() {   # description, proc dir, port file, want
-    got=$(probe "$2" "$3")
+probe_case() {   # description, proc dir, port file, want, [drop-in]
+    got=$(probe "$2" "$3" "$5")
     [ "$got" = "$4" ] && note "$1 -> $got" OK || note "$1 -> $got, want $4" FAIL
 }
 
@@ -898,16 +914,21 @@ echo "  --- the owner's port"
 # working door as shut and restarts its sshd every SSH_CURE_BACKOFF, for ever.
 probe_case "port 2222 chosen, sshd on 2222"                p-2222      2222    0
 probe_case "port 2222 chosen, nothing on 2222 or 22"       p-shut      2222    1
-# S50sshd falls back to 22 when sshd rejects the drop-in, which the file does
-# not record. The door is open, so it must read as open.
-probe_case "port 2222 chosen, sshd fell back to 22"        p-only4     2222    0
+# Only the chosen port is the door. Something else listening on 22 must not
+# hide an sshd that died on 2222.
+probe_case "port 2222 chosen, only 22 listens"             p-only4     2222    1
+probe_case "port 2222 chosen, 22 listens and 2222 does not" p-open     2222    1
+# With 22 chosen, a listener on 2222 is not the door either.
+probe_case "port 22 by default, only 2222 listens"         p-2222      absent  1
+# S50sshd falls back to 22 when sshd rejects the port, and removes the drop-in
+# when it does. That door is open on 22, so it must read as open.
+probe_case "port 2222 refused, sshd fell back to 22"       p-only4     2222    0  no
+probe_case "port 2222 refused, nothing on 22"              p-2222      2222    1  no
 
 # ssh_port applies S50sshd's rules: anything it would not use means 22.
-port_case() {   # description, file contents or absent, want
+port_case() {   # description, file contents or absent, want, [drop-in]
     got=$(
-        SSH_PORT_FILE="$WORK/ssh_port"
-        rm -f "$SSH_PORT_FILE"
-        [ "$2" = absent ] || printf '%s\n' "$2" > "$SSH_PORT_FILE"
+        port_files "$2" "$4"
         . "$WORK/sshdoor.sh"
         ssh_port
         echo "$SSH_PORT"
@@ -925,6 +946,7 @@ port_case "a leading zero, which sh reads as octal" 022               22
 port_case "zero"                                0                     22
 port_case "not a number"                        ssh                   22
 port_case "a negative number"                   -22                   22
+port_case "a chosen port sshd refused"          2222                  22    no
 
 # A board whose socket tables cannot be read measured nothing, and must say so
 # rather than report the door shut.
@@ -932,7 +954,7 @@ probe_case "no socket tables: the probe could not run"     p-none      absent  2
 
 # The log line names the port that was probed, or an owner on 2222 reads that
 # 22 was down and goes looking for the wrong fault.
-grep -q 'log "nothing has listened on port \$SSH_PORT for ' "$SV" \
+grep -q 'warn "nothing has listened on port \$SSH_PORT for ' "$SV" \
     && note "the restart line names the probed port" OK \
     || note "the restart line does not name the probed port" FAIL
 
@@ -969,11 +991,192 @@ sys_case "gone, and pidof reports several"           999     "456 789"  "0 456 1
 sys_case "never seen and not running"                ""      ""         "1 - 1"
 
 # The pid the loop starts is the pid it tracks, or the next pass asks pidof for
-# a process it started itself.
-grep -A1 '^[[:space:]]*"\$SYSTEM_BIN" < /dev/null > /dev/null 2>&1 &$' "$SV" \
-    | grep -q '^[[:space:]]*SYS_PID=\$!$' \
+# a process it started itself. Both ways of starting it, with syslog and
+# without, have to keep the pid.
+tracked=0
+for start in '"\$SYSTEM_BIN" < /dev/null > /dev/null 2>&1 &' '"\$SYSTEM_BIN" < /dev/null >&8 2>&8 8>&- &'
+do
+    grep -A1 "^[[:space:]]*$start\$" "$SV" | grep -q '^[[:space:]]*SYS_PID=\$!$' \
+        && tracked=$(( tracked + 1 ))
+done
+[ "$tracked" -eq 2 ] \
     && note "a kvm_system this starts is tracked from the start" OK \
     || note "a kvm_system this starts is not tracked" FAIL
+loop_start=$(sed -n '/^watch_loop() {$/,/^}$/p' "$SV" | grep -A1 '^[[:space:]]*start_system$')
+case "$loop_start" in
+    *'warn "kvm_system was gone, started it as pid $SYS_PID"'*)
+        note "the loop starts kvm_system through start_system" OK ;;
+    *)  note "the loop does not start kvm_system through start_system" FAIL ;;
+esac
+
+echo
+echo "===== kvm_system's output goes to syslog ====="
+# kvm_system's output went to /dev/null, and from S95nanokvm to wherever that
+# script's output went. It now goes through one logger per kvm_system, fed by a
+# fifo so that $! stays kvm_system: a pipeline would hand the loop the logger's
+# pid, and the loop would track a process that is not kvm_system.
+sed -n '/^# --- syslog pipe ---$/,/^# --- end syslog pipe ---$/p' "$SV" > "$WORK/syslog.sh"
+[ -s "$WORK/syslog.sh" ] || { echo "could not extract the syslog pipe block"; exit 1; }
+
+# Three scripts start a program this way. One block, spelled three times,
+# drifts, so the copies must match.
+for other in "$S95" "$(dirname "$S95")/S98tailscaled"
+do
+    sed -n '/^# --- syslog pipe ---$/,/^# --- end syslog pipe ---$/p' "$other" > "$WORK/syslog.other"
+    if cmp -s "$WORK/syslog.sh" "$WORK/syslog.other"; then
+        note "$(basename "$other") carries the same syslog pipe" OK
+    else
+        note "$(basename "$other") carries a different syslog pipe" FAIL
+    fi
+done
+
+grep -q '^        /tmp/kvm_system/kvm_system >&8 2>&8 8>&- &$' "$S95" \
+    && note "S95nanokvm sends kvm_system to syslog too" OK \
+    || note "S95nanokvm does not send kvm_system to syslog" FAIL
+
+# The rest runs the block for real: a fifo, a stub logger and a stub
+# kvm_system. It needs /proc/<pid>/comm, which Linux has and Git Bash does not.
+if [ -r /proc/self/comm ] && command -v mkfifo > /dev/null 2>&1; then
+    SL="$WORK/sl"
+    mkdir -p "$SL/bin"
+    # Named kvm_system, so the kernel names the process that and comm_is can
+    # find it. It says one line on each stream, then one line a tick while the
+    # talk file exists.
+    cat > "$SL/bin/kvm_system" <<'STUB'
+#!/bin/sh
+echo "to stdout"
+echo "to stderr" >&2
+trap 'exit 0' TERM
+while :; do
+    [ -e "$TALK" ] && echo tick
+    sleep 0.1
+done
+STUB
+    # Records how it was called, each line it read, and its end of file.
+    cat > "$SL/bin/logger" <<'STUB'
+#!/bin/sh
+echo "args $*" >> "$LOGGER_OUT"
+while IFS= read -r line; do echo "line $line" >> "$LOGGER_OUT"; done
+echo eof >> "$LOGGER_OUT"
+STUB
+    chmod +x "$SL/bin/kvm_system" "$SL/bin/logger"
+
+    # wait_for <what> <shell test>, up to three seconds.
+    wait_for() {
+        i=0
+        while ! eval "$2"; do
+            i=$(( i + 1 ))
+            [ "$i" -ge 30 ] && return 1
+            sleep 0.1
+        done
+        return 0
+    }
+    # The bracket keeps grep from finding its own command line.
+    logger_pids() {
+        grep -l "$SL/bin/logge[r]" /proc/[0-9]*/cmdline 2>/dev/null \
+            | sed 's|^/proc/\([0-9]*\)/cmdline$|\1|'
+    }
+
+    # One run: start it, check what reached the logger, stop it.
+    : > "$SL/out"
+    rm -f "$SL/talk"
+    SYSLOG_LOGGER="$SL/bin/logger" SYSLOG_FIFO_DIR="$SL" LOGGER_OUT="$SL/out" TALK="$SL/talk" \
+        SYSTEM_BIN="$SL/bin/kvm_system" WORK="$WORK" SL="$SL" sh -c '
+        . "$WORK/syslog.sh"
+        . "$WORK/procs.sh"
+        start_system
+        echo "$SYS_PID" > "$SL/pid"
+        { [ -e "/proc/$$/fd/8" ] || [ -e "/proc/$$/fd/9" ]; } && echo open > "$SL/fds"
+        # The child is named sh until its exec lands.
+        i=0
+        until comm_is "$SYS_PID" kvm_system || [ "$i" -ge 30 ]; do
+            i=$(( i + 1 )); sleep 0.1
+        done
+        comm_is "$SYS_PID" kvm_system && echo tracked > "$SL/tracked"
+        exit 0
+    '
+    pid=$(cat "$SL/pid" 2>/dev/null)
+
+    [ -e "$SL/tracked" ] && note "SYS_PID is kvm_system, not its logger" OK \
+                         || note "SYS_PID $pid is not kvm_system" FAIL
+    [ -e "$SL/fds" ] && note "the starting shell keeps the pipe open" FAIL \
+                     || note "the starting shell closes its ends of the pipe" OK
+    leftovers=$(ls -A "$SL" | grep -c '^\.syslog-')
+    [ "$leftovers" -eq 0 ] && note "no fifo is left behind" OK \
+                           || note "$leftovers fifo(s) left behind" FAIL
+
+    if wait_for "both lines" 'grep -q "^line to stderr$" "$SL/out" && grep -q "^line to stdout$" "$SL/out"'; then
+        note "stdout and stderr both reach the logger" OK
+    else
+        note "the logger got: $(tr '\n' '|' < "$SL/out")" FAIL
+    fi
+    grep -q '^args -t kvm_system -p daemon.info$' "$SL/out" \
+        && note "the logger tags it kvm_system at daemon.info" OK \
+        || note "the logger was called: $(grep '^args' "$SL/out")" FAIL
+
+    # A stop or a killall sends TERM. The logger stays for as long as
+    # kvm_system has something to say.
+    lp=$(logger_pids)
+    [ -n "$lp" ] && kill -TERM $lp 2>/dev/null
+    sleep 0.3
+    [ -n "$lp" ] && [ -n "$(logger_pids)" ] \
+        && note "the logger ignores SIGTERM" OK \
+        || note "the logger died of SIGTERM" FAIL
+
+    # Stopping kvm_system ends its logger, so a restart leaves none behind.
+    kill "$pid" 2>/dev/null
+    if wait_for "the logger to go" '[ -z "$(logger_pids)" ]'; then
+        note "stopping kvm_system ends its logger" OK
+    else
+        note "the logger outlived kvm_system: $(logger_pids)" FAIL
+        kill -9 $(logger_pids) 2>/dev/null
+    fi
+    grep -q '^eof$' "$SL/out" && note "the logger read to the end" OK \
+                              || note "the logger did not see end of file" FAIL
+
+    # A logger that is gone must not wedge kvm_system on a full pipe. It
+    # dies of SIGPIPE at its next write, and the loop starts the pair again.
+    : > "$SL/out"
+    SYSLOG_LOGGER="$SL/bin/logger" SYSLOG_FIFO_DIR="$SL" LOGGER_OUT="$SL/out" TALK="$SL/talk" \
+        SYSTEM_BIN="$SL/bin/kvm_system" WORK="$WORK" SL="$SL" sh -c '
+        . "$WORK/syslog.sh"
+        . "$WORK/procs.sh"
+        start_system
+        echo "$SYS_PID" > "$SL/pid"
+    '
+    pid=$(cat "$SL/pid" 2>/dev/null)
+    wait_for "the logger" '[ -n "$(logger_pids)" ]'
+    kill -9 $(logger_pids) 2>/dev/null
+    : > "$SL/talk"
+    if wait_for "kvm_system to go" '! kill -0 "$pid" 2>/dev/null'; then
+        note "a dead logger ends kvm_system instead of blocking it" OK
+    else
+        note "kvm_system $pid outlived its logger" FAIL
+        kill -9 "$pid" 2>/dev/null
+    fi
+    rm -f "$SL/talk"
+
+    # Without logger nothing changes: /dev/null, tracked, no logger started.
+    SYSLOG_LOGGER= SYSLOG_FIFO_DIR="$SL" TALK="$SL/talk" \
+        SYSTEM_BIN="$SL/bin/kvm_system" WORK="$WORK" SL="$SL" sh -c '
+        . "$WORK/syslog.sh"
+        . "$WORK/procs.sh"
+        start_system
+        echo "$SYS_PID" > "$SL/pid"
+        i=0
+        until comm_is "$SYS_PID" kvm_system || [ "$i" -ge 30 ]; do
+            i=$(( i + 1 )); sleep 0.1
+        done
+        comm_is "$SYS_PID" kvm_system && echo tracked > "$SL/tracked2"
+    '
+    pid=$(cat "$SL/pid" 2>/dev/null)
+    [ -e "$SL/tracked2" ] && [ -z "$(logger_pids)" ] \
+        && note "without logger kvm_system starts as before" OK \
+        || note "without logger: tracked=$([ -e "$SL/tracked2" ] && echo yes || echo no) loggers=$(logger_pids)" FAIL
+    kill "$pid" 2>/dev/null
+else
+    note "the syslog pipe itself (needs Linux /proc and mkfifo)" SKIP
+fi
 
 echo
 echo "===== a healthy pass costs a sleep and a curl ====="
@@ -1046,6 +1249,52 @@ if [ "$(cat "$WORK/logger.out" 2>/dev/null)" = "-t|supervise|-p|daemon.notice|--
 else
     note "syslog got: $(cat "$WORK/logger.out" 2>/dev/null)" FAIL
 fi
+
+# warn is the same line at daemon.warning, so a collector can alert on what
+# this script does to the board without the routine lines.
+rm -f "$WORK/events.log" "$WORK/logger.out"
+LOGGER_OUT="$WORK/logger.out" SUPERVISE_LOGGER="$WORK/logger" LOG="$WORK/events.log" sh -c '
+    . "$0"
+    warn "rebooting: crash loop"
+' "$WORK/log.sh"
+if grep -q ' rebooting: crash loop$' "$WORK/events.log" 2>/dev/null; then
+    note "a warning is in the file" OK
+else
+    note "a warning is not in the file" FAIL
+fi
+if [ "$(cat "$WORK/logger.out" 2>/dev/null)" = "-t|supervise|-p|daemon.warning|--|rebooting: crash loop|" ]; then
+    note "a warning goes to syslog at daemon.warning" OK
+else
+    note "syslog got: $(cat "$WORK/logger.out" 2>/dev/null)" FAIL
+fi
+
+# Which lines are warnings. Each of these reboots the board, decides to, or
+# kills or restarts a process; everything else stays at notice.
+for line in \
+    'warn "the evidence capture did not finish' \
+    'warn "would reboot (' \
+    'warn "rebooting: ' \
+    'warn "NanoKVM-Server is up but has not answered' \
+    'warn "the process did not leave after SIGKILL"' \
+    'warn "NanoKVM-Server is gone after' \
+    'warn "started $SERVER_BIN as pid' \
+    'warn "kvm_system was gone' \
+    'warn "nothing has listened on port' \
+    'log "ion ' \
+    'log "an update is in progress' \
+    'log "no update in progress any more' \
+    'log "supervisor started' \
+    'log "supervisor stopped"'
+do
+    if grep -qF "$line" "$SV"; then
+        note "${line%% *} ${line#* }" OK
+    else
+        note "missing: $line" FAIL
+    fi
+done
+n_warn=$(grep -c '^[[:space:]]*warn "' "$SV")
+[ "$n_warn" -eq 9 ] && note "nine lines are warnings" OK \
+                    || note "$n_warn lines are warnings, want 9" FAIL
 
 rm -f "$WORK/events.log"
 SUPERVISE_LOGGER= LOG="$WORK/events.log" sh -c '

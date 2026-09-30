@@ -18,6 +18,7 @@ import (
 	"NanoKVM-Server/service/extensions/tailscale"
 	"NanoKVM-Server/service/hid"
 	"NanoKVM-Server/service/ion"
+	"NanoKVM-Server/service/metrics"
 	"NanoKVM-Server/service/stream/webrtc"
 	"NanoKVM-Server/service/vm"
 	"NanoKVM-Server/service/vm/jiggler"
@@ -218,6 +219,9 @@ func dispose() {
 	teardownStep("jiggler", jiggler.GetJiggler().Shutdown)
 	teardownStep("audio capture", webrtc.StopAudioCapture)
 	teardownStep("capture pipeline", func() { common.GetKvmVision().Close() })
+	// Last and quick: it ends a VPN CLI the metrics refresher may be running,
+	// which would otherwise outlive this process by up to its timeout.
+	teardownStep("vpn metrics", metrics.StopVpnRefresher)
 
 	after := ion.Read()
 	log.Printf("teardown: carveout after: used=%d free=%d generations=%d",

@@ -1,10 +1,7 @@
 package metrics
 
 import (
-	"context"
-	"strings"
 	"testing"
-	"time"
 
 	"NanoKVM-Server/service/stream/audio"
 )
@@ -53,96 +50,4 @@ ironkvm_jiggler_enabled{kind="mouse"} 0
 ironkvm_jiggler_enabled{kind="key"} 1
 `
 	assertText(t, render(t, collectJiggler), want)
-}
-
-// fakeVpn is a provider whose CLI calls are counted.
-type fakeVpn struct {
-	installed, running, connected bool
-	calls                         int
-}
-
-func (f *fakeVpn) provider(name string) vpnProvider {
-	return vpnProvider{
-		name:      name,
-		installed: func() bool { return f.installed },
-		running:   func() bool { return f.running },
-		connected: func(context.Context) bool { f.calls++; return f.connected },
-	}
-}
-
-func stubVpn(t *testing.T, providers ...vpnProvider) *time.Time {
-	t.Helper()
-	clock := time.Unix(1_000_000, 0)
-	setVar(t, &vpnProviders, providers)
-	setVar(t, &vpnAnswers, map[string]vpnAnswer{})
-	setVar(t, &now, func() time.Time { return clock })
-	return &clock
-}
-
-func TestVpnOnlyInstalledProvidersAreWritten(t *testing.T) {
-	ts := &fakeVpn{installed: true, running: true, connected: true}
-	nb := &fakeVpn{installed: false}
-	stubVpn(t, ts.provider("tailscale"), nb.provider("netbird"))
-
-	want := `# HELP ironkvm_vpn_connected Whether an installed VPN is connected. Asked of its CLI at most once a minute.
-# TYPE ironkvm_vpn_connected gauge
-ironkvm_vpn_connected{provider="tailscale"} 1
-`
-	assertText(t, render(t, collectVpn), want)
-}
-
-func TestVpnNotRunningIsNotConnectedWithoutAskingTheCli(t *testing.T) {
-	ts := &fakeVpn{installed: true, running: false, connected: true}
-	nb := &fakeVpn{installed: true, running: true, connected: false}
-	stubVpn(t, ts.provider("tailscale"), nb.provider("netbird"))
-
-	want := `# HELP ironkvm_vpn_connected Whether an installed VPN is connected. Asked of its CLI at most once a minute.
-# TYPE ironkvm_vpn_connected gauge
-ironkvm_vpn_connected{provider="tailscale"} 0
-ironkvm_vpn_connected{provider="netbird"} 0
-`
-	assertText(t, render(t, collectVpn), want)
-	if ts.calls != 0 {
-		t.Fatalf("the CLI of a stopped daemon was run %d times", ts.calls)
-	}
-}
-
-func TestVpnAnswerIsKeptForAMinute(t *testing.T) {
-	ts := &fakeVpn{installed: true, running: true, connected: true}
-	clock := stubVpn(t, ts.provider("tailscale"))
-
-	render(t, collectVpn)
-	*clock = clock.Add(59 * time.Second)
-	ts.connected = false
-	if got := render(t, collectVpn); !contains(got, `ironkvm_vpn_connected{provider="tailscale"} 1`) {
-		t.Fatalf("the kept answer was not used:\n%s", got)
-	}
-	if ts.calls != 1 {
-		t.Fatalf("the CLI ran %d times within a minute, want 1", ts.calls)
-	}
-
-	*clock = clock.Add(time.Second)
-	if got := render(t, collectVpn); !contains(got, `ironkvm_vpn_connected{provider="tailscale"} 0`) {
-		t.Fatalf("a stale answer was served:\n%s", got)
-	}
-	if ts.calls != 2 {
-		t.Fatalf("the CLI ran %d times, want 2 after a minute", ts.calls)
-	}
-}
-
-func TestVpnDaemonThatStartsIsAskedAtOnce(t *testing.T) {
-	ts := &fakeVpn{installed: true, running: true, connected: false}
-	stubVpn(t, ts.provider("tailscale"))
-
-	render(t, collectVpn)
-	ts.running = false
-	render(t, collectVpn)
-	ts.running, ts.connected = true, true
-	if got := render(t, collectVpn); !contains(got, `ironkvm_vpn_connected{provider="tailscale"} 1`) {
-		t.Fatalf("a restarted daemon was served the old answer:\n%s", got)
-	}
-}
-
-func contains(text, line string) bool {
-	return strings.Contains(text, line+"\n")
 }

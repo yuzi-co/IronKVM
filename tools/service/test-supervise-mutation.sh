@@ -208,7 +208,7 @@ mutate "the backoff is off by one" 's/-ge "${SSH_CURE_BACKOFF/-gt "${SSH_CURE_BA
 mutate "any probe answer is taken as the door being shut" 's/\[ "$answered" = 1 \]/[ 1 = 1 ]/'
 # Only the ssh port is the door. Any listener at all would pass the web
 # server's own port 80 as a reachable sshd.
-mutate "any listener counts as the door" 's/"\$SSH_PORT"|22) return 0 ;;/*) return 0 ;;/'
+mutate "any listener counts as the door" 's/"\$SSH_PORT") return 0 ;;/*) return 0 ;;/'
 # A connection is not a listener: the session that was open when sshd died
 # stays up until it ends.
 mutate "the listen state is not checked" 's/\[ "\$st" = 0A \] || continue/:/'
@@ -217,7 +217,11 @@ mutate "tcp6 is not read" 's| "\${PROC:-/proc}/net/tcp6"||'
 mutate "the owner's port is ignored"      's/SSH_PORT=\$port/SSH_PORT=22/'
 mutate "a port past 65535 is kept"        's/-le 65535/-le 99999/'
 mutate "a leading zero is kept"           "s/''|0\*|\*\[!0-9\]\*) port=22/''|*[!0-9]*) port=22/"
-mutate "a sshd that fell back to 22 is not the door" 's/"\$SSH_PORT"|22) return 0 ;;/"$SSH_PORT") return 0 ;;/'
+# Only the owner's port: a listener on 22 must not stand in for it.
+mutate "a listener on 22 always counts" 's/"\$SSH_PORT") return 0 ;;/"$SSH_PORT"|22) return 0 ;;/'
+# But a port sshd refused, which S50sshd records by removing the drop-in, is 22.
+mutate "a refused port is still expected" 's/^    \[ -e "\${SSH_PORT_DROPIN.*\] || port=22$/    :/'
+mutate "the drop-in test is inverted"     's/^    \[ -e "\${SSH_PORT_DROPIN/    [ ! -e "${SSH_PORT_DROPIN/'
 mutate "unreadable socket tables read as a shut door" 's/\[ "\$probed" = yes \] || return 2/:/'
 # The cure has to stay inside the update stand-off: an update replaces the boot
 # scripts, and restarting one in the middle of that is the fault the stand-off
@@ -228,7 +232,67 @@ mutate "the cure runs only during an update" 's/"$state" != updating \]; then/"$
 # Event lines reach syslog as well as the file.
 mutate "the log line never reaches syslog"  's/^        "\$LOGGER" -t supervise/        : "$LOGGER" -t supervise/'
 mutate "the syslog tag is lost"             's/-t supervise -p/-p/'
-mutate "log fails without logger"           '/^log() {$/,/^}$/s/return 0/return 1/'
+mutate "log fails without logger"           '/^say() {/,/^}$/s/return 0/return 1/'
+# Reboots and restarts are warnings, the rest notices.
+mutate "warn logs at notice"                's/^warn() { say warning/warn() { say notice/'
+mutate "log logs at warning"                's/^log()  { say notice/log()  { say warning/'
+mutate "the priority is not passed on"      's/-p "daemon.\$pri"/-p daemon.notice/'
+mutate "a reboot is logged at notice"       's/^    warn "rebooting: /    log "rebooting: /'
+mutate "a hang cure is logged at notice"    's/^                warn "NanoKVM-Server is up/                log "NanoKVM-Server is up/'
+
+echo
+echo "== kvm_system's output into syslog"
+# The syslog pipe block is spelled the same in three scripts and the suite
+# compares them, so a mutation of one copy would be caught by the comparison
+# alone. mutate_pipe applies the same edit to all three, which leaves the cases
+# that run the block to catch it. They need Linux: under Git Bash they are
+# skipped and every mutation here survives.
+mutate_pipe() {
+    desc="$1"; expr="$2"
+    mkdir -p "$WORK/initd"
+    sed "$expr" "$SV" > "$WORK/mutant"
+    sed "$expr" "$S95" > "$WORK/initd/S95nanokvm"
+    sed "$expr" "$(dirname "$S95")/S98tailscaled" > "$WORK/initd/S98tailscaled"
+
+    if ! sh -n "$WORK/mutant" 2>/dev/null; then
+        echo "   BROKEN MUTATION (does not parse): $desc"
+        fails=$((fails + 1))
+        return 0
+    fi
+    if cmp -s "$SV" "$WORK/mutant"; then
+        echo "   MUTATION CHANGED NOTHING: $desc"
+        fails=$((fails + 1))
+        return 0
+    fi
+    if sh "$HERE/test-supervise.sh" "$WORK/mutant" "$WORK/initd/S95nanokvm" > /dev/null 2>&1; then
+        echo "   NOT CAUGHT: $desc"
+        fails=$((fails + 1))
+    else
+        echo "   caught: $desc"
+    fi
+}
+mutate_pipe "the logger keeps the write end, so it never sees end of file" \
+    's/ <&9 8>&- 9<&- &$/ <\&9 9<\&- \&/'
+mutate_pipe "the logger dies of the TERM a stop sends" \
+    "s/( trap '' HUP INT QUIT TERM PIPE; exec/( exec/"
+mutate_pipe "the lines go out at notice" \
+    's/-t "\$1" -p daemon.info/-t "$1" -p daemon.notice/'
+mutate_pipe "the tag is lost" \
+    's/-t "\$1" -p daemon.info/-p daemon.info/'
+mutate_pipe "the starting shell keeps the read end" \
+    's/^    exec 9<&-$/    :/'
+mutate_pipe "the fifo is left in /tmp" \
+    '/^syslog_pipe() {/,/^}$/s/^    rm -f "\$fifo"$/    :/'
+mutate "the starting shell keeps the write end" \
+    '/^start_system() {/,/^}$/s/^        exec 8>&-$/        :/'
+mutate "stderr is not sent to syslog" \
+    's/"\$SYSTEM_BIN" < \/dev\/null >&8 2>&8 8>&- &/"$SYSTEM_BIN" < \/dev\/null >\&8 8>\&- \&/'
+# A pipeline is the obvious way to write this, and it hands the loop the
+# logger's pid.
+mutate "kvm_system is piped into logger" \
+    's/^        "\$SYSTEM_BIN" < \/dev\/null >&8 2>&8 8>&- &$/        "$SYSTEM_BIN" < \/dev\/null 2>\&1 | "$SYSLOG_LOGGER" -t kvm_system -p daemon.info \&/'
+mutate "without logger kvm_system is not started" \
+    '/^start_system() {/,/^}$/s/^        "\$SYSTEM_BIN" < \/dev\/null > \/dev\/null 2>&1 &$/        :/'
 
 echo
 if [ "$fails" -eq 0 ]; then

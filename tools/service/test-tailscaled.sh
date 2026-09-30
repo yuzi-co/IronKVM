@@ -21,6 +21,7 @@ note() { printf '  %-64s %s\n' "$1" "$2"; [ "$2" = FAIL ] && fails=$((fails + 1)
 work=$(mktemp -d)
 cleanup() {
     for p in $(pgrep -f "$work/bin/tailscaled"); do kill -9 "$p" 2>/dev/null; done
+    for p in $(pgrep -f "$work/bin/logger"); do kill -9 "$p" 2>/dev/null; done
     rm -rf "$work"
 }
 trap cleanup EXIT
@@ -36,6 +37,7 @@ case "$1" in
     --cleanup) echo cleanup >> "$STUB_LOG"; exit 0 ;;
 esac
 echo "$*" >> "$STUB_LOG"
+echo "tailscaled says hello" >&2
 [ -n "$STUB_EXIT" ] && exit 1
 trap 'exit 0' TERM
 while :; do sleep 1; done
@@ -44,7 +46,14 @@ cat > "$work/bin/tailscale" <<'STUB'
 #!/bin/sh
 echo "tailscale $*" >> "$STUB_LOG"
 STUB
-chmod 755 "$work/bin/tailscaled" "$work/bin/tailscale"
+# A logger that records how it was called, what it read, and its end of file.
+cat > "$work/bin/logger" <<'STUB'
+#!/bin/sh
+echo "args $*" >> "$LOGGER_OUT"
+while IFS= read -r line; do echo "line $line" >> "$LOGGER_OUT"; done
+echo eof >> "$LOGGER_OUT"
+STUB
+chmod 755 "$work/bin/tailscaled" "$work/bin/tailscale" "$work/bin/logger"
 
 reset_tree() {
     rm -rf "$work/root" "$work/stub.log"
@@ -64,6 +73,8 @@ run() {
     SOCKETDIR="$work/root/var/run/tailscale" \
     KVMDIR="$work/root/etc/kvm" MOUNTS="$work/root/mounts" DATA="$work/root/data" \
     START_WAIT=1 STOP_WAIT=5 STUB_LOG="$work/stub.log" \
+    SYSLOG_LOGGER="${TEST_LOGGER-$work/bin/logger}" SYSLOG_FIFO_DIR="$work" \
+    LOGGER_OUT="$work/logger.out" \
         sh "$S98" "$@" > "$work/out" 2>&1
 }
 
@@ -169,6 +180,57 @@ esac
 [ ! -d "$work/root/data/identity-system" ] \
     && note "and nothing is written under an unmounted /data" OK \
     || note "and nothing is written under an unmounted /data" FAIL
+
+echo
+echo "===== the daemon's output goes to syslog ====="
+# It went to /dev/null. Through a fifo rather than a pipeline, so the pid file
+# still names tailscaled and not its logger.
+loggers() { pgrep -f "$work/bin/logger" | wc -l | tr -d ' '; }
+wait_until() {   # a shell test, up to three seconds
+    i=0
+    while ! eval "$1"; do
+        i=$((i + 1))
+        [ "$i" -ge 30 ] && return 1
+        sleep 0.1
+    done
+}
+
+reset_tree mounted
+rm -f "$work/logger.out"
+run start
+pid=$(cat "$work/root/var/run/tailscaled.pid" 2>/dev/null)
+[ -n "$pid" ] && grep -q tailscaled "/proc/$pid/cmdline" 2>/dev/null \
+    && note "the pid file names the daemon, not its logger" OK \
+    || note "the pid file names the daemon, not its logger" FAIL
+wait_until 'grep -q "^line tailscaled says hello$" "$work/logger.out" 2>/dev/null' \
+    && note "what the daemon says reaches the logger" OK \
+    || note "what the daemon says reaches the logger" FAIL
+grep -q '^args -t tailscaled -p daemon.info$' "$work/logger.out" 2>/dev/null \
+    && note "tagged tailscaled, at daemon.info" OK \
+    || note "tagged tailscaled, at daemon.info (got $(grep '^args' "$work/logger.out" 2>/dev/null))" FAIL
+[ "$(loggers)" = 1 ] \
+    && note "one logger for the daemon" OK \
+    || note "one logger for the daemon (got $(loggers))" FAIL
+ls -A "$work" | grep -q '^\.syslog-' \
+    && note "no fifo is left behind" FAIL \
+    || note "no fifo is left behind" OK
+
+run restart
+[ "$(loggers)" = 1 ] \
+    && note "a restart leaves one logger, not two" OK \
+    || note "a restart leaves one logger, not two (got $(loggers))" FAIL
+run stop
+wait_until '[ "$(loggers)" = 0 ]' \
+    && note "stopping the daemon ends its logger" OK \
+    || note "stopping the daemon ends its logger (got $(loggers))" FAIL
+
+reset_tree mounted
+rm -f "$work/logger.out"
+TEST_LOGGER= run start
+[ "$(daemons)" = 1 ] && [ "$(loggers)" = 0 ] && [ ! -e "$work/logger.out" ] \
+    && note "without logger the daemon starts as before" OK \
+    || note "without logger the daemon starts as before" FAIL
+TEST_LOGGER= run stop
 
 echo
 echo "===== a pid file it cannot trust ====="

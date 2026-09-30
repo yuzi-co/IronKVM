@@ -29,6 +29,8 @@
 #   SUPERVISE_NO_REBOOT     1 logs the decision and does not act (default 0)
 #   SSH_DOWN_AFTER       seconds with no ssh listener before a restart   (60)
 #   SSH_PORT_FILE        the owner's ssh port, 22 if unusable (/etc/kvm/ssh_port)
+#   SSH_PORT_DROPIN      S50sshd's port drop-in, absent when sshd refused the port
+#                        (/etc/ssh/sshd_config.d/ironkvm-port.conf)
 #   SSH_CURE_BACKOFF     seconds between two sshd restarts               (300)
 #   SSHD_INIT            the init script to restart (default /etc/init.d/S50sshd)
 #   SSH_STOP_FLAG        present when the owner turned SSH off (/etc/kvm/ssh_stop)
@@ -94,14 +96,23 @@ SERVER_LOG=/tmp/nanokvm-server.log
 # reboot. This logs on events only, so a logger fork per line costs nothing;
 # without logger the line goes to the file alone. SUPERVISE_LOGGER names
 # another logger, or none when empty.
+#
+# Two priorities. warn is for what this script does to the board: a reboot or
+# the decision to reboot, and killing or restarting a process. A collector that
+# alerts on daemon.warning then sees those and nothing else. log is everything
+# else: starting and stopping, the update stand-off, the carveout.
 LOGGER=${SUPERVISE_LOGGER-$(command -v logger 2>/dev/null)}
-log() {
+say() {   # $1 = syslog priority, then the line
+    pri=$1
+    shift
     echo "$(date '+%Y-%m-%d %H:%M:%S') $*" >> "$LOG"
     if [ -n "$LOGGER" ]; then
-        "$LOGGER" -t supervise -p daemon.notice -- "$*" 2>/dev/null
+        "$LOGGER" -t supervise -p "daemon.$pri" -- "$*" 2>/dev/null
     fi
     return 0
 }
+log()  { say notice "$@"; }
+warn() { say warning "$@"; }
 # --- end log ---
 
 # --- decide ---
@@ -464,7 +475,7 @@ capture_bounded() {   # $1 = reason
     # wedged dmesg or tail is a grandchild and survives. The reboot proceeds
     # anyway, which is the property that matters, and the survivor leaves with
     # the board.
-    log "the evidence capture did not finish, rebooting without it"
+    warn "the evidence capture did not finish, rebooting without it"
     kill -9 "$pid" 2>/dev/null
     return 0
 }
@@ -503,11 +514,11 @@ ion_line() {
 
 escalate() {   # $1 = reason
     if [ "${NO_REBOOT:-0}" = 1 ]; then
-        log "would reboot ($1), but SUPERVISE_NO_REBOOT is set"
+        warn "would reboot ($1), but SUPERVISE_NO_REBOOT is set"
         return 0
     fi
 
-    log "rebooting: $1"
+    warn "rebooting: $1"
     capture_bounded "$1"
     sync
     reboot
@@ -566,10 +577,18 @@ delay_after_run() {
 # The owner can move sshd off 22 in Settings > SSH, which keeps the choice in
 # /etc/kvm/ssh_port. S50sshd falls back to 22 for anything it cannot use, and
 # so does this: a missing or unreadable file, anything that is not plain
-# digits, a leading zero, or a number past 65535. S50sshd also falls back when
-# sshd rejects the drop-in, which this cannot see, so a listener on 22 counts
-# as the door whatever the file says. Otherwise that board would have its
-# working sshd restarted every SSH_CURE_BACKOFF, for ever.
+# digits, a leading zero, or a number past 65535.
+#
+# Only that one port is the door. A listener on 22 used to count whatever the
+# file said, which let anything else on 22 (a second sshd, a dropbear) hide an
+# sshd that had died on the owner's port.
+#
+# S50sshd also falls back to 22 when sshd rejects the port, and it says so by
+# removing the drop-in it wrote: a chosen port with no drop-in is a board whose
+# sshd listens on 22. The server writes the drop-in before the file and takes
+# it back when sshd will not honour the port, so the two agree otherwise.
+# Without this a board whose port was rejected would have its working sshd
+# restarted every SSH_CURE_BACKOFF, for ever.
 ssh_port() {   # sets SSH_PORT
     port=
     [ -r "${SSH_PORT_FILE:-/etc/kvm/ssh_port}" ] &&
@@ -580,6 +599,7 @@ ssh_port() {   # sets SSH_PORT
     # The length first, because busybox `[` errors on a value too wide to
     # compare, and an error here would keep the number rather than drop it.
     { [ "${#port}" -le 5 ] && [ "$port" -le 65535 ]; } || port=22
+    [ -e "${SSH_PORT_DROPIN:-/etc/ssh/sshd_config.d/ironkvm-port.conf}" ] || port=22
     SSH_PORT=$port
 }
 
@@ -611,7 +631,7 @@ ssh_listening() {
             hex=${laddr##*:}
             case "$hex" in ''|*[!0-9A-Fa-f]*) continue ;; esac
             case "$(( 0x$hex ))" in
-                "$SSH_PORT"|22) return 0 ;;
+                "$SSH_PORT") return 0 ;;
             esac
         done < "$table"
     done
@@ -666,6 +686,43 @@ cure_ssh() {
 }
 # --- end ssh door ---
 
+# --- syslog pipe ---
+# A program's output, into syslog. syslog_pipe starts one logger reading a pipe
+# and leaves the pipe's write end on fd 8. The caller starts the program with
+# `>&8 2>&8 8>&- &` and then closes its own copy with `exec 8>&-`. $! is then
+# the program, as with a plain `&`, so whatever tracks its pid still tracks it.
+# A pipeline into logger would make $! the logger instead.
+#
+# The pipe is a fifo, opened here and unlinked at once, so nothing is left in
+# /tmp. It is opened read-write first, which never blocks, so that opening the
+# read end and then the write end does not block either.
+#
+# The program is the only writer. When it exits, however it exits, the logger
+# reads end of file and exits too, so stopping or restarting the program never
+# leaves a logger behind. The other way round is worse: a program whose logger
+# has gone dies of SIGPIPE at its next write. So the logger ignores the signals
+# a stop or a killall sends, and the OOM killer is told to pass it by; it holds
+# one line of text and cannot grow. Only a SIGKILL by hand ends it early.
+#
+# Every line goes out at daemon.info under the tag given. Without logger or
+# mkfifo this returns 1 and the caller starts the program as it always did.
+# SYSLOG_LOGGER names another logger, or none when empty.
+SYSLOG_LOGGER=${SYSLOG_LOGGER-$(command -v logger 2>/dev/null)}
+syslog_pipe() {   # $1 = tag
+    [ -n "$SYSLOG_LOGGER" ] || return 1
+    fifo=${SYSLOG_FIFO_DIR:-/tmp}/.syslog-$1.$$
+    rm -f "$fifo"
+    mkfifo -m 600 "$fifo" 2>/dev/null || return 1
+    exec 8<>"$fifo"
+    exec 9<"$fifo" 8>"$fifo"
+    rm -f "$fifo"
+    ( trap '' HUP INT QUIT TERM PIPE; exec "$SYSLOG_LOGGER" -t "$1" -p daemon.info ) <&9 8>&- 9<&- &
+    { echo -1000 > "/proc/$!/oom_score_adj"; } 2>/dev/null
+    exec 9<&-
+    return 0
+}
+# --- end syslog pipe ---
+
 binary_present() {
     [ -x "$SERVER_BIN" ]
 }
@@ -700,6 +757,21 @@ system_running() {   # uses and refreshes SYS_PID
     SYS_PID=$(pidof kvm_system 2>/dev/null)
     SYS_PID=${SYS_PID%% *}
     [ -n "$SYS_PID" ]
+}
+
+# start_system starts kvm_system and tracks it from the start, or the next pass
+# asks pidof for a process this started itself. Its output goes to syslog,
+# tagged kvm_system, which is where the board keeps what its programs say; it
+# went to /dev/null before, and still does on a board without logger.
+start_system() {   # sets SYS_PID
+    if syslog_pipe kvm_system; then
+        "$SYSTEM_BIN" < /dev/null >&8 2>&8 8>&- &
+        SYS_PID=$!
+        exec 8>&-
+    else
+        "$SYSTEM_BIN" < /dev/null > /dev/null 2>&1 &
+        SYS_PID=$!
+    fi
 }
 # --- end procs ---
 
@@ -870,7 +942,7 @@ watch_loop() {
                 # guard refused" from "the threshold was never met", and the
                 # counter is the only thing that says which.
                 failed_cures=$(next_failed_cures "$cures" "$failed_cures")
-                log "NanoKVM-Server is up but has not answered for ${stuck}s (failed_cures=$failed_cures), killing and restarting it"
+                warn "NanoKVM-Server is up but has not answered for ${stuck}s (failed_cures=$failed_cures), killing and restarting it"
 
                 if cure_hung; then
                     cures=$(( cures + 1 ))
@@ -878,7 +950,7 @@ watch_loop() {
                 else
                     # SIGKILL cannot clear uninterruptible sleep, and no later
                     # cure does better. Go straight to the threshold.
-                    log "the process did not leave after SIGKILL"
+                    warn "the process did not leave after SIGKILL"
                     failed_cures=${HANG_CURES_K:-2}
                     hang_reason="hung: the process did not leave after SIGKILL"
                 fi
@@ -908,7 +980,7 @@ watch_loop() {
                 # timed by the poll and the backoff instead.
                 ran=$(( NOW - started ))
                 short_runs=$(next_short_runs "$ran" "$short_runs")
-                log "NanoKVM-Server is gone after ${ran}s (short_runs=$short_runs), restarting in ${delay}s"
+                warn "NanoKVM-Server is gone after ${ran}s (short_runs=$short_runs), restarting in ${delay}s"
 
                 if [ "$(should_reboot restart "$short_runs" 0 "$NOW" "$served_ever")" = yes ]; then
                     escalate "crash loop: $short_runs runs shorter than ${SHORT_RUN:-30}s"
@@ -929,7 +1001,7 @@ watch_loop() {
                     # often.
                     ion_line
                     "$SERVER_BIN" < /dev/null >> "$SERVER_LOG" 2>&1 &
-                    log "started $SERVER_BIN as pid $!"
+                    warn "started $SERVER_BIN as pid $!"
                 fi
 
                 delay=$(delay_after_run "$ran" "$delay")
@@ -955,9 +1027,8 @@ watch_loop() {
         # to write to a running executable, so a copy that lands while this
         # poll's process is running returns ETXTBSY and the old binary stays.
         if [ "$state" != updating ] && ! system_running && system_binary_present; then
-            "$SYSTEM_BIN" < /dev/null > /dev/null 2>&1 &
-            SYS_PID=$!
-            log "kvm_system was gone, started it as pid $!"
+            start_system
+            warn "kvm_system was gone, started it as pid $SYS_PID"
         fi
 
         # The other door. An update replaces the boot scripts, so restarting one
@@ -978,7 +1049,7 @@ watch_loop() {
 
             if ssh_action "$ssh_answered" "$ssh_down_for" "$since_ssh_cure"
             then
-                log "nothing has listened on port $SSH_PORT for ${ssh_down_for}s, restarting $SSHD_INIT"
+                warn "nothing has listened on port $SSH_PORT for ${ssh_down_for}s, restarting $SSHD_INIT"
                 cure_ssh
                 ssh_cured_at=$NOW
             fi
