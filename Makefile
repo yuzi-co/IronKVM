@@ -47,7 +47,12 @@ GO_LDFLAGS := -ldflags "-s -w$(if $(BUILD_STAMP), -X NanoKVM-Server/common/versi
 #
 # server/build.sh does not need the flag. It runs on the host, where the
 # checkout and the user agree, so git answers there.
-GO_BUILD_CMD := cd /home/build/NanoKVM/server && go mod tidy && CGO_ENABLED=1 GOOS=linux GOARCH=riscv64 CC=riscv64-unknown-linux-musl-gcc CGO_CFLAGS="-mcpu=c906fdv -march=rv64imafdcv0p7xthead -mcmodel=medany -mabi=lp64d" go build -buildvcs=false $(GO_LDFLAGS)
+#
+# -trimpath drops the build machine's paths from the binary, so panic traces
+# name packages rather than /home/build/... or /go/pkg/mod/..., and the
+# binary is a little smaller. Every entry point that builds the server passes
+# it; tools/build/test-strip-flags.sh checks that they agree.
+GO_BUILD_CMD := cd /home/build/NanoKVM/server && go mod tidy && CGO_ENABLED=1 GOOS=linux GOARCH=riscv64 CC=riscv64-unknown-linux-musl-gcc CGO_CFLAGS="-mcpu=c906fdv -march=rv64imafdcv0p7xthead -mcmodel=medany -mabi=lp64d" go build -buildvcs=false -trimpath $(GO_LDFLAGS)
 SUPPORT_BUILD_CMD := . ./home/build/MaixCDK/bin/activate && cd /home/build/NanoKVM/support/sg2002 && ./build kvm_system && ./build kvm_system add_to_kvmapp
 VISION_BUILD_CMD := . ./home/build/MaixCDK/bin/activate && cd /home/build/NanoKVM/support/sg2002 && ./build kvm_vision && ./build kvm_vision add_to_kvmapp
 RELEASE_BUILD_CMD := /home/build/NanoKVM/scripts/build-in-container.sh

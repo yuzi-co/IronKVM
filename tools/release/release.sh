@@ -237,7 +237,7 @@ docker run -e UID="$BUILD_UID" -e GID="$BUILD_GID" -v "$PWD:/home/build/NanoKVM"
     "cd /home/build/NanoKVM/server && go mod tidy \
      && CGO_ENABLED=1 GOOS=linux GOARCH=riscv64 CC=riscv64-unknown-linux-musl-gcc \
         CGO_CFLAGS='-mcpu=c906fdv -march=rv64imafdcv0p7xthead -mcmodel=medany -mabi=lp64d' \
-        go build -buildvcs=false -ldflags '-s -w -X NanoKVM-Server/common/version.Build='"
+        go build -buildvcs=false -trimpath -ldflags '-s -w -X NanoKVM-Server/common/version.Build='"
 
 # The build does not patch the RPATH, and a binary without it does not start on
 # the device: the loader cannot find libkvm.so.

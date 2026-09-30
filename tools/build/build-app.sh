@@ -31,9 +31,9 @@ echo "== go build (stamp: ${BUILD_STAMP:-none})"
 # GO_LDFLAGS in the repository Makefile. Both branches strip, because an
 # unstamped build is deployed the same way a stamped one is.
 if [ -n "$BUILD_STAMP" ]; then
-    go build -ldflags "-s -w -X NanoKVM-Server/common/version.Build=$BUILD_STAMP" -o "$BINARY"
+    go build -trimpath -ldflags "-s -w -X NanoKVM-Server/common/version.Build=$BUILD_STAMP" -o "$BINARY"
 else
-    go build -ldflags "-s -w" -o "$BINARY"
+    go build -trimpath -ldflags "-s -w" -o "$BINARY"
 fi
 
 # libkvm.so records four OpenCV libraries and all four ship in dl_lib, so the
