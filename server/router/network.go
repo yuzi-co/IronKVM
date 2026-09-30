@@ -32,6 +32,11 @@ func networkRouter(r *gin.Engine) {
 	admin.GET("/network/dns", service.GetDNS)                      // get DNS configuration
 	admin.POST("/network/dns", service.SetDNS)                     // set DNS configuration
 
+	// Remote syslog: the collector S01syslogd forwards the system log to.
+	admin.GET("/network/syslog", service.GetSyslog)        // get the remote syslog setting and what runs
+	admin.POST("/network/syslog", service.SetSyslog)       // save the collector and restart syslogd
+	admin.POST("/network/syslog/test", service.TestSyslog) // send one message through the local syslogd
+
 	// The address routes change the interface the caller is talking over, so
 	// a change is applied on trial and reverts unless it is confirmed from
 	// the new address.
