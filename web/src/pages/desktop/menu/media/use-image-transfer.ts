@@ -28,7 +28,7 @@ export type ImageTransfer = ReturnType<typeof useImageTransfer>;
 
 // useImageTransfer holds the one image transfer the server runs at a time: a
 // download from a URL, the boot menu download, or an upload from this browser.
-// The Media dialog calls handleOpenChange as it opens and closes; the Network
+// The Media menu calls handleOpenChange as it opens and closes; the Network
 // boot settings page calls it as it opens.
 export function useImageTransfer() {
   const { t } = useTranslation();

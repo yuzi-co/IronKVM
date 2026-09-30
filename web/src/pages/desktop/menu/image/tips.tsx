@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import type { CollapseProps } from 'antd';
 import { Collapse, Modal } from 'antd';
 import { CircleHelpIcon } from 'lucide-react';
@@ -6,10 +5,32 @@ import { useTranslation } from 'react-i18next';
 
 import { useKeyboardLock } from '@/hooks/useKeyboardLock.ts';
 
-export const Tips = () => {
+// TipsButton sits in the Media menu's title row. The dialog it opens is
+// TipsModal, rendered outside the menu's popover: the menu closes first, so the
+// dialog is not drawn under or over a dropdown left open behind it.
+export const TipsButton = ({ onClick }: { onClick: () => void }) => {
   const { t } = useTranslation();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  useKeyboardLock('image-tips', isModalOpen);
+
+  return (
+    <button
+      type="button"
+      aria-label={t('image.tips.title')}
+      className="flex cursor-pointer items-center space-x-1 p-0 text-neutral-500 hover:text-blue-500"
+      onClick={onClick}
+    >
+      <CircleHelpIcon size={14} />
+    </button>
+  );
+};
+
+type TipsModalProps = {
+  open: boolean;
+  onClose: () => void;
+};
+
+export const TipsModal = ({ open, onClose }: TipsModalProps) => {
+  const { t } = useTranslation();
+  useKeyboardLock('image-tips', open);
 
   const items: CollapseProps['items'] = [
     {
@@ -52,32 +73,21 @@ export const Tips = () => {
   ];
 
   return (
-    <>
-      <button
-        type="button"
-        aria-label={t('image.tips.title')}
-        className="flex cursor-pointer items-center space-x-1 p-0 text-neutral-500 hover:text-blue-500"
-        onClick={() => setIsModalOpen(true)}
-      >
-        <CircleHelpIcon size={14} />
-      </button>
-
-      <Modal
-        title={t('image.tips.title')}
-        open={isModalOpen}
-        width={520}
-        footer={null}
-        centered
-        onCancel={() => setIsModalOpen(false)}
-      >
-        <Collapse
-          accordion
-          items={items}
-          bordered={false}
-          defaultActiveKey={['1']}
-          style={{ backgroundColor: 'transparent' }}
-        />
-      </Modal>
-    </>
+    <Modal
+      title={t('image.tips.title')}
+      open={open}
+      width={520}
+      footer={null}
+      centered
+      onCancel={onClose}
+    >
+      <Collapse
+        accordion
+        items={items}
+        bordered={false}
+        defaultActiveKey={['1']}
+        style={{ backgroundColor: 'transparent' }}
+      />
+    </Modal>
   );
 };
