@@ -20,7 +20,7 @@
 #   /tmp/server gone            -> someone stopped it, leave it alone
 #
 # Environment:
-#   SUPERVISE_INTERVAL   seconds between checks   (default 5)
+#   SUPERVISE_INTERVAL   seconds between checks   (default 10)
 #   SUPERVISE_LOG        where events go          (default /data/supervise.log)
 #   SUPERVISE_REBOOT_FLOOR  uptime below which it never reboots  (default 600)
 #   SUPERVISE_SHORT_RUN     a run shorter than this counts       (default 30)
@@ -33,7 +33,12 @@
 #   SSHD_INIT            the init script to restart (default /etc/init.d/S50sshd)
 #   SSH_STOP_FLAG        present when the owner turned SSH off (/etc/kvm/ssh_stop)
 
-INTERVAL=${SUPERVISE_INTERVAL:-5}
+# Ten seconds, not five. Each pass costs a fork for sleep and one for curl and
+# nothing else when all is well, but this is a single core, and nothing here
+# needs the finer grain: a hang takes HANG_AFTER (60s) to judge, the ssh door
+# SSH_DOWN_AFTER (60s), and a short run is anything under SHORT_RUN (30s),
+# which a ten-second poll still lands well inside.
+INTERVAL=${SUPERVISE_INTERVAL:-10}
 # Seconds a process may be alive and not answering before it counts as hung. A
 # minute is deliberately long: the cost of acting too early is killing a working
 # KVM, and the cost of acting late is a few more seconds of an outage that has
@@ -162,7 +167,7 @@ action() {   # $1 = what serving said this pass: 0 answered, 1 did not, 2 could 
 #
 # An update stops the server, moves /kvmapp to the backup directory, moves the
 # new tree in, installs the boot scripts and restarts. This script polls every
-# five seconds, so without a stand-off it acts in the middle of that. On
+# ten seconds, so without a stand-off it acts in the middle of that. On
 # 2026-08-17 it did: it started the server ten seconds into an install, that
 # server died three seconds later with its own files being moved out from under
 # it, and the board rebooted.
@@ -314,8 +319,8 @@ should_reboot() {
 #
 # SHORT_RUN is 30s and not the one second the process really survives. watch_loop
 # sleeps INTERVAL between checks and resets `started` after each start, so `ran`
-# is quantised to the poll and never reports below about five seconds - a
-# five-second threshold would be an assertion that can never be true. Thirty sits
+# is quantised to the poll and never reports below one INTERVAL, ten seconds - a
+# threshold that low would be an assertion that can never be true. Thirty sits
 # clear above that quantisation and clear below the sixty seconds delay_after_run
 # already uses to mean the fault was transient.
 next_short_runs() {   # $1 = seconds the run lasted, $2 = current count
@@ -832,8 +837,8 @@ watch_loop() {
 
         case "$state" in
             updating)
-                # The first pass only. At five seconds a stand-off would
-                # otherwise write sixty lines into that same log.
+                # The first pass only. At ten seconds a stand-off would
+                # otherwise write thirty lines into that same log.
                 if [ "$stood_off" = no ]; then
                     log "an update is in progress, standing off"
                     stood_off=yes

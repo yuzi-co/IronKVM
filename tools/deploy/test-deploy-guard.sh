@@ -315,7 +315,7 @@ grep -q 'setsid' "$DG" \
 
 echo
 echo "===== standing off the supervisor ====="
-# S98supervise polls every five seconds and acts on a server it finds gone or
+# S98supervise polls every ten seconds and acts on a server it finds gone or
 # not answering. A deploy stops the server and restarts it, which looks like
 # exactly that. On 2026-08-17 the supervisor started the server in the middle of
 # a deploy and then killed it 63 seconds later as hung, while the deploy was
