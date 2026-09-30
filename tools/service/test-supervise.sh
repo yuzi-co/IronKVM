@@ -867,21 +867,30 @@ table "$WORK/p-2222"      tcp  0050 0A 08AE 0A
 table "$WORK/p-only4"     tcp  0016 0A
 mkdir -p "$WORK/p-none"
 
-# probe <proc dir> <ssh_port contents, or absent>
+# port_files <ssh_port contents, or absent> <drop-in: yes or no>
+# S50sshd writes the drop-in for any port it accepted, so it is there unless a
+# case says otherwise.
+port_files() {
+    SSH_PORT_FILE="$WORK/ssh_port"
+    SSH_PORT_DROPIN="$WORK/ironkvm-port.conf"
+    rm -f "$SSH_PORT_FILE" "$SSH_PORT_DROPIN"
+    [ "$1" = absent ] || printf '%s\n' "$1" > "$SSH_PORT_FILE"
+    [ "${2:-yes}" = no ] || printf 'Port %s\n' "$1" > "$SSH_PORT_DROPIN"
+}
+
+# probe <proc dir> <ssh_port contents, or absent> [drop-in: yes or no]
 probe() {
     (
         PROC="$WORK/$1"
-        SSH_PORT_FILE="$WORK/ssh_port"
-        rm -f "$SSH_PORT_FILE"
-        [ "$2" = absent ] || printf '%s\n' "$2" > "$SSH_PORT_FILE"
+        port_files "$2" "$3"
         . "$WORK/sshdoor.sh"
         ssh_listening
         echo $?
     )
 }
 
-probe_case() {   # description, proc dir, port file, want
-    got=$(probe "$2" "$3")
+probe_case() {   # description, proc dir, port file, want, [drop-in]
+    got=$(probe "$2" "$3" "$5")
     [ "$got" = "$4" ] && note "$1 -> $got" OK || note "$1 -> $got, want $4" FAIL
 }
 
@@ -902,16 +911,21 @@ echo "  --- the owner's port"
 # working door as shut and restarts its sshd every SSH_CURE_BACKOFF, for ever.
 probe_case "port 2222 chosen, sshd on 2222"                p-2222      2222    0
 probe_case "port 2222 chosen, nothing on 2222 or 22"       p-shut      2222    1
-# S50sshd falls back to 22 when sshd rejects the drop-in, which the file does
-# not record. The door is open, so it must read as open.
-probe_case "port 2222 chosen, sshd fell back to 22"        p-only4     2222    0
+# Only the chosen port is the door. Something else listening on 22 must not
+# hide an sshd that died on 2222.
+probe_case "port 2222 chosen, only 22 listens"             p-only4     2222    1
+probe_case "port 2222 chosen, 22 listens and 2222 does not" p-open     2222    1
+# With 22 chosen, a listener on 2222 is not the door either.
+probe_case "port 22 by default, only 2222 listens"         p-2222      absent  1
+# S50sshd falls back to 22 when sshd rejects the port, and removes the drop-in
+# when it does. That door is open on 22, so it must read as open.
+probe_case "port 2222 refused, sshd fell back to 22"       p-only4     2222    0  no
+probe_case "port 2222 refused, nothing on 22"              p-2222      2222    1  no
 
 # ssh_port applies S50sshd's rules: anything it would not use means 22.
-port_case() {   # description, file contents or absent, want
+port_case() {   # description, file contents or absent, want, [drop-in]
     got=$(
-        SSH_PORT_FILE="$WORK/ssh_port"
-        rm -f "$SSH_PORT_FILE"
-        [ "$2" = absent ] || printf '%s\n' "$2" > "$SSH_PORT_FILE"
+        port_files "$2" "$4"
         . "$WORK/sshdoor.sh"
         ssh_port
         echo "$SSH_PORT"
@@ -929,6 +943,7 @@ port_case "a leading zero, which sh reads as octal" 022               22
 port_case "zero"                                0                     22
 port_case "not a number"                        ssh                   22
 port_case "a negative number"                   -22                   22
+port_case "a chosen port sshd refused"          2222                  22    no
 
 # A board whose socket tables cannot be read measured nothing, and must say so
 # rather than report the door shut.

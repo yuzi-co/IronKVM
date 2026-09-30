@@ -208,7 +208,7 @@ mutate "the backoff is off by one" 's/-ge "${SSH_CURE_BACKOFF/-gt "${SSH_CURE_BA
 mutate "any probe answer is taken as the door being shut" 's/\[ "$answered" = 1 \]/[ 1 = 1 ]/'
 # Only the ssh port is the door. Any listener at all would pass the web
 # server's own port 80 as a reachable sshd.
-mutate "any listener counts as the door" 's/"\$SSH_PORT"|22) return 0 ;;/*) return 0 ;;/'
+mutate "any listener counts as the door" 's/"\$SSH_PORT") return 0 ;;/*) return 0 ;;/'
 # A connection is not a listener: the session that was open when sshd died
 # stays up until it ends.
 mutate "the listen state is not checked" 's/\[ "\$st" = 0A \] || continue/:/'
@@ -217,7 +217,11 @@ mutate "tcp6 is not read" 's| "\${PROC:-/proc}/net/tcp6"||'
 mutate "the owner's port is ignored"      's/SSH_PORT=\$port/SSH_PORT=22/'
 mutate "a port past 65535 is kept"        's/-le 65535/-le 99999/'
 mutate "a leading zero is kept"           "s/''|0\*|\*\[!0-9\]\*) port=22/''|*[!0-9]*) port=22/"
-mutate "a sshd that fell back to 22 is not the door" 's/"\$SSH_PORT"|22) return 0 ;;/"$SSH_PORT") return 0 ;;/'
+# Only the owner's port: a listener on 22 must not stand in for it.
+mutate "a listener on 22 always counts" 's/"\$SSH_PORT") return 0 ;;/"$SSH_PORT"|22) return 0 ;;/'
+# But a port sshd refused, which S50sshd records by removing the drop-in, is 22.
+mutate "a refused port is still expected" 's/^    \[ -e "\${SSH_PORT_DROPIN.*\] || port=22$/    :/'
+mutate "the drop-in test is inverted"     's/^    \[ -e "\${SSH_PORT_DROPIN/    [ ! -e "${SSH_PORT_DROPIN/'
 mutate "unreadable socket tables read as a shut door" 's/\[ "\$probed" = yes \] || return 2/:/'
 # The cure has to stay inside the update stand-off: an update replaces the boot
 # scripts, and restarting one in the middle of that is the fault the stand-off
