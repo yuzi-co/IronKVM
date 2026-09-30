@@ -167,7 +167,11 @@ func (c *Coordinator) CancelMCPWithCause(cause error) {
 	}
 }
 
-func (c *Coordinator) beginManual(ctx context.Context) error {
+// beginManual counts a manual session in and waits for an MCP HID operation to
+// yield. A non-zero deadline bounds that wait; the deadline context is only
+// built when there is something to wait for, so the common path, with no MCP
+// operation running, allocates no timer.
+func (c *Coordinator) beginManual(ctx context.Context, deadline time.Time) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -184,6 +188,12 @@ func (c *Coordinator) beginManual(ctx context.Context) error {
 
 	if operation == nil {
 		return nil
+	}
+
+	if !deadline.IsZero() {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithDeadline(ctx, deadline)
+		defer cancel()
 	}
 
 	select {
@@ -235,7 +245,7 @@ func (s *ManualSession) Reserve(
 	held bool,
 	allow func(controlmode.Mode) bool,
 ) (*ManualReservation, error) {
-	return s.reserve(ctx, kind, held, true, allow)
+	return s.reserve(ctx, time.Time{}, kind, held, true, allow)
 }
 
 func (s *ManualSession) ReserveWithCooldown(
@@ -245,11 +255,26 @@ func (s *ManualSession) ReserveWithCooldown(
 	startCooldown bool,
 	allow func(controlmode.Mode) bool,
 ) (*ManualReservation, error) {
-	return s.reserve(ctx, kind, held, startCooldown, allow)
+	return s.reserve(ctx, time.Time{}, kind, held, startCooldown, allow)
+}
+
+// ReserveWithCooldownWithin is ReserveWithCooldown with a bound of timeout on
+// the wait for an MCP operation to yield, measured from this call. It is for
+// callers that reserve once per input event: a reservation that has nothing to
+// wait for, which is nearly all of them, builds no context and no timer.
+func (s *ManualSession) ReserveWithCooldownWithin(
+	timeout time.Duration,
+	kind ManualReportKind,
+	held bool,
+	startCooldown bool,
+	allow func(controlmode.Mode) bool,
+) (*ManualReservation, error) {
+	return s.reserve(context.Background(), time.Now().Add(timeout), kind, held, startCooldown, allow)
 }
 
 func (s *ManualSession) reserve(
 	ctx context.Context,
+	deadline time.Time,
 	kind ManualReportKind,
 	held bool,
 	startCooldown bool,
@@ -293,7 +318,7 @@ func (s *ManualSession) reserve(
 		releaseControl()
 		return nil, ErrManualInputBlocked
 	}
-	if err := s.coordinator.beginManual(ctx); err != nil {
+	if err := s.coordinator.beginManual(ctx, deadline); err != nil {
 		releaseControl()
 		return nil, err
 	}
