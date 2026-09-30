@@ -16,6 +16,8 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -69,6 +71,14 @@
 // input is settled. See the sleep at the end of vi_subsystem_detection.
 #define vi_detection_active_poll_ms 10U
 #define vi_detection_idle_poll_ms 100U
+// The detection loop asks get_hdmi_mode on every pass, so up to 100 times a
+// second. The file changes only when this library writes it or someone edits
+// it by hand, so a pass stats it and reads it only when the stat moved. The
+// age limit covers a rewrite that the stat cannot see: /etc/kvm is exFAT,
+// which keeps mtime to 10ms, so a second write of the same length inside one
+// tick leaves the stat identical.
+#define hdmi_mode_max_age_ms 1000U
+#define ion_summary_path        "/sys/kernel/debug/ion/cvi_carveout_heap_dump/summary"
 
 // The VPSS channel can stop delivering frames while the VI device keeps
 // running. Measured on 2026-09-04: VIDevFPS held at about 50 while the
@@ -584,10 +594,58 @@ void write_res_to_file(uint16_t _width, uint16_t _height)
     sync();
 }
 
+// What the last read of a small file saw, so a poller can skip the read when
+// nothing has moved. Split out, like the wedge counters, so it can be run
+// off-device: it takes a struct stat and a clock value and touches nothing.
+typedef struct {
+    uint8_t  valid;
+    uint64_t ino;
+    int64_t  size;
+    int64_t  mtime_sec;
+    int64_t  mtime_nsec;
+    uint32_t read_ms;
+} file_stamp_t;
+
+// 1 when the file has to be read again: never read, a different file, a
+// different length or mtime, or a read older than max_age_ms.
+uint8_t file_stamp_due(const file_stamp_t *s, const struct stat *st,
+    uint32_t now_ms, uint32_t max_age_ms)
+{
+    if(s == NULL || st == NULL || s->valid == 0){
+        return 1;
+    }
+    if(s->ino != (uint64_t)st->st_ino ||
+            s->size != (int64_t)st->st_size ||
+            s->mtime_sec != (int64_t)st->st_mtim.tv_sec ||
+            s->mtime_nsec != (int64_t)st->st_mtim.tv_nsec){
+        return 1;
+    }
+    return now_ms - s->read_ms >= max_age_ms ? 1 : 0;
+}
+
+void file_stamp_record(file_stamp_t *s, const struct stat *st, uint32_t now_ms)
+{
+    if(s == NULL || st == NULL){
+        return;
+    }
+    s->valid = 1;
+    s->ino = (uint64_t)st->st_ino;
+    s->size = (int64_t)st->st_size;
+    s->mtime_sec = (int64_t)st->st_mtim.tv_sec;
+    s->mtime_nsec = (int64_t)st->st_mtim.tv_nsec;
+    s->read_ms = now_ms;
+}
+
+// Only the detection thread touches this. get_hdmi_mode, set_hdmi_mode and
+// get_hdmi_version, the callers of both, all run on it.
+file_stamp_t hdmi_mode_stamp = { 0, 0, 0, 0, 0, 0 };
+
 int set_hdmi_mode(uint8_t _hdmi_mode)
 {
     if(_hdmi_mode >= 0 && _hdmi_mode <= 2){
         write_small_file(hdmi_mode_path, "%d", _hdmi_mode);
+        // The next pass has to see this even if the stat does not move.
+        hdmi_mode_stamp.valid = 0;
         return 1;
     } else {
         debug("[kvmv] Incorrect HDMI mode.\n");
@@ -595,19 +653,31 @@ int set_hdmi_mode(uint8_t _hdmi_mode)
     }
 }
 
+// Returns 1 when the mode differs from the one last seen, as it always has.
+// A pass that finds the file unchanged since its last read returns 0 without
+// opening it, which is what the read would have returned: an unchanged file
+// holds the mode already in kvmv_cfg.hdmi_mode.
 int get_hdmi_mode(void)
 {
-    if(access(hdmi_mode_path, F_OK) == 0){
+    struct stat st;
+    if(stat(hdmi_mode_path, &st) == 0){
         // exist
         FILE *fp;
         uint8_t tmp8;
         uint8_t RW_Data[3] = {0};
+        uint32_t now_ms = vi_state_shared::monotonic_ms();
+
+        if(file_stamp_due(&hdmi_mode_stamp, &st, now_ms, hdmi_mode_max_age_ms) == 0){
+            return 0;
+        }
 
         fp = fopen(hdmi_mode_path, "r");
         if (fp == NULL) {
+            hdmi_mode_stamp.valid = 0;
             kvmv_cfg.hdmi_mode = 0;
             return 0;
         }
+        file_stamp_record(&hdmi_mode_stamp, &st, now_ms);
         fread(RW_Data, sizeof(char), sizeof(RW_Data) - 1, fp);
         fclose(fp);
         tmp8 = atoi((char*)RW_Data);
@@ -623,6 +693,7 @@ int get_hdmi_mode(void)
             return 0;
         }
     }
+    hdmi_mode_stamp.valid = 0;
     kvmv_cfg.hdmi_mode = 0;
     return 0;
 }
@@ -787,36 +858,58 @@ uint8_t auto_try_res()
     return 0;
 }
 
+// The percentage on the "usage rate:" line of the carveout heap summary, which
+// reads, on this board:
+//
+//   Summary:
+//   [0] carveout heap size:78643200 bytes, used:31010816 bytes
+//   usage rate:40%, memory usage peak 31010816 bytes
+//
+// -1 when the line is not there or carries no number.
+int ion_usage_rate_from_summary(const char *text)
+{
+    static const char key[] = "usage rate:";
+    if(text == NULL){
+        return -1;
+    }
+    const char *p = strstr(text, key);
+    if(p == NULL){
+        return -1;
+    }
+    int rate = -1;
+    if(sscanf(p + sizeof(key) - 1, "%d", &rate) != 1 || rate < 0){
+        return -1;
+    }
+    return rate;
+}
+
 /* return :
  * 0 : error
  * 1 : out of mem
  * 2 : normal
+ *
+ * This used to popen "cat summary | grep | awk", which is a fork of a shell
+ * and three programs every 500ms on the one core for as long as the watchdog
+ * is on. It also misread the number: it took two characters after "rate:",
+ * so 100% read as 10 and never reached the threshold, and it tested for '&'
+ * where the text has '%'. A missing line left the buffer uninitialised.
 */
 uint8_t chack_ion()
 {
-    // cat /sys/kernel/debug/ion/cvi_carveout_heap_dump/summary | grep "usage rate:" | awk -F '[:%]' '{print $2}'
-	uint8_t RW_Data[10];
-    uint8_t ATOI_Data[3] = {0};
-    uint8_t ion_usage_rate;
-    char Cmd[150]={0};
-    // sprintf( Cmd, "cat /sys/kernel/debug/ion/cvi_carveout_heap_dump/summary | grep \"usage rate:\" | awk -F '[:%]' '{print $2}'");
-    sprintf( Cmd, "cat /sys/kernel/debug/ion/cvi_carveout_heap_dump/summary | grep \"usage rate:\" | awk '{print $2}'");
-    FILE* fp = popen( Cmd, "r" );
-    if ( NULL == fp )
-    {
-        pclose(fp);
+    // The rate is on the third line, well inside the first few hundred bytes.
+    // The rest of the file is a per-buffer table that can run long, and a
+    // short read of debugfs stops generating it.
+    char text[512];
+    FILE *fp = fopen(ion_summary_path, "r");
+    if(fp == NULL){
         return 0;
     }
-    fgets((char*)RW_Data, 8, fp);
-    pclose(fp);
-    RW_Data[8] = 0;
-    if (RW_Data[6] == '&') return 1;
-    else {
-        ATOI_Data[0] = RW_Data[5];
-        ATOI_Data[1] = RW_Data[6];
-    }
-    ion_usage_rate = atoi((char*)ATOI_Data);
+    size_t n = fread(text, 1, sizeof(text) - 1, fp);
+    fclose(fp);
+    text[n] = 0;
 
+    int ion_usage_rate = ion_usage_rate_from_summary(text);
+    if(ion_usage_rate < 0) return 0;
     if(ion_usage_rate >= 95) return 1;
     else return 2;
 }
