@@ -53,6 +53,7 @@ func Init() {
 
 	logrus.SetReportCaller(shouldReportCaller(level))
 	logrus.SetFormatter(&formatter{})
+	logrus.AddHook(newSyslogHook(syslogSocket, syslogTag))
 
 	logrus.Info("logger set success")
 }
