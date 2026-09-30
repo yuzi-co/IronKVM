@@ -32,34 +32,37 @@ export const VpnTab = ({ isLocked, setIsLocked }: VpnTabProps) => {
 
   return (
     <>
-      <Segmented<Provider>
-        block
-        className="mb-6"
-        aria-label={t('settings.nav.vpnProvider')}
-        disabled={isLocked}
-        value={provider}
-        onChange={change}
-        options={[
-          {
-            value: 'tailscale',
-            label: (
-              <div className="flex items-center justify-center space-x-2">
-                <TailscaleIcon size={15} />
-                <span>Tailscale</span>
-              </div>
-            )
-          },
-          {
-            value: 'netbird',
-            label: (
-              <div className="flex items-center justify-center space-x-2">
-                <NetbirdIcon size={15} />
-                <span>NetBird</span>
-              </div>
-            )
-          }
-        ]}
-      />
+      {/* The margin sits on a wrapper: antd's reset gives Segmented margin 0,
+          and its unlayered style beats a Tailwind class on the component. */}
+      <div className="mb-6">
+        <Segmented<Provider>
+          block
+          aria-label={t('settings.nav.vpnProvider')}
+          disabled={isLocked}
+          value={provider}
+          onChange={change}
+          options={[
+            {
+              value: 'tailscale',
+              label: (
+                <div className="flex items-center justify-center space-x-2">
+                  <TailscaleIcon size={15} />
+                  <span>Tailscale</span>
+                </div>
+              )
+            },
+            {
+              value: 'netbird',
+              label: (
+                <div className="flex items-center justify-center space-x-2">
+                  <NetbirdIcon size={15} />
+                  <span>NetBird</span>
+                </div>
+              )
+            }
+          ]}
+        />
+      </div>
 
       {provider === 'tailscale' ? (
         <Tailscale setIsLocked={setIsLocked} />
