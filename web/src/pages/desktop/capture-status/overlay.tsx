@@ -23,7 +23,7 @@ export function CaptureStatusOverlay({ status }: { status: CaptureStatus | null 
     <div
       className={`pointer-events-none absolute left-1/2 top-1/2 z-10 flex max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 items-center gap-2.5 rounded-lg border px-4 py-2.5 text-sm font-medium shadow-xl backdrop-blur-md ${toneClass}`}
     >
-      <Icon className="h-5 w-5 shrink-0 animate-pulse" />
+      <Icon size={20} className="shrink-0 animate-pulse" />
       <span className="min-w-0 truncate">{t(messageKey)}</span>
     </div>
   );

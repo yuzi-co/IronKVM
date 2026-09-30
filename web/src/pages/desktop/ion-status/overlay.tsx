@@ -30,7 +30,7 @@ export function IonWarningBadge({ status }: { status: IonStatus | null }) {
 
   return (
     <div className="pointer-events-none absolute top-4 left-1/2 z-10 flex max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-2.5 rounded-lg border border-amber-500/50 bg-neutral-900/90 px-4 py-2.5 text-sm font-medium text-amber-400 shadow-xl shadow-amber-900/20 backdrop-blur-md">
-      <AlertTriangle className="h-5 w-5 shrink-0" />
+      <AlertTriangle size={20} className="shrink-0" />
       <span className="min-w-0">{t('ion.warn')}</span>
     </div>
   );
@@ -62,7 +62,7 @@ export function IonCriticalGate({ onContinue }: { onContinue: () => void }) {
     <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/80 p-6">
       <div className="flex max-w-md flex-col gap-4 rounded-lg border border-red-500/50 bg-neutral-900/95 p-6 shadow-xl">
         <div className="flex items-center gap-2.5 text-red-400">
-          <AlertCircle className="h-5 w-5 shrink-0" />
+          <AlertCircle size={20} className="shrink-0" />
           <span className="font-medium">{t('ion.criticalTitle')}</span>
         </div>
 

@@ -56,7 +56,7 @@ export const FrameDetect = () => {
           <LoaderCircleIcon className="animate-spin" size={18} />
         ) : (
           <>
-            {isEnabled ? <Tally4Icon color="#22c55e" size={18} /> : <Tally5Icon size={18} />}
+            {isEnabled ? <Tally4Icon className="text-green-500" size={18} /> : <Tally5Icon size={18} />}
 
             <span
               className={clsx(

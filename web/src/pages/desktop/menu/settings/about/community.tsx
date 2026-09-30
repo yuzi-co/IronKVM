@@ -19,7 +19,7 @@ export const Community = () => {
     },
     {
       name: 'GitHub',
-      icon: <GithubOutlined style={{ fontSize: '20px' }} width={24} height={24} />,
+      icon: <GithubOutlined style={{ fontSize: '24px' }} />,
       url: 'https://github.com/yuzi-co/IronKVM'
     },
     {

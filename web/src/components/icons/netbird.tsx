@@ -1,5 +1,5 @@
 import icon from '@/assets/images/netbird.svg';
 
-export const Netbird = () => {
-  return <img src={icon} className="h-[18px] w-[18px] object-contain" alt="netbird" />;
+export const Netbird = ({ size = 18 }: { size?: number }) => {
+  return <img src={icon} width={size} height={size} className="object-contain" alt="netbird" />;
 };

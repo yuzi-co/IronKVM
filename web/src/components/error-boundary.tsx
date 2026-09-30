@@ -58,7 +58,7 @@ const PanelFallback = ({ error, resetErrorBoundary }: FallbackProps) => {
       role="alert"
       className="flex h-full min-h-0 w-full min-w-0 flex-col items-center justify-center gap-3 p-4 text-center"
     >
-      <TriangleAlertIcon className="h-6 w-6 shrink-0 text-amber-400" />
+      <TriangleAlertIcon size={24} className="shrink-0 text-amber-400" />
       <div className="text-sm text-neutral-300">{t('error.panel')}</div>
       {detail && <div className="max-w-full text-xs break-words text-neutral-500">{detail}</div>}
       <Actions retry={resetErrorBoundary} />
@@ -139,7 +139,7 @@ export const RouteError = () => {
       role="alert"
       className="flex h-screen w-screen flex-col items-center justify-center space-y-4 bg-neutral-950 px-6 text-center"
     >
-      <TriangleAlertIcon className="h-8 w-8 text-red-500" />
+      <TriangleAlertIcon size={32} className="text-red-500" />
       <h2 className="text-lg font-semibold text-red-500">{t('error.title')}</h2>
       {detail && <div className="max-w-full text-xs break-words text-neutral-500">{detail}</div>}
       <Button type="primary" danger onClick={() => window.location.reload()}>

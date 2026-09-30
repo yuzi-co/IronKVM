@@ -44,7 +44,7 @@ export const VpnTab = ({ isLocked, setIsLocked }: VpnTabProps) => {
             value: 'tailscale',
             label: (
               <div className="flex items-center justify-center space-x-2">
-                <TailscaleIcon />
+                <TailscaleIcon size={15} />
                 <span>Tailscale</span>
               </div>
             )
@@ -53,7 +53,7 @@ export const VpnTab = ({ isLocked, setIsLocked }: VpnTabProps) => {
             value: 'netbird',
             label: (
               <div className="flex items-center justify-center space-x-2">
-                <NetbirdIcon />
+                <NetbirdIcon size={15} />
                 <span>NetBird</span>
               </div>
             )
