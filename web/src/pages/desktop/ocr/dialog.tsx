@@ -124,8 +124,8 @@ export const OcrDialog = ({
       {contextHolder}
 
       <div className="flex flex-col pb-3">
-        <span className="text-xl">{t('screen.ocr.title')}</span>
-        <span className="text-sm text-neutral-500">{t('screen.ocr.tips')}</span>
+        <span className="text-base font-bold text-neutral-300">{t('screen.ocr.title')}</span>
+        <span className="text-xs text-neutral-500">{t('screen.ocr.tips')}</span>
       </div>
 
       <div className="flex flex-wrap items-center gap-3 pb-3">

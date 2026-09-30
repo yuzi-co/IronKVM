@@ -18,7 +18,7 @@ export const InstallHelp = () => {
       <p className="px-4 pt-3 text-left text-sm text-neutral-400">
         {t('settings.tailscale.manualIntro')}
       </p>
-      <ul className="list-decimal text-left font-mono text-sm text-neutral-300">
+      <ul className="list-decimal text-left text-sm text-neutral-300">
         <li>
           {t('settings.tailscale.download')}
           <a

@@ -135,7 +135,7 @@ export const Media = () => {
 
       <Modal open={isModalOpen} footer={null} onCancel={() => toggleModal(false)}>
         <div className="flex items-center space-x-1">
-          <span className="text-xl font-bold">{t('menu.media')}</span>
+          <span className="text-base font-bold text-neutral-300">{t('menu.media')}</span>
           <Tips />
         </div>
 
