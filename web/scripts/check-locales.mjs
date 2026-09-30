@@ -75,6 +75,25 @@ for (const [key, value] of en) {
 }
 
 let failed = false;
+
+// src/i18n/languages.ts is the static list the app detects from and the picker offers;
+// locale files are loaded lazily, so a file missing from the list is never chosen, and a
+// listed tag without a file silently shows English.
+const listed = new Set(
+  (await import(pathToFileURL(join(localesDir, '..', 'languages.ts')).href)).default.map(
+    (l) => l.key
+  )
+);
+const tags = new Set(files.map((f) => intlLocale[f] ?? f));
+const unlisted = [...tags].filter((t) => !listed.has(t));
+const fileless = [...listed].filter((t) => !tags.has(t));
+if (unlisted.length || fileless.length) {
+  failed = true;
+  console.log('\nlanguages.ts:');
+  if (unlisted.length) console.log(`  locale files not listed: ${unlisted.join(', ')}`);
+  if (fileless.length) console.log(`  listed without a locale file: ${fileless.join(', ')}`);
+}
+
 let totalMissing = 0;
 let totalStale = 0;
 let totalPlaceholder = 0;
