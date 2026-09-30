@@ -1215,10 +1215,6 @@ const zh_tw = {
         memory: '記憶體',
         uninstall: '解除安裝 {{name}}',
         uninstallDesc: '確定要解除安裝 {{name}} 嗎？登入資訊會保留在開發板上。',
-        swap: {
-          title: 'Swap 記憶體',
-          tip: '如果背景服務記憶體不足，請嘗試啟用 Swap。可在「設定 > 效能」中設定。'
-        },
         copy: '複製',
         copied: '連結已複製',
         copyFailed: '無法複製連結。請選取後手動複製。',

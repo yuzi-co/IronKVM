@@ -1302,10 +1302,6 @@ const de = {
         uninstall: '{{name}} deinstallieren',
         uninstallDesc:
           'Möchten Sie {{name}} wirklich deinstallieren? Die Anmeldung bleibt auf dem Board gespeichert.',
-        swap: {
-          title: 'Swap-Speicher',
-          tip: 'Wenn dem Dienst der Speicher knapp wird, versuchen Sie, Swap zu aktivieren. Das geht unter „Einstellungen > Leistung“.'
-        },
         copy: 'Kopieren',
         copied: 'Link kopiert',
         copyFailed: 'Link konnte nicht kopiert werden. Markieren und von Hand kopieren.',

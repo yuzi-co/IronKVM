@@ -1271,10 +1271,6 @@ const id = {
         memory: 'Memori',
         uninstall: 'Copot {{name}}',
         uninstallDesc: 'Apakah Anda yakin ingin mencopot {{name}}? Login tetap tersimpan di papan.',
-        swap: {
-          title: 'Memori swap',
-          tip: 'Jika daemon kekurangan memori, coba aktifkan swap. Swap diatur di "Pengaturan > Performa".'
-        },
         copy: 'Salin',
         copied: 'Tautan disalin',
         copyFailed: 'Tidak dapat menyalin tautan. Pilih lalu salin secara manual.',

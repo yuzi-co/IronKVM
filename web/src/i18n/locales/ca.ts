@@ -1280,10 +1280,6 @@ const ca = {
         memory: 'Memòria',
         uninstall: 'Desinstal·la {{name}}',
         uninstallDesc: 'Segur que voleu desinstal·lar {{name}}? La sessió es queda a la placa.',
-        swap: {
-          title: 'Memòria swap',
-          tip: 'Si el dimoni es queda curt de memòria, proveu d\'activar la memòria swap. Es configura a "Configuració > Rendiment".'
-        },
         copy: 'Copia',
         copied: 'Enllaç copiat',
         copyFailed: "No s'ha pogut copiar l'enllaç. Seleccioneu-lo i copieu-lo a mà.",

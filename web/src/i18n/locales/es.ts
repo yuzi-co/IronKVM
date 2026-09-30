@@ -1287,10 +1287,6 @@ const es = {
         memory: 'Memoria',
         uninstall: 'Desinstalar {{name}}',
         uninstallDesc: '¿Seguro que quieres desinstalar {{name}}? La sesión se queda en la placa.',
-        swap: {
-          title: 'Memoria swap',
-          tip: 'Si al daemon le falta memoria, prueba a activar la memoria swap. Se configura en "Ajustes > Rendimiento".'
-        },
         copy: 'Copiar',
         copied: 'Enlace copiado',
         copyFailed: 'No se pudo copiar el enlace. Selecciónelo y cópielo a mano.',

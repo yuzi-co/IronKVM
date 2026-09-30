@@ -1216,10 +1216,6 @@ const zh = {
         memory: '内存',
         uninstall: '卸载 {{name}}',
         uninstallDesc: '确定要卸载 {{name}} 吗？登录信息会保留在开发板上。',
-        swap: {
-          title: '交换内存',
-          tip: '如果守护进程内存不足，请尝试启用交换内存。可在“设置 > 性能”中设置。'
-        },
         copy: '复制',
         copied: '链接已复制',
         copyFailed: '无法复制链接。请选中后手动复制。',

@@ -1278,10 +1278,6 @@ const pt_br = {
         uninstall: 'Desinstalar {{name}}',
         uninstallDesc:
           'Tem certeza de que deseja desinstalar o {{name}}? O login permanece na placa.',
-        swap: {
-          title: 'Memória swap',
-          tip: 'Se faltar memória ao daemon, tente ativar o swap. Ele é configurado em "Configurações > Desempenho".'
-        },
         copy: 'Copiar',
         copied: 'Link copiado',
         copyFailed: 'Não foi possível copiar o link. Selecione-o e copie manualmente.',

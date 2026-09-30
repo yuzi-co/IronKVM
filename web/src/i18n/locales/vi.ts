@@ -1263,10 +1263,6 @@ const vi = {
         uninstall: 'Gỡ cài đặt {{name}}',
         uninstallDesc:
           'Bạn có chắc chắn muốn gỡ cài đặt {{name}} không? Thông tin đăng nhập vẫn được giữ trên bo mạch.',
-        swap: {
-          title: 'Bộ nhớ hoán đổi',
-          tip: 'Nếu daemon thiếu bộ nhớ, hãy thử bật bộ nhớ hoán đổi. Thiết lập trong "Cài đặt > Hiệu năng".'
-        },
         copy: 'Sao chép',
         copied: 'Đã sao chép liên kết',
         copyFailed: 'Không thể sao chép liên kết. Hãy chọn và sao chép thủ công.',

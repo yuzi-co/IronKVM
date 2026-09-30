@@ -39,7 +39,6 @@ import { useStableCallback } from '@/hooks/useStableCallback.ts';
 import { PanelBoundary } from '@/components/error-boundary';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-import { SettingsNav } from './nav-context.ts';
 import {
   browserStorage,
   filterTabs,
@@ -486,15 +485,13 @@ export const Settings = () => {
           >
             <div className="flex h-full w-full justify-center">
               <div className="w-full max-w-[600px] pt-14 pb-10">
-                <SettingsNav.Provider value={{ openTab: changeTab }}>
-                  {/* A page that fails to load or render stays inside the
-                      modal, and picking another tab clears it. */}
-                  <PanelBoundary key={currentTab} name={`settings-${currentTab}`}>
-                    <Suspense fallback={<PageLoading />}>
-                      {tabs.find((tab) => tab.id === currentTab)?.component}
-                    </Suspense>
-                  </PanelBoundary>
-                </SettingsNav.Provider>
+                {/* A page that fails to load or render stays inside the
+                    modal, and picking another tab clears it. */}
+                <PanelBoundary key={currentTab} name={`settings-${currentTab}`}>
+                  <Suspense fallback={<PageLoading />}>
+                    {tabs.find((tab) => tab.id === currentTab)?.component}
+                  </Suspense>
+                </PanelBoundary>
               </div>
             </div>
           </ScrollArea>

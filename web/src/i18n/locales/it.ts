@@ -1286,10 +1286,6 @@ const it = {
         memory: 'Memoria',
         uninstall: 'Disinstalla {{name}}',
         uninstallDesc: "Sei sicuro di voler disinstallare {{name}}? L'accesso resta sulla scheda.",
-        swap: {
-          title: 'Memoria di swap',
-          tip: 'Se il demone resta a corto di memoria, prova ad attivare lo swap. Si imposta in "Impostazioni > Prestazioni".'
-        },
         copy: 'Copia',
         copied: 'Link copiato',
         copyFailed: 'Impossibile copiare il link. Selezionalo e copialo a mano.',

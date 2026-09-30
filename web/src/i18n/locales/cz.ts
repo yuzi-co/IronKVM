@@ -1261,10 +1261,6 @@ const cz = {
         memory: 'Paměť',
         uninstall: 'Odinstalovat {{name}}',
         uninstallDesc: 'Opravdu chcete odinstalovat {{name}}? Přihlášení na desce zůstane.',
-        swap: {
-          title: 'Odkládací paměť',
-          tip: 'Pokud démonu dochází paměť, zkuste zapnout odkládací paměť. Nastavuje se v "Nastavení > Výkon".'
-        },
         copy: 'Kopírovat',
         copied: 'Odkaz zkopírován',
         copyFailed: 'Odkaz se nepodařilo zkopírovat. Označte ho a zkopírujte ručně.',

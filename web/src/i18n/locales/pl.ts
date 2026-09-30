@@ -1274,10 +1274,6 @@ const pl = {
         uninstall: 'Odinstaluj {{name}}',
         uninstallDesc:
           'Czy na pewno chcesz odinstalować {{name}}? Dane logowania pozostaną na płytce.',
-        swap: {
-          title: 'Plik wymiany',
-          tip: 'Jeśli usłudze brakuje pamięci, spróbuj włączyć plik wymiany. Ustawia się go w „Ustawienia > Wydajność”.'
-        },
         copy: 'Kopiuj',
         copied: 'Skopiowano link',
         copyFailed: 'Nie udało się skopiować linku. Zaznacz go i skopiuj ręcznie.',

@@ -1293,10 +1293,6 @@ const fr = {
         uninstall: 'Désinstaller {{name}}',
         uninstallDesc:
           'Êtes-vous sûr de vouloir désinstaller {{name}} ? La connexion reste enregistrée sur la carte.',
-        swap: {
-          title: "Mémoire d'échange",
-          tip: "Si le démon manque de mémoire, essayez d'activer le swap. Il se règle dans « Paramètres > Performances »."
-        },
         copy: 'Copier',
         copied: 'Lien copié',
         copyFailed: 'Impossible de copier le lien. Sélectionnez-le et copiez-le à la main.',

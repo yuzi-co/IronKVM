@@ -1284,10 +1284,6 @@ const nl = {
         uninstall: '{{name}} verwijderen',
         uninstallDesc:
           'Weet u zeker dat u {{name}} wilt verwijderen? De aanmelding blijft op het bord bewaard.',
-        swap: {
-          title: 'Swapgeheugen',
-          tip: 'Als de daemon te weinig geheugen heeft, probeer dan swap in te schakelen. Dat stelt u in bij "Instellingen > Prestaties".'
-        },
         copy: 'Kopiëren',
         copied: 'Link gekopieerd',
         copyFailed: 'Link kopiëren mislukt. Selecteer hem en kopieer hem handmatig.',

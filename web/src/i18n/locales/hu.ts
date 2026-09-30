@@ -1283,10 +1283,6 @@ const hu = {
         memory: 'Memória',
         uninstall: '{{name}} eltávolítása',
         uninstallDesc: 'Biztosan eltávolítja ezt: {{name}}? A bejelentkezés megmarad a kártyán.',
-        swap: {
-          title: 'Swap memória',
-          tip: 'Ha a démonnak kevés a memóriája, próbálja bekapcsolni a swapot. Ezt a "Beállítások > Teljesítmény" alatt lehet megadni.'
-        },
         copy: 'Másolás',
         copied: 'Hivatkozás másolva',
         copyFailed: 'Nem sikerült másolni a hivatkozást. Jelölje ki, és másolja kézzel.',

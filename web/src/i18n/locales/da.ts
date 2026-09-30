@@ -1266,10 +1266,6 @@ const da = {
         uninstall: 'Afinstaller {{name}}',
         uninstallDesc:
           'Er du sikker på, at du vil afinstallere {{name}}? Login forbliver på kortet.',
-        swap: {
-          title: 'Swap-hukommelse',
-          tip: 'Hvis dæmonen mangler hukommelse, så prøv at slå swap til. Det indstilles under "Indstillinger > Ydeevne".'
-        },
         copy: 'Kopiér',
         copied: 'Link kopieret',
         copyFailed: 'Linket kunne ikke kopieres. Markér det, og kopiér det manuelt.',

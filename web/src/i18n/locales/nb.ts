@@ -1266,10 +1266,6 @@ const nb = {
         uninstall: 'Avinstaller {{name}}',
         uninstallDesc:
           'Er du sikker på at du vil avinstallere {{name}}? Innloggingen blir liggende på kortet.',
-        swap: {
-          title: 'Swap-minne',
-          tip: 'Hvis tjenesten får for lite minne, kan du prøve å slå på swap. Det stilles inn i "Innstillinger > Ytelse".'
-        },
         copy: 'Kopier',
         copied: 'Lenke kopiert',
         copyFailed: 'Kunne ikke kopiere lenken. Merk den og kopier den manuelt.',

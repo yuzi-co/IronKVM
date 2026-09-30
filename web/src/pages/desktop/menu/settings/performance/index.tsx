@@ -5,8 +5,7 @@ import { CpuFreq } from './cpu-freq.tsx';
 import { Swap } from './swap.tsx';
 import { Zram } from './zram.tsx';
 
-// The board's CPU and memory tuning. The VPN page links here for swap rather
-// than keeping a second switch for the same setting.
+// The board's CPU and memory tuning.
 export const Performance = () => {
   const { t } = useTranslation();
 

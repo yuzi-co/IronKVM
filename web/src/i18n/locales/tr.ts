@@ -1266,10 +1266,6 @@ const tr = {
         memory: 'Bellek',
         uninstall: '{{name}} kaldır',
         uninstallDesc: '{{name}} kaldırılsın mı? Oturum bilgisi kartta kalır.',
-        swap: {
-          title: 'Swap belleği',
-          tip: 'Hizmetin belleği yetmezse swap açmayı deneyin. Bu ayar "Ayarlar > Performans" bölümündedir.'
-        },
         copy: 'Kopyala',
         copied: 'Bağlantı kopyalandı',
         copyFailed: 'Bağlantı kopyalanamadı. Seçip elle kopyalayın.',

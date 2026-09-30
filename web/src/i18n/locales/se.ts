@@ -1269,10 +1269,6 @@ const se = {
         uninstall: 'Avinstallera {{name}}',
         uninstallDesc:
           'Är du säker på att du vill avinstallera {{name}}? Inloggningen blir kvar på kortet.',
-        swap: {
-          title: 'Swap-minne',
-          tip: 'Om tjänsten får ont om minne kan du prova att slå på swap. Det ställs in under "Inställningar > Prestanda".'
-        },
         copy: 'Kopiera',
         copied: 'Länken kopierad',
         copyFailed: 'Det gick inte att kopiera länken. Markera den och kopiera den för hand.',

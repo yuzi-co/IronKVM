@@ -1255,10 +1255,6 @@ const en = {
         memory: 'Memory',
         uninstall: 'Uninstall {{name}}',
         uninstallDesc: 'Are you sure you want to uninstall {{name}}? The login stays on the board.',
-        swap: {
-          title: 'Swap memory',
-          tip: 'If the daemon runs short of memory, try turning on swap. It is set in "Settings > Performance".'
-        },
         copy: 'Copy',
         copied: 'Link copied',
         copyFailed: 'Could not copy the link. Select it and copy it by hand.',

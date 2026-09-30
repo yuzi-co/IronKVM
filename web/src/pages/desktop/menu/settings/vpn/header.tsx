@@ -15,7 +15,6 @@ import { StatusDot } from '@/components/status-dot.tsx';
 
 import { StateTag } from '../components/status-tag.tsx';
 import { MenuRow } from './menu-row.tsx';
-import { Swap } from './swap.tsx';
 import type { Rsp, State, UpdateInfo, VpnInfo } from './types.ts';
 import { Uninstall } from './uninstall.tsx';
 import { hasDaemon, statusTag, type Tag } from './view.ts';
@@ -158,7 +157,6 @@ export const Header = ({ vpn, state, failed, setIsLocked, onChange, onError }: H
         </Popconfirm>
       )}
 
-      <Swap />
       <Uninstall vpn={vpn} onSuccess={onChange} />
     </div>
   );
