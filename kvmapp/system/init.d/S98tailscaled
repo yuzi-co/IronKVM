@@ -149,6 +149,60 @@ memlimit_mib() {
 }
 # --- end memlimit ---
 
+# --- syslog pipe ---
+# A program's output, into syslog. syslog_pipe starts one logger reading a pipe
+# and leaves the pipe's write end on fd 8. The caller starts the program with
+# `>&8 2>&8 8>&- &` and then closes its own copy with `exec 8>&-`. $! is then
+# the program, as with a plain `&`, so whatever tracks its pid still tracks it.
+# A pipeline into logger would make $! the logger instead.
+#
+# The pipe is a fifo, opened here and unlinked at once, so nothing is left in
+# /tmp. It is opened read-write first, which never blocks, so that opening the
+# read end and then the write end does not block either.
+#
+# The program is the only writer. When it exits, however it exits, the logger
+# reads end of file and exits too, so stopping or restarting the program never
+# leaves a logger behind. The other way round is worse: a program whose logger
+# has gone dies of SIGPIPE at its next write. So the logger ignores the signals
+# a stop or a killall sends, and the OOM killer is told to pass it by; it holds
+# one line of text and cannot grow. Only a SIGKILL by hand ends it early.
+#
+# Every line goes out at daemon.info under the tag given. Without logger or
+# mkfifo this returns 1 and the caller starts the program as it always did.
+# SYSLOG_LOGGER names another logger, or none when empty.
+SYSLOG_LOGGER=${SYSLOG_LOGGER-$(command -v logger 2>/dev/null)}
+syslog_pipe() {   # $1 = tag
+    [ -n "$SYSLOG_LOGGER" ] || return 1
+    fifo=${SYSLOG_FIFO_DIR:-/tmp}/.syslog-$1.$$
+    rm -f "$fifo"
+    mkfifo -m 600 "$fifo" 2>/dev/null || return 1
+    exec 8<>"$fifo"
+    exec 9<"$fifo" 8>"$fifo"
+    rm -f "$fifo"
+    ( trap '' HUP INT QUIT TERM PIPE; exec "$SYSLOG_LOGGER" -t "$1" -p daemon.info ) <&9 8>&- 9<&- &
+    { echo -1000 > "/proc/$!/oom_score_adj"; } 2>/dev/null
+    exec 9<&-
+    return 0
+}
+# --- end syslog pipe ---
+
+# The daemon's output goes to syslog, tagged tailscaled, and to /dev/null on a
+# board without logger. At its default verbosity it says a hundred lines or so
+# while it comes up and then a few a minute: peers, DERP and link changes, and
+# its own rate limit folds a line that repeats. --verbose stays at 0; it only
+# goes up from there.
+#
+# exec, so the pid the caller records is tailscaled itself and not a subshell
+# waiting on it: stop signals that pid, and running_pid checks its cmdline.
+run_daemon() {
+    exec "$TAILSCALED" \
+        --state="$state" \
+        --statedir="$STATEDIR" \
+        --socket="$SOCKETDIR/tailscaled.sock" \
+        --port=${PORT} \
+        $FLAGS
+}
+
 case "$1" in
         start)
                 export GOMEMLIMIT="$(memlimit_mib)MiB"
@@ -164,13 +218,14 @@ case "$1" in
                 state=$(state_file)
 
                 printf "Starting $DAEMON[$VERSION]: "
-                "$TAILSCALED" \
-                    --state="$state" \
-                    --statedir="$STATEDIR" \
-                    --socket="$SOCKETDIR/tailscaled.sock" \
-                    --port=${PORT} \
-                    $FLAGS </dev/null >/dev/null 2>&1 &
-                echo $! > "$PIDFILE"
+                if syslog_pipe "$DAEMON"; then
+                    run_daemon </dev/null >&8 2>&8 8>&- &
+                    echo $! > "$PIDFILE"
+                    exec 8>&-
+                else
+                    run_daemon </dev/null >/dev/null 2>&1 &
+                    echo $! > "$PIDFILE"
+                fi
                 sleep "$START_WAIT"
                 if running_pid >/dev/null; then
                     echo "OK"

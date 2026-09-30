@@ -686,6 +686,43 @@ cure_ssh() {
 }
 # --- end ssh door ---
 
+# --- syslog pipe ---
+# A program's output, into syslog. syslog_pipe starts one logger reading a pipe
+# and leaves the pipe's write end on fd 8. The caller starts the program with
+# `>&8 2>&8 8>&- &` and then closes its own copy with `exec 8>&-`. $! is then
+# the program, as with a plain `&`, so whatever tracks its pid still tracks it.
+# A pipeline into logger would make $! the logger instead.
+#
+# The pipe is a fifo, opened here and unlinked at once, so nothing is left in
+# /tmp. It is opened read-write first, which never blocks, so that opening the
+# read end and then the write end does not block either.
+#
+# The program is the only writer. When it exits, however it exits, the logger
+# reads end of file and exits too, so stopping or restarting the program never
+# leaves a logger behind. The other way round is worse: a program whose logger
+# has gone dies of SIGPIPE at its next write. So the logger ignores the signals
+# a stop or a killall sends, and the OOM killer is told to pass it by; it holds
+# one line of text and cannot grow. Only a SIGKILL by hand ends it early.
+#
+# Every line goes out at daemon.info under the tag given. Without logger or
+# mkfifo this returns 1 and the caller starts the program as it always did.
+# SYSLOG_LOGGER names another logger, or none when empty.
+SYSLOG_LOGGER=${SYSLOG_LOGGER-$(command -v logger 2>/dev/null)}
+syslog_pipe() {   # $1 = tag
+    [ -n "$SYSLOG_LOGGER" ] || return 1
+    fifo=${SYSLOG_FIFO_DIR:-/tmp}/.syslog-$1.$$
+    rm -f "$fifo"
+    mkfifo -m 600 "$fifo" 2>/dev/null || return 1
+    exec 8<>"$fifo"
+    exec 9<"$fifo" 8>"$fifo"
+    rm -f "$fifo"
+    ( trap '' HUP INT QUIT TERM PIPE; exec "$SYSLOG_LOGGER" -t "$1" -p daemon.info ) <&9 8>&- 9<&- &
+    { echo -1000 > "/proc/$!/oom_score_adj"; } 2>/dev/null
+    exec 9<&-
+    return 0
+}
+# --- end syslog pipe ---
+
 binary_present() {
     [ -x "$SERVER_BIN" ]
 }
@@ -720,6 +757,21 @@ system_running() {   # uses and refreshes SYS_PID
     SYS_PID=$(pidof kvm_system 2>/dev/null)
     SYS_PID=${SYS_PID%% *}
     [ -n "$SYS_PID" ]
+}
+
+# start_system starts kvm_system and tracks it from the start, or the next pass
+# asks pidof for a process this started itself. Its output goes to syslog,
+# tagged kvm_system, which is where the board keeps what its programs say; it
+# went to /dev/null before, and still does on a board without logger.
+start_system() {   # sets SYS_PID
+    if syslog_pipe kvm_system; then
+        "$SYSTEM_BIN" < /dev/null >&8 2>&8 8>&- &
+        SYS_PID=$!
+        exec 8>&-
+    else
+        "$SYSTEM_BIN" < /dev/null > /dev/null 2>&1 &
+        SYS_PID=$!
+    fi
 }
 # --- end procs ---
 
@@ -975,9 +1027,8 @@ watch_loop() {
         # to write to a running executable, so a copy that lands while this
         # poll's process is running returns ETXTBSY and the old binary stays.
         if [ "$state" != updating ] && ! system_running && system_binary_present; then
-            "$SYSTEM_BIN" < /dev/null > /dev/null 2>&1 &
-            SYS_PID=$!
-            warn "kvm_system was gone, started it as pid $!"
+            start_system
+            warn "kvm_system was gone, started it as pid $SYS_PID"
         fi
 
         # The other door. An update replaces the boot scripts, so restarting one

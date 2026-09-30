@@ -241,6 +241,60 @@ mutate "a reboot is logged at notice"       's/^    warn "rebooting: /    log "r
 mutate "a hang cure is logged at notice"    's/^                warn "NanoKVM-Server is up/                log "NanoKVM-Server is up/'
 
 echo
+echo "== kvm_system's output into syslog"
+# The syslog pipe block is spelled the same in three scripts and the suite
+# compares them, so a mutation of one copy would be caught by the comparison
+# alone. mutate_pipe applies the same edit to all three, which leaves the cases
+# that run the block to catch it. They need Linux: under Git Bash they are
+# skipped and every mutation here survives.
+mutate_pipe() {
+    desc="$1"; expr="$2"
+    mkdir -p "$WORK/initd"
+    sed "$expr" "$SV" > "$WORK/mutant"
+    sed "$expr" "$S95" > "$WORK/initd/S95nanokvm"
+    sed "$expr" "$(dirname "$S95")/S98tailscaled" > "$WORK/initd/S98tailscaled"
+
+    if ! sh -n "$WORK/mutant" 2>/dev/null; then
+        echo "   BROKEN MUTATION (does not parse): $desc"
+        fails=$((fails + 1))
+        return 0
+    fi
+    if cmp -s "$SV" "$WORK/mutant"; then
+        echo "   MUTATION CHANGED NOTHING: $desc"
+        fails=$((fails + 1))
+        return 0
+    fi
+    if sh "$HERE/test-supervise.sh" "$WORK/mutant" "$WORK/initd/S95nanokvm" > /dev/null 2>&1; then
+        echo "   NOT CAUGHT: $desc"
+        fails=$((fails + 1))
+    else
+        echo "   caught: $desc"
+    fi
+}
+mutate_pipe "the logger keeps the write end, so it never sees end of file" \
+    's/ <&9 8>&- 9<&- &$/ <\&9 9<\&- \&/'
+mutate_pipe "the logger dies of the TERM a stop sends" \
+    "s/( trap '' HUP INT QUIT TERM PIPE; exec/( exec/"
+mutate_pipe "the lines go out at notice" \
+    's/-t "\$1" -p daemon.info/-t "$1" -p daemon.notice/'
+mutate_pipe "the tag is lost" \
+    's/-t "\$1" -p daemon.info/-p daemon.info/'
+mutate_pipe "the starting shell keeps the read end" \
+    's/^    exec 9<&-$/    :/'
+mutate_pipe "the fifo is left in /tmp" \
+    '/^syslog_pipe() {/,/^}$/s/^    rm -f "\$fifo"$/    :/'
+mutate "the starting shell keeps the write end" \
+    '/^start_system() {/,/^}$/s/^        exec 8>&-$/        :/'
+mutate "stderr is not sent to syslog" \
+    's/"\$SYSTEM_BIN" < \/dev\/null >&8 2>&8 8>&- &/"$SYSTEM_BIN" < \/dev\/null >\&8 8>\&- \&/'
+# A pipeline is the obvious way to write this, and it hands the loop the
+# logger's pid.
+mutate "kvm_system is piped into logger" \
+    's/^        "\$SYSTEM_BIN" < \/dev\/null >&8 2>&8 8>&- &$/        "$SYSTEM_BIN" < \/dev\/null 2>\&1 | "$SYSLOG_LOGGER" -t kvm_system -p daemon.info \&/'
+mutate "without logger kvm_system is not started" \
+    '/^start_system() {/,/^}$/s/^        "\$SYSTEM_BIN" < \/dev\/null > \/dev\/null 2>&1 &$/        :/'
+
+echo
 if [ "$fails" -eq 0 ]; then
     echo "===== every mutation was caught ====="
 else
