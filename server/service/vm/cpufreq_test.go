@@ -44,7 +44,11 @@ func useRegisters(t *testing.T, values map[uint32]uint32) {
 	t.Helper()
 
 	original := readRegister
-	t.Cleanup(func() { readRegister = original })
+	resetRunningClock()
+	t.Cleanup(func() {
+		readRegister = original
+		resetRunningClock()
+	})
 
 	readRegister = func(addr uint32) (uint32, bool) {
 		v, ok := values[addr]
@@ -133,6 +137,61 @@ func TestReadRunningMHzUnreadable(t *testing.T) {
 
 	if _, measured := readRunningMHz(); measured {
 		t.Error("readRunningMHz claimed a reading with no registers")
+	}
+}
+
+// countRegisterReads wraps the current register reader and counts calls.
+func countRegisterReads(t *testing.T) *int {
+	t.Helper()
+
+	inner := readRegister
+	reads := 0
+	readRegister = func(addr uint32) (uint32, bool) {
+		reads++
+		return inner(addr)
+	}
+	return &reads
+}
+
+func TestRunningMHzReadsTheRegistersOnce(t *testing.T) {
+	// The clock is fixed until reboot, so only the first request pays for the
+	// two devmem forks.
+	useRegisters(t, map[uint32]uint32{
+		muxReg:  0x00010309,
+		mpllReg: 0x00448101,
+	})
+	reads := countRegisterReads(t)
+
+	for i := 0; i < 3; i++ {
+		mhz, measured := runningMHz()
+		if !measured || mhz != 850 {
+			t.Fatalf("runningMHz = %d, %v; want 850, true", mhz, measured)
+		}
+	}
+	if *reads != 2 {
+		t.Errorf("register reads = %d, want 2 (mux and PLL, once)", *reads)
+	}
+}
+
+func TestRunningMHzRetriesAfterAFailedRead(t *testing.T) {
+	// A failed read is not remembered: the next request tries again and can
+	// succeed.
+	values := map[uint32]uint32{}
+	useRegisters(t, values)
+	reads := countRegisterReads(t)
+
+	if _, measured := runningMHz(); measured {
+		t.Fatal("runningMHz claimed a reading with no registers")
+	}
+
+	values[muxReg] = 0x00010309
+	values[mpllReg] = 0x00448101
+
+	if mhz, measured := runningMHz(); !measured || mhz != 850 {
+		t.Fatalf("runningMHz = %d, %v after registers appeared; want 850, true", mhz, measured)
+	}
+	if *reads != 3 {
+		t.Errorf("register reads = %d, want 3", *reads)
 	}
 }
 
