@@ -204,6 +204,9 @@ func dispose() {
 	log.Printf("teardown: carveout before: used=%d free=%d generations=%d",
 		before.Used, before.Free, before.Generations)
 
+	// First, and quick: it waits at most for one key press to be released, so
+	// the jiggler never leaves a key held on the host across a restart.
+	teardownStep("jiggler", jiggler.GetJiggler().Shutdown)
 	teardownStep("audio capture", webrtc.StopAudioCapture)
 	teardownStep("capture pipeline", func() { common.GetKvmVision().Close() })
 

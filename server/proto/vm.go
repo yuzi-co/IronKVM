@@ -362,14 +362,23 @@ type SetCpuFreqReq struct {
 	Target int `validate:"required"` // MHz, must be one of GetCpuFreqRsp.Options
 }
 
+// Method is "mouse" or "key". Key names the key the key method presses ("f15",
+// "shift" or "ctrl") and is empty for the mouse method.
 type GetMouseJigglerRsp struct {
 	Enabled bool   `json:"enabled"`
 	Mode    string `json:"mode"`
+	Method  string `json:"method"`
+	Key     string `json:"key"`
 }
 
+// Method and Key are optional. A request without Method keeps the method the
+// jiggler already has, so a client that predates them cannot switch a key
+// jiggler back to the mouse by toggling it. Method "key" without Key means F15.
 type SetMouseJigglerReq struct {
 	Enabled bool   `validate:"omitempty"`
 	Mode    string `validate:"omitempty"`
+	Method  string `validate:"omitempty,oneof=mouse key"`
+	Key     string `validate:"omitempty,oneof=f15 shift ctrl"`
 }
 
 type GetMdnsStateRsp struct {
