@@ -28,7 +28,7 @@ import {
   UserRoundIcon
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import semver from 'semver';
+import { versionGt } from '@/lib/version.ts';
 
 import * as api from '@/api/application.ts';
 import * as ls from '@/lib/localstorage.ts';
@@ -235,7 +235,7 @@ export const Settings = () => {
         return;
       }
 
-      if (semver.gt(rsp.data.latest, rsp.data.current)) {
+      if (versionGt(rsp.data.latest, rsp.data.current)) {
         setIsUpdateAvailable(true);
       }
     });

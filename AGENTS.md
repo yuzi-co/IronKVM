@@ -108,8 +108,8 @@ docker run --rm -v "$PWD/server:/src" -w /src ubuntu:24.04 \
 Both build paths stamp the binary. `common/version.Build` is set through `-ldflags -X` to
 `dev.<date>.<sha>[.dirty]`, computed on the host because the builder container only sees the
 checkout, not `.git`. `Decorate` attaches it to the reported application version as semver *build
-metadata* (`2.4.3+dev.20260729.1023.0414ec9`), so `Settings > Update` — which compares versions with
-`semver.gte` — still orders it correctly against the release feed. A prerelease suffix would sort
+metadata* (`2.4.3+dev.20260729.1023.0414ec9`), so `Settings > Update` — which compares versions by
+semver rules (`web/src/lib/version.ts`) — still orders it correctly against the release feed. A prerelease suffix would sort
 below the release it was built from and leave that page advertising an upgrade forever. Pass
 `BUILD_STAMP=` to build unstamped the way a release does, or `BUILD_STAMP=<value>` to override.
 
