@@ -68,6 +68,7 @@ esac`)
 case "$1" in
 version) echo "1.88.3"; echo "  tailscale commit: abc" ;;
 up) if [ -n "$STUB_FAIL" ]; then echo "backend error: tailscaled is not running" >&2; exit 1; fi ;;
+status) echo "{\"BackendState\": \"${STUB_STATE:-Stopped}\"}" ;;
 esac`)
 	stub(t, TailscaledPath, `exit 0`)
 	return calls
@@ -308,5 +309,38 @@ func TestUpdateAndUninstallStopOnAFailedStop(t *testing.T) {
 	}
 	if strings.Contains(callsOf(t, calls), "script start") {
 		t.Fatal("nothing may start after a failed stop")
+	}
+}
+
+func TestConnectStartsThenUps(t *testing.T) {
+	calls := lifecycle(t)
+	if rsp := call(t, NewService().Connect, ""); rsp.Code != 0 {
+		t.Fatalf("got %d %q", rsp.Code, rsp.Msg)
+	}
+	want := "script start\ntailscale status --json\ntailscale up --accept-dns=false\n"
+	if got := callsOf(t, calls); got != want {
+		t.Fatalf("calls:\n%s", got)
+	}
+}
+
+func TestConnectIsRefusedWhileNetBirdRuns(t *testing.T) {
+	calls := lifecycle(t)
+	fakeRunning(t, addon.NetBird, 4242, "/usr/bin/netbird")
+	if rsp := call(t, NewService().Connect, ""); rsp.Code == 0 || !strings.Contains(rsp.Msg, "NetBird") {
+		t.Fatalf("got %d %q", rsp.Code, rsp.Msg)
+	}
+	if got := callsOf(t, calls); got != "" {
+		t.Fatalf("nothing may run while refused, ran:\n%s", got)
+	}
+}
+
+func TestDisconnectDownsThenStops(t *testing.T) {
+	calls := lifecycle(t)
+	fakeRunning(t, addon.Tailscale, 4343, "/usr/sbin/tailscaled")
+	if rsp := call(t, NewService().Disconnect, ""); rsp.Code != 0 {
+		t.Fatalf("got %d %q", rsp.Code, rsp.Msg)
+	}
+	if got := callsOf(t, calls); got != "tailscale down\nscript stop\n" {
+		t.Fatalf("calls:\n%s", got)
 	}
 }

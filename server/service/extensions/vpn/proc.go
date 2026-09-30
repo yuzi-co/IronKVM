@@ -43,6 +43,19 @@ func UptimeSec(pid int) int64 {
 	if err != nil {
 		return 0
 	}
+	system := SystemUptimeSec()
+	if system == 0 {
+		return 0
+	}
+	if sec := system - start/clockTicks; sec > 0 {
+		return sec
+	}
+	return 0
+}
+
+// SystemUptimeSec is how long the board has been up, in whole seconds, from
+// /proc/uptime, or 0 when it cannot be read.
+func SystemUptimeSec() int64 {
 	up, err := os.ReadFile(filepath.Join(addon.ProcDir, "uptime"))
 	if err != nil {
 		return 0
@@ -52,10 +65,7 @@ func UptimeSec(pid int) int64 {
 	if err != nil {
 		return 0
 	}
-	if sec := int64(system) - start/clockTicks; sec > 0 {
-		return sec
-	}
-	return 0
+	return int64(system)
 }
 
 // RSS is the process's resident memory in bytes, from VmRSS, or 0.
