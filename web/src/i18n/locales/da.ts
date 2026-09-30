@@ -1236,6 +1236,39 @@ const da = {
           subnetMask: 'Undernetmaske',
           router: 'Router',
           none: 'Ingen'
+        },
+        syslog: {
+          title: 'Fjernlogning',
+          description: 'Send system-, kerne- og IronKVM-logs til en syslog-modtager over UDP.',
+          placeholder: 'vært eller vært:port, UDP, standardport 514',
+          save: 'Gem',
+          turnOff: 'Slå fra',
+          test: 'Send testbesked',
+          sent: 'Sendt <v>{{message}}</v>. Søg efter den i modtageren.',
+          forwarding: 'Videresender til <v>{{target}}</v>',
+          local: 'Kun lokalt',
+          savedButLocal: 'Gemt <v>{{target}}</v>, men den kørende logger logger kun lokalt',
+          savedButForwarding:
+            'Gemt <v>{{target}}</v>, men den kørende logger videresender til <v>{{active}}</v>',
+          offButForwarding:
+            'Slået fra, men den kørende logger videresender stadig til <v>{{active}}</v>',
+          unsupported: 'Dette images logger ignorerer indstillingen; opdater for at bruge den',
+          loadFailed: 'Kunne ikke læse logindstillingen',
+          saveFailed: 'Kunne ikke gemme logindstillingen',
+          testFailed: 'Kunne ikke sende testbeskeden',
+          metrics: 'Metrikker',
+          metricsDesc:
+            "Prometheus kan hente URL'en nedenfor med et bearer-token fra <link>API-nøgler</link>.",
+          metricsUrl: 'Metrik-URL',
+          errors: {
+            empty: 'Angiv en vært eller vært:port',
+            long: 'For langt til et værtsnavn',
+            ipv6: 'Sæt en IPv6-adresse i kantede parenteser, f.eks. [fd00::1]:514',
+            brackets: 'Adressen i parenteserne er ikke en IPv6-adresse',
+            host:
+              'Brug kun bogstaver, tal, punktummer og bindestreger, og start ikke med punktum eller bindestreg',
+            port: 'Porten skal være et tal fra 1 til 65535'
+          }
         }
       },
       vpn: {

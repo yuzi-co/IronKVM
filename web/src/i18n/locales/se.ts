@@ -1239,6 +1239,41 @@ const se = {
           subnetMask: 'Subnätmask',
           router: 'Router',
           none: 'Ingen'
+        },
+        syslog: {
+          title: 'Fjärrloggning',
+          description:
+            'Skickar system-, kärn- och IronKVM-loggar till en syslog-mottagare över UDP.',
+          placeholder: 'värd eller värd:port, UDP, standardport 514',
+          save: 'Spara',
+          turnOff: 'Stäng av',
+          test: 'Skicka testmeddelande',
+          sent: 'Skickade <v>{{message}}</v>. Sök efter det i mottagaren.',
+          forwarding: 'Vidarebefordrar till <v>{{target}}</v>',
+          local: 'Endast lokalt',
+          savedButLocal: 'Sparade <v>{{target}}</v>, men den körande loggern loggar bara lokalt',
+          savedButForwarding:
+            'Sparade <v>{{target}}</v>, men den körande loggern vidarebefordrar till <v>{{active}}</v>',
+          offButForwarding:
+            'Avstängt, men den körande loggern vidarebefordrar fortfarande till <v>{{active}}</v>',
+          unsupported:
+            'Loggern i den här avbildningen ignorerar inställningen; uppdatera för att använda den',
+          loadFailed: 'Kunde inte läsa logginställningen',
+          saveFailed: 'Kunde inte spara logginställningen',
+          testFailed: 'Kunde inte skicka testmeddelandet',
+          metrics: 'Mätvärden',
+          metricsDesc:
+            'Prometheus kan hämta URL:en nedan med en bearer-token från <link>API-nycklar</link>.',
+          metricsUrl: 'URL för mätvärden',
+          errors: {
+            empty: 'Ange en värd eller värd:port',
+            long: 'För långt för ett värdnamn',
+            ipv6: 'Sätt en IPv6-adress inom hakparenteser, som [fd00::1]:514',
+            brackets: 'Adressen inom parenteser är inte en IPv6-adress',
+            host:
+              'Använd bara bokstäver, siffror, punkter och bindestreck, och börja inte med punkt eller bindestreck',
+            port: 'Porten måste vara ett tal från 1 till 65535'
+          }
         }
       },
       vpn: {

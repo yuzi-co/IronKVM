@@ -1251,6 +1251,42 @@ const ca = {
           subnetMask: 'Màscara de subxarxa',
           router: 'Encaminador',
           none: 'Cap'
+        },
+        syslog: {
+          title: 'Registre remot',
+          description:
+            "Envia els registres del sistema, del nucli i d'IronKVM a un col·lector syslog per UDP.",
+          placeholder: 'host o host:port, UDP, port per defecte 514',
+          save: 'Desa',
+          turnOff: 'Desactiva',
+          test: 'Envia un missatge de prova',
+          sent: "S'ha enviat <v>{{message}}</v>. Cerca'l al col·lector.",
+          forwarding: 'Reenviant a <v>{{target}}</v>',
+          local: 'Només local',
+          savedButLocal:
+            "S'ha desat <v>{{target}}</v>, però el registrador en execució manté els registres en local",
+          savedButForwarding:
+            "S'ha desat <v>{{target}}</v>, però el registrador en execució reenvia a <v>{{active}}</v>",
+          offButForwarding:
+            'Desactivat, però el registrador en execució encara reenvia a <v>{{active}}</v>',
+          unsupported:
+            "El registrador d'aquesta imatge ignora el paràmetre; actualitza-la per fer-lo servir",
+          loadFailed: "No s'ha pogut llegir el paràmetre de registre",
+          saveFailed: "No s'ha pogut desar el paràmetre de registre",
+          testFailed: "No s'ha pogut enviar el missatge de prova",
+          metrics: 'Mètriques',
+          metricsDesc:
+            "Prometheus pot llegir l'URL següent amb un token bearer de <link>Claus API</link>.",
+          metricsUrl: 'URL de mètriques',
+          errors: {
+            empty: 'Introdueix un host o host:port',
+            long: 'Massa llarg per a un nom de host',
+            ipv6: "Posa l'adreça IPv6 entre claudàtors, com [fd00::1]:514",
+            brackets: "L'adreça entre claudàtors no és una adreça IPv6",
+            host:
+              'Fes servir només lletres, xifres, punts i guions, sense començar amb punt ni guió',
+            port: "El port ha de ser un número de l'1 al 65535"
+          }
         }
       },
       vpn: {

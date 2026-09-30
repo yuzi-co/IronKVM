@@ -1255,6 +1255,40 @@ const hu = {
           subnetMask: 'Alhálózati maszk',
           router: 'Router',
           none: 'Nincs'
+        },
+        syslog: {
+          title: 'Távoli naplózás',
+          description: 'A rendszer-, kernel- és IronKVM-naplókat UDP-n küldi egy syslog-gyűjtőnek.',
+          placeholder: 'gazdagép vagy gazdagép:port, UDP, alapértelmezett port 514',
+          save: 'Mentés',
+          turnOff: 'Kikapcsolás',
+          test: 'Tesztüzenet küldése',
+          sent: 'Elküldve: <v>{{message}}</v>. Keresse meg a gyűjtőn.',
+          forwarding: 'Továbbítás ide: <v>{{target}}</v>',
+          local: 'Csak helyi',
+          savedButLocal: 'Mentve: <v>{{target}}</v>, de a futó naplózó csak helyben naplóz',
+          savedButForwarding:
+            'Mentve: <v>{{target}}</v>, de a futó naplózó ide továbbít: <v>{{active}}</v>',
+          offButForwarding:
+            'Kikapcsolva, de a futó naplózó még mindig ide továbbít: <v>{{active}}</v>',
+          unsupported:
+            'Ennek a lemezképnek a naplózója figyelmen kívül hagyja a beállítást; frissítsen a használatához',
+          loadFailed: 'A naplózási beállítás beolvasása sikertelen',
+          saveFailed: 'A naplózási beállítás mentése sikertelen',
+          testFailed: 'A tesztüzenet elküldése sikertelen',
+          metrics: 'Metrikák',
+          metricsDesc:
+            'A Prometheus lekérdezheti az alábbi URL-t egy bearer tokennel az <link>API-kulcsok</link> közül.',
+          metricsUrl: 'Metrikák URL-je',
+          errors: {
+            empty: 'Adjon meg egy gazdagépet vagy gazdagép:portot',
+            long: 'Túl hosszú gazdagépnévnek',
+            ipv6: 'Az IPv6-címet tegye szögletes zárójelbe, például [fd00::1]:514',
+            brackets: 'A zárójelben lévő cím nem IPv6-cím',
+            host:
+              'Csak betűk, számjegyek, pontok és kötőjelek, és nem kezdődhet ponttal vagy kötőjellel',
+            port: 'A port 1 és 65535 közötti szám legyen'
+          }
         }
       },
       vpn: {

@@ -1238,6 +1238,40 @@ const tr = {
           subnetMask: 'Alt Ağ Maskesi',
           router: 'Yönlendirici',
           none: 'Yok'
+        },
+        syslog: {
+          title: 'Uzak günlükleme',
+          description:
+            'Sistem, çekirdek ve IronKVM günlüklerini UDP ile bir syslog toplayıcısına gönderir.',
+          placeholder: 'ana makine veya ana makine:port, UDP, varsayılan port 514',
+          save: 'Kaydet',
+          turnOff: 'Kapat',
+          test: 'Test mesajı gönder',
+          sent: '<v>{{message}}</v> gönderildi. Toplayıcıda bunu arayın.',
+          forwarding: '<v>{{target}}</v> adresine iletiliyor',
+          local: 'Yalnızca yerel',
+          savedButLocal:
+            '<v>{{target}}</v> kaydedildi, ancak çalışan günlükleyici yalnızca yerel kaydediyor',
+          savedButForwarding:
+            '<v>{{target}}</v> kaydedildi, ancak çalışan günlükleyici <v>{{active}}</v> adresine iletiyor',
+          offButForwarding:
+            'Kapatıldı, ancak çalışan günlükleyici hâlâ <v>{{active}}</v> adresine iletiyor',
+          unsupported: 'Bu imajın günlükleyicisi ayarı yok sayıyor; kullanmak için güncelleyin',
+          loadFailed: 'Günlük ayarı okunamadı',
+          saveFailed: 'Günlük ayarı kaydedilemedi',
+          testFailed: 'Test mesajı gönderilemedi',
+          metrics: 'Metrikler',
+          metricsDesc:
+            "Prometheus aşağıdaki URL'yi <link>API Anahtarları</link> içinden bir bearer token ile okuyabilir.",
+          metricsUrl: "Metrik URL'si",
+          errors: {
+            empty: 'Bir ana makine veya ana makine:port girin',
+            long: 'Ana makine adı için çok uzun',
+            ipv6: 'IPv6 adresini köşeli parantez içine alın, örneğin [fd00::1]:514',
+            brackets: 'Parantez içindeki adres bir IPv6 adresi değil',
+            host: 'Yalnızca harf, rakam, nokta ve tire kullanın; nokta veya tireyle başlamayın',
+            port: 'Port 1 ile 65535 arasında bir sayı olmalı'
+          }
         }
       },
       vpn: {

@@ -1241,6 +1241,40 @@ const id = {
           subnetMask: 'Subnet mask',
           router: 'Router',
           none: 'Tidak ada'
+        },
+        syslog: {
+          title: 'Log jarak jauh',
+          description: 'Kirim log sistem, kernel, dan IronKVM ke pengumpul syslog melalui UDP.',
+          placeholder: 'host atau host:port, UDP, port bawaan 514',
+          save: 'Simpan',
+          turnOff: 'Matikan',
+          test: 'Kirim pesan uji',
+          sent: 'Terkirim <v>{{message}}</v>. Cari pesan itu di pengumpul.',
+          forwarding: 'Meneruskan ke <v>{{target}}</v>',
+          local: 'Hanya lokal',
+          savedButLocal:
+            'Tersimpan <v>{{target}}</v>, tetapi logger yang berjalan hanya mencatat secara lokal',
+          savedButForwarding:
+            'Tersimpan <v>{{target}}</v>, tetapi logger yang berjalan meneruskan ke <v>{{active}}</v>',
+          offButForwarding:
+            'Dimatikan, tetapi logger yang berjalan masih meneruskan ke <v>{{active}}</v>',
+          unsupported: 'Logger image ini mengabaikan pengaturan; perbarui untuk menggunakannya',
+          loadFailed: 'Gagal membaca pengaturan log',
+          saveFailed: 'Gagal menyimpan pengaturan log',
+          testFailed: 'Gagal mengirim pesan uji',
+          metrics: 'Metrik',
+          metricsDesc:
+            'Prometheus dapat mengambil URL di bawah dengan bearer token dari <link>Kunci API</link>.',
+          metricsUrl: 'URL metrik',
+          errors: {
+            empty: 'Masukkan host atau host:port',
+            long: 'Terlalu panjang untuk nama host',
+            ipv6: 'Tulis alamat IPv6 dalam kurung siku, seperti [fd00::1]:514',
+            brackets: 'Alamat dalam kurung bukan alamat IPv6',
+            host:
+              'Gunakan hanya huruf, angka, titik, dan tanda hubung, tidak diawali titik atau tanda hubung',
+            port: 'Port harus berupa angka 1 sampai 65535'
+          }
         }
       },
       vpn: {

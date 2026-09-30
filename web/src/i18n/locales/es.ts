@@ -1259,6 +1259,40 @@ const es = {
           subnetMask: 'Máscara de subred',
           router: 'Router',
           none: 'Ninguno'
+        },
+        syslog: {
+          title: 'Registro remoto',
+          description:
+            'Envía los registros del sistema, del kernel y de IronKVM a un recolector syslog por UDP.',
+          placeholder: 'host o host:puerto, UDP, puerto predeterminado 514',
+          save: 'Guardar',
+          turnOff: 'Desactivar',
+          test: 'Enviar mensaje de prueba',
+          sent: 'Enviado <v>{{message}}</v>. Búscalo en el recolector.',
+          forwarding: 'Reenviando a <v>{{target}}</v>',
+          local: 'Solo local',
+          savedButLocal:
+            'Guardado <v>{{target}}</v>, pero el registrador en ejecución mantiene los registros en local',
+          savedButForwarding:
+            'Guardado <v>{{target}}</v>, pero el registrador en ejecución reenvía a <v>{{active}}</v>',
+          offButForwarding:
+            'Desactivado, pero el registrador en ejecución sigue reenviando a <v>{{active}}</v>',
+          unsupported: 'El registrador de esta imagen ignora el ajuste; actualiza para usarlo',
+          loadFailed: 'No se pudo leer el ajuste de registro',
+          saveFailed: 'No se pudo guardar el ajuste de registro',
+          testFailed: 'No se pudo enviar el mensaje de prueba',
+          metrics: 'Métricas',
+          metricsDesc:
+            'Prometheus puede consultar la URL siguiente con un token bearer de <link>Claves API</link>.',
+          metricsUrl: 'URL de métricas',
+          errors: {
+            empty: 'Introduce un host o host:puerto',
+            long: 'Demasiado largo para un nombre de host',
+            ipv6: 'Pon la dirección IPv6 entre corchetes, como [fd00::1]:514',
+            brackets: 'La dirección entre corchetes no es una dirección IPv6',
+            host: 'Usa solo letras, dígitos, puntos y guiones, sin empezar por punto ni guion',
+            port: 'El puerto debe ser un número del 1 al 65535'
+          }
         }
       },
       vpn: {

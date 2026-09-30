@@ -1254,6 +1254,35 @@ const ja = {
           subnetMask: 'サブネットマスク',
           router: 'ルーター',
           none: 'なし'
+        },
+        syslog: {
+          title: 'リモートログ',
+          description: 'システム、カーネル、IronKVM のログを UDP で syslog コレクターに送信します。',
+          placeholder: 'ホストまたはホスト:ポート、UDP、既定ポート 514',
+          save: '保存',
+          turnOff: 'オフにする',
+          test: 'テストメッセージを送信',
+          sent: '<v>{{message}}</v> を送信しました。コレクターで検索してください。',
+          forwarding: '<v>{{target}}</v> に転送中',
+          local: 'ローカルのみ',
+          savedButLocal: '<v>{{target}}</v> を保存しましたが、実行中のロガーはローカルにのみ記録しています',
+          savedButForwarding: '<v>{{target}}</v> を保存しましたが、実行中のロガーは <v>{{active}}</v> に転送しています',
+          offButForwarding: 'オフにしましたが、実行中のロガーはまだ <v>{{active}}</v> に転送しています',
+          unsupported: 'このイメージのロガーは設定を無視します。使用するには更新してください',
+          loadFailed: 'ログ設定を読み込めませんでした',
+          saveFailed: 'ログ設定を保存できませんでした',
+          testFailed: 'テストメッセージを送信できませんでした',
+          metrics: 'メトリクス',
+          metricsDesc: 'Prometheus は <link>API キー</link> の Bearer トークンを使って下の URL を取得できます。',
+          metricsUrl: 'メトリクス URL',
+          errors: {
+            empty: 'ホストまたはホスト:ポートを入力してください',
+            long: 'ホスト名として長すぎます',
+            ipv6: 'IPv6 アドレスは [fd00::1]:514 のように角括弧で囲んでください',
+            brackets: '括弧内のアドレスは IPv6 アドレスではありません',
+            host: '英字、数字、ドット、ハイフンのみ使用でき、ドットやハイフンで始めることはできません',
+            port: 'ポートは 1 から 65535 の数値にしてください'
+          }
         }
       },
       vpn: {

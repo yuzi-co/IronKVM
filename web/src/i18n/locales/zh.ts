@@ -1188,6 +1188,35 @@ const zh = {
           subnetMask: '子网掩码',
           router: '路由器',
           none: '无'
+        },
+        syslog: {
+          title: '远程日志',
+          description: '通过 UDP 将系统、内核和 IronKVM 日志发送到 syslog 收集器。',
+          placeholder: '主机或主机:端口，UDP，默认端口 514',
+          save: '保存',
+          turnOff: '关闭',
+          test: '发送测试消息',
+          sent: '已发送 <v>{{message}}</v>。请在收集器中搜索它。',
+          forwarding: '正在转发到 <v>{{target}}</v>',
+          local: '仅本地',
+          savedButLocal: '已保存 <v>{{target}}</v>，但运行中的日志程序仅在本地记录',
+          savedButForwarding: '已保存 <v>{{target}}</v>，但运行中的日志程序转发到 <v>{{active}}</v>',
+          offButForwarding: '已关闭，但运行中的日志程序仍在转发到 <v>{{active}}</v>',
+          unsupported: '此镜像的日志程序会忽略该设置；请更新后使用',
+          loadFailed: '读取日志设置失败',
+          saveFailed: '保存日志设置失败',
+          testFailed: '发送测试消息失败',
+          metrics: '指标',
+          metricsDesc: 'Prometheus 可使用 <link>API 密钥</link> 中的 Bearer 令牌抓取下面的 URL。',
+          metricsUrl: '指标 URL',
+          errors: {
+            empty: '请输入主机或主机:端口',
+            long: '作为主机名太长',
+            ipv6: 'IPv6 地址请放在方括号中，如 [fd00::1]:514',
+            brackets: '方括号中的地址不是 IPv6 地址',
+            host: '只能使用字母、数字、点和连字符，且不能以点或连字符开头',
+            port: '端口必须是 1 到 65535 之间的数字'
+          }
         }
       },
       vpn: {

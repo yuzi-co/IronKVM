@@ -1232,6 +1232,37 @@ const cz = {
           subnetMask: 'Maska podsítě',
           router: 'Router',
           none: 'Žádné'
+        },
+        syslog: {
+          title: 'Vzdálené logování',
+          description: 'Odesílá systémové logy, logy jádra a IronKVM na syslog server přes UDP.',
+          placeholder: 'host nebo host:port, UDP, výchozí port 514',
+          save: 'Uložit',
+          turnOff: 'Vypnout',
+          test: 'Odeslat testovací zprávu',
+          sent: 'Odesláno <v>{{message}}</v>. Vyhledejte ji na serveru.',
+          forwarding: 'Přeposílá se na <v>{{target}}</v>',
+          local: 'Pouze lokálně',
+          savedButLocal: 'Uloženo <v>{{target}}</v>, ale běžící logger ukládá logy jen lokálně',
+          savedButForwarding:
+            'Uloženo <v>{{target}}</v>, ale běžící logger přeposílá na <v>{{active}}</v>',
+          offButForwarding: 'Vypnuto, ale běžící logger stále přeposílá na <v>{{active}}</v>',
+          unsupported: 'Logger tohoto obrazu nastavení ignoruje; pro jeho použití aktualizujte',
+          loadFailed: 'Nastavení logování se nepodařilo načíst',
+          saveFailed: 'Nastavení logování se nepodařilo uložit',
+          testFailed: 'Testovací zprávu se nepodařilo odeslat',
+          metrics: 'Metriky',
+          metricsDesc:
+            'Prometheus může stahovat níže uvedenou URL s bearer tokenem z <link>API klíčů</link>.',
+          metricsUrl: 'URL metrik',
+          errors: {
+            empty: 'Zadejte host nebo host:port',
+            long: 'Příliš dlouhé pro název hostitele',
+            ipv6: 'Adresu IPv6 dejte do hranatých závorek, např. [fd00::1]:514',
+            brackets: 'Adresa v závorkách není adresa IPv6',
+            host: 'Použijte jen písmena, číslice, tečky a pomlčky, nezačínejte tečkou ani pomlčkou',
+            port: 'Port musí být číslo od 1 do 65535'
+          }
         }
       },
       vpn: {

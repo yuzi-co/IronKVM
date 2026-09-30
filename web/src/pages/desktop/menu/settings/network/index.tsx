@@ -5,6 +5,7 @@ import { Hostname } from '../about/hostname.tsx';
 import { Mdns } from '../device/mdns.tsx';
 import { DNS } from './dns.tsx';
 import { Ethernet } from './ethernet.tsx';
+import { Syslog } from './syslog.tsx';
 import { Wifi } from './wifi.tsx';
 
 export const Network = () => {
@@ -32,6 +33,10 @@ export const Network = () => {
       <Divider className="opacity-50" style={{ margin: '32px 0' }} />
 
       <DNS />
+
+      <Divider className="opacity-50" style={{ margin: '32px 0' }} />
+
+      <Syslog />
     </>
   );
 };

@@ -1263,6 +1263,42 @@ const fr = {
           subnetMask: 'Masque de sous-réseau',
           router: 'Routeur',
           none: 'Aucun'
+        },
+        syslog: {
+          title: 'Journalisation à distance',
+          description:
+            "Envoie les journaux du système, du noyau et d'IronKVM à un collecteur syslog en UDP.",
+          placeholder: 'hôte ou hôte:port, UDP, port 514 par défaut',
+          save: 'Enregistrer',
+          turnOff: 'Désactiver',
+          test: 'Envoyer un message de test',
+          sent: '<v>{{message}}</v> envoyé. Recherchez-le sur le collecteur.',
+          forwarding: 'Transfert vers <v>{{target}}</v>',
+          local: 'Local uniquement',
+          savedButLocal:
+            '<v>{{target}}</v> enregistré, mais le journaliseur en cours garde les journaux en local',
+          savedButForwarding:
+            '<v>{{target}}</v> enregistré, mais le journaliseur en cours transfère vers <v>{{active}}</v>',
+          offButForwarding:
+            'Désactivé, mais le journaliseur en cours transfère encore vers <v>{{active}}</v>',
+          unsupported:
+            "Le journaliseur de cette image ignore le réglage ; mettez à jour pour l'utiliser",
+          loadFailed: 'Impossible de lire le réglage de journalisation',
+          saveFailed: "Impossible d'enregistrer le réglage de journalisation",
+          testFailed: "Impossible d'envoyer le message de test",
+          metrics: 'Métriques',
+          metricsDesc:
+            "Prometheus peut interroger l'URL ci-dessous avec un jeton bearer issu de <link>Clés API</link>.",
+          metricsUrl: 'URL des métriques',
+          errors: {
+            empty: 'Saisissez un hôte ou hôte:port',
+            long: "Trop long pour un nom d'hôte",
+            ipv6: 'Mettez une adresse IPv6 entre crochets, comme [fd00::1]:514',
+            brackets: "L'adresse entre crochets n'est pas une adresse IPv6",
+            host:
+              'Uniquement des lettres, chiffres, points et tirets, sans commencer par un point ou un tiret',
+            port: 'Le port doit être un nombre de 1 à 65535'
+          }
         }
       },
       vpn: {

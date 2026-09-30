@@ -1187,6 +1187,35 @@ const zh_tw = {
           subnetMask: '子網路遮罩',
           router: '路由器',
           none: '無'
+        },
+        syslog: {
+          title: '遠端日誌',
+          description: '透過 UDP 將系統、核心和 IronKVM 日誌傳送到 syslog 收集器。',
+          placeholder: '主機或主機:連接埠，UDP，預設連接埠 514',
+          save: '儲存',
+          turnOff: '關閉',
+          test: '傳送測試訊息',
+          sent: '已傳送 <v>{{message}}</v>。請在收集器中搜尋它。',
+          forwarding: '正在轉送到 <v>{{target}}</v>',
+          local: '僅本機',
+          savedButLocal: '已儲存 <v>{{target}}</v>，但執行中的日誌程式僅在本機記錄',
+          savedButForwarding: '已儲存 <v>{{target}}</v>，但執行中的日誌程式轉送到 <v>{{active}}</v>',
+          offButForwarding: '已關閉，但執行中的日誌程式仍在轉送到 <v>{{active}}</v>',
+          unsupported: '此映像的日誌程式會忽略此設定；請更新後使用',
+          loadFailed: '讀取日誌設定失敗',
+          saveFailed: '儲存日誌設定失敗',
+          testFailed: '傳送測試訊息失敗',
+          metrics: '指標',
+          metricsDesc: 'Prometheus 可使用 <link>API 金鑰</link> 中的 Bearer 權杖抓取下方的 URL。',
+          metricsUrl: '指標 URL',
+          errors: {
+            empty: '請輸入主機或主機:連接埠',
+            long: '作為主機名稱太長',
+            ipv6: 'IPv6 位址請放在方括號中，例如 [fd00::1]:514',
+            brackets: '方括號中的位址不是 IPv6 位址',
+            host: '只能使用字母、數字、點和連字號，且不能以點或連字號開頭',
+            port: '連接埠必須是 1 到 65535 之間的數字'
+          }
         }
       },
       vpn: {

@@ -1258,6 +1258,40 @@ const it = {
           subnetMask: 'Subnet mask',
           router: 'Router',
           none: 'Nessuno'
+        },
+        syslog: {
+          title: 'Log remoto',
+          description:
+            'Invia i log di sistema, del kernel e di IronKVM a un collettore syslog via UDP.',
+          placeholder: 'host o host:porta, UDP, porta predefinita 514',
+          save: 'Salva',
+          turnOff: 'Disattiva',
+          test: 'Invia messaggio di prova',
+          sent: 'Inviato <v>{{message}}</v>. Cercalo sul collettore.',
+          forwarding: 'Inoltro a <v>{{target}}</v>',
+          local: 'Solo locale',
+          savedButLocal:
+            'Salvato <v>{{target}}</v>, ma il logger in esecuzione tiene i log in locale',
+          savedButForwarding:
+            'Salvato <v>{{target}}</v>, ma il logger in esecuzione inoltra a <v>{{active}}</v>',
+          offButForwarding:
+            'Disattivato, ma il logger in esecuzione inoltra ancora a <v>{{active}}</v>',
+          unsupported: "Il logger di questa immagine ignora l'impostazione; aggiorna per usarla",
+          loadFailed: "Impossibile leggere l'impostazione dei log",
+          saveFailed: "Impossibile salvare l'impostazione dei log",
+          testFailed: 'Impossibile inviare il messaggio di prova',
+          metrics: 'Metriche',
+          metricsDesc:
+            "Prometheus può leggere l'URL qui sotto con un token bearer da <link>Chiavi API</link>.",
+          metricsUrl: 'URL delle metriche',
+          errors: {
+            empty: 'Inserisci un host o host:porta',
+            long: 'Troppo lungo per un nome host',
+            ipv6: "Metti l'indirizzo IPv6 tra parentesi quadre, come [fd00::1]:514",
+            brackets: "L'indirizzo tra parentesi non è un indirizzo IPv6",
+            host: 'Usa solo lettere, cifre, punti e trattini, senza iniziare con punto o trattino',
+            port: 'La porta deve essere un numero da 1 a 65535'
+          }
         }
       },
       vpn: {

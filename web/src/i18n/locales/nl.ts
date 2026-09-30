@@ -1255,6 +1255,41 @@ const nl = {
           subnetMask: 'Subnetmasker',
           router: 'Router',
           none: 'Geen'
+        },
+        syslog: {
+          title: 'Externe logging',
+          description:
+            'Stuurt systeem-, kernel- en IronKVM-logs via UDP naar een syslog-collector.',
+          placeholder: 'host of host:poort, UDP, standaardpoort 514',
+          save: 'Opslaan',
+          turnOff: 'Uitschakelen',
+          test: 'Testbericht versturen',
+          sent: '<v>{{message}}</v> verstuurd. Zoek ernaar op de collector.',
+          forwarding: 'Doorsturen naar <v>{{target}}</v>',
+          local: 'Alleen lokaal',
+          savedButLocal: '<v>{{target}}</v> opgeslagen, maar de actieve logger logt alleen lokaal',
+          savedButForwarding:
+            '<v>{{target}}</v> opgeslagen, maar de actieve logger stuurt door naar <v>{{active}}</v>',
+          offButForwarding:
+            'Uitgeschakeld, maar de actieve logger stuurt nog door naar <v>{{active}}</v>',
+          unsupported:
+            'De logger van deze image negeert de instelling; werk bij om hem te gebruiken',
+          loadFailed: 'Kan de loginstelling niet lezen',
+          saveFailed: 'Kan de loginstelling niet opslaan',
+          testFailed: 'Kan het testbericht niet versturen',
+          metrics: 'Metrieken',
+          metricsDesc:
+            'Prometheus kan de URL hieronder uitlezen met een bearer-token uit <link>API-sleutels</link>.',
+          metricsUrl: 'Metrieken-URL',
+          errors: {
+            empty: 'Voer een host of host:poort in',
+            long: 'Te lang voor een hostnaam',
+            ipv6: 'Zet een IPv6-adres tussen vierkante haken, zoals [fd00::1]:514',
+            brackets: 'Het adres tussen haken is geen IPv6-adres',
+            host:
+              'Alleen letters, cijfers, punten en streepjes, niet beginnend met een punt of streepje',
+            port: 'De poort moet een getal van 1 tot 65535 zijn'
+          }
         }
       },
       vpn: {

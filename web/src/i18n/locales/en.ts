@@ -1226,6 +1226,38 @@ const en = {
           subnetMask: 'Subnet Mask',
           router: 'Router',
           none: 'None'
+        },
+        syslog: {
+          title: 'Remote logging',
+          description: 'Send the system, kernel and IronKVM logs to a syslog collector over UDP.',
+          placeholder: 'host or host:port, UDP, default port 514',
+          save: 'Save',
+          turnOff: 'Turn off',
+          test: 'Send test message',
+          sent: 'Sent <v>{{message}}</v>. Search the collector for it.',
+          forwarding: 'Forwarding to <v>{{target}}</v>',
+          local: 'Local only',
+          savedButLocal: 'Saved <v>{{target}}</v>, but the running logger keeps logs local',
+          savedButForwarding:
+            'Saved <v>{{target}}</v>, but the running logger forwards to <v>{{active}}</v>',
+          offButForwarding:
+            'Turned off, but the running logger still forwards to <v>{{active}}</v>',
+          unsupported: "This image's logger ignores the setting; update to use it",
+          loadFailed: 'Failed to read the logging setting',
+          saveFailed: 'Failed to save the logging setting',
+          testFailed: 'Failed to send the test message',
+          metrics: 'Metrics',
+          metricsDesc:
+            'Prometheus can scrape the URL below with a bearer token from <link>API Keys</link>.',
+          metricsUrl: 'Metrics URL',
+          errors: {
+            empty: 'Enter a host or host:port',
+            long: 'Too long for a host name',
+            ipv6: 'Put an IPv6 address in brackets, like [fd00::1]:514',
+            brackets: 'The address in brackets is not an IPv6 address',
+            host: 'Use only letters, digits, dots and dashes, not starting with a dot or dash',
+            port: 'The port must be a number from 1 to 65535'
+          }
         }
       },
       vpn: {

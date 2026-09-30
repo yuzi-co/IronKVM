@@ -1273,6 +1273,42 @@ const de = {
           subnetMask: 'Subnetzmaske',
           router: 'Router',
           none: 'Keine'
+        },
+        syslog: {
+          title: 'Remote-Protokollierung',
+          description:
+            'Sendet System-, Kernel- und IronKVM-Protokolle per UDP an einen Syslog-Server.',
+          placeholder: 'Host oder Host:Port, UDP, Standardport 514',
+          save: 'Speichern',
+          turnOff: 'Ausschalten',
+          test: 'Testnachricht senden',
+          sent: '<v>{{message}}</v> gesendet. Suchen Sie auf dem Server danach.',
+          forwarding: 'Weiterleitung an <v>{{target}}</v>',
+          local: 'Nur lokal',
+          savedButLocal:
+            '<v>{{target}}</v> gespeichert, aber der laufende Logger protokolliert nur lokal',
+          savedButForwarding:
+            '<v>{{target}}</v> gespeichert, aber der laufende Logger leitet an <v>{{active}}</v> weiter',
+          offButForwarding:
+            'Ausgeschaltet, aber der laufende Logger leitet noch an <v>{{active}}</v> weiter',
+          unsupported:
+            'Der Logger dieses Images ignoriert die Einstellung; aktualisieren Sie, um sie zu nutzen',
+          loadFailed: 'Protokolleinstellung konnte nicht gelesen werden',
+          saveFailed: 'Protokolleinstellung konnte nicht gespeichert werden',
+          testFailed: 'Testnachricht konnte nicht gesendet werden',
+          metrics: 'Metriken',
+          metricsDesc:
+            'Prometheus kann die folgende URL mit einem Bearer-Token aus <link>API-Schlüssel</link> abfragen.',
+          metricsUrl: 'Metrik-URL',
+          errors: {
+            empty: 'Geben Sie einen Host oder Host:Port ein',
+            long: 'Zu lang für einen Hostnamen',
+            ipv6: 'Setzen Sie eine IPv6-Adresse in eckige Klammern, z. B. [fd00::1]:514',
+            brackets: 'Die Adresse in Klammern ist keine IPv6-Adresse',
+            host:
+              'Nur Buchstaben, Ziffern, Punkte und Bindestriche, nicht mit Punkt oder Bindestrich beginnend',
+            port: 'Der Port muss eine Zahl von 1 bis 65535 sein'
+          }
         }
       },
       vpn: {

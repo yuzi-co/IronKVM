@@ -1249,6 +1249,39 @@ const pt_br = {
           subnetMask: 'Máscara de sub-rede',
           router: 'Roteador',
           none: 'Nenhum'
+        },
+        syslog: {
+          title: 'Log remoto',
+          description:
+            'Envia os logs do sistema, do kernel e do IronKVM para um coletor syslog via UDP.',
+          placeholder: 'host ou host:porta, UDP, porta padrão 514',
+          save: 'Salvar',
+          turnOff: 'Desativar',
+          test: 'Enviar mensagem de teste',
+          sent: 'Enviado <v>{{message}}</v>. Procure por ela no coletor.',
+          forwarding: 'Encaminhando para <v>{{target}}</v>',
+          local: 'Somente local',
+          savedButLocal: '<v>{{target}}</v> salvo, mas o logger em execução mantém os logs locais',
+          savedButForwarding:
+            '<v>{{target}}</v> salvo, mas o logger em execução encaminha para <v>{{active}}</v>',
+          offButForwarding:
+            'Desativado, mas o logger em execução ainda encaminha para <v>{{active}}</v>',
+          unsupported: 'O logger desta imagem ignora a configuração; atualize para usá-la',
+          loadFailed: 'Falha ao ler a configuração de log',
+          saveFailed: 'Falha ao salvar a configuração de log',
+          testFailed: 'Falha ao enviar a mensagem de teste',
+          metrics: 'Métricas',
+          metricsDesc:
+            'O Prometheus pode coletar a URL abaixo com um token bearer de <link>Chaves de API</link>.',
+          metricsUrl: 'URL de métricas',
+          errors: {
+            empty: 'Informe um host ou host:porta',
+            long: 'Longo demais para um nome de host',
+            ipv6: 'Coloque o endereço IPv6 entre colchetes, como [fd00::1]:514',
+            brackets: 'O endereço entre colchetes não é um endereço IPv6',
+            host: 'Use apenas letras, dígitos, pontos e hifens, sem começar com ponto ou hífen',
+            port: 'A porta deve ser um número de 1 a 65535'
+          }
         }
       },
       vpn: {

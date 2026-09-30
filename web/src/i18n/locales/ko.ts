@@ -1231,6 +1231,35 @@ const ko = {
           subnetMask: '서브넷 마스크',
           router: '라우터',
           none: '없음'
+        },
+        syslog: {
+          title: '원격 로깅',
+          description: '시스템, 커널 및 IronKVM 로그를 UDP로 syslog 수집기에 보냅니다.',
+          placeholder: '호스트 또는 호스트:포트, UDP, 기본 포트 514',
+          save: '저장',
+          turnOff: '끄기',
+          test: '테스트 메시지 보내기',
+          sent: '<v>{{message}}</v> 을(를) 보냈습니다. 수집기에서 검색하세요.',
+          forwarding: '<v>{{target}}</v>(으)로 전달 중',
+          local: '로컬만',
+          savedButLocal: '<v>{{target}}</v> 을(를) 저장했지만 실행 중인 로거는 로컬에만 기록합니다',
+          savedButForwarding: '<v>{{target}}</v> 을(를) 저장했지만 실행 중인 로거는 <v>{{active}}</v>(으)로 전달합니다',
+          offButForwarding: '껐지만 실행 중인 로거는 여전히 <v>{{active}}</v>(으)로 전달합니다',
+          unsupported: '이 이미지의 로거는 설정을 무시합니다. 사용하려면 업데이트하세요',
+          loadFailed: '로깅 설정을 읽지 못했습니다',
+          saveFailed: '로깅 설정을 저장하지 못했습니다',
+          testFailed: '테스트 메시지를 보내지 못했습니다',
+          metrics: '메트릭',
+          metricsDesc: 'Prometheus는 <link>API 키</link>의 Bearer 토큰으로 아래 URL을 수집할 수 있습니다.',
+          metricsUrl: '메트릭 URL',
+          errors: {
+            empty: '호스트 또는 호스트:포트를 입력하세요',
+            long: '호스트 이름으로는 너무 깁니다',
+            ipv6: 'IPv6 주소는 [fd00::1]:514처럼 대괄호로 묶으세요',
+            brackets: '괄호 안의 주소가 IPv6 주소가 아닙니다',
+            host: '문자, 숫자, 점, 하이픈만 사용할 수 있으며 점이나 하이픈으로 시작할 수 없습니다',
+            port: '포트는 1에서 65535 사이의 숫자여야 합니다'
+          }
         }
       },
       vpn: {

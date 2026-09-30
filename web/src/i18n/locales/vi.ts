@@ -1232,6 +1232,41 @@ const vi = {
           subnetMask: 'Mặt nạ mạng con',
           router: 'Bộ định tuyến',
           none: 'Không có'
+        },
+        syslog: {
+          title: 'Ghi nhật ký từ xa',
+          description: 'Gửi nhật ký hệ thống, nhân và IronKVM tới bộ thu syslog qua UDP.',
+          placeholder: 'máy chủ hoặc máy chủ:cổng, UDP, cổng mặc định 514',
+          save: 'Lưu',
+          turnOff: 'Tắt',
+          test: 'Gửi tin nhắn thử',
+          sent: 'Đã gửi <v>{{message}}</v>. Hãy tìm nó trên bộ thu.',
+          forwarding: 'Đang chuyển tiếp tới <v>{{target}}</v>',
+          local: 'Chỉ cục bộ',
+          savedButLocal:
+            'Đã lưu <v>{{target}}</v>, nhưng trình ghi nhật ký đang chạy chỉ ghi cục bộ',
+          savedButForwarding:
+            'Đã lưu <v>{{target}}</v>, nhưng trình ghi nhật ký đang chạy chuyển tiếp tới <v>{{active}}</v>',
+          offButForwarding:
+            'Đã tắt, nhưng trình ghi nhật ký đang chạy vẫn chuyển tiếp tới <v>{{active}}</v>',
+          unsupported:
+            'Trình ghi nhật ký của bản image này bỏ qua cài đặt; hãy cập nhật để sử dụng',
+          loadFailed: 'Không đọc được cài đặt nhật ký',
+          saveFailed: 'Không lưu được cài đặt nhật ký',
+          testFailed: 'Không gửi được tin nhắn thử',
+          metrics: 'Số liệu',
+          metricsDesc:
+            'Prometheus có thể thu thập URL bên dưới bằng bearer token từ <link>Khóa API</link>.',
+          metricsUrl: 'URL số liệu',
+          errors: {
+            empty: 'Nhập máy chủ hoặc máy chủ:cổng',
+            long: 'Quá dài cho một tên máy chủ',
+            ipv6: 'Đặt địa chỉ IPv6 trong ngoặc vuông, như [fd00::1]:514',
+            brackets: 'Địa chỉ trong ngoặc không phải địa chỉ IPv6',
+            host:
+              'Chỉ dùng chữ cái, chữ số, dấu chấm và gạch ngang, không bắt đầu bằng dấu chấm hoặc gạch ngang',
+            port: 'Cổng phải là số từ 1 đến 65535'
+          }
         }
       },
       vpn: {

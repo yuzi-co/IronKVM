@@ -1244,6 +1244,40 @@ const pl = {
           subnetMask: 'Maska podsieci',
           router: 'Router',
           none: 'Brak'
+        },
+        syslog: {
+          title: 'Zdalne logowanie',
+          description: 'Wysyła logi systemu, jądra i IronKVM do kolektora syslog przez UDP.',
+          placeholder: 'host lub host:port, UDP, domyślny port 514',
+          save: 'Zapisz',
+          turnOff: 'Wyłącz',
+          test: 'Wyślij wiadomość testową',
+          sent: 'Wysłano <v>{{message}}</v>. Wyszukaj ją w kolektorze.',
+          forwarding: 'Przekazywanie do <v>{{target}}</v>',
+          local: 'Tylko lokalnie',
+          savedButLocal:
+            'Zapisano <v>{{target}}</v>, ale działający logger zapisuje logi tylko lokalnie',
+          savedButForwarding:
+            'Zapisano <v>{{target}}</v>, ale działający logger przekazuje do <v>{{active}}</v>',
+          offButForwarding:
+            'Wyłączono, ale działający logger nadal przekazuje do <v>{{active}}</v>',
+          unsupported:
+            'Logger tego obrazu ignoruje to ustawienie; zaktualizuj, aby z niego korzystać',
+          loadFailed: 'Nie udało się odczytać ustawienia logowania',
+          saveFailed: 'Nie udało się zapisać ustawienia logowania',
+          testFailed: 'Nie udało się wysłać wiadomości testowej',
+          metrics: 'Metryki',
+          metricsDesc:
+            'Prometheus może pobierać poniższy URL z tokenem bearer z <link>Kluczy API</link>.',
+          metricsUrl: 'URL metryk',
+          errors: {
+            empty: 'Wpisz host lub host:port',
+            long: 'Za długie jak na nazwę hosta',
+            ipv6: 'Adres IPv6 umieść w nawiasach kwadratowych, np. [fd00::1]:514',
+            brackets: 'Adres w nawiasach nie jest adresem IPv6',
+            host: 'Tylko litery, cyfry, kropki i myślniki, bez kropki ani myślnika na początku',
+            port: 'Port musi być liczbą od 1 do 65535'
+          }
         }
       },
       vpn: {

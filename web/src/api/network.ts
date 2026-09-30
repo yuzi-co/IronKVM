@@ -107,3 +107,25 @@ export function setEthernet(
 export function confirmEthernet(token: string) {
   return http.post('/api/network/ethernet/confirm', { token });
 }
+
+// The collector S01syslogd forwards the system log to. target is what is
+// saved, active what the running syslogd forwards to, and supported whether
+// this image's init script reads the setting at all.
+export type SyslogState = {
+  target: string;
+  active: string;
+  supported: boolean;
+};
+
+export function getSyslog() {
+  return http.get('/api/network/syslog');
+}
+
+// An empty target turns forwarding off.
+export function setSyslog(target: string) {
+  return http.post('/api/network/syslog', { target });
+}
+
+export function testSyslog() {
+  return http.post('/api/network/syslog/test');
+}
