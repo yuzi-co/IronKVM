@@ -359,11 +359,18 @@ void kvm_update_hdmi_res(void)
 void kvm_update_eth_state(void)
 {	
 	static uint8_t nic_state = 0;
+	// The gateway is probed every GATEWAY_PROBE_INTERVAL_MS, and eth_state
+	// keeps the last verdict in between. Anything else that writes eth_state
+	// invalidates the timer, so the verdict is back on the next pass, as it
+	// was when every pass probed. NIC_STATE_RUNNING is IFF_RUNNING, which is
+	// the carrier, so a port with no cable is never probed.
+	static probe_timer_t probe = {};
 	nic_state = get_nic_state("eth0");
 
 	if(nic_state == NIC_STATE_RUNNING){
 		// Get IP
 		if(strcmp(ip_address()["eth0"].c_str(), (char*)kvm_sys_state.eth_addr) != 0){
+			probe_invalidate(&probe);
 			if(get_ip_addr(ETH_IP)){
 				kvm_sys_state.eth_state = 2;
 			} else {
@@ -376,11 +383,15 @@ void kvm_update_eth_state(void)
 			if(kvm_sys_state.eth_route[0] == 0){
 				get_ip_addr(ETH_ROUTE);
 			} else {
-				if(chack_net_state(ETH_ROUTE)){
-					// Ping successful
-					kvm_sys_state.eth_state = 3;
-				} else {
-					kvm_sys_state.eth_state = 2;
+				uint32_t now = probe_now_ms();
+				if(probe_due(&probe, now, GATEWAY_PROBE_INTERVAL_MS)){
+					probe_mark(&probe, now);
+					if(chack_net_state(ETH_ROUTE)){
+						// Ping successful
+						kvm_sys_state.eth_state = 3;
+					} else {
+						kvm_sys_state.eth_state = 2;
+					}
 				}
 			}
 		} else {
@@ -389,6 +400,7 @@ void kvm_update_eth_state(void)
 		}
 
 	} else {
+		probe_invalidate(&probe);
 		kvm_sys_state.eth_state = 0;
 		patch_eth_wifi();
 	}
@@ -397,6 +409,10 @@ void kvm_update_eth_state(void)
 void kvm_update_wifi_state(void)
 {	
 	// No WiFi module (check for existence?) -> Module exists & not connected (check if connected) ->
+	// The gateway is probed at most every GATEWAY_PROBE_INTERVAL_MS, as on
+	// eth0: in state 0 to decide the link is up, in state 1 that it is still
+	// up. wifi_state holds between probes. The first probe is not delayed.
+	static probe_timer_t probe = {};
 	if(kvm_sys_state.wifi_state == -2) return;
 	switch (kvm_sys_state.wifi_state){
 		case -1:
@@ -417,9 +433,13 @@ void kvm_update_wifi_state(void)
 			if (get_ip_addr(WiFi_IP) && get_ip_addr(WiFi_ROUTE)){
 				// IP+Route has been acquired
 				if(kvm_sys_state.ping_allow){
-					if (chack_net_state(WiFi_ROUTE)){
-						// Ping successful
-						kvm_sys_state.wifi_state = 1;
+					uint32_t now = probe_now_ms();
+					if (probe_due(&probe, now, GATEWAY_PROBE_INTERVAL_MS)){
+						probe_mark(&probe, now);
+						if (chack_net_state(WiFi_ROUTE)){
+							// Ping successful
+							kvm_sys_state.wifi_state = 1;
+						}
 					}
 				} else {
 					// Consider the network to be connected
@@ -432,7 +452,9 @@ void kvm_update_wifi_state(void)
 			system("echo 1 > /kvmapp/kvm/wifi_state");
 			get_ip_addr(WiFi_IP);
 			if(kvm_sys_state.ping_allow){
-				if (kvm_sys_state.wifi_route[0] != 0){
+				uint32_t now = probe_now_ms();
+				if (kvm_sys_state.wifi_route[0] != 0 && probe_due(&probe, now, GATEWAY_PROBE_INTERVAL_MS)){
+					probe_mark(&probe, now);
 					if (chack_net_state(WiFi_ROUTE) == 0){
 						// Ping successful
 						kvm_sys_state.wifi_state = 0;
