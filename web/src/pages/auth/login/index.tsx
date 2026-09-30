@@ -114,7 +114,7 @@ export const Login = (): ReactElement => {
             />
           </div>
           {notice === 'passwordChanged' && (
-            <Alert className="mb-4" type="success" showIcon message={t('auth.passwordChanged')} />
+            <Alert className="mb-4!" type="success" showIcon message={t('auth.passwordChanged')} />
           )}
 
           <Form.Item

@@ -15,7 +15,7 @@ export const Notice = ({ blockedBy }: NoticeProps) => {
 
   return (
     <Alert
-      className="mt-5"
+      className="mt-5!"
       type="warning"
       showIcon
       message={t('settings.vpn.blocked', { other: vpnTitles[blockedBy] ?? blockedBy })}
