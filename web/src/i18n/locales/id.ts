@@ -313,6 +313,11 @@ const id = {
     },
     mouse: {
       jiggler: 'Penggerak mouse',
+      jigglerMouse: 'Mouse',
+      jigglerF15: 'Tombol F15',
+      jigglerShift: 'Tombol Shift',
+      jigglerCtrl: 'Tombol Ctrl',
+      jigglerF15Tip: 'F15 paling tidak mengganggu: tidak dipakai sistem atau aplikasi umum mana pun',
       title: 'Tikus',
       cursor: 'Gaya kursor',
       default: 'Kursor bawaan',

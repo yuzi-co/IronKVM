@@ -313,6 +313,11 @@ const da = {
     },
     mouse: {
       jiggler: 'Musebevæger',
+      jigglerMouse: 'Mus',
+      jigglerF15: 'F15-tast',
+      jigglerShift: 'Skift-tast',
+      jigglerCtrl: 'Ctrl-tast',
+      jigglerF15Tip: 'F15 forstyrrer mindst: intet almindeligt system eller program bruger den',
       title: 'Mus',
       cursor: 'Markørstil',
       default: 'Standard-markør',

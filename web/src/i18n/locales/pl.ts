@@ -315,6 +315,11 @@ const pl = {
     },
     mouse: {
       jiggler: 'Poruszanie myszą',
+      jigglerMouse: 'Mysz',
+      jigglerF15: 'Klawisz F15',
+      jigglerShift: 'Klawisz Shift',
+      jigglerCtrl: 'Klawisz Ctrl',
+      jigglerF15Tip: 'F15 jest najmniej inwazyjny: nie używa go żaden popularny system ani aplikacja',
       title: 'Mysz',
       cursor: 'Styl kursora',
       default: 'Domyślny kursor',

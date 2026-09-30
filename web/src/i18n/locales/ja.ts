@@ -313,6 +313,11 @@ const ja = {
     },
     mouse: {
       jiggler: 'マウスジグラー',
+      jigglerMouse: 'マウス',
+      jigglerF15: 'F15 キー',
+      jigglerShift: 'Shift キー',
+      jigglerCtrl: 'Ctrl キー',
+      jigglerF15Tip: 'F15 が最も影響が少なく、一般的な OS やアプリでは使われません',
       title: 'マウス',
       cursor: 'ポインター形状',
       default: 'デフォルトポインター',

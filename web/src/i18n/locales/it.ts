@@ -315,6 +315,11 @@ const it = {
     },
     mouse: {
       jiggler: 'Movimento automatico del mouse',
+      jigglerMouse: 'Mouse',
+      jigglerF15: 'Tasto F15',
+      jigglerShift: 'Tasto Maiusc',
+      jigglerCtrl: 'Tasto Ctrl',
+      jigglerF15Tip: 'F15 è il meno invasivo: nessun sistema o app comune lo usa',
       title: 'Mouse',
       cursor: 'Stile cursore',
       default: 'Cursore predefinito',

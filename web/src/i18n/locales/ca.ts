@@ -315,6 +315,11 @@ const ca = {
     },
     mouse: {
       jiggler: 'Moviment automàtic del ratolí',
+      jigglerMouse: 'Ratolí',
+      jigglerF15: 'Tecla F15',
+      jigglerShift: 'Tecla Maj',
+      jigglerCtrl: 'Tecla Ctrl',
+      jigglerF15Tip: 'F15 és la menys intrusiva: cap sistema ni aplicació habitual la fa servir',
       title: 'Ratolí',
       cursor: 'Estil del cursor',
       default: 'Cursor per defecte',

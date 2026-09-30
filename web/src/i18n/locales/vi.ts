@@ -312,6 +312,11 @@ const vi = {
     },
     mouse: {
       jiggler: 'Tự động di chuột',
+      jigglerMouse: 'Chuột',
+      jigglerF15: 'Phím F15',
+      jigglerShift: 'Phím Shift',
+      jigglerCtrl: 'Phím Ctrl',
+      jigglerF15Tip: 'F15 ít gây ảnh hưởng nhất: không hệ điều hành hay ứng dụng phổ biến nào dùng phím này',
       title: 'Chuột',
       cursor: 'Kiểu con trỏ',
       default: 'Con trỏ mặc định',

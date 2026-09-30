@@ -314,6 +314,11 @@ const uk = {
     },
     mouse: {
       jiggler: 'Імітація руху миші',
+      jigglerMouse: 'Миша',
+      jigglerF15: 'Клавіша F15',
+      jigglerShift: 'Клавіша Shift',
+      jigglerCtrl: 'Клавіша Ctrl',
+      jigglerF15Tip: 'F15 заважає найменше: її не використовує жодна поширена система чи програма',
       title: 'Миша',
       cursor: 'Стиль курсору',
       default: 'Курсор за замовчуванням',

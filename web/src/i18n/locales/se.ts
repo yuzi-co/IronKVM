@@ -310,6 +310,11 @@ const se = {
     },
     mouse: {
       jiggler: 'Musrörare',
+      jigglerMouse: 'Mus',
+      jigglerF15: 'F15-tangent',
+      jigglerShift: 'Skift-tangent',
+      jigglerCtrl: 'Ctrl-tangent',
+      jigglerF15Tip: 'F15 stör minst: inget vanligt system eller program använder den',
       title: 'Mus',
       cursor: 'Markörstil',
       default: 'Standardmarkör',

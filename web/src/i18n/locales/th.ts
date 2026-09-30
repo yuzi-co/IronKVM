@@ -307,6 +307,11 @@ const th = {
     },
     mouse: {
       jiggler: 'ขยับเมาส์อัตโนมัติ',
+      jigglerMouse: 'เมาส์',
+      jigglerF15: 'ปุ่ม F15',
+      jigglerShift: 'ปุ่ม Shift',
+      jigglerCtrl: 'ปุ่ม Ctrl',
+      jigglerF15Tip: 'F15 รบกวนน้อยที่สุด: ไม่มีระบบหรือแอปทั่วไปที่ใช้ปุ่มนี้',
       title: 'เมาส์',
       cursor: 'รูปแบบเคอร์เซอร์',
       default: 'ตัวชี้เริ่มต้น',

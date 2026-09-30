@@ -303,6 +303,11 @@ const zh_tw = {
     },
     mouse: {
       jiggler: '滑鼠防休眠',
+      jigglerMouse: '滑鼠',
+      jigglerF15: 'F15 鍵',
+      jigglerShift: 'Shift 鍵',
+      jigglerCtrl: 'Ctrl 鍵',
+      jigglerF15Tip: 'F15 干擾最小：常見的系統和應用程式都不使用它',
       title: '滑鼠',
       cursor: '游標樣式',
       default: '預設游標',

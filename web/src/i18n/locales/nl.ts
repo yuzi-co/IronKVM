@@ -316,6 +316,11 @@ const nl = {
     },
     mouse: {
       jiggler: 'Muisbeweger',
+      jigglerMouse: 'Muis',
+      jigglerF15: 'F15-toets',
+      jigglerShift: 'Shift-toets',
+      jigglerCtrl: 'Ctrl-toets',
+      jigglerF15Tip: 'F15 stoort het minst: geen gangbaar systeem of app gebruikt hem',
       title: 'Muis',
       cursor: 'Cursorstijl',
       default: 'Standaard cursor',

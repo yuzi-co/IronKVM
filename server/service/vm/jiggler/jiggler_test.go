@@ -25,6 +25,7 @@ func newJiggler(t *testing.T) *Jiggler {
 		lastUpdated: time.Now(),
 		interval:    time.Millisecond,
 		move:        func(string) {},
+		press:       func(string) {},
 	}
 	t.Cleanup(j.stop)
 
@@ -128,7 +129,7 @@ func TestJigglerEnableAndDisableAreSafeWhileItsLoopRuns(t *testing.T) {
 	go func() {
 		defer wg.Done()
 		for range 200 {
-			_ = j.Enable("absolute")
+			_ = j.Enable("absolute", "")
 			_ = j.Disable()
 		}
 	}()
@@ -151,7 +152,7 @@ func TestJigglerEnableAndDisableAreSafeWhileItsLoopRuns(t *testing.T) {
 func TestJigglerDisableClearsTheConfigFile(t *testing.T) {
 	j := newJiggler(t)
 
-	if err := j.Enable("absolute"); err != nil {
+	if err := j.Enable("absolute", ""); err != nil {
 		t.Fatalf("failed to enable: %s", err)
 	}
 	if _, err := os.Stat(ConfigFile); err != nil {
