@@ -30,11 +30,17 @@
   }
 }
 
+/* antd sets its font on its own components only, and preflight is left out,
+ * so plain text elsewhere fell back to the browser's serif default. This is
+ * antd's default stack, so both kinds of text match. */
 html,
 body {
   padding: 0;
   margin: 0;
   background: #000;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
 ::-webkit-scrollbar {
