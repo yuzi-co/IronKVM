@@ -2,6 +2,8 @@ import { GithubOutlined } from '@ant-design/icons';
 import { BookOpenIcon, CpuIcon, MessageCircleQuestionIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { SectionHeader } from '../components/section.tsx';
+
 export const Community = () => {
   const { t } = useTranslation();
 
@@ -34,7 +36,7 @@ export const Community = () => {
 
   return (
     <>
-      <div className="text-neutral-400">{t('settings.about.community')}</div>
+      <SectionHeader title={t('settings.about.community')} />
 
       <div className="mt-5 flex flex-wrap gap-3">
         {communities.map((community) => (

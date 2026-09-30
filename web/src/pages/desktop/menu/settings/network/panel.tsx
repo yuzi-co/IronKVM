@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 
+import { SectionHeader } from '../components/section.tsx';
+
 // Panel is a titled card, the frame of the Ethernet and DNS settings.
 export const Panel = ({
   title,
@@ -12,12 +14,7 @@ export const Panel = ({
 }) => {
   return (
     <div className="overflow-hidden rounded-xl bg-neutral-800/50">
-      <div className="px-4 pt-3 pb-1.5">
-        <div className="font-semibold text-neutral-100">{title}</div>
-        {description && (
-          <div className="mt-0.5 text-xs leading-snug text-neutral-500">{description}</div>
-        )}
-      </div>
+      <SectionHeader title={title} description={description} className="px-4 pt-3 pb-1.5" />
       <div>{children}</div>
     </div>
   );

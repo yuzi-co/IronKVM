@@ -7,7 +7,7 @@ import * as api from '@/api/vm.ts';
 import { showFailure, showResult } from '@/lib/feedback.ts';
 import { isHdmiEnabledAtom } from '@/jotai/screen.ts';
 
-import { Section } from './section.tsx';
+import { Section } from '../components/section.tsx';
 
 export const Hdmi = () => {
   const { t } = useTranslation();
@@ -109,7 +109,7 @@ export const Hdmi = () => {
 
   return (
     <>
-      <Section title={t('settings.device.sections.video')}>
+      <Section loose title={t('settings.device.sections.video')}>
         <div className="flex flex-col space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex flex-col space-y-1">

@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/vm.ts';
 
+import { SectionHeader } from '../components/section.tsx';
 import { Hostname } from './hostname.tsx';
 import { VideoMemory } from './video-memory.tsx';
 
@@ -49,7 +50,7 @@ export const Information = () => {
 
   return (
     <>
-      <div className="text-neutral-400">{t('settings.about.information')}</div>
+      <SectionHeader title={t('settings.about.information')} />
 
       <div className="mt-5 flex w-full flex-col space-y-5">
         {/* IP list */}
@@ -59,7 +60,7 @@ export const Information = () => {
             <div className="flex flex-col space-y-1">
               {information.ips.map((ip) => (
                 <div key={ip.addr} className="flex items-center justify-end space-x-2">
-                  <span>{ip.addr}</span>
+                  <span className="font-mono text-xs text-neutral-300">{ip.addr}</span>
                   <div className="size-[16px] text-neutral-500">
                     {ip.type === 'Wireless' ? (
                       <WifiIcon size={16} />
@@ -79,7 +80,7 @@ export const Information = () => {
         {!!information?.mdns && (
           <div className="flex w-full items-center justify-between">
             <span>{t('settings.about.mdns')}</span>
-            <span>{information.mdns}</span>
+            <span className="font-mono text-xs text-neutral-300">{information.mdns}</span>
           </div>
         )}
 
@@ -96,7 +97,9 @@ export const Information = () => {
             </Tooltip>
           </div>
 
-          <span>{information ? information.image : '-'}</span>
+          <span className="font-mono text-xs text-neutral-300">
+            {information ? information.image : '-'}
+          </span>
         </div>
 
         {/* kernel version */}
@@ -112,7 +115,7 @@ export const Information = () => {
             </Tooltip>
           </div>
 
-          <span>{information?.kernel || '-'}</span>
+          <span className="font-mono text-xs text-neutral-300">{information?.kernel || '-'}</span>
         </div>
 
         {/* application version */}
@@ -133,7 +136,7 @@ export const Information = () => {
             metadata, so 2.4.3+iron.5 would compare equal to 2.4.3, and a
             prerelease suffix would sort below it. So it is shown beside it.
           */}
-          <span>
+          <span className="font-mono text-xs text-neutral-300">
             {information ? information.application : '-'}
             {information?.base && (
               <span className="text-neutral-500">

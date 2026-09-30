@@ -6,9 +6,9 @@ import { useTranslation } from 'react-i18next';
 import * as api from '@/api/vm.ts';
 import { showFailure } from '@/lib/feedback.ts';
 
+import { Section } from '../components/section.tsx';
 import { keyLabel } from './command.ts';
 import { report } from './report.ts';
-import { Section } from './section.tsx';
 import type { SshKey } from './types.ts';
 
 type AuthorizedKeysProps = {

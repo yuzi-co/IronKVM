@@ -141,7 +141,7 @@ export const Redfish = () => {
           <>
             <div className="flex flex-col space-y-3">
               <div className="group flex flex-col space-y-2 rounded-xl border border-neutral-700/50 bg-neutral-800/40 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
-                <span className="w-28 shrink-0 text-sm font-medium text-neutral-400">
+                <span className="w-28 shrink-0 text-sm text-neutral-400">
                   {t('settings.redfish.endpoint')}
                 </span>
                 <div className="flex min-w-0 items-center justify-between gap-2">

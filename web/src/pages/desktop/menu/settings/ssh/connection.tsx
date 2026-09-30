@@ -6,9 +6,9 @@ import * as tailscale from '@/api/extensions/tailscale.ts';
 import { getHostname } from '@/lib/service.ts';
 
 import { CopyBlock, CopyRow } from '../components/copy-button.tsx';
+import { Box, Section } from '../components/section.tsx';
 import { sshCommand } from './command.ts';
 import { PortRow } from './port.tsx';
-import { Box, Section } from './section.tsx';
 import type { SshState } from './types.ts';
 
 type VpnAddress = { name: string; ip: string };

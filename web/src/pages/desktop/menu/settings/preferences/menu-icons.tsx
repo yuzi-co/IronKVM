@@ -20,6 +20,8 @@ import * as ls from '@/lib/localstorage.ts';
 import { menuDisabledItemsAtom } from '@/jotai/settings.ts';
 import { Robot } from '@/components/icons/robot.tsx';
 
+import { SectionHeader } from '../components/section.tsx';
+
 export const MenuIcons = () => {
   const { t } = useTranslation();
   const { account } = useAuth();
@@ -62,12 +64,10 @@ export const MenuIcons = () => {
 
   return (
     <div className="mt-8 flex flex-col space-y-5">
-      <div className="flex flex-col">
-        <span className="text-neutral-400">{t('settings.appearance.menuBar.icons')}</span>
-        <span className="text-xs text-neutral-500">
-          {t('settings.appearance.menuBar.iconsDesc')}
-        </span>
-      </div>
+      <SectionHeader
+        title={t('settings.appearance.menuBar.icons')}
+        description={t('settings.appearance.menuBar.iconsDesc')}
+      />
 
       <div className="mt-5 flex flex-col space-y-5">
         {items.map((item) => (

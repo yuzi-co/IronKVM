@@ -26,7 +26,7 @@ export const MenuMode = () => {
   return (
     <div className="mt-5 flex w-full items-center justify-between">
       <div className="flex flex-col">
-        <span className="text-neutral-400">{t('settings.appearance.menuBar.mode')}</span>
+        <span className="text-sm">{t('settings.appearance.menuBar.mode')}</span>
         <span className="text-xs text-neutral-500">
           {t('settings.appearance.menuBar.modeDesc')}
         </span>

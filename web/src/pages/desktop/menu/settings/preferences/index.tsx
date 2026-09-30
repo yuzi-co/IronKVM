@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { LeaderKey } from '../../keyboard/leader-key.tsx';
 import { MenuAction } from '../components/menu-action.tsx';
+import { SectionHeader } from '../components/section.tsx';
 import { KeyboardLedStatusSetting } from './keyboard-led-status.tsx';
 import { Language } from './language.tsx';
 import { MenuIcons } from './menu-icons.tsx';
@@ -23,13 +24,13 @@ export const Preferences = () => {
       <div className="text-base">{t('settings.preferences.title')}</div>
       <Divider className="opacity-50" />
 
-      <div className="flex flex-col space-y-1">
-        <span className="text-neutral-400">{t('settings.appearance.thisBrowser')}</span>
-        <span className="text-xs text-neutral-500">{t('settings.appearance.thisBrowserDesc')}</span>
-      </div>
+      <SectionHeader
+        title={t('settings.appearance.thisBrowser')}
+        description={t('settings.appearance.thisBrowserDesc')}
+      />
       <Language />
 
-      <div className="mt-8 text-sm text-neutral-400">{t('settings.appearance.menuBar.title')}</div>
+      <SectionHeader title={t('settings.appearance.menuBar.title')} className="mt-8" />
       <MenuMode />
       <KeyboardLedStatusSetting />
       <MenuIcons />
@@ -38,12 +39,10 @@ export const Preferences = () => {
         <>
           <Divider className="opacity-50" style={{ margin: '32px 0' }} />
 
-          <div className="flex flex-col space-y-1">
-            <span className="text-neutral-400">{t('settings.appearance.deviceWide')}</span>
-            <span className="text-xs text-neutral-500">
-              {t('settings.appearance.deviceWideDesc')}
-            </span>
-          </div>
+          <SectionHeader
+            title={t('settings.appearance.deviceWide')}
+            description={t('settings.appearance.deviceWideDesc')}
+          />
           <WebTitle />
           <div className="mt-8">
             <MenuAction description={t('keyboard.leaderKey.desc')}>

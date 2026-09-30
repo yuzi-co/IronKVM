@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
 
 import { CopyRow } from '../components/copy-button.tsx';
+import { Box, Section } from '../components/section.tsx';
 import { keyLabel } from './command.ts';
-import { Box, Section } from './section.tsx';
 import type { SshKey } from './types.ts';
 
 // HostKeys lists the board's host key fingerprints, to check against what ssh

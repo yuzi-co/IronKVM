@@ -269,7 +269,7 @@ const CredentialRow = ({
 
   return (
     <div className="group flex flex-col space-y-2 px-4 py-3.5 transition-colors hover:bg-neutral-800/40 sm:flex-row sm:items-center sm:justify-between">
-      <span className="w-24 shrink-0 text-sm font-medium text-neutral-400">{label}</span>
+      <span className="w-24 shrink-0 text-sm text-neutral-400">{label}</span>
       <div className="flex min-w-0 items-center justify-between gap-2">
         <span className="min-w-0 flex-1 truncate font-mono text-sm text-neutral-300 select-all">
           {value}

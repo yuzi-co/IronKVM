@@ -173,8 +173,8 @@ export const Wifi = () => {
 
           {!connectedWiFi ? (
             <div className="flex flex-col">
-              <span className="text-lg font-bold">{t('settings.network.wifi.connect')}</span>
-              <span className="text-xs text-neutral-400">
+              <span className="text-base">{t('settings.network.wifi.connect')}</span>
+              <span className="text-xs text-neutral-500">
                 {t('settings.network.wifi.connectDesc1')}
               </span>
             </div>
