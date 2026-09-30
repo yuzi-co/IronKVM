@@ -1,5 +1,5 @@
 import { useEffect, useState, type MouseEvent as ReactMouseEvent } from 'react';
-import { Button, Modal, notification, Tooltip, Typography } from 'antd';
+import { Button, notification, Popconfirm, Tooltip, Typography } from 'antd';
 import clsx from 'clsx';
 import {
   ArrowBigDownDashIcon,
@@ -55,8 +55,6 @@ export const Images = ({
   const [sizes, setSizes] = useState<Record<string, number>>({});
   const [busyImage, setBusyImage] = useState('');
   const [targets, setTargets] = useState<Record<string, api.DriveId>>({});
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedImage, setSelectedImage] = useState('');
   const [deletingImage, setDeletingImage] = useState('');
 
   const available = drives.map((drive) => drive.id);
@@ -155,29 +153,13 @@ export const Images = ({
       });
   }
 
-  // show delete image modal
-  function showDeleteModal(e: any, image: string) {
-    e.stopPropagation();
-
-    const isDeleting = deletingImage !== '';
-
-    if (isLocked(image) || isDeleting) {
-      return;
-    }
-
-    setSelectedImage(image);
-    setIsModalOpen(true);
-  }
-
-  // delete image
-  function deleteImage() {
-    if (!selectedImage || !!deletingImage) return;
-    setDeletingImage(selectedImage);
-
-    setIsModalOpen(false);
+  // delete image, once its confirmation is accepted
+  function deleteImage(image: string) {
+    if (isLocked(image) || !!deletingImage) return;
+    setDeletingImage(image);
 
     api
-      .deleteImage(selectedImage)
+      .deleteImage(image)
       .then((rsp) => {
         if (rsp.code !== 0) {
           notify.open({ message: t('image.deleteFailed'), description: rsp.msg, duration: 10 });
@@ -185,8 +167,6 @@ export const Images = ({
         }
 
         getImages();
-
-        setSelectedImage('');
       })
       .catch((err) => {
         notify.open({ message: t('image.deleteFailed'), description: err?.message, duration: 10 });
@@ -327,53 +307,58 @@ export const Images = ({
                 )}
               </div>
 
-              <Tooltip
-                title={isLocked(image) ? t('image.inUse') : t('image.delete')}
-                mouseEnterDelay={0.6}
-              >
-                <button
-                  type="button"
-                  aria-label={isLocked(image) ? t('image.inUse') : t('image.delete')}
-                  aria-disabled={isLocked(image)}
-                  className={clsx(
-                    'flex h-[24px] w-[24px] items-center justify-center rounded p-0 hover:bg-neutral-500/50',
-                    isLocked(image)
-                      ? 'cursor-not-allowed text-neutral-500'
-                      : 'text-neutral-300 hover:text-red-500'
-                  )}
-                  onClick={(e) => showDeleteModal(e, image)}
+              {/* The confirmation is a popover rather than a dialog, so it
+                  counts as part of the Media menu and does not close it. The
+                  wrapper keeps clicks on the button and in the confirmation,
+                  which bubble through React's tree, from reaching the row and
+                  inserting the image. */}
+              <div onClick={(e) => e.stopPropagation()}>
+                <Popconfirm
+                  placement="left"
+                  title={t('image.attention')}
+                  description={
+                    <div className="flex max-w-[260px] flex-col">
+                      <span>{t('image.deleteConfirm')}</span>
+                      <Typography.Text code className="break-all">
+                        {image}
+                      </Typography.Text>
+                    </div>
+                  }
+                  okText={t('image.okBtn')}
+                  cancelText={t('image.cancelBtn')}
+                  okButtonProps={{ danger: true }}
+                  disabled={isLocked(image) || deletingImage !== ''}
+                  onConfirm={() => deleteImage(image)}
+                  color="#404040"
                 >
-                  {deletingImage === image ? (
-                    <LoaderCircleIcon className="animate-spin text-red-500" size={16} />
-                  ) : (
-                    <Trash2Icon size={15} />
-                  )}
-                </button>
-              </Tooltip>
+                  <Tooltip
+                    title={isLocked(image) ? t('image.inUse') : t('image.delete')}
+                    mouseEnterDelay={0.6}
+                  >
+                    <button
+                      type="button"
+                      aria-label={isLocked(image) ? t('image.inUse') : t('image.delete')}
+                      aria-disabled={isLocked(image)}
+                      className={clsx(
+                        'flex h-[24px] w-[24px] items-center justify-center rounded p-0 hover:bg-neutral-500/50',
+                        isLocked(image)
+                          ? 'cursor-not-allowed text-neutral-500'
+                          : 'text-neutral-300 hover:text-red-500'
+                      )}
+                    >
+                      {deletingImage === image ? (
+                        <LoaderCircleIcon className="animate-spin text-red-500" size={16} />
+                      ) : (
+                        <Trash2Icon size={15} />
+                      )}
+                    </button>
+                  </Tooltip>
+                </Popconfirm>
+              </div>
             </div>
           );
         })}
       </div>
-
-      <Modal
-        title={t('image.attention')}
-        open={isModalOpen}
-        width={520}
-        footer={null}
-        onCancel={() => setIsModalOpen(false)}
-      >
-        <div className="flex flex-col items-center pb-10">
-          <p>{t('image.deleteConfirm')}</p>
-          <Typography.Text code>{selectedImage}</Typography.Text>
-        </div>
-
-        <div className="flex justify-center space-x-3 pb-3">
-          <Button type="primary" danger onClick={deleteImage}>
-            {t('image.okBtn')}
-          </Button>
-          <Button onClick={() => setIsModalOpen(false)}>{t('image.cancelBtn')}</Button>
-        </div>
-      </Modal>
 
       {contextHolder}
     </>
