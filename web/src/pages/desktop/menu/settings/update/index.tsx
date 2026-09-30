@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { LoadingOutlined, RocketOutlined, SmileOutlined } from '@ant-design/icons';
 import { Button, Divider, Popconfirm, Result, Spin } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { versionGte } from '@/lib/version.ts';
 
 import * as api from '@/api/application.ts';
+import { versionGte } from '@/lib/version.ts';
 import {
   reloadAfterRestart,
   SERVER_RESTART_DOWN_MS,

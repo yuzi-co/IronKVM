@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-
 import semver from 'semver';
 
 import { compareVersions, isValidVersion, versionGt, versionGte } from './version.ts';

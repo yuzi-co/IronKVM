@@ -9,9 +9,9 @@ import {
   RotateCwIcon
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { isValidVersion, versionGt } from '@/lib/version.ts';
 
 import { describeFailure } from '@/lib/feedback.ts';
+import { isValidVersion, versionGt } from '@/lib/version.ts';
 
 import { StatusTag } from '../components/status-tag.tsx';
 import { Swap } from './swap.tsx';

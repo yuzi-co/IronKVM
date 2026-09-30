@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-
 import CryptoJS from 'crypto-js';
 
 import { encrypt } from './encrypt.ts';
