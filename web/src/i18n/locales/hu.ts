@@ -1628,7 +1628,13 @@ const hu = {
       hidDisabled: 'A HID ki van kapcsolva ezen az eszközön (/boot/disable_hid).',
       keyFailed: 'A billentyűt nem sikerült elküldeni.'
     },
-    speaker: { title: 'Hangszóró', unmute: 'Némítás feloldása', mute: 'Némítás' },
+    speaker: {
+      title: 'Hangszóró',
+      unmute: 'Némítás feloldása',
+      mute: 'Némítás',
+      hostIdle: 'A gazdagép nem küld hangot',
+      hostIdleHint: 'Játssz le valamit a gazdagépen, vagy válaszd a KVM-et hangkimenetnek.'
+    },
     upstream: {
       check: 'Frissítések keresése',
       updateTo: 'Frissítés erre: {{version}}',

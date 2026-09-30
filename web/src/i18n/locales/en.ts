@@ -1600,7 +1600,9 @@ const en = {
     speaker: {
       title: 'Speaker',
       unmute: 'Unmute',
-      mute: 'Mute'
+      mute: 'Mute',
+      hostIdle: 'Host is not sending audio',
+      hostIdleHint: 'Play something on the host, or pick the KVM as its sound output.'
     },
     upstream: {
       check: 'Check for updates',

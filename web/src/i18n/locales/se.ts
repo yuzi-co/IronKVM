@@ -1608,7 +1608,13 @@ const se = {
       hidDisabled: 'HID är avstängt på den här enheten (/boot/disable_hid).',
       keyFailed: 'Tangenten kunde inte skickas.'
     },
-    speaker: { title: 'Högtalare', unmute: 'Slå på ljud', mute: 'Stäng av ljud' },
+    speaker: {
+      title: 'Högtalare',
+      unmute: 'Slå på ljud',
+      mute: 'Stäng av ljud',
+      hostIdle: 'Värden skickar inget ljud',
+      hostIdleHint: 'Spela upp något på värden, eller välj KVM:en som ljudutgång.'
+    },
     upstream: {
       check: 'Sök efter uppdateringar',
       updateTo: 'Uppdatera till {{version}}',

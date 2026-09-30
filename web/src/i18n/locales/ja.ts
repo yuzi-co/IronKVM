@@ -1629,7 +1629,13 @@ const ja = {
       hidDisabled: 'このデバイスでは HID が無効です（/boot/disable_hid）。',
       keyFailed: 'キーを送信できませんでした。'
     },
-    speaker: { title: 'スピーカー', unmute: 'ミュート解除', mute: 'ミュート' },
+    speaker: {
+      title: 'スピーカー',
+      unmute: 'ミュート解除',
+      mute: 'ミュート',
+      hostIdle: 'ホストから音声が送られていません',
+      hostIdleHint: 'ホストで何か再生するか、ホストの音声出力に KVM を選んでください。'
+    },
     upstream: {
       check: '更新を確認',
       updateTo: '{{version}} に更新',

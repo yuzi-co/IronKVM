@@ -1607,7 +1607,13 @@ const tr = {
       hidDisabled: 'Bu cihazda HID kapalı (/boot/disable_hid).',
       keyFailed: 'Tuş gönderilemedi.'
     },
-    speaker: { title: 'Hoparlör', unmute: 'Sesi aç', mute: 'Sesi kapat' },
+    speaker: {
+      title: 'Hoparlör',
+      unmute: 'Sesi aç',
+      mute: 'Sesi kapat',
+      hostIdle: 'Ana makine ses göndermiyor',
+      hostIdleHint: "Ana makinede bir şey çalın veya ses çıkışı olarak KVM'yi seçin."
+    },
     upstream: {
       check: 'Güncellemeleri denetle',
       updateTo: '{{version}} sürümüne güncelle',

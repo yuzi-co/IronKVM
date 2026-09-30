@@ -1618,7 +1618,13 @@ const ru = {
       hidDisabled: 'HID на этом устройстве отключён (/boot/disable_hid).',
       keyFailed: 'Не удалось отправить клавишу.'
     },
-    speaker: { title: 'Динамик', unmute: 'Включить звук', mute: 'Выключить звук' },
+    speaker: {
+      title: 'Динамик',
+      unmute: 'Включить звук',
+      mute: 'Выключить звук',
+      hostIdle: 'Хост не передаёт звук',
+      hostIdleHint: 'Включите что-нибудь на хосте или выберите KVM устройством вывода звука.'
+    },
     upstream: {
       check: 'Проверить обновления',
       updateTo: 'Обновить до {{version}}',

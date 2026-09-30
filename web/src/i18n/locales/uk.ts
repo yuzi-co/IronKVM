@@ -1621,7 +1621,13 @@ const uk = {
       hidDisabled: 'HID на цьому пристрої вимкнено (/boot/disable_hid).',
       keyFailed: 'Не вдалося надіслати клавішу.'
     },
-    speaker: { title: 'Динамік', unmute: 'Увімкнути звук', mute: 'Вимкнути звук' },
+    speaker: {
+      title: 'Динамік',
+      unmute: 'Увімкнути звук',
+      mute: 'Вимкнути звук',
+      hostIdle: 'Хост не передає звук',
+      hostIdleHint: 'Увімкніть щось на хості або виберіть KVM пристроєм виведення звуку.'
+    },
     upstream: {
       check: 'Перевірити оновлення',
       updateTo: 'Оновити до {{version}}',

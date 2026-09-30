@@ -1619,7 +1619,13 @@ const pl = {
       hidDisabled: 'HID jest wyłączone na tym urządzeniu (/boot/disable_hid).',
       keyFailed: 'Nie udało się wysłać klawisza.'
     },
-    speaker: { title: 'Głośnik', unmute: 'Włącz dźwięk', mute: 'Wycisz' },
+    speaker: {
+      title: 'Głośnik',
+      unmute: 'Włącz dźwięk',
+      mute: 'Wycisz',
+      hostIdle: 'Host nie wysyła dźwięku',
+      hostIdleHint: 'Odtwórz coś na hoście lub wybierz KVM jako jego wyjście dźwięku.'
+    },
     upstream: {
       check: 'Sprawdź aktualizacje',
       updateTo: 'Zaktualizuj do {{version}}',

@@ -1632,7 +1632,13 @@ const it = {
       hidDisabled: "L'HID è disattivato su questo dispositivo (/boot/disable_hid).",
       keyFailed: 'Impossibile inviare il tasto.'
     },
-    speaker: { title: 'Altoparlante', unmute: 'Riattiva audio', mute: 'Disattiva audio' },
+    speaker: {
+      title: 'Altoparlante',
+      unmute: 'Riattiva audio',
+      mute: 'Disattiva audio',
+      hostIdle: "L'host non invia audio",
+      hostIdleHint: "Riproduci qualcosa sull'host o scegli il KVM come uscita audio."
+    },
     upstream: {
       check: 'Cerca aggiornamenti',
       updateTo: 'Aggiorna a {{version}}',

@@ -1620,7 +1620,13 @@ const pt_br = {
       hidDisabled: 'O HID está desativado neste dispositivo (/boot/disable_hid).',
       keyFailed: 'Não foi possível enviar a tecla.'
     },
-    speaker: { title: 'Alto-falante', unmute: 'Ativar som', mute: 'Silenciar' },
+    speaker: {
+      title: 'Alto-falante',
+      unmute: 'Ativar som',
+      mute: 'Silenciar',
+      hostIdle: 'O host não está enviando áudio',
+      hostIdleHint: 'Reproduza algo no host ou escolha o KVM como saída de som.'
+    },
     upstream: {
       check: 'Verificar atualizações',
       updateTo: 'Atualizar para {{version}}',

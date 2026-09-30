@@ -1614,7 +1614,13 @@ const id = {
       hidDisabled: 'HID dinonaktifkan di perangkat ini (/boot/disable_hid).',
       keyFailed: 'Tombol tidak dapat dikirim.'
     },
-    speaker: { title: 'Speaker', unmute: 'Bunyikan', mute: 'Bisukan' },
+    speaker: {
+      title: 'Speaker',
+      unmute: 'Bunyikan',
+      mute: 'Bisukan',
+      hostIdle: 'Host tidak mengirim audio',
+      hostIdleHint: 'Putar sesuatu di host, atau pilih KVM sebagai output suaranya.'
+    },
     upstream: {
       check: 'Periksa pembaruan',
       updateTo: 'Perbarui ke {{version}}',

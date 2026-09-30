@@ -1597,7 +1597,13 @@ const ko = {
       hidDisabled: '이 장치에서 HID가 꺼져 있습니다 (/boot/disable_hid).',
       keyFailed: '키를 보내지 못했습니다.'
     },
-    speaker: { title: '스피커', unmute: '음소거 해제', mute: '음소거' },
+    speaker: {
+      title: '스피커',
+      unmute: '음소거 해제',
+      mute: '음소거',
+      hostIdle: '호스트가 오디오를 보내지 않습니다',
+      hostIdleHint: '호스트에서 무언가를 재생하거나 호스트의 사운드 출력으로 KVM을 선택하세요.'
+    },
     upstream: {
       check: '업데이트 확인',
       updateTo: '{{version}}(으)로 업데이트',

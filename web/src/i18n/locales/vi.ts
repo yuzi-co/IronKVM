@@ -1606,7 +1606,13 @@ const vi = {
       hidDisabled: 'HID đã bị tắt trên thiết bị này (/boot/disable_hid).',
       keyFailed: 'Không thể gửi phím.'
     },
-    speaker: { title: 'Loa', unmute: 'Bật tiếng', mute: 'Tắt tiếng' },
+    speaker: {
+      title: 'Loa',
+      unmute: 'Bật tiếng',
+      mute: 'Tắt tiếng',
+      hostIdle: 'Máy chủ không gửi âm thanh',
+      hostIdleHint: 'Hãy phát gì đó trên máy chủ, hoặc chọn KVM làm đầu ra âm thanh.'
+    },
     upstream: {
       check: 'Kiểm tra cập nhật',
       updateTo: 'Cập nhật lên {{version}}',

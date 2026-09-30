@@ -1652,7 +1652,13 @@ const de = {
       hidDisabled: 'HID ist auf diesem Gerät ausgeschaltet (/boot/disable_hid).',
       keyFailed: 'Die Taste konnte nicht gesendet werden.'
     },
-    speaker: { title: 'Lautsprecher', unmute: 'Ton an', mute: 'Stummschalten' },
+    speaker: {
+      title: 'Lautsprecher',
+      unmute: 'Ton an',
+      mute: 'Stummschalten',
+      hostIdle: 'Der Host sendet keinen Ton',
+      hostIdleHint: 'Spiele etwas auf dem Host ab oder wähle das KVM als Audioausgabe.'
+    },
     upstream: {
       check: 'Nach Updates suchen',
       updateTo: 'Auf {{version}} aktualisieren',

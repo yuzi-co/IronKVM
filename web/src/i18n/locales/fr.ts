@@ -1640,7 +1640,13 @@ const fr = {
       hidDisabled: 'Le HID est désactivé sur cet appareil (/boot/disable_hid).',
       keyFailed: "La touche n'a pas pu être envoyée."
     },
-    speaker: { title: 'Haut-parleur', unmute: 'Réactiver le son', mute: 'Couper le son' },
+    speaker: {
+      title: 'Haut-parleur',
+      unmute: 'Réactiver le son',
+      mute: 'Couper le son',
+      hostIdle: "L'hôte n'envoie pas de son",
+      hostIdleHint: "Lancez un son sur l'hôte, ou choisissez le KVM comme sortie audio."
+    },
     upstream: {
       check: 'Rechercher des mises à jour',
       updateTo: 'Mettre à jour vers {{version}}',

@@ -1630,7 +1630,13 @@ const nl = {
       hidDisabled: 'HID is uitgeschakeld op dit apparaat (/boot/disable_hid).',
       keyFailed: 'De toets kon niet worden verzonden.'
     },
-    speaker: { title: 'Luidspreker', unmute: 'Geluid aan', mute: 'Dempen' },
+    speaker: {
+      title: 'Luidspreker',
+      unmute: 'Geluid aan',
+      mute: 'Dempen',
+      hostIdle: 'De host stuurt geen geluid',
+      hostIdleHint: 'Speel iets af op de host, of kies de KVM als geluidsuitvoer.'
+    },
     upstream: {
       check: 'Controleren op updates',
       updateTo: 'Bijwerken naar {{version}}',

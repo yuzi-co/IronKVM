@@ -1546,7 +1546,13 @@ const zh_tw = {
       hidDisabled: '此裝置已關閉 HID（/boot/disable_hid）。',
       keyFailed: '按鍵傳送失敗。'
     },
-    speaker: { title: '喇叭', unmute: '取消靜音', mute: '靜音' },
+    speaker: {
+      title: '喇叭',
+      unmute: '取消靜音',
+      mute: '靜音',
+      hostIdle: '主機未傳送音訊',
+      hostIdleHint: '請在主機上播放聲音，或將 KVM 選為主機的聲音輸出裝置。'
+    },
     upstream: {
       check: '檢查更新',
       updateTo: '更新至 {{version}}',

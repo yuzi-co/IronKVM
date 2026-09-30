@@ -1608,7 +1608,13 @@ const da = {
       hidDisabled: 'HID er slået fra på denne enhed (/boot/disable_hid).',
       keyFailed: 'Tasten kunne ikke sendes.'
     },
-    speaker: { title: 'Højttaler', unmute: 'Slå lyd til', mute: 'Slå lyd fra' },
+    speaker: {
+      title: 'Højttaler',
+      unmute: 'Slå lyd til',
+      mute: 'Slå lyd fra',
+      hostIdle: 'Værten sender ikke lyd',
+      hostIdleHint: "Afspil noget på værten, eller vælg KVM'en som dens lydudgang."
+    },
     upstream: {
       check: 'Søg efter opdateringer',
       updateTo: 'Opdater til {{version}}',

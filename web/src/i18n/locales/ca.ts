@@ -1626,7 +1626,13 @@ const ca = {
       hidDisabled: "L'HID està desactivat en aquest dispositiu (/boot/disable_hid).",
       keyFailed: "No s'ha pogut enviar la tecla."
     },
-    speaker: { title: 'Altaveu', unmute: 'Activa el so', mute: 'Silencia' },
+    speaker: {
+      title: 'Altaveu',
+      unmute: 'Activa el so',
+      mute: 'Silencia',
+      hostIdle: "L'amfitrió no envia àudio",
+      hostIdleHint: "Reprodueix alguna cosa a l'amfitrió o tria el KVM com a sortida de so."
+    },
     upstream: {
       check: 'Cerca actualitzacions',
       updateTo: 'Actualitza a {{version}}',

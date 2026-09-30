@@ -1602,7 +1602,13 @@ const cz = {
       hidDisabled: 'HID je na tomto zařízení vypnuto (/boot/disable_hid).',
       keyFailed: 'Klávesu se nepodařilo odeslat.'
     },
-    speaker: { title: 'Reproduktor', unmute: 'Zapnout zvuk', mute: 'Ztlumit' },
+    speaker: {
+      title: 'Reproduktor',
+      unmute: 'Zapnout zvuk',
+      mute: 'Ztlumit',
+      hostIdle: 'Hostitel neposílá zvuk',
+      hostIdleHint: 'Přehrajte něco na hostiteli nebo v něm zvolte KVM jako zvukový výstup.'
+    },
     upstream: {
       check: 'Zkontrolovat aktualizace',
       updateTo: 'Aktualizovat na {{version}}',

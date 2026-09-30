@@ -1550,7 +1550,13 @@ const zh = {
       hidDisabled: '此设备已关闭 HID（/boot/disable_hid）。',
       keyFailed: '按键发送失败。'
     },
-    speaker: { title: '扬声器', unmute: '取消静音', mute: '静音' },
+    speaker: {
+      title: '扬声器',
+      unmute: '取消静音',
+      mute: '静音',
+      hostIdle: '主机未发送音频',
+      hostIdleHint: '请在主机上播放声音，或将 KVM 选为主机的声音输出设备。'
+    },
     upstream: {
       check: '检查更新',
       updateTo: '更新到 {{version}}',

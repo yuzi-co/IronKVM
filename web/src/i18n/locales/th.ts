@@ -1583,7 +1583,13 @@ const th = {
       hidDisabled: 'HID ถูกปิดอยู่บนอุปกรณ์นี้ (/boot/disable_hid)',
       keyFailed: 'ส่งปุ่มไม่สำเร็จ'
     },
-    speaker: { title: 'ลำโพง', unmute: 'เปิดเสียง', mute: 'ปิดเสียง' },
+    speaker: {
+      title: 'ลำโพง',
+      unmute: 'เปิดเสียง',
+      mute: 'ปิดเสียง',
+      hostIdle: 'โฮสต์ไม่ได้ส่งเสียงมา',
+      hostIdleHint: 'เล่นเสียงบางอย่างบนโฮสต์ หรือเลือก KVM เป็นอุปกรณ์เสียงออกของโฮสต์'
+    },
     upstream: {
       check: 'ตรวจหาอัปเดต',
       updateTo: 'อัปเดตเป็น {{version}}',
