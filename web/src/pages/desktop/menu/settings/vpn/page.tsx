@@ -16,8 +16,16 @@ import { Install } from './install.tsx';
 import { Notice } from './notice.tsx';
 import { Peers } from './peers.tsx';
 import type { Status, VpnInfo } from './types.ts';
+import { hasSettled } from './view.ts';
 
 const statusPollMs = 10 * 1000;
+
+// After the switch is turned on, the status is asked for this often, for at
+// most this long, until the address and a peer online show up. The daemon
+// answers connect before its peers are known, and the normal poll would leave
+// "0 online of 0" on the page for up to its whole interval.
+const settlePollMs = 1500;
+const settleForMs = 20 * 1000;
 
 type VpnPageProps = {
   vpn: VpnInfo;
@@ -79,6 +87,24 @@ export const VpnPage = ({ vpn, setIsLocked }: VpnPageProps) => {
   // progress and holds the page.
   usePoll(() => fetchStatus('poll'), statusPollMs, !!status && status.state !== 'notInstall');
 
+  // When the settling after a connect ends, or 0 when there is none.
+  const [settleUntil, setSettleUntil] = useState(0);
+  const onConnected = useStableCallback(() => setSettleUntil(Date.now() + settleForMs));
+  usePoll(
+    () => {
+      if (
+        Date.now() >= settleUntil ||
+        (!failed && hasSettled(status?.state, status?.ip ?? '', status?.peers ?? null))
+      ) {
+        setSettleUntil(0);
+        return;
+      }
+      fetchStatus('poll');
+    },
+    settlePollMs,
+    settleUntil > 0
+  );
+
   const blocked = !!status?.blockedBy;
   const state = status?.state;
   const installed = !!status && state !== 'notInstall';
@@ -121,6 +147,7 @@ export const VpnPage = ({ vpn, setIsLocked }: VpnPageProps) => {
                 status={status}
                 blocked={blocked}
                 onChange={refresh}
+                onConnected={onConnected}
                 onError={setErrMsg}
               />
               <Boot

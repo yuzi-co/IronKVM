@@ -13,13 +13,22 @@ type ConnectionProps = {
   status: Status;
   blocked: boolean;
   onChange: () => void;
+  // The switch was turned on and the server brought the network up.
+  onConnected: () => void;
   onError: (msg: string) => void;
 };
 
 // Connection is the page's one switch. On starts the daemon when it is not
 // running and joins the network; off leaves the network and stops the
 // daemon, which frees its memory. The server does both steps.
-export const Connection = ({ vpn, status, blocked, onChange, onError }: ConnectionProps) => {
+export const Connection = ({
+  vpn,
+  status,
+  blocked,
+  onChange,
+  onConnected,
+  onError
+}: ConnectionProps) => {
   const { t } = useTranslation();
 
   // While a request runs, and until the status it changed arrives, the
@@ -48,7 +57,9 @@ export const Connection = ({ vpn, status, blocked, onChange, onError }: Connecti
         if (rsp.code !== 0) {
           setPending(undefined);
           onError(describeFailure(rsp));
+          return;
         }
+        if (next) onConnected();
       })
       .catch((err) => {
         setPending(undefined);

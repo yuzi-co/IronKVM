@@ -46,6 +46,16 @@ export function countOnline(peers: Peer[]): number {
   return peers.filter((p) => p.online).length;
 }
 
+// hasSettled reports whether a network just switched on shows what the page
+// is for: an address and a peer online. The daemon answers connect before
+// that, NetBird as soon as it is Connecting and Tailscale once it is Running
+// but before its peers are reachable, so until then the page asks again
+// quickly. A daemon waiting for its login has nothing more coming.
+export function hasSettled(state: State | undefined, ip: string, peers: Peer[] | null): boolean {
+  if (state === undefined || state === 'notInstall' || state === 'notLogin') return true;
+  return state === 'running' && !!ip && countOnline(peers ?? []) > 0;
+}
+
 // memoryUse is the daemon's resident memory against the addons group's limit:
 // memory.high, where the kernel starts to throttle, or memory.max without it.
 // pressed is set once the whole group is within a tenth of memory.high.

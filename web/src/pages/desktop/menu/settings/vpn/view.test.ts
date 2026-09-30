@@ -3,7 +3,15 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { countOnline, hasDaemon, isSwitchedOn, memoryUse, sortPeers, statusTag } from './view.ts';
+import {
+  countOnline,
+  hasDaemon,
+  hasSettled,
+  isSwitchedOn,
+  memoryUse,
+  sortPeers,
+  statusTag
+} from './view.ts';
 
 describe('statusTag', () => {
   it('maps each state to its badge', () => {
@@ -65,6 +73,31 @@ describe('sortPeers', () => {
   it('counts the online ones', () => {
     assert.equal(countOnline(peers), 3);
     assert.equal(countOnline([]), 0);
+  });
+});
+
+describe('hasSettled', () => {
+  const online = [{ name: 'nas', ip: '100.64.0.2', online: true }];
+  const offline = [{ name: 'nas', ip: '100.64.0.2', online: false }];
+
+  it('waits for an address and a peer online', () => {
+    assert.equal(hasSettled('running', '', []), false);
+    assert.equal(hasSettled('running', '', null), false);
+    assert.equal(hasSettled('running', '100.64.0.1', []), false);
+    assert.equal(hasSettled('running', '100.64.0.1', offline), false);
+    assert.equal(hasSettled('running', '', online), false);
+    assert.equal(hasSettled('running', '100.64.0.1', online), true);
+  });
+
+  it('waits while the daemon or the network is still coming up', () => {
+    assert.equal(hasSettled('notRunning', '', []), false);
+    assert.equal(hasSettled('stopped', '', []), false);
+  });
+
+  it('has nothing to wait for while a login is needed', () => {
+    assert.equal(hasSettled('notLogin', '', []), true);
+    assert.equal(hasSettled('notInstall', '', []), true);
+    assert.equal(hasSettled(undefined, '', null), true);
   });
 });
 
