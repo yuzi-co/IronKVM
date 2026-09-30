@@ -6,6 +6,7 @@ import (
 	"io"
 	"os/exec"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -36,17 +37,63 @@ const (
 	// until it recovers.
 	//
 	// Capture is never retired, so without this a source that cannot work
-	// writes a line per attempt for as long as a viewer listens. A managed
-	// host that plays nothing streams nothing, and arecord fails every time,
-	// so that is the ordinary case rather than a rare one. The log it fills is
-	// /tmp/nanokvm-server.log, which S98vidiag and the supervisor both read.
+	// writes a line per attempt for as long as a viewer listens. The log it
+	// fills is /tmp/nanokvm-server.log, which S98vidiag and the supervisor
+	// both read. A host that plays nothing is not counted as a failure: see
+	// hostIdleReason.
 	quietAfterFailures = 5
+
+	// hostIdleReason is what arecord says when the host plays nothing to the
+	// gadget. It does not block waiting for sound: measured on a board on
+	// 2026-09-30, with the host's stream0 at "Playback Status: Stop", arecord
+	// exits after about 0.4 s with "arecord: pcm_read:2285: read error: I/O
+	// error", status 1, no samples and nothing in dmesg. That is this
+	// device's ordinary idle state, not a fault, so it is told apart from one.
+	hostIdleReason = "read error: I/O error"
 
 	// stderrLimit caps what is kept of the child's stderr. ALSA states its
 	// reason in one short line, so this is generous; the cap is there because
 	// a child that complains once per period must not grow a buffer forever.
 	stderrLimit = 512
 )
+
+// State is what capture is doing, as far as a viewer needs to know.
+//
+// The zero value means nothing is known yet. A Frame carries a State only when
+// it is a notice rather than audio, so StateUnknown there means "this is audio".
+type State uint8
+
+const (
+	StateUnknown State = iota
+	// StatePlaying means the host plays and audio is being delivered.
+	StatePlaying
+	// StateIdle means the host plays nothing to the gadget, so there is no
+	// audio to deliver. It turns into StatePlaying by itself once the host
+	// plays something.
+	StateIdle
+	// StateFailing means capture failed for a reason other than an idle host.
+	StateFailing
+)
+
+func (s State) String() string {
+	switch s {
+	case StatePlaying:
+		return "playing"
+	case StateIdle:
+		return "idle"
+	case StateFailing:
+		return "failing"
+	default:
+		return "unknown"
+	}
+}
+
+// isHostIdle reports whether a child's run is what an idle host looks like:
+// it exited well short of a healthy run, delivered nothing, and said the read
+// failed with an I/O error.
+func isHostIdle(delivered bool, uptime time.Duration, reason string) bool {
+	return !delivered && uptime < minRunDuration && strings.Contains(reason, hostIdleReason)
+}
 
 // tailBuffer keeps the last stderrLimit bytes written to it and nothing else.
 //
@@ -96,6 +143,12 @@ type Source struct {
 
 	minBackoff time.Duration
 	maxBackoff time.Duration
+
+	// onState, when set, hears every change of state. It is set before Run
+	// and called from Run's goroutine only.
+	onState func(State)
+	// state is the last state reported. Only Run's goroutine touches it.
+	state State
 
 	mutex   sync.Mutex
 	cmd     *exec.Cmd
@@ -151,21 +204,55 @@ func newArecord() *exec.Cmd {
 // change that a settled connection never produces again.
 //
 // What the retry must not do is cost anything while it waits. The backoff
-// climbs to maxBackoff, and the log falls quiet after quietAfterFailures.
+// climbs to maxBackoff, which also bounds how long a host that starts playing
+// waits for its sound.
+//
+// An idle host makes arecord exit at once rather than wait for sound (see
+// hostIdleReason), so that is not a failure. The loop says so once, at info,
+// retries at the same cadence without another line, and says so once more
+// when sound arrives. A real failure keeps its warnings, which fall quiet
+// after quietAfterFailures.
 func (s *Source) Run(handle func([]byte)) {
 	chunk := make([]byte, ChunkBytes)
 	backoff := s.minBackoff
 
 	var failures int
+	var idle bool
+
+	deliver := func(chunk []byte) {
+		if idle {
+			idle = false
+			log.Infof("audio capture: the host is playing audio to the KVM again")
+		}
+		s.report(StatePlaying)
+		handle(chunk)
+	}
 
 	for {
 		if s.isStopped() {
 			return
 		}
 
-		delivered, uptime, reason := s.runOnce(chunk, handle)
+		delivered, uptime, reason := s.runOnce(chunk, deliver)
 
-		if delivered && uptime > minRunDuration {
+		// A child killed by Stop is neither idle nor failing.
+		if s.isStopped() {
+			return
+		}
+
+		switch {
+		case isHostIdle(delivered, uptime, reason):
+			// Not a failure, so it neither counts toward the quiet limit nor
+			// warns. One line when it starts explains the silence.
+			if !idle {
+				idle = true
+				log.Infof("audio capture: the host is not playing audio to the KVM; waiting for it")
+			}
+
+			failures = 0
+			s.report(StateIdle)
+
+		case delivered && uptime > minRunDuration:
 			// The child produced audio and ran long enough, so the next failure
 			// is a fresh one.
 			if failures >= quietAfterFailures {
@@ -174,18 +261,17 @@ func (s *Source) Run(handle func([]byte)) {
 
 			backoff = s.minBackoff
 			failures = 0
-		} else {
-			// This branch is the negation of the condition above, so every
-			// arrival here is a child that failed or one that did not run
-			// long enough to count.
+
+		default:
+			// Every arrival here is a child that failed for a reason other
+			// than an idle host, or one that did not run long enough to count.
 			failures++
+			idle = false
+			s.report(StateFailing)
 
 			// The child's own reason rides on these lines rather than on one
-			// of its own, so it falls quiet with them. A host that plays
-			// nothing is this board's ordinary idle state, and arecord
-			// complains about it on every attempt, for as long as the board is
-			// up. The reason is still the only diagnostic this feature has, so
-			// it is carried, not dropped.
+			// of its own, so it falls quiet with them. The reason is the only
+			// diagnostic this feature has, so it is carried, not dropped.
 			said := ""
 			if reason != "" {
 				said = fmt.Sprintf(", and it said: %s", reason)
@@ -203,10 +289,6 @@ func (s *Source) Run(handle func([]byte)) {
 			}
 		}
 
-		if s.isStopped() {
-			return
-		}
-
 		select {
 		case <-time.After(backoff):
 		case <-s.done:
@@ -216,6 +298,19 @@ func (s *Source) Run(handle func([]byte)) {
 		if backoff *= 2; backoff > s.maxBackoff {
 			backoff = s.maxBackoff
 		}
+	}
+}
+
+// report passes a change of state to onState. A repeat is dropped, so calling
+// it for every chunk costs a comparison.
+func (s *Source) report(state State) {
+	if state == s.state {
+		return
+	}
+
+	s.state = state
+	if s.onState != nil {
+		s.onState(state)
 	}
 }
 
@@ -329,8 +424,9 @@ func (s *Source) runOnce(chunk []byte, handle func([]byte)) (bool, time.Duration
 	return delivered, time.Since(startTime), reason
 }
 
-// Stop kills the child and stops the loop. It is safe to call more than once,
-// and it is the only thing that unblocks a read while the host plays nothing.
+// Stop kills the child and stops the loop. It is safe to call more than once.
+// It is the only thing that ends a read while the host plays, and it cuts short
+// the wait between attempts while the host plays nothing.
 func (s *Source) Stop() {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()

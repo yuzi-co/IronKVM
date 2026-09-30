@@ -208,3 +208,103 @@ func TestHubStopAllKillsCaptureAndClosesListeners(t *testing.T) {
 	}
 	a.Close()
 }
+
+// reportingCapture is a fakeCapture that can report state, the way a Stream
+// does. The test calls report where a Stream's source would.
+type reportingCapture struct {
+	*fakeCapture
+	mutex   sync.Mutex
+	handler func(State)
+}
+
+func (r *reportingCapture) SetStateHandler(fn func(State)) {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+	r.handler = fn
+}
+
+func (r *reportingCapture) report(state State) {
+	r.mutex.Lock()
+	handler := r.handler
+	r.mutex.Unlock()
+	handler(state)
+}
+
+func newReportingHub() (*Hub, func() []*reportingCapture) {
+	var mutex sync.Mutex
+	var captures []*reportingCapture
+
+	hub := NewHubWith(func() Capture {
+		mutex.Lock()
+		defer mutex.Unlock()
+		c := &reportingCapture{fakeCapture: newFakeCapture()}
+		captures = append(captures, c)
+		return c
+	}, func() bool { return true })
+
+	return hub, func() []*reportingCapture {
+		mutex.Lock()
+		defer mutex.Unlock()
+		return append([]*reportingCapture(nil), captures...)
+	}
+}
+
+func TestHubTellsEveryListenerWhenTheStateChanges(t *testing.T) {
+	hub, captures := newReportingHub()
+	a := hub.Subscribe()
+	b := hub.Subscribe()
+	defer a.Close()
+	defer b.Close()
+
+	captures()[0].report(StateIdle)
+
+	for name, sub := range map[string]*Subscription{"a": a, "b": b} {
+		if frame := receive(t, sub); frame.State != StateIdle || frame.Data != nil {
+			t.Errorf("listener %s got %+v, want an idle notice", name, frame)
+		}
+	}
+}
+
+// A viewer that joins while the host is idle would otherwise hear nothing
+// about it until the host plays, which may be never.
+func TestHubTellsALateListenerTheCurrentState(t *testing.T) {
+	hub, captures := newReportingHub()
+	first := hub.Subscribe()
+	defer first.Close()
+
+	captures()[0].report(StateIdle)
+	receive(t, first)
+
+	late := hub.Subscribe()
+	defer late.Close()
+
+	if frame := receive(t, late); frame.State != StateIdle {
+		t.Fatalf("the late listener got %+v first, want the idle notice", frame)
+	}
+}
+
+func TestHubIgnoresStateFromACaptureItStopped(t *testing.T) {
+	hub, captures := newReportingHub()
+	old := hub.Subscribe()
+	old.Close()
+
+	next := hub.Subscribe()
+	defer next.Close()
+
+	captures()[0].report(StateIdle)
+
+	select {
+	case frame := <-next.Frames():
+		t.Fatalf("a stopped capture's state reached a new listener: %+v", frame)
+	case <-time.After(50 * time.Millisecond):
+	}
+
+	// Nor does it count as the current state for the next listener.
+	late := hub.Subscribe()
+	defer late.Close()
+	select {
+	case frame := <-late.Frames():
+		t.Fatalf("a stopped capture's state was handed to a late listener: %+v", frame)
+	case <-time.After(50 * time.Millisecond):
+	}
+}

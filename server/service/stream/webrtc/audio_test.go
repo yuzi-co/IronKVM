@@ -511,3 +511,99 @@ func TestSendAudioStreamMovesTheClockAcrossAGap(t *testing.T) {
 		t.Fatalf("skipped %v, want one skip of %d samples", recorder.skipped, want)
 	}
 }
+
+// stateCapture is an endingCapture that reports state, the way a Stream does.
+type stateCapture struct {
+	*endingCapture
+	mutex   sync.Mutex
+	handler func(audio.State)
+}
+
+func (c *stateCapture) SetStateHandler(fn func(audio.State)) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+	c.handler = fn
+}
+
+func (c *stateCapture) report(state audio.State) {
+	c.mutex.Lock()
+	handler := c.handler
+	c.mutex.Unlock()
+	handler(state)
+}
+
+// newSignallingPair returns both ends of a live websocket: the server end a
+// Client writes to, and the browser end the test reads from.
+func newSignallingPair(t *testing.T) (*websocket.Conn, *websocket.Conn) {
+	t.Helper()
+
+	upgrade := websocket.Upgrader{CheckOrigin: func(*http.Request) bool { return true }}
+	accepted := make(chan *websocket.Conn, 1)
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		conn, err := upgrade.Upgrade(w, r, nil)
+		if err != nil {
+			t.Errorf("upgrade websocket: %v", err)
+			return
+		}
+		accepted <- conn
+	}))
+	t.Cleanup(server.Close)
+
+	browser, _, err := websocket.DefaultDialer.Dial("ws"+strings.TrimPrefix(server.URL, "http"), nil)
+	if err != nil {
+		t.Fatalf("dial: %v", err)
+	}
+	t.Cleanup(func() { _ = browser.Close() })
+
+	serverConn := <-accepted
+	t.Cleanup(func() { _ = serverConn.Close() })
+
+	return serverConn, browser
+}
+
+// An idle host reaches the viewer as a signalling event, and the notice does
+// not touch the RTP clock, which only audio may move.
+func TestSendAudioStreamTellsTheViewerTheHostIsIdle(t *testing.T) {
+	manager := NewWebRTCManager()
+	recorder := &skipRecorder{}
+	manager.audioPacketizer = recorder
+
+	serverConn, browser := newSignallingPair(t)
+	listener := newTestClient()
+	listener.ws = serverConn
+	listener.mutex.Lock()
+	listener.track.audio = &recordingWriter{}
+	listener.mutex.Unlock()
+	manager.storeClient(serverConn, listener)
+
+	capture := &stateCapture{endingCapture: newEndingCapture()}
+	manager.audioHub = audio.NewHubWith(func() audio.Capture { return capture }, func() bool { return true })
+	sub := manager.audioHub.Subscribe()
+
+	manager.mutex.Lock()
+	manager.audioSub = sub
+	manager.audioSending = true
+	manager.mutex.Unlock()
+
+	done := make(chan struct{})
+	go func() { manager.sendAudioStream(sub); close(done) }()
+
+	capture.report(audio.StateIdle)
+
+	_ = browser.SetReadDeadline(time.Now().Add(5 * time.Second))
+	var message Message
+	if err := browser.ReadJSON(&message); err != nil {
+		t.Fatalf("read: %v", err)
+	}
+	if message.Event != audioStateEvent || message.Data != "idle" {
+		t.Errorf("got %+v, want event %q with data %q", message, audioStateEvent, "idle")
+	}
+
+	capture.end()
+	<-done
+
+	if len(recorder.skipped) != 0 {
+		t.Errorf("a state notice moved the RTP clock: %v", recorder.skipped)
+	}
+}

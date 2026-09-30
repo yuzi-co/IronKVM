@@ -43,6 +43,7 @@ func (m *WebRTCManager) clearAudioStream(sub *audio.Subscription) {
 
 	m.audioSub = nil
 	m.audioSending = false
+	m.audioState = audio.StateUnknown
 }
 
 // StartAudioStream begins capture if a client can hear it and the gadget has a
@@ -54,7 +55,16 @@ func (m *WebRTCManager) StartAudioStream() {
 	}
 
 	m.mutex.Lock()
-	if m.audioSending || len(m.clients) == 0 {
+	if m.audioSending {
+		// Capture is already running for someone else. The viewer that just
+		// connected has not heard its state, and the state may not change
+		// again for as long as the host stays idle.
+		state := m.audioState
+		m.mutex.Unlock()
+		m.announceAudioState(state)
+		return
+	}
+	if len(m.clients) == 0 {
 		m.mutex.Unlock()
 		return
 	}
@@ -79,9 +89,11 @@ func (m *WebRTCManager) StartAudioStream() {
 // arecord child with it. main.go calls it from dispose() so the child does not
 // outlive the server.
 //
-// An orphaned arecord does not die on its own. It notices the closed pipe only
-// when it writes, and while the host plays nothing it blocks in the ALSA read
-// for as long as the board is up. The orphan holds hw:UAC1Gadget,0
+// An orphaned arecord cannot be counted on to die on its own. It notices the
+// closed pipe only when it writes, and a read wedged in the driver (see
+// audio.stopTimeout) may never return to write. While the host plays nothing
+// it does exit within a second, but that is no help while the host plays and
+// the read is stuck. The orphan holds hw:UAC1Gadget,0
 // exclusively, so the replacement server's arecord fails with "Device or
 // resource busy", spends its whole restart budget in about three seconds, and
 // gives up. Audio then stays dead until somebody logs in and kills the orphan.
@@ -107,6 +119,7 @@ func (m *WebRTCManager) stopAudioStream() {
 	sub := m.audioSub
 	m.audioSub = nil
 	m.audioSending = false
+	m.audioState = audio.StateUnknown
 	m.mutex.Unlock()
 
 	// Close runs outside the lock. As the last listener it stops capture and
@@ -128,8 +141,9 @@ func (m *WebRTCManager) stopAudioStream() {
 // has for its whole life.
 //
 // This has to kill the child process rather than wait for the loop to notice.
-// While the host plays nothing, arecord blocks in a read, so the loop does not
-// tick and would never see that nobody is listening.
+// While the host plays, arecord blocks in a read for as long as it plays, so
+// the loop does not tick and would not see that nobody is listening. While the
+// host plays nothing, the loop would retry every few seconds forever.
 //
 // hasAudioListener reads the atomic client snapshot and takes no lock, so
 // calling it before m.mutex cannot invert the lock order.
@@ -154,6 +168,13 @@ func (m *WebRTCManager) sendAudioStream(sub *audio.Subscription) {
 	started := false
 
 	for frame := range sub.Frames() {
+		// A notice carries no audio and no sequence, so it must not move the
+		// clock.
+		if frame.State != audio.StateUnknown {
+			m.setAudioState(sub, frame.State)
+			continue
+		}
+
 		if started && frame.Seq > next {
 			m.audioPacketizer.SkipSamples(uint32(frame.Seq-next) * audio.SamplesPerFrame)
 		}
@@ -215,5 +236,40 @@ func (m *WebRTCManager) deliverAudioFrame(frame []byte) {
 		}
 
 		client.enqueueAudio(packets)
+	}
+}
+
+// audioStateEvent is the signalling event that tells a viewer what capture is
+// doing, so it can say why there is no sound. Its data is State.String().
+const audioStateEvent = "audio-state"
+
+// setAudioState records the capture's new state and tells every viewer that
+// negotiated audio. A notice from a subscription that has been replaced or
+// stopped is ignored.
+func (m *WebRTCManager) setAudioState(sub *audio.Subscription, state audio.State) {
+	m.mutex.Lock()
+	if m.audioSub != sub {
+		m.mutex.Unlock()
+		return
+	}
+	m.audioState = state
+	m.mutex.Unlock()
+
+	m.announceAudioState(state)
+}
+
+// announceAudioState sends a state to every viewer that negotiated audio. It
+// runs outside m.mutex, because WriteMessage takes each client's own lock.
+func (m *WebRTCManager) announceAudioState(state audio.State) {
+	if state == audio.StateUnknown {
+		return
+	}
+
+	for _, client := range m.getClients() {
+		if client.ws == nil || !client.hasAudioTrack() {
+			continue
+		}
+
+		_ = client.WriteMessage(audioStateEvent, state.String())
 	}
 }

@@ -190,9 +190,10 @@ func run() {
 }
 
 func dispose() {
-	// Stop the audio child before this process goes away. It does not follow us
-	// out: arecord sees the closed pipe only when it writes, and while the host
-	// plays nothing it blocks in the ALSA read forever. The orphan keeps the
+	// Stop the audio child before this process goes away. It cannot be counted
+	// on to follow us out: arecord sees the closed pipe only when it writes, and
+	// a read wedged in the driver may never return to write. (While the host
+	// plays nothing it exits by itself within a second.) The orphan keeps the
 	// capture card open, so the next server cannot record and audio stays dead
 	// until somebody kills it by hand.
 	//

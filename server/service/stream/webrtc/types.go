@@ -32,6 +32,9 @@ type WebRTCManager struct {
 	audioSending    bool
 	audioSub        *audio.Subscription
 	audioPacketizer rtp.Packetizer
+	// audioState is the capture's last reported state, which a viewer that
+	// joins a running capture is told at once. Guarded by mutex.
+	audioState audio.State
 
 	// audioHub is audio.Shared in production. The capture device opens
 	// exclusively, so this path and H.264 direct share one capture through it.

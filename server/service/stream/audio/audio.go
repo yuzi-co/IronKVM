@@ -171,9 +171,10 @@ func (s *Stream) closeFrames() {
 
 // Stop kills the child and closes Frames.
 //
-// Killing the child is what ends the read. While the host plays nothing,
-// arecord blocks, so nothing in the read path notices that the last viewer has
-// gone.
+// Killing the child is what ends the read. While the host plays, arecord
+// blocks in it, and nothing in the read path notices that the last viewer has
+// gone. While the host plays nothing, arecord exits by itself within a second
+// and the loop waits between attempts; Stop ends that wait.
 //
 // Calling s.source.Stop() before reading started under the mutex is critical:
 // it ensures that a Start call racing with Stop will spawn a goroutine whose
@@ -212,6 +213,12 @@ func (s *Stream) Stop() {
 
 func (s *Stream) Frames() <-chan []byte {
 	return s.frames
+}
+
+// SetStateHandler registers fn to hear each change of capture state. It must be
+// called before Start. fn runs on the capture goroutine, so it must not block.
+func (s *Stream) SetStateHandler(fn func(State)) {
+	s.source.onState = fn
 }
 
 // consume encodes one capture chunk and offers the packet. It never blocks: a

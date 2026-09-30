@@ -135,3 +135,31 @@ type chanCapture struct{ frames chan []byte }
 func (c *chanCapture) Start()                {}
 func (c *chanCapture) Stop()                 {}
 func (c *chanCapture) Frames() <-chan []byte { return c.frames }
+
+// A state notice is two bytes, marker and state. Every viewer drops a message
+// shorter than an audio header, so one that predates the notice ignores it.
+func TestAStateNoticeReachesTheBrowserAsTwoBytes(t *testing.T) {
+	conn, browser, done := pair(t)
+	defer done()
+
+	c := newClient(conn)
+	c.start()
+	defer func() { c.close(); c.wait() }()
+
+	c.offerAudio(audio.Frame{State: audio.StateIdle})
+
+	_ = browser.SetReadDeadline(time.Now().Add(5 * time.Second))
+	messageType, payload, err := browser.ReadMessage()
+	if err != nil {
+		t.Fatalf("failed to read: %s", err)
+	}
+	if messageType != websocket.BinaryMessage {
+		t.Fatalf("message type is %d, want binary", messageType)
+	}
+	if len(payload) != 2 || payload[0] != audioStateMessage || payload[1] != byte(audio.StateIdle) {
+		t.Fatalf("received %v, want [%d %d]", payload, audioStateMessage, audio.StateIdle)
+	}
+	if len(payload) >= audioHeaderSize {
+		t.Fatal("the notice is long enough for an older viewer to read it as audio or video")
+	}
+}

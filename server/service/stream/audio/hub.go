@@ -12,9 +12,16 @@ const subscriptionBuffer = 8
 // Seq counts from 0 for each capture. A listener that sees a gap knows frames
 // were lost and can keep its clock by filling the gap with silence. A listener
 // that sees Seq go back knows a new capture started.
+//
+// A frame with a State is a notice rather than audio: it has no Data and no
+// Seq, and says that capture changed state. A listener that joins a running
+// capture gets the current state first, so it need not wait for the next
+// change. A notice can be lost to a slow listener like any frame; audio
+// arriving says StatePlaying by itself.
 type Frame struct {
-	Seq  uint64
-	Data []byte
+	Seq   uint64
+	Data  []byte
+	State State
 }
 
 // Capture is what the hub runs. *Stream is the production one.
@@ -22,6 +29,13 @@ type Capture interface {
 	Start()
 	Stop()
 	Frames() <-chan []byte
+}
+
+// stateReporter is a Capture that can say when its state changes. *Stream is
+// one. The hub asks for it rather than requiring it, so a capture that cannot
+// tell simply sends no notices.
+type stateReporter interface {
+	SetStateHandler(func(State))
 }
 
 // Hub shares one capture between every listener.
@@ -39,6 +53,9 @@ type Hub struct {
 	current    Capture
 	newCapture func() Capture
 	available  func() bool
+
+	// state is the current capture's last reported state.
+	state State
 }
 
 // Shared is the hub every video path subscribes to.
@@ -83,6 +100,15 @@ func (h *Hub) Subscribe() *Subscription {
 	if h.current == nil {
 		start = h.newCapture()
 		h.current = start
+		h.state = StateUnknown
+
+		if reporter, ok := start.(stateReporter); ok {
+			capture := start
+			reporter.SetStateHandler(func(state State) { h.publishState(capture, state) })
+		}
+	} else if h.state != StateUnknown {
+		// The channel is new and empty, so this cannot block.
+		sub.frames <- Frame{State: h.state}
 	}
 	h.mutex.Unlock()
 
@@ -127,6 +153,25 @@ func (h *Hub) fanOut(capture Capture) {
 		}
 	}
 	h.mutex.Unlock()
+}
+
+// publishState records a capture's new state and tells every listener. A
+// capture that has been replaced or stopped is ignored.
+func (h *Hub) publishState(capture Capture, state State) {
+	h.mutex.Lock()
+	defer h.mutex.Unlock()
+
+	if h.current != capture {
+		return
+	}
+
+	h.state = state
+	for sub := range h.subs {
+		select {
+		case sub.frames <- Frame{State: state}:
+		default:
+		}
+	}
 }
 
 // Close removes the listener, and stops capture if it was the last one. Stop

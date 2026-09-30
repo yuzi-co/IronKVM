@@ -4,6 +4,7 @@ package audio
 
 import (
 	"bytes"
+	"fmt"
 	"os/exec"
 	"strings"
 	"sync"
@@ -239,9 +240,9 @@ func TestRunStopsLoggingOnceFailureIsTheSteadyState(t *testing.T) {
 // The quiet promise covers one line and has to cover both. On a device on
 // 2026-08-19 the retry message fell silent after five attempts exactly as
 // designed, and arecord's own complaint kept arriving every fifteen seconds for
-// hours: "audio capture said: arecord: pcm_read:2240: read error: I/O error".
-// A host that plays nothing is the ordinary idle state of this board, so that
-// is the steady state, not an incident.
+// hours. That complaint was an idle host, which is no longer a failure at all
+// (see TestRunTreatsAnIdleHostAsIdleNotAsAFailure), but a real fault that
+// repeats forever needs the same promise.
 //
 // TestRunStopsLoggingOnceFailureIsTheSteadyState does not catch it, because the
 // child it runs exits without writing anything, and a silent child has no
@@ -256,7 +257,7 @@ func TestRunStopsRepeatingTheChildsComplaint(t *testing.T) {
 	source.minBackoff = time.Millisecond
 	source.maxBackoff = time.Millisecond
 	newCmd, attempted := countedChild(steadyStateAttempts,
-		"echo 'pcm_read:2240: read error: I/O error' >&2; exit 1")
+		"echo 'arecord: main:850: audio open error: Device or resource busy' >&2; exit 1")
 	source.newCmd = newCmd
 
 	done := make(chan struct{})
@@ -280,7 +281,7 @@ func TestRunStopsRepeatingTheChildsComplaint(t *testing.T) {
 
 	// Silence is not the goal. An operator who has to diagnose no audio needs
 	// the reason the child gave, so it has to appear.
-	if !strings.Contains(captured.String(), "read error") {
+	if !strings.Contains(captured.String(), "Device or resource busy") {
 		t.Error("the child's reason was never reported, so nothing says why audio is off")
 	}
 
@@ -383,5 +384,221 @@ func TestMinRunDurationReset(t *testing.T) {
 	if starts >= tooMany {
 		t.Errorf("started the child %d times, want fewer than %d: the backoff did not climb",
 			starts, tooMany)
+	}
+}
+
+// idleComplaint is what arecord said on a board on 2026-09-30 while the host
+// played nothing to the gadget.
+const idleComplaint = "echo 'arecord: pcm_read:2285: read error: I/O error' >&2; exit 1"
+
+// busyComplaint is a real fault: another reader holds the card.
+const busyComplaint = "echo 'arecord: main:850: audio open error: Device or resource busy' >&2; exit 1"
+
+func TestIsHostIdle(t *testing.T) {
+	const idle = "arecord: pcm_read:2285: read error: I/O error"
+
+	cases := []struct {
+		name      string
+		delivered bool
+		uptime    time.Duration
+		reason    string
+		want      bool
+	}{
+		{"the idle host seen on the board", false, 390 * time.Millisecond, idle, true},
+		{"another arecord build's line number", false, time.Second, "arecord: pcm_read:2240: read error: I/O error", true},
+		{"audio came first, so the host stopped mid-run", true, 390 * time.Millisecond, idle, false},
+		{"ran as long as a healthy child", false, minRunDuration + time.Second, idle, false},
+		{"the card is held by someone else", false, 50 * time.Millisecond, "arecord: main:850: audio open error: Device or resource busy", false},
+		{"the gadget has no card", false, 50 * time.Millisecond, "arecord: main:850: audio open error: No such file or directory", false},
+		{"a silent crash", false, 50 * time.Millisecond, "", false},
+	}
+
+	for _, c := range cases {
+		if got := isHostIdle(c.delivered, c.uptime, c.reason); got != c.want {
+			t.Errorf("%s: isHostIdle = %v, want %v", c.name, got, c.want)
+		}
+	}
+}
+
+// stateLog records what a source reports through onState.
+type stateLog struct {
+	mutex  sync.Mutex
+	states []State
+}
+
+func (l *stateLog) record(state State) {
+	l.mutex.Lock()
+	defer l.mutex.Unlock()
+	l.states = append(l.states, state)
+}
+
+func (l *stateLog) all() []State {
+	l.mutex.Lock()
+	defer l.mutex.Unlock()
+	return append([]State(nil), l.states...)
+}
+
+// captureLog sends the standard logger to a buffer for the rest of the test.
+func captureLog(t *testing.T) *bytes.Buffer {
+	t.Helper()
+
+	var captured bytes.Buffer
+	original := log.StandardLogger().Out
+	log.SetOutput(&captured)
+	t.Cleanup(func() { log.SetOutput(original) })
+
+	return &captured
+}
+
+// fastSource is a source that retries at once and reports to states.
+func fastSource(states *stateLog) *Source {
+	source := NewSource()
+	source.minBackoff = time.Millisecond
+	source.maxBackoff = time.Millisecond
+	source.onState = states.record
+
+	return source
+}
+
+// scriptedChild returns a newCmd that runs script(n) for the nth start, and a
+// channel that closes once the child has been started until times.
+func scriptedChild(until int, script func(n int) string) (func() *exec.Cmd, <-chan struct{}) {
+	var mutex sync.Mutex
+	var starts int
+	reached := make(chan struct{})
+
+	return func() *exec.Cmd {
+		mutex.Lock()
+		starts++
+		n := starts
+		if n == until {
+			close(reached)
+		}
+		mutex.Unlock()
+
+		return exec.Command("sh", "-c", script(n))
+	}, reached
+}
+
+// runUntil runs source until reached closes, then stops it and waits.
+func runUntil(t *testing.T, source *Source, handle func([]byte), reached <-chan struct{}) {
+	t.Helper()
+
+	done := make(chan struct{})
+	go func() {
+		source.Run(handle)
+		close(done)
+	}()
+
+	select {
+	case <-reached:
+	case <-done:
+		t.Fatal("Run returned before Stop")
+	case <-time.After(10 * time.Second):
+		t.Fatal("the expected attempts never happened")
+	}
+	source.Stop()
+
+	select {
+	case <-done:
+	case <-time.After(5 * time.Second):
+		t.Fatal("Run did not return after Stop")
+	}
+}
+
+// An idle host is this board's ordinary state and not a fault. It gets one
+// line at info, saying what is going on, and no warning at all.
+func TestRunTreatsAnIdleHostAsIdleNotAsAFailure(t *testing.T) {
+	captured := captureLog(t)
+	states := &stateLog{}
+	source := fastSource(states)
+	newCmd, attempted := countedChild(steadyStateAttempts, idleComplaint)
+	source.newCmd = newCmd
+
+	runUntil(t, source, func([]byte) {}, attempted)
+
+	out := captured.String()
+	if n := strings.Count(out, "the host is not playing audio to the KVM"); n != 1 {
+		t.Errorf("said the host is idle %d times, want once:\n%s", n, out)
+	}
+	if strings.Contains(out, "level=warning") {
+		t.Errorf("an idle host produced a warning:\n%s", out)
+	}
+	if got := states.all(); len(got) != 1 || got[0] != StateIdle {
+		t.Errorf("reported %v, want only %v", got, StateIdle)
+	}
+}
+
+// When the host starts playing, audio flows on the next attempt, the log says
+// so once, and the state follows.
+func TestRunPicksUpAudioOnceTheHostPlays(t *testing.T) {
+	captured := captureLog(t)
+	states := &stateLog{}
+	source := fastSource(states)
+
+	const idleAttempts = 3
+	newCmd, _ := scriptedChild(0, func(n int) string {
+		if n <= idleAttempts {
+			return idleComplaint
+		}
+		// The host plays: two chunks, then the read stays open.
+		return fmt.Sprintf("head -c %d /dev/zero; exec sleep 60", 2*ChunkBytes)
+	})
+	source.newCmd = newCmd
+
+	got := &collector{}
+	reached := make(chan struct{})
+	var once sync.Once
+	runUntil(t, source, func(chunk []byte) {
+		got.handle(chunk)
+		if got.count() >= 2 {
+			once.Do(func() { close(reached) })
+		}
+	}, reached)
+
+	out := captured.String()
+	if n := strings.Count(out, "the host is not playing audio to the KVM"); n != 1 {
+		t.Errorf("said the host is idle %d times, want once:\n%s", n, out)
+	}
+	if n := strings.Count(out, "the host is playing audio to the KVM again"); n != 1 {
+		t.Errorf("said the host plays again %d times, want once:\n%s", n, out)
+	}
+	if strings.Contains(out, "level=warning") {
+		t.Errorf("an idle host that started playing produced a warning:\n%s", out)
+	}
+
+	want := []State{StateIdle, StatePlaying}
+	if reported := states.all(); fmt.Sprint(reported) != fmt.Sprint(want) {
+		t.Errorf("reported %v, want %v", reported, want)
+	}
+}
+
+// A real fault keeps its warning and tells the viewer, and an idle host after
+// it is announced afresh.
+func TestRunReportsARealFailureAsFailing(t *testing.T) {
+	captured := captureLog(t)
+	states := &stateLog{}
+	source := fastSource(states)
+	newCmd, reached := scriptedChild(4, func(n int) string {
+		if n == 2 {
+			return busyComplaint
+		}
+		return idleComplaint
+	})
+	source.newCmd = newCmd
+
+	runUntil(t, source, func([]byte) {}, reached)
+
+	out := captured.String()
+	if !strings.Contains(out, "level=warning") || !strings.Contains(out, "Device or resource busy") {
+		t.Errorf("a real fault was not warned about:\n%s", out)
+	}
+	if n := strings.Count(out, "the host is not playing audio to the KVM"); n != 2 {
+		t.Errorf("said the host is idle %d times, want twice, before and after the fault:\n%s", n, out)
+	}
+
+	got := states.all()
+	if len(got) < 3 || got[0] != StateIdle || got[1] != StateFailing || got[2] != StateIdle {
+		t.Errorf("reported %v, want %v, %v, %v", got, StateIdle, StateFailing, StateIdle)
 	}
 }
