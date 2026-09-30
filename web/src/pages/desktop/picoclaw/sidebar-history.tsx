@@ -53,7 +53,7 @@ export const SidebarHistory = ({
     if (sessions.length === 0) {
       return (
         <div className="flex flex-1 flex-col items-center justify-center gap-2 px-6 text-center">
-          <Clock3Icon size={18} className="text-neutral-600" />
+          <Clock3Icon size={22} className="text-neutral-600" />
           <span className="text-sm text-neutral-400">{t('picoclaw.history.emptyTitle')}</span>
           <span className="text-xs text-neutral-400">{t('picoclaw.history.emptyDescription')}</span>
         </div>
@@ -94,7 +94,7 @@ export const SidebarHistory = ({
                 ].join(' ')}
               >
                 <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/[0.05] text-neutral-400">
-                  <MessageSquareTextIcon size={16} />
+                  <MessageSquareTextIcon size={18} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-3">
@@ -112,7 +112,7 @@ export const SidebarHistory = ({
                       danger
                       disabled={isDeleting || isSwitching}
                       aria-label={t('picoclaw.history.deleteConfirmTitle')}
-                      icon={<Trash2Icon size={14} />}
+                      icon={<Trash2Icon size={15} />}
                       className={[
                         '!mt-0.5 hidden! items-center! justify-center! !text-neutral-500 hover:!bg-red-500/10 hover:!text-red-300',
                         isActive ? '' : 'group-hover:inline-flex!'
@@ -124,7 +124,7 @@ export const SidebarHistory = ({
                       }}
                     />
                   </div>
-                  <div className="mt-2 flex items-center gap-3 text-[11px] text-neutral-500">
+                  <div className="mt-2 flex items-center gap-3 text-xs text-neutral-500">
                     <span>{formatSessionTime(session.updated)}</span>
                     <span>
                       {t('picoclaw.history.messageCount', { count: session.message_count })}

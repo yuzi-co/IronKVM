@@ -96,7 +96,7 @@ export const MessageInput = ({
       />
       <Button
         type="text"
-        icon={<PlusIcon size={14} />}
+        icon={<PlusIcon size={15} />}
         onClick={() => void onNewConversation()}
         disabled={disabled || disableNewConversation}
         className="absolute bottom-2.5 right-11 flex! !h-7 !w-7 items-center! justify-center! !rounded-lg border! !border-white/[0.08]"
@@ -104,7 +104,7 @@ export const MessageInput = ({
       />
       <Button
         type="primary"
-        icon={<SendIcon size={14} />}
+        icon={<SendIcon size={15} />}
         onClick={() => void submit()}
         disabled={!canSubmit || !value.trim()}
         className="absolute bottom-2.5 right-2.5 flex! !h-7 !w-7 items-center! justify-center! !rounded-lg"

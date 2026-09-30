@@ -80,19 +80,19 @@ export const SidebarModelConfig = ({
       >
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-md border border-white/[0.08] bg-white/[0.04]">
-            <BookOpenIcon className="text-sky-400" size={14} />
+            <BookOpenIcon className="text-sky-400" size={18} />
           </div>
           <div>
             <div className="text-xs font-medium text-neutral-300">
               {t('picoclaw.model.docsTitle', 'Configuration Guide')}
             </div>
-            <div className="mt-0.5 text-[11px] text-neutral-500">
+            <div className="mt-0.5 text-xs text-neutral-500">
               {t('picoclaw.model.docsDesc', 'Supported models and protocols')}
             </div>
           </div>
         </div>
         <ExternalLinkIcon
-          size={14}
+          size={15}
           className="text-neutral-500 transition-colors group-hover:text-neutral-300"
         />
       </a>
@@ -104,7 +104,7 @@ export const SidebarModelConfig = ({
             {t('picoclaw.model.modelIdentifier')}
           </label>
           <Input
-            prefix={<CpuIcon size={13} className="text-neutral-500" />}
+            prefix={<CpuIcon size={15} className="text-neutral-500" />}
             placeholder={t('picoclaw.model.modelIdentifierPlaceholder')}
             status={fieldStatus(modelIdentifier)}
             value={modelIdentifier}
@@ -116,7 +116,7 @@ export const SidebarModelConfig = ({
             {t('picoclaw.model.apiKey')}
           </label>
           <Input.Password
-            prefix={<KeyRoundIcon size={13} className="text-neutral-500" />}
+            prefix={<KeyRoundIcon size={15} className="text-neutral-500" />}
             placeholder={t('picoclaw.model.apiKeyPlaceholder')}
             status={fieldStatus(apiKey)}
             value={apiKey}
@@ -128,7 +128,7 @@ export const SidebarModelConfig = ({
             {t('picoclaw.model.apiBase')}
           </label>
           <Input
-            prefix={<LinkIcon size={13} className="text-neutral-500" />}
+            prefix={<LinkIcon size={15} className="text-neutral-500" />}
             placeholder={t('picoclaw.model.apiBasePlaceholder')}
             status={fieldStatus(apiBase)}
             value={apiBase}
@@ -151,7 +151,7 @@ export const SidebarModelConfig = ({
           </Button>
         )}
         <Button
-          icon={<SaveIcon size={13} />}
+          icon={<SaveIcon size={15} />}
           loading={isSaving}
           disabled={disabled}
           onClick={() => void onSave()}

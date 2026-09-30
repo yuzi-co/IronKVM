@@ -216,11 +216,11 @@ export const Sidebar = () => {
         <div className="min-w-0 text-xs">
           <div className="flex min-w-0 items-center gap-2 text-neutral-300">
             {controlView.isTransitioning ? (
-              <Loader2Icon size={14} className={`shrink-0 animate-spin ${controlIconClass}`} />
+              <Loader2Icon size={15} className={`shrink-0 animate-spin ${controlIconClass}`} />
             ) : controlView.canDeviceWrite ? (
-              <ShieldCheckIcon size={14} className={`shrink-0 ${controlIconClass}`} />
+              <ShieldCheckIcon size={15} className={`shrink-0 ${controlIconClass}`} />
             ) : (
-              <ShieldOffIcon size={14} className={`shrink-0 ${controlIconClass}`} />
+              <ShieldOffIcon size={15} className={`shrink-0 ${controlIconClass}`} />
             )}
             <span className="truncate font-medium">{controlView.label}</span>
           </div>
@@ -356,7 +356,7 @@ export const Sidebar = () => {
                   </div>
                   <Button
                     type="primary"
-                    icon={<PlayIcon size={14} />}
+                    icon={<PlayIcon size={15} />}
                     loading={isTogglingRuntime || isRuntimeLifecyclePending}
                     disabled={runtimeActionDisabled}
                     onClick={() => void handleToggleRuntime()}
@@ -405,7 +405,7 @@ export const Sidebar = () => {
                   </div>
                   <Button
                     type="primary"
-                    icon={<RefreshCwIcon size={14} />}
+                    icon={<RefreshCwIcon size={15} />}
                     loading={isGatewayConnecting}
                     disabled={isGatewayConnecting || actionBusy}
                     onClick={() => void handleReconnectGateway()}

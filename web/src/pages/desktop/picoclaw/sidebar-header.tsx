@@ -85,7 +85,7 @@ export const SidebarHeader = ({
     {
       key: 'model-config',
       label: <span className="text-xs">{t('picoclaw.model.menuLabel')}</span>,
-      icon: <SlidersHorizontalIcon size={14} className="text-neutral-400" />,
+      icon: <SlidersHorizontalIcon size={15} className="text-neutral-400" />,
       onClick: () => onOpenModelConfig?.(),
       disabled: areActionsDisabled || isUninstallingRuntime || isTogglingRuntime || !isInstalled
     },
@@ -96,7 +96,7 @@ export const SidebarHeader = ({
       key: 'uninstall',
       danger: true,
       label: <span className="text-xs">{t('picoclaw.uninstall.menuLabel')}</span>,
-      icon: <TrashIcon size={14} />,
+      icon: <TrashIcon size={15} />,
       onClick: handleUninstallClick,
       disabled: areActionsDisabled || isUninstallingRuntime || isTogglingRuntime
     }
@@ -115,7 +115,7 @@ export const SidebarHeader = ({
             className="flex! items-center! justify-center! !text-neutral-400 hover:!bg-white/[0.08] hover:!text-neutral-200"
             icon={<LayoutSidebarRightCollapse size={18} />}
           />
-          {/* <span className="truncate text-[13px] font-medium text-neutral-200">{t('picoclaw.title')}</span> */}
+          {/* <span className="truncate text-sm font-medium text-neutral-200">{t('picoclaw.title')}</span> */}
         </div>
 
         {/* Right: Actions */}
@@ -147,7 +147,7 @@ export const SidebarHeader = ({
                   return (
                     <div className="py-1">
                       <div className="text-xs font-medium text-neutral-200">{current.title}</div>
-                      <div className="mt-0.5 text-[10px] leading-snug text-neutral-500">
+                      <div className="mt-0.5 text-xs leading-snug text-neutral-500">
                         {current.description}
                       </div>
                     </div>
@@ -170,14 +170,14 @@ export const SidebarHeader = ({
                         ? '!bg-white/[0.08] !text-neutral-200'
                         : '!text-neutral-400 hover:!bg-white/[0.08] hover:!text-neutral-200'
                     ].join(' ')}
-                    icon={<HistoryIcon size={14} />}
+                    icon={<HistoryIcon size={15} />}
                   />
                   <Button
                     disabled={isRuntimeActionDisabled || isTogglingRuntime}
                     loading={isTogglingRuntime}
                     onClick={() => void onToggleRuntime()}
                     title={runtimeToggleTitle || t('picoclaw.config.stopRuntime')}
-                    icon={!isTogglingRuntime ? <PowerIcon size={14} /> : undefined}
+                    icon={!isTogglingRuntime ? <PowerIcon size={15} /> : undefined}
                     type="text"
                     size="small"
                     className="flex! items-center! justify-center! !text-red-400 hover:!bg-white/[0.08] hover:!text-red-500"
@@ -189,7 +189,7 @@ export const SidebarHeader = ({
                   loading={isTogglingRuntime}
                   onClick={() => void onToggleRuntime()}
                   title={runtimeToggleTitle || t('picoclaw.config.startRuntime')}
-                  icon={!isTogglingRuntime ? <PlayIcon size={14} /> : undefined}
+                  icon={!isTogglingRuntime ? <PlayIcon size={15} /> : undefined}
                   type="text"
                   size="small"
                   className="flex! items-center! justify-center! !text-neutral-400 hover:!bg-white/[0.08] hover:!text-sky-400"
@@ -208,7 +208,7 @@ export const SidebarHeader = ({
                   disabled={areActionsDisabled || isUninstallingRuntime}
                   loading={isUninstallingRuntime}
                   aria-label={t('menu.more')}
-                  icon={!isUninstallingRuntime ? <EllipsisIcon size={16} /> : undefined}
+                  icon={!isUninstallingRuntime ? <EllipsisIcon size={15} /> : undefined}
                   type="text"
                   size="small"
                   className="flex! items-center! justify-center! !text-neutral-400 hover:!bg-white/[0.08] hover:!text-neutral-200"

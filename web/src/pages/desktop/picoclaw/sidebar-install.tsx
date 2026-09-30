@@ -38,7 +38,7 @@ export const SidebarInstall = ({
 
         {isInstalling && (
           <div className="mt-6 text-left">
-            <div className="mb-2 flex items-center justify-between text-[11px] text-neutral-500">
+            <div className="mb-2 flex items-center justify-between text-xs text-neutral-500">
               <span>{t(`picoclaw.install.stages.${installStage || 'downloading'}`)}</span>
               <span>{installProgress ?? 0}%</span>
             </div>
@@ -55,7 +55,7 @@ export const SidebarInstall = ({
         <div className="mt-6 flex justify-center">
           {!isInstalling && (
             <Button
-              icon={<DownloadIcon size={13} />}
+              icon={<DownloadIcon size={15} />}
               disabled={disabled}
               onClick={() => void onInstall()}
               type="primary"

@@ -72,7 +72,7 @@ export const MessageList = ({ messages, runState }: MessageListProps) => {
         {messages.length === 0 ? (
           <div className="flex h-full min-h-[200px] flex-col items-center justify-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/[0.07] bg-white/[0.04]">
-              <BotIcon className="text-neutral-600" size={18} />
+              <BotIcon className="text-neutral-600" size={22} />
             </div>
             <span className="text-xs text-neutral-400">{t('picoclaw.empty')}</span>
             {isLoading && <MessageLoading text={t('picoclaw.processing')} />}
