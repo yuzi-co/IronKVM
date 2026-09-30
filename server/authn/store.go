@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"sync"
+	"sync/atomic"
+	"time"
 
 	"NanoKVM-Server/utils"
 
@@ -83,6 +85,11 @@ type legacyAccount struct {
 type Store struct {
 	path  string
 	mutex sync.RWMutex
+	// cache is the last account file parsed, with the identity of the file it
+	// came from. Every authenticated request and every open session's recheck
+	// reads the store, so it pays a stat instead of a read, a parse and a
+	// validation when the file has not changed. See readLocked.
+	cache atomic.Pointer[cachedDatabase]
 }
 
 var DefaultStore = NewStore(AccountFile)
@@ -229,22 +236,61 @@ func (s *Store) userForLogin(username string) (*User, error) {
 // current is false when the file is missing or in a legacy format, which
 // loadLocked has to migrate.
 func (s *Store) readCurrentLocked() (*database, bool, error) {
-	data, err := os.ReadFile(s.path)
+	db, _, err := s.readLocked()
+	if err != nil || db == nil {
+		return nil, false, err
+	}
+	return db, true, nil
+}
+
+// readLocked returns a copy of the account file's database when the file is
+// in the current format. Otherwise db is nil and data is the file's raw
+// content for loadLocked to migrate, or nil when there is no file.
+//
+// A file that parsed before and still has the same identity (size,
+// modification time, and on Linux inode, device and change time) is not read
+// again. A shell edit or a reset that removes the file changes that identity,
+// so it is still seen on the next call. A file modified in the last few
+// seconds is never cached, because two writes inside one tick of the
+// filesystem's clock can leave the same size and time behind.
+func (s *Store) readLocked() (*database, []byte, error) {
+	info, err := os.Stat(s.path)
 	if errors.Is(err, os.ErrNotExist) {
-		return nil, false, nil
+		s.cache.Store(nil)
+		return nil, nil, nil
 	}
 	if err != nil {
-		return nil, false, err
+		return nil, nil, err
+	}
+	if cached := s.cache.Load(); cached != nil && cached.stamp.equal(stampOf(info)) {
+		return cached.db.clone(), nil, nil
+	}
+
+	data, info, err := readAccountFile(s.path)
+	if errors.Is(err, os.ErrNotExist) {
+		s.cache.Store(nil)
+		return nil, nil, nil
+	}
+	if err != nil {
+		return nil, nil, err
 	}
 
 	var db database
 	if err = json.Unmarshal(data, &db); err != nil || db.Version == 0 {
-		return nil, false, nil
+		s.cache.Store(nil)
+		return nil, data, nil
 	}
 	if err = validateDatabase(&db); err != nil {
-		return nil, false, err
+		s.cache.Store(nil)
+		return nil, nil, err
 	}
-	return &db, true, nil
+	stamp := stampOf(info)
+	if stamp.settled(time.Now()) {
+		s.cache.Store(&cachedDatabase{stamp: stamp, db: db.clone()})
+	} else {
+		s.cache.Store(nil)
+	}
+	return &db, nil, nil
 }
 
 func (s *Store) ValidateToken(username string, tokenVersion uint64) (*User, error) {
@@ -459,8 +505,14 @@ func (s *Store) Revoke(username string) (*User, error) {
 }
 
 func (s *Store) loadLocked(migrate bool) (*database, error) {
-	data, err := os.ReadFile(s.path)
-	if errors.Is(err, os.ErrNotExist) {
+	current, data, err := s.readLocked()
+	if err != nil {
+		return nil, err
+	}
+	if current != nil {
+		return current, nil
+	}
+	if data == nil {
 		db, defaultErr := defaultDatabase()
 		if defaultErr != nil {
 			return nil, defaultErr
@@ -472,18 +524,8 @@ func (s *Store) loadLocked(migrate bool) (*database, error) {
 		}
 		return db, nil
 	}
-	if err != nil {
-		return nil, err
-	}
 
 	var db database
-	if err = json.Unmarshal(data, &db); err == nil && db.Version != 0 {
-		if err = validateDatabase(&db); err != nil {
-			return nil, err
-		}
-		return &db, nil
-	}
-
 	var legacy legacyAccount
 	if err = json.Unmarshal(data, &legacy); err != nil || legacy.Username == "" || legacy.Password == "" {
 		return nil, errors.New("invalid account file")
@@ -516,6 +558,9 @@ func (s *Store) loadLocked(migrate bool) (*database, error) {
 }
 
 func (s *Store) saveLocked(db *database) error {
+	// The next read parses what was written rather than trusting the file's
+	// new identity to differ from the cached one.
+	defer s.cache.Store(nil)
 	if err := validateDatabase(db); err != nil {
 		return err
 	}
