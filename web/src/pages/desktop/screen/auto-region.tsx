@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useAtomValue, useSetAtom } from 'jotai';
 
+import { autoRegionDelay } from '@/lib/input-region.ts';
 import {
   controlRegionModeAtom,
   inputRegionAtom,
@@ -22,9 +23,29 @@ export const AutoRegion = () => {
     }
 
     let stopped = false;
+    let timer: number | undefined;
     let target: Element | null = null;
     let candidate = '';
     let confirmations = 0;
+    const canvas = document.createElement('canvas');
+
+    // Each check schedules the next: fast while the region is settling, slow
+    // once it has held, and none while the tab is hidden (coming back checks
+    // at once).
+    const schedule = () => {
+      window.clearTimeout(timer);
+      timer = undefined;
+      if (stopped || document.visibilityState !== 'visible') return;
+      timer = window.setTimeout(run, autoRegionDelay(confirmations));
+    };
+    const run = () => {
+      detect();
+      schedule();
+    };
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') run();
+      else schedule();
+    };
 
     const detect = () => {
       if (stopped) return;
@@ -39,7 +60,7 @@ export const AutoRegion = () => {
 
       const mediaSize = getMediaSize(screen, resolution);
       if (!mediaSize) return;
-      const content = detectFrameContent(screen, mediaSize);
+      const content = detectFrameContent(screen, mediaSize, canvas);
       const key = [
         mediaSize.width,
         mediaSize.height,
@@ -68,11 +89,12 @@ export const AutoRegion = () => {
       }
     };
 
-    detect();
-    const timer = window.setInterval(detect, 1000);
+    run();
+    document.addEventListener('visibilitychange', onVisible);
     return () => {
       stopped = true;
-      window.clearInterval(timer);
+      window.clearTimeout(timer);
+      document.removeEventListener('visibilitychange', onVisible);
     };
   }, [mode, resolution, selecting, setInputRegion]);
 

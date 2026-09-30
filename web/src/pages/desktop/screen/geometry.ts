@@ -61,13 +61,20 @@ export function isMediaReady(screen: Element) {
   return false;
 }
 
-export function detectFrameContent(screen: Element, mediaSize: MediaSize): FrameContent {
+// detectFrameContent samples the picture to find the black bars around it. A
+// caller that checks repeatedly passes its own canvas, so the sample buffer is
+// allocated once rather than on every check.
+export function detectFrameContent(
+  screen: Element,
+  mediaSize: MediaSize,
+  canvas: HTMLCanvasElement = document.createElement('canvas')
+): FrameContent {
   const sampleScale = Math.min(1, 640 / mediaSize.width, 360 / mediaSize.height);
   const width = Math.max(1, Math.round(mediaSize.width * sampleScale));
   const height = Math.max(1, Math.round(mediaSize.height * sampleScale));
-  const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
+  // Setting a canvas size clears and reallocates it, even to the same value.
+  if (canvas.width !== width) canvas.width = width;
+  if (canvas.height !== height) canvas.height = height;
   const context = canvas.getContext('2d', { willReadFrequently: true });
   if (!context || !drawMediaFrame(context, screen, width, height)) {
     return fullFrameContent(mediaSize);
