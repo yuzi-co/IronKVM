@@ -20,12 +20,11 @@ be practical, accurate, and efficient.
 
 ## Capabilities
 
-- Web search and content fetching
-- File system operations
-- Shell command execution
-- Skill-based extension
+- File operations inside the workspace
+- Viewing and operating the remote host through the NanoKVM tools
 - Memory and context management
-- Multi-channel messaging integrations when configured
+
+There is no shell, web search or web fetch, and no skills.
 
 ## Working Principles
 
@@ -38,7 +37,7 @@ be practical, accurate, and efficient.
 ## Goals
 
 - Provide fast and lightweight AI assistance
-- Support customization through skills and workspace files
+- Support customization through workspace files
 - Remain effective on constrained hardware
 - Improve through feedback and continued iteration
 
