@@ -23,16 +23,37 @@ type picoclawConfigDefault struct {
 	value any
 }
 
+// picoclawNanoKVMDefaults are written into PicoClaw's config.json on every
+// start (ensurePicoclawStartupDefaults), so they hold for existing installs
+// too and a hand edit is reverted on the next start.
+//
+// PicoClaw runs as root here and reads text from the controlled host's
+// screen, so everything it does not need for KVM control is off: file tools
+// stay in the workspace, and there is no shell, web search or fetch, skills,
+// subagents, cron or heartbeat. Screenshots and input go through the
+// nanokvm MCP server; screenshots arrive as media, which PicoClaw may always
+// read. These match the defaults of the fork's ironkvm build.
 var picoclawNanoKVMDefaults = []picoclawConfigDefault{
-	{path: []string{"agents", "defaults", "restrict_to_workspace"}, value: false},
-	{path: []string{"agents", "defaults", "allow_read_outside_workspace"}, value: true},
+	{path: []string{"agents", "defaults", "restrict_to_workspace"}, value: true},
+	{path: []string{"agents", "defaults", "allow_read_outside_workspace"}, value: false},
 	{path: []string{"agents", "defaults", "tool_feedback", "enabled"}, value: true},
 	{path: []string{"gateway", "host"}, value: defaultPicoclawGatewayHost},
 	{path: []string{"gateway", "port"}, value: defaultPicoclawGatewayPort},
 	{path: []string{"gateway", "hot_reload"}, value: false},
-	{path: []string{"tools", "cron", "allow_command"}, value: true},
-	{path: []string{"tools", "exec", "allow_remote"}, value: true},
-	{path: []string{"tools", "exec", "enable_deny_patterns"}, value: false},
+	{path: []string{"tools", "exec", "enabled"}, value: false},
+	{path: []string{"tools", "exec", "allow_remote"}, value: false},
+	{path: []string{"tools", "exec", "enable_deny_patterns"}, value: true},
+	{path: []string{"tools", "web", "enabled"}, value: false},
+	{path: []string{"tools", "web_fetch", "enabled"}, value: false},
+	{path: []string{"tools", "skills", "enabled"}, value: false},
+	{path: []string{"tools", "find_skills", "enabled"}, value: false},
+	{path: []string{"tools", "install_skill", "enabled"}, value: false},
+	{path: []string{"tools", "spawn", "enabled"}, value: false},
+	{path: []string{"tools", "spawn_status", "enabled"}, value: false},
+	{path: []string{"tools", "subagent", "enabled"}, value: false},
+	{path: []string{"tools", "cron", "enabled"}, value: false},
+	{path: []string{"tools", "cron", "allow_command"}, value: false},
+	{path: []string{"heartbeat", "enabled"}, value: false},
 	{path: []string{"channel_list", "pico", "type"}, value: "pico"},
 	{path: []string{"channel_list", "pico", "settings", "allow_token_query"}, value: false},
 	{path: []string{"channel_list", "pico", "settings", "ping_interval"}, value: defaultPicoclawPingSec},
@@ -91,16 +112,22 @@ func ensurePicoclawPicoChannelEnabled(doc *picoclawConfigDocument) error {
 }
 
 func applyPicoclawStartupDefaults(editor *picoclawConfigEditor) error {
-	editor.setValue(currentPicoclawConfigVersion, "version")
-	for _, entry := range picoclawNanoKVMDefaults {
-		editor.setValue(entry.value, entry.path...)
-	}
+	applyPicoclawNanoKVMDefaults(editor)
 	server, err := defaultPicoclawMCPServer()
 	if err != nil {
 		return err
 	}
 	editor.setMCPServer("nanokvm", server)
 	return nil
+}
+
+// applyPicoclawNanoKVMDefaults overwrites the config version and every entry
+// of picoclawNanoKVMDefaults, whatever the config held before.
+func applyPicoclawNanoKVMDefaults(editor *picoclawConfigEditor) {
+	editor.setValue(currentPicoclawConfigVersion, "version")
+	for _, entry := range picoclawNanoKVMDefaults {
+		editor.setValue(entry.value, entry.path...)
+	}
 }
 
 func forceEnablePicoclawPicoChannel(doc *picoclawConfigDocument, editor *picoclawConfigEditor) {
