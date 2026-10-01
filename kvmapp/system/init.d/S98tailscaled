@@ -125,7 +125,9 @@ fi
 # limit above memory.high therefore meets the throttle first, and the 512
 # default meets the kill. So the limit is capped at seven eighths of
 # memory.high, 56 for 64M, which leaves room for what Go does not count (the
-# binary's pages and thread stacks). An owner's setting below that stays.
+# binary's pages and thread stacks). It is never more than 56 either: the
+# group also holds PicoClaw, and a larger memory.high is room for it, not for
+# this daemon. An owner's setting below that stays.
 memlimit_mib() {
     mib=512
     if [ -f "$KVMDIR/GOMEMLIMIT" ]; then
@@ -140,6 +142,7 @@ memlimit_mib() {
         ''|*[!0-9]*) ;;
         *)
             cap=$((high / 1048576 * 7 / 8))
+            [ "$cap" -gt 56 ] && cap=56
             if [ "$cap" -gt 0 ] && [ "$cap" -lt "$mib" ]; then
                 mib=$cap
             fi
