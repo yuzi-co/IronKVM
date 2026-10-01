@@ -137,3 +137,37 @@ func TestStartupDefaultsKeepKVMControlTools(t *testing.T) {
 		}
 	}
 }
+
+func TestStartupDefaultsLeaveAHardenedConfigUnchanged(t *testing.T) {
+	// The config lives on the SD card; a start with nothing to change must
+	// not rewrite it. The second pass sees the config as json.Unmarshal
+	// returns it, with every number a float64.
+	first := &picoclawConfigEditor{raw: parseRawConfig(t, permissiveConfig)}
+	applyPicoclawNanoKVMDefaults(first)
+
+	data, err := json.Marshal(first.raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	second := &picoclawConfigEditor{raw: parseRawConfig(t, string(data))}
+	applyPicoclawNanoKVMDefaults(second)
+
+	if second.changed {
+		t.Fatal("a second start rewrote a config that already had the defaults")
+	}
+}
+
+func TestSetValueTreatsAnUnmarshalledNumberAsEqual(t *testing.T) {
+	editor := &picoclawConfigEditor{raw: parseRawConfig(t, `{"gateway": {"port": 18790}}`)}
+
+	editor.setValue(18790, "gateway", "port")
+
+	if editor.changed {
+		t.Fatal("float64(18790) from the file was treated as different from int 18790")
+	}
+
+	editor.setValue(18791, "gateway", "port")
+	if !editor.changed {
+		t.Fatal("a real port change was not recorded")
+	}
+}

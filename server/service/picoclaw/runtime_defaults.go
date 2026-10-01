@@ -1,8 +1,10 @@
 package picoclaw
 
 import (
+	"bytes"
 	"crypto/rand"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"strings"
@@ -184,12 +186,25 @@ func (e *picoclawConfigEditor) setValue(value any, path ...string) {
 
 	target := e.ensureObject(path[:len(path)-1]...)
 	key := path[len(path)-1]
-	if current, exists := target[key]; exists && reflect.DeepEqual(current, value) {
+	if current, exists := target[key]; exists && sameJSONValue(current, value) {
 		return
 	}
 
 	target[key] = value
 	e.changed = true
+}
+
+// sameJSONValue reports whether two values encode to the same JSON. The raw
+// config comes from json.Unmarshal, so its numbers are float64 while the
+// defaults are ints; DeepEqual saw every number as changed and the config
+// was rewritten on each start.
+func sameJSONValue(a, b any) bool {
+	if reflect.DeepEqual(a, b) {
+		return true
+	}
+	encodedA, errA := json.Marshal(a)
+	encodedB, errB := json.Marshal(b)
+	return errA == nil && errB == nil && bytes.Equal(encodedA, encodedB)
 }
 
 func (e *picoclawConfigEditor) ensureObject(path ...string) map[string]any {
