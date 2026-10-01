@@ -1614,11 +1614,13 @@ const ca = {
         apiBasePlaceholder: 'https://api.example.com/v1',
         apiKey: 'Clau API',
         apiKeyPlaceholder: 'Introduïu la clau API del model',
+        apiKeyOptionalPlaceholder: 'No cal per a ollama, lmstudio o vllm',
         save: 'Desa',
         saving: 'Desa',
         saved: "S'ha desat la configuració del model",
         saveFailed: "No s'ha pogut desar la configuració del model",
-        invalid: "Cal indicar l'identificador del model, l'API Base URL i la clau API"
+        invalid: "Cal indicar l'identificador del model, l'API Base URL i la clau API",
+        invalidNoKey: "Cal indicar l'identificador del model i l'API Base URL"
       },
       uninstall: {
         menuLabel: 'Desinstal·la',

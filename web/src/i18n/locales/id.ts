@@ -1599,11 +1599,13 @@ const id = {
         apiBasePlaceholder: 'https://api.example.com/v1',
         apiKey: 'Kunci API',
         apiKeyPlaceholder: 'Masukkan kunci API model',
+        apiKeyOptionalPlaceholder: 'Tidak diperlukan untuk ollama, lmstudio, atau vllm',
         save: 'Simpan',
         saving: 'Menyimpan',
         saved: 'Konfigurasi model disimpan',
         saveFailed: 'Gagal menyimpan konfigurasi model',
-        invalid: 'Pengidentifikasi model, API Base URL, dan kunci API wajib diisi'
+        invalid: 'Pengidentifikasi model, API Base URL, dan kunci API wajib diisi',
+        invalidNoKey: 'Pengidentifikasi model dan API Base URL wajib diisi'
       },
       uninstall: {
         menuLabel: 'Copot pemasangan',

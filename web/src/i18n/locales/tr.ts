@@ -1592,11 +1592,13 @@ const tr = {
         apiBasePlaceholder: 'https://api.example.com/v1',
         apiKey: 'API Anahtarı',
         apiKeyPlaceholder: 'Model API anahtarını girin',
+        apiKeyOptionalPlaceholder: 'ollama, lmstudio veya vllm için gerekmez',
         save: 'Kaydet',
         saving: 'Kaydediliyor',
         saved: 'Model yapılandırması kaydedildi',
         saveFailed: 'Model yapılandırması kaydedilemedi',
-        invalid: 'Model tanımlayıcı, API Base URL ve API anahtarı gereklidir'
+        invalid: 'Model tanımlayıcı, API Base URL ve API anahtarı gereklidir',
+        invalidNoKey: 'Model tanımlayıcı ve API Base URL gereklidir'
       },
       uninstall: {
         menuLabel: 'Kaldırma',

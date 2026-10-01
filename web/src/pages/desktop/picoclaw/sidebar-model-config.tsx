@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { modelProviderAllowsEmptyApiKey } from '@/lib/picoclaw-model.ts';
 import { keyboardLockAtom } from '@/jotai/keyboard.ts';
 
 import { PICOCLAW_MODEL_CONFIG_KEYBOARD_LOCK_SOURCE } from './keyboard-lock.ts';
@@ -56,8 +57,10 @@ export const SidebarModelConfig = ({
     };
   }, [setKeyboardLock]);
 
-  // After a failed save, mark every field that is still empty, since all three
-  // are required and the message alone does not say which one is missing.
+  // After a failed save, mark every required field that is still empty, since
+  // the message alone does not say which one is missing. Local inference
+  // providers (Ollama, LM Studio, vLLM) need no API key.
+  const apiKeyOptional = modelProviderAllowsEmptyApiKey(modelIdentifier);
   const fieldStatus = (value: string) => (error && !value.trim() ? 'error' : undefined);
 
   return (
@@ -117,8 +120,12 @@ export const SidebarModelConfig = ({
           </label>
           <Input.Password
             prefix={<KeyRoundIcon size={15} className="text-neutral-500" />}
-            placeholder={t('picoclaw.model.apiKeyPlaceholder')}
-            status={fieldStatus(apiKey)}
+            placeholder={t(
+              apiKeyOptional
+                ? 'picoclaw.model.apiKeyOptionalPlaceholder'
+                : 'picoclaw.model.apiKeyPlaceholder'
+            )}
+            status={apiKeyOptional ? undefined : fieldStatus(apiKey)}
             value={apiKey}
             onChange={(e) => onApiKeyChange(e.target.value)}
           />

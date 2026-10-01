@@ -1582,11 +1582,13 @@ const cz = {
         apiBasePlaceholder: 'https://api.example.com/v1',
         apiKey: 'Klíč API',
         apiKeyPlaceholder: 'Zadejte klíč API modelu',
+        apiKeyOptionalPlaceholder: 'Pro ollama, lmstudio nebo vllm není potřeba',
         save: 'Uložit',
         saving: 'Ukládání',
         saved: 'Konfigurace modelu uložena',
         saveFailed: 'Nepodařilo se uložit konfiguraci modelu',
-        invalid: 'Identifikátor modelu, API Base URL a klíč API jsou povinné'
+        invalid: 'Identifikátor modelu, API Base URL a klíč API jsou povinné',
+        invalidNoKey: 'Identifikátor modelu a API Base URL jsou povinné'
       },
       uninstall: {
         menuLabel: 'Odinstalovat',

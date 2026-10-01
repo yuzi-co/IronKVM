@@ -1609,11 +1609,13 @@ const ja = {
         apiBasePlaceholder: 'https://api.example.com/v1',
         apiKey: 'API キー',
         apiKeyPlaceholder: 'モデルの API キーを入力してください',
+        apiKeyOptionalPlaceholder: 'ollama、lmstudio、vllm では不要です',
         save: '保存',
         saving: '保存中',
         saved: 'モデル構成が保存されました',
         saveFailed: 'モデル構成の保存に失敗しました',
-        invalid: 'モデル識別子、API Base URL、API キーは必須です'
+        invalid: 'モデル識別子、API Base URL、API キーは必須です',
+        invalidNoKey: 'モデル識別子と API Base URL は必須です'
       },
       uninstall: {
         menuLabel: 'アンインストール',

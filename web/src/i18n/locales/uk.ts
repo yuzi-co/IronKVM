@@ -1601,11 +1601,13 @@ const uk = {
         apiBasePlaceholder: 'https://api.example.com/v1',
         apiKey: 'API-ключ',
         apiKeyPlaceholder: 'Введіть API-ключ моделі',
+        apiKeyOptionalPlaceholder: 'Не потрібен для ollama, lmstudio чи vllm',
         save: 'Зберегти',
         saving: 'Збереження',
         saved: 'Конфігурацію моделі збережено',
         saveFailed: 'Не вдалося зберегти конфігурацію моделі',
-        invalid: 'Потрібні ідентифікатор моделі, API Base URL і API-ключ'
+        invalid: 'Потрібні ідентифікатор моделі, API Base URL і API-ключ',
+        invalidNoKey: 'Потрібні ідентифікатор моделі та API Base URL'
       },
       uninstall: {
         menuLabel: 'Видалити',

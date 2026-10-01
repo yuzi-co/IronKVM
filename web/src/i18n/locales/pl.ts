@@ -1601,11 +1601,13 @@ const pl = {
         apiBasePlaceholder: 'https://api.example.com/v1',
         apiKey: 'Klucz API',
         apiKeyPlaceholder: 'Wprowadź klucz API modelu',
+        apiKeyOptionalPlaceholder: 'Niepotrzebny dla ollama, lmstudio i vllm',
         save: 'Zapisz',
         saving: 'Zapisywanie',
         saved: 'Konfiguracja modelu została zapisana',
         saveFailed: 'Nie udało się zapisać konfiguracji modelu',
-        invalid: 'Identyfikator modelu, API Base URL i klucz API są wymagane'
+        invalid: 'Identyfikator modelu, API Base URL i klucz API są wymagane',
+        invalidNoKey: 'Identyfikator modelu i API Base URL są wymagane'
       },
       uninstall: {
         menuLabel: 'Odinstaluj',

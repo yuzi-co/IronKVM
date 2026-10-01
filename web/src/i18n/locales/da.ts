@@ -1593,11 +1593,13 @@ const da = {
         apiBasePlaceholder: 'https://api.example.com/v1',
         apiKey: 'API-nøgle',
         apiKeyPlaceholder: 'Indtast modellens API-nøgle',
+        apiKeyOptionalPlaceholder: 'Ikke nødvendig for ollama, lmstudio eller vllm',
         save: 'Gem',
         saving: 'Gemmer',
         saved: 'Modelkonfiguration gemt',
         saveFailed: 'Kunne ikke gemme modelkonfigurationen',
-        invalid: 'Model-id, API Base URL og API-nøgle er påkrævet'
+        invalid: 'Model-id, API Base URL og API-nøgle er påkrævet',
+        invalidNoKey: 'Model-id og API Base URL er påkrævet'
       },
       uninstall: {
         menuLabel: 'Afinstaller',

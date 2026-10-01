@@ -1579,11 +1579,13 @@ const ko = {
         apiBasePlaceholder: 'https://api.example.com/v1',
         apiKey: 'API 키',
         apiKeyPlaceholder: '모델 API 키를 입력하세요',
+        apiKeyOptionalPlaceholder: 'ollama, lmstudio, vllm에는 필요하지 않습니다',
         save: '저장',
         saving: '저장 중',
         saved: '모델 구성이 저장되었습니다',
         saveFailed: '모델 구성 저장에 실패했습니다',
-        invalid: '모델 식별자, API Base URL, API 키가 필요합니다'
+        invalid: '모델 식별자, API Base URL, API 키가 필요합니다',
+        invalidNoKey: '모델 식별자와 API Base URL이 필요합니다'
       },
       uninstall: {
         menuLabel: '제거',

@@ -168,3 +168,68 @@ func TestUpdatePicoclawModelConfigRequiresProviderModelFormat(t *testing.T) {
 		t.Fatalf("error = %v, want provider/model format hint", err)
 	}
 }
+
+func TestUpdatePicoclawModelConfigAllowsKeylessLocalProvider(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("PICOCLAW_HOME", home)
+
+	configPath := filepath.Join(home, "config.json")
+	if err := os.WriteFile(configPath, []byte(`{
+  "agents": {"defaults": {}},
+  "gateway": {"host": "127.0.0.1", "port": 18790},
+  "model_list": [],
+  "channel_list": {}
+}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	// A key from an earlier setup of the same model must not survive.
+	if _, err := updatePicoclawModelConfig("http://192.0.2.10:11434/v1", "old-key", "ollama/qwen3.5:9b"); err != nil {
+		t.Fatal(err)
+	}
+	modelName, err := updatePicoclawModelConfig("http://192.0.2.10:11434/v1", "", "ollama/qwen3.5:9b")
+	if err != nil {
+		t.Fatalf("keyless ollama model rejected: %v", err)
+	}
+	if modelName != "qwen3.5:9b" {
+		t.Fatalf("model name = %q, want qwen3.5:9b", modelName)
+	}
+
+	doc, err := loadPicoclawConfigDocument()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !isPicoclawModelConfigured(doc.config, doc.security, "qwen3.5:9b") {
+		t.Fatalf("keyless model not reported as configured: config=%+v", doc.config.ModelList)
+	}
+	if securityHasModelAPIKeys(doc.security, "qwen3.5:9b") {
+		t.Fatalf("stale API key kept for keyless model: %+v", doc.security.ModelList)
+	}
+}
+
+func TestUpdatePicoclawModelConfigRequiresKeyForHostedProvider(t *testing.T) {
+	t.Setenv("PICOCLAW_HOME", t.TempDir())
+
+	_, err := updatePicoclawModelConfig("https://api.example.invalid", "", "openai/gpt-5.4")
+	if err == nil || !strings.Contains(err.Error(), "api_key is required") {
+		t.Fatalf("error = %v, want api_key required", err)
+	}
+}
+
+func TestPicoclawProviderAllowsEmptyAPIKey(t *testing.T) {
+	cases := map[string]bool{
+		"ollama/qwen3.5:9b":    true,
+		" Ollama/llama3 ":      true,
+		"lmstudio/local-model": true,
+		"vllm/meta-llama/x":    true,
+		"openai/gpt-5.4":       false,
+		"openai_compatible/x":  false,
+		"qwen3.5:9b":           false,
+		"":                     false,
+	}
+	for model, want := range cases {
+		if got := picoclawProviderAllowsEmptyAPIKey(model); got != want {
+			t.Errorf("picoclawProviderAllowsEmptyAPIKey(%q) = %v, want %v", model, got, want)
+		}
+	}
+}
