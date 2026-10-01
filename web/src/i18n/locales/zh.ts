@@ -1530,11 +1530,13 @@ const zh = {
         apiBasePlaceholder: 'https://api.example.com/v1',
         apiKey: 'API Key',
         apiKeyPlaceholder: '请输入模型 API Key',
+        apiKeyOptionalPlaceholder: 'ollama、lmstudio 或 vllm 无需填写',
         save: '保存模型配置',
         saving: '正在保存模型配置',
         saved: '模型配置已保存',
         saveFailed: '保存模型配置失败',
-        invalid: '模型标识、API Base URL 和 API Key 不能为空'
+        invalid: '模型标识、API Base URL 和 API Key 不能为空',
+        invalidNoKey: '模型标识和 API Base URL 不能为空'
       },
       uninstall: {
         menuLabel: '卸载',

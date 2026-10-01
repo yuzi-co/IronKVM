@@ -1566,11 +1566,13 @@ const th = {
         apiBasePlaceholder: 'https://api.example.com/v1',
         apiKey: 'คีย์ API',
         apiKeyPlaceholder: 'ป้อนคีย์ API ของโมเดล',
+        apiKeyOptionalPlaceholder: 'ไม่จำเป็นสำหรับ ollama, lmstudio หรือ vllm',
         save: 'บันทึก',
         saving: 'กำลังบันทึก',
         saved: 'บันทึกการกำหนดค่าโมเดลแล้ว',
         saveFailed: 'ไม่สามารถบันทึกการกำหนดค่าโมเดลได้',
-        invalid: 'ต้องระบุรหัสโมเดล, API Base URL และคีย์ API'
+        invalid: 'ต้องระบุรหัสโมเดล, API Base URL และคีย์ API',
+        invalidNoKey: 'ต้องระบุรหัสโมเดลและ API Base URL'
       },
       uninstall: {
         menuLabel: 'ถอนการติดตั้ง',

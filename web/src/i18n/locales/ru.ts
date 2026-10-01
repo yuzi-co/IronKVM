@@ -1600,11 +1600,13 @@ const ru = {
         apiBasePlaceholder: 'https://api.example.com/v1',
         apiKey: 'API-ключ',
         apiKeyPlaceholder: 'Введите API-ключ модели',
+        apiKeyOptionalPlaceholder: 'Не нужен для ollama, lmstudio и vllm',
         save: 'Сохранить',
         saving: 'Сохранение',
         saved: 'Конфигурация модели сохранена.',
         saveFailed: 'Не удалось сохранить конфигурацию модели.',
-        invalid: 'Требуются идентификатор модели, API Base URL и API-ключ'
+        invalid: 'Требуются идентификатор модели, API Base URL и API-ключ',
+        invalidNoKey: 'Требуются идентификатор модели и API Base URL'
       },
       uninstall: {
         menuLabel: 'Удалить',

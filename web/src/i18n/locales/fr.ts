@@ -1627,11 +1627,13 @@ const fr = {
         apiBasePlaceholder: 'https://api.example.com/v1',
         apiKey: 'Clé API',
         apiKeyPlaceholder: 'Saisissez la clé API du modèle',
+        apiKeyOptionalPlaceholder: 'Inutile pour ollama, lmstudio ou vllm',
         save: 'Enregistrer',
         saving: 'Enregistrement',
         saved: 'Configuration du modèle enregistrée',
         saveFailed: "Échec de l'enregistrement de la configuration du modèle",
-        invalid: 'L’identifiant du modèle, l’API Base URL et la clé API sont requis'
+        invalid: 'L’identifiant du modèle, l’API Base URL et la clé API sont requis',
+        invalidNoKey: 'L’identifiant du modèle et l’API Base URL sont requis'
       },
       uninstall: {
         menuLabel: 'Désinstaller',

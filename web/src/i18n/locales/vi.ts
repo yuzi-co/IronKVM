@@ -1593,11 +1593,13 @@ const vi = {
         apiBasePlaceholder: 'https://api.example.com/v1',
         apiKey: 'Khóa API',
         apiKeyPlaceholder: 'Nhập khóa API của mô hình',
+        apiKeyOptionalPlaceholder: 'Không cần cho ollama, lmstudio hoặc vllm',
         save: 'Lưu',
         saving: 'Đang lưu',
         saved: 'Đã lưu cấu hình mô hình',
         saveFailed: 'Không lưu được cấu hình mô hình',
-        invalid: 'Bắt buộc nhập mã định danh mô hình, API Base URL và khóa API'
+        invalid: 'Bắt buộc nhập mã định danh mô hình, API Base URL và khóa API',
+        invalidNoKey: 'Bắt buộc nhập mã định danh mô hình và API Base URL'
       },
       uninstall: {
         menuLabel: 'Gỡ cài đặt',

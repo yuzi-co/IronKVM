@@ -1616,11 +1616,13 @@ const nl = {
         apiBasePlaceholder: 'https://api.example.com/v1',
         apiKey: 'API-sleutel',
         apiKeyPlaceholder: 'Voer de API-sleutel van het model in',
+        apiKeyOptionalPlaceholder: 'Niet nodig voor ollama, lmstudio of vllm',
         save: 'Opslaan',
         saving: 'Opslaan',
         saved: 'Modelconfiguratie opgeslagen',
         saveFailed: 'Kan de modelconfiguratie niet opslaan',
-        invalid: 'Model-ID, API Base URL en API-sleutel zijn vereist'
+        invalid: 'Model-ID, API Base URL en API-sleutel zijn vereist',
+        invalidNoKey: 'Model-ID en API Base URL zijn vereist'
       },
       uninstall: {
         menuLabel: 'Verwijderen',

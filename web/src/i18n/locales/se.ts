@@ -1595,11 +1595,13 @@ const se = {
         apiBasePlaceholder: 'https://api.example.com/v1',
         apiKey: 'API-nyckel',
         apiKeyPlaceholder: 'Ange modellens API-nyckel',
+        apiKeyOptionalPlaceholder: 'Behövs inte för ollama, lmstudio eller vllm',
         save: 'Spara',
         saving: 'Sparar',
         saved: 'Modellkonfiguration sparad',
         saveFailed: 'Det gick inte att spara modellkonfigurationen',
-        invalid: 'Modellidentifierare, API Base URL och API-nyckel krävs'
+        invalid: 'Modellidentifierare, API Base URL och API-nyckel krävs',
+        invalidNoKey: 'Modellidentifierare och API Base URL krävs'
       },
       uninstall: {
         menuLabel: 'Avinstallera',

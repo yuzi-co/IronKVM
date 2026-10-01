@@ -1590,11 +1590,13 @@ const nb = {
         apiBasePlaceholder: 'https://api.example.com/v1',
         apiKey: 'API-nøkkel',
         apiKeyPlaceholder: 'Skriv inn modellens API-nøkkel',
+        apiKeyOptionalPlaceholder: 'Ikke nødvendig for ollama, lmstudio eller vllm',
         save: 'Lagre',
         saving: 'Lagrer',
         saved: 'Modellkonfigurasjon lagret',
         saveFailed: 'Kunne ikke lagre modellkonfigurasjonen',
-        invalid: 'Modellidentifikator, API Base URL og API-nøkkel kreves'
+        invalid: 'Modellidentifikator, API Base URL og API-nøkkel kreves',
+        invalidNoKey: 'Modellidentifikator og API Base URL kreves'
       },
       uninstall: {
         menuLabel: 'Avinstaller',

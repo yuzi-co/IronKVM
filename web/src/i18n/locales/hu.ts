@@ -1614,11 +1614,13 @@ const hu = {
         apiBasePlaceholder: 'https://api.example.com/v1',
         apiKey: 'API-kulcs',
         apiKeyPlaceholder: 'Adja meg a modell API-kulcsát',
+        apiKeyOptionalPlaceholder: 'ollama, lmstudio vagy vllm esetén nem szükséges',
         save: 'Mentés',
         saving: 'Mentés',
         saved: 'A modell konfigurációja mentve',
         saveFailed: 'Nem sikerült menteni a modellkonfigurációt',
-        invalid: 'A modellazonosító, az API Base URL és az API-kulcs megadása kötelező'
+        invalid: 'A modellazonosító, az API Base URL és az API-kulcs megadása kötelező',
+        invalidNoKey: 'A modellazonosító és az API Base URL megadása kötelező'
       },
       uninstall: {
         menuLabel: 'Eltávolítás',

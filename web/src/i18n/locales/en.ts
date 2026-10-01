@@ -1580,11 +1580,13 @@ const en = {
         apiBasePlaceholder: 'https://api.example.com/v1',
         apiKey: 'API Key',
         apiKeyPlaceholder: 'Enter the model API key',
+        apiKeyOptionalPlaceholder: 'Not needed for ollama, lmstudio or vllm',
         save: 'Save',
         saving: 'Saving',
         saved: 'Model configuration saved',
         saveFailed: 'Failed to save model configuration',
-        invalid: 'Model identifier, API base URL, and API key are required'
+        invalid: 'Model identifier, API base URL, and API key are required',
+        invalidNoKey: 'Model identifier and API base URL are required'
       },
       uninstall: {
         menuLabel: 'Uninstall',

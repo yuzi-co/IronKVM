@@ -1606,11 +1606,13 @@ const pt_br = {
         apiBasePlaceholder: 'https://api.example.com/v1',
         apiKey: 'Chave API',
         apiKeyPlaceholder: 'Insira a chave API do modelo',
+        apiKeyOptionalPlaceholder: 'Não é necessária para ollama, lmstudio ou vllm',
         save: 'Salvar',
         saving: 'Salvando',
         saved: 'Configuração do modelo salva',
         saveFailed: 'Falha ao salvar a configuração do modelo',
-        invalid: 'Identificador do modelo, API Base URL e chave API são obrigatórios'
+        invalid: 'Identificador do modelo, API Base URL e chave API são obrigatórios',
+        invalidNoKey: 'Identificador do modelo e API Base URL são obrigatórios'
       },
       uninstall: {
         menuLabel: 'Desinstalar',
