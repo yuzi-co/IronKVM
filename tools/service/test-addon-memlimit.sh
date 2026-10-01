@@ -4,7 +4,7 @@
 #   test-addon-memlimit.sh
 #
 # The limit is the owner's /etc/kvm/GOMEMLIMIT, or 512 MiB without it, capped
-# at seven eighths of the addons group's memory.high. Only the block between
+# at seven eighths of the addons group's memory.high and at 56 MiB. Only the block between
 # "# --- memlimit ---" and "# --- end memlimit ---" runs here, never a script.
 set -u
 HERE=$(cd "$(dirname "$0")" && pwd)
@@ -36,6 +36,9 @@ for s in S98tailscaled S98netbird; do
     check "no setting, memory.high 64M: 56" "$(limit - 67108864)" "56"
     check "an owner's 75, memory.high 64M: 56" "$(limit 75 67108864)" "56"
     check "an owner's 40, memory.high 64M: 40" "$(limit 40 67108864)" "40"
+    check "no setting, memory.high 48M: 42" "$(limit - 50331648)" "42"
+    check "no setting, memory.high 96M: 56, the rest is PicoClaw's" "$(limit - 100663296)" "56"
+    check "an owner's 40, memory.high 96M: 40" "$(limit 40 100663296)" "40"
     check "memory.high max (no limit): the setting stands" "$(limit 75 max)" "75"
     check "a setting that is not a number: 512" "$(limit 75MiB -)" "512"
     check "a setting of 0: 512" "$(limit 0 -)" "512"
