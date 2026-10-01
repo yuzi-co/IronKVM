@@ -110,41 +110,13 @@ gateway_running_pid() {
   printf '%s\n' "$pid"
 }
 
-resolve_kvm_control_source() {
-  for candidate in \
-    "/kvmapp/picoclaw/skills/kvm-control" \
-    "/kvmapp/skills/kvm-control" \
-    "$SCRIPT_DIR/../../../picoclaw/skills/kvm-control"
-  do
-    if [ -d "$candidate" ] && [ -f "$candidate/SKILL.md" ]; then
-      printf '%s\n' "$candidate"
-      return 0
-    fi
-  done
-
-  return 1
-}
-
-sync_kvm_control_skill() {
-  source_dir="$(resolve_kvm_control_source)" || {
-    echo "kvm-control skill source not found"
-    return 1
-  }
-
-  skills_dir="$PICOCLAW_HOME/workspace/skills"
-  target_dir="$skills_dir/kvm-control"
-  mkdir -p "$skills_dir" || {
-    echo "failed to create skills directory: $skills_dir"
-    return 1
-  }
-
+# The kvm-control skill drove the KVM through a shell script. PicoClaw now
+# runs without exec or skills and reaches the KVM only through the nanokvm
+# MCP server, so remove the copy older versions placed in the workspace.
+remove_kvm_control_skill() {
+  target_dir="$PICOCLAW_HOME/workspace/skills/kvm-control"
   rm -rf "$target_dir" || {
     echo "failed to remove old kvm-control skill: $target_dir"
-    return 1
-  }
-
-  cp -R "$source_dir" "$target_dir" || {
-    echo "failed to copy kvm-control skill to $target_dir"
     return 1
   }
 }
@@ -183,6 +155,9 @@ start_service() {
     return 1
   fi
 
+  # Installs onboarded before the skill was dropped still carry a copy.
+  remove_kvm_control_skill || return 1
+
   "$BIN_PATH" gateway >>"$LOG_FILE" 2>&1 &
   gateway_pid="$!"
   printf '%s\n' "$gateway_pid" >"$PICOCLAW_PID_FILE" || {
@@ -195,7 +170,7 @@ start_service() {
 onboard_service() {
   setup_runtime_env || return 1
   "$BIN_PATH" onboard >>"$LOG_FILE" 2>&1 || return 1
-  sync_kvm_control_skill || return 1
+  remove_kvm_control_skill || return 1
   sync_agent_profile || return 1
 }
 
