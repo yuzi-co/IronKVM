@@ -42,10 +42,7 @@ func NewService(control *controlmode.Manager) *Service {
 		control:            control,
 		releaseHID:         hid.ReleaseAllHIDStateBestEffort,
 		operations:         newControlOperationTracker(),
-		acquireHDMILease:   vm.AcquireHdmiCaptureLease,
 		acquireHDMIForRead: vm.AcquireHdmiCaptureLeaseForRead,
-		captureLeases:      make(map[string]func()),
-		captureLeaseTimers: make(map[string]*time.Timer),
 	}
 	service.ensureDependencies()
 	service.startRuntimeIntentReconcile()
@@ -83,17 +80,11 @@ func (s *Service) ensureDependencies() {
 	if s.operations == nil {
 		s.operations = newControlOperationTracker()
 	}
-	if s.acquireHDMILease == nil {
-		s.acquireHDMILease = vm.AcquireHdmiCaptureLease
-	}
 	if s.acquireHDMIForRead == nil {
 		s.acquireHDMIForRead = vm.AcquireHdmiCaptureLeaseForRead
 	}
-	if s.captureLeases == nil {
-		s.captureLeases = make(map[string]func())
-	}
-	if s.captureLeaseTimers == nil {
-		s.captureLeaseTimers = make(map[string]*time.Timer)
+	if s.chat == nil {
+		s.chat = noChat{}
 	}
 }
 

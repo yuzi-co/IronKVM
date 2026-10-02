@@ -9,7 +9,10 @@ import (
 	"strings"
 	"time"
 
+	"NanoKVM-Server/service/agent"
+
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -338,18 +341,20 @@ func (s *Service) publishMCPObservation(c *gin.Context, text string, imageBase64
 		return
 	}
 
-	sessionID, session, err := s.requireActiveGatewaySession(c)
-	if err != nil || session == nil || session.Downstream == nil {
+	sessionID, err := s.requireActiveGatewaySession(c)
+	if err != nil {
 		return
 	}
 
-	message := newPicoGatewayObservationMessage(sessionID, map[string]any{
-		"content":      text,
-		"image_base64": imageBase64,
-		"mime_type":    "image/jpeg",
-	})
-	if writeErr := session.writeDownstreamJSON(s.config.Get(), message); writeErr != nil {
-		log.Warnf("failed to deliver picoclaw observation message: %v", writeErr)
+	event := agent.Event{
+		Type:        agent.EventObservation,
+		MessageID:   uuid.NewString(),
+		Text:        text,
+		ImageBase64: imageBase64,
+		MimeType:    "image/jpeg",
+	}
+	if publishErr := s.chat.Publish(sessionID, event); publishErr != nil {
+		log.Warnf("failed to deliver picoclaw observation message: %v", publishErr)
 	}
 }
 

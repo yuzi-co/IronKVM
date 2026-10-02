@@ -6,7 +6,10 @@ import (
 	"strings"
 	"time"
 
+	"NanoKVM-Server/service/agent"
+
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 const (
@@ -20,7 +23,7 @@ func (s *Service) LoadImage(c *gin.Context) {
 		return
 	}
 
-	sessionID, session, sessionErr := s.requireActiveGatewaySession(c)
+	sessionID, sessionErr := s.requireActiveGatewaySession(c)
 	if sessionErr != nil {
 		writePicoclawError(c, sessionErr)
 		return
@@ -33,10 +36,8 @@ func (s *Service) LoadImage(c *gin.Context) {
 	}
 
 	instruction := buildLoadImageInstruction(sourcePath, req.Prompt)
-	message := newPicoGatewayMessage(sessionID, map[string]any{
-		"content": instruction,
-	})
-	if err := session.writeUpstreamJSON(s.config.Get(), message); err != nil {
+	messageID := uuid.NewString()
+	if err := s.chat.Prompt(sessionID, agent.Prompt{RequestID: messageID, Text: instruction}); err != nil {
 		writePicoclawError(c, newPicoclawError(CodeRuntimeUnavailable, "failed to deliver image instruction to picoclaw"))
 		return
 	}
@@ -44,35 +45,31 @@ func (s *Service) LoadImage(c *gin.Context) {
 	writeSuccess(c, gin.H{
 		"accepted":      true,
 		"session_id":    sessionID,
-		"message_id":    message.ID,
+		"message_id":    messageID,
 		"path":          sourcePath,
 		"user_prompt":   normalizeImagePrompt(req.Prompt),
 		"instructed_at": time.Now(),
 	})
 }
 
-func (s *Service) requireActiveGatewaySession(c *gin.Context) (string, *GatewaySession, *PicoclawError) {
+// requireActiveGatewaySession returns the chat session a loopback call is
+// about: the one its header names, or the lock owner's. The session must be
+// open.
+func (s *Service) requireActiveGatewaySession(c *gin.Context) (string, *PicoclawError) {
+	s.ensureDependencies()
 	sessionID := strings.TrimSpace(c.GetHeader(sessionIDHeader))
 	if sessionID == "" {
 		sessionID = strings.TrimSpace(s.lock.Owner())
 	}
 	if sessionID == "" {
-		return "", nil, newPicoclawError(CodeSessionIDMissing, "missing X-PicoClaw-Session-ID")
+		return "", newPicoclawError(CodeSessionIDMissing, "missing X-PicoClaw-Session-ID")
 	}
-
-	session, ok := GetSessionManager().Get(sessionID)
-	if !ok || session == nil {
-		err := newPicoclawError(CodeRuntimeUnavailable, "picoclaw session is not connected")
-		err.SessionID = sessionID
-		return "", nil, err
-	}
-	if session.State != SessionStateActive || session.Upstream == nil {
+	if !s.chat.IsActive(sessionID) {
 		err := newPicoclawError(CodeRuntimeUnavailable, "picoclaw session is not active")
 		err.SessionID = sessionID
-		return "", nil, err
+		return "", err
 	}
-
-	return sessionID, session, nil
+	return sessionID, nil
 }
 
 func normalizeLoadImagePath(sourcePath string) (string, *PicoclawError) {

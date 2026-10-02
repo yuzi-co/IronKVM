@@ -6,8 +6,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	"NanoKVM-Server/service/agent"
 	"NanoKVM-Server/service/controlmode"
 	"NanoKVM-Server/service/picoclaw"
+	"NanoKVM-Server/service/vm"
 
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
@@ -75,6 +77,11 @@ func staticHandler(webPath string) gin.HandlerFunc {
 func server(r *gin.Engine) {
 	control := controlmode.GetManager()
 	picoclawService := picoclaw.NewService(control)
+	// PicoClaw is the agent behind the chat routes. Another agent needs only
+	// another agent.Agent here.
+	chatAgent := picoclawService.Agent()
+	chatBridge := agent.NewBridge(chatAgent, picoclawService, agent.NewTaskLeases(vm.AcquireHdmiCaptureLease))
+	picoclawService.SetChat(chatBridge)
 
 	authRouter(r)
 	applicationRouter(r)
@@ -86,6 +93,7 @@ func server(r *gin.Engine) {
 	controlRouter(r, control, picoclawService)
 	mcpRouter(r, control, picoclawService)
 	picoclawRouter(r, picoclawService)
+	agentRouter(r, chatBridge, chatAgent)
 	wsRouter(r)
 	downloadRouter(r)
 	extensionsRouter(r)

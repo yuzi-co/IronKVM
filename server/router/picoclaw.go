@@ -5,6 +5,7 @@ import (
 
 	"NanoKVM-Server/authn"
 	"NanoKVM-Server/middleware"
+	"NanoKVM-Server/service/agent"
 	"NanoKVM-Server/service/picoclaw"
 )
 
@@ -39,11 +40,10 @@ func PicoclawLoopbackHTTPAllowedPaths() []string {
 	return append([]string(nil), picoclawLoopbackHTTPAllowedPaths...)
 }
 
+// picoclawRouter registers PicoClaw's own routes: its runtime, model and
+// profile settings, and the KVM tools it calls back over loopback.
 func picoclawRouter(r *gin.Engine, service *picoclaw.Service) {
-	frontendAPI := r.Group(picoclawBasePath).Use(
-		middleware.CheckToken(),
-		middleware.RequireRole(authn.RoleAdmin),
-	)
+	frontendAPI := picoclawFrontendAPI(r)
 	localAPI := r.Group(picoclawBasePath).Use(middleware.CheckLoopbackInternalToken())
 
 	localAPI.GET(picoclawScreenshotPath, service.Screenshot)
@@ -54,14 +54,28 @@ func picoclawRouter(r *gin.Engine, service *picoclaw.Service) {
 
 	frontendAPI.POST(picoclawModelConfigPath, service.UpdateModelConfig)
 	frontendAPI.POST(picoclawAgentProfilePath, service.UpdateAgentProfile)
-	frontendAPI.GET(picoclawSessionsPath, service.ListSessions)
-	frontendAPI.GET(picoclawSessionByIDPath, service.GetSession)
-	frontendAPI.DELETE(picoclawSessionByIDPath, service.DeleteSession)
 	frontendAPI.GET(picoclawRuntimeStatusPath, service.GetRuntimeStatus)
 	frontendAPI.DELETE(picoclawRuntimeSessionPath, service.ReleaseRuntimeSession)
 	frontendAPI.POST(picoclawRuntimeInstallPath, service.InstallRuntime)
 	frontendAPI.POST(picoclawRuntimeUninstallPath, service.UninstallRuntime)
 	frontendAPI.POST(picoclawRuntimeStartPath, service.StartRuntime)
 	frontendAPI.POST(picoclawRuntimeStopPath, service.StopRuntime)
-	frontendAPI.GET(picoclawGatewayWSPath, service.ConnectGateway)
+}
+
+// agentRouter registers the chat socket and the chat history routes. They use
+// only the agent interface. They keep the /api/picoclaw paths the web UI has
+// always used.
+func agentRouter(r *gin.Engine, bridge *agent.Bridge, history agent.History) {
+	frontendAPI := picoclawFrontendAPI(r)
+	frontendAPI.GET(picoclawGatewayWSPath, bridge.Connect)
+	frontendAPI.GET(picoclawSessionsPath, agent.ListSessionsHandler(history))
+	frontendAPI.GET(picoclawSessionByIDPath, agent.ReadSessionHandler(history))
+	frontendAPI.DELETE(picoclawSessionByIDPath, agent.DeleteSessionHandler(history))
+}
+
+func picoclawFrontendAPI(r *gin.Engine) gin.IRoutes {
+	return r.Group(picoclawBasePath).Use(
+		middleware.CheckToken(),
+		middleware.RequireRole(authn.RoleAdmin),
+	)
 }

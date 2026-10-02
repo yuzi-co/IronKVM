@@ -420,6 +420,14 @@ with a compiled-in default if the file is missing. See `server/README.md` for th
 the KVM through HID and screenshots. The server acts as its gateway: browser-facing routes take the
 normal token check, the runtime's own callbacks come back over loopback with an internal token.
 
+**The agent interface** (`service/agent/`) sits between the server and the agent. The chat socket
+(`/api/picoclaw/gateway/ws`), the chat history routes and the task capture lease use only
+`agent.Agent`, and the browser receives normalized events (`agent_message`, `turn_done`, and so on),
+never PicoClaw's pico protocol. `picoclaw.Adapter` is the PicoClaw implementation;
+`service/agent/agenttest` is an in-memory one for tests. A second agent needs its own `agent.Agent`
+and one line in `router/router.go`. PicoClaw's runtime, install, model and profile routes are still
+PicoClaw's own.
+
 ## Frontend architecture
 
 Hash router (`src/router.tsx`) with lazily imported pages; `ProtectedRoute` wraps everything but

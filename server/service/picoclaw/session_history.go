@@ -2,17 +2,16 @@ package picoclaw
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"errors"
-	"net/http"
 	"os"
 	"path/filepath"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"NanoKVM-Server/service/agent"
 )
 
 const (
@@ -21,7 +20,6 @@ const (
 	opaqueSessionKeyPrefix     = "sk_v1_"
 	maxSessionJSONLLineSize    = 10 * 1024 * 1024
 	maxSessionPreviewRunes     = 60
-	defaultSessionLimit        = 20
 )
 
 type sessionStoredMessage struct {
@@ -44,28 +42,6 @@ type sessionMetaFile struct {
 	Count     int       `json:"count"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
-}
-
-type sessionListItem struct {
-	ID           string `json:"id"`
-	Title        string `json:"title"`
-	Preview      string `json:"preview"`
-	MessageCount int    `json:"message_count"`
-	Created      string `json:"created"`
-	Updated      string `json:"updated"`
-}
-
-type sessionDetailMessage struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
-}
-
-type sessionDetail struct {
-	ID       string                 `json:"id"`
-	Messages []sessionDetailMessage `json:"messages"`
-	Summary  string                 `json:"summary,omitempty"`
-	Created  string                 `json:"created"`
-	Updated  string                 `json:"updated"`
 }
 
 func resolvePicoclawWorkspacePath() (string, error) {
@@ -148,24 +124,23 @@ func extractOpaqueSessionID(fileName string) (string, bool) {
 	return "", false
 }
 
-func (s *Service) ListSessions(c *gin.Context) {
+// ListSessions reads PicoClaw's session files: the JSONL files of v0.3,
+// keyed by the pico session id or by an opaque key, and the older JSON files.
+func (a *Adapter) ListSessions(context.Context) ([]agent.SessionSummary, error) {
 	dir, err := resolvePicoclawSessionsPath()
 	if err != nil {
-		writePicoclawError(c, newPicoclawError(CodeRuntimeUnavailable, "failed to resolve sessions directory"))
-		return
+		return nil, agent.NewError(CodeRuntimeUnavailable, "failed to resolve sessions directory")
 	}
 
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		if os.IsNotExist(err) {
-			writeSuccess(c, []sessionListItem{})
-			return
+			return []agent.SessionSummary{}, nil
 		}
-		writePicoclawError(c, newPicoclawError(CodeRuntimeUnavailable, "failed to read sessions directory"))
-		return
+		return nil, agent.NewError(CodeRuntimeUnavailable, "failed to read sessions directory")
 	}
 
-	items := make([]sessionListItem, 0)
+	items := make([]agent.SessionSummary, 0)
 	seen := make(map[string]struct{})
 
 	for _, entry := range entries {
@@ -237,45 +212,17 @@ func (s *Service) ListSessions(c *gin.Context) {
 	sort.Slice(items, func(i, j int) bool {
 		return items[i].Updated > items[j].Updated
 	})
-
-	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", strconv.Itoa(defaultSessionLimit)))
-	if offset < 0 {
-		offset = 0
-	}
-	if limit <= 0 {
-		limit = defaultSessionLimit
-	}
-
-	if offset >= len(items) {
-		writeSuccess(c, []sessionListItem{})
-		return
-	}
-
-	end := offset + limit
-	if end > len(items) {
-		end = len(items)
-	}
-
-	writeSuccess(c, items[offset:end])
+	return items, nil
 }
 
-func (s *Service) GetSession(c *gin.Context) {
-	sessionID := strings.TrimSpace(c.Param("id"))
-	if sessionID == "" {
-		writePicoclawError(c, newPicoclawError(CodeInvalidAction, "missing session id"))
-		return
-	}
-
+func (a *Adapter) ReadSession(_ context.Context, sessionID string) (agent.SessionDetail, error) {
 	if _, ok := sessionFileBase(sessionID); !ok {
-		writePicoclawError(c, newPicoclawError(CodeInvalidAction, "invalid session id"))
-		return
+		return agent.SessionDetail{}, agent.ErrInvalidSessionID
 	}
 
 	dir, err := resolvePicoclawSessionsPath()
 	if err != nil {
-		writePicoclawError(c, newPicoclawError(CodeRuntimeUnavailable, "failed to resolve sessions directory"))
-		return
+		return agent.SessionDetail{}, agent.NewError(CodeRuntimeUnavailable, "failed to resolve sessions directory")
 	}
 
 	var sess sessionStoredFile
@@ -295,49 +242,38 @@ func (s *Service) GetSession(c *gin.Context) {
 			}
 		}
 		if err != nil {
-			sessionErr := newPicoclawError(CodeRuntimeUnavailable, "session not found")
-			sessionErr.StatusCode = http.StatusNotFound
-			writePicoclawError(c, sessionErr)
-			return
+			return agent.SessionDetail{}, agent.ErrSessionNotFound
 		}
 	}
 
-	messages := make([]sessionDetailMessage, 0, len(sess.Messages))
+	messages := make([]agent.SessionMessage, 0, len(sess.Messages))
 	for _, msg := range sess.Messages {
 		if (msg.Role == "user" || msg.Role == "assistant") && strings.TrimSpace(msg.Content) != "" {
-			messages = append(messages, sessionDetailMessage{
+			messages = append(messages, agent.SessionMessage{
 				Role:    msg.Role,
 				Content: msg.Content,
 			})
 		}
 	}
 
-	writeSuccess(c, sessionDetail{
+	return agent.SessionDetail{
 		ID:       sessionID,
 		Messages: messages,
 		Summary:  sess.Summary,
 		Created:  sess.Created.Format(time.RFC3339),
 		Updated:  sess.Updated.Format(time.RFC3339),
-	})
+	}, nil
 }
 
-func (s *Service) DeleteSession(c *gin.Context) {
-	sessionID := strings.TrimSpace(c.Param("id"))
-	if sessionID == "" {
-		writePicoclawError(c, newPicoclawError(CodeInvalidAction, "missing session id"))
-		return
-	}
-
+func (a *Adapter) DeleteSession(_ context.Context, sessionID string) error {
 	fileBase, ok := sessionFileBase(sessionID)
 	if !ok {
-		writePicoclawError(c, newPicoclawError(CodeInvalidAction, "invalid session id"))
-		return
+		return agent.ErrInvalidSessionID
 	}
 
 	dir, err := resolvePicoclawSessionsPath()
 	if err != nil {
-		writePicoclawError(c, newPicoclawError(CodeRuntimeUnavailable, "failed to resolve sessions directory"))
-		return
+		return agent.NewError(CodeRuntimeUnavailable, "failed to resolve sessions directory")
 	}
 
 	base := filepath.Join(dir, fileBase)
@@ -349,23 +285,15 @@ func (s *Service) DeleteSession(c *gin.Context) {
 			if os.IsNotExist(err) {
 				continue
 			}
-			writePicoclawError(c, newPicoclawError(CodeRuntimeUnavailable, "failed to delete session"))
-			return
+			return agent.NewError(CodeRuntimeUnavailable, "failed to delete session")
 		}
 		removed = true
 	}
 
 	if !removed {
-		sessionErr := newPicoclawError(CodeRuntimeUnavailable, "session not found")
-		sessionErr.StatusCode = http.StatusNotFound
-		writePicoclawError(c, sessionErr)
-		return
+		return agent.ErrSessionNotFound
 	}
-
-	writeSuccess(c, gin.H{
-		"id":      sessionID,
-		"deleted": true,
-	})
+	return nil
 }
 
 func readLegacySession(dir, fileName string) (sessionStoredFile, error) {
@@ -514,7 +442,7 @@ func readJSONLSession(dir, sessionID string) (sessionStoredFile, error) {
 	}, nil
 }
 
-func buildSessionListItem(sessionID string, sess sessionStoredFile) sessionListItem {
+func buildSessionListItem(sessionID string, sess sessionStoredFile) agent.SessionSummary {
 	preview := ""
 	for _, msg := range sess.Messages {
 		if msg.Role == "user" && strings.TrimSpace(msg.Content) != "" {
@@ -544,7 +472,7 @@ func buildSessionListItem(sessionID string, sess sessionStoredFile) sessionListI
 		}
 	}
 
-	return sessionListItem{
+	return agent.SessionSummary{
 		ID:           sessionID,
 		Title:        title,
 		Preview:      preview,
