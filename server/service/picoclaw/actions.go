@@ -12,6 +12,7 @@ import (
 	"NanoKVM-Server/service/hid"
 
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -95,7 +96,9 @@ func (s *Service) executeActions(ctx context.Context, sessionID string, actions 
 
 	defer func() {
 		if err != nil {
-			s.releaseAllHIDState()
+			if releaseErr := s.releaseHeldInput(); releaseErr != nil {
+				log.Warnf("PicoClaw action failed with input still held on the host: %v", releaseErr)
+			}
 		}
 	}()
 
@@ -142,6 +145,7 @@ func (s *Service) executeAction(ctx context.Context, action Action) (int, *Picoc
 		return 0, err
 	}
 
+	out := &hidOutput{s: s}
 	switch strings.ToLower(strings.TrimSpace(action.Action)) {
 	case "click":
 		x, y, err := s.clickTarget(action)
@@ -153,21 +157,24 @@ func (s *Service) executeAction(ctx context.Context, action Action) (int, *Picoc
 			return 0, err
 		}
 
-		writes := 0
-		writes += s.sendMouseMoveWithButton(x, y, 0x00, 0)
-		writes += s.sendMousePress(x, y, button)
-		if waitErr := waitForControlOperation(ctx, defaultClickHold); waitErr != nil {
-			return writes, waitErr
+		out.mouse(x, y, 0x00, 0)
+		out.mouse(x, y, button, 0)
+		if out.err != nil {
+			return out.writes, out.err
 		}
-		writes += s.sendMouseRelease(x, y)
-		return writes, nil
+		if waitErr := waitForControlOperation(ctx, defaultClickHold); waitErr != nil {
+			return out.writes, waitErr
+		}
+		out.mouse(x, y, 0x00, 0)
+		return out.writes, out.err
 
 	case "move":
 		x, y, err := s.moveTarget(action)
 		if err != nil {
 			return 0, err
 		}
-		return s.sendMouseMoveWithButton(x, y, 0x00, 0), nil
+		out.mouse(x, y, 0x00, 0)
+		return out.writes, out.err
 
 	case "wait":
 		if action.DurationMs < 0 {
@@ -195,20 +202,19 @@ func (s *Service) executeAction(ctx context.Context, action Action) (int, *Picoc
 			return 0, err
 		}
 
-		writes := 0
-		writes += s.sendMouseMoveWithButton(fromX, fromY, 0x00, 0)
-		writes += s.sendMousePress(fromX, fromY, button)
-		for step := 1; step <= defaultDragSteps; step++ {
+		out.mouse(fromX, fromY, 0x00, 0)
+		out.mouse(fromX, fromY, button, 0)
+		for step := 1; step <= defaultDragSteps && out.err == nil; step++ {
 			if contextErr := controlOperationError(ctx); contextErr != nil {
-				return writes, contextErr
+				return out.writes, contextErr
 			}
 			ratio := float64(step) / float64(defaultDragSteps)
 			x := fromX + (toX-fromX)*ratio
 			y := fromY + (toY-fromY)*ratio
-			writes += s.sendMouseMoveWithButton(x, y, button, 0)
+			out.mouse(x, y, button, 0)
 		}
-		writes += s.sendMouseRelease(toX, toY)
-		return writes, nil
+		out.mouse(toX, toY, 0x00, 0)
+		return out.writes, out.err
 
 	case "scroll":
 		// Scroll where the pointer is, or at the centre when that is unknown.
@@ -242,58 +248,66 @@ func (s *Service) executeAction(ctx context.Context, action Action) (int, *Picoc
 			return 0, newPicoclawError(CodeInvalidAction, "invalid scroll direction")
 		}
 
-		writes := 0
 		for range amount {
 			if contextErr := controlOperationError(ctx); contextErr != nil {
-				return writes, contextErr
+				return out.writes, contextErr
 			}
-			writes += s.sendMouseMoveWithButton(x, y, 0x00, wheel)
-			writes += s.sendMouseMoveWithButton(x, y, 0x00, 0)
+			out.mouse(x, y, 0x00, wheel)
+			out.mouse(x, y, 0x00, 0)
+			if out.err != nil {
+				return out.writes, out.err
+			}
 			if waitErr := waitForControlOperation(ctx, defaultScrollStep); waitErr != nil {
-				return writes, waitErr
+				return out.writes, waitErr
 			}
 		}
-		return writes, nil
+		return out.writes, nil
 
 	case "type":
 		if action.Text == "" {
-			return 0, newPicoclawError(CodeInvalidAction, "type requires text")
+			return 0, newPicoclawError(CodeInvalidAction, typeNeedsTextMessage)
 		}
 		charMap := hid.GetCharMap("")
-		writes := 0
 		for _, char := range action.Text {
 			if contextErr := controlOperationError(ctx); contextErr != nil {
-				return writes, contextErr
+				return out.writes, contextErr
 			}
 			key, ok := charMap[char]
 			if !ok {
-				return 0, newPicoclawError(CodeInvalidAction, "unsupported character in type action")
+				return out.writes, newPicoclawError(CodeInvalidAction, "unsupported character in type action")
 			}
 
-			writes += s.sendKeyboardReport([]byte{byte(key.Modifiers), 0x00, byte(key.Code), 0x00, 0x00, 0x00, 0x00, 0x00})
-			writes += s.sendKeyboardReport([]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
+			out.key([]byte{byte(key.Modifiers), 0x00, byte(key.Code), 0x00, 0x00, 0x00, 0x00, 0x00})
+			out.key([]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
+			if out.err != nil {
+				return out.writes, out.err
+			}
 			if waitErr := waitForControlOperation(ctx, defaultKeyDelay); waitErr != nil {
-				return writes, waitErr
+				return out.writes, waitErr
 			}
 		}
-		return writes, nil
+		return out.writes, nil
 
 	case "hotkey":
 		report, err := buildHotkeyReport([]string(action.Keys))
 		if err != nil {
 			return 0, err
 		}
-		writes := 0
-		writes += s.sendKeyboardReport(report)
-		if waitErr := waitForControlOperation(ctx, defaultClickHold); waitErr != nil {
-			return writes, waitErr
+		out.key(report)
+		if out.err != nil {
+			return out.writes, out.err
 		}
-		writes += s.sendKeyboardReport([]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
-		return writes, nil
+		if waitErr := waitForControlOperation(ctx, defaultClickHold); waitErr != nil {
+			return out.writes, waitErr
+		}
+		out.key([]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
+		return out.writes, out.err
 	}
 
 	return 0, newPicoclawError(CodeInvalidAction, fmt.Sprintf(`unknown action %q; "action" must be one of click, move, type, hotkey, scroll, drag, wait`, action.Action))
 }
+
+const typeNeedsTextMessage = "type requires text"
 
 func toAbsoluteHidCoord(normalized float64) uint16 {
 	if normalized < 0 {
@@ -305,19 +319,38 @@ func toAbsoluteHidCoord(normalized float64) uint16 {
 	return uint16(math.Floor(0x7FFF*normalized)) + 1
 }
 
-func (s *Service) sendMousePress(x float64, y float64, button byte) int {
-	return s.sendMouseMoveWithButton(x, y, button, 0)
+// hidOutput sends the reports of one action and stops at the first one that
+// does not reach the host: a later report would act on a host that missed
+// the earlier ones, for example a button release without its press.
+type hidOutput struct {
+	s      *Service
+	writes int
+	err    *PicoclawError
 }
 
-func (s *Service) sendMouseRelease(x float64, y float64) int {
-	return s.sendMouseMoveWithButton(x, y, 0x00, 0)
+func (o *hidOutput) mouse(x float64, y float64, buttons byte, wheel int) {
+	if o.err != nil {
+		return
+	}
+	if o.err = o.s.sendMouseMoveWithButton(x, y, buttons, wheel); o.err == nil {
+		o.writes++
+	}
 }
 
-func (s *Service) sendMouseMoveWithButton(x float64, y float64, buttons byte, wheel int) int {
+func (o *hidOutput) key(report []byte) {
+	if o.err != nil {
+		return
+	}
+	if o.err = o.s.sendKeyboardReport(report); o.err == nil {
+		o.writes++
+	}
+}
+
+func absoluteMouseReport(x float64, y float64, buttons byte, wheel int) []byte {
 	absoluteX := toAbsoluteHidCoord(x)
 	absoluteY := toAbsoluteHidCoord(y)
 
-	report := []byte{
+	return []byte{
 		buttons,
 		byte(absoluteX & 0xff),
 		byte(absoluteX >> 8),
@@ -325,14 +358,32 @@ func (s *Service) sendMouseMoveWithButton(x float64, y float64, buttons byte, wh
 		byte(absoluteY >> 8),
 		byte(int8(wheel)),
 	}
-	s.hid.WriteHid2(report)
-	s.pointer.set(clampUnit(x), clampUnit(y))
-	return 1
 }
 
-func (s *Service) sendKeyboardReport(report []byte) int {
-	s.hid.WriteHid0(report)
-	return 1
+// sendMouseMoveWithButton writes one absolute pointer report. The pointer
+// position is remembered only once the report has reached the host, so a
+// failed write leaves the next relative move starting from where the
+// pointer really is.
+func (s *Service) sendMouseMoveWithButton(x float64, y float64, buttons byte, wheel int) *PicoclawError {
+	if err := s.hid.WriteAbsoluteMouseReport(absoluteMouseReport(x, y, buttons, wheel)); err != nil {
+		return hidWriteError("mouse", err)
+	}
+	s.pointer.set(clampUnit(x), clampUnit(y))
+	s.held.setButtons(buttons != 0)
+	return nil
+}
+
+func (s *Service) sendKeyboardReport(report []byte) *PicoclawError {
+	if err := s.hid.WriteKeyboardReport(report); err != nil {
+		return hidWriteError("keyboard", err)
+	}
+	s.held.setKeys(!bytes.Equal(report, make([]byte, len(report))))
+	return nil
+}
+
+func hidWriteError(device string, err error) *PicoclawError {
+	return newPicoclawError(CodeHIDWriteFailed, fmt.Sprintf(
+		"the %s report did not reach the remote host (%v), so this action did not take effect", device, err))
 }
 
 func normalizedNestedPoint(name string, point *Point) (float64, float64, *PicoclawError) {

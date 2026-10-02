@@ -17,10 +17,14 @@ type VisionReader interface {
 	ReadMjpeg(width uint16, height uint16, quality uint16) (data []byte, result int)
 }
 
+// HIDWriter is the part of the HID gadget PicoClaw writes to: the keyboard and
+// the absolute pointer. It never writes the relative mouse endpoint: the host
+// polls that one only while something on the host has the device open, so a
+// report there can wait and time out. A "dx"/"dy" move goes to the remembered
+// position plus the delta on the absolute pointer instead.
 type HIDWriter interface {
-	WriteHid0(data []byte)
-	WriteHid1(data []byte)
-	WriteHid2(data []byte)
+	WriteKeyboardReport(data []byte) error
+	WriteAbsoluteMouseReport(data []byte) error
 }
 
 type Service struct {
@@ -39,6 +43,7 @@ type Service struct {
 	captureLeases      map[string]func()
 	captureLeaseTimers map[string]*time.Timer
 	pointer            pointerTracker
+	held               heldInput
 	runtimeLifecycleMu sync.Mutex
 	reconcileOnce      sync.Once
 }
