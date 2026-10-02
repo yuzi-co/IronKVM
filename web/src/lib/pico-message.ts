@@ -53,3 +53,52 @@ export function picoError(message: PicoMessage): PicoError {
     requestScoped: nonEmptyString(payload.request_id) !== undefined
   };
 }
+
+export type PicoTurnUsage = {
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+  llmCalls?: number;
+};
+
+export type PicoTurnDone = {
+  // The ids of the message.send requests the turn handled.
+  requestIds: string[];
+  status: 'ok' | 'error' | 'canceled';
+  usage?: PicoTurnUsage;
+};
+
+// turn.done is the IronKVM PicoClaw build's end-of-turn event. It comes once
+// per turn, after the replies, including turns that end without one (an
+// error, a cancel, or a model that answered nothing).
+export function picoTurnDone(message: PicoMessage): PicoTurnDone | undefined {
+  if (message.type !== 'turn.done') {
+    return undefined;
+  }
+  const payload = payloadOf(message);
+  const ids = Array.isArray(payload.request_ids)
+    ? payload.request_ids.filter((id): id is string => typeof id === 'string' && id !== '')
+    : [];
+  const first = nonEmptyString(payload.request_id);
+  if (first && !ids.includes(first)) {
+    ids.unshift(first);
+  }
+  const status =
+    payload.status === 'error' || payload.status === 'canceled' ? payload.status : 'ok';
+  return { requestIds: ids, status, usage: usageOf(payload.usage) };
+}
+
+function usageOf(value: unknown): PicoTurnUsage | undefined {
+  if (!value || typeof value !== 'object') {
+    return undefined;
+  }
+  const usage = value as Record<string, unknown>;
+  const count = (key: string) =>
+    typeof usage[key] === 'number' && Number.isFinite(usage[key]) ? (usage[key] as number) : 0;
+  return {
+    inputTokens: count('input_tokens'),
+    outputTokens: count('output_tokens'),
+    totalTokens: count('total_tokens'),
+    llmCalls: typeof usage.llm_calls === 'number' ? usage.llm_calls : undefined
+  };
+}

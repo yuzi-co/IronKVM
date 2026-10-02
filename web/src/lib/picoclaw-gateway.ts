@@ -1,4 +1,10 @@
-import { picoAssistantKind, picoError, picoMessageId } from '@/lib/pico-message.ts';
+import {
+  picoAssistantKind,
+  picoError,
+  picoMessageId,
+  picoTurnDone,
+  type PicoTurnDone
+} from '@/lib/pico-message.ts';
 import { clearPicoclawSessionId, setPicoclawSessionId } from '@/lib/picoclaw-storage.ts';
 import { getBaseUrl } from '@/lib/service.ts';
 
@@ -82,6 +88,7 @@ type GatewayEventMap = {
   error: GatewayError;
   close: GatewayClose;
   control_mode_changed: GatewayControlStatus;
+  turn_done: PicoTurnDone;
 };
 
 type EventName = keyof GatewayEventMap;
@@ -131,6 +138,9 @@ class PicoClawGateway {
   private reconnectAttempts = 0;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private explicitClose = false;
+  // Set once PicoClaw has sent a turn.done. From then on only turn.done ends a
+  // turn; before, a reply does, as it did with builds that lack the event.
+  private sendsTurnDone = false;
 
   public connect(options: ConnectOptions = {}) {
     if (options.sessionId) {
@@ -375,6 +385,13 @@ class PicoClawGateway {
       this.emit('error', { code: error.code, message: error.message, raw: message });
       return;
     }
+    const turnDone = picoTurnDone(message);
+    if (turnDone) {
+      this.sendsTurnDone = true;
+      this.setRunState('idle');
+      this.emit('turn_done', turnDone);
+      return;
+    }
     if (type === 'control.mode_changed') {
       const payload = (message.payload || {}) as Record<string, unknown>;
       const mode = String(payload.mode || 'off');
@@ -395,7 +412,7 @@ class PicoClawGateway {
       if (kind === 'hidden') {
         return;
       }
-      if (kind === 'reply') {
+      if (kind === 'reply' && !this.sendsTurnDone) {
         this.setRunState('idle');
       }
       this.emit('assistant_message', {
