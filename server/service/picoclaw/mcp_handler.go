@@ -1,11 +1,13 @@
 package picoclaw
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -50,7 +52,7 @@ var mcpToolDefinitions = []map[string]interface{}{
 	},
 	{
 		"name":        "kvm_actions",
-		"description": "Send one or more HID actions (click, type, hotkey, scroll, drag, move, wait) to the downstream remote host. Use normalized [0,1] coordinates for mouse actions.",
+		"description": "Send one or more HID actions (click, type, hotkey, scroll, drag, move, wait) to the downstream remote host. Use normalized [0,1] coordinates for mouse actions. Set screenshot_after to get a screenshot of the result in the same call.",
 		"inputSchema": map[string]interface{}{
 			"type": "object",
 			"properties": map[string]interface{}{
@@ -79,6 +81,16 @@ var mcpToolDefinitions = []map[string]interface{}{
 						},
 						"required": []string{"action"},
 					},
+				},
+				"screenshot_after": map[string]interface{}{
+					"type":        "boolean",
+					"description": "If true, take a screenshot after the actions and return it in this result, so no separate kvm_screenshot call is needed to check the outcome. Default false.",
+				},
+				"settle_ms": map[string]interface{}{
+					"type":        "integer",
+					"minimum":     0,
+					"maximum":     maxScreenshotSettle.Milliseconds(),
+					"description": "With screenshot_after: milliseconds to wait after the last action before the screenshot, so windows and pages can draw. Default 500, at most 5000.",
 				},
 			},
 			"required": []string{"actions"},
@@ -297,7 +309,9 @@ func (s *Service) publishMCPObservation(c *gin.Context, text string, imageBase64
 
 func (s *Service) mcpActions(req jsonRPCRequest, args json.RawMessage, c *gin.Context) jsonRPCResponse {
 	var params struct {
-		Actions []Action `json:"actions"`
+		Actions         []Action `json:"actions"`
+		ScreenshotAfter bool     `json:"screenshot_after"`
+		SettleMs        *int     `json:"settle_ms"`
 	}
 	if err := json.Unmarshal(args, &params); err != nil {
 		return mcpToolError(req, "invalid actions payload")
@@ -311,22 +325,84 @@ func (s *Service) mcpActions(req jsonRPCRequest, args json.RawMessage, c *gin.Co
 		sessionID = s.lock.Owner()
 	}
 
-	result, err := s.executeActions(c.Request.Context(), sessionID, params.Actions)
+	ctx := c.Request.Context()
+	result, err := s.executeActions(ctx, sessionID, params.Actions)
 	if err != nil {
 		return mcpToolError(req, err.Message)
 	}
 
 	resultJSON, _ := json.Marshal(result)
+	content := []map[string]interface{}{
+		{
+			"type": "text",
+			"text": string(resultJSON),
+		},
+	}
+	if params.ScreenshotAfter {
+		content = append(content, s.screenshotAfterActions(ctx, c, settleDuration(params.SettleMs))...)
+	}
+
 	return jsonRPCResponse{
 		JSONRPC: "2.0",
 		ID:      req.ID,
 		Result: map[string]interface{}{
-			"content": []map[string]interface{}{
-				{
-					"type": "text",
-					"text": string(resultJSON),
-				},
-			},
+			"content": content,
+		},
+	}
+}
+
+// The pause between the last action and the screenshot that screenshot_after
+// takes, so that a menu, a window or a page has time to draw.
+const (
+	defaultScreenshotSettle = 500 * time.Millisecond
+	maxScreenshotSettle     = 5 * time.Second
+)
+
+func settleDuration(settleMs *int) time.Duration {
+	if settleMs == nil {
+		return defaultScreenshotSettle
+	}
+	settle := time.Duration(*settleMs) * time.Millisecond
+	if settle < 0 {
+		return 0
+	}
+	if settle > maxScreenshotSettle {
+		return maxScreenshotSettle
+	}
+	return settle
+}
+
+// screenshotAfterActions waits for the screen to settle and returns the
+// screenshot as tool result content. The actions have already run, so a
+// failed capture is reported as text and does not turn the result into an
+// error.
+func (s *Service) screenshotAfterActions(ctx context.Context, c *gin.Context, settle time.Duration) []map[string]interface{} {
+	if waitErr := waitForControlOperation(ctx, settle); waitErr != nil {
+		return []map[string]interface{}{{
+			"type": "text",
+			"text": "actions done; no screenshot taken: " + waitErr.Message,
+		}}
+	}
+
+	data, meta, captureErr := s.captureScreenshot(ctx, ScreenshotQuery{Format: "base64"})
+	if captureErr != nil {
+		return []map[string]interface{}{{
+			"type": "text",
+			"text": "actions done; screenshot failed: " + captureErr.Message,
+		}}
+	}
+
+	b64 := base64.StdEncoding.EncodeToString(data)
+	s.publishMCPObservation(c, "screenshot captured", b64)
+	return []map[string]interface{}{
+		{
+			"type": "text",
+			"text": screenshotCaption(meta) + fmt.Sprintf(", taken %d ms after the actions", settle.Milliseconds()),
+		},
+		{
+			"type":     "image",
+			"data":     b64,
+			"mimeType": "image/jpeg",
 		},
 	}
 }
