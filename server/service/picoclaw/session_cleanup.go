@@ -1,6 +1,8 @@
 package picoclaw
 
 import (
+	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -25,12 +27,16 @@ func (s *Service) releaseGatewaySession(sessionID string) {
 		return
 	}
 	s.ensureDependencies()
-	releaseHID := s.releaseHID
-	if s.control.Current() != controlmode.ModePicoclaw {
-		releaseHID = nil
+	// Only PicoClaw sends input while it is in control, so only what it left
+	// held needs releasing. After a turn that pressed nothing this writes
+	// nothing, and in particular never touches the relative mouse endpoint,
+	// which times out whenever the host is not polling it.
+	var releaseHID func() error
+	if s.control.Current() == controlmode.ModePicoclaw {
+		releaseHID = s.releaseHeldInput
 	}
 	if _, err := releaseOwnedSession(s.lock, sessionID, releaseHID); err != nil {
-		log.Errorf("failed to release HID state for PicoClaw session %s: %v", sessionID, err)
+		log.Warnf("PicoClaw session %s ended with input still held on the host: %v", sessionID, err)
 	}
 }
 
@@ -44,10 +50,32 @@ func releaseOwnedSession(lock *SessionLock, sessionID string, releaseHID func() 
 	return true, releaseHID()
 }
 
-func (s *Service) releaseAllHIDState() {
-	s.hid.WriteHid0(make([]byte, hid.KeyboardReportLen))
-	s.hid.WriteHid1(make([]byte, hid.RelativeMouseReportLen))
-	s.hid.WriteHid2(make([]byte, hid.AbsoluteMouseReportLen))
+// releaseHeldInput lets go of any key or mouse button PicoClaw's last report
+// left down. The button release goes to where the pointer is, so it does not
+// move the pointer.
+func (s *Service) releaseHeldInput() error {
+	keys, buttons := s.held.get()
+
+	var errs []error
+	if keys {
+		if err := s.hid.WriteKeyboardReport(make([]byte, hid.KeyboardReportLen)); err != nil {
+			errs = append(errs, fmt.Errorf("release keyboard: %w", err))
+		} else {
+			s.held.setKeys(false)
+		}
+	}
+	if buttons {
+		report := make([]byte, hid.AbsoluteMouseReportLen)
+		if x, y, known := s.pointer.get(); known {
+			report = absoluteMouseReport(x, y, 0x00, 0)
+		}
+		if err := s.hid.WriteAbsoluteMouseReport(report); err != nil {
+			errs = append(errs, fmt.Errorf("release mouse buttons: %w", err))
+		} else {
+			s.held.setButtons(false)
+		}
+	}
+	return errors.Join(errs...)
 }
 
 func picoclawMediaTempDir() string {

@@ -1,8 +1,10 @@
 package picoclaw
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
+	"image/jpeg"
 	"net/http"
 	"time"
 
@@ -61,19 +63,80 @@ func (s *Service) Screenshot(c *gin.Context) {
 }
 
 func (s *Service) captureScreenshot(ctx context.Context, query ScreenshotQuery) ([]byte, ScreenshotMeta, *PicoclawError) {
-	width, height, quality := resolveScreenshotRequest(query)
-
 	common.CheckScreen()
 	values := common.GetScreen().Snapshot()
+	width, height, quality := resolveScreenshotRequest(query, values)
+
 	releaseLease, claimFresh, leaseErr := s.acquireCaptureLease(ctx)
 	if leaseErr != nil {
 		return nil, ScreenshotMeta{}, newPicoclawError(CodeScreenshotFailed, "screenshot capture canceled")
 	}
 	defer releaseLease()
 
+	sourceWidth, sourceHeight := values.Width, values.Height
+	if sourceWidth == 0 || sourceHeight == 0 {
+		// The stream is set to the automatic resolution, so the screen size
+		// is not known up front and the sizes above are 0x0, which libkvm
+		// reads as "the full HDMI frame". Read one, take the screen size
+		// from it, and read again at the size the request asks for.
+		data, err := s.readScreenshotFrame(ctx, 0, 0, quality, &claimFresh)
+		if err != nil {
+			return nil, ScreenshotMeta{}, err
+		}
+		frameWidth, frameHeight, ok := jpegDimensions(data)
+		if !ok {
+			return data, ScreenshotMeta{Format: "jpeg"}, nil
+		}
+		sourceWidth, sourceHeight = frameWidth, frameHeight
+		width, height, _ = resolveScreenshotRequest(query, common.ScreenValues{
+			Width:   frameWidth,
+			Height:  frameHeight,
+			Quality: values.Quality,
+		})
+		if width == frameWidth && height == frameHeight {
+			return data, screenshotMeta(sourceWidth, sourceHeight, frameWidth, frameHeight), nil
+		}
+	}
+
+	data, err := s.readScreenshotFrame(ctx, width, height, quality, &claimFresh)
+	if err != nil {
+		return nil, ScreenshotMeta{}, err
+	}
+	// The frame says what it really is. The request is the fallback for a
+	// frame whose header cannot be read.
+	if frameWidth, frameHeight, ok := jpegDimensions(data); ok {
+		width, height = frameWidth, frameHeight
+	}
+	return data, screenshotMeta(sourceWidth, sourceHeight, width, height), nil
+}
+
+func screenshotMeta(sourceWidth, sourceHeight, captureWidth, captureHeight uint16) ScreenshotMeta {
+	return ScreenshotMeta{
+		SourceWidth:   sourceWidth,
+		SourceHeight:  sourceHeight,
+		CaptureWidth:  captureWidth,
+		CaptureHeight: captureHeight,
+		Format:        "jpeg",
+	}
+}
+
+// jpegDimensions reads the size of a JPEG from its header.
+func jpegDimensions(data []byte) (uint16, uint16, bool) {
+	cfg, err := jpeg.DecodeConfig(bytes.NewReader(data))
+	if err != nil || cfg.Width <= 0 || cfg.Height <= 0 || cfg.Width > 0xffff || cfg.Height > 0xffff {
+		return 0, 0, false
+	}
+	return uint16(cfg.Width), uint16(cfg.Height), true
+}
+
+// readScreenshotFrame reads one JPEG frame, retrying while libkvm has none
+// ready. claimFresh is the capture lease's "this frame predates the lease"
+// check; it is cleared once used so that a second read in the same capture
+// does not discard a frame again.
+func (s *Service) readScreenshotFrame(ctx context.Context, width, height, quality uint16, claimFresh *func() bool) ([]byte, *PicoclawError) {
 	for attempt := 0; attempt < screenshotRetryCount; attempt++ {
 		if err := ctx.Err(); err != nil {
-			return nil, ScreenshotMeta{}, newPicoclawError(CodeScreenshotFailed, "screenshot capture canceled")
+			return nil, newPicoclawError(CodeScreenshotFailed, "screenshot capture canceled")
 		}
 		data, result := s.vision.ReadMjpeg(width, height, quality)
 		switch {
@@ -83,34 +146,28 @@ func (s *Service) captureScreenshot(ctx context.Context, query ScreenshotQuery) 
 				select {
 				case <-ctx.Done():
 					timer.Stop()
-					return nil, ScreenshotMeta{}, newPicoclawError(CodeScreenshotFailed, "screenshot capture canceled")
+					return nil, newPicoclawError(CodeScreenshotFailed, "screenshot capture canceled")
 				case <-timer.C:
 				}
 				continue
 			}
-			return nil, ScreenshotMeta{}, newPicoclawError(CodeScreenshotNoSignal, "no HDMI signal or frame unavailable")
+			return nil, newPicoclawError(CodeScreenshotNoSignal, "no HDMI signal or frame unavailable")
 		case result < 0 || len(data) == 0:
-			return nil, ScreenshotMeta{}, newPicoclawError(CodeScreenshotFailed, "failed to capture screenshot")
+			return nil, newPicoclawError(CodeScreenshotFailed, "failed to capture screenshot")
 		default:
-			if claimFresh != nil && claimFresh() {
-				claimFresh = nil
+			if *claimFresh != nil && (*claimFresh)() {
+				*claimFresh = nil
 				continue
 			}
-			return data, ScreenshotMeta{
-				SourceWidth:   values.Width,
-				SourceHeight:  values.Height,
-				CaptureWidth:  width,
-				CaptureHeight: height,
-				Format:        "jpeg",
-			}, nil
+			*claimFresh = nil
+			return data, nil
 		}
 	}
 
-	return nil, ScreenshotMeta{}, newPicoclawError(CodeScreenshotFailed, "failed to capture screenshot")
+	return nil, newPicoclawError(CodeScreenshotFailed, "failed to capture screenshot")
 }
 
-func resolveScreenshotRequest(query ScreenshotQuery) (uint16, uint16, uint16) {
-	values := common.GetScreen().Snapshot()
+func resolveScreenshotRequest(query ScreenshotQuery, values common.ScreenValues) (uint16, uint16, uint16) {
 	width := values.Width
 	height := values.Height
 	quality := values.Quality

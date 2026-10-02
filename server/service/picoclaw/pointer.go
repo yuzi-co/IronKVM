@@ -143,3 +143,31 @@ func isFinite(value float64) bool {
 func clampUnit(value float64) float64 {
 	return math.Min(1, math.Max(0, value))
 }
+
+// heldInput records whether the last report PicoClaw sent left a key or a
+// mouse button down on the host. Releasing input at the end of a session or
+// after a failed action then writes only to the endpoints that need it, and
+// nothing at all after a turn that pressed nothing.
+type heldInput struct {
+	mu      sync.Mutex
+	keys    bool
+	buttons bool
+}
+
+func (h *heldInput) setKeys(held bool) {
+	h.mu.Lock()
+	h.keys = held
+	h.mu.Unlock()
+}
+
+func (h *heldInput) setButtons(held bool) {
+	h.mu.Lock()
+	h.buttons = held
+	h.mu.Unlock()
+}
+
+func (h *heldInput) get() (keys bool, buttons bool) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	return h.keys, h.buttons
+}

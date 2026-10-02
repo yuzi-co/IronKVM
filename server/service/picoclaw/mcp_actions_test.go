@@ -40,20 +40,30 @@ type fakeHID struct {
 	mu    sync.Mutex
 	mouse [][]byte
 	keys  [][]byte
+	// mouseErr and keyErr, when set, fail every write to that endpoint the
+	// way a gadget endpoint the host does not poll does.
+	mouseErr error
+	keyErr   error
 }
 
-func (h *fakeHID) WriteHid0(data []byte) {
+func (h *fakeHID) WriteKeyboardReport(data []byte) error {
 	h.mu.Lock()
 	defer h.mu.Unlock()
+	if h.keyErr != nil {
+		return h.keyErr
+	}
 	h.keys = append(h.keys, append([]byte(nil), data...))
+	return nil
 }
 
-func (h *fakeHID) WriteHid1(data []byte) {}
-
-func (h *fakeHID) WriteHid2(data []byte) {
+func (h *fakeHID) WriteAbsoluteMouseReport(data []byte) error {
 	h.mu.Lock()
 	defer h.mu.Unlock()
+	if h.mouseErr != nil {
+		return h.mouseErr
+	}
 	h.mouse = append(h.mouse, append([]byte(nil), data...))
+	return nil
 }
 
 func (h *fakeHID) lastMouse() []byte {

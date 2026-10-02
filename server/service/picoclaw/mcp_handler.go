@@ -58,8 +58,9 @@ var mcpToolDefinitions = []map[string]interface{}{
 			"To move the pointer by a number of screen pixels from where it is, use move with dx/dy. " +
 			`Examples: {"action":"click","x":0.5,"y":0.5} clicks the centre; {"action":"move","x":0.1,"y":0.9} goes near the bottom-left corner; ` +
 			`{"action":"move","dx":10} moves 10 pixels right; {"action":"move","dy":-20} moves 20 pixels up; {"action":"click"} clicks where the pointer is; ` +
-			`{"action":"type","text":"hello"}; {"action":"hotkey","keys":["ctrl","c"]}; {"action":"scroll","direction":"down","amount":3}; ` +
+			`{"action":"type","text":"hello"} types text; {"action":"hotkey","keys":["shift"]} presses one key, here a modifier on its own; {"action":"hotkey","keys":["ctrl","c"]} presses keys together; {"action":"scroll","direction":"down","amount":3}; ` +
 			`{"action":"drag","from":{"x":0.2,"y":0.2},"to":{"x":0.6,"y":0.2}}; {"action":"wait","duration_ms":1000}. ` +
+			"type is only for text: to press any key, such as Enter, Escape, Tab, an arrow or Shift, use hotkey with that key. " +
 			"The result reports where the pointer ended up. Set screenshot_after to get a screenshot of the result in the same call.",
 		"inputSchema": map[string]interface{}{
 			"type": "object",
@@ -95,11 +96,11 @@ var mcpToolDefinitions = []map[string]interface{}{
 								"enum":        []string{"left", "right", "middle", "back", "forward"},
 								"description": "click, drag: mouse button, default left.",
 							},
-							"text": map[string]interface{}{"type": "string", "description": "type: the text to type."},
+							"text": map[string]interface{}{"type": "string", "description": "type: the characters to type. Not for single keys: press Enter, Shift and other keys with hotkey."},
 							"keys": map[string]interface{}{
 								"type":        "array",
 								"items":       map[string]interface{}{"type": "string"},
-								"description": `hotkey: keys pressed together, modifiers first, e.g. ["ctrl","alt","delete"] or ["enter"].`,
+								"description": `hotkey: the keys to press together and then release, modifiers first. One key works too, including a modifier alone: ["shift"], ["enter"], ["ctrl","alt","delete"].`,
 							},
 							"direction": map[string]interface{}{
 								"type":        "string",
