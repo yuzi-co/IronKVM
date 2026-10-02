@@ -1575,7 +1575,7 @@ const id = {
         uninstallFailed: 'Pencopotan pemasangan gagal.',
         requiredTitle: 'PicoClaw tidak diinstal',
         requiredDescription: 'Instal PicoClaw sebelum memulai runtime PicoClaw.',
-        progressDescription: 'PicoClaw sedang diunduh dan diinstal.',
+        progressDescription: 'PicoClaw sedang diinstal.',
         stages: {
           preparing: 'Mempersiapkan',
           downloading: 'Mengunduh',

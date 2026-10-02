@@ -1555,7 +1555,7 @@ const ko = {
         uninstallFailed: '삭제에 실패했습니다.',
         requiredTitle: 'PicoClaw가 설치되지 않았습니다',
         requiredDescription: 'PicoClaw 런타임을 시작하기 전에 PicoClaw를 설치하세요.',
-        progressDescription: 'PicoClaw가 다운로드되고 설치되고 있습니다.',
+        progressDescription: 'PicoClaw가 설치되고 있습니다.',
         stages: {
           preparing: '준비 중',
           downloading: '다운로드 중',

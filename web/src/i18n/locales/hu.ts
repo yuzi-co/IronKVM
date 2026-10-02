@@ -1590,7 +1590,7 @@ const hu = {
         requiredTitle: 'PicoClaw nincs telepítve',
         requiredDescription:
           'Telepítse a PicoClaw alkalmazást a PicoClaw Runtime elindítása előtt.',
-        progressDescription: 'PicoClaw letöltése és telepítése folyamatban van.',
+        progressDescription: 'PicoClaw telepítése folyamatban van.',
         stages: {
           preparing: 'Felkészülés',
           downloading: 'Letöltés',

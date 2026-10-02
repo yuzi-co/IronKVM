@@ -1568,7 +1568,7 @@ const vi = {
         uninstallFailed: 'Gỡ cài đặt không thành công.',
         requiredTitle: 'PicoClaw chưa được cài đặt',
         requiredDescription: 'Cài đặt PicoClaw trước khi bắt đầu runtime PicoClaw.',
-        progressDescription: 'PicoClaw đang được tải xuống và cài đặt.',
+        progressDescription: 'PicoClaw đang được cài đặt.',
         stages: {
           preparing: 'Đang chuẩn bị',
           downloading: 'Đang tải xuống',

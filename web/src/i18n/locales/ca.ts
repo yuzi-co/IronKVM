@@ -1590,7 +1590,7 @@ const ca = {
         uninstallFailed: 'La desinstal·lació ha fallat.',
         requiredTitle: 'PicoClaw no està instal·lat',
         requiredDescription: "Instal·leu PicoClaw abans d'iniciar el temps d'execució de PicoClaw.",
-        progressDescription: "PicoClaw s'està baixant i instal·lant.",
+        progressDescription: "PicoClaw s'està instal·lant.",
         stages: {
           preparing: 'Preparant',
           downloading: "S'està baixant",

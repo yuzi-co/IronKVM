@@ -1599,7 +1599,7 @@ const es = {
         requiredTitle: 'PicoClaw no está instalado',
         requiredDescription:
           'Instala PicoClaw antes de iniciar el tiempo de ejecución de PicoClaw.',
-        progressDescription: 'PicoClaw se está descargando e instalando.',
+        progressDescription: 'PicoClaw se está instalando.',
         stages: {
           preparing: 'Preparando',
           downloading: 'Descargando',

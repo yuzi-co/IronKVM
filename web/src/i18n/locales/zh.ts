@@ -1506,7 +1506,7 @@ const zh = {
         uninstallFailed: '卸载失败。',
         requiredTitle: '未安装 PicoClaw',
         requiredDescription: '在启动 PicoClaw 运行时之前，需要先下载安装 PicoClaw。',
-        progressDescription: '正在下载并安装 PicoClaw。',
+        progressDescription: '正在安装 PicoClaw。',
         stages: {
           preparing: '准备中',
           downloading: '下载中',

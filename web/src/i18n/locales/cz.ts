@@ -1558,7 +1558,7 @@ const cz = {
         uninstallFailed: 'Odinstalace se nezdařila.',
         requiredTitle: 'PicoClaw není nainstalováno',
         requiredDescription: 'Nainstalujte PicoClaw před spuštěním běhového prostředí PicoClaw.',
-        progressDescription: 'PicoClaw se stahuje a instaluje.',
+        progressDescription: 'PicoClaw se instaluje.',
         stages: {
           preparing: 'Příprava',
           downloading: 'Stahování',

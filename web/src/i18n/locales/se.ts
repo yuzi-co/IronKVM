@@ -1571,7 +1571,7 @@ const se = {
         uninstallFailed: 'Avinstallationen misslyckades.',
         requiredTitle: 'PicoClaw är inte installerad',
         requiredDescription: 'Installera PicoClaw innan du startar PicoClaw runtime.',
-        progressDescription: 'PicoClaw laddas ner och installeras.',
+        progressDescription: 'PicoClaw installeras.',
         stages: {
           preparing: 'Förbereder',
           downloading: 'Laddar ner',

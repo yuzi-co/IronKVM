@@ -1576,7 +1576,7 @@ const ru = {
         uninstallFailed: 'Не удалось удалить.',
         requiredTitle: 'PicoClaw не установлен',
         requiredDescription: 'Установите PicoClaw перед запуском runtime PicoClaw.',
-        progressDescription: 'PicoClaw загружается и устанавливается.',
+        progressDescription: 'PicoClaw устанавливается.',
         stages: {
           preparing: 'Подготовка',
           downloading: 'Загрузка',

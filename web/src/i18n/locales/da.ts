@@ -1569,7 +1569,7 @@ const da = {
         uninstallFailed: 'Afinstallation mislykkedes.',
         requiredTitle: 'PicoClaw er ikke installeret',
         requiredDescription: 'Installer PicoClaw før start af PicoClaw runtime.',
-        progressDescription: 'PicoClaw bliver downloadet og installeret.',
+        progressDescription: 'PicoClaw bliver installeret.',
         stages: {
           preparing: 'Forberedelse',
           downloading: 'Downloader',

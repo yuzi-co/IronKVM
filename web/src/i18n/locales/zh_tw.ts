@@ -1502,7 +1502,7 @@ const zh_tw = {
         uninstallFailed: '解除安裝失敗。',
         requiredTitle: 'PicoClaw 未安裝',
         requiredDescription: '在啟動 PicoClaw Runtime 之前，請先安裝 PicoClaw。',
-        progressDescription: '正在下載並安裝 PicoClaw。',
+        progressDescription: '正在安裝 PicoClaw。',
         stages: {
           preparing: '準備中',
           downloading: '下載中',
