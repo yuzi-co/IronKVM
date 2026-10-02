@@ -116,3 +116,25 @@ func TestFailedReleaseIsReportedAndRetried(t *testing.T) {
 		t.Fatal("keys still recorded as held after a successful retry")
 	}
 }
+
+func TestEmptyTypePointsToHotkeyForKeys(t *testing.T) {
+	service, _, hid := newMCPActionTestService(t)
+
+	text := errorTextOf(t, callKVMActions(t, service, `{"actions":[{"action":"type","text":""}]}`))
+	if !strings.Contains(text, `type needs "text"`) || !strings.Contains(text, `{"action":"hotkey","keys":["shift"]}`) {
+		t.Fatalf("error = %q, want it to point a key press to hotkey", text)
+	}
+	if len(hid.keys) != 0 {
+		t.Fatal("an empty type action wrote keyboard reports")
+	}
+}
+
+func TestHotkeyPressesASingleModifier(t *testing.T) {
+	service, _, hid := newMCPActionTestService(t)
+
+	actionResultOf(t, callKVMActions(t, service, `{"actions":[{"action":"hotkey","keys":["shift"]}]}`))
+	if len(hid.keys) != 2 || hid.keys[0][0] == 0 || strings.Trim(string(hid.keys[0][1:]), "\x00") != "" ||
+		strings.Trim(string(hid.keys[1]), "\x00") != "" {
+		t.Fatalf("keyboard reports = %v, want Shift down then all keys up", hid.keys)
+	}
+}

@@ -307,7 +307,9 @@ func (s *Service) executeAction(ctx context.Context, action Action) (int, *Picoc
 	return 0, newPicoclawError(CodeInvalidAction, fmt.Sprintf(`unknown action %q; "action" must be one of click, move, type, hotkey, scroll, drag, wait`, action.Action))
 }
 
-const typeNeedsTextMessage = "type requires text"
+const typeNeedsTextMessage = `type needs "text", the characters to type. ` +
+	`To press a key or a key combination instead, including a single modifier such as Shift, use hotkey: ` +
+	`{"action":"hotkey","keys":["shift"]}, {"action":"hotkey","keys":["enter"]}, {"action":"hotkey","keys":["ctrl","c"]}`
 
 func toAbsoluteHidCoord(normalized float64) uint16 {
 	if normalized < 0 {
