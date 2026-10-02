@@ -4,47 +4,41 @@ import (
 	"testing"
 	"time"
 
+	"NanoKVM-Server/service/agent"
 	"NanoKVM-Server/service/controlmode"
 )
 
-func TestControlModeChangedPayloadIncludesControlMetadata(t *testing.T) {
+func TestControlModeChangedEventIncludesControlMetadata(t *testing.T) {
 	changedAt := time.Now().UTC()
-	payload := controlModeChangedPayload(controlmode.Status{
+	event := controlModeChangedEvent(controlmode.Status{
 		Mode:          controlmode.ModeMCP,
 		Transitioning: true,
 		LastError:     "switch failed",
 		ChangedAt:     changedAt,
 	}, "mcp_config")
 
-	if payload["mode"] != string(controlmode.ModeMCP) {
-		t.Fatalf("mode = %v, want %q", payload["mode"], controlmode.ModeMCP)
+	want := agent.ControlMode{
+		Mode:          string(controlmode.ModeMCP),
+		Transitioning: true,
+		CanControl:    false,
+		LastError:     "switch failed",
+		ChangedAt:     changedAt,
+		Source:        "mcp_config",
 	}
-	if payload["transitioning"] != true {
-		t.Fatalf("transitioning = %v, want true", payload["transitioning"])
-	}
-	if payload["can_control"] != false {
-		t.Fatalf("can_control = %v, want false", payload["can_control"])
-	}
-	if payload["last_error"] != "switch failed" {
-		t.Fatalf("last_error = %v, want switch failed", payload["last_error"])
-	}
-	if payload["changed_at"] != changedAt {
-		t.Fatalf("changed_at = %v, want %v", payload["changed_at"], changedAt)
-	}
-	if payload["source"] != "mcp_config" {
-		t.Fatalf("source = %v, want mcp_config", payload["source"])
+	if event.Type != agent.EventControlModeChanged || event.Control == nil || *event.Control != want {
+		t.Fatalf("event = %+v, want control %+v", event, want)
 	}
 }
 
-func TestControlModeChangedPayloadAllowsPicoclawControlWhenStable(t *testing.T) {
-	payload := controlModeChangedPayload(controlmode.Status{
+func TestControlModeChangedEventAllowsPicoclawControlWhenStable(t *testing.T) {
+	event := controlModeChangedEvent(controlmode.Status{
 		Mode: controlmode.ModePicoclaw,
 	}, "")
 
-	if payload["can_control"] != true {
-		t.Fatalf("can_control = %v, want true", payload["can_control"])
+	if !event.Control.CanControl {
+		t.Fatal("can_control = false, want true")
 	}
-	if _, ok := payload["source"]; ok {
-		t.Fatalf("source = %v, want omitted", payload["source"])
+	if event.Control.Source != "" {
+		t.Fatalf("source = %q, want empty", event.Control.Source)
 	}
 }

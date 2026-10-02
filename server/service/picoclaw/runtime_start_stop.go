@@ -11,8 +11,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	log "github.com/sirupsen/logrus"
 )
 
 func (s *Service) startRuntime() (string, string, *PicoclawError) {
@@ -67,7 +65,7 @@ func (s *Service) startRuntimeContext(ctx context.Context) (string, string, *Pic
 		})
 		return "", "", newPicoclawError(CodeRuntimeStartFailed, err.Error())
 	}
-	if err := ensurePicoclawStartupDefaults(); err != nil {
+	if err := applyPicoclawConfig(); err != nil {
 		s.runtime.Update(func(status *RuntimeStatus) {
 			status.Ready = false
 			status.Installed = true
@@ -77,11 +75,6 @@ func (s *Service) startRuntimeContext(ctx context.Context) (string, string, *Pic
 			status.CheckedAt = time.Now()
 		})
 		return "", "", newPicoclawError(CodeRuntimeStartFailed, err.Error())
-	}
-	// A stale AGENT.md only costs the agent newer instructions, so a failure
-	// here is logged and the runtime starts anyway.
-	if _, err := refreshPicoclawAgentProfile(); err != nil {
-		log.Warnf("picoclaw: failed to refresh the workspace AGENT.md: %v", err)
 	}
 	if err := s.detectGatewayPortConflict(); err != nil {
 		s.runtime.Update(func(status *RuntimeStatus) {

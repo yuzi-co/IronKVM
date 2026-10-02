@@ -36,8 +36,7 @@ export function createAssistantMessage(message: GatewayAssistantMessage): Picocl
     id: message.id,
     kind: 'assistant',
     text: message.text,
-    createdAt: Date.now(),
-    raw: message.raw
+    createdAt: Date.now()
   };
 }
 
@@ -47,8 +46,7 @@ export function createToolActionMessage(action: GatewayToolAction): PicoclawChat
     kind: 'tool_action',
     text: action.action,
     action: action.action,
-    createdAt: Date.now(),
-    raw: action.raw
+    createdAt: Date.now()
   };
 }
 

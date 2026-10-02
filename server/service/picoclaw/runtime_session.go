@@ -15,10 +15,7 @@ func (s *Service) ReleaseRuntimeSession(c *gin.Context) {
 		return
 	}
 
-	if session, ok := GetSessionManager().Get(sessionID); ok {
-		s.closeGatewaySession(session, websocket.CloseNormalClosure, "session released")
-	}
-	s.releaseCaptureLeasesForSession(sessionID)
+	s.chat.CloseSession(sessionID, websocket.CloseNormalClosure, "session released")
 
 	status := s.runtime.Get()
 	status.CurrentSession = s.lock.Owner()

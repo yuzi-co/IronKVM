@@ -74,19 +74,6 @@ function normalizeLiteralEmptyText(value: string): string {
   return trimmed;
 }
 
-function isThoughtMessage(raw: unknown): boolean {
-  if (!raw || typeof raw !== 'object') {
-    return false;
-  }
-
-  const payload = (raw as Record<string, unknown>).payload;
-  if (!payload || typeof payload !== 'object') {
-    return false;
-  }
-
-  return (payload as Record<string, unknown>).kind === 'thought';
-}
-
 export const Message = ({ message }: MessageProps) => {
   const { t } = useTranslation();
 
@@ -106,10 +93,7 @@ export const Message = ({ message }: MessageProps) => {
   }
 
   if (message.kind === 'tool_action') {
-    const toolText =
-      extractDisplayText(message.text) ||
-      extractDisplayText(message.action) ||
-      extractDisplayText(message.raw);
+    const toolText = extractDisplayText(message.text) || extractDisplayText(message.action);
 
     if (!toolText) {
       return null;
@@ -148,19 +132,6 @@ export const Message = ({ message }: MessageProps) => {
             src={`data:image/jpeg;base64,${message.imageBase64}`}
           />
         )}
-      </div>
-    );
-  }
-
-  if (message.kind === 'assistant' && isThoughtMessage(message.raw)) {
-    const thoughtText = extractDisplayText(message.text);
-    if (!thoughtText) {
-      return null;
-    }
-
-    return (
-      <div className="border-white/5 rounded-xl border bg-white/[0.02] px-3 py-2 text-xs text-neutral-400">
-        <MarkdownContent content={thoughtText} className="wrap-break-word" />
       </div>
     );
   }

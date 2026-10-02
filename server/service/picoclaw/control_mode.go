@@ -113,7 +113,7 @@ func (s *Service) PreserveRuntimeForChatOnly(source string) {
 	s.ensureDependencies()
 
 	status := s.runtime.Get()
-	if !status.Ready && len(GetSessionManager().Snapshot()) == 0 {
+	if !status.Ready && s.chat.SessionCount() == 0 {
 		return
 	}
 	s.setRuntimeIntentDesired(true, source)
@@ -145,10 +145,7 @@ func (s *Service) stopRuntimeAndCloseSessions(closeCode int, closeReason string)
 	}
 	s.ensureDependencies()
 	startedAt := time.Now()
-	sessions := GetSessionManager().Snapshot()
-	for _, session := range sessions {
-		s.closeGatewaySession(session, closeCode, closeReason)
-	}
+	sessionCount := s.chat.CloseAll(closeCode, closeReason)
 	closeElapsed := time.Since(startedAt)
 	if s.lock != nil {
 		s.lock.Release("")
@@ -157,7 +154,7 @@ func (s *Service) stopRuntimeAndCloseSessions(closeCode int, closeReason string)
 	stopStartedAt := time.Now()
 	if err := s.stopRuntimeAndVerify(false); err != nil {
 		log.WithFields(log.Fields{
-			"session_count":     len(sessions),
+			"session_count":     sessionCount,
 			"close_code":        closeCode,
 			"close_sessions_ms": closeElapsed.Milliseconds(),
 			"stop_runtime_ms":   time.Since(stopStartedAt).Milliseconds(),
@@ -167,7 +164,7 @@ func (s *Service) stopRuntimeAndCloseSessions(closeCode int, closeReason string)
 	}
 
 	log.WithFields(log.Fields{
-		"session_count":     len(sessions),
+		"session_count":     sessionCount,
 		"close_code":        closeCode,
 		"close_sessions_ms": closeElapsed.Milliseconds(),
 		"stop_runtime_ms":   time.Since(stopStartedAt).Milliseconds(),
@@ -182,19 +179,16 @@ func (s *Service) ReleaseControlSessions(closeCode int, closeReason string) int 
 	}
 	s.ensureDependencies()
 	startedAt := time.Now()
-	sessions := GetSessionManager().Snapshot()
-	for _, session := range sessions {
-		s.closeGatewaySession(session, closeCode, closeReason)
-	}
+	sessionCount := s.chat.CloseAll(closeCode, closeReason)
 	if s.lock != nil {
 		s.lock.Release("")
 	}
 	log.WithFields(log.Fields{
-		"session_count": len(sessions),
+		"session_count": sessionCount,
 		"close_code":    closeCode,
 		"elapsed_ms":    time.Since(startedAt).Milliseconds(),
 	}).Info("picoclaw gateway sessions closed for control release")
-	return len(sessions)
+	return sessionCount
 }
 
 func (s *Service) stopRuntimeAndVerify(forceStop bool) error {

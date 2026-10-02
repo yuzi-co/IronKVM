@@ -8,9 +8,8 @@ import (
 	"sync"
 	"time"
 
+	"NanoKVM-Server/service/agent"
 	"NanoKVM-Server/service/controlmode"
-
-	"github.com/gorilla/websocket"
 )
 
 type VisionReader interface {
@@ -37,11 +36,8 @@ type Service struct {
 	control            *controlmode.Manager
 	releaseHID         func() error
 	operations         *controlOperationTracker
-	acquireHDMILease   func() func()
 	acquireHDMIForRead func(context.Context) (func(), func() bool, error)
-	captureLeaseMu     sync.Mutex
-	captureLeases      map[string]func()
-	captureLeaseTimers map[string]*time.Timer
+	chat               ChatHub
 	pointer            pointerTracker
 	held               heldInput
 	runtimeLifecycleMu sync.Mutex
@@ -242,41 +238,26 @@ type cachedFrame struct {
 	capturedAt time.Time
 }
 
-type SessionState string
-
+// Close codes of the chat socket. They are the agent package's.
 const (
-	SessionStateCreated    SessionState = "created"
-	SessionStateConnecting SessionState = "connecting"
-	SessionStateActive     SessionState = "active"
-	SessionStateClosing    SessionState = "closing"
-	SessionStateClosed     SessionState = "closed"
+	CloseCodePicoclawLockHeld    = agent.CloseLockHeld
+	CloseCodeRuntimeUnavailable  = agent.CloseRuntimeUnavailable
+	CloseCodeAuthFailed          = agent.CloseAuthFailed
+	CloseCodePicoclawTakenOver   = agent.CloseTakenOver
+	CloseCodeUpstreamClosed      = agent.CloseUpstreamClosed
+	CloseCodeControlModeSwitched = agent.CloseControlModeSwitched
+	CloseCodeRuntimeStopped      = agent.CloseRuntimeStopped
 )
 
-const (
-	CloseCodePicoclawLockHeld    = 4001
-	CloseCodeRuntimeUnavailable  = 4002
-	CloseCodeAuthFailed          = 4003
-	CloseCodePicoclawTakenOver   = 4004
-	CloseCodeUpstreamClosed      = 4005
-	CloseCodeControlModeSwitched = 4006
-	CloseCodeRuntimeStopped      = 4007
-)
-
-type GatewaySession struct {
-	SessionID         string
-	State             SessionState
-	Downstream        *websocket.Conn
-	Upstream          *websocket.Conn
-	CreatedAt         time.Time
-	UpdatedAt         time.Time
-	closeOnce         sync.Once
-	upstreamWriteMu   sync.Mutex
-	downstreamWriteMu sync.Mutex
-}
-
-type SessionManager struct {
-	mu       sync.RWMutex
-	sessions map[string]*GatewaySession
+// ChatHub is the chat socket side the service reaches: the agent.Bridge.
+type ChatHub interface {
+	Publish(sessionID string, event agent.Event) error
+	Broadcast(event agent.Event)
+	Prompt(sessionID string, prompt agent.Prompt) error
+	IsActive(sessionID string) bool
+	CloseSession(sessionID string, closeCode int, reason string) bool
+	CloseAll(closeCode int, reason string) int
+	SessionCount() int
 }
 
 type LoadImageRequest struct {
