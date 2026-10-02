@@ -64,7 +64,8 @@ func (s *Service) updateTaskCaptureLease(source string, sessionID string, data [
 		ID      string `json:"id"`
 		Type    string `json:"type"`
 		Payload struct {
-			MaxRuntimeMS int `json:"max_runtime_ms"`
+			MaxRuntimeMS int      `json:"max_runtime_ms"`
+			RequestIDs   []string `json:"request_ids"`
 		} `json:"payload"`
 	}
 	if err := json.Unmarshal(data, &message); err != nil {
@@ -85,6 +86,16 @@ func (s *Service) updateTaskCaptureLease(source string, sessionID string, data [
 			return
 		}
 		s.releaseTaskCaptureLease(sessionID, message.ID)
+	case source == "upstream" && message.Type == "turn.done":
+		// The IronKVM PicoClaw build ends every turn with turn.done, naming
+		// the message.send requests the turn handled.
+		if len(message.Payload.RequestIDs) == 0 {
+			s.releaseCaptureLeasesForSession(sessionID)
+			return
+		}
+		for _, id := range message.Payload.RequestIDs {
+			s.releaseTaskCaptureLease(sessionID, id)
+		}
 	case source == "upstream" && (message.Type == "typing.stop" || message.Type == "message.create" || message.Type == "message.update" || message.Type == "error"):
 		if message.ID == "" {
 			s.releaseCaptureLeasesForSession(sessionID)
