@@ -41,6 +41,33 @@ var HWPcie = Hardware{
 	GPIOHDDLed:   "",
 }
 
+// GPIOLineName is the device tree name of the line whose sysfs path is p, or
+// "" when p is none of this board's lines.
+//
+// The sysfs paths above exist on the vendor kernel only. The mainline kernel
+// has no sysfs GPIO interface, and its board device tree names each control
+// line in gpio-line-names instead, with the function names of the pin map
+// files in ironkvm-dist (devices/<device>/pins). The server falls back to the
+// line of that name when the sysfs path is absent; see service/vm/gpio.go.
+// gates/check-pin-map.sh in ironkvm-dist maps the same four fields to the same
+// four names.
+func (h Hardware) GPIOLineName(p string) string {
+	if p == "" {
+		return ""
+	}
+	switch p {
+	case h.GPIOPower:
+		return "power"
+	case h.GPIOReset:
+		return "reset"
+	case h.GPIOPowerLED:
+		return "led-power"
+	case h.GPIOHDDLed:
+		return "led-hdd"
+	}
+	return ""
+}
+
 func (h HWVersion) String() string {
 	switch h {
 	case HWVersionAlpha:
