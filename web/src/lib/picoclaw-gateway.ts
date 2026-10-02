@@ -1,10 +1,4 @@
-import {
-  picoAssistantKind,
-  picoError,
-  picoMessageId,
-  picoTurnDone,
-  type PicoTurnDone
-} from '@/lib/pico-message.ts';
+import { createAgentEventHandler, type AgentCommand, type AgentEvent } from '@/lib/agent-events.ts';
 import { clearPicoclawSessionId, setPicoclawSessionId } from '@/lib/picoclaw-storage.ts';
 import { getBaseUrl } from '@/lib/service.ts';
 
@@ -48,7 +42,6 @@ export type GatewayControlStatus = {
 export type GatewayAssistantMessage = {
   id: string;
   text: string;
-  raw: Record<string, unknown>;
 };
 
 export type GatewayToolAction = {
@@ -56,15 +49,15 @@ export type GatewayToolAction = {
   action: string;
   x?: number;
   y?: number;
-  raw: Record<string, unknown>;
 };
 
 export type GatewayObservation = {
   id: string;
   text?: string;
   imageBase64?: string;
-  raw: Record<string, unknown>;
 };
+
+export type GatewayTurnDone = Extract<AgentEvent, { type: 'turn_done' }>;
 
 export type GatewayError = {
   code: string;
@@ -88,7 +81,7 @@ type GatewayEventMap = {
   error: GatewayError;
   close: GatewayClose;
   control_mode_changed: GatewayControlStatus;
-  turn_done: PicoTurnDone;
+  turn_done: GatewayTurnDone;
 };
 
 type EventName = keyof GatewayEventMap;
@@ -138,9 +131,9 @@ class PicoClawGateway {
   private reconnectAttempts = 0;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private explicitClose = false;
-  // Set once PicoClaw has sent a turn.done. From then on only turn.done ends a
-  // turn; before, a reply does, as it did with builds that lack the event.
-  private sendsTurnDone = false;
+  // One handler for the gateway's whole life, as before: once the agent has
+  // sent a turn_done, only turn_done ends a turn, also after a reconnect.
+  private handleMessage = this.createMessageHandler();
 
   public connect(options: ConnectOptions = {}) {
     if (options.sessionId) {
@@ -266,18 +259,13 @@ class PicoClawGateway {
       this.setRunState('busy');
     }
 
-    this.ws.send(
-      JSON.stringify({
-        id,
-        session_id: this.sessionId,
-        type: 'message.send',
-        payload: {
-          content: trimmed,
-          max_steps: options.maxSteps,
-          max_runtime_ms: options.maxRuntimeMs
-        }
-      })
-    );
+    this.send({
+      type: 'session/prompt',
+      requestId: id,
+      text: trimmed,
+      maxSteps: options.maxSteps,
+      maxRuntimeMs: options.maxRuntimeMs
+    });
 
     return { id, sessionId: this.sessionId };
   }
@@ -287,13 +275,7 @@ class PicoClawGateway {
       return false;
     }
 
-    this.ws.send(
-      JSON.stringify({
-        type: 'message.cancel',
-        session_id: this.sessionId,
-        payload: {}
-      })
-    );
+    this.send({ type: 'session/cancel' });
     return true;
   }
 
@@ -348,110 +330,38 @@ class PicoClawGateway {
     this.emit('run_state', state);
   }
 
-  private handleMessage(rawData: string | ArrayBuffer | Blob) {
-    if (typeof rawData !== 'string') {
-      return;
-    }
+  private send(command: AgentCommand) {
+    this.ws?.send(JSON.stringify(command));
+  }
 
-    let message: Record<string, unknown>;
-    try {
-      message = JSON.parse(rawData) as Record<string, unknown>;
-    } catch {
-      this.emit('error', {
-        code: 'INVALID_MESSAGE',
-        message: 'Failed to parse gateway message',
-        raw: rawData
-      });
-      return;
-    }
-
-    const type = String(message.type || '');
-    if (type === 'typing.start') {
-      this.setRunState('busy');
-      return;
-    }
-    if (type === 'typing.stop') {
-      return;
-    }
-    if (type === 'pong') {
-      return;
-    }
-    if (type === 'error') {
-      const error = picoError(message);
-      if (!error.requestScoped) {
-        this.setTransportState('error');
-      }
-      this.setRunState('idle');
-      this.emit('error', { code: error.code, message: error.message, raw: message });
-      return;
-    }
-    const turnDone = picoTurnDone(message);
-    if (turnDone) {
-      this.sendsTurnDone = true;
-      this.setRunState('idle');
-      this.emit('turn_done', turnDone);
-      return;
-    }
-    if (type === 'control.mode_changed') {
-      const payload = (message.payload || {}) as Record<string, unknown>;
-      const mode = String(payload.mode || 'off');
-      if (mode === 'off' || mode === 'mcp' || mode === 'picoclaw') {
-        this.emit('control_mode_changed', {
-          mode,
-          transitioning: payload.transitioning === true,
-          can_control: payload.can_control === true,
-          last_error: typeof payload.last_error === 'string' ? payload.last_error : undefined,
-          changed_at: typeof payload.changed_at === 'string' ? payload.changed_at : undefined,
-          source: typeof payload.source === 'string' ? payload.source : undefined
-        });
-      }
-      return;
-    }
-    if (type === 'message.create' || type === 'message.update') {
-      const kind = picoAssistantKind(message);
-      if (kind === 'hidden') {
-        return;
-      }
-      if (kind === 'reply' && !this.sendsTurnDone) {
-        this.setRunState('idle');
-      }
-      this.emit('assistant_message', {
-        id: picoMessageId(message) ?? generateUUIDv4(),
-        text: extractText(message),
-        raw: message
-      });
-      return;
-    }
-    if (type === 'message.delete') {
-      const id = picoMessageId(message);
-      if (id) {
-        this.emit('assistant_message_delete', { id });
-      }
-      return;
-    }
-
-    const imageBase64 = extractImageBase64(message);
-    if (imageBase64) {
-      this.emit('observation', {
-        id: String(message.id || generateUUIDv4()),
-        text: extractText(message),
-        imageBase64,
-        raw: message
-      });
-      return;
-    }
-
-    const action = extractAction(message);
-    if (action) {
-      this.emit('tool_action', {
-        id: String(message.id || generateUUIDv4()),
-        action: action.action,
-        x: action.x,
-        y: action.y,
-        raw: message
-      });
-      return;
-    }
+  private createMessageHandler() {
+    return createAgentEventHandler(
+      {
+        runState: (state) => this.setRunState(state),
+        transportError: () => this.setTransportState('error'),
+        assistantMessage: (message) => this.emit('assistant_message', message),
+        assistantMessageDelete: (id) => this.emit('assistant_message_delete', { id }),
+        toolAction: (action) => this.emit('tool_action', action),
+        observation: (observation) => this.emit('observation', observation),
+        error: (error) => this.emit('error', error),
+        turnDone: (done) => this.emit('turn_done', done),
+        controlModeChanged: (control) => {
+          const mode = control.mode;
+          if (mode !== 'off' && mode !== 'mcp' && mode !== 'picoclaw') {
+            return;
+          }
+          this.emit('control_mode_changed', {
+            mode,
+            transitioning: control.transitioning,
+            can_control: control.canControl,
+            last_error: control.lastError,
+            changed_at: control.changedAt,
+            source: control.source
+          });
+        }
+      },
+      generateUUIDv4
+    );
   }
 
   private emit<T extends EventName>(eventName: T, payload: GatewayEventMap[T]) {
@@ -464,78 +374,6 @@ class PicoClawGateway {
       (listener as Listener<T>)(payload);
     });
   }
-}
-
-function extractText(message: Record<string, unknown>) {
-  const payload = (message.payload || {}) as Record<string, unknown>;
-  const content = payload.content ?? message.content ?? payload.text ?? message.text;
-
-  if (typeof content === 'string') {
-    return normalizeLiteralEmptyText(content);
-  }
-  if (Array.isArray(content)) {
-    return content
-      .map((item) => {
-        if (typeof item === 'string') {
-          return normalizeLiteralEmptyText(item);
-        }
-        if (item && typeof item === 'object' && 'text' in item) {
-          return normalizeLiteralEmptyText(String((item as Record<string, unknown>).text || ''));
-        }
-        return '';
-      })
-      .filter(Boolean)
-      .join('\n')
-      .trim();
-  }
-
-  return '';
-}
-
-function extractImageBase64(message: Record<string, unknown>) {
-  const payload = (message.payload || {}) as Record<string, unknown>;
-  const data = (payload.data || message.data || {}) as Record<string, unknown>;
-
-  const value = data.image_base64 || payload.image_base64 || message.image_base64;
-
-  return typeof value === 'string' ? value : undefined;
-}
-
-function extractAction(message: Record<string, unknown>) {
-  const payload = (message.payload || {}) as Record<string, unknown>;
-  const actionValue = payload.action || message.action || payload.tool_name || message.tool_name;
-
-  if (typeof actionValue !== 'string') {
-    return null;
-  }
-
-  const action = normalizeLiteralEmptyText(actionValue);
-  if (!action) {
-    return null;
-  }
-
-  const x = typeof payload.x === 'number' ? payload.x : undefined;
-  const y = typeof payload.y === 'number' ? payload.y : undefined;
-
-  return {
-    action,
-    x,
-    y
-  };
-}
-
-function normalizeLiteralEmptyText(value: string) {
-  const trimmed = value.trim();
-  if (!trimmed) {
-    return '';
-  }
-
-  const normalized = trimmed.toLowerCase();
-  if (normalized === 'null' || normalized === 'undefined') {
-    return '';
-  }
-
-  return trimmed;
 }
 
 export const picoclawGateway = new PicoClawGateway();
