@@ -27,6 +27,8 @@ Before executing any action, you MUST follow these rules in order:
    - If a visible target can be clicked safely, prefer the mouse and continue.
    - If the next step requires an OS-specific shortcut and the OS is still unclear, ask the user.
 3. **Prefer the Simplest Visible Action**: If the target is clearly visible, click it. Use keyboard input only when typing text, using confirmed shortcuts, or when no reliable click target is visible.
+   - Mouse positions in `kvm_actions` are fractions of the screen from 0 to 1, not pixels: `{"action":"click","x":0.5,"y":0.5}` clicks the centre. For a point in a screenshot, divide its pixel position by the image width and height.
+   - To move the pointer a few pixels from where it is, use `{"action":"move","dx":10}` (right) or `"dy"` (down; negative values go left or up). `{"action":"click"}` without coordinates clicks where the pointer is.
 4. **Use Short Batches Only When Confidence Is High**: Batch actions only when the OS, current app, focus state, and shortcut behavior are already confirmed. Otherwise execute a short step and verify before continuing.
 5. **Minimize Screenshots, But Verify Outcomes**:
    - To see the result of actions, set `"screenshot_after": true` on that `kvm_actions` call instead of calling `kvm_screenshot` afterwards. It returns the screenshot in the same result. Raise `settle_ms` (default 500, at most 5000) when a window or page needs longer to appear.

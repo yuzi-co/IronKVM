@@ -51,33 +51,78 @@ var mcpToolDefinitions = []map[string]interface{}{
 		},
 	},
 	{
-		"name":        "kvm_actions",
-		"description": "Send one or more HID actions (click, type, hotkey, scroll, drag, move, wait) to the downstream remote host. Use normalized [0,1] coordinates for mouse actions. Set screenshot_after to get a screenshot of the result in the same call.",
+		"name": "kvm_actions",
+		"description": "Send mouse and keyboard actions to the downstream remote host, in order. " +
+			"Mouse positions are fractions of the screen from 0 to 1, not pixels: x=0 is the left edge, x=1 the right edge, y=0 the top, y=1 the bottom. " +
+			"For a point seen in a screenshot, divide its pixel position by the image width and height (pixel 480,270 in a 960x540 image is x=0.5, y=0.5). " +
+			"To move the pointer by a number of screen pixels from where it is, use move with dx/dy. " +
+			`Examples: {"action":"click","x":0.5,"y":0.5} clicks the centre; {"action":"move","x":0.1,"y":0.9} goes near the bottom-left corner; ` +
+			`{"action":"move","dx":10} moves 10 pixels right; {"action":"move","dy":-20} moves 20 pixels up; {"action":"click"} clicks where the pointer is; ` +
+			`{"action":"type","text":"hello"}; {"action":"hotkey","keys":["ctrl","c"]}; {"action":"scroll","direction":"down","amount":3}; ` +
+			`{"action":"drag","from":{"x":0.2,"y":0.2},"to":{"x":0.6,"y":0.2}}; {"action":"wait","duration_ms":1000}. ` +
+			"The result reports where the pointer ended up. Set screenshot_after to get a screenshot of the result in the same call.",
 		"inputSchema": map[string]interface{}{
 			"type": "object",
 			"properties": map[string]interface{}{
 				"actions": map[string]interface{}{
 					"type":        "array",
-					"description": "Array of action objects. Each requires an 'action' field (click, move, type, hotkey, scroll, drag, wait).",
+					"description": "The actions to run, in order. Each object needs an \"action\" field: click, move, type, hotkey, scroll, drag or wait.",
 					"items": map[string]interface{}{
 						"type": "object",
 						"properties": map[string]interface{}{
-							"action":    map[string]interface{}{"type": "string"},
-							"x":         map[string]interface{}{"type": "number"},
-							"y":         map[string]interface{}{"type": "number"},
-							"button":    map[string]interface{}{"type": "string"},
-							"text":      map[string]interface{}{"type": "string"},
-							"keys":      map[string]interface{}{"type": "array", "items": map[string]interface{}{"type": "string"}},
-							"direction": map[string]interface{}{"type": "string"},
-							"amount":    map[string]interface{}{"type": "integer"},
+							"action": map[string]interface{}{
+								"type": "string",
+								"enum": []string{"click", "move", "type", "hotkey", "scroll", "drag", "wait"},
+							},
+							"x": map[string]interface{}{
+								"type": "number", "minimum": 0, "maximum": 1,
+								"description": "click, move, scroll: horizontal position as a fraction of the screen width, 0 = left edge, 1 = right edge. Not pixels.",
+							},
+							"y": map[string]interface{}{
+								"type": "number", "minimum": 0, "maximum": 1,
+								"description": "click, move, scroll: vertical position as a fraction of the screen height, 0 = top edge, 1 = bottom edge. Not pixels.",
+							},
+							"dx": map[string]interface{}{
+								"type":        "number",
+								"description": "move only, instead of x/y: screen pixels to move right from the current pointer position (negative = left).",
+							},
+							"dy": map[string]interface{}{
+								"type":        "number",
+								"description": "move only, instead of x/y: screen pixels to move down from the current pointer position (negative = up).",
+							},
+							"button": map[string]interface{}{
+								"type":        "string",
+								"enum":        []string{"left", "right", "middle", "back", "forward"},
+								"description": "click, drag: mouse button, default left.",
+							},
+							"text": map[string]interface{}{"type": "string", "description": "type: the text to type."},
+							"keys": map[string]interface{}{
+								"type":        "array",
+								"items":       map[string]interface{}{"type": "string"},
+								"description": `hotkey: keys pressed together, modifiers first, e.g. ["ctrl","alt","delete"] or ["enter"].`,
+							},
+							"direction": map[string]interface{}{
+								"type":        "string",
+								"enum":        []string{"up", "down"},
+								"description": "scroll: direction, default up.",
+							},
+							"amount": map[string]interface{}{"type": "integer", "minimum": 1, "description": "scroll: number of wheel steps, default 1."},
 							"duration_ms": map[string]interface{}{
 								"type":        "integer",
 								"minimum":     0,
 								"maximum":     maxWaitDurationMS,
-								"description": "Wait duration in milliseconds, up to 30000",
+								"description": "wait: milliseconds to wait, up to 30000.",
 							},
-							"from": map[string]interface{}{"type": "object", "properties": map[string]interface{}{"x": map[string]interface{}{"type": "number"}, "y": map[string]interface{}{"type": "number"}}},
-							"to":   map[string]interface{}{"type": "object", "properties": map[string]interface{}{"x": map[string]interface{}{"type": "number"}, "y": map[string]interface{}{"type": "number"}}},
+							"from": map[string]interface{}{
+								"type":        "object",
+								"description": "drag: start point, with x and y as fractions from 0 to 1.",
+								"properties":  map[string]interface{}{"x": map[string]interface{}{"type": "number"}, "y": map[string]interface{}{"type": "number"}},
+							},
+							"to": map[string]interface{}{
+								"type":        "object",
+								"description": "drag: end point, with x and y as fractions from 0 to 1.",
+								"properties":  map[string]interface{}{"x": map[string]interface{}{"type": "number"}, "y": map[string]interface{}{"type": "number"}},
+							},
 						},
 						"required": []string{"action"},
 					},
@@ -328,7 +373,7 @@ func (s *Service) mcpActions(req jsonRPCRequest, args json.RawMessage, c *gin.Co
 	ctx := c.Request.Context()
 	result, err := s.executeActions(ctx, sessionID, params.Actions)
 	if err != nil {
-		return mcpToolError(req, err.Message)
+		return mcpToolError(req, describeActionError(err, params.Actions, args))
 	}
 
 	resultJSON, _ := json.Marshal(result)

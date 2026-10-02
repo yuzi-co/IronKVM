@@ -120,6 +120,7 @@ func (s *Service) CancelActiveControlOperations() int {
 		return 0
 	}
 	count := s.operations.cancelAll(errControlModeSwitch)
+	s.pointer.forget()
 	log.WithFields(log.Fields{
 		"active_operations": count,
 	}).Info("picoclaw control operations canceled for control mode switch")

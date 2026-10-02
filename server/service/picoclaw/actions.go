@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"math"
 	"strings"
 	"time"
@@ -43,6 +44,7 @@ func (s *Service) Actions(c *gin.Context) {
 		return
 	}
 	if releaseAfter {
+		s.pointer.forget()
 		defer s.lock.Release(sessionID)
 	}
 
@@ -103,9 +105,14 @@ func (s *Service) executeActions(ctx context.Context, sessionID string, actions 
 			contextErr.Index = &idx
 			return ActionResult{}, contextErr
 		}
-		if lockErr := s.lock.Ensure(sessionID); lockErr != nil {
+		acquired, lockErr := s.lock.acquire(sessionID)
+		if lockErr != nil {
 			lockErr.Index = &idx
 			return ActionResult{}, lockErr
+		}
+		if acquired {
+			// Someone else may have moved the pointer while nobody held the lock.
+			s.pointer.forget()
 		}
 
 		writes, execErr := s.executeAction(ctx, action)
@@ -121,6 +128,7 @@ func (s *Service) executeActions(ctx context.Context, sessionID string, actions 
 		DurationMs:      time.Since(startedAt).Milliseconds(),
 		HIDWrites:       totalWrites,
 		ExecutedActions: len(actions),
+		Pointer:         s.pointerPosition(),
 	}
 	if len(actions) > 1 {
 		result.Action = "batch"
@@ -136,7 +144,7 @@ func (s *Service) executeAction(ctx context.Context, action Action) (int, *Picoc
 
 	switch strings.ToLower(strings.TrimSpace(action.Action)) {
 	case "click":
-		x, y, err := normalizedPoint(action.X, action.Y)
+		x, y, err := s.clickTarget(action)
 		if err != nil {
 			return 0, err
 		}
@@ -155,7 +163,7 @@ func (s *Service) executeAction(ctx context.Context, action Action) (int, *Picoc
 		return writes, nil
 
 	case "move":
-		x, y, err := normalizedPoint(action.X, action.Y)
+		x, y, err := s.moveTarget(action)
 		if err != nil {
 			return 0, err
 		}
@@ -174,11 +182,11 @@ func (s *Service) executeAction(ctx context.Context, action Action) (int, *Picoc
 		return 0, nil
 
 	case "drag":
-		fromX, fromY, err := normalizedNestedPoint(action.From)
+		fromX, fromY, err := normalizedNestedPoint("drag \"from\"", action.From)
 		if err != nil {
 			return 0, err
 		}
-		toX, toY, err := normalizedNestedPoint(action.To)
+		toX, toY, err := normalizedNestedPoint("drag \"to\"", action.To)
 		if err != nil {
 			return 0, err
 		}
@@ -203,10 +211,14 @@ func (s *Service) executeAction(ctx context.Context, action Action) (int, *Picoc
 		return writes, nil
 
 	case "scroll":
-		x, y := 0.5, 0.5
+		// Scroll where the pointer is, or at the centre when that is unknown.
+		x, y, known := s.pointer.get()
+		if !known {
+			x, y = 0.5, 0.5
+		}
 		if action.X != nil || action.Y != nil {
 			var err *PicoclawError
-			x, y, err = normalizedPoint(action.X, action.Y)
+			x, y, err = normalizedPointFor("scroll", action.X, action.Y)
 			if err != nil {
 				return 0, err
 			}
@@ -280,7 +292,7 @@ func (s *Service) executeAction(ctx context.Context, action Action) (int, *Picoc
 		return writes, nil
 	}
 
-	return 0, newPicoclawError(CodeInvalidAction, "unknown or invalid action")
+	return 0, newPicoclawError(CodeInvalidAction, fmt.Sprintf(`unknown action %q; "action" must be one of click, move, type, hotkey, scroll, drag, wait`, action.Action))
 }
 
 func toAbsoluteHidCoord(normalized float64) uint16 {
@@ -314,6 +326,7 @@ func (s *Service) sendMouseMoveWithButton(x float64, y float64, buttons byte, wh
 		byte(int8(wheel)),
 	}
 	s.hid.WriteHid2(report)
+	s.pointer.set(clampUnit(x), clampUnit(y))
 	return 1
 }
 
@@ -322,21 +335,25 @@ func (s *Service) sendKeyboardReport(report []byte) int {
 	return 1
 }
 
-func normalizedPoint(x *float64, y *float64) (float64, float64, *PicoclawError) {
-	if x == nil || y == nil {
-		return 0, 0, newPicoclawError(CodeInvalidAction, "action requires x and y")
+func normalizedNestedPoint(name string, point *Point) (float64, float64, *PicoclawError) {
+	if point == nil {
+		return 0, 0, newPicoclawError(CodeInvalidAction, name+` needs an object with "x" and "y", e.g. {"x":0.2,"y":0.3}. `+coordinateHelp)
 	}
-	if *x < 0 || *x > 1 || *y < 0 || *y > 1 {
-		return 0, 0, newPicoclawError(CodeInvalidAction, "coordinates must be within [0,1]")
-	}
-	return *x, *y, nil
+	return normalizedPointFor(name, point.X, point.Y)
 }
 
-func normalizedNestedPoint(point *Point) (float64, float64, *PicoclawError) {
-	if point == nil {
-		return 0, 0, newPicoclawError(CodeInvalidAction, "action requires point coordinates")
+// clickTarget resolves a click to a point: the given "x" and "y", or where
+// the pointer is when the click has no coordinates.
+func (s *Service) clickTarget(action Action) (float64, float64, *PicoclawError) {
+	if action.DX != nil || action.DY != nil {
+		return 0, 0, newPicoclawError(CodeInvalidAction, `click does not take "dx"/"dy". Move with "dx"/"dy" first, then click without coordinates to click where the pointer is, or click with "x" and "y". `+coordinateHelp)
 	}
-	return normalizedPoint(point.X, point.Y)
+	if action.X == nil && action.Y == nil {
+		if x, y, known := s.pointer.get(); known {
+			return x, y, nil
+		}
+	}
+	return normalizedPointFor("click", action.X, action.Y)
 }
 
 func mouseButton(button string) (byte, *PicoclawError) {
