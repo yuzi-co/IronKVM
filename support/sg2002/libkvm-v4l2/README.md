@@ -49,9 +49,9 @@ from "nothing captured" before a pipeline is up.
 | `kvmv_read_img` | Type 1 as above. Type 0 (MJPEG) answers `-2`: see below. |
 | `free_kvmv_data`, `free_all_kvmv_data` | As the vendor library: four reusable slots, a pointer stays valid until freed. |
 | `set_h264_gop` | `V4L2_CID_MPEG_VIDEO_GOP_SIZE` at runtime, plus a forced keyframe, because the vendor library rebuilds its encoder here and the server relies on the next frame being a keyframe. |
-| `set_h264_fps` | `VIDIOC_S_PARM` on the encoder's OUTPUT queue at runtime; returns early when unchanged. |
+| `set_h264_fps` | `VIDIOC_S_PARM` on the encoder's OUTPUT queue at runtime; returns early when unchanged. The rate given is the lower of this and `set_capture_fps`, or the measured delivery rate when frames arrive more than 10% slower (see Known issues). |
 | bitrate argument | `V4L2_CID_MPEG_VIDEO_BITRATE` (kbit/s x 1000) at runtime. |
-| `set_capture_fps` | Recorded only. The capture node has no frame interval control. Unread frames cost their DMA and nothing else. |
+| `set_capture_fps` | The capture node has no frame interval control; unread frames cost their DMA and nothing else. Caps the rate the encoder is told, since frames cannot reach it faster. |
 | `set_frame_detact` | Recorded only. Frame detection applies to MJPEG. |
 | `set_venc_auto_recyc` | Recorded only. There is one encoder. |
 | `kvmv_hdmi_control` | Stops and starts capture in software on every board: `0` tears the pipeline down and reads answer `-1`; `1` allows capture again. Answers `0`. The receiver is not powered down (the vendor library does that through a GPIO on the PCIe board only, and answers `-1` elsewhere). |
@@ -117,7 +117,7 @@ has read for 10 s.
 
 | Variable | Default | |
 |----------|---------|---|
-| `KVMV_DEBUG` | off | Debug logging to stderr, including the measured output rate every 10 s. |
+| `KVMV_DEBUG` | off | Debug logging to stderr, including the measured output rate, the rate the encoder was told and the per-stage time of a read every 10 s. |
 | `KVMV_CAPTURE_DEV`, `KVMV_SCALER_DEV`, `KVMV_ENCODER_DEV`, `KVMV_SUBDEV` | discovered | Override a node. |
 | `KVMV_CAPTURE_BUFFERS` | 2 | Capture queue depth (4 MB each at 1080p UYVY). |
 | `KVMV_MID_BUFFERS` | 2 | NV12 buffers between scaler and encoder. |
@@ -132,8 +132,19 @@ has read for 10 s.
   target.
 - Only 1920x1080 sources: the capture driver's DMA geometry is fixed. Downscaling for the stream
   works (the VPSS does it); other HDMI modes answer `-6`.
-- Each read waits for the scaler and the encoder in turn, so it takes one encode time (about
-  20 ms at 1080p, judging by the bridge's 51 fps) plus the age of the newest captured frame.
+- Each read waits for the capture, the scaler and the encoder in turn; nothing overlaps, unlike
+  the free-running bridge. A read costs the capture wait plus one scale plus one encode plus the
+  copy out. With `KVMV_DEBUG=1` the library logs the average of each every 10 s ("per frame:
+  capture wait, scale, encode, copy"), which is the measurement to take before pipelining.
+- The encoder's bitstream buffers come from the Coda's no-map `shared-dma-pool`, so user space
+  maps them uncached. The library copies each access unit out once, in 8-byte loads, and parses
+  the copy. Before this it scanned the mapping byte by byte twice and then copied it, one DRAM
+  round trip per byte each time, which the first board run (15.2 fps for 30 asked) paid on every
+  frame.
+- The encoder's frame rate (`VIDIOC_S_PARM`) follows what is delivered. With rate control on
+  the Coda budgets bitrate / rate per frame, so telling it 30 while 15 arrive doubles every
+  frame's share. The library tells it the lower of `set_h264_fps` and `set_capture_fps`, and
+  the measured delivery rate (3 s window) when that falls more than 10% short.
 
 ## Build and test
 

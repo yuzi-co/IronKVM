@@ -930,15 +930,22 @@ static enum kvmv_pipe_status newest_capture(struct kvmv_pipe *p,
 	}
 }
 
-enum kvmv_pipe_status kvmv_pipe_encode(struct kvmv_pipe *p,
-				       unsigned int timeout_ms,
-				       struct kvmv_encoded *out)
+static uint64_t now_us(void)
+{
+	struct timespec ts;
+
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	return (uint64_t)ts.tv_sec * 1000000U + (uint64_t)ts.tv_nsec / 1000U;
+}
+
+enum kvmv_pipe_status kvmv_pipe_scale(struct kvmv_pipe *p,
+				      unsigned int timeout_ms, unsigned int *mid)
 {
 	enum kvmv_pipe_status status;
 	struct v4l2_buffer buf;
 	unsigned int ci, mi;
+	uint64_t t0, t1;
 
-	memset(out, 0, sizeof(*out));
 	if (!p->running)
 		return fail_msg(p, "pipeline not running"), KVMV_PIPE_ERROR;
 	if (source_changed(p->cap_fd)) {
@@ -946,9 +953,12 @@ enum kvmv_pipe_status kvmv_pipe_encode(struct kvmv_pipe *p,
 		return KVMV_PIPE_SOURCE_CHANGED;
 	}
 
+	t0 = now_us();
 	status = newest_capture(p, timeout_ms, &ci);
 	if (status != KVMV_PIPE_OK)
 		return status;
+	t1 = now_us();
+	p->times.capture_us += t1 - t0;
 
 	/* Scale: the capture buffer in, a middle buffer out. */
 	mi = p->next_mid;
@@ -971,8 +981,21 @@ enum kvmv_pipe_status kvmv_pipe_encode(struct kvmv_pipe *p,
 	if (qbuf(p->cap_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, V4L2_MEMORY_MMAP,
 		 buf.index, -1, 0))
 		return fail(p, "capture requeue"), KVMV_PIPE_ERROR;
+	p->times.scale_us += now_us() - t1;
+	*mid = mi;
+	return KVMV_PIPE_OK;
+}
 
-	/* Encode the middle buffer. */
+enum kvmv_pipe_status kvmv_pipe_encode_mid(struct kvmv_pipe *p,
+					   unsigned int mi,
+					   struct kvmv_encoded *out)
+{
+	struct v4l2_buffer buf;
+	uint64_t t0 = now_us();
+
+	memset(out, 0, sizeof(*out));
+	if (!p->running || mi >= p->mid_count)
+		return fail_msg(p, "no scaled picture to encode"), KVMV_PIPE_ERROR;
 	if (qbuf(p->enc_fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, V4L2_MEMORY_DMABUF, mi,
 		 p->mid[mi].fd, p->enc_out_fmt.sizeimage))
 		return fail(p, "encoder OUTPUT QBUF"), KVMV_PIPE_ERROR;
@@ -997,7 +1020,94 @@ enum kvmv_pipe_status kvmv_pipe_encode(struct kvmv_pipe *p,
 		return KVMV_PIPE_ERROR;
 	}
 	out->data = p->bs[out->index].addr;
+	p->times.encode_us += now_us() - t0;
+	p->times.frames++;
 	return KVMV_PIPE_OK;
+}
+
+enum kvmv_pipe_status kvmv_pipe_encode(struct kvmv_pipe *p,
+				       unsigned int timeout_ms,
+				       struct kvmv_encoded *out)
+{
+	enum kvmv_pipe_status status;
+	unsigned int mi;
+
+	memset(out, 0, sizeof(*out));
+	status = kvmv_pipe_scale(p, timeout_ms, &mi);
+	if (status != KVMV_PIPE_OK)
+		return status;
+	return kvmv_pipe_encode_mid(p, mi, out);
+}
+
+int kvmv_pipe_map_mid(struct kvmv_pipe *p, unsigned int mi,
+		      struct kvmv_nv12 *image)
+{
+	size_t luma;
+	void *map;
+
+	memset(image, 0, sizeof(*image));
+	image->fd = -1;
+	if (!p->running || mi >= p->mid_count)
+		return fail_msg(p, "no scaled picture to map");
+	luma = (size_t)p->enc_out_fmt.bytesperline * p->enc_out_fmt.height;
+	if (luma * 3 / 2 > p->mid[mi].length)
+		return fail_msg(p, "NV12 surface %zu exceeds its buffer %zu",
+				luma * 3 / 2, p->mid[mi].length);
+	map = mmap(NULL, p->mid[mi].length, PROT_READ, MAP_SHARED,
+		   p->mid[mi].fd, 0);
+	if (map == MAP_FAILED)
+		return fail(p, "mmap middle buffer");
+	sync_dmabuf(p->mid[mi].fd, DMA_BUF_SYNC_START | DMA_BUF_SYNC_READ);
+	image->map = map;
+	image->map_length = p->mid[mi].length;
+	image->fd = p->mid[mi].fd;
+	image->y = map;
+	image->uv = (const uint8_t *)map + luma;
+	image->width = p->plan.out_width;
+	image->height = p->plan.out_height;
+	image->stride = p->enc_out_fmt.bytesperline;
+	return 0;
+}
+
+void kvmv_pipe_unmap_mid(struct kvmv_nv12 *image)
+{
+	if (image->map == NULL)
+		return;
+	sync_dmabuf(image->fd, DMA_BUF_SYNC_END | DMA_BUF_SYNC_READ);
+	munmap(image->map, image->map_length);
+	memset(image, 0, sizeof(*image));
+	image->fd = -1;
+}
+
+void kvmv_copy_from_device(uint8_t *dst, const uint8_t *src, size_t len)
+{
+	/*
+	 * Each load from an uncached mapping is a DRAM round trip, so the
+	 * number of loads is the cost: 8 bytes each where both ends allow it.
+	 * The mapping starts on a page, so src is aligned in practice; dst is
+	 * the caller's.
+	 */
+	if ((((uintptr_t)dst | (uintptr_t)src) & 7U) == 0) {
+		uint64_t *d = (uint64_t *)(void *)dst;
+		const volatile uint64_t *s = (const volatile uint64_t *)(const void *)src;
+		size_t words = len / 8;
+		size_t i;
+
+		for (i = 0; i + 4 <= words; i += 4) {
+			uint64_t a = s[i], b = s[i + 1], c = s[i + 2], e = s[i + 3];
+
+			d[i] = a;
+			d[i + 1] = b;
+			d[i + 2] = c;
+			d[i + 3] = e;
+		}
+		for (; i < words; i++)
+			d[i] = s[i];
+		dst += words * 8;
+		src += words * 8;
+		len -= words * 8;
+	}
+	memcpy(dst, src, len);
 }
 
 void kvmv_pipe_release(struct kvmv_pipe *p, const struct kvmv_encoded *e)

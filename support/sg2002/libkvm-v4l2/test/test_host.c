@@ -459,6 +459,52 @@ static void test_clamps_and_rate(void)
 	CHECK(fps_x10 >= 300 && fps_x10 <= 320);
 }
 
+static void test_encoder_fps(void)
+{
+	/* Nothing measured: the asked rate, capped by the capture rate. */
+	CHECK_EQ(kvmv_encoder_fps(30, 30, 0, 0), 30);
+	CHECK_EQ(kvmv_encoder_fps(30, 20, 0, 0), 20);
+	CHECK_EQ(kvmv_encoder_fps(30, 60, 0, 0), 30);
+	CHECK_EQ(kvmv_encoder_fps(30, 0, 0, 0), 30);
+	/* Delivering half: the encoder is told the delivered rate. */
+	CHECK_EQ(kvmv_encoder_fps(30, 30, 15, 30), 15);
+	CHECK_EQ(kvmv_encoder_fps(30, 30, 15, 0), 15);
+	/* Within 10% of the target counts as the target. */
+	CHECK_EQ(kvmv_encoder_fps(30, 30, 28, 15), 30);
+	CHECK_EQ(kvmv_encoder_fps(30, 30, 29, 30), 30);
+	/* Small wobble while tracking costs no ioctl; a real move does. */
+	CHECK_EQ(kvmv_encoder_fps(30, 30, 16, 15), 15);
+	CHECK_EQ(kvmv_encoder_fps(30, 30, 20, 15), 20);
+	/* Never faster than asked, never below 1. */
+	CHECK_EQ(kvmv_encoder_fps(30, 30, 45, 30), 30);
+	CHECK_EQ(kvmv_encoder_fps(0, 0, 0, 0), 1);
+}
+
+static void test_copy_from_device(void)
+{
+	uint8_t src[300], dst[320];
+	size_t off, len;
+	int ok = 1;
+
+	for (off = 0; off < sizeof(src); off++)
+		src[off] = (uint8_t)(off * 7 + 3);
+	/* Every alignment of both ends, every short length and a long one. */
+	for (off = 0; off < 9; off++) {
+		for (len = 0; len < 40; len++) {
+			memset(dst, 0xee, sizeof(dst));
+			kvmv_copy_from_device(dst + off, src + (off % 3), len);
+			if (memcmp(dst + off, src + (off % 3), len) != 0 ||
+			    (off && dst[off - 1] != 0xee) || dst[off + len] != 0xee)
+				ok = 0;
+		}
+		memset(dst, 0xee, sizeof(dst));
+		kvmv_copy_from_device(dst + off, src, 290);
+		if (memcmp(dst + off, src, 290) != 0 || dst[off + 290] != 0xee)
+			ok = 0;
+	}
+	CHECK(ok);
+}
+
 static void test_slots(void)
 {
 	struct kvmv_slots slots;
@@ -774,6 +820,8 @@ int main(void)
 	test_timings();
 	test_roles();
 	test_clamps_and_rate();
+	test_encoder_fps();
+	test_copy_from_device();
 	test_slots();
 	test_negotiate();
 

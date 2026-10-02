@@ -62,6 +62,10 @@ void set_capture_fps(uint8_t _fps);
 #define KVMV_KEY_DROP_LIMIT 60 /* delta frames dropped waiting for an IDR */
 #define KVMV_DEFAULT_IDLE_MS 10000U
 #define KVMV_RATE_WINDOW_MS 10000U
+#define KVMV_FPS_WINDOW_MS 3000U
+/* Room in front of a copied access unit for the SPS and PPS a keyframe may
+ * need, so the unit is copied out of the encoder once. */
+#define KVMV_PREFIX_ROOM (2 * KVMV_PS_MAX)
 
 #define KVMV_STATE_DIR "/tmp/kvm"
 #define KVMV_STATE_FILE "/tmp/kvm/state"
@@ -94,6 +98,7 @@ static unsigned int no_frame_count;
 static uint64_t next_start_ms;
 static int last_start_result;
 static struct kvmv_rate rate;
+static struct kvmv_rate fps_rate; /* a shorter window, for delivered_fps */
 static int overshoot_warned;
 static char last_error[256];
 
@@ -107,6 +112,9 @@ static int capture_fps_setting = KVMV_DEFAULT_FPS;
 static int frame_detect_setting;
 static int venc_auto_recyc_setting;
 static int force_key;
+/* Frames per second actually handed out, rounded; 0 until measured. Reset when
+ * the asked rate changes. Written under pipe_lock, cleared by the setters. */
+static int delivered_fps;
 static int pipe_running;
 static uint64_t last_read_ms;
 static int capture_enabled; /* kvmv_hdmi_control; 0 until the server enables it, as in the vendor library */
@@ -127,6 +135,14 @@ static uint64_t now_ms(void)
 
 	clock_gettime(CLOCK_MONOTONIC, &ts);
 	return (uint64_t)ts.tv_sec * 1000U + (uint64_t)ts.tv_nsec / 1000000U;
+}
+
+static uint64_t now_us(void)
+{
+	struct timespec ts;
+
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	return (uint64_t)ts.tv_sec * 1000000U + (uint64_t)ts.tv_nsec / 1000U;
 }
 
 static void log_msg(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
@@ -340,6 +356,16 @@ static void report_applied(uint32_t bitrate_bps, int gop, int fps)
 		log_msg("encoder changed the bitrate it was given");
 }
 
+/* The rate to tell the encoder: see kvmv_encoder_fps. current is what it
+ * holds now, 0 for a new pipeline. */
+static int encoder_fps(int current)
+{
+	return kvmv_encoder_fps(__atomic_load_n(&fps_setting, __ATOMIC_ACQUIRE),
+				__atomic_load_n(&capture_fps_setting, __ATOMIC_ACQUIRE),
+				__atomic_load_n(&delivered_fps, __ATOMIC_ACQUIRE),
+				current);
+}
+
 static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps)
 {
 	struct kvmv_pipe_cfg cfg;
@@ -371,7 +397,7 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 	cfg.req_height = height;
 	cfg.bitrate_bps = bitrate_bps;
 	cfg.gop = (unsigned int)__atomic_load_n(&gop_setting, __ATOMIC_ACQUIRE);
-	cfg.fps = (unsigned int)__atomic_load_n(&fps_setting, __ATOMIC_ACQUIRE);
+	cfg.fps = (unsigned int)encoder_fps(0);
 	cfg.capture_buffers = env_uint("KVMV_CAPTURE_BUFFERS", 2);
 	cfg.mid_buffers = env_uint("KVMV_MID_BUFFERS", 2);
 	cfg.bitstream_buffers = env_uint("KVMV_BITSTREAM_BUFFERS", 3);
@@ -400,6 +426,7 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 	last_error[0] = 0;
 	kvmv_ps_cache_reset(&ps_cache);
 	kvmv_rate_reset(&rate);
+	kvmv_rate_reset(&fps_rate);
 	/* The first picture after a build must be decodable from cold. */
 	need_key = 1;
 	kvmv_pipe_force_key(&pipe_state);
@@ -422,7 +449,7 @@ static int apply_settings(unsigned int width, unsigned int height,
 			  uint32_t bitrate_bps)
 {
 	int gop = __atomic_load_n(&gop_setting, __ATOMIC_ACQUIRE);
-	int fps = __atomic_load_n(&fps_setting, __ATOMIC_ACQUIRE);
+	int fps = encoder_fps(pipe_fps);
 	int rebuild = 0;
 	int changed = 0;
 
@@ -464,12 +491,27 @@ static void watch_rate(size_t bytes)
 {
 	unsigned int kbps, fps_x10;
 	unsigned int target = pipe_bitrate / 1000U;
+	uint64_t now = now_ms();
 
-	if (!kvmv_rate_add(&rate, now_ms(), bytes, KVMV_RATE_WINDOW_MS, &kbps,
+	if (kvmv_rate_add(&fps_rate, now, 0, KVMV_FPS_WINDOW_MS, &kbps, &fps_x10))
+		__atomic_store_n(&delivered_fps, (int)((fps_x10 + 5) / 10),
+				 __ATOMIC_RELEASE);
+	if (!kvmv_rate_add(&rate, now, bytes, KVMV_RATE_WINDOW_MS, &kbps,
 			   &fps_x10))
 		return;
-	DBG("output %u kbit/s at %u.%u fps, target %u kbit/s", kbps,
-	    fps_x10 / 10, fps_x10 % 10, target);
+	DBG("output %u kbit/s at %u.%u fps, target %u kbit/s, encoder told %d fps",
+	    kbps, fps_x10 / 10, fps_x10 % 10, target, pipe_fps);
+	if (pipe_state.times.frames) {
+		const struct kvmv_stage_times *t = &pipe_state.times;
+		unsigned int n = t->frames;
+
+		DBG("per frame: capture wait %llu us, scale %llu us, encode %llu us, copy %llu us",
+		    (unsigned long long)(t->capture_us / n),
+		    (unsigned long long)(t->scale_us / n),
+		    (unsigned long long)(t->encode_us / n),
+		    (unsigned long long)(t->copy_us / n));
+		memset(&pipe_state.times, 0, sizeof(pipe_state.times));
+	}
 	if (!overshoot_warned && target && kbps > target * 2) {
 		overshoot_warned = 1;
 		log_msg("output runs at %u kbit/s against a %u kbit/s target (%u.%u fps); see ironkvm-dist#35",
@@ -509,8 +551,9 @@ static int read_video_locked(unsigned int width, unsigned int height,
 		struct kvmv_encoded encoded;
 		struct kvmv_au_info info;
 		struct kvmv_slot *slot;
-		uint8_t prefix[2 * KVMV_PS_MAX];
-		size_t prefix_len;
+		uint8_t *unit;
+		size_t unit_size, prefix_len;
+		uint64_t copy_start;
 		int type;
 
 		switch (kvmv_pipe_encode(&pipe_state, KVMV_FRAME_TIMEOUT_MS, &encoded)) {
@@ -538,12 +581,32 @@ static int read_video_locked(unsigned int width, unsigned int height,
 		}
 		no_frame_count = 0;
 
-		kvmv_au_inspect(encoded.data, encoded.size, &info);
-		kvmv_ps_cache_update(&ps_cache, encoded.data, encoded.size);
+		/*
+		 * Copy the unit out of the encoder's buffer before looking at
+		 * it. That buffer is mapped uncached, and the NAL scans below
+		 * read it byte by byte, twice: done on the mapping, that cost
+		 * one DRAM round trip per byte per scan, which at 1080p is a
+		 * large part of a frame time. The copy leaves room in front
+		 * for the parameter sets a keyframe may need.
+		 */
+		slot = kvmv_slot_claim(&slots, (uint32_t)(KVMV_PREFIX_ROOM + encoded.size));
+		if (slot == NULL) {
+			kvmv_pipe_release(&pipe_state, &encoded);
+			return IMG_BUFFER_FULL;
+		}
+		unit = slot->data + KVMV_PREFIX_ROOM;
+		unit_size = encoded.size;
+		copy_start = now_us();
+		kvmv_copy_from_device(unit, encoded.data, unit_size);
+		pipe_state.times.copy_us += now_us() - copy_start;
+		kvmv_pipe_release(&pipe_state, &encoded);
+
+		kvmv_au_inspect(unit, unit_size, &info);
+		kvmv_ps_cache_update(&ps_cache, unit, unit_size);
 		type = kvmv_au_type(&info);
 		if (type != IMG_H264_TYPE_IF && type != IMG_H264_TYPE_PF) {
 			DBG("access unit with no picture (%u NALs), skipped", info.nal_count);
-			kvmv_pipe_release(&pipe_state, &encoded);
+			kvmv_slot_abandon(slot);
 			continue;
 		}
 		if (need_key && type != IMG_H264_TYPE_IF) {
@@ -557,23 +620,19 @@ static int read_video_locked(unsigned int width, unsigned int height,
 				need_key = 0;
 			} else {
 				DBG("delta frame before the first keyframe, dropped");
-				kvmv_pipe_release(&pipe_state, &encoded);
+				kvmv_slot_abandon(slot);
 				kvmv_pipe_force_key(&pipe_state);
 				continue;
 			}
 		}
 
-		prefix_len = kvmv_ps_cache_prefix(&ps_cache, &info, prefix,
-						  sizeof(prefix));
-		slot = kvmv_slot_claim(&slots, (uint32_t)(prefix_len + encoded.size));
-		if (slot == NULL) {
-			kvmv_pipe_release(&pipe_state, &encoded);
-			return IMG_BUFFER_FULL;
-		}
-		memcpy(slot->data, prefix, prefix_len);
-		memcpy(slot->data + prefix_len, encoded.data, encoded.size);
-		kvmv_pipe_release(&pipe_state, &encoded);
-		slot->size = (uint32_t)(prefix_len + encoded.size);
+		/* The prefix goes straight into the room in front of the unit,
+		 * then the unit moves down to meet it (cached memory). */
+		prefix_len = kvmv_ps_cache_prefix(&ps_cache, &info, slot->data,
+						  KVMV_PREFIX_ROOM);
+		if (prefix_len != KVMV_PREFIX_ROOM)
+			memmove(slot->data + prefix_len, unit, unit_size);
+		slot->size = (uint32_t)(prefix_len + unit_size);
 		slot->type = (uint8_t)type;
 		need_key = 0;
 		set_source_locked(1);
@@ -765,9 +824,7 @@ int kvmv_read_video(uint16_t _width, uint16_t _height, uint8_t _codec,
 				 kvmv_clamp(_gop, KVMV_GOP_MIN, KVMV_GOP_MAX),
 				 __ATOMIC_RELEASE);
 	if (_fps != 0)
-		__atomic_store_n(&fps_setting,
-				 kvmv_clamp(_fps, KVMV_FPS_MIN, KVMV_FPS_MAX),
-				 __ATOMIC_RELEASE);
+		set_h264_fps(_fps);
 	if (_codec != KVMV_CODEC_H264 && _codec != KVMV_CODEC_H265) {
 		if (_pp_kvm_data)
 			*_pp_kvm_data = NULL;
@@ -805,21 +862,31 @@ void set_h264_fps(uint8_t _fps)
 {
 	int fps = kvmv_clamp(_fps, KVMV_FPS_MIN, KVMV_FPS_MAX);
 
-	if (__atomic_exchange_n(&fps_setting, fps, __ATOMIC_ACQ_REL) != fps)
+	if (__atomic_exchange_n(&fps_setting, fps, __ATOMIC_ACQ_REL) != fps) {
+		/* A new rate starts from what was asked, not from what the
+		 * old one delivered. */
+		__atomic_store_n(&delivered_fps, 0, __ATOMIC_RELEASE);
 		DBG("set_h264_fps %d", fps);
+	}
 }
 
 void set_capture_fps(uint8_t _fps)
 {
+	int fps = kvmv_clamp(_fps, KVMV_FPS_MIN, KVMV_FPS_MAX);
+
 	/*
-	 * Recorded only. The capture node has no frame interval control and
-	 * runs at the source's rate, but nothing beyond its DMA happens to a
-	 * frame nobody reads: each read takes the newest frame and the rest go
-	 * straight back to the driver, unscaled and unencoded.
+	 * The capture node has no frame interval control and runs at the
+	 * source's rate, but nothing beyond its DMA happens to a frame nobody
+	 * reads: each read takes the newest frame and the rest go straight back
+	 * to the driver, unscaled and unencoded. What this does change is the
+	 * rate the encoder is told: frames cannot reach it faster than this, so
+	 * the lower of this and set_h264_fps is what its rate control budgets
+	 * for (applied on the next read).
 	 */
-	__atomic_store_n(&capture_fps_setting,
-			 kvmv_clamp(_fps, KVMV_FPS_MIN, KVMV_FPS_MAX),
-			 __ATOMIC_RELAXED);
+	if (__atomic_exchange_n(&capture_fps_setting, fps, __ATOMIC_ACQ_REL) != fps) {
+		__atomic_store_n(&delivered_fps, 0, __ATOMIC_RELEASE);
+		DBG("set_capture_fps %d", fps);
+	}
 }
 
 void set_frame_detact(uint8_t _frame_detact)

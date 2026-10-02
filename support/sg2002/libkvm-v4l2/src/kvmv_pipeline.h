@@ -79,6 +79,18 @@ struct kvmv_applied {
 	int fps_denominator; /* per this many seconds */
 };
 
+/*
+ * Where the time of a read goes, summed over the frames since the last reset.
+ * Microseconds. The library logs the averages with KVMV_DEBUG.
+ */
+struct kvmv_stage_times {
+	uint64_t capture_us; /* waiting for a captured frame */
+	uint64_t scale_us; /* VPSS, queue to dequeue */
+	uint64_t encode_us; /* Coda, queue to dequeue */
+	uint64_t copy_us; /* bitstream out of the encoder's buffer (the caller adds it) */
+	unsigned int frames;
+};
+
 struct kvmv_pipe {
 	int cap_fd, vpss_fd, enc_fd, heap_fd;
 	struct v4l2_pix_format cap_fmt;
@@ -95,6 +107,7 @@ struct kvmv_pipe {
 	int cap_on, vpss_out_on, vpss_cap_on, enc_out_on, enc_cap_on;
 	int running;
 	struct kvmv_applied applied;
+	struct kvmv_stage_times times;
 	char error[192];
 };
 
@@ -133,12 +146,56 @@ int kvmv_pipe_start(struct kvmv_pipe *pipe, const struct kvmv_devices *devices,
 /* Stop streaming and release everything. Safe on a stopped pipe. */
 void kvmv_pipe_stop(struct kvmv_pipe *pipe);
 
-/* Take the newest frame, scale it and encode it. On KVMV_PIPE_OK the caller
- * copies out->data and then calls kvmv_pipe_release. */
+/*
+ * Take the newest captured frame and scale it into a middle buffer. On
+ * KVMV_PIPE_OK *mid names the buffer, which holds the NV12 picture until the
+ * next call: kvmv_pipe_encode_mid encodes it, kvmv_pipe_map_mid shows it to the
+ * CPU.
+ */
+enum kvmv_pipe_status kvmv_pipe_scale(struct kvmv_pipe *pipe,
+				      unsigned int timeout_ms, unsigned int *mid);
+
+/* Encode a middle buffer filled by kvmv_pipe_scale. */
+enum kvmv_pipe_status kvmv_pipe_encode_mid(struct kvmv_pipe *pipe,
+					   unsigned int mid,
+					   struct kvmv_encoded *out);
+
+/*
+ * Take the newest frame, scale it and encode it. On KVMV_PIPE_OK the caller
+ * copies out->data with kvmv_copy_from_device and then calls kvmv_pipe_release.
+ */
 enum kvmv_pipe_status kvmv_pipe_encode(struct kvmv_pipe *pipe,
 				       unsigned int timeout_ms,
 				       struct kvmv_encoded *out);
 void kvmv_pipe_release(struct kvmv_pipe *pipe, const struct kvmv_encoded *encoded);
+
+/* An NV12 picture the CPU can read. */
+struct kvmv_nv12 {
+	const uint8_t *y; /* luma plane, height rows of stride bytes */
+	const uint8_t *uv; /* interleaved chroma, height / 2 rows of stride bytes */
+	unsigned int width, height; /* the picture, without the encoder's padding */
+	unsigned int stride;
+	void *map; /* for kvmv_pipe_unmap_mid */
+	size_t map_length;
+	int fd;
+};
+
+/*
+ * Map a middle buffer kvmv_pipe_scale filled, for reading, and end the CPU
+ * access with kvmv_pipe_unmap_mid. The buffers come from a dma-heap, so the
+ * mapping is cached; the dma-buf sync calls around it keep it coherent.
+ */
+int kvmv_pipe_map_mid(struct kvmv_pipe *pipe, unsigned int mid,
+		      struct kvmv_nv12 *image);
+void kvmv_pipe_unmap_mid(struct kvmv_nv12 *image);
+
+/*
+ * Copy out of the encoder's bitstream buffer. That buffer comes from the
+ * Coda's no-map shared-dma-pool, so user space sees it uncached and every load
+ * goes to DRAM: copy it once, in 8-byte loads where alignment allows, and
+ * parse the copy, never the mapping.
+ */
+void kvmv_copy_from_device(uint8_t *dst, const uint8_t *src, size_t len);
 
 /* Runtime changes. Each returns 0 when the encoder took it; the caller
  * rebuilds the pipeline otherwise. */
