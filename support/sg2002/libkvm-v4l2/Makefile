@@ -13,6 +13,7 @@
 CROSS ?= riscv64-unknown-linux-musl-
 CC := $(CROSS)gcc
 NM := $(CROSS)nm
+READELF := $(CROSS)readelf
 HOSTCC ?= gcc
 
 # The flags the server's cgo build uses for this core.
@@ -39,10 +40,19 @@ $(BUILD):
 
 # -z defs: anything not in libc is a link error, not a load-time surprise.
 # The soname is what the server records in NEEDED.
+#
+# libgcc_s is linked with --no-as-needed although nothing in the library calls
+# it. NanoKVM-Server's crtbegin calls __register_frame_info and
+# __deregister_frame_info through the PLT. They are weak there, but the server
+# is linked against Sipeed's library, which NEEDs libgcc_s, so the linker found
+# them and gave them PLT slots; the server itself NEEDs only libkvm.so and
+# libc.so. Loaded with a library that does not bring libgcc_s in, musl resolves
+# the slots to 0 and the server jumps to address 0 at start.
+# check-symbols.sh fails a library without this entry.
 $(BUILD)/libkvm.so: $(LIB_SRCS) $(HEADERS) | $(BUILD)
 	$(CC) $(ARCH_FLAGS) $(CFLAGS_COMMON) -fPIC -fvisibility=hidden -shared \
 		-Wl,-soname,libkvm.so -Wl,--as-needed -Wl,-z,defs \
-		-o $@ $(LIB_SRCS) -lpthread
+		-o $@ $(LIB_SRCS) -lpthread -Wl,--no-as-needed -lgcc_s -Wl,--as-needed
 
 $(BUILD)/kvmv-probe: tools/kvmv_probe.c src/kvmv_annexb.c $(HEADERS) | $(BUILD)
 	$(CC) $(ARCH_FLAGS) $(CFLAGS_COMMON) -o $@ tools/kvmv_probe.c \
@@ -59,7 +69,8 @@ test: $(BUILD)/test_host
 	./$(BUILD)/test_host
 
 check-symbols: $(BUILD)/libkvm.so
-	sh ./check-symbols.sh $(NM) $(BUILD)/libkvm.so abi-symbols.txt $(VENDOR_LIB)
+	READELF=$(READELF) \
+		sh ./check-symbols.sh $(NM) $(BUILD)/libkvm.so abi-symbols.txt $(VENDOR_LIB)
 
 clean:
 	rm -rf $(BUILD)

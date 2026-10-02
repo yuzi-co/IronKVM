@@ -144,13 +144,20 @@ docker run --rm -v "$PWD":/w -w /w/support/sg2002/libkvm-v4l2 nanokvm-app-builde
     make all test check-symbols
 ```
 
-- `build/libkvm.so`: soname `libkvm.so`, `NEEDED` only `libc.so`, no `RUNPATH` needed. It
-  exports exactly the 13 functions in `abi-symbols.txt`, all strong (`nm` type `T`).
+- `build/libkvm.so`: soname `libkvm.so`, `NEEDED` `libgcc_s.so.1` and `libc.so`, no `RUNPATH`
+  needed. It exports the 13 functions in `abi-symbols.txt`, all strong (`nm` type `T`).
+  Nothing in the library calls libgcc_s. The server needs it: its crtbegin calls
+  `__register_frame_info` through the PLT, and the server NEEDs only `libkvm.so` and `libc.so`,
+  relying on Sipeed's library (`NEEDED` OpenCV, `libkvm_mmf.so`, `libstdc++.so.6`,
+  `libgcc_s.so.1`, `libc.so`, `libatomic.so.1`) to load it. Without it the server jumps to
+  address 0 at start. Of everything the server leaves undefined, only `__register_frame_info`
+  and `__deregister_frame_info` come from outside libc and libkvm.
 - `build/kvmv-probe`: the on-board test below.
 - `make test`: host unit tests with ASan and UBSan: Annex-B splitting and classification,
   parameter-set prefixing, SPS parsing (with emulation prevention), the policy decisions, the
   frame slots, and format negotiation against mock capture, VPSS and Coda drivers.
-- `make check-symbols`: the exports against `abi-symbols.txt` and against Sipeed's library.
+- `make check-symbols`: the exports against `abi-symbols.txt` and against Sipeed's library, and
+  the `NEEDED` entries for `libgcc_s.so.1` and `libc.so`.
 
 ## Testing on the board
 
