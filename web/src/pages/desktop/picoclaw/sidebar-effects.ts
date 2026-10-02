@@ -219,6 +219,9 @@ export function usePicoclawGatewayEvents({
           return updated;
         });
       }),
+      picoclawGateway.on('assistant_message_delete', ({ id }) => {
+        setMessages((current) => current.filter((item) => item.id !== id));
+      }),
       picoclawGateway.on('tool_action', (action) => {
         setMessages((current) => [...current, createToolActionMessage(action)]);
         setOverlay({
