@@ -3,6 +3,7 @@ package vm
 import (
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"strconv"
 	"strings"
@@ -14,6 +15,7 @@ import (
 
 	"NanoKVM-Server/config"
 	"NanoKVM-Server/proto"
+	"NanoKVM-Server/utils/gpiocdev"
 )
 
 func (s *Service) SetGpio(c *gin.Context) {
@@ -176,10 +178,61 @@ func gpioLock(device string) *sync.Mutex {
 	return lock
 }
 
+// cdevLines holds the lines taken through the GPIO character device, by name.
+// An output stays requested once taken, so it stays driven low between presses
+// rather than floating; the kernel releases it when the process exits.
+var (
+	cdevLinesMu sync.Mutex
+	cdevLines   = map[string]*gpiocdev.Line{}
+)
+
+// cdevLine returns the character-device line to use in place of the sysfs
+// path device, or nil when the sysfs path is the one to use.
+//
+// The sysfs path wins whenever it exists, which is always on the vendor kernel
+// once the init script has exported the line, so nothing changes there. The
+// mainline kernel has no /sys/class/gpio, and there the line is found by the
+// name config.Hardware.GPIOLineName gives it. A name no chip carries (the
+// vendor device tree names no lines) also returns nil, and the caller then
+// fails on the sysfs path exactly as it did before.
+func cdevLine(device string, dir gpiocdev.Direction) *gpiocdev.Line {
+	if device == "" {
+		return nil
+	}
+	if _, err := os.Stat(device); err == nil || !errors.Is(err, fs.ErrNotExist) {
+		return nil
+	}
+	name := config.GetInstance().Hardware.GPIOLineName(device)
+	if name == "" {
+		return nil
+	}
+
+	cdevLinesMu.Lock()
+	defer cdevLinesMu.Unlock()
+
+	if l, ok := cdevLines[name]; ok {
+		return l
+	}
+	l, err := gpiocdev.Request(name, dir, 0)
+	if err != nil {
+		if !errors.Is(err, gpiocdev.ErrNotFound) {
+			noteGpioRead(device, err)
+		}
+		return nil
+	}
+	log.Infof("gpio %s does not exist, using the gpio line %q", device, name)
+	cdevLines[name] = l
+	return l
+}
+
 func writeGpio(device string, duration time.Duration) error {
 	lock := gpioLock(device)
 	lock.Lock()
 	defer lock.Unlock()
+
+	if line := cdevLine(device, gpiocdev.Output); line != nil {
+		return pressLine(line, duration)
+	}
 
 	if err := os.WriteFile(device, []byte("1"), 0o666); err != nil {
 		log.Errorf("write gpio %s failed: %s", device, err)
@@ -190,6 +243,23 @@ func writeGpio(device string, duration time.Duration) error {
 
 	if err := os.WriteFile(device, []byte("0"), 0o666); err != nil {
 		log.Errorf("write gpio %s failed: %s", device, err)
+		return err
+	}
+
+	return nil
+}
+
+// pressLine is writeGpio's press on a character-device line.
+func pressLine(line *gpiocdev.Line, duration time.Duration) error {
+	if err := line.Set(1); err != nil {
+		log.Errorf("set gpio line %s failed: %s", line.Name(), err)
+		return err
+	}
+
+	time.Sleep(duration)
+
+	if err := line.Set(0); err != nil {
+		log.Errorf("set gpio line %s failed: %s", line.Name(), err)
 		return err
 	}
 
@@ -224,6 +294,15 @@ func noteGpioRead(device string, err error) {
 // readGpio reports whether an active-low line is asserted. Content that is
 // not a number is an error, not "released": the state is unknown.
 func readGpio(device string) (bool, error) {
+	if line := cdevLine(device, gpiocdev.Input); line != nil {
+		value, err := line.Get()
+		noteGpioRead(device, err)
+		if err != nil {
+			return false, err
+		}
+		return value == 0, nil
+	}
+
 	content, err := os.ReadFile(device)
 	if err != nil {
 		noteGpioRead(device, err)

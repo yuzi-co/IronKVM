@@ -52,6 +52,17 @@ SERVER_DST=${SERVER_DST:-/tmp/server}
 # which lands in this same place.
 SYSTEM_DST=${SYSTEM_DST:-/tmp/kvm_system}
 
+# efuse_uid prints the chip id as the vendor kernel's
+# /sys/class/cvi-base/base_uid has it, "UID: %08x_%08x", from the eFuse nvmem
+# device a mainline kernel offers instead. S03usbdev carries the account.
+efuse_uid() {
+    _efuse=/sys/bus/nvmem/devices/cv1800-efuse/nvmem
+    [ -r "$_efuse" ] || return 1
+    set -- $(od -An -tx4 -j12 -N8 "$_efuse" 2>/dev/null)
+    [ $# -eq 2 ] || return 1
+    printf 'UID: %s_%s\n' "$1" "$2"
+}
+
 wait_for_exit() {
     process="$1"
     timeout="$2"
@@ -671,6 +682,12 @@ case "$1" in
     # Generate unique device key
     if [ -f /sys/class/cvi-base/base_uid ]; then
         str_value=$(awk '{print $2}' /sys/class/cvi-base/base_uid)
+        first_uint=$(echo "$str_value" | cut -d'_' -f1)
+        second_uint=$(echo "$str_value" | cut -d'_' -f2)
+        echo "$first_uint$second_uint" > /device_key
+    elif uid=$(efuse_uid); then
+        # A kernel without cvi-base: the same words from the eFuse nvmem.
+        str_value=$(printf '%s\n' "$uid" | awk '{print $2}')
         first_uint=$(echo "$str_value" | cut -d'_' -f1)
         second_uint=$(echo "$str_value" | cut -d'_' -f2)
         echo "$first_uint$second_uint" > /device_key

@@ -197,9 +197,13 @@ start_usb_dev(){
     # keyboard
     mkdir functions/hid.GS0
     echo 1 > functions/hid.GS0/subclass
-    if [ -e /boot/usb.wakeup ]
+    # Where the attribute exists only: see S03usbdev.
+    if [ -e /boot/usb.wakeup ] && [ -e functions/hid.GS0/wakeup_on_write ]
     then
         echo 1 > functions/hid.GS0/wakeup_on_write
+    elif [ -e /boot/usb.wakeup ]
+    then
+        echo "usb: /boot/usb.wakeup is set, and this kernel's f_hid has no wakeup_on_write"
     fi
     echo 1 > functions/hid.GS0/protocol
     echo 8 > functions/hid.GS0/report_length
@@ -209,7 +213,7 @@ start_usb_dev(){
     # mouse
     mkdir functions/hid.GS1
     echo 1 > functions/hid.GS1/subclass
-    if [ -e /boot/usb.wakeup ]
+    if [ -e /boot/usb.wakeup ] && [ -e functions/hid.GS1/wakeup_on_write ]
     then
         echo 1 > functions/hid.GS1/wakeup_on_write
     fi
@@ -221,7 +225,7 @@ start_usb_dev(){
     # absolute pointer: never boot. The boot mouse protocol has no absolute
     # coordinates, so claiming it here described a device this is not.
     mkdir functions/hid.GS2
-    if [ -e /boot/usb.wakeup ]
+    if [ -e /boot/usb.wakeup ] && [ -e functions/hid.GS2/wakeup_on_write ]
     then
         echo 1 > functions/hid.GS2/wakeup_on_write
     fi

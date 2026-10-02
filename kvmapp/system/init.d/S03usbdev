@@ -996,6 +996,22 @@ set_otg_role() {
     return 1
 }
 
+# efuse_uid prints the chip id in the form the vendor kernel's
+# /sys/class/cvi-base/base_uid has, "UID: %08x_%08x", read from the eFuse
+# nvmem device instead. It is for a kernel without that file: the mainline
+# kernel has no cvi-base driver, and ironkvm-dist's mainline patch 0901 exposes
+# the eFuse shadow registers as nvmem. The two words are at 0x0c and 0x10, as
+# the vendor driver reads them, so the serial and the MACs built from the id
+# stay what they are on the vendor kernel. Status 1 and no output when there is
+# no such device either.
+efuse_uid() {
+    _efuse=/sys/bus/nvmem/devices/cv1800-efuse/nvmem
+    [ -r "$_efuse" ] || return 1
+    set -- $(od -An -tx4 -j12 -N8 "$_efuse" 2>/dev/null)
+    [ $# -eq 2 ] || return 1
+    printf 'UID: %s_%s\n' "$1" "$2"
+}
+
 start_usb_dev(){
     # f_hid copies the descriptors into its instance when the gadget is bound
     # and refuses every write to them afterwards, so rebuilding on top of a
@@ -1056,6 +1072,13 @@ start_usb_dev(){
         then
             serial="$uid_serial"
         fi
+    elif usb_efuse_uid=$(efuse_uid)
+    then
+        uid_serial=$(printf '%s\n' "$usb_efuse_uid" | awk '{print $2}' | tr -d '_')
+        if [ ${#uid_serial} -ge 12 ]
+        then
+            serial="$uid_serial"
+        fi
     fi
     echo "$serial" > strings/0x409/serialnumber
     echo 'sipeed' > strings/0x409/manufacturer
@@ -1097,7 +1120,12 @@ start_usb_dev(){
     # interface keeps a STABLE MAC across re-enumeration/reboot. Without this
     # the kernel assigns a random dev_addr/host_addr on every bind, so the
     # attached PC sees a brand-new network adapter (and MAC) each time.
-    usb_uid=$(sha512sum /sys/class/cvi-base/base_uid | head -c 4)
+    if [ -f /sys/class/cvi-base/base_uid ] || ! usb_efuse_uid=$(efuse_uid)
+    then
+        usb_uid=$(sha512sum /sys/class/cvi-base/base_uid | head -c 4)
+    else
+        usb_uid=$(printf '%s\n' "$usb_efuse_uid" | sha512sum | head -c 4)
+    fi
     if [ -n "$usb_uid" ]
     then
         usb_dev_mac="48:da:35:6e:${usb_uid%??}:${usb_uid#??}"
@@ -1186,9 +1214,16 @@ start_usb_dev(){
         # descriptor, so a host that prefers report protocol is unaffected.
         mkdir functions/hid.GS0
         echo 1 > functions/hid.GS0/subclass
-        if [ -e /boot/usb.wakeup ]
+        # wakeup_on_write is a vendor f_hid option. A kernel without it has
+        # no such attribute, configfs refuses to create one, and the write
+        # would only print an error, so it is made where the attribute exists
+        # and reported once where it does not.
+        if [ -e /boot/usb.wakeup ] && [ -e functions/hid.GS0/wakeup_on_write ]
         then
             echo 1 > functions/hid.GS0/wakeup_on_write
+        elif [ -e /boot/usb.wakeup ]
+        then
+            echo "usb: /boot/usb.wakeup is set, and this kernel's f_hid has no wakeup_on_write"
         fi
         echo 1 > functions/hid.GS0/protocol
         echo 8 > functions/hid.GS0/report_length
@@ -1198,7 +1233,7 @@ start_usb_dev(){
         # relative mouse: boot protocol, same reasoning as the keyboard
         mkdir functions/hid.GS1
         echo 1 > functions/hid.GS1/subclass
-        if [ -e /boot/usb.wakeup ]
+        if [ -e /boot/usb.wakeup ] && [ -e functions/hid.GS1/wakeup_on_write ]
         then
             echo 1 > functions/hid.GS1/wakeup_on_write
         fi
@@ -1211,7 +1246,7 @@ start_usb_dev(){
         # absolute coordinates, so claiming it here described a device this
         # is not, and a host taking that at face value got nonsense.
         mkdir functions/hid.GS2
-        if [ -e /boot/usb.wakeup ]
+        if [ -e /boot/usb.wakeup ] && [ -e functions/hid.GS2/wakeup_on_write ]
         then
             echo 1 > functions/hid.GS2/wakeup_on_write
         fi

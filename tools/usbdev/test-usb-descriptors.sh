@@ -157,6 +157,13 @@ mkdir() {
                 /bin/mkdir -p "$_arg/os_desc/interface.rndis" ;;
             functions/ncm.*|*/functions/ncm.*)
                 /bin/mkdir -p "$_arg/os_desc/interface.ncm" ;;
+            # The vendor kernel's f_hid has wakeup_on_write and starts it at
+            # 0. HID_WAKEUP_ATTR=0 is a kernel without the option.
+            functions/hid.*|*/functions/hid.*)
+                if [ "${HID_WAKEUP_ATTR:-1}" = 1 ] && [ ! -e "$_arg/wakeup_on_write" ]
+                then
+                    echo 0 > "$_arg/wakeup_on_write"
+                fi ;;
         esac
     done
 }
@@ -304,7 +311,7 @@ is configs/c.1/strings/0x409/configuration NanoKVM "configuration string"
 hid_is hid.GS0 1  1 8 "$KEYBOARD_DESC"        "keyboard"
 hid_is hid.GS1 1  2 5 "$RELATIVE_MOUSE_DESC"  "relative mouse"
 hid_is hid.GS2 "" 2 6 "$ABSOLUTE_MOUSE_DESC"  "absolute pointer"
-absent functions/hid.GS0/wakeup_on_write "no wake on write without /boot/usb.wakeup"
+is functions/hid.GS0/wakeup_on_write 0 "no wake on write without /boot/usb.wakeup"
 
 absent configs/c.1/mass_storage.disk0 "no mass storage without /boot/usb.disk0"
 absent configs/c.1/rndis.usb0 "no RNDIS without /boot/usb.rndis0"
@@ -345,6 +352,57 @@ run "$S03" start_usb_dev
 is functions/hid.GS0/wakeup_on_write 1 "the keyboard wakes the host when asked"
 is functions/hid.GS1/wakeup_on_write 1 "the relative mouse wakes the host when asked"
 is functions/hid.GS2/wakeup_on_write 1 "the absolute pointer wakes the host when asked"
+
+# A kernel whose f_hid has no wakeup_on_write (mainline): the gadget is built
+# all the same, nothing is written where the attribute is not, and the console
+# says once why /boot/usb.wakeup did nothing.
+build_env
+: > "$work/boot/usb.wakeup"
+HID_WAKEUP_ATTR=0 run "$S03" start_usb_dev
+absent functions/hid.GS0/wakeup_on_write "no wakeup_on_write is created on a kernel without it"
+absent functions/hid.GS2/wakeup_on_write "nor for the absolute pointer"
+hid_is hid.GS0 1 1 8 "$KEYBOARD_DESC" "keyboard without wakeup_on_write"
+is UDC 4340000.usb "the gadget still binds without wakeup_on_write"
+if [ "$(grep -c "has no wakeup_on_write" "$work/out")" = 1 ]
+then
+    note "the missing option is reported once" OK
+else
+    note "the missing option is reported $(grep -c "has no wakeup_on_write" "$work/out") times, want once" FAIL
+fi
+
+# A kernel without /sys/class/cvi-base (mainline): the id comes from the eFuse
+# nvmem device, words 0x0c and 0x10, and becomes the same serial the vendor
+# file would give. The bytes below are the little-endian words 0x01234567 and
+# 0x89abcdef, which the vendor file prints as "UID: 01234567_89abcdef".
+efuse_env() {
+    build_env
+    rm -rf "$work/sys/class/cvi-base"
+    mkdir -p "$work/sys/bus/nvmem/devices/cv1800-efuse"
+    printf '\000\000\000\000\000\000\000\000\000\000\000\000\147\105\043\001\357\315\253\211\000\000\000\000' \
+        > "$work/sys/bus/nvmem/devices/cv1800-efuse/nvmem"
+}
+efuse_env
+: > "$work/boot/usb.ncm"
+run "$S03" start_usb_dev
+is strings/0x409/serialnumber 0123456789abcdef "without cvi-base the serial comes from the eFuse words"
+efuse_hash=$(printf 'UID: 01234567_89abcdef\n' | sha512sum | head -c 4)
+is functions/ncm.usb0/dev_addr "48:da:35:6e:${efuse_hash%??}:${efuse_hash#??}" \
+   "and the gadget NIC's MAC hashes the same text the vendor file holds"
+is functions/ncm.usb0/host_addr "48:da:35:6d:${efuse_hash%??}:${efuse_hash#??}" \
+   "and so does the host side's"
+
+# Both present: the vendor file wins, so a vendor kernel is unchanged.
+efuse_env
+mkdir -p "$work/sys/class/cvi-base"
+echo "$BASE_UID" > "$work/sys/class/cvi-base/base_uid"
+run "$S03" start_usb_dev
+is strings/0x409/serialnumber "$SERIAL_FROM_UID" "with both sources the vendor file wins"
+
+# Neither source: the fallback serial, as on a vendor kernel that lost the file.
+build_env
+rm -rf "$work/sys/class/cvi-base"
+run "$S03" start_usb_dev
+is strings/0x409/serialnumber "$SERIAL_FALLBACK" "with no id source at all the serial falls back"
 
 build_env
 : > "$work/boot/usb.extkeys"
