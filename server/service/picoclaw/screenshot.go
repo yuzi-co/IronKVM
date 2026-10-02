@@ -7,18 +7,21 @@ import (
 	"time"
 
 	"NanoKVM-Server/common"
+	"NanoKVM-Server/config"
 
 	"github.com/gin-gonic/gin"
 )
 
 var screenshotRetryDelay = 100 * time.Millisecond
 
-const (
-	screenshotRetryCount             = 30
-	defaultPicoclawScreenshotWidth   = 960
-	defaultPicoclawScreenshotHeight  = 540
-	defaultPicoclawScreenshotQuality = 60
-)
+const screenshotRetryCount = 30
+
+// picoclawScreenshotSettings returns the size and quality of the screenshots
+// the model gets when it does not ask for a size, from server.yaml. A
+// variable so the tests can replace it.
+var picoclawScreenshotSettings = func() config.Picoclaw {
+	return config.GetInstance().Picoclaw.WithDefaults()
+}
 
 func (s *Service) Screenshot(c *gin.Context) {
 	var query ScreenshotQuery
@@ -113,9 +116,15 @@ func resolveScreenshotRequest(query ScreenshotQuery) (uint16, uint16, uint16) {
 	quality := values.Quality
 
 	if query.Format == "base64" {
-		width, height = fitWithinBounds(width, height, defaultPicoclawScreenshotWidth, defaultPicoclawScreenshotHeight)
-		if quality == 0 || quality > defaultPicoclawScreenshotQuality {
-			quality = defaultPicoclawScreenshotQuality
+		settings := picoclawScreenshotSettings()
+		// At most 16:9, so the 960 wide default gives 960x540 for a 16:9
+		// source and 720x540 for a 4:3 one.
+		maxWidth := uint16(settings.ScreenshotWidth)
+		maxHeight := uint16(settings.ScreenshotWidth * 9 / 16)
+		width, height = fitWithinBounds(width, height, maxWidth, maxHeight)
+		maxQuality := uint16(settings.ScreenshotQuality)
+		if quality == 0 || quality > maxQuality {
+			quality = maxQuality
 		}
 	}
 

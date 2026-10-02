@@ -38,13 +38,13 @@ type jsonRPCError struct {
 var mcpToolDefinitions = []map[string]interface{}{
 	{
 		"name":        "kvm_screenshot",
-		"description": "Capture the current HDMI frame from the downstream remote host as a base64-encoded JPEG image.",
+		"description": "Capture the current HDMI frame from the downstream remote host as a JPEG image. Without arguments the image is scaled down (960 pixels wide unless the NanoKVM owner changed it), which is enough for most steps. To read small text or aim at a small target, pass both width and height, for example the full screen size reported with the previous screenshot.",
 		"inputSchema": map[string]interface{}{
 			"type": "object",
 			"properties": map[string]interface{}{
-				"width":   map[string]interface{}{"type": "integer", "description": "Target width in pixels (optional, default: 960)"},
-				"height":  map[string]interface{}{"type": "integer", "description": "Target height in pixels (optional)"},
-				"quality": map[string]interface{}{"type": "integer", "description": "JPEG quality 1-100 (optional, default: 60)"},
+				"width":   map[string]interface{}{"type": "integer", "description": "Target width in pixels (optional). Alone it can only make the default image smaller; with height the image has exactly this size"},
+				"height":  map[string]interface{}{"type": "integer", "description": "Target height in pixels (optional). Alone it can only make the default image smaller; with width the image has exactly this size"},
+				"quality": map[string]interface{}{"type": "integer", "description": "JPEG quality 1-100 (optional, default set by the NanoKVM owner, normally 60)"},
 			},
 		},
 	},
@@ -257,7 +257,7 @@ func (s *Service) mcpScreenshot(req jsonRPCRequest, args json.RawMessage, c *gin
 			"content": []map[string]interface{}{
 				{
 					"type": "text",
-					"text": "screenshot captured",
+					"text": screenshotCaption(meta),
 				},
 				{
 					"type":     "image",
@@ -345,4 +345,17 @@ func mcpToolError(req jsonRPCRequest, message string) jsonRPCResponse {
 			},
 		},
 	}
+}
+
+// screenshotCaption tells the model what it is looking at: the size of the
+// image it got and the size of the remote screen, so that it can ask for a
+// sharper image or reason about screen pixels.
+func screenshotCaption(meta ScreenshotMeta) string {
+	if meta.SourceWidth == 0 || meta.SourceHeight == 0 {
+		return fmt.Sprintf("screenshot captured: %dx%d image", meta.CaptureWidth, meta.CaptureHeight)
+	}
+	return fmt.Sprintf(
+		"screenshot captured: %dx%d image of a %dx%d screen",
+		meta.CaptureWidth, meta.CaptureHeight, meta.SourceWidth, meta.SourceHeight,
+	)
 }

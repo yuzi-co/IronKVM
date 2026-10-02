@@ -47,6 +47,10 @@ type Config struct {
 	// without the block loads with the server off.
 	VNC VNC `yaml:"vnc,omitempty" mapstructure:"vnc"`
 
+	// Picoclaw tunes what the server hands the PicoClaw assistant, kept under
+	// "picoclaw" in server.yaml. A file without the block loads the defaults.
+	Picoclaw Picoclaw `yaml:"picoclaw,omitempty" mapstructure:"picoclaw"`
+
 	// Hardware holds the board's pins, derived from its version at start. It
 	// is never read from or written to server.yaml.
 	Hardware Hardware `yaml:"-" mapstructure:"-"`
@@ -233,4 +237,50 @@ type Hardware struct {
 	GPIOPower    string    `yaml:"-"`
 	GPIOPowerLED string    `yaml:"-"`
 	GPIOHDDLed   string    `yaml:"-"`
+}
+
+// The defaults and limits of the screenshots PicoClaw's model is sent. A zero
+// value in server.yaml means the default.
+const (
+	DefaultPicoclawScreenshotWidth   = 960
+	DefaultPicoclawScreenshotQuality = 60
+	MinPicoclawScreenshotWidth       = 320
+	MaxPicoclawScreenshotWidth       = 1920
+	MinPicoclawScreenshotQuality     = 10
+	MaxPicoclawScreenshotQuality     = 100
+)
+
+// Picoclaw configures the server side of the PicoClaw integration. Read it
+// through WithDefaults.
+type Picoclaw struct {
+	// ScreenshotWidth is the largest width, in pixels, of a screenshot sent
+	// to the model when it does not ask for a size; the height follows at
+	// 16:9 at most. Smaller images cost fewer tokens and less time on small
+	// local models, larger ones help them read small text and hit small
+	// targets. The model can still ask for any size per screenshot.
+	ScreenshotWidth int `yaml:"screenshotWidth,omitempty" mapstructure:"screenshotWidth"`
+	// ScreenshotQuality is the JPEG quality, 10 to 100, of those screenshots.
+	ScreenshotQuality int `yaml:"screenshotQuality,omitempty" mapstructure:"screenshotQuality"`
+}
+
+// WithDefaults returns the settings with zero values replaced by their
+// defaults and the rest held within their limits.
+func (p Picoclaw) WithDefaults() Picoclaw {
+	switch {
+	case p.ScreenshotWidth <= 0:
+		p.ScreenshotWidth = DefaultPicoclawScreenshotWidth
+	case p.ScreenshotWidth < MinPicoclawScreenshotWidth:
+		p.ScreenshotWidth = MinPicoclawScreenshotWidth
+	case p.ScreenshotWidth > MaxPicoclawScreenshotWidth:
+		p.ScreenshotWidth = MaxPicoclawScreenshotWidth
+	}
+	switch {
+	case p.ScreenshotQuality <= 0:
+		p.ScreenshotQuality = DefaultPicoclawScreenshotQuality
+	case p.ScreenshotQuality < MinPicoclawScreenshotQuality:
+		p.ScreenshotQuality = MinPicoclawScreenshotQuality
+	case p.ScreenshotQuality > MaxPicoclawScreenshotQuality:
+		p.ScreenshotQuality = MaxPicoclawScreenshotQuality
+	}
+	return p
 }
