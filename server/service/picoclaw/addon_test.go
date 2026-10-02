@@ -104,7 +104,7 @@ func TestInstallBinaryMakesItsDirectory(t *testing.T) {
 	if _, err := os.Stat(filepath.Dir(dest)); err == nil {
 		t.Fatal("the add-on directory must not exist yet, or this proves nothing")
 	}
-	if err := installPicoclawBinary(source, dest); err != nil {
+	if err := installPicoclawBinary(source, dest, sha256Hex("bin")); err != nil {
 		t.Fatal(err)
 	}
 	if b, err := os.ReadFile(dest); err != nil || string(b) != "bin" {

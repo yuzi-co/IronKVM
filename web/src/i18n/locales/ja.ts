@@ -1585,7 +1585,7 @@ const ja = {
         requiredTitle: 'PicoClaw がインストールされていません',
         requiredDescription:
           'PicoClaw ランタイムを開始する前に PicoClaw をインストールしてください。',
-        progressDescription: 'PicoClaw をダウンロードしてインストールしています。',
+        progressDescription: 'PicoClaw をインストールしています。',
         stages: {
           preparing: '準備中',
           downloading: 'ダウンロード中',

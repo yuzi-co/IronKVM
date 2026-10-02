@@ -1542,7 +1542,7 @@ const th = {
         uninstallFailed: 'การถอนการติดตั้งล้มเหลว',
         requiredTitle: 'PicoClaw ไม่ได้ติดตั้ง',
         requiredDescription: 'ติดตั้ง PicoClaw ก่อนที่จะเริ่ม Runtime PicoClaw',
-        progressDescription: 'PicoClaw กำลังดาวน์โหลดและติดตั้ง',
+        progressDescription: 'PicoClaw กำลังติดตั้ง',
         stages: {
           preparing: 'กำลังเตรียมการ',
           downloading: 'กำลังดาวน์โหลด',

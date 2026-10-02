@@ -1556,7 +1556,7 @@ const en = {
         uninstallFailed: 'Uninstall failed.',
         requiredTitle: 'PicoClaw is not installed',
         requiredDescription: 'Install PicoClaw before starting the PicoClaw runtime.',
-        progressDescription: 'PicoClaw is being downloaded and installed.',
+        progressDescription: 'PicoClaw is being installed.',
         stages: {
           preparing: 'Preparing',
           downloading: 'Downloading',

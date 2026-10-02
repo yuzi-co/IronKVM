@@ -1566,7 +1566,7 @@ const nb = {
         uninstallFailed: 'Avinstallering mislyktes.',
         requiredTitle: 'PicoClaw er ikke installert',
         requiredDescription: 'Installer PicoClaw før du starter PicoClaw runtime.',
-        progressDescription: 'PicoClaw blir lastet ned og installert.',
+        progressDescription: 'PicoClaw blir installert.',
         stages: {
           preparing: 'Forbereder',
           downloading: 'Laster ned',

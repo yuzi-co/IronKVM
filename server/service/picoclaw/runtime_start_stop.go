@@ -52,6 +52,7 @@ func (s *Service) startRuntimeContext(ctx context.Context) (string, string, *Pic
 		})
 		return "", "", newPicoclawError(CodeRuntimeStartFailed, "picoclaw is not installed")
 	}
+	refreshInstalledPicoclaw()
 
 	scriptPath, err := resolvePicoclawStartScript()
 	if err != nil {

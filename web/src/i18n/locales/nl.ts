@@ -1592,7 +1592,7 @@ const nl = {
         uninstallFailed: 'Verwijderen mislukt.',
         requiredTitle: 'PicoClaw is niet geïnstalleerd',
         requiredDescription: 'Installeer PicoClaw voordat u de runtime van PicoClaw start.',
-        progressDescription: 'PicoClaw wordt gedownload en geïnstalleerd.',
+        progressDescription: 'PicoClaw wordt geïnstalleerd.',
         stages: {
           preparing: 'Voorbereiden',
           downloading: 'Downloaden',

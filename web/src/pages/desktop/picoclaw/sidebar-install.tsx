@@ -39,7 +39,7 @@ export const SidebarInstall = ({
         {isInstalling && (
           <div className="mt-6 text-left">
             <div className="mb-2 flex items-center justify-between text-xs text-neutral-500">
-              <span>{t(`picoclaw.install.stages.${installStage || 'downloading'}`)}</span>
+              <span>{t(`picoclaw.install.stages.${installStage || 'preparing'}`)}</span>
               <span>{installProgress ?? 0}%</span>
             </div>
             <Progress

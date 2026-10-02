@@ -1577,7 +1577,7 @@ const uk = {
         uninstallFailed: 'Помилка видалення.',
         requiredTitle: 'PicoClaw не встановлено',
         requiredDescription: 'Встановіть PicoClaw перед запуском runtime PicoClaw.',
-        progressDescription: 'PicoClaw завантажується та встановлюється.',
+        progressDescription: 'PicoClaw встановлюється.',
         stages: {
           preparing: 'Підготовка',
           downloading: 'Завантаження',

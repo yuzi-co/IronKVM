@@ -1614,7 +1614,7 @@ const de = {
         uninstallFailed: 'Deinstallation fehlgeschlagen.',
         requiredTitle: 'PicoClaw ist nicht installiert',
         requiredDescription: 'Installieren Sie PicoClaw, bevor Sie die PicoClaw Runtime starten.',
-        progressDescription: 'PicoClaw wird heruntergeladen und installiert.',
+        progressDescription: 'PicoClaw wird installiert.',
         stages: {
           preparing: 'Vorbereiten',
           downloading: 'Wird heruntergeladen',

@@ -1,3 +1,4 @@
+import { picoAssistantKind, picoError, picoMessageId } from '@/lib/pico-message.ts';
 import { clearPicoclawSessionId, setPicoclawSessionId } from '@/lib/picoclaw-storage.ts';
 import { getBaseUrl } from '@/lib/service.ts';
 
@@ -75,6 +76,7 @@ type GatewayEventMap = {
   transport_state: GatewayTransportState;
   run_state: GatewayRunState;
   assistant_message: GatewayAssistantMessage;
+  assistant_message_delete: { id: string };
   tool_action: GatewayToolAction;
   observation: GatewayObservation;
   error: GatewayError;
@@ -365,13 +367,12 @@ class PicoClawGateway {
       return;
     }
     if (type === 'error') {
-      this.setTransportState('error');
+      const error = picoError(message);
+      if (!error.requestScoped) {
+        this.setTransportState('error');
+      }
       this.setRunState('idle');
-      this.emit('error', {
-        code: String(message.code || 'ERROR'),
-        message: String(message.message || 'Gateway error'),
-        raw: message
-      });
+      this.emit('error', { code: error.code, message: error.message, raw: message });
       return;
     }
     if (type === 'control.mode_changed') {
@@ -390,12 +391,25 @@ class PicoClawGateway {
       return;
     }
     if (type === 'message.create' || type === 'message.update') {
-      this.setRunState('idle');
+      const kind = picoAssistantKind(message);
+      if (kind === 'hidden') {
+        return;
+      }
+      if (kind === 'reply') {
+        this.setRunState('idle');
+      }
       this.emit('assistant_message', {
-        id: String(message.id || generateUUIDv4()),
+        id: picoMessageId(message) ?? generateUUIDv4(),
         text: extractText(message),
         raw: message
       });
+      return;
+    }
+    if (type === 'message.delete') {
+      const id = picoMessageId(message);
+      if (id) {
+        this.emit('assistant_message_delete', { id });
+      }
       return;
     }
 

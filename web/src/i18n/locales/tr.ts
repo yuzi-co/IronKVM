@@ -1568,7 +1568,7 @@ const tr = {
         uninstallFailed: 'Kaldırma başarısız oldu.',
         requiredTitle: 'PicoClaw kurulu değil',
         requiredDescription: "PicoClaw runtime'ı başlatmadan önce PicoClaw'ı yükleyin.",
-        progressDescription: 'PicoClaw indiriliyor ve kuruluyor.',
+        progressDescription: 'PicoClaw kuruluyor.',
         stages: {
           preparing: 'Hazırlanıyor',
           downloading: 'İndiriliyor',

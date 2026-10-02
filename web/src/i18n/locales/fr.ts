@@ -1603,7 +1603,7 @@ const fr = {
         uninstallFailed: 'Échec de la désinstallation.',
         requiredTitle: "PicoClaw n'est pas installé",
         requiredDescription: 'Installez PicoClaw avant de démarrer le runtime PicoClaw.',
-        progressDescription: "PicoClaw est en cours de téléchargement et d'installation.",
+        progressDescription: "PicoClaw est en cours d'installation.",
         stages: {
           preparing: 'Préparation',
           downloading: 'Téléchargement',
