@@ -1,0 +1,17 @@
+# Functions libkvm.so must export as strong definitions. The first eleven are
+# what NanoKVM-Server's binary leaves undefined for libkvm.so to resolve
+# (riscv64-unknown-linux-musl-nm -D --undefined-only NanoKVM-Server, less
+# libc); the last two complete kvm_vision.h.
+free_kvmv_data
+kvmv_deinit
+kvmv_hdmi_control
+kvmv_hdmi_signal_active
+kvmv_init
+kvmv_read_img
+kvmv_read_video
+set_capture_fps
+set_frame_detact
+set_h264_fps
+set_h264_gop
+free_all_kvmv_data
+set_venc_auto_recyc
