@@ -124,7 +124,6 @@ type RuntimeStartResult struct {
 type RuntimeInstallResult struct {
 	Installed bool          `json:"installed"`
 	Binary    string        `json:"binary"`
-	Download  string        `json:"download"`
 	Output    string        `json:"output,omitempty"`
 	Status    RuntimeStatus `json:"status"`
 }

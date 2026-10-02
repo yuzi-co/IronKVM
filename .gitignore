@@ -63,3 +63,7 @@ official-kvmapp/
 base/
 release-out/
 tools/viewer/viewer.exe
+
+# The PicoClaw binary the image carries. ironkvm-dist builds it from a pinned
+# commit of yuzi-co/picoclaw (dist/build-picoclaw.sh); it is never committed.
+kvmapp/picoclaw/bin/

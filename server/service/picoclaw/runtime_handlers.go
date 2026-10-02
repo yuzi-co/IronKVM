@@ -247,7 +247,6 @@ func (s *Service) InstallRuntime(c *gin.Context) {
 	writeSuccess(c, RuntimeInstallResult{
 		Installed: currentStatus.Installed && !currentStatus.Installing,
 		Binary:    picoclawBinaryPath,
-		Download:  picoclawDownloadURL,
 		Output:    output,
 		Status:    s.runtimeStatus(),
 	})
@@ -326,7 +325,7 @@ func (s *Service) UninstallRuntime(c *gin.Context) {
 		}
 	}
 	_ = os.Remove(picoclawBinaryPath)
-	_ = os.RemoveAll(picoclawCacheDir)
+	_ = os.Remove(installedChecksumPath(picoclawBinaryPath))
 
 	s.runtime.Set(RuntimeStatus{
 		Ready:           false,
@@ -343,7 +342,6 @@ func (s *Service) UninstallRuntime(c *gin.Context) {
 	writeSuccess(c, RuntimeInstallResult{
 		Installed: false,
 		Binary:    picoclawBinaryPath,
-		Download:  picoclawDownloadURL,
 		Output:    uninstallOutput,
 		Status:    s.runtimeStatus(),
 	})

@@ -1,15 +1,11 @@
 package picoclaw
 
 import (
-	"archive/tar"
-	"compress/gzip"
-	"context"
-	"crypto/sha512"
+	"crypto/sha256"
 	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -18,15 +14,18 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"NanoKVM-Server/service/extensions/addon"
-	"NanoKVM-Server/utils"
 )
+
+// errPicoclawNotBundled is what an install answers on an image that does not
+// carry PicoClaw. There is no download to fall back to.
+var errPicoclawNotBundled = errors.New("PicoClaw is not included in this image")
 
 func (s *Service) installRuntime() (string, *PicoclawError) {
 	if s == nil {
 		return "", newPicoclawError(CodeRuntimeUnavailable, "picoclaw service is unavailable")
 	}
 	s.ensureDependencies()
-	log.Debugf("picoclaw install: start, binary=%s, cache=%s", picoclawBinaryPath, picoclawCacheDir)
+	log.Debugf("picoclaw install: start, binary=%s, source=%s", picoclawBinaryPath, picoclawBundledBinary)
 
 	currentStatus := s.runtime.Get()
 	if currentStatus.Installing {
@@ -34,7 +33,7 @@ func (s *Service) installRuntime() (string, *PicoclawError) {
 		return "picoclaw installation is already in progress", nil
 	}
 
-	if installed, err := isPicoclawInstalled(); err == nil && installed {
+	if installed, err := isPicoclawInstalled(); err == nil && installed && !installedPicoclawIsStale() {
 		settings, _ := loadPicoclawGatewaySettings()
 		log.Debugf("picoclaw install: binary already exists at %s", picoclawBinaryPath)
 		s.runtime.Set(RuntimeStatus{
@@ -52,7 +51,11 @@ func (s *Service) installRuntime() (string, *PicoclawError) {
 		return "picoclaw is already installed", nil
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), picoclawInstallTimeout)
+	if _, err := readBundledPicoclawChecksum(); err != nil {
+		log.Errorf("picoclaw install: %v", err)
+		return "", newPicoclawError(CodeRuntimeUnavailable, err.Error())
+	}
+
 	s.runtime.Set(RuntimeStatus{
 		Ready:           false,
 		Installed:       false,
@@ -64,86 +67,16 @@ func (s *Service) installRuntime() (string, *PicoclawError) {
 		CheckedAt:       time.Now(),
 	})
 
-	go s.runInstallRuntime(ctx, cancel)
+	go s.runInstallRuntime()
 	return "picoclaw installation started", nil
 }
 
-func (s *Service) runInstallRuntime(ctx context.Context, cancel context.CancelFunc) {
+func (s *Service) runInstallRuntime() {
 	s.ensureDependencies()
-	defer cancel()
 
-	_ = os.RemoveAll(picoclawCacheDir)
-	if err := os.MkdirAll(picoclawCacheDir, 0o755); err != nil {
-		log.Errorf("picoclaw install: failed to create cache directory %s: %v", picoclawCacheDir, err)
-		s.finishInstallFailure("install_failed", fmt.Sprintf("failed to create cache directory: %v", err))
-		return
-	}
-	log.Debugf("picoclaw install: cache directory ready at %s", picoclawCacheDir)
-	defer func() {
-		if err := os.RemoveAll(picoclawCacheDir); err != nil {
-			log.Errorf("picoclaw install: failed to clean cache directory %s: %v", picoclawCacheDir, err)
-			return
-		}
-		log.Debugf("picoclaw install: cleaned cache directory %s", picoclawCacheDir)
-	}()
-
-	s.setInstallProgress("downloading", 5, "")
-	log.Debugf("picoclaw install: downloading checksum from %s", picoclawChecksumURL)
-	expectedDigest, err := downloadPicoclawChecksum(ctx)
-	if err != nil {
-		log.Errorf("picoclaw install: checksum download failed: %v", err)
-		s.finishInstallFailure(installFailureStatus(err), err.Error())
-		return
-	}
-	log.Debug("picoclaw install: checksum file downloaded")
-
-	archivePath := filepath.Join(picoclawCacheDir, "picoclaw.tar.gz")
-	log.Debugf("picoclaw install: downloading archive from %s to %s", picoclawDownloadURL, archivePath)
-	if err := downloadPicoclawArchive(ctx, archivePath, func(downloaded int64, total int64) {
-		progress := 10
-		if total > 0 {
-			progress = 10 + int(float64(downloaded)*70/float64(total))
-			if progress > 80 {
-				progress = 80
-			}
-		}
-		s.setInstallProgress("downloading", progress, "")
-	}); err != nil {
-		log.Errorf("picoclaw install: download failed: %v", err)
-		s.finishInstallFailure(installFailureStatus(err), err.Error())
-		return
-	}
-	log.Debugf("picoclaw install: archive download completed")
-
-	s.setInstallProgress("verifying", 82, "")
-
-	if err := verifyFileSHA512(archivePath, expectedDigest); err != nil {
-		log.Errorf("picoclaw install: checksum verification failed: %v", err)
-		s.finishInstallFailure(installFailureStatus(err), err.Error())
-		return
-	}
-	log.Debugf("picoclaw install: archive checksum verified for %s", archivePath)
-
-	s.setInstallProgress("extracting", 85, "")
-	log.Debugf("picoclaw install: extracting binary from %s", archivePath)
-	extractedPath, err := extractPicoclawBinary(archivePath, picoclawCacheDir)
-	if err != nil {
-		log.Errorf("picoclaw install: extract failed: %v", err)
-		s.finishInstallFailure(installFailureStatus(err), err.Error())
-		return
-	}
-	log.Debugf("picoclaw install: extracted binary to %s", extractedPath)
-
-	s.setInstallProgress("installing", 95, "")
-	destination := picoclawInstallDestination()
-	log.Debugf("picoclaw install: installing binary to %s", destination)
-	if err := installPicoclawBinary(extractedPath, destination); err != nil {
-		log.Errorf("picoclaw install: install failed: %v", err)
-		s.finishInstallFailure(installFailureStatus(err), err.Error())
-		return
-	}
-	if err := recordPicoclawAddon(); err != nil {
-		log.Errorf("picoclaw install: failed to record the add-on: %v", err)
+	s.setInstallProgress("installing", 20, "")
+	if err := installBundledPicoclaw(); err != nil {
+		log.Errorf("picoclaw install: %v", err)
 		s.finishInstallFailure("install_failed", err.Error())
 		return
 	}
@@ -161,95 +94,81 @@ func (s *Service) runInstallRuntime(ctx context.Context, cancel context.CancelFu
 	})
 }
 
-func downloadPicoclawArchive(ctx context.Context, destination string, onProgress func(downloaded int64, total int64)) error {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, picoclawDownloadURL, nil)
+// installBundledPicoclaw copies the image's PicoClaw to where it is installed,
+// checks the copy against the image's sha256, records that sha256 beside it,
+// and makes the add-on's link and bind.
+func installBundledPicoclaw() error {
+	digest, err := readBundledPicoclawChecksum()
 	if err != nil {
-		return fmt.Errorf("failed to create download request: %w", err)
+		return err
 	}
-
-	client := utils.OutboundClient(picoclawDownloadTimeout)
-	resp, err := client.Do(req)
-	if err != nil {
-		return fmt.Errorf("failed to download picoclaw: %w", err)
+	destination := picoclawInstallDestination()
+	if err := installPicoclawBinary(picoclawBundledBinary, destination, digest); err != nil {
+		return err
 	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("failed to download picoclaw: unexpected status %s", resp.Status)
+	if err := os.WriteFile(installedChecksumPath(destination), []byte(digest+"\n"), 0o644); err != nil {
+		return fmt.Errorf("failed to record the installed sha256: %w", err)
 	}
-
-	file, err := os.Create(destination)
-	if err != nil {
-		return fmt.Errorf("failed to create archive file: %w", err)
-	}
-	defer file.Close()
-
-	if err := copyWithProgress(ctx, file, resp.Body, resp.ContentLength, onProgress); err != nil {
-		return fmt.Errorf("failed to save archive: %w", err)
+	if err := recordPicoclawAddon(); err != nil {
+		return fmt.Errorf("failed to record the add-on: %w", err)
 	}
 	return nil
 }
 
-func downloadPicoclawChecksum(ctx context.Context) (string, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, picoclawChecksumURL, nil)
-	if err != nil {
-		return "", fmt.Errorf("failed to create checksum request: %w", err)
+// refreshInstalledPicoclaw replaces an installed PicoClaw that is not the one
+// the image carries: Sipeed's v0.2.8 from an older server, or the fork's build
+// from an older image. It runs before every start, so a new image brings its
+// PicoClaw with it. The settings are left alone.
+func refreshInstalledPicoclaw() {
+	if !installedPicoclawIsStale() {
+		return
 	}
-
-	client := utils.OutboundClient(picoclawDownloadTimeout)
-	resp, err := client.Do(req)
-	if err != nil {
-		return "", fmt.Errorf("failed to download picoclaw checksum: %w", err)
+	log.Infof("picoclaw: installing the PicoClaw this image carries over the one installed")
+	if err := installBundledPicoclaw(); err != nil {
+		log.Errorf("picoclaw: failed to install the PicoClaw this image carries: %v", err)
 	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("failed to download picoclaw checksum: unexpected status %s", resp.Status)
-	}
-
-	data, err := io.ReadAll(io.LimitReader(resp.Body, 16*1024))
-	if err != nil {
-		return "", fmt.Errorf("failed to read checksum file: %w", err)
-	}
-
-	digest, err := parseSHA512Digest(string(data), filepath.Base(picoclawDownloadURL))
-	if err != nil {
-		return "", err
-	}
-	return digest, nil
 }
 
-func copyWithProgress(ctx context.Context, dst io.Writer, src io.Reader, total int64, onProgress func(downloaded int64, total int64)) error {
-	buffer := make([]byte, 32*1024)
-	var downloaded int64
-
-	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		default:
-		}
-
-		n, readErr := src.Read(buffer)
-		if n > 0 {
-			if _, writeErr := dst.Write(buffer[:n]); writeErr != nil {
-				return writeErr
-			}
-			downloaded += int64(n)
-			if onProgress != nil {
-				onProgress(downloaded, total)
-			}
-		}
-		if readErr == io.EOF {
-			if onProgress != nil {
-				onProgress(downloaded, total)
-			}
-			return nil
-		}
-		if readErr != nil {
-			return readErr
-		}
+// installedPicoclawIsStale reports whether the image carries a PicoClaw and
+// the installed one is not it. It compares the sha256 recorded at install with
+// the image's, and reads no binary.
+func installedPicoclawIsStale() bool {
+	want, err := readBundledPicoclawChecksum()
+	if err != nil {
+		return false
 	}
+	have, err := os.ReadFile(installedChecksumPath(picoclawInstallDestination()))
+	return err != nil || strings.TrimSpace(string(have)) != want
+}
+
+func installedChecksumPath(binary string) string {
+	return binary + ".sha256"
+}
+
+// readBundledPicoclawChecksum returns the sha256 the image records for its
+// PicoClaw, in the sha256sum format the build writes, or errPicoclawNotBundled
+// when the image carries no PicoClaw.
+func readBundledPicoclawChecksum() (string, error) {
+	if info, err := os.Stat(picoclawBundledBinary); err != nil || info.IsDir() {
+		return "", errPicoclawNotBundled
+	}
+	raw, err := os.ReadFile(picoclawBundledChecksum)
+	if err != nil {
+		return "", errPicoclawNotBundled
+	}
+	fields := strings.Fields(string(raw))
+	if len(fields) == 0 || !isValidSHA256Digest(fields[0]) {
+		return "", fmt.Errorf("%s holds no sha256", picoclawBundledChecksum)
+	}
+	return strings.ToLower(fields[0]), nil
+}
+
+func isValidSHA256Digest(value string) bool {
+	if len(value) != sha256.Size*2 {
+		return false
+	}
+	_, err := hex.DecodeString(value)
+	return err == nil
 }
 
 func (s *Service) setInstallProgress(stage string, progress int, lastError string) {
@@ -288,138 +207,9 @@ func (s *Service) finishInstallFailure(status string, message string) {
 	})
 }
 
-func installFailureStatus(err error) string {
-	if err == nil {
-		return "install_failed"
-	}
-	if errors.Is(err, context.DeadlineExceeded) {
-		return "install_timeout"
-	}
-	return "install_failed"
-}
-
-func parseSHA512Digest(raw string, expectedName string) (string, error) {
-	lines := strings.Split(raw, "\n")
-	var fallback string
-
-	for _, line := range lines {
-		trimmed := strings.TrimSpace(line)
-		if trimmed == "" {
-			continue
-		}
-
-		fields := strings.Fields(trimmed)
-		if len(fields) == 0 {
-			continue
-		}
-
-		digest := fields[0]
-		if !isValidSHA512Digest(digest) {
-			continue
-		}
-
-		if len(fields) == 1 {
-			if fallback == "" {
-				fallback = strings.ToLower(digest)
-			}
-			continue
-		}
-
-		name := strings.TrimPrefix(fields[len(fields)-1], "*")
-		if expectedName == "" || name == expectedName {
-			return strings.ToLower(digest), nil
-		}
-	}
-
-	if fallback != "" {
-		return fallback, nil
-	}
-
-	return "", fmt.Errorf("failed to parse sha512 digest from checksum file")
-}
-
-func isValidSHA512Digest(value string) bool {
-	if len(value) != sha512.Size*2 {
-		return false
-	}
-
-	_, err := hex.DecodeString(value)
-	return err == nil
-}
-
-func verifyFileSHA512(filePath string, expectedDigest string) error {
-	expectedDigest = strings.ToLower(strings.TrimSpace(expectedDigest))
-	if !isValidSHA512Digest(expectedDigest) {
-		return fmt.Errorf("invalid expected sha512 digest")
-	}
-
-	file, err := os.Open(filePath)
-	if err != nil {
-		return fmt.Errorf("failed to open file for sha512 verification: %w", err)
-	}
-	defer file.Close()
-
-	hasher := sha512.New()
-	if _, err := io.Copy(hasher, file); err != nil {
-		return fmt.Errorf("failed to hash file for sha512 verification: %w", err)
-	}
-
-	actualDigest := hex.EncodeToString(hasher.Sum(nil))
-	if actualDigest != expectedDigest {
-		return fmt.Errorf("sha512 mismatch: got %s", actualDigest)
-	}
-
-	return nil
-}
-
-func extractPicoclawBinary(archivePath string, destinationDir string) (string, error) {
-	file, err := os.Open(archivePath)
-	if err != nil {
-		return "", fmt.Errorf("failed to open archive: %w", err)
-	}
-	defer file.Close()
-
-	gzipReader, err := gzip.NewReader(file)
-	if err != nil {
-		return "", fmt.Errorf("failed to read archive: %w", err)
-	}
-	defer gzipReader.Close()
-
-	tarReader := tar.NewReader(gzipReader)
-	for {
-		header, err := tarReader.Next()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return "", fmt.Errorf("failed to extract archive: %w", err)
-		}
-		if header.Typeflag != tar.TypeReg {
-			continue
-		}
-		if filepath.Base(header.Name) != "picoclaw" {
-			continue
-		}
-
-		extractedPath := filepath.Join(destinationDir, "picoclaw")
-		outFile, err := os.OpenFile(extractedPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o755)
-		if err != nil {
-			return "", fmt.Errorf("failed to create extracted binary: %w", err)
-		}
-		if _, err := io.Copy(outFile, tarReader); err != nil {
-			_ = outFile.Close()
-			return "", fmt.Errorf("failed to extract picoclaw binary: %w", err)
-		}
-		if err := outFile.Close(); err != nil {
-			return "", fmt.Errorf("failed to finalize extracted binary: %w", err)
-		}
-		return extractedPath, nil
-	}
-
-	return "", fmt.Errorf("picoclaw binary not found in archive")
-}
-
-func installPicoclawBinary(source string, destination string) error {
+// installPicoclawBinary copies source to destination through a temporary file
+// and renames it into place only when the bytes written hash to wantSHA256.
+func installPicoclawBinary(source string, destination string, wantSHA256 string) error {
 	// The destination directory need not exist: on a distribution image it is
 	// the add-on's own directory on /data, and the first install of PicoClaw on
 	// a board is what creates it. Measured on the reference board on
@@ -432,7 +222,7 @@ func installPicoclawBinary(source string, destination string) error {
 
 	inFile, err := os.Open(source)
 	if err != nil {
-		return fmt.Errorf("failed to open extracted picoclaw binary: %w", err)
+		return fmt.Errorf("failed to open picoclaw binary: %w", err)
 	}
 	defer inFile.Close()
 
@@ -442,7 +232,8 @@ func installPicoclawBinary(source string, destination string) error {
 		return fmt.Errorf("failed to create destination binary: %w", err)
 	}
 
-	if _, err := io.Copy(outFile, inFile); err != nil {
+	hasher := sha256.New()
+	if _, err := io.Copy(io.MultiWriter(outFile, hasher), inFile); err != nil {
 		_ = outFile.Close()
 		_ = os.Remove(tempDestination)
 		return fmt.Errorf("failed to write destination binary: %w", err)
@@ -450,6 +241,10 @@ func installPicoclawBinary(source string, destination string) error {
 	if err := outFile.Close(); err != nil {
 		_ = os.Remove(tempDestination)
 		return fmt.Errorf("failed to finalize destination binary: %w", err)
+	}
+	if got := hex.EncodeToString(hasher.Sum(nil)); got != strings.ToLower(wantSHA256) {
+		_ = os.Remove(tempDestination)
+		return fmt.Errorf("sha256 mismatch: %s is %s, want %s", source, got, wantSHA256)
 	}
 	if err := os.Chmod(tempDestination, 0o755); err != nil {
 		_ = os.Remove(tempDestination)
