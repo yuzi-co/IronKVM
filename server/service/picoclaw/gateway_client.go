@@ -2,6 +2,7 @@ package picoclaw
 
 import (
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -73,7 +74,92 @@ func (s *Service) connectGateway(sessionID string) (*websocket.Conn, *PicoclawEr
 	return upstream, nil
 }
 
+// gatewayReadyPath is PicoClaw's readiness endpoint. Since v0.3 the gateway
+// serves it unauthenticated on the same port as the pico channel, and it
+// answers 200 only after the channels have started.
+const gatewayReadyPath = "/ready"
+
+// gatewayProbeTimeout bounds one readiness request. The gateway listens on
+// loopback, so anything slower than this is as good as unavailable.
+const gatewayProbeTimeout = 3 * time.Second
+
+// probePicoclawGateway asks the gateway's GET /ready whether it is up. This
+// replaces a full WebSocket handshake every few seconds. A gateway without
+// the endpoint (404) is probed with the WebSocket handshake as before.
 func probePicoclawGateway(cfg Config) *gatewayProbeError {
+	readyURL, err := buildGatewayReadyURL(cfg)
+	if err != nil {
+		return &gatewayProbeError{
+			status:      "config_error",
+			configError: err.Error(),
+			lastError:   err.Error(),
+			message:     "gateway config is invalid",
+		}
+	}
+
+	timeout := time.Duration(cfg.ConnectTimeoutMs) * time.Millisecond
+	if timeout <= 0 || timeout > gatewayProbeTimeout {
+		timeout = gatewayProbeTimeout
+	}
+	client := &http.Client{
+		Timeout: timeout,
+		// Never follow a redirect away from the loopback gateway.
+		CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse },
+	}
+	response, err := client.Get(readyURL)
+	if err != nil {
+		return &gatewayProbeError{
+			status:    "unavailable",
+			lastError: err.Error(),
+			message:   "gateway is unavailable",
+		}
+	}
+	_, _ = io.Copy(io.Discard, io.LimitReader(response.Body, 64*1024))
+	_ = response.Body.Close()
+
+	switch response.StatusCode {
+	case http.StatusOK:
+		return nil
+	case http.StatusNotFound:
+		return probePicoclawGatewayWebSocket(cfg)
+	case http.StatusServiceUnavailable:
+		return &gatewayProbeError{
+			status:    "unavailable",
+			lastError: "gateway is not ready",
+			message:   "gateway is not ready",
+		}
+	default:
+		return &gatewayProbeError{
+			status:    "unavailable",
+			lastError: fmt.Sprintf("gateway readiness check failed: HTTP %d", response.StatusCode),
+			message:   "gateway readiness check failed",
+		}
+	}
+}
+
+// buildGatewayReadyURL turns the configured ws:// gateway URL into the
+// http:// URL of its readiness endpoint on the same host and port.
+func buildGatewayReadyURL(cfg Config) (string, error) {
+	parsed, err := url.Parse(cfg.GatewayURL)
+	if err != nil {
+		return "", fmt.Errorf("invalid gateway url: %w", err)
+	}
+	scheme := ""
+	switch parsed.Scheme {
+	case "ws":
+		scheme = "http"
+	case "wss":
+		scheme = "https"
+	default:
+		return "", fmt.Errorf("invalid gateway url scheme: %s", parsed.Scheme)
+	}
+	if parsed.Host == "" {
+		return "", fmt.Errorf("invalid gateway url host")
+	}
+	return (&url.URL{Scheme: scheme, Host: parsed.Host, Path: gatewayReadyPath}).String(), nil
+}
+
+func probePicoclawGatewayWebSocket(cfg Config) *gatewayProbeError {
 	gatewayURL, err := buildGatewayURL(cfg, "runtime-probe")
 	if err != nil {
 		return &gatewayProbeError{

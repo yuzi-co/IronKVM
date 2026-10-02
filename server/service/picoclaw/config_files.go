@@ -170,6 +170,7 @@ func (d *picoclawConfigDocument) saveConfig() error {
 	if err != nil {
 		return fmt.Errorf("failed to encode updated picoclaw config: %w", err)
 	}
+	defer invalidatePicoclawSettingsCache()
 	if err := writeFileAtomic(d.configPath, updated, 0o600); err != nil {
 		return fmt.Errorf("failed to write picoclaw config: %w", err)
 	}
@@ -186,6 +187,7 @@ func (d *picoclawConfigDocument) saveSecurity() error {
 	if err := encoder.Close(); err != nil {
 		return fmt.Errorf("failed to finalize picoclaw security config: %w", err)
 	}
+	defer invalidatePicoclawSettingsCache()
 	if err := writeFileAtomic(d.securityPath, buf.Bytes(), 0o600); err != nil {
 		return fmt.Errorf("failed to write picoclaw security config: %w", err)
 	}
