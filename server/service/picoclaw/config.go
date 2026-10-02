@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -163,7 +164,104 @@ type picoclawGatewaySettings struct {
 	TargetModelName string
 }
 
+// picoclawFileStamp identifies one version of a file by modification time and
+// size. A missing file has the zero stamp with exists false.
+type picoclawFileStamp struct {
+	exists  bool
+	modTime int64
+	size    int64
+}
+
+func statPicoclawFile(path string) (picoclawFileStamp, error) {
+	info, err := os.Stat(path)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return picoclawFileStamp{}, nil
+		}
+		return picoclawFileStamp{}, err
+	}
+	return picoclawFileStamp{exists: true, modTime: info.ModTime().UnixNano(), size: info.Size()}, nil
+}
+
+type picoclawSettingsCacheKey struct {
+	configPath string
+	config     picoclawFileStamp
+	security   picoclawFileStamp
+}
+
+// picoclawSettingsCache keeps the gateway settings parsed from config.json and
+// .security.yml. The status probe asks for them every few seconds and the
+// files rarely change, so they are parsed again only when either file's
+// modification time or size differs, or after this server wrote one of them.
+var picoclawSettingsCache struct {
+	mu         sync.Mutex
+	valid      bool
+	generation uint64
+	key        picoclawSettingsCacheKey
+	settings   picoclawGatewaySettings
+}
+
+func invalidatePicoclawSettingsCache() {
+	picoclawSettingsCache.mu.Lock()
+	picoclawSettingsCache.valid = false
+	picoclawSettingsCache.generation++
+	picoclawSettingsCache.mu.Unlock()
+}
+
+func picoclawSettingsKey() (picoclawSettingsCacheKey, error) {
+	configPath, err := resolvePicoclawConfigPath()
+	if err != nil {
+		return picoclawSettingsCacheKey{}, err
+	}
+	configStamp, err := statPicoclawFile(configPath)
+	if err != nil {
+		return picoclawSettingsCacheKey{}, err
+	}
+	securityStamp, err := statPicoclawFile(resolvePicoclawSecurityPath(configPath))
+	if err != nil {
+		return picoclawSettingsCacheKey{}, err
+	}
+	return picoclawSettingsCacheKey{configPath: configPath, config: configStamp, security: securityStamp}, nil
+}
+
 func loadPicoclawGatewaySettings() (picoclawGatewaySettings, error) {
+	key, err := picoclawSettingsKey()
+	if err != nil || !key.config.exists {
+		// Let the uncached path produce the usual error.
+		return loadPicoclawGatewaySettingsUncached()
+	}
+
+	picoclawSettingsCache.mu.Lock()
+	if picoclawSettingsCache.valid && picoclawSettingsCache.key == key {
+		settings := picoclawSettingsCache.settings
+		picoclawSettingsCache.mu.Unlock()
+		return settings, nil
+	}
+	generation := picoclawSettingsCache.generation
+	picoclawSettingsCache.mu.Unlock()
+
+	// Parse without the lock: loading can enable the pico channel and save
+	// config.json, which invalidates the cache.
+	settings, err := loadPicoclawGatewaySettingsUncached()
+	if err != nil {
+		return settings, err
+	}
+
+	picoclawSettingsCache.mu.Lock()
+	defer picoclawSettingsCache.mu.Unlock()
+	// A write during the parse (ours or another goroutine's) bumps the
+	// generation; then the result is returned but not kept. A file changed
+	// after the stat above only makes the stored key stale, so the next call
+	// parses again.
+	if picoclawSettingsCache.generation == generation {
+		picoclawSettingsCache.valid = true
+		picoclawSettingsCache.key = key
+		picoclawSettingsCache.settings = settings
+	}
+	return settings, nil
+}
+
+func loadPicoclawGatewaySettingsUncached() (picoclawGatewaySettings, error) {
 	doc, err := loadPicoclawConfigDocument()
 	if err != nil {
 		return picoclawGatewaySettings{}, err

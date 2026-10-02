@@ -38,6 +38,7 @@ type Service struct {
 	captureLeaseMu     sync.Mutex
 	captureLeases      map[string]func()
 	captureLeaseTimers map[string]*time.Timer
+	pointer            pointerTracker
 	runtimeLifecycleMu sync.Mutex
 	reconcileOnce      sync.Once
 }
@@ -194,6 +195,8 @@ type Action struct {
 	Action     string     `json:"action"`
 	X          *float64   `json:"x"`
 	Y          *float64   `json:"y"`
+	DX         *float64   `json:"dx"`
+	DY         *float64   `json:"dy"`
 	From       *Point     `json:"from"`
 	To         *Point     `json:"to"`
 	Button     string     `json:"button"`
@@ -213,6 +216,18 @@ type ActionResult struct {
 	DurationMs      int64  `json:"duration_ms"`
 	HIDWrites       int    `json:"hid_writes"`
 	ExecutedActions int    `json:"executed_actions,omitempty"`
+	// Pointer is where the actions left the mouse pointer, when the server
+	// knows it.
+	Pointer *PointerPosition `json:"pointer,omitempty"`
+}
+
+// PointerPosition is a mouse pointer position both as fractions of the screen
+// and in screen pixels.
+type PointerPosition struct {
+	X  float64 `json:"x"`
+	Y  float64 `json:"y"`
+	PX int     `json:"px"`
+	PY int     `json:"py"`
 }
 
 type cachedFrame struct {

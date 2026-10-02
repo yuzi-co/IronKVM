@@ -1,11 +1,13 @@
 package picoclaw
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -38,47 +40,102 @@ type jsonRPCError struct {
 var mcpToolDefinitions = []map[string]interface{}{
 	{
 		"name":        "kvm_screenshot",
-		"description": "Capture the current HDMI frame from the downstream remote host as a base64-encoded JPEG image.",
+		"description": "Capture the current HDMI frame from the downstream remote host as a JPEG image. Without arguments the image is scaled down (960 pixels wide unless the NanoKVM owner changed it), which is enough for most steps. To read small text or aim at a small target, pass both width and height, for example the full screen size reported with the previous screenshot.",
 		"inputSchema": map[string]interface{}{
 			"type": "object",
 			"properties": map[string]interface{}{
-				"width":   map[string]interface{}{"type": "integer", "description": "Target width in pixels (optional, default: 960)"},
-				"height":  map[string]interface{}{"type": "integer", "description": "Target height in pixels (optional)"},
-				"quality": map[string]interface{}{"type": "integer", "description": "JPEG quality 1-100 (optional, default: 60)"},
+				"width":   map[string]interface{}{"type": "integer", "description": "Target width in pixels (optional). Alone it can only make the default image smaller; with height the image has exactly this size"},
+				"height":  map[string]interface{}{"type": "integer", "description": "Target height in pixels (optional). Alone it can only make the default image smaller; with width the image has exactly this size"},
+				"quality": map[string]interface{}{"type": "integer", "description": "JPEG quality 1-100 (optional, default set by the NanoKVM owner, normally 60)"},
 			},
 		},
 	},
 	{
-		"name":        "kvm_actions",
-		"description": "Send one or more HID actions (click, type, hotkey, scroll, drag, move, wait) to the downstream remote host. Use normalized [0,1] coordinates for mouse actions.",
+		"name": "kvm_actions",
+		"description": "Send mouse and keyboard actions to the downstream remote host, in order. " +
+			"Mouse positions are fractions of the screen from 0 to 1, not pixels: x=0 is the left edge, x=1 the right edge, y=0 the top, y=1 the bottom. " +
+			"For a point seen in a screenshot, divide its pixel position by the image width and height (pixel 480,270 in a 960x540 image is x=0.5, y=0.5). " +
+			"To move the pointer by a number of screen pixels from where it is, use move with dx/dy. " +
+			`Examples: {"action":"click","x":0.5,"y":0.5} clicks the centre; {"action":"move","x":0.1,"y":0.9} goes near the bottom-left corner; ` +
+			`{"action":"move","dx":10} moves 10 pixels right; {"action":"move","dy":-20} moves 20 pixels up; {"action":"click"} clicks where the pointer is; ` +
+			`{"action":"type","text":"hello"}; {"action":"hotkey","keys":["ctrl","c"]}; {"action":"scroll","direction":"down","amount":3}; ` +
+			`{"action":"drag","from":{"x":0.2,"y":0.2},"to":{"x":0.6,"y":0.2}}; {"action":"wait","duration_ms":1000}. ` +
+			"The result reports where the pointer ended up. Set screenshot_after to get a screenshot of the result in the same call.",
 		"inputSchema": map[string]interface{}{
 			"type": "object",
 			"properties": map[string]interface{}{
 				"actions": map[string]interface{}{
 					"type":        "array",
-					"description": "Array of action objects. Each requires an 'action' field (click, move, type, hotkey, scroll, drag, wait).",
+					"description": "The actions to run, in order. Each object needs an \"action\" field: click, move, type, hotkey, scroll, drag or wait.",
 					"items": map[string]interface{}{
 						"type": "object",
 						"properties": map[string]interface{}{
-							"action":    map[string]interface{}{"type": "string"},
-							"x":         map[string]interface{}{"type": "number"},
-							"y":         map[string]interface{}{"type": "number"},
-							"button":    map[string]interface{}{"type": "string"},
-							"text":      map[string]interface{}{"type": "string"},
-							"keys":      map[string]interface{}{"type": "array", "items": map[string]interface{}{"type": "string"}},
-							"direction": map[string]interface{}{"type": "string"},
-							"amount":    map[string]interface{}{"type": "integer"},
+							"action": map[string]interface{}{
+								"type": "string",
+								"enum": []string{"click", "move", "type", "hotkey", "scroll", "drag", "wait"},
+							},
+							"x": map[string]interface{}{
+								"type": "number", "minimum": 0, "maximum": 1,
+								"description": "click, move, scroll: horizontal position as a fraction of the screen width, 0 = left edge, 1 = right edge. Not pixels.",
+							},
+							"y": map[string]interface{}{
+								"type": "number", "minimum": 0, "maximum": 1,
+								"description": "click, move, scroll: vertical position as a fraction of the screen height, 0 = top edge, 1 = bottom edge. Not pixels.",
+							},
+							"dx": map[string]interface{}{
+								"type":        "number",
+								"description": "move only, instead of x/y: screen pixels to move right from the current pointer position (negative = left).",
+							},
+							"dy": map[string]interface{}{
+								"type":        "number",
+								"description": "move only, instead of x/y: screen pixels to move down from the current pointer position (negative = up).",
+							},
+							"button": map[string]interface{}{
+								"type":        "string",
+								"enum":        []string{"left", "right", "middle", "back", "forward"},
+								"description": "click, drag: mouse button, default left.",
+							},
+							"text": map[string]interface{}{"type": "string", "description": "type: the text to type."},
+							"keys": map[string]interface{}{
+								"type":        "array",
+								"items":       map[string]interface{}{"type": "string"},
+								"description": `hotkey: keys pressed together, modifiers first, e.g. ["ctrl","alt","delete"] or ["enter"].`,
+							},
+							"direction": map[string]interface{}{
+								"type":        "string",
+								"enum":        []string{"up", "down"},
+								"description": "scroll: direction, default up.",
+							},
+							"amount": map[string]interface{}{"type": "integer", "minimum": 1, "description": "scroll: number of wheel steps, default 1."},
 							"duration_ms": map[string]interface{}{
 								"type":        "integer",
 								"minimum":     0,
 								"maximum":     maxWaitDurationMS,
-								"description": "Wait duration in milliseconds, up to 30000",
+								"description": "wait: milliseconds to wait, up to 30000.",
 							},
-							"from": map[string]interface{}{"type": "object", "properties": map[string]interface{}{"x": map[string]interface{}{"type": "number"}, "y": map[string]interface{}{"type": "number"}}},
-							"to":   map[string]interface{}{"type": "object", "properties": map[string]interface{}{"x": map[string]interface{}{"type": "number"}, "y": map[string]interface{}{"type": "number"}}},
+							"from": map[string]interface{}{
+								"type":        "object",
+								"description": "drag: start point, with x and y as fractions from 0 to 1.",
+								"properties":  map[string]interface{}{"x": map[string]interface{}{"type": "number"}, "y": map[string]interface{}{"type": "number"}},
+							},
+							"to": map[string]interface{}{
+								"type":        "object",
+								"description": "drag: end point, with x and y as fractions from 0 to 1.",
+								"properties":  map[string]interface{}{"x": map[string]interface{}{"type": "number"}, "y": map[string]interface{}{"type": "number"}},
+							},
 						},
 						"required": []string{"action"},
 					},
+				},
+				"screenshot_after": map[string]interface{}{
+					"type":        "boolean",
+					"description": "If true, take a screenshot after the actions and return it in this result, so no separate kvm_screenshot call is needed to check the outcome. Default false.",
+				},
+				"settle_ms": map[string]interface{}{
+					"type":        "integer",
+					"minimum":     0,
+					"maximum":     maxScreenshotSettle.Milliseconds(),
+					"description": "With screenshot_after: milliseconds to wait after the last action before the screenshot, so windows and pages can draw. Default 500, at most 5000.",
 				},
 			},
 			"required": []string{"actions"},
@@ -257,7 +314,7 @@ func (s *Service) mcpScreenshot(req jsonRPCRequest, args json.RawMessage, c *gin
 			"content": []map[string]interface{}{
 				{
 					"type": "text",
-					"text": "screenshot captured",
+					"text": screenshotCaption(meta),
 				},
 				{
 					"type":     "image",
@@ -297,7 +354,9 @@ func (s *Service) publishMCPObservation(c *gin.Context, text string, imageBase64
 
 func (s *Service) mcpActions(req jsonRPCRequest, args json.RawMessage, c *gin.Context) jsonRPCResponse {
 	var params struct {
-		Actions []Action `json:"actions"`
+		Actions         []Action `json:"actions"`
+		ScreenshotAfter bool     `json:"screenshot_after"`
+		SettleMs        *int     `json:"settle_ms"`
 	}
 	if err := json.Unmarshal(args, &params); err != nil {
 		return mcpToolError(req, "invalid actions payload")
@@ -311,22 +370,84 @@ func (s *Service) mcpActions(req jsonRPCRequest, args json.RawMessage, c *gin.Co
 		sessionID = s.lock.Owner()
 	}
 
-	result, err := s.executeActions(c.Request.Context(), sessionID, params.Actions)
+	ctx := c.Request.Context()
+	result, err := s.executeActions(ctx, sessionID, params.Actions)
 	if err != nil {
-		return mcpToolError(req, err.Message)
+		return mcpToolError(req, describeActionError(err, params.Actions, args))
 	}
 
 	resultJSON, _ := json.Marshal(result)
+	content := []map[string]interface{}{
+		{
+			"type": "text",
+			"text": string(resultJSON),
+		},
+	}
+	if params.ScreenshotAfter {
+		content = append(content, s.screenshotAfterActions(ctx, c, settleDuration(params.SettleMs))...)
+	}
+
 	return jsonRPCResponse{
 		JSONRPC: "2.0",
 		ID:      req.ID,
 		Result: map[string]interface{}{
-			"content": []map[string]interface{}{
-				{
-					"type": "text",
-					"text": string(resultJSON),
-				},
-			},
+			"content": content,
+		},
+	}
+}
+
+// The pause between the last action and the screenshot that screenshot_after
+// takes, so that a menu, a window or a page has time to draw.
+const (
+	defaultScreenshotSettle = 500 * time.Millisecond
+	maxScreenshotSettle     = 5 * time.Second
+)
+
+func settleDuration(settleMs *int) time.Duration {
+	if settleMs == nil {
+		return defaultScreenshotSettle
+	}
+	settle := time.Duration(*settleMs) * time.Millisecond
+	if settle < 0 {
+		return 0
+	}
+	if settle > maxScreenshotSettle {
+		return maxScreenshotSettle
+	}
+	return settle
+}
+
+// screenshotAfterActions waits for the screen to settle and returns the
+// screenshot as tool result content. The actions have already run, so a
+// failed capture is reported as text and does not turn the result into an
+// error.
+func (s *Service) screenshotAfterActions(ctx context.Context, c *gin.Context, settle time.Duration) []map[string]interface{} {
+	if waitErr := waitForControlOperation(ctx, settle); waitErr != nil {
+		return []map[string]interface{}{{
+			"type": "text",
+			"text": "actions done; no screenshot taken: " + waitErr.Message,
+		}}
+	}
+
+	data, meta, captureErr := s.captureScreenshot(ctx, ScreenshotQuery{Format: "base64"})
+	if captureErr != nil {
+		return []map[string]interface{}{{
+			"type": "text",
+			"text": "actions done; screenshot failed: " + captureErr.Message,
+		}}
+	}
+
+	b64 := base64.StdEncoding.EncodeToString(data)
+	s.publishMCPObservation(c, "screenshot captured", b64)
+	return []map[string]interface{}{
+		{
+			"type": "text",
+			"text": screenshotCaption(meta) + fmt.Sprintf(", taken %d ms after the actions", settle.Milliseconds()),
+		},
+		{
+			"type":     "image",
+			"data":     b64,
+			"mimeType": "image/jpeg",
 		},
 	}
 }
@@ -345,4 +466,17 @@ func mcpToolError(req jsonRPCRequest, message string) jsonRPCResponse {
 			},
 		},
 	}
+}
+
+// screenshotCaption tells the model what it is looking at: the size of the
+// image it got and the size of the remote screen, so that it can ask for a
+// sharper image or reason about screen pixels.
+func screenshotCaption(meta ScreenshotMeta) string {
+	if meta.SourceWidth == 0 || meta.SourceHeight == 0 {
+		return fmt.Sprintf("screenshot captured: %dx%d image", meta.CaptureWidth, meta.CaptureHeight)
+	}
+	return fmt.Sprintf(
+		"screenshot captured: %dx%d image of a %dx%d screen",
+		meta.CaptureWidth, meta.CaptureHeight, meta.SourceWidth, meta.SourceHeight,
+	)
 }
