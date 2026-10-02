@@ -1,0 +1,150 @@
+/*
+ * The V4L2 pipeline behind libkvm-v4l2:
+ *
+ *   capture node (UYVY, LT6911 over CSI-2)
+ *     -> VPSS mem2mem scaler (UYVY to NV12, optional downscale)
+ *     -> Coda980 mem2mem encoder (NV12 to H.264)
+ *
+ * Capture buffers are exported as dma-bufs and imported by the scaler. The
+ * buffers between the scaler and the encoder come from a dma-heap and are
+ * imported by both, so no frame is copied by the CPU. Only the bitstream is
+ * copied out, into the buffer handed to the server.
+ *
+ * This is the pipeline nixos-nanokvm's sg2002-h264-bridge proved on the board
+ * (about 51 fps at 1080p), run one frame per call instead of free running:
+ * kvmv_read_* takes the newest captured frame, scales it, encodes it and
+ * returns its access unit, which is what the vendor library does with its VI
+ * channel.
+ */
+#ifndef KVMV_PIPELINE_H
+#define KVMV_PIPELINE_H
+
+#include <stddef.h>
+#include <stdint.h>
+#include <linux/videodev2.h>
+
+#include "kvmv_policy.h"
+
+#define KVMV_PATH_MAX 64
+
+struct kvmv_devices {
+	char capture[KVMV_PATH_MAX];
+	char scaler[KVMV_PATH_MAX];
+	char encoder[KVMV_PATH_MAX];
+	char subdev[KVMV_PATH_MAX]; /* empty when the receiver has no node */
+};
+
+/*
+ * Find the three video nodes by driver and capability. Environment variables
+ * KVMV_CAPTURE_DEV, KVMV_SCALER_DEV, KVMV_ENCODER_DEV and KVMV_SUBDEV override
+ * discovery. Returns 0 when all three video nodes were found; otherwise -1,
+ * with the missing roles named in missing.
+ */
+int kvmv_find_devices(struct kvmv_devices *devices, char *missing,
+		      size_t missing_size);
+
+/* Find the HDMI receiver's subdevice node. Returns 0 when found. */
+int kvmv_find_subdev(char *path, size_t size);
+
+/*
+ * Ask the receiver what it sees. need_width and need_height are the capture
+ * node's frame size, or 0 to accept any. The timings are copied to out when
+ * it is not NULL.
+ */
+enum kvmv_signal kvmv_query_signal(int subdev_fd, unsigned int need_width,
+				   unsigned int need_height,
+				   struct v4l2_dv_timings *out);
+
+struct kvmv_buf {
+	void *addr;
+	size_t length;
+	int fd;
+};
+
+struct kvmv_pipe_cfg {
+	unsigned int req_width, req_height;
+	uint32_t bitrate_bps;
+	unsigned int gop;
+	unsigned int fps;
+	unsigned int capture_buffers;
+	unsigned int mid_buffers;
+	unsigned int bitstream_buffers;
+};
+
+/* What the encoder reports back. -1 where it would not say. */
+struct kvmv_applied {
+	int64_t bitrate_bps;
+	int gop;
+	int fps_numerator; /* frames */
+	int fps_denominator; /* per this many seconds */
+};
+
+struct kvmv_pipe {
+	int cap_fd, vpss_fd, enc_fd, heap_fd;
+	struct v4l2_pix_format cap_fmt;
+	struct v4l2_pix_format vpss_in_fmt, vpss_out_fmt;
+	struct v4l2_pix_format enc_out_fmt, enc_cap_fmt;
+	struct kvmv_plan plan;
+	struct kvmv_buf *cap;
+	unsigned int cap_count;
+	struct kvmv_buf *mid;
+	unsigned int mid_count;
+	unsigned int next_mid;
+	struct kvmv_buf *bs;
+	unsigned int bs_count;
+	int cap_on, vpss_out_on, vpss_cap_on, enc_out_on, enc_cap_on;
+	int running;
+	struct kvmv_applied applied;
+	char error[192];
+};
+
+enum kvmv_pipe_status {
+	KVMV_PIPE_OK = 0,
+	KVMV_PIPE_NO_FRAME, /* the capture node delivered nothing in time */
+	KVMV_PIPE_SOURCE_CHANGED, /* the source changed mode under the pipeline */
+	KVMV_PIPE_ERROR,
+};
+
+struct kvmv_encoded {
+	unsigned int index;
+	const uint8_t *data;
+	size_t size;
+	uint32_t flags;
+};
+
+/* Every ioctl the pipeline makes goes through this, so a test can stand in
+ * for the drivers. */
+extern int (*kvmv_ioctl_hook)(int fd, unsigned long request, void *arg);
+
+void kvmv_pipe_init(struct kvmv_pipe *pipe);
+
+/*
+ * Set formats, crops, frame rate and rate control on already open nodes, and
+ * check that the scaler's output surface is laid out exactly as the encoder
+ * expects its input. No buffers are touched, so this is what the host test
+ * drives through kvmv_ioctl_hook.
+ */
+int kvmv_pipe_negotiate(struct kvmv_pipe *pipe, const struct kvmv_pipe_cfg *cfg);
+
+/* Open the nodes, negotiate, allocate, prime the encoder and start streaming. */
+int kvmv_pipe_start(struct kvmv_pipe *pipe, const struct kvmv_devices *devices,
+		    const struct kvmv_pipe_cfg *cfg);
+
+/* Stop streaming and release everything. Safe on a stopped pipe. */
+void kvmv_pipe_stop(struct kvmv_pipe *pipe);
+
+/* Take the newest frame, scale it and encode it. On KVMV_PIPE_OK the caller
+ * copies out->data and then calls kvmv_pipe_release. */
+enum kvmv_pipe_status kvmv_pipe_encode(struct kvmv_pipe *pipe,
+				       unsigned int timeout_ms,
+				       struct kvmv_encoded *out);
+void kvmv_pipe_release(struct kvmv_pipe *pipe, const struct kvmv_encoded *encoded);
+
+/* Runtime changes. Each returns 0 when the encoder took it; the caller
+ * rebuilds the pipeline otherwise. */
+int kvmv_pipe_set_bitrate(struct kvmv_pipe *pipe, uint32_t bitrate_bps);
+int kvmv_pipe_set_gop(struct kvmv_pipe *pipe, unsigned int gop);
+int kvmv_pipe_set_fps(struct kvmv_pipe *pipe, unsigned int fps);
+int kvmv_pipe_force_key(struct kvmv_pipe *pipe);
+
+#endif
