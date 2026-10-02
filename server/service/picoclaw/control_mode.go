@@ -200,8 +200,12 @@ func (s *Service) stopRuntimeAndVerify(forceStop bool) error {
 		forceStop,
 		isRuntimeRunning,
 		func() error {
-			_, _, stopErr := s.stopRuntime()
-			return stopErr
+			// stopRuntime returns a *PicoclawError; a nil one must not
+			// become a non-nil error interface.
+			if _, _, stopErr := s.stopRuntime(); stopErr != nil {
+				return stopErr
+			}
+			return nil
 		},
 		picoclawStopTimeout,
 		100*time.Millisecond,
