@@ -65,13 +65,21 @@ func (s *Service) updateTaskCaptureLease(source string, sessionID string, data [
 		Type    string `json:"type"`
 		Payload struct {
 			MaxRuntimeMS int      `json:"max_runtime_ms"`
+			RequestID    string   `json:"request_id"`
 			RequestIDs   []string `json:"request_ids"`
+			Kind         string   `json:"kind"`
+			Thought      bool     `json:"thought"`
+			Placeholder  bool     `json:"placeholder"`
 		} `json:"payload"`
 	}
 	if err := json.Unmarshal(data, &message); err != nil {
 		return
 	}
 
+	// A task lease lasts for the whole turn. PicoClaw sends no top-level id on
+	// its messages, so releasing on every message.create or typing.stop, as
+	// this did before, let the lease go at the agent's first reasoning or
+	// tool-call message, long before the turn ended.
 	switch {
 	case source == "downstream" && message.Type == "message.send":
 		duration := defaultTaskCaptureLeaseDuration
@@ -89,20 +97,64 @@ func (s *Service) updateTaskCaptureLease(source string, sessionID string, data [
 	case source == "upstream" && message.Type == "turn.done":
 		// The IronKVM PicoClaw build ends every turn with turn.done, naming
 		// the message.send requests the turn handled.
-		if len(message.Payload.RequestIDs) == 0 {
+		s.markSessionSendsTurnDone(sessionID)
+		ids := message.Payload.RequestIDs
+		if len(ids) == 0 && message.Payload.RequestID != "" {
+			ids = []string{message.Payload.RequestID}
+		}
+		if len(ids) == 0 {
 			s.releaseCaptureLeasesForSession(sessionID)
 			return
 		}
-		for _, id := range message.Payload.RequestIDs {
+		for _, id := range ids {
 			s.releaseTaskCaptureLease(sessionID, id)
 		}
-	case source == "upstream" && (message.Type == "typing.stop" || message.Type == "message.create" || message.Type == "message.update" || message.Type == "error"):
-		if message.ID == "" {
-			s.releaseCaptureLeasesForSession(sessionID)
+	case source == "upstream" && message.Type == "error":
+		// An error about one request names it; any other error ends the
+		// session's work.
+		if message.Payload.RequestID != "" {
+			s.releaseTaskCaptureLease(sessionID, message.Payload.RequestID)
 			return
 		}
-		s.releaseTaskCaptureLease(sessionID, message.ID)
+		s.releaseCaptureLeasesForSession(sessionID)
+	case source == "upstream" && (message.Type == "message.create" || message.Type == "message.update"):
+		// A build without turn.done ends a turn with its reply. Reasoning,
+		// tool calls and placeholders do not end it.
+		p := message.Payload
+		if p.Kind == "thought" || p.Kind == "tool_calls" || p.Thought || p.Placeholder {
+			return
+		}
+		if !s.sessionSendsTurnDone(sessionID) {
+			s.releaseCaptureLeasesForSession(sessionID)
+		}
 	}
+}
+
+func (s *Service) markSessionSendsTurnDone(sessionID string) {
+	s.captureLeaseMu.Lock()
+	defer s.captureLeaseMu.Unlock()
+	if s.turnDoneSessions == nil {
+		s.turnDoneSessions = make(map[string]bool)
+	}
+	s.turnDoneSessions[sessionID] = true
+}
+
+func (s *Service) sessionSendsTurnDone(sessionID string) bool {
+	s.captureLeaseMu.Lock()
+	defer s.captureLeaseMu.Unlock()
+	return s.turnDoneSessions[sessionID]
+}
+
+// forgetTaskCaptureSession drops what the lease tracker knows about a closed
+// session, after releasing its leases.
+func (s *Service) forgetTaskCaptureSession(sessionID string) {
+	if s == nil || sessionID == "" {
+		return
+	}
+	s.releaseCaptureLeasesForSession(sessionID)
+	s.captureLeaseMu.Lock()
+	delete(s.turnDoneSessions, sessionID)
+	s.captureLeaseMu.Unlock()
 }
 
 func taskCaptureLeaseKey(sessionID string, taskID string) string {

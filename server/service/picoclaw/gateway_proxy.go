@@ -217,7 +217,7 @@ func (s *Service) closeGatewaySession(session *GatewaySession, closeCode int, re
 		hadDownstream := session.Downstream != nil
 
 		mjpeg.DisableLatestFrameCache()
-		s.releaseCaptureLeasesForSession(session.SessionID)
+		s.forgetTaskCaptureSession(session.SessionID)
 		GetSessionManager().SetState(session.SessionID, SessionStateClosing)
 
 		if session.Upstream != nil {

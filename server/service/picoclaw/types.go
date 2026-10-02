@@ -42,6 +42,7 @@ type Service struct {
 	captureLeaseMu     sync.Mutex
 	captureLeases      map[string]func()
 	captureLeaseTimers map[string]*time.Timer
+	turnDoneSessions   map[string]bool
 	pointer            pointerTracker
 	held               heldInput
 	runtimeLifecycleMu sync.Mutex
