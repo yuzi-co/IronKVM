@@ -12,6 +12,27 @@ using namespace maix::sys;
 extern kvm_sys_state_t kvm_sys_state;
 extern kvm_oled_state_t kvm_oled_state;
 
+// read_small_file reads at most size - 1 bytes of path into buf and ends them
+// with a NUL. A file that cannot be opened reads as empty and returns -1.
+//
+// The readers below used to fopen, seek to the end, and read ftell's answer
+// into a 10-byte buffer with no check of either. A missing file crashed the
+// process on the NULL stream (the runtime files in /tmp/kvm exist only once
+// S95nanokvm has made them), and a sysfs attribute, whose ftell is the page
+// size, could overrun the buffer.
+static int read_small_file(const char *path, char *buf, size_t size)
+{
+	FILE *fp = fopen(path, "r");
+	if(fp == NULL){
+		buf[0] = 0;
+		return -1;
+	}
+	size_t n = fread(buf, 1, size - 1, fp);
+	fclose(fp);
+	buf[n] = 0;
+	return (int)n;
+}
+
 int get_nic_state(const char* interface_name)
 {
 	int sock;
@@ -117,14 +138,8 @@ int get_ip_addr(ip_addr_t ip_type)
 				// 开机时未插入ETH: nothing is found and eth_route stays empty.
 				return route_gateway("eth0", (char*)kvm_sys_state.eth_route, sizeof( kvm_sys_state.eth_route ));
 			} else {
-				int file_size;
-				FILE *fp = fopen("/etc/kvm/gateway", "r");
-				fseek(fp, 0, SEEK_END);
-				file_size = ftell(fp); 
-				fseek(fp, 0, SEEK_SET);
-				fread(kvm_sys_state.eth_route, sizeof(char), file_size, fp);
-				fclose(fp);
-				return 1;
+				return read_small_file("/etc/kvm/gateway", (char*)kvm_sys_state.eth_route,
+					sizeof(kvm_sys_state.eth_route)) > 0;
 			}
 		case WiFi_ROUTE: // wifi_route
 			// Every pass while wlan0 has an address and is not yet up, so no
@@ -175,15 +190,8 @@ int kvm_wifi_exist()
 void kvm_update_usb_state()
 {
 	// usb_state, hid_state, rndis_state, udisk_state
-	FILE *fp;
-	int file_size;
-	uint8_t RW_Data[10];		
-	fp = fopen("/sys/class/udc/4340000.usb/state", "r");
-	fseek(fp, 0, SEEK_END);
-	file_size = ftell(fp); 
-	fseek(fp, 0, SEEK_SET);
-	fread(RW_Data, sizeof(char), file_size, fp);
-	fclose(fp);
+	char RW_Data[16];
+	read_small_file("/sys/class/udc/4340000.usb/state", RW_Data, sizeof(RW_Data));
 	if(RW_Data[0] == 'n') kvm_sys_state.usb_state = 0;
 	else if(RW_Data[0] == 'c') kvm_sys_state.usb_state = 1;
 	else kvm_sys_state.usb_state = -1;
@@ -267,34 +275,19 @@ void kvm_update_hdmi_state()
 
 void kvm_update_stream_fps(void)
 {
-	FILE *fp;
-	int file_size;
-	uint8_t RW_Data[10];
+	uint8_t RW_Data[16];
 
 	// FPS
-	fp = fopen("/kvmapp/kvm/now_fps", "r");
-    fseek(fp, 0, SEEK_END);
-    file_size = ftell(fp); 
-    fseek(fp, 0, SEEK_SET);
-    fread(RW_Data, sizeof(char), file_size, fp);
-	fclose(fp);
-	RW_Data[file_size] = 0;
+	read_small_file("/kvmapp/kvm/now_fps", (char*)RW_Data, sizeof(RW_Data));
 	kvm_sys_state.now_fps = atoi((char*)RW_Data);
 }
 
 void kvm_update_stream_type(void)
 {
-	FILE *fp;
-	int file_size;
-	uint8_t RW_Data[10];
+	uint8_t RW_Data[16];
 
 	// type
-	fp = fopen("/kvmapp/kvm/type", "r");
-    fseek(fp, 0, SEEK_END);
-    file_size = ftell(fp); 
-    fseek(fp, 0, SEEK_SET);
-    fread(RW_Data, sizeof(char), file_size, fp);
-	fclose(fp);
+	read_small_file("/kvmapp/kvm/type", (char*)RW_Data, sizeof(RW_Data));
 	if(RW_Data[0] == 'm') 		kvm_sys_state.type = KVM_TYPE_MJPG;
 	else if(RW_Data[0] == 'h') 	kvm_sys_state.type = KVM_TYPE_H264;
 	else 						kvm_sys_state.type = KVM_TYPE_none;
@@ -302,19 +295,11 @@ void kvm_update_stream_type(void)
 
 void kvm_update_stream_qlty(void)
 {
-	FILE *fp;
-	int file_size;
-	uint8_t RW_Data[10];
+	uint8_t RW_Data[16];
 	uint16_t tmp16;
 
 	// QLTY
-	fp = fopen("/kvmapp/kvm/qlty", "r");
-    fseek(fp, 0, SEEK_END);
-    file_size = ftell(fp); 
-    fseek(fp, 0, SEEK_SET);
-    fread(RW_Data, sizeof(char), file_size, fp);
-	fclose(fp);
-	RW_Data[file_size] = 0;
+	read_small_file("/kvmapp/kvm/qlty", (char*)RW_Data, sizeof(RW_Data));
 	tmp16 = atoi((char*)RW_Data);
 	if(kvm_sys_state.type == KVM_TYPE_MJPG){
 		if(tmp16 < 60) 						 	kvm_sys_state.qlty = 1;
@@ -333,26 +318,12 @@ void kvm_update_stream_qlty(void)
 
 void kvm_update_hdmi_res(void)
 {
-	FILE *fp;
-	int file_size;
-	uint8_t RW_Data[10];
+	uint8_t RW_Data[16];
 	// HDMI width
-	fp = fopen("/kvmapp/kvm/width", "r");
-	fseek(fp, 0, SEEK_END);
-	file_size = ftell(fp); 
-	fseek(fp, 0, SEEK_SET);
-	fread(RW_Data, sizeof(char), file_size, fp);
-	fclose(fp);
-	RW_Data[file_size] = 0;
+	read_small_file("/kvmapp/kvm/width", (char*)RW_Data, sizeof(RW_Data));
 	kvm_sys_state.hdmi_width = atoi((char*)RW_Data);
 	// HDMI height
-	fp = fopen("/kvmapp/kvm/height", "r");
-	fseek(fp, 0, SEEK_END);
-	file_size = ftell(fp); 
-	fseek(fp, 0, SEEK_SET);
-	fread(RW_Data, sizeof(char), file_size, fp);
-	fclose(fp);
-	RW_Data[file_size] = 0;
+	read_small_file("/kvmapp/kvm/height", (char*)RW_Data, sizeof(RW_Data));
 	kvm_sys_state.hdmi_height = atoi((char*)RW_Data);
 }
 

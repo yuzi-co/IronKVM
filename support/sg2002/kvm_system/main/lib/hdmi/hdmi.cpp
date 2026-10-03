@@ -3,18 +3,26 @@
 using namespace maix;
 using namespace maix::sys;
 using namespace maix::peripheral;
-i2c::I2C LT6911_i2c(4, i2c::Mode::MASTER);
+// The bridge's bus, opened on first use. As a global object it was opened
+// before main, where a missing /dev/i2c-4 made MaixCDK throw from a static
+// initializer and the process died with SIGSEGV (ironkvm-dist#56, the same
+// fault as the OLED bus). Nothing calls these functions today.
+static i2c::I2C &lt6911_i2c()
+{
+	static i2c::I2C bus(4, i2c::Mode::MASTER);
+	return bus;
+}
 
 void lt6911_enable()
 {
 	uint8_t buf[2];
 	buf[0] = 0xff;
 	buf[1] = 0x80;
-	LT6911_i2c.writeto(LT6911_ADDR, buf, 2);
+	lt6911_i2c().writeto(LT6911_ADDR, buf, 2);
 	
 	buf[0] = 0xee;
 	buf[1] = 0x01;
-	LT6911_i2c.writeto(LT6911_ADDR, buf, 2);
+	lt6911_i2c().writeto(LT6911_ADDR, buf, 2);
 }
 
 void lt6911_disable()
@@ -22,11 +30,11 @@ void lt6911_disable()
 	uint8_t buf[2];
 	buf[0] = 0xff;
 	buf[1] = 0x80;
-	LT6911_i2c.writeto(LT6911_ADDR, buf, 2);
+	lt6911_i2c().writeto(LT6911_ADDR, buf, 2);
 	
 	buf[0] = 0xee;
 	buf[1] = 0x00;
-	LT6911_i2c.writeto(LT6911_ADDR, buf, 2);
+	lt6911_i2c().writeto(LT6911_ADDR, buf, 2);
 }
 
 void lt6911_start()
@@ -35,11 +43,11 @@ void lt6911_start()
 
 	buf[0] = 0xff;
 	buf[1] = 0x80;
-	LT6911_i2c.writeto(LT6911_ADDR, buf, 2);
+	lt6911_i2c().writeto(LT6911_ADDR, buf, 2);
 
 	buf[0] = 0x5A;
 	buf[1] = 0x80;
-	LT6911_i2c.writeto(LT6911_ADDR, buf, 2);
+	lt6911_i2c().writeto(LT6911_ADDR, buf, 2);
 }
 
 void lt6911_stop()
@@ -48,11 +56,11 @@ void lt6911_stop()
 
 	buf[0] = 0xff;
 	buf[1] = 0x80;
-	LT6911_i2c.writeto(LT6911_ADDR, buf, 2);
+	lt6911_i2c().writeto(LT6911_ADDR, buf, 2);
 
 	buf[0] = 0x5A;
 	buf[1] = 0x88;
-	LT6911_i2c.writeto(LT6911_ADDR, buf, 2);
+	lt6911_i2c().writeto(LT6911_ADDR, buf, 2);
 }
 
 void lt6911_reset()
@@ -68,22 +76,22 @@ void lt6911_get_hdmi_errer()
 
 	buf[0] = 0xff;
 	buf[1] = 0xC0;
-	LT6911_i2c.writeto(LT6911_ADDR, buf, 2);
+	lt6911_i2c().writeto(LT6911_ADDR, buf, 2);
 
 	buf[0] = 0x20;
 	buf[1] = 0x01;
-	LT6911_i2c.writeto(LT6911_ADDR, buf, 2);
+	lt6911_i2c().writeto(LT6911_ADDR, buf, 2);
 
 	time::sleep_ms(100);
 
 	buf[0] = 0x24;
-	LT6911_i2c.writeto(LT6911_ADDR, buf, 1);
+	lt6911_i2c().writeto(LT6911_ADDR, buf, 1);
 
-	maix::Bytes *dat = LT6911_i2c.readfrom(LT6911_ADDR, 6);
+	maix::Bytes *dat = lt6911_i2c().readfrom(LT6911_ADDR, 6);
 
 	buf[0] = 0x20;
 	buf[1] = 0x07;
-	LT6911_i2c.writeto(LT6911_ADDR, buf, 2);
+	lt6911_i2c().writeto(LT6911_ADDR, buf, 2);
 
 	for(int i = 0; i < 6; i++){
 		buf[i] = (uint8_t)dat->data[i];
@@ -102,23 +110,23 @@ uint8_t lt6911_get_hdmi_res()
 
 	buf[0] = 0xff;
 	buf[1] = 0xd2;
-	LT6911_i2c.writeto(LT6911_ADDR, buf, 2);
+	lt6911_i2c().writeto(LT6911_ADDR, buf, 2);
 
 	buf[0] = 0x83;
 	buf[1] = 0x11;
-	LT6911_i2c.writeto(LT6911_ADDR, buf, 2);
+	lt6911_i2c().writeto(LT6911_ADDR, buf, 2);
 
 	time::sleep_ms(100);
 
 	// Vactive
 	buf[0] = 0x96;
-	LT6911_i2c.writeto(LT6911_ADDR, buf, 1);
-	maix::Bytes *dat0 = LT6911_i2c.readfrom(LT6911_ADDR, 2);
+	lt6911_i2c().writeto(LT6911_ADDR, buf, 1);
+	maix::Bytes *dat0 = lt6911_i2c().readfrom(LT6911_ADDR, 2);
 
 	// Hactive
 	buf[0] = 0x8b;
-	LT6911_i2c.writeto(LT6911_ADDR, buf, 1);
-	maix::Bytes *dat1 = LT6911_i2c.readfrom(LT6911_ADDR, 2);
+	lt6911_i2c().writeto(LT6911_ADDR, buf, 1);
+	maix::Bytes *dat1 = lt6911_i2c().readfrom(LT6911_ADDR, 2);
 
 	revbuf[0] = (uint8_t)dat0->data[0];
 	revbuf[1] = (uint8_t)dat0->data[1];
@@ -150,22 +158,22 @@ void lt6911_get_hdmi_clk()
 
 	buf[0] = 0xff;
 	buf[1] = 0xa0;
-	LT6911_i2c.writeto(LT6911_ADDR, buf, 2);
+	lt6911_i2c().writeto(LT6911_ADDR, buf, 2);
 
 	buf[0] = 0x34;
 	buf[1] = 0x0b;
-	LT6911_i2c.writeto(LT6911_ADDR, buf, 2);
+	lt6911_i2c().writeto(LT6911_ADDR, buf, 2);
 
 	time::sleep_ms(50);
 
 	// clk
 	buf[0] = 0xff;
 	buf[1] = 0xb8;
-	LT6911_i2c.writeto(LT6911_ADDR, buf, 2);
+	lt6911_i2c().writeto(LT6911_ADDR, buf, 2);
 
 	buf[0] = 0xb1;
-	LT6911_i2c.writeto(LT6911_ADDR, buf, 1);
-	maix::Bytes *dat0 = LT6911_i2c.readfrom(LT6911_ADDR, 3);
+	lt6911_i2c().writeto(LT6911_ADDR, buf, 1);
+	maix::Bytes *dat0 = lt6911_i2c().readfrom(LT6911_ADDR, 3);
 
 	revbuf[0] = (uint8_t)dat0->data[0];
 	revbuf[1] = (uint8_t)dat0->data[1];
@@ -196,17 +204,17 @@ uint8_t lt6911_get_csi_res()
 
 	buf[0] = 0xff;
 	buf[1] = 0xc2;
-	LT6911_i2c.writeto(LT6911_ADDR, buf, 2);
+	lt6911_i2c().writeto(LT6911_ADDR, buf, 2);
 
 	// Vactive
 	buf[0] = 0x06;
-	LT6911_i2c.writeto(LT6911_ADDR, buf, 1);
-	maix::Bytes *dat0 = LT6911_i2c.readfrom(LT6911_ADDR, 2);
+	lt6911_i2c().writeto(LT6911_ADDR, buf, 1);
+	maix::Bytes *dat0 = lt6911_i2c().readfrom(LT6911_ADDR, 2);
 
 	// Hactive
 	buf[0] = 0x38;
-	LT6911_i2c.writeto(LT6911_ADDR, buf, 1);
-	maix::Bytes *dat1 = LT6911_i2c.readfrom(LT6911_ADDR, 2);
+	lt6911_i2c().writeto(LT6911_ADDR, buf, 1);
+	maix::Bytes *dat1 = lt6911_i2c().readfrom(LT6911_ADDR, 2);
 
 	revbuf[0] = (uint8_t)dat0->data[0];
 	revbuf[1] = (uint8_t)dat0->data[1];

@@ -3,37 +3,64 @@
 using namespace maix;
 using namespace maix::sys;
 using namespace maix::peripheral;
-i2c::I2C oled_alpha(1, i2c::Mode::MASTER);
-i2c::I2C oled_beta(5, i2c::Mode::MASTER);
 
 uint8_t OLED_state = 0;
 uint8_t kvm_hw_ver = 0;
+
+// The panel's bus is opened once, on first use, and only the bus of this
+// board's variant: /dev/i2c-1 on alpha, /dev/i2c-5 on beta and pcie.
+//
+// Both used to be global objects, so both buses were opened before main. The
+// vendor kernel creates every i2c-dev node, but a kernel that does not (the
+// mainline beta DT has no I2C1) leaves one of them missing. MaixCDK's
+// constructor then throws, from a static initializer, while err::Exception's
+// own tables are not yet built, and the process died with SIGSEGV before main
+// (ironkvm-dist#56). A bus that cannot be opened now means no panel.
+static i2c::I2C *oled_bus(void)
+{
+	static i2c::I2C *bus = NULL;
+	static bool tried = false;
+	if (tried) {
+		return bus;
+	}
+	tried = true;
+
+	int id = (kvm_hw_ver == 0) ? 1 : 5;
+	char path[32];
+	snprintf(path, sizeof(path), "/dev/i2c-%d", id);
+	if (access(path, F_OK) != 0) {
+		printf("oled: no %s\r\n", path);
+		return NULL;
+	}
+	try {
+		bus = new i2c::I2C(id, i2c::Mode::MASTER);
+	} catch (const std::exception &e) {
+		printf("oled: cannot open %s: %s\r\n", path, e.what());
+		bus = NULL;
+	}
+	return bus;
+}
+
+static uint8_t oled_addr(void)
+{
+	return (kvm_hw_ver == 2) ? OLED_PCIe_ADDR : OLED_ADDR;
+}
 
 /* mode = OLED_CMD
  * 		= OLED_DATA         */
 void oled_write_register(uint8_t mode, uint8_t data)
 {
 	if(OLED_state){
+		i2c::I2C *bus = oled_bus();
 		uint8_t buf[2];
 
+		if(bus == NULL){
+			return;
+		}
 		buf[0] = mode;
 		buf[1] = data;
-		if(kvm_hw_ver == 0){
-			if(oled_alpha.writeto(OLED_ADDR, buf, 2) == (int)-err::Err::ERR_IO){
-				return;
-			}
-		} else if(kvm_hw_ver == 1){
-			if(oled_beta.writeto(OLED_ADDR, buf, 2) == (int)-err::Err::ERR_IO){
-				return;
-			}
-		} else if(kvm_hw_ver == 2){
-			if(oled_beta.writeto(OLED_PCIe_ADDR, buf, 2) == (int)-err::Err::ERR_IO){
-				return;
-			}
-		}
-		return;
+		bus->writeto(oled_addr(), buf, 2);
 	}
-	return;
 }
 
 int oled_exist(void)
@@ -47,30 +74,28 @@ int oled_exist(void)
 	if(access("/etc/kvm/hw", F_OK) == 0){
 		uint8_t RW_Data[2];
 		FILE *fp = fopen("/etc/kvm/hw", "r");
-		fread(RW_Data, sizeof(char), 2, fp);
-		fclose(fp);
-		if(RW_Data[0] == 'b') kvm_hw_ver = 1;
-		else if(RW_Data[0] == 'p') kvm_hw_ver = 2;
+		if(fp != NULL){
+			if(fread(RW_Data, sizeof(char), 2, fp) >= 1){
+				if(RW_Data[0] == 'b') kvm_hw_ver = 1;
+				else if(RW_Data[0] == 'p') kvm_hw_ver = 2;
+			}
+			fclose(fp);
+		}
+	}
+	if(kvm_hw_ver == 1) printf("beta\r\n");
+	else if(kvm_hw_ver == 2) printf("PCIe\r\n");
+
+	i2c::I2C *bus = oled_bus();
+	if(bus == NULL){
+		return 0;
 	}
 
 	uint8_t buf[2];
 
 	buf[0] = OLED_CMD;
 	buf[1] = 0xAE;
-	if(kvm_hw_ver == 0){
-		if(oled_alpha.writeto(OLED_ADDR, buf, 2) == (int)-err::Err::ERR_IO){
-			return 0;
-		}
-	} else if(kvm_hw_ver == 1){
-		printf("beta\r\n");
-		if(oled_beta.writeto(OLED_ADDR, buf, 2) == (int)-err::Err::ERR_IO){
-			return 0;
-		}
-	} else if(kvm_hw_ver == 2){
-		printf("PCIe\r\n");
-		if(oled_beta.writeto(OLED_PCIe_ADDR, buf, 2) == (int)-err::Err::ERR_IO){
-			return 0;
-		}
+	if(bus->writeto(oled_addr(), buf, 2) == (int)-err::Err::ERR_IO){
+		return 0;
 	}
 	return 1;
 }
