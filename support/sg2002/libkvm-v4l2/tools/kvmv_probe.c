@@ -529,6 +529,9 @@ int main(int argc, char **argv)
 	report(&st, fps);
 	result(st.frames == frames, "read %u of %u H.264 frames", st.frames, frames);
 	result(st.first_type == TYPE_KEY, "first frame is a keyframe (type %d)", st.first_type);
+	/* Delta frames the library drops while it waits for an IDR show as -1
+	 * reads: a kernel without ironkvm-dist patch 0912 has seven at GOP 30. */
+	result(st.errors == 0, "stream start without dropped reads (%u errors)", st.errors);
 	result(st.keys > 0 && st.keys_complete == st.keys,
 	       "%u of %u keyframes carry SPS, PPS and IDR", st.keys_complete, st.keys);
 	if (frames > 2 * gop)
@@ -554,8 +557,9 @@ int main(int argc, char **argv)
 		run(&st, count, 0, 0, (uint16_t)(kbps / 2), 0, (uint8_t)fps,
 		    count * 1000U / fps + 10000U);
 		report(&st, fps);
-		result(st.first_type == TYPE_KEY, "set_h264_gop gives a keyframe next (type %d)",
-		       st.first_type);
+		result(st.first_type == TYPE_KEY && st.errors == 0,
+		       "set_h264_gop gives a keyframe next (type %d, %u errors)",
+		       st.first_type, st.errors);
 		result(st.keys >= 2 && st.max_key_gap <= gop2 + 1 && st.min_key_gap + 1 >= gop2,
 		       "keyframe every %u frames after the change (seen %u..%u)", gop2,
 		       st.min_key_gap, st.max_key_gap);

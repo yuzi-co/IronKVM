@@ -105,7 +105,11 @@ the method are in that run sheet.
 ### Keyframes
 
 The first picture after every pipeline build is a keyframe: the encoder is asked for one, and
-delta frames before it are dropped (up to four attempts per read). Every keyframe returned
+delta frames before it are dropped (up to four attempts per read). The coda driver creates the
+keyframe control only from yuzi-co/ironkvm-dist patch 0912 (#37). Without it the request fails,
+the library says so once ("keyframes wait for the GOP"), drops delta frames until the GOP's next
+IDR, which costs up to seven -1 reads at GOP 30, and rebuilds the pipeline on a GOP change,
+because such a kernel applies the GOP only at stream start. Every keyframe returned
 carries SPS and PPS: if the encoder emits an IDR without them, the last ones it produced are
 put in front. The type is decided by scanning the access unit for NAL type 5, as the vendor
 library does.
@@ -195,8 +199,8 @@ has read for 10 s.
   Patches 0910 (rate control) and 0911 (motion estimation at 1080p) fix the picture; on older
   kernels the stream is legible only on a still screen. The library measures its own output and
   logs once per pipeline when it runs above twice the target.
-- The GOP set at runtime reaches the Coda only at the next pipeline build: the driver takes
-  `V4L2_CID_MPEG_VIDEO_GOP_SIZE` at stream start.
+- Before ironkvm-dist patch 0912 the GOP set at runtime reached the Coda only at the next
+  pipeline build, and no keyframe could be forced (see "Keyframes").
 - Only 1920x1080 sources: the capture driver's DMA geometry is fixed. Downscaling for the stream
   works (the VPSS does it); other HDMI modes answer `-6`.
 - Each read waits for the capture, the scaler and the encoder in turn; nothing overlaps, unlike
@@ -269,9 +273,11 @@ It loads the library with `dlopen`, checks all 13 symbols resolve, and runs:
    90% of it (it does with the JPEG unit, not in software), and the probe's CPU share is printed.
    The library logs which encoder it uses and whether the scaler gave full range.
 4. 300 H.264 frames paced at 30 fps: the first is a keyframe, every keyframe carries SPS, PPS and
-   IDR, keyframes come every 30 frames, the SPS size, and the output bitrate against the target
-   (fails only above three times the target, until #35 is settled).
-5. Half the bitrate and twice the GOP at runtime: a keyframe next, then the new interval. Then
+   IDR, keyframes come every 30 frames, no read answered an error (dropped delta frames at the
+   start show as -1 reads), the SPS size, and the output bitrate against the target (fails only
+   above three times the target, until #35 is settled).
+5. Half the bitrate and twice the GOP at runtime: a keyframe next with no dropped reads, then
+   the new interval. Then
    5 s of H.264 with a thread reading 960x540 MJPEG continuously: every H.264 frame must arrive,
    and the H.264 rate and MJPEG reads per second are printed.
 6. A 1280x720 request: the SPS says 1280x720 and the stream starts on a keyframe (`-s` skips).

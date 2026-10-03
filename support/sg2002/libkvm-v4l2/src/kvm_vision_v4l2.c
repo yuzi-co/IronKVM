@@ -294,6 +294,8 @@ static void set_capture_enabled(int enabled)
 
 /* ---- pipeline lifecycle (pipe_lock held) --------------------------- */
 
+static void request_key(void);
+
 static void pipe_down(const char *why)
 {
 	if (!pipe_state.running && pipe_state.cap_fd < 0 && pipe_state.enc_fd < 0)
@@ -454,7 +456,7 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 	kvmv_rate_reset(&fps_rate);
 	/* The first picture after a build must be decodable from cold. */
 	need_key = 1;
-	kvmv_pipe_force_key(&pipe_state);
+	request_key();
 	__atomic_store_n(&force_key, 0, __ATOMIC_RELEASE);
 	__atomic_store_n(&pipe_running, 1, __ATOMIC_RELEASE);
 	set_source_locked(1);
@@ -465,6 +467,28 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 		pipe_state.plan.out_width, pipe_state.plan.out_height);
 	report_applied(bitrate_bps, pipe_gop, pipe_fps);
 	return 0;
+}
+
+/*
+ * Ask the encoder for a keyframe next. An encoder without the control (the
+ * coda driver before ironkvm-dist patch 0912 creates none) produces IDRs only
+ * at its GOP boundaries: drop delta frames until the next one instead. That
+ * waits at most one GOP; a rebuild, which this used to do, primes the encoder
+ * with a picture of its own and so always waits for a whole GOP.
+ */
+static int key_control_missing;
+
+static void request_key(void)
+{
+	if (kvmv_pipe_force_key(&pipe_state) == 0)
+		return;
+	if (!key_control_missing) {
+		key_control_missing = 1;
+		log_msg("%s; keyframes wait for the GOP (ironkvm-dist#37, patch 0912)",
+			pipe_state.error);
+	}
+	if (!need_key)
+		need_key = 1;
 }
 
 /* Apply settings that changed since the pipe was built. A change the encoder
@@ -479,7 +503,10 @@ static int apply_settings(unsigned int width, unsigned int height,
 	int changed = 0;
 
 	if (gop != pipe_gop) {
-		if (kvmv_pipe_set_gop(&pipe_state, (unsigned int)gop))
+		/* A kernel without the keyframe control (no 0912) also
+		 * applies a GOP only at stream start: rebuild there. */
+		if (kvmv_pipe_set_gop(&pipe_state, (unsigned int)gop) ||
+		    key_control_missing)
 			rebuild = 1;
 		pipe_gop = gop;
 		changed = 1;
@@ -498,10 +525,8 @@ static int apply_settings(unsigned int width, unsigned int height,
 		overshoot_warned = 0;
 		changed = 1;
 	}
-	if (!rebuild && __atomic_exchange_n(&force_key, 0, __ATOMIC_ACQ_REL)) {
-		if (kvmv_pipe_force_key(&pipe_state))
-			rebuild = 1;
-	}
+	if (!rebuild && __atomic_exchange_n(&force_key, 0, __ATOMIC_ACQ_REL))
+		request_key();
 	if (rebuild) {
 		DBG("rebuilding: %s", pipe_state.error);
 		pipe_down("setting refused at runtime");
@@ -667,7 +692,7 @@ static int read_video_locked(unsigned int width, unsigned int height,
 			} else {
 				DBG("delta frame before the first keyframe, dropped");
 				kvmv_slot_abandon(slot);
-				kvmv_pipe_force_key(&pipe_state);
+				request_key();
 				continue;
 			}
 		}
@@ -1059,6 +1084,7 @@ void kvmv_deinit(void)
 	pthread_mutex_lock(&pipe_lock);
 	pipe_down("deinit");
 	devices_found = 0;
+	key_control_missing = 0;
 	hw_jpeg_failures = 0;
 	next_start_ms = 0;
 	pthread_mutex_unlock(&pipe_lock);
