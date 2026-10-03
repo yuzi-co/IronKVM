@@ -254,6 +254,10 @@ static int set_fmt(int fd, enum v4l2_buf_type type, uint32_t fourcc,
 	format.fmt.pix.field = V4L2_FIELD_NONE;
 	format.fmt.pix.sizeimage = sizeimage;
 	if (colour != NULL) {
+		/* Without the magic the V4L2 core zeroes ycbcr_enc,
+		 * quantization and xfer_func of a single-planar format before
+		 * the driver sees them (v4l_sanitize_format). */
+		format.fmt.pix.priv = V4L2_PIX_FMT_PRIV_MAGIC;
 		format.fmt.pix.colorspace = colour->colorspace;
 		format.fmt.pix.xfer_func = colour->xfer_func;
 		format.fmt.pix.ycbcr_enc = colour->ycbcr_enc;

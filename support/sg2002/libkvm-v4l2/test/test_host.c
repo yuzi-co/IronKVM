@@ -909,6 +909,7 @@ static struct {
 	int import_fd;
 	uint32_t import_length, out_bytesused;
 	int fail_next;
+	int cache_hints;
 	int streaming;
 } jm;
 
@@ -946,6 +947,9 @@ static int jm_ioctl(int fd, unsigned long request, void *arg)
 
 		if (req->type == V4L2_BUF_TYPE_VIDEO_OUTPUT)
 			jm.out_memory = req->memory;
+		/* The flags byte after capabilities: kept only with cache hints. */
+		if (req->type == V4L2_BUF_TYPE_VIDEO_OUTPUT || !jm.cache_hints)
+			((uint8_t *)req)[16] = 0;
 		if (req->count > 1)
 			req->count = 1;
 		return 0;
@@ -1089,11 +1093,14 @@ static void test_hwjpeg(void)
 	CHECK_EQ(jm.out_memory, V4L2_MEMORY_MMAP);
 	CHECK_EQ(jm.out_bytesused, jm.out_size);
 	CHECK_EQ(jm.ctrl_calls, 1);
+	CHECK_EQ(hw.cap_cached, 0);
 	CHECK_EQ(jm.streaming, 2);
 	CHECK_EQ(kvmv_hwjpeg_encode(&hw, &image, -1, 0, 80, 80, &data, &size), 0);
 	CHECK_EQ(jm.ctrl_calls, 1);
 	CHECK_EQ(jm.s_fmt_calls, 2); /* configured once */
 
+	/* A driver with cache hints keeps the flag: a cached buffer. */
+	jm.cache_hints = 1;
 	/* Import mode reconfigures, queues the dma-buf with its size, and
 	 * clamps the quality. */
 	need = kvmv_hwjpeg_src_size(STRIDE, H);
@@ -1101,6 +1108,7 @@ static void test_hwjpeg(void)
 	CHECK_EQ(jm.out_memory, V4L2_MEMORY_DMABUF);
 	CHECK_EQ(jm.import_fd, 77);
 	CHECK_EQ(jm.import_length, need);
+	CHECK_EQ(hw.cap_cached, 1);
 	CHECK(data != NULL && data[2] == 100 && data[3] == JM_IMPORTED_BYTE);
 	CHECK_EQ(jm.s_fmt_calls, 4);
 	CHECK_EQ(jm.streaming, 2);

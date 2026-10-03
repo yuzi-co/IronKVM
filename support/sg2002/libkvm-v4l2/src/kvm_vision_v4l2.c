@@ -117,6 +117,7 @@ static struct kvmv_jpeg jpeg_state; /* guarded by jpeg_lock */
 static struct kvmv_hwjpeg hw_jpeg = { .fd = -1, .out = { .fd = -1 }, .cap = { .fd = -1 } };
 static int hw_jpeg_failures; /* consecutive; the unit is left alone at the limit */
 static int hw_jpeg_announced;
+static int hw_jpeg_cache_announced;
 static int range_announced; /* 1 full, 2 limited */
 
 /* Shared with the setters and the monitor thread: __atomic only. */
@@ -782,6 +783,9 @@ static int read_hw_locked(unsigned int width, unsigned int height, int quality,
 	}
 	hw_jpeg_failures = 0;
 	kvmv_pipe_snapshot_done(&pipe_state);
+	if (!__atomic_exchange_n(&hw_jpeg_cache_announced, 1, __ATOMIC_RELAXED))
+		log_msg("MJPEG: the JPEG comes back in a %s buffer",
+			hw_jpeg.cap_cached ? "cached" : "coherent (uncached; no ironkvm-dist patch 0909)");
 
 	t2 = now_us();
 	slot = claim_slot((uint32_t)jpeg_size);
@@ -790,8 +794,9 @@ static int read_hw_locked(unsigned int width, unsigned int height, int quality,
 	kvmv_copy_from_device(slot->data, jpeg, jpeg_size);
 	slot->size = (uint32_t)jpeg_size;
 	slot->type = IMG_MJPEG_TYPE;
-	DBG("MJPEG %ux%u q%d (unit, %s): picture %llu us, encode %llu us, copy %llu us, %zu bytes",
+	DBG("MJPEG %ux%u q%d (unit, %s, %s): picture %llu us, encode %llu us, copy %llu us, %zu bytes",
 	    image.width, image.height, quality, import ? "import" : "copy",
+	    hw_jpeg.cap_cached ? "cached" : "uncached",
 	    (unsigned long long)(t1 - t0), (unsigned long long)(t2 - t1),
 	    (unsigned long long)(now_us() - t2), jpeg_size);
 	*data = slot->data;

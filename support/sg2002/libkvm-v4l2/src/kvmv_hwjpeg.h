@@ -38,6 +38,7 @@ struct kvmv_hwjpeg {
 	uint32_t out_size; /* the OUTPUT sizeimage the driver asked for */
 	int quality; /* the control's value, 0 when not set yet */
 	int out_on, cap_on;
+	int cap_cached; /* the CAPTURE buffer is cached (V4L2_MEMORY_FLAG_NON_COHERENT) */
 	struct kvmv_buf out; /* copy mode: the mapped OUTPUT buffer */
 	struct kvmv_buf cap; /* the mapped CAPTURE buffer */
 	char error[160];
@@ -72,8 +73,9 @@ size_t kvmv_hwjpeg_src_size(unsigned int stride, unsigned int height);
  * is clamped to 1..100, 0 meaning def_quality.
  *
  * On 0, *data and *size describe the JPEG inside the CAPTURE buffer, which
- * is mapped uncached: copy it with kvmv_copy_from_device. It stays valid
- * until the next call. Returns -1 with the reason in hw->error.
+ * is mapped cached when the driver allows it (hw->cap_cached) and uncached
+ * otherwise: copy it with kvmv_copy_from_device. It stays valid until the
+ * next call. Returns -1 with the reason in hw->error.
  */
 int kvmv_hwjpeg_encode(struct kvmv_hwjpeg *hw, const struct kvmv_nv12 *image,
 		       int src_fd, size_t src_size, int quality, int def_quality,

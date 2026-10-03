@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <poll.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/ioctl.h>
@@ -65,8 +66,19 @@ static void unmap(struct kvmv_buf *buf)
 	buf->length = 0;
 }
 
+/*
+ * V4L2_MEMORY_FLAG_NON_COHERENT, in struct v4l2_requestbuffers' flags byte
+ * since Linux 5.17. The toolchain's headers predate it and still call that
+ * byte reserved[0]'s first, so it is written by offset.
+ */
+#define KVMV_MEMORY_FLAG_NON_COHERENT 0x01
+#define KVMV_REQBUFS_FLAGS_OFFSET 16
+_Static_assert(offsetof(struct v4l2_requestbuffers, capabilities) + 4 ==
+	       KVMV_REQBUFS_FLAGS_OFFSET, "flags follow capabilities");
+
+/* REQBUFS; *flags_inout (or NULL) is the flags byte asked and answered. */
 static void request(int fd, enum v4l2_buf_type type, enum v4l2_memory memory,
-		    unsigned int count, int *got)
+		    unsigned int count, int *got, uint8_t *flags_inout)
 {
 	struct v4l2_requestbuffers req;
 
@@ -74,10 +86,16 @@ static void request(int fd, enum v4l2_buf_type type, enum v4l2_memory memory,
 	req.count = count;
 	req.type = type;
 	req.memory = memory;
-	if (xioctl(fd, VIDIOC_REQBUFS, &req))
+	if (flags_inout != NULL)
+		((uint8_t *)&req)[KVMV_REQBUFS_FLAGS_OFFSET] = *flags_inout;
+	if (xioctl(fd, VIDIOC_REQBUFS, &req)) {
 		*got = -1;
-	else
-		*got = (int)req.count;
+		return;
+	}
+	*got = (int)req.count;
+	/* A kernel that does not honour the flag clears it. */
+	if (flags_inout != NULL)
+		*flags_inout = ((uint8_t *)&req)[KVMV_REQBUFS_FLAGS_OFFSET];
 }
 
 /* Back to an open node with no buffers. */
@@ -101,8 +119,8 @@ static void release(struct kvmv_hwjpeg *hw)
 	unmap(&hw->cap);
 	if (hw->width) {
 		request(hw->fd, V4L2_BUF_TYPE_VIDEO_OUTPUT,
-			hw->import ? V4L2_MEMORY_DMABUF : V4L2_MEMORY_MMAP, 0, &got);
-		request(hw->fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, V4L2_MEMORY_MMAP, 0, &got);
+			hw->import ? V4L2_MEMORY_DMABUF : V4L2_MEMORY_MMAP, 0, &got, NULL);
+		request(hw->fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, V4L2_MEMORY_MMAP, 0, &got, NULL);
 	}
 	hw->width = hw->height = hw->stride = 0;
 	hw->out_size = 0;
@@ -141,6 +159,7 @@ static int configure(struct kvmv_hwjpeg *hw, unsigned int width,
 {
 	struct v4l2_format fmt;
 	enum v4l2_buf_type type;
+	uint8_t flags;
 	int got;
 
 	release(hw);
@@ -187,15 +206,24 @@ static int configure(struct kvmv_hwjpeg *hw, unsigned int width,
 	hw->import = import;
 
 	request(hw->fd, V4L2_BUF_TYPE_VIDEO_OUTPUT,
-		import ? V4L2_MEMORY_DMABUF : V4L2_MEMORY_MMAP, 1, &got);
+		import ? V4L2_MEMORY_DMABUF : V4L2_MEMORY_MMAP, 1, &got, NULL);
 	if (got < 1)
 		return fail(hw, "OUTPUT REQBUFS");
 	if (!import && map_one(hw, V4L2_BUF_TYPE_VIDEO_OUTPUT,
 			       PROT_READ | PROT_WRITE, &hw->out))
 		return -1;
-	request(hw->fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, V4L2_MEMORY_MMAP, 1, &got);
+	/*
+	 * Ask for a cached CAPTURE buffer. Coherent ones are mapped uncached,
+	 * and copying a 1080p JPEG out of one takes about 6 ms of CPU; vb2
+	 * syncs a cached one when it is queued and when it is done. A driver
+	 * without cache hints (sg2002-jpeg before ironkvm-dist patch 0909)
+	 * clears the flag and the buffer stays coherent.
+	 */
+	flags = KVMV_MEMORY_FLAG_NON_COHERENT;
+	request(hw->fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, V4L2_MEMORY_MMAP, 1, &got, &flags);
 	if (got < 1)
 		return fail(hw, "CAPTURE REQBUFS");
+	hw->cap_cached = (flags & KVMV_MEMORY_FLAG_NON_COHERENT) != 0;
 	if (map_one(hw, V4L2_BUF_TYPE_VIDEO_CAPTURE, PROT_READ, &hw->cap))
 		return -1;
 
