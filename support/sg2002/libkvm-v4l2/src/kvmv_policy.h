@@ -100,4 +100,20 @@ void kvmv_rate_reset(struct kvmv_rate *rate);
 int kvmv_rate_add(struct kvmv_rate *rate, uint64_t now_ms, size_t bytes,
 		  unsigned int window_ms, unsigned int *kbps, unsigned int *fps_x10);
 
+/*
+ * The frame rate to give the encoder's OUTPUT queue (VIDIOC_S_PARM). With rate
+ * control on, the Coda budgets bitrate / rate per frame, so the rate has to be
+ * the one frames actually arrive at, or every frame gets a share of a stream
+ * that never comes and the output runs over its bitrate.
+ *
+ * asked is set_h264_fps (or the read's fps argument), capture is
+ * set_capture_fps; frames cannot arrive faster than either. delivered is the
+ * measured rate of frames handed out, rounded, or 0 before there is one; when
+ * it falls more than 10% short of the target, it is the rate given. current
+ * is what the encoder holds now (0 for none): a change smaller than 10% of it
+ * while tracking the delivered rate is not worth an ioctl, so current is
+ * answered. Never below 1.
+ */
+int kvmv_encoder_fps(int asked, int capture, int delivered, int current);
+
 #endif

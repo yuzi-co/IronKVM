@@ -3,7 +3,7 @@
  * the way NanoKVM-Server does, and say what came out.
  *
  *   kvmv-probe [-l ./libkvm.so] [-n frames] [-b kbit/s] [-g gop] [-f fps]
- *              [-o out.h264] [-s] [-v]
+ *              [-q jpeg quality] [-o out.h264] [-j dir] [-s] [-v]
  *
  * Stop NanoKVM-Server first: it holds the same devices. The library is loaded
  * with dlopen, so the same binary can be pointed at the vendor library for a
@@ -12,6 +12,7 @@
 #define _GNU_SOURCE
 #include <dlfcn.h>
 #include <errno.h>
+#include <pthread.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -246,18 +247,135 @@ static void report(const struct run_stats *st, unsigned int fps)
 	     st->max_key_gap, st->sps_width, st->sps_height);
 }
 
+/* The picture size in a JPEG's SOF segment. Returns 0 when found. */
+static int jpeg_size(const uint8_t *d, uint32_t n, unsigned int *w, unsigned int *h)
+{
+	uint32_t i = 2;
+
+	if (n < 4 || d[0] != 0xff || d[1] != 0xd8)
+		return -1;
+	while (i + 4 <= n) {
+		uint8_t marker;
+		uint32_t len;
+
+		if (d[i] != 0xff)
+			return -1;
+		marker = d[i + 1];
+		len = (uint32_t)d[i + 2] << 8 | d[i + 3];
+		if (marker >= 0xc0 && marker <= 0xc3) {
+			if (i + 9 > n)
+				return -1;
+			*h = (unsigned int)d[i + 5] << 8 | d[i + 6];
+			*w = (unsigned int)d[i + 7] << 8 | d[i + 8];
+			return 0;
+		}
+		if (marker == 0xda)
+			return -1;
+		i += 2 + len;
+	}
+	return -1;
+}
+
+static int cmp_u64(const void *a, const void *b)
+{
+	uint64_t x = *(const uint64_t *)a, y = *(const uint64_t *)b;
+
+	return x < y ? -1 : x > y;
+}
+
+static const char *jpeg_dir;
+
+/* kvmv_read_img MJPEG at one size: each read's time, and the picture checked. */
+static void run_mjpeg(unsigned int w, unsigned int h, unsigned int quality,
+		      unsigned int count)
+{
+	uint64_t times[64];
+	unsigned int ok = 0, good = 0, i, sw = 0, sh = 0;
+	uint64_t bytes = 0;
+	int last = 0;
+
+	if (count > 64)
+		count = 64;
+	for (i = 0; i < count; i++) {
+		uint8_t *data = NULL;
+		uint32_t size = 0;
+		uint64_t t0 = now_us();
+		int ret = api.kvmv_read_img((uint16_t)w, (uint16_t)h, 0,
+					    (uint16_t)quality, &data, &size);
+
+		times[i] = now_us() - t0;
+		last = ret;
+		if (ret != 0 || data == NULL)
+			continue;
+		ok++;
+		bytes += size;
+		if (size > 4 && data[size - 2] == 0xff && data[size - 1] == 0xd9 &&
+		    jpeg_size(data, size, &sw, &sh) == 0 && sw == w && sh == h)
+			good++;
+		if (jpeg_dir && i == count - 1) {
+			char path[256];
+			FILE *fp;
+
+			snprintf(path, sizeof(path), "%s/probe-%ux%u.jpg", jpeg_dir, w, h);
+			if ((fp = fopen(path, "wb")) != NULL) {
+				fwrite(data, 1, size, fp);
+				fclose(fp);
+				note("wrote %s", path);
+			}
+		}
+		api.free_kvmv_data(&data);
+	}
+	/* The first read may build the pipeline and the scaler context. */
+	qsort(times + 1, count - 1, sizeof(times[0]), cmp_u64);
+	note("MJPEG %ux%u q%u: first read %.1f ms, then median %.1f ms, min %.1f, max %.1f per frame; %u bytes average",
+	     w, h, quality, times[0] / 1000.0, times[1 + (count - 1) / 2] / 1000.0,
+	     times[1] / 1000.0, times[count - 1] / 1000.0,
+	     ok ? (unsigned int)(bytes / ok) : 0);
+	result(ok == count, "MJPEG %ux%u: %u of %u reads answered 0 (last %d)", w, h, ok,
+	       count, last);
+	result(good == ok && ok > 0, "MJPEG %ux%u: %u of %u are complete JPEGs of that size (last SOF %ux%u)",
+	       w, h, good, ok, sw, sh);
+}
+
+struct mjpeg_load {
+	volatile int stop;
+	unsigned int reads, errors;
+};
+
+static void *mjpeg_loop(void *arg)
+{
+	struct mjpeg_load *load = arg;
+
+	while (!load->stop) {
+		uint8_t *data = NULL;
+		uint32_t size = 0;
+		int ret = api.kvmv_read_img(960, 540, 0, 80, &data, &size);
+
+		if (ret == 0) {
+			load->reads++;
+			api.free_kvmv_data(&data);
+		} else {
+			load->errors++;
+			usleep(10000);
+		}
+	}
+	return NULL;
+}
+
 static void usage(const char *argv0)
 {
 	fprintf(stderr,
-		"usage: %s [-l lib] [-n frames] [-b kbit/s] [-g gop] [-f fps] [-o out.h264] [-s] [-v]\n"
-		"  -s  skip the downscale phase\n", argv0);
+		"usage: %s [-l lib] [-n frames] [-b kbit/s] [-g gop] [-f fps] [-q jpeg quality]\n"
+		"          [-o out.h264] [-j dir] [-s] [-v]\n"
+		"  -s  skip the downscale phase\n"
+		"  -j  save the last MJPEG picture of each size in dir\n", argv0);
 }
 
 int main(int argc, char **argv)
 {
 	const char *lib = "./libkvm.so";
 	const char *out_path = NULL;
-	unsigned int frames = 300, kbps = 4000, gop = 30, fps = 30;
+	unsigned int frames = 300, kbps = 4000, gop = 30, fps = 30, quality = 80;
 	int skip_scale = 0;
 	struct run_stats st;
 	uint8_t *data = NULL;
@@ -265,9 +383,11 @@ int main(int argc, char **argv)
 	uint64_t t0;
 	int opt, ret, i;
 
-	while ((opt = getopt(argc, argv, "l:n:b:g:f:o:sv")) != -1) {
+	while ((opt = getopt(argc, argv, "l:n:b:g:f:q:o:j:sv")) != -1) {
 		switch (opt) {
 		case 'l': lib = optarg; break;
+		case 'q': quality = (unsigned int)atoi(optarg); break;
+		case 'j': jpeg_dir = optarg; break;
 		case 'n': frames = (unsigned int)atoi(optarg); break;
 		case 'b': kbps = (unsigned int)atoi(optarg); break;
 		case 'g': gop = (unsigned int)atoi(optarg); break;
@@ -301,16 +421,25 @@ int main(int argc, char **argv)
 	result(api.kvmv_hdmi_signal_active(), "HDMI signal active after %.1f s",
 	       (double)(now_us() - t0) / 1e6);
 
-	/* 3. Codecs this hardware lacks answer the encoder error. */
-	ret = api.kvmv_read_img(0, 0, 0, 80, &data, &size);
-	result(ret == IMG_VENC_ERROR && data == NULL,
-	       "MJPEG read answers %d (want -2: no mainline JPEG driver)", ret);
-	if (ret >= 0)
-		api.free_kvmv_data(&data);
+	/* 3. H.265 answers the encoder error: the Coda980 encodes H.264 only. */
 	ret = api.kvmv_read_video(0, 0, 2, kbps, 0, 0, &data, &size);
 	result(ret == IMG_VENC_ERROR, "H.265 read answers %d (want -2)", ret);
 	if (ret >= 0)
 		api.free_kvmv_data(&data);
+	{
+		u8_u8_fn supported = (u8_u8_fn)dlsym(RTLD_DEFAULT, "kvmv_codec_supported");
+
+		if (supported != NULL)
+			result(supported(0) == 1 && supported(1) == 1 && supported(2) == 0,
+			       "kvmv_codec_supported: MJPEG %u, H.264 %u, H.265 %u (want 1 1 0)",
+			       supported(0), supported(1), supported(2));
+		else
+			note("no kvmv_codec_supported (the vendor library has none)");
+	}
+
+	/* 3b. MJPEG (software JPEG): time per read at two sizes. */
+	run_mjpeg(1920, 1080, quality, 10);
+	run_mjpeg(960, 540, quality, 20);
 
 	/* 4. H.264 at the configured rate, as h264_source.go reads it. */
 	api.set_h264_fps((uint8_t)fps);
@@ -352,6 +481,30 @@ int main(int argc, char **argv)
 		       "keyframe every %u frames after the change (seen %u..%u)", gop2,
 		       st.min_key_gap, st.max_key_gap);
 		api.set_h264_gop((uint8_t)gop);
+	}
+
+	/* 5b. H.264 with an MJPEG reader alongside, as a VNC viewer or a
+	 * screenshot next to a web viewer would be. The JPEG encode runs
+	 * without the pipeline lock, so H.264 should keep its frames; on one
+	 * core it competes for CPU, so the rate is reported, not judged. */
+	{
+		struct mjpeg_load load = { 0, 0, 0 };
+		pthread_t thread;
+		unsigned int count = fps * 5;
+
+		if (pthread_create(&thread, NULL, mjpeg_loop, &load) == 0) {
+			run(&st, count, 0, 0, (uint16_t)kbps, 0, (uint8_t)fps,
+			    count * 1000U / fps + 10000U);
+			load.stop = 1;
+			pthread_join(thread, NULL);
+			report(&st, fps);
+			note("alongside: %u MJPEG 960x540 reads (%.1f/s), %u errors",
+			     load.reads, st.elapsed_us ? load.reads * 1e6 / st.elapsed_us : 0.0,
+			     load.errors);
+			result(st.frames == count && st.errors == 0,
+			       "H.264 with an MJPEG reader: %u of %u frames, %u errors",
+			       st.frames, count, st.errors);
+		}
 	}
 
 	/* 6. Downscale through the VPSS. */

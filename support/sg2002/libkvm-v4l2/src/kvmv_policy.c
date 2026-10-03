@@ -157,3 +157,24 @@ int kvmv_rate_add(struct kvmv_rate *rate, uint64_t now_ms, size_t bytes,
 	rate->frames = 0;
 	return 1;
 }
+
+int kvmv_encoder_fps(int asked, int capture, int delivered, int current)
+{
+	int target = asked;
+	int want;
+	int diff;
+
+	if (capture > 0 && capture < target)
+		target = capture;
+	if (target < 1)
+		target = 1;
+	want = target;
+	if (delivered > 0 && delivered * 10 < target * 9)
+		want = delivered;
+	if (want == target || current <= 0)
+		return want;
+	diff = want > current ? want - current : current - want;
+	if (diff * 10 <= current)
+		return current;
+	return want;
+}

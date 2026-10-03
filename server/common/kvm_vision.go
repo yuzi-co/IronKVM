@@ -5,7 +5,27 @@ package common
 /*
 	#cgo CFLAGS: -I../include
 	#cgo LDFLAGS: -L../dl_lib -lkvm
+	#include <dlfcn.h>
 	#include "kvm_vision.h"
+
+	#ifndef RTLD_DEFAULT
+	#define RTLD_DEFAULT ((void *)0)
+	#endif
+
+	// kvmv_codec_supported is an extension of libkvm-v4l2 and absent from
+	// Sipeed's library, so it is found at run time rather than linked: a
+	// weak reference would be resolved, or not, by whichever libkvm.so the
+	// server was linked against, not by the one it runs with.
+	// Answers -1 when the library does not have it.
+	static int kvmv_codec_supported_lookup(uint8_t codec)
+	{
+		uint8_t (*fn)(uint8_t) =
+			(uint8_t (*)(uint8_t))dlsym(RTLD_DEFAULT, "kvmv_codec_supported");
+
+		if (fn == NULL)
+			return -1;
+		return fn(codec);
+	}
 */
 import "C"
 import (
@@ -227,6 +247,19 @@ func (k *KvmVision) SetCaptureFPS(fps uint8) bool {
 	})
 
 	return available
+}
+
+// libraryCodecSupported asks the loaded libkvm.so. It needs no kvmv_init, so
+// the screen settings can be checked before capture has started.
+func libraryCodecSupported(codec uint8) bool {
+	switch C.kvmv_codec_supported_lookup(C.uint8_t(codec)) {
+	case -1:
+		return vendorCodecSupported(codec)
+	case 0:
+		return false
+	default:
+		return true
+	}
 }
 
 func (k *KvmVision) SetFrameDetect(frame uint8) {

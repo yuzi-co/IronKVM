@@ -48,6 +48,15 @@ func (s *Service) SetScreen(c *gin.Context) {
 		return
 	}
 
+	// Refuse a codec the capture library cannot deliver (H.265 with
+	// libkvm-v4l2) before it reaches the card. common.SetScreen would ignore
+	// it, so answering OK would tell the menu a change was made that was not.
+	if req.Type == "codec" && (req.Value == common.CodecH264 || req.Value == common.CodecH265) &&
+		!common.CodecSupported(uint8(req.Value)) {
+		rsp.ErrRsp(c, -3, "codec not supported by this capture library")
+		return
+	}
+
 	switch req.Type {
 	case "type":
 		data := "h264"

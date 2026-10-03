@@ -11,9 +11,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <linux/videodev2.h>
+#include <turbojpeg.h>
 
 #include "kvm_vision.h"
 #include "kvmv_annexb.h"
+#include "kvmv_jpeg.h"
 #include "kvmv_pipeline.h"
 #include "kvmv_policy.h"
 #include "kvmv_slots.h"
@@ -459,6 +461,121 @@ static void test_clamps_and_rate(void)
 	CHECK(fps_x10 >= 300 && fps_x10 <= 320);
 }
 
+static void test_encoder_fps(void)
+{
+	/* Nothing measured: the asked rate, capped by the capture rate. */
+	CHECK_EQ(kvmv_encoder_fps(30, 30, 0, 0), 30);
+	CHECK_EQ(kvmv_encoder_fps(30, 20, 0, 0), 20);
+	CHECK_EQ(kvmv_encoder_fps(30, 60, 0, 0), 30);
+	CHECK_EQ(kvmv_encoder_fps(30, 0, 0, 0), 30);
+	/* Delivering half: the encoder is told the delivered rate. */
+	CHECK_EQ(kvmv_encoder_fps(30, 30, 15, 30), 15);
+	CHECK_EQ(kvmv_encoder_fps(30, 30, 15, 0), 15);
+	/* Within 10% of the target counts as the target. */
+	CHECK_EQ(kvmv_encoder_fps(30, 30, 28, 15), 30);
+	CHECK_EQ(kvmv_encoder_fps(30, 30, 29, 30), 30);
+	/* Small wobble while tracking costs no ioctl; a real move does. */
+	CHECK_EQ(kvmv_encoder_fps(30, 30, 16, 15), 15);
+	CHECK_EQ(kvmv_encoder_fps(30, 30, 20, 15), 20);
+	/* Never faster than asked, never below 1. */
+	CHECK_EQ(kvmv_encoder_fps(30, 30, 45, 30), 30);
+	CHECK_EQ(kvmv_encoder_fps(0, 0, 0, 0), 1);
+}
+
+static void test_jpeg(void)
+{
+	enum { W = 96, H = 64, STRIDE = 128 };
+	static uint8_t nv12[STRIDE * H * 3 / 2];
+	uint8_t cb[(W / 2) * (H / 2)], cr[(W / 2) * (H / 2)];
+	struct kvmv_nv12 image;
+	struct kvmv_jpeg jpeg;
+	const uint8_t *data;
+	size_t size;
+	char error[128];
+	tjhandle tj;
+	int x, y, ok;
+
+	/* Flat colour with garbage in the stride padding, which must not
+	 * reach the picture. */
+	memset(nv12, 0xff, sizeof(nv12));
+	for (y = 0; y < H; y++)
+		memset(nv12 + y * STRIDE, 100, W);
+	for (y = 0; y < H / 2; y++)
+		for (x = 0; x < W / 2; x++) {
+			nv12[STRIDE * H + y * STRIDE + 2 * x] = 80;
+			nv12[STRIDE * H + y * STRIDE + 2 * x + 1] = 200;
+		}
+
+	kvmv_nv12_split_chroma(nv12 + STRIDE * H, STRIDE, W, H, cb, cr);
+	ok = 1;
+	for (x = 0; x < (W / 2) * (H / 2); x++)
+		if (cb[x] != 80 || cr[x] != 200)
+			ok = 0;
+	CHECK(ok);
+
+	memset(&image, 0, sizeof(image));
+	image.y = nv12;
+	image.uv = nv12 + STRIDE * H;
+	image.width = W;
+	image.height = H;
+	image.stride = STRIDE;
+	kvmv_jpeg_init(&jpeg);
+	CHECK_EQ(kvmv_jpeg_compress(&jpeg, 80, &data, &size, error, sizeof(error)), -1);
+	CHECK_EQ(kvmv_jpeg_load(&jpeg, &image), 0);
+	CHECK_EQ(kvmv_jpeg_compress(&jpeg, 80, &data, &size, error, sizeof(error)), 0);
+	CHECK(size > 100);
+	CHECK(data[0] == 0xff && data[1] == 0xd8);
+	CHECK(data[size - 2] == 0xff && data[size - 1] == 0xd9);
+
+	/* It decodes, at the size given, 4:2:0, to the colour given. */
+	tj = tj3Init(TJINIT_DECOMPRESS);
+	CHECK(tj != NULL);
+	if (tj != NULL) {
+		uint8_t out[W * H + 2 * (W / 2) * (H / 2)];
+
+		CHECK_EQ(tj3DecompressHeader(tj, data, size), 0);
+		CHECK_EQ(tj3Get(tj, TJPARAM_JPEGWIDTH), W);
+		CHECK_EQ(tj3Get(tj, TJPARAM_JPEGHEIGHT), H);
+		CHECK_EQ(tj3Get(tj, TJPARAM_SUBSAMP), TJSAMP_420);
+		CHECK_EQ(tj3DecompressToYUV8(tj, data, size, out, 1), 0);
+		CHECK(abs(out[W * H / 2 + W / 2] - 100) <= 2);
+		CHECK(abs(out[W * H + 10] - 80) <= 2);
+		CHECK(abs(out[W * H + (W / 2) * (H / 2) + 10] - 200) <= 2);
+		tj3Destroy(tj);
+	}
+
+	/* A second picture reuses the buffers; an odd size is refused. */
+	CHECK_EQ(kvmv_jpeg_compress(&jpeg, 0, &data, &size, error, sizeof(error)), 0);
+	image.width = W - 1;
+	CHECK_EQ(kvmv_jpeg_load(&jpeg, &image), -1);
+	kvmv_jpeg_free(&jpeg);
+}
+
+static void test_copy_from_device(void)
+{
+	uint8_t src[300], dst[320];
+	size_t off, len;
+	int ok = 1;
+
+	for (off = 0; off < sizeof(src); off++)
+		src[off] = (uint8_t)(off * 7 + 3);
+	/* Every alignment of both ends, every short length and a long one. */
+	for (off = 0; off < 9; off++) {
+		for (len = 0; len < 40; len++) {
+			memset(dst, 0xee, sizeof(dst));
+			kvmv_copy_from_device(dst + off, src + (off % 3), len);
+			if (memcmp(dst + off, src + (off % 3), len) != 0 ||
+			    (off && dst[off - 1] != 0xee) || dst[off + len] != 0xee)
+				ok = 0;
+		}
+		memset(dst, 0xee, sizeof(dst));
+		kvmv_copy_from_device(dst + off, src, 290);
+		if (memcmp(dst + off, src, 290) != 0 || dst[off + 290] != 0xee)
+			ok = 0;
+	}
+	CHECK(ok);
+}
+
 static void test_slots(void)
 {
 	struct kvmv_slots slots;
@@ -774,6 +891,9 @@ int main(void)
 	test_timings();
 	test_roles();
 	test_clamps_and_rate();
+	test_encoder_fps();
+	test_copy_from_device();
+	test_jpeg();
 	test_slots();
 	test_negotiate();
 
