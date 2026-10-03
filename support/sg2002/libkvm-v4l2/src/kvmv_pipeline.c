@@ -314,6 +314,25 @@ static int get_ctrl(int fd, uint32_t id, int32_t *value)
 	return 0;
 }
 
+/*
+ * value held to the control's range where the driver reports one: the Coda
+ * takes a GOP of at most 99, the ABI up to 100.
+ */
+static int32_t ctrl_fit(int fd, uint32_t id, int32_t value)
+{
+	struct v4l2_queryctrl query;
+
+	memset(&query, 0, sizeof(query));
+	query.id = id;
+	if (xioctl(fd, VIDIOC_QUERYCTRL, &query))
+		return value;
+	if (value > query.maximum)
+		return query.maximum;
+	if (value < query.minimum)
+		return query.minimum;
+	return value;
+}
+
 static void read_back(struct kvmv_pipe *p)
 {
 	struct v4l2_streamparm parm;
@@ -327,6 +346,12 @@ static void read_back(struct kvmv_pipe *p)
 		p->applied.bitrate_bps = value;
 	if (!get_ctrl(p->enc_fd, V4L2_CID_MPEG_VIDEO_GOP_SIZE, &value))
 		p->applied.gop = value;
+	p->applied.min_qp = -1;
+	p->applied.max_qp = -1;
+	if (!get_ctrl(p->enc_fd, V4L2_CID_MPEG_VIDEO_H264_MIN_QP, &value))
+		p->applied.min_qp = value;
+	if (!get_ctrl(p->enc_fd, V4L2_CID_MPEG_VIDEO_H264_MAX_QP, &value))
+		p->applied.max_qp = value;
 	memset(&parm, 0, sizeof(parm));
 	parm.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
 	if (!xioctl(p->enc_fd, VIDIOC_G_PARM, &parm) &&
@@ -365,6 +390,8 @@ void kvmv_pipe_init(struct kvmv_pipe *p)
 	p->applied.gop = -1;
 	p->applied.fps_numerator = -1;
 	p->applied.fps_denominator = -1;
+	p->applied.min_qp = -1;
+	p->applied.max_qp = -1;
 }
 
 int kvmv_pipe_negotiate(struct kvmv_pipe *p, const struct kvmv_pipe_cfg *cfg)
@@ -440,7 +467,22 @@ int kvmv_pipe_negotiate(struct kvmv_pipe *p, const struct kvmv_pipe_cfg *cfg)
 		set_ctrl(p->enc_fd, V4L2_CID_MPEG_VIDEO_BITRATE,
 			 (int32_t)cfg->bitrate_bps);
 	if (cfg->gop)
-		set_ctrl(p->enc_fd, V4L2_CID_MPEG_VIDEO_GOP_SIZE, (int32_t)cfg->gop);
+		set_ctrl(p->enc_fd, V4L2_CID_MPEG_VIDEO_GOP_SIZE,
+			 ctrl_fit(p->enc_fd, V4L2_CID_MPEG_VIDEO_GOP_SIZE,
+				  (int32_t)cfg->gop));
+	/*
+	 * Picture quality (#35). Kernels before patch 0910 lack the minimum
+	 * QP control on the Coda980 and ignore the maximum; each is set on
+	 * its own, and what sticks is read back. MAX first, so a minimum
+	 * above the encoder's current maximum is not refused.
+	 */
+	if (cfg->max_qp)
+		set_ctrl(p->enc_fd, V4L2_CID_MPEG_VIDEO_H264_MAX_QP, cfg->max_qp);
+	if (cfg->min_qp || cfg->max_qp)
+		set_ctrl(p->enc_fd, V4L2_CID_MPEG_VIDEO_H264_MIN_QP, cfg->min_qp);
+	if (cfg->vbv_delay_ms)
+		set_ctrl(p->enc_fd, V4L2_CID_MPEG_VIDEO_VBV_DELAY,
+			 (int32_t)cfg->vbv_delay_ms);
 	read_back(p);
 
 	/* The scaler: OUTPUT is the captured frame, CAPTURE is the encoder's
@@ -1300,7 +1342,9 @@ int kvmv_pipe_set_bitrate(struct kvmv_pipe *p, uint32_t bitrate_bps)
 
 int kvmv_pipe_set_gop(struct kvmv_pipe *p, unsigned int gop)
 {
-	if (set_ctrl(p->enc_fd, V4L2_CID_MPEG_VIDEO_GOP_SIZE, (int32_t)gop))
+	if (set_ctrl(p->enc_fd, V4L2_CID_MPEG_VIDEO_GOP_SIZE,
+		     ctrl_fit(p->enc_fd, V4L2_CID_MPEG_VIDEO_GOP_SIZE,
+			      (int32_t)gop)))
 		return fail(p, "set GOP");
 	read_back(p);
 	return 0;

@@ -67,6 +67,10 @@ struct kvmv_pipe_cfg {
 	uint32_t bitrate_bps;
 	unsigned int gop;
 	unsigned int fps;
+	/* H.264 QP range, both 0 to leave the encoder's own; 0 ms keeps the
+	 * encoder's initial rate-control delay. */
+	int min_qp, max_qp;
+	unsigned int vbv_delay_ms;
 	unsigned int capture_buffers;
 	unsigned int mid_buffers;
 	unsigned int bitstream_buffers;
@@ -78,6 +82,7 @@ struct kvmv_applied {
 	int gop;
 	int fps_numerator; /* frames */
 	int fps_denominator; /* per this many seconds */
+	int min_qp, max_qp; /* -1 on a kernel without the controls */
 };
 
 /*

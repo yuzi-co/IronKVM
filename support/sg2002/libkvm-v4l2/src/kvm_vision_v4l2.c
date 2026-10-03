@@ -373,6 +373,7 @@ static void report_applied(uint32_t bitrate_bps, int gop, int fps)
 		a->fps_numerator, a->fps_denominator, fps);
 	if (a->bitrate_bps >= 0 && a->bitrate_bps != (int64_t)bitrate_bps)
 		log_msg("encoder changed the bitrate it was given");
+	log_msg("encoder QP range %d..%d (-1: no control)", a->min_qp, a->max_qp);
 }
 
 /* The rate to tell the encoder: see kvmv_encoder_fps. current is what it
@@ -388,6 +389,7 @@ static int encoder_fps(int current)
 static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps)
 {
 	struct kvmv_pipe_cfg cfg;
+	struct kvmv_qp_range qp;
 	unsigned int need_width, need_height;
 	char missing[128];
 	int result;
@@ -417,6 +419,10 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 	cfg.bitrate_bps = bitrate_bps;
 	cfg.gop = (unsigned int)__atomic_load_n(&gop_setting, __ATOMIC_ACQUIRE);
 	cfg.fps = (unsigned int)encoder_fps(0);
+	kvmv_h264_qp_range(getenv("KVMV_H264_QP"), &qp);
+	cfg.min_qp = qp.min_qp;
+	cfg.max_qp = qp.max_qp;
+	cfg.vbv_delay_ms = env_uint("KVMV_H264_VBV_DELAY_MS", KVMV_H264_VBV_DELAY_MS);
 	cfg.capture_buffers = env_uint("KVMV_CAPTURE_BUFFERS", 2);
 	cfg.mid_buffers = env_uint("KVMV_MID_BUFFERS", 2);
 	cfg.bitstream_buffers = env_uint("KVMV_BITSTREAM_BUFFERS", 3);
@@ -693,7 +699,8 @@ static int image_pipe_up(void)
 	if (pipe_state.running)
 		return 0;
 	return pipe_up(pipe_width, pipe_height,
-		       pipe_bitrate ? pipe_bitrate : kvmv_kbps_to_bps(KVMV_DEFAULT_KBPS));
+		       pipe_bitrate ? pipe_bitrate :
+		       kvmv_kbps_to_bps(kvmv_default_kbps(pipe_width, pipe_height)));
 }
 
 static void announce_range(int full_range)
@@ -931,6 +938,9 @@ static int read_frame(uint16_t width, uint16_t height, uint8_t codec,
 		pthread_mutex_unlock(&pipe_lock);
 		return IMG_NOT_EXIST;
 	}
+	/* 0 is outside the ABI's 500..10000: give the stream its size's default. */
+	if (bitrate_kbps == 0)
+		bitrate_kbps = kvmv_default_kbps(width, height);
 	result = read_video_locked(width, height, kvmv_kbps_to_bps(bitrate_kbps),
 				   data, size);
 	pthread_mutex_unlock(&pipe_lock);

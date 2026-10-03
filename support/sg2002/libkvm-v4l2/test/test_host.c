@@ -458,6 +458,37 @@ static void test_clamps_and_rate(void)
 	CHECK_EQ(kvmv_clamp(0, KVMV_GOP_MIN, KVMV_GOP_MAX), 1);
 	CHECK_EQ(kvmv_clamp(255, KVMV_FPS_MIN, KVMV_FPS_MAX), 60);
 
+	/* Default bitrates by size. */
+	CHECK_EQ(kvmv_default_kbps(1920, 1080), 3000);
+	CHECK_EQ(kvmv_default_kbps(0, 0), 3000);
+	CHECK_EQ(kvmv_default_kbps(1280, 720), 2200);
+	CHECK_EQ(kvmv_default_kbps(640, 480), 1700);
+	CHECK_EQ(kvmv_default_kbps(3840, 2160), 7500);
+	CHECK_EQ(kvmv_default_kbps(65535, 65535), 10000);
+
+	/* The QP range: defaults, an override, and overrides that do not parse. */
+	{
+		struct kvmv_qp_range r;
+
+		kvmv_h264_qp_range(NULL, &r);
+		CHECK_EQ(r.min_qp, KVMV_H264_MIN_QP);
+		CHECK_EQ(r.max_qp, KVMV_H264_MAX_QP);
+		kvmv_h264_qp_range("20:36", &r);
+		CHECK_EQ(r.min_qp, 20);
+		CHECK_EQ(r.max_qp, 36);
+		kvmv_h264_qp_range("0:51", &r);
+		CHECK_EQ(r.min_qp, 0);
+		CHECK_EQ(r.max_qp, 51);
+		kvmv_h264_qp_range("40:30", &r);
+		CHECK_EQ(r.min_qp, KVMV_H264_MIN_QP);
+		kvmv_h264_qp_range("10:52", &r);
+		CHECK_EQ(r.max_qp, KVMV_H264_MAX_QP);
+		kvmv_h264_qp_range("10:40x", &r);
+		CHECK_EQ(r.min_qp, KVMV_H264_MIN_QP);
+		kvmv_h264_qp_range("", &r);
+		CHECK_EQ(r.max_qp, KVMV_H264_MAX_QP);
+	}
+
 	/* 30 frames a second of 12500 bytes for a second is 3000 kbit/s. */
 	kvmv_rate_reset(&rate);
 	for (i = 0; i <= 30; i++)
@@ -625,6 +656,8 @@ struct mock {
 	int vpss_has_crop;
 	int coda_rejects_gop;
 	int coda_bitrate_divisor; /* the encoder keeps bitrate / this */
+	int coda_lacks_qp; /* a kernel without patch 0910 */
+	int32_t min_qp, max_qp, vbv_delay;
 	struct v4l2_pix_format vpss_out, vpss_cap, coda_out, coda_cap;
 	struct v4l2_rect vpss_crop, coda_crop;
 	int32_t bitrate, gop;
@@ -727,6 +760,25 @@ static int mock_ctrls(int fd, struct v4l2_ext_controls *list, int set)
 			else
 				c->value = mock.gop;
 			break;
+		case V4L2_CID_MPEG_VIDEO_H264_MIN_QP:
+		case V4L2_CID_MPEG_VIDEO_H264_MAX_QP: {
+			int32_t *qp = c->id == V4L2_CID_MPEG_VIDEO_H264_MIN_QP ?
+				      &mock.min_qp : &mock.max_qp;
+
+			if (mock.coda_lacks_qp)
+				return errno = EINVAL, -1;
+			if (set)
+				*qp = c->value;
+			else
+				c->value = *qp;
+			break;
+		}
+		case V4L2_CID_MPEG_VIDEO_VBV_DELAY:
+			if (set)
+				mock.vbv_delay = c->value;
+			else
+				c->value = mock.vbv_delay;
+			break;
 		case V4L2_CID_MPEG_VIDEO_FRAME_RC_ENABLE:
 		case V4L2_CID_MPEG_VIDEO_FORCE_KEY_FRAME:
 			break;
@@ -785,6 +837,16 @@ static int mock_ioctl(int fd, unsigned long request, void *arg)
 		return mock_ctrls(fd, arg, 1);
 	case VIDIOC_G_EXT_CTRLS:
 		return mock_ctrls(fd, arg, 0);
+	case VIDIOC_QUERYCTRL: {
+		struct v4l2_queryctrl *query = arg;
+
+		/* The Coda's GOP control stops at 99. */
+		if (fd != FD_CODA || query->id != V4L2_CID_MPEG_VIDEO_GOP_SIZE)
+			return errno = EINVAL, -1;
+		query->minimum = 0;
+		query->maximum = 99;
+		return 0;
+	}
 	default:
 		return errno = ENOTTY, -1;
 	}
@@ -812,6 +874,25 @@ static int negotiate(struct kvmv_pipe *p, unsigned int w, unsigned int h,
 	cfg.bitrate_bps = bps;
 	cfg.gop = gop;
 	cfg.fps = fps;
+	kvmv_pipe_init(p);
+	p->cap_fd = FD_CAPTURE;
+	p->vpss_fd = FD_VPSS;
+	p->enc_fd = FD_CODA;
+	return kvmv_pipe_negotiate(p, &cfg);
+}
+
+static int negotiate_qp(struct kvmv_pipe *p, int min_qp, int max_qp,
+			unsigned int vbv_delay_ms)
+{
+	struct kvmv_pipe_cfg cfg;
+
+	memset(&cfg, 0, sizeof(cfg));
+	cfg.bitrate_bps = 4000000;
+	cfg.gop = 30;
+	cfg.fps = 30;
+	cfg.min_qp = min_qp;
+	cfg.max_qp = max_qp;
+	cfg.vbv_delay_ms = vbv_delay_ms;
 	kvmv_pipe_init(p);
 	p->cap_fd = FD_CAPTURE;
 	p->vpss_fd = FD_VPSS;
@@ -854,6 +935,37 @@ static void test_negotiate(void)
 	CHECK_EQ(p.vpss_out_fmt.width, 1280);
 	CHECK_EQ(p.vpss_in_fmt.width, 1920);
 	CHECK_EQ(mock.fps, 60);
+
+	/* The QP range and initial delay go to the encoder, and are read back. */
+	mock_reset();
+	CHECK_EQ(negotiate_qp(&p, 18, 42, 1000), 0);
+	CHECK_EQ(mock.min_qp, 18);
+	CHECK_EQ(mock.max_qp, 42);
+	CHECK_EQ(mock.vbv_delay, 1000);
+	CHECK_EQ(p.applied.min_qp, 18);
+	CHECK_EQ(p.applied.max_qp, 42);
+
+	/* Without the QP controls the stream still comes up. */
+	mock_reset();
+	mock.coda_lacks_qp = 1;
+	CHECK_EQ(negotiate_qp(&p, 18, 42, 1000), 0);
+	CHECK_EQ(p.applied.min_qp, -1);
+	CHECK_EQ(p.applied.max_qp, -1);
+	CHECK_EQ(p.applied.bitrate_bps, 4000000);
+
+	/* 0 leaves the encoder's own range and delay alone. */
+	mock_reset();
+	mock.min_qp = 12;
+	mock.max_qp = 51;
+	CHECK_EQ(negotiate_qp(&p, 0, 0, 0), 0);
+	CHECK_EQ(mock.min_qp, 12);
+	CHECK_EQ(mock.max_qp, 51);
+	CHECK_EQ(mock.vbv_delay, 0);
+
+	/* The ABI allows a GOP of 100; the Coda stops at 99. */
+	mock_reset();
+	CHECK_EQ(negotiate(&p, 0, 0, 4000000, 100, 30), 0);
+	CHECK_EQ(mock.gop, 99);
 
 	/* An encoder that keeps a different bitrate is reported as such. */
 	mock_reset();

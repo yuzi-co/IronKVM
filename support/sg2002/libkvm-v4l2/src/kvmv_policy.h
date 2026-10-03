@@ -18,10 +18,40 @@
 #define KVMV_FPS_MAX 60
 #define KVMV_DEFAULT_GOP 30
 #define KVMV_DEFAULT_FPS 60
-#define KVMV_DEFAULT_KBPS 1000
+
+/*
+ * H.264 rate control on the Coda980 (issue #35, run sheet trial 10). The
+ * encoder keeps the picture QP inside [min, max] and gives up the bitrate
+ * rather than go past max, so text stays legible on a busy screen. The
+ * initial delay is the rate control's buffer: with none, the Coda980 holds
+ * every picture at QP 49 to 51.
+ */
+#define KVMV_H264_MIN_QP 18
+#define KVMV_H264_MAX_QP 42
+#define KVMV_H264_VBV_DELAY_MS 1000
 
 int kvmv_clamp(int value, int min, int max);
 uint32_t kvmv_kbps_to_bps(int kbps);
+
+struct kvmv_qp_range {
+	int min_qp, max_qp;
+};
+
+/*
+ * The QP range to ask for: the defaults above, or spec when it reads
+ * "min:max" with 0 <= min <= max <= 51 (KVMV_H264_QP in the environment).
+ * "0:51" leaves the encoder's own range alone.
+ */
+void kvmv_h264_qp_range(const char *spec, struct kvmv_qp_range *range);
+
+/*
+ * The H.264 bitrate in kbit/s for a stream of width x height when the caller
+ * gives none: 3000 kbit/s at 1080p, the server's default. Half of it follows
+ * the pixel count, because desktop text costs more per pixel the smaller it
+ * is drawn: about 2200 kbit/s at 720p. Rounded to 100, within the range the
+ * library accepts. 0 x 0 is the source size, taken as 1080p.
+ */
+int kvmv_default_kbps(unsigned int width, unsigned int height);
 
 /* Encoder geometry for one pipeline build. */
 struct kvmv_plan {

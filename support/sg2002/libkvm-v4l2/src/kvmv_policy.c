@@ -1,6 +1,7 @@
 #include "kvmv_policy.h"
 
 #include <errno.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "kvm_vision.h"
@@ -18,6 +19,36 @@ uint32_t kvmv_kbps_to_bps(int kbps)
 {
 	return (uint32_t)kvmv_clamp(kbps, KVMV_BITRATE_MIN_KBPS,
 				    KVMV_BITRATE_MAX_KBPS) * 1000U;
+}
+
+void kvmv_h264_qp_range(const char *spec, struct kvmv_qp_range *range)
+{
+	int min_qp, max_qp;
+	char extra;
+
+	range->min_qp = KVMV_H264_MIN_QP;
+	range->max_qp = KVMV_H264_MAX_QP;
+	if (spec == NULL ||
+	    sscanf(spec, "%d:%d%c", &min_qp, &max_qp, &extra) != 2)
+		return;
+	if (min_qp < 0 || max_qp > 51 || min_qp > max_qp)
+		return;
+	range->min_qp = min_qp;
+	range->max_qp = max_qp;
+}
+
+int kvmv_default_kbps(unsigned int width, unsigned int height)
+{
+	const uint64_t full = 1920 * 1080;
+	uint64_t pixels = (uint64_t)width * height;
+	uint64_t kbps;
+
+	if (pixels == 0)
+		pixels = full;
+	kbps = 1500 + 1500 * pixels / full;
+	kbps = (kbps + 50) / 100 * 100;
+	return kvmv_clamp((int)(kbps > 100000 ? 100000 : kbps),
+			  KVMV_BITRATE_MIN_KBPS, KVMV_BITRATE_MAX_KBPS);
 }
 
 int kvmv_plan_output(unsigned int src_width, unsigned int src_height,

@@ -57,7 +57,7 @@ from "nothing captured" before a pipeline is up.
 | `free_kvmv_data`, `free_all_kvmv_data` | As the vendor library: four reusable slots, a pointer stays valid until freed. |
 | `set_h264_gop` | `V4L2_CID_MPEG_VIDEO_GOP_SIZE` at runtime, plus a forced keyframe, because the vendor library rebuilds its encoder here and the server relies on the next frame being a keyframe. |
 | `set_h264_fps` | `VIDIOC_S_PARM` on the encoder's OUTPUT queue at runtime; returns early when unchanged. The rate given is the lower of this and `set_capture_fps`, or the measured delivery rate when frames arrive more than 10% slower (see Known issues). |
-| bitrate argument | `V4L2_CID_MPEG_VIDEO_BITRATE` (kbit/s x 1000) at runtime. |
+| bitrate argument | `V4L2_CID_MPEG_VIDEO_BITRATE` (kbit/s x 1000) at runtime, clamped to 500..10000. `0` gives the default for the stream's size (below). |
 | `set_capture_fps` | The capture node has no frame interval control; unread frames cost their DMA and nothing else. Caps the rate the encoder is told, since frames cannot reach it faster. |
 | `set_frame_detact` | Recorded only: every MJPEG read encodes a picture, and `5` ("not changed") is never answered. |
 | `kvmv_codec_supported` | Not in `kvm_vision.h` or Sipeed's library (`abi-extensions.txt`). `1` for codecs 0 (MJPEG) and 1 (H.264), `0` for 2 (H.265). The server finds it with `dlsym` and, without it, assumes all three. |
@@ -69,6 +69,24 @@ from "nothing captured" before a pipeline is up.
 Every runtime change the encoder refuses (an ioctl error) rebuilds the pipeline instead, which is
 what the vendor library does for all of them. The encoder's actual bitrate, GOP and frame rate
 are read back after every build and change and logged next to what was asked for.
+
+### H.264 quality
+
+Every pipeline build sets, besides the bitrate, GOP and frame rate:
+
+| Setting | Value | Why |
+|---------|-------|-----|
+| QP range (`V4L2_CID_MPEG_VIDEO_H264_MIN_QP`, `MAX_QP`) | 18 to 42 | The encoder may not go past QP 42, so text stays legible on a busy screen at a low bitrate; it overshoots the bitrate instead (1.6 Mbit/s for 1 asked, on a 1080p screen with a moving region). Below 18 a still screen gains nothing visible. Kernels before ironkvm-dist patch 0910 have no minimum control on the Coda980 and ignore the maximum; the stream comes up without them. |
+| Initial delay (`V4L2_CID_MPEG_VIDEO_VBV_DELAY`) | 1000 ms | The Coda980's rate-control buffer. With 0 (the control's default) it codes every picture at QP 49 to 51 and pads the stream to the bitrate. Patch 0910 uses 1000 ms itself when it is 0. |
+| GOP | as asked, held to the encoder's range | The Coda takes a GOP of at most 99; the ABI allows 100. |
+
+When no bitrate is given (an MJPEG reader with no H.264 stream before it, or `0`), the stream
+gets 3000 kbit/s at 1080p, the server's default, with half of that following the pixel count:
+2200 kbit/s at 720p, 1700 at 640x480.
+
+Measured on the board with ironkvm-dist patches 0910 and 0911 (run sheet, trial 10): luma PSNR
+of 1080p desktop pictures fed to the encoder from a file, at 2, 4 and 8 Mbit/s. The numbers and
+the method are in that run sheet.
 
 ### Return codes
 
@@ -167,13 +185,18 @@ has read for 10 s.
 | `KVMV_MID_BUFFERS` | 2 | NV12 buffers between scaler and encoder. |
 | `KVMV_BITSTREAM_BUFFERS` | 3 | Encoder output buffers. |
 | `KVMV_IDLE_MS` | 10000 | Tear down an unread pipeline after this long; 0 never does. |
+| `KVMV_H264_QP` | `18:42` | H.264 QP range, `min:max`, 0 to 51. `0:51` leaves the encoder's own. |
+| `KVMV_H264_VBV_DELAY_MS` | 1000 | Rate-control initial delay; 0 leaves the encoder's own. |
 
 ## Known issues
 
-- Bitrate (yuzi-co/ironkvm-dist#35): the bridge produced about nine times its target. The bridge
-  never set the encoder's frame rate; this library does, which may be part of the answer. The
-  library measures its own output and logs once per pipeline when it runs above twice the
-  target.
+- Bitrate and quality (yuzi-co/ironkvm-dist#35): the bridge produced about nine times its
+  target; patch 0905 made the Coda980 follow it, but only by padding pictures coded at QP 51.
+  Patches 0910 (rate control) and 0911 (motion estimation at 1080p) fix the picture; on older
+  kernels the stream is legible only on a still screen. The library measures its own output and
+  logs once per pipeline when it runs above twice the target.
+- The GOP set at runtime reaches the Coda only at the next pipeline build: the driver takes
+  `V4L2_CID_MPEG_VIDEO_GOP_SIZE` at stream start.
 - Only 1920x1080 sources: the capture driver's DMA geometry is fixed. Downscaling for the stream
   works (the VPSS does it); other HDMI modes answer `-6`.
 - Each read waits for the capture, the scaler and the encoder in turn; nothing overlaps, unlike
