@@ -66,13 +66,17 @@ fi
 
 echo -e "${YELLOW}[INFO] Build stamp: ${BUILD_STAMP:-none}${NC}"
 
+# The riscv64 ChaCha20 and Poly1305 for crypto/tls. See goroot-overlay/overlay.sh;
+# NANOKVM_GOROOT_OVERLAY=off builds without them.
+overlay=$(sh "$(dirname "$0")/goroot-overlay/overlay.sh")
+
 # -s -w drop the symbol table and the DWARF sections. See the note beside
 # GO_LDFLAGS in the repository Makefile for why the device cares. Both branches
 # strip, because an unstamped build is deployed the same way a stamped one is.
 if [ -n "$BUILD_STAMP" ]; then
-    go build -trimpath -ldflags "-s -w -X NanoKVM-Server/common/version.Build=$BUILD_STAMP" -o "$BINARY_NAME" -v
+    go build -overlay "$overlay" -trimpath -ldflags "-s -w -X NanoKVM-Server/common/version.Build=$BUILD_STAMP" -o "$BINARY_NAME" -v
 else
-    go build -trimpath -ldflags "-s -w" -o "$BINARY_NAME" -v
+    go build -overlay "$overlay" -trimpath -ldflags "-s -w" -o "$BINARY_NAME" -v
 fi
 
 if [ -f "$BINARY_NAME" ]; then
