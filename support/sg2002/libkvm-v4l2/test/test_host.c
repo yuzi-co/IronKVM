@@ -346,6 +346,105 @@ static void test_sps(void)
 	CHECK(kvmv_h264_sps_size(nal, 5, &w, &h) != 0);
 }
 
+/* ---- H.265 --------------------------------------------------------- */
+
+/* The parameter sets the WAVE420L wrote for 1920x1080 Main, level 4.1 (trial 13). */
+static const uint8_t hevc_vps[] = {
+	0x40, 0x01, 0x0c, 0x01, 0xff, 0xff, 0x01, 0x60, 0x00, 0x00, 0x03, 0x00,
+	0x00, 0x03, 0x00, 0x00, 0x03, 0x00, 0x00, 0x03, 0x00, 0x7b, 0xac, 0x0c,
+	0x00, 0x00, 0x03, 0x00, 0x04, 0x00, 0x00, 0x03, 0x00, 0x79, 0xa0,
+};
+static const uint8_t hevc_sps[] = {
+	0x42, 0x01, 0x01, 0x01, 0x60, 0x00, 0x00, 0x03, 0x00, 0x00, 0x03, 0x00,
+	0x00, 0x03, 0x00, 0x00, 0x03, 0x00, 0x7b, 0xa0, 0x03, 0xc0, 0x80, 0x10,
+	0xe5, 0x96, 0xb9, 0x24, 0xc1, 0xae, 0x59, 0x90,
+};
+static const uint8_t hevc_pps[] = { 0x44, 0x01, 0xe0, 0x72, 0xb0, 0x26, 0x40 };
+static const uint8_t hevc_idr[] = { 0x26, 0x01, 0xac, 0x19, 0x60, 0xe0 }; /* type 19 */
+static const uint8_t hevc_cra[] = { 0x2a, 0x01, 0xac, 0x19, 0x60, 0xe0 }; /* type 21 */
+static const uint8_t hevc_trail[] = { 0x02, 0x01, 0xd0, 0x08, 0x31, 0x22 }; /* type 1 */
+
+static void test_hevc(void)
+{
+	const enum kvmv_codec hevc = KVMV_CODEC_KIND_HEVC;
+	struct stream key = { .len = 0 }, delta = { .len = 0 }, bare = { .len = 0 },
+		      cra = { .len = 0 }, headers = { .len = 0 };
+	struct kvmv_au_info info;
+	struct kvmv_ps_cache cache;
+	struct kvmv_nal nals[8];
+	uint8_t out[3 * KVMV_PS_MAX];
+	unsigned int w = 0, h = 0;
+	size_t n;
+
+	put_nal(&key, 1, hevc_vps, sizeof(hevc_vps));
+	put_nal(&key, 1, hevc_sps, sizeof(hevc_sps));
+	put_nal(&key, 1, hevc_pps, sizeof(hevc_pps));
+	put_nal(&key, 1, hevc_idr, sizeof(hevc_idr));
+	CHECK_EQ(kvmv_annexb_split_codec(hevc, key.data, key.len, nals, 8), 4);
+	CHECK_EQ(nals[0].type, KVMV_HEVC_NAL_VPS);
+	CHECK_EQ(nals[1].type, KVMV_HEVC_NAL_SPS);
+	CHECK_EQ(nals[2].type, KVMV_HEVC_NAL_PPS);
+	CHECK_EQ(nals[3].type, KVMV_HEVC_NAL_IDR_W_RADL);
+	kvmv_au_inspect_codec(hevc, key.data, key.len, &info);
+	CHECK_EQ(kvmv_au_type(&info), IMG_H264_TYPE_IF);
+	CHECK_EQ(info.vps, 1);
+	CHECK_EQ(info.sps, 1);
+	CHECK_EQ(info.pps, 1);
+	CHECK_EQ(info.idr, 1);
+
+	/* Read as H.264, the same bytes are no keyframe. */
+	kvmv_au_inspect(key.data, key.len, &info);
+	CHECK(info.idr == 0);
+
+	put_nal(&delta, 1, hevc_trail, sizeof(hevc_trail));
+	kvmv_au_inspect_codec(hevc, delta.data, delta.len, &info);
+	CHECK_EQ(kvmv_au_type(&info), IMG_H264_TYPE_PF);
+
+	/* A CRA is a random access point too. */
+	put_nal(&cra, 1, hevc_cra, sizeof(hevc_cra));
+	kvmv_au_inspect_codec(hevc, cra.data, cra.len, &info);
+	CHECK_EQ(kvmv_au_type(&info), IMG_H264_TYPE_IF);
+
+	put_nal(&headers, 1, hevc_vps, sizeof(hevc_vps));
+	kvmv_au_inspect_codec(hevc, headers.data, headers.len, &info);
+	CHECK_EQ(kvmv_au_type(&info), KVMV_AU_HEADERS_ONLY);
+
+	/* The cache gives a bare IDR the VPS, SPS and PPS, in that order. */
+	kvmv_ps_cache_reset_codec(&cache, hevc);
+	put_nal(&bare, 0, hevc_idr, sizeof(hevc_idr));
+	kvmv_au_inspect_codec(hevc, bare.data, bare.len, &info);
+	CHECK_EQ(kvmv_ps_cache_prefix(&cache, &info, out, sizeof(out)), 0);
+	kvmv_ps_cache_update(&cache, key.data, key.len);
+	CHECK_EQ(cache.vps_len, 4 + sizeof(hevc_vps));
+	CHECK_EQ(cache.sps_len, 4 + sizeof(hevc_sps));
+	CHECK_EQ(cache.pps_len, 4 + sizeof(hevc_pps));
+	n = kvmv_ps_cache_prefix(&cache, &info, out, sizeof(out));
+	CHECK_EQ(n, 12 + sizeof(hevc_vps) + sizeof(hevc_sps) + sizeof(hevc_pps));
+	CHECK(memcmp(out + 4, hevc_vps, sizeof(hevc_vps)) == 0);
+	CHECK(memcmp(out + 8 + sizeof(hevc_vps), hevc_sps, sizeof(hevc_sps)) == 0);
+	/* A complete keyframe and a delta frame need nothing. */
+	kvmv_au_inspect_codec(hevc, key.data, key.len, &info);
+	CHECK_EQ(kvmv_ps_cache_prefix(&cache, &info, out, sizeof(out)), 0);
+	kvmv_au_inspect_codec(hevc, delta.data, delta.len, &info);
+	CHECK_EQ(kvmv_ps_cache_prefix(&cache, &info, out, sizeof(out)), 0);
+	/* SPS and PPS without the VPS are not complete. */
+	{
+		struct stream partial = { .len = 0 };
+
+		put_nal(&partial, 1, hevc_sps, sizeof(hevc_sps));
+		put_nal(&partial, 1, hevc_pps, sizeof(hevc_pps));
+		put_nal(&partial, 1, hevc_idr, sizeof(hevc_idr));
+		kvmv_au_inspect_codec(hevc, partial.data, partial.len, &info);
+		CHECK(kvmv_ps_cache_prefix(&cache, &info, out, sizeof(out)) > 0);
+	}
+
+	CHECK_EQ(kvmv_hevc_sps_size(hevc_sps, sizeof(hevc_sps), &w, &h), 0);
+	CHECK_EQ(w, 1920);
+	CHECK_EQ(h, 1080);
+	CHECK(kvmv_hevc_sps_size(hevc_vps, sizeof(hevc_vps), &w, &h) != 0);
+	CHECK(kvmv_hevc_sps_size(hevc_sps, 10, &w, &h) != 0);
+}
+
 /* ---- policy -------------------------------------------------------- */
 
 static void test_plan(void)
@@ -428,18 +527,22 @@ static void test_roles(void)
 	const uint32_t cap = V4L2_CAP_VIDEO_CAPTURE | V4L2_CAP_STREAMING;
 	const uint32_t m2m = V4L2_CAP_VIDEO_M2M | V4L2_CAP_STREAMING;
 
-	CHECK_EQ(kvmv_match_role("sg2002-capture", cap, 0, 0), KVMV_ROLE_CAPTURE);
-	CHECK_EQ(kvmv_match_role("sg2002-vpss", m2m, 0, 1), KVMV_ROLE_SCALER);
-	CHECK_EQ(kvmv_match_role("coda", m2m, 1, 1), KVMV_ROLE_ENCODER);
-	CHECK_EQ(kvmv_match_role("sg2002-jpeg", m2m, 0, 1), KVMV_ROLE_JPEG);
-	CHECK_EQ(kvmv_match_role("sg2002-jpeg", cap, 0, 0), KVMV_ROLE_NONE);
+	CHECK_EQ(kvmv_match_role("sg2002-capture", cap, 0, 0, 0), KVMV_ROLE_CAPTURE);
+	CHECK_EQ(kvmv_match_role("sg2002-vpss", m2m, 0, 0, 1), KVMV_ROLE_SCALER);
+	CHECK_EQ(kvmv_match_role("coda", m2m, 1, 0, 1), KVMV_ROLE_ENCODER);
+	CHECK_EQ(kvmv_match_role("sg2002-jpeg", m2m, 0, 0, 1), KVMV_ROLE_JPEG);
+	CHECK_EQ(kvmv_match_role("sg2002-jpeg", cap, 0, 0, 0), KVMV_ROLE_NONE);
 	/* The Coda's decoder and JPEG nodes are not the encoder. */
-	CHECK_EQ(kvmv_match_role("coda", m2m, 0, 1), KVMV_ROLE_NONE);
-	CHECK_EQ(kvmv_match_role("coda", m2m, 1, 0), KVMV_ROLE_NONE);
-	CHECK_EQ(kvmv_match_role("sg2002-capture", V4L2_CAP_VIDEO_CAPTURE, 0, 0),
+	CHECK_EQ(kvmv_match_role("coda", m2m, 0, 0, 1), KVMV_ROLE_NONE);
+	CHECK_EQ(kvmv_match_role("coda", m2m, 1, 0, 0), KVMV_ROLE_NONE);
+	CHECK_EQ(kvmv_match_role("sg2002-capture", V4L2_CAP_VIDEO_CAPTURE, 0, 0, 0),
 		 KVMV_ROLE_NONE);
-	CHECK_EQ(kvmv_match_role("uvcvideo", cap, 0, 0), KVMV_ROLE_NONE);
-	CHECK_EQ(kvmv_match_role(NULL, cap, 0, 0), KVMV_ROLE_NONE);
+	CHECK_EQ(kvmv_match_role("uvcvideo", cap, 0, 0, 0), KVMV_ROLE_NONE);
+	/* The WAVE420L: NV12 in, H.265 out. A node offering both goes to H.264. */
+	CHECK_EQ(kvmv_match_role("wave420l", m2m, 0, 1, 1), KVMV_ROLE_ENCODER_HEVC);
+	CHECK_EQ(kvmv_match_role("wave420l", m2m, 0, 1, 0), KVMV_ROLE_NONE);
+	CHECK_EQ(kvmv_match_role("both", m2m, 1, 1, 1), KVMV_ROLE_ENCODER);
+	CHECK_EQ(kvmv_match_role(NULL, cap, 0, 0, 0), KVMV_ROLE_NONE);
 
 	CHECK(kvmv_subdev_name_matches("lt6911uxe 4-002b\n"));
 	CHECK(!kvmv_subdev_name_matches("ov5647 2-0036"));
@@ -1251,6 +1354,7 @@ int main(void)
 	test_classify();
 	test_ps_cache();
 	test_sps();
+	test_hevc();
 	test_plan();
 	test_timings();
 	test_roles();

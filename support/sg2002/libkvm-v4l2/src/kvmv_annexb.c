@@ -28,8 +28,13 @@ static size_t find_start_code(const uint8_t *buf, size_t len, size_t from,
 	return len;
 }
 
-size_t kvmv_annexb_split(const uint8_t *buf, size_t len, struct kvmv_nal *nals,
-			 size_t max_nals)
+static uint8_t nal_type(enum kvmv_codec codec, uint8_t header)
+{
+	return codec == KVMV_CODEC_KIND_HEVC ? (header >> 1) & 0x3f : header & 0x1f;
+}
+
+size_t kvmv_annexb_split_codec(enum kvmv_codec codec, const uint8_t *buf,
+			       size_t len, struct kvmv_nal *nals, size_t max_nals)
 {
 	size_t count = 0;
 	size_t code_len;
@@ -48,7 +53,7 @@ size_t kvmv_annexb_split(const uint8_t *buf, size_t len, struct kvmv_nal *nals,
 			nals[count].offset = pos;
 			nals[count].start = start;
 			nals[count].size = next - start;
-			nals[count].type = buf[start] & 0x1f;
+			nals[count].type = nal_type(codec, buf[start]);
 			count++;
 		}
 		pos = next;
@@ -57,16 +62,48 @@ size_t kvmv_annexb_split(const uint8_t *buf, size_t len, struct kvmv_nal *nals,
 	return count;
 }
 
-void kvmv_au_inspect(const uint8_t *buf, size_t len, struct kvmv_au_info *info)
+size_t kvmv_annexb_split(const uint8_t *buf, size_t len, struct kvmv_nal *nals,
+			 size_t max_nals)
+{
+	return kvmv_annexb_split_codec(KVMV_CODEC_KIND_H264, buf, len, nals, max_nals);
+}
+
+static void count_hevc(struct kvmv_au_info *info, uint8_t type)
+{
+	if (type <= KVMV_HEVC_NAL_RASL_R)
+		info->slice++;
+	else if (type >= KVMV_HEVC_NAL_BLA_W_LP && type <= KVMV_HEVC_NAL_CRA)
+		info->idr++;
+	else if (type == KVMV_HEVC_NAL_VPS)
+		info->vps++;
+	else if (type == KVMV_HEVC_NAL_SPS)
+		info->sps++;
+	else if (type == KVMV_HEVC_NAL_PPS)
+		info->pps++;
+	else if (type == KVMV_HEVC_NAL_SEI_PREFIX || type == KVMV_HEVC_NAL_SEI_SUFFIX)
+		info->sei++;
+	else if (type == KVMV_HEVC_NAL_AUD)
+		info->aud++;
+	else
+		info->other++;
+}
+
+void kvmv_au_inspect_codec(enum kvmv_codec codec, const uint8_t *buf, size_t len,
+			   struct kvmv_au_info *info)
 {
 	struct kvmv_nal nals[64];
 	size_t count;
 	size_t i;
 
 	memset(info, 0, sizeof(*info));
-	count = kvmv_annexb_split(buf, len, nals, sizeof(nals) / sizeof(nals[0]));
+	count = kvmv_annexb_split_codec(codec, buf, len, nals,
+					sizeof(nals) / sizeof(nals[0]));
 	info->nal_count = (unsigned int)count;
 	for (i = 0; i < count; i++) {
+		if (codec == KVMV_CODEC_KIND_HEVC) {
+			count_hevc(info, nals[i].type);
+			continue;
+		}
 		switch (nals[i].type) {
 		case KVMV_NAL_IDR:
 			info->idr++;
@@ -96,21 +133,33 @@ void kvmv_au_inspect(const uint8_t *buf, size_t len, struct kvmv_au_info *info)
 	}
 }
 
+void kvmv_au_inspect(const uint8_t *buf, size_t len, struct kvmv_au_info *info)
+{
+	kvmv_au_inspect_codec(KVMV_CODEC_KIND_H264, buf, len, info);
+}
+
 int kvmv_au_type(const struct kvmv_au_info *info)
 {
 	if (info->idr)
 		return IMG_H264_TYPE_IF;
 	if (info->slice)
 		return IMG_H264_TYPE_PF;
-	if (info->sps || info->pps)
+	if (info->vps || info->sps || info->pps)
 		return KVMV_AU_HEADERS_ONLY;
 	return KVMV_AU_NO_PICTURE;
 }
 
-void kvmv_ps_cache_reset(struct kvmv_ps_cache *cache)
+void kvmv_ps_cache_reset_codec(struct kvmv_ps_cache *cache, enum kvmv_codec codec)
 {
+	cache->codec = codec;
+	cache->vps_len = 0;
 	cache->sps_len = 0;
 	cache->pps_len = 0;
+}
+
+void kvmv_ps_cache_reset(struct kvmv_ps_cache *cache)
+{
+	kvmv_ps_cache_reset_codec(cache, KVMV_CODEC_KIND_H264);
 }
 
 static void cache_store(uint8_t *dst, size_t *dst_len, const uint8_t *nal,
@@ -132,17 +181,20 @@ void kvmv_ps_cache_update(struct kvmv_ps_cache *cache, const uint8_t *buf,
 			  size_t len)
 {
 	struct kvmv_nal nals[64];
-	size_t count = kvmv_annexb_split(buf, len, nals,
-					 sizeof(nals) / sizeof(nals[0]));
+	int hevc = cache->codec == KVMV_CODEC_KIND_HEVC;
+	size_t count = kvmv_annexb_split_codec(cache->codec, buf, len, nals,
+					       sizeof(nals) / sizeof(nals[0]));
 	size_t i;
 
 	for (i = 0; i < count; i++) {
-		if (nals[i].type == KVMV_NAL_SPS)
-			cache_store(cache->sps, &cache->sps_len,
-				    buf + nals[i].start, nals[i].size);
-		else if (nals[i].type == KVMV_NAL_PPS)
-			cache_store(cache->pps, &cache->pps_len,
-				    buf + nals[i].start, nals[i].size);
+		const uint8_t *nal = buf + nals[i].start;
+
+		if (hevc && nals[i].type == KVMV_HEVC_NAL_VPS)
+			cache_store(cache->vps, &cache->vps_len, nal, nals[i].size);
+		else if (nals[i].type == (hevc ? KVMV_HEVC_NAL_SPS : KVMV_NAL_SPS))
+			cache_store(cache->sps, &cache->sps_len, nal, nals[i].size);
+		else if (nals[i].type == (hevc ? KVMV_HEVC_NAL_PPS : KVMV_NAL_PPS))
+			cache_store(cache->pps, &cache->pps_len, nal, nals[i].size);
 	}
 }
 
@@ -150,19 +202,26 @@ size_t kvmv_ps_cache_prefix(const struct kvmv_ps_cache *cache,
 			    const struct kvmv_au_info *info, uint8_t *out,
 			    size_t out_size)
 {
+	int hevc = cache->codec == KVMV_CODEC_KIND_HEVC;
 	size_t need;
 
-	if (!info->idr || (info->sps && info->pps))
+	if (!info->idr || ((info->vps || !hevc) && info->sps && info->pps))
 		return 0;
-	if (cache->sps_len == 0 || cache->pps_len == 0)
+	if ((hevc && cache->vps_len == 0) || cache->sps_len == 0 ||
+	    cache->pps_len == 0)
 		return 0;
 	/*
-	 * Both sets, even when the unit carries one of them: a PPS is parsed
-	 * against the SPS it names, so the pair travels together.
+	 * All of them, even when the unit carries some: a PPS is parsed against
+	 * the SPS it names, and an H.265 SPS against its VPS, so they travel
+	 * together.
 	 */
-	need = cache->sps_len + cache->pps_len;
+	need = (hevc ? cache->vps_len : 0) + cache->sps_len + cache->pps_len;
 	if (need > out_size)
 		return 0;
+	if (hevc) {
+		memcpy(out, cache->vps, cache->vps_len);
+		out += cache->vps_len;
+	}
 	memcpy(out, cache->sps, cache->sps_len);
 	memcpy(out + cache->sps_len, cache->pps, cache->pps_len);
 	return need;
@@ -348,5 +407,85 @@ int kvmv_h264_sps_size(const uint8_t *nal, size_t len, unsigned int *width,
 		return -1;
 	*width = w - crop_x * (crop_left + crop_right);
 	*height = h - crop_y * (crop_top + crop_bottom);
+	return 0;
+}
+
+/*
+ * profile_tier_level() of an H.265 VPS or SPS with profile_present_flag 1:
+ * 88 bits of general profile, 8 of level, then the sub-layers.
+ */
+static void skip_profile_tier_level(struct bit_reader *r, unsigned int max_sub_layers_minus1)
+{
+	unsigned int profile_present[8] = { 0 }, level_present[8] = { 0 };
+	unsigned int i;
+
+	read_bits(r, 8); /* profile space, tier, profile idc */
+	read_bits(r, 32); /* profile compatibility flags */
+	read_bits(r, 4); /* progressive, interlaced, non-packed, frame-only */
+	read_bits(r, 32); /* the 43 reserved or constraint bits ... */
+	read_bits(r, 11);
+	read_bits(r, 1); /* ... and the inbld or reserved bit */
+	read_bits(r, 8); /* general_level_idc */
+	for (i = 0; i < max_sub_layers_minus1; i++) {
+		profile_present[i] = read_bit(r);
+		level_present[i] = read_bit(r);
+	}
+	if (max_sub_layers_minus1 > 0)
+		for (i = max_sub_layers_minus1; i < 8; i++)
+			read_bits(r, 2);
+	for (i = 0; i < max_sub_layers_minus1; i++) {
+		if (profile_present[i]) {
+			read_bits(r, 32);
+			read_bits(r, 32);
+			read_bits(r, 24);
+		}
+		if (level_present[i])
+			read_bits(r, 8);
+	}
+}
+
+int kvmv_hevc_sps_size(const uint8_t *nal, size_t len, unsigned int *width,
+		       unsigned int *height)
+{
+	struct bit_reader r;
+	unsigned int max_sub_layers_minus1, chroma_format, separate_planes = 0;
+	unsigned int w, h, crop_x, crop_y;
+	unsigned int left = 0, right = 0, top = 0, bottom = 0;
+
+	if (nal == NULL || len < 4 ||
+	    ((nal[0] >> 1) & 0x3f) != KVMV_HEVC_NAL_SPS)
+		return -1;
+
+	reader_init(&r, nal + 2, len - 2);
+	read_bits(&r, 4); /* sps_video_parameter_set_id */
+	max_sub_layers_minus1 = read_bits(&r, 3);
+	read_bit(&r); /* sps_temporal_id_nesting_flag */
+	skip_profile_tier_level(&r, max_sub_layers_minus1);
+	read_ue(&r); /* sps_seq_parameter_set_id */
+	chroma_format = read_ue(&r);
+	if (chroma_format == 3)
+		separate_planes = read_bit(&r);
+	w = read_ue(&r);
+	h = read_ue(&r);
+	if (read_bit(&r)) { /* conformance_window_flag */
+		left = read_ue(&r);
+		right = read_ue(&r);
+		top = read_ue(&r);
+		bottom = read_ue(&r);
+	}
+	if (r.overrun || chroma_format > 3 || w == 0 || h == 0)
+		return -1;
+
+	if (chroma_format == 0 || separate_planes) {
+		crop_x = 1;
+		crop_y = 1;
+	} else {
+		crop_x = chroma_format == 3 ? 1 : 2;
+		crop_y = chroma_format == 1 ? 2 : 1;
+	}
+	if (crop_x * (left + right) >= w || crop_y * (top + bottom) >= h)
+		return -1;
+	*width = w - crop_x * (left + right);
+	*height = h - crop_y * (top + bottom);
 	return 0;
 }

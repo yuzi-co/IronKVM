@@ -67,9 +67,10 @@ void set_capture_fps(uint8_t _fps);
 #define KVMV_DEFAULT_IDLE_MS 10000U
 #define KVMV_RATE_WINDOW_MS 10000U
 #define KVMV_FPS_WINDOW_MS 3000U
-/* Room in front of a copied access unit for the SPS and PPS a keyframe may
- * need, so the unit is copied out of the encoder once. */
-#define KVMV_PREFIX_ROOM (2 * KVMV_PS_MAX)
+/* Room in front of a copied access unit for the parameter sets a keyframe
+ * may need (H.265: VPS, SPS and PPS), so the unit is copied out of the
+ * encoder once. */
+#define KVMV_PREFIX_ROOM (3 * KVMV_PS_MAX)
 
 #define KVMV_STATE_DIR "/tmp/kvm"
 #define KVMV_STATE_FILE "/tmp/kvm/state"
@@ -99,6 +100,8 @@ static struct kvmv_devices devices;
 static int devices_found;
 static struct kvmv_ps_cache ps_cache;
 static unsigned int pipe_width, pipe_height; /* the size the pipe was built for */
+/* The codec the pipe was built for, or is built for next by an MJPEG read. */
+static enum kvmv_codec pipe_codec = KVMV_CODEC_KIND_H264;
 static uint32_t pipe_bitrate;
 static int pipe_gop, pipe_fps;
 static int need_key; /* 0, or 1 plus the delta frames dropped waiting for an IDR */
@@ -388,26 +391,55 @@ static int encoder_fps(int current)
 				current);
 }
 
+static const char *codec_name(enum kvmv_codec codec)
+{
+	return codec == KVMV_CODEC_KIND_HEVC ? "H.265" : "H.264";
+}
+
+static int find_devices_locked(void)
+{
+	char missing[128];
+
+	if (devices_found)
+		return 0;
+	if (kvmv_find_devices(&devices, missing, sizeof(missing))) {
+		log_error_once("V4L2 nodes not found", missing);
+		return -1;
+	}
+	devices_found = 1;
+	log_msg("capture %s, scaler %s, H.264 encoder %s, H.265 encoder %s, receiver %s",
+		devices.capture, devices.scaler,
+		devices.encoder[0] ? devices.encoder : "(none)",
+		devices.encoder_hevc[0] ? devices.encoder_hevc : "(none)",
+		devices.subdev[0] ? devices.subdev : "(no subdevice node)");
+	return 0;
+}
+
+static int have_encoder(enum kvmv_codec codec)
+{
+	return codec == KVMV_CODEC_KIND_HEVC ? devices.encoder_hevc[0] != 0 :
+					       devices.encoder[0] != 0;
+}
+
 static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps)
 {
 	struct kvmv_pipe_cfg cfg;
 	struct kvmv_qp_range qp;
 	unsigned int need_width, need_height;
-	char missing[128];
+	enum kvmv_codec codec = pipe_codec;
+	int hevc = codec == KVMV_CODEC_KIND_HEVC;
 	int result;
 
 	if (next_start_ms && now_ms() < next_start_ms)
 		return last_start_result;
 
-	if (!devices_found) {
-		if (kvmv_find_devices(&devices, missing, sizeof(missing))) {
-			log_error_once("V4L2 nodes not found", missing);
-			return start_failed(IMG_VENC_ERROR, 2000);
-		}
-		devices_found = 1;
-		log_msg("capture %s, scaler %s, encoder %s, receiver %s",
-			devices.capture, devices.scaler, devices.encoder,
-			devices.subdev[0] ? devices.subdev : "(no subdevice node)");
+	if (find_devices_locked())
+		return start_failed(IMG_VENC_ERROR, 2000);
+	/* An MJPEG read builds the pipe too; it takes whichever encoder exists. */
+	if (!have_encoder(codec)) {
+		codec = hevc ? KVMV_CODEC_KIND_H264 : KVMV_CODEC_KIND_HEVC;
+		hevc = !hevc;
+		pipe_codec = codec;
 	}
 
 	capture_frame_size(&need_width, &need_height);
@@ -416,15 +448,21 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 		return start_failed(result, 500);
 
 	memset(&cfg, 0, sizeof(cfg));
+	cfg.codec = codec;
 	cfg.req_width = width;
 	cfg.req_height = height;
 	cfg.bitrate_bps = bitrate_bps;
 	cfg.gop = (unsigned int)__atomic_load_n(&gop_setting, __ATOMIC_ACQUIRE);
 	cfg.fps = (unsigned int)encoder_fps(0);
-	kvmv_h264_qp_range(getenv("KVMV_H264_QP"), &qp);
+	if (hevc) {
+		kvmv_h265_qp_range(getenv("KVMV_H265_QP"), &qp);
+		cfg.vbv_delay_ms = env_uint("KVMV_H265_VBV_DELAY_MS", KVMV_H265_VBV_DELAY_MS);
+	} else {
+		kvmv_h264_qp_range(getenv("KVMV_H264_QP"), &qp);
+		cfg.vbv_delay_ms = env_uint("KVMV_H264_VBV_DELAY_MS", KVMV_H264_VBV_DELAY_MS);
+	}
 	cfg.min_qp = qp.min_qp;
 	cfg.max_qp = qp.max_qp;
-	cfg.vbv_delay_ms = env_uint("KVMV_H264_VBV_DELAY_MS", KVMV_H264_VBV_DELAY_MS);
 	cfg.capture_buffers = env_uint("KVMV_CAPTURE_BUFFERS", 2);
 	cfg.mid_buffers = env_uint("KVMV_MID_BUFFERS", 2);
 	cfg.bitstream_buffers = env_uint("KVMV_BITSTREAM_BUFFERS", 3);
@@ -439,6 +477,10 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 		 * EPIPE at STREAMON. */
 		if (err == EPIPE)
 			return start_failed(-6, 1000);
+		/* The other codec's encoder holds the codec SRAM. */
+		if (err == EBUSY)
+			log_msg("the %s encoder is busy: the other codec is streaming",
+				codec_name(codec));
 		return start_failed(IMG_VENC_ERROR, 1000);
 	}
 
@@ -451,7 +493,7 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 	no_frame_count = 0;
 	overshoot_warned = 0;
 	last_error[0] = 0;
-	kvmv_ps_cache_reset(&ps_cache);
+	kvmv_ps_cache_reset_codec(&ps_cache, codec);
 	kvmv_rate_reset(&rate);
 	kvmv_rate_reset(&fps_rate);
 	/* The first picture after a build must be decodable from cold. */
@@ -462,9 +504,10 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 	set_source_locked(1);
 	publish_resolution(pipe_state.plan.src_width, pipe_state.plan.src_height);
 
-	log_msg("pipeline %ux%u -> %ux%u H.264",
+	log_msg("pipeline %ux%u -> %ux%u %s",
 		pipe_state.plan.src_width, pipe_state.plan.src_height,
-		pipe_state.plan.out_width, pipe_state.plan.out_height);
+		pipe_state.plan.out_width, pipe_state.plan.out_height,
+		codec_name(codec));
 	report_applied(bitrate_bps, pipe_gop, pipe_fps);
 	return 0;
 }
@@ -619,12 +662,27 @@ static int pipe_failure(enum kvmv_pipe_status status)
 }
 
 static int read_video_locked(unsigned int width, unsigned int height,
-			     uint32_t bitrate_bps, uint8_t **data,
-			     uint32_t *size)
+			     uint32_t bitrate_bps, enum kvmv_codec codec,
+			     uint8_t **data, uint32_t *size)
 {
 	int attempt;
 	int result;
 
+	if (find_devices_locked())
+		return start_failed(IMG_VENC_ERROR, 2000);
+	if (!have_encoder(codec)) {
+		log_error_once(codec_name(codec), "no encoder for this codec");
+		return IMG_VENC_ERROR;
+	}
+	/*
+	 * A codec switch is a new pipe. The old encoder stops streaming first,
+	 * which releases the codec SRAM the new one needs.
+	 */
+	if (codec != pipe_codec) {
+		pipe_down("codec changed");
+		log_msg("codec %s -> %s", codec_name(pipe_codec), codec_name(codec));
+		pipe_codec = codec;
+	}
 	if (pipe_state.running && (width != pipe_width || height != pipe_height))
 		pipe_down("output size changed");
 	if (!pipe_state.running) {
@@ -672,7 +730,7 @@ static int read_video_locked(unsigned int width, unsigned int height,
 		pipe_state.times.copy_us += now_us() - copy_start;
 		kvmv_pipe_release(&pipe_state, &encoded);
 
-		kvmv_au_inspect(unit, unit_size, &info);
+		kvmv_au_inspect_codec(pipe_state.codec, unit, unit_size, &info);
 		kvmv_ps_cache_update(&ps_cache, unit, unit_size);
 		type = kvmv_au_type(&info);
 		if (type != IMG_H264_TYPE_IF && type != IMG_H264_TYPE_PF) {
@@ -940,7 +998,6 @@ static int read_image(uint16_t width, uint16_t height, int quality,
 static int read_frame(uint16_t width, uint16_t height, uint8_t codec,
 		      int bitrate_kbps, uint8_t **data, uint32_t *size)
 {
-	static int hevc_warned;
 	int result;
 
 	if (data == NULL || size == NULL)
@@ -950,11 +1007,8 @@ static int read_frame(uint16_t width, uint16_t height, uint8_t codec,
 
 	if (codec == KVMV_CODEC_MJPEG)
 		return read_image(width, height, bitrate_kbps, data, size);
-	if (codec != KVMV_CODEC_H264) {
-		if (!__atomic_exchange_n(&hevc_warned, 1, __ATOMIC_ACQ_REL))
-			log_msg("codec %u is not available: the Coda980 encodes H.264 only", codec);
+	if (codec != KVMV_CODEC_H264 && codec != KVMV_CODEC_H265)
 		return IMG_VENC_ERROR;
-	}
 
 	if (timed_lock(&pipe_lock, KVMV_LOCK_TIMEOUT_S) != 0)
 		return KVMV_RET_RETRIEVING;
@@ -967,6 +1021,8 @@ static int read_frame(uint16_t width, uint16_t height, uint8_t codec,
 	if (bitrate_kbps == 0)
 		bitrate_kbps = kvmv_default_kbps(width, height);
 	result = read_video_locked(width, height, kvmv_kbps_to_bps(bitrate_kbps),
+				   codec == KVMV_CODEC_H265 ? KVMV_CODEC_KIND_HEVC :
+							      KVMV_CODEC_KIND_H264,
 				   data, size);
 	pthread_mutex_unlock(&pipe_lock);
 	return result;
@@ -1238,5 +1294,27 @@ uint8_t kvmv_hdmi_signal_active(void)
 __attribute__((visibility("default"))) uint8_t kvmv_codec_supported(uint8_t _codec);
 uint8_t kvmv_codec_supported(uint8_t _codec)
 {
-	return _codec == KVMV_CODEC_MJPEG || _codec == KVMV_CODEC_H264;
+	uint8_t supported = 0;
+
+	if (_codec == KVMV_CODEC_MJPEG)
+		return 1;
+	if (_codec != KVMV_CODEC_H264 && _codec != KVMV_CODEC_H265)
+		return 0;
+	/*
+	 * By the encoder nodes the kernel has: the Coda980 for H.264, the
+	 * WAVE420L (ironkvm-dist#55) for H.265. Discovery opens the nodes
+	 * once; a pipeline busy for longer than the lock timeout answers from
+	 * what is known, or the vendor library's "yes" for H.264.
+	 */
+	if (timed_lock(&pipe_lock, KVMV_LOCK_TIMEOUT_S) != 0)
+		return devices_found ? (uint8_t)have_encoder(_codec == KVMV_CODEC_H265 ?
+							   KVMV_CODEC_KIND_HEVC :
+							   KVMV_CODEC_KIND_H264) :
+				       _codec == KVMV_CODEC_H264;
+	if (find_devices_locked() == 0)
+		supported = (uint8_t)have_encoder(_codec == KVMV_CODEC_H265 ?
+						  KVMV_CODEC_KIND_HEVC :
+						  KVMV_CODEC_KIND_H264);
+	pthread_mutex_unlock(&pipe_lock);
+	return supported;
 }

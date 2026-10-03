@@ -142,10 +142,13 @@ static int load(const char *path)
 	return missing ? -1 : 0;
 }
 
+/* The codec run() reads: 1 H.264, 2 H.265. */
+static uint8_t run_codec = 1;
+
 struct run_stats {
 	unsigned int frames, keys, deltas, errors;
 	unsigned int first_key_index; /* UINT32_MAX when none */
-	unsigned int keys_complete; /* keyframes carrying SPS, PPS and IDR */
+	unsigned int keys_complete; /* keyframes carrying (VPS,) SPS, PPS and IDR */
 	unsigned int max_key_gap, min_key_gap;
 	unsigned int sps_width, sps_height;
 	int first_type;
@@ -157,20 +160,25 @@ struct run_stats {
 static void inspect_frame(struct run_stats *st, const uint8_t *data, uint32_t size,
 			  int type, unsigned int *since_key)
 {
+	enum kvmv_codec kind = run_codec == 2 ? KVMV_CODEC_KIND_HEVC : KVMV_CODEC_KIND_H264;
 	struct kvmv_au_info info;
 
-	kvmv_au_inspect(data, size, &info);
+	kvmv_au_inspect_codec(kind, data, size, &info);
 	if (type == TYPE_KEY) {
 		struct kvmv_nal nals[32];
-		size_t n = kvmv_annexb_split(data, size, nals, 32), i;
+		size_t n = kvmv_annexb_split_codec(kind, data, size, nals, 32), i;
 
 		st->keys++;
-		if (info.sps && info.pps && info.idr)
+		if ((info.vps || kind != KVMV_CODEC_KIND_HEVC) && info.sps && info.pps && info.idr)
 			st->keys_complete++;
-		for (i = 0; i < n; i++)
-			if (nals[i].type == KVMV_NAL_SPS)
+		for (i = 0; i < n; i++) {
+			if (kind == KVMV_CODEC_KIND_HEVC && nals[i].type == KVMV_HEVC_NAL_SPS)
+				kvmv_hevc_sps_size(data + nals[i].start, nals[i].size,
+						   &st->sps_width, &st->sps_height);
+			else if (kind == KVMV_CODEC_KIND_H264 && nals[i].type == KVMV_NAL_SPS)
 				kvmv_h264_sps_size(data + nals[i].start, nals[i].size,
 						   &st->sps_width, &st->sps_height);
+		}
 		if (st->keys > 1) {
 			if (*since_key > st->max_key_gap)
 				st->max_key_gap = *since_key;
@@ -205,7 +213,7 @@ static void run(struct run_stats *st, unsigned int count, uint16_t w, uint16_t h
 
 		sleep_until(next);
 		next += 1000000U / fps;
-		type = api.kvmv_read_video(w, h, 1, kbps, gop, 0, &data, &size);
+		type = api.kvmv_read_video(w, h, run_codec, kbps, gop, 0, &data, &size);
 		if (type < 0) {
 			st->errors++;
 			if (type >= -7)
@@ -452,6 +460,7 @@ int main(int argc, char **argv)
 	unsigned int frames = 300, kbps = 4000, gop = 30, fps = 30, quality = 80;
 	int skip_scale = 0;
 	struct run_stats st;
+	int hevc = 0;
 	uint8_t *data = NULL;
 	uint32_t size = 0;
 	uint64_t t0;
@@ -495,20 +504,29 @@ int main(int argc, char **argv)
 	result(api.kvmv_hdmi_signal_active(), "HDMI signal active after %.1f s",
 	       (double)(now_us() - t0) / 1e6);
 
-	/* 3. H.265 answers the encoder error: the Coda980 encodes H.264 only. */
-	ret = api.kvmv_read_video(0, 0, 2, kbps, 0, 0, &data, &size);
-	result(ret == IMG_VENC_ERROR, "H.265 read answers %d (want -2)", ret);
-	if (ret >= 0)
-		api.free_kvmv_data(&data);
+	/*
+	 * 3. Codecs. H.265 needs the WAVE420L (ironkvm-dist#55, wave420l.ko);
+	 * without it an H.265 read answers the encoder error.
+	 */
 	{
 		u8_u8_fn supported = (u8_u8_fn)dlsym(RTLD_DEFAULT, "kvmv_codec_supported");
 
-		if (supported != NULL)
-			result(supported(0) == 1 && supported(1) == 1 && supported(2) == 0,
-			       "kvmv_codec_supported: MJPEG %u, H.264 %u, H.265 %u (want 1 1 0)",
-			       supported(0), supported(1), supported(2));
-		else
+		if (supported != NULL) {
+			hevc = supported(2);
+			result(supported(0) == 1 && supported(1) == 1,
+			       "kvmv_codec_supported: MJPEG %u, H.264 %u, H.265 %u (want 1 1, H.265 %s)",
+			       supported(0), supported(1), supported(2),
+			       hevc ? "found" : "not found");
+		} else {
 			note("no kvmv_codec_supported (the vendor library has none)");
+		}
+	}
+	if (!hevc) {
+		ret = api.kvmv_read_video(0, 0, 2, kbps, 0, 0, &data, &size);
+		result(ret == IMG_VENC_ERROR, "H.265 read without an H.265 encoder answers %d (want -2)",
+		       ret);
+		if (ret >= 0)
+			api.free_kvmv_data(&data);
 	}
 
 	/* 3b. MJPEG: time per read at three sizes, then the frame rate at the
@@ -589,6 +607,64 @@ int main(int argc, char **argv)
 			       "H.264 with an MJPEG reader: %u of %u frames, %u errors",
 			       st.frames, count, st.errors);
 		}
+	}
+
+	/*
+	 * 5c. H.265, a switch from H.264 and back, and an MJPEG reader beside
+	 * it. The two encoders share the codec SRAM, so a switch rebuilds the
+	 * pipe with the other encoder; the first frame of each must be a
+	 * keyframe that carries VPS, SPS and PPS.
+	 */
+	if (hevc) {
+		struct mjpeg_load load = { 0, 0, 0 };
+		pthread_t thread;
+		unsigned int count = fps * 5;
+
+		run_codec = 2;
+		run(&st, frames, 0, 0, (uint16_t)kbps, 0, (uint8_t)fps,
+		    frames * 1000U / fps + 10000U);
+		report(&st, fps);
+		result(st.frames == frames, "read %u of %u H.265 frames", st.frames, frames);
+		result(st.first_type == TYPE_KEY && st.errors == 0,
+		       "H.265 after H.264 starts on a keyframe (type %d, %u errors)",
+		       st.first_type, st.errors);
+		result(st.keys > 0 && st.keys_complete == st.keys,
+		       "%u of %u H.265 keyframes carry VPS, SPS, PPS and an IRAP picture",
+		       st.keys_complete, st.keys);
+		if (frames > 2 * gop)
+			result(st.max_key_gap <= gop + 1 && st.min_key_gap + 1 >= gop,
+			       "H.265 keyframe every %u frames (seen %u..%u)", gop,
+			       st.min_key_gap, st.max_key_gap);
+		result(st.sps_width > 0 && st.sps_height > 0, "H.265 SPS reports %ux%u",
+		       st.sps_width, st.sps_height);
+		{
+			double nominal = st.frames ? (double)st.bytes * 8.0 / 1000.0 /
+						     ((double)st.frames / fps) : 0;
+
+			result(nominal < kbps * 3.0, "H.265 output %.0f kbit/s against %u kbit/s",
+			       nominal, kbps);
+		}
+
+		if (pthread_create(&thread, NULL, mjpeg_loop, &load) == 0) {
+			run(&st, count, 0, 0, (uint16_t)kbps, 0, (uint8_t)fps,
+			    count * 1000U / fps + 10000U);
+			load.stop = 1;
+			pthread_join(thread, NULL);
+			report(&st, fps);
+			note("alongside: %u MJPEG 960x540 reads (%.1f/s), %u errors",
+			     load.reads, st.elapsed_us ? load.reads * 1e6 / st.elapsed_us : 0.0,
+			     load.errors);
+			result(st.frames == count && st.errors == 0 && load.reads > 0,
+			       "H.265 with an MJPEG reader: %u of %u frames, %u errors, %u MJPEG reads",
+			       st.frames, count, st.errors, load.reads);
+		}
+
+		run_codec = 1;
+		run(&st, fps * 2, 0, 0, (uint16_t)kbps, 0, (uint8_t)fps, 10000U);
+		report(&st, fps);
+		result(st.frames == fps * 2 && st.first_type == TYPE_KEY && st.errors == 0,
+		       "H.264 after H.265: %u frames, first type %d, %u errors",
+		       st.frames, st.first_type, st.errors);
 	}
 
 	/* 6. Downscale through the VPSS. */

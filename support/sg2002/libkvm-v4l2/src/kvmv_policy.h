@@ -30,6 +30,14 @@
 #define KVMV_H264_MAX_QP 42
 #define KVMV_H264_VBV_DELAY_MS 1000
 
+/*
+ * H.265 on the WAVE420L (ironkvm-dist#55, run sheet trial 13): the same
+ * QP window and initial delay as H.264 until measurements say otherwise.
+ */
+#define KVMV_H265_MIN_QP 18
+#define KVMV_H265_MAX_QP 42
+#define KVMV_H265_VBV_DELAY_MS 1000
+
 int kvmv_clamp(int value, int min, int max);
 uint32_t kvmv_kbps_to_bps(int kbps);
 
@@ -43,6 +51,9 @@ struct kvmv_qp_range {
  * "0:51" leaves the encoder's own range alone.
  */
 void kvmv_h264_qp_range(const char *spec, struct kvmv_qp_range *range);
+
+/* The same for H.265: KVMV_H265_MIN_QP to KVMV_H265_MAX_QP, or spec. */
+void kvmv_h265_qp_range(const char *spec, struct kvmv_qp_range *range);
 
 /*
  * The H.264 bitrate in kbit/s for a stream of width x height when the caller
@@ -105,6 +116,7 @@ enum kvmv_role {
 	KVMV_ROLE_SCALER,
 	KVMV_ROLE_ENCODER,
 	KVMV_ROLE_JPEG, /* the hardware JPEG encoder, optional */
+	KVMV_ROLE_ENCODER_HEVC, /* NV12 to H.265 (the WAVE420L), optional */
 };
 
 /*
@@ -113,7 +125,7 @@ enum kvmv_role {
  * discovery goes by driver name and capability, never by /dev/videoN.
  */
 enum kvmv_role kvmv_match_role(const char *driver, uint32_t device_caps,
-			       int encodes_h264, int takes_nv12);
+			       int encodes_h264, int encodes_hevc, int takes_nv12);
 
 int kvmv_subdev_name_matches(const char *name);
 

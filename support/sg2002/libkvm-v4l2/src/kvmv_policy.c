@@ -21,13 +21,14 @@ uint32_t kvmv_kbps_to_bps(int kbps)
 				    KVMV_BITRATE_MAX_KBPS) * 1000U;
 }
 
-void kvmv_h264_qp_range(const char *spec, struct kvmv_qp_range *range)
+static void qp_range(const char *spec, int def_min, int def_max,
+		     struct kvmv_qp_range *range)
 {
 	int min_qp, max_qp;
 	char extra;
 
-	range->min_qp = KVMV_H264_MIN_QP;
-	range->max_qp = KVMV_H264_MAX_QP;
+	range->min_qp = def_min;
+	range->max_qp = def_max;
 	if (spec == NULL ||
 	    sscanf(spec, "%d:%d%c", &min_qp, &max_qp, &extra) != 2)
 		return;
@@ -35,6 +36,16 @@ void kvmv_h264_qp_range(const char *spec, struct kvmv_qp_range *range)
 		return;
 	range->min_qp = min_qp;
 	range->max_qp = max_qp;
+}
+
+void kvmv_h264_qp_range(const char *spec, struct kvmv_qp_range *range)
+{
+	qp_range(spec, KVMV_H264_MIN_QP, KVMV_H264_MAX_QP, range);
+}
+
+void kvmv_h265_qp_range(const char *spec, struct kvmv_qp_range *range)
+{
+	qp_range(spec, KVMV_H265_MIN_QP, KVMV_H265_MAX_QP, range);
 }
 
 int kvmv_default_kbps(unsigned int width, unsigned int height)
@@ -137,7 +148,7 @@ int kvmv_signal_result(enum kvmv_signal signal)
 }
 
 enum kvmv_role kvmv_match_role(const char *driver, uint32_t device_caps,
-			       int encodes_h264, int takes_nv12)
+			       int encodes_h264, int encodes_hevc, int takes_nv12)
 {
 	if (driver == NULL)
 		return KVMV_ROLE_NONE;
@@ -158,6 +169,9 @@ enum kvmv_role kvmv_match_role(const char *driver, uint32_t device_caps,
 	 */
 	if (encodes_h264 && takes_nv12)
 		return KVMV_ROLE_ENCODER;
+	/* The WAVE420L's node: NV12 in, H.265 out. */
+	if (encodes_hevc && takes_nv12)
+		return KVMV_ROLE_ENCODER_HEVC;
 	return KVMV_ROLE_NONE;
 }
 
