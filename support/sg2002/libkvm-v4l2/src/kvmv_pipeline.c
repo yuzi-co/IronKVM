@@ -174,6 +174,9 @@ int kvmv_find_devices(struct kvmv_devices *devices, char *missing,
 				       queue_offers(fd, V4L2_BUF_TYPE_VIDEO_CAPTURE,
 						    V4L2_PIX_FMT_H264),
 				       (caps & V4L2_CAP_VIDEO_M2M) &&
+				       queue_offers(fd, V4L2_BUF_TYPE_VIDEO_CAPTURE,
+						    V4L2_PIX_FMT_HEVC),
+				       (caps & V4L2_CAP_VIDEO_M2M) &&
 				       queue_offers(fd, V4L2_BUF_TYPE_VIDEO_OUTPUT,
 						    V4L2_PIX_FMT_NV12));
 		close(fd);
@@ -184,6 +187,8 @@ int kvmv_find_devices(struct kvmv_devices *devices, char *missing,
 			copy_path(devices->scaler, path);
 		else if (role == KVMV_ROLE_ENCODER && !devices->encoder[0])
 			copy_path(devices->encoder, path);
+		else if (role == KVMV_ROLE_ENCODER_HEVC && !devices->encoder_hevc[0])
+			copy_path(devices->encoder_hevc, path);
 		else if (role == KVMV_ROLE_JPEG && !devices->jpeg[0])
 			copy_path(devices->jpeg, path);
 	}
@@ -194,16 +199,20 @@ int kvmv_find_devices(struct kvmv_devices *devices, char *missing,
 		copy_path(devices->scaler, env);
 	if ((env = getenv("KVMV_ENCODER_DEV")) != NULL && *env)
 		copy_path(devices->encoder, env);
+	if ((env = getenv("KVMV_HEVC_ENCODER_DEV")) != NULL && *env)
+		copy_path(devices->encoder_hevc, env);
 	if ((env = getenv("KVMV_JPEG_DEV")) != NULL && *env)
 		copy_path(devices->jpeg, env);
 	kvmv_find_subdev(devices->subdev, sizeof(devices->subdev));
 
-	if (devices->capture[0] && devices->scaler[0] && devices->encoder[0])
+	if (devices->capture[0] && devices->scaler[0] &&
+	    (devices->encoder[0] || devices->encoder_hevc[0]))
 		return 0;
 	snprintf(missing, missing_size, "%s%s%s",
 		 devices->capture[0] ? "" : "capture (sg2002-capture) ",
 		 devices->scaler[0] ? "" : "scaler (sg2002-vpss) ",
-		 devices->encoder[0] ? "" : "encoder (coda, NV12 to H.264)");
+		 devices->encoder[0] || devices->encoder_hevc[0] ? "" :
+		 "encoder (coda, NV12 to H.264, or wave420l, NV12 to H.265)");
 	return -1;
 }
 
@@ -333,6 +342,26 @@ static int32_t ctrl_fit(int fd, uint32_t id, int32_t value)
 	return value;
 }
 
+static int is_hevc(const struct kvmv_pipe *p)
+{
+	return p->codec == KVMV_CODEC_KIND_HEVC;
+}
+
+static uint32_t coded_fourcc(const struct kvmv_pipe *p)
+{
+	return is_hevc(p) ? V4L2_PIX_FMT_HEVC : V4L2_PIX_FMT_H264;
+}
+
+static uint32_t min_qp_ctrl(const struct kvmv_pipe *p)
+{
+	return is_hevc(p) ? V4L2_CID_MPEG_VIDEO_HEVC_MIN_QP : V4L2_CID_MPEG_VIDEO_H264_MIN_QP;
+}
+
+static uint32_t max_qp_ctrl(const struct kvmv_pipe *p)
+{
+	return is_hevc(p) ? V4L2_CID_MPEG_VIDEO_HEVC_MAX_QP : V4L2_CID_MPEG_VIDEO_H264_MAX_QP;
+}
+
 static void read_back(struct kvmv_pipe *p)
 {
 	struct v4l2_streamparm parm;
@@ -348,9 +377,9 @@ static void read_back(struct kvmv_pipe *p)
 		p->applied.gop = value;
 	p->applied.min_qp = -1;
 	p->applied.max_qp = -1;
-	if (!get_ctrl(p->enc_fd, V4L2_CID_MPEG_VIDEO_H264_MIN_QP, &value))
+	if (!get_ctrl(p->enc_fd, min_qp_ctrl(p), &value))
 		p->applied.min_qp = value;
-	if (!get_ctrl(p->enc_fd, V4L2_CID_MPEG_VIDEO_H264_MAX_QP, &value))
+	if (!get_ctrl(p->enc_fd, max_qp_ctrl(p), &value))
 		p->applied.max_qp = value;
 	memset(&parm, 0, sizeof(parm));
 	parm.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
@@ -442,12 +471,13 @@ int kvmv_pipe_negotiate(struct kvmv_pipe *p, const struct kvmv_pipe_cfg *cfg)
 				(const char *)&p->enc_out_fmt.pixelformat,
 				p->enc_out_fmt.width, p->enc_out_fmt.height,
 				p->plan.out_width, p->plan.coded_height);
-	if (set_fmt(p->enc_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, V4L2_PIX_FMT_H264,
+	if (set_fmt(p->enc_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, coded_fourcc(p),
 		    p->plan.out_width, p->plan.out_height, cap,
 		    KVMV_BITSTREAM_SIZE, &p->enc_cap_fmt))
 		return fail(p, "encoder CAPTURE S_FMT");
-	if (p->enc_cap_fmt.pixelformat != V4L2_PIX_FMT_H264)
-		return fail_msg(p, "encoder does not produce H.264");
+	if (p->enc_cap_fmt.pixelformat != coded_fourcc(p))
+		return fail_msg(p, "encoder does not produce %s",
+				is_hevc(p) ? "H.265" : "H.264");
 
 	/*
 	 * Rate control. The frame rate matters to it: the encoder sizes a frame
@@ -474,12 +504,13 @@ int kvmv_pipe_negotiate(struct kvmv_pipe *p, const struct kvmv_pipe_cfg *cfg)
 	 * Picture quality (#35). Kernels before patch 0910 lack the minimum
 	 * QP control on the Coda980 and ignore the maximum; each is set on
 	 * its own, and what sticks is read back. MAX first, so a minimum
-	 * above the encoder's current maximum is not refused.
+	 * above the encoder's current maximum is not refused. The WAVE420L
+	 * takes the HEVC controls.
 	 */
 	if (cfg->max_qp)
-		set_ctrl(p->enc_fd, V4L2_CID_MPEG_VIDEO_H264_MAX_QP, cfg->max_qp);
+		set_ctrl(p->enc_fd, max_qp_ctrl(p), cfg->max_qp);
 	if (cfg->min_qp || cfg->max_qp)
-		set_ctrl(p->enc_fd, V4L2_CID_MPEG_VIDEO_H264_MIN_QP, cfg->min_qp);
+		set_ctrl(p->enc_fd, min_qp_ctrl(p), cfg->min_qp);
 	if (cfg->vbv_delay_ms)
 		set_ctrl(p->enc_fd, V4L2_CID_MPEG_VIDEO_VBV_DELAY,
 			 (int32_t)cfg->vbv_delay_ms);
@@ -790,8 +821,17 @@ static void subscribe_source_change(int fd)
 int kvmv_pipe_start(struct kvmv_pipe *p, const struct kvmv_devices *d,
 		    const struct kvmv_pipe_cfg *cfg)
 {
+	const char *encoder;
+
 	kvmv_pipe_init(p);
+	p->codec = cfg->codec;
 	copy_path(p->scaler_path, d->scaler);
+	encoder = is_hevc(p) ? d->encoder_hevc : d->encoder;
+	if (!encoder[0]) {
+		fail_msg(p, "no %s encoder", is_hevc(p) ? "H.265" : "H.264");
+		errno = ENODEV;
+		return -1;
+	}
 
 	p->cap_fd = open(d->capture, O_RDWR | O_NONBLOCK | O_CLOEXEC);
 	if (p->cap_fd < 0) {
@@ -803,9 +843,13 @@ int kvmv_pipe_start(struct kvmv_pipe *p, const struct kvmv_devices *d,
 		fail(p, d->scaler);
 		goto out;
 	}
-	p->enc_fd = open(d->encoder, O_RDWR | O_NONBLOCK | O_CLOEXEC);
+	/*
+	 * The H.264 and H.265 encoders share the codec SRAM and take turns:
+	 * the one that is not streaming refuses STREAMON with EBUSY.
+	 */
+	p->enc_fd = open(encoder, O_RDWR | O_NONBLOCK | O_CLOEXEC);
 	if (p->enc_fd < 0) {
-		fail(p, d->encoder);
+		fail(p, encoder);
 		goto out;
 	}
 	subscribe_source_change(p->cap_fd);

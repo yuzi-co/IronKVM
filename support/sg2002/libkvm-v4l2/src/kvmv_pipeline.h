@@ -3,7 +3,8 @@
  *
  *   capture node (UYVY, LT6911 over CSI-2)
  *     -> VPSS mem2mem scaler (UYVY to NV12, optional downscale)
- *     -> Coda980 mem2mem encoder (NV12 to H.264)
+ *     -> Coda980 mem2mem encoder (NV12 to H.264), or the WAVE420L (NV12 to
+ *        H.265)
  *
  * Capture buffers are exported as dma-bufs and imported by the scaler. The
  * buffers between the scaler and the encoder come from a dma-heap and are
@@ -23,6 +24,7 @@
 #include <stdint.h>
 #include <linux/videodev2.h>
 
+#include "kvmv_annexb.h"
 #include "kvmv_policy.h"
 
 #define KVMV_PATH_MAX 64
@@ -30,16 +32,18 @@
 struct kvmv_devices {
 	char capture[KVMV_PATH_MAX];
 	char scaler[KVMV_PATH_MAX];
-	char encoder[KVMV_PATH_MAX];
+	char encoder[KVMV_PATH_MAX]; /* H.264; empty when the kernel has none */
+	char encoder_hevc[KVMV_PATH_MAX]; /* H.265 (wave420l); empty when none */
 	char subdev[KVMV_PATH_MAX]; /* empty when the receiver has no node */
 	char jpeg[KVMV_PATH_MAX]; /* sg2002-jpeg; empty when the kernel has none */
 };
 
 /*
- * Find the three video nodes by driver and capability. Environment variables
- * KVMV_CAPTURE_DEV, KVMV_SCALER_DEV, KVMV_ENCODER_DEV, KVMV_JPEG_DEV and
- * KVMV_SUBDEV override discovery. The JPEG unit is optional. Returns 0 when all three video nodes were found; otherwise -1,
- * with the missing roles named in missing.
+ * Find the video nodes by driver and capability. Environment variables
+ * KVMV_CAPTURE_DEV, KVMV_SCALER_DEV, KVMV_ENCODER_DEV, KVMV_HEVC_ENCODER_DEV,
+ * KVMV_JPEG_DEV and KVMV_SUBDEV override discovery. The JPEG unit is optional,
+ * and one encoder of the two is enough. Returns 0 when capture, scaler and an
+ * encoder were found; otherwise -1, with the missing roles named in missing.
  */
 int kvmv_find_devices(struct kvmv_devices *devices, char *missing,
 		      size_t missing_size);
@@ -63,11 +67,12 @@ struct kvmv_buf {
 };
 
 struct kvmv_pipe_cfg {
+	enum kvmv_codec codec; /* H.264 (the Coda980) or H.265 (the WAVE420L) */
 	unsigned int req_width, req_height;
 	uint32_t bitrate_bps;
 	unsigned int gop;
 	unsigned int fps;
-	/* H.264 QP range, both 0 to leave the encoder's own; 0 ms keeps the
+	/* QP range, both 0 to leave the encoder's own; 0 ms keeps the
 	 * encoder's initial rate-control delay. */
 	int min_qp, max_qp;
 	unsigned int vbv_delay_ms;
@@ -119,6 +124,7 @@ struct kvmv_snap {
 };
 
 struct kvmv_pipe {
+	enum kvmv_codec codec;
 	int cap_fd, vpss_fd, enc_fd, heap_fd;
 	char scaler_path[KVMV_PATH_MAX];
 	struct kvmv_snap snap;

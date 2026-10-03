@@ -28,8 +28,13 @@ static size_t find_start_code(const uint8_t *buf, size_t len, size_t from,
 	return len;
 }
 
-size_t kvmv_annexb_split(const uint8_t *buf, size_t len, struct kvmv_nal *nals,
-			 size_t max_nals)
+static uint8_t nal_type(enum kvmv_codec codec, uint8_t header)
+{
+	return codec == KVMV_CODEC_KIND_HEVC ? (header >> 1) & 0x3f : header & 0x1f;
+}
+
+size_t kvmv_annexb_split_codec(enum kvmv_codec codec, const uint8_t *buf,
+			       size_t len, struct kvmv_nal *nals, size_t max_nals)
 {
 	size_t count = 0;
 	size_t code_len;
@@ -48,7 +53,7 @@ size_t kvmv_annexb_split(const uint8_t *buf, size_t len, struct kvmv_nal *nals,
 			nals[count].offset = pos;
 			nals[count].start = start;
 			nals[count].size = next - start;
-			nals[count].type = buf[start] & 0x1f;
+			nals[count].type = nal_type(codec, buf[start]);
 			count++;
 		}
 		pos = next;
@@ -57,16 +62,48 @@ size_t kvmv_annexb_split(const uint8_t *buf, size_t len, struct kvmv_nal *nals,
 	return count;
 }
 
-void kvmv_au_inspect(const uint8_t *buf, size_t len, struct kvmv_au_info *info)
+size_t kvmv_annexb_split(const uint8_t *buf, size_t len, struct kvmv_nal *nals,
+			 size_t max_nals)
+{
+	return kvmv_annexb_split_codec(KVMV_CODEC_KIND_H264, buf, len, nals, max_nals);
+}
+
+static void count_hevc(struct kvmv_au_info *info, uint8_t type)
+{
+	if (type <= KVMV_HEVC_NAL_RASL_R)
+		info->slice++;
+	else if (type >= KVMV_HEVC_NAL_BLA_W_LP && type <= KVMV_HEVC_NAL_CRA)
+		info->idr++;
+	else if (type == KVMV_HEVC_NAL_VPS)
+		info->vps++;
+	else if (type == KVMV_HEVC_NAL_SPS)
+		info->sps++;
+	else if (type == KVMV_HEVC_NAL_PPS)
+		info->pps++;
+	else if (type == KVMV_HEVC_NAL_SEI_PREFIX || type == KVMV_HEVC_NAL_SEI_SUFFIX)
+		info->sei++;
+	else if (type == KVMV_HEVC_NAL_AUD)
+		info->aud++;
+	else
+		info->other++;
+}
+
+void kvmv_au_inspect_codec(enum kvmv_codec codec, const uint8_t *buf, size_t len,
+			   struct kvmv_au_info *info)
 {
 	struct kvmv_nal nals[64];
 	size_t count;
 	size_t i;
 
 	memset(info, 0, sizeof(*info));
-	count = kvmv_annexb_split(buf, len, nals, sizeof(nals) / sizeof(nals[0]));
+	count = kvmv_annexb_split_codec(codec, buf, len, nals,
+					sizeof(nals) / sizeof(nals[0]));
 	info->nal_count = (unsigned int)count;
 	for (i = 0; i < count; i++) {
+		if (codec == KVMV_CODEC_KIND_HEVC) {
+			count_hevc(info, nals[i].type);
+			continue;
+		}
 		switch (nals[i].type) {
 		case KVMV_NAL_IDR:
 			info->idr++;
@@ -96,21 +133,33 @@ void kvmv_au_inspect(const uint8_t *buf, size_t len, struct kvmv_au_info *info)
 	}
 }
 
+void kvmv_au_inspect(const uint8_t *buf, size_t len, struct kvmv_au_info *info)
+{
+	kvmv_au_inspect_codec(KVMV_CODEC_KIND_H264, buf, len, info);
+}
+
 int kvmv_au_type(const struct kvmv_au_info *info)
 {
 	if (info->idr)
 		return IMG_H264_TYPE_IF;
 	if (info->slice)
 		return IMG_H264_TYPE_PF;
-	if (info->sps || info->pps)
+	if (info->vps || info->sps || info->pps)
 		return KVMV_AU_HEADERS_ONLY;
 	return KVMV_AU_NO_PICTURE;
 }
 
-void kvmv_ps_cache_reset(struct kvmv_ps_cache *cache)
+void kvmv_ps_cache_reset_codec(struct kvmv_ps_cache *cache, enum kvmv_codec codec)
 {
+	cache->codec = codec;
+	cache->vps_len = 0;
 	cache->sps_len = 0;
 	cache->pps_len = 0;
+}
+
+void kvmv_ps_cache_reset(struct kvmv_ps_cache *cache)
+{
+	kvmv_ps_cache_reset_codec(cache, KVMV_CODEC_KIND_H264);
 }
 
 static void cache_store(uint8_t *dst, size_t *dst_len, const uint8_t *nal,
@@ -132,17 +181,20 @@ void kvmv_ps_cache_update(struct kvmv_ps_cache *cache, const uint8_t *buf,
 			  size_t len)
 {
 	struct kvmv_nal nals[64];
-	size_t count = kvmv_annexb_split(buf, len, nals,
-					 sizeof(nals) / sizeof(nals[0]));
+	int hevc = cache->codec == KVMV_CODEC_KIND_HEVC;
+	size_t count = kvmv_annexb_split_codec(cache->codec, buf, len, nals,
+					       sizeof(nals) / sizeof(nals[0]));
 	size_t i;
 
 	for (i = 0; i < count; i++) {
-		if (nals[i].type == KVMV_NAL_SPS)
-			cache_store(cache->sps, &cache->sps_len,
-				    buf + nals[i].start, nals[i].size);
-		else if (nals[i].type == KVMV_NAL_PPS)
-			cache_store(cache->pps, &cache->pps_len,
-				    buf + nals[i].start, nals[i].size);
+		const uint8_t *nal = buf + nals[i].start;
+
+		if (hevc && nals[i].type == KVMV_HEVC_NAL_VPS)
+			cache_store(cache->vps, &cache->vps_len, nal, nals[i].size);
+		else if (nals[i].type == (hevc ? KVMV_HEVC_NAL_SPS : KVMV_NAL_SPS))
+			cache_store(cache->sps, &cache->sps_len, nal, nals[i].size);
+		else if (nals[i].type == (hevc ? KVMV_HEVC_NAL_PPS : KVMV_NAL_PPS))
+			cache_store(cache->pps, &cache->pps_len, nal, nals[i].size);
 	}
 }
 
@@ -150,19 +202,26 @@ size_t kvmv_ps_cache_prefix(const struct kvmv_ps_cache *cache,
 			    const struct kvmv_au_info *info, uint8_t *out,
 			    size_t out_size)
 {
+	int hevc = cache->codec == KVMV_CODEC_KIND_HEVC;
 	size_t need;
 
-	if (!info->idr || (info->sps && info->pps))
+	if (!info->idr || ((info->vps || !hevc) && info->sps && info->pps))
 		return 0;
-	if (cache->sps_len == 0 || cache->pps_len == 0)
+	if ((hevc && cache->vps_len == 0) || cache->sps_len == 0 ||
+	    cache->pps_len == 0)
 		return 0;
 	/*
-	 * Both sets, even when the unit carries one of them: a PPS is parsed
-	 * against the SPS it names, so the pair travels together.
+	 * All of them, even when the unit carries some: a PPS is parsed against
+	 * the SPS it names, and an H.265 SPS against its VPS, so they travel
+	 * together.
 	 */
-	need = cache->sps_len + cache->pps_len;
+	need = (hevc ? cache->vps_len : 0) + cache->sps_len + cache->pps_len;
 	if (need > out_size)
 		return 0;
+	if (hevc) {
+		memcpy(out, cache->vps, cache->vps_len);
+		out += cache->vps_len;
+	}
 	memcpy(out, cache->sps, cache->sps_len);
 	memcpy(out + cache->sps_len, cache->pps, cache->pps_len);
 	return need;
@@ -349,4 +408,184 @@ int kvmv_h264_sps_size(const uint8_t *nal, size_t len, unsigned int *width,
 	*width = w - crop_x * (crop_left + crop_right);
 	*height = h - crop_y * (crop_top + crop_bottom);
 	return 0;
+}
+
+/*
+ * profile_tier_level() of an H.265 VPS or SPS with profile_present_flag 1:
+ * 88 bits of general profile, 8 of level, then the sub-layers.
+ */
+static void skip_profile_tier_level(struct bit_reader *r, unsigned int max_sub_layers_minus1)
+{
+	unsigned int profile_present[8] = { 0 }, level_present[8] = { 0 };
+	unsigned int i;
+
+	read_bits(r, 8); /* profile space, tier, profile idc */
+	read_bits(r, 32); /* profile compatibility flags */
+	read_bits(r, 4); /* progressive, interlaced, non-packed, frame-only */
+	read_bits(r, 32); /* the 43 reserved or constraint bits ... */
+	read_bits(r, 11);
+	read_bits(r, 1); /* ... and the inbld or reserved bit */
+	read_bits(r, 8); /* general_level_idc */
+	for (i = 0; i < max_sub_layers_minus1; i++) {
+		profile_present[i] = read_bit(r);
+		level_present[i] = read_bit(r);
+	}
+	if (max_sub_layers_minus1 > 0)
+		for (i = max_sub_layers_minus1; i < 8; i++)
+			read_bits(r, 2);
+	for (i = 0; i < max_sub_layers_minus1; i++) {
+		if (profile_present[i]) {
+			read_bits(r, 32);
+			read_bits(r, 32);
+			read_bits(r, 24);
+		}
+		if (level_present[i])
+			read_bits(r, 8);
+	}
+}
+
+int kvmv_hevc_sps_size(const uint8_t *nal, size_t len, unsigned int *width,
+		       unsigned int *height)
+{
+	struct bit_reader r;
+	unsigned int max_sub_layers_minus1, chroma_format, separate_planes = 0;
+	unsigned int w, h, crop_x, crop_y;
+	unsigned int left = 0, right = 0, top = 0, bottom = 0;
+
+	if (nal == NULL || len < 4 ||
+	    ((nal[0] >> 1) & 0x3f) != KVMV_HEVC_NAL_SPS)
+		return -1;
+
+	reader_init(&r, nal + 2, len - 2);
+	read_bits(&r, 4); /* sps_video_parameter_set_id */
+	max_sub_layers_minus1 = read_bits(&r, 3);
+	read_bit(&r); /* sps_temporal_id_nesting_flag */
+	skip_profile_tier_level(&r, max_sub_layers_minus1);
+	read_ue(&r); /* sps_seq_parameter_set_id */
+	chroma_format = read_ue(&r);
+	if (chroma_format == 3)
+		separate_planes = read_bit(&r);
+	w = read_ue(&r);
+	h = read_ue(&r);
+	if (read_bit(&r)) { /* conformance_window_flag */
+		left = read_ue(&r);
+		right = read_ue(&r);
+		top = read_ue(&r);
+		bottom = read_ue(&r);
+	}
+	if (r.overrun || chroma_format > 3 || w == 0 || h == 0)
+		return -1;
+
+	if (chroma_format == 0 || separate_planes) {
+		crop_x = 1;
+		crop_y = 1;
+	} else {
+		crop_x = chroma_format == 3 ? 1 : 2;
+		crop_y = chroma_format == 1 ? 2 : 1;
+	}
+	if (crop_x * (left + right) >= w || crop_y * (top + bottom) >= h)
+		return -1;
+	*width = w - crop_x * (left + right);
+	*height = h - crop_y * (top + bottom);
+	return 0;
+}
+
+/*
+ * The NAL byte that holds RBSP bit 'bit' of a NAL starting at nal (header
+ * included), skipping emulation prevention bytes. Returns the offset, or -1.
+ */
+static long rbsp_bit_to_nal_byte(const uint8_t *nal, size_t len, size_t bit)
+{
+	size_t want = bit / 8, rbsp = 0, zeros = 0, i;
+
+	for (i = 0; i < len; i++) {
+		if (zeros >= 2 && nal[i] == 3) {
+			zeros = 0;
+			continue;
+		}
+		if (rbsp == want)
+			return (long)i;
+		rbsp++;
+		zeros = nal[i] == 0 ? zeros + 1 : 0;
+	}
+	return -1;
+}
+
+static int clear_one_vps_extension(uint8_t *nal, size_t len)
+{
+	struct bit_reader r;
+	unsigned int max_sub_layers_minus1, i, n, layer_sets, max_layer_id;
+	size_t bit;
+	long at;
+
+	/* The reader starts after the 2-byte NAL header; bits count from there. */
+	reader_init(&r, nal + 2, len - 2);
+	read_bits(&r, 4); /* vps_video_parameter_set_id */
+	read_bits(&r, 2); /* base layer internal, available */
+	read_bits(&r, 6); /* vps_max_layers_minus1 */
+	max_sub_layers_minus1 = read_bits(&r, 3);
+	read_bit(&r); /* vps_temporal_id_nesting_flag */
+	read_bits(&r, 16); /* vps_reserved_0xffff_16bits */
+	skip_profile_tier_level(&r, max_sub_layers_minus1);
+	n = read_bit(&r) ? max_sub_layers_minus1 + 1 : 1; /* ordering info present */
+	for (i = 0; i < n; i++) {
+		read_ue(&r);
+		read_ue(&r);
+		read_ue(&r);
+	}
+	max_layer_id = read_bits(&r, 6);
+	layer_sets = read_ue(&r);
+	if (layer_sets > 1023)
+		return 0;
+	for (i = 1; i <= layer_sets; i++)
+		read_bits(&r, max_layer_id + 1); /* layer_id_included_flag */
+	if (read_bit(&r)) { /* vps_timing_info_present_flag */
+		read_bits(&r, 32);
+		read_bits(&r, 32);
+		if (read_bit(&r)) /* vps_poc_proportional_to_timing_flag */
+			read_ue(&r);
+		if (read_ue(&r) != 0) /* vps_num_hrd_parameters: not handled */
+			return 0;
+	}
+	if (r.overrun || !read_bit(&r)) /* vps_extension_flag */
+		return 0;
+
+	/* The flag's bit, counted in the RBSP after the NAL header. */
+	bit = r.bit - 1 + 16;
+	at = rbsp_bit_to_nal_byte(nal, len, bit);
+	if (at < 0)
+		return 0;
+	/* Flag 0, the stop bit after it, zeros to the end of the byte. */
+	{
+		unsigned int pos = bit % 8; /* from the most significant bit */
+		uint8_t keep = (uint8_t)(0xff00 >> pos);
+		uint8_t stop = (uint8_t)(0x80 >> (pos + 1));
+
+		if (pos == 7) {
+			nal[at] &= keep;
+			if ((size_t)at + 1 >= len)
+				return 0;
+			nal[at + 1] = 0x80;
+			at++;
+		} else {
+			nal[at] = (uint8_t)((nal[at] & keep) | stop);
+		}
+	}
+	/* What the extension took is now trailing zero bytes. */
+	memset(nal + at + 1, 0, len - (size_t)at - 1);
+	return 1;
+}
+
+unsigned int kvmv_hevc_clear_vps_extension(uint8_t *buf, size_t len)
+{
+	struct kvmv_nal nals[64];
+	size_t count = kvmv_annexb_split_codec(KVMV_CODEC_KIND_HEVC, buf, len, nals,
+					       sizeof(nals) / sizeof(nals[0]));
+	unsigned int changed = 0;
+	size_t i;
+
+	for (i = 0; i < count; i++)
+		if (nals[i].type == KVMV_HEVC_NAL_VPS && nals[i].size > 4)
+			changed += clear_one_vps_extension(buf + nals[i].start, nals[i].size);
+	return changed;
 }
