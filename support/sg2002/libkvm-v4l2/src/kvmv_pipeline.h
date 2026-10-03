@@ -91,8 +91,28 @@ struct kvmv_stage_times {
 	unsigned int frames;
 };
 
+/* An NV12 picture the CPU can read. */
+struct kvmv_nv12 {
+	const uint8_t *y; /* luma plane, height rows of stride bytes */
+	const uint8_t *uv; /* interleaved chroma, height / 2 rows of stride bytes */
+	unsigned int width, height; /* the picture, without any padding */
+	unsigned int stride;
+};
+
+/* The scaler context behind kvmv_pipe_snapshot. */
+struct kvmv_snap {
+	int fd; /* -1 until the first snapshot */
+	struct kvmv_plan plan;
+	struct v4l2_pix_format fmt;
+	struct kvmv_buf buf; /* from the dma-heap, mapped for reading */
+	int out_on, cap_on;
+	int synced; /* the CPU holds the buffer (DMA_BUF_SYNC_START done) */
+};
+
 struct kvmv_pipe {
 	int cap_fd, vpss_fd, enc_fd, heap_fd;
+	char scaler_path[KVMV_PATH_MAX];
+	struct kvmv_snap snap;
 	struct v4l2_pix_format cap_fmt;
 	struct v4l2_pix_format vpss_in_fmt, vpss_out_fmt;
 	struct v4l2_pix_format enc_out_fmt, enc_cap_fmt;
@@ -148,9 +168,8 @@ void kvmv_pipe_stop(struct kvmv_pipe *pipe);
 
 /*
  * Take the newest captured frame and scale it into a middle buffer. On
- * KVMV_PIPE_OK *mid names the buffer, which holds the NV12 picture until the
- * next call: kvmv_pipe_encode_mid encodes it, kvmv_pipe_map_mid shows it to the
- * CPU.
+ * KVMV_PIPE_OK *mid names the buffer, which holds the NV12 picture for
+ * kvmv_pipe_encode_mid.
  */
 enum kvmv_pipe_status kvmv_pipe_scale(struct kvmv_pipe *pipe,
 				      unsigned int timeout_ms, unsigned int *mid);
@@ -169,25 +188,24 @@ enum kvmv_pipe_status kvmv_pipe_encode(struct kvmv_pipe *pipe,
 				       struct kvmv_encoded *out);
 void kvmv_pipe_release(struct kvmv_pipe *pipe, const struct kvmv_encoded *encoded);
 
-/* An NV12 picture the CPU can read. */
-struct kvmv_nv12 {
-	const uint8_t *y; /* luma plane, height rows of stride bytes */
-	const uint8_t *uv; /* interleaved chroma, height / 2 rows of stride bytes */
-	unsigned int width, height; /* the picture, without the encoder's padding */
-	unsigned int stride;
-	void *map; /* for kvmv_pipe_unmap_mid */
-	size_t map_length;
-	int fd;
-};
-
 /*
- * Map a middle buffer kvmv_pipe_scale filled, for reading, and end the CPU
- * access with kvmv_pipe_unmap_mid. The buffers come from a dma-heap, so the
- * mapping is cached; the dma-buf sync calls around it keep it coherent.
+ * Snapshots for kvmv_read_img. A second context on the scaler node takes the
+ * same captured frames the H.264 path takes (it imports the same capture
+ * dma-bufs) and scales them to the picture size asked for, into one NV12
+ * buffer of its own from the dma-heap. Its size is independent of the H.264
+ * stream's, so a screenshot or VNC reader never rebuilds the encoder, and the
+ * scaler's mem2mem queue serialises its jobs with the H.264 path's.
+ *
+ * kvmv_pipe_snapshot fills the buffer and makes it readable by the CPU (a
+ * cached mapping, synced for reading); the caller reads the picture and then
+ * calls kvmv_pipe_snapshot_done. The context is set up on the first snapshot,
+ * rebuilt when the size changes, and torn down with the pipeline.
  */
-int kvmv_pipe_map_mid(struct kvmv_pipe *pipe, unsigned int mid,
-		      struct kvmv_nv12 *image);
-void kvmv_pipe_unmap_mid(struct kvmv_nv12 *image);
+enum kvmv_pipe_status kvmv_pipe_snapshot(struct kvmv_pipe *pipe,
+					 unsigned int width, unsigned int height,
+					 unsigned int timeout_ms,
+					 struct kvmv_nv12 *image);
+void kvmv_pipe_snapshot_done(struct kvmv_pipe *pipe);
 
 /*
  * Copy out of the encoder's bitstream buffer. That buffer comes from the

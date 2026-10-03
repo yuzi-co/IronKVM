@@ -5,9 +5,10 @@
 #
 # Fails when LIB does not define every symbol in SYMBOL_LIST as a strong text
 # symbol (nm type T). A weak definition would still resolve, but the vendor
-# library's are strong and the server was built against those. Also lists any
-# other symbol LIB exports, and, given the vendor library, confirms it exports
-# the same functions, so the list cannot drift from what the server had.
+# library's are strong and the server was built against those. Fails on any
+# other export not listed in the file EXTENSIONS names, and, given the vendor
+# library, confirms it exports the same functions, so the list cannot drift
+# from what the server had.
 #
 # Also fails when LIB does not record NEEDED libgcc_s.so.1 (READELF names the
 # readelf to use; default readelf). NanoKVM-Server's crtbegin calls
@@ -48,10 +49,25 @@ if [ -n "$missing" ]; then
 	status=1
 fi
 
-extra=$(comm -13 "$tmp/want" "$tmp/ours_all" | grep -vxE '_init|_fini' || true)
+# EXTENSIONS lists what the library exports beyond kvm_vision.h (the server
+# finds these with dlsym). Each must be there as T, and nothing else may be
+# exported: the statically linked libjpeg-turbo in particular stays hidden.
+: > "$tmp/ext"
+if [ -n "${EXTENSIONS:-}" ]; then
+	grep -v '^#' "$EXTENSIONS" | sed '/^$/d' | sort -u > "$tmp/ext"
+	ext_missing=$(comm -23 "$tmp/ext" "$tmp/ours")
+	if [ -n "$ext_missing" ]; then
+		echo "MISSING extension from $lib (as T):"
+		echo "$ext_missing" | sed 's/^/  /'
+		status=1
+	fi
+fi
+sort -u "$tmp/want" "$tmp/ext" > "$tmp/allowed"
+extra=$(comm -13 "$tmp/allowed" "$tmp/ours_all" | grep -vxE '_init|_fini' || true)
 if [ -n "$extra" ]; then
-	echo "other exported symbols:"
+	echo "UNEXPECTED exported symbols:"
 	echo "$extra" | sed 's/^/  /'
+	status=1
 fi
 
 if [ -n "$vendor" ] && [ -f "$vendor" ]; then

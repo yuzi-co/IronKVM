@@ -1,0 +1,6 @@
+# Functions libkvm-v4l2 exports beyond kvm_vision.h. Sipeed's library does not
+# have them; NanoKVM-Server looks them up with dlsym and copes without them.
+#
+# kvmv_codec_supported(codec): 1 when kvmv_read_img/kvmv_read_video can
+# deliver that codec number (0 MJPEG, 1 H.264, 2 H.265), else 0.
+kvmv_codec_supported

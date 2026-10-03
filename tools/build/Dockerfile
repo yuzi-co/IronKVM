@@ -15,9 +15,11 @@ ARG HOST_TOOLS_URL=https://sophon-file.sophon.cn/sophon-prod-s3/drive/23/03/07/1
 ARG HOST_TOOLS_SHA256=ff9a58e8e192b20ea42e1d729c42d2219523209706cb3f0cf134582f6c70f805
 ARG GO_SHA256_AMD64=2852af0cb20a13139b3448992e69b868e50ed0f8a1e5940ee1de9e19a123b613
 
+# cmake builds the static libjpeg-turbo that support/sg2002/libkvm-v4l2 links
+# into libkvm.so for the mainline image.
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        wget ca-certificates build-essential patchelf git \
+        wget ca-certificates build-essential patchelf git cmake \
     && rm -rf /var/lib/apt/lists/*
 
 RUN wget -q -O /tmp/host-tools.tar.gz "$HOST_TOOLS_URL" \

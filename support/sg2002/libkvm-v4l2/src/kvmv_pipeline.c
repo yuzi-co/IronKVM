@@ -350,6 +350,8 @@ void kvmv_pipe_init(struct kvmv_pipe *p)
 	p->vpss_fd = -1;
 	p->enc_fd = -1;
 	p->heap_fd = -1;
+	p->snap.fd = -1;
+	p->snap.buf.fd = -1;
 	p->applied.bitrate_bps = -1;
 	p->applied.gop = -1;
 	p->applied.fps_numerator = -1;
@@ -738,6 +740,7 @@ int kvmv_pipe_start(struct kvmv_pipe *p, const struct kvmv_devices *d,
 		    const struct kvmv_pipe_cfg *cfg)
 {
 	kvmv_pipe_init(p);
+	copy_path(p->scaler_path, d->scaler);
 
 	p->cap_fd = open(d->capture, O_RDWR | O_NONBLOCK | O_CLOEXEC);
 	if (p->cap_fd < 0) {
@@ -821,8 +824,12 @@ static void free_bufs(struct kvmv_buf **bufs, unsigned int *count)
 	*count = 0;
 }
 
+static void snap_stop(struct kvmv_pipe *p);
+
 void kvmv_pipe_stop(struct kvmv_pipe *p)
 {
+	/* The snapshot context imports the capture buffers: it goes first. */
+	snap_stop(p);
 	if (p->vpss_out_on)
 		stream(p->vpss_fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, 0);
 	if (p->vpss_cap_on)
@@ -1039,44 +1046,181 @@ enum kvmv_pipe_status kvmv_pipe_encode(struct kvmv_pipe *p,
 	return kvmv_pipe_encode_mid(p, mi, out);
 }
 
-int kvmv_pipe_map_mid(struct kvmv_pipe *p, unsigned int mi,
-		      struct kvmv_nv12 *image)
-{
-	size_t luma;
-	void *map;
+/* ---- snapshots ----------------------------------------------------- */
 
-	memset(image, 0, sizeof(*image));
-	image->fd = -1;
-	if (!p->running || mi >= p->mid_count)
-		return fail_msg(p, "no scaled picture to map");
-	luma = (size_t)p->enc_out_fmt.bytesperline * p->enc_out_fmt.height;
-	if (luma * 3 / 2 > p->mid[mi].length)
-		return fail_msg(p, "NV12 surface %zu exceeds its buffer %zu",
-				luma * 3 / 2, p->mid[mi].length);
-	map = mmap(NULL, p->mid[mi].length, PROT_READ, MAP_SHARED,
-		   p->mid[mi].fd, 0);
-	if (map == MAP_FAILED)
-		return fail(p, "mmap middle buffer");
-	sync_dmabuf(p->mid[mi].fd, DMA_BUF_SYNC_START | DMA_BUF_SYNC_READ);
-	image->map = map;
-	image->map_length = p->mid[mi].length;
-	image->fd = p->mid[mi].fd;
-	image->y = map;
-	image->uv = (const uint8_t *)map + luma;
-	image->width = p->plan.out_width;
-	image->height = p->plan.out_height;
-	image->stride = p->enc_out_fmt.bytesperline;
+static void snap_stop(struct kvmv_pipe *p)
+{
+	struct kvmv_snap *s = &p->snap;
+
+	if (s->synced)
+		sync_dmabuf(s->buf.fd, DMA_BUF_SYNC_END | DMA_BUF_SYNC_READ);
+	if (s->out_on)
+		stream(s->fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, 0);
+	if (s->cap_on)
+		stream(s->fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, 0);
+	if (s->buf.addr != NULL)
+		munmap(s->buf.addr, s->buf.length);
+	if (s->buf.fd >= 0)
+		close(s->buf.fd);
+	if (s->fd >= 0)
+		close(s->fd);
+	memset(s, 0, sizeof(*s));
+	s->fd = -1;
+	s->buf.fd = -1;
+}
+
+static int snap_start(struct kvmv_pipe *p, unsigned int width,
+		      unsigned int height)
+{
+	struct kvmv_snap *s = &p->snap;
+	const struct v4l2_pix_format *cap = &p->cap_fmt;
+	struct v4l2_pix_format in;
+	struct dma_heap_allocation_data alloc;
+	size_t need;
+
+	if (kvmv_plan_output(cap->width, cap->height, width, height, &s->plan))
+		return fail_msg(p, "snapshot size %ux%u is unusable", width, height);
+	s->fd = open(p->scaler_path, O_RDWR | O_NONBLOCK | O_CLOEXEC);
+	if (s->fd < 0)
+		return fail(p, "open scaler for snapshots");
+
+	if (set_fmt(s->fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, cap->pixelformat,
+		    cap->width, cap->height, cap, 0, &in))
+		return fail(p, "snapshot scaler OUTPUT S_FMT");
+	if (in.bytesperline != cap->bytesperline || in.width != cap->width ||
+	    in.height != cap->height)
+		return fail_msg(p, "snapshot scaler wants %ux%u stride %u, capture gives %ux%u stride %u",
+				in.width, in.height, in.bytesperline, cap->width,
+				cap->height, cap->bytesperline);
+	if (set_fmt(s->fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, V4L2_PIX_FMT_NV12,
+		    s->plan.out_width, s->plan.out_height, cap, 0, &s->fmt))
+		return fail(p, "snapshot scaler CAPTURE S_FMT");
+	need = (size_t)s->fmt.bytesperline * s->fmt.height * 3 / 2;
+	if (s->fmt.pixelformat != V4L2_PIX_FMT_NV12 ||
+	    s->fmt.width < s->plan.out_width || s->fmt.height < s->plan.out_height ||
+	    s->fmt.bytesperline < s->plan.out_width || s->fmt.sizeimage < need)
+		return fail_msg(p, "snapshot scaler took %.4s %ux%u stride %u size %u for NV12 %ux%u",
+				(const char *)&s->fmt.pixelformat, s->fmt.width,
+				s->fmt.height, s->fmt.bytesperline,
+				s->fmt.sizeimage, s->plan.out_width,
+				s->plan.out_height);
+	if (set_crop(s->fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, s->plan.out_width,
+		     s->plan.out_height)) {
+		if (errno != EINVAL || s->fmt.width != s->plan.out_width ||
+		    s->fmt.height != s->plan.out_height)
+			return fail(p, "snapshot scaler CAPTURE crop");
+	}
+
+	if (request(s->fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, V4L2_MEMORY_DMABUF, 1) < 1)
+		return fail(p, "snapshot scaler CAPTURE REQBUFS");
+	if (request(s->fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, V4L2_MEMORY_DMABUF,
+		    p->cap_count) < (int)p->cap_count)
+		return fail(p, "snapshot scaler OUTPUT REQBUFS");
+	memset(&alloc, 0, sizeof(alloc));
+	alloc.len = s->fmt.sizeimage;
+	alloc.fd_flags = O_CLOEXEC | O_RDWR;
+	if (xioctl(p->heap_fd, DMA_HEAP_IOCTL_ALLOC, &alloc))
+		return fail(p, "snapshot DMA_HEAP_IOCTL_ALLOC");
+	s->buf.fd = (int)alloc.fd;
+	s->buf.length = s->fmt.sizeimage;
+	/* A dma-heap buffer maps cached; the sync calls keep it coherent. */
+	s->buf.addr = mmap(NULL, s->buf.length, PROT_READ, MAP_SHARED,
+			   s->buf.fd, 0);
+	if (s->buf.addr == MAP_FAILED) {
+		s->buf.addr = NULL;
+		return fail(p, "snapshot mmap");
+	}
+	if (stream(s->fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, 1))
+		return fail(p, "snapshot scaler OUTPUT STREAMON");
+	s->out_on = 1;
+	if (stream(s->fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, 1))
+		return fail(p, "snapshot scaler CAPTURE STREAMON");
+	s->cap_on = 1;
 	return 0;
 }
 
-void kvmv_pipe_unmap_mid(struct kvmv_nv12 *image)
+enum kvmv_pipe_status kvmv_pipe_snapshot(struct kvmv_pipe *p,
+					 unsigned int width, unsigned int height,
+					 unsigned int timeout_ms,
+					 struct kvmv_nv12 *image)
 {
-	if (image->map == NULL)
-		return;
-	sync_dmabuf(image->fd, DMA_BUF_SYNC_END | DMA_BUF_SYNC_READ);
-	munmap(image->map, image->map_length);
+	struct kvmv_snap *s = &p->snap;
+	enum kvmv_pipe_status status;
+	struct v4l2_buffer buf;
+	struct kvmv_plan want;
+	unsigned int ci;
+
 	memset(image, 0, sizeof(*image));
-	image->fd = -1;
+	if (!p->running)
+		return fail_msg(p, "pipeline not running"), KVMV_PIPE_ERROR;
+	kvmv_pipe_snapshot_done(p);
+	if (s->fd >= 0 &&
+	    (kvmv_plan_output(p->cap_fmt.width, p->cap_fmt.height, width, height,
+			      &want) ||
+	     want.out_width != s->plan.out_width ||
+	     want.out_height != s->plan.out_height))
+		snap_stop(p);
+	if (s->fd < 0 && snap_start(p, width, height)) {
+		int saved = errno;
+		char error[sizeof(p->error)];
+
+		memcpy(error, p->error, sizeof(error));
+		snap_stop(p);
+		memcpy(p->error, error, sizeof(error));
+		errno = saved;
+		return KVMV_PIPE_ERROR;
+	}
+
+	if (source_changed(p->cap_fd)) {
+		snprintf(p->error, sizeof(p->error), "source change event");
+		return KVMV_PIPE_SOURCE_CHANGED;
+	}
+	status = newest_capture(p, timeout_ms, &ci);
+	if (status != KVMV_PIPE_OK)
+		return status;
+
+	if (qbuf(s->fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, V4L2_MEMORY_DMABUF, ci,
+		 p->cap[ci].fd, p->cap_fmt.sizeimage)) {
+		fail(p, "snapshot scaler OUTPUT QBUF");
+		qbuf(p->cap_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, V4L2_MEMORY_MMAP, ci,
+		     -1, 0);
+		return KVMV_PIPE_ERROR;
+	}
+	if (qbuf(s->fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, V4L2_MEMORY_DMABUF, 0,
+		 s->buf.fd, 0))
+		return fail(p, "snapshot scaler CAPTURE QBUF"), KVMV_PIPE_ERROR;
+	if (wait_dqbuf(s->fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, V4L2_MEMORY_DMABUF,
+		       POLLIN, KVMV_M2M_TIMEOUT_MS, &buf))
+		return fail(p, "snapshot scaler CAPTURE DQBUF"), KVMV_PIPE_ERROR;
+	if (buf.flags & V4L2_BUF_FLAG_ERROR)
+		return fail_msg(p, "snapshot scaler returned an error buffer"),
+		       KVMV_PIPE_ERROR;
+	if (wait_dqbuf(s->fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, V4L2_MEMORY_DMABUF,
+		       POLLOUT, KVMV_M2M_TIMEOUT_MS, &buf))
+		return fail(p, "snapshot scaler OUTPUT DQBUF"), KVMV_PIPE_ERROR;
+	if (qbuf(p->cap_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, V4L2_MEMORY_MMAP,
+		 buf.index, -1, 0))
+		return fail(p, "capture requeue"), KVMV_PIPE_ERROR;
+
+	sync_dmabuf(s->buf.fd, DMA_BUF_SYNC_START | DMA_BUF_SYNC_READ);
+	s->synced = 1;
+	image->y = s->buf.addr;
+	image->uv = (const uint8_t *)s->buf.addr +
+		    (size_t)s->fmt.bytesperline * s->fmt.height;
+	image->width = s->plan.out_width;
+	image->height = s->plan.out_height;
+	image->stride = s->fmt.bytesperline;
+	return KVMV_PIPE_OK;
+}
+
+void kvmv_pipe_snapshot_done(struct kvmv_pipe *p)
+{
+	struct kvmv_snap *s = &p->snap;
+
+	if (!s->synced)
+		return;
+	sync_dmabuf(s->buf.fd, DMA_BUF_SYNC_END | DMA_BUF_SYNC_READ);
+	s->synced = 0;
 }
 
 void kvmv_copy_from_device(uint8_t *dst, const uint8_t *src, size_t len)
