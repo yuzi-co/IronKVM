@@ -158,7 +158,7 @@ func run() {
 			if conf.HTTP2 {
 				utils.AllowHTTP2(server)
 			}
-			if err := server.ListenAndServeTLS(conf.Cert.Crt, conf.Cert.Key); err != nil {
+			if err := utils.ListenAndServeTLS(server, conf.Cert.Crt, conf.Cert.Key); err != nil {
 				panic("start https server failed")
 			}
 		}()

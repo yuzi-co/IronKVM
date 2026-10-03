@@ -12,6 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"NanoKVM-Server/service/stream"
+	"NanoKVM-Server/utils"
 )
 
 // writeTimeout caps how long a single write may take before the client is
@@ -90,6 +91,16 @@ func (c *client) writeFrame(data []byte) (err error) {
 	// Without a deadline a client that stops reading blocks this goroutine
 	// forever. Not every writer supports deadlines.
 	_ = http.NewResponseController(c.ctx.Writer).SetWriteDeadline(time.Now().Add(writeTimeout))
+
+	// Over HTTPS a picture leaves as about twenty 16 kB TLS records, and the
+	// socket takes them in a few large writes instead of one each. See
+	// utils.BeginWriteBatch. Over HTTP this does nothing.
+	endBatch := utils.BeginWriteBatch(c.ctx.Request)
+	defer func() {
+		if endErr := endBatch(); err == nil {
+			err = endErr
+		}
+	}()
 
 	header := "--frame\r\nContent-Type: image/jpeg\r\nContent-Length: " + strconv.Itoa(len(data)) + "\r\n\r\n"
 	if _, err = c.ctx.Writer.WriteString(header); err != nil {
