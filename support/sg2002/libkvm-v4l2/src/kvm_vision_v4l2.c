@@ -731,6 +731,9 @@ static int read_video_locked(unsigned int width, unsigned int height,
 		kvmv_pipe_release(&pipe_state, &encoded);
 
 		kvmv_au_inspect_codec(pipe_state.codec, unit, unit_size, &info);
+		/* Chrome refuses the WAVE420L's VPS with its empty extension. */
+		if (pipe_state.codec == KVMV_CODEC_KIND_HEVC && info.vps)
+			kvmv_hevc_clear_vps_extension(unit, unit_size);
 		kvmv_ps_cache_update(&ps_cache, unit, unit_size);
 		type = kvmv_au_type(&info);
 		if (type != IMG_H264_TYPE_IF && type != IMG_H264_TYPE_PF) {

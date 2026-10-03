@@ -489,3 +489,103 @@ int kvmv_hevc_sps_size(const uint8_t *nal, size_t len, unsigned int *width,
 	*height = h - crop_y * (top + bottom);
 	return 0;
 }
+
+/*
+ * The NAL byte that holds RBSP bit 'bit' of a NAL starting at nal (header
+ * included), skipping emulation prevention bytes. Returns the offset, or -1.
+ */
+static long rbsp_bit_to_nal_byte(const uint8_t *nal, size_t len, size_t bit)
+{
+	size_t want = bit / 8, rbsp = 0, zeros = 0, i;
+
+	for (i = 0; i < len; i++) {
+		if (zeros >= 2 && nal[i] == 3) {
+			zeros = 0;
+			continue;
+		}
+		if (rbsp == want)
+			return (long)i;
+		rbsp++;
+		zeros = nal[i] == 0 ? zeros + 1 : 0;
+	}
+	return -1;
+}
+
+static int clear_one_vps_extension(uint8_t *nal, size_t len)
+{
+	struct bit_reader r;
+	unsigned int max_sub_layers_minus1, i, n, layer_sets, max_layer_id;
+	size_t bit;
+	long at;
+
+	/* The reader starts after the 2-byte NAL header; bits count from there. */
+	reader_init(&r, nal + 2, len - 2);
+	read_bits(&r, 4); /* vps_video_parameter_set_id */
+	read_bits(&r, 2); /* base layer internal, available */
+	read_bits(&r, 6); /* vps_max_layers_minus1 */
+	max_sub_layers_minus1 = read_bits(&r, 3);
+	read_bit(&r); /* vps_temporal_id_nesting_flag */
+	read_bits(&r, 16); /* vps_reserved_0xffff_16bits */
+	skip_profile_tier_level(&r, max_sub_layers_minus1);
+	n = read_bit(&r) ? max_sub_layers_minus1 + 1 : 1; /* ordering info present */
+	for (i = 0; i < n; i++) {
+		read_ue(&r);
+		read_ue(&r);
+		read_ue(&r);
+	}
+	max_layer_id = read_bits(&r, 6);
+	layer_sets = read_ue(&r);
+	if (layer_sets > 1023)
+		return 0;
+	for (i = 1; i <= layer_sets; i++)
+		read_bits(&r, max_layer_id + 1); /* layer_id_included_flag */
+	if (read_bit(&r)) { /* vps_timing_info_present_flag */
+		read_bits(&r, 32);
+		read_bits(&r, 32);
+		if (read_bit(&r)) /* vps_poc_proportional_to_timing_flag */
+			read_ue(&r);
+		if (read_ue(&r) != 0) /* vps_num_hrd_parameters: not handled */
+			return 0;
+	}
+	if (r.overrun || !read_bit(&r)) /* vps_extension_flag */
+		return 0;
+
+	/* The flag's bit, counted in the RBSP after the NAL header. */
+	bit = r.bit - 1 + 16;
+	at = rbsp_bit_to_nal_byte(nal, len, bit);
+	if (at < 0)
+		return 0;
+	/* Flag 0, the stop bit after it, zeros to the end of the byte. */
+	{
+		unsigned int pos = bit % 8; /* from the most significant bit */
+		uint8_t keep = (uint8_t)(0xff00 >> pos);
+		uint8_t stop = (uint8_t)(0x80 >> (pos + 1));
+
+		if (pos == 7) {
+			nal[at] &= keep;
+			if ((size_t)at + 1 >= len)
+				return 0;
+			nal[at + 1] = 0x80;
+			at++;
+		} else {
+			nal[at] = (uint8_t)((nal[at] & keep) | stop);
+		}
+	}
+	/* What the extension took is now trailing zero bytes. */
+	memset(nal + at + 1, 0, len - (size_t)at - 1);
+	return 1;
+}
+
+unsigned int kvmv_hevc_clear_vps_extension(uint8_t *buf, size_t len)
+{
+	struct kvmv_nal nals[64];
+	size_t count = kvmv_annexb_split_codec(KVMV_CODEC_KIND_HEVC, buf, len, nals,
+					       sizeof(nals) / sizeof(nals[0]));
+	unsigned int changed = 0;
+	size_t i;
+
+	for (i = 0; i < count; i++)
+		if (nals[i].type == KVMV_HEVC_NAL_VPS && nals[i].size > 4)
+			changed += clear_one_vps_extension(buf + nals[i].start, nals[i].size);
+	return changed;
+}

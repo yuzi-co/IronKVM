@@ -122,6 +122,16 @@ size_t kvmv_ps_cache_prefix(const struct kvmv_ps_cache *cache,
 			    size_t out_size);
 
 /*
+ * Clear vps_extension_flag in every H.265 VPS of buf, in place. The WAVE420L
+ * sets it with no extension behind it, and Chrome's hardware HEVC decoder
+ * refuses a VPS with the flag set (every picture is a decoding error); ffmpeg
+ * ignores it. The flag becomes 0 and the stop bit follows it; bytes the
+ * extension took become trailing zero bytes, so the length does not change.
+ * Returns how many VPS were changed.
+ */
+unsigned int kvmv_hevc_clear_vps_extension(uint8_t *buf, size_t len);
+
+/*
  * Picture size from an SPS, the conformance window or frame cropping applied.
  * nal points at the NAL header, without the start code. Returns 0 on success.
  */

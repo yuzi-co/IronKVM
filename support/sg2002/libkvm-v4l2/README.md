@@ -37,6 +37,7 @@ Nodes are found by driver name and capability, never by number:
 | capture | `VIDIOC_QUERYCAP` driver `sg2002-capture`, video capture + streaming |
 | scaler | driver `sg2002-vpss`, mem2mem |
 | encoder | any mem2mem node whose CAPTURE queue offers H.264 and OUTPUT queue NV12 (the Coda's encoder node, not its decoder or JPEG nodes) |
+| H.265 encoder (optional) | a mem2mem node whose CAPTURE queue offers HEVC and OUTPUT queue NV12 (`wave420l`, ironkvm-dist#55) |
 | receiver | `/sys/class/video4linux/v4l-subdev*/name` containing `lt6911` |
 | JPEG unit (optional) | driver `sg2002-jpeg`, mem2mem |
 
@@ -52,7 +53,7 @@ from "nothing captured" before a pipeline is up.
 | Function | Here |
 |----------|------|
 | `kvmv_init` | Starts the monitor thread. Devices open lazily on the first read. `KVMV_DEBUG=1` or a non-zero argument enables debug logging. |
-| `kvmv_read_video` | H.264: one access unit per call. `3` for a keyframe, `4` for a delta frame. Codec 2 (H.265) answers `-2`: the Coda980 encodes H.264 only. |
+| `kvmv_read_video` | Codec 1, H.264 (the Coda980), or codec 2, H.265 (the WAVE420L): one access unit per call. `3` for a keyframe, `4` for a delta frame. A codec switch rebuilds the pipeline with the other encoder; the two share the codec SRAM and take turns. Codec 2 answers `-2` on a kernel without the WAVE420L driver. |
 | `kvmv_read_img` | Type 1 as above. Type 0 (MJPEG): one JPEG per call at the size asked, from the JPEG unit or in software, quality from the `_qlty` argument; answers `0`. See below. |
 | `free_kvmv_data`, `free_all_kvmv_data` | As the vendor library: four reusable slots, a pointer stays valid until freed. |
 | `set_h264_gop` | `V4L2_CID_MPEG_VIDEO_GOP_SIZE` at runtime, plus a forced keyframe, because the vendor library rebuilds its encoder here and the server relies on the next frame being a keyframe. |
@@ -60,7 +61,7 @@ from "nothing captured" before a pipeline is up.
 | bitrate argument | `V4L2_CID_MPEG_VIDEO_BITRATE` (kbit/s x 1000) at runtime, clamped to 500..10000. `0` gives the default for the stream's size (below). |
 | `set_capture_fps` | The capture node has no frame interval control; unread frames cost their DMA and nothing else. Caps the rate the encoder is told, since frames cannot reach it faster. |
 | `set_frame_detact` | Recorded only: every MJPEG read encodes a picture, and `5` ("not changed") is never answered. |
-| `kvmv_codec_supported` | Not in `kvm_vision.h` or Sipeed's library (`abi-extensions.txt`). `1` for codecs 0 (MJPEG) and 1 (H.264), `0` for 2 (H.265). The server finds it with `dlsym` and, without it, assumes all three. |
+| `kvmv_codec_supported` | Not in `kvm_vision.h` or Sipeed's library (`abi-extensions.txt`). `1` for codec 0 (MJPEG); `1` for codecs 1 (H.264) and 2 (H.265) when their encoder node exists. The server finds it with `dlsym` and, without it, assumes all three. |
 | `set_venc_auto_recyc` | Recorded only. There is one encoder. |
 | `kvmv_hdmi_control` | Stops and starts capture in software on every board: `0` tears the pipeline down and reads answer `-1`; `1` allows capture again. Answers `0`. The receiver is not powered down (the vendor library does that through a GPIO on the PCIe board only, and answers `-1` elsewhere). |
 | `kvmv_hdmi_signal_active` | `1` when capture is enabled and the receiver has a source. Like the vendor library it reads `0` until `kvmv_hdmi_control(1)`. |
@@ -265,7 +266,8 @@ source connected, then:
 It loads the library with `dlopen`, checks all 13 symbols resolve, and runs:
 
 1. `kvmv_hdmi_control(1)`, then waits up to 5 s for a signal.
-2. H.265 reads answer `-2`; `kvmv_codec_supported` says 1, 1, 0 for MJPEG, H.264, H.265.
+2. `kvmv_codec_supported` says 1 for MJPEG and H.264, and whether H.265 is there. Without
+   it, an H.265 read must answer `-2`.
 3. MJPEG: 30 reads at 1920x1080, 30 at 1280x720 and 20 at 960x540, each a complete JPEG of that
    size, with the first read's time, the median, minimum and maximum of the rest in ms per
    frame, and the rate back to back. `-j` saves the last picture of each size as
@@ -280,6 +282,9 @@ It loads the library with `dlopen`, checks all 13 symbols resolve, and runs:
    the new interval. Then
    5 s of H.264 with a thread reading 960x540 MJPEG continuously: every H.264 frame must arrive,
    and the H.264 rate and MJPEG reads per second are printed.
+5c. With H.265: 300 frames (first a keyframe, every keyframe carrying VPS, SPS, PPS and an IRAP
+   picture, the GOP, the SPS size, the bitrate), then 5 s with an MJPEG reader alongside, then
+   back to H.264, which must start on a keyframe with no error reads.
 6. A 1280x720 request: the SPS says 1280x720 and the stream starts on a keyframe (`-s` skips).
 7. Capture off answers `-1` with no signal; capture on again starts on a keyframe.
 8. `kvmv_deinit`, `kvmv_init` again, first frame a keyframe.

@@ -438,6 +438,28 @@ static void test_hevc(void)
 		CHECK(kvmv_ps_cache_prefix(&cache, &info, out, sizeof(out)) > 0);
 	}
 
+	/* The VPS loses its empty extension: the flag bit and nothing else. */
+	{
+		struct stream fix = { .len = 0 };
+		uint8_t want[sizeof(hevc_vps)];
+		size_t i, vps_at;
+
+		put_nal(&fix, 1, hevc_vps, sizeof(hevc_vps));
+		put_nal(&fix, 1, hevc_sps, sizeof(hevc_sps));
+		put_nal(&fix, 1, hevc_idr, sizeof(hevc_idr));
+		memcpy(want, hevc_vps, sizeof(want));
+		want[sizeof(want) - 1] = 0x40; /* 0xa0: flag 1, data 0, stop; now flag 0, stop */
+		CHECK_EQ(kvmv_hevc_clear_vps_extension(fix.data, fix.len), 1);
+		vps_at = 4;
+		CHECK(memcmp(fix.data + vps_at, want, sizeof(want)) == 0);
+		/* The rest of the unit is untouched, and a second pass finds nothing. */
+		i = 4 + sizeof(hevc_vps) + 4;
+		CHECK(memcmp(fix.data + i, hevc_sps, sizeof(hevc_sps)) == 0);
+		CHECK_EQ(kvmv_hevc_clear_vps_extension(fix.data, fix.len), 0);
+		/* An H.264 buffer is left alone. */
+		CHECK_EQ(kvmv_hevc_clear_vps_extension(key.data, 0), 0);
+	}
+
 	CHECK_EQ(kvmv_hevc_sps_size(hevc_sps, sizeof(hevc_sps), &w, &h), 0);
 	CHECK_EQ(w, 1920);
 	CHECK_EQ(h, 1080);
