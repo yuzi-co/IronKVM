@@ -28,6 +28,9 @@ func NewServer(addr string, handler http.Handler) *http.Server {
 		ReadHeaderTimeout: readHeaderTimeout,
 		IdleTimeout:       idleTimeout,
 
+		// For BeginWriteBatch, which needs the connection under a request.
+		ConnContext: rememberConn,
+
 		// An empty non-nil map turns HTTP/2 off, and AllowHTTP2 below is what
 		// puts it back. ListenAndServeTLS configures h2 automatically when this
 		// field is nil, so the HTTPS listener spoke it while the plain one
