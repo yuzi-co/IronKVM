@@ -83,6 +83,12 @@ func (k *KvmVision) SetCaptureFPS(fps uint8) bool { return false }
 
 func (k *KvmVision) SetFrameDetect(frame uint8) {}
 
+// libraryCodecSupported answers as Sipeed's library would off-device: there is
+// no library to ask, and tests that need a narrower one replace codecSupported.
+func libraryCodecSupported(codec uint8) bool {
+	return vendorCodecSupported(codec)
+}
+
 func (k *KvmVision) Close() {
 	captureLifecycle.stop(func() {})
 }

@@ -197,7 +197,12 @@ func applyScreenValue(values *ScreenValues, key string, value int) {
 		// before 2026-09-09 that was an uncaught C++ exception across cgo and
 		// so the whole server. It is an error return now, and it still has no
 		// business getting that far.
-		if value == CodecH264 || value == CodecH265 {
+		//
+		// A codec the library cannot deliver is left alone too. libkvm-v4l2
+		// has no H.265 encoder, and a board restored from the vendor image
+		// with H.265 chosen otherwise asked for it on every frame and got
+		// no video at all, in either H.264 delivery mode.
+		if (value == CodecH264 || value == CodecH265) && codecSupported(uint8(value)) {
 			values.Codec = uint8(value)
 		}
 	}
@@ -228,9 +233,10 @@ func CheckScreen() {
 
 // validateCodec keeps an unusable codec away from the encoder. The settings
 // files are plain text on the card and a person can edit them, so the value
-// read back is not necessarily one this build knows.
+// read back is not necessarily one this build knows, or one the capture
+// library can deliver (see CodecSupported).
 func validateCodec(codec uint8) uint8 {
-	if codec == CodecH264 || codec == CodecH265 {
+	if (codec == CodecH264 || codec == CodecH265) && codecSupported(codec) {
 		return codec
 	}
 
