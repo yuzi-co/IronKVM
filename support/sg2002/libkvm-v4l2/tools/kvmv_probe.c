@@ -291,7 +291,7 @@ static void run_mjpeg(unsigned int w, unsigned int h, unsigned int quality,
 {
 	uint64_t times[64];
 	unsigned int ok = 0, good = 0, i, sw = 0, sh = 0;
-	uint64_t bytes = 0;
+	uint64_t bytes = 0, total;
 	int last = 0;
 
 	if (count > 64)
@@ -326,15 +326,89 @@ static void run_mjpeg(unsigned int w, unsigned int h, unsigned int quality,
 		api.free_kvmv_data(&data);
 	}
 	/* The first read may build the pipeline and the scaler context. */
+	for (i = 1, total = 0; i < count; i++)
+		total += times[i];
 	qsort(times + 1, count - 1, sizeof(times[0]), cmp_u64);
-	note("MJPEG %ux%u q%u: first read %.1f ms, then median %.1f ms, min %.1f, max %.1f per frame; %u bytes average",
+	note("MJPEG %ux%u q%u: first read %.1f ms, then median %.1f ms, min %.1f, max %.1f per frame (%.1f fps back to back); %u bytes average",
 	     w, h, quality, times[0] / 1000.0, times[1 + (count - 1) / 2] / 1000.0,
 	     times[1] / 1000.0, times[count - 1] / 1000.0,
+	     total ? (count - 1) * 1e6 / (double)total : 0.0,
 	     ok ? (unsigned int)(bytes / ok) : 0);
 	result(ok == count, "MJPEG %ux%u: %u of %u reads answered 0 (last %d)", w, h, ok,
 	       count, last);
 	result(good == ok && ok > 0, "MJPEG %ux%u: %u of %u are complete JPEGs of that size (last SOF %ux%u)",
 	       w, h, good, ok, sw, sh);
+}
+
+/* This process's CPU time so far, user and system, in clock ticks. */
+static int cpu_ticks(unsigned long long *user, unsigned long long *sys)
+{
+	char buf[1024], *p;
+	FILE *fp = fopen("/proc/self/stat", "re");
+	size_t n;
+
+	if (fp == NULL)
+		return -1;
+	n = fread(buf, 1, sizeof(buf) - 1, fp);
+	fclose(fp);
+	buf[n] = 0;
+	/* Fields 14 and 15, counted after the ")" that ends the name. */
+	p = strrchr(buf, ')');
+	if (p == NULL ||
+	    sscanf(p + 2, "%*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %llu %llu",
+		   user, sys) != 2)
+		return -1;
+	return 0;
+}
+
+/*
+ * MJPEG paced like the server's ticker: one read every 1/fps s for secs
+ * seconds. The delivered rate is what a viewer would get; the CPU is this
+ * process's share of the one core over the run.
+ */
+static void run_mjpeg_paced(unsigned int w, unsigned int h, unsigned int quality,
+			    unsigned int fps, unsigned int secs)
+{
+	unsigned long long u0 = 0, s0 = 0, u1 = 0, s1 = 0;
+	uint64_t start, next, end;
+	unsigned int ok = 0, errors = 0;
+	long hz = sysconf(_SC_CLK_TCK);
+	double elapsed, delivered;
+	int have_cpu;
+
+	have_cpu = cpu_ticks(&u0, &s0) == 0;
+	start = now_us();
+	next = start;
+	end = start + (uint64_t)secs * 1000000U;
+	while (now_us() < end) {
+		uint8_t *data = NULL;
+		uint32_t size = 0;
+
+		sleep_until(next);
+		next += 1000000U / fps;
+		if (api.kvmv_read_img((uint16_t)w, (uint16_t)h, 0, (uint16_t)quality,
+				      &data, &size) == 0 && data != NULL) {
+			ok++;
+			api.free_kvmv_data(&data);
+		} else {
+			errors++;
+		}
+	}
+	elapsed = (double)(now_us() - start) / 1e6;
+	have_cpu = have_cpu && cpu_ticks(&u1, &s1) == 0 && hz > 0;
+	delivered = ok / elapsed;
+	if (have_cpu)
+		note("MJPEG %ux%u q%u paced at %u fps: %u pictures in %.1f s = %.1f fps, %u errors; CPU %.1f%% (user %.1f%%, sys %.1f%%)",
+		     w, h, quality, fps, ok, elapsed, delivered, errors,
+		     100.0 * (double)(u1 - u0 + s1 - s0) / hz / elapsed,
+		     100.0 * (double)(u1 - u0) / hz / elapsed,
+		     100.0 * (double)(s1 - s0) / hz / elapsed);
+	else
+		note("MJPEG %ux%u q%u paced at %u fps: %u pictures in %.1f s = %.1f fps, %u errors",
+		     w, h, quality, fps, ok, elapsed, delivered, errors);
+	/* Holds with the JPEG unit; software JPEG manages about 4 fps at 1080p. */
+	result(delivered >= fps * 0.9, "MJPEG %ux%u keeps up with %u fps (%.1f)", w, h,
+	       fps, delivered);
 }
 
 struct mjpeg_load {
@@ -437,9 +511,14 @@ int main(int argc, char **argv)
 			note("no kvmv_codec_supported (the vendor library has none)");
 	}
 
-	/* 3b. MJPEG (software JPEG): time per read at two sizes. */
-	run_mjpeg(1920, 1080, quality, 10);
+	/* 3b. MJPEG: time per read at three sizes, then the frame rate at the
+	 * stream rate. The library logs which encoder it uses (the JPEG unit,
+	 * or software) and whether the scaler gives full range. */
+	run_mjpeg(1920, 1080, quality, 30);
+	run_mjpeg(1280, 720, quality, 30);
 	run_mjpeg(960, 540, quality, 20);
+	run_mjpeg_paced(1920, 1080, quality, fps, 10);
+	run_mjpeg_paced(1280, 720, quality, fps, 10);
 
 	/* 4. H.264 at the configured rate, as h264_source.go reads it. */
 	api.set_h264_fps((uint8_t)fps);
@@ -484,9 +563,10 @@ int main(int argc, char **argv)
 	}
 
 	/* 5b. H.264 with an MJPEG reader alongside, as a VNC viewer or a
-	 * screenshot next to a web viewer would be. The JPEG encode runs
-	 * without the pipeline lock, so H.264 should keep its frames; on one
-	 * core it competes for CPU, so the rate is reported, not judged. */
+	 * screenshot next to a web viewer would be. A software encode runs
+	 * without the pipeline lock and competes for the one core; a read
+	 * through the JPEG unit holds the lock for about 10 ms. Either way
+	 * H.264 should keep its frames; the MJPEG rate is reported, not judged. */
 	{
 		struct mjpeg_load load = { 0, 0, 0 };
 		pthread_t thread;

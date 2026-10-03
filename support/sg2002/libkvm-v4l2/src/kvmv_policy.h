@@ -74,6 +74,7 @@ enum kvmv_role {
 	KVMV_ROLE_CAPTURE,
 	KVMV_ROLE_SCALER,
 	KVMV_ROLE_ENCODER,
+	KVMV_ROLE_JPEG, /* the hardware JPEG encoder, optional */
 };
 
 /*

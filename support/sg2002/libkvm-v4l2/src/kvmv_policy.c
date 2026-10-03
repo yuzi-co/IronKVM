@@ -119,6 +119,8 @@ enum kvmv_role kvmv_match_role(const char *driver, uint32_t device_caps,
 		return KVMV_ROLE_NONE;
 	if (!strcmp(driver, "sg2002-vpss"))
 		return KVMV_ROLE_SCALER;
+	if (!strcmp(driver, "sg2002-jpeg"))
+		return KVMV_ROLE_JPEG;
 	/*
 	 * The Coda registers several nodes (encoder, decoder, JPEG). The one
 	 * wanted takes NV12 in and hands H.264 out.

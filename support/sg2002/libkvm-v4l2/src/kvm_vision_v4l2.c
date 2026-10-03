@@ -47,6 +47,7 @@ void set_capture_fps(uint8_t _fps);
 #include "kvmv_policy.h"
 #include "kvmv_slots.h"
 #include "kvmv_jpeg.h"
+#include "kvmv_hwjpeg.h"
 
 #define KVMV_CODEC_MJPEG 0
 #define KVMV_CODEC_H264 1
@@ -111,6 +112,12 @@ static char last_error[256];
 
 static struct kvmv_slots slots;
 static struct kvmv_jpeg jpeg_state; /* guarded by jpeg_lock */
+/* The JPEG unit, when the kernel has it. Guarded by pipe_lock: it encodes
+ * from the snapshot buffer, which the pipeline owns. */
+static struct kvmv_hwjpeg hw_jpeg = { .fd = -1, .out = { .fd = -1 }, .cap = { .fd = -1 } };
+static int hw_jpeg_failures; /* consecutive; the unit is left alone at the limit */
+static int hw_jpeg_announced;
+static int range_announced; /* 1 full, 2 limited */
 
 /* Shared with the setters and the monitor thread: __atomic only. */
 static int debug_enabled;
@@ -292,6 +299,9 @@ static void pipe_down(const char *why)
 		return;
 	DBG("pipeline down: %s", why);
 	kvmv_pipe_stop(&pipe_state);
+	/* The unit imports the snapshot buffer; let both go together. Closing
+	 * the node also turns the unit's clocks off. */
+	kvmv_hwjpeg_close(&hw_jpeg);
 	__atomic_store_n(&pipe_running, 0, __ATOMIC_RELEASE);
 }
 
@@ -674,31 +684,137 @@ static int read_video_locked(unsigned int width, unsigned int height,
 	return IMG_NOT_EXIST;
 }
 
+/* Capture runs inside the H.264 pipeline. Build it at the size and bitrate
+ * the stream last used, so a stream that comes back does not rebuild it
+ * straight away. Caller holds pipe_lock. */
+static int image_pipe_up(void)
+{
+	if (pipe_state.running)
+		return 0;
+	return pipe_up(pipe_width, pipe_height,
+		       pipe_bitrate ? pipe_bitrate : kvmv_kbps_to_bps(KVMV_DEFAULT_KBPS));
+}
+
+static void announce_range(int full_range)
+{
+	int state = full_range ? 1 : 2;
+
+	if (__atomic_exchange_n(&range_announced, state, __ATOMIC_RELAXED) == state)
+		return;
+	if (full_range)
+		log_msg("MJPEG: the scaler expands the capture to full range");
+	else
+		log_msg("MJPEG: the scaler keeps limited range (no ironkvm-dist patch 0908); pictures look flat");
+}
+
+/* A return of read_hw_locked: use the software encoder for this picture. */
+#define KVMV_USE_SOFTWARE 1000
+/* Consecutive hardware failures after which only software is used. */
+#define KVMV_HWJPEG_FAILURE_LIMIT 3
+
+/* Whether this read goes to the JPEG unit; opens it on first use. */
+static int hw_jpeg_ready(void)
+{
+	const char *mode = getenv("KVMV_JPEG");
+
+	if (mode != NULL && !strcmp(mode, "sw"))
+		return 0;
+	if (!devices.jpeg[0] || hw_jpeg_failures >= KVMV_HWJPEG_FAILURE_LIMIT)
+		return 0;
+	if (hw_jpeg.fd >= 0)
+		return 1;
+	if (kvmv_hwjpeg_open(&hw_jpeg, devices.jpeg)) {
+		log_msg("%s; software JPEG", hw_jpeg.error);
+		hw_jpeg_failures = KVMV_HWJPEG_FAILURE_LIMIT;
+		return 0;
+	}
+	if (!__atomic_exchange_n(&hw_jpeg_announced, 1, __ATOMIC_RELAXED))
+		log_msg("MJPEG: hardware JPEG encoder %s, %s", devices.jpeg,
+			env_uint("KVMV_JPEG_IMPORT", 1) ? "dma-buf import" : "CPU copy");
+	return 1;
+}
+
 /*
- * Take a picture for an MJPEG read: the newest captured frame, scaled by the
- * snapshot scaler context and copied into the JPEG encoder's planes. Caller
- * holds pipe_lock; the encode itself happens after it is released.
+ * An MJPEG read through the JPEG unit: the snapshot scaler context's buffer
+ * goes straight to the unit (or is copied into its own buffer with
+ * KVMV_JPEG_IMPORT=0), and the JPEG is copied once, into the slot. About
+ * 5 ms at 1080p, so it runs under pipe_lock. Answers KVMV_USE_SOFTWARE when
+ * the unit cannot take this picture.
+ */
+static int read_hw_locked(unsigned int width, unsigned int height, int quality,
+			  uint8_t **data, uint32_t *size)
+{
+	int import = env_uint("KVMV_JPEG_IMPORT", 1) != 0;
+	struct kvmv_nv12 image;
+	struct kvmv_slot *slot;
+	const uint8_t *jpeg;
+	size_t jpeg_size;
+	uint64_t t0, t1, t2;
+	int result;
+
+	t0 = now_us();
+	result = pipe_failure(kvmv_pipe_snapshot(&pipe_state, width, height,
+						 KVMV_FRAME_TIMEOUT_MS, !import, &image));
+	if (result != 0)
+		return result;
+	no_frame_count = 0;
+	set_source_locked(1);
+	announce_range(image.full_range);
+	if (!kvmv_hwjpeg_fits(image.width, image.height, image.stride)) {
+		kvmv_pipe_snapshot_done(&pipe_state);
+		DBG("MJPEG %ux%u: the JPEG unit needs a width in steps of 16; software",
+		    image.width, image.height);
+		return KVMV_USE_SOFTWARE;
+	}
+
+	t1 = now_us();
+	if (kvmv_hwjpeg_encode(&hw_jpeg, &image, import ? image.fd : -1,
+			       image.fd_size, quality, KVMV_JPEG_QUALITY_DEFAULT,
+			       &jpeg, &jpeg_size)) {
+		kvmv_pipe_snapshot_done(&pipe_state);
+		log_msg("%s", hw_jpeg.error);
+		if (++hw_jpeg_failures >= KVMV_HWJPEG_FAILURE_LIMIT) {
+			log_msg("MJPEG: %d hardware failures in a row; software JPEG from now on",
+				hw_jpeg_failures);
+			kvmv_hwjpeg_close(&hw_jpeg);
+		}
+		return KVMV_USE_SOFTWARE;
+	}
+	hw_jpeg_failures = 0;
+	kvmv_pipe_snapshot_done(&pipe_state);
+
+	t2 = now_us();
+	slot = claim_slot((uint32_t)jpeg_size);
+	if (slot == NULL)
+		return IMG_BUFFER_FULL;
+	kvmv_copy_from_device(slot->data, jpeg, jpeg_size);
+	slot->size = (uint32_t)jpeg_size;
+	slot->type = IMG_MJPEG_TYPE;
+	DBG("MJPEG %ux%u q%d (unit, %s): picture %llu us, encode %llu us, copy %llu us, %zu bytes",
+	    image.width, image.height, quality, import ? "import" : "copy",
+	    (unsigned long long)(t1 - t0), (unsigned long long)(t2 - t1),
+	    (unsigned long long)(now_us() - t2), jpeg_size);
+	*data = slot->data;
+	*size = slot->size;
+	return IMG_MJPEG_TYPE;
+}
+
+/*
+ * Take a picture for a software MJPEG read: the newest captured frame, scaled
+ * by the snapshot scaler context and copied into the JPEG encoder's planes.
+ * Caller holds pipe_lock; the encode itself happens after it is released.
  */
 static int snapshot_locked(unsigned int width, unsigned int height)
 {
 	struct kvmv_nv12 image;
 	int result;
 
-	if (!pipe_state.running) {
-		/* Capture runs inside the H.264 pipeline. Build it at the size
-		 * and bitrate the stream last used, so a stream that comes back
-		 * does not rebuild it straight away. */
-		result = pipe_up(pipe_width, pipe_height,
-				 pipe_bitrate ? pipe_bitrate :
-						kvmv_kbps_to_bps(KVMV_DEFAULT_KBPS));
-		if (result != 0)
-			return result;
-	}
 	result = pipe_failure(kvmv_pipe_snapshot(&pipe_state, width, height,
-						 KVMV_FRAME_TIMEOUT_MS, &image));
+						 KVMV_FRAME_TIMEOUT_MS, 1, &image));
 	if (result != 0)
 		return result;
 	no_frame_count = 0;
+	announce_range(image.full_range);
 	result = kvmv_jpeg_load(&jpeg_state, &image);
 	kvmv_pipe_snapshot_done(&pipe_state);
 	if (result != 0) {
@@ -721,9 +837,11 @@ static int read_image(uint16_t width, uint16_t height, int quality,
 
 	/*
 	 * jpeg_lock keeps one picture in the encoder at a time and is always
-	 * taken before pipe_lock. pipe_lock is held only to take the picture
-	 * (a capture wait, one scale, a copy); the encode, a fifth of a second
-	 * at 1080p, runs without it, so the H.264 stream keeps going.
+	 * taken before pipe_lock. With the JPEG unit the whole read, about
+	 * 10 ms at 1080p, runs under pipe_lock. In software pipe_lock is held
+	 * only to take the picture (a capture wait, one scale, a copy); the
+	 * encode, a fifth of a second at 1080p, runs without it, so the H.264
+	 * stream keeps going.
 	 */
 	if (timed_lock(&jpeg_lock, KVMV_JPEG_LOCK_TIMEOUT_S) != 0)
 		return KVMV_RET_RETRIEVING;
@@ -737,8 +855,19 @@ static int read_image(uint16_t width, uint16_t height, int quality,
 		pthread_mutex_unlock(&jpeg_lock);
 		return IMG_NOT_EXIST;
 	}
+	result = image_pipe_up();
+	if (result == 0 && hw_jpeg_ready()) {
+		result = read_hw_locked(width, height, quality, data, size);
+		if (result != KVMV_USE_SOFTWARE) {
+			pthread_mutex_unlock(&pipe_lock);
+			pthread_mutex_unlock(&jpeg_lock);
+			return result;
+		}
+		result = 0;
+	}
 	t0 = now_us();
-	result = snapshot_locked(width, height);
+	if (result == 0)
+		result = snapshot_locked(width, height);
 	pthread_mutex_unlock(&pipe_lock);
 	if (result != 0) {
 		pthread_mutex_unlock(&jpeg_lock);
@@ -915,6 +1044,7 @@ void kvmv_deinit(void)
 	pthread_mutex_lock(&pipe_lock);
 	pipe_down("deinit");
 	devices_found = 0;
+	hw_jpeg_failures = 0;
 	next_start_ms = 0;
 	pthread_mutex_unlock(&pipe_lock);
 	pthread_mutex_lock(&jpeg_lock);

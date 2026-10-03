@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 #include "kvmv_pipeline.h"
+#include "kvmv_hwjpeg.h"
 
 #include <dirent.h>
 #include <errno.h>
@@ -183,6 +184,8 @@ int kvmv_find_devices(struct kvmv_devices *devices, char *missing,
 			copy_path(devices->scaler, path);
 		else if (role == KVMV_ROLE_ENCODER && !devices->encoder[0])
 			copy_path(devices->encoder, path);
+		else if (role == KVMV_ROLE_JPEG && !devices->jpeg[0])
+			copy_path(devices->jpeg, path);
 	}
 
 	if ((env = getenv("KVMV_CAPTURE_DEV")) != NULL && *env)
@@ -191,6 +194,8 @@ int kvmv_find_devices(struct kvmv_devices *devices, char *missing,
 		copy_path(devices->scaler, env);
 	if ((env = getenv("KVMV_ENCODER_DEV")) != NULL && *env)
 		copy_path(devices->encoder, env);
+	if ((env = getenv("KVMV_JPEG_DEV")) != NULL && *env)
+		copy_path(devices->jpeg, env);
 	kvmv_find_subdev(devices->subdev, sizeof(devices->subdev));
 
 	if (devices->capture[0] && devices->scaler[0] && devices->encoder[0])
@@ -1074,9 +1079,9 @@ static int snap_start(struct kvmv_pipe *p, unsigned int width,
 {
 	struct kvmv_snap *s = &p->snap;
 	const struct v4l2_pix_format *cap = &p->cap_fmt;
-	struct v4l2_pix_format in;
+	struct v4l2_pix_format in, full;
 	struct dma_heap_allocation_data alloc;
-	size_t need;
+	size_t need, jpeg_need;
 
 	if (kvmv_plan_output(cap->width, cap->height, width, height, &s->plan))
 		return fail_msg(p, "snapshot size %ux%u is unusable", width, height);
@@ -1092,8 +1097,17 @@ static int snap_start(struct kvmv_pipe *p, unsigned int width,
 		return fail_msg(p, "snapshot scaler wants %ux%u stride %u, capture gives %ux%u stride %u",
 				in.width, in.height, in.bytesperline, cap->width,
 				cap->height, cap->bytesperline);
+	/*
+	 * Snapshots become JPEGs, and JPEG (JFIF) is full range. The capture is
+	 * limited range; a scaler with ironkvm-dist patch 0908 expands it when
+	 * asked, one without answers with the source's range, and the picture
+	 * is then encoded as it is. The H.264 context never asks: H.264 carries
+	 * limited range as standard.
+	 */
+	full = in;
+	full.quantization = V4L2_QUANTIZATION_FULL_RANGE;
 	if (set_fmt(s->fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, V4L2_PIX_FMT_NV12,
-		    s->plan.out_width, s->plan.out_height, cap, 0, &s->fmt))
+		    s->plan.out_width, s->plan.out_height, &full, 0, &s->fmt))
 		return fail(p, "snapshot scaler CAPTURE S_FMT");
 	need = (size_t)s->fmt.bytesperline * s->fmt.height * 3 / 2;
 	if (s->fmt.pixelformat != V4L2_PIX_FMT_NV12 ||
@@ -1116,13 +1130,19 @@ static int snap_start(struct kvmv_pipe *p, unsigned int width,
 	if (request(s->fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, V4L2_MEMORY_DMABUF,
 		    p->cap_count) < (int)p->cap_count)
 		return fail(p, "snapshot scaler OUTPUT REQBUFS");
+	/* Room for the JPEG unit's reads past the last chroma row. */
+	need = s->fmt.sizeimage;
+	jpeg_need = kvmv_hwjpeg_src_size(s->fmt.bytesperline, s->fmt.height);
+	if (jpeg_need > need)
+		need = jpeg_need;
+	need = (need + 4095U) & ~(size_t)4095U;
 	memset(&alloc, 0, sizeof(alloc));
-	alloc.len = s->fmt.sizeimage;
+	alloc.len = need;
 	alloc.fd_flags = O_CLOEXEC | O_RDWR;
 	if (xioctl(p->heap_fd, DMA_HEAP_IOCTL_ALLOC, &alloc))
 		return fail(p, "snapshot DMA_HEAP_IOCTL_ALLOC");
 	s->buf.fd = (int)alloc.fd;
-	s->buf.length = s->fmt.sizeimage;
+	s->buf.length = need;
 	/* A dma-heap buffer maps cached; the sync calls keep it coherent. */
 	s->buf.addr = mmap(NULL, s->buf.length, PROT_READ, MAP_SHARED,
 			   s->buf.fd, 0);
@@ -1141,7 +1161,7 @@ static int snap_start(struct kvmv_pipe *p, unsigned int width,
 
 enum kvmv_pipe_status kvmv_pipe_snapshot(struct kvmv_pipe *p,
 					 unsigned int width, unsigned int height,
-					 unsigned int timeout_ms,
+					 unsigned int timeout_ms, int cpu_read,
 					 struct kvmv_nv12 *image)
 {
 	struct kvmv_snap *s = &p->snap;
@@ -1202,14 +1222,19 @@ enum kvmv_pipe_status kvmv_pipe_snapshot(struct kvmv_pipe *p,
 		 buf.index, -1, 0))
 		return fail(p, "capture requeue"), KVMV_PIPE_ERROR;
 
-	sync_dmabuf(s->buf.fd, DMA_BUF_SYNC_START | DMA_BUF_SYNC_READ);
-	s->synced = 1;
+	if (cpu_read) {
+		sync_dmabuf(s->buf.fd, DMA_BUF_SYNC_START | DMA_BUF_SYNC_READ);
+		s->synced = 1;
+	}
 	image->y = s->buf.addr;
 	image->uv = (const uint8_t *)s->buf.addr +
 		    (size_t)s->fmt.bytesperline * s->fmt.height;
 	image->width = s->plan.out_width;
 	image->height = s->plan.out_height;
 	image->stride = s->fmt.bytesperline;
+	image->fd = s->buf.fd;
+	image->fd_size = s->buf.length;
+	image->full_range = s->fmt.quantization == V4L2_QUANTIZATION_FULL_RANGE;
 	return KVMV_PIPE_OK;
 }
 

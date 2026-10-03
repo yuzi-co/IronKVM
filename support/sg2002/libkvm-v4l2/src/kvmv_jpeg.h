@@ -1,8 +1,9 @@
 /*
  * Software JPEG for kvmv_read_img (MJPEG) on the mainline kernel.
  *
- * There is no mainline driver for the SG2002's JPEG unit (ironkvm-dist#36), so
- * pictures are encoded on the CPU with libjpeg-turbo's TurboJPEG API, linked
+ * The fallback for a kernel without the JPEG unit's driver (kvmv_hwjpeg.h,
+ * ironkvm-dist#36) and for picture sizes the unit cannot take. Pictures are
+ * encoded on the CPU with libjpeg-turbo's TurboJPEG API, linked
  * statically: 4:2:0, fast integer DCT, from planar YUV, no RGB anywhere. The
  * board measurements (ironkvm-dist socs/sophgo-sg2002/mainline/jpeg-bench) put
  * one encode at about 210 ms at 1080p, 94 ms at 720p and 53 ms at 540p, all

@@ -17,8 +17,10 @@ sg2002-capture ──dma-buf──> sg2002-vpss ──dma-buf──> coda (Coda9
  UYVY 1920x1080             UYVY -> NV12,            NV12 in               copied into the
                             optional downscale                             buffer the server gets
                      │
-                     └─dma-buf──> sg2002-vpss ──> NV12, CPU ──> libjpeg-turbo ──> JPEG
-                                  (2nd context)    (cached)      (kvmv_read_img MJPEG)
+                     └─dma-buf──> sg2002-vpss ──dma-buf──> sg2002-jpeg ──> JPEG
+                                  (2nd context,              (JPEG unit;      (kvmv_read_img MJPEG)
+                                   full range)                libjpeg-turbo
+                                                              without it)
 ```
 
 The order of operations follows nixos-nanokvm's `sg2002-h264-bridge` (`--scaler vpss --format
@@ -36,10 +38,12 @@ Nodes are found by driver name and capability, never by number:
 | scaler | driver `sg2002-vpss`, mem2mem |
 | encoder | any mem2mem node whose CAPTURE queue offers H.264 and OUTPUT queue NV12 (the Coda's encoder node, not its decoder or JPEG nodes) |
 | receiver | `/sys/class/video4linux/v4l-subdev*/name` containing `lt6911` |
+| JPEG unit (optional) | driver `sg2002-jpeg`, mem2mem |
 
 Kernel requirements: the nixos-nanokvm 7.2 media patches (LT6911UXE DT probe and UXC polling,
 SG2002 CSI capture with source-change events, VPSS with patch `0900`, Coda980 with NV12 and
-dma-buf input), `coda-vpu` and `sg2002-vpss` loaded, `coda980.bin` installed, and a CMA
+dma-buf input), `coda-vpu` and `sg2002-vpss` loaded (and `sg2002-jpeg` for hardware MJPEG, patch 0908 for
+full-range MJPEG), `coda980.bin` installed, and a CMA
 dma-heap. Without a `v4l-subdev` node the library still runs, but it cannot tell "no signal"
 from "nothing captured" before a pipeline is up.
 
@@ -49,7 +53,7 @@ from "nothing captured" before a pipeline is up.
 |----------|------|
 | `kvmv_init` | Starts the monitor thread. Devices open lazily on the first read. `KVMV_DEBUG=1` or a non-zero argument enables debug logging. |
 | `kvmv_read_video` | H.264: one access unit per call. `3` for a keyframe, `4` for a delta frame. Codec 2 (H.265) answers `-2`: the Coda980 encodes H.264 only. |
-| `kvmv_read_img` | Type 1 as above. Type 0 (MJPEG): one software JPEG per call at the size asked, quality from the `_qlty` argument; answers `0`. See below. |
+| `kvmv_read_img` | Type 1 as above. Type 0 (MJPEG): one JPEG per call at the size asked, from the JPEG unit or in software, quality from the `_qlty` argument; answers `0`. See below. |
 | `free_kvmv_data`, `free_all_kvmv_data` | As the vendor library: four reusable slots, a pointer stays valid until freed. |
 | `set_h264_gop` | `V4L2_CID_MPEG_VIDEO_GOP_SIZE` at runtime, plus a forced keyframe, because the vendor library rebuilds its encoder here and the server relies on the next frame being a keyframe. |
 | `set_h264_fps` | `VIDIOC_S_PARM` on the encoder's OUTPUT queue at runtime; returns early when unchanged. The rate given is the lower of this and `set_capture_fps`, or the measured delivery rate when frames arrive more than 10% slower (see Known issues). |
@@ -90,31 +94,44 @@ library does.
 
 ### MJPEG
 
-There is no mainline driver for the SG2002's JPEG unit (yuzi-co/ironkvm-dist#36), so MJPEG is
-encoded on the CPU with libjpeg-turbo 3.1.2's TurboJPEG API, linked statically: planar 4:2:0
-from the NV12 picture (chroma deinterleaved, no RGB), fast integer DCT, quality from the
-caller (1 to 100, 0 for 80). The choice and the numbers come from ironkvm-dist
-`socs/sophgo-sg2002/mainline/jpeg-bench`: about 210 ms per picture at 1080p, 94 ms at 720p and
-53 ms at 960x540, all of it on the board's only core.
-
-So JPEG is encoded per `kvmv_read_img` call, never at the stream rate, and it is kept off the
-H.264 path:
+MJPEG goes to the SG2002's JPEG unit when the kernel has its driver, `sg2002-jpeg`
+(yuzi-co/ironkvm-dist patch 0907, #36), and to libjpeg-turbo on the CPU when it does not (the
+vendor kernel, or a mainline kernel without 0907). Both take the same picture:
 
 - A second context on the scaler node imports the same capture buffers and scales the newest
-  frame to the size asked for, into one NV12 buffer of its own (cached, from the dma-heap). Its
-  size does not touch the H.264 stream's, and the scaler's mem2mem queue orders its jobs with
-  the H.264 ones. It is set up on the first MJPEG read, rebuilt when the size changes, and torn
-  down with the pipeline.
-- The pipeline lock is held only to take the picture: the capture wait, one scale, and the copy
-  into the encoder's own planes (a few ms at 1080p). The encode runs after it is released, under
-  a lock of its own, so an H.264 read waits at most for one scale and copy, not for a JPEG.
+  frame to the size asked for, into one NV12 buffer of its own (from the dma-heap). Its size
+  does not touch the H.264 stream's, and the scaler's mem2mem queue orders its jobs with the
+  H.264 ones. It is set up on the first MJPEG read, rebuilt when the size changes, and torn down
+  with the pipeline.
+- That context asks the scaler for full range (`V4L2_QUANTIZATION_FULL_RANGE`), because a JPEG
+  file is full range and the capture is limited range (16 to 235). A scaler with ironkvm-dist
+  patch 0908 expands it in its input CSC; one without keeps limited range and the library says
+  so once in the log ("pictures look flat"). The H.264 context never asks: H.264 carries limited
+  range as standard.
 - With no H.264 stream running, an MJPEG read builds the pipeline at the size and bitrate the
   stream last used (capture runs inside it), and the idle timer tears it down 10 s after the
   last read of either kind. An H.264 read at a new size rebuilds it, and the next MJPEG read sets
   its scaler context up again.
 
-The CPU cost is the limit: at 1080p a reader asking continuously takes the whole core. The
-server's MJPEG consumers should ask at a low rate or a small size (screenshots, VNC at 960x540).
+**The JPEG unit.** The node is found by driver name, `sg2002-jpeg`, or named with
+`KVMV_JPEG_DEV`; `KVMV_JPEG=sw` keeps the software encoder. The snapshot buffer's dma-buf is
+queued on the unit's OUTPUT queue as it is, so no pixel passes through the CPU and no cache is
+maintained for it; `KVMV_JPEG_IMPORT=0` copies the picture into a buffer of the driver's
+instead, for comparison. The quality argument (1 to 100, 0 for 80) is
+`V4L2_CID_JPEG_COMPRESSION_QUALITY`, set when it changes. The JPEG comes back in the driver's
+CAPTURE buffer, which is mapped uncached, and is copied once, into the slot the server gets. A
+1080p read takes about 10 ms, the encode about 5 ms of it, and runs under the pipeline lock.
+The unit encodes widths in steps of 16 only (it rounds the width and writes the rounded one
+into the header), so other widths, and three hardware failures in a row, fall back to
+software. The node is closed when the pipeline goes down, which turns the unit's clocks off.
+
+**Software.** libjpeg-turbo 3.1.2's TurboJPEG API, linked statically: planar 4:2:0 from the NV12
+picture (chroma deinterleaved, no RGB), fast integer DCT. ironkvm-dist
+`socs/sophgo-sg2002/mainline/jpeg-bench` measured about 210 ms per picture at 1080p, 94 ms at
+720p and 53 ms at 960x540, all of it on the board's only core. The pipeline lock is held only to
+take the picture: the capture wait, one scale, and the copy into the encoder's own planes. The
+encode runs after it is released, under a lock of its own, so an H.264 read waits at most for
+one scale and copy. At 1080p a reader asking continuously takes the whole core.
 
 ### Audio
 
@@ -201,7 +218,9 @@ container. `make clean` keeps `deps/`; `make distclean` removes it.
 - `make test`: host unit tests with ASan and UBSan: Annex-B splitting and classification,
   parameter-set prefixing, SPS parsing (with emulation prevention), the policy decisions, the
   frame slots, format negotiation against mock capture, VPSS and Coda drivers, the encoder
-  frame-rate policy, the uncached copy, and the JPEG path (NV12 split, encode, decode back).
+  frame-rate policy, the uncached copy, the software JPEG path (NV12 split, encode, decode back), and the JPEG
+  unit against a mock `sg2002-jpeg` (copy and dma-buf import, quality, reconfiguration, a bad
+  picture, widths it cannot take).
 - `make check-symbols`: the exports against `abi-symbols.txt`, `abi-extensions.txt` and
   Sipeed's library (any other export fails), and the `NEEDED` entries for `libgcc_s.so.1` and
   `libc.so`.
@@ -220,9 +239,12 @@ It loads the library with `dlopen`, checks all 13 symbols resolve, and runs:
 
 1. `kvmv_hdmi_control(1)`, then waits up to 5 s for a signal.
 2. H.265 reads answer `-2`; `kvmv_codec_supported` says 1, 1, 0 for MJPEG, H.264, H.265.
-3. MJPEG: 10 reads at 1920x1080 and 20 at 960x540, each a complete JPEG of that size, with the
-   first read's time and the median, minimum and maximum of the rest in ms per frame. `-j`
-   saves the last picture of each size as `probe-WxH.jpg`.
+3. MJPEG: 30 reads at 1920x1080, 30 at 1280x720 and 20 at 960x540, each a complete JPEG of that
+   size, with the first read's time, the median, minimum and maximum of the rest in ms per
+   frame, and the rate back to back. `-j` saves the last picture of each size as
+   `probe-WxH.jpg`. Then 10 s each at 1080p and 720p paced at `-f`: the delivered rate must reach
+   90% of it (it does with the JPEG unit, not in software), and the probe's CPU share is printed.
+   The library logs which encoder it uses and whether the scaler gave full range.
 4. 300 H.264 frames paced at 30 fps: the first is a keyframe, every keyframe carries SPS, PPS and
    IDR, keyframes come every 30 frames, the SPS size, and the output bitrate against the target
    (fails only above three times the target, until #35 is settled).

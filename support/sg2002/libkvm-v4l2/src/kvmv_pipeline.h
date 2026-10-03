@@ -32,12 +32,13 @@ struct kvmv_devices {
 	char scaler[KVMV_PATH_MAX];
 	char encoder[KVMV_PATH_MAX];
 	char subdev[KVMV_PATH_MAX]; /* empty when the receiver has no node */
+	char jpeg[KVMV_PATH_MAX]; /* sg2002-jpeg; empty when the kernel has none */
 };
 
 /*
  * Find the three video nodes by driver and capability. Environment variables
- * KVMV_CAPTURE_DEV, KVMV_SCALER_DEV, KVMV_ENCODER_DEV and KVMV_SUBDEV override
- * discovery. Returns 0 when all three video nodes were found; otherwise -1,
+ * KVMV_CAPTURE_DEV, KVMV_SCALER_DEV, KVMV_ENCODER_DEV, KVMV_JPEG_DEV and
+ * KVMV_SUBDEV override discovery. The JPEG unit is optional. Returns 0 when all three video nodes were found; otherwise -1,
  * with the missing roles named in missing.
  */
 int kvmv_find_devices(struct kvmv_devices *devices, char *missing,
@@ -97,6 +98,9 @@ struct kvmv_nv12 {
 	const uint8_t *uv; /* interleaved chroma, height / 2 rows of stride bytes */
 	unsigned int width, height; /* the picture, without any padding */
 	unsigned int stride;
+	int fd; /* the dma-buf holding it, or -1 */
+	size_t fd_size; /* that buffer's size */
+	int full_range; /* 1 when the samples are full range (0..255) */
 };
 
 /* The scaler context behind kvmv_pipe_snapshot. */
@@ -196,14 +200,21 @@ void kvmv_pipe_release(struct kvmv_pipe *pipe, const struct kvmv_encoded *encode
  * stream's, so a screenshot or VNC reader never rebuilds the encoder, and the
  * scaler's mem2mem queue serialises its jobs with the H.264 path's.
  *
- * kvmv_pipe_snapshot fills the buffer and makes it readable by the CPU (a
- * cached mapping, synced for reading); the caller reads the picture and then
- * calls kvmv_pipe_snapshot_done. The context is set up on the first snapshot,
- * rebuilt when the size changes, and torn down with the pipeline.
+ * kvmv_pipe_snapshot fills the buffer and, with cpu_read, makes it readable
+ * by the CPU (a cached mapping, synced for reading); the caller reads the
+ * picture and then calls kvmv_pipe_snapshot_done. Without cpu_read the
+ * buffer is left to devices (the JPEG unit imports image->fd) and no cache
+ * maintenance is done. The context is set up on the first snapshot, rebuilt
+ * when the size changes, and torn down with the pipeline.
+ *
+ * The scaler is asked for full range, which JPEG wants; image->full_range
+ * says whether it gave it (a kernel without ironkvm-dist patch 0908 keeps
+ * the source's limited range). The buffer is sized for the JPEG unit too
+ * (kvmv_hwjpeg_src_size), which reads chroma rows past a tight 4:2:0 frame.
  */
 enum kvmv_pipe_status kvmv_pipe_snapshot(struct kvmv_pipe *pipe,
 					 unsigned int width, unsigned int height,
-					 unsigned int timeout_ms,
+					 unsigned int timeout_ms, int cpu_read,
 					 struct kvmv_nv12 *image);
 void kvmv_pipe_snapshot_done(struct kvmv_pipe *pipe);
 

@@ -1,21 +1,26 @@
 /*
  * Host unit tests for libkvm-v4l2: Annex-B classification, parameter-set
- * handling, SPS parsing, the policy decisions, the frame slots, and format
- * negotiation against mock capture, VPSS and Coda drivers.
+ * handling, SPS parsing, the policy decisions, the frame slots, format
+ * negotiation against mock capture, VPSS and Coda drivers, and the JPEG unit
+ * against a mock sg2002-jpeg.
  *
  * Built and run by `make test`.
  */
+#define _GNU_SOURCE
 #include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
+#include <unistd.h>
 #include <linux/videodev2.h>
 #include <turbojpeg.h>
 
 #include "kvm_vision.h"
 #include "kvmv_annexb.h"
 #include "kvmv_jpeg.h"
+#include "kvmv_hwjpeg.h"
 #include "kvmv_pipeline.h"
 #include "kvmv_policy.h"
 #include "kvmv_slots.h"
@@ -426,6 +431,8 @@ static void test_roles(void)
 	CHECK_EQ(kvmv_match_role("sg2002-capture", cap, 0, 0), KVMV_ROLE_CAPTURE);
 	CHECK_EQ(kvmv_match_role("sg2002-vpss", m2m, 0, 1), KVMV_ROLE_SCALER);
 	CHECK_EQ(kvmv_match_role("coda", m2m, 1, 1), KVMV_ROLE_ENCODER);
+	CHECK_EQ(kvmv_match_role("sg2002-jpeg", m2m, 0, 1), KVMV_ROLE_JPEG);
+	CHECK_EQ(kvmv_match_role("sg2002-jpeg", cap, 0, 0), KVMV_ROLE_NONE);
 	/* The Coda's decoder and JPEG nodes are not the encoder. */
 	CHECK_EQ(kvmv_match_role("coda", m2m, 0, 1), KVMV_ROLE_NONE);
 	CHECK_EQ(kvmv_match_role("coda", m2m, 1, 0), KVMV_ROLE_NONE);
@@ -881,6 +888,243 @@ static void test_negotiate(void)
 	CHECK_EQ(mock.s_fmt_calls, 0);
 }
 
+/*
+ * The JPEG unit (kvmv_hwjpeg) against a mock sg2002-jpeg. The node is a
+ * memfd, so the library's mmap of the OUTPUT and CAPTURE buffers works: the
+ * OUTPUT buffer sits at offset 0, the CAPTURE buffer at JM_CAP_OFFSET. The
+ * mock "encodes" by writing SOI, the quality, the first source byte (from its
+ * OUTPUT buffer in copy mode; 0xd1 for an imported dma-buf) and EOI.
+ */
+#define JM_CAP_OFFSET 65536
+#define JM_SIZE (2 * JM_CAP_OFFSET)
+#define JM_IMPORTED_BYTE 0xd1
+
+static struct {
+	int fd;
+	unsigned int width, height, stride;
+	uint32_t out_size;
+	int quality, ctrl_calls, s_fmt_calls;
+	enum v4l2_memory out_memory;
+	int out_queued, cap_queued, done, out_done;
+	int import_fd;
+	uint32_t import_length, out_bytesused;
+	int fail_next;
+	int streaming;
+} jm;
+
+static int jm_ioctl(int fd, unsigned long request, void *arg)
+{
+	if (fd != jm.fd)
+		return errno = EBADF, -1;
+	switch (request) {
+	case VIDIOC_S_FMT: {
+		struct v4l2_pix_format *pix = &((struct v4l2_format *)arg)->fmt.pix;
+
+		jm.s_fmt_calls++;
+		if (((struct v4l2_format *)arg)->type == V4L2_BUF_TYPE_VIDEO_CAPTURE) {
+			pix->pixelformat = V4L2_PIX_FMT_JPEG;
+			pix->sizeimage = 4096;
+			return 0;
+		}
+		/* As sg2002-jpeg: width to 16, stride to 16 and at least the
+		 * width, chroma read to the next 16 lines. */
+		pix->pixelformat = V4L2_PIX_FMT_NV12;
+		pix->width = align_up(pix->width, 16);
+		if (pix->bytesperline < pix->width)
+			pix->bytesperline = pix->width;
+		pix->bytesperline = align_up(pix->bytesperline, 16);
+		pix->sizeimage = pix->bytesperline * pix->height +
+				 pix->bytesperline * align_up(pix->height, 16) / 2;
+		jm.width = pix->width;
+		jm.height = pix->height;
+		jm.stride = pix->bytesperline;
+		jm.out_size = pix->sizeimage;
+		return 0;
+	}
+	case VIDIOC_REQBUFS: {
+		struct v4l2_requestbuffers *req = arg;
+
+		if (req->type == V4L2_BUF_TYPE_VIDEO_OUTPUT)
+			jm.out_memory = req->memory;
+		if (req->count > 1)
+			req->count = 1;
+		return 0;
+	}
+	case VIDIOC_QUERYBUF: {
+		struct v4l2_buffer *buf = arg;
+
+		if (buf->type == V4L2_BUF_TYPE_VIDEO_OUTPUT) {
+			buf->m.offset = 0;
+			buf->length = jm.out_size;
+		} else {
+			buf->m.offset = JM_CAP_OFFSET;
+			buf->length = 4096;
+		}
+		return 0;
+	}
+	case VIDIOC_STREAMON:
+		jm.streaming++;
+		return 0;
+	case VIDIOC_STREAMOFF:
+		jm.streaming--;
+		return 0;
+	case VIDIOC_S_EXT_CTRLS: {
+		struct v4l2_ext_controls *list = arg;
+
+		if (list->count != 1 ||
+		    list->controls[0].id != V4L2_CID_JPEG_COMPRESSION_QUALITY)
+			return errno = EINVAL, -1;
+		jm.quality = list->controls[0].value;
+		jm.ctrl_calls++;
+		return 0;
+	}
+	case VIDIOC_QBUF: {
+		struct v4l2_buffer *buf = arg;
+
+		if (buf->type == V4L2_BUF_TYPE_VIDEO_CAPTURE) {
+			jm.cap_queued = 1;
+			return 0;
+		}
+		if (buf->memory != jm.out_memory)
+			return errno = EINVAL, -1;
+		if (buf->memory == V4L2_MEMORY_DMABUF) {
+			if (buf->length && buf->length < jm.out_size)
+				return errno = EINVAL, -1;
+			jm.import_fd = buf->m.fd;
+			jm.import_length = buf->length;
+		}
+		jm.out_bytesused = buf->bytesused;
+		jm.out_queued = 1;
+		return 0;
+	}
+	case VIDIOC_DQBUF: {
+		struct v4l2_buffer *buf = arg;
+
+		if (buf->type == V4L2_BUF_TYPE_VIDEO_CAPTURE) {
+			uint8_t pic[5] = { 0xff, 0xd8, 0, 0, 0xff };
+			uint8_t eoi = 0xd9;
+
+			if (!jm.cap_queued || !jm.out_queued)
+				return errno = EAGAIN, -1;
+			pic[2] = (uint8_t)jm.quality;
+			if (jm.out_memory == V4L2_MEMORY_MMAP) {
+				if (pread(jm.fd, &pic[3], 1, 0) != 1)
+					return errno = EIO, -1;
+			} else {
+				pic[3] = JM_IMPORTED_BYTE;
+			}
+			if (pwrite(jm.fd, pic, 5, JM_CAP_OFFSET) != 5 ||
+			    pwrite(jm.fd, &eoi, 1, JM_CAP_OFFSET + 5) != 1)
+				return errno = EIO, -1;
+			buf->index = 0;
+			buf->bytesused = jm.fail_next ? 0 : 6;
+			buf->flags = jm.fail_next ? V4L2_BUF_FLAG_ERROR : 0;
+			jm.fail_next = 0;
+			jm.cap_queued = 0;
+			jm.out_queued = 0;
+			jm.out_done = 1;
+			return 0;
+		}
+		if (!jm.out_done)
+			return errno = EAGAIN, -1;
+		jm.out_done = 0;
+		buf->index = 0;
+		return 0;
+	}
+	default:
+		return errno = ENOTTY, -1;
+	}
+}
+
+static void test_hwjpeg(void)
+{
+	enum { W = 32, H = 16, STRIDE = 32 };
+	static uint8_t nv12[STRIDE * H * 3 / 2];
+	int (*saved)(int, unsigned long, void *) = kvmv_ioctl_hook;
+	struct kvmv_hwjpeg hw;
+	struct kvmv_nv12 image;
+	const uint8_t *data;
+	size_t size, need;
+	char path[64];
+
+	CHECK(kvmv_hwjpeg_fits(1920, 1080, 1920));
+	CHECK(kvmv_hwjpeg_fits(1280, 720, 1280));
+	CHECK(kvmv_hwjpeg_fits(960, 540, 960));
+	CHECK(!kvmv_hwjpeg_fits(1366, 768, 1376)); /* the header would say 1376 */
+	CHECK(!kvmv_hwjpeg_fits(1920, 1081, 1920));
+	CHECK(!kvmv_hwjpeg_fits(1920, 1080, 1928));
+	/* 1080 lines: four chroma rows past a tight 4:2:0 buffer. */
+	CHECK_EQ(kvmv_hwjpeg_src_size(1920, 1080), 1920 * 1080 + 1920 * 1088 / 2);
+	CHECK_EQ(kvmv_hwjpeg_src_size(1280, 720), 1280 * 720 * 3 / 2);
+
+	memset(&jm, 0, sizeof(jm));
+	jm.fd = memfd_create("jpeg-mock", 0);
+	CHECK(jm.fd >= 0);
+	if (jm.fd < 0)
+		return;
+	CHECK_EQ(ftruncate(jm.fd, JM_SIZE), 0);
+	kvmv_ioctl_hook = jm_ioctl;
+
+	/* Open through /proc so the library gets a descriptor of its own on
+	 * the same memfd; the mock knows it by number. */
+	snprintf(path, sizeof(path), "/proc/self/fd/%d", jm.fd);
+	CHECK_EQ(kvmv_hwjpeg_open(&hw, path), 0);
+	jm.fd = hw.fd;
+
+	memset(nv12, 0x42, STRIDE * H);
+	memset(nv12 + STRIDE * H, 0x80, STRIDE * H / 2);
+	memset(&image, 0, sizeof(image));
+	image.y = nv12;
+	image.uv = nv12 + STRIDE * H;
+	image.width = W;
+	image.height = H;
+	image.stride = STRIDE;
+
+	/* Copy mode: the picture reaches the driver's buffer, quality 0 is
+	 * the default and is set once. */
+	CHECK_EQ(kvmv_hwjpeg_encode(&hw, &image, -1, 0, 0, 80, &data, &size), 0);
+	CHECK_EQ(size, 6);
+	CHECK(data != NULL && data[0] == 0xff && data[1] == 0xd8 && data[5] == 0xd9);
+	CHECK(data != NULL && data[2] == 80 && data[3] == 0x42);
+	CHECK_EQ(jm.out_memory, V4L2_MEMORY_MMAP);
+	CHECK_EQ(jm.out_bytesused, jm.out_size);
+	CHECK_EQ(jm.ctrl_calls, 1);
+	CHECK_EQ(jm.streaming, 2);
+	CHECK_EQ(kvmv_hwjpeg_encode(&hw, &image, -1, 0, 80, 80, &data, &size), 0);
+	CHECK_EQ(jm.ctrl_calls, 1);
+	CHECK_EQ(jm.s_fmt_calls, 2); /* configured once */
+
+	/* Import mode reconfigures, queues the dma-buf with its size, and
+	 * clamps the quality. */
+	need = kvmv_hwjpeg_src_size(STRIDE, H);
+	CHECK_EQ(kvmv_hwjpeg_encode(&hw, &image, 77, need, 150, 80, &data, &size), 0);
+	CHECK_EQ(jm.out_memory, V4L2_MEMORY_DMABUF);
+	CHECK_EQ(jm.import_fd, 77);
+	CHECK_EQ(jm.import_length, need);
+	CHECK(data != NULL && data[2] == 100 && data[3] == JM_IMPORTED_BYTE);
+	CHECK_EQ(jm.s_fmt_calls, 4);
+	CHECK_EQ(jm.streaming, 2);
+
+	/* A source buffer too small for the unit's reads is refused. */
+	CHECK_EQ(kvmv_hwjpeg_encode(&hw, &image, 77, need - 1, 80, 80, &data, &size), -1);
+	CHECK(data == NULL);
+
+	/* A picture the driver marks bad is an error, and the next one works. */
+	jm.fail_next = 1;
+	CHECK_EQ(kvmv_hwjpeg_encode(&hw, &image, 77, need, 80, 80, &data, &size), -1);
+	CHECK(data == NULL && size == 0);
+	CHECK_EQ(kvmv_hwjpeg_encode(&hw, &image, 77, need, 80, 80, &data, &size), 0);
+
+	/* A width the unit would round is not taken. */
+	image.width = W - 2;
+	CHECK_EQ(kvmv_hwjpeg_encode(&hw, &image, 77, need, 80, 80, &data, &size), -1);
+
+	kvmv_hwjpeg_close(&hw);
+	CHECK_EQ(hw.fd, -1);
+	CHECK_EQ(jm.streaming, 0);
+	kvmv_ioctl_hook = saved;
+}
+
 int main(void)
 {
 	test_split();
@@ -894,6 +1138,7 @@ int main(void)
 	test_encoder_fps();
 	test_copy_from_device();
 	test_jpeg();
+	test_hwjpeg();
 	test_slots();
 	test_negotiate();
 
