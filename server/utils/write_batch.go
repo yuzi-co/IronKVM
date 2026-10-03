@@ -19,9 +19,12 @@ const batchFlushSize = 64 << 10
 //
 // crypto/tls hands every record to the socket on its own, and a record holds
 // at most 16 kB, so a 300 kB MJPEG picture went out as about twenty writes.
-// On the C906 those cost the kernel three times what the same bytes cost in
-// one write: measured at 1080p, gathering them took MJPEG over HTTPS from 12.5
-// to 18.7 fps, with system time down from 34% to 15% of the core.
+// On the C906 with the 5.10 kernel those cost the kernel about twice the
+// system time of the same bytes in large writes: measured at 1080p, gathering
+// them took MJPEG over HTTPS from 17.4 to 21.5 fps, with system time down from
+// 30% to 16% of the core. On the 7.2 kernel small writes cost less and the
+// gain is smaller (17.2 to 18.7 fps), as the copy into the batch costs about
+// what it saves.
 //
 // Outside a batch every write passes straight through, so the handshake,
 // ordinary responses and websockets behave exactly as before. Only a handler

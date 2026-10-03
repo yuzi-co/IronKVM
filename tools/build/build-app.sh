@@ -26,14 +26,18 @@ export CGO_CFLAGS="-mcpu=c906fdv -march=rv64imafdcv0p7xthead -mcmodel=medany -ma
 echo "== go mod download"
 go mod download
 
+# The riscv64 ChaCha20 and Poly1305 for crypto/tls. See
+# server/goroot-overlay/overlay.sh; NANOKVM_GOROOT_OVERLAY=off builds without them.
+overlay=$(sh goroot-overlay/overlay.sh)
+
 echo "== go build (stamp: ${BUILD_STAMP:-none})"
 # -s -w drop the symbol table and the DWARF sections. See the note beside
 # GO_LDFLAGS in the repository Makefile. Both branches strip, because an
 # unstamped build is deployed the same way a stamped one is.
 if [ -n "$BUILD_STAMP" ]; then
-    go build -trimpath -ldflags "-s -w -X NanoKVM-Server/common/version.Build=$BUILD_STAMP" -o "$BINARY"
+    go build -overlay "$overlay" -trimpath -ldflags "-s -w -X NanoKVM-Server/common/version.Build=$BUILD_STAMP" -o "$BINARY"
 else
-    go build -trimpath -ldflags "-s -w" -o "$BINARY"
+    go build -overlay "$overlay" -trimpath -ldflags "-s -w" -o "$BINARY"
 fi
 
 # libkvm.so records four OpenCV libraries and all four ship in dl_lib, so the

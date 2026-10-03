@@ -1,0 +1,11 @@
+// Copyright 2018 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+// NanoKVM: the toolchain's file with riscv64 removed, see sum_asm.go.
+
+//go:build (!amd64 && !loong64 && !ppc64le && !ppc64 && !s390x && !riscv64) || !gc || purego
+
+package poly1305
+
+type mac struct{ macGeneric }
