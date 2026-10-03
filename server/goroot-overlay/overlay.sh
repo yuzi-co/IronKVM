@@ -50,8 +50,16 @@
 #
 # What it was checked with, on the device (C906, both kernels): the tests
 # beside the files, x/crypto v0.39.0's own chacha20, chacha20poly1305 and
-# poly1305 suites with these files dropped in, and crypto/tls -test.short
-# built with the overlay.
+# poly1305 suites with these files dropped in, crypto/tls -test.short
+# built with the overlay, and Wycheproof's ChaCha20-Poly1305 (325 tests) and
+# XChaCha20-Poly1305 (315 tests) vectors on the C906 (vendor 5.10 kernel), all
+# passing, with chacha_riscv64_active_test.go confirming that the assembly
+# was the path in use. The Wycheproof test reads the vector files named by
+# WP_CHACHA and WP_XCHACHA (testvectors_v1/ in github.com/C2SP/wycheproof) and
+# skips when they are unset:
+#
+#   GOARCH=riscv64 CGO_ENABLED=0 go test -c -overlay "$o" #       -o aead.test vendor/golang.org/x/crypto/chacha20poly1305
+#   WP_CHACHA=chacha20_poly1305_test.json #       WP_XCHACHA=xchacha20_poly1305_test.json ./aead.test -test.v
 set -e
 
 if [ "${NANOKVM_GOROOT_OVERLAY:-on}" = off ]; then
