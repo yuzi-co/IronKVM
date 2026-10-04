@@ -612,6 +612,22 @@ static void test_clamps_and_rate(void)
 		CHECK_EQ(r.min_qp, KVMV_H264_MIN_QP);
 		kvmv_h264_qp_range("", &r);
 		CHECK_EQ(r.max_qp, KVMV_H264_MAX_QP);
+
+		/*
+		 * H.265 goes lower than H.264: at QP 18 the WAVE420L stops
+		 * short of the asked bitrate on screen content (trial 20).
+		 */
+		kvmv_h265_qp_range(NULL, &r);
+		CHECK_EQ(r.min_qp, 12);
+		CHECK_EQ(r.max_qp, 42);
+		kvmv_h265_qp_range("18:42", &r);
+		CHECK_EQ(r.min_qp, 18);
+		kvmv_h265_qp_range("x", &r);
+		CHECK_EQ(r.min_qp, 12);
+
+		/* And a longer rate-control buffer than H.264's (trial 20). */
+		CHECK_EQ(KVMV_H265_VBV_DELAY_MS, 2000);
+		CHECK_EQ(KVMV_H264_VBV_DELAY_MS, 1000);
 	}
 
 	/* 30 frames a second of 12500 bytes for a second is 3000 kbit/s. */
