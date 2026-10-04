@@ -99,6 +99,10 @@ struct kvmv_stage_times {
 	uint64_t scale_us; /* VPSS, queue to dequeue */
 	uint64_t encode_us; /* Coda, queue to dequeue */
 	uint64_t copy_us; /* bitstream out of the encoder's buffer (the caller adds it) */
+	uint64_t age_us; /* capture timestamp to the encoded frame, summed */
+	uint64_t age_max_us; /* the largest of those */
+	uint64_t pick_age_us; /* capture timestamp to the frame being taken, summed */
+	uint64_t seq_gap; /* capture sequence numbers skipped between taken frames, summed */
 	unsigned int frames;
 };
 
@@ -143,6 +147,12 @@ struct kvmv_pipe {
 	int running;
 	struct kvmv_applied applied;
 	struct kvmv_stage_times times;
+	uint64_t cap_ts_us; /* CLOCK_MONOTONIC capture time of the frame being scaled */
+	uint32_t cap_seq; /* its sequence number */
+	/* kvmv_pipe_start's steps, microseconds from its start: open, negotiate,
+	 * middle buffers, bitstream buffers, priming encode, capture buffers,
+	 * capture STREAMON, scaler STREAMON. For KVMV_DEBUG. */
+	uint32_t start_us[8];
 	char error[192];
 };
 

@@ -463,7 +463,7 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 	}
 	cfg.min_qp = qp.min_qp;
 	cfg.max_qp = qp.max_qp;
-	cfg.capture_buffers = env_uint("KVMV_CAPTURE_BUFFERS", 2);
+	cfg.capture_buffers = env_uint("KVMV_CAPTURE_BUFFERS", 3);
 	cfg.mid_buffers = env_uint("KVMV_MID_BUFFERS", 2);
 	cfg.bitstream_buffers = env_uint("KVMV_BITSTREAM_BUFFERS", 3);
 
@@ -484,6 +484,11 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 		return start_failed(IMG_VENC_ERROR, 1000);
 	}
 
+	DBG("pipeline start, ms: open %.1f, formats %.1f, middle buffers %.1f, bitstream buffers %.1f, priming %.1f, capture buffers %.1f, capture on %.1f, scaler on %.1f",
+	    pipe_state.start_us[0] / 1000.0, pipe_state.start_us[1] / 1000.0,
+	    pipe_state.start_us[2] / 1000.0, pipe_state.start_us[3] / 1000.0,
+	    pipe_state.start_us[4] / 1000.0, pipe_state.start_us[5] / 1000.0,
+	    pipe_state.start_us[6] / 1000.0, pipe_state.start_us[7] / 1000.0);
 	pipe_width = width;
 	pipe_height = height;
 	pipe_bitrate = bitrate_bps;
@@ -598,11 +603,15 @@ static void watch_rate(size_t bytes)
 		const struct kvmv_stage_times *t = &pipe_state.times;
 		unsigned int n = t->frames;
 
-		DBG("per frame: capture wait %llu us, scale %llu us, encode %llu us, copy %llu us",
+		DBG("per frame: capture wait %llu us, scale %llu us, encode %llu us, copy %llu us, capture age at encoded %llu us (max %llu), at pickup %llu us, capture frames per read x100 %llu",
 		    (unsigned long long)(t->capture_us / n),
 		    (unsigned long long)(t->scale_us / n),
 		    (unsigned long long)(t->encode_us / n),
-		    (unsigned long long)(t->copy_us / n));
+		    (unsigned long long)(t->copy_us / n),
+		    (unsigned long long)(t->age_us / n),
+		    (unsigned long long)t->age_max_us,
+		    (unsigned long long)(t->pick_age_us / n),
+		    (unsigned long long)(t->seq_gap * 100 / n));
 		memset(&pipe_state.times, 0, sizeof(pipe_state.times));
 	}
 	if (!overshoot_warned && target && kbps > target * 2) {
@@ -661,6 +670,10 @@ static int pipe_failure(enum kvmv_pipe_status status)
 	}
 }
 
+/* When the pipeline build for a video read began, until its first picture
+ * (KVMV_DEBUG). */
+static uint64_t cold_start_us;
+
 static int read_video_locked(unsigned int width, unsigned int height,
 			     uint32_t bitrate_bps, enum kvmv_codec codec,
 			     uint8_t **data, uint32_t *size)
@@ -686,6 +699,7 @@ static int read_video_locked(unsigned int width, unsigned int height,
 	if (pipe_state.running && (width != pipe_width || height != pipe_height))
 		pipe_down("output size changed");
 	if (!pipe_state.running) {
+		cold_start_us = now_us();
 		result = pipe_up(width, height, bitrate_bps);
 		if (result != 0)
 			return result;
@@ -769,6 +783,11 @@ static int read_video_locked(unsigned int width, unsigned int height,
 		need_key = 0;
 		set_source_locked(1);
 		watch_rate(slot->size);
+		if (cold_start_us) {
+			DBG("first picture %llu us after the pipeline build began",
+			    (unsigned long long)(now_us() - cold_start_us));
+			cold_start_us = 0;
+		}
 
 		*data = slot->data;
 		*size = slot->size;

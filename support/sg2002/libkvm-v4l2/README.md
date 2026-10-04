@@ -184,9 +184,9 @@ has read for 10 s.
 
 | Variable | Default | |
 |----------|---------|---|
-| `KVMV_DEBUG` | off | Debug logging to stderr, including the measured output rate, the rate the encoder was told and the per-stage time of a read every 10 s. |
+| `KVMV_DEBUG` | off | Debug logging to stderr, including the measured output rate, the rate the encoder was told, the per-stage time of a read every 10 s with how old the captured frame was when it was taken and when it was encoded, and the time of each step of a pipeline build and to its first picture. |
 | `KVMV_CAPTURE_DEV`, `KVMV_SCALER_DEV`, `KVMV_ENCODER_DEV`, `KVMV_SUBDEV` | discovered | Override a node. |
-| `KVMV_CAPTURE_BUFFERS` | 2 | Capture queue depth (4 MB each at 1080p UYVY). |
+| `KVMV_CAPTURE_BUFFERS` | 3 | Capture queue depth (4 MB each at 1080p UYVY). Kernels before ironkvm-dist patch 0916 give 2, which loses the newest frame for a 30 fps reader of a 60 fps source. |
 | `KVMV_MID_BUFFERS` | 2 | NV12 buffers between scaler and encoder. |
 | `KVMV_BITSTREAM_BUFFERS` | 3 | Encoder output buffers. |
 | `KVMV_IDLE_MS` | 10000 | Tear down an unread pipeline after this long; 0 never does. |

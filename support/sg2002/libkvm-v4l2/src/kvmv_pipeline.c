@@ -818,10 +818,14 @@ static void subscribe_source_change(int fd)
 	xioctl(fd, VIDIOC_SUBSCRIBE_EVENT, &sub);
 }
 
+static uint64_t now_us(void);
+#define START_STAMP(i) (p->start_us[i] = (uint32_t)(now_us() - start0))
+
 int kvmv_pipe_start(struct kvmv_pipe *p, const struct kvmv_devices *d,
 		    const struct kvmv_pipe_cfg *cfg)
 {
 	const char *encoder;
+	uint64_t start0 = now_us();
 
 	kvmv_pipe_init(p);
 	p->codec = cfg->codec;
@@ -853,17 +857,23 @@ int kvmv_pipe_start(struct kvmv_pipe *p, const struct kvmv_devices *d,
 		goto out;
 	}
 	subscribe_source_change(p->cap_fd);
+	START_STAMP(0);
 
 	if (kvmv_pipe_negotiate(p, cfg))
 		goto out;
+	START_STAMP(1);
 	if (alloc_mid(p, cfg->mid_buffers ? cfg->mid_buffers : 2))
 		goto out;
+	START_STAMP(2);
 	if (alloc_bitstream(p, cfg->bitstream_buffers ? cfg->bitstream_buffers : 3))
 		goto out;
+	START_STAMP(3);
 	if (prime_encoder(p))
 		goto out;
+	START_STAMP(4);
 	if (alloc_capture(p, cfg->capture_buffers ? cfg->capture_buffers : 2))
 		goto out;
+	START_STAMP(5);
 	/* Capture first: while the CSI driver streams, the VIP fabric clocks
 	 * are on and VPSS register access is safe. */
 	if (stream(p->cap_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, 1)) {
@@ -872,6 +882,7 @@ int kvmv_pipe_start(struct kvmv_pipe *p, const struct kvmv_devices *d,
 		goto out;
 	}
 	p->cap_on = 1;
+	START_STAMP(6);
 	if (request(p->vpss_fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, V4L2_MEMORY_DMABUF,
 		    p->cap_count) < (int)p->cap_count) {
 		fail(p, "scaler OUTPUT REQBUFS");
@@ -887,6 +898,7 @@ int kvmv_pipe_start(struct kvmv_pipe *p, const struct kvmv_devices *d,
 		goto out;
 	}
 	p->vpss_cap_on = 1;
+	START_STAMP(7);
 	p->running = 1;
 	return 0;
 
@@ -997,6 +1009,10 @@ static enum kvmv_pipe_status newest_capture(struct kvmv_pipe *p,
 				 V4L2_MEMORY_MMAP, (unsigned int)held, -1, 0))
 				return fail(p, "capture requeue"), KVMV_PIPE_ERROR;
 			held = (int)buf.index;
+			p->cap_ts_us = (uint64_t)buf.timestamp.tv_sec * 1000000U +
+				       (uint64_t)buf.timestamp.tv_usec;
+			p->times.seq_gap += buf.sequence - p->cap_seq;
+			p->cap_seq = buf.sequence;
 			continue;
 		}
 		if (errno != EAGAIN) {
@@ -1061,6 +1077,8 @@ enum kvmv_pipe_status kvmv_pipe_scale(struct kvmv_pipe *p,
 		return status;
 	t1 = now_us();
 	p->times.capture_us += t1 - t0;
+	if (p->cap_ts_us && t1 > p->cap_ts_us)
+		p->times.pick_age_us += t1 - p->cap_ts_us;
 
 	/* Scale: the capture buffer in, a middle buffer out. */
 	mi = p->next_mid;
@@ -1122,7 +1140,15 @@ enum kvmv_pipe_status kvmv_pipe_encode_mid(struct kvmv_pipe *p,
 		return KVMV_PIPE_ERROR;
 	}
 	out->data = p->bs[out->index].addr;
-	p->times.encode_us += now_us() - t0;
+	{
+		uint64_t t1 = now_us();
+		uint64_t age = p->cap_ts_us && t1 > p->cap_ts_us ? t1 - p->cap_ts_us : 0;
+
+		p->times.encode_us += t1 - t0;
+		p->times.age_us += age;
+		if (age > p->times.age_max_us)
+			p->times.age_max_us = age;
+	}
 	p->times.frames++;
 	return KVMV_PIPE_OK;
 }
