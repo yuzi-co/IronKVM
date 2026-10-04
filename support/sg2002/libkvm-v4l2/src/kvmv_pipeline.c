@@ -787,9 +787,9 @@ static int alloc_capture(struct kvmv_pipe *p, unsigned int wanted)
  * Stream the encoder on (see enum kvmv_prime). With a priming picture, one
  * black picture goes in before any live frame, as the bridge does: on the
  * Coda980 that is what starts the sequence (its OUTPUT queue waits for a
- * picture), which claims the encoder's working memory before the capture
- * buffers take theirs. Its output is thrown away; the caller asks for a
- * keyframe for the first live frame.
+ * picture), which claims the encoder's working memory. The capture buffers
+ * are allocated before this (kvmv_pipe_start). Its output is thrown away;
+ * the caller asks for a keyframe for the first live frame.
  */
 static uint64_t now_us(void);
 
@@ -1071,22 +1071,34 @@ int kvmv_pipe_start(struct kvmv_pipe *p, const struct kvmv_devices *d,
 	if (alloc_bitstream(p, cfg->bitstream_buffers ? cfg->bitstream_buffers : 3))
 		goto out;
 	START_STAMP(4);
-	if (prime_encoder(p, cfg->prime, start0))
-		goto out;
-	START_STAMP(6);
-	if (p->early) {
-		/* Adopted above. */
-	} else if (parked.bufs && parked.sizeimage == p->cap_fmt.sizeimage &&
-		   parked.count == (cfg->capture_buffers ? cfg->capture_buffers : 2)) {
-		if (adopt_capture(p))
-			goto out;
-	} else {
-		/* Nothing parked that fits: the node was opened afresh, or
-		 * holds buffers of another size, which REQBUFS replaces. The
-		 * encoder has taken its working memory by now. */
+	/*
+	 * Nothing parked that fits: the node was opened afresh, or holds
+	 * buffers of another size, which REQBUFS replaces. Allocate before the
+	 * encoder streams on. The capture buffers and the encoders' reference
+	 * frames all come from video_pool, a 32 MiB device pool that hands out
+	 * each 4 MB buffer as an aligned 4 MiB block. The WAVE420L takes its
+	 * reference frames at STREAMON; allocated after them, on a first
+	 * build with H.265, the capture got fewer buffers than it asked for
+	 * (trial 25). Parked, that short set never matched the count again, so
+	 * every later build freed it and came up short once more. This
+	 * order is the one every later build has anyway: the parked capture
+	 * buffers stay while the encoders come and go.
+	 */
+	if (!p->early &&
+	    !(parked.bufs && parked.sizeimage == p->cap_fmt.sizeimage &&
+	      parked.count == (cfg->capture_buffers ? cfg->capture_buffers : 2))) {
 		free_bufs(&parked.bufs, &parked.count);
 		if (alloc_capture(p, cfg->capture_buffers ? cfg->capture_buffers : 2))
 			goto out;
+		p->cap_allocated = 1;
+	}
+	if (prime_encoder(p, cfg->prime, start0))
+		goto out;
+	START_STAMP(6);
+	if (p->early || p->cap != NULL) {
+		/* Adopted or allocated above. */
+	} else if (adopt_capture(p)) {
+		goto out;
 	}
 	START_STAMP(7);
 	if (!p->cap_on) {

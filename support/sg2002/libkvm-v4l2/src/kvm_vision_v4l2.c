@@ -574,7 +574,7 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 		return start_failed(IMG_VENC_ERROR, 1000);
 	}
 
-	DBG("pipeline start, ms: receiver %.1f%s, then open %.1f, early capture on %.1f, formats %.1f, middle buffers %.1f, bitstream buffers %.1f, encoder on %.1f, priming %.1f (mode %d), capture buffers %.1f, capture on %.1f, scaler on %.1f%s%s",
+	DBG("pipeline start, ms: receiver %.1f%s, then open %.1f, early capture on %.1f, formats %.1f, middle buffers %.1f, bitstream buffers %.1f, encoder on %.1f, priming %.1f (mode %d), capture buffers %.1f, capture on %.1f, scaler on %.1f%s%s%s",
 	    query_us / 1000.0, receiver_cached ? " (cached)" : "",
 	    pipe_state.start_us[0] / 1000.0, pipe_state.start_us[1] / 1000.0,
 	    pipe_state.start_us[2] / 1000.0, pipe_state.start_us[3] / 1000.0,
@@ -583,7 +583,12 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 	    pipe_state.start_us[7] / 1000.0,
 	    pipe_state.start_us[8] / 1000.0, pipe_state.start_us[9] / 1000.0,
 	    pipe_state.early ? " (capture started first)" : "",
-	    pipe_state.enc_reused ? " (encoder kept)" : "");
+	    pipe_state.enc_reused ? " (encoder kept)" : "",
+	    pipe_state.cap_allocated ? " (capture buffers allocated before the encoder on)" : "");
+	if (pipe_state.cap_allocated &&
+	    pipe_state.cap_count < (cfg.capture_buffers ? cfg.capture_buffers : 2))
+		log_msg("capture got %u of %u buffers: video_pool is short",
+			pipe_state.cap_count, cfg.capture_buffers ? cfg.capture_buffers : 2);
 	pipe_width = width;
 	pipe_height = height;
 	pipe_bitrate = bitrate_bps;
