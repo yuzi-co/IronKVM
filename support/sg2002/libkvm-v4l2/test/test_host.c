@@ -798,6 +798,7 @@ struct mock {
 	int coda_rejects_gop;
 	int coda_bitrate_divisor; /* the encoder keeps bitrate / this */
 	int coda_lacks_qp; /* a kernel without patch 0910 */
+	int coda_busy; /* buffers allocated: S_FMT and crop refused */
 	int32_t min_qp, max_qp, vbv_delay;
 	struct v4l2_pix_format vpss_out, vpss_cap, coda_out, coda_cap;
 	struct v4l2_rect vpss_crop, coda_crop;
@@ -853,6 +854,9 @@ static int mock_fmt(int fd, struct v4l2_format *f, int set)
 	}
 	if (fd == FD_CODA) {
 		struct v4l2_pix_format *slot = output ? &mock.coda_out : &mock.coda_cap;
+
+		if (set && mock.coda_busy)
+			return errno = EBUSY, -1;
 
 		if (set) {
 			mock.s_fmt_calls++;
@@ -1139,6 +1143,62 @@ static void test_negotiate(void)
 	mock.capture_fourcc = V4L2_PIX_FMT_SRGGB12P;
 	CHECK(negotiate(&p, 0, 0, 4000000, 30, 30) != 0);
 	CHECK_EQ(mock.s_fmt_calls, 0);
+
+	/*
+	 * A parked encoder holds its buffers, so its queues refuse S_FMT: the
+	 * formats it was parked with stand, the rate control is set again, and
+	 * the new scaler context is set up against them.
+	 */
+	mock_reset();
+	CHECK_EQ(negotiate(&p, 0, 0, 4000000, 30, 30), 0);
+	{
+		struct v4l2_pix_format out = p.enc_out_fmt, cap = p.enc_cap_fmt;
+		struct kvmv_pipe_cfg cfg;
+		unsigned int calls;
+
+		mock.coda_busy = 1;
+		CHECK(negotiate(&p, 0, 0, 4000000, 30, 30) != 0);
+		calls = mock.s_fmt_calls;
+		memset(&cfg, 0, sizeof(cfg));
+		cfg.bitrate_bps = 2000000;
+		cfg.gop = 60;
+		cfg.fps = 25;
+		kvmv_pipe_init(&p);
+		p.cap_fd = FD_CAPTURE;
+		p.vpss_fd = FD_VPSS;
+		p.enc_fd = FD_CODA;
+		p.enc_reused = 1;
+		p.enc_out_fmt = out;
+		p.enc_cap_fmt = cap;
+		CHECK_EQ(kvmv_pipe_negotiate(&p, &cfg), 0);
+		CHECK_EQ(mock.s_fmt_calls, calls + 2); /* the scaler's two */
+		CHECK_EQ(p.enc_out_fmt.height, 1088);
+		CHECK_EQ(p.vpss_out_fmt.height, 1088);
+		CHECK_EQ(p.applied.bitrate_bps, 2000000);
+		CHECK_EQ(p.applied.gop, 60);
+		CHECK_EQ(mock.fps, 25);
+	}
+}
+
+static void test_start_policy(void)
+{
+	/* The default per encoder, and KVMV_PRIME over it. */
+	CHECK_EQ(kvmv_prime_mode(NULL, 0), KVMV_PRIME_ASYNC);
+	CHECK_EQ(kvmv_prime_mode("", 0), KVMV_PRIME_ASYNC);
+	CHECK_EQ(kvmv_prime_mode(NULL, 1), KVMV_PRIME_NONE);
+	CHECK_EQ(kvmv_prime_mode("1", 1), KVMV_PRIME_WAIT);
+	CHECK_EQ(kvmv_prime_mode("0", 0), KVMV_PRIME_NONE);
+	CHECK_EQ(kvmv_prime_mode("2", 1), KVMV_PRIME_ASYNC);
+	CHECK_EQ(kvmv_prime_mode("3", 0), KVMV_PRIME_ASYNC);
+	CHECK_EQ(kvmv_prime_mode("12", 1), KVMV_PRIME_NONE);
+
+	/* A receiver answer stands in for a query while it is young enough. */
+	CHECK(kvmv_receiver_fresh(10000, 10500, 1500));
+	CHECK(kvmv_receiver_fresh(10000, 11500, 1500));
+	CHECK(!kvmv_receiver_fresh(10000, 11501, 1500));
+	CHECK(!kvmv_receiver_fresh(10000, 10500, 0));
+	CHECK(!kvmv_receiver_fresh(0, 500, 1500));
+	CHECK(!kvmv_receiver_fresh(10000, 9000, 1500));
 }
 
 /*
@@ -1403,6 +1463,7 @@ int main(void)
 	test_hwjpeg();
 	test_slots();
 	test_negotiate();
+	test_start_policy();
 
 	if (failures) {
 		fprintf(stderr, "%d of %d checks failed\n", failures, checks);

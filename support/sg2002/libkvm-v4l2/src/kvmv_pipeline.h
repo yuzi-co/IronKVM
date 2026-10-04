@@ -87,6 +87,11 @@ struct kvmv_pipe_cfg {
 	 * so the receiver and the CSI link come up while the encoder is set
 	 * up, instead of after it. */
 	int early_capture;
+	/* Keep the encoder node, its bitstream buffers and the middle buffers
+	 * in kvmv_pipe_park, for the next start of the same codec and size. */
+	int park_encoder;
+	/* How the encoder is started: see enum kvmv_prime. */
+	enum kvmv_prime prime;
 };
 
 /* What the encoder reports back. -1 where it would not say. */
@@ -140,6 +145,7 @@ struct kvmv_pipe {
 	enum kvmv_codec codec;
 	int cap_fd, vpss_fd, enc_fd, heap_fd;
 	char scaler_path[KVMV_PATH_MAX];
+	char enc_path[KVMV_PATH_MAX];
 	struct kvmv_snap snap;
 	struct v4l2_pix_format cap_fmt;
 	struct v4l2_pix_format vpss_in_fmt, vpss_out_fmt;
@@ -164,6 +170,12 @@ struct kvmv_pipe {
 	 * CLOCK_MONOTONIC time are given back, not taken. 0 once a frame was. */
 	uint64_t fresh_after_us;
 	int early; /* this start began with the capture (cfg.early_capture) */
+	int park_encoder; /* cfg.park_encoder */
+	int enc_reused; /* the encoder and its buffers came from kvmv_pipe_park */
+	/* KVMV_PRIME_ASYNC: the priming picture's output is still to be
+	 * collected, and a keyframe asked for meanwhile is asked for after it. */
+	int prime_pending;
+	int key_after_prime;
 	/* kvmv_pipe_start's steps, microseconds from its start: open, early
 	 * capture STREAMON, negotiate, middle buffers, bitstream buffers,
 	 * encoder STREAMON, priming encode, capture buffers, capture STREAMON,
@@ -211,7 +223,11 @@ void kvmv_pipe_stop(struct kvmv_pipe *pipe);
  * As kvmv_pipe_stop, but keep the capture node open with its buffers, so the
  * next kvmv_pipe_start takes them instead of allocating and clearing new ones
  * (about 50 ms for three 1080p frames). The capture is streamed off, so its
- * clocks and DMA stop. kvmv_pipe_unpark releases them.
+ * clocks and DMA stop. With cfg.park_encoder the encoder node is kept too,
+ * streamed off (no sequence, no codec SRAM, no reference frames), with its
+ * bitstream buffers and the middle buffers; the next start of the same codec
+ * at the same size takes them instead of allocating and clearing new ones.
+ * kvmv_pipe_unpark releases all of it.
  */
 void kvmv_pipe_park(struct kvmv_pipe *pipe);
 void kvmv_pipe_unpark(void);

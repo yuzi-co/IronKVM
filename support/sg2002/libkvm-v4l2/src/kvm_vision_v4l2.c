@@ -69,6 +69,9 @@ void set_capture_fps(uint8_t _fps);
 #define KVMV_KEY_ATTEMPTS 4
 #define KVMV_KEY_DROP_LIMIT 60 /* delta frames dropped waiting for an IDR */
 #define KVMV_DEFAULT_IDLE_MS 10000U
+/* How old a receiver answer from the monitor thread a build may use. It asks
+ * every second while no pipeline runs. */
+#define KVMV_RECEIVER_CACHE_MS 1500U
 #define KVMV_RATE_WINDOW_MS 10000U
 #define KVMV_FPS_WINDOW_MS 3000U
 /* Room in front of a copied access unit for the parameter sets a keyframe
@@ -302,6 +305,9 @@ static void set_capture_enabled(int enabled)
 /* ---- pipeline lifecycle (pipe_lock held) --------------------------- */
 
 static void request_key(void);
+static unsigned int capture_width_known, capture_height_known;
+static void receiver_remember(enum kvmv_signal signal,
+			      const struct v4l2_dv_timings *timings);
 
 /*
  * Tear the pipeline down. park keeps the capture node and its buffers for
@@ -311,8 +317,13 @@ static void request_key(void);
  */
 static void pipe_down_keep(const char *why, int park)
 {
-	if (!park)
+	if (!park) {
 		kvmv_pipe_unpark();
+		/* The source may have changed: ask the nodes again. */
+		capture_width_known = 0;
+		capture_height_known = 0;
+		receiver_remember(KVMV_SIGNAL_NONE, NULL);
+	}
 	if (!pipe_state.running && pipe_state.cap_fd < 0 && pipe_state.enc_fd < 0)
 		return;
 	DBG("pipeline down: %s%s", why, park ? " (capture buffers kept)" : "");
@@ -370,14 +381,19 @@ static int query_receiver(unsigned int need_width, unsigned int need_height)
 	return kvmv_signal_result(signal);
 }
 
-/* The capture node's fixed frame size, to check the source against. */
+/* The capture node's fixed frame size, to check the source against. Asked
+ * once (capture_width_known, capture_height_known), and again after a
+ * pipe_down that does not park (source changes). */
 static void capture_frame_size(unsigned int *width, unsigned int *height)
 {
 	struct v4l2_format format;
-	int fd = open(devices.capture, O_RDWR | O_NONBLOCK | O_CLOEXEC);
+	int fd;
 
-	*width = 0;
-	*height = 0;
+	*width = capture_width_known;
+	*height = capture_height_known;
+	if (*width && *height)
+		return;
+	fd = open(devices.capture, O_RDWR | O_NONBLOCK | O_CLOEXEC);
 	if (fd < 0)
 		return;
 	memset(&format, 0, sizeof(format));
@@ -385,8 +401,51 @@ static void capture_frame_size(unsigned int *width, unsigned int *height)
 	if (ioctl(fd, VIDIOC_G_FMT, &format) == 0) {
 		*width = format.fmt.pix.width;
 		*height = format.fmt.pix.height;
+		capture_width_known = *width;
+		capture_height_known = *height;
 	}
 	close(fd);
+}
+
+/*
+ * The monitor thread's last answer from the receiver, taken while no pipeline
+ * ran: a source in a mode with a frame size, or receiver_seen_ms 0. A build
+ * soon after uses it instead of asking again (KVMV_RECEIVER_CACHE_MS).
+ */
+static pthread_mutex_t receiver_lock = PTHREAD_MUTEX_INITIALIZER;
+static struct v4l2_dv_timings receiver_timings;
+static uint64_t receiver_seen_ms;
+
+static void receiver_remember(enum kvmv_signal signal,
+			      const struct v4l2_dv_timings *timings)
+{
+	pthread_mutex_lock(&receiver_lock);
+	if (signal == KVMV_SIGNAL_OK) {
+		receiver_timings = *timings;
+		receiver_seen_ms = now_ms();
+	} else {
+		receiver_seen_ms = 0;
+	}
+	pthread_mutex_unlock(&receiver_lock);
+}
+
+/* 1 when the monitor saw, recently enough, a source the capture takes. */
+static int receiver_recent(unsigned int need_width, unsigned int need_height)
+{
+	unsigned int max_age = env_uint("KVMV_RECEIVER_CACHE_MS", KVMV_RECEIVER_CACHE_MS);
+	struct v4l2_dv_timings timings;
+	int fresh;
+
+	pthread_mutex_lock(&receiver_lock);
+	fresh = kvmv_receiver_fresh(receiver_seen_ms, now_ms(), max_age);
+	timings = receiver_timings;
+	pthread_mutex_unlock(&receiver_lock);
+	if (!fresh || kvmv_classify_timings(0, 0, &timings, need_width,
+					    need_height) != KVMV_SIGNAL_OK)
+		return 0;
+	set_source_locked(1);
+	publish_resolution(timings.bt.width, timings.bt.height);
+	return 1;
 }
 
 static void report_applied(uint32_t bitrate_bps, int gop, int fps)
@@ -449,6 +508,7 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 	enum kvmv_codec codec = pipe_codec;
 	int hevc = codec == KVMV_CODEC_KIND_HEVC;
 	uint64_t query_us;
+	int receiver_cached;
 	int result;
 
 	if (next_start_ms && now_ms() < next_start_ms)
@@ -465,9 +525,12 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 
 	query_us = now_us();
 	capture_frame_size(&need_width, &need_height);
-	result = query_receiver(need_width, need_height);
-	if (result != 0)
-		return start_failed(result, 500);
+	receiver_cached = receiver_recent(need_width, need_height);
+	if (!receiver_cached) {
+		result = query_receiver(need_width, need_height);
+		if (result != 0)
+			return start_failed(result, 500);
+	}
 	query_us = now_us() - query_us;
 
 	memset(&cfg, 0, sizeof(cfg));
@@ -491,6 +554,8 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 	cfg.mid_buffers = env_uint("KVMV_MID_BUFFERS", 2);
 	cfg.bitstream_buffers = env_uint("KVMV_BITSTREAM_BUFFERS", 3);
 	cfg.early_capture = (int)env_uint("KVMV_EARLY_CAPTURE", 1);
+	cfg.park_encoder = (int)env_uint("KVMV_PARK_ENCODER", 1);
+	cfg.prime = kvmv_prime_mode(getenv("KVMV_PRIME"), hevc);
 
 	if (kvmv_pipe_start(&pipe_state, &devices, &cfg)) {
 		int err = errno;
@@ -509,14 +574,16 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 		return start_failed(IMG_VENC_ERROR, 1000);
 	}
 
-	DBG("pipeline start, ms: receiver %.1f, then open %.1f, early capture on %.1f, formats %.1f, middle buffers %.1f, bitstream buffers %.1f, encoder on %.1f, priming %.1f, capture buffers %.1f, capture on %.1f, scaler on %.1f%s",
-	    query_us / 1000.0,
+	DBG("pipeline start, ms: receiver %.1f%s, then open %.1f, early capture on %.1f, formats %.1f, middle buffers %.1f, bitstream buffers %.1f, encoder on %.1f, priming %.1f (mode %d), capture buffers %.1f, capture on %.1f, scaler on %.1f%s%s",
+	    query_us / 1000.0, receiver_cached ? " (cached)" : "",
 	    pipe_state.start_us[0] / 1000.0, pipe_state.start_us[1] / 1000.0,
 	    pipe_state.start_us[2] / 1000.0, pipe_state.start_us[3] / 1000.0,
 	    pipe_state.start_us[4] / 1000.0, pipe_state.start_us[5] / 1000.0,
-	    pipe_state.start_us[6] / 1000.0, pipe_state.start_us[7] / 1000.0,
+	    pipe_state.start_us[6] / 1000.0, (int)cfg.prime,
+	    pipe_state.start_us[7] / 1000.0,
 	    pipe_state.start_us[8] / 1000.0, pipe_state.start_us[9] / 1000.0,
-	    pipe_state.early ? " (capture started first)" : "");
+	    pipe_state.early ? " (capture started first)" : "",
+	    pipe_state.enc_reused ? " (encoder kept)" : "");
 	pipe_width = width;
 	pipe_height = height;
 	pipe_bitrate = bitrate_bps;
@@ -1144,6 +1211,7 @@ static void *monitor_main(void *arg)
 					fd = open(subdev, O_RDONLY | O_NONBLOCK | O_CLOEXEC);
 			}
 			signal = kvmv_query_signal(fd, 0, 0, &timings);
+			receiver_remember(signal, &timings);
 			if (signal != KVMV_SIGNAL_UNKNOWN) {
 				set_source_locked(kvmv_signal_present(signal));
 				if (kvmv_signal_present(signal))
