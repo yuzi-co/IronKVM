@@ -61,6 +61,10 @@ void set_capture_fps(uint8_t _fps);
 /* An MJPEG read may wait behind another one's encode, up to about 0.3 s at 1080p. */
 #define KVMV_JPEG_LOCK_TIMEOUT_S 2
 #define KVMV_FRAME_TIMEOUT_MS 1000U
+/* The longest a read waits for a capture frame about to complete (see
+ * pickup_wait_ms in kvmv_pipeline.c). 6 ms keeps an H.264 read, about 26 ms
+ * at 1080p, inside a 30 fps frame time. */
+#define KVMV_PICKUP_WAIT_MS 6U
 #define KVMV_NO_FRAME_LIMIT 3U
 #define KVMV_KEY_ATTEMPTS 4
 #define KVMV_KEY_DROP_LIMIT 60 /* delta frames dropped waiting for an IDR */
@@ -464,6 +468,7 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 	cfg.min_qp = qp.min_qp;
 	cfg.max_qp = qp.max_qp;
 	cfg.capture_buffers = env_uint("KVMV_CAPTURE_BUFFERS", 3);
+	cfg.pickup_wait_ms = env_uint("KVMV_PICKUP_WAIT_MS", KVMV_PICKUP_WAIT_MS);
 	cfg.mid_buffers = env_uint("KVMV_MID_BUFFERS", 2);
 	cfg.bitstream_buffers = env_uint("KVMV_BITSTREAM_BUFFERS", 3);
 
@@ -603,7 +608,7 @@ static void watch_rate(size_t bytes)
 		const struct kvmv_stage_times *t = &pipe_state.times;
 		unsigned int n = t->frames;
 
-		DBG("per frame: capture wait %llu us, scale %llu us, encode %llu us, copy %llu us, capture age at encoded %llu us (max %llu), at pickup %llu us, capture frames per read x100 %llu",
+		DBG("per frame: capture wait %llu us, scale %llu us, encode %llu us, copy %llu us, capture age at encoded %llu us (max %llu), at pickup %llu us, capture frames per read x100 %llu, waited for the next frame %u",
 		    (unsigned long long)(t->capture_us / n),
 		    (unsigned long long)(t->scale_us / n),
 		    (unsigned long long)(t->encode_us / n),
@@ -611,7 +616,8 @@ static void watch_rate(size_t bytes)
 		    (unsigned long long)(t->age_us / n),
 		    (unsigned long long)t->age_max_us,
 		    (unsigned long long)(t->pick_age_us / n),
-		    (unsigned long long)(t->seq_gap * 100 / n));
+		    (unsigned long long)(t->seq_gap * 100 / n),
+		    t->pickup_waits);
 		memset(&pipe_state.times, 0, sizeof(pipe_state.times));
 	}
 	if (!overshoot_warned && target && kbps > target * 2) {

@@ -829,6 +829,7 @@ int kvmv_pipe_start(struct kvmv_pipe *p, const struct kvmv_devices *d,
 
 	kvmv_pipe_init(p);
 	p->codec = cfg->codec;
+	p->pickup_wait_max_us = cfg->pickup_wait_ms * 1000U;
 	copy_path(p->scaler_path, d->scaler);
 	encoder = is_hevc(p) ? d->encoder_hevc : d->encoder;
 	if (!encoder[0]) {
@@ -982,6 +983,31 @@ static int stream_broken(int err)
 	return err == EIO || err == EPIPE || err == ENODEV || err == ENOLINK;
 }
 
+/*
+ * How long to wait for the next capture frame instead of taking the one held,
+ * in ms, or 0. The reader comes at its own rate, so the newest frame is
+ * anything from 0 to a frame time old when it arrives, and what it takes
+ * reaches the viewer that much later. When the next frame is due sooner than
+ * the held one is old, and within pickup_wait_max_us, the newer one is the
+ * fresher picture by the time it is delivered.
+ */
+static unsigned int pickup_wait_ms(const struct kvmv_pipe *p)
+{
+	uint64_t now = now_us();
+	uint64_t age, due;
+
+	if (!p->pickup_wait_max_us || !p->cap_interval_us || now < p->cap_ts_us)
+		return 0;
+	age = now - p->cap_ts_us;
+	if (age >= p->cap_interval_us || age * 2 <= p->cap_interval_us)
+		return 0;
+	due = p->cap_interval_us - age;
+	if (due > p->pickup_wait_max_us)
+		return 0;
+	/* A little over, for the interrupt and the wake-up. */
+	return (unsigned int)((due + 2000U + 999U) / 1000U);
+}
+
 /* Take the newest finished capture buffer and give the older ones back. */
 static enum kvmv_pipe_status newest_capture(struct kvmv_pipe *p,
 					    unsigned int timeout_ms,
@@ -989,6 +1015,7 @@ static enum kvmv_pipe_status newest_capture(struct kvmv_pipe *p,
 {
 	uint64_t deadline = now_ms() + timeout_ms;
 	int held = -1;
+	int waited = 0;
 
 	for (;;) {
 		struct v4l2_buffer buf;
@@ -1009,10 +1036,23 @@ static enum kvmv_pipe_status newest_capture(struct kvmv_pipe *p,
 				 V4L2_MEMORY_MMAP, (unsigned int)held, -1, 0))
 				return fail(p, "capture requeue"), KVMV_PIPE_ERROR;
 			held = (int)buf.index;
-			p->cap_ts_us = (uint64_t)buf.timestamp.tv_sec * 1000000U +
-				       (uint64_t)buf.timestamp.tv_usec;
-			p->times.seq_gap += buf.sequence - p->cap_seq;
-			p->cap_seq = buf.sequence;
+			{
+				uint64_t ts = (uint64_t)buf.timestamp.tv_sec * 1000000U +
+					      (uint64_t)buf.timestamp.tv_usec;
+				uint32_t frames = buf.sequence - p->cap_seq;
+
+				/* The frame time, from frames that both reached a
+				 * buffer: 5 to 50 ms, or it is not a frame time. */
+				if (p->cap_ts_us && frames && ts > p->cap_ts_us) {
+					uint64_t iv = (ts - p->cap_ts_us) / frames;
+
+					if (iv >= 5000 && iv <= 50000)
+						p->cap_interval_us = (uint32_t)iv;
+				}
+				p->cap_ts_us = ts;
+				p->times.seq_gap += frames;
+				p->cap_seq = buf.sequence;
+			}
 			continue;
 		}
 		if (errno != EAGAIN) {
@@ -1021,11 +1061,23 @@ static enum kvmv_pipe_status newest_capture(struct kvmv_pipe *p,
 						      KVMV_PIPE_ERROR;
 		}
 		if (held >= 0) {
-			*index = (unsigned int)held;
-			return KVMV_PIPE_OK;
+			unsigned int wait = waited ? 0 : pickup_wait_ms(p);
+
+			if (wait == 0) {
+				*index = (unsigned int)held;
+				return KVMV_PIPE_OK;
+			}
+			/* Once: poll for the next frame, then take the newest. */
+			waited = 1;
+			p->times.pickup_waits++;
+			deadline = now_ms() + wait;
 		}
 		now = now_ms();
 		if (now >= deadline) {
+			if (held >= 0) {
+				*index = (unsigned int)held;
+				return KVMV_PIPE_OK;
+			}
 			snprintf(p->error, sizeof(p->error),
 				 "no frame from the capture node in %u ms",
 				 timeout_ms);
