@@ -302,6 +302,21 @@ run start > /dev/null 2>&1
 # pressure stops exactly when the fault it exists for arrives.
 has realtime           yes
 
+# The daemon's own default log directory is /var/log/watchdog, and /var/log is
+# a link to /tmp on this rootfs. The daemon creates the directory at start, so
+# /tmp/watchdog existed on every boot, and kvm_system reads any /tmp/watchdog
+# as "the video watchdog is on": with the server down it rebooted the board
+# about ten seconds later (#59). The log directory must be named and must not
+# be that path.
+has log-dir            /var/log/hwdt
+for bad in /var/log/watchdog /tmp/watchdog; do
+    if grep -qE "^[[:space:]]*log-dir[[:space:]]*=[[:space:]]*$bad/?[[:space:]]*$" "$WORK/watchdog.conf"; then
+        note "log-dir is $bad, which switches kvm_system's video watchdog on" FAIL
+    else
+        note "log-dir is not $bad" OK
+    fi
+done
+
 echo
 echo "===== what it must never arm ====="
 # Each line below is in the sample /etc/watchdog.conf and would reset this board

@@ -31,12 +31,23 @@
 #define KVMV_H264_VBV_DELAY_MS 1000
 
 /*
- * H.265 on the WAVE420L (ironkvm-dist#55, run sheet trial 13): the same
- * QP window and initial delay as H.264 until measurements say otherwise.
+ * H.265 on the WAVE420L (ironkvm-dist#55, run sheet trials 13 and 20): the
+ * same maximum QP as H.264, a lower minimum and a longer initial delay.
+ *
+ * At QP 18 the WAVE420L stops at 2 to 3.4 Mbit/s on screen content whatever
+ * is asked, up to 2 dB under the Coda980 at its QP 18; at 12 it spends more
+ * of what is asked and passes the Coda980 (QP 8 gains nothing over 12). The
+ * minimum only acts when the bitrate leaves room.
+ *
+ * With a 1 s GOP the IDR takes most of the bits on a screen, and a 1000 ms
+ * buffer starves it: 2000 ms gives 1 to 6 dB more on still, changing and
+ * scrolling text at 1 to 3 Mbit/s for 0 to 8% more bits. 3000 ms gains a
+ * little more on scrolling text, but lets the stream run further from the
+ * bitrate over a longer window, which a slow link sees as delay.
  */
-#define KVMV_H265_MIN_QP 18
+#define KVMV_H265_MIN_QP 12
 #define KVMV_H265_MAX_QP 42
-#define KVMV_H265_VBV_DELAY_MS 1000
+#define KVMV_H265_VBV_DELAY_MS 2000
 
 int kvmv_clamp(int value, int min, int max);
 uint32_t kvmv_kbps_to_bps(int kbps);

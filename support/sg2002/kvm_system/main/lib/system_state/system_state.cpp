@@ -2,6 +2,7 @@
 #include "system_state.h"
 #include "vi_state_shared.hpp"
 #include "net_probe.h"
+#include "video_watchdog.h"
 #include <sys/socket.h>
 #include <net/if.h>
 #include <sys/ioctl.h>
@@ -518,8 +519,9 @@ void auto_remove_temp_watchdog(void)
 uint8_t watchdog_sf_is_open(void)
 {
 	if(access(watchdog_mode_path, F_OK) == 0) return 1;
-	if(access(watchdog_temp_path, F_OK) == 0) return 1;
-	else return 0;
+	// A file, as create_temp_watchdog makes it. A directory there is the
+	// watchdog daemon's log directory on an old S01hwdt (#59), not a switch.
+	return video_wd_is_regular_file(watchdog_temp_path) ? 1 : 0;
 }
 
 int check_watchdog() 

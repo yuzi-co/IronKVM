@@ -144,6 +144,15 @@ ALLOCATABLE=${HWDOG_ALLOCATABLE:-256}
 #                      "Function not implemented" to that. The daemon logs it and
 #                      carries on, so the lock is what this line buys here.
 #
+#   log-dir            Where the daemon keeps its own logs. It has to be named:
+#                      the daemon's default is /var/log/watchdog, which it
+#                      creates at start, and /var/log is a link to /tmp on this
+#                      rootfs. kvm_system and the vendor libkvm read any
+#                      /tmp/watchdog as "the video watchdog is on", so with the
+#                      default every boot armed it, and a board whose server was
+#                      not running rebooted about ten seconds after kvm_system
+#                      started (#59).
+#
 #   retry-timeout      A test must keep failing for this long before the daemon
 #                      acts. Every threshold here is biased toward inaction: the
 #                      cost of acting late is a few more seconds of an outage
@@ -192,6 +201,7 @@ interval		= $INTERVAL
 retry-timeout		= $RETRY
 realtime		= yes
 priority		= 1
+log-dir			= /var/log/hwdt
 EOF
 
     [ "$ALLOCATABLE" -gt 0 ] 2>/dev/null || return 0

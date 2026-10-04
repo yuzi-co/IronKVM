@@ -193,6 +193,8 @@ has read for 10 s.
 | `KVMV_IDLE_MS` | 10000 | Tear down an unread pipeline after this long; 0 never does. |
 | `KVMV_H264_QP` | `18:42` | H.264 QP range, `min:max`, 0 to 51. `0:51` leaves the encoder's own. |
 | `KVMV_H264_VBV_DELAY_MS` | 1000 | Rate-control initial delay; 0 leaves the encoder's own. |
+| `KVMV_H265_QP` | `12:42` | H.265 QP range, as `KVMV_H264_QP`. Lower than H.264's minimum: at 18 the WAVE420L stops short of the asked bitrate on screen content (ironkvm-dist run sheet, trial 20). |
+| `KVMV_H265_VBV_DELAY_MS` | 2000 | H.265 rate-control initial delay. At 1000 the WAVE420L starves the IDR, which carries most of a 1 s GOP's bits on a screen (trial 20). |
 
 ## Known issues
 
