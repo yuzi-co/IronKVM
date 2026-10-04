@@ -818,13 +818,52 @@ static void subscribe_source_change(int fd)
 	xioctl(fd, VIDIOC_SUBSCRIBE_EVENT, &sub);
 }
 
+/* The capture node and buffers kvmv_pipe_park kept, for the next start. */
+static struct {
+	int fd;
+	struct kvmv_buf *bufs;
+	unsigned int count;
+	uint32_t sizeimage;
+} parked = { .fd = -1 };
+
+static void free_bufs(struct kvmv_buf **bufs, unsigned int *count);
+
+void kvmv_pipe_unpark(void)
+{
+	free_bufs(&parked.bufs, &parked.count);
+	if (parked.fd >= 0)
+		close(parked.fd);
+	parked.fd = -1;
+}
+
+/* Queue the parked buffers on the capture node instead of allocating. */
+static int adopt_capture(struct kvmv_pipe *p)
+{
+	unsigned int i;
+
+	p->cap = parked.bufs;
+	p->cap_count = parked.count;
+	parked.bufs = NULL;
+	parked.count = 0;
+	for (i = 0; i < p->cap_count; i++)
+		if (qbuf(p->cap_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, V4L2_MEMORY_MMAP,
+			 i, -1, 0))
+			return fail(p, "capture QBUF");
+	return 0;
+}
+
+static uint64_t now_us(void);
+#define START_STAMP(i) (p->start_us[i] = (uint32_t)(now_us() - start0))
+
 int kvmv_pipe_start(struct kvmv_pipe *p, const struct kvmv_devices *d,
 		    const struct kvmv_pipe_cfg *cfg)
 {
 	const char *encoder;
+	uint64_t start0 = now_us();
 
 	kvmv_pipe_init(p);
 	p->codec = cfg->codec;
+	p->pickup_wait_max_us = cfg->pickup_wait_ms * 1000U;
 	copy_path(p->scaler_path, d->scaler);
 	encoder = is_hevc(p) ? d->encoder_hevc : d->encoder;
 	if (!encoder[0]) {
@@ -833,7 +872,12 @@ int kvmv_pipe_start(struct kvmv_pipe *p, const struct kvmv_devices *d,
 		return -1;
 	}
 
-	p->cap_fd = open(d->capture, O_RDWR | O_NONBLOCK | O_CLOEXEC);
+	if (parked.fd >= 0) {
+		p->cap_fd = parked.fd;
+		parked.fd = -1;
+	} else {
+		p->cap_fd = open(d->capture, O_RDWR | O_NONBLOCK | O_CLOEXEC);
+	}
 	if (p->cap_fd < 0) {
 		fail(p, d->capture);
 		goto out;
@@ -853,17 +897,32 @@ int kvmv_pipe_start(struct kvmv_pipe *p, const struct kvmv_devices *d,
 		goto out;
 	}
 	subscribe_source_change(p->cap_fd);
+	START_STAMP(0);
 
 	if (kvmv_pipe_negotiate(p, cfg))
 		goto out;
+	START_STAMP(1);
 	if (alloc_mid(p, cfg->mid_buffers ? cfg->mid_buffers : 2))
 		goto out;
+	START_STAMP(2);
 	if (alloc_bitstream(p, cfg->bitstream_buffers ? cfg->bitstream_buffers : 3))
 		goto out;
+	START_STAMP(3);
 	if (prime_encoder(p))
 		goto out;
-	if (alloc_capture(p, cfg->capture_buffers ? cfg->capture_buffers : 2))
-		goto out;
+	START_STAMP(4);
+	if (parked.bufs && parked.sizeimage == p->cap_fmt.sizeimage &&
+	    parked.count == (cfg->capture_buffers ? cfg->capture_buffers : 2)) {
+		if (adopt_capture(p))
+			goto out;
+	} else {
+		/* Nothing parked that fits: the node was opened afresh, or
+		 * holds buffers of another size, which REQBUFS replaces. */
+		free_bufs(&parked.bufs, &parked.count);
+		if (alloc_capture(p, cfg->capture_buffers ? cfg->capture_buffers : 2))
+			goto out;
+	}
+	START_STAMP(5);
 	/* Capture first: while the CSI driver streams, the VIP fabric clocks
 	 * are on and VPSS register access is safe. */
 	if (stream(p->cap_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, 1)) {
@@ -872,6 +931,7 @@ int kvmv_pipe_start(struct kvmv_pipe *p, const struct kvmv_devices *d,
 		goto out;
 	}
 	p->cap_on = 1;
+	START_STAMP(6);
 	if (request(p->vpss_fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, V4L2_MEMORY_DMABUF,
 		    p->cap_count) < (int)p->cap_count) {
 		fail(p, "scaler OUTPUT REQBUFS");
@@ -887,6 +947,7 @@ int kvmv_pipe_start(struct kvmv_pipe *p, const struct kvmv_devices *d,
 		goto out;
 	}
 	p->vpss_cap_on = 1;
+	START_STAMP(7);
 	p->running = 1;
 	return 0;
 
@@ -950,6 +1011,32 @@ void kvmv_pipe_stop(struct kvmv_pipe *p)
 	kvmv_pipe_init(p);
 }
 
+void kvmv_pipe_park(struct kvmv_pipe *p)
+{
+	kvmv_pipe_unpark();
+	if (p->cap_fd < 0 || p->cap == NULL) {
+		kvmv_pipe_stop(p);
+		return;
+	}
+	/* The snapshot context imports the capture buffers: it goes first,
+	 * then the scaler that reads them, then the capture itself. */
+	snap_stop(p);
+	if (p->vpss_out_on)
+		stream(p->vpss_fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, 0);
+	p->vpss_out_on = 0;
+	if (p->cap_on)
+		stream(p->cap_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, 0);
+	p->cap_on = 0;
+	parked.fd = p->cap_fd;
+	parked.bufs = p->cap;
+	parked.count = p->cap_count;
+	parked.sizeimage = p->cap_fmt.sizeimage;
+	p->cap_fd = -1;
+	p->cap = NULL;
+	p->cap_count = 0;
+	kvmv_pipe_stop(p);
+}
+
 /* ---- per frame ----------------------------------------------------- */
 
 static int source_changed(int fd)
@@ -970,6 +1057,31 @@ static int stream_broken(int err)
 	return err == EIO || err == EPIPE || err == ENODEV || err == ENOLINK;
 }
 
+/*
+ * How long to wait for the next capture frame instead of taking the one held,
+ * in ms, or 0. The reader comes at its own rate, so the newest frame is
+ * anything from 0 to a frame time old when it arrives, and what it takes
+ * reaches the viewer that much later. When the next frame is due sooner than
+ * the held one is old, and within pickup_wait_max_us, the newer one is the
+ * fresher picture by the time it is delivered.
+ */
+static unsigned int pickup_wait_ms(const struct kvmv_pipe *p)
+{
+	uint64_t now = now_us();
+	uint64_t age, due;
+
+	if (!p->pickup_wait_max_us || !p->cap_interval_us || now < p->cap_ts_us)
+		return 0;
+	age = now - p->cap_ts_us;
+	if (age >= p->cap_interval_us || age * 2 <= p->cap_interval_us)
+		return 0;
+	due = p->cap_interval_us - age;
+	if (due > p->pickup_wait_max_us)
+		return 0;
+	/* A little over, for the interrupt and the wake-up. */
+	return (unsigned int)((due + 2000U + 999U) / 1000U);
+}
+
 /* Take the newest finished capture buffer and give the older ones back. */
 static enum kvmv_pipe_status newest_capture(struct kvmv_pipe *p,
 					    unsigned int timeout_ms,
@@ -977,6 +1089,7 @@ static enum kvmv_pipe_status newest_capture(struct kvmv_pipe *p,
 {
 	uint64_t deadline = now_ms() + timeout_ms;
 	int held = -1;
+	int waited = 0;
 
 	for (;;) {
 		struct v4l2_buffer buf;
@@ -997,6 +1110,23 @@ static enum kvmv_pipe_status newest_capture(struct kvmv_pipe *p,
 				 V4L2_MEMORY_MMAP, (unsigned int)held, -1, 0))
 				return fail(p, "capture requeue"), KVMV_PIPE_ERROR;
 			held = (int)buf.index;
+			{
+				uint64_t ts = (uint64_t)buf.timestamp.tv_sec * 1000000U +
+					      (uint64_t)buf.timestamp.tv_usec;
+				uint32_t frames = buf.sequence - p->cap_seq;
+
+				/* The frame time, from frames that both reached a
+				 * buffer: 5 to 50 ms, or it is not a frame time. */
+				if (p->cap_ts_us && frames && ts > p->cap_ts_us) {
+					uint64_t iv = (ts - p->cap_ts_us) / frames;
+
+					if (iv >= 5000 && iv <= 50000)
+						p->cap_interval_us = (uint32_t)iv;
+				}
+				p->cap_ts_us = ts;
+				p->times.seq_gap += frames;
+				p->cap_seq = buf.sequence;
+			}
 			continue;
 		}
 		if (errno != EAGAIN) {
@@ -1005,11 +1135,23 @@ static enum kvmv_pipe_status newest_capture(struct kvmv_pipe *p,
 						      KVMV_PIPE_ERROR;
 		}
 		if (held >= 0) {
-			*index = (unsigned int)held;
-			return KVMV_PIPE_OK;
+			unsigned int wait = waited ? 0 : pickup_wait_ms(p);
+
+			if (wait == 0) {
+				*index = (unsigned int)held;
+				return KVMV_PIPE_OK;
+			}
+			/* Once: poll for the next frame, then take the newest. */
+			waited = 1;
+			p->times.pickup_waits++;
+			deadline = now_ms() + wait;
 		}
 		now = now_ms();
 		if (now >= deadline) {
+			if (held >= 0) {
+				*index = (unsigned int)held;
+				return KVMV_PIPE_OK;
+			}
 			snprintf(p->error, sizeof(p->error),
 				 "no frame from the capture node in %u ms",
 				 timeout_ms);
@@ -1061,6 +1203,8 @@ enum kvmv_pipe_status kvmv_pipe_scale(struct kvmv_pipe *p,
 		return status;
 	t1 = now_us();
 	p->times.capture_us += t1 - t0;
+	if (p->cap_ts_us && t1 > p->cap_ts_us)
+		p->times.pick_age_us += t1 - p->cap_ts_us;
 
 	/* Scale: the capture buffer in, a middle buffer out. */
 	mi = p->next_mid;
@@ -1122,7 +1266,15 @@ enum kvmv_pipe_status kvmv_pipe_encode_mid(struct kvmv_pipe *p,
 		return KVMV_PIPE_ERROR;
 	}
 	out->data = p->bs[out->index].addr;
-	p->times.encode_us += now_us() - t0;
+	{
+		uint64_t t1 = now_us();
+		uint64_t age = p->cap_ts_us && t1 > p->cap_ts_us ? t1 - p->cap_ts_us : 0;
+
+		p->times.encode_us += t1 - t0;
+		p->times.age_us += age;
+		if (age > p->times.age_max_us)
+			p->times.age_max_us = age;
+	}
 	p->times.frames++;
 	return KVMV_PIPE_OK;
 }

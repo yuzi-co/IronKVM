@@ -79,6 +79,9 @@ struct kvmv_pipe_cfg {
 	unsigned int capture_buffers;
 	unsigned int mid_buffers;
 	unsigned int bitstream_buffers;
+	/* Longest wait at a read for a capture frame about to complete,
+	 * instead of taking one more than half a frame time old; 0 never. */
+	unsigned int pickup_wait_ms;
 };
 
 /* What the encoder reports back. -1 where it would not say. */
@@ -99,6 +102,11 @@ struct kvmv_stage_times {
 	uint64_t scale_us; /* VPSS, queue to dequeue */
 	uint64_t encode_us; /* Coda, queue to dequeue */
 	uint64_t copy_us; /* bitstream out of the encoder's buffer (the caller adds it) */
+	uint64_t age_us; /* capture timestamp to the encoded frame, summed */
+	uint64_t age_max_us; /* the largest of those */
+	uint64_t pick_age_us; /* capture timestamp to the frame being taken, summed */
+	uint64_t seq_gap; /* capture sequence numbers skipped between taken frames, summed */
+	unsigned int pickup_waits; /* reads that waited for the next frame */
 	unsigned int frames;
 };
 
@@ -143,6 +151,14 @@ struct kvmv_pipe {
 	int running;
 	struct kvmv_applied applied;
 	struct kvmv_stage_times times;
+	uint64_t cap_ts_us; /* CLOCK_MONOTONIC capture time of the frame being scaled */
+	uint32_t cap_seq; /* its sequence number */
+	uint32_t cap_interval_us; /* the source's frame time, from the timestamps */
+	uint32_t pickup_wait_max_us; /* kvmv_pipe_cfg.pickup_wait_ms */
+	/* kvmv_pipe_start's steps, microseconds from its start: open, negotiate,
+	 * middle buffers, bitstream buffers, priming encode, capture buffers,
+	 * capture STREAMON, scaler STREAMON. For KVMV_DEBUG. */
+	uint32_t start_us[8];
 	char error[192];
 };
 
@@ -180,6 +196,15 @@ int kvmv_pipe_start(struct kvmv_pipe *pipe, const struct kvmv_devices *devices,
 
 /* Stop streaming and release everything. Safe on a stopped pipe. */
 void kvmv_pipe_stop(struct kvmv_pipe *pipe);
+
+/*
+ * As kvmv_pipe_stop, but keep the capture node open with its buffers, so the
+ * next kvmv_pipe_start takes them instead of allocating and clearing new ones
+ * (about 50 ms for three 1080p frames). The capture is streamed off, so its
+ * clocks and DMA stop. kvmv_pipe_unpark releases them.
+ */
+void kvmv_pipe_park(struct kvmv_pipe *pipe);
+void kvmv_pipe_unpark(void);
 
 /*
  * Take the newest captured frame and scale it into a middle buffer. On

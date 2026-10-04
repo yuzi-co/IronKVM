@@ -61,6 +61,10 @@ void set_capture_fps(uint8_t _fps);
 /* An MJPEG read may wait behind another one's encode, up to about 0.3 s at 1080p. */
 #define KVMV_JPEG_LOCK_TIMEOUT_S 2
 #define KVMV_FRAME_TIMEOUT_MS 1000U
+/* The longest a read waits for a capture frame about to complete (see
+ * pickup_wait_ms in kvmv_pipeline.c). 6 ms keeps an H.264 read, about 26 ms
+ * at 1080p, inside a 30 fps frame time. */
+#define KVMV_PICKUP_WAIT_MS 6U
 #define KVMV_NO_FRAME_LIMIT 3U
 #define KVMV_KEY_ATTEMPTS 4
 #define KVMV_KEY_DROP_LIMIT 60 /* delta frames dropped waiting for an IDR */
@@ -299,16 +303,32 @@ static void set_capture_enabled(int enabled)
 
 static void request_key(void);
 
-static void pipe_down(const char *why)
+/*
+ * Tear the pipeline down. park keeps the capture node and its buffers for
+ * the next build (kvmv_pipe_park): for a pipeline nobody reads, a codec
+ * switch or a new output size, where the source is unchanged. Anything else
+ * releases them too.
+ */
+static void pipe_down_keep(const char *why, int park)
 {
+	if (!park)
+		kvmv_pipe_unpark();
 	if (!pipe_state.running && pipe_state.cap_fd < 0 && pipe_state.enc_fd < 0)
 		return;
-	DBG("pipeline down: %s", why);
-	kvmv_pipe_stop(&pipe_state);
+	DBG("pipeline down: %s%s", why, park ? " (capture buffers kept)" : "");
+	if (park)
+		kvmv_pipe_park(&pipe_state);
+	else
+		kvmv_pipe_stop(&pipe_state);
 	/* The unit imports the snapshot buffer; let both go together. Closing
 	 * the node also turns the unit's clocks off. */
 	kvmv_hwjpeg_close(&hw_jpeg);
 	__atomic_store_n(&pipe_running, 0, __ATOMIC_RELEASE);
+}
+
+static void pipe_down(const char *why)
+{
+	pipe_down_keep(why, 0);
 }
 
 static int start_failed(int result, unsigned int retry_ms)
@@ -463,7 +483,8 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 	}
 	cfg.min_qp = qp.min_qp;
 	cfg.max_qp = qp.max_qp;
-	cfg.capture_buffers = env_uint("KVMV_CAPTURE_BUFFERS", 2);
+	cfg.capture_buffers = env_uint("KVMV_CAPTURE_BUFFERS", 3);
+	cfg.pickup_wait_ms = env_uint("KVMV_PICKUP_WAIT_MS", KVMV_PICKUP_WAIT_MS);
 	cfg.mid_buffers = env_uint("KVMV_MID_BUFFERS", 2);
 	cfg.bitstream_buffers = env_uint("KVMV_BITSTREAM_BUFFERS", 3);
 
@@ -484,6 +505,11 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 		return start_failed(IMG_VENC_ERROR, 1000);
 	}
 
+	DBG("pipeline start, ms: open %.1f, formats %.1f, middle buffers %.1f, bitstream buffers %.1f, priming %.1f, capture buffers %.1f, capture on %.1f, scaler on %.1f",
+	    pipe_state.start_us[0] / 1000.0, pipe_state.start_us[1] / 1000.0,
+	    pipe_state.start_us[2] / 1000.0, pipe_state.start_us[3] / 1000.0,
+	    pipe_state.start_us[4] / 1000.0, pipe_state.start_us[5] / 1000.0,
+	    pipe_state.start_us[6] / 1000.0, pipe_state.start_us[7] / 1000.0);
 	pipe_width = width;
 	pipe_height = height;
 	pipe_bitrate = bitrate_bps;
@@ -598,11 +624,16 @@ static void watch_rate(size_t bytes)
 		const struct kvmv_stage_times *t = &pipe_state.times;
 		unsigned int n = t->frames;
 
-		DBG("per frame: capture wait %llu us, scale %llu us, encode %llu us, copy %llu us",
+		DBG("per frame: capture wait %llu us, scale %llu us, encode %llu us, copy %llu us, capture age at encoded %llu us (max %llu), at pickup %llu us, capture frames per read x100 %llu, waited for the next frame %u",
 		    (unsigned long long)(t->capture_us / n),
 		    (unsigned long long)(t->scale_us / n),
 		    (unsigned long long)(t->encode_us / n),
-		    (unsigned long long)(t->copy_us / n));
+		    (unsigned long long)(t->copy_us / n),
+		    (unsigned long long)(t->age_us / n),
+		    (unsigned long long)t->age_max_us,
+		    (unsigned long long)(t->pick_age_us / n),
+		    (unsigned long long)(t->seq_gap * 100 / n),
+		    t->pickup_waits);
 		memset(&pipe_state.times, 0, sizeof(pipe_state.times));
 	}
 	if (!overshoot_warned && target && kbps > target * 2) {
@@ -661,6 +692,10 @@ static int pipe_failure(enum kvmv_pipe_status status)
 	}
 }
 
+/* When the pipeline build for a video read began, until its first picture
+ * (KVMV_DEBUG). */
+static uint64_t cold_start_us;
+
 static int read_video_locked(unsigned int width, unsigned int height,
 			     uint32_t bitrate_bps, enum kvmv_codec codec,
 			     uint8_t **data, uint32_t *size)
@@ -679,13 +714,14 @@ static int read_video_locked(unsigned int width, unsigned int height,
 	 * which releases the codec SRAM the new one needs.
 	 */
 	if (codec != pipe_codec) {
-		pipe_down("codec changed");
+		pipe_down_keep("codec changed", 1);
 		log_msg("codec %s -> %s", codec_name(pipe_codec), codec_name(codec));
 		pipe_codec = codec;
 	}
 	if (pipe_state.running && (width != pipe_width || height != pipe_height))
-		pipe_down("output size changed");
+		pipe_down_keep("output size changed", 1);
 	if (!pipe_state.running) {
+		cold_start_us = now_us();
 		result = pipe_up(width, height, bitrate_bps);
 		if (result != 0)
 			return result;
@@ -769,6 +805,11 @@ static int read_video_locked(unsigned int width, unsigned int height,
 		need_key = 0;
 		set_source_locked(1);
 		watch_rate(slot->size);
+		if (cold_start_us) {
+			DBG("first picture %llu us after the pipeline build began",
+			    (unsigned long long)(now_us() - cold_start_us));
+			cold_start_us = 0;
+		}
 
 		*data = slot->data;
 		*size = slot->size;
@@ -1105,7 +1146,7 @@ static void *monitor_main(void *arg)
 		    now_ms() - __atomic_load_n(&last_read_ms, __ATOMIC_ACQUIRE) > idle_ms &&
 		    pthread_mutex_trylock(&pipe_lock) == 0) {
 			if (now_ms() - __atomic_load_n(&last_read_ms, __ATOMIC_ACQUIRE) > idle_ms)
-				pipe_down("no reads");
+				pipe_down_keep("no reads", 1);
 			pthread_mutex_unlock(&pipe_lock);
 		}
 	}
