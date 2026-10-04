@@ -225,3 +225,18 @@ int kvmv_encoder_fps(int asked, int capture, int delivered, int current)
 		return current;
 	return want;
 }
+
+enum kvmv_prime kvmv_prime_mode(const char *env, int hevc)
+{
+	if (env != NULL && env[0] >= '0' && env[0] <= '2' && env[1] == 0)
+		return (enum kvmv_prime)(env[0] - '0');
+	(void)hevc;
+	return KVMV_PRIME_NONE;
+}
+
+int kvmv_receiver_fresh(uint64_t seen_ms, uint64_t now_ms, unsigned int max_age_ms)
+{
+	if (max_age_ms == 0 || seen_ms == 0 || seen_ms > now_ms)
+		return 0;
+	return now_ms - seen_ms <= max_age_ms;
+}

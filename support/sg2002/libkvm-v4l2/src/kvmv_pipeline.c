@@ -452,7 +452,11 @@ int kvmv_pipe_negotiate(struct kvmv_pipe *p, const struct kvmv_pipe_cfg *cfg)
 				cap->height);
 
 	/* The encoder first: its padded input surface dictates the layout the
-	 * scaler has to write. */
+	 * scaler has to write. A parked encoder holds its buffers, so its
+	 * queues refuse S_FMT; it was parked with these formats, for this
+	 * plan (take_parked_encoder). */
+	if (p->enc_reused)
+		goto rate_control;
 	if (set_fmt(p->enc_fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, V4L2_PIX_FMT_NV12,
 		    p->plan.out_width, p->plan.coded_height, cap, 0,
 		    &p->enc_out_fmt))
@@ -479,6 +483,7 @@ int kvmv_pipe_negotiate(struct kvmv_pipe *p, const struct kvmv_pipe_cfg *cfg)
 		return fail_msg(p, "encoder does not produce %s",
 				is_hevc(p) ? "H.265" : "H.264");
 
+rate_control:
 	/*
 	 * Rate control. The frame rate matters to it: the encoder sizes a frame
 	 * as bitrate divided by frame rate, and the bridge never set the rate,
@@ -659,6 +664,15 @@ static int alloc_mid(struct kvmv_pipe *p, unsigned int wanted)
 	unsigned int i;
 	int got;
 
+	if (p->enc_reused) {
+		/* The buffers and the encoder's OUTPUT queue came parked; only
+		 * the new scaler context needs its queue. */
+		got = request(p->vpss_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE,
+			      V4L2_MEMORY_DMABUF, p->mid_count);
+		if (got != (int)p->mid_count)
+			return fail(p, "scaler CAPTURE REQBUFS");
+		return 0;
+	}
 	got = request(p->vpss_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE,
 		      V4L2_MEMORY_DMABUF, wanted);
 	if (got < 1)
@@ -696,6 +710,14 @@ static int alloc_bitstream(struct kvmv_pipe *p, unsigned int wanted)
 	unsigned int i;
 	int got;
 
+	if (p->enc_reused) {
+		/* Mapped already; STREAMOFF gave them back to user space. */
+		for (i = 0; i < p->bs_count; i++)
+			if (qbuf(p->enc_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE,
+				 V4L2_MEMORY_MMAP, i, -1, 0))
+				return fail(p, "encoder CAPTURE QBUF");
+		return 0;
+	}
 	got = request(p->enc_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, V4L2_MEMORY_MMAP,
 		      wanted);
 	if (got < 1)
@@ -762,19 +784,36 @@ static int alloc_capture(struct kvmv_pipe *p, unsigned int wanted)
 }
 
 /*
- * Encode one black picture before any live frame, as the bridge does. It
- * claims the encoder's working memory before the capture buffers take theirs,
- * and gives the first live picture a reference. Its output is thrown away;
- * the caller asks for a keyframe for the first live frame.
+ * Stream the encoder on (see enum kvmv_prime). With a priming picture, one
+ * black picture goes in before any live frame, as the bridge does: on the
+ * Coda980 that is what starts the sequence (its OUTPUT queue waits for a
+ * picture), which claims the encoder's working memory before the capture
+ * buffers take theirs. Its output is thrown away; the caller asks for a
+ * keyframe for the first live frame.
  */
 static uint64_t now_us(void);
 
-static int prime_encoder(struct kvmv_pipe *p, uint64_t start0)
+static int prime_encoder(struct kvmv_pipe *p, enum kvmv_prime mode,
+			 uint64_t start0)
 {
 	size_t luma = (size_t)p->enc_out_fmt.bytesperline * p->enc_out_fmt.height;
 	size_t frame = luma * 3 / 2;
 	struct v4l2_buffer buf;
 	uint8_t *map;
+
+	/* The first scale goes into mid[1] while mid[0] is being encoded. */
+	if (mode == KVMV_PRIME_ASYNC && p->mid_count < 2)
+		mode = KVMV_PRIME_WAIT;
+	if (mode == KVMV_PRIME_NONE) {
+		if (stream(p->enc_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, 1))
+			return fail(p, "encoder CAPTURE STREAMON");
+		p->enc_cap_on = 1;
+		if (stream(p->enc_fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, 1))
+			return fail(p, "encoder OUTPUT STREAMON");
+		p->enc_out_on = 1;
+		p->start_us[5] = (uint32_t)(now_us() - start0);
+		return 0;
+	}
 
 	if (frame > p->mid[0].length)
 		return fail_msg(p, "encoder surface %zu exceeds its buffer %zu",
@@ -801,6 +840,13 @@ static int prime_encoder(struct kvmv_pipe *p, uint64_t start0)
 	/* STREAMON has set the encoder up: its buffers and sequence. */
 	p->start_us[5] = (uint32_t)(now_us() - start0);
 
+	if (mode == KVMV_PRIME_ASYNC) {
+		/* The encode runs while the capture and the scaler start; the
+		 * first kvmv_pipe_encode_mid collects it. */
+		p->prime_pending = 1;
+		p->next_mid = 1;
+		return 0;
+	}
 	if (wait_dqbuf(p->enc_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, V4L2_MEMORY_MMAP,
 		       POLLIN, KVMV_PRIME_TIMEOUT_MS, &buf))
 		return fail(p, "encoder priming output");
@@ -830,7 +876,38 @@ static struct {
 	uint32_t sizeimage;
 } parked = { .fd = -1 };
 
+/*
+ * The encoder node kvmv_pipe_park kept (cfg.park_encoder), streamed off, with
+ * its bitstream buffers (mapped) and the middle buffers its OUTPUT queue has
+ * imported. Its queues keep their formats, which hold for this capture format
+ * and plan only.
+ */
+static struct {
+	int fd;
+	enum kvmv_codec codec;
+	char path[KVMV_PATH_MAX];
+	struct v4l2_pix_format cap_fmt;
+	struct kvmv_plan plan;
+	struct v4l2_pix_format enc_out_fmt, enc_cap_fmt;
+	struct kvmv_buf *bs, *mid;
+	unsigned int bs_count, mid_count;
+	int heap_fd;
+} parked_enc = { .fd = -1, .heap_fd = -1 };
+
 static void free_bufs(struct kvmv_buf **bufs, unsigned int *count);
+
+static void unpark_encoder(void)
+{
+	/* Mappings first: the node's buffers live until both are gone. */
+	free_bufs(&parked_enc.bs, &parked_enc.bs_count);
+	free_bufs(&parked_enc.mid, &parked_enc.mid_count);
+	if (parked_enc.fd >= 0)
+		close(parked_enc.fd);
+	if (parked_enc.heap_fd >= 0)
+		close(parked_enc.heap_fd);
+	parked_enc.fd = -1;
+	parked_enc.heap_fd = -1;
+}
 
 void kvmv_pipe_unpark(void)
 {
@@ -838,6 +915,61 @@ void kvmv_pipe_unpark(void)
 	if (parked.fd >= 0)
 		close(parked.fd);
 	parked.fd = -1;
+	unpark_encoder();
+}
+
+static int same_pix(const struct v4l2_pix_format *a, const struct v4l2_pix_format *b)
+{
+	return a->width == b->width && a->height == b->height &&
+	       a->pixelformat == b->pixelformat &&
+	       a->bytesperline == b->bytesperline &&
+	       a->sizeimage == b->sizeimage && a->colorspace == b->colorspace &&
+	       a->ycbcr_enc == b->ycbcr_enc &&
+	       a->quantization == b->quantization &&
+	       a->xfer_func == b->xfer_func;
+}
+
+/*
+ * Take the parked encoder when it was parked for this codec, node, capture
+ * format, output plan and buffer counts; otherwise let it go, so its memory
+ * is free before new buffers are allocated. Returns 1 when taken.
+ */
+static int take_parked_encoder(struct kvmv_pipe *p, const struct kvmv_pipe_cfg *cfg,
+			       const char *encoder)
+{
+	struct v4l2_pix_format cap;
+	struct kvmv_plan plan;
+
+	if (parked_enc.fd < 0)
+		return 0;
+	if (!cfg->park_encoder || parked_enc.codec != cfg->codec ||
+	    strcmp(parked_enc.path, encoder) != 0 ||
+	    parked_enc.mid_count != (cfg->mid_buffers ? cfg->mid_buffers : 2) ||
+	    parked_enc.bs_count != (cfg->bitstream_buffers ? cfg->bitstream_buffers : 3) ||
+	    get_fmt(p->cap_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, &cap) ||
+	    !same_pix(&cap, &parked_enc.cap_fmt) ||
+	    kvmv_plan_output(cap.width, cap.height, cfg->req_width,
+			     cfg->req_height, &plan) ||
+	    memcmp(&plan, &parked_enc.plan, sizeof(plan)) != 0) {
+		unpark_encoder();
+		return 0;
+	}
+	p->enc_fd = parked_enc.fd;
+	p->heap_fd = parked_enc.heap_fd;
+	p->bs = parked_enc.bs;
+	p->bs_count = parked_enc.bs_count;
+	p->mid = parked_enc.mid;
+	p->mid_count = parked_enc.mid_count;
+	p->enc_out_fmt = parked_enc.enc_out_fmt;
+	p->enc_cap_fmt = parked_enc.enc_cap_fmt;
+	parked_enc.fd = -1;
+	parked_enc.heap_fd = -1;
+	parked_enc.bs = NULL;
+	parked_enc.mid = NULL;
+	parked_enc.bs_count = 0;
+	parked_enc.mid_count = 0;
+	p->enc_reused = 1;
+	return 1;
 }
 
 /* Queue the parked buffers on the capture node instead of allocating. */
@@ -868,6 +1000,7 @@ int kvmv_pipe_start(struct kvmv_pipe *p, const struct kvmv_devices *d,
 	kvmv_pipe_init(p);
 	p->codec = cfg->codec;
 	p->pickup_wait_max_us = cfg->pickup_wait_ms * 1000U;
+	p->park_encoder = cfg->park_encoder;
 	copy_path(p->scaler_path, d->scaler);
 	encoder = is_hevc(p) ? d->encoder_hevc : d->encoder;
 	if (!encoder[0]) {
@@ -875,6 +1008,7 @@ int kvmv_pipe_start(struct kvmv_pipe *p, const struct kvmv_devices *d,
 		errno = ENODEV;
 		return -1;
 	}
+	copy_path(p->enc_path, encoder);
 
 	if (parked.fd >= 0) {
 		p->cap_fd = parked.fd;
@@ -895,7 +1029,8 @@ int kvmv_pipe_start(struct kvmv_pipe *p, const struct kvmv_devices *d,
 	 * The H.264 and H.265 encoders share the codec SRAM and take turns:
 	 * the one that is not streaming refuses STREAMON with EBUSY.
 	 */
-	p->enc_fd = open(encoder, O_RDWR | O_NONBLOCK | O_CLOEXEC);
+	if (!take_parked_encoder(p, cfg, encoder))
+		p->enc_fd = open(encoder, O_RDWR | O_NONBLOCK | O_CLOEXEC);
 	if (p->enc_fd < 0) {
 		fail(p, encoder);
 		goto out;
@@ -936,7 +1071,7 @@ int kvmv_pipe_start(struct kvmv_pipe *p, const struct kvmv_devices *d,
 	if (alloc_bitstream(p, cfg->bitstream_buffers ? cfg->bitstream_buffers : 3))
 		goto out;
 	START_STAMP(4);
-	if (prime_encoder(p, start0))
+	if (prime_encoder(p, cfg->prime, start0))
 		goto out;
 	START_STAMP(6);
 	if (p->early) {
@@ -1067,6 +1202,39 @@ void kvmv_pipe_park(struct kvmv_pipe *p)
 	parked.bufs = p->cap;
 	parked.count = p->cap_count;
 	parked.sizeimage = p->cap_fmt.sizeimage;
+	if (p->park_encoder && p->running && p->enc_fd >= 0 && p->bs != NULL &&
+	    p->mid != NULL && p->heap_fd >= 0) {
+		/*
+		 * Streamed off, the encoder ends its sequence: it frees its
+		 * reference frames, gives the codec SRAM back and, for the
+		 * WAVE420L, powers its core down. What stays is the node and
+		 * the buffers user space holds.
+		 */
+		if (p->enc_out_on)
+			stream(p->enc_fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, 0);
+		if (p->enc_cap_on)
+			stream(p->enc_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, 0);
+		p->enc_out_on = 0;
+		p->enc_cap_on = 0;
+		parked_enc.fd = p->enc_fd;
+		parked_enc.codec = p->codec;
+		snprintf(parked_enc.path, sizeof(parked_enc.path), "%s", p->enc_path);
+		parked_enc.cap_fmt = p->cap_fmt;
+		parked_enc.plan = p->plan;
+		parked_enc.enc_out_fmt = p->enc_out_fmt;
+		parked_enc.enc_cap_fmt = p->enc_cap_fmt;
+		parked_enc.bs = p->bs;
+		parked_enc.bs_count = p->bs_count;
+		parked_enc.mid = p->mid;
+		parked_enc.mid_count = p->mid_count;
+		parked_enc.heap_fd = p->heap_fd;
+		p->enc_fd = -1;
+		p->heap_fd = -1;
+		p->bs = NULL;
+		p->bs_count = 0;
+		p->mid = NULL;
+		p->mid_count = 0;
+	}
 	p->cap_fd = -1;
 	p->cap = NULL;
 	p->cap_count = 0;
@@ -1280,6 +1448,36 @@ enum kvmv_pipe_status kvmv_pipe_scale(struct kvmv_pipe *p,
 	return KVMV_PIPE_OK;
 }
 
+/*
+ * KVMV_PRIME_ASYNC: take the priming picture's output and input back, before
+ * the first live picture goes in, and ask for the keyframe that was held back
+ * for it. Mostly done by then: the encode ran while the capture frame was
+ * waited for and scaled.
+ */
+static int collect_prime(struct kvmv_pipe *p)
+{
+	struct v4l2_buffer buf;
+
+	if (!p->prime_pending)
+		return 0;
+	if (wait_dqbuf(p->enc_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, V4L2_MEMORY_MMAP,
+		       POLLIN, KVMV_PRIME_TIMEOUT_MS, &buf))
+		return fail(p, "encoder priming output");
+	if (qbuf(p->enc_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, V4L2_MEMORY_MMAP,
+		 buf.index, -1, 0))
+		return fail(p, "encoder CAPTURE requeue");
+	if (wait_dqbuf(p->enc_fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, V4L2_MEMORY_DMABUF,
+		       POLLOUT, KVMV_M2M_TIMEOUT_MS, &buf))
+		return fail(p, "encoder priming input");
+	p->prime_pending = 0;
+	if (p->key_after_prime) {
+		p->key_after_prime = 0;
+		if (set_ctrl(p->enc_fd, V4L2_CID_MPEG_VIDEO_FORCE_KEY_FRAME, 1))
+			return fail(p, "force keyframe");
+	}
+	return 0;
+}
+
 enum kvmv_pipe_status kvmv_pipe_encode_mid(struct kvmv_pipe *p,
 					   unsigned int mi,
 					   struct kvmv_encoded *out)
@@ -1290,6 +1488,8 @@ enum kvmv_pipe_status kvmv_pipe_encode_mid(struct kvmv_pipe *p,
 	memset(out, 0, sizeof(*out));
 	if (!p->running || mi >= p->mid_count)
 		return fail_msg(p, "no scaled picture to encode"), KVMV_PIPE_ERROR;
+	if (collect_prime(p))
+		return KVMV_PIPE_ERROR;
 	if (qbuf(p->enc_fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, V4L2_MEMORY_DMABUF, mi,
 		 p->mid[mi].fd, p->enc_out_fmt.sizeimage))
 		return fail(p, "encoder OUTPUT QBUF"), KVMV_PIPE_ERROR;
@@ -1648,6 +1848,21 @@ int kvmv_pipe_set_fps(struct kvmv_pipe *p, unsigned int fps)
 
 int kvmv_pipe_force_key(struct kvmv_pipe *p)
 {
+	if (p->prime_pending) {
+		/*
+		 * Asked now, the key could go to the priming picture if the
+		 * encoder has not taken it yet: hold it for the first live one
+		 * (collect_prime). Answer as the control would.
+		 */
+		struct v4l2_queryctrl query;
+
+		memset(&query, 0, sizeof(query));
+		query.id = V4L2_CID_MPEG_VIDEO_FORCE_KEY_FRAME;
+		if (xioctl(p->enc_fd, VIDIOC_QUERYCTRL, &query))
+			return fail(p, "force keyframe");
+		p->key_after_prime = 1;
+		return 0;
+	}
 	if (set_ctrl(p->enc_fd, V4L2_CID_MPEG_VIDEO_FORCE_KEY_FRAME, 1))
 		return fail(p, "force keyframe");
 	return 0;
