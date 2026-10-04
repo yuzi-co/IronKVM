@@ -168,7 +168,9 @@ func (s *Streamer) run() {
 	ticker := time.NewTicker(time.Second / time.Duration(fps))
 	defer ticker.Stop()
 
-	for range ticker.C {
+	// The first read goes out at once, not a tick later, as in the H.264
+	// loop: the viewer that started this loop is waiting for it.
+	for ; ; <-ticker.C {
 		clients := s.getClients()
 		if len(clients) == 0 {
 			log.Debug("mjpeg stream stopped due to no clients")

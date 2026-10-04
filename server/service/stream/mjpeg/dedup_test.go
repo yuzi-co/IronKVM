@@ -254,3 +254,33 @@ func TestAllPending(t *testing.T) {
 		t.Fatal("both slots full and not reported as pending")
 	}
 }
+
+// The viewer that starts the loop waits for its first read, so that read must
+// not wait for the first tick. At 10 fps a tick is 100 ms.
+func TestTheFirstReadDoesNotWaitForATick(t *testing.T) {
+	withScreenFPS(t, 10)
+	withCaptureFPS(t)
+	withRefreshInterval(t, time.Minute)
+	withReadMjpeg(t, func(n int) ([]byte, int) { return []byte{byte(n)}, 0 })
+
+	s := NewStreamer()
+	ctx := addBareClient(s)
+
+	stop := make(chan struct{})
+	defer close(stop)
+	received := drain(clientOf(s, ctx), stop)
+
+	done := make(chan struct{})
+	start := time.Now()
+	go func() { defer close(done); s.run() }()
+
+	waitFor(t, "the first frame", func() bool { return received() > 0 })
+	waited := time.Since(start)
+
+	removeBareClient(s, ctx)
+	<-done
+
+	if waited >= 80*time.Millisecond {
+		t.Fatalf("the first frame took %v, a tick is 100ms", waited)
+	}
+}
