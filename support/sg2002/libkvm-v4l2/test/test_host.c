@@ -1183,13 +1183,13 @@ static void test_negotiate(void)
 static void test_start_policy(void)
 {
 	/* The default per encoder, and KVMV_PRIME over it. */
-	CHECK_EQ(kvmv_prime_mode(NULL, 0), KVMV_PRIME_ASYNC);
-	CHECK_EQ(kvmv_prime_mode("", 0), KVMV_PRIME_ASYNC);
+	CHECK_EQ(kvmv_prime_mode(NULL, 0), KVMV_PRIME_NONE);
+	CHECK_EQ(kvmv_prime_mode("", 0), KVMV_PRIME_NONE);
 	CHECK_EQ(kvmv_prime_mode(NULL, 1), KVMV_PRIME_NONE);
 	CHECK_EQ(kvmv_prime_mode("1", 1), KVMV_PRIME_WAIT);
 	CHECK_EQ(kvmv_prime_mode("0", 0), KVMV_PRIME_NONE);
 	CHECK_EQ(kvmv_prime_mode("2", 1), KVMV_PRIME_ASYNC);
-	CHECK_EQ(kvmv_prime_mode("3", 0), KVMV_PRIME_ASYNC);
+	CHECK_EQ(kvmv_prime_mode("3", 0), KVMV_PRIME_NONE);
 	CHECK_EQ(kvmv_prime_mode("12", 1), KVMV_PRIME_NONE);
 
 	/* A receiver answer stands in for a query while it is young enough. */

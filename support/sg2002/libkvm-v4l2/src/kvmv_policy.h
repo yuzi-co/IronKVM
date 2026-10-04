@@ -177,7 +177,9 @@ int kvmv_encoder_fps(int asked, int capture, int delivered, int current);
  * starts its sequence at STREAMON and makes its first picture an IDR, so the
  * first live picture is the first output. The Coda980 waits for a queued
  * picture (min_queued_buffers 1), so its sequence setup moves into the first
- * read.
+ * read; in trial 24 that encode took no longer than one after a priming
+ * picture (12 ms), and the build was 23 ms shorter. Both encoders' first output is an IDR with
+ * its parameter sets.
  *
  * KVMV_PRIME_WAIT: one black picture encoded and its output thrown away
  * before the start returns, as before trial 24.
@@ -194,7 +196,9 @@ enum kvmv_prime {
 
 /*
  * The mode for an encoder, from KVMV_PRIME ("0", "1", "2", or NULL or empty
- * for the default): none for the WAVE420L (hevc), async for the Coda980.
+ * for the default): none for either encoder (trial 24: async came to 66 ms
+ * from build to first H.264 picture, none to 59). hevc is kept for a
+ * per-encoder default.
  */
 enum kvmv_prime kvmv_prime_mode(const char *env, int hevc);
 
