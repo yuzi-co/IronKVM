@@ -157,6 +157,10 @@ func (s *Streamer) run() {
 	// memory in full. The H.264 loop says the same thing for the same reason.
 	setCaptureFPS(fps)
 
+	// A second P while the stream runs, so sending one picture overlaps the
+	// cgo call that waits for the next. See moreProcs.
+	defer moreProcs()()
+
 	// The comparison holds a whole JPEG, so let go of it when the stream ends
 	// rather than keeping it for as long as the process runs.
 	defer func() { s.lastFrame = nil }()
