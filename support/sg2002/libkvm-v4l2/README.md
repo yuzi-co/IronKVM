@@ -191,6 +191,9 @@ has read for 10 s.
 | `KVMV_MID_BUFFERS` | 2 | NV12 buffers between scaler and encoder. |
 | `KVMV_BITSTREAM_BUFFERS` | 3 | Encoder output buffers. |
 | `KVMV_IDLE_MS` | 10000 | Tear down an unread pipeline after this long; 0 never does. |
+| `KVMV_PARK_ENCODER` | 1 | Keep the encoder node, streamed off, with its bitstream and middle buffers over a teardown, for the next start of the same codec and size. A parked H.264 encoder keeps the Coda980's clocks on (the driver enables them at open); 0 closes it. |
+| `KVMV_PRIME` | 0 | Encoder start: 0 no priming picture, 1 encode a black picture and wait for it (before trial 24), 2 queue it and let the first read collect its output. |
+| `KVMV_RECEIVER_CACHE_MS` | 1500 | A build uses the monitor thread's receiver answer up to this old instead of asking again; 0 always asks. |
 | `KVMV_H264_QP` | `18:42` | H.264 QP range, `min:max`, 0 to 51. `0:51` leaves the encoder's own. |
 | `KVMV_H264_VBV_DELAY_MS` | 1000 | Rate-control initial delay; 0 leaves the encoder's own. |
 | `KVMV_H265_QP` | `12:42` | H.265 QP range, as `KVMV_H264_QP`. Lower than H.264's minimum: at 18 the WAVE420L stops short of the asked bitrate on screen content (ironkvm-dist run sheet, trial 20). |
