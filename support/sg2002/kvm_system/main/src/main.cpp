@@ -1,4 +1,5 @@
 #include "config.h"
+#include "video_watchdog.h"
 
 using namespace maix;
 using namespace maix::sys;
@@ -285,23 +286,28 @@ int main(int argc, char* argv[])
 	}
 
 	// while(!app::need_exit()){
-	uint8_t kvm_wd_count = 0;
-	int kvm_wd_state = 0;
+	// The video watchdog arms on the first heartbeat after it is switched on,
+	// so kvm_system without a running server does not reboot the board (#59).
+	video_wd_t video_wd = {0, 0};
 	while(kvm_sys_state.sys_thread_running){
 		time::sleep_ms(1000);
-		if(watchdog_sf_is_open()){
-			kvm_wd_state = check_watchdog();
-			if(kvm_wd_state == 1) kvm_wd_count = 0;
-			else if(kvm_wd_state == 0) {
-				kvm_wd_count++;
-				printf("Vision service unresponsive : %d\n", kvm_wd_count);
-			}
-			if(kvm_wd_count > KVM_WD_COUNT_MAX){
-				printf("Vision service unresponsive, restart now\n");
-				system("reboot");
-			}
-		} else {
-			kvm_wd_count = 0;
+		int enabled = watchdog_sf_is_open();
+		int fed = enabled ? check_watchdog() : 0;
+		uint8_t was_armed = video_wd.armed;
+		switch (video_wd_step(&video_wd, enabled, fed, KVM_WD_COUNT_MAX)) {
+		case VIDEO_WD_FED:
+			if (!was_armed)
+				printf("Vision service heartbeat seen, video watchdog armed\n");
+			break;
+		case VIDEO_WD_MISSED:
+			printf("Vision service unresponsive : %d\n", video_wd.misses);
+			break;
+		case VIDEO_WD_REBOOT:
+			printf("Vision service unresponsive, restart now\n");
+			system("reboot");
+			break;
+		default:
+			break;
 		}
 	}
 	kvm_sys_state.sys_thread_running = 0;
