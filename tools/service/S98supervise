@@ -141,7 +141,8 @@ warn() { say warning "$@"; }
 # needs that answer too and a second curl every pass is a second fork for
 # nothing. The verdict comes back in ACTION rather than on stdout for the same
 # reason: `$(action)` is a subshell on every pass.
-action() {   # $1 = what serving said this pass: 0 answered, 1 did not, 2 could not run
+# $1 = what serving said this pass: 0 answered, 1 did not, 2 could not run
+action() {
     answered=$1
 
     # Before anything else. An update stops the server and then replaces
@@ -650,7 +651,8 @@ ssh_listening() {
 #
 # The answer is the return status, 0 to restart, so the loop asks without a
 # subshell.
-ssh_action() {   # $1 = probe answer, $2 = seconds down, $3 = seconds since the last cure
+# $1 = probe answer, $2 = seconds down, $3 = seconds since the last cure
+ssh_action() {
     answered=$1; down_for=$2; since_cure=$3
 
     # Anything that is not a clear "no" is not evidence. A board whose socket
@@ -708,7 +710,8 @@ cure_ssh() {
 # mkfifo this returns 1 and the caller starts the program as it always did.
 # SYSLOG_LOGGER names another logger, or none when empty.
 SYSLOG_LOGGER=${SYSLOG_LOGGER-$(command -v logger 2>/dev/null)}
-syslog_pipe() {   # $1 = tag
+# $1 = tag
+syslog_pipe() {
     [ -n "$SYSLOG_LOGGER" ] || return 1
     fifo=${SYSLOG_FIFO_DIR:-/tmp}/.syslog-$1.$$
     rm -f "$fifo"

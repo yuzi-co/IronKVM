@@ -616,7 +616,8 @@ refresh_kvm_system() {
 # mkfifo this returns 1 and the caller starts the program as it always did.
 # SYSLOG_LOGGER names another logger, or none when empty.
 SYSLOG_LOGGER=${SYSLOG_LOGGER-$(command -v logger 2>/dev/null)}
-syslog_pipe() {   # $1 = tag
+# $1 = tag
+syslog_pipe() {
     [ -n "$SYSLOG_LOGGER" ] || return 1
     fifo=${SYSLOG_FIFO_DIR:-/tmp}/.syslog-$1.$$
     rm -f "$fifo"
