@@ -35,6 +35,9 @@ struct kvmv_hwjpeg {
 	int fd; /* -1 when closed */
 	int import; /* the configured mode: 1 dma-buf import, 0 copy */
 	unsigned int width, height, stride; /* the configured picture; 0 when none */
+	uint32_t fourcc; /* its OUTPUT format: NV12, or UYVY for a capture frame */
+	int limited; /* the source is limited range; the unit expands it (0920) */
+	unsigned int out_count; /* OUTPUT buffers: 1, or one per capture buffer */
 	uint32_t out_size; /* the OUTPUT sizeimage the driver asked for */
 	int quality; /* the control's value, 0 when not set yet */
 	int out_on, cap_on;
@@ -80,5 +83,20 @@ size_t kvmv_hwjpeg_src_size(unsigned int stride, unsigned int height);
 int kvmv_hwjpeg_encode(struct kvmv_hwjpeg *hw, const struct kvmv_nv12 *image,
 		       int src_fd, size_t src_size, int quality, int def_quality,
 		       const uint8_t **data, size_t *size);
+
+/*
+ * Encode a captured frame as it is: a packed 4:2:2 capture buffer (fourcc
+ * UYVY), imported by its dma-buf as OUTPUT buffer index of count, one per
+ * capture buffer so each keeps its attachment. limited asks the unit to
+ * expand limited range to JPEG's full range. Needs ironkvm-dist patch 0920;
+ * without it the driver answers NV12 to the format and this returns -1 with
+ * errno ENOTSUP. Results as kvmv_hwjpeg_encode.
+ */
+int kvmv_hwjpeg_encode_frame(struct kvmv_hwjpeg *hw, int src_fd, size_t src_size,
+			     unsigned int index, unsigned int count,
+			     unsigned int width, unsigned int height,
+			     unsigned int stride, uint32_t fourcc, int limited,
+			     int quality, int def_quality,
+			     const uint8_t **data, size_t *size);
 
 #endif

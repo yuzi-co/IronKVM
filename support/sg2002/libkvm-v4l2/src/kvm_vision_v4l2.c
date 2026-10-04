@@ -870,6 +870,97 @@ static int hw_jpeg_ready(void)
 }
 
 /*
+ * Direct MJPEG off: KVMV_JPEG_DIRECT=0, or a JPEG unit without packed input
+ * (ironkvm-dist patch 0920). Set once, under pipe_lock.
+ */
+static int hw_jpeg_direct_off = -1;
+static int hw_jpeg_direct_announced;
+
+/* A return of read_direct_locked: take the picture through the scaler. */
+#define KVMV_USE_SCALER 1001
+
+/*
+ * An MJPEG read at the capture's own size, without the scaler: the JPEG unit
+ * reads the UYVY capture buffer itself and expands its limited range to full
+ * range (ironkvm-dist patch 0920). At 1080p the scaler only converted the
+ * format and the range, at the cost of reading 4 MB and writing 3 MB that
+ * the unit then read back, for every picture. Answers KVMV_USE_SCALER when
+ * this picture needs the scaler (another size, another capture format) or
+ * the unit cannot do it.
+ */
+static int read_direct_locked(unsigned int width, unsigned int height, int quality,
+			      uint8_t **data, uint32_t *size)
+{
+	const struct v4l2_pix_format *cap = &pipe_state.cap_fmt;
+	struct kvmv_frame frame;
+	struct kvmv_plan plan;
+	struct kvmv_slot *slot;
+	const uint8_t *jpeg;
+	size_t jpeg_size;
+	uint64_t t0, t1, t2;
+	int result, rc, saved;
+
+	if (hw_jpeg_direct_off < 0)
+		hw_jpeg_direct_off = env_uint("KVMV_JPEG_DIRECT", 1) == 0;
+	if (hw_jpeg_direct_off || cap->pixelformat != V4L2_PIX_FMT_UYVY ||
+	    kvmv_plan_output(cap->width, cap->height, width, height, &plan) ||
+	    plan.out_width != cap->width || plan.out_height != cap->height)
+		return KVMV_USE_SCALER;
+
+	t0 = now_us();
+	result = pipe_failure(kvmv_pipe_lend(&pipe_state, KVMV_FRAME_TIMEOUT_MS, &frame));
+	if (result != 0)
+		return result;
+	no_frame_count = 0;
+	set_source_locked(1);
+
+	t1 = now_us();
+	rc = kvmv_hwjpeg_encode_frame(&hw_jpeg, frame.fd, frame.size, frame.index,
+				      pipe_state.cap_count, cap->width, cap->height,
+				      cap->bytesperline, cap->pixelformat,
+				      cap->quantization != V4L2_QUANTIZATION_FULL_RANGE,
+				      quality, KVMV_JPEG_QUALITY_DEFAULT, &jpeg, &jpeg_size);
+	saved = errno;
+	if (kvmv_pipe_give_back(&pipe_state, &frame))
+		return pipe_failure(KVMV_PIPE_ERROR);
+	if (rc) {
+		if (saved == ENOTSUP) {
+			log_msg("MJPEG: %s; the scaler converts every picture", hw_jpeg.error);
+			hw_jpeg_direct_off = 1;
+			return KVMV_USE_SCALER;
+		}
+		log_msg("%s", hw_jpeg.error);
+		if (++hw_jpeg_failures >= KVMV_HWJPEG_FAILURE_LIMIT) {
+			log_msg("MJPEG: %d hardware failures in a row; software JPEG from now on",
+				hw_jpeg_failures);
+			kvmv_hwjpeg_close(&hw_jpeg);
+		}
+		return KVMV_USE_SOFTWARE;
+	}
+	hw_jpeg_failures = 0;
+	if (!__atomic_exchange_n(&hw_jpeg_direct_announced, 1, __ATOMIC_RELAXED))
+		log_msg("MJPEG: the JPEG unit reads the capture buffer at %ux%u, %s range expanded, no scaler",
+			cap->width, cap->height,
+			cap->quantization != V4L2_QUANTIZATION_FULL_RANGE ? "limited" : "full (not)");
+
+	t2 = now_us();
+	slot = claim_slot((uint32_t)jpeg_size);
+	if (slot == NULL)
+		return IMG_BUFFER_FULL;
+	kvmv_copy_from_device(slot->data, jpeg, jpeg_size);
+	slot->size = (uint32_t)jpeg_size;
+	slot->type = IMG_MJPEG_TYPE;
+	DBG("MJPEG %ux%u q%d (unit, direct, %s): picture %llu us, encode %llu us, copy %llu us, %zu bytes",
+	    cap->width, cap->height, quality,
+	    hw_jpeg.cap_cached ? "cached" : "uncached",
+	    (unsigned long long)(t1 - t0), (unsigned long long)(t2 - t1),
+	    (unsigned long long)(now_us() - t2), jpeg_size);
+	*data = slot->data;
+	*size = slot->size;
+	return IMG_MJPEG_TYPE;
+}
+
+/*
  * An MJPEG read through the JPEG unit: the snapshot scaler context's buffer
  * goes straight to the unit (or is copied into its own buffer with
  * KVMV_JPEG_IMPORT=0), and the JPEG is copied once, into the slot. About
@@ -886,6 +977,10 @@ static int read_hw_locked(unsigned int width, unsigned int height, int quality,
 	size_t jpeg_size;
 	uint64_t t0, t1, t2;
 	int result;
+
+	result = read_direct_locked(width, height, quality, data, size);
+	if (result != KVMV_USE_SCALER)
+		return result;
 
 	t0 = now_us();
 	result = pipe_failure(kvmv_pipe_snapshot(&pipe_state, width, height,

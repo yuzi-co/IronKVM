@@ -148,6 +148,19 @@ The unit encodes widths in steps of 16 only (it rounds the width and writes the 
 into the header), so other widths, and three hardware failures in a row, fall back to
 software. The node is closed when the pipeline goes down, which turns the unit's clocks off.
 
+**Without the scaler.** When the picture asked for is the capture's own size (1080p) and the
+capture is UYVY, the unit reads the capture buffer itself: the buffer is lent by the pipeline
+(`kvmv_pipe_lend`), imported on the unit's OUTPUT queue (one buffer index per capture buffer, so
+each keeps its attachment) and queued back to the capture once the JPEG is done. The unit codes
+4:2:0 and expands limited range to full range in its quantiser (ironkvm-dist patches 0920 and
+0921). That saves the scaler's 4 MB read and 3 MB write and the unit's 3 MB read back for every
+picture, on a core whose DRAM path is the bottleneck: trial 22 measured 27.6 against 26.1 fps
+over HTTPS at 1080p, the core 80 to 88% busy against 91 to 96%, and MJPEG capture latency p50
+61 to 71 against 77 to 88 ms. A kernel without 0920 answers NV12 to the format; the library
+says so once and keeps the scaler. `KVMV_JPEG_DIRECT=0` keeps the scaler too, for comparison.
+The capture buffer is the frame's 1080 lines plus the eight the unit reads past them (0921); the
+library takes its size from the dma-buf.
+
 **Software.** libjpeg-turbo 3.1.2's TurboJPEG API, linked statically: planar 4:2:0 from the NV12
 picture (chroma deinterleaved, no RGB), fast integer DCT. ironkvm-dist
 `socs/sophgo-sg2002/mainline/jpeg-bench` measured about 210 ms per picture at 1080p, 94 ms at

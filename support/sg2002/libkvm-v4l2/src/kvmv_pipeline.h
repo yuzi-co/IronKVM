@@ -255,6 +255,27 @@ enum kvmv_pipe_status kvmv_pipe_snapshot(struct kvmv_pipe *pipe,
 void kvmv_pipe_snapshot_done(struct kvmv_pipe *pipe);
 
 /*
+ * A captured frame lent as it is, to a device that reads the capture format
+ * itself: the JPEG unit with ironkvm-dist patch 0920 takes the UYVY capture
+ * buffer at the capture's own size, so an MJPEG picture needs no scaler
+ * pass. kvmv_pipe_lend takes the newest frame, as a snapshot does, and
+ * describes it in *frame; kvmv_pipe_give_back queues it to the capture
+ * again. In between the frame is the caller's, and the pipeline must not be
+ * stopped.
+ */
+struct kvmv_frame {
+	unsigned int index; /* the capture buffer */
+	int fd; /* its dma-buf */
+	size_t size; /* that buffer's size */
+	const struct v4l2_pix_format *fmt; /* the capture format */
+};
+
+enum kvmv_pipe_status kvmv_pipe_lend(struct kvmv_pipe *pipe,
+				     unsigned int timeout_ms,
+				     struct kvmv_frame *frame);
+int kvmv_pipe_give_back(struct kvmv_pipe *pipe, const struct kvmv_frame *frame);
+
+/*
  * Copy out of the encoder's bitstream buffer. That buffer comes from the
  * Coda's no-map shared-dma-pool, so user space sees it uncached and every load
  * goes to DRAM: copy it once, in 8-byte loads where alignment allows, and
