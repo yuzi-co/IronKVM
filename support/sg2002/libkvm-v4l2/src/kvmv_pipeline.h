@@ -28,6 +28,7 @@
 #include "kvmv_policy.h"
 
 #define KVMV_PATH_MAX 64
+#define KVMV_START_STEPS 10
 
 struct kvmv_devices {
 	char capture[KVMV_PATH_MAX];
@@ -82,6 +83,10 @@ struct kvmv_pipe_cfg {
 	/* Longest wait at a read for a capture frame about to complete,
 	 * instead of taking one more than half a frame time old; 0 never. */
 	unsigned int pickup_wait_ms;
+	/* Start the capture first when kvmv_pipe_park left buffers that fit,
+	 * so the receiver and the CSI link come up while the encoder is set
+	 * up, instead of after it. */
+	int early_capture;
 };
 
 /* What the encoder reports back. -1 where it would not say. */
@@ -155,10 +160,15 @@ struct kvmv_pipe {
 	uint32_t cap_seq; /* its sequence number */
 	uint32_t cap_interval_us; /* the source's frame time, from the timestamps */
 	uint32_t pickup_wait_max_us; /* kvmv_pipe_cfg.pickup_wait_ms */
-	/* kvmv_pipe_start's steps, microseconds from its start: open, negotiate,
-	 * middle buffers, bitstream buffers, priming encode, capture buffers,
-	 * capture STREAMON, scaler STREAMON. For KVMV_DEBUG. */
-	uint32_t start_us[8];
+	/* With an early capture start: frames that completed before this
+	 * CLOCK_MONOTONIC time are given back, not taken. 0 once a frame was. */
+	uint64_t fresh_after_us;
+	int early; /* this start began with the capture (cfg.early_capture) */
+	/* kvmv_pipe_start's steps, microseconds from its start: open, early
+	 * capture STREAMON, negotiate, middle buffers, bitstream buffers,
+	 * encoder STREAMON, priming encode, capture buffers, capture STREAMON,
+	 * scaler STREAMON. For KVMV_DEBUG. */
+	uint32_t start_us[KVMV_START_STEPS];
 	char error[192];
 };
 

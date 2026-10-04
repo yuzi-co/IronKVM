@@ -208,3 +208,27 @@ func TestACaptureFailureIsDeliveredRatherThanSwallowed(t *testing.T) {
 		t.Fatal("the capture failure never reached the subscriber")
 	}
 }
+
+// A viewer that opens a stream waits for the loop's first read, so that read
+// must not wait for the first tick. At 10 fps a tick is 100 ms; the first frame
+// has to arrive well inside it.
+func TestTheFirstReadDoesNotWaitForATick(t *testing.T) {
+	withScreenFPS(t, 10)
+	withCapture(t, func(uint16, uint16, uint16) ([]byte, int) {
+		return []byte{0x00, 0x00, 0x00, 0x01}, 3
+	})
+
+	source := newH264Source()
+	start := time.Now()
+	subscription := source.subscribe(nil)
+	defer subscription.Close()
+
+	select {
+	case <-subscription.Frames():
+		if waited := time.Since(start); waited >= 80*time.Millisecond {
+			t.Errorf("the first frame took %v, a tick is 100ms", waited)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("no frame")
+	}
+}

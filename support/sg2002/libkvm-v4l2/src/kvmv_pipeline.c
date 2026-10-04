@@ -767,7 +767,9 @@ static int alloc_capture(struct kvmv_pipe *p, unsigned int wanted)
  * and gives the first live picture a reference. Its output is thrown away;
  * the caller asks for a keyframe for the first live frame.
  */
-static int prime_encoder(struct kvmv_pipe *p)
+static uint64_t now_us(void);
+
+static int prime_encoder(struct kvmv_pipe *p, uint64_t start0)
 {
 	size_t luma = (size_t)p->enc_out_fmt.bytesperline * p->enc_out_fmt.height;
 	size_t frame = luma * 3 / 2;
@@ -796,6 +798,8 @@ static int prime_encoder(struct kvmv_pipe *p)
 	if (stream(p->enc_fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, 1))
 		return fail(p, "encoder OUTPUT STREAMON");
 	p->enc_out_on = 1;
+	/* STREAMON has set the encoder up: its buffers and sequence. */
+	p->start_us[5] = (uint32_t)(now_us() - start0);
 
 	if (wait_dqbuf(p->enc_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, V4L2_MEMORY_MMAP,
 		       POLLIN, KVMV_PRIME_TIMEOUT_MS, &buf))
@@ -899,39 +903,67 @@ int kvmv_pipe_start(struct kvmv_pipe *p, const struct kvmv_devices *d,
 	subscribe_source_change(p->cap_fd);
 	START_STAMP(0);
 
+	/*
+	 * Buffers kept by kvmv_pipe_park need no allocation, so the capture
+	 * can start first. Its STREAMON brings the receiver and the CSI link
+	 * up, and the first frames arrive while the encoder below is set up
+	 * and primes, which takes several frame times. Started last, as on a
+	 * first build, the pipeline waits for both one after the other.
+	 * Capture before the scaler either way: while the CSI driver streams,
+	 * the VIP fabric clocks are on and VPSS register access is safe.
+	 */
+	if (cfg->early_capture && parked.bufs &&
+	    get_fmt(p->cap_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, &p->cap_fmt) == 0 &&
+	    parked.sizeimage == p->cap_fmt.sizeimage &&
+	    parked.count == (cfg->capture_buffers ? cfg->capture_buffers : 2)) {
+		if (adopt_capture(p))
+			goto out;
+		if (stream(p->cap_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, 1)) {
+			fail(p, "capture STREAMON");
+			goto out;
+		}
+		p->cap_on = 1;
+		p->early = 1;
+	}
+	START_STAMP(1);
+
 	if (kvmv_pipe_negotiate(p, cfg))
 		goto out;
-	START_STAMP(1);
+	START_STAMP(2);
 	if (alloc_mid(p, cfg->mid_buffers ? cfg->mid_buffers : 2))
 		goto out;
-	START_STAMP(2);
+	START_STAMP(3);
 	if (alloc_bitstream(p, cfg->bitstream_buffers ? cfg->bitstream_buffers : 3))
 		goto out;
-	START_STAMP(3);
-	if (prime_encoder(p))
-		goto out;
 	START_STAMP(4);
-	if (parked.bufs && parked.sizeimage == p->cap_fmt.sizeimage &&
-	    parked.count == (cfg->capture_buffers ? cfg->capture_buffers : 2)) {
+	if (prime_encoder(p, start0))
+		goto out;
+	START_STAMP(6);
+	if (p->early) {
+		/* Adopted above. */
+	} else if (parked.bufs && parked.sizeimage == p->cap_fmt.sizeimage &&
+		   parked.count == (cfg->capture_buffers ? cfg->capture_buffers : 2)) {
 		if (adopt_capture(p))
 			goto out;
 	} else {
 		/* Nothing parked that fits: the node was opened afresh, or
-		 * holds buffers of another size, which REQBUFS replaces. */
+		 * holds buffers of another size, which REQBUFS replaces. The
+		 * encoder has taken its working memory by now. */
 		free_bufs(&parked.bufs, &parked.count);
 		if (alloc_capture(p, cfg->capture_buffers ? cfg->capture_buffers : 2))
 			goto out;
 	}
-	START_STAMP(5);
-	/* Capture first: while the CSI driver streams, the VIP fabric clocks
-	 * are on and VPSS register access is safe. */
-	if (stream(p->cap_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, 1)) {
-		/* EPIPE here is the capture link refusing the source format. */
-		fail(p, "capture STREAMON");
-		goto out;
+	START_STAMP(7);
+	if (!p->cap_on) {
+		if (stream(p->cap_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, 1)) {
+			/* EPIPE here is the capture link refusing the source
+			 * format. */
+			fail(p, "capture STREAMON");
+			goto out;
+		}
+		p->cap_on = 1;
 	}
-	p->cap_on = 1;
-	START_STAMP(6);
+	START_STAMP(8);
 	if (request(p->vpss_fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, V4L2_MEMORY_DMABUF,
 		    p->cap_count) < (int)p->cap_count) {
 		fail(p, "scaler OUTPUT REQBUFS");
@@ -947,7 +979,11 @@ int kvmv_pipe_start(struct kvmv_pipe *p, const struct kvmv_devices *d,
 		goto out;
 	}
 	p->vpss_cap_on = 1;
-	START_STAMP(7);
+	START_STAMP(9);
+	/* Frames that completed while the encoder was set up are as old as
+	 * that took: the first read waits for the next one instead. */
+	if (p->early)
+		p->fresh_after_us = now_us();
 	p->running = 1;
 	return 0;
 
@@ -1105,6 +1141,16 @@ static enum kvmv_pipe_status newest_capture(struct kvmv_pipe *p,
 					       KVMV_PIPE_ERROR;
 				continue;
 			}
+			if (p->fresh_after_us &&
+			    (uint64_t)buf.timestamp.tv_sec * 1000000U +
+			    (uint64_t)buf.timestamp.tv_usec < p->fresh_after_us) {
+				/* Completed before the pipeline was ready. */
+				if (qbuf(p->cap_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE,
+					 V4L2_MEMORY_MMAP, buf.index, -1, 0))
+					return fail(p, "capture requeue"),
+					       KVMV_PIPE_ERROR;
+				continue;
+			}
 			if (held >= 0 &&
 			    qbuf(p->cap_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE,
 				 V4L2_MEMORY_MMAP, (unsigned int)held, -1, 0))
@@ -1139,6 +1185,7 @@ static enum kvmv_pipe_status newest_capture(struct kvmv_pipe *p,
 
 			if (wait == 0) {
 				*index = (unsigned int)held;
+				p->fresh_after_us = 0;
 				return KVMV_PIPE_OK;
 			}
 			/* Once: poll for the next frame, then take the newest. */
@@ -1150,6 +1197,7 @@ static enum kvmv_pipe_status newest_capture(struct kvmv_pipe *p,
 		if (now >= deadline) {
 			if (held >= 0) {
 				*index = (unsigned int)held;
+				p->fresh_after_us = 0;
 				return KVMV_PIPE_OK;
 			}
 			snprintf(p->error, sizeof(p->error),

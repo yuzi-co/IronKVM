@@ -448,6 +448,7 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 	unsigned int need_width, need_height;
 	enum kvmv_codec codec = pipe_codec;
 	int hevc = codec == KVMV_CODEC_KIND_HEVC;
+	uint64_t query_us;
 	int result;
 
 	if (next_start_ms && now_ms() < next_start_ms)
@@ -462,10 +463,12 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 		pipe_codec = codec;
 	}
 
+	query_us = now_us();
 	capture_frame_size(&need_width, &need_height);
 	result = query_receiver(need_width, need_height);
 	if (result != 0)
 		return start_failed(result, 500);
+	query_us = now_us() - query_us;
 
 	memset(&cfg, 0, sizeof(cfg));
 	cfg.codec = codec;
@@ -487,6 +490,7 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 	cfg.pickup_wait_ms = env_uint("KVMV_PICKUP_WAIT_MS", KVMV_PICKUP_WAIT_MS);
 	cfg.mid_buffers = env_uint("KVMV_MID_BUFFERS", 2);
 	cfg.bitstream_buffers = env_uint("KVMV_BITSTREAM_BUFFERS", 3);
+	cfg.early_capture = (int)env_uint("KVMV_EARLY_CAPTURE", 1);
 
 	if (kvmv_pipe_start(&pipe_state, &devices, &cfg)) {
 		int err = errno;
@@ -505,11 +509,14 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 		return start_failed(IMG_VENC_ERROR, 1000);
 	}
 
-	DBG("pipeline start, ms: open %.1f, formats %.1f, middle buffers %.1f, bitstream buffers %.1f, priming %.1f, capture buffers %.1f, capture on %.1f, scaler on %.1f",
+	DBG("pipeline start, ms: receiver %.1f, then open %.1f, early capture on %.1f, formats %.1f, middle buffers %.1f, bitstream buffers %.1f, encoder on %.1f, priming %.1f, capture buffers %.1f, capture on %.1f, scaler on %.1f%s",
+	    query_us / 1000.0,
 	    pipe_state.start_us[0] / 1000.0, pipe_state.start_us[1] / 1000.0,
 	    pipe_state.start_us[2] / 1000.0, pipe_state.start_us[3] / 1000.0,
 	    pipe_state.start_us[4] / 1000.0, pipe_state.start_us[5] / 1000.0,
-	    pipe_state.start_us[6] / 1000.0, pipe_state.start_us[7] / 1000.0);
+	    pipe_state.start_us[6] / 1000.0, pipe_state.start_us[7] / 1000.0,
+	    pipe_state.start_us[8] / 1000.0, pipe_state.start_us[9] / 1000.0,
+	    pipe_state.early ? " (capture started first)" : "");
 	pipe_width = width;
 	pipe_height = height;
 	pipe_bitrate = bitrate_bps;
@@ -806,8 +813,14 @@ static int read_video_locked(unsigned int width, unsigned int height,
 		set_source_locked(1);
 		watch_rate(slot->size);
 		if (cold_start_us) {
-			DBG("first picture %llu us after the pipeline build began",
-			    (unsigned long long)(now_us() - cold_start_us));
+			const struct kvmv_stage_times *t = &pipe_state.times;
+
+			DBG("first picture %llu us after the pipeline build began; %u frames encoded for it: capture wait %llu us, scale %llu us, encode %llu us, copy %llu us",
+			    (unsigned long long)(now_us() - cold_start_us), t->frames,
+			    (unsigned long long)t->capture_us,
+			    (unsigned long long)t->scale_us,
+			    (unsigned long long)t->encode_us,
+			    (unsigned long long)t->copy_us);
 			cold_start_us = 0;
 		}
 

@@ -271,7 +271,9 @@ func (s *H264Source) run() {
 	ticker := time.NewTicker(duration)
 	defer ticker.Stop()
 
-	for range ticker.C {
+	// The first read goes out at once, not a tick later: a viewer that opens
+	// the stream waits for this frame, and a tick is 33 ms at 30 fps.
+	for ; ; <-ticker.C {
 		subscribers := s.snapshot()
 		if len(subscribers) == 0 {
 			if s.stopIfIdle() {
