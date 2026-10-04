@@ -29,10 +29,14 @@ FROM node:22-bookworm
 # same message for the edited file, which is the string `slot install` matches
 # to tell an image that was edited after signing from one signed by a key
 # nobody trusts.
+#
+# kmod is for that repository's abslots/build-image.sh, which runs depmod on a
+# slot kernel's own modules (SLOT_MODULES_DIR, the mainline slot image), and
+# for its test-build-image.sh, which needs depmod to run at all.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         fdisk util-linux dosfstools mtools e2fsprogs zstd xz-utils \
         u-boot-tools cpio device-tree-compiler openssl ca-certificates \
-        coreutils tar gzip file patchelf parted exfatprogs minisign \
+        coreutils tar gzip file patchelf parted exfatprogs minisign kmod \
     && rm -rf /var/lib/apt/lists/*
 
 # The client only. The daemon is the workstation's, reached over the socket.
