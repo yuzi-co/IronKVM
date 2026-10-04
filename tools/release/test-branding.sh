@@ -48,15 +48,25 @@ check "the update page offers it as a one-click preset" \
     "$(grep -c 'customServer.useSipeed' "$ROOT/web/src/pages/desktop/menu/settings/update/custom-server.tsx")" "1"
 check "the preset has an English label" \
     "$(grep -c 'useSipeed:' "$ROOT/web/src/i18n/locales/en.ts")" "1"
+# 06c0889f moved the disclaimer into the locales, so the panel names the key
+# and en.ts carries the words.
 check "the About panel carries the disclaimer" \
-    "$(grep -c 'Not affiliated with Sipeed' "$ROOT/web/src/pages/desktop/menu/settings/about/community.tsx")" "1"
+    "$(grep -c "t('settings.about.disclaimer')" "$ROOT/web/src/pages/desktop/menu/settings/about/community.tsx")" "1"
+check "the disclaimer says it is not Sipeed's" \
+    "$(grep -c 'Not affiliated with Sipeed' "$ROOT/web/src/i18n/locales/en.ts")" "1"
+check "every locale carries a disclaimer" \
+    "$(grep -L 'disclaimer:' "$ROOT"/web/src/i18n/locales/*.ts 2>/dev/null | grep -c .)" "0"
 check "the About panel still links the hardware vendor" \
     "$(grep -c 'wiki.sipeed.com' "$ROOT/web/src/pages/desktop/menu/settings/about/community.tsx")" "2"
 
 # Hardware references must survive. A blanket search and replace across the
-# locale files is the failure this guards against.
-check "the reset instruction still names the hardware" \
-    "$(grep -c 'BOOT button on the NanoKVM' "$ROOT/web/src/i18n/locales/en.ts")" "2"
+# locale files is the failure this guards against. Since 06c0889f the reset
+# text names the device the user holds, the IronKVM, and the hardware
+# reference is the link beside it to Sipeed's reset page.
+check "the reset instruction names the button" \
+    "$(grep -c 'BOOT button on the IronKVM' "$ROOT/web/src/i18n/locales/en.ts")" "2"
+check "the reset tip still links the hardware's own reset page" \
+    "$(grep -c 'wiki.sipeed.com/hardware/en/kvm/NanoKVM/reset.html' "$ROOT/web/src/pages/auth/login/tips.tsx")" "1"
 # The wording changed when the card image gained a version of its own: the field
 # now shows both, so the tooltip has to name both. What this guards is unchanged
 # - the hardware reference must survive, because the system image is Sipeed's
@@ -68,11 +78,12 @@ check "the tooltip names the card image too" \
 check "the product strings were changed" \
     "$(grep -c 'About IronKVM' "$ROOT/web/src/i18n/locales/en.ts")" "1"
 
-# Only the English source is retranslated. A part-translated locale file is
-# worse than an untouched one, because the reader cannot tell which half is
-# current.
-check "no locale but en.ts mentions IronKVM" \
-    "$(grep -l 'IronKVM' "$ROOT"/web/src/i18n/locales/*.ts 2>/dev/null | grep -vc '/en\.ts$')" "0"
+# A part-translated locale file is worse than an untouched one, because the
+# reader cannot tell which half is current. Until 06c0889f only en.ts was
+# retranslated; that commit rebranded every locale, so the rule turned round:
+# no locale may be left saying only NanoKVM.
+check "every locale mentions IronKVM" \
+    "$(grep -L 'IronKVM' "$ROOT"/web/src/i18n/locales/*.ts 2>/dev/null | grep -c .)" "0"
 
 # The offline upload validates the file name in the browser, before the server
 # ever sees it. The server pattern was widened to accept both products and this
