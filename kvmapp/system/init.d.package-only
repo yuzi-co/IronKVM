@@ -38,6 +38,12 @@ S96picoclaw      not-installed-by-policy  started on demand, not at boot
 S98tailscaled    not-installed-by-policy  started on demand, not at boot
 S98netbird       not-installed-by-policy  started on demand, not at boot
 
+# The netboot add-on's script. The server records it as the add-on's boot
+# script, and S04addons copies it into /etc/init.d only while proxy DHCP on the
+# LAN is on; S03usbdev runs this copy from /kvmapp for the USB link. See
+# server/service/netboot/install.go.
+S85netboot       not-installed-by-policy  S04addons installs it while LAN proxy DHCP is on
+
 # Carried for reference, identical to the base. The base copy is the one that
 # runs, and it is the same file.
 #
