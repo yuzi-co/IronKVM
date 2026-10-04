@@ -1528,6 +1528,50 @@ enum kvmv_pipe_status kvmv_pipe_snapshot(struct kvmv_pipe *p,
 	return KVMV_PIPE_OK;
 }
 
+enum kvmv_pipe_status kvmv_pipe_lend(struct kvmv_pipe *p,
+				     unsigned int timeout_ms,
+				     struct kvmv_frame *frame)
+{
+	enum kvmv_pipe_status status;
+	unsigned int ci;
+
+	memset(frame, 0, sizeof(*frame));
+	frame->fd = -1;
+	if (!p->running)
+		return fail_msg(p, "pipeline not running"), KVMV_PIPE_ERROR;
+	if (source_changed(p->cap_fd)) {
+		snprintf(p->error, sizeof(p->error), "source change event");
+		return KVMV_PIPE_SOURCE_CHANGED;
+	}
+	status = newest_capture(p, timeout_ms, &ci);
+	if (status != KVMV_PIPE_OK)
+		return status;
+	frame->index = ci;
+	frame->fd = p->cap[ci].fd;
+	frame->size = p->cap[ci].length;
+	{
+		/*
+		 * The buffer can be larger than the frame: with ironkvm-dist
+		 * patch 0921 it has room for the 16-line MCU rows the JPEG unit
+		 * reads. A dma-buf tells its size through lseek.
+		 */
+		off_t end = lseek(frame->fd, 0, SEEK_END);
+
+		if (end > 0 && (size_t)end > frame->size)
+			frame->size = (size_t)end;
+	}
+	frame->fmt = &p->cap_fmt;
+	return KVMV_PIPE_OK;
+}
+
+int kvmv_pipe_give_back(struct kvmv_pipe *p, const struct kvmv_frame *frame)
+{
+	if (qbuf(p->cap_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, V4L2_MEMORY_MMAP,
+		 frame->index, -1, 0))
+		return fail(p, "capture requeue");
+	return 0;
+}
+
 void kvmv_pipe_snapshot_done(struct kvmv_pipe *p)
 {
 	struct kvmv_snap *s = &p->snap;

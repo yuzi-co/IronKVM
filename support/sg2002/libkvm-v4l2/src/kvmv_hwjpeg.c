@@ -123,6 +123,9 @@ static void release(struct kvmv_hwjpeg *hw)
 		request(hw->fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, V4L2_MEMORY_MMAP, 0, &got, NULL);
 	}
 	hw->width = hw->height = hw->stride = 0;
+	hw->fourcc = 0;
+	hw->limited = 0;
+	hw->out_count = 0;
 	hw->out_size = 0;
 }
 
@@ -155,7 +158,8 @@ static int map_one(struct kvmv_hwjpeg *hw, enum v4l2_buf_type type, int prot,
 }
 
 static int configure(struct kvmv_hwjpeg *hw, unsigned int width,
-		     unsigned int height, unsigned int stride, int import)
+		     unsigned int height, unsigned int stride, int import,
+		     uint32_t fourcc, int limited, unsigned int count)
 {
 	struct v4l2_format fmt;
 	enum v4l2_buf_type type;
@@ -168,19 +172,39 @@ static int configure(struct kvmv_hwjpeg *hw, unsigned int width,
 	fmt.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
 	fmt.fmt.pix.width = width;
 	fmt.fmt.pix.height = height;
-	fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_NV12;
+	fmt.fmt.pix.pixelformat = fourcc;
 	fmt.fmt.pix.field = V4L2_FIELD_NONE;
 	fmt.fmt.pix.bytesperline = stride;
+	if (limited) {
+		/*
+		 * The core clears the colour fields without the magic, and the
+		 * quantization too without a valid colorspace.
+		 */
+		fmt.fmt.pix.colorspace = V4L2_COLORSPACE_REC709;
+		fmt.fmt.pix.priv = V4L2_PIX_FMT_PRIV_MAGIC;
+		fmt.fmt.pix.quantization = V4L2_QUANTIZATION_LIM_RANGE;
+	}
 	if (xioctl(hw->fd, VIDIOC_S_FMT, &fmt))
 		return fail(hw, "OUTPUT S_FMT");
-	if (fmt.fmt.pix.pixelformat != V4L2_PIX_FMT_NV12 ||
+	if (fmt.fmt.pix.pixelformat != fourcc ||
+	    (limited && fmt.fmt.pix.quantization != V4L2_QUANTIZATION_LIM_RANGE)) {
+		/* A driver without packed input or the range expansion (0920). */
+		snprintf(hw->error, sizeof(hw->error),
+			 "JPEG unit took %.4s quantization %u for %.4s%s",
+			 (const char *)&fmt.fmt.pix.pixelformat,
+			 fmt.fmt.pix.quantization, (const char *)&fourcc,
+			 limited ? " limited range" : "");
+		errno = ENOTSUP;
+		return -1;
+	}
+	if (
 	    fmt.fmt.pix.width != width || fmt.fmt.pix.height != height ||
 	    fmt.fmt.pix.bytesperline != stride || fmt.fmt.pix.sizeimage == 0) {
 		snprintf(hw->error, sizeof(hw->error),
-			 "JPEG unit took %.4s %ux%u stride %u for NV12 %ux%u stride %u",
-			 (const char *)&fmt.fmt.pix.pixelformat, fmt.fmt.pix.width,
-			 fmt.fmt.pix.height, fmt.fmt.pix.bytesperline, width, height,
-			 stride);
+			 "JPEG unit took %ux%u stride %u for %.4s %ux%u stride %u",
+			 fmt.fmt.pix.width, fmt.fmt.pix.height,
+			 fmt.fmt.pix.bytesperline, (const char *)&fourcc, width,
+			 height, stride);
 		errno = EINVAL;
 		return -1;
 	}
@@ -204,10 +228,13 @@ static int configure(struct kvmv_hwjpeg *hw, unsigned int width,
 	hw->height = height;
 	hw->stride = stride;
 	hw->import = import;
+	hw->fourcc = fourcc;
+	hw->limited = limited;
+	hw->out_count = count;
 
 	request(hw->fd, V4L2_BUF_TYPE_VIDEO_OUTPUT,
-		import ? V4L2_MEMORY_DMABUF : V4L2_MEMORY_MMAP, 1, &got, NULL);
-	if (got < 1)
+		import ? V4L2_MEMORY_DMABUF : V4L2_MEMORY_MMAP, count, &got, NULL);
+	if (got < (int)count)
 		return fail(hw, "OUTPUT REQBUFS");
 	if (!import && map_one(hw, V4L2_BUF_TYPE_VIDEO_OUTPUT,
 			       PROT_READ | PROT_WRITE, &hw->out))
@@ -305,6 +332,9 @@ static void copy_rows(uint8_t *dst, unsigned int dst_stride, const uint8_t *src,
 		memcpy(dst + (size_t)y * dst_stride, src + (size_t)y * src_stride, width);
 }
 
+static int run(struct kvmv_hwjpeg *hw, struct v4l2_buffer *out,
+	       const uint8_t **data, size_t *size);
+
 int kvmv_hwjpeg_encode(struct kvmv_hwjpeg *hw, const struct kvmv_nv12 *image,
 		       int src_fd, size_t src_size, int quality, int def_quality,
 		       const uint8_t **data, size_t *size)
@@ -327,8 +357,11 @@ int kvmv_hwjpeg_encode(struct kvmv_hwjpeg *hw, const struct kvmv_nv12 *image,
 		return -1;
 	}
 	if (hw->width != image->width || hw->height != image->height ||
-	    hw->stride != image->stride || hw->import != import || !hw->out_on) {
-		if (configure(hw, image->width, image->height, image->stride, import)) {
+	    hw->stride != image->stride || hw->import != import ||
+	    hw->fourcc != V4L2_PIX_FMT_NV12 || hw->limited || hw->out_count != 1 ||
+	    !hw->out_on) {
+		if (configure(hw, image->width, image->height, image->stride, import,
+			      V4L2_PIX_FMT_NV12, 0, 1)) {
 			int saved = errno;
 
 			release(hw);
@@ -352,13 +385,6 @@ int kvmv_hwjpeg_encode(struct kvmv_hwjpeg *hw, const struct kvmv_nv12 *image,
 		return -1;
 
 	memset(&buf, 0, sizeof(buf));
-	buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-	buf.memory = V4L2_MEMORY_MMAP;
-	buf.index = 0;
-	if (xioctl(hw->fd, VIDIOC_QBUF, &buf))
-		return fail(hw, "CAPTURE QBUF");
-
-	memset(&buf, 0, sizeof(buf));
 	buf.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
 	buf.index = 0;
 	buf.bytesused = hw->out_size;
@@ -374,7 +400,26 @@ int kvmv_hwjpeg_encode(struct kvmv_hwjpeg *hw, const struct kvmv_nv12 *image,
 			  hw->stride, image->uv, image->stride, image->width,
 			  image->height / 2);
 	}
-	if (xioctl(hw->fd, VIDIOC_QBUF, &buf)) {
+	return run(hw, &buf, data, size);
+}
+
+/*
+ * Queue the CAPTURE buffer and *out, and wait for both back. On 0 the JPEG
+ * is at *data, *size bytes.
+ */
+static int run(struct kvmv_hwjpeg *hw, struct v4l2_buffer *out,
+	       const uint8_t **data, size_t *size)
+{
+	enum v4l2_memory memory = out->memory;
+	struct v4l2_buffer buf;
+
+	memset(&buf, 0, sizeof(buf));
+	buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+	buf.memory = V4L2_MEMORY_MMAP;
+	buf.index = 0;
+	if (xioctl(hw->fd, VIDIOC_QBUF, &buf))
+		return fail(hw, "CAPTURE QBUF");
+	if (xioctl(hw->fd, VIDIOC_QBUF, out)) {
 		fail(hw, "OUTPUT QBUF");
 		/* The CAPTURE buffer is queued: start over on the next call. */
 		release(hw);
@@ -394,8 +439,7 @@ int kvmv_hwjpeg_encode(struct kvmv_hwjpeg *hw, const struct kvmv_nv12 *image,
 			 buf.bytesused);
 		*size = 0;
 	}
-	if (wait_dqbuf(hw, V4L2_BUF_TYPE_VIDEO_OUTPUT,
-		       import ? V4L2_MEMORY_DMABUF : V4L2_MEMORY_MMAP, POLLOUT, &buf)) {
+	if (wait_dqbuf(hw, V4L2_BUF_TYPE_VIDEO_OUTPUT, memory, POLLOUT, &buf)) {
 		fail(hw, "OUTPUT DQBUF");
 		release(hw);
 		*size = 0;
@@ -407,4 +451,65 @@ int kvmv_hwjpeg_encode(struct kvmv_hwjpeg *hw, const struct kvmv_nv12 *image,
 	}
 	*data = hw->cap.addr;
 	return 0;
+}
+
+int kvmv_hwjpeg_encode_frame(struct kvmv_hwjpeg *hw, int src_fd, size_t src_size,
+			     unsigned int index, unsigned int count,
+			     unsigned int width, unsigned int height,
+			     unsigned int stride, uint32_t fourcc, int limited,
+			     int quality, int def_quality,
+			     const uint8_t **data, size_t *size)
+{
+	struct v4l2_buffer buf;
+
+	*data = NULL;
+	*size = 0;
+	if (hw->fd < 0) {
+		snprintf(hw->error, sizeof(hw->error), "JPEG unit not open");
+		errno = EBADF;
+		return -1;
+	}
+	if (src_fd < 0 || index >= count || width < 16 || height < 16 ||
+	    width > 8192 || height > 8192 || width % 16 || height % 2 ||
+	    stride % 16 || stride < width * 2) {
+		snprintf(hw->error, sizeof(hw->error),
+			 "JPEG unit cannot take %.4s %ux%u stride %u",
+			 (const char *)&fourcc, width, height, stride);
+		errno = EINVAL;
+		return -1;
+	}
+	if (hw->width != width || hw->height != height || hw->stride != stride ||
+	    !hw->import || hw->fourcc != fourcc || hw->limited != limited ||
+	    hw->out_count != count || !hw->out_on) {
+		if (configure(hw, width, height, stride, 1, fourcc, limited, count)) {
+			int saved = errno;
+
+			release(hw);
+			errno = saved;
+			return -1;
+		}
+	}
+	if (src_size < hw->out_size) {
+		snprintf(hw->error, sizeof(hw->error),
+			 "JPEG unit needs a %u byte source, the buffer has %zu",
+			 hw->out_size, src_size);
+		errno = EINVAL;
+		return -1;
+	}
+
+	if (quality <= 0)
+		quality = def_quality;
+	if (quality > 100)
+		quality = 100;
+	if (set_quality(hw, quality))
+		return -1;
+
+	memset(&buf, 0, sizeof(buf));
+	buf.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+	buf.memory = V4L2_MEMORY_DMABUF;
+	buf.index = index;
+	buf.bytesused = hw->out_size;
+	buf.m.fd = src_fd;
+	buf.length = (uint32_t)src_size;
+	return run(hw, &buf, data, size);
 }
