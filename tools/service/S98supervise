@@ -735,6 +735,27 @@ system_binary_present() {
     [ -x "$SYSTEM_BIN" ]
 }
 
+# --- libkvm ---
+# The restart below starts the server without S95nanokvm, so it asks that
+# script to put this kernel's libkvm.so in place first. On a mainline slot an
+# application update replaces /kvmapp with Sipeed's library, and a server
+# started on it has no video. S95nanokvm owns the choice (KERNEL in the device
+# description) and does nothing on a slot that installs no library of its own.
+# Its answer is not waited on for anything but the copy, and a failure is
+# reported and not acted on: a server on the wrong library still answers, which
+# is better than no server.
+S95_INIT=${S95_INIT:-/etc/init.d/S95nanokvm}
+
+refresh_libkvm() {
+    [ -x "$S95_INIT" ] || return 0
+    said=$("$S95_INIT" __libkvm 2>&1) || warn "libkvm: ${said:-S95nanokvm __libkvm failed}"
+    case "$said" in
+        *"is now"*) log "libkvm: $said" ;;
+    esac
+    return 0
+}
+# --- end libkvm ---
+
 # --- procs ---
 # kvm_system is checked on every pass and is nearly always there, so its pid is
 # remembered and the next pass reads /proc/$pid/comm with the read builtin
@@ -1000,6 +1021,7 @@ watch_loop() {
                     # like full_restart does, and it is the one taken far more
                     # often.
                     ion_line
+                    refresh_libkvm
                     "$SERVER_BIN" < /dev/null >> "$SERVER_LOG" 2>&1 &
                     warn "started $SERVER_BIN as pid $!"
                 fi

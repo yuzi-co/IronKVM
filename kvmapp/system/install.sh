@@ -26,6 +26,8 @@
 #   INSTALL_DEST    where they go         (default /etc/init.d)
 #   INSTALL_BACKUP  where originals go    (default /root/.ironkvm/initd-backup)
 #   INSTALL_LIST    which ones to install (default /kvmapp/system/init.d.install)
+#   INSTALL_REFUSE  which ones this slot refuses
+#                   (default /usr/share/ironkvm/init.d.refuse)
 
 SRC=${INSTALL_SRC:-/kvmapp/system/init.d}
 DEST=${INSTALL_DEST:-/etc/init.d}
@@ -51,6 +53,19 @@ LIST=${INSTALL_LIST:-$(dirname "$SRC")/init.d.install}
 # that it changes no boot script. Guessing is what caused the fault above.
 [ -f "$LIST" ] || { echo "install.sh: $LIST is missing, no boot scripts to install"; exit 0; }
 NAMES=$(grep -v '^[[:space:]]*$' "$LIST")
+
+# A slot image may refuse some of them. The list is the package's and the same
+# for every board, but a slot built for another kernel leaves some scripts out
+# on purpose: the mainline slot image in ironkvm-dist carries no S03usbdev,
+# S15kvmhwd or S30wifi, because they talk to vendor drivers that kernel does
+# not have. An update would otherwise put them back and the next boot would run
+# them. The image says which in its own root filesystem, one name per line,
+# because that file belongs to the slot and not to the application.
+REFUSE=${INSTALL_REFUSE:-/usr/share/ironkvm/init.d.refuse}
+refused() {
+    [ -f "$REFUSE" ] || return 1
+    grep -v '^[[:space:]]*#' "$REFUSE" | grep -qx "$1"
+}
 
 # Check every script before installing any of them. A partial install is the
 # worst outcome available: some scripts new, some old, and a board that may not
@@ -98,6 +113,10 @@ install_one() {
 # partway, the copy still in place is the one that already works.
 for n in $NAMES; do
     [ "$n" = S00awatchdog ] && continue
+    if refused "$n"; then
+        echo "install.sh: $n is refused by this slot ($REFUSE), not installed"
+        continue
+    fi
     install_one "$SRC/$n" || exit 1
 done
 

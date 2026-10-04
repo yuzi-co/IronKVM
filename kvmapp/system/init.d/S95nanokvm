@@ -480,6 +480,65 @@ server_gogc() {
 }
 # --- end Go tuning ---
 
+# --- libkvm ---
+# libkvm.so is the one per-kernel binary the server loads. On the vendor kernel
+# it is Sipeed's MPI build. On the mainline kernel it is libkvm-v4l2
+# (support/sg2002/libkvm-v4l2), which speaks V4L2 to the in-tree drivers, and
+# Sipeed's library finds none of the vendor devices it opens there: the server
+# starts and has no video.
+#
+# An application update replaces /kvmapp whole, from a release tarball that
+# carries Sipeed's library, so the library cannot live only in /kvmapp. A slot
+# image that needs another one installs it outside /kvmapp, as
+# /usr/lib/ironkvm/libkvm-<variant>.so, and this puts it into the server's
+# dl_lib before every start. The variant follows KERNEL in the device
+# description:
+#
+#   mainline   libkvm-v4l2.so
+#   otherwise  libkvm-vendor.so
+#
+# A slot that installs no such file keeps whatever /kvmapp carries, which is
+# what the vendor image does today: its application's own library is the
+# right one.
+#
+# The copy is renamed into place, never written over the old file. A write into
+# a library the running server has mapped kills it, and a rename leaves the
+# mapped inode alone. It is skipped while a server runs, because that server
+# would keep the old library until it restarts and report nothing.
+#
+# DEFAULT ASSUMED (docs/plans/2026-10-04-mainline-slot-image-design.md in
+# ironkvm-dist, open question 6): the library is chosen here, from outside
+# /kvmapp, rather than by refusing application updates on a mainline slot.
+LIBKVM_DIR=${LIBKVM_DIR:-/usr/lib/ironkvm}
+LIBKVM_DST=${LIBKVM_DST:-/kvmapp/server/dl_lib/libkvm.so}
+
+libkvm_variant() {
+    case "$(devinfo_get KERNEL)" in
+        mainline) echo libkvm-v4l2.so ;;
+        *)        echo libkvm-vendor.so ;;
+    esac
+}
+
+place_libkvm() {
+    want=$LIBKVM_DIR/$(libkvm_variant)
+    [ -f "$want" ] || return 0
+    cmp -s "$want" "$LIBKVM_DST" 2>/dev/null && return 0
+    if pidof NanoKVM-Server > /dev/null 2>&1; then
+        echo "S95nanokvm: the server runs; $want goes in at its next start"
+        return 1
+    fi
+    mkdir -p "$(dirname "$LIBKVM_DST")" || return 1
+    if cp "$want" "$LIBKVM_DST.new" && chmod 0755 "$LIBKVM_DST.new" \
+       && mv -f "$LIBKVM_DST.new" "$LIBKVM_DST"; then
+        echo "S95nanokvm: $LIBKVM_DST is now ${want##*/}"
+        return 0
+    fi
+    rm -f "$LIBKVM_DST.new"
+    echo "S95nanokvm: could not put $want in place; the server keeps the library it has" >&2
+    return 1
+}
+# --- end libkvm ---
+
 # S98supervise starts NanoKVM-Server and kvm_system again within ten seconds
 # of finding either gone. That is what it is for, and it is wrong while this
 # script is deliberately stopping them: it fills the gap between a stop and the
@@ -613,6 +672,10 @@ start_services() {
     # pipeline that fails in a loop fills tmpfs, and a copy into a full tmpfs
     # leaves a truncated binary that the case then starts.
     : > "$SERVER_LOG"
+
+    # Before anything can start the server, kvm_system's migration path
+    # included: the library it loads has to be this kernel's.
+    place_libkvm
 
     refresh_kvm_system
     if [ -f /kvmapp/kvm_new_app ]; then
@@ -766,6 +829,13 @@ case "$1" in
   # S98supervise expose their own loops.
   __stage_server)
     stage_server
+   ;;
+
+  # S98supervise starts the server again without this script, so it asks for
+  # the library first. An update that replaced /kvmapp under a running server
+  # would otherwise come back on the wrong one.
+  __libkvm)
+    place_libkvm
    ;;
 
   *)

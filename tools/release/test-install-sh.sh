@@ -49,7 +49,7 @@ run() {
         ( cd "$WORK/src" && ls ) > "$WORK/init.d.install"
     fi
     INSTALL_SRC="$WORK/src" INSTALL_DEST="$WORK/dest" INSTALL_BACKUP="$WORK/backup" \
-        INSTALL_LIST="$WORK/init.d.install" \
+        INSTALL_LIST="$WORK/init.d.install" INSTALL_REFUSE="$WORK/init.d.refuse" \
         sh "$SCRIPT" > "$WORK/out" 2>&1
     echo $?
 }
@@ -186,6 +186,29 @@ printf 'S40here\nS41gone\n' > "$WORK/init.d.install"
 status=$(run)
 check "a listed script the package lacks fails the run" "$status" "1"
 check "and nothing is installed" "$(ls "$WORK/dest" | wc -l | tr -d ' ')" "0"
+teardown
+
+# A slot may refuse scripts the package lists: the mainline slot image carries
+# no S03usbdev, and an update must not put it back. The refusal is the slot's,
+# in its root filesystem, so the same package installs the script on a slot
+# that does not refuse it.
+setup
+printf '#!/bin/sh\necho usb\n' > "$WORK/src/S03usbdev"
+printf '#!/bin/sh\necho srv\n' > "$WORK/src/S95nanokvm"
+printf '# vendor drivers only\nS03usbdev\n' > "$WORK/init.d.refuse"
+status=$(run)
+check "a refused script does not fail the run" "$status" "0"
+check "a refused script is not installed" "$([ -e "$WORK/dest/S03usbdev" ] && echo yes || echo no)" "no"
+check "the others are" "$([ -f "$WORK/dest/S95nanokvm" ] && echo yes || echo no)" "yes"
+check "and it says which and why" "$(grep -c 'S03usbdev is refused by this slot' "$WORK/out")" "1"
+check "a refused script is not recorded for rollback" "$(grep -c S03usbdev "$WORK/backup/manifest")" "0"
+teardown
+
+setup
+printf '#!/bin/sh\necho usb\n' > "$WORK/src/S03usbdev"
+printf '#S03usbdev\nS03usb\n' > "$WORK/init.d.refuse"
+run > /dev/null
+check "a commented or partial name refuses nothing" "$([ -f "$WORK/dest/S03usbdev" ] && echo yes || echo no)" "yes"
 teardown
 
 echo
