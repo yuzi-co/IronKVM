@@ -818,6 +818,40 @@ static void subscribe_source_change(int fd)
 	xioctl(fd, VIDIOC_SUBSCRIBE_EVENT, &sub);
 }
 
+/* The capture node and buffers kvmv_pipe_park kept, for the next start. */
+static struct {
+	int fd;
+	struct kvmv_buf *bufs;
+	unsigned int count;
+	uint32_t sizeimage;
+} parked = { .fd = -1 };
+
+static void free_bufs(struct kvmv_buf **bufs, unsigned int *count);
+
+void kvmv_pipe_unpark(void)
+{
+	free_bufs(&parked.bufs, &parked.count);
+	if (parked.fd >= 0)
+		close(parked.fd);
+	parked.fd = -1;
+}
+
+/* Queue the parked buffers on the capture node instead of allocating. */
+static int adopt_capture(struct kvmv_pipe *p)
+{
+	unsigned int i;
+
+	p->cap = parked.bufs;
+	p->cap_count = parked.count;
+	parked.bufs = NULL;
+	parked.count = 0;
+	for (i = 0; i < p->cap_count; i++)
+		if (qbuf(p->cap_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, V4L2_MEMORY_MMAP,
+			 i, -1, 0))
+			return fail(p, "capture QBUF");
+	return 0;
+}
+
 static uint64_t now_us(void);
 #define START_STAMP(i) (p->start_us[i] = (uint32_t)(now_us() - start0))
 
@@ -838,7 +872,12 @@ int kvmv_pipe_start(struct kvmv_pipe *p, const struct kvmv_devices *d,
 		return -1;
 	}
 
-	p->cap_fd = open(d->capture, O_RDWR | O_NONBLOCK | O_CLOEXEC);
+	if (parked.fd >= 0) {
+		p->cap_fd = parked.fd;
+		parked.fd = -1;
+	} else {
+		p->cap_fd = open(d->capture, O_RDWR | O_NONBLOCK | O_CLOEXEC);
+	}
 	if (p->cap_fd < 0) {
 		fail(p, d->capture);
 		goto out;
@@ -872,8 +911,17 @@ int kvmv_pipe_start(struct kvmv_pipe *p, const struct kvmv_devices *d,
 	if (prime_encoder(p))
 		goto out;
 	START_STAMP(4);
-	if (alloc_capture(p, cfg->capture_buffers ? cfg->capture_buffers : 2))
-		goto out;
+	if (parked.bufs && parked.sizeimage == p->cap_fmt.sizeimage &&
+	    parked.count == (cfg->capture_buffers ? cfg->capture_buffers : 2)) {
+		if (adopt_capture(p))
+			goto out;
+	} else {
+		/* Nothing parked that fits: the node was opened afresh, or
+		 * holds buffers of another size, which REQBUFS replaces. */
+		free_bufs(&parked.bufs, &parked.count);
+		if (alloc_capture(p, cfg->capture_buffers ? cfg->capture_buffers : 2))
+			goto out;
+	}
 	START_STAMP(5);
 	/* Capture first: while the CSI driver streams, the VIP fabric clocks
 	 * are on and VPSS register access is safe. */
@@ -961,6 +1009,32 @@ void kvmv_pipe_stop(struct kvmv_pipe *p)
 	if (p->cap_fd >= 0)
 		close(p->cap_fd);
 	kvmv_pipe_init(p);
+}
+
+void kvmv_pipe_park(struct kvmv_pipe *p)
+{
+	kvmv_pipe_unpark();
+	if (p->cap_fd < 0 || p->cap == NULL) {
+		kvmv_pipe_stop(p);
+		return;
+	}
+	/* The snapshot context imports the capture buffers: it goes first,
+	 * then the scaler that reads them, then the capture itself. */
+	snap_stop(p);
+	if (p->vpss_out_on)
+		stream(p->vpss_fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, 0);
+	p->vpss_out_on = 0;
+	if (p->cap_on)
+		stream(p->cap_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, 0);
+	p->cap_on = 0;
+	parked.fd = p->cap_fd;
+	parked.bufs = p->cap;
+	parked.count = p->cap_count;
+	parked.sizeimage = p->cap_fmt.sizeimage;
+	p->cap_fd = -1;
+	p->cap = NULL;
+	p->cap_count = 0;
+	kvmv_pipe_stop(p);
 }
 
 /* ---- per frame ----------------------------------------------------- */

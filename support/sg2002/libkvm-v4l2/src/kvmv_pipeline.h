@@ -198,6 +198,15 @@ int kvmv_pipe_start(struct kvmv_pipe *pipe, const struct kvmv_devices *devices,
 void kvmv_pipe_stop(struct kvmv_pipe *pipe);
 
 /*
+ * As kvmv_pipe_stop, but keep the capture node open with its buffers, so the
+ * next kvmv_pipe_start takes them instead of allocating and clearing new ones
+ * (about 50 ms for three 1080p frames). The capture is streamed off, so its
+ * clocks and DMA stop. kvmv_pipe_unpark releases them.
+ */
+void kvmv_pipe_park(struct kvmv_pipe *pipe);
+void kvmv_pipe_unpark(void);
+
+/*
  * Take the newest captured frame and scale it into a middle buffer. On
  * KVMV_PIPE_OK *mid names the buffer, which holds the NV12 picture for
  * kvmv_pipe_encode_mid.

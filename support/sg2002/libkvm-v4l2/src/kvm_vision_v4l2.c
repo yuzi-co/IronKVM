@@ -303,16 +303,32 @@ static void set_capture_enabled(int enabled)
 
 static void request_key(void);
 
-static void pipe_down(const char *why)
+/*
+ * Tear the pipeline down. park keeps the capture node and its buffers for
+ * the next build (kvmv_pipe_park): for a pipeline nobody reads, a codec
+ * switch or a new output size, where the source is unchanged. Anything else
+ * releases them too.
+ */
+static void pipe_down_keep(const char *why, int park)
 {
+	if (!park)
+		kvmv_pipe_unpark();
 	if (!pipe_state.running && pipe_state.cap_fd < 0 && pipe_state.enc_fd < 0)
 		return;
-	DBG("pipeline down: %s", why);
-	kvmv_pipe_stop(&pipe_state);
+	DBG("pipeline down: %s%s", why, park ? " (capture buffers kept)" : "");
+	if (park)
+		kvmv_pipe_park(&pipe_state);
+	else
+		kvmv_pipe_stop(&pipe_state);
 	/* The unit imports the snapshot buffer; let both go together. Closing
 	 * the node also turns the unit's clocks off. */
 	kvmv_hwjpeg_close(&hw_jpeg);
 	__atomic_store_n(&pipe_running, 0, __ATOMIC_RELEASE);
+}
+
+static void pipe_down(const char *why)
+{
+	pipe_down_keep(why, 0);
 }
 
 static int start_failed(int result, unsigned int retry_ms)
@@ -698,12 +714,12 @@ static int read_video_locked(unsigned int width, unsigned int height,
 	 * which releases the codec SRAM the new one needs.
 	 */
 	if (codec != pipe_codec) {
-		pipe_down("codec changed");
+		pipe_down_keep("codec changed", 1);
 		log_msg("codec %s -> %s", codec_name(pipe_codec), codec_name(codec));
 		pipe_codec = codec;
 	}
 	if (pipe_state.running && (width != pipe_width || height != pipe_height))
-		pipe_down("output size changed");
+		pipe_down_keep("output size changed", 1);
 	if (!pipe_state.running) {
 		cold_start_us = now_us();
 		result = pipe_up(width, height, bitrate_bps);
@@ -1130,7 +1146,7 @@ static void *monitor_main(void *arg)
 		    now_ms() - __atomic_load_n(&last_read_ms, __ATOMIC_ACQUIRE) > idle_ms &&
 		    pthread_mutex_trylock(&pipe_lock) == 0) {
 			if (now_ms() - __atomic_load_n(&last_read_ms, __ATOMIC_ACQUIRE) > idle_ms)
-				pipe_down("no reads");
+				pipe_down_keep("no reads", 1);
 			pthread_mutex_unlock(&pipe_lock);
 		}
 	}
