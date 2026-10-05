@@ -9,13 +9,15 @@
 #include <stdint.h>
 #include <linux/videodev2.h>
 
-/* The same ranges the vendor library clamps to. */
+/* The same ranges the vendor library clamps to, but for the frame rate: the
+ * capture runs at the source's rate, which can be above 60 Hz with an EDID
+ * that offers it (ironkvm-dist trial 31), so 120 rather than 60. */
 #define KVMV_BITRATE_MIN_KBPS 500
 #define KVMV_BITRATE_MAX_KBPS 10000
 #define KVMV_GOP_MIN 1
 #define KVMV_GOP_MAX 100
 #define KVMV_FPS_MIN 10
-#define KVMV_FPS_MAX 60
+#define KVMV_FPS_MAX 120
 #define KVMV_DEFAULT_GOP 30
 #define KVMV_DEFAULT_FPS 60
 

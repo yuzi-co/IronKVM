@@ -581,7 +581,7 @@ static void test_clamps_and_rate(void)
 	CHECK_EQ(kvmv_kbps_to_bps(4000), 4000000);
 	CHECK_EQ(kvmv_kbps_to_bps(65535), 10000000);
 	CHECK_EQ(kvmv_clamp(0, KVMV_GOP_MIN, KVMV_GOP_MAX), 1);
-	CHECK_EQ(kvmv_clamp(255, KVMV_FPS_MIN, KVMV_FPS_MAX), 60);
+	CHECK_EQ(kvmv_clamp(255, KVMV_FPS_MIN, KVMV_FPS_MAX), 120);
 
 	/* Default bitrates by size. */
 	CHECK_EQ(kvmv_default_kbps(1920, 1080), 3000);

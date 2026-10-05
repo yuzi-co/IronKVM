@@ -1660,8 +1660,15 @@ enum kvmv_pipe_status kvmv_pipe_encode(struct kvmv_pipe *p,
 	if (p->ahead_mid >= 0) {
 		uint64_t now = now_us();
 		/* More than two frame times old (the reads paused, or came
-		 * slower than the frames): collect it and take a newer one. */
-		uint64_t stale = 2ULL * (p->cap_interval_us ? p->cap_interval_us : 16667U);
+		 * slower than the frames): collect it and take a newer one.
+		 * Never less than two 60 Hz frame times: from a faster source
+		 * (trial 31, 100 to 110 Hz) a picture scaled ahead is younger
+		 * than that whenever the reads keep up with the encoder, and
+		 * two source frame times (18 ms at 110 Hz) is shorter than
+		 * one encode plus the wait for the next read, which threw
+		 * away half of them. */
+		uint64_t iv = p->cap_interval_us ? p->cap_interval_us : 16667U;
+		uint64_t stale = 2ULL * (iv < 16667U ? 16667U : iv);
 
 		status = finish_ahead(p, &mi);
 		if (status != KVMV_PIPE_OK)
