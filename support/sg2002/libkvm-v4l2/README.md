@@ -197,11 +197,12 @@ has read for 10 s.
 
 | Variable | Default | |
 |----------|---------|---|
-| `KVMV_DEBUG` | off | Debug logging to stderr, including the measured output rate, the rate the encoder was told, the per-stage time of a read every 10 s with how old the captured frame was when it was taken and when it was encoded, and the time of each step of a pipeline build and to its first picture. |
+| `KVMV_DEBUG` | off | Debug logging to stderr, including the measured output rate, the rate the encoder was told, the per-stage time of a read every 10 s with how old the captured frame was when it was taken and when it was encoded, how long the scaler worked beside the encoder, and the time of each step of a pipeline build and to its first picture. |
 | `KVMV_CAPTURE_DEV`, `KVMV_SCALER_DEV`, `KVMV_ENCODER_DEV`, `KVMV_SUBDEV` | discovered | Override a node. |
 | `KVMV_CAPTURE_BUFFERS` | 3 | Capture queue depth (4 MB each at 1080p UYVY). Kernels before ironkvm-dist patch 0916 give 2, which loses the newest frame for a 30 fps reader of a 60 fps source. |
 | `KVMV_PICKUP_WAIT_MS` | 6 | Longest a read waits for a capture frame about to complete rather than take one over half a frame time old; 0 never waits. |
 | `KVMV_MID_BUFFERS` | 2 | NV12 buffers between scaler and encoder. |
+| `KVMV_AHEAD_DELAY_US` | 0 | Scale-ahead gives the scaler a frame no earlier than this long after the encoder took its picture, so it takes a newer frame and works beside the encoder for less of its time. From a 110 Hz source, 4000 takes about 7 ms off the capture age at encoded for 2 fps less at 1080p (ironkvm-dist run sheet, trial 33). |
 | `KVMV_BITSTREAM_BUFFERS` | 3 | Encoder output buffers. |
 | `KVMV_IDLE_MS` | 10000 | Tear down an unread pipeline after this long; 0 never does. |
 | `KVMV_PARK_ENCODER` | 1 | Keep the encoder node, streamed off, with its bitstream and middle buffers over a teardown, for the next start of the same codec and size. A parked H.264 encoder keeps the Coda980's clocks on (the driver enables them at open); 0 closes it. |

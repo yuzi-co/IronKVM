@@ -1523,6 +1523,7 @@ static enum kvmv_pipe_status start_ahead(struct kvmv_pipe *p)
 	p->ahead_mid = (int)mi;
 	p->ahead_ci = ci;
 	p->ahead_ts_us = p->cap_ts_us;
+	p->ahead_start_us = now_us();
 	return KVMV_PIPE_OK;
 }
 
@@ -1532,29 +1533,40 @@ static enum kvmv_pipe_status start_ahead(struct kvmv_pipe *p)
  * once the encoder has output or the wait is over; wait_dqbuf then takes it
  * or reports the timeout.
  */
-static enum kvmv_pipe_status encode_wait_ahead(struct kvmv_pipe *p)
+static enum kvmv_pipe_status encode_wait_ahead(struct kvmv_pipe *p,
+						uint64_t enc_start_us)
 {
 	uint64_t deadline = now_ms() + KVMV_M2M_TIMEOUT_MS;
+	uint64_t not_before = enc_start_us + p->ahead_delay_us;
 
 	while (p->ahead_mid < 0) {
 		struct pollfd pfd[2];
 		uint64_t now = now_ms();
+		uint64_t us = now_us();
+		int early = us < not_before;
+		int timeout = (int)(deadline - now);
 
 		if (now >= deadline)
 			return KVMV_PIPE_OK;
+		/* Before the delay is over only the encoder is watched, then
+		 * whatever completed meanwhile goes to the scaler. */
+		if (early && (int)((not_before - us + 999U) / 1000U) < timeout)
+			timeout = (int)((not_before - us + 999U) / 1000U);
 		pfd[0].fd = p->enc_fd;
 		pfd[0].events = POLLIN;
 		pfd[0].revents = 0;
 		pfd[1].fd = p->cap_fd;
 		pfd[1].events = POLLIN;
 		pfd[1].revents = 0;
-		if (poll(pfd, 2, (int)(deadline - now)) < 0) {
+		if (poll(pfd, early ? 1 : 2, timeout) < 0) {
 			if (errno == EINTR)
 				continue;
 			return fail(p, "encoder poll"), KVMV_PIPE_ERROR;
 		}
 		if (pfd[0].revents)
-			return KVMV_PIPE_OK;
+			return early ? start_ahead(p) : KVMV_PIPE_OK;
+		if (early)
+			continue;
 		/* A source change or a queue error is the next read's to see. */
 		if (pfd[1].revents & ~POLLIN)
 			return KVMV_PIPE_OK;
@@ -1610,7 +1622,7 @@ enum kvmv_pipe_status kvmv_pipe_encode_mid(struct kvmv_pipe *p,
 		 p->mid[mi].fd, p->enc_out_fmt.sizeimage))
 		return fail(p, "encoder OUTPUT QBUF"), KVMV_PIPE_ERROR;
 	if (p->scale_ahead && p->ahead_mid < 0 && p->mid_count >= 2) {
-		enum kvmv_pipe_status status = encode_wait_ahead(p);
+		enum kvmv_pipe_status status = encode_wait_ahead(p, t0);
 
 		if (status != KVMV_PIPE_OK)
 			return status;
@@ -1641,6 +1653,9 @@ enum kvmv_pipe_status kvmv_pipe_encode_mid(struct kvmv_pipe *p,
 		uint64_t age = frame_ts && t1 > frame_ts ? t1 - frame_ts : 0;
 
 		p->times.encode_us += t1 - t0;
+		if (p->ahead_mid >= 0 && p->ahead_start_us >= t0 &&
+		    t1 > p->ahead_start_us)
+			p->times.overlap_us += t1 - p->ahead_start_us;
 		p->times.age_us += age;
 		if (age > p->times.age_max_us)
 			p->times.age_max_us = age;
