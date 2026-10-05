@@ -7,6 +7,7 @@ import (
 
 	"NanoKVM-Server/service/stream"
 	"NanoKVM-Server/service/stream/audio"
+	"NanoKVM-Server/service/stream/framequeue"
 
 	"github.com/gorilla/websocket"
 	"github.com/pion/rtp"
@@ -19,7 +20,7 @@ func NewClient(ws *websocket.Conn, videoConn *webrtc.PeerConnection) *Client {
 		ws:        ws,
 		video:     videoConn,
 		mutex:     sync.Mutex{},
-		slot:      stream.NewFrameSlot[[]*rtp.Packet](),
+		queue:     framequeue.New[[]*rtp.Packet](framequeue.DefaultMaxFrames, framequeue.DefaultMaxDelay),
 		done:      make(chan struct{}),
 		audioSlot: stream.NewFrameSlot[[]*rtp.Packet](),
 		audioDone: make(chan struct{}),
@@ -28,20 +29,14 @@ func NewClient(ws *websocket.Conn, videoConn *webrtc.PeerConnection) *Client {
 
 // enqueue offers a frame to this client and never blocks.
 //
-// A client that has not drained the previous frame is behind, and an H.264
-// stream with a hole in it stays broken until the next keyframe, so the frame
-// is dropped and everything after it skipped until one arrives.
+// The writer can be well behind for a moment: a 1080p keyframe is about a
+// hundred packets and takes it 90 to 150 ms. The frames that arrive meanwhile
+// wait in the queue rather than being dropped, which would cost the viewer the
+// rest of the GOP. Only a client that stays behind loses frames, and then up to
+// the next keyframe, since an H.264 or H.265 stream with a hole in it stays
+// broken until one arrives. See framequeue.Queue.
 func (c *Client) enqueue(packets []*rtp.Packet, isKeyFrame bool) {
-	if c.waitingForKeyFrame && !isKeyFrame {
-		return
-	}
-
-	if !c.slot.TryPut(packets) {
-		c.waitingForKeyFrame = true
-		return
-	}
-
-	c.waitingForKeyFrame = false
+	c.queue.Put(packets, isKeyFrame)
 }
 
 // enqueueAudio offers a frame to this client and never blocks.
@@ -89,14 +84,14 @@ func (c *Client) writeAudio() {
 	}
 }
 
-// write drains the slot until it is closed or the connection fails. It is the
+// write drains the queue until it is closed or the connection fails. It is the
 // only goroutine that writes to this client's track, so the capture loop never
 // waits on a viewer.
 func (c *Client) write() {
 	defer close(c.done)
 
 	for {
-		packets, ok := c.slot.Take()
+		packets, ok := c.queue.Take()
 		if !ok {
 			return
 		}
@@ -131,14 +126,14 @@ func (c *Client) startWriters() {
 
 // stop releases the writer and waits for it to let go of the connection.
 func (c *Client) stop() {
-	c.slot.Close()
+	c.queue.Close()
 	<-c.done
 
 	c.audioSlot.Close()
 	<-c.audioDone
 
-	if dropped := c.slot.Dropped(); dropped > 0 {
-		log.Debugf("h264 client dropped %d frames", dropped)
+	if dropped := c.queue.Dropped(); dropped > 0 {
+		log.Debugf("video client dropped %d frames in %d resyncs", dropped, c.queue.Resyncs())
 	}
 
 	if dropped := c.audioSlot.Dropped(); dropped > 0 {
