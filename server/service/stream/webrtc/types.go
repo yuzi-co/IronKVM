@@ -6,6 +6,7 @@ import (
 
 	"NanoKVM-Server/service/stream"
 	"NanoKVM-Server/service/stream/audio"
+	"NanoKVM-Server/service/stream/framequeue"
 
 	"github.com/gorilla/websocket"
 	"github.com/pion/rtp"
@@ -54,14 +55,22 @@ type Client struct {
 	// a different payload in the old one.
 	codec uint8
 
-	// slot holds at most one frame for this client. The capture loop hands a
+	// queue holds the frames waiting for this client. The capture loop hands a
 	// frame over and moves on; the writer goroutine takes frames at whatever
-	// rate this connection manages.
-	slot *stream.FrameSlot[[]*rtp.Packet]
-	done chan struct{}
+	// rate this connection manages. It is several frames deep so that the
+	// frames after a slow keyframe wait instead of being dropped.
+	queue *framequeue.Queue[[]*rtp.Packet]
+	done  chan struct{}
+
+	// ready closes when the peer connection is up and packets written to the
+	// track reach the viewer. The video writer waits for it, or for stopping.
+	ready     chan struct{}
+	readyOnce sync.Once
+	stopping  chan struct{}
+	stopOnce  sync.Once
 
 	// audioSlot holds at most one pending audio frame, with its own writer
-	// goroutine. Sharing the video slot would drop audio whenever video fell
+	// goroutine. Sharing the video queue would drop audio whenever video fell
 	// behind, and the two have nothing to do with each other.
 	audioSlot *stream.FrameSlot[[]*rtp.Packet]
 	audioDone chan struct{}
@@ -75,9 +84,6 @@ type Client struct {
 	// one's first Take() would return immediately and close an already-closed
 	// channel.
 	writersOnce sync.Once
-
-	// waitingForKeyFrame is read and written only by the capture goroutine.
-	waitingForKeyFrame bool
 }
 
 func (c *Client) WsConn() *websocket.Conn {
