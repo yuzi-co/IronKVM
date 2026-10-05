@@ -151,8 +151,8 @@ func TestAnUnknownResolutionIsIgnored(t *testing.T) {
 func TestAStoredFPSIsClamped(t *testing.T) {
 	withScreenFiles(t, map[string]string{"fps": "240"})
 
-	if values := loadScreenValues(); values.FPS != 60 {
-		t.Fatalf("fps = %d, want 60", values.FPS)
+	if values := loadScreenValues(); values.FPS != maxFPS {
+		t.Fatalf("fps = %d, want %d", values.FPS, maxFPS)
 	}
 }
 

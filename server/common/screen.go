@@ -243,9 +243,14 @@ func validateCodec(codec uint8) uint8 {
 	return CodecH264
 }
 
+// maxFPS is the highest frame rate the API stores. The source sets the real
+// limit: a capture delivers no more pictures than the HDMI input carries, and
+// an input above 60 Hz needs an EDID that offers it (ironkvm-dist trial 31).
+const maxFPS = 120
+
 func validateFPS(fps int) int {
-	if fps > 60 {
-		return 60
+	if fps > maxFPS {
+		return maxFPS
 	}
 	if fps < 10 {
 		return 10
