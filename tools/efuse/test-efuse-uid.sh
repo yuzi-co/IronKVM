@@ -47,7 +47,13 @@ do
     fi
 done
 
-efuse=$work/sys/bus/nvmem/devices/cv1800-efuse/nvmem
+# The device is sg2002-efuse0 on kernels with nixos-nanokvm's patch 0083 and
+# cv1800-efuse on those with ironkvm-dist's former patch 0901; each case runs
+# against both names.
+for dev in sg2002-efuse0 cv1800-efuse
+do
+rm -rf "$work/sys"
+efuse=$work/sys/bus/nvmem/devices/$dev/nvmem
 mkdir -p "${efuse%/*}"
 
 for s in $SCRIPTS
@@ -60,7 +66,7 @@ do
     printf '\000\000\000\000\000\000\000\000\000\000\000\000\147\105\043\001\357\315\253\211' > "$efuse"
     got=$(sh "$work/run.sh"); st=$?
     [ "$st" = 0 ] && [ "$got" = "UID: 01234567_89abcdef" ] \
-        && note "$s: the vendor line from the eFuse words" OK \
+        && note "$s: the vendor line from $dev" OK \
         || note "$s: got '$got' (status $st), want 'UID: 01234567_89abcdef'" FAIL
 
     # The text and its newline are what sha512sum hashes, as of the vendor file.
@@ -78,6 +84,7 @@ do
     got=$(sh "$work/run.sh"); st=$?
     [ "$st" = 1 ] && [ -z "$got" ] && note "$s: no device is no id" OK \
         || note "$s: no device gave '$got' (status $st)" FAIL
+done
 done
 
 if [ "$fails" -gt 0 ]
