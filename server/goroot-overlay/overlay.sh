@@ -21,6 +21,15 @@
 # replaces chacha_noasm.go, sum_asm.go and mac_noasm.go with the same files
 # with riscv64 moved into their build constraints.
 #
+# Second part (ironkvm-dist#68, run sheet trial 37): crypto/tls gathers the
+# MJPEG writer's records itself and seals each one straight from the
+# caller's bytes into the buffer the socket is written from
+# (src/crypto/tls/gather_ironkvm.go, with a three-line hook in conn.go, and
+# SealTLS13 in chacha20poly1305/seal_tls13_ironkvm.go). Without it every
+# record was copied next to its header and copied again into the server's
+# write batch, both a byte at a time on riscv64. The server finds the methods
+# by interface assertion and keeps its own batch when the overlay is off.
+#
 # The replaced file has to match the toolchain's, or the build would silently
 # mix two versions of the package. The check below compares checksums of the
 # files the assembly depends on and stops the build when the toolchain has
@@ -47,6 +56,8 @@
 #   sum_riscv64.s      Go's own sum_loong64.s (BSD), translated instruction
 #                      for instruction
 #   the .go files      the toolchain's, with riscv64 added to the constraints
+#   conn.go            the toolchain's, with the gather hook (field and branch)
+#   *_ironkvm.go       written for NanoKVM: gathering and SealTLS13
 #
 # What it was checked with, on the device (C906, both kernels): the tests
 # beside the files, x/crypto v0.39.0's own chacha20, chacha20poly1305 and
@@ -77,20 +88,23 @@ xc=src/vendor/golang.org/x/crypto
 # golang.org/x/crypto v0.39.0): the ones it replaces, and the ones whose
 # types and calling conventions the assembly relies on.
 check() {
-    sum=$(sha256sum "$goroot/$xc/$1" | cut -d' ' -f1)
+    sum=$(sha256sum "$goroot/$1" | cut -d' ' -f1)
     if [ "$sum" != "$2" ]; then
-        echo "goroot-overlay: $goroot/$xc/$1 is not the file the overlay was written for" >&2
+        echo "goroot-overlay: $goroot/$1 is not the file the overlay was written for" >&2
         echo "  have $sum" >&2
         echo "  want $2" >&2
         echo "  see the notes in $0" >&2
         exit 1
     fi
 }
-check chacha20/chacha_noasm.go bbdb67ceb30ef13efc54e17935f47e00744b96754e03364e606d4f1f8f9085c1
-check chacha20/chacha_generic.go 34403e82b1387b4402b00ce30c1364508c333f4bdbe671321690c6ebaa8d3180
-check internal/poly1305/sum_asm.go ce5f94aedd0ce3349a8a8655607bd0159d354902e3298169cf9350fe235382b7
-check internal/poly1305/mac_noasm.go f5308cd6f14bab1b00963eeae8137d63fc5452db7f7d49276a56f457bfd89d2d
-check internal/poly1305/sum_generic.go b0094a2895d5bda42dcaaf57c0b31fc914c3b6c6aa6237aab0100a6d78346933
+check $xc/chacha20/chacha_noasm.go bbdb67ceb30ef13efc54e17935f47e00744b96754e03364e606d4f1f8f9085c1
+check $xc/chacha20/chacha_generic.go 34403e82b1387b4402b00ce30c1364508c333f4bdbe671321690c6ebaa8d3180
+check $xc/internal/poly1305/sum_asm.go ce5f94aedd0ce3349a8a8655607bd0159d354902e3298169cf9350fe235382b7
+check $xc/internal/poly1305/mac_noasm.go f5308cd6f14bab1b00963eeae8137d63fc5452db7f7d49276a56f457bfd89d2d
+check $xc/internal/poly1305/sum_generic.go b0094a2895d5bda42dcaaf57c0b31fc914c3b6c6aa6237aab0100a6d78346933
+check $xc/chacha20poly1305/chacha20poly1305_generic.go 5b949322cccac6e86a5fa721195de0f8aff949cf5c910fd5fe79cc825e22cb12
+check src/crypto/tls/conn.go f5178241bea60da9af09ef0dd317354cea88e6c37ada835d43eceae98b520e2a
+check src/crypto/tls/cipher_suites.go d407df31106c5989e29f84fb37403ca52f4bc6a583d821f4235915bdff4c07c1
 
 out=$(mktemp "${TMPDIR:-/tmp}/goroot-overlay.XXXXXX")
 {
