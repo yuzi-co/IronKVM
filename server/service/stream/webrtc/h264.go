@@ -263,11 +263,14 @@ func newAPI() (*webrtc.API, error) {
 func newSettingEngine() webrtc.SettingEngine {
 	settingEngine := webrtc.SettingEngine{}
 
-	// Go has no riscv64 assembly for AES, GHASH or SHA-1, and in pure Go
-	// AES_CM_128_HMAC_SHA1_80 encrypts a full RTP packet 10-25% cheaper than
-	// AEAD_AES_128_GCM. Reordering this list would not buy that, though: the
-	// browser offers, pion answers as the DTLS client, and the DTLS server
-	// (the browser) picks the profile by its own preference, which is GCM.
+	// Go has no riscv64 assembly for AES, GHASH or SHA-1, so either profile
+	// costs the board about a quarter of a millisecond per full packet. On the
+	// C906 AEAD_AES_128_GCM is the cheaper of the two: 258-264 us against
+	// 277-281 us for AES_CM_128_HMAC_SHA1_80 on a 1200-byte payload, 61-64
+	// against 74 us on a 200-byte one (pion srtp, trial 39, #72). The order
+	// would not matter anyway: the browser offers, pion answers as the DTLS
+	// client, and the DTLS server (the browser) picks by its own preference,
+	// which is GCM. AES-256-GCM, slower again (307-311 us), is not offered.
 	settingEngine.SetSRTPProtectionProfiles(
 		dtls.SRTP_AEAD_AES_128_GCM,
 		dtls.SRTP_AES128_CM_HMAC_SHA1_80,
