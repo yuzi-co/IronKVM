@@ -21,6 +21,7 @@ var (
 	hidStatus      = func() []proto.HidDeviceStatus { return hid.GetHid().Status() }
 	hidWriteErrors = func() []hid.EndpointWriteErrors { return hid.GetHid().WriteErrors() }
 	usbRecoveries  = hid.USBRecoveries
+	usbReenums     = hid.USBReenumerations
 )
 
 const (
@@ -28,6 +29,7 @@ const (
 	helpHidState   = "Each HID endpoint's state, 1 for the current one."
 	helpHidErrors  = "HID writes that stalled or found the gadget detached, by endpoint."
 	helpRecoveries = "Recoveries the USB watchdog started, by action."
+	helpReenums    = "Times the host enumerated the gadget again after it had been configured, not counting the server's own rebinds."
 )
 
 func collectUSB(w *Writer) {
@@ -50,6 +52,8 @@ func collectUSB(w *Writer) {
 	rebinds, rebuilds := usbRecoveries()
 	w.Counter("ironkvm_usb_recoveries_total", helpRecoveries, float64(rebinds), L("action", "rebind"))
 	w.Counter("ironkvm_usb_recoveries_total", helpRecoveries, float64(rebuilds), L("action", "rebuild"))
+
+	w.Counter("ironkvm_usb_reenumerations_total", helpReenums, float64(usbReenums()))
 }
 
 // writeEnum writes one sample per known state, 1 for current and 0 for the

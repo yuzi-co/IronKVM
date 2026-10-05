@@ -28,6 +28,7 @@ func useUSBSources(t *testing.T) {
 		}
 	})
 	setVar(t, &usbRecoveries, func() (uint64, uint64) { return 2, 1 })
+	setVar(t, &usbReenums, func() uint64 { return 5 })
 }
 
 func TestUSBWritesEveryFamily(t *testing.T) {
@@ -66,6 +67,9 @@ ironkvm_hid_write_errors_total{endpoint="mouse-absolute",kind="detached"} 1
 # TYPE ironkvm_usb_recoveries_total counter
 ironkvm_usb_recoveries_total{action="rebind"} 2
 ironkvm_usb_recoveries_total{action="rebuild"} 1
+# HELP ironkvm_usb_reenumerations_total Times the host enumerated the gadget again after it had been configured, not counting the server's own rebinds.
+# TYPE ironkvm_usb_reenumerations_total counter
+ironkvm_usb_reenumerations_total 5
 `
 	assertText(t, render(t, collectUSB), want)
 }

@@ -77,10 +77,17 @@ const (
 	// Enumerated, addressed, configured, and useless.
 	linkDegraded
 
-	// linkPending: mid-enumeration, suspended, or no controller to read. Not
-	// health, but not evidence of a fault either. A host that goes to sleep
-	// reports "suspended" and is working perfectly.
+	// linkPending: suspended, or no controller to read. Not health, but not
+	// evidence of a fault either. A host that goes to sleep reports
+	// "suspended" and is working perfectly.
 	linkPending
+
+	// linkEnumerating: the host has reset the bus and not configured the
+	// gadget yet. That takes well under a second, so a sample normally never
+	// sees it. One that stays here is an enumeration that failed: trial 29's
+	// wedge on the mainline slot ended with the host giving up on a reset
+	// (#70). It was graded pending before, which left it alone for good.
+	linkEnumerating
 )
 
 func (l usbLink) health() linkHealth {
@@ -92,6 +99,8 @@ func (l usbLink) health() linkHealth {
 		return linkDegraded
 	case udcStateDetached:
 		return linkDetached
+	case "attached", "powered", "reconnecting", "unauthenticated", "default", "addressed":
+		return linkEnumerating
 	default:
 		return linkPending
 	}
@@ -108,6 +117,8 @@ func (l usbLink) describe() string {
 		return "the host has not enumerated the gadget"
 	case linkDegraded:
 		return "the host enumerated the gadget at " + l.Speed
+	case linkEnumerating:
+		return "the host has not finished enumerating the gadget (" + l.State + ")"
 	default:
 		return "the link reads " + l.State
 	}

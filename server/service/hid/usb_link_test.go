@@ -75,11 +75,12 @@ func TestLinkHealthGrades(t *testing.T) {
 		{"configured", "", linkDegraded},
 		{"not attached", "UNKNOWN", linkDetached},
 
-		// Everything in the enumeration sequence is in progress, not a fault.
-		{"attached", "UNKNOWN", linkPending},
-		{"powered", "UNKNOWN", linkPending},
-		{"default", "UNKNOWN", linkPending},
-		{"addressed", "UNKNOWN", linkPending},
+		// The enumeration sequence. Graded apart from pending, because one
+		// that stays here is a failed enumeration (#70).
+		{"attached", "UNKNOWN", linkEnumerating},
+		{"powered", "UNKNOWN", linkEnumerating},
+		{"default", "UNKNOWN", linkEnumerating},
+		{"addressed", "UNKNOWN", linkEnumerating},
 
 		// A host that goes to sleep suspends the bus. The gadget is fine, and
 		// nothing must rebind it for this.

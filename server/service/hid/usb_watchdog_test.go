@@ -158,7 +158,7 @@ func TestPendingStatesNeitherStartNorClearTheTimer(t *testing.T) {
 	}
 
 	running := detachedSince(true, epoch.Add(-time.Minute))
-	running.observe(usbLink{State: "addressed"})
+	running.observe(usbLink{State: "suspended"})
 	if running.faultSince != epoch.Add(-time.Minute) {
 		t.Fatalf("a pending sample moved the fault timer to %s", running.faultSince)
 	}

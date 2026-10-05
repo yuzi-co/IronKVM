@@ -39,6 +39,7 @@ package hid
 // S03usbdev's endpoint budget refuses it before the bind.
 
 import (
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -122,6 +123,16 @@ func USBRecoveries() (rebinds uint64, rebuilds uint64) {
 	return usbRebinds.Load(), usbRebuilds.Load()
 }
 
+// usbReenumerations counts the times the host enumerated the gadget again
+// after it had been configured, as track sees them.
+var usbReenumerations atomic.Uint64
+
+// USBReenumerations reports how many re-enumerations the supervisor has seen
+// since the server started, its own rebinds not included.
+func USBReenumerations() uint64 {
+	return usbReenumerations.Load()
+}
+
 // NoteUSBGadgetMutated tells the supervisor to hold off. Call it around
 // anything that unbinds the UDC on purpose: mounting an image, switching HID
 // mode, resetting the controller. Without it the transient "not attached" in
@@ -162,6 +173,14 @@ type usbWatchdog struct {
 	gaveUp bool
 
 	lastState string
+
+	// wasConfigured, leftConfigured and trail follow the raw state through
+	// every reading, sample or event, for track. leftConfigured is when the
+	// link last left configured (zero while it is configured or never was),
+	// and trail the states it has read since.
+	wasConfigured  bool
+	leftConfigured time.Time
+	trail          []string
 }
 
 type usbAction int
@@ -198,6 +217,8 @@ func StartUSBWatchdog() {
 				}
 			}()
 
+			go watchUSBLinkEvents()
+
 			w := &usbWatchdog{}
 			for {
 				time.Sleep(usbPollInterval)
@@ -208,6 +229,17 @@ func StartUSBWatchdog() {
 }
 
 func (w *usbWatchdog) poll() {
+	// Changes the event reader heard since the last poll, oldest first. They
+	// are older than the sample below, so they go first.
+	for drained := false; !drained; {
+		select {
+		case ev := <-usbLinkEvents:
+			w.track(ev.link, ev.at, true)
+		default:
+			drained = true
+		}
+	}
+
 	link, err := readUSBLink()
 	if err != nil {
 		// No controller to read at all. That is not a link fault, it is a
@@ -218,6 +250,7 @@ func (w *usbWatchdog) poll() {
 		return
 	}
 
+	w.track(link, usbWatchdogNow(), false)
 	w.observe(link)
 
 	// A rebuild can change the pointer descriptor without deleting /dev/hidg2,
@@ -338,16 +371,76 @@ func (w *usbWatchdog) observe(link usbLink) {
 		w.attempt = 0
 		w.nextAttemptAfter = time.Time{}
 		w.gaveUp = false
-	case linkDetached, linkDegraded:
+	case linkDetached, linkDegraded, linkEnumerating:
+		// An enumeration in progress starts the timer too. A good one ends
+		// within the second and clears it; one the host gave up on stays here,
+		// and was left alone for good while this was graded pending (#70).
 		if w.faultSince.IsZero() {
 			w.faultSince = usbWatchdogNow()
 		}
 	case linkPending:
-		// Mid-enumeration, suspended, or no controller. Not health, but not
-		// evidence of a fault either: a host that goes to sleep reports
-		// "suspended" and is working perfectly. Any running fault timer is left
-		// alone rather than cleared, so a link flapping through these states
-		// still escalates eventually.
+		// Suspended, or no controller. Not health, but not evidence of a fault
+		// either: a host that goes to sleep reports "suspended" and is working
+		// perfectly. Any running fault timer is left alone rather than cleared,
+		// so a link flapping through these states still escalates eventually.
+	}
+}
+
+// usbTrailMax bounds the states one re-enumeration logs. A reset passes
+// through four.
+const usbTrailMax = 8
+
+// track follows the raw state through every reading and reports each time the
+// host enumerates the gadget again after it had been configured: a reset of the
+// port, or a disconnect and reconnect. The samples alone saw 4 of the 22 resets
+// in trial 30 (#70); the events from watchUSBLinkEvents see them all.
+//
+// event says the reading came from a wakeup, which means the state changed
+// since the previous one. Configured read on a wakeup right after configured
+// is a whole reset that finished before the read.
+//
+// A return through "suspended" alone is the host sleeping and waking, and a
+// return inside the settle window is this server's own rebind or rebuild.
+// Neither is counted.
+func (w *usbWatchdog) track(link usbLink, at time.Time, event bool) {
+	if link.State != udcStateConfigured {
+		if w.wasConfigured {
+			w.wasConfigured = false
+			w.leftConfigured = at
+			w.trail = []string{udcStateConfigured}
+		}
+		if !w.leftConfigured.IsZero() && w.trail[len(w.trail)-1] != link.State && len(w.trail) < usbTrailMax {
+			w.trail = append(w.trail, link.State)
+		}
+		return
+	}
+
+	switch {
+	case w.wasConfigured && event:
+		w.reenumerated(link, "too quick to read", 0)
+	case !w.leftConfigured.IsZero():
+		w.reenumerated(link, strings.Join(append(w.trail, link.State), " -> "), at.Sub(w.leftConfigured))
+	}
+
+	w.wasConfigured = true
+	w.leftConfigured = time.Time{}
+	w.trail = nil
+}
+
+func (w *usbWatchdog) reenumerated(link usbLink, path string, took time.Duration) {
+	if len(w.trail) == 2 && w.trail[1] == "suspended" {
+		return
+	}
+	if usbGadgetSettling() {
+		return
+	}
+
+	usbReenumerations.Add(1)
+	if took > 0 {
+		log.Infof("usb watchdog: the host enumerated the gadget again at %s after %s (%s)",
+			link.Speed, took.Round(time.Millisecond), path)
+	} else {
+		log.Infof("usb watchdog: the host enumerated the gadget again at %s (%s)", link.Speed, path)
 	}
 }
 
