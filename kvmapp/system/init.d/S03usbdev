@@ -999,13 +999,19 @@ set_otg_role() {
 # efuse_uid prints the chip id in the form the vendor kernel's
 # /sys/class/cvi-base/base_uid has, "UID: %08x_%08x", read from the eFuse
 # nvmem device instead. It is for a kernel without that file: the mainline
-# kernel has no cvi-base driver, and ironkvm-dist's mainline patch 0901 exposes
-# the eFuse shadow registers as nvmem. The two words are at 0x0c and 0x10, as
+# kernel has no cvi-base driver, and exposes the eFuse shadow registers as
+# nvmem instead: sg2002-efuse0 from nixos-nanokvm's patch 0083, or cv1800-efuse
+# from ironkvm-dist's former mainline patch 0901 on older mainline kernels. Both
+# keep the shadow offsets. The two words are at 0x0c and 0x10, as
 # the vendor driver reads them, so the serial and the MACs built from the id
 # stay what they are on the vendor kernel. Status 1 and no output when there is
 # no such device either.
 efuse_uid() {
-    _efuse=/sys/bus/nvmem/devices/cv1800-efuse/nvmem
+    for _efuse in /sys/bus/nvmem/devices/sg2002-efuse*/nvmem \
+        /sys/bus/nvmem/devices/cv1800-efuse/nvmem
+    do
+        [ -r "$_efuse" ] && break
+    done
     [ -r "$_efuse" ] || return 1
     set -- $(od -An -tx4 -j12 -N8 "$_efuse" 2>/dev/null)
     [ $# -eq 2 ] || return 1

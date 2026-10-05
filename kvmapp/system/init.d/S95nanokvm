@@ -56,7 +56,11 @@ SYSTEM_DST=${SYSTEM_DST:-/tmp/kvm_system}
 # /sys/class/cvi-base/base_uid has it, "UID: %08x_%08x", from the eFuse nvmem
 # device a mainline kernel offers instead. S03usbdev carries the account.
 efuse_uid() {
-    _efuse=/sys/bus/nvmem/devices/cv1800-efuse/nvmem
+    for _efuse in /sys/bus/nvmem/devices/sg2002-efuse*/nvmem \
+        /sys/bus/nvmem/devices/cv1800-efuse/nvmem
+    do
+        [ -r "$_efuse" ] && break
+    done
     [ -r "$_efuse" ] || return 1
     set -- $(od -An -tx4 -j12 -N8 "$_efuse" 2>/dev/null)
     [ $# -eq 2 ] || return 1
