@@ -71,6 +71,16 @@ Every runtime change the encoder refuses (an ioctl error) rebuilds the pipeline 
 what the vendor library does for all of them. The encoder's actual bitrate, GOP and frame rate
 are read back after every build and change and logged next to what was asked for.
 
+**H.265 without the scaler.** At the capture's own size (1080p) the WAVE420L reads the UYVY
+capture buffer itself (ironkvm-dist patch 0933; the core codes 4:2:0 from it): its OUTPUT queue
+imports the capture dma-bufs, one slot per capture buffer, and each read encodes the newest frame
+and queues it back to the capture when the encoder is done with it. That saves the scaler's
+4 MB read and 3 MB write a picture and its 8 ms: the capture age at encoded is about 13 ms at
+60 fps, against 24 to 26 through the scaler with scale-ahead. Limited range goes through as it
+did (H.265 carries limited range; the scaler did not convert it either). Other sizes, H.264 (the
+Coda980 reads 4:2:0 only) and a kernel without 0933 (the encoder answers NV12) keep the scaler;
+`KVMV_HEVC_DIRECT=0` too. The pipeline log line says which path a build took.
+
 ### H.264 quality
 
 Every pipeline build sets, besides the bitrate, GOP and frame rate:
@@ -204,6 +214,7 @@ has read for 10 s.
 | `KVMV_MID_BUFFERS` | 2 | NV12 buffers between scaler and encoder. |
 | `KVMV_AHEAD_DELAY_US` | 0 | Scale-ahead gives the scaler a frame no earlier than this long after the encoder took its picture, so it takes a newer frame and works beside the encoder for less of its time. From a 110 Hz source, 4000 takes about 7 ms off the capture age at encoded for 2 fps less at 1080p (ironkvm-dist run sheet, trial 33). |
 | `KVMV_BITSTREAM_BUFFERS` | 3 | Encoder output buffers. |
+| `KVMV_HEVC_DIRECT` | 1 | H.265 at the capture's size reads the UYVY capture buffer itself (ironkvm-dist patch 0933), with no scaler pass: same 60 fps at 1080p from a 60 Hz source, capture age at encoded 13 ms against 24 to 26 through the scaler with scale-ahead. From a 110 Hz source asked for 110 fps it gives 71 fps against scale-ahead's 76 (ironkvm-dist run sheet, trial 36). 0 keeps the scaler. A kernel without 0933 keeps it anyway. |
 | `KVMV_IDLE_MS` | 10000 | Tear down an unread pipeline after this long; 0 never does. |
 | `KVMV_PARK_ENCODER` | 1 | Keep the encoder node, streamed off, with its bitstream and middle buffers over a teardown, for the next start of the same codec and size. A parked H.264 encoder keeps the Coda980's clocks on (the driver enables them at open); 0 closes it. |
 | `KVMV_PRIME` | 0 | Encoder start: 0 no priming picture, 1 encode a black picture and wait for it (before trial 24), 2 queue it and let the first read collect its output. |
