@@ -26,6 +26,10 @@ const (
 
 	USBDevScript = "/etc/init.d/S03usbdev"
 
+	// MainlineGadgetScript builds the gadget on a mainline kernel slot, where
+	// S03usbdev is disabled or absent. See gadgetScript.
+	MainlineGadgetScript = "/etc/init.d/S00aagadget"
+
 	// HidOnlyFlag records that the owner chose HID-only mode.
 	//
 	// Copying S03usbhid over USBDevScript is not enough on its own. That file
@@ -137,10 +141,39 @@ func (s *Service) SetHidMode(c *gin.Context) {
 	log.Debugf("hid mode is now %s", req.Mode)
 }
 
-// usbDevCommand runs one action of the gadget script that is installed at
-// USBDevScript. It is a variable so the switch can be tested without a device.
+// gadgetScriptStat is os.Stat, a variable so gadgetScript can be tested off a
+// device.
+var gadgetScriptStat = os.Stat
+
+// gadgetScript names the script that owns the gadget on the running slot.
+//
+// On the vendor kernel that is S03usbdev. A mainline kernel slot builds the
+// gadget with MainlineGadgetScript instead and takes S03usbdev's execute bit
+// away (the trial slot), or does not carry it at all (the mainline image),
+// because S03usbdev speaks to /proc/cviusb. Running S03usbdev there failed with
+// exit status 126, so the watchdog could not recover a wedged gadget on that
+// slot (#70). MainlineGadgetScript takes the same restart, stop_start and
+// restart_phy actions.
+func gadgetScript() string {
+	info, err := gadgetScriptStat(MainlineGadgetScript)
+	if err == nil && info.Mode().IsRegular() && info.Mode().Perm()&0o111 != 0 {
+		return MainlineGadgetScript
+	}
+	return USBDevScript
+}
+
+// usbDevCommand runs one action of the gadget script, gadgetScript. It is a
+// variable so the switch can be tested without a device.
+//
+// The output is not collected. S03usbdev can leave a background child holding
+// it (the enumeration watch, udhcpd for the USB network), and waiting for that
+// would hold the HID lock for as long as the child lives.
 var usbDevCommand = func(action string) error {
-	return exec.Command("sh", "-c", fmt.Sprintf("%s %s", USBDevScript, action)).Run()
+	script := gadgetScript()
+	if err := exec.Command("sh", "-c", fmt.Sprintf("%s %s", script, action)).Run(); err != nil {
+		return fmt.Errorf("%s %s: %w", script, action, err)
+	}
+	return nil
 }
 
 // applyHidMode rebuilds the USB gadget from the script SetHidMode has just
