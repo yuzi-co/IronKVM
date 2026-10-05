@@ -102,6 +102,7 @@ static pthread_mutex_t slot_lock = PTHREAD_MUTEX_INITIALIZER;
 /* Everything below up to the atomics is guarded by pipe_lock. */
 static struct kvmv_pipe pipe_state = {
 	.cap_fd = -1, .vpss_fd = -1, .enc_fd = -1, .heap_fd = -1,
+	.ahead_mid = -1,
 };
 static struct kvmv_devices devices;
 static int devices_found;
@@ -110,6 +111,10 @@ static unsigned int pipe_width, pipe_height; /* the size the pipe was built for 
 /* The codec the pipe was built for, or is built for next by an MJPEG read. */
 static enum kvmv_codec pipe_codec = KVMV_CODEC_KIND_H264;
 static uint32_t pipe_bitrate;
+/* Smoothed scale and encode times of this pipeline, for want_scale_ahead. */
+static uint32_t scale_ewma_us, encode_ewma_us;
+/* The last MJPEG or snapshot read, for want_scale_ahead. */
+static uint64_t last_image_ms;
 static int pipe_gop, pipe_fps;
 static int need_key; /* 0, or 1 plus the delta frames dropped waiting for an IDR */
 static unsigned int no_frame_count;
@@ -703,7 +708,7 @@ static void watch_rate(size_t bytes)
 		const struct kvmv_stage_times *t = &pipe_state.times;
 		unsigned int n = t->frames;
 
-		DBG("per frame: capture wait %llu us, scale %llu us, encode %llu us, copy %llu us, capture age at encoded %llu us (max %llu), at pickup %llu us, capture frames per read x100 %llu, waited for the next frame %u",
+		DBG("per frame: capture wait %llu us, scale %llu us, encode %llu us, copy %llu us, capture age at encoded %llu us (max %llu), at pickup %llu us, capture frames per read x100 %llu, waited for the next frame %u, scaled ahead %u of %u (smoothed scale %u us, encode %u us)",
 		    (unsigned long long)(t->capture_us / n),
 		    (unsigned long long)(t->scale_us / n),
 		    (unsigned long long)(t->encode_us / n),
@@ -712,7 +717,7 @@ static void watch_rate(size_t bytes)
 		    (unsigned long long)t->age_max_us,
 		    (unsigned long long)(t->pick_age_us / n),
 		    (unsigned long long)(t->seq_gap * 100 / n),
-		    t->pickup_waits);
+		    t->pickup_waits, t->ahead, n, scale_ewma_us, encode_ewma_us);
 		memset(&pipe_state.times, 0, sizeof(pipe_state.times));
 	}
 	if (!overshoot_warned && target && kbps > target * 2) {
@@ -775,6 +780,47 @@ static int pipe_failure(enum kvmv_pipe_status status)
  * (KVMV_DEBUG). */
 static uint64_t cold_start_us;
 
+/*
+ * Scale-ahead (struct kvmv_pipe): the scaler takes the next frame while the
+ * encoder works on this one. KVMV_SCALE_AHEAD=0 never, 1 always, 2 (the
+ * default) when the frame time the server asks for is shorter than a read
+ * that scales and then encodes: 1080p at 60 fps (about 8 + 13 ms against
+ * 16.7), not 30 fps, where a frame scaled ahead would only be older than the
+ * one the next read could take. The two stage times are smoothed per
+ * pipeline: the scale from reads that scaled their own frame, the encode from
+ * every read but the first, which starts the encoder's sequence
+ * (scale_ewma_us and encode_ewma_us, above).
+ *
+ * Not while MJPEG or snapshot reads come too (in the last second): they take
+ * capture frames and the scaler between the video reads, a frame scaled ahead
+ * then holds one of the three capture buffers for longer, and kvmv-probe's
+ * H.264 at 60 fps beside a 30 fps MJPEG reader fell from 28 to 16 fps.
+ */
+
+static int want_scale_ahead(void)
+{
+	static int mode = -1;
+	int fps;
+
+	if (mode < 0)
+		mode = (int)env_uint("KVMV_SCALE_AHEAD", 2);
+	if (mode != 2)
+		return mode == 1;
+	if (last_image_ms && now_ms() - last_image_ms < 1000U)
+		return 0;
+	fps = __atomic_load_n(&capture_fps_setting, __ATOMIC_ACQUIRE);
+	if (fps <= 0 || !scale_ewma_us || !encode_ewma_us)
+		return 0;
+	return 1000000U / (unsigned int)fps < scale_ewma_us + encode_ewma_us;
+}
+
+static uint32_t ewma(uint32_t avg, uint64_t sample)
+{
+	if (sample > 1000000U)
+		sample = 1000000U;
+	return avg ? (uint32_t)((avg * 7ULL + sample) / 8U) : (uint32_t)sample;
+}
+
 static int read_video_locked(unsigned int width, unsigned int height,
 			     uint32_t bitrate_bps, enum kvmv_codec codec,
 			     uint8_t **data, uint32_t *size)
@@ -801,6 +847,8 @@ static int read_video_locked(unsigned int width, unsigned int height,
 		pipe_down_keep("output size changed", 1);
 	if (!pipe_state.running) {
 		cold_start_us = now_us();
+		scale_ewma_us = 0;
+		encode_ewma_us = 0;
 		result = pipe_up(width, height, bitrate_bps);
 		if (result != 0)
 			return result;
@@ -818,12 +866,23 @@ static int read_video_locked(unsigned int width, unsigned int height,
 		size_t unit_size, prefix_len;
 		uint64_t copy_start;
 		int type;
+		uint64_t scale0 = pipe_state.times.scale_us;
+		uint64_t encode0 = pipe_state.times.encode_us;
+		unsigned int ahead0 = pipe_state.times.ahead;
 
+		pipe_state.scale_ahead = want_scale_ahead();
 		result = pipe_failure(kvmv_pipe_encode(&pipe_state, KVMV_FRAME_TIMEOUT_MS,
 						       &encoded));
 		if (result != 0)
 			return result;
 		no_frame_count = 0;
+		if (!cold_start_us) {
+			if (pipe_state.times.ahead == ahead0)
+				scale_ewma_us = ewma(scale_ewma_us,
+						     pipe_state.times.scale_us - scale0);
+			encode_ewma_us = ewma(encode_ewma_us,
+					      pipe_state.times.encode_us - encode0);
+		}
 
 		/*
 		 * Copy the unit out of the encoder's buffer before looking at
@@ -1169,6 +1228,7 @@ static int read_image(uint16_t width, uint16_t height, int quality,
 		return KVMV_RET_RETRIEVING;
 	}
 	__atomic_store_n(&last_read_ms, now_ms(), __ATOMIC_RELEASE);
+	last_image_ms = now_ms();
 	if (__atomic_load_n(&capture_stopped, __ATOMIC_ACQUIRE)) {
 		pthread_mutex_unlock(&pipe_lock);
 		pthread_mutex_unlock(&jpeg_lock);

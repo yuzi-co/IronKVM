@@ -117,6 +117,7 @@ struct kvmv_stage_times {
 	uint64_t pick_age_us; /* capture timestamp to the frame being taken, summed */
 	uint64_t seq_gap; /* capture sequence numbers skipped between taken frames, summed */
 	unsigned int pickup_waits; /* reads that waited for the next frame */
+	unsigned int ahead; /* frames the scaler had started on during the encode before */
 	unsigned int frames;
 };
 
@@ -177,6 +178,21 @@ struct kvmv_pipe {
 	 * collected, and a keyframe asked for meanwhile is asked for after it. */
 	int prime_pending;
 	int key_after_prime;
+	/*
+	 * Scale-ahead. With scale_ahead set (by the caller, before each
+	 * kvmv_pipe_encode), a capture frame that completes while the encoder
+	 * works on the picture before it goes to the scaler at once, into the
+	 * other middle buffer, and the next kvmv_pipe_encode takes that picture
+	 * instead of waiting for and scaling a frame of its own. The scaler and
+	 * the encoder then work side by side instead of one after the other.
+	 * ahead_mid is the middle buffer being filled, -1 for none; ahead_ci
+	 * the capture buffer the scaler reads; ahead_ts_us that frame's capture
+	 * time.
+	 */
+	int scale_ahead;
+	int ahead_mid;
+	unsigned int ahead_ci;
+	uint64_t ahead_ts_us;
 	/* kvmv_pipe_start's steps, microseconds from its start: open, early
 	 * capture STREAMON, negotiate, middle buffers, bitstream buffers,
 	 * encoder STREAMON, priming encode, capture buffers, capture STREAMON,
@@ -249,6 +265,9 @@ enum kvmv_pipe_status kvmv_pipe_encode_mid(struct kvmv_pipe *pipe,
 /*
  * Take the newest frame, scale it and encode it. On KVMV_PIPE_OK the caller
  * copies out->data with kvmv_copy_from_device and then calls kvmv_pipe_release.
+ * With pipe->scale_ahead the picture may be one the scaler started on during
+ * the previous call (see struct kvmv_pipe), and this call may leave the next
+ * one with the scaler.
  */
 enum kvmv_pipe_status kvmv_pipe_encode(struct kvmv_pipe *pipe,
 				       unsigned int timeout_ms,
