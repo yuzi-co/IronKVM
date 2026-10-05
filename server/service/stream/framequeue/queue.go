@@ -44,6 +44,8 @@ type entry[T any] struct {
 //   - A delta frame is queued unless the viewer is too far behind: the queue
 //     holds MaxFrames frames, or the oldest one has waited longer than MaxDelay.
 //     Then it and every delta frame after it are dropped until a keyframe.
+//   - A new queue waits for a keyframe: a viewer that joins a running stream
+//     cannot decode the delta frames before one.
 //   - A keyframe is always queued. If the viewer is too far behind when it
 //     arrives, the frames still waiting are discarded first: the keyframe does
 //     not need them, and sending them would only add to the delay.
@@ -76,9 +78,10 @@ func New[T any](maxFrames int, maxDelay time.Duration) *Queue[T] {
 	}
 
 	q := &Queue[T]{
-		frames:   make([]entry[T], maxFrames),
-		maxDelay: maxDelay,
-		now:      time.Now,
+		frames:        make([]entry[T], maxFrames),
+		maxDelay:      maxDelay,
+		waitingForKey: true,
+		now:           time.Now,
 	}
 	q.ready = sync.NewCond(&q.mutex)
 

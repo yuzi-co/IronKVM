@@ -62,6 +62,13 @@ type Client struct {
 	queue *framequeue.Queue[[]*rtp.Packet]
 	done  chan struct{}
 
+	// ready closes when the peer connection is up and packets written to the
+	// track reach the viewer. The video writer waits for it, or for stopping.
+	ready     chan struct{}
+	readyOnce sync.Once
+	stopping  chan struct{}
+	stopOnce  sync.Once
+
 	// audioSlot holds at most one pending audio frame, with its own writer
 	// goroutine. Sharing the video queue would drop audio whenever video fell
 	// behind, and the two have nothing to do with each other.

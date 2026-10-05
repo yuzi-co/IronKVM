@@ -2,6 +2,7 @@ package webrtc
 
 import (
 	"testing"
+	"time"
 
 	"github.com/pion/rtp"
 )
@@ -26,6 +27,15 @@ func takeLabel(t *testing.T, c *Client) string {
 	return string(packets[0].Payload)
 }
 
+func labels(w *recordingWriter) []string {
+	var out []string
+	for _, p := range w.packets() {
+		out = append(out, string(p.Payload))
+	}
+
+	return out
+}
+
 func newTestClient() *Client {
 	c := NewClient(nil, nil)
 	c.track, _ = newTestTrack(5)
@@ -36,10 +46,23 @@ func newTestClient() *Client {
 func TestEnqueueAcceptsFrameWhenClientIsKeepingUp(t *testing.T) {
 	c := newTestClient()
 
+	c.enqueue(frame("key"), keyFrame)
 	c.enqueue(frame("frame"), deltaFrame)
 
-	if c.queue.Len() != 1 {
-		t.Fatal("the frame should be queued for the writer")
+	if c.queue.Len() != 2 {
+		t.Fatal("the frames should be queued for the writer")
+	}
+}
+
+// A viewer that joins a running stream starts at the next keyframe: the
+// delta frames before it reference pictures it never received.
+func TestEnqueueStartsANewClientAtAKeyframe(t *testing.T) {
+	c := newTestClient()
+
+	c.enqueue(frame("delta"), deltaFrame)
+
+	if c.queue.Len() != 0 {
+		t.Fatal("a delta frame before the first keyframe should not be queued")
 	}
 }
 
@@ -82,6 +105,36 @@ func TestEnqueueNeverBlocksOnAClientThatStaysBehind(t *testing.T) {
 	c.enqueue(frame("key2"), keyFrame)
 	if c.queue.Len() == 0 {
 		t.Fatal("a keyframe should resume the stream")
+	}
+}
+
+// Frames that arrive before the peer connection is up wait for it, so the
+// keyframe capture starts with is the viewer's first picture.
+func TestWriterHoldsFramesUntilTheConnectionIsReady(t *testing.T) {
+	c := NewClient(nil, nil)
+	track, writer := newTestTrack(5)
+	c.track = track
+	c.startWriters()
+	defer c.stop()
+
+	c.enqueue(frame("key"), keyFrame)
+	c.enqueue(frame("p1"), deltaFrame)
+
+	time.Sleep(20 * time.Millisecond)
+	if n := len(labels(writer)); n != 0 {
+		t.Fatalf("nothing should be written before the connection is ready, got %d packets", n)
+	}
+
+	c.markReady()
+
+	deadline := time.Now().Add(time.Second)
+	for len(labels(writer)) < 2 && time.Now().Before(deadline) {
+		time.Sleep(time.Millisecond)
+	}
+
+	got := labels(writer)
+	if len(got) != 2 || got[0] != "key" || got[1] != "p1" {
+		t.Fatalf("expected the held keyframe and the frame after it, got %v", got)
 	}
 }
 

@@ -16,15 +16,40 @@ import (
 )
 
 func NewClient(ws *websocket.Conn, videoConn *webrtc.PeerConnection) *Client {
-	return &Client{
+	c := &Client{
 		ws:        ws,
 		video:     videoConn,
 		mutex:     sync.Mutex{},
 		queue:     framequeue.New[[]*rtp.Packet](framequeue.DefaultMaxFrames, framequeue.DefaultMaxDelay),
 		done:      make(chan struct{}),
+		ready:     make(chan struct{}),
+		stopping:  make(chan struct{}),
 		audioSlot: stream.NewFrameSlot[[]*rtp.Packet](),
 		audioDone: make(chan struct{}),
 	}
+
+	if videoConn != nil {
+		videoConn.OnConnectionStateChange(func(state webrtc.PeerConnectionState) {
+			if state == webrtc.PeerConnectionStateConnected {
+				c.markReady()
+			}
+		})
+	}
+
+	return c
+}
+
+// markReady lets the video writer start. The peer connection reports Connected
+// once DTLS is up and SRTP has its keys.
+//
+// The client is added, and capture starts, when ICE connects, which is before
+// the DTLS handshake ends. pion drops every packet written before that without
+// an error, so the first keyframe, which the encoder produces as soon as
+// capture starts, never reached the viewer, and its first picture waited for
+// the next keyframe a GOP later. Holding the writer back until now keeps that
+// keyframe in the queue instead.
+func (c *Client) markReady() {
+	c.readyOnce.Do(func() { close(c.ready) })
 }
 
 // enqueue offers a frame to this client and never blocks.
@@ -90,6 +115,12 @@ func (c *Client) writeAudio() {
 func (c *Client) write() {
 	defer close(c.done)
 
+	select {
+	case <-c.ready:
+	case <-c.stopping:
+		return
+	}
+
 	for {
 		packets, ok := c.queue.Take()
 		if !ok {
@@ -126,6 +157,7 @@ func (c *Client) startWriters() {
 
 // stop releases the writer and waits for it to let go of the connection.
 func (c *Client) stop() {
+	c.stopOnce.Do(func() { close(c.stopping) })
 	c.queue.Close()
 	<-c.done
 

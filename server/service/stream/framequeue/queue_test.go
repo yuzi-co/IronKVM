@@ -169,14 +169,31 @@ func TestKeyframeFlushesAStaleBacklog(t *testing.T) {
 	}
 }
 
+func TestANewQueueStartsAtAKeyframe(t *testing.T) {
+	// A viewer joining a running stream cannot decode the delta frames before
+	// the next keyframe, so they are not sent.
+	q, _ := newQueue(8, time.Second)
+
+	if q.Put("p0", delta) {
+		t.Fatal("a delta frame before the first keyframe must be refused")
+	}
+	q.Put("k", key)
+	q.Put("p1", delta)
+
+	if got := drain(t, q); !equal(got, []string{"k", "p1"}) {
+		t.Fatalf("got %v", got)
+	}
+}
+
 func TestKeyframeKeepsAFreshBacklog(t *testing.T) {
 	// A viewer a frame or two behind finishes the old GOP first.
 	q, c := newQueue(100, 100*time.Millisecond)
+	q.Put("k", key)
 	q.Put("p1", delta)
 	c.advance(20 * time.Millisecond)
-	q.Put("k", key)
+	q.Put("k2", key)
 
-	if got := drain(t, q); !equal(got, []string{"p1", "k"}) {
+	if got := drain(t, q); !equal(got, []string{"k", "p1", "k2"}) {
 		t.Fatalf("got %v", got)
 	}
 }
