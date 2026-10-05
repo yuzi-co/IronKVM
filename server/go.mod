@@ -2,6 +2,13 @@ module NanoKVM-Server
 
 go 1.25.0
 
+// The board has one core and no cgroup CPU limit that could change under the
+// server, so Go 1.25's once-a-second re-check of the CPU count and cgroup
+// limit for GOMAXPROCS has nothing to find. Trial 38 (#72) blamed it for 12%
+// of a WebRTC profile; trial 39 found no cost to measure either way, so this
+// only drops a pointless periodic check. GOMAXPROCS is still set at start.
+godebug updatemaxprocs=0
+
 require (
 	github.com/creack/pty v1.1.24
 	github.com/gin-gonic/contrib v0.0.0-20260101091603-d12f07a9136b
