@@ -49,7 +49,7 @@ func runWycheproof(t *testing.T, env string, mk func([]byte) (cipher.AEAD, error
 	if err := json.Unmarshal(raw, &f); err != nil {
 		t.Fatal(err)
 	}
-	n, pass, skipped := 0, 0, 0
+	n, pass, skipped, tls13 := 0, 0, 0, 0
 	for _, g := range f.TestGroups {
 		for _, tc := range g.Tests {
 			n++
@@ -73,6 +73,16 @@ func runWycheproof(t *testing.T, env string, mk func([]byte) (cipher.AEAD, error
 					t.Errorf("tc %d (%s): Seal mismatch", tc.TcID, tc.Comment)
 					continue
 				}
+				// SealTLS13 (seal_tls13_ironkvm.go) on the same vector, its
+				// last message byte taken as the content type.
+				if s, ok := a.(*chacha20poly1305); ok && len(msg) > 0 {
+					got := s.SealTLS13(nil, iv, msg[:len(msg)-1], msg[len(msg)-1], aad)
+					if !bytes.Equal(got, sealed) {
+						t.Errorf("tc %d (%s): SealTLS13 mismatch", tc.TcID, tc.Comment)
+						continue
+					}
+					tls13++
+				}
 			}
 			pt, err := a.Open(nil, iv, sealed, aad)
 			ok := err == nil && bytes.Equal(pt, msg)
@@ -89,7 +99,7 @@ func runWycheproof(t *testing.T, env string, mk func([]byte) (cipher.AEAD, error
 	if n != f.NumberOfTests {
 		t.Errorf("%s: ran %d of %d tests", f.Algorithm, n, f.NumberOfTests)
 	}
-	t.Logf("%s: %d tests, %d passed (%d rejected by size as expected)", f.Algorithm, n, pass, skipped)
+	t.Logf("%s: %d tests, %d passed (%d rejected by size as expected), %d also through SealTLS13", f.Algorithm, n, pass, skipped, tls13)
 }
 
 func TestIronKVMWycheproofChaCha20Poly1305(t *testing.T) {

@@ -5,6 +5,8 @@ import (
 	"crypto/tls"
 	"net"
 	"net/http"
+	"os"
+	"strconv"
 	"sync"
 )
 
@@ -130,6 +132,12 @@ func BeginWriteBatch(r *http.Request) (end func() error) {
 		return noBatch
 	}
 
+	if g, ok := any(conn).(gatherer); ok && gatherFlushSize > 0 {
+		g.BeginGather(gatherFlushSize)
+
+		return g.EndGather
+	}
+
 	batch, ok := conn.NetConn().(*batchConn)
 	if !ok {
 		return noBatch
@@ -143,6 +151,32 @@ func BeginWriteBatch(r *http.Request) (end func() error) {
 func noBatch() error {
 	return nil
 }
+
+// gatherer is a *tls.Conn built with server/goroot-overlay, whose crypto/tls
+// gathers records itself (goroot-overlay/src/crypto/tls/gather_ironkvm.go).
+// It seals each record from the caller's bytes straight into the buffer the
+// socket is written from, so neither of the two copies the batch above costs
+// is made: the payload copied next to its header to be sealed, and the
+// record copied into the batch. On the C906 both run a byte at a time (the
+// riscv64 memmove does that when source and destination differ in alignment
+// modulo 8), and at 1080p they took 8 to 9% of the core (ironkvm-dist#68,
+// run sheet trial 37). A build without the overlay has no such method and
+// uses the batch.
+type gatherer interface {
+	BeginGather(flushAt int)
+	EndGather() error
+}
+
+// gatherFlushSize is the socket write size while gathering: as the batch's,
+// for the same reason. NANOKVM_TLS_GATHER sets it in bytes, or 0 for the batch
+// instead; for measurements only.
+var gatherFlushSize = func() int {
+	if v, err := strconv.Atoi(os.Getenv("NANOKVM_TLS_GATHER")); err == nil && v >= 0 {
+		return v
+	}
+
+	return batchFlushSize
+}()
 
 // ListenAndServeTLS is server.ListenAndServeTLS with the connections wrapped
 // for BeginWriteBatch.
