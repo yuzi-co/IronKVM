@@ -708,7 +708,7 @@ static void watch_rate(size_t bytes)
 		const struct kvmv_stage_times *t = &pipe_state.times;
 		unsigned int n = t->frames;
 
-		DBG("per frame: capture wait %llu us, scale %llu us, encode %llu us, copy %llu us, capture age at encoded %llu us (max %llu), at pickup %llu us, capture frames per read x100 %llu, waited for the next frame %u, scaled ahead %u of %u (smoothed scale %u us, encode %u us)",
+		DBG("per frame: capture wait %llu us, scale %llu us, encode %llu us, copy %llu us, capture age at encoded %llu us (max %llu), at pickup %llu us, capture frames per read x100 %llu, waited for the next frame %u, scaled ahead %u of %u (smoothed scale %u us, encode %u us), scaler beside the encoder %llu us",
 		    (unsigned long long)(t->capture_us / n),
 		    (unsigned long long)(t->scale_us / n),
 		    (unsigned long long)(t->encode_us / n),
@@ -717,7 +717,8 @@ static void watch_rate(size_t bytes)
 		    (unsigned long long)t->age_max_us,
 		    (unsigned long long)(t->pick_age_us / n),
 		    (unsigned long long)(t->seq_gap * 100 / n),
-		    t->pickup_waits, t->ahead, n, scale_ewma_us, encode_ewma_us);
+		    t->pickup_waits, t->ahead, n, scale_ewma_us, encode_ewma_us,
+		    (unsigned long long)(t->overlap_us / n));
 		memset(&pipe_state.times, 0, sizeof(pipe_state.times));
 	}
 	if (!overshoot_warned && target && kbps > target * 2) {
@@ -814,6 +815,20 @@ static int want_scale_ahead(void)
 	return 1000000U / (unsigned int)fps < scale_ewma_us + encode_ewma_us;
 }
 
+/*
+ * KVMV_AHEAD_DELAY_US: scale-ahead gives the scaler a frame no earlier than
+ * this long after the encoder took its picture, so the two overlap less in
+ * the DRAM (trial 33). 0, the default, starts it at once.
+ */
+static uint32_t ahead_delay_us(void)
+{
+	static long delay = -1;
+
+	if (delay < 0)
+		delay = (long)env_uint("KVMV_AHEAD_DELAY_US", 0);
+	return (uint32_t)delay;
+}
+
 static uint32_t ewma(uint32_t avg, uint64_t sample)
 {
 	if (sample > 1000000U)
@@ -871,6 +886,7 @@ static int read_video_locked(unsigned int width, unsigned int height,
 		unsigned int ahead0 = pipe_state.times.ahead;
 
 		pipe_state.scale_ahead = want_scale_ahead();
+		pipe_state.ahead_delay_us = ahead_delay_us();
 		result = pipe_failure(kvmv_pipe_encode(&pipe_state, KVMV_FRAME_TIMEOUT_MS,
 						       &encoded));
 		if (result != 0)

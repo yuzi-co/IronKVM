@@ -118,6 +118,7 @@ struct kvmv_stage_times {
 	uint64_t seq_gap; /* capture sequence numbers skipped between taken frames, summed */
 	unsigned int pickup_waits; /* reads that waited for the next frame */
 	unsigned int ahead; /* frames the scaler had started on during the encode before */
+	uint64_t overlap_us; /* scaler started to encoder done, on reads that started it */
 	unsigned int frames;
 };
 
@@ -193,6 +194,11 @@ struct kvmv_pipe {
 	int ahead_mid;
 	unsigned int ahead_ci;
 	uint64_t ahead_ts_us;
+	/* Scale-ahead starts no earlier than this after the encoder was given
+	 * its picture (KVMV_AHEAD_DELAY_US), 0 at once; ahead_start_us is when
+	 * it last started, for times.overlap_us. */
+	uint32_t ahead_delay_us;
+	uint64_t ahead_start_us;
 	/* kvmv_pipe_start's steps, microseconds from its start: open, early
 	 * capture STREAMON, negotiate, middle buffers, bitstream buffers,
 	 * encoder STREAMON, priming encode, capture buffers, capture STREAMON,
