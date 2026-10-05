@@ -458,24 +458,43 @@ int kvmv_pipe_negotiate(struct kvmv_pipe *p, const struct kvmv_pipe_cfg *cfg)
 	 * plan (take_parked_encoder). */
 	if (p->enc_reused)
 		goto rate_control;
-	if (set_fmt(p->enc_fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, V4L2_PIX_FMT_NV12,
-		    p->plan.out_width, p->plan.coded_height, cap, 0,
-		    &p->enc_out_fmt))
-		return fail(p, "encoder OUTPUT S_FMT");
-	if (set_crop(p->enc_fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, p->plan.out_width,
-		     p->plan.out_height)) {
-		if (errno != EINVAL || p->plan.coded_height != p->plan.out_height)
-			return fail(p, "encoder OUTPUT crop");
+	/*
+	 * H.265 at the capture's size: the encoder may read the capture buffer
+	 * as it is. It must keep the capture's format, size and line, or the
+	 * scaler converts as before. A WAVE420L without ironkvm-dist patch
+	 * 0933 answers NV12.
+	 */
+	p->direct = 0;
+	if (cfg->direct && is_hevc(p) && bytes_per_pixel == 2 &&
+	    p->plan.out_width == cap->width && p->plan.out_height == cap->height) {
+		if (set_fmt(p->enc_fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, cap->pixelformat,
+			    cap->width, cap->height, cap, 0, &p->enc_out_fmt))
+			return fail(p, "encoder OUTPUT S_FMT");
+		p->direct = p->enc_out_fmt.pixelformat == cap->pixelformat &&
+			    p->enc_out_fmt.width == cap->width &&
+			    p->enc_out_fmt.height == cap->height &&
+			    p->enc_out_fmt.bytesperline == cap->bytesperline;
 	}
-	if (get_fmt(p->enc_fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, &p->enc_out_fmt))
-		return fail(p, "encoder OUTPUT G_FMT");
-	if (p->enc_out_fmt.pixelformat != V4L2_PIX_FMT_NV12 ||
-	    p->enc_out_fmt.width < p->plan.out_width ||
-	    p->enc_out_fmt.height < p->plan.out_height)
-		return fail_msg(p, "encoder took %.4s %ux%u for NV12 %ux%u",
-				(const char *)&p->enc_out_fmt.pixelformat,
-				p->enc_out_fmt.width, p->enc_out_fmt.height,
-				p->plan.out_width, p->plan.coded_height);
+	if (!p->direct) {
+		if (set_fmt(p->enc_fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, V4L2_PIX_FMT_NV12,
+			    p->plan.out_width, p->plan.coded_height, cap, 0,
+			    &p->enc_out_fmt))
+			return fail(p, "encoder OUTPUT S_FMT");
+		if (set_crop(p->enc_fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, p->plan.out_width,
+			     p->plan.out_height)) {
+			if (errno != EINVAL || p->plan.coded_height != p->plan.out_height)
+				return fail(p, "encoder OUTPUT crop");
+		}
+		if (get_fmt(p->enc_fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, &p->enc_out_fmt))
+			return fail(p, "encoder OUTPUT G_FMT");
+		if (p->enc_out_fmt.pixelformat != V4L2_PIX_FMT_NV12 ||
+		    p->enc_out_fmt.width < p->plan.out_width ||
+		    p->enc_out_fmt.height < p->plan.out_height)
+			return fail_msg(p, "encoder took %.4s %ux%u for NV12 %ux%u",
+					(const char *)&p->enc_out_fmt.pixelformat,
+					p->enc_out_fmt.width, p->enc_out_fmt.height,
+					p->plan.out_width, p->plan.coded_height);
+	}
 	if (set_fmt(p->enc_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, coded_fourcc(p),
 		    p->plan.out_width, p->plan.out_height, cap,
 		    KVMV_BITSTREAM_SIZE, &p->enc_cap_fmt))
@@ -521,6 +540,8 @@ rate_control:
 		set_ctrl(p->enc_fd, V4L2_CID_MPEG_VIDEO_VBV_DELAY,
 			 (int32_t)cfg->vbv_delay_ms);
 	read_back(p);
+	if (p->direct)
+		return 0;
 
 	/* The scaler: OUTPUT is the captured frame, CAPTURE is the encoder's
 	 * input surface. */
@@ -660,11 +681,31 @@ static int sync_dmabuf(int fd, uint64_t flags)
 	return xioctl(fd, DMA_BUF_IOCTL_SYNC, &sync);
 }
 
-static int alloc_mid(struct kvmv_pipe *p, unsigned int wanted)
+static int alloc_mid(struct kvmv_pipe *p, unsigned int wanted,
+		     unsigned int capture_wanted)
 {
 	unsigned int i;
 	int got;
 
+	if (p->direct) {
+		/*
+		 * No middle buffers: the encoder's OUTPUT queue takes the
+		 * capture buffers' dma-bufs, slot i for capture buffer i. The
+		 * heap stays open for the snapshot context.
+		 */
+		if (!p->enc_reused) {
+			got = request(p->enc_fd, V4L2_BUF_TYPE_VIDEO_OUTPUT,
+				      V4L2_MEMORY_DMABUF, capture_wanted);
+			if (got < 1)
+				return fail(p, "encoder OUTPUT REQBUFS");
+			p->enc_out_count = (unsigned int)got;
+		}
+		if (p->heap_fd < 0)
+			p->heap_fd = open_heap();
+		if (p->heap_fd < 0)
+			return fail(p, "open /dev/dma_heap");
+		return 0;
+	}
 	if (p->enc_reused) {
 		/* The buffers and the encoder's OUTPUT queue came parked; only
 		 * the new scaler context needs its queue. */
@@ -805,6 +846,10 @@ static int prime_encoder(struct kvmv_pipe *p, enum kvmv_prime mode,
 	/* The first scale goes into mid[1] while mid[0] is being encoded. */
 	if (mode == KVMV_PRIME_ASYNC && p->mid_count < 2)
 		mode = KVMV_PRIME_WAIT;
+	/* Reading the capture buffers, the encoder has no surface of its own
+	 * to prime with (and no priming is the default). */
+	if (p->direct)
+		mode = KVMV_PRIME_NONE;
 	if (mode == KVMV_PRIME_NONE) {
 		if (stream(p->enc_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, 1))
 			return fail(p, "encoder CAPTURE STREAMON");
@@ -893,6 +938,9 @@ static struct {
 	struct kvmv_buf *bs, *mid;
 	unsigned int bs_count, mid_count;
 	int heap_fd;
+	/* kvmv_pipe_cfg.direct as asked, and what the pipe got. */
+	int want_direct, direct;
+	unsigned int enc_out_count;
 } parked_enc = { .fd = -1, .heap_fd = -1 };
 
 static void free_bufs(struct kvmv_buf **bufs, unsigned int *count);
@@ -945,7 +993,9 @@ static int take_parked_encoder(struct kvmv_pipe *p, const struct kvmv_pipe_cfg *
 		return 0;
 	if (!cfg->park_encoder || parked_enc.codec != cfg->codec ||
 	    strcmp(parked_enc.path, encoder) != 0 ||
-	    parked_enc.mid_count != (cfg->mid_buffers ? cfg->mid_buffers : 2) ||
+	    parked_enc.want_direct != cfg->direct ||
+	    (!parked_enc.direct &&
+	     parked_enc.mid_count != (cfg->mid_buffers ? cfg->mid_buffers : 2)) ||
 	    parked_enc.bs_count != (cfg->bitstream_buffers ? cfg->bitstream_buffers : 3) ||
 	    get_fmt(p->cap_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, &cap) ||
 	    !same_pix(&cap, &parked_enc.cap_fmt) ||
@@ -963,6 +1013,8 @@ static int take_parked_encoder(struct kvmv_pipe *p, const struct kvmv_pipe_cfg *
 	p->mid_count = parked_enc.mid_count;
 	p->enc_out_fmt = parked_enc.enc_out_fmt;
 	p->enc_cap_fmt = parked_enc.enc_cap_fmt;
+	p->direct = parked_enc.direct;
+	p->enc_out_count = parked_enc.enc_out_count;
 	parked_enc.fd = -1;
 	parked_enc.heap_fd = -1;
 	parked_enc.bs = NULL;
@@ -1002,6 +1054,7 @@ int kvmv_pipe_start(struct kvmv_pipe *p, const struct kvmv_devices *d,
 	p->codec = cfg->codec;
 	p->pickup_wait_max_us = cfg->pickup_wait_ms * 1000U;
 	p->park_encoder = cfg->park_encoder;
+	p->want_direct = cfg->direct;
 	copy_path(p->scaler_path, d->scaler);
 	encoder = is_hevc(p) ? d->encoder_hevc : d->encoder;
 	if (!encoder[0]) {
@@ -1066,7 +1119,8 @@ int kvmv_pipe_start(struct kvmv_pipe *p, const struct kvmv_devices *d,
 	if (kvmv_pipe_negotiate(p, cfg))
 		goto out;
 	START_STAMP(2);
-	if (alloc_mid(p, cfg->mid_buffers ? cfg->mid_buffers : 2))
+	if (alloc_mid(p, cfg->mid_buffers ? cfg->mid_buffers : 2,
+		      cfg->capture_buffers ? cfg->capture_buffers : 2))
 		goto out;
 	START_STAMP(3);
 	if (alloc_bitstream(p, cfg->bitstream_buffers ? cfg->bitstream_buffers : 3))
@@ -1101,6 +1155,25 @@ int kvmv_pipe_start(struct kvmv_pipe *p, const struct kvmv_devices *d,
 	} else if (adopt_capture(p)) {
 		goto out;
 	}
+	if (p->direct) {
+		/*
+		 * Each capture buffer goes to the encoder slot of its index, and
+		 * must hold what the encoder reads: whole 16-line rows, which
+		 * the capture allocates with ironkvm-dist patch 0921.
+		 */
+		off_t size = lseek(p->cap[0].fd, 0, SEEK_END);
+
+		if (p->cap_count > p->enc_out_count) {
+			fail_msg(p, "encoder took %u capture buffers of %u",
+				 p->enc_out_count, p->cap_count);
+			goto out;
+		}
+		if (size < (off_t)p->enc_out_fmt.sizeimage) {
+			fail_msg(p, "capture buffer of %lld bytes is short of the encoder's %u",
+				 (long long)size, p->enc_out_fmt.sizeimage);
+			goto out;
+		}
+	}
 	START_STAMP(7);
 	if (!p->cap_on) {
 		if (stream(p->cap_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, 1)) {
@@ -1112,21 +1185,23 @@ int kvmv_pipe_start(struct kvmv_pipe *p, const struct kvmv_devices *d,
 		p->cap_on = 1;
 	}
 	START_STAMP(8);
-	if (request(p->vpss_fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, V4L2_MEMORY_DMABUF,
-		    p->cap_count) < (int)p->cap_count) {
-		fail(p, "scaler OUTPUT REQBUFS");
-		goto out;
+	if (!p->direct) {
+		if (request(p->vpss_fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, V4L2_MEMORY_DMABUF,
+			    p->cap_count) < (int)p->cap_count) {
+			fail(p, "scaler OUTPUT REQBUFS");
+			goto out;
+		}
+		if (stream(p->vpss_fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, 1)) {
+			fail(p, "scaler OUTPUT STREAMON");
+			goto out;
+		}
+		p->vpss_out_on = 1;
+		if (stream(p->vpss_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, 1)) {
+			fail(p, "scaler CAPTURE STREAMON");
+			goto out;
+		}
+		p->vpss_cap_on = 1;
 	}
-	if (stream(p->vpss_fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, 1)) {
-		fail(p, "scaler OUTPUT STREAMON");
-		goto out;
-	}
-	p->vpss_out_on = 1;
-	if (stream(p->vpss_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, 1)) {
-		fail(p, "scaler CAPTURE STREAMON");
-		goto out;
-	}
-	p->vpss_cap_on = 1;
 	START_STAMP(9);
 	/* Frames that completed while the encoder was set up are as old as
 	 * that took: the first read waits for the next one instead. */
@@ -1216,7 +1291,7 @@ void kvmv_pipe_park(struct kvmv_pipe *p)
 	parked.count = p->cap_count;
 	parked.sizeimage = p->cap_fmt.sizeimage;
 	if (p->park_encoder && p->running && p->enc_fd >= 0 && p->bs != NULL &&
-	    p->mid != NULL && p->heap_fd >= 0) {
+	    (p->mid != NULL || p->direct) && p->heap_fd >= 0) {
 		/*
 		 * Streamed off, the encoder ends its sequence: it frees its
 		 * reference frames, gives the codec SRAM back and, for the
@@ -1241,6 +1316,9 @@ void kvmv_pipe_park(struct kvmv_pipe *p)
 		parked_enc.mid = p->mid;
 		parked_enc.mid_count = p->mid_count;
 		parked_enc.heap_fd = p->heap_fd;
+		parked_enc.want_direct = p->want_direct;
+		parked_enc.direct = p->direct;
+		parked_enc.enc_out_count = p->enc_out_count;
 		p->enc_fd = -1;
 		p->heap_fd = -1;
 		p->bs = NULL;
@@ -1604,29 +1682,19 @@ static enum kvmv_pipe_status finish_ahead(struct kvmv_pipe *p, unsigned int *mid
 	return KVMV_PIPE_OK;
 }
 
-enum kvmv_pipe_status kvmv_pipe_encode_mid(struct kvmv_pipe *p,
-					   unsigned int mi,
-					   struct kvmv_encoded *out)
+/*
+ * The encoder has its picture (queued at t0, captured at frame_ts): take the
+ * access unit and the picture back. *input_back says whether the encoder gave
+ * the picture back, so its buffer may be reused.
+ */
+static enum kvmv_pipe_status finish_encode(struct kvmv_pipe *p, uint64_t t0,
+					   uint64_t frame_ts,
+					   struct kvmv_encoded *out,
+					   int *input_back)
 {
 	struct v4l2_buffer buf;
-	uint64_t t0 = now_us();
-	/* This picture's capture time: start_ahead moves cap_ts_us on. */
-	uint64_t frame_ts = p->cap_ts_us;
 
-	memset(out, 0, sizeof(*out));
-	if (!p->running || mi >= p->mid_count)
-		return fail_msg(p, "no scaled picture to encode"), KVMV_PIPE_ERROR;
-	if (collect_prime(p))
-		return KVMV_PIPE_ERROR;
-	if (qbuf(p->enc_fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, V4L2_MEMORY_DMABUF, mi,
-		 p->mid[mi].fd, p->enc_out_fmt.sizeimage))
-		return fail(p, "encoder OUTPUT QBUF"), KVMV_PIPE_ERROR;
-	if (p->scale_ahead && p->ahead_mid < 0 && p->mid_count >= 2) {
-		enum kvmv_pipe_status status = encode_wait_ahead(p, t0);
-
-		if (status != KVMV_PIPE_OK)
-			return status;
-	}
+	*input_back = 0;
 	if (wait_dqbuf(p->enc_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, V4L2_MEMORY_MMAP,
 		       POLLIN, KVMV_M2M_TIMEOUT_MS, &buf))
 		return fail(p, "encoder CAPTURE DQBUF"), KVMV_PIPE_ERROR;
@@ -1639,6 +1707,7 @@ enum kvmv_pipe_status kvmv_pipe_encode_mid(struct kvmv_pipe *p,
 		kvmv_pipe_release(p, out);
 		return KVMV_PIPE_ERROR;
 	}
+	*input_back = 1;
 	if (out->index >= p->bs_count || (out->flags & V4L2_BUF_FLAG_ERROR) ||
 	    out->size == 0 || out->size > p->bs[out->index].length) {
 		fail_msg(p, "encoder returned buffer %u flags %#x size %zu",
@@ -1664,6 +1733,79 @@ enum kvmv_pipe_status kvmv_pipe_encode_mid(struct kvmv_pipe *p,
 	return KVMV_PIPE_OK;
 }
 
+enum kvmv_pipe_status kvmv_pipe_encode_mid(struct kvmv_pipe *p,
+					   unsigned int mi,
+					   struct kvmv_encoded *out)
+{
+	uint64_t t0 = now_us();
+	/* This picture's capture time: start_ahead moves cap_ts_us on. */
+	uint64_t frame_ts = p->cap_ts_us;
+	int input_back;
+
+	memset(out, 0, sizeof(*out));
+	if (!p->running || mi >= p->mid_count)
+		return fail_msg(p, "no scaled picture to encode"), KVMV_PIPE_ERROR;
+	if (collect_prime(p))
+		return KVMV_PIPE_ERROR;
+	if (qbuf(p->enc_fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, V4L2_MEMORY_DMABUF, mi,
+		 p->mid[mi].fd, p->enc_out_fmt.sizeimage))
+		return fail(p, "encoder OUTPUT QBUF"), KVMV_PIPE_ERROR;
+	if (p->scale_ahead && p->ahead_mid < 0 && p->mid_count >= 2) {
+		enum kvmv_pipe_status status = encode_wait_ahead(p, t0);
+
+		if (status != KVMV_PIPE_OK)
+			return status;
+	}
+	return finish_encode(p, t0, frame_ts, out, &input_back);
+}
+
+/*
+ * The direct path: the newest capture buffer goes to the encoder as it is
+ * (its OUTPUT slot of the same index) and back to the capture once the
+ * encoder has read it. No scaler, no middle buffer.
+ */
+static enum kvmv_pipe_status encode_direct(struct kvmv_pipe *p,
+					   unsigned int timeout_ms,
+					   struct kvmv_encoded *out)
+{
+	enum kvmv_pipe_status status;
+	unsigned int ci;
+	uint64_t t0, t1;
+	int input_back;
+
+	if (!p->running)
+		return fail_msg(p, "pipeline not running"), KVMV_PIPE_ERROR;
+	if (source_changed(p->cap_fd)) {
+		snprintf(p->error, sizeof(p->error), "source change event");
+		return KVMV_PIPE_SOURCE_CHANGED;
+	}
+	t0 = now_us();
+	status = newest_capture(p, timeout_ms, &ci);
+	if (status != KVMV_PIPE_OK)
+		return status;
+	t1 = now_us();
+	p->times.capture_us += t1 - t0;
+	if (p->cap_ts_us && t1 > p->cap_ts_us)
+		p->times.pick_age_us += t1 - p->cap_ts_us;
+	if (ci >= p->enc_out_count ||
+	    qbuf(p->enc_fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, V4L2_MEMORY_DMABUF, ci,
+		 p->cap[ci].fd, p->enc_out_fmt.sizeimage)) {
+		fail(p, "encoder OUTPUT QBUF (capture buffer)");
+		qbuf(p->cap_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, V4L2_MEMORY_MMAP, ci, -1, 0);
+		return KVMV_PIPE_ERROR;
+	}
+	status = finish_encode(p, t1, p->cap_ts_us, out, &input_back);
+	/* Still with the encoder after a failure: the pipe is torn down. */
+	if (input_back &&
+	    qbuf(p->cap_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, V4L2_MEMORY_MMAP, ci, -1, 0) &&
+	    status == KVMV_PIPE_OK) {
+		fail(p, "capture requeue");
+		kvmv_pipe_release(p, out);
+		return KVMV_PIPE_ERROR;
+	}
+	return status;
+}
+
 enum kvmv_pipe_status kvmv_pipe_encode(struct kvmv_pipe *p,
 				       unsigned int timeout_ms,
 				       struct kvmv_encoded *out)
@@ -1672,6 +1814,8 @@ enum kvmv_pipe_status kvmv_pipe_encode(struct kvmv_pipe *p,
 	unsigned int mi;
 
 	memset(out, 0, sizeof(*out));
+	if (p->direct)
+		return encode_direct(p, timeout_ms, out);
 	if (p->ahead_mid >= 0) {
 		uint64_t now = now_us();
 		/* More than two frame times old (the reads paused, or came

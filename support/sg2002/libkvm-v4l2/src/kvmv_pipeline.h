@@ -6,6 +6,9 @@
  *     -> Coda980 mem2mem encoder (NV12 to H.264), or the WAVE420L (NV12 to
  *        H.265)
  *
+ * H.265 at the capture's own size can skip the scaler: the WAVE420L reads the
+ * UYVY capture buffer itself (kvmv_pipe_cfg.direct).
+ *
  * Capture buffers are exported as dma-bufs and imported by the scaler. The
  * buffers between the scaler and the encoder come from a dma-heap and are
  * imported by both, so no frame is copied by the CPU. Only the bitstream is
@@ -92,6 +95,14 @@ struct kvmv_pipe_cfg {
 	int park_encoder;
 	/* How the encoder is started: see enum kvmv_prime. */
 	enum kvmv_prime prime;
+	/*
+	 * H.265 at the capture's own size: give the encoder the capture buffer
+	 * itself, without the scaler, when it takes the capture format (the
+	 * WAVE420L with ironkvm-dist patch 0933 reads packed UYVY). The
+	 * pipeline falls back to the scaler when the encoder refuses it;
+	 * struct kvmv_pipe's direct says which it got.
+	 */
+	int direct;
 };
 
 /* What the encoder reports back. -1 where it would not say. */
@@ -160,6 +171,15 @@ struct kvmv_pipe {
 	unsigned int next_mid;
 	struct kvmv_buf *bs;
 	unsigned int bs_count;
+	/*
+	 * The encoder reads the capture buffers (kvmv_pipe_cfg.direct): its
+	 * OUTPUT queue imports them by dma-buf, index for index, enc_out_count
+	 * slots, and the scaler context of this pipe is not used. No middle
+	 * buffers then.
+	 */
+	int direct;
+	int want_direct; /* kvmv_pipe_cfg.direct, for kvmv_pipe_park */
+	unsigned int enc_out_count;
 	int cap_on, vpss_out_on, vpss_cap_on, enc_out_on, enc_cap_on;
 	int running;
 	struct kvmv_applied applied;
@@ -269,7 +289,9 @@ enum kvmv_pipe_status kvmv_pipe_encode_mid(struct kvmv_pipe *pipe,
 					   struct kvmv_encoded *out);
 
 /*
- * Take the newest frame, scale it and encode it. On KVMV_PIPE_OK the caller
+ * Take the newest frame, scale it and encode it; with pipe->direct, encode the
+ * capture buffer itself and give it back to the capture once the encoder has
+ * read it. On KVMV_PIPE_OK the caller
  * copies out->data with kvmv_copy_from_device and then calls kvmv_pipe_release.
  * With pipe->scale_ahead the picture may be one the scaler started on during
  * the previous call (see struct kvmv_pipe), and this call may leave the next

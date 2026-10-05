@@ -124,6 +124,17 @@ static struct kvmv_rate rate;
 static struct kvmv_rate fps_rate; /* a shorter window, for delivered_fps */
 static int overshoot_warned;
 static char last_error[256];
+/*
+ * H.265 at the capture's size straight from the capture buffer, without the
+ * scaler (kvmv_pipe_cfg.direct, ironkvm-dist patch 0933): KVMV_HEVC_DIRECT=0
+ * keeps the scaler. Off for good after a build that fails on it or a few
+ * failed pictures in a row from it. Set once, under pipe_lock.
+ */
+#define KVMV_HEVC_DIRECT_DEFAULT 1U
+#define KVMV_HEVC_DIRECT_FAILURE_LIMIT 3
+static int hevc_direct_off = -1;
+static int hevc_direct_failures;
+static int hevc_direct_refused; /* logged that the encoder refused the format */
 
 static struct kvmv_slots slots;
 static struct kvmv_jpeg jpeg_state; /* guarded by jpeg_lock */
@@ -561,11 +572,22 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 	cfg.early_capture = (int)env_uint("KVMV_EARLY_CAPTURE", 1);
 	cfg.park_encoder = (int)env_uint("KVMV_PARK_ENCODER", 1);
 	cfg.prime = kvmv_prime_mode(getenv("KVMV_PRIME"), hevc);
+	if (hevc_direct_off < 0)
+		hevc_direct_off = env_uint("KVMV_HEVC_DIRECT", KVMV_HEVC_DIRECT_DEFAULT) == 0;
+	cfg.direct = hevc && !hevc_direct_off;
 
 	if (kvmv_pipe_start(&pipe_state, &devices, &cfg)) {
 		int err = errno;
 
 		log_error_once("pipeline start failed", pipe_state.error);
+		/* EINVAL: the capture buffers do not fit the encoder (no
+		 * ironkvm-dist patch 0921), or a format was refused. */
+		if (cfg.direct && err == EINVAL) {
+			/* The next build goes through the scaler. */
+			log_msg("H.265 from the capture buffer failed (%s); the scaler converts from now on",
+				pipe_state.error);
+			hevc_direct_off = 1;
+		}
 		if (err == ENOENT || err == ENODEV || err == ENXIO)
 			devices_found = 0;
 		/* The capture link refuses a source format it cannot take with
@@ -614,10 +636,17 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 	set_source_locked(1);
 	publish_resolution(pipe_state.plan.src_width, pipe_state.plan.src_height);
 
-	log_msg("pipeline %ux%u -> %ux%u %s",
+	log_msg("pipeline %ux%u -> %ux%u %s%s",
 		pipe_state.plan.src_width, pipe_state.plan.src_height,
 		pipe_state.plan.out_width, pipe_state.plan.out_height,
-		codec_name(codec));
+		codec_name(codec),
+		pipe_state.direct ? ", the encoder reads the capture buffer (no scaler)" : "");
+	if (cfg.direct && !pipe_state.direct &&
+	    pipe_state.plan.out_width == pipe_state.plan.src_width &&
+	    pipe_state.plan.out_height == pipe_state.plan.src_height &&
+	    !__atomic_exchange_n(&hevc_direct_refused, 1, __ATOMIC_RELAXED))
+		log_msg("H.265: the encoder does not take the capture's %.4s (ironkvm-dist patch 0933); the scaler converts",
+			(const char *)&pipe_state.cap_fmt.pixelformat);
 	report_applied(bitrate_bps, pipe_gop, pipe_fps);
 	return 0;
 }
@@ -770,6 +799,11 @@ static int pipe_failure(enum kvmv_pipe_status status)
 	case KVMV_PIPE_ERROR:
 	default:
 		log_error_once("frame failed", pipe_state.error);
+		if (pipe_state.direct && ++hevc_direct_failures >= KVMV_HEVC_DIRECT_FAILURE_LIMIT) {
+			log_msg("H.265: %d failed pictures in a row from the capture buffer; the scaler converts from now on",
+				hevc_direct_failures);
+			hevc_direct_off = 1;
+		}
 		pipe_down("frame failed");
 		/* Rebuild after a pause rather than on every read: a build
 		 * costs a priming encode and a burst of ioctls. */
@@ -892,6 +926,7 @@ static int read_video_locked(unsigned int width, unsigned int height,
 		if (result != 0)
 			return result;
 		no_frame_count = 0;
+		hevc_direct_failures = 0;
 		if (!cold_start_us) {
 			if (pipe_state.times.ahead == ahead0)
 				scale_ewma_us = ewma(scale_ewma_us,
