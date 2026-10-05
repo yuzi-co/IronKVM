@@ -5,7 +5,8 @@ import (
 	"sync/atomic"
 )
 
-// FrameSlot holds at most one pending frame for a single client.
+// FrameSlot holds at most one pending frame for a single client, or a few
+// when made with NewFrameSlotDepth.
 //
 // The capture loop must never block on a client: one viewer on a slow link
 // would otherwise stall capture for every other viewer. Producers hand a frame
@@ -16,7 +17,7 @@ import (
 // Producers choose the policy that suits the codec:
 //   - Replace keeps the newest frame, for formats where every frame stands
 //     alone (MJPEG).
-//   - TryPut refuses while a frame is pending, so the producer learns the
+//   - TryPut refuses while the slot is full, so the producer learns the
 //     client is behind and can decide what to send next (H.264, where a gap
 //     has to be repaired with a keyframe).
 type FrameSlot[T any] struct {
@@ -27,12 +28,25 @@ type FrameSlot[T any] struct {
 }
 
 func NewFrameSlot[T any]() *FrameSlot[T] {
+	return NewFrameSlotDepth[T](1)
+}
+
+// NewFrameSlotDepth makes a slot that holds up to depth frames, oldest first.
+// TryPut refuses only when all of them are pending, and Replace discards the
+// oldest. It is for a consumer that is close by and normally keeps up, but
+// whose goroutine can be late by a frame or two: there a refusal would cost a
+// whole GOP for a delay the next tick makes up.
+func NewFrameSlotDepth[T any](depth int) *FrameSlot[T] {
+	if depth < 1 {
+		depth = 1
+	}
+
 	return &FrameSlot[T]{
-		frames: make(chan T, 1),
+		frames: make(chan T, depth),
 	}
 }
 
-// TryPut stores a frame only if the slot is empty. It reports whether the
+// TryPut stores a frame only if the slot has room. It reports whether the
 // frame was accepted, and never blocks.
 func (s *FrameSlot[T]) TryPut(frame T) bool {
 	s.mutex.Lock()
@@ -51,8 +65,8 @@ func (s *FrameSlot[T]) TryPut(frame T) bool {
 	}
 }
 
-// Replace stores a frame, discarding any frame still pending. It reports
-// whether the slot accepted it, and never blocks.
+// Replace stores a frame, discarding the oldest pending one when the slot is
+// full. It reports whether the slot accepted it, and never blocks.
 func (s *FrameSlot[T]) Replace(frame T) bool {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
@@ -61,14 +75,16 @@ func (s *FrameSlot[T]) Replace(frame T) bool {
 		return false
 	}
 
-	select {
-	case <-s.frames:
-		s.dropped.Add(1)
-	default:
+	if len(s.frames) == cap(s.frames) {
+		select {
+		case <-s.frames:
+			s.dropped.Add(1)
+		default:
+		}
 	}
 
-	// The slot is empty and no other producer can run while the mutex is held,
-	// so this cannot block.
+	// The slot has room and no other producer can run while the mutex is
+	// held, so this cannot block.
 	s.frames <- frame
 
 	return true

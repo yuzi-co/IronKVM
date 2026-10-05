@@ -131,3 +131,53 @@ func TestFrameSlotSurvivesConcurrentUse(t *testing.T) {
 
 	wg.Wait()
 }
+
+func TestADeepSlotTakesFramesUntilItIsFull(t *testing.T) {
+	slot := NewFrameSlotDepth[int](3)
+
+	for i := 1; i <= 3; i++ {
+		if !slot.TryPut(i) {
+			t.Fatalf("a slot of three refused frame %d", i)
+		}
+	}
+	if slot.TryPut(4) {
+		t.Fatal("a full slot must refuse another frame")
+	}
+	if slot.Dropped() != 1 {
+		t.Fatalf("dropped = %d, want 1", slot.Dropped())
+	}
+
+	for want := 1; want <= 3; want++ {
+		if got, _ := slot.Take(); got != want {
+			t.Fatalf("took %d, want %d: frames must leave in order", got, want)
+		}
+	}
+}
+
+func TestReplaceOnADeepSlotDiscardsOnlyWhenFull(t *testing.T) {
+	slot := NewFrameSlotDepth[int](2)
+
+	slot.Replace(1)
+	slot.Replace(2)
+	if slot.Dropped() != 0 {
+		t.Fatalf("a slot with room discarded %d frames", slot.Dropped())
+	}
+
+	slot.Replace(3)
+	if slot.Dropped() != 1 {
+		t.Fatalf("dropped = %d, want 1", slot.Dropped())
+	}
+	for _, want := range []int{2, 3} {
+		if got, _ := slot.Take(); got != want {
+			t.Fatalf("took %d, want %d: the oldest frame goes first", got, want)
+		}
+	}
+}
+
+func TestASlotOfDepthZeroHoldsOne(t *testing.T) {
+	slot := NewFrameSlotDepth[int](0)
+
+	if !slot.TryPut(1) || slot.TryPut(2) {
+		t.Fatal("depth 0 should behave as a slot of one")
+	}
+}
