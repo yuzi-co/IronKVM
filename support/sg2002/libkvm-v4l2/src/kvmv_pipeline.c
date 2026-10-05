@@ -421,6 +421,7 @@ void kvmv_pipe_init(struct kvmv_pipe *p)
 	p->applied.fps_denominator = -1;
 	p->applied.min_qp = -1;
 	p->applied.max_qp = -1;
+	p->ahead_mid = -1;
 }
 
 int kvmv_pipe_negotiate(struct kvmv_pipe *p, const struct kvmv_pipe_cfg *cfg)
@@ -1490,12 +1491,115 @@ static int collect_prime(struct kvmv_pipe *p)
 	return 0;
 }
 
+/*
+ * Scale-ahead: give the scaler the capture frame that just completed, into the
+ * middle buffer the encoder is not reading. Called while the encoder works.
+ * Nothing to take is not an error: the next read scales its own frame.
+ */
+static enum kvmv_pipe_status start_ahead(struct kvmv_pipe *p)
+{
+	enum kvmv_pipe_status status;
+	uint32_t pickup = p->pickup_wait_max_us;
+	unsigned int ci, mi;
+
+	/* Take what has completed; no waiting for a frame about to. */
+	p->pickup_wait_max_us = 0;
+	status = newest_capture(p, 0, &ci);
+	p->pickup_wait_max_us = pickup;
+	if (status == KVMV_PIPE_NO_FRAME) {
+		p->error[0] = '\0';
+		return KVMV_PIPE_OK;
+	}
+	if (status != KVMV_PIPE_OK)
+		return status;
+	mi = p->next_mid;
+	p->next_mid = (p->next_mid + 1) % p->mid_count;
+	if (qbuf(p->vpss_fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, V4L2_MEMORY_DMABUF, ci,
+		 p->cap[ci].fd, p->cap_fmt.sizeimage))
+		return fail(p, "scaler OUTPUT QBUF (ahead)"), KVMV_PIPE_ERROR;
+	if (qbuf(p->vpss_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, V4L2_MEMORY_DMABUF, mi,
+		 p->mid[mi].fd, 0))
+		return fail(p, "scaler CAPTURE QBUF (ahead)"), KVMV_PIPE_ERROR;
+	p->ahead_mid = (int)mi;
+	p->ahead_ci = ci;
+	p->ahead_ts_us = p->cap_ts_us;
+	return KVMV_PIPE_OK;
+}
+
+/*
+ * Wait for the encoder's output as wait_dqbuf would, but watch the capture
+ * node too, and start the scaler on a frame that completes meanwhile. Returns
+ * once the encoder has output or the wait is over; wait_dqbuf then takes it
+ * or reports the timeout.
+ */
+static enum kvmv_pipe_status encode_wait_ahead(struct kvmv_pipe *p)
+{
+	uint64_t deadline = now_ms() + KVMV_M2M_TIMEOUT_MS;
+
+	while (p->ahead_mid < 0) {
+		struct pollfd pfd[2];
+		uint64_t now = now_ms();
+
+		if (now >= deadline)
+			return KVMV_PIPE_OK;
+		pfd[0].fd = p->enc_fd;
+		pfd[0].events = POLLIN;
+		pfd[0].revents = 0;
+		pfd[1].fd = p->cap_fd;
+		pfd[1].events = POLLIN;
+		pfd[1].revents = 0;
+		if (poll(pfd, 2, (int)(deadline - now)) < 0) {
+			if (errno == EINTR)
+				continue;
+			return fail(p, "encoder poll"), KVMV_PIPE_ERROR;
+		}
+		if (pfd[0].revents)
+			return KVMV_PIPE_OK;
+		/* A source change or a queue error is the next read's to see. */
+		if (pfd[1].revents & ~POLLIN)
+			return KVMV_PIPE_OK;
+		if (pfd[1].revents & POLLIN)
+			return start_ahead(p);
+	}
+	return KVMV_PIPE_OK;
+}
+
+/* Collect the picture start_ahead gave the scaler. */
+static enum kvmv_pipe_status finish_ahead(struct kvmv_pipe *p, unsigned int *mid)
+{
+	struct v4l2_buffer buf;
+	unsigned int mi = (unsigned int)p->ahead_mid;
+	uint64_t t0 = now_us();
+
+	p->ahead_mid = -1;
+	if (wait_dqbuf(p->vpss_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, V4L2_MEMORY_DMABUF,
+		       POLLIN, KVMV_M2M_TIMEOUT_MS, &buf))
+		return fail(p, "scaler CAPTURE DQBUF (ahead)"), KVMV_PIPE_ERROR;
+	if (buf.index != mi || (buf.flags & V4L2_BUF_FLAG_ERROR))
+		return fail_msg(p, "scaler returned buffer %u flags %#x for %u (ahead)",
+				buf.index, buf.flags, mi), KVMV_PIPE_ERROR;
+	if (wait_dqbuf(p->vpss_fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, V4L2_MEMORY_DMABUF,
+		       POLLOUT, KVMV_M2M_TIMEOUT_MS, &buf))
+		return fail(p, "scaler OUTPUT DQBUF (ahead)"), KVMV_PIPE_ERROR;
+	if (qbuf(p->cap_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, V4L2_MEMORY_MMAP,
+		 buf.index, -1, 0))
+		return fail(p, "capture requeue"), KVMV_PIPE_ERROR;
+	/* What is left of the scale once the read wants it. */
+	p->times.scale_us += now_us() - t0;
+	p->times.ahead++;
+	p->cap_ts_us = p->ahead_ts_us;
+	*mid = mi;
+	return KVMV_PIPE_OK;
+}
+
 enum kvmv_pipe_status kvmv_pipe_encode_mid(struct kvmv_pipe *p,
 					   unsigned int mi,
 					   struct kvmv_encoded *out)
 {
 	struct v4l2_buffer buf;
 	uint64_t t0 = now_us();
+	/* This picture's capture time: start_ahead moves cap_ts_us on. */
+	uint64_t frame_ts = p->cap_ts_us;
 
 	memset(out, 0, sizeof(*out));
 	if (!p->running || mi >= p->mid_count)
@@ -1505,6 +1609,12 @@ enum kvmv_pipe_status kvmv_pipe_encode_mid(struct kvmv_pipe *p,
 	if (qbuf(p->enc_fd, V4L2_BUF_TYPE_VIDEO_OUTPUT, V4L2_MEMORY_DMABUF, mi,
 		 p->mid[mi].fd, p->enc_out_fmt.sizeimage))
 		return fail(p, "encoder OUTPUT QBUF"), KVMV_PIPE_ERROR;
+	if (p->scale_ahead && p->ahead_mid < 0 && p->mid_count >= 2) {
+		enum kvmv_pipe_status status = encode_wait_ahead(p);
+
+		if (status != KVMV_PIPE_OK)
+			return status;
+	}
 	if (wait_dqbuf(p->enc_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, V4L2_MEMORY_MMAP,
 		       POLLIN, KVMV_M2M_TIMEOUT_MS, &buf))
 		return fail(p, "encoder CAPTURE DQBUF"), KVMV_PIPE_ERROR;
@@ -1528,7 +1638,7 @@ enum kvmv_pipe_status kvmv_pipe_encode_mid(struct kvmv_pipe *p,
 	out->data = p->bs[out->index].addr;
 	{
 		uint64_t t1 = now_us();
-		uint64_t age = p->cap_ts_us && t1 > p->cap_ts_us ? t1 - p->cap_ts_us : 0;
+		uint64_t age = frame_ts && t1 > frame_ts ? t1 - frame_ts : 0;
 
 		p->times.encode_us += t1 - t0;
 		p->times.age_us += age;
@@ -1547,7 +1657,22 @@ enum kvmv_pipe_status kvmv_pipe_encode(struct kvmv_pipe *p,
 	unsigned int mi;
 
 	memset(out, 0, sizeof(*out));
-	status = kvmv_pipe_scale(p, timeout_ms, &mi);
+	if (p->ahead_mid >= 0) {
+		uint64_t now = now_us();
+		/* More than two frame times old (the reads paused, or came
+		 * slower than the frames): collect it and take a newer one. */
+		uint64_t stale = 2ULL * (p->cap_interval_us ? p->cap_interval_us : 16667U);
+
+		status = finish_ahead(p, &mi);
+		if (status != KVMV_PIPE_OK)
+			return status;
+		if (now > p->ahead_ts_us && now - p->ahead_ts_us > stale) {
+			p->times.ahead--;
+			status = kvmv_pipe_scale(p, timeout_ms, &mi);
+		}
+	} else {
+		status = kvmv_pipe_scale(p, timeout_ms, &mi);
+	}
 	if (status != KVMV_PIPE_OK)
 		return status;
 	return kvmv_pipe_encode_mid(p, mi, out);
