@@ -799,6 +799,8 @@ struct mock {
 	int coda_bitrate_divisor; /* the encoder keeps bitrate / this */
 	int coda_lacks_qp; /* a kernel without patch 0910 */
 	int coda_busy; /* buffers allocated: S_FMT and crop refused */
+	int enc_hevc; /* the encoder node codes H.265 (the WAVE420L) */
+	int enc_takes_uyvy; /* ... and reads packed UYVY (patch 0933) */
 	int32_t min_qp, max_qp, vbv_delay;
 	struct v4l2_pix_format vpss_out, vpss_cap, coda_out, coda_cap;
 	struct v4l2_rect vpss_crop, coda_crop;
@@ -860,14 +862,22 @@ static int mock_fmt(int fd, struct v4l2_format *f, int set)
 
 		if (set) {
 			mock.s_fmt_calls++;
-			if (output) {
+			if (output && pix->pixelformat == V4L2_PIX_FMT_UYVY &&
+			    mock.enc_takes_uyvy) {
+				/* As the WAVE420L with 0933: whole 16-line rows. */
+				pix->width = align_up(pix->width, 8);
+				pix->height = align_up(pix->height, 8);
+				pix->bytesperline = pix->width * 2;
+				pix->sizeimage = pix->bytesperline * align_up(pix->height, 16);
+			} else if (output) {
 				pix->pixelformat = V4L2_PIX_FMT_NV12;
 				pix->width = align_up(pix->width, 16);
 				pix->height = align_up(pix->height, 16);
 				pix->bytesperline = pix->width;
 				pix->sizeimage = pix->width * pix->height * 3 / 2;
 			} else {
-				pix->pixelformat = V4L2_PIX_FMT_H264;
+				pix->pixelformat = mock.enc_hevc ? V4L2_PIX_FMT_HEVC :
+								   V4L2_PIX_FMT_H264;
 				pix->bytesperline = 0;
 				if (pix->sizeimage < 256 * 1024)
 					pix->sizeimage = 256 * 1024;
@@ -1177,6 +1187,118 @@ static void test_negotiate(void)
 		CHECK_EQ(p.applied.bitrate_bps, 2000000);
 		CHECK_EQ(p.applied.gop, 60);
 		CHECK_EQ(mock.fps, 25);
+	}
+
+	/*
+	 * H.265 from the capture buffer: at the capture's size the WAVE420L
+	 * takes the UYVY frame with the capture's line, and the scaler is not
+	 * set up at all.
+	 */
+	{
+		struct kvmv_pipe_cfg cfg;
+		unsigned int calls;
+
+		memset(&cfg, 0, sizeof(cfg));
+		cfg.codec = KVMV_CODEC_KIND_HEVC;
+		cfg.bitrate_bps = 2000000;
+		cfg.gop = 30;
+		cfg.fps = 60;
+		cfg.direct = 1;
+
+		mock_reset();
+		mock.enc_hevc = 1;
+		mock.enc_takes_uyvy = 1;
+		kvmv_pipe_init(&p);
+		p.codec = cfg.codec;
+		p.cap_fd = FD_CAPTURE;
+		p.vpss_fd = FD_VPSS;
+		p.enc_fd = FD_CODA;
+		CHECK_EQ(kvmv_pipe_negotiate(&p, &cfg), 0);
+		CHECK_EQ(p.direct, 1);
+		CHECK_EQ(p.enc_out_fmt.pixelformat, V4L2_PIX_FMT_UYVY);
+		CHECK_EQ(p.enc_out_fmt.bytesperline, 3840);
+		CHECK_EQ(p.enc_out_fmt.height, 1080);
+		CHECK_EQ(p.enc_out_fmt.sizeimage, 3840 * 1088);
+		CHECK_EQ(p.enc_cap_fmt.pixelformat, V4L2_PIX_FMT_HEVC);
+		CHECK_EQ(mock.s_fmt_calls, 2); /* the encoder's two, no scaler */
+		CHECK_EQ(mock.fps, 60);
+		CHECK_EQ(p.applied.bitrate_bps, 2000000);
+
+		/* An encoder without 0933 answers NV12: the scaler as before. */
+		mock_reset();
+		mock.enc_hevc = 1;
+		kvmv_pipe_init(&p);
+		p.codec = cfg.codec;
+		p.cap_fd = FD_CAPTURE;
+		p.vpss_fd = FD_VPSS;
+		p.enc_fd = FD_CODA;
+		CHECK_EQ(kvmv_pipe_negotiate(&p, &cfg), 0);
+		CHECK_EQ(p.direct, 0);
+		CHECK_EQ(p.enc_out_fmt.pixelformat, V4L2_PIX_FMT_NV12);
+		CHECK_EQ(p.enc_out_fmt.height, 1088);
+		CHECK_EQ(p.vpss_out_fmt.height, 1088);
+		CHECK_EQ(mock.coda_crop.height, 1080);
+
+		/* Another size needs the scaler. */
+		mock_reset();
+		mock.enc_hevc = 1;
+		mock.enc_takes_uyvy = 1;
+		cfg.req_width = 1280;
+		cfg.req_height = 720;
+		kvmv_pipe_init(&p);
+		p.codec = cfg.codec;
+		p.cap_fd = FD_CAPTURE;
+		p.vpss_fd = FD_VPSS;
+		p.enc_fd = FD_CODA;
+		CHECK_EQ(kvmv_pipe_negotiate(&p, &cfg), 0);
+		CHECK_EQ(p.direct, 0);
+		CHECK_EQ(p.enc_out_fmt.pixelformat, V4L2_PIX_FMT_NV12);
+		CHECK_EQ(p.vpss_out_fmt.width, 1280);
+
+		/* H.264 never: the Coda980 reads 4:2:0 only (trial 33). */
+		mock_reset();
+		mock.enc_takes_uyvy = 1;
+		cfg.codec = KVMV_CODEC_KIND_H264;
+		cfg.req_width = 0;
+		cfg.req_height = 0;
+		kvmv_pipe_init(&p);
+		p.codec = cfg.codec;
+		p.cap_fd = FD_CAPTURE;
+		p.vpss_fd = FD_VPSS;
+		p.enc_fd = FD_CODA;
+		CHECK_EQ(kvmv_pipe_negotiate(&p, &cfg), 0);
+		CHECK_EQ(p.direct, 0);
+		CHECK_EQ(p.enc_out_fmt.pixelformat, V4L2_PIX_FMT_NV12);
+
+		/* A parked direct encoder keeps its formats; still no scaler. */
+		mock_reset();
+		mock.enc_hevc = 1;
+		mock.enc_takes_uyvy = 1;
+		cfg.codec = KVMV_CODEC_KIND_HEVC;
+		kvmv_pipe_init(&p);
+		p.codec = cfg.codec;
+		p.cap_fd = FD_CAPTURE;
+		p.vpss_fd = FD_VPSS;
+		p.enc_fd = FD_CODA;
+		CHECK_EQ(kvmv_pipe_negotiate(&p, &cfg), 0);
+		{
+			struct v4l2_pix_format out = p.enc_out_fmt, cap = p.enc_cap_fmt;
+
+			mock.coda_busy = 1;
+			calls = mock.s_fmt_calls;
+			kvmv_pipe_init(&p);
+			p.codec = cfg.codec;
+			p.cap_fd = FD_CAPTURE;
+			p.vpss_fd = FD_VPSS;
+			p.enc_fd = FD_CODA;
+			p.enc_reused = 1;
+			p.direct = 1;
+			p.enc_out_fmt = out;
+			p.enc_cap_fmt = cap;
+			CHECK_EQ(kvmv_pipe_negotiate(&p, &cfg), 0);
+			CHECK_EQ(mock.s_fmt_calls, calls);
+			CHECK_EQ(p.direct, 1);
+		}
 	}
 }
 
