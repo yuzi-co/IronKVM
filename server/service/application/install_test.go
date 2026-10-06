@@ -183,3 +183,54 @@ func TestExecInstallHookSucceedsWhenTheScriptIsAbsent(t *testing.T) {
 		t.Fatalf("a missing hook must not be an error: %s", err)
 	}
 }
+
+// stubFlush records whether the install flushed the page cache.
+func stubFlush(t *testing.T) *int {
+	t.Helper()
+
+	original := flushToDisk
+	t.Cleanup(func() { flushToDisk = original })
+
+	var calls int
+	flushToDisk = func() { calls++ }
+
+	return &calls
+}
+
+// The caller restarts the server as soon as the install returns, and the
+// supervisor turns a restart it cannot complete into a reboot. Everything the
+// install wrote is still in the page cache at that point. RobbyV2 saw a board
+// come back from one of those with an empty version file and two truncated
+// payloads, and a board in that state cannot be repaired over the network.
+func TestInstallPreparedPackageFlushesBeforeTheRestart(t *testing.T) {
+	source := useTempDirs(t)
+	useTempUpdateMarker(t)
+	stubInstallHook(t, nil)
+	flushes := stubFlush(t)
+
+	if err := installPreparedPackage(source); err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	if *flushes != 1 {
+		t.Fatalf("flushed %d times, want 1", *flushes)
+	}
+}
+
+// A failed install does not restart, so there is nothing to protect and the
+// flush is a cost for no benefit: it blocks until every dirty page on the board
+// is written, including the ones this install did not make.
+func TestAFailedInstallDoesNotFlush(t *testing.T) {
+	source := useTempDirs(t)
+	useTempUpdateMarker(t)
+	stubInstallHook(t, errors.New("boom"))
+	flushes := stubFlush(t)
+
+	if err := installPreparedPackage(source); err == nil {
+		t.Fatal("expected the hook failure to be reported")
+	}
+
+	if *flushes != 0 {
+		t.Fatalf("flushed %d times on a failed install, want 0", *flushes)
+	}
+}

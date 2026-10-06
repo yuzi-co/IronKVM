@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"NanoKVM-Server/utils"
@@ -18,6 +19,9 @@ import (
 
 // runInstallHook is a variable so tests can avoid running a shell script.
 var runInstallHook = execInstallHook
+
+// flushToDisk is a variable so tests can observe the flush.
+var flushToDisk = syscall.Sync
 
 // installHookTimeout bounds the hook. It copies a handful of small files, so a
 // run that takes a minute is a run that has hung.
@@ -154,6 +158,12 @@ func installPreparedPackage(sourceDir string) error {
 		log.Errorf("install hook failed: %s", err)
 		return fmt.Errorf("application installed but the boot scripts were not updated: %w", err)
 	}
+
+	// The caller restarts as soon as this returns, and a restart the supervisor
+	// turns into a reboot leaves the new tree in the page cache. A board that
+	// comes back with an empty /kvmapp/version and a truncated payload cannot
+	// be repaired remotely, so pay the flush here.
+	flushToDisk()
 
 	return nil
 }
