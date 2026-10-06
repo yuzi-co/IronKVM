@@ -8,8 +8,10 @@ import { w3cwebsocket as W3cWebSocket } from 'websocket';
 import { audioStateFromName } from '@/lib/audio-state.ts';
 import { withStereoOpus } from '@/lib/sdp-opus.ts';
 import { getBaseUrl } from '@/lib/service.ts';
+import { CODEC_CHANGED_EVENT, codecChangeNeedsNewSession } from '@/lib/stream-codec.ts';
 import { audioMutedAtom, audioStateAtom, hasAudioAtom } from '@/jotai/audio.ts';
 import { mouseStyleAtom } from '@/jotai/mouse.ts';
+import { screenSettingsAtom } from '@/jotai/screen.ts';
 
 import { ScreenViewport } from './viewport.tsx';
 
@@ -21,6 +23,7 @@ type SignalingMessage = {
 const WEBRTC_CONNECTION_FAILED_NOTIFICATION_KEY = 'webrtc_connection_failed';
 const WEBRTC_CONNECTION_TIMEOUT = 10 * 1000;
 const WEBRTC_RECONNECT_DELAY = 3 * 1000;
+const CODEC_RESTART_GRACE = 3 * 1000;
 
 const parseSignalingData = <T,>(data?: string): T | null => {
   if (!data) {
@@ -39,6 +42,12 @@ export const H264Webrtc = () => {
   const isMuted = useAtomValue(audioMutedAtom);
   const setHasAudio = useSetAtom(hasAudioAtom);
   const setAudioState = useSetAtom(audioStateAtom);
+  const codec = useAtomValue(screenSettingsAtom)?.codec;
+  const codecRef = useRef(codec);
+  // When the last new session was started for a codec change. The server's
+  // message and this browser's own setting can both report one change, and
+  // whichever comes second must not tear down the session the first started.
+  const codecRestartAt = useRef(0);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -49,6 +58,24 @@ export const H264Webrtc = () => {
   useEffect(() => {
     translationRef.current = t;
   }, [t]);
+
+  // The session's video track is fixed to the codec it negotiated, and the
+  // server sends a session nothing once the encoder runs another one. A codec
+  // change from this browser therefore starts a new session at once, as a
+  // reload would (#83). A change from another viewer reaches this one as the
+  // server's codec-changed message below.
+  useEffect(() => {
+    const previous = codecRef.current;
+    codecRef.current = codec;
+    if (
+      codecChangeNeedsNewSession(previous, codec) &&
+      Date.now() - codecRestartAt.current > CODEC_RESTART_GRACE
+    ) {
+      codecRestartAt.current = Date.now();
+      setIsLoading(true);
+      setConnectionAttempt((attempt) => attempt + 1);
+    }
+  }, [codec]);
 
   useEffect(() => {
     const url = `${getBaseUrl('ws')}/api/stream/h264`;
@@ -280,6 +307,18 @@ export const H264Webrtc = () => {
           }
           case 'audio-state':
             setAudioState(audioStateFromName(msg.data));
+            break;
+          case CODEC_CHANGED_EVENT:
+            // The encoder runs another codec than this session negotiated, so
+            // no more frames come on it. Start a new one; the server reads
+            // the codec afresh for it. The cleanup closes this one, and a
+            // closed session schedules nothing once disposed.
+            if (!disposed) {
+              console.log('WebRTC: the codec changed, negotiating a new session');
+              codecRestartAt.current = Date.now();
+              setIsLoading(true);
+              setConnectionAttempt((attempt) => attempt + 1);
+            }
             break;
           case 'heartbeat':
             break;
