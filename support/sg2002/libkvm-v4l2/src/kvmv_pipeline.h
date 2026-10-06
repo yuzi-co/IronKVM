@@ -192,6 +192,10 @@ struct kvmv_pipe {
 	 * CLOCK_MONOTONIC time are given back, not taken. 0 once a frame was. */
 	uint64_t fresh_after_us;
 	int early; /* this start began with the capture (cfg.early_capture) */
+	/* A failed start failed at the capture's STREAMON, where the capture
+	 * driver asks the receiver for its mode again: the source changed or
+	 * went away since the build asked (kept across the stop). */
+	int cap_on_failed;
 	int cap_allocated; /* this start allocated the capture buffers */
 	int park_encoder; /* cfg.park_encoder */
 	int enc_reused; /* the encoder and its buffers came from kvmv_pipe_park */

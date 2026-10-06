@@ -1114,6 +1114,7 @@ int kvmv_pipe_start(struct kvmv_pipe *p, const struct kvmv_devices *d,
 			goto out;
 		if (stream(p->cap_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, 1)) {
 			fail(p, "capture STREAMON");
+			p->cap_on_failed = 1;
 			goto out;
 		}
 		p->cap_on = 1;
@@ -1183,8 +1184,10 @@ int kvmv_pipe_start(struct kvmv_pipe *p, const struct kvmv_devices *d,
 	if (!p->cap_on) {
 		if (stream(p->cap_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, 1)) {
 			/* EPIPE here is the capture link refusing the source
-			 * format. */
+			 * format; EINVAL, ENOLINK or ERANGE the receiver's
+			 * answer while the source changes mode. */
 			fail(p, "capture STREAMON");
+			p->cap_on_failed = 1;
 			goto out;
 		}
 		p->cap_on = 1;
@@ -1218,10 +1221,12 @@ int kvmv_pipe_start(struct kvmv_pipe *p, const struct kvmv_devices *d,
 out: {
 	char error[sizeof(p->error)];
 	int saved = errno;
+	int cap_on_failed = p->cap_on_failed;
 
 	memcpy(error, p->error, sizeof(error));
 	kvmv_pipe_stop(p);
 	memcpy(p->error, error, sizeof(error));
+	p->cap_on_failed = cap_on_failed;
 	errno = saved;
 	return -1;
 }

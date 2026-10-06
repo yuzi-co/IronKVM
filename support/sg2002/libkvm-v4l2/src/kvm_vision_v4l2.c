@@ -635,7 +635,7 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 		log_error_once("pipeline start failed", pipe_state.error);
 		/* EINVAL: the capture buffers do not fit the encoder (no
 		 * ironkvm-dist patch 0921), or a format was refused. */
-		if (cfg.direct && err == EINVAL) {
+		if (cfg.direct && err == EINVAL && !pipe_state.cap_on_failed) {
 			/* The next build goes through the scaler. */
 			log_msg("H.265 from the capture buffer failed (%s); the scaler converts from now on",
 				pipe_state.error);
@@ -643,10 +643,15 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 		}
 		if (err == ENOENT || err == ENODEV || err == ENXIO)
 			devices_found = 0;
-		/* The capture link refuses a source format that differs from
-		 * the capture node's with EPIPE at STREAMON: the mode changed
-		 * after the receiver was asked. Ask again on the next read. */
-		if (err == EPIPE) {
+		/* The capture's STREAMON asks the receiver again: EPIPE is a
+		 * source format that differs from the capture node's, EINVAL,
+		 * ENOLINK or ERANGE a source that is between modes. Either way
+		 * the mode changed after the build asked; ask again on the next
+		 * read. */
+		if (pipe_state.cap_on_failed &&
+		    (err == EPIPE || err == EINVAL || err == ENOLINK || err == ERANGE)) {
+			log_msg("HDMI source changed while the pipeline was built (%s), rebuilding",
+				pipe_state.error);
 			capture_width_known = 0;
 			capture_height_known = 0;
 			receiver_remember(KVMV_SIGNAL_NONE, NULL);

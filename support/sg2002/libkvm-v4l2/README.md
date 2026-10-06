@@ -108,7 +108,7 @@ the method are in that run sheet.
 | `-1` | No signal (receiver says no link or lock), no frame within 1 s, or capture switched off. |
 | `-2` | H.265, video nodes missing, a pipeline that will not build, an encode error (H.264 or JPEG). |
 | `-3` | All four slots are held by the server. |
-| `-4` | The source changed mode under a running pipeline, or between the receiver query and `STREAMON` (the capture link refuses it with `EPIPE`); the next read rebuilds. |
+| `-4` | The source changed mode under a running pipeline, or between the receiver query and the capture's `STREAMON` (which fails with `EPIPE`, or with `EINVAL`, `ENOLINK` or `ERANGE` from a receiver between modes); the next read rebuilds. |
 | `-5` | Another read held the lock for over a second. |
 | `-6` | The source runs a mode the capture cannot take: interlaced, a frame larger than a 4 MiB capture buffer (1920x1200 and up), or on a kernel without ironkvm-dist patch 0936 any size but 1920x1080. |
 | `-7` | The receiver reports timings out of range (`ERANGE`). |
@@ -233,13 +233,16 @@ has read for 10 s.
   logs once per pipeline when it runs above twice the target.
 - Before ironkvm-dist patch 0912 the GOP set at runtime reached the Coda only at the next
   pipeline build, and no keyframe could be forced (see "Keyframes").
-- HDMI modes (yuzi-co/ironkvm-dist#37): any progressive mode whose UYVY frame fits a 4 MiB
-  capture buffer, from 640x480 (720x400 for text mode) to 1920x1080, 1680x1050 and 1600x1200.
-  The capture node follows the receiver's size while it holds no buffers (ironkvm-dist patch
-  0936), the scaler reads its 16-byte padded line for 1366 wide modes (0937), and the LT6911UXC
-  accepts modes under 1024x768 (0938). The stream is the source's size, or the size asked for
-  when smaller; a size beyond 1920x1080 is scaled into it with its shape kept. Before 0936 only
-  1920x1080 sources work and other modes answer `-6`.
+- HDMI modes (yuzi-co/ironkvm-dist#37): any progressive mode the LT6911UXC locks whose UYVY
+  frame fits a 4 MiB capture buffer (up to 1920x1088; 1920x1200 does not fit). The capture node
+  follows the receiver's size while it holds no buffers (ironkvm-dist patch 0936), the scaler
+  reads its 16-byte padded line for 1366 wide modes (0937), and the LT6911UXC's modes under
+  1024x768 pass its timing check (0938). The stream is the source's size, or the size asked for
+  when smaller; a size beyond 1920x1080 is scaled into it with its shape kept. Trial 43 streamed
+  1280x720, 1024x768, 1680x1050, 1366x768 (as 1360x768), 1280x1024, 1280x800, 1280x960,
+  800x600 and 720x400 at 70 Hz; the receiver itself reports no link for 640x480 at 60 Hz and
+  720x576 at 50 Hz, and the read answers `-1` as with no cable. Before 0936 only 1920x1080
+  sources work and other modes answer `-6`.
 - Each read waits for the capture, the scaler and the encoder in turn; nothing overlaps, unlike
   the free-running bridge. A read costs the capture wait plus one scale plus one encode plus the
   copy out. With `KVMV_DEBUG=1` the library logs the average of each every 10 s ("per frame:
