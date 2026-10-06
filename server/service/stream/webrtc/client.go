@@ -3,6 +3,7 @@ package webrtc
 import (
 	"NanoKVM-Server/common"
 	"encoding/json"
+	"strconv"
 	"sync"
 
 	"NanoKVM-Server/service/stream"
@@ -203,6 +204,24 @@ func (c *Client) WriteMessage(event string, data string) error {
 
 	log.Debugf("sent message %s", event)
 	return nil
+}
+
+// noteCodecChanged tells the viewer, once, that the encoder now runs codec and
+// this session cannot carry it. The browser answers by closing the session and
+// negotiating a new one, which reads the codec afresh.
+//
+// It is called from the capture loop, so the write runs on its own goroutine:
+// a slow socket must not hold up the frames of every other viewer.
+func (c *Client) noteCodecChanged(codec uint8) {
+	c.codecChanged.Do(func() {
+		if c.ws == nil {
+			return
+		}
+		log.Infof("webrtc: session negotiated codec %d, encoder runs %d; asking the viewer to reconnect", c.codec, codec)
+		go func() {
+			_ = c.WriteMessage("codec-changed", strconv.Itoa(int(codec)))
+		}()
+	})
 }
 
 func (c *Client) ReadMessage() (*Message, error) {
