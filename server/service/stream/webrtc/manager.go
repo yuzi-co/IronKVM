@@ -212,6 +212,10 @@ func (m *WebRTCManager) sendVideoStream() {
 	idle := time.NewTicker(idleCheckInterval)
 	defer idle.Stop()
 
+	// One RTP clock per packetizer, for this run of the stream: a frame left
+	// out moves it on, see frameClock.
+	clocks := make(map[rtp.Packetizer]*frameClock)
+
 	for {
 		select {
 		case <-idle.C:
@@ -257,7 +261,16 @@ func (m *WebRTCManager) sendVideoStream() {
 					continue
 				}
 				if packets == nil {
-					packets = m.packetizerFor(captured).Packetize(frame.Data, samples)
+					packetizer := m.packetizerFor(captured)
+					clock, ok := clocks[packetizer]
+					if !ok {
+						clock = &frameClock{}
+						clocks[packetizer] = clock
+					}
+					if skip := clock.skip(frame.Timestamp, frame.Duration, clockRate); skip > 0 {
+						packetizer.SkipSamples(skip)
+					}
+					packets = packetizer.Packetize(frame.Data, samples)
 				}
 
 				// Handing the frame over never blocks: a client that is
