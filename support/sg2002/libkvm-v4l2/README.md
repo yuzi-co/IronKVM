@@ -110,7 +110,7 @@ the method are in that run sheet.
 | `-3` | All four slots are held by the server. |
 | `-4` | The source changed mode under a running pipeline, or between the receiver query and the capture's `STREAMON` (which fails with `EPIPE`, or with `EINVAL`, `ENOLINK` or `ERANGE` from a receiver between modes); the next read rebuilds. |
 | `-5` | Another read held the lock for over a second. |
-| `-6` | The source runs a mode the capture cannot take: interlaced, a frame larger than a 4 MiB capture buffer (1920x1200 and up), or on a kernel without ironkvm-dist patch 0936 any size but 1920x1080. |
+| `-6` | The source runs a mode the capture cannot take: interlaced, a frame larger than a 1920x1200 one (4.4 MB), or on a kernel without ironkvm-dist patch 0936 any size but 1920x1080. |
 | `-7` | The receiver reports timings out of range (`ERANGE`). |
 
 ### Keyframes
@@ -234,7 +234,9 @@ has read for 10 s.
 - Before ironkvm-dist patch 0912 the GOP set at runtime reached the Coda only at the next
   pipeline build, and no keyframe could be forced (see "Keyframes").
 - HDMI modes (yuzi-co/ironkvm-dist#37): any progressive mode the LT6911UXC locks whose UYVY
-  frame fits a 4 MiB capture buffer (up to 1920x1088; 1920x1200 does not fit). The capture node
+  frame is no larger than a 1920x1200 one (4.4 MB). Before ironkvm-dist patch 0940 the video
+  pool rounded each capture buffer up to a power of two, and three 8 MiB blocks for 1920x1200
+  left the encoders short; the kernel and the library go together on slot B. The capture node
   follows the receiver's size while it holds no buffers (ironkvm-dist patch 0936), the scaler
   reads its 16-byte padded line for 1366 wide modes (0937), and the LT6911UXC's modes under
   1024x768 pass its timing check (0938). The stream is the source's size, or the size asked for
