@@ -63,6 +63,39 @@ export class MouseReportRelative {
   }
 
   /**
+   * Build the reports for one pointer movement of any size.
+   *
+   * A report carries at most 127 counts per axis, and buildReport clamps
+   * anything larger, so a fast flick used to move the host pointer less
+   * than the user's mouse. The movement is split into as few reports as
+   * fit, with both axes advancing together in every report so the path
+   * keeps its direction. The deltas add up exactly to the rounded input.
+   * Every report carries the current buttons, so a drag stays a drag.
+   *
+   * At least one report is returned, even for a movement that rounds to
+   * zero, to match what a single buildReport call sent before.
+   */
+  buildMoveReports(deltaX: number, deltaY: number): Uint8Array[] {
+    const x = Math.round(deltaX);
+    const y = Math.round(deltaY);
+    const count = Math.max(1, Math.ceil(Math.max(Math.abs(x), Math.abs(y)) / 127));
+
+    const reports: Uint8Array[] = [];
+    let sentX = 0;
+    let sentY = 0;
+    for (let i = 1; i <= count; i++) {
+      // Cumulative targets, so rounding never drifts and the last report
+      // lands exactly on the total.
+      const targetX = i === count ? x : Math.round((x * i) / count);
+      const targetY = i === count ? y : Math.round((y * i) / count);
+      reports.push(this.buildReport(targetX - sentX, targetY - sentY));
+      sentX = targetX;
+      sentY = targetY;
+    }
+    return reports;
+  }
+
+  /**
    * Build button-only report (no movement)
    */
   buildButtonReport(): Uint8Array {

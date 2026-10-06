@@ -348,31 +348,34 @@ export const Relative = () => {
 
     // Mouse handler
     function handleMouseEvent(event: MouseRelativeEvent) {
-      let report: Uint8Array;
+      let reports: Uint8Array[];
       const mouse = mouseRef.current;
 
       switch (event.type) {
         case 'mousedown':
           mouse.buttonDown(event.button);
-          report = mouse.buildButtonReport();
+          reports = [mouse.buildButtonReport()];
           break;
         case 'mouseup':
           mouse.buttonUp(event.button);
-          report = mouse.buildButtonReport();
+          reports = [mouse.buildButtonReport()];
           break;
         case 'wheel':
-          report = mouse.buildReport(0, 0, event.deltaY, event.deltaX ?? 0);
+          reports = [mouse.buildReport(0, 0, event.deltaY, event.deltaX ?? 0)];
           break;
         case 'move':
-          report = mouse.buildReport(event.deltaX, event.deltaY);
+          // A move past 127 counts is split over several reports rather
+          // than clamped, so the host pointer travels the full distance.
+          reports = mouse.buildMoveReports(event.deltaX, event.deltaY);
           break;
         default:
-          report = mouse.buildReport(0, 0);
+          reports = [mouse.buildReport(0, 0)];
           break;
       }
 
-      const data = new Uint8Array([MessageEvent.Mouse, ...report]);
-      client.send(data);
+      for (const report of reports) {
+        client.send(new Uint8Array([MessageEvent.Mouse, ...report]));
+      }
     }
 
     function clearTouchLongPressTimer() {
