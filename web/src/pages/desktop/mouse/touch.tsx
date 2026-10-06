@@ -3,6 +3,7 @@ import { useAtomValue } from 'jotai';
 
 import { client, MessageEvent } from '@/lib/websocket.ts';
 import { inputRegionAtom, resolutionAtom } from '@/jotai/screen.ts';
+import { useScreenElement } from '@/hooks/useScreenElement.ts';
 
 import { getScreenPosition } from './position.ts';
 
@@ -37,6 +38,7 @@ function disableEvent(event: Event) {
 // works too: the left button is a finger.
 export const Touch = () => {
   const resolution = useAtomValue(resolutionAtom);
+  const screen = useScreenElement();
   const inputRegion = useAtomValue(inputRegionAtom);
   // Read through a ref so a region change does not lift the fingers on the
   // host by re-registering the handlers mid-gesture.
@@ -46,9 +48,12 @@ export const Touch = () => {
   }, [inputRegion]);
 
   useEffect(() => {
-    const screen = document.getElementById('screen');
+    // The element is looked up here rather than taken from the hook, because
+    // this effect sets its style; `screen` reruns the effect when it changes.
     if (!screen) return;
-    const target = screen;
+    const element = document.getElementById('screen');
+    if (!element) return;
+    const target = element;
 
     const contacts = new Map<number, Contact>();
     let moveFrame: number | null = null;
@@ -209,7 +214,7 @@ export const Touch = () => {
       target.removeEventListener('contextmenu', disableEvent);
       target.removeEventListener('click', disableEvent);
     };
-  }, [resolution]);
+  }, [screen, resolution]);
 
   return <></>;
 };

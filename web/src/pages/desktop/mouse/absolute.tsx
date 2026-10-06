@@ -5,6 +5,7 @@ import { MouseReportAbsolute } from '@/lib/mouse.ts';
 import { client, MessageEvent } from '@/lib/websocket.ts';
 import { scrollDirectionAtom, scrollIntervalAtom } from '@/jotai/mouse.ts';
 import { inputRegionAtom, resolutionAtom } from '@/jotai/screen.ts';
+import { useScreenElement } from '@/hooks/useScreenElement.ts';
 
 import { getScreenPosition } from './position.ts';
 import { MouseAbsoluteEvent } from './types.ts';
@@ -25,6 +26,7 @@ function disableEvent(event: Event) {
 
 export const Absolute = () => {
   const resolution = useAtomValue(resolutionAtom);
+  const screen = useScreenElement();
   const inputRegion = useAtomValue(inputRegionAtom);
   // The region is read through a ref: it can change while a button is held
   // (a resize, a new manual or auto region), and re-registering the handlers
@@ -62,7 +64,6 @@ export const Absolute = () => {
   const DOUBLE_TAP_DISTANCE = 24;
 
   useEffect(() => {
-    const screen = document.getElementById('screen');
     if (!screen) return;
     const target = screen;
     const mouse = mouseRef.current;
@@ -475,7 +476,7 @@ export const Absolute = () => {
         clearTimeout(longPressTimerRef.current);
       }
     };
-  }, [resolution, scrollDirection, scrollInterval]);
+  }, [screen, resolution, scrollDirection, scrollInterval]);
 
   return <></>;
 };

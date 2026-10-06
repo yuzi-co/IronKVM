@@ -8,6 +8,7 @@ import { client, MessageEvent } from '@/lib/websocket.ts';
 import { scrollDirectionAtom, scrollIntervalAtom } from '@/jotai/mouse.ts';
 import { resolutionAtom } from '@/jotai/screen.ts';
 import { useStableCallback } from '@/hooks/useStableCallback.ts';
+import { useScreenElement } from '@/hooks/useScreenElement.ts';
 
 import { MouseRelativeEvent } from './types.ts';
 
@@ -26,6 +27,7 @@ export const Relative = () => {
   const [messageApi, contextHolder] = message.useMessage();
 
   const resolution = useAtomValue(resolutionAtom);
+  const screen = useScreenElement();
   const scrollDirection = useAtomValue(scrollDirectionAtom);
   const scrollInterval = useAtomValue(scrollIntervalAtom);
 
@@ -68,7 +70,6 @@ export const Relative = () => {
   });
 
   useEffect(() => {
-    const screen = document.getElementById('screen');
     if (!screen) return;
     const target = screen;
     const mouse = mouseRef.current;
@@ -416,7 +417,7 @@ export const Relative = () => {
       target.removeEventListener('touchcancel', handleTouchCancel, touchOptions.capture);
       clearTouchLongPressTimer();
     };
-  }, [resolution, scrollDirection, scrollInterval, showMessage]);
+  }, [screen, resolution, scrollDirection, scrollInterval, showMessage]);
 
   return <>{contextHolder}</>;
 };
