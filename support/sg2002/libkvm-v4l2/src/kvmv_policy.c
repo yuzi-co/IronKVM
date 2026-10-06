@@ -259,6 +259,56 @@ int kvmv_rate_add(struct kvmv_rate *rate, uint64_t now_ms, size_t bytes,
 	return 1;
 }
 
+void kvmv_guard_reset(struct kvmv_guard *guard)
+{
+	memset(guard, 0, sizeof(*guard));
+}
+
+/* Drop the entries older than window_ms before now_ms. */
+static void guard_expire(struct kvmv_guard *guard, uint64_t now_ms,
+			 unsigned int window_ms)
+{
+	while (guard->count &&
+	       (now_ms < guard->at_ms[guard->head] || /* the clock went back */
+		now_ms - guard->at_ms[guard->head] >= window_ms)) {
+		guard->sum -= guard->bytes[guard->head];
+		guard->head = (guard->head + 1) % KVMV_GUARD_SLOTS;
+		guard->count--;
+	}
+}
+
+void kvmv_guard_add(struct kvmv_guard *guard, uint64_t now_ms, uint32_t bytes)
+{
+	unsigned int slot;
+
+	if (guard->count == KVMV_GUARD_SLOTS) {
+		/* Full: the oldest goes, which only lowers the sum. */
+		guard->sum -= guard->bytes[guard->head];
+		guard->head = (guard->head + 1) % KVMV_GUARD_SLOTS;
+		guard->count--;
+	}
+	slot = (guard->head + guard->count) % KVMV_GUARD_SLOTS;
+	guard->at_ms[slot] = now_ms;
+	guard->bytes[slot] = bytes;
+	guard->count++;
+	guard->sum += bytes;
+}
+
+int kvmv_guard_full(struct kvmv_guard *guard, uint64_t now_ms,
+		    uint64_t limit_bytes, unsigned int window_ms)
+{
+	if (!limit_bytes)
+		return 0;
+	guard_expire(guard, now_ms, window_ms);
+	return guard->sum >= limit_bytes;
+}
+
+uint64_t kvmv_guard_limit(uint32_t bitrate_bps, unsigned int percent,
+			  unsigned int window_ms)
+{
+	return (uint64_t)bitrate_bps / 8U * percent / 100U * window_ms / 1000U;
+}
+
 int kvmv_encoder_fps(int asked, int capture, int delivered, int current)
 {
 	int target = asked;

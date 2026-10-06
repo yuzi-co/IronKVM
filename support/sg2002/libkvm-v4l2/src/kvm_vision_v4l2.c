@@ -124,6 +124,10 @@ static int last_start_result;
 static struct kvmv_rate rate;
 static struct kvmv_rate fps_rate; /* a shorter window, for delivered_fps */
 static int overshoot_warned;
+static struct kvmv_guard guard; /* the output-rate guard, kvmv_policy.h */
+static unsigned int guard_skipped; /* pictures it left out since the last report */
+static int guard_warned;
+static uint32_t last_delta_bytes; /* the last delta picture handed out */
 static char last_error[256];
 /*
  * H.265 at the capture's size straight from the capture buffer, without the
@@ -694,10 +698,14 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 	next_start_ms = 0;
 	no_frame_count = 0;
 	overshoot_warned = 0;
+	guard_warned = 0;
 	last_error[0] = 0;
 	kvmv_ps_cache_reset_codec(&ps_cache, codec);
 	kvmv_rate_reset(&rate);
 	kvmv_rate_reset(&fps_rate);
+	kvmv_guard_reset(&guard);
+	guard_skipped = 0;
+	last_delta_bytes = 0;
 	/* The first picture after a build must be decodable from cold. */
 	need_key = 1;
 	request_key();
@@ -789,20 +797,72 @@ static int apply_settings(unsigned int width, unsigned int height,
 	return 0;
 }
 
+/*
+ * A read's frame time, for the rate the encoder is told (kvmv_encoder_fps).
+ * A picture the guard leaves out counts as well: the encoder should keep
+ * budgeting bitrate / frame rate per picture and raise its QP, rather than
+ * learn a lower rate and spend more on each picture it gets.
+ */
+static void count_frame_time(uint64_t now)
+{
+	unsigned int kbps, fps_x10;
+
+	if (kvmv_rate_add(&fps_rate, now, 0, KVMV_FPS_WINDOW_MS, &kbps, &fps_x10))
+		__atomic_store_n(&delivered_fps, (int)((fps_x10 + 5) / 10),
+				 __ATOMIC_RELEASE);
+}
+
+/* The guard's byte limit for the current bitrate; 0 when it is off. */
+static uint64_t guard_limit(void)
+{
+	static long percent = -1;
+
+	if (percent < 0)
+		percent = (long)env_uint("KVMV_RATE_GUARD", KVMV_GUARD_PERCENT);
+	return kvmv_guard_limit(pipe_bitrate, (unsigned int)percent,
+				KVMV_GUARD_WINDOW_MS);
+}
+
+/*
+ * Whether the guard leaves this read's picture out (kvmv_policy.h). Never
+ * while a keyframe is owed: a viewer is waiting for it. And only while delta
+ * pictures cost at least their share of the bitrate: on a calm screen a
+ * keyframe can fill the window on its own (270 kB at 2000 kbit/s, trial 51),
+ * and leaving out the small pictures after it would save nothing but cost the
+ * pointer's movement.
+ */
+static int guard_skips(void)
+{
+	uint64_t now = now_ms();
+	uint32_t share = pipe_bitrate / 8U / (uint32_t)(pipe_fps > 0 ? pipe_fps : 1);
+
+	if (need_key || last_delta_bytes < share ||
+	    !kvmv_guard_full(&guard, now, guard_limit(), KVMV_GUARD_WINDOW_MS))
+		return 0;
+	guard_skipped++;
+	count_frame_time(now);
+	return 1;
+}
+
 static void watch_rate(size_t bytes)
 {
 	unsigned int kbps, fps_x10;
 	unsigned int target = pipe_bitrate / 1000U;
 	uint64_t now = now_ms();
 
-	if (kvmv_rate_add(&fps_rate, now, 0, KVMV_FPS_WINDOW_MS, &kbps, &fps_x10))
-		__atomic_store_n(&delivered_fps, (int)((fps_x10 + 5) / 10),
-				 __ATOMIC_RELEASE);
+	kvmv_guard_add(&guard, now, (uint32_t)bytes);
+	count_frame_time(now);
 	if (!kvmv_rate_add(&rate, now, bytes, KVMV_RATE_WINDOW_MS, &kbps,
 			   &fps_x10))
 		return;
-	DBG("output %u kbit/s at %u.%u fps, target %u kbit/s, encoder told %d fps",
-	    kbps, fps_x10 / 10, fps_x10 % 10, target, pipe_fps);
+	DBG("output %u kbit/s at %u.%u fps, target %u kbit/s, encoder told %d fps, %u pictures left out by the rate guard",
+	    kbps, fps_x10 / 10, fps_x10 % 10, target, pipe_fps, guard_skipped);
+	if (guard_skipped && !guard_warned) {
+		guard_warned = 1;
+		log_msg("rate guard: %u pictures left out in %u s to hold %u kbit/s (ironkvm-dist#35)",
+			guard_skipped, KVMV_RATE_WINDOW_MS / 1000U, target);
+	}
+	guard_skipped = 0;
 	if (pipe_state.times.frames) {
 		const struct kvmv_stage_times *t = &pipe_state.times;
 		unsigned int n = t->frames;
@@ -980,6 +1040,14 @@ static int read_video_locked(unsigned int width, unsigned int height,
 			return result;
 	}
 
+	/*
+	 * The output-rate guard: no picture this time. The answer is 0 with no
+	 * data, which the server passes over like a status that is not an
+	 * error, and the next read takes the newest frame again.
+	 */
+	if (guard_skips())
+		return 0;
+
 	for (attempt = 0; attempt < KVMV_KEY_ATTEMPTS; attempt++) {
 		struct kvmv_encoded encoded;
 		struct kvmv_au_info info;
@@ -1066,6 +1134,8 @@ static int read_video_locked(unsigned int width, unsigned int height,
 		slot->type = (uint8_t)type;
 		need_key = 0;
 		set_source_locked(1);
+		if (type == IMG_H264_TYPE_PF)
+			last_delta_bytes = slot->size;
 		watch_rate(slot->size);
 		if (cold_start_us) {
 			const struct kvmv_stage_times *t = &pipe_state.times;

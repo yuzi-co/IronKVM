@@ -222,6 +222,9 @@ static void run(struct run_stats *st, unsigned int count, uint16_t w, uint16_t h
 				note("read -> %d", type);
 			continue;
 		}
+		/* 0 with no data: the output-rate guard left this picture out. */
+		if (type == 0 && size == 0)
+			continue;
 		if (st->frames == 0)
 			st->first_type = type;
 		if (type == TYPE_KEY && st->first_key_index == UINT32_MAX)
