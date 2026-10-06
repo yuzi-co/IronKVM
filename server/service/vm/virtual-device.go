@@ -20,8 +20,8 @@ const (
 var (
 	mountConsoleCommands = []string{
 		"touch /boot/usb.acm",
-		"/etc/init.d/S03usbdev stop",
-		"/etc/init.d/S03usbdev start",
+		usbGadgetStop,
+		usbGadgetStart,
 	}
 
 	// The function directory stays. `rmdir functions/acm.GS0` blocks forever:
@@ -35,10 +35,10 @@ var (
 	// nonzero exit, so a bare rm that failed would skip `start` and leave the
 	// board in host mode with no HID and no way back from the UI.
 	unmountConsoleCommands = []string{
-		"/etc/init.d/S03usbdev stop",
+		usbGadgetStop,
 		"rm -rf /sys/kernel/config/usb_gadget/g0/configs/c.1/acm.GS0",
 		"rm -f /boot/usb.acm",
-		"/etc/init.d/S03usbdev start",
+		usbGadgetStart,
 	}
 
 	// The switch turns the network on as NCM, the mode the USB network
@@ -46,8 +46,8 @@ var (
 	// no longer offers. See usb-network.go for the section itself.
 	mountNetworkCommands = []string{
 		"touch /boot/usb.ncm",
-		"/etc/init.d/S03usbdev stop",
-		"/etc/init.d/S03usbdev start",
+		usbGadgetStop,
+		usbGadgetStart,
 	}
 
 	// The network has three markers - usb.ncm, usb.ecm and usb.rndis0 - because
@@ -56,34 +56,34 @@ var (
 	// The config symlinks are removed the same way: the ones that did not bind
 	// are simply absent, and `rm -rf` does not error on a path that is not there.
 	unmountNetworkCommands = []string{
-		"/etc/init.d/S03usbdev stop",
+		usbGadgetStop,
 		"rm -rf /sys/kernel/config/usb_gadget/g0/configs/c.1/ncm.usb0",
 		"rm -rf /sys/kernel/config/usb_gadget/g0/configs/c.1/ecm.usb0",
 		"rm -rf /sys/kernel/config/usb_gadget/g0/configs/c.1/rndis.usb0",
 		"rm -f /boot/usb.ncm",
 		"rm -f /boot/usb.ecm",
 		"rm -f /boot/usb.rndis0",
-		"/etc/init.d/S03usbdev start",
+		usbGadgetStart,
 	}
 
 	mountDiskCommands = []string{
 		"touch /boot/usb.disk0",
-		"/etc/init.d/S03usbdev stop",
-		"/etc/init.d/S03usbdev start",
+		usbGadgetStop,
+		usbGadgetStart,
 	}
 
 	// The marker goes with rm -f, for the reason the console list records.
 	unmountDiskCommands = []string{
-		"/etc/init.d/S03usbdev stop",
+		usbGadgetStop,
 		"rm -rf /sys/kernel/config/usb_gadget/g0/configs/c.1/mass_storage.disk0",
 		"rm -f /boot/usb.disk0",
-		"/etc/init.d/S03usbdev start",
+		usbGadgetStart,
 	}
 
 	mountAudioCommands = []string{
 		"touch /boot/usb.uac",
-		"/etc/init.d/S03usbdev stop",
-		"/etc/init.d/S03usbdev start",
+		usbGadgetStop,
+		usbGadgetStart,
 	}
 
 	// The function directory stays. Removing it blocks until every holder of
@@ -91,10 +91,10 @@ var (
 	// teardown of the gadget. The marker goes with rm -f, for the reason the
 	// console list records.
 	unmountAudioCommands = []string{
-		"/etc/init.d/S03usbdev stop",
+		usbGadgetStop,
 		"rm -rf /sys/kernel/config/usb_gadget/g0/configs/c.1/uac1.usb0",
 		"rm -f /boot/usb.uac",
-		"/etc/init.d/S03usbdev start",
+		usbGadgetStart,
 	}
 )
 

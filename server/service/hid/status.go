@@ -26,8 +26,9 @@ const (
 
 	USBDevScript = "/etc/init.d/S03usbdev"
 
-	// MainlineGadgetScript builds the gadget on a mainline kernel slot, where
-	// S03usbdev is disabled or absent. See gadgetScript.
+	// MainlineGadgetScript builds the console gadget early in a mainline
+	// slot's boot. The server uses it only where S03usbdev is disabled or
+	// absent. See GadgetScript.
 	MainlineGadgetScript = "/etc/init.d/S00aagadget"
 
 	// HidOnlyFlag records that the owner chose HID-only mode.
@@ -145,31 +146,43 @@ func (s *Service) SetHidMode(c *gin.Context) {
 // device.
 var gadgetScriptStat = os.Stat
 
-// gadgetScript names the script that owns the gadget on the running slot.
+// GadgetScript names the script that owns the gadget on the running slot.
 //
-// On the vendor kernel that is S03usbdev. A mainline kernel slot builds the
-// gadget with MainlineGadgetScript instead and takes S03usbdev's execute bit
-// away (the trial slot), or does not carry it at all (the mainline image),
-// because S03usbdev speaks to /proc/cviusb. Running S03usbdev there failed with
-// exit status 126, so the watchdog could not recover a wedged gadget on that
-// slot (#70). MainlineGadgetScript takes the same restart, stop_start and
-// restart_phy actions.
-func gadgetScript() string {
-	info, err := gadgetScriptStat(MainlineGadgetScript)
-	if err == nil && info.Mode().IsRegular() && info.Mode().Perm()&0o111 != 0 {
+// That is S03usbdev on both kernels. It reads the /boot markers every switch
+// writes, and it runs on a mainline kernel too: it skips the role switch when
+// the device description says USB_ROLE_SWITCH=none, and it takes down the
+// console gadget a mainline slot binds early in the boot (ironkvm-dist #86).
+//
+// A mainline slot installed before that took S03usbdev's execute bit away and
+// built its gadget with MainlineGadgetScript alone. Running S03usbdev there
+// failed with exit status 126, so the watchdog could not recover a wedged
+// gadget on that slot (#70). Such a slot still gets MainlineGadgetScript, which
+// takes the same restart, stop_start and restart_phy actions but reads no
+// marker. When neither script can run, the answer is S03usbdev, so the error
+// names the script that should be there.
+func GadgetScript() string {
+	if scriptRuns(USBDevScript) {
+		return USBDevScript
+	}
+	if scriptRuns(MainlineGadgetScript) {
 		return MainlineGadgetScript
 	}
 	return USBDevScript
 }
 
-// usbDevCommand runs one action of the gadget script, gadgetScript. It is a
+func scriptRuns(path string) bool {
+	info, err := gadgetScriptStat(path)
+	return err == nil && info.Mode().IsRegular() && info.Mode().Perm()&0o111 != 0
+}
+
+// usbDevCommand runs one action of the gadget script, GadgetScript. It is a
 // variable so the switch can be tested without a device.
 //
 // The output is not collected. S03usbdev can leave a background child holding
 // it (the enumeration watch, udhcpd for the USB network), and waiting for that
 // would hold the HID lock for as long as the child lives.
 var usbDevCommand = func(action string) error {
-	script := gadgetScript()
+	script := GadgetScript()
 	if err := exec.Command("sh", "-c", fmt.Sprintf("%s %s", script, action)).Run(); err != nil {
 		return fmt.Errorf("%s %s: %w", script, action, err)
 	}

@@ -165,11 +165,18 @@ func TestStuckEnumerationStartsTheFaultTimer(t *testing.T) {
 	}
 }
 
-// fakeScript stands in for /etc/init.d/S00aagadget.
-func fakeScript(t *testing.T, mode os.FileMode) {
+// fakeScripts stands in for /etc/init.d/S03usbdev and /etc/init.d/S00aagadget.
+// A mode of 0 leaves the script out.
+func fakeScripts(t *testing.T, usbDev os.FileMode, mainline os.FileMode) {
 	t.Helper()
-	path := filepath.Join(t.TempDir(), "S00aagadget")
-	if mode != 0 {
+	dir := t.TempDir()
+	paths := map[string]string{}
+	for name, mode := range map[string]os.FileMode{USBDevScript: usbDev, MainlineGadgetScript: mainline} {
+		path := filepath.Join(dir, filepath.Base(name))
+		paths[name] = path
+		if mode == 0 {
+			continue
+		}
 		if err := os.WriteFile(path, []byte("#!/bin/sh\n"), 0o644); err != nil {
 			t.Fatal(err)
 		}
@@ -179,7 +186,7 @@ func fakeScript(t *testing.T, mode os.FileMode) {
 	}
 	previous := gadgetScriptStat
 	gadgetScriptStat = func(name string) (fs.FileInfo, error) {
-		if name == MainlineGadgetScript {
+		if path, ok := paths[name]; ok {
 			return os.Stat(path)
 		}
 		return previous(name)
@@ -187,21 +194,27 @@ func fakeScript(t *testing.T, mode os.FileMode) {
 	t.Cleanup(func() { gadgetScriptStat = previous })
 }
 
-// The watchdog's rebind must reach a script that runs on both slots (#70).
+// Every gadget action reaches the script that reads the markers, on both
+// slots (#70, ironkvm-dist #86). S00aagadget is the fallback for a mainline
+// slot installed before S03usbdev ran there.
 func TestGadgetScriptPerSlot(t *testing.T) {
 	cases := []struct {
-		name string
-		mode os.FileMode
-		want string
+		name     string
+		usbDev   os.FileMode
+		mainline os.FileMode
+		want     string
 	}{
-		{"vendor slot, no S00aagadget", 0, USBDevScript},
-		{"mainline slot", 0o755, MainlineGadgetScript},
-		{"S00aagadget present but not executable", 0o644, USBDevScript},
+		{"vendor slot, no S00aagadget", 0o755, 0, USBDevScript},
+		{"mainline slot with S03usbdev", 0o755, 0o755, USBDevScript},
+		{"older mainline trial slot, S03usbdev disabled", 0o644, 0o755, MainlineGadgetScript},
+		{"mainline image without S03usbdev", 0, 0o755, MainlineGadgetScript},
+		{"S00aagadget present but not executable", 0o755, 0o644, USBDevScript},
+		{"neither runs: the error names S03usbdev", 0o644, 0o644, USBDevScript},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			fakeScript(t, tc.mode)
-			if got := gadgetScript(); got != tc.want {
+			fakeScripts(t, tc.usbDev, tc.mainline)
+			if got := GadgetScript(); got != tc.want {
 				t.Fatalf("gadget script %s, want %s", got, tc.want)
 			}
 		})

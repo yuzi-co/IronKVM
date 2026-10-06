@@ -653,10 +653,39 @@ is functions/uac1.usb0/p_chmask 0 "the sound card offers no microphone"
 # 3 is the worst setting available here and the buffer costs 192 bytes each.
 is functions/uac1.usb0/req_number 8 "the sound card keeps eight requests in flight"
 
+# The mainline f_uac1's feature units add an interrupt IN endpoint, which takes
+# a periodic TX FIFO the disk needs (ironkvm-dist trial 19). The vendor kernel
+# has no such attributes; a plain tree takes the write either way.
+for unit in c_mute_present c_volume_present p_mute_present p_volume_present
+do
+    is "functions/uac1.usb0/$unit" 0 "the sound card has no $unit feature unit"
+done
+
 run "$HID" start_usb_host
 run "$HID" start_usb_dev
 absent configs/c.1/acm.GS0   "hid-only unlinks the console"
 absent configs/c.1/uac1.usb0 "hid-only unlinks the speaker"
+
+echo
+echo "===== start over a gadget an earlier script bound ====="
+# A mainline slot's S00aagadget binds a fixed gadget before /boot is mounted.
+# start has to take it down and build what the markers ask for; start_usb_dev
+# alone refuses a bound gadget and would leave the early one in place.
+build_env
+run "$S03" start_usb_dev
+is UDC 4340000.usb "the early gadget is bound"
+absent configs/c.1/uac1.usb0 "the early gadget has no speaker here"
+: > "$work/boot/usb.uac"
+run "$S03" start_usb
+present configs/c.1/uac1.usb0 "start over a bound gadget builds what the markers ask for"
+is UDC 4340000.usb "and binds it again"
+
+: > "$work/boot/usb.acm"
+run "$HID" start_usb
+absent configs/c.1/uac1.usb0 "hid-only start over a bound gadget unlinks the speaker"
+absent configs/c.1/acm.GS0 "and the console"
+is bcdDevice 0x0623 "and reports HID-only mode"
+is UDC 4340000.usb "and binds it again"
 
 echo
 echo "===== the sound card is configured before it is linked ====="
