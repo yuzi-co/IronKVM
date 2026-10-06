@@ -93,16 +93,22 @@ struct kvmv_plan {
 
 /*
  * Work out the stream size. A requested size of 0 in either dimension follows
- * the source, as the vendor library does. The VPSS only scales down here, so
- * a request larger than the source is held to the source. A size beyond the
- * encoder's box is scaled into it with its shape kept (1600x1200 gives
- * 1440x1080). The width is rounded down to a multiple of 16 so that the
- * encoder's line stride and the scaler's agree, and the height to an even
- * number for 4:2:0. Returns 0, or -1 when the source itself is unusable.
+ * the source, as the vendor library does. With keep_shape the stream has the
+ * source's shape at the requested height, or at the source's height when that
+ * is smaller, and the requested width is not used: a 1920x1200 source asked
+ * for 1920x1080 gives 1728x1080, 1024x768 asked for 1280x720 gives 960x720
+ * (ironkvm-dist#37). Without it each side is held to the request on its own,
+ * so a source of another shape is stretched to the request's (1920x1200 gives
+ * 1920x1080). The VPSS only scales down here, so a request larger than the
+ * source is held to the source. A size beyond the encoder's box is scaled
+ * into it with its shape kept (1600x1200 gives 1440x1080). The width is
+ * rounded down to a multiple of 16 so that the encoder's line stride and the
+ * scaler's agree, and the height to an even number for 4:2:0. Returns 0, or
+ * -1 when the source itself is unusable.
  */
 int kvmv_plan_output(unsigned int src_width, unsigned int src_height,
 		     unsigned int req_width, unsigned int req_height,
-		     struct kvmv_plan *plan);
+		     int keep_shape, struct kvmv_plan *plan);
 
 /*
  * HDMI modes the capture can take (ironkvm-dist#37, patches 0936 to 0938).

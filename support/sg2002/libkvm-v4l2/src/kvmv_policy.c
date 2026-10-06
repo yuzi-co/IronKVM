@@ -62,9 +62,38 @@ int kvmv_default_kbps(unsigned int width, unsigned int height)
 			  KVMV_BITRATE_MIN_KBPS, KVMV_BITRATE_MAX_KBPS);
 }
 
+/*
+ * The source's shape at the requested height, or at the source's own height
+ * when that is smaller. The width goes to the nearest multiple of 16 the
+ * source has; when that moved it, the height is worked out again from the
+ * width, so the picture keeps the source's ratio to within a line. A source
+ * kept at its own height whose width is not a multiple of 16 (1366x768) only
+ * loses the last few columns' worth of width, as without keep_shape.
+ */
+static void keep_shape_size(unsigned int src_width, unsigned int src_height,
+			    unsigned int req_height, unsigned int *width,
+			    unsigned int *height)
+{
+	uint64_t h = req_height > src_height ? src_height : req_height;
+	uint64_t w = (h * src_width * 2 + src_height) / ((uint64_t)src_height * 2);
+	uint64_t w16 = (w + 8) & ~(uint64_t)15;
+	uint64_t max16 = src_width & ~15U;
+
+	if (w16 > max16)
+		w16 = max16;
+	if (w16 != w && !(h == src_height && w16 == max16)) {
+		uint64_t h2 = (w16 * src_height * 2 + src_width) / ((uint64_t)src_width * 2);
+
+		if (h2 < h)
+			h = h2;
+	}
+	*width = (unsigned int)w16;
+	*height = (unsigned int)h;
+}
+
 int kvmv_plan_output(unsigned int src_width, unsigned int src_height,
 		     unsigned int req_width, unsigned int req_height,
-		     struct kvmv_plan *plan)
+		     int keep_shape, struct kvmv_plan *plan)
 {
 	unsigned int width, height;
 
@@ -75,6 +104,8 @@ int kvmv_plan_output(unsigned int src_width, unsigned int src_height,
 	if (req_width == 0 || req_height == 0) {
 		width = src_width;
 		height = src_height;
+	} else if (keep_shape) {
+		keep_shape_size(src_width, src_height, req_height, &width, &height);
 	} else {
 		width = req_width > src_width ? src_width : req_width;
 		height = req_height > src_height ? src_height : req_height;

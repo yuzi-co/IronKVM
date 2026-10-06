@@ -453,7 +453,7 @@ int kvmv_pipe_negotiate(struct kvmv_pipe *p, const struct kvmv_pipe_cfg *cfg)
 		return fail_msg(p, "capture stride %u is short for %ux%u",
 				cap->bytesperline, cap->width, cap->height);
 	if (kvmv_plan_output(cap->width, cap->height, cfg->req_width,
-			     cfg->req_height, &p->plan))
+			     cfg->req_height, cfg->keep_shape, &p->plan))
 		return fail_msg(p, "capture size %ux%u is unusable", cap->width,
 				cap->height);
 
@@ -1005,7 +1005,7 @@ static int take_parked_encoder(struct kvmv_pipe *p, const struct kvmv_pipe_cfg *
 	    get_fmt(p->cap_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, &cap) ||
 	    !same_pix(&cap, &parked_enc.cap_fmt) ||
 	    kvmv_plan_output(cap.width, cap.height, cfg->req_width,
-			     cfg->req_height, &plan) ||
+			     cfg->req_height, cfg->keep_shape, &plan) ||
 	    memcmp(&plan, &parked_enc.plan, sizeof(plan)) != 0) {
 		unpark_encoder();
 		return 0;
@@ -1879,7 +1879,7 @@ static void snap_stop(struct kvmv_pipe *p)
 }
 
 static int snap_start(struct kvmv_pipe *p, unsigned int width,
-		      unsigned int height)
+		      unsigned int height, int keep_shape)
 {
 	struct kvmv_snap *s = &p->snap;
 	const struct v4l2_pix_format *cap = &p->cap_fmt;
@@ -1887,7 +1887,8 @@ static int snap_start(struct kvmv_pipe *p, unsigned int width,
 	struct dma_heap_allocation_data alloc;
 	size_t need, jpeg_need;
 
-	if (kvmv_plan_output(cap->width, cap->height, width, height, &s->plan))
+	if (kvmv_plan_output(cap->width, cap->height, width, height, keep_shape,
+			     &s->plan))
 		return fail_msg(p, "snapshot size %ux%u is unusable", width, height);
 	s->fd = open(p->scaler_path, O_RDWR | O_NONBLOCK | O_CLOEXEC);
 	if (s->fd < 0)
@@ -1965,8 +1966,8 @@ static int snap_start(struct kvmv_pipe *p, unsigned int width,
 
 enum kvmv_pipe_status kvmv_pipe_snapshot(struct kvmv_pipe *p,
 					 unsigned int width, unsigned int height,
-					 unsigned int timeout_ms, int cpu_read,
-					 struct kvmv_nv12 *image)
+					 int keep_shape, unsigned int timeout_ms,
+					 int cpu_read, struct kvmv_nv12 *image)
 {
 	struct kvmv_snap *s = &p->snap;
 	enum kvmv_pipe_status status;
@@ -1980,11 +1981,11 @@ enum kvmv_pipe_status kvmv_pipe_snapshot(struct kvmv_pipe *p,
 	kvmv_pipe_snapshot_done(p);
 	if (s->fd >= 0 &&
 	    (kvmv_plan_output(p->cap_fmt.width, p->cap_fmt.height, width, height,
-			      &want) ||
+			      keep_shape, &want) ||
 	     want.out_width != s->plan.out_width ||
 	     want.out_height != s->plan.out_height))
 		snap_stop(p);
-	if (s->fd < 0 && snap_start(p, width, height)) {
+	if (s->fd < 0 && snap_start(p, width, height, keep_shape)) {
 		int saved = errno;
 		char error[sizeof(p->error)];
 

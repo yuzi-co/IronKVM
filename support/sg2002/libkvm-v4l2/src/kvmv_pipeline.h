@@ -73,6 +73,8 @@ struct kvmv_buf {
 struct kvmv_pipe_cfg {
 	enum kvmv_codec codec; /* H.264 (the Coda980) or H.265 (the WAVE420L) */
 	unsigned int req_width, req_height;
+	/* kvmv_plan_output's keep_shape: the source's shape at req_height. */
+	int keep_shape;
 	uint32_t bitrate_bps;
 	unsigned int gop;
 	unsigned int fps;
@@ -325,11 +327,13 @@ void kvmv_pipe_release(struct kvmv_pipe *pipe, const struct kvmv_encoded *encode
  * says whether it gave it (a kernel without ironkvm-dist patch 0908 keeps
  * the source's limited range). The buffer is sized for the JPEG unit too
  * (kvmv_hwjpeg_src_size), which reads chroma rows past a tight 4:2:0 frame.
+ * keep_shape is kvmv_plan_output's: the picture keeps the source's shape at
+ * the height asked for.
  */
 enum kvmv_pipe_status kvmv_pipe_snapshot(struct kvmv_pipe *pipe,
 					 unsigned int width, unsigned int height,
-					 unsigned int timeout_ms, int cpu_read,
-					 struct kvmv_nv12 *image);
+					 int keep_shape, unsigned int timeout_ms,
+					 int cpu_read, struct kvmv_nv12 *image);
 void kvmv_pipe_snapshot_done(struct kvmv_pipe *pipe);
 
 /*

@@ -473,63 +473,124 @@ static void test_plan(void)
 {
 	struct kvmv_plan plan;
 
-	CHECK_EQ(kvmv_plan_output(1920, 1080, 0, 0, &plan), 0);
+	CHECK_EQ(kvmv_plan_output(1920, 1080, 0, 0, 0, &plan), 0);
 	CHECK_EQ(plan.out_width, 1920);
 	CHECK_EQ(plan.out_height, 1080);
 	CHECK_EQ(plan.coded_height, 1088);
 
-	CHECK_EQ(kvmv_plan_output(1920, 1080, 1280, 720, &plan), 0);
+	CHECK_EQ(kvmv_plan_output(1920, 1080, 1280, 720, 0, &plan), 0);
 	CHECK_EQ(plan.out_width, 1280);
 	CHECK_EQ(plan.out_height, 720);
 	CHECK_EQ(plan.coded_height, 720);
 
 	/* 1366 is not a multiple of 16; the stride has to be. */
-	CHECK_EQ(kvmv_plan_output(1920, 1080, 1366, 768, &plan), 0);
+	CHECK_EQ(kvmv_plan_output(1920, 1080, 1366, 768, 0, &plan), 0);
 	CHECK_EQ(plan.out_width, 1360);
 	CHECK_EQ(plan.out_height, 768);
 
 	/* Odd heights are made even for 4:2:0. */
-	CHECK_EQ(kvmv_plan_output(1920, 1080, 800, 601, &plan), 0);
+	CHECK_EQ(kvmv_plan_output(1920, 1080, 800, 601, 0, &plan), 0);
 	CHECK_EQ(plan.out_height, 600);
 	CHECK_EQ(plan.coded_height, 608);
 
 	/* No upscaling. */
-	CHECK_EQ(kvmv_plan_output(1920, 1080, 2560, 1440, &plan), 0);
+	CHECK_EQ(kvmv_plan_output(1920, 1080, 2560, 1440, 0, &plan), 0);
 	CHECK_EQ(plan.out_width, 1920);
 	CHECK_EQ(plan.out_height, 1080);
 
 	/* One dimension zero follows the source, as the vendor library does. */
-	CHECK_EQ(kvmv_plan_output(1920, 1080, 1280, 0, &plan), 0);
+	CHECK_EQ(kvmv_plan_output(1920, 1080, 1280, 0, 0, &plan), 0);
 	CHECK_EQ(plan.out_width, 1920);
 
-	CHECK(kvmv_plan_output(0, 0, 0, 0, &plan) != 0);
-	CHECK(kvmv_plan_output(1920, 1080, 8, 8, &plan) != 0);
+	CHECK(kvmv_plan_output(0, 0, 0, 0, 0, &plan) != 0);
+	CHECK(kvmv_plan_output(1920, 1080, 8, 8, 0, &plan) != 0);
 
 	/* Other HDMI modes (#37): the source's size, or less. */
-	CHECK_EQ(kvmv_plan_output(1280, 720, 1920, 1080, &plan), 0);
+	CHECK_EQ(kvmv_plan_output(1280, 720, 1920, 1080, 0, &plan), 0);
 	CHECK_EQ(plan.out_width, 1280);
 	CHECK_EQ(plan.out_height, 720);
-	CHECK_EQ(kvmv_plan_output(1366, 768, 0, 0, &plan), 0);
+	CHECK_EQ(kvmv_plan_output(1366, 768, 0, 0, 0, &plan), 0);
 	CHECK_EQ(plan.out_width, 1360);
 	CHECK_EQ(plan.out_height, 768);
-	CHECK_EQ(kvmv_plan_output(1680, 1050, 1920, 1080, &plan), 0);
+	CHECK_EQ(kvmv_plan_output(1680, 1050, 1920, 1080, 0, &plan), 0);
 	CHECK_EQ(plan.out_width, 1680);
 	CHECK_EQ(plan.out_height, 1050);
 	CHECK_EQ(plan.coded_height, 1056);
-	CHECK_EQ(kvmv_plan_output(1024, 768, 1280, 720, &plan), 0);
+	CHECK_EQ(kvmv_plan_output(1024, 768, 1280, 720, 0, &plan), 0);
 	CHECK_EQ(plan.out_width, 1024);
 	CHECK_EQ(plan.out_height, 720);
 
 	/* Taller than the encoder takes: into 1920x1080, shape kept. */
-	CHECK_EQ(kvmv_plan_output(1600, 1200, 0, 0, &plan), 0);
+	CHECK_EQ(kvmv_plan_output(1600, 1200, 0, 0, 0, &plan), 0);
 	CHECK_EQ(plan.out_width, 1440);
 	CHECK_EQ(plan.out_height, 1080);
-	CHECK_EQ(kvmv_plan_output(1920, 1200, 1920, 1200, &plan), 0);
+	CHECK_EQ(kvmv_plan_output(1920, 1200, 1920, 1200, 0, &plan), 0);
 	CHECK_EQ(plan.out_width, 1728);
 	CHECK_EQ(plan.out_height, 1080);
-	CHECK_EQ(kvmv_plan_output(2560, 1080, 0, 0, &plan), 0);
+	CHECK_EQ(kvmv_plan_output(2560, 1080, 0, 0, 0, &plan), 0);
 	CHECK_EQ(plan.out_width, 1920);
 	CHECK_EQ(plan.out_height, 810);
+
+	/* Stretching (keep_shape 0) is what the requests above did: 1920x1200
+	 * asked for 1920x1080 is squashed. */
+	CHECK_EQ(kvmv_plan_output(1920, 1200, 1920, 1080, 0, &plan), 0);
+	CHECK_EQ(plan.out_width, 1920);
+	CHECK_EQ(plan.out_height, 1080);
+}
+
+static void test_plan_keep_shape(void)
+{
+	static const struct {
+		unsigned int src_w, src_h, req_w, req_h, out_w, out_h;
+	} cases[] = {
+		/* 16:9 sources: the same as stretching. */
+		{ 1920, 1080, 1920, 1080, 1920, 1080 },
+		{ 1920, 1080, 1280, 720, 1280, 720 },
+		{ 1280, 720, 1920, 1080, 1280, 720 },
+		/* 16:10 */
+		{ 1920, 1200, 1920, 1080, 1728, 1080 },
+		{ 1920, 1200, 1280, 720, 1152, 720 },
+		{ 1680, 1050, 1920, 1080, 1680, 1050 },
+		{ 1680, 1050, 1280, 720, 1152, 720 },
+		{ 1280, 800, 1280, 720, 1152, 720 },
+		/* 4:3 */
+		{ 1600, 1200, 1920, 1080, 1440, 1080 },
+		{ 1024, 768, 1920, 1080, 1024, 768 },
+		{ 1024, 768, 1280, 720, 960, 720 },
+		{ 1024, 768, 800, 600, 800, 600 },
+		{ 1024, 768, 640, 480, 640, 480 },
+		{ 800, 600, 1280, 720, 800, 600 },
+		/* 5:4: 900 wide is rounded to 896, the height follows (716.8). */
+		{ 1280, 1024, 1920, 1080, 1280, 1024 },
+		{ 1280, 1024, 1280, 720, 896, 716 },
+		{ 1280, 1024, 800, 600, 752, 600 },
+		/* 1366x768 at its own height keeps 768 lines, as stretching does. */
+		{ 1366, 768, 1920, 1080, 1360, 768 },
+		{ 1366, 768, 1280, 720, 1280, 720 },
+		/* 720x400 (9:5) */
+		{ 720, 400, 1920, 1080, 720, 400 },
+		/* Wider than the encoder's box at that height: into the box. */
+		{ 2560, 1080, 1920, 1080, 1920, 810 },
+	};
+	struct kvmv_plan plan;
+	size_t i;
+
+	for (i = 0; i < sizeof(cases) / sizeof(cases[0]); i++) {
+		CHECK_EQ(kvmv_plan_output(cases[i].src_w, cases[i].src_h, cases[i].req_w,
+					  cases[i].req_h, 1, &plan), 0);
+		CHECK_EQ(plan.out_width, cases[i].out_w);
+		CHECK_EQ(plan.out_height, cases[i].out_h);
+		CHECK_EQ(plan.out_width % 16, 0);
+		CHECK_EQ(plan.out_height % 2, 0);
+		CHECK(plan.out_width <= KVMV_ENCODE_MAX_WIDTH);
+		CHECK(plan.out_height <= KVMV_ENCODE_MAX_HEIGHT);
+	}
+
+	/* A request of 0 still follows the source. */
+	CHECK_EQ(kvmv_plan_output(1600, 1200, 0, 0, 1, &plan), 0);
+	CHECK_EQ(plan.out_width, 1440);
+	CHECK_EQ(plan.out_height, 1080);
+	CHECK(kvmv_plan_output(1920, 1080, 8, 8, 1, &plan) != 0);
 }
 
 static void test_source_fits(void)
@@ -1625,6 +1686,7 @@ int main(void)
 	test_sps();
 	test_hevc();
 	test_plan();
+	test_plan_keep_shape();
 	test_source_fits();
 	test_timings();
 	test_roles();

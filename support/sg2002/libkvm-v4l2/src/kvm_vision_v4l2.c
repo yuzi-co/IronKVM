@@ -108,6 +108,7 @@ static struct kvmv_devices devices;
 static int devices_found;
 static struct kvmv_ps_cache ps_cache;
 static unsigned int pipe_width, pipe_height; /* the size the pipe was built for */
+static int pipe_keep_aspect; /* and the keep_aspect_setting it was built with */
 /* The codec the pipe was built for, or is built for next by an MJPEG read. */
 static enum kvmv_codec pipe_codec = KVMV_CODEC_KIND_H264;
 static uint32_t pipe_bitrate;
@@ -153,6 +154,9 @@ static int fps_setting = KVMV_DEFAULT_FPS;
 static int capture_fps_setting = KVMV_DEFAULT_FPS;
 static int frame_detect_setting;
 static int venc_auto_recyc_setting;
+/* kvmv_set_keep_aspect: 1 keeps the source's shape (the default), 0 stretches
+ * it to the requested size, as the vendor library does. */
+static int keep_aspect_setting = 1;
 static int force_key;
 /* Frames per second actually handed out, rounded; 0 until measured. Reset when
  * the asked rate changes. Written under pipe_lock, cleared by the setters. */
@@ -606,6 +610,7 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 	cfg.codec = codec;
 	cfg.req_width = width;
 	cfg.req_height = height;
+	cfg.keep_shape = __atomic_load_n(&keep_aspect_setting, __ATOMIC_ACQUIRE);
 	cfg.bitrate_bps = bitrate_bps;
 	cfg.gop = (unsigned int)__atomic_load_n(&gop_setting, __ATOMIC_ACQUIRE);
 	cfg.fps = (unsigned int)encoder_fps(0);
@@ -682,6 +687,7 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 			pipe_state.cap_count, cfg.capture_buffers ? cfg.capture_buffers : 2);
 	pipe_width = width;
 	pipe_height = height;
+	pipe_keep_aspect = cfg.keep_shape;
 	pipe_bitrate = bitrate_bps;
 	pipe_gop = (int)cfg.gop;
 	pipe_fps = (int)cfg.fps;
@@ -958,6 +964,9 @@ static int read_video_locked(unsigned int width, unsigned int height,
 	}
 	if (pipe_state.running && (width != pipe_width || height != pipe_height))
 		pipe_down_keep("output size changed", 1);
+	else if (pipe_state.running &&
+		 pipe_keep_aspect != __atomic_load_n(&keep_aspect_setting, __ATOMIC_ACQUIRE))
+		pipe_down_keep("aspect setting changed", 1);
 	if (!pipe_state.running) {
 		cold_start_us = now_us();
 		scale_ewma_us = 0;
@@ -1162,7 +1171,8 @@ static int read_direct_locked(unsigned int width, unsigned int height, int quali
 	if (hw_jpeg_direct_off < 0)
 		hw_jpeg_direct_off = env_uint("KVMV_JPEG_DIRECT", 1) == 0;
 	if (hw_jpeg_direct_off || cap->pixelformat != V4L2_PIX_FMT_UYVY ||
-	    kvmv_plan_output(cap->width, cap->height, width, height, &plan) ||
+	    kvmv_plan_output(cap->width, cap->height, width, height,
+			     __atomic_load_n(&keep_aspect_setting, __ATOMIC_ACQUIRE), &plan) ||
 	    plan.out_width != cap->width || plan.out_height != cap->height)
 		return KVMV_USE_SCALER;
 
@@ -1243,6 +1253,7 @@ static int read_hw_locked(unsigned int width, unsigned int height, int quality,
 
 	t0 = now_us();
 	result = pipe_failure(kvmv_pipe_snapshot(&pipe_state, width, height,
+						 __atomic_load_n(&keep_aspect_setting, __ATOMIC_ACQUIRE),
 						 KVMV_FRAME_TIMEOUT_MS, !import, &image));
 	if (result != 0)
 		return result;
@@ -1303,6 +1314,7 @@ static int snapshot_locked(unsigned int width, unsigned int height)
 	int result;
 
 	result = pipe_failure(kvmv_pipe_snapshot(&pipe_state, width, height,
+						 __atomic_load_n(&keep_aspect_setting, __ATOMIC_ACQUIRE),
 						 KVMV_FRAME_TIMEOUT_MS, 1, &image));
 	if (result != 0)
 		return result;
@@ -1717,4 +1729,24 @@ uint8_t kvmv_codec_supported(uint8_t _codec)
 						  KVMV_CODEC_KIND_H264);
 	pthread_mutex_unlock(&pipe_lock);
 	return supported;
+}
+
+/*
+ * Not part of kvm_vision.h, and not in Sipeed's library: how a source of
+ * another shape than the requested size is fitted (ironkvm-dist#37). 1, the
+ * default, keeps the source's shape at the requested height (a 1920x1200
+ * source asked for 1920x1080 is sent as 1728x1080); 0 stretches it to the
+ * requested size. The next read rebuilds the H.264/H.265 pipeline when the
+ * setting changed, and MJPEG pictures follow it from the next picture.
+ * NanoKVM-Server looks it up with dlsym. Answers the setting now in force.
+ */
+__attribute__((visibility("default"))) uint8_t kvmv_set_keep_aspect(uint8_t _keep);
+uint8_t kvmv_set_keep_aspect(uint8_t _keep)
+{
+	int keep = _keep ? 1 : 0;
+
+	if (__atomic_exchange_n(&keep_aspect_setting, keep, __ATOMIC_ACQ_REL) != keep)
+		log_msg("aspect: %s", keep ? "keep the source's shape" :
+					    "stretch to the requested size");
+	return (uint8_t)keep;
 }

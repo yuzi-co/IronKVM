@@ -62,6 +62,7 @@ from "nothing captured" before a pipeline is up.
 | `set_capture_fps` | The capture node has no frame interval control; unread frames cost their DMA and nothing else. Caps the rate the encoder is told, since frames cannot reach it faster. |
 | `set_frame_detact` | Recorded only: every MJPEG read encodes a picture, and `5` ("not changed") is never answered. |
 | `kvmv_codec_supported` | Not in `kvm_vision.h` or Sipeed's library (`abi-extensions.txt`). `1` for codec 0 (MJPEG); `1` for codecs 1 (H.264) and 2 (H.265) when their encoder node exists. The server finds it with `dlsym` and, without it, assumes all three. |
+| `kvmv_set_keep_aspect` | Not in `kvm_vision.h` or Sipeed's library (`abi-extensions.txt`). How a source of another shape than the requested size is fitted: `1` (the default) keeps the source's shape at the requested height, `0` stretches it to the requested size. The next read rebuilds the encoder pipeline when it changed; MJPEG follows from the next picture. The server sets it from its aspect setting through `dlsym`. |
 | `set_venc_auto_recyc` | Recorded only. There is one encoder. |
 | `kvmv_hdmi_control` | Stops and starts capture in software on every board: `0` tears the pipeline down and reads answer `-1`; `1` allows capture again. Answers `0`. The receiver is not powered down (the vendor library does that through a GPIO on the PCIe board only, and answers `-1` elsewhere). |
 | `kvmv_hdmi_signal_active` | `1` when capture is enabled and the receiver has a source. Like the vendor library it reads `0` until `kvmv_hdmi_control(1)`. |
@@ -240,7 +241,12 @@ has read for 10 s.
   follows the receiver's size while it holds no buffers (ironkvm-dist patch 0936), the scaler
   reads its 16-byte padded line for 1366 wide modes (0937), and the LT6911UXC's modes under
   1024x768 pass its timing check (0938). The stream is the source's size, or the size asked for
-  when smaller; a size beyond 1920x1080 is scaled into it with its shape kept. Trial 43 streamed
+  when smaller; a size beyond 1920x1080 is scaled into it with its shape kept. A source of
+  another shape than the request keeps its shape at the requested height (`kvmv_set_keep_aspect`,
+  default): 1920x1200 asked for 1920x1080 is 1728x1080, 1024x768 asked for 1280x720 is 960x720,
+  1280x1024 asked for 1280x720 is 896x716 (the width in steps of 16, the height following it).
+  With `kvmv_set_keep_aspect(0)` each side is held to the request on its own and the picture is
+  stretched (1920x1080, 1280x720), as before. Trial 43 streamed
   1280x720, 1024x768, 1680x1050, 1366x768 (as 1360x768), 1280x1024, 1280x800, 1280x960,
   800x600 and 720x400 at 70 Hz; the receiver itself reports no link for 640x480 at 60 Hz and
   720x576 at 50 Hz, and the read answers `-1` as with no cable. Before 0936 only 1920x1080
@@ -276,7 +282,7 @@ container. `make clean` keeps `deps/`; `make distclean` removes it.
 
 - `build/libkvm.so`: soname `libkvm.so`, `NEEDED` `libgcc_s.so.1` and `libc.so`, no `RUNPATH`
   needed. It exports the 13 functions in `abi-symbols.txt`, all strong (`nm` type `T`), and
-  `kvmv_codec_supported` (`abi-extensions.txt`), nothing else; libjpeg-turbo is inside it.
+  `kvmv_codec_supported` and `kvmv_set_keep_aspect` (`abi-extensions.txt`), nothing else; libjpeg-turbo is inside it.
   Nothing in the library calls libgcc_s. The server needs it: its crtbegin calls
   `__register_frame_info` through the PLT, and the server NEEDs only `libkvm.so` and `libc.so`,
   relying on Sipeed's library (`NEEDED` OpenCV, `libkvm_mmf.so`, `libstdc++.so.6`,
