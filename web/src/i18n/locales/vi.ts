@@ -109,8 +109,7 @@ const vi = {
       },
       codecNoWebrtcHevc: 'Trình duyệt này không nhận được H.265 qua WebRTC',
       codecNoHevc: 'Trình duyệt này không giải mã được H.265',
-      codecNote:
-        'Bo mạch chỉ có một bộ mã hóa nên thay đổi này áp dụng cho mọi người xem. Kết nối lại để áp dụng cho phiên WebRTC đang chạy.',
+      codecNote: 'Bo mạch chỉ có một bộ mã hóa nên thay đổi này áp dụng cho mọi người xem.',
       codec: 'Codec',
       updateFailed: 'Chưa áp dụng được cài đặt',
       scale: 'Quy mô',

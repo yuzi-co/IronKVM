@@ -55,6 +55,12 @@ type Client struct {
 	// a different payload in the old one.
 	codec uint8
 
+	// codecChanged sends the viewer one "codec-changed" message once the
+	// encoder runs another codec than this session negotiated. The sender skips
+	// such a session, and without the message the browser shows a frozen
+	// picture until it reloads (#83).
+	codecChanged sync.Once
+
 	// queue holds the frames waiting for this client. The capture loop hands a
 	// frame over and moves on; the writer goroutine takes frames at whatever
 	// rate this connection manages. It is several frames deep so that the

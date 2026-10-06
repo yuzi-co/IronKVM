@@ -110,7 +110,7 @@ const pt_br = {
       codecNoWebrtcHevc: 'Este navegador não recebe H.265 via WebRTC',
       codecNoHevc: 'Este navegador não decodifica H.265',
       codecNote:
-        'A placa tem um só codificador, então isso muda o stream para todos os espectadores. Reconecte para aplicar a uma sessão WebRTC em andamento.',
+        'A placa tem um só codificador, então isso muda o stream para todos os espectadores.',
       codec: 'Codec',
       updateFailed: 'A configuração não foi aplicada',
       scale: 'Escala',

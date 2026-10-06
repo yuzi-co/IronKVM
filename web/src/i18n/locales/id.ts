@@ -109,8 +109,7 @@ const id = {
       },
       codecNoWebrtcHevc: 'Browser ini tidak dapat menerima H.265 melalui WebRTC',
       codecNoHevc: 'Browser ini tidak dapat mendekode H.265',
-      codecNote:
-        'Papan hanya punya satu encoder, jadi ini mengubah stream untuk semua penonton. Sambungkan ulang agar berlaku pada sesi WebRTC yang berjalan.',
+      codecNote: 'Papan hanya punya satu encoder, jadi ini mengubah stream untuk semua penonton.',
       codec: 'Codec',
       updateFailed: 'Pengaturan tidak diterapkan',
       scale: 'Skala',

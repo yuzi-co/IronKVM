@@ -109,8 +109,7 @@ const da = {
       },
       codecNoWebrtcHevc: 'Denne browser kan ikke modtage H.265 via WebRTC',
       codecNoHevc: 'Denne browser kan ikke afkode H.265',
-      codecNote:
-        'Kortet har én encoder, så dette ændrer streamen for alle seere. Forbind igen for at anvende det på en kørende WebRTC-session.',
+      codecNote: 'Kortet har én encoder, så dette ændrer streamen for alle seere.',
       codec: 'Codec',
       updateFailed: 'Indstillingen blev ikke anvendt',
       scale: 'Skala',

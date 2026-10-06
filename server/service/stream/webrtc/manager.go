@@ -250,9 +250,10 @@ func (m *WebRTCManager) sendVideoStream() {
 			for _, client := range clients {
 				// A session that negotiated the other codec cannot be served
 				// this frame: its description promised something else, and
-				// the peer would decode noise. It waits for the viewer to
-				// reconnect, which renegotiates at the current codec.
+				// the peer would decode noise. The viewer is told once and
+				// reconnects, which renegotiates at the current codec.
 				if client.codec != captured {
+					client.noteCodecChanged(captured)
 					continue
 				}
 				if packets == nil {

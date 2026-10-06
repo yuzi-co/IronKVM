@@ -110,8 +110,7 @@ const cz = {
       },
       codecNoWebrtcHevc: 'Tento prohlížeč neumí přijímat H.265 přes WebRTC',
       codecNoHevc: 'Tento prohlížeč neumí dekódovat H.265',
-      codecNote:
-        'Deska má jediný kodér, takže se tím změní stream pro všechny diváky. Pro použití v běžící relaci WebRTC se znovu připojte.',
+      codecNote: 'Deska má jediný kodér, takže se tím změní stream pro všechny diváky.',
       codec: 'Kodek',
       updateFailed: 'Nastavení nebylo použito',
       scale: 'Měřítko',

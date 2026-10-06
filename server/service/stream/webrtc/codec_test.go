@@ -1,10 +1,15 @@
 package webrtc
 
 import (
+	"net/http"
+	"net/http/httptest"
+	"strings"
 	"testing"
+	"time"
 
 	"NanoKVM-Server/common"
 
+	"github.com/gorilla/websocket"
 	"github.com/pion/webrtc/v4"
 )
 
@@ -62,4 +67,52 @@ func TestAPacketizerIsReusedRatherThanRebuiltPerFrame(t *testing.T) {
 	if first != second {
 		t.Fatal("packetizerFor built a second packetizer for the same codec")
 	}
+}
+
+// A session whose codec no longer matches the encoder gets no frames, so the
+// viewer must be told to reconnect or its picture freezes (#83). The message
+// goes once per session, however many frames arrive in the meantime.
+func TestACodecChangeIsAnnouncedOncePerSession(t *testing.T) {
+	upgrade := websocket.Upgrader{CheckOrigin: func(*http.Request) bool { return true }}
+	accepted := make(chan *websocket.Conn, 1)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		conn, err := upgrade.Upgrade(w, r, nil)
+		if err != nil {
+			t.Errorf("upgrade websocket: %v", err)
+			return
+		}
+		accepted <- conn
+	}))
+	defer server.Close()
+
+	browser, _, err := websocket.DefaultDialer.Dial("ws"+strings.TrimPrefix(server.URL, "http"), nil)
+	if err != nil {
+		t.Fatalf("dial: %v", err)
+	}
+	defer browser.Close()
+
+	c := NewClient(<-accepted, nil)
+	c.codec = common.CodecH264
+	for i := 0; i < 5; i++ {
+		c.noteCodecChanged(common.CodecH265)
+	}
+
+	var msg Message
+	_ = browser.SetReadDeadline(time.Now().Add(2 * time.Second))
+	if err := browser.ReadJSON(&msg); err != nil {
+		t.Fatalf("no message reached the viewer: %v", err)
+	}
+	if msg.Event != "codec-changed" || msg.Data != "2" {
+		t.Fatalf("got %+v, want codec-changed 2", msg)
+	}
+
+	_ = browser.SetReadDeadline(time.Now().Add(200 * time.Millisecond))
+	if err := browser.ReadJSON(&msg); err == nil {
+		t.Fatalf("a second message reached the viewer: %+v", msg)
+	}
+}
+
+func TestNoteCodecChangedWithoutASocketDoesNothing(t *testing.T) {
+	c := NewClient(nil, nil)
+	c.noteCodecChanged(common.CodecH265)
 }

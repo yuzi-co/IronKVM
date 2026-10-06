@@ -113,7 +113,7 @@ const es = {
       codecNoWebrtcHevc: 'Este navegador no puede recibir H.265 por WebRTC',
       codecNoHevc: 'Este navegador no puede decodificar H.265',
       codecNote:
-        'La placa tiene un solo codificador, así que esto cambia el flujo para todos los espectadores. Vuelva a conectar para aplicarlo a una sesión WebRTC en curso.',
+        'La placa tiene un solo codificador, así que esto cambia el flujo para todos los espectadores.',
       codec: 'Códec',
       updateFailed: 'No se aplicó el ajuste',
       scale: 'Escala',

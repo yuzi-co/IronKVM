@@ -110,8 +110,7 @@ const pl = {
       },
       codecNoWebrtcHevc: 'Ta przeglądarka nie odbiera H.265 przez WebRTC',
       codecNoHevc: 'Ta przeglądarka nie dekoduje H.265',
-      codecNote:
-        'Płytka ma jeden koder, więc zmienia to strumień dla wszystkich widzów. Połącz się ponownie, aby zastosować to w trwającej sesji WebRTC.',
+      codecNote: 'Płytka ma jeden koder, więc zmienia to strumień dla wszystkich widzów.',
       codec: 'Kodek',
       updateFailed: 'Ustawienie nie zostało zastosowane',
       scale: 'Skala',

@@ -4,13 +4,12 @@ import { CheckIcon, TvMinimalPlayIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { setVideoMode as setCookie } from '@/lib/localstorage.ts';
-import { videoModeAtom } from '@/jotai/screen.ts';
+import { videoModeLabel } from '@/lib/stream-codec.ts';
+import { screenSettingsAtom, videoModeAtom } from '@/jotai/screen.ts';
 
-const videoModes = [
-  { key: 'direct', name: 'H.264 (Direct)' },
-  { key: 'h264', name: 'H.264 (WebRTC)' },
-  { key: 'mjpeg', name: 'MJPEG' }
-];
+// The two H.264 paths carry whichever codec the encoder runs, so their labels
+// name that codec (#84). The keys stay as they are: they are stored per viewer.
+const videoModes = ['direct', 'h264', 'mjpeg'];
 
 // Neither fact changes while the page is open, so both are read once rather
 // than in an effect that renders the component a second time.
@@ -19,6 +18,7 @@ const isDirectSupported = window.location.protocol === 'https:' && !!window.Vide
 export const VideoMode = () => {
   const { t } = useTranslation();
   const videoMode = useAtomValue(videoModeAtom);
+  const codec = useAtomValue(screenSettingsAtom)?.codec;
 
   function update(mode: string) {
     if (mode === videoMode) return;
@@ -41,24 +41,24 @@ export const VideoMode = () => {
         >
           <div className="flex cursor-not-allowed items-center rounded py-1.5 pr-5 pl-1 text-neutral-500 select-none hover:bg-neutral-700/70">
             <div className="flex h-[14px] w-[20px] items-end text-blue-500"></div>
-            <span>H.264 (Direct)</span>
+            <span>{videoModeLabel('direct', codec)}</span>
           </div>
         </Tooltip>
       )}
 
       {videoModes.map(
         (mode) =>
-          (isDirectSupported || mode.key !== 'direct') && (
+          (isDirectSupported || mode !== 'direct') && (
             <button
               type="button"
-              key={mode.key}
+              key={mode}
               className="flex w-full cursor-pointer items-center rounded p-0 py-1.5 pr-5 pl-1 text-left select-none hover:bg-neutral-700/70"
-              onClick={() => update(mode.key)}
+              onClick={() => update(mode)}
             >
               <div className="flex h-[14px] w-[20px] items-end text-blue-500">
-                {mode.key === videoMode && <CheckIcon size={14} />}
+                {mode === videoMode && <CheckIcon size={14} />}
               </div>
-              <span>{mode.name}</span>
+              <span>{videoModeLabel(mode, codec)}</span>
             </button>
           )
       )}

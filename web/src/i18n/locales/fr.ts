@@ -114,7 +114,7 @@ const fr = {
       codecNoWebrtcHevc: 'Ce navigateur ne peut pas recevoir le H.265 via WebRTC',
       codecNoHevc: 'Ce navigateur ne peut pas décoder le H.265',
       codecNote:
-        "La carte n'a qu'un encodeur : ce réglage change le flux pour tous les spectateurs. Reconnectez-vous pour l'appliquer à une session WebRTC en cours.",
+        "La carte n'a qu'un encodeur : ce réglage change le flux pour tous les spectateurs.",
       codec: 'Codec',
       updateFailed: "Le réglage n'a pas été appliqué",
       scale: 'Échelle',
