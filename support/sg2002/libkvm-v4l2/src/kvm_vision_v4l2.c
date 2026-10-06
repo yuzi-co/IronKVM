@@ -74,6 +74,8 @@ void set_capture_fps(uint8_t _fps);
 #define KVMV_RECEIVER_CACHE_MS 1500U
 #define KVMV_RATE_WINDOW_MS 10000U
 #define KVMV_FPS_WINDOW_MS 3000U
+/* A longer gap between two reads starts the delivered-rate window again. */
+#define KVMV_FPS_IDLE_MS 1000U
 /* Room in front of a copied access unit for the parameter sets a keyframe
  * may need (H.265: VPS, SPS and PPS), so the unit is copied out of the
  * encoder once. */
@@ -805,8 +807,18 @@ static int apply_settings(unsigned int width, unsigned int height,
  */
 static void count_frame_time(uint64_t now)
 {
+	static uint64_t last_ms;
 	unsigned int kbps, fps_x10;
 
+	/*
+	 * A pause in the reads (no viewer for a while) is not a slow encoder.
+	 * Measured across it, the window gave a rate as low as 1 fps when the
+	 * next viewer came, the encoder was told that, and its rate control
+	 * then spent a second's bits on each picture (trial 51).
+	 */
+	if (last_ms && now - last_ms > KVMV_FPS_IDLE_MS)
+		kvmv_rate_reset(&fps_rate);
+	last_ms = now;
 	if (kvmv_rate_add(&fps_rate, now, 0, KVMV_FPS_WINDOW_MS, &kbps, &fps_x10))
 		__atomic_store_n(&delivered_fps, (int)((fps_x10 + 5) / 10),
 				 __ATOMIC_RELEASE);
@@ -834,7 +846,9 @@ static uint64_t guard_limit(void)
 static int guard_skips(void)
 {
 	uint64_t now = now_ms();
-	uint32_t share = pipe_bitrate / 8U / (uint32_t)(pipe_fps > 0 ? pipe_fps : 1);
+	/* The share at the asked rate, not the one the encoder was told. */
+	int fps = __atomic_load_n(&fps_setting, __ATOMIC_ACQUIRE);
+	uint32_t share = pipe_bitrate / 8U / (uint32_t)(fps > 0 ? fps : 1);
 
 	if (need_key || last_delta_bytes < share ||
 	    !kvmv_guard_full(&guard, now, guard_limit(), KVMV_GUARD_WINDOW_MS))
