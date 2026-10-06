@@ -365,12 +365,20 @@ static int start_failed(int result, unsigned int retry_ms)
 	return result;
 }
 
-static int query_receiver(unsigned int need_width, unsigned int need_height)
+/*
+ * Ask the receiver for the source's mode. On a source the capture can take,
+ * *width and *height are its size; they stay 0 when there is no receiver to
+ * ask. The query also makes the mode the receiver's active format, which the
+ * capture node follows (ironkvm-dist patch 0936).
+ */
+static int query_receiver(unsigned int *width, unsigned int *height)
 {
 	struct v4l2_dv_timings timings;
 	enum kvmv_signal signal;
 	int fd;
 
+	*width = 0;
+	*height = 0;
 	if (!devices.subdev[0])
 		return 0;
 	fd = open(devices.subdev, O_RDWR | O_NONBLOCK | O_CLOEXEC);
@@ -378,7 +386,7 @@ static int query_receiver(unsigned int need_width, unsigned int need_height)
 		fd = open(devices.subdev, O_RDONLY | O_NONBLOCK | O_CLOEXEC);
 	if (fd < 0)
 		return 0;
-	signal = kvmv_query_signal(fd, need_width, need_height, &timings);
+	signal = kvmv_query_signal(fd, 0, 0, &timings);
 	if (signal == KVMV_SIGNAL_OK) {
 		/* Make the queried mode the active one. The capture driver's
 		 * STREAMON refreshes it too; a read-only node refuses this, and
@@ -392,14 +400,17 @@ static int query_receiver(unsigned int need_width, unsigned int need_height)
 	if (kvmv_signal_present(signal))
 		publish_resolution(timings.bt.width, timings.bt.height);
 	if (signal == KVMV_SIGNAL_UNSUPPORTED)
-		log_error_once("HDMI source mode not supported by the capture node",
-			       "set the host to 1920x1080 progressive");
+		log_error_once("HDMI source mode not supported", "interlaced");
+	if (signal == KVMV_SIGNAL_OK) {
+		*width = timings.bt.width;
+		*height = timings.bt.height;
+	}
 	return kvmv_signal_result(signal);
 }
 
-/* The capture node's fixed frame size, to check the source against. Asked
- * once (capture_width_known, capture_height_known), and again after a
- * pipe_down that does not park (source changes). */
+/* The capture node's frame size. Asked once (capture_width_known,
+ * capture_height_known), and again after a pipe_down that does not park
+ * (source changes) or when the source's size differs. */
 static void capture_frame_size(unsigned int *width, unsigned int *height)
 {
 	struct v4l2_format format;
@@ -445,8 +456,9 @@ static void receiver_remember(enum kvmv_signal signal,
 	pthread_mutex_unlock(&receiver_lock);
 }
 
-/* 1 when the monitor saw, recently enough, a source the capture takes. */
-static int receiver_recent(unsigned int need_width, unsigned int need_height)
+/* 1 when the monitor saw, recently enough, a source in a progressive mode;
+ * *width and *height are its size. */
+static int receiver_recent(unsigned int *width, unsigned int *height)
 {
 	unsigned int max_age = env_uint("KVMV_RECEIVER_CACHE_MS", KVMV_RECEIVER_CACHE_MS);
 	struct v4l2_dv_timings timings;
@@ -456,12 +468,51 @@ static int receiver_recent(unsigned int need_width, unsigned int need_height)
 	fresh = kvmv_receiver_fresh(receiver_seen_ms, now_ms(), max_age);
 	timings = receiver_timings;
 	pthread_mutex_unlock(&receiver_lock);
-	if (!fresh || kvmv_classify_timings(0, 0, &timings, need_width,
-					    need_height) != KVMV_SIGNAL_OK)
+	if (!fresh || kvmv_classify_timings(0, 0, &timings, 0, 0) != KVMV_SIGNAL_OK)
 		return 0;
 	set_source_locked(1);
 	publish_resolution(timings.bt.width, timings.bt.height);
+	*width = timings.bt.width;
+	*height = timings.bt.height;
 	return 1;
+}
+
+/*
+ * Check the source's mode against what the capture can take and what the
+ * capture node reports, and have them agree. A parked capture node keeps the
+ * size it had when it was parked, so a different source size unparks it and
+ * asks again. Returns 0, or the read result for a mode that cannot be taken.
+ */
+static int match_capture(unsigned int src_width, unsigned int src_height)
+{
+	unsigned int width, height;
+	char detail[96];
+
+	if (!src_width || !src_height)
+		return 0; /* no receiver to ask: the capture node's size it is */
+	if (!kvmv_source_fits(src_width, src_height)) {
+		snprintf(detail, sizeof(detail), "%ux%u is larger than a capture buffer holds",
+			 src_width, src_height);
+		log_error_once("HDMI source mode not supported", detail);
+		return -6;
+	}
+	capture_frame_size(&width, &height);
+	if (width == src_width && height == src_height)
+		return 0;
+	/* Parked buffers pin the old size, and the remembered size is old. */
+	kvmv_pipe_unpark();
+	capture_width_known = 0;
+	capture_height_known = 0;
+	capture_frame_size(&width, &height);
+	if (width == src_width && height == src_height) {
+		log_msg("capture follows the source to %ux%u", width, height);
+		return 0;
+	}
+	snprintf(detail, sizeof(detail),
+		 "source %ux%u, capture node %ux%u (kernel without ironkvm-dist patch 0936)",
+		 src_width, src_height, width, height);
+	log_error_once("HDMI source mode not supported by the capture node", detail);
+	return -6;
 }
 
 static void report_applied(uint32_t bitrate_bps, int gop, int fps)
@@ -520,7 +571,7 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 {
 	struct kvmv_pipe_cfg cfg;
 	struct kvmv_qp_range qp;
-	unsigned int need_width, need_height;
+	unsigned int src_width = 0, src_height = 0;
 	enum kvmv_codec codec = pipe_codec;
 	int hevc = codec == KVMV_CODEC_KIND_HEVC;
 	uint64_t query_us;
@@ -540,13 +591,15 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 	}
 
 	query_us = now_us();
-	capture_frame_size(&need_width, &need_height);
-	receiver_cached = receiver_recent(need_width, need_height);
+	receiver_cached = receiver_recent(&src_width, &src_height);
 	if (!receiver_cached) {
-		result = query_receiver(need_width, need_height);
+		result = query_receiver(&src_width, &src_height);
 		if (result != 0)
 			return start_failed(result, 500);
 	}
+	result = match_capture(src_width, src_height);
+	if (result != 0)
+		return start_failed(result, 1000);
 	query_us = now_us() - query_us;
 
 	memset(&cfg, 0, sizeof(cfg));
@@ -590,10 +643,16 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 		}
 		if (err == ENOENT || err == ENODEV || err == ENXIO)
 			devices_found = 0;
-		/* The capture link refuses a source format it cannot take with
-		 * EPIPE at STREAMON. */
-		if (err == EPIPE)
-			return start_failed(-6, 1000);
+		/* The capture link refuses a source format that differs from
+		 * the capture node's with EPIPE at STREAMON: the mode changed
+		 * after the receiver was asked. Ask again on the next read. */
+		if (err == EPIPE) {
+			capture_width_known = 0;
+			capture_height_known = 0;
+			receiver_remember(KVMV_SIGNAL_NONE, NULL);
+			kvmv_pipe_unpark();
+			return start_failed(KVMV_RET_CHANGING, 500);
+		}
 		/* The other codec's encoder holds the codec SRAM. */
 		if (err == EBUSY)
 			log_msg("the %s encoder is busy: the other codec is streaming",

@@ -504,6 +504,52 @@ static void test_plan(void)
 
 	CHECK(kvmv_plan_output(0, 0, 0, 0, &plan) != 0);
 	CHECK(kvmv_plan_output(1920, 1080, 8, 8, &plan) != 0);
+
+	/* Other HDMI modes (#37): the source's size, or less. */
+	CHECK_EQ(kvmv_plan_output(1280, 720, 1920, 1080, &plan), 0);
+	CHECK_EQ(plan.out_width, 1280);
+	CHECK_EQ(plan.out_height, 720);
+	CHECK_EQ(kvmv_plan_output(1366, 768, 0, 0, &plan), 0);
+	CHECK_EQ(plan.out_width, 1360);
+	CHECK_EQ(plan.out_height, 768);
+	CHECK_EQ(kvmv_plan_output(1680, 1050, 1920, 1080, &plan), 0);
+	CHECK_EQ(plan.out_width, 1680);
+	CHECK_EQ(plan.out_height, 1050);
+	CHECK_EQ(plan.coded_height, 1056);
+	CHECK_EQ(kvmv_plan_output(1024, 768, 1280, 720, &plan), 0);
+	CHECK_EQ(plan.out_width, 1024);
+	CHECK_EQ(plan.out_height, 720);
+
+	/* Taller than the encoder takes: into 1920x1080, shape kept. */
+	CHECK_EQ(kvmv_plan_output(1600, 1200, 0, 0, &plan), 0);
+	CHECK_EQ(plan.out_width, 1440);
+	CHECK_EQ(plan.out_height, 1080);
+	CHECK_EQ(kvmv_plan_output(1920, 1200, 1920, 1200, &plan), 0);
+	CHECK_EQ(plan.out_width, 1728);
+	CHECK_EQ(plan.out_height, 1080);
+	CHECK_EQ(kvmv_plan_output(2560, 1080, 0, 0, &plan), 0);
+	CHECK_EQ(plan.out_width, 1920);
+	CHECK_EQ(plan.out_height, 810);
+}
+
+static void test_source_fits(void)
+{
+	CHECK(kvmv_source_fits(1920, 1080));
+	CHECK(kvmv_source_fits(1920, 1088));
+	CHECK(kvmv_source_fits(1680, 1050));
+	CHECK(kvmv_source_fits(1600, 1200));
+	CHECK(kvmv_source_fits(1366, 768));
+	CHECK(kvmv_source_fits(1280, 1024));
+	CHECK(kvmv_source_fits(800, 600));
+	CHECK(kvmv_source_fits(720, 400));
+	CHECK(kvmv_source_fits(640, 480));
+	/* 4.5 MB: past the 4 MiB pool block. */
+	CHECK(!kvmv_source_fits(1920, 1200));
+	CHECK(!kvmv_source_fits(1920, 1089 + 16));
+	CHECK(!kvmv_source_fits(3840, 2160));
+	CHECK(!kvmv_source_fits(2880, 64 + 2880));
+	CHECK(!kvmv_source_fits(32, 480));
+	CHECK(!kvmv_source_fits(640, 0));
 }
 
 static void test_timings(void)
@@ -1576,6 +1622,7 @@ int main(void)
 	test_sps();
 	test_hevc();
 	test_plan();
+	test_source_fits();
 	test_timings();
 	test_roles();
 	test_clamps_and_rate();

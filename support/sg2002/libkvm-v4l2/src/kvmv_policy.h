@@ -85,16 +85,39 @@ struct kvmv_plan {
 };
 
 /*
+ * The largest picture either encoder takes: the Coda980 stops at 1920x1088,
+ * which is 1080 visible lines.
+ */
+#define KVMV_ENCODE_MAX_WIDTH 1920
+#define KVMV_ENCODE_MAX_HEIGHT 1080
+
+/*
  * Work out the stream size. A requested size of 0 in either dimension follows
  * the source, as the vendor library does. The VPSS only scales down here, so
- * a request larger than the source is held to the source. The width is
- * rounded down to a multiple of 16 so that the encoder's line stride and the
- * scaler's agree, and the height to an even number for 4:2:0. Returns 0, or
- * -1 when the source itself is unusable.
+ * a request larger than the source is held to the source. A size beyond the
+ * encoder's box is scaled into it with its shape kept (1600x1200 gives
+ * 1440x1080). The width is rounded down to a multiple of 16 so that the
+ * encoder's line stride and the scaler's agree, and the height to an even
+ * number for 4:2:0. Returns 0, or -1 when the source itself is unusable.
  */
 int kvmv_plan_output(unsigned int src_width, unsigned int src_height,
 		     unsigned int req_width, unsigned int req_height,
 		     struct kvmv_plan *plan);
+
+/*
+ * HDMI modes the capture can take (ironkvm-dist#37, patches 0936 to 0938).
+ * A UYVY frame of the mode, its line rounded to 16 bytes and its height to
+ * 16 lines, must fit the 4 MiB block of the media pool that a 1080p buffer
+ * takes: three buffers of the next size up, 8 MiB, would leave the encoders
+ * short. 1920x1200 does not fit; 1600x1200 and everything up to 1920x1088
+ * do. The scaler takes 64 to 2880 pixels a side.
+ */
+#define KVMV_SOURCE_MIN_SIZE 64
+#define KVMV_SOURCE_MAX_WIDTH 2880
+#define KVMV_CAPTURE_FRAME_MAX (4U << 20)
+
+/* 1 when a source of width x height fits the capture, else 0. */
+int kvmv_source_fits(unsigned int width, unsigned int height);
 
 enum kvmv_signal {
 	KVMV_SIGNAL_UNKNOWN = 0, /* no subdevice to ask, or it cannot answer */
@@ -106,8 +129,8 @@ enum kvmv_signal {
 
 /*
  * Classify a VIDIOC_QUERY_DV_TIMINGS answer. ret and err are the ioctl return
- * and errno. need_width and need_height are the capture node's fixed frame
- * size, or 0 to accept any.
+ * and errno. need_width and need_height are a frame size the mode must have,
+ * or 0 to accept any progressive mode.
  */
 enum kvmv_signal kvmv_classify_timings(int ret, int err,
 				       const struct v4l2_dv_timings *timings,

@@ -79,6 +79,18 @@ int kvmv_plan_output(unsigned int src_width, unsigned int src_height,
 		width = req_width > src_width ? src_width : req_width;
 		height = req_height > src_height ? src_height : req_height;
 	}
+	if (width > KVMV_ENCODE_MAX_WIDTH || height > KVMV_ENCODE_MAX_HEIGHT) {
+		/* Into the encoder's box, keeping the shape. */
+		uint64_t w = width, h = height;
+
+		if (w * KVMV_ENCODE_MAX_HEIGHT > h * KVMV_ENCODE_MAX_WIDTH) {
+			height = (unsigned int)(h * KVMV_ENCODE_MAX_WIDTH / w);
+			width = KVMV_ENCODE_MAX_WIDTH;
+		} else {
+			width = (unsigned int)(w * KVMV_ENCODE_MAX_HEIGHT / h);
+			height = KVMV_ENCODE_MAX_HEIGHT;
+		}
+	}
 	width &= ~15U;
 	height &= ~1U;
 	if (width < 16 || height < 16)
@@ -90,6 +102,17 @@ int kvmv_plan_output(unsigned int src_width, unsigned int src_height,
 	plan->out_height = height;
 	plan->coded_height = (height + 15U) & ~15U;
 	return 0;
+}
+
+int kvmv_source_fits(unsigned int width, unsigned int height)
+{
+	uint64_t line = ((uint64_t)width * 2 + 15) & ~(uint64_t)15;
+	uint64_t lines = ((uint64_t)height + 15) & ~(uint64_t)15;
+
+	if (width < KVMV_SOURCE_MIN_SIZE || height < KVMV_SOURCE_MIN_SIZE ||
+	    width > KVMV_SOURCE_MAX_WIDTH || height > KVMV_SOURCE_MAX_WIDTH)
+		return 0;
+	return line * lines <= KVMV_CAPTURE_FRAME_MAX;
 }
 
 enum kvmv_signal kvmv_classify_timings(int ret, int err,

@@ -108,9 +108,9 @@ the method are in that run sheet.
 | `-1` | No signal (receiver says no link or lock), no frame within 1 s, or capture switched off. |
 | `-2` | H.265, video nodes missing, a pipeline that will not build, an encode error (H.264 or JPEG). |
 | `-3` | All four slots are held by the server. |
-| `-4` | The source changed mode under a running pipeline; the next read rebuilds. |
+| `-4` | The source changed mode under a running pipeline, or between the receiver query and `STREAMON` (the capture link refuses it with `EPIPE`); the next read rebuilds. |
 | `-5` | Another read held the lock for over a second. |
-| `-6` | The source runs a mode the capture node cannot take (it is fixed at 1920x1080 progressive), or the capture link refused it at `STREAMON` (`EPIPE`). |
+| `-6` | The source runs a mode the capture cannot take: interlaced, a frame larger than a 4 MiB capture buffer (1920x1200 and up), or on a kernel without ironkvm-dist patch 0936 any size but 1920x1080. |
 | `-7` | The receiver reports timings out of range (`ERANGE`). |
 
 ### Keyframes
@@ -233,8 +233,13 @@ has read for 10 s.
   logs once per pipeline when it runs above twice the target.
 - Before ironkvm-dist patch 0912 the GOP set at runtime reached the Coda only at the next
   pipeline build, and no keyframe could be forced (see "Keyframes").
-- Only 1920x1080 sources: the capture driver's DMA geometry is fixed. Downscaling for the stream
-  works (the VPSS does it); other HDMI modes answer `-6`.
+- HDMI modes (yuzi-co/ironkvm-dist#37): any progressive mode whose UYVY frame fits a 4 MiB
+  capture buffer, from 640x480 (720x400 for text mode) to 1920x1080, 1680x1050 and 1600x1200.
+  The capture node follows the receiver's size while it holds no buffers (ironkvm-dist patch
+  0936), the scaler reads its 16-byte padded line for 1366 wide modes (0937), and the LT6911UXC
+  accepts modes under 1024x768 (0938). The stream is the source's size, or the size asked for
+  when smaller; a size beyond 1920x1080 is scaled into it with its shape kept. Before 0936 only
+  1920x1080 sources work and other modes answer `-6`.
 - Each read waits for the capture, the scaler and the encoder in turn; nothing overlaps, unlike
   the free-running bridge. A read costs the capture wait plus one scale plus one encode plus the
   copy out. With `KVMV_DEBUG=1` the library logs the average of each every 10 s ("per frame:
@@ -324,5 +329,6 @@ The exit status is the number of failed checks. `-v` adds per-frame output and t
 debug log. Then play `/tmp/probe.h264` on a desktop (`ffplay`, or `ffprobe -show_frames`) to see
 the picture, and with the server started on this library, watch the web UI in H.264 mode, change
 the GOP, frame rate, bitrate and resolution from the menu, unplug and replug HDMI (expect `-1`
-while out, then a keyframe), and switch the host to 1280x720 (expect "Unsupported resolution").
+while out, then a keyframe), and switch the host to 1280x720 (expect `-4` once, then the stream
+at 1280x720; "Unsupported resolution" on a kernel without patch 0936).
 The same probe pointed at Sipeed's library on the vendor kernel gives a baseline.

@@ -271,6 +271,11 @@ static int set_fmt(int fd, enum v4l2_buf_type type, uint32_t fourcc,
 		format.fmt.pix.xfer_func = colour->xfer_func;
 		format.fmt.pix.ycbcr_enc = colour->ycbcr_enc;
 		format.fmt.pix.quantization = colour->quantization;
+		/* A queue that reads the capture buffer as it is takes the
+		 * capture's line too: the capture pads it to 16 bytes, which a
+		 * 1366 pixel wide mode needs (ironkvm-dist patch 0937). */
+		if (V4L2_TYPE_IS_OUTPUT(type) && colour->pixelformat == fourcc)
+			format.fmt.pix.bytesperline = colour->bytesperline;
 	}
 	if (xioctl(fd, VIDIOC_S_FMT, &format))
 		return -1;
