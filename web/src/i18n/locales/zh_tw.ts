@@ -104,8 +104,7 @@ const zh_tw = {
       },
       codecNoWebrtcHevc: '此瀏覽器無法透過 WebRTC 接收 H.265',
       codecNoHevc: '此瀏覽器無法解碼 H.265',
-      codecNote:
-        '裝置只有一個編碼器，此變更會影響所有觀看者的影像串流。進行中的 WebRTC 工作階段需重新連線後生效。',
+      codecNote: '裝置只有一個編碼器，此變更會影響所有觀看者的影像串流。',
       codec: '編碼格式',
       updateFailed: '設定未套用',
       scale: '缩放',

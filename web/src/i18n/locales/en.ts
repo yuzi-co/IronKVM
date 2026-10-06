@@ -108,8 +108,7 @@ const en = {
       },
       codecNoWebrtcHevc: 'This browser cannot receive H.265 over WebRTC',
       codecNoHevc: 'This browser cannot decode H.265',
-      codecNote:
-        'The board has one encoder, so this changes the stream for every viewer. Reconnect to apply it to a running WebRTC session.',
+      codecNote: 'The board has one encoder, so this changes the stream for every viewer.',
       codec: 'Codec',
       updateFailed: 'The setting was not applied',
       scale: 'Scale',

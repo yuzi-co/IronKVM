@@ -107,8 +107,7 @@ const ko = {
       },
       codecNoWebrtcHevc: '이 브라우저는 WebRTC로 H.265를 받을 수 없습니다',
       codecNoHevc: '이 브라우저는 H.265를 디코딩할 수 없습니다',
-      codecNote:
-        '보드에는 인코더가 하나뿐이므로 모든 시청자의 스트림이 바뀝니다. 실행 중인 WebRTC 세션에 적용하려면 다시 연결하세요.',
+      codecNote: '보드에는 인코더가 하나뿐이므로 모든 시청자의 스트림이 바뀝니다.',
       codec: '코덱',
       updateFailed: '설정이 적용되지 않았습니다',
       scale: '규모',

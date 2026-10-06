@@ -111,7 +111,7 @@ const tr = {
       codecNoWebrtcHevc: 'Bu tarayıcı WebRTC üzerinden H.265 alamıyor',
       codecNoHevc: 'Bu tarayıcı H.265 çözemiyor',
       codecNote:
-        'Kartta tek bir kodlayıcı var, bu yüzden bu tüm izleyicilerin yayınını değiştirir. Çalışan bir WebRTC oturumuna uygulamak için yeniden bağlanın.',
+        'Kartta tek bir kodlayıcı var, bu yüzden bu tüm izleyicilerin yayınını değiştirir.',
       codec: 'Kodek',
       updateFailed: 'Ayar uygulanmadı',
       scale: 'Ölçek',

@@ -111,8 +111,7 @@ const nl = {
       },
       codecNoWebrtcHevc: 'Deze browser kan H.265 niet via WebRTC ontvangen',
       codecNoHevc: 'Deze browser kan H.265 niet decoderen',
-      codecNote:
-        'Het bord heeft één encoder, dus dit wijzigt de stream voor alle kijkers. Maak opnieuw verbinding om het op een lopende WebRTC-sessie toe te passen.',
+      codecNote: 'Het bord heeft één encoder, dus dit wijzigt de stream voor alle kijkers.',
       codec: 'Codec',
       updateFailed: 'De instelling is niet toegepast',
       scale: 'Schaal',

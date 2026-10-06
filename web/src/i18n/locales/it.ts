@@ -111,7 +111,7 @@ const it = {
       codecNoWebrtcHevc: 'Questo browser non può ricevere H.265 tramite WebRTC',
       codecNoHevc: 'Questo browser non può decodificare H.265',
       codecNote:
-        'La scheda ha un solo encoder, quindi questo cambia lo stream per tutti gli spettatori. Riconnettiti per applicarlo a una sessione WebRTC in corso.',
+        'La scheda ha un solo encoder, quindi questo cambia lo stream per tutti gli spettatori.',
       codec: 'Codec',
       updateFailed: "L'impostazione non è stata applicata",
       scale: 'Scala',

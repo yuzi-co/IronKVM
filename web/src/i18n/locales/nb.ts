@@ -110,8 +110,7 @@ const nb = {
       },
       codecNoWebrtcHevc: 'Denne nettleseren kan ikke motta H.265 over WebRTC',
       codecNoHevc: 'Denne nettleseren kan ikke dekode H.265',
-      codecNote:
-        'Kortet har én koder, så dette endrer strømmen for alle seere. Koble til på nytt for å bruke det i en pågående WebRTC-økt.',
+      codecNote: 'Kortet har én koder, så dette endrer strømmen for alle seere.',
       codec: 'Kodek',
       updateFailed: 'Innstillingen ble ikke brukt',
       scale: 'Skala',

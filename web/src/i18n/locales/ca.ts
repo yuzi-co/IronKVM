@@ -112,7 +112,7 @@ const ca = {
       codecNoWebrtcHevc: 'Aquest navegador no pot rebre H.265 per WebRTC',
       codecNoHevc: 'Aquest navegador no pot descodificar H.265',
       codecNote:
-        'La placa té un sol codificador, així que això canvia el flux per a tots els espectadors. Torneu a connectar per aplicar-ho a una sessió WebRTC en curs.',
+        'La placa té un sol codificador, així que això canvia el flux per a tots els espectadors.',
       codec: 'Còdec',
       updateFailed: "No s'ha aplicat la configuració",
       scale: 'Escala',

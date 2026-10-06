@@ -111,7 +111,7 @@ const hu = {
       codecNoWebrtcHevc: 'Ez a böngésző nem tud H.265-öt fogadni WebRTC-n keresztül',
       codecNoHevc: 'Ez a böngésző nem tudja dekódolni a H.265-öt',
       codecNote:
-        'Az eszköznek egy kódolója van, így ez minden néző számára megváltoztatja a streamet. Futó WebRTC-munkamenetnél csatlakozzon újra.',
+        'Az eszköznek egy kódolója van, így ez minden néző számára megváltoztatja a streamet.',
       codec: 'Kodek',
       updateFailed: 'A beállítás nem lépett érvénybe',
       scale: 'Skála',

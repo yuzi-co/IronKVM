@@ -107,8 +107,7 @@ const se = {
       },
       codecNoWebrtcHevc: 'Den här webbläsaren kan inte ta emot H.265 via WebRTC',
       codecNoHevc: 'Den här webbläsaren kan inte avkoda H.265',
-      codecNote:
-        'Kortet har en kodare, så detta ändrar strömmen för alla tittare. Anslut igen för att tillämpa det på en pågående WebRTC-session.',
+      codecNote: 'Kortet har en kodare, så detta ändrar strömmen för alla tittare.',
       codec: 'Kodek',
       updateFailed: 'Inställningen tillämpades inte',
       scale: 'Skala',
