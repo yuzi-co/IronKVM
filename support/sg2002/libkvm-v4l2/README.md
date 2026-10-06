@@ -53,7 +53,7 @@ from "nothing captured" before a pipeline is up.
 | Function | Here |
 |----------|------|
 | `kvmv_init` | Starts the monitor thread. Devices open lazily on the first read. `KVMV_DEBUG=1` or a non-zero argument enables debug logging. |
-| `kvmv_read_video` | Codec 1, H.264 (the Coda980), or codec 2, H.265 (the WAVE420L): one access unit per call. `3` for a keyframe, `4` for a delta frame. A codec switch rebuilds the pipeline with the other encoder; the two share the codec SRAM and take turns. Codec 2 answers `-2` on a kernel without the WAVE420L driver. |
+| `kvmv_read_video` | Codec 1, H.264 (the Coda980), or codec 2, H.265 (the WAVE420L): one access unit per call. `3` for a keyframe, `4` for a delta frame, `0` with no data when the output-rate guard left the picture out (see "H.264 quality"). A codec switch rebuilds the pipeline with the other encoder; the two share the codec SRAM and take turns. Codec 2 answers `-2` on a kernel without the WAVE420L driver. |
 | `kvmv_read_img` | Type 1 as above. Type 0 (MJPEG): one JPEG per call at the size asked, from the JPEG unit or in software, quality from the `_qlty` argument; answers `0`. See below. |
 | `free_kvmv_data`, `free_all_kvmv_data` | As the vendor library: four reusable slots, a pointer stays valid until freed. |
 | `set_h264_gop` | `V4L2_CID_MPEG_VIDEO_GOP_SIZE` at runtime, plus a forced keyframe, because the vendor library rebuilds its encoder here and the server relies on the next frame being a keyframe. |
@@ -88,9 +88,10 @@ Every pipeline build sets, besides the bitrate, GOP and frame rate:
 
 | Setting | Value | Why |
 |---------|-------|-----|
-| QP range (`V4L2_CID_MPEG_VIDEO_H264_MIN_QP`, `MAX_QP`) | 18 to 42 | The encoder may not go past QP 42, so text stays legible on a busy screen at a low bitrate; it overshoots the bitrate instead (1.6 Mbit/s for 1 asked, on a 1080p screen with a moving region). Below 18 a still screen gains nothing visible. Kernels before ironkvm-dist patch 0910 have no minimum control on the Coda980 and ignore the maximum; the stream comes up without them. |
+| QP range (`V4L2_CID_MPEG_VIDEO_H264_MIN_QP`, `MAX_QP`) | 18 to 51 | Below 18 a still screen gains nothing visible. The maximum is the encoder's own: until ironkvm-dist trial 51 it was 42, so text stayed legible on a busy screen, but the stream then ran at two to fifteen times its bitrate on scrolling text and full-screen changes, and a WebRTC viewer stalled. Kernels before ironkvm-dist patch 0910 have no minimum control on the Coda980 and ignore the maximum; the stream comes up without them. |
 | Initial delay (`V4L2_CID_MPEG_VIDEO_VBV_DELAY`) | 1000 ms | The Coda980's rate-control buffer. With 0 (the control's default) it codes every picture at QP 49 to 51 and pads the stream to the bitrate. Patch 0910 uses 1000 ms itself when it is 0. |
 | GOP | as asked, held to the encoder's range | The Coda takes a GOP of at most 99; the ABI allows 100. |
+| Output-rate guard | 140% of the bitrate over 1 s | When the pictures handed out in the last second reach this, the next read encodes nothing and answers `0` with no data; the server sends nothing for it. Even at QP 51 a 1080p screen that changes everywhere costs 40 kB a picture in H.264, 12 in H.265; the guard holds any second to the limit and one picture, and leaves keyframes that are owed alone. It acts only while delta pictures cost their share of the bitrate (bitrate / frame rate) or more, so the small pictures after a calm screen's large keyframe still go out. `KVMV_RATE_GUARD` sets the percentage, 0 turns it off. |
 
 When no bitrate is given (an MJPEG reader with no H.264 stream before it, or `0`), the stream
 gets 3000 kbit/s at 1080p, the server's default, with half of that following the pixel count:
@@ -220,10 +221,11 @@ has read for 10 s.
 | `KVMV_PARK_ENCODER` | 1 | Keep the encoder node, streamed off, with its bitstream and middle buffers over a teardown, for the next start of the same codec and size. A parked H.264 encoder keeps the Coda980's clocks on (the driver enables them at open); 0 closes it. |
 | `KVMV_PRIME` | 0 | Encoder start: 0 no priming picture, 1 encode a black picture and wait for it (before trial 24), 2 queue it and let the first read collect its output. |
 | `KVMV_RECEIVER_CACHE_MS` | 1500 | A build uses the monitor thread's receiver answer up to this old instead of asking again; 0 always asks. |
-| `KVMV_H264_QP` | `18:42` | H.264 QP range, `min:max`, 0 to 51. `0:51` leaves the encoder's own. |
+| `KVMV_H264_QP` | `18:51` | H.264 QP range, `min:max`, 0 to 51. `0:51` leaves the encoder's own. |
 | `KVMV_H264_VBV_DELAY_MS` | 1000 | Rate-control initial delay; 0 leaves the encoder's own. |
-| `KVMV_H265_QP` | `12:42` | H.265 QP range, as `KVMV_H264_QP`. Lower than H.264's minimum: at 18 the WAVE420L stops short of the asked bitrate on screen content (ironkvm-dist run sheet, trial 20). |
+| `KVMV_H265_QP` | `12:51` | H.265 QP range, as `KVMV_H264_QP`. Lower than H.264's minimum: at 18 the WAVE420L stops short of the asked bitrate on screen content (ironkvm-dist run sheet, trial 20). |
 | `KVMV_H265_VBV_DELAY_MS` | 2000 | H.265 rate-control initial delay. At 1000 the WAVE420L starves the IDR, which carries most of a 1 s GOP's bits on a screen (trial 20). |
+| `KVMV_RATE_GUARD` | 140 | The output-rate guard's limit in percent of the bitrate over one second (see "H.264 quality"); 0 turns it off. |
 
 ## Known issues
 
@@ -231,7 +233,9 @@ has read for 10 s.
   target; patch 0905 made the Coda980 follow it, but only by padding pictures coded at QP 51.
   Patches 0910 (rate control) and 0911 (motion estimation at 1080p) fix the picture; on older
   kernels the stream is legible only on a still screen. The library measures its own output and
-  logs once per pipeline when it runs above twice the target.
+  logs once per pipeline when it runs above twice the target. Busy screens ran far over the
+  target with the maximum QP at 42 (trial 50); from trial 51 the QP goes to 51 and the
+  output-rate guard leaves pictures out when even that is not enough, and logs once when it does.
 - Before ironkvm-dist patch 0912 the GOP set at runtime reached the Coda only at the next
   pipeline build, and no keyframe could be forced (see "Keyframes").
 - HDMI modes (yuzi-co/ironkvm-dist#37): any progressive mode the LT6911UXC locks whose UYVY

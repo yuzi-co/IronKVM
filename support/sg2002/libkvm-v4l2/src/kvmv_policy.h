@@ -23,18 +23,24 @@
 
 /*
  * H.264 rate control on the Coda980 (issue #35, run sheet trial 10). The
- * encoder keeps the picture QP inside [min, max] and gives up the bitrate
- * rather than go past max, so text stays legible on a busy screen. The
- * initial delay is the rate control's buffer: with none, the Coda980 holds
- * every picture at QP 49 to 51.
+ * encoder keeps the picture QP inside [min, max]. The initial delay is the
+ * rate control's buffer: with none, the Coda980 holds every picture at QP 49
+ * to 51.
+ *
+ * The maximum is the encoder's own, 51 (trial 51). Trial 10 held it to 42 so
+ * text stayed legible on a busy screen, at the cost of the bitrate: scrolling
+ * text then ran at two to five times the target and a screen changing
+ * everywhere at fifteen (31 Mbit/s for 2), more than a WebRTC viewer takes, so
+ * the viewer stalled. Quality gives way now, not the frame rate; the
+ * output-rate guard below handles what even QP 51 cannot hold.
  */
 #define KVMV_H264_MIN_QP 18
-#define KVMV_H264_MAX_QP 42
+#define KVMV_H264_MAX_QP 51
 #define KVMV_H264_VBV_DELAY_MS 1000
 
 /*
- * H.265 on the WAVE420L (ironkvm-dist#55, run sheet trials 13 and 20): the
- * same maximum QP as H.264, a lower minimum and a longer initial delay.
+ * H.265 on the WAVE420L (ironkvm-dist#55, run sheet trials 13, 20 and 51):
+ * the same maximum QP as H.264, a lower minimum and a longer initial delay.
  *
  * At QP 18 the WAVE420L stops at 2 to 3.4 Mbit/s on screen content whatever
  * is asked, up to 2 dB under the Coda980 at its QP 18; at 12 it spends more
@@ -48,7 +54,7 @@
  * bitrate over a longer window, which a slow link sees as delay.
  */
 #define KVMV_H265_MIN_QP 12
-#define KVMV_H265_MAX_QP 42
+#define KVMV_H265_MAX_QP 51
 #define KVMV_H265_VBV_DELAY_MS 2000
 
 int kvmv_clamp(int value, int min, int max);
@@ -186,6 +192,52 @@ struct kvmv_rate {
 void kvmv_rate_reset(struct kvmv_rate *rate);
 int kvmv_rate_add(struct kvmv_rate *rate, uint64_t now_ms, size_t bytes,
 		  unsigned int window_ms, unsigned int *kbps, unsigned int *fps_x10);
+
+/*
+ * Output-rate guard (ironkvm-dist#35, run sheet trial 51). On a screen that
+ * changes everywhere at once the encoders cannot reach a low bitrate even at
+ * their highest QP, and a stream far over its bitrate stalls a WebRTC viewer:
+ * its sender falls behind and drops frames up to the next keyframe. The guard
+ * keeps the bytes of the pictures handed out over the last window_ms and
+ * tells the caller to leave the next picture out while they reach the limit,
+ * so any window of that length carries at most the limit and one picture.
+ * A picture left out is never encoded, so no reference goes missing. The
+ * library asks only while delta pictures cost their share of the bitrate
+ * (bitrate / frame rate) or more: after a calm screen's keyframe the window
+ * can be full with nothing left to save.
+ */
+#define KVMV_GUARD_SLOTS 256
+
+struct kvmv_guard {
+	uint64_t at_ms[KVMV_GUARD_SLOTS];
+	uint32_t bytes[KVMV_GUARD_SLOTS];
+	unsigned int head, count; /* oldest entry, entries held */
+	uint64_t sum; /* bytes of the entries held */
+};
+
+/*
+ * The limit in percent of the bitrate, over one second: 140 by default
+ * (KVMV_RATE_GUARD in the environment, 0 turns the guard off). With one
+ * picture on top it holds a second to about 1.5 times the bitrate on the
+ * busiest screen, and stays out of the way of a rate control that holds its
+ * target: a calm screen never reaches it.
+ */
+#define KVMV_GUARD_PERCENT 140
+#define KVMV_GUARD_WINDOW_MS 1000
+
+void kvmv_guard_reset(struct kvmv_guard *guard);
+/* A picture of bytes handed out at now_ms. */
+void kvmv_guard_add(struct kvmv_guard *guard, uint64_t now_ms, uint32_t bytes);
+/*
+ * 1 when the pictures handed out in the window_ms before now_ms already hold
+ * limit_bytes or more, so the next one should be left out; 0 otherwise, and
+ * always 0 for a limit of 0.
+ */
+int kvmv_guard_full(struct kvmv_guard *guard, uint64_t now_ms,
+		    uint64_t limit_bytes, unsigned int window_ms);
+/* The byte limit for bitrate_bps at percent over window_ms; 0 for percent 0. */
+uint64_t kvmv_guard_limit(uint32_t bitrate_bps, unsigned int percent,
+			  unsigned int window_ms);
 
 /*
  * The frame rate to give the encoder's OUTPUT queue (VIDIOC_S_PARM). With rate

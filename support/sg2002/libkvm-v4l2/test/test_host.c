@@ -729,7 +729,7 @@ static void test_clamps_and_rate(void)
 		 */
 		kvmv_h265_qp_range(NULL, &r);
 		CHECK_EQ(r.min_qp, 12);
-		CHECK_EQ(r.max_qp, 42);
+		CHECK_EQ(r.max_qp, 51);
 		kvmv_h265_qp_range("18:42", &r);
 		CHECK_EQ(r.min_qp, 18);
 		kvmv_h265_qp_range("x", &r);
@@ -748,6 +748,88 @@ static void test_clamps_and_rate(void)
 	CHECK_EQ(closed, 1);
 	CHECK(kbps >= 3000 && kbps <= 3200);
 	CHECK(fps_x10 >= 300 && fps_x10 <= 320);
+}
+
+static void test_guard(void)
+{
+	static struct kvmv_guard g;
+	uint64_t limit = kvmv_guard_limit(2000000, 140, 1000);
+	unsigned int skipped = 0, t;
+
+	/* 2000 kbit/s at 140% over a second is 350000 bytes. */
+	CHECK_EQ(limit, 350000);
+	CHECK_EQ(kvmv_guard_limit(2000000, 0, 1000), 0);
+
+	/* Off, or empty: nothing is left out. */
+	kvmv_guard_reset(&g);
+	CHECK_EQ(kvmv_guard_full(&g, 1000, 0, 1000), 0);
+	CHECK_EQ(kvmv_guard_full(&g, 1000, limit, 1000), 0);
+
+	/*
+	 * A calm stream near its bitrate, a 60 kB keyframe a second among 4 kB
+	 * pictures at 60 fps (2.4 Mbit/s): under the limit, nothing left out.
+	 */
+	kvmv_guard_reset(&g);
+	for (t = 0; t < 600; t++) {
+		uint64_t now = 1000 + (uint64_t)t * 1000 / 60;
+
+		if (kvmv_guard_full(&g, now, limit, 1000)) {
+			skipped++;
+			continue;
+		}
+		kvmv_guard_add(&g, now, t % 60 ? 4000 : 60000);
+	}
+	CHECK_EQ(skipped, 0);
+
+	/*
+	 * 250 kB pictures (trial 50's random screen) at 60 fps: about two a
+	 * second get through, and no second carries more than the limit and
+	 * one picture.
+	 */
+	{
+		static uint64_t at[600];
+		uint64_t sent, worst = 0;
+		unsigned int n = 0, i, j;
+
+		kvmv_guard_reset(&g);
+		skipped = 0;
+		for (t = 0; t < 600; t++) {
+			uint64_t now = 1000 + (uint64_t)t * 1000 / 60;
+
+			if (kvmv_guard_full(&g, now, limit, 1000)) {
+				skipped++;
+				continue;
+			}
+			kvmv_guard_add(&g, now, 250000);
+			at[n++] = now;
+		}
+		for (i = 0; i < n; i++) {
+			sent = 0;
+			for (j = i; j < n && at[j] - at[i] < 1000; j++)
+				sent += 250000;
+			if (sent > worst)
+				worst = sent;
+		}
+		CHECK(n >= 10 && n <= 25);
+		CHECK_EQ(skipped + n, 600);
+		CHECK(worst <= limit + 250000);
+	}
+
+	/* The window moves on: a second later the guard is open again. */
+	kvmv_guard_reset(&g);
+	kvmv_guard_add(&g, 1000, 400000);
+	CHECK_EQ(kvmv_guard_full(&g, 1500, limit, 1000), 1);
+	CHECK_EQ(kvmv_guard_full(&g, 2000, limit, 1000), 0);
+	/* A clock that went back empties it rather than holding it shut. */
+	kvmv_guard_add(&g, 5000, 400000);
+	CHECK_EQ(kvmv_guard_full(&g, 4000, limit, 1000), 0);
+
+	/* More entries than slots: the oldest go, the sum stays right. */
+	kvmv_guard_reset(&g);
+	for (t = 0; t < KVMV_GUARD_SLOTS + 10; t++)
+		kvmv_guard_add(&g, 1000, 1);
+	CHECK_EQ(g.count, KVMV_GUARD_SLOTS);
+	CHECK_EQ(g.sum, KVMV_GUARD_SLOTS);
 }
 
 static void test_encoder_fps(void)
@@ -1692,6 +1774,7 @@ int main(void)
 	test_roles();
 	test_clamps_and_rate();
 	test_encoder_fps();
+	test_guard();
 	test_copy_from_device();
 	test_jpeg();
 	test_hwjpeg();
