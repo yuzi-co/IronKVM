@@ -26,6 +26,7 @@ var ScreenFileMap = map[string]string{
 	"resolution": "/kvmapp/kvm/res",
 	"codec":      "/kvmapp/kvm/codec",
 	"gop":        "/kvmapp/kvm/gop",
+	"aspect":     "/kvmapp/kvm/aspect",
 }
 
 // The video codecs the encoder implements. These are libkvm's public numbering
@@ -44,6 +45,7 @@ var defaultScreenValues = ScreenValues{
 	BitRate: 3000,
 	GOP:     30,
 	Codec:   CodecH264,
+	Aspect:  AspectKeep,
 }
 
 // ScreenValues is a consistent copy of the capture parameters.
@@ -58,6 +60,9 @@ type ScreenValues struct {
 	// encoder, so this cannot be a per-viewer choice: changing it rebuilds
 	// the VENC channel out from under every viewer at once.
 	Codec uint8
+	// Aspect is AspectKeep or AspectStretch: how a source of another shape
+	// than the resolution is fitted. One setting for the same reason.
+	Aspect uint8
 }
 
 // Screen holds the capture parameters. HTTP handlers write them while the
@@ -99,6 +104,9 @@ var BitRateMap = map[uint16]bool{
 func GetScreen() *Screen {
 	screenOnce.Do(func() {
 		screen = &Screen{values: loadScreenValues()}
+		// The library starts with its own default; tell it the stored one
+		// before the first stream is built.
+		applyAspect(screen.values.Aspect)
 	})
 
 	return screen
@@ -120,7 +128,7 @@ func loadScreenValues() ScreenValues {
 
 	// Resolution first, so a stored quality that the resolution constrains is
 	// applied against the right one. The order also matches the switch below.
-	for _, key := range []string{"resolution", "quality", "fps", "codec", "gop"} {
+	for _, key := range []string{"resolution", "quality", "fps", "codec", "gop", "aspect"} {
 		if value, ok := readScreenSetting(key); ok {
 			applyScreenValue(&values, key, value)
 		}
@@ -163,6 +171,9 @@ func SetScreen(key string, value int) {
 	defer s.mutex.Unlock()
 
 	applyScreenValue(&s.values, key, value)
+	if key == "aspect" {
+		applyAspect(s.values.Aspect)
+	}
 }
 
 // applyScreenValue is shared by the API and by the restore at startup, so a
@@ -205,6 +216,13 @@ func applyScreenValue(values *ScreenValues, key string, value int) {
 		if (value == CodecH264 || value == CodecH265) && codecSupported(uint8(value)) {
 			values.Codec = uint8(value)
 		}
+
+	case "aspect":
+		// Anything else is a hand-edited file or a caller with a bug, and is
+		// left alone like an unknown codec.
+		if validAspect(value) {
+			values.Aspect = uint8(value)
+		}
 	}
 }
 
@@ -229,6 +247,10 @@ func CheckScreen() {
 
 	s.values.Codec = validateCodec(s.values.Codec)
 	s.values.GOP = validateGOP(int(s.values.GOP))
+
+	if !validAspect(int(s.values.Aspect)) {
+		s.values.Aspect = AspectKeep
+	}
 }
 
 // validateCodec keeps an unusable codec away from the encoder. The settings

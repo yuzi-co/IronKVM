@@ -37,7 +37,9 @@ export const defaultScreenSettings: ScreenSettings = {
   bitRate: 3000,
   fps: 30,
   gop: 30,
-  codec: 1
+  codec: 1,
+  aspect: 0,
+  aspectSupported: false
 };
 
 // currently effective absolute mouse input region. Timers recompute it, so a

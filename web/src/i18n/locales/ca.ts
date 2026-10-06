@@ -120,6 +120,11 @@ const ca = {
       video: 'Mode de vídeo',
       videoDirectTips: "Activa HTTPS a 'Configuració > Dispositiu' per utilitzar aquest mode",
       resolution: 'Resolució',
+      aspect: "Relació d'aspecte",
+      aspectKeep: 'Automàtic (manté la relació de la font)',
+      aspectStretch: 'Estira a la resolució',
+      aspectTips:
+        "Automàtic manté la forma de la pantalla de l'amfitrió a l'alçada seleccionada: una pantalla de 1920x1200 s'envia com a 1728x1080. Estira omple la resolució seleccionada i deforma les pantalles que no són 16:9.",
       ocr: {
         title: 'Llegeix text (OCR)',
         tips: 'El text es reconeix en aquest navegador. El pots corregir abans de copiar-lo.',

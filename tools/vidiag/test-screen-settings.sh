@@ -17,7 +17,7 @@ S95=${1:-$(dirname "$0")/../../kvmapp/system/init.d/S95nanokvm}
 fails=0
 note() { printf '  %-66s %s\n' "$1" "$2"; [ "$2" = FAIL ] && fails=$((fails + 1)); return 0; }
 
-NAMES="type fps qlty res codec gop"
+NAMES="type fps qlty res codec gop aspect"
 
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT

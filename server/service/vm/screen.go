@@ -35,6 +35,9 @@ func (s *Service) GetScreen(c *gin.Context) {
 		FPS:     values.FPS,
 		GOP:     values.GOP,
 		Codec:   values.Codec,
+
+		Aspect:          values.Aspect,
+		AspectSupported: common.AspectSupported(),
 	})
 }
 
@@ -55,6 +58,19 @@ func (s *Service) SetScreen(c *gin.Context) {
 		!common.CodecSupported(uint8(req.Value)) {
 		rsp.ErrRsp(c, -3, "codec not supported by this capture library")
 		return
+	}
+
+	// The aspect choice exists only with a library that can keep the shape
+	// (libkvm-v4l2); Sipeed's always stretches.
+	if req.Type == "aspect" {
+		if req.Value != common.AspectKeep && req.Value != common.AspectStretch {
+			rsp.ErrRsp(c, -1, "invalid arguments")
+			return
+		}
+		if !common.AspectSupported() {
+			rsp.ErrRsp(c, -3, "aspect ratio not supported by this capture library")
+			return
+		}
 	}
 
 	switch req.Type {

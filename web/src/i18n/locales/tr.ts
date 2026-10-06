@@ -119,6 +119,11 @@ const tr = {
       video: 'Görüntü modu',
       videoDirectTips: 'kullanmak için "Ayarlar > Cihaz" HTTPS aktif edin',
       resolution: 'Çözünürlük',
+      aspect: 'En boy oranı',
+      aspectKeep: 'Otomatik (kaynağın oranını koru)',
+      aspectStretch: 'Çözünürlüğe uzat',
+      aspectTips:
+        'Otomatik, ana bilgisayar ekranının şeklini seçilen yükseklikte korur: 1920x1200 bir ekran 1728x1080 olarak gönderilir. Uzat, seçilen çözünürlüğü doldurur ve 16:9 olmayan ekranları bozar.',
       ocr: {
         title: 'Metni Oku (OCR)',
         tips: 'Metin bu tarayıcıda tanınır. Kopyalamadan önce düzeltebilirsiniz.',

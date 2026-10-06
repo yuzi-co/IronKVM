@@ -9,6 +9,7 @@ import { defaultScreenSettings, screenSettingsAtom, videoModeAtom } from '@/jota
 import { MenuItem } from '@/components/menu-item.tsx';
 import { StatusDot, type DotTone } from '@/components/status-dot.tsx';
 
+import { Aspect, aspectKeep } from './aspect.tsx';
 import { Codec } from './codec.tsx';
 import { getQualityMap, getScreenType } from './constants.ts';
 import { Fps } from './fps';
@@ -101,6 +102,14 @@ export const Screen = () => {
     <div className="flex flex-col space-y-1">
       <VideoMode />
       <Resolution />
+      {/* Only a capture library that can keep the shape offers the choice;
+          Sipeed's always stretches. */}
+      {current.aspectSupported && (
+        <Aspect
+          aspect={current.aspect ?? aspectKeep}
+          setAspect={(aspect) => apply({ aspect })}
+        />
+      )}
       <Quality quality={qualityKey(videoMode, current)} setQuality={setQuality} />
       <Fps fps={current.fps} setFps={(fps) => apply({ fps })} />
       <Scale />

@@ -122,6 +122,11 @@ const fr = {
       video: 'Mode vidéo',
       videoDirectTips: 'Activez HTTPS dans "Paramètres > Appareil" pour utiliser ce mode',
       resolution: 'Résolution',
+      aspect: "Format d'image",
+      aspectKeep: 'Automatique (garder le format de la source)',
+      aspectStretch: 'Étirer à la résolution',
+      aspectTips:
+        "Automatique garde la forme de l'écran de l'hôte à la hauteur choisie : un écran 1920x1200 est envoyé en 1728x1080. Étirer remplit la résolution choisie et déforme les écrans qui ne sont pas en 16:9.",
       ocr: {
         title: 'Lire le texte (OCR)',
         tips: 'Le texte est reconnu dans ce navigateur. Vous pouvez le corriger avant de le copier.',

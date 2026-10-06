@@ -112,6 +112,10 @@ const zh = {
       video: '视频模式',
       videoDirectTips: '该模式需启用 HTTPS，请前往「设置 - 设备」中开启',
       resolution: '分辨率',
+      aspect: '宽高比',
+      aspectKeep: '自动（保持源比例）',
+      aspectStretch: '拉伸到分辨率',
+      aspectTips: '自动模式按所选高度保持主机屏幕的比例：1920x1200 的屏幕以 1728x1080 发送。拉伸会填满所选分辨率，非 16:9 的屏幕会变形。',
       ocr: {
         title: '识别文字 (OCR)',
         tips: '文字在此浏览器中识别，复制前可以修改。',

@@ -118,6 +118,11 @@ const cz = {
       video: 'Režim videa',
       videoDirectTips: 'Chcete-li používat tento režim, povolte HTTPS v "Nastavení > Zařízení"',
       resolution: 'Rozlišení',
+      aspect: 'Poměr stran',
+      aspectKeep: 'Automaticky (zachovat poměr zdroje)',
+      aspectStretch: 'Roztáhnout na rozlišení',
+      aspectTips:
+        'Automaticky zachová tvar obrazovky hostitele ve zvolené výšce: obrazovka 1920x1200 se odešle jako 1728x1080. Roztáhnout vyplní zvolené rozlišení a zkreslí obrazovky, které nejsou 16:9.',
       ocr: {
         title: 'Přečíst text (OCR)',
         tips: 'Text se rozpoznává v tomto prohlížeči. Před zkopírováním jej můžete opravit.',

@@ -66,6 +66,11 @@ type GetScreenRsp struct {
 	FPS     int    `json:"fps"`
 	GOP     uint8  `json:"gop"`
 	Codec   uint8  `json:"codec"` // 1 H.264, 2 H.265
+	// Aspect is 0 to keep the source's aspect ratio, 1 to stretch it to the
+	// resolution. AspectSupported is false with a capture library that always
+	// stretches (Sipeed's), where the menu leaves the choice out.
+	Aspect          uint8 `json:"aspect"`
+	AspectSupported bool  `json:"aspectSupported"`
 }
 
 type GetScriptsRsp struct {

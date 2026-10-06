@@ -117,6 +117,11 @@ const vi = {
       video: 'Chế độ video',
       videoDirectTips: 'Bật HTTPS trong "Cài đặt > Thiết bị" để sử dụng chế độ này',
       resolution: 'Độ phân giải',
+      aspect: 'Tỷ lệ khung hình',
+      aspectKeep: 'Tự động (giữ tỷ lệ nguồn)',
+      aspectStretch: 'Kéo giãn theo độ phân giải',
+      aspectTips:
+        'Tự động giữ hình dạng màn hình máy chủ ở chiều cao đã chọn: màn hình 1920x1200 được gửi thành 1728x1080. Kéo giãn lấp đầy độ phân giải đã chọn và làm méo các màn hình không phải 16:9.',
       ocr: {
         title: 'Đọc văn bản (OCR)',
         tips: 'Văn bản được nhận dạng trong trình duyệt này. Bạn có thể sửa trước khi sao chép.',

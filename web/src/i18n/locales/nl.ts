@@ -119,6 +119,11 @@ const nl = {
       video: 'Videomodus',
       videoDirectTips: 'Schakel HTTPS in "Instellingen > Apparaat" in om deze modus te gebruiken',
       resolution: 'Resolutie',
+      aspect: 'Beeldverhouding',
+      aspectKeep: 'Automatisch (verhouding van de bron)',
+      aspectStretch: 'Uitrekken tot resolutie',
+      aspectTips:
+        'Automatisch behoudt de vorm van het hostscherm op de gekozen hoogte: een 1920x1200-scherm wordt verzonden als 1728x1080. Uitrekken vult de gekozen resolutie en vervormt schermen die niet 16:9 zijn.',
       ocr: {
         title: 'Tekst lezen (OCR)',
         tips: 'De tekst wordt in deze browser herkend. U kunt hem verbeteren voordat u hem kopieert.',

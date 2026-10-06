@@ -89,6 +89,12 @@ func libraryCodecSupported(codec uint8) bool {
 	return vendorCodecSupported(codec)
 }
 
+// Off-device there is no library to ask, and Sipeed's library, whose answers
+// the stub gives, has no aspect choice: it always stretches.
+func libraryAspectSupported() bool { return false }
+
+func librarySetKeepAspect(keep bool) bool { return false }
+
 func (k *KvmVision) Close() {
 	captureLifecycle.stop(func() {})
 }

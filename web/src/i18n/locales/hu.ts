@@ -120,6 +120,11 @@ const hu = {
       videoDirectTips:
         'Engedélyezze az HTTPS elemet a "Beállítások > Eszköz" menüpontban ennek a módnak a használatához',
       resolution: 'Felbontás',
+      aspect: 'Képarány',
+      aspectKeep: 'Automatikus (forrás képaránya)',
+      aspectStretch: 'Nyújtás a felbontásra',
+      aspectTips:
+        'Az automatikus mód megtartja a gazdagép képernyőjének alakját a választott magasságon: egy 1920x1200-as képernyő 1728x1080-ként érkezik. A nyújtás kitölti a választott felbontást, és torzítja a nem 16:9-es képernyőket.',
       ocr: {
         title: 'Szöveg beolvasása (OCR)',
         tips: 'A szövegfelismerés ebben a böngészőben fut. Másolás előtt javíthatja a szöveget.',

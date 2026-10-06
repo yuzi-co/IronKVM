@@ -112,6 +112,10 @@ const zh_tw = {
       video: '編碼格式',
       videoDirectTips: '本模式需先啟用 HTTPS，請前往「設定 -> 設備」中開啟',
       resolution: '解析度',
+      aspect: '長寬比',
+      aspectKeep: '自動（保持來源比例）',
+      aspectStretch: '延展至解析度',
+      aspectTips: '自動模式依所選高度保持主機螢幕的比例：1920x1200 的螢幕以 1728x1080 傳送。延展會填滿所選解析度，非 16:9 的螢幕會變形。',
       ocr: {
         title: '辨識文字 (OCR)',
         tips: '文字在此瀏覽器中辨識，複製前可以修改。',

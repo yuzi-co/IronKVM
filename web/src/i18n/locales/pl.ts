@@ -118,6 +118,11 @@ const pl = {
       video: 'Tryb wideo',
       videoDirectTips: 'Włącz HTTPS w „Ustawienia > Urządzenie”, aby korzystać z tego trybu',
       resolution: 'Rozdzielczość',
+      aspect: 'Proporcje obrazu',
+      aspectKeep: 'Automatycznie (zachowaj proporcje źródła)',
+      aspectStretch: 'Rozciągnij do rozdzielczości',
+      aspectTips:
+        'Tryb automatyczny zachowuje kształt ekranu hosta przy wybranej wysokości: ekran 1920x1200 jest wysyłany jako 1728x1080. Rozciąganie wypełnia wybraną rozdzielczość i zniekształca ekrany inne niż 16:9.',
       ocr: {
         title: 'Odczytaj tekst (OCR)',
         tips: 'Tekst jest rozpoznawany w tej przeglądarce. Możesz go poprawić przed skopiowaniem.',

@@ -118,6 +118,11 @@ const pt_br = {
       video: 'Modo de Vídeo',
       videoDirectTips: 'Ative HTTPS em "Configurações > Dispositivo" para usar este modo',
       resolution: 'Resolução',
+      aspect: 'Proporção de tela',
+      aspectKeep: 'Automático (manter a proporção da origem)',
+      aspectStretch: 'Esticar para a resolução',
+      aspectTips:
+        'Automático mantém o formato da tela do host na altura selecionada: uma tela de 1920x1200 é enviada como 1728x1080. Esticar preenche a resolução selecionada e distorce telas que não são 16:9.',
       ocr: {
         title: 'Ler texto (OCR)',
         tips: 'O texto é reconhecido neste navegador. Você pode corrigi-lo antes de copiar.',

@@ -120,6 +120,11 @@ const it = {
       videoDirectTips:
         'Abilita HTTPS in "Impostazioni > Dispositivo" per utilizzare questa modalità',
       resolution: 'Risoluzione',
+      aspect: 'Proporzioni',
+      aspectKeep: 'Automatico (mantieni le proporzioni della sorgente)',
+      aspectStretch: 'Estendi alla risoluzione',
+      aspectTips:
+        "Automatico mantiene la forma dello schermo dell'host all'altezza scelta: uno schermo 1920x1200 viene inviato come 1728x1080. Estendi riempie la risoluzione scelta e deforma gli schermi che non sono 16:9.",
       ocr: {
         title: 'Leggi testo (OCR)',
         tips: 'Il testo viene riconosciuto in questo browser. Puoi correggerlo prima di copiarlo.',

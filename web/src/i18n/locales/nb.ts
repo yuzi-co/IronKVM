@@ -118,6 +118,11 @@ const nb = {
       video: 'Video-kodek',
       videoDirectTips: 'Aktiver HTTPS i "Innstillinger > Enhet" for å bruke denne modusen',
       resolution: 'Oppløsning',
+      aspect: 'Sideforhold',
+      aspectKeep: 'Automatisk (behold kildens forhold)',
+      aspectStretch: 'Strekk til oppløsning',
+      aspectTips:
+        'Automatisk beholder formen på vertsskjermen i den valgte høyden: en 1920x1200-skjerm sendes som 1728x1080. Strekk fyller den valgte oppløsningen og forvrenger skjermer som ikke er 16:9.',
       ocr: {
         title: 'Les tekst (OCR)',
         tips: 'Teksten gjenkjennes i denne nettleseren. Du kan rette den før du kopierer den.',

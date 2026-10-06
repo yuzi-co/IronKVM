@@ -121,6 +121,11 @@ const de = {
       videoDirectTips:
         'Aktivieren Sie HTTPS unter „Einstellungen > Gerät“, um diesen Modus zu verwenden',
       resolution: 'Auflösung',
+      aspect: 'Seitenverhältnis',
+      aspectKeep: 'Automatisch (Seitenverhältnis der Quelle)',
+      aspectStretch: 'Auf Auflösung strecken',
+      aspectTips:
+        'Automatisch behält die Form des Host-Bildschirms in der gewählten Höhe bei: Ein 1920x1200-Bildschirm wird als 1728x1080 gesendet. Strecken füllt die gewählte Auflösung und verzerrt Bildschirme, die nicht 16:9 sind.',
       ocr: {
         title: 'Text lesen (OCR)',
         tips: 'Der Text wird in diesem Browser erkannt. Sie können ihn vor dem Kopieren korrigieren.',

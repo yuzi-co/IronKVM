@@ -26,6 +26,25 @@ package common
 			return -1;
 		return fn(codec);
 	}
+
+	// kvmv_set_keep_aspect is another libkvm-v4l2 extension (ironkvm-dist#37):
+	// 1 keeps the source's shape at the requested height, 0 stretches it to
+	// the requested size. Answers -1 when the library does not have it, as
+	// Sipeed's does not; that library always stretches.
+	static int kvmv_set_keep_aspect_lookup(uint8_t keep)
+	{
+		uint8_t (*fn)(uint8_t) =
+			(uint8_t (*)(uint8_t))dlsym(RTLD_DEFAULT, "kvmv_set_keep_aspect");
+
+		if (fn == NULL)
+			return -1;
+		return fn(keep);
+	}
+
+	static int kvmv_keep_aspect_available(void)
+	{
+		return dlsym(RTLD_DEFAULT, "kvmv_set_keep_aspect") != NULL;
+	}
 */
 import "C"
 import (
@@ -260,6 +279,24 @@ func libraryCodecSupported(codec uint8) bool {
 	default:
 		return true
 	}
+}
+
+// libraryAspectSupported reports whether the loaded libkvm.so can keep the
+// source's aspect ratio (libkvm-v4l2's kvmv_set_keep_aspect). Like
+// libraryCodecSupported it needs no kvmv_init.
+func libraryAspectSupported() bool {
+	return C.kvmv_keep_aspect_available() != 0
+}
+
+// librarySetKeepAspect tells the library how to fit a source of another shape.
+// It answers false when the library has no such choice.
+func librarySetKeepAspect(keep bool) bool {
+	value := C.uint8_t(0)
+	if keep {
+		value = 1
+	}
+
+	return C.kvmv_set_keep_aspect_lookup(value) >= 0
 }
 
 func (k *KvmVision) SetFrameDetect(frame uint8) {

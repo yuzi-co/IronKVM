@@ -116,6 +116,11 @@ const en = {
       video: 'Video Mode',
       videoDirectTips: 'Enable HTTPS in "Settings > Device" to use this mode',
       resolution: 'Resolution',
+      aspect: 'Aspect ratio',
+      aspectKeep: 'Auto (keep source ratio)',
+      aspectStretch: 'Stretch to resolution',
+      aspectTips:
+        "Auto keeps the host screen's shape at the selected height, so a 1920x1200 screen is sent as 1728x1080. Stretch fills the selected resolution and distorts screens that are not 16:9.",
       ocr: {
         title: 'Read Text (OCR)',
         tips: 'The text is recognized in this browser. You can correct it before you copy it.',

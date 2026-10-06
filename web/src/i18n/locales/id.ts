@@ -117,6 +117,11 @@ const id = {
       video: 'Mode Video',
       videoDirectTips: 'Aktifkan HTTPS di "Pengaturan > Perangkat" untuk menggunakan mode ini',
       resolution: 'Resolusi',
+      aspect: 'Rasio aspek',
+      aspectKeep: 'Otomatis (pertahankan rasio sumber)',
+      aspectStretch: 'Regangkan ke resolusi',
+      aspectTips:
+        'Otomatis mempertahankan bentuk layar host pada tinggi yang dipilih: layar 1920x1200 dikirim sebagai 1728x1080. Regangkan mengisi resolusi yang dipilih dan mendistorsi layar yang bukan 16:9.',
       ocr: {
         title: 'Baca Teks (OCR)',
         tips: 'Teks dikenali di browser ini. Anda dapat memperbaikinya sebelum menyalinnya.',

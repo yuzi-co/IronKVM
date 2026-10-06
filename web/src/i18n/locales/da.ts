@@ -117,6 +117,11 @@ const da = {
       video: 'Videotilstand',
       videoDirectTips: 'Aktiver HTTPS i "Indstillinger > Enhed" for at bruge denne tilstand',
       resolution: 'Opløsning',
+      aspect: 'Billedformat',
+      aspectKeep: 'Automatisk (bevar kildens format)',
+      aspectStretch: 'Stræk til opløsning',
+      aspectTips:
+        'Automatisk bevarer værtsskærmens form i den valgte højde: en 1920x1200-skærm sendes som 1728x1080. Stræk udfylder den valgte opløsning og forvrænger skærme, der ikke er 16:9.',
       ocr: {
         title: 'Læs tekst (OCR)',
         tips: 'Teksten genkendes i denne browser. Du kan rette den, før du kopierer den.',

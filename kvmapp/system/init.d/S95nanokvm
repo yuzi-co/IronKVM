@@ -233,7 +233,8 @@ link_runtime_file() {
 }
 
 # The screen settings are the operator's choices: stream type, frame rate,
-# quality, resolution, codec and GOP. They belong to the board, not to a slot.
+# quality, resolution, codec, GOP and aspect ratio. They belong to the board,
+# not to a slot.
 # /kvmapp is part of the root filesystem, so each slot used to keep its own
 # copy, and booting the other slot quietly changed all of them.
 #
@@ -253,7 +254,7 @@ link_runtime_file() {
 # width and height are not here. They describe the HDMI source, not a choice,
 # and the comment above link_runtime_file says why they stay where they are.
 SETTINGS_DIR=${SETTINGS_DIR:-/etc/kvm/screen}
-SCREEN_SETTINGS="type fps qlty res codec gop"
+SCREEN_SETTINGS="type fps qlty res codec gop aspect"
 
 share_screen_settings() {
     mkdir -p "$SETTINGS_DIR" || return 0

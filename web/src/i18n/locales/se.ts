@@ -115,6 +115,11 @@ const se = {
       video: 'Videoläge',
       videoDirectTips: 'Aktivera HTTPS i "Inställningar > Enhet" för att använda detta läge',
       resolution: 'Upplösning',
+      aspect: 'Bildförhållande',
+      aspectKeep: 'Automatiskt (behåll källans förhållande)',
+      aspectStretch: 'Sträck till upplösning',
+      aspectTips:
+        'Automatiskt behåller värdskärmens form vid den valda höjden: en 1920x1200-skärm skickas som 1728x1080. Sträck fyller den valda upplösningen och förvränger skärmar som inte är 16:9.',
       ocr: {
         title: 'Läs text (OCR)',
         tips: 'Texten tolkas i den här webbläsaren. Du kan rätta den innan du kopierar den.',

@@ -29,6 +29,11 @@ export type ScreenSettings = {
   fps: number;
   gop: number;
   codec: number;
+  // 0 keeps the source's aspect ratio, 1 stretches it to the resolution.
+  // Older servers send neither field; aspectSupported is false with Sipeed's
+  // capture library, which always stretches.
+  aspect?: number;
+  aspectSupported?: boolean;
 };
 
 export type ControlRegionMode = 'off' | 'auto' | 'manual';
