@@ -543,9 +543,12 @@ static void test_source_fits(void)
 	CHECK(kvmv_source_fits(800, 600));
 	CHECK(kvmv_source_fits(720, 400));
 	CHECK(kvmv_source_fits(640, 480));
-	/* 4.5 MB: past the 4 MiB pool block. */
-	CHECK(!kvmv_source_fits(1920, 1200));
-	CHECK(!kvmv_source_fits(1920, 1089 + 16));
+	CHECK(kvmv_source_fits(1920, 1200));
+	CHECK(kvmv_source_fits(1920, 1104));
+	/* Past a 1920x1200 frame. */
+	CHECK(!kvmv_source_fits(1920, 1201));
+	CHECK(!kvmv_source_fits(2048, 1152));
+	CHECK(!kvmv_source_fits(2560, 1080));
 	CHECK(!kvmv_source_fits(3840, 2160));
 	CHECK(!kvmv_source_fits(2880, 64 + 2880));
 	CHECK(!kvmv_source_fits(32, 480));

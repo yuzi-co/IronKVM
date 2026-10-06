@@ -1136,8 +1136,9 @@ int kvmv_pipe_start(struct kvmv_pipe *p, const struct kvmv_devices *d,
 	 * Nothing parked that fits: the node was opened afresh, or holds
 	 * buffers of another size, which REQBUFS replaces. Allocate before the
 	 * encoder streams on. The capture buffers and the encoders' reference
-	 * frames all come from video_pool, a 32 MiB device pool that hands out
-	 * each 4 MB buffer as an aligned 4 MiB block. The WAVE420L takes its
+	 * frames all come from video_pool, a 32 MiB device pool (a 1080p
+	 * capture buffer is 4 MB; before ironkvm-dist patch 0940 the pool
+	 * rounded each buffer up to a power of two). The WAVE420L takes its
 	 * reference frames at STREAMON; allocated after them, on a first
 	 * build with H.265, the capture got fewer buffers than it asked for
 	 * (trial 25). Parked, that short set never matched the count again, so

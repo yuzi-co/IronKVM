@@ -107,14 +107,16 @@ int kvmv_plan_output(unsigned int src_width, unsigned int src_height,
 /*
  * HDMI modes the capture can take (ironkvm-dist#37, patches 0936 to 0938).
  * A UYVY frame of the mode, its line rounded to 16 bytes and its height to
- * 16 lines, must fit the 4 MiB block of the media pool that a 1080p buffer
- * takes: three buffers of the next size up, 8 MiB, would leave the encoders
- * short. 1920x1200 does not fit; 1600x1200 and everything up to 1920x1088
- * do. The scaler takes 64 to 2880 pixels a side.
+ * 16 lines, must be no larger than a 1920x1200 frame (4.4 MB). The capture
+ * buffers share the 32 MiB media pool with the encoders' frames. From
+ * ironkvm-dist patch 0940 the pool hands out the pages a buffer needs, so
+ * three 1920x1200 buffers take 13.2 MiB, 1.2 more than three at 1080p;
+ * before it each took an 8 MiB block and the encoders no longer fitted
+ * (trial 44). The scaler takes 64 to 2880 pixels a side.
  */
 #define KVMV_SOURCE_MIN_SIZE 64
 #define KVMV_SOURCE_MAX_WIDTH 2880
-#define KVMV_CAPTURE_FRAME_MAX (4U << 20)
+#define KVMV_CAPTURE_FRAME_MAX (3840U * 1200U)
 
 /* 1 when a source of width x height fits the capture, else 0. */
 int kvmv_source_fits(unsigned int width, unsigned int height);
