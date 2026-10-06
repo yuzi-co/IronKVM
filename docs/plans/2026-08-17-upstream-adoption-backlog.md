@@ -2287,9 +2287,9 @@ on the plain token check, and the keyboard and mouse themselves arrive over the 
 - **No request body cap.** `server/middleware/` has no `MaxBytesReader`, and neither does
   `server/router/`. Every JSON endpoint still decodes an arbitrarily large authenticated POST into
   memory, on a board that wedges below about 30 MB free instead of OOM-killing. Recorded on
-  2026-08-25 as one middleware fix.
+  2026-08-25 as one middleware fix, and filed as `ironkvm-dist#87`.
 - **`removeInputRegion` has no caller.** `server/service/vm/input_region.go:383`, dead since the
-  same date.
+  same date. Filed as `ironkvm-dist#89`.
 - **#858's other half,** separating the OLED power state from the UI subpage. It needs a panel.
 - **Priority 2.** #809, #867, #825 and #682 are still open upstream and still worth taking in
   whatever order the device needs.
@@ -2304,13 +2304,13 @@ Availability first, then the defects a user meets, then the rest.
 1. `syscall.Sync()` in `installPreparedPackage`. One line, and it protects an update that lands on
    the boot card.
 2. The keyboard import. Two lines, and the on-screen keyboard is dead without them.
-3. The request body cap, as middleware. Open for six weeks, and the failure mode is a board that
-   needs a power cycle.
-4. Rebase `main` onto `d0ff328d`. Decide the stream resolution policy first, and keep a
-   device free to check the video path afterwards.
+3. The request body cap, as middleware, `ironkvm-dist#87`. Open for six weeks, and the failure
+   mode is a board that needs a power cycle.
+4. Rebase `main` onto `d0ff328d`, `ironkvm-dist#88`. Decide the stream resolution policy first,
+   and keep a device free to check the video path afterwards.
 5. The image header check. Accept UDF and raw disk images, and read the descriptor while
    streaming.
-6. Delete `removeInputRegion` or give it a caller.
+6. Delete `removeInputRegion` or give it a caller, `ironkvm-dist#89`.
 7. #942, `udhcpc` to syslog, in both `S30eth` and `S30wifi`.
 8. Decide #935 against `/boot/usb.vid` and `/boot/usb.pid`.
 9. Decide the `/data` handover from #937. A plan, not a patch.
