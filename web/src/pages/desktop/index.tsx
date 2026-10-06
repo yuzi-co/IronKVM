@@ -298,8 +298,15 @@ export const Desktop = () => {
         <div className="relative flex h-full min-h-0 w-full min-w-0">
           <Menu />
           <div className="h-full min-h-0 w-full min-w-0">
+            {/* With the chat closed the bar sits on the screen's right edge,
+                and its disabled dragger, 6 px wide around it, took the
+                pointer from the screen's last 3 px. */}
             <Splitter
-              className="h-full w-full"
+              className={
+                isBigScreen && isPicoclawChatOpen
+                  ? 'h-full w-full'
+                  : 'h-full w-full [&>.ant-splitter-bar]:hidden'
+              }
               style={{ height: '100%', width: '100%' }}
               onResize={handleSplitterResize}
             >
