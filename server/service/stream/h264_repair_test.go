@@ -139,3 +139,53 @@ func TestAKeyframeTheClientCannotTakeDoesNotEndTheRepair(t *testing.T) {
 		t.Fatal("the next keyframe did not end the repair")
 	}
 }
+
+// ironkvm-dist#73: the delivery goroutine late by a tick or two. With one frame
+// of room the second frame was refused and the rest of the GOP lost, a 470 ms
+// freeze at 60 fps for a delay of 17. The subscription's slot rides that out.
+func TestAPathLateByAFewFramesLosesNone(t *testing.T) {
+	subscription := &H264Subscription{slot: NewFrameSlotDepth[H264Frame](h264SubscriptionDepth)}
+
+	subscription.deliver(dataFrame(true))
+	for i := 1; i < h264SubscriptionDepth; i++ {
+		subscription.deliver(dataFrame(false))
+	}
+	if subscription.repairing {
+		t.Fatal("a path behind by fewer frames than the slot holds started a repair")
+	}
+
+	for i := 0; i < h264SubscriptionDepth; i++ {
+		if !take(subscription) {
+			t.Fatalf("frame %d of %d was lost", i+1, h264SubscriptionDepth)
+		}
+	}
+
+	// Caught up: the next frame goes straight through.
+	subscription.deliver(dataFrame(false))
+	if !take(subscription) {
+		t.Fatal("the frame after the late spell was not delivered")
+	}
+}
+
+// A path that stays behind still loses frames to the next keyframe.
+func TestAPathFurtherBehindThanTheSlotStillRepairs(t *testing.T) {
+	subscription := &H264Subscription{slot: NewFrameSlotDepth[H264Frame](h264SubscriptionDepth)}
+
+	for i := 0; i <= h264SubscriptionDepth; i++ {
+		subscription.deliver(dataFrame(i == 0))
+	}
+	if !subscription.repairing {
+		t.Fatal("a refused frame did not start a repair")
+	}
+}
+
+func TestTheSourceGivesEachPathTheDeeperSlot(t *testing.T) {
+	withCapture(t, func(uint16, uint16, uint16) ([]byte, int) { return nil, -1 })
+
+	subscription := newH264Source().subscribe(func() bool { return false })
+	defer subscription.Close()
+
+	if got := cap(subscription.Frames()); got != h264SubscriptionDepth {
+		t.Fatalf("the subscription's slot holds %d frames, want %d", got, h264SubscriptionDepth)
+	}
+}

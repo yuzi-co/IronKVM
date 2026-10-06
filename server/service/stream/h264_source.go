@@ -70,6 +70,19 @@ type H264Subscription struct {
 	repairing bool
 }
 
+// h264SubscriptionDepth is how many frames a delivery path may fall behind the
+// capture loop before it loses the rest of the GOP.
+//
+// Both paths take frames on a goroutine of their own that only hands them on to
+// per-viewer queues, so they keep up unless the goroutine is not scheduled in
+// time. With one frame of room, a single tick of that (a 1080p60 tick is 16.7
+// ms) refused the next frame, and deliver then dropped every frame up to the
+// next keyframe: a 1080p60 H.264 soak froze for 469 ms once in an hour
+// (ironkvm-dist#73). Four frames ride out a delay of 67 ms at 60 fps and 133
+// at 30, and cost no latency while the path keeps up; a path that stays
+// behind still fills them and then loses frames to the next keyframe as before.
+const h264SubscriptionDepth = 4
+
 func newH264Source() *H264Source {
 	return &H264Source{subscribers: make(map[*H264Subscription]struct{})}
 }
@@ -127,7 +140,7 @@ func (s *H264Source) subscribe(demand func() bool) *H264Subscription {
 
 	subscription := &H264Subscription{
 		source: s,
-		slot:   NewFrameSlot[H264Frame](),
+		slot:   NewFrameSlotDepth[H264Frame](h264SubscriptionDepth),
 		demand: demand,
 	}
 
@@ -158,9 +171,10 @@ func (p *H264Subscription) Dropped() uint64 {
 // deliver offers one frame to this path, and holds the stream back until the
 // next keyframe once a frame has been dropped.
 //
-// The slot refuses while the client still holds the previous frame, which is
-// the whole reason it is a TryPut and not a Replace: MJPEG frames stand alone
-// and the newest one is always the right one to keep, but an H.264 frame is
+// The slot refuses while the path still holds h264SubscriptionDepth frames,
+// and that refusal is the whole reason it is a TryPut and not a Replace:
+// MJPEG frames stand alone and the newest one is always the right one to
+// keep, but an H.264 frame is
 // coded against the one before it. Handing a decoder the frame after a gap
 // gives it a picture predicted from a reference it never received, and the
 // error propagates through every following frame until the encoder emits a
