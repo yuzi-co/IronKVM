@@ -24,9 +24,15 @@ import (
 // checks the set against the budget as a whole, writes every marker, and
 // rebuilds once.
 
+// Every switch rebuilds the gadget through S03usbdev, on both kernels. It is
+// the script that reads the markers; a mainline slot runs it too (ironkvm-dist
+// #86). hid.GadgetScript may answer S00aagadget on an older mainline trial
+// slot, and that script reads no marker, so a switch routed there would report
+// success and change nothing. These name S03usbdev, and fail where it cannot
+// run.
 const (
-	usbGadgetStop  = "/etc/init.d/S03usbdev stop"
-	usbGadgetStart = "/etc/init.d/S03usbdev start"
+	usbGadgetStop  = hid.USBDevScript + " stop"
+	usbGadgetStart = hid.USBDevScript + " start"
 )
 
 // usbSelection is the set of optional functions the gadget carries, or should.

@@ -1433,6 +1433,20 @@ start_usb_dev(){
         echo 0 > functions/uac1.usb0/p_chmask 2>/dev/null
         echo 8 > functions/uac1.usb0/req_number 2>/dev/null
 
+        # The mainline f_uac1 adds a mute and volume feature unit that the
+        # vendor 5.10 one lacks, and with either direction's unit present it
+        # adds an interrupt IN endpoint, even for the playback direction
+        # p_chmask switched off. That endpoint takes one of the controller's
+        # six periodic TX FIFOs, and the disk's bulk IN then finds none
+        # ("dwc2_hsotg_ep_enable: No suitable fifo found", ironkvm-dist
+        # trial 19). The gadget never applied the unit to the samples; the
+        # host scales in software, as it does on the vendor kernel. On 5.10
+        # the attributes do not exist and the writes go nowhere.
+        for usb_uac_unit in c_mute_present c_volume_present p_mute_present p_volume_present
+        do
+            echo 0 > "functions/uac1.usb0/$usb_uac_unit" 2>/dev/null
+        done
+
         # Linked last, so the interface numbering above is unchanged.
         ln -s functions/uac1.usb0 configs/c.1
     fi
@@ -1458,6 +1472,24 @@ start_usb_host(){
     usb_unbind || return 1
     usb_net_stop ""
     set_otg_role host
+}
+
+# start_usb is the start action.
+#
+# A mainline kernel slot binds a gadget before this script runs: its
+# S00aagadget (ironkvm-dist) builds one at the start of rcS, so that the kernel
+# console on ttyGS0 has a port before /boot is mounted. That gadget carries a
+# fixed set of functions and reads no marker, so start takes it down and builds
+# the one the markers ask for. On the vendor kernel nothing binds a gadget
+# before this script, and the first branch never runs. The server never calls
+# start on a bound gadget either: its rebuilds run stop first.
+start_usb() {
+    if [ -n "$(cat /sys/kernel/config/usb_gadget/g0/UDC 2>/dev/null)" ]
+    then
+        echo "usb: a gadget is bound already, rebuilding it from the markers"
+        start_usb_host
+    fi
+    start_usb_dev
 }
 
 restart_usb_dev(){
@@ -1518,7 +1550,7 @@ fi
 
 case "$1" in
   start)
-    start_usb_dev
+    start_usb
 
     # Backgrounded on purpose. rcS waits on this script, and the watch spends
     # its whole budget on a board that has no host attached, which is a board

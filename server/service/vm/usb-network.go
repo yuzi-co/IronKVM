@@ -240,7 +240,7 @@ func usbNetworkFits(mode string, present func(string) bool) (bool, string) {
 // records: a failed removal would stop the list before `start`.
 func usbNetworkCommands(mode string) []string {
 	commands := []string{
-		"/etc/init.d/S03usbdev stop",
+		usbGadgetStop,
 		"rm -f /boot/usb.ncm",
 		"rm -f /boot/usb.ecm",
 		"rm -f /boot/usb.rndis0",
@@ -253,7 +253,7 @@ func usbNetworkCommands(mode string) []string {
 		commands = append(commands, "touch "+virtualNetworkECM)
 	}
 
-	return append(commands, "/etc/init.d/S03usbdev start")
+	return append(commands, usbGadgetStart)
 }
 
 // needsRebuild answers whether a save has to rebuild the gadget. A new mode

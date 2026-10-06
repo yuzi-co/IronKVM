@@ -243,6 +243,19 @@ start_usb_host(){
     set_otg_role host
 }
 
+# start_usb is the start action. A mainline kernel slot binds a console gadget
+# before this script runs (S00aagadget in ironkvm-dist); see start_usb in
+# S03usbdev. Start takes it down and builds this mode's gadget. On the vendor
+# kernel nothing binds a gadget first, and the first branch never runs.
+start_usb() {
+    if [ -n "$(cat /sys/kernel/config/usb_gadget/g0/UDC 2>/dev/null)" ]
+    then
+        echo "usb: a gadget is bound already, rebuilding it in HID-only mode"
+        start_usb_host
+    fi
+    start_usb_dev
+}
+
 restart_usb_dev(){
     usb_unbind || return 1
     sleep 1
@@ -272,7 +285,7 @@ restart_phy() {
 
 case "$1" in
   start)
-    start_usb_dev
+    start_usb
   ;;
   restart)
     restart_usb_dev
