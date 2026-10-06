@@ -2095,3 +2095,228 @@ carries it and the rebuilt one does not.
 block. Those run programs rather than write files, replacing them means
 `finit_module`, and the driver reload they belong to has never worked here
 anyway, which `tools/README.md` records.
+
+## Status, 2026-10-05
+
+`upstream/main` moved from `5c0bef01` to `d0ff328d`. Three commits, all from Sipeed, and one of
+them is the 2.5.1 changelog. The pull request pool gained three entries that this document has
+never triaged.
+
+Fork movement since 2026-09-08: `RobbyV2/NanoKVM` added 148 commits, `pi-bmc/nanokvm-app` added
+one, `mrjeeves/NanoKVM` added four and then stopped on 2026-09-09, and
+`eringiriri/ERINGI_JPN_NanoKVM` has not moved since 2026-08-22.
+
+This section keeps the convention of the ones above it. The earlier text stays as written, and the
+corrections to it are here.
+
+Every candidate below was checked against this tree by content. `git cherry` and `git log ^main`
+cannot answer the question, because this fork rewrites what it adopts.
+
+### `main` is seven commits behind, and the divergence count no longer measures anything
+
+`main` was level with `upstream/main` on 2026-08-30 and has not been rebased since. It now lacks
+seven commits:
+
+| Commit | What | State here |
+| --- | --- | --- |
+| `a9e1ef24` | Share H264 capture frames | Rejected on 2026-09-03. This fork shares a source and gates the read as well. |
+| `7f95fe9b` | Isolate H264 subscribers | Taken in part on 2026-09-03: the linker flag and the interceptors. |
+| `283c1390` | SSH prompt | Taken on 2026-09-08. |
+| `5c0bef01` | Root login shell in the web terminal | Taken on 2026-09-08. |
+| `bd070b2f` | 2.5.1 changelog | Nothing to take. |
+| `ff45b46c` | #937, storage | Triaged below. |
+| `d0ff328d` | Keyboard import | Take it. See below. |
+
+Four of the seven are adopted by content. That does not make the rebase cheap, which a trial run on
+2026-10-06 proved. `git cherry upstream/main main` reports no patch-equal commit at all, so nothing
+is skipped automatically and all 89 of our commits replay. Until the rebase lands,
+`git rev-list --count upstream/main..main` reports a number that AGENTS.md describes as the fork's
+divergence and that is wrong in both directions.
+
+### The rebase stops at the WebRTC writer commit
+
+Tried on 2026-10-06 and aborted. 22 of the 89 commits touch files that upstream also changed, and
+seven of those are in `server/service/stream`. Four conflicts resolved cleanly, and they are cached
+in `.git/rr-cache`, so `rerere` replays them on the next attempt:
+
+| Commit | Files | Resolution |
+| --- | --- | --- |
+| 2/89, the security fixes | `storage/image.go`, `image_test.go` | Our `isMountableImage` guard runs before upstream's `/data` handover block. |
+| 3/89, the stalled viewer | `stream/direct/streamer.go`, `stream/webrtc/manager.go` | Took upstream's shared source. |
+| 8/89, download verification | `download/service.go`, `service_test.go` | Kept our free-space preflight, took upstream's `imageDirectory` name, and unioned the tests. |
+| 9/89, the gadget identity | `storage/image.go` | Kept our `legacyNoImageDevice` rename and upstream's inquiry and product constants. |
+
+`e324cdae`, "Give every WebRTC viewer its own writer, and packetize each frame once", then conflicts
+across six files in `server/service/stream/webrtc/`. This is the collision that the rejection of
+`a9e1ef24` above predicted. The two commits solve the same problem with different designs, and ours
+packetizes a frame once and fans the packets out, which upstream does not do. Three more of this
+fork's stream commits queue behind it.
+
+The resolution policy has to be decided before the rebase restarts, and it has to be one policy for
+the whole package. To prefer this fork's side everywhere agrees with the rejection recorded above,
+and it leaves upstream's `server/service/stream/h264_source.go` in the tree with no caller, which
+needs a commit of its own. The 3/89 resolution above takes upstream's side, so a restart under that
+policy has to redo it. Either way the video path needs hardware to confirm, so the rebase is a task
+of its own and it blocks nothing else in this list.
+
+### The virtual keyboard is broken here, and upstream found it first
+
+`d0ff328d` is the one upstream commit of this pass that fixes a defect this fork carries.
+`react-simple-keyboard` ships a CJS bundle. Vite 8 applies Node interop to it, so a default import
+resolves to the whole `module.exports` object and React throws error #130 as soon as the on-screen
+keyboard opens.
+
+Both preconditions hold here. `web/package.json` pins `vite 8.2.2`, and
+`web/src/pages/desktop/virtual-keyboard/index.tsx:6` still reads
+`import Keyboard, { KeyboardButtonTheme } from 'react-simple-keyboard'`.
+
+The fix is two lines: import the `KeyboardReact` named export and make `KeyboardButtonTheme` a
+type-only import. Not reproduced on a device yet, so open the keyboard once after the deploy.
+
+### The updater does not flush the new tree before it restarts
+
+From `RobbyV2/NanoKVM` `58b87ea1`, and it applies here unchanged. `installPreparedPackage` at
+`server/service/application/install.go:124` moves the new `/kvmapp` into place, sets the modes,
+runs the install hook and returns. Nothing calls `sync()`. The caller restarts immediately.
+
+RobbyV2 saw a 2.8.1 to 2.8.2 install come back after a reset about a minute later with `version`
+empty and two payloads truncated, because the last writes were still in the page cache. The cause
+of their reset is not known, which does not matter here: this fork writes to the boot SD card, its
+own supervisor reboots the board when a restart cannot work, and a reboot here has been observed to
+shut down without resetting. The window is real whatever opens it.
+
+One `syscall.Sync()` before the return closes it.
+
+### The image upload accepts ISO 9660 and nothing else
+
+`isISO9660` at `server/service/download/service.go:167` tests for `CD001` alone, and the caller at
+`:283` runs it after the whole file has been written to `tempPath`. A UDF-only image, a raw disk
+image with a GPT or an MBR, and a macOS installer converted from a DMG are all rejected today, and
+an unusable image is rejected only after the transfer.
+
+#937 answers both halves. It accepts `BEA01` as well as `CD001`, it recognises GPT, MBR, APFS and
+HFS+, and it reads the descriptor sector while streaming, so a bad image fails in seconds.
+
+### What is left of #937 after the parts this fork already has
+
+The rest of the commit is three separate pieces of work, and most of it is here already.
+
+| #937 claims | State here |
+| --- | --- |
+| Set the LUN read-only flag with no medium present | `server/service/storage/drives.go:271-282`, with the kernel's rule written beside it |
+| Reset the LUN flags on every gadget restart | `kvmapp/system/init.d/S03usbdev:1265-1279` |
+| Keep `/data` from filling up on upload | `server/service/download/limits.go` |
+| Name the medium after the image file | Not here. Cosmetic. |
+| Hand `/data` to one writer | Not here, and not a cherry-pick |
+
+The handover is the part worth arguing about. Upstream makes `/data` read-only whenever the raw
+partition is served to the host as a writable disk, and it refuses to expose the disk when the
+remount fails. This fork has two LUNs, a device registry and Ventoy, so the question is which of
+those writers may hold `/data`, and what the UI says when one takes it. That is a design decision
+and it needs its own plan.
+
+### The pull requests triaged for the first time
+
+| PR | What | Verdict |
+| --- | --- | --- |
+| #935 | USB HID identity override, VID, PID and descriptors, with a settings page | A real gap. `S03usbdev:1030-1040` reads `/boot/usb.vid` and `/boot/usb.pid`, and there is no descriptor override and no UI. Supersedes the #758 entry in Priority 3. |
+| #942 | Log `udhcpc` to syslog | Cheap. `S30eth:94` ends in `&>/dev/null`, so a lease that never arrives leaves nothing to read. |
+| #943 | Open the OLED I2C bus only for the detected hardware | Skip. It is `kvm_system`, and a release takes that binary from Sipeed. |
+
+Four older pull requests were re-checked against the tree and are covered, which confirms the
+Priority 3 entries rather than changing them: #749 (`S30eth:94` and `:102` already pass `-O 121`),
+#746 (`S03usbdev:1052-1060`), #741 (`S03usbdev:1287` leaves `lun.0/file` unset), and #764, which
+is `S01fs` and belongs to the distro repository now.
+
+### The forks
+
+`RobbyV2/NanoKVM` wrote 148 commits in three weeks, and one of them is for this fork. The rest is
+their own product: an in-panel LLM assistant ported from a browser extension, `nexit`, a Go exit
+client for Windows hosts with no usable shell, and a socks tunnel. Read it for the update path,
+not for features.
+
+`mrjeeves/NanoKVM` `0cec1d3b` recovers a stalled enumeration with a bounded escalation. Neither
+half transfers. Their ENODEV guard reads the `UDC` back after a failed unbind, which is a Go
+configfs write; recovery here shells out to `S03usbdev` through `server/service/hid/status.go:195`,
+so there is no write to guard. Their ladder then runs to a 24 hour ceiling with a 30 second healthy
+debounce, where `server/service/hid/usb_watchdog.go:66-71` doubles from 30 seconds to 15 minutes
+and gives up at `:243`. Giving up is the safer end state on a board with no remote power cycle, and
+this fork chose it deliberately.
+
+`pi-bmc/nanokvm-app` added one commit and continues to be a BMC. Its in-repo mDNS responder
+replaces `brutella/dnssd`, which this fork never had: mDNS here is avahi, and the only mDNS in
+`server/go.mod` is pion's, pulled in by WebRTC.
+
+### What this document lists as open and is not
+
+Five entries above are stale. They are corrected here rather than in place.
+
+- **#864, the Spanish paste layout.** Done. `server/service/hid/layout.go:318` carries `es`, and
+  the list at `:333` is eleven layouts, not the two the Priority 2 note described.
+- **`tests/usb-init-scripts-test.sh`,** item 1 of "take first, small and unblocking". Superseded.
+  `tools/usbdev/` holds ten scripts, including descriptor, enumeration and link-record suites with
+  a mutation variant each.
+- **A fork-built `kvm_system` binary,** item 1 of the suggested order. Settled as no. A release
+  takes that binary from Sipeed, so nothing in `support/sg2002/kvm_system/` reaches a device.
+- **Comment on #888 upstream.** Moot since 2026-08-28, when the fork stopped contributing.
+- **Replace the bundled ntpd with busybox ntpd.** No `ntpd` is left in `kvmapp/system/init.d/`,
+  and the rootfs belongs to the distro repository.
+
+### #797 is superseded, and only its third role is left
+
+Checked on 2026-10-06, because the Priority 2 table has carried it since 2026-08-17.
+
+Upstream answered #797 with #876, which it names as prior work. #876 merged on 2026-08-20 with a
+two-role model, `admin` and `user`, and it closed the authorization, revocation, migration and
+websocket gaps that the three-role pull request left open. This fork carries that model:
+`server/authn/store.go:29-30` defines `RoleAdmin` and `RoleUser`, and the store keeps the token
+version and the system account flag with it.
+
+#797 has not been pushed since 2026-08-12, eight days before #876 merged, so its 41 files stand
+against auth code that no longer exists upstream or here. Do not take the pull request.
+
+One idea in it has no answer here. Its third role, a viewer who watches the stream and sends no
+input, is what upstream issue #933 asks for as well. `middleware.RequireRole` at
+`server/middleware/jwt.go:119` already exists and every router group uses it, so a viewer role is a
+decision about which groups accept it and what the web UI hides, not new machinery. The input path
+needs the most care: `server/router/hid.go:19-35` puts paste, the consumer keys and the LED state
+on the plain token check, and the keyboard and mouse themselves arrive over the websocket.
+
+### Still open, verified in the tree today
+
+- **No request body cap.** `server/middleware/` has no `MaxBytesReader`, and neither does
+  `server/router/`. Every JSON endpoint still decodes an arbitrarily large authenticated POST into
+  memory, on a board that wedges below about 30 MB free instead of OOM-killing. Recorded on
+  2026-08-25 as one middleware fix.
+- **`removeInputRegion` has no caller.** `server/service/vm/input_region.go:383`, dead since the
+  same date.
+- **#858's other half,** separating the OLED power state from the UI subpage. It needs a panel.
+- **Priority 2.** #809, #867, #825 and #682 are still open upstream and still worth taking in
+  whatever order the device needs.
+- **The 2026-09-08 list,** unchanged and not re-read: `Schokobecher`'s five branches, #921 against
+  `S98vidiag`, #911's `S25wifimod` half, #910 against `958bb8a9`, and whether #927's binary
+  provenance layout should cover this fork's downloads. All four pull requests are still open.
+
+### Order
+
+Availability first, then the defects a user meets, then the rest.
+
+1. `syscall.Sync()` in `installPreparedPackage`. One line, and it protects an update that lands on
+   the boot card.
+2. The keyboard import. Two lines, and the on-screen keyboard is dead without them.
+3. The request body cap, as middleware. Open for six weeks, and the failure mode is a board that
+   needs a power cycle.
+4. Rebase `main` onto `d0ff328d`. Decide the stream resolution policy first, and keep a
+   device free to check the video path afterwards.
+5. The image header check. Accept UDF and raw disk images, and read the descriptor while
+   streaming.
+6. Delete `removeInputRegion` or give it a caller.
+7. #942, `udhcpc` to syslog, in both `S30eth` and `S30wifi`.
+8. Decide #935 against `/boot/usb.vid` and `/boot/usb.pid`.
+9. Decide the `/data` handover from #937. A plan, not a patch.
+10. Decide the viewer role. It is what is left of #797 and what #933 asks for, and the role
+    machinery is already here.
+11. Priority 2, in whatever order the device needs.
+
+The research list is unchanged. Nothing in this pass touched the OneKVM driver set, the cryptodma
+question, UAC2, or the EDID work.
