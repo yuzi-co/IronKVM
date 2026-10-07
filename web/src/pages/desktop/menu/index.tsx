@@ -8,6 +8,7 @@ import Draggable, { DraggableData, DraggableEvent } from 'react-draggable';
 import { useMediaQuery } from 'react-responsive';
 
 import { getVirtualDevice } from '@/api/virtual-device.ts';
+import { showAudioMenu } from '@/lib/room-mic.ts';
 import { hasAudioAtom } from '@/jotai/audio.ts';
 import { ocrSelectingAtom } from '@/jotai/ocr.ts';
 import { inputRegionSelectingAtom } from '@/jotai/screen.ts';
@@ -31,10 +32,12 @@ import { Mouse } from './mouse';
 import { Collapse, Expand } from './operations';
 import { Picoclaw } from './picoclaw';
 import { Power } from './power';
+import { RoomMicIndicator } from './room-mic-indicator.tsx';
 import { Screen } from './screen';
 import { Script } from './script';
 import { Settings } from './settings';
 import { Speaker } from './speaker';
+import { useRoomMicControls } from './speaker/use-room-mic.ts';
 import { Terminal } from './terminal';
 import { Text } from './text';
 import { Tools } from './tools';
@@ -63,6 +66,7 @@ export const Menu = () => {
   const menuCloseSignal = useAtomValue(menuCloseSignalAtom);
   const isKeyboardLedStatusVisible = useAtomValue(keyboardLedStatusVisibleAtom);
   const hasAudio = useAtomValue(hasAudioAtom);
+  const roomMicControls = useRoomMicControls();
   const requestMenuClose = useSetAtom(menuCloseSignalAtom);
 
   // Below the sm breakpoint the full bar is wider than a phone. The entries
@@ -137,8 +141,9 @@ export const Menu = () => {
   // hasAudio is set by the video path when audio is on offer: the WebRTC audio
   // track, or the first audio frame or state notice on H.264 direct. A device
   // without the USB audio gadget sends none, and the button would then unmute
-  // nothing.
-  const speaker = isEnabled('speaker') && hasAudio && (
+  // nothing. The room microphone, when an administrator allows it, also
+  // lives in this entry.
+  const speaker = isEnabled('speaker') && showAudioMenu(hasAudio, roomMicControls) && (
     <MenuBoundary key="speaker" name="speaker">
       <Speaker />
     </MenuBoundary>
@@ -260,6 +265,10 @@ export const Menu = () => {
                 </MenuBoundary>
               </div>
             )}
+            {/* Shown to every viewer while the room microphone is open. */}
+            <MenuBoundary name="room-mic-indicator">
+              <RoomMicIndicator />
+            </MenuBoundary>
             {/* Shown only while something is wrong. */}
             <MenuBoundary name="alerts">
               <Alerts />
@@ -302,9 +311,15 @@ export const Menu = () => {
 
         {/* Menubar expand button */}
         {!isMenuExpanded && (
-          <MenuBoundary name="expand">
-            <Expand toggleMenu={setIsMenuExpanded} />
-          </MenuBoundary>
+          <div className="flex items-center">
+            {/* The bar is folded, but the room microphone still shows. */}
+            <MenuBoundary name="room-mic-indicator">
+              <RoomMicIndicator />
+            </MenuBoundary>
+            <MenuBoundary name="expand">
+              <Expand toggleMenu={setIsMenuExpanded} />
+            </MenuBoundary>
+          </div>
         )}
       </div>
     </Draggable>

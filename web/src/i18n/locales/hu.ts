@@ -1058,7 +1058,15 @@ const hu = {
         sections: {
           video: 'Videó',
           usb: 'USB',
-          frontPanel: 'Előlap'
+          frontPanel: 'Előlap',
+          roomMic: 'Szobamikrofon'
+        },
+        roomMic: {
+          allow: 'Szobamikrofon engedélyezése',
+          description:
+            'A nézők a KVM beépített mikrofonján keresztül hallgathatják a szobát. Minden néző látja, amikor be van kapcsolva.',
+          unavailable: 'Ezzel a kernellel nem érhető el',
+          gain: 'Mikrofonerősítés'
         },
         cpuFreq: {
           title: 'CPU-frekvencia',
@@ -1690,7 +1698,14 @@ const hu = {
       unmute: 'Némítás feloldása',
       mute: 'Némítás',
       hostIdle: 'A gazdagép nem küld hangot',
-      hostIdleHint: 'Játssz le valamit a gazdagépen, vagy válaszd a KVM-et hangkimenetnek.'
+      hostIdleHint: 'Játssz le valamit a gazdagépen, vagy válaszd a KVM-et hangkimenetnek.',
+      host: 'Gazdagép hangja',
+      room: 'Szobamikrofon',
+      roomListen: 'A szoba hallgatása',
+      roomVolume: 'Hangerő',
+      roomHint: 'Minden néző látja, amikor be van kapcsolva.',
+      roomLive: 'Mikrofon él',
+      roomLiveBy: 'Szobamikrofon bekapcsolva: {{names}}'
     },
     upstream: {
       check: 'Frissítések keresése',

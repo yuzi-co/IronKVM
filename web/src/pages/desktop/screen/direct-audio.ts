@@ -9,7 +9,6 @@
 // made on the first unmute and every frame before it is simply dropped.
 
 const sampleRate = 48000;
-const channels = 2;
 const frameSeconds = 0.02;
 
 // How far ahead of the audio clock a frame is scheduled. Enough to ride out
@@ -29,6 +28,16 @@ export class DirectAudioPlayer {
   private closed = false;
   private nextTime = 0;
   private lastSeq: number | null = null;
+  private gain: GainNode | null = null;
+  private volume = 1;
+
+  // channels is what the decoder is configured for: two for the host's
+  // audio, one for the room microphone.
+  private readonly channels: number;
+
+  constructor(channels = 2) {
+    this.channels = channels;
+  }
 
   static supported(): boolean {
     return typeof window.AudioDecoder === 'function' && typeof window.AudioContext === 'function';
@@ -79,8 +88,17 @@ export class DirectAudioPlayer {
 
     if (!this.context) {
       this.context = new AudioContext({ sampleRate, latencyHint: 'interactive' });
+      this.gain = this.context.createGain();
+      this.gain.gain.value = this.volume;
+      this.gain.connect(this.context.destination);
     }
     void this.context.resume();
+  }
+
+  // setVolume scales what is played, 0 to 1.
+  setVolume(volume: number) {
+    this.volume = Math.min(1, Math.max(0, volume));
+    if (this.gain) this.gain.gain.value = this.volume;
   }
 
   close() {
@@ -88,6 +106,7 @@ export class DirectAudioPlayer {
     this.resetDecoder();
     void this.context?.close();
     this.context = null;
+    this.gain = null;
   }
 
   private ensureDecoder(): AudioDecoder | null {
@@ -105,7 +124,7 @@ export class DirectAudioPlayer {
           }
         }
       });
-      decoder.configure({ codec: 'opus', sampleRate, numberOfChannels: channels });
+      decoder.configure({ codec: 'opus', sampleRate, numberOfChannels: this.channels });
       this.decoder = decoder;
       return decoder;
     } catch (error) {
@@ -148,7 +167,7 @@ export class DirectAudioPlayer {
 
       const source = context.createBufferSource();
       source.buffer = buffer;
-      source.connect(context.destination);
+      source.connect(this.gain ?? context.destination);
       source.start(this.nextTime);
       this.nextTime += buffer.duration;
     } finally {

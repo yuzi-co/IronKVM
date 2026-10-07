@@ -23,6 +23,8 @@ export function currentId(id: string | null): string | null {
 export const KEYWORDS: Record<string, string[]> = {
   device: [
     'hdmi',
+    'microphone',
+    'mic',
     'video',
     'usb',
     'virtual',

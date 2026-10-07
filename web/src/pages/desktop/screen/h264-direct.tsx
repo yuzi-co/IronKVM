@@ -1,13 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
 import { notification, Spin } from 'antd';
 import clsx from 'clsx';
-import { useAtomValue, useSetAtom } from 'jotai';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { useTranslation } from 'react-i18next';
 
 import { audioStateFromByte } from '@/lib/audio-state.ts';
+import { nextRoomMicSwitch, roomMicPushFromBytes } from '@/lib/room-mic.ts';
 import { getBaseUrl } from '@/lib/service.ts';
 import { audioMutedAtom, audioStateAtom, hasAudioAtom } from '@/jotai/audio.ts';
 import { mouseStyleAtom } from '@/jotai/mouse';
+import {
+  roomMicListeningAtom,
+  roomMicMutedAtom,
+  roomMicPushAtom,
+  roomMicSwitchAtom,
+  roomMicTransportAtom,
+  roomMicVolumeAtom
+} from '@/jotai/room-mic.ts';
 
 import { DirectAudioPlayer } from './direct-audio.ts';
 import DirectWorker from './direct.worker.ts?worker';
@@ -26,6 +35,7 @@ type WorkerEvent = {
   seq?: number;
   data?: ArrayBuffer;
   value?: number;
+  bytes?: Uint8Array;
 };
 
 export const H264Direct = () => {
@@ -34,10 +44,18 @@ export const H264Direct = () => {
   const isMuted = useAtomValue(audioMutedAtom);
   const setHasAudio = useSetAtom(hasAudioAtom);
   const setAudioState = useSetAtom(audioStateAtom);
+  const [roomSwitch, setRoomSwitch] = useAtom(roomMicSwitchAtom);
+  const roomMuted = useAtomValue(roomMicMutedAtom);
+  const roomVolume = useAtomValue(roomMicVolumeAtom);
+  const setRoomListening = useSetAtom(roomMicListeningAtom);
+  const setRoomTransport = useSetAtom(roomMicTransportAtom);
+  const pushRoomState = useSetAtom(roomMicPushAtom);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const workerRef = useRef<Worker | null>(null);
   const playerRef = useRef<DirectAudioPlayer | null>(null);
+  const roomPlayerRef = useRef<DirectAudioPlayer | null>(null);
+  const roomWantedRef = useRef(roomSwitch.wanted);
   const isMutedRef = useRef(isMuted);
 
   // Without WebCodecs nothing will ever draw, so there is nothing to wait for.
@@ -65,6 +83,9 @@ export const H264Direct = () => {
     const player = DirectAudioPlayer.supported() ? new DirectAudioPlayer() : null;
     playerRef.current = player;
     player?.setMuted(isMutedRef.current);
+    // The room microphone is one channel. It plays only while switched on.
+    const roomPlayer = DirectAudioPlayer.supported() ? new DirectAudioPlayer(1) : null;
+    roomPlayerRef.current = roomPlayer;
     let reportedAudio = false;
     let playing = false;
 
@@ -92,7 +113,7 @@ export const H264Direct = () => {
     const offscreen = canvasRef.current.transferControlToOffscreen();
     const url = `${getBaseUrl('ws')}/api/stream/h264/direct`;
     worker.onmessage = (event: MessageEvent<WorkerEvent>) => {
-      const { type, state, width, height, seq, data, value } = event.data;
+      const { type, state, width, height, seq, data, value, bytes } = event.data;
 
       if (type === 'playing') {
         if (failTimer) {
@@ -106,6 +127,9 @@ export const H264Direct = () => {
 
       if (type === 'socket') {
         if (state === 'closed') {
+          // The server let go of the microphone with the socket. The worker
+          // switches it on again on the next one.
+          setRoomListening(false);
           setIsLoading(true);
           watchForFailure();
         }
@@ -144,6 +168,24 @@ export const H264Direct = () => {
         return;
       }
 
+      // The microphone's state comes only on a kernel that has one, so it
+      // also says this connection can carry it.
+      if (type === 'room-state' && bytes) {
+        const push = roomMicPushFromBytes(bytes);
+        if (push) {
+          setRoomTransport(true);
+          pushRoomState(push);
+          setRoomListening(push.listening);
+          setRoomSwitch((current) => nextRoomMicSwitch(current, push));
+        }
+        return;
+      }
+
+      if (type === 'room-audio' && roomPlayer && seq !== undefined && data) {
+        roomPlayer.push(seq, data);
+        return;
+      }
+
       if (type !== 'frame-size' || !width || !height || !canvasRef.current) {
         return;
       }
@@ -151,9 +193,19 @@ export const H264Direct = () => {
       canvasRef.current.dataset.mediaWidth = String(width);
       canvasRef.current.dataset.mediaHeight = String(height);
     };
-    worker.postMessage({ type: 'h264', canvas: offscreen, url, audio: player !== null }, [
-      offscreen
-    ]);
+    worker.postMessage(
+      {
+        type: 'h264',
+        canvas: offscreen,
+        url,
+        audio: player !== null,
+        room: roomPlayer !== null
+      },
+      [offscreen]
+    );
+    if (roomWantedRef.current) {
+      worker.postMessage({ type: 'room-mic', on: true });
+    }
 
     return () => {
       if (failTimer) clearTimeout(failTimer);
@@ -162,10 +214,35 @@ export const H264Direct = () => {
       worker.terminate();
       player?.close();
       playerRef.current = null;
+      roomPlayer?.close();
+      roomPlayerRef.current = null;
       setHasAudio(false);
       setAudioState('unknown');
+      setRoomTransport(false);
+      setRoomListening(false);
     };
-  }, [setHasAudio, setAudioState, notificationApi]);
+  }, [
+    setHasAudio,
+    setAudioState,
+    notificationApi,
+    setRoomTransport,
+    setRoomListening,
+    pushRoomState,
+    setRoomSwitch
+  ]);
+
+  // The switch goes to the server through the worker, which sends it again
+  // on every reconnect. The flip is the user act that lets the microphone's
+  // player start its AudioContext.
+  useEffect(() => {
+    roomWantedRef.current = roomSwitch.wanted;
+    workerRef.current?.postMessage({ type: 'room-mic', on: roomSwitch.wanted });
+    roomPlayerRef.current?.setMuted(roomMuted || !roomSwitch.wanted);
+  }, [roomSwitch.wanted, roomMuted]);
+
+  useEffect(() => {
+    roomPlayerRef.current?.setVolume(roomVolume);
+  }, [roomVolume]);
 
   // The unmute click is the user act the browser requires before it plays
   // sound, so the player makes its AudioContext here and not before.

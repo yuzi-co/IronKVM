@@ -1040,7 +1040,15 @@ const nb = {
         sections: {
           video: 'Video',
           usb: 'USB',
-          frontPanel: 'Frontpanel'
+          frontPanel: 'Frontpanel',
+          roomMic: 'Rommikrofon'
+        },
+        roomMic: {
+          allow: 'Tillat rommikrofon',
+          description:
+            'Seere kan lytte til rommet gjennom den innebygde mikrofonen i KVM-en. Alle seere ser når den er på.',
+          unavailable: 'Ikke tilgjengelig med denne kjernen',
+          gain: 'Mikrofonforsterkning'
         },
         cpuFreq: {
           title: 'CPU-frekvens',
@@ -1665,7 +1673,14 @@ const nb = {
       unmute: 'Slå på lyd',
       mute: 'Demp',
       hostIdle: 'Verten sender ikke lyd',
-      hostIdleHint: 'Spill av noe på verten, eller velg KVM-en som lydutgang.'
+      hostIdleHint: 'Spill av noe på verten, eller velg KVM-en som lydutgang.',
+      host: 'Vertslyd',
+      room: 'Rommikrofon',
+      roomListen: 'Lytt til rommet',
+      roomVolume: 'Volum',
+      roomHint: 'Alle seere ser når den er på.',
+      roomLive: 'Mikrofon på',
+      roomLiveBy: 'Rommikrofon på: {{names}}'
     },
     upstream: {
       check: 'Se etter oppdateringer',

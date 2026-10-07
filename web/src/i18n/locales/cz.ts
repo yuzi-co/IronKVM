@@ -1035,7 +1035,15 @@ const cz = {
         sections: {
           video: 'Video',
           usb: 'USB',
-          frontPanel: 'Přední panel'
+          frontPanel: 'Přední panel',
+          roomMic: 'Mikrofon v místnosti'
+        },
+        roomMic: {
+          allow: 'Povolit mikrofon v místnosti',
+          description:
+            'Diváci mohou poslouchat místnost přes vestavěný mikrofon KVM. Všichni diváci vidí, kdy je zapnutý.',
+          unavailable: 'Na tomto jádře není k dispozici',
+          gain: 'Zesílení mikrofonu'
         },
         cpuFreq: {
           title: 'Frekvence CPU',
@@ -1658,7 +1666,14 @@ const cz = {
       unmute: 'Zapnout zvuk',
       mute: 'Ztlumit',
       hostIdle: 'Hostitel neposílá zvuk',
-      hostIdleHint: 'Přehrajte něco na hostiteli nebo v něm zvolte KVM jako zvukový výstup.'
+      hostIdleHint: 'Přehrajte něco na hostiteli nebo v něm zvolte KVM jako zvukový výstup.',
+      host: 'Zvuk hostitele',
+      room: 'Mikrofon v místnosti',
+      roomListen: 'Poslouchat místnost',
+      roomVolume: 'Hlasitost',
+      roomHint: 'Všichni diváci vidí, kdy je zapnutý.',
+      roomLive: 'Mikrofon zapnut',
+      roomLiveBy: 'Mikrofon v místnosti zapnut: {{names}}'
     },
     upstream: {
       check: 'Zkontrolovat aktualizace',

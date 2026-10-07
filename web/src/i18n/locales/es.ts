@@ -1062,7 +1062,15 @@ const es = {
         sections: {
           video: 'Vídeo',
           usb: 'USB',
-          frontPanel: 'Panel frontal'
+          frontPanel: 'Panel frontal',
+          roomMic: 'Micrófono de la sala'
+        },
+        roomMic: {
+          allow: 'Permitir el micrófono de la sala',
+          description:
+            'Los espectadores pueden escuchar la sala con el micrófono integrado del KVM. Todos los que miran ven cuándo está encendido.',
+          unavailable: 'No disponible con este kernel',
+          gain: 'Ganancia del micrófono'
         },
         cpuFreq: {
           title: 'Frecuencia de la CPU',
@@ -1700,7 +1708,14 @@ const es = {
       unmute: 'Activar sonido',
       mute: 'Silenciar',
       hostIdle: 'El host no envía audio',
-      hostIdleHint: 'Reproduce algo en el host o elige el KVM como su salida de sonido.'
+      hostIdleHint: 'Reproduce algo en el host o elige el KVM como su salida de sonido.',
+      host: 'Audio del host',
+      room: 'Micrófono de la sala',
+      roomListen: 'Escuchar la sala',
+      roomVolume: 'Volumen',
+      roomHint: 'Todos los que miran ven cuándo está encendido.',
+      roomLive: 'Micro activo',
+      roomLiveBy: 'Micrófono de la sala encendido: {{names}}'
     },
     upstream: {
       check: 'Buscar actualizaciones',
