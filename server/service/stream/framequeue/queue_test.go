@@ -66,6 +66,21 @@ func TestFramesComeOutInOrder(t *testing.T) {
 	}
 }
 
+// The writer raises its priority for keyframes, so it has to know which frame
+// is one.
+func TestTakeInfoSaysWhichFrameIsAKeyframe(t *testing.T) {
+	q, _ := newQueue(8, time.Second)
+	q.Put("k", key)
+	q.Put("p", delta)
+
+	for _, want := range []bool{key, delta} {
+		_, info, ok := q.TakeInfo()
+		if !ok || info.Key != want {
+			t.Fatalf("key %t (%t), want %t", info.Key, ok, want)
+		}
+	}
+}
+
 // The case that broke WebRTC at 1080p: the writer is still sending a keyframe
 // when several more frames arrive. They must wait, not be dropped.
 func TestSlowKeyframeDelaysTheGOPInsteadOfTruncatingIt(t *testing.T) {

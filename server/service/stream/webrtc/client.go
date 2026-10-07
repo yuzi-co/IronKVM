@@ -123,8 +123,11 @@ func (c *Client) write() {
 		return
 	}
 
+	// Keyframes are written at a raised priority (keyboost.go).
+	boost := newKeyBoost()
+
 	for {
-		packets, ok := c.queue.Take()
+		packets, info, ok := c.queue.TakeInfo()
 		if !ok {
 			return
 		}
@@ -137,7 +140,15 @@ func (c *Client) write() {
 			continue
 		}
 
-		if err := track.writePackets(packets); err != nil {
+		if info.Key {
+			boost.raise()
+		}
+		err := track.writePackets(packets)
+		if info.Key {
+			boost.lower()
+		}
+
+		if err != nil {
 			log.Debugf("h264 write to %s failed: %s", c.ws.RemoteAddr(), err)
 
 			// Unblock the reader so the handler tears this client down.
