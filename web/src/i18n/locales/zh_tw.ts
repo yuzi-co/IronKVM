@@ -997,7 +997,15 @@ const zh_tw = {
         sections: {
           video: '視訊',
           usb: 'USB',
-          frontPanel: '前面板'
+          frontPanel: '前面板',
+          roomMic: '房間麥克風'
+        },
+        roomMic: {
+          allow: '允許房間麥克風',
+          description:
+            '觀看者可以透過 KVM 內建麥克風收聽房間聲音。開啟時，所有觀看者都會看到提示。',
+          unavailable: '此核心無法使用',
+          gain: '麥克風增益'
         },
         cpuFreq: {
           title: 'CPU 時脈',
@@ -1598,7 +1606,14 @@ const zh_tw = {
       unmute: '取消靜音',
       mute: '靜音',
       hostIdle: '主機未傳送音訊',
-      hostIdleHint: '請在主機上播放聲音，或將 KVM 選為主機的聲音輸出裝置。'
+      hostIdleHint: '請在主機上播放聲音，或將 KVM 選為主機的聲音輸出裝置。',
+      host: '主機音訊',
+      room: '房間麥克風',
+      roomListen: '收聽房間',
+      roomVolume: '音量',
+      roomHint: '開啟時，所有觀看者都會看到提示。',
+      roomLive: '麥克風開啟',
+      roomLiveBy: '房間麥克風已開啟：{{names}}'
     },
     upstream: {
       check: '檢查更新',

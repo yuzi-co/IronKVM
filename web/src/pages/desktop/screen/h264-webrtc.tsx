@@ -1,16 +1,25 @@
 import { useEffect, useRef, useState } from 'react';
 import { notification, Spin } from 'antd';
 import clsx from 'clsx';
-import { useAtomValue, useSetAtom } from 'jotai';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { useTranslation } from 'react-i18next';
 import { w3cwebsocket as W3cWebSocket } from 'websocket';
 
 import { audioStateFromName } from '@/lib/audio-state.ts';
+import { nextRoomMicSwitch, roomMicPushFromSignal } from '@/lib/room-mic.ts';
 import { withStereoOpus } from '@/lib/sdp-opus.ts';
 import { getBaseUrl } from '@/lib/service.ts';
 import { CODEC_CHANGED_EVENT, codecChangeNeedsNewSession } from '@/lib/stream-codec.ts';
 import { audioMutedAtom, audioStateAtom, hasAudioAtom } from '@/jotai/audio.ts';
 import { mouseStyleAtom } from '@/jotai/mouse.ts';
+import {
+  roomMicListeningAtom,
+  roomMicMutedAtom,
+  roomMicPushAtom,
+  roomMicSwitchAtom,
+  roomMicTransportAtom,
+  roomMicVolumeAtom
+} from '@/jotai/room-mic.ts';
 import { screenSettingsAtom } from '@/jotai/screen.ts';
 
 import { ScreenViewport } from './viewport.tsx';
@@ -24,6 +33,9 @@ const WEBRTC_CONNECTION_FAILED_NOTIFICATION_KEY = 'webrtc_connection_failed';
 const WEBRTC_CONNECTION_TIMEOUT = 10 * 1000;
 const WEBRTC_RECONNECT_DELAY = 3 * 1000;
 const CODEC_RESTART_GRACE = 3 * 1000;
+// The server puts the room microphone's track in a media stream of its own,
+// so the two audio tracks can be told apart.
+const ROOM_MIC_STREAM_ID = 'room-mic';
 
 const parseSignalingData = <T,>(data?: string): T | null => {
   if (!data) {
@@ -42,6 +54,15 @@ export const H264Webrtc = () => {
   const isMuted = useAtomValue(audioMutedAtom);
   const setHasAudio = useSetAtom(hasAudioAtom);
   const setAudioState = useSetAtom(audioStateAtom);
+  const [roomSwitch, setRoomSwitch] = useAtom(roomMicSwitchAtom);
+  const roomMuted = useAtomValue(roomMicMutedAtom);
+  const roomVolume = useAtomValue(roomMicVolumeAtom);
+  const setRoomListening = useSetAtom(roomMicListeningAtom);
+  const setRoomTransport = useSetAtom(roomMicTransportAtom);
+  const pushRoomState = useSetAtom(roomMicPushAtom);
+  const roomWantedRef = useRef(roomSwitch.wanted);
+  // Sends the room microphone switch on the current signalling socket.
+  const sendRoomSwitchRef = useRef<(on: boolean) => void>(() => {});
   const codec = useAtomValue(screenSettingsAtom)?.codec;
   const codecRef = useRef(codec);
   // When the last new session was started for a codec change. The server's
@@ -51,6 +72,7 @@ export const H264Webrtc = () => {
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const roomAudioRef = useRef<HTMLAudioElement | null>(null);
   const videoOfferSent = useRef(false);
   const videoIceCandidates = useRef<RTCIceCandidate[]>([]);
   const translationRef = useRef(t);
@@ -82,6 +104,7 @@ export const H264Webrtc = () => {
     const ws = new W3cWebSocket(url);
     const videoElement = videoRef.current;
     const audioElement = audioRef.current;
+    const roomAudioElement = roomAudioRef.current;
 
     let video: RTCPeerConnection | null = null;
     let heartbeatTimer: ReturnType<typeof setInterval> | null = null;
@@ -138,6 +161,7 @@ export const H264Webrtc = () => {
         console.error('Error sending event: ', err);
       }
     };
+    sendRoomSwitchRef.current = (on: boolean) => sendMsg('room-mic', on ? 'on' : 'off');
 
     const startVideo = (iceServers: RTCIceServer[]) => {
       if (video || disposed) {
@@ -198,6 +222,17 @@ export const H264Webrtc = () => {
           videoElement.srcObject = new MediaStream([event.track]);
         }
 
+        // The room microphone's track comes on a kernel that has one,
+        // whatever the setting, and plays only once this viewer switches
+        // it on.
+        if (event.track.kind === 'audio' && event.streams[0]?.id === ROOM_MIC_STREAM_ID) {
+          if (roomAudioElement) {
+            roomAudioElement.srcObject = new MediaStream([event.track]);
+          }
+          setRoomTransport(true);
+          return;
+        }
+
         // An audio track arrives only when the device has the USB audio
         // gadget, so this event is what tells the UI to offer a speaker.
         if (audioElement && event.track.kind === 'audio') {
@@ -213,6 +248,9 @@ export const H264Webrtc = () => {
       };
 
       peer.addTransceiver('video', { direction: 'recvonly' });
+      peer.addTransceiver('audio', { direction: 'recvonly' });
+      // A second audio line for the room microphone. A server without one
+      // leaves it inactive.
       peer.addTransceiver('audio', { direction: 'recvonly' });
     };
 
@@ -271,6 +309,11 @@ export const H264Webrtc = () => {
       heartbeatTimer = setInterval(() => {
         sendMsg('heartbeat', '');
       }, 60 * 1000);
+
+      // The server forgets the switch with the old socket.
+      if (roomWantedRef.current) {
+        sendMsg('room-mic', 'on');
+      }
     };
 
     ws.onerror = (error) => {
@@ -308,6 +351,15 @@ export const H264Webrtc = () => {
           case 'audio-state':
             setAudioState(audioStateFromName(msg.data));
             break;
+          case 'room-mic': {
+            const push = roomMicPushFromSignal(msg.data);
+            if (push) {
+              pushRoomState(push);
+              setRoomListening(push.listening);
+              setRoomSwitch((current) => nextRoomMicSwitch(current, push));
+            }
+            break;
+          }
           case CODEC_CHANGED_EVENT:
             // The encoder runs another codec than this session negotiated, so
             // no more frames come on it. Start a new one; the server reads
@@ -362,6 +414,12 @@ export const H264Webrtc = () => {
       if (audioElement) {
         audioElement.srcObject = null;
       }
+      if (roomAudioElement) {
+        roomAudioElement.srcObject = null;
+      }
+      setRoomTransport(false);
+      setRoomListening(false);
+      sendRoomSwitchRef.current = () => {};
       // The track goes with the peer connection, so the speaker button goes
       // with it. A reconnect sets this again if a track still arrives.
       setHasAudio(false);
@@ -375,7 +433,30 @@ export const H264Webrtc = () => {
       clearTimeout(loadingTimer);
       clearTimeout(connectionTimeoutTimer);
     };
-  }, [connectionAttempt, notificationApi, setHasAudio, setAudioState]);
+  }, [
+    connectionAttempt,
+    notificationApi,
+    setHasAudio,
+    setAudioState,
+    setRoomTransport,
+    setRoomListening,
+    pushRoomState,
+    setRoomSwitch
+  ]);
+
+  // The viewer's switch goes to the server as it changes.
+  useEffect(() => {
+    if (roomWantedRef.current === roomSwitch.wanted) return;
+    roomWantedRef.current = roomSwitch.wanted;
+    sendRoomSwitchRef.current(roomSwitch.wanted);
+  }, [roomSwitch.wanted]);
+
+  useEffect(() => {
+    if (roomAudioRef.current) {
+      roomAudioRef.current.muted = roomMuted || !roomSwitch.wanted;
+      roomAudioRef.current.volume = roomVolume;
+    }
+  }, [roomMuted, roomVolume, roomSwitch.wanted]);
 
   useEffect(() => {
     return () => {
@@ -413,6 +494,7 @@ export const H264Webrtc = () => {
       </ScreenViewport>
 
       <audio ref={audioRef} muted autoPlay playsInline />
+      <audio ref={roomAudioRef} muted autoPlay playsInline />
 
       {isLoading && (
         <div className="pointer-events-none absolute inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-[2px] transition-all duration-300">

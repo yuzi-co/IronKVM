@@ -4,6 +4,7 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"NanoKVM-Server/service/roommic"
 	"NanoKVM-Server/service/stream"
 	"NanoKVM-Server/service/stream/audio"
 	"NanoKVM-Server/service/stream/framequeue"
@@ -90,6 +91,18 @@ type Client struct {
 	// one's first Take() would return immediately and close an already-closed
 	// channel.
 	writersOnce sync.Once
+
+	// user names the account behind this session, for the room microphone's
+	// log.
+	user string
+
+	// room is this viewer's hold on the room microphone, nil while it is off.
+	// Guarded by roomMutex, which also orders the state messages.
+	roomMutex sync.Mutex
+	room      *roommic.Listener
+	// roomError is the reason the last attempt to switch it on failed, sent
+	// once with the next state message.
+	roomError string
 }
 
 func (c *Client) WsConn() *websocket.Conn {
@@ -108,6 +121,12 @@ type Track struct {
 
 	// audio is nil when the gadget had no capture card at negotiation time.
 	audio rtpWriter
+
+	// room carries the board's own microphone. It is nil on a kernel without
+	// the onboard card. It is negotiated whatever the administrator's setting,
+	// so allowing the microphone needs no new session; nothing is sent on it
+	// until this viewer switches it on.
+	room rtpWriter
 
 	// extensionID is negotiated on the websocket goroutine and read on the
 	// capture goroutine.

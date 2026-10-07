@@ -94,13 +94,19 @@ func (t *Track) writePackets(packets []*rtp.Packet) error {
 // Audio carries no playout delay extension: that hint is about video rendering
 // and the browser's own jitter buffer handles the rest.
 func (t *Track) writeAudioPackets(packets []*rtp.Packet) error {
+	return writeOpusPackets(t.audio, packets)
+}
+
+// writeOpusPackets sends packets that may be shared with other clients, each
+// through a copy of its header, with no header extension.
+func writeOpusPackets(w rtpWriter, packets []*rtp.Packet) error {
 	for _, source := range packets {
 		packet := rtp.Packet{Header: source.Header, Payload: source.Payload}
 
 		packet.Header.Extension = false
 		packet.Header.Extensions = nil
 
-		if err := t.audio.WriteRTP(&packet); err != nil {
+		if err := w.WriteRTP(&packet); err != nil {
 			log.Errorf("failed to write audio RTP: %v", err)
 			return err
 		}

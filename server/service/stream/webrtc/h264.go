@@ -3,6 +3,7 @@ package webrtc
 import (
 	"NanoKVM-Server/config"
 	"NanoKVM-Server/middleware"
+	"NanoKVM-Server/service/roommic"
 	"encoding/json"
 	"sync"
 	"time"
@@ -91,6 +92,7 @@ func Connect(c *gin.Context) {
 
 	// create client
 	client := NewClient(wsConn, videoConn)
+	client.user = roommic.UserOf(c)
 	if err := client.AddTrack(); err != nil {
 		log.Errorf("failed to add track: %s", err)
 		return
@@ -100,6 +102,11 @@ func Connect(c *gin.Context) {
 	signalingHandler := NewSignalingHandler(client)
 	defer signalingHandler.Close()
 	signalingHandler.RegisterCallbacks()
+
+	// Stopped before the handler closes, which lets go of the microphone and
+	// would otherwise send this closing socket one last state.
+	stopRoomWatch := client.watchRoomMic()
+	defer stopRoomWatch()
 	if err := sendICEServers(client, iceServers); err != nil {
 		log.Errorf("failed to send ICE servers: %s", err)
 		return

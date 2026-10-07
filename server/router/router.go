@@ -87,6 +87,7 @@ func server(r *gin.Engine) {
 	applicationRouter(r)
 	vmRouter(r)
 	streamRouter(r)
+	roomMicRouter(r)
 	storageRouter(r)
 	networkRouter(r)
 	hidRouter(r)

@@ -1046,7 +1046,15 @@ const pl = {
         sections: {
           video: 'Wideo',
           usb: 'USB',
-          frontPanel: 'Panel przedni'
+          frontPanel: 'Panel przedni',
+          roomMic: 'Mikrofon w pomieszczeniu'
+        },
+        roomMic: {
+          allow: 'Zezwól na mikrofon w pomieszczeniu',
+          description:
+            'Oglądający mogą słuchać pomieszczenia przez wbudowany mikrofon KVM. Wszyscy oglądający widzą, kiedy jest włączony.',
+          unavailable: 'Niedostępne w tym jądrze',
+          gain: 'Wzmocnienie mikrofonu'
         },
         cpuFreq: {
           title: 'Częstotliwość CPU',
@@ -1678,7 +1686,14 @@ const pl = {
       unmute: 'Włącz dźwięk',
       mute: 'Wycisz',
       hostIdle: 'Host nie wysyła dźwięku',
-      hostIdleHint: 'Odtwórz coś na hoście lub wybierz KVM jako jego wyjście dźwięku.'
+      hostIdleHint: 'Odtwórz coś na hoście lub wybierz KVM jako jego wyjście dźwięku.',
+      host: 'Dźwięk hosta',
+      room: 'Mikrofon w pomieszczeniu',
+      roomListen: 'Słuchaj pomieszczenia',
+      roomVolume: 'Głośność',
+      roomHint: 'Wszyscy oglądający widzą, kiedy jest włączony.',
+      roomLive: 'Mikrofon włączony',
+      roomLiveBy: 'Mikrofon w pomieszczeniu włączony: {{names}}'
     },
     upstream: {
       check: 'Sprawdź aktualizacje',

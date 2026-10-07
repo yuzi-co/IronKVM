@@ -1,7 +1,6 @@
 package direct
 
 import (
-	"encoding/binary"
 	"sync"
 
 	"NanoKVM-Server/service/stream/audio"
@@ -106,22 +105,5 @@ func writeAudio(conn *websocket.Conn, frame audio.Frame) error {
 		return conn.WriteMessage(websocket.BinaryMessage, []byte{audioStateMessage, byte(frame.State)})
 	}
 
-	writer, err := conn.NextWriter(websocket.BinaryMessage)
-	if err != nil {
-		return err
-	}
-
-	var header [audioHeaderSize]byte
-	header[0] = audioMessage
-	binary.LittleEndian.PutUint64(header[1:], frame.Seq)
-	if _, err := writer.Write(header[:]); err != nil {
-		_ = writer.Close()
-		return err
-	}
-	if _, err := writer.Write(frame.Data); err != nil {
-		_ = writer.Close()
-		return err
-	}
-
-	return writer.Close()
+	return writeOpusFrame(conn, audioMessage, frame)
 }

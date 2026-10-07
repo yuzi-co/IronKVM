@@ -52,6 +52,9 @@ func (s *SignalingHandler) Close() {
 
 	s.closed = true
 	s.unregisterH264ModeLocked()
+	if s.client != nil {
+		s.client.closeRoomMic()
+	}
 	if s.client != nil && s.client.WsConn() != nil {
 		getManager().RemoveClient(s.client.WsConn())
 	}
@@ -123,6 +126,9 @@ func (s *SignalingHandler) HandleMessage(message *Message) error {
 		return s.handleVideoCandidate(message.Data)
 	case "heartbeat":
 		return s.handleHeartbeat()
+	case roomMicEvent:
+		s.client.setRoomMic(message.Data == "on")
+		return nil
 	default:
 		log.Debugf("Unhandled message event: %s", message.Event)
 		return nil

@@ -1055,7 +1055,15 @@ const ca = {
         sections: {
           video: 'Vídeo',
           usb: 'USB',
-          frontPanel: 'Panell frontal'
+          frontPanel: 'Panell frontal',
+          roomMic: 'Micròfon de la sala'
+        },
+        roomMic: {
+          allow: 'Permet el micròfon de la sala',
+          description:
+            'Els espectadors poden escoltar la sala amb el micròfon integrat del KVM. Tothom que mira veu quan està encès.',
+          unavailable: 'No disponible amb aquest nucli',
+          gain: 'Guany del micròfon'
         },
         cpuFreq: {
           title: 'Freqüència de la CPU',
@@ -1690,7 +1698,14 @@ const ca = {
       unmute: 'Activa el so',
       mute: 'Silencia',
       hostIdle: "L'amfitrió no envia àudio",
-      hostIdleHint: "Reprodueix alguna cosa a l'amfitrió o tria el KVM com a sortida de so."
+      hostIdleHint: "Reprodueix alguna cosa a l'amfitrió o tria el KVM com a sortida de so.",
+      host: "Àudio de l'amfitrió",
+      room: 'Micròfon de la sala',
+      roomListen: 'Escolta la sala',
+      roomVolume: 'Volum',
+      roomHint: 'Tothom que mira veu quan està encès.',
+      roomLive: 'Micro actiu',
+      roomLiveBy: 'Micròfon de la sala encès: {{names}}'
     },
     upstream: {
       check: 'Cerca actualitzacions',

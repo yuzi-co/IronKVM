@@ -1,5 +1,7 @@
 import Queue from 'yocto-queue';
 
+import { ROOM_AUDIO_MESSAGE, ROOM_STATE_MESSAGE, roomMicControlBytes } from '@/lib/room-mic.ts';
+
 let canvas: OffscreenCanvas | null = null;
 let ctx: OffscreenCanvasRenderingContext2D | null = null;
 let rendering: boolean = false;
@@ -22,6 +24,11 @@ let announcedFrame = false;
 // Asked for only when the page can play it. The board starts arecord for every
 // listener, and a browser without AudioDecoder would hold it for nothing.
 let wantAudio = false;
+// The room microphone is offered when the page asks for it, and its switch is
+// held here so a reconnect can send it again: the server forgets a viewer's
+// switch when its socket closes.
+let wantRoom = false;
+let roomOn = false;
 
 // The board has one hardware encoder, so which of these arrives is the
 // operator's global choice, not this viewer's. The stream is read rather than
@@ -49,10 +56,12 @@ const frameQueue = new Queue<VideoFrame>();
 const frameChannel = new MessageChannel();
 
 type WorkerMessage = {
-  type: 'h264' | 'stop';
+  type: 'h264' | 'stop' | 'room-mic';
   canvas?: OffscreenCanvas;
   url?: string;
   audio?: boolean;
+  room?: boolean;
+  on?: boolean;
 };
 
 frameChannel.port1.onmessage = () => {
@@ -61,7 +70,7 @@ frameChannel.port1.onmessage = () => {
 };
 
 self.onmessage = (event: MessageEvent<WorkerMessage>) => {
-  const { type, canvas: offscreenCanvas, url, audio } = event.data;
+  const { type, canvas: offscreenCanvas, url, audio, room, on } = event.data;
 
   switch (type) {
     case 'h264':
@@ -78,8 +87,13 @@ self.onmessage = (event: MessageEvent<WorkerMessage>) => {
       }) as OffscreenCanvasRenderingContext2D;
       streamUrl = url;
       wantAudio = audio === true;
+      wantRoom = room === true;
       stopped = false;
       connect();
+      break;
+    case 'room-mic':
+      roomOn = on === true;
+      sendRoomSwitch();
       break;
     case 'stop':
       stopped = true;
@@ -101,6 +115,9 @@ function connect() {
     if (wantAudio) {
       url.searchParams.set('audio', '1');
     }
+    if (wantRoom) {
+      url.searchParams.set('room', '1');
+    }
     const nextSocket = new WebSocket(url);
     nextSocket.binaryType = 'arraybuffer';
     socket = nextSocket;
@@ -116,6 +133,9 @@ function connect() {
       decodeBackpressured = false;
       announcedFrame = false;
       self.postMessage({ type: 'socket', state: 'open' });
+      if (roomOn) {
+        sendRoomSwitch();
+      }
     };
 
     nextSocket.onmessage = (event) => {
@@ -223,7 +243,19 @@ function handleWsMessage(message: ArrayBuffer) {
       return;
     }
 
+    if (message.byteLength === 5 && view.getUint8(0) === ROOM_STATE_MESSAGE) {
+      self.postMessage({ type: 'room-state', bytes: new Uint8Array(message.slice(0)) });
+      return;
+    }
+
     if (message.byteLength < 9) {
+      return;
+    }
+
+    if (view.getUint8(0) === ROOM_AUDIO_MESSAGE) {
+      const seq = Number(view.getBigUint64(1, true));
+      const data = message.slice(9);
+      self.postMessage({ type: 'room-audio', seq, data }, [data]);
       return;
     }
 
@@ -494,5 +526,19 @@ function requestStreamResync() {
     resyncRequested = true;
   } catch {
     currentSocket.close();
+  }
+}
+
+// sendRoomSwitch tells the server whether this viewer has the room microphone
+// on. It is sent again on every new socket.
+function sendRoomSwitch() {
+  if (!wantRoom || !socket || socket.readyState !== WebSocket.OPEN) {
+    return;
+  }
+
+  try {
+    socket.send(roomMicControlBytes(roomOn));
+  } catch (error) {
+    console.error('Failed to send the room microphone switch:', error);
   }
 }

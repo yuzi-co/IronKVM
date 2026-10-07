@@ -1064,7 +1064,15 @@ const fr = {
         sections: {
           video: 'Vidéo',
           usb: 'USB',
-          frontPanel: 'Façade'
+          frontPanel: 'Façade',
+          roomMic: 'Micro de la pièce'
+        },
+        roomMic: {
+          allow: 'Autoriser le micro de la pièce',
+          description:
+            'Les spectateurs peuvent écouter la pièce via le micro intégré du KVM. Tous les spectateurs voient quand il est actif.',
+          unavailable: 'Indisponible avec ce noyau',
+          gain: 'Gain du micro'
         },
         cpuFreq: {
           title: 'Fréquence du CPU',
@@ -1703,7 +1711,14 @@ const fr = {
       unmute: 'Réactiver le son',
       mute: 'Couper le son',
       hostIdle: "L'hôte n'envoie pas de son",
-      hostIdleHint: "Lancez un son sur l'hôte, ou choisissez le KVM comme sortie audio."
+      hostIdleHint: "Lancez un son sur l'hôte, ou choisissez le KVM comme sortie audio.",
+      host: "Audio de l'hôte",
+      room: 'Micro de la pièce',
+      roomListen: 'Écouter la pièce',
+      roomVolume: 'Volume',
+      roomHint: 'Tous les spectateurs voient quand il est actif.',
+      roomLive: 'Micro actif',
+      roomLiveBy: 'Micro de la pièce actif : {{names}}'
     },
     upstream: {
       check: 'Rechercher des mises à jour',

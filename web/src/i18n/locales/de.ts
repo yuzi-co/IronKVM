@@ -1071,7 +1071,15 @@ const de = {
         sections: {
           video: 'Video',
           usb: 'USB',
-          frontPanel: 'Frontpanel'
+          frontPanel: 'Frontpanel',
+          roomMic: 'Raummikrofon'
+        },
+        roomMic: {
+          allow: 'Raummikrofon erlauben',
+          description:
+            'Zuschauer können den Raum über das eingebaute Mikrofon des KVM hören. Alle Zuschauer sehen, wann es an ist.',
+          unavailable: 'Mit diesem Kernel nicht verfügbar',
+          gain: 'Mikrofonverstärkung'
         },
         cpuFreq: {
           title: 'CPU-Frequenz',
@@ -1715,7 +1723,14 @@ const de = {
       unmute: 'Ton an',
       mute: 'Stummschalten',
       hostIdle: 'Der Host sendet keinen Ton',
-      hostIdleHint: 'Spiele etwas auf dem Host ab oder wähle das KVM als Audioausgabe.'
+      hostIdleHint: 'Spiele etwas auf dem Host ab oder wähle das KVM als Audioausgabe.',
+      host: 'Host-Audio',
+      room: 'Raummikrofon',
+      roomListen: 'Raum mithören',
+      roomVolume: 'Lautstärke',
+      roomHint: 'Alle Zuschauer sehen, wann es an ist.',
+      roomLive: 'Mikro aktiv',
+      roomLiveBy: 'Raummikrofon an: {{names}}'
     },
     upstream: {
       check: 'Nach Updates suchen',

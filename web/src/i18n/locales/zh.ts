@@ -998,7 +998,15 @@ const zh = {
         sections: {
           video: '视频',
           usb: 'USB',
-          frontPanel: '前面板'
+          frontPanel: '前面板',
+          roomMic: '房间麦克风'
+        },
+        roomMic: {
+          allow: '允许房间麦克风',
+          description:
+            '观看者可以通过 KVM 内置麦克风收听房间声音。开启时，所有观看者都会看到提示。',
+          unavailable: '此内核不可用',
+          gain: '麦克风增益'
         },
         cpuFreq: {
           title: 'CPU 频率',
@@ -1602,7 +1610,14 @@ const zh = {
       unmute: '取消静音',
       mute: '静音',
       hostIdle: '主机未发送音频',
-      hostIdleHint: '请在主机上播放声音，或将 KVM 选为主机的声音输出设备。'
+      hostIdleHint: '请在主机上播放声音，或将 KVM 选为主机的声音输出设备。',
+      host: '主机音频',
+      room: '房间麦克风',
+      roomListen: '收听房间',
+      roomVolume: '音量',
+      roomHint: '开启时，所有观看者都会看到提示。',
+      roomLive: '麦克风开启',
+      roomLiveBy: '房间麦克风已开启：{{names}}'
     },
     upstream: {
       check: '检查更新',

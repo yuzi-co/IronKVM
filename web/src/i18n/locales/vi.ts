@@ -1035,7 +1035,15 @@ const vi = {
         sections: {
           video: 'Video',
           usb: 'USB',
-          frontPanel: 'Mặt trước'
+          frontPanel: 'Mặt trước',
+          roomMic: 'Micrô phòng'
+        },
+        roomMic: {
+          allow: 'Cho phép micrô phòng',
+          description:
+            'Người xem có thể nghe trong phòng qua micrô tích hợp của KVM. Mọi người đang xem đều thấy khi micrô bật.',
+          unavailable: 'Không khả dụng trên nhân này',
+          gain: 'Độ khuếch đại micrô'
         },
         cpuFreq: {
           title: 'Tần số CPU',
@@ -1667,7 +1675,14 @@ const vi = {
       unmute: 'Bật tiếng',
       mute: 'Tắt tiếng',
       hostIdle: 'Máy chủ không gửi âm thanh',
-      hostIdleHint: 'Hãy phát gì đó trên máy chủ, hoặc chọn KVM làm đầu ra âm thanh.'
+      hostIdleHint: 'Hãy phát gì đó trên máy chủ, hoặc chọn KVM làm đầu ra âm thanh.',
+      host: 'Âm thanh máy chủ',
+      room: 'Micrô phòng',
+      roomListen: 'Nghe trong phòng',
+      roomVolume: 'Âm lượng',
+      roomHint: 'Mọi người đang xem đều thấy khi micrô bật.',
+      roomLive: 'Micrô đang bật',
+      roomLiveBy: 'Micrô phòng đang bật: {{names}}'
     },
     upstream: {
       check: 'Kiểm tra cập nhật',

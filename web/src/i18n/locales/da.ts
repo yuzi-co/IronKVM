@@ -1038,7 +1038,15 @@ const da = {
         sections: {
           video: 'Video',
           usb: 'USB',
-          frontPanel: 'Frontpanel'
+          frontPanel: 'Frontpanel',
+          roomMic: 'Rummikrofon'
+        },
+        roomMic: {
+          allow: 'Tillad rummikrofon',
+          description:
+            'Seere kan lytte til rummet gennem KVM-enhedens indbyggede mikrofon. Alle seere kan se, når den er tændt.',
+          unavailable: 'Ikke tilgængelig med denne kerne',
+          gain: 'Mikrofonforstærkning'
         },
         cpuFreq: {
           title: 'CPU-frekvens',
@@ -1668,7 +1676,14 @@ const da = {
       unmute: 'Slå lyd til',
       mute: 'Slå lyd fra',
       hostIdle: 'Værten sender ikke lyd',
-      hostIdleHint: "Afspil noget på værten, eller vælg KVM'en som dens lydudgang."
+      hostIdleHint: "Afspil noget på værten, eller vælg KVM'en som dens lydudgang.",
+      host: 'Værtslyd',
+      room: 'Rummikrofon',
+      roomListen: 'Lyt til rummet',
+      roomVolume: 'Lydstyrke',
+      roomHint: 'Alle seere kan se, når den er tændt.',
+      roomLive: 'Mikrofon aktiv',
+      roomLiveBy: 'Rummikrofon tændt: {{names}}'
     },
     upstream: {
       check: 'Søg efter opdateringer',

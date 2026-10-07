@@ -1045,7 +1045,15 @@ const id = {
         sections: {
           video: 'Video',
           usb: 'USB',
-          frontPanel: 'Panel depan'
+          frontPanel: 'Panel depan',
+          roomMic: 'Mikrofon ruangan'
+        },
+        roomMic: {
+          allow: 'Izinkan mikrofon ruangan',
+          description:
+            'Penonton dapat mendengarkan ruangan melalui mikrofon bawaan KVM. Semua yang menonton melihat saat mikrofon aktif.',
+          unavailable: 'Tidak tersedia pada kernel ini',
+          gain: 'Penguatan mikrofon'
         },
         cpuFreq: {
           title: 'Frekuensi CPU',
@@ -1673,7 +1681,14 @@ const id = {
       unmute: 'Bunyikan',
       mute: 'Bisukan',
       hostIdle: 'Host tidak mengirim audio',
-      hostIdleHint: 'Putar sesuatu di host, atau pilih KVM sebagai output suaranya.'
+      hostIdleHint: 'Putar sesuatu di host, atau pilih KVM sebagai output suaranya.',
+      host: 'Audio host',
+      room: 'Mikrofon ruangan',
+      roomListen: 'Dengarkan ruangan',
+      roomVolume: 'Volume',
+      roomHint: 'Semua yang menonton melihat saat mikrofon aktif.',
+      roomLive: 'Mik aktif',
+      roomLiveBy: 'Mikrofon ruangan aktif: {{names}}'
     },
     upstream: {
       check: 'Periksa pembaruan',

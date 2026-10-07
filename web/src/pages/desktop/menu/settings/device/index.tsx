@@ -6,6 +6,7 @@ import { Section } from '../components/section.tsx';
 import { Hdmi } from './hdmi.tsx';
 import { Oled } from './oled.tsx';
 import { Reboot } from './reboot.tsx';
+import { RoomMic } from './room-mic.tsx';
 import { VirtualDevices } from './virtual-devices.tsx';
 
 // The board's hardware, by what it faces: the video it takes in (PCIe boards
@@ -31,6 +32,9 @@ export const Device = () => {
           <Oled />
           <PowerLedSetting framed={false} />
         </Section>
+        <Divider className="opacity-50" style={{ margin: 0 }} />
+
+        <RoomMic />
       </div>
 
       <Divider className="opacity-50" />

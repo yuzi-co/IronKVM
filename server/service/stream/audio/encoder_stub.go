@@ -14,3 +14,7 @@ var errNoEncoder = errors.New("audio: this build has no Opus encoder")
 func newOpusEncoder() (Encoder, error) {
 	return nil, errNoEncoder
 }
+
+func newOpusEncoderFor(Format) (Encoder, error) {
+	return nil, errNoEncoder
+}

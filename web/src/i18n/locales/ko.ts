@@ -1032,7 +1032,15 @@ const ko = {
         sections: {
           video: '비디오',
           usb: 'USB',
-          frontPanel: '전면 패널'
+          frontPanel: '전면 패널',
+          roomMic: '실내 마이크'
+        },
+        roomMic: {
+          allow: '실내 마이크 허용',
+          description:
+            '시청자가 KVM 내장 마이크로 실내 소리를 들을 수 있습니다. 켜져 있으면 모든 시청자에게 표시됩니다.',
+          unavailable: '이 커널에서는 사용할 수 없음',
+          gain: '마이크 게인'
         },
         cpuFreq: {
           title: 'CPU 주파수',
@@ -1652,7 +1660,14 @@ const ko = {
       unmute: '음소거 해제',
       mute: '음소거',
       hostIdle: '호스트가 오디오를 보내지 않습니다',
-      hostIdleHint: '호스트에서 무언가를 재생하거나 호스트의 사운드 출력으로 KVM을 선택하세요.'
+      hostIdleHint: '호스트에서 무언가를 재생하거나 호스트의 사운드 출력으로 KVM을 선택하세요.',
+      host: '호스트 오디오',
+      room: '실내 마이크',
+      roomListen: '실내 소리 듣기',
+      roomVolume: '볼륨',
+      roomHint: '켜져 있으면 모든 시청자에게 표시됩니다.',
+      roomLive: '마이크 켜짐',
+      roomLiveBy: '실내 마이크 켜짐: {{names}}'
     },
     upstream: {
       check: '업데이트 확인',

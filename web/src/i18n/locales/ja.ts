@@ -1054,7 +1054,15 @@ const ja = {
         sections: {
           video: 'ビデオ',
           usb: 'USB',
-          frontPanel: 'フロントパネル'
+          frontPanel: 'フロントパネル',
+          roomMic: '室内マイク'
+        },
+        roomMic: {
+          allow: '室内マイクを許可',
+          description:
+            '視聴者は KVM 内蔵マイクで室内の音を聞けます。オンのときは視聴者全員に表示されます。',
+          unavailable: 'このカーネルでは利用できません',
+          gain: 'マイクゲイン'
         },
         cpuFreq: {
           title: 'CPU 周波数',
@@ -1684,7 +1692,14 @@ const ja = {
       unmute: 'ミュート解除',
       mute: 'ミュート',
       hostIdle: 'ホストから音声が送られていません',
-      hostIdleHint: 'ホストで何か再生するか、ホストの音声出力に KVM を選んでください。'
+      hostIdleHint: 'ホストで何か再生するか、ホストの音声出力に KVM を選んでください。',
+      host: 'ホストの音声',
+      room: '室内マイク',
+      roomListen: '室内の音を聞く',
+      roomVolume: '音量',
+      roomHint: 'オンのときは視聴者全員に表示されます。',
+      roomLive: 'マイク使用中',
+      roomLiveBy: '室内マイク使用中: {{names}}'
     },
     upstream: {
       check: '更新を確認',

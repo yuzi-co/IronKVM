@@ -1055,7 +1055,15 @@ const nl = {
         sections: {
           video: 'Video',
           usb: 'USB',
-          frontPanel: 'Voorpaneel'
+          frontPanel: 'Voorpaneel',
+          roomMic: 'Ruimtemicrofoon'
+        },
+        roomMic: {
+          allow: 'Ruimtemicrofoon toestaan',
+          description:
+            'Kijkers kunnen de ruimte horen via de ingebouwde microfoon van de KVM. Iedereen die kijkt ziet wanneer hij aan staat.',
+          unavailable: 'Niet beschikbaar met deze kernel',
+          gain: 'Microfoonversterking'
         },
         cpuFreq: {
           title: 'CPU-frequentie',
@@ -1692,7 +1700,14 @@ const nl = {
       unmute: 'Geluid aan',
       mute: 'Dempen',
       hostIdle: 'De host stuurt geen geluid',
-      hostIdleHint: 'Speel iets af op de host, of kies de KVM als geluidsuitvoer.'
+      hostIdleHint: 'Speel iets af op de host, of kies de KVM als geluidsuitvoer.',
+      host: 'Hostaudio',
+      room: 'Ruimtemicrofoon',
+      roomListen: 'Meeluisteren in de ruimte',
+      roomVolume: 'Volume',
+      roomHint: 'Iedereen die kijkt ziet wanneer hij aan staat.',
+      roomLive: 'Microfoon aan',
+      roomLiveBy: 'Ruimtemicrofoon aan: {{names}}'
     },
     upstream: {
       check: 'Controleren op updates',

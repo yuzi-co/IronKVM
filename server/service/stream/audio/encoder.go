@@ -29,6 +29,32 @@ const (
 	maxPacketBytes = 4000
 )
 
+// Format is one capture source: which ALSA device arecord reads, how many
+// channels it delivers and how hard the encoder works on them. The rate and
+// the frame length are the same for every source, because Opus in RTP runs at
+// 48 kHz and every path here sends 20 ms frames.
+type Format struct {
+	// Device is the ALSA device, by card name rather than index.
+	Device string
+	// Channels is what arecord asks the device for and what the encoder is
+	// created with.
+	Channels int
+	// Bitrate is the encoder's target in bit/s.
+	Bitrate int
+}
+
+// HostFormat is the USB audio gadget: what the managed host plays to the KVM.
+var HostFormat = Format{
+	Device:   CaptureDevice,
+	Channels: Channels,
+	Bitrate:  Bitrate,
+}
+
+// ChunkBytes is 20 ms of this format as S16_LE.
+func (f Format) ChunkBytes() int {
+	return SamplesPerFrame * f.Channels * 2
+}
+
 // Encoder turns one 20 ms chunk of 48 kHz stereo S16_LE into one packet.
 //
 // It is an interface because the implementation is a static riscv64 archive:

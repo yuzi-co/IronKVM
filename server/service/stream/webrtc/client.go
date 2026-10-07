@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"sync"
 
+	"NanoKVM-Server/service/roommic"
 	"NanoKVM-Server/service/stream"
 	"NanoKVM-Server/service/stream/audio"
 	"NanoKVM-Server/service/stream/framequeue"
@@ -291,6 +292,27 @@ func (c *Client) AddTrack() error {
 		go startRTCPReader(audioSender)
 
 		track.audio = audioTrack
+	}
+
+	// The room microphone gets a track of its own whenever this kernel has the
+	// onboard card, so a viewer can switch it on without a new session. On
+	// slot A there is no such card and no track, and nothing ever opens the
+	// codec there.
+	if roommic.Available() {
+		roomTrack, err := newRoomTrack()
+		if err != nil {
+			log.Errorf("failed to create room microphone track: %s", err)
+			return err
+		}
+
+		roomSender, err := c.video.AddTrack(roomTrack)
+		if err != nil {
+			log.Errorf("failed to add room microphone track: %s", err)
+			return err
+		}
+		go startRTCPReader(roomSender)
+
+		track.room = roomTrack
 	}
 
 	c.mutex.Lock()

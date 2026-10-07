@@ -1040,7 +1040,15 @@ const tr = {
         sections: {
           video: 'Video',
           usb: 'USB',
-          frontPanel: 'Ön panel'
+          frontPanel: 'Ön panel',
+          roomMic: 'Oda mikrofonu'
+        },
+        roomMic: {
+          allow: 'Oda mikrofonuna izin ver',
+          description:
+            "İzleyiciler odayı KVM'nin yerleşik mikrofonuyla dinleyebilir. Açıkken izleyen herkes görür.",
+          unavailable: 'Bu çekirdekte kullanılamaz',
+          gain: 'Mikrofon kazancı'
         },
         cpuFreq: {
           title: 'CPU Frekansı',
@@ -1668,7 +1676,14 @@ const tr = {
       unmute: 'Sesi aç',
       mute: 'Sesi kapat',
       hostIdle: 'Ana makine ses göndermiyor',
-      hostIdleHint: "Ana makinede bir şey çalın veya ses çıkışı olarak KVM'yi seçin."
+      hostIdleHint: "Ana makinede bir şey çalın veya ses çıkışı olarak KVM'yi seçin.",
+      host: 'Ana bilgisayar sesi',
+      room: 'Oda mikrofonu',
+      roomListen: 'Odayı dinle',
+      roomVolume: 'Ses düzeyi',
+      roomHint: 'Açıkken izleyen herkes görür.',
+      roomLive: 'Mikrofon açık',
+      roomLiveBy: 'Oda mikrofonu açık: {{names}}'
     },
     upstream: {
       check: 'Güncellemeleri denetle',
