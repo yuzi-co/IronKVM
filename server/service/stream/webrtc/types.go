@@ -136,6 +136,16 @@ type Track struct {
 	// extensionID is negotiated on the websocket goroutine and read on the
 	// capture goroutine.
 	extensionID atomic.Uint32
+
+	// sent is the newest video sequence number written, with sentValid set
+	// once there is one. The writer stores it and the RTCP reader reads it.
+	sent atomic.Uint32
+	// sentRing holds the latest sequence numbers written, by their low bits
+	// (wasSent).
+	sentRing [sentRingSize]atomic.Uint32
+	// keySent is the first sequence number of the last keyframe written,
+	// with sentValid set once there is one (markKey).
+	keySent atomic.Uint32
 }
 
 type Message struct {

@@ -629,7 +629,8 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 		cfg.vbv_delay_ms = env_uint("KVMV_H265_VBV_DELAY_MS", KVMV_H265_VBV_DELAY_MS);
 	} else {
 		kvmv_h264_qp_range(getenv("KVMV_H264_QP"), &qp);
-		cfg.vbv_delay_ms = env_uint("KVMV_H264_VBV_DELAY_MS", KVMV_H264_VBV_DELAY_MS);
+		cfg.vbv_delay_ms = env_uint("KVMV_H264_VBV_DELAY_MS",
+					    kvmv_h264_vbv_delay_ms(cfg.gop));
 	}
 	cfg.min_qp = qp.min_qp;
 	cfg.max_qp = qp.max_qp;
@@ -775,6 +776,13 @@ static int apply_settings(unsigned int width, unsigned int height,
 		 * applies a GOP only at stream start: rebuild there. */
 		if (kvmv_pipe_set_gop(&pipe_state, (unsigned int)gop) ||
 		    key_control_missing)
+			rebuild = 1;
+		/* The H.264 buffer follows the GOP (kvmv_h264_vbv_delay_ms)
+		 * and is only taken at stream start. */
+		if (pipe_codec == KVMV_CODEC_KIND_H264 &&
+		    getenv("KVMV_H264_VBV_DELAY_MS") == NULL &&
+		    kvmv_h264_vbv_delay_ms((unsigned int)gop) !=
+		    kvmv_h264_vbv_delay_ms((unsigned int)pipe_gop))
 			rebuild = 1;
 		pipe_gop = gop;
 		changed = 1;

@@ -72,7 +72,10 @@ func TestTheEncoderIsToldTheGopAtTheStart(t *testing.T) {
 }
 
 func TestAChangedGopReachesTheEncoder(t *testing.T) {
-	withScreenGop(t, 30)
+	// Off-device the library takes no keyframe request, so the encoder is
+	// given the setting itself, up to a second (keyframe_policy.go).
+	withScreenGop(t, 12)
+	withScreenFPS(t, 30)
 	told := withEncoderGop(t)
 	withCapture(t, func(uint16, uint16, uint16) ([]byte, int) {
 		return []byte{0x00, 0x00, 0x00, 0x01}, 3
@@ -84,12 +87,12 @@ func TestAChangedGopReachesTheEncoder(t *testing.T) {
 
 	waitFor(t, "the first gop", func() bool { return len(told()) > 0 })
 
-	common.SetScreen("gop", 60)
+	common.SetScreen("gop", 20)
 
 	waitFor(t, "the new gop", func() bool {
 		values := told()
 
-		return len(values) > 1 && values[len(values)-1] == 60
+		return len(values) > 1 && values[len(values)-1] == 20
 	})
 }
 

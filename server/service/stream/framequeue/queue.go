@@ -147,6 +147,19 @@ func (q *Queue[T]) Put(value T, key bool) bool {
 // Take blocks until a frame is queued and returns it, or returns false once
 // the queue is closed.
 func (q *Queue[T]) Take() (T, bool) {
+	value, _, ok := q.TakeInfo()
+
+	return value, ok
+}
+
+// Info describes a frame as Put saw it.
+type Info struct {
+	// Key is the key argument Put was given.
+	Key bool
+}
+
+// TakeInfo is Take, and also says what Put was told about the frame.
+func (q *Queue[T]) TakeInfo() (T, Info, bool) {
 	q.mutex.Lock()
 	defer q.mutex.Unlock()
 
@@ -156,7 +169,7 @@ func (q *Queue[T]) Take() (T, bool) {
 
 	var zero T
 	if q.closed {
-		return zero, false
+		return zero, Info{}, false
 	}
 
 	e := q.frames[q.head]
@@ -164,7 +177,7 @@ func (q *Queue[T]) Take() (T, bool) {
 	q.head = (q.head + 1) % len(q.frames)
 	q.count--
 
-	return e.value, true
+	return e.value, Info{Key: e.key}, true
 }
 
 // Close releases the consumer. Frames still queued are discarded: the viewer

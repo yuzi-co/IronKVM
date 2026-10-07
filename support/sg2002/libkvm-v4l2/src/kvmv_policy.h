@@ -39,6 +39,21 @@
 #define KVMV_H264_VBV_DELAY_MS 1000
 
 /*
+ * The buffer for a longer GOP (ironkvm-dist#72, run sheet trial 64). The
+ * Coda980's rate control lets the I picture fill the buffer in proportion to
+ * the GOP: at 2000 kbit/s and 1000 ms, a 1080p keyframe on btop is about 100
+ * kB at GOP 30 and 250 kB, the whole buffer, at GOP 99. The server's adaptive
+ * keyframes ask for 2 s GOPs, and on slot B a keyframe costs about 1 ms of
+ * the send path per 1.2 kB, so the buffer shrinks with the GOP to keep the I
+ * picture near its GOP 30 size: 1000 ms * 30 / GOP, never under
+ * KVMV_H264_VBV_DELAY_MIN_MS, above the cliff where the I picture falls apart
+ * (150 to 200 ms, trial 61). Trial 64, 1080p, btop: GOP 99 at 300 ms gives
+ * 110 kB keyframes, GOP 60 at 500 ms 173 kB (30 fps; 124 kB at GOP 30).
+ */
+#define KVMV_H264_VBV_DELAY_MIN_MS 300
+unsigned int kvmv_h264_vbv_delay_ms(unsigned int gop);
+
+/*
  * H.265 on the WAVE420L (ironkvm-dist#55, run sheet trials 13, 20 and 51):
  * the same maximum QP as H.264, a lower minimum and a longer initial delay.
  *

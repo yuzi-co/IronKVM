@@ -113,6 +113,38 @@ func TestQueueRefusesAFrameThatWouldExceedTheByteBudget(t *testing.T) {
 	}
 }
 
+// A viewer asks the encoder for a keyframe while it waits for one and could
+// take it, and not while its window is full: it would refuse that keyframe.
+func TestQueueWantsAKeyframeOnlyWhenItCouldTakeOne(t *testing.T) {
+	q := newFrameQueue(8, 1024*1024)
+	if !q.wantsKeyframe() {
+		t.Fatal("a new viewer does not want a keyframe")
+	}
+
+	q.offer(newOutboundFrame(true, 1, make([]byte, 10)))
+	if q.wantsKeyframe() {
+		t.Fatal("wants a keyframe right after one")
+	}
+
+	q.enableFlowControl(1)
+	if !q.wantsKeyframe() {
+		t.Fatal("a resynchronised viewer with room does not want a keyframe")
+	}
+
+	q.offer(newOutboundFrame(true, 2, make([]byte, 10)))
+	q.popForWrite()
+	q.requestResync()
+	q.inFlight = append(q.inFlight, 3)
+	if q.wantsKeyframe() {
+		t.Fatal("wants a keyframe with its window full")
+	}
+
+	q.acknowledge(3)
+	if !q.wantsKeyframe() {
+		t.Fatal("does not want a keyframe once its window has room")
+	}
+}
+
 // writeFrame has to produce one binary message holding the header followed by
 // the frame, which is what the browser decoder reads.
 func TestWriteFrameSendsOneMessageWithTheHeaderInFront(t *testing.T) {

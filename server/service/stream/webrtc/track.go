@@ -83,9 +83,52 @@ func (t *Track) writePackets(packets []*rtp.Packet) error {
 			log.Errorf("failed to write RTP: %v", err)
 			return err
 		}
+
+		v := uint32(packet.SequenceNumber) | sentValid
+		t.sentRing[packet.SequenceNumber%sentRingSize].Store(v)
+		t.sent.Store(v)
 	}
 
 	return nil
+}
+
+// sentValid marks t.sent and the entries of t.sentRing as holding a sequence
+// number.
+const sentValid = 1 << 16
+
+// sentRingSize is how many of the latest sequence numbers a track remembers
+// writing. It is more than the NACK responder keeps (nackResponderSize).
+const sentRingSize = 1024
+
+// markKey records that the frame about to be written, starting at seq, is a
+// keyframe. Only the writer calls it.
+func (t *Track) markKey(seq uint16) {
+	t.keySent.Store(uint32(seq) | sentValid)
+}
+
+// keySequence is the first sequence number of the last keyframe written, and
+// false before the first.
+func (t *Track) keySequence() (uint16, bool) {
+	v := t.keySent.Load()
+
+	return uint16(v), v&sentValid != 0
+}
+
+// wasSent reports whether seq is among the last sentRingSize sequence numbers
+// and was written to this viewer. The packetizer is shared, so the frames a
+// viewer's queue gave up leave holes in its sequence: the viewer NACKs them,
+// but nothing was lost on the network, and its queue has already asked for a
+// keyframe.
+func (t *Track) wasSent(seq uint16) bool {
+	return t.sentRing[seq%sentRingSize].Load() == uint32(seq)|sentValid
+}
+
+// sentSequence is the newest video sequence number written to this viewer,
+// and false before the first. The RTCP reader compares a NACK with it.
+func (t *Track) sentSequence() (uint16, bool) {
+	v := t.sent.Load()
+
+	return uint16(v), v&sentValid != 0
 }
 
 // writeAudioPackets sends one audio frame to this client's peer connection.
