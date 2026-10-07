@@ -5,6 +5,7 @@ import (
 	"slices"
 	"sync"
 
+	"NanoKVM-Server/authn"
 	"NanoKVM-Server/service/stream/audio"
 
 	log "github.com/sirupsen/logrus"
@@ -35,8 +36,22 @@ type Status struct {
 	Gain int `json:"gain"`
 	// Live is true while the microphone is open, whoever opened it.
 	Live bool `json:"live"`
-	// Listeners names the accounts listening, each once.
-	Listeners []string `json:"listeners"`
+	// ListenerCount is how many accounts are listening.
+	ListenerCount int `json:"listenerCount"`
+	// Listeners names the accounts listening, each once. Only administrators
+	// are told who listens: ForViewer leaves it out for everyone else.
+	Listeners []string `json:"listeners,omitempty"`
+}
+
+// ForViewer returns the status as a viewer with the given role may see it.
+// The listeners' names go to administrators only; everyone else keeps the
+// live flag and the count.
+func (s Status) ForViewer(role authn.Role) Status {
+	if role != authn.RoleAdmin {
+		s.Listeners = nil
+	}
+
+	return s
 }
 
 // Manager counts the viewers who have the microphone on, opens it for the
@@ -119,11 +134,12 @@ func (m *Manager) Status() Status {
 	slices.Sort(names)
 
 	return Status{
-		Available: available,
-		Allowed:   settings.Allowed,
-		Gain:      settings.Gain,
-		Live:      len(m.listeners) > 0,
-		Listeners: names,
+		Available:     available,
+		Allowed:       settings.Allowed,
+		Gain:          settings.Gain,
+		Live:          len(m.listeners) > 0,
+		ListenerCount: len(names),
+		Listeners:     names,
 	}
 }
 

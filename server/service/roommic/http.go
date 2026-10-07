@@ -18,10 +18,21 @@ type SetRequest struct {
 }
 
 // GetStatus answers every signed-in viewer: the page needs it to decide what
-// to show, and the live flag is what the indicator shows to everyone.
+// to show, and the live flag is what the indicator shows to everyone. Who is
+// listening is told to administrators only.
 func GetStatus(c *gin.Context) {
 	var rsp proto.Response
-	rsp.OkRspWithData(c, Shared.Status())
+	rsp.OkRspWithData(c, Shared.Status().ForViewer(RoleOf(c)))
+}
+
+// RoleOf returns the role of the viewer behind a request. A request without a
+// principal counts as an ordinary user, so it is told the least.
+func RoleOf(c *gin.Context) authn.Role {
+	if principal, ok := middleware.CurrentPrincipal(c); ok {
+		return principal.Role
+	}
+
+	return authn.RoleUser
 }
 
 // SetSettings is for administrators. The router puts it behind RequireRole

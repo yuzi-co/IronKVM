@@ -93,6 +93,7 @@ func Connect(c *gin.Context) {
 	// create client
 	client := NewClient(wsConn, videoConn)
 	client.user = roommic.UserOf(c)
+	client.role = roommic.RoleOf(c)
 	if err := client.AddTrack(); err != nil {
 		log.Errorf("failed to add track: %s", err)
 		return
