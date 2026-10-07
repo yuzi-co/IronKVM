@@ -141,6 +141,9 @@ type Source struct {
 	// command which does not need ALSA.
 	newCmd func() *exec.Cmd
 
+	// chunkBytes is 20 ms of the format the child delivers.
+	chunkBytes int
+
 	minBackoff time.Duration
 	maxBackoff time.Duration
 
@@ -158,8 +161,14 @@ type Source struct {
 }
 
 func NewSource() *Source {
+	return NewSourceFor(HostFormat)
+}
+
+// NewSourceFor reads one capture format.
+func NewSourceFor(format Format) *Source {
 	return &Source{
-		newCmd:     newArecord,
+		newCmd:     func() *exec.Cmd { return arecordFor(format) },
+		chunkBytes: format.ChunkBytes(),
 		minBackoff: 200 * time.Millisecond,
 		maxBackoff: 5 * time.Second,
 		done:       make(chan struct{}),
@@ -182,11 +191,16 @@ func NewSource() *Source {
 // (now wrong) chunk size, opus_encode still succeeds, and the only symptom is
 // audio at the wrong speed.
 func newArecord() *exec.Cmd {
+	return arecordFor(HostFormat)
+}
+
+// arecordFor reads one format's device the same way.
+func arecordFor(format Format) *exec.Cmd {
 	return exec.Command("arecord",
-		"-D", CaptureDevice,
+		"-D", format.Device,
 		"-f", "S16_LE",
 		"-r", strconv.Itoa(SampleRate),
-		"-c", strconv.Itoa(Channels),
+		"-c", strconv.Itoa(format.Channels),
 		"-t", "raw",
 		"--period-size="+strconv.Itoa(SamplesPerFrame),
 	)
@@ -213,7 +227,11 @@ func newArecord() *exec.Cmd {
 // when sound arrives. A real failure keeps its warnings, which fall quiet
 // after quietAfterFailures.
 func (s *Source) Run(handle func([]byte)) {
-	chunk := make([]byte, ChunkBytes)
+	chunkBytes := s.chunkBytes
+	if chunkBytes == 0 {
+		chunkBytes = ChunkBytes
+	}
+	chunk := make([]byte, chunkBytes)
 	backoff := s.minBackoff
 
 	var failures int

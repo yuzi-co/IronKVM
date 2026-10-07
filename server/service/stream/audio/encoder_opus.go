@@ -26,6 +26,10 @@ import (
 type opusEncoder struct {
 	state *C.OpusEncoder
 
+	// format is what the encoder was created for. Encode checks each chunk
+	// against its size.
+	format Format
+
 	// scratch receives the packet from C. One encoder belongs to one stream
 	// and Encode is called from one goroutine, so a single buffer is enough
 	// and it keeps 50 allocations a second off the heap.
@@ -33,11 +37,16 @@ type opusEncoder struct {
 }
 
 func newOpusEncoder() (Encoder, error) {
+	return newOpusEncoderFor(HostFormat)
+}
+
+// newOpusEncoderFor builds an encoder for one capture format.
+func newOpusEncoderFor(format Format) (Encoder, error) {
 	var status C.int
 
 	state := C.opus_encoder_create(
 		C.opus_int32(SampleRate),
-		C.int(Channels),
+		C.int(format.Channels),
 		C.OPUS_APPLICATION_AUDIO,
 		&status,
 	)
@@ -45,7 +54,7 @@ func newOpusEncoder() (Encoder, error) {
 		return nil, fmt.Errorf("opus_encoder_create: %s", opusError(status))
 	}
 
-	encoder := &opusEncoder{state: state, scratch: make([]byte, maxPacketBytes)}
+	encoder := &opusEncoder{state: state, format: format, scratch: make([]byte, maxPacketBytes)}
 
 	// OPUS_APPLICATION_AUDIO rather than VOIP. This carries desktop audio, not
 	// a phone call, and VOIP was measured more expensive as well as wrong:
@@ -56,7 +65,7 @@ func newOpusEncoder() (Encoder, error) {
 		request C.int
 		value   C.opus_int32
 	}{
-		{"bitrate", C.OPUS_SET_BITRATE_REQUEST, C.opus_int32(Bitrate)},
+		{"bitrate", C.OPUS_SET_BITRATE_REQUEST, C.opus_int32(format.Bitrate)},
 		{"complexity", C.OPUS_SET_COMPLEXITY_REQUEST, C.opus_int32(Complexity)},
 	}
 
@@ -92,8 +101,8 @@ func (e *opusEncoder) Encode(pcm []byte, dst []byte) ([]byte, error) {
 		return dst, errors.New("audio: the encoder is closed")
 	}
 
-	if len(pcm) != ChunkBytes {
-		return dst, fmt.Errorf("audio: chunk is %d bytes, want %d", len(pcm), ChunkBytes)
+	if want := e.format.ChunkBytes(); len(pcm) != want {
+		return dst, fmt.Errorf("audio: chunk is %d bytes, want %d", len(pcm), want)
 	}
 
 	// The samples are S16_LE and this is a little-endian machine, so the byte

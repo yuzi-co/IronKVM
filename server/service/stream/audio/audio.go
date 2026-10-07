@@ -94,6 +94,10 @@ type Stream struct {
 	// without the device libraries.
 	newEncoder func() (Encoder, error)
 
+	// filter, when set, works on each chunk in place before it is encoded. It
+	// runs on the source goroutine only.
+	filter func([]byte)
+
 	// encoder and packet are touched only by the source goroutine, between
 	// Start launching it and Run returning.
 	encoder Encoder
@@ -110,9 +114,16 @@ type Stream struct {
 }
 
 func NewStream() *Stream {
+	return NewStreamFor(HostFormat, nil)
+}
+
+// NewStreamFor captures one format. filter, if not nil, is applied to each
+// 20 ms chunk of S16_LE before it is encoded, and may change it in place.
+func NewStreamFor(format Format, filter func([]byte)) *Stream {
 	return &Stream{
-		source:     NewSource(),
-		newEncoder: newOpusEncoder,
+		source:     NewSourceFor(format),
+		newEncoder: func() (Encoder, error) { return newOpusEncoderFor(format) },
+		filter:     filter,
 		// Four frames of slack. A consumer further behind than 80 ms is not
 		// going to catch up, and buffering only adds delay.
 		frames: make(chan []byte, 4),
@@ -234,6 +245,10 @@ func (s *Stream) SetStateHandler(fn func(State)) {
 // reports that it happened. This channel therefore has to keep up, and the
 // only consumer is the send loop, which does not block.
 func (s *Stream) consume(chunk []byte) {
+	if s.filter != nil {
+		s.filter(chunk)
+	}
+
 	packet, err := s.encoder.Encode(chunk, s.packet[:0])
 	if err != nil {
 		s.reportEncodeFailure(err)
