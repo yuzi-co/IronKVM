@@ -294,4 +294,19 @@ enum kvmv_prime kvmv_prime_mode(const char *env, int hevc);
  */
 int kvmv_receiver_fresh(uint64_t seen_ms, uint64_t now_ms, unsigned int max_age_ms);
 
+/*
+ * How long a pipeline build that found no usable source waits before the
+ * next try. After an HDMI source change the receiver reports no signal until
+ * it has locked to the new mode, about 0.5 to 1 s after the change on the
+ * LT6911UXC (trial 56). A build retried every 500 ms then started up to
+ * 500 ms after the signal was back, on every mode change; within
+ * KVMV_CHANGE_WINDOW_MS of a change it retries every KVMV_CHANGE_RETRY_MS
+ * instead. Outside it (no cable, the host asleep) the slow interval stands,
+ * slow_ms. change_ms is when the source last changed, 0 for never.
+ */
+#define KVMV_CHANGE_WINDOW_MS 5000U
+#define KVMV_CHANGE_RETRY_MS 100U
+unsigned int kvmv_start_retry_ms(uint64_t change_ms, uint64_t now_ms,
+				 unsigned int slow_ms);
+
 #endif
