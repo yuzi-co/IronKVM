@@ -104,6 +104,7 @@ func (m *WebRTCManager) StartAudioStream() {
 func StopAudioCapture() {
 	getManager().stopAudioStream()
 	audio.Shared.StopAll()
+	roomMics.CloseAll("the server is stopping")
 }
 
 // stopAudioStream ends capture and forgets the stream. The caller decides

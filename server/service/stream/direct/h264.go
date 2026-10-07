@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"NanoKVM-Server/middleware"
+	"NanoKVM-Server/service/roommic"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -48,7 +49,19 @@ func Connect(c *gin.Context) {
 		return ws.SetReadDeadline(time.Now().Add(pongWait))
 	})
 
+	// The room microphone, likewise only for a browser that asked, and only on
+	// a kernel with the onboard card. Set before the client is added, which
+	// starts its writer.
+	if c.Query("room") == "1" && roommic.Available() {
+		client.room = newRoomSession(client, roommic.UserOf(c))
+	}
+
 	streamer.addClient(client)
+
+	if client.room != nil {
+		stopRoomWatch := client.room.watch()
+		defer stopRoomWatch()
+	}
 
 	// Audio only for a browser that asked. An older viewer reads byte 0 of
 	// every message as the keyframe flag and must never be sent an audio one.
@@ -73,6 +86,9 @@ func Connect(c *gin.Context) {
 			return
 		}
 		_ = ws.SetReadDeadline(time.Now().Add(pongWait))
+		if client.room != nil && client.room.handleControl(messageType, data) {
+			continue
+		}
 		client.handleControl(messageType, data)
 	}
 }

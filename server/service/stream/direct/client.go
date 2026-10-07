@@ -253,6 +253,10 @@ type client struct {
 	queue *frameQueue
 	audio *audioQueue
 
+	// room is the room microphone, nil for a viewer that did not ask for it
+	// or a kernel without the card. Set before the writer starts.
+	room *roomSession
+
 	done       chan struct{}
 	writerDone chan struct{}
 	closeOnce  sync.Once
@@ -277,6 +281,9 @@ func (c *client) close() {
 		close(c.done)
 		c.queue.close()
 		c.audio.close()
+		if c.room != nil {
+			c.room.close()
+		}
 		_ = c.conn.Close()
 	})
 }
@@ -406,6 +413,18 @@ func (c *client) writeLoop() {
 				return
 			}
 			wroteAudio = true
+		}
+
+		if c.room != nil {
+			wrote, err := c.room.write(c.conn, func() error {
+				return c.conn.SetWriteDeadline(time.Now().Add(writeWait))
+			})
+			if err != nil {
+				log.Debugf("failed to write room microphone to %s: %s", c.conn.RemoteAddr(), err)
+				c.close()
+				return
+			}
+			wroteAudio = wroteAudio || wrote
 		}
 
 		if frame := c.queue.popForWrite(); frame != nil {
