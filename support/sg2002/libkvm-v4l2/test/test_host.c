@@ -701,6 +701,14 @@ static void test_clamps_and_rate(void)
 	CHECK_EQ(kvmv_default_kbps(3840, 2160), 7500);
 	CHECK_EQ(kvmv_default_kbps(65535, 65535), 10000);
 
+	/* The H.264 buffer shrinks with longer GOPs (trial 64), not under 300 ms. */
+	CHECK_EQ(kvmv_h264_vbv_delay_ms(1), KVMV_H264_VBV_DELAY_MS);
+	CHECK_EQ(kvmv_h264_vbv_delay_ms(30), KVMV_H264_VBV_DELAY_MS);
+	CHECK_EQ(kvmv_h264_vbv_delay_ms(60), 500);
+	CHECK_EQ(kvmv_h264_vbv_delay_ms(99), 303);
+	CHECK_EQ(kvmv_h264_vbv_delay_ms(100), 300);
+	CHECK_EQ(kvmv_h264_vbv_delay_ms(255), KVMV_H264_VBV_DELAY_MIN_MS);
+
 	/* The QP range: defaults, an override, and overrides that do not parse. */
 	{
 		struct kvmv_qp_range r;

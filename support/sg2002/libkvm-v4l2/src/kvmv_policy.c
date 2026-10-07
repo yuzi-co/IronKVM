@@ -43,6 +43,16 @@ void kvmv_h264_qp_range(const char *spec, struct kvmv_qp_range *range)
 	qp_range(spec, KVMV_H264_MIN_QP, KVMV_H264_MAX_QP, range);
 }
 
+unsigned int kvmv_h264_vbv_delay_ms(unsigned int gop)
+{
+	unsigned int ms;
+
+	if (gop <= 30)
+		return KVMV_H264_VBV_DELAY_MS;
+	ms = KVMV_H264_VBV_DELAY_MS * 30U / gop;
+	return ms < KVMV_H264_VBV_DELAY_MIN_MS ? KVMV_H264_VBV_DELAY_MIN_MS : ms;
+}
+
 void kvmv_h265_qp_range(const char *spec, struct kvmv_qp_range *range)
 {
 	qp_range(spec, KVMV_H265_MIN_QP, KVMV_H265_MAX_QP, range);
