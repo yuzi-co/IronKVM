@@ -14,7 +14,10 @@ export type RoomMicStatus = {
   gain: number;
   // live is true while the microphone is open for anyone.
   live: boolean;
-  // listeners names who has it on.
+  // listenerCount is how many accounts have it on.
+  listenerCount: number;
+  // listeners names who has it on. The server tells administrators only;
+  // for everyone else it is empty.
   listeners: string[];
 };
 
@@ -27,6 +30,7 @@ export const unknownRoomMicStatus: RoomMicStatus = {
   allowed: false,
   gain: ROOM_MIC_DEFAULT_GAIN,
   live: false,
+  listenerCount: 0,
   listeners: []
 };
 
@@ -45,8 +49,13 @@ export function parseRoomMicStatus(data: unknown): RoomMicStatus {
     allowed: d.allowed === true,
     gain: typeof d.gain === 'number' ? d.gain : ROOM_MIC_DEFAULT_GAIN,
     live: d.live === true,
+    listenerCount: asCount(d.listenerCount),
     listeners: asStrings(d.listeners)
   };
+}
+
+function asCount(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? Math.floor(value) : 0;
 }
 
 // What the video connection says about the microphone, for this viewer.
@@ -54,6 +63,9 @@ export type RoomMicPush = {
   live: boolean;
   listening: boolean;
   allowed: boolean;
+  // WebRTC says who listens (to an administrator) and how many; H.264
+  // direct says neither.
+  listenerCount?: number;
   listeners?: string[];
   error: '' | 'not-allowed' | 'unavailable';
 };
@@ -71,6 +83,7 @@ export function roomMicPushFromSignal(data: string | undefined): RoomMicPush | n
       live: d.live === true,
       listening: d.listening === true,
       allowed: d.allowed === true,
+      listenerCount: asCount(d.listenerCount),
       listeners: asStrings(d.listeners),
       error: asError(d.error)
     };
@@ -113,7 +126,10 @@ export function applyRoomMicPush(status: RoomMicStatus, push: RoomMicPush): Room
     available: true,
     allowed: push.allowed,
     live: push.live,
-    listeners: push.listeners ?? status.listeners
+    // A push without the count or the names (H.264 direct) keeps the polled
+    // ones while the microphone stays live, and clears them once it is not.
+    listenerCount: push.listenerCount ?? (push.live ? status.listenerCount : 0),
+    listeners: push.listeners ?? (push.live ? status.listeners : [])
   };
 }
 
@@ -138,9 +154,9 @@ export function nextRoomMicSwitch(current: RoomMicSwitch, push: RoomMicPush): Ro
   return current;
 }
 
-// showRoomMicControls decides whether the audio menu offers the microphone:
-// the kernel has it, an administrator allowed it, and the video connection in
-// use can carry it (MJPEG cannot).
+// showRoomMicControls decides whether the microphone's own toolbar entry
+// shows: the kernel has it, an administrator allowed it, and the video
+// connection in use can carry it (MJPEG cannot).
 export function showRoomMicControls(status: RoomMicStatus, transportOffersRoom: boolean): boolean {
   return status.available && status.allowed && transportOffersRoom;
 }
@@ -151,9 +167,39 @@ export function showRoomMicIndicator(status: RoomMicStatus): boolean {
   return status.available && status.live;
 }
 
-// showAudioMenu decides whether the speaker entry is on the bar at all.
-export function showAudioMenu(hasHostAudio: boolean, roomControls: boolean): boolean {
-  return hasHostAudio || roomControls;
+// The toolbar's two audio entries: the speaker for the host's audio and the
+// room microphone's own.
+export type AudioEntries = { speaker: boolean; roomMic: boolean };
+
+// audioEntries decides which audio entries are on the bar. The speaker needs
+// host audio and can be hidden in Preferences. The microphone's entry follows
+// showRoomMicControls alone: hiding the speaker does not hide it.
+export function audioEntries(options: {
+  speakerEnabled: boolean;
+  hasHostAudio: boolean;
+  status: RoomMicStatus;
+  transportOffersRoom: boolean;
+}): AudioEntries {
+  return {
+    speaker: options.speakerEnabled && options.hasHostAudio,
+    roomMic: showRoomMicControls(options.status, options.transportOffersRoom)
+  };
+}
+
+// The indicator's tooltip, as a translation key and its values.
+export type RoomMicIndicatorTitle =
+  { key: 'speaker.roomLiveBy'; names: string } | { key: 'speaker.roomLive' };
+
+// roomMicIndicatorTitle says who listens to an administrator and just "Mic
+// live" to everyone else. The server sends the names to administrators only;
+// the role check keeps the rule here too.
+export function roomMicIndicatorTitle(
+  status: RoomMicStatus,
+  isAdmin: boolean
+): RoomMicIndicatorTitle {
+  const names = status.listeners.join(', ');
+  if (isAdmin && names) return { key: 'speaker.roomLiveBy', names };
+  return { key: 'speaker.roomLive' };
 }
 
 // roomMicAdminState is what the administrator's setting shows: the switch, or

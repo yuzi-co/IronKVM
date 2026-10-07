@@ -1674,7 +1674,6 @@ const nb = {
       mute: 'Demp',
       hostIdle: 'Verten sender ikke lyd',
       hostIdleHint: 'Spill av noe på verten, eller velg KVM-en som lydutgang.',
-      host: 'Vertslyd',
       room: 'Rommikrofon',
       roomListen: 'Lytt til rommet',
       roomVolume: 'Volum',

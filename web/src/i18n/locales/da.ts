@@ -1677,7 +1677,6 @@ const da = {
       mute: 'Slå lyd fra',
       hostIdle: 'Værten sender ikke lyd',
       hostIdleHint: "Afspil noget på værten, eller vælg KVM'en som dens lydudgang.",
-      host: 'Værtslyd',
       room: 'Rummikrofon',
       roomListen: 'Lyt til rummet',
       roomVolume: 'Lydstyrke',

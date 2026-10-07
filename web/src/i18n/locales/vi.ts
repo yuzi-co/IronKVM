@@ -1676,7 +1676,6 @@ const vi = {
       mute: 'Tắt tiếng',
       hostIdle: 'Máy chủ không gửi âm thanh',
       hostIdleHint: 'Hãy phát gì đó trên máy chủ, hoặc chọn KVM làm đầu ra âm thanh.',
-      host: 'Âm thanh máy chủ',
       room: 'Micrô phòng',
       roomListen: 'Nghe trong phòng',
       roomVolume: 'Âm lượng',

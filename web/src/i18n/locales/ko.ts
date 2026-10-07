@@ -1661,7 +1661,6 @@ const ko = {
       mute: '음소거',
       hostIdle: '호스트가 오디오를 보내지 않습니다',
       hostIdleHint: '호스트에서 무언가를 재생하거나 호스트의 사운드 출력으로 KVM을 선택하세요.',
-      host: '호스트 오디오',
       room: '실내 마이크',
       roomListen: '실내 소리 듣기',
       roomVolume: '볼륨',

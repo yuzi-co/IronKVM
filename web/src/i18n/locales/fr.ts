@@ -1712,7 +1712,6 @@ const fr = {
       mute: 'Couper le son',
       hostIdle: "L'hôte n'envoie pas de son",
       hostIdleHint: "Lancez un son sur l'hôte, ou choisissez le KVM comme sortie audio.",
-      host: "Audio de l'hôte",
       room: 'Micro de la pièce',
       roomListen: 'Écouter la pièce',
       roomVolume: 'Volume',

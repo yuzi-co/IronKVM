@@ -1611,7 +1611,6 @@ const zh = {
       mute: '静音',
       hostIdle: '主机未发送音频',
       hostIdleHint: '请在主机上播放声音，或将 KVM 选为主机的声音输出设备。',
-      host: '主机音频',
       room: '房间麦克风',
       roomListen: '收听房间',
       roomVolume: '音量',
