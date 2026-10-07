@@ -41,6 +41,11 @@ type Format struct {
 	Channels int
 	// Bitrate is the encoder's target in bit/s.
 	Bitrate int
+	// Name, when set, is what the log calls this source: its capture lines
+	// carry it as a prefix and say plainly that capture failed. Left empty it
+	// is the host's audio, whose lines talk about the host playing or not,
+	// because an idle host is that source's ordinary state.
+	Name string
 }
 
 // HostFormat is the USB audio gadget: what the managed host plays to the KVM.

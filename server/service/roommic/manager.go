@@ -24,6 +24,7 @@ var Format = audio.Format{
 	Device:   Device,
 	Channels: 1,
 	Bitrate:  32000,
+	Name:     "room microphone",
 }
 
 // Status is what every viewer is told.

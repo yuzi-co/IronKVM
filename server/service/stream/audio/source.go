@@ -147,6 +147,11 @@ type Source struct {
 	minBackoff time.Duration
 	maxBackoff time.Duration
 
+	// name is Format.Name: empty for the host's audio, otherwise the prefix of
+	// every capture line. A named source has no host that may be idle, so an
+	// I/O error from it is a failure like any other.
+	name string
+
 	// onState, when set, hears every change of state. It is set before Run
 	// and called from Run's goroutine only.
 	onState func(State)
@@ -171,6 +176,7 @@ func NewSourceFor(format Format) *Source {
 		chunkBytes: format.ChunkBytes(),
 		minBackoff: 200 * time.Millisecond,
 		maxBackoff: 5 * time.Second,
+		name:       format.Name,
 		done:       make(chan struct{}),
 	}
 }
@@ -259,7 +265,7 @@ func (s *Source) Run(handle func([]byte)) {
 		}
 
 		switch {
-		case isHostIdle(delivered, uptime, reason):
+		case s.name == "" && isHostIdle(delivered, uptime, reason):
 			// Not a failure, so it neither counts toward the quiet limit nor
 			// warns. One line when it starts explains the silence.
 			if !idle {
@@ -274,7 +280,11 @@ func (s *Source) Run(handle func([]byte)) {
 			// The child produced audio and ran long enough, so the next failure
 			// is a fresh one.
 			if failures >= quietAfterFailures {
-				log.Infof("audio capture recovered after %d failed attempts", failures)
+				if s.name != "" {
+					log.Infof("%s: capture recovered after %d failed attempts", s.name, failures)
+				} else {
+					log.Infof("audio capture recovered after %d failed attempts", failures)
+				}
 			}
 
 			backoff = s.minBackoff
@@ -286,6 +296,11 @@ func (s *Source) Run(handle func([]byte)) {
 			failures++
 			idle = false
 			s.report(StateFailing)
+
+			if s.name != "" {
+				s.logNamedFailure(failures, uptime, delivered, reason)
+				break
+			}
 
 			// The child's own reason rides on these lines rather than on one
 			// of its own, so it falls quiet with them. The reason is the only
@@ -316,6 +331,25 @@ func (s *Source) Run(handle func([]byte)) {
 		if backoff *= 2; backoff > s.maxBackoff {
 			backoff = s.maxBackoff
 		}
+	}
+}
+
+// logNamedFailure writes a named source's failure under its own prefix, with
+// the child's reason first. It falls quiet after quietAfterFailures like the
+// host's lines do.
+func (s *Source) logNamedFailure(failures int, uptime time.Duration, delivered bool, reason string) {
+	if reason == "" {
+		reason = "arecord exited without saying why"
+	}
+
+	switch {
+	case failures < quietAfterFailures:
+		log.Warnf("%s: capture failed: %s (uptime=%v, delivered=%v, attempt %d)",
+			s.name, reason, uptime, delivered, failures)
+	case failures == quietAfterFailures:
+		log.Warnf("%s: capture failed: %s (uptime=%v, delivered=%v); it has failed %d times "+
+			"and retries every %v from here, without another line until it recovers",
+			s.name, reason, uptime, delivered, failures, s.maxBackoff)
 	}
 }
 
