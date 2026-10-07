@@ -1679,7 +1679,6 @@ const se = {
       mute: 'Stäng av ljud',
       hostIdle: 'Värden skickar inget ljud',
       hostIdleHint: 'Spela upp något på värden, eller välj KVM:en som ljudutgång.',
-      host: 'Värdljud',
       room: 'Rumsmikrofon',
       roomListen: 'Lyssna på rummet',
       roomVolume: 'Volym',

@@ -3,14 +3,15 @@ import { test } from 'node:test';
 
 import {
   applyRoomMicPush,
+  audioEntries,
   clampGain,
   nextRoomMicSwitch,
   parseRoomMicStatus,
   roomMicAdminState,
   roomMicControlBytes,
+  roomMicIndicatorTitle,
   roomMicPushFromBytes,
   roomMicPushFromSignal,
-  showAudioMenu,
   showRoomMicControls,
   showRoomMicIndicator,
   switchRoomMic,
@@ -24,6 +25,7 @@ const slotB: RoomMicStatus = {
   allowed: true,
   gain: 18,
   live: false,
+  listenerCount: 0,
   listeners: []
 };
 
@@ -50,10 +52,74 @@ test('the indicator shows to every viewer while it is live, and only then', () =
   assert.equal(showRoomMicIndicator({ ...slotB, allowed: false, live: true }), true);
 });
 
-test('the speaker entry shows for host audio or the microphone', () => {
-  assert.equal(showAudioMenu(false, false), false);
-  assert.equal(showAudioMenu(true, false), true);
-  assert.equal(showAudioMenu(false, true), true);
+test('the speaker entry is host audio only and follows Preferences', () => {
+  const entries = (speakerEnabled: boolean, hasHostAudio: boolean) =>
+    audioEntries({ speakerEnabled, hasHostAudio, status: slotB, transportOffersRoom: true });
+  assert.equal(entries(true, true).speaker, true);
+  assert.equal(entries(true, false).speaker, false);
+  assert.equal(entries(false, true).speaker, false);
+});
+
+test('the microphone has its own entry, whatever Preferences does to the speaker', () => {
+  for (const speakerEnabled of [true, false]) {
+    for (const hasHostAudio of [true, false]) {
+      const entries = audioEntries({
+        speakerEnabled,
+        hasHostAudio,
+        status: slotB,
+        transportOffersRoom: true
+      });
+      assert.equal(entries.roomMic, true, `speaker ${speakerEnabled}, host audio ${hasHostAudio}`);
+    }
+  }
+});
+
+test('the microphone entry needs the card, the setting and a transport with audio', () => {
+  const roomMic = (status: RoomMicStatus, transportOffersRoom: boolean) =>
+    audioEntries({ speakerEnabled: true, hasHostAudio: true, status, transportOffersRoom }).roomMic;
+  assert.equal(roomMic(slotB, true), true);
+  assert.equal(roomMic({ ...slotB, available: false }, true), false);
+  assert.equal(roomMic({ ...slotB, allowed: false }, true), false);
+  // MJPEG carries no audio, so it never offers the microphone.
+  assert.equal(roomMic(slotB, false), false);
+});
+
+test('the indicator names the listeners to an administrator only', () => {
+  const live = { ...slotB, live: true, listenerCount: 2, listeners: ['alice', 'bob'] };
+  assert.deepEqual(roomMicIndicatorTitle(live, true), {
+    key: 'speaker.roomLiveBy',
+    names: 'alice, bob'
+  });
+  assert.deepEqual(roomMicIndicatorTitle(live, false), { key: 'speaker.roomLive' });
+  // What the server sends a non-admin: the count, no names.
+  const userView = { ...live, listeners: [] };
+  assert.deepEqual(roomMicIndicatorTitle(userView, false), { key: 'speaker.roomLive' });
+  assert.deepEqual(roomMicIndicatorTitle(userView, true), { key: 'speaker.roomLive' });
+});
+
+test('a status without names keeps the count', () => {
+  const status = parseRoomMicStatus({
+    available: true,
+    allowed: true,
+    gain: 18,
+    live: true,
+    listenerCount: 2
+  });
+  assert.equal(status.listenerCount, 2);
+  assert.deepEqual(status.listeners, []);
+});
+
+test('a direct push keeps the polled listeners while live and clears them after', () => {
+  const live = { ...slotB, live: true, listenerCount: 1, listeners: ['alice'] };
+  const stillLive = applyRoomMicPush(
+    live,
+    roomMicPushFromBytes(new Uint8Array([0x13, 1, 0, 1, 0]))!
+  );
+  assert.equal(stillLive.listenerCount, 1);
+  assert.deepEqual(stillLive.listeners, ['alice']);
+  const off = applyRoomMicPush(live, roomMicPushFromBytes(new Uint8Array([0x13, 0, 0, 1, 0]))!);
+  assert.equal(off.listenerCount, 0);
+  assert.deepEqual(off.listeners, []);
 });
 
 test('the admin setting waits for the status, then knows the kernel', () => {
@@ -70,16 +136,19 @@ test('a status the page cannot read hides the feature', () => {
       allowed: true,
       gain: 12,
       live: true,
+      listenerCount: 1,
       listeners: ['a', 3]
     }),
-    { available: true, allowed: true, gain: 12, live: true, listeners: ['a'] }
+    { available: true, allowed: true, gain: 12, live: true, listenerCount: 1, listeners: ['a'] }
   );
 });
 
 test('a WebRTC state reads its fields', () => {
   assert.deepEqual(
-    roomMicPushFromSignal('{"live":true,"listening":false,"listeners":["bob"],"allowed":true}'),
-    { live: true, listening: false, allowed: true, listeners: ['bob'], error: '' }
+    roomMicPushFromSignal(
+      '{"live":true,"listening":false,"listenerCount":1,"listeners":["bob"],"allowed":true}'
+    ),
+    { live: true, listening: false, allowed: true, listenerCount: 1, listeners: ['bob'], error: '' }
   );
   assert.equal(roomMicPushFromSignal('{'), null);
   assert.equal(roomMicPushFromSignal(undefined), null);

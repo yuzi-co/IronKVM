@@ -36,8 +36,10 @@ type roomMicState struct {
 	Live bool `json:"live"`
 	// Listening is true while it is open for this viewer.
 	Listening bool `json:"listening"`
-	// Listeners names who has it on.
-	Listeners []string `json:"listeners"`
+	// ListenerCount is how many accounts have it on.
+	ListenerCount int `json:"listenerCount"`
+	// Listeners names who has it on, for an administrator only.
+	Listeners []string `json:"listeners,omitempty"`
 	// Allowed is the administrator's setting.
 	Allowed bool `json:"allowed"`
 	// Error says why switching it on failed: "not-allowed" or "unavailable".
@@ -126,22 +128,30 @@ func (c *Client) sendRoomState() {
 	c.roomMutex.Lock()
 	defer c.roomMutex.Unlock()
 
-	status := roomMics.Status()
-	state := roomMicState{
-		Live:      status.Live,
-		Listening: c.room != nil,
-		Listeners: status.Listeners,
-		Allowed:   status.Allowed,
-		Error:     c.roomError,
-	}
-	c.roomError = ""
-
-	data, err := json.Marshal(state)
+	data, err := json.Marshal(c.roomStateLocked())
 	if err != nil {
 		return
 	}
 
 	_ = c.WriteMessage(roomMicEvent, string(data))
+}
+
+// roomStateLocked builds the state this viewer is told and clears the pending
+// error. The names of the listeners reach an administrator only. The caller
+// holds roomMutex.
+func (c *Client) roomStateLocked() roomMicState {
+	status := roomMics.Status().ForViewer(c.role)
+	state := roomMicState{
+		Live:          status.Live,
+		Listening:     c.room != nil,
+		ListenerCount: status.ListenerCount,
+		Listeners:     status.Listeners,
+		Allowed:       status.Allowed,
+		Error:         c.roomError,
+	}
+	c.roomError = ""
+
+	return state
 }
 
 // forwardRoom packetizes this viewer's microphone frames and writes them to

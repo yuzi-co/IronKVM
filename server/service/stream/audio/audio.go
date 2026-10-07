@@ -98,6 +98,9 @@ type Stream struct {
 	// runs on the source goroutine only.
 	filter func([]byte)
 
+	// name is Format.Name, the prefix of this stream's log lines when set.
+	name string
+
 	// encoder and packet are touched only by the source goroutine, between
 	// Start launching it and Run returning.
 	encoder Encoder
@@ -124,6 +127,7 @@ func NewStreamFor(format Format, filter func([]byte)) *Stream {
 		source:     NewSourceFor(format),
 		newEncoder: func() (Encoder, error) { return newOpusEncoderFor(format) },
 		filter:     filter,
+		name:       format.Name,
 		// Four frames of slack. A consumer further behind than 80 ms is not
 		// going to catch up, and buffering only adds delay.
 		frames: make(chan []byte, 4),
@@ -152,7 +156,11 @@ func (s *Stream) Start() {
 		//
 		// Nothing was launched, so this path closes done itself. The goroutine
 		// below is the only other closer and it never runs.
-		log.Errorf("audio is off: %s", err)
+		if s.name != "" {
+			log.Errorf("%s: capture failed: the encoder would not start: %s", s.name, err)
+		} else {
+			log.Errorf("audio is off: %s", err)
+		}
 		close(s.done)
 		s.closeFrames()
 
@@ -214,7 +222,11 @@ func (s *Stream) Stop() {
 		select {
 		case <-s.done:
 		case <-time.After(stopTimeout):
-			log.Warnf("audio capture did not stop in %v; leaving it behind", stopTimeout)
+			if s.name != "" {
+				log.Warnf("%s: capture did not stop in %v; leaving it behind", s.name, stopTimeout)
+			} else {
+				log.Warnf("audio capture did not stop in %v; leaving it behind", stopTimeout)
+			}
 			return
 		}
 	}
@@ -259,7 +271,7 @@ func (s *Stream) consume(chunk []byte) {
 	s.packet = packet
 
 	if s.encodeFailures >= quietAfterFailures {
-		log.Infof("audio encode recovered after %d failed frames", s.encodeFailures)
+		log.Infof("%s encode recovered after %d failed frames", s.label(), s.encodeFailures)
 	}
 	s.encodeFailures = 0
 
@@ -285,9 +297,20 @@ func (s *Stream) reportEncodeFailure(err error) {
 
 	switch {
 	case s.encodeFailures < quietAfterFailures:
-		log.Warnf("audio encode failed: %s (frame %d)", err, s.encodeFailures)
+		log.Warnf("%s encode failed: %s (frame %d)", s.label(), err, s.encodeFailures)
 	case s.encodeFailures == quietAfterFailures:
-		log.Warnf("audio encode has failed %d times, and the last reason was %s; "+
-			"it stays quiet until a frame encodes again", s.encodeFailures, err)
+		log.Warnf("%s encode has failed %d times, and the last reason was %s; "+
+			"it stays quiet until a frame encodes again", s.label(), s.encodeFailures, err)
 	}
+}
+
+// label names this stream at the start of an encoder log line: "audio" for
+// the host's, as it always was, or "<name>: capture" for any other, so its
+// lines are never mistaken for the host's.
+func (s *Stream) label() string {
+	if s.name != "" {
+		return s.name + ": capture"
+	}
+
+	return "audio"
 }

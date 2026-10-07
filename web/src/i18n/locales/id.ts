@@ -1682,7 +1682,6 @@ const id = {
       mute: 'Bisukan',
       hostIdle: 'Host tidak mengirim audio',
       hostIdleHint: 'Putar sesuatu di host, atau pilih KVM sebagai output suaranya.',
-      host: 'Audio host',
       room: 'Mikrofon ruangan',
       roomListen: 'Dengarkan ruangan',
       roomVolume: 'Volume',

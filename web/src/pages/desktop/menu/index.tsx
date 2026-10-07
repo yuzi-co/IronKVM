@@ -8,9 +8,10 @@ import Draggable, { DraggableData, DraggableEvent } from 'react-draggable';
 import { useMediaQuery } from 'react-responsive';
 
 import { getVirtualDevice } from '@/api/virtual-device.ts';
-import { showAudioMenu } from '@/lib/room-mic.ts';
+import { audioEntries, unknownRoomMicStatus } from '@/lib/room-mic.ts';
 import { hasAudioAtom } from '@/jotai/audio.ts';
 import { ocrSelectingAtom } from '@/jotai/ocr.ts';
+import { roomMicStatusAtom, roomMicTransportAtom } from '@/jotai/room-mic.ts';
 import { inputRegionSelectingAtom } from '@/jotai/screen.ts';
 import {
   keyboardLedStatusVisibleAtom,
@@ -32,12 +33,12 @@ import { Mouse } from './mouse';
 import { Collapse, Expand } from './operations';
 import { Picoclaw } from './picoclaw';
 import { Power } from './power';
+import { RoomMic } from './room-mic';
 import { RoomMicIndicator } from './room-mic-indicator.tsx';
 import { Screen } from './screen';
 import { Script } from './script';
 import { Settings } from './settings';
 import { Speaker } from './speaker';
-import { useRoomMicControls } from './speaker/use-room-mic.ts';
 import { Terminal } from './terminal';
 import { Text } from './text';
 import { Tools } from './tools';
@@ -66,7 +67,8 @@ export const Menu = () => {
   const menuCloseSignal = useAtomValue(menuCloseSignalAtom);
   const isKeyboardLedStatusVisible = useAtomValue(keyboardLedStatusVisibleAtom);
   const hasAudio = useAtomValue(hasAudioAtom);
-  const roomMicControls = useRoomMicControls();
+  const roomMicStatus = useAtomValue(roomMicStatusAtom) ?? unknownRoomMicStatus;
+  const roomMicTransport = useAtomValue(roomMicTransportAtom);
   const requestMenuClose = useSetAtom(menuCloseSignalAtom);
 
   // Below the sm breakpoint the full bar is wider than a phone. The entries
@@ -141,11 +143,22 @@ export const Menu = () => {
   // hasAudio is set by the video path when audio is on offer: the WebRTC audio
   // track, or the first audio frame or state notice on H.264 direct. A device
   // without the USB audio gadget sends none, and the button would then unmute
-  // nothing. The room microphone, when an administrator allows it, also
-  // lives in this entry.
-  const speaker = isEnabled('speaker') && showAudioMenu(hasAudio, roomMicControls) && (
+  // nothing. The room microphone has an entry of its own, which the
+  // Preferences switch for the speaker does not hide.
+  const audio = audioEntries({
+    speakerEnabled: isEnabled('speaker'),
+    hasHostAudio: hasAudio,
+    status: roomMicStatus,
+    transportOffersRoom: roomMicTransport
+  });
+  const speaker = audio.speaker && (
     <MenuBoundary key="speaker" name="speaker">
       <Speaker />
+    </MenuBoundary>
+  );
+  const roomMic = audio.roomMic && (
+    <MenuBoundary key="room-mic" name="room-mic">
+      <RoomMic />
     </MenuBoundary>
   );
   const media = isAdmin && isEnabled('media') && isVirtualDiskEnabled !== false && (
@@ -212,7 +225,7 @@ export const Menu = () => {
   // power, and the bar itself. A separator stands between two groups that
   // both have something to show.
   const groups: ReactNode[][] = [
-    [screen, speaker],
+    [screen, speaker, roomMic],
     [keyboard, mouse, text],
     [media, terminal, tools],
     [power],
@@ -291,6 +304,7 @@ export const Menu = () => {
                 <More>
                   {screen}
                   {speaker}
+                  {roomMic}
                   {terminal}
                   {text}
                   {tools}

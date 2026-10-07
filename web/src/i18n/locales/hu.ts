@@ -1699,7 +1699,6 @@ const hu = {
       mute: 'Némítás',
       hostIdle: 'A gazdagép nem küld hangot',
       hostIdleHint: 'Játssz le valamit a gazdagépen, vagy válaszd a KVM-et hangkimenetnek.',
-      host: 'Gazdagép hangja',
       room: 'Szobamikrofon',
       roomListen: 'A szoba hallgatása',
       roomVolume: 'Hangerő',

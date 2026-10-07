@@ -8,6 +8,7 @@ import (
 	"sync"
 	"testing"
 
+	"NanoKVM-Server/authn"
 	"NanoKVM-Server/service/stream/audio"
 )
 
@@ -287,5 +288,41 @@ func TestAnUnreadableFileKeepsItOff(t *testing.T) {
 
 	if r.manager.Settings().Allowed {
 		t.Fatal("a corrupt settings file allowed the microphone")
+	}
+}
+
+// Only an administrator is told who is listening. Everyone else keeps the
+// live flag and the count, which is all the indicator needs.
+func TestOnlyAnAdministratorSeesWhoIsListening(t *testing.T) {
+	r := newRig(t)
+	r.allow(true)
+
+	alice := r.open("alice")
+	defer alice.Close()
+	bob := r.open("bob")
+	defer bob.Close()
+	again := r.open("alice")
+	defer again.Close()
+
+	status := r.manager.Status()
+
+	admin := status.ForViewer(authn.RoleAdmin)
+	if !slices.Equal(admin.Listeners, []string{"alice", "bob"}) || admin.ListenerCount != 2 || !admin.Live {
+		t.Fatalf("the administrator was told %+v", admin)
+	}
+
+	for _, role := range []authn.Role{authn.RoleUser, authn.Role(""), authn.Role("guest")} {
+		user := status.ForViewer(role)
+		if user.Listeners != nil {
+			t.Fatalf("role %q was told the names %v", role, user.Listeners)
+		}
+		if !user.Live || user.ListenerCount != 2 || !user.Allowed {
+			t.Fatalf("role %q lost the rest of the status: %+v", role, user)
+		}
+	}
+
+	// The filter works on a copy: the manager's own status keeps the names.
+	if !slices.Equal(status.Listeners, []string{"alice", "bob"}) {
+		t.Fatalf("filtering changed the original: %v", status.Listeners)
 	}
 }

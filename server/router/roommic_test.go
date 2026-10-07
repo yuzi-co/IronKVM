@@ -6,13 +6,16 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
+	"sync"
 	"testing"
 
 	"NanoKVM-Server/authn"
 	"NanoKVM-Server/config"
 	"NanoKVM-Server/service/apikey"
 	"NanoKVM-Server/service/roommic"
+	"NanoKVM-Server/service/stream/audio"
 
 	"github.com/gin-gonic/gin"
 )
@@ -137,5 +140,79 @@ func TestTheRoomMicrophoneCannotBeAllowedWithoutTheCard(t *testing.T) {
 	}
 	if roommic.Shared.Settings().Allowed {
 		t.Fatal("the setting was saved as allowed")
+	}
+}
+
+// roomMicCapture stands in for arecord.
+type roomMicCapture struct {
+	frames chan []byte
+	once   sync.Once
+}
+
+func (c *roomMicCapture) Start()                {}
+func (c *roomMicCapture) Frames() <-chan []byte { return c.frames }
+func (c *roomMicCapture) Stop()                 { c.once.Do(func() { close(c.frames) }) }
+
+// withListeners swaps in a manager with a card and no arecord, allows the
+// microphone and opens it for each user.
+func withListeners(t *testing.T, users ...string) {
+	t.Helper()
+
+	original := roommic.Shared
+	manager := roommic.NewManager(func() bool { return true }, func() audio.Capture {
+		return &roomMicCapture{frames: make(chan []byte)}
+	})
+	roommic.Shared = manager
+	t.Cleanup(func() {
+		manager.CloseAll("the test ended")
+		roommic.Shared = original
+	})
+
+	if err := manager.SetSettings(roommic.Settings{Allowed: true, Gain: roommic.DefaultGain}, "admin"); err != nil {
+		t.Fatal(err)
+	}
+	for _, user := range users {
+		if _, err := manager.Open(user, "test"); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
+// Every viewer reads whether the microphone is live and how many listen; only
+// an administrator reads who.
+func TestOnlyAnAdministratorReadsWhoListensToTheRoomMicrophone(t *testing.T) {
+	adminKey, operatorKey := roomMicAccounts(t)
+	withListeners(t, "alice", "bob")
+
+	r := gin.New()
+	roomMicRouter(r)
+
+	read := func(key string) (roommic.Status, string) {
+		t.Helper()
+		w := roomMicRequest(r, http.MethodGet, key, "")
+		if w.Code != http.StatusOK {
+			t.Fatalf("read failed: %d %s", w.Code, w.Body.String())
+		}
+		var rsp struct {
+			Code int            `json:"code"`
+			Data roommic.Status `json:"data"`
+		}
+		if err := json.Unmarshal(w.Body.Bytes(), &rsp); err != nil || rsp.Code != 0 {
+			t.Fatalf("response %s: %v", w.Body.String(), err)
+		}
+		return rsp.Data, w.Body.String()
+	}
+
+	admin, _ := read(adminKey)
+	if !admin.Live || admin.ListenerCount != 2 || !slices.Equal(admin.Listeners, []string{"alice", "bob"}) {
+		t.Fatalf("the administrator was told %+v", admin)
+	}
+
+	operator, body := read(operatorKey)
+	if !operator.Live || operator.ListenerCount != 2 {
+		t.Fatalf("the operator lost the live flag or the count: %+v", operator)
+	}
+	if strings.Contains(body, "listeners\"") || strings.Contains(body, "alice") || strings.Contains(body, "bob") {
+		t.Fatalf("the operator was told who listens: %s", body)
 	}
 }

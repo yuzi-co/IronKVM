@@ -1687,7 +1687,6 @@ const pl = {
       mute: 'Wycisz',
       hostIdle: 'Host nie wysyła dźwięku',
       hostIdleHint: 'Odtwórz coś na hoście lub wybierz KVM jako jego wyjście dźwięku.',
-      host: 'Dźwięk hosta',
       room: 'Mikrofon w pomieszczeniu',
       roomListen: 'Słuchaj pomieszczenia',
       roomVolume: 'Głośność',

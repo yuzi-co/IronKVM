@@ -1691,7 +1691,6 @@ const pt_br = {
       mute: 'Silenciar',
       hostIdle: 'O host não está enviando áudio',
       hostIdleHint: 'Reproduza algo no host ou escolha o KVM como saída de som.',
-      host: 'Áudio do host',
       room: 'Microfone do ambiente',
       roomListen: 'Ouvir o ambiente',
       roomVolume: 'Volume',

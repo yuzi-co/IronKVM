@@ -602,3 +602,34 @@ func TestRunReportsARealFailureAsFailing(t *testing.T) {
 		t.Errorf("reported %v, want %v, %v, %v", got, StateIdle, StateFailing, StateIdle)
 	}
 }
+
+// A named source, the room microphone, has no host that may be idle. An I/O
+// error from it is a failure, logged under its own prefix with the reason,
+// and never in the host's words.
+func TestANamedSourceLogsItsFailureUnderItsOwnName(t *testing.T) {
+	captured := captureLog(t)
+	states := &stateLog{}
+	source := NewSourceFor(Format{Device: "hw:test,0", Channels: 1, Bitrate: 32000, Name: "room microphone"})
+	source.minBackoff = time.Millisecond
+	source.maxBackoff = time.Millisecond
+	source.onState = states.record
+	newCmd, attempted := countedChild(steadyStateAttempts, idleComplaint)
+	source.newCmd = newCmd
+
+	runUntil(t, source, func([]byte) {}, attempted)
+
+	out := captured.String()
+	if strings.Contains(out, "host") {
+		t.Errorf("the microphone's failure was told in the host's words:\n%s", out)
+	}
+	want := "room microphone: capture failed: arecord: pcm_read:2285: read error: I/O error"
+	if n := strings.Count(out, want); n != quietAfterFailures {
+		t.Errorf("said %q %d times, want %d:\n%s", want, n, quietAfterFailures, out)
+	}
+	if strings.Contains(out, "audio capture") {
+		t.Errorf("the microphone used the host audio's prefix:\n%s", out)
+	}
+	if got := states.all(); len(got) != 1 || got[0] != StateFailing {
+		t.Errorf("reported %v, want only %v", got, StateFailing)
+	}
+}

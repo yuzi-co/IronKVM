@@ -1693,7 +1693,6 @@ const ja = {
       mute: 'ミュート',
       hostIdle: 'ホストから音声が送られていません',
       hostIdleHint: 'ホストで何か再生するか、ホストの音声出力に KVM を選んでください。',
-      host: 'ホストの音声',
       room: '室内マイク',
       roomListen: '室内の音を聞く',
       roomVolume: '音量',

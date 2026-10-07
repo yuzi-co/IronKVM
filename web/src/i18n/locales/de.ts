@@ -1724,7 +1724,6 @@ const de = {
       mute: 'Stummschalten',
       hostIdle: 'Der Host sendet keinen Ton',
       hostIdleHint: 'Spiele etwas auf dem Host ab oder wähle das KVM als Audioausgabe.',
-      host: 'Host-Audio',
       room: 'Raummikrofon',
       roomListen: 'Raum mithören',
       roomVolume: 'Lautstärke',

@@ -1704,7 +1704,6 @@ const it = {
       mute: 'Disattiva audio',
       hostIdle: "L'host non invia audio",
       hostIdleHint: "Riproduci qualcosa sull'host o scegli il KVM come uscita audio.",
-      host: "Audio dell'host",
       room: 'Microfono della stanza',
       roomListen: 'Ascolta la stanza',
       roomVolume: 'Volume',

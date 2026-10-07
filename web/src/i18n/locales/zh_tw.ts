@@ -1607,7 +1607,6 @@ const zh_tw = {
       mute: '靜音',
       hostIdle: '主機未傳送音訊',
       hostIdleHint: '請在主機上播放聲音，或將 KVM 選為主機的聲音輸出裝置。',
-      host: '主機音訊',
       room: '房間麥克風',
       roomListen: '收聽房間',
       roomVolume: '音量',

@@ -4,6 +4,7 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"NanoKVM-Server/authn"
 	"NanoKVM-Server/service/roommic"
 	"NanoKVM-Server/service/stream"
 	"NanoKVM-Server/service/stream/audio"
@@ -95,6 +96,10 @@ type Client struct {
 	// user names the account behind this session, for the room microphone's
 	// log.
 	user string
+
+	// role is that account's role. Only an administrator is told who is
+	// listening to the room microphone.
+	role authn.Role
 
 	// room is this viewer's hold on the room microphone, nil while it is off.
 	// Guarded by roomMutex, which also orders the state messages.

@@ -1677,7 +1677,6 @@ const tr = {
       mute: 'Sesi kapat',
       hostIdle: 'Ana makine ses göndermiyor',
       hostIdleHint: "Ana makinede bir şey çalın veya ses çıkışı olarak KVM'yi seçin.",
-      host: 'Ana bilgisayar sesi',
       room: 'Oda mikrofonu',
       roomListen: 'Odayı dinle',
       roomVolume: 'Ses düzeyi',

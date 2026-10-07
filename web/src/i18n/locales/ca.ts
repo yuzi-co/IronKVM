@@ -1699,7 +1699,6 @@ const ca = {
       mute: 'Silencia',
       hostIdle: "L'amfitrió no envia àudio",
       hostIdleHint: "Reprodueix alguna cosa a l'amfitrió o tria el KVM com a sortida de so.",
-      host: "Àudio de l'amfitrió",
       room: 'Micròfon de la sala',
       roomListen: 'Escolta la sala',
       roomVolume: 'Volum',

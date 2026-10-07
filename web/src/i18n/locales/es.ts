@@ -1709,7 +1709,6 @@ const es = {
       mute: 'Silenciar',
       hostIdle: 'El host no envía audio',
       hostIdleHint: 'Reproduce algo en el host o elige el KVM como su salida de sonido.',
-      host: 'Audio del host',
       room: 'Micrófono de la sala',
       roomListen: 'Escuchar la sala',
       roomVolume: 'Volumen',

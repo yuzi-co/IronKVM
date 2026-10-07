@@ -1667,7 +1667,6 @@ const cz = {
       mute: 'Ztlumit',
       hostIdle: 'Hostitel neposílá zvuk',
       hostIdleHint: 'Přehrajte něco na hostiteli nebo v něm zvolte KVM jako zvukový výstup.',
-      host: 'Zvuk hostitele',
       room: 'Mikrofon v místnosti',
       roomListen: 'Poslouchat místnost',
       roomVolume: 'Hlasitost',

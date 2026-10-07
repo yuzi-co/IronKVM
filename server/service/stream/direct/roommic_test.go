@@ -121,3 +121,27 @@ func TestARoomFrameCarriesItsOwnMarker(t *testing.T) {
 		t.Fatalf("message %v", data)
 	}
 }
+
+// The direct stream's state message has no room for names: whoever reads it,
+// it says live, listening, allowed and an error code, and nothing else.
+func TestTheDirectRoomStateCarriesNoNames(t *testing.T) {
+	withRoomManager(t)
+	if err := roomMics.SetSettings(roommic.Settings{Allowed: true, Gain: roommic.DefaultGain}, "admin"); err != nil {
+		t.Fatal(err)
+	}
+
+	alice := newRoomSession(newClient(nil), "alice")
+	alice.set(true)
+	defer alice.close()
+
+	viewer := newRoomSession(newClient(nil), "bob")
+	viewer.queueState()
+
+	state := viewer.takeState()
+	if len(state) != roomStateSize || bytes.Contains(state, []byte("alice")) {
+		t.Fatalf("state %v", state)
+	}
+	if want := []byte{roomStateMessage, 1, 0, 1, roomErrorNone}; !bytes.Equal(state, want) {
+		t.Fatalf("state %v, want %v", state, want)
+	}
+}

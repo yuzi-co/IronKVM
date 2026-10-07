@@ -1664,7 +1664,6 @@ const en = {
       mute: 'Mute',
       hostIdle: 'Host is not sending audio',
       hostIdleHint: 'Play something on the host, or pick the KVM as its sound output.',
-      host: 'Host audio',
       room: 'Room microphone',
       roomListen: 'Listen to the room',
       roomVolume: 'Volume',

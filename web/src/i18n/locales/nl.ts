@@ -1701,7 +1701,6 @@ const nl = {
       mute: 'Dempen',
       hostIdle: 'De host stuurt geen geluid',
       hostIdleHint: 'Speel iets af op de host, of kies de KVM als geluidsuitvoer.',
-      host: 'Hostaudio',
       room: 'Ruimtemicrofoon',
       roomListen: 'Meeluisteren in de ruimte',
       roomVolume: 'Volume',
