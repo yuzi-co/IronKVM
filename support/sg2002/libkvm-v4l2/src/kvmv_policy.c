@@ -344,3 +344,12 @@ int kvmv_receiver_fresh(uint64_t seen_ms, uint64_t now_ms, unsigned int max_age_
 		return 0;
 	return now_ms - seen_ms <= max_age_ms;
 }
+
+unsigned int kvmv_start_retry_ms(uint64_t change_ms, uint64_t now_ms,
+				 unsigned int slow_ms)
+{
+	if (change_ms == 0 || change_ms > now_ms ||
+	    now_ms - change_ms >= KVMV_CHANGE_WINDOW_MS)
+		return slow_ms;
+	return KVMV_CHANGE_RETRY_MS < slow_ms ? KVMV_CHANGE_RETRY_MS : slow_ms;
+}

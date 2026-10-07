@@ -123,6 +123,9 @@ static int need_key; /* 0, or 1 plus the delta frames dropped waiting for an IDR
 static unsigned int no_frame_count;
 static uint64_t next_start_ms;
 static int last_start_result;
+/* When the HDMI source last changed under a pipeline, 0 for never: builds
+ * soon after it are retried quickly (kvmv_start_retry_ms). */
+static uint64_t source_change_ms;
 static struct kvmv_rate rate;
 static struct kvmv_rate fps_rate; /* a shorter window, for delivered_fps */
 static int overshoot_warned;
@@ -605,7 +608,8 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 	if (!receiver_cached) {
 		result = query_receiver(&src_width, &src_height);
 		if (result != 0)
-			return start_failed(result, 500);
+			return start_failed(result,
+					    kvmv_start_retry_ms(source_change_ms, now_ms(), 500));
 	}
 	result = match_capture(src_width, src_height);
 	if (result != 0)
@@ -667,7 +671,9 @@ static int pipe_up(unsigned int width, unsigned int height, uint32_t bitrate_bps
 			capture_height_known = 0;
 			receiver_remember(KVMV_SIGNAL_NONE, NULL);
 			kvmv_pipe_unpark();
-			return start_failed(KVMV_RET_CHANGING, 500);
+			source_change_ms = now_ms();
+			return start_failed(KVMV_RET_CHANGING,
+					    kvmv_start_retry_ms(source_change_ms, now_ms(), 500));
 		}
 		/* The other codec's encoder holds the codec SRAM. */
 		if (err == EBUSY)
@@ -929,15 +935,28 @@ static int pipe_failure(enum kvmv_pipe_status status)
 	case KVMV_PIPE_OK:
 		return 0;
 	case KVMV_PIPE_NO_FRAME:
-		DBG("%s", pipe_state.error);
+		/* Logged always, with what the capture last did: a stall with no
+		 * source change until a second later (trial 40) was untraceable
+		 * from the message alone. */
+		{
+			uint64_t now = now_us();
+
+			log_msg("%s; the last capture frame (sequence %u) came %llu ms ago, %u such reads in a row",
+				pipe_state.error, pipe_state.cap_seq,
+				pipe_state.cap_ts_us && now > pipe_state.cap_ts_us ?
+				(unsigned long long)((now - pipe_state.cap_ts_us) / 1000U) : 0ULL,
+				no_frame_count + 1);
+		}
 		if (++no_frame_count >= KVMV_NO_FRAME_LIMIT) {
 			/* Rebuild from the receiver's answer next time. */
 			set_source_locked(0);
+			source_change_ms = now_ms();
 			pipe_down("capture delivers nothing");
 		}
 		return IMG_NOT_EXIST;
 	case KVMV_PIPE_SOURCE_CHANGED:
 		log_msg("HDMI source changed (%s), rebuilding", pipe_state.error);
+		source_change_ms = now_ms();
 		pipe_down("source changed");
 		return KVMV_RET_CHANGING;
 	case KVMV_PIPE_ERROR:
@@ -1639,6 +1658,7 @@ void kvmv_deinit(void)
 	key_control_missing = 0;
 	hw_jpeg_failures = 0;
 	next_start_ms = 0;
+	source_change_ms = 0;
 	pthread_mutex_unlock(&pipe_lock);
 	pthread_mutex_lock(&jpeg_lock);
 	kvmv_jpeg_free(&jpeg_state);

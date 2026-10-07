@@ -1513,6 +1513,15 @@ static void test_start_policy(void)
 	CHECK(!kvmv_receiver_fresh(10000, 10500, 0));
 	CHECK(!kvmv_receiver_fresh(0, 500, 1500));
 	CHECK(!kvmv_receiver_fresh(10000, 9000, 1500));
+
+	/* Soon after a source change a build is retried quickly. */
+	CHECK_EQ(kvmv_start_retry_ms(0, 10000, 500), 500);
+	CHECK_EQ(kvmv_start_retry_ms(10000, 10000, 500), KVMV_CHANGE_RETRY_MS);
+	CHECK_EQ(kvmv_start_retry_ms(10000, 10000 + KVMV_CHANGE_WINDOW_MS - 1, 500),
+		 KVMV_CHANGE_RETRY_MS);
+	CHECK_EQ(kvmv_start_retry_ms(10000, 10000 + KVMV_CHANGE_WINDOW_MS, 500), 500);
+	CHECK_EQ(kvmv_start_retry_ms(10000, 9000, 500), 500);
+	CHECK_EQ(kvmv_start_retry_ms(10000, 10050, 50), 50);
 }
 
 /*
