@@ -202,11 +202,10 @@ func createMediaEngine() (*webrtc.MediaEngine, error) {
 // them a browser has no common clock for the video and audio tracks, so it
 // cannot hold them in sync and cannot measure the round trip either.
 //
-// NACK is the only repair this server can offer. A lost packet corrupts the
-// rest of its frame, and nothing here can force the encoder to emit a keyframe
-// early, so an unrepaired loss stays on screen until the next GOP boundary: a
-// whole second at the default 30 frames and GOP 30. Retransmission is what
-// keeps that from being the normal outcome of a single dropped datagram.
+// NACK is the cheap repair. A lost packet corrupts the rest of its frame, and
+// retransmission is what keeps a single dropped datagram from costing a
+// keyframe. What it cannot repair, the viewer reports with a PLI, and the
+// encoder is asked for a keyframe (readVideoRTCP, stream/keyframe_policy.go).
 func createInterceptorRegistry() (*interceptor.Registry, error) {
 	registry := &interceptor.Registry{}
 
@@ -219,13 +218,9 @@ func createInterceptorRegistry() (*interceptor.Registry, error) {
 	// video codec, so the browser has been able to send retransmission requests
 	// all along and there was simply nothing here to answer them.
 	//
-	// One of those defaults is a promise this server cannot keep. `nack pli`
-	// asks the sender for a keyframe now, and `libkvm` exposes `set_h264_gop`
-	// and no IDR request, so a picture loss indication is answered with silence
-	// and the viewer waits for the next GOP boundary. Removing it from the
-	// answer would mean hand-registering the codecs instead of taking the
-	// defaults; producing a keyframe on demand would be the better answer, and
-	// neither is done here.
+	// `nack pli` and `ccm fir` ask the sender for a keyframe now. Both slots'
+	// libraries can be asked for one (common.KvmVision.RequestKeyframe), and
+	// readVideoRTCP does.
 	//
 	// Only the responder is registered. The generator half of ConfigureNack
 	// acts on inbound streams, and this server has no OnTrack handler and never

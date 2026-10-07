@@ -45,6 +45,77 @@ package common
 	{
 		return dlsym(RTLD_DEFAULT, "kvmv_set_keep_aspect") != NULL;
 	}
+
+	// Keyframe requests (ironkvm-dist#72, trial 64). kvm_vision.h declares
+	// none. libkvm-v4l2 asks its encoder for a keyframe on every
+	// set_h264_gop, without a rebuild while the GOP stays the same, so the
+	// server uses that there. Sipeed's library rebuilds its encoder on
+	// set_h264_gop instead, so on it the request goes to the vendor's
+	// CVI_VENC_RequestIDR in libvenc.so, which libkvm already loads, on the
+	// channel that carries H.264 or H.265. Both are found at run time.
+	static int kvmv_is_v4l2_library(void)
+	{
+		return dlsym(RTLD_DEFAULT, "kvmv_codec_supported") != NULL;
+	}
+
+	typedef int (*cvi_request_idr_fn)(int, int);
+	typedef int (*cvi_get_chn_attr_fn)(int, void *);
+
+	static int vendor_venc_chn = -1;
+
+	// VENC_CHN_ATTR_S opens with VENC_ATTR_S, which opens with the payload
+	// type: PT_H264 is 96, PT_H265 265. Nothing else is read. The buffer is
+	// far larger than the structure, and only the capture loop calls this.
+	static int vendor_venc_is_video(cvi_get_chn_attr_fn get_attr, int chn)
+	{
+		static union {
+			int type;
+			unsigned char raw[8192];
+		} attr;
+
+		memset(&attr, 0, sizeof(attr));
+		if (get_attr(chn, &attr) != 0)
+			return 0;
+		return attr.type == 96 || attr.type == 265;
+	}
+
+	static int kvmv_vendor_keyframe_available(void)
+	{
+		return dlsym(RTLD_DEFAULT, "CVI_VENC_RequestIDR") != NULL &&
+		       dlsym(RTLD_DEFAULT, "CVI_VENC_GetChnAttr") != NULL;
+	}
+
+	// Answers 0 when the encoder took the request, -1 without the vendor
+	// calls, -2 when no channel carries video (none built yet), else the
+	// vendor's error.
+	static int kvmv_vendor_request_keyframe(void)
+	{
+		cvi_request_idr_fn request =
+			(cvi_request_idr_fn)dlsym(RTLD_DEFAULT, "CVI_VENC_RequestIDR");
+		cvi_get_chn_attr_fn get_attr =
+			(cvi_get_chn_attr_fn)dlsym(RTLD_DEFAULT, "CVI_VENC_GetChnAttr");
+		int chn;
+		int ret;
+
+		if (request == NULL || get_attr == NULL)
+			return -1;
+		if (vendor_venc_chn < 0 || !vendor_venc_is_video(get_attr, vendor_venc_chn)) {
+			vendor_venc_chn = -1;
+			for (chn = 0; chn < 16; chn++) {
+				if (vendor_venc_is_video(get_attr, chn)) {
+					vendor_venc_chn = chn;
+					break;
+				}
+			}
+		}
+		if (vendor_venc_chn < 0)
+			return -2;
+		// bInstant: the next picture, not the next GOP.
+		ret = request(vendor_venc_chn, 1);
+		if (ret != 0)
+			vendor_venc_chn = -1;
+		return ret;
+	}
 */
 import "C"
 import (
@@ -234,6 +305,44 @@ func (k *KvmVision) SetGop(gop uint8) {
 	captureLifecycle.withLive(func() {
 		C.set_h264_gop(_gop)
 	})
+}
+
+// KeyframeRequests says how the loaded library can be asked for a keyframe
+// outside its GOP, or that it cannot. It needs no kvmv_init.
+func (k *KvmVision) KeyframeRequests() KeyframeRequestKind {
+	if C.kvmv_is_v4l2_library() != 0 {
+		return KeyframeRequestV4L2
+	}
+	if C.kvmv_vendor_keyframe_available() != 0 {
+		return KeyframeRequestVendor
+	}
+
+	return KeyframeRequestNone
+}
+
+// RequestKeyframe asks the encoder to make its next picture a keyframe. gop
+// must be the GOP the encoder holds: libkvm-v4l2 takes the request through
+// set_h264_gop, and another value there would also change the GOP. It answers
+// whether the request was made. Only the capture loop calls it, between reads.
+func (k *KvmVision) RequestKeyframe(gop uint8) bool {
+	kind := k.KeyframeRequests()
+	made := false
+
+	captureLifecycle.withLive(func() {
+		switch kind {
+		case KeyframeRequestV4L2:
+			C.set_h264_gop(C.uint8_t(gop))
+			made = true
+		case KeyframeRequestVendor:
+			ret := int(C.kvmv_vendor_request_keyframe())
+			made = ret == 0
+			if !made {
+				noteKeyframeRequestFailure(ret)
+			}
+		}
+	})
+
+	return made
 }
 
 // SetFPS tells the encoder what frame rate the capture loop is feeding it, so

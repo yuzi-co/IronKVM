@@ -74,6 +74,12 @@ func (k *KvmVision) HasHDMISignal() bool {
 
 func (k *KvmVision) SetGop(gop uint8) {}
 
+// KeyframeRequests answers none off-device: there is no encoder to ask.
+func (k *KvmVision) KeyframeRequests() KeyframeRequestKind { return KeyframeRequestNone }
+
+// RequestKeyframe answers false off-device for the same reason.
+func (k *KvmVision) RequestKeyframe(gop uint8) bool { return false }
+
 // SetFPS answers false off-device, the same as a library that predates the
 // call, so a caller that reports the difference is exercised here too.
 func (k *KvmVision) SetFPS(fps uint8) bool { return false }

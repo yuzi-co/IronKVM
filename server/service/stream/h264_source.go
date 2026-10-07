@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"NanoKVM-Server/common"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // H264Frame is one encoded frame as the capture pipeline returned it.
@@ -119,6 +121,17 @@ var setEncoderGop = func(gop uint8) {
 	common.GetKvmVision().SetGop(gop)
 }
 
+// keyframeRequests and requestKeyframe are variables for the same reason
+// setEncoderGop is. The first says whether the library can be asked for a
+// keyframe at all; the second asks, with the GOP the encoder holds.
+var keyframeRequests = func() common.KeyframeRequestKind {
+	return common.GetKvmVision().KeyframeRequests()
+}
+
+var requestKeyframe = func(gop uint8) bool {
+	return common.GetKvmVision().RequestKeyframe(gop)
+}
+
 // setCaptureFPS is a variable for the same reason setEncoderFPS is. It tells a
 // different thing: the encoder is told what rate to size a frame for, and the
 // capture channel is told how many frames to hand out at all.
@@ -207,6 +220,7 @@ func (p *H264Subscription) deliver(frame H264Frame) {
 
 	if !p.slot.TryPut(frame) {
 		p.repairing = true
+		RequestKeyframe(KeyframeReasonWaiting)
 	}
 }
 
@@ -278,7 +292,15 @@ func (s *H264Source) run() {
 	// set_h264_fps, set_h264_gop does not return early when nothing changed, so
 	// this costs one channel rebuild at the start of a stream. A stream opens on
 	// a keyframe in any case, which is what that rebuild produces.
-	setEncoderGop(gop)
+	//
+	// What it is told is not the GOP setting itself but the clean interval
+	// of keyframe_policy.go, when keyframes can be asked for.
+	kind := keyframeRequests()
+	onRequest := kind != common.KeyframeRequestNone
+	keyframes := newKeyframeSchedule(defaultKeyframePolicy, onRequest)
+	encGop := encoderGop(gop, fps, onRequest)
+	setEncoderGop(encGop)
+	logKeyframePlan(kind, gop, fps, encGop)
 
 	startTime := time.Now()
 
@@ -301,16 +323,20 @@ func (s *H264Source) run() {
 		// No zero guard, unlike the frame rate below: applyScreenValue puts an
 		// out-of-range GOP back to the default rather than storing it, so the
 		// snapshot never carries one the encoder would refuse.
-		if values.GOP != gop {
-			gop = values.GOP
-			setEncoderGop(gop)
-		}
 		if values.FPS != fps && values.FPS != 0 {
 			fps = values.FPS
 			duration = time.Second / time.Duration(fps)
 			setEncoderFPS(fps)
 			setCaptureFPS(fps)
 			ticker.Reset(duration)
+		}
+		gop = values.GOP
+		// The encoder's GOP follows the frame rate as well: the clean
+		// interval is a time, not a number of frames.
+		if next := encoderGop(gop, fps, onRequest); next != encGop {
+			encGop = next
+			setEncoderGop(encGop)
+			logKeyframePlan(kind, gop, fps, encGop)
 		}
 
 		// Ask before reading. A read costs the encoder whether or not anyone
@@ -326,7 +352,14 @@ func (s *H264Source) run() {
 			continue
 		}
 
+		if reason := keyframes.beforeRead(time.Now(), gop, fps); reason != "" {
+			requestKeyframe(encGop)
+		}
+
 		data, result := readVideo(values.Width, values.Height, values.Codec, values.BitRate, 0, 0)
+		if result >= 0 && len(data) > 0 {
+			keyframes.afterRead(time.Now(), result == 3)
+		}
 
 		frame := H264Frame{
 			Data:      data,
@@ -348,4 +381,18 @@ func (s *H264Source) run() {
 		// board with a viewer on each reported twice the frame rate it had.
 		GetFrameRateCounter().Update()
 	}
+}
+
+// logKeyframePlan says how keyframes are spaced, once per stream and again on
+// a change of the GOP or the frame rate.
+func logKeyframePlan(kind common.KeyframeRequestKind, gop uint8, fps int, encGop uint8) {
+	if kind == common.KeyframeRequestNone {
+		log.Infof("keyframes: the library takes no keyframe request; encoder GOP %d (%s at %d fps)",
+			encGop, gopInterval(encGop, fps), fps)
+
+		return
+	}
+
+	log.Infof("keyframes: on request (%s); encoder GOP %d (%s at %d fps); every %s while a viewer loses packets (GOP %d)",
+		kind, encGop, gopInterval(encGop, fps), fps, gopInterval(gop, fps), gop)
 }

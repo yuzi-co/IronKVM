@@ -6,6 +6,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	"NanoKVM-Server/service/stream"
+
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
 )
@@ -208,6 +210,16 @@ func (q *frameQueue) acknowledge(timestamp int64) {
 	q.inFlight = q.inFlight[acknowledged:]
 }
 
+// wantsKeyframe reports whether the viewer waits for a keyframe and could take
+// one now.
+func (q *frameQueue) wantsKeyframe() bool {
+	q.mutex.Lock()
+	defer q.mutex.Unlock()
+
+	return !q.closed && q.waitingForKeyframe &&
+		(!q.flowControlled || len(q.inFlight) < q.window)
+}
+
 func (q *frameQueue) requestResync() {
 	q.mutex.Lock()
 	q.clearFramesLocked()
@@ -310,8 +322,18 @@ func hasCaptureDemand(clients []*client) bool {
 	return false
 }
 
+// offer hands a frame to this viewer. A viewer left waiting for a keyframe
+// (it joined, fell behind, or its decoder asked for a resync) that could take
+// one now asks the encoder for it: the periodic ones are up to two seconds
+// apart on a clean network (stream/keyframe_policy.go). One that waits for its
+// window to drain does not ask yet, or it would be sent keyframes it cannot
+// take.
 func (c *client) offer(frame *outboundFrame) {
 	c.queue.offer(frame)
+
+	if !frame.key && c.queue.wantsKeyframe() {
+		stream.RequestKeyframe(stream.KeyframeReasonWaiting)
+	}
 }
 
 func (c *client) handleControl(messageType int, data []byte) {

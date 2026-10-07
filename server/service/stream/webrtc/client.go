@@ -12,6 +12,7 @@ import (
 	"NanoKVM-Server/service/stream/framequeue"
 
 	"github.com/gorilla/websocket"
+	"github.com/pion/rtcp"
 	"github.com/pion/rtp"
 	"github.com/pion/webrtc/v4"
 	log "github.com/sirupsen/logrus"
@@ -62,8 +63,16 @@ func (c *Client) markReady() {
 // rest of the GOP. Only a client that stays behind loses frames, and then up to
 // the next keyframe, since an H.264 or H.265 stream with a hole in it stays
 // broken until one arrives. See framequeue.Queue.
+//
+// A delta frame the queue refuses means this client waits for a keyframe: it
+// has just joined, or it fell behind and gave up the rest of the GOP. The
+// encoder is asked for one rather than leaving the viewer frozen until the
+// next periodic keyframe, which is up to two seconds away on a clean network
+// (keyframe_policy.go).
 func (c *Client) enqueue(packets []*rtp.Packet, isKeyFrame bool) {
-	c.queue.Put(packets, isKeyFrame)
+	if !c.queue.Put(packets, isKeyFrame) && !isKeyFrame {
+		stream.RequestKeyframe(stream.KeyframeReasonWaiting)
+	}
 }
 
 // enqueueAudio offers a frame to this client and never blocks.
@@ -141,6 +150,9 @@ func (c *Client) write() {
 		}
 
 		if info.Key {
+			if len(packets) > 0 {
+				track.markKey(packets[0].SequenceNumber)
+			}
 			boost.raise()
 		}
 		err := track.writePackets(packets)
@@ -173,6 +185,8 @@ func (c *Client) stop() {
 	c.stopOnce.Do(func() { close(c.stopping) })
 	c.queue.Close()
 	<-c.done
+
+	stream.ForgetViewer(c)
 
 	c.audioSlot.Close()
 	<-c.audioDone
@@ -274,9 +288,8 @@ func (c *Client) AddTrack() error {
 		log.Errorf("failed to add video track: %s", err)
 		return err
 	}
-	go startRTCPReader(videoSender)
-
 	track := &Track{video: videoTrack}
+	go c.readVideoRTCP(videoSender, track)
 
 	// The card comes and goes with the settings switch, so this is decided per
 	// connection rather than once at start.
@@ -331,6 +344,89 @@ func (c *Client) AddTrack() error {
 	c.mutex.Unlock()
 
 	return nil
+}
+
+// readVideoRTCP reads the viewer's feedback on the video track, after the NACK
+// responder has answered what it can, and tells the keyframe policy about
+// loss (keyframe_policy.go):
+//
+//   - PLI and FIR: the viewer cannot decode and asks for a keyframe.
+//   - NACK: packets went missing. The responder resends them if it still holds
+//     them, and a NACK for a packet it no longer holds can only be answered
+//     with a keyframe.
+//
+// Every one of them counts as loss, so a viewer that keeps losing packets gets
+// keyframes at the GOP setting's interval until it stops.
+func (c *Client) readVideoRTCP(sender *webrtc.RTPSender, track *Track) {
+	for {
+		packets, _, err := sender.ReadRTCP()
+		if err != nil {
+			log.Debugf("RTCP reader error: %v", err)
+			return
+		}
+
+		loss, picture := rtcpLoss(packets, track)
+		if loss {
+			stream.ReportLoss(c)
+		}
+		if picture {
+			stream.RequestKeyframe(stream.KeyframeReasonPicture)
+		}
+	}
+}
+
+// sentLog is what rtcpLoss needs to know about what a viewer was sent. Track
+// implements it.
+type sentLog interface {
+	// sentSequence is the newest sequence number written, false before any.
+	sentSequence() (uint16, bool)
+	// wasSent says whether a recent sequence number was written.
+	wasSent(seq uint16) bool
+	// keySequence is the first sequence number of the last keyframe
+	// written, false before any.
+	keySequence() (uint16, bool)
+}
+
+// rtcpLoss reads one compound RTCP packet: whether it reports loss, and
+// whether only a keyframe can repair it.
+//
+// A NACK for a packet this viewer was never sent is no loss: its queue gave
+// that frame up and has asked for a keyframe already. A NACK for a packet the
+// responder no longer holds (older than nackResponderSize) needs a keyframe,
+// unless a keyframe went out after that packet: the viewer can start again
+// from that one. pion's NACK generator, like a browser's, repeats a NACK for a
+// packet whose retransmission was lost too until the packet leaves its
+// window, so without that condition one such packet would ask for keyframe
+// after keyframe.
+func rtcpLoss(packets []rtcp.Packet, view sentLog) (loss bool, picture bool) {
+	last, ok := view.sentSequence()
+	key, keyOK := view.keySequence()
+
+	for _, packet := range packets {
+		switch p := packet.(type) {
+		case *rtcp.PictureLossIndication, *rtcp.FullIntraRequest:
+			loss, picture = true, true
+		case *rtcp.TransportLayerNack:
+			if !ok {
+				continue
+			}
+			for _, pair := range p.Nacks {
+				for _, seq := range pair.PacketList() {
+					age := last - seq
+					if age < sentRingSize && !view.wasSent(seq) {
+						continue
+					}
+					loss = true
+					superseded := keyOK && int16(seq-key) < 0
+					if age >= nackResponderSize && !superseded {
+						picture = true
+					}
+				}
+			}
+		}
+	}
+
+	return loss, picture
 }
 
 func startRTCPReader(sender *webrtc.RTPSender) {
