@@ -3,6 +3,7 @@
 
 #include <errno.h>
 #include <sys/stat.h>
+#include <sys/utsname.h>
 
 using namespace maix;
 using namespace maix::sys;
@@ -94,32 +95,69 @@ void Production_testing_patch(void)
 	system("sync");
 }
 
+// Whether the running kernel is Sipeed's vendor 5.10 kernel. Part of
+// new_app_init is written for that kernel alone: S00kmod loads modules from
+// /mnt/system/ko, S15kvmhwd and S30wifi drive vendor GPIO numbers and drivers,
+// and soph_saradc.ko and soph_mipi_rx.ko are 5.10 modules. The IronKVM
+// mainline slot runs Linux 7.x, has none of those modules, and refuses the
+// same scripts on an application update (ironkvm-dist
+// devices/sipeed-nanokvm/flavour.d/mainline/init.d.refuse). There, the module
+// check below finds no vendor soph_mipi_rx.ko, copies one in and reboots, on
+// every update.
+//
+// The kernel's own release is the test, not a file an image installs, so it
+// holds on a stock Sipeed image, on either IronKVM slot, and on a slot whose
+// IronKVM files are missing. If uname fails the answer is yes, which is the
+// behaviour this function had before it asked.
+static int vendor_kernel(char *release, size_t len)
+{
+	struct utsname uts;
+	if(uname(&uts) != 0){
+		snprintf(release, len, "unknown");
+		return 1;
+	}
+	snprintf(release, len, "%s", uts.release);
+	return strncmp(uts.release, "5.10", 4) == 0;
+}
+
 void new_app_init(void)
 {
+	char release[65];
+	int vendor = vendor_kernel(release, sizeof(release));
+	if(!vendor){
+		printf("new_app_init: kernel %s is not the vendor 5.10 kernel; skipping S00kmod, S15kvmhwd, S30wifi, soph_saradc and soph_mipi_rx.ko\n", release);
+	}
+
 	// Update the necessary scripts
 	system("rm -f /boot/logo.jpeg");
 	system("cp -f /kvmapp/system/update-nanokvm.py /etc/kvm/");
 	system("rm -f /etc/init.d/S02udisk");
-	system("cp -f /kvmapp/system/init.d/S00kmod /etc/init.d/");
+	if(vendor){
+		system("cp -f /kvmapp/system/init.d/S00kmod /etc/init.d/");
+	}
 	system("cp -f /kvmapp/system/init.d/S01fs /etc/init.d/");
 	system("cp -f /kvmapp/system/init.d/S03usbdev /etc/init.d/");
-	system("cp -f /kvmapp/system/init.d/S15kvmhwd /etc/init.d/");
+	if(vendor){
+		system("cp -f /kvmapp/system/init.d/S15kvmhwd /etc/init.d/");
+	}
 	system("cp -f /kvmapp/system/init.d/S30eth /etc/init.d/");
 	system("cp -f /kvmapp/system/init.d/S50sshd /etc/init.d/");
-	if(kvm_wifi_exist()) {
+	if(vendor && kvm_wifi_exist()) {
 		system("cp -f /kvmapp/system/init.d/S30wifi /etc/init.d/");
 	} else {
 		system("rm -f /etc/init.d/S30wifi");
 	}
-	
+
 	// if exit /etc/init.d/S98tailscaled then cp -f /kvmapp/system/init.d/S98tailscaled /etc/init.d/
 	if(access("/etc/init.d/S98tailscaled", F_OK) == 0){
 		system("cp -f /kvmapp/system/init.d/S98tailscaled /etc/init.d/");
 	}
 
 	// rmmod soph_saradc
-	system("rmmod soph_saradc");
-	system("rm -f /mnt/system/ko/soph_saradc.ko");
+	if(vendor){
+		system("rmmod soph_saradc");
+		system("rm -f /mnt/system/ko/soph_saradc.ko");
+	}
 
 	// PCIe Patch
 	// system("cp /kvmapp/system/init.d/S95nanokvm /etc/init.d/");
@@ -154,61 +192,70 @@ void new_app_init(void)
 	// system("/etc/init.d/S95nanokvm restart");
 
 	// update ko
-	FILE *fp;
-	uint8_t RW_Data_0[30];	
-	uint8_t RW_Data_1[30];	
-	fp = popen("md5sum /mnt/system/ko/soph_mipi_rx.ko | grep 086ed01749188975afaa40fb569374f8 | awk '{print $2}'", "r");
-	if ( NULL == fp )
-	{
+	if(vendor){
+		FILE *fp;
+		uint8_t RW_Data_0[30];
+		uint8_t RW_Data_1[30];
+		fp = popen("md5sum /mnt/system/ko/soph_mipi_rx.ko | grep 086ed01749188975afaa40fb569374f8 | awk '{print $2}'", "r");
+		if ( NULL == fp )
+		{
+			pclose(fp);
+			// return;
+		}
+		fgets((char*)RW_Data_0, 10, fp);
 		pclose(fp);
-		// return;
-	}
-	fgets((char*)RW_Data_0, 10, fp);
-	pclose(fp);
-	fp = popen("md5sum /mnt/system/ko/soph_mipi_rx.ko | grep 69be7eeded3777f750480a5dd5a1aa26 | awk '{print $2}'", "r");
-	if ( NULL == fp )
-	{
+		fp = popen("md5sum /mnt/system/ko/soph_mipi_rx.ko | grep 69be7eeded3777f750480a5dd5a1aa26 | awk '{print $2}'", "r");
+		if ( NULL == fp )
+		{
+			pclose(fp);
+			// return;
+		}
+		fgets((char*)RW_Data_1, 10, fp);
 		pclose(fp);
-		// return;
-	}
-	fgets((char*)RW_Data_1, 10, fp);
-	pclose(fp);
 
-	int8_t hdmi_ver = -1;
+		int8_t hdmi_ver = -1;
 
-	if(access("/etc/kvm/hdmi_version", F_OK) == 0){
-		uint8_t RW_Data[2];
-		FILE *fp = fopen("/etc/kvm/hdmi_version", "r");
-		fread(RW_Data, sizeof(char), 2, fp);
-		fclose(fp);
-		if(RW_Data[0] == 'c') hdmi_ver = 1;
-		else if(RW_Data[0] == 'u') hdmi_ver = 2;
-		else if(RW_Data[0] == 'd') hdmi_ver = 2;
-	}
+		if(access("/etc/kvm/hdmi_version", F_OK) == 0){
+			uint8_t RW_Data[2];
+			FILE *fp = fopen("/etc/kvm/hdmi_version", "r");
+			fread(RW_Data, sizeof(char), 2, fp);
+			fclose(fp);
+			if(RW_Data[0] == 'c') hdmi_ver = 1;
+			else if(RW_Data[0] == 'u') hdmi_ver = 2;
+			else if(RW_Data[0] == 'd') hdmi_ver = 2;
+		}
 
-	// system("/etc/init.d/S03usbdev stop_start");
-	create_temp_watchdog();
+		// system("/etc/init.d/S03usbdev stop_start");
+		create_temp_watchdog();
 
-	if(hdmi_ver == 2){
-		if(RW_Data_1[0] != '/'){
-			system("cp /kvmapp/system/ko/soph_mipi_rx.ko /mnt/system/ko/soph_mipi_rx.ko");
-			system("sync");
-			system("reboot");
+		if(hdmi_ver == 2){
+			if(RW_Data_1[0] != '/'){
+				system("cp /kvmapp/system/ko/soph_mipi_rx.ko /mnt/system/ko/soph_mipi_rx.ko");
+				system("sync");
+				system("reboot");
+			} else {
+				system("sync");
+				system("/etc/init.d/S15kvmhwd start");
+				system("/etc/init.d/S95nanokvm restart");
+			}
 		} else {
-			system("sync");
-			system("/etc/init.d/S15kvmhwd start");
-			system("/etc/init.d/S95nanokvm restart");
+			if((RW_Data_0[0] != '/') && (RW_Data_1[0] != '/')){
+				system("cp /kvmapp/system/ko/soph_mipi_rx.ko /mnt/system/ko/soph_mipi_rx.ko");
+				system("sync");
+				system("reboot");
+			} else {
+				system("sync");
+				system("/etc/init.d/S15kvmhwd start");
+				system("/etc/init.d/S95nanokvm restart");
+			}
 		}
 	} else {
-		if((RW_Data_0[0] != '/') && (RW_Data_1[0] != '/')){
-			system("cp /kvmapp/system/ko/soph_mipi_rx.ko /mnt/system/ko/soph_mipi_rx.ko");
-			system("sync");
-			system("reboot");
-		} else {
-			system("sync");
-			system("/etc/init.d/S15kvmhwd start");
-			system("/etc/init.d/S95nanokvm restart");
-		}
+		// The rest of the vendor branch without the module or S15kvmhwd:
+		// the same watchdog file, and the restart that lets S95nanokvm
+		// finish the migration.
+		create_temp_watchdog();
+		system("sync");
+		system("/etc/init.d/S95nanokvm restart");
 	}
 
 	if(access("/root/old/kvm_new_img", F_OK) == 0){
