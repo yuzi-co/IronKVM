@@ -4,6 +4,7 @@ import (
 	"NanoKVM-Server/common"
 	"NanoKVM-Server/service/stream"
 	"NanoKVM-Server/service/stream/audio"
+	"NanoKVM-Server/service/stream/procs"
 	"NanoKVM-Server/service/vm"
 	"time"
 
@@ -167,6 +168,45 @@ func (m *WebRTCManager) stopVideoStreamIfIdle() bool {
 	return true
 }
 
+// moreProcs is procs.Two, a variable so a test can count the calls without
+// touching the runtime.
+var moreProcs = procs.Two
+
+// soloProcs holds a second P while the video stream has exactly one viewer.
+//
+// The capture loop's read is a cgo call that waits 13 to 17 ms for a 1080p
+// picture, and with one P the viewer's writer waits through most of it with
+// the core idle, then the capture goroutine waits behind the writer. One
+// viewer of H.264 at 1080p60 on the mainline slot got 57.5 to 57.9 fps, its
+// frames 115 to 125 ms behind the least delayed one at the median; with a
+// second P 58.8 to 60.9 fps and 17 to 36 ms. At 30 fps the median went from
+// 75 to 6 to 12 ms, the 95th percentile from 245 to 71 to 124 ms. Slot A, on
+// the vendor library, gains the same way (ironkvm-dist trial 56).
+//
+// Not with two viewers or more. The core is then close to busy with the
+// writers alone, 0.6 to 0.8 ms of CPU a packet for each viewer (SRTP in
+// software, the UDP send, pion), and a second P only adds the runtime's
+// spinning and lets the capture loop hand the writers frames they cannot send
+// in time: with three viewers the 95th percentile went from 260 to 300 ms to
+// 740 to 900 ms for at most three more frames a second. With one P the
+// capture loop yields to the writers instead, which holds the delay down.
+//
+// It changes only when the number of viewers does. update runs on the stream
+// goroutine only.
+type soloProcs struct {
+	release func()
+}
+
+func (s *soloProcs) update(viewers int) {
+	switch {
+	case viewers == 1 && s.release == nil:
+		s.release = moreProcs()
+	case viewers != 1 && s.release != nil:
+		s.release()
+		s.release = nil
+	}
+}
+
 // idleCheckInterval is how often the loop asks whether its last viewer has
 // gone. The loop used to notice on the capture tick, which it no longer owns.
 const idleCheckInterval = time.Second
@@ -212,6 +252,9 @@ func (m *WebRTCManager) sendVideoStream() {
 	idle := time.NewTicker(idleCheckInterval)
 	defer idle.Stop()
 
+	var solo soloProcs
+	defer solo.update(0)
+
 	// One RTP clock per packetizer, for this run of the stream: a frame left
 	// out moves it on, see frameClock.
 	clocks := make(map[rtp.Packetizer]*frameClock)
@@ -219,6 +262,7 @@ func (m *WebRTCManager) sendVideoStream() {
 	for {
 		select {
 		case <-idle.C:
+			solo.update(len(m.getClients()))
 			if len(m.getClients()) == 0 && m.stopVideoStreamIfIdle() {
 				log.Debugf("stop sending h264 stream")
 				return
@@ -235,6 +279,7 @@ func (m *WebRTCManager) sendVideoStream() {
 			}
 
 			clients := m.getClients()
+			solo.update(len(clients))
 			if len(clients) == 0 {
 				continue
 			}
