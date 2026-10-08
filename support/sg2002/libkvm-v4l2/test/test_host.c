@@ -709,6 +709,14 @@ static void test_clamps_and_rate(void)
 	CHECK_EQ(kvmv_h264_vbv_delay_ms(100), 300);
 	CHECK_EQ(kvmv_h264_vbv_delay_ms(255), KVMV_H264_VBV_DELAY_MIN_MS);
 
+	/* H.265's the same way from 2000 ms, not under 600 ms (trial 65). */
+	CHECK_EQ(kvmv_h265_vbv_delay_ms(1), KVMV_H265_VBV_DELAY_MS);
+	CHECK_EQ(kvmv_h265_vbv_delay_ms(30), KVMV_H265_VBV_DELAY_MS);
+	CHECK_EQ(kvmv_h265_vbv_delay_ms(60), 1000);
+	CHECK_EQ(kvmv_h265_vbv_delay_ms(99), 606);
+	CHECK_EQ(kvmv_h265_vbv_delay_ms(100), 600);
+	CHECK_EQ(kvmv_h265_vbv_delay_ms(255), KVMV_H265_VBV_DELAY_MIN_MS);
+
 	/* The QP range: defaults, an override, and overrides that do not parse. */
 	{
 		struct kvmv_qp_range r;
