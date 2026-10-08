@@ -224,7 +224,7 @@ has read for 10 s.
 | `KVMV_H264_QP` | `18:51` | H.264 QP range, `min:max`, 0 to 51. `0:51` leaves the encoder's own. |
 | `KVMV_H264_VBV_DELAY_MS` | 1000 | Rate-control initial delay; 0 leaves the encoder's own. |
 | `KVMV_H265_QP` | `12:51` | H.265 QP range, as `KVMV_H264_QP`. Lower than H.264's minimum: at 18 the WAVE420L stops short of the asked bitrate on screen content (ironkvm-dist run sheet, trial 20). |
-| `KVMV_H265_VBV_DELAY_MS` | 2000 | H.265 rate-control initial delay. At 1000 the WAVE420L starves the IDR, which carries most of a 1 s GOP's bits on a screen (trial 20). |
+| `KVMV_H265_VBV_DELAY_MS` | 2000 x 30 / GOP | H.265 rate-control initial delay: 2000 ms up to GOP 30, then 2000 x 30 / GOP, at least 600 ms (1000 at GOP 60, 600 at GOP 100). At 1000 with a 1 s GOP the WAVE420L starves the IDR, which carries most of the GOP's bits on a screen (trial 20); with 2 s GOPs 2000 lets the keyframes reach 250 kB (ironkvm-dist run sheet, trial 65). |
 | `KVMV_RATE_GUARD` | 140 | The output-rate guard's limit in percent of the bitrate over one second (see "H.264 quality"); 0 turns it off. |
 
 ## Known issues

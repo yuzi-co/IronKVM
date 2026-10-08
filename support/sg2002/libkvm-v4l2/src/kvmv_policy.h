@@ -72,6 +72,21 @@ unsigned int kvmv_h264_vbv_delay_ms(unsigned int gop);
 #define KVMV_H265_MAX_QP 51
 #define KVMV_H265_VBV_DELAY_MS 2000
 
+/*
+ * The H.265 buffer for a longer GOP (ironkvm-dist run sheet, trial 65), as
+ * H.264's: 2000 ms * 30 / GOP, never under KVMV_H265_VBV_DELAY_MIN_MS (GOP 30
+ * and shorter keep 2000 ms). With the server's 2 s GOPs and 2000 ms, the
+ * WAVE420L's keyframes on a still or slow screen grew from 86 to 89 kB (GOP 30
+ * at 60 fps) to 216 to 249 kB, and WebRTC's p95 delay from 85 to 95 ms to 124
+ * to 164 ms. 600 ms at GOP 100 (60 fps) gives 137 to 139 kB and p95 39 to 44
+ * ms with 45.7 to 48.6 dB against 37 at GOP 30; 1000 ms at GOP 60 (30 fps)
+ * 207 kB and p95 87 to 113 ms against 134 to 151 at GOP 30, the keyframe
+ * still as good as the pictures after it. Under 600 ms the keyframe is
+ * starved: at 30 fps, 600 ms gives a 38 dB keyframe on a 47 dB still screen.
+ */
+#define KVMV_H265_VBV_DELAY_MIN_MS 600
+unsigned int kvmv_h265_vbv_delay_ms(unsigned int gop);
+
 int kvmv_clamp(int value, int min, int max);
 uint32_t kvmv_kbps_to_bps(int kbps);
 
