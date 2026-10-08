@@ -306,6 +306,10 @@ func TestPeerConnectionThroughBatchNet(t *testing.T) {
 			}
 		}
 		udp.flush()
+		// A frame time apart, as the capture loop hands them over: three
+		// frames back to back can overflow the receiving socket's buffer
+		// on a loaded test host.
+		time.Sleep(20 * time.Millisecond)
 	}
 
 	seen := map[uint16]bool{}
