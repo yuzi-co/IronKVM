@@ -47,6 +47,25 @@
 #   scp chacha20.test poly1305.test root@<device>:/tmp/
 #   ssh root@<device> 'for t in /tmp/chacha20.test /tmp/poly1305.test; do $t -test.v -test.bench .; rm $t; done'
 #
+# Third part (ironkvm-dist#72, run sheet trial 66): AES-GCM for SRTP. Every
+# WebRTC packet is sealed with AEAD_AES_128_GCM (the browsers' choice), and
+# Go's generic AES and GHASH cost the board about 260 us of a 1200-byte
+# packet, a third of the server's CPU with two or three viewers. The overlay
+# adds riscv64 assembly for AES encryption (one block, and GCM's counter mode)
+# and for GHASH with a per-key 8-bit table (aes_riscv64.{go,s},
+# gcm/gcm_riscv64.{go,s}), and replaces aes_noasm.go and gcm/gcm_noasm.go with
+# the same files with riscv64 taken out of their build constraints. The
+# assembly uses T-Head instructions (XTheadBb, XTheadMemIdx) that the C906
+# runs with both of the board's kernels; aesgcm_riscv64_gen.py writes it and
+# says why. Decryption and key expansion stay generic. Tests beside the files
+# compare it with the generic code on random inputs:
+#
+#   for p in crypto/internal/fips140/aes crypto/internal/fips140/aes/gcm \
+#           crypto/cipher crypto/aes; do
+#       GOARCH=riscv64 CGO_ENABLED=0 go test -c -overlay "$o" \
+#           -o "$(echo $p | tr / _).test" $p
+#   done
+#
 # Turning it off: NANOKVM_GOROOT_OVERLAY=off makes this print an empty
 # overlay, and the build uses the toolchain's own generic Go code. The server
 # is then correct and slower over HTTPS; nothing else changes.
@@ -105,6 +124,17 @@ check $xc/internal/poly1305/sum_generic.go b0094a2895d5bda42dcaaf57c0b31fc914c3b
 check $xc/chacha20poly1305/chacha20poly1305_generic.go 5b949322cccac6e86a5fa721195de0f8aff949cf5c910fd5fe79cc825e22cb12
 check src/crypto/tls/conn.go f5178241bea60da9af09ef0dd317354cea88e6c37ada835d43eceae98b520e2a
 check src/crypto/tls/cipher_suites.go d407df31106c5989e29f84fb37403ca52f4bc6a583d821f4235915bdff4c07c1
+# Third part (AES-GCM), Go 1.25.0: the two files it replaces, and the ones
+# whose types, tables and generic functions the riscv64 code uses.
+fa=src/crypto/internal/fips140/aes
+check $fa/aes_noasm.go 8647ca404ea9300cce387f7d5419367f8c801e7e0c9a8dd263eb1f069a9e8b24
+check $fa/aes.go 3f7a470932a6f1e2bc9fa5f03be3a60f7c2edd557ec4a58ecb25fcab71b83ddc
+check $fa/const.go 1e425707426f310a093c92512a88c134f508801dae0326b1deea4c7e135fdf38
+check $fa/aes_generic.go a33d0a61c315c185f168987c7a2f4035d78b1059e9981cf750b7bdf15f91af08
+check $fa/gcm/gcm_noasm.go cfdf828aa34498dd358b86e7711abed4a6302eb1d09b0ade74951d51bedcd8b3
+check $fa/gcm/gcm.go bcb49a1b0727d616f716d1a2d6c67f8eb63d9095ab24b1424797ba08cd43427f
+check $fa/gcm/gcm_generic.go def1fd72eb31bd265956d1c1cc7212a0debdb0349f6edef349a5901ab3576b00
+check $fa/gcm/ghash.go 905a27c113c3837adbeb21f87e8acbe12abf2bfb5c018d0042930f691fdcba08
 
 out=$(mktemp "${TMPDIR:-/tmp}/goroot-overlay.XXXXXX")
 {
