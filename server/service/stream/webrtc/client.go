@@ -155,7 +155,9 @@ func (c *Client) write() {
 			}
 			boost.raise()
 		}
+		c.udp.begin()
 		err := track.writePackets(packets)
+		c.udp.flush()
 		if info.Key {
 			boost.lower()
 		}

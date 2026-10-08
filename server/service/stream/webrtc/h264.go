@@ -80,7 +80,7 @@ func Connect(c *gin.Context) {
 	// create video connection
 	iceServers := createICEServers()
 
-	videoConn, err := createPeerConnection(iceServers)
+	videoConn, udp, err := createPeerConnection(iceServers)
 	if err != nil {
 		log.Errorf("failed to create h264 video peer connection: %s", err)
 		return
@@ -92,6 +92,7 @@ func Connect(c *gin.Context) {
 
 	// create client
 	client := NewClient(wsConn, videoConn)
+	client.udp = udp
 	client.user = roommic.UserOf(c)
 	client.role = roommic.RoleOf(c)
 	if err := client.AddTrack(); err != nil {
@@ -235,31 +236,54 @@ func createInterceptorRegistry() (*interceptor.Registry, error) {
 	return registry, nil
 }
 
-// sharedAPI is built on first use and serves every viewer after that.
+// apiParts are the parts of the API that every viewer shares. They are built
+// on first use.
 //
-// Building an API per connection was pure overhead: nothing in it is per
-// connection. NewPeerConnection copies the MediaEngine, so codecs and header
-// extension IDs negotiated with one browser never leak into another, and the
-// interceptor registry holds factories, so each connection gets its own NACK
-// history and sender reports from Build. The SettingEngine is only read.
-var sharedAPI = sync.OnceValues(newAPI)
+// NewPeerConnection copies the MediaEngine, so codecs and header extension IDs
+// negotiated with one browser never leak into another, and the interceptor
+// registry holds factories, so each connection gets its own NACK history and
+// sender reports from Build. Only the SettingEngine is per connection: it
+// carries the connection's own batchNet (udpbatch.go). NewAPI itself only
+// fills a struct.
+type apiParts struct {
+	mediaEngine *webrtc.MediaEngine
+	registry    *interceptor.Registry
+}
 
-func newAPI() (*webrtc.API, error) {
+var sharedAPIParts = sync.OnceValues(newAPIParts)
+
+func newAPIParts() (apiParts, error) {
 	mediaEngine, err := createMediaEngine()
 	if err != nil {
-		return nil, err
+		return apiParts{}, err
 	}
 
 	registry, err := createInterceptorRegistry()
 	if err != nil {
 		log.Errorf("failed to create interceptor registry: %s", err)
+		return apiParts{}, err
+	}
+
+	return apiParts{mediaEngine: mediaEngine, registry: registry}, nil
+}
+
+// newAPI builds one connection's API. udp, when not nil, is the network its
+// ICE agent listens through.
+func newAPI(udp *batchNet) (*webrtc.API, error) {
+	parts, err := sharedAPIParts()
+	if err != nil {
 		return nil, err
 	}
 
+	settingEngine := newSettingEngine()
+	if udp != nil {
+		settingEngine.SetNet(udp)
+	}
+
 	return webrtc.NewAPI(
-		webrtc.WithSettingEngine(newSettingEngine()),
-		webrtc.WithMediaEngine(mediaEngine),
-		webrtc.WithInterceptorRegistry(registry),
+		webrtc.WithSettingEngine(settingEngine),
+		webrtc.WithMediaEngine(parts.mediaEngine),
+		webrtc.WithInterceptorRegistry(parts.registry),
 	), nil
 }
 
@@ -292,14 +316,31 @@ func newSettingEngine() webrtc.SettingEngine {
 	return settingEngine
 }
 
-func createPeerConnection(iceServers []webrtc.ICEServer) (*webrtc.PeerConnection, error) {
-	api, err := sharedAPI()
-	if err != nil {
-		return nil, err
+// createPeerConnection builds a viewer's peer connection and the batchNet its
+// sockets come from, which the video writer brackets each frame with. The
+// batchNet is nil when KVM_WEBRTC_UDP_BATCH=off.
+func createPeerConnection(iceServers []webrtc.ICEServer) (*webrtc.PeerConnection, *batchNet, error) {
+	var udp *batchNet
+	if udpBatchEnabled {
+		var err error
+		if udp, err = newBatchNet(); err != nil {
+			log.Warnf("udp batch: %v; one send per datagram", err)
+			udp = nil
+		}
 	}
 
-	return api.NewPeerConnection(webrtc.Configuration{
+	api, err := newAPI(udp)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	pc, err := api.NewPeerConnection(webrtc.Configuration{
 		ICEServers:   iceServers,
 		SDPSemantics: webrtc.SDPSemanticsUnifiedPlan,
 	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return pc, udp, nil
 }

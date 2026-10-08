@@ -14,7 +14,7 @@ import (
 func offerFor(t *testing.T) string {
 	t.Helper()
 
-	connection, err := createPeerConnection(nil)
+	connection, _, err := createPeerConnection(nil)
 	if err != nil {
 		t.Fatalf("create peer connection: %s", err)
 	}
