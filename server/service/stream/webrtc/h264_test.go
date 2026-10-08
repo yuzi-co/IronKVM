@@ -15,21 +15,21 @@ func TestSignalingWriteBufferStaysSmall(t *testing.T) {
 	}
 }
 
-// Every viewer's peer connection comes from one API rather than a fresh one
-// per connection.
-func TestPeerConnectionsShareOneAPI(t *testing.T) {
-	first, err := sharedAPI()
+// Every viewer's peer connection is built from one media engine and one
+// interceptor registry rather than fresh ones per connection.
+func TestPeerConnectionsShareTheAPIParts(t *testing.T) {
+	first, err := sharedAPIParts()
 	if err != nil {
-		t.Fatalf("build api: %s", err)
+		t.Fatalf("build api parts: %s", err)
 	}
 
-	second, err := sharedAPI()
+	second, err := sharedAPIParts()
 	if err != nil {
-		t.Fatalf("build api: %s", err)
+		t.Fatalf("build api parts: %s", err)
 	}
 
-	if first != second {
-		t.Fatal("sharedAPI built a second API")
+	if first.mediaEngine != second.mediaEngine || first.registry != second.registry {
+		t.Fatal("sharedAPIParts built a second media engine or registry")
 	}
 }
 

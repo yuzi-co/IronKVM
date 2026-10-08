@@ -49,6 +49,11 @@ type Client struct {
 	ws    *websocket.Conn
 	video *webrtc.PeerConnection
 	track *Track
+
+	// udp is the network video's sockets come from; the video writer holds
+	// a frame's datagrams and sends them in batches (udpbatch.go). nil when
+	// batching is off. Set before the writers start.
+	udp *batchNet
 	mutex sync.Mutex
 
 	// codec is what this session's video track told the peer it carries. It is
