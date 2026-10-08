@@ -48,23 +48,29 @@
 #   ssh root@<device> 'for t in /tmp/chacha20.test /tmp/poly1305.test; do $t -test.v -test.bench .; rm $t; done'
 #
 # Third part (ironkvm-dist#72, run sheet trial 66): AES-GCM for SRTP. Every
-# WebRTC packet is sealed with AEAD_AES_128_GCM (the browsers' choice), and
-# Go's generic AES and GHASH cost the board about 260 us of a 1200-byte
-# packet, a third of the server's CPU with two or three viewers. The overlay
-# adds riscv64 assembly for AES encryption (one block, and GCM's counter mode)
-# and for GHASH with a per-key 8-bit table (aes_riscv64.{go,s},
-# gcm/gcm_riscv64.{go,s}), and replaces aes_noasm.go and gcm/gcm_noasm.go with
-# the same files with riscv64 taken out of their build constraints. The
-# assembly uses T-Head instructions (XTheadBb, XTheadMemIdx) that the C906
-# runs with both of the board's kernels; aesgcm_riscv64_gen.py writes it and
-# says why. Decryption and key expansion stay generic. Tests beside the files
-# compare it with the generic code on random inputs:
+# WebRTC packet is sealed with AEAD_AES_128_GCM (the profile Chrome's and
+# pion's DTLS servers pick from the two this server offers), and Go's generic
+# AES and GHASH cost the board 267-275 us of a 1200-byte packet, about a third
+# of the server's CPU with two or three viewers. The overlay adds riscv64
+# assembly for AES encryption (one block, and GCM's counter mode) and for
+# GHASH with a per-key 8-bit table (aes_riscv64.{go,s},
+# gcm/gcm_riscv64.{go,s}), and replaces aes_noasm.go and gcm/gcm_noasm.go
+# with the same files with riscv64 taken out of their build constraints. pion
+# srtp then seals the packet in 82-87 us. The assembly uses T-Head
+# instructions (XTheadBb, XTheadMemIdx) that the C906 runs with both of the
+# board's kernels; aesgcm_riscv64_gen.py writes it and says why. Decryption
+# and key expansion stay generic. Tests beside the files compare it with the
+# generic code on random inputs, and the toolchain's own suites run with it:
 #
 #   for p in crypto/internal/fips140/aes crypto/internal/fips140/aes/gcm \
-#           crypto/cipher crypto/aes; do
+#           crypto/cipher crypto/aes crypto/tls; do
 #       GOARCH=riscv64 CGO_ENABLED=0 go test -c -overlay "$o" \
 #           -o "$(echo $p | tr / _).test" $p
 #   done
+#
+# On the device (or qemu-riscv64 -cpu thead-c906) run each; crypto/tls needs
+# its testdata directory beside it and -test.short, and crypto/cipher's test
+# needs more memory than the board has free.
 #
 # Turning it off: NANOKVM_GOROOT_OVERLAY=off makes this print an empty
 # overlay, and the build uses the toolchain's own generic Go code. The server
