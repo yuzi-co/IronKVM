@@ -290,14 +290,15 @@ func newAPI(udp *batchNet) (*webrtc.API, error) {
 func newSettingEngine() webrtc.SettingEngine {
 	settingEngine := webrtc.SettingEngine{}
 
-	// Go has no riscv64 assembly for AES, GHASH or SHA-1, so either profile
-	// costs the board about a quarter of a millisecond per full packet. On the
-	// C906 AEAD_AES_128_GCM is the cheaper of the two: 258-264 us against
-	// 277-281 us for AES_CM_128_HMAC_SHA1_80 on a 1200-byte payload, 61-64
-	// against 74 us on a 200-byte one (pion srtp, trial 39, #72). The order
-	// would not matter anyway: the browser offers, pion answers as the DTLS
-	// client, and the DTLS server (the browser) picks by its own preference,
-	// which is GCM. AES-256-GCM, slower again (307-311 us), is not offered.
+	// AEAD_AES_128_GCM is the cheaper profile on the C906. With Go's generic
+	// code it cost 258-264 us against 277-281 us for AES_CM_128_HMAC_SHA1_80
+	// on a 1200-byte payload (pion srtp, trial 39, #72). The goroot overlay's
+	// riscv64 AES and GHASH (trial 66) bring GCM to 82-85 us; the CM profile
+	// only gains on its AES half (about 200 us), as SHA-1 stays generic. The
+	// order would not matter anyway: the browser offers, pion answers as the
+	// DTLS client, and the DTLS server (the browser) picks by its own
+	// preference, which is GCM. AES-256-GCM (98 us with the overlay) is not
+	// offered.
 	settingEngine.SetSRTPProtectionProfiles(
 		dtls.SRTP_AEAD_AES_128_GCM,
 		dtls.SRTP_AES128_CM_HMAC_SHA1_80,

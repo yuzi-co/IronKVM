@@ -22,7 +22,9 @@ type gsoSocket struct {
 	off atomic.Bool
 }
 
-var errGSOAddress = errors.New("udp batch: address family does not match the socket")
+// errGSOAddress: a run this socket sends one datagram at a time, without
+// turning UDP_SEGMENT off.
+var errGSOAddress = errors.New("udp batch: address not for UDP_SEGMENT on this socket")
 
 func newGSOSocket(c *net.UDPConn) *gsoSocket {
 	g := &gsoSocket{oob: make([]byte, unix.CmsgSpace(2))}
@@ -61,6 +63,10 @@ func (g *gsoSocket) send(p []byte, size int, to netip.AddrPort) error {
 		}
 		sa = &unix.SockaddrInet4{Port: int(to.Port()), Addr: addr.As4()}
 	} else {
+		if addr.Zone() != "" {
+			// A link-local address: the plain send resolves the zone.
+			return errGSOAddress
+		}
 		sa = &unix.SockaddrInet6{Port: int(to.Port()), Addr: addr.As16()}
 	}
 
