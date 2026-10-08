@@ -63,6 +63,7 @@ const (
 	KeyframeReasonPicture = "a viewer lost a picture"
 	keyframeReasonLossy   = "interval while a viewer loses packets"
 	keyframeReasonOverdue = "no keyframe from the encoder's GOP"
+	keyframeReasonIdle    = "the screen went still after motion"
 )
 
 // keyframeDiagEnv logs every forced keyframe and how many reads it took.
@@ -231,8 +232,16 @@ type keyframeSchedule struct {
 	onRequest bool
 	diag      bool
 
+	// idle forces a keyframe once the screen goes still after motion
+	// (idle_refresh.go). nil when it is off. v4l2: the library is
+	// libkvm-v4l2, where it acts by default.
+	idle *idleRefresh
+	v4l2 bool
+
 	lastKey    time.Time
 	lastForced time.Time
+	// forcing: a keyframe was asked for and has not come yet.
+	forcing bool
 
 	// For the diagnostic log: the read count when a keyframe was forced.
 	reads       int
@@ -243,11 +252,16 @@ type keyframeSchedule struct {
 }
 
 func newKeyframeSchedule(policy *keyframePolicy, onRequest bool) *keyframeSchedule {
-	return &keyframeSchedule{
+	s := &keyframeSchedule{
 		policy:    policy,
 		onRequest: onRequest,
 		diag:      os.Getenv(keyframeDiagEnv) != "",
 	}
+	if onRequest {
+		s.idle = newIdleRefreshFromEnv()
+	}
+
+	return s
 }
 
 // beforeRead decides whether to force a keyframe for the next read, and
@@ -292,6 +306,9 @@ func (s *keyframeSchedule) beforeRead(now time.Time, gop uint8, fps int) string 
 		reason = pending
 	case lossy && since >= gopInterval(gop, fps):
 		reason = keyframeReasonLossy
+	case s.idleActive(fps) && s.idle.due(now, s.lastKey):
+		reason = keyframeReasonIdle
+		s.idle.fired(now)
 	case since >= max(keyframeRareInterval, gopInterval(gop, fps))*5/4:
 		// The encoder's GOP should have made one by now. It may have been
 		// clamped below what was asked, or not have taken the GOP at all.
@@ -300,6 +317,7 @@ func (s *keyframeSchedule) beforeRead(now time.Time, gop uint8, fps int) string 
 
 	if reason != "" {
 		s.lastForced = now
+		s.forcing = true
 		if s.diag {
 			s.forcedAt = s.reads
 			s.forcedFor = reason
@@ -311,19 +329,25 @@ func (s *keyframeSchedule) beforeRead(now time.Time, gop uint8, fps int) string 
 	return reason
 }
 
-// afterRead records what the read gave.
-func (s *keyframeSchedule) afterRead(now time.Time, key bool) {
+// afterRead records what the read gave: a keyframe or not, its size in bytes,
+// and the bitrate (kbit/s) and frame rate it was made for.
+func (s *keyframeSchedule) afterRead(now time.Time, key bool, size int, bitRate int, fps int) {
 	s.reads++
+	if s.idle != nil {
+		s.idle.observe(now, key, key && s.forcing, size, bitRate, fps)
+	}
 	if !key {
 		return
 	}
+
+	s.forcing = false
 
 	s.lastKey = now
 	s.policy.keySeen()
 
 	if s.diag && s.awaitingKey {
 		s.awaitingKey = false
-		log.Infof("keyframe forced (%s): came with read %d after the request, %d ms",
-			s.forcedFor, s.reads-s.forcedAt, now.Sub(s.forcedTime).Milliseconds())
+		log.Infof("keyframe forced (%s): came with read %d after the request, %d ms, %d bytes",
+			s.forcedFor, s.reads-s.forcedAt, now.Sub(s.forcedTime).Milliseconds(), size)
 	}
 }

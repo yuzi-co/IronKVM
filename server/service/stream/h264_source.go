@@ -298,9 +298,13 @@ func (s *H264Source) run() {
 	kind := keyframeRequests()
 	onRequest := kind != common.KeyframeRequestNone
 	keyframes := newKeyframeSchedule(defaultKeyframePolicy, onRequest)
+	keyframes.v4l2 = kind == common.KeyframeRequestV4L2
 	encGop := encoderGop(gop, fps, onRequest)
 	setEncoderGop(encGop)
 	logKeyframePlan(kind, gop, fps, encGop)
+	if onRequest {
+		log.Infof("keyframes: idle refresh %s", keyframes.idlePlan(fps))
+	}
 
 	startTime := time.Now()
 
@@ -352,13 +356,17 @@ func (s *H264Source) run() {
 			continue
 		}
 
+		bitRate := values.BitRate
 		if reason := keyframes.beforeRead(time.Now(), gop, fps); reason != "" {
 			requestKeyframe(encGop)
+			if reason == keyframeReasonIdle && kind == common.KeyframeRequestV4L2 {
+				bitRate = keyframes.refreshBitRate(bitRate)
+			}
 		}
 
-		data, result := readVideo(values.Width, values.Height, values.Codec, values.BitRate, 0, 0)
+		data, result := readVideo(values.Width, values.Height, values.Codec, bitRate, 0, 0)
 		if result >= 0 && len(data) > 0 {
-			keyframes.afterRead(time.Now(), result == 3)
+			keyframes.afterRead(time.Now(), result == 3, len(data), int(values.BitRate), fps)
 		}
 
 		frame := H264Frame{

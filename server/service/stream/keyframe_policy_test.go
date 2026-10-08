@@ -41,7 +41,7 @@ func at(ms int) time.Time {
 // keyframe if one was forced or key says so.
 func read(s *keyframeSchedule, ms int, key bool) string {
 	reason := s.beforeRead(at(ms), 30, 60)
-	s.afterRead(at(ms), key || reason != "")
+	s.afterRead(at(ms), key || reason != "", 0, 2000, 60)
 
 	return reason
 }
@@ -70,7 +70,7 @@ func TestAKeyframeFromTheGopAnswersAPendingRequest(t *testing.T) {
 	read(s, 0, true)
 
 	p.request(KeyframeReasonWaiting)
-	s.afterRead(at(400), true)
+	s.afterRead(at(400), true, 100000, 2000, 60)
 
 	if r := read(s, 417, false); r != "" {
 		t.Fatalf("forced %q though the GOP's keyframe came after the request", r)
