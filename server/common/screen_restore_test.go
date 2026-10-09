@@ -99,6 +99,36 @@ func TestNoStoredSettingsLeavesTheDefaults(t *testing.T) {
 	}
 }
 
+// The default bitrate is the web's "High" step, 3000 kbit/s (ironkvm-dist
+// trial 68). kvm_system seeds the same number and the web shows it before the
+// server answers, so a change here has to be made in all three.
+func TestAnUnconfiguredBoardStreamsAt3000(t *testing.T) {
+	withScreenFiles(t, nil)
+
+	if DefaultBitRate != 3000 {
+		t.Fatalf("DefaultBitRate = %d, want 3000", DefaultBitRate)
+	}
+	if !BitRateMap[DefaultBitRate] {
+		t.Fatalf("DefaultBitRate %d is not one of the steps the API accepts", DefaultBitRate)
+	}
+	if values := loadScreenValues(); values.BitRate != 3000 {
+		t.Fatalf("bitrate = %d, want 3000", values.BitRate)
+	}
+}
+
+// A stored bitrate the API would not have written falls back to the default,
+// not to whatever the last step happens to be.
+func TestCheckScreenFallsBackTo3000(t *testing.T) {
+	resetScreen(t)
+	withScreenFiles(t, map[string]string{"quality": "4000"})
+
+	CheckScreen()
+
+	if got := GetScreen().Snapshot().BitRate; got != 3000 {
+		t.Fatalf("bitrate = %d, want 3000", got)
+	}
+}
+
 // One API key carries either a JPEG quality or an H.264 bitrate depending on
 // its size, and both are written to the same file. Reading it back has to make
 // the same distinction or a board set to quality 60 comes up at bitrate 60.

@@ -245,7 +245,9 @@ link_runtime_file() {
 #
 # The links are made here and not on /data because /data is exFAT, which has
 # no symlinks. Every writer follows the link: the server uses os.WriteFile, and
-# kvm_system writes its defaults with a shell redirect. Neither renames.
+# kvm_system's update path (new_app_init) opens the file for writing. Neither
+# renames. kvm_system writes a default only into a file that is missing, empty
+# or unusable, so an update keeps the owner's settings.
 #
 # A regular file seeds the shared copy only when the shared copy is absent. The
 # first slot to boot with this change therefore keeps its settings, and the

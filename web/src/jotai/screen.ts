@@ -7,6 +7,7 @@ import { KeyboardReport } from '@/lib/keyboard.ts';
 import { getPauseWhenHidden, setPauseWhenHidden } from '@/lib/localstorage.ts';
 import { setViewOnly } from '@/lib/view-only.ts';
 import { client, MessageEvent } from '@/lib/websocket.ts';
+import { DEFAULT_BIT_RATE } from '@/pages/desktop/menu/screen/constants.ts';
 
 export const isHdmiEnabledAtom = atom(true);
 
@@ -34,7 +35,7 @@ export const defaultScreenSettings: ScreenSettings = {
   width: 0,
   height: 0,
   quality: 80,
-  bitRate: 3000,
+  bitRate: DEFAULT_BIT_RATE,
   fps: 30,
   gop: 30,
   codec: 1,
