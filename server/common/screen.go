@@ -36,13 +36,21 @@ const (
 	CodecH265 = 2
 )
 
+// DefaultBitRate is the H.264/H.265 target, in kbit/s, of a board that has
+// never been configured: the web's "High" step. ironkvm-dist trial 68 measured
+// 5000 against it, and three WebRTC viewers at 60 fps lost over 4 fps on the
+// vendor slot where 3000 lost at most 1.4. kvm_system's new_app_init seeds the
+// same number into a missing qlty file, and the web's defaultScreenSettings
+// shows it until the server answers.
+const DefaultBitRate = 3000
+
 // defaultScreenValues is what a board serves when it has never been configured.
 var defaultScreenValues = ScreenValues{
 	Width:   0,
 	Height:  0,
 	Quality: 80,
 	FPS:     30,
-	BitRate: 3000,
+	BitRate: DefaultBitRate,
 	GOP:     30,
 	Codec:   CodecH264,
 	Aspect:  AspectKeep,
@@ -242,7 +250,7 @@ func CheckScreen() {
 	}
 
 	if _, ok := BitRateMap[s.values.BitRate]; !ok {
-		s.values.BitRate = 3000
+		s.values.BitRate = DefaultBitRate
 	}
 
 	s.values.Codec = validateCodec(s.values.Codec)

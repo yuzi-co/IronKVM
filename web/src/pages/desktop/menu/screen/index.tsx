@@ -11,7 +11,7 @@ import { StatusDot, type DotTone } from '@/components/status-dot.tsx';
 
 import { Aspect, aspectKeep } from './aspect.tsx';
 import { Codec } from './codec.tsx';
-import { getQualityMap, getScreenType } from './constants.ts';
+import { getQualityMap, getScreenType, qualityKey } from './constants.ts';
 import { Fps } from './fps';
 import { FrameDetect } from './frame-detect';
 import { Gop } from './gop.tsx';
@@ -23,22 +23,6 @@ import { Scale } from './scale';
 import { Session } from './session.tsx';
 import { useStreamState } from './use-stream-state.ts';
 import { VideoMode } from './video-mode.tsx';
-
-// The quality item offers four steps rather than a value, and what those steps
-// mean depends on the delivery path: a JPEG quality on MJPEG, a bitrate on both
-// H.264 paths. The server reports the two separately because it cannot know
-// which one the viewer is asking about.
-function qualityKey(videoMode: string, settings: ScreenSettings): number {
-  const qualityMap = getQualityMap(videoMode);
-  if (!qualityMap) return 2;
-
-  const value = videoMode === 'mjpeg' ? settings.quality : settings.bitRate;
-  for (const [key, mapped] of qualityMap) {
-    if (mapped === value) return key;
-  }
-
-  return 2;
-}
 
 // The menu shows what the server holds, and it holds nothing of its own.
 //

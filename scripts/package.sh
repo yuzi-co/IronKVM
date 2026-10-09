@@ -151,14 +151,19 @@ cp -a "$ROOT/tools/nanokvm_update_edid/nanokvm_update_edid" "$STAGE/system/tool/
 cp -a "$ROOT/tools/nanokvm_update_edid/E21_NanoKVM.bin" "$STAGE/system/tool/"
 
 # 7. Default runtime state read by common.GetScreen() on first boot.
+#    S95nanokvm copies the screen settings among these (type, fps, qlty, res)
+#    to /etc/kvm/screen only where that shared copy is absent, so they are a
+#    fresh board's defaults and never replace an owner's. qlty is the H.264
+#    bitrate, 3000 kbit/s, the same as the server's DefaultBitRate and
+#    kvm_system's SCREEN_DEFAULT_QLTY; type h264 to go with it.
 mkdir -p "$STAGE/kvm"
 printf '30\n'    > "$STAGE/kvm/fps"
 printf '0\n'     > "$STAGE/kvm/now_fps"
-printf '60\n'    > "$STAGE/kvm/qlty"
+printf '3000\n'  > "$STAGE/kvm/qlty"
 printf '1920\n'  > "$STAGE/kvm/width"
 printf '1080\n'  > "$STAGE/kvm/height"
 printf '0\n'     > "$STAGE/kvm/state"
-printf 'mjpeg\n' > "$STAGE/kvm/type"
+printf 'h264\n'  > "$STAGE/kvm/type"
 printf '0'       > "$STAGE/kvm/res"
 
 # 8. Directories the released package has always carried, kept so the layout
