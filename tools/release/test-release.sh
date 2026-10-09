@@ -239,6 +239,23 @@ check "and the reader accepts every line of it" \
     "$(DEVICEINFO_PATHS="$ROOT/kvmapp/system/deviceinfo" \
        sh "$ROOT/kvmapp/system/ironkvm-deviceinfo" part BOOT_PART 2>/dev/null)" "/dev/mmcblk0p1"
 
+# kvmapp/kvm_system/kvm_system is gitignored like kvmapp/server/dl_lib, so a
+# fresh clone layers nothing over Sipeed's kvm_system and the package ships the
+# one that resets the owner's bitrate on every update. Trial 70 found that.
+check "a package without the fork's kvm_system is refused" \
+    "$(grep -c 'no kvmapp/kvm_system/kvm_system: build the fork' "$SCRIPT")" "1"
+check "the package's kvm_system is checked against the fork's build" \
+    "$(grep -c 'the package.s kvm_system is not the fork.s build' "$SCRIPT")" "1"
+
+# The official kvm/ carries MJPEG at quality 60. A fresh board starts from
+# these, so they have to be the fork's one default, the same as package.sh's.
+check "the package seeds 3000 kbit/s" \
+    "$(grep -c "printf '3000\\\\n' > \"\$PAYLOAD/kvm/qlty\"" "$SCRIPT")" "1"
+check "and H.264" \
+    "$(grep -c "printf 'h264\\\\n' > \"\$PAYLOAD/kvm/type\"" "$SCRIPT")" "1"
+check "package.sh seeds the same bitrate" \
+    "$(grep -c "printf '3000\\\\n'  > \"\$STAGE/kvm/qlty\"" "$ROOT/scripts/package.sh")" "1"
+
 # Two builds never collide on a hashed asset name, so a merge would leave the
 # official bundle's files beside the fork's and serve both.
 check "the web directory is replaced, not merged" \
