@@ -211,6 +211,28 @@ run > /dev/null
 check "a commented or partial name refuses nothing" "$([ -f "$WORK/dest/S03usbdev" ] && echo yes || echo no)" "yes"
 teardown
 
+# The vendor-kernel image refuses S00kmod alone: its hook runner loads the same
+# modules (ironkvm-dist run sheet, trial 70). The image's own S30wifi is listed
+# by the package and not refused, so the package's copy replaces it.
+setup
+printf '#!/bin/sh\necho kmod\n' > "$WORK/src/S00kmod"
+printf '#!/bin/sh\necho wifi new\n' > "$WORK/src/S30wifi"
+printf '#!/bin/sh\necho wifi old\n' > "$WORK/dest/S30wifi"
+printf '# the hook runner loads the modules\nS00kmod\n' > "$WORK/init.d.refuse"
+status=$(run)
+check "vendor image: the run succeeds" "$status" "0"
+check "vendor image: S00kmod is not installed" "$([ -e "$WORK/dest/S00kmod" ] && echo yes || echo no)" "no"
+check "vendor image: S30wifi is updated" "$(grep -c 'wifi new' "$WORK/dest/S30wifi")" "1"
+teardown
+
+# A stock board has no list at all, and installs every listed script.
+setup
+printf '#!/bin/sh\necho kmod\n' > "$WORK/src/S00kmod"
+status=$(run)
+check "no list: the run succeeds" "$status" "0"
+check "no list: S00kmod is installed" "$([ -f "$WORK/dest/S00kmod" ] && echo yes || echo no)" "yes"
+teardown
+
 echo
 echo "passed $pass, failed $fail, skipped $skipped"
 [ "$skipped" -gt 0 ] && echo "run this in a Linux container to cover the skipped cases"

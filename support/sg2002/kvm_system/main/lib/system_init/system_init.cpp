@@ -1,6 +1,7 @@
 #include "config.h"
 #include "system_init.h"
 #include "screen_defaults.h"
+#include "slot_scripts.h"
 
 #include <errno.h>
 #include <sys/stat.h>
@@ -129,29 +130,40 @@ void new_app_init(void)
 		printf("new_app_init: kernel %s is not the vendor 5.10 kernel; skipping S00kmod, S15kvmhwd, S30wifi, soph_saradc and soph_mipi_rx.ko\n", release);
 	}
 
-	// Update the necessary scripts
+	// Update the necessary scripts. An IronKVM slot image may refuse some
+	// of them, and keeps its own S30wifi: see slot_scripts.h. On a stock
+	// board (no refuse list) these are the same commands as before.
+	const char *refuse = SLOT_REFUSE_LIST;
+	const char *pkg = "/kvmapp/system/init.d";
+	const char *etc = "/etc/init.d";
 	system("rm -f /boot/logo.jpeg");
 	system("cp -f /kvmapp/system/update-nanokvm.py /etc/kvm/");
 	system("rm -f /etc/init.d/S02udisk");
 	if(vendor){
-		system("cp -f /kvmapp/system/init.d/S00kmod /etc/init.d/");
+		install_boot_script(refuse, pkg, etc, "S00kmod");
 	}
-	system("cp -f /kvmapp/system/init.d/S01fs /etc/init.d/");
-	system("cp -f /kvmapp/system/init.d/S03usbdev /etc/init.d/");
+	install_boot_script(refuse, pkg, etc, "S01fs");
+	install_boot_script(refuse, pkg, etc, "S03usbdev");
 	if(vendor){
-		system("cp -f /kvmapp/system/init.d/S15kvmhwd /etc/init.d/");
+		install_boot_script(refuse, pkg, etc, "S15kvmhwd");
 	}
-	system("cp -f /kvmapp/system/init.d/S30eth /etc/init.d/");
-	system("cp -f /kvmapp/system/init.d/S50sshd /etc/init.d/");
-	if(vendor && kvm_wifi_exist()) {
+	install_boot_script(refuse, pkg, etc, "S30eth");
+	install_boot_script(refuse, pkg, etc, "S50sshd");
+	switch(s30wifi_action(refuse, vendor, kvm_wifi_exist())){
+	case S30WIFI_INSTALL:
 		system("cp -f /kvmapp/system/init.d/S30wifi /etc/init.d/");
-	} else {
+		break;
+	case S30WIFI_KEEP:
+		printf("new_app_init: S30wifi left as this slot's image made it (%s does not refuse it)\n", refuse);
+		break;
+	case S30WIFI_REMOVE:
 		system("rm -f /etc/init.d/S30wifi");
+		break;
 	}
 
 	// if exit /etc/init.d/S98tailscaled then cp -f /kvmapp/system/init.d/S98tailscaled /etc/init.d/
 	if(access("/etc/init.d/S98tailscaled", F_OK) == 0){
-		system("cp -f /kvmapp/system/init.d/S98tailscaled /etc/init.d/");
+		install_boot_script(refuse, pkg, etc, "S98tailscaled");
 	}
 
 	// rmmod soph_saradc
@@ -163,7 +175,7 @@ void new_app_init(void)
 	// PCIe Patch
 	// system("cp /kvmapp/system/init.d/S95nanokvm /etc/init.d/");
 	if(access("/kvmapp/jpg_stream/dl_lib/libmaixcam_lib.so", F_OK) != 0){
-		system("cp -f /kvmapp/system/init.d/S95nanokvm /etc/init.d/");
+		install_boot_script(refuse, pkg, etc, "S95nanokvm");
 	}
 
 	// Remove unnecessary components to speed up boot time
