@@ -59,8 +59,10 @@ NAMES=$(grep -v '^[[:space:]]*$' "$LIST")
 # on purpose: the mainline slot image in ironkvm-dist carries no S03usbdev,
 # S15kvmhwd or S30wifi, because they talk to vendor drivers that kernel does
 # not have. An update would otherwise put them back and the next boot would run
-# them. The image says which in its own root filesystem, one name per line,
-# because that file belongs to the slot and not to the application.
+# them. The vendor-kernel image refuses S00kmod, because its hook runner loads
+# the same modules. The image says which in its own root filesystem, one name
+# per line, because that file belongs to the slot and not to the application.
+# kvm_system's new_app_init reads the same file. A stock board has none.
 REFUSE=${INSTALL_REFUSE:-/usr/share/ironkvm/init.d.refuse}
 refused() {
     [ -f "$REFUSE" ] || return 1
