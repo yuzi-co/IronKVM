@@ -1,5 +1,6 @@
 #include "config.h"
 #include "system_init.h"
+#include "screen_defaults.h"
 
 #include <errno.h>
 #include <sys/stat.h>
@@ -176,10 +177,10 @@ void new_app_init(void)
 	system("mkdir /kvmapp/kvm");
 	system("mkdir /etc/kvm");
 	system("echo 0 > /kvmapp/kvm/now_fps");
-	system("echo 30 > /kvmapp/kvm/fps");
-	system("echo 2000 > /kvmapp/kvm/qlty");
-	system("echo 720 > /kvmapp/kvm/res");
-	system("echo h264 > /kvmapp/kvm/type");
+	// The screen settings are the owner's, kept on /data behind the
+	// /kvmapp/kvm links: seed only the ones that are missing or unusable.
+	// See screen_defaults.h.
+	seed_screen_defaults("/kvmapp/kvm");
 	write_hdmi_state(0);
 	system("touch /etc/kvm/frame_detact");
 
