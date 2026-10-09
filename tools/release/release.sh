@@ -297,6 +297,44 @@ for lib in libkvm.so libkvm_mmf.so; do
         exit 1; }
 done
 
+# The fork's kvm_system, from the same untracked path the copy above reads.
+# kvmapp/kvm_system/kvm_system is a build output (`make support`, or
+# build-kvm-system-remote.sh in ironkvm-dist) and .gitignore excludes it, so on
+# a fresh clone the copy brings nothing and the package ships Sipeed's 2.5.0
+# kvm_system instead. Nothing fails: the board starts it, and its
+# new_app_init() resets the owner's saved bitrate to 2000 through the
+# /kvmapp/kvm links and runs the vendor kernel steps on any kernel, which are
+# the two faults the fork's kvm_system fixes. Trial 70 found a package built
+# this way would have shipped it.
+[ -f kvmapp/kvm_system/kvm_system ] || {
+    echo "no kvmapp/kvm_system/kvm_system: build the fork's kvm_system first" >&2
+    echo "  (make support, or ironkvm-dist's build-kvm-system-remote.sh)" >&2
+    exit 1; }
+want=$(md5sum < kvmapp/kvm_system/kvm_system | cut -d' ' -f1)
+got=$(md5sum < "$PAYLOAD/kvm_system/kvm_system" | cut -d' ' -f1)
+official=$(md5sum < official-kvmapp/kvm_system/kvm_system | cut -d' ' -f1)
+[ "$want" = "$got" ] && [ "$got" != "$official" ] || {
+    echo "the package's kvm_system is not the fork's build" >&2
+    echo "  want $want" >&2
+    echo "  got  $got (official $official)" >&2
+    exit 1; }
+
+# The screen settings a fresh board starts from, the same values
+# scripts/package.sh writes: 3000 kbit/s H.264, as the server's DefaultBitRate
+# and kvm_system's seed. The official tree's kvm/ carries Sipeed's MJPEG at
+# quality 60, and the layering above would ship those. S95nanokvm copies these
+# into /etc/kvm/screen only where nothing is kept there, so they never replace
+# an owner's settings.
+mkdir -p "$PAYLOAD/kvm"
+printf '30\n'   > "$PAYLOAD/kvm/fps"
+printf '0\n'    > "$PAYLOAD/kvm/now_fps"
+printf '3000\n' > "$PAYLOAD/kvm/qlty"
+printf '1920\n' > "$PAYLOAD/kvm/width"
+printf '1080\n' > "$PAYLOAD/kvm/height"
+printf '0\n'    > "$PAYLOAD/kvm/state"
+printf 'h264\n' > "$PAYLOAD/kvm/type"
+printf '0'      > "$PAYLOAD/kvm/res"
+
 # Replaced, not merged. Two builds never collide on a hashed asset name, so a
 # merge would leave the official bundle's files beside the fork's.
 rm -rf "$PAYLOAD/server/web"
