@@ -13,8 +13,10 @@ import {
   lossPct,
   NTP_UNIX_OFFSET_MS,
   rate,
+  refreshIntervalMs,
   webrtcSample,
   webrtcStats,
+  withBoardPart,
   type WebrtcSample
 } from './model.ts';
 
@@ -126,14 +128,66 @@ test('loss is the interval share of packets that never came', () => {
   assert.equal(lossPct(at(4, 1100), at(5, 1000)), 0);
 });
 
-test('abs-capture-time gives capture-to-display latency', () => {
+test('without a measured offset, the old arithmetic, taken on trust', () => {
   const capturedUnix = 1_700_000_000_000;
   const source = {
     timestamp: capturedUnix + 48,
     captureTimestamp: capturedUnix + NTP_UNIX_OFFSET_MS + 5,
     senderCaptureTimeOffset: -5
   };
-  assert.deepEqual(captureLatency(source), { ms: 48, kind: 'capture' });
+  // The board's 0, or a guess the browser filled in, says nothing about this
+  // page's clock: still assumed.
+  assert.deepEqual(captureLatency(source), { ms: 48, kind: 'capture', clockAssumed: true });
+});
+
+// The board's clock is right, and the page's is skewMs ahead of it: at the
+// moment the board reads boardMs, the page reads boardMs + skewMs. A frame captured at capturedBoardMs reaches the track latencyMs later, which
+// the page stamps on its own clock.
+function skewedSource(capturedBoardMs: number, latencyMs: number, skewMs: number) {
+  return {
+    timestamp: capturedBoardMs + latencyMs + skewMs,
+    captureTimestamp: capturedBoardMs + NTP_UNIX_OFFSET_MS,
+    senderCaptureTimeOffset: 0
+  };
+}
+
+for (const skewMs of [500, -500, 420]) {
+  test(`a page clock ${skewMs} ms off is corrected by the measured offset`, () => {
+    const captured = 1_700_000_000_000;
+    const source = skewedSource(captured, 37, skewMs);
+
+    // Uncorrected, the skew is all there is to see, or nothing at all.
+    const assumed = captureLatency(source);
+    if (skewMs > 0) assert.ok(assumed && Math.abs(assumed.ms - (37 + skewMs)) < 1e-6);
+    else assert.equal(assumed, null);
+
+    // board = page + offset, so the offset is -skew, measured within 3 ms.
+    const clock = { offsetMs: -skewMs + 2, errorMs: 3 };
+    const latency = captureLatency(source, clock);
+    assert.ok(latency);
+    assert.equal(latency.kind, 'capture');
+    assert.equal(latency.clockAssumed, undefined);
+    assert.equal(latency.errorMs, 3);
+    assert.equal(latency.clockOffsetMs, -skewMs + 2);
+    // Off by the offset's own error, 2 ms, inside its bound.
+    assert.ok(Math.abs(latency.ms - 37) <= 3, `got ${latency.ms}`);
+    assert.equal(formatLatency(latency), '39 ±3 ms');
+  });
+}
+
+test('with a measured offset, senderCaptureTimeOffset is not counted twice', () => {
+  const captured = 1_700_000_000_000;
+  const source = { ...skewedSource(captured, 40, 420), senderCaptureTimeOffset: 418 };
+  const latency = captureLatency(source, { offsetMs: -420, errorMs: 1 });
+  assert.equal(latency?.ms, 40);
+});
+
+test('a corrected latency just under zero is a fast frame within the error', () => {
+  const captured = 1_700_000_000_000;
+  const source = skewedSource(captured, 2, 0);
+  // The offset is 4 ms out, which the error bound of 5 allows.
+  assert.equal(captureLatency(source, { offsetMs: -4, errorMs: 5 })?.ms, 0);
+  assert.equal(captureLatency(source, { offsetMs: -40, errorMs: 5 }), null);
 });
 
 test('a capture time without an offset is taken on trust, and says so', () => {
@@ -161,12 +215,86 @@ test('a capture latency replaces the estimate', () => {
   const unix = 1_700_000_000_000;
   const before = webrtcSample(report(300, 1_000_000, 6), 1000);
   const after = webrtcSample(report(330, 1_500_000, 6.6), 2000);
-  const stats = webrtcStats(after, before, 'connected', {
+  const source = {
     timestamp: unix + 60,
     captureTimestamp: unix + NTP_UNIX_OFFSET_MS,
     senderCaptureTimeOffset: 0
+  };
+  assert.deepEqual(webrtcStats(after, before, 'connected', { source }).latency, {
+    ms: 60,
+    kind: 'capture',
+    clockAssumed: true
   });
-  assert.deepEqual(stats.latency, { ms: 60, kind: 'capture' });
+  assert.deepEqual(
+    webrtcStats(after, before, 'connected', { source, clock: { offsetMs: 0, errorMs: 1.5 } })
+      .latency,
+    { ms: 60, kind: 'capture', errorMs: 1.5, clockOffsetMs: 0 }
+  );
+});
+
+test('the estimate is a sum of measured parts once the board reports its share', () => {
+  const before = webrtcSample(report(300, 1_000_000, 6), 1000);
+  const after = webrtcSample(report(330, 1_500_000, 6.6), 2000);
+  const stats = webrtcStats(after, before, 'connected', { refreshMs: 1000 / 60 });
+  const latency = stats.latency;
+  assert.ok(latency && latency.parts);
+  // Without the board's share it stays what it was: the browser's part only.
+  assert.ok(Math.abs(latency.ms - 22) < 1e-9);
+  assert.equal(withBoardPart(latency, undefined), latency);
+
+  const summed = withBoardPart(latency, 24.5);
+  assert.equal(summed.kind, 'estimate');
+  assert.equal(summed.parts?.boardMs, 24.5);
+  // 24.5 on the board, 2 on the way, 20 buffering and decoding, 8.33 display.
+  assert.ok(Math.abs(summed.ms - (24.5 + 2 + 20 + 1000 / 120)) < 1e-9, `got ${summed.ms}`);
+  assert.equal(formatLatency(summed), '~55 ms');
+
+  // A capture latency is never touched.
+  const capture = { ms: 40, kind: 'capture' as const };
+  assert.equal(withBoardPart(capture, 24.5), capture);
+  assert.equal(withBoardPart(latency, Number.NaN), latency);
+});
+
+// One frame's path, with every part known, as the two measurements see it.
+// The capture measurement stops at the frame reaching the track (after
+// decode); the sum goes on to the display. They differ by the display part.
+test('the summed estimate and the capture measurement agree on one timeline', () => {
+  const capturedBoardMs = 1_700_000_000_000;
+  const boardMs = 24; // capture to the last packet leaving the board
+  const oneWayMs = 3; // half of a 6 ms round trip
+  const receiveMs = 18; // first packet to decoded, 30 frames
+  const refreshMs = 1000 / 60;
+
+  const before = webrtcSample(report(300, 1_000_000, 6), 1000);
+  const afterReport = report(330, 1_500_000, 6 + (receiveMs * 30) / 1000).map((entry) =>
+    entry.type === 'candidate-pair' ? { ...entry, currentRoundTripTime: 0.006 } : entry
+  );
+  const after = webrtcSample(afterReport, 2000);
+  const estimate = webrtcStats(after, before, 'connected', { refreshMs }).latency;
+  assert.ok(estimate);
+  const summed = withBoardPart(estimate, boardMs);
+
+  const skewMs = 420;
+  const reachedTrack = capturedBoardMs + boardMs + oneWayMs + receiveMs;
+  const capture = captureLatency(
+    {
+      timestamp: reachedTrack + skewMs,
+      captureTimestamp: capturedBoardMs + NTP_UNIX_OFFSET_MS,
+      senderCaptureTimeOffset: 0
+    },
+    { offsetMs: -skewMs, errorMs: 3 }
+  );
+  assert.ok(capture);
+  assert.ok(Math.abs(capture.ms - 45) < 1e-6, `capture ${capture.ms}`);
+  assert.ok(Math.abs(summed.ms - capture.ms - refreshMs / 2) < 1e-6, `sum ${summed.ms}`);
+});
+
+test('the refresh interval is the median gap between animation frames', () => {
+  const at60 = Array.from({ length: 30 }, (_, i) => (i % 2 ? 16.5 : 16.8));
+  assert.ok(Math.abs((refreshIntervalMs(at60) ?? 0) - 16.65) < 1e-9);
+  // A missed frame and a hidden tab do not move it.
+  assert.equal(refreshIntervalMs([...Array(20).fill(6.94), 13.9, 2000]), 6.94);
+  assert.equal(refreshIntervalMs([16.7, 16.7]), null);
 });
 
 test('the clock estimate takes the quickest answer, wrong by half its round trip', () => {

@@ -7,6 +7,7 @@ import { w3cwebsocket as W3cWebSocket } from 'websocket';
 
 import { offerAbsCaptureTime } from '@/lib/abs-capture-time.ts';
 import { audioStateFromName } from '@/lib/audio-state.ts';
+import { CLOCK_EVENT, ClockSampler, parseClockReply } from '@/lib/clock-offset.ts';
 import { nextRoomMicSwitch, roomMicPushFromSignal } from '@/lib/room-mic.ts';
 import { withStereoOpus } from '@/lib/sdp-opus.ts';
 import { getBaseUrl } from '@/lib/service.ts';
@@ -22,6 +23,7 @@ import {
   roomMicVolumeAtom
 } from '@/jotai/room-mic.ts';
 import { screenSettingsAtom, streamInfoVisibleAtom, streamStatsAtom } from '@/jotai/screen.ts';
+import { useServerFeature } from '@/hooks/useServerFeature.ts';
 
 import { watchWebrtc } from '../status-bar/webrtc.ts';
 import { ScreenViewport } from './viewport.tsx';
@@ -76,6 +78,11 @@ export const H264Webrtc = () => {
   const setStreamStats = useSetAtom(streamStatsAtom);
   // The session's peer connection, for the status bar's statistics.
   const peerRef = useRef<RTCPeerConnection | null>(null);
+  // The board's clock against this page's, measured over the signalling
+  // socket while the status bar shows, from a server that answers for it.
+  const clockFeature = useServerFeature('webrtc-clock');
+  const clockSamplerRef = useRef<ClockSampler | null>(null);
+  const clockWantedRef = useRef(false);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -169,6 +176,19 @@ export const H264Webrtc = () => {
       }
     };
     sendRoomSwitchRef.current = (on: boolean) => sendMsg('room-mic', on ? 'on' : 'off');
+
+    // Sent straight, not through sendMsg: the sampler has to know whether the
+    // request went out, or it would wait for an answer that cannot come.
+    const clockSampler = new ClockSampler((id) => {
+      if (ws.readyState !== WebSocket.OPEN) return false;
+      try {
+        ws.send(JSON.stringify({ event: CLOCK_EVENT, data: String(id) }));
+        return true;
+      } catch {
+        return false;
+      }
+    });
+    clockSamplerRef.current = clockSampler;
 
     const startVideo = (iceServers: RTCIceServer[]) => {
       if (video || disposed) {
@@ -324,6 +344,10 @@ export const H264Webrtc = () => {
       if (roomWantedRef.current) {
         sendMsg('room-mic', 'on');
       }
+
+      if (clockWantedRef.current) {
+        clockSampler.start();
+      }
     };
 
     ws.onerror = (error) => {
@@ -382,6 +406,13 @@ export const H264Webrtc = () => {
               setConnectionAttempt((attempt) => attempt + 1);
             }
             break;
+          case CLOCK_EVENT: {
+            const reply = parseClockReply(msg.data);
+            if (reply) {
+              clockSampler.onReply(reply.boardMs, reply.id);
+            }
+            break;
+          }
           case 'heartbeat':
             break;
           default:
@@ -419,6 +450,10 @@ export const H264Webrtc = () => {
       video?.close();
       video = null;
       peerRef.current = null;
+      clockSampler.stop();
+      if (clockSamplerRef.current === clockSampler) {
+        clockSamplerRef.current = null;
+      }
       if (videoElement) {
         videoElement.srcObject = null;
       }
@@ -455,15 +490,25 @@ export const H264Webrtc = () => {
     setRoomSwitch
   ]);
 
-  // The status bar reads the browser's own statistics while it shows.
+  // The status bar reads the browser's own statistics while it shows, and the
+  // board's clock, which corrects the frames' capture times.
   useEffect(() => {
     if (!statsVisible) return;
-    const stop = watchWebrtc(() => peerRef.current, setStreamStats);
+    const useClock = clockFeature === true;
+    clockWantedRef.current = useClock;
+    if (useClock) clockSamplerRef.current?.start();
+    const stop = watchWebrtc(
+      () => peerRef.current,
+      setStreamStats,
+      () => (useClock ? (clockSamplerRef.current?.estimate() ?? null) : null)
+    );
     return () => {
       stop();
+      clockWantedRef.current = false;
+      clockSamplerRef.current?.stop();
       setStreamStats(null);
     };
-  }, [statsVisible, setStreamStats]);
+  }, [statsVisible, setStreamStats, clockFeature]);
 
   // The viewer's switch goes to the server as it changes.
   useEffect(() => {

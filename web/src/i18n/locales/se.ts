@@ -129,6 +129,10 @@ const se = {
           'Från att bilden lämnar kodaren till att den ritas här, mätt mot enhetens klocka. Fångst och kodning ingår inte.',
         latencyEstimate:
           'Uppskattning: halva nätverkets tur och retur plus buffring och avkodning i den här webbläsaren. Fångst och kodning på enheten ingår inte, så den verkliga latensen är högre.',
+        latencyEstimateSum:
+          'Summan av uppmätta delar: {{board}} ms på enheten från fångst till sändning, {{network}} ms på vägen hit (halva nätverkets tur och retur), {{receive}} ms buffring och avkodning i den här webbläsaren och {{display}} ms väntan på skärmen (en halv uppdatering).',
+        latencyClockOffset:
+          'Korrigerat för skillnaden mellan enhetens klocka och den här datorns, uppmätt till {{offset}} ms (enheten minus den här datorn).',
         latencyClockAssumed: 'Enhetens klocka antas gå lika med den här datorns.',
         latencyArrival:
           'Bilder kommer fram {{ms}} ms efter kodaren; resten är avkodning och ritning i den här webbläsaren.',

@@ -132,6 +132,10 @@ const cz = {
           'Od opuštění kodéru po vykreslení zde, měřeno podle hodin zařízení. Zachycení a kódování nejsou zahrnuty.',
         latencyEstimate:
           'Odhad: polovina doby odezvy sítě plus vyrovnávací paměť a dekódování v tomto prohlížeči. Zachycení a kódování na zařízení nejsou zahrnuty, skutečná latence je tedy vyšší.',
+        latencyEstimateSum:
+          'Součet měřených částí: {{board}} ms na zařízení od zachycení po odeslání, {{network}} ms cestou sem (polovina doby odezvy sítě), {{receive}} ms vyrovnávací paměť a dekódování v tomto prohlížeči a {{display}} ms čekání na displej (polovina obnovení).',
+        latencyClockOffset:
+          'Opraveno o rozdíl mezi hodinami zařízení a tohoto počítače, naměřený na {{offset}} ms (zařízení minus tento počítač).',
         latencyClockAssumed:
           'Předpokládá se, že hodiny zařízení jdou stejně jako hodiny tohoto počítače.',
         latencyArrival:

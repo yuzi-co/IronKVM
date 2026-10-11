@@ -122,6 +122,10 @@ const zh = {
         latencyCapture: '从设备采集到在此显示，依据服务器随每帧发送的采集时间计算。',
         latencyEncoder: '从帧离开编码器到在此绘制，以设备的时钟测量。不含采集和编码时间。',
         latencyEstimate: '估计值：网络往返时间的一半，加上此浏览器的缓冲和解码时间。不含设备上的采集和编码，因此实际延迟更高。',
+        latencyEstimateSum:
+          '各测量部分之和：设备上从采集到发送 {{board}} ms，到这里的路上 {{network}} ms（网络往返时间的一半），此浏览器的缓冲和解码 {{receive}} ms，等待显示 {{display}} ms（半个刷新周期）。',
+        latencyClockOffset:
+          '已按设备时钟与这台电脑时钟之差校正，测得为 {{offset}} ms（设备减这台电脑）。',
         latencyClockAssumed: '假定设备的时钟与这台电脑的时钟一致。',
         latencyArrival: '帧离开编码器 {{ms}} ms 后到达此处；其余是此浏览器中的解码和绘制。',
         rttTip: '到设备的网络往返时间',

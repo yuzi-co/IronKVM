@@ -132,6 +132,10 @@ const tr = {
           'Karenin kodlayıcıdan çıkışından burada çizilmesine kadar, cihazın saatine göre ölçülür. Yakalama ve kodlama dahil değildir.',
         latencyEstimate:
           'Tahmin: ağ gidiş-dönüş süresinin yarısı artı bu tarayıcıdaki arabellek ve çözme. Cihazdaki yakalama ve kodlama dahil değildir, bu yüzden gerçek gecikme daha yüksektir.',
+        latencyEstimateSum:
+          'Ölçülen parçaların toplamı: cihazda yakalamadan gönderime {{board}} ms, buraya gelen yolda {{network}} ms (ağ gidiş-dönüş süresinin yarısı), bu tarayıcıda arabellek ve çözme {{receive}} ms ve ekranı bekleme {{display}} ms (yarım yenileme).',
+        latencyClockOffset:
+          'Cihazın saati ile bu bilgisayarınki arasındaki farka göre düzeltildi; ölçülen fark {{offset}} ms (cihaz eksi bu bilgisayar).',
         latencyClockAssumed: 'Cihazın saatinin bu bilgisayarınkiyle aynı olduğu varsayılır.',
         latencyArrival:
           'Kareler kodlayıcıdan {{ms}} ms sonra buraya ulaşır; geri kalanı bu tarayıcıda çözme ve çizmedir.',

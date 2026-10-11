@@ -131,6 +131,10 @@ const id = {
           'Dari bingkai keluar dari encoder hingga digambar di sini, diukur dengan jam perangkat. Penangkapan dan pengodean tidak termasuk.',
         latencyEstimate:
           'Perkiraan: setengah waktu pulang-pergi jaringan ditambah buffer dan dekode di browser ini. Penangkapan dan pengodean di perangkat tidak termasuk, jadi latensi sebenarnya lebih tinggi.',
+        latencyEstimateSum:
+          'Jumlah bagian yang diukur: {{board}} ms di perangkat dari penangkapan hingga pengiriman, {{network}} ms di perjalanan ke sini (setengah waktu pulang-pergi jaringan), {{receive}} ms buffer dan dekode di browser ini, dan {{display}} ms menunggu layar (setengah penyegaran).',
+        latencyClockOffset:
+          'Dikoreksi dengan selisih antara jam perangkat dan jam komputer ini, terukur {{offset}} ms (perangkat dikurangi komputer ini).',
         latencyClockAssumed: 'Jam perangkat dianggap sama dengan jam komputer ini.',
         latencyArrival:
           'Bingkai tiba di sini {{ms}} ms setelah encoder; sisanya adalah dekode dan menggambar di browser ini.',

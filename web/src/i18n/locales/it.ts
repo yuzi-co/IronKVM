@@ -132,6 +132,10 @@ const it = {
           'Dall\'uscita dall\'encoder al disegno qui, misurata sull\'orologio del dispositivo. Cattura e codifica non sono incluse.',
         latencyEstimate:
           'Stima: metà del tempo di andata e ritorno di rete più buffer e decodifica in questo browser. Cattura e codifica sul dispositivo non sono incluse, quindi la latenza reale è maggiore.',
+        latencyEstimateSum:
+          'Somma di parti misurate: {{board}} ms sul dispositivo dalla cattura all\'invio, {{network}} ms di percorso fin qui (metà del tempo di andata e ritorno di rete), {{receive}} ms di buffer e decodifica in questo browser e {{display}} ms di attesa del display (mezzo aggiornamento).',
+        latencyClockOffset:
+          'Corretto per la differenza tra l\'orologio del dispositivo e quello di questo computer, misurata in {{offset}} ms (dispositivo meno questo computer).',
         latencyClockAssumed:
           'Si presume che l\'orologio del dispositivo coincida con quello di questo computer.',
         latencyArrival:

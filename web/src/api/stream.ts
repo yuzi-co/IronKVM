@@ -12,6 +12,10 @@ export type StreamInfo = {
   // H.264 Direct's frames are stamped with their capture time rather than
   // when they left the encoder (libkvm-v4l2 boards). Absent on older servers.
   captureStamps?: boolean;
+  // The board's share of each path's latency, milliseconds from capture to
+  // the network, median over the last second (info-latency). Absent
+  // on older servers and while no viewer is sent frames with capture times.
+  boardLatency?: { webrtc?: number; direct?: number };
 };
 
 export function getStreamInfo() {

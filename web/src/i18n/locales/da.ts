@@ -131,6 +131,10 @@ const da = {
           'Fra billedet forlader koderen, til det tegnes her, målt mod enhedens ur. Optagelse og kodning er ikke medregnet.',
         latencyEstimate:
           'Skøn: halvdelen af netværkets rundtur plus denne browsers buffering og afkodning. Optagelse og kodning på enheden er ikke medregnet, så den reelle latens er højere.',
+        latencyEstimateSum:
+          'Summen af målte dele: {{board}} ms på enheden fra optagelse til afsendelse, {{network}} ms på vejen hertil (halvdelen af netværkets rundtur), {{receive}} ms buffering og afkodning i denne browser og {{display}} ms ventetid på skærmen (en halv opdatering).',
+        latencyClockOffset:
+          'Rettet for forskellen mellem enhedens ur og denne computers, målt til {{offset}} ms (enheden minus denne computer).',
         latencyClockAssumed: 'Enhedens ur antages at gå som denne computers.',
         latencyArrival:
           'Billeder når frem {{ms}} ms efter koderen; resten er afkodning og tegning i denne browser.',

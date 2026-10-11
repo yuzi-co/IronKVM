@@ -135,6 +135,10 @@ const es = {
           'Desde que el fotograma sale del codificador hasta que se dibuja aquí, medido con el reloj del dispositivo. No incluye la captura ni la codificación.',
         latencyEstimate:
           'Estimación: la mitad del viaje de ida y vuelta de la red más el búfer y la decodificación de este navegador. No incluye la captura ni la codificación en el dispositivo, así que la latencia real es mayor.',
+        latencyEstimateSum:
+          'Suma de partes medidas: {{board}} ms en el dispositivo desde la captura hasta el envío, {{network}} ms de camino hasta aquí (la mitad del viaje de ida y vuelta de la red), {{receive}} ms de búfer y decodificación en este navegador y {{display}} ms de espera de la pantalla (medio refresco).',
+        latencyClockOffset:
+          'Corregido por la diferencia entre el reloj del dispositivo y el de este ordenador, medida en {{offset}} ms (dispositivo menos este ordenador).',
         latencyClockAssumed:
           'Se supone que el reloj del dispositivo coincide con el de este ordenador.',
         latencyArrival:

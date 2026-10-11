@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Tooltip } from 'antd';
 import clsx from 'clsx';
+import type { TFunction } from 'i18next';
 import { useAtomValue } from 'jotai';
 import { useTranslation } from 'react-i18next';
 
@@ -14,12 +15,14 @@ import {
   streamStatsAtom,
   videoModeAtom
 } from '@/jotai/screen.ts';
+import { useServerFeature } from '@/hooks/useServerFeature.ts';
 
 import {
   formatBitrate,
   formatFps,
   formatLatency,
   formatRefresh,
+  withBoardPart,
   type ConnectionState,
   type Latency,
   type StreamStats
@@ -85,6 +88,7 @@ const Bar = () => {
   const capture = useAtomValue(captureStatusAtom);
   const settings = useAtomValue(screenSettingsAtom);
   const source = useSourceInfo();
+  const boardLatency = useServerFeature('info-latency') === true;
 
   const noSignal = capture?.result === CAPTURE_NO_SIGNAL;
   const connection: ConnectionState = paused ? 'paused' : (stats?.connection ?? 'connecting');
@@ -133,7 +137,12 @@ const Bar = () => {
       )}
 
       {stats?.latency && (
-        <LatencyItem latency={directFromCapture(stats.latency, source?.captureStamps)} />
+        <LatencyItem
+          latency={withBoardPart(
+            directFromCapture(stats.latency, source?.captureStamps),
+            boardLatency ? source?.boardLatency?.webrtc : undefined
+          )}
+        />
       )}
 
       {stats?.rttMs !== null && stats?.rttMs !== undefined && (
@@ -211,11 +220,29 @@ const latencyTips: Record<Latency['kind'], string> = {
   estimate: 'screen.streamInfo.latencyEstimate'
 };
 
+// The tooltip's first sentence: what kind of number it is, and for an
+// estimate the board reported its share of, the parts it adds up.
+function latencyTip(latency: Latency, t: TFunction): string {
+  const parts = latency.parts;
+  if (latency.kind === 'estimate' && parts?.boardMs !== undefined) {
+    return t('screen.streamInfo.latencyEstimateSum', {
+      board: Math.round(parts.boardMs),
+      network: Math.round(parts.networkMs),
+      receive: Math.round(parts.receiveMs),
+      display: Math.round(parts.displayMs ?? 0)
+    });
+  }
+  return t(latencyTips[latency.kind]);
+}
+
 const LatencyItem = ({ latency }: { latency: Latency }) => {
   const { t } = useTranslation();
   const tip = [
-    t(latencyTips[latency.kind]),
+    latencyTip(latency, t),
     latency.clockAssumed ? t('screen.streamInfo.latencyClockAssumed') : '',
+    latency.clockOffsetMs !== undefined
+      ? t('screen.streamInfo.latencyClockOffset', { offset: Math.round(latency.clockOffsetMs) })
+      : '',
     latency.arrivalMs !== undefined
       ? t('screen.streamInfo.latencyArrival', { ms: Math.round(latency.arrivalMs) })
       : ''

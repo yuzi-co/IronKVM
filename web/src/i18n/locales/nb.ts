@@ -132,6 +132,10 @@ const nb = {
           'Fra bildet forlater koderen til det tegnes her, målt mot enhetens klokke. Fangst og koding er ikke med.',
         latencyEstimate:
           'Anslag: halve nettverkets tur-retur pluss buffring og dekoding i denne nettleseren. Fangst og koding på enheten er ikke med, så den faktiske forsinkelsen er høyere.',
+        latencyEstimateSum:
+          'Summen av målte deler: {{board}} ms på enheten fra fangst til sending, {{network}} ms på veien hit (halve nettverkets tur-retur), {{receive}} ms buffring og dekoding i denne nettleseren og {{display}} ms venting på skjermen (en halv oppdatering).',
+        latencyClockOffset:
+          'Korrigert for forskjellen mellom enhetens klokke og denne datamaskinens, målt til {{offset}} ms (enheten minus denne datamaskinen).',
         latencyClockAssumed: 'Enhetens klokke antas å gå likt med denne datamaskinens.',
         latencyArrival:
           'Bilder kommer fram {{ms}} ms etter koderen; resten er dekoding og tegning i denne nettleseren.',
