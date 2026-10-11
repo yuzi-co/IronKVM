@@ -2,12 +2,17 @@
 //
 // The device serves these from a 1GHz core, so compressing per request would
 // cost more CPU than it has to spare. The server picks the .gz up when the
-// client advertises gzip support and falls back to the original otherwise.
+// client advertises gzip support. For a client that does not, the server
+// decompresses the .gz itself (server/router/static.go), so the original is
+// deleted once its copy exists: keeping both doubled the flash the web files
+// take. Two kinds of file stay as they are. index.html and the assets it names
+// are read as plain files by the server's UI package check (an older server
+// reads them that way too), and they are what every client fetches first.
 //
 // Uses only Node built-ins on purpose: no extra dependency for a build step.
 
 import { gzipSync, constants } from 'node:zlib';
-import { readdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { join, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -41,9 +46,24 @@ async function* walk(dir) {
   }
 }
 
+// The pattern the server's package check uses to find what index.html loads
+// (server/service/webui/package.go).
+const ASSET_REFERENCE = /(?:src|href)="\/?(assets\/[^"?#]+)"/g;
+
+async function entryFiles() {
+  const index = await readFile(join(DIST, 'index.html'), 'utf8');
+  const keep = new Set([join(DIST, 'index.html')]);
+  for (const match of index.matchAll(ASSET_REFERENCE)) {
+    keep.add(join(DIST, ...match[1].split('/')));
+  }
+  return keep;
+}
+
 async function main() {
+  const keep = await entryFiles();
   let compressed = 0;
   let saved = 0;
+  let removed = 0;
 
   for await (const file of walk(DIST)) {
     if (file.endsWith('.gz') || !COMPRESSIBLE.has(extname(file))) continue;
@@ -60,9 +80,17 @@ async function main() {
     await writeFile(`${file}.gz`, gzipped);
     compressed += 1;
     saved += source.length - gzipped.length;
+
+    if (!keep.has(file)) {
+      await rm(file);
+      removed += 1;
+    }
   }
 
-  console.log(`precompressed ${compressed} files, saving ${(saved / 1024).toFixed(0)} KB over the wire`);
+  console.log(
+    `precompressed ${compressed} files, saving ${(saved / 1024).toFixed(0)} KB over the wire; ` +
+      `removed ${removed} originals`
+  );
 }
 
 main().catch((error) => {
