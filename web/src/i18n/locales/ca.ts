@@ -29,6 +29,11 @@ const ca = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      share: {
+        opening: "S'està obrint la pantalla compartida...",
+        failed: "Aquest enllaç no és vàlid, ha caducat o s'ha revocat.",
+        toLogin: 'Inicia la sessió'
+      },
       passwordChanged: 'Contrasenya canviada. Inicia la sessió amb la contrasenya nova.',
       cookieRejected:
         "El navegador s'ha negat a desar la sessió. Una galeta que va deixar una sessió HTTPS anterior no es pot substituir per http sense xifrar. Esborreu les galetes d'aquesta adreça, o obriu una finestra privada, i torneu a iniciar la sessió.",
@@ -2004,7 +2009,31 @@ const ca = {
         title: 'Compte',
         webAccount: 'Nom del compte web',
         role: 'Rol',
-        roles: { admin: 'Administrador', user: 'Usuari' },
+        roles: { admin: 'Administrador', user: 'Usuari', viewer: 'Espectador' },
+        shareLinks: {
+          title: 'Enllaços per compartir',
+          desc: "Un enllaç per compartir mostra la pantalla a qualsevol que l'obri. No dona accés a teclat, ratolí, alimentació, suports ni paràmetres, i deixa de funcionar quan caduca o es revoca.",
+          create: 'Crea un enllaç',
+          label: 'Etiqueta (opcional)',
+          duration: 'Vàlid durant',
+          durations: {
+            h1: '1 hora',
+            h8: '8 hores',
+            d1: '1 dia',
+            d7: '7 dies',
+            d30: '30 dies'
+          },
+          empty: 'Cap enllaç per compartir',
+          expires: 'Caduca el {{time}}',
+          revoke: 'Revoca',
+          revokeConfirm: "Voleu revocar aquest enllaç? Qui l'estigui fent servir per mirar es desconnectarà.",
+          revoked: 'Enllaç revocat',
+          loadFailed: "No s'han pogut carregar els enllaços",
+          createFailed: "No s'ha pogut crear l'enllaç",
+          revokeFailed: "No s'ha pogut revocar l'enllaç",
+          createdTitle: 'Enllaç creat',
+          createdDesc: "Copieu l'enllaç ara. No es podrà tornar a mostrar."
+        },
         password: 'Contrasenya',
         updateBtn: 'Canvia',
         logoutBtn: 'Tanca sessió',

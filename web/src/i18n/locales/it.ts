@@ -28,6 +28,11 @@ const it = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      share: {
+        opening: 'Apertura dello schermo condiviso...',
+        failed: 'Questo link non è valido, è scaduto o è stato revocato.',
+        toLogin: 'Accedi invece'
+      },
       passwordChanged: 'Password cambiata. Accedi con la nuova password.',
       cookieRejected:
         'Il browser si è rifiutato di salvare la sessione. Un cookie lasciato da una precedente sessione HTTPS non può essere sostituito tramite http non cifrato. Cancella i cookie di questo indirizzo, oppure apri una finestra privata, e accedi di nuovo.',
@@ -2010,7 +2015,31 @@ const it = {
         title: 'Account',
         webAccount: 'Nome account web',
         role: 'Ruolo',
-        roles: { admin: 'Amministratore', user: 'Utente' },
+        roles: { admin: 'Amministratore', user: 'Utente', viewer: 'Spettatore' },
+        shareLinks: {
+          title: 'Link di condivisione',
+          desc: 'Un link di condivisione mostra lo schermo a chiunque lo apra. Non dà accesso a tastiera, mouse, alimentazione, supporti o impostazioni e smette di funzionare alla scadenza o se viene revocato.',
+          create: 'Crea link',
+          label: 'Etichetta (facoltativa)',
+          duration: 'Valido per',
+          durations: {
+            h1: '1 ora',
+            h8: '8 ore',
+            d1: '1 giorno',
+            d7: '7 giorni',
+            d30: '30 giorni'
+          },
+          empty: 'Nessun link di condivisione',
+          expires: 'Scade il {{time}}',
+          revoke: 'Revoca',
+          revokeConfirm: 'Revocare questo link? Chi guarda tramite il link viene disconnesso.',
+          revoked: 'Link revocato',
+          loadFailed: 'Impossibile caricare i link di condivisione',
+          createFailed: 'Impossibile creare il link di condivisione',
+          revokeFailed: 'Impossibile revocare il link di condivisione',
+          createdTitle: 'Link di condivisione creato',
+          createdDesc: 'Copia il link adesso. Non potrà essere mostrato di nuovo.'
+        },
         password: 'Password',
         updateBtn: 'Update',
         logoutBtn: 'Esci',

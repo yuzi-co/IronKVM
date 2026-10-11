@@ -51,6 +51,11 @@ func (s Status) ForViewer(role authn.Role) Status {
 	if role != authn.RoleAdmin {
 		s.Listeners = nil
 	}
+	// A view-only session sees the screen and does not listen to the room, so
+	// the page is told the microphone is not on offer.
+	if role == authn.RoleViewer {
+		s.Allowed = false
+	}
 
 	return s
 }

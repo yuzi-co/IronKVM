@@ -18,7 +18,7 @@ func requestIdentity(c *gin.Context) (audit.Identity, bool) {
 	if !ok {
 		return audit.Identity{}, false
 	}
-	return audit.Identity{Actor: principal.Username, Via: principal.Via, Key: principal.Key}, true
+	return audit.Identity{Actor: principal.Username, Via: principal.Via, Key: principal.Key, Role: string(principal.Role)}, true
 }
 
 // auditRouter serves the audit log and the capability tiers of MCP and the

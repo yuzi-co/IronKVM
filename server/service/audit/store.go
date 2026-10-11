@@ -89,7 +89,9 @@ type Event struct {
 	// off), mcp, agent, ipmi, redfish, watchdog or macro.
 	Via string `json:"via,omitempty"`
 	// Key is the name of the API key, when one was used.
-	Key      string `json:"key,omitempty"`
+	Key string `json:"key,omitempty"`
+	// Role is the actor's role: admin, user or viewer.
+	Role     string `json:"role,omitempty"`
 	IP       string `json:"ip,omitempty"`
 	Category string `json:"category"`
 	Action   string `json:"action"`
@@ -368,7 +370,7 @@ func containsFold(s, part string) bool {
 // repeats reports whether b is a second copy of a within the window.
 func repeats(a, b Event) bool {
 	return b.Time.Sub(a.Time) < coalesceWindow &&
-		a.Actor == b.Actor && a.Via == b.Via && a.Key == b.Key && a.IP == b.IP &&
+		a.Actor == b.Actor && a.Via == b.Via && a.Key == b.Key && a.Role == b.Role && a.IP == b.IP &&
 		a.Category == b.Category && a.Action == b.Action && a.Target == b.Target &&
 		a.Outcome == b.Outcome && a.Tier == b.Tier && a.Detail == b.Detail
 }
@@ -384,6 +386,7 @@ func clean(e Event) Event {
 	e.Actor = field(e.Actor, maxActor)
 	e.Via = field(e.Via, 16)
 	e.Key = field(e.Key, maxActor)
+	e.Role = field(e.Role, 8)
 	e.IP = field(e.IP, 45)
 	e.Category = field(e.Category, 16)
 	e.Action = field(e.Action, 64)

@@ -315,3 +315,13 @@ func TestRememberedCredentialsEndWhenTheAccountIsDisabled(t *testing.T) {
 	w := h.do(http.MethodGet, "/redfish/v1/Probe", "", "Authorization", creds)
 	expectError(t, w, http.StatusUnauthorized, "NoValidSession")
 }
+
+func TestAViewOnlyAccountIsRefusedEverywhere(t *testing.T) {
+	h := withProbe(newHarness(t))
+	if err := h.accounts.Create("guest", "valid-password", authn.RoleViewer); err != nil {
+		t.Fatal(err)
+	}
+
+	w := h.do(http.MethodGet, "/redfish/v1/Probe", "", "Authorization", basic("guest", "valid-password"))
+	expectError(t, w, http.StatusUnauthorized, "NoValidSession")
+}

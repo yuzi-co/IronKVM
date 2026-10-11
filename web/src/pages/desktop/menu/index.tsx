@@ -38,6 +38,7 @@ import { RoomMicIndicator } from './room-mic-indicator.tsx';
 import { Screen } from './screen';
 import { Script } from './script';
 import { Settings } from './settings';
+import { SignOut } from './sign-out.tsx';
 import { Speaker } from './speaker';
 import { Terminal } from './terminal';
 import { Text } from './text';
@@ -48,6 +49,9 @@ export const Menu = () => {
   const nodeRef = useRef<HTMLDivElement | null>(null);
   const { account } = useAuth();
   const isAdmin = account.role === 'admin';
+  // A view-only account gets the picture and the sound, and no control: the
+  // server refuses the rest, and the bar does not offer it.
+  const isViewer = account.role === 'viewer';
   const [isVirtualDiskEnabled, setIsVirtualDiskEnabled] = useAtom(virtualDiskEnabledAtom);
 
   // Media only works with the Virtual Disk on. Settings keeps the atom current
@@ -125,17 +129,17 @@ export const Menu = () => {
       <Screen />
     </MenuBoundary>
   );
-  const keyboard = (
+  const keyboard = !isViewer && (
     <MenuBoundary key="keyboard" name="keyboard">
       <Keyboard />
     </MenuBoundary>
   );
-  const mouse = (
+  const mouse = !isViewer && (
     <MenuBoundary key="mouse" name="mouse">
       <Mouse />
     </MenuBoundary>
   );
-  const text = isEnabled('text') && (
+  const text = !isViewer && isEnabled('text') && (
     <MenuBoundary key="text" name="text">
       <Text />
     </MenuBoundary>
@@ -156,7 +160,7 @@ export const Menu = () => {
       <Speaker />
     </MenuBoundary>
   );
-  const roomMic = audio.roomMic && (
+  const roomMic = audio.roomMic && !isViewer && (
     <MenuBoundary key="room-mic" name="room-mic">
       <RoomMic />
     </MenuBoundary>
@@ -189,7 +193,7 @@ export const Menu = () => {
       <Picoclaw />
     </MenuBoundary>
   );
-  const tools = isEnabled('tools') && (script || wol || picoclaw) && (
+  const tools = !isViewer && isEnabled('tools') && (script || wol || picoclaw) && (
     <MenuBoundary key="tools" name="tools">
       <Tools>
         {script}
@@ -199,12 +203,14 @@ export const Menu = () => {
     </MenuBoundary>
   );
 
-  const power = isEnabled('power') && (
+  const power = !isViewer && isEnabled('power') && (
     <MenuBoundary key="power" name="power">
       <Power />
     </MenuBoundary>
   );
-  const settings = (
+  const settings = isViewer ? (
+    <SignOut key="sign-out" />
+  ) : (
     <MenuBoundary key="settings" name="settings">
       <Settings />
     </MenuBoundary>
@@ -266,7 +272,7 @@ export const Menu = () => {
               isMenuHidden ? 'translate-y-[-110%] opacity-80' : 'translate-y-0 opacity-100'
             )}
           >
-            {isMenuExpanded && isKeyboardLedStatusVisible && !isNarrow && (
+            {isMenuExpanded && isKeyboardLedStatusVisible && !isNarrow && !isViewer && (
               <div
                 className={clsx(
                   'absolute inset-y-0 right-full mr-1 transition-all duration-300',

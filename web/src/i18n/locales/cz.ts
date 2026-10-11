@@ -28,6 +28,11 @@ const cz = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      share: {
+        opening: 'Otevírá se sdílená obrazovka...',
+        failed: 'Tento odkaz je neplatný, vypršel nebo byl zrušen.',
+        toLogin: 'Přihlásit se jinak'
+      },
       passwordChanged: 'Heslo změněno. Přihlaste se novým heslem.',
       cookieRejected:
         'Prohlížeč odmítl uložit relaci. Cookie, které zůstalo z předchozí relace přes HTTPS, nelze přes nešifrované http nahradit. Vymažte cookies pro tuto adresu nebo otevřete anonymní okno a přihlaste se znovu.',
@@ -1975,7 +1980,31 @@ const cz = {
         title: 'Účet',
         webAccount: 'Název webového účtu',
         role: 'Role',
-        roles: { admin: 'Správce', user: 'Uživatel' },
+        roles: { admin: 'Správce', user: 'Uživatel', viewer: 'Divák' },
+        shareLinks: {
+          title: 'Sdílené odkazy',
+          desc: 'Sdílený odkaz ukáže obrazovku každému, kdo ho otevře. Nedává přístup ke klávesnici, myši, napájení, médiím ani nastavení a přestane fungovat, jakmile vyprší nebo je zrušen.',
+          create: 'Vytvořit odkaz',
+          label: 'Popisek (volitelný)',
+          duration: 'Platí',
+          durations: {
+            h1: '1 hodinu',
+            h8: '8 hodin',
+            d1: '1 den',
+            d7: '7 dní',
+            d30: '30 dní'
+          },
+          empty: 'Žádné sdílené odkazy',
+          expires: 'Vyprší {{time}}',
+          revoke: 'Zrušit',
+          revokeConfirm: 'Zrušit tento odkaz? Kdokoli, kdo se přes něj dívá, bude odpojen.',
+          revoked: 'Odkaz zrušen',
+          loadFailed: 'Sdílené odkazy se nepodařilo načíst',
+          createFailed: 'Sdílený odkaz se nepodařilo vytvořit',
+          revokeFailed: 'Sdílený odkaz se nepodařilo zrušit',
+          createdTitle: 'Sdílený odkaz vytvořen',
+          createdDesc: 'Zkopírujte odkaz hned. Znovu ho zobrazit nelze.'
+        },
         password: 'Heslo',
         updateBtn: 'Update',
         logoutBtn: 'Odhlásit',

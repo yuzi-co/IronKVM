@@ -31,6 +31,8 @@ export const SERVER_FEATURES = [
   'ipv6-settings', // /api/network/ipv6 (Settings > Network > IPv6)
   'notifications', // /api/notify (Settings > Notifications)
   'nut-client', // /api/nut (Settings > NUT, UPS line in the status bar)
+  'role-viewer', // the viewer role in Settings > Users, and a UI with no input for it
+  'share-links', // /api/auth/share and /api/auth/share-links (Settings > Account > Share links)
   'status-bar', // GET /api/stream/info (status bar source line)
   'ui-update', // /api/ui: separate UI packages (Settings > Update)
   'webrtc-clock', // the clock event on the WebRTC signalling socket (status bar latency)

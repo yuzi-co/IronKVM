@@ -323,7 +323,8 @@ func (s *Service) ipmiUser(username string) (*authn.User, []byte, string) {
 		return nil, nil, ""
 	}
 	user, err := s.deps.Accounts.Get(username)
-	if err != nil || !user.Enabled || user.IPMIPassword == "" || s.deps.Keyring == nil {
+	// A viewer has no business on the power controls this protocol is for.
+	if err != nil || !user.Enabled || user.Role == authn.RoleViewer || user.IPMIPassword == "" || s.deps.Keyring == nil {
 		return nil, nil, ""
 	}
 	password, err := s.deps.Keyring.Open(username, user.IPMIPassword)
@@ -452,7 +453,7 @@ func (s *Service) inSession(p *v20Packet, addr net.Addr, now time.Time) []byte {
 	// The account may have been disabled, demoted, deleted or given a new
 	// IPMI password since the session opened.
 	user, err := s.deps.Accounts.Get(sess.username)
-	if err != nil || !user.Enabled || user.IPMIPassword != sess.sealed {
+	if err != nil || !user.Enabled || user.Role == authn.RoleViewer || user.IPMIPassword != sess.sealed {
 		delete(s.sessions, sess.id)
 		return nil
 	}

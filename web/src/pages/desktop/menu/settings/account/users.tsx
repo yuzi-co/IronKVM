@@ -7,6 +7,8 @@ import * as api from '@/api/auth.ts';
 import { User, UserRole } from '@/api/auth.ts';
 import { encrypt } from '@/lib/encrypt.ts';
 import { describeFailure } from '@/lib/feedback.ts';
+import { useServerFeature } from '@/hooks/useServerFeature.ts';
+import { parseRole } from '@/lib/roles.ts';
 
 type CreateValues = {
   username: string;
@@ -24,6 +26,20 @@ export const Users = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const [createForm] = Form.useForm<CreateValues>();
   const [passwordForm] = Form.useForm<PasswordValues>();
+
+  // The viewer role is offered only by a server that has it, and an account
+  // that already is one keeps its entry in the list either way.
+  const hasViewerRole = useServerFeature('role-viewer') === true;
+  function roleOptions(current?: UserRole) {
+    const options: { value: UserRole; label: string }[] = [
+      { value: 'admin', label: t('settings.account.roles.admin') },
+      { value: 'user', label: t('settings.account.roles.user') }
+    ];
+    if (hasViewerRole || current === 'viewer') {
+      options.push({ value: 'viewer', label: t('settings.account.roles.viewer') });
+    }
+    return options;
+  }
 
   const [users, setUsers] = useState<User[]>([]);
   // The list loads on mount, so the table starts in its loading state. Every
@@ -49,7 +65,7 @@ export const Users = () => {
           setUsers(
             (Array.isArray(data) ? data : []).map((user: User) => ({
               username: user.username,
-              role: user.role === 'admin' ? 'admin' : 'user',
+              role: parseRole(user.role),
               enabled: user.enabled !== false,
               systemAccount: user.systemAccount === true,
               totpEnabled: user.totpEnabled === true
@@ -175,10 +191,7 @@ export const Users = () => {
                 className="w-28"
                 value={user.role}
                 disabled={isLoading || isProtected}
-                options={[
-                  { value: 'admin', label: t('settings.account.roles.admin') },
-                  { value: 'user', label: t('settings.account.roles.user') }
-                ]}
+                options={roleOptions(user.role)}
                 onChange={(role) => updateUser(user, { role })}
               />
               <Switch
@@ -257,12 +270,7 @@ export const Users = () => {
             <Input.Password autoComplete="new-password" />
           </Form.Item>
           <Form.Item name="role" label={t('settings.account.role')}>
-            <Select
-              options={[
-                { value: 'admin', label: t('settings.account.roles.admin') },
-                { value: 'user', label: t('settings.account.roles.user') }
-              ]}
-            />
+            <Select options={roleOptions()} />
           </Form.Item>
           <Button type="primary" htmlType="submit" loading={isLoading} className="w-full">
             {t('settings.account.users.create')}

@@ -28,6 +28,11 @@ const fr = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      share: {
+        opening: "Ouverture de l'écran partagé...",
+        failed: 'Ce lien est invalide, expiré ou révoqué.',
+        toLogin: 'Se connecter à la place'
+      },
       passwordChanged: 'Mot de passe modifié. Connectez-vous avec le nouveau mot de passe.',
       cookieRejected:
         "Le navigateur a refusé d'enregistrer la session. Un cookie laissé par une session HTTPS précédente ne peut pas être remplacé en http simple. Effacez les cookies de cette adresse, ou ouvrez une fenêtre privée, puis reconnectez-vous.",
@@ -2020,7 +2025,31 @@ const fr = {
         title: 'Compte',
         webAccount: 'Nom du compte Web',
         role: 'Rôle',
-        roles: { admin: 'Administrateur', user: 'Utilisateur' },
+        roles: { admin: 'Administrateur', user: 'Utilisateur', viewer: 'Observateur' },
+        shareLinks: {
+          title: 'Liens de partage',
+          desc: "Un lien de partage montre l'écran à toute personne qui l'ouvre. Il ne donne accès ni au clavier, ni à la souris, ni à l'alimentation, ni aux médias, ni aux réglages, et cesse de fonctionner à son expiration ou une fois révoqué.",
+          create: 'Créer un lien',
+          label: 'Libellé (facultatif)',
+          duration: 'Valable pendant',
+          durations: {
+            h1: '1 heure',
+            h8: '8 heures',
+            d1: '1 jour',
+            d7: '7 jours',
+            d30: '30 jours'
+          },
+          empty: 'Aucun lien de partage',
+          expires: 'Expire le {{time}}',
+          revoke: 'Révoquer',
+          revokeConfirm: 'Révoquer ce lien ? Toute personne qui regarde via ce lien est déconnectée.',
+          revoked: 'Lien révoqué',
+          loadFailed: 'Échec du chargement des liens de partage',
+          createFailed: 'Échec de la création du lien de partage',
+          revokeFailed: 'Échec de la révocation du lien de partage',
+          createdTitle: 'Lien de partage créé',
+          createdDesc: 'Copiez le lien maintenant. Il ne pourra plus être affiché.'
+        },
         password: 'Mot de passe',
         updateBtn: 'Mettre à jour',
         logoutBtn: 'Déconnexion',

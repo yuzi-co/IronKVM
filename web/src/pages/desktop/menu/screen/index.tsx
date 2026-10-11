@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useAuth } from '@/contexts/auth.ts';
 import { useAtom, useAtomValue } from 'jotai';
 import { ChevronDownIcon, ChevronRightIcon, MonitorIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -51,6 +52,9 @@ const streamTone: Record<string, DotTone> = { ok: 'ok', noSignal: 'warning', fai
 export const Screen = () => {
   const { t } = useTranslation();
   const stream = useStreamState();
+  // A view-only account watches what the board encodes. It cannot change the
+  // encoder, so it is offered the settings of this tab alone.
+  const isViewer = useAuth().account.role === 'viewer';
 
   const videoMode = useAtomValue(videoModeAtom);
   const [settings, setSettings] = useAtom(screenSettingsAtom);
@@ -66,10 +70,10 @@ export const Screen = () => {
   // over it, which is inherent to having one encoder and is not new here.
   useEffect(() => {
     const screenType = getScreenType(videoMode);
-    if (screenType === null) return;
+    if (screenType === null || isViewer) return;
 
     updateScreen('type', screenType);
-  }, [videoMode]);
+  }, [videoMode, isViewer]);
 
   function apply(change: Partial<ScreenSettings>) {
     setSettings((previous) => ({ ...(previous ?? defaultScreenSettings), ...change }));
@@ -82,7 +86,18 @@ export const Screen = () => {
     apply(isMjpeg ? { quality: value } : { bitRate: value });
   }
 
-  const content = (
+  const viewerContent = (
+    <div className="flex flex-col space-y-1">
+      <Scale />
+      <div className="border-t border-neutral-700 pt-1">
+        <Session />
+      </div>
+    </div>
+  );
+
+  const content = isViewer ? (
+    viewerContent
+  ) : (
     <div className="flex flex-col space-y-1">
       <VideoMode />
       <Resolution />

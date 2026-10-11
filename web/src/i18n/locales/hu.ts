@@ -28,6 +28,11 @@ const hu = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      share: {
+        opening: 'A megosztott képernyő megnyitása...',
+        failed: 'Ez a hivatkozás érvénytelen, lejárt vagy vissza lett vonva.',
+        toLogin: 'Bejelentkezés helyette'
+      },
       passwordChanged: 'A jelszó megváltozott. Jelentkezzen be az új jelszóval.',
       cookieRejected:
         'A böngésző nem tárolta el a munkamenetet. Egy korábbi HTTPS-munkamenetből visszamaradt cookie titkosítatlan http-kapcsolaton nem cserélhető le. Törölje a cookie-kat ehhez a címhez, vagy nyisson privát ablakot, és jelentkezzen be újra.',
@@ -2006,7 +2011,31 @@ const hu = {
         title: 'Fiók',
         webAccount: 'Webes fiók neve',
         role: 'Szerepkör',
-        roles: { admin: 'Rendszergazda', user: 'Felhasználó' },
+        roles: { admin: 'Rendszergazda', user: 'Felhasználó', viewer: 'Megtekintő' },
+        shareLinks: {
+          title: 'Megosztási hivatkozások',
+          desc: 'A megosztási hivatkozás megmutatja a képernyőt mindenkinek, aki megnyitja. Nem ad hozzáférést billentyűzethez, egérhez, tápellátáshoz, adathordozókhoz vagy beállításokhoz, és megszűnik működni, ha lejár vagy visszavonják.',
+          create: 'Hivatkozás létrehozása',
+          label: 'Címke (nem kötelező)',
+          duration: 'Érvényesség',
+          durations: {
+            h1: '1 óra',
+            h8: '8 óra',
+            d1: '1 nap',
+            d7: '7 nap',
+            d30: '30 nap'
+          },
+          empty: 'Nincs megosztási hivatkozás',
+          expires: 'Lejár: {{time}}',
+          revoke: 'Visszavonás',
+          revokeConfirm: 'Visszavonja ezt a hivatkozást? Aki rajta keresztül néz, annak a kapcsolata megszakad.',
+          revoked: 'Hivatkozás visszavonva',
+          loadFailed: 'A megosztási hivatkozások betöltése sikertelen',
+          createFailed: 'A megosztási hivatkozás létrehozása sikertelen',
+          revokeFailed: 'A megosztási hivatkozás visszavonása sikertelen',
+          createdTitle: 'Megosztási hivatkozás létrehozva',
+          createdDesc: 'Másolja ki a hivatkozást most. Később nem jeleníthető meg újra.'
+        },
         password: 'Jelszó',
         updateBtn: 'Update',
         logoutBtn: 'Kijelentkezés',

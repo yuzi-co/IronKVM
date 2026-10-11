@@ -34,6 +34,8 @@ export type ScreenSettings = {
   // capture library, which always stretches.
   aspect?: number;
   aspectSupported?: boolean;
+  // The mode the encoder runs, when the server says.
+  type?: 'h264' | 'mjpeg';
 };
 
 export type ControlRegionMode = 'off' | 'auto' | 'manual';

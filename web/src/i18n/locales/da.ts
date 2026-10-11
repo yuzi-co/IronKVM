@@ -28,6 +28,11 @@ const da = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      share: {
+        opening: 'Åbner den delte skærm...',
+        failed: 'Linket er ugyldigt, udløbet eller tilbagekaldt.',
+        toLogin: 'Log ind i stedet'
+      },
       passwordChanged: 'Adgangskoden er ændret. Log ind med den nye adgangskode.',
       cookieRejected:
         'Browseren nægtede at gemme sessionen. En cookie fra en tidligere HTTPS-session kan ikke erstattes via ukrypteret http. Ryd cookies for denne adresse, eller åbn et privat vindue, og log ind igen.',
@@ -1982,7 +1987,31 @@ const da = {
         title: 'Konto',
         webAccount: 'Navn på webkonto',
         role: 'Rolle',
-        roles: { admin: 'Administrator', user: 'Bruger' },
+        roles: { admin: 'Administrator', user: 'Bruger', viewer: 'Seer' },
+        shareLinks: {
+          title: 'Delingslinks',
+          desc: 'Et delingslink viser skærmen for alle, der åbner det. Det giver ikke adgang til tastatur, mus, strøm, medier eller indstillinger og holder op med at virke, når det udløber eller tilbagekaldes.',
+          create: 'Opret link',
+          label: 'Betegnelse (valgfri)',
+          duration: 'Gyldigt i',
+          durations: {
+            h1: '1 time',
+            h8: '8 timer',
+            d1: '1 dag',
+            d7: '7 dage',
+            d30: '30 dage'
+          },
+          empty: 'Ingen delingslinks',
+          expires: 'Udløber {{time}}',
+          revoke: 'Tilbagekald',
+          revokeConfirm: 'Tilbagekald dette link? Alle, der ser med via det, bliver afbrudt.',
+          revoked: 'Link tilbagekaldt',
+          loadFailed: 'Delingslinks kunne ikke indlæses',
+          createFailed: 'Delingslinket kunne ikke oprettes',
+          revokeFailed: 'Delingslinket kunne ikke tilbagekaldes',
+          createdTitle: 'Delingslink oprettet',
+          createdDesc: 'Kopiér linket nu. Det kan ikke vises igen.'
+        },
         password: 'Adgangskode',
         updateBtn: 'Update',
         logoutBtn: 'Log ud',

@@ -31,7 +31,7 @@ func (s *Service) ChangePassword(c *gin.Context) {
 		return
 	}
 	principal, ok := middleware.CurrentPrincipal(c)
-	if !ok {
+	if !ok || principal.ShareID != "" {
 		rsp.ErrRsp(c, -2, "invalid session")
 		return
 	}
@@ -64,6 +64,15 @@ func (s *Service) ChangePassword(c *gin.Context) {
 	// written, and the store has already revoked the sessions that knew the old
 	// one, so refusing cannot undo either. A copy that is one boot stale is the
 	// better of the two outcomes, and changing the password again repairs it.
+	// The first-boot password is no longer the live one. Left on the card or
+	// the display it would offer a password that does not work, and one that
+	// anybody who held the card once could read.
+	if !authn.DefaultStore.FirstBootPending() {
+		if err := authn.ClearFirstBoot(authn.FirstBootPasswordFile, authn.FirstBootCardFile); err != nil {
+			log.Warnf("remove the first-boot password files: %s", err)
+		}
+	}
+
 	if err := saveIdentity(); err != nil {
 		log.Warnf("password changed but the identity write-back failed: %s", err)
 	}
@@ -81,6 +90,11 @@ func (s *Service) IsPasswordUpdated(c *gin.Context) {
 	principal, ok := middleware.CurrentPrincipal(c)
 	if !ok {
 		rsp.ErrRsp(c, -1, "invalid session")
+		return
+	}
+	if principal.ShareID != "" {
+		// No account, so no password to choose.
+		rsp.OkRspWithData(c, &proto.IsPasswordUpdatedRsp{IsUpdated: true})
 		return
 	}
 	user, err := authn.DefaultStore.Get(principal.Username)

@@ -38,6 +38,9 @@ type Identity struct {
 	Via   string
 	// Key names the API key, when one authenticated the request.
 	Key string
+	// Role is the actor's role, so a view-only account or share link shows as
+	// one in the log.
+	Role string
 }
 
 // identify reads the identity the authentication middleware left on the
@@ -100,7 +103,7 @@ func SetAction(c *gin.Context, action string) { noteOf(c).action = action }
 func Request(c *gin.Context, e Event) {
 	if e.Actor == "" {
 		if id, ok := identityOf(c); ok {
-			e.Actor, e.Via, e.Key = id.Actor, id.Via, id.Key
+			e.Actor, e.Via, e.Key, e.Role = id.Actor, id.Via, id.Key, id.Role
 		}
 	}
 	if e.IP == "" {
@@ -141,7 +144,7 @@ func Middleware() gin.HandlerFunc {
 
 		id, known := identityOf(c)
 		if n.actor != "" {
-			id = Identity{Actor: n.actor, Via: id.Via}
+			id = Identity{Actor: n.actor, Via: id.Via, Role: id.Role}
 			known = true
 		}
 		// A request nobody authenticated is a probe, not an action. The
@@ -154,6 +157,7 @@ func Middleware() gin.HandlerFunc {
 			Actor:    id.Actor,
 			Via:      id.Via,
 			Key:      id.Key,
+			Role:     id.Role,
 			IP:       ClientIP(c),
 			Category: rule.Category,
 			Action:   rule.Action,

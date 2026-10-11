@@ -28,6 +28,11 @@ const pt_br = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      share: {
+        opening: 'Abrindo a tela compartilhada...',
+        failed: 'Este link é inválido, expirou ou foi revogado.',
+        toLogin: 'Entrar com uma conta'
+      },
       passwordChanged: 'Senha alterada. Entre com a nova senha.',
       cookieRejected:
         'O navegador se recusou a armazenar a sessão. Um cookie deixado por uma sessão HTTPS anterior não pode ser substituído por http simples. Limpe os cookies deste endereço, ou abra uma janela anônima, e entre novamente.',
@@ -1999,7 +2004,31 @@ const pt_br = {
         title: 'Conta',
         webAccount: 'Nome da Conta Web',
         role: 'Função',
-        roles: { admin: 'Administrador', user: 'Usuário' },
+        roles: { admin: 'Administrador', user: 'Usuário', viewer: 'Visualizador' },
+        shareLinks: {
+          title: 'Links de compartilhamento',
+          desc: 'Um link de compartilhamento mostra a tela para quem o abrir. Ele não dá acesso a teclado, mouse, energia, mídia ou configurações e deixa de funcionar quando expira ou é revogado.',
+          create: 'Criar link',
+          label: 'Rótulo (opcional)',
+          duration: 'Válido por',
+          durations: {
+            h1: '1 hora',
+            h8: '8 horas',
+            d1: '1 dia',
+            d7: '7 dias',
+            d30: '30 dias'
+          },
+          empty: 'Nenhum link de compartilhamento',
+          expires: 'Expira em {{time}}',
+          revoke: 'Revogar',
+          revokeConfirm: 'Revogar este link? Quem estiver assistindo por ele será desconectado.',
+          revoked: 'Link revogado',
+          loadFailed: 'Falha ao carregar os links de compartilhamento',
+          createFailed: 'Falha ao criar o link de compartilhamento',
+          revokeFailed: 'Falha ao revogar o link de compartilhamento',
+          createdTitle: 'Link de compartilhamento criado',
+          createdDesc: 'Copie o link agora. Ele não poderá ser exibido novamente.'
+        },
         password: 'Senha',
         updateBtn: 'Alterar',
         logoutBtn: 'Sair',

@@ -14,6 +14,14 @@ export const router = createHashRouter([
     }
   },
   {
+    path: '/share/:token',
+    errorElement: <RouteError />,
+    lazy: async () => {
+      const { Share } = await import('./pages/auth/share');
+      return { Component: Share };
+    }
+  },
+  {
     path: '/',
     errorElement: <RouteError />,
     element: (

@@ -28,6 +28,11 @@ const tr = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      share: {
+        opening: 'Paylaşılan ekran açılıyor...',
+        failed: 'Bu bağlantı geçersiz, süresi dolmuş veya iptal edilmiş.',
+        toLogin: 'Bunun yerine oturum aç'
+      },
       passwordChanged: 'Parola değiştirildi. Yeni parolayla oturum açın.',
       cookieRejected:
         'Tarayıcı oturumu kaydetmeyi reddetti. Önceki bir HTTPS oturumundan kalan çerez, şifrelenmemiş http üzerinden değiştirilemez. Bu adres için çerezleri temizleyin veya gizli bir pencere açın ve yeniden giriş yapın.',
@@ -1984,7 +1989,31 @@ const tr = {
         title: 'Hesap',
         webAccount: 'Web Hesap Adı',
         role: 'Rol',
-        roles: { admin: 'Yönetici', user: 'Kullanıcı' },
+        roles: { admin: 'Yönetici', user: 'Kullanıcı', viewer: 'Görüntüleyici' },
+        shareLinks: {
+          title: 'Paylaşım bağlantıları',
+          desc: 'Paylaşım bağlantısı, onu açan herkese ekranı gösterir. Klavye, fare, güç, ortam veya ayarlara erişim vermez; süresi dolduğunda veya iptal edildiğinde çalışmayı bırakır.',
+          create: 'Bağlantı oluştur',
+          label: 'Etiket (isteğe bağlı)',
+          duration: 'Geçerlilik süresi',
+          durations: {
+            h1: '1 saat',
+            h8: '8 saat',
+            d1: '1 gün',
+            d7: '7 gün',
+            d30: '30 gün'
+          },
+          empty: 'Paylaşım bağlantısı yok',
+          expires: 'Bitiş: {{time}}',
+          revoke: 'İptal et',
+          revokeConfirm: 'Bu bağlantı iptal edilsin mi? Bağlantı üzerinden izleyen herkesin bağlantısı kesilir.',
+          revoked: 'Bağlantı iptal edildi',
+          loadFailed: 'Paylaşım bağlantıları yüklenemedi',
+          createFailed: 'Paylaşım bağlantısı oluşturulamadı',
+          revokeFailed: 'Paylaşım bağlantısı iptal edilemedi',
+          createdTitle: 'Paylaşım bağlantısı oluşturuldu',
+          createdDesc: 'Bağlantıyı şimdi kopyalayın. Tekrar gösterilemez.'
+        },
         password: 'Şifre',
         updateBtn: 'Değiştir',
         logoutBtn: 'Çıkış  yap',

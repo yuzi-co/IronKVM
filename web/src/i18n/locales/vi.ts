@@ -28,6 +28,11 @@ const vi = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      share: {
+        opening: 'Đang mở màn hình được chia sẻ...',
+        failed: 'Liên kết này không hợp lệ, đã hết hạn hoặc đã bị thu hồi.',
+        toLogin: 'Đăng nhập thay thế'
+      },
       passwordChanged: 'Đã đổi mật khẩu. Hãy đăng nhập bằng mật khẩu mới.',
       cookieRejected:
         'Trình duyệt từ chối lưu phiên. Cookie còn sót lại từ phiên HTTPS trước không thể bị thay thế qua http thường. Hãy xóa cookie của địa chỉ này, hoặc mở cửa sổ ẩn danh, rồi đăng nhập lại.',
@@ -1979,7 +1984,31 @@ const vi = {
         title: 'Tài khoản',
         webAccount: 'Tên tài khoản web',
         role: 'Vai trò',
-        roles: { admin: 'Quản trị viên', user: 'Người dùng' },
+        roles: { admin: 'Quản trị viên', user: 'Người dùng', viewer: 'Người xem' },
+        shareLinks: {
+          title: 'Liên kết chia sẻ',
+          desc: 'Liên kết chia sẻ cho phép bất kỳ ai mở nó xem màn hình. Liên kết không cấp quyền dùng bàn phím, chuột, nguồn, phương tiện hay cài đặt, và ngừng hoạt động khi hết hạn hoặc bị thu hồi.',
+          create: 'Tạo liên kết',
+          label: 'Nhãn (không bắt buộc)',
+          duration: 'Có hiệu lực trong',
+          durations: {
+            h1: '1 giờ',
+            h8: '8 giờ',
+            d1: '1 ngày',
+            d7: '7 ngày',
+            d30: '30 ngày'
+          },
+          empty: 'Chưa có liên kết chia sẻ',
+          expires: 'Hết hạn {{time}}',
+          revoke: 'Thu hồi',
+          revokeConfirm: 'Thu hồi liên kết này? Mọi người đang xem qua liên kết sẽ bị ngắt kết nối.',
+          revoked: 'Đã thu hồi liên kết',
+          loadFailed: 'Không tải được các liên kết chia sẻ',
+          createFailed: 'Không tạo được liên kết chia sẻ',
+          revokeFailed: 'Không thu hồi được liên kết chia sẻ',
+          createdTitle: 'Đã tạo liên kết chia sẻ',
+          createdDesc: 'Hãy sao chép liên kết ngay bây giờ. Liên kết không thể hiển thị lại.'
+        },
         password: 'Mật khẩu',
         updateBtn: 'Update',
         logoutBtn: 'Đăng xuất',

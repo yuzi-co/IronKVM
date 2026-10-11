@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"NanoKVM-Server/authn"
 	"NanoKVM-Server/common"
 	"NanoKVM-Server/config"
 	"NanoKVM-Server/logger"
@@ -47,6 +48,10 @@ func initialize() {
 
 	logger.Init()
 	audit.Init(logger.Syslog)
+
+	// A freshly flashed card gets the password its first boot generated in
+	// place of admin/admin. This runs before the server answers any login.
+	authn.SettleFirstBoot()
 
 	// Before anything can reach libkvm. After a video crash loop the server
 	// starts without video, so the web UI, updates and logs stay reachable;

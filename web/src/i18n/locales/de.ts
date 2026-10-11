@@ -29,6 +29,11 @@ const de = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      share: {
+        opening: 'Geteilter Bildschirm wird geöffnet...',
+        failed: 'Dieser Link ist ungültig, abgelaufen oder wurde widerrufen.',
+        toLogin: 'Stattdessen anmelden'
+      },
       passwordChanged: 'Passwort geändert. Melden Sie sich mit dem neuen Passwort an.',
       cookieRejected:
         'Der Browser hat das Speichern der Sitzung verweigert. Ein Cookie aus einer früheren HTTPS-Sitzung kann über unverschlüsseltes http nicht ersetzt werden. Löschen Sie die Cookies für diese Adresse oder öffnen Sie ein privates Fenster und melden Sie sich erneut an.',
@@ -2029,7 +2034,31 @@ const de = {
         title: 'Konto',
         webAccount: 'Web Konto Name',
         role: 'Rolle',
-        roles: { admin: 'Administrator', user: 'Benutzer' },
+        roles: { admin: 'Administrator', user: 'Benutzer', viewer: 'Betrachter' },
+        shareLinks: {
+          title: 'Freigabelinks',
+          desc: 'Ein Freigabelink zeigt jedem, der ihn öffnet, den Bildschirm. Er gibt keinen Zugriff auf Tastatur, Maus, Netzteil, Medien oder Einstellungen und funktioniert nicht mehr, wenn er abläuft oder widerrufen wird.',
+          create: 'Link erstellen',
+          label: 'Bezeichnung (optional)',
+          duration: 'Gültig für',
+          durations: {
+            h1: '1 Stunde',
+            h8: '8 Stunden',
+            d1: '1 Tag',
+            d7: '7 Tage',
+            d30: '30 Tage'
+          },
+          empty: 'Keine Freigabelinks',
+          expires: 'Läuft ab: {{time}}',
+          revoke: 'Widerrufen',
+          revokeConfirm: 'Diesen Link widerrufen? Alle, die darüber zuschauen, werden getrennt.',
+          revoked: 'Link widerrufen',
+          loadFailed: 'Freigabelinks konnten nicht geladen werden',
+          createFailed: 'Freigabelink konnte nicht erstellt werden',
+          revokeFailed: 'Freigabelink konnte nicht widerrufen werden',
+          createdTitle: 'Freigabelink erstellt',
+          createdDesc: 'Kopiere den Link jetzt. Er kann nicht erneut angezeigt werden.'
+        },
         password: 'Passwort',
         updateBtn: 'Ändern',
         logoutBtn: 'Abmelden',

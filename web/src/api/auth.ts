@@ -1,6 +1,8 @@
 import { http } from '@/lib/http';
 
-export type UserRole = 'admin' | 'user';
+import type { UserRole } from '@/lib/roles.ts';
+
+export type { UserRole };
 
 export type Account = {
   username: string;
@@ -133,4 +135,36 @@ export function createAPIKey(name: string) {
 
 export function revokeAPIKey(id: string) {
   return http.delete(`/api/auth/api-keys/${encodeURIComponent(id)}`);
+}
+
+// ShareLink is an expiring view-only link. The token is not part of it: the
+// device keeps only a digest and hands the token back once, when the link is
+// created.
+export type ShareLink = {
+  id: string;
+  label: string;
+  createdBy: string;
+  createdAt: number;
+  expiresAt: number;
+};
+
+export type CreatedShareLink = ShareLink & {
+  token: string;
+};
+
+export function getShareLinks() {
+  return http.get('/api/auth/share-links');
+}
+
+export function createShareLink(label: string, ttlSeconds: number) {
+  return http.post('/api/auth/share-links', { label, ttlSeconds });
+}
+
+export function revokeShareLink(id: string) {
+  return http.delete(`/api/auth/share-links/${encodeURIComponent(id)}`);
+}
+
+// redeemShareLink opens a view-only session for whoever holds a link's token.
+export function redeemShareLink(token: string) {
+  return http.post('/api/auth/share', { token });
 }

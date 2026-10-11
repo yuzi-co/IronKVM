@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
+import { useAuth } from '@/contexts/auth.ts';
 import { Splitter } from 'antd';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { LoaderCircleIcon } from 'lucide-react';
@@ -8,6 +9,7 @@ import { useMediaQuery } from 'react-responsive';
 import { getInputRegion, getScreen, setControlRegionMode } from '@/api/vm.ts';
 import { ControlRegionConfig, InputRegion, ScreenSettings } from '@/types';
 import * as storage from '@/lib/localstorage.ts';
+import { lockViewOnly } from '@/lib/view-only.ts';
 import { client } from '@/lib/websocket.ts';
 import { isKeyboardOpenAtom } from '@/jotai/keyboard.ts';
 import { picoclawChatOpenAtom } from '@/jotai/picoclaw.ts';
@@ -21,7 +23,8 @@ import {
   screenSettingsAtom,
   selectedManualRegionAtom,
   selectedOriginalResolutionAtom,
-  videoModeAtom
+  videoModeAtom,
+  viewOnlyAtom
 } from '@/jotai/screen.ts';
 import { OverlayBoundary, PanelBoundary } from '@/components/error-boundary';
 import { Head } from '@/components/head.tsx';
@@ -106,8 +109,20 @@ const LazyVirtualKeyboard = () => {
   );
 };
 
+// A view-only account follows the encoder it finds. It cannot switch it, and
+// a stream of the other kind has no picture, so when the board runs MJPEG and
+// this browser would ask for H.264 (or the reverse) the browser changes its
+// own choice once and reloads.
+function videoModeForBoard(active: string, boardType: unknown) {
+  if (boardType === 'mjpeg' && active !== 'mjpeg') return 'mjpeg';
+  if (boardType === 'h264' && active === 'mjpeg') return getDefaultVideoMode();
+  return null;
+}
+
 export const Desktop = () => {
   const { t } = useTranslation();
+  const isViewer = useAuth().account.role === 'viewer';
+  const setViewOnlyAtom = useSetAtom(viewOnlyAtom);
   const isBigScreen = useMediaQuery({ minWidth: 850 });
   const [activeVideoMode] = useState(getVideoMode);
   const [picoclawSidebarWidth, setPicoclawSidebarWidth] = useState(420);
@@ -133,7 +148,14 @@ export const Desktop = () => {
   const isPicoclawChatOpen = useAtomValue(picoclawChatOpenAtom);
 
   useEffect(() => {
-    client.connect();
+    // The input socket carries nothing a view-only account may send, and the
+    // server refuses it the socket.
+    if (isViewer) {
+      setViewOnlyAtom(true);
+      lockViewOnly();
+    } else {
+      client.connect();
+    }
 
     setVideoMode(activeVideoMode);
 
@@ -158,6 +180,14 @@ export const Desktop = () => {
 
         setResolution({ width: settings.width, height: settings.height });
         setScreenSettings(settings);
+
+        if (isViewer) {
+          const wanted = videoModeForBoard(activeVideoMode, settings.type);
+          if (wanted) {
+            storage.setVideoMode(wanted);
+            window.location.reload();
+          }
+        }
       })
       .catch(() => {
         // Auto is the safe answer: the capture pipeline picks the source
@@ -198,6 +228,8 @@ export const Desktop = () => {
     };
   }, [
     activeVideoMode,
+    isViewer,
+    setViewOnlyAtom,
     setControlRegionModeState,
     setInputRegion,
     setManualInputRegion,
@@ -293,8 +325,8 @@ export const Desktop = () => {
       <OverlayBoundary name="notifications">
         {isBigScreen && <Notification />}
         <H264ModeNotification />
-        <AbsoluteMouseWarning />
-        <InputDisconnectedWarning />
+        {!isViewer && <AbsoluteMouseWarning />}
+        {!isViewer && <InputDisconnectedWarning />}
         <ViewOnlyBadge />
         <FailsafeBanner />
         <SequenceBanner />

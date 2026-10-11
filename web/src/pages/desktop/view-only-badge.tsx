@@ -3,6 +3,7 @@ import { useAtom } from 'jotai';
 import { EyeIcon, XIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { isViewOnlyLocked } from '@/lib/view-only.ts';
 import { viewOnlyAtom } from '@/jotai/screen.ts';
 
 // ViewOnlyBadge stays on screen while view only is on, so nobody types at a
@@ -12,6 +13,16 @@ export const ViewOnlyBadge = () => {
   const [viewOnly, setViewOnly] = useAtom(viewOnlyAtom);
 
   if (!viewOnly) return null;
+
+  // A view-only account has no way out of it, so the badge only says so.
+  if (isViewOnlyLocked()) {
+    return (
+      <div className="fixed bottom-3 left-3 z-1000 flex items-center space-x-1.5 rounded-full border border-amber-500/60 bg-neutral-900/90 px-3 py-1 text-xs text-amber-400 shadow-lg">
+        <EyeIcon size={14} />
+        <span>{t('screen.viewOnly')}</span>
+      </div>
+    );
+  }
 
   return (
     <Tooltip title={t('screen.viewOnlyOff')} placement="top">

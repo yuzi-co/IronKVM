@@ -28,6 +28,11 @@ const pl = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      share: {
+        opening: 'Otwieranie udostępnionego ekranu...',
+        failed: 'Ten link jest nieprawidłowy, wygasł lub został unieważniony.',
+        toLogin: 'Zaloguj się zamiast tego'
+      },
       passwordChanged: 'Hasło zmienione. Zaloguj się nowym hasłem.',
       cookieRejected:
         'Przeglądarka odmówiła zapisania sesji. Pliku cookie pozostałego po poprzedniej sesji HTTPS nie można zastąpić przez zwykłe http. Wyczyść pliki cookie dla tego adresu lub otwórz okno prywatne i zaloguj się ponownie.',
@@ -1991,7 +1996,31 @@ const pl = {
         title: 'Konto',
         webAccount: 'Nazwa konta web',
         role: 'Rola',
-        roles: { admin: 'Administrator', user: 'Użytkownik' },
+        roles: { admin: 'Administrator', user: 'Użytkownik', viewer: 'Obserwator' },
+        shareLinks: {
+          title: 'Linki udostępniania',
+          desc: 'Link udostępniania pokazuje ekran każdemu, kto go otworzy. Nie daje dostępu do klawiatury, myszy, zasilania, nośników ani ustawień i przestaje działać po wygaśnięciu lub unieważnieniu.',
+          create: 'Utwórz link',
+          label: 'Etykieta (opcjonalnie)',
+          duration: 'Ważny przez',
+          durations: {
+            h1: '1 godzinę',
+            h8: '8 godzin',
+            d1: '1 dzień',
+            d7: '7 dni',
+            d30: '30 dni'
+          },
+          empty: 'Brak linków udostępniania',
+          expires: 'Wygasa {{time}}',
+          revoke: 'Unieważnij',
+          revokeConfirm: 'Unieważnić ten link? Każdy, kto ogląda przez niego, zostanie rozłączony.',
+          revoked: 'Link unieważniony',
+          loadFailed: 'Nie udało się wczytać linków udostępniania',
+          createFailed: 'Nie udało się utworzyć linku udostępniania',
+          revokeFailed: 'Nie udało się unieważnić linku udostępniania',
+          createdTitle: 'Utworzono link udostępniania',
+          createdDesc: 'Skopiuj link teraz. Nie będzie można go ponownie wyświetlić.'
+        },
         password: 'Hasło',
         updateBtn: 'Update',
         logoutBtn: 'Wyloguj',

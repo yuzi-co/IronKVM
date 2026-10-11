@@ -28,6 +28,11 @@ const en = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      share: {
+        opening: 'Opening the shared screen...',
+        failed: 'This link is invalid, has expired or was revoked.',
+        toLogin: 'Sign in instead'
+      },
       passwordChanged: 'Password changed. Sign in with the new password.',
       cookieRejected:
         'The browser refused to store the session. A cookie left behind by a previous HTTPS session cannot be replaced over plain http. Clear cookies for this address, or open a private window, and sign in again.',
@@ -1969,7 +1974,32 @@ const en = {
         role: 'Role',
         roles: {
           admin: 'Administrator',
-          user: 'User'
+          user: 'User',
+          viewer: 'Viewer'
+        },
+        shareLinks: {
+          title: 'Share links',
+          desc: 'A share link shows the screen to anyone who opens it. It gives no keyboard, mouse, power, media or settings, and stops working when it expires or is revoked.',
+          create: 'Create link',
+          label: 'Label (optional)',
+          duration: 'Valid for',
+          durations: {
+            h1: '1 hour',
+            h8: '8 hours',
+            d1: '1 day',
+            d7: '7 days',
+            d30: '30 days'
+          },
+          empty: 'No share links',
+          expires: 'Expires {{time}}',
+          revoke: 'Revoke',
+          revokeConfirm: 'Revoke this link? Anyone watching through it is disconnected.',
+          revoked: 'Link revoked',
+          loadFailed: 'Failed to load share links',
+          createFailed: 'Failed to create the share link',
+          revokeFailed: 'Failed to revoke the share link',
+          createdTitle: 'Share link created',
+          createdDesc: 'Copy the link now. It cannot be shown again.'
         },
         password: 'Password',
         updateBtn: 'Change',
