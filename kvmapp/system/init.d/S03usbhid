@@ -230,10 +230,16 @@ start_usb_dev(){
     # HID-only mode has never set a serial number, and sets one only when the
     # owner chose it.
     [ -n "$usb_serial" ] && echo "$usb_serial" > strings/0x409/serialnumber
-    printf '%s
-' "$usb_manufacturer" > strings/0x409/manufacturer
-    printf '%s
-' "$usb_product" > strings/0x409/product
+    # One write each. configfs keeps only the last write() to a string, and
+    # BusyBox printf was measured on the board writing the value and the
+    # newline separately, which left the manufacturer empty. cat writes the
+    # whole here-document at once, and a value is expanded, never run.
+    cat > strings/0x409/manufacturer <<USB_STRING
+$usb_manufacturer
+USB_STRING
+    cat > strings/0x409/product <<USB_STRING
+$usb_product
+USB_STRING
 
     mkdir configs/c.1
     echo 0xA0 > configs/c.1/bmAttributes
