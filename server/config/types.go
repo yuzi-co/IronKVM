@@ -35,6 +35,11 @@ type Config struct {
 	// server.yaml. A file without the block loads with the watchdog off.
 	Watchdog Watchdog `yaml:"watchdog,omitempty" mapstructure:"watchdog"`
 
+	// NUT configures the NUT client, kept under "nut" in server.yaml. A file
+	// without the block loads with the client off. The password is kept
+	// outside server.yaml.
+	NUT NUT `yaml:"nut,omitempty" mapstructure:"nut"`
+
 	// IPMI configures IPMI over LAN, kept under "ipmi" in server.yaml. A
 	// file without the block loads with the service off.
 	IPMI IPMI `yaml:"ipmi,omitempty" mapstructure:"ipmi"`
@@ -132,6 +137,57 @@ func (w Watchdog) WithDefaults() Watchdog {
 		w.MaxPerHour = DefaultWatchdogMaxPerHour
 	}
 	return w
+}
+
+// The NUT client's defaults. A zero value in server.yaml means the default.
+const (
+	DefaultNUTPort                = 3493
+	DefaultNUTRestoreDelaySeconds = 60
+)
+
+// NUT configures the NUT client, which reads a UPS from a NUT server over the
+// network and drives the host's ATX buttons from what it finds. Read it
+// through WithDefaults.
+type NUT struct {
+	// Enabled runs the client. Off by default: it presses the host's power
+	// button.
+	Enabled bool `yaml:"enabled" mapstructure:"enabled"`
+	// Host is the NUT server's address, and Port its TCP port.
+	Host string `yaml:"host,omitempty" mapstructure:"host"`
+	Port int    `yaml:"port,omitempty" mapstructure:"port"`
+	// UPS is the name of the UPS on that server.
+	UPS string `yaml:"ups,omitempty" mapstructure:"ups"`
+	// Username is the NUT user. With a password the client logs in as a
+	// secondary, so the primary waits for the host to shut down before it cuts
+	// the UPS output. Without them it only reads.
+	Username string `yaml:"username,omitempty" mapstructure:"username"`
+
+	// OnBatteryMinutes shuts the host down once the UPS has run on battery
+	// this long. Zero means never: low battery and a forced shutdown still do.
+	OnBatteryMinutes int `yaml:"onBatteryMinutes,omitempty" mapstructure:"onBatteryMinutes"`
+	// ForceOffMinutes presses power for five seconds when the host is still on
+	// this long after the shutdown press. Zero means never.
+	ForceOffMinutes int `yaml:"forceOffMinutes,omitempty" mapstructure:"forceOffMinutes"`
+
+	// PowerOnRestore presses power when mains is back and the host is off.
+	PowerOnRestore bool `yaml:"powerOnRestore,omitempty" mapstructure:"powerOnRestore"`
+	// PowerOnMinCharge is the battery charge, in percent, the UPS must reach
+	// before the host is switched on. Zero means any.
+	PowerOnMinCharge int `yaml:"powerOnMinCharge,omitempty" mapstructure:"powerOnMinCharge"`
+	// PowerOnDelaySeconds is how long mains must be back before the press.
+	PowerOnDelaySeconds int `yaml:"powerOnDelaySeconds,omitempty" mapstructure:"powerOnDelaySeconds"`
+}
+
+// WithDefaults returns the settings with every zero value replaced by its
+// default.
+func (n NUT) WithDefaults() NUT {
+	if n.Port <= 0 {
+		n.Port = DefaultNUTPort
+	}
+	if n.PowerOnDelaySeconds <= 0 {
+		n.PowerOnDelaySeconds = DefaultNUTRestoreDelaySeconds
+	}
+	return n
 }
 
 // NetBoot configures network boot of the host. Both sides are off by

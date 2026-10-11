@@ -136,6 +136,7 @@ func server(r *gin.Engine) {
 	redfishRouter(r)
 	ipmiRouter(r)
 	watchdogRouter(r)
+	nutRouter(r)
 	netbootRouter(r)
 	vncRouter(r)
 	ventoyRouter(r)

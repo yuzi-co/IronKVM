@@ -140,12 +140,9 @@ func (w *Watchdog) State() State {
 	if !s.Enabled {
 		st.Status = StatusOff
 		st.Signal = w.deps.Signal()
-		st.LEDConnected = w.deps.PowerLEDConnected()
-		st.LEDOn = false
-		if st.LEDConnected {
-			on, err := w.deps.PowerLED()
-			st.LEDOn = err == nil && on
-		}
+		connected, on, err := w.power.LED()
+		st.LEDConnected = connected
+		st.LEDOn = connected && err == nil && on
 	}
 	if s.PingHost != "" {
 		st.PingHost = s.PingHost

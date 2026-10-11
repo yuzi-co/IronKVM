@@ -6,6 +6,7 @@ import clsx from 'clsx';
 import { useAtom, useSetAtom } from 'jotai';
 import {
   BadgeInfoIcon,
+  BatteryChargingIcon,
   BotIcon,
   CircleArrowUpIcon,
   DiscIcon,
@@ -35,6 +36,7 @@ import * as ls from '@/lib/localstorage.ts';
 import { versionGt } from '@/lib/version.ts';
 import { keyboardLockAtom } from '@/jotai/keyboard.ts';
 import { settingsOpenRequestAtom, submenuOpenCountAtom } from '@/jotai/settings.ts';
+import { useServerFeature } from '@/hooks/useServerFeature.ts';
 import { useStableCallback } from '@/hooks/useStableCallback.ts';
 import { PanelBoundary } from '@/components/error-boundary';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -71,6 +73,7 @@ const pageModules = {
   ipmi: () => import('./ipmi'),
   redfish: () => import('./redfish'),
   mcp: () => import('./mcp'),
+  nut: () => import('./nut'),
   netboot: () => import('./netboot'),
   media: () => import('./media')
 };
@@ -90,6 +93,7 @@ const Vnc = lazy(() => pageModules.vnc().then((m) => ({ default: m.Vnc })));
 const Tls = lazy(() => pageModules.tls().then((m) => ({ default: m.Tls })));
 const Ipmi = lazy(() => pageModules.ipmi().then((m) => ({ default: m.Ipmi })));
 const Redfish = lazy(() => pageModules.redfish().then((m) => ({ default: m.Redfish })));
+const Nut = lazy(() => pageModules.nut().then((m) => ({ default: m.Nut })));
 const MCP = lazy(() => pageModules.mcp().then((m) => ({ default: m.MCP })));
 const Netboot = lazy(() => pageModules.netboot().then((m) => ({ default: m.Netboot })));
 const VirtualMedia = lazy(() => pageModules.media().then((m) => ({ default: m.VirtualMedia })));
@@ -136,6 +140,8 @@ export const Settings = () => {
   const { t } = useTranslation();
   const { account } = useAuth();
   const isAdmin = account.role === 'admin';
+  // The NUT client is there only on a server that declares it.
+  const nutSupported = useServerFeature('nut-client') === true;
   // Below sm the sidebar shows icons only, so each item needs a tooltip.
   const isNarrow = useIsNarrow();
 
@@ -235,6 +241,17 @@ export const Settings = () => {
             component: <Redfish />
           },
           { id: 'mcp', group: 'integrations', icon: <BotIcon {...icon16} />, component: <MCP /> },
+          ...(nutSupported
+            ? ([
+                {
+                  id: 'nut',
+                  group: 'integrations',
+                  icon: <BatteryChargingIcon {...icon16} />,
+                  label: 'NUT',
+                  component: <Nut />
+                }
+              ] satisfies Tab[])
+            : []),
           {
             id: 'netboot',
             group: 'boot',
