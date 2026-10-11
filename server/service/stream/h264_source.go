@@ -21,6 +21,12 @@ type H264Frame struct {
 	KeyFrame  bool
 	Timestamp int64
 	Duration  time.Duration
+
+	// Times says when the picture was captured and encoded, where the
+	// library can say (HasTimes; libkvm-v4l2 only). WebRTC puts the capture
+	// time on the stream (abs-capture-time).
+	Times    common.VideoTimes
+	HasTimes bool
 }
 
 // H264Source runs one capture loop for both H.264 delivery paths.
@@ -101,6 +107,12 @@ var defaultH264Source = newH264Source()
 // one channel rebuild; saying it on every frame would cost one per frame.
 var readVideo = func(width uint16, height uint16, codec uint8, bitRate uint16, gop uint8, fps uint8) ([]byte, int) {
 	return common.GetKvmVision().ReadVideo(width, height, codec, bitRate, gop, fps)
+}
+
+// videoTimes is a variable for the same reason readVideo is. It answers when
+// the frame of the last read was captured and encoded, or false.
+var videoTimes = func() (common.VideoTimes, bool) {
+	return common.GetKvmVision().LastVideoTimes()
 }
 
 // setEncoderFPS is a variable for the same reason readH264 is: the loop below
@@ -298,18 +310,35 @@ func (s *H264Source) run() {
 	kind := keyframeRequests()
 	onRequest := kind != common.KeyframeRequestNone
 	keyframes := newKeyframeSchedule(defaultKeyframePolicy, onRequest)
-	encGop := encoderGop(gop, fps, onRequest)
+	demandEvery, demandOnly := keyframeDemandOnly()
+	demandOnly = demandOnly && kind == common.KeyframeRequestV4L2
+	keyframes.demandOnly, keyframes.demandEvery = demandOnly, demandEvery
+	gopFor := func(gop uint8, fps int) uint8 {
+		if demandOnly {
+			return encoderGopNone
+		}
+
+		return encoderGop(gop, fps, onRequest)
+	}
+	encGop := gopFor(gop, fps)
 	setEncoderGop(encGop)
 	logKeyframePlan(kind, gop, fps, encGop)
 
 	startTime := time.Now()
 
-	ticker := time.NewTicker(duration)
-	defer ticker.Stop()
+	pacer := newReadPacer(duration)
+	defer pacer.stop()
 
-	// The first read goes out at once, not a tick later: a viewer that opens
-	// the stream waits for this frame, and a tick is 33 ms at 30 fps.
-	for ; ; <-ticker.C {
+	lat := newLatencyLog()
+
+	// The first read goes out at once, not a frame time later: a viewer that
+	// opens the stream waits for this frame, and a frame time is 33 ms at 30
+	// fps.
+	for first := true; ; first = false {
+		if !first {
+			pacer.wait()
+		}
+
 		subscribers := s.snapshot()
 		if len(subscribers) == 0 {
 			if s.stopIfIdle() {
@@ -328,12 +357,12 @@ func (s *H264Source) run() {
 			duration = time.Second / time.Duration(fps)
 			setEncoderFPS(fps)
 			setCaptureFPS(fps)
-			ticker.Reset(duration)
+			pacer.setPeriod(duration)
 		}
 		gop = values.GOP
 		// The encoder's GOP follows the frame rate as well: the clean
 		// interval is a time, not a number of frames.
-		if next := encoderGop(gop, fps, onRequest); next != encGop {
+		if next := gopFor(gop, fps); next != encGop {
 			encGop = next
 			setEncoderGop(encGop)
 			logKeyframePlan(kind, gop, fps, encGop)
@@ -349,6 +378,7 @@ func (s *H264Source) run() {
 		}
 
 		if len(wanted) == 0 {
+			pacer.read(time.Time{})
 			continue
 		}
 
@@ -357,7 +387,8 @@ func (s *H264Source) run() {
 		}
 
 		data, result := readVideo(values.Width, values.Height, values.Codec, values.BitRate, 0, 0)
-		if result >= 0 && len(data) > 0 {
+		got := result >= 0 && len(data) > 0
+		if got {
 			keyframes.afterRead(time.Now(), result == 3)
 		}
 
@@ -368,14 +399,28 @@ func (s *H264Source) run() {
 			Timestamp: time.Since(startTime).Microseconds(),
 			Duration:  duration,
 		}
+		if got {
+			frame.Times, frame.HasTimes = videoTimes()
+		}
+		if frame.HasTimes {
+			// The RTP clock follows when the frames were captured, not
+			// when they were read.
+			// Never before the stream's start: H.264 Direct sends it unsigned.
+			frame.Timestamp = max(0, frame.Times.CaptureEnd.Sub(startTime).Microseconds())
+			pacer.read(frame.Times.CaptureEnd)
+		} else {
+			pacer.read(time.Time{})
+		}
 
 		for _, subscription := range wanted {
 			subscription.deliver(frame)
 		}
 
-		if result < 0 || len(data) == 0 {
+		if !got {
 			continue
 		}
+
+		lat.add(frame, time.Now())
 
 		// Counted once per captured frame. Both paths used to count, so a
 		// board with a viewer on each reported twice the frame rate it had.
@@ -386,6 +431,13 @@ func (s *H264Source) run() {
 // logKeyframePlan says how keyframes are spaced, once per stream and again on
 // a change of the GOP or the frame rate.
 func logKeyframePlan(kind common.KeyframeRequestKind, gop uint8, fps int, encGop uint8) {
+	if encGop == encoderGopNone {
+		log.Infof("keyframes: on request only (%s, %s); no periodic keyframes; every %s while a viewer loses packets (GOP %d)",
+			kind, keyframeIntervalEnv, gopInterval(gop, fps), gop)
+
+		return
+	}
+
 	if kind == common.KeyframeRequestNone {
 		log.Infof("keyframes: the library takes no keyframe request; encoder GOP %d (%s at %d fps)",
 			encGop, gopInterval(encGop, fps), fps)

@@ -65,6 +65,11 @@ func (k *KvmVision) SetHDMI(enable bool) int {
 	return 0
 }
 
+// LastVideoTimes answers false off-device: no picture was captured.
+func (k *KvmVision) LastVideoTimes() (VideoTimes, bool) {
+	return VideoTimes{}, false
+}
+
 // HasHDMISignal answers false off-device. There is no capture hardware to ask,
 // and a stub that claimed a signal would make every test that reads the HDMI
 // state assert against a picture that is not there.

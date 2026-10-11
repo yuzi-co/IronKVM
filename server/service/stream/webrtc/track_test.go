@@ -54,10 +54,10 @@ func TestWritePacketsAppliesEachTracksOwnExtensionID(t *testing.T) {
 	trackA, writerA := newTestTrack(3)
 	trackB, writerB := newTestTrack(7)
 
-	if err := trackA.writePackets(packets); err != nil {
+	if err := trackA.writePackets(packets, nil); err != nil {
 		t.Fatalf("writePackets failed: %s", err)
 	}
-	if err := trackB.writePackets(packets); err != nil {
+	if err := trackB.writePackets(packets, nil); err != nil {
 		t.Fatalf("writePackets failed: %s", err)
 	}
 
@@ -87,7 +87,7 @@ func TestWritePacketsLeavesTheSharedPacketsAlone(t *testing.T) {
 	packets := sharedFrame()
 
 	track, _ := newTestTrack(3)
-	if err := track.writePackets(packets); err != nil {
+	if err := track.writePackets(packets, nil); err != nil {
 		t.Fatalf("writePackets failed: %s", err)
 	}
 
@@ -121,7 +121,7 @@ func TestExtensionIDIsSafeUnderConcurrentUpdate(t *testing.T) {
 	go func() {
 		defer wg.Done()
 		for range 200 {
-			_ = track.writePackets(packets)
+			_ = track.writePackets(packets, nil)
 		}
 	}()
 

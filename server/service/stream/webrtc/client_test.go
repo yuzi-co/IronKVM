@@ -19,12 +19,12 @@ func frame(label string) []*rtp.Packet {
 func takeLabel(t *testing.T, c *Client) string {
 	t.Helper()
 
-	packets, ok := c.queue.Take()
+	frame, ok := c.queue.Take()
 	if !ok {
 		t.Fatal("queue was closed")
 	}
 
-	return string(packets[0].Payload)
+	return string(frame.packets[0].Payload)
 }
 
 func labels(w *recordingWriter) []string {

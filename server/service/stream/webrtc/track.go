@@ -1,6 +1,9 @@
 package webrtc
 
 import (
+	"encoding/binary"
+	"time"
+
 	"github.com/pion/rtp"
 	log "github.com/sirupsen/logrus"
 )
@@ -18,6 +21,40 @@ const rtpExtensionProfile = 0xBEDE
 
 // playoutDelayExtensionURI has to match on both sides of the negotiation.
 const playoutDelayExtensionURI = "http://www.webrtc.org/experiments/rtp-hdrext/playout-delay"
+
+// absCaptureTimeExtensionURI is the absolute capture time header extension
+// (http://www.webrtc.org/experiments/rtp-hdrext/abs-capture-time), which PiKVM
+// measures its latency with. Each frame's first packet carries the time the
+// frame's first line reached the capture (common.VideoTimes.CaptureStart), on
+// the board's wall clock, the clock its RTCP sender reports use. Chrome
+// offers it only when the page asks (RTCRtpTransceiver
+// setHeaderExtensionsToNegotiate; it is "stopped" by default), and then
+// reports it per frame as captureTimestamp in
+// RTCRtpReceiver.getSynchronizationSources().
+const absCaptureTimeExtensionURI = "http://www.webrtc.org/experiments/rtp-hdrext/abs-capture-time"
+
+// ntpEpochOffset is the seconds from 1900 (NTP) to 1970 (Unix).
+const ntpEpochOffset = 2208988800
+
+// absCaptureTime is the extension's data for a frame captured at t: the
+// capture time as an NTP timestamp (UQ32.32), then the estimated capture clock
+// offset, 0 because the board both captures and sends (so the browser's
+// senderCaptureTimeOffset is 0 rather than undefined). 16 bytes, the most a
+// one-byte header extension carries. nil for the zero time.
+func absCaptureTime(t time.Time) []byte {
+	if t.IsZero() {
+		return nil
+	}
+
+	ns := t.UnixNano()
+	seconds := uint64(ns/int64(time.Second)) + ntpEpochOffset
+	fraction := (uint64(ns%int64(time.Second)) << 32) / uint64(time.Second)
+
+	data := make([]byte, 16)
+	binary.BigEndian.PutUint64(data, seconds<<32|fraction)
+
+	return data
+}
 
 // playoutDelayExtensionData asks the receiver not to buffer ahead of playback.
 // It is the same for every client and never changes, so it is marshalled once
@@ -55,6 +92,12 @@ func (t *Track) playoutDelayExtensionID() uint8 {
 	return defaultPlayoutDelayExtensionID
 }
 
+// setAbsCaptureTimeExtensionID records what signalling negotiated for the
+// capture time, 0 for nothing: then no packet carries it.
+func (t *Track) setAbsCaptureTimeExtensionID(id uint8) {
+	t.absCaptureID.Store(uint32(id))
+}
+
 // writePackets sends one frame to this client's peer connection.
 //
 // The frame is packetized once for everyone, so these packets are shared. pion
@@ -62,10 +105,16 @@ func (t *Track) playoutDelayExtensionID() uint8 {
 // client writes on its own goroutine, so each packet goes out through a copy.
 // Only the header is copied - the payload is the encoded frame itself, which
 // nobody modifies.
-func (t *Track) writePackets(packets []*rtp.Packet) error {
+//
+// capture, when not nil, is the frame's abs-capture-time data (absCaptureTime).
+// Only the first packet carries it: the receiver takes the rest of the frame's
+// packets, which share its RTP timestamp, from that one, and the extension
+// costs 17 bytes a frame rather than a packet.
+func (t *Track) writePackets(packets []*rtp.Packet, capture []byte) error {
 	id := t.playoutDelayExtensionID()
+	absID := uint8(t.absCaptureID.Load())
 
-	for _, source := range packets {
+	for i, source := range packets {
 		packet := rtp.Packet{Header: source.Header, Payload: source.Payload}
 
 		packet.Header.Extension = true
@@ -77,6 +126,13 @@ func (t *Track) writePackets(packets []*rtp.Packet) error {
 		if err := packet.Header.SetExtension(id, playoutDelayExtensionData); err != nil {
 			log.Errorf("failed to set extension: %v", err)
 			return err
+		}
+
+		if i == 0 && absID != 0 && capture != nil {
+			if err := packet.Header.SetExtension(absID, capture); err != nil {
+				log.Errorf("failed to set the capture time extension: %v", err)
+				return err
+			}
 		}
 
 		if err := t.video.WriteRTP(&packet); err != nil {

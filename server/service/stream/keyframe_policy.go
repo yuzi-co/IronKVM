@@ -54,19 +54,56 @@ const (
 	// maxEncoderGop is what set_h264_gop can carry. Both libraries clamp
 	// further: Sipeed's and libkvm-v4l2 to 100, the Coda980 to 99. So at 60
 	// fps the clean interval is 1.65 to 1.67 s rather than 2 s (trial 64).
-	maxEncoderGop = 255
+	// 255 is not used: libkvm-v4l2 takes it as "no periodic keyframes"
+	// (encoderGopNone).
+	maxEncoderGop = 254
 )
 
 // Reasons a keyframe is asked for, for the log.
 const (
-	KeyframeReasonWaiting = "a viewer waits for one"
-	KeyframeReasonPicture = "a viewer lost a picture"
-	keyframeReasonLossy   = "interval while a viewer loses packets"
-	keyframeReasonOverdue = "no keyframe from the encoder's GOP"
+	KeyframeReasonWaiting  = "a viewer waits for one"
+	KeyframeReasonPicture  = "a viewer lost a picture"
+	keyframeReasonLossy    = "interval while a viewer loses packets"
+	keyframeReasonOverdue  = "no keyframe from the encoder's GOP"
+	keyframeReasonInterval = "the longest interval without one passed"
 )
 
 // keyframeDiagEnv logs every forced keyframe and how many reads it took.
 const keyframeDiagEnv = "KVM_KEYFRAME_DIAG"
+
+// keyframeIntervalEnv turns the encoder's periodic keyframes off on
+// libkvm-v4l2 (PiKVM's "GOP 0", ironkvm-dist trial 78): the encoder gets
+// encoderGopNone and makes a keyframe only when one is forced, on demand and
+// while a viewer loses packets as above. The value is a Go duration: the
+// server forces one when that long passed without any ("30s"), or never ("0").
+// Unset, keyframes are as described above. Sipeed's library has no GOP that
+// means "none", so there the variable is ignored.
+const keyframeIntervalEnv = "KVM_KEYFRAME_INTERVAL"
+
+// encoderGopNone is libkvm-v4l2's GOP for "no periodic keyframes", above the
+// range of either library (kvmv_policy.h KVMV_GOP_NONE).
+const encoderGopNone = 255
+
+// keyframeDemandOnly reads keyframeIntervalEnv: whether it is set, and the
+// longest the stream goes without a keyframe then, 0 for no limit.
+func keyframeDemandOnly() (time.Duration, bool) {
+	value, ok := os.LookupEnv(keyframeIntervalEnv)
+	if !ok || value == "" {
+		return 0, false
+	}
+
+	if value == "0" {
+		return 0, true
+	}
+
+	every, err := time.ParseDuration(value)
+	if err != nil || every < 0 {
+		log.Warnf("keyframes: %s=%q is not a duration; ignored", keyframeIntervalEnv, value)
+		return 0, false
+	}
+
+	return every, true
+}
 
 type lossRecord struct {
 	events []time.Time
@@ -231,6 +268,12 @@ type keyframeSchedule struct {
 	onRequest bool
 	diag      bool
 
+	// demandOnly: the encoder makes no periodic keyframes
+	// (keyframeIntervalEnv); every one after the first is forced, and the
+	// backstop is demandEvery, 0 for none.
+	demandOnly  bool
+	demandEvery time.Duration
+
 	lastKey    time.Time
 	lastForced time.Time
 
@@ -292,6 +335,10 @@ func (s *keyframeSchedule) beforeRead(now time.Time, gop uint8, fps int) string 
 		reason = pending
 	case lossy && since >= gopInterval(gop, fps):
 		reason = keyframeReasonLossy
+	case s.demandOnly:
+		if s.demandEvery > 0 && since >= s.demandEvery {
+			reason = keyframeReasonInterval
+		}
 	case since >= max(keyframeRareInterval, gopInterval(gop, fps))*5/4:
 		// The encoder's GOP should have made one by now. It may have been
 		// clamped below what was asked, or not have taken the GOP at all.

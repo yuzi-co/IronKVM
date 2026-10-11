@@ -6,6 +6,8 @@ package common
 	#cgo CFLAGS: -I../include
 	#cgo LDFLAGS: -L../dl_lib -lkvm
 	#include <dlfcn.h>
+	#include <stdint.h>
+	#include <time.h>
 	#include "kvm_vision.h"
 
 	#ifndef RTLD_DEFAULT
@@ -116,10 +118,45 @@ package common
 			vendor_venc_chn = -1;
 		return ret;
 	}
+
+	// kvmv_video_times is a libkvm-v4l2 extension (ironkvm-dist trial 78):
+	// when the picture behind the last access unit was captured and encoded,
+	// in CLOCK_MONOTONIC microseconds. This puts them on the wall clock, in
+	// nanoseconds, by the two clocks read back to back now: out[0] capture
+	// end, out[1] the source's frame time (a duration), out[2] encode start,
+	// out[3] encode end, out[4] returned. Answers 5, 0 before the first
+	// picture, -1 when the library has no such call.
+	static int kvmv_video_times_wall(int64_t *out)
+	{
+		static int (*fn)(uint64_t *, int);
+		static int looked;
+		uint64_t t[5];
+		struct timespec mono, real;
+		int64_t mono_ns, real_ns;
+		int i;
+
+		if (!looked) {
+			fn = (int (*)(uint64_t *, int))dlsym(RTLD_DEFAULT, "kvmv_video_times");
+			looked = 1;
+		}
+		if (fn == NULL)
+			return -1;
+		if (fn(t, 5) < 5)
+			return 0;
+		clock_gettime(CLOCK_MONOTONIC, &mono);
+		clock_gettime(CLOCK_REALTIME, &real);
+		mono_ns = (int64_t)mono.tv_sec * 1000000000LL + mono.tv_nsec;
+		real_ns = (int64_t)real.tv_sec * 1000000000LL + real.tv_nsec;
+		for (i = 0; i < 5; i++)
+			out[i] = real_ns - (mono_ns - (int64_t)t[i] * 1000LL);
+		out[1] = (int64_t)t[1] * 1000LL;
+		return 5;
+	}
 */
 import "C"
 import (
 	"sync"
+	"time"
 	"unsafe"
 
 	log "github.com/sirupsen/logrus"
@@ -269,6 +306,26 @@ func (k *KvmVision) ReadVideo(width uint16, height uint16, codec uint8, bitRate 
 	}
 
 	return
+}
+
+// LastVideoTimes says when the picture behind the last access unit ReadVideo
+// returned was captured and encoded. It answers false with Sipeed's library,
+// which cannot say, and before the first picture. Only the capture loop calls
+// it, right after its read, so the times are that read's.
+func (k *KvmVision) LastVideoTimes() (VideoTimes, bool) {
+	var raw [5]C.int64_t
+
+	if C.kvmv_video_times_wall(&raw[0]) != 5 {
+		return VideoTimes{}, false
+	}
+
+	return VideoTimes{
+		CaptureEnd:  time.Unix(0, int64(raw[0])),
+		FrameTime:   time.Duration(raw[1]),
+		EncodeStart: time.Unix(0, int64(raw[2])),
+		EncodeEnd:   time.Unix(0, int64(raw[3])),
+		Returned:    time.Unix(0, int64(raw[4])),
+	}, true
 }
 
 func (k *KvmVision) SetHDMI(enable bool) int {

@@ -53,7 +53,7 @@ type Client struct {
 	// udp is the network video's sockets come from; the video writer holds
 	// a frame's datagrams and sends them in batches (udpbatch.go). nil when
 	// batching is off. Set before the writers start.
-	udp *batchNet
+	udp   *batchNet
 	mutex sync.Mutex
 
 	// codec is what this session's video track told the peer it carries. It is
@@ -72,7 +72,7 @@ type Client struct {
 	// frame over and moves on; the writer goroutine takes frames at whatever
 	// rate this connection manages. It is several frames deep so that the
 	// frames after a slow keyframe wait instead of being dropped.
-	queue *framequeue.Queue[[]*rtp.Packet]
+	queue *framequeue.Queue[videoFrame]
 	done  chan struct{}
 
 	// ready closes when the peer connection is up and packets written to the
@@ -141,6 +141,9 @@ type Track struct {
 	// extensionID is negotiated on the websocket goroutine and read on the
 	// capture goroutine.
 	extensionID atomic.Uint32
+	// absCaptureID is the abs-capture-time extension's ID, the same way; 0
+	// when the viewer did not negotiate it.
+	absCaptureID atomic.Uint32
 
 	// sent is the newest video sequence number written, with sentValid set
 	// once there is one. The writer stores it and the RTCP reader reads it.

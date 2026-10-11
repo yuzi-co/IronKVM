@@ -19,7 +19,7 @@ func TestEncoderGopIsTheCleanIntervalWhenKeyframesCanBeAskedFor(t *testing.T) {
 		{30, 30, true, 60},   // 2 s
 		{100, 30, true, 100}, // the setting is longer than 2 s
 		{30, 120, true, 240},
-		{30, 144, true, 255}, // what set_h264_gop can carry
+		{30, 144, true, 254}, // what set_h264_gop can carry, but 255 (none)
 		{30, 60, false, 30},  // the setting, under 1 s
 		{60, 30, false, 30},  // at most 1 s
 		{30, 0, true, 30},    // no frame rate yet: 2 frames, the setting wins
@@ -263,5 +263,60 @@ func TestTheLoopAsksTheEncoderWithTheGopItHolds(t *testing.T) {
 
 	if got := asked()[0]; got != 60 {
 		t.Fatalf("asked with GOP %d, want the encoder's 60", got)
+	}
+}
+
+// With no periodic keyframes (KVM_KEYFRAME_INTERVAL), nothing is forced until
+// a viewer asks, or the longest interval passes.
+func TestOnlyDemandAndTheLongestIntervalForceKeyframesWhenOnDemand(t *testing.T) {
+	p := newKeyframePolicy()
+	s := newKeyframeSchedule(p, true)
+	s.demandOnly, s.demandEvery = true, 10*time.Second
+	read(s, 0, true)
+
+	for ms := 17; ms < 10000; ms += 17 {
+		if r := read(s, ms, false); r != "" {
+			t.Fatalf("forced %q at %d ms", r, ms)
+		}
+	}
+
+	if r := read(s, 10001, false); r != keyframeReasonInterval {
+		t.Fatalf("forced %q at 10 s, want the longest interval", r)
+	}
+
+	p.request(KeyframeReasonWaiting)
+	if r := read(s, 10500, false); r != KeyframeReasonWaiting {
+		t.Fatalf("forced %q for a waiting viewer", r)
+	}
+
+	s = newKeyframeSchedule(newKeyframePolicy(), true)
+	s.demandOnly = true
+	read(s, 0, true)
+	for ms := 17; ms < 60000; ms += 17 {
+		if r := read(s, ms, false); r != "" {
+			t.Fatalf("forced %q at %d ms with no longest interval", r, ms)
+		}
+	}
+}
+
+func TestKeyframeIntervalEnv(t *testing.T) {
+	cases := []struct {
+		value string
+		every time.Duration
+		on    bool
+	}{
+		{"", 0, false},
+		{"0", 0, true},
+		{"30s", 30 * time.Second, true},
+		{"soon", 0, false},
+		{"-1s", 0, false},
+	}
+
+	for _, c := range cases {
+		t.Setenv(keyframeIntervalEnv, c.value)
+		every, on := keyframeDemandOnly()
+		if every != c.every || on != c.on {
+			t.Errorf("%q: %s %t, want %s %t", c.value, every, on, c.every, c.on)
+		}
 	}
 }
