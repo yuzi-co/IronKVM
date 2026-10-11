@@ -55,6 +55,11 @@ export const Details = ({ status }: DetailsProps) => {
     ],
     [t('settings.vpn.account'), status.account || '-']
   ];
+  // A custom control server, such as Headscale, is worth seeing beside the
+  // account: the account name alone does not say which server issued it.
+  if (status.loginServer) {
+    rows.push([t('settings.tailscale.loginServer'), status.loginServer]);
+  }
 
   return (
     <div className="flex flex-col space-y-2">

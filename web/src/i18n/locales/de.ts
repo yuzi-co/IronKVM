@@ -1460,7 +1460,14 @@ const de = {
         manualIntro: 'Oder per SSH von Hand installieren:',
         copyBinaries: 'tailscale und tailscaled nach {{dir}} auf dem IronKVM kopieren',
         linksFile: 'Im selben Verzeichnis eine Datei namens links mit diesen zwei Zeilen anlegen:',
-        rebootRefresh: 'Den IronKVM neu starten, dann diese Seite neu laden'
+        rebootRefresh: 'Den IronKVM neu starten, dann diese Seite neu laden',
+        loginServer: 'Steuerungsserver',
+        loginServerDesc:
+          'Leer lassen, um Tailscale zu verwenden. Die https-URL eines Headscale-Servers eingeben, um diesen zu verwenden. Eine Änderung startet eine neue Anmeldung, und der alte Server bleibt, wenn der neue nicht antwortet.',
+        loginServerDefault: 'Tailscale (Standard)',
+        loginServerInvalid: 'Eine https-URL eingeben, zum Beispiel https://headscale.example.com',
+        loginServerLocked: 'Zum Ändern des Steuerungsservers abmelden.',
+        loginServerSaved: 'Steuerungsserver gespeichert'
       },
       netbird: {
         title: 'NetBird',
@@ -1836,6 +1843,14 @@ const de = {
       criticalContinue: 'Video trotzdem starten',
       criticalReboot: 'IronKVM neu starten',
       criticalRebooting: 'Wird neu gestartet...'
+    },
+    failsafe: {
+      title: 'Video aus: Der Server läuft im abgesicherten Modus',
+      body: 'Die Videobibliothek hat den Server mehrmals hintereinander abstürzen lassen, daher läuft der Server jetzt ohne Video. Alles andere funktioniert: Einstellungen, Updates, Protokolle, Stromsteuerung und Terminal. Video nach einem Update oder einer Korrektur erneut versuchen. Ein Neustart von IronKVM versucht Video ebenfalls erneut.',
+      showLog: 'Protokoll anzeigen',
+      hideLog: 'Protokoll ausblenden',
+      retry: 'Video erneut versuchen',
+      retrying: 'Wird neu gestartet...'
     }
   }
 };

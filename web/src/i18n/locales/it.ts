@@ -1442,7 +1442,14 @@ const it = {
         manualIntro: 'Oppure installalo a mano via SSH:',
         copyBinaries: "Copia tailscale e tailscaled in {{dir}} sull'IronKVM",
         linksFile: 'Nella stessa directory, crea un file chiamato links con queste due righe:',
-        rebootRefresh: "Riavvia l'IronKVM, poi aggiorna questa pagina"
+        rebootRefresh: "Riavvia l'IronKVM, poi aggiorna questa pagina",
+        loginServer: 'Server di controllo',
+        loginServerDesc:
+          "Lascia vuoto per usare Tailscale. Inserisci l'URL https di un server Headscale per usarlo al suo posto. Una modifica avvia un nuovo accesso, e il server precedente resta se il nuovo non risponde.",
+        loginServerDefault: 'Tailscale (predefinito)',
+        loginServerInvalid: 'Inserisci un URL https, ad esempio https://headscale.example.com',
+        loginServerLocked: 'Esci per cambiare il server di controllo.',
+        loginServerSaved: 'Server di controllo salvato'
       },
       netbird: {
         title: 'NetBird',
@@ -1816,6 +1823,14 @@ const it = {
       criticalContinue: 'Avvia comunque il video',
       criticalReboot: 'Riavvia IronKVM',
       criticalRebooting: 'Riavvio in corso...'
+    },
+    failsafe: {
+      title: 'Video disattivato: il server è avviato in modalità provvisoria',
+      body: "La libreria video ha fatto arrestare il server più volte di seguito, quindi ora il server funziona senza video. Tutto il resto funziona: impostazioni, aggiornamenti, log, controllo dell'alimentazione e terminale. Riprova il video dopo un aggiornamento o una correzione. Anche il riavvio di IronKVM riprova il video.",
+      showLog: 'Mostra log',
+      hideLog: 'Nascondi log',
+      retry: 'Riprova video',
+      retrying: 'Riavvio in corso...'
     }
   }
 };

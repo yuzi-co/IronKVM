@@ -26,6 +26,8 @@ export type Status = {
   bootEnabled: boolean;
   memory: Memory;
   blockedBy: string;
+  // Tailscale's control server when it is not Tailscale's own. Absent otherwise.
+  loginServer?: string;
 };
 
 export type UpdateInfo = { current: string; latest: string };
@@ -58,4 +60,6 @@ export type VpnInfo = {
   logoutWarning: string;
   renderLogin: (onSuccess: () => void) => ReactNode;
   installHelp?: ReactNode;
+  // Settings of this add-on alone, shown below connect at boot.
+  renderSettings?: (status: Status, blocked: boolean, onChange: () => void) => ReactNode;
 };

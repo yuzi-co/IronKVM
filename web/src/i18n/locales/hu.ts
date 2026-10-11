@@ -1439,7 +1439,14 @@ const hu = {
         manualIntro: 'Vagy telepítsd kézzel SSH-n keresztül:',
         copyBinaries: 'Másold a tailscale és tailscaled fájlt az IronKVM {{dir}} könyvtárába',
         linksFile: 'Ugyanebben a könyvtárban hozz létre egy links nevű fájlt ezzel a két sorral:',
-        rebootRefresh: 'Indítsd újra az IronKVM-et, majd frissítsd ezt az oldalt'
+        rebootRefresh: 'Indítsd újra az IronKVM-et, majd frissítsd ezt az oldalt',
+        loginServer: 'Vezérlőszerver',
+        loginServerDesc:
+          'Hagyja üresen a Tailscale használatához. Adja meg egy Headscale-szerver https URL-jét, ha azt szeretné használni. A módosítás új bejelentkezést indít, és a régi szerver marad, ha az új nem válaszol.',
+        loginServerDefault: 'Tailscale (alapértelmezett)',
+        loginServerInvalid: 'Adjon meg egy https URL-t, például https://headscale.example.com',
+        loginServerLocked: 'A vezérlőszerver módosításához jelentkezzen ki.',
+        loginServerSaved: 'Vezérlőszerver mentve'
       },
       netbird: {
         title: 'NetBird',
@@ -1810,6 +1817,14 @@ const hu = {
       criticalContinue: 'Videó indítása mégis',
       criticalReboot: 'IronKVM újraindítása',
       criticalRebooting: 'Újraindítás...'
+    },
+    failsafe: {
+      title: 'A videó ki van kapcsolva: a szerver csökkentett módban indult',
+      body: 'A videókönyvtár többször egymás után összeomlasztotta a szervert, ezért a szerver most videó nélkül fut. Minden más működik: beállítások, frissítések, naplók, tápellátás-vezérlés és terminál. Frissítés vagy javítás után próbálja újra a videót. Az IronKVM újraindítása is újrapróbálja a videót.',
+      showLog: 'Napló megjelenítése',
+      hideLog: 'Napló elrejtése',
+      retry: 'Videó újrapróbálása',
+      retrying: 'Újraindítás...'
     }
   }
 };

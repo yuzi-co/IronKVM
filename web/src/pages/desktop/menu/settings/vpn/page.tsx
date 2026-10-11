@@ -158,6 +158,8 @@ export const VpnPage = ({ vpn, setIsLocked }: VpnPageProps) => {
                 onError={setErrMsg}
               />
 
+              {vpn.renderSettings?.(status, blocked, refresh)}
+
               {state === 'notLogin' && vpn.renderLogin(refresh)}
 
               {(state === 'stopped' || state === 'running') && (

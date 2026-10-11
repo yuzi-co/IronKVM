@@ -1437,7 +1437,14 @@ const ca = {
         manualIntro: 'O instal·la-ho manualment per SSH:',
         copyBinaries: "Copia tailscale i tailscaled a {{dir}} a l'IronKVM",
         linksFile: 'Al mateix directori, crea un fitxer anomenat links amb aquestes dues línies:',
-        rebootRefresh: "Reinicia l'IronKVM i després actualitza aquesta pàgina"
+        rebootRefresh: "Reinicia l'IronKVM i després actualitza aquesta pàgina",
+        loginServer: 'Servidor de control',
+        loginServerDesc:
+          "Deixeu-ho buit per fer servir Tailscale. Introduïu l'URL https d'un servidor Headscale per fer-lo servir. Un canvi inicia un nou inici de sessió, i el servidor anterior es manté si el nou no respon.",
+        loginServerDefault: 'Tailscale (per defecte)',
+        loginServerInvalid: 'Introduïu un URL https, per exemple https://headscale.example.com',
+        loginServerLocked: 'Tanqueu la sessió per canviar el servidor de control.',
+        loginServerSaved: 'Servidor de control desat'
       },
       netbird: {
         title: 'NetBird',
@@ -1811,6 +1818,14 @@ const ca = {
       criticalContinue: 'Inicia el vídeo igualment',
       criticalReboot: 'Reinicia el IronKVM',
       criticalRebooting: "S'està reiniciant..."
+    },
+    failsafe: {
+      title: 'Vídeo desactivat: el servidor ha arrencat en mode de seguretat',
+      body: "La biblioteca de vídeo ha fet fallar el servidor diverses vegades seguides, i ara el servidor funciona sense vídeo. Tota la resta funciona: configuració, actualitzacions, registres, control d'energia i terminal. Torneu a provar el vídeo després d'una actualització o una correcció. Reiniciar IronKVM també torna a provar el vídeo.",
+      showLog: 'Mostra el registre',
+      hideLog: 'Amaga el registre',
+      retry: 'Torna a provar el vídeo',
+      retrying: "S'està reiniciant..."
     }
   }
 };

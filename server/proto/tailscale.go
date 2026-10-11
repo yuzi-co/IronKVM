@@ -17,3 +17,16 @@ const (
 type GetTailscaleStatusRsp = VpnStatus
 
 type LoginTailscaleRsp = VpnLoginRsp
+
+// TailscaleLoginServerReq sets the control server: an https URL, such as a
+// Headscale server's, or empty for Tailscale's own.
+type TailscaleLoginServerReq struct {
+	LoginServer string `json:"loginServer"`
+}
+
+// TailscaleLoginServerRsp is the server now in use and, when the change
+// started a login, the URL to finish it at.
+type TailscaleLoginServerRsp struct {
+	LoginServer string `json:"loginServer"`
+	Url         string `json:"url"`
+}

@@ -140,6 +140,16 @@ export function getIon() {
   return http.get('/api/vm/ion');
 }
 
+// whether the server runs without video after a video crash loop, and why
+export function getFailsafe() {
+  return http.get('/api/vm/failsafe');
+}
+
+// forget the crashes and restart the server with video
+export function retryFailsafe() {
+  return http.post('/api/vm/failsafe/retry');
+}
+
 // set memory limit
 export function setMemoryLimit(enabled: boolean, limit: number) {
   const data = {

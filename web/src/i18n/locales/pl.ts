@@ -1426,7 +1426,14 @@ const pl = {
         manualIntro: 'Albo zainstaluj ręcznie przez SSH:',
         copyBinaries: 'Skopiuj tailscale i tailscaled do {{dir}} na IronKVM',
         linksFile: 'W tym samym katalogu utwórz plik o nazwie links z tymi dwoma wierszami:',
-        rebootRefresh: 'Uruchom ponownie IronKVM, a potem odśwież tę stronę'
+        rebootRefresh: 'Uruchom ponownie IronKVM, a potem odśwież tę stronę',
+        loginServer: 'Serwer sterujący',
+        loginServerDesc:
+          'Pozostaw puste, aby używać Tailscale. Wpisz adres URL https serwera Headscale, aby używać go zamiast tego. Zmiana rozpoczyna nowe logowanie, a stary serwer zostaje, jeśli nowy nie odpowiada.',
+        loginServerDefault: 'Tailscale (domyślny)',
+        loginServerInvalid: 'Wpisz adres URL https, na przykład https://headscale.example.com',
+        loginServerLocked: 'Wyloguj się, aby zmienić serwer sterujący.',
+        loginServerSaved: 'Zapisano serwer sterujący'
       },
       netbird: {
         title: 'NetBird',
@@ -1799,6 +1806,14 @@ const pl = {
       criticalContinue: 'Uruchom wideo mimo to',
       criticalReboot: 'Uruchom ponownie IronKVM',
       criticalRebooting: 'Ponowne uruchamianie...'
+    },
+    failsafe: {
+      title: 'Wideo wyłączone: serwer uruchomił się w trybie awaryjnym',
+      body: 'Biblioteka wideo kilka razy z rzędu spowodowała awarię serwera, więc serwer działa teraz bez wideo. Wszystko inne działa: ustawienia, aktualizacje, logi, sterowanie zasilaniem i terminal. Spróbuj ponownie wideo po aktualizacji lub poprawce. Ponowne uruchomienie IronKVM również ponawia próbę wideo.',
+      showLog: 'Pokaż log',
+      hideLog: 'Ukryj log',
+      retry: 'Ponów wideo',
+      retrying: 'Ponowne uruchamianie...'
     }
   }
 };

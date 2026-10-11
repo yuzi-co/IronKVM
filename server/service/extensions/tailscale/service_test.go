@@ -317,7 +317,8 @@ func TestConnectStartsThenUps(t *testing.T) {
 	if rsp := call(t, NewService().Connect, ""); rsp.Code != 0 {
 		t.Fatalf("got %d %q", rsp.Code, rsp.Msg)
 	}
-	want := "script start\ntailscale status --json\ntailscale up --accept-dns=false\n"
+	// up reads the login server first, to keep a custom one.
+	want := "script start\ntailscale status --json\ntailscale debug prefs\ntailscale up --accept-dns=false\n"
 	if got := callsOf(t, calls); got != want {
 		t.Fatalf("calls:\n%s", got)
 	}

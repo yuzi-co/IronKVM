@@ -726,6 +726,75 @@ syslog_pipe() {
 }
 # --- end syslog pipe ---
 
+# --- exit record ---
+# How each server run ended, for service/failsafe. After a video crash loop the
+# server starts without video, so the web UI, the updates and the logs stay
+# reachable, and it decides that from these records.
+#
+# Only the parent learns how a process ended. A server killed by a signal runs
+# no code of its own, so it cannot say that it died. run_recorded therefore
+# starts the server, waits for it, and writes one file per exit into
+# FAILSAFE_DIR/exits: the status, the uptime and the time, the Go runtime's
+# crash report when there is one (the server writes it to crash.<pid> through
+# debug.SetCrashOutput), and the last lines of the server log.
+#
+# A clean exit removes every record instead. Status 0 is what the server gives
+# for SIGTERM, so a server stopped on purpose, by S95nanokvm or by an update,
+# starts with video the next time.
+#
+# The crash report is renamed before it is read, and the server does the same
+# with a report nobody took, so one exit never makes two records. The
+# directory is in tmpfs on purpose: a reboot clears it and tries video again.
+#
+# The process that waits is a fork of the calling shell and holds nothing but
+# the wait. pidof NanoKVM-Server still finds the server alone, so every check
+# in this script and in S98supervise sees what it saw before.
+#
+# The block is spelled the same in S95nanokvm and S98supervise, and
+# tools/service/test-exit-record.sh holds the two copies together.
+FAILSAFE_DIR=${FAILSAFE_DIR:-/tmp/nanokvm-failsafe}
+
+# $1 = the status, $2 = the server's pid
+record_exit() {
+    mkdir -p "$FAILSAFE_DIR/exits" 2>/dev/null || return 0
+
+    if [ "$1" -eq 0 ]; then
+        rm -f "$FAILSAFE_DIR"/exits/* "$FAILSAFE_DIR/crash.$2"
+        return 0
+    fi
+
+    up=
+    { read -r up _ < /proc/uptime; } 2>/dev/null
+    up=${up%%.*}
+    rec="$FAILSAFE_DIR/exits/${up:-0}.$2"
+    crash="$FAILSAFE_DIR/crash.$2"
+
+    {
+        echo "uptime ${up:-0}"
+        echo "time $(date +%s)"
+        echo "status $1"
+        echo "pid $2"
+        echo "--- crash"
+        if mv "$crash" "$crash.taken" 2>/dev/null; then
+            head -c 32768 "$crash.taken"
+            rm -f "$crash.taken"
+        fi
+        echo "--- log"
+        tail -n 60 "$SERVER_LOG" 2>/dev/null
+    } > "$rec.new" 2>/dev/null && mv "$rec.new" "$rec"
+    return 0
+}
+
+# $1 = the server binary. Call it as `run_recorded "$bin" >> "$SERVER_LOG"
+# 2>&1 &`: it returns when the server has gone and its exit is recorded.
+run_recorded() {
+    "$1" < /dev/null &
+    server_pid=$!
+    wait "$server_pid"
+    record_exit $? "$server_pid"
+}
+# --- end exit record ---
+
 binary_present() {
     [ -x "$SERVER_BIN" ]
 }
@@ -1023,10 +1092,15 @@ watch_loop() {
                     # is started, so this path erodes the carveout exactly
                     # like full_restart does, and it is the one taken far more
                     # often.
+                    #
+                    # Through run_recorded, so this exit is recorded too: a
+                    # crash loop is exactly the restarts this path makes.
+                    # $! is the shell that waits for the server, not the
+                    # server itself.
                     ion_line
                     refresh_libkvm
-                    "$SERVER_BIN" < /dev/null >> "$SERVER_LOG" 2>&1 &
-                    warn "started $SERVER_BIN as pid $!"
+                    run_recorded "$SERVER_BIN" < /dev/null >> "$SERVER_LOG" 2>&1 &
+                    warn "started $SERVER_BIN, its exit recorder is pid $!"
                 fi
 
                 delay=$(delay_after_run "$ran" "$delay")

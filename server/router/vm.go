@@ -21,6 +21,9 @@ func vmRouter(r *gin.Engine) {
 	api.GET("/vm/hardware", service.GetHardware) // get hardware version
 	api.GET("/vm/health", service.GetHealth)     // temperature, image space, VPNs for the alert icon
 
+	api.GET("/vm/failsafe", service.GetFailsafe)            // video failsafe mode, its reason and the exits behind it
+	admin.POST("/vm/failsafe/retry", service.RetryFailsafe) // forget the crashes and restart with video
+
 	api.POST("/vm/gpio", service.SetGpio) // update gpio
 	api.GET("/vm/gpio", service.GetGpio)  // get gpio
 

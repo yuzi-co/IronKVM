@@ -302,7 +302,7 @@ echo "===== a restarted server still reports where libkvm fails ====="
 # /dev/null is a server nobody can debug, and a crash is when the record matters
 # most. S98vidiag would go on reading a file that nothing writes to, and the
 # file would still be there, so nothing would look wrong.
-if grep -q '"\$SERVER_BIN" < /dev/null >> "\$SERVER_LOG" 2>&1 &' "$SV"; then
+if grep -q 'run_recorded "\$SERVER_BIN" < /dev/null >> "\$SERVER_LOG" 2>&1 &' "$SV"; then
     note "the crash restart sends the server's output to the log" OK
 else
     note "the crash restart discards the server's output" FAIL
@@ -1277,7 +1277,7 @@ for line in \
     'warn "NanoKVM-Server is up but has not answered' \
     'warn "the process did not leave after SIGKILL"' \
     'warn "NanoKVM-Server is gone after' \
-    'warn "started $SERVER_BIN as pid' \
+    'warn "started $SERVER_BIN, its exit recorder is pid' \
     'warn "kvm_system was gone' \
     'warn "nothing has listened on port' \
     'log "ion ' \

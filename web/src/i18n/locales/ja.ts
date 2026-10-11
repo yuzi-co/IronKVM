@@ -1429,7 +1429,14 @@ const ja = {
         manualIntro: 'または SSH で手動インストールします:',
         copyBinaries: 'tailscale と tailscaled を IronKVM の {{dir}} にコピーします',
         linksFile: '同じディレクトリに、次の 2 行を書いた links という名前のファイルを作成します:',
-        rebootRefresh: 'IronKVM を再起動してから、このページを再読み込みします'
+        rebootRefresh: 'IronKVM を再起動してから、このページを再読み込みします',
+        loginServer: 'コントロールサーバー',
+        loginServerDesc:
+          'Tailscale を使う場合は空のままにします。Headscale サーバーを使う場合はその https URL を入力します。変更すると新しいログインが始まり、新しいサーバーが応答しない場合は元のサーバーのままになります。',
+        loginServerDefault: 'Tailscale（既定）',
+        loginServerInvalid: 'https URL を入力してください（例: https://headscale.example.com）',
+        loginServerLocked: 'コントロールサーバーを変更するにはログアウトしてください。',
+        loginServerSaved: 'コントロールサーバーを保存しました'
       },
       netbird: {
         title: 'NetBird',
@@ -1800,6 +1807,14 @@ const ja = {
       criticalContinue: 'それでもビデオを開始',
       criticalReboot: 'IronKVM を再起動',
       criticalRebooting: '再起動中...'
+    },
+    failsafe: {
+      title: 'ビデオ停止中: サーバーはフェイルセーフモードで起動しました',
+      body: 'ビデオライブラリが続けてサーバーをクラッシュさせたため、サーバーはビデオなしで動作しています。設定、アップデート、ログ、電源操作、ターミナルなど他の機能は使えます。アップデートや修正の後にビデオを再試行してください。IronKVM の再起動でもビデオを再試行します。',
+      showLog: 'ログを表示',
+      hideLog: 'ログを隠す',
+      retry: 'ビデオを再試行',
+      retrying: '再起動中...'
     }
   }
 };

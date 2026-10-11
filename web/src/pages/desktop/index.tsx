@@ -27,6 +27,7 @@ import { OverlayBoundary, PanelBoundary } from '@/components/error-boundary';
 import { Head } from '@/components/head.tsx';
 
 import { CaptureStatusOverlay, useCaptureStatus } from './capture-status';
+import { FailsafeBanner } from './failsafe-banner.tsx';
 import { AbsoluteMouseWarning, InputDisconnectedWarning } from './hid-status';
 import { IonCheckingIndicator, IonCriticalGate, IonWarningBadge, useIonStatus } from './ion-status';
 import { Keyboard } from './keyboard';
@@ -293,6 +294,7 @@ export const Desktop = () => {
         <AbsoluteMouseWarning />
         <InputDisconnectedWarning />
         <ViewOnlyBadge />
+        <FailsafeBanner />
       </OverlayBoundary>
 
       {videoMode && resolution && (

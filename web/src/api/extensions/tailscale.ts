@@ -58,3 +58,14 @@ export function getUpdate() {
 export function update() {
   return http.post('/api/extensions/tailscale/update', undefined, LONG);
 }
+
+// set the control server: an https URL, such as a Headscale server's, or
+// empty for Tailscale's own. A logged-out device starts a login against it,
+// which can take as long as the server takes to answer.
+export function setLoginServer(loginServer: string) {
+  return http.post(
+    '/api/extensions/tailscale/login-server',
+    { loginServer },
+    { timeout: 2 * 60 * 1000 }
+  );
+}
