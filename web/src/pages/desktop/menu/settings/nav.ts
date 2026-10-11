@@ -43,6 +43,8 @@ export const KEYWORDS: Record<string, string[]> = {
   ],
   performance: ['cpu', 'frequency', 'swap', 'zram', 'memory', 'ram'],
   watchdog: ['health', 'ping', 'hang', 'heartbeat'],
+  hostLog: ['syslog', 'netconsole', 'kernel', 'panic', 'dmesg', 'logs', 'udp'],
+  notifications: ['alert', 'webhook', 'ntfy', 'telegram', 'push', 'snapshot', 'screenshot'],
   update: ['upgrade', 'firmware', 'version', 'addon', 'offline'],
   network: [
     'ip',
@@ -67,6 +69,7 @@ export const KEYWORDS: Record<string, string[]> = {
   ipmi: ['bmc', 'ipmitool'],
   redfish: ['bmc'],
   mcp: ['ai', 'agent', 'llm'],
+  nut: ['ups', 'battery', 'power outage', 'upsmon', 'shutdown', 'blackout'],
   netboot: ['pxe', 'ipxe', 'tftp', 'boot', 'netboot.xyz', 'iso', 'boot menu'],
   media: ['ventoy', 'iso', 'image', 'media', 'virtual', 'cd', 'disk'],
   preferences: ['language', 'menu', 'icons', 'title', 'leader key', 'caps lock', 'led'],

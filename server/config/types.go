@@ -35,6 +35,11 @@ type Config struct {
 	// server.yaml. A file without the block loads with the watchdog off.
 	Watchdog Watchdog `yaml:"watchdog,omitempty" mapstructure:"watchdog"`
 
+	// NUT configures the NUT client, kept under "nut" in server.yaml. A file
+	// without the block loads with the client off. The password is kept
+	// outside server.yaml.
+	NUT NUT `yaml:"nut,omitempty" mapstructure:"nut"`
+
 	// IPMI configures IPMI over LAN, kept under "ipmi" in server.yaml. A
 	// file without the block loads with the service off.
 	IPMI IPMI `yaml:"ipmi,omitempty" mapstructure:"ipmi"`
@@ -55,6 +60,11 @@ type Config struct {
 	// Picoclaw tunes what the server hands the PicoClaw assistant, kept under
 	// "picoclaw" in server.yaml. A file without the block loads the defaults.
 	Picoclaw Picoclaw `yaml:"picoclaw,omitempty" mapstructure:"picoclaw"`
+
+	// HostLog configures the receiver for the host's logs, kept under
+	// "hostlog" in server.yaml. A file without the block loads with both
+	// listeners off.
+	HostLog HostLog `yaml:"hostlog,omitempty" mapstructure:"hostlog"`
 
 	// Hardware holds the board's pins, derived from its version at start. It
 	// is never read from or written to server.yaml.
@@ -150,6 +160,57 @@ func (w Watchdog) WithDefaults() Watchdog {
 		w.MaxPerHour = DefaultWatchdogMaxPerHour
 	}
 	return w
+}
+
+// The NUT client's defaults. A zero value in server.yaml means the default.
+const (
+	DefaultNUTPort                = 3493
+	DefaultNUTRestoreDelaySeconds = 60
+)
+
+// NUT configures the NUT client, which reads a UPS from a NUT server over the
+// network and drives the host's ATX buttons from what it finds. Read it
+// through WithDefaults.
+type NUT struct {
+	// Enabled runs the client. Off by default: it presses the host's power
+	// button.
+	Enabled bool `yaml:"enabled" mapstructure:"enabled"`
+	// Host is the NUT server's address, and Port its TCP port.
+	Host string `yaml:"host,omitempty" mapstructure:"host"`
+	Port int    `yaml:"port,omitempty" mapstructure:"port"`
+	// UPS is the name of the UPS on that server.
+	UPS string `yaml:"ups,omitempty" mapstructure:"ups"`
+	// Username is the NUT user. With a password the client logs in as a
+	// secondary, so the primary waits for the host to shut down before it cuts
+	// the UPS output. Without them it only reads.
+	Username string `yaml:"username,omitempty" mapstructure:"username"`
+
+	// OnBatteryMinutes shuts the host down once the UPS has run on battery
+	// this long. Zero means never: low battery and a forced shutdown still do.
+	OnBatteryMinutes int `yaml:"onBatteryMinutes,omitempty" mapstructure:"onBatteryMinutes"`
+	// ForceOffMinutes presses power for five seconds when the host is still on
+	// this long after the shutdown press. Zero means never.
+	ForceOffMinutes int `yaml:"forceOffMinutes,omitempty" mapstructure:"forceOffMinutes"`
+
+	// PowerOnRestore presses power when mains is back and the host is off.
+	PowerOnRestore bool `yaml:"powerOnRestore,omitempty" mapstructure:"powerOnRestore"`
+	// PowerOnMinCharge is the battery charge, in percent, the UPS must reach
+	// before the host is switched on. Zero means any.
+	PowerOnMinCharge int `yaml:"powerOnMinCharge,omitempty" mapstructure:"powerOnMinCharge"`
+	// PowerOnDelaySeconds is how long mains must be back before the press.
+	PowerOnDelaySeconds int `yaml:"powerOnDelaySeconds,omitempty" mapstructure:"powerOnDelaySeconds"`
+}
+
+// WithDefaults returns the settings with every zero value replaced by its
+// default.
+func (n NUT) WithDefaults() NUT {
+	if n.Port <= 0 {
+		n.Port = DefaultNUTPort
+	}
+	if n.PowerOnDelaySeconds <= 0 {
+		n.PowerOnDelaySeconds = DefaultNUTRestoreDelaySeconds
+	}
+	return n
 }
 
 // NetBoot configures network boot of the host. Both sides are off by
@@ -306,4 +367,72 @@ func (p Picoclaw) WithDefaults() Picoclaw {
 		p.ScreenshotQuality = MaxPicoclawScreenshotQuality
 	}
 	return p
+}
+
+// The host log receiver's defaults. A zero value in server.yaml means the
+// default.
+const (
+	DefaultSyslogPort      = 514
+	DefaultNetconsolePort  = 6666
+	DefaultHostLogMemoryKB = 1024
+	DefaultHostLogDiskKB   = 4096
+)
+
+// HostLog configures the receiver for the managed host's logs: UDP syslog and
+// netconsole. Both listeners are off by default. Read it through WithDefaults.
+type HostLog struct {
+	Syslog     HostLogListener `yaml:"syslog,omitempty" mapstructure:"syslog"`
+	Netconsole HostLogListener `yaml:"netconsole,omitempty" mapstructure:"netconsole"`
+	// Bind is where the listeners bind: "" for every interface, or "usb" for
+	// the board's address on the USB network link.
+	Bind string `yaml:"bind,omitempty" mapstructure:"bind"`
+	// Sources are the client addresses, single or CIDR, that may send. Empty
+	// means the host on the USB link when it is up, else the watchdog's ping
+	// host, else any address.
+	Sources []string `yaml:"sources,omitempty" mapstructure:"sources"`
+	// MemoryKB caps the in-memory ring.
+	MemoryKB int `yaml:"memoryKb,omitempty" mapstructure:"memoryKb"`
+	// Disk keeps the log on /data as well, up to DiskKB. Off by default:
+	// it writes to the SD card.
+	Disk   bool `yaml:"disk,omitempty" mapstructure:"disk"`
+	DiskKB int  `yaml:"diskKb,omitempty" mapstructure:"diskKb"`
+	// Patterns are regular expressions; a line that matches one raises a
+	// notification. Empty means the defaults for a kernel panic.
+	Patterns []string `yaml:"patterns,omitempty" mapstructure:"patterns"`
+}
+
+// HostLogListener is one UDP listener.
+type HostLogListener struct {
+	Enabled bool `yaml:"enabled" mapstructure:"enabled"`
+	// Port is the UDP port; zero means the protocol's default.
+	Port int `yaml:"port,omitempty" mapstructure:"port"`
+}
+
+// WithDefaults returns the settings with every zero value replaced by its
+// default.
+func (h HostLog) WithDefaults() HostLog {
+	if h.Syslog.Port <= 0 {
+		h.Syslog.Port = DefaultSyslogPort
+	}
+	if h.Netconsole.Port <= 0 {
+		h.Netconsole.Port = DefaultNetconsolePort
+	}
+	if h.MemoryKB <= 0 {
+		h.MemoryKB = DefaultHostLogMemoryKB
+	}
+	if h.DiskKB <= 0 {
+		h.DiskKB = DefaultHostLogDiskKB
+	}
+	if len(h.Patterns) == 0 {
+		h.Patterns = append([]string(nil), DefaultHostLogPatterns...)
+	}
+	return h
+}
+
+// DefaultHostLogPatterns are the phrases that mean the host is in trouble.
+var DefaultHostLogPatterns = []string{
+	`Kernel panic`,
+	`\bOops\b`,
+	`BUG: `,
+	`Out of memory: Kill`,
 }

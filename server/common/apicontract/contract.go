@@ -24,9 +24,12 @@ var features = []string{
 	"direct-clock",        // clock request (byte 5) on the direct H.264 socket
 	"hid-autotap",         // POST /api/hid/autotap, /api/hid/sequence: key auto-tap
 	"hid-macros",          // /api/hid/macro(s), /api/hid/sequence: recorded macros
+	"host-log",            // /api/hostlog: UDP syslog and netconsole receiver, live tail
 	"info-latency",        // GET /api/stream/info boardLatency: the board's share of the latency
 	"ip-allowlist",        // /api/network/allowlist: allowed client networks
 	"ipv6-settings",       // /api/network/ipv6: SLAAC, DHCPv6, static or off
+	"notifications",       // /api/notify: webhook, ntfy and Telegram alerts with a snapshot
+	"nut-client",          // /api/nut: NUT client, UPS state and settings
 	"status-bar",          // GET /api/stream/info
 	"ui-update",           // /api/ui: separately installed UI packages
 	"webrtc-clock",        // "clock" event on the WebRTC signalling socket
