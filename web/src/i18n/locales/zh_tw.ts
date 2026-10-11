@@ -1386,7 +1386,37 @@ const zh_tw = {
         },
         updateTo: '更新至 {{version}}',
         updateConfirmDesc: '裝置將安裝更新並重新啟動服務。服務恢復後此頁面會自動重新載入。',
-        releaseNotes: '版本說明'
+        releaseNotes: '版本說明',
+        ui: {
+          title: '網頁介面',
+          desc: '在不更新伺服器的情況下安裝或回復網頁介面',
+          served: '目前：{{version}}，伺服器 API {{api}}',
+          bundled: '應用程式內建的介面',
+          bundledVersion: '{{version}}（應用程式內建）',
+          checkOff: '簽章檢查已關閉（/data/ironkvm/no-signature-check），任何套件都會被安裝。',
+          noKeys: '金鑰圈是空的，套件將不經簽章檢查直接安裝。',
+          check: '檢查',
+          noPackage: '更新伺服器未提供網頁介面套件。',
+          isCurrent: '網頁介面 {{version}} 已在使用中。',
+          incompatible: '網頁介面 {{version}} 需要伺服器 API {{api}}，而此伺服器為 {{server}}。請先更新應用程式。',
+          installTo: '安裝網頁介面 {{version}}',
+          installDesc: '裝置會檢查簽章，切換到新介面，並保留目前的介面以便回復。之後本頁面將重新載入。',
+          chooseFiles: '選擇套件',
+          chooseHint: 'ironkvm-ui_<version>.tar.gz 及其 .minisig',
+          noSignature: '無簽章',
+          pick: {
+            noPackage: '請選擇 ironkvm-ui_<version>.tar.gz 套件。',
+            tooMany: '請選擇一個套件和最多一個簽章。',
+            badName: '不是網頁介面套件（ironkvm-ui_<version>.tar.gz）。',
+            signatureMismatch: '此簽章屬於另一個套件。'
+          },
+          install: '安裝',
+          installed: '網頁介面已安裝，正在重新載入...',
+          rolledBack: '網頁介面已回復，正在重新載入...',
+          rollback: '回復',
+          rollbackDesc: '回復到 {{version}}',
+          rollbackConfirm: '將網頁介面回復到 {{version}}？'
+        }
       },
       account: {
         title: '帳號',
@@ -1676,6 +1706,11 @@ const zh_tw = {
       mediaLibrary: '映像庫',
       textToHost: '傳送到主機',
       textFromHost: '從主機讀取'
+    },
+    serverContract: {
+      incompatibleTitle: '此網頁介面不支援此伺服器',
+      incompatible: '網頁介面支援伺服器 API {{ui}}，而伺服器為 API {{server}}。部分功能可能無法使用。請更新應用程式，或在 設定 > 更新 中回復網頁介面。',
+      dismiss: '關閉'
     },
     ion: {
       checking: '正在啟動串流前檢查視訊記憶體...',

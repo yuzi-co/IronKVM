@@ -78,13 +78,20 @@ var versionFile = fmt.Sprintf("%s/version", AppDir)
 // currentVersion reports the installed application version, carrying the stamp
 // of the binary serving it.
 func currentVersion() string {
+	return buildversion.Decorate(InstalledVersion())
+}
+
+// InstalledVersion reports the installed application version without the
+// binary's build stamp. GET /api/version answers it to anyone, and the stamp
+// names a commit, which says more about the board than a release number does.
+func InstalledVersion() string {
 	version := "1.0.0"
 
 	if content, err := os.ReadFile(versionFile); err == nil {
 		version = strings.ReplaceAll(string(content), "\n", "")
 	}
 
-	return buildversion.Decorate(version)
+	return version
 }
 
 func (s *Service) GetVersion(c *gin.Context) {
@@ -111,50 +118,9 @@ func (s *Service) GetVersion(c *gin.Context) {
 }
 
 func getLatest() (*Latest, error) {
-	baseURL, err := resolveUpdateBaseURL()
+	body, baseURL, err := FetchFeedDocument("latest.json", maxLatestJSONSize)
 	if err != nil {
 		return nil, err
-	}
-
-	// latestClient carries both the proxy and the redirect rule, so the manifest
-	// fetch reaches a custom update server the same way the download does.
-	manifestURL, err := joinUpdateURL(baseURL, "latest.json")
-	if err != nil {
-		return nil, err
-	}
-	parsedManifestURL, err := url.Parse(manifestURL)
-	if err != nil {
-		return nil, err
-	}
-	query := parsedManifestURL.Query()
-	query.Set("now", fmt.Sprintf("%d", time.Now().Unix()))
-	parsedManifestURL.RawQuery = query.Encode()
-
-	request, err := utils.NewAuthenticatedRequest("GET", parsedManifestURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := latestClient.Do(request)
-	if err != nil {
-		log.Debugf("failed to request version from %s", parsedManifestURL.Redacted())
-		return nil, errors.New("update server is inaccessible")
-	}
-	defer func() {
-		_ = resp.Body.Close()
-	}()
-
-	body, err := io.ReadAll(io.LimitReader(resp.Body, maxLatestJSONSize+1))
-	if err != nil {
-		log.Errorf("failed to read response: %v", err)
-		return nil, err
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		log.Errorf("server responded with status code: %d", resp.StatusCode)
-		return nil, fmt.Errorf("status code %d", resp.StatusCode)
-	}
-	if len(body) > maxLatestJSONSize {
-		return nil, fmt.Errorf("latest manifest exceeds %d bytes", maxLatestJSONSize)
 	}
 
 	latest, err := parseLatest(body, baseURL)
@@ -164,6 +130,67 @@ func getLatest() (*Latest, error) {
 
 	log.Debugf("get application latest version: %s", latest.Version)
 	return latest, nil
+}
+
+// FetchFeedDocument fetches one small document from the configured update
+// feed, the way latest.json is fetched: through the proxy, with the custom
+// server's credentials, and refusing an answer over maxBytes. It returns the
+// body and the feed's base URL, against which the document's own names
+// resolve (ResolveFeedURL).
+func FetchFeedDocument(name string, maxBytes int) ([]byte, string, error) {
+	baseURL, err := resolveUpdateBaseURL()
+	if err != nil {
+		return nil, "", err
+	}
+
+	// latestClient carries both the proxy and the redirect rule, so the manifest
+	// fetch reaches a custom update server the same way the download does.
+	manifestURL, err := joinUpdateURL(baseURL, name)
+	if err != nil {
+		return nil, "", err
+	}
+	parsedManifestURL, err := url.Parse(manifestURL)
+	if err != nil {
+		return nil, "", err
+	}
+	query := parsedManifestURL.Query()
+	query.Set("now", fmt.Sprintf("%d", time.Now().Unix()))
+	parsedManifestURL.RawQuery = query.Encode()
+
+	request, err := utils.NewAuthenticatedRequest("GET", parsedManifestURL.String(), nil)
+	if err != nil {
+		return nil, "", err
+	}
+	resp, err := latestClient.Do(request)
+	if err != nil {
+		log.Debugf("failed to request version from %s", parsedManifestURL.Redacted())
+		return nil, "", errors.New("update server is inaccessible")
+	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	body, err := io.ReadAll(io.LimitReader(resp.Body, int64(maxBytes)+1))
+	if err != nil {
+		log.Errorf("failed to read response: %v", err)
+		return nil, "", err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		log.Errorf("server responded with status code: %d", resp.StatusCode)
+		return nil, "", fmt.Errorf("status code %d", resp.StatusCode)
+	}
+	if len(body) > maxBytes {
+		return nil, "", fmt.Errorf("%s exceeds %d bytes", name, maxBytes)
+	}
+	return body, baseURL, nil
+}
+
+// ResolveFeedURL is resolveDownloadURL for a document other than latest.json:
+// an explicit url must be absolute https, and without one the file is looked
+// for beside the document.
+func ResolveFeedURL(explicitURL, baseURL, name string) (string, error) {
+	return resolveDownloadURL(explicitURL, baseURL, name)
 }
 
 // parseLatest reads the manifest and refuses anything it would not be safe to

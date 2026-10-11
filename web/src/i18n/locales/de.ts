@@ -1498,7 +1498,37 @@ const de = {
         updateTo: 'Auf {{version}} aktualisieren',
         updateConfirmDesc:
           'Das Gerät installiert das Update und startet seinen Server neu. Diese Seite lädt neu, sobald der Server wieder da ist.',
-        releaseNotes: 'Versionshinweise'
+        releaseNotes: 'Versionshinweise',
+        ui: {
+          title: 'Weboberfläche',
+          desc: 'Weboberfläche installieren oder zurücksetzen, ohne den Server zu aktualisieren',
+          served: 'Aktiv: {{version}}, Server-API {{api}}',
+          bundled: 'die mit der Anwendung gelieferte Oberfläche',
+          bundledVersion: '{{version}} (mit der Anwendung geliefert)',
+          checkOff: 'Die Signaturprüfung ist aus (/data/ironkvm/no-signature-check), jedes Paket wird installiert.',
+          noKeys: 'Der Schlüsselbund ist leer, Pakete werden ohne Signaturprüfung installiert.',
+          check: 'Prüfen',
+          noPackage: 'Der Update-Server bietet kein Paket für die Weboberfläche an.',
+          isCurrent: 'Weboberfläche {{version}} ist bereits aktiv.',
+          incompatible: 'Weboberfläche {{version}} benötigt Server-API {{api}}, dieser Server spricht {{server}}. Aktualisieren Sie zuerst die Anwendung.',
+          installTo: 'Weboberfläche {{version}} installieren',
+          installDesc: 'Das Gerät prüft die Signatur, wechselt zur neuen Oberfläche und behält die aktuelle für ein Zurücksetzen. Danach lädt diese Seite neu.',
+          chooseFiles: 'Paket wählen',
+          chooseHint: 'ironkvm-ui_<version>.tar.gz und die zugehörige .minisig',
+          noSignature: 'keine Signatur',
+          pick: {
+            noPackage: 'Wählen Sie ein Paket ironkvm-ui_<version>.tar.gz.',
+            tooMany: 'Wählen Sie ein Paket und höchstens eine Signatur.',
+            badName: 'Kein Paket für die Weboberfläche (ironkvm-ui_<version>.tar.gz).',
+            signatureMismatch: 'Die Signatur gehört zu einem anderen Paket.'
+          },
+          install: 'Installieren',
+          installed: 'Weboberfläche installiert. Seite wird neu geladen...',
+          rolledBack: 'Weboberfläche zurückgesetzt. Seite wird neu geladen...',
+          rollback: 'Zurücksetzen',
+          rollbackDesc: 'Zurück zu {{version}}',
+          rollbackConfirm: 'Weboberfläche auf {{version}} zurücksetzen?'
+        }
       },
       account: {
         title: 'Konto',
@@ -1799,6 +1829,11 @@ const de = {
       mediaLibrary: 'Bibliothek',
       textToHost: 'Zum Host',
       textFromHost: 'Vom Host'
+    },
+    serverContract: {
+      incompatibleTitle: 'Diese Weboberfläche unterstützt diesen Server nicht',
+      incompatible: 'Die Weboberfläche unterstützt Server-API {{ui}}, der Server spricht API {{server}}. Einige Funktionen können fehlschlagen. Aktualisieren Sie die Anwendung oder setzen Sie die Weboberfläche unter Einstellungen > Update zurück.',
+      dismiss: 'Schließen'
     },
     ion: {
       checking: 'Videospeicher wird vor dem Start des Streams geprüft...',

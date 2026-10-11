@@ -1387,7 +1387,37 @@ const zh = {
         },
         updateTo: '更新到 {{version}}',
         updateConfirmDesc: '设备将安装更新并重启服务。服务恢复后此页面会自动重新加载。',
-        releaseNotes: '版本说明'
+        releaseNotes: '版本说明',
+        ui: {
+          title: '网页界面',
+          desc: '在不更新服务器的情况下安装或回滚网页界面',
+          served: '当前：{{version}}，服务器 API {{api}}',
+          bundled: '应用自带的界面',
+          bundledVersion: '{{version}}（应用自带）',
+          checkOff: '签名检查已关闭（/data/ironkvm/no-signature-check），任何安装包都会被安装。',
+          noKeys: '密钥环为空，安装包将不经签名检查直接安装。',
+          check: '检查',
+          noPackage: '更新服务器未提供网页界面安装包。',
+          isCurrent: '网页界面 {{version}} 已在使用。',
+          incompatible: '网页界面 {{version}} 需要服务器 API {{api}}，而此服务器为 {{server}}。请先更新应用。',
+          installTo: '安装网页界面 {{version}}',
+          installDesc: '设备会检查签名，切换到新界面，并保留当前界面以便回滚。随后本页面将重新加载。',
+          chooseFiles: '选择安装包',
+          chooseHint: 'ironkvm-ui_<version>.tar.gz 及其 .minisig',
+          noSignature: '无签名',
+          pick: {
+            noPackage: '请选择 ironkvm-ui_<version>.tar.gz 安装包。',
+            tooMany: '请选择一个安装包和最多一个签名。',
+            badName: '不是网页界面安装包（ironkvm-ui_<version>.tar.gz）。',
+            signatureMismatch: '该签名属于另一个安装包。'
+          },
+          install: '安装',
+          installed: '网页界面已安装，正在重新加载...',
+          rolledBack: '网页界面已回滚，正在重新加载...',
+          rollback: '回滚',
+          rollbackDesc: '回滚到 {{version}}',
+          rollbackConfirm: '将网页界面回滚到 {{version}}？'
+        }
       },
       account: {
         title: '帐号',
@@ -1680,6 +1710,11 @@ const zh = {
       mediaLibrary: '镜像库',
       textToHost: '发送到主机',
       textFromHost: '从主机读取'
+    },
+    serverContract: {
+      incompatibleTitle: '此网页界面不支持此服务器',
+      incompatible: '网页界面支持服务器 API {{ui}}，而服务器为 API {{server}}。部分功能可能无法使用。请更新应用，或在 设置 > 更新 中回滚网页界面。',
+      dismiss: '关闭'
     },
     ion: {
       checking: '正在启动视频流前检查视频内存...',

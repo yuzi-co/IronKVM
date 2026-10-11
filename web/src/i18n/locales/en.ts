@@ -1439,7 +1439,37 @@ const en = {
         updateTo: 'Update to {{version}}',
         updateConfirmDesc:
           'The device installs the update and restarts its server. This page reloads when the server is back.',
-        releaseNotes: 'Release notes'
+        releaseNotes: 'Release notes',
+        ui: {
+          title: 'Web UI',
+          desc: 'Install or roll back the web interface without updating the server',
+          served: 'Serving {{version}}, server API {{api}}',
+          bundled: 'the UI bundled with the application',
+          bundledVersion: '{{version}} (bundled with the application)',
+          checkOff: 'The signature check is off (/data/ironkvm/no-signature-check), so any package installs.',
+          noKeys: 'The keyring is empty, so packages install without a signature check.',
+          check: 'Check',
+          noPackage: 'The update server offers no web UI package.',
+          isCurrent: 'Web UI {{version}} is already served.',
+          incompatible: 'Web UI {{version}} needs server API {{api}}, and this server speaks {{server}}. Update the application first.',
+          installTo: 'Install web UI {{version}}',
+          installDesc: 'The device checks the package signature, switches to the new UI and keeps the current one for a rollback. This page then reloads.',
+          chooseFiles: 'Choose package',
+          chooseHint: 'ironkvm-ui_<version>.tar.gz and its .minisig',
+          noSignature: 'no signature',
+          pick: {
+            noPackage: 'Choose an ironkvm-ui_<version>.tar.gz package.',
+            tooMany: 'Choose one package and at most one signature.',
+            badName: 'Not a web UI package (ironkvm-ui_<version>.tar.gz).',
+            signatureMismatch: 'The signature belongs to another package.'
+          },
+          install: 'Install',
+          installed: 'Web UI installed. Reloading...',
+          rolledBack: 'Web UI rolled back. Reloading...',
+          rollback: 'Roll back',
+          rollbackDesc: 'Roll back to {{version}}',
+          rollbackConfirm: 'Roll the web UI back to {{version}}?'
+        }
       },
       account: {
         title: 'Account',
@@ -1738,6 +1768,11 @@ const en = {
       mediaLibrary: 'Library',
       textToHost: 'To the host',
       textFromHost: 'From the host'
+    },
+    serverContract: {
+      incompatibleTitle: 'This web UI does not support this server',
+      incompatible: 'The web UI supports server API {{ui}}, and the server speaks API {{server}}. Some functions may fail. Update the application, or roll back the web UI in Settings > Update.',
+      dismiss: 'Dismiss'
     },
     ion: {
       checking: 'Checking video memory before starting the stream...',

@@ -1455,7 +1455,37 @@ const tr = {
         updateTo: '{{version}} sürümüne güncelle',
         updateConfirmDesc:
           'Cihaz güncellemeyi kurar ve sunucusunu yeniden başlatır. Sunucu geri geldiğinde bu sayfa yeniden yüklenir.',
-        releaseNotes: 'Sürüm notları'
+        releaseNotes: 'Sürüm notları',
+        ui: {
+          title: 'Web arayüzü',
+          desc: 'Sunucuyu güncellemeden web arayüzünü yükleyin veya geri alın',
+          served: 'Etkin: {{version}}, sunucu API {{api}}',
+          bundled: 'uygulamayla gelen arayüz',
+          bundledVersion: '{{version}} (uygulamayla gelen)',
+          checkOff: 'İmza denetimi kapalı (/data/ironkvm/no-signature-check), her paket yüklenir.',
+          noKeys: 'Anahtarlık boş, paketler imza denetimi olmadan yüklenir.',
+          check: 'Denetle',
+          noPackage: 'Güncelleme sunucusu web arayüzü paketi sunmuyor.',
+          isCurrent: 'Web arayüzü {{version}} zaten etkin.',
+          incompatible: 'Web arayüzü {{version}} sunucu API {{api}} gerektiriyor, bu sunucu {{server}} kullanıyor. Önce uygulamayı güncelleyin.',
+          installTo: 'Web arayüzü {{version}} yükle',
+          installDesc: 'Cihaz imzayı denetler, yeni arayüze geçer ve geri almak için mevcut olanı saklar. Ardından sayfa yeniden yüklenir.',
+          chooseFiles: 'Paket seç',
+          chooseHint: 'ironkvm-ui_<version>.tar.gz ve .minisig dosyası',
+          noSignature: 'imza yok',
+          pick: {
+            noPackage: 'Bir ironkvm-ui_<version>.tar.gz paketi seçin.',
+            tooMany: 'Bir paket ve en fazla bir imza seçin.',
+            badName: 'Web arayüzü paketi değil (ironkvm-ui_<version>.tar.gz).',
+            signatureMismatch: 'İmza başka bir pakete ait.'
+          },
+          install: 'Yükle',
+          installed: 'Web arayüzü yüklendi. Yeniden yükleniyor...',
+          rolledBack: 'Web arayüzü geri alındı. Yeniden yükleniyor...',
+          rollback: 'Geri al',
+          rollbackDesc: '{{version}} sürümüne dön',
+          rollbackConfirm: 'Web arayüzü {{version}} sürümüne geri alınsın mı?'
+        }
       },
       account: {
         title: 'Hesap',
@@ -1751,6 +1781,11 @@ const tr = {
       mediaLibrary: 'Kitaplık',
       textToHost: 'Ana makineye',
       textFromHost: 'Ana makineden'
+    },
+    serverContract: {
+      incompatibleTitle: 'Bu web arayüzü bu sunucuyu desteklemiyor',
+      incompatible: 'Web arayüzü sunucu API {{ui}} destekliyor, sunucu API {{server}} kullanıyor. Bazı işlevler çalışmayabilir. Uygulamayı güncelleyin veya web arayüzünü Ayarlar > Güncelleme bölümünden geri alın.',
+      dismiss: 'Kapat'
     },
     ion: {
       checking: 'Akış başlatılmadan önce video belleği kontrol ediliyor...',

@@ -1429,7 +1429,37 @@ const th = {
         updateTo: 'อัปเดตเป็น {{version}}',
         updateConfirmDesc:
           'อุปกรณ์จะติดตั้งการอัปเดตและรีสตาร์ทเซิร์ฟเวอร์ หน้านี้จะโหลดใหม่เมื่อเซิร์ฟเวอร์กลับมา',
-        releaseNotes: 'บันทึกประจำรุ่น'
+        releaseNotes: 'บันทึกประจำรุ่น',
+        ui: {
+          title: 'เว็บ UI',
+          desc: 'ติดตั้งหรือย้อนกลับเว็บ UI โดยไม่ต้องอัปเดตเซิร์ฟเวอร์',
+          served: 'ใช้งานอยู่: {{version}}, API ของเซิร์ฟเวอร์ {{api}}',
+          bundled: 'UI ที่มาพร้อมแอปพลิเคชัน',
+          bundledVersion: '{{version}} (มาพร้อมแอปพลิเคชัน)',
+          checkOff: 'การตรวจลายเซ็นปิดอยู่ (/data/ironkvm/no-signature-check) แพ็กเกจใดก็ติดตั้งได้',
+          noKeys: 'พวงกุญแจว่างเปล่า แพ็กเกจจะติดตั้งโดยไม่ตรวจลายเซ็น',
+          check: 'ตรวจสอบ',
+          noPackage: 'เซิร์ฟเวอร์อัปเดตไม่มีแพ็กเกจเว็บ UI',
+          isCurrent: 'เว็บ UI {{version}} ใช้งานอยู่แล้ว',
+          incompatible: 'เว็บ UI {{version}} ต้องการ API ของเซิร์ฟเวอร์ {{api}} แต่เซิร์ฟเวอร์นี้ใช้ {{server}} โปรดอัปเดตแอปพลิเคชันก่อน',
+          installTo: 'ติดตั้งเว็บ UI {{version}}',
+          installDesc: 'อุปกรณ์จะตรวจลายเซ็น สลับไปใช้ UI ใหม่ และเก็บ UI ปัจจุบันไว้สำหรับย้อนกลับ จากนั้นหน้านี้จะโหลดใหม่',
+          chooseFiles: 'เลือกแพ็กเกจ',
+          chooseHint: 'ironkvm-ui_<version>.tar.gz และไฟล์ .minisig ของมัน',
+          noSignature: 'ไม่มีลายเซ็น',
+          pick: {
+            noPackage: 'โปรดเลือกแพ็กเกจ ironkvm-ui_<version>.tar.gz',
+            tooMany: 'โปรดเลือกแพ็กเกจหนึ่งรายการและลายเซ็นไม่เกินหนึ่งรายการ',
+            badName: 'ไม่ใช่แพ็กเกจเว็บ UI (ironkvm-ui_<version>.tar.gz)',
+            signatureMismatch: 'ลายเซ็นเป็นของแพ็กเกจอื่น'
+          },
+          install: 'ติดตั้ง',
+          installed: 'ติดตั้งเว็บ UI แล้ว กำลังโหลดใหม่...',
+          rolledBack: 'ย้อนกลับเว็บ UI แล้ว กำลังโหลดใหม่...',
+          rollback: 'ย้อนกลับ',
+          rollbackDesc: 'ย้อนกลับไปที่ {{version}}',
+          rollbackConfirm: 'ย้อนกลับเว็บ UI ไปที่ {{version}} หรือไม่?'
+        }
       },
       account: {
         title: 'บัญชี',
@@ -1722,6 +1752,11 @@ const th = {
       mediaLibrary: 'คลัง',
       textToHost: 'ไปยังโฮสต์',
       textFromHost: 'จากโฮสต์'
+    },
+    serverContract: {
+      incompatibleTitle: 'เว็บ UI นี้ไม่รองรับเซิร์ฟเวอร์นี้',
+      incompatible: 'เว็บ UI รองรับ API ของเซิร์ฟเวอร์ {{ui}} แต่เซิร์ฟเวอร์ใช้ API {{server}} บางฟังก์ชันอาจทำงานผิดพลาด โปรดอัปเดตแอปพลิเคชัน หรือย้อนกลับเว็บ UI ใน การตั้งค่า > อัปเดต',
+      dismiss: 'ปิด'
     },
     ion: {
       checking: 'กำลังตรวจสอบหน่วยความจำวิดีโอก่อนเริ่มสตรีม...',

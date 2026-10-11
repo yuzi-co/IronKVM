@@ -1475,7 +1475,37 @@ const hu = {
         updateTo: 'Frissítés erre: {{version}}',
         updateConfirmDesc:
           'Az eszköz telepíti a frissítést és újraindítja a szerverét. Az oldal újratöltődik, amikor a szerver ismét elérhető.',
-        releaseNotes: 'Kiadási megjegyzések'
+        releaseNotes: 'Kiadási megjegyzések',
+        ui: {
+          title: 'Webes felület',
+          desc: 'A webes felület telepítése vagy visszaállítása a szerver frissítése nélkül',
+          served: 'Aktív: {{version}}, szerver API {{api}}',
+          bundled: 'az alkalmazással szállított felület',
+          bundledVersion: '{{version}} (az alkalmazással szállítva)',
+          checkOff: 'Az aláírás-ellenőrzés ki van kapcsolva (/data/ironkvm/no-signature-check), így bármely csomag telepíthető.',
+          noKeys: 'A kulcstartó üres, így a csomagok aláírás-ellenőrzés nélkül települnek.',
+          check: 'Ellenőrzés',
+          noPackage: 'A frissítési szerver nem kínál webes felület csomagot.',
+          isCurrent: 'A(z) {{version}} webes felület már aktív.',
+          incompatible: 'A(z) {{version}} webes felülethez {{api}} szerver API kell, ez a szerver {{server}} verziót használ. Először frissítse az alkalmazást.',
+          installTo: '{{version}} webes felület telepítése',
+          installDesc: 'Az eszköz ellenőrzi az aláírást, átvált az új felületre, és megtartja a jelenlegit visszaállításhoz. Ezután az oldal újratöltődik.',
+          chooseFiles: 'Csomag kiválasztása',
+          chooseHint: 'ironkvm-ui_<version>.tar.gz és a hozzá tartozó .minisig',
+          noSignature: 'nincs aláírás',
+          pick: {
+            noPackage: 'Válasszon egy ironkvm-ui_<version>.tar.gz csomagot.',
+            tooMany: 'Válasszon egy csomagot és legfeljebb egy aláírást.',
+            badName: 'Nem webes felület csomag (ironkvm-ui_<version>.tar.gz).',
+            signatureMismatch: 'Az aláírás egy másik csomaghoz tartozik.'
+          },
+          install: 'Telepítés',
+          installed: 'Webes felület telepítve. Újratöltés...',
+          rolledBack: 'Webes felület visszaállítva. Újratöltés...',
+          rollback: 'Visszaállítás',
+          rollbackDesc: 'Vissza erre: {{version}}',
+          rollbackConfirm: 'Visszaállítja a webes felületet erre: {{version}}?'
+        }
       },
       account: {
         title: 'Fiók',
@@ -1773,6 +1803,11 @@ const hu = {
       mediaLibrary: 'Könyvtár',
       textToHost: 'A gazdagép felé',
       textFromHost: 'A gazdagéptől'
+    },
+    serverContract: {
+      incompatibleTitle: 'Ez a webes felület nem támogatja ezt a szervert',
+      incompatible: 'A webes felület a(z) {{ui}} szerver API-t támogatja, a szerver a(z) {{server}} API-t használja. Egyes funkciók hibásan működhetnek. Frissítse az alkalmazást, vagy állítsa vissza a webes felületet a Beállítások > Frissítés menüben.',
+      dismiss: 'Bezárás'
     },
     ion: {
       checking: 'Videomemória ellenőrzése az adatfolyam indítása előtt...',

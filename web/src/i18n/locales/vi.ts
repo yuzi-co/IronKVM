@@ -1452,7 +1452,37 @@ const vi = {
         updateTo: 'Cập nhật lên {{version}}',
         updateConfirmDesc:
           'Thiết bị cài đặt bản cập nhật và khởi động lại máy chủ. Trang này sẽ tải lại khi máy chủ hoạt động trở lại.',
-        releaseNotes: 'Ghi chú phát hành'
+        releaseNotes: 'Ghi chú phát hành',
+        ui: {
+          title: 'Giao diện web',
+          desc: 'Cài đặt hoặc khôi phục giao diện web mà không cập nhật máy chủ',
+          served: 'Đang dùng: {{version}}, API máy chủ {{api}}',
+          bundled: 'giao diện đi kèm ứng dụng',
+          bundledVersion: '{{version}} (đi kèm ứng dụng)',
+          checkOff: 'Kiểm tra chữ ký đang tắt (/data/ironkvm/no-signature-check), nên mọi gói đều được cài.',
+          noKeys: 'Kho khóa trống, nên các gói được cài mà không kiểm tra chữ ký.',
+          check: 'Kiểm tra',
+          noPackage: 'Máy chủ cập nhật không cung cấp gói giao diện web nào.',
+          isCurrent: 'Giao diện web {{version}} đã đang được dùng.',
+          incompatible: 'Giao diện web {{version}} cần API máy chủ {{api}}, còn máy chủ này dùng {{server}}. Hãy cập nhật ứng dụng trước.',
+          installTo: 'Cài giao diện web {{version}}',
+          installDesc: 'Thiết bị kiểm tra chữ ký, chuyển sang giao diện mới và giữ giao diện hiện tại để khôi phục. Sau đó trang sẽ tải lại.',
+          chooseFiles: 'Chọn gói',
+          chooseHint: 'ironkvm-ui_<version>.tar.gz và tệp .minisig của nó',
+          noSignature: 'không có chữ ký',
+          pick: {
+            noPackage: 'Hãy chọn một gói ironkvm-ui_<version>.tar.gz.',
+            tooMany: 'Hãy chọn một gói và tối đa một chữ ký.',
+            badName: 'Không phải gói giao diện web (ironkvm-ui_<version>.tar.gz).',
+            signatureMismatch: 'Chữ ký thuộc về một gói khác.'
+          },
+          install: 'Cài đặt',
+          installed: 'Đã cài giao diện web. Đang tải lại...',
+          rolledBack: 'Đã khôi phục giao diện web. Đang tải lại...',
+          rollback: 'Khôi phục',
+          rollbackDesc: 'Quay lại {{version}}',
+          rollbackConfirm: 'Khôi phục giao diện web về {{version}}?'
+        }
       },
       account: {
         title: 'Tài khoản',
@@ -1750,6 +1780,11 @@ const vi = {
       mediaLibrary: 'Thư viện',
       textToHost: 'Đến máy chủ',
       textFromHost: 'Từ máy chủ'
+    },
+    serverContract: {
+      incompatibleTitle: 'Giao diện web này không hỗ trợ máy chủ này',
+      incompatible: 'Giao diện web hỗ trợ API máy chủ {{ui}}, còn máy chủ dùng API {{server}}. Một số chức năng có thể lỗi. Hãy cập nhật ứng dụng hoặc khôi phục giao diện web trong Cài đặt > Cập nhật.',
+      dismiss: 'Đóng'
     },
     ion: {
       checking: 'Đang kiểm tra bộ nhớ video trước khi bắt đầu luồng...',

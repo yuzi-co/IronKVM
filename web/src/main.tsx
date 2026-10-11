@@ -6,6 +6,8 @@ import { HelmetProvider } from 'react-helmet-async';
 import { RouterProvider } from 'react-router';
 
 import { MainError } from './components/main-error.tsx';
+import { ServerCompatNotice } from './components/server-compat-notice.tsx';
+import { loadServerContract } from './hooks/useServerFeature.ts';
 import { router } from './router';
 
 import { i18nReady } from './i18n';
@@ -38,6 +40,7 @@ const renderApp = () => {
         <ErrorBoundary FallbackComponent={MainError}>
           <HelmetProvider>
             <ConfigProvider theme={themeConfig}>
+              <ServerCompatNotice />
               <RouterProvider router={router} />
             </ConfigProvider>
           </HelmetProvider>
@@ -53,6 +56,10 @@ if (import.meta.env.MODE === 'mocked') {
   const { worker } = await import('./mocks/browser');
   await worker.start();
 }
+
+// What the server has, asked for while the locale loads. Nothing waits on it:
+// a feature reads as pending until the answer is in.
+void loadServerContract();
 
 // The chosen locale is its own chunk; render once it is in, not with raw keys.
 await i18nReady;

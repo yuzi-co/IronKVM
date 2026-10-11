@@ -1436,7 +1436,37 @@ const ko = {
         updateTo: '{{version}}(으)로 업데이트',
         updateConfirmDesc:
           '장치가 업데이트를 설치하고 서버를 다시 시작합니다. 서버가 돌아오면 이 페이지가 새로 고쳐집니다.',
-        releaseNotes: '릴리스 노트'
+        releaseNotes: '릴리스 노트',
+        ui: {
+          title: '웹 UI',
+          desc: '서버를 업데이트하지 않고 웹 UI를 설치하거나 롤백합니다',
+          served: '사용 중: {{version}}, 서버 API {{api}}',
+          bundled: '애플리케이션에 포함된 UI',
+          bundledVersion: '{{version}} (애플리케이션 포함)',
+          checkOff: '서명 검사가 꺼져 있어 (/data/ironkvm/no-signature-check) 모든 패키지가 설치됩니다.',
+          noKeys: '키링이 비어 있어 패키지가 서명 검사 없이 설치됩니다.',
+          check: '확인',
+          noPackage: '업데이트 서버에 웹 UI 패키지가 없습니다.',
+          isCurrent: '웹 UI {{version}}을(를) 이미 사용 중입니다.',
+          incompatible: '웹 UI {{version}}에는 서버 API {{api}}이(가) 필요하지만 이 서버는 {{server}}입니다. 먼저 애플리케이션을 업데이트하세요.',
+          installTo: '웹 UI {{version}} 설치',
+          installDesc: '장치가 서명을 확인하고 새 UI로 전환하며 롤백을 위해 현재 UI를 보관합니다. 그 후 이 페이지를 다시 불러옵니다.',
+          chooseFiles: '패키지 선택',
+          chooseHint: 'ironkvm-ui_<version>.tar.gz 및 해당 .minisig',
+          noSignature: '서명 없음',
+          pick: {
+            noPackage: 'ironkvm-ui_<version>.tar.gz 패키지를 선택하세요.',
+            tooMany: '패키지 하나와 최대 하나의 서명을 선택하세요.',
+            badName: '웹 UI 패키지가 아닙니다 (ironkvm-ui_<version>.tar.gz).',
+            signatureMismatch: '서명이 다른 패키지의 것입니다.'
+          },
+          install: '설치',
+          installed: '웹 UI를 설치했습니다. 다시 불러오는 중...',
+          rolledBack: '웹 UI를 롤백했습니다. 다시 불러오는 중...',
+          rollback: '롤백',
+          rollbackDesc: '{{version}}(으)로 되돌리기',
+          rollbackConfirm: '웹 UI를 {{version}}(으)로 롤백할까요?'
+        }
       },
       account: {
         title: '계정',
@@ -1731,6 +1761,11 @@ const ko = {
       mediaLibrary: '라이브러리',
       textToHost: '호스트로',
       textFromHost: '호스트에서'
+    },
+    serverContract: {
+      incompatibleTitle: '이 웹 UI는 이 서버를 지원하지 않습니다',
+      incompatible: '웹 UI는 서버 API {{ui}}을(를) 지원하지만 서버는 API {{server}}입니다. 일부 기능이 실패할 수 있습니다. 애플리케이션을 업데이트하거나 설정 > 업데이트에서 웹 UI를 롤백하세요.',
+      dismiss: '닫기'
     },
     ion: {
       checking: '스트림을 시작하기 전에 비디오 메모리를 확인하는 중...',

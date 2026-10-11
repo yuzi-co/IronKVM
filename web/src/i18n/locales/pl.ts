@@ -1462,7 +1462,37 @@ const pl = {
         updateTo: 'Aktualizuj do {{version}}',
         updateConfirmDesc:
           'Urządzenie zainstaluje aktualizację i uruchomi ponownie swój serwer. Strona przeładuje się, gdy serwer wróci.',
-        releaseNotes: 'Informacje o wydaniu'
+        releaseNotes: 'Informacje o wydaniu',
+        ui: {
+          title: 'Interfejs WWW',
+          desc: 'Zainstaluj lub przywróć interfejs WWW bez aktualizacji serwera',
+          served: 'Aktywny: {{version}}, API serwera {{api}}',
+          bundled: 'interfejs dołączony do aplikacji',
+          bundledVersion: '{{version}} (dołączony do aplikacji)',
+          checkOff: 'Sprawdzanie podpisu jest wyłączone (/data/ironkvm/no-signature-check), więc każdy pakiet zostanie zainstalowany.',
+          noKeys: 'Pęk kluczy jest pusty, więc pakiety są instalowane bez sprawdzania podpisu.',
+          check: 'Sprawdź',
+          noPackage: 'Serwer aktualizacji nie oferuje pakietu interfejsu WWW.',
+          isCurrent: 'Interfejs WWW {{version}} jest już aktywny.',
+          incompatible: 'Interfejs WWW {{version}} wymaga API serwera {{api}}, a ten serwer używa {{server}}. Najpierw zaktualizuj aplikację.',
+          installTo: 'Zainstaluj interfejs WWW {{version}}',
+          installDesc: 'Urządzenie sprawdza podpis, przełącza się na nowy interfejs i zachowuje obecny do przywrócenia. Następnie strona zostanie przeładowana.',
+          chooseFiles: 'Wybierz pakiet',
+          chooseHint: 'ironkvm-ui_<version>.tar.gz i jego .minisig',
+          noSignature: 'brak podpisu',
+          pick: {
+            noPackage: 'Wybierz pakiet ironkvm-ui_<version>.tar.gz.',
+            tooMany: 'Wybierz jeden pakiet i najwyżej jeden podpis.',
+            badName: 'To nie jest pakiet interfejsu WWW (ironkvm-ui_<version>.tar.gz).',
+            signatureMismatch: 'Podpis należy do innego pakietu.'
+          },
+          install: 'Zainstaluj',
+          installed: 'Interfejs WWW zainstalowany. Przeładowywanie...',
+          rolledBack: 'Interfejs WWW przywrócony. Przeładowywanie...',
+          rollback: 'Przywróć',
+          rollbackDesc: 'Powrót do {{version}}',
+          rollbackConfirm: 'Przywrócić interfejs WWW do {{version}}?'
+        }
       },
       account: {
         title: 'Konto',
@@ -1762,6 +1792,11 @@ const pl = {
       mediaLibrary: 'Biblioteka',
       textToHost: 'Do hosta',
       textFromHost: 'Z hosta'
+    },
+    serverContract: {
+      incompatibleTitle: 'Ten interfejs WWW nie obsługuje tego serwera',
+      incompatible: 'Interfejs WWW obsługuje API serwera {{ui}}, a serwer używa API {{server}}. Niektóre funkcje mogą nie działać. Zaktualizuj aplikację lub przywróć interfejs WWW w Ustawienia > Aktualizacja.',
+      dismiss: 'Zamknij'
     },
     ion: {
       checking: 'Sprawdzanie pamięci wideo przed uruchomieniem strumienia...',

@@ -1458,7 +1458,37 @@ const se = {
         updateTo: 'Uppdatera till {{version}}',
         updateConfirmDesc:
           'Enheten installerar uppdateringen och startar om sin server. Sidan laddas om när servern är tillbaka.',
-        releaseNotes: 'Versionsinformation'
+        releaseNotes: 'Versionsinformation',
+        ui: {
+          title: 'Webbgränssnitt',
+          desc: 'Installera eller återställ webbgränssnittet utan att uppdatera servern',
+          served: 'Aktivt: {{version}}, server-API {{api}}',
+          bundled: 'gränssnittet som följer med applikationen',
+          bundledVersion: '{{version}} (följer med applikationen)',
+          checkOff: 'Signaturkontrollen är avstängd (/data/ironkvm/no-signature-check), så alla paket installeras.',
+          noKeys: 'Nyckelringen är tom, så paket installeras utan signaturkontroll.',
+          check: 'Kontrollera',
+          noPackage: 'Uppdateringsservern erbjuder inget paket för webbgränssnittet.',
+          isCurrent: 'Webbgränssnitt {{version}} är redan aktivt.',
+          incompatible: 'Webbgränssnitt {{version}} kräver server-API {{api}}, och den här servern använder {{server}}. Uppdatera applikationen först.',
+          installTo: 'Installera webbgränssnitt {{version}}',
+          installDesc: 'Enheten kontrollerar signaturen, byter till det nya gränssnittet och behåller det nuvarande för återställning. Sedan laddas sidan om.',
+          chooseFiles: 'Välj paket',
+          chooseHint: 'ironkvm-ui_<version>.tar.gz och dess .minisig',
+          noSignature: 'ingen signatur',
+          pick: {
+            noPackage: 'Välj ett paket ironkvm-ui_<version>.tar.gz.',
+            tooMany: 'Välj ett paket och högst en signatur.',
+            badName: 'Inte ett paket för webbgränssnittet (ironkvm-ui_<version>.tar.gz).',
+            signatureMismatch: 'Signaturen hör till ett annat paket.'
+          },
+          install: 'Installera',
+          installed: 'Webbgränssnittet installerat. Laddar om...',
+          rolledBack: 'Webbgränssnittet återställt. Laddar om...',
+          rollback: 'Återställ',
+          rollbackDesc: 'Tillbaka till {{version}}',
+          rollbackConfirm: 'Återställa webbgränssnittet till {{version}}?'
+        }
       },
       account: {
         title: 'Konto',
@@ -1753,6 +1783,11 @@ const se = {
       mediaLibrary: 'Bibliotek',
       textToHost: 'Till värden',
       textFromHost: 'Från värden'
+    },
+    serverContract: {
+      incompatibleTitle: 'Det här webbgränssnittet stöder inte den här servern',
+      incompatible: 'Webbgränssnittet stöder server-API {{ui}}, och servern använder API {{server}}. Vissa funktioner kan misslyckas. Uppdatera applikationen eller återställ webbgränssnittet under Inställningar > Uppdatering.',
+      dismiss: 'Stäng'
     },
     ion: {
       checking: 'Kontrollerar videominnet innan strömmen startar...',
