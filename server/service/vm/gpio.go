@@ -15,6 +15,8 @@ import (
 
 	"NanoKVM-Server/config"
 	"NanoKVM-Server/proto"
+	"NanoKVM-Server/service/audit"
+	"NanoKVM-Server/service/events"
 	"NanoKVM-Server/utils/gpiocdev"
 )
 
@@ -32,6 +34,8 @@ func (s *Service) SetGpio(c *gin.Context) {
 		return
 	}
 
+	audit.SetTarget(c, req.Type)
+	audit.SetDetail(c, pressDuration(req.Duration).String())
 	if err := PressButton(req.Type, pressDuration(req.Duration)); err != nil {
 		rsp.ErrRsp(c, -3, fmt.Sprintf("operation failed: %s", err))
 		return
@@ -126,8 +130,29 @@ var (
 var buttonMu sync.Mutex
 
 // PressButton holds the power or the reset button for d, then releases it.
-// It returns once the button is up again.
+// It returns once the button is up again, and tells the event bus about it.
+// Every caller that acts for a person (the UI, Redfish, IPMI, a sequence) comes
+// here; the watchdog reports its own presses and uses PressButtonQuiet.
 func PressButton(kind string, d time.Duration) error {
+	if err := PressButtonQuiet(kind, d); err != nil {
+		return err
+	}
+
+	name := "Power"
+	if kind == ButtonReset {
+		name = "Reset"
+	}
+	events.Publish(events.Event{
+		Type:    events.ATXPress,
+		Title:   name + " button pressed",
+		Message: "The ATX " + kind + " button was held for " + d.Round(time.Millisecond).String() + ".",
+		Fields:  map[string]string{"button": kind},
+	})
+	return nil
+}
+
+// PressButtonQuiet is PressButton without the event.
+func PressButtonQuiet(kind string, d time.Duration) error {
 	conf := config.GetInstance().Hardware
 
 	var device string

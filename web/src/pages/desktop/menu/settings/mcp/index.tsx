@@ -11,6 +11,9 @@ import { writeClipboardText } from '@/lib/clipboard.ts';
 import { getBaseUrl } from '@/lib/service.ts';
 import { pollWhileVisible } from '@/lib/visible-poll.ts';
 import { aiControlStatusAtom, normalizeAIControlStatus } from '@/jotai/ai-control.ts';
+import { useServerFeature } from '@/hooks/useServerFeature.ts';
+
+import { CapabilityTiers } from './tiers.tsx';
 
 function maskKey(key: string) {
   if (!key) return '-';
@@ -26,6 +29,7 @@ export const MCP = () => {
   const { t } = useTranslation();
   const [modal, contextHolder] = Modal.useModal();
   const setAIControlStatus = useSetAtom(aiControlStatusAtom);
+  const hasTiers = useServerFeature('agent-tiers') === true;
   const [config, setConfig] = useState<MCPConfig>({
     enabled: false,
     apiKey: '',
@@ -243,6 +247,8 @@ export const MCP = () => {
             </div>
           </div>
         )}
+
+        {hasTiers && <CapabilityTiers />}
       </div>
     </>
   );

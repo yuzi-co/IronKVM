@@ -37,6 +37,11 @@ type Principal struct {
 	// ShareID is set for a session that came from a share link. Such a
 	// principal has no account behind it.
 	ShareID string
+	// Via is how the request authenticated: a login session, an api key, or
+	// nothing because authentication is switched off. Key names the api key.
+	// The audit log records both (service/audit).
+	Via string
+	Key string
 }
 
 type Token struct {
@@ -211,7 +216,7 @@ func authenticateBySession(c *gin.Context) (Principal, *Token, bool) {
 		// Not reported as a client that reached the board. With the check off
 		// there is no signed-in client to speak of, and an address trial that
 		// confirmed itself on any request at all would confirm on a port scan.
-		return Principal{Username: "admin", Role: authn.RoleAdmin}, nil, true
+		return Principal{Username: "admin", Role: authn.RoleAdmin, Via: "open"}, nil, true
 	}
 
 	cookie, err := c.Cookie(CookieName)
@@ -240,7 +245,7 @@ func authenticateBySession(c *gin.Context) (Principal, *Token, bool) {
 		noteSignedInAdmin(c)
 	}
 
-	return Principal{Username: user.Username, Role: user.Role}, token, true
+	return Principal{Username: user.Username, Role: user.Role, Via: "session"}, token, true
 }
 
 // authenticateByShare accepts a session opened from a share link for as long
@@ -252,7 +257,7 @@ func authenticateByShare(token *Token) (Principal, *Token, bool) {
 	if _, ok := authn.DefaultShares.Valid(token.ShareID); !ok {
 		return Principal{}, nil, false
 	}
-	return Principal{Username: token.Username, Role: authn.RoleViewer, ShareID: token.ShareID}, token, true
+	return Principal{Username: token.Username, Role: authn.RoleViewer, ShareID: token.ShareID, Via: "share"}, token, true
 }
 
 func abortUnauthorized(c *gin.Context) {

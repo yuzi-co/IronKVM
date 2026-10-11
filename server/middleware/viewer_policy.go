@@ -74,6 +74,8 @@ func allowByRole(c *gin.Context, principal Principal) bool {
 		return true
 	}
 	log.Debugf("view-only %s refused %s %s", principal.Username, c.Request.Method, c.FullPath())
+	// Left on the request so the audit log names the viewer who tried.
+	c.Set(principalContextKey, principal)
 	c.JSON(http.StatusForbidden, "forbidden")
 	c.Abort()
 	return false

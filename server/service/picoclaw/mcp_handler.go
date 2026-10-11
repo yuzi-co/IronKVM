@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"NanoKVM-Server/service/agent"
+	"NanoKVM-Server/service/audit"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -238,7 +239,7 @@ func (s *Service) mcpToolsList(req jsonRPCRequest) jsonRPCResponse {
 		JSONRPC: "2.0",
 		ID:      req.ID,
 		Result: map[string]interface{}{
-			"tools": mcpToolDefinitions,
+			"tools": allowedToolDefinitions(),
 		},
 	}
 }
@@ -256,9 +257,48 @@ func (s *Service) mcpToolsCall(req jsonRPCRequest, c *gin.Context) jsonRPCRespon
 		}
 	}
 
-	switch params.Name {
+	tier, known := agentToolTiers[params.Name]
+	if !known {
+		return jsonRPCResponse{
+			JSONRPC: "2.0",
+			ID:      req.ID,
+			Error:   &jsonRPCError{Code: -32602, Message: fmt.Sprintf("unknown tool: %s", params.Name)},
+		}
+	}
+
+	event := audit.Event{
+		Actor:    "picoclaw",
+		Via:      "agent",
+		IP:       audit.ClientIP(c),
+		Category: audit.CategoryAgent,
+		Action:   params.Name,
+		Tier:     string(tier),
+		Detail:   summarizeAgentCall(params.Name, params.Arguments),
+	}
+	if !audit.Allowed(audit.SubjectAgent, tier) {
+		event.Outcome = audit.OutcomeDenied
+		audit.Record(event)
+		return mcpToolError(req, audit.DeniedMessage(audit.SubjectAgent, tier))
+	}
+
+	resp := s.runMCPTool(req, params.Name, params.Arguments, c)
+	event.Outcome = audit.OutcomeOK
+	if resp.Error != nil {
+		event.Outcome = audit.OutcomeFail
+		event.Detail = joinAuditDetail(event.Detail, resp.Error.Message)
+	} else if result, ok := resp.Result.(map[string]interface{}); ok && result["isError"] == true {
+		event.Outcome = audit.OutcomeFail
+		event.Detail = joinAuditDetail(event.Detail, mcpErrorText(result))
+	}
+	audit.Record(event)
+	return resp
+}
+
+// runMCPTool runs a tool whose tier is on.
+func (s *Service) runMCPTool(req jsonRPCRequest, name string, arguments json.RawMessage, c *gin.Context) jsonRPCResponse {
+	switch name {
 	case "kvm_screenshot":
-		return s.mcpScreenshot(req, params.Arguments, c)
+		return s.mcpScreenshot(req, arguments, c)
 	case "kvm_actions":
 		releaseMode, modeErr := s.acquireControlMode()
 		if modeErr != nil {
@@ -276,12 +316,12 @@ func (s *Service) mcpToolsCall(req jsonRPCRequest, c *gin.Context) jsonRPCRespon
 		operationCtx, releaseOperation := s.beginControlOperation(c.Request.Context())
 		defer releaseOperation()
 		c.Request = c.Request.WithContext(operationCtx)
-		return s.mcpActions(req, params.Arguments, c)
+		return s.mcpActions(req, arguments, c)
 	default:
 		return jsonRPCResponse{
 			JSONRPC: "2.0",
 			ID:      req.ID,
-			Error:   &jsonRPCError{Code: -32602, Message: fmt.Sprintf("unknown tool: %s", params.Name)},
+			Error:   &jsonRPCError{Code: -32602, Message: fmt.Sprintf("unknown tool: %s", name)},
 		}
 	}
 }

@@ -2,22 +2,20 @@ package network
 
 import (
 	"errors"
-	"fmt"
-	"os"
-	"os/exec"
-	"path/filepath"
-	"regexp"
 	"strings"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 
 	"NanoKVM-Server/proto"
+	"NanoKVM-Server/service/audit"
+	"NanoKVM-Server/service/wol"
 )
 
-const (
-	WolMacFile = "/etc/kvm/cache/wol"
-)
+// The device list itself, its files and the wake packets are in service/wol.
+// These handlers keep the routes and answers they always had, and add the
+// ones the managed list needs.
 
 func (s *Service) WakeOnLAN(c *gin.Context) {
 	var req proto.WakeOnLANReq
@@ -28,50 +26,60 @@ func (s *Service) WakeOnLAN(c *gin.Context) {
 		return
 	}
 
-	mac, err := parseMAC(req.Mac)
-	if err != nil {
+	name := wol.SanitizeName(req.Name)
+	if name == "" && strings.TrimSpace(req.Mac) == "" {
+		rsp.ErrRsp(c, -1, "invalid arguments")
+		return
+	}
+
+	if name != "" {
+		audit.SetTarget(c, name)
+	} else {
+		audit.SetTarget(c, strings.TrimSpace(req.Mac))
+	}
+
+	device, output, err := wol.Default.Wake(req.Mac, name)
+	switch {
+	case errors.Is(err, wol.ErrInvalidMAC):
 		rsp.ErrRsp(c, -2, "invalid MAC address")
-		return
-	}
-
-	cmd := exec.Command("ether-wake", "-b", mac)
-
-	output, err := cmd.CombinedOutput()
-	if err != nil {
+	case errors.Is(err, wol.ErrNotFound):
+		rsp.ErrRsp(c, -4, "no device with this name")
+	case err != nil && output == "":
+		// Never the device: its options include the SecureOn password.
 		log.Errorf("failed to wake on lan: %s", err)
-		rsp.ErrRsp(c, -3, string(output))
-		return
+		rsp.ErrRsp(c, -3, err.Error())
+	case err != nil:
+		log.Errorf("failed to wake on lan: %s", err)
+		rsp.ErrRsp(c, -3, output)
+	default:
+		rsp.OkRsp(c)
+		log.Debugf("wake on lan: %s", device.Mac)
 	}
-
-	saveMac(mac)
-
-	rsp.OkRsp(c)
-	log.Debugf("wake on lan: %s", mac)
 }
 
 func (s *Service) GetMac(c *gin.Context) {
 	var rsp proto.Response
 
-	macs, err := readWolMacs()
+	devices, err := wol.Default.List()
 	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			rsp.OkRspWithData(c, &proto.GetMacRsp{Macs: []string{}})
-			return
-		}
-
 		rsp.ErrRsp(c, -2, "open file error")
 		return
 	}
 
-	data := &proto.GetMacRsp{
-		Macs: macs,
+	macs := make([]string, 0, len(devices))
+	for _, d := range devices {
+		line := d.Mac
+		if d.Name != "" {
+			line += " " + d.Name
+		}
+		macs = append(macs, line)
 	}
 
-	rsp.OkRspWithData(c, data)
+	rsp.OkRspWithData(c, &proto.GetMacRsp{Macs: macs})
 }
 
 func (s *Service) SetMacName(c *gin.Context) {
-	var req proto.SetMacNameReq // Mac:string Name:string
+	var req proto.SetMacNameReq
 	var rsp proto.Response
 
 	if err := proto.ParseFormRequest(c, &req); err != nil {
@@ -79,61 +87,19 @@ func (s *Service) SetMacName(c *gin.Context) {
 		return
 	}
 
-	mac, err := parseMAC(req.Mac)
-	if err != nil {
+	err := wol.Default.Rename(req.Mac, req.Name)
+	switch {
+	case errors.Is(err, wol.ErrInvalidMAC):
 		rsp.ErrRsp(c, -2, "invalid MAC address")
-		return
-	}
-
-	name := sanitizeWolMacName(req.Name)
-	if name == "" {
+	case errors.Is(err, wol.ErrInvalidName):
 		rsp.ErrRsp(c, -1, "invalid arguments")
-		return
-	}
-
-	macs, err := readWolMacs()
-	if err != nil {
-		log.Errorf("failed to open %s: %s", WolMacFile, err)
-		rsp.ErrRsp(c, -2, "read failed")
-		return
-	}
-
-	var newLines []string
-	macFound := false
-
-	for _, line := range macs {
-		itemMac, itemName, ok := splitWolMacLine(line)
-		if !ok {
-			continue
-		}
-		normalizedMac, err := parseMAC(itemMac)
-		if err != nil {
-			newLines = append(newLines, formatWolMacLine(itemMac, itemName))
-			continue
-		}
-		if mac != normalizedMac {
-			newLines = append(newLines, formatWolMacLine(normalizedMac, itemName))
-			continue
-		}
-
-		newLines = append(newLines, formatWolMacLine(normalizedMac, name))
-		macFound = true
-	}
-
-	if !macFound {
-		log.Errorf("failed to find mac %s", req.Mac)
+	case err != nil:
+		log.Errorf("failed to rename wol mac %s: %s", req.Mac, err)
 		rsp.ErrRsp(c, -3, "write failed")
-		return
+	default:
+		rsp.OkRsp(c)
+		log.Debugf("set wol mac name: %s %s", req.Mac, req.Name)
 	}
-
-	if err = writeWolMacs(newLines); err != nil {
-		log.Errorf("failed to write %s: %s", WolMacFile, err)
-		rsp.ErrRsp(c, -3, "write failed")
-		return
-	}
-
-	rsp.OkRsp(c)
-	log.Debugf("set wol mac name: %s %s", req.Mac, req.Name)
 }
 
 func (s *Service) DeleteMac(c *gin.Context) {
@@ -145,180 +111,127 @@ func (s *Service) DeleteMac(c *gin.Context) {
 		return
 	}
 
-	mac, err := parseMAC(req.Mac)
-	if err != nil {
+	err := wol.Default.Delete(req.Mac)
+	switch {
+	case errors.Is(err, wol.ErrInvalidMAC):
 		rsp.ErrRsp(c, -2, "invalid MAC address")
-		return
-	}
-
-	macs, err := readWolMacs()
-	if err != nil {
-		log.Errorf("failed to open %s: %s", WolMacFile, err)
-		rsp.ErrRsp(c, -2, "read failed")
-		return
-	}
-
-	var newMacs []string
-
-	for _, line := range macs {
-		itemMac, itemName, ok := splitWolMacLine(line)
-		if !ok {
-			continue
-		}
-		normalizedMac, err := parseMAC(itemMac)
-		if err != nil {
-			newMacs = append(newMacs, formatWolMacLine(itemMac, itemName))
-			continue
-		}
-		if mac != normalizedMac {
-			newMacs = append(newMacs, formatWolMacLine(normalizedMac, itemName))
-		}
-	}
-
-	if err = writeWolMacs(newMacs); err != nil {
-		log.Errorf("failed to write %s: %s", WolMacFile, err)
+	case err != nil:
+		log.Errorf("failed to delete wol mac %s: %s", req.Mac, err)
 		rsp.ErrRsp(c, -3, "write failed")
+	default:
+		rsp.OkRsp(c)
+		log.Debugf("delete wol mac: %s", req.Mac)
+	}
+}
+
+// GetWolDevices lists the devices with their options. The SecureOn password
+// stays on the board.
+func (s *Service) GetWolDevices(c *gin.Context) {
+	var rsp proto.Response
+
+	devices, err := wol.Default.List()
+	if err != nil {
+		rsp.ErrRsp(c, -2, "open file error")
 		return
 	}
 
-	rsp.OkRsp(c)
-	log.Debugf("delete wol mac: %s", req.Mac)
+	out := make([]proto.WolDevice, 0, len(devices))
+	for _, d := range devices {
+		out = append(out, proto.WolDevice{
+			Mac:         d.Mac,
+			Name:        d.Name,
+			Broadcast:   d.Broadcast,
+			Port:        d.Port,
+			HasSecureOn: d.SecureOn != "",
+			IP:          d.IP,
+		})
+	}
+
+	rsp.OkRspWithData(c, &proto.GetWolDevicesRsp{Devices: out})
 }
 
-func parseMAC(mac string) (string, error) {
-	mac = strings.ToUpper(strings.TrimSpace(mac))
+// SaveWolDevice adds a device, or edits one, without sending a packet.
+func (s *Service) SaveWolDevice(c *gin.Context) {
+	var req proto.SaveWolDeviceReq
+	var rsp proto.Response
 
-	mac = strings.ReplaceAll(mac, "-", "")
-	mac = strings.ReplaceAll(mac, ":", "")
-	mac = strings.ReplaceAll(mac, ".", "")
-
-	matched, err := regexp.MatchString("^[0-9A-F]{12}$", mac)
-	if err != nil {
-		return "", err
-	}
-	if !matched {
-		return "", fmt.Errorf("invalid MAC address: %s", mac)
-	}
-
-	var result strings.Builder
-	for i := 0; i < 12; i += 2 {
-		if i > 0 {
-			result.WriteString(":")
-		}
-		result.WriteString(mac[i : i+2])
-	}
-
-	return result.String(), nil
-}
-
-func saveMac(mac string) {
-	if isMacExist(mac) {
+	if err := proto.ParseFormRequest(c, &req); err != nil {
+		rsp.ErrRsp(c, -1, "invalid arguments")
 		return
 	}
 
-	err := os.MkdirAll(filepath.Dir(WolMacFile), 0o755)
+	device := wol.Device{
+		Mac:  req.Mac,
+		Name: req.Name,
+		Options: wol.Options{
+			Broadcast: req.Broadcast,
+			Port:      req.Port,
+			SecureOn:  req.SecureOn,
+			IP:        req.IP,
+		},
+	}
+
+	var inputErr *wol.InputError
+	_, err := wol.Default.Save(req.OldMac, device, !req.ClearSecureOn)
+	switch {
+	case errors.Is(err, wol.ErrInvalidMAC):
+		rsp.ErrRsp(c, -2, "invalid MAC address")
+	case errors.Is(err, wol.ErrDuplicate):
+		rsp.ErrRsp(c, -4, err.Error())
+	case errors.Is(err, wol.ErrNotFound):
+		rsp.ErrRsp(c, -5, err.Error())
+	case errors.Is(err, wol.ErrInvalidName):
+		rsp.ErrRsp(c, -1, err.Error())
+	case errors.As(err, &inputErr):
+		rsp.ErrRsp(c, -1, err.Error())
+	case err != nil:
+		log.Errorf("failed to save wol device %s: %s", req.Mac, err)
+		rsp.ErrRsp(c, -3, "write failed")
+	default:
+		rsp.OkRsp(c)
+		log.Debugf("saved wol device: %s", req.Mac)
+	}
+}
+
+// CheckWolDevice says whether a listed device answers on its host address.
+func (s *Service) CheckWolDevice(c *gin.Context) {
+	var rsp proto.Response
+
+	device, err := wol.Default.Get(c.Query("mac"))
 	if err != nil {
-		log.Errorf("failed to create dir: %s", err)
+		rsp.ErrRsp(c, -2, "no such device")
+		return
+	}
+	if device.IP == "" {
+		rsp.OkRspWithData(c, &proto.CheckWolDeviceRsp{})
 		return
 	}
 
-	file, err := os.OpenFile(WolMacFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
-	if err != nil {
-		log.Errorf("failed to open %s: %s", WolMacFile, err)
-		return
-	}
-	defer func() {
-		_ = file.Close()
-	}()
-
-	content := fmt.Sprintf("%s\n", mac)
-	_, err = file.WriteString(content)
-	if err != nil {
-		log.Errorf("failed to write %s: %s", WolMacFile, err)
-		return
-	}
+	rsp.OkRspWithData(c, &proto.CheckWolDeviceRsp{Up: wol.IsUp(device.IP)})
 }
 
-func isMacExist(mac string) bool {
-	macs, err := readWolMacs()
-	if err != nil {
-		return false
-	}
+var scanMutex sync.Mutex
 
-	for _, item := range macs {
-		itemMac, _, ok := splitWolMacLine(item)
-		if !ok {
-			continue
-		}
-		normalizedMac, err := parseMAC(itemMac)
-		if err != nil {
-			continue
-		}
-		if mac == normalizedMac {
-			return true
+// ScanWol lists the hosts the board knows on the LAN, to pick a MAC from.
+func (s *Service) ScanWol(c *gin.Context) {
+	var rsp proto.Response
+
+	// avahi-browse takes seconds on a single core; one scan at a time.
+	scanMutex.Lock()
+	neighbors := wol.Scan()
+	scanMutex.Unlock()
+
+	listed := map[string]bool{}
+	if devices, err := wol.Default.List(); err == nil {
+		for _, d := range devices {
+			listed[d.Mac] = true
 		}
 	}
 
-	return false
-}
-
-func readWolMacs() ([]string, error) {
-	content, err := os.ReadFile(WolMacFile)
-	if err != nil {
-		return nil, err
+	out := make([]proto.WolNeighbor, 0, len(neighbors))
+	for _, n := range neighbors {
+		out = append(out, proto.WolNeighbor{Mac: n.Mac, IP: n.IP, Name: n.Name, Listed: listed[n.Mac]})
 	}
 
-	lines := strings.Split(string(content), "\n")
-	macs := make([]string, 0, len(lines))
-	for _, line := range lines {
-		mac, name, ok := splitWolMacLine(line)
-		if !ok {
-			continue
-		}
-
-		macs = append(macs, formatWolMacLine(mac, name))
-	}
-
-	return macs, nil
-}
-
-func writeWolMacs(macs []string) error {
-	data := ""
-	if len(macs) > 0 {
-		data = strings.Join(macs, "\n") + "\n"
-	}
-
-	return os.WriteFile(WolMacFile, []byte(data), 0o644)
-}
-
-func splitWolMacLine(line string) (string, string, bool) {
-	line = strings.TrimSpace(line)
-	if line == "" {
-		return "", "", false
-	}
-
-	fields := strings.Fields(line)
-	if len(fields) == 0 {
-		return "", "", false
-	}
-
-	mac := fields[0]
-	if len(line) == len(mac) {
-		return mac, "", true
-	}
-
-	name := line[len(mac):]
-	return mac, strings.TrimSpace(name), true
-}
-
-func formatWolMacLine(mac string, name string) string {
-	if name == "" {
-		return mac
-	}
-
-	return mac + " " + name
-}
-
-func sanitizeWolMacName(name string) string {
-	return strings.Join(strings.Fields(name), " ")
+	rsp.OkRspWithData(c, &proto.ScanWolRsp{Neighbors: out})
 }

@@ -6,13 +6,12 @@ import (
 	"NanoKVM-Server/authn"
 	"NanoKVM-Server/middleware"
 	"NanoKVM-Server/service/sequence"
-	"NanoKVM-Server/service/vm"
 )
 
 // sequenceRouter serves the key auto-tap and the macros, which the server
 // plays as timed input sequences (service/sequence).
 func sequenceRouter(r *gin.Engine) {
-	sequence.SetATX(vm.PressButton)
+	sequence.SetATX(auditedPress("macro"))
 	service := sequence.NewService()
 	api := r.Group("/api").Use(middleware.CheckToken())
 

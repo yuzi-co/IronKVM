@@ -20,16 +20,24 @@ export const LEGACY_API_VERSION = 1;
 // The server features this UI gates on, one line each, by the name the server
 // registers (server/common/apicontract/contract.go). Keep the list sorted.
 export const SERVER_FEATURES = [
+  'agent-tiers', // /api/agent/tiers (Settings > MCP: what MCP and the agent may do)
+  'audit-log', // /api/audit (Settings > Audit log)
   'direct-clock', // the clock request on the direct H.264 socket (status bar latency)
   'hid-autotap', // POST /api/hid/autotap and /api/hid/sequence (keyboard menu: auto-tap)
   'hid-macros', // /api/hid/macro(s) and /api/hid/sequence (keyboard menu: macros)
+  'host-log', // /api/hostlog (Settings > Host log)
   'info-latency', // boardLatency in GET /api/stream/info (status bar latency estimate)
   'ip-allowlist', // /api/network/allowlist (Settings > Network > Allowed networks)
+  'ipv6-settings', // /api/network/ipv6 (Settings > Network > IPv6)
+  'notifications', // /api/notify (Settings > Notifications)
+  'nut-client', // /api/nut (Settings > NUT, UPS line in the status bar)
   'role-viewer', // the viewer role in Settings > Users, and a UI with no input for it
   'share-links', // /api/auth/share and /api/auth/share-links (Settings > Account > Share links)
   'status-bar', // GET /api/stream/info (status bar source line)
   'ui-update', // /api/ui: separate UI packages (Settings > Update)
-  'webrtc-clock' // the clock event on the WebRTC signalling socket (status bar latency)
+  'webrtc-clock', // the clock event on the WebRTC signalling socket (status bar latency)
+  'webrtc-port-forward', // /api/network/webrtc (Settings > Network > WebRTC)
+  'wol-devices' // /api/network/wol/devices, /device, /check, /scan (Tools > Wake-on-LAN: managed list)
 ] as const;
 
 export type ServerFeature = (typeof SERVER_FEATURES)[number];

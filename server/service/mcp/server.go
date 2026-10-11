@@ -90,17 +90,20 @@ type toolExecutor struct {
 	coordinator *inputcontrol.Coordinator
 }
 
-func NewMCPHandler(control *controlmode.Manager, snapshotter Snapshotter) http.Handler {
-	return newMCPHandler(control, inputcontrol.GetCoordinator(), NewRemote(), snapshotter)
+func NewMCPHandler(control *controlmode.Manager, snapshotter Snapshotter, devices Devices) http.Handler {
+	return newMCPHandler(control, inputcontrol.GetCoordinator(), NewRemote(), snapshotter, devices)
 }
 
-func newMCPHandler(control *controlmode.Manager, coordinator *inputcontrol.Coordinator, remote *Remote, snapshotter Snapshotter) http.Handler {
+func newMCPHandler(control *controlmode.Manager, coordinator *inputcontrol.Coordinator, remote *Remote, snapshotter Snapshotter, devices Devices) http.Handler {
 	executor := &toolExecutor{control: control, coordinator: coordinator}
 	server := protocol.NewServer(&protocol.Implementation{
 		Name:    mcpServerName,
 		Version: "v1.0.0",
 	}, nil)
 	registerTools(server, executor, remote, snapshotter)
+	registerDeviceTools(server, devices)
+	// A client is offered only the tools whose tier is on.
+	server.AddReceivingMiddleware(onlyAllowedTools)
 	handler := protocol.NewStreamableHTTPHandler(
 		func(*http.Request) *protocol.Server { return server },
 		&protocol.StreamableHTTPOptions{Stateless: true, JSONResponse: true},
@@ -109,12 +112,13 @@ func newMCPHandler(control *controlmode.Manager, coordinator *inputcontrol.Coord
 }
 
 func registerTools(server *protocol.Server, executor *toolExecutor, remote *Remote, snapshotter Snapshotter) {
-	protocol.AddTool(server, &protocol.Tool{Name: typeTextToolName, Description: "Type short text into the remote host", InputSchema: typeTextSchema()}, typeTextHandler(executor, remote))
-	protocol.AddTool(server, &protocol.Tool{Name: pressKeysToolName, Description: "Press one keyboard shortcut on the remote host", InputSchema: pressKeysSchema()}, pressKeysHandler(executor, remote))
-	protocol.AddTool(server, &protocol.Tool{Name: moveMouseToolName, Description: "Move the remote mouse pointer", InputSchema: moveMouseSchema()}, moveMouseHandler(executor, remote))
-	protocol.AddTool(server, &protocol.Tool{Name: clickMouseToolName, Description: "Click a remote mouse button", InputSchema: clickMouseSchema()}, clickMouseHandler(executor, remote))
-	protocol.AddTool(server, &protocol.Tool{Name: scrollMouseToolName, Description: "Scroll the remote mouse wheel", InputSchema: scrollMouseSchema()}, scrollMouseHandler(executor, remote))
-	protocol.AddTool(server, &protocol.Tool{Name: screenshotToolName, Description: "Capture a JPEG screenshot from the remote display", InputSchema: screenshotSchema()}, screenshotHandler(executor, snapshotter))
+	protocol.AddTool(server, &protocol.Tool{Name: typeTextToolName, Description: "Type short text into the remote host", InputSchema: typeTextSchema()}, guard(typeTextToolName, describeTypeText, typeTextHandler(executor, remote)))
+	protocol.AddTool(server, &protocol.Tool{Name: pressKeysToolName, Description: "Press one keyboard shortcut on the remote host", InputSchema: pressKeysSchema()}, guard(pressKeysToolName, describePressKeys, pressKeysHandler(executor, remote)))
+	protocol.AddTool(server, &protocol.Tool{Name: moveMouseToolName, Description: "Move the remote mouse pointer", InputSchema: moveMouseSchema()}, guard(moveMouseToolName, describeMoveMouse, moveMouseHandler(executor, remote)))
+	protocol.AddTool(server, &protocol.Tool{Name: clickMouseToolName, Description: "Click a remote mouse button", InputSchema: clickMouseSchema()}, guard(clickMouseToolName, describeClickMouse, clickMouseHandler(executor, remote)))
+	protocol.AddTool(server, &protocol.Tool{Name: scrollMouseToolName, Description: "Scroll the remote mouse wheel", InputSchema: scrollMouseSchema()}, guard(scrollMouseToolName, describeScroll, scrollMouseHandler(executor, remote)))
+	protocol.AddTool(server, &protocol.Tool{Name: screenshotToolName, Description: "Capture a JPEG screenshot from the remote display", InputSchema: screenshotSchema()}, guard(screenshotToolName, describeScreenshot, screenshotHandler(executor, snapshotter)))
+	protocol.AddTool(server, &protocol.Tool{Name: wakeToolName, Description: "Wake a device on the LAN by its name in the Wake-on-LAN list, or by MAC address", InputSchema: wakeSchema()}, guard(wakeToolName, describeWake, wakeHandler()))
 }
 
 func typeTextHandler(executor *toolExecutor, remote *Remote) protocol.ToolHandlerFor[TypeTextParams, TypeTextResult] {

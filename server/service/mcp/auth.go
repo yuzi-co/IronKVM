@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"NanoKVM-Server/service/audit"
 	"NanoKVM-Server/service/controlmode"
 
 	"github.com/gin-gonic/gin"
@@ -29,8 +30,13 @@ func APIKeyMiddleware(control *controlmode.Manager) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+		// The tool handlers see only the headers of the request, so the peer
+		// address travels in one. Set, not added: a client cannot choose it.
+		c.Request.Header.Set(audit.ClientHeader, audit.ClientIP(c))
+
 		token, ok := extractBearer(c.GetHeader("Authorization"))
 		if !ok || cfg.APIKey == "" || subtle.ConstantTimeCompare([]byte(token), []byte(cfg.APIKey)) != 1 {
+			audit.Record(audit.Event{Actor: "mcp", Via: "mcp", IP: audit.ClientIP(c), Category: audit.CategoryAgent, Action: "auth", Outcome: audit.OutcomeDenied, Detail: "invalid MCP API key"})
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid MCP API key"})
 			c.Abort()
 			return

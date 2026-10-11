@@ -8,7 +8,9 @@ import { Mdns } from '../device/mdns.tsx';
 import { AllowedNetworks } from './allowlist.tsx';
 import { DNS } from './dns.tsx';
 import { Ethernet } from './ethernet.tsx';
+import { IPv6 } from './ipv6.tsx';
 import { Syslog } from './syslog.tsx';
+import { WebRTCForward } from './webrtc.tsx';
 import { Wifi } from './wifi.tsx';
 
 export const Network = () => {
@@ -35,6 +37,8 @@ export const Network = () => {
 
       <Divider className="opacity-50" style={{ margin: '32px 0' }} />
 
+      <IPv6Block />
+
       <DNS />
 
       <Divider className="opacity-50" style={{ margin: '32px 0' }} />
@@ -42,6 +46,8 @@ export const Network = () => {
       <Syslog />
 
       <AllowedNetworksBlock />
+
+      <WebRTCForwardBlock />
     </>
   );
 };
@@ -56,6 +62,33 @@ const AllowedNetworksBlock = () => {
     <>
       <Divider className="opacity-50" style={{ margin: '32px 0' }} />
       <AllowedNetworks />
+    </>
+  );
+};
+
+// IPv6 renders nothing on a server without it, so its divider goes with it.
+const IPv6Block = () => {
+  const supported = useServerFeature('ipv6-settings');
+  if (!supported) return null;
+
+  return (
+    <>
+      <IPv6 />
+      <Divider className="opacity-50" style={{ margin: '32px 0' }} />
+    </>
+  );
+};
+
+// The port forward renders nothing on a server without it, so its divider goes
+// with it.
+const WebRTCForwardBlock = () => {
+  const supported = useServerFeature('webrtc-port-forward');
+  if (!supported) return null;
+
+  return (
+    <>
+      <Divider className="opacity-50" style={{ margin: '32px 0' }} />
+      <WebRTCForward />
     </>
   );
 };

@@ -7,6 +7,7 @@ import (
 	"NanoKVM-Server/config"
 	"NanoKVM-Server/middleware"
 	"NanoKVM-Server/proto"
+	"NanoKVM-Server/service/audit"
 	"NanoKVM-Server/utils"
 
 	"github.com/gin-gonic/gin"
@@ -34,6 +35,7 @@ func (s *Service) Login(c *gin.Context) {
 		rsp.ErrRsp(c, -1, "invalid parameters")
 		return
 	}
+	audit.SetActor(c, req.Username)
 	password, err := utils.DecodeDecrypt(req.Password)
 	if err != nil || password == "" {
 		s.loginFailed(c, clientIP, &rsp)

@@ -16,12 +16,14 @@ import (
 	"NanoKVM-Server/middleware"
 	"NanoKVM-Server/router"
 	"NanoKVM-Server/service/application"
+	"NanoKVM-Server/service/audit"
 	"NanoKVM-Server/service/extensions/netbird"
 	"NanoKVM-Server/service/extensions/tailscale"
 	"NanoKVM-Server/service/failsafe"
 	"NanoKVM-Server/service/hid"
 	"NanoKVM-Server/service/ion"
 	"NanoKVM-Server/service/metrics"
+	"NanoKVM-Server/service/network"
 	"NanoKVM-Server/service/sequence"
 	"NanoKVM-Server/service/stream/webrtc"
 	"NanoKVM-Server/service/vm"
@@ -45,6 +47,7 @@ func initialize() {
 	}
 
 	logger.Init()
+	audit.Init(logger.Syslog)
 
 	// A freshly flashed card gets the password its first boot generated in
 	// place of admin/admin. This runs before the server answers any login.
@@ -121,6 +124,8 @@ func initialize() {
 	// just booted and the VPN connects at boot.
 	go tailscale.ConnectAtBoot()
 	go netbird.ConnectAtBoot()
+	// The saved IPv6 setting, once per boot. See service/network/ipv6.go.
+	go network.RestoreIPv6()
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
@@ -267,6 +272,8 @@ func dispose() {
 	// First, and quick: it waits at most for one key press to be released, so
 	// the jiggler never leaves a key held on the host across a restart.
 	teardownStep("jiggler", jiggler.GetJiggler().Shutdown)
+	// The audit log waits in memory for up to a few seconds; write it out.
+	teardownStep("audit log", audit.Default().Flush)
 	// As quick, for the same reason: a macro or an auto-tap stops and lets go
 	// of what it holds.
 	teardownStep("input sequence", sequence.Shutdown)
