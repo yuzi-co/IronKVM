@@ -1018,6 +1018,82 @@ efuse_uid() {
     printf 'UID: %s_%s\n' "$1" "$2"
 }
 
+# usb_identity_read sets the IDs and strings the gadget shows the host:
+# usb_vid, usb_pid, usb_manufacturer, usb_product, and usb_serial, which is
+# empty unless the owner chose one.
+#
+# The web UI saves the owner's choice to /etc/kvm/usb-identity, one key=value
+# per line (server/service/vm/usb-identity.go). /etc/kvm is on /data, so the
+# choice survives an image and is the same on both slots. Without that file
+# the older /boot/usb.vid and /boot/usb.pid still apply, and without those the
+# board is a NanoKVM. The defaults are repeated in the server's default preset,
+# and a test there holds the copies together.
+#
+# Every field is checked again here, because the file can be edited by hand
+# and configfs takes whatever is written to it. A field that does not pass is
+# left at its default and the rest of the file still applies: a typo in the
+# product name must not cost the host its keyboard.
+usb_identity_read() {
+    usb_vid=0x3346
+    usb_pid=0x1009
+    usb_manufacturer='sipeed'
+    usb_product='NanoKVM'
+    usb_serial=
+
+    [ -e /boot/usb.vid ] && usb_vid=$(cat /boot/usb.vid)
+    [ -e /boot/usb.pid ] && usb_pid=$(cat /boot/usb.pid)
+
+    _idfile=${USB_IDENTITY_FILE:-/etc/kvm/usb-identity}
+    [ -r "$_idfile" ] || return 0
+
+    _idv=$(usb_identity_field "$_idfile" vid)
+    if usb_identity_id "$_idv"; then usb_vid=$_idv; else echo "usb: $_idfile: bad vid '$_idv'"; fi
+    _idv=$(usb_identity_field "$_idfile" pid)
+    if usb_identity_id "$_idv"; then usb_pid=$_idv; else echo "usb: $_idfile: bad pid '$_idv'"; fi
+    _idv=$(usb_identity_field "$_idfile" manufacturer)
+    if usb_identity_string "$_idv"; then usb_manufacturer=$_idv; else echo "usb: $_idfile: bad manufacturer"; fi
+    _idv=$(usb_identity_field "$_idfile" product)
+    if usb_identity_string "$_idv"; then usb_product=$_idv; else echo "usb: $_idfile: bad product"; fi
+    # An empty serial is the board's own, and not an error.
+    _idv=$(usb_identity_field "$_idfile" serial)
+    if [ -z "$_idv" ]; then :
+    elif usb_identity_serial "$_idv"; then usb_serial=$_idv
+    else echo "usb: $_idfile: bad serial"
+    fi
+
+    return 0
+}
+
+# usb_identity_field prints the first value of one key in the identity file.
+usb_identity_field() {
+    sed -n "s/^$2=//p" "$1" | head -n 1
+}
+
+# usb_identity_id accepts 0x and four hex digits, and not zero.
+usb_identity_id() {
+    case "$1" in
+        0x0000) return 1 ;;
+        0x[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]) return 0 ;;
+    esac
+    return 1
+}
+
+# usb_identity_string accepts what a string descriptor holds: at most 126
+# characters, and not none.
+usb_identity_string() {
+    [ -n "$1" ] && [ ${#1} -le 126 ]
+}
+
+# usb_identity_serial accepts 12 to 126 letters and digits. Mass storage asks
+# for at least 12.
+usb_identity_serial() {
+    [ ${#1} -ge 12 ] && [ ${#1} -le 126 ] || return 1
+    case "$1" in
+        *[!0-9A-Za-z]*) return 1 ;;
+    esac
+    return 0
+}
+
 start_usb_dev(){
     # f_hid copies the descriptors into its instance when the gadget is bound
     # and refuses every write to them afterwards, so rebuilding on top of a
@@ -1047,20 +1123,9 @@ start_usb_dev(){
     echo 0x0200 > bcdUSB
     echo 0x0510 > bcdDevice
 
-    # echo 0x3346 > idVendor
-    # echo 0x1009 > idProduct
-    if [ -e /boot/usb.vid ]
-    then
-        cat /boot/usb.vid > idVendor
-    else
-        echo 0x3346 > idVendor
-    fi
-    if [ -e /boot/usb.pid ]
-    then
-        cat /boot/usb.pid > idProduct
-    else
-        echo 0x1009 > idProduct
-    fi
+    usb_identity_read
+    echo "$usb_vid" > idVendor
+    echo "$usb_pid" > idProduct
 
     echo 0xEF > bDeviceClass
     echo 0x02 > bDeviceSubClass
@@ -1086,9 +1151,12 @@ start_usb_dev(){
             serial="$uid_serial"
         fi
     fi
+    [ -n "$usb_serial" ] && serial=$usb_serial
     echo "$serial" > strings/0x409/serialnumber
-    echo 'sipeed' > strings/0x409/manufacturer
-    echo 'NanoKVM' > strings/0x409/product
+    printf '%s
+' "$usb_manufacturer" > strings/0x409/manufacturer
+    printf '%s
+' "$usb_product" > strings/0x409/product
 
     mkdir configs/c.1
     echo 0xE0 > configs/c.1/bmAttributes

@@ -1179,6 +1179,33 @@ const nl = {
           reenumerate:
             'Toepassen bouwt de USB-verbinding opnieuw op. De host verliest het toetsenbord, de muis en de virtuele schijf enkele seconden.'
         },
+        usbIdentity: {
+          title: 'USB-identiteit',
+          description: 'De leveranciers- en product-ID en de namen die de externe host voor dit apparaat ziet.',
+          live: 'De host ziet:',
+          bootOverride: '/boot/usb.vid of /boot/usb.pid is ingesteld. Dit geldt zolang de standaard is gekozen.',
+          vendorId: 'Leveranciers-ID',
+          productId: 'Product-ID',
+          manufacturer: 'Fabrikant',
+          product: 'Productnaam',
+          serial: 'Serienummer',
+          serialDesc: '12 tot 64 letters en cijfers. Laat leeg om dat van het bord te houden.',
+          serialPlaceholder: 'Dat van het bord',
+          invalid: 'Controleer de gemarkeerde velden.',
+          apply: 'Toepassen',
+          restore: 'Standaard herstellen',
+          confirm: 'USB-identiteit wijzigen?',
+          restoreConfirm: 'Standaard USB-identiteit herstellen?',
+          warning: 'De host ziet een nieuw USB-apparaat en somt het opnieuw op: toetsenbord, muis en virtuele schijf vallen enkele seconden weg en de host installeert mogelijk stuurprogramma\'s.',
+          error: 'Kan de USB-identiteit niet lezen.',
+          presets: {
+            default: 'Standaard',
+            logitech: 'Logitech-toetsenbord',
+            microsoft: 'Microsoft-toetsenbord',
+            dell: 'Dell-toetsenbord',
+            custom: 'Aangepast'
+          }
+        },
         audio: 'Virtuele luidspreker',
         audioDesc:
           'Biedt de externe host een USB-geluidskaart aan, zodat u het geluid kunt horen. De host moet deze als uitvoerapparaat kiezen. Omschakelen bouwt de USB-verbinding opnieuw op.',

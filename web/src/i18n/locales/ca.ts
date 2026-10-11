@@ -1177,6 +1177,33 @@ const ca = {
           reenumerate:
             "En aplicar-ho es reconstrueix la connexió USB. L'amfitrió perd el teclat, el ratolí i el disc virtual durant uns segons."
         },
+        usbIdentity: {
+          title: 'Identitat USB',
+          description: 'Els ID de fabricant i de producte i els noms que l\'amfitrió remot veu per a aquest dispositiu.',
+          live: 'L\'amfitrió veu:',
+          bootOverride: '/boot/usb.vid o /boot/usb.pid està definit. S\'aplica mentre el predeterminat estigui seleccionat.',
+          vendorId: 'ID de fabricant',
+          productId: 'ID de producte',
+          manufacturer: 'Fabricant',
+          product: 'Nom del producte',
+          serial: 'Número de sèrie',
+          serialDesc: 'De 12 a 64 lletres i dígits. Deixeu-lo buit per mantenir el de la placa.',
+          serialPlaceholder: 'El de la placa',
+          invalid: 'Reviseu els camps destacats.',
+          apply: 'Aplica',
+          restore: 'Restaura el predeterminat',
+          confirm: 'Voleu canviar la identitat USB?',
+          restoreConfirm: 'Voleu restaurar la identitat USB predeterminada?',
+          warning: 'L\'amfitrió veu un dispositiu USB nou i el torna a enumerar: el teclat, el ratolí i el disc virtual es perden uns segons, i l\'amfitrió pot instal·lar controladors.',
+          error: 'No s\'ha pogut llegir la identitat USB.',
+          presets: {
+            default: 'Predeterminat',
+            logitech: 'Teclat Logitech',
+            microsoft: 'Teclat Microsoft',
+            dell: 'Teclat Dell',
+            custom: 'Personalitzat'
+          }
+        },
         audio: 'Altaveu virtual',
         audioDesc:
           "Presenta una targeta de so USB a l'amfitrió remot, perquè el pugueu sentir. L'amfitrió l'ha de seleccionar com a dispositiu de sortida. Canviar-ho reconstrueix la connexió USB.",

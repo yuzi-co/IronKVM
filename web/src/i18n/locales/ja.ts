@@ -1173,6 +1173,33 @@ const ja = {
           reenumerate:
             '適用すると USB 接続が再構築されます。ホストは数秒間、キーボード、マウス、仮想ディスクを使用できなくなります。'
         },
+        usbIdentity: {
+          title: 'USB ID',
+          description: 'リモートホストがこのデバイスについて認識するベンダー ID、製品 ID と名前。',
+          live: 'ホストからの見え方:',
+          bootOverride: '/boot/usb.vid または /boot/usb.pid が設定されています。デフォルトを選択している間は有効です。',
+          vendorId: 'ベンダー ID',
+          productId: '製品 ID',
+          manufacturer: '製造元',
+          product: '製品名',
+          serial: 'シリアル番号',
+          serialDesc: '英数字 12～64 文字。空欄にするとボード固有の番号を使います。',
+          serialPlaceholder: 'ボード固有の番号',
+          invalid: '強調表示された項目を確認してください。',
+          apply: '適用',
+          restore: 'デフォルトに戻す',
+          confirm: 'USB ID を変更しますか?',
+          restoreConfirm: 'USB ID をデフォルトに戻しますか?',
+          warning: 'ホストは新しい USB デバイスとして再列挙します。キーボード、マウス、仮想ディスクが数秒間切断され、ホストがドライバーをインストールすることがあります。',
+          error: 'USB ID を読み取れませんでした。',
+          presets: {
+            default: 'デフォルト',
+            logitech: 'Logitech キーボード',
+            microsoft: 'Microsoft キーボード',
+            dell: 'Dell キーボード',
+            custom: 'カスタム'
+          }
+        },
         audio: '仮想スピーカー',
         audioDesc:
           'リモートホストに USB サウンドカードを提供し、ホストの音声を聞けるようにします。ホスト側で出力デバイスとして選択する必要があります。切り替えると USB 接続が再構築されます。',

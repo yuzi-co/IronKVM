@@ -1109,6 +1109,33 @@ const zh_tw = {
           confirm: '重新連接 USB 裝置？',
           reenumerate: '套用後將重建 USB 連線。主機會有幾秒鐘無法使用鍵盤、滑鼠和虛擬磁碟。'
         },
+        usbIdentity: {
+          title: 'USB 識別',
+          description: '遠端主機看到的此裝置的廠商 ID、產品 ID 與名稱。',
+          live: '主機看到:',
+          bootOverride: '已設定 /boot/usb.vid 或 /boot/usb.pid,選擇預設值時生效。',
+          vendorId: '廠商 ID',
+          productId: '產品 ID',
+          manufacturer: '製造商',
+          product: '產品名稱',
+          serial: '序號',
+          serialDesc: '12 到 64 個字母與數字。留空則使用板子本身的序號。',
+          serialPlaceholder: '板子本身的序號',
+          invalid: '請檢查醒目標示的欄位。',
+          apply: '套用',
+          restore: '還原預設',
+          confirm: '變更 USB 識別?',
+          restoreConfirm: '還原預設 USB 識別?',
+          warning: '主機會看到新的 USB 裝置並重新列舉:鍵盤、滑鼠與虛擬磁碟會中斷幾秒鐘,主機可能會安裝驅動程式。',
+          error: '無法讀取 USB 識別。',
+          presets: {
+            default: '預設',
+            logitech: 'Logitech 鍵盤',
+            microsoft: 'Microsoft 鍵盤',
+            dell: 'Dell 鍵盤',
+            custom: '自訂'
+          }
+        },
         audio: '虛擬喇叭',
         audioDesc:
           '向遠端主機提供一張 USB 音效卡，讓您能聽到它的聲音。主機必須將其選為輸出裝置。切換此項會重建 USB 連線。',

@@ -1110,6 +1110,33 @@ const zh = {
           confirm: '重新连接 USB 设备？',
           reenumerate: '应用后将重建 USB 连接。主机会在几秒钟内失去键盘、鼠标和虚拟磁盘。'
         },
+        usbIdentity: {
+          title: 'USB 标识',
+          description: '远程主机看到的此设备的厂商 ID、产品 ID 和名称。',
+          live: '主机看到:',
+          bootOverride: '已设置 /boot/usb.vid 或 /boot/usb.pid,选择默认值时生效。',
+          vendorId: '厂商 ID',
+          productId: '产品 ID',
+          manufacturer: '制造商',
+          product: '产品名称',
+          serial: '序列号',
+          serialDesc: '12 到 64 个字母和数字。留空则使用板子自身的序列号。',
+          serialPlaceholder: '板子自身的序列号',
+          invalid: '请检查高亮的字段。',
+          apply: '应用',
+          restore: '恢复默认',
+          confirm: '更改 USB 标识?',
+          restoreConfirm: '恢复默认 USB 标识?',
+          warning: '主机会看到一个新的 USB 设备并重新枚举:键盘、鼠标和虚拟磁盘会断开几秒钟,主机可能会安装驱动。',
+          error: '无法读取 USB 标识。',
+          presets: {
+            default: '默认',
+            logitech: 'Logitech 键盘',
+            microsoft: 'Microsoft 键盘',
+            dell: 'Dell 键盘',
+            custom: '自定义'
+          }
+        },
         audio: '虚拟扬声器',
         audioDesc:
           '向远程主机提供一个 USB 声卡，以便听到其声音。主机需要将其选为输出设备。切换此项会重建 USB 连接。',

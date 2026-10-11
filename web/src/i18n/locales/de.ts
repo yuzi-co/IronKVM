@@ -1195,6 +1195,33 @@ const de = {
           reenumerate:
             'Beim Übernehmen wird die USB-Verbindung neu aufgebaut. Der Host verliert Tastatur, Maus und virtuelle Festplatte für einige Sekunden.'
         },
+        usbIdentity: {
+          title: 'USB-Identität',
+          description: 'Hersteller- und Produkt-ID sowie Namen, die der entfernte Host für dieses Gerät sieht.',
+          live: 'Der Host sieht:',
+          bootOverride: '/boot/usb.vid oder /boot/usb.pid ist gesetzt. Es gilt, solange die Standardeinstellung gewählt ist.',
+          vendorId: 'Hersteller-ID',
+          productId: 'Produkt-ID',
+          manufacturer: 'Hersteller',
+          product: 'Produktname',
+          serial: 'Seriennummer',
+          serialDesc: '12 bis 64 Buchstaben und Ziffern. Leer lassen, um die eigene des Geräts zu behalten.',
+          serialPlaceholder: 'Die eigene des Geräts',
+          invalid: 'Bitte die markierten Felder prüfen.',
+          apply: 'Übernehmen',
+          restore: 'Standard wiederherstellen',
+          confirm: 'USB-Identität ändern?',
+          restoreConfirm: 'Standard-USB-Identität wiederherstellen?',
+          warning: 'Der Host sieht ein neues USB-Gerät und erkennt es neu: Tastatur, Maus und virtuelle Festplatte fallen einige Sekunden aus, und der Host installiert eventuell Treiber.',
+          error: 'Die USB-Identität konnte nicht gelesen werden.',
+          presets: {
+            default: 'Standard',
+            logitech: 'Logitech-Tastatur',
+            microsoft: 'Microsoft-Tastatur',
+            dell: 'Dell-Tastatur',
+            custom: 'Benutzerdefiniert'
+          }
+        },
         audio: 'Virtueller Lautsprecher',
         audioDesc:
           'Stellt dem entfernten Host eine USB-Soundkarte bereit, damit Sie ihn hören können. Der Host muss sie als Ausgabegerät auswählen. Beim Umschalten wird die USB-Verbindung neu aufgebaut.',

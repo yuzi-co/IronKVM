@@ -1183,6 +1183,33 @@ const it = {
           reenumerate:
             "Applicando si ricostruisce la connessione USB. L'host perde tastiera, mouse e disco virtuale per alcuni secondi."
         },
+        usbIdentity: {
+          title: 'Identità USB',
+          description: 'Gli ID fornitore e prodotto e i nomi che l\'host remoto vede per questo dispositivo.',
+          live: 'L\'host vede:',
+          bootOverride: '/boot/usb.vid o /boot/usb.pid è impostato. Si applica finché è selezionato il predefinito.',
+          vendorId: 'ID fornitore',
+          productId: 'ID prodotto',
+          manufacturer: 'Produttore',
+          product: 'Nome prodotto',
+          serial: 'Numero di serie',
+          serialDesc: 'Da 12 a 64 lettere e cifre. Lasciare vuoto per mantenere quello della scheda.',
+          serialPlaceholder: 'Quello della scheda',
+          invalid: 'Controllare i campi evidenziati.',
+          apply: 'Applica',
+          restore: 'Ripristina predefinito',
+          confirm: 'Cambiare l\'identità USB?',
+          restoreConfirm: 'Ripristinare l\'identità USB predefinita?',
+          warning: 'L\'host vede un nuovo dispositivo USB e lo enumera di nuovo: tastiera, mouse e disco virtuale si interrompono per alcuni secondi e l\'host potrebbe installare driver.',
+          error: 'Impossibile leggere l\'identità USB.',
+          presets: {
+            default: 'Predefinito',
+            logitech: 'Tastiera Logitech',
+            microsoft: 'Tastiera Microsoft',
+            dell: 'Tastiera Dell',
+            custom: 'Personalizzato'
+          }
+        },
         audio: 'Altoparlante virtuale',
         audioDesc:
           "Presenta una scheda audio USB all'host remoto, così puoi sentirlo. L'host deve selezionarla come dispositivo di uscita. Cambiare questa opzione ricostruisce la connessione USB.",

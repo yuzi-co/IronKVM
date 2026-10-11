@@ -1150,6 +1150,33 @@ const en = {
           reenumerate:
             'Applying rebuilds the USB connection. The host loses the keyboard, mouse and virtual disk for a few seconds.'
         },
+        usbIdentity: {
+          title: 'USB identity',
+          description: 'The vendor and product IDs and names the remote host sees for this device.',
+          live: 'The host sees:',
+          bootOverride: '/boot/usb.vid or /boot/usb.pid is set. It applies while the default is selected.',
+          vendorId: 'Vendor ID',
+          productId: 'Product ID',
+          manufacturer: 'Manufacturer',
+          product: 'Product name',
+          serial: 'Serial number',
+          serialDesc: '12 to 64 letters and digits. Leave empty to keep the board\'s own.',
+          serialPlaceholder: 'The board\'s own',
+          invalid: 'Check the highlighted fields.',
+          apply: 'Apply',
+          restore: 'Restore default',
+          confirm: 'Change the USB identity?',
+          restoreConfirm: 'Restore the default USB identity?',
+          warning: 'The host sees a new USB device and enumerates it again: the keyboard, mouse and virtual disk drop for a few seconds, and the host may install drivers.',
+          error: 'Could not read the USB identity.',
+          presets: {
+            default: 'Default',
+            logitech: 'Logitech keyboard',
+            microsoft: 'Microsoft keyboard',
+            dell: 'Dell keyboard',
+            custom: 'Custom'
+          }
+        },
         audio: 'Virtual Speaker',
         audioDesc:
           'Present a USB sound card to the remote host, so you can hear it. The host must select it as its output device. Switching this rebuilds the USB connection.',

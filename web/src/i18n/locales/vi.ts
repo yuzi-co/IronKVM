@@ -1156,6 +1156,33 @@ const vi = {
           reenumerate:
             'Áp dụng sẽ dựng lại kết nối USB. Máy chủ mất bàn phím, chuột và ổ đĩa ảo trong vài giây.'
         },
+        usbIdentity: {
+          title: 'Định danh USB',
+          description: 'ID nhà cung cấp, ID sản phẩm và tên mà máy chủ từ xa thấy cho thiết bị này.',
+          live: 'Máy chủ thấy:',
+          bootOverride: '/boot/usb.vid hoặc /boot/usb.pid đã được đặt. Nó áp dụng khi chọn mặc định.',
+          vendorId: 'ID nhà cung cấp',
+          productId: 'ID sản phẩm',
+          manufacturer: 'Nhà sản xuất',
+          product: 'Tên sản phẩm',
+          serial: 'Số sê-ri',
+          serialDesc: '12 đến 64 chữ cái và chữ số. Để trống để giữ số của bo mạch.',
+          serialPlaceholder: 'Số của bo mạch',
+          invalid: 'Kiểm tra các trường được đánh dấu.',
+          apply: 'Áp dụng',
+          restore: 'Khôi phục mặc định',
+          confirm: 'Đổi định danh USB?',
+          restoreConfirm: 'Khôi phục định danh USB mặc định?',
+          warning: 'Máy chủ thấy một thiết bị USB mới và liệt kê lại: bàn phím, chuột và đĩa ảo mất vài giây, và máy chủ có thể cài trình điều khiển.',
+          error: 'Không thể đọc định danh USB.',
+          presets: {
+            default: 'Mặc định',
+            logitech: 'Bàn phím Logitech',
+            microsoft: 'Bàn phím Microsoft',
+            dell: 'Bàn phím Dell',
+            custom: 'Tùy chỉnh'
+          }
+        },
         audio: 'Loa ảo',
         audioDesc:
           'Cung cấp một card âm thanh USB cho máy chủ từ xa, để bạn có thể nghe âm thanh của nó. Máy chủ phải chọn nó làm thiết bị đầu ra. Thay đổi mục này sẽ dựng lại kết nối USB.',

@@ -1159,6 +1159,33 @@ const nb = {
           reenumerate:
             'Når du bruker endringen, bygges USB-tilkoblingen opp på nytt. Verten mister tastatur, mus og virtuell disk i noen sekunder.'
         },
+        usbIdentity: {
+          title: 'USB-identitet',
+          description: 'Leverandør- og produkt-ID og navnene den eksterne verten ser for denne enheten.',
+          live: 'Verten ser:',
+          bootOverride: '/boot/usb.vid eller /boot/usb.pid er satt. Det gjelder så lenge standard er valgt.',
+          vendorId: 'Leverandør-ID',
+          productId: 'Produkt-ID',
+          manufacturer: 'Produsent',
+          product: 'Produktnavn',
+          serial: 'Serienummer',
+          serialDesc: '12 til 64 bokstaver og sifre. La feltet stå tomt for å beholde kortets eget.',
+          serialPlaceholder: 'Kortets eget',
+          invalid: 'Kontroller de merkede feltene.',
+          apply: 'Bruk',
+          restore: 'Gjenopprett standard',
+          confirm: 'Endre USB-identiteten?',
+          restoreConfirm: 'Gjenopprette standard USB-identitet?',
+          warning: 'Verten ser en ny USB-enhet og teller den opp på nytt: tastatur, mus og virtuell disk faller ut i noen sekunder, og verten kan installere drivere.',
+          error: 'Kunne ikke lese USB-identiteten.',
+          presets: {
+            default: 'Standard',
+            logitech: 'Logitech-tastatur',
+            microsoft: 'Microsoft-tastatur',
+            dell: 'Dell-tastatur',
+            custom: 'Egendefinert'
+          }
+        },
         audio: 'Virtuell høyttaler',
         audioDesc:
           'Vis et USB-lydkort for den eksterne verten, slik at du kan høre den. Verten må velge det som utenhet for lyd. Endring av dette bygger opp USB-tilkoblingen på nytt.',
