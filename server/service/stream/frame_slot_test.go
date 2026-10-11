@@ -181,3 +181,47 @@ func TestASlotOfDepthZeroHoldsOne(t *testing.T) {
 		t.Fatal("depth 0 should behave as a slot of one")
 	}
 }
+
+func TestPutIndependentQueuesWhileThereIsRoom(t *testing.T) {
+	slot := NewFrameSlotDepth[int](3)
+	slot.TryPut(1)
+
+	if !slot.PutIndependent(2) {
+		t.Fatal("a slot with room refused an independent frame")
+	}
+	if got := len(slot.Channel()); got != 2 {
+		t.Fatalf("the slot holds %d frames, want 2", got)
+	}
+	if slot.Dropped() != 0 {
+		t.Fatal("a frame was discarded although there was room")
+	}
+}
+
+func TestPutIndependentOnAFullSlotDiscardsEverythingPending(t *testing.T) {
+	slot := NewFrameSlotDepth[int](3)
+	slot.TryPut(1)
+	slot.TryPut(2)
+	slot.TryPut(3)
+
+	if !slot.PutIndependent(4) {
+		t.Fatal("a full slot refused an independent frame")
+	}
+	if got := len(slot.Channel()); got != 1 {
+		t.Fatalf("the slot holds %d frames, want 1", got)
+	}
+	if value, _ := slot.Take(); value != 4 {
+		t.Fatalf("expected 4, got %d", value)
+	}
+	if got := slot.Dropped(); got != 3 {
+		t.Fatalf("dropped %d frames, want 3", got)
+	}
+}
+
+func TestPutIndependentOnAClosedSlotIsRefused(t *testing.T) {
+	slot := NewFrameSlot[int]()
+	slot.Close()
+
+	if slot.PutIndependent(1) {
+		t.Fatal("a closed slot accepted a frame")
+	}
+}

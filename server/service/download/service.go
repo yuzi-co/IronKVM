@@ -36,11 +36,19 @@ const (
 	downloadStatusPresent        downloadStatus = "present"
 	downloadStatusFailed         downloadStatus = "failed"
 	downloadStatusChecksumFailed downloadStatus = "checksum_failed"
+
+	// ISO 9660 and UDF volume descriptors live in sector 16 of the image.
+	volumeDescriptorOffset = 0x8001
+	volumeDescriptorSize   = 5
+	// Only the descriptors are read before the image is stored, so an unusable
+	// image is rejected without transferring all of it.
+	imageHeaderSize = volumeDescriptorOffset + volumeDescriptorSize
 )
 
 var (
 	errDownloadInProgress = errors.New("download in progress")
 	errSHA256Mismatch     = errors.New("sha256 mismatch")
+	errUnsupportedImage   = errors.New("unsupported image format: expected an ISO 9660/UDF image or a raw disk image")
 	validISOFilename      = regexp.MustCompile(`^[a-zA-Z0-9._-]+$`)
 )
 
@@ -167,24 +175,49 @@ func (s *Service) ImageEnabled(c *gin.Context) {
 	rsp.OkRspWithData(c, &proto.ImageEnabledRsp{Enabled: true})
 }
 
-func isISO9660(path string) (bool, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return false, err
-	}
-	defer f.Close()
-
-	// ISO-9660 magic "CD001" at offset 32769.
-	if _, err = f.Seek(0x8001, io.SeekStart); err != nil {
-		return false, err
-	}
-
-	buf := make([]byte, 5)
-	if _, err = io.ReadFull(f, buf); err != nil {
-		return false, err
+// isSupportedImage reports whether the uploaded image can be exposed through
+// the USB mass-storage gadget. ISO 9660 images and UDF bridges, which is what
+// bootable installer ISOs are normally built as, carry "CD001" in the volume
+// descriptor sector, while UDF-only images carry "BEA01" there. From upstream
+// #937, which replaced a check that accepted CD001 alone and ran only after
+// the whole file had been written.
+func isSupportedImage(head []byte) bool {
+	if len(head) >= volumeDescriptorOffset+volumeDescriptorSize {
+		switch string(head[volumeDescriptorOffset : volumeDescriptorOffset+volumeDescriptorSize]) {
+		case "CD001", "BEA01":
+			return true
+		}
 	}
 
-	return string(buf) == "CD001", nil
+	return looksLikeDiskImage(head)
+}
+
+// looksLikeDiskImage reports whether the image starts with a partition table or
+// a filesystem that a target machine can mount on its own, which covers raw
+// disk images such as macOS installers converted from a DMG.
+func looksLikeDiskImage(head []byte) bool {
+	if len(head) < 0x200 {
+		return false
+	}
+
+	if len(head) >= 0x208 && string(head[0x200:0x208]) == "EFI PART" { // GPT header
+		return true
+	}
+
+	if len(head) >= 0x24 && string(head[0x20:0x24]) == "NXSB" { // APFS container superblock
+		return true
+	}
+
+	if len(head) >= 0x402 {
+		switch string(head[0x400:0x402]) { // HFS+/HFS volume header
+		case "H+", "BD":
+			return true
+		}
+	}
+
+	// MBR partition table. FAT, exFAT and NTFS volume images carry the same
+	// signature in their boot sector.
+	return head[0x1FE] == 0x55 && head[0x1FF] == 0xAA
 }
 
 func (s *Service) StatusImage(c *gin.Context) {
@@ -212,6 +245,22 @@ func (s *Service) DownloadImageFile(c *gin.Context) {
 		rsp.ErrRsp(c, -1, err.Error())
 		return
 	}
+
+	// The rootfs shares this card, so an upload must not be able to fill it
+	// either. Refused before any of the body is read; a body that understates
+	// its size is bounded by the copy below.
+	available, err := availableBytes(imageDir)
+	if err != nil {
+		log.Errorf("reject image upload: free space of %s: %s", imageDir, err)
+		rsp.ErrRsp(c, -1, "failed to check free space")
+		return
+	}
+	if !fitsOnDisk(c.Request.ContentLength, available) {
+		log.Warnf("reject image upload: %d bytes, %d available", c.Request.ContentLength, available)
+		rsp.ErrRsp(c, -1, errNotEnoughSpace.Error())
+		return
+	}
+	limit := available - reservedFreeBytes
 
 	done, err := s.beginDownload("", nil)
 	if err != nil {
@@ -248,15 +297,35 @@ func (s *Service) DownloadImageFile(c *gin.Context) {
 		filename := part.FileName()
 		if err := validateISOFilename(filename); err != nil {
 			_ = part.Close()
+			log.Warnf("reject uploaded image %q: %s", filename, err)
 			rsp.ErrRsp(c, -1, err.Error())
 			return
 		}
 		s.setDownloadFile(done, filename)
 
-		out, err := os.CreateTemp("/data", ".nanokvm-upload-*")
+		// Check the volume descriptors before anything is stored, so an
+		// unusable image is rejected in seconds instead of after the whole
+		// upload. The rejection paths return without draining the body: the
+		// client stops sending once the response arrives.
+		head := make([]byte, imageHeaderSize)
+		headSize, readErr := io.ReadFull(part, head)
+		if readErr != nil && readErr != io.ErrUnexpectedEOF && readErr != io.EOF {
+			_ = part.Close()
+			log.Errorf("read uploaded image %q failed: %s", filename, readErr)
+			rsp.ErrRsp(c, -1, "write failed")
+			return
+		}
+		if !isSupportedImage(head[:headSize]) {
+			_ = part.Close()
+			log.Warnf("reject uploaded image %q: %s", filename, errUnsupportedImage)
+			rsp.ErrRsp(c, -1, errUnsupportedImage.Error())
+			return
+		}
+
+		out, err := os.CreateTemp(imageDir, ".nanokvm-upload-*")
 		if err != nil {
 			_ = part.Close()
-			log.Error("cannot create temporary file")
+			log.Errorf("cannot create temporary file in %s: %s", imageDir, err)
 			rsp.ErrRsp(c, -1, "cannot create temporary file")
 			return
 		}
@@ -267,13 +336,21 @@ func (s *Service) DownloadImageFile(c *gin.Context) {
 		lw := newLoggingWriter(io.MultiWriter(out, hasher), c.Request.ContentLength, func(percentage string) {
 			s.setDownloadProgress(done, percentage)
 		})
-		_, copyErr := io.Copy(lw, part)
+		body := io.MultiReader(bytes.NewReader(head[:headSize]), part)
+		written, copyErr := io.Copy(lw, io.LimitReader(body, limit+1))
+		if copyErr == nil && written > limit {
+			copyErr = errNotEnoughSpace
+		}
 		lw.stopTicker()
 		partCloseErr := part.Close()
 		outCloseErr := out.Close()
 		if copyErr != nil || partCloseErr != nil || outCloseErr != nil {
-			log.Error("write failed")
-			rsp.ErrRsp(c, -1, "write failed")
+			log.Errorf("write uploaded image %q failed: %s", filename, errors.Join(copyErr, partCloseErr, outCloseErr))
+			if errors.Is(copyErr, errNotEnoughSpace) {
+				rsp.ErrRsp(c, -1, errNotEnoughSpace.Error())
+			} else {
+				rsp.ErrRsp(c, -1, "write failed")
+			}
 			return
 		}
 
@@ -283,13 +360,7 @@ func (s *Service) DownloadImageFile(c *gin.Context) {
 			return
 		}
 
-		valid, err := isISO9660(tempPath)
-		if err != nil || !valid {
-			rsp.ErrRsp(c, -1, "file is not a valid ISO image")
-			return
-		}
-
-		outPath := filepath.Join("/data", filename)
+		outPath := filepath.Join(imageDir, filename)
 		if err := os.Rename(tempPath, outPath); err != nil {
 			rsp.ErrRsp(c, -1, "cannot install uploaded image")
 			return

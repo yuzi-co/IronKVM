@@ -118,8 +118,13 @@ func normalizeMountedImage(content string) string {
 }
 
 // legacyMount serves the single-drive mount call older clients make. An
-// image goes into the CD drive when cdrom is set, otherwise into a writable
+// image goes into the CD drive when cdrom is set, otherwise into a read-only
 // disk. No image ejects both drives.
+//
+// The disk is read-only because upstream made this call serve every image
+// read-only (sipeed/NanoKVM #937): a client of this endpoint expects that the
+// host can neither write nor format the image. A writable disk is an explicit
+// choice, made through the drive API's ro field.
 func legacyMount(file string, cdrom bool) error {
 	if file == "" {
 		for _, d := range driveDefs {
@@ -131,7 +136,7 @@ func legacyMount(file string, cdrom bool) error {
 	}
 
 	if !cdrom {
-		return insertDrive(DriveDisk, file, false)
+		return insertDrive(DriveDisk, file, true)
 	}
 
 	// Switching lun.0 into a CD-ROM was the path this replaces, so a gadget

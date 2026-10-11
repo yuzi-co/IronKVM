@@ -528,6 +528,19 @@ is functions/mass_storage.disk0/lun.1/cdrom 1 "a second start keeps the CD drive
 is functions/mass_storage.disk0/lun.1/inquiry_string "NanoKVM USB CD/DVD-ROM  0520" "a second start keeps the CD inquiry string"
 is functions/mass_storage.disk0/lun.0/cdrom 0 "a lun.0 left as a CD-ROM becomes a disk again"
 is functions/mass_storage.disk0/lun.0/ro 0 "and loses the CD's read-only flag"
+
+# A read-only insert by the server leaves lun.0/ro at 1, and the LUN outlives a
+# restart. With no usb.disk0.ro marker the next start has to reset it, or the
+# image named in usb.disk0 comes up read-only too (upstream #937).
+build_env
+: > "$work/boot/usb.disk0"
+run "$S03" start_usb_dev
+echo 1 > "$G/functions/mass_storage.disk0/lun.0/ro"
+echo /data/disk.img > "$work/boot/usb.disk0"
+run "$S03" start_usb_host
+run "$S03" start_usb_dev
+is functions/mass_storage.disk0/lun.0/ro 0 "a restart without the marker resets a stale read-only flag"
+is functions/mass_storage.disk0/lun.0/file /data/disk.img "and the named image goes in writable"
 is functions/mass_storage.disk0/lun.0/inquiry_string "NanoKVM USB Mass Storage0520" "and gets the disk inquiry string back"
 
 # --- network -------------------------------------------------------------

@@ -20,6 +20,9 @@ import (
 //   - TryPut refuses while the slot is full, so the producer learns the
 //     client is behind and can decide what to send next (H.264, where a gap
 //     has to be repaired with a keyframe).
+//   - PutIndependent makes room by discarding everything pending, for a
+//     frame the consumer can restart from (the H.264 keyframe that repairs
+//     such a gap).
 type FrameSlot[T any] struct {
 	mutex   sync.Mutex
 	frames  chan T
@@ -85,6 +88,37 @@ func (s *FrameSlot[T]) Replace(frame T) bool {
 
 	// The slot has room and no other producer can run while the mutex is
 	// held, so this cannot block.
+	s.frames <- frame
+
+	return true
+}
+
+// PutIndependent stores a frame that does not depend on the ones before it,
+// an H.264 keyframe. It is never refused: with room it is queued behind the
+// pending frames like TryPut, and with the slot full every pending frame is
+// discarded first, since the consumer can start from this one without them.
+// It reports whether the slot accepted it, false only once closed.
+func (s *FrameSlot[T]) PutIndependent(frame T) bool {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	if s.closed {
+		return false
+	}
+
+	if len(s.frames) == cap(s.frames) {
+		for drained := false; !drained; {
+			select {
+			case <-s.frames:
+				s.dropped.Add(1)
+			default:
+				drained = true
+			}
+		}
+	}
+
+	// As in Replace: the slot has room, and the mutex keeps every other
+	// producer out, so this cannot block.
 	s.frames <- frame
 
 	return true
