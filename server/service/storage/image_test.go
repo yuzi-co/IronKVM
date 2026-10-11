@@ -73,7 +73,7 @@ func TestLegacyMountWithCdromGoesToTheCdDrive(t *testing.T) {
 	}
 }
 
-func TestLegacyMountWithoutCdromGoesToAWritableDisk(t *testing.T) {
+func TestLegacyMountWithoutCdromGoesToAReadOnlyDisk(t *testing.T) {
 	dir := fakeGadget(t, "lun.0", "lun.1")
 
 	if err := legacyMount("/data/a.img", false); err != nil {
@@ -82,8 +82,8 @@ func TestLegacyMountWithoutCdromGoesToAWritableDisk(t *testing.T) {
 	if got := readAttr(t, dir, "lun.0", "file"); got != "/data/a.img" {
 		t.Fatalf("lun.0/file is %q", got)
 	}
-	if got := readAttr(t, dir, "lun.0", "ro"); got != "0" {
-		t.Fatalf("lun.0/ro is %q, want 0", got)
+	if got := readAttr(t, dir, "lun.0", "ro"); got != "1" {
+		t.Fatalf("lun.0/ro is %q, want 1", got)
 	}
 }
 

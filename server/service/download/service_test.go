@@ -1,6 +1,7 @@
 package download
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"os"
 	"path/filepath"
@@ -108,5 +109,52 @@ func TestFileHasSHA256(t *testing.T) {
 	}
 	if fileHasSHA256(path, nil) {
 		t.Error("without a checksum nothing can be trusted as present")
+	}
+}
+
+func headWithDescriptor(magic string) []byte {
+	head := make([]byte, imageHeaderSize)
+	copy(head[volumeDescriptorOffset:], magic)
+	return head
+}
+
+// From upstream #937: an upload is judged by its first sectors, before it is
+// stored.
+func TestIsSupportedImage(t *testing.T) {
+	mbr := make([]byte, imageHeaderSize)
+	mbr[0x1FE], mbr[0x1FF] = 0x55, 0xAA
+
+	gpt := make([]byte, imageHeaderSize)
+	copy(gpt[0x200:], "EFI PART")
+
+	apfs := make([]byte, imageHeaderSize)
+	copy(apfs[0x20:], "NXSB")
+
+	hfs := make([]byte, imageHeaderSize)
+	copy(hfs[0x400:], "H+")
+
+	tests := []struct {
+		name string
+		head []byte
+		want bool
+	}{
+		{"iso9660 image", headWithDescriptor("CD001"), true},
+		{"udf only image", headWithDescriptor("BEA01"), true},
+		{"gpt disk image", gpt, true},
+		{"apfs disk image", apfs, true},
+		{"hfs+ disk image", hfs, true},
+		{"mbr disk image", mbr, true},
+		{"compressed dmg", make([]byte, imageHeaderSize), false},
+		{"plain data", bytes.Repeat([]byte{0xA5}, imageHeaderSize), false},
+		{"truncated image", headWithDescriptor("CD001")[:16], false},
+		{"empty image", nil, false},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got := isSupportedImage(test.head); got != test.want {
+				t.Fatalf("isSupportedImage(%s) = %v, want %v", test.name, got, test.want)
+			}
+		})
 	}
 }

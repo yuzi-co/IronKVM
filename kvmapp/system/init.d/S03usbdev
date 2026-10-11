@@ -1388,10 +1388,16 @@ USB_STRING
                     echo 0 > functions/mass_storage.disk0/lun.0/cdrom
             fi
             echo 1 > functions/mass_storage.disk0/lun.0/removable
+            # ro is always written, because the LUN outlives a restart of this
+            # script: a read-only insert by the server would otherwise leave
+            # the boot image named in usb.disk0 read-only too (upstream #937).
+            # It only takes while no medium is present, as above, so the
+            # reset is quiet when the server's medium is still in.
             if [ -e /boot/usb.disk0.ro ]
             then
                     echo 1 > functions/mass_storage.disk0/lun.0/ro
-                    echo 0 > functions/mass_storage.disk0/lun.0/cdrom
+            else
+                    echo 0 > functions/mass_storage.disk0/lun.0/ro 2>/dev/null
             fi
             echo "NanoKVM USB Mass Storage0520" > functions/mass_storage.disk0/lun.0/inquiry_string
             disk=$(cat /boot/usb.disk0)
