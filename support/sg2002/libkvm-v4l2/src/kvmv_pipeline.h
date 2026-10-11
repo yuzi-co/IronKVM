@@ -135,6 +135,22 @@ struct kvmv_stage_times {
 	unsigned int frames;
 };
 
+/*
+ * When the last picture the pipe encoded was captured and encoded, all
+ * CLOCK_MONOTONIC microseconds. captured_us is the capture buffer's timestamp,
+ * which the SG2002 capture driver takes at the frame-done interrupt, so it is
+ * the end of the frame's transfer, not its start. frame_us is the source's
+ * frame time then (0 until two frames have been seen). encode_start_us is when
+ * the picture went to the encoder, encode_end_us when its access unit came
+ * back.
+ */
+struct kvmv_frame_times {
+	uint64_t captured_us;
+	uint32_t frame_us;
+	uint64_t encode_start_us;
+	uint64_t encode_end_us;
+};
+
 /* An NV12 picture the CPU can read. */
 struct kvmv_nv12 {
 	const uint8_t *y; /* luma plane, height rows of stride bytes */
@@ -186,7 +202,8 @@ struct kvmv_pipe {
 	int running;
 	struct kvmv_applied applied;
 	struct kvmv_stage_times times;
-	uint64_t cap_ts_us; /* CLOCK_MONOTONIC capture time of the frame being scaled */
+	struct kvmv_frame_times last; /* of the last picture encoded */
+	uint64_t cap_ts_us;/* CLOCK_MONOTONIC capture time of the frame being scaled */
 	uint32_t cap_seq; /* its sequence number */
 	uint32_t cap_interval_us; /* the source's frame time, from the timestamps */
 	uint32_t pickup_wait_max_us; /* kvmv_pipe_cfg.pickup_wait_ms */

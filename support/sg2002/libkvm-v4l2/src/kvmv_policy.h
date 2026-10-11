@@ -16,6 +16,14 @@
 #define KVMV_BITRATE_MAX_KBPS 10000
 #define KVMV_GOP_MIN 1
 #define KVMV_GOP_MAX 100
+/*
+ * A GOP of 255 (above KVMV_GOP_MAX, so no vendor value) asks for no periodic
+ * keyframes at all: the encoder gets GOP 0, which both the Coda980 and the
+ * WAVE420L take as "the first picture is the only IDR", and every later
+ * keyframe is one the server forces (ironkvm-dist trial 78, PiKVM's "GOP 0").
+ * The rate-control buffers treat it as the longest GOP.
+ */
+#define KVMV_GOP_NONE 255
 #define KVMV_FPS_MIN 10
 #define KVMV_FPS_MAX 120
 #define KVMV_DEFAULT_GOP 30

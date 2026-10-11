@@ -1352,6 +1352,17 @@ static void test_negotiate(void)
 	CHECK_EQ(negotiate(&p, 0, 0, 4000000, 100, 30), 0);
 	CHECK_EQ(mock.gop, 99);
 
+	/* KVMV_GOP_NONE: no periodic keyframes, GOP 0 to the encoder, at the
+	 * start and as a change. */
+	mock_reset();
+	CHECK_EQ(negotiate(&p, 0, 0, 4000000, KVMV_GOP_NONE, 30), 0);
+	CHECK_EQ(mock.gop, 0);
+	CHECK_EQ(p.applied.gop, 0);
+	CHECK_EQ(kvmv_pipe_set_gop(&p, 30), 0);
+	CHECK_EQ(mock.gop, 30);
+	CHECK_EQ(kvmv_pipe_set_gop(&p, KVMV_GOP_NONE), 0);
+	CHECK_EQ(mock.gop, 0);
+
 	/* An encoder that keeps a different bitrate is reported as such. */
 	mock_reset();
 	mock.coda_bitrate_divisor = 2;
