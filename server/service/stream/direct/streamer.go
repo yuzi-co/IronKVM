@@ -137,7 +137,18 @@ func (s *Streamer) run() {
 			// answered on the same clock, which lets the status bar tell how
 			// old a frame is when it is drawn. The ack compares stamps of one
 			// connection only, and they still rise.
-			outbound := newOutboundFrame(frame.KeyFrame, clockMicros(), frame.Data)
+			//
+			// Where the library says when the frame was captured
+			// (libkvm-v4l2), the stamp is that moment on the same clock
+			// instead: when the frame's first line reached the capture,
+			// as on the WebRTC stream's abs-capture-time. The age at
+			// drawing then counts capture and encode too, as PiKVM's
+			// latency does. Capture times rise frame by frame as well.
+			stamp := clockMicros()
+			if frame.HasTimes {
+				stamp = max(0, frame.Times.CaptureStart().Sub(clockBase).Microseconds())
+			}
+			outbound := newOutboundFrame(frame.KeyFrame, stamp, frame.Data)
 			for _, client := range clients {
 				client.offer(outbound)
 			}

@@ -46,6 +46,20 @@ func TestStreamInfoReadsTheSourceMode(t *testing.T) {
 	}
 }
 
+func TestStreamInfoSaysWhetherFramesCarryCaptureTimes(t *testing.T) {
+	t.Cleanup(func() { captureStamps.Store(false) })
+
+	captureStamps.Store(false)
+	if readStreamInfo().CaptureStamps {
+		t.Fatal("capture stamps reported without capture times")
+	}
+
+	captureStamps.Store(true)
+	if !readStreamInfo().CaptureStamps {
+		t.Fatal("capture stamps not reported")
+	}
+}
+
 func TestARefreshRateOlderThanTheSizeIsNotReported(t *testing.T) {
 	// Sipeed's library writes the size and never the rate, so a rate file
 	// from an earlier libkvm-v4l2 run may describe another mode.

@@ -4,6 +4,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync/atomic"
 
 	"NanoKVM-Server/proto"
 
@@ -18,6 +19,10 @@ var (
 	sourceHeightFile  = "/kvmapp/kvm/height"
 	sourceRefreshFile = "/kvmapp/kvm/refresh"
 )
+
+// captureStamps says whether the last frame the capture loop read came with
+// its capture time (H264Frame.HasTimes).
+var captureStamps atomic.Bool
 
 // Info answers GET /api/stream/info, which the web UI's status bar asks
 // every two seconds while it shows: the source's mode as the capture library
@@ -39,6 +44,7 @@ func readStreamInfo() proto.GetStreamInfoRsp {
 	if fps, started := CurrentFPS(); started {
 		info.CaptureFps = int(fps)
 	}
+	info.CaptureStamps = captureStamps.Load()
 
 	return info
 }

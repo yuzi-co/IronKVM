@@ -401,6 +401,7 @@ func (s *H264Source) run() {
 		}
 		if got {
 			frame.Times, frame.HasTimes = videoTimes()
+			captureStamps.Store(frame.HasTimes)
 		}
 		if frame.HasTimes {
 			// The RTP clock follows when the frames were captured, not

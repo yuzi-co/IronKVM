@@ -513,4 +513,9 @@ type GetStreamInfoRsp struct {
 	Height     int `json:"height"`
 	Refresh    int `json:"refresh"`
 	CaptureFps int `json:"captureFps"`
+	// CaptureStamps: the capture loop's frames carry the time they were
+	// captured (libkvm-v4l2), and H.264 Direct stamps its frames with it, so
+	// a frame's age at drawing counts from its capture, not from the
+	// encoder. Off with Sipeed's library.
+	CaptureStamps bool `json:"captureStamps"`
 }
