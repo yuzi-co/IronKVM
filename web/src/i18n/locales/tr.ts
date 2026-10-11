@@ -756,7 +756,68 @@ const tr = {
         locked: 'Bir işlem sürüyor. Bitene kadar diğer sayfalar ve kapatma kullanılamaz.',
         vpnProvider: 'VPN sağlayıcısı'
       },
+      audit: {
+        title: 'Denetim günlüğü',
+        log: 'Olaylar',
+        description:
+          'Kimin oturum açtığı, denetimi aldığı, güç düğmesine bastığı, ortamı veya ayarları değiştirdiği ve yapay zekâ istemcilerinin ne yaptığı. Günlük dolduğunda en eski olaylar silinir.',
+        refresh: 'Yenile',
+        export: 'Dışa aktar',
+        time: 'Zaman',
+        who: 'Kim',
+        address: 'Adres',
+        category: 'Kategori',
+        action: 'Eylem',
+        target: 'Hedef',
+        outcome: 'Sonuç',
+        tier: 'Düzey: {{tier}}',
+        empty: 'Olay yok',
+        searchPlaceholder: 'Eylem, hedef veya ayrıntı ara',
+        loadFailed: 'Denetim günlüğü yüklenemedi.',
+        exportFailed: 'Denetim günlüğü dışa aktarılamadı.',
+        saveFailed: 'Ayar kaydedilemedi.',
+        syslog: 'Olayları syslog\'a gönder',
+        syslogDescription:
+          'Her olayı ayrıca sistem günlüğüne gönderir; sistem günlüğü, Ağ bölümünde ayarlanmışsa uzak syslog toplayıcısına iletir.',
+        storage: '{{directory}} içinde saklanır, en fazla {{size}} KB.',
+        categories: {
+          auth: 'Oturum açma',
+          control: 'Denetim',
+          power: 'Güç',
+          media: 'Ortam',
+          settings: 'Ayarlar',
+          macro: 'Makrolar',
+          system: 'Sistem',
+          agent: 'Yapay zekâ ajanları',
+        },
+        outcomes: {
+          ok: 'Başarılı',
+          fail: 'Başarısız',
+          denied: 'Reddedildi'
+        }
+      },
       mcp: {
+        tiers: {
+          title: 'Yetenek düzeyleri',
+          description:
+            'MCP istemcilerinin ve yerleşik ajanın neler yapabileceğini seçin. Her çağrı, düzeyiyle birlikte denetim günlüğüne kaydedilir.',
+          mcp: 'MCP istemcileri',
+          agent: 'Yerleşik ajan',
+          observe: 'Gözlem',
+          observeDesc: 'Ekran görüntüleri ve durum',
+          input: 'Giriş',
+          inputDesc: 'Klavye ve fare',
+          power: 'Güç',
+          powerDesc: 'ATX güç ve sıfırlama düğmelerine bas',
+          media: 'Ortam',
+          mediaDesc: 'Sanal ortam tak ve çıkar',
+          admin: 'Yönetim',
+          adminDesc: 'Cihaz ayarlarını değiştir (bu düzeyi henüz kullanan bir araç yok)',
+          agentNote:
+            'Yerleşik ajanın henüz güç veya ortam aracı yok, bu yüzden bu iki düzey yalnızca MCP istemcileri için geçerlidir.',
+          loadFailed: 'Yetenek düzeyleri yüklenemedi.',
+          saveFailed: 'Yetenek düzeyleri kaydedilemedi.'
+        },
         keyNote:
           'MCP aşağıda gösterilen kendi API anahtarını kullanır. API Anahtarları sayfasındaki anahtarlar burada çalışmaz.',
         title: 'MCP Hizmeti',

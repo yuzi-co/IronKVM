@@ -10,6 +10,7 @@ import (
 	"NanoKVM-Server/middleware"
 	"NanoKVM-Server/service/agent"
 	"NanoKVM-Server/service/allowlist"
+	"NanoKVM-Server/service/audit"
 	"NanoKVM-Server/service/controlmode"
 	"NanoKVM-Server/service/picoclaw"
 	"NanoKVM-Server/service/vm"
@@ -25,6 +26,8 @@ func Init(r *gin.Engine) {
 	// these go first: every route, the static UI and the login included, is
 	// behind both.
 	r.Use(allowlist.Middleware())
+	audit.SetIdentity(requestIdentity)
+	r.Use(audit.Middleware())
 	r.Use(middleware.LimitBody(middleware.DefaultBodyLimit, bodyLimits))
 
 	web(r)
@@ -124,6 +127,7 @@ func server(r *gin.Engine) {
 	allowlistRouter(r)
 	hidRouter(r)
 	sequenceRouter(r)
+	auditRouter(r)
 	controlRouter(r, control, picoclawService)
 	mcpRouter(r, control, picoclawService)
 	picoclawRouter(r, picoclawService)

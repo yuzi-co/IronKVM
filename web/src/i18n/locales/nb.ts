@@ -758,7 +758,68 @@ const nb = {
           'En operasjon pågår. Andre sider og lukking er ikke tilgjengelig før den er ferdig.',
         vpnProvider: 'VPN-leverandør'
       },
+      audit: {
+        title: 'Revisjonslogg',
+        log: 'Hendelser',
+        description:
+          'Hvem som logget inn, tok kontroll, trykket på strøm, endret medier eller innstillinger, og hva KI-klienter gjorde. Når loggen er full, slettes de eldste hendelsene.',
+        refresh: 'Oppdater',
+        export: 'Eksporter',
+        time: 'Tid',
+        who: 'Hvem',
+        address: 'Adresse',
+        category: 'Kategori',
+        action: 'Handling',
+        target: 'Mål',
+        outcome: 'Resultat',
+        tier: 'Nivå: {{tier}}',
+        empty: 'Ingen hendelser',
+        searchPlaceholder: 'Søk i handling, mål eller detalj',
+        loadFailed: 'Kunne ikke laste revisjonsloggen.',
+        exportFailed: 'Kunne ikke eksportere revisjonsloggen.',
+        saveFailed: 'Kunne ikke lagre innstillingen.',
+        syslog: 'Send hendelser til syslog',
+        syslogDescription:
+          'Send også hver hendelse til systemloggen, som videresender den til den eksterne syslog-mottakeren hvis det er satt opp en under Nettverk.',
+        storage: 'Lagres i {{directory}}, høyst {{size}} KB.',
+        categories: {
+          auth: 'Pålogging',
+          control: 'Kontroll',
+          power: 'Strøm',
+          media: 'Medier',
+          settings: 'Innstillinger',
+          macro: 'Makroer',
+          system: 'System',
+          agent: 'KI-agenter',
+        },
+        outcomes: {
+          ok: 'Vellykket',
+          fail: 'Mislyktes',
+          denied: 'Avvist'
+        }
+      },
       mcp: {
+        tiers: {
+          title: 'Kapabilitetsnivåer',
+          description:
+            'Velg hva MCP-klienter og den innebygde agenten kan gjøre. Hvert kall logges i revisjonsloggen med sitt nivå.',
+          mcp: 'MCP-klienter',
+          agent: 'Innebygd agent',
+          observe: 'Observer',
+          observeDesc: 'Skjermbilder og status',
+          input: 'Inndata',
+          inputDesc: 'Tastatur og mus',
+          power: 'Strøm',
+          powerDesc: 'Trykk på ATX-strøm- og tilbakestillingsknappene',
+          media: 'Medier',
+          mediaDesc: 'Sett inn og løs ut virtuelle medier',
+          admin: 'Admin',
+          adminDesc: 'Endre enhetens innstillinger (ingen verktøy bruker dette nivået ennå)',
+          agentNote:
+            'Den innebygde agenten har ingen strøm- eller medieverktøy ennå, så disse to nivåene gjelder bare MCP-klienter.',
+          loadFailed: 'Kunne ikke laste kapabilitetsnivåene.',
+          saveFailed: 'Kunne ikke lagre kapabilitetsnivåene.'
+        },
         keyNote:
           'MCP bruker sin egen API-nøkkel, vist nedenfor. Nøkler fra siden API-nøkler virker ikke her.',
         title: 'MCP-tjeneste',

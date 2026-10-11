@@ -48,3 +48,10 @@ func wakeHandler() protocol.ToolHandlerFor[WakeOnLANParams, WakeOnLANResult] {
 		return nil, WakeOnLANResult{OK: true, Mac: mac}, nil
 	}
 }
+
+func describeWake(in WakeOnLANParams) (string, string) {
+	if in.Name != "" {
+		return in.Name, ""
+	}
+	return in.Mac, ""
+}

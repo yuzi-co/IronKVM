@@ -766,7 +766,68 @@ const nl = {
           "Er loopt een bewerking. Andere pagina's en sluiten zijn pas weer beschikbaar als die klaar is.",
         vpnProvider: 'VPN-aanbieder'
       },
+      audit: {
+        title: 'Auditlogboek',
+        log: 'Gebeurtenissen',
+        description:
+          'Wie zich aanmeldde, de besturing overnam, op aan/uit drukte, media of instellingen wijzigde en wat AI-clients deden. Als het logboek vol is, worden de oudste gebeurtenissen verwijderd.',
+        refresh: 'Vernieuwen',
+        export: 'Exporteren',
+        time: 'Tijd',
+        who: 'Wie',
+        address: 'Adres',
+        category: 'Categorie',
+        action: 'Actie',
+        target: 'Doel',
+        outcome: 'Resultaat',
+        tier: 'Niveau: {{tier}}',
+        empty: 'Geen gebeurtenissen',
+        searchPlaceholder: 'Zoek op actie, doel of detail',
+        loadFailed: 'Het auditlogboek kan niet worden geladen.',
+        exportFailed: 'Het auditlogboek kan niet worden geëxporteerd.',
+        saveFailed: 'De instelling kan niet worden opgeslagen.',
+        syslog: 'Gebeurtenissen naar syslog sturen',
+        syslogDescription:
+          'Stuur elke gebeurtenis ook naar het systeemlogboek, dat deze doorstuurt naar de externe syslog-ontvanger als er een is ingesteld onder Netwerk.',
+        storage: 'Opgeslagen in {{directory}}, maximaal {{size}} KB.',
+        categories: {
+          auth: 'Aanmelden',
+          control: 'Besturing',
+          power: 'Voeding',
+          media: 'Media',
+          settings: 'Instellingen',
+          macro: 'Macro\'s',
+          system: 'Systeem',
+          agent: 'AI-agents',
+        },
+        outcomes: {
+          ok: 'Geslaagd',
+          fail: 'Mislukt',
+          denied: 'Geweigerd'
+        }
+      },
       mcp: {
+        tiers: {
+          title: 'Bevoegdheidsniveaus',
+          description:
+            'Kies wat MCP-clients en de ingebouwde agent mogen doen. Elke aanroep wordt met zijn niveau vastgelegd in het auditlogboek.',
+          mcp: 'MCP-clients',
+          agent: 'Ingebouwde agent',
+          observe: 'Observeren',
+          observeDesc: 'Schermafbeeldingen en status',
+          input: 'Invoer',
+          inputDesc: 'Toetsenbord en muis',
+          power: 'Voeding',
+          powerDesc: 'De ATX-aan/uit- en resetknop indrukken',
+          media: 'Media',
+          mediaDesc: 'Virtuele media plaatsen en uitwerpen',
+          admin: 'Beheer',
+          adminDesc: 'Apparaatinstellingen wijzigen (nog geen tool gebruikt dit niveau)',
+          agentNote:
+            'De ingebouwde agent heeft nog geen voedings- of mediatools, dus deze twee niveaus gelden alleen voor MCP-clients.',
+          loadFailed: 'De bevoegdheidsniveaus kunnen niet worden geladen.',
+          saveFailed: 'De bevoegdheidsniveaus kunnen niet worden opgeslagen.'
+        },
         keyNote:
           'MCP gebruikt een eigen API-sleutel, hieronder getoond. Sleutels van de pagina API-sleutels werken hier niet.',
         title: 'MCP-service',

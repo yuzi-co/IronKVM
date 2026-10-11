@@ -755,7 +755,68 @@ const se = {
           'En åtgärd pågår. Andra sidor och stängning är inte tillgängliga förrän den är klar.',
         vpnProvider: 'VPN-leverantör'
       },
+      audit: {
+        title: 'Granskningslogg',
+        log: 'Händelser',
+        description:
+          'Vem som loggade in, tog kontrollen, tryckte på strömbrytaren, ändrade media eller inställningar och vad AI-klienter gjorde. När loggen är full tas de äldsta händelserna bort.',
+        refresh: 'Uppdatera',
+        export: 'Exportera',
+        time: 'Tid',
+        who: 'Vem',
+        address: 'Adress',
+        category: 'Kategori',
+        action: 'Åtgärd',
+        target: 'Mål',
+        outcome: 'Resultat',
+        tier: 'Nivå: {{tier}}',
+        empty: 'Inga händelser',
+        searchPlaceholder: 'Sök åtgärd, mål eller detalj',
+        loadFailed: 'Granskningsloggen kunde inte läsas in.',
+        exportFailed: 'Granskningsloggen kunde inte exporteras.',
+        saveFailed: 'Inställningen kunde inte sparas.',
+        syslog: 'Skicka händelser till syslog',
+        syslogDescription:
+          'Skicka även varje händelse till systemloggen, som vidarebefordrar den till den fjärranslutna syslog-mottagaren om en är inställd under Nätverk.',
+        storage: 'Sparas i {{directory}}, högst {{size}} KB.',
+        categories: {
+          auth: 'Inloggning',
+          control: 'Kontroll',
+          power: 'Ström',
+          media: 'Media',
+          settings: 'Inställningar',
+          macro: 'Makron',
+          system: 'System',
+          agent: 'AI-agenter',
+        },
+        outcomes: {
+          ok: 'Lyckades',
+          fail: 'Misslyckades',
+          denied: 'Nekades'
+        }
+      },
       mcp: {
+        tiers: {
+          title: 'Behörighetsnivåer',
+          description:
+            'Välj vad MCP-klienter och den inbyggda agenten får göra. Varje anrop loggas i granskningsloggen med sin nivå.',
+          mcp: 'MCP-klienter',
+          agent: 'Inbyggd agent',
+          observe: 'Observera',
+          observeDesc: 'Skärmdumpar och status',
+          input: 'Inmatning',
+          inputDesc: 'Tangentbord och mus',
+          power: 'Ström',
+          powerDesc: 'Tryck på ATX-ström- och återställningsknapparna',
+          media: 'Media',
+          mediaDesc: 'Sätt in och mata ut virtuella media',
+          admin: 'Admin',
+          adminDesc: 'Ändra enhetens inställningar (inget verktyg använder den här nivån ännu)',
+          agentNote:
+            'Den inbyggda agenten har inga ström- eller mediaverktyg ännu, så de två nivåerna gäller bara MCP-klienter.',
+          loadFailed: 'Behörighetsnivåerna kunde inte läsas in.',
+          saveFailed: 'Behörighetsnivåerna kunde inte sparas.'
+        },
         keyNote:
           'MCP använder en egen API-nyckel, som visas nedan. Nycklar från sidan API-nycklar fungerar inte här.',
         title: 'MCP-tjänst',

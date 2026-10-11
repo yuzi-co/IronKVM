@@ -755,7 +755,68 @@ const cz = {
         locked: 'Probíhá operace. Ostatní stránky ani zavření nejsou dostupné, dokud neskončí.',
         vpnProvider: 'Poskytovatel VPN'
       },
+      audit: {
+        title: 'Auditní protokol',
+        log: 'Události',
+        description:
+          'Kdo se přihlásil, převzal ovládání, stiskl tlačítko napájení, změnil média nebo nastavení a co dělali klienti AI. Když je protokol plný, nejstarší události se zahodí.',
+        refresh: 'Obnovit',
+        export: 'Exportovat',
+        time: 'Čas',
+        who: 'Kdo',
+        address: 'Adresa',
+        category: 'Kategorie',
+        action: 'Akce',
+        target: 'Cíl',
+        outcome: 'Výsledek',
+        tier: 'Úroveň: {{tier}}',
+        empty: 'Žádné události',
+        searchPlaceholder: 'Hledat akci, cíl nebo podrobnost',
+        loadFailed: 'Auditní protokol se nepodařilo načíst.',
+        exportFailed: 'Auditní protokol se nepodařilo exportovat.',
+        saveFailed: 'Nastavení se nepodařilo uložit.',
+        syslog: 'Posílat události do syslogu',
+        syslogDescription:
+          'Každou událost posílat také do systémového protokolu, který ji předá vzdálenému syslog kolektoru, pokud je nastaven v části Síť.',
+        storage: 'Uloženo v {{directory}}, nejvýše {{size}} KB.',
+        categories: {
+          auth: 'Přihlášení',
+          control: 'Ovládání',
+          power: 'Napájení',
+          media: 'Média',
+          settings: 'Nastavení',
+          macro: 'Makra',
+          system: 'Systém',
+          agent: 'Agenti AI',
+        },
+        outcomes: {
+          ok: 'Úspěch',
+          fail: 'Selhalo',
+          denied: 'Zamítnuto'
+        }
+      },
       mcp: {
+        tiers: {
+          title: 'Úrovně oprávnění',
+          description:
+            'Vyberte, co smějí dělat klienti MCP a vestavěný agent. Každé volání se zapíše do auditního protokolu s úrovní.',
+          mcp: 'Klienti MCP',
+          agent: 'Vestavěný agent',
+          observe: 'Pozorování',
+          observeDesc: 'Snímky obrazovky a stav',
+          input: 'Vstup',
+          inputDesc: 'Klávesnice a myš',
+          power: 'Napájení',
+          powerDesc: 'Stisknout tlačítka napájení a resetu ATX',
+          media: 'Média',
+          mediaDesc: 'Vložit a vysunout virtuální média',
+          admin: 'Správa',
+          adminDesc: 'Měnit nastavení zařízení (tuto úroveň zatím nepoužívá žádný nástroj)',
+          agentNote:
+            'Vestavěný agent zatím nemá nástroje pro napájení ani média, proto se tyto dvě úrovně týkají jen klientů MCP.',
+          loadFailed: 'Úrovně oprávnění se nepodařilo načíst.',
+          saveFailed: 'Úrovně oprávnění se nepodařilo uložit.'
+        },
         keyNote:
           'MCP používá vlastní API klíč, zobrazený níže. Klíče ze stránky API klíče zde nefungují.',
         title: 'Služba MCP',

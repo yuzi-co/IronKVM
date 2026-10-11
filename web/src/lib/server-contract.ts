@@ -20,6 +20,8 @@ export const LEGACY_API_VERSION = 1;
 // The server features this UI gates on, one line each, by the name the server
 // registers (server/common/apicontract/contract.go). Keep the list sorted.
 export const SERVER_FEATURES = [
+  'agent-tiers', // /api/agent/tiers (Settings > MCP: what MCP and the agent may do)
+  'audit-log', // /api/audit (Settings > Audit log)
   'direct-clock', // the clock request on the direct H.264 socket (status bar latency)
   'hid-autotap', // POST /api/hid/autotap and /api/hid/sequence (keyboard menu: auto-tap)
   'hid-macros', // /api/hid/macro(s) and /api/hid/sequence (keyboard menu: macros)

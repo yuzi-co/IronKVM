@@ -10,6 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"NanoKVM-Server/proto"
+	"NanoKVM-Server/service/audit"
 	"NanoKVM-Server/service/hid"
 	"NanoKVM-Server/utils"
 )
@@ -196,6 +197,7 @@ func (s *Service) MountImage(c *gin.Context) {
 		return
 	}
 
+	audit.SetTarget(c, req.File)
 	if err := legacyMount(req.File, req.Cdrom); err != nil {
 		log.Errorf("mount image %q (cdrom %t) failed: %s", req.File, req.Cdrom, err)
 		rsp.ErrRsp(c, -2, err.Error())
@@ -273,6 +275,7 @@ func (s *Service) InsertDrive(c *gin.Context) {
 	}
 
 	id := c.Param("id")
+	audit.SetTarget(c, id+": "+req.File)
 	if err := insertDrive(id, req.File, req.Ro); err != nil {
 		log.Errorf("insert %q into %q failed: %s", req.File, id, err)
 		rsp.ErrRsp(c, -2, err.Error())
@@ -318,6 +321,7 @@ func (s *Service) DeleteImage(c *gin.Context) {
 		return
 	}
 
+	audit.SetTarget(c, req.File)
 	if err := removeImage(req.File); err != nil {
 		log.Errorf("failed to remove file %s: %s", req.File, err)
 		if errors.Is(err, errImageLoaded) {

@@ -761,7 +761,69 @@ const ca = {
           'Hi ha una operació en curs. Les altres pàgines i el tancament no estan disponibles fins que acabi.',
         vpnProvider: 'Proveïdor de VPN'
       },
+      audit: {
+        title: 'Registre d\'auditoria',
+        log: 'Esdeveniments',
+        description:
+          'Qui ha iniciat sessió, ha pres el control, ha premut l\'encesa, ha canviat suports o paràmetres, i què han fet els clients d\'IA. Quan el registre s\'omple, s\'eliminen els esdeveniments més antics.',
+        refresh: 'Actualitza',
+        export: 'Exporta',
+        time: 'Hora',
+        who: 'Qui',
+        address: 'Adreça',
+        category: 'Categoria',
+        action: 'Acció',
+        target: 'Objectiu',
+        outcome: 'Resultat',
+        tier: 'Nivell: {{tier}}',
+        empty: 'Cap esdeveniment',
+        searchPlaceholder: 'Cerca acció, objectiu o detall',
+        loadFailed: 'No s\'ha pogut carregar el registre d\'auditoria.',
+        exportFailed: 'No s\'ha pogut exportar el registre d\'auditoria.',
+        saveFailed: 'No s\'ha pogut desar el paràmetre.',
+        syslog: 'Envia els esdeveniments a syslog',
+        syslogDescription:
+          'Envia també cada esdeveniment al registre del sistema, que el reenvia al col·lector syslog remot si n\'hi ha un configurat a Xarxa.',
+        storage: 'Es desa a {{directory}}, com a màxim {{size}} KB.',
+        categories: {
+          auth: 'Inici de sessió',
+          control: 'Control',
+          power: 'Encesa',
+          media: 'Suports',
+          settings: 'Paràmetres',
+          macro: 'Macros',
+          system: 'Sistema',
+          agent: 'Agents d\'IA',
+        },
+        outcomes: {
+          ok: 'Correcte',
+          fail: 'Fallit',
+          denied: 'Denegat'
+        }
+      },
       mcp: {
+        tiers: {
+          title: 'Nivells de capacitat',
+          description:
+            'Trieu què poden fer els clients MCP i l\'agent integrat. Cada crida es desa al registre d\'auditoria amb el seu nivell.',
+          mcp: 'Clients MCP',
+          agent: 'Agent integrat',
+          observe: 'Observar',
+          observeDesc: 'Captures de pantalla i estat',
+          input: 'Entrada',
+          inputDesc: 'Teclat i ratolí',
+          power: 'Encesa',
+          powerDesc: 'Prem els botons d\'encesa i de reinici ATX',
+          media: 'Suports',
+          mediaDesc: 'Insereix i expulsa suports virtuals',
+          admin: 'Administració',
+          adminDesc:
+            'Canvia els paràmetres del dispositiu (cap eina fa servir encara aquest nivell)',
+          agentNote:
+            'L\'agent integrat encara no té eines d\'encesa ni de suports, de manera que aquests dos nivells només afecten els clients MCP.',
+          loadFailed: 'No s\'han pogut carregar els nivells de capacitat.',
+          saveFailed: 'No s\'han pogut desar els nivells de capacitat.'
+        },
         keyNote:
           'MCP fa servir la seva pròpia clau API, que es mostra a sota. Les claus de la pàgina Claus API no funcionen aquí.',
         title: 'Servei MCP',

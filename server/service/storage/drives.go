@@ -349,3 +349,46 @@ func replaceImage(src, file string) error {
 	}
 	return os.Rename(src, file)
 }
+
+// Drive is a virtual drive and the image it serves, for callers outside the
+// package that cannot use the HTTP handlers.
+type Drive struct {
+	ID       string
+	File     string
+	ReadOnly bool
+}
+
+// Drives lists the virtual drives.
+func Drives() ([]Drive, error) {
+	infos, err := listDrives()
+	if err != nil {
+		return nil, err
+	}
+	drives := make([]Drive, len(infos))
+	for i, info := range infos {
+		drives[i] = Drive{ID: info.ID, File: info.File, ReadOnly: info.Ro}
+	}
+	return drives, nil
+}
+
+// Images lists the image files that can be loaded into a drive.
+func Images() ([]string, error) {
+	images, _, err := listImages(imageDirectory)
+	return images, err
+}
+
+// Insert loads an image into a drive, as the drive API does.
+func Insert(id, file string, readOnly bool) error {
+	if hidOnly() {
+		return errNoDrive
+	}
+	return insertDrive(id, file, readOnly)
+}
+
+// Eject empties a drive, as the drive API does.
+func Eject(id string) error {
+	if hidOnly() {
+		return errNoDrive
+	}
+	return ejectDrive(id)
+}

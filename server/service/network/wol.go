@@ -9,6 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"NanoKVM-Server/proto"
+	"NanoKVM-Server/service/audit"
 	"NanoKVM-Server/service/wol"
 )
 
@@ -29,6 +30,12 @@ func (s *Service) WakeOnLAN(c *gin.Context) {
 	if name == "" && strings.TrimSpace(req.Mac) == "" {
 		rsp.ErrRsp(c, -1, "invalid arguments")
 		return
+	}
+
+	if name != "" {
+		audit.SetTarget(c, name)
+	} else {
+		audit.SetTarget(c, strings.TrimSpace(req.Mac))
 	}
 
 	device, output, err := wol.Default.Wake(req.Mac, name)

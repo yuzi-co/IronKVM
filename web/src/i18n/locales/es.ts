@@ -766,7 +766,68 @@ const es = {
           'Hay una operación en curso. Las demás páginas y el cierre no están disponibles hasta que termine.',
         vpnProvider: 'Proveedor de VPN'
       },
+      audit: {
+        title: 'Registro de auditoría',
+        log: 'Eventos',
+        description:
+          'Quién inició sesión, tomó el control, pulsó el encendido, cambió medios o ajustes, y qué hicieron los clientes de IA. Cuando el registro se llena, se descartan los eventos más antiguos.',
+        refresh: 'Actualizar',
+        export: 'Exportar',
+        time: 'Hora',
+        who: 'Quién',
+        address: 'Dirección',
+        category: 'Categoría',
+        action: 'Acción',
+        target: 'Destino',
+        outcome: 'Resultado',
+        tier: 'Nivel: {{tier}}',
+        empty: 'Sin eventos',
+        searchPlaceholder: 'Buscar acción, destino o detalle',
+        loadFailed: 'No se pudo cargar el registro de auditoría.',
+        exportFailed: 'No se pudo exportar el registro de auditoría.',
+        saveFailed: 'No se pudo guardar el ajuste.',
+        syslog: 'Enviar eventos a syslog',
+        syslogDescription:
+          'Envía también cada evento al registro del sistema, que lo reenvía al colector syslog remoto si hay uno configurado en Red.',
+        storage: 'Se guarda en {{directory}}, como máximo {{size}} KB.',
+        categories: {
+          auth: 'Inicio de sesión',
+          control: 'Control',
+          power: 'Energía',
+          media: 'Medios',
+          settings: 'Ajustes',
+          macro: 'Macros',
+          system: 'Sistema',
+          agent: 'Agentes de IA',
+        },
+        outcomes: {
+          ok: 'Correcto',
+          fail: 'Fallido',
+          denied: 'Denegado'
+        }
+      },
       mcp: {
+        tiers: {
+          title: 'Niveles de capacidad',
+          description:
+            'Elige qué pueden hacer los clientes MCP y el agente integrado. Cada llamada se anota en el registro de auditoría con su nivel.',
+          mcp: 'Clientes MCP',
+          agent: 'Agente integrado',
+          observe: 'Observar',
+          observeDesc: 'Capturas de pantalla y estado',
+          input: 'Entrada',
+          inputDesc: 'Teclado y ratón',
+          power: 'Energía',
+          powerDesc: 'Pulsar los botones de encendido y reinicio ATX',
+          media: 'Medios',
+          mediaDesc: 'Insertar y expulsar medios virtuales',
+          admin: 'Administración',
+          adminDesc: 'Cambiar los ajustes del dispositivo (ninguna herramienta usa aún este nivel)',
+          agentNote:
+            'El agente integrado aún no tiene herramientas de energía ni de medios, así que esos dos niveles solo afectan a los clientes MCP.',
+          loadFailed: 'No se pudieron cargar los niveles de capacidad.',
+          saveFailed: 'No se pudieron guardar los niveles de capacidad.'
+        },
         keyNote:
           'MCP usa su propia clave API, mostrada abajo. Las claves de la página Claves API no funcionan aquí.',
         title: 'Servicio MCP',

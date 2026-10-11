@@ -763,7 +763,69 @@ const hu = {
           'Egy művelet folyamatban van. A többi oldal és a bezárás a befejezéséig nem érhető el.',
         vpnProvider: 'VPN-szolgáltató'
       },
+      audit: {
+        title: 'Auditnapló',
+        log: 'Események',
+        description:
+          'Ki jelentkezett be, vette át az irányítást, nyomta meg a bekapcsoló gombot, módosította a médiát vagy a beállításokat, és mit tettek az MI-kliensek. Ha a napló megtelik, a legrégebbi események törlődnek.',
+        refresh: 'Frissítés',
+        export: 'Exportálás',
+        time: 'Idő',
+        who: 'Ki',
+        address: 'Cím',
+        category: 'Kategória',
+        action: 'Művelet',
+        target: 'Cél',
+        outcome: 'Eredmény',
+        tier: 'Szint: {{tier}}',
+        empty: 'Nincs esemény',
+        searchPlaceholder: 'Keresés műveletre, célra vagy részletre',
+        loadFailed: 'Az auditnapló nem tölthető be.',
+        exportFailed: 'Az auditnapló nem exportálható.',
+        saveFailed: 'A beállítás nem menthető.',
+        syslog: 'Események küldése a syslogba',
+        syslogDescription:
+          'Minden eseményt a rendszernaplóba is elküld, amely továbbítja a távoli syslog gyűjtőnek, ha a Hálózat alatt van beállítva.',
+        storage: 'Tárolás helye: {{directory}}, legfeljebb {{size}} KB.',
+        categories: {
+          auth: 'Bejelentkezés',
+          control: 'Irányítás',
+          power: 'Tápellátás',
+          media: 'Média',
+          settings: 'Beállítások',
+          macro: 'Makrók',
+          system: 'Rendszer',
+          agent: 'MI-ügynökök',
+        },
+        outcomes: {
+          ok: 'Sikeres',
+          fail: 'Sikertelen',
+          denied: 'Elutasítva'
+        }
+      },
       mcp: {
+        tiers: {
+          title: 'Képességszintek',
+          description:
+            'Válassza ki, mit tehetnek az MCP-kliensek és a beépített ügynök. Minden hívás szintjével együtt bekerül az auditnaplóba.',
+          mcp: 'MCP-kliensek',
+          agent: 'Beépített ügynök',
+          observe: 'Megfigyelés',
+          observeDesc: 'Képernyőképek és állapot',
+          input: 'Bevitel',
+          inputDesc: 'Billentyűzet és egér',
+          power: 'Tápellátás',
+          powerDesc: 'Az ATX bekapcsoló és reset gomb megnyomása',
+          media: 'Média',
+          mediaDesc: 'Virtuális média behelyezése és kivétele',
+          admin: 'Admin',
+          adminDesc:
+            'Az eszköz beállításainak módosítása (ezt a szintet még egyetlen eszköz sem használja)',
+          agentNote:
+            'A beépített ügynöknek még nincs tápellátás- vagy médiaeszköze, ezért ez a két szint csak az MCP-kliensekre vonatkozik.',
+          loadFailed: 'A képességszintek nem tölthetők be.',
+          saveFailed: 'A képességszintek nem menthetők.'
+        },
         keyNote:
           'Az MCP saját API-kulcsot használ, lent látható. Az API-kulcsok oldal kulcsai itt nem működnek.',
         title: 'MCP-szolgáltatás',

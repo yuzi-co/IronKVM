@@ -778,7 +778,68 @@ const de = {
           'Ein Vorgang läuft. Andere Seiten und das Schließen sind erst danach wieder möglich.',
         vpnProvider: 'VPN-Anbieter'
       },
+      audit: {
+        title: 'Audit-Protokoll',
+        log: 'Ereignisse',
+        description:
+          'Wer sich angemeldet, die Steuerung übernommen, die Einschalttaste gedrückt, Medien oder Einstellungen geändert hat und was KI-Clients getan haben. Ist das Protokoll voll, werden die ältesten Ereignisse verworfen.',
+        refresh: 'Aktualisieren',
+        export: 'Exportieren',
+        time: 'Zeit',
+        who: 'Wer',
+        address: 'Adresse',
+        category: 'Kategorie',
+        action: 'Aktion',
+        target: 'Ziel',
+        outcome: 'Ergebnis',
+        tier: 'Stufe: {{tier}}',
+        empty: 'Keine Ereignisse',
+        searchPlaceholder: 'Aktion, Ziel oder Detail suchen',
+        loadFailed: 'Das Audit-Protokoll konnte nicht geladen werden.',
+        exportFailed: 'Das Audit-Protokoll konnte nicht exportiert werden.',
+        saveFailed: 'Die Einstellung konnte nicht gespeichert werden.',
+        syslog: 'Ereignisse an Syslog senden',
+        syslogDescription:
+          'Jedes Ereignis zusätzlich an das Systemprotokoll senden, das es an den entfernten Syslog-Empfänger weiterleitet, falls unter Netzwerk einer eingestellt ist.',
+        storage: 'Gespeichert in {{directory}}, höchstens {{size}} KB.',
+        categories: {
+          auth: 'Anmeldung',
+          control: 'Steuerung',
+          power: 'Strom',
+          media: 'Medien',
+          settings: 'Einstellungen',
+          macro: 'Makros',
+          system: 'System',
+          agent: 'KI-Agenten',
+        },
+        outcomes: {
+          ok: 'Erfolgreich',
+          fail: 'Fehlgeschlagen',
+          denied: 'Abgelehnt'
+        }
+      },
       mcp: {
+        tiers: {
+          title: 'Berechtigungsstufen',
+          description:
+            'Legen Sie fest, was MCP-Clients und der integrierte Agent tun dürfen. Jeder Aufruf wird mit seiner Stufe im Audit-Protokoll festgehalten.',
+          mcp: 'MCP-Clients',
+          agent: 'Integrierter Agent',
+          observe: 'Beobachten',
+          observeDesc: 'Screenshots und Status',
+          input: 'Eingabe',
+          inputDesc: 'Tastatur und Maus',
+          power: 'Strom',
+          powerDesc: 'ATX-Ein/Aus- und Reset-Taste drücken',
+          media: 'Medien',
+          mediaDesc: 'Virtuelle Medien einlegen und auswerfen',
+          admin: 'Admin',
+          adminDesc: 'Geräteeinstellungen ändern (noch kein Werkzeug nutzt diese Stufe)',
+          agentNote:
+            'Der integrierte Agent hat noch keine Strom- oder Medienwerkzeuge, daher gelten diese beiden Stufen nur für MCP-Clients.',
+          loadFailed: 'Die Berechtigungsstufen konnten nicht geladen werden.',
+          saveFailed: 'Die Berechtigungsstufen konnten nicht gespeichert werden.'
+        },
         keyNote:
           'MCP verwendet einen eigenen API-Schlüssel, siehe unten. Schlüssel von der Seite API-Schlüssel funktionieren hier nicht.',
         title: 'MCP-Dienst',

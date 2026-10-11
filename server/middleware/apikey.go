@@ -56,7 +56,7 @@ func authenticateByAPIKey(r *http.Request) (Principal, bool) {
 		return Principal{}, false
 	}
 
-	return Principal{Username: user.Username, Role: user.Role}, true
+	return Principal{Username: user.Username, Role: user.Role, Via: "apikey", Key: keyLabel(key)}, true
 }
 
 // presentedAPIKey pulls a key out of either header clients expect to use.
@@ -71,4 +71,13 @@ func presentedAPIKey(r *http.Request) string {
 	}
 
 	return strings.TrimSpace(strings.TrimPrefix(authorization, bearerPrefix))
+}
+
+// keyLabel is what the audit log calls a key: its name, or its id when it
+// has none. Never the secret.
+func keyLabel(key *apikey.Key) string {
+	if key.Name != "" {
+		return key.Name
+	}
+	return key.ID
 }

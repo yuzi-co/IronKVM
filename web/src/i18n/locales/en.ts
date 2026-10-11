@@ -753,7 +753,68 @@ const en = {
           'An operation is in progress. Other pages and closing are unavailable until it finishes.',
         vpnProvider: 'VPN provider'
       },
+      audit: {
+        title: 'Audit log',
+        log: 'Events',
+        description:
+          'Who signed in, took control, pressed power, changed media or settings, and what AI clients did. When the log is full, the oldest events are dropped.',
+        refresh: 'Refresh',
+        export: 'Export',
+        time: 'Time',
+        who: 'Who',
+        address: 'Address',
+        category: 'Category',
+        action: 'Action',
+        target: 'Target',
+        outcome: 'Outcome',
+        tier: 'Tier: {{tier}}',
+        empty: 'No events',
+        searchPlaceholder: 'Search action, target or detail',
+        loadFailed: 'Could not load the audit log.',
+        exportFailed: 'Could not export the audit log.',
+        saveFailed: 'Could not save the setting.',
+        syslog: 'Send events to syslog',
+        syslogDescription:
+          'Also send each event to the system log, which forwards it to the remote syslog collector if one is set under Network.',
+        storage: 'Kept in {{directory}}, at most {{size}} KB.',
+        categories: {
+          auth: 'Sign-in',
+          control: 'Control',
+          power: 'Power',
+          media: 'Media',
+          settings: 'Settings',
+          macro: 'Macros',
+          system: 'System',
+          agent: 'AI agents',
+        },
+        outcomes: {
+          ok: 'Succeeded',
+          fail: 'Failed',
+          denied: 'Denied'
+        }
+      },
       mcp: {
+        tiers: {
+          title: 'Capability tiers',
+          description:
+            'Choose what MCP clients and the on-board agent may do. Every call is recorded in the audit log with its tier.',
+          mcp: 'MCP clients',
+          agent: 'On-board agent',
+          observe: 'Observe',
+          observeDesc: 'Screenshots and status',
+          input: 'Input',
+          inputDesc: 'Keyboard and mouse',
+          power: 'Power',
+          powerDesc: 'Press the ATX power and reset buttons',
+          media: 'Media',
+          mediaDesc: 'Insert and eject virtual media',
+          admin: 'Admin',
+          adminDesc: 'Change the device settings (no tool uses this tier yet)',
+          agentNote:
+            'The on-board agent has no power or media tools yet, so those two tiers apply to MCP clients only.',
+          loadFailed: 'Could not load the capability tiers.',
+          saveFailed: 'Could not save the capability tiers.'
+        },
         keyNote:
           'MCP uses its own API key, shown below. Keys from the API Keys page do not work here.',
         title: 'MCP Service',

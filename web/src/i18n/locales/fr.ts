@@ -769,7 +769,69 @@ const fr = {
           "Une opération est en cours. Les autres pages et la fermeture sont indisponibles jusqu'à sa fin.",
         vpnProvider: 'Fournisseur VPN'
       },
+      audit: {
+        title: 'Journal d\'audit',
+        log: 'Événements',
+        description:
+          'Qui s\'est connecté, a pris le contrôle, appuyé sur l\'alimentation, modifié les médias ou les réglages, et ce que les clients IA ont fait. Quand le journal est plein, les événements les plus anciens sont supprimés.',
+        refresh: 'Actualiser',
+        export: 'Exporter',
+        time: 'Heure',
+        who: 'Qui',
+        address: 'Adresse',
+        category: 'Catégorie',
+        action: 'Action',
+        target: 'Cible',
+        outcome: 'Résultat',
+        tier: 'Niveau : {{tier}}',
+        empty: 'Aucun événement',
+        searchPlaceholder: 'Rechercher une action, une cible ou un détail',
+        loadFailed: 'Impossible de charger le journal d\'audit.',
+        exportFailed: 'Impossible d\'exporter le journal d\'audit.',
+        saveFailed: 'Impossible d\'enregistrer le réglage.',
+        syslog: 'Envoyer les événements à syslog',
+        syslogDescription:
+          'Envoie aussi chaque événement au journal système, qui le transmet au collecteur syslog distant s\'il y en a un défini dans Réseau.',
+        storage: 'Conservé dans {{directory}}, {{size}} Ko au plus.',
+        categories: {
+          auth: 'Connexion',
+          control: 'Contrôle',
+          power: 'Alimentation',
+          media: 'Médias',
+          settings: 'Réglages',
+          macro: 'Macros',
+          system: 'Système',
+          agent: 'Agents IA',
+        },
+        outcomes: {
+          ok: 'Réussi',
+          fail: 'Échoué',
+          denied: 'Refusé'
+        }
+      },
       mcp: {
+        tiers: {
+          title: 'Niveaux de capacité',
+          description:
+            'Choisissez ce que les clients MCP et l\'agent intégré peuvent faire. Chaque appel est consigné dans le journal d\'audit avec son niveau.',
+          mcp: 'Clients MCP',
+          agent: 'Agent intégré',
+          observe: 'Observer',
+          observeDesc: 'Captures d\'écran et état',
+          input: 'Saisie',
+          inputDesc: 'Clavier et souris',
+          power: 'Alimentation',
+          powerDesc: 'Appuyer sur les boutons d\'alimentation et de réinitialisation ATX',
+          media: 'Médias',
+          mediaDesc: 'Insérer et éjecter des médias virtuels',
+          admin: 'Admin',
+          adminDesc:
+            'Modifier les réglages de l\'appareil (aucun outil n\'utilise encore ce niveau)',
+          agentNote:
+            'L\'agent intégré n\'a pas encore d\'outils d\'alimentation ni de médias : ces deux niveaux ne concernent que les clients MCP.',
+          loadFailed: 'Impossible de charger les niveaux de capacité.',
+          saveFailed: 'Impossible d\'enregistrer les niveaux de capacité.'
+        },
         keyNote:
           'MCP utilise sa propre clé API, affichée ci-dessous. Les clés de la page Clés API ne fonctionnent pas ici.',
         title: 'Service MCP',

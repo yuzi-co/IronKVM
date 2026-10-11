@@ -758,7 +758,68 @@ const id = {
           'Sebuah operasi sedang berjalan. Halaman lain dan tombol tutup tidak tersedia sampai selesai.',
         vpnProvider: 'Penyedia VPN'
       },
+      audit: {
+        title: 'Log audit',
+        log: 'Peristiwa',
+        description:
+          'Siapa yang masuk, mengambil kendali, menekan daya, mengubah media atau pengaturan, dan apa yang dilakukan klien AI. Saat log penuh, peristiwa terlama dihapus.',
+        refresh: 'Segarkan',
+        export: 'Ekspor',
+        time: 'Waktu',
+        who: 'Siapa',
+        address: 'Alamat',
+        category: 'Kategori',
+        action: 'Tindakan',
+        target: 'Target',
+        outcome: 'Hasil',
+        tier: 'Tingkat: {{tier}}',
+        empty: 'Tidak ada peristiwa',
+        searchPlaceholder: 'Cari tindakan, target, atau detail',
+        loadFailed: 'Log audit tidak dapat dimuat.',
+        exportFailed: 'Log audit tidak dapat diekspor.',
+        saveFailed: 'Pengaturan tidak dapat disimpan.',
+        syslog: 'Kirim peristiwa ke syslog',
+        syslogDescription:
+          'Kirim juga setiap peristiwa ke log sistem, yang meneruskannya ke kolektor syslog jarak jauh jika diatur di Jaringan.',
+        storage: 'Disimpan di {{directory}}, maksimal {{size}} KB.',
+        categories: {
+          auth: 'Masuk',
+          control: 'Kendali',
+          power: 'Daya',
+          media: 'Media',
+          settings: 'Pengaturan',
+          macro: 'Makro',
+          system: 'Sistem',
+          agent: 'Agen AI',
+        },
+        outcomes: {
+          ok: 'Berhasil',
+          fail: 'Gagal',
+          denied: 'Ditolak'
+        }
+      },
       mcp: {
+        tiers: {
+          title: 'Tingkat kemampuan',
+          description:
+            'Pilih apa yang boleh dilakukan klien MCP dan agen bawaan. Setiap panggilan dicatat di log audit beserta tingkatnya.',
+          mcp: 'Klien MCP',
+          agent: 'Agen bawaan',
+          observe: 'Amati',
+          observeDesc: 'Tangkapan layar dan status',
+          input: 'Input',
+          inputDesc: 'Keyboard dan mouse',
+          power: 'Daya',
+          powerDesc: 'Tekan tombol daya dan reset ATX',
+          media: 'Media',
+          mediaDesc: 'Masukkan dan keluarkan media virtual',
+          admin: 'Admin',
+          adminDesc: 'Ubah pengaturan perangkat (belum ada alat yang memakai tingkat ini)',
+          agentNote:
+            'Agen bawaan belum punya alat daya atau media, jadi kedua tingkat itu hanya berlaku untuk klien MCP.',
+          loadFailed: 'Tingkat kemampuan tidak dapat dimuat.',
+          saveFailed: 'Tingkat kemampuan tidak dapat disimpan.'
+        },
         keyNote:
           'MCP memakai kunci API sendiri, ditampilkan di bawah. Kunci dari halaman Kunci API tidak berlaku di sini.',
         title: 'Layanan MCP',

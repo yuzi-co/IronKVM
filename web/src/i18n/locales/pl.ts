@@ -760,7 +760,68 @@ const pl = {
         locked: 'Trwa operacja. Inne strony i zamknięcie są niedostępne do jej zakończenia.',
         vpnProvider: 'Dostawca VPN'
       },
+      audit: {
+        title: 'Dziennik audytu',
+        log: 'Zdarzenia',
+        description:
+          'Kto się zalogował, przejął sterowanie, nacisnął zasilanie, zmienił nośniki lub ustawienia oraz co zrobili klienci AI. Gdy dziennik jest pełny, najstarsze zdarzenia są usuwane.',
+        refresh: 'Odśwież',
+        export: 'Eksportuj',
+        time: 'Czas',
+        who: 'Kto',
+        address: 'Adres',
+        category: 'Kategoria',
+        action: 'Akcja',
+        target: 'Cel',
+        outcome: 'Wynik',
+        tier: 'Poziom: {{tier}}',
+        empty: 'Brak zdarzeń',
+        searchPlaceholder: 'Szukaj akcji, celu lub szczegółu',
+        loadFailed: 'Nie udało się wczytać dziennika audytu.',
+        exportFailed: 'Nie udało się wyeksportować dziennika audytu.',
+        saveFailed: 'Nie udało się zapisać ustawienia.',
+        syslog: 'Wysyłaj zdarzenia do syslog',
+        syslogDescription:
+          'Wysyłaj też każde zdarzenie do dziennika systemowego, który przekaże je do zdalnego kolektora syslog, jeśli ustawiono go w sekcji Sieć.',
+        storage: 'Zapisany w {{directory}}, najwyżej {{size}} KB.',
+        categories: {
+          auth: 'Logowanie',
+          control: 'Sterowanie',
+          power: 'Zasilanie',
+          media: 'Nośniki',
+          settings: 'Ustawienia',
+          macro: 'Makra',
+          system: 'System',
+          agent: 'Agenci AI',
+        },
+        outcomes: {
+          ok: 'Powodzenie',
+          fail: 'Niepowodzenie',
+          denied: 'Odmowa'
+        }
+      },
       mcp: {
+        tiers: {
+          title: 'Poziomy uprawnień',
+          description:
+            'Wybierz, co mogą robić klienci MCP i wbudowany agent. Każde wywołanie trafia do dziennika audytu razem ze swoim poziomem.',
+          mcp: 'Klienci MCP',
+          agent: 'Wbudowany agent',
+          observe: 'Obserwacja',
+          observeDesc: 'Zrzuty ekranu i stan',
+          input: 'Wejście',
+          inputDesc: 'Klawiatura i mysz',
+          power: 'Zasilanie',
+          powerDesc: 'Naciskanie przycisków zasilania i resetu ATX',
+          media: 'Nośniki',
+          mediaDesc: 'Wkładanie i wysuwanie nośników wirtualnych',
+          admin: 'Administracja',
+          adminDesc: 'Zmiana ustawień urządzenia (żadne narzędzie jeszcze nie używa tego poziomu)',
+          agentNote:
+            'Wbudowany agent nie ma jeszcze narzędzi zasilania ani nośników, więc te dwa poziomy dotyczą tylko klientów MCP.',
+          loadFailed: 'Nie udało się wczytać poziomów uprawnień.',
+          saveFailed: 'Nie udało się zapisać poziomów uprawnień.'
+        },
         keyNote:
           'MCP używa własnego klucza API, pokazanego poniżej. Klucze ze strony Klucze API tu nie działają.',
         title: 'Usługa MCP',
