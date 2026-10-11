@@ -135,6 +135,8 @@ const es = {
           'Estimación: la mitad del viaje de ida y vuelta de la red más el búfer y la decodificación de este navegador. No incluye la captura ni la codificación en el dispositivo, así que la latencia real es mayor.',
         latencyClockAssumed:
           'Se supone que el reloj del dispositivo coincide con el de este ordenador.',
+        latencyArrival:
+          'Los fotogramas llegan aquí {{ms}} ms después del codificador; el resto es decodificar y dibujar en este navegador.',
         rttTip: 'Ida y vuelta de la red hasta el dispositivo',
         loss: 'Pérdida',
         lossTip: 'Paquetes perdidos en el último segundo',

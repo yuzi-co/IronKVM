@@ -133,6 +133,8 @@ const pl = {
           'Szacunek: połowa czasu podróży w obie strony w sieci plus buforowanie i dekodowanie w tej przeglądarce. Przechwytywanie i kodowanie na urządzeniu nie są wliczone, więc rzeczywiste opóźnienie jest większe.',
         latencyClockAssumed:
           'Zakłada się, że zegar urządzenia zgadza się z zegarem tego komputera.',
+        latencyArrival:
+          'Klatki docierają tu {{ms}} ms po koderze; reszta to dekodowanie i rysowanie w tej przeglądarce.',
         rttTip: 'Czas podróży w obie strony do urządzenia',
         loss: 'Straty',
         lossTip: 'Pakiety utracone w ostatniej sekundzie',

@@ -131,6 +131,8 @@ const id = {
         latencyEstimate:
           'Perkiraan: setengah waktu pulang-pergi jaringan ditambah buffer dan dekode di browser ini. Penangkapan dan pengodean di perangkat tidak termasuk, jadi latensi sebenarnya lebih tinggi.',
         latencyClockAssumed: 'Jam perangkat dianggap sama dengan jam komputer ini.',
+        latencyArrival:
+          'Bingkai tiba di sini {{ms}} ms setelah encoder; sisanya adalah dekode dan menggambar di browser ini.',
         rttTip: 'Waktu pulang-pergi jaringan ke perangkat',
         loss: 'Hilang',
         lossTip: 'Paket yang hilang pada detik terakhir',

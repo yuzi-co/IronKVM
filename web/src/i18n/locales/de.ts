@@ -135,6 +135,8 @@ const de = {
           'Schätzung: halbe Netzwerk-Umlaufzeit plus Pufferung und Dekodierung in diesem Browser. Erfassung und Kodierung auf dem Gerät fehlen, die echte Latenz ist also höher.',
         latencyClockAssumed:
           'Es wird angenommen, dass die Uhr des Geräts mit der dieses Computers übereinstimmt.',
+        latencyArrival:
+          'Bilder kommen {{ms}} ms nach dem Encoder hier an; der Rest ist Dekodieren und Zeichnen in diesem Browser.',
         rttTip: 'Netzwerk-Umlaufzeit zum Gerät',
         loss: 'Verlust',
         lossTip: 'In der letzten Sekunde verlorene Pakete',

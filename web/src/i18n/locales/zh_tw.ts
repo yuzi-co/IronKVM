@@ -122,6 +122,7 @@ const zh_tw = {
         latencyEncoder: '從影格離開編碼器到在此繪製，以裝置的時鐘測量。不含擷取和編碼時間。',
         latencyEstimate: '估計值：網路往返時間的一半，加上此瀏覽器的緩衝和解碼時間。不含裝置上的擷取和編碼，因此實際延遲更高。',
         latencyClockAssumed: '假定裝置的時鐘與這台電腦的時鐘一致。',
+        latencyArrival: '影格離開編碼器 {{ms}} ms 後到達此處；其餘是此瀏覽器中的解碼和繪製。',
         rttTip: '到裝置的網路往返時間',
         loss: '遺失',
         lossTip: '最近一秒內遺失的封包',

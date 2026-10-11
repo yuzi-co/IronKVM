@@ -122,6 +122,7 @@ const zh = {
         latencyEncoder: '从帧离开编码器到在此绘制，以设备的时钟测量。不含采集和编码时间。',
         latencyEstimate: '估计值：网络往返时间的一半，加上此浏览器的缓冲和解码时间。不含设备上的采集和编码，因此实际延迟更高。',
         latencyClockAssumed: '假定设备的时钟与这台电脑的时钟一致。',
+        latencyArrival: '帧离开编码器 {{ms}} ms 后到达此处；其余是此浏览器中的解码和绘制。',
         rttTip: '到设备的网络往返时间',
         loss: '丢包',
         lossTip: '最近一秒内丢失的数据包',

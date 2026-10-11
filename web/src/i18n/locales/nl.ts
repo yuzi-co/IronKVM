@@ -134,6 +134,8 @@ const nl = {
           'Schatting: de helft van de netwerkrondreis plus buffering en decodering in deze browser. Vastleggen en coderen op het apparaat zijn niet meegerekend, dus de echte latentie is hoger.',
         latencyClockAssumed:
           'Aangenomen wordt dat de klok van het apparaat gelijk loopt met die van deze computer.',
+        latencyArrival:
+          'Beelden komen hier {{ms}} ms na de encoder aan; de rest is decoderen en tekenen in deze browser.',
         rttTip: 'Netwerkrondreis naar het apparaat',
         loss: 'Verlies',
         lossTip: 'Pakketten verloren in de laatste seconde',

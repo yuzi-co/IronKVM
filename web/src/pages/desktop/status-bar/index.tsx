@@ -207,7 +207,10 @@ const LatencyItem = ({ latency }: { latency: Latency }) => {
   const { t } = useTranslation();
   const tip = [
     t(latencyTips[latency.kind]),
-    latency.clockAssumed ? t('screen.streamInfo.latencyClockAssumed') : ''
+    latency.clockAssumed ? t('screen.streamInfo.latencyClockAssumed') : '',
+    latency.arrivalMs !== undefined
+      ? t('screen.streamInfo.latencyArrival', { ms: Math.round(latency.arrivalMs) })
+      : ''
   ]
     .filter(Boolean)
     .join(' ');

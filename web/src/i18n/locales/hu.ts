@@ -132,6 +132,8 @@ const hu = {
         latencyEstimate:
           'Becslés: a hálózati körbejárási idő fele plusz a böngésző pufferelése és dekódolása. A rögzítés és a kódolás az eszközön nincs benne, így a valós késleltetés nagyobb.',
         latencyClockAssumed: 'Feltételezzük, hogy az eszköz órája egyezik a számítógépével.',
+        latencyArrival:
+          'A képkockák {{ms}} ms-mal a kódoló után érkeznek ide; a többi dekódolás és rajzolás ebben a böngészőben.',
         rttTip: 'Hálózati körbejárási idő az eszközig',
         loss: 'Veszteség',
         lossTip: 'Az utolsó másodpercben elveszett csomagok',

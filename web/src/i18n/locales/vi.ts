@@ -131,6 +131,8 @@ const vi = {
         latencyEstimate:
           'Ước tính: một nửa thời gian khứ hồi mạng cộng bộ đệm và giải mã trong trình duyệt này. Không gồm thu và mã hóa trên thiết bị, nên độ trễ thực cao hơn.',
         latencyClockAssumed: 'Giả định đồng hồ của thiết bị khớp với đồng hồ của máy tính này.',
+        latencyArrival:
+          'Khung hình đến đây {{ms}} ms sau bộ mã hóa; phần còn lại là giải mã và vẽ trong trình duyệt này.',
         rttTip: 'Thời gian khứ hồi mạng đến thiết bị',
         loss: 'Mất gói',
         lossTip: 'Số gói bị mất trong giây vừa qua',

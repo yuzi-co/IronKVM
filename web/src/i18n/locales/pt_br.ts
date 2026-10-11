@@ -132,6 +132,8 @@ const pt_br = {
           'Estimativa: metade da ida e volta da rede mais o buffer e a decodificação deste navegador. Captura e codificação no dispositivo não estão incluídas, então a latência real é maior.',
         latencyClockAssumed:
           'Supõe-se que o relógio do dispositivo coincide com o deste computador.',
+        latencyArrival:
+          'Os quadros chegam aqui {{ms}} ms após o codificador; o resto é decodificação e desenho neste navegador.',
         rttTip: 'Ida e volta da rede até o dispositivo',
         loss: 'Perda',
         lossTip: 'Pacotes perdidos no último segundo',

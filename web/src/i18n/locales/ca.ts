@@ -134,6 +134,8 @@ const ca = {
           'Estimació: la meitat de l\'anada i tornada de la xarxa més la memòria intermèdia i la descodificació d\'aquest navegador. No inclou la captura ni la codificació al dispositiu, així que la latència real és més alta.',
         latencyClockAssumed:
           'Se suposa que el rellotge del dispositiu coincideix amb el d\'aquest ordinador.',
+        latencyArrival:
+          'Els fotogrames arriben aquí {{ms}} ms després del codificador; la resta és descodificar i dibuixar en aquest navegador.',
         rttTip: 'Anada i tornada de la xarxa fins al dispositiu',
         loss: 'Pèrdua',
         lossTip: 'Paquets perduts en l\'últim segon',

@@ -136,6 +136,8 @@ const fr = {
           'Estimation : la moitié de l\'aller-retour réseau plus la mise en tampon et le décodage dans ce navigateur. La capture et l\'encodage sur l\'appareil ne sont pas inclus, la latence réelle est donc plus élevée.',
         latencyClockAssumed:
           'L\'horloge de l\'appareil est supposée identique à celle de cet ordinateur.',
+        latencyArrival:
+          'Les images arrivent ici {{ms}} ms après l\'encodeur ; le reste est le décodage et le dessin dans ce navigateur.',
         rttTip: 'Aller-retour réseau vers l\'appareil',
         loss: 'Pertes',
         lossTip: 'Paquets perdus dans la dernière seconde',

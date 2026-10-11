@@ -130,6 +130,8 @@ const en = {
         latencyEstimate:
           'Estimate: half the network round trip plus this browser\'s buffering and decoding. Capture and encoding on the board are not included, so the real latency is higher.',
         latencyClockAssumed: 'The board\'s clock is taken to match this computer\'s.',
+        latencyArrival:
+          'Frames arrive here {{ms}} ms after leaving the encoder; the rest is decoding and drawing in this browser.',
         rttTip: 'Network round trip to the board',
         loss: 'Loss',
         lossTip: 'Packets lost in the last second',

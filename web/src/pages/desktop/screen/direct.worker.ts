@@ -88,7 +88,9 @@ const counters = {
   decoded: 0,
   dropped: 0,
   ageSumMs: 0,
-  ageCount: 0
+  ageCount: 0,
+  arrivalSumMs: 0,
+  arrivalCount: 0
 };
 let statsTimer: ReturnType<typeof setInterval> | null = null;
 let clockSamples: ClockSample[] = [];
@@ -102,6 +104,8 @@ function resetCounters() {
   counters.dropped = 0;
   counters.ageSumMs = 0;
   counters.ageCount = 0;
+  counters.arrivalSumMs = 0;
+  counters.arrivalCount = 0;
 }
 
 function setStats(on: boolean) {
@@ -130,6 +134,7 @@ function setStats(on: boolean) {
       fpsDropped: counters.dropped / seconds,
       kbps: (counters.bytes * 8) / 1000 / seconds,
       latencyMs: counters.ageCount > 0 ? counters.ageSumMs / counters.ageCount : null,
+      arrivalMs: counters.arrivalCount > 0 ? counters.arrivalSumMs / counters.arrivalCount : null,
       latencyErrorMs: clock?.errorMs ?? null
     });
     resetCounters();
@@ -394,6 +399,13 @@ function handleWsMessage(message: ArrayBuffer) {
     const data = new Uint8Array(message, 9);
     counters.bytes += message.byteLength;
     counters.received++;
+    if (clock && statsTimer !== null) {
+      const age = frameAgeMs(timestamp, performance.now(), clock);
+      if (age >= 0 && age < 10_000) {
+        counters.arrivalSumMs += age;
+        counters.arrivalCount++;
+      }
+    }
 
     // A keyframe carries the parameter sets, so it is the only frame that can
     // say which codec this is, and the only frame a fresh decoder can start

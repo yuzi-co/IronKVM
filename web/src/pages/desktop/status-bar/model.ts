@@ -27,6 +27,9 @@ export type Latency = {
   // A capture time read against the board's clock with no offset to this
   // browser's: right only when both clocks keep the same time.
   clockAssumed?: boolean;
+  // How much of it had passed when the frame arrived in this browser, where
+  // that is known (the direct path). The rest is decoding and drawing here.
+  arrivalMs?: number;
 };
 
 export type StreamStats = {

@@ -132,6 +132,8 @@ const nb = {
         latencyEstimate:
           'Anslag: halve nettverkets tur-retur pluss buffring og dekoding i denne nettleseren. Fangst og koding på enheten er ikke med, så den faktiske forsinkelsen er høyere.',
         latencyClockAssumed: 'Enhetens klokke antas å gå likt med denne datamaskinens.',
+        latencyArrival:
+          'Bilder kommer fram {{ms}} ms etter koderen; resten er dekoding og tegning i denne nettleseren.',
         rttTip: 'Nettverkets tur-retur til enheten',
         loss: 'Tap',
         lossTip: 'Pakker tapt det siste sekundet',

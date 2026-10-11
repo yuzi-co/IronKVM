@@ -49,6 +49,7 @@ type WorkerStats = {
   kbps: number;
   latencyMs: number | null;
   latencyErrorMs: number | null;
+  arrivalMs: number | null;
 };
 
 function directStats(report: WorkerEvent, connection: ConnectionState): StreamStats {
@@ -65,7 +66,8 @@ function directStats(report: WorkerEvent, connection: ConnectionState): StreamSt
     stats.latency = {
       ms: report.latencyMs,
       kind: 'encoder',
-      errorMs: report.latencyErrorMs ?? undefined
+      errorMs: report.latencyErrorMs ?? undefined,
+      arrivalMs: report.arrivalMs ?? undefined
     };
   }
   return stats;

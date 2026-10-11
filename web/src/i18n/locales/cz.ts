@@ -133,6 +133,8 @@ const cz = {
           'Odhad: polovina doby odezvy sítě plus vyrovnávací paměť a dekódování v tomto prohlížeči. Zachycení a kódování na zařízení nejsou zahrnuty, skutečná latence je tedy vyšší.',
         latencyClockAssumed:
           'Předpokládá se, že hodiny zařízení jdou stejně jako hodiny tohoto počítače.',
+        latencyArrival:
+          'Snímky sem dorazí {{ms}} ms po kodéru; zbytek je dekódování a vykreslení v tomto prohlížeči.',
         rttTip: 'Doba odezvy sítě k zařízení',
         loss: 'Ztráta',
         lossTip: 'Pakety ztracené za poslední sekundu',

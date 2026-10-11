@@ -131,6 +131,8 @@ const da = {
         latencyEstimate:
           'Skøn: halvdelen af netværkets rundtur plus denne browsers buffering og afkodning. Optagelse og kodning på enheden er ikke medregnet, så den reelle latens er højere.',
         latencyClockAssumed: 'Enhedens ur antages at gå som denne computers.',
+        latencyArrival:
+          'Billeder når frem {{ms}} ms efter koderen; resten er afkodning og tegning i denne browser.',
         rttTip: 'Netværkets rundtur til enheden',
         loss: 'Tab',
         lossTip: 'Pakker tabt i det seneste sekund',

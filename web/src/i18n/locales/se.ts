@@ -129,6 +129,8 @@ const se = {
         latencyEstimate:
           'Uppskattning: halva nätverkets tur och retur plus buffring och avkodning i den här webbläsaren. Fångst och kodning på enheten ingår inte, så den verkliga latensen är högre.',
         latencyClockAssumed: 'Enhetens klocka antas gå lika med den här datorns.',
+        latencyArrival:
+          'Bilder kommer fram {{ms}} ms efter kodaren; resten är avkodning och ritning i den här webbläsaren.',
         rttTip: 'Nätverkets tur och retur till enheten',
         loss: 'Förlust',
         lossTip: 'Paket som förlorades den senaste sekunden',

@@ -133,6 +133,8 @@ const it = {
           'Stima: metà del tempo di andata e ritorno di rete più buffer e decodifica in questo browser. Cattura e codifica sul dispositivo non sono incluse, quindi la latenza reale è maggiore.',
         latencyClockAssumed:
           'Si presume che l\'orologio del dispositivo coincida con quello di questo computer.',
+        latencyArrival:
+          'I fotogrammi arrivano qui {{ms}} ms dopo l\'encoder; il resto è decodifica e disegno in questo browser.',
         rttTip: 'Andata e ritorno di rete verso il dispositivo',
         loss: 'Perdita',
         lossTip: 'Pacchetti persi nell\'ultimo secondo',

@@ -132,6 +132,8 @@ const tr = {
         latencyEstimate:
           'Tahmin: ağ gidiş-dönüş süresinin yarısı artı bu tarayıcıdaki arabellek ve çözme. Cihazdaki yakalama ve kodlama dahil değildir, bu yüzden gerçek gecikme daha yüksektir.',
         latencyClockAssumed: 'Cihazın saatinin bu bilgisayarınkiyle aynı olduğu varsayılır.',
+        latencyArrival:
+          'Kareler kodlayıcıdan {{ms}} ms sonra buraya ulaşır; geri kalanı bu tarayıcıda çözme ve çizmedir.',
         rttTip: 'Cihaza ağ gidiş-dönüş süresi',
         loss: 'Kayıp',
         lossTip: 'Son saniyede kaybolan paketler',

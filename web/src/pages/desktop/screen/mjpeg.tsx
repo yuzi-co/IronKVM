@@ -26,9 +26,7 @@ export const Mjpeg = () => {
   const statsVisible = useAtomValue(streamInfoVisibleAtom);
   const setStreamStats = useSetAtom(streamStatsAtom);
   const imageRef = useRef<HTMLImageElement | null>(null);
-  // Parts loaded since the status bar last looked, and whether any has since
-  // the stream was last asked for.
-  const loads = useRef(0);
+  // Whether the stream has shown a picture since it was last asked for.
   const hasLoaded = useRef(false);
   const hasErrorRef = useRef(hasError);
   useEffect(() => {
@@ -67,15 +65,13 @@ export const Mjpeg = () => {
 
   useEffect(() => clearRetry, []);
 
-  // The status bar counts the parts as they load. The browser knows nothing
-  // else of a multipart image: no bitrate, and no capture time to measure
-  // latency against, so the bar shows neither.
+  // The browser tells a page almost nothing of a multipart image: Chrome
+  // fires load for the first part only, so there is no frame count, no
+  // bitrate, and no capture time to measure latency against. The bar shows
+  // the picture's size and the board's own capture rate.
   useEffect(() => {
     if (!statsVisible) return;
-    loads.current = 0;
-    let last = performance.now();
     const timer = setInterval(() => {
-      const now = performance.now();
       const image = imageRef.current;
       const stats = emptyStats(
         'mjpeg',
@@ -84,10 +80,7 @@ export const Mjpeg = () => {
       stats.codec = 'MJPEG';
       stats.width = image?.naturalWidth ?? 0;
       stats.height = image?.naturalHeight ?? 0;
-      stats.fpsReceived = (loads.current * 1000) / (now - last);
       stats.transport = window.location.protocol === 'https:' ? 'HTTPS' : 'HTTP';
-      loads.current = 0;
-      last = now;
       setStreamStats(stats);
     }, 1000);
     return () => {
@@ -131,7 +124,6 @@ export const Mjpeg = () => {
         // so a frame arriving does not re-render anything.
         onLoad={() => {
           retryDelay.current = retryDelayMs;
-          loads.current++;
           hasLoaded.current = true;
         }}
         onError={() => {
