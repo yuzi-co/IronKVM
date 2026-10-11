@@ -38,7 +38,7 @@ func watchdogRouter(r *gin.Engine) {
 		PowerLED:          vm.PowerLED,
 
 		Ping:        watchdog.Ping,
-		PressButton: auditedPress("watchdog"),
+		PressButton: auditedPressWith("watchdog", vm.PressButtonQuiet),
 
 		Log: watchdog.OpenLog(watchdogLogDir),
 	})

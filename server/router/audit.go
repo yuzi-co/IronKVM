@@ -44,8 +44,16 @@ func auditRouter(r *gin.Engine) {
 // already records: IPMI, Redfish, the watchdog and macros. The press itself is
 // the event, so it is recorded here, once, with the outcome.
 func auditedPress(via string) func(kind string, d time.Duration) error {
+	return auditedPressWith(via, vm.PressButton)
+}
+
+// auditedPressWith is auditedPress around another press function, such as
+// vm.PressButtonQuiet for the watchdog, which reports its presses to the event
+// bus itself. The bus carries no actor or outcome, so the audit log keeps its
+// own record rather than subscribing to it.
+func auditedPressWith(via string, press func(kind string, d time.Duration) error) func(kind string, d time.Duration) error {
 	return func(kind string, d time.Duration) error {
-		err := vm.PressButton(kind, d)
+		err := press(kind, d)
 		e := audit.Event{
 			Actor:    via,
 			Via:      via,

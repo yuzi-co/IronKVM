@@ -6,6 +6,8 @@ import clsx from 'clsx';
 import { useAtom, useSetAtom } from 'jotai';
 import {
   BadgeInfoIcon,
+  BatteryChargingIcon,
+  BellIcon,
   BotIcon,
   CircleArrowUpIcon,
   DiscIcon,
@@ -65,6 +67,8 @@ const pageModules = {
   device: () => import('./device'),
   performance: () => import('./performance'),
   watchdog: () => import('./watchdog'),
+  notifications: () => import('./notifications'),
+  hostLog: () => import('./host-log'),
   update: () => import('./update'),
   network: () => import('./network'),
   vpn: () => import('./vpn/tab.tsx'),
@@ -74,6 +78,7 @@ const pageModules = {
   ipmi: () => import('./ipmi'),
   redfish: () => import('./redfish'),
   mcp: () => import('./mcp'),
+  nut: () => import('./nut'),
   netboot: () => import('./netboot'),
   media: () => import('./media')
 };
@@ -86,6 +91,10 @@ const Preferences = lazy(() => pageModules.preferences().then((m) => ({ default:
 const Device = lazy(() => pageModules.device().then((m) => ({ default: m.Device })));
 const Performance = lazy(() => pageModules.performance().then((m) => ({ default: m.Performance })));
 const Watchdog = lazy(() => pageModules.watchdog().then((m) => ({ default: m.Watchdog })));
+const Notifications = lazy(() =>
+  pageModules.notifications().then((m) => ({ default: m.Notifications }))
+);
+const HostLog = lazy(() => pageModules.hostLog().then((m) => ({ default: m.HostLog })));
 const Update = lazy(() => pageModules.update().then((m) => ({ default: m.Update })));
 const Network = lazy(() => pageModules.network().then((m) => ({ default: m.Network })));
 const VpnTab = lazy(() => pageModules.vpn().then((m) => ({ default: m.VpnTab })));
@@ -94,6 +103,7 @@ const Vnc = lazy(() => pageModules.vnc().then((m) => ({ default: m.Vnc })));
 const Tls = lazy(() => pageModules.tls().then((m) => ({ default: m.Tls })));
 const Ipmi = lazy(() => pageModules.ipmi().then((m) => ({ default: m.Ipmi })));
 const Redfish = lazy(() => pageModules.redfish().then((m) => ({ default: m.Redfish })));
+const Nut = lazy(() => pageModules.nut().then((m) => ({ default: m.Nut })));
 const MCP = lazy(() => pageModules.mcp().then((m) => ({ default: m.MCP })));
 const Netboot = lazy(() => pageModules.netboot().then((m) => ({ default: m.Netboot })));
 const VirtualMedia = lazy(() => pageModules.media().then((m) => ({ default: m.VirtualMedia })));
@@ -141,6 +151,11 @@ export const Settings = () => {
   const { account } = useAuth();
   const isAdmin = account.role === 'admin';
   const hasAudit = useServerFeature('audit-log') === true;
+  // The server decides whether these pages have anything to talk to.
+  const hasNotifications = useServerFeature('notifications') === true;
+  const hasHostLog = useServerFeature('host-log') === true;
+  // The NUT client is there only on a server that declares it.
+  const nutSupported = useServerFeature('nut-client') === true;
   // Below sm the sidebar shows icons only, so each item needs a tooltip.
   const isNarrow = useIsNarrow();
 
@@ -193,6 +208,16 @@ export const Settings = () => {
             icon: <HeartPulseIcon {...icon16} />,
             component: <Watchdog />
           },
+          ...(hasHostLog
+            ? ([
+                {
+                  id: 'hostLog',
+                  group: 'system',
+                  icon: <ScrollTextIcon {...icon16} />,
+                  component: <HostLog />
+                }
+              ] satisfies Tab[])
+            : []),
           {
             id: 'update',
             group: 'system',
@@ -250,6 +275,27 @@ export const Settings = () => {
             component: <Redfish />
           },
           { id: 'mcp', group: 'integrations', icon: <BotIcon {...icon16} />, component: <MCP /> },
+          ...(hasNotifications
+            ? ([
+                {
+                  id: 'notifications',
+                  group: 'integrations',
+                  icon: <BellIcon {...icon16} />,
+                  component: <Notifications />
+                }
+              ] satisfies Tab[])
+            : []),
+          ...(nutSupported
+            ? ([
+                {
+                  id: 'nut',
+                  group: 'integrations',
+                  icon: <BatteryChargingIcon {...icon16} />,
+                  label: 'NUT',
+                  component: <Nut />
+                }
+              ] satisfies Tab[])
+            : []),
           {
             id: 'netboot',
             group: 'boot',

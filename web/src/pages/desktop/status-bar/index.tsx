@@ -28,6 +28,8 @@ import {
   type StreamStats
 } from './model.ts';
 import { useSourceInfo } from './use-source-info.ts';
+import { useUps } from './use-ups.ts';
+import { upsLine, type UpsLine } from './ups.ts';
 
 type Tone = 'ok' | 'warning' | 'error' | 'off';
 
@@ -88,6 +90,7 @@ const Bar = () => {
   const capture = useAtomValue(captureStatusAtom);
   const settings = useAtomValue(screenSettingsAtom);
   const source = useSourceInfo();
+  const ups = upsLine(useUps());
   const boardLatency = useServerFeature('info-latency') === true;
 
   const noSignal = capture?.result === CAPTURE_NO_SIGNAL;
@@ -166,7 +169,30 @@ const Bar = () => {
           <Muted>{stats.transport}</Muted>
         </Item>
       )}
+
+      {ups && <UpsItem line={ups} />}
     </div>
+  );
+};
+
+// The UPS the NUT client reads: its state, the charge and the runtime. It is
+// there only when the client is on.
+const UpsItem = ({ line }: { line: UpsLine }) => {
+  const { t } = useTranslation();
+
+  return (
+    <Item title={t('settings.nut.barTip')}>
+      <span
+        aria-hidden="true"
+        className={clsx('mr-1.5 inline-block h-[7px] w-[7px] rounded-full', toneClass[line.tone])}
+      />
+      <Muted>UPS </Muted>
+      {t(`settings.nut.upsState.${line.state}`)}
+      {line.charge !== null && <> {line.charge}%</>}
+      {line.runtimeMinutes !== null && (
+        <> {t('settings.nut.runtimeShort', { minutes: line.runtimeMinutes })}</>
+      )}
+    </Item>
   );
 };
 
