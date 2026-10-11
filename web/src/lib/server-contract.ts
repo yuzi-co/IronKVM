@@ -25,6 +25,7 @@ export const SERVER_FEATURES = [
   'hid-macros', // /api/hid/macro(s) and /api/hid/sequence (keyboard menu: macros)
   'info-latency', // boardLatency in GET /api/stream/info (status bar latency estimate)
   'ip-allowlist', // /api/network/allowlist (Settings > Network > Allowed networks)
+  'nut-client', // /api/nut (Settings > NUT, UPS line in the status bar)
   'status-bar', // GET /api/stream/info (status bar source line)
   'ui-update', // /api/ui: separate UI packages (Settings > Update)
   'webrtc-clock' // the clock event on the WebRTC signalling socket (status bar latency)

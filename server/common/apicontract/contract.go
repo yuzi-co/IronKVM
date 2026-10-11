@@ -26,6 +26,7 @@ var features = []string{
 	"hid-macros",   // /api/hid/macro(s), /api/hid/sequence: recorded macros
 	"info-latency", // GET /api/stream/info boardLatency: the board's share of the latency
 	"ip-allowlist", // /api/network/allowlist: allowed client networks
+	"nut-client",   // /api/nut: NUT client, UPS state and settings
 	"status-bar",   // GET /api/stream/info
 	"ui-update",    // /api/ui: separately installed UI packages
 	"webrtc-clock", // "clock" event on the WebRTC signalling socket
