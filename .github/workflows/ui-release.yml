@@ -1,0 +1,280 @@
+name: IronKVM UI Release
+
+# Builds, signs and verifies the web UI package (docs/specs/2026-10-11-ui-packages.md)
+# for an IronKVM release tag, and attaches it to that tag's GitHub release:
+#
+#   ironkvm-ui_<version>.tar.gz          the package
+#   ironkvm-ui_<version>.tar.gz.minisig  its signature by the ironkvm-release key
+#   ui-latest.json                       the feed entry, naming the asset's URL
+#
+# IronKVM tags a release ironkvm-X.Y.Z (tools/release/README.md, "The tag name"),
+# not vX.Y.Z: Sipeed's vX.Y.Z card image tags arrive with every fetch from
+# upstream. Those tags and the numeric ones release.yml takes do not trigger this.
+#
+# The job that builds the UI runs pnpm install and therefore third-party code,
+# so it never sees the signing secrets. The signing job takes the built web/dist
+# as an artifact and runs only this repository's packaging script on it.
+#
+# workflow_dispatch is a dry run: it builds, signs and verifies, keeps the result
+# as a workflow artifact, and publishes nothing.
+#
+# This does not write ui-latest.json to the gh-pages feed. Offering the package
+# to boards stays a separate, deliberate step, as for latest.json.
+
+on:
+  push:
+    tags:
+      - 'ironkvm-*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to build and sign as a dry run, e.g. 1.2.0-rc.1 (nothing is published)
+        required: true
+        type: string
+
+concurrency:
+  group: ironkvm-ui-release-${{ github.ref }}-${{ inputs.version }}
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  build:
+    name: Build web UI
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+      source_date_epoch: ${{ steps.version.outputs.source_date_epoch }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Resolve version
+        id: version
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          if [ "$EVENT_NAME" = push ]; then
+            TAG="$REF_NAME"
+            VERSION="${TAG#ironkvm-}"
+          else
+            TAG=
+            VERSION="$INPUT_VERSION"
+          fi
+          # The pattern scripts/package-ui.sh and the server apply.
+          if ! printf '%s\n' "$VERSION" \
+              | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$'; then
+            echo "::error::invalid version '$VERSION', expected a tag ironkvm-X.Y.Z"
+            exit 1
+          fi
+          {
+            echo "version=$VERSION"
+            echo "tag=$TAG"
+            echo "source_date_epoch=$(git log -1 --format=%ct)"
+          } >> "$GITHUB_OUTPUT"
+          echo "UI version $VERSION${TAG:+ from tag $TAG}"
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+
+      - name: Set up pnpm
+        run: npm install --global pnpm@11
+
+      - name: Build web UI
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: make web VERSION="$VERSION"
+
+      - name: Upload web/dist
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ui-dist-${{ github.run_id }}-${{ github.run_attempt }}
+          path: web/dist
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 1
+
+  sign:
+    name: Package and sign
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    env:
+      VERSION: ${{ needs.build.outputs.version }}
+      TAG: ${{ needs.build.outputs.tag }}
+      SOURCE_DATE_EPOCH: ${{ needs.build.outputs.source_date_epoch }}
+      RELEASE_PUB: keys/ironkvm-release.pub
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Download web/dist
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ui-dist-${{ github.run_id }}-${{ github.run_attempt }}
+          path: web/dist
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+
+      - name: Install minisign
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq minisign
+          minisign -v
+
+      - name: Package and sign
+        env:
+          MINISIGN_SECRET_KEY: ${{ secrets.MINISIGN_SECRET_KEY }}
+          MINISIGN_PASSWORD: ${{ secrets.MINISIGN_PASSWORD }}
+        run: |
+          if [ -z "$MINISIGN_SECRET_KEY" ] || [ -z "$MINISIGN_PASSWORD" ]; then
+            echo "::error::MINISIGN_SECRET_KEY and MINISIGN_PASSWORD must both be set"
+            exit 1
+          fi
+          KEY="$RUNNER_TEMP/ironkvm-release.key"
+          PASS="$RUNNER_TEMP/ironkvm-release.password"
+          trap 'rm -f "$KEY" "$PASS"' EXIT
+          (
+            umask 077
+            printf '%s\n' "$MINISIGN_SECRET_KEY" > "$KEY"
+            printf '%s\n' "$MINISIGN_PASSWORD" > "$PASS"
+          )
+          unset MINISIGN_SECRET_KEY MINISIGN_PASSWORD
+
+          if [ -n "$TAG" ]; then
+            URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/ironkvm-ui_${VERSION}.tar.gz"
+          else
+            URL=
+          fi
+          # VERIFY_KEYS is the committed release key: a signature it does not
+          # verify is removed and the script fails, so a wrong secret fails here.
+          SIGN_KEY="$KEY" SIGN_PASSWORD_FILE="$PASS" \
+            VERIFY_KEYS="$GITHUB_WORKSPACE/$RELEASE_PUB" \
+            UI_PACKAGE_URL="$URL" \
+            scripts/package-ui.sh "$VERSION"
+
+      - name: Verify
+        run: |
+          PKG="build/ui/ironkvm-ui_${VERSION}.tar.gz"
+          FEED=build/ui/ui-latest.json
+          minisign -V -p "$RELEASE_PUB" -m "$PKG"
+          [ "$(jq -er .version "$FEED")" = "$VERSION" ] \
+            || { echo "::error::ui-latest.json names another version"; exit 1; }
+          [ "$(jq -er .name "$FEED")" = "$(basename "$PKG")" ] \
+            || { echo "::error::ui-latest.json names another package"; exit 1; }
+          [ "$(jq -er .size_bytes "$FEED")" = "$(wc -c < "$PKG" | tr -d ' ')" ] \
+            || { echo "::error::ui-latest.json size does not match the package"; exit 1; }
+          [ "$(jq -er .sha512 "$FEED")" = "$(openssl dgst -sha512 -binary "$PKG" | openssl base64 -A)" ] \
+            || { echo "::error::ui-latest.json sha512 does not match the package"; exit 1; }
+          {
+            echo "### ironkvm-ui_${VERSION}.tar.gz"
+            echo
+            if [ -z "$TAG" ]; then
+              echo '> Dry run: nothing is published.'
+              echo
+            fi
+            echo '```json'
+            cat "$FEED"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload signed package
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ironkvm-ui-${{ needs.build.outputs.version }}-run-${{ github.run_id }}-attempt-${{ github.run_attempt }}
+          path: |
+            build/ui/ironkvm-ui_${{ needs.build.outputs.version }}.tar.gz
+            build/ui/ironkvm-ui_${{ needs.build.outputs.version }}.tar.gz.minisig
+            build/ui/ui-latest.json
+          if-no-files-found: error
+          retention-days: ${{ github.event_name == 'push' && 90 || 7 }}
+
+  publish:
+    name: Attach to GitHub release
+    needs:
+      - build
+      - sign
+    if: github.event_name == 'push' && needs.build.outputs.tag != ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    # release.yml serializes on this group because "latest" is repository-wide.
+    concurrency:
+      group: nanokvm-github-release
+      cancel-in-progress: false
+    env:
+      GH_REPO: ${{ github.repository }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TAG: ${{ needs.build.outputs.tag }}
+      VERSION: ${{ needs.build.outputs.version }}
+
+    steps:
+      - name: Download signed package
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ironkvm-ui-${{ needs.build.outputs.version }}-run-${{ github.run_id }}-attempt-${{ github.run_attempt }}
+          path: build/ui
+
+      - name: Attach assets
+        run: |
+          FILES=(
+            "build/ui/ironkvm-ui_${VERSION}.tar.gz"
+            "build/ui/ironkvm-ui_${VERSION}.tar.gz.minisig"
+            build/ui/ui-latest.json
+          )
+          ls -l "${FILES[@]}"
+
+          # tools/release/release.sh pushes the tag and creates the release a
+          # moment later, so the release normally exists by now. Wait a while for
+          # it rather than racing it; a tag pushed by hand gets a release here.
+          found=
+          for _ in $(seq 1 20); do
+            if gh release view "$TAG" > /dev/null 2>&1; then
+              found=1
+              break
+            fi
+            sleep 30
+          done
+
+          if [ -n "$found" ]; then
+            # No --clobber: an asset that is already there is a second run, and
+            # replacing a signed package under the same name is not this job's call.
+            gh release upload "$TAG" "${FILES[@]}"
+          else
+            gh release create "$TAG" --verify-tag --latest=false \
+              --title "IronKVM $VERSION" \
+              --notes "Web UI package for IronKVM ${VERSION}, signed with the ironkvm-release key (key ID 32F88FAC69726707)." \
+              "${FILES[@]}"
+          fi
+
+          {
+            echo "### Attached to release \`$TAG\`"
+            echo
+            # Backticks below are intentional Markdown, not command substitution.
+            # shellcheck disable=SC2016
+            printf -- '- `%s`\n' "${FILES[@]##*/}"
+            echo
+            echo 'ui-latest.json was not written to the gh-pages feed.'
+          } >> "$GITHUB_STEP_SUMMARY"
