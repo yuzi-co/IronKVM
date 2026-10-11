@@ -82,6 +82,15 @@ func (g *captureGate) stop(deinit func()) {
 	g.live = false
 }
 
+// disable closes the gate without a deinit, for a process that never
+// initialised the library: see DisableVideo.
+func (g *captureGate) disable() {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+
+	g.live = false
+}
+
 // There used to be a withRead method that rebuilt the pipeline before reading,
 // and resume and isLive helpers beside it. All of that served
 // service/vm/hdmi_idle.go, which released capture after an idle timeout and

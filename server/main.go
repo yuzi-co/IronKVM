@@ -16,6 +16,7 @@ import (
 	"NanoKVM-Server/service/application"
 	"NanoKVM-Server/service/extensions/netbird"
 	"NanoKVM-Server/service/extensions/tailscale"
+	"NanoKVM-Server/service/failsafe"
 	"NanoKVM-Server/service/hid"
 	"NanoKVM-Server/service/ion"
 	"NanoKVM-Server/service/metrics"
@@ -41,6 +42,14 @@ func initialize() {
 	}
 
 	logger.Init()
+
+	// Before anything can reach libkvm. After a video crash loop the server
+	// starts without video, so the web UI, updates and logs stay reachable;
+	// see service/failsafe.
+	if failsafe.Init() {
+		common.DisableVideo()
+	}
+	failsafe.Restart = restartInPlace
 
 	// Record the carveout baseline and reset the peak watermark here, before
 	// the first call that can allocate from it. That call is
@@ -82,7 +91,7 @@ func initialize() {
 	// The idle bookkeeping that DisableHdmiCapture also does is all zero-valued
 	// in a process that has only just started, so dropping the call loses it
 	// nothing.
-	if !utils.IsHdmiDisabled() {
+	if !utils.IsHdmiDisabled() && !common.VideoDisabled() {
 		vm.EnableHdmiCapture()
 	}
 	vm.SetHdmiViewerCount(0)
@@ -117,6 +126,28 @@ func initialize() {
 		}
 		os.Exit(0)
 	}()
+}
+
+// restartInPlace is the failsafe's retry. It tears down what this process runs
+// and execs the same binary with the same arguments and environment. The pid
+// stays, so whatever waits on it (run_recorded in the boot scripts) sees one
+// server and records no exit, and S98supervise never finds the server gone.
+// Every descriptor Go opens is close-on-exec, so the listeners are free for
+// the new image to bind.
+//
+// An exec that fails exits instead, with status 0. That is a clean exit, which
+// also clears the crash records, and S98supervise starts the server again.
+func restartInPlace() {
+	if !disposeWithin(disposeTimeout, dispose) {
+		log.Printf("teardown did not finish in %s, restarting anyway\n", disposeTimeout)
+	}
+
+	exe, err := os.Executable()
+	if err == nil {
+		err = syscall.Exec(exe, os.Args, os.Environ())
+	}
+	log.Printf("restart in place failed (%v), exiting for the supervisor to start the server\n", err)
+	os.Exit(0)
 }
 
 func run() {

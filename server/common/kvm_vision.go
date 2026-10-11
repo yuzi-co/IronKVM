@@ -116,9 +116,39 @@ package common
 			vendor_venc_chn = -1;
 		return ret;
 	}
+
+	// The failsafe test hook (service/failsafe, TestEnv). Both fault inside
+	// native code, as a libkvm crash does. The first faults on the calling Go
+	// thread, inside a cgo call, so the runtime writes a report that names
+	// this function. The second faults on a thread of its own, as a crash in
+	// one of libkvm's threads would, which the runtime may not report at all.
+	#include <pthread.h>
+	#include <unistd.h>
+
+	static void kvmv_failsafe_test_crash(void)
+	{
+		volatile int *p = (volatile int *)0;
+		*p = 1;
+	}
+
+	static void *kvmv_failsafe_test_thread_main(void *arg)
+	{
+		(void)arg;
+		kvmv_failsafe_test_crash();
+		return NULL;
+	}
+
+	static void kvmv_failsafe_test_thread_crash(void)
+	{
+		pthread_t t;
+
+		if (pthread_create(&t, NULL, kvmv_failsafe_test_thread_main, NULL) == 0)
+			pthread_join(t, NULL);
+	}
 */
 import "C"
 import (
+	"os"
 	"sync"
 	"unsafe"
 
@@ -153,6 +183,23 @@ type KvmVision struct{}
 func GetKvmVision() *KvmVision {
 	kvmVisionOnce.Do(func() {
 		kvmVision = &KvmVision{}
+
+		if VideoDisabled() {
+			log.Warnf("kvm vision not initialized: the server runs in video failsafe mode")
+			return
+		}
+
+		// The failsafe test hook. The name is service/failsafe.TestEnv,
+		// repeated because common imports no service package. Nothing on a
+		// board sets it, so in production this is one getenv per process.
+		switch os.Getenv("NANOKVM_FAILSAFE_TEST") {
+		case "video-crash":
+			log.Warnf("failsafe test hook: faulting in native code before kvmv_init")
+			C.kvmv_failsafe_test_crash()
+		case "video-thread-crash":
+			log.Warnf("failsafe test hook: faulting on a native thread before kvmv_init")
+			C.kvmv_failsafe_test_thread_crash()
+		}
 
 		logLevel := C.uint8_t(0)
 		C.kvmv_init(logLevel)
@@ -400,6 +447,12 @@ func libraryAspectSupported() bool {
 // librarySetKeepAspect tells the library how to fit a source of another shape.
 // It answers false when the library has no such choice.
 func librarySetKeepAspect(keep bool) bool {
+	// This one changes the pipeline's state, and in failsafe mode there is
+	// no pipeline to change.
+	if VideoDisabled() {
+		return false
+	}
+
 	value := C.uint8_t(0)
 	if keep {
 		value = 1
