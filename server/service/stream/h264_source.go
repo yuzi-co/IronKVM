@@ -209,6 +209,14 @@ func (p *H264Subscription) Dropped() uint64 {
 // than a broken one, and it ends the moment a keyframe arrives. At the default
 // GOP of 30 that is at most a second.
 //
+// A keyframe is never refused. It needs none of the frames before it, so when
+// the path is still full it replaces the stale frames it holds rather than
+// being lost, and the repair ends on it. Refusing it, as this did before,
+// left a path that was still behind waiting a whole further GOP, and threw
+// away the very keyframe the repair had asked the encoder for. Upstream found
+// this first (sipeed/NanoKVM 7f95fe9b), and it costs nothing in latency: the
+// frames it discards were older than the keyframe that replaces them.
+//
 // Status frames are exempt in both directions. They carry no picture, each path
 // reports them under its own capture mode, and a status nobody reports is a
 // stream that fails silently. So a gap in the video must not silence the status,
@@ -222,12 +230,15 @@ func (p *H264Subscription) deliver(frame H264Frame) {
 		return
 	}
 
-	if p.repairing {
-		if !frame.KeyFrame {
-			return
-		}
-
+	if frame.KeyFrame {
 		p.repairing = false
+		p.slot.PutIndependent(frame)
+
+		return
+	}
+
+	if p.repairing {
+		return
 	}
 
 	if !p.slot.TryPut(frame) {

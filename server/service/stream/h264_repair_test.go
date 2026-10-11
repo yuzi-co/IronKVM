@@ -110,33 +110,70 @@ func TestARefusedStatusFrameDoesNotStartARepair(t *testing.T) {
 	}
 }
 
-// A keyframe ends the repair only if it is actually delivered. If the client is
-// still behind when it arrives, the stream stays held rather than resuming on a
-// keyframe the decoder never saw.
-func TestAKeyframeTheClientCannotTakeDoesNotEndTheRepair(t *testing.T) {
+// A keyframe that finds the client still behind replaces what it holds and
+// ends the repair. Refusing it kept the stream held for another whole GOP and
+// lost the keyframe the repair had asked for (sipeed/NanoKVM 7f95fe9b).
+func TestAKeyframeTheClientIsBehindOnReplacesTheStaleFrames(t *testing.T) {
 	subscription := newTestSubscription()
 
 	subscription.deliver(dataFrame(false))
 	subscription.deliver(dataFrame(false))
 
-	// The slot is still full, so the keyframe is refused too.
+	// The slot is still full when the keyframe arrives.
 	subscription.deliver(dataFrame(true))
 
-	if !take(subscription) {
-		t.Fatal("the first frame never reached the slot")
+	select {
+	case frame := <-subscription.slot.Channel():
+		if !frame.KeyFrame {
+			t.Fatal("the stale frame was delivered instead of the keyframe")
+		}
+	default:
+		t.Fatal("the keyframe was refused")
 	}
-	if take(subscription) {
-		t.Fatal("the refused keyframe reached the slot")
+	if subscription.repairing {
+		t.Fatal("the delivered keyframe did not end the repair")
 	}
 
 	subscription.deliver(dataFrame(false))
-	if take(subscription) {
-		t.Fatal("the stream resumed on a keyframe that was never delivered")
-	}
-
-	subscription.deliver(dataFrame(true))
 	if !take(subscription) {
-		t.Fatal("the next keyframe did not end the repair")
+		t.Fatal("the stream did not resume after the keyframe")
+	}
+}
+
+// A keyframe that overflows a path which was keeping up is not a gap: the
+// decoder restarts from it, so no repair starts and nothing waits.
+func TestAKeyframeThatOverflowsStartsNoRepair(t *testing.T) {
+	subscription := &H264Subscription{slot: NewFrameSlotDepth[H264Frame](h264SubscriptionDepth)}
+
+	for i := 0; i < h264SubscriptionDepth; i++ {
+		subscription.deliver(dataFrame(false))
+	}
+	subscription.deliver(dataFrame(true))
+
+	if subscription.repairing {
+		t.Fatal("an overflowing keyframe started a repair")
+	}
+	if got := len(subscription.slot.Channel()); got != 1 {
+		t.Fatalf("the slot holds %d frames, want the keyframe alone", got)
+	}
+	if got := subscription.Dropped(); got != h264SubscriptionDepth {
+		t.Fatalf("dropped %d frames, want the %d stale ones", got, h264SubscriptionDepth)
+	}
+}
+
+// With room, a keyframe queues behind the frames before it like any other: they
+// are still a valid run, and the client is keeping up.
+func TestAKeyframeWithRoomKeepsTheFramesBeforeIt(t *testing.T) {
+	subscription := &H264Subscription{slot: NewFrameSlotDepth[H264Frame](h264SubscriptionDepth)}
+
+	subscription.deliver(dataFrame(false))
+	subscription.deliver(dataFrame(true))
+
+	if got := len(subscription.slot.Channel()); got != 2 {
+		t.Fatalf("the slot holds %d frames, want 2", got)
+	}
+	if got := subscription.Dropped(); got != 0 {
+		t.Fatalf("dropped %d frames, want none", got)
 	}
 }
 
