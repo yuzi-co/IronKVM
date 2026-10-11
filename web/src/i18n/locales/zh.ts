@@ -736,10 +736,29 @@ const zh = {
         outcomes: {
           ok: '成功',
           fail: '失败',
-          denied: '已拒绝',
+          denied: '已拒绝'
         }
       },
       mcp: {
+        tiers: {
+          title: '能力层级',
+          description: '选择 MCP 客户端和内置代理可以做什么。每次调用都会连同其层级记录到审计日志。',
+          mcp: 'MCP 客户端',
+          agent: '内置代理',
+          observe: '观察',
+          observeDesc: '截图和状态',
+          input: '输入',
+          inputDesc: '键盘和鼠标',
+          power: '电源',
+          powerDesc: '按下 ATX 电源和重置按钮',
+          media: '介质',
+          mediaDesc: '插入和弹出虚拟介质',
+          admin: '管理',
+          adminDesc: '更改设备设置（目前没有工具使用此层级）',
+          agentNote: '内置代理目前没有电源或介质工具，因此这两个层级只对 MCP 客户端生效。',
+          loadFailed: '无法加载能力层级。',
+          saveFailed: '无法保存能力层级。'
+        },
         keyNote: 'MCP 使用下方显示的专用 API 密钥。API 密钥页面中的密钥在此无效。',
         title: 'MCP 服务',
         service: '远程控制 MCP',

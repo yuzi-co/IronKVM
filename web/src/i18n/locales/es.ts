@@ -776,10 +776,31 @@ const es = {
         outcomes: {
           ok: 'Correcto',
           fail: 'Fallido',
-          denied: 'Denegado',
+          denied: 'Denegado'
         }
       },
       mcp: {
+        tiers: {
+          title: 'Niveles de capacidad',
+          description:
+            'Elige qué pueden hacer los clientes MCP y el agente integrado. Cada llamada se anota en el registro de auditoría con su nivel.',
+          mcp: 'Clientes MCP',
+          agent: 'Agente integrado',
+          observe: 'Observar',
+          observeDesc: 'Capturas de pantalla y estado',
+          input: 'Entrada',
+          inputDesc: 'Teclado y ratón',
+          power: 'Energía',
+          powerDesc: 'Pulsar los botones de encendido y reinicio ATX',
+          media: 'Medios',
+          mediaDesc: 'Insertar y expulsar medios virtuales',
+          admin: 'Administración',
+          adminDesc: 'Cambiar los ajustes del dispositivo (ninguna herramienta usa aún este nivel)',
+          agentNote:
+            'El agente integrado aún no tiene herramientas de energía ni de medios, así que esos dos niveles solo afectan a los clientes MCP.',
+          loadFailed: 'No se pudieron cargar los niveles de capacidad.',
+          saveFailed: 'No se pudieron guardar los niveles de capacidad.'
+        },
         keyNote:
           'MCP usa su propia clave API, mostrada abajo. Las claves de la página Claves API no funcionan aquí.',
         title: 'Servicio MCP',

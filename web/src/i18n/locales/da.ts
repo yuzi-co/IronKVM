@@ -765,10 +765,31 @@ const da = {
         outcomes: {
           ok: 'Lykkedes',
           fail: 'Mislykkedes',
-          denied: 'Afvist',
+          denied: 'Afvist'
         }
       },
       mcp: {
+        tiers: {
+          title: 'Kapabilitetsniveauer',
+          description:
+            'Vælg, hvad MCP-klienter og den indbyggede agent må. Hvert kald logges i revisionsloggen med sit niveau.',
+          mcp: 'MCP-klienter',
+          agent: 'Indbygget agent',
+          observe: 'Observér',
+          observeDesc: 'Skærmbilleder og status',
+          input: 'Input',
+          inputDesc: 'Tastatur og mus',
+          power: 'Strøm',
+          powerDesc: 'Tryk på ATX-tænd- og nulstillingsknapperne',
+          media: 'Medier',
+          mediaDesc: 'Indsæt og skub virtuelle medier ud',
+          admin: 'Admin',
+          adminDesc: 'Ændr enhedens indstillinger (intet værktøj bruger endnu dette niveau)',
+          agentNote:
+            'Den indbyggede agent har endnu ingen strøm- eller medieværktøjer, så disse to niveauer gælder kun MCP-klienter.',
+          loadFailed: 'Kapabilitetsniveauerne kunne ikke indlæses.',
+          saveFailed: 'Kapabilitetsniveauerne kunne ikke gemmes.'
+        },
         keyNote:
           'MCP bruger sin egen API-nøgle, vist nedenfor. Nøgler fra siden API-nøgler virker ikke her.',
         title: 'MCP-tjeneste',

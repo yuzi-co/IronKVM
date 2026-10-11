@@ -766,10 +766,31 @@ const tr = {
         outcomes: {
           ok: 'Başarılı',
           fail: 'Başarısız',
-          denied: 'Reddedildi',
+          denied: 'Reddedildi'
         }
       },
       mcp: {
+        tiers: {
+          title: 'Yetenek düzeyleri',
+          description:
+            'MCP istemcilerinin ve yerleşik ajanın neler yapabileceğini seçin. Her çağrı, düzeyiyle birlikte denetim günlüğüne kaydedilir.',
+          mcp: 'MCP istemcileri',
+          agent: 'Yerleşik ajan',
+          observe: 'Gözlem',
+          observeDesc: 'Ekran görüntüleri ve durum',
+          input: 'Giriş',
+          inputDesc: 'Klavye ve fare',
+          power: 'Güç',
+          powerDesc: 'ATX güç ve sıfırlama düğmelerine bas',
+          media: 'Ortam',
+          mediaDesc: 'Sanal ortam tak ve çıkar',
+          admin: 'Yönetim',
+          adminDesc: 'Cihaz ayarlarını değiştir (bu düzeyi henüz kullanan bir araç yok)',
+          agentNote:
+            'Yerleşik ajanın henüz güç veya ortam aracı yok, bu yüzden bu iki düzey yalnızca MCP istemcileri için geçerlidir.',
+          loadFailed: 'Yetenek düzeyleri yüklenemedi.',
+          saveFailed: 'Yetenek düzeyleri kaydedilemedi.'
+        },
         keyNote:
           'MCP aşağıda gösterilen kendi API anahtarını kullanır. API Anahtarları sayfasındaki anahtarlar burada çalışmaz.',
         title: 'MCP Hizmeti',

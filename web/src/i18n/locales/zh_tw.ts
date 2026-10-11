@@ -736,10 +736,29 @@ const zh_tw = {
         outcomes: {
           ok: '成功',
           fail: '失敗',
-          denied: '已拒絕',
+          denied: '已拒絕'
         }
       },
       mcp: {
+        tiers: {
+          title: '能力層級',
+          description: '選擇 MCP 用戶端和內建代理可以做什麼。每次呼叫都會連同其層級記錄到稽核日誌。',
+          mcp: 'MCP 用戶端',
+          agent: '內建代理',
+          observe: '觀察',
+          observeDesc: '截圖和狀態',
+          input: '輸入',
+          inputDesc: '鍵盤和滑鼠',
+          power: '電源',
+          powerDesc: '按下 ATX 電源和重設按鈕',
+          media: '媒體',
+          mediaDesc: '插入和彈出虛擬媒體',
+          admin: '管理',
+          adminDesc: '變更裝置設定（目前沒有工具使用此層級）',
+          agentNote: '內建代理目前沒有電源或媒體工具，因此這兩個層級只對 MCP 用戶端生效。',
+          loadFailed: '無法載入能力層級。',
+          saveFailed: '無法儲存能力層級。'
+        },
         keyNote: 'MCP 使用下方顯示的專用 API 金鑰。API 金鑰頁面中的金鑰在此無效。',
         title: 'MCP 服務',
         service: 'MCP 遠端控制',

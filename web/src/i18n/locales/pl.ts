@@ -769,10 +769,31 @@ const pl = {
         outcomes: {
           ok: 'Powodzenie',
           fail: 'Niepowodzenie',
-          denied: 'Odmowa',
+          denied: 'Odmowa'
         }
       },
       mcp: {
+        tiers: {
+          title: 'Poziomy uprawnień',
+          description:
+            'Wybierz, co mogą robić klienci MCP i wbudowany agent. Każde wywołanie trafia do dziennika audytu razem ze swoim poziomem.',
+          mcp: 'Klienci MCP',
+          agent: 'Wbudowany agent',
+          observe: 'Obserwacja',
+          observeDesc: 'Zrzuty ekranu i stan',
+          input: 'Wejście',
+          inputDesc: 'Klawiatura i mysz',
+          power: 'Zasilanie',
+          powerDesc: 'Naciskanie przycisków zasilania i resetu ATX',
+          media: 'Nośniki',
+          mediaDesc: 'Wkładanie i wysuwanie nośników wirtualnych',
+          admin: 'Administracja',
+          adminDesc: 'Zmiana ustawień urządzenia (żadne narzędzie jeszcze nie używa tego poziomu)',
+          agentNote:
+            'Wbudowany agent nie ma jeszcze narzędzi zasilania ani nośników, więc te dwa poziomy dotyczą tylko klientów MCP.',
+          loadFailed: 'Nie udało się wczytać poziomów uprawnień.',
+          saveFailed: 'Nie udało się zapisać poziomów uprawnień.'
+        },
         keyNote:
           'MCP używa własnego klucza API, pokazanego poniżej. Klucze ze strony Klucze API tu nie działają.',
         title: 'Usługa MCP',

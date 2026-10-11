@@ -762,10 +762,31 @@ const vi = {
         outcomes: {
           ok: 'Thành công',
           fail: 'Thất bại',
-          denied: 'Bị từ chối',
+          denied: 'Bị từ chối'
         }
       },
       mcp: {
+        tiers: {
+          title: 'Cấp năng lực',
+          description:
+            'Chọn những gì client MCP và tác tử tích hợp được phép làm. Mỗi lệnh gọi được ghi vào nhật ký kiểm toán cùng cấp của nó.',
+          mcp: 'Client MCP',
+          agent: 'Tác tử tích hợp',
+          observe: 'Quan sát',
+          observeDesc: 'Ảnh chụp màn hình và trạng thái',
+          input: 'Nhập liệu',
+          inputDesc: 'Bàn phím và chuột',
+          power: 'Nguồn',
+          powerDesc: 'Nhấn nút nguồn và nút reset ATX',
+          media: 'Phương tiện',
+          mediaDesc: 'Chèn và đẩy phương tiện ảo',
+          admin: 'Quản trị',
+          adminDesc: 'Đổi cài đặt thiết bị (chưa có công cụ nào dùng cấp này)',
+          agentNote:
+            'Tác tử tích hợp chưa có công cụ nguồn hoặc phương tiện, nên hai cấp này chỉ áp dụng cho client MCP.',
+          loadFailed: 'Không thể tải các cấp năng lực.',
+          saveFailed: 'Không thể lưu các cấp năng lực.'
+        },
         keyNote:
           'MCP dùng khóa API riêng, hiển thị bên dưới. Khóa từ trang Khóa API không dùng được ở đây.',
         title: 'Dịch vụ MCP',

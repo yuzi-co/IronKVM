@@ -43,6 +43,14 @@ export type AuditPage = { events: AuditEvent[]; total: number };
 
 export type AuditSettings = { syslog: boolean; directory: string; maxBytes: number };
 
+export type AgentTier = 'observe' | 'input' | 'power' | 'media' | 'admin';
+
+export type AgentTiers = {
+  mcp: AgentTier[];
+  agent: AgentTier[];
+  available: AgentTier[];
+};
+
 // Empty filter fields are left out of the request.
 function params(filter: AuditFilter) {
   return Object.fromEntries(Object.entries(filter).filter(([, value]) => value));
@@ -71,3 +79,10 @@ export function setAuditSyslog(syslog: boolean) {
   return http.post('/api/audit/settings', { syslog });
 }
 
+export function getAgentTiers() {
+  return http.get('/api/agent/tiers');
+}
+
+export function setAgentTiers(mcp: AgentTier[], agent: AgentTier[]) {
+  return http.post('/api/agent/tiers', { mcp, agent });
+}

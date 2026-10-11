@@ -768,10 +768,31 @@ const nb = {
         outcomes: {
           ok: 'Vellykket',
           fail: 'Mislyktes',
-          denied: 'Avvist',
+          denied: 'Avvist'
         }
       },
       mcp: {
+        tiers: {
+          title: 'Kapabilitetsnivåer',
+          description:
+            'Velg hva MCP-klienter og den innebygde agenten kan gjøre. Hvert kall logges i revisjonsloggen med sitt nivå.',
+          mcp: 'MCP-klienter',
+          agent: 'Innebygd agent',
+          observe: 'Observer',
+          observeDesc: 'Skjermbilder og status',
+          input: 'Inndata',
+          inputDesc: 'Tastatur og mus',
+          power: 'Strøm',
+          powerDesc: 'Trykk på ATX-strøm- og tilbakestillingsknappene',
+          media: 'Medier',
+          mediaDesc: 'Sett inn og løs ut virtuelle medier',
+          admin: 'Admin',
+          adminDesc: 'Endre enhetens innstillinger (ingen verktøy bruker dette nivået ennå)',
+          agentNote:
+            'Den innebygde agenten har ingen strøm- eller medieverktøy ennå, så disse to nivåene gjelder bare MCP-klienter.',
+          loadFailed: 'Kunne ikke laste kapabilitetsnivåene.',
+          saveFailed: 'Kunne ikke lagre kapabilitetsnivåene.'
+        },
         keyNote:
           'MCP bruker sin egen API-nøkkel, vist nedenfor. Nøkler fra siden API-nøkler virker ikke her.',
         title: 'MCP-tjeneste',

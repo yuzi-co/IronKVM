@@ -767,10 +767,29 @@ const ja = {
         outcomes: {
           ok: '成功',
           fail: '失敗',
-          denied: '拒否',
+          denied: '拒否'
         }
       },
       mcp: {
+        tiers: {
+          title: '権限ティア',
+          description: 'MCP クライアントと内蔵エージェントに許可する操作を選びます。すべての呼び出しは、ティアとともに監査ログに記録されます。',
+          mcp: 'MCP クライアント',
+          agent: '内蔵エージェント',
+          observe: '観察',
+          observeDesc: 'スクリーンショットとステータス',
+          input: '入力',
+          inputDesc: 'キーボードとマウス',
+          power: '電源',
+          powerDesc: 'ATX の電源ボタンとリセットボタンを押す',
+          media: 'メディア',
+          mediaDesc: '仮想メディアの挿入と取り出し',
+          admin: '管理',
+          adminDesc: 'デバイスの設定を変更（このティアを使うツールはまだありません）',
+          agentNote: '内蔵エージェントには電源やメディアのツールがまだないため、この 2 つのティアは MCP クライアントにのみ適用されます。',
+          loadFailed: '権限ティアを読み込めませんでした。',
+          saveFailed: '権限ティアを保存できませんでした。'
+        },
         keyNote:
           'MCP は下に表示される専用の API キーを使います。API キーページのキーはここでは使えません。',
         title: 'MCP サービス',

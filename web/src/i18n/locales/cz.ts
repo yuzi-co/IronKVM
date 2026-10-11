@@ -765,10 +765,31 @@ const cz = {
         outcomes: {
           ok: 'Úspěch',
           fail: 'Selhalo',
-          denied: 'Zamítnuto',
+          denied: 'Zamítnuto'
         }
       },
       mcp: {
+        tiers: {
+          title: 'Úrovně oprávnění',
+          description:
+            'Vyberte, co smějí dělat klienti MCP a vestavěný agent. Každé volání se zapíše do auditního protokolu s úrovní.',
+          mcp: 'Klienti MCP',
+          agent: 'Vestavěný agent',
+          observe: 'Pozorování',
+          observeDesc: 'Snímky obrazovky a stav',
+          input: 'Vstup',
+          inputDesc: 'Klávesnice a myš',
+          power: 'Napájení',
+          powerDesc: 'Stisknout tlačítka napájení a resetu ATX',
+          media: 'Média',
+          mediaDesc: 'Vložit a vysunout virtuální média',
+          admin: 'Správa',
+          adminDesc: 'Měnit nastavení zařízení (tuto úroveň zatím nepoužívá žádný nástroj)',
+          agentNote:
+            'Vestavěný agent zatím nemá nástroje pro napájení ani média, proto se tyto dvě úrovně týkají jen klientů MCP.',
+          loadFailed: 'Úrovně oprávnění se nepodařilo načíst.',
+          saveFailed: 'Úrovně oprávnění se nepodařilo uložit.'
+        },
         keyNote:
           'MCP používá vlastní API klíč, zobrazený níže. Klíče ze stránky API klíče zde nefungují.',
         title: 'Služba MCP',

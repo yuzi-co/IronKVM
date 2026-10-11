@@ -21,8 +21,9 @@ func requestIdentity(c *gin.Context) (audit.Identity, bool) {
 	return audit.Identity{Actor: principal.Username, Via: principal.Via, Key: principal.Key}, true
 }
 
-// auditRouter serves the audit log to administrators only: it names the other
-// users and their addresses.
+// auditRouter serves the audit log and the capability tiers of MCP and the
+// agent, both to administrators only: the log names the other users and their
+// addresses, and the tiers decide what an AI may do.
 func auditRouter(r *gin.Engine) {
 	service := audit.NewService()
 	admin := r.Group("/api").Use(
@@ -34,6 +35,8 @@ func auditRouter(r *gin.Engine) {
 	admin.GET("/audit/export", service.Export)        // the matching events as JSON lines
 	admin.GET("/audit/settings", service.GetSettings) // the syslog forward and the log's limits
 	admin.POST("/audit/settings", service.SetSettings)
+	admin.GET("/agent/tiers", service.GetTiers) // what MCP and the agent may do
+	admin.POST("/agent/tiers", service.SetTiers)
 }
 
 // auditedPress wraps vm.PressButton for the callers that press a button on

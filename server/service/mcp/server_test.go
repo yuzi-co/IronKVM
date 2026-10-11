@@ -88,11 +88,12 @@ func TestMoveMouseHandlerDoesNotRateLimitRapidMoves(t *testing.T) {
 }
 
 func TestMCPInitializeAndToolsList(t *testing.T) {
+	isolateAudit(t)
 	hid := &recordingHID{}
 	control := controlmode.NewManager(filepath.Join(t.TempDir(), "mode"), controlmode.ModeMCP)
 	handler := newMCPHandler(control, &inputcontrol.Coordinator{}, newRemoteWithHID(hid), fakeSnapshotter{snapshot: Snapshot{
 		OK: true, Width: 800, Height: 600, JPEG: []byte{0xff, 0xd8, 0xff},
-	}})
+	}}, Devices{})
 
 	request := func(method string, body string, sessionID string) *httptest.ResponseRecorder {
 		recorder := httptest.NewRecorder()
@@ -195,8 +196,9 @@ func TestMCPInitializeAndToolsList(t *testing.T) {
 }
 
 func TestMCPHandlerRejectsCrossOriginBrowserRequests(t *testing.T) {
+	isolateAudit(t)
 	control := controlmode.NewManager(filepath.Join(t.TempDir(), "mode"), controlmode.ModeMCP)
-	handler := http.NewCrossOriginProtection().Handler(newMCPHandler(control, &inputcontrol.Coordinator{}, newRemoteWithHID(&recordingHID{}), nil))
+	handler := http.NewCrossOriginProtection().Handler(newMCPHandler(control, &inputcontrol.Coordinator{}, newRemoteWithHID(&recordingHID{}), nil, Devices{}))
 
 	request := func(origin string) *httptest.ResponseRecorder {
 		recorder := httptest.NewRecorder()
@@ -215,8 +217,9 @@ func TestMCPHandlerRejectsCrossOriginBrowserRequests(t *testing.T) {
 }
 
 func TestMCPHandlerRejectsOversizedRequestBody(t *testing.T) {
+	isolateAudit(t)
 	control := controlmode.NewManager(filepath.Join(t.TempDir(), "mode"), controlmode.ModeMCP)
-	handler := newMCPHandler(control, &inputcontrol.Coordinator{}, newRemoteWithHID(&recordingHID{}), nil)
+	handler := newMCPHandler(control, &inputcontrol.Coordinator{}, newRemoteWithHID(&recordingHID{}), nil, Devices{})
 	recorder := httptest.NewRecorder()
 	req := httptest.NewRequest(
 		http.MethodPost,

@@ -763,10 +763,31 @@ const en = {
         outcomes: {
           ok: 'Succeeded',
           fail: 'Failed',
-          denied: 'Denied',
+          denied: 'Denied'
         }
       },
       mcp: {
+        tiers: {
+          title: 'Capability tiers',
+          description:
+            'Choose what MCP clients and the on-board agent may do. Every call is recorded in the audit log with its tier.',
+          mcp: 'MCP clients',
+          agent: 'On-board agent',
+          observe: 'Observe',
+          observeDesc: 'Screenshots and status',
+          input: 'Input',
+          inputDesc: 'Keyboard and mouse',
+          power: 'Power',
+          powerDesc: 'Press the ATX power and reset buttons',
+          media: 'Media',
+          mediaDesc: 'Insert and eject virtual media',
+          admin: 'Admin',
+          adminDesc: 'Change the device settings (no tool uses this tier yet)',
+          agentNote:
+            'The on-board agent has no power or media tools yet, so those two tiers apply to MCP clients only.',
+          loadFailed: 'Could not load the capability tiers.',
+          saveFailed: 'Could not save the capability tiers.'
+        },
         keyNote:
           'MCP uses its own API key, shown below. Keys from the API Keys page do not work here.',
         title: 'MCP Service',

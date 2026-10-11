@@ -776,10 +776,31 @@ const nl = {
         outcomes: {
           ok: 'Geslaagd',
           fail: 'Mislukt',
-          denied: 'Geweigerd',
+          denied: 'Geweigerd'
         }
       },
       mcp: {
+        tiers: {
+          title: 'Bevoegdheidsniveaus',
+          description:
+            'Kies wat MCP-clients en de ingebouwde agent mogen doen. Elke aanroep wordt met zijn niveau vastgelegd in het auditlogboek.',
+          mcp: 'MCP-clients',
+          agent: 'Ingebouwde agent',
+          observe: 'Observeren',
+          observeDesc: 'Schermafbeeldingen en status',
+          input: 'Invoer',
+          inputDesc: 'Toetsenbord en muis',
+          power: 'Voeding',
+          powerDesc: 'De ATX-aan/uit- en resetknop indrukken',
+          media: 'Media',
+          mediaDesc: 'Virtuele media plaatsen en uitwerpen',
+          admin: 'Beheer',
+          adminDesc: 'Apparaatinstellingen wijzigen (nog geen tool gebruikt dit niveau)',
+          agentNote:
+            'De ingebouwde agent heeft nog geen voedings- of mediatools, dus deze twee niveaus gelden alleen voor MCP-clients.',
+          loadFailed: 'De bevoegdheidsniveaus kunnen niet worden geladen.',
+          saveFailed: 'De bevoegdheidsniveaus kunnen niet worden opgeslagen.'
+        },
         keyNote:
           'MCP gebruikt een eigen API-sleutel, hieronder getoond. Sleutels van de pagina API-sleutels werken hier niet.',
         title: 'MCP-service',

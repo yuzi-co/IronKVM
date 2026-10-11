@@ -765,10 +765,31 @@ const se = {
         outcomes: {
           ok: 'Lyckades',
           fail: 'Misslyckades',
-          denied: 'Nekades',
+          denied: 'Nekades'
         }
       },
       mcp: {
+        tiers: {
+          title: 'Behörighetsnivåer',
+          description:
+            'Välj vad MCP-klienter och den inbyggda agenten får göra. Varje anrop loggas i granskningsloggen med sin nivå.',
+          mcp: 'MCP-klienter',
+          agent: 'Inbyggd agent',
+          observe: 'Observera',
+          observeDesc: 'Skärmdumpar och status',
+          input: 'Inmatning',
+          inputDesc: 'Tangentbord och mus',
+          power: 'Ström',
+          powerDesc: 'Tryck på ATX-ström- och återställningsknapparna',
+          media: 'Media',
+          mediaDesc: 'Sätt in och mata ut virtuella media',
+          admin: 'Admin',
+          adminDesc: 'Ändra enhetens inställningar (inget verktyg använder den här nivån ännu)',
+          agentNote:
+            'Den inbyggda agenten har inga ström- eller mediaverktyg ännu, så de två nivåerna gäller bara MCP-klienter.',
+          loadFailed: 'Behörighetsnivåerna kunde inte läsas in.',
+          saveFailed: 'Behörighetsnivåerna kunde inte sparas.'
+        },
         keyNote:
           'MCP använder en egen API-nyckel, som visas nedan. Nycklar från sidan API-nycklar fungerar inte här.',
         title: 'MCP-tjänst',

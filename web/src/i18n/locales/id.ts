@@ -768,10 +768,31 @@ const id = {
         outcomes: {
           ok: 'Berhasil',
           fail: 'Gagal',
-          denied: 'Ditolak',
+          denied: 'Ditolak'
         }
       },
       mcp: {
+        tiers: {
+          title: 'Tingkat kemampuan',
+          description:
+            'Pilih apa yang boleh dilakukan klien MCP dan agen bawaan. Setiap panggilan dicatat di log audit beserta tingkatnya.',
+          mcp: 'Klien MCP',
+          agent: 'Agen bawaan',
+          observe: 'Amati',
+          observeDesc: 'Tangkapan layar dan status',
+          input: 'Input',
+          inputDesc: 'Keyboard dan mouse',
+          power: 'Daya',
+          powerDesc: 'Tekan tombol daya dan reset ATX',
+          media: 'Media',
+          mediaDesc: 'Masukkan dan keluarkan media virtual',
+          admin: 'Admin',
+          adminDesc: 'Ubah pengaturan perangkat (belum ada alat yang memakai tingkat ini)',
+          agentNote:
+            'Agen bawaan belum punya alat daya atau media, jadi kedua tingkat itu hanya berlaku untuk klien MCP.',
+          loadFailed: 'Tingkat kemampuan tidak dapat dimuat.',
+          saveFailed: 'Tingkat kemampuan tidak dapat disimpan.'
+        },
         keyNote:
           'MCP memakai kunci API sendiri, ditampilkan di bawah. Kunci dari halaman Kunci API tidak berlaku di sini.',
         title: 'Layanan MCP',

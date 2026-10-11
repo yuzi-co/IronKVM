@@ -755,10 +755,29 @@ const ko = {
         outcomes: {
           ok: '성공',
           fail: '실패',
-          denied: '거부됨',
+          denied: '거부됨'
         }
       },
       mcp: {
+        tiers: {
+          title: '권한 등급',
+          description: 'MCP 클라이언트와 내장 에이전트가 할 수 있는 일을 선택합니다. 모든 호출은 등급과 함께 감사 로그에 기록됩니다.',
+          mcp: 'MCP 클라이언트',
+          agent: '내장 에이전트',
+          observe: '관찰',
+          observeDesc: '스크린샷 및 상태',
+          input: '입력',
+          inputDesc: '키보드와 마우스',
+          power: '전원',
+          powerDesc: 'ATX 전원 및 리셋 버튼 누르기',
+          media: '미디어',
+          mediaDesc: '가상 미디어 삽입 및 꺼내기',
+          admin: '관리',
+          adminDesc: '장치 설정 변경 (아직 이 등급을 쓰는 도구는 없습니다)',
+          agentNote: '내장 에이전트에는 아직 전원이나 미디어 도구가 없으므로 이 두 등급은 MCP 클라이언트에만 적용됩니다.',
+          loadFailed: '권한 등급을 불러오지 못했습니다.',
+          saveFailed: '권한 등급을 저장하지 못했습니다.'
+        },
         keyNote:
           'MCP는 아래에 표시된 자체 API 키를 사용합니다. API 키 페이지의 키는 여기서 작동하지 않습니다.',
         title: 'MCP 서비스',

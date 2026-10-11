@@ -771,10 +771,32 @@ const ca = {
         outcomes: {
           ok: 'Correcte',
           fail: 'Fallit',
-          denied: 'Denegat',
+          denied: 'Denegat'
         }
       },
       mcp: {
+        tiers: {
+          title: 'Nivells de capacitat',
+          description:
+            'Trieu què poden fer els clients MCP i l\'agent integrat. Cada crida es desa al registre d\'auditoria amb el seu nivell.',
+          mcp: 'Clients MCP',
+          agent: 'Agent integrat',
+          observe: 'Observar',
+          observeDesc: 'Captures de pantalla i estat',
+          input: 'Entrada',
+          inputDesc: 'Teclat i ratolí',
+          power: 'Encesa',
+          powerDesc: 'Prem els botons d\'encesa i de reinici ATX',
+          media: 'Suports',
+          mediaDesc: 'Insereix i expulsa suports virtuals',
+          admin: 'Administració',
+          adminDesc:
+            'Canvia els paràmetres del dispositiu (cap eina fa servir encara aquest nivell)',
+          agentNote:
+            'L\'agent integrat encara no té eines d\'encesa ni de suports, de manera que aquests dos nivells només afecten els clients MCP.',
+          loadFailed: 'No s\'han pogut carregar els nivells de capacitat.',
+          saveFailed: 'No s\'han pogut desar els nivells de capacitat.'
+        },
         keyNote:
           'MCP fa servir la seva pròpia clau API, que es mostra a sota. Les claus de la pàgina Claus API no funcionen aquí.',
         title: 'Servei MCP',

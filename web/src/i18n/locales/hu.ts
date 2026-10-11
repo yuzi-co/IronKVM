@@ -773,10 +773,32 @@ const hu = {
         outcomes: {
           ok: 'Sikeres',
           fail: 'Sikertelen',
-          denied: 'Elutasítva',
+          denied: 'Elutasítva'
         }
       },
       mcp: {
+        tiers: {
+          title: 'Képességszintek',
+          description:
+            'Válassza ki, mit tehetnek az MCP-kliensek és a beépített ügynök. Minden hívás szintjével együtt bekerül az auditnaplóba.',
+          mcp: 'MCP-kliensek',
+          agent: 'Beépített ügynök',
+          observe: 'Megfigyelés',
+          observeDesc: 'Képernyőképek és állapot',
+          input: 'Bevitel',
+          inputDesc: 'Billentyűzet és egér',
+          power: 'Tápellátás',
+          powerDesc: 'Az ATX bekapcsoló és reset gomb megnyomása',
+          media: 'Média',
+          mediaDesc: 'Virtuális média behelyezése és kivétele',
+          admin: 'Admin',
+          adminDesc:
+            'Az eszköz beállításainak módosítása (ezt a szintet még egyetlen eszköz sem használja)',
+          agentNote:
+            'A beépített ügynöknek még nincs tápellátás- vagy médiaeszköze, ezért ez a két szint csak az MCP-kliensekre vonatkozik.',
+          loadFailed: 'A képességszintek nem tölthetők be.',
+          saveFailed: 'A képességszintek nem menthetők.'
+        },
         keyNote:
           'Az MCP saját API-kulcsot használ, lent látható. Az API-kulcsok oldal kulcsai itt nem működnek.',
         title: 'MCP-szolgáltatás',

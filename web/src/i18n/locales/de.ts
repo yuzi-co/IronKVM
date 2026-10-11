@@ -788,10 +788,31 @@ const de = {
         outcomes: {
           ok: 'Erfolgreich',
           fail: 'Fehlgeschlagen',
-          denied: 'Abgelehnt',
+          denied: 'Abgelehnt'
         }
       },
       mcp: {
+        tiers: {
+          title: 'Berechtigungsstufen',
+          description:
+            'Legen Sie fest, was MCP-Clients und der integrierte Agent tun dürfen. Jeder Aufruf wird mit seiner Stufe im Audit-Protokoll festgehalten.',
+          mcp: 'MCP-Clients',
+          agent: 'Integrierter Agent',
+          observe: 'Beobachten',
+          observeDesc: 'Screenshots und Status',
+          input: 'Eingabe',
+          inputDesc: 'Tastatur und Maus',
+          power: 'Strom',
+          powerDesc: 'ATX-Ein/Aus- und Reset-Taste drücken',
+          media: 'Medien',
+          mediaDesc: 'Virtuelle Medien einlegen und auswerfen',
+          admin: 'Admin',
+          adminDesc: 'Geräteeinstellungen ändern (noch kein Werkzeug nutzt diese Stufe)',
+          agentNote:
+            'Der integrierte Agent hat noch keine Strom- oder Medienwerkzeuge, daher gelten diese beiden Stufen nur für MCP-Clients.',
+          loadFailed: 'Die Berechtigungsstufen konnten nicht geladen werden.',
+          saveFailed: 'Die Berechtigungsstufen konnten nicht gespeichert werden.'
+        },
         keyNote:
           'MCP verwendet einen eigenen API-Schlüssel, siehe unten. Schlüssel von der Seite API-Schlüssel funktionieren hier nicht.',
         title: 'MCP-Dienst',

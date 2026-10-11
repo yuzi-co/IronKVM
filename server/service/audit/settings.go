@@ -120,11 +120,3 @@ func Syslog(e Event) string {
 	}
 	return b.String()
 }
-
-// ResetForTest forgets what was read, so the next call reads the file again.
-func ResetForTest() {
-	fileMu.Lock()
-	defer fileMu.Unlock()
-	loaded = false
-	settings = Settings{}
-}
