@@ -1077,6 +1077,23 @@ static uint32_t ahead_delay_us(void)
 	return (uint32_t)delay;
 }
 
+/*
+ * KVMV_H264_LOW_DELAY_VUI: 1 (the default) gives every H.264 SPS a VUI saying
+ * no picture is reordered (kvmv_h264_au_low_delay), 0 passes the Coda980's SPS
+ * through as it is, without a VUI.
+ */
+static int low_delay_vui(void)
+{
+	static int on = -1;
+
+	if (on < 0) {
+		on = env_uint("KVMV_H264_LOW_DELAY_VUI", 1) != 0;
+		log_msg("H.264: %s", on ? "the SPS says no picture is reordered (bitstream_restriction)" :
+					  "the SPS goes out as the encoder made it");
+	}
+	return on;
+}
+
 static uint32_t ewma(uint32_t avg, uint64_t sample)
 {
 	if (sample > 1000000U)
@@ -1215,6 +1232,12 @@ static int read_video_locked(unsigned int width, unsigned int height,
 		if (prefix_len != KVMV_PREFIX_ROOM)
 			memmove(slot->data + prefix_len, unit, unit_size);
 		slot->size = (uint32_t)(prefix_len + unit_size);
+		/* Every SPS says pictures come out in decoding order, so no
+		 * decoder waits for a DPB's worth of them (kvmv_annexb.h). */
+		if (pipe_state.codec == KVMV_CODEC_KIND_H264 && (info.sps || prefix_len) &&
+		    low_delay_vui())
+			slot->size = (uint32_t)kvmv_h264_au_low_delay(slot->data, slot->size,
+								      slot->capacity);
 		slot->type = (uint8_t)type;
 		need_key = 0;
 		set_source_locked(1);

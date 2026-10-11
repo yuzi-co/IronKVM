@@ -314,100 +314,245 @@ static void skip_scaling_list(struct bit_reader *r, unsigned int size)
 	}
 }
 
-int kvmv_h264_sps_size(const uint8_t *nal, size_t len, unsigned int *width,
-		       unsigned int *height)
-{
-	struct bit_reader r;
-	unsigned int profile;
-	unsigned int chroma_format = 1;
-	unsigned int separate_planes = 0;
+/* What an H.264 SPS says up to vui_parameters_present_flag. */
+struct h264_sps_head {
+	unsigned int chroma_format;
+	unsigned int separate_planes;
+	unsigned int max_num_ref_frames;
 	unsigned int width_mbs, height_units, frame_mbs_only;
-	unsigned int crop_left = 0, crop_right = 0, crop_top = 0, crop_bottom = 0;
-	unsigned int crop_x, crop_y;
-	unsigned int w, h;
+	unsigned int crop_left, crop_right, crop_top, crop_bottom;
+};
 
-	if (nal == NULL || len < 4 || (nal[0] & 0x1f) != KVMV_NAL_SPS)
-		return -1;
+/* Reads an SPS from after the NAL header up to, not including,
+ * vui_parameters_present_flag. Returns 0, or -1 for one it cannot read. */
+static int h264_sps_head(struct bit_reader *r, struct h264_sps_head *h)
+{
+	unsigned int profile;
 
-	reader_init(&r, nal + 1, len - 1);
-	profile = read_bits(&r, 8);
-	read_bits(&r, 8); /* constraint flags */
-	read_bits(&r, 8); /* level */
-	read_ue(&r); /* seq_parameter_set_id */
+	memset(h, 0, sizeof(*h));
+	h->chroma_format = 1;
+	profile = read_bits(r, 8);
+	read_bits(r, 8); /* constraint flags */
+	read_bits(r, 8); /* level */
+	read_ue(r); /* seq_parameter_set_id */
 
 	if (profile == 100 || profile == 110 || profile == 122 || profile == 244 ||
 	    profile == 44 || profile == 83 || profile == 86 || profile == 118 ||
 	    profile == 128 || profile == 138 || profile == 139 || profile == 134 ||
 	    profile == 135) {
-		chroma_format = read_ue(&r);
-		if (chroma_format == 3)
-			separate_planes = read_bit(&r);
-		read_ue(&r); /* bit_depth_luma_minus8 */
-		read_ue(&r); /* bit_depth_chroma_minus8 */
-		read_bit(&r); /* qpprime_y_zero_transform_bypass */
-		if (read_bit(&r)) {
-			unsigned int lists = chroma_format != 3 ? 8 : 12;
+		h->chroma_format = read_ue(r);
+		if (h->chroma_format == 3)
+			h->separate_planes = read_bit(r);
+		read_ue(r); /* bit_depth_luma_minus8 */
+		read_ue(r); /* bit_depth_chroma_minus8 */
+		read_bit(r); /* qpprime_y_zero_transform_bypass */
+		if (read_bit(r)) {
+			unsigned int lists = h->chroma_format != 3 ? 8 : 12;
 			unsigned int i;
 
 			for (i = 0; i < lists; i++)
-				if (read_bit(&r))
-					skip_scaling_list(&r, i < 6 ? 16 : 64);
+				if (read_bit(r))
+					skip_scaling_list(r, i < 6 ? 16 : 64);
 		}
 	}
 
-	read_ue(&r); /* log2_max_frame_num_minus4 */
-	switch (read_ue(&r)) { /* pic_order_cnt_type */
+	read_ue(r); /* log2_max_frame_num_minus4 */
+	switch (read_ue(r)) { /* pic_order_cnt_type */
 	case 0:
-		read_ue(&r);
+		read_ue(r);
 		break;
 	case 1: {
 		unsigned int cycle, i;
 
-		read_bit(&r);
-		read_se(&r);
-		read_se(&r);
-		cycle = read_ue(&r);
+		read_bit(r);
+		read_se(r);
+		read_se(r);
+		cycle = read_ue(r);
 		if (cycle > 255)
 			return -1;
 		for (i = 0; i < cycle; i++)
-			read_se(&r);
+			read_se(r);
 		break;
 	}
 	default:
 		break;
 	}
-	read_ue(&r); /* max_num_ref_frames */
-	read_bit(&r); /* gaps_in_frame_num_value_allowed */
-	width_mbs = read_ue(&r) + 1;
-	height_units = read_ue(&r) + 1;
-	frame_mbs_only = read_bit(&r);
-	if (!frame_mbs_only)
-		read_bit(&r); /* mb_adaptive_frame_field */
-	read_bit(&r); /* direct_8x8_inference */
-	if (read_bit(&r)) {
-		crop_left = read_ue(&r);
-		crop_right = read_ue(&r);
-		crop_top = read_ue(&r);
-		crop_bottom = read_ue(&r);
+	h->max_num_ref_frames = read_ue(r);
+	read_bit(r); /* gaps_in_frame_num_value_allowed */
+	h->width_mbs = read_ue(r) + 1;
+	h->height_units = read_ue(r) + 1;
+	h->frame_mbs_only = read_bit(r);
+	if (!h->frame_mbs_only)
+		read_bit(r); /* mb_adaptive_frame_field */
+	read_bit(r); /* direct_8x8_inference */
+	if (read_bit(r)) {
+		h->crop_left = read_ue(r);
+		h->crop_right = read_ue(r);
+		h->crop_top = read_ue(r);
+		h->crop_bottom = read_ue(r);
 	}
-	if (r.overrun)
+	return r->overrun ? -1 : 0;
+}
+
+int kvmv_h264_sps_size(const uint8_t *nal, size_t len, unsigned int *width,
+		       unsigned int *height)
+{
+	struct bit_reader r;
+	struct h264_sps_head h;
+	unsigned int crop_x, crop_y;
+	unsigned int w, h_px;
+
+	if (nal == NULL || len < 4 || (nal[0] & 0x1f) != KVMV_NAL_SPS)
 		return -1;
 
-	w = width_mbs * 16;
-	h = (2 - frame_mbs_only) * height_units * 16;
-	if (chroma_format == 0 || separate_planes) {
-		crop_x = 1;
-		crop_y = 2 - frame_mbs_only;
-	} else {
-		crop_x = chroma_format == 3 ? 1 : 2;
-		crop_y = (chroma_format == 1 ? 2 : 1) * (2 - frame_mbs_only);
-	}
-	if (crop_x * (crop_left + crop_right) >= w ||
-	    crop_y * (crop_top + crop_bottom) >= h)
+	reader_init(&r, nal + 1, len - 1);
+	if (h264_sps_head(&r, &h))
 		return -1;
-	*width = w - crop_x * (crop_left + crop_right);
-	*height = h - crop_y * (crop_top + crop_bottom);
+
+	w = h.width_mbs * 16;
+	h_px = (2 - h.frame_mbs_only) * h.height_units * 16;
+	if (h.chroma_format == 0 || h.separate_planes) {
+		crop_x = 1;
+		crop_y = 2 - h.frame_mbs_only;
+	} else {
+		crop_x = h.chroma_format == 3 ? 1 : 2;
+		crop_y = (h.chroma_format == 1 ? 2 : 1) * (2 - h.frame_mbs_only);
+	}
+	if (crop_x * (h.crop_left + h.crop_right) >= w ||
+	    crop_y * (h.crop_top + h.crop_bottom) >= h_px)
+		return -1;
+	*width = w - crop_x * (h.crop_left + h.crop_right);
+	*height = h_px - crop_y * (h.crop_top + h.crop_bottom);
 	return 0;
+}
+
+/* ---- the low-delay VUI ----------------------------------------------- */
+
+struct bit_writer {
+	uint8_t buf[KVMV_PS_MAX];
+	size_t bit;
+	int overflow;
+};
+
+static void put_bit(struct bit_writer *w, unsigned int bit)
+{
+	if (w->bit >= sizeof(w->buf) * 8) {
+		w->overflow = 1;
+		return;
+	}
+	if (w->bit % 8 == 0)
+		w->buf[w->bit / 8] = 0;
+	if (bit)
+		w->buf[w->bit / 8] |= (uint8_t)(0x80 >> (w->bit % 8));
+	w->bit++;
+}
+
+static void put_ue(struct bit_writer *w, unsigned int value)
+{
+	unsigned int v = value + 1;
+	int bits = 0;
+	int i;
+
+	while ((v >> bits) > 1)
+		bits++;
+	for (i = 0; i < bits; i++)
+		put_bit(w, 0);
+	for (i = bits; i >= 0; i--)
+		put_bit(w, (v >> i) & 1);
+}
+
+size_t kvmv_h264_sps_low_delay(const uint8_t *nal, size_t len, uint8_t *out,
+			       size_t out_size)
+{
+	struct bit_reader r;
+	struct h264_sps_head h;
+	struct bit_writer w;
+	size_t bit, bytes, n, i, zeros;
+
+	if (nal == NULL || out == NULL || len < 4 || (nal[0] & 0x1f) != KVMV_NAL_SPS)
+		return 0;
+	reader_init(&r, nal + 1, len - 1);
+	if (h264_sps_head(&r, &h) || read_bit(&r) != 0 || r.overrun)
+		return 0; /* unreadable, or it has a VUI already */
+
+	/* The RBSP up to the VUI flag as it was, then the flag set. */
+	w.bit = 0;
+	w.overflow = 0;
+	for (bit = 0; bit + 1 < r.bit; bit++)
+		put_bit(&w, (r.rbsp[bit / 8] >> (7 - bit % 8)) & 1);
+	put_bit(&w, 1); /* vui_parameters_present_flag */
+	put_bit(&w, 0); /* aspect_ratio_info_present_flag */
+	put_bit(&w, 0); /* overscan_info_present_flag */
+	put_bit(&w, 0); /* video_signal_type_present_flag */
+	put_bit(&w, 0); /* chroma_loc_info_present_flag */
+	put_bit(&w, 0); /* timing_info_present_flag */
+	put_bit(&w, 0); /* nal_hrd_parameters_present_flag */
+	put_bit(&w, 0); /* vcl_hrd_parameters_present_flag */
+	put_bit(&w, 0); /* pic_struct_present_flag */
+	put_bit(&w, 1); /* bitstream_restriction_flag */
+	put_bit(&w, 1); /* motion_vectors_over_pic_boundaries_flag */
+	put_ue(&w, 2); /* max_bytes_per_pic_denom (the default) */
+	put_ue(&w, 1); /* max_bits_per_mb_denom (the default) */
+	put_ue(&w, 16); /* log2_max_mv_length_horizontal */
+	put_ue(&w, 16); /* log2_max_mv_length_vertical */
+	put_ue(&w, 0); /* max_num_reorder_frames */
+	put_ue(&w, h.max_num_ref_frames ? h.max_num_ref_frames : 1); /* max_dec_frame_buffering */
+	put_bit(&w, 1); /* rbsp_stop_one_bit */
+	while (w.bit % 8)
+		put_bit(&w, 0);
+	if (w.overflow)
+		return 0;
+	bytes = w.bit / 8;
+
+	/* The header, then the RBSP with emulation prevention put back. */
+	n = 0;
+	if (out_size < 1)
+		return 0;
+	out[n++] = nal[0];
+	zeros = 0;
+	for (i = 0; i < bytes; i++) {
+		if (zeros >= 2 && w.buf[i] <= 3) {
+			if (n >= out_size)
+				return 0;
+			out[n++] = 3;
+			zeros = 0;
+		}
+		if (n >= out_size)
+			return 0;
+		out[n++] = w.buf[i];
+		zeros = w.buf[i] == 0 ? zeros + 1 : 0;
+	}
+	return n;
+}
+
+size_t kvmv_h264_au_low_delay(uint8_t *buf, size_t len, size_t capacity)
+{
+	struct kvmv_nal nals[16];
+	size_t count, i;
+
+	if (buf == NULL)
+		return len;
+	count = kvmv_annexb_split_codec(KVMV_CODEC_KIND_H264, buf, len, nals, 16);
+	/* From the last, so the offsets of the earlier ones stay right. */
+	for (i = count; i-- > 0;) {
+		uint8_t sps[KVMV_PS_MAX + 16];
+		size_t size, old;
+
+		if (nals[i].type != KVMV_NAL_SPS)
+			continue;
+		old = nals[i].size;
+		/* Trailing zero bytes belong to no NAL; leave them out. */
+		while (old > 1 && buf[nals[i].start + old - 1] == 0)
+			old--;
+		size = kvmv_h264_sps_low_delay(buf + nals[i].start, old, sps, sizeof(sps));
+		if (size == 0 || len - old + size > capacity)
+			continue;
+		memmove(buf + nals[i].start + size, buf + nals[i].start + old,
+			len - nals[i].start - old);
+		memcpy(buf + nals[i].start, sps, size);
+		len = len - old + size;
+	}
+	return len;
 }
 
 /*
