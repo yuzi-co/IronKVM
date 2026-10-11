@@ -1,10 +1,12 @@
 package auth
 
 import (
+	"strings"
 	"sync"
 	"time"
 
 	"NanoKVM-Server/config"
+	"NanoKVM-Server/service/events"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -93,6 +95,17 @@ func CheckLoginAttempt(clientIP string) (bool, int, string) {
 
 // RecordLoginFailure records a failed login attempt for the given IP address.
 func RecordLoginFailure(clientIP string) (bool, int, string) {
+	// The notifier counts failures whether or not the lockout is on. The key
+	// of a Redfish failure is "address/account"; only the address is told,
+	// because a mistyped account name may be a password.
+	source, _, _ := strings.Cut(clientIP, "/")
+	events.Publish(events.Event{
+		Type:       events.LoginFailure,
+		Title:      "Failed login",
+		Fields:     map[string]string{"source": source},
+		NoSnapshot: true,
+	})
+
 	conf := config.GetInstance()
 	if conf.Security.LoginLockoutDuration <= 0 {
 		return false, 0, ""

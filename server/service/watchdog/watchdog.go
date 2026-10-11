@@ -17,6 +17,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"NanoKVM-Server/config"
+	"NanoKVM-Server/service/events"
 )
 
 // SampleInterval is how often the watchdog looks at the host. Each sample
@@ -380,6 +381,8 @@ func (w *Watchdog) act(ctx context.Context, now time.Time, action, reason string
 		}
 	}
 
+	publishAction(action, reason, stuck, screenshot, pressErr)
+
 	w.mu.Lock()
 	defer w.mu.Unlock()
 
@@ -388,6 +391,25 @@ func (w *Watchdog) act(ctx context.Context, now time.Time, action, reason string
 	// The host gets the whole timeout to come back up.
 	w.rearmLocked(w.deps.Now())
 	w.status = StatusWatching
+}
+
+// publishAction tells the event bus the watchdog acted. The picture is the one
+// taken before the press: after it the host is rebooting.
+func publishAction(action, reason string, stuck time.Duration, screenshot []byte, pressErr error) {
+	ev := events.Event{
+		Type:  events.WatchdogAction,
+		Title: "Watchdog pressed " + action,
+		Message: "The host showed no sign of life for " + stuck.Round(time.Second).String() +
+			" (" + reason + ").",
+		Fields:     map[string]string{"action": action, "reason": reason},
+		JPEG:       screenshot,
+		NoSnapshot: len(screenshot) == 0,
+	}
+	if pressErr != nil {
+		ev.Title = "Watchdog failed to press " + action
+		ev.Fields["error"] = pressErr.Error()
+	}
+	events.Publish(ev)
 }
 
 // press carries out the action.

@@ -21,14 +21,16 @@ const APIVersion = 1
 // route; two branches that both add one conflict only on adjacent lines, and
 // the resolution is to keep both.
 var features = []string{
-	"direct-clock", // clock request (byte 5) on the direct H.264 socket
-	"hid-autotap",  // POST /api/hid/autotap, /api/hid/sequence: key auto-tap
-	"hid-macros",   // /api/hid/macro(s), /api/hid/sequence: recorded macros
-	"info-latency", // GET /api/stream/info boardLatency: the board's share of the latency
-	"ip-allowlist", // /api/network/allowlist: allowed client networks
-	"status-bar",   // GET /api/stream/info
-	"ui-update",    // /api/ui: separately installed UI packages
-	"webrtc-clock", // "clock" event on the WebRTC signalling socket
+	"direct-clock",  // clock request (byte 5) on the direct H.264 socket
+	"hid-autotap",   // POST /api/hid/autotap, /api/hid/sequence: key auto-tap
+	"hid-macros",    // /api/hid/macro(s), /api/hid/sequence: recorded macros
+	"host-log",      // /api/hostlog: UDP syslog and netconsole receiver, live tail
+	"info-latency",  // GET /api/stream/info boardLatency: the board's share of the latency
+	"ip-allowlist",  // /api/network/allowlist: allowed client networks
+	"notifications", // /api/notify: webhook, ntfy and Telegram alerts with a snapshot
+	"status-bar",    // GET /api/stream/info
+	"ui-update",     // /api/ui: separately installed UI packages
+	"webrtc-clock",  // "clock" event on the WebRTC signalling socket
 }
 
 // Features returns the registry, sorted, as a copy the caller may keep.

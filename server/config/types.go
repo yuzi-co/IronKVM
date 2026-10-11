@@ -51,6 +51,11 @@ type Config struct {
 	// "picoclaw" in server.yaml. A file without the block loads the defaults.
 	Picoclaw Picoclaw `yaml:"picoclaw,omitempty" mapstructure:"picoclaw"`
 
+	// HostLog configures the receiver for the host's logs, kept under
+	// "hostlog" in server.yaml. A file without the block loads with both
+	// listeners off.
+	HostLog HostLog `yaml:"hostlog,omitempty" mapstructure:"hostlog"`
+
 	// Hardware holds the board's pins, derived from its version at start. It
 	// is never read from or written to server.yaml.
 	Hardware Hardware `yaml:"-" mapstructure:"-"`
@@ -288,4 +293,72 @@ func (p Picoclaw) WithDefaults() Picoclaw {
 		p.ScreenshotQuality = MaxPicoclawScreenshotQuality
 	}
 	return p
+}
+
+// The host log receiver's defaults. A zero value in server.yaml means the
+// default.
+const (
+	DefaultSyslogPort      = 514
+	DefaultNetconsolePort  = 6666
+	DefaultHostLogMemoryKB = 1024
+	DefaultHostLogDiskKB   = 4096
+)
+
+// HostLog configures the receiver for the managed host's logs: UDP syslog and
+// netconsole. Both listeners are off by default. Read it through WithDefaults.
+type HostLog struct {
+	Syslog     HostLogListener `yaml:"syslog,omitempty" mapstructure:"syslog"`
+	Netconsole HostLogListener `yaml:"netconsole,omitempty" mapstructure:"netconsole"`
+	// Bind is where the listeners bind: "" for every interface, or "usb" for
+	// the board's address on the USB network link.
+	Bind string `yaml:"bind,omitempty" mapstructure:"bind"`
+	// Sources are the client addresses, single or CIDR, that may send. Empty
+	// means the host on the USB link when it is up, else the watchdog's ping
+	// host, else any address.
+	Sources []string `yaml:"sources,omitempty" mapstructure:"sources"`
+	// MemoryKB caps the in-memory ring.
+	MemoryKB int `yaml:"memoryKb,omitempty" mapstructure:"memoryKb"`
+	// Disk keeps the log on /data as well, up to DiskKB. Off by default:
+	// it writes to the SD card.
+	Disk   bool `yaml:"disk,omitempty" mapstructure:"disk"`
+	DiskKB int  `yaml:"diskKb,omitempty" mapstructure:"diskKb"`
+	// Patterns are regular expressions; a line that matches one raises a
+	// notification. Empty means the defaults for a kernel panic.
+	Patterns []string `yaml:"patterns,omitempty" mapstructure:"patterns"`
+}
+
+// HostLogListener is one UDP listener.
+type HostLogListener struct {
+	Enabled bool `yaml:"enabled" mapstructure:"enabled"`
+	// Port is the UDP port; zero means the protocol's default.
+	Port int `yaml:"port,omitempty" mapstructure:"port"`
+}
+
+// WithDefaults returns the settings with every zero value replaced by its
+// default.
+func (h HostLog) WithDefaults() HostLog {
+	if h.Syslog.Port <= 0 {
+		h.Syslog.Port = DefaultSyslogPort
+	}
+	if h.Netconsole.Port <= 0 {
+		h.Netconsole.Port = DefaultNetconsolePort
+	}
+	if h.MemoryKB <= 0 {
+		h.MemoryKB = DefaultHostLogMemoryKB
+	}
+	if h.DiskKB <= 0 {
+		h.DiskKB = DefaultHostLogDiskKB
+	}
+	if len(h.Patterns) == 0 {
+		h.Patterns = append([]string(nil), DefaultHostLogPatterns...)
+	}
+	return h
+}
+
+// DefaultHostLogPatterns are the phrases that mean the host is in trouble.
+var DefaultHostLogPatterns = []string{
+	`Kernel panic`,
+	`\bOops\b`,
+	`BUG: `,
+	`Out of memory: Kill`,
 }
