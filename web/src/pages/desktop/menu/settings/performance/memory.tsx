@@ -12,7 +12,15 @@ import { useStableCallback } from '@/hooks/useStableCallback.ts';
 import type { IonStatus } from '../../../ion-status/model';
 import { Box, Section } from '../components/section.tsx';
 import { usePoll } from '../components/use-poll.ts';
-import { groupUse, ramUse, type MemoryStatus, type MemorySwap } from './memory.ts';
+import {
+  groupUse,
+  percentOf,
+  ramUse,
+  type MemoryCma,
+  type MemoryPool,
+  type MemoryStatus,
+  type MemorySwap
+} from './memory.ts';
 
 const pollMs = 5 * 1000;
 
@@ -41,7 +49,8 @@ const Row = ({ label, tip, value, className }: RowProps) => (
 );
 
 // Memory is the board's memory in one place: RAM, swap, the video capture's
-// carveout, and what uses the most of it. It is read again every few seconds
+// memory (the ION carveout on the vendor kernel, the reserved pool and the CMA
+// areas on mainline), and what uses the most of it. It is read again every few seconds
 // while the page is open and the browser tab is visible.
 export const Memory = () => {
   const { t } = useTranslation();
@@ -91,6 +100,36 @@ export const Memory = () => {
   const addons = memory?.addons ? groupUse(memory.addons) : undefined;
   // A board that cannot report its carveout shows no row for it.
   const showIon = !!ion && ion.verdict !== 'unavailable';
+  // The mainline kernel has no carveout. It reports its video pool and CMA
+  // areas with the rest of the memory instead.
+  const pools = memory?.videoPools ?? [];
+  const cmaAreas = memory?.cma ?? [];
+
+  // detail is the line under a pool or CMA row: the longest free run, which
+  // decides whether the next large buffer fits, and the pool's peak.
+  function detail(largestFree: number | undefined, peak: number) {
+    const parts: string[] = [];
+    if (largestFree !== undefined) {
+      parts.push(t('settings.performance.memory.largestFree', { size: formatBytes(largestFree) }));
+    }
+    if (peak > 0) {
+      parts.push(t('settings.performance.memory.peak', { size: formatBytes(peak) }));
+    }
+    return parts.length > 0 ? (
+      <span className="text-xs text-neutral-500">{parts.join(' · ')}</span>
+    ) : null;
+  }
+
+  function poolValue(pool: MemoryPool) {
+    if (!pool.measured) {
+      return t('settings.performance.memory.videoUnmeasured', { size: formatBytes(pool.size) });
+    }
+    return `${of(pool.used, pool.size)} (${percentOf(pool.used, pool.size)}%)`;
+  }
+
+  function cmaValue(area: MemoryCma) {
+    return `${of(area.used, area.total)} (${percentOf(area.used, area.total)}%)`;
+  }
 
   return (
     <Section
@@ -170,6 +209,36 @@ export const Memory = () => {
               )}
             </div>
           )}
+
+          {pools.map((pool) => (
+            <div key={pool.name} className="flex flex-col space-y-1">
+              <Row
+                label={
+                  pools.length > 1
+                    ? `${t('settings.performance.memory.video')} (${pool.name})`
+                    : t('settings.performance.memory.video')
+                }
+                tip={t('settings.performance.memory.videoTip')}
+                value={poolValue(pool)}
+              />
+              {pool.measured && detail(pool.largestFree, pool.peak)}
+            </div>
+          ))}
+
+          {cmaAreas.map((area) => (
+            <div key={area.name} className="flex flex-col space-y-1">
+              <Row
+                label={
+                  cmaAreas.length > 1
+                    ? `${t('settings.performance.memory.cma')} (${area.name})`
+                    : t('settings.performance.memory.cma')
+                }
+                tip={t('settings.performance.memory.cmaTip')}
+                value={cmaValue(area)}
+              />
+              {detail(area.largestFree, 0)}
+            </div>
+          ))}
         </Box>
       )}
 

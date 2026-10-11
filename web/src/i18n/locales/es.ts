@@ -1033,7 +1033,13 @@ const es = {
             '{{count}} sesión anterior de IronKVM está reteniendo memoria de vídeo',
           videoGenerations_other:
             '{{count}} sesiones anteriores de IronKVM están reteniendo memoria de vídeo',
-          videoReboot: 'Reinicia para recuperarla.'
+          videoReboot: 'Reinicia para recuperarla.',
+          videoUnmeasured: '{{size}} reservados, uso no medible',
+          largestFree: 'Bloque libre más grande {{size}}',
+          peak: 'máximo {{size}}',
+          cma: 'Memoria contigua (CMA)',
+          cmaTip:
+            'Memoria que el kernel reserva para búferes que deben ser contiguos, como los fotogramas de vídeo entre el escalador y los codificadores. Mientras no está asignada, el resto del sistema puede usarla.'
         }
       },
       appearance: {

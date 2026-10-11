@@ -1002,7 +1002,13 @@ const en = {
             'Memory reserved for video capture. It is not shared with the rest of the system.',
           videoGenerations_one: '{{count}} earlier IronKVM session is holding video memory',
           videoGenerations_other: '{{count}} earlier IronKVM sessions are holding video memory',
-          videoReboot: 'Reboot to reclaim it.'
+          videoReboot: 'Reboot to reclaim it.',
+          videoUnmeasured: '{{size}} reserved, use not measurable',
+          largestFree: 'Largest free block {{size}}',
+          peak: 'peak {{size}}',
+          cma: 'Contiguous memory (CMA)',
+          cmaTip:
+            'Memory the kernel keeps for buffers that must be contiguous, such as video frames passed between the scaler and the encoders. While it is not allocated, the rest of the system can borrow it.'
         }
       },
       appearance: {

@@ -1008,7 +1008,13 @@ const da = {
           videoGenerations_one: '{{count}} tidligere IronKVM-session optager videohukommelse',
           videoGenerations_other:
             '{{count}} tidligere IronKVM-sessioner optager videohukommelse',
-          videoReboot: 'Genstart for at frigøre den.'
+          videoReboot: 'Genstart for at frigøre den.',
+          videoUnmeasured: '{{size}} reserveret, forbrug kan ikke måles',
+          largestFree: 'Største ledige blok {{size}}',
+          peak: 'top {{size}}',
+          cma: 'Sammenhængende hukommelse (CMA)',
+          cmaTip:
+            'Hukommelse, som kernen holder til buffere, der skal være sammenhængende, f.eks. videobilleder mellem skaleringen og koderne. Så længe den ikke er tildelt, kan resten af systemet låne den.'
         }
       },
       appearance: {

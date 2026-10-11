@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { groupUse, ramUse } from './memory.ts';
+import { groupUse, percentOf, ramUse } from './memory.ts';
 
 const MiB = 1024 * 1024;
 
@@ -44,5 +44,21 @@ describe('groupUse', () => {
   it('flags a group within a tenth of memory.high', () => {
     assert.equal(groupUse({ current: 58 * MiB, high: 64 * MiB, max: 0 }).pressed, true);
     assert.equal(groupUse({ current: 57 * MiB, high: 64 * MiB, max: 0 }).pressed, false);
+  });
+});
+
+describe('percentOf', () => {
+  it('rounds the share', () => {
+    // The board's video pool on 2026-10-11: 17440 of 28672 KiB.
+    assert.equal(percentOf(17440, 28672), 61);
+  });
+
+  it('keeps a torn reading inside 0 to 100', () => {
+    assert.equal(percentOf(30 * MiB, 28 * MiB), 100);
+    assert.equal(percentOf(-1, 28 * MiB), 0);
+  });
+
+  it('is 0 without a total', () => {
+    assert.equal(percentOf(5, 0), 0);
   });
 });

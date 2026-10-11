@@ -1010,7 +1010,13 @@ const nb = {
           videoTip: 'Minne reservert for videoopptak. Det deles ikke med resten av systemet.',
           videoGenerations_one: '{{count}} tidligere IronKVM-økt holder på videominne',
           videoGenerations_other: '{{count}} tidligere IronKVM-økter holder på videominne',
-          videoReboot: 'Start på nytt for å frigjøre det.'
+          videoReboot: 'Start på nytt for å frigjøre det.',
+          videoUnmeasured: '{{size}} reservert, bruk kan ikke måles',
+          largestFree: 'Største ledige blokk {{size}}',
+          peak: 'topp {{size}}',
+          cma: 'Sammenhengende minne (CMA)',
+          cmaTip:
+            'Minne kjernen holder av til buffere som må være sammenhengende, for eksempel videobilder mellom skaleringen og koderne. Så lenge det ikke er tildelt, kan resten av systemet låne det.'
         }
       },
       appearance: {

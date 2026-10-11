@@ -964,7 +964,12 @@ const zh = {
           video: '视频内存',
           videoTip: '为视频采集预留的内存，不与系统其他部分共享。',
           videoGenerations_other: '之前的 {{count}} 个 IronKVM 会话仍占用着视频内存',
-          videoReboot: '重启以回收。'
+          videoReboot: '重启以回收。',
+          videoUnmeasured: '已预留 {{size}}，无法测量用量',
+          largestFree: '最大空闲块 {{size}}',
+          peak: '峰值 {{size}}',
+          cma: '连续内存 (CMA)',
+          cmaTip: '内核为必须连续的缓冲区保留的内存，例如缩放器与编码器之间的视频帧。未分配时，系统的其他部分可以借用。'
         }
       },
       appearance: {

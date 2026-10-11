@@ -1025,7 +1025,13 @@ const nl = {
             'Geheugen gereserveerd voor video-opname. Het wordt niet gedeeld met de rest van het systeem.',
           videoGenerations_one: '{{count}} eerdere IronKVM-sessie houdt videogeheugen vast',
           videoGenerations_other: '{{count}} eerdere IronKVM-sessies houden videogeheugen vast',
-          videoReboot: 'Start opnieuw op om het vrij te maken.'
+          videoReboot: 'Start opnieuw op om het vrij te maken.',
+          videoUnmeasured: '{{size}} gereserveerd, gebruik niet meetbaar',
+          largestFree: 'Grootste vrije blok {{size}}',
+          peak: 'piek {{size}}',
+          cma: 'Aaneengesloten geheugen (CMA)',
+          cmaTip:
+            'Geheugen dat de kernel vasthoudt voor buffers die aaneengesloten moeten zijn, zoals videobeelden tussen de schaler en de encoders. Zolang het niet is toegewezen, kan de rest van het systeem het lenen.'
         }
       },
       appearance: {

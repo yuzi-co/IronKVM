@@ -19,6 +19,32 @@ export type MemoryStatus = {
   zramMemUsed: number;
   processes: MemoryProcess[];
   addons: MemoryGroup | null;
+  // The mainline kernel's device memory. A server on the vendor kernel, or one
+  // older than these fields, leaves both out and reports GET /api/vm/ion.
+  videoPools?: MemoryPool[];
+  cma?: MemoryCma[];
+};
+
+// A reserved pool the video drivers allocate from. When measured is false the
+// kernel publishes only its size. largestFree is absent when unknown.
+export type MemoryPool = {
+  name: string;
+  size: number;
+  measured: boolean;
+  used: number;
+  free: number;
+  largestFree?: number;
+  peak: number;
+  failed: number;
+};
+
+// A CMA area. used is what the kernel handed out as contiguous buffers.
+export type MemoryCma = {
+  name: string;
+  total: number;
+  used: number;
+  largestFree?: number;
+  failed: number;
 };
 
 // Below this share of RAM available the board is short of memory: the kernel
@@ -51,4 +77,11 @@ export function groupUse(g: MemoryGroup): { limit: number; pressed: boolean } {
     limit: g.high || g.max,
     pressed: g.high > 0 && g.current >= g.high * 0.9
   };
+}
+
+// percentOf is a share for a row's label, kept inside 0 to 100 against a torn
+// reading.
+export function percentOf(used: number, total: number): number {
+  if (total <= 0) return 0;
+  return Math.round((Math.min(Math.max(used, 0), total) * 100) / total);
 }

@@ -1034,7 +1034,13 @@ const fr = {
             '{{count}} session IronKVM précédente occupe de la mémoire vidéo',
           videoGenerations_other:
             '{{count}} sessions IronKVM précédentes occupent de la mémoire vidéo',
-          videoReboot: 'Redémarrez pour la récupérer.'
+          videoReboot: 'Redémarrez pour la récupérer.',
+          videoUnmeasured: '{{size}} réservés, utilisation non mesurable',
+          largestFree: 'Plus grand bloc libre {{size}}',
+          peak: 'pic {{size}}',
+          cma: 'Mémoire contiguë (CMA)',
+          cmaTip:
+            'Mémoire que le noyau garde pour les tampons qui doivent être contigus, comme les images vidéo entre le redimensionneur et les encodeurs. Tant qu\'elle n\'est pas allouée, le reste du système peut l\'emprunter.'
         }
       },
       appearance: {
