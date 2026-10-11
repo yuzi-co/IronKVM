@@ -47,6 +47,13 @@ export const handlers = [
       }
     });
   }),
+  // The source mode and capture rate the stream status bar shows.
+  http.get('/api/stream/info', () => {
+    return HttpResponse.json({
+      code: 0,
+      data: { width: 1920, height: 1080, refresh: 60000, captureFps: 30 }
+    });
+  }),
   http.get('/api/vm/memory', () => {
     const MiB = 1024 * 1024;
     return HttpResponse.json({
