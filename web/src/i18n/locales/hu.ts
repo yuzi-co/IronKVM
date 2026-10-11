@@ -1180,6 +1180,33 @@ const hu = {
           reenumerate:
             'Az alkalmazás újraépíti az USB-kapcsolatot. A gazdagép néhány másodpercre elveszíti a billentyűzetet, az egeret és a virtuális lemezt.'
         },
+        usbIdentity: {
+          title: 'USB-azonosító',
+          description: 'A gyártó- és termékazonosító, valamint a nevek, amelyeket a távoli gép lát erről az eszközről.',
+          live: 'A gép ezt látja:',
+          bootOverride: 'A /boot/usb.vid vagy /boot/usb.pid be van állítva. Addig érvényes, amíg az alapértelmezett van kiválasztva.',
+          vendorId: 'Gyártóazonosító',
+          productId: 'Termékazonosító',
+          manufacturer: 'Gyártó',
+          product: 'Terméknév',
+          serial: 'Sorozatszám',
+          serialDesc: '12–64 betű és számjegy. Hagyja üresen a kártya saját számához.',
+          serialPlaceholder: 'A kártya saját száma',
+          invalid: 'Ellenőrizze a kiemelt mezőket.',
+          apply: 'Alkalmaz',
+          restore: 'Alapértelmezett visszaállítása',
+          confirm: 'Módosítja az USB-azonosítót?',
+          restoreConfirm: 'Visszaállítja az alapértelmezett USB-azonosítót?',
+          warning: 'A gép új USB-eszközt lát, és újra felsorolja: a billentyűzet, az egér és a virtuális lemez néhány másodpercre kiesik, és a gép illesztőprogramokat telepíthet.',
+          error: 'Az USB-azonosító nem olvasható.',
+          presets: {
+            default: 'Alapértelmezett',
+            logitech: 'Logitech billentyűzet',
+            microsoft: 'Microsoft billentyűzet',
+            dell: 'Dell billentyűzet',
+            custom: 'Egyéni'
+          }
+        },
         audio: 'Virtuális hangszóró',
         audioDesc:
           'USB-hangkártyát jelenít meg a távoli gazdagépen, így hallhatja annak hangját. A gazdagépen ki kell választani kimeneti eszközként. A kapcsolása újraépíti az USB-kapcsolatot.',

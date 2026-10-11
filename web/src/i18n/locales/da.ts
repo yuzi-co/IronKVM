@@ -1159,6 +1159,33 @@ const da = {
           reenumerate:
             'Når du anvender, genopbygges USB-forbindelsen. Værten mister tastatur, mus og virtuel disk i nogle sekunder.'
         },
+        usbIdentity: {
+          title: 'USB-identitet',
+          description: 'Leverandør- og produkt-id og de navne, fjernværten ser for denne enhed.',
+          live: 'Værten ser:',
+          bootOverride: '/boot/usb.vid eller /boot/usb.pid er sat. Det gælder, så længe standard er valgt.',
+          vendorId: 'Leverandør-id',
+          productId: 'Produkt-id',
+          manufacturer: 'Producent',
+          product: 'Produktnavn',
+          serial: 'Serienummer',
+          serialDesc: '12 til 64 bogstaver og cifre. Lad feltet stå tomt for at beholde kortets eget.',
+          serialPlaceholder: 'Kortets eget',
+          invalid: 'Kontrollér de markerede felter.',
+          apply: 'Anvend',
+          restore: 'Gendan standard',
+          confirm: 'Skift USB-identitet?',
+          restoreConfirm: 'Gendan standard-USB-identiteten?',
+          warning: 'Værten ser en ny USB-enhed og opregner den igen: tastatur, mus og virtuel disk forsvinder i nogle sekunder, og værten installerer måske drivere.',
+          error: 'USB-identiteten kunne ikke læses.',
+          presets: {
+            default: 'Standard',
+            logitech: 'Logitech-tastatur',
+            microsoft: 'Microsoft-tastatur',
+            dell: 'Dell-tastatur',
+            custom: 'Brugerdefineret'
+          }
+        },
         audio: 'Virtuel højttaler',
         audioDesc:
           'Giv fjernværten et USB-lydkort, så du kan høre den. Værten skal vælge det som sin lydudgang. Når du skifter, genopbygges USB-forbindelsen.',

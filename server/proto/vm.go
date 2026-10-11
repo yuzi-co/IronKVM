@@ -514,3 +514,42 @@ type GetStreamInfoRsp struct {
 	Refresh    int `json:"refresh"`
 	CaptureFps int `json:"captureFps"`
 }
+
+// USBIdentity is what the gadget tells the host it is. IDs are four hex digits
+// with a 0x prefix. An empty Serial is the board's own serial number.
+type USBIdentity struct {
+	VendorID     string `json:"vendorId"`
+	ProductID    string `json:"productId"`
+	Manufacturer string `json:"manufacturer"`
+	Product      string `json:"product"`
+	Serial       string `json:"serial"`
+}
+
+// USBIdentityPreset is one identity the settings offer by name.
+type USBIdentityPreset struct {
+	Name string `json:"name"`
+	USBIdentity
+}
+
+// GetUSBIdentityRsp is the chosen identity and what the live gadget carries.
+// Preset is default, a preset's name, or custom. BootOverride is true when
+// /boot/usb.vid or /boot/usb.pid exist; they apply only while no identity is
+// saved.
+type GetUSBIdentityRsp struct {
+	Preset       string              `json:"preset"`
+	Identity     USBIdentity         `json:"identity"`
+	Live         USBIdentity         `json:"live"`
+	Presets      []USBIdentityPreset `json:"presets"`
+	BootOverride bool                `json:"bootOverride"`
+}
+
+// SetUSBIdentityReq picks a preset, or custom with its own IDs and strings.
+// For a named preset only Serial is read from the request.
+type SetUSBIdentityReq struct {
+	Preset       string `json:"preset" validate:"required,oneof=default logitech microsoft dell custom"`
+	VendorID     string `json:"vendorId"`
+	ProductID    string `json:"productId"`
+	Manufacturer string `json:"manufacturer"`
+	Product      string `json:"product"`
+	Serial       string `json:"serial"`
+}

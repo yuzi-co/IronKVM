@@ -1163,6 +1163,33 @@ const se = {
           reenumerate:
             'När du verkställer byggs USB-anslutningen upp på nytt. Värden förlorar tangentbord, mus och virtuell disk i några sekunder.'
         },
+        usbIdentity: {
+          title: 'USB-identitet',
+          description: 'Leverantörs- och produkt-ID och de namn som fjärrvärden ser för den här enheten.',
+          live: 'Värden ser:',
+          bootOverride: '/boot/usb.vid eller /boot/usb.pid är satt. Det gäller så länge standard är valt.',
+          vendorId: 'Leverantörs-ID',
+          productId: 'Produkt-ID',
+          manufacturer: 'Tillverkare',
+          product: 'Produktnamn',
+          serial: 'Serienummer',
+          serialDesc: '12 till 64 bokstäver och siffror. Lämna tomt för att behålla kortets eget.',
+          serialPlaceholder: 'Kortets eget',
+          invalid: 'Kontrollera de markerade fälten.',
+          apply: 'Verkställ',
+          restore: 'Återställ standard',
+          confirm: 'Ändra USB-identiteten?',
+          restoreConfirm: 'Återställa standard-USB-identiteten?',
+          warning: 'Värden ser en ny USB-enhet och räknar upp den igen: tangentbord, mus och virtuell disk försvinner några sekunder, och värden kan installera drivrutiner.',
+          error: 'Det gick inte att läsa USB-identiteten.',
+          presets: {
+            default: 'Standard',
+            logitech: 'Logitech-tangentbord',
+            microsoft: 'Microsoft-tangentbord',
+            dell: 'Dell-tangentbord',
+            custom: 'Anpassad'
+          }
+        },
         audio: 'Virtuell högtalare',
         audioDesc:
           'Visa ett USB-ljudkort för fjärrvärden, så att du kan höra den. Värden måste välja det som sin utenhet. Att ändra detta bygger upp USB-anslutningen på nytt.',

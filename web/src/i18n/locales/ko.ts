@@ -1149,6 +1149,33 @@ const ko = {
           reenumerate:
             '적용하면 USB 연결이 다시 구성됩니다. 호스트는 몇 초 동안 키보드, 마우스, 가상 디스크를 잃습니다.'
         },
+        usbIdentity: {
+          title: 'USB 식별 정보',
+          description: '원격 호스트가 이 장치에 대해 보는 공급업체 ID, 제품 ID와 이름입니다.',
+          live: '호스트에 보이는 정보:',
+          bootOverride: '/boot/usb.vid 또는 /boot/usb.pid가 설정되어 있습니다. 기본값을 선택한 동안 적용됩니다.',
+          vendorId: '공급업체 ID',
+          productId: '제품 ID',
+          manufacturer: '제조사',
+          product: '제품 이름',
+          serial: '일련번호',
+          serialDesc: '문자와 숫자 12~64자. 비워 두면 보드 고유 번호를 사용합니다.',
+          serialPlaceholder: '보드 고유 번호',
+          invalid: '강조 표시된 항목을 확인하세요.',
+          apply: '적용',
+          restore: '기본값 복원',
+          confirm: 'USB 식별 정보를 변경할까요?',
+          restoreConfirm: '기본 USB 식별 정보로 복원할까요?',
+          warning: '호스트는 새 USB 장치로 보고 다시 열거합니다. 키보드, 마우스, 가상 디스크가 몇 초간 끊기고 호스트가 드라이버를 설치할 수 있습니다.',
+          error: 'USB 식별 정보를 읽을 수 없습니다.',
+          presets: {
+            default: '기본값',
+            logitech: 'Logitech 키보드',
+            microsoft: 'Microsoft 키보드',
+            dell: 'Dell 키보드',
+            custom: '사용자 지정'
+          }
+        },
         audio: '가상 스피커',
         audioDesc:
           '원격 호스트에 USB 사운드 카드를 제공하여 호스트의 소리를 들을 수 있게 합니다. 호스트에서 출력 장치로 선택해야 합니다. 전환하면 USB 연결이 다시 구성됩니다.',

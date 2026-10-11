@@ -346,6 +346,60 @@ run "$S03" start_usb_dev
 is idVendor  0x1234 "/boot/usb.vid overrides the vendor id"
 is idProduct 0x5678 "/boot/usb.pid overrides the product id"
 
+# The identity the web UI saves. It is above /boot/usb.vid and usb.pid, which
+# stay in place here to show it.
+build_env
+echo 0x1234 > "$work/boot/usb.vid"
+echo 0x5678 > "$work/boot/usb.pid"
+IDFILE=$work/etc/usb-identity
+cat > "$IDFILE" <<'ID'
+preset=custom
+vid=0x046d
+pid=0xc31c
+manufacturer=Logitech
+product=USB Keyboard
+serial=SERIAL0000AB
+ID
+run "$S03" "USB_IDENTITY_FILE=$IDFILE; start_usb_dev"
+is idVendor  0x046d "a saved identity's vendor id wins over /boot/usb.vid"
+is idProduct 0xc31c "a saved identity's product id wins over /boot/usb.pid"
+is strings/0x409/manufacturer Logitech       "a saved manufacturer string"
+is strings/0x409/product      "USB Keyboard" "a saved product string, spaces kept"
+is strings/0x409/serialnumber SERIAL0000AB   "a saved serial number replaces the chip's"
+is UDC 4340000.usb "a gadget with a saved identity still binds"
+
+# A file edited by hand: each bad field falls back alone, and the good ones
+# still apply. A bad vendor id falls back to /boot/usb.vid, which is what
+# would apply without the file.
+build_env
+echo 0x1234 > "$work/boot/usb.vid"
+echo 0x5678 > "$work/boot/usb.pid"
+cat > "$IDFILE" <<'ID'
+vid=0x0000
+pid=46d
+manufacturer=
+product=Product $(touch pwned) `id`
+serial=short
+ID
+run "$S03" "USB_IDENTITY_FILE=$IDFILE; start_usb_dev"
+is idVendor  0x1234 "a zero vendor id is refused"
+is idProduct 0x5678 "a product id without 0x and four digits is refused"
+is strings/0x409/manufacturer sipeed "an empty manufacturer is refused"
+is strings/0x409/product 'Product $(touch pwned) `id`' "a product string is written, never run"
+is strings/0x409/serialnumber "$SERIAL_FROM_UID" "a serial under twelve characters is refused"
+if [ -e pwned ] || [ -e "$work/pwned" ] || [ -e "$G/pwned" ]
+then
+    note "the identity file's text ran as a command" FAIL
+    rm -f pwned "$work/pwned"
+else
+    note "the identity file's text never runs" OK
+fi
+
+build_env
+run "$S03" "USB_IDENTITY_FILE=$work/etc/none; start_usb_dev"
+is idVendor  0x3346 "no identity file and no /boot override is the default vendor id"
+is strings/0x409/serialnumber "$SERIAL_FROM_UID" "no identity file keeps the chip's serial"
+
 build_env
 : > "$work/boot/usb.wakeup"
 run "$S03" start_usb_dev
@@ -844,6 +898,24 @@ hid_is hid.GS0 1  1 8 "$HID_ONLY_KEYBOARD_DESC" "hid-only keyboard"
 hid_is hid.GS1 1  2 5 "$RELATIVE_MOUSE_DESC"    "hid-only relative mouse"
 hid_is hid.GS2 "" 2 6 "$HID_ONLY_ABSOLUTE_DESC" "hid-only absolute pointer"
 
+build_env
+printf 'vid=0x413c\npid=0x2113\nmanufacturer=Dell\nproduct=Dell KB216 Wired Keyboard\nserial=\n' > "$work/etc/usb-identity"
+run "$HID" "USB_IDENTITY_FILE=$work/etc/usb-identity; start_usb_dev"
+is idVendor  0x413c "hid-only takes the saved vendor id"
+is idProduct 0x2113 "hid-only takes the saved product id"
+is strings/0x409/product "Dell KB216 Wired Keyboard" "hid-only takes the saved product string"
+absent strings/0x409/serialnumber "hid-only still sets no serial without a saved one"
+
+build_env
+printf 'vid=0x413c\npid=0x2113\nmanufacturer=Dell\nproduct=KB\nserial=0123456789AB\n' > "$work/etc/usb-identity"
+run "$HID" "USB_IDENTITY_FILE=$work/etc/usb-identity; start_usb_dev"
+is strings/0x409/serialnumber 0123456789AB "hid-only sets a saved serial number"
+
+build_env
+: > "$work/boot/usb.disk0"
+: > "$work/boot/usb.rndis0"
+: > "$work/boot/usb.acm"
+run "$HID" start_usb_dev
 absent configs/c.1/mass_storage.disk0 "hid-only ignores /boot/usb.disk0"
 absent configs/c.1/rndis.usb0 "hid-only ignores /boot/usb.rndis0"
 absent configs/c.1/acm.GS0    "hid-only ignores /boot/usb.acm"

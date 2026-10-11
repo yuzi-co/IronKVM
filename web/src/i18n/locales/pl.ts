@@ -1169,6 +1169,33 @@ const pl = {
           reenumerate:
             'Zastosowanie odbudowuje połączenie USB. Host na kilka sekund traci klawiaturę, mysz i dysk wirtualny.'
         },
+        usbIdentity: {
+          title: 'Tożsamość USB',
+          description: 'Identyfikatory producenta i produktu oraz nazwy, które zdalny host widzi dla tego urządzenia.',
+          live: 'Host widzi:',
+          bootOverride: 'Ustawiono /boot/usb.vid lub /boot/usb.pid. Obowiązuje, dopóki wybrane jest ustawienie domyślne.',
+          vendorId: 'ID producenta',
+          productId: 'ID produktu',
+          manufacturer: 'Producent',
+          product: 'Nazwa produktu',
+          serial: 'Numer seryjny',
+          serialDesc: 'Od 12 do 64 liter i cyfr. Pozostaw puste, aby zachować numer płytki.',
+          serialPlaceholder: 'Numer płytki',
+          invalid: 'Sprawdź wyróżnione pola.',
+          apply: 'Zastosuj',
+          restore: 'Przywróć domyślne',
+          confirm: 'Zmienić tożsamość USB?',
+          restoreConfirm: 'Przywrócić domyślną tożsamość USB?',
+          warning: 'Host widzi nowe urządzenie USB i wylicza je ponownie: klawiatura, mysz i dysk wirtualny znikają na kilka sekund, a host może instalować sterowniki.',
+          error: 'Nie można odczytać tożsamości USB.',
+          presets: {
+            default: 'Domyślne',
+            logitech: 'Klawiatura Logitech',
+            microsoft: 'Klawiatura Microsoft',
+            dell: 'Klawiatura Dell',
+            custom: 'Własne'
+          }
+        },
         audio: 'Wirtualny głośnik',
         audioDesc:
           'Udostępnij zdalnemu hostowi kartę dźwiękową USB, aby go słyszeć. Host musi wybrać ją jako urządzenie wyjściowe. Przełączenie odbudowuje połączenie USB.',

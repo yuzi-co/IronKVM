@@ -1,4 +1,5 @@
 import { http } from '@/lib/http.ts';
+import type { UsbIdentity, UsbIdentityPresetName } from '@/lib/usb-identity.ts';
 
 export type VirtualDeviceName = 'console' | 'disk' | 'network' | 'audio';
 
@@ -75,4 +76,26 @@ export type UsbApplyRequest = {
 
 export function applyUsbDevices(request: UsbApplyRequest) {
   return http.post('/api/vm/device/virtual/apply', request);
+}
+
+// The IDs and strings the gadget shows the host. preset is default, a named
+// preset or custom; live is what the running gadget carries; bootOverride is
+// true while /boot/usb.vid or /boot/usb.pid exist, which apply only when no
+// identity is saved.
+export type UsbIdentityState = {
+  preset: UsbIdentityPresetName;
+  identity: UsbIdentity;
+  live: UsbIdentity;
+  presets: (UsbIdentity & { name: UsbIdentityPresetName })[];
+  bootOverride: boolean;
+};
+
+export function getUsbIdentity() {
+  return http.get('/api/vm/device/usb-identity');
+}
+
+// Saving rebuilds the gadget, so the host enumerates it again. A named preset
+// takes only the serial from identity.
+export function setUsbIdentity(preset: UsbIdentityPresetName, identity: UsbIdentity) {
+  return http.post('/api/vm/device/usb-identity', { preset, ...identity });
 }

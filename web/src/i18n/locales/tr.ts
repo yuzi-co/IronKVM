@@ -1162,6 +1162,33 @@ const tr = {
           reenumerate:
             'Uygulamak USB bağlantısını yeniden kurar. Ana bilgisayar birkaç saniye boyunca klavyeyi, fareyi ve sanal diski kaybeder.'
         },
+        usbIdentity: {
+          title: 'USB kimliği',
+          description: 'Uzak ana bilgisayarın bu cihaz için gördüğü üretici ve ürün kimlikleri ile adlar.',
+          live: 'Ana bilgisayar görüyor:',
+          bootOverride: '/boot/usb.vid veya /boot/usb.pid ayarlı. Varsayılan seçili olduğu sürece geçerlidir.',
+          vendorId: 'Üretici kimliği',
+          productId: 'Ürün kimliği',
+          manufacturer: 'Üretici',
+          product: 'Ürün adı',
+          serial: 'Seri numarası',
+          serialDesc: '12 ile 64 arası harf ve rakam. Kartın kendi numarası için boş bırakın.',
+          serialPlaceholder: 'Kartın kendi numarası',
+          invalid: 'İşaretli alanları kontrol edin.',
+          apply: 'Uygula',
+          restore: 'Varsayılana dön',
+          confirm: 'USB kimliği değiştirilsin mi?',
+          restoreConfirm: 'Varsayılan USB kimliğine dönülsün mü?',
+          warning: 'Ana bilgisayar yeni bir USB cihazı görür ve yeniden numaralandırır: klavye, fare ve sanal disk birkaç saniye kesilir, ana bilgisayar sürücü yükleyebilir.',
+          error: 'USB kimliği okunamadı.',
+          presets: {
+            default: 'Varsayılan',
+            logitech: 'Logitech klavye',
+            microsoft: 'Microsoft klavye',
+            dell: 'Dell klavye',
+            custom: 'Özel'
+          }
+        },
         audio: 'Sanal Hoparlör',
         audioDesc:
           'Uzak ana bilgisayara bir USB ses kartı sunar, böylece sesini duyabilirsiniz. Ana bilgisayarın bunu çıkış aygıtı olarak seçmesi gerekir. Bunu değiştirmek USB bağlantısını yeniden kurar.',

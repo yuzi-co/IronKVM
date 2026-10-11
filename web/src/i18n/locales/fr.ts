@@ -1187,6 +1187,33 @@ const fr = {
           reenumerate:
             "L'application reconstruit la connexion USB. L'hôte perd le clavier, la souris et le disque virtuel pendant quelques secondes."
         },
+        usbIdentity: {
+          title: 'Identité USB',
+          description: 'Les identifiants fournisseur et produit et les noms que l\'hôte distant voit pour cet appareil.',
+          live: 'L\'hôte voit :',
+          bootOverride: '/boot/usb.vid ou /boot/usb.pid est défini. Il s\'applique tant que la valeur par défaut est choisie.',
+          vendorId: 'ID fournisseur',
+          productId: 'ID produit',
+          manufacturer: 'Fabricant',
+          product: 'Nom du produit',
+          serial: 'Numéro de série',
+          serialDesc: '12 à 64 lettres et chiffres. Laisser vide pour garder celui de la carte.',
+          serialPlaceholder: 'Celui de la carte',
+          invalid: 'Vérifiez les champs en surbrillance.',
+          apply: 'Appliquer',
+          restore: 'Rétablir par défaut',
+          confirm: 'Changer l\'identité USB ?',
+          restoreConfirm: 'Rétablir l\'identité USB par défaut ?',
+          warning: 'L\'hôte voit un nouveau périphérique USB et le réénumère : clavier, souris et disque virtuel sont coupés quelques secondes, et l\'hôte peut installer des pilotes.',
+          error: 'Impossible de lire l\'identité USB.',
+          presets: {
+            default: 'Par défaut',
+            logitech: 'Clavier Logitech',
+            microsoft: 'Clavier Microsoft',
+            dell: 'Clavier Dell',
+            custom: 'Personnalisé'
+          }
+        },
         audio: 'Haut-parleur virtuel',
         audioDesc:
           "Présenter une carte son USB à l'hôte distant, pour pouvoir l'entendre. L'hôte doit la choisir comme périphérique de sortie. Modifier ce réglage reconstruit la connexion USB.",

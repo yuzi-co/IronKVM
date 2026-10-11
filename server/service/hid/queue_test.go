@@ -243,3 +243,40 @@ func TestMouseFailureCompletesFalseWhenCleanupFails(t *testing.T) {
 	}
 	h.Close()
 }
+
+// TestKeyboardQueueCloseReleasesHeldKeys is what a dropped WebSocket relies
+// on: the client closes its queue, and a key it left down is released by the
+// worker rather than left for the host to auto-repeat.
+func TestKeyboardQueueCloseReleasesHeldKeys(t *testing.T) {
+	reader, writer, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer reader.Close()
+
+	h := &Hid{g0: writer}
+	queue := make(chan QueuedReport, 1)
+	queue <- QueuedReport{Data: []byte{0x02, 0, 0, 0, 0, 0, 0, 0}}
+	close(queue)
+
+	done := make(chan struct{})
+	go func() {
+		h.keyboardReports(queue, "unused-keyboard")
+		close(done)
+	}()
+	select {
+	case <-done:
+	case <-time.After(time.Second):
+		t.Fatal("keyboard worker did not stop")
+	}
+	h.Close()
+
+	got, err := io.ReadAll(reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := append([]byte{0x02, 0, 0, 0, 0, 0, 0, 0}, keyboardReleaseReport()...)
+	if !bytes.Equal(got, want) {
+		t.Fatalf("keyboard wrote % x, want the press then the release % x", got, want)
+	}
+}

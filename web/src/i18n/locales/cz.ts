@@ -1156,6 +1156,33 @@ const cz = {
           reenumerate:
             'Použití znovu sestaví připojení USB. Hostitel na několik sekund ztratí klávesnici, myš a virtuální disk.'
         },
+        usbIdentity: {
+          title: 'Identita USB',
+          description: 'ID výrobce a produktu a názvy, které vzdálený hostitel vidí pro toto zařízení.',
+          live: 'Hostitel vidí:',
+          bootOverride: 'Je nastaveno /boot/usb.vid nebo /boot/usb.pid. Platí, dokud je zvolena výchozí hodnota.',
+          vendorId: 'ID výrobce',
+          productId: 'ID produktu',
+          manufacturer: 'Výrobce',
+          product: 'Název produktu',
+          serial: 'Sériové číslo',
+          serialDesc: '12 až 64 písmen a číslic. Ponechte prázdné pro vlastní číslo desky.',
+          serialPlaceholder: 'Vlastní číslo desky',
+          invalid: 'Zkontrolujte zvýrazněná pole.',
+          apply: 'Použít',
+          restore: 'Obnovit výchozí',
+          confirm: 'Změnit identitu USB?',
+          restoreConfirm: 'Obnovit výchozí identitu USB?',
+          warning: 'Hostitel uvidí nové zařízení USB a znovu jej vyčíslí: klávesnice, myš a virtuální disk na několik sekund vypadnou a hostitel může instalovat ovladače.',
+          error: 'Identitu USB nelze přečíst.',
+          presets: {
+            default: 'Výchozí',
+            logitech: 'Klávesnice Logitech',
+            microsoft: 'Klávesnice Microsoft',
+            dell: 'Klávesnice Dell',
+            custom: 'Vlastní'
+          }
+        },
         audio: 'Virtuální reproduktor',
         audioDesc:
           'Zpřístupní vzdálenému hostiteli zvukovou kartu USB, abyste slyšeli jeho zvuk. Hostitel ji musí zvolit jako výstupní zařízení. Přepnutí znovu sestaví připojení USB.',

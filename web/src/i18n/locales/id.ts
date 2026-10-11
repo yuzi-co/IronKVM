@@ -1164,6 +1164,33 @@ const id = {
           reenumerate:
             'Menerapkan akan membangun ulang koneksi USB. Host kehilangan keyboard, mouse, dan disk virtual selama beberapa detik.'
         },
+        usbIdentity: {
+          title: 'Identitas USB',
+          description: 'ID vendor dan produk serta nama yang dilihat host jarak jauh untuk perangkat ini.',
+          live: 'Host melihat:',
+          bootOverride: '/boot/usb.vid atau /boot/usb.pid diatur. Berlaku selama default dipilih.',
+          vendorId: 'ID vendor',
+          productId: 'ID produk',
+          manufacturer: 'Produsen',
+          product: 'Nama produk',
+          serial: 'Nomor seri',
+          serialDesc: '12 sampai 64 huruf dan angka. Biarkan kosong untuk memakai milik papan.',
+          serialPlaceholder: 'Milik papan',
+          invalid: 'Periksa kolom yang disorot.',
+          apply: 'Terapkan',
+          restore: 'Pulihkan default',
+          confirm: 'Ubah identitas USB?',
+          restoreConfirm: 'Pulihkan identitas USB default?',
+          warning: 'Host melihat perangkat USB baru dan mengenumerasinya ulang: keyboard, mouse, dan disk virtual terputus beberapa detik, dan host mungkin memasang driver.',
+          error: 'Tidak dapat membaca identitas USB.',
+          presets: {
+            default: 'Default',
+            logitech: 'Keyboard Logitech',
+            microsoft: 'Keyboard Microsoft',
+            dell: 'Keyboard Dell',
+            custom: 'Kustom'
+          }
+        },
         audio: 'Speaker Virtual',
         audioDesc:
           'Menyediakan kartu suara USB untuk host jarak jauh, sehingga Anda dapat mendengarnya. Host harus memilihnya sebagai perangkat output. Mengubah ini akan membangun ulang koneksi USB.',

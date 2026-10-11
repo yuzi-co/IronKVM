@@ -1175,6 +1175,33 @@ const pt_br = {
           reenumerate:
             'Aplicar reconstrói a conexão USB. O host perde o teclado, o mouse e o disco virtual por alguns segundos.'
         },
+        usbIdentity: {
+          title: 'Identidade USB',
+          description: 'Os IDs de fabricante e produto e os nomes que o host remoto vê para este dispositivo.',
+          live: 'O host vê:',
+          bootOverride: '/boot/usb.vid ou /boot/usb.pid está definido. Vale enquanto o padrão estiver selecionado.',
+          vendorId: 'ID do fabricante',
+          productId: 'ID do produto',
+          manufacturer: 'Fabricante',
+          product: 'Nome do produto',
+          serial: 'Número de série',
+          serialDesc: 'De 12 a 64 letras e dígitos. Deixe vazio para manter o da placa.',
+          serialPlaceholder: 'O da placa',
+          invalid: 'Verifique os campos destacados.',
+          apply: 'Aplicar',
+          restore: 'Restaurar padrão',
+          confirm: 'Alterar a identidade USB?',
+          restoreConfirm: 'Restaurar a identidade USB padrão?',
+          warning: 'O host vê um novo dispositivo USB e o enumera de novo: teclado, mouse e disco virtual caem por alguns segundos, e o host pode instalar drivers.',
+          error: 'Não foi possível ler a identidade USB.',
+          presets: {
+            default: 'Padrão',
+            logitech: 'Teclado Logitech',
+            microsoft: 'Teclado Microsoft',
+            dell: 'Teclado Dell',
+            custom: 'Personalizado'
+          }
+        },
         audio: 'Alto-falante Virtual',
         audioDesc:
           'Apresenta uma placa de som USB ao host remoto, para que você possa ouvi-lo. O host deve selecioná-la como dispositivo de saída. Alterar isso reconstrói a conexão USB.',
