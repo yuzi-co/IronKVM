@@ -1306,11 +1306,11 @@ USB_STRING
             echo "usb: /boot/usb.wakeup is set, and this kernel's f_hid has no wakeup_on_write"
         fi
         # keep_latest is a mainline f_hid option (ironkvm-dist#111): a write
-        # never waits for the host, and the newest report replaces one still
-        # waiting behind the report the host was offered. A host that stops
-        # polling then cannot be left holding a key whose release timed out.
+        # never waits for the host. Reports queue in order behind the one the
+        # host was offered, and once the host stops reading only the newest is
+        # kept, so it cannot be left holding a key whose release timed out.
         # Set only where each report is the whole state of the device; the
-        # pointer with report IDs is left out, since a report of one ID would
+        # pointer with report IDs is left out, since a report of one ID could
         # replace another ID's. As with wakeup_on_write, only where it exists.
         if [ -e functions/hid.GS0/keep_latest ]
         then
