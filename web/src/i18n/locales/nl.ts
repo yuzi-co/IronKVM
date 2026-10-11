@@ -637,7 +637,34 @@ const nl = {
       sending: 'Commando wordt verzonden...',
       sent: 'Commando verzonden',
       input: 'Voer het MAC-adres in',
-      ok: 'Ok'
+      ok: 'Ok',
+      add: 'Apparaat toevoegen',
+      edit: 'Apparaat bewerken',
+      name: 'Naam',
+      mac: 'MAC-adres',
+      scan: 'Zoeken op het netwerk',
+      scanFailed: 'Het netwerk kon niet worden gescand',
+      scanEmpty: 'Geen hosts gevonden',
+      scanPick: 'Kies een host',
+      ip: 'IP-adres van de host (voor de aan-controle, optioneel)',
+      broadcast: 'Broadcastadres of subnet (optioneel)',
+      port: 'Wekpakket',
+      portFrame: 'Ethernetframe (standaard)',
+      secureOn: 'SecureOn-wachtwoord (optioneel)',
+      secureOnKept: 'Opgeslagen. Laat leeg om het te behouden',
+      secureOnRemove: 'Wachtwoord verwijderen',
+      secureOnKeep: 'Wachtwoord behouden',
+      invalidMac: 'Voer een geldig MAC-adres in',
+      invalidIp: 'Voer een geldig IPv4-adres in',
+      invalidBroadcast: 'Voer een IPv4-adres of subnet in, zoals 192.168.1.0/24',
+      invalidSecureOn: 'Het wachtwoord is zes bytes in hex, zoals AA:BB:CC:DD:EE:FF',
+      duplicate: 'Er bestaat al een apparaat met dit MAC-adres of deze naam',
+      saveFailed: 'Het apparaat kon niet worden opgeslagen',
+      save: 'Opslaan',
+      cancel: 'Annuleren',
+      up: 'Aan',
+      down: 'Uit',
+      checking: 'Controleren...'
     },
     download: {
       uploadFailed: 'Upload mislukt',
@@ -1607,6 +1634,61 @@ const nl = {
           trialKeepFailed: 'De instellingen konden niet worden behouden',
           trialGone: 'De wijziging is al teruggezet. Probeer het opnieuw.',
           unsaved: 'Niet-opgeslagen wijzigingen'
+        },
+        ipv6: {
+          title: 'IPv6',
+          description: 'Stel in hoe IronKVM zijn IPv6-adres krijgt op het bekabelde netwerk',
+          slaac: 'SLAAC',
+          dhcpv6: 'DHCPv6',
+          static: 'Handmatig',
+          off: 'Uit',
+          address: 'IPv6-adres',
+          prefix: 'Prefixlengte',
+          router: 'Router',
+          apply: 'Toepassen',
+          saved: 'IPv6-instellingen toegepast en opgeslagen',
+          loadFailed: 'De IPv6-instellingen konden niet worden gelezen',
+          saveFailed: 'De IPv6-instellingen konden niet worden toegepast',
+          unsupported: 'Deze kernel heeft geen IPv6',
+          noDhcpv6: 'DHCPv6 is niet beschikbaar: dit image heeft geen DHCPv6-client',
+          invalid:
+            'Voer een geldig IPv6-adres in, een prefixlengte van 16 tot 126 en een routeradres (of laat het leeg)',
+          offNote:
+            'IPv6 staat uit op de bekabelde interface. De webinterface blijft bereikbaar via IPv4.',
+          keepsIpv4:
+            'Het IPv4-adres verandert niet. Als toepassen mislukt, worden de vorige IPv6-instellingen teruggezet.',
+          useIpv4:
+            'Deze pagina is geopend via IPv6. Open IronKVM op het IPv4-adres om de IPv6-instellingen te wijzigen.',
+          current: 'Huidige IPv6-adressen',
+          disabled: 'Uit',
+          noAddress: 'Nog geen IPv6-adres',
+          scopeLink: 'link-local',
+          scopeUla: 'privé',
+          scopeGlobal: 'globaal'
+        },
+        webrtc: {
+          title: 'WebRTC via een poortdoorsturing',
+          description:
+            'Laat kijkers buiten je netwerk de video bereiken via een poortdoorsturing in de router.',
+          warning:
+            'Een poort doorsturen maakt deze KVM bereikbaar vanaf internet. Een VPN zoals Tailscale of NetBird blijft de aanbevolen toegang. Stuur alleen de UDP-poort hieronder door, nooit de poort van de webinterface.',
+          udpPort: 'Vaste UDP-poort',
+          udpPortHint:
+            'Alle kijkers delen deze poort. Laat leeg om uit te schakelen. Stuur hem in de router door naar dit apparaat.',
+          publicAddress: 'Openbaar adres',
+          publicAddressHint:
+            'Het IP-adres of de dynamische DNS-naam waarop je router antwoordt. Heeft de UDP-poort nodig.',
+          apply: 'Toepassen',
+          saved: 'Opgeslagen. Nieuwe kijkers gebruiken de nieuwe instellingen.',
+          loadFailed: 'De WebRTC-instellingen konden niet worden gelezen',
+          saveFailed: 'De WebRTC-instellingen konden niet worden opgeslagen',
+          invalidPort: 'De poort moet een getal van 1024 tot 65535 zijn',
+          needsPort: 'Een openbaar adres heeft een UDP-poort nodig',
+          active: 'Kijkers delen UDP-poort {{port}}',
+          inactive: 'Elke kijker gebruikt een eigen poort',
+          offered: 'Aangeboden aan kijkers: {{addresses}}',
+          cost:
+            'Op een gedeelde poort verstuurt het bord één pakket tegelijk, wat het CPU-gebruik kan verhogen bij meerdere kijkers en hoge framerates.'
         },
         dns: {
           title: 'DNS',

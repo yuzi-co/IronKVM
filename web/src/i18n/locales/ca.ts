@@ -633,7 +633,34 @@ const ca = {
       sending: 'Enviant comanda...',
       sent: 'Comanda enviada',
       input: 'Introdueix la MAC',
-      ok: "D'acord"
+      ok: "D'acord",
+      add: 'Afegeix un dispositiu',
+      edit: 'Edita el dispositiu',
+      name: 'Nom',
+      mac: 'Adreça MAC',
+      scan: 'Cerca a la xarxa',
+      scanFailed: "No s'ha pogut explorar la xarxa",
+      scanEmpty: "No s'ha trobat cap equip",
+      scanPick: 'Tria un equip',
+      ip: "Adreça IP de l'equip (per comprovar si està encès, opcional)",
+      broadcast: 'Adreça de broadcast o subxarxa (opcional)',
+      port: "Paquet d'activació",
+      portFrame: 'Trama Ethernet (per defecte)',
+      secureOn: 'Contrasenya SecureOn (opcional)',
+      secureOnKept: 'Desada. Deixeu-ho buit per conservar-la',
+      secureOnRemove: 'Elimina la contrasenya',
+      secureOnKeep: 'Conserva la contrasenya',
+      invalidMac: 'Introduïu una adreça MAC vàlida',
+      invalidIp: 'Introduïu una adreça IPv4 vàlida',
+      invalidBroadcast: 'Introduïu una adreça IPv4 o una subxarxa, com 192.168.1.0/24',
+      invalidSecureOn: 'La contrasenya són sis bytes en hexadecimal, com AA:BB:CC:DD:EE:FF',
+      duplicate: 'Ja existeix un dispositiu amb aquesta adreça MAC o nom',
+      saveFailed: "No s'ha pogut desar el dispositiu",
+      save: 'Desa',
+      cancel: 'Cancel·la',
+      up: 'Encès',
+      down: 'Apagat',
+      checking: "S'està comprovant..."
     },
     download: {
       uploadFailed: 'La pujada ha fallat',
@@ -1605,6 +1632,61 @@ const ca = {
           trialKeepFailed: "No s'ha pogut conservar la configuració",
           trialGone: "El canvi ja s'ha restaurat. Torneu-ho a provar.",
           unsaved: 'Canvis no desats'
+        },
+        ipv6: {
+          title: 'IPv6',
+          description: "Defineix com obté IronKVM l'adreça IPv6 a la xarxa cablejada",
+          slaac: 'SLAAC',
+          dhcpv6: 'DHCPv6',
+          static: 'Manual',
+          off: 'Desactivat',
+          address: 'Adreça IPv6',
+          prefix: 'Longitud del prefix',
+          router: 'Encaminador',
+          apply: 'Aplica',
+          saved: "Els paràmetres IPv6 s'han aplicat i desat",
+          loadFailed: "No s'han pogut llegir els paràmetres IPv6",
+          saveFailed: "No s'han pogut aplicar els paràmetres IPv6",
+          unsupported: 'Aquest nucli no té IPv6',
+          noDhcpv6: 'DHCPv6 no està disponible: aquesta imatge no té client DHCPv6',
+          invalid:
+            "Introduïu una adreça IPv6 vàlida, una longitud de prefix de 16 a 126 i l'adreça de l'encaminador (o deixeu-la buida)",
+          offNote:
+            'IPv6 està desactivat a la interfície cablejada. La interfície web continua accessible per IPv4.',
+          keepsIpv4:
+            "L'adreça IPv4 no canvia. Si l'aplicació falla, es restauren els paràmetres IPv6 anteriors.",
+          useIpv4:
+            'Aquesta pàgina està oberta per IPv6. Obriu IronKVM a la seva adreça IPv4 per canviar els paràmetres IPv6.',
+          current: 'Adreces IPv6 actuals',
+          disabled: 'Desactivat',
+          noAddress: 'Encara no hi ha cap adreça IPv6',
+          scopeLink: "d'enllaç local",
+          scopeUla: 'privada',
+          scopeGlobal: 'global'
+        },
+        webrtc: {
+          title: 'WebRTC mitjançant redirecció de ports',
+          description:
+            "Permet que els espectadors fora de la teva xarxa accedeixin al vídeo mitjançant una redirecció de ports de l'encaminador.",
+          warning:
+            "Redirigir un port exposa aquest KVM a Internet. Una VPN com Tailscale o NetBird continua sent la via d'accés recomanada. Redirigiu només el port UDP següent, mai el de la interfície web.",
+          udpPort: 'Port UDP fix',
+          udpPortHint:
+            "Tots els espectadors comparteixen aquest port. Deixeu-ho buit per desactivar-lo. Redirigiu-lo a l'encaminador cap a aquest dispositiu.",
+          publicAddress: 'Adreça pública',
+          publicAddressHint:
+            "L'adreça IP o el nom DNS dinàmic en què respon l'encaminador. Necessita el port UDP.",
+          apply: 'Aplica',
+          saved: 'Desat. Els nous espectadors fan servir els nous paràmetres.',
+          loadFailed: "No s'han pogut llegir els paràmetres de WebRTC",
+          saveFailed: "No s'han pogut desar els paràmetres de WebRTC",
+          invalidPort: 'El port ha de ser un número de 1024 a 65535',
+          needsPort: 'Una adreça pública necessita un port UDP',
+          active: 'Els espectadors comparteixen el port UDP {{port}}',
+          inactive: 'Cada espectador fa servir el seu propi port',
+          offered: 'Oferit als espectadors: {{addresses}}',
+          cost:
+            "En un port compartit la placa envia un paquet cada cop, cosa que pot augmentar l'ús de CPU amb diversos espectadors i fotogrames alts."
         },
         dns: {
           title: 'DNS',

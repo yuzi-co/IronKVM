@@ -631,7 +631,34 @@ const id = {
       sending: 'Kirim perintah...',
       sent: 'Perintah terkirim',
       input: 'Silahkan masukkan MAC',
-      ok: 'Ok'
+      ok: 'Ok',
+      add: 'Tambah perangkat',
+      edit: 'Ubah perangkat',
+      name: 'Nama',
+      mac: 'Alamat MAC',
+      scan: 'Cari di jaringan',
+      scanFailed: 'Tidak dapat memindai jaringan',
+      scanEmpty: 'Tidak ada host ditemukan',
+      scanPick: 'Pilih host',
+      ip: 'Alamat IP host (untuk pemeriksaan menyala, opsional)',
+      broadcast: 'Alamat broadcast atau subnet (opsional)',
+      port: 'Paket bangun',
+      portFrame: 'Frame Ethernet (bawaan)',
+      secureOn: 'Kata sandi SecureOn (opsional)',
+      secureOnKept: 'Tersimpan. Biarkan kosong untuk mempertahankannya',
+      secureOnRemove: 'Hapus kata sandi',
+      secureOnKeep: 'Pertahankan kata sandi',
+      invalidMac: 'Masukkan alamat MAC yang valid',
+      invalidIp: 'Masukkan alamat IPv4 yang valid',
+      invalidBroadcast: 'Masukkan alamat IPv4 atau subnet, seperti 192.168.1.0/24',
+      invalidSecureOn: 'Kata sandi berupa enam byte heksadesimal, seperti AA:BB:CC:DD:EE:FF',
+      duplicate: 'Perangkat dengan alamat MAC atau nama ini sudah ada',
+      saveFailed: 'Gagal menyimpan perangkat',
+      save: 'Simpan',
+      cancel: 'Batal',
+      up: 'Menyala',
+      down: 'Mati',
+      checking: 'Memeriksa...'
     },
     download: {
       uploadFailed: 'Unggahan gagal',
@@ -1591,6 +1618,61 @@ const id = {
           trialKeepFailed: 'Gagal mempertahankan pengaturan',
           trialGone: 'Perubahan sudah dikembalikan. Coba lagi.',
           unsaved: 'Perubahan belum disimpan'
+        },
+        ipv6: {
+          title: 'IPv6',
+          description: 'Atur bagaimana IronKVM mendapatkan alamat IPv6 di jaringan kabel',
+          slaac: 'SLAAC',
+          dhcpv6: 'DHCPv6',
+          static: 'Manual',
+          off: 'Mati',
+          address: 'Alamat IPv6',
+          prefix: 'Panjang prefiks',
+          router: 'Router',
+          apply: 'Terapkan',
+          saved: 'Pengaturan IPv6 diterapkan dan disimpan',
+          loadFailed: 'Gagal membaca pengaturan IPv6',
+          saveFailed: 'Gagal menerapkan pengaturan IPv6',
+          unsupported: 'Kernel ini tidak memiliki IPv6',
+          noDhcpv6: 'DHCPv6 tidak tersedia: image ini tidak memiliki klien DHCPv6',
+          invalid:
+            'Masukkan alamat IPv6 yang valid, panjang prefiks 16 sampai 126, dan alamat router (atau kosongkan)',
+          offNote:
+            'IPv6 dimatikan pada antarmuka kabel. Antarmuka web tetap dapat diakses melalui IPv4.',
+          keepsIpv4:
+            'Alamat IPv4 tidak berubah. Jika penerapan gagal, pengaturan IPv6 sebelumnya dikembalikan.',
+          useIpv4:
+            'Halaman ini dibuka melalui IPv6. Buka IronKVM di alamat IPv4-nya untuk mengubah pengaturan IPv6.',
+          current: 'Alamat IPv6 saat ini',
+          disabled: 'Mati',
+          noAddress: 'Belum ada alamat IPv6',
+          scopeLink: 'link-local',
+          scopeUla: 'privat',
+          scopeGlobal: 'global'
+        },
+        webrtc: {
+          title: 'WebRTC melalui penerusan port',
+          description:
+            'Izinkan penonton di luar jaringan Anda menjangkau video melalui penerusan port di router.',
+          warning:
+            'Meneruskan port membuka KVM ini ke internet. VPN seperti Tailscale atau NetBird tetap menjadi cara masuk yang disarankan. Teruskan hanya port UDP di bawah, jangan port antarmuka web.',
+          udpPort: 'Port UDP tetap',
+          udpPortHint:
+            'Semua penonton berbagi port ini. Kosongkan untuk mematikannya. Teruskan di router ke perangkat ini.',
+          publicAddress: 'Alamat publik',
+          publicAddressHint:
+            'Alamat IP atau nama DNS dinamis tempat router Anda menjawab. Memerlukan port UDP.',
+          apply: 'Terapkan',
+          saved: 'Tersimpan. Penonton baru memakai pengaturan baru.',
+          loadFailed: 'Gagal membaca pengaturan WebRTC',
+          saveFailed: 'Gagal menyimpan pengaturan WebRTC',
+          invalidPort: 'Port harus berupa angka dari 1024 sampai 65535',
+          needsPort: 'Alamat publik memerlukan port UDP',
+          active: 'Penonton berbagi port UDP {{port}}',
+          inactive: 'Setiap penonton memakai port sendiri',
+          offered: 'Ditawarkan ke penonton: {{addresses}}',
+          cost:
+            'Pada port bersama, board mengirim satu paket pada satu waktu, yang dapat menaikkan penggunaan CPU dengan banyak penonton dan frame rate tinggi.'
         },
         dns: {
           title: 'DNS',

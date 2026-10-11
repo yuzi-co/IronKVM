@@ -628,7 +628,34 @@ const da = {
       sending: 'Sender Wake-on-LAN magic packet',
       sent: 'Wake-on-LAN magic packet sendt',
       input: 'Angiv MAC-adresse',
-      ok: 'OK'
+      ok: 'OK',
+      add: 'Tilføj enhed',
+      edit: 'Rediger enhed',
+      name: 'Navn',
+      mac: 'MAC-adresse',
+      scan: 'Find på netværket',
+      scanFailed: 'Netværket kunne ikke scannes',
+      scanEmpty: 'Ingen værter fundet',
+      scanPick: 'Vælg en vært',
+      ip: 'Værtens IP-adresse (til tjek af tændt tilstand, valgfri)',
+      broadcast: 'Broadcast-adresse eller undernet (valgfri)',
+      port: 'Vækningspakke',
+      portFrame: 'Ethernet-frame (standard)',
+      secureOn: 'SecureOn-adgangskode (valgfri)',
+      secureOnKept: 'Gemt. Lad feltet stå tomt for at beholde den',
+      secureOnRemove: 'Fjern adgangskoden',
+      secureOnKeep: 'Behold adgangskoden',
+      invalidMac: 'Angiv en gyldig MAC-adresse',
+      invalidIp: 'Angiv en gyldig IPv4-adresse',
+      invalidBroadcast: 'Angiv en IPv4-adresse eller et undernet, fx 192.168.1.0/24',
+      invalidSecureOn: 'Adgangskoden er seks bytes i hex, fx AA:BB:CC:DD:EE:FF',
+      duplicate: 'Der findes allerede en enhed med denne MAC-adresse eller dette navn',
+      saveFailed: 'Enheden kunne ikke gemmes',
+      save: 'Gem',
+      cancel: 'Annuller',
+      up: 'Tændt',
+      down: 'Slukket',
+      checking: 'Tjekker...'
     },
     download: {
       uploadFailed: 'Upload mislykkedes',
@@ -1587,6 +1614,61 @@ const da = {
           trialKeepFailed: 'Indstillingerne kunne ikke beholdes',
           trialGone: 'Ændringen er allerede gendannet. Prøv igen.',
           unsaved: 'Ikke-gemte ændringer'
+        },
+        ipv6: {
+          title: 'IPv6',
+          description: 'Indstil, hvordan IronKVM får sin IPv6-adresse på det kablede netværk',
+          slaac: 'SLAAC',
+          dhcpv6: 'DHCPv6',
+          static: 'Manuel',
+          off: 'Fra',
+          address: 'IPv6-adresse',
+          prefix: 'Præfikslængde',
+          router: 'Router',
+          apply: 'Anvend',
+          saved: 'IPv6-indstillingerne er anvendt og gemt',
+          loadFailed: 'IPv6-indstillingerne kunne ikke læses',
+          saveFailed: 'IPv6-indstillingerne kunne ikke anvendes',
+          unsupported: 'Denne kerne har ikke IPv6',
+          noDhcpv6: 'DHCPv6 er ikke tilgængelig: dette image har ingen DHCPv6-klient',
+          invalid:
+            'Angiv en gyldig IPv6-adresse, en præfikslængde fra 16 til 126 og en routeradresse (eller lad den stå tom)',
+          offNote:
+            'IPv6 er slået fra på den kablede grænseflade. Webgrænsefladen kan stadig nås via IPv4.',
+          keepsIpv4:
+            'IPv4-adressen ændres ikke. Hvis det mislykkes at anvende, genindsættes de tidligere IPv6-indstillinger.',
+          useIpv4:
+            'Siden er åbnet via IPv6. Åbn IronKVM på dens IPv4-adresse for at ændre IPv6-indstillingerne.',
+          current: 'Aktuelle IPv6-adresser',
+          disabled: 'Fra',
+          noAddress: 'Ingen IPv6-adresse endnu',
+          scopeLink: 'link-local',
+          scopeUla: 'privat',
+          scopeGlobal: 'global'
+        },
+        webrtc: {
+          title: 'WebRTC via portvideresendelse',
+          description:
+            'Lad seere uden for dit netværk nå videoen via en portvideresendelse i routeren.',
+          warning:
+            'Portvideresendelse udsætter denne KVM for internettet. En VPN som Tailscale eller NetBird er stadig den anbefalede vej ind. Videresend kun UDP-porten nedenfor, aldrig webgrænsefladens port.',
+          udpPort: 'Fast UDP-port',
+          udpPortHint:
+            'Alle seere deler denne port. Lad feltet stå tomt for at slå den fra. Videresend den i routeren til denne enhed.',
+          publicAddress: 'Offentlig adresse',
+          publicAddressHint:
+            'IP-adressen eller det dynamiske DNS-navn, som din router svarer på. Kræver UDP-porten.',
+          apply: 'Anvend',
+          saved: 'Gemt. Nye seere bruger de nye indstillinger.',
+          loadFailed: 'WebRTC-indstillingerne kunne ikke læses',
+          saveFailed: 'WebRTC-indstillingerne kunne ikke gemmes',
+          invalidPort: 'Porten skal være et tal fra 1024 til 65535',
+          needsPort: 'En offentlig adresse kræver en UDP-port',
+          active: 'Seere deler UDP-port {{port}}',
+          inactive: 'Hver seer bruger sin egen port',
+          offered: 'Tilbudt seerne: {{addresses}}',
+          cost:
+            'På en delt port sender kortet én pakke ad gangen, hvilket kan øge CPU-forbruget med flere seere og høje billedfrekvenser.'
         },
         dns: {
           title: 'DNS',

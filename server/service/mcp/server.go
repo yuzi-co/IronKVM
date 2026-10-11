@@ -115,6 +115,7 @@ func registerTools(server *protocol.Server, executor *toolExecutor, remote *Remo
 	protocol.AddTool(server, &protocol.Tool{Name: clickMouseToolName, Description: "Click a remote mouse button", InputSchema: clickMouseSchema()}, clickMouseHandler(executor, remote))
 	protocol.AddTool(server, &protocol.Tool{Name: scrollMouseToolName, Description: "Scroll the remote mouse wheel", InputSchema: scrollMouseSchema()}, scrollMouseHandler(executor, remote))
 	protocol.AddTool(server, &protocol.Tool{Name: screenshotToolName, Description: "Capture a JPEG screenshot from the remote display", InputSchema: screenshotSchema()}, screenshotHandler(executor, snapshotter))
+	protocol.AddTool(server, &protocol.Tool{Name: wakeToolName, Description: "Wake a device on the LAN by its name in the Wake-on-LAN list, or by MAC address", InputSchema: wakeSchema()}, wakeHandler())
 }
 
 func typeTextHandler(executor *toolExecutor, remote *Remote) protocol.ToolHandlerFor[TypeTextParams, TypeTextResult] {

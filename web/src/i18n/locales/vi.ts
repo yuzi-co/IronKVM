@@ -627,7 +627,34 @@ const vi = {
       sending: 'Đang gửi lệnh...',
       sent: 'Đã gửi lệnh',
       input: 'Vui lòng nhập địa chỉ MAC',
-      ok: 'OK'
+      ok: 'OK',
+      add: 'Thêm thiết bị',
+      edit: 'Sửa thiết bị',
+      name: 'Tên',
+      mac: 'Địa chỉ MAC',
+      scan: 'Tìm trong mạng',
+      scanFailed: 'Không thể quét mạng',
+      scanEmpty: 'Không tìm thấy máy chủ nào',
+      scanPick: 'Chọn một máy',
+      ip: 'Địa chỉ IP của máy (để kiểm tra đã bật chưa, tùy chọn)',
+      broadcast: 'Địa chỉ broadcast hoặc mạng con (tùy chọn)',
+      port: 'Gói đánh thức',
+      portFrame: 'Khung Ethernet (mặc định)',
+      secureOn: 'Mật khẩu SecureOn (tùy chọn)',
+      secureOnKept: 'Đã lưu. Để trống để giữ nguyên',
+      secureOnRemove: 'Xóa mật khẩu',
+      secureOnKeep: 'Giữ mật khẩu',
+      invalidMac: 'Vui lòng nhập địa chỉ MAC hợp lệ',
+      invalidIp: 'Vui lòng nhập địa chỉ IPv4 hợp lệ',
+      invalidBroadcast: 'Vui lòng nhập địa chỉ IPv4 hoặc mạng con, ví dụ 192.168.1.0/24',
+      invalidSecureOn: 'Mật khẩu gồm sáu byte hex, ví dụ AA:BB:CC:DD:EE:FF',
+      duplicate: 'Đã có thiết bị với địa chỉ MAC hoặc tên này',
+      saveFailed: 'Không thể lưu thiết bị',
+      save: 'Lưu',
+      cancel: 'Hủy',
+      up: 'Đang bật',
+      down: 'Đã tắt',
+      checking: 'Đang kiểm tra...'
     },
     download: {
       uploadFailed: 'Tải lên thất bại',
@@ -1583,6 +1610,60 @@ const vi = {
           trialKeepFailed: 'Không giữ được cài đặt',
           trialGone: 'Thay đổi đã được khôi phục. Vui lòng thử lại.',
           unsaved: 'Thay đổi chưa lưu'
+        },
+        ipv6: {
+          title: 'IPv6',
+          description: 'Cách IronKVM nhận địa chỉ IPv6 trên mạng có dây',
+          slaac: 'SLAAC',
+          dhcpv6: 'DHCPv6',
+          static: 'Thủ công',
+          off: 'Tắt',
+          address: 'Địa chỉ IPv6',
+          prefix: 'Độ dài tiền tố',
+          router: 'Bộ định tuyến',
+          apply: 'Áp dụng',
+          saved: 'Đã áp dụng và lưu cài đặt IPv6',
+          loadFailed: 'Không thể đọc cài đặt IPv6',
+          saveFailed: 'Không thể áp dụng cài đặt IPv6',
+          unsupported: 'Nhân này không có IPv6',
+          noDhcpv6: 'DHCPv6 không khả dụng: bản image này không có ứng dụng khách DHCPv6',
+          invalid:
+            'Nhập địa chỉ IPv6 hợp lệ, độ dài tiền tố từ 16 đến 126 và địa chỉ bộ định tuyến (hoặc để trống)',
+          offNote: 'IPv6 đã tắt trên giao diện có dây. Giao diện web vẫn truy cập được qua IPv4.',
+          keepsIpv4:
+            'Địa chỉ IPv4 không thay đổi. Nếu áp dụng thất bại, cài đặt IPv6 trước đó sẽ được khôi phục.',
+          useIpv4:
+            'Trang này đang mở qua IPv6. Hãy mở IronKVM bằng địa chỉ IPv4 để đổi cài đặt IPv6.',
+          current: 'Địa chỉ IPv6 hiện tại',
+          disabled: 'Tắt',
+          noAddress: 'Chưa có địa chỉ IPv6',
+          scopeLink: 'link-local',
+          scopeUla: 'riêng',
+          scopeGlobal: 'toàn cầu'
+        },
+        webrtc: {
+          title: 'WebRTC qua chuyển tiếp cổng',
+          description:
+            'Cho phép người xem bên ngoài mạng của bạn truy cập video qua chuyển tiếp cổng trên router.',
+          warning:
+            'Chuyển tiếp cổng sẽ đưa KVM này ra internet. VPN như Tailscale hoặc NetBird vẫn là cách truy cập được khuyến nghị. Chỉ chuyển tiếp cổng UDP bên dưới, không bao giờ chuyển tiếp cổng giao diện web.',
+          udpPort: 'Cổng UDP cố định',
+          udpPortHint:
+            'Mọi người xem dùng chung cổng này. Để trống để tắt. Hãy chuyển tiếp nó trên router tới thiết bị này.',
+          publicAddress: 'Địa chỉ công khai',
+          publicAddressHint:
+            'Địa chỉ IP hoặc tên DNS động mà router của bạn phản hồi. Cần có cổng UDP.',
+          apply: 'Áp dụng',
+          saved: 'Đã lưu. Người xem mới dùng cài đặt mới.',
+          loadFailed: 'Không thể đọc cài đặt WebRTC',
+          saveFailed: 'Không thể lưu cài đặt WebRTC',
+          invalidPort: 'Cổng phải là số từ 1024 đến 65535',
+          needsPort: 'Địa chỉ công khai cần một cổng UDP',
+          active: 'Người xem dùng chung cổng UDP {{port}}',
+          inactive: 'Mỗi người xem dùng cổng riêng',
+          offered: 'Cung cấp cho người xem: {{addresses}}',
+          cost:
+            'Trên cổng dùng chung, bo mạch gửi từng gói một, có thể làm tăng mức dùng CPU khi có nhiều người xem và tốc độ khung hình cao.'
         },
         dns: {
           title: 'DNS',

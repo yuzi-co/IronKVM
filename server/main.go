@@ -21,6 +21,7 @@ import (
 	"NanoKVM-Server/service/hid"
 	"NanoKVM-Server/service/ion"
 	"NanoKVM-Server/service/metrics"
+	"NanoKVM-Server/service/network"
 	"NanoKVM-Server/service/sequence"
 	"NanoKVM-Server/service/stream/webrtc"
 	"NanoKVM-Server/service/vm"
@@ -116,6 +117,8 @@ func initialize() {
 	// just booted and the VPN connects at boot.
 	go tailscale.ConnectAtBoot()
 	go netbird.ConnectAtBoot()
+	// The saved IPv6 setting, once per boot. See service/network/ipv6.go.
+	go network.RestoreIPv6()
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)

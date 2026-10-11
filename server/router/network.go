@@ -6,25 +6,31 @@ import (
 	"NanoKVM-Server/authn"
 	"NanoKVM-Server/middleware"
 	"NanoKVM-Server/service/network"
+	"NanoKVM-Server/service/webrtcforward"
 )
 
 func networkRouter(r *gin.Engine) {
 	service := network.NewService()
+	forward := webrtcforward.NewService()
 
 	r.POST("/api/network/wifi", service.ConnectWifiNoAuth)    // connect Wi-Fi without auth (only available in ap mode)
 	r.POST("/api/network/wifi/verify", service.VerifyApLogin) // verify ap login
 
 	api := r.Group("/api").Use(middleware.CheckToken())
 
-	api.POST("/network/wol", service.WakeOnLAN) // wake on lan
-	api.GET("/network/wol/mac", service.GetMac) // get mac list
+	api.POST("/network/wol", service.WakeOnLAN)            // wake on lan
+	api.GET("/network/wol/mac", service.GetMac)            // get mac list
+	api.GET("/network/wol/devices", service.GetWolDevices) // device list with options
+	api.GET("/network/wol/check", service.CheckWolDevice)  // is the device up
 
 	admin := r.Group("/api").Use(
 		middleware.CheckToken(),
 		middleware.RequireRole(authn.RoleAdmin),
 	)
-	admin.DELETE("/network/wol/mac", service.DeleteMac)     // delete mac
-	admin.POST("/network/wol/mac/name", service.SetMacName) // set mac name
+	admin.DELETE("/network/wol/mac", service.DeleteMac)      // delete mac
+	admin.POST("/network/wol/mac/name", service.SetMacName)  // set mac name
+	admin.POST("/network/wol/device", service.SaveWolDevice) // add or edit a device
+	admin.GET("/network/wol/scan", service.ScanWol)          // hosts on the LAN
 
 	admin.GET("/network/wifi", service.GetWifi)                    // get Wi-Fi information
 	admin.POST("/network/wifi/connect", service.ConnectWifi)       // connect Wi-Fi
@@ -43,4 +49,13 @@ func networkRouter(r *gin.Engine) {
 	admin.GET("/network/ethernet", service.GetEthernet)              // get the wired address configuration
 	admin.POST("/network/ethernet", service.SetEthernet)             // apply a wired address configuration on trial
 	admin.POST("/network/ethernet/confirm", service.ConfirmEthernet) // keep the applied configuration
+
+	// IPv6 leaves the IPv4 address alone, so it needs no trial: it is saved after
+	// it applied, and an apply that fails puts the saved setting back.
+	admin.GET("/network/ipv6", service.GetIPv6)  // get the IPv6 configuration
+	admin.POST("/network/ipv6", service.SetIPv6) // apply an IPv6 configuration
+
+	// WebRTC through a port forward: a fixed UDP port and a public address.
+	admin.GET("/network/webrtc", forward.Get)  // get the port forward setting
+	admin.POST("/network/webrtc", forward.Set) // set it
 }

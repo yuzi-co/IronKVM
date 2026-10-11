@@ -627,7 +627,34 @@ const en = {
       sending: 'Sending command...',
       sent: 'Command sent',
       input: 'Please enter the MAC',
-      ok: 'Ok'
+      ok: 'Ok',
+      add: 'Add device',
+      edit: 'Edit device',
+      name: 'Name',
+      mac: 'MAC address',
+      scan: 'Find on the network',
+      scanFailed: 'Could not scan the network',
+      scanEmpty: 'No hosts found',
+      scanPick: 'Pick a host',
+      ip: 'Host IP address (for the awake check, optional)',
+      broadcast: 'Broadcast address or subnet (optional)',
+      port: 'Wake packet',
+      portFrame: 'Ethernet frame (default)',
+      secureOn: 'SecureOn password (optional)',
+      secureOnKept: 'Stored. Leave empty to keep it',
+      secureOnRemove: 'Remove the password',
+      secureOnKeep: 'Keep the password',
+      invalidMac: 'Please enter a valid MAC address',
+      invalidIp: 'Please enter a valid IPv4 address',
+      invalidBroadcast: 'Please enter an IPv4 address or subnet, such as 192.168.1.0/24',
+      invalidSecureOn: 'The password is six bytes in hex, such as AA:BB:CC:DD:EE:FF',
+      duplicate: 'A device with this MAC address or name already exists',
+      saveFailed: 'Failed to save the device',
+      save: 'Save',
+      cancel: 'Cancel',
+      up: 'Up',
+      down: 'Down',
+      checking: 'Checking...'
     },
     download: {
       uploadFailed: 'Upload failed',
@@ -1577,6 +1604,61 @@ const en = {
           trialKeepFailed: 'Failed to keep the settings',
           trialGone: 'The change was already put back. Try again.',
           unsaved: 'Unsaved changes'
+        },
+        ipv6: {
+          title: 'IPv6',
+          description: 'Configure how IronKVM gets its IPv6 address on the wired network',
+          slaac: 'SLAAC',
+          dhcpv6: 'DHCPv6',
+          static: 'Manual',
+          off: 'Off',
+          address: 'IPv6 address',
+          prefix: 'Prefix length',
+          router: 'Router',
+          apply: 'Apply',
+          saved: 'IPv6 settings applied and saved',
+          loadFailed: 'Failed to read the IPv6 settings',
+          saveFailed: 'Failed to apply the IPv6 settings',
+          unsupported: 'This kernel has no IPv6',
+          noDhcpv6: 'DHCPv6 is not available: this image has no DHCPv6 client',
+          invalid:
+            'Enter a valid IPv6 address, a prefix length from 16 to 126, and a router address or leave it empty',
+          offNote:
+            'IPv6 is turned off on the wired interface. The web UI stays reachable over IPv4.',
+          keepsIpv4:
+            'The IPv4 address is not changed. If applying fails, the previous IPv6 settings are put back.',
+          useIpv4:
+            'This page is open over IPv6. Open IronKVM at its IPv4 address to change the IPv6 settings.',
+          current: 'Current IPv6 addresses',
+          disabled: 'Off',
+          noAddress: 'No IPv6 address yet',
+          scopeLink: 'link-local',
+          scopeUla: 'private',
+          scopeGlobal: 'global'
+        },
+        webrtc: {
+          title: 'WebRTC through a port forward',
+          description:
+            'Let viewers outside your network reach the video through a router port forward.',
+          warning:
+            'Forwarding a port exposes this KVM to the internet. A VPN such as Tailscale or NetBird stays the recommended way in. Forward only the UDP port below, never the web UI port.',
+          udpPort: 'Fixed UDP port',
+          udpPortHint:
+            'All viewers share this port. Leave empty to turn it off. Forward it on your router to this device.',
+          publicAddress: 'Public address',
+          publicAddressHint:
+            'The IP address or dynamic DNS name your router answers on. Needs the UDP port.',
+          apply: 'Apply',
+          saved: 'Saved. New viewers use the new settings.',
+          loadFailed: 'Failed to read the WebRTC settings',
+          saveFailed: 'Failed to save the WebRTC settings',
+          invalidPort: 'The port must be a number from 1024 to 65535',
+          needsPort: 'A public address needs a UDP port',
+          active: 'Viewers share UDP port {{port}}',
+          inactive: 'Each viewer uses its own port',
+          offered: 'Offered to viewers: {{addresses}}',
+          cost:
+            'On a shared port the board sends one packet at a time, which can raise CPU use with several viewers at high frame rates.'
         },
         dns: {
           title: 'DNS',

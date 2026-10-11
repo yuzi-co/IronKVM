@@ -270,8 +270,9 @@ func newAPIParts() (apiParts, error) {
 }
 
 // newAPI builds one connection's API. udp, when not nil, is the network its
-// ICE agent listens through.
-func newAPI(udp *batchNet) (*webrtc.API, error) {
+// ICE agent listens through. forward, when not nil, moves the agent onto the
+// shared port (portforward.go).
+func newAPI(udp *batchNet, forward *portForward) (*webrtc.API, error) {
 	parts, err := sharedAPIParts()
 	if err != nil {
 		return nil, err
@@ -280,6 +281,9 @@ func newAPI(udp *batchNet) (*webrtc.API, error) {
 	settingEngine := newSettingEngine()
 	if udp != nil {
 		settingEngine.SetNet(udp)
+	}
+	if forward != nil {
+		forward.apply(&settingEngine)
 	}
 
 	return webrtc.NewAPI(
@@ -323,8 +327,12 @@ func newSettingEngine() webrtc.SettingEngine {
 // sockets come from, which the video writer brackets each frame with. The
 // batchNet is nil when KVM_WEBRTC_UDP_BATCH=off.
 func createPeerConnection(iceServers []webrtc.ICEServer) (*webrtc.PeerConnection, *batchNet, error) {
+	// On the shared port the viewer's datagrams go out through the mux, one at
+	// a time: the batching below belongs to a viewer's own sockets.
+	forward := currentPortForward()
+
 	var udp *batchNet
-	if udpBatchEnabled {
+	if udpBatchEnabled && forward == nil {
 		var err error
 		if udp, err = newBatchNet(); err != nil {
 			log.Warnf("udp batch: %v; one send per datagram", err)
@@ -332,7 +340,7 @@ func createPeerConnection(iceServers []webrtc.ICEServer) (*webrtc.PeerConnection
 		}
 	}
 
-	api, err := newAPI(udp)
+	api, err := newAPI(udp, forward)
 	if err != nil {
 		return nil, nil, err
 	}

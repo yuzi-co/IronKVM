@@ -640,7 +640,35 @@ const fr = {
       sending: 'Envoi de la commande...',
       sent: 'Commande envoyée',
       input: "Veuillez entrer l'adresse MAC",
-      ok: 'Ok'
+      ok: 'Ok',
+      add: 'Ajouter un appareil',
+      edit: "Modifier l'appareil",
+      name: 'Nom',
+      mac: 'Adresse MAC',
+      scan: 'Chercher sur le réseau',
+      scanFailed: 'Impossible de scanner le réseau',
+      scanEmpty: 'Aucun hôte trouvé',
+      scanPick: 'Choisir un hôte',
+      ip: "Adresse IP de l'hôte (pour vérifier qu'il est allumé, facultatif)",
+      broadcast: 'Adresse de broadcast ou sous-réseau (facultatif)',
+      port: 'Paquet de réveil',
+      portFrame: 'Trame Ethernet (par défaut)',
+      secureOn: 'Mot de passe SecureOn (facultatif)',
+      secureOnKept: 'Enregistré. Laisser vide pour le conserver',
+      secureOnRemove: 'Supprimer le mot de passe',
+      secureOnKeep: 'Conserver le mot de passe',
+      invalidMac: 'Saisissez une adresse MAC valide',
+      invalidIp: 'Saisissez une adresse IPv4 valide',
+      invalidBroadcast: 'Saisissez une adresse IPv4 ou un sous-réseau, par exemple 192.168.1.0/24',
+      invalidSecureOn:
+        'Le mot de passe fait six octets en hexadécimal, par exemple AA:BB:CC:DD:EE:FF',
+      duplicate: 'Un appareil avec cette adresse MAC ou ce nom existe déjà',
+      saveFailed: "Impossible d'enregistrer l'appareil",
+      save: 'Enregistrer',
+      cancel: 'Annuler',
+      up: 'Allumé',
+      down: 'Éteint',
+      checking: 'Vérification...'
     },
     download: {
       uploadFailed: "Échec de l'envoi",
@@ -1617,6 +1645,61 @@ const fr = {
           trialKeepFailed: 'Échec de la conservation des paramètres',
           trialGone: 'La modification a déjà été annulée. Veuillez réessayer.',
           unsaved: 'Modifications non enregistrées'
+        },
+        ipv6: {
+          title: 'IPv6',
+          description: 'Définit comment IronKVM obtient son adresse IPv6 sur le réseau filaire',
+          slaac: 'SLAAC',
+          dhcpv6: 'DHCPv6',
+          static: 'Manuel',
+          off: 'Désactivé',
+          address: 'Adresse IPv6',
+          prefix: 'Longueur du préfixe',
+          router: 'Routeur',
+          apply: 'Appliquer',
+          saved: 'Paramètres IPv6 appliqués et enregistrés',
+          loadFailed: 'Impossible de lire les paramètres IPv6',
+          saveFailed: "Impossible d'appliquer les paramètres IPv6",
+          unsupported: "Ce noyau n'a pas IPv6",
+          noDhcpv6: "DHCPv6 n'est pas disponible : cette image n'a pas de client DHCPv6",
+          invalid:
+            "Saisissez une adresse IPv6 valide, une longueur de préfixe de 16 à 126 et l'adresse du routeur (ou laissez-la vide)",
+          offNote:
+            "IPv6 est désactivé sur l'interface filaire. L'interface web reste accessible en IPv4.",
+          keepsIpv4:
+            "L'adresse IPv4 n'est pas modifiée. Si l'application échoue, les anciens paramètres IPv6 sont rétablis.",
+          useIpv4:
+            'Cette page est ouverte en IPv6. Ouvrez IronKVM à son adresse IPv4 pour modifier les paramètres IPv6.',
+          current: 'Adresses IPv6 actuelles',
+          disabled: 'Désactivé',
+          noAddress: "Pas encore d'adresse IPv6",
+          scopeLink: 'lien local',
+          scopeUla: 'privée',
+          scopeGlobal: 'globale'
+        },
+        webrtc: {
+          title: 'WebRTC via une redirection de port',
+          description:
+            "Permet aux spectateurs hors de votre réseau d'accéder à la vidéo via une redirection de port du routeur.",
+          warning:
+            "Rediriger un port expose ce KVM à Internet. Un VPN comme Tailscale ou NetBird reste le moyen d'accès recommandé. Ne redirigez que le port UDP ci-dessous, jamais le port de l'interface web.",
+          udpPort: 'Port UDP fixe',
+          udpPortHint:
+            'Tous les spectateurs partagent ce port. Laissez vide pour le désactiver. Redirigez-le sur votre routeur vers cet appareil.',
+          publicAddress: 'Adresse publique',
+          publicAddressHint:
+            "L'adresse IP ou le nom DNS dynamique auquel votre routeur répond. Nécessite le port UDP.",
+          apply: 'Appliquer',
+          saved: 'Enregistré. Les nouveaux spectateurs utilisent les nouveaux paramètres.',
+          loadFailed: 'Impossible de lire les paramètres WebRTC',
+          saveFailed: "Impossible d'enregistrer les paramètres WebRTC",
+          invalidPort: 'Le port doit être un nombre de 1024 à 65535',
+          needsPort: 'Une adresse publique nécessite un port UDP',
+          active: 'Les spectateurs partagent le port UDP {{port}}',
+          inactive: 'Chaque spectateur utilise son propre port',
+          offered: 'Proposé aux spectateurs : {{addresses}}',
+          cost:
+            "Sur un port partagé, la carte envoie un paquet à la fois, ce qui peut augmenter la charge CPU avec plusieurs spectateurs à fréquence d'images élevée."
         },
         dns: {
           title: 'DNS',

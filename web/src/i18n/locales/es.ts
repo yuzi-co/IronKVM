@@ -638,7 +638,34 @@ const es = {
       sending: 'Enviando comando...',
       sent: 'Comando enviado',
       input: 'Por favor, introduce la dirección MAC',
-      ok: 'Aceptar'
+      ok: 'Aceptar',
+      add: 'Añadir dispositivo',
+      edit: 'Editar dispositivo',
+      name: 'Nombre',
+      mac: 'Dirección MAC',
+      scan: 'Buscar en la red',
+      scanFailed: 'No se pudo explorar la red',
+      scanEmpty: 'No se encontraron equipos',
+      scanPick: 'Elegir un equipo',
+      ip: 'Dirección IP del equipo (para comprobar si está encendido, opcional)',
+      broadcast: 'Dirección de broadcast o subred (opcional)',
+      port: 'Paquete de activación',
+      portFrame: 'Trama Ethernet (predeterminado)',
+      secureOn: 'Contraseña SecureOn (opcional)',
+      secureOnKept: 'Guardada. Déjelo vacío para conservarla',
+      secureOnRemove: 'Quitar la contraseña',
+      secureOnKeep: 'Conservar la contraseña',
+      invalidMac: 'Introduzca una dirección MAC válida',
+      invalidIp: 'Introduzca una dirección IPv4 válida',
+      invalidBroadcast: 'Introduzca una dirección IPv4 o una subred, como 192.168.1.0/24',
+      invalidSecureOn: 'La contraseña son seis bytes en hexadecimal, como AA:BB:CC:DD:EE:FF',
+      duplicate: 'Ya existe un dispositivo con esta dirección MAC o este nombre',
+      saveFailed: 'No se pudo guardar el dispositivo',
+      save: 'Guardar',
+      cancel: 'Cancelar',
+      up: 'Encendido',
+      down: 'Apagado',
+      checking: 'Comprobando...'
     },
     download: {
       uploadFailed: 'La subida falló',
@@ -1614,6 +1641,61 @@ const es = {
           trialKeepFailed: 'No se pudo conservar la configuración',
           trialGone: 'El cambio ya se restauró. Inténtelo de nuevo.',
           unsaved: 'Cambios sin guardar'
+        },
+        ipv6: {
+          title: 'IPv6',
+          description: 'Configura cómo obtiene IronKVM su dirección IPv6 en la red cableada',
+          slaac: 'SLAAC',
+          dhcpv6: 'DHCPv6',
+          static: 'Manual',
+          off: 'Desactivado',
+          address: 'Dirección IPv6',
+          prefix: 'Longitud del prefijo',
+          router: 'Router',
+          apply: 'Aplicar',
+          saved: 'Ajustes IPv6 aplicados y guardados',
+          loadFailed: 'No se pudieron leer los ajustes IPv6',
+          saveFailed: 'No se pudieron aplicar los ajustes IPv6',
+          unsupported: 'Este kernel no tiene IPv6',
+          noDhcpv6: 'DHCPv6 no está disponible: esta imagen no incluye cliente DHCPv6',
+          invalid:
+            'Introduzca una dirección IPv6 válida, una longitud de prefijo de 16 a 126 y la dirección del router (o déjela vacía)',
+          offNote:
+            'IPv6 está desactivado en la interfaz cableada. La interfaz web sigue accesible por IPv4.',
+          keepsIpv4:
+            'La dirección IPv4 no cambia. Si la aplicación falla, se restauran los ajustes IPv6 anteriores.',
+          useIpv4:
+            'Esta página está abierta por IPv6. Abra IronKVM en su dirección IPv4 para cambiar los ajustes IPv6.',
+          current: 'Direcciones IPv6 actuales',
+          disabled: 'Desactivado',
+          noAddress: 'Aún no hay dirección IPv6',
+          scopeLink: 'local de enlace',
+          scopeUla: 'privada',
+          scopeGlobal: 'global'
+        },
+        webrtc: {
+          title: 'WebRTC mediante redirección de puertos',
+          description:
+            'Permite que los espectadores fuera de tu red accedan al vídeo mediante una redirección de puertos del router.',
+          warning:
+            'Redirigir un puerto expone este KVM a Internet. Una VPN como Tailscale o NetBird sigue siendo la forma recomendada de acceder. Redirige solo el puerto UDP de abajo, nunca el de la interfaz web.',
+          udpPort: 'Puerto UDP fijo',
+          udpPortHint:
+            'Todos los espectadores comparten este puerto. Déjalo vacío para desactivarlo. Redirígelo en el router a este dispositivo.',
+          publicAddress: 'Dirección pública',
+          publicAddressHint:
+            'La dirección IP o el nombre DNS dinámico con el que responde tu router. Necesita el puerto UDP.',
+          apply: 'Aplicar',
+          saved: 'Guardado. Los nuevos espectadores usan los nuevos ajustes.',
+          loadFailed: 'No se pudieron leer los ajustes de WebRTC',
+          saveFailed: 'No se pudieron guardar los ajustes de WebRTC',
+          invalidPort: 'El puerto debe ser un número de 1024 a 65535',
+          needsPort: 'Una dirección pública necesita un puerto UDP',
+          active: 'Los espectadores comparten el puerto UDP {{port}}',
+          inactive: 'Cada espectador usa su propio puerto',
+          offered: 'Ofrecido a los espectadores: {{addresses}}',
+          cost:
+            'En un puerto compartido la placa envía un paquete cada vez, lo que puede aumentar el uso de CPU con varios espectadores y fotogramas altos.'
         },
         dns: {
           title: 'DNS',

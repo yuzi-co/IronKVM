@@ -632,7 +632,34 @@ const hu = {
       sending: 'Parancs küldése...',
       sent: 'Parancs elküldve',
       input: 'Adja meg a MAC címet',
-      ok: 'Ok'
+      ok: 'Ok',
+      add: 'Eszköz hozzáadása',
+      edit: 'Eszköz szerkesztése',
+      name: 'Név',
+      mac: 'MAC-cím',
+      scan: 'Keresés a hálózaton',
+      scanFailed: 'A hálózat vizsgálata nem sikerült',
+      scanEmpty: 'Nem található gazdagép',
+      scanPick: 'Válasszon gazdagépet',
+      ip: 'A gazdagép IP-címe (a bekapcsolt állapot ellenőrzéséhez, nem kötelező)',
+      broadcast: 'Broadcast cím vagy alhálózat (nem kötelező)',
+      port: 'Ébresztőcsomag',
+      portFrame: 'Ethernet-keret (alapértelmezett)',
+      secureOn: 'SecureOn jelszó (nem kötelező)',
+      secureOnKept: 'Mentve. Hagyja üresen a megtartásához',
+      secureOnRemove: 'Jelszó eltávolítása',
+      secureOnKeep: 'Jelszó megtartása',
+      invalidMac: 'Adjon meg érvényes MAC-címet',
+      invalidIp: 'Adjon meg érvényes IPv4-címet',
+      invalidBroadcast: 'Adjon meg IPv4-címet vagy alhálózatot, például 192.168.1.0/24',
+      invalidSecureOn: 'A jelszó hat bájt hexadecimálisan, például AA:BB:CC:DD:EE:FF',
+      duplicate: 'Már létezik eszköz ezzel a MAC-címmel vagy névvel',
+      saveFailed: 'Az eszköz mentése nem sikerült',
+      save: 'Mentés',
+      cancel: 'Mégse',
+      up: 'Be van kapcsolva',
+      down: 'Ki van kapcsolva',
+      checking: 'Ellenőrzés...'
     },
     download: {
       uploadFailed: 'A feltöltés sikertelen',
@@ -1609,6 +1636,61 @@ const hu = {
           trialKeepFailed: 'A beállításokat nem sikerült megtartani',
           trialGone: 'A módosítás már vissza lett vonva. Próbálja újra.',
           unsaved: 'Nem mentett módosítások'
+        },
+        ipv6: {
+          title: 'IPv6',
+          description: 'Beállítja, hogyan kapja az IronKVM az IPv6-címét a vezetékes hálózaton',
+          slaac: 'SLAAC',
+          dhcpv6: 'DHCPv6',
+          static: 'Kézi',
+          off: 'Ki',
+          address: 'IPv6-cím',
+          prefix: 'Előtaghossz',
+          router: 'Útválasztó',
+          apply: 'Alkalmaz',
+          saved: 'Az IPv6-beállítások alkalmazva és mentve',
+          loadFailed: 'Az IPv6-beállítások olvasása nem sikerült',
+          saveFailed: 'Az IPv6-beállítások alkalmazása nem sikerült',
+          unsupported: 'Ebben a kernelben nincs IPv6',
+          noDhcpv6: 'A DHCPv6 nem érhető el: ebben a képben nincs DHCPv6-kliens',
+          invalid:
+            'Adjon meg érvényes IPv6-címet, 16 és 126 közötti előtaghosszt és útválasztócímet (vagy hagyja üresen)',
+          offNote:
+            'Az IPv6 ki van kapcsolva a vezetékes interfészen. A webes felület IPv4-en továbbra is elérhető.',
+          keepsIpv4:
+            'Az IPv4-cím nem változik. Ha az alkalmazás sikertelen, a korábbi IPv6-beállítások visszaállnak.',
+          useIpv4:
+            'Ez az oldal IPv6-on van megnyitva. Az IPv6-beállítások módosításához nyissa meg az IronKVM-et az IPv4-címén.',
+          current: 'Jelenlegi IPv6-címek',
+          disabled: 'Ki',
+          noAddress: 'Még nincs IPv6-cím',
+          scopeLink: 'kapcsolat-helyi',
+          scopeUla: 'privát',
+          scopeGlobal: 'globális'
+        },
+        webrtc: {
+          title: 'WebRTC porttovábbítással',
+          description:
+            'Lehetővé teszi, hogy a hálózaton kívüli nézők elérjék a videót a router porttovábbításán keresztül.',
+          warning:
+            'A port továbbítása az internetről is elérhetővé teszi ezt a KVM-et. A javasolt elérés továbbra is a VPN, például a Tailscale vagy a NetBird. Csak az alábbi UDP-portot továbbítsa, soha a webes felület portját.',
+          udpPort: 'Rögzített UDP-port',
+          udpPortHint:
+            'Minden néző ezt a portot használja közösen. Hagyja üresen a kikapcsoláshoz. Továbbítsa a routeren erre az eszközre.',
+          publicAddress: 'Nyilvános cím',
+          publicAddressHint:
+            'Az IP-cím vagy a dinamikus DNS-név, amelyen a router válaszol. Szükséges hozzá az UDP-port.',
+          apply: 'Alkalmaz',
+          saved: 'Mentve. Az új nézők az új beállításokat használják.',
+          loadFailed: 'A WebRTC-beállítások olvasása nem sikerült',
+          saveFailed: 'A WebRTC-beállítások mentése nem sikerült',
+          invalidPort: 'A portnak 1024 és 65535 közötti számnak kell lennie',
+          needsPort: 'A nyilvános címhez UDP-port kell',
+          active: 'A nézők a(z) {{port}} UDP-portot használják közösen',
+          inactive: 'Minden néző saját portot használ',
+          offered: 'A nézőknek felkínált cím: {{addresses}}',
+          cost:
+            'Közös porton a panel egyszerre egy csomagot küld, ami több nézőnél és magas képkockasebességnél növelheti a CPU-terhelést.'
         },
         dns: {
           title: 'DNS',

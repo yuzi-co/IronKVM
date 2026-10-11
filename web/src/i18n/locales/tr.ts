@@ -630,7 +630,34 @@ const tr = {
       sending: 'Komut gönderiliyor...',
       sent: 'Komut gönderildi',
       input: 'MAC adresi girin',
-      ok: 'Tamam'
+      ok: 'Tamam',
+      add: 'Cihaz ekle',
+      edit: 'Cihazı düzenle',
+      name: 'Ad',
+      mac: 'MAC adresi',
+      scan: 'Ağda bul',
+      scanFailed: 'Ağ taranamadı',
+      scanEmpty: 'Hiç ana bilgisayar bulunamadı',
+      scanPick: 'Bir ana bilgisayar seçin',
+      ip: 'Ana bilgisayarın IP adresi (açık olup olmadığını denetlemek için, isteğe bağlı)',
+      broadcast: 'Yayın adresi veya alt ağ (isteğe bağlı)',
+      port: 'Uyandırma paketi',
+      portFrame: 'Ethernet çerçevesi (varsayılan)',
+      secureOn: 'SecureOn parolası (isteğe bağlı)',
+      secureOnKept: 'Kayıtlı. Korumak için boş bırakın',
+      secureOnRemove: 'Parolayı kaldır',
+      secureOnKeep: 'Parolayı koru',
+      invalidMac: 'Geçerli bir MAC adresi girin',
+      invalidIp: 'Geçerli bir IPv4 adresi girin',
+      invalidBroadcast: 'Bir IPv4 adresi veya alt ağ girin, örneğin 192.168.1.0/24',
+      invalidSecureOn: 'Parola, onaltılık altı bayttır, örneğin AA:BB:CC:DD:EE:FF',
+      duplicate: 'Bu MAC adresine veya adına sahip bir cihaz zaten var',
+      saveFailed: 'Cihaz kaydedilemedi',
+      save: 'Kaydet',
+      cancel: 'İptal',
+      up: 'Açık',
+      down: 'Kapalı',
+      checking: 'Denetleniyor...'
     },
     download: {
       uploadFailed: 'Yükleme başarısız',
@@ -1591,6 +1618,61 @@ const tr = {
           trialKeepFailed: 'Ayarlar korunamadı',
           trialGone: 'Değişiklik zaten geri alındı. Tekrar deneyin.',
           unsaved: 'Kaydedilmemiş değişiklikler'
+        },
+        ipv6: {
+          title: 'IPv6',
+          description: 'IronKVM’nin kablolu ağda IPv6 adresini nasıl alacağını ayarlayın',
+          slaac: 'SLAAC',
+          dhcpv6: 'DHCPv6',
+          static: 'Elle',
+          off: 'Kapalı',
+          address: 'IPv6 adresi',
+          prefix: 'Önek uzunluğu',
+          router: 'Yönlendirici',
+          apply: 'Uygula',
+          saved: 'IPv6 ayarları uygulandı ve kaydedildi',
+          loadFailed: 'IPv6 ayarları okunamadı',
+          saveFailed: 'IPv6 ayarları uygulanamadı',
+          unsupported: 'Bu çekirdekte IPv6 yok',
+          noDhcpv6: 'DHCPv6 kullanılamıyor: bu imajda DHCPv6 istemcisi yok',
+          invalid:
+            'Geçerli bir IPv6 adresi, 16 ile 126 arasında bir önek uzunluğu ve bir yönlendirici adresi girin (veya boş bırakın)',
+          offNote:
+            'Kablolu arayüzde IPv6 kapalı. Web arayüzüne IPv4 üzerinden erişilmeye devam edilir.',
+          keepsIpv4:
+            'IPv4 adresi değişmez. Uygulama başarısız olursa önceki IPv6 ayarları geri konur.',
+          useIpv4:
+            'Bu sayfa IPv6 üzerinden açık. IPv6 ayarlarını değiştirmek için IronKVM’yi IPv4 adresinden açın.',
+          current: 'Geçerli IPv6 adresleri',
+          disabled: 'Kapalı',
+          noAddress: 'Henüz IPv6 adresi yok',
+          scopeLink: 'bağlantı yerel',
+          scopeUla: 'özel',
+          scopeGlobal: 'genel'
+        },
+        webrtc: {
+          title: 'Port yönlendirme üzerinden WebRTC',
+          description:
+            'Ağınızın dışındaki izleyicilerin, yönlendiricideki bir port yönlendirmesi üzerinden görüntüye ulaşmasını sağlar.',
+          warning:
+            'Bir portu yönlendirmek bu KVM’yi internete açar. Önerilen erişim yolu Tailscale veya NetBird gibi bir VPN olmaya devam eder. Yalnızca aşağıdaki UDP portunu yönlendirin, web arayüzü portunu asla.',
+          udpPort: 'Sabit UDP portu',
+          udpPortHint:
+            'Tüm izleyiciler bu portu paylaşır. Kapatmak için boş bırakın. Yönlendiricide bu cihaza yönlendirin.',
+          publicAddress: 'Genel adres',
+          publicAddressHint:
+            'Yönlendiricinizin yanıt verdiği IP adresi veya dinamik DNS adı. UDP portu gerekir.',
+          apply: 'Uygula',
+          saved: 'Kaydedildi. Yeni izleyiciler yeni ayarları kullanır.',
+          loadFailed: 'WebRTC ayarları okunamadı',
+          saveFailed: 'WebRTC ayarları kaydedilemedi',
+          invalidPort: 'Port 1024 ile 65535 arasında bir sayı olmalıdır',
+          needsPort: 'Genel adres için bir UDP portu gerekir',
+          active: 'İzleyiciler {{port}} UDP portunu paylaşır',
+          inactive: 'Her izleyici kendi portunu kullanır',
+          offered: 'İzleyicilere sunulan: {{addresses}}',
+          cost:
+            'Paylaşılan portta kart paketleri teker teker gönderir; bu, birden çok izleyici ve yüksek kare hızında CPU kullanımını artırabilir.'
         },
         dns: {
           title: 'DNS',

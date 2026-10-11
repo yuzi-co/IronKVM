@@ -630,7 +630,34 @@ const cz = {
       sending: 'Odesílání příkazu...',
       sent: 'Příkaz odeslán',
       input: 'Zadejte prosím MAC adresu',
-      ok: 'OK'
+      ok: 'OK',
+      add: 'Přidat zařízení',
+      edit: 'Upravit zařízení',
+      name: 'Název',
+      mac: 'Adresa MAC',
+      scan: 'Najít v síti',
+      scanFailed: 'Síť se nepodařilo prohledat',
+      scanEmpty: 'Nenalezeni žádní hostitelé',
+      scanPick: 'Vyberte hostitele',
+      ip: 'IP adresa hostitele (pro kontrolu zapnutí, volitelné)',
+      broadcast: 'Broadcastová adresa nebo podsíť (volitelné)',
+      port: 'Probouzecí paket',
+      portFrame: 'Ethernetový rámec (výchozí)',
+      secureOn: 'Heslo SecureOn (volitelné)',
+      secureOnKept: 'Uloženo. Nechte prázdné, aby zůstalo',
+      secureOnRemove: 'Odebrat heslo',
+      secureOnKeep: 'Ponechat heslo',
+      invalidMac: 'Zadejte platnou adresu MAC',
+      invalidIp: 'Zadejte platnou adresu IPv4',
+      invalidBroadcast: 'Zadejte adresu IPv4 nebo podsíť, například 192.168.1.0/24',
+      invalidSecureOn: 'Heslo je šest bajtů v hexadecimálním zápisu, například AA:BB:CC:DD:EE:FF',
+      duplicate: 'Zařízení s touto adresou MAC nebo názvem již existuje',
+      saveFailed: 'Zařízení se nepodařilo uložit',
+      save: 'Uložit',
+      cancel: 'Zrušit',
+      up: 'Zapnuto',
+      down: 'Vypnuto',
+      checking: 'Kontroluje se...'
     },
     download: {
       uploadFailed: 'Nahrávání selhalo',
@@ -1585,6 +1612,61 @@ const cz = {
           trialKeepFailed: 'Nastavení se nepodařilo zachovat',
           trialGone: 'Změna už byla vrácena zpět. Zkuste to znovu.',
           unsaved: 'Neuložené změny'
+        },
+        ipv6: {
+          title: 'IPv6',
+          description: 'Nastavení, jak IronKVM získává adresu IPv6 v kabelové síti',
+          slaac: 'SLAAC',
+          dhcpv6: 'DHCPv6',
+          static: 'Ručně',
+          off: 'Vypnuto',
+          address: 'Adresa IPv6',
+          prefix: 'Délka prefixu',
+          router: 'Router',
+          apply: 'Použít',
+          saved: 'Nastavení IPv6 bylo použito a uloženo',
+          loadFailed: 'Nastavení IPv6 se nepodařilo načíst',
+          saveFailed: 'Nastavení IPv6 se nepodařilo použít',
+          unsupported: 'Toto jádro nemá IPv6',
+          noDhcpv6: 'DHCPv6 není k dispozici: tento obraz nemá klienta DHCPv6',
+          invalid:
+            'Zadejte platnou adresu IPv6, délku prefixu od 16 do 126 a adresu routeru (nebo ji nechte prázdnou)',
+          offNote:
+            'IPv6 je na kabelovém rozhraní vypnuto. Webové rozhraní zůstává dostupné přes IPv4.',
+          keepsIpv4:
+            'Adresa IPv4 se nemění. Pokud použití selže, vrátí se předchozí nastavení IPv6.',
+          useIpv4:
+            'Tato stránka je otevřena přes IPv6. Pro změnu nastavení IPv6 otevřete IronKVM na jeho adrese IPv4.',
+          current: 'Aktuální adresy IPv6',
+          disabled: 'Vypnuto',
+          noAddress: 'Zatím žádná adresa IPv6',
+          scopeLink: 'místní pro spoj',
+          scopeUla: 'soukromá',
+          scopeGlobal: 'globální'
+        },
+        webrtc: {
+          title: 'WebRTC přes přesměrování portu',
+          description:
+            'Umožní divákům mimo vaši síť dostat se k videu přes přesměrování portu na routeru.',
+          warning:
+            'Přesměrování portu zpřístupní tento KVM z internetu. Doporučeným přístupem zůstává VPN, například Tailscale nebo NetBird. Přesměrujte jen UDP port níže, nikdy port webového rozhraní.',
+          udpPort: 'Pevný UDP port',
+          udpPortHint:
+            'Všichni diváci sdílejí tento port. Prázdné pole port vypne. Přesměrujte ho na routeru na toto zařízení.',
+          publicAddress: 'Veřejná adresa',
+          publicAddressHint:
+            'IP adresa nebo dynamický DNS název, na kterém váš router odpovídá. Vyžaduje UDP port.',
+          apply: 'Použít',
+          saved: 'Uloženo. Noví diváci použijí nové nastavení.',
+          loadFailed: 'Nastavení WebRTC se nepodařilo načíst',
+          saveFailed: 'Nastavení WebRTC se nepodařilo uložit',
+          invalidPort: 'Port musí být číslo od 1024 do 65535',
+          needsPort: 'Veřejná adresa vyžaduje UDP port',
+          active: 'Diváci sdílejí UDP port {{port}}',
+          inactive: 'Každý divák používá vlastní port',
+          offered: 'Nabízeno divákům: {{addresses}}',
+          cost:
+            'Na sdíleném portu posílá deska jeden paket po druhém, což může při více divácích a vysoké snímkové frekvenci zvýšit zatížení CPU.'
         },
         dns: {
           title: 'DNS',

@@ -52,6 +52,11 @@ type Config struct {
 	// without the block loads with the server off.
 	VNC VNC `yaml:"vnc,omitempty" mapstructure:"vnc"`
 
+	// WebRTC reaches the video through a port forward, kept under "webrtc"
+	// in server.yaml. A file without the block loads with both settings off,
+	// which is how WebRTC has always been set up.
+	WebRTC WebRTC `yaml:"webrtc,omitempty" mapstructure:"webrtc"`
+
 	// Picoclaw tunes what the server hands the PicoClaw assistant, kept under
 	// "picoclaw" in server.yaml. A file without the block loads the defaults.
 	Picoclaw Picoclaw `yaml:"picoclaw,omitempty" mapstructure:"picoclaw"`
@@ -74,6 +79,19 @@ type HardwareSettings struct {
 	// Redfish's On and ForceOff, must not press. Off by default: most boards
 	// are installed without that header.
 	PowerLED bool `yaml:"powerLed" mapstructure:"powerLed"`
+}
+
+// WebRTC lets a viewer reach the video from outside the LAN through a router's
+// port forward. See service/stream/webrtc/portforward.go.
+type WebRTC struct {
+	// UDPPort, when not zero, is the one UDP port every viewer's ICE agent
+	// shares, so a router can forward it. Zero leaves each viewer on its own
+	// ephemeral port, as before.
+	UDPPort int `yaml:"udpPort,omitempty" mapstructure:"udpPort"`
+	// PublicAddress is the address a viewer outside the LAN reaches the router
+	// at: an IP or a host name, resolved when a viewer connects. It is offered
+	// as one more host candidate on UDPPort. It needs UDPPort.
+	PublicAddress string `yaml:"publicAddress,omitempty" mapstructure:"publicAddress"`
 }
 
 // Redfish configures the Redfish service.

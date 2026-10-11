@@ -26,11 +26,14 @@ export const SERVER_FEATURES = [
   'host-log', // /api/hostlog (Settings > Host log)
   'info-latency', // boardLatency in GET /api/stream/info (status bar latency estimate)
   'ip-allowlist', // /api/network/allowlist (Settings > Network > Allowed networks)
+  'ipv6-settings', // /api/network/ipv6 (Settings > Network > IPv6)
   'notifications', // /api/notify (Settings > Notifications)
   'nut-client', // /api/nut (Settings > NUT, UPS line in the status bar)
   'status-bar', // GET /api/stream/info (status bar source line)
   'ui-update', // /api/ui: separate UI packages (Settings > Update)
-  'webrtc-clock' // the clock event on the WebRTC signalling socket (status bar latency)
+  'webrtc-clock', // the clock event on the WebRTC signalling socket (status bar latency)
+  'webrtc-port-forward', // /api/network/webrtc (Settings > Network > WebRTC)
+  'wol-devices' // /api/network/wol/devices, /device, /check, /scan (Tools > Wake-on-LAN: managed list)
 ] as const;
 
 export type ServerFeature = (typeof SERVER_FEATURES)[number];

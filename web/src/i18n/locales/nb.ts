@@ -630,7 +630,34 @@ const nb = {
       sending: 'Sender kommando...',
       sent: 'Kommando sendt',
       input: 'Vennligst angi MAC-adressen',
-      ok: 'Ok'
+      ok: 'Ok',
+      add: 'Legg til enhet',
+      edit: 'Rediger enhet',
+      name: 'Navn',
+      mac: 'MAC-adresse',
+      scan: 'Finn på nettverket',
+      scanFailed: 'Kunne ikke skanne nettverket',
+      scanEmpty: 'Ingen verter funnet',
+      scanPick: 'Velg en vert',
+      ip: 'Vertens IP-adresse (for å sjekke om den er på, valgfritt)',
+      broadcast: 'Kringkastingsadresse eller delnett (valgfritt)',
+      port: 'Vekkepakke',
+      portFrame: 'Ethernet-ramme (standard)',
+      secureOn: 'SecureOn-passord (valgfritt)',
+      secureOnKept: 'Lagret. La feltet stå tomt for å beholde det',
+      secureOnRemove: 'Fjern passordet',
+      secureOnKeep: 'Behold passordet',
+      invalidMac: 'Skriv inn en gyldig MAC-adresse',
+      invalidIp: 'Skriv inn en gyldig IPv4-adresse',
+      invalidBroadcast: 'Skriv inn en IPv4-adresse eller et delnett, for eksempel 192.168.1.0/24',
+      invalidSecureOn: 'Passordet er seks byte i hex, for eksempel AA:BB:CC:DD:EE:FF',
+      duplicate: 'Det finnes allerede en enhet med denne MAC-adressen eller dette navnet',
+      saveFailed: 'Kunne ikke lagre enheten',
+      save: 'Lagre',
+      cancel: 'Avbryt',
+      up: 'På',
+      down: 'Av',
+      checking: 'Sjekker...'
     },
     download: {
       uploadFailed: 'Opplastingen mislyktes',
@@ -1587,6 +1614,61 @@ const nb = {
           trialKeepFailed: 'Innstillingene kunne ikke beholdes',
           trialGone: 'Endringen er allerede tilbakestilt. Prøv igjen.',
           unsaved: 'Ulagrede endringer'
+        },
+        ipv6: {
+          title: 'IPv6',
+          description: 'Velg hvordan IronKVM får IPv6-adressen sin på det kablede nettverket',
+          slaac: 'SLAAC',
+          dhcpv6: 'DHCPv6',
+          static: 'Manuell',
+          off: 'Av',
+          address: 'IPv6-adresse',
+          prefix: 'Prefikslengde',
+          router: 'Ruter',
+          apply: 'Bruk',
+          saved: 'IPv6-innstillingene er brukt og lagret',
+          loadFailed: 'Kunne ikke lese IPv6-innstillingene',
+          saveFailed: 'Kunne ikke bruke IPv6-innstillingene',
+          unsupported: 'Denne kjernen har ikke IPv6',
+          noDhcpv6: 'DHCPv6 er ikke tilgjengelig: dette avbildet har ingen DHCPv6-klient',
+          invalid:
+            'Skriv inn en gyldig IPv6-adresse, en prefikslengde fra 16 til 126 og en ruteradresse (eller la den stå tom)',
+          offNote:
+            'IPv6 er slått av på det kablede grensesnittet. Nettgrensesnittet kan fortsatt nås over IPv4.',
+          keepsIpv4:
+            'IPv4-adressen endres ikke. Hvis det mislykkes å bruke innstillingene, settes de forrige IPv6-innstillingene tilbake.',
+          useIpv4:
+            'Denne siden er åpnet over IPv6. Åpne IronKVM på IPv4-adressen for å endre IPv6-innstillingene.',
+          current: 'Gjeldende IPv6-adresser',
+          disabled: 'Av',
+          noAddress: 'Ingen IPv6-adresse ennå',
+          scopeLink: 'link-local',
+          scopeUla: 'privat',
+          scopeGlobal: 'global'
+        },
+        webrtc: {
+          title: 'WebRTC via portviderekobling',
+          description:
+            'La seere utenfor nettverket ditt nå videoen via en portviderekobling i ruteren.',
+          warning:
+            'Portviderekobling gjør denne KVM-en tilgjengelig fra internett. VPN som Tailscale eller NetBird er fortsatt den anbefalte veien inn. Videresend bare UDP-porten under, aldri porten til nettgrensesnittet.',
+          udpPort: 'Fast UDP-port',
+          udpPortHint:
+            'Alle seere deler denne porten. La feltet stå tomt for å slå den av. Videresend den i ruteren til denne enheten.',
+          publicAddress: 'Offentlig adresse',
+          publicAddressHint:
+            'IP-adressen eller det dynamiske DNS-navnet ruteren svarer på. Krever UDP-porten.',
+          apply: 'Bruk',
+          saved: 'Lagret. Nye seere bruker de nye innstillingene.',
+          loadFailed: 'Kunne ikke lese WebRTC-innstillingene',
+          saveFailed: 'Kunne ikke lagre WebRTC-innstillingene',
+          invalidPort: 'Porten må være et tall fra 1024 til 65535',
+          needsPort: 'En offentlig adresse krever en UDP-port',
+          active: 'Seere deler UDP-port {{port}}',
+          inactive: 'Hver seer bruker sin egen port',
+          offered: 'Tilbys seerne: {{addresses}}',
+          cost:
+            'På en delt port sender kortet én pakke om gangen, noe som kan øke CPU-bruken med flere seere og høy bildefrekvens.'
         },
         dns: {
           title: 'DNS',

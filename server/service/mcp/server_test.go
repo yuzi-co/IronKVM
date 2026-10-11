@@ -128,7 +128,7 @@ func TestMCPInitializeAndToolsList(t *testing.T) {
 	if tools.Code != http.StatusOK {
 		t.Fatalf("tools/list status=%d body=%s", tools.Code, tools.Body.String())
 	}
-	for _, name := range []string{"cube_type_text", "cube_press_keys", "cube_move_mouse", "cube_click_mouse", "cube_scroll_mouse", "cube_screenshot"} {
+	for _, name := range []string{"cube_type_text", "cube_press_keys", "cube_move_mouse", "cube_click_mouse", "cube_scroll_mouse", "cube_screenshot", "cube_wake_on_lan"} {
 		if !strings.Contains(tools.Body.String(), `"name":"`+name+`"`) {
 			t.Fatalf("tools/list missing %s: %s", name, tools.Body.String())
 		}

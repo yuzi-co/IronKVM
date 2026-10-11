@@ -633,7 +633,34 @@ const pt_br = {
       sending: 'Enviando comando...',
       sent: 'Comando enviado',
       input: 'Por favor, digite o MAC',
-      ok: 'Ok'
+      ok: 'Ok',
+      add: 'Adicionar dispositivo',
+      edit: 'Editar dispositivo',
+      name: 'Nome',
+      mac: 'Endereço MAC',
+      scan: 'Procurar na rede',
+      scanFailed: 'Não foi possível varrer a rede',
+      scanEmpty: 'Nenhum host encontrado',
+      scanPick: 'Escolha um host',
+      ip: 'Endereço IP do host (para verificar se está ligado, opcional)',
+      broadcast: 'Endereço de broadcast ou sub-rede (opcional)',
+      port: 'Pacote de ativação',
+      portFrame: 'Quadro Ethernet (padrão)',
+      secureOn: 'Senha SecureOn (opcional)',
+      secureOnKept: 'Salva. Deixe em branco para mantê-la',
+      secureOnRemove: 'Remover a senha',
+      secureOnKeep: 'Manter a senha',
+      invalidMac: 'Informe um endereço MAC válido',
+      invalidIp: 'Informe um endereço IPv4 válido',
+      invalidBroadcast: 'Informe um endereço IPv4 ou uma sub-rede, como 192.168.1.0/24',
+      invalidSecureOn: 'A senha tem seis bytes em hexadecimal, como AA:BB:CC:DD:EE:FF',
+      duplicate: 'Já existe um dispositivo com este endereço MAC ou nome',
+      saveFailed: 'Falha ao salvar o dispositivo',
+      save: 'Salvar',
+      cancel: 'Cancelar',
+      up: 'Ligado',
+      down: 'Desligado',
+      checking: 'Verificando...'
     },
     download: {
       uploadFailed: 'Falha no envio',
@@ -1604,6 +1631,61 @@ const pt_br = {
           trialKeepFailed: 'Falha ao manter as configurações',
           trialGone: 'A alteração já foi desfeita. Tente novamente.',
           unsaved: 'Alterações não salvas'
+        },
+        ipv6: {
+          title: 'IPv6',
+          description: 'Define como o IronKVM obtém o endereço IPv6 na rede cabeada',
+          slaac: 'SLAAC',
+          dhcpv6: 'DHCPv6',
+          static: 'Manual',
+          off: 'Desligado',
+          address: 'Endereço IPv6',
+          prefix: 'Tamanho do prefixo',
+          router: 'Roteador',
+          apply: 'Aplicar',
+          saved: 'Configurações de IPv6 aplicadas e salvas',
+          loadFailed: 'Falha ao ler as configurações de IPv6',
+          saveFailed: 'Falha ao aplicar as configurações de IPv6',
+          unsupported: 'Este kernel não tem IPv6',
+          noDhcpv6: 'DHCPv6 não está disponível: esta imagem não tem cliente DHCPv6',
+          invalid:
+            'Informe um endereço IPv6 válido, um tamanho de prefixo de 16 a 126 e o endereço do roteador (ou deixe vazio)',
+          offNote:
+            'O IPv6 está desligado na interface cabeada. A interface web continua acessível por IPv4.',
+          keepsIpv4:
+            'O endereço IPv4 não muda. Se a aplicação falhar, as configurações de IPv6 anteriores são restauradas.',
+          useIpv4:
+            'Esta página está aberta por IPv6. Abra o IronKVM pelo endereço IPv4 para alterar as configurações de IPv6.',
+          current: 'Endereços IPv6 atuais',
+          disabled: 'Desligado',
+          noAddress: 'Ainda sem endereço IPv6',
+          scopeLink: 'link-local',
+          scopeUla: 'privado',
+          scopeGlobal: 'global'
+        },
+        webrtc: {
+          title: 'WebRTC por redirecionamento de porta',
+          description:
+            'Permite que espectadores fora da sua rede acessem o vídeo por um redirecionamento de porta no roteador.',
+          warning:
+            'Redirecionar uma porta expõe este KVM à internet. Uma VPN como Tailscale ou NetBird continua sendo o acesso recomendado. Redirecione apenas a porta UDP abaixo, nunca a porta da interface web.',
+          udpPort: 'Porta UDP fixa',
+          udpPortHint:
+            'Todos os espectadores compartilham esta porta. Deixe vazio para desativar. Redirecione-a no roteador para este dispositivo.',
+          publicAddress: 'Endereço público',
+          publicAddressHint:
+            'O endereço IP ou o nome DNS dinâmico em que seu roteador responde. Requer a porta UDP.',
+          apply: 'Aplicar',
+          saved: 'Salvo. Novos espectadores usam as novas configurações.',
+          loadFailed: 'Falha ao ler as configurações de WebRTC',
+          saveFailed: 'Falha ao salvar as configurações de WebRTC',
+          invalidPort: 'A porta deve ser um número de 1024 a 65535',
+          needsPort: 'Um endereço público requer uma porta UDP',
+          active: 'Os espectadores compartilham a porta UDP {{port}}',
+          inactive: 'Cada espectador usa sua própria porta',
+          offered: 'Oferecido aos espectadores: {{addresses}}',
+          cost:
+            'Em uma porta compartilhada a placa envia um pacote por vez, o que pode aumentar o uso de CPU com vários espectadores e taxas de quadros altas.'
         },
         dns: {
           title: 'DNS',

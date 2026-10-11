@@ -28,6 +28,51 @@ export function setWolMacName(mac: string, name: string) {
   return http.post('/api/network/wol/mac/name', { mac, name });
 }
 
+// The managed device list (feature wol-devices). A wake by name sends the name
+// instead of the MAC.
+export interface WolDevice {
+  mac: string;
+  name: string;
+  broadcast: string;
+  port: number;
+  hasSecureOn: boolean;
+  ip: string;
+}
+
+export interface WolDeviceInput {
+  oldMac?: string;
+  mac: string;
+  name: string;
+  broadcast: string;
+  port: number;
+  secureOn: string;
+  clearSecureOn: boolean;
+  ip: string;
+}
+
+export interface WolNeighbor {
+  mac: string;
+  ip: string;
+  name: string;
+  listed: boolean;
+}
+
+export function getWolDevices() {
+  return http.get('/api/network/wol/devices');
+}
+
+export function saveWolDevice(device: WolDeviceInput) {
+  return http.post('/api/network/wol/device', device);
+}
+
+export function checkWolDevice(mac: string) {
+  return http.get('/api/network/wol/check', { mac });
+}
+
+export function scanWol() {
+  return http.get('/api/network/wol/scan');
+}
+
 // get wifi information
 export function getWiFi() {
   return http.get('/api/network/wifi');
@@ -144,4 +189,52 @@ export function getAllowlist() {
 
 export function setAllowlist(networks: string[]) {
   return http.post('/api/network/allowlist', { networks });
+}
+
+// IPv6 on the wired interface (feature ipv6-settings). Unlike the IPv4 address
+// it needs no trial: the device saves the setting after it applied, and puts
+// the previous one back when applying fails.
+export type IPv6Mode = 'slaac' | 'dhcpv6' | 'static' | 'off';
+
+export type IPv6State = {
+  supported: boolean;
+  mode: IPv6Mode;
+  address: string;
+  prefix: number;
+  gateway: string;
+  dhcpv6Available: boolean;
+  client: string;
+  live: {
+    interface: string;
+    disabled: boolean;
+    addresses: { address: string; prefix: number; scope: 'link' | 'ula' | 'global' }[];
+    gateway: string;
+  };
+};
+
+export function getIPv6() {
+  return http.get('/api/network/ipv6');
+}
+
+export function setIPv6(mode: IPv6Mode, address: string, prefix: number, gateway: string) {
+  return http.post('/api/network/ipv6', { mode, address, prefix, gateway });
+}
+
+// WebRTC through a router's port forward (feature webrtc-port-forward): one
+// fixed UDP port for every viewer, and the public address offered on it.
+export type WebRTCForwardState = {
+  udpPort: number;
+  publicAddress: string;
+  // The port new viewers get now; 0 when each viewer has its own.
+  activePort: number;
+  // The addresses the public address stands for at this moment.
+  resolved: string[];
+};
+
+export function getWebRTCForward() {
+  return http.get('/api/network/webrtc');
+}
+
+export function setWebRTCForward(udpPort: number, publicAddress: string) {
+  return http.post('/api/network/webrtc', { udpPort, publicAddress });
 }
