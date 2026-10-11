@@ -4,6 +4,8 @@ import (
 	"NanoKVM-Server/service/stream"
 	"encoding/json"
 	"errors"
+	"strconv"
+	"time"
 
 	"github.com/pion/webrtc/v4"
 	log "github.com/sirupsen/logrus"
@@ -126,6 +128,8 @@ func (s *SignalingHandler) HandleMessage(message *Message) error {
 		return s.handleVideoCandidate(message.Data)
 	case "heartbeat":
 		return s.handleHeartbeat()
+	case clockEvent:
+		return s.client.WriteMessage(clockEvent, clockReply(time.Now(), message.Data))
 	case roomMicEvent:
 		s.client.setRoomMic(message.Data == "on")
 		return nil
@@ -230,4 +234,26 @@ func (s *SignalingHandler) handleVideoCandidate(data string) error {
 // handle heartbeat
 func (s *SignalingHandler) handleHeartbeat() error {
 	return s.client.WriteMessage("heartbeat", "")
+}
+
+// clockEvent asks for the board's clock (feature webrtc-clock), and the answer
+// carries it under the same name. The status bar corrects the frames' capture
+// times (abs-capture-time) by the offset between this clock and the
+// browser's, measured NTP-style from these round trips. A server without the
+// event logs it as unhandled and answers nothing.
+const clockEvent = "clock"
+
+// maxClockID bounds the request's id that the answer carries back.
+const maxClockID = 32
+
+// clockReply is the board's wall clock at now in Unix microseconds, decimal:
+// the clock the capture times are on (common.VideoTimes, CLOCK_REALTIME).
+// The request's data is an id, which follows after a space, so the browser can
+// tell a late answer from the one it waits for.
+func clockReply(now time.Time, id string) string {
+	reply := strconv.FormatInt(now.UnixMicro(), 10)
+	if id == "" || len(id) > maxClockID {
+		return reply
+	}
+	return reply + " " + id
 }

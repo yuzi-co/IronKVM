@@ -149,6 +149,9 @@ func (s *Streamer) run() {
 				stamp = max(0, frame.Times.CaptureStart().Sub(clockBase).Microseconds())
 			}
 			outbound := newOutboundFrame(frame.KeyFrame, stamp, frame.Data)
+			if frame.HasTimes {
+				outbound.captured = frame.Times.CaptureStart()
+			}
 			for _, client := range clients {
 				client.offer(outbound)
 			}

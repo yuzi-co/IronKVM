@@ -81,9 +81,16 @@ func (l *latencyLog) add(frame H264Frame, handed time.Time) {
 }
 
 // NoteSent records that the last packet of a frame left a WebRTC viewer's
-// socket at sent. The WebRTC writer calls it.
+// socket at sent. The WebRTC writer calls it. The status bar's board latency
+// takes it whether or not the log is on.
 func NoteSent(times common.VideoTimes, sent time.Time) {
-	if !latencyLogOn || times.CaptureEnd.IsZero() {
+	if times.CaptureEnd.IsZero() {
+		return
+	}
+
+	NoteBoardLatency(BoardPathWebRTC, times.CaptureStart(), sent)
+
+	if !latencyLogOn {
 		return
 	}
 

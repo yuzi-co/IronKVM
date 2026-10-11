@@ -557,6 +557,19 @@ type GetStreamInfoRsp struct {
 	// a frame's age at drawing counts from its capture, not from the
 	// encoder. Off with Sipeed's library.
 	CaptureStamps bool `json:"captureStamps"`
+	// BoardLatency is the board's share of each delivery path's latency
+	// (feature info-latency), absent while no viewer was sent a frame
+	// with capture times in the last second.
+	BoardLatency *BoardLatency `json:"boardLatency,omitempty"`
+}
+
+// BoardLatency is, per delivery path, the median time in milliseconds from a
+// frame's first line reaching the capture to the frame being handed to the
+// network for a viewer, over the last second. A path no viewer used in that
+// second is absent.
+type BoardLatency struct {
+	WebRTC *float64 `json:"webrtc,omitempty"`
+	Direct *float64 `json:"direct,omitempty"`
 }
 
 // USBIdentity is what the gadget tells the host it is. IDs are four hex digits
