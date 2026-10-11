@@ -326,3 +326,23 @@ export function setPauseWhenHidden(enabled: boolean) {
     // Not remembered; the switch holds for this tab.
   }
 }
+
+// Whether the stream status bar shows under the picture. Off by default: it is
+// a diagnostic, and it takes a line of the screen.
+const STREAM_INFO_KEY = 'nano-kvm-stream-info';
+
+export function getStreamInfoVisible(): boolean {
+  try {
+    return localStorage.getItem(STREAM_INFO_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+export function setStreamInfoVisible(visible: boolean) {
+  try {
+    localStorage.setItem(STREAM_INFO_KEY, String(visible));
+  } catch {
+    // Not remembered; the switch holds for this tab.
+  }
+}

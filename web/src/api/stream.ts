@@ -1,5 +1,20 @@
 import { http } from '@/lib/http.ts';
 
+// What the board knows of the stream's source, for the status bar: the HDMI
+// input's mode and the rate the capture loop delivers frames at.
+export type StreamInfo = {
+  width: number;
+  height: number;
+  // Millihertz, 0 when the capture library does not say.
+  refresh: number;
+  // Frames per second over the last few seconds; -1 before any stream ran.
+  captureFps: number;
+};
+
+export function getStreamInfo() {
+  return http.get('/api/stream/info');
+}
+
 // read the board-wide frame detect setting
 export function getFrameDetect() {
   return http.get('/api/stream/mjpeg/detect');

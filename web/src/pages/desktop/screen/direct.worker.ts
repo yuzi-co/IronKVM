@@ -2,6 +2,14 @@ import Queue from 'yocto-queue';
 
 import { ROOM_AUDIO_MESSAGE, ROOM_STATE_MESSAGE, roomMicControlBytes } from '@/lib/room-mic.ts';
 
+import {
+  CLOCK_WINDOW,
+  clockEstimate,
+  frameAgeMs,
+  type ClockEstimate,
+  type ClockSample
+} from '../status-bar/model.ts';
+
 let canvas: OffscreenCanvas | null = null;
 let ctx: OffscreenCanvasRenderingContext2D | null = null;
 let rendering: boolean = false;
@@ -49,6 +57,13 @@ const audioMessage = 0x10;
 // is two bytes long, shorter than any audio or video message.
 const audioStateMessage = 0x11;
 const streamResyncMessage = 3;
+// The status bar's clock: this worker asks with the one byte, and a server
+// that knows the request answers with nine, the marker and the board's clock
+// in microseconds, on the same scale as the frames' timestamps. An older
+// server ignores the request, and the bar then shows no latency.
+const clockRequestMessage = 5;
+const clockReplyMessage = 0x14;
+const statsIntervalMs = 1000;
 const flowControlWindow = 8;
 const decoderHighWatermark = 6;
 const decoderLowWatermark = 3;
@@ -56,13 +71,101 @@ const frameQueue = new Queue<VideoFrame>();
 const frameChannel = new MessageChannel();
 
 type WorkerMessage = {
-  type: 'h264' | 'stop' | 'room-mic';
+  type: 'h264' | 'stop' | 'room-mic' | 'stats';
   canvas?: OffscreenCanvas;
   url?: string;
   audio?: boolean;
   room?: boolean;
   on?: boolean;
 };
+
+// What the status bar is told once a second while it shows. Counters run all
+// the time, since an increment costs nothing; only the report and the clock
+// request wait for the bar.
+const counters = {
+  bytes: 0,
+  received: 0,
+  decoded: 0,
+  dropped: 0,
+  ageSumMs: 0,
+  ageCount: 0,
+  arrivalSumMs: 0,
+  arrivalCount: 0
+};
+let statsTimer: ReturnType<typeof setInterval> | null = null;
+let clockSamples: ClockSample[] = [];
+let clock: ClockEstimate | null = null;
+let clockAskedAt: number | null = null;
+
+function resetCounters() {
+  counters.bytes = 0;
+  counters.received = 0;
+  counters.decoded = 0;
+  counters.dropped = 0;
+  counters.ageSumMs = 0;
+  counters.ageCount = 0;
+  counters.arrivalSumMs = 0;
+  counters.arrivalCount = 0;
+}
+
+function setStats(on: boolean) {
+  if (statsTimer !== null) {
+    clearInterval(statsTimer);
+    statsTimer = null;
+  }
+  clockSamples = [];
+  clock = null;
+  clockAskedAt = null;
+  resetCounters();
+  if (!on) return;
+
+  let last = performance.now();
+  statsTimer = setInterval(() => {
+    const now = performance.now();
+    const seconds = (now - last) / 1000;
+    last = now;
+    self.postMessage({
+      type: 'stats',
+      codec: configuredCodec,
+      width: reportedFrameWidth,
+      height: reportedFrameHeight,
+      fpsReceived: counters.received / seconds,
+      fpsDecoded: counters.decoded / seconds,
+      fpsDropped: counters.dropped / seconds,
+      kbps: (counters.bytes * 8) / 1000 / seconds,
+      latencyMs: counters.ageCount > 0 ? counters.ageSumMs / counters.ageCount : null,
+      arrivalMs: counters.arrivalCount > 0 ? counters.arrivalSumMs / counters.arrivalCount : null,
+      latencyErrorMs: clock?.errorMs ?? null
+    });
+    resetCounters();
+    askClock();
+  }, statsIntervalMs);
+  askClock();
+}
+
+function askClock() {
+  const currentSocket = socket;
+  if (!currentSocket || currentSocket.readyState !== WebSocket.OPEN) return;
+  try {
+    currentSocket.send(new Uint8Array([clockRequestMessage]));
+    clockAskedAt = performance.now();
+  } catch {
+    // The next second asks again.
+  }
+}
+
+function handleClockReply(view: DataView) {
+  if (clockAskedAt === null) return;
+  const sample = {
+    sentMs: clockAskedAt,
+    receivedMs: performance.now(),
+    boardUs: Number(view.getBigUint64(1, true))
+  };
+  clockAskedAt = null;
+  clockSamples.push(sample);
+  if (clockSamples.length > CLOCK_WINDOW) clockSamples.shift();
+  clock = clockEstimate(clockSamples);
+}
 
 frameChannel.port1.onmessage = () => {
   flushScheduled = false;
@@ -95,8 +198,12 @@ self.onmessage = (event: MessageEvent<WorkerMessage>) => {
       roomOn = on === true;
       sendRoomSwitch();
       break;
+    case 'stats':
+      setStats(on === true);
+      break;
     case 'stop':
       stopped = true;
+      setStats(false);
       clearReconnectTimer();
       disconnect();
       resetDecoder();
@@ -132,6 +239,13 @@ function connect() {
       pendingAckTimestamp = null;
       decodeBackpressured = false;
       announcedFrame = false;
+      // A new server may count from another start.
+      clockSamples = [];
+      clock = null;
+      clockAskedAt = null;
+      if (statsTimer !== null) {
+        askClock();
+      }
       self.postMessage({ type: 'socket', state: 'open' });
       if (roomOn) {
         sendRoomSwitch();
@@ -205,9 +319,15 @@ function clearReconnectTimer() {
 // bits 1 to 6 of the same byte. Nothing else needs to agree for this to work,
 // which is why the codec travels in no header and needs no API call.
 function detectCodec(data: Uint8Array): 'avc' | 'hevc' | null {
-  for (let i = 0; i + 3 < data.length; ) {
+  for (let i = 0; i + 3 < data.length;) {
     let prefix = 0;
-    if (i + 4 < data.length && data[i] === 0 && data[i + 1] === 0 && data[i + 2] === 0 && data[i + 3] === 1) {
+    if (
+      i + 4 < data.length &&
+      data[i] === 0 &&
+      data[i + 1] === 0 &&
+      data[i + 2] === 0 &&
+      data[i + 3] === 1
+    ) {
       prefix = 4;
     } else if (data[i] === 0 && data[i + 1] === 0 && data[i + 2] === 1) {
       prefix = 3;
@@ -248,6 +368,11 @@ function handleWsMessage(message: ArrayBuffer) {
       return;
     }
 
+    if (message.byteLength === 9 && view.getUint8(0) === clockReplyMessage) {
+      handleClockReply(view);
+      return;
+    }
+
     if (message.byteLength < 9) {
       return;
     }
@@ -272,6 +397,15 @@ function handleWsMessage(message: ArrayBuffer) {
     const isKeyFrame = view.getUint8(0) === 1;
     const timestamp = Number(view.getBigUint64(1, true));
     const data = new Uint8Array(message, 9);
+    counters.bytes += message.byteLength;
+    counters.received++;
+    if (clock && statsTimer !== null) {
+      const age = frameAgeMs(timestamp, performance.now(), clock);
+      if (age >= 0 && age < 10_000) {
+        counters.arrivalSumMs += age;
+        counters.arrivalCount++;
+      }
+    }
 
     // A keyframe carries the parameter sets, so it is the only frame that can
     // say which codec this is, and the only frame a fresh decoder can start
@@ -365,10 +499,12 @@ function handleDecodedFrame(source: VideoDecoder | null, frame: VideoFrame) {
     return;
   }
 
+  counters.decoded++;
   frameQueue.enqueue(frame);
   while (frameQueue.size > maxQueuedFrames) {
     const droppedFrame = frameQueue.dequeue();
     if (droppedFrame) {
+      counters.dropped++;
       droppedFrame.close();
     }
   }
@@ -442,6 +578,15 @@ function renderFrame(frame: VideoFrame) {
       canvas.height = frame.displayHeight;
     }
     ctx.drawImage(frame, 0, 0, canvas.width, canvas.height);
+    // The frame keeps the timestamp its chunk had, the board's clock when
+    // the frame left the encoder.
+    if (clock && statsTimer !== null) {
+      const age = frameAgeMs(frame.timestamp, performance.now(), clock);
+      if (age >= 0 && age < 10_000) {
+        counters.ageSumMs += age;
+        counters.ageCount++;
+      }
+    }
 
     if (!announcedFrame) {
       announcedFrame = true;

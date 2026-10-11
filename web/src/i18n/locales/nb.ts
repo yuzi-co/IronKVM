@@ -103,6 +103,42 @@ const nb = {
       screenshot: 'Skjermbilde',
       screenshotTip: 'Lagrer vertens skjerm som PNG i full opptaksstørrelse.',
       screenshotFailed: 'Skjermbilde mislyktes',
+      streamInfo: {
+        toggle: 'Strøminfo',
+        toggleTip:
+          'Viser en linje under bildet med strømmens tilkobling, oppløsning, bildefrekvens, bithastighet og forsinkelse, slik denne nettleseren måler dem.',
+        title: 'Strømstatus',
+        connecting: 'Kobler til',
+        connected: 'Tilkoblet',
+        reconnecting: 'Kobler til på nytt',
+        failed: 'Mislyktes',
+        paused: 'Pauset',
+        noSignal: 'Ingen signal',
+        source: 'Kilde',
+        sourceTip: 'HDMI-inngangens modus som enheten fanger',
+        stream: 'Strøm',
+        streamTip: 'Bildestørrelsen slik den kommer fram i denne nettleseren',
+        received: 'mottatt',
+        decoded: 'dekodet',
+        dropped: 'forkastet',
+        board: 'enhet',
+        boardTip: 'Bilder per sekund som enheten fanger og koder',
+        bitrateTip: 'Videodata denne nettleseren mottar',
+        latency: 'Forsinkelse',
+        latencyCapture:
+          'Fra fangst på enheten til bildet vises her, ut fra fangsttiden serveren sender med hvert bilde.',
+        latencyEncoder:
+          'Fra bildet forlater koderen til det tegnes her, målt mot enhetens klokke. Fangst og koding er ikke med.',
+        latencyEstimate:
+          'Anslag: halve nettverkets tur-retur pluss buffring og dekoding i denne nettleseren. Fangst og koding på enheten er ikke med, så den faktiske forsinkelsen er høyere.',
+        latencyClockAssumed: 'Enhetens klokke antas å gå likt med denne datamaskinens.',
+        latencyArrival:
+          'Bilder kommer fram {{ms}} ms etter koderen; resten er dekoding og tegning i denne nettleseren.',
+        rttTip: 'Nettverkets tur-retur til enheten',
+        loss: 'Tap',
+        lossTip: 'Pakker tapt det siste sekundet',
+        transportTip: 'Hvordan videoen når denne nettleseren'
+      },
       stream: {
         ok: 'bilde OK',
         noSignal: 'ingen signal',

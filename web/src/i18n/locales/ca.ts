@@ -104,6 +104,43 @@ const ca = {
       screenshot: 'Captura de pantalla',
       screenshotTip: "Desa la pantalla de l'amfitrió com a PNG a mida completa de captura.",
       screenshotFailed: 'Ha fallat la captura de pantalla',
+      streamInfo: {
+        toggle: 'Info del flux',
+        toggleTip:
+          'Mostra sota la imatge una línia amb la connexió, la resolució, la taxa de fotogrames, la taxa de bits i la latència del flux, tal com les mesura aquest navegador.',
+        title: 'Estat del flux',
+        connecting: 'Connectant',
+        connected: 'Connectat',
+        reconnecting: 'Reconnectant',
+        failed: 'Error',
+        paused: 'En pausa',
+        noSignal: 'Sense senyal',
+        source: 'Font',
+        sourceTip: 'El mode d\'entrada HDMI que captura el dispositiu',
+        stream: 'Flux',
+        streamTip: 'La mida de la imatge tal com arriba a aquest navegador',
+        received: 'rebuts',
+        decoded: 'descodificats',
+        dropped: 'descartats',
+        board: 'dispositiu',
+        boardTip: 'Fotogrames per segon que el dispositiu captura i codifica',
+        bitrateTip: 'Dades de vídeo que rep aquest navegador',
+        latency: 'Latència',
+        latencyCapture:
+          'Des de la captura al dispositiu fins que es mostra aquí, segons l\'hora de captura que el servidor envia amb cada fotograma.',
+        latencyEncoder:
+          'Des que el fotograma surt del codificador fins que es dibuixa aquí, mesurat amb el rellotge del dispositiu. No inclou la captura ni la codificació.',
+        latencyEstimate:
+          'Estimació: la meitat de l\'anada i tornada de la xarxa més la memòria intermèdia i la descodificació d\'aquest navegador. No inclou la captura ni la codificació al dispositiu, així que la latència real és més alta.',
+        latencyClockAssumed:
+          'Se suposa que el rellotge del dispositiu coincideix amb el d\'aquest ordinador.',
+        latencyArrival:
+          'Els fotogrames arriben aquí {{ms}} ms després del codificador; la resta és descodificar i dibuixar en aquest navegador.',
+        rttTip: 'Anada i tornada de la xarxa fins al dispositiu',
+        loss: 'Pèrdua',
+        lossTip: 'Paquets perduts en l\'últim segon',
+        transportTip: 'Com arriba el vídeo a aquest navegador'
+      },
       stream: {
         ok: 'imatge correcta',
         noSignal: 'sense senyal',

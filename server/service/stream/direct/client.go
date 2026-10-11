@@ -15,6 +15,12 @@ import (
 const (
 	frameAckMessage     byte = 2
 	streamResyncMessage byte = 3
+	// clockRequestMessage asks for the board's clock, which the writer
+	// answers with clockReplyMessage and the clock's microseconds. The web
+	// UI's status bar asks once a second while it shows, and sets the frames'
+	// timestamps against the answer to show how old each frame is.
+	clockRequestMessage byte = 5
+	clockReplyMessage   byte = 0x14
 
 	defaultQueueFrames = 8
 	defaultQueueBytes  = 2 * 1024 * 1024
@@ -269,6 +275,10 @@ type client struct {
 	// or a kernel without the card. Set before the writer starts.
 	room *roomSession
 
+	// clockAsked is set by a clock request and cleared by the writer when it
+	// sends the answer.
+	clockAsked atomic.Bool
+
 	done       chan struct{}
 	writerDone chan struct{}
 	closeOnce  sync.Once
@@ -351,7 +361,30 @@ func (c *client) handleControl(messageType int, data []byte) {
 		if len(data) == 1 {
 			c.queue.requestResync()
 		}
+	case clockRequestMessage:
+		if len(data) == 1 {
+			c.clockAsked.Store(true)
+			c.queue.wakeWriter()
+		}
 	}
+}
+
+// clockBase is where the direct stream's clock starts. Frames are stamped on
+// it (Streamer.run) and the clock answer reads it, so the two compare.
+var clockBase = time.Now()
+
+// clockMicros is the direct stream's clock: microseconds since clockBase, on
+// Go's monotonic clock.
+func clockMicros() int64 {
+	return time.Since(clockBase).Microseconds()
+}
+
+// writeClock answers a clock request: the marker and the clock, little-endian.
+func writeClock(conn *websocket.Conn) error {
+	var message [9]byte
+	message[0] = clockReplyMessage
+	binary.LittleEndian.PutUint64(message[1:], uint64(clockMicros()))
+	return conn.WriteMessage(websocket.BinaryMessage, message[:])
 }
 
 // newOutboundFrame takes ownership of data rather than copying it. The encoder
@@ -419,6 +452,20 @@ func (c *client) writeLoop() {
 				return
 			}
 		default:
+		}
+
+		// The clock goes before anything else, and is read as it is written:
+		// the time it waits is time the viewer cannot tell from the network.
+		if c.clockAsked.Swap(false) {
+			if err := c.conn.SetWriteDeadline(time.Now().Add(writeWait)); err != nil {
+				c.close()
+				return
+			}
+			if err := writeClock(c.conn); err != nil {
+				log.Debugf("failed to write the clock to %s: %s", c.conn.RemoteAddr(), err)
+				c.close()
+				return
+			}
 		}
 
 		// Audio first. It is a few hundred bytes every 20 ms, and a frame that

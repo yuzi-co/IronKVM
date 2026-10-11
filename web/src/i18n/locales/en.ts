@@ -101,6 +101,42 @@ const en = {
       screenshot: 'Screenshot',
       screenshotTip: 'Saves the host screen as a PNG file at full capture size.',
       screenshotFailed: 'Screenshot failed',
+      streamInfo: {
+        toggle: 'Stream info',
+        toggleTip:
+          'Shows a line under the picture with the stream\'s connection, resolution, frame rate, bitrate and latency, as this browser measures them.',
+        title: 'Stream status',
+        connecting: 'Connecting',
+        connected: 'Connected',
+        reconnecting: 'Reconnecting',
+        failed: 'Failed',
+        paused: 'Paused',
+        noSignal: 'No signal',
+        source: 'Source',
+        sourceTip: 'The HDMI input mode the board captures',
+        stream: 'Stream',
+        streamTip: 'The picture size as it arrives in this browser',
+        received: 'received',
+        decoded: 'decoded',
+        dropped: 'dropped',
+        board: 'board',
+        boardTip: 'Frames the board captures and encodes per second',
+        bitrateTip: 'Video data this browser receives',
+        latency: 'Latency',
+        latencyCapture:
+          'From capture on the board to the frame being shown here, from the capture time the server sends with each frame.',
+        latencyEncoder:
+          'From the frame leaving the encoder to it being drawn here, measured against the board\'s clock. The time to capture and encode the frame is not included.',
+        latencyEstimate:
+          'Estimate: half the network round trip plus this browser\'s buffering and decoding. Capture and encoding on the board are not included, so the real latency is higher.',
+        latencyClockAssumed: 'The board\'s clock is taken to match this computer\'s.',
+        latencyArrival:
+          'Frames arrive here {{ms}} ms after leaving the encoder; the rest is decoding and drawing in this browser.',
+        rttTip: 'Network round trip to the board',
+        loss: 'Loss',
+        lossTip: 'Packets lost in the last second',
+        transportTip: 'How the video reaches this browser'
+      },
       stream: {
         ok: 'picture OK',
         noSignal: 'no signal',

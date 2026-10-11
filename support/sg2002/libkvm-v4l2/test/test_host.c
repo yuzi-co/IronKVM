@@ -652,6 +652,28 @@ static void test_timings(void)
 	CHECK(kvmv_signal_present(KVMV_SIGNAL_UNSUPPORTED));
 	CHECK(!kvmv_signal_present(KVMV_SIGNAL_NONE));
 	CHECK(!kvmv_signal_present(KVMV_SIGNAL_UNKNOWN));
+
+	/* The refresh rate: CEA-861 1080p60 is 148.5 MHz over 2200 x 1125, and
+	 * its 59.94 Hz twin runs the same frame at 148.5 / 1.001 MHz. */
+	memset(&t, 0, sizeof(t));
+	t.type = V4L2_DV_BT_656_1120;
+	t.bt.width = 1920;
+	t.bt.height = 1080;
+	CHECK_EQ(kvmv_refresh_mhz(&t), 0); /* no pixel clock, no blanking */
+	t.bt.pixelclock = 148500000;
+	CHECK_EQ(kvmv_refresh_mhz(&t), 0); /* no blanking: not a rate */
+	t.bt.hfrontporch = 88;
+	t.bt.hsync = 44;
+	t.bt.hbackporch = 148;
+	t.bt.vfrontporch = 4;
+	t.bt.vsync = 5;
+	t.bt.vbackporch = 36;
+	CHECK_EQ(kvmv_refresh_mhz(&t), 60000);
+	t.bt.pixelclock = 148351648;
+	CHECK_EQ(kvmv_refresh_mhz(&t), 59940);
+	t.type = V4L2_DV_BT_656_1120 + 1;
+	CHECK_EQ(kvmv_refresh_mhz(&t), 0);
+	CHECK_EQ(kvmv_refresh_mhz(NULL), 0);
 }
 
 static void test_roles(void)

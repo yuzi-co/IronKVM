@@ -103,6 +103,43 @@ const pl = {
       screenshot: 'Zrzut ekranu',
       screenshotTip: 'Zapisuje ekran hosta jako PNG w pełnym rozmiarze przechwytywania.',
       screenshotFailed: 'Zrzut ekranu nie powiódł się',
+      streamInfo: {
+        toggle: 'Informacje o strumieniu',
+        toggleTip:
+          'Pokazuje pod obrazem wiersz z połączeniem, rozdzielczością, liczbą klatek, przepływnością i opóźnieniem strumienia, tak jak mierzy je ta przeglądarka.',
+        title: 'Stan strumienia',
+        connecting: 'Łączenie',
+        connected: 'Połączono',
+        reconnecting: 'Ponowne łączenie',
+        failed: 'Błąd',
+        paused: 'Wstrzymano',
+        noSignal: 'Brak sygnału',
+        source: 'Źródło',
+        sourceTip: 'Tryb wejścia HDMI przechwytywany przez urządzenie',
+        stream: 'Strumień',
+        streamTip: 'Rozmiar obrazu, jaki dociera do tej przeglądarki',
+        received: 'odebrane',
+        decoded: 'zdekodowane',
+        dropped: 'odrzucone',
+        board: 'urządzenie',
+        boardTip: 'Klatki na sekundę przechwytywane i kodowane przez urządzenie',
+        bitrateTip: 'Dane wideo odbierane przez tę przeglądarkę',
+        latency: 'Opóźnienie',
+        latencyCapture:
+          'Od przechwycenia na urządzeniu do wyświetlenia tutaj, według czasu przechwycenia, który serwer wysyła z każdą klatką.',
+        latencyEncoder:
+          'Od wyjścia klatki z kodera do narysowania jej tutaj, mierzone zegarem urządzenia. Przechwytywanie i kodowanie nie są wliczone.',
+        latencyEstimate:
+          'Szacunek: połowa czasu podróży w obie strony w sieci plus buforowanie i dekodowanie w tej przeglądarce. Przechwytywanie i kodowanie na urządzeniu nie są wliczone, więc rzeczywiste opóźnienie jest większe.',
+        latencyClockAssumed:
+          'Zakłada się, że zegar urządzenia zgadza się z zegarem tego komputera.',
+        latencyArrival:
+          'Klatki docierają tu {{ms}} ms po koderze; reszta to dekodowanie i rysowanie w tej przeglądarce.',
+        rttTip: 'Czas podróży w obie strony do urządzenia',
+        loss: 'Straty',
+        lossTip: 'Pakiety utracone w ostatniej sekundzie',
+        transportTip: 'Jak wideo dociera do tej przeglądarki'
+      },
       stream: {
         ok: 'obraz OK',
         noSignal: 'brak sygnału',

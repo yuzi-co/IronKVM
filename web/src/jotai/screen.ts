@@ -4,10 +4,16 @@ import { ControlRegionMode, InputRegion, Resolution, ScreenSettings } from '@/ty
 import type { CaptureReport } from '@/lib/health.ts';
 import { sameInputRegion } from '@/lib/input-region.ts';
 import { KeyboardReport } from '@/lib/keyboard.ts';
-import { getPauseWhenHidden, setPauseWhenHidden } from '@/lib/localstorage.ts';
+import {
+  getPauseWhenHidden,
+  getStreamInfoVisible,
+  setPauseWhenHidden,
+  setStreamInfoVisible
+} from '@/lib/localstorage.ts';
 import { setViewOnly } from '@/lib/view-only.ts';
 import { client, MessageEvent } from '@/lib/websocket.ts';
 import { DEFAULT_BIT_RATE } from '@/pages/desktop/menu/screen/constants.ts';
+import type { StreamStats } from '@/pages/desktop/status-bar/model.ts';
 
 export const isHdmiEnabledAtom = atom(true);
 
@@ -82,6 +88,22 @@ export const pauseWhenHiddenAtom = atom(
     setPauseWhenHidden(enabled);
   }
 );
+
+const streamInfoVisibleBaseAtom = atom(getStreamInfoVisible());
+
+// Whether the stream status bar shows, remembered per browser. The screen
+// views measure their stream only while it does.
+export const streamInfoVisibleAtom = atom(
+  (get) => get(streamInfoVisibleBaseAtom),
+  (_get, set, visible: boolean) => {
+    set(streamInfoVisibleBaseAtom, visible);
+    setStreamInfoVisible(visible);
+  }
+);
+
+// What the screen view in use last measured of its stream, about once a
+// second while the status bar shows; null otherwise.
+export const streamStatsAtom = atom<StreamStats | null>(null);
 
 const viewOnlyBaseAtom = atom(false);
 

@@ -103,6 +103,42 @@ const tr = {
       screenshot: 'Ekran görüntüsü',
       screenshotTip: 'Ana bilgisayar ekranını tam yakalama boyutunda PNG olarak kaydeder.',
       screenshotFailed: 'Ekran görüntüsü alınamadı',
+      streamInfo: {
+        toggle: 'Akış bilgisi',
+        toggleTip:
+          'Görüntünün altında, akışın bağlantısını, çözünürlüğünü, kare hızını, bit hızını ve gecikmesini bu tarayıcının ölçtüğü şekliyle gösteren bir satır gösterir.',
+        title: 'Akış durumu',
+        connecting: 'Bağlanıyor',
+        connected: 'Bağlandı',
+        reconnecting: 'Yeniden bağlanıyor',
+        failed: 'Başarısız',
+        paused: 'Duraklatıldı',
+        noSignal: 'Sinyal yok',
+        source: 'Kaynak',
+        sourceTip: 'Cihazın yakaladığı HDMI giriş modu',
+        stream: 'Akış',
+        streamTip: 'Görüntünün bu tarayıcıya ulaştığı boyut',
+        received: 'alınan',
+        decoded: 'çözülen',
+        dropped: 'atlanan',
+        board: 'cihaz',
+        boardTip: 'Cihazın saniyede yakalayıp kodladığı kareler',
+        bitrateTip: 'Bu tarayıcının aldığı video verisi',
+        latency: 'Gecikme',
+        latencyCapture:
+          'Cihazda yakalamadan burada gösterilene kadar, sunucunun her kareyle gönderdiği yakalama zamanına göre.',
+        latencyEncoder:
+          'Karenin kodlayıcıdan çıkışından burada çizilmesine kadar, cihazın saatine göre ölçülür. Yakalama ve kodlama dahil değildir.',
+        latencyEstimate:
+          'Tahmin: ağ gidiş-dönüş süresinin yarısı artı bu tarayıcıdaki arabellek ve çözme. Cihazdaki yakalama ve kodlama dahil değildir, bu yüzden gerçek gecikme daha yüksektir.',
+        latencyClockAssumed: 'Cihazın saatinin bu bilgisayarınkiyle aynı olduğu varsayılır.',
+        latencyArrival:
+          'Kareler kodlayıcıdan {{ms}} ms sonra buraya ulaşır; geri kalanı bu tarayıcıda çözme ve çizmedir.',
+        rttTip: 'Cihaza ağ gidiş-dönüş süresi',
+        loss: 'Kayıp',
+        lossTip: 'Son saniyede kaybolan paketler',
+        transportTip: 'Videonun bu tarayıcıya nasıl ulaştığı'
+      },
       stream: {
         ok: 'görüntü tamam',
         noSignal: 'sinyal yok',

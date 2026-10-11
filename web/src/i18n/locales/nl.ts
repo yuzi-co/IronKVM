@@ -104,6 +104,43 @@ const nl = {
       screenshot: 'Schermafbeelding',
       screenshotTip: 'Slaat het scherm van de host op als PNG op volle opnamegrootte.',
       screenshotFailed: 'Schermafbeelding mislukt',
+      streamInfo: {
+        toggle: 'Streaminfo',
+        toggleTip:
+          'Toont onder het beeld een regel met verbinding, resolutie, beeldsnelheid, bitrate en latentie van de stream, zoals deze browser ze meet.',
+        title: 'Streamstatus',
+        connecting: 'Verbinden',
+        connected: 'Verbonden',
+        reconnecting: 'Opnieuw verbinden',
+        failed: 'Mislukt',
+        paused: 'Gepauzeerd',
+        noSignal: 'Geen signaal',
+        source: 'Bron',
+        sourceTip: 'De HDMI-invoermodus die het apparaat vastlegt',
+        stream: 'Stream',
+        streamTip: 'De beeldgrootte zoals die in deze browser aankomt',
+        received: 'ontvangen',
+        decoded: 'gedecodeerd',
+        dropped: 'weggegooid',
+        board: 'apparaat',
+        boardTip: 'Beelden per seconde die het apparaat vastlegt en codeert',
+        bitrateTip: 'Videogegevens die deze browser ontvangt',
+        latency: 'Latentie',
+        latencyCapture:
+          'Van vastleggen op het apparaat tot weergave hier, op basis van de opnametijd die de server met elk beeld meestuurt.',
+        latencyEncoder:
+          'Van het verlaten van de encoder tot het tekenen hier, gemeten met de klok van het apparaat. Vastleggen en coderen zijn niet meegerekend.',
+        latencyEstimate:
+          'Schatting: de helft van de netwerkrondreis plus buffering en decodering in deze browser. Vastleggen en coderen op het apparaat zijn niet meegerekend, dus de echte latentie is hoger.',
+        latencyClockAssumed:
+          'Aangenomen wordt dat de klok van het apparaat gelijk loopt met die van deze computer.',
+        latencyArrival:
+          'Beelden komen hier {{ms}} ms na de encoder aan; de rest is decoderen en tekenen in deze browser.',
+        rttTip: 'Netwerkrondreis naar het apparaat',
+        loss: 'Verlies',
+        lossTip: 'Pakketten verloren in de laatste seconde',
+        transportTip: 'Hoe de video deze browser bereikt'
+      },
       stream: {
         ok: 'beeld OK',
         noSignal: 'geen signaal',

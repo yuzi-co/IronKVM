@@ -17,7 +17,9 @@ import {
   roomMicTransportAtom,
   roomMicVolumeAtom
 } from '@/jotai/room-mic.ts';
+import { streamInfoVisibleAtom, streamStatsAtom } from '@/jotai/screen.ts';
 
+import { emptyStats, type ConnectionState, type StreamStats } from '../status-bar/model.ts';
 import { DirectAudioPlayer } from './direct-audio.ts';
 import DirectWorker from './direct.worker.ts?worker';
 import { ScreenViewport } from './viewport.tsx';
@@ -36,7 +38,40 @@ type WorkerEvent = {
   data?: ArrayBuffer;
   value?: number;
   bytes?: Uint8Array;
+} & Partial<WorkerStats>;
+
+// The worker's once-a-second report for the status bar (direct.worker.ts).
+type WorkerStats = {
+  codec: 'avc' | 'hevc' | null;
+  fpsReceived: number;
+  fpsDecoded: number;
+  fpsDropped: number;
+  kbps: number;
+  latencyMs: number | null;
+  latencyErrorMs: number | null;
+  arrivalMs: number | null;
 };
+
+function directStats(report: WorkerEvent, connection: ConnectionState): StreamStats {
+  const stats = emptyStats('direct', connection);
+  stats.codec = report.codec === 'hevc' ? 'H.265' : report.codec === 'avc' ? 'H.264' : null;
+  stats.width = report.width ?? 0;
+  stats.height = report.height ?? 0;
+  stats.fpsReceived = report.fpsReceived ?? null;
+  stats.fpsDecoded = report.fpsDecoded ?? null;
+  stats.fpsDropped = report.fpsDropped ?? null;
+  stats.kbps = report.kbps ?? null;
+  stats.transport = window.location.protocol === 'https:' ? 'WSS' : 'WS';
+  if (typeof report.latencyMs === 'number') {
+    stats.latency = {
+      ms: report.latencyMs,
+      kind: 'encoder',
+      errorMs: report.latencyErrorMs ?? undefined,
+      arrivalMs: report.arrivalMs ?? undefined
+    };
+  }
+  return stats;
+}
 
 export const H264Direct = () => {
   const { t } = useTranslation();
@@ -50,6 +85,10 @@ export const H264Direct = () => {
   const setRoomListening = useSetAtom(roomMicListeningAtom);
   const setRoomTransport = useSetAtom(roomMicTransportAtom);
   const pushRoomState = useSetAtom(roomMicPushAtom);
+  const statsVisible = useAtomValue(streamInfoVisibleAtom);
+  const setStreamStats = useSetAtom(streamStatsAtom);
+  const statsVisibleRef = useRef(statsVisible);
+  const connectionRef = useRef<ConnectionState>('connecting');
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const workerRef = useRef<Worker | null>(null);
@@ -115,7 +154,13 @@ export const H264Direct = () => {
     worker.onmessage = (event: MessageEvent<WorkerEvent>) => {
       const { type, state, width, height, seq, data, value, bytes } = event.data;
 
+      if (type === 'stats') {
+        setStreamStats(directStats(event.data, connectionRef.current));
+        return;
+      }
+
       if (type === 'playing') {
+        connectionRef.current = 'connected';
         if (failTimer) {
           clearTimeout(failTimer);
           failTimer = null;
@@ -126,7 +171,11 @@ export const H264Direct = () => {
       }
 
       if (type === 'socket') {
+        if (state === 'open') {
+          connectionRef.current = 'connecting';
+        }
         if (state === 'closed') {
+          connectionRef.current = 'reconnecting';
           // The server let go of the microphone with the socket. The worker
           // switches it on again on the next one.
           setRoomListening(false);
@@ -206,6 +255,9 @@ export const H264Direct = () => {
     if (roomWantedRef.current) {
       worker.postMessage({ type: 'room-mic', on: true });
     }
+    if (statsVisibleRef.current) {
+      worker.postMessage({ type: 'stats', on: true });
+    }
 
     return () => {
       if (failTimer) clearTimeout(failTimer);
@@ -220,9 +272,12 @@ export const H264Direct = () => {
       setAudioState('unknown');
       setRoomTransport(false);
       setRoomListening(false);
+      setStreamStats(null);
+      connectionRef.current = 'connecting';
     };
   }, [
     setHasAudio,
+    setStreamStats,
     setAudioState,
     notificationApi,
     setRoomTransport,
@@ -230,6 +285,13 @@ export const H264Direct = () => {
     pushRoomState,
     setRoomSwitch
   ]);
+
+  // The worker measures the stream only while the status bar shows.
+  useEffect(() => {
+    statsVisibleRef.current = statsVisible;
+    workerRef.current?.postMessage({ type: 'stats', on: statsVisible });
+    if (!statsVisible) setStreamStats(null);
+  }, [statsVisible, setStreamStats]);
 
   // The switch goes to the server through the worker, which sends it again
   // on every reconnect. The flip is the user act that lets the microphone's

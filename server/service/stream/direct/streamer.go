@@ -132,7 +132,12 @@ func (s *Streamer) run() {
 				continue
 			}
 
-			outbound := newOutboundFrame(frame.KeyFrame, frame.Timestamp, frame.Data)
+			// Stamped on this package's clock, as it reaches the stream, rather
+			// than with the capture loop's own timestamp: a clock request is
+			// answered on the same clock, which lets the status bar tell how
+			// old a frame is when it is drawn. The ack compares stamps of one
+			// connection only, and they still rise.
+			outbound := newOutboundFrame(frame.KeyFrame, clockMicros(), frame.Data)
 			for _, client := range clients {
 				client.offer(outbound)
 			}
