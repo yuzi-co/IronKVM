@@ -32,8 +32,8 @@ var features = []string{
 	"ipv6-settings",       // /api/network/ipv6: SLAAC, DHCPv6, static or off
 	"notifications",       // /api/notify: webhook, ntfy and Telegram alerts with a snapshot
 	"nut-client",          // /api/nut: NUT client, UPS state and settings
-	"role-viewer",          // role "viewer" in /api/auth/users and GET /api/auth/account: video only
-	"share-links",          // /api/auth/share, /api/auth/share-links: expiring view-only links
+	"role-viewer",         // role "viewer" in /api/auth/users and GET /api/auth/account: video only
+	"share-links",         // /api/auth/share, /api/auth/share-links: expiring view-only links
 	"status-bar",          // GET /api/stream/info
 	"ui-update",           // /api/ui: separately installed UI packages
 	"webrtc-clock",        // "clock" event on the WebRTC signalling socket
