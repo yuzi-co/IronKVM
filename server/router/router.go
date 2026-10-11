@@ -99,6 +99,7 @@ func server(r *gin.Engine) {
 	storageRouter(r)
 	networkRouter(r)
 	hidRouter(r)
+	sequenceRouter(r)
 	controlRouter(r, control, picoclawService)
 	mcpRouter(r, control, picoclawService)
 	picoclawRouter(r, picoclawService)
