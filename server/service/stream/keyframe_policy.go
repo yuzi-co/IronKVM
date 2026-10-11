@@ -71,24 +71,34 @@ const (
 // keyframeDiagEnv logs every forced keyframe and how many reads it took.
 const keyframeDiagEnv = "KVM_KEYFRAME_DIAG"
 
-// keyframeIntervalEnv turns the encoder's periodic keyframes off on
-// libkvm-v4l2 (PiKVM's "GOP 0", ironkvm-dist trial 78): the encoder gets
-// encoderGopNone and makes a keyframe only when one is forced, on demand and
-// while a viewer loses packets as above. The value is a Go duration: the
-// server forces one when that long passed without any ("30s"), or never ("0").
-// Unset, keyframes are as described above. Sipeed's library has no GOP that
-// means "none", so there the variable is ignored.
+// keyframeIntervalEnv sets how the encoder's periodic keyframes work on
+// libkvm-v4l2. By default they are off (PiKVM's "GOP 0", ironkvm-dist trial
+// 78): the encoder gets encoderGopNone and makes a keyframe only when one is
+// forced, on demand and while a viewer loses packets as above, plus a backstop
+// every keyframeDemandBackstop. The value is a Go duration for that backstop
+// ("30s"), "0" for no backstop, or "off" for the periodic keyframes described
+// above. Sipeed's library has no GOP that means "none", so there the variable
+// is ignored and keyframes are periodic.
 const keyframeIntervalEnv = "KVM_KEYFRAME_INTERVAL"
+
+// keyframeDemandBackstop is the longest a stream goes without a keyframe when
+// keyframes are on request and keyframeIntervalEnv is unset.
+const keyframeDemandBackstop = 30 * time.Second
 
 // encoderGopNone is libkvm-v4l2's GOP for "no periodic keyframes", above the
 // range of either library (kvmv_policy.h KVMV_GOP_NONE).
 const encoderGopNone = 255
 
-// keyframeDemandOnly reads keyframeIntervalEnv: whether it is set, and the
-// longest the stream goes without a keyframe then, 0 for no limit.
+// keyframeDemandOnly reads keyframeIntervalEnv: whether keyframes are on
+// request only, and the longest the stream goes without one then, 0 for no
+// limit.
 func keyframeDemandOnly() (time.Duration, bool) {
 	value, ok := os.LookupEnv(keyframeIntervalEnv)
 	if !ok || value == "" {
+		return keyframeDemandBackstop, true
+	}
+
+	if value == "off" {
 		return 0, false
 	}
 
@@ -98,8 +108,8 @@ func keyframeDemandOnly() (time.Duration, bool) {
 
 	every, err := time.ParseDuration(value)
 	if err != nil || every < 0 {
-		log.Warnf("keyframes: %s=%q is not a duration; ignored", keyframeIntervalEnv, value)
-		return 0, false
+		log.Warnf("keyframes: %s=%q is not a duration; using %s", keyframeIntervalEnv, value, keyframeDemandBackstop)
+		return keyframeDemandBackstop, true
 	}
 
 	return every, true

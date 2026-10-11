@@ -1,6 +1,7 @@
 package stream
 
 import (
+	"os"
 	"sync"
 	"testing"
 	"time"
@@ -241,6 +242,7 @@ func withKeyframeRequests(t *testing.T) func() []uint8 {
 // The loop asks with the GOP the encoder holds: libkvm-v4l2 takes the request
 // through set_h264_gop, and any other number would change the GOP as well.
 func TestTheLoopAsksTheEncoderWithTheGopItHolds(t *testing.T) {
+	t.Setenv(keyframeIntervalEnv, "off")
 	withScreenGop(t, 30)
 	withScreenFPS(t, 30)
 	told := withEncoderGop(t)
@@ -263,6 +265,35 @@ func TestTheLoopAsksTheEncoderWithTheGopItHolds(t *testing.T) {
 
 	if got := asked()[0]; got != 60 {
 		t.Fatalf("asked with GOP %d, want the encoder's 60", got)
+	}
+}
+
+// By default libkvm-v4l2 makes no periodic keyframes: the encoder holds
+// encoderGopNone, and a request carries it so the GOP stays "none".
+func TestByDefaultTheEncoderMakesNoPeriodicKeyframes(t *testing.T) {
+	t.Setenv(keyframeIntervalEnv, "")
+	withScreenGop(t, 30)
+	withScreenFPS(t, 30)
+	told := withEncoderGop(t)
+	asked := withKeyframeRequests(t)
+	withCapture(t, func(uint16, uint16, uint16) ([]byte, int) {
+		return []byte{0x00, 0x00, 0x00, 0x01}, 4
+	})
+
+	source := newH264Source()
+	subscription := source.subscribe(nil)
+	defer subscription.Close()
+
+	waitFor(t, "the gop", func() bool { return len(told()) > 0 })
+	if got := told()[0]; got != encoderGopNone {
+		t.Fatalf("the encoder was told GOP %d, want %d (none)", got, encoderGopNone)
+	}
+
+	RequestKeyframe(KeyframeReasonWaiting)
+	waitFor(t, "the keyframe request", func() bool { return len(asked()) > 0 })
+
+	if got := asked()[0]; got != encoderGopNone {
+		t.Fatalf("asked with GOP %d, want %d", got, encoderGopNone)
 	}
 }
 
@@ -305,12 +336,22 @@ func TestKeyframeIntervalEnv(t *testing.T) {
 		every time.Duration
 		on    bool
 	}{
-		{"", 0, false},
+		{"", keyframeDemandBackstop, true},
+		{"off", 0, false},
 		{"0", 0, true},
-		{"30s", 30 * time.Second, true},
-		{"soon", 0, false},
-		{"-1s", 0, false},
+		{"10s", 10 * time.Second, true},
+		{"soon", keyframeDemandBackstop, true},
+		{"-1s", keyframeDemandBackstop, true},
 	}
+
+	t.Run("unset", func(t *testing.T) {
+		t.Setenv(keyframeIntervalEnv, "")
+		os.Unsetenv(keyframeIntervalEnv)
+		every, on := keyframeDemandOnly()
+		if every != keyframeDemandBackstop || !on {
+			t.Errorf("unset: %s %t, want %s true", every, on, keyframeDemandBackstop)
+		}
+	})
 
 	for _, c := range cases {
 		t.Setenv(keyframeIntervalEnv, c.value)
