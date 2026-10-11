@@ -1,7 +1,53 @@
 package proto
 
+// WakeOnLANReq names the device by MAC or, for a listed device, by name.
 type WakeOnLANReq struct {
-	Mac string `form:"mac" validate:"required"`
+	Mac  string `form:"mac"`
+	Name string `form:"name"`
+}
+
+// WolDevice is a device of the list. The SecureOn password is never sent back:
+// HasSecureOn says only that one is stored.
+type WolDevice struct {
+	Mac         string `json:"mac"`
+	Name        string `json:"name"`
+	Broadcast   string `json:"broadcast"`
+	Port        int    `json:"port"`
+	HasSecureOn bool   `json:"hasSecureOn"`
+	IP          string `json:"ip"`
+}
+
+type GetWolDevicesRsp struct {
+	Devices []WolDevice `json:"devices"`
+}
+
+// SaveWolDeviceReq adds a device, or edits the one at OldMac. An edit that
+// leaves SecureOn empty keeps the stored password unless ClearSecureOn is set.
+type SaveWolDeviceReq struct {
+	OldMac        string `json:"oldMac"`
+	Mac           string `json:"mac" validate:"required"`
+	Name          string `json:"name"`
+	Broadcast     string `json:"broadcast"`
+	Port          int    `json:"port"`
+	SecureOn      string `json:"secureOn"`
+	ClearSecureOn bool   `json:"clearSecureOn"`
+	IP            string `json:"ip"`
+}
+
+type CheckWolDeviceRsp struct {
+	Up bool `json:"up"`
+}
+
+type WolNeighbor struct {
+	Mac  string `json:"mac"`
+	IP   string `json:"ip"`
+	Name string `json:"name"`
+	// Listed says the MAC is already in the device list.
+	Listed bool `json:"listed"`
+}
+
+type ScanWolRsp struct {
+	Neighbors []WolNeighbor `json:"neighbors"`
 }
 
 type GetMacRsp struct {

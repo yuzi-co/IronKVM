@@ -27,7 +27,8 @@ export const SERVER_FEATURES = [
   'ip-allowlist', // /api/network/allowlist (Settings > Network > Allowed networks)
   'status-bar', // GET /api/stream/info (status bar source line)
   'ui-update', // /api/ui: separate UI packages (Settings > Update)
-  'webrtc-clock' // the clock event on the WebRTC signalling socket (status bar latency)
+  'webrtc-clock', // the clock event on the WebRTC signalling socket (status bar latency)
+  'wol-devices' // /api/network/wol/devices, /device, /check, /scan (Tools > Wake-on-LAN: managed list)
 ] as const;
 
 export type ServerFeature = (typeof SERVER_FEATURES)[number];

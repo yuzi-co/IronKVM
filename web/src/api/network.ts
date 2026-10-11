@@ -28,6 +28,51 @@ export function setWolMacName(mac: string, name: string) {
   return http.post('/api/network/wol/mac/name', { mac, name });
 }
 
+// The managed device list (feature wol-devices). A wake by name sends the name
+// instead of the MAC.
+export interface WolDevice {
+  mac: string;
+  name: string;
+  broadcast: string;
+  port: number;
+  hasSecureOn: boolean;
+  ip: string;
+}
+
+export interface WolDeviceInput {
+  oldMac?: string;
+  mac: string;
+  name: string;
+  broadcast: string;
+  port: number;
+  secureOn: string;
+  clearSecureOn: boolean;
+  ip: string;
+}
+
+export interface WolNeighbor {
+  mac: string;
+  ip: string;
+  name: string;
+  listed: boolean;
+}
+
+export function getWolDevices() {
+  return http.get('/api/network/wol/devices');
+}
+
+export function saveWolDevice(device: WolDeviceInput) {
+  return http.post('/api/network/wol/device', device);
+}
+
+export function checkWolDevice(mac: string) {
+  return http.get('/api/network/wol/check', { mac });
+}
+
+export function scanWol() {
+  return http.get('/api/network/wol/scan');
+}
+
 // get wifi information
 export function getWiFi() {
   return http.get('/api/network/wifi');

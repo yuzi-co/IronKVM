@@ -29,6 +29,7 @@ var features = []string{
 	"status-bar",   // GET /api/stream/info
 	"ui-update",    // /api/ui: separately installed UI packages
 	"webrtc-clock", // "clock" event on the WebRTC signalling socket
+	"wol-devices",  // /api/network/wol/devices, /device, /check, /scan: managed Wake-on-LAN list
 }
 
 // Features returns the registry, sorted, as a copy the caller may keep.

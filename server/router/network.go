@@ -16,15 +16,19 @@ func networkRouter(r *gin.Engine) {
 
 	api := r.Group("/api").Use(middleware.CheckToken())
 
-	api.POST("/network/wol", service.WakeOnLAN) // wake on lan
-	api.GET("/network/wol/mac", service.GetMac) // get mac list
+	api.POST("/network/wol", service.WakeOnLAN)            // wake on lan
+	api.GET("/network/wol/mac", service.GetMac)            // get mac list
+	api.GET("/network/wol/devices", service.GetWolDevices) // device list with options
+	api.GET("/network/wol/check", service.CheckWolDevice)  // is the device up
 
 	admin := r.Group("/api").Use(
 		middleware.CheckToken(),
 		middleware.RequireRole(authn.RoleAdmin),
 	)
-	admin.DELETE("/network/wol/mac", service.DeleteMac)     // delete mac
-	admin.POST("/network/wol/mac/name", service.SetMacName) // set mac name
+	admin.DELETE("/network/wol/mac", service.DeleteMac)      // delete mac
+	admin.POST("/network/wol/mac/name", service.SetMacName)  // set mac name
+	admin.POST("/network/wol/device", service.SaveWolDevice) // add or edit a device
+	admin.GET("/network/wol/scan", service.ScanWol)          // hosts on the LAN
 
 	admin.GET("/network/wifi", service.GetWifi)                    // get Wi-Fi information
 	admin.POST("/network/wifi/connect", service.ConnectWifi)       // connect Wi-Fi
