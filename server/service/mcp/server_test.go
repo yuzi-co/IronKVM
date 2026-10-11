@@ -129,10 +129,14 @@ func TestMCPInitializeAndToolsList(t *testing.T) {
 	if tools.Code != http.StatusOK {
 		t.Fatalf("tools/list status=%d body=%s", tools.Code, tools.Body.String())
 	}
-	for _, name := range []string{"cube_type_text", "cube_press_keys", "cube_move_mouse", "cube_click_mouse", "cube_scroll_mouse", "cube_screenshot", "cube_wake_on_lan"} {
+	for _, name := range []string{"cube_type_text", "cube_press_keys", "cube_move_mouse", "cube_click_mouse", "cube_scroll_mouse", "cube_screenshot"} {
 		if !strings.Contains(tools.Body.String(), `"name":"`+name+`"`) {
 			t.Fatalf("tools/list missing %s: %s", name, tools.Body.String())
 		}
+	}
+	// Waking a device needs the power tier, which is off by default.
+	if strings.Contains(tools.Body.String(), `"name":"cube_wake_on_lan"`) {
+		t.Fatalf("tools/list exposes cube_wake_on_lan without the power tier: %s", tools.Body.String())
 	}
 	for _, name := range []string{"type_text", "press_keys", "move_mouse", "click_mouse", "scroll_mouse", "screenshot"} {
 		if strings.Contains(tools.Body.String(), `"name":"`+name+`"`) {

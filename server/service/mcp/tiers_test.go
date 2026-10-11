@@ -143,7 +143,7 @@ func TestTurningATierOnOffersAndRunsTheTool(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if list := s.tools(); !strings.Contains(list, `"name":"cube_power"`) || strings.Contains(list, `"name":"cube_media"`) {
+	if list := s.tools(); !strings.Contains(list, `"name":"cube_power"`) || !strings.Contains(list, `"name":"cube_wake_on_lan"`) || strings.Contains(list, `"name":"cube_media"`) {
 		t.Fatalf("tools/list does not follow the tiers: %s", list)
 	}
 	if out := s.call("cube_power", `{"button":"reset","holdMs":300}`); strings.Contains(out, `"isError":true`) {
