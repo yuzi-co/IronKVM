@@ -1517,7 +1517,37 @@ const es = {
         updateTo: 'Actualizar a {{version}}',
         updateConfirmDesc:
           'El dispositivo instala la actualización y reinicia su servidor. Esta página se recarga cuando el servidor vuelve.',
-        releaseNotes: 'Notas de la versión'
+        releaseNotes: 'Notas de la versión',
+        ui: {
+          title: 'Interfaz web',
+          desc: 'Instala o revierte la interfaz web sin actualizar el servidor',
+          served: 'En uso: {{version}}, API del servidor {{api}}',
+          bundled: 'la interfaz incluida con la aplicación',
+          bundledVersion: '{{version}} (incluida con la aplicación)',
+          checkOff: 'La comprobación de firmas está desactivada (/data/ironkvm/no-signature-check): se instala cualquier paquete.',
+          noKeys: 'El llavero está vacío: los paquetes se instalan sin comprobar la firma.',
+          check: 'Comprobar',
+          noPackage: 'El servidor de actualizaciones no ofrece ningún paquete de interfaz web.',
+          isCurrent: 'La interfaz web {{version}} ya está en uso.',
+          incompatible: 'La interfaz web {{version}} necesita la API del servidor {{api}} y este servidor usa {{server}}. Actualice primero la aplicación.',
+          installTo: 'Instalar interfaz web {{version}}',
+          installDesc: 'El dispositivo comprueba la firma, cambia a la nueva interfaz y conserva la actual para revertir. Después esta página se recarga.',
+          chooseFiles: 'Elegir paquete',
+          chooseHint: 'ironkvm-ui_<version>.tar.gz y su .minisig',
+          noSignature: 'sin firma',
+          pick: {
+            noPackage: 'Elija un paquete ironkvm-ui_<version>.tar.gz.',
+            tooMany: 'Elija un paquete y como máximo una firma.',
+            badName: 'No es un paquete de interfaz web (ironkvm-ui_<version>.tar.gz).',
+            signatureMismatch: 'La firma pertenece a otro paquete.'
+          },
+          install: 'Instalar',
+          installed: 'Interfaz web instalada. Recargando...',
+          rolledBack: 'Interfaz web revertida. Recargando...',
+          rollback: 'Revertir',
+          rollbackDesc: 'Volver a {{version}}',
+          rollbackConfirm: '¿Revertir la interfaz web a {{version}}?'
+        }
       },
       account: {
         title: 'Cuenta',
@@ -1818,6 +1848,11 @@ const es = {
       mediaLibrary: 'Biblioteca',
       textToHost: 'Hacia el host',
       textFromHost: 'Desde el host'
+    },
+    serverContract: {
+      incompatibleTitle: 'Esta interfaz web no admite este servidor',
+      incompatible: 'La interfaz web admite la API del servidor {{ui}} y el servidor usa la API {{server}}. Algunas funciones pueden fallar. Actualice la aplicación o revierta la interfaz web en Ajustes > Actualización.',
+      dismiss: 'Cerrar'
     },
     ion: {
       checking: 'Comprobando la memoria de vídeo antes de iniciar la transmisión...',

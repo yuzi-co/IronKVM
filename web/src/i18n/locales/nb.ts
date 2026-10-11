@@ -1487,7 +1487,37 @@ const nb = {
         updateTo: 'Oppdater til {{version}}',
         updateConfirmDesc:
           'Enheten installerer oppdateringen og starter serveren på nytt. Siden lastes inn på nytt når serveren er tilbake.',
-        releaseNotes: 'Utgivelsesnotater'
+        releaseNotes: 'Utgivelsesnotater',
+        ui: {
+          title: 'Nettgrensesnitt',
+          desc: 'Installer eller rull tilbake nettgrensesnittet uten å oppdatere serveren',
+          served: 'Aktiv: {{version}}, server-API {{api}}',
+          bundled: 'grensesnittet som følger med programmet',
+          bundledVersion: '{{version}} (følger med programmet)',
+          checkOff: 'Signaturkontrollen er slått av (/data/ironkvm/no-signature-check), så alle pakker installeres.',
+          noKeys: 'Nøkkelringen er tom, så pakker installeres uten signaturkontroll.',
+          check: 'Sjekk',
+          noPackage: 'Oppdateringsserveren tilbyr ingen pakke for nettgrensesnittet.',
+          isCurrent: 'Nettgrensesnitt {{version}} er allerede aktivt.',
+          incompatible: 'Nettgrensesnitt {{version}} krever server-API {{api}}, og denne serveren bruker {{server}}. Oppdater programmet først.',
+          installTo: 'Installer nettgrensesnitt {{version}}',
+          installDesc: 'Enheten kontrollerer signaturen, bytter til det nye grensesnittet og beholder det nåværende for tilbakerulling. Deretter lastes siden på nytt.',
+          chooseFiles: 'Velg pakke',
+          chooseHint: 'ironkvm-ui_<version>.tar.gz og tilhørende .minisig',
+          noSignature: 'ingen signatur',
+          pick: {
+            noPackage: 'Velg en pakke ironkvm-ui_<version>.tar.gz.',
+            tooMany: 'Velg én pakke og høyst én signatur.',
+            badName: 'Ikke en pakke for nettgrensesnittet (ironkvm-ui_<version>.tar.gz).',
+            signatureMismatch: 'Signaturen tilhører en annen pakke.'
+          },
+          install: 'Installer',
+          installed: 'Nettgrensesnitt installert. Laster på nytt...',
+          rolledBack: 'Nettgrensesnitt rullet tilbake. Laster på nytt...',
+          rollback: 'Rull tilbake',
+          rollbackDesc: 'Tilbake til {{version}}',
+          rollbackConfirm: 'Rulle nettgrensesnittet tilbake til {{version}}?'
+        }
       },
       account: {
         title: 'Konto',
@@ -1782,6 +1812,11 @@ const nb = {
       mediaLibrary: 'Bibliotek',
       textToHost: 'Til verten',
       textFromHost: 'Fra verten'
+    },
+    serverContract: {
+      incompatibleTitle: 'Dette nettgrensesnittet støtter ikke denne serveren',
+      incompatible: 'Nettgrensesnittet støtter server-API {{ui}}, og serveren bruker API {{server}}. Noen funksjoner kan feile. Oppdater programmet, eller rull tilbake nettgrensesnittet under Innstillinger > Oppdatering.',
+      dismiss: 'Lukk'
     },
     ion: {
       checking: 'Sjekker videominnet før strømmen starter...',

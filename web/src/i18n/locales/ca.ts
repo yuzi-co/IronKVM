@@ -1508,7 +1508,37 @@ const ca = {
         updateTo: 'Actualitza a {{version}}',
         updateConfirmDesc:
           "El dispositiu instal·la l'actualització i reinicia el servidor. Aquesta pàgina es recarrega quan el servidor torna a respondre.",
-        releaseNotes: 'Notes de la versió'
+        releaseNotes: 'Notes de la versió',
+        ui: {
+          title: 'Interfície web',
+          desc: 'Instal·la o reverteix la interfície web sense actualitzar el servidor',
+          served: 'En ús: {{version}}, API del servidor {{api}}',
+          bundled: 'la interfície inclosa amb l\'aplicació',
+          bundledVersion: '{{version}} (inclosa amb l\'aplicació)',
+          checkOff: 'La comprovació de signatures està desactivada (/data/ironkvm/no-signature-check): s\'instal·la qualsevol paquet.',
+          noKeys: 'El clauer és buit: els paquets s\'instal·len sense comprovar la signatura.',
+          check: 'Comprova',
+          noPackage: 'El servidor d\'actualitzacions no ofereix cap paquet d\'interfície web.',
+          isCurrent: 'La interfície web {{version}} ja està en ús.',
+          incompatible: 'La interfície web {{version}} necessita l\'API del servidor {{api}} i aquest servidor fa servir {{server}}. Actualitzeu primer l\'aplicació.',
+          installTo: 'Instal·la la interfície web {{version}}',
+          installDesc: 'El dispositiu comprova la signatura, canvia a la nova interfície i conserva l\'actual per poder revertir. Després aquesta pàgina es recarrega.',
+          chooseFiles: 'Tria el paquet',
+          chooseHint: 'ironkvm-ui_<version>.tar.gz i el seu .minisig',
+          noSignature: 'sense signatura',
+          pick: {
+            noPackage: 'Trieu un paquet ironkvm-ui_<version>.tar.gz.',
+            tooMany: 'Trieu un paquet i com a màxim una signatura.',
+            badName: 'No és un paquet d\'interfície web (ironkvm-ui_<version>.tar.gz).',
+            signatureMismatch: 'La signatura pertany a un altre paquet.'
+          },
+          install: 'Instal·la',
+          installed: 'Interfície web instal·lada. Recarregant...',
+          rolledBack: 'Interfície web revertida. Recarregant...',
+          rollback: 'Reverteix',
+          rollbackDesc: 'Torna a {{version}}',
+          rollbackConfirm: 'Voleu revertir la interfície web a {{version}}?'
+        }
       },
       account: {
         title: 'Compte',
@@ -1808,6 +1838,11 @@ const ca = {
       mediaLibrary: 'Biblioteca',
       textToHost: "Cap a l'amfitrió",
       textFromHost: "Des de l'amfitrió"
+    },
+    serverContract: {
+      incompatibleTitle: 'Aquesta interfície web no admet aquest servidor',
+      incompatible: 'La interfície web admet l\'API del servidor {{ui}} i el servidor fa servir l\'API {{server}}. Algunes funcions poden fallar. Actualitzeu l\'aplicació o reverteu la interfície web a Configuració > Actualització.',
+      dismiss: 'Tanca'
     },
     ion: {
       checking: "S'està comprovant la memòria de vídeo abans d'iniciar la transmissió...",

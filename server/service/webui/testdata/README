@@ -1,0 +1,11 @@
+Test vectors made by the minisign tool itself (0.11, Alpine), so the Go
+verifier is held to the real format rather than to its own idea of it.
+
+  vector.pub              public half of a key made for this with `minisign -G -W`
+  vector.txt              the signed message
+  vector.txt.minisig      `minisign -S` (prehashed, "ED")
+  vector-legacy.minisig   `minisign -S -l` (legacy, "Ed")
+
+The secret half was made in a throwaway container and never written anywhere
+else. Nothing trusts this key: it is not in any keyring, and no image ships it.
+Every other key in these tests is made fresh by the test that uses it.

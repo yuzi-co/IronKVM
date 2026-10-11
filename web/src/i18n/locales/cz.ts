@@ -1480,7 +1480,37 @@ const cz = {
         updateTo: 'Aktualizovat na {{version}}',
         updateConfirmDesc:
           'Zařízení nainstaluje aktualizaci a restartuje svůj server. Stránka se znovu načte, až bude server zpět.',
-        releaseNotes: 'Poznámky k vydání'
+        releaseNotes: 'Poznámky k vydání',
+        ui: {
+          title: 'Webové rozhraní',
+          desc: 'Instalace nebo vrácení webového rozhraní bez aktualizace serveru',
+          served: 'Aktivní: {{version}}, API serveru {{api}}',
+          bundled: 'rozhraní dodané s aplikací',
+          bundledVersion: '{{version}} (dodáno s aplikací)',
+          checkOff: 'Kontrola podpisu je vypnutá (/data/ironkvm/no-signature-check), nainstaluje se jakýkoli balíček.',
+          noKeys: 'Svazek klíčů je prázdný, balíčky se instalují bez kontroly podpisu.',
+          check: 'Zkontrolovat',
+          noPackage: 'Aktualizační server nenabízí žádný balíček webového rozhraní.',
+          isCurrent: 'Webové rozhraní {{version}} je již aktivní.',
+          incompatible: 'Webové rozhraní {{version}} vyžaduje API serveru {{api}}, tento server používá {{server}}. Nejprve aktualizujte aplikaci.',
+          installTo: 'Nainstalovat webové rozhraní {{version}}',
+          installDesc: 'Zařízení ověří podpis, přepne na nové rozhraní a ponechá současné pro vrácení. Poté se stránka znovu načte.',
+          chooseFiles: 'Vybrat balíček',
+          chooseHint: 'ironkvm-ui_<version>.tar.gz a jeho .minisig',
+          noSignature: 'bez podpisu',
+          pick: {
+            noPackage: 'Vyberte balíček ironkvm-ui_<version>.tar.gz.',
+            tooMany: 'Vyberte jeden balíček a nejvýše jeden podpis.',
+            badName: 'Nejde o balíček webového rozhraní (ironkvm-ui_<version>.tar.gz).',
+            signatureMismatch: 'Podpis patří k jinému balíčku.'
+          },
+          install: 'Nainstalovat',
+          installed: 'Webové rozhraní nainstalováno. Načítání...',
+          rolledBack: 'Webové rozhraní vráceno. Načítání...',
+          rollback: 'Vrátit',
+          rollbackDesc: 'Zpět na {{version}}',
+          rollbackConfirm: 'Vrátit webové rozhraní na {{version}}?'
+        }
       },
       account: {
         title: 'Účet',
@@ -1776,6 +1806,11 @@ const cz = {
       mediaLibrary: 'Knihovna',
       textToHost: 'Do hostitele',
       textFromHost: 'Z hostitele'
+    },
+    serverContract: {
+      incompatibleTitle: 'Toto webové rozhraní nepodporuje tento server',
+      incompatible: 'Webové rozhraní podporuje API serveru {{ui}}, server používá API {{server}}. Některé funkce nemusí fungovat. Aktualizujte aplikaci nebo vraťte webové rozhraní v Nastavení > Aktualizace.',
+      dismiss: 'Zavřít'
     },
     ion: {
       checking: 'Kontrola videopaměti před spuštěním streamu...',

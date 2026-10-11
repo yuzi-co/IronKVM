@@ -1488,7 +1488,37 @@ const da = {
         updateTo: 'Opdater til {{version}}',
         updateConfirmDesc:
           'Enheden installerer opdateringen og genstarter sin server. Siden genindlæses, når serveren er tilbage.',
-        releaseNotes: 'Udgivelsesnoter'
+        releaseNotes: 'Udgivelsesnoter',
+        ui: {
+          title: 'Webbrugerflade',
+          desc: 'Installer eller rul webbrugerfladen tilbage uden at opdatere serveren',
+          served: 'Aktiv: {{version}}, server-API {{api}}',
+          bundled: 'brugerfladen, der følger med applikationen',
+          bundledVersion: '{{version}} (følger med applikationen)',
+          checkOff: 'Signaturkontrollen er slået fra (/data/ironkvm/no-signature-check), så alle pakker installeres.',
+          noKeys: 'Nøgleringen er tom, så pakker installeres uden signaturkontrol.',
+          check: 'Tjek',
+          noPackage: 'Opdateringsserveren tilbyder ingen pakke til webbrugerfladen.',
+          isCurrent: 'Webbrugerflade {{version}} er allerede aktiv.',
+          incompatible: 'Webbrugerflade {{version}} kræver server-API {{api}}, og denne server bruger {{server}}. Opdater applikationen først.',
+          installTo: 'Installer webbrugerflade {{version}}',
+          installDesc: 'Enheden kontrollerer signaturen, skifter til den nye brugerflade og beholder den nuværende til tilbagerulning. Derefter genindlæses siden.',
+          chooseFiles: 'Vælg pakke',
+          chooseHint: 'ironkvm-ui_<version>.tar.gz og dens .minisig',
+          noSignature: 'ingen signatur',
+          pick: {
+            noPackage: 'Vælg en pakke ironkvm-ui_<version>.tar.gz.',
+            tooMany: 'Vælg én pakke og højst én signatur.',
+            badName: 'Ikke en pakke til webbrugerfladen (ironkvm-ui_<version>.tar.gz).',
+            signatureMismatch: 'Signaturen hører til en anden pakke.'
+          },
+          install: 'Installer',
+          installed: 'Webbrugerflade installeret. Genindlæser...',
+          rolledBack: 'Webbrugerflade rullet tilbage. Genindlæser...',
+          rollback: 'Rul tilbage',
+          rollbackDesc: 'Tilbage til {{version}}',
+          rollbackConfirm: 'Rul webbrugerfladen tilbage til {{version}}?'
+        }
       },
       account: {
         title: 'Konto',
@@ -1785,6 +1815,11 @@ const da = {
       mediaLibrary: 'Bibliotek',
       textToHost: 'Til værten',
       textFromHost: 'Fra værten'
+    },
+    serverContract: {
+      incompatibleTitle: 'Denne webbrugerflade understøtter ikke denne server',
+      incompatible: 'Webbrugerfladen understøtter server-API {{ui}}, og serveren bruger API {{server}}. Nogle funktioner kan fejle. Opdater applikationen, eller rul webbrugerfladen tilbage under Indstillinger > Opdatering.',
+      dismiss: 'Luk'
     },
     ion: {
       checking: 'Kontrollerer videohukommelsen, før streamen startes...',

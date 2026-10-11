@@ -8,6 +8,30 @@ let isLoggedIn = false;
 const ION_VERDICT = 'ok'
 
 export const handlers = [
+  // The server contract. Raise api past the UI's range to see the notice.
+  http.get('/api/version', () => {
+    return HttpResponse.json({
+      code: 0,
+      data: { version: '1.0.0', api: 1, features: ['direct-clock', 'status-bar', 'ui-update'] }
+    });
+  }),
+  http.get('/api/ui', () => {
+    return HttpResponse.json({
+      code: 0,
+      data: {
+        serverApi: 1,
+        active: { id: '', version: '1.0.0', api: { min: 1, max: 1 }, bundled: true },
+        canRollback: false,
+        signatureCheck: 'on'
+      }
+    });
+  }),
+  http.get('/api/ui/latest', () => {
+    return HttpResponse.json({
+      code: 0,
+      data: { version: '1.0.1', api: { min: 1, max: 1 }, compatible: true, active: false }
+    });
+  }),
   http.post('/api/auth/login', () => {
     isLoggedIn = true;
     return HttpResponse.json({

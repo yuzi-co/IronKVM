@@ -6,10 +6,12 @@ import (
 	"path/filepath"
 	"strings"
 
+	"NanoKVM-Server/common/apicontract"
 	"NanoKVM-Server/service/agent"
 	"NanoKVM-Server/service/controlmode"
 	"NanoKVM-Server/service/picoclaw"
 	"NanoKVM-Server/service/vm"
+	"NanoKVM-Server/service/webui"
 
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
@@ -31,7 +33,11 @@ func web(r *gin.Engine) {
 	execDir := filepath.Dir(execPath)
 	webPath := fmt.Sprintf("%s/web", execDir)
 
-	r.Use(staticHandler(webPath))
+	// The bundled UI in web/, unless a separately installed one in ui/ is
+	// current and passes its check (service/webui).
+	uiStore = webui.NewStore(filepath.Join(execDir, "ui"), webPath, apicontract.APIVersion, webui.DefaultPolicy())
+	uiStore.Probe = probeWebDir
+	r.Use(switchingStaticHandler(uiStore.Dir))
 }
 
 // apiPrefix covers the routes of the web UI's own API.
@@ -83,8 +89,10 @@ func server(r *gin.Engine) {
 	chatBridge := agent.NewBridge(chatAgent, picoclawService, agent.NewTaskLeases(vm.AcquireHdmiCaptureLease))
 	picoclawService.SetChat(chatBridge)
 
+	versionRouter(r)
 	authRouter(r)
 	applicationRouter(r)
+	uiRouter(r)
 	vmRouter(r)
 	streamRouter(r)
 	roomMicRouter(r)

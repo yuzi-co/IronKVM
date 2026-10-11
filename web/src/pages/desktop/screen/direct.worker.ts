@@ -77,6 +77,9 @@ type WorkerMessage = {
   audio?: boolean;
   room?: boolean;
   on?: boolean;
+  // With 'stats': whether the server answers the clock request (the
+  // direct-clock feature). Without it the latency is not measured.
+  clock?: boolean;
 };
 
 // What the status bar is told once a second while it shows. Counters run all
@@ -96,6 +99,7 @@ let statsTimer: ReturnType<typeof setInterval> | null = null;
 let clockSamples: ClockSample[] = [];
 let clock: ClockEstimate | null = null;
 let clockAskedAt: number | null = null;
+let clockSupported = true;
 
 function resetCounters() {
   counters.bytes = 0;
@@ -144,6 +148,7 @@ function setStats(on: boolean) {
 }
 
 function askClock() {
+  if (!clockSupported) return;
   const currentSocket = socket;
   if (!currentSocket || currentSocket.readyState !== WebSocket.OPEN) return;
   try {
@@ -173,7 +178,7 @@ frameChannel.port1.onmessage = () => {
 };
 
 self.onmessage = (event: MessageEvent<WorkerMessage>) => {
-  const { type, canvas: offscreenCanvas, url, audio, room, on } = event.data;
+  const { type, canvas: offscreenCanvas, url, audio, room, on, clock: clockFeature } = event.data;
 
   switch (type) {
     case 'h264':
@@ -199,6 +204,7 @@ self.onmessage = (event: MessageEvent<WorkerMessage>) => {
       sendRoomSwitch();
       break;
     case 'stats':
+      clockSupported = clockFeature !== false;
       setStats(on === true);
       break;
     case 'stop':

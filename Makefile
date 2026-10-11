@@ -58,7 +58,7 @@ VISION_BUILD_CMD := . ./home/build/MaixCDK/bin/activate && cd /home/build/NanoKV
 RELEASE_BUILD_CMD := /home/build/NanoKVM/scripts/build-in-container.sh
 
 .PHONY: help check-root builder-image rebuild-image check-image shell app support vision \
-        web release-build package release all clean
+        web release-build package ui-package release all clean
 
 # Default target
 all: app support
@@ -80,6 +80,7 @@ help:
 	@echo "  all           - Build both app and support (default)"
 	@echo "  release-build - Build every riscv64 release artifact in one pass"
 	@echo "  package       - Assemble nanokvm_<VERSION>.tar.gz + latest.json"
+	@echo "  ui-package    - Build web and assemble ironkvm-ui_<VERSION>.tar.gz + ui-latest.json"
 	@echo "  release       - release-build + web + package (needs VERSION=x.y.z)"
 	@echo "  clean         - Clean build artifacts"
 	@echo ""
@@ -143,10 +144,21 @@ release-build: check-root builder-image
 	@echo "Building release artifacts..."
 	@$(DOCKER_RUN_BASE) $(DOCKER_TTY) $(IMAGE_NAME) /bin/bash -c '$(RELEASE_BUILD_CMD)'
 
-# Build the frontend (runs on the host; the builder image has no Node)
+# Build the frontend (runs on the host; the builder image has no Node). VERSION,
+# when given, is the UI version the build records in dist/ui-version.json.
 web:
 	@echo "Building web..."
-	@cd web && pnpm install --frozen-lockfile && pnpm build
+	@cd web && pnpm install --frozen-lockfile && UI_VERSION="$(VERSION)" pnpm build
+
+# Assemble a web UI package that installs without the server (docs/specs/2026-10-11-ui-packages.md).
+# SIGN_KEY, SIGN_PASSWORD_FILE and VERIFY_KEYS are passed through to the script.
+ui-package:
+	@if [ -z "$(VERSION)" ]; then \
+		echo "VERSION is required, e.g. make ui-package VERSION=2.4.4"; \
+		exit 1; \
+	fi
+	@$(MAKE) web VERSION="$(VERSION)"
+	@scripts/package-ui.sh "$(VERSION)"
 
 # Assemble the release package and its manifest
 package:

@@ -1510,7 +1510,37 @@ const nl = {
         updateTo: 'Bijwerken naar {{version}}',
         updateConfirmDesc:
           'Het apparaat installeert de update en herstart zijn server. Deze pagina herlaadt zodra de server terug is.',
-        releaseNotes: 'Release-opmerkingen'
+        releaseNotes: 'Release-opmerkingen',
+        ui: {
+          title: 'Webinterface',
+          desc: 'De webinterface installeren of terugzetten zonder de server bij te werken',
+          served: 'Actief: {{version}}, server-API {{api}}',
+          bundled: 'de interface die bij de applicatie hoort',
+          bundledVersion: '{{version}} (meegeleverd met de applicatie)',
+          checkOff: 'De handtekeningcontrole staat uit (/data/ironkvm/no-signature-check): elk pakket wordt geïnstalleerd.',
+          noKeys: 'De sleutelring is leeg: pakketten worden zonder handtekeningcontrole geïnstalleerd.',
+          check: 'Controleren',
+          noPackage: 'De updateserver biedt geen webinterfacepakket aan.',
+          isCurrent: 'Webinterface {{version}} is al actief.',
+          incompatible: 'Webinterface {{version}} vereist server-API {{api}}, deze server gebruikt {{server}}. Werk eerst de applicatie bij.',
+          installTo: 'Webinterface {{version}} installeren',
+          installDesc: 'Het apparaat controleert de handtekening, schakelt over naar de nieuwe interface en bewaart de huidige om terug te zetten. Daarna wordt deze pagina herladen.',
+          chooseFiles: 'Pakket kiezen',
+          chooseHint: 'ironkvm-ui_<version>.tar.gz en de bijbehorende .minisig',
+          noSignature: 'geen handtekening',
+          pick: {
+            noPackage: 'Kies een pakket ironkvm-ui_<version>.tar.gz.',
+            tooMany: 'Kies één pakket en hoogstens één handtekening.',
+            badName: 'Geen webinterfacepakket (ironkvm-ui_<version>.tar.gz).',
+            signatureMismatch: 'De handtekening hoort bij een ander pakket.'
+          },
+          install: 'Installeren',
+          installed: 'Webinterface geïnstalleerd. Herladen...',
+          rolledBack: 'Webinterface teruggezet. Herladen...',
+          rollback: 'Terugzetten',
+          rollbackDesc: 'Terug naar {{version}}',
+          rollbackConfirm: 'Webinterface terugzetten naar {{version}}?'
+        }
       },
       account: {
         title: 'Account',
@@ -1810,6 +1840,11 @@ const nl = {
       mediaLibrary: 'Bibliotheek',
       textToHost: 'Naar de host',
       textFromHost: 'Van de host'
+    },
+    serverContract: {
+      incompatibleTitle: 'Deze webinterface ondersteunt deze server niet',
+      incompatible: 'De webinterface ondersteunt server-API {{ui}}, de server gebruikt API {{server}}. Sommige functies kunnen mislukken. Werk de applicatie bij of zet de webinterface terug via Instellingen > Update.',
+      dismiss: 'Sluiten'
     },
     ion: {
       checking: 'Videogeheugen controleren voordat de stream start...',

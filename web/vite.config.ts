@@ -5,6 +5,7 @@ import { defineConfig } from 'vite';
 import type { Plugin } from 'vite';
 
 import { ocrAssets } from './vite-plugin-ocr';
+import { uiVersion } from './vite-plugin-ui-version';
 
 // The mock service worker in public/ serves `npm run mocked`, a dev-server
 // mode. Vite copies all of public/ into every build, so a production build
@@ -27,7 +28,7 @@ function dropMockWorker(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [react(), ocrAssets(), dropMockWorker()],
+  plugins: [react(), ocrAssets(), dropMockWorker(), uiVersion()],
   resolve: {
     tsconfigPaths: true,
     alias: [

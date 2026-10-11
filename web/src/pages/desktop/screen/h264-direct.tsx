@@ -18,6 +18,7 @@ import {
   roomMicVolumeAtom
 } from '@/jotai/room-mic.ts';
 import { streamInfoVisibleAtom, streamStatsAtom } from '@/jotai/screen.ts';
+import { useServerFeature } from '@/hooks/useServerFeature.ts';
 
 import { emptyStats, type ConnectionState, type StreamStats } from '../status-bar/model.ts';
 import { DirectAudioPlayer } from './direct-audio.ts';
@@ -88,6 +89,8 @@ export const H264Direct = () => {
   const statsVisible = useAtomValue(streamInfoVisibleAtom);
   const setStreamStats = useSetAtom(streamStatsAtom);
   const statsVisibleRef = useRef(statsVisible);
+  const clockFeature = useServerFeature('direct-clock');
+  const clockRef = useRef(clockFeature !== false);
   const connectionRef = useRef<ConnectionState>('connecting');
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -256,7 +259,7 @@ export const H264Direct = () => {
       worker.postMessage({ type: 'room-mic', on: true });
     }
     if (statsVisibleRef.current) {
-      worker.postMessage({ type: 'stats', on: true });
+      worker.postMessage({ type: 'stats', on: true, clock: clockRef.current });
     }
 
     return () => {
@@ -286,12 +289,14 @@ export const H264Direct = () => {
     setRoomSwitch
   ]);
 
-  // The worker measures the stream only while the status bar shows.
+  // The worker measures the stream only while the status bar shows, and asks
+  // the board's clock only of a server that answers it.
   useEffect(() => {
     statsVisibleRef.current = statsVisible;
-    workerRef.current?.postMessage({ type: 'stats', on: statsVisible });
+    clockRef.current = clockFeature !== false;
+    workerRef.current?.postMessage({ type: 'stats', on: statsVisible, clock: clockRef.current });
     if (!statsVisible) setStreamStats(null);
-  }, [statsVisible, setStreamStats]);
+  }, [statsVisible, clockFeature, setStreamStats]);
 
   // The switch goes to the server through the worker, which sends it again
   // on every reconnect. The flip is the user act that lets the microphone's

@@ -1501,7 +1501,37 @@ const ja = {
         updateTo: '{{version}} に更新',
         updateConfirmDesc:
           'デバイスは更新をインストールしてサーバーを再起動します。サーバーが戻るとこのページは再読み込みされます。',
-        releaseNotes: 'リリースノート'
+        releaseNotes: 'リリースノート',
+        ui: {
+          title: 'Web UI',
+          desc: 'サーバーを更新せずに Web UI をインストールまたはロールバックします',
+          served: '使用中: {{version}}、サーバー API {{api}}',
+          bundled: 'アプリケーション同梱の UI',
+          bundledVersion: '{{version}} (アプリケーション同梱)',
+          checkOff: '署名チェックはオフです (/data/ironkvm/no-signature-check)。どのパッケージもインストールされます。',
+          noKeys: 'キーリングが空のため、パッケージは署名チェックなしでインストールされます。',
+          check: '確認',
+          noPackage: '更新サーバーに Web UI パッケージがありません。',
+          isCurrent: 'Web UI {{version}} は既に使用中です。',
+          incompatible: 'Web UI {{version}} にはサーバー API {{api}} が必要ですが、このサーバーは {{server}} です。先にアプリケーションを更新してください。',
+          installTo: 'Web UI {{version}} をインストール',
+          installDesc: 'デバイスは署名を確認して新しい UI に切り替え、現在の UI をロールバック用に保持します。その後このページを再読み込みします。',
+          chooseFiles: 'パッケージを選択',
+          chooseHint: 'ironkvm-ui_<version>.tar.gz とその .minisig',
+          noSignature: '署名なし',
+          pick: {
+            noPackage: 'ironkvm-ui_<version>.tar.gz パッケージを選択してください。',
+            tooMany: 'パッケージ 1 つと署名を最大 1 つ選択してください。',
+            badName: 'Web UI パッケージではありません (ironkvm-ui_<version>.tar.gz)。',
+            signatureMismatch: '署名は別のパッケージのものです。'
+          },
+          install: 'インストール',
+          installed: 'Web UI をインストールしました。再読み込みしています...',
+          rolledBack: 'Web UI をロールバックしました。再読み込みしています...',
+          rollback: 'ロールバック',
+          rollbackDesc: '{{version}} に戻す',
+          rollbackConfirm: 'Web UI を {{version}} に戻しますか?'
+        }
       },
       account: {
         title: 'アカウント',
@@ -1797,6 +1827,11 @@ const ja = {
       mediaLibrary: 'ライブラリ',
       textToHost: 'ホストへ',
       textFromHost: 'ホストから'
+    },
+    serverContract: {
+      incompatibleTitle: 'この Web UI はこのサーバーに対応していません',
+      incompatible: 'Web UI はサーバー API {{ui}} に対応していますが、サーバーは API {{server}} です。一部の機能が動作しない可能性があります。アプリケーションを更新するか、設定 > 更新 で Web UI をロールバックしてください。',
+      dismiss: '閉じる'
     },
     ion: {
       checking: 'ストリームを開始する前にビデオメモリを確認しています...',

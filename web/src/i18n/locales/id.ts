@@ -1492,7 +1492,37 @@ const id = {
         updateTo: 'Perbarui ke {{version}}',
         updateConfirmDesc:
           'Perangkat memasang pembaruan dan memulai ulang servernya. Halaman ini dimuat ulang saat server kembali.',
-        releaseNotes: 'Catatan rilis'
+        releaseNotes: 'Catatan rilis',
+        ui: {
+          title: 'Antarmuka web',
+          desc: 'Pasang atau kembalikan antarmuka web tanpa memperbarui server',
+          served: 'Aktif: {{version}}, API server {{api}}',
+          bundled: 'antarmuka bawaan aplikasi',
+          bundledVersion: '{{version}} (bawaan aplikasi)',
+          checkOff: 'Pemeriksaan tanda tangan mati (/data/ironkvm/no-signature-check), jadi paket apa pun akan dipasang.',
+          noKeys: 'Keyring kosong, jadi paket dipasang tanpa pemeriksaan tanda tangan.',
+          check: 'Periksa',
+          noPackage: 'Server pembaruan tidak menawarkan paket antarmuka web.',
+          isCurrent: 'Antarmuka web {{version}} sudah aktif.',
+          incompatible: 'Antarmuka web {{version}} memerlukan API server {{api}}, sedangkan server ini memakai {{server}}. Perbarui aplikasi terlebih dahulu.',
+          installTo: 'Pasang antarmuka web {{version}}',
+          installDesc: 'Perangkat memeriksa tanda tangan, beralih ke antarmuka baru, dan menyimpan yang sekarang untuk dikembalikan. Setelah itu halaman dimuat ulang.',
+          chooseFiles: 'Pilih paket',
+          chooseHint: 'ironkvm-ui_<version>.tar.gz dan .minisig-nya',
+          noSignature: 'tanpa tanda tangan',
+          pick: {
+            noPackage: 'Pilih paket ironkvm-ui_<version>.tar.gz.',
+            tooMany: 'Pilih satu paket dan paling banyak satu tanda tangan.',
+            badName: 'Bukan paket antarmuka web (ironkvm-ui_<version>.tar.gz).',
+            signatureMismatch: 'Tanda tangan milik paket lain.'
+          },
+          install: 'Pasang',
+          installed: 'Antarmuka web terpasang. Memuat ulang...',
+          rolledBack: 'Antarmuka web dikembalikan. Memuat ulang...',
+          rollback: 'Kembalikan',
+          rollbackDesc: 'Kembali ke {{version}}',
+          rollbackConfirm: 'Kembalikan antarmuka web ke {{version}}?'
+        }
       },
       account: {
         title: 'Akun',
@@ -1790,6 +1820,11 @@ const id = {
       mediaLibrary: 'Pustaka',
       textToHost: 'Ke host',
       textFromHost: 'Dari host'
+    },
+    serverContract: {
+      incompatibleTitle: 'Antarmuka web ini tidak mendukung server ini',
+      incompatible: 'Antarmuka web mendukung API server {{ui}}, sedangkan server memakai API {{server}}. Beberapa fungsi mungkin gagal. Perbarui aplikasi, atau kembalikan antarmuka web di Pengaturan > Pembaruan.',
+      dismiss: 'Tutup'
     },
     ion: {
       checking: 'Memeriksa memori video sebelum memulai streaming...',
