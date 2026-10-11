@@ -133,6 +133,10 @@ const nl = {
           'Van het verlaten van de encoder tot het tekenen hier, gemeten met de klok van het apparaat. Vastleggen en coderen zijn niet meegerekend.',
         latencyEstimate:
           'Schatting: de helft van de netwerkrondreis plus buffering en decodering in deze browser. Vastleggen en coderen op het apparaat zijn niet meegerekend, dus de echte latentie is hoger.',
+        latencyEstimateSum:
+          'Som van gemeten delen: {{board}} ms op het apparaat van vastleggen tot verzenden, {{network}} ms onderweg hierheen (de helft van de netwerkrondreis), {{receive}} ms buffering en decodering in deze browser en {{display}} ms wachten op het scherm (een halve verversing).',
+        latencyClockOffset:
+          'Gecorrigeerd voor het verschil tussen de klok van het apparaat en die van deze computer, gemeten op {{offset}} ms (apparaat min deze computer).',
         latencyClockAssumed:
           'Aangenomen wordt dat de klok van het apparaat gelijk loopt met die van deze computer.',
         latencyArrival:

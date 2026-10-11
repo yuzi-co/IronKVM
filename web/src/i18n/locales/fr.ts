@@ -135,6 +135,10 @@ const fr = {
           'De la sortie de l\'encodeur au dessin ici, mesuré sur l\'horloge de l\'appareil. La capture et l\'encodage ne sont pas inclus.',
         latencyEstimate:
           'Estimation : la moitié de l\'aller-retour réseau plus la mise en tampon et le décodage dans ce navigateur. La capture et l\'encodage sur l\'appareil ne sont pas inclus, la latence réelle est donc plus élevée.',
+        latencyEstimateSum:
+          'Somme de parts mesurées : {{board}} ms sur l\'appareil de la capture à l\'envoi, {{network}} ms de trajet jusqu\'ici (la moitié de l\'aller-retour réseau), {{receive}} ms de mise en tampon et de décodage dans ce navigateur et {{display}} ms d\'attente de l\'écran (un demi-rafraîchissement).',
+        latencyClockOffset:
+          'Corrigé de l\'écart entre l\'horloge de l\'appareil et celle de cet ordinateur, mesuré à {{offset}} ms (appareil moins cet ordinateur).',
         latencyClockAssumed:
           'L\'horloge de l\'appareil est supposée identique à celle de cet ordinateur.',
         latencyArrival:

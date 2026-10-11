@@ -131,6 +131,10 @@ const vi = {
           'Từ lúc khung hình rời bộ mã hóa đến lúc được vẽ ở đây, đo theo đồng hồ của thiết bị. Không gồm thời gian thu và mã hóa.',
         latencyEstimate:
           'Ước tính: một nửa thời gian khứ hồi mạng cộng bộ đệm và giải mã trong trình duyệt này. Không gồm thu và mã hóa trên thiết bị, nên độ trễ thực cao hơn.',
+        latencyEstimateSum:
+          'Tổng các phần đo được: {{board}} ms trên thiết bị từ khi thu đến khi gửi, {{network}} ms trên đường đến đây (một nửa thời gian khứ hồi mạng), {{receive}} ms bộ đệm và giải mã trong trình duyệt này và {{display}} ms chờ màn hình (nửa chu kỳ làm mới).',
+        latencyClockOffset:
+          'Đã hiệu chỉnh theo độ lệch giữa đồng hồ của thiết bị và của máy tính này, đo được {{offset}} ms (thiết bị trừ máy tính này).',
         latencyClockAssumed: 'Giả định đồng hồ của thiết bị khớp với đồng hồ của máy tính này.',
         latencyArrival:
           'Khung hình đến đây {{ms}} ms sau bộ mã hóa; phần còn lại là giải mã và vẽ trong trình duyệt này.',

@@ -132,6 +132,10 @@ const hu = {
           'Attól, hogy a képkocka elhagyja a kódolót, addig, hogy itt kirajzolódik, az eszköz órájához mérve. A rögzítés és a kódolás nincs benne.',
         latencyEstimate:
           'Becslés: a hálózati körbejárási idő fele plusz a böngésző pufferelése és dekódolása. A rögzítés és a kódolás az eszközön nincs benne, így a valós késleltetés nagyobb.',
+        latencyEstimateSum:
+          'Mért részek összege: {{board}} ms az eszközön a rögzítéstől a küldésig, {{network}} ms az ide vezető úton (a hálózati körbejárási idő fele), {{receive}} ms pufferelés és dekódolás ebben a böngészőben, valamint {{display}} ms várakozás a kijelzőre (fél frissítés).',
+        latencyClockOffset:
+          'Javítva az eszköz és a számítógép órája közti eltéréssel, amely mérve {{offset}} ms (eszköz mínusz ez a számítógép).',
         latencyClockAssumed: 'Feltételezzük, hogy az eszköz órája egyezik a számítógépével.',
         latencyArrival:
           'A képkockák {{ms}} ms-mal a kódoló után érkeznek ide; a többi dekódolás és rajzolás ebben a böngészőben.',

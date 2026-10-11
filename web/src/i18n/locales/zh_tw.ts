@@ -122,6 +122,10 @@ const zh_tw = {
         latencyCapture: '從裝置擷取到在此顯示，依據伺服器隨每個影格傳送的擷取時間計算。',
         latencyEncoder: '從影格離開編碼器到在此繪製，以裝置的時鐘測量。不含擷取和編碼時間。',
         latencyEstimate: '估計值：網路往返時間的一半，加上此瀏覽器的緩衝和解碼時間。不含裝置上的擷取和編碼，因此實際延遲更高。',
+        latencyEstimateSum:
+          '各測量部分之和：裝置上從擷取到傳送 {{board}} ms，到這裡的路上 {{network}} ms（網路往返時間的一半），此瀏覽器的緩衝和解碼 {{receive}} ms，等待顯示 {{display}} ms（半個更新週期）。',
+        latencyClockOffset:
+          '已依裝置時鐘與這台電腦時鐘之差校正，測得為 {{offset}} ms（裝置減這台電腦）。',
         latencyClockAssumed: '假定裝置的時鐘與這台電腦的時鐘一致。',
         latencyArrival: '影格離開編碼器 {{ms}} ms 後到達此處；其餘是此瀏覽器中的解碼和繪製。',
         rttTip: '到裝置的網路往返時間',

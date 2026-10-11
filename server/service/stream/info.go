@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 	"sync/atomic"
+	"time"
 
 	"NanoKVM-Server/proto"
 
@@ -28,7 +29,8 @@ var captureStamps atomic.Bool
 // every two seconds while it shows: the source's mode as the capture library
 // last published it, and the rate the capture loop delivers frames at. It
 // reads two or three small files and a counter, and starts nothing; a board
-// that streams to nobody reports a capture rate of -1.
+// that streams to nobody reports a capture rate of -1. With it goes the
+// board's share of each path's latency (board_latency.go).
 func Info(c *gin.Context) {
 	var rsp proto.Response
 	rsp.OkRspWithData(c, readStreamInfo())
@@ -45,6 +47,7 @@ func readStreamInfo() proto.GetStreamInfoRsp {
 		info.CaptureFps = int(fps)
 	}
 	info.CaptureStamps = captureStamps.Load()
+	info.BoardLatency = readBoardLatency(time.Now())
 
 	return info
 }

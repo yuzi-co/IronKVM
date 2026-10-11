@@ -41,6 +41,10 @@ type outboundFrame struct {
 	key       bool
 	timestamp int64
 	data      []byte
+	// captured is when the frame's first line reached the capture, on the
+	// wall clock, zero where the library does not say. It is not sent; the
+	// writer reports the board's share of the latency with it.
+	captured time.Time
 }
 
 // header renders the prefix. The array is returned by value so it stays on the
@@ -506,6 +510,7 @@ func (c *client) writeLoop() {
 				c.close()
 				return
 			}
+			stream.NoteBoardLatency(stream.BoardPathDirect, frame.captured, time.Now())
 			continue
 		}
 		if wroteAudio {

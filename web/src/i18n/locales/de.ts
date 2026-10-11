@@ -135,6 +135,10 @@ const de = {
           'Vom Verlassen des Encoders bis zum Zeichnen hier, gemessen an der Uhr des Geräts. Erfassung und Kodierung sind nicht enthalten.',
         latencyEstimate:
           'Schätzung: halbe Netzwerk-Umlaufzeit plus Pufferung und Dekodierung in diesem Browser. Erfassung und Kodierung auf dem Gerät fehlen, die echte Latenz ist also höher.',
+        latencyEstimateSum:
+          'Summe gemessener Teile: {{board}} ms auf dem Gerät von der Erfassung bis zum Senden, {{network}} ms auf dem Weg hierher (halbe Netzwerk-Umlaufzeit), {{receive}} ms Pufferung und Dekodierung in diesem Browser und {{display}} ms Warten auf die Anzeige (halbe Bildwiederholung).',
+        latencyClockOffset:
+          'Korrigiert um den Unterschied zwischen der Uhr des Geräts und der dieses Computers, gemessen mit {{offset}} ms (Gerät minus dieser Computer).',
         latencyClockAssumed:
           'Es wird angenommen, dass die Uhr des Geräts mit der dieses Computers übereinstimmt.',
         latencyArrival:

@@ -133,6 +133,10 @@ const ca = {
           'Des que el fotograma surt del codificador fins que es dibuixa aquí, mesurat amb el rellotge del dispositiu. No inclou la captura ni la codificació.',
         latencyEstimate:
           'Estimació: la meitat de l\'anada i tornada de la xarxa més la memòria intermèdia i la descodificació d\'aquest navegador. No inclou la captura ni la codificació al dispositiu, així que la latència real és més alta.',
+        latencyEstimateSum:
+          'Suma de parts mesurades: {{board}} ms al dispositiu de la captura a l\'enviament, {{network}} ms de camí fins aquí (la meitat de l\'anada i tornada de la xarxa), {{receive}} ms de memòria intermèdia i descodificació en aquest navegador i {{display}} ms d\'espera de la pantalla (mig refresc).',
+        latencyClockOffset:
+          'Corregit per la diferència entre el rellotge del dispositiu i el d\'aquest ordinador, mesurada en {{offset}} ms (dispositiu menys aquest ordinador).',
         latencyClockAssumed:
           'Se suposa que el rellotge del dispositiu coincideix amb el d\'aquest ordinador.',
         latencyArrival:

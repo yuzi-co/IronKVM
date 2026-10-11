@@ -23,9 +23,11 @@ export const SERVER_FEATURES = [
   'direct-clock', // the clock request on the direct H.264 socket (status bar latency)
   'hid-autotap', // POST /api/hid/autotap and /api/hid/sequence (keyboard menu: auto-tap)
   'hid-macros', // /api/hid/macro(s) and /api/hid/sequence (keyboard menu: macros)
+  'info-latency', // boardLatency in GET /api/stream/info (status bar latency estimate)
   'ip-allowlist', // /api/network/allowlist (Settings > Network > Allowed networks)
   'status-bar', // GET /api/stream/info (status bar source line)
-  'ui-update' // /api/ui: separate UI packages (Settings > Update)
+  'ui-update', // /api/ui: separate UI packages (Settings > Update)
+  'webrtc-clock' // the clock event on the WebRTC signalling socket (status bar latency)
 ] as const;
 
 export type ServerFeature = (typeof SERVER_FEATURES)[number];

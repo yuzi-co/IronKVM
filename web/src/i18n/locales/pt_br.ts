@@ -131,6 +131,10 @@ const pt_br = {
           'Da saída do codificador até o desenho aqui, medida pelo relógio do dispositivo. Captura e codificação não estão incluídas.',
         latencyEstimate:
           'Estimativa: metade da ida e volta da rede mais o buffer e a decodificação deste navegador. Captura e codificação no dispositivo não estão incluídas, então a latência real é maior.',
+        latencyEstimateSum:
+          'Soma de partes medidas: {{board}} ms no dispositivo da captura ao envio, {{network}} ms no caminho até aqui (metade da ida e volta da rede), {{receive}} ms de buffer e decodificação neste navegador e {{display}} ms de espera pela tela (meia atualização).',
+        latencyClockOffset:
+          'Corrigido pela diferença entre o relógio do dispositivo e o deste computador, medida em {{offset}} ms (dispositivo menos este computador).',
         latencyClockAssumed:
           'Supõe-se que o relógio do dispositivo coincide com o deste computador.',
         latencyArrival:

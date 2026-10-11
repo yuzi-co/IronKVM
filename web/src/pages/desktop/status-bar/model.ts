@@ -6,12 +6,23 @@
 // only ever one of three things, and the bar says which:
 //
 //   capture  capture to display, from the abs-capture-time RTP header
-//            extension (WebRTC, when the server sends it)
+//            extension (WebRTC, when the server sends it), corrected by the
+//            offset between the board's clock and this page's where the
+//            server answers the clock request
 //   encoder  the frame leaving the encoder to it being drawn, against the
 //            board's clock (H.264 direct, clock-synchronised over the socket)
-//   estimate what the browser can see of the path: half the round trip plus
-//            the time from a frame's first packet to its decode. It leaves out
-//            capture and encoding on the board, so it is a lower bound.
+//   estimate a sum of measured parts: the board's own share (capture to the
+//            network, which the server measures), half the round trip, the
+//            time from a frame's first packet to its decode, and half a
+//            display refresh. From a server that does not measure its share,
+//            only what the browser sees, which is a lower bound.
+
+import {
+  midpointMs,
+  quickestReading,
+  roundTripMs,
+  type WallClockOffset
+} from '../../../lib/clock-offset.ts';
 
 export type StreamMode = 'h264' | 'direct' | 'mjpeg';
 
@@ -30,6 +41,23 @@ export type Latency = {
   // How much of it had passed when the frame arrived in this browser, where
   // that is known (the direct path). The rest is decoding and drawing here.
   arrivalMs?: number;
+  // The measured offset the capture time was corrected by: the board's clock
+  // minus this page's.
+  clockOffsetMs?: number;
+  // What an estimate is made of. Without boardMs it is only what the browser
+  // sees, and ms leaves out displayMs too, as it always did.
+  parts?: LatencyParts;
+};
+
+export type LatencyParts = {
+  // Half the round trip.
+  networkMs: number;
+  // From a frame's first packet to its decode: buffering and decoding.
+  receiveMs: number;
+  // Half a display refresh, the average wait for the next one.
+  displayMs?: number;
+  // The board's median from capture to handing the frame to the network.
+  boardMs?: number;
 };
 
 export type StreamStats = {
@@ -193,6 +221,15 @@ function perFrameMs(
 // failing that the jitter buffer delay and the decode time added up. Null
 // until a whole interval has frames in it.
 export function webrtcEstimate(current: WebrtcSample, previous: WebrtcSample): number | null {
+  const parts = webrtcEstimateParts(current, previous);
+  return parts === null ? null : parts.receiveMs + parts.networkMs;
+}
+
+// webrtcEstimateParts is webrtcEstimate before the two parts are added.
+export function webrtcEstimateParts(
+  current: WebrtcSample,
+  previous: WebrtcSample
+): LatencyParts | null {
   let receive = perFrameMs(
     current.totalProcessingDelay,
     previous.totalProcessingDelay,
@@ -216,7 +253,29 @@ export function webrtcEstimate(current: WebrtcSample, previous: WebrtcSample): n
     receive = buffer + decode;
   }
   const way = current.rttS !== undefined ? (current.rttS * 1000) / 2 : 0;
-  return receive + way;
+  return { networkMs: way, receiveMs: receive };
+}
+
+// withBoardPart completes a WebRTC estimate with the board's share of the
+// latency (GET /api/stream/info boardLatency.webrtc) and the display's: the
+// sum of measured parts. Anything else, or no board share, is left as it is.
+export function withBoardPart(latency: Latency, boardMs: number | undefined): Latency {
+  if (latency.kind !== 'estimate' || !latency.parts) return latency;
+  if (typeof boardMs !== 'number' || !Number.isFinite(boardMs) || boardMs < 0) return latency;
+  const parts = { ...latency.parts, boardMs };
+  const ms = boardMs + parts.networkMs + parts.receiveMs + (parts.displayMs ?? 0);
+  return { ...latency, ms, parts };
+}
+
+// refreshIntervalMs is the display's refresh interval from the gaps between
+// requestAnimationFrame callbacks: their median, so that a frame the page
+// missed (a gap of two) does not count. Gaps outside 4 to 100 ms (250 Hz to
+// 10 Hz) are a page that was busy or hidden. Null without enough gaps.
+export function refreshIntervalMs(gaps: readonly number[]): number | null {
+  const usable = gaps.filter((g) => g >= 4 && g <= 100).sort((a, b) => a - b);
+  if (usable.length < 10) return null;
+  const middle = usable.length >> 1;
+  return usable.length % 2 ? usable[middle] : (usable[middle - 1] + usable[middle]) / 2;
 }
 
 // lossPct is the share of the interval's packets that never came.
@@ -247,23 +306,46 @@ export type SyncSource = {
 };
 
 // captureLatency reads the abs-capture-time RTP header extension as Chrome
-// passes it on. captureTimestamp is the frame's capture time on the sender's
-// NTP clock, and senderCaptureTimeOffset what the browser estimates that clock
-// to be off its own (from the sender reports). timestamp is when the frame
-// went to the track, on the Unix clock. Without the offset the two clocks are
-// taken to agree, and the answer says so. Null when there is no capture time,
-// or the arithmetic gives no plausible answer.
-export function captureLatency(source: SyncSource | undefined): Latency | null {
+// passes it on. captureTimestamp is the frame's capture time on the board's
+// wall clock (NTP epoch), and timestamp when the frame went to the track, on
+// this page's clock (performance.timeOrigin + performance.now(), Unix epoch).
+//
+// With clock, the offset between the two clocks measured over the signalling
+// socket, the capture time is moved onto the page's clock by it, and the
+// answer carries the offset's error. senderCaptureTimeOffset is not used
+// then: the board sends 0 for it, and anything else is the browser's own
+// guess at the same offset, which would count it twice.
+//
+// Without clock the arithmetic is the old one, which takes the two clocks to
+// agree (senderCaptureTimeOffset is the board's 0 unless the browser filled
+// in a guess), and the answer says so. Null when there is no capture time, or
+// the arithmetic gives no plausible answer.
+export function captureLatency(
+  source: SyncSource | undefined,
+  clock?: WallClockOffset | null
+): Latency | null {
   if (!source) return null;
   const { timestamp, captureTimestamp, senderCaptureTimeOffset } = source;
   if (typeof timestamp !== 'number' || typeof captureTimestamp !== 'number') return null;
   if (!(captureTimestamp > 0)) return null;
-  const hasOffset = typeof senderCaptureTimeOffset === 'number';
-  const captured =
-    captureTimestamp + (hasOffset ? senderCaptureTimeOffset : 0) - NTP_UNIX_OFFSET_MS;
-  const ms = timestamp - captured;
+
+  if (clock) {
+    const captured = captureTimestamp - NTP_UNIX_OFFSET_MS - clock.offsetMs;
+    const ms = timestamp - captured;
+    // Within the offset's error of zero is a fast frame, not a broken clock.
+    if (!(ms >= -clock.errorMs && ms <= MAX_PLAUSIBLE_LATENCY_MS)) return null;
+    return {
+      ms: Math.max(0, ms),
+      kind: 'capture',
+      errorMs: clock.errorMs,
+      clockOffsetMs: clock.offsetMs
+    };
+  }
+
+  const offset = typeof senderCaptureTimeOffset === 'number' ? senderCaptureTimeOffset : 0;
+  const ms = timestamp - (captureTimestamp + offset - NTP_UNIX_OFFSET_MS);
   if (!(ms >= 0 && ms <= MAX_PLAUSIBLE_LATENCY_MS)) return null;
-  return hasOffset ? { ms, kind: 'capture' } : { ms, kind: 'capture', clockAssumed: true };
+  return { ms, kind: 'capture', clockAssumed: true };
 }
 
 // transportLabel says how the media travels: "UDP host", "TCP relay".
@@ -274,13 +356,24 @@ export function transportLabel(sample: WebrtcSample): string | null {
   return [protocol, type].filter(Boolean).join(' ');
 }
 
+// What webrtcStats takes besides the two samples, where known.
+export type WebrtcExtras = {
+  // The video source's newest capture time.
+  source?: SyncSource;
+  // The board's wall clock against this page's.
+  clock?: WallClockOffset | null;
+  // The display's refresh interval (refreshIntervalMs).
+  refreshMs?: number | null;
+};
+
 // webrtcStats is what the bar shows for a WebRTC session, from two samples a
-// second or so apart and the video source's capture time if it has one.
+// second or so apart, the video source's capture time if it has one, and the
+// clock offset and the display refresh where known.
 export function webrtcStats(
   current: WebrtcSample,
   previous: WebrtcSample | null,
   connection: ConnectionState,
-  source?: SyncSource
+  extras: WebrtcExtras = {}
 ): StreamStats {
   const stats = emptyStats('h264', connection);
   stats.codec = codecFromMime(current.mimeType);
@@ -288,7 +381,7 @@ export function webrtcStats(
   stats.height = current.frameHeight ?? 0;
   stats.rttMs = current.rttS !== undefined ? current.rttS * 1000 : null;
   stats.transport = transportLabel(current);
-  stats.latency = captureLatency(source);
+  stats.latency = captureLatency(extras.source, extras.clock);
 
   if (!previous) return stats;
 
@@ -300,8 +393,11 @@ export function webrtcStats(
   stats.kbps = bytes === null ? null : (bytes * 8) / 1000;
   stats.lossPct = lossPct(current, previous);
   if (!stats.latency) {
-    const estimate = webrtcEstimate(current, previous);
-    if (estimate !== null) stats.latency = { ms: estimate, kind: 'estimate' };
+    const parts = webrtcEstimateParts(current, previous);
+    if (parts !== null) {
+      if (typeof extras.refreshMs === 'number') parts.displayMs = extras.refreshMs / 2;
+      stats.latency = { ms: parts.networkMs + parts.receiveMs, kind: 'estimate', parts };
+    }
   }
   return stats;
 }
@@ -327,17 +423,11 @@ export const CLOCK_WINDOW = 10;
 // The board stamped its clock somewhere inside that round trip, and the
 // middle of it is the best guess, wrong by at most half of it.
 export function clockEstimate(samples: readonly ClockSample[]): ClockEstimate | null {
-  let best: ClockSample | null = null;
-  for (const sample of samples) {
-    const rtt = sample.receivedMs - sample.sentMs;
-    if (rtt < 0) continue;
-    if (!best || rtt < best.receivedMs - best.sentMs) best = sample;
-  }
+  const best = quickestReading(samples);
   if (!best) return null;
-  const middleMs = (best.sentMs + best.receivedMs) / 2;
   return {
-    offsetUs: best.boardUs - middleMs * 1000,
-    errorMs: (best.receivedMs - best.sentMs) / 2
+    offsetUs: best.boardUs - midpointMs(best) * 1000,
+    errorMs: roundTripMs(best) / 2
   };
 }
 

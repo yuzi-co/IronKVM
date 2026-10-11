@@ -130,6 +130,10 @@ const en = {
           'From the frame leaving the encoder to it being drawn here, measured against the board\'s clock. The time to capture and encode the frame is not included.',
         latencyEstimate:
           'Estimate: half the network round trip plus this browser\'s buffering and decoding. Capture and encoding on the board are not included, so the real latency is higher.',
+        latencyEstimateSum:
+          'Sum of measured parts: {{board}} ms on the board from capture to sending, {{network}} ms on the way here (half the network round trip), {{receive}} ms buffering and decoding in this browser, and {{display}} ms waiting for the display (half a refresh).',
+        latencyClockOffset:
+          'Corrected for the difference between the board\'s clock and this computer\'s, measured at {{offset}} ms (board minus this computer).',
         latencyClockAssumed: 'The board\'s clock is taken to match this computer\'s.',
         latencyArrival:
           'Frames arrive here {{ms}} ms after leaving the encoder; the rest is decoding and drawing in this browser.',

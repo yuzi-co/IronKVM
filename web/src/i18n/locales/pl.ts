@@ -132,6 +132,10 @@ const pl = {
           'Od wyjścia klatki z kodera do narysowania jej tutaj, mierzone zegarem urządzenia. Przechwytywanie i kodowanie nie są wliczone.',
         latencyEstimate:
           'Szacunek: połowa czasu podróży w obie strony w sieci plus buforowanie i dekodowanie w tej przeglądarce. Przechwytywanie i kodowanie na urządzeniu nie są wliczone, więc rzeczywiste opóźnienie jest większe.',
+        latencyEstimateSum:
+          'Suma zmierzonych części: {{board}} ms na urządzeniu od przechwycenia do wysłania, {{network}} ms w drodze tutaj (połowa czasu podróży w obie strony w sieci), {{receive}} ms buforowania i dekodowania w tej przeglądarce oraz {{display}} ms oczekiwania na wyświetlacz (pół odświeżenia).',
+        latencyClockOffset:
+          'Skorygowano o różnicę między zegarem urządzenia a zegarem tego komputera, zmierzoną na {{offset}} ms (urządzenie minus ten komputer).',
         latencyClockAssumed:
           'Zakłada się, że zegar urządzenia zgadza się z zegarem tego komputera.',
         latencyArrival:
