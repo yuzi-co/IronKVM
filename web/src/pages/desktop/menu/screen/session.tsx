@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { message, Switch, Tooltip } from 'antd';
 import { useAtom } from 'jotai';
-import { CameraIcon, EyeIcon, LoaderCircleIcon, PauseIcon } from 'lucide-react';
+import { ActivityIcon, CameraIcon, EyeIcon, LoaderCircleIcon, PauseIcon } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { getScreenshot } from '@/api/stream.ts';
-import { pauseWhenHiddenAtom, viewOnlyAtom } from '@/jotai/screen.ts';
+import { pauseWhenHiddenAtom, streamInfoVisibleAtom, viewOnlyAtom } from '@/jotai/screen.ts';
 
 const rowClass =
   'box-border flex h-[30px] w-full items-center space-x-2 rounded p-0 pr-5 pl-3 text-left text-neutral-300';
@@ -71,11 +71,12 @@ const ToggleRow = ({ icon: Icon, label, tip, checked, onChange }: ToggleRowProps
 
 // Session holds the switches that belong to this tab rather than to the
 // board, as PiKVM's System menu does: view only, pausing the stream while the
-// tab is hidden, and a screenshot of the host screen.
+// tab is hidden, the stream status bar, and a screenshot of the host screen.
 export const Session = () => {
   const { t } = useTranslation();
   const [viewOnly, setViewOnly] = useAtom(viewOnlyAtom);
   const [pauseWhenHidden, setPauseWhenHidden] = useAtom(pauseWhenHiddenAtom);
+  const [streamInfoVisible, setStreamInfoVisible] = useAtom(streamInfoVisibleAtom);
   const [isCapturing, setIsCapturing] = useState(false);
 
   // The frame comes from the board, as OCR takes it, rather than from the
@@ -112,6 +113,13 @@ export const Session = () => {
         tip={t('screen.pauseHiddenTip')}
         checked={pauseWhenHidden}
         onChange={setPauseWhenHidden}
+      />
+      <ToggleRow
+        icon={ActivityIcon}
+        label={t('screen.streamInfo.toggle')}
+        tip={t('screen.streamInfo.toggleTip')}
+        checked={streamInfoVisible}
+        onChange={setStreamInfoVisible}
       />
       <Tooltip placement="rightTop" title={t('screen.screenshotTip')} color="#262626" arrow>
         <button

@@ -103,6 +103,40 @@ const hu = {
       screenshot: 'Képernyőkép',
       screenshotTip: 'A gazdagép képernyőjét PNG-fájlba menti teljes rögzítési méretben.',
       screenshotFailed: 'A képernyőkép nem sikerült',
+      streamInfo: {
+        toggle: 'Stream infó',
+        toggleTip:
+          'A kép alatt egy sorban mutatja a stream kapcsolatát, felbontását, képkockasebességét, bitsebességét és késleltetését, ahogy ez a böngésző méri.',
+        title: 'Stream állapota',
+        connecting: 'Kapcsolódás',
+        connected: 'Kapcsolódva',
+        reconnecting: 'Újrakapcsolódás',
+        failed: 'Sikertelen',
+        paused: 'Szüneteltetve',
+        noSignal: 'Nincs jel',
+        source: 'Forrás',
+        sourceTip: 'A HDMI bemenet módja, amelyet az eszköz rögzít',
+        stream: 'Stream',
+        streamTip: 'A kép mérete, ahogy ebbe a böngészőbe érkezik',
+        received: 'fogadott',
+        decoded: 'dekódolt',
+        dropped: 'eldobott',
+        board: 'eszköz',
+        boardTip: 'Az eszköz által másodpercenként rögzített és kódolt képkockák',
+        bitrateTip: 'A böngésző által fogadott videoadat',
+        latency: 'Késleltetés',
+        latencyCapture:
+          'A rögzítéstől az eszközön a megjelenítésig itt, a szerver által minden képkockával küldött rögzítési idő alapján.',
+        latencyEncoder:
+          'Attól, hogy a képkocka elhagyja a kódolót, addig, hogy itt kirajzolódik, az eszköz órájához mérve. A rögzítés és a kódolás nincs benne.',
+        latencyEstimate:
+          'Becslés: a hálózati körbejárási idő fele plusz a böngésző pufferelése és dekódolása. A rögzítés és a kódolás az eszközön nincs benne, így a valós késleltetés nagyobb.',
+        latencyClockAssumed: 'Feltételezzük, hogy az eszköz órája egyezik a számítógépével.',
+        rttTip: 'Hálózati körbejárási idő az eszközig',
+        loss: 'Veszteség',
+        lossTip: 'Az utolsó másodpercben elveszett csomagok',
+        transportTip: 'Hogyan jut el a videó ebbe a böngészőbe'
+      },
       stream: {
         ok: 'kép rendben',
         noSignal: 'nincs jel',

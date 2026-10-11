@@ -105,6 +105,41 @@ const de = {
       screenshot: 'Bildschirmfoto',
       screenshotTip: 'Speichert den Bildschirm des Hosts als PNG-Datei in voller Aufnahmegröße.',
       screenshotFailed: 'Bildschirmfoto fehlgeschlagen',
+      streamInfo: {
+        toggle: 'Stream-Info',
+        toggleTip:
+          'Zeigt unter dem Bild eine Zeile mit Verbindung, Auflösung, Bildrate, Bitrate und Latenz des Streams, wie dieser Browser sie misst.',
+        title: 'Stream-Status',
+        connecting: 'Verbinde',
+        connected: 'Verbunden',
+        reconnecting: 'Neu verbinden',
+        failed: 'Fehlgeschlagen',
+        paused: 'Pausiert',
+        noSignal: 'Kein Signal',
+        source: 'Quelle',
+        sourceTip: 'Der HDMI-Eingangsmodus, den das Gerät erfasst',
+        stream: 'Stream',
+        streamTip: 'Die Bildgröße, wie sie in diesem Browser ankommt',
+        received: 'empfangen',
+        decoded: 'dekodiert',
+        dropped: 'verworfen',
+        board: 'Gerät',
+        boardTip: 'Bilder pro Sekunde, die das Gerät erfasst und kodiert',
+        bitrateTip: 'Videodaten, die dieser Browser empfängt',
+        latency: 'Latenz',
+        latencyCapture:
+          'Von der Erfassung auf dem Gerät bis zur Anzeige hier, anhand der Erfassungszeit, die der Server mit jedem Bild sendet.',
+        latencyEncoder:
+          'Vom Verlassen des Encoders bis zum Zeichnen hier, gemessen an der Uhr des Geräts. Erfassung und Kodierung sind nicht enthalten.',
+        latencyEstimate:
+          'Schätzung: halbe Netzwerk-Umlaufzeit plus Pufferung und Dekodierung in diesem Browser. Erfassung und Kodierung auf dem Gerät fehlen, die echte Latenz ist also höher.',
+        latencyClockAssumed:
+          'Es wird angenommen, dass die Uhr des Geräts mit der dieses Computers übereinstimmt.',
+        rttTip: 'Netzwerk-Umlaufzeit zum Gerät',
+        loss: 'Verlust',
+        lossTip: 'In der letzten Sekunde verlorene Pakete',
+        transportTip: 'Wie das Video diesen Browser erreicht'
+      },
       stream: {
         ok: 'Bild OK',
         noSignal: 'kein Signal',

@@ -102,6 +102,40 @@ const da = {
       screenshot: 'Skærmbillede',
       screenshotTip: 'Gemmer værtens skærm som PNG i fuld optagestørrelse.',
       screenshotFailed: 'Skærmbillede mislykkedes',
+      streamInfo: {
+        toggle: 'Streaminfo',
+        toggleTip:
+          'Viser en linje under billedet med streamens forbindelse, opløsning, billedhastighed, bitrate og latens, som denne browser måler dem.',
+        title: 'Streamstatus',
+        connecting: 'Forbinder',
+        connected: 'Forbundet',
+        reconnecting: 'Genforbinder',
+        failed: 'Mislykkedes',
+        paused: 'På pause',
+        noSignal: 'Intet signal',
+        source: 'Kilde',
+        sourceTip: 'HDMI-indgangens tilstand, som enheden optager',
+        stream: 'Stream',
+        streamTip: 'Billedstørrelsen, som den kommer frem i denne browser',
+        received: 'modtaget',
+        decoded: 'afkodet',
+        dropped: 'droppet',
+        board: 'enhed',
+        boardTip: 'Billeder pr. sekund, som enheden optager og koder',
+        bitrateTip: 'Videodata, som denne browser modtager',
+        latency: 'Latens',
+        latencyCapture:
+          'Fra optagelse på enheden til billedet vises her, ud fra optagetidspunktet, som serveren sender med hvert billede.',
+        latencyEncoder:
+          'Fra billedet forlader koderen, til det tegnes her, målt mod enhedens ur. Optagelse og kodning er ikke medregnet.',
+        latencyEstimate:
+          'Skøn: halvdelen af netværkets rundtur plus denne browsers buffering og afkodning. Optagelse og kodning på enheden er ikke medregnet, så den reelle latens er højere.',
+        latencyClockAssumed: 'Enhedens ur antages at gå som denne computers.',
+        rttTip: 'Netværkets rundtur til enheden',
+        loss: 'Tab',
+        lossTip: 'Pakker tabt i det seneste sekund',
+        transportTip: 'Hvordan videoen når denne browser'
+      },
       stream: {
         ok: 'billede OK',
         noSignal: 'intet signal',

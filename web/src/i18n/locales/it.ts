@@ -103,6 +103,41 @@ const it = {
       screenshot: 'Screenshot',
       screenshotTip: "Salva lo schermo dell'host come PNG alla piena dimensione di acquisizione.",
       screenshotFailed: 'Screenshot non riuscito',
+      streamInfo: {
+        toggle: 'Info stream',
+        toggleTip:
+          'Mostra sotto l\'immagine una riga con connessione, risoluzione, frequenza dei fotogrammi, bitrate e latenza dello stream, come li misura questo browser.',
+        title: 'Stato dello stream',
+        connecting: 'Connessione',
+        connected: 'Connesso',
+        reconnecting: 'Riconnessione',
+        failed: 'Non riuscito',
+        paused: 'In pausa',
+        noSignal: 'Nessun segnale',
+        source: 'Sorgente',
+        sourceTip: 'La modalità dell\'ingresso HDMI catturata dal dispositivo',
+        stream: 'Stream',
+        streamTip: 'La dimensione dell\'immagine come arriva in questo browser',
+        received: 'ricevuti',
+        decoded: 'decodificati',
+        dropped: 'scartati',
+        board: 'dispositivo',
+        boardTip: 'Fotogrammi al secondo catturati e codificati dal dispositivo',
+        bitrateTip: 'Dati video ricevuti da questo browser',
+        latency: 'Latenza',
+        latencyCapture:
+          'Dalla cattura sul dispositivo alla visualizzazione qui, in base all\'ora di cattura che il server invia con ogni fotogramma.',
+        latencyEncoder:
+          'Dall\'uscita dall\'encoder al disegno qui, misurata sull\'orologio del dispositivo. Cattura e codifica non sono incluse.',
+        latencyEstimate:
+          'Stima: metà del tempo di andata e ritorno di rete più buffer e decodifica in questo browser. Cattura e codifica sul dispositivo non sono incluse, quindi la latenza reale è maggiore.',
+        latencyClockAssumed:
+          'Si presume che l\'orologio del dispositivo coincida con quello di questo computer.',
+        rttTip: 'Andata e ritorno di rete verso il dispositivo',
+        loss: 'Perdita',
+        lossTip: 'Pacchetti persi nell\'ultimo secondo',
+        transportTip: 'Come il video raggiunge questo browser'
+      },
       stream: {
         ok: 'immagine OK',
         noSignal: 'nessun segnale',

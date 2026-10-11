@@ -20,8 +20,9 @@ import {
   roomMicTransportAtom,
   roomMicVolumeAtom
 } from '@/jotai/room-mic.ts';
-import { screenSettingsAtom } from '@/jotai/screen.ts';
+import { screenSettingsAtom, streamInfoVisibleAtom, streamStatsAtom } from '@/jotai/screen.ts';
 
+import { watchWebrtc } from '../status-bar/webrtc.ts';
 import { ScreenViewport } from './viewport.tsx';
 
 type SignalingMessage = {
@@ -69,6 +70,11 @@ export const H264Webrtc = () => {
   // message and this browser's own setting can both report one change, and
   // whichever comes second must not tear down the session the first started.
   const codecRestartAt = useRef(0);
+
+  const statsVisible = useAtomValue(streamInfoVisibleAtom);
+  const setStreamStats = useSetAtom(streamStatsAtom);
+  // The session's peer connection, for the status bar's statistics.
+  const peerRef = useRef<RTCPeerConnection | null>(null);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -170,6 +176,7 @@ export const H264Webrtc = () => {
 
       const peer = new RTCPeerConnection({ iceServers });
       video = peer;
+      peerRef.current = peer;
       videoOfferSent.current = false;
       videoIceCandidates.current = [];
 
@@ -408,6 +415,7 @@ export const H264Webrtc = () => {
 
       video?.close();
       video = null;
+      peerRef.current = null;
       if (videoElement) {
         videoElement.srcObject = null;
       }
@@ -443,6 +451,16 @@ export const H264Webrtc = () => {
     pushRoomState,
     setRoomSwitch
   ]);
+
+  // The status bar reads the browser's own statistics while it shows.
+  useEffect(() => {
+    if (!statsVisible) return;
+    const stop = watchWebrtc(() => peerRef.current, setStreamStats);
+    return () => {
+      stop();
+      setStreamStats(null);
+    };
+  }, [statsVisible, setStreamStats]);
 
   // The viewer's switch goes to the server as it changes.
   useEffect(() => {

@@ -103,6 +103,41 @@ const cz = {
       screenshot: 'Snímek obrazovky',
       screenshotTip: 'Uloží obrazovku hostitele jako PNG v plné velikosti záznamu.',
       screenshotFailed: 'Snímek obrazovky se nezdařil',
+      streamInfo: {
+        toggle: 'Informace o streamu',
+        toggleTip:
+          'Zobrazí pod obrazem řádek s připojením, rozlišením, snímkovou frekvencí, datovým tokem a latencí streamu, jak je měří tento prohlížeč.',
+        title: 'Stav streamu',
+        connecting: 'Připojování',
+        connected: 'Připojeno',
+        reconnecting: 'Opětovné připojování',
+        failed: 'Selhalo',
+        paused: 'Pozastaveno',
+        noSignal: 'Žádný signál',
+        source: 'Zdroj',
+        sourceTip: 'Režim vstupu HDMI, který zařízení zachytává',
+        stream: 'Stream',
+        streamTip: 'Velikost obrazu, jak přichází do tohoto prohlížeče',
+        received: 'přijato',
+        decoded: 'dekódováno',
+        dropped: 'zahozeno',
+        board: 'zařízení',
+        boardTip: 'Snímky za sekundu, které zařízení zachytí a zakóduje',
+        bitrateTip: 'Video data, která tento prohlížeč přijímá',
+        latency: 'Latence',
+        latencyCapture:
+          'Od zachycení na zařízení po zobrazení zde, podle času zachycení, který server posílá s každým snímkem.',
+        latencyEncoder:
+          'Od opuštění kodéru po vykreslení zde, měřeno podle hodin zařízení. Zachycení a kódování nejsou zahrnuty.',
+        latencyEstimate:
+          'Odhad: polovina doby odezvy sítě plus vyrovnávací paměť a dekódování v tomto prohlížeči. Zachycení a kódování na zařízení nejsou zahrnuty, skutečná latence je tedy vyšší.',
+        latencyClockAssumed:
+          'Předpokládá se, že hodiny zařízení jdou stejně jako hodiny tohoto počítače.',
+        rttTip: 'Doba odezvy sítě k zařízení',
+        loss: 'Ztráta',
+        lossTip: 'Pakety ztracené za poslední sekundu',
+        transportTip: 'Jak video dorazí do tohoto prohlížeče'
+      },
       stream: {
         ok: 'obraz v pořádku',
         noSignal: 'bez signálu',

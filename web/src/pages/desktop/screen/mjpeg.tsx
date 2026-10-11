@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
-import { useAtomValue } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 
 import { stopFrameDetect } from '@/api/stream.ts';
 import { getBaseUrl } from '@/lib/service.ts';
 import { mouseStyleAtom } from '@/jotai/mouse.ts';
-import { resolutionAtom } from '@/jotai/screen.ts';
+import { resolutionAtom, streamInfoVisibleAtom, streamStatsAtom } from '@/jotai/screen.ts';
 
+import { emptyStats } from '../status-bar/model.ts';
 import { ScreenViewport } from './viewport.tsx';
 
 // How long to wait before asking for the stream again, and the ceiling that
@@ -22,6 +23,17 @@ export const Mjpeg = () => {
   const [streamNonce, setStreamNonce] = useState(0);
   const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const retryDelay = useRef(retryDelayMs);
+  const statsVisible = useAtomValue(streamInfoVisibleAtom);
+  const setStreamStats = useSetAtom(streamStatsAtom);
+  const imageRef = useRef<HTMLImageElement | null>(null);
+  // Parts loaded since the status bar last looked, and whether any has since
+  // the stream was last asked for.
+  const loads = useRef(0);
+  const hasLoaded = useRef(false);
+  const hasErrorRef = useRef(hasError);
+  useEffect(() => {
+    hasErrorRef.current = hasError;
+  }, [hasError]);
 
   const streamURL = `${getBaseUrl('http')}/api/stream/mjpeg`;
   const streamSrc = hasError ? undefined : `${streamURL}?v=${streamNonce}`;
@@ -55,6 +67,35 @@ export const Mjpeg = () => {
 
   useEffect(() => clearRetry, []);
 
+  // The status bar counts the parts as they load. The browser knows nothing
+  // else of a multipart image: no bitrate, and no capture time to measure
+  // latency against, so the bar shows neither.
+  useEffect(() => {
+    if (!statsVisible) return;
+    loads.current = 0;
+    let last = performance.now();
+    const timer = setInterval(() => {
+      const now = performance.now();
+      const image = imageRef.current;
+      const stats = emptyStats(
+        'mjpeg',
+        hasErrorRef.current ? 'reconnecting' : hasLoaded.current ? 'connected' : 'connecting'
+      );
+      stats.codec = 'MJPEG';
+      stats.width = image?.naturalWidth ?? 0;
+      stats.height = image?.naturalHeight ?? 0;
+      stats.fpsReceived = (loads.current * 1000) / (now - last);
+      stats.transport = window.location.protocol === 'https:' ? 'HTTPS' : 'HTTP';
+      loads.current = 0;
+      last = now;
+      setStreamStats(stats);
+    }, 1000);
+    return () => {
+      clearInterval(timer);
+      setStreamStats(null);
+    };
+  }, [statsVisible, setStreamStats]);
+
   // A new resolution asks for the stream again from a clean state. The state
   // half is done during render, so no frame is painted with the old error flag
   // against the new resolution. The first render needs neither step: the
@@ -78,6 +119,7 @@ export const Mjpeg = () => {
   return (
     <ScreenViewport>
       <img
+        ref={imageRef}
         id="screen"
         className={clsx('block touch-none select-none', mouseStyle)}
         style={{
@@ -89,8 +131,11 @@ export const Mjpeg = () => {
         // so a frame arriving does not re-render anything.
         onLoad={() => {
           retryDelay.current = retryDelayMs;
+          loads.current++;
+          hasLoaded.current = true;
         }}
         onError={() => {
+          hasLoaded.current = false;
           setHasError(true);
           scheduleRetry();
         }}

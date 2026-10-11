@@ -102,6 +102,40 @@ const vi = {
       screenshot: 'Chụp màn hình',
       screenshotTip: 'Lưu màn hình máy chủ thành tệp PNG ở kích thước chụp đầy đủ.',
       screenshotFailed: 'Chụp màn hình thất bại',
+      streamInfo: {
+        toggle: 'Thông tin luồng',
+        toggleTip:
+          'Hiển thị một dòng dưới hình với kết nối, độ phân giải, tốc độ khung hình, bitrate và độ trễ của luồng, theo đo đạc của trình duyệt này.',
+        title: 'Trạng thái luồng',
+        connecting: 'Đang kết nối',
+        connected: 'Đã kết nối',
+        reconnecting: 'Đang kết nối lại',
+        failed: 'Thất bại',
+        paused: 'Tạm dừng',
+        noSignal: 'Không có tín hiệu',
+        source: 'Nguồn',
+        sourceTip: 'Chế độ đầu vào HDMI mà thiết bị thu',
+        stream: 'Luồng',
+        streamTip: 'Kích thước hình khi đến trình duyệt này',
+        received: 'đã nhận',
+        decoded: 'đã giải mã',
+        dropped: 'bị bỏ',
+        board: 'thiết bị',
+        boardTip: 'Số khung hình mỗi giây thiết bị thu và mã hóa',
+        bitrateTip: 'Dữ liệu video trình duyệt này nhận',
+        latency: 'Độ trễ',
+        latencyCapture:
+          'Từ lúc thu trên thiết bị đến lúc hiển thị ở đây, theo thời điểm thu mà máy chủ gửi kèm mỗi khung hình.',
+        latencyEncoder:
+          'Từ lúc khung hình rời bộ mã hóa đến lúc được vẽ ở đây, đo theo đồng hồ của thiết bị. Không gồm thời gian thu và mã hóa.',
+        latencyEstimate:
+          'Ước tính: một nửa thời gian khứ hồi mạng cộng bộ đệm và giải mã trong trình duyệt này. Không gồm thu và mã hóa trên thiết bị, nên độ trễ thực cao hơn.',
+        latencyClockAssumed: 'Giả định đồng hồ của thiết bị khớp với đồng hồ của máy tính này.',
+        rttTip: 'Thời gian khứ hồi mạng đến thiết bị',
+        loss: 'Mất gói',
+        lossTip: 'Số gói bị mất trong giây vừa qua',
+        transportTip: 'Cách video đến trình duyệt này'
+      },
       stream: {
         ok: 'hình ảnh ổn',
         noSignal: 'không có tín hiệu',

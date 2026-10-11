@@ -102,6 +102,40 @@ const id = {
       screenshot: 'Tangkapan layar',
       screenshotTip: 'Menyimpan layar host sebagai PNG dalam ukuran tangkapan penuh.',
       screenshotFailed: 'Tangkapan layar gagal',
+      streamInfo: {
+        toggle: 'Info stream',
+        toggleTip:
+          'Menampilkan satu baris di bawah gambar berisi koneksi, resolusi, laju bingkai, bitrate, dan latensi stream, seperti yang diukur browser ini.',
+        title: 'Status stream',
+        connecting: 'Menghubungkan',
+        connected: 'Terhubung',
+        reconnecting: 'Menghubungkan ulang',
+        failed: 'Gagal',
+        paused: 'Dijeda',
+        noSignal: 'Tidak ada sinyal',
+        source: 'Sumber',
+        sourceTip: 'Mode input HDMI yang ditangkap perangkat',
+        stream: 'Stream',
+        streamTip: 'Ukuran gambar saat tiba di browser ini',
+        received: 'diterima',
+        decoded: 'didekode',
+        dropped: 'dibuang',
+        board: 'perangkat',
+        boardTip: 'Bingkai per detik yang ditangkap dan dikodekan perangkat',
+        bitrateTip: 'Data video yang diterima browser ini',
+        latency: 'Latensi',
+        latencyCapture:
+          'Dari penangkapan di perangkat hingga ditampilkan di sini, berdasarkan waktu penangkapan yang dikirim server bersama setiap bingkai.',
+        latencyEncoder:
+          'Dari bingkai keluar dari encoder hingga digambar di sini, diukur dengan jam perangkat. Penangkapan dan pengodean tidak termasuk.',
+        latencyEstimate:
+          'Perkiraan: setengah waktu pulang-pergi jaringan ditambah buffer dan dekode di browser ini. Penangkapan dan pengodean di perangkat tidak termasuk, jadi latensi sebenarnya lebih tinggi.',
+        latencyClockAssumed: 'Jam perangkat dianggap sama dengan jam komputer ini.',
+        rttTip: 'Waktu pulang-pergi jaringan ke perangkat',
+        loss: 'Hilang',
+        lossTip: 'Paket yang hilang pada detik terakhir',
+        transportTip: 'Cara video sampai ke browser ini'
+      },
       stream: {
         ok: 'gambar OK',
         noSignal: 'tidak ada sinyal',

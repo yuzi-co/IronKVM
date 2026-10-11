@@ -47,6 +47,7 @@ import {
 import { InputRegionOverlay } from './screen/input-region-overlay.tsx';
 import { ManualRegion } from './screen/manual-region.tsx';
 import { usePauseWhenHidden } from './screen/use-pause-when-hidden.ts';
+import { StatusBar } from './status-bar';
 import { ViewOnlyBadge } from './view-only-badge.tsx';
 
 // H.264 direct is the default where the browser can decode both its video and
@@ -311,26 +312,33 @@ export const Desktop = () => {
               onResize={handleSplitterResize}
             >
               <Splitter.Panel min="45%">
-                <div className="relative h-full min-h-0 w-full min-w-0 overflow-hidden bg-black">
-                  {ion.holdStream ? (
-                    ion.loading ? (
-                      <IonCheckingIndicator />
-                    ) : (
-                      ion.status?.verdict === 'critical' && (
-                        <IonCriticalGate onContinue={ion.continueAnyway} />
+                {/* The status bar, when shown, takes a line under the picture
+                    rather than covering the host's own bottom edge. */}
+                <div className="flex h-full min-h-0 w-full min-w-0 flex-col bg-black">
+                  <div className="relative min-h-0 w-full min-w-0 flex-1 overflow-hidden">
+                    {ion.holdStream ? (
+                      ion.loading ? (
+                        <IonCheckingIndicator />
+                      ) : (
+                        ion.status?.verdict === 'critical' && (
+                          <IonCriticalGate onContinue={ion.continueAnyway} />
+                        )
                       )
-                    )
-                  ) : (
-                    <>
-                      <PanelBoundary name="screen">{!isStreamPaused && <Screen />}</PanelBoundary>
-                      <OverlayBoundary name="capture-status">
-                        <CaptureStatusOverlay status={captureStatus} />
-                      </OverlayBoundary>
-                      <OverlayBoundary name="ion-status">
-                        <IonWarningBadge status={ion.status} />
-                      </OverlayBoundary>
-                    </>
-                  )}
+                    ) : (
+                      <>
+                        <PanelBoundary name="screen">{!isStreamPaused && <Screen />}</PanelBoundary>
+                        <OverlayBoundary name="capture-status">
+                          <CaptureStatusOverlay status={captureStatus} />
+                        </OverlayBoundary>
+                        <OverlayBoundary name="ion-status">
+                          <IonWarningBadge status={ion.status} />
+                        </OverlayBoundary>
+                      </>
+                    )}
+                  </div>
+                  <OverlayBoundary name="status-bar">
+                    <StatusBar />
+                  </OverlayBoundary>
                 </div>
               </Splitter.Panel>
               <Splitter.Panel

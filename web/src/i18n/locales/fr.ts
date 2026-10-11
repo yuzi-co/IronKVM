@@ -106,6 +106,41 @@ const fr = {
       screenshot: "Capture d'écran",
       screenshotTip: "Enregistre l'écran de l'hôte en PNG, à la taille de capture complète.",
       screenshotFailed: "Échec de la capture d'écran",
+      streamInfo: {
+        toggle: 'Infos du flux',
+        toggleTip:
+          'Affiche sous l\'image une ligne avec la connexion, la résolution, la fréquence d\'images, le débit et la latence du flux, tels que ce navigateur les mesure.',
+        title: 'État du flux',
+        connecting: 'Connexion',
+        connected: 'Connecté',
+        reconnecting: 'Reconnexion',
+        failed: 'Échec',
+        paused: 'En pause',
+        noSignal: 'Aucun signal',
+        source: 'Source',
+        sourceTip: 'Le mode d\'entrée HDMI capturé par l\'appareil',
+        stream: 'Flux',
+        streamTip: 'La taille de l\'image telle qu\'elle arrive dans ce navigateur',
+        received: 'reçues',
+        decoded: 'décodées',
+        dropped: 'perdues',
+        board: 'appareil',
+        boardTip: 'Images capturées et encodées par seconde sur l\'appareil',
+        bitrateTip: 'Données vidéo reçues par ce navigateur',
+        latency: 'Latence',
+        latencyCapture:
+          'De la capture sur l\'appareil à l\'affichage ici, d\'après l\'heure de capture que le serveur envoie avec chaque image.',
+        latencyEncoder:
+          'De la sortie de l\'encodeur au dessin ici, mesuré sur l\'horloge de l\'appareil. La capture et l\'encodage ne sont pas inclus.',
+        latencyEstimate:
+          'Estimation : la moitié de l\'aller-retour réseau plus la mise en tampon et le décodage dans ce navigateur. La capture et l\'encodage sur l\'appareil ne sont pas inclus, la latence réelle est donc plus élevée.',
+        latencyClockAssumed:
+          'L\'horloge de l\'appareil est supposée identique à celle de cet ordinateur.',
+        rttTip: 'Aller-retour réseau vers l\'appareil',
+        loss: 'Pertes',
+        lossTip: 'Paquets perdus dans la dernière seconde',
+        transportTip: 'Comment la vidéo parvient à ce navigateur'
+      },
       stream: {
         ok: 'image OK',
         noSignal: 'pas de signal',

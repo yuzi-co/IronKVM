@@ -105,6 +105,41 @@ const es = {
       screenshot: 'Captura de pantalla',
       screenshotTip: 'Guarda la pantalla del host como PNG al tamaño completo de captura.',
       screenshotFailed: 'Error en la captura de pantalla',
+      streamInfo: {
+        toggle: 'Info del flujo',
+        toggleTip:
+          'Muestra bajo la imagen una línea con la conexión, la resolución, la tasa de fotogramas, la tasa de bits y la latencia del flujo, según las mide este navegador.',
+        title: 'Estado del flujo',
+        connecting: 'Conectando',
+        connected: 'Conectado',
+        reconnecting: 'Reconectando',
+        failed: 'Fallido',
+        paused: 'En pausa',
+        noSignal: 'Sin señal',
+        source: 'Fuente',
+        sourceTip: 'El modo de entrada HDMI que captura el dispositivo',
+        stream: 'Flujo',
+        streamTip: 'El tamaño de la imagen tal como llega a este navegador',
+        received: 'recibidos',
+        decoded: 'decodificados',
+        dropped: 'descartados',
+        board: 'dispositivo',
+        boardTip: 'Fotogramas por segundo que el dispositivo captura y codifica',
+        bitrateTip: 'Datos de vídeo que recibe este navegador',
+        latency: 'Latencia',
+        latencyCapture:
+          'Desde la captura en el dispositivo hasta que se muestra aquí, según la hora de captura que el servidor envía con cada fotograma.',
+        latencyEncoder:
+          'Desde que el fotograma sale del codificador hasta que se dibuja aquí, medido con el reloj del dispositivo. No incluye la captura ni la codificación.',
+        latencyEstimate:
+          'Estimación: la mitad del viaje de ida y vuelta de la red más el búfer y la decodificación de este navegador. No incluye la captura ni la codificación en el dispositivo, así que la latencia real es mayor.',
+        latencyClockAssumed:
+          'Se supone que el reloj del dispositivo coincide con el de este ordenador.',
+        rttTip: 'Ida y vuelta de la red hasta el dispositivo',
+        loss: 'Pérdida',
+        lossTip: 'Paquetes perdidos en el último segundo',
+        transportTip: 'Cómo llega el vídeo a este navegador'
+      },
       stream: {
         ok: 'imagen OK',
         noSignal: 'sin señal',

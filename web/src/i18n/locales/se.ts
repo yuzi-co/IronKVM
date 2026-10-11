@@ -100,6 +100,40 @@ const se = {
       screenshot: 'Skärmbild',
       screenshotTip: 'Sparar värdens skärm som PNG i full inspelningsstorlek.',
       screenshotFailed: 'Skärmbilden misslyckades',
+      streamInfo: {
+        toggle: 'Strömningsinfo',
+        toggleTip:
+          'Visar en rad under bilden med strömmens anslutning, upplösning, bildfrekvens, bithastighet och latens, så som den här webbläsaren mäter dem.',
+        title: 'Strömningsstatus',
+        connecting: 'Ansluter',
+        connected: 'Ansluten',
+        reconnecting: 'Återansluter',
+        failed: 'Misslyckades',
+        paused: 'Pausad',
+        noSignal: 'Ingen signal',
+        source: 'Källa',
+        sourceTip: 'HDMI-ingångens läge som enheten fångar',
+        stream: 'Ström',
+        streamTip: 'Bildstorleken så som den når den här webbläsaren',
+        received: 'mottagna',
+        decoded: 'avkodade',
+        dropped: 'tappade',
+        board: 'enhet',
+        boardTip: 'Bilder per sekund som enheten fångar och kodar',
+        bitrateTip: 'Videodata som den här webbläsaren tar emot',
+        latency: 'Latens',
+        latencyCapture:
+          'Från fångst på enheten till att bilden visas här, utifrån fångsttiden som servern skickar med varje bild.',
+        latencyEncoder:
+          'Från att bilden lämnar kodaren till att den ritas här, mätt mot enhetens klocka. Fångst och kodning ingår inte.',
+        latencyEstimate:
+          'Uppskattning: halva nätverkets tur och retur plus buffring och avkodning i den här webbläsaren. Fångst och kodning på enheten ingår inte, så den verkliga latensen är högre.',
+        latencyClockAssumed: 'Enhetens klocka antas gå lika med den här datorns.',
+        rttTip: 'Nätverkets tur och retur till enheten',
+        loss: 'Förlust',
+        lossTip: 'Paket som förlorades den senaste sekunden',
+        transportTip: 'Hur videon når den här webbläsaren'
+      },
       stream: {
         ok: 'bild OK',
         noSignal: 'ingen signal',
