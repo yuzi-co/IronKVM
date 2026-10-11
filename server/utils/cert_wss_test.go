@@ -140,7 +140,7 @@ func openInputSocket(t *testing.T, listenAddr, certPath, host string) error {
 	return nil
 }
 
-func certPairFor(t *testing.T, id certIdentity) (string, string) {
+func certPairFor(t *testing.T, id CertIdentity) (string, string) {
 	t.Helper()
 
 	dir := t.TempDir()
@@ -160,7 +160,7 @@ func certPairFor(t *testing.T, id certIdentity) (string, string) {
 // is not hypothetical: it is what the product did, and one click on the settings
 // page was enough to reach it.
 func TestTheShippedCertificateRemovesTheInput(t *testing.T) {
-	shipped := certIdentity{
+	shipped := CertIdentity{
 		DNS: []string{"localhost"},
 		IPs: []net.IP{net.ParseIP("127.0.0.1"), net.ParseIP("::1")},
 	}

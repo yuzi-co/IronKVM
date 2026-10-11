@@ -1824,6 +1824,67 @@ const ja = {
         resetConfirm: '{{username}} の 2 段階認証をオフにしますか？',
         resetDone: '2 段階認証をリセットしました'
       }
+    },
+    tlsCert: {
+      title: '証明書',
+      description: 'HTTPS サーバーが提示する証明書です。',
+      uploaded: 'アップロード済み',
+      selfSigned: '自己署名',
+      httpsOff: 'HTTPS はオフです。証明書は HTTPS をオンにすると使用されます。',
+      none: '証明書はまだありません。HTTPS をオンにすると生成されます。',
+      subject: 'サブジェクト',
+      issuer: '発行者',
+      names: '名前',
+      validFrom: '有効期間の開始',
+      validUntil: '有効期限',
+      keyType: '鍵',
+      chain: 'チェーン内の証明書',
+      fingerprint: 'SHA-256',
+      restore: '自己署名に戻す',
+      restoreConfirm: '自己署名証明書に戻しますか？',
+      restoreDesc:
+        'アップロードした証明書と鍵は削除されます。ブラウザーは再び自己署名証明書について警告します。',
+      restored: '自己署名証明書に戻しました',
+      restoreFailed: '自己署名証明書に戻せませんでした',
+      uploadTitle: '証明書をアップロード',
+      uploadDescription:
+        'PEM 形式。サーバー証明書を先頭に置き、その後に中間証明書を続けます。鍵は暗号化されていない必要があります。',
+      certField: '証明書チェーン',
+      keyField: '秘密鍵',
+      chooseFile: 'ファイルを選択',
+      readFailed: 'ファイルを読み込めませんでした',
+      check: 'チェック',
+      install: 'インストール',
+      installConfirm: 'この証明書をインストールしますか？',
+      installDesc:
+        '新しい接続ではすぐに使用されます。開いているページはそのまま動作します。新しい証明書を確認するには再読み込みしてください。',
+      installed: '証明書をインストールしました',
+      installFailed: '証明書をインストールできませんでした',
+      checkFailed: '証明書が拒否されました',
+      loadFailed: '証明書を読み込めませんでした',
+      warnings: {
+        expiresSoon: '証明書の有効期限は 30 日以内に切れます。',
+        nameMismatch:
+          '証明書は次の名前に対応していません: {{names}}。これらの名前でデバイスを開くと、ブラウザーが警告します。',
+        selfSigned:
+          'この証明書は自己署名です。ブラウザーは各コンピューターにインストールした後でのみ信頼します。'
+      },
+      errors: {
+        tooLarge: 'ファイルが大きすぎます。',
+        noCertificate: 'PEM 証明書が見つかりません。',
+        badCertificate:
+          '証明書を読み取れません。-----BEGIN CERTIFICATE----- で始まる PEM テキストを貼り付けてください。',
+        noKey: 'PEM 秘密鍵が見つかりません。',
+        encryptedKey: '秘密鍵が暗号化されています。先にパスフレーズを解除してください。',
+        badKey: '秘密鍵を読み取れません。',
+        keyMismatch: '秘密鍵がこの証明書に対応していません。',
+        expired: '証明書、またはチェーン内の証明書の有効期限が切れています。',
+        notYetValid: '証明書はまだ有効ではありません。デバイスの時計を確認してください。',
+        badChain:
+          'チェーンの順序が正しくないか、不完全です。サーバー証明書を先頭に置き、その後に各発行者を続けてください。',
+        weakKey: '鍵が短すぎます。RSA 2048 以上、または ECDSA を使用してください。',
+        notServerCert: 'この証明書は TLS サーバー用ではありません。'
+      }
     }
   }
 };

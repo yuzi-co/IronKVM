@@ -1791,6 +1791,66 @@ const ko = {
         resetConfirm: '{{username}}의 2단계 인증을 끄시겠습니까?',
         resetDone: '2단계 인증을 초기화했습니다'
       }
+    },
+    tlsCert: {
+      title: '인증서',
+      description: 'HTTPS 서버가 제공하는 인증서입니다.',
+      uploaded: '업로드됨',
+      selfSigned: '자체 서명',
+      httpsOff: 'HTTPS가 꺼져 있습니다. HTTPS를 켜면 인증서가 사용됩니다.',
+      none: '아직 인증서가 없습니다. HTTPS를 켜면 생성됩니다.',
+      subject: '주체',
+      issuer: '발급자',
+      names: '이름',
+      validFrom: '유효 시작',
+      validUntil: '유효 기간',
+      keyType: '키',
+      chain: '체인의 인증서',
+      fingerprint: 'SHA-256',
+      restore: '자체 서명으로 복원',
+      restoreConfirm: '자체 서명 인증서로 되돌리시겠습니까?',
+      restoreDesc:
+        '업로드한 인증서와 키가 삭제됩니다. 브라우저가 다시 자체 서명 인증서에 대해 경고합니다.',
+      restored: '자체 서명 인증서로 복원했습니다',
+      restoreFailed: '자체 서명 인증서로 복원하지 못했습니다',
+      uploadTitle: '인증서 업로드',
+      uploadDescription:
+        'PEM 형식. 서버 인증서를 먼저 넣고 그 뒤에 중간 인증서를 넣으세요. 키는 암호화되지 않아야 합니다.',
+      certField: '인증서 체인',
+      keyField: '개인 키',
+      chooseFile: '파일 선택',
+      readFailed: '파일을 읽을 수 없습니다',
+      check: '검사',
+      install: '설치',
+      installConfirm: '이 인증서를 설치하시겠습니까?',
+      installDesc:
+        '새 연결에는 즉시 사용됩니다. 열린 페이지는 계속 작동하며, 새 인증서를 보려면 새로고침하세요.',
+      installed: '인증서를 설치했습니다',
+      installFailed: '인증서를 설치하지 못했습니다',
+      checkFailed: '인증서가 거부되었습니다',
+      loadFailed: '인증서를 불러오지 못했습니다',
+      warnings: {
+        expiresSoon: '인증서가 30일 이내에 만료됩니다.',
+        nameMismatch:
+          '인증서가 다음 이름을 포함하지 않습니다: {{names}}. 이 이름으로 장치를 열면 브라우저가 경고합니다.',
+        selfSigned: '자체 서명 인증서입니다. 브라우저는 각 컴퓨터에 설치한 후에만 이를 신뢰합니다.'
+      },
+      errors: {
+        tooLarge: '파일이 너무 큽니다.',
+        noCertificate: 'PEM 인증서를 찾을 수 없습니다.',
+        badCertificate:
+          '인증서를 읽을 수 없습니다. -----BEGIN CERTIFICATE-----로 시작하는 PEM 텍스트를 붙여넣으세요.',
+        noKey: 'PEM 개인 키를 찾을 수 없습니다.',
+        encryptedKey: '개인 키가 암호화되어 있습니다. 먼저 암호를 제거하세요.',
+        badKey: '개인 키를 읽을 수 없습니다.',
+        keyMismatch: '개인 키가 이 인증서와 일치하지 않습니다.',
+        expired: '인증서 또는 체인의 인증서가 만료되었습니다.',
+        notYetValid: '인증서가 아직 유효하지 않습니다. 장치 시계를 확인하세요.',
+        badChain:
+          '체인 순서가 잘못되었거나 불완전합니다. 서버 인증서를 먼저 넣고 그 뒤에 각 발급자를 넣으세요.',
+        weakKey: '키가 너무 짧습니다. RSA 2048 이상 또는 ECDSA를 사용하세요.',
+        notServerCert: 'TLS 서버용 인증서가 아닙니다.'
+      }
     }
   }
 };

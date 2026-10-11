@@ -1812,6 +1812,67 @@ const da = {
         resetConfirm: 'Slå totrinsgodkendelse fra for {{username}}?',
         resetDone: 'Totrinsgodkendelse nulstillet'
       }
+    },
+    tlsCert: {
+      title: 'Certifikat',
+      description: 'Det certifikat, som HTTPS-serveren præsenterer.',
+      uploaded: 'Uploadet',
+      selfSigned: 'Selvsigneret',
+      httpsOff: 'HTTPS er slået fra. Certifikatet bruges, når HTTPS slås til.',
+      none: 'Intet certifikat endnu. Et genereres, når HTTPS slås til.',
+      subject: 'Emne',
+      issuer: 'Udsteder',
+      names: 'Navne',
+      validFrom: 'Gyldig fra',
+      validUntil: 'Gyldig til',
+      keyType: 'Nøgle',
+      chain: 'Certifikater i kæden',
+      fingerprint: 'SHA-256',
+      restore: 'Gendan selvsigneret',
+      restoreConfirm: 'Gå tilbage til det selvsignerede certifikat?',
+      restoreDesc:
+        'Det uploadede certifikat og nøglen slettes. Browsere advarer igen om det selvsignerede certifikat.',
+      restored: 'Selvsigneret certifikat gendannet',
+      restoreFailed: 'Kunne ikke gendanne det selvsignerede certifikat',
+      uploadTitle: 'Upload et certifikat',
+      uploadDescription:
+        'PEM-format. Sæt servercertifikatet først og derefter eventuelle mellemcertifikater. Nøglen må ikke være krypteret.',
+      certField: 'Certifikatkæde',
+      keyField: 'Privat nøgle',
+      chooseFile: 'Vælg fil',
+      readFailed: 'Kunne ikke læse filen',
+      check: 'Kontrollér',
+      install: 'Installer',
+      installConfirm: 'Installer dette certifikat?',
+      installDesc:
+        'Nye forbindelser bruger det med det samme. Åbne sider virker fortsat; genindlæs for at se det nye certifikat.',
+      installed: 'Certifikat installeret',
+      installFailed: 'Kunne ikke installere certifikatet',
+      checkFailed: 'Certifikatet blev afvist',
+      loadFailed: 'Kunne ikke indlæse certifikatet',
+      warnings: {
+        expiresSoon: 'Certifikatet udløber inden for 30 dage.',
+        nameMismatch:
+          'Certifikatet dækker ikke: {{names}}. Browsere advarer, når enheden åbnes med de navne.',
+        selfSigned:
+          'Dette certifikat er selvsigneret. Browsere stoler kun på det, når det er installeret på hver computer.'
+      },
+      errors: {
+        tooLarge: 'Filen er for stor.',
+        noCertificate: 'Intet PEM-certifikat fundet.',
+        badCertificate:
+          'Certifikatet kan ikke læses. Indsæt PEM-tekst, der starter med -----BEGIN CERTIFICATE-----.',
+        noKey: 'Ingen privat PEM-nøgle fundet.',
+        encryptedKey: 'Den private nøgle er krypteret. Fjern adgangssætningen først.',
+        badKey: 'Den private nøgle kan ikke læses.',
+        keyMismatch: 'Den private nøgle hører ikke til certifikatet.',
+        expired: 'Certifikatet, eller et i kæden, er udløbet.',
+        notYetValid: 'Certifikatet er endnu ikke gyldigt. Kontrollér enhedens ur.',
+        badChain:
+          'Kæden er i forkert rækkefølge eller ufuldstændig. Sæt servercertifikatet først og derefter hver udsteder.',
+        weakKey: 'Nøglen er for kort. Brug RSA 2048 eller længere, eller ECDSA.',
+        notServerCert: 'Certifikatet er ikke til en TLS-server.'
+      }
     }
   }
 };

@@ -26,7 +26,7 @@ const (
 // reject it and that has to be provable.
 var certValidFor = time.Hour * 24 * 365 * 10
 
-// certIdentity is every name and address a certificate for this device has to
+// CertIdentity is every name and address a certificate for this device has to
 // answer for.
 //
 // It has to answer for the address the operator typed. The browser compares the
@@ -41,7 +41,7 @@ var certValidFor = time.Hour * 24 * 365 * 10
 // websocket to the same origin: it refuses, and reports nothing to the page. So
 // the UI appears, the REST calls answer, the video plays, and no key reaches the
 // managed host.
-type certIdentity struct {
+type CertIdentity struct {
 	DNS []string
 	IPs []net.IP
 }
@@ -50,8 +50,8 @@ type certIdentity struct {
 //
 // Loopback stays in it. The server talks to itself, and so does the on-device
 // PicoClaw runtime, so naming the real address must not cost the old one.
-func certNames(hostname string, addrs []net.IP) certIdentity {
-	id := certIdentity{
+func certNames(hostname string, addrs []net.IP) CertIdentity {
+	id := CertIdentity{
 		DNS: []string{"localhost"},
 		IPs: []net.IP{net.ParseIP("127.0.0.1"), net.ParseIP("::1")},
 	}
@@ -82,7 +82,7 @@ func certNames(hostname string, addrs []net.IP) certIdentity {
 	return id
 }
 
-func (id *certIdentity) dedupe() {
+func (id *CertIdentity) dedupe() {
 	seenDNS := make(map[string]bool, len(id.DNS))
 	dns := id.DNS[:0]
 	for _, name := range id.DNS {
@@ -141,7 +141,7 @@ func localIPs() []net.IP {
 }
 
 // CurrentCertIdentity is what a certificate generated right now has to cover.
-func CurrentCertIdentity() certIdentity {
+func CurrentCertIdentity() CertIdentity {
 	hostname, err := os.Hostname()
 	if err != nil {
 		// A board with no hostname still has addresses, and those are what the
@@ -159,7 +159,7 @@ func CurrentCertIdentity() certIdentity {
 // A certificate that still fits must be left alone. Generating a new one voids
 // whatever trust the operator granted the old one, so a restart that changes
 // nothing has to change nothing.
-func CertCovers(certPath string, id certIdentity) bool {
+func CertCovers(certPath string, id CertIdentity) bool {
 	raw, err := os.ReadFile(certPath)
 	if err != nil {
 		return false
@@ -196,7 +196,7 @@ func CertCovers(certPath string, id certIdentity) bool {
 
 // ensureCert writes a new certificate when the one on disk cannot answer for
 // this device, and reports whether it wrote one.
-func ensureCert(certPath, keyPath string, id certIdentity) (bool, error) {
+func ensureCert(certPath, keyPath string, id CertIdentity) (bool, error) {
 	if CertCovers(certPath, id) {
 		return false, nil
 	}
@@ -246,7 +246,7 @@ func GenerateCert() error {
 	return generateCertTo(CertFile, KeyFile, CurrentCertIdentity())
 }
 
-func generateCertTo(certFile, keyFile string, id certIdentity) error {
+func generateCertTo(certFile, keyFile string, id CertIdentity) error {
 	// P-256 rather than RSA-2048. This now runs at boot when the address has
 	// moved, on a single core that is also starting the video pipeline, and an
 	// RSA key costs seconds there where this costs none. Every browser has

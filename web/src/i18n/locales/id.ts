@@ -1817,6 +1817,67 @@ const id = {
         resetConfirm: 'Nonaktifkan autentikasi dua faktor untuk {{username}}?',
         resetDone: 'Autentikasi dua faktor diatur ulang'
       }
+    },
+    tlsCert: {
+      title: 'Sertifikat',
+      description: 'Sertifikat yang ditampilkan oleh server HTTPS.',
+      uploaded: 'Diunggah',
+      selfSigned: 'Ditandatangani sendiri',
+      httpsOff: 'HTTPS nonaktif. Sertifikat dipakai setelah HTTPS diaktifkan.',
+      none: 'Belum ada sertifikat. Sertifikat akan dibuat saat HTTPS diaktifkan.',
+      subject: 'Subjek',
+      issuer: 'Penerbit',
+      names: 'Nama',
+      validFrom: 'Berlaku sejak',
+      validUntil: 'Berlaku hingga',
+      keyType: 'Kunci',
+      chain: 'Sertifikat dalam rantai',
+      fingerprint: 'SHA-256',
+      restore: 'Pulihkan yang ditandatangani sendiri',
+      restoreConfirm: 'Kembali ke sertifikat yang ditandatangani sendiri?',
+      restoreDesc:
+        'Sertifikat dan kunci yang diunggah akan dihapus. Browser akan kembali memperingatkan tentang sertifikat yang ditandatangani sendiri.',
+      restored: 'Sertifikat yang ditandatangani sendiri dipulihkan',
+      restoreFailed: 'Gagal memulihkan sertifikat yang ditandatangani sendiri',
+      uploadTitle: 'Unggah sertifikat',
+      uploadDescription:
+        'Format PEM. Letakkan sertifikat server terlebih dahulu, lalu sertifikat perantara. Kunci tidak boleh terenkripsi.',
+      certField: 'Rantai sertifikat',
+      keyField: 'Kunci privat',
+      chooseFile: 'Pilih file',
+      readFailed: 'Tidak dapat membaca file',
+      check: 'Periksa',
+      install: 'Pasang',
+      installConfirm: 'Pasang sertifikat ini?',
+      installDesc:
+        'Koneksi baru langsung memakainya. Halaman yang terbuka tetap berfungsi; muat ulang untuk melihat sertifikat baru.',
+      installed: 'Sertifikat terpasang',
+      installFailed: 'Gagal memasang sertifikat',
+      checkFailed: 'Sertifikat ditolak',
+      loadFailed: 'Gagal memuat sertifikat',
+      warnings: {
+        expiresSoon: 'Sertifikat kedaluwarsa dalam 30 hari.',
+        nameMismatch:
+          'Sertifikat tidak mencakup: {{names}}. Browser akan memperingatkan saat perangkat dibuka dengan nama tersebut.',
+        selfSigned:
+          'Sertifikat ini ditandatangani sendiri. Browser hanya memercayainya setelah dipasang di setiap komputer.'
+      },
+      errors: {
+        tooLarge: 'File terlalu besar.',
+        noCertificate: 'Tidak ditemukan sertifikat PEM.',
+        badCertificate:
+          'Sertifikat tidak dapat dibaca. Tempel teks PEM yang diawali -----BEGIN CERTIFICATE-----.',
+        noKey: 'Tidak ditemukan kunci privat PEM.',
+        encryptedKey: 'Kunci privat terenkripsi. Hapus frasa sandinya terlebih dahulu.',
+        badKey: 'Kunci privat tidak dapat dibaca.',
+        keyMismatch: 'Kunci privat bukan milik sertifikat ini.',
+        expired: 'Sertifikat, atau salah satu sertifikat dalam rantainya, sudah kedaluwarsa.',
+        notYetValid: 'Sertifikat belum berlaku. Periksa jam perangkat.',
+        badChain:
+          'Urutan rantai salah atau tidak lengkap. Letakkan sertifikat server terlebih dahulu, lalu setiap penerbitnya.',
+        weakKey: 'Kunci terlalu pendek. Gunakan RSA 2048 atau lebih panjang, atau ECDSA.',
+        notServerCert: 'Sertifikat ini bukan untuk server TLS.'
+      }
     }
   }
 };

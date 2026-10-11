@@ -1840,6 +1840,67 @@ const it = {
         resetConfirm: "Disattivare l'autenticazione a due fattori per {{username}}?",
         resetDone: 'Autenticazione a due fattori reimpostata'
       }
+    },
+    tlsCert: {
+      title: 'Certificato',
+      description: 'Il certificato presentato dal server HTTPS.',
+      uploaded: 'Caricato',
+      selfSigned: 'Autofirmato',
+      httpsOff: 'HTTPS è disattivato. Il certificato verrà usato quando HTTPS sarà attivato.',
+      none: 'Nessun certificato. Ne viene generato uno quando si attiva HTTPS.',
+      subject: 'Soggetto',
+      issuer: 'Emittente',
+      names: 'Nomi',
+      validFrom: 'Valido dal',
+      validUntil: 'Valido fino al',
+      keyType: 'Chiave',
+      chain: 'Certificati nella catena',
+      fingerprint: 'SHA-256',
+      restore: 'Ripristina autofirmato',
+      restoreConfirm: 'Tornare al certificato autofirmato?',
+      restoreDesc:
+        'Il certificato e la chiave caricati verranno eliminati. I browser mostreranno di nuovo un avviso per il certificato autofirmato.',
+      restored: 'Certificato autofirmato ripristinato',
+      restoreFailed: 'Impossibile ripristinare il certificato autofirmato',
+      uploadTitle: 'Carica un certificato',
+      uploadDescription:
+        'Formato PEM. Metti prima il certificato del server, poi gli eventuali intermedi. La chiave non deve essere cifrata.',
+      certField: 'Catena di certificati',
+      keyField: 'Chiave privata',
+      chooseFile: 'Scegli file',
+      readFailed: 'Impossibile leggere il file',
+      check: 'Controlla',
+      install: 'Installa',
+      installConfirm: 'Installare questo certificato?',
+      installDesc:
+        'Le nuove connessioni lo usano subito. Le pagine aperte continuano a funzionare; ricarica per vedere il nuovo certificato.',
+      installed: 'Certificato installato',
+      installFailed: 'Impossibile installare il certificato',
+      checkFailed: 'Il certificato è stato rifiutato',
+      loadFailed: 'Impossibile caricare il certificato',
+      warnings: {
+        expiresSoon: 'Il certificato scade entro 30 giorni.',
+        nameMismatch:
+          'Il certificato non copre: {{names}}. I browser mostreranno un avviso quando il dispositivo viene aperto con questi nomi.',
+        selfSigned:
+          'Questo certificato è autofirmato. I browser lo considerano attendibile solo dopo averlo installato su ogni computer.'
+      },
+      errors: {
+        tooLarge: 'Il file è troppo grande.',
+        noCertificate: 'Nessun certificato PEM trovato.',
+        badCertificate:
+          'Impossibile leggere il certificato. Incolla un testo PEM che inizi con -----BEGIN CERTIFICATE-----.',
+        noKey: 'Nessuna chiave privata PEM trovata.',
+        encryptedKey: 'La chiave privata è cifrata. Rimuovi prima la passphrase.',
+        badKey: 'Impossibile leggere la chiave privata.',
+        keyMismatch: 'La chiave privata non appartiene al certificato.',
+        expired: 'Il certificato, o uno della sua catena, è scaduto.',
+        notYetValid: "Il certificato non è ancora valido. Controlla l'orologio del dispositivo.",
+        badChain:
+          'La catena è in ordine errato o incompleta. Metti prima il certificato del server, poi ogni emittente.',
+        weakKey: 'La chiave è troppo corta. Usa RSA 2048 o superiore, oppure ECDSA.',
+        notServerCert: 'Il certificato non è per un server TLS.'
+      }
     }
   }
 };

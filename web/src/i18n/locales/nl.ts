@@ -1837,6 +1837,67 @@ const nl = {
         resetConfirm: 'Tweestapsverificatie uitschakelen voor {{username}}?',
         resetDone: 'Tweestapsverificatie gereset'
       }
+    },
+    tlsCert: {
+      title: 'Certificaat',
+      description: 'Het certificaat dat de HTTPS-server presenteert.',
+      uploaded: 'Geüpload',
+      selfSigned: 'Zelfondertekend',
+      httpsOff: 'HTTPS staat uit. Het certificaat wordt gebruikt zodra HTTPS is ingeschakeld.',
+      none: 'Nog geen certificaat. Er wordt er een gegenereerd wanneer HTTPS wordt ingeschakeld.',
+      subject: 'Onderwerp',
+      issuer: 'Uitgever',
+      names: 'Namen',
+      validFrom: 'Geldig vanaf',
+      validUntil: 'Geldig tot',
+      keyType: 'Sleutel',
+      chain: 'Certificaten in keten',
+      fingerprint: 'SHA-256',
+      restore: 'Zelfondertekend herstellen',
+      restoreConfirm: 'Terug naar het zelfondertekende certificaat?',
+      restoreDesc:
+        'Het geüploade certificaat en de sleutel worden verwijderd. Browsers waarschuwen dan weer voor het zelfondertekende certificaat.',
+      restored: 'Zelfondertekend certificaat hersteld',
+      restoreFailed: 'Herstellen van het zelfondertekende certificaat mislukt',
+      uploadTitle: 'Certificaat uploaden',
+      uploadDescription:
+        'PEM-formaat. Zet het servercertificaat eerst, daarna eventuele tussencertificaten. De sleutel mag niet versleuteld zijn.',
+      certField: 'Certificaatketen',
+      keyField: 'Privésleutel',
+      chooseFile: 'Bestand kiezen',
+      readFailed: 'Kan het bestand niet lezen',
+      check: 'Controleren',
+      install: 'Installeren',
+      installConfirm: 'Dit certificaat installeren?',
+      installDesc:
+        "Nieuwe verbindingen gebruiken het meteen. Open pagina's blijven werken; herlaad om het nieuwe certificaat te zien.",
+      installed: 'Certificaat geïnstalleerd',
+      installFailed: 'Installeren van het certificaat mislukt',
+      checkFailed: 'Het certificaat is geweigerd',
+      loadFailed: 'Laden van het certificaat mislukt',
+      warnings: {
+        expiresSoon: 'Het certificaat verloopt binnen 30 dagen.',
+        nameMismatch:
+          'Het certificaat dekt niet: {{names}}. Browsers waarschuwen wanneer het apparaat via die namen wordt geopend.',
+        selfSigned:
+          'Dit certificaat is zelfondertekend. Browsers vertrouwen het pas nadat het op elke computer is geïnstalleerd.'
+      },
+      errors: {
+        tooLarge: 'Het bestand is te groot.',
+        noCertificate: 'Geen PEM-certificaat gevonden.',
+        badCertificate:
+          'Het certificaat kan niet worden gelezen. Plak PEM-tekst die begint met -----BEGIN CERTIFICATE-----.',
+        noKey: 'Geen PEM-privésleutel gevonden.',
+        encryptedKey: 'De privésleutel is versleuteld. Verwijder eerst de wachtwoordzin.',
+        badKey: 'De privésleutel kan niet worden gelezen.',
+        keyMismatch: 'De privésleutel hoort niet bij het certificaat.',
+        expired: 'Het certificaat, of een certificaat in de keten, is verlopen.',
+        notYetValid: 'Het certificaat is nog niet geldig. Controleer de klok van het apparaat.',
+        badChain:
+          'De keten staat in de verkeerde volgorde of is onvolledig. Zet het servercertificaat eerst, daarna elke uitgever.',
+        weakKey: 'De sleutel is te kort. Gebruik RSA 2048 of langer, of ECDSA.',
+        notServerCert: 'Het certificaat is niet bedoeld voor een TLS-server.'
+      }
     }
   }
 };

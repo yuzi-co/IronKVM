@@ -1811,6 +1811,67 @@ const vi = {
         resetConfirm: 'Tắt xác thực hai yếu tố cho {{username}}?',
         resetDone: 'Đã đặt lại xác thực hai yếu tố'
       }
+    },
+    tlsCert: {
+      title: 'Chứng chỉ',
+      description: 'Chứng chỉ mà máy chủ HTTPS cung cấp.',
+      uploaded: 'Đã tải lên',
+      selfSigned: 'Tự ký',
+      httpsOff: 'HTTPS đang tắt. Chứng chỉ sẽ được dùng khi bật HTTPS.',
+      none: 'Chưa có chứng chỉ. Một chứng chỉ sẽ được tạo khi bật HTTPS.',
+      subject: 'Chủ thể',
+      issuer: 'Bên cấp',
+      names: 'Tên',
+      validFrom: 'Hiệu lực từ',
+      validUntil: 'Hiệu lực đến',
+      keyType: 'Khóa',
+      chain: 'Số chứng chỉ trong chuỗi',
+      fingerprint: 'SHA-256',
+      restore: 'Khôi phục chứng chỉ tự ký',
+      restoreConfirm: 'Quay lại chứng chỉ tự ký?',
+      restoreDesc:
+        'Chứng chỉ và khóa đã tải lên sẽ bị xóa. Trình duyệt sẽ lại cảnh báo về chứng chỉ tự ký.',
+      restored: 'Đã khôi phục chứng chỉ tự ký',
+      restoreFailed: 'Không khôi phục được chứng chỉ tự ký',
+      uploadTitle: 'Tải lên chứng chỉ',
+      uploadDescription:
+        'Định dạng PEM. Đặt chứng chỉ máy chủ trước, sau đó là các chứng chỉ trung gian. Khóa không được mã hóa.',
+      certField: 'Chuỗi chứng chỉ',
+      keyField: 'Khóa riêng',
+      chooseFile: 'Chọn file',
+      readFailed: 'Không đọc được file',
+      check: 'Kiểm tra',
+      install: 'Cài đặt',
+      installConfirm: 'Cài đặt chứng chỉ này?',
+      installDesc:
+        'Các kết nối mới sẽ dùng nó ngay. Các trang đang mở vẫn hoạt động; hãy tải lại để thấy chứng chỉ mới.',
+      installed: 'Đã cài đặt chứng chỉ',
+      installFailed: 'Không cài đặt được chứng chỉ',
+      checkFailed: 'Chứng chỉ bị từ chối',
+      loadFailed: 'Không tải được chứng chỉ',
+      warnings: {
+        expiresSoon: 'Chứng chỉ sẽ hết hạn trong vòng 30 ngày.',
+        nameMismatch:
+          'Chứng chỉ không bao gồm: {{names}}. Trình duyệt sẽ cảnh báo khi mở thiết bị bằng các tên đó.',
+        selfSigned:
+          'Chứng chỉ này là tự ký. Trình duyệt chỉ tin cậy nó sau khi được cài trên từng máy tính.'
+      },
+      errors: {
+        tooLarge: 'File quá lớn.',
+        noCertificate: 'Không tìm thấy chứng chỉ PEM.',
+        badCertificate:
+          'Không đọc được chứng chỉ. Hãy dán văn bản PEM bắt đầu bằng -----BEGIN CERTIFICATE-----.',
+        noKey: 'Không tìm thấy khóa riêng PEM.',
+        encryptedKey: 'Khóa riêng đã được mã hóa. Hãy gỡ cụm mật khẩu trước.',
+        badKey: 'Không đọc được khóa riêng.',
+        keyMismatch: 'Khóa riêng không thuộc về chứng chỉ này.',
+        expired: 'Chứng chỉ, hoặc một chứng chỉ trong chuỗi, đã hết hạn.',
+        notYetValid: 'Chứng chỉ chưa có hiệu lực. Hãy kiểm tra đồng hồ của thiết bị.',
+        badChain:
+          'Chuỗi bị sai thứ tự hoặc không đầy đủ. Đặt chứng chỉ máy chủ trước, sau đó lần lượt từng bên cấp.',
+        weakKey: 'Khóa quá ngắn. Hãy dùng RSA 2048 trở lên, hoặc ECDSA.',
+        notServerCert: 'Chứng chỉ này không dành cho máy chủ TLS.'
+      }
     }
   }
 };

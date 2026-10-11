@@ -1809,6 +1809,67 @@ const nb = {
         resetConfirm: 'Slå av tofaktorautentisering for {{username}}?',
         resetDone: 'Tofaktorautentisering tilbakestilt'
       }
+    },
+    tlsCert: {
+      title: 'Sertifikat',
+      description: 'Sertifikatet HTTPS-serveren presenterer.',
+      uploaded: 'Lastet opp',
+      selfSigned: 'Selvsignert',
+      httpsOff: 'HTTPS er slått av. Sertifikatet tas i bruk når HTTPS slås på.',
+      none: 'Ingen sertifikat ennå. Et genereres når HTTPS slås på.',
+      subject: 'Emne',
+      issuer: 'Utsteder',
+      names: 'Navn',
+      validFrom: 'Gyldig fra',
+      validUntil: 'Gyldig til',
+      keyType: 'Nøkkel',
+      chain: 'Sertifikater i kjeden',
+      fingerprint: 'SHA-256',
+      restore: 'Gjenopprett selvsignert',
+      restoreConfirm: 'Gå tilbake til det selvsignerte sertifikatet?',
+      restoreDesc:
+        'Det opplastede sertifikatet og nøkkelen slettes. Nettlesere vil igjen advare om det selvsignerte sertifikatet.',
+      restored: 'Selvsignert sertifikat gjenopprettet',
+      restoreFailed: 'Kunne ikke gjenopprette det selvsignerte sertifikatet',
+      uploadTitle: 'Last opp et sertifikat',
+      uploadDescription:
+        'PEM-format. Sett serversertifikatet først, deretter eventuelle mellomsertifikater. Nøkkelen kan ikke være kryptert.',
+      certField: 'Sertifikatkjede',
+      keyField: 'Privat nøkkel',
+      chooseFile: 'Velg fil',
+      readFailed: 'Kunne ikke lese filen',
+      check: 'Kontroller',
+      install: 'Installer',
+      installConfirm: 'Installere dette sertifikatet?',
+      installDesc:
+        'Nye tilkoblinger bruker det med en gang. Åpne sider fortsetter å virke; last inn på nytt for å se det nye sertifikatet.',
+      installed: 'Sertifikat installert',
+      installFailed: 'Kunne ikke installere sertifikatet',
+      checkFailed: 'Sertifikatet ble avvist',
+      loadFailed: 'Kunne ikke laste inn sertifikatet',
+      warnings: {
+        expiresSoon: 'Sertifikatet utløper innen 30 dager.',
+        nameMismatch:
+          'Sertifikatet dekker ikke: {{names}}. Nettlesere advarer når enheten åpnes med disse navnene.',
+        selfSigned:
+          'Dette sertifikatet er selvsignert. Nettlesere stoler bare på det etter at det er installert på hver datamaskin.'
+      },
+      errors: {
+        tooLarge: 'Filen er for stor.',
+        noCertificate: 'Fant ikke noe PEM-sertifikat.',
+        badCertificate:
+          'Sertifikatet kan ikke leses. Lim inn PEM-tekst som starter med -----BEGIN CERTIFICATE-----.',
+        noKey: 'Fant ingen privat PEM-nøkkel.',
+        encryptedKey: 'Den private nøkkelen er kryptert. Fjern passfrasen først.',
+        badKey: 'Den private nøkkelen kan ikke leses.',
+        keyMismatch: 'Den private nøkkelen hører ikke til sertifikatet.',
+        expired: 'Sertifikatet, eller et i kjeden, er utløpt.',
+        notYetValid: 'Sertifikatet er ikke gyldig ennå. Kontroller klokken på enheten.',
+        badChain:
+          'Kjeden er i feil rekkefølge eller ufullstendig. Sett serversertifikatet først, deretter hver utsteder.',
+        weakKey: 'Nøkkelen er for kort. Bruk RSA 2048 eller lengre, eller ECDSA.',
+        notServerCert: 'Sertifikatet er ikke for en TLS-server.'
+      }
     }
   }
 };

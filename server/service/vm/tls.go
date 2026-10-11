@@ -115,8 +115,13 @@ func enableTls() error {
 	}
 
 	conf.Proto = "https"
-	conf.Cert.Crt = utils.CertFile
-	conf.Cert.Key = utils.KeyFile
+	// An uploaded certificate stays in force across an off and on. Anything
+	// else, including an uploaded pair that no longer loads, is replaced by
+	// the generated one.
+	if !uploadedPairUsable(conf) {
+		conf.Cert.Crt = utils.CertFile
+		conf.Cert.Key = utils.KeyFile
+	}
 
 	if err := config.Write(conf); err != nil {
 		return err

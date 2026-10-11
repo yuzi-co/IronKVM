@@ -1823,6 +1823,67 @@ const pl = {
         resetConfirm: 'Wyłączyć uwierzytelnianie dwuskładnikowe dla {{username}}?',
         resetDone: 'Uwierzytelnianie dwuskładnikowe zresetowane'
       }
+    },
+    tlsCert: {
+      title: 'Certyfikat',
+      description: 'Certyfikat przedstawiany przez serwer HTTPS.',
+      uploaded: 'Przesłany',
+      selfSigned: 'Samopodpisany',
+      httpsOff: 'HTTPS jest wyłączony. Certyfikat zostanie użyty po włączeniu HTTPS.',
+      none: 'Brak certyfikatu. Zostanie wygenerowany po włączeniu HTTPS.',
+      subject: 'Podmiot',
+      issuer: 'Wystawca',
+      names: 'Nazwy',
+      validFrom: 'Ważny od',
+      validUntil: 'Ważny do',
+      keyType: 'Klucz',
+      chain: 'Certyfikaty w łańcuchu',
+      fingerprint: 'SHA-256',
+      restore: 'Przywróć samopodpisany',
+      restoreConfirm: 'Wrócić do certyfikatu samopodpisanego?',
+      restoreDesc:
+        'Przesłany certyfikat i klucz zostaną usunięte. Przeglądarki znów będą ostrzegać o certyfikacie samopodpisanym.',
+      restored: 'Przywrócono certyfikat samopodpisany',
+      restoreFailed: 'Nie udało się przywrócić certyfikatu samopodpisanego',
+      uploadTitle: 'Prześlij certyfikat',
+      uploadDescription:
+        'Format PEM. Najpierw certyfikat serwera, potem certyfikaty pośrednie. Klucz nie może być zaszyfrowany.',
+      certField: 'Łańcuch certyfikatów',
+      keyField: 'Klucz prywatny',
+      chooseFile: 'Wybierz plik',
+      readFailed: 'Nie można odczytać pliku',
+      check: 'Sprawdź',
+      install: 'Zainstaluj',
+      installConfirm: 'Zainstalować ten certyfikat?',
+      installDesc:
+        'Nowe połączenia użyją go od razu. Otwarte strony nadal działają; odśwież, aby zobaczyć nowy certyfikat.',
+      installed: 'Certyfikat zainstalowany',
+      installFailed: 'Nie udało się zainstalować certyfikatu',
+      checkFailed: 'Certyfikat został odrzucony',
+      loadFailed: 'Nie udało się wczytać certyfikatu',
+      warnings: {
+        expiresSoon: 'Certyfikat wygasa w ciągu 30 dni.',
+        nameMismatch:
+          'Certyfikat nie obejmuje: {{names}}. Przeglądarki będą ostrzegać przy otwieraniu urządzenia pod tymi nazwami.',
+        selfSigned:
+          'Ten certyfikat jest samopodpisany. Przeglądarki ufają mu dopiero po zainstalowaniu go na każdym komputerze.'
+      },
+      errors: {
+        tooLarge: 'Plik jest za duży.',
+        noCertificate: 'Nie znaleziono certyfikatu PEM.',
+        badCertificate:
+          'Nie można odczytać certyfikatu. Wklej tekst PEM zaczynający się od -----BEGIN CERTIFICATE-----.',
+        noKey: 'Nie znaleziono klucza prywatnego PEM.',
+        encryptedKey: 'Klucz prywatny jest zaszyfrowany. Najpierw usuń hasło klucza.',
+        badKey: 'Nie można odczytać klucza prywatnego.',
+        keyMismatch: 'Klucz prywatny nie pasuje do certyfikatu.',
+        expired: 'Certyfikat lub jeden z certyfikatów w łańcuchu wygasł.',
+        notYetValid: 'Certyfikat nie jest jeszcze ważny. Sprawdź zegar urządzenia.',
+        badChain:
+          'Łańcuch ma złą kolejność lub jest niekompletny. Najpierw certyfikat serwera, potem kolejni wystawcy.',
+        weakKey: 'Klucz jest za krótki. Użyj RSA 2048 lub dłuższego albo ECDSA.',
+        notServerCert: 'Certyfikat nie jest przeznaczony dla serwera TLS.'
+      }
     }
   }
 };

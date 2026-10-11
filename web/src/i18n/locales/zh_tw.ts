@@ -1734,6 +1734,60 @@ const zh_tw = {
         resetConfirm: '關閉 {{username}} 的雙重驗證？',
         resetDone: '雙重驗證已重設'
       }
+    },
+    tlsCert: {
+      title: '憑證',
+      description: 'HTTPS 伺服器所使用的憑證。',
+      uploaded: '已上傳',
+      selfSigned: '自簽',
+      httpsOff: 'HTTPS 已關閉。開啟 HTTPS 後將使用此憑證。',
+      none: '尚無憑證。開啟 HTTPS 時會自動產生。',
+      subject: '主體',
+      issuer: '簽發者',
+      names: '名稱',
+      validFrom: '生效日期',
+      validUntil: '到期日期',
+      keyType: '金鑰',
+      chain: '憑證鏈中的憑證',
+      fingerprint: 'SHA-256',
+      restore: '還原自簽憑證',
+      restoreConfirm: '還原為自簽憑證？',
+      restoreDesc: '上傳的憑證和金鑰將被刪除。瀏覽器會再次對自簽憑證發出警告。',
+      restored: '已還原自簽憑證',
+      restoreFailed: '無法還原自簽憑證',
+      uploadTitle: '上傳憑證',
+      uploadDescription: 'PEM 格式。伺服器憑證放在最前面，其後是中繼憑證。金鑰不可加密。',
+      certField: '憑證鏈',
+      keyField: '私密金鑰',
+      chooseFile: '選擇檔案',
+      readFailed: '無法讀取檔案',
+      check: '檢查',
+      install: '安裝',
+      installConfirm: '安裝此憑證？',
+      installDesc: '新連線會立即使用此憑證。已開啟的頁面可繼續使用，重新整理後即可看到新憑證。',
+      installed: '憑證已安裝',
+      installFailed: '無法安裝憑證',
+      checkFailed: '憑證遭到拒絕',
+      loadFailed: '無法載入憑證',
+      warnings: {
+        expiresSoon: '憑證將在 30 天內到期。',
+        nameMismatch: '憑證未涵蓋以下名稱：{{names}}。以這些名稱開啟裝置時，瀏覽器會發出警告。',
+        selfSigned: '此憑證為自簽憑證。必須在每台電腦上安裝後，瀏覽器才會信任它。'
+      },
+      errors: {
+        tooLarge: '檔案過大。',
+        noCertificate: '找不到 PEM 憑證。',
+        badCertificate: '無法讀取憑證。請貼上以 -----BEGIN CERTIFICATE----- 開頭的 PEM 文字。',
+        noKey: '找不到 PEM 私密金鑰。',
+        encryptedKey: '私密金鑰已加密。請先移除密碼片語。',
+        badKey: '無法讀取私密金鑰。',
+        keyMismatch: '私密金鑰與憑證不相符。',
+        expired: '憑證或其憑證鏈中的憑證已過期。',
+        notYetValid: '憑證尚未生效。請檢查裝置時鐘。',
+        badChain: '憑證鏈順序錯誤或不完整。請將伺服器憑證放在最前面，其後依序是各簽發者憑證。',
+        weakKey: '金鑰過短。請使用 RSA 2048 或以上，或 ECDSA。',
+        notServerCert: '此憑證不是 TLS 伺服器憑證。'
+      }
     }
   }
 };

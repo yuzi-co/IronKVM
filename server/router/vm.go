@@ -98,6 +98,11 @@ func vmRouter(r *gin.Engine) {
 	admin.GET("/vm/tls", service.GetTls)  // get the configured TLS state
 	admin.POST("/vm/tls", service.SetTls) // enable/disable TLS
 
+	admin.GET("/vm/tls/cert", service.GetTlsCert)          // describe the HTTPS certificate
+	admin.POST("/vm/tls/cert/check", service.CheckTlsCert) // validate an upload without installing it
+	admin.POST("/vm/tls/cert", service.SetTlsCert)         // install an uploaded certificate
+	admin.DELETE("/vm/tls/cert", service.RestoreTlsCert)   // back to the self-signed certificate
+
 	admin.GET("/vm/autostart", service.GetAutostart)              // get autostart list
 	admin.GET("/vm/autostart/:name", service.GetAutostartContent) // get autostart content
 	admin.DELETE("/vm/autostart/:name", service.DeleteAutostart)  // delete autostart script

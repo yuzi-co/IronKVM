@@ -1845,6 +1845,67 @@ const es = {
         resetConfirm: '¿Desactivar la autenticación de dos factores para {{username}}?',
         resetDone: 'Autenticación de dos factores restablecida'
       }
+    },
+    tlsCert: {
+      title: 'Certificado',
+      description: 'El certificado que presenta el servidor HTTPS.',
+      uploaded: 'Subido',
+      selfSigned: 'Autofirmado',
+      httpsOff: 'HTTPS está desactivado. El certificado se usará cuando se active HTTPS.',
+      none: 'Todavía no hay certificado. Se genera uno al activar HTTPS.',
+      subject: 'Sujeto',
+      issuer: 'Emisor',
+      names: 'Nombres',
+      validFrom: 'Válido desde',
+      validUntil: 'Válido hasta',
+      keyType: 'Clave',
+      chain: 'Certificados en la cadena',
+      fingerprint: 'SHA-256',
+      restore: 'Restaurar autofirmado',
+      restoreConfirm: '¿Volver al certificado autofirmado?',
+      restoreDesc:
+        'Se eliminarán el certificado y la clave subidos. Los navegadores volverán a avisar del certificado autofirmado.',
+      restored: 'Certificado autofirmado restaurado',
+      restoreFailed: 'No se pudo restaurar el certificado autofirmado',
+      uploadTitle: 'Subir un certificado',
+      uploadDescription:
+        'Formato PEM. Pon primero el certificado del servidor y después los intermedios. La clave no debe estar cifrada.',
+      certField: 'Cadena de certificados',
+      keyField: 'Clave privada',
+      chooseFile: 'Elegir archivo',
+      readFailed: 'No se pudo leer el archivo',
+      check: 'Comprobar',
+      install: 'Instalar',
+      installConfirm: '¿Instalar este certificado?',
+      installDesc:
+        'Las conexiones nuevas lo usan de inmediato. Las páginas abiertas siguen funcionando; recarga para ver el nuevo certificado.',
+      installed: 'Certificado instalado',
+      installFailed: 'No se pudo instalar el certificado',
+      checkFailed: 'El certificado fue rechazado',
+      loadFailed: 'No se pudo cargar el certificado',
+      warnings: {
+        expiresSoon: 'El certificado caduca en menos de 30 días.',
+        nameMismatch:
+          'El certificado no cubre: {{names}}. Los navegadores avisarán cuando se abra el dispositivo con esos nombres.',
+        selfSigned:
+          'Este certificado es autofirmado. Los navegadores solo confían en él después de instalarlo en cada ordenador.'
+      },
+      errors: {
+        tooLarge: 'El archivo es demasiado grande.',
+        noCertificate: 'No se encontró ningún certificado PEM.',
+        badCertificate:
+          'No se puede leer el certificado. Pega texto PEM que empiece por -----BEGIN CERTIFICATE-----.',
+        noKey: 'No se encontró ninguna clave privada PEM.',
+        encryptedKey: 'La clave privada está cifrada. Quita primero la frase de contraseña.',
+        badKey: 'No se puede leer la clave privada.',
+        keyMismatch: 'La clave privada no corresponde al certificado.',
+        expired: 'El certificado, o uno de su cadena, ha caducado.',
+        notYetValid: 'El certificado aún no es válido. Comprueba el reloj del dispositivo.',
+        badChain:
+          'La cadena está desordenada o incompleta. Pon primero el certificado del servidor y después cada emisor.',
+        weakKey: 'La clave es demasiado corta. Usa RSA 2048 o más, o ECDSA.',
+        notServerCert: 'El certificado no es para un servidor TLS.'
+      }
     }
   }
 };

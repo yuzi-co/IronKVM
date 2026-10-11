@@ -1812,6 +1812,67 @@ const tr = {
         resetConfirm: '{{username}} için iki faktörlü kimlik doğrulama kapatılsın mı?',
         resetDone: 'İki faktörlü kimlik doğrulama sıfırlandı'
       }
+    },
+    tlsCert: {
+      title: 'Sertifika',
+      description: 'HTTPS sunucusunun sunduğu sertifika.',
+      uploaded: 'Yüklenen',
+      selfSigned: 'Kendinden imzalı',
+      httpsOff: 'HTTPS kapalı. Sertifika, HTTPS açıldığında kullanılır.',
+      none: 'Henüz sertifika yok. HTTPS açıldığında bir tane oluşturulur.',
+      subject: 'Konu',
+      issuer: 'Veren',
+      names: 'Adlar',
+      validFrom: 'Geçerlilik başlangıcı',
+      validUntil: 'Geçerlilik bitişi',
+      keyType: 'Anahtar',
+      chain: 'Zincirdeki sertifikalar',
+      fingerprint: 'SHA-256',
+      restore: 'Kendinden imzalıya dön',
+      restoreConfirm: 'Kendinden imzalı sertifikaya geri dönülsün mü?',
+      restoreDesc:
+        'Yüklenen sertifika ve anahtar silinir. Tarayıcılar kendinden imzalı sertifika için yeniden uyarı verir.',
+      restored: 'Kendinden imzalı sertifika geri yüklendi',
+      restoreFailed: 'Kendinden imzalı sertifika geri yüklenemedi',
+      uploadTitle: 'Sertifika yükle',
+      uploadDescription:
+        'PEM biçimi. Önce sunucu sertifikasını, ardından ara sertifikaları koyun. Anahtar şifreli olmamalıdır.',
+      certField: 'Sertifika zinciri',
+      keyField: 'Özel anahtar',
+      chooseFile: 'Dosya seç',
+      readFailed: 'Dosya okunamadı',
+      check: 'Denetle',
+      install: 'Yükle',
+      installConfirm: 'Bu sertifika yüklensin mi?',
+      installDesc:
+        'Yeni bağlantılar hemen bunu kullanır. Açık sayfalar çalışmaya devam eder; yeni sertifikayı görmek için sayfayı yenileyin.',
+      installed: 'Sertifika yüklendi',
+      installFailed: 'Sertifika yüklenemedi',
+      checkFailed: 'Sertifika reddedildi',
+      loadFailed: 'Sertifika alınamadı',
+      warnings: {
+        expiresSoon: 'Sertifikanın süresi 30 gün içinde doluyor.',
+        nameMismatch:
+          'Sertifika şunları kapsamıyor: {{names}}. Cihaz bu adlarla açıldığında tarayıcılar uyarı verir.',
+        selfSigned:
+          'Bu sertifika kendinden imzalı. Tarayıcılar ona yalnızca her bilgisayara yüklendikten sonra güvenir.'
+      },
+      errors: {
+        tooLarge: 'Dosya çok büyük.',
+        noCertificate: 'PEM sertifikası bulunamadı.',
+        badCertificate:
+          'Sertifika okunamıyor. -----BEGIN CERTIFICATE----- ile başlayan PEM metnini yapıştırın.',
+        noKey: 'PEM özel anahtarı bulunamadı.',
+        encryptedKey: 'Özel anahtar şifreli. Önce parola ifadesini kaldırın.',
+        badKey: 'Özel anahtar okunamıyor.',
+        keyMismatch: 'Özel anahtar bu sertifikaya ait değil.',
+        expired: 'Sertifikanın veya zincirindeki bir sertifikanın süresi dolmuş.',
+        notYetValid: 'Sertifika henüz geçerli değil. Cihazın saatini kontrol edin.',
+        badChain:
+          'Zincir sırasız veya eksik. Önce sunucu sertifikasını, ardından her vereni koyun.',
+        weakKey: 'Anahtar çok kısa. RSA 2048 veya daha uzun ya da ECDSA kullanın.',
+        notServerCert: 'Sertifika bir TLS sunucusu için değil.'
+      }
     }
   }
 };

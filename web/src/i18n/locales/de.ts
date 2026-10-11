@@ -1860,6 +1860,68 @@ const de = {
         resetConfirm: 'Zwei-Faktor-Authentifizierung für {{username}} ausschalten?',
         resetDone: 'Zwei-Faktor-Authentifizierung zurückgesetzt'
       }
+    },
+    tlsCert: {
+      title: 'Zertifikat',
+      description: 'Das Zertifikat, das der HTTPS-Server vorlegt.',
+      uploaded: 'Hochgeladen',
+      selfSigned: 'Selbstsigniert',
+      httpsOff: 'HTTPS ist aus. Das Zertifikat wird verwendet, sobald HTTPS eingeschaltet ist.',
+      none: 'Noch kein Zertifikat. Es wird erzeugt, wenn HTTPS eingeschaltet wird.',
+      subject: 'Antragsteller',
+      issuer: 'Aussteller',
+      names: 'Namen',
+      validFrom: 'Gültig ab',
+      validUntil: 'Gültig bis',
+      keyType: 'Schlüssel',
+      chain: 'Zertifikate in der Kette',
+      fingerprint: 'SHA-256',
+      restore: 'Selbstsigniertes wiederherstellen',
+      restoreConfirm: 'Zum selbstsignierten Zertifikat zurückkehren?',
+      restoreDesc:
+        'Das hochgeladene Zertifikat und der Schlüssel werden gelöscht. Browser warnen dann wieder vor dem selbstsignierten Zertifikat.',
+      restored: 'Selbstsigniertes Zertifikat wiederhergestellt',
+      restoreFailed: 'Selbstsigniertes Zertifikat konnte nicht wiederhergestellt werden',
+      uploadTitle: 'Zertifikat hochladen',
+      uploadDescription:
+        'PEM-Format. Zuerst das Serverzertifikat, dann etwaige Zwischenzertifikate. Der Schlüssel darf nicht verschlüsselt sein.',
+      certField: 'Zertifikatskette',
+      keyField: 'Privater Schlüssel',
+      chooseFile: 'Datei auswählen',
+      readFailed: 'Die Datei konnte nicht gelesen werden',
+      check: 'Prüfen',
+      install: 'Installieren',
+      installConfirm: 'Dieses Zertifikat installieren?',
+      installDesc:
+        'Neue Verbindungen verwenden es sofort. Offene Seiten funktionieren weiter; laden Sie neu, um das neue Zertifikat zu sehen.',
+      installed: 'Zertifikat installiert',
+      installFailed: 'Zertifikat konnte nicht installiert werden',
+      checkFailed: 'Das Zertifikat wurde abgelehnt',
+      loadFailed: 'Zertifikat konnte nicht geladen werden',
+      warnings: {
+        expiresSoon: 'Das Zertifikat läuft innerhalb von 30 Tagen ab.',
+        nameMismatch:
+          'Das Zertifikat deckt nicht ab: {{names}}. Browser warnen, wenn das Gerät unter diesen Namen geöffnet wird.',
+        selfSigned:
+          'Dieses Zertifikat ist selbstsigniert. Browser vertrauen ihm erst, wenn es auf jedem Computer installiert ist.'
+      },
+      errors: {
+        tooLarge: 'Die Datei ist zu groß.',
+        noCertificate: 'Kein PEM-Zertifikat gefunden.',
+        badCertificate:
+          'Das Zertifikat kann nicht gelesen werden. Fügen Sie PEM-Text ein, der mit -----BEGIN CERTIFICATE----- beginnt.',
+        noKey: 'Kein privater PEM-Schlüssel gefunden.',
+        encryptedKey:
+          'Der private Schlüssel ist verschlüsselt. Entfernen Sie zuerst die Passphrase.',
+        badKey: 'Der private Schlüssel kann nicht gelesen werden.',
+        keyMismatch: 'Der private Schlüssel gehört nicht zum Zertifikat.',
+        expired: 'Das Zertifikat oder eines in seiner Kette ist abgelaufen.',
+        notYetValid: 'Das Zertifikat ist noch nicht gültig. Prüfen Sie die Uhr des Geräts.',
+        badChain:
+          'Die Kette ist ungeordnet oder unvollständig. Zuerst das Serverzertifikat, dann jeden Aussteller.',
+        weakKey: 'Der Schlüssel ist zu kurz. Verwenden Sie RSA 2048 oder länger, oder ECDSA.',
+        notServerCert: 'Das Zertifikat ist nicht für einen TLS-Server bestimmt.'
+      }
     }
   }
 };

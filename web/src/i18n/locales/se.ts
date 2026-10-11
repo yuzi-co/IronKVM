@@ -1814,6 +1814,67 @@ const se = {
         resetConfirm: 'Stäng av tvåfaktorsautentisering för {{username}}?',
         resetDone: 'Tvåfaktorsautentisering återställd'
       }
+    },
+    tlsCert: {
+      title: 'Certifikat',
+      description: 'Certifikatet som HTTPS-servern visar upp.',
+      uploaded: 'Uppladdat',
+      selfSigned: 'Självsignerat',
+      httpsOff: 'HTTPS är avstängt. Certifikatet används när HTTPS slås på.',
+      none: 'Inget certifikat ännu. Ett genereras när HTTPS slås på.',
+      subject: 'Ämne',
+      issuer: 'Utfärdare',
+      names: 'Namn',
+      validFrom: 'Giltigt från',
+      validUntil: 'Giltigt till',
+      keyType: 'Nyckel',
+      chain: 'Certifikat i kedjan',
+      fingerprint: 'SHA-256',
+      restore: 'Återställ självsignerat',
+      restoreConfirm: 'Gå tillbaka till det självsignerade certifikatet?',
+      restoreDesc:
+        'Det uppladdade certifikatet och nyckeln raderas. Webbläsare varnar igen för det självsignerade certifikatet.',
+      restored: 'Självsignerat certifikat återställt',
+      restoreFailed: 'Det gick inte att återställa det självsignerade certifikatet',
+      uploadTitle: 'Ladda upp ett certifikat',
+      uploadDescription:
+        'PEM-format. Lägg servercertifikatet först, sedan eventuella mellanliggande certifikat. Nyckeln får inte vara krypterad.',
+      certField: 'Certifikatkedja',
+      keyField: 'Privat nyckel',
+      chooseFile: 'Välj fil',
+      readFailed: 'Det gick inte att läsa filen',
+      check: 'Kontrollera',
+      install: 'Installera',
+      installConfirm: 'Installera det här certifikatet?',
+      installDesc:
+        'Nya anslutningar använder det direkt. Öppna sidor fortsätter att fungera; ladda om för att se det nya certifikatet.',
+      installed: 'Certifikat installerat',
+      installFailed: 'Det gick inte att installera certifikatet',
+      checkFailed: 'Certifikatet avvisades',
+      loadFailed: 'Det gick inte att läsa in certifikatet',
+      warnings: {
+        expiresSoon: 'Certifikatet går ut inom 30 dagar.',
+        nameMismatch:
+          'Certifikatet täcker inte: {{names}}. Webbläsare varnar när enheten öppnas via de namnen.',
+        selfSigned:
+          'Det här certifikatet är självsignerat. Webbläsare litar bara på det när det har installerats på varje dator.'
+      },
+      errors: {
+        tooLarge: 'Filen är för stor.',
+        noCertificate: 'Inget PEM-certifikat hittades.',
+        badCertificate:
+          'Certifikatet kan inte läsas. Klistra in PEM-text som börjar med -----BEGIN CERTIFICATE-----.',
+        noKey: 'Ingen privat PEM-nyckel hittades.',
+        encryptedKey: 'Den privata nyckeln är krypterad. Ta bort lösenfrasen först.',
+        badKey: 'Den privata nyckeln kan inte läsas.',
+        keyMismatch: 'Den privata nyckeln hör inte till certifikatet.',
+        expired: 'Certifikatet, eller ett i kedjan, har gått ut.',
+        notYetValid: 'Certifikatet är inte giltigt ännu. Kontrollera enhetens klocka.',
+        badChain:
+          'Kedjan är i fel ordning eller ofullständig. Lägg servercertifikatet först, sedan varje utfärdare.',
+        weakKey: 'Nyckeln är för kort. Använd RSA 2048 eller längre, eller ECDSA.',
+        notServerCert: 'Certifikatet är inte avsett för en TLS-server.'
+      }
     }
   }
 };

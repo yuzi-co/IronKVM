@@ -1835,6 +1835,67 @@ const ca = {
         resetConfirm: "Vols desactivar l'autenticació de dos factors per a {{username}}?",
         resetDone: 'Autenticació de dos factors restablerta'
       }
+    },
+    tlsCert: {
+      title: 'Certificat',
+      description: 'El certificat que presenta el servidor HTTPS.',
+      uploaded: 'Pujat',
+      selfSigned: 'Autosignat',
+      httpsOff: "HTTPS està desactivat. El certificat es farà servir quan s'activi HTTPS.",
+      none: "Encara no hi ha cap certificat. Se'n genera un quan s'activa HTTPS.",
+      subject: 'Subjecte',
+      issuer: 'Emissor',
+      names: 'Noms',
+      validFrom: 'Vàlid des de',
+      validUntil: 'Vàlid fins a',
+      keyType: 'Clau',
+      chain: 'Certificats de la cadena',
+      fingerprint: 'SHA-256',
+      restore: "Restaura l'autosignat",
+      restoreConfirm: 'Vols tornar al certificat autosignat?',
+      restoreDesc:
+        "S'eliminaran el certificat i la clau pujats. Els navegadors tornaran a avisar del certificat autosignat.",
+      restored: 'Certificat autosignat restaurat',
+      restoreFailed: "No s'ha pogut restaurar el certificat autosignat",
+      uploadTitle: 'Puja un certificat',
+      uploadDescription:
+        'Format PEM. Posa primer el certificat del servidor i després els intermedis. La clau no pot estar xifrada.',
+      certField: 'Cadena de certificats',
+      keyField: 'Clau privada',
+      chooseFile: 'Tria un fitxer',
+      readFailed: "No s'ha pogut llegir el fitxer",
+      check: 'Comprova',
+      install: 'Instal·la',
+      installConfirm: 'Vols instal·lar aquest certificat?',
+      installDesc:
+        'Les connexions noves el fan servir de seguida. Les pàgines obertes continuen funcionant; recarrega per veure el certificat nou.',
+      installed: 'Certificat instal·lat',
+      installFailed: "No s'ha pogut instal·lar el certificat",
+      checkFailed: 'El certificat ha estat rebutjat',
+      loadFailed: "No s'ha pogut carregar el certificat",
+      warnings: {
+        expiresSoon: "El certificat caduca d'aquí a menys de 30 dies.",
+        nameMismatch:
+          "El certificat no cobreix: {{names}}. Els navegadors avisaran quan s'obri el dispositiu amb aquests noms.",
+        selfSigned:
+          'Aquest certificat és autosignat. Els navegadors només hi confien un cop instal·lat a cada ordinador.'
+      },
+      errors: {
+        tooLarge: 'El fitxer és massa gran.',
+        noCertificate: "No s'ha trobat cap certificat PEM.",
+        badCertificate:
+          'No es pot llegir el certificat. Enganxa text PEM que comenci per -----BEGIN CERTIFICATE-----.',
+        noKey: "No s'ha trobat cap clau privada PEM.",
+        encryptedKey: 'La clau privada està xifrada. Treu primer la frase de contrasenya.',
+        badKey: 'No es pot llegir la clau privada.',
+        keyMismatch: 'La clau privada no correspon al certificat.',
+        expired: 'El certificat, o un de la seva cadena, ha caducat.',
+        notYetValid: 'El certificat encara no és vàlid. Comprova el rellotge del dispositiu.',
+        badChain:
+          'La cadena està desordenada o incompleta. Posa primer el certificat del servidor i després cada emissor.',
+        weakKey: 'La clau és massa curta. Fes servir RSA 2048 o més, o ECDSA.',
+        notServerCert: 'El certificat no és per a un servidor TLS.'
+      }
     }
   }
 };

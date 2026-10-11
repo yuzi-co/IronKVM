@@ -1799,6 +1799,67 @@ const en = {
         resetConfirm: 'Turn off two-factor authentication for {{username}}?',
         resetDone: 'Two-factor authentication reset'
       }
+    },
+    tlsCert: {
+      title: 'Certificate',
+      description: 'The certificate the HTTPS server presents.',
+      uploaded: 'Uploaded',
+      selfSigned: 'Self-signed',
+      httpsOff: 'HTTPS is off. The certificate is used once HTTPS is turned on.',
+      none: 'No certificate yet. One is generated when HTTPS is turned on.',
+      subject: 'Subject',
+      issuer: 'Issuer',
+      names: 'Names',
+      validFrom: 'Valid from',
+      validUntil: 'Valid until',
+      keyType: 'Key',
+      chain: 'Certificates in chain',
+      fingerprint: 'SHA-256',
+      restore: 'Restore self-signed',
+      restoreConfirm: 'Go back to the self-signed certificate?',
+      restoreDesc:
+        'The uploaded certificate and key are deleted. Browsers will warn about the self-signed certificate again.',
+      restored: 'Self-signed certificate restored',
+      restoreFailed: 'Failed to restore the self-signed certificate',
+      uploadTitle: 'Upload a certificate',
+      uploadDescription:
+        'PEM format. Put the server certificate first, then any intermediates. The key must not be encrypted.',
+      certField: 'Certificate chain',
+      keyField: 'Private key',
+      chooseFile: 'Choose file',
+      readFailed: 'Could not read the file',
+      check: 'Check',
+      install: 'Install',
+      installConfirm: 'Install this certificate?',
+      installDesc:
+        'New connections use it at once. Open pages keep working; reload to see the new certificate.',
+      installed: 'Certificate installed',
+      installFailed: 'Failed to install the certificate',
+      checkFailed: 'The certificate was refused',
+      loadFailed: 'Failed to load the certificate',
+      warnings: {
+        expiresSoon: 'The certificate expires within 30 days.',
+        nameMismatch:
+          'The certificate does not cover: {{names}}. Browsers will warn when the device is opened by those names.',
+        selfSigned:
+          'This certificate is self-signed. Browsers trust it only after it is installed on each computer.'
+      },
+      errors: {
+        tooLarge: 'The file is too large.',
+        noCertificate: 'No PEM certificate found.',
+        badCertificate:
+          'The certificate cannot be read. Paste PEM text that starts with -----BEGIN CERTIFICATE-----.',
+        noKey: 'No PEM private key found.',
+        encryptedKey: 'The private key is encrypted. Remove the passphrase first.',
+        badKey: 'The private key cannot be read.',
+        keyMismatch: 'The private key does not belong to the certificate.',
+        expired: 'The certificate, or one in its chain, has expired.',
+        notYetValid: 'The certificate is not valid yet. Check the device clock.',
+        badChain:
+          'The chain is out of order or incomplete. Put the server certificate first, then each issuer.',
+        weakKey: 'The key is too short. Use RSA 2048 or longer, or ECDSA.',
+        notServerCert: 'The certificate is not for a TLS server.'
+      }
     }
   }
 };
