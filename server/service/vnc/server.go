@@ -83,6 +83,10 @@ type Deps struct {
 	Limiter      Limiter
 	FailureDelay time.Duration
 	Password     PasswordStore
+	// ClientAllowed reports whether a client at this address may connect.
+	// One it refuses is closed before the handshake. Nil allows every
+	// address.
+	ClientAllowed func(net.Addr) bool
 	// Certificate returns the certificate for the VeNCrypt TLS handshake.
 	// It is called for every connection, so a new certificate applies to the
 	// next client without a restart.
@@ -200,6 +204,12 @@ func (s *Server) accept(listener net.Listener) {
 				log.Errorf("vnc: accept: %s", err)
 			}
 			return
+		}
+
+		if s.deps.ClientAllowed != nil && !s.deps.ClientAllowed(conn.RemoteAddr()) {
+			log.Debugf("vnc: refused %s, not an allowed network", conn.RemoteAddr())
+			_ = conn.Close()
+			continue
 		}
 
 		select {

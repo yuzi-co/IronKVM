@@ -1345,6 +1345,21 @@ const da = {
               'Brug kun bogstaver, tal, punktummer og bindestreger, og start ikke med punktum eller bindestreg',
             port: 'Porten skal være et tal fra 1 til 65535'
           }
+        },
+        allowlist: {
+          title: 'Tilladte netværk',
+          description:
+            "Adresser, der må nå webbrugerfladen, API'et, VNC og IPMI. Én adresse eller CIDR pr. linje, f.eks. 192.168.1.0/24. Lad feltet være tomt for at tillade alle adresser.",
+          everyone: 'Alle adresser kan forbinde.',
+          restricted:
+            'Kun de angivne netværk kan forbinde. Enheden selv og USB-netværksforbindelsen er altid tilladt.',
+          placeholder: '192.168.1.0/24',
+          yourAddress: 'Din adresse: {{client}}',
+          addMine: 'Tilføj min adresse',
+          save: 'Gem',
+          allowAll: 'Tillad alle adresser',
+          loadFailed: 'Kunne ikke indlæse de tilladte netværk',
+          saveFailed: 'Kunne ikke gemme de tilladte netværk'
         }
       },
       vpn: {

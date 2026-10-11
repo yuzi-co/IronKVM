@@ -1349,6 +1349,21 @@ const tr = {
             host: 'Yalnızca harf, rakam, nokta ve tire kullanın; nokta veya tireyle başlamayın',
             port: 'Port 1 ile 65535 arasında bir sayı olmalı'
           }
+        },
+        allowlist: {
+          title: 'İzin verilen ağlar',
+          description:
+            "Web arayüzüne, API'ye, VNC'ye ve IPMI'ya erişebilecek adresler. Her satıra bir adres veya CIDR, örneğin 192.168.1.0/24. Tüm adreslere izin vermek için boş bırakın.",
+          everyone: 'Her adres bağlanabilir.',
+          restricted:
+            'Yalnızca listedeki ağlar bağlanabilir. Cihazın kendisine ve USB ağ bağlantısına her zaman izin verilir.',
+          placeholder: '192.168.1.0/24',
+          yourAddress: 'Adresiniz: {{client}}',
+          addMine: 'Adresimi ekle',
+          save: 'Kaydet',
+          allowAll: 'Tüm adreslere izin ver',
+          loadFailed: 'İzin verilen ağlar yüklenemedi',
+          saveFailed: 'İzin verilen ağlar kaydedilemedi'
         }
       },
       vpn: {

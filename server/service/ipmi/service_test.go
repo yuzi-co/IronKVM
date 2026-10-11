@@ -361,3 +361,20 @@ func TestTurningTheServiceOffClosesTheSocket(t *testing.T) {
 		t.Fatalf("%d sessions after stop", n)
 	}
 }
+
+// A client the allowed networks setting refuses gets no answer at all, not
+// even to the unauthenticated discovery command.
+func TestAClientOffTheAllowedNetworksIsNotAnswered(t *testing.T) {
+	env := newTestEnv(t)
+	c := dial(t, env.service)
+
+	env.refuse.Store(true)
+	if _, _, err := c.v15Command(netFnApp, cmdGetChannelAuthCaps, []byte{0x8e, privAdmin}); err == nil {
+		t.Fatal("a refused client was answered")
+	}
+
+	env.refuse.Store(false)
+	if cc, _, err := c.v15Command(netFnApp, cmdGetChannelAuthCaps, []byte{0x8e, privAdmin}); err != nil || cc != ccOK {
+		t.Fatalf("an allowed client: cc %#x, %v", cc, err)
+	}
+}

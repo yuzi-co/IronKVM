@@ -1332,6 +1332,20 @@ const ko = {
             host: '문자, 숫자, 점, 하이픈만 사용할 수 있으며 점이나 하이픈으로 시작할 수 없습니다',
             port: '포트는 1에서 65535 사이의 숫자여야 합니다'
           }
+        },
+        allowlist: {
+          title: '허용된 네트워크',
+          description:
+            '웹 UI, API, VNC, IPMI에 접근할 수 있는 주소입니다. 한 줄에 주소 또는 CIDR 하나(예: 192.168.1.0/24). 비워 두면 모든 주소를 허용합니다.',
+          everyone: '모든 주소에서 연결할 수 있습니다.',
+          restricted: '목록의 네트워크만 연결할 수 있습니다. 장치 자체와 USB 네트워크 연결은 항상 허용됩니다.',
+          placeholder: '192.168.1.0/24',
+          yourAddress: '내 주소: {{client}}',
+          addMine: '내 주소 추가',
+          save: '저장',
+          allowAll: '모든 주소 허용',
+          loadFailed: '허용된 네트워크를 불러오지 못했습니다',
+          saveFailed: '허용된 네트워크를 저장하지 못했습니다'
         }
       },
       vpn: {

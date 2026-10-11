@@ -129,3 +129,19 @@ export function setSyslog(target: string) {
 export function testSyslog() {
   return http.post('/api/network/syslog/test');
 }
+
+// The client networks allowed to reach the board. An empty list allows every
+// address. client is the address the request came from, which a saved list
+// must include.
+export type AllowlistState = {
+  networks: string[];
+  client: string;
+};
+
+export function getAllowlist() {
+  return http.get('/api/network/allowlist');
+}
+
+export function setAllowlist(networks: string[]) {
+  return http.post('/api/network/allowlist', { networks });
+}

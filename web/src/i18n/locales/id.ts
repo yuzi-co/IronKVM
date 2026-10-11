@@ -1351,6 +1351,21 @@ const id = {
               'Gunakan hanya huruf, angka, titik, dan tanda hubung, tidak diawali titik atau tanda hubung',
             port: 'Port harus berupa angka 1 sampai 65535'
           }
+        },
+        allowlist: {
+          title: 'Jaringan yang diizinkan',
+          description:
+            'Alamat yang boleh mengakses antarmuka web, API, VNC, dan IPMI. Satu alamat atau CIDR per baris, misalnya 192.168.1.0/24. Kosongkan untuk mengizinkan semua alamat.',
+          everyone: 'Semua alamat dapat terhubung.',
+          restricted:
+            'Hanya jaringan dalam daftar yang dapat terhubung. Perangkat itu sendiri dan tautan jaringan USB selalu diizinkan.',
+          placeholder: '192.168.1.0/24',
+          yourAddress: 'Alamat Anda: {{client}}',
+          addMine: 'Tambahkan alamat saya',
+          save: 'Simpan',
+          allowAll: 'Izinkan semua alamat',
+          loadFailed: 'Gagal memuat jaringan yang diizinkan',
+          saveFailed: 'Gagal menyimpan jaringan yang diizinkan'
         }
       },
       vpn: {

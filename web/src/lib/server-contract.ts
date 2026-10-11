@@ -21,6 +21,7 @@ export const LEGACY_API_VERSION = 1;
 // registers (server/common/apicontract/contract.go). Keep the list sorted.
 export const SERVER_FEATURES = [
   'direct-clock', // the clock request on the direct H.264 socket (status bar latency)
+  'ip-allowlist', // /api/network/allowlist (Settings > Network > Allowed networks)
   'status-bar', // GET /api/stream/info (status bar source line)
   'ui-update' // /api/ui: separate UI packages (Settings > Update)
 ] as const;

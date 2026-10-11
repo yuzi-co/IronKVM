@@ -12,6 +12,7 @@ import (
 	"NanoKVM-Server/common"
 	"NanoKVM-Server/config"
 	"NanoKVM-Server/middleware"
+	"NanoKVM-Server/service/allowlist"
 	"NanoKVM-Server/service/redfish"
 	"NanoKVM-Server/service/stream/mjpeg"
 	"NanoKVM-Server/service/vnc"
@@ -38,6 +39,8 @@ func vncRouter(r *gin.Engine) {
 
 		Accounts: authn.DefaultStore,
 		Limiter:  redfish.LoginLimiter{},
+		// The allowed networks setting covers VNC as it does the web UI.
+		ClientAllowed: allowlist.AllowedAddr,
 		// The web login waits as long after a wrong password.
 		FailureDelay: 2 * time.Second,
 		Password:     vnc.FilePassword{Path: vnc.PasswordFile},

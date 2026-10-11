@@ -1372,6 +1372,21 @@ const es = {
             host: 'Usa solo letras, dígitos, puntos y guiones, sin empezar por punto ni guion',
             port: 'El puerto debe ser un número del 1 al 65535'
           }
+        },
+        allowlist: {
+          title: 'Redes permitidas',
+          description:
+            'Direcciones que pueden acceder a la interfaz web, la API, VNC e IPMI. Una dirección o CIDR por línea, por ejemplo 192.168.1.0/24. Déjelo vacío para permitir cualquier dirección.',
+          everyone: 'Cualquier dirección puede conectarse.',
+          restricted:
+            'Solo pueden conectarse las redes de la lista. El propio dispositivo y el enlace de red USB siempre están permitidos.',
+          placeholder: '192.168.1.0/24',
+          yourAddress: 'Su dirección: {{client}}',
+          addMine: 'Añadir mi dirección',
+          save: 'Guardar',
+          allowAll: 'Permitir cualquier dirección',
+          loadFailed: 'No se pudieron cargar las redes permitidas',
+          saveFailed: 'No se pudieron guardar las redes permitidas'
         }
       },
       vpn: {

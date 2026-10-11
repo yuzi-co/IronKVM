@@ -1286,6 +1286,19 @@ const zh_tw = {
             host: '只能使用字母、數字、點和連字號，且不能以點或連字號開頭',
             port: '連接埠必須是 1 到 65535 之間的數字'
           }
+        },
+        allowlist: {
+          title: '允許的網路',
+          description: '可以存取 Web 介面、API、VNC 和 IPMI 的位址。每行一個位址或 CIDR，例如 192.168.1.0/24。留空則允許所有位址。',
+          everyone: '所有位址都可以連線。',
+          restricted: '只有清單中的網路可以連線。裝置本身和 USB 網路連結一律允許。',
+          placeholder: '192.168.1.0/24',
+          yourAddress: '你的位址：{{client}}',
+          addMine: '新增我的位址',
+          save: '儲存',
+          allowAll: '允許所有位址',
+          loadFailed: '載入允許的網路失敗',
+          saveFailed: '儲存允許的網路失敗'
         }
       },
       vpn: {

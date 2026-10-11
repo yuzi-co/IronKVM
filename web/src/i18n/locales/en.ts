@@ -1334,6 +1334,21 @@ const en = {
             host: 'Use only letters, digits, dots and dashes, not starting with a dot or dash',
             port: 'The port must be a number from 1 to 65535'
           }
+        },
+        allowlist: {
+          title: 'Allowed networks',
+          description:
+            'Addresses that may reach the web UI, the API, VNC and IPMI. One address or CIDR per line, such as 192.168.1.0/24. Leave it empty to allow every address.',
+          everyone: 'Every address can connect.',
+          restricted:
+            'Only the listed networks can connect. The board itself and the USB network link are always allowed.',
+          placeholder: '192.168.1.0/24',
+          yourAddress: 'Your address: {{client}}',
+          addMine: 'Add my address',
+          save: 'Save',
+          allowAll: 'Allow every address',
+          loadFailed: 'Failed to load the allowed networks',
+          saveFailed: 'Failed to save the allowed networks'
         }
       },
       vpn: {

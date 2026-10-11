@@ -9,6 +9,7 @@ import (
 	"NanoKVM-Server/common/apicontract"
 	"NanoKVM-Server/middleware"
 	"NanoKVM-Server/service/agent"
+	"NanoKVM-Server/service/allowlist"
 	"NanoKVM-Server/service/controlmode"
 	"NanoKVM-Server/service/picoclaw"
 	"NanoKVM-Server/service/vm"
@@ -21,8 +22,9 @@ import (
 
 func Init(r *gin.Engine) {
 	// Engine middleware applies only to the routes registered after it, so
-	// this goes first: every route, the static UI and the login included, is
-	// behind it.
+	// these go first: every route, the static UI and the login included, is
+	// behind both.
+	r.Use(allowlist.Middleware())
 	r.Use(middleware.LimitBody(middleware.DefaultBodyLimit, bodyLimits))
 
 	web(r)
@@ -119,6 +121,7 @@ func server(r *gin.Engine) {
 	roomMicRouter(r)
 	storageRouter(r)
 	networkRouter(r)
+	allowlistRouter(r)
 	hidRouter(r)
 	controlRouter(r, control, picoclawService)
 	mcpRouter(r, control, picoclawService)

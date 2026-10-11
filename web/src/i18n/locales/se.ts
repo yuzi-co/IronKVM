@@ -1350,6 +1350,21 @@ const se = {
               'Använd bara bokstäver, siffror, punkter och bindestreck, och börja inte med punkt eller bindestreck',
             port: 'Porten måste vara ett tal från 1 till 65535'
           }
+        },
+        allowlist: {
+          title: 'Tillåtna nätverk',
+          description:
+            'Adresser som får nå webbgränssnittet, API:t, VNC och IPMI. En adress eller CIDR per rad, till exempel 192.168.1.0/24. Lämna tomt för att tillåta alla adresser.',
+          everyone: 'Alla adresser kan ansluta.',
+          restricted:
+            'Endast nätverken i listan kan ansluta. Själva enheten och USB-nätverkslänken är alltid tillåtna.',
+          placeholder: '192.168.1.0/24',
+          yourAddress: 'Din adress: {{client}}',
+          addMine: 'Lägg till min adress',
+          save: 'Spara',
+          allowAll: 'Tillåt alla adresser',
+          loadFailed: 'Det gick inte att läsa in de tillåtna nätverken',
+          saveFailed: 'Det gick inte att spara de tillåtna nätverken'
         }
       },
       vpn: {

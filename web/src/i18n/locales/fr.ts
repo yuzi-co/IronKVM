@@ -1377,6 +1377,21 @@ const fr = {
               'Uniquement des lettres, chiffres, points et tirets, sans commencer par un point ou un tiret',
             port: 'Le port doit être un nombre de 1 à 65535'
           }
+        },
+        allowlist: {
+          title: 'Réseaux autorisés',
+          description:
+            "Adresses autorisées à joindre l'interface web, l'API, VNC et IPMI. Une adresse ou un CIDR par ligne, par exemple 192.168.1.0/24. Laissez vide pour autoriser toutes les adresses.",
+          everyone: 'Toutes les adresses peuvent se connecter.',
+          restricted:
+            "Seuls les réseaux de la liste peuvent se connecter. L'appareil lui-même et la liaison réseau USB sont toujours autorisés.",
+          placeholder: '192.168.1.0/24',
+          yourAddress: 'Votre adresse : {{client}}',
+          addMine: 'Ajouter mon adresse',
+          save: 'Enregistrer',
+          allowAll: 'Autoriser toutes les adresses',
+          loadFailed: 'Impossible de charger les réseaux autorisés',
+          saveFailed: "Impossible d'enregistrer les réseaux autorisés"
         }
       },
       vpn: {
