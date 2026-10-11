@@ -169,6 +169,10 @@ uint8_t kvm_reset_password(void)
 	time::sleep_ms(10);
     fputs("rm /etc/kvm/pwd\n", fp);
 	time::sleep_ms(10);
+	// The reset puts admin/admin back, so a first-boot password still on the
+	// card or the panel would offer one that no longer works.
+    fputs("rm -f /etc/kvm/first-boot-password /boot/ironkvm-first-password.txt\n", fp);
+	time::sleep_ms(10);
     fputs("sync\n", fp);
 	time::sleep_ms(10);
     fputs("exit\n", fp); // 退出 bash

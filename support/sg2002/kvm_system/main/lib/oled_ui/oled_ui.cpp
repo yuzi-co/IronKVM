@@ -806,6 +806,70 @@ void kvm_compact_ui_disp(uint8_t first_disp)
 }
 // --- end of the compact roaming page ---
 
+// --- the first-boot password page ---
+//
+// A card flashed with an IronKVM image has no account until its first boot,
+// and that boot gives the device owner a random password in place of
+// admin/admin (ironkvm-dist abslots/device/S02identity, applied by the
+// server). There is nobody to ask what it is and no network login to read it
+// from, so the panel shows it, for as long as the file that holds it exists.
+// The server removes the file when the owner chooses a password.
+//
+// It takes the panel over from the status page, and it does not sleep: a
+// password that blanked after thirty seconds would have to be found again by
+// pressing a button on a board nobody has yet logged in to.
+#define FIRST_BOOT_FILE "/etc/kvm/first-boot-password"
+#define FIRST_BOOT_MAX  20
+
+static char first_boot_shown[FIRST_BOOT_MAX + 1];
+static uint8_t first_boot_drawn = 0;
+
+// first_boot_read returns the password in out, or 0 when there is none to
+// show. Anything that is not printable ASCII ends the text, so a damaged file
+// cannot put garbage on the panel.
+static uint8_t first_boot_read(char *out, size_t size)
+{
+	FILE *fp = fopen(FIRST_BOOT_FILE, "r");
+	size_t n = 0;
+	int c;
+
+	if(fp == NULL){
+		return 0;
+	}
+	while(n + 1 < size && (c = fgetc(fp)) != EOF){
+		if(c < 0x21 || c > 0x7e){
+			break;
+		}
+		out[n++] = (char)c;
+	}
+	fclose(fp);
+	out[n] = '\0';
+	return n > 0;
+}
+
+// first_boot_disp draws the page and returns 1 while it owns the panel.
+static uint8_t first_boot_disp(uint8_t force)
+{
+	char password[FIRST_BOOT_MAX + 1];
+
+	if(!first_boot_read(password, sizeof(password))){
+		return 0;
+	}
+	if(force || !first_boot_drawn || strcmp(password, first_boot_shown) != 0){
+		OLED_Clear();
+		OLED_ShowString(0, 0, (char *)"Web login: admin", 8);
+		OLED_ShowString(0, 1, (char *)"Password:", 8);
+		OLED_ShowString(0, 2, password, 16);
+		OLED_ShowString(0, 5, (char *)"Change it when you", 8);
+		OLED_ShowString(0, 6, (char *)"first log in. A copy", 8);
+		OLED_ShowString(0, 7, (char *)"is on the SD card.", 8);
+		snprintf(first_boot_shown, sizeof(first_boot_shown), "%s", password);
+		first_boot_drawn = 1;
+	}
+	return 1;
+}
+// --- end of the first-boot password page ---
+
 void kvm_main_ui_disp(uint8_t first_disp, uint8_t subpage_changed)
 {
 	ip_addr_t now_ip_type;
@@ -815,6 +879,16 @@ void kvm_main_ui_disp(uint8_t first_disp, uint8_t subpage_changed)
 	// Any operation will update the OLED sleep time
 	if (kvm_state_is_changed())
 		oled_auto_sleep_time_update();
+
+	if(first_boot_disp(first_disp || subpage_changed)){
+		kvm_oled_state.oled_sleep_state = 0;
+		return;
+	}
+	if(first_boot_drawn){
+		// The page is gone, so the panel holds nothing the status page drew.
+		first_boot_drawn = 0;
+		first_disp = 1;
+	}
 
 	if(kvm_oled_state.sub_page == 1){
 		// main page (oled sleep)
