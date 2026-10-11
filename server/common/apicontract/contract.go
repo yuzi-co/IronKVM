@@ -28,6 +28,7 @@ var features = []string{
 	"info-latency",  // GET /api/stream/info boardLatency: the board's share of the latency
 	"ip-allowlist",  // /api/network/allowlist: allowed client networks
 	"notifications", // /api/notify: webhook, ntfy and Telegram alerts with a snapshot
+	"nut-client",    // /api/nut: NUT client, UPS state and settings
 	"status-bar",    // GET /api/stream/info
 	"ui-update",     // /api/ui: separately installed UI packages
 	"webrtc-clock",  // "clock" event on the WebRTC signalling socket

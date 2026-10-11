@@ -138,6 +138,7 @@ func server(r *gin.Engine) {
 	watchdogRouter(r)
 	notifyRouter(r)
 	hostlogRouter(r)
+	nutRouter(r)
 	netbootRouter(r)
 	vncRouter(r)
 	ventoyRouter(r)

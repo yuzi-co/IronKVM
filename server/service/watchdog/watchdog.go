@@ -18,6 +18,7 @@ import (
 
 	"NanoKVM-Server/config"
 	"NanoKVM-Server/service/events"
+	"NanoKVM-Server/service/hostpower"
 )
 
 // SampleInterval is how often the watchdog looks at the host. Each sample
@@ -50,15 +51,13 @@ const (
 	StatusActing     = "acting"
 )
 
-// The presses. A reset is the UI's default press. A power cycle holds power
-// long enough to force a hung host off, as Redfish's ForceOff does, waits, and
-// presses again to turn it on: a short press alone does nothing to a host
-// that no longer answers ACPI.
+// The presses come from hostpower. A reset is the UI's default press. A power
+// cycle holds power long enough to force a hung host off, as Redfish's
+// ForceOff does, waits, and presses again to turn it on: a short press alone
+// does nothing to a host that no longer answers ACPI.
 const (
-	resetPress    = 800 * time.Millisecond
-	forceOffPress = 5 * time.Second
+	resetPress    = hostpower.ShortPress
 	powerOffPause = 5 * time.Second
-	powerOnPress  = 800 * time.Millisecond
 )
 
 // Capture qualities. The sample only has to be compared, so it takes the
@@ -109,6 +108,7 @@ type Deps struct {
 // Watchdog watches the host and acts when it hangs.
 type Watchdog struct {
 	deps      Deps
+	power     *hostpower.Power
 	startOnce sync.Once
 
 	mu sync.Mutex
@@ -143,7 +143,13 @@ func New(deps Deps) *Watchdog {
 	if deps.Sleep == nil {
 		deps.Sleep = time.Sleep
 	}
-	return &Watchdog{deps: deps, status: StatusOff}
+	power := hostpower.New(hostpower.Deps{
+		PressButton:       deps.PressButton,
+		PowerLEDConnected: deps.PowerLEDConnected,
+		PowerLED:          deps.PowerLED,
+		Sleep:             deps.Sleep,
+	})
+	return &Watchdog{deps: deps, power: power, status: StatusOff}
 }
 
 // Start samples the host every SampleInterval for the rest of uptime. Calling
@@ -202,15 +208,12 @@ func (w *Watchdog) tick(ctx context.Context) {
 
 	// If the LED says the host is off, or cannot say, the host is not
 	// "should be up", and nothing the picture does means a hang.
-	ledConnected := w.deps.PowerLEDConnected()
-	ledOn := false
+	ledConnected, ledOn, ledErr := w.power.LED()
 	if ledConnected {
-		on, err := w.deps.PowerLED()
-		if err != nil || !on {
+		if ledErr != nil || !ledOn {
 			w.pause(now, StatusHostOff, ledConnected, false)
 			return
 		}
-		ledOn = true
 	}
 
 	// With capture turned off there is no picture and no signal to judge.
@@ -415,14 +418,9 @@ func publishAction(action, reason string, stuck time.Duration, screenshot []byte
 // press carries out the action.
 func (w *Watchdog) press(action string) error {
 	if action != ActionPower {
-		return w.deps.PressButton(ActionReset, resetPress)
+		return w.power.Reset()
 	}
-
-	if err := w.deps.PressButton(ActionPower, forceOffPress); err != nil {
-		return err
-	}
-	w.deps.Sleep(powerOffPause)
-	return w.deps.PressButton(ActionPower, powerOnPress)
+	return w.power.Cycle(powerOffPause)
 }
 
 // The actions taken since the server started, for /api/metrics.
