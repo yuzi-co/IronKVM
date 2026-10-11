@@ -378,7 +378,7 @@ func (s *H264Source) run() {
 		}
 
 		if len(wanted) == 0 {
-			pacer.read(time.Time{})
+			pacer.read(time.Time{}, 0)
 			continue
 		}
 
@@ -408,9 +408,9 @@ func (s *H264Source) run() {
 			// when they were read.
 			// Never before the stream's start: H.264 Direct sends it unsigned.
 			frame.Timestamp = max(0, frame.Times.CaptureEnd.Sub(startTime).Microseconds())
-			pacer.read(frame.Times.CaptureEnd)
+			pacer.read(frame.Times.CaptureEnd, frame.Times.FrameTime)
 		} else {
-			pacer.read(time.Time{})
+			pacer.read(time.Time{}, 0)
 		}
 
 		for _, subscription := range wanted {

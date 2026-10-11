@@ -5,6 +5,12 @@ import (
 	"time"
 )
 
+const (
+	hz60  = time.Second / 60
+	hz50  = time.Second / 50
+	hz110 = time.Second / 110
+)
+
 func TestReadPacerFollowsTheCaptureTimes(t *testing.T) {
 	t.Setenv(readPacingEnv, "")
 
@@ -16,14 +22,14 @@ func TestReadPacerFollowsTheCaptureTimes(t *testing.T) {
 	}
 
 	captured := time.Now()
-	p.read(captured)
+	p.read(captured, hz60)
 	if !p.paced() {
 		t.Fatal("not paced after a capture time")
 	}
 
-	// The next read starts readLead before the next frame is due.
-	want := time.Second/30 - readLead
-	if got := p.delay(captured); got != want {
+	// 30 fps from 60 Hz: the second source frame after the last, readLead
+	// before it completes.
+	if got, want := p.delay(captured), 2*hz60-readLead; got != want {
 		t.Fatalf("delay %s, want %s", got, want)
 	}
 
@@ -32,17 +38,47 @@ func TestReadPacerFollowsTheCaptureTimes(t *testing.T) {
 		t.Fatalf("delay %s after a long read, want 0", got)
 	}
 
-	// A read with no frame moves the schedule on by a frame time.
-	p.read(time.Time{})
-	if got := p.delay(captured); got != 2*time.Second/30-readLead {
-		t.Fatalf("delay %s after a read with no frame", got)
+	// A read with no frame moves the schedule on by a frame period.
+	p.read(time.Time{}, 0)
+	if got, want := p.delay(captured), time.Second/30+2*hz60-readLead; got != want {
+		t.Fatalf("delay %s after a read with no frame, want %s", got, want)
 	}
 
-	// A frame rate change applies from the next frame.
-	p.read(captured.Add(100 * time.Millisecond))
+	// 60 fps from 60 Hz: the next source frame.
+	p.read(captured.Add(100*time.Millisecond), hz60)
 	p.setPeriod(time.Second / 60)
-	if got := p.delay(captured.Add(100 * time.Millisecond)); got != time.Second/60-readLead {
-		t.Fatalf("delay %s at 60 fps", got)
+	if got, want := p.delay(captured.Add(100*time.Millisecond)), hz60-readLead; got != want {
+		t.Fatalf("delay %s at 60 fps, want %s", got, want)
+	}
+}
+
+// Never faster than asked: the frame taken is the first one at least a
+// period, less half a source frame, after the last.
+func TestReadPacerNeverReadsFasterThanAsked(t *testing.T) {
+	t.Setenv(readPacingEnv, "")
+
+	cases := []struct {
+		fps   int
+		frame time.Duration
+		next  time.Duration
+	}{
+		{30, hz50, 2 * hz50},   // 25 fps, not 50
+		{60, hz110, 2 * hz110}, // 55 fps, not 110
+		{30, hz110, 4 * hz110}, // 27.5 fps
+		{60, hz60, hz60},
+		{30, 0, time.Second / 30},            // source frame time unknown
+		{60, time.Second / 50, hz60},         // a source slower than asked
+		{60, 16683 * time.Microsecond, hz60}, // 59.94 Hz
+	}
+
+	for _, c := range cases {
+		p := newReadPacer(time.Second / time.Duration(c.fps))
+		captured := time.Now()
+		p.read(captured, c.frame)
+		if got := p.next().Sub(captured); got != c.next {
+			t.Errorf("%d fps, source frame %s: next frame after %s, want %s", c.fps, c.frame, got, c.next)
+		}
+		p.stop()
 	}
 }
 
@@ -52,7 +88,7 @@ func TestReadPacerKeepsTheTickerWhenAsked(t *testing.T) {
 	p := newReadPacer(time.Second / 30)
 	defer p.stop()
 
-	p.read(time.Now())
+	p.read(time.Now(), hz60)
 	if p.paced() {
 		t.Fatal("paced with KVM_READ_PACING=tick")
 	}
