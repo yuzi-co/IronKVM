@@ -503,3 +503,14 @@ type GetInputResolutionRsp struct {
 	Width  int `json:"width"`
 	Height int `json:"height"`
 }
+
+// GetStreamInfoRsp is what the web UI's stream status bar shows of the board:
+// the HDMI source's size, its refresh rate in millihertz (0 when the capture
+// library does not say), and the frames per second the capture loop delivered
+// over the last few seconds (-1 before any stream has run).
+type GetStreamInfoRsp struct {
+	Width      int `json:"width"`
+	Height     int `json:"height"`
+	Refresh    int `json:"refresh"`
+	CaptureFps int `json:"captureFps"`
+}
