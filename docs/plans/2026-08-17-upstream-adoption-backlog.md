@@ -2320,3 +2320,15 @@ Availability first, then the defects a user meets, then the rest.
 
 The research list is unchanged. Nothing in this pass touched the OneKVM driver set, the cryptodma
 question, UAC2, or the EDID work.
+
+## Status, 2026-10-11: upstream `d0ff328d` and the stream policy
+
+`fork/integration` merged `upstream/main` at `d0ff328d` (ironkvm-dist#88). The merge commit
+`cb3af7a5` lists each of the seven upstream commits and the decision for each conflicted file.
+Upstream is now merged, not rebased onto.
+
+Policy for `server/service/stream`, agreed 2026-10-11: this fork's design is the base for every file
+in the package. Upstream stream commits are never merged as text. Each one is read as a list of
+behaviours, and each behaviour is either mapped to the place this fork's code already does it, with
+the mapping recorded in the merge commit, or ported into this fork's types with a test. The board is
+needed only when a port changes behaviour that the tests cannot reach.
