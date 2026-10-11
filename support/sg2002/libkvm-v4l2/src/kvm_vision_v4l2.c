@@ -85,6 +85,9 @@ void set_capture_fps(uint8_t _fps);
 #define KVMV_STATE_FILE "/tmp/kvm/state"
 #define KVMV_WIDTH_FILE "/kvmapp/kvm/width"
 #define KVMV_HEIGHT_FILE "/kvmapp/kvm/height"
+/* The source's refresh rate in millihertz. Sipeed's library does not write
+ * it, so the server reports it only when it is not older than the width. */
+#define KVMV_REFRESH_FILE "/kvmapp/kvm/refresh"
 #define KVMV_WATCHDOG_MODE "/etc/kvm/watchdog"
 #define KVMV_WATCHDOG_TEMP "/tmp/watchdog"
 #define KVMV_WATCHDOG_FILE "/tmp/nanokvm_wd"
@@ -176,7 +179,7 @@ static int capture_enabled; /* kvmv_hdmi_control; 0 until the server enables it,
 static int capture_stopped; /* kvmv_hdmi_control(0) until kvmv_hdmi_control(1) */
 static int source_locked;
 static int signal_active;
-static unsigned int published_width, published_height;
+static unsigned int published_width, published_height, published_refresh;
 
 static pthread_t monitor_thread;
 static int monitor_valid;
@@ -282,23 +285,49 @@ static void publish_state_file(int active)
 		unlink(temp_path);
 }
 
-/* The input resolution the server reports through GetInputResolution. */
-static void publish_resolution(unsigned int width, unsigned int height)
+/* The input resolution the server reports through GetInputResolution.
+ * Returns 1 when it changed. */
+static int publish_resolution(unsigned int width, unsigned int height)
 {
 	struct stat st;
 
 	if (width == 0 || height == 0)
-		return;
+		return 0;
 	if (__atomic_load_n(&published_width, __ATOMIC_RELAXED) == width &&
 	    __atomic_load_n(&published_height, __ATOMIC_RELAXED) == height)
-		return;
+		return 0;
 	__atomic_store_n(&published_width, width, __ATOMIC_RELAXED);
 	__atomic_store_n(&published_height, height, __ATOMIC_RELAXED);
 	log_msg("HDMI input %ux%u", width, height);
 	if (stat("/kvmapp/kvm", &st) != 0 || !S_ISDIR(st.st_mode))
-		return;
+		return 1;
 	write_small_file(KVMV_WIDTH_FILE, width);
 	write_small_file(KVMV_HEIGHT_FILE, height);
+	return 1;
+}
+
+/* The receiver's mode: its size, and the refresh rate the server's stream
+ * info adds to it. The rate is written after the size, and again whenever the
+ * size is, so it is never older than the size it belongs with. */
+static void publish_timings(const struct v4l2_dv_timings *timings)
+{
+	unsigned int refresh = kvmv_refresh_mhz(timings);
+	int resized = publish_resolution(timings->bt.width, timings->bt.height);
+	struct stat st;
+
+	if (timings->bt.width == 0 || timings->bt.height == 0)
+		return;
+	if (!resized && __atomic_load_n(&published_refresh, __ATOMIC_RELAXED) == refresh)
+		return;
+	__atomic_store_n(&published_refresh, refresh, __ATOMIC_RELAXED);
+	if (refresh)
+		DBG("HDMI input refresh %u.%03u Hz", refresh / 1000, refresh % 1000);
+	if (stat("/kvmapp/kvm", &st) != 0 || !S_ISDIR(st.st_mode))
+		return;
+	if (refresh)
+		write_small_file(KVMV_REFRESH_FILE, refresh);
+	else
+		unlink(KVMV_REFRESH_FILE);
 }
 
 static void update_signal(void)
@@ -411,7 +440,7 @@ static int query_receiver(unsigned int *width, unsigned int *height)
 	if (signal != KVMV_SIGNAL_UNKNOWN)
 		set_source_locked(kvmv_signal_present(signal));
 	if (kvmv_signal_present(signal))
-		publish_resolution(timings.bt.width, timings.bt.height);
+		publish_timings(&timings);
 	if (signal == KVMV_SIGNAL_UNSUPPORTED)
 		log_error_once("HDMI source mode not supported", "interlaced");
 	if (signal == KVMV_SIGNAL_OK) {
@@ -484,7 +513,7 @@ static int receiver_recent(unsigned int *width, unsigned int *height)
 	if (!fresh || kvmv_classify_timings(0, 0, &timings, 0, 0) != KVMV_SIGNAL_OK)
 		return 0;
 	set_source_locked(1);
-	publish_resolution(timings.bt.width, timings.bt.height);
+	publish_timings(&timings);
 	*width = timings.bt.width;
 	*height = timings.bt.height;
 	return 1;
@@ -1619,8 +1648,7 @@ static void *monitor_main(void *arg)
 			if (signal != KVMV_SIGNAL_UNKNOWN) {
 				set_source_locked(kvmv_signal_present(signal));
 				if (kvmv_signal_present(signal))
-					publish_resolution(timings.bt.width,
-							   timings.bt.height);
+					publish_timings(&timings);
 			} else if (fd >= 0 && (errno == ENODEV || errno == EBADF)) {
 				close(fd);
 				fd = -1;

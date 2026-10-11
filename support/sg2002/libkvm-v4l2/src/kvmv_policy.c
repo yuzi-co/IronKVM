@@ -199,6 +199,23 @@ enum kvmv_signal kvmv_classify_timings(int ret, int err,
 	return KVMV_SIGNAL_OK;
 }
 
+unsigned int kvmv_refresh_mhz(const struct v4l2_dv_timings *timings)
+{
+	const struct v4l2_bt_timings *bt;
+	uint64_t frame;
+
+	if (timings == NULL || timings->type != V4L2_DV_BT_656_1120)
+		return 0;
+	bt = &timings->bt;
+	frame = (uint64_t)V4L2_DV_BT_FRAME_WIDTH(bt) * V4L2_DV_BT_FRAME_HEIGHT(bt);
+	if (bt->pixelclock == 0 || bt->width == 0 || bt->height == 0 ||
+	    frame <= (uint64_t)bt->width * bt->height)
+		return 0;
+	/* Rounded to the nearest millihertz: 148.5 MHz over 2200 x 1125 is
+	 * 60000, and 148.35 MHz over the same is 59940. */
+	return (unsigned int)((bt->pixelclock * 1000 + frame / 2) / frame);
+}
+
 int kvmv_signal_present(enum kvmv_signal signal)
 {
 	return signal == KVMV_SIGNAL_OK || signal == KVMV_SIGNAL_UNSUPPORTED ||

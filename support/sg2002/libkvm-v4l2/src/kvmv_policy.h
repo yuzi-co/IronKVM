@@ -181,6 +181,12 @@ enum kvmv_signal kvmv_classify_timings(int ret, int err,
 				       unsigned int need_width,
 				       unsigned int need_height);
 
+/*
+ * The mode's refresh rate in millihertz, from the pixel clock and the frame
+ * with its blanking, or 0 when the receiver left any of them out.
+ */
+unsigned int kvmv_refresh_mhz(const struct v4l2_dv_timings *timings);
+
 /* Whether the receiver sees a source at all, whatever its mode. */
 int kvmv_signal_present(enum kvmv_signal signal);
 
