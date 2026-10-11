@@ -156,6 +156,11 @@ func run() {
 
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
+	// What a multipart form may hold in memory before it spills to /tmp,
+	// which is tmpfs, so the spill costs memory as well. gin's default is
+	// 32MB. The body cap (router.Init) keeps every form-parsing route under
+	// this anyway; the large uploads read their parts as a stream instead.
+	r.MaxMultipartMemory = middleware.DefaultBodyLimit
 	r.Use(gin.Recovery())
 	if conf.Authentication == "disable" {
 		r.Use(cors.AllowAll())

@@ -83,7 +83,8 @@ const it = {
         authDescription: 'Inserisci la password AP per continuare',
         authFailed: 'Password AP non valida',
         passPlaceholder: 'AP password',
-        verifyBtn: 'Verifica'
+        verifyBtn: 'Verifica',
+        tooManyAttempts: 'Troppe password errate. Attendi un momento e riprova.'
       },
       ssidRequired: 'Inserisci il nome della rete, fino a 32 caratteri',
       passwordLength: 'La password è di 8-63 caratteri. Lasciala vuota per una rete aperta.',
@@ -1369,6 +1370,21 @@ const it = {
             host: 'Usa solo lettere, cifre, punti e trattini, senza iniziare con punto o trattino',
             port: 'La porta deve essere un numero da 1 a 65535'
           }
+        },
+        allowlist: {
+          title: 'Reti consentite',
+          description:
+            "Indirizzi che possono raggiungere l'interfaccia web, l'API, VNC e IPMI. Un indirizzo o CIDR per riga, ad esempio 192.168.1.0/24. Lasciare vuoto per consentire qualsiasi indirizzo.",
+          everyone: 'Qualsiasi indirizzo può connettersi.',
+          restricted:
+            'Possono connettersi solo le reti elencate. Il dispositivo stesso e il collegamento di rete USB sono sempre consentiti.',
+          placeholder: '192.168.1.0/24',
+          yourAddress: 'Il tuo indirizzo: {{client}}',
+          addMine: 'Aggiungi il mio indirizzo',
+          save: 'Salva',
+          allowAll: 'Consenti qualsiasi indirizzo',
+          loadFailed: 'Impossibile caricare le reti consentite',
+          saveFailed: 'Impossibile salvare le reti consentite'
         }
       },
       vpn: {

@@ -82,7 +82,8 @@ const pt_br = {
         authDescription: 'Por favor, digite a senha AP para continuar',
         authFailed: 'Senha AP inválida',
         passPlaceholder: 'AP senha',
-        verifyBtn: 'Verificar'
+        verifyBtn: 'Verificar',
+        tooManyAttempts: 'Muitas senhas incorretas. Aguarde um momento e tente novamente.'
       },
       ssidRequired: 'Digite o nome da rede, até 32 caracteres',
       passwordLength: 'A senha tem de 8 a 63 caracteres. Deixe vazia para uma rede aberta.',
@@ -1359,6 +1360,21 @@ const pt_br = {
             host: 'Use apenas letras, dígitos, pontos e hifens, sem começar com ponto ou hífen',
             port: 'A porta deve ser um número de 1 a 65535'
           }
+        },
+        allowlist: {
+          title: 'Redes permitidas',
+          description:
+            'Endereços que podem acessar a interface web, a API, o VNC e o IPMI. Um endereço ou CIDR por linha, como 192.168.1.0/24. Deixe vazio para permitir qualquer endereço.',
+          everyone: 'Qualquer endereço pode se conectar.',
+          restricted:
+            'Somente as redes da lista podem se conectar. O próprio dispositivo e o link de rede USB são sempre permitidos.',
+          placeholder: '192.168.1.0/24',
+          yourAddress: 'Seu endereço: {{client}}',
+          addMine: 'Adicionar meu endereço',
+          save: 'Salvar',
+          allowAll: 'Permitir qualquer endereço',
+          loadFailed: 'Falha ao carregar as redes permitidas',
+          saveFailed: 'Falha ao salvar as redes permitidas'
         }
       },
       vpn: {

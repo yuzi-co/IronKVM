@@ -83,7 +83,8 @@ const cz = {
         authDescription: 'Pokračujte zadáním hesla AP',
         authFailed: 'Neplatné heslo AP',
         passPlaceholder: 'AP heslo',
-        verifyBtn: 'Ověřte'
+        verifyBtn: 'Ověřte',
+        tooManyAttempts: 'Příliš mnoho chybných hesel. Chvíli počkejte a zkuste to znovu.'
       },
       ssidRequired: 'Zadejte název sítě, nejvýše 32 znaků',
       passwordLength: 'Heslo má 8 až 63 znaků. U otevřené sítě ho nechte prázdné.',
@@ -1339,6 +1340,21 @@ const cz = {
             host: 'Použijte jen písmena, číslice, tečky a pomlčky, nezačínejte tečkou ani pomlčkou',
             port: 'Port musí být číslo od 1 do 65535'
           }
+        },
+        allowlist: {
+          title: 'Povolené sítě',
+          description:
+            'Adresy, které mohou přistupovat k webovému rozhraní, API, VNC a IPMI. Jedna adresa nebo CIDR na řádek, například 192.168.1.0/24. Ponechte prázdné pro povolení všech adres.',
+          everyone: 'Připojit se může jakákoli adresa.',
+          restricted:
+            'Připojit se mohou jen uvedené sítě. Samotné zařízení a síťové spojení přes USB jsou povoleny vždy.',
+          placeholder: '192.168.1.0/24',
+          yourAddress: 'Vaše adresa: {{client}}',
+          addMine: 'Přidat moji adresu',
+          save: 'Uložit',
+          allowAll: 'Povolit všechny adresy',
+          loadFailed: 'Povolené sítě se nepodařilo načíst',
+          saveFailed: 'Povolené sítě se nepodařilo uložit'
         }
       },
       vpn: {

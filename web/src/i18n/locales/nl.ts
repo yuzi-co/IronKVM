@@ -84,7 +84,8 @@ const nl = {
         authDescription: 'Voer het wachtwoord AP in om door te gaan',
         authFailed: 'Ongeldig AP wachtwoord',
         passPlaceholder: 'AP wachtwoord',
-        verifyBtn: 'Verifieer'
+        verifyBtn: 'Verifieer',
+        tooManyAttempts: 'Te veel onjuiste wachtwoorden. Wacht even en probeer het opnieuw.'
       },
       ssidRequired: 'Voer de netwerknaam in, maximaal 32 tekens',
       passwordLength: 'Het wachtwoord is 8 tot 63 tekens. Laat het leeg voor een open netwerk.',
@@ -1366,6 +1367,21 @@ const nl = {
               'Alleen letters, cijfers, punten en streepjes, niet beginnend met een punt of streepje',
             port: 'De poort moet een getal van 1 tot 65535 zijn'
           }
+        },
+        allowlist: {
+          title: 'Toegestane netwerken',
+          description:
+            'Adressen die de webinterface, de API, VNC en IPMI mogen bereiken. Eén adres of CIDR per regel, bijvoorbeeld 192.168.1.0/24. Laat leeg om elk adres toe te staan.',
+          everyone: 'Elk adres kan verbinding maken.',
+          restricted:
+            'Alleen de vermelde netwerken kunnen verbinding maken. Het apparaat zelf en de USB-netwerkverbinding zijn altijd toegestaan.',
+          placeholder: '192.168.1.0/24',
+          yourAddress: 'Uw adres: {{client}}',
+          addMine: 'Mijn adres toevoegen',
+          save: 'Opslaan',
+          allowAll: 'Elk adres toestaan',
+          loadFailed: 'Kan de toegestane netwerken niet laden',
+          saveFailed: 'Kan de toegestane netwerken niet opslaan'
         }
       },
       vpn: {

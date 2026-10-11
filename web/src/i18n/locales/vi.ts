@@ -82,7 +82,8 @@ const vi = {
         authDescription: 'Vui lòng nhập mật khẩu AP để tiếp tục',
         authFailed: 'Mật khẩu AP không hợp lệ',
         passPlaceholder: 'AP mật khẩu',
-        verifyBtn: 'Xác minh'
+        verifyBtn: 'Xác minh',
+        tooManyAttempts: 'Nhập sai mật khẩu quá nhiều lần. Hãy đợi một lát rồi thử lại.'
       },
       ssidRequired: 'Nhập tên mạng, tối đa 32 ký tự',
       passwordLength: 'Mật khẩu dài 8 đến 63 ký tự. Để trống nếu là mạng mở.',
@@ -1342,6 +1343,21 @@ const vi = {
               'Chỉ dùng chữ cái, chữ số, dấu chấm và gạch ngang, không bắt đầu bằng dấu chấm hoặc gạch ngang',
             port: 'Cổng phải là số từ 1 đến 65535'
           }
+        },
+        allowlist: {
+          title: 'Mạng được phép',
+          description:
+            'Các địa chỉ được truy cập giao diện web, API, VNC và IPMI. Mỗi dòng một địa chỉ hoặc CIDR, ví dụ 192.168.1.0/24. Để trống để cho phép mọi địa chỉ.',
+          everyone: 'Mọi địa chỉ đều có thể kết nối.',
+          restricted:
+            'Chỉ các mạng trong danh sách có thể kết nối. Bản thân thiết bị và liên kết mạng USB luôn được phép.',
+          placeholder: '192.168.1.0/24',
+          yourAddress: 'Địa chỉ của bạn: {{client}}',
+          addMine: 'Thêm địa chỉ của tôi',
+          save: 'Lưu',
+          allowAll: 'Cho phép mọi địa chỉ',
+          loadFailed: 'Không tải được các mạng được phép',
+          saveFailed: 'Không lưu được các mạng được phép'
         }
       },
       vpn: {

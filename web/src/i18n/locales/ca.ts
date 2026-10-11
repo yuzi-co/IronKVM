@@ -83,7 +83,8 @@ const ca = {
         authDescription: 'Introduïu la contrasenya AP per continuar',
         authFailed: 'Contrasenya AP no vàlida',
         passPlaceholder: 'AP contrasenya',
-        verifyBtn: 'Verificar'
+        verifyBtn: 'Verificar',
+        tooManyAttempts: 'Massa contrasenyes incorrectes. Espereu un moment i torneu-ho a provar.'
       },
       ssidRequired: 'Introduïu el nom de la xarxa, fins a 32 caràcters',
       passwordLength:
@@ -1364,6 +1365,21 @@ const ca = {
               'Fes servir només lletres, xifres, punts i guions, sense començar amb punt ni guió',
             port: "El port ha de ser un número de l'1 al 65535"
           }
+        },
+        allowlist: {
+          title: 'Xarxes permeses',
+          description:
+            "Adreces que poden accedir a la interfície web, l'API, VNC i IPMI. Una adreça o CIDR per línia, com ara 192.168.1.0/24. Deixeu-ho buit per permetre qualsevol adreça.",
+          everyone: 'Qualsevol adreça es pot connectar.',
+          restricted:
+            "Només es poden connectar les xarxes de la llista. La placa mateixa i l'enllaç de xarxa USB sempre estan permesos.",
+          placeholder: '192.168.1.0/24',
+          yourAddress: 'La vostra adreça: {{client}}',
+          addMine: 'Afegeix la meva adreça',
+          save: 'Desa',
+          allowAll: 'Permet qualsevol adreça',
+          loadFailed: "No s'han pogut carregar les xarxes permeses",
+          saveFailed: "No s'han pogut desar les xarxes permeses"
         }
       },
       vpn: {

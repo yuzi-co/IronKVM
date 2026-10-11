@@ -79,7 +79,8 @@ const zh = {
         authDescription: '请输入 AP 密码以继续',
         authFailed: '密码错误',
         passPlaceholder: 'AP 密码',
-        verifyBtn: '验证'
+        verifyBtn: '验证',
+        tooManyAttempts: '密码错误次数过多，请稍后再试。'
       },
       ssidRequired: '请输入网络名称，最多 32 个字符',
       passwordLength: '密码为 8 到 63 个字符。开放网络请留空。',
@@ -1286,6 +1287,19 @@ const zh = {
             host: '只能使用字母、数字、点和连字符，且不能以点或连字符开头',
             port: '端口必须是 1 到 65535 之间的数字'
           }
+        },
+        allowlist: {
+          title: '允许的网络',
+          description: '可以访问 Web 界面、API、VNC 和 IPMI 的地址。每行一个地址或 CIDR，例如 192.168.1.0/24。留空则允许所有地址。',
+          everyone: '所有地址都可以连接。',
+          restricted: '只有列表中的网络可以连接。设备本身和 USB 网络链路始终允许。',
+          placeholder: '192.168.1.0/24',
+          yourAddress: '你的地址：{{client}}',
+          addMine: '添加我的地址',
+          save: '保存',
+          allowAll: '允许所有地址',
+          loadFailed: '加载允许的网络失败',
+          saveFailed: '保存允许的网络失败'
         }
       },
       vpn: {

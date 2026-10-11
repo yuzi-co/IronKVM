@@ -2,8 +2,10 @@ package ipmi
 
 import (
 	"fmt"
+	"net"
 	"path/filepath"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -129,6 +131,9 @@ type testEnv struct {
 	accounts *authn.Store
 	keyring  *Keyring
 	enabled  bool
+	// refuse stands in for an allowed networks setting that excludes the
+	// test client.
+	refuse atomic.Bool
 }
 
 func init() {
@@ -182,6 +187,7 @@ func newTestEnv(t *testing.T) *testEnv {
 		Accounts:          env.accounts,
 		Keyring:           env.keyring,
 		Limiter:           env.limiter,
+		ClientAllowed:     func(net.Addr) bool { return !env.refuse.Load() },
 		FirmwareVersion:   func() string { return "2.4.1 (image v1.4.0)" },
 		GUID:              guid,
 		Addr:              "127.0.0.1:0",

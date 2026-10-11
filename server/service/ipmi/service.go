@@ -41,6 +41,10 @@ type Deps struct {
 	Keyring *Keyring
 	// Limiter is the login brute-force limit. Nil means none.
 	Limiter Limiter
+	// ClientAllowed reports whether a client at this address may use the
+	// service. Packets from one it refuses are dropped unanswered. Nil
+	// allows every address.
+	ClientAllowed func(net.Addr) bool
 
 	// FirmwareVersion is the version Get Device ID reports.
 	FirmwareVersion func() string
@@ -177,6 +181,9 @@ func (s *Service) serve(conn net.PacketConn) {
 				return
 			}
 			log.Debugf("ipmi: read: %s", err)
+			continue
+		}
+		if s.deps.ClientAllowed != nil && !s.deps.ClientAllowed(addr) {
 			continue
 		}
 

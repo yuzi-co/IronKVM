@@ -10,6 +10,7 @@ import (
 	"NanoKVM-Server/authn"
 	"NanoKVM-Server/config"
 	"NanoKVM-Server/middleware"
+	"NanoKVM-Server/service/allowlist"
 	"NanoKVM-Server/service/ipmi"
 	"NanoKVM-Server/service/redfish"
 	"NanoKVM-Server/service/vm"
@@ -30,6 +31,8 @@ func ipmiRouter(r *gin.Engine) {
 		// The same record the Redfish login counts failures under, per
 		// address and account.
 		Limiter: redfish.LoginLimiter{},
+		// The allowed networks setting covers IPMI as it does the web UI.
+		ClientAllowed: allowlist.AllowedAddr,
 
 		FirmwareVersion: vm.FirmwareVersion,
 		// The Redfish service UUID, so both services name the same system.

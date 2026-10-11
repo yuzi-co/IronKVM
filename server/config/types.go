@@ -209,6 +209,11 @@ type Turn struct {
 type Security struct {
 	LoginLockoutDuration int `yaml:"loginLockoutDuration"`
 	LoginMaxFailures     int `yaml:"loginMaxFailures"`
+
+	// AllowedNetworks are the client addresses, as CIDRs or single
+	// addresses, that may reach the web UI, the API, VNC and IPMI. Empty
+	// allows every address. See service/allowlist.
+	AllowedNetworks []string `yaml:"allowedNetworks,omitempty"`
 }
 
 // Ion configures how the carveout is graded.

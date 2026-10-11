@@ -17,6 +17,7 @@ import (
 	"net"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -125,6 +126,9 @@ type harness struct {
 	settings config.VNC
 	limiter  *fakeLimiter
 	password *memoryPassword
+	// refuse stands in for an allowed networks setting that excludes the
+	// test client.
+	refuse atomic.Bool
 
 	mu     sync.Mutex
 	frames []*fakeFrames
@@ -159,11 +163,12 @@ func newHarness(t *testing.T, settings config.VNC) *harness {
 			h.mu.Unlock()
 			return in
 		},
-		Accounts:    fakeAccounts{"admin": "right-password"},
-		Limiter:     h.limiter,
-		Password:    h.password,
-		Certificate: func() (*tls.Certificate, error) { return cert, nil },
-		Name:        func() string { return "test-kvm" },
+		Accounts:      fakeAccounts{"admin": "right-password"},
+		Limiter:       h.limiter,
+		ClientAllowed: func(net.Addr) bool { return !h.refuse.Load() },
+		Password:      h.password,
+		Certificate:   func() (*tls.Certificate, error) { return cert, nil },
+		Name:          func() string { return "test-kvm" },
 		Listen: func(network, _ string) (net.Listener, error) {
 			return net.Listen(network, "127.0.0.1:0")
 		},
@@ -711,4 +716,16 @@ func waitUntil(t *testing.T, what string, condition func() bool) {
 		time.Sleep(5 * time.Millisecond)
 	}
 	t.Fatalf("timed out waiting for %s", what)
+}
+
+// A client the allowed networks setting refuses is closed before the server
+// says anything.
+func TestAClientOffTheAllowedNetworksIsClosed(t *testing.T) {
+	h := newHarness(t, config.VNC{})
+
+	h.refuse.Store(true)
+	expectClosed(t, dial(t, h.addr))
+
+	h.refuse.Store(false)
+	h.connect(t)
 }

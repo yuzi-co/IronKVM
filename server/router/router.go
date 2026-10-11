@@ -7,7 +7,9 @@ import (
 	"strings"
 
 	"NanoKVM-Server/common/apicontract"
+	"NanoKVM-Server/middleware"
 	"NanoKVM-Server/service/agent"
+	"NanoKVM-Server/service/allowlist"
 	"NanoKVM-Server/service/controlmode"
 	"NanoKVM-Server/service/picoclaw"
 	"NanoKVM-Server/service/vm"
@@ -19,6 +21,12 @@ import (
 )
 
 func Init(r *gin.Engine) {
+	// Engine middleware applies only to the routes registered after it, so
+	// these go first: every route, the static UI and the login included, is
+	// behind both.
+	r.Use(allowlist.Middleware())
+	r.Use(middleware.LimitBody(middleware.DefaultBodyLimit, bodyLimits))
+
 	web(r)
 	server(r)
 	log.Debugf("router init done")
@@ -38,6 +46,21 @@ func web(r *gin.Engine) {
 	uiStore = webui.NewStore(filepath.Join(execDir, "ui"), webPath, apicontract.APIVersion, webui.DefaultPolicy())
 	uiStore.Probe = probeWebDir
 	r.Use(switchingStaticHandler(uiStore.Dir))
+}
+
+// bodyLimits are the routes allowed a larger body than
+// middleware.DefaultBodyLimit. Each one is an upload whose handler bounds the
+// body itself, so the cap here steps aside rather than setting a second number
+// that would have to be kept in step with the first.
+var bodyLimits = map[string]int64{
+	// Capped at the largest package plus 1MB by the handler, which also
+	// checks the free space against the declared length first.
+	"POST /api/application/update/offline": middleware.NoBodyLimit,
+	// Capped at the largest UI package and its signature plus 1MB.
+	"POST /api/ui/upload": middleware.NoBodyLimit,
+	// An ISO, often several GB. It streams to /data, not to memory, and the
+	// write fails when the card is full.
+	"POST /api/download/file": middleware.NoBodyLimit,
 }
 
 // apiPrefix covers the routes of the web UI's own API.
@@ -98,6 +121,7 @@ func server(r *gin.Engine) {
 	roomMicRouter(r)
 	storageRouter(r)
 	networkRouter(r)
+	allowlistRouter(r)
 	hidRouter(r)
 	controlRouter(r, control, picoclawService)
 	mcpRouter(r, control, picoclawService)

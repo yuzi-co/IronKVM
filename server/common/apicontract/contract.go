@@ -22,6 +22,7 @@ const APIVersion = 1
 // the resolution is to keep both.
 var features = []string{
 	"direct-clock", // clock request (byte 5) on the direct H.264 socket
+	"ip-allowlist", // /api/network/allowlist: allowed client networks
 	"status-bar",   // GET /api/stream/info
 	"ui-update",    // /api/ui: separately installed UI packages
 }

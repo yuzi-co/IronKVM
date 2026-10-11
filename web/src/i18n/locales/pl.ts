@@ -83,7 +83,8 @@ const pl = {
         authDescription: 'Aby kontynuować, wprowadź AP hasło',
         authFailed: 'Nieprawidłowe hasło AP',
         passPlaceholder: 'AP hasło',
-        verifyBtn: 'Sprawdź'
+        verifyBtn: 'Sprawdź',
+        tooManyAttempts: 'Zbyt wiele błędnych haseł. Odczekaj chwilę i spróbuj ponownie.'
       },
       ssidRequired: 'Wpisz nazwę sieci, maksymalnie 32 znaki',
       passwordLength: 'Hasło ma od 8 do 63 znaków. W przypadku sieci otwartej zostaw je puste.',
@@ -1354,6 +1355,21 @@ const pl = {
             host: 'Tylko litery, cyfry, kropki i myślniki, bez kropki ani myślnika na początku',
             port: 'Port musi być liczbą od 1 do 65535'
           }
+        },
+        allowlist: {
+          title: 'Dozwolone sieci',
+          description:
+            'Adresy, które mogą łączyć się z interfejsem WWW, API, VNC i IPMI. Jeden adres lub CIDR w wierszu, np. 192.168.1.0/24. Pozostaw puste, aby zezwolić na każdy adres.',
+          everyone: 'Każdy adres może się połączyć.',
+          restricted:
+            'Połączyć mogą się tylko sieci z listy. Samo urządzenie i połączenie sieciowe USB są zawsze dozwolone.',
+          placeholder: '192.168.1.0/24',
+          yourAddress: 'Twój adres: {{client}}',
+          addMine: 'Dodaj mój adres',
+          save: 'Zapisz',
+          allowAll: 'Zezwól na każdy adres',
+          loadFailed: 'Nie udało się wczytać dozwolonych sieci',
+          saveFailed: 'Nie udało się zapisać dozwolonych sieci'
         }
       },
       vpn: {

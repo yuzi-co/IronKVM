@@ -83,7 +83,8 @@ const nb = {
         authDescription: 'Vennligst skriv inn AP passordet for å fortsette',
         authFailed: 'Ugyldig AP passord',
         passPlaceholder: 'AP passord',
-        verifyBtn: 'Bekreft'
+        verifyBtn: 'Bekreft',
+        tooManyAttempts: 'For mange feil passord. Vent litt og prøv igjen.'
       },
       ssidRequired: 'Skriv inn nettverksnavnet, opptil 32 tegn',
       passwordLength: 'Passordet er 8 til 63 tegn. La det stå tomt for et åpent nettverk.',
@@ -1344,6 +1345,21 @@ const nb = {
               'Bruk bare bokstaver, sifre, punktum og bindestreker, og ikke start med punktum eller bindestrek',
             port: 'Porten må være et tall fra 1 til 65535'
           }
+        },
+        allowlist: {
+          title: 'Tillatte nettverk',
+          description:
+            'Adresser som kan nå nettgrensesnittet, API-et, VNC og IPMI. Én adresse eller CIDR per linje, for eksempel 192.168.1.0/24. La feltet stå tomt for å tillate alle adresser.',
+          everyone: 'Alle adresser kan koble til.',
+          restricted:
+            'Bare nettverkene i listen kan koble til. Selve enheten og USB-nettverkskoblingen er alltid tillatt.',
+          placeholder: '192.168.1.0/24',
+          yourAddress: 'Din adresse: {{client}}',
+          addMine: 'Legg til min adresse',
+          save: 'Lagre',
+          allowAll: 'Tillat alle adresser',
+          loadFailed: 'Kunne ikke laste inn de tillatte nettverkene',
+          saveFailed: 'Kunne ikke lagre de tillatte nettverkene'
         }
       },
       vpn: {

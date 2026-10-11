@@ -83,7 +83,8 @@ const hu = {
         authDescription: 'A folytatáshoz adja meg a AP jelszót',
         authFailed: 'Érvénytelen AP jelszó',
         passPlaceholder: 'AP jelszót',
-        verifyBtn: 'Ellenőrizze'
+        verifyBtn: 'Ellenőrizze',
+        tooManyAttempts: 'Túl sok hibás jelszó. Várjon egy kicsit, majd próbálja újra.'
       },
       ssidRequired: 'Adja meg a hálózat nevét, legfeljebb 32 karakter',
       passwordLength: 'A jelszó 8–63 karakter. Nyílt hálózatnál hagyja üresen.',
@@ -1365,6 +1366,21 @@ const hu = {
               'Csak betűk, számjegyek, pontok és kötőjelek, és nem kezdődhet ponttal vagy kötőjellel',
             port: 'A port 1 és 65535 közötti szám legyen'
           }
+        },
+        allowlist: {
+          title: 'Engedélyezett hálózatok',
+          description:
+            'Azok a címek, amelyek elérhetik a webes felületet, az API-t, a VNC-t és az IPMI-t. Soronként egy cím vagy CIDR, például 192.168.1.0/24. Hagyja üresen, hogy minden cím engedélyezve legyen.',
+          everyone: 'Bármely cím csatlakozhat.',
+          restricted:
+            'Csak a felsorolt hálózatok csatlakozhatnak. Maga az eszköz és az USB-hálózati kapcsolat mindig engedélyezett.',
+          placeholder: '192.168.1.0/24',
+          yourAddress: 'Az Ön címe: {{client}}',
+          addMine: 'Saját cím hozzáadása',
+          save: 'Mentés',
+          allowAll: 'Minden cím engedélyezése',
+          loadFailed: 'Nem sikerült betölteni az engedélyezett hálózatokat',
+          saveFailed: 'Nem sikerült menteni az engedélyezett hálózatokat'
         }
       },
       vpn: {
