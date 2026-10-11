@@ -1761,6 +1761,57 @@ const tr = {
       criticalContinue: 'Videoyu yine de başlat',
       criticalReboot: "IronKVM'i Yeniden Başlat",
       criticalRebooting: 'Yeniden başlatılıyor...'
+    },
+    totp: {
+      login: {
+        title: 'İki faktörlü kimlik doğrulama',
+        description:
+          'Kimlik doğrulama uygulamanızdaki 6 haneli kodu veya kurtarma kodlarınızdan birini girin.',
+        placeholder: 'Kod veya kurtarma kodu',
+        noEmptyCode: 'Lütfen bir kod girin',
+        verify: 'Doğrula',
+        back: 'Parolaya dön',
+        invalidCode: 'Geçersiz kod',
+        locked: 'Çok fazla hatalı kod. Birkaç dakika sonra yeniden deneyin.',
+        expired: 'Oturum açma süresi doldu. Parolanızı yeniden girin.'
+      },
+      settings: {
+        title: 'İki faktörlü kimlik doğrulama',
+        description: 'Paroladan sonra kimlik doğrulama uygulamasından bir kod iste.',
+        scope:
+          'Yalnızca web girişi için geçerlidir. VNC, IPMI ve Redfish yine yalnızca parola kullanır, API anahtarları da kod olmadan çalışır.',
+        on: 'Açık',
+        off: 'Kapalı',
+        enable: 'Aç',
+        disable: 'Kapat',
+        regenerate: 'Yeni kurtarma kodları',
+        codesLeft: 'Kalan kurtarma kodu: {{count}}',
+        enableTitle: 'İki faktörlü kimlik doğrulamayı aç',
+        disableTitle: 'İki faktörlü kimlik doğrulamayı kapat',
+        regenerateTitle: 'Yeni kurtarma kodları',
+        confirmPassword: 'Parolanızla onaylayın',
+        continue: 'Devam',
+        scan: 'QR kodunu bir kimlik doğrulama uygulamasıyla tarayın veya gizli anahtarı elle girin. Ardından uygulamanın gösterdiği kodu yazın.',
+        secret: 'Gizli anahtar',
+        enterCode: 'Uygulamadaki kod',
+        verifyAndEnable: 'Doğrula ve aç',
+        codesOnce:
+          'Bu kurtarma kodlarını şimdi kaydedin. Her biri bir kez kod yerine kullanılabilir ve bir daha gösterilmez.',
+        recoveryCodes: 'IronKVM kurtarma kodları',
+        download: 'İndir',
+        saved: 'Kaydettim',
+        disabled: 'İki faktörlü kimlik doğrulama kapatıldı',
+        wrongPassword: 'Parola yanlış',
+        setupExpired: 'Kurulum süresi doldu. Yeniden başlayın.',
+        loadFailed: 'İki faktörlü kimlik doğrulama durumu yüklenemedi',
+        failed: 'Değişiklik başarısız oldu'
+      },
+      users: {
+        tag: '2FA',
+        reset: "2FA'yı sıfırla",
+        resetConfirm: '{{username}} için iki faktörlü kimlik doğrulama kapatılsın mı?',
+        resetDone: 'İki faktörlü kimlik doğrulama sıfırlandı'
+      }
     }
   }
 };

@@ -1741,6 +1741,56 @@ const ko = {
       criticalContinue: '그래도 비디오 시작',
       criticalReboot: 'IronKVM 재부팅',
       criticalRebooting: '재부팅 중...'
+    },
+    totp: {
+      login: {
+        title: '2단계 인증',
+        description: '인증 앱에 표시된 6자리 코드 또는 복구 코드를 입력하세요.',
+        placeholder: '코드 또는 복구 코드',
+        noEmptyCode: '코드를 입력하세요',
+        verify: '확인',
+        back: '비밀번호로 돌아가기',
+        invalidCode: '코드가 올바르지 않습니다',
+        locked: '잘못된 코드를 너무 많이 입력했습니다. 몇 분 후 다시 시도하세요.',
+        expired: '로그인이 만료되었습니다. 비밀번호를 다시 입력하세요.'
+      },
+      settings: {
+        title: '2단계 인증',
+        description: '비밀번호 입력 후 인증 앱의 코드를 요구합니다.',
+        scope:
+          '웹 로그인에만 적용됩니다. VNC, IPMI, Redfish는 계속 비밀번호만 사용하며, API 키는 코드 없이 작동합니다.',
+        on: '켜짐',
+        off: '꺼짐',
+        enable: '켜기',
+        disable: '끄기',
+        regenerate: '새 복구 코드',
+        codesLeft: '남은 복구 코드: {{count}}',
+        enableTitle: '2단계 인증 켜기',
+        disableTitle: '2단계 인증 끄기',
+        regenerateTitle: '새 복구 코드',
+        confirmPassword: '비밀번호로 확인',
+        continue: '계속',
+        scan: '인증 앱으로 QR 코드를 스캔하거나 비밀 키를 직접 입력하세요. 그런 다음 앱에 표시된 코드를 입력하세요.',
+        secret: '비밀 키',
+        enterCode: '앱의 코드',
+        verifyAndEnable: '확인 후 켜기',
+        codesOnce:
+          '지금 이 복구 코드를 저장하세요. 각 코드는 인증 코드 대신 한 번만 사용할 수 있으며 다시 표시되지 않습니다.',
+        recoveryCodes: 'IronKVM 복구 코드',
+        download: '다운로드',
+        saved: '저장했습니다',
+        disabled: '2단계 인증을 껐습니다',
+        wrongPassword: '비밀번호가 올바르지 않습니다',
+        setupExpired: '설정이 만료되었습니다. 처음부터 다시 시작하세요.',
+        loadFailed: '2단계 인증 상태를 불러오지 못했습니다',
+        failed: '변경하지 못했습니다'
+      },
+      users: {
+        tag: '2FA',
+        reset: '2FA 초기화',
+        resetConfirm: '{{username}}의 2단계 인증을 끄시겠습니까?',
+        resetDone: '2단계 인증을 초기화했습니다'
+      }
     }
   }
 };

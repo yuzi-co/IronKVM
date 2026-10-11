@@ -11,6 +11,8 @@ type GetAccountRsp struct {
 	// SystemAccount is true for the device owner, whose password change also
 	// sets the root password used by SSH and the console.
 	SystemAccount bool `json:"systemAccount"`
+	// TOTPEnabled is true when the web login asks this account for a code.
+	TOTPEnabled bool `json:"totpEnabled"`
 }
 
 type ChangePasswordReq struct {
@@ -27,6 +29,7 @@ type UserInfo struct {
 	Role          string `json:"role"`
 	Enabled       bool   `json:"enabled"`
 	SystemAccount bool   `json:"systemAccount,omitempty"`
+	TOTPEnabled   bool   `json:"totpEnabled,omitempty"`
 }
 
 type ListUsersRsp struct {
@@ -68,4 +71,48 @@ type CreateAPIKeyRsp struct {
 
 type GetAPIKeysRsp struct {
 	Keys []APIKey `json:"keys"`
+}
+
+// LoginChallengeRsp is the data of a login that needs a second step: the
+// password was right and the account has TOTP on. Challenge names the half
+// finished login for LoginTOTPReq.
+type LoginChallengeRsp struct {
+	TOTPRequired bool   `json:"totpRequired"`
+	Challenge    string `json:"challenge"`
+}
+
+// LoginTOTPReq is the second login step. Code is a TOTP code or one of the
+// account's recovery codes.
+type LoginTOTPReq struct {
+	Challenge string `json:"challenge" validate:"required,max=128"`
+	Code      string `json:"code" validate:"required,max=64"`
+}
+
+type GetTOTPRsp struct {
+	Enabled bool `json:"enabled"`
+	// RecoveryCodes is how many unused recovery codes are left.
+	RecoveryCodes int `json:"recoveryCodes"`
+}
+
+// TOTPPasswordReq confirms a change to the second factor with the account's
+// password, encrypted the way the login form sends it.
+type TOTPPasswordReq struct {
+	Password string `json:"password" validate:"required"`
+}
+
+// SetupTOTPRsp carries a new secret that is not in force yet. EnableTOTPReq
+// puts it in force once a code from it has been typed back.
+type SetupTOTPRsp struct {
+	Secret string `json:"secret"`
+	URI    string `json:"uri"`
+}
+
+type EnableTOTPReq struct {
+	Code string `json:"code" validate:"required,max=16"`
+}
+
+// RecoveryCodesRsp is the only time recovery codes are shown. The account
+// file keeps their hashes.
+type RecoveryCodesRsp struct {
+	RecoveryCodes []string `json:"recoveryCodes"`
 }

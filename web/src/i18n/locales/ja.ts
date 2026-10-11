@@ -1773,6 +1773,57 @@ const ja = {
       criticalContinue: 'それでもビデオを開始',
       criticalReboot: 'IronKVM を再起動',
       criticalRebooting: '再起動中...'
+    },
+    totp: {
+      login: {
+        title: '2 段階認証',
+        description:
+          '認証アプリに表示される 6 桁のコード、またはリカバリーコードを入力してください。',
+        placeholder: 'コードまたはリカバリーコード',
+        noEmptyCode: 'コードを入力してください',
+        verify: '確認',
+        back: 'パスワード入力に戻る',
+        invalidCode: 'コードが正しくありません',
+        locked: '誤ったコードが多すぎます。数分後にもう一度お試しください。',
+        expired: 'ログインの有効期限が切れました。パスワードをもう一度入力してください。'
+      },
+      settings: {
+        title: '2 段階認証',
+        description: 'パスワードの後に認証アプリのコードを求めます。',
+        scope:
+          'ウェブのログインにのみ適用されます。VNC、IPMI、Redfish は引き続きパスワードのみを使用し、API キーはコードなしで使えます。',
+        on: 'オン',
+        off: 'オフ',
+        enable: 'オンにする',
+        disable: 'オフにする',
+        regenerate: '新しいリカバリーコード',
+        codesLeft: '残りのリカバリーコード: {{count}}',
+        enableTitle: '2 段階認証をオンにする',
+        disableTitle: '2 段階認証をオフにする',
+        regenerateTitle: '新しいリカバリーコード',
+        confirmPassword: 'パスワードで確認',
+        continue: '続行',
+        scan: '認証アプリで QR コードを読み取るか、シークレットを手動で入力してください。その後、アプリに表示されたコードを入力します。',
+        secret: 'シークレット',
+        enterCode: 'アプリのコード',
+        verifyAndEnable: '確認してオンにする',
+        codesOnce:
+          'これらのリカバリーコードを今すぐ保存してください。各コードはコードの代わりに 1 回だけ使え、再表示されません。',
+        recoveryCodes: 'IronKVM リカバリーコード',
+        download: 'ダウンロード',
+        saved: '保存しました',
+        disabled: '2 段階認証をオフにしました',
+        wrongPassword: 'パスワードが正しくありません',
+        setupExpired: '設定の有効期限が切れました。最初からやり直してください。',
+        loadFailed: '2 段階認証の状態を読み込めませんでした',
+        failed: '変更に失敗しました'
+      },
+      users: {
+        tag: '2FA',
+        reset: '2FA をリセット',
+        resetConfirm: '{{username}} の 2 段階認証をオフにしますか？',
+        resetDone: '2 段階認証をリセットしました'
+      }
     }
   }
 };

@@ -2,6 +2,7 @@ package authn
 
 import (
 	"crypto/rand"
+	"crypto/subtle"
 	"encoding/binary"
 	"encoding/json"
 	"errors"
@@ -56,6 +57,18 @@ type User struct {
 	// above cannot give back, so it is a separate password. Empty means the
 	// account cannot log in over IPMI.
 	IPMIPassword string `json:"ipmiPassword,omitempty"`
+	// TOTPSecret is the account's TOTP seed, sealed by a Keyring. Empty means
+	// the web login asks for the password alone.
+	TOTPSecret string `json:"totpSecret,omitempty"`
+	// RecoveryCodes are the SHA-256 hashes of the recovery codes that have not
+	// been used yet. Each one stands in for a TOTP code once.
+	RecoveryCodes []string `json:"recoveryCodes,omitempty"`
+}
+
+// TOTPEnabled reports whether the web login asks this account for a second
+// factor.
+func (u *User) TOTPEnabled() bool {
+	return u.TOTPSecret != ""
 }
 
 type UserInfo struct {
@@ -63,6 +76,7 @@ type UserInfo struct {
 	Role          Role   `json:"role"`
 	Enabled       bool   `json:"enabled"`
 	SystemAccount bool   `json:"systemAccount,omitempty"`
+	TOTPEnabled   bool   `json:"totpEnabled,omitempty"`
 }
 
 type UserPatch struct {
@@ -133,6 +147,7 @@ func (s *Store) List() ([]UserInfo, error) {
 			Role:          user.Role,
 			Enabled:       user.Enabled,
 			SystemAccount: user.SystemAccount,
+			TOTPEnabled:   user.TOTPEnabled(),
 		})
 	}
 	return users, nil
@@ -486,6 +501,93 @@ func (s *Store) SetIPMIPassword(username, sealed string) (*User, error) {
 	return cloneUser(&db.Users[index]), nil
 }
 
+// SetTOTP turns on the second login step for an account, or replaces its
+// secret and recovery codes. sealed is the secret as a Keyring sealed it;
+// recoveryHashes are the hashes of the recovery codes. Sessions are not
+// revoked: the password is unchanged, and the session that enrols is the
+// one that proved it.
+func (s *Store) SetTOTP(username, sealed string, recoveryHashes []string) (*User, error) {
+	if sealed == "" {
+		return nil, errors.New("empty TOTP secret")
+	}
+	return s.updateTOTP(username, func(user *User) bool {
+		user.TOTPSecret = sealed
+		user.RecoveryCodes = append([]string(nil), recoveryHashes...)
+		return true
+	})
+}
+
+// SetRecoveryCodes replaces the recovery codes of an account that has TOTP
+// on.
+func (s *Store) SetRecoveryCodes(username string, recoveryHashes []string) (*User, error) {
+	return s.updateTOTP(username, func(user *User) bool {
+		if !user.TOTPEnabled() {
+			return false
+		}
+		user.RecoveryCodes = append([]string(nil), recoveryHashes...)
+		return true
+	})
+}
+
+// ClearTOTP turns the second login step off for an account and forgets its
+// secret and recovery codes.
+func (s *Store) ClearTOTP(username string) (*User, error) {
+	return s.updateTOTP(username, func(user *User) bool {
+		changed := user.TOTPSecret != "" || len(user.RecoveryCodes) > 0
+		user.TOTPSecret = ""
+		user.RecoveryCodes = nil
+		return changed
+	})
+}
+
+// ConsumeRecoveryCode removes one recovery code, by its hash, and reports
+// whether the account had it. The check and the removal happen under one
+// lock, so a code cannot be spent twice by two requests at once.
+func (s *Store) ConsumeRecoveryCode(username, hash string) (bool, error) {
+	found := false
+	_, err := s.updateTOTP(username, func(user *User) bool {
+		if !user.TOTPEnabled() {
+			return false
+		}
+		kept := make([]string, 0, len(user.RecoveryCodes))
+		for _, stored := range user.RecoveryCodes {
+			if !found && subtle.ConstantTimeCompare([]byte(stored), []byte(hash)) == 1 {
+				found = true
+				continue
+			}
+			kept = append(kept, stored)
+		}
+		user.RecoveryCodes = kept
+		return found
+	})
+	if err != nil {
+		return false, err
+	}
+	return found, nil
+}
+
+// updateTOTP applies change to an account under the write lock, and saves
+// when change reports that it changed something.
+func (s *Store) updateTOTP(username string, change func(*User) bool) (*User, error) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	db, err := s.loadLocked(true)
+	if err != nil {
+		return nil, err
+	}
+	index := userIndex(db.Users, username)
+	if index < 0 {
+		return nil, ErrUserNotFound
+	}
+	if !change(&db.Users[index]) {
+		return cloneUser(&db.Users[index]), nil
+	}
+	if err = s.saveLocked(db); err != nil {
+		return nil, err
+	}
+	return cloneUser(&db.Users[index]), nil
+}
+
 func (s *Store) Revoke(username string) (*User, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
@@ -722,6 +824,7 @@ func cloneUser(user *User) *User {
 		return nil
 	}
 	copy := *user
+	copy.RecoveryCodes = append([]string(nil), user.RecoveryCodes...)
 	return &copy
 }
 

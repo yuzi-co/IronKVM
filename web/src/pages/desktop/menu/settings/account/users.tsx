@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/auth.ts';
-import { Button, Form, Input, message, Modal, Popconfirm, Select, Switch } from 'antd';
+import { Button, Form, Input, message, Modal, Popconfirm, Select, Switch, Tag } from 'antd';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/auth.ts';
@@ -51,7 +51,8 @@ export const Users = () => {
               username: user.username,
               role: user.role === 'admin' ? 'admin' : 'user',
               enabled: user.enabled !== false,
-              systemAccount: user.systemAccount === true
+              systemAccount: user.systemAccount === true,
+              totpEnabled: user.totpEnabled === true
             }))
           );
         })
@@ -109,6 +110,19 @@ export const Users = () => {
     }
   }
 
+  async function resetTotp(username: string) {
+    setIsLoading(true);
+    try {
+      const rsp = await api.resetUserTotp(username);
+      if (rsp.code !== 0) throw rsp;
+      messageApi.success(t('totp.users.resetDone'));
+      await loadUsers();
+    } catch (err) {
+      messageApi.error(describeFailure(err, t('settings.account.users.saveFailed')));
+      setIsLoading(false);
+    }
+  }
+
   async function resetPassword(values: PasswordValues) {
     if (!passwordUser) return;
     setIsLoading(true);
@@ -151,6 +165,11 @@ export const Users = () => {
                     {t('settings.account.users.deviceOwner')}
                   </span>
                 )}
+                {user.totpEnabled && (
+                  <Tag className="ml-2" color="green">
+                    {t('totp.users.tag')}
+                  </Tag>
+                )}
               </span>
               <Select<UserRole>
                 className="w-28"
@@ -176,6 +195,18 @@ export const Users = () => {
               >
                 {t('settings.account.users.resetPassword')}
               </Button>
+              {user.totpEnabled && !isSelf && (
+                <Popconfirm
+                  title={t('totp.users.resetConfirm', { username: user.username })}
+                  okText={t('settings.account.okBtn')}
+                  cancelText={t('settings.account.cancelBtn')}
+                  onConfirm={() => resetTotp(user.username)}
+                >
+                  <Button size="small" disabled={isLoading}>
+                    {t('totp.users.reset')}
+                  </Button>
+                </Popconfirm>
+              )}
               <Popconfirm
                 title={t('settings.account.users.deleteConfirm')}
                 okText={t('settings.account.okBtn')}

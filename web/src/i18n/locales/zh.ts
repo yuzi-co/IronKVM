@@ -1690,6 +1690,54 @@ const zh = {
       criticalContinue: '仍然启动视频',
       criticalReboot: '重启 IronKVM',
       criticalRebooting: '正在重启...'
+    },
+    totp: {
+      login: {
+        title: '双因素认证',
+        description: '请输入身份验证器应用中的 6 位验证码，或一个恢复码。',
+        placeholder: '验证码或恢复码',
+        noEmptyCode: '请输入验证码',
+        verify: '验证',
+        back: '返回密码登录',
+        invalidCode: '验证码无效',
+        locked: '错误验证码次数过多，请几分钟后再试。',
+        expired: '登录已过期，请重新输入密码。'
+      },
+      settings: {
+        title: '双因素认证',
+        description: '输入密码后，还需输入身份验证器应用中的验证码。',
+        scope: '仅适用于网页登录。VNC、IPMI 和 Redfish 仍只使用密码，API Key 无需验证码即可使用。',
+        on: '已开启',
+        off: '已关闭',
+        enable: '开启',
+        disable: '关闭',
+        regenerate: '生成新恢复码',
+        codesLeft: '剩余恢复码：{{count}}',
+        enableTitle: '开启双因素认证',
+        disableTitle: '关闭双因素认证',
+        regenerateTitle: '生成新恢复码',
+        confirmPassword: '请输入密码确认',
+        continue: '继续',
+        scan: '用身份验证器应用扫描二维码（QR 码），或手动输入密钥。然后输入应用显示的验证码。',
+        secret: '密钥',
+        enterCode: '应用中的验证码',
+        verifyAndEnable: '验证并开启',
+        codesOnce: '请立即保存这些恢复码。每个恢复码可代替验证码使用一次，之后不会再显示。',
+        recoveryCodes: 'IronKVM 恢复码',
+        download: '下载',
+        saved: '我已保存',
+        disabled: '双因素认证已关闭',
+        wrongPassword: '密码错误',
+        setupExpired: '设置已过期，请重新开始。',
+        loadFailed: '加载双因素认证状态失败',
+        failed: '更改失败'
+      },
+      users: {
+        tag: '2FA',
+        reset: '重置 2FA',
+        resetConfirm: '关闭 {{username}} 的双因素认证？',
+        resetDone: '双因素认证已重置'
+      }
     }
   }
 };

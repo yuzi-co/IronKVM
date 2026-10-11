@@ -1748,6 +1748,57 @@ const en = {
       criticalContinue: 'Start video anyway',
       criticalReboot: 'Reboot IronKVM',
       criticalRebooting: 'Rebooting...'
+    },
+    totp: {
+      login: {
+        title: 'Two-factor authentication',
+        description:
+          'Enter the 6-digit code from your authenticator app, or one of your recovery codes.',
+        placeholder: 'Code or recovery code',
+        noEmptyCode: 'Please enter a code',
+        verify: 'Verify',
+        back: 'Back to password',
+        invalidCode: 'Invalid code',
+        locked: 'Too many wrong codes. Try again in a few minutes.',
+        expired: 'The sign-in expired. Enter your password again.'
+      },
+      settings: {
+        title: 'Two-factor authentication',
+        description: 'Ask for a code from an authenticator app after the password.',
+        scope:
+          'Applies to the web login only. VNC, IPMI and Redfish still use the password alone, and API keys work without a code.',
+        on: 'On',
+        off: 'Off',
+        enable: 'Turn on',
+        disable: 'Turn off',
+        regenerate: 'New recovery codes',
+        codesLeft: 'Recovery codes left: {{count}}',
+        enableTitle: 'Turn on two-factor authentication',
+        disableTitle: 'Turn off two-factor authentication',
+        regenerateTitle: 'New recovery codes',
+        confirmPassword: 'Confirm with your password',
+        continue: 'Continue',
+        scan: 'Scan the QR code with an authenticator app, or enter the secret by hand. Then type the code the app shows.',
+        secret: 'Secret',
+        enterCode: 'Code from the app',
+        verifyAndEnable: 'Verify and turn on',
+        codesOnce:
+          'Save these recovery codes now. Each one works once in place of a code, and they are not shown again.',
+        recoveryCodes: 'IronKVM recovery codes',
+        download: 'Download',
+        saved: 'I have saved them',
+        disabled: 'Two-factor authentication turned off',
+        wrongPassword: 'The password is incorrect',
+        setupExpired: 'The setup expired. Start again.',
+        loadFailed: 'Failed to load the two-factor state',
+        failed: 'The change failed'
+      },
+      users: {
+        tag: '2FA',
+        reset: 'Reset 2FA',
+        resetConfirm: 'Turn off two-factor authentication for {{username}}?',
+        resetDone: 'Two-factor authentication reset'
+      }
     }
   }
 };

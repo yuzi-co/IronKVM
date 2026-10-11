@@ -1760,6 +1760,57 @@ const vi = {
       criticalContinue: 'Vẫn bắt đầu video',
       criticalReboot: 'Khởi động lại IronKVM',
       criticalRebooting: 'Đang khởi động lại...'
+    },
+    totp: {
+      login: {
+        title: 'Xác thực hai yếu tố',
+        description:
+          'Nhập mã 6 chữ số từ ứng dụng xác thực, hoặc một trong các mã khôi phục của bạn.',
+        placeholder: 'Mã hoặc mã khôi phục',
+        noEmptyCode: 'Vui lòng nhập mã',
+        verify: 'Xác minh',
+        back: 'Quay lại mật khẩu',
+        invalidCode: 'Mã không hợp lệ',
+        locked: 'Nhập sai mã quá nhiều lần. Hãy thử lại sau vài phút.',
+        expired: 'Phiên đăng nhập đã hết hạn. Hãy nhập lại mật khẩu.'
+      },
+      settings: {
+        title: 'Xác thực hai yếu tố',
+        description: 'Yêu cầu mã từ ứng dụng xác thực sau khi nhập mật khẩu.',
+        scope:
+          'Chỉ áp dụng cho đăng nhập web. VNC, IPMI và Redfish vẫn chỉ dùng mật khẩu, còn khóa API hoạt động không cần mã.',
+        on: 'Bật',
+        off: 'Tắt',
+        enable: 'Bật',
+        disable: 'Tắt',
+        regenerate: 'Mã khôi phục mới',
+        codesLeft: 'Mã khôi phục còn lại: {{count}}',
+        enableTitle: 'Bật xác thực hai yếu tố',
+        disableTitle: 'Tắt xác thực hai yếu tố',
+        regenerateTitle: 'Mã khôi phục mới',
+        confirmPassword: 'Xác nhận bằng mật khẩu của bạn',
+        continue: 'Tiếp tục',
+        scan: 'Quét mã QR bằng ứng dụng xác thực, hoặc nhập khóa bí mật thủ công. Sau đó nhập mã mà ứng dụng hiển thị.',
+        secret: 'Khóa bí mật',
+        enterCode: 'Mã từ ứng dụng',
+        verifyAndEnable: 'Xác minh và bật',
+        codesOnce:
+          'Hãy lưu các mã khôi phục này ngay. Mỗi mã dùng được một lần thay cho mã xác thực và sẽ không hiển thị lại.',
+        recoveryCodes: 'Mã khôi phục IronKVM',
+        download: 'Tải xuống',
+        saved: 'Tôi đã lưu',
+        disabled: 'Đã tắt xác thực hai yếu tố',
+        wrongPassword: 'Mật khẩu không đúng',
+        setupExpired: 'Quá trình thiết lập đã hết hạn. Hãy bắt đầu lại.',
+        loadFailed: 'Không tải được trạng thái xác thực hai yếu tố',
+        failed: 'Thay đổi thất bại'
+      },
+      users: {
+        tag: '2FA',
+        reset: 'Đặt lại 2FA',
+        resetConfirm: 'Tắt xác thực hai yếu tố cho {{username}}?',
+        resetDone: 'Đã đặt lại xác thực hai yếu tố'
+      }
     }
   }
 };

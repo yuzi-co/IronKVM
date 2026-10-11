@@ -1794,6 +1794,57 @@ const es = {
       criticalContinue: 'Iniciar el vídeo de todos modos',
       criticalReboot: 'Reiniciar IronKVM',
       criticalRebooting: 'Reiniciando...'
+    },
+    totp: {
+      login: {
+        title: 'Autenticación de dos factores',
+        description:
+          'Introduce el código de 6 dígitos de tu aplicación de autenticación, o uno de tus códigos de recuperación.',
+        placeholder: 'Código o código de recuperación',
+        noEmptyCode: 'Introduce un código',
+        verify: 'Verificar',
+        back: 'Volver a la contraseña',
+        invalidCode: 'Código no válido',
+        locked: 'Demasiados códigos incorrectos. Inténtalo de nuevo en unos minutos.',
+        expired: 'El inicio de sesión ha caducado. Vuelve a introducir tu contraseña.'
+      },
+      settings: {
+        title: 'Autenticación de dos factores',
+        description: 'Pedir un código de una aplicación de autenticación después de la contraseña.',
+        scope:
+          'Solo se aplica al inicio de sesión web. VNC, IPMI y Redfish siguen usando solo la contraseña, y las claves API funcionan sin código.',
+        on: 'Activada',
+        off: 'Desactivada',
+        enable: 'Activar',
+        disable: 'Desactivar',
+        regenerate: 'Nuevos códigos de recuperación',
+        codesLeft: 'Códigos de recuperación restantes: {{count}}',
+        enableTitle: 'Activar la autenticación de dos factores',
+        disableTitle: 'Desactivar la autenticación de dos factores',
+        regenerateTitle: 'Nuevos códigos de recuperación',
+        confirmPassword: 'Confirma con tu contraseña',
+        continue: 'Continuar',
+        scan: 'Escanea el código QR con una aplicación de autenticación, o introduce el secreto a mano. Después escribe el código que muestra la aplicación.',
+        secret: 'Secreto',
+        enterCode: 'Código de la aplicación',
+        verifyAndEnable: 'Verificar y activar',
+        codesOnce:
+          'Guarda ahora estos códigos de recuperación. Cada uno sirve una vez en lugar de un código, y no se volverán a mostrar.',
+        recoveryCodes: 'Códigos de recuperación de IronKVM',
+        download: 'Descargar',
+        saved: 'Ya los he guardado',
+        disabled: 'Autenticación de dos factores desactivada',
+        wrongPassword: 'La contraseña es incorrecta',
+        setupExpired: 'La configuración ha caducado. Empieza de nuevo.',
+        loadFailed: 'No se pudo cargar el estado de la autenticación de dos factores',
+        failed: 'El cambio ha fallado'
+      },
+      users: {
+        tag: '2FA',
+        reset: 'Restablecer 2FA',
+        resetConfirm: '¿Desactivar la autenticación de dos factores para {{username}}?',
+        resetDone: 'Autenticación de dos factores restablecida'
+      }
     }
   }
 };

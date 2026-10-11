@@ -1783,6 +1783,57 @@ const hu = {
       criticalContinue: 'Videó indítása mégis',
       criticalReboot: 'IronKVM újraindítása',
       criticalRebooting: 'Újraindítás...'
+    },
+    totp: {
+      login: {
+        title: 'Kétlépcsős azonosítás',
+        description:
+          'Adja meg a hitelesítő alkalmazás 6 jegyű kódját vagy az egyik helyreállítási kódját.',
+        placeholder: 'Kód vagy helyreállítási kód',
+        noEmptyCode: 'Adjon meg egy kódot',
+        verify: 'Ellenőrzés',
+        back: 'Vissza a jelszóhoz',
+        invalidCode: 'Érvénytelen kód',
+        locked: 'Túl sok hibás kód. Próbálja újra néhány perc múlva.',
+        expired: 'A bejelentkezés lejárt. Adja meg újra a jelszavát.'
+      },
+      settings: {
+        title: 'Kétlépcsős azonosítás',
+        description: 'A jelszó után kódot kér egy hitelesítő alkalmazásból.',
+        scope:
+          'Csak a webes bejelentkezésre vonatkozik. A VNC, az IPMI és a Redfish továbbra is csak jelszót kér, az API-kulcsok pedig kód nélkül működnek.',
+        on: 'Be',
+        off: 'Ki',
+        enable: 'Bekapcsolás',
+        disable: 'Kikapcsolás',
+        regenerate: 'Új helyreállítási kódok',
+        codesLeft: 'Hátralévő helyreállítási kódok: {{count}}',
+        enableTitle: 'Kétlépcsős azonosítás bekapcsolása',
+        disableTitle: 'Kétlépcsős azonosítás kikapcsolása',
+        regenerateTitle: 'Új helyreállítási kódok',
+        confirmPassword: 'Erősítse meg a jelszavával',
+        continue: 'Tovább',
+        scan: 'Olvassa be a QR-kódot egy hitelesítő alkalmazással, vagy írja be kézzel a titkos kulcsot. Ezután adja meg az alkalmazás által mutatott kódot.',
+        secret: 'Titkos kulcs',
+        enterCode: 'Kód az alkalmazásból',
+        verifyAndEnable: 'Ellenőrzés és bekapcsolás',
+        codesOnce:
+          'Mentse el most ezeket a helyreállítási kódokat. Mindegyik egyszer használható kód helyett, és többé nem jelennek meg.',
+        recoveryCodes: 'IronKVM helyreállítási kódok',
+        download: 'Letöltés',
+        saved: 'Elmentettem őket',
+        disabled: 'Kétlépcsős azonosítás kikapcsolva',
+        wrongPassword: 'Hibás jelszó',
+        setupExpired: 'A beállítás lejárt. Kezdje újra.',
+        loadFailed: 'Nem sikerült betölteni a kétlépcsős azonosítás állapotát',
+        failed: 'A módosítás sikertelen'
+      },
+      users: {
+        tag: '2FA',
+        reset: '2FA visszaállítása',
+        resetConfirm: 'Kikapcsolja a kétlépcsős azonosítást {{username}} számára?',
+        resetDone: 'Kétlépcsős azonosítás visszaállítva'
+      }
     }
   }
 };

@@ -1809,6 +1809,57 @@ const de = {
       criticalContinue: 'Video trotzdem starten',
       criticalReboot: 'IronKVM neu starten',
       criticalRebooting: 'Wird neu gestartet...'
+    },
+    totp: {
+      login: {
+        title: 'Zwei-Faktor-Authentifizierung',
+        description:
+          'Geben Sie den 6-stelligen Code aus Ihrer Authenticator-App oder einen Ihrer Wiederherstellungscodes ein.',
+        placeholder: 'Code oder Wiederherstellungscode',
+        noEmptyCode: 'Bitte einen Code eingeben',
+        verify: 'Bestätigen',
+        back: 'Zurück zum Passwort',
+        invalidCode: 'Ungültiger Code',
+        locked: 'Zu viele falsche Codes. Versuchen Sie es in einigen Minuten erneut.',
+        expired: 'Die Anmeldung ist abgelaufen. Geben Sie Ihr Passwort erneut ein.'
+      },
+      settings: {
+        title: 'Zwei-Faktor-Authentifizierung',
+        description: 'Nach dem Passwort einen Code aus einer Authenticator-App abfragen.',
+        scope:
+          'Gilt nur für die Web-Anmeldung. VNC, IPMI und Redfish verwenden weiterhin nur das Passwort, und API-Schlüssel funktionieren ohne Code.',
+        on: 'Ein',
+        off: 'Aus',
+        enable: 'Einschalten',
+        disable: 'Ausschalten',
+        regenerate: 'Neue Wiederherstellungscodes',
+        codesLeft: 'Verbleibende Wiederherstellungscodes: {{count}}',
+        enableTitle: 'Zwei-Faktor-Authentifizierung einschalten',
+        disableTitle: 'Zwei-Faktor-Authentifizierung ausschalten',
+        regenerateTitle: 'Neue Wiederherstellungscodes',
+        confirmPassword: 'Mit Ihrem Passwort bestätigen',
+        continue: 'Weiter',
+        scan: 'Scannen Sie den QR-Code mit einer Authenticator-App oder geben Sie den geheimen Schlüssel manuell ein. Geben Sie dann den Code ein, den die App anzeigt.',
+        secret: 'Geheimer Schlüssel',
+        enterCode: 'Code aus der App',
+        verifyAndEnable: 'Bestätigen und einschalten',
+        codesOnce:
+          'Speichern Sie diese Wiederherstellungscodes jetzt. Jeder funktioniert einmal anstelle eines Codes und sie werden nicht erneut angezeigt.',
+        recoveryCodes: 'IronKVM-Wiederherstellungscodes',
+        download: 'Herunterladen',
+        saved: 'Ich habe sie gespeichert',
+        disabled: 'Zwei-Faktor-Authentifizierung ausgeschaltet',
+        wrongPassword: 'Das Passwort ist falsch',
+        setupExpired: 'Die Einrichtung ist abgelaufen. Beginnen Sie erneut.',
+        loadFailed: 'Zwei-Faktor-Status konnte nicht geladen werden',
+        failed: 'Die Änderung ist fehlgeschlagen'
+      },
+      users: {
+        tag: '2FA',
+        reset: '2FA zurücksetzen',
+        resetConfirm: 'Zwei-Faktor-Authentifizierung für {{username}} ausschalten?',
+        resetDone: 'Zwei-Faktor-Authentifizierung zurückgesetzt'
+      }
     }
   }
 };

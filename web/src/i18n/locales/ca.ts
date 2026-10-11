@@ -1784,6 +1784,57 @@ const ca = {
       criticalContinue: 'Inicia el vídeo igualment',
       criticalReboot: 'Reinicia el IronKVM',
       criticalRebooting: "S'està reiniciant..."
+    },
+    totp: {
+      login: {
+        title: 'Autenticació de dos factors',
+        description:
+          "Introdueix el codi de 6 dígits de l'aplicació d'autenticació, o un dels teus codis de recuperació.",
+        placeholder: 'Codi o codi de recuperació',
+        noEmptyCode: 'Introdueix un codi',
+        verify: 'Verifica',
+        back: 'Torna a la contrasenya',
+        invalidCode: 'Codi no vàlid',
+        locked: "Massa codis incorrectes. Torna-ho a provar d'aquí a uns minuts.",
+        expired: "L'inici de sessió ha caducat. Torna a introduir la contrasenya."
+      },
+      settings: {
+        title: 'Autenticació de dos factors',
+        description: "Demana un codi d'una aplicació d'autenticació després de la contrasenya.",
+        scope:
+          "Només s'aplica a l'inici de sessió web. VNC, IPMI i Redfish continuen fent servir només la contrasenya, i les claus API funcionen sense codi.",
+        on: 'Activada',
+        off: 'Desactivada',
+        enable: 'Activa',
+        disable: 'Desactiva',
+        regenerate: 'Codis de recuperació nous',
+        codesLeft: 'Codis de recuperació restants: {{count}}',
+        enableTitle: "Activa l'autenticació de dos factors",
+        disableTitle: "Desactiva l'autenticació de dos factors",
+        regenerateTitle: 'Codis de recuperació nous',
+        confirmPassword: 'Confirma amb la teva contrasenya',
+        continue: 'Continua',
+        scan: "Escaneja el codi QR amb una aplicació d'autenticació, o introdueix el secret a mà. Després escriu el codi que mostra l'aplicació.",
+        secret: 'Secret',
+        enterCode: "Codi de l'aplicació",
+        verifyAndEnable: 'Verifica i activa',
+        codesOnce:
+          "Desa ara aquests codis de recuperació. Cadascun serveix una vegada en lloc d'un codi, i no es tornaran a mostrar.",
+        recoveryCodes: "Codis de recuperació d'IronKVM",
+        download: 'Baixa',
+        saved: 'Ja els he desat',
+        disabled: 'Autenticació de dos factors desactivada',
+        wrongPassword: 'La contrasenya no és correcta',
+        setupExpired: 'La configuració ha caducat. Torna a començar.',
+        loadFailed: "No s'ha pogut carregar l'estat de l'autenticació de dos factors",
+        failed: 'El canvi ha fallat'
+      },
+      users: {
+        tag: '2FA',
+        reset: 'Restableix la 2FA',
+        resetConfirm: "Vols desactivar l'autenticació de dos factors per a {{username}}?",
+        resetDone: 'Autenticació de dos factors restablerta'
+      }
     }
   }
 };

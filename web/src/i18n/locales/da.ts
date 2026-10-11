@@ -1761,6 +1761,57 @@ const da = {
       criticalContinue: 'Start video alligevel',
       criticalReboot: 'Genstart IronKVM',
       criticalRebooting: 'Genstarter...'
+    },
+    totp: {
+      login: {
+        title: 'Totrinsgodkendelse',
+        description:
+          'Indtast den 6-cifrede kode fra din godkendelsesapp eller en af dine gendannelseskoder.',
+        placeholder: 'Kode eller gendannelseskode',
+        noEmptyCode: 'Indtast en kode',
+        verify: 'Bekræft',
+        back: 'Tilbage til adgangskode',
+        invalidCode: 'Ugyldig kode',
+        locked: 'For mange forkerte koder. Prøv igen om et par minutter.',
+        expired: 'Login er udløbet. Indtast din adgangskode igen.'
+      },
+      settings: {
+        title: 'Totrinsgodkendelse',
+        description: 'Bed om en kode fra en godkendelsesapp efter adgangskoden.',
+        scope:
+          'Gælder kun web-login. VNC, IPMI og Redfish bruger stadig kun adgangskoden, og API-nøgler virker uden kode.',
+        on: 'Til',
+        off: 'Fra',
+        enable: 'Slå til',
+        disable: 'Slå fra',
+        regenerate: 'Nye gendannelseskoder',
+        codesLeft: 'Gendannelseskoder tilbage: {{count}}',
+        enableTitle: 'Slå totrinsgodkendelse til',
+        disableTitle: 'Slå totrinsgodkendelse fra',
+        regenerateTitle: 'Nye gendannelseskoder',
+        confirmPassword: 'Bekræft med din adgangskode',
+        continue: 'Fortsæt',
+        scan: 'Scan QR-koden med en godkendelsesapp, eller indtast den hemmelige nøgle manuelt. Skriv derefter koden, som appen viser.',
+        secret: 'Hemmelig nøgle',
+        enterCode: 'Kode fra appen',
+        verifyAndEnable: 'Bekræft og slå til',
+        codesOnce:
+          'Gem disse gendannelseskoder nu. Hver kode virker én gang i stedet for en almindelig kode, og de vises ikke igen.',
+        recoveryCodes: 'IronKVM-gendannelseskoder',
+        download: 'Download',
+        saved: 'Jeg har gemt dem',
+        disabled: 'Totrinsgodkendelse slået fra',
+        wrongPassword: 'Adgangskoden er forkert',
+        setupExpired: 'Opsætningen er udløbet. Start forfra.',
+        loadFailed: 'Kunne ikke indlæse status for totrinsgodkendelse',
+        failed: 'Ændringen mislykkedes'
+      },
+      users: {
+        tag: '2FA',
+        reset: 'Nulstil 2FA',
+        resetConfirm: 'Slå totrinsgodkendelse fra for {{username}}?',
+        resetDone: 'Totrinsgodkendelse nulstillet'
+      }
     }
   }
 };

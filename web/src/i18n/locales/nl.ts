@@ -1786,6 +1786,57 @@ const nl = {
       criticalContinue: 'Video toch starten',
       criticalReboot: 'IronKVM opnieuw opstarten',
       criticalRebooting: 'Opnieuw opstarten...'
+    },
+    totp: {
+      login: {
+        title: 'Tweestapsverificatie',
+        description:
+          'Voer de 6-cijferige code uit je authenticator-app in, of een van je herstelcodes.',
+        placeholder: 'Code of herstelcode',
+        noEmptyCode: 'Voer een code in',
+        verify: 'Verifiëren',
+        back: 'Terug naar wachtwoord',
+        invalidCode: 'Ongeldige code',
+        locked: 'Te veel onjuiste codes. Probeer het over een paar minuten opnieuw.',
+        expired: 'De aanmelding is verlopen. Voer je wachtwoord opnieuw in.'
+      },
+      settings: {
+        title: 'Tweestapsverificatie',
+        description: 'Na het wachtwoord om een code uit een authenticator-app vragen.',
+        scope:
+          'Geldt alleen voor het inloggen via het web. VNC, IPMI en Redfish gebruiken nog steeds alleen het wachtwoord, en API-sleutels werken zonder code.',
+        on: 'Aan',
+        off: 'Uit',
+        enable: 'Inschakelen',
+        disable: 'Uitschakelen',
+        regenerate: 'Nieuwe herstelcodes',
+        codesLeft: 'Resterende herstelcodes: {{count}}',
+        enableTitle: 'Tweestapsverificatie inschakelen',
+        disableTitle: 'Tweestapsverificatie uitschakelen',
+        regenerateTitle: 'Nieuwe herstelcodes',
+        confirmPassword: 'Bevestig met je wachtwoord',
+        continue: 'Doorgaan',
+        scan: 'Scan de QR-code met een authenticator-app, of voer de geheime sleutel handmatig in. Typ daarna de code die de app toont.',
+        secret: 'Geheime sleutel',
+        enterCode: 'Code uit de app',
+        verifyAndEnable: 'Verifiëren en inschakelen',
+        codesOnce:
+          'Bewaar deze herstelcodes nu. Elke code werkt één keer in plaats van een gewone code, en ze worden niet opnieuw getoond.',
+        recoveryCodes: 'IronKVM-herstelcodes',
+        download: 'Downloaden',
+        saved: 'Ik heb ze bewaard',
+        disabled: 'Tweestapsverificatie uitgeschakeld',
+        wrongPassword: 'Het wachtwoord is onjuist',
+        setupExpired: 'De instelling is verlopen. Begin opnieuw.',
+        loadFailed: 'Laden van de status van tweestapsverificatie mislukt',
+        failed: 'De wijziging is mislukt'
+      },
+      users: {
+        tag: '2FA',
+        reset: '2FA resetten',
+        resetConfirm: 'Tweestapsverificatie uitschakelen voor {{username}}?',
+        resetDone: 'Tweestapsverificatie gereset'
+      }
     }
   }
 };

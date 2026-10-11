@@ -1758,6 +1758,57 @@ const nb = {
       criticalContinue: 'Start video likevel',
       criticalReboot: 'Start IronKVM på nytt',
       criticalRebooting: 'Starter på nytt...'
+    },
+    totp: {
+      login: {
+        title: 'Tofaktorautentisering',
+        description:
+          'Skriv inn den 6-sifrede koden fra autentiseringsappen, eller en av gjenopprettingskodene dine.',
+        placeholder: 'Kode eller gjenopprettingskode',
+        noEmptyCode: 'Skriv inn en kode',
+        verify: 'Bekreft',
+        back: 'Tilbake til passord',
+        invalidCode: 'Ugyldig kode',
+        locked: 'For mange feil koder. Prøv igjen om noen minutter.',
+        expired: 'Innloggingen er utløpt. Skriv inn passordet på nytt.'
+      },
+      settings: {
+        title: 'Tofaktorautentisering',
+        description: 'Be om en kode fra en autentiseringsapp etter passordet.',
+        scope:
+          'Gjelder bare web-innlogging. VNC, IPMI og Redfish bruker fortsatt bare passordet, og API-nøkler virker uten kode.',
+        on: 'På',
+        off: 'Av',
+        enable: 'Slå på',
+        disable: 'Slå av',
+        regenerate: 'Nye gjenopprettingskoder',
+        codesLeft: 'Gjenopprettingskoder igjen: {{count}}',
+        enableTitle: 'Slå på tofaktorautentisering',
+        disableTitle: 'Slå av tofaktorautentisering',
+        regenerateTitle: 'Nye gjenopprettingskoder',
+        confirmPassword: 'Bekreft med passordet ditt',
+        continue: 'Fortsett',
+        scan: 'Skann QR-koden med en autentiseringsapp, eller skriv inn den hemmelige nøkkelen manuelt. Skriv deretter inn koden appen viser.',
+        secret: 'Hemmelig nøkkel',
+        enterCode: 'Kode fra appen',
+        verifyAndEnable: 'Bekreft og slå på',
+        codesOnce:
+          'Lagre disse gjenopprettingskodene nå. Hver kode virker én gang i stedet for en vanlig kode, og de vises ikke igjen.',
+        recoveryCodes: 'IronKVM-gjenopprettingskoder',
+        download: 'Last ned',
+        saved: 'Jeg har lagret dem',
+        disabled: 'Tofaktorautentisering slått av',
+        wrongPassword: 'Passordet er feil',
+        setupExpired: 'Oppsettet er utløpt. Start på nytt.',
+        loadFailed: 'Kunne ikke laste inn status for tofaktorautentisering',
+        failed: 'Endringen mislyktes'
+      },
+      users: {
+        tag: '2FA',
+        reset: 'Tilbakestill 2FA',
+        resetConfirm: 'Slå av tofaktorautentisering for {{username}}?',
+        resetDone: 'Tofaktorautentisering tilbakestilt'
+      }
     }
   }
 };

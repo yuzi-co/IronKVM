@@ -1789,6 +1789,57 @@ const it = {
       criticalContinue: 'Avvia comunque il video',
       criticalReboot: 'Riavvia IronKVM',
       criticalRebooting: 'Riavvio in corso...'
+    },
+    totp: {
+      login: {
+        title: 'Autenticazione a due fattori',
+        description:
+          "Inserisci il codice a 6 cifre dell'app di autenticazione, oppure uno dei tuoi codici di recupero.",
+        placeholder: 'Codice o codice di recupero',
+        noEmptyCode: 'Inserisci un codice',
+        verify: 'Verifica',
+        back: 'Torna alla password',
+        invalidCode: 'Codice non valido',
+        locked: 'Troppi codici errati. Riprova tra qualche minuto.',
+        expired: "L'accesso è scaduto. Inserisci di nuovo la password."
+      },
+      settings: {
+        title: 'Autenticazione a due fattori',
+        description: "Richiedi un codice da un'app di autenticazione dopo la password.",
+        scope:
+          "Vale solo per l'accesso web. VNC, IPMI e Redfish usano ancora solo la password, e le chiavi API funzionano senza codice.",
+        on: 'Attiva',
+        off: 'Disattiva',
+        enable: 'Attiva',
+        disable: 'Disattiva',
+        regenerate: 'Nuovi codici di recupero',
+        codesLeft: 'Codici di recupero rimasti: {{count}}',
+        enableTitle: "Attiva l'autenticazione a due fattori",
+        disableTitle: "Disattiva l'autenticazione a due fattori",
+        regenerateTitle: 'Nuovi codici di recupero',
+        confirmPassword: 'Conferma con la tua password',
+        continue: 'Continua',
+        scan: "Scansiona il codice QR con un'app di autenticazione, oppure inserisci il segreto a mano. Poi digita il codice mostrato dall'app.",
+        secret: 'Segreto',
+        enterCode: "Codice dell'app",
+        verifyAndEnable: 'Verifica e attiva',
+        codesOnce:
+          'Salva ora questi codici di recupero. Ognuno vale una sola volta al posto di un codice, e non verranno più mostrati.',
+        recoveryCodes: 'Codici di recupero IronKVM',
+        download: 'Scarica',
+        saved: 'Li ho salvati',
+        disabled: 'Autenticazione a due fattori disattivata',
+        wrongPassword: 'La password non è corretta',
+        setupExpired: 'La configurazione è scaduta. Ricomincia.',
+        loadFailed: "Impossibile caricare lo stato dell'autenticazione a due fattori",
+        failed: 'La modifica non è riuscita'
+      },
+      users: {
+        tag: '2FA',
+        reset: 'Reimposta 2FA',
+        resetConfirm: "Disattivare l'autenticazione a due fattori per {{username}}?",
+        resetDone: 'Autenticazione a due fattori reimpostata'
+      }
     }
   }
 };

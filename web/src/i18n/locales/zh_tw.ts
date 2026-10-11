@@ -1686,6 +1686,54 @@ const zh_tw = {
       criticalContinue: '仍然啟動視訊',
       criticalReboot: '重新啟動 IronKVM',
       criticalRebooting: '正在重新啟動...'
+    },
+    totp: {
+      login: {
+        title: '雙重驗證',
+        description: '請輸入驗證器 App 中的 6 位數驗證碼，或一組復原碼。',
+        placeholder: '驗證碼或復原碼',
+        noEmptyCode: '請輸入驗證碼',
+        verify: '驗證',
+        back: '返回密碼登入',
+        invalidCode: '驗證碼無效',
+        locked: '錯誤的驗證碼次數過多，請幾分鐘後再試。',
+        expired: '登入已逾時，請重新輸入密碼。'
+      },
+      settings: {
+        title: '雙重驗證',
+        description: '輸入密碼後，還需輸入驗證器 App 中的驗證碼。',
+        scope: '僅適用於網頁登入。VNC、IPMI 和 Redfish 仍只使用密碼，API Key 不需驗證碼即可使用。',
+        on: '已開啟',
+        off: '已關閉',
+        enable: '開啟',
+        disable: '關閉',
+        regenerate: '產生新復原碼',
+        codesLeft: '剩餘復原碼：{{count}}',
+        enableTitle: '開啟雙重驗證',
+        disableTitle: '關閉雙重驗證',
+        regenerateTitle: '產生新復原碼',
+        confirmPassword: '請輸入密碼確認',
+        continue: '繼續',
+        scan: '用驗證器 App 掃描 QR 碼，或手動輸入金鑰。然後輸入 App 顯示的驗證碼。',
+        secret: '金鑰',
+        enterCode: 'App 中的驗證碼',
+        verifyAndEnable: '驗證並開啟',
+        codesOnce: '請立即儲存這些復原碼。每組復原碼可代替驗證碼使用一次，之後不會再顯示。',
+        recoveryCodes: 'IronKVM 復原碼',
+        download: '下載',
+        saved: '我已儲存',
+        disabled: '雙重驗證已關閉',
+        wrongPassword: '密碼不正確',
+        setupExpired: '設定已逾時，請重新開始。',
+        loadFailed: '無法載入雙重驗證狀態',
+        failed: '變更失敗'
+      },
+      users: {
+        tag: '2FA',
+        reset: '重設 2FA',
+        resetConfirm: '關閉 {{username}} 的雙重驗證？',
+        resetDone: '雙重驗證已重設'
+      }
     }
   }
 };

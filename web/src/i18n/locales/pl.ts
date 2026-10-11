@@ -1772,6 +1772,57 @@ const pl = {
       criticalContinue: 'Uruchom wideo mimo to',
       criticalReboot: 'Uruchom ponownie IronKVM',
       criticalRebooting: 'Ponowne uruchamianie...'
+    },
+    totp: {
+      login: {
+        title: 'Uwierzytelnianie dwuskładnikowe',
+        description:
+          'Wpisz 6-cyfrowy kod z aplikacji uwierzytelniającej albo jeden z kodów odzyskiwania.',
+        placeholder: 'Kod lub kod odzyskiwania',
+        noEmptyCode: 'Wpisz kod',
+        verify: 'Zweryfikuj',
+        back: 'Wróć do hasła',
+        invalidCode: 'Nieprawidłowy kod',
+        locked: 'Zbyt wiele błędnych kodów. Spróbuj ponownie za kilka minut.',
+        expired: 'Logowanie wygasło. Wpisz hasło ponownie.'
+      },
+      settings: {
+        title: 'Uwierzytelnianie dwuskładnikowe',
+        description: 'Po haśle wymagaj kodu z aplikacji uwierzytelniającej.',
+        scope:
+          'Dotyczy tylko logowania przez przeglądarkę. VNC, IPMI i Redfish nadal używają samego hasła, a klucze API działają bez kodu.',
+        on: 'Włączone',
+        off: 'Wyłączone',
+        enable: 'Włącz',
+        disable: 'Wyłącz',
+        regenerate: 'Nowe kody odzyskiwania',
+        codesLeft: 'Pozostałe kody odzyskiwania: {{count}}',
+        enableTitle: 'Włącz uwierzytelnianie dwuskładnikowe',
+        disableTitle: 'Wyłącz uwierzytelnianie dwuskładnikowe',
+        regenerateTitle: 'Nowe kody odzyskiwania',
+        confirmPassword: 'Potwierdź hasłem',
+        continue: 'Dalej',
+        scan: 'Zeskanuj kod QR aplikacją uwierzytelniającą albo wpisz klucz tajny ręcznie. Następnie wpisz kod wyświetlony przez aplikację.',
+        secret: 'Klucz tajny',
+        enterCode: 'Kod z aplikacji',
+        verifyAndEnable: 'Zweryfikuj i włącz',
+        codesOnce:
+          'Zapisz teraz te kody odzyskiwania. Każdy działa jeden raz zamiast kodu i nie zostaną pokazane ponownie.',
+        recoveryCodes: 'Kody odzyskiwania IronKVM',
+        download: 'Pobierz',
+        saved: 'Mam je zapisane',
+        disabled: 'Uwierzytelnianie dwuskładnikowe wyłączone',
+        wrongPassword: 'Hasło jest nieprawidłowe',
+        setupExpired: 'Konfiguracja wygasła. Zacznij od nowa.',
+        loadFailed: 'Nie udało się wczytać stanu uwierzytelniania dwuskładnikowego',
+        failed: 'Zmiana nie powiodła się'
+      },
+      users: {
+        tag: '2FA',
+        reset: 'Resetuj 2FA',
+        resetConfirm: 'Wyłączyć uwierzytelnianie dwuskładnikowe dla {{username}}?',
+        resetDone: 'Uwierzytelnianie dwuskładnikowe zresetowane'
+      }
     }
   }
 };

@@ -1,6 +1,6 @@
 import { ReactElement, useEffect, useState } from 'react';
 import { Alert, Button, Form, Input } from 'antd';
-import { LockIcon, UserIcon } from 'lucide-react';
+import { KeyRoundIcon, LockIcon, UserIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
 
@@ -22,6 +22,8 @@ export const Login = (): ReactElement => {
 
   const [isLoading, setIsloading] = useState(false);
   const [msg, setMsg] = useState('');
+  // Set while the password was right and the account still owes a TOTP code.
+  const [challenge, setChallenge] = useState<string | null>(null);
 
   useEffect(() => {
     api
@@ -40,6 +42,29 @@ export const Login = (): ReactElement => {
     }
   }, [msg]);
 
+  // A session cookie was just set. A browser that discards it sends the
+  // operator back here with no explanation, forever. That happens when the
+  // page is served over plain http while the server still believes it is on
+  // https: the cookie it sets carries Secure, and the browser throws it away.
+  // The cookie is HttpOnly, so the page cannot look at it. Ask for the account
+  // instead, which is the same question one step further on.
+  function finishLogin() {
+    return api
+      .getAccount()
+      .then((account: any) => {
+        if (account.code !== 0 || !account.data?.username) {
+          setMsg(t('auth.cookieRejected'));
+          return;
+        }
+
+        setMsg('');
+        navigate(target, { replace: true });
+      })
+      .catch(() => {
+        setMsg(t('auth.cookieRejected'));
+      });
+  }
+
   function login(values: any) {
     if (isLoading) return;
     setIsloading(true);
@@ -50,6 +75,11 @@ export const Login = (): ReactElement => {
     api
       .login(username, password)
       .then((rsp: any) => {
+        if (rsp.code === api.LOGIN_TOTP_REQUIRED && rsp.data?.challenge) {
+          setMsg('');
+          setChallenge(rsp.data.challenge);
+          return;
+        }
         if (rsp.code !== 0) {
           let errorMsg = t('auth.error');
           if (rsp.code === -2) errorMsg = t('auth.invalidUser');
@@ -60,26 +90,7 @@ export const Login = (): ReactElement => {
           return;
         }
 
-        // A browser that discards the session cookie sends the operator back
-        // here with no explanation, forever. That happens when the page is
-        // served over plain http while the server still believes it is on
-        // https: the cookie it sets carries Secure, and the browser throws it
-        // away. The cookie is HttpOnly, so the page cannot look at it. Ask for
-        // the account instead, which is the same question one step further on.
-        return api
-          .getAccount()
-          .then((account: any) => {
-            if (account.code !== 0 || !account.data?.username) {
-              setMsg(t('auth.cookieRejected'));
-              return;
-            }
-
-            setMsg('');
-            navigate(target, { replace: true });
-          })
-          .catch(() => {
-            setMsg(t('auth.cookieRejected'));
-          });
+        return finishLogin();
       })
       .catch(() => {
         setMsg(t('auth.error'));
@@ -89,64 +100,144 @@ export const Login = (): ReactElement => {
       });
   }
 
+  function submitCode(values: { code: string }) {
+    if (isLoading || !challenge) return;
+    setIsloading(true);
+
+    api
+      .loginTotp(challenge, values.code.trim())
+      .then((rsp: any) => {
+        if (rsp.code === api.LOGIN_TOTP_EXPIRED) {
+          setChallenge(null);
+          setMsg(t('totp.login.expired'));
+          return;
+        }
+        if (rsp.code !== 0) {
+          let errorMsg = t('auth.error');
+          if (rsp.code === -2) errorMsg = t('totp.login.invalidCode');
+          else if (rsp.code === -5) errorMsg = t('totp.login.locked');
+          else if (rsp.code === -4) errorMsg = t('auth.globalLocked');
+
+          setMsg(errorMsg);
+          return;
+        }
+
+        return finishLogin();
+      })
+      .catch(() => {
+        setMsg(t('auth.error'));
+      })
+      .finally(() => {
+        setIsloading(false);
+      });
+  }
+
+  function backToPassword() {
+    setChallenge(null);
+    setMsg('');
+  }
+
   return (
     <>
       <Head title={t('head.login')} />
 
       <div className="flex h-screen w-screen flex-col items-center justify-center">
-        <Form
-          style={{ minWidth: 300, maxWidth: 500 }}
-          initialValues={{ remember: true }}
-          onFinish={login}
-        >
-          <div className="flex flex-col items-center justify-center pb-4">
-            <img
-              id="logo"
-              src="/ironkvm.ico"
-              alt="IronKVM"
-              onClick={(evt) => {
-                evt.preventDefault();
-                (evt.target as HTMLImageElement).classList.add('animate-spin');
-                setTimeout(() => {
-                  (evt.target as HTMLImageElement).classList.remove('animate-spin');
-                }, 1000);
-              }}
-            />
-          </div>
-          {notice === 'passwordChanged' && (
-            <Alert className="mb-4!" type="success" showIcon message={t('auth.passwordChanged')} />
-          )}
+        {challenge ? (
+          <Form key="code" style={{ minWidth: 300, maxWidth: 500 }} onFinish={submitCode}>
+            <div className="flex flex-col items-center justify-center pb-4">
+              <img id="logo" src="/ironkvm.ico" alt="IronKVM" />
+            </div>
+            <div className="pb-1 text-base">{t('totp.login.title')}</div>
+            <div className="pb-4 text-sm text-neutral-500">{t('totp.login.description')}</div>
 
-          <Form.Item
-            name="username"
-            rules={[{ required: true, message: t('auth.noEmptyUsername'), min: 1 }]}
+            <Form.Item
+              name="code"
+              rules={[{ required: true, message: t('totp.login.noEmptyCode') }]}
+            >
+              <Input
+                prefix={<KeyRoundIcon size={15} />}
+                autoFocus
+                autoComplete="one-time-code"
+                maxLength={64}
+                placeholder={t('totp.login.placeholder')}
+              />
+            </Form.Item>
+
+            <div className="pb-1 text-red-500">{msg}</div>
+
+            <Form.Item>
+              <Button type="primary" htmlType="submit" className="w-full" loading={isLoading}>
+                {t('totp.login.verify')}
+              </Button>
+            </Form.Item>
+
+            <div className="flex justify-end pb-4 text-sm">
+              <Button type="link" size="small" className="px-0!" onClick={backToPassword}>
+                {t('totp.login.back')}
+              </Button>
+            </div>
+          </Form>
+        ) : (
+          <Form
+            key="password"
+            style={{ minWidth: 300, maxWidth: 500 }}
+            initialValues={{ remember: true }}
+            onFinish={login}
           >
-            <Input prefix={<UserIcon size={15} />} placeholder={t('auth.placeholderUsername')} />
-          </Form.Item>
+            <div className="flex flex-col items-center justify-center pb-4">
+              <img
+                id="logo"
+                src="/ironkvm.ico"
+                alt="IronKVM"
+                onClick={(evt) => {
+                  evt.preventDefault();
+                  (evt.target as HTMLImageElement).classList.add('animate-spin');
+                  setTimeout(() => {
+                    (evt.target as HTMLImageElement).classList.remove('animate-spin');
+                  }, 1000);
+                }}
+              />
+            </div>
+            {notice === 'passwordChanged' && (
+              <Alert
+                className="mb-4!"
+                type="success"
+                showIcon
+                message={t('auth.passwordChanged')}
+              />
+            )}
 
-          <Form.Item
-            name="password"
-            rules={[{ required: true, message: t('auth.noEmptyPassword'), min: 1 }]}
-          >
-            <Input
-              prefix={<LockIcon size={15} />}
-              type="password"
-              placeholder={t('auth.placeholderPassword')}
-            />
-          </Form.Item>
+            <Form.Item
+              name="username"
+              rules={[{ required: true, message: t('auth.noEmptyUsername'), min: 1 }]}
+            >
+              <Input prefix={<UserIcon size={15} />} placeholder={t('auth.placeholderUsername')} />
+            </Form.Item>
 
-          <div className="pb-1 text-red-500">{msg}</div>
+            <Form.Item
+              name="password"
+              rules={[{ required: true, message: t('auth.noEmptyPassword'), min: 1 }]}
+            >
+              <Input
+                prefix={<LockIcon size={15} />}
+                type="password"
+                placeholder={t('auth.placeholderPassword')}
+              />
+            </Form.Item>
 
-          <Form.Item>
-            <Button type="primary" htmlType="submit" className="w-full" loading={isLoading}>
-              {t('auth.loginButtonText')}
-            </Button>
-          </Form.Item>
+            <div className="pb-1 text-red-500">{msg}</div>
 
-          <div className="flex justify-end pb-4 text-sm">
-            <Tips />
-          </div>
-        </Form>
+            <Form.Item>
+              <Button type="primary" htmlType="submit" className="w-full" loading={isLoading}>
+                {t('auth.loginButtonText')}
+              </Button>
+            </Form.Item>
+
+            <div className="flex justify-end pb-4 text-sm">
+              <Tips />
+            </div>
+          </Form>
+        )}
       </div>
     </>
   );

@@ -1763,6 +1763,57 @@ const se = {
       criticalContinue: 'Starta video ändå',
       criticalReboot: 'Starta om IronKVM',
       criticalRebooting: 'Startar om...'
+    },
+    totp: {
+      login: {
+        title: 'Tvåfaktorsautentisering',
+        description:
+          'Ange den 6-siffriga koden från din autentiseringsapp, eller en av dina återställningskoder.',
+        placeholder: 'Kod eller återställningskod',
+        noEmptyCode: 'Ange en kod',
+        verify: 'Verifiera',
+        back: 'Tillbaka till lösenord',
+        invalidCode: 'Ogiltig kod',
+        locked: 'För många felaktiga koder. Försök igen om några minuter.',
+        expired: 'Inloggningen har gått ut. Ange ditt lösenord igen.'
+      },
+      settings: {
+        title: 'Tvåfaktorsautentisering',
+        description: 'Be om en kod från en autentiseringsapp efter lösenordet.',
+        scope:
+          'Gäller bara webbinloggning. VNC, IPMI och Redfish använder fortfarande bara lösenordet, och API-nycklar fungerar utan kod.',
+        on: 'På',
+        off: 'Av',
+        enable: 'Slå på',
+        disable: 'Stäng av',
+        regenerate: 'Nya återställningskoder',
+        codesLeft: 'Återställningskoder kvar: {{count}}',
+        enableTitle: 'Slå på tvåfaktorsautentisering',
+        disableTitle: 'Stäng av tvåfaktorsautentisering',
+        regenerateTitle: 'Nya återställningskoder',
+        confirmPassword: 'Bekräfta med ditt lösenord',
+        continue: 'Fortsätt',
+        scan: 'Skanna QR-koden med en autentiseringsapp, eller ange den hemliga nyckeln manuellt. Skriv sedan koden som appen visar.',
+        secret: 'Hemlig nyckel',
+        enterCode: 'Kod från appen',
+        verifyAndEnable: 'Verifiera och slå på',
+        codesOnce:
+          'Spara de här återställningskoderna nu. Varje kod fungerar en gång i stället för en vanlig kod, och de visas inte igen.',
+        recoveryCodes: 'IronKVM-återställningskoder',
+        download: 'Ladda ner',
+        saved: 'Jag har sparat dem',
+        disabled: 'Tvåfaktorsautentisering avstängd',
+        wrongPassword: 'Lösenordet är felaktigt',
+        setupExpired: 'Konfigurationen har gått ut. Börja om.',
+        loadFailed: 'Det gick inte att läsa in status för tvåfaktorsautentisering',
+        failed: 'Ändringen misslyckades'
+      },
+      users: {
+        tag: '2FA',
+        reset: 'Återställ 2FA',
+        resetConfirm: 'Stäng av tvåfaktorsautentisering för {{username}}?',
+        resetDone: 'Tvåfaktorsautentisering återställd'
+      }
     }
   }
 };

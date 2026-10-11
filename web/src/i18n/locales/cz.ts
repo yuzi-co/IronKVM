@@ -1752,6 +1752,57 @@ const cz = {
       criticalContinue: 'Přesto spustit video',
       criticalReboot: 'Restartovat IronKVM',
       criticalRebooting: 'Restartování...'
+    },
+    totp: {
+      login: {
+        title: 'Dvoufázové ověření',
+        description:
+          'Zadejte 6místný kód z ověřovací aplikace nebo jeden ze svých záchranných kódů.',
+        placeholder: 'Kód nebo záchranný kód',
+        noEmptyCode: 'Zadejte kód',
+        verify: 'Ověřit',
+        back: 'Zpět k heslu',
+        invalidCode: 'Neplatný kód',
+        locked: 'Příliš mnoho chybných kódů. Zkuste to znovu za několik minut.',
+        expired: 'Přihlášení vypršelo. Zadejte heslo znovu.'
+      },
+      settings: {
+        title: 'Dvoufázové ověření',
+        description: 'Po hesle vyžadovat kód z ověřovací aplikace.',
+        scope:
+          'Platí jen pro přihlášení přes web. VNC, IPMI a Redfish dál používají pouze heslo a API klíče fungují bez kódu.',
+        on: 'Zapnuto',
+        off: 'Vypnuto',
+        enable: 'Zapnout',
+        disable: 'Vypnout',
+        regenerate: 'Nové záchranné kódy',
+        codesLeft: 'Zbývající záchranné kódy: {{count}}',
+        enableTitle: 'Zapnout dvoufázové ověření',
+        disableTitle: 'Vypnout dvoufázové ověření',
+        regenerateTitle: 'Nové záchranné kódy',
+        confirmPassword: 'Potvrďte heslem',
+        continue: 'Pokračovat',
+        scan: 'Naskenujte QR kód ověřovací aplikací nebo zadejte tajný klíč ručně. Pak napište kód, který aplikace zobrazí.',
+        secret: 'Tajný klíč',
+        enterCode: 'Kód z aplikace',
+        verifyAndEnable: 'Ověřit a zapnout',
+        codesOnce:
+          'Uložte si tyto záchranné kódy hned teď. Každý funguje jednou místo kódu a znovu se nezobrazí.',
+        recoveryCodes: 'Záchranné kódy IronKVM',
+        download: 'Stáhnout',
+        saved: 'Mám je uložené',
+        disabled: 'Dvoufázové ověření vypnuto',
+        wrongPassword: 'Heslo je nesprávné',
+        setupExpired: 'Nastavení vypršelo. Začněte znovu.',
+        loadFailed: 'Nepodařilo se načíst stav dvoufázového ověření',
+        failed: 'Změna se nezdařila'
+      },
+      users: {
+        tag: '2FA',
+        reset: 'Resetovat 2FA',
+        resetConfirm: 'Vypnout dvoufázové ověření pro {{username}}?',
+        resetDone: 'Dvoufázové ověření resetováno'
+      }
     }
   }
 };

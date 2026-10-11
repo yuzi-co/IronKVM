@@ -1766,6 +1766,57 @@ const id = {
       criticalContinue: 'Tetap mulai video',
       criticalReboot: 'Mulai ulang IronKVM',
       criticalRebooting: 'Memulai ulang...'
+    },
+    totp: {
+      login: {
+        title: 'Autentikasi dua faktor',
+        description:
+          'Masukkan kode 6 digit dari aplikasi autentikator Anda, atau salah satu kode pemulihan Anda.',
+        placeholder: 'Kode atau kode pemulihan',
+        noEmptyCode: 'Masukkan kode',
+        verify: 'Verifikasi',
+        back: 'Kembali ke kata sandi',
+        invalidCode: 'Kode tidak valid',
+        locked: 'Terlalu banyak kode salah. Coba lagi dalam beberapa menit.',
+        expired: 'Proses masuk kedaluwarsa. Masukkan kata sandi Anda lagi.'
+      },
+      settings: {
+        title: 'Autentikasi dua faktor',
+        description: 'Minta kode dari aplikasi autentikator setelah kata sandi.',
+        scope:
+          'Hanya berlaku untuk login web. VNC, IPMI, dan Redfish tetap hanya memakai kata sandi, dan kunci API berfungsi tanpa kode.',
+        on: 'Aktif',
+        off: 'Nonaktif',
+        enable: 'Aktifkan',
+        disable: 'Nonaktifkan',
+        regenerate: 'Kode pemulihan baru',
+        codesLeft: 'Sisa kode pemulihan: {{count}}',
+        enableTitle: 'Aktifkan autentikasi dua faktor',
+        disableTitle: 'Nonaktifkan autentikasi dua faktor',
+        regenerateTitle: 'Kode pemulihan baru',
+        confirmPassword: 'Konfirmasi dengan kata sandi Anda',
+        continue: 'Lanjutkan',
+        scan: 'Pindai kode QR dengan aplikasi autentikator, atau masukkan kunci rahasia secara manual. Lalu ketik kode yang ditampilkan aplikasi.',
+        secret: 'Kunci rahasia',
+        enterCode: 'Kode dari aplikasi',
+        verifyAndEnable: 'Verifikasi dan aktifkan',
+        codesOnce:
+          'Simpan kode pemulihan ini sekarang. Masing-masing dapat dipakai sekali sebagai pengganti kode, dan tidak akan ditampilkan lagi.',
+        recoveryCodes: 'Kode pemulihan IronKVM',
+        download: 'Unduh',
+        saved: 'Saya sudah menyimpannya',
+        disabled: 'Autentikasi dua faktor dinonaktifkan',
+        wrongPassword: 'Kata sandi salah',
+        setupExpired: 'Penyiapan kedaluwarsa. Mulai lagi.',
+        loadFailed: 'Gagal memuat status autentikasi dua faktor',
+        failed: 'Perubahan gagal'
+      },
+      users: {
+        tag: '2FA',
+        reset: 'Atur ulang 2FA',
+        resetConfirm: 'Nonaktifkan autentikasi dua faktor untuk {{username}}?',
+        resetDone: 'Autentikasi dua faktor diatur ulang'
+      }
     }
   }
 };
