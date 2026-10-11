@@ -242,6 +242,11 @@ struct kvmv_pipe {
 	 * it last started, for times.overlap_us. */
 	uint32_t ahead_delay_us;
 	uint64_t ahead_start_us;
+	/* A picture scaled ahead is used only if it was captured at least this
+	 * long after the last one encoded (set by the caller before each
+	 * kvmv_pipe_encode: the frame period asked less half a source frame);
+	 * 0 for no limit. */
+	uint32_t min_gap_us;
 	/* kvmv_pipe_start's steps, microseconds from its start: open, early
 	 * capture STREAMON, negotiate, middle buffers, bitstream buffers,
 	 * encoder STREAMON, priming encode, capture buffers, capture STREAMON,

@@ -1854,7 +1854,14 @@ enum kvmv_pipe_status kvmv_pipe_encode(struct kvmv_pipe *p,
 		status = finish_ahead(p, &mi);
 		if (status != KVMV_PIPE_OK)
 			return status;
-		if (now > p->ahead_ts_us && now - p->ahead_ts_us > stale) {
+		/* Too soon after the last picture for the frame rate asked
+		 * (min_gap_us): a source faster than the stream (110 Hz for 30
+		 * fps) completes frames during the encode that the stream must
+		 * skip, and taking them raised the rate above the one asked
+		 * (ironkvm-dist trial 78). Scale the frame that is due. */
+		if ((now > p->ahead_ts_us && now - p->ahead_ts_us > stale) ||
+		    (p->min_gap_us && p->last.captured_us &&
+		     p->ahead_ts_us < p->last.captured_us + p->min_gap_us)) {
 			p->times.ahead--;
 			status = kvmv_pipe_scale(p, timeout_ms, &mi);
 		}

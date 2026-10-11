@@ -17,18 +17,19 @@ import (
 // waits for a frame about to complete.
 //
 // When the library says when each frame was captured (libkvm-v4l2's
-// kvmv_video_times), the next read is timed from that instead. The frame to
-// take is the first source frame at least a frame period, less half a source
-// frame, after the last one taken; the read starts readLead before that frame
-// completes. A read blocks until a frame it has not taken completes, and the
-// library waits for a frame about to complete rather than take one over half a
-// source frame old, so the read takes that frame as soon as it lands. The rate
-// is then never above the one asked for: 30 fps from 60 Hz is every second
-// frame, from 50 Hz every second frame too (25 fps), where the ticker mixed
-// gaps of one and two source frames. A read that took longer than a frame
+// kvmv_video_times), the next read is timed from that instead. The frames are
+// due on a schedule a frame period apart; the frame to take is the first
+// source frame that ends no more than half a source frame before its slot, and
+// the read starts readLead before that frame completes. A read blocks until a
+// frame it has not taken completes, and the library waits for a frame about to
+// complete rather than take one over half a source frame old, so the read
+// takes that frame as soon as it lands. 30 fps from 60 Hz is every second
+// frame; 50 from 60 Hz or 60 from 110 Hz mixes gaps of one and two source
+// frames and averages the rate asked. A read that took longer than a frame
 // time (H.264 through the scaler at 60 fps) is followed by the next at once,
 // which takes the frame that completed meanwhile, as the ticker's late tick
-// did.
+// did, and the schedule starts again from that frame once it is a period
+// behind.
 //
 // Without capture times (Sipeed's library on slot A), and with
 // KVM_READ_PACING=tick, the ticker stays.
@@ -40,6 +41,7 @@ type readPacer struct {
 
 	last      time.Time     // capture end of the last frame read, wall clock
 	frameTime time.Duration // the source's frame time then, 0 when unknown
+	slot      time.Time     // the schedule's slot that frame filled
 }
 
 // readLead is how long before the frame is due the paced read starts. It covers
@@ -82,10 +84,9 @@ func (p *readPacer) paced() bool {
 func (p *readPacer) read(captureEnd time.Time, frameTime time.Duration) {
 	if captureEnd.IsZero() || !captureEnd.After(p.last) {
 		// No new frame (no signal, an error, or the library's rate guard
-		// left the picture out): the next read is due a frame period
-		// later, as on the ticker.
+		// left the picture out): its slot passes unfilled.
 		if !p.last.IsZero() && p.byCapture {
-			p.last = p.last.Add(p.period)
+			p.slot = p.slot.Add(p.period)
 		}
 
 		return
@@ -95,20 +96,38 @@ func (p *readPacer) read(captureEnd time.Time, frameTime time.Duration) {
 		log.Infof("capture: reads follow the frames' capture times (%s=tick for the ticker)", readPacingEnv)
 	}
 
+	if p.slot.IsZero() {
+		p.slot = captureEnd
+	} else {
+		p.slot = p.slot.Add(p.period)
+		// A period off the schedule (late reads, a slower source, a rate
+		// change): start it again from this frame.
+		if d := captureEnd.Sub(p.slot); d > p.period || d < -p.period {
+			p.slot = captureEnd
+		}
+	}
+
 	p.last = captureEnd
 	p.frameTime = frameTime
 }
 
 // next is when the frame the next read should take completes: the first
-// source frame that ends at least a period less half a source frame after the
-// last one.
+// source frame after the last one that ends no earlier than half a source
+// frame before the next slot.
 func (p *readPacer) next() time.Time {
 	ft := p.frameTime
-	if ft <= 0 || ft > p.period {
-		return p.last.Add(p.period)
+	if ft <= 0 {
+		return p.slot.Add(p.period)
+	}
+	if ft > p.period {
+		// The source is slower than asked: every frame.
+		return p.last.Add(ft)
 	}
 
-	frames := (p.period - ft/2 + ft - 1) / ft
+	frames := (p.slot.Add(p.period).Sub(p.last) - ft/2 + ft - 1) / ft
+	if frames < 1 {
+		frames = 1
+	}
 
 	return p.last.Add(frames * ft)
 }

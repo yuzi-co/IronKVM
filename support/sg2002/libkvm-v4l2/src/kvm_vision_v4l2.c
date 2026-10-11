@@ -1094,6 +1094,20 @@ static int low_delay_vui(void)
 	return on;
 }
 
+/* The least time between the capture of two pictures at the frame rate asked
+ * (set_capture_fps), less half a source frame: kvmv_pipe.min_gap_us. */
+static uint32_t min_frame_gap_us(void)
+{
+	int fps = __atomic_load_n(&capture_fps_setting, __ATOMIC_ACQUIRE);
+	uint32_t period, half;
+
+	if (fps <= 0)
+		return 0;
+	period = 1000000U / (uint32_t)fps;
+	half = pipe_state.cap_interval_us / 2U;
+	return period > half ? period - half : 0;
+}
+
 static uint32_t ewma(uint32_t avg, uint64_t sample)
 {
 	if (sample > 1000000U)
@@ -1163,6 +1177,7 @@ static int read_video_locked(unsigned int width, unsigned int height,
 
 		pipe_state.scale_ahead = want_scale_ahead();
 		pipe_state.ahead_delay_us = ahead_delay_us();
+		pipe_state.min_gap_us = min_frame_gap_us();
 		result = pipe_failure(kvmv_pipe_encode(&pipe_state, KVMV_FRAME_TIMEOUT_MS,
 						       &encoded));
 		if (result != 0)
