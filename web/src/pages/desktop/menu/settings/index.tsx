@@ -6,6 +6,7 @@ import clsx from 'clsx';
 import { useAtom, useSetAtom } from 'jotai';
 import {
   BadgeInfoIcon,
+  BellIcon,
   BotIcon,
   CircleArrowUpIcon,
   DiscIcon,
@@ -20,6 +21,7 @@ import {
   PaletteIcon,
   PowerIcon,
   ScreenShareIcon,
+  ScrollTextIcon,
   SearchIcon,
   ServerCogIcon,
   SettingsIcon,
@@ -35,6 +37,7 @@ import * as ls from '@/lib/localstorage.ts';
 import { versionGt } from '@/lib/version.ts';
 import { keyboardLockAtom } from '@/jotai/keyboard.ts';
 import { settingsOpenRequestAtom, submenuOpenCountAtom } from '@/jotai/settings.ts';
+import { useServerFeature } from '@/hooks/useServerFeature.ts';
 import { useStableCallback } from '@/hooks/useStableCallback.ts';
 import { PanelBoundary } from '@/components/error-boundary';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -62,6 +65,8 @@ const pageModules = {
   device: () => import('./device'),
   performance: () => import('./performance'),
   watchdog: () => import('./watchdog'),
+  notifications: () => import('./notifications'),
+  hostLog: () => import('./host-log'),
   update: () => import('./update'),
   network: () => import('./network'),
   vpn: () => import('./vpn/tab.tsx'),
@@ -82,6 +87,10 @@ const Preferences = lazy(() => pageModules.preferences().then((m) => ({ default:
 const Device = lazy(() => pageModules.device().then((m) => ({ default: m.Device })));
 const Performance = lazy(() => pageModules.performance().then((m) => ({ default: m.Performance })));
 const Watchdog = lazy(() => pageModules.watchdog().then((m) => ({ default: m.Watchdog })));
+const Notifications = lazy(() =>
+  pageModules.notifications().then((m) => ({ default: m.Notifications }))
+);
+const HostLog = lazy(() => pageModules.hostLog().then((m) => ({ default: m.HostLog })));
 const Update = lazy(() => pageModules.update().then((m) => ({ default: m.Update })));
 const Network = lazy(() => pageModules.network().then((m) => ({ default: m.Network })));
 const VpnTab = lazy(() => pageModules.vpn().then((m) => ({ default: m.VpnTab })));
@@ -136,6 +145,9 @@ export const Settings = () => {
   const { t } = useTranslation();
   const { account } = useAuth();
   const isAdmin = account.role === 'admin';
+  // The server decides whether these pages have anything to talk to.
+  const hasNotifications = useServerFeature('notifications') === true;
+  const hasHostLog = useServerFeature('host-log') === true;
   // Below sm the sidebar shows icons only, so each item needs a tooltip.
   const isNarrow = useIsNarrow();
 
@@ -188,6 +200,16 @@ export const Settings = () => {
             icon: <HeartPulseIcon {...icon16} />,
             component: <Watchdog />
           },
+          ...(hasHostLog
+            ? ([
+                {
+                  id: 'hostLog',
+                  group: 'system',
+                  icon: <ScrollTextIcon {...icon16} />,
+                  component: <HostLog />
+                }
+              ] satisfies Tab[])
+            : []),
           {
             id: 'update',
             group: 'system',
@@ -235,6 +257,16 @@ export const Settings = () => {
             component: <Redfish />
           },
           { id: 'mcp', group: 'integrations', icon: <BotIcon {...icon16} />, component: <MCP /> },
+          ...(hasNotifications
+            ? ([
+                {
+                  id: 'notifications',
+                  group: 'integrations',
+                  icon: <BellIcon {...icon16} />,
+                  component: <Notifications />
+                }
+              ] satisfies Tab[])
+            : []),
           {
             id: 'netboot',
             group: 'boot',
