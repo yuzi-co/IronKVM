@@ -86,6 +86,12 @@ writes `dist/ui-version.json`) and runs `scripts/package-ui.sh`, which writes th
 1. **The signing key.** `SIGN_KEY` is the minisign secret key, the same kind
    `abslots/sign-image.sh` signs slot images with; a password is read from
    `SIGN_PASSWORD_FILE` on stdin, as there. The secret key never enters a repository.
+   Releases are signed with the IronKVM release key, `ironkvm-release` (key ID
+   `32F88FAC69726707`, public key `RWQHZ3JprI/4MjT286dEbA+7YYAFxH75jphjig4pEW1n4YKTxtH3z7OX`).
+   Its public half is `keys/ironkvm-release.pub` here and `signing/ironkvm-release.pub` in
+   ironkvm-dist, whose images install it as `/usr/share/ironkvm/keys/ironkvm-release.pub`.
+   The secret half and its password live with the operator and in this repository's GitHub
+   Actions secrets `MINISIGN_SECRET_KEY` and `MINISIGN_PASSWORD`.
 2. **The build checks the chain.** With `VERIFY_KEYS` set to the public keys boards trust (the
    release key images ship), the build fails and removes the signature unless one of them
    verifies it.
@@ -111,8 +117,19 @@ server's environment replace the two paths.
 **Test keys.** The Go tests make Ed25519 keys at run time and write them in minisign's format.
 `server/service/webui/testdata` holds one public key and two signatures made by the minisign tool,
 whose secret half was discarded; nothing trusts that key. `tools/release/test-package-ui.sh` makes
-its key with `minisign -G -W` in a temporary directory. No key, test or real, is committed for
-signing.
+its key with `minisign -G -W` in a temporary directory. No secret key, test or real, is
+committed; the only real key in the repository is the release key's public half.
+
+**Releases.** `.github/workflows/ui-release.yml` runs on every `ironkvm-X.Y.Z` tag, the form
+`tools/release/release.sh` tags. One job builds `web/` with `UI_VERSION=X.Y.Z` and never sees
+the secrets, because `pnpm install` runs third-party code. A second job writes the secrets to
+files in `$RUNNER_TEMP`, runs `scripts/package-ui.sh` on that build with `VERIFY_KEYS` set to
+`keys/ironkvm-release.pub`, removes the files, and checks the signature with `minisign -V` and
+`ui-latest.json` against the package. A third attaches the package, its `.minisig` and
+`ui-latest.json` to the tag's GitHub release, whose download URL `ui-latest.json` names. It
+waits for the release `release.sh` creates and creates one only if none appears. It does not
+write `ui-latest.json` to the `gh-pages` feed: offering the package to boards stays a manual
+step, as for `latest.json`. Running the workflow by hand is a dry run that publishes nothing.
 
 ## On the board
 
