@@ -377,6 +377,38 @@ type GetMemoryRsp struct {
 
 	Processes []MemoryProcess `json:"processes"` // the main consumers that run now
 	Addons    *MemoryGroup    `json:"addons"`    // the add-ons' cgroup, null when absent
+
+	// VideoPools and Cma describe the mainline kernel's device memory. The
+	// vendor kernel reports its ION carveout through GET /api/vm/ion instead,
+	// and leaves both out.
+	VideoPools []MemoryPool `json:"videoPools,omitempty"` // the reserved pools the video drivers use
+	Cma        []MemoryCma  `json:"cma,omitempty"`        // CMA areas other than those pools
+}
+
+// MemoryPool is a reserved pool a device allocates from. When Measured is
+// false the kernel publishes only its size, and the other sizes are 0.
+type MemoryPool struct {
+	Name     string `json:"name"` // the reserved-memory node: video-pool@86800000
+	Size     int64  `json:"size"`
+	Measured bool   `json:"measured"`
+	Used     int64  `json:"used"`
+	Free     int64  `json:"free"`
+	// LargestFree is the longest free run, absent when unknown.
+	LargestFree *int64 `json:"largestFree,omitempty"`
+	Peak        int64  `json:"peak"`   // since boot or the last reset; 0 when not kept
+	Failed      int64  `json:"failed"` // allocations the pool refused
+}
+
+// MemoryCma is one CMA area. Used counts what cma_alloc handed out, unlike
+// CmaFree in /proc/meminfo, which also counts the free pages that movable
+// allocations borrow.
+type MemoryCma struct {
+	Name  string `json:"name"`
+	Total int64  `json:"total"`
+	Used  int64  `json:"used"`
+	// LargestFree is the longest free run, absent without CMA debugfs.
+	LargestFree *int64 `json:"largestFree,omitempty"`
+	Failed      int64  `json:"failed"` // alloc_pages_fail, in pages
 }
 
 type MemorySwap struct {

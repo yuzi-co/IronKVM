@@ -14,6 +14,14 @@ import (
 // killed.
 var Root = "/sys/kernel/debug/ion/cvi_carveout_heap_dump"
 
+// Present reports whether the carveout dump exists. It is how the rest of the
+// server tells the vendor kernel from the mainline one, which has no ION and
+// whose device pools package dmapool reads instead.
+func Present() bool {
+	_, err := os.Stat(Root)
+	return err == nil
+}
+
 // orphanCost is what one generation leaves behind when it does not release what
 // it held. No userspace action returns it. It is the floor under Reserve,
 // because a board with less than this free cannot absorb one more.
