@@ -1457,6 +1457,30 @@ const hu = {
           scopeUla: 'privát',
           scopeGlobal: 'globális'
         },
+        webrtc: {
+          title: 'WebRTC porttovábbítással',
+          description:
+            'Lehetővé teszi, hogy a hálózaton kívüli nézők elérjék a videót a router porttovábbításán keresztül.',
+          warning:
+            'A port továbbítása az internetről is elérhetővé teszi ezt a KVM-et. A javasolt elérés továbbra is a VPN, például a Tailscale vagy a NetBird. Csak az alábbi UDP-portot továbbítsa, soha a webes felület portját.',
+          udpPort: 'Rögzített UDP-port',
+          udpPortHint:
+            'Minden néző ezt a portot használja közösen. Hagyja üresen a kikapcsoláshoz. Továbbítsa a routeren erre az eszközre.',
+          publicAddress: 'Nyilvános cím',
+          publicAddressHint:
+            'Az IP-cím vagy a dinamikus DNS-név, amelyen a router válaszol. Szükséges hozzá az UDP-port.',
+          apply: 'Alkalmaz',
+          saved: 'Mentve. Az új nézők az új beállításokat használják.',
+          loadFailed: 'A WebRTC-beállítások olvasása nem sikerült',
+          saveFailed: 'A WebRTC-beállítások mentése nem sikerült',
+          invalidPort: 'A portnak 1024 és 65535 közötti számnak kell lennie',
+          needsPort: 'A nyilvános címhez UDP-port kell',
+          active: 'A nézők a(z) {{port}} UDP-portot használják közösen',
+          inactive: 'Minden néző saját portot használ',
+          offered: 'A nézőknek felkínált cím: {{addresses}}',
+          cost:
+            'Közös porton a panel egyszerre egy csomagot küld, ami több nézőnél és magas képkockasebességnél növelheti a CPU-terhelést.'
+        },
         dns: {
           title: 'DNS',
           description: 'DNS-kiszolgálók beállítása a IronKVM számára',

@@ -1437,6 +1437,30 @@ const da = {
           scopeUla: 'privat',
           scopeGlobal: 'global'
         },
+        webrtc: {
+          title: 'WebRTC via portvideresendelse',
+          description:
+            'Lad seere uden for dit netværk nå videoen via en portvideresendelse i routeren.',
+          warning:
+            'Portvideresendelse udsætter denne KVM for internettet. En VPN som Tailscale eller NetBird er stadig den anbefalede vej ind. Videresend kun UDP-porten nedenfor, aldrig webgrænsefladens port.',
+          udpPort: 'Fast UDP-port',
+          udpPortHint:
+            'Alle seere deler denne port. Lad feltet stå tomt for at slå den fra. Videresend den i routeren til denne enhed.',
+          publicAddress: 'Offentlig adresse',
+          publicAddressHint:
+            'IP-adressen eller det dynamiske DNS-navn, som din router svarer på. Kræver UDP-porten.',
+          apply: 'Anvend',
+          saved: 'Gemt. Nye seere bruger de nye indstillinger.',
+          loadFailed: 'WebRTC-indstillingerne kunne ikke læses',
+          saveFailed: 'WebRTC-indstillingerne kunne ikke gemmes',
+          invalidPort: 'Porten skal være et tal fra 1024 til 65535',
+          needsPort: 'En offentlig adresse kræver en UDP-port',
+          active: 'Seere deler UDP-port {{port}}',
+          inactive: 'Hver seer bruger sin egen port',
+          offered: 'Tilbudt seerne: {{addresses}}',
+          cost:
+            'På en delt port sender kortet én pakke ad gangen, hvilket kan øge CPU-forbruget med flere seere og høje billedfrekvenser.'
+        },
         dns: {
           title: 'DNS',
           description: 'Konfigurer DNS-servere til IronKVM',

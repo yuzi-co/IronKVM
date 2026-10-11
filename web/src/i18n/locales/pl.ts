@@ -1447,6 +1447,30 @@ const pl = {
           scopeUla: 'prywatny',
           scopeGlobal: 'globalny'
         },
+        webrtc: {
+          title: 'WebRTC przez przekierowanie portu',
+          description:
+            'Pozwala widzom spoza Twojej sieci dotrzeć do obrazu przez przekierowanie portu na routerze.',
+          warning:
+            'Przekierowanie portu wystawia ten KVM do internetu. Zalecanym dostępem pozostaje VPN, na przykład Tailscale lub NetBird. Przekieruj tylko poniższy port UDP, nigdy portu interfejsu WWW.',
+          udpPort: 'Stały port UDP',
+          udpPortHint:
+            'Wszyscy widzowie współdzielą ten port. Zostaw puste, aby wyłączyć. Przekieruj go na routerze do tego urządzenia.',
+          publicAddress: 'Adres publiczny',
+          publicAddressHint:
+            'Adres IP lub dynamiczna nazwa DNS, pod którą odpowiada router. Wymaga portu UDP.',
+          apply: 'Zastosuj',
+          saved: 'Zapisano. Nowi widzowie używają nowych ustawień.',
+          loadFailed: 'Nie udało się odczytać ustawień WebRTC',
+          saveFailed: 'Nie udało się zapisać ustawień WebRTC',
+          invalidPort: 'Port musi być liczbą od 1024 do 65535',
+          needsPort: 'Adres publiczny wymaga portu UDP',
+          active: 'Widzowie współdzielą port UDP {{port}}',
+          inactive: 'Każdy widz używa własnego portu',
+          offered: 'Oferowane widzom: {{addresses}}',
+          cost:
+            'Na współdzielonym porcie płytka wysyła jeden pakiet naraz, co przy kilku widzach i wysokiej liczbie klatek może zwiększyć obciążenie CPU.'
+        },
         dns: {
           title: 'DNS',
           description: 'Skonfiguruj serwery DNS dla IronKVM',

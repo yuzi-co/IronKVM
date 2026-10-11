@@ -1432,6 +1432,30 @@ const vi = {
           scopeUla: 'riêng',
           scopeGlobal: 'toàn cầu'
         },
+        webrtc: {
+          title: 'WebRTC qua chuyển tiếp cổng',
+          description:
+            'Cho phép người xem bên ngoài mạng của bạn truy cập video qua chuyển tiếp cổng trên router.',
+          warning:
+            'Chuyển tiếp cổng sẽ đưa KVM này ra internet. VPN như Tailscale hoặc NetBird vẫn là cách truy cập được khuyến nghị. Chỉ chuyển tiếp cổng UDP bên dưới, không bao giờ chuyển tiếp cổng giao diện web.',
+          udpPort: 'Cổng UDP cố định',
+          udpPortHint:
+            'Mọi người xem dùng chung cổng này. Để trống để tắt. Hãy chuyển tiếp nó trên router tới thiết bị này.',
+          publicAddress: 'Địa chỉ công khai',
+          publicAddressHint:
+            'Địa chỉ IP hoặc tên DNS động mà router của bạn phản hồi. Cần có cổng UDP.',
+          apply: 'Áp dụng',
+          saved: 'Đã lưu. Người xem mới dùng cài đặt mới.',
+          loadFailed: 'Không thể đọc cài đặt WebRTC',
+          saveFailed: 'Không thể lưu cài đặt WebRTC',
+          invalidPort: 'Cổng phải là số từ 1024 đến 65535',
+          needsPort: 'Địa chỉ công khai cần một cổng UDP',
+          active: 'Người xem dùng chung cổng UDP {{port}}',
+          inactive: 'Mỗi người xem dùng cổng riêng',
+          offered: 'Cung cấp cho người xem: {{addresses}}',
+          cost:
+            'Trên cổng dùng chung, bo mạch gửi từng gói một, có thể làm tăng mức dùng CPU khi có nhiều người xem và tốc độ khung hình cao.'
+        },
         dns: {
           title: 'DNS',
           description: 'Cấu hình máy chủ DNS cho IronKVM',

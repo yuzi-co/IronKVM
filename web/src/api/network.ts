@@ -219,3 +219,22 @@ export function getIPv6() {
 export function setIPv6(mode: IPv6Mode, address: string, prefix: number, gateway: string) {
   return http.post('/api/network/ipv6', { mode, address, prefix, gateway });
 }
+
+// WebRTC through a router's port forward (feature webrtc-port-forward): one
+// fixed UDP port for every viewer, and the public address offered on it.
+export type WebRTCForwardState = {
+  udpPort: number;
+  publicAddress: string;
+  // The port new viewers get now; 0 when each viewer has its own.
+  activePort: number;
+  // The addresses the public address stands for at this moment.
+  resolved: string[];
+};
+
+export function getWebRTCForward() {
+  return http.get('/api/network/webrtc');
+}
+
+export function setWebRTCForward(udpPort: number, publicAddress: string) {
+  return http.post('/api/network/webrtc', { udpPort, publicAddress });
+}

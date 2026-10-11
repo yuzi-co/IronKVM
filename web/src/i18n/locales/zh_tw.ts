@@ -1376,6 +1376,26 @@ const zh_tw = {
           scopeUla: '私有',
           scopeGlobal: '全域'
         },
+        webrtc: {
+          title: '透過連接埠轉發使用 WebRTC',
+          description: '讓網路之外的觀看者透過路由器的連接埠轉發存取影像。',
+          warning:
+            '轉發連接埠會讓此 KVM 暴露在網際網路上。仍建議透過 Tailscale 或 NetBird 等 VPN 存取。只轉發下方的 UDP 連接埠，切勿轉發網頁介面的連接埠。',
+          udpPort: '固定 UDP 連接埠',
+          udpPortHint: '所有觀看者共用此連接埠。留空則關閉。請在路由器上將其轉發到此裝置。',
+          publicAddress: '公開位址',
+          publicAddressHint: '路由器回應的 IP 位址或動態 DNS 名稱。需要設定 UDP 連接埠。',
+          apply: '套用',
+          saved: '已儲存。新的觀看者將使用新設定。',
+          loadFailed: '讀取 WebRTC 設定失敗',
+          saveFailed: '儲存 WebRTC 設定失敗',
+          invalidPort: '連接埠必須是 1024 到 65535 之間的數字',
+          needsPort: '公開位址需要 UDP 連接埠',
+          active: '觀看者共用 UDP 連接埠 {{port}}',
+          inactive: '每位觀看者使用各自的連接埠',
+          offered: '提供給觀看者：{{addresses}}',
+          cost: '在共用連接埠上，開發板一次傳送一個封包，觀看者較多且畫面更新率較高時可能增加 CPU 使用率。'
+        },
         dns: {
           title: 'DNS',
           description: '設定 IronKVM 使用的 DNS 伺服器',

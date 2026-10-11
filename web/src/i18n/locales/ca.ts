@@ -1454,6 +1454,30 @@ const ca = {
           scopeUla: 'privada',
           scopeGlobal: 'global'
         },
+        webrtc: {
+          title: 'WebRTC mitjançant redirecció de ports',
+          description:
+            "Permet que els espectadors fora de la teva xarxa accedeixin al vídeo mitjançant una redirecció de ports de l'encaminador.",
+          warning:
+            "Redirigir un port exposa aquest KVM a Internet. Una VPN com Tailscale o NetBird continua sent la via d'accés recomanada. Redirigiu només el port UDP següent, mai el de la interfície web.",
+          udpPort: 'Port UDP fix',
+          udpPortHint:
+            "Tots els espectadors comparteixen aquest port. Deixeu-ho buit per desactivar-lo. Redirigiu-lo a l'encaminador cap a aquest dispositiu.",
+          publicAddress: 'Adreça pública',
+          publicAddressHint:
+            "L'adreça IP o el nom DNS dinàmic en què respon l'encaminador. Necessita el port UDP.",
+          apply: 'Aplica',
+          saved: 'Desat. Els nous espectadors fan servir els nous paràmetres.',
+          loadFailed: "No s'han pogut llegir els paràmetres de WebRTC",
+          saveFailed: "No s'han pogut desar els paràmetres de WebRTC",
+          invalidPort: 'El port ha de ser un número de 1024 a 65535',
+          needsPort: 'Una adreça pública necessita un port UDP',
+          active: 'Els espectadors comparteixen el port UDP {{port}}',
+          inactive: 'Cada espectador fa servir el seu propi port',
+          offered: 'Oferit als espectadors: {{addresses}}',
+          cost:
+            "En un port compartit la placa envia un paquet cada cop, cosa que pot augmentar l'ús de CPU amb diversos espectadors i fotogrames alts."
+        },
         dns: {
           title: 'DNS',
           description: 'Configura els servidors DNS per a IronKVM',

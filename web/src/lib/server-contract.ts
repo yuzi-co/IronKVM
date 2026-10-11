@@ -29,6 +29,7 @@ export const SERVER_FEATURES = [
   'status-bar', // GET /api/stream/info (status bar source line)
   'ui-update', // /api/ui: separate UI packages (Settings > Update)
   'webrtc-clock', // the clock event on the WebRTC signalling socket (status bar latency)
+  'webrtc-port-forward', // /api/network/webrtc (Settings > Network > WebRTC)
   'wol-devices' // /api/network/wol/devices, /device, /check, /scan (Tools > Wake-on-LAN: managed list)
 ] as const;
 

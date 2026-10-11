@@ -1434,6 +1434,30 @@ const cz = {
           scopeUla: 'soukromá',
           scopeGlobal: 'globální'
         },
+        webrtc: {
+          title: 'WebRTC přes přesměrování portu',
+          description:
+            'Umožní divákům mimo vaši síť dostat se k videu přes přesměrování portu na routeru.',
+          warning:
+            'Přesměrování portu zpřístupní tento KVM z internetu. Doporučeným přístupem zůstává VPN, například Tailscale nebo NetBird. Přesměrujte jen UDP port níže, nikdy port webového rozhraní.',
+          udpPort: 'Pevný UDP port',
+          udpPortHint:
+            'Všichni diváci sdílejí tento port. Prázdné pole port vypne. Přesměrujte ho na routeru na toto zařízení.',
+          publicAddress: 'Veřejná adresa',
+          publicAddressHint:
+            'IP adresa nebo dynamický DNS název, na kterém váš router odpovídá. Vyžaduje UDP port.',
+          apply: 'Použít',
+          saved: 'Uloženo. Noví diváci použijí nové nastavení.',
+          loadFailed: 'Nastavení WebRTC se nepodařilo načíst',
+          saveFailed: 'Nastavení WebRTC se nepodařilo uložit',
+          invalidPort: 'Port musí být číslo od 1024 do 65535',
+          needsPort: 'Veřejná adresa vyžaduje UDP port',
+          active: 'Diváci sdílejí UDP port {{port}}',
+          inactive: 'Každý divák používá vlastní port',
+          offered: 'Nabízeno divákům: {{addresses}}',
+          cost:
+            'Na sdíleném portu posílá deska jeden paket po druhém, což může při více divácích a vysoké snímkové frekvenci zvýšit zatížení CPU.'
+        },
         dns: {
           title: 'DNS',
           description: 'Nastavit DNS servery pro IronKVM',

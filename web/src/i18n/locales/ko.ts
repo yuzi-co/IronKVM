@@ -1424,6 +1424,26 @@ const ko = {
           scopeUla: '비공개',
           scopeGlobal: '글로벌'
         },
+        webrtc: {
+          title: '포트 포워딩을 통한 WebRTC',
+          description: '네트워크 밖의 시청자가 라우터의 포트 포워딩으로 영상에 접속할 수 있게 합니다.',
+          warning:
+            '포트를 포워딩하면 이 KVM이 인터넷에 노출됩니다. 권장 접속 방법은 여전히 Tailscale이나 NetBird 같은 VPN입니다. 아래 UDP 포트만 포워딩하고, 웹 UI 포트는 절대 포워딩하지 마세요.',
+          udpPort: '고정 UDP 포트',
+          udpPortHint: '모든 시청자가 이 포트를 공유합니다. 비워 두면 꺼집니다. 라우터에서 이 장치로 포워딩하세요.',
+          publicAddress: '공용 주소',
+          publicAddressHint: '라우터가 응답하는 IP 주소 또는 동적 DNS 이름. UDP 포트가 필요합니다.',
+          apply: '적용',
+          saved: '저장했습니다. 새 시청자부터 새 설정을 사용합니다.',
+          loadFailed: 'WebRTC 설정을 읽지 못했습니다',
+          saveFailed: 'WebRTC 설정을 저장하지 못했습니다',
+          invalidPort: '포트는 1024에서 65535 사이의 숫자여야 합니다',
+          needsPort: '공용 주소에는 UDP 포트가 필요합니다',
+          active: '시청자가 UDP 포트 {{port}}를 공유합니다',
+          inactive: '시청자마다 자체 포트를 사용합니다',
+          offered: '시청자에게 제공: {{addresses}}',
+          cost: '공유 포트에서는 보드가 패킷을 하나씩 보내므로, 시청자가 많고 프레임 속도가 높으면 CPU 사용량이 늘 수 있습니다.'
+        },
         dns: {
           title: 'DNS',
           description: 'IronKVM의 DNS 서버 설정',

@@ -1461,6 +1461,30 @@ const it = {
           scopeUla: 'privato',
           scopeGlobal: 'globale'
         },
+        webrtc: {
+          title: 'WebRTC tramite port forwarding',
+          description:
+            'Permette agli spettatori fuori dalla tua rete di raggiungere il video tramite un port forwarding del router.',
+          warning:
+            "Inoltrare una porta espone questo KVM a Internet. Una VPN come Tailscale o NetBird resta il modo consigliato per accedere. Inoltra solo la porta UDP qui sotto, mai la porta dell'interfaccia web.",
+          udpPort: 'Porta UDP fissa',
+          udpPortHint:
+            'Tutti gli spettatori condividono questa porta. Lascia vuoto per disattivarla. Inoltrala sul router a questo dispositivo.',
+          publicAddress: 'Indirizzo pubblico',
+          publicAddressHint:
+            "L'indirizzo IP o il nome DNS dinamico a cui risponde il router. Richiede la porta UDP.",
+          apply: 'Applica',
+          saved: 'Salvato. I nuovi spettatori usano le nuove impostazioni.',
+          loadFailed: 'Impossibile leggere le impostazioni WebRTC',
+          saveFailed: 'Impossibile salvare le impostazioni WebRTC',
+          invalidPort: 'La porta deve essere un numero da 1024 a 65535',
+          needsPort: 'Un indirizzo pubblico richiede una porta UDP',
+          active: 'Gli spettatori condividono la porta UDP {{port}}',
+          inactive: 'Ogni spettatore usa una porta propria',
+          offered: 'Offerto agli spettatori: {{addresses}}',
+          cost:
+            'Su una porta condivisa la scheda invia un pacchetto alla volta, il che può aumentare il carico della CPU con più spettatori e frame rate alti.'
+        },
         dns: {
           title: 'DNS',
           description: 'Configura i server DNS per IronKVM',

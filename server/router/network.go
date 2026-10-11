@@ -6,10 +6,12 @@ import (
 	"NanoKVM-Server/authn"
 	"NanoKVM-Server/middleware"
 	"NanoKVM-Server/service/network"
+	"NanoKVM-Server/service/webrtcforward"
 )
 
 func networkRouter(r *gin.Engine) {
 	service := network.NewService()
+	forward := webrtcforward.NewService()
 
 	r.POST("/api/network/wifi", service.ConnectWifiNoAuth)    // connect Wi-Fi without auth (only available in ap mode)
 	r.POST("/api/network/wifi/verify", service.VerifyApLogin) // verify ap login
@@ -52,4 +54,8 @@ func networkRouter(r *gin.Engine) {
 	// it applied, and an apply that fails puts the saved setting back.
 	admin.GET("/network/ipv6", service.GetIPv6)  // get the IPv6 configuration
 	admin.POST("/network/ipv6", service.SetIPv6) // apply an IPv6 configuration
+
+	// WebRTC through a port forward: a fixed UDP port and a public address.
+	admin.GET("/network/webrtc", forward.Get)  // get the port forward setting
+	admin.POST("/network/webrtc", forward.Set) // set it
 }

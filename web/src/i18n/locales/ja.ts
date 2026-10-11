@@ -1448,6 +1448,26 @@ const ja = {
           scopeUla: 'プライベート',
           scopeGlobal: 'グローバル'
         },
+        webrtc: {
+          title: 'ポート転送によるWebRTC',
+          description: 'ルーターのポート転送を使って、ネットワーク外の視聴者が映像に接続できるようにします。',
+          warning:
+            'ポートを転送すると、このKVMがインターネットに公開されます。推奨される接続方法は引き続きTailscaleやNetBirdなどのVPNです。転送するのは下のUDPポートだけにし、Web UIのポートは転送しないでください。',
+          udpPort: '固定UDPポート',
+          udpPortHint: 'すべての視聴者がこのポートを共有します。空にすると無効になります。ルーターでこのデバイスに転送してください。',
+          publicAddress: '公開アドレス',
+          publicAddressHint: 'ルーターが応答するIPアドレスまたはダイナミックDNS名。UDPポートが必要です。',
+          apply: '適用',
+          saved: '保存しました。新しい視聴者から新しい設定が使われます。',
+          loadFailed: 'WebRTC設定を読み込めませんでした',
+          saveFailed: 'WebRTC設定を保存できませんでした',
+          invalidPort: 'ポートは1024から65535の数値にしてください',
+          needsPort: '公開アドレスにはUDPポートが必要です',
+          active: '視聴者はUDPポート{{port}}を共有しています',
+          inactive: '視聴者ごとに別のポートを使用しています',
+          offered: '視聴者に提示するアドレス: {{addresses}}',
+          cost: '共有ポートでは1パケットずつ送信するため、視聴者が複数でフレームレートが高いとCPU使用率が上がることがあります。'
+        },
         dns: {
           title: 'DNS',
           description: 'IronKVM の DNS サーバーを設定',

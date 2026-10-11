@@ -10,6 +10,7 @@ import { DNS } from './dns.tsx';
 import { Ethernet } from './ethernet.tsx';
 import { IPv6 } from './ipv6.tsx';
 import { Syslog } from './syslog.tsx';
+import { WebRTCForward } from './webrtc.tsx';
 import { Wifi } from './wifi.tsx';
 
 export const Network = () => {
@@ -45,6 +46,8 @@ export const Network = () => {
       <Syslog />
 
       <AllowedNetworksBlock />
+
+      <WebRTCForwardBlock />
     </>
   );
 };
@@ -72,6 +75,20 @@ const IPv6Block = () => {
     <>
       <IPv6 />
       <Divider className="opacity-50" style={{ margin: '32px 0' }} />
+    </>
+  );
+};
+
+// The port forward renders nothing on a server without it, so its divider goes
+// with it.
+const WebRTCForwardBlock = () => {
+  const supported = useServerFeature('webrtc-port-forward');
+  if (!supported) return null;
+
+  return (
+    <>
+      <Divider className="opacity-50" style={{ margin: '32px 0' }} />
+      <WebRTCForward />
     </>
   );
 };

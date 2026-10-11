@@ -1442,6 +1442,30 @@ const id = {
           scopeUla: 'privat',
           scopeGlobal: 'global'
         },
+        webrtc: {
+          title: 'WebRTC melalui penerusan port',
+          description:
+            'Izinkan penonton di luar jaringan Anda menjangkau video melalui penerusan port di router.',
+          warning:
+            'Meneruskan port membuka KVM ini ke internet. VPN seperti Tailscale atau NetBird tetap menjadi cara masuk yang disarankan. Teruskan hanya port UDP di bawah, jangan port antarmuka web.',
+          udpPort: 'Port UDP tetap',
+          udpPortHint:
+            'Semua penonton berbagi port ini. Kosongkan untuk mematikannya. Teruskan di router ke perangkat ini.',
+          publicAddress: 'Alamat publik',
+          publicAddressHint:
+            'Alamat IP atau nama DNS dinamis tempat router Anda menjawab. Memerlukan port UDP.',
+          apply: 'Terapkan',
+          saved: 'Tersimpan. Penonton baru memakai pengaturan baru.',
+          loadFailed: 'Gagal membaca pengaturan WebRTC',
+          saveFailed: 'Gagal menyimpan pengaturan WebRTC',
+          invalidPort: 'Port harus berupa angka dari 1024 sampai 65535',
+          needsPort: 'Alamat publik memerlukan port UDP',
+          active: 'Penonton berbagi port UDP {{port}}',
+          inactive: 'Setiap penonton memakai port sendiri',
+          offered: 'Ditawarkan ke penonton: {{addresses}}',
+          cost:
+            'Pada port bersama, board mengirim satu paket pada satu waktu, yang dapat menaikkan penggunaan CPU dengan banyak penonton dan frame rate tinggi.'
+        },
         dns: {
           title: 'DNS',
           description: 'Konfigurasi server DNS untuk IronKVM',

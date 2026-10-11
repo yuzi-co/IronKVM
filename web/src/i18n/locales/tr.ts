@@ -1440,6 +1440,30 @@ const tr = {
           scopeUla: 'özel',
           scopeGlobal: 'genel'
         },
+        webrtc: {
+          title: 'Port yönlendirme üzerinden WebRTC',
+          description:
+            'Ağınızın dışındaki izleyicilerin, yönlendiricideki bir port yönlendirmesi üzerinden görüntüye ulaşmasını sağlar.',
+          warning:
+            'Bir portu yönlendirmek bu KVM’yi internete açar. Önerilen erişim yolu Tailscale veya NetBird gibi bir VPN olmaya devam eder. Yalnızca aşağıdaki UDP portunu yönlendirin, web arayüzü portunu asla.',
+          udpPort: 'Sabit UDP portu',
+          udpPortHint:
+            'Tüm izleyiciler bu portu paylaşır. Kapatmak için boş bırakın. Yönlendiricide bu cihaza yönlendirin.',
+          publicAddress: 'Genel adres',
+          publicAddressHint:
+            'Yönlendiricinizin yanıt verdiği IP adresi veya dinamik DNS adı. UDP portu gerekir.',
+          apply: 'Uygula',
+          saved: 'Kaydedildi. Yeni izleyiciler yeni ayarları kullanır.',
+          loadFailed: 'WebRTC ayarları okunamadı',
+          saveFailed: 'WebRTC ayarları kaydedilemedi',
+          invalidPort: 'Port 1024 ile 65535 arasında bir sayı olmalıdır',
+          needsPort: 'Genel adres için bir UDP portu gerekir',
+          active: 'İzleyiciler {{port}} UDP portunu paylaşır',
+          inactive: 'Her izleyici kendi portunu kullanır',
+          offered: 'İzleyicilere sunulan: {{addresses}}',
+          cost:
+            'Paylaşılan portta kart paketleri teker teker gönderir; bu, birden çok izleyici ve yüksek kare hızında CPU kullanımını artırabilir.'
+        },
         dns: {
           title: 'DNS',
           description: 'IronKVM için DNS sunucularını yapılandır',

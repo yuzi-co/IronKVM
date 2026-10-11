@@ -1377,6 +1377,26 @@ const zh = {
           scopeUla: '私有',
           scopeGlobal: '全局'
         },
+        webrtc: {
+          title: '通过端口转发使用 WebRTC',
+          description: '让网络之外的观看者通过路由器的端口转发访问视频。',
+          warning:
+            '转发端口会让此 KVM 暴露到互联网。仍然推荐通过 Tailscale 或 NetBird 等 VPN 访问。只转发下面的 UDP 端口，切勿转发网页界面的端口。',
+          udpPort: '固定 UDP 端口',
+          udpPortHint: '所有观看者共用此端口。留空则关闭。请在路由器上将其转发到此设备。',
+          publicAddress: '公网地址',
+          publicAddressHint: '路由器响应的 IP 地址或动态 DNS 域名。需要设置 UDP 端口。',
+          apply: '应用',
+          saved: '已保存。新的观看者将使用新设置。',
+          loadFailed: '读取 WebRTC 设置失败',
+          saveFailed: '保存 WebRTC 设置失败',
+          invalidPort: '端口必须是 1024 到 65535 之间的数字',
+          needsPort: '公网地址需要 UDP 端口',
+          active: '观看者共用 UDP 端口 {{port}}',
+          inactive: '每个观看者使用各自的端口',
+          offered: '向观看者提供：{{addresses}}',
+          cost: '在共用端口上，开发板一次发送一个数据包，观看者较多且帧率较高时可能增加 CPU 占用。'
+        },
         dns: {
           title: 'DNS',
           description: '配置 IronKVM 使用的 DNS 服务器',

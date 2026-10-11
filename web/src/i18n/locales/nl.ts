@@ -1457,6 +1457,30 @@ const nl = {
           scopeUla: 'privé',
           scopeGlobal: 'globaal'
         },
+        webrtc: {
+          title: 'WebRTC via een poortdoorsturing',
+          description:
+            'Laat kijkers buiten je netwerk de video bereiken via een poortdoorsturing in de router.',
+          warning:
+            'Een poort doorsturen maakt deze KVM bereikbaar vanaf internet. Een VPN zoals Tailscale of NetBird blijft de aanbevolen toegang. Stuur alleen de UDP-poort hieronder door, nooit de poort van de webinterface.',
+          udpPort: 'Vaste UDP-poort',
+          udpPortHint:
+            'Alle kijkers delen deze poort. Laat leeg om uit te schakelen. Stuur hem in de router door naar dit apparaat.',
+          publicAddress: 'Openbaar adres',
+          publicAddressHint:
+            'Het IP-adres of de dynamische DNS-naam waarop je router antwoordt. Heeft de UDP-poort nodig.',
+          apply: 'Toepassen',
+          saved: 'Opgeslagen. Nieuwe kijkers gebruiken de nieuwe instellingen.',
+          loadFailed: 'De WebRTC-instellingen konden niet worden gelezen',
+          saveFailed: 'De WebRTC-instellingen konden niet worden opgeslagen',
+          invalidPort: 'De poort moet een getal van 1024 tot 65535 zijn',
+          needsPort: 'Een openbaar adres heeft een UDP-poort nodig',
+          active: 'Kijkers delen UDP-poort {{port}}',
+          inactive: 'Elke kijker gebruikt een eigen poort',
+          offered: 'Aangeboden aan kijkers: {{addresses}}',
+          cost:
+            'Op een gedeelde poort verstuurt het bord één pakket tegelijk, wat het CPU-gebruik kan verhogen bij meerdere kijkers en hoge framerates.'
+        },
         dns: {
           title: 'DNS',
           description: 'Configureer DNS-servers voor IronKVM',

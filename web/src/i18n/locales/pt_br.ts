@@ -1452,6 +1452,30 @@ const pt_br = {
           scopeUla: 'privado',
           scopeGlobal: 'global'
         },
+        webrtc: {
+          title: 'WebRTC por redirecionamento de porta',
+          description:
+            'Permite que espectadores fora da sua rede acessem o vídeo por um redirecionamento de porta no roteador.',
+          warning:
+            'Redirecionar uma porta expõe este KVM à internet. Uma VPN como Tailscale ou NetBird continua sendo o acesso recomendado. Redirecione apenas a porta UDP abaixo, nunca a porta da interface web.',
+          udpPort: 'Porta UDP fixa',
+          udpPortHint:
+            'Todos os espectadores compartilham esta porta. Deixe vazio para desativar. Redirecione-a no roteador para este dispositivo.',
+          publicAddress: 'Endereço público',
+          publicAddressHint:
+            'O endereço IP ou o nome DNS dinâmico em que seu roteador responde. Requer a porta UDP.',
+          apply: 'Aplicar',
+          saved: 'Salvo. Novos espectadores usam as novas configurações.',
+          loadFailed: 'Falha ao ler as configurações de WebRTC',
+          saveFailed: 'Falha ao salvar as configurações de WebRTC',
+          invalidPort: 'A porta deve ser um número de 1024 a 65535',
+          needsPort: 'Um endereço público requer uma porta UDP',
+          active: 'Os espectadores compartilham a porta UDP {{port}}',
+          inactive: 'Cada espectador usa sua própria porta',
+          offered: 'Oferecido aos espectadores: {{addresses}}',
+          cost:
+            'Em uma porta compartilhada a placa envia um pacote por vez, o que pode aumentar o uso de CPU com vários espectadores e taxas de quadros altas.'
+        },
         dns: {
           title: 'DNS',
           description: 'Configurar servidores DNS para o IronKVM',

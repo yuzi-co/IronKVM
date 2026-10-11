@@ -1476,6 +1476,30 @@ const de = {
           scopeUla: 'privat',
           scopeGlobal: 'global'
         },
+        webrtc: {
+          title: 'WebRTC über eine Portweiterleitung',
+          description:
+            'Zuschauer außerhalb deines Netzwerks erreichen das Video über eine Portweiterleitung im Router.',
+          warning:
+            'Eine Portweiterleitung macht diesen KVM im Internet erreichbar. Ein VPN wie Tailscale oder NetBird bleibt der empfohlene Zugang. Leite nur den UDP-Port unten weiter, nie den Port der Weboberfläche.',
+          udpPort: 'Fester UDP-Port',
+          udpPortHint:
+            'Alle Zuschauer teilen sich diesen Port. Leer lassen, um ihn auszuschalten. Leite ihn im Router an dieses Gerät weiter.',
+          publicAddress: 'Öffentliche Adresse',
+          publicAddressHint:
+            'Die IP-Adresse oder der DynDNS-Name, unter dem dein Router antwortet. Benötigt den UDP-Port.',
+          apply: 'Anwenden',
+          saved: 'Gespeichert. Neue Zuschauer verwenden die neuen Einstellungen.',
+          loadFailed: 'WebRTC-Einstellungen konnten nicht gelesen werden',
+          saveFailed: 'WebRTC-Einstellungen konnten nicht gespeichert werden',
+          invalidPort: 'Der Port muss eine Zahl von 1024 bis 65535 sein',
+          needsPort: 'Eine öffentliche Adresse benötigt einen UDP-Port',
+          active: 'Zuschauer teilen sich den UDP-Port {{port}}',
+          inactive: 'Jeder Zuschauer nutzt einen eigenen Port',
+          offered: 'Den Zuschauern angeboten: {{addresses}}',
+          cost:
+            'Auf einem gemeinsamen Port sendet das Gerät ein Paket nach dem anderen. Das kann bei mehreren Zuschauern und hohen Bildraten die CPU-Last erhöhen.'
+        },
         dns: {
           title: 'DNS',
           description: 'DNS-Server für IronKVM konfigurieren',
