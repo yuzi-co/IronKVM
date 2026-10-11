@@ -461,15 +461,77 @@ static void put_ue(struct bit_writer *w, unsigned int value)
 		put_bit(w, (v >> i) & 1);
 }
 
+/* video_signal_type_present_flag and what follows it, H.264 E.1.1 and H.265
+ * E.2.1 alike: video_format 5 (unspecified), the range, and the colour
+ * description. Without a colour, the flag alone, 0. */
+static void put_video_signal(struct bit_writer *w, const struct kvmv_vui_colour *colour)
+{
+	int i;
+
+	put_bit(w, colour != NULL); /* video_signal_type_present_flag */
+	if (colour == NULL)
+		return;
+	for (i = 2; i >= 0; i--)
+		put_bit(w, (5 >> i) & 1); /* video_format */
+	put_bit(w, colour->full_range != 0); /* video_full_range_flag */
+	put_bit(w, 1); /* colour_description_present_flag */
+	for (i = 7; i >= 0; i--)
+		put_bit(w, (colour->primaries >> i) & 1);
+	for (i = 7; i >= 0; i--)
+		put_bit(w, (colour->transfer >> i) & 1);
+	for (i = 7; i >= 0; i--)
+		put_bit(w, (colour->matrix >> i) & 1);
+}
+
+/* RBSP bits [from, to) of the reader, as they were. */
+static void copy_bits(struct bit_writer *w, const struct bit_reader *r, size_t from,
+		      size_t to)
+{
+	size_t bit;
+
+	for (bit = from; bit < to; bit++)
+		put_bit(w, (r->rbsp[bit / 8] >> (7 - bit % 8)) & 1);
+}
+
+/*
+ * The NAL header, then the writer's RBSP (stop bit and alignment included)
+ * with emulation prevention put back. Returns the length, or 0 when out is too
+ * small or the writer overflowed.
+ */
+static size_t put_nal_out(const uint8_t *header, size_t header_len,
+			  const struct bit_writer *w, uint8_t *out, size_t out_size)
+{
+	size_t bytes = w->bit / 8, n, i, zeros;
+
+	if (w->overflow || w->bit % 8 || out_size < header_len)
+		return 0;
+	memcpy(out, header, header_len);
+	n = header_len;
+	zeros = 0;
+	for (i = 0; i < bytes; i++) {
+		if (zeros >= 2 && w->buf[i] <= 3) {
+			if (n >= out_size)
+				return 0;
+			out[n++] = 3;
+			zeros = 0;
+		}
+		if (n >= out_size)
+			return 0;
+		out[n++] = w->buf[i];
+		zeros = w->buf[i] == 0 ? zeros + 1 : 0;
+	}
+	return n;
+}
+
 size_t kvmv_h264_sps_low_delay(const uint8_t *nal, size_t len, uint8_t *out,
-			       size_t out_size)
+			       size_t out_size, const struct kvmv_vui_colour *colour)
 {
 	struct bit_reader r;
 	struct h264_sps_head h;
 	struct bit_writer w;
-	size_t bit, bytes, n, i, zeros;
 
-	if (nal == NULL || out == NULL || len < 4 || (nal[0] & 0x1f) != KVMV_NAL_SPS)
+	if (nal == NULL || out == NULL || len < 4 || len - 1 > KVMV_PS_MAX ||
+	    (nal[0] & 0x1f) != KVMV_NAL_SPS)
 		return 0;
 	reader_init(&r, nal + 1, len - 1);
 	if (h264_sps_head(&r, &h) || read_bit(&r) != 0 || r.overrun)
@@ -478,12 +540,11 @@ size_t kvmv_h264_sps_low_delay(const uint8_t *nal, size_t len, uint8_t *out,
 	/* The RBSP up to the VUI flag as it was, then the flag set. */
 	w.bit = 0;
 	w.overflow = 0;
-	for (bit = 0; bit + 1 < r.bit; bit++)
-		put_bit(&w, (r.rbsp[bit / 8] >> (7 - bit % 8)) & 1);
+	copy_bits(&w, &r, 0, r.bit - 1);
 	put_bit(&w, 1); /* vui_parameters_present_flag */
 	put_bit(&w, 0); /* aspect_ratio_info_present_flag */
 	put_bit(&w, 0); /* overscan_info_present_flag */
-	put_bit(&w, 0); /* video_signal_type_present_flag */
+	put_video_signal(&w, colour);
 	put_bit(&w, 0); /* chroma_loc_info_present_flag */
 	put_bit(&w, 0); /* timing_info_present_flag */
 	put_bit(&w, 0); /* nal_hrd_parameters_present_flag */
@@ -500,51 +561,36 @@ size_t kvmv_h264_sps_low_delay(const uint8_t *nal, size_t len, uint8_t *out,
 	put_bit(&w, 1); /* rbsp_stop_one_bit */
 	while (w.bit % 8)
 		put_bit(&w, 0);
-	if (w.overflow)
-		return 0;
-	bytes = w.bit / 8;
-
-	/* The header, then the RBSP with emulation prevention put back. */
-	n = 0;
-	if (out_size < 1)
-		return 0;
-	out[n++] = nal[0];
-	zeros = 0;
-	for (i = 0; i < bytes; i++) {
-		if (zeros >= 2 && w.buf[i] <= 3) {
-			if (n >= out_size)
-				return 0;
-			out[n++] = 3;
-			zeros = 0;
-		}
-		if (n >= out_size)
-			return 0;
-		out[n++] = w.buf[i];
-		zeros = w.buf[i] == 0 ? zeros + 1 : 0;
-	}
-	return n;
+	return put_nal_out(nal, 1, &w, out, out_size);
 }
 
-size_t kvmv_h264_au_low_delay(uint8_t *buf, size_t len, size_t capacity)
+typedef size_t (*sps_rewrite_fn)(const uint8_t *nal, size_t len, uint8_t *out,
+				 size_t out_size, const struct kvmv_vui_colour *colour);
+
+/* Rewrites every SPS of an access unit in place with fn; see kvmv_annexb.h. */
+static size_t au_rewrite_sps(enum kvmv_codec codec, uint8_t *buf, size_t len,
+			     size_t capacity, sps_rewrite_fn fn,
+			     const struct kvmv_vui_colour *colour)
 {
 	struct kvmv_nal nals[16];
+	unsigned int sps_type = codec == KVMV_CODEC_KIND_HEVC ? KVMV_HEVC_NAL_SPS : KVMV_NAL_SPS;
 	size_t count, i;
 
 	if (buf == NULL)
 		return len;
-	count = kvmv_annexb_split_codec(KVMV_CODEC_KIND_H264, buf, len, nals, 16);
+	count = kvmv_annexb_split_codec(codec, buf, len, nals, 16);
 	/* From the last, so the offsets of the earlier ones stay right. */
 	for (i = count; i-- > 0;) {
 		uint8_t sps[KVMV_PS_MAX + 16];
 		size_t size, old;
 
-		if (nals[i].type != KVMV_NAL_SPS)
+		if (nals[i].type != sps_type)
 			continue;
 		old = nals[i].size;
 		/* Trailing zero bytes belong to no NAL; leave them out. */
 		while (old > 1 && buf[nals[i].start + old - 1] == 0)
 			old--;
-		size = kvmv_h264_sps_low_delay(buf + nals[i].start, old, sps, sizeof(sps));
+		size = fn(buf + nals[i].start, old, sps, sizeof(sps), colour);
 		if (size == 0 || len - old + size > capacity)
 			continue;
 		memmove(buf + nals[i].start + size, buf + nals[i].start + old,
@@ -553,6 +599,13 @@ size_t kvmv_h264_au_low_delay(uint8_t *buf, size_t len, size_t capacity)
 		len = len - old + size;
 	}
 	return len;
+}
+
+size_t kvmv_h264_au_low_delay(uint8_t *buf, size_t len, size_t capacity,
+			      const struct kvmv_vui_colour *colour)
+{
+	return au_rewrite_sps(KVMV_CODEC_KIND_H264, buf, len, capacity,
+			      kvmv_h264_sps_low_delay, colour);
 }
 
 /*
@@ -733,4 +786,185 @@ unsigned int kvmv_hevc_clear_vps_extension(uint8_t *buf, size_t len)
 		if (nals[i].type == KVMV_HEVC_NAL_VPS && nals[i].size > 4)
 			changed += clear_one_vps_extension(buf + nals[i].start, nals[i].size);
 	return changed;
+}
+
+/* scaling_list_data() of an H.265 SPS or PPS (7.3.4). */
+static void skip_hevc_scaling_list_data(struct bit_reader *r)
+{
+	unsigned int size_id, matrix_id, i, coefs;
+
+	for (size_id = 0; size_id < 4; size_id++) {
+		for (matrix_id = 0; matrix_id < 6; matrix_id += size_id == 3 ? 3 : 1) {
+			if (!read_bit(r)) { /* scaling_list_pred_mode_flag */
+				read_ue(r); /* scaling_list_pred_matrix_id_delta */
+				continue;
+			}
+			coefs = 1U << (4 + (size_id << 1));
+			if (coefs > 64)
+				coefs = 64;
+			if (size_id > 1)
+				read_se(r); /* scaling_list_dc_coef_minus8 */
+			for (i = 0; i < coefs && !r->overrun; i++)
+				read_se(r); /* scaling_list_delta_coef */
+		}
+	}
+}
+
+/* The SPS's short-term reference picture sets (7.3.7). Returns -1 for sets it
+ * cannot read. */
+static int skip_hevc_st_ref_pic_sets(struct bit_reader *r, unsigned int count)
+{
+	unsigned int deltas[64];
+	unsigned int idx, j, n;
+
+	if (count > 64)
+		return -1;
+	for (idx = 0; idx < count && !r->overrun; idx++) {
+		if (idx != 0 && read_bit(r)) { /* inter_ref_pic_set_prediction_flag */
+			read_bit(r); /* delta_rps_sign */
+			read_ue(r); /* abs_delta_rps_minus1 */
+			n = 0;
+			/* In the SPS the reference is the set before this one. */
+			for (j = 0; j <= deltas[idx - 1]; j++) {
+				unsigned int used = read_bit(r);
+
+				if (used || read_bit(r)) /* use_delta_flag */
+					n++;
+			}
+		} else {
+			unsigned int negative = read_ue(r), positive = read_ue(r);
+
+			if (negative > 16 || positive > 16)
+				return -1;
+			n = negative + positive;
+			for (j = 0; j < n; j++) {
+				read_ue(r); /* delta_poc_minus1 */
+				read_bit(r); /* used_by_curr_pic_flag */
+			}
+		}
+		if (n > 32)
+			return -1;
+		deltas[idx] = n;
+	}
+	return r->overrun ? -1 : 0;
+}
+
+size_t kvmv_hevc_sps_colour(const uint8_t *nal, size_t len, uint8_t *out,
+			    size_t out_size, const struct kvmv_vui_colour *colour)
+{
+	struct bit_reader r;
+	struct bit_writer w;
+	unsigned int max_sub_layers_minus1, i, n, log2_max_poc_lsb;
+	size_t vui_flag, end;
+
+	if (nal == NULL || out == NULL || colour == NULL || len < 4 ||
+	    len - 2 > KVMV_PS_MAX || ((nal[0] >> 1) & 0x3f) != KVMV_HEVC_NAL_SPS)
+		return 0;
+
+	/* 7.3.2.2, up to vui_parameters_present_flag. */
+	reader_init(&r, nal + 2, len - 2);
+	read_bits(&r, 4); /* sps_video_parameter_set_id */
+	max_sub_layers_minus1 = read_bits(&r, 3);
+	read_bit(&r); /* sps_temporal_id_nesting_flag */
+	skip_profile_tier_level(&r, max_sub_layers_minus1);
+	read_ue(&r); /* sps_seq_parameter_set_id */
+	if (read_ue(&r) == 3) /* chroma_format_idc */
+		read_bit(&r); /* separate_colour_plane_flag */
+	read_ue(&r); /* pic_width_in_luma_samples */
+	read_ue(&r); /* pic_height_in_luma_samples */
+	if (read_bit(&r)) { /* conformance_window_flag */
+		for (i = 0; i < 4; i++)
+			read_ue(&r);
+	}
+	read_ue(&r); /* bit_depth_luma_minus8 */
+	read_ue(&r); /* bit_depth_chroma_minus8 */
+	log2_max_poc_lsb = read_ue(&r) + 4;
+	if (log2_max_poc_lsb > 16)
+		return 0;
+	i = read_bit(&r) ? 0 : max_sub_layers_minus1; /* sub_layer_ordering_info_present */
+	for (; i <= max_sub_layers_minus1; i++) {
+		read_ue(&r);
+		read_ue(&r);
+		read_ue(&r);
+	}
+	for (i = 0; i < 6; i++)
+		read_ue(&r); /* the coding and transform block sizes and depths */
+	if (read_bit(&r) && read_bit(&r)) /* scaling_list_enabled, sps_..._data_present */
+		skip_hevc_scaling_list_data(&r);
+	read_bit(&r); /* amp_enabled_flag */
+	read_bit(&r); /* sample_adaptive_offset_enabled_flag */
+	if (read_bit(&r)) { /* pcm_enabled_flag */
+		read_bits(&r, 8);
+		read_ue(&r);
+		read_ue(&r);
+		read_bit(&r);
+	}
+	if (skip_hevc_st_ref_pic_sets(&r, read_ue(&r)))
+		return 0;
+	if (read_bit(&r)) { /* long_term_ref_pics_present_flag */
+		n = read_ue(&r);
+		if (n > 32)
+			return 0;
+		for (i = 0; i < n; i++) {
+			read_bits(&r, log2_max_poc_lsb);
+			read_bit(&r);
+		}
+	}
+	read_bit(&r); /* sps_temporal_mvp_enabled_flag */
+	read_bit(&r); /* strong_intra_smoothing_enabled_flag */
+	vui_flag = r.bit;
+	if (read_bit(&r)) { /* vui_parameters_present_flag: E.2.1 */
+		if (read_bit(&r) && read_bits(&r, 8) == 255) /* aspect_ratio_idc */
+			read_bits(&r, 32);
+		if (read_bit(&r)) /* overscan_info_present_flag */
+			read_bit(&r);
+		if (r.overrun || read_bit(&r)) /* video_signal_type_present_flag */
+			return 0; /* unreadable, or it says already */
+	}
+	if (r.overrun)
+		return 0;
+
+	/* The rbsp_stop_one_bit: the last bit set. */
+	end = r.len * 8;
+	while (end > r.bit && !((r.rbsp[(end - 1) / 8] >> (7 - (end - 1) % 8)) & 1))
+		end--;
+	if (end <= r.bit)
+		return 0;
+	end--;
+
+	w.bit = 0;
+	w.overflow = 0;
+	if (r.bit == vui_flag + 1) {
+		/* No VUI: one with the video signal type alone. */
+		copy_bits(&w, &r, 0, vui_flag);
+		put_bit(&w, 1); /* vui_parameters_present_flag */
+		put_bit(&w, 0); /* aspect_ratio_info_present_flag */
+		put_bit(&w, 0); /* overscan_info_present_flag */
+		put_video_signal(&w, colour);
+		put_bit(&w, 0); /* chroma_loc_info_present_flag */
+		put_bit(&w, 0); /* neutral_chroma_indication_flag */
+		put_bit(&w, 0); /* field_seq_flag */
+		put_bit(&w, 0); /* frame_field_info_present_flag */
+		put_bit(&w, 0); /* default_display_window_flag */
+		put_bit(&w, 0); /* vui_timing_info_present_flag */
+		put_bit(&w, 0); /* bitstream_restriction_flag */
+	} else {
+		/* A VUI without it: the flag set and the fields put in. */
+		copy_bits(&w, &r, 0, r.bit - 1);
+		put_video_signal(&w, colour);
+	}
+	copy_bits(&w, &r, r.bit, end);
+	put_bit(&w, 1); /* rbsp_stop_one_bit */
+	while (w.bit % 8)
+		put_bit(&w, 0);
+	return put_nal_out(nal, 2, &w, out, out_size);
+}
+
+size_t kvmv_hevc_au_colour(uint8_t *buf, size_t len, size_t capacity,
+			   const struct kvmv_vui_colour *colour)
+{
+	if (colour == NULL)
+		return len;
+	return au_rewrite_sps(KVMV_CODEC_KIND_HEVC, buf, len, capacity,
+			      kvmv_hevc_sps_colour, colour);
 }
