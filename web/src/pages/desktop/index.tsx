@@ -48,6 +48,8 @@ import {
 import { InputRegionOverlay } from './screen/input-region-overlay.tsx';
 import { ManualRegion } from './screen/manual-region.tsx';
 import { usePauseWhenHidden } from './screen/use-pause-when-hidden.ts';
+import { SequenceBanner } from './sequence/banner.tsx';
+import { MacroEditor } from './sequence/editor.tsx';
 import { StatusBar } from './status-bar';
 import { ViewOnlyBadge } from './view-only-badge.tsx';
 
@@ -295,6 +297,8 @@ export const Desktop = () => {
         <InputDisconnectedWarning />
         <ViewOnlyBadge />
         <FailsafeBanner />
+        <SequenceBanner />
+        <MacroEditor />
       </OverlayBoundary>
 
       {videoMode && resolution && (

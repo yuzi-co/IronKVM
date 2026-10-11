@@ -2,6 +2,7 @@ import { ICloseEvent, IMessageEvent, w3cwebsocket as W3cWebSocket } from 'websoc
 
 import { notifyAuthExpired } from '@/lib/auth-events.ts';
 import { HoldKeepalive, KEEPALIVE_MESSAGE } from '@/lib/hold-keepalive.ts';
+import { isTapping, tapInput } from '@/lib/input-tap.ts';
 import { getBaseUrl } from '@/lib/service.ts';
 import { isViewOnly } from '@/lib/view-only.ts';
 
@@ -144,7 +145,12 @@ export class WsClient {
       this.instance.send(JSON.stringify(data));
     }
 
-    this.holdKeepalive.observe(data instanceof ArrayBuffer ? new Uint8Array(data) : data);
+    const sent = data instanceof ArrayBuffer ? new Uint8Array(data) : data;
+    this.holdKeepalive.observe(sent);
+    // Only input that reached the socket is recorded into a macro.
+    if (isTapping() && isInputReport(sent)) {
+      tapInput({ kind: 'message', data: sent });
+    }
 
     return true;
   }

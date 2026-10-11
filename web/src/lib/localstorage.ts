@@ -346,3 +346,29 @@ export function setStreamInfoVisible(visible: boolean) {
     // Not remembered; the switch holds for this tab.
   }
 }
+
+// The auto-tap's last settings (keyboard menu). Only an object is promised;
+// lib/macro.ts autoTapSettingsFrom checks each field.
+const AUTO_TAP_KEY = 'nano-kvm-auto-tap';
+
+export function getAutoTapSettings(): unknown {
+  try {
+    return readItem(AUTO_TAP_KEY, (raw) => {
+      const parsed: unknown = JSON.parse(raw);
+      if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        throw new Error('not an object');
+      }
+      return parsed;
+    });
+  } catch {
+    return null;
+  }
+}
+
+export function setAutoTapSettings(settings: object) {
+  try {
+    localStorage.setItem(AUTO_TAP_KEY, JSON.stringify(settings));
+  } catch {
+    // Not remembered; the settings hold for this tab.
+  }
+}

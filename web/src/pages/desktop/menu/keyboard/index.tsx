@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 
 import { MenuItem } from '@/components/menu-item.tsx';
 
+import { AutoTap } from './auto-tap.tsx';
+import { Macros } from './macros.tsx';
 import { MediaKeys } from './media-keys.tsx';
 import { Shortcuts } from './shortcuts';
 import { VirtualKeyboard } from './virtual-keyboard.tsx';
@@ -16,6 +18,8 @@ export const Keyboard = () => {
     <div className="flex flex-col space-y-1">
       <VirtualKeyboard />
       <Shortcuts />
+      <AutoTap />
+      <Macros />
       <MediaKeys />
     </div>
   );
