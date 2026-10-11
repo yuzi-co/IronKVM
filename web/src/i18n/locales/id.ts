@@ -1411,6 +1411,37 @@ const id = {
           trialGone: 'Perubahan sudah dikembalikan. Coba lagi.',
           unsaved: 'Perubahan belum disimpan'
         },
+        ipv6: {
+          title: 'IPv6',
+          description: 'Atur bagaimana IronKVM mendapatkan alamat IPv6 di jaringan kabel',
+          slaac: 'SLAAC',
+          dhcpv6: 'DHCPv6',
+          static: 'Manual',
+          off: 'Mati',
+          address: 'Alamat IPv6',
+          prefix: 'Panjang prefiks',
+          router: 'Router',
+          apply: 'Terapkan',
+          saved: 'Pengaturan IPv6 diterapkan dan disimpan',
+          loadFailed: 'Gagal membaca pengaturan IPv6',
+          saveFailed: 'Gagal menerapkan pengaturan IPv6',
+          unsupported: 'Kernel ini tidak memiliki IPv6',
+          noDhcpv6: 'DHCPv6 tidak tersedia: image ini tidak memiliki klien DHCPv6',
+          invalid:
+            'Masukkan alamat IPv6 yang valid, panjang prefiks 16 sampai 126, dan alamat router (atau kosongkan)',
+          offNote:
+            'IPv6 dimatikan pada antarmuka kabel. Antarmuka web tetap dapat diakses melalui IPv4.',
+          keepsIpv4:
+            'Alamat IPv4 tidak berubah. Jika penerapan gagal, pengaturan IPv6 sebelumnya dikembalikan.',
+          useIpv4:
+            'Halaman ini dibuka melalui IPv6. Buka IronKVM di alamat IPv4-nya untuk mengubah pengaturan IPv6.',
+          current: 'Alamat IPv6 saat ini',
+          disabled: 'Mati',
+          noAddress: 'Belum ada alamat IPv6',
+          scopeLink: 'link-local',
+          scopeUla: 'privat',
+          scopeGlobal: 'global'
+        },
         dns: {
           title: 'DNS',
           description: 'Konfigurasi server DNS untuk IronKVM',

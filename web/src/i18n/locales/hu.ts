@@ -1426,6 +1426,37 @@ const hu = {
           trialGone: 'A módosítás már vissza lett vonva. Próbálja újra.',
           unsaved: 'Nem mentett módosítások'
         },
+        ipv6: {
+          title: 'IPv6',
+          description: 'Beállítja, hogyan kapja az IronKVM az IPv6-címét a vezetékes hálózaton',
+          slaac: 'SLAAC',
+          dhcpv6: 'DHCPv6',
+          static: 'Kézi',
+          off: 'Ki',
+          address: 'IPv6-cím',
+          prefix: 'Előtaghossz',
+          router: 'Útválasztó',
+          apply: 'Alkalmaz',
+          saved: 'Az IPv6-beállítások alkalmazva és mentve',
+          loadFailed: 'Az IPv6-beállítások olvasása nem sikerült',
+          saveFailed: 'Az IPv6-beállítások alkalmazása nem sikerült',
+          unsupported: 'Ebben a kernelben nincs IPv6',
+          noDhcpv6: 'A DHCPv6 nem érhető el: ebben a képben nincs DHCPv6-kliens',
+          invalid:
+            'Adjon meg érvényes IPv6-címet, 16 és 126 közötti előtaghosszt és útválasztócímet (vagy hagyja üresen)',
+          offNote:
+            'Az IPv6 ki van kapcsolva a vezetékes interfészen. A webes felület IPv4-en továbbra is elérhető.',
+          keepsIpv4:
+            'Az IPv4-cím nem változik. Ha az alkalmazás sikertelen, a korábbi IPv6-beállítások visszaállnak.',
+          useIpv4:
+            'Ez az oldal IPv6-on van megnyitva. Az IPv6-beállítások módosításához nyissa meg az IronKVM-et az IPv4-címén.',
+          current: 'Jelenlegi IPv6-címek',
+          disabled: 'Ki',
+          noAddress: 'Még nincs IPv6-cím',
+          scopeLink: 'kapcsolat-helyi',
+          scopeUla: 'privát',
+          scopeGlobal: 'globális'
+        },
         dns: {
           title: 'DNS',
           description: 'DNS-kiszolgálók beállítása a IronKVM számára',

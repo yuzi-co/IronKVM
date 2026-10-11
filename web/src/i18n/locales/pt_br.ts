@@ -1421,6 +1421,37 @@ const pt_br = {
           trialGone: 'A alteração já foi desfeita. Tente novamente.',
           unsaved: 'Alterações não salvas'
         },
+        ipv6: {
+          title: 'IPv6',
+          description: 'Define como o IronKVM obtém o endereço IPv6 na rede cabeada',
+          slaac: 'SLAAC',
+          dhcpv6: 'DHCPv6',
+          static: 'Manual',
+          off: 'Desligado',
+          address: 'Endereço IPv6',
+          prefix: 'Tamanho do prefixo',
+          router: 'Roteador',
+          apply: 'Aplicar',
+          saved: 'Configurações de IPv6 aplicadas e salvas',
+          loadFailed: 'Falha ao ler as configurações de IPv6',
+          saveFailed: 'Falha ao aplicar as configurações de IPv6',
+          unsupported: 'Este kernel não tem IPv6',
+          noDhcpv6: 'DHCPv6 não está disponível: esta imagem não tem cliente DHCPv6',
+          invalid:
+            'Informe um endereço IPv6 válido, um tamanho de prefixo de 16 a 126 e o endereço do roteador (ou deixe vazio)',
+          offNote:
+            'O IPv6 está desligado na interface cabeada. A interface web continua acessível por IPv4.',
+          keepsIpv4:
+            'O endereço IPv4 não muda. Se a aplicação falhar, as configurações de IPv6 anteriores são restauradas.',
+          useIpv4:
+            'Esta página está aberta por IPv6. Abra o IronKVM pelo endereço IPv4 para alterar as configurações de IPv6.',
+          current: 'Endereços IPv6 atuais',
+          disabled: 'Desligado',
+          noAddress: 'Ainda sem endereço IPv6',
+          scopeLink: 'link-local',
+          scopeUla: 'privado',
+          scopeGlobal: 'global'
+        },
         dns: {
           title: 'DNS',
           description: 'Configurar servidores DNS para o IronKVM',

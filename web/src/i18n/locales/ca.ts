@@ -1423,6 +1423,37 @@ const ca = {
           trialGone: "El canvi ja s'ha restaurat. Torneu-ho a provar.",
           unsaved: 'Canvis no desats'
         },
+        ipv6: {
+          title: 'IPv6',
+          description: "Defineix com obté IronKVM l'adreça IPv6 a la xarxa cablejada",
+          slaac: 'SLAAC',
+          dhcpv6: 'DHCPv6',
+          static: 'Manual',
+          off: 'Desactivat',
+          address: 'Adreça IPv6',
+          prefix: 'Longitud del prefix',
+          router: 'Encaminador',
+          apply: 'Aplica',
+          saved: "Els paràmetres IPv6 s'han aplicat i desat",
+          loadFailed: "No s'han pogut llegir els paràmetres IPv6",
+          saveFailed: "No s'han pogut aplicar els paràmetres IPv6",
+          unsupported: 'Aquest nucli no té IPv6',
+          noDhcpv6: 'DHCPv6 no està disponible: aquesta imatge no té client DHCPv6',
+          invalid:
+            "Introduïu una adreça IPv6 vàlida, una longitud de prefix de 16 a 126 i l'adreça de l'encaminador (o deixeu-la buida)",
+          offNote:
+            'IPv6 està desactivat a la interfície cablejada. La interfície web continua accessible per IPv4.',
+          keepsIpv4:
+            "L'adreça IPv4 no canvia. Si l'aplicació falla, es restauren els paràmetres IPv6 anteriors.",
+          useIpv4:
+            'Aquesta pàgina està oberta per IPv6. Obriu IronKVM a la seva adreça IPv4 per canviar els paràmetres IPv6.',
+          current: 'Adreces IPv6 actuals',
+          disabled: 'Desactivat',
+          noAddress: 'Encara no hi ha cap adreça IPv6',
+          scopeLink: "d'enllaç local",
+          scopeUla: 'privada',
+          scopeGlobal: 'global'
+        },
         dns: {
           title: 'DNS',
           description: 'Configura els servidors DNS per a IronKVM',

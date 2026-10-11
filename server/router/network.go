@@ -47,4 +47,9 @@ func networkRouter(r *gin.Engine) {
 	admin.GET("/network/ethernet", service.GetEthernet)              // get the wired address configuration
 	admin.POST("/network/ethernet", service.SetEthernet)             // apply a wired address configuration on trial
 	admin.POST("/network/ethernet/confirm", service.ConfirmEthernet) // keep the applied configuration
+
+	// IPv6 leaves the IPv4 address alone, so it needs no trial: it is saved after
+	// it applied, and an apply that fails puts the saved setting back.
+	admin.GET("/network/ipv6", service.GetIPv6)  // get the IPv6 configuration
+	admin.POST("/network/ipv6", service.SetIPv6) // apply an IPv6 configuration
 }

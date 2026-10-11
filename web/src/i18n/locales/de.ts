@@ -1445,6 +1445,37 @@ const de = {
           trialGone: 'Die Änderung wurde bereits zurückgenommen. Bitte erneut versuchen.',
           unsaved: 'Ungespeicherte Änderungen'
         },
+        ipv6: {
+          title: 'IPv6',
+          description: 'Legt fest, wie IronKVM im Kabelnetz seine IPv6-Adresse bekommt',
+          slaac: 'SLAAC',
+          dhcpv6: 'DHCPv6',
+          static: 'Manuell',
+          off: 'Aus',
+          address: 'IPv6-Adresse',
+          prefix: 'Präfixlänge',
+          router: 'Router',
+          apply: 'Anwenden',
+          saved: 'IPv6-Einstellungen angewendet und gespeichert',
+          loadFailed: 'IPv6-Einstellungen konnten nicht gelesen werden',
+          saveFailed: 'IPv6-Einstellungen konnten nicht angewendet werden',
+          unsupported: 'Dieser Kernel hat kein IPv6',
+          noDhcpv6: 'DHCPv6 ist nicht verfügbar: Dieses Image enthält keinen DHCPv6-Client',
+          invalid:
+            'Gib eine gültige IPv6-Adresse, eine Präfixlänge von 16 bis 126 und eine Router-Adresse ein (oder lass sie leer)',
+          offNote:
+            'IPv6 ist auf der Kabelschnittstelle ausgeschaltet. Die Weboberfläche bleibt über IPv4 erreichbar.',
+          keepsIpv4:
+            'Die IPv4-Adresse bleibt unverändert. Schlägt das Anwenden fehl, werden die vorherigen IPv6-Einstellungen wiederhergestellt.',
+          useIpv4:
+            'Diese Seite ist über IPv6 geöffnet. Öffne IronKVM über die IPv4-Adresse, um die IPv6-Einstellungen zu ändern.',
+          current: 'Aktuelle IPv6-Adressen',
+          disabled: 'Aus',
+          noAddress: 'Noch keine IPv6-Adresse',
+          scopeLink: 'Link-lokal',
+          scopeUla: 'privat',
+          scopeGlobal: 'global'
+        },
         dns: {
           title: 'DNS',
           description: 'DNS-Server für IronKVM konfigurieren',

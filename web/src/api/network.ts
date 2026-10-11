@@ -190,3 +190,32 @@ export function getAllowlist() {
 export function setAllowlist(networks: string[]) {
   return http.post('/api/network/allowlist', { networks });
 }
+
+// IPv6 on the wired interface (feature ipv6-settings). Unlike the IPv4 address
+// it needs no trial: the device saves the setting after it applied, and puts
+// the previous one back when applying fails.
+export type IPv6Mode = 'slaac' | 'dhcpv6' | 'static' | 'off';
+
+export type IPv6State = {
+  supported: boolean;
+  mode: IPv6Mode;
+  address: string;
+  prefix: number;
+  gateway: string;
+  dhcpv6Available: boolean;
+  client: string;
+  live: {
+    interface: string;
+    disabled: boolean;
+    addresses: { address: string; prefix: number; scope: 'link' | 'ula' | 'global' }[];
+    gateway: string;
+  };
+};
+
+export function getIPv6() {
+  return http.get('/api/network/ipv6');
+}
+
+export function setIPv6(mode: IPv6Mode, address: string, prefix: number, gateway: string) {
+  return http.post('/api/network/ipv6', { mode, address, prefix, gateway });
+}

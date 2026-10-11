@@ -1396,6 +1396,37 @@ const en = {
           trialGone: 'The change was already put back. Try again.',
           unsaved: 'Unsaved changes'
         },
+        ipv6: {
+          title: 'IPv6',
+          description: 'Configure how IronKVM gets its IPv6 address on the wired network',
+          slaac: 'SLAAC',
+          dhcpv6: 'DHCPv6',
+          static: 'Manual',
+          off: 'Off',
+          address: 'IPv6 address',
+          prefix: 'Prefix length',
+          router: 'Router',
+          apply: 'Apply',
+          saved: 'IPv6 settings applied and saved',
+          loadFailed: 'Failed to read the IPv6 settings',
+          saveFailed: 'Failed to apply the IPv6 settings',
+          unsupported: 'This kernel has no IPv6',
+          noDhcpv6: 'DHCPv6 is not available: this image has no DHCPv6 client',
+          invalid:
+            'Enter a valid IPv6 address, a prefix length from 16 to 126, and a router address or leave it empty',
+          offNote:
+            'IPv6 is turned off on the wired interface. The web UI stays reachable over IPv4.',
+          keepsIpv4:
+            'The IPv4 address is not changed. If applying fails, the previous IPv6 settings are put back.',
+          useIpv4:
+            'This page is open over IPv6. Open IronKVM at its IPv4 address to change the IPv6 settings.',
+          current: 'Current IPv6 addresses',
+          disabled: 'Off',
+          noAddress: 'No IPv6 address yet',
+          scopeLink: 'link-local',
+          scopeUla: 'private',
+          scopeGlobal: 'global'
+        },
         dns: {
           title: 'DNS',
           description: 'Configure DNS servers for IronKVM',

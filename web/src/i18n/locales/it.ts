@@ -1430,6 +1430,37 @@ const it = {
           trialGone: 'La modifica è già stata ripristinata. Riprova.',
           unsaved: 'Modifiche non salvate'
         },
+        ipv6: {
+          title: 'IPv6',
+          description: "Imposta come IronKVM ottiene l'indirizzo IPv6 sulla rete cablata",
+          slaac: 'SLAAC',
+          dhcpv6: 'DHCPv6',
+          static: 'Manuale',
+          off: 'Disattivato',
+          address: 'Indirizzo IPv6',
+          prefix: 'Lunghezza del prefisso',
+          router: 'Router',
+          apply: 'Applica',
+          saved: 'Impostazioni IPv6 applicate e salvate',
+          loadFailed: 'Impossibile leggere le impostazioni IPv6',
+          saveFailed: 'Impossibile applicare le impostazioni IPv6',
+          unsupported: 'Questo kernel non ha IPv6',
+          noDhcpv6: 'DHCPv6 non è disponibile: questa immagine non ha un client DHCPv6',
+          invalid:
+            "Inserisci un indirizzo IPv6 valido, una lunghezza del prefisso da 16 a 126 e l'indirizzo del router (o lascialo vuoto)",
+          offNote:
+            "IPv6 è disattivato sull'interfaccia cablata. L'interfaccia web resta raggiungibile via IPv4.",
+          keepsIpv4:
+            "L'indirizzo IPv4 non cambia. Se l'applicazione fallisce, le impostazioni IPv6 precedenti vengono ripristinate.",
+          useIpv4:
+            'Questa pagina è aperta via IPv6. Apri IronKVM al suo indirizzo IPv4 per modificare le impostazioni IPv6.',
+          current: 'Indirizzi IPv6 attuali',
+          disabled: 'Disattivato',
+          noAddress: 'Ancora nessun indirizzo IPv6',
+          scopeLink: 'link-local',
+          scopeUla: 'privato',
+          scopeGlobal: 'globale'
+        },
         dns: {
           title: 'DNS',
           description: 'Configura i server DNS per IronKVM',

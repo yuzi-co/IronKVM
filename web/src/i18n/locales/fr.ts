@@ -1436,6 +1436,37 @@ const fr = {
           trialGone: 'La modification a déjà été annulée. Veuillez réessayer.',
           unsaved: 'Modifications non enregistrées'
         },
+        ipv6: {
+          title: 'IPv6',
+          description: 'Définit comment IronKVM obtient son adresse IPv6 sur le réseau filaire',
+          slaac: 'SLAAC',
+          dhcpv6: 'DHCPv6',
+          static: 'Manuel',
+          off: 'Désactivé',
+          address: 'Adresse IPv6',
+          prefix: 'Longueur du préfixe',
+          router: 'Routeur',
+          apply: 'Appliquer',
+          saved: 'Paramètres IPv6 appliqués et enregistrés',
+          loadFailed: 'Impossible de lire les paramètres IPv6',
+          saveFailed: "Impossible d'appliquer les paramètres IPv6",
+          unsupported: "Ce noyau n'a pas IPv6",
+          noDhcpv6: "DHCPv6 n'est pas disponible : cette image n'a pas de client DHCPv6",
+          invalid:
+            "Saisissez une adresse IPv6 valide, une longueur de préfixe de 16 à 126 et l'adresse du routeur (ou laissez-la vide)",
+          offNote:
+            "IPv6 est désactivé sur l'interface filaire. L'interface web reste accessible en IPv4.",
+          keepsIpv4:
+            "L'adresse IPv4 n'est pas modifiée. Si l'application échoue, les anciens paramètres IPv6 sont rétablis.",
+          useIpv4:
+            'Cette page est ouverte en IPv6. Ouvrez IronKVM à son adresse IPv4 pour modifier les paramètres IPv6.',
+          current: 'Adresses IPv6 actuelles',
+          disabled: 'Désactivé',
+          noAddress: "Pas encore d'adresse IPv6",
+          scopeLink: 'lien local',
+          scopeUla: 'privée',
+          scopeGlobal: 'globale'
+        },
         dns: {
           title: 'DNS',
           description: 'Configurer les serveurs DNS pour IronKVM',

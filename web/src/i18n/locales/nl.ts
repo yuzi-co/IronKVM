@@ -1426,6 +1426,37 @@ const nl = {
           trialGone: 'De wijziging is al teruggezet. Probeer het opnieuw.',
           unsaved: 'Niet-opgeslagen wijzigingen'
         },
+        ipv6: {
+          title: 'IPv6',
+          description: 'Stel in hoe IronKVM zijn IPv6-adres krijgt op het bekabelde netwerk',
+          slaac: 'SLAAC',
+          dhcpv6: 'DHCPv6',
+          static: 'Handmatig',
+          off: 'Uit',
+          address: 'IPv6-adres',
+          prefix: 'Prefixlengte',
+          router: 'Router',
+          apply: 'Toepassen',
+          saved: 'IPv6-instellingen toegepast en opgeslagen',
+          loadFailed: 'De IPv6-instellingen konden niet worden gelezen',
+          saveFailed: 'De IPv6-instellingen konden niet worden toegepast',
+          unsupported: 'Deze kernel heeft geen IPv6',
+          noDhcpv6: 'DHCPv6 is niet beschikbaar: dit image heeft geen DHCPv6-client',
+          invalid:
+            'Voer een geldig IPv6-adres in, een prefixlengte van 16 tot 126 en een routeradres (of laat het leeg)',
+          offNote:
+            'IPv6 staat uit op de bekabelde interface. De webinterface blijft bereikbaar via IPv4.',
+          keepsIpv4:
+            'Het IPv4-adres verandert niet. Als toepassen mislukt, worden de vorige IPv6-instellingen teruggezet.',
+          useIpv4:
+            'Deze pagina is geopend via IPv6. Open IronKVM op het IPv4-adres om de IPv6-instellingen te wijzigen.',
+          current: 'Huidige IPv6-adressen',
+          disabled: 'Uit',
+          noAddress: 'Nog geen IPv6-adres',
+          scopeLink: 'link-local',
+          scopeUla: 'privé',
+          scopeGlobal: 'globaal'
+        },
         dns: {
           title: 'DNS',
           description: 'Configureer DNS-servers voor IronKVM',

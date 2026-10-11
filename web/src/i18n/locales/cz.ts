@@ -1403,6 +1403,37 @@ const cz = {
           trialGone: 'Změna už byla vrácena zpět. Zkuste to znovu.',
           unsaved: 'Neuložené změny'
         },
+        ipv6: {
+          title: 'IPv6',
+          description: 'Nastavení, jak IronKVM získává adresu IPv6 v kabelové síti',
+          slaac: 'SLAAC',
+          dhcpv6: 'DHCPv6',
+          static: 'Ručně',
+          off: 'Vypnuto',
+          address: 'Adresa IPv6',
+          prefix: 'Délka prefixu',
+          router: 'Router',
+          apply: 'Použít',
+          saved: 'Nastavení IPv6 bylo použito a uloženo',
+          loadFailed: 'Nastavení IPv6 se nepodařilo načíst',
+          saveFailed: 'Nastavení IPv6 se nepodařilo použít',
+          unsupported: 'Toto jádro nemá IPv6',
+          noDhcpv6: 'DHCPv6 není k dispozici: tento obraz nemá klienta DHCPv6',
+          invalid:
+            'Zadejte platnou adresu IPv6, délku prefixu od 16 do 126 a adresu routeru (nebo ji nechte prázdnou)',
+          offNote:
+            'IPv6 je na kabelovém rozhraní vypnuto. Webové rozhraní zůstává dostupné přes IPv4.',
+          keepsIpv4:
+            'Adresa IPv4 se nemění. Pokud použití selže, vrátí se předchozí nastavení IPv6.',
+          useIpv4:
+            'Tato stránka je otevřena přes IPv6. Pro změnu nastavení IPv6 otevřete IronKVM na jeho adrese IPv4.',
+          current: 'Aktuální adresy IPv6',
+          disabled: 'Vypnuto',
+          noAddress: 'Zatím žádná adresa IPv6',
+          scopeLink: 'místní pro spoj',
+          scopeUla: 'soukromá',
+          scopeGlobal: 'globální'
+        },
         dns: {
           title: 'DNS',
           description: 'Nastavit DNS servery pro IronKVM',

@@ -1406,6 +1406,37 @@ const da = {
           trialGone: 'Ændringen er allerede gendannet. Prøv igen.',
           unsaved: 'Ikke-gemte ændringer'
         },
+        ipv6: {
+          title: 'IPv6',
+          description: 'Indstil, hvordan IronKVM får sin IPv6-adresse på det kablede netværk',
+          slaac: 'SLAAC',
+          dhcpv6: 'DHCPv6',
+          static: 'Manuel',
+          off: 'Fra',
+          address: 'IPv6-adresse',
+          prefix: 'Præfikslængde',
+          router: 'Router',
+          apply: 'Anvend',
+          saved: 'IPv6-indstillingerne er anvendt og gemt',
+          loadFailed: 'IPv6-indstillingerne kunne ikke læses',
+          saveFailed: 'IPv6-indstillingerne kunne ikke anvendes',
+          unsupported: 'Denne kerne har ikke IPv6',
+          noDhcpv6: 'DHCPv6 er ikke tilgængelig: dette image har ingen DHCPv6-klient',
+          invalid:
+            'Angiv en gyldig IPv6-adresse, en præfikslængde fra 16 til 126 og en routeradresse (eller lad den stå tom)',
+          offNote:
+            'IPv6 er slået fra på den kablede grænseflade. Webgrænsefladen kan stadig nås via IPv4.',
+          keepsIpv4:
+            'IPv4-adressen ændres ikke. Hvis det mislykkes at anvende, genindsættes de tidligere IPv6-indstillinger.',
+          useIpv4:
+            'Siden er åbnet via IPv6. Åbn IronKVM på dens IPv4-adresse for at ændre IPv6-indstillingerne.',
+          current: 'Aktuelle IPv6-adresser',
+          disabled: 'Fra',
+          noAddress: 'Ingen IPv6-adresse endnu',
+          scopeLink: 'link-local',
+          scopeUla: 'privat',
+          scopeGlobal: 'global'
+        },
         dns: {
           title: 'DNS',
           description: 'Konfigurer DNS-servere til IronKVM',

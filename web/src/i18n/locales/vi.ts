@@ -1402,6 +1402,36 @@ const vi = {
           trialGone: 'Thay đổi đã được khôi phục. Vui lòng thử lại.',
           unsaved: 'Thay đổi chưa lưu'
         },
+        ipv6: {
+          title: 'IPv6',
+          description: 'Cách IronKVM nhận địa chỉ IPv6 trên mạng có dây',
+          slaac: 'SLAAC',
+          dhcpv6: 'DHCPv6',
+          static: 'Thủ công',
+          off: 'Tắt',
+          address: 'Địa chỉ IPv6',
+          prefix: 'Độ dài tiền tố',
+          router: 'Bộ định tuyến',
+          apply: 'Áp dụng',
+          saved: 'Đã áp dụng và lưu cài đặt IPv6',
+          loadFailed: 'Không thể đọc cài đặt IPv6',
+          saveFailed: 'Không thể áp dụng cài đặt IPv6',
+          unsupported: 'Nhân này không có IPv6',
+          noDhcpv6: 'DHCPv6 không khả dụng: bản image này không có ứng dụng khách DHCPv6',
+          invalid:
+            'Nhập địa chỉ IPv6 hợp lệ, độ dài tiền tố từ 16 đến 126 và địa chỉ bộ định tuyến (hoặc để trống)',
+          offNote: 'IPv6 đã tắt trên giao diện có dây. Giao diện web vẫn truy cập được qua IPv4.',
+          keepsIpv4:
+            'Địa chỉ IPv4 không thay đổi. Nếu áp dụng thất bại, cài đặt IPv6 trước đó sẽ được khôi phục.',
+          useIpv4:
+            'Trang này đang mở qua IPv6. Hãy mở IronKVM bằng địa chỉ IPv4 để đổi cài đặt IPv6.',
+          current: 'Địa chỉ IPv6 hiện tại',
+          disabled: 'Tắt',
+          noAddress: 'Chưa có địa chỉ IPv6',
+          scopeLink: 'link-local',
+          scopeUla: 'riêng',
+          scopeGlobal: 'toàn cầu'
+        },
         dns: {
           title: 'DNS',
           description: 'Cấu hình máy chủ DNS cho IronKVM',

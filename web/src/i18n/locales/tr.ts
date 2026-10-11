@@ -1409,6 +1409,37 @@ const tr = {
           trialGone: 'Değişiklik zaten geri alındı. Tekrar deneyin.',
           unsaved: 'Kaydedilmemiş değişiklikler'
         },
+        ipv6: {
+          title: 'IPv6',
+          description: 'IronKVM’nin kablolu ağda IPv6 adresini nasıl alacağını ayarlayın',
+          slaac: 'SLAAC',
+          dhcpv6: 'DHCPv6',
+          static: 'Elle',
+          off: 'Kapalı',
+          address: 'IPv6 adresi',
+          prefix: 'Önek uzunluğu',
+          router: 'Yönlendirici',
+          apply: 'Uygula',
+          saved: 'IPv6 ayarları uygulandı ve kaydedildi',
+          loadFailed: 'IPv6 ayarları okunamadı',
+          saveFailed: 'IPv6 ayarları uygulanamadı',
+          unsupported: 'Bu çekirdekte IPv6 yok',
+          noDhcpv6: 'DHCPv6 kullanılamıyor: bu imajda DHCPv6 istemcisi yok',
+          invalid:
+            'Geçerli bir IPv6 adresi, 16 ile 126 arasında bir önek uzunluğu ve bir yönlendirici adresi girin (veya boş bırakın)',
+          offNote:
+            'Kablolu arayüzde IPv6 kapalı. Web arayüzüne IPv4 üzerinden erişilmeye devam edilir.',
+          keepsIpv4:
+            'IPv4 adresi değişmez. Uygulama başarısız olursa önceki IPv6 ayarları geri konur.',
+          useIpv4:
+            'Bu sayfa IPv6 üzerinden açık. IPv6 ayarlarını değiştirmek için IronKVM’yi IPv4 adresinden açın.',
+          current: 'Geçerli IPv6 adresleri',
+          disabled: 'Kapalı',
+          noAddress: 'Henüz IPv6 adresi yok',
+          scopeLink: 'bağlantı yerel',
+          scopeUla: 'özel',
+          scopeGlobal: 'genel'
+        },
         dns: {
           title: 'DNS',
           description: 'IronKVM için DNS sunucularını yapılandır',
