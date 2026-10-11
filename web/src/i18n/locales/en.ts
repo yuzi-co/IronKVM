@@ -1825,6 +1825,118 @@ const en = {
       hideLog: 'Hide log',
       retry: 'Retry video',
       retrying: 'Restarting...'
+    },
+    totp: {
+      login: {
+        title: 'Two-factor authentication',
+        description:
+          'Enter the 6-digit code from your authenticator app, or one of your recovery codes.',
+        placeholder: 'Code or recovery code',
+        noEmptyCode: 'Please enter a code',
+        verify: 'Verify',
+        back: 'Back to password',
+        invalidCode: 'Invalid code',
+        locked: 'Too many wrong codes. Try again in a few minutes.',
+        expired: 'The sign-in expired. Enter your password again.'
+      },
+      settings: {
+        title: 'Two-factor authentication',
+        description: 'Ask for a code from an authenticator app after the password.',
+        scope:
+          'Applies to the web login only. VNC, IPMI and Redfish still use the password alone, and API keys work without a code.',
+        on: 'On',
+        off: 'Off',
+        enable: 'Turn on',
+        disable: 'Turn off',
+        regenerate: 'New recovery codes',
+        codesLeft: 'Recovery codes left: {{count}}',
+        enableTitle: 'Turn on two-factor authentication',
+        disableTitle: 'Turn off two-factor authentication',
+        regenerateTitle: 'New recovery codes',
+        confirmPassword: 'Confirm with your password',
+        continue: 'Continue',
+        scan: 'Scan the QR code with an authenticator app, or enter the secret by hand. Then type the code the app shows.',
+        secret: 'Secret',
+        enterCode: 'Code from the app',
+        verifyAndEnable: 'Verify and turn on',
+        codesOnce:
+          'Save these recovery codes now. Each one works once in place of a code, and they are not shown again.',
+        recoveryCodes: 'IronKVM recovery codes',
+        download: 'Download',
+        saved: 'I have saved them',
+        disabled: 'Two-factor authentication turned off',
+        wrongPassword: 'The password is incorrect',
+        setupExpired: 'The setup expired. Start again.',
+        loadFailed: 'Failed to load the two-factor state',
+        failed: 'The change failed'
+      },
+      users: {
+        tag: '2FA',
+        reset: 'Reset 2FA',
+        resetConfirm: 'Turn off two-factor authentication for {{username}}?',
+        resetDone: 'Two-factor authentication reset'
+      }
+    },
+    tlsCert: {
+      title: 'Certificate',
+      description: 'The certificate the HTTPS server presents.',
+      uploaded: 'Uploaded',
+      selfSigned: 'Self-signed',
+      httpsOff: 'HTTPS is off. The certificate is used once HTTPS is turned on.',
+      none: 'No certificate yet. One is generated when HTTPS is turned on.',
+      subject: 'Subject',
+      issuer: 'Issuer',
+      names: 'Names',
+      validFrom: 'Valid from',
+      validUntil: 'Valid until',
+      keyType: 'Key',
+      chain: 'Certificates in chain',
+      fingerprint: 'SHA-256',
+      restore: 'Restore self-signed',
+      restoreConfirm: 'Go back to the self-signed certificate?',
+      restoreDesc:
+        'The uploaded certificate and key are deleted. Browsers will warn about the self-signed certificate again.',
+      restored: 'Self-signed certificate restored',
+      restoreFailed: 'Failed to restore the self-signed certificate',
+      uploadTitle: 'Upload a certificate',
+      uploadDescription:
+        'PEM format. Put the server certificate first, then any intermediates. The key must not be encrypted.',
+      certField: 'Certificate chain',
+      keyField: 'Private key',
+      chooseFile: 'Choose file',
+      readFailed: 'Could not read the file',
+      check: 'Check',
+      install: 'Install',
+      installConfirm: 'Install this certificate?',
+      installDesc:
+        'New connections use it at once. Open pages keep working; reload to see the new certificate.',
+      installed: 'Certificate installed',
+      installFailed: 'Failed to install the certificate',
+      checkFailed: 'The certificate was refused',
+      loadFailed: 'Failed to load the certificate',
+      warnings: {
+        expiresSoon: 'The certificate expires within 30 days.',
+        nameMismatch:
+          'The certificate does not cover: {{names}}. Browsers will warn when the device is opened by those names.',
+        selfSigned:
+          'This certificate is self-signed. Browsers trust it only after it is installed on each computer.'
+      },
+      errors: {
+        tooLarge: 'The file is too large.',
+        noCertificate: 'No PEM certificate found.',
+        badCertificate:
+          'The certificate cannot be read. Paste PEM text that starts with -----BEGIN CERTIFICATE-----.',
+        noKey: 'No PEM private key found.',
+        encryptedKey: 'The private key is encrypted. Remove the passphrase first.',
+        badKey: 'The private key cannot be read.',
+        keyMismatch: 'The private key does not belong to the certificate.',
+        expired: 'The certificate, or one in its chain, has expired.',
+        notYetValid: 'The certificate is not valid yet. Check the device clock.',
+        badChain:
+          'The chain is out of order or incomplete. Put the server certificate first, then each issuer.',
+        weakKey: 'The key is too short. Use RSA 2048 or longer, or ECDSA.',
+        notServerCert: 'The certificate is not for a TLS server.'
+      }
     }
   }
 };

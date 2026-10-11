@@ -64,6 +64,9 @@ var readAccountFile = func(path string) ([]byte, os.FileInfo, error) {
 
 func (db *database) clone() *database {
 	copy := *db
-	copy.Users = append([]User(nil), db.Users...)
+	copy.Users = make([]User, len(db.Users))
+	for index := range db.Users {
+		copy.Users[index] = *cloneUser(&db.Users[index])
+	}
 	return &copy
 }

@@ -1829,6 +1829,118 @@ const cz = {
       hideLog: 'Skrýt protokol',
       retry: 'Zkusit video znovu',
       retrying: 'Restartování...'
+    },
+    totp: {
+      login: {
+        title: 'Dvoufázové ověření',
+        description:
+          'Zadejte 6místný kód z ověřovací aplikace nebo jeden ze svých záchranných kódů.',
+        placeholder: 'Kód nebo záchranný kód',
+        noEmptyCode: 'Zadejte kód',
+        verify: 'Ověřit',
+        back: 'Zpět k heslu',
+        invalidCode: 'Neplatný kód',
+        locked: 'Příliš mnoho chybných kódů. Zkuste to znovu za několik minut.',
+        expired: 'Přihlášení vypršelo. Zadejte heslo znovu.'
+      },
+      settings: {
+        title: 'Dvoufázové ověření',
+        description: 'Po hesle vyžadovat kód z ověřovací aplikace.',
+        scope:
+          'Platí jen pro přihlášení přes web. VNC, IPMI a Redfish dál používají pouze heslo a API klíče fungují bez kódu.',
+        on: 'Zapnuto',
+        off: 'Vypnuto',
+        enable: 'Zapnout',
+        disable: 'Vypnout',
+        regenerate: 'Nové záchranné kódy',
+        codesLeft: 'Zbývající záchranné kódy: {{count}}',
+        enableTitle: 'Zapnout dvoufázové ověření',
+        disableTitle: 'Vypnout dvoufázové ověření',
+        regenerateTitle: 'Nové záchranné kódy',
+        confirmPassword: 'Potvrďte heslem',
+        continue: 'Pokračovat',
+        scan: 'Naskenujte QR kód ověřovací aplikací nebo zadejte tajný klíč ručně. Pak napište kód, který aplikace zobrazí.',
+        secret: 'Tajný klíč',
+        enterCode: 'Kód z aplikace',
+        verifyAndEnable: 'Ověřit a zapnout',
+        codesOnce:
+          'Uložte si tyto záchranné kódy hned teď. Každý funguje jednou místo kódu a znovu se nezobrazí.',
+        recoveryCodes: 'Záchranné kódy IronKVM',
+        download: 'Stáhnout',
+        saved: 'Mám je uložené',
+        disabled: 'Dvoufázové ověření vypnuto',
+        wrongPassword: 'Heslo je nesprávné',
+        setupExpired: 'Nastavení vypršelo. Začněte znovu.',
+        loadFailed: 'Nepodařilo se načíst stav dvoufázového ověření',
+        failed: 'Změna se nezdařila'
+      },
+      users: {
+        tag: '2FA',
+        reset: 'Resetovat 2FA',
+        resetConfirm: 'Vypnout dvoufázové ověření pro {{username}}?',
+        resetDone: 'Dvoufázové ověření resetováno'
+      }
+    },
+    tlsCert: {
+      title: 'Certifikát',
+      description: 'Certifikát, který předkládá server HTTPS.',
+      uploaded: 'Nahraný',
+      selfSigned: 'Podepsaný sám sebou',
+      httpsOff: 'HTTPS je vypnuté. Certifikát se použije po zapnutí HTTPS.',
+      none: 'Zatím žádný certifikát. Vygeneruje se po zapnutí HTTPS.',
+      subject: 'Subjekt',
+      issuer: 'Vydavatel',
+      names: 'Názvy',
+      validFrom: 'Platný od',
+      validUntil: 'Platný do',
+      keyType: 'Klíč',
+      chain: 'Certifikáty v řetězci',
+      fingerprint: 'SHA-256',
+      restore: 'Obnovit certifikát podepsaný sám sebou',
+      restoreConfirm: 'Vrátit se k certifikátu podepsanému sám sebou?',
+      restoreDesc:
+        'Nahraný certifikát a klíč budou smazány. Prohlížeče budou znovu varovat před certifikátem podepsaným sám sebou.',
+      restored: 'Certifikát podepsaný sám sebou obnoven',
+      restoreFailed: 'Nepodařilo se obnovit certifikát podepsaný sám sebou',
+      uploadTitle: 'Nahrát certifikát',
+      uploadDescription:
+        'Formát PEM. Nejdřív certifikát serveru, pak případné mezilehlé certifikáty. Klíč nesmí být šifrovaný.',
+      certField: 'Řetězec certifikátů',
+      keyField: 'Soukromý klíč',
+      chooseFile: 'Vybrat soubor',
+      readFailed: 'Soubor nelze přečíst',
+      check: 'Zkontrolovat',
+      install: 'Nainstalovat',
+      installConfirm: 'Nainstalovat tento certifikát?',
+      installDesc:
+        'Nová připojení ho použijí okamžitě. Otevřené stránky dál fungují; nový certifikát uvidíte po obnovení stránky.',
+      installed: 'Certifikát nainstalován',
+      installFailed: 'Certifikát se nepodařilo nainstalovat',
+      checkFailed: 'Certifikát byl odmítnut',
+      loadFailed: 'Certifikát se nepodařilo načíst',
+      warnings: {
+        expiresSoon: 'Platnost certifikátu vyprší do 30 dnů.',
+        nameMismatch:
+          'Certifikát nepokrývá: {{names}}. Prohlížeče budou varovat při otevření zařízení pod těmito názvy.',
+        selfSigned:
+          'Tento certifikát je podepsaný sám sebou. Prohlížeče mu důvěřují až po instalaci na každý počítač.'
+      },
+      errors: {
+        tooLarge: 'Soubor je příliš velký.',
+        noCertificate: 'Nenalezen žádný certifikát PEM.',
+        badCertificate:
+          'Certifikát nelze přečíst. Vložte text PEM začínající -----BEGIN CERTIFICATE-----.',
+        noKey: 'Nenalezen žádný soukromý klíč PEM.',
+        encryptedKey: 'Soukromý klíč je šifrovaný. Nejdřív odstraňte heslo klíče.',
+        badKey: 'Soukromý klíč nelze přečíst.',
+        keyMismatch: 'Soukromý klíč nepatří k certifikátu.',
+        expired: 'Platnost certifikátu nebo některého v řetězci vypršela.',
+        notYetValid: 'Certifikát ještě není platný. Zkontrolujte hodiny zařízení.',
+        badChain:
+          'Řetězec je ve špatném pořadí nebo neúplný. Nejdřív certifikát serveru, pak každý vydavatel.',
+        weakKey: 'Klíč je příliš krátký. Použijte RSA 2048 nebo delší, případně ECDSA.',
+        notServerCert: 'Certifikát není určen pro server TLS.'
+      }
     }
   }
 };

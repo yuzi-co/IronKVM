@@ -60,10 +60,14 @@ func vncRouter(r *gin.Engine) {
 	admin.POST("/disconnect", service.EndSession)
 }
 
-// vncCertificate loads the certificate the HTTPS listener uses. A board that
-// serves plain HTTP may have none yet, and then the shipped one is made the
-// same way the HTTPS switch makes it.
+// vncCertificate is the certificate the HTTPS listener serves, including one
+// uploaded since the server started. A board that serves plain HTTP has
+// none in memory, so it loads the configured pair, and when there is none
+// yet the shipped one is made the same way the HTTPS switch makes it.
 func vncCertificate() (*tls.Certificate, error) {
+	if cert := utils.ActiveCert.Current(); cert != nil {
+		return cert, nil
+	}
 	conf := config.GetInstance()
 	if cert, err := tls.LoadX509KeyPair(conf.Cert.Crt, conf.Cert.Key); err == nil {
 		return &cert, nil

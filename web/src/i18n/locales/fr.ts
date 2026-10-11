@@ -1874,6 +1874,118 @@ const fr = {
       hideLog: 'Masquer le journal',
       retry: 'Réessayer la vidéo',
       retrying: 'Redémarrage...'
+    },
+    totp: {
+      login: {
+        title: 'Authentification à deux facteurs',
+        description:
+          "Saisissez le code à 6 chiffres de votre application d'authentification, ou l'un de vos codes de récupération.",
+        placeholder: 'Code ou code de récupération',
+        noEmptyCode: 'Veuillez saisir un code',
+        verify: 'Vérifier',
+        back: 'Retour au mot de passe',
+        invalidCode: 'Code invalide',
+        locked: 'Trop de codes erronés. Réessayez dans quelques minutes.',
+        expired: 'La connexion a expiré. Saisissez à nouveau votre mot de passe.'
+      },
+      settings: {
+        title: 'Authentification à deux facteurs',
+        description: "Demander un code d'une application d'authentification après le mot de passe.",
+        scope:
+          "S'applique uniquement à la connexion web. VNC, IPMI et Redfish utilisent toujours le mot de passe seul, et les clés API fonctionnent sans code.",
+        on: 'Activée',
+        off: 'Désactivée',
+        enable: 'Activer',
+        disable: 'Désactiver',
+        regenerate: 'Nouveaux codes de récupération',
+        codesLeft: 'Codes de récupération restants : {{count}}',
+        enableTitle: "Activer l'authentification à deux facteurs",
+        disableTitle: "Désactiver l'authentification à deux facteurs",
+        regenerateTitle: 'Nouveaux codes de récupération',
+        confirmPassword: 'Confirmez avec votre mot de passe',
+        continue: 'Continuer',
+        scan: "Scannez le code QR avec une application d'authentification, ou saisissez le secret à la main. Tapez ensuite le code affiché par l'application.",
+        secret: 'Secret',
+        enterCode: "Code de l'application",
+        verifyAndEnable: 'Vérifier et activer',
+        codesOnce:
+          'Enregistrez ces codes de récupération maintenant. Chacun remplace un code une seule fois, et ils ne seront plus affichés.',
+        recoveryCodes: 'Codes de récupération IronKVM',
+        download: 'Télécharger',
+        saved: 'Je les ai enregistrés',
+        disabled: 'Authentification à deux facteurs désactivée',
+        wrongPassword: 'Le mot de passe est incorrect',
+        setupExpired: 'La configuration a expiré. Recommencez.',
+        loadFailed: "Impossible de charger l'état de l'authentification à deux facteurs",
+        failed: 'La modification a échoué'
+      },
+      users: {
+        tag: '2FA',
+        reset: 'Réinitialiser la 2FA',
+        resetConfirm: "Désactiver l'authentification à deux facteurs pour {{username}} ?",
+        resetDone: 'Authentification à deux facteurs réinitialisée'
+      }
+    },
+    tlsCert: {
+      title: 'Certificat',
+      description: 'Le certificat présenté par le serveur HTTPS.',
+      uploaded: 'Téléversé',
+      selfSigned: 'Auto-signé',
+      httpsOff: 'HTTPS est désactivé. Le certificat sera utilisé une fois HTTPS activé.',
+      none: "Aucun certificat pour l'instant. Un certificat sera généré à l'activation de HTTPS.",
+      subject: 'Sujet',
+      issuer: 'Émetteur',
+      names: 'Noms',
+      validFrom: 'Valide à partir du',
+      validUntil: "Valide jusqu'au",
+      keyType: 'Clé',
+      chain: 'Certificats de la chaîne',
+      fingerprint: 'SHA-256',
+      restore: "Restaurer l'auto-signé",
+      restoreConfirm: 'Revenir au certificat auto-signé ?',
+      restoreDesc:
+        'Le certificat et la clé téléversés seront supprimés. Les navigateurs afficheront à nouveau un avertissement pour le certificat auto-signé.',
+      restored: 'Certificat auto-signé restauré',
+      restoreFailed: 'Impossible de restaurer le certificat auto-signé',
+      uploadTitle: 'Téléverser un certificat',
+      uploadDescription:
+        "Format PEM. Placez d'abord le certificat du serveur, puis les éventuels intermédiaires. La clé ne doit pas être chiffrée.",
+      certField: 'Chaîne de certificats',
+      keyField: 'Clé privée',
+      chooseFile: 'Choisir un fichier',
+      readFailed: 'Impossible de lire le fichier',
+      check: 'Vérifier',
+      install: 'Installer',
+      installConfirm: 'Installer ce certificat ?',
+      installDesc:
+        "Les nouvelles connexions l'utilisent immédiatement. Les pages ouvertes continuent de fonctionner ; rechargez pour voir le nouveau certificat.",
+      installed: 'Certificat installé',
+      installFailed: "Impossible d'installer le certificat",
+      checkFailed: 'Le certificat a été refusé',
+      loadFailed: 'Impossible de charger le certificat',
+      warnings: {
+        expiresSoon: 'Le certificat expire dans moins de 30 jours.',
+        nameMismatch:
+          "Le certificat ne couvre pas : {{names}}. Les navigateurs afficheront un avertissement si l'appareil est ouvert avec ces noms.",
+        selfSigned:
+          "Ce certificat est auto-signé. Les navigateurs ne lui font confiance qu'une fois installé sur chaque ordinateur."
+      },
+      errors: {
+        tooLarge: 'Le fichier est trop volumineux.',
+        noCertificate: 'Aucun certificat PEM trouvé.',
+        badCertificate:
+          'Le certificat est illisible. Collez un texte PEM commençant par -----BEGIN CERTIFICATE-----.',
+        noKey: 'Aucune clé privée PEM trouvée.',
+        encryptedKey: "La clé privée est chiffrée. Retirez d'abord la phrase secrète.",
+        badKey: 'La clé privée est illisible.',
+        keyMismatch: 'La clé privée ne correspond pas au certificat.',
+        expired: 'Le certificat, ou un certificat de sa chaîne, a expiré.',
+        notYetValid: "Le certificat n'est pas encore valide. Vérifiez l'horloge de l'appareil.",
+        badChain:
+          "La chaîne est dans le désordre ou incomplète. Placez d'abord le certificat du serveur, puis chaque émetteur.",
+        weakKey: 'La clé est trop courte. Utilisez RSA 2048 ou plus, ou ECDSA.',
+        notServerCert: "Le certificat n'est pas destiné à un serveur TLS."
+      }
     }
   }
 };

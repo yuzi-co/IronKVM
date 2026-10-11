@@ -1860,6 +1860,119 @@ const hu = {
       hideLog: 'Napló elrejtése',
       retry: 'Videó újrapróbálása',
       retrying: 'Újraindítás...'
+    },
+    totp: {
+      login: {
+        title: 'Kétlépcsős azonosítás',
+        description:
+          'Adja meg a hitelesítő alkalmazás 6 jegyű kódját vagy az egyik helyreállítási kódját.',
+        placeholder: 'Kód vagy helyreállítási kód',
+        noEmptyCode: 'Adjon meg egy kódot',
+        verify: 'Ellenőrzés',
+        back: 'Vissza a jelszóhoz',
+        invalidCode: 'Érvénytelen kód',
+        locked: 'Túl sok hibás kód. Próbálja újra néhány perc múlva.',
+        expired: 'A bejelentkezés lejárt. Adja meg újra a jelszavát.'
+      },
+      settings: {
+        title: 'Kétlépcsős azonosítás',
+        description: 'A jelszó után kódot kér egy hitelesítő alkalmazásból.',
+        scope:
+          'Csak a webes bejelentkezésre vonatkozik. A VNC, az IPMI és a Redfish továbbra is csak jelszót kér, az API-kulcsok pedig kód nélkül működnek.',
+        on: 'Be',
+        off: 'Ki',
+        enable: 'Bekapcsolás',
+        disable: 'Kikapcsolás',
+        regenerate: 'Új helyreállítási kódok',
+        codesLeft: 'Hátralévő helyreállítási kódok: {{count}}',
+        enableTitle: 'Kétlépcsős azonosítás bekapcsolása',
+        disableTitle: 'Kétlépcsős azonosítás kikapcsolása',
+        regenerateTitle: 'Új helyreállítási kódok',
+        confirmPassword: 'Erősítse meg a jelszavával',
+        continue: 'Tovább',
+        scan: 'Olvassa be a QR-kódot egy hitelesítő alkalmazással, vagy írja be kézzel a titkos kulcsot. Ezután adja meg az alkalmazás által mutatott kódot.',
+        secret: 'Titkos kulcs',
+        enterCode: 'Kód az alkalmazásból',
+        verifyAndEnable: 'Ellenőrzés és bekapcsolás',
+        codesOnce:
+          'Mentse el most ezeket a helyreállítási kódokat. Mindegyik egyszer használható kód helyett, és többé nem jelennek meg.',
+        recoveryCodes: 'IronKVM helyreállítási kódok',
+        download: 'Letöltés',
+        saved: 'Elmentettem őket',
+        disabled: 'Kétlépcsős azonosítás kikapcsolva',
+        wrongPassword: 'Hibás jelszó',
+        setupExpired: 'A beállítás lejárt. Kezdje újra.',
+        loadFailed: 'Nem sikerült betölteni a kétlépcsős azonosítás állapotát',
+        failed: 'A módosítás sikertelen'
+      },
+      users: {
+        tag: '2FA',
+        reset: '2FA visszaállítása',
+        resetConfirm: 'Kikapcsolja a kétlépcsős azonosítást {{username}} számára?',
+        resetDone: 'Kétlépcsős azonosítás visszaállítva'
+      }
+    },
+    tlsCert: {
+      title: 'Tanúsítvány',
+      description: 'A HTTPS-kiszolgáló által bemutatott tanúsítvány.',
+      uploaded: 'Feltöltött',
+      selfSigned: 'Önaláírt',
+      httpsOff:
+        'A HTTPS ki van kapcsolva. A tanúsítvány a HTTPS bekapcsolása után lesz használatban.',
+      none: 'Még nincs tanúsítvány. A HTTPS bekapcsolásakor létrejön egy.',
+      subject: 'Tulajdonos',
+      issuer: 'Kibocsátó',
+      names: 'Nevek',
+      validFrom: 'Érvényesség kezdete',
+      validUntil: 'Érvényes eddig',
+      keyType: 'Kulcs',
+      chain: 'Tanúsítványok a láncban',
+      fingerprint: 'SHA-256',
+      restore: 'Önaláírt visszaállítása',
+      restoreConfirm: 'Visszatér az önaláírt tanúsítványhoz?',
+      restoreDesc:
+        'A feltöltött tanúsítvány és kulcs törlődik. A böngészők ismét figyelmeztetni fognak az önaláírt tanúsítvány miatt.',
+      restored: 'Önaláírt tanúsítvány visszaállítva',
+      restoreFailed: 'Nem sikerült visszaállítani az önaláírt tanúsítványt',
+      uploadTitle: 'Tanúsítvány feltöltése',
+      uploadDescription:
+        'PEM formátum. Először a kiszolgálótanúsítvány, utána a köztes tanúsítványok. A kulcs nem lehet titkosított.',
+      certField: 'Tanúsítványlánc',
+      keyField: 'Titkos kulcs',
+      chooseFile: 'Fájl kiválasztása',
+      readFailed: 'Nem sikerült beolvasni a fájlt',
+      check: 'Ellenőrzés',
+      install: 'Telepítés',
+      installConfirm: 'Telepíti ezt a tanúsítványt?',
+      installDesc:
+        'Az új kapcsolatok azonnal ezt használják. A megnyitott oldalak tovább működnek; töltse újra az oldalt az új tanúsítványhoz.',
+      installed: 'Tanúsítvány telepítve',
+      installFailed: 'Nem sikerült telepíteni a tanúsítványt',
+      checkFailed: 'A tanúsítványt elutasította a rendszer',
+      loadFailed: 'Nem sikerült betölteni a tanúsítványt',
+      warnings: {
+        expiresSoon: 'A tanúsítvány 30 napon belül lejár.',
+        nameMismatch:
+          'A tanúsítvány nem fedi le: {{names}}. A böngészők figyelmeztetni fognak, ha az eszközt ezeken a neveken nyitják meg.',
+        selfSigned:
+          'Ez a tanúsítvány önaláírt. A böngészők csak akkor bíznak benne, ha minden számítógépre telepítik.'
+      },
+      errors: {
+        tooLarge: 'A fájl túl nagy.',
+        noCertificate: 'Nem található PEM-tanúsítvány.',
+        badCertificate:
+          'A tanúsítvány nem olvasható. Illesszen be -----BEGIN CERTIFICATE----- kezdetű PEM-szöveget.',
+        noKey: 'Nem található PEM titkos kulcs.',
+        encryptedKey: 'A titkos kulcs titkosított. Először távolítsa el a jelmondatot.',
+        badKey: 'A titkos kulcs nem olvasható.',
+        keyMismatch: 'A titkos kulcs nem ehhez a tanúsítványhoz tartozik.',
+        expired: 'A tanúsítvány vagy a láncában lévő egyik tanúsítvány lejárt.',
+        notYetValid: 'A tanúsítvány még nem érvényes. Ellenőrizze az eszköz óráját.',
+        badChain:
+          'A lánc sorrendje hibás vagy hiányos. Először a kiszolgálótanúsítvány, utána sorban minden kibocsátó.',
+        weakKey: 'A kulcs túl rövid. Használjon legalább 2048 bites RSA-t vagy ECDSA-t.',
+        notServerCert: 'A tanúsítvány nem TLS-kiszolgálóhoz készült.'
+      }
     }
   }
 };

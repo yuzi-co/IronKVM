@@ -1886,6 +1886,119 @@ const de = {
       hideLog: 'Protokoll ausblenden',
       retry: 'Video erneut versuchen',
       retrying: 'Wird neu gestartet...'
+    },
+    totp: {
+      login: {
+        title: 'Zwei-Faktor-Authentifizierung',
+        description:
+          'Geben Sie den 6-stelligen Code aus Ihrer Authenticator-App oder einen Ihrer Wiederherstellungscodes ein.',
+        placeholder: 'Code oder Wiederherstellungscode',
+        noEmptyCode: 'Bitte einen Code eingeben',
+        verify: 'Bestätigen',
+        back: 'Zurück zum Passwort',
+        invalidCode: 'Ungültiger Code',
+        locked: 'Zu viele falsche Codes. Versuchen Sie es in einigen Minuten erneut.',
+        expired: 'Die Anmeldung ist abgelaufen. Geben Sie Ihr Passwort erneut ein.'
+      },
+      settings: {
+        title: 'Zwei-Faktor-Authentifizierung',
+        description: 'Nach dem Passwort einen Code aus einer Authenticator-App abfragen.',
+        scope:
+          'Gilt nur für die Web-Anmeldung. VNC, IPMI und Redfish verwenden weiterhin nur das Passwort, und API-Schlüssel funktionieren ohne Code.',
+        on: 'Ein',
+        off: 'Aus',
+        enable: 'Einschalten',
+        disable: 'Ausschalten',
+        regenerate: 'Neue Wiederherstellungscodes',
+        codesLeft: 'Verbleibende Wiederherstellungscodes: {{count}}',
+        enableTitle: 'Zwei-Faktor-Authentifizierung einschalten',
+        disableTitle: 'Zwei-Faktor-Authentifizierung ausschalten',
+        regenerateTitle: 'Neue Wiederherstellungscodes',
+        confirmPassword: 'Mit Ihrem Passwort bestätigen',
+        continue: 'Weiter',
+        scan: 'Scannen Sie den QR-Code mit einer Authenticator-App oder geben Sie den geheimen Schlüssel manuell ein. Geben Sie dann den Code ein, den die App anzeigt.',
+        secret: 'Geheimer Schlüssel',
+        enterCode: 'Code aus der App',
+        verifyAndEnable: 'Bestätigen und einschalten',
+        codesOnce:
+          'Speichern Sie diese Wiederherstellungscodes jetzt. Jeder funktioniert einmal anstelle eines Codes und sie werden nicht erneut angezeigt.',
+        recoveryCodes: 'IronKVM-Wiederherstellungscodes',
+        download: 'Herunterladen',
+        saved: 'Ich habe sie gespeichert',
+        disabled: 'Zwei-Faktor-Authentifizierung ausgeschaltet',
+        wrongPassword: 'Das Passwort ist falsch',
+        setupExpired: 'Die Einrichtung ist abgelaufen. Beginnen Sie erneut.',
+        loadFailed: 'Zwei-Faktor-Status konnte nicht geladen werden',
+        failed: 'Die Änderung ist fehlgeschlagen'
+      },
+      users: {
+        tag: '2FA',
+        reset: '2FA zurücksetzen',
+        resetConfirm: 'Zwei-Faktor-Authentifizierung für {{username}} ausschalten?',
+        resetDone: 'Zwei-Faktor-Authentifizierung zurückgesetzt'
+      }
+    },
+    tlsCert: {
+      title: 'Zertifikat',
+      description: 'Das Zertifikat, das der HTTPS-Server vorlegt.',
+      uploaded: 'Hochgeladen',
+      selfSigned: 'Selbstsigniert',
+      httpsOff: 'HTTPS ist aus. Das Zertifikat wird verwendet, sobald HTTPS eingeschaltet ist.',
+      none: 'Noch kein Zertifikat. Es wird erzeugt, wenn HTTPS eingeschaltet wird.',
+      subject: 'Antragsteller',
+      issuer: 'Aussteller',
+      names: 'Namen',
+      validFrom: 'Gültig ab',
+      validUntil: 'Gültig bis',
+      keyType: 'Schlüssel',
+      chain: 'Zertifikate in der Kette',
+      fingerprint: 'SHA-256',
+      restore: 'Selbstsigniertes wiederherstellen',
+      restoreConfirm: 'Zum selbstsignierten Zertifikat zurückkehren?',
+      restoreDesc:
+        'Das hochgeladene Zertifikat und der Schlüssel werden gelöscht. Browser warnen dann wieder vor dem selbstsignierten Zertifikat.',
+      restored: 'Selbstsigniertes Zertifikat wiederhergestellt',
+      restoreFailed: 'Selbstsigniertes Zertifikat konnte nicht wiederhergestellt werden',
+      uploadTitle: 'Zertifikat hochladen',
+      uploadDescription:
+        'PEM-Format. Zuerst das Serverzertifikat, dann etwaige Zwischenzertifikate. Der Schlüssel darf nicht verschlüsselt sein.',
+      certField: 'Zertifikatskette',
+      keyField: 'Privater Schlüssel',
+      chooseFile: 'Datei auswählen',
+      readFailed: 'Die Datei konnte nicht gelesen werden',
+      check: 'Prüfen',
+      install: 'Installieren',
+      installConfirm: 'Dieses Zertifikat installieren?',
+      installDesc:
+        'Neue Verbindungen verwenden es sofort. Offene Seiten funktionieren weiter; laden Sie neu, um das neue Zertifikat zu sehen.',
+      installed: 'Zertifikat installiert',
+      installFailed: 'Zertifikat konnte nicht installiert werden',
+      checkFailed: 'Das Zertifikat wurde abgelehnt',
+      loadFailed: 'Zertifikat konnte nicht geladen werden',
+      warnings: {
+        expiresSoon: 'Das Zertifikat läuft innerhalb von 30 Tagen ab.',
+        nameMismatch:
+          'Das Zertifikat deckt nicht ab: {{names}}. Browser warnen, wenn das Gerät unter diesen Namen geöffnet wird.',
+        selfSigned:
+          'Dieses Zertifikat ist selbstsigniert. Browser vertrauen ihm erst, wenn es auf jedem Computer installiert ist.'
+      },
+      errors: {
+        tooLarge: 'Die Datei ist zu groß.',
+        noCertificate: 'Kein PEM-Zertifikat gefunden.',
+        badCertificate:
+          'Das Zertifikat kann nicht gelesen werden. Fügen Sie PEM-Text ein, der mit -----BEGIN CERTIFICATE----- beginnt.',
+        noKey: 'Kein privater PEM-Schlüssel gefunden.',
+        encryptedKey:
+          'Der private Schlüssel ist verschlüsselt. Entfernen Sie zuerst die Passphrase.',
+        badKey: 'Der private Schlüssel kann nicht gelesen werden.',
+        keyMismatch: 'Der private Schlüssel gehört nicht zum Zertifikat.',
+        expired: 'Das Zertifikat oder eines in seiner Kette ist abgelaufen.',
+        notYetValid: 'Das Zertifikat ist noch nicht gültig. Prüfen Sie die Uhr des Geräts.',
+        badChain:
+          'Die Kette ist ungeordnet oder unvollständig. Zuerst das Serverzertifikat, dann jeden Aussteller.',
+        weakKey: 'Der Schlüssel ist zu kurz. Verwenden Sie RSA 2048 oder länger, oder ECDSA.',
+        notServerCert: 'Das Zertifikat ist nicht für einen TLS-Server bestimmt.'
+      }
     }
   }
 };

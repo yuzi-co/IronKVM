@@ -341,6 +341,49 @@ export function setTLS(enabled: boolean) {
   return http.post('/api/vm/tls', { enabled });
 }
 
+// CertInfo describes a certificate. The server never sends a key back.
+export type CertInfo = {
+  subject: string;
+  issuer: string;
+  dnsNames: string[];
+  ipAddresses: string[];
+  notBefore: string;
+  notAfter: string;
+  fingerprint: string;
+  keyType: string;
+  chainLength: number;
+  // This device's names and addresses the certificate does not answer for.
+  uncovered?: string[];
+  warnings?: ('expiresSoon' | 'nameMismatch' | 'selfSigned')[];
+};
+
+export type TLSCertState = {
+  // An uploaded certificate is configured, rather than the generated one.
+  uploaded: boolean;
+  https: boolean;
+  info: CertInfo | null;
+};
+
+// describe the HTTPS certificate in force
+export function getTLSCert() {
+  return http.get('/api/vm/tls/cert');
+}
+
+// validate a certificate and key without installing them
+export function checkTLSCert(cert: string, key: string) {
+  return http.post('/api/vm/tls/cert/check', { cert, key });
+}
+
+// install a certificate and key; served from the next connection on
+export function setTLSCert(cert: string, key: string) {
+  return http.post('/api/vm/tls/cert', { cert, key });
+}
+
+// go back to the generated self-signed certificate
+export function restoreTLSCert() {
+  return http.delete('/api/vm/tls/cert');
+}
+
 // reboot
 export function reboot() {
   return http.post('/api/vm/system/reboot');

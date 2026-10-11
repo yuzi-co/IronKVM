@@ -11,7 +11,8 @@ import (
 func authRouter(r *gin.Engine) {
 	service := auth.NewService()
 
-	r.POST("/api/auth/login", service.Login) // login
+	r.POST("/api/auth/login", service.Login)          // login
+	r.POST("/api/auth/login/totp", service.LoginTOTP) // login, second step
 
 	api := r.Group("/api").Use(middleware.CheckToken())
 
@@ -37,4 +38,18 @@ func authRouter(r *gin.Engine) {
 	keys.GET("/auth/api-keys", service.GetAPIKeys)          // list api keys
 	keys.POST("/auth/api-keys", service.CreateAPIKey)       // create an api key
 	keys.DELETE("/auth/api-keys/:id", service.DeleteAPIKey) // revoke an api key
+
+	// The second factor is session work too. API keys bypass it, as they
+	// bypass the password, so a key must not be able to turn it off either.
+	keys.GET("/auth/totp", service.GetTOTP)
+	keys.POST("/auth/totp/setup", service.SetupTOTP)
+	keys.POST("/auth/totp/enable", service.EnableTOTP)
+	keys.POST("/auth/totp/disable", service.DisableTOTP)
+	keys.POST("/auth/totp/recovery-codes", service.RegenerateRecoveryCodes)
+
+	adminSession := r.Group("/api").Use(
+		middleware.CheckSession(),
+		middleware.RequireRole(authn.RoleAdmin),
+	)
+	adminSession.DELETE("/auth/users/:username/totp", service.ResetUserTOTP)
 }

@@ -1863,6 +1863,118 @@ const nl = {
       hideLog: 'Logboek verbergen',
       retry: 'Video opnieuw proberen',
       retrying: 'Opnieuw opstarten...'
+    },
+    totp: {
+      login: {
+        title: 'Tweestapsverificatie',
+        description:
+          'Voer de 6-cijferige code uit je authenticator-app in, of een van je herstelcodes.',
+        placeholder: 'Code of herstelcode',
+        noEmptyCode: 'Voer een code in',
+        verify: 'Verifiëren',
+        back: 'Terug naar wachtwoord',
+        invalidCode: 'Ongeldige code',
+        locked: 'Te veel onjuiste codes. Probeer het over een paar minuten opnieuw.',
+        expired: 'De aanmelding is verlopen. Voer je wachtwoord opnieuw in.'
+      },
+      settings: {
+        title: 'Tweestapsverificatie',
+        description: 'Na het wachtwoord om een code uit een authenticator-app vragen.',
+        scope:
+          'Geldt alleen voor het inloggen via het web. VNC, IPMI en Redfish gebruiken nog steeds alleen het wachtwoord, en API-sleutels werken zonder code.',
+        on: 'Aan',
+        off: 'Uit',
+        enable: 'Inschakelen',
+        disable: 'Uitschakelen',
+        regenerate: 'Nieuwe herstelcodes',
+        codesLeft: 'Resterende herstelcodes: {{count}}',
+        enableTitle: 'Tweestapsverificatie inschakelen',
+        disableTitle: 'Tweestapsverificatie uitschakelen',
+        regenerateTitle: 'Nieuwe herstelcodes',
+        confirmPassword: 'Bevestig met je wachtwoord',
+        continue: 'Doorgaan',
+        scan: 'Scan de QR-code met een authenticator-app, of voer de geheime sleutel handmatig in. Typ daarna de code die de app toont.',
+        secret: 'Geheime sleutel',
+        enterCode: 'Code uit de app',
+        verifyAndEnable: 'Verifiëren en inschakelen',
+        codesOnce:
+          'Bewaar deze herstelcodes nu. Elke code werkt één keer in plaats van een gewone code, en ze worden niet opnieuw getoond.',
+        recoveryCodes: 'IronKVM-herstelcodes',
+        download: 'Downloaden',
+        saved: 'Ik heb ze bewaard',
+        disabled: 'Tweestapsverificatie uitgeschakeld',
+        wrongPassword: 'Het wachtwoord is onjuist',
+        setupExpired: 'De instelling is verlopen. Begin opnieuw.',
+        loadFailed: 'Laden van de status van tweestapsverificatie mislukt',
+        failed: 'De wijziging is mislukt'
+      },
+      users: {
+        tag: '2FA',
+        reset: '2FA resetten',
+        resetConfirm: 'Tweestapsverificatie uitschakelen voor {{username}}?',
+        resetDone: 'Tweestapsverificatie gereset'
+      }
+    },
+    tlsCert: {
+      title: 'Certificaat',
+      description: 'Het certificaat dat de HTTPS-server presenteert.',
+      uploaded: 'Geüpload',
+      selfSigned: 'Zelfondertekend',
+      httpsOff: 'HTTPS staat uit. Het certificaat wordt gebruikt zodra HTTPS is ingeschakeld.',
+      none: 'Nog geen certificaat. Er wordt er een gegenereerd wanneer HTTPS wordt ingeschakeld.',
+      subject: 'Onderwerp',
+      issuer: 'Uitgever',
+      names: 'Namen',
+      validFrom: 'Geldig vanaf',
+      validUntil: 'Geldig tot',
+      keyType: 'Sleutel',
+      chain: 'Certificaten in keten',
+      fingerprint: 'SHA-256',
+      restore: 'Zelfondertekend herstellen',
+      restoreConfirm: 'Terug naar het zelfondertekende certificaat?',
+      restoreDesc:
+        'Het geüploade certificaat en de sleutel worden verwijderd. Browsers waarschuwen dan weer voor het zelfondertekende certificaat.',
+      restored: 'Zelfondertekend certificaat hersteld',
+      restoreFailed: 'Herstellen van het zelfondertekende certificaat mislukt',
+      uploadTitle: 'Certificaat uploaden',
+      uploadDescription:
+        'PEM-formaat. Zet het servercertificaat eerst, daarna eventuele tussencertificaten. De sleutel mag niet versleuteld zijn.',
+      certField: 'Certificaatketen',
+      keyField: 'Privésleutel',
+      chooseFile: 'Bestand kiezen',
+      readFailed: 'Kan het bestand niet lezen',
+      check: 'Controleren',
+      install: 'Installeren',
+      installConfirm: 'Dit certificaat installeren?',
+      installDesc:
+        "Nieuwe verbindingen gebruiken het meteen. Open pagina's blijven werken; herlaad om het nieuwe certificaat te zien.",
+      installed: 'Certificaat geïnstalleerd',
+      installFailed: 'Installeren van het certificaat mislukt',
+      checkFailed: 'Het certificaat is geweigerd',
+      loadFailed: 'Laden van het certificaat mislukt',
+      warnings: {
+        expiresSoon: 'Het certificaat verloopt binnen 30 dagen.',
+        nameMismatch:
+          'Het certificaat dekt niet: {{names}}. Browsers waarschuwen wanneer het apparaat via die namen wordt geopend.',
+        selfSigned:
+          'Dit certificaat is zelfondertekend. Browsers vertrouwen het pas nadat het op elke computer is geïnstalleerd.'
+      },
+      errors: {
+        tooLarge: 'Het bestand is te groot.',
+        noCertificate: 'Geen PEM-certificaat gevonden.',
+        badCertificate:
+          'Het certificaat kan niet worden gelezen. Plak PEM-tekst die begint met -----BEGIN CERTIFICATE-----.',
+        noKey: 'Geen PEM-privésleutel gevonden.',
+        encryptedKey: 'De privésleutel is versleuteld. Verwijder eerst de wachtwoordzin.',
+        badKey: 'De privésleutel kan niet worden gelezen.',
+        keyMismatch: 'De privésleutel hoort niet bij het certificaat.',
+        expired: 'Het certificaat, of een certificaat in de keten, is verlopen.',
+        notYetValid: 'Het certificaat is nog niet geldig. Controleer de klok van het apparaat.',
+        badChain:
+          'De keten staat in de verkeerde volgorde of is onvolledig. Zet het servercertificaat eerst, daarna elke uitgever.',
+        weakKey: 'De sleutel is te kort. Gebruik RSA 2048 of langer, of ECDSA.',
+        notServerCert: 'Het certificaat is niet bedoeld voor een TLS-server.'
+      }
     }
   }
 };

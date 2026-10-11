@@ -119,17 +119,6 @@ func isSystemPasswordOwner(user *authn.User) bool {
 	return user.SystemAccount && user.Role == authn.RoleAdmin && user.Enabled
 }
 
-// changesSystemPassword is isSystemPasswordOwner by name, for the account
-// endpoint, which lets the page say whether the root password changes too. An
-// account that cannot be read reports false, the answer that promises less.
-func changesSystemPassword(username string) bool {
-	user, err := authn.DefaultStore.Get(username)
-	if err != nil {
-		return false
-	}
-	return isSystemPasswordOwner(user)
-}
-
 func changeRootPassword(password string) error {
 	if err := passwd(password); err != nil {
 		log.Errorf("failed to change root password: %s", err)

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
 import { Logout } from './logout.tsx';
+import { TwoFactor } from './two-factor.tsx';
 import { Users } from './users.tsx';
 
 export const Account = () => {
@@ -38,6 +39,10 @@ export const Account = () => {
           </Button>
         </div>
       </div>
+
+      <Divider className="opacity-50" />
+
+      <TwoFactor />
 
       <Divider className="opacity-50" />
 

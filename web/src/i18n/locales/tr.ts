@@ -1838,6 +1838,118 @@ const tr = {
       hideLog: 'Günlüğü gizle',
       retry: 'Videoyu yeniden dene',
       retrying: 'Yeniden başlatılıyor...'
+    },
+    totp: {
+      login: {
+        title: 'İki faktörlü kimlik doğrulama',
+        description:
+          'Kimlik doğrulama uygulamanızdaki 6 haneli kodu veya kurtarma kodlarınızdan birini girin.',
+        placeholder: 'Kod veya kurtarma kodu',
+        noEmptyCode: 'Lütfen bir kod girin',
+        verify: 'Doğrula',
+        back: 'Parolaya dön',
+        invalidCode: 'Geçersiz kod',
+        locked: 'Çok fazla hatalı kod. Birkaç dakika sonra yeniden deneyin.',
+        expired: 'Oturum açma süresi doldu. Parolanızı yeniden girin.'
+      },
+      settings: {
+        title: 'İki faktörlü kimlik doğrulama',
+        description: 'Paroladan sonra kimlik doğrulama uygulamasından bir kod iste.',
+        scope:
+          'Yalnızca web girişi için geçerlidir. VNC, IPMI ve Redfish yine yalnızca parola kullanır, API anahtarları da kod olmadan çalışır.',
+        on: 'Açık',
+        off: 'Kapalı',
+        enable: 'Aç',
+        disable: 'Kapat',
+        regenerate: 'Yeni kurtarma kodları',
+        codesLeft: 'Kalan kurtarma kodu: {{count}}',
+        enableTitle: 'İki faktörlü kimlik doğrulamayı aç',
+        disableTitle: 'İki faktörlü kimlik doğrulamayı kapat',
+        regenerateTitle: 'Yeni kurtarma kodları',
+        confirmPassword: 'Parolanızla onaylayın',
+        continue: 'Devam',
+        scan: 'QR kodunu bir kimlik doğrulama uygulamasıyla tarayın veya gizli anahtarı elle girin. Ardından uygulamanın gösterdiği kodu yazın.',
+        secret: 'Gizli anahtar',
+        enterCode: 'Uygulamadaki kod',
+        verifyAndEnable: 'Doğrula ve aç',
+        codesOnce:
+          'Bu kurtarma kodlarını şimdi kaydedin. Her biri bir kez kod yerine kullanılabilir ve bir daha gösterilmez.',
+        recoveryCodes: 'IronKVM kurtarma kodları',
+        download: 'İndir',
+        saved: 'Kaydettim',
+        disabled: 'İki faktörlü kimlik doğrulama kapatıldı',
+        wrongPassword: 'Parola yanlış',
+        setupExpired: 'Kurulum süresi doldu. Yeniden başlayın.',
+        loadFailed: 'İki faktörlü kimlik doğrulama durumu yüklenemedi',
+        failed: 'Değişiklik başarısız oldu'
+      },
+      users: {
+        tag: '2FA',
+        reset: "2FA'yı sıfırla",
+        resetConfirm: '{{username}} için iki faktörlü kimlik doğrulama kapatılsın mı?',
+        resetDone: 'İki faktörlü kimlik doğrulama sıfırlandı'
+      }
+    },
+    tlsCert: {
+      title: 'Sertifika',
+      description: 'HTTPS sunucusunun sunduğu sertifika.',
+      uploaded: 'Yüklenen',
+      selfSigned: 'Kendinden imzalı',
+      httpsOff: 'HTTPS kapalı. Sertifika, HTTPS açıldığında kullanılır.',
+      none: 'Henüz sertifika yok. HTTPS açıldığında bir tane oluşturulur.',
+      subject: 'Konu',
+      issuer: 'Veren',
+      names: 'Adlar',
+      validFrom: 'Geçerlilik başlangıcı',
+      validUntil: 'Geçerlilik bitişi',
+      keyType: 'Anahtar',
+      chain: 'Zincirdeki sertifikalar',
+      fingerprint: 'SHA-256',
+      restore: 'Kendinden imzalıya dön',
+      restoreConfirm: 'Kendinden imzalı sertifikaya geri dönülsün mü?',
+      restoreDesc:
+        'Yüklenen sertifika ve anahtar silinir. Tarayıcılar kendinden imzalı sertifika için yeniden uyarı verir.',
+      restored: 'Kendinden imzalı sertifika geri yüklendi',
+      restoreFailed: 'Kendinden imzalı sertifika geri yüklenemedi',
+      uploadTitle: 'Sertifika yükle',
+      uploadDescription:
+        'PEM biçimi. Önce sunucu sertifikasını, ardından ara sertifikaları koyun. Anahtar şifreli olmamalıdır.',
+      certField: 'Sertifika zinciri',
+      keyField: 'Özel anahtar',
+      chooseFile: 'Dosya seç',
+      readFailed: 'Dosya okunamadı',
+      check: 'Denetle',
+      install: 'Yükle',
+      installConfirm: 'Bu sertifika yüklensin mi?',
+      installDesc:
+        'Yeni bağlantılar hemen bunu kullanır. Açık sayfalar çalışmaya devam eder; yeni sertifikayı görmek için sayfayı yenileyin.',
+      installed: 'Sertifika yüklendi',
+      installFailed: 'Sertifika yüklenemedi',
+      checkFailed: 'Sertifika reddedildi',
+      loadFailed: 'Sertifika alınamadı',
+      warnings: {
+        expiresSoon: 'Sertifikanın süresi 30 gün içinde doluyor.',
+        nameMismatch:
+          'Sertifika şunları kapsamıyor: {{names}}. Cihaz bu adlarla açıldığında tarayıcılar uyarı verir.',
+        selfSigned:
+          'Bu sertifika kendinden imzalı. Tarayıcılar ona yalnızca her bilgisayara yüklendikten sonra güvenir.'
+      },
+      errors: {
+        tooLarge: 'Dosya çok büyük.',
+        noCertificate: 'PEM sertifikası bulunamadı.',
+        badCertificate:
+          'Sertifika okunamıyor. -----BEGIN CERTIFICATE----- ile başlayan PEM metnini yapıştırın.',
+        noKey: 'PEM özel anahtarı bulunamadı.',
+        encryptedKey: 'Özel anahtar şifreli. Önce parola ifadesini kaldırın.',
+        badKey: 'Özel anahtar okunamıyor.',
+        keyMismatch: 'Özel anahtar bu sertifikaya ait değil.',
+        expired: 'Sertifikanın veya zincirindeki bir sertifikanın süresi dolmuş.',
+        notYetValid: 'Sertifika henüz geçerli değil. Cihazın saatini kontrol edin.',
+        badChain:
+          'Zincir sırasız veya eksik. Önce sunucu sertifikasını, ardından her vereni koyun.',
+        weakKey: 'Anahtar çok kısa. RSA 2048 veya daha uzun ya da ECDSA kullanın.',
+        notServerCert: 'Sertifika bir TLS sunucusu için değil.'
+      }
     }
   }
 };

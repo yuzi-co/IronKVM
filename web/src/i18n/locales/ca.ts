@@ -1861,6 +1861,118 @@ const ca = {
       hideLog: 'Amaga el registre',
       retry: 'Torna a provar el vídeo',
       retrying: "S'està reiniciant..."
+    },
+    totp: {
+      login: {
+        title: 'Autenticació de dos factors',
+        description:
+          "Introdueix el codi de 6 dígits de l'aplicació d'autenticació, o un dels teus codis de recuperació.",
+        placeholder: 'Codi o codi de recuperació',
+        noEmptyCode: 'Introdueix un codi',
+        verify: 'Verifica',
+        back: 'Torna a la contrasenya',
+        invalidCode: 'Codi no vàlid',
+        locked: "Massa codis incorrectes. Torna-ho a provar d'aquí a uns minuts.",
+        expired: "L'inici de sessió ha caducat. Torna a introduir la contrasenya."
+      },
+      settings: {
+        title: 'Autenticació de dos factors',
+        description: "Demana un codi d'una aplicació d'autenticació després de la contrasenya.",
+        scope:
+          "Només s'aplica a l'inici de sessió web. VNC, IPMI i Redfish continuen fent servir només la contrasenya, i les claus API funcionen sense codi.",
+        on: 'Activada',
+        off: 'Desactivada',
+        enable: 'Activa',
+        disable: 'Desactiva',
+        regenerate: 'Codis de recuperació nous',
+        codesLeft: 'Codis de recuperació restants: {{count}}',
+        enableTitle: "Activa l'autenticació de dos factors",
+        disableTitle: "Desactiva l'autenticació de dos factors",
+        regenerateTitle: 'Codis de recuperació nous',
+        confirmPassword: 'Confirma amb la teva contrasenya',
+        continue: 'Continua',
+        scan: "Escaneja el codi QR amb una aplicació d'autenticació, o introdueix el secret a mà. Després escriu el codi que mostra l'aplicació.",
+        secret: 'Secret',
+        enterCode: "Codi de l'aplicació",
+        verifyAndEnable: 'Verifica i activa',
+        codesOnce:
+          "Desa ara aquests codis de recuperació. Cadascun serveix una vegada en lloc d'un codi, i no es tornaran a mostrar.",
+        recoveryCodes: "Codis de recuperació d'IronKVM",
+        download: 'Baixa',
+        saved: 'Ja els he desat',
+        disabled: 'Autenticació de dos factors desactivada',
+        wrongPassword: 'La contrasenya no és correcta',
+        setupExpired: 'La configuració ha caducat. Torna a començar.',
+        loadFailed: "No s'ha pogut carregar l'estat de l'autenticació de dos factors",
+        failed: 'El canvi ha fallat'
+      },
+      users: {
+        tag: '2FA',
+        reset: 'Restableix la 2FA',
+        resetConfirm: "Vols desactivar l'autenticació de dos factors per a {{username}}?",
+        resetDone: 'Autenticació de dos factors restablerta'
+      }
+    },
+    tlsCert: {
+      title: 'Certificat',
+      description: 'El certificat que presenta el servidor HTTPS.',
+      uploaded: 'Pujat',
+      selfSigned: 'Autosignat',
+      httpsOff: "HTTPS està desactivat. El certificat es farà servir quan s'activi HTTPS.",
+      none: "Encara no hi ha cap certificat. Se'n genera un quan s'activa HTTPS.",
+      subject: 'Subjecte',
+      issuer: 'Emissor',
+      names: 'Noms',
+      validFrom: 'Vàlid des de',
+      validUntil: 'Vàlid fins a',
+      keyType: 'Clau',
+      chain: 'Certificats de la cadena',
+      fingerprint: 'SHA-256',
+      restore: "Restaura l'autosignat",
+      restoreConfirm: 'Vols tornar al certificat autosignat?',
+      restoreDesc:
+        "S'eliminaran el certificat i la clau pujats. Els navegadors tornaran a avisar del certificat autosignat.",
+      restored: 'Certificat autosignat restaurat',
+      restoreFailed: "No s'ha pogut restaurar el certificat autosignat",
+      uploadTitle: 'Puja un certificat',
+      uploadDescription:
+        'Format PEM. Posa primer el certificat del servidor i després els intermedis. La clau no pot estar xifrada.',
+      certField: 'Cadena de certificats',
+      keyField: 'Clau privada',
+      chooseFile: 'Tria un fitxer',
+      readFailed: "No s'ha pogut llegir el fitxer",
+      check: 'Comprova',
+      install: 'Instal·la',
+      installConfirm: 'Vols instal·lar aquest certificat?',
+      installDesc:
+        'Les connexions noves el fan servir de seguida. Les pàgines obertes continuen funcionant; recarrega per veure el certificat nou.',
+      installed: 'Certificat instal·lat',
+      installFailed: "No s'ha pogut instal·lar el certificat",
+      checkFailed: 'El certificat ha estat rebutjat',
+      loadFailed: "No s'ha pogut carregar el certificat",
+      warnings: {
+        expiresSoon: "El certificat caduca d'aquí a menys de 30 dies.",
+        nameMismatch:
+          "El certificat no cobreix: {{names}}. Els navegadors avisaran quan s'obri el dispositiu amb aquests noms.",
+        selfSigned:
+          'Aquest certificat és autosignat. Els navegadors només hi confien un cop instal·lat a cada ordinador.'
+      },
+      errors: {
+        tooLarge: 'El fitxer és massa gran.',
+        noCertificate: "No s'ha trobat cap certificat PEM.",
+        badCertificate:
+          'No es pot llegir el certificat. Enganxa text PEM que comenci per -----BEGIN CERTIFICATE-----.',
+        noKey: "No s'ha trobat cap clau privada PEM.",
+        encryptedKey: 'La clau privada està xifrada. Treu primer la frase de contrasenya.',
+        badKey: 'No es pot llegir la clau privada.',
+        keyMismatch: 'La clau privada no correspon al certificat.',
+        expired: 'El certificat, o un de la seva cadena, ha caducat.',
+        notYetValid: 'El certificat encara no és vàlid. Comprova el rellotge del dispositiu.',
+        badChain:
+          'La cadena està desordenada o incompleta. Posa primer el certificat del servidor i després cada emissor.',
+        weakKey: 'La clau és massa curta. Fes servir RSA 2048 o més, o ECDSA.',
+        notServerCert: 'El certificat no és per a un servidor TLS.'
+      }
     }
   }
 };

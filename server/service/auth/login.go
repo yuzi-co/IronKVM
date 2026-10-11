@@ -50,6 +50,12 @@ func (s *Service) Login(c *gin.Context) {
 		s.loginFailed(c, clientIP, &rsp)
 		return
 	}
+	// The address's failed attempts are kept until the second step passes:
+	// a right password alone is not a login.
+	if user.TOTPEnabled() {
+		s.startTOTPChallenge(c, user, &rsp)
+		return
+	}
 
 	ClearLoginAttempt(clientIP)
 	token, err := middleware.GenerateJWT(user.Username, user.TokenVersion)
@@ -95,10 +101,14 @@ func (s *Service) GetAccount(c *gin.Context) {
 		rsp.ErrRsp(c, -1, "get account failed")
 		return
 	}
+	// An account that cannot be read reports false for both, the answers
+	// that promise less.
+	user, err := authn.DefaultStore.Get(principal.Username)
 	rsp.OkRspWithData(c, &proto.GetAccountRsp{
 		Username:      principal.Username,
 		Role:          string(principal.Role),
-		SystemAccount: changesSystemPassword(principal.Username),
+		SystemAccount: err == nil && isSystemPasswordOwner(user),
+		TOTPEnabled:   err == nil && user.TOTPEnabled(),
 	})
 }
 

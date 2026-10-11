@@ -39,7 +39,7 @@ func ips(t *testing.T, in ...string) []net.IP {
 	return out
 }
 
-func hasDNS(id certIdentity, want string) bool {
+func hasDNS(id CertIdentity, want string) bool {
 	for _, got := range id.DNS {
 		if got == want {
 			return true
@@ -49,7 +49,7 @@ func hasDNS(id certIdentity, want string) bool {
 	return false
 }
 
-func hasIP(id certIdentity, want string) bool {
+func hasIP(id CertIdentity, want string) bool {
 	target := net.ParseIP(want)
 	for _, got := range id.IPs {
 		if got.Equal(target) {
@@ -141,7 +141,7 @@ func TestCertNamesSurvivesAnUnsetHostname(t *testing.T) {
 }
 
 // writeCert generates a certificate for the given identity and returns its path.
-func writeCert(t *testing.T, id certIdentity) string {
+func writeCert(t *testing.T, id CertIdentity) string {
 	t.Helper()
 
 	dir := t.TempDir()
@@ -169,7 +169,7 @@ func TestCertCoversAcceptsACertificateThatStillFits(t *testing.T) {
 func TestCertCoversRejectsTheLocalhostOnlyCertificate(t *testing.T) {
 	// The exact certificate the product shipped, against a device that is
 	// reached on its address. This is the reported fault.
-	shipped := certIdentity{
+	shipped := CertIdentity{
 		DNS: []string{"localhost"},
 		IPs: ips(t, "127.0.0.1", "::1"),
 	}
@@ -279,7 +279,7 @@ func TestEnsureCertReplacesOneThatNoLongerFits(t *testing.T) {
 	crt := filepath.Join(dir, "server.crt")
 	key := filepath.Join(dir, "server.key")
 
-	shipped := certIdentity{DNS: []string{"localhost"}, IPs: ips(t, "127.0.0.1", "::1")}
+	shipped := CertIdentity{DNS: []string{"localhost"}, IPs: ips(t, "127.0.0.1", "::1")}
 	if err := generateCertTo(crt, key, shipped); err != nil {
 		t.Fatal(err)
 	}

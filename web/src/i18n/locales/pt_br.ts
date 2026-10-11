@@ -1853,6 +1853,118 @@ const pt_br = {
       hideLog: 'Ocultar log',
       retry: 'Tentar vídeo novamente',
       retrying: 'Reiniciando...'
+    },
+    totp: {
+      login: {
+        title: 'Autenticação de dois fatores',
+        description:
+          'Digite o código de 6 dígitos do seu aplicativo autenticador, ou um dos seus códigos de recuperação.',
+        placeholder: 'Código ou código de recuperação',
+        noEmptyCode: 'Digite um código',
+        verify: 'Verificar',
+        back: 'Voltar para a senha',
+        invalidCode: 'Código inválido',
+        locked: 'Muitos códigos errados. Tente novamente em alguns minutos.',
+        expired: 'O login expirou. Digite sua senha novamente.'
+      },
+      settings: {
+        title: 'Autenticação de dois fatores',
+        description: 'Pedir um código de um aplicativo autenticador depois da senha.',
+        scope:
+          'Vale apenas para o login web. VNC, IPMI e Redfish continuam usando só a senha, e as chaves de API funcionam sem código.',
+        on: 'Ativada',
+        off: 'Desativada',
+        enable: 'Ativar',
+        disable: 'Desativar',
+        regenerate: 'Novos códigos de recuperação',
+        codesLeft: 'Códigos de recuperação restantes: {{count}}',
+        enableTitle: 'Ativar autenticação de dois fatores',
+        disableTitle: 'Desativar autenticação de dois fatores',
+        regenerateTitle: 'Novos códigos de recuperação',
+        confirmPassword: 'Confirme com sua senha',
+        continue: 'Continuar',
+        scan: 'Escaneie o código QR com um aplicativo autenticador, ou digite o segredo manualmente. Depois digite o código que o aplicativo mostra.',
+        secret: 'Segredo',
+        enterCode: 'Código do aplicativo',
+        verifyAndEnable: 'Verificar e ativar',
+        codesOnce:
+          'Salve estes códigos de recuperação agora. Cada um funciona uma vez no lugar de um código, e eles não serão mostrados novamente.',
+        recoveryCodes: 'Códigos de recuperação do IronKVM',
+        download: 'Baixar',
+        saved: 'Já salvei',
+        disabled: 'Autenticação de dois fatores desativada',
+        wrongPassword: 'A senha está incorreta',
+        setupExpired: 'A configuração expirou. Comece novamente.',
+        loadFailed: 'Falha ao carregar o estado da autenticação de dois fatores',
+        failed: 'A alteração falhou'
+      },
+      users: {
+        tag: '2FA',
+        reset: 'Redefinir 2FA',
+        resetConfirm: 'Desativar a autenticação de dois fatores de {{username}}?',
+        resetDone: 'Autenticação de dois fatores redefinida'
+      }
+    },
+    tlsCert: {
+      title: 'Certificado',
+      description: 'O certificado apresentado pelo servidor HTTPS.',
+      uploaded: 'Enviado',
+      selfSigned: 'Autoassinado',
+      httpsOff: 'O HTTPS está desativado. O certificado será usado quando o HTTPS for ativado.',
+      none: 'Nenhum certificado ainda. Um será gerado quando o HTTPS for ativado.',
+      subject: 'Assunto',
+      issuer: 'Emissor',
+      names: 'Nomes',
+      validFrom: 'Válido desde',
+      validUntil: 'Válido até',
+      keyType: 'Chave',
+      chain: 'Certificados na cadeia',
+      fingerprint: 'SHA-256',
+      restore: 'Restaurar autoassinado',
+      restoreConfirm: 'Voltar ao certificado autoassinado?',
+      restoreDesc:
+        'O certificado e a chave enviados serão excluídos. Os navegadores voltarão a avisar sobre o certificado autoassinado.',
+      restored: 'Certificado autoassinado restaurado',
+      restoreFailed: 'Falha ao restaurar o certificado autoassinado',
+      uploadTitle: 'Enviar um certificado',
+      uploadDescription:
+        'Formato PEM. Coloque primeiro o certificado do servidor, depois os intermediários. A chave não pode estar criptografada.',
+      certField: 'Cadeia de certificados',
+      keyField: 'Chave privada',
+      chooseFile: 'Escolher arquivo',
+      readFailed: 'Não foi possível ler o arquivo',
+      check: 'Verificar',
+      install: 'Instalar',
+      installConfirm: 'Instalar este certificado?',
+      installDesc:
+        'Novas conexões passam a usá-lo imediatamente. As páginas abertas continuam funcionando; recarregue para ver o novo certificado.',
+      installed: 'Certificado instalado',
+      installFailed: 'Falha ao instalar o certificado',
+      checkFailed: 'O certificado foi recusado',
+      loadFailed: 'Falha ao carregar o certificado',
+      warnings: {
+        expiresSoon: 'O certificado expira em menos de 30 dias.',
+        nameMismatch:
+          'O certificado não cobre: {{names}}. Os navegadores vão avisar quando o dispositivo for aberto por esses nomes.',
+        selfSigned:
+          'Este certificado é autoassinado. Os navegadores só confiam nele depois que é instalado em cada computador.'
+      },
+      errors: {
+        tooLarge: 'O arquivo é grande demais.',
+        noCertificate: 'Nenhum certificado PEM encontrado.',
+        badCertificate:
+          'Não é possível ler o certificado. Cole um texto PEM que comece com -----BEGIN CERTIFICATE-----.',
+        noKey: 'Nenhuma chave privada PEM encontrada.',
+        encryptedKey: 'A chave privada está criptografada. Remova a senha da chave primeiro.',
+        badKey: 'Não é possível ler a chave privada.',
+        keyMismatch: 'A chave privada não pertence ao certificado.',
+        expired: 'O certificado, ou um da sua cadeia, expirou.',
+        notYetValid: 'O certificado ainda não é válido. Verifique o relógio do dispositivo.',
+        badChain:
+          'A cadeia está fora de ordem ou incompleta. Coloque primeiro o certificado do servidor, depois cada emissor.',
+        weakKey: 'A chave é curta demais. Use RSA 2048 ou maior, ou ECDSA.',
+        notServerCert: 'O certificado não é para um servidor TLS.'
+      }
     }
   }
 };

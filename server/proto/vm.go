@@ -453,6 +453,13 @@ type GetTlsRsp struct {
 	Enabled bool `json:"enabled"`
 }
 
+// TlsCertReq is a certificate chain and its private key, both PEM. The chain
+// starts with the server's own certificate.
+type TlsCertReq struct {
+	Cert string `json:"cert" validate:"required"`
+	Key  string `json:"key" validate:"required"`
+}
+
 type InputRegion struct {
 	Mode               string               `json:"mode"`
 	FrameWidth         int                  `json:"frameWidth"`

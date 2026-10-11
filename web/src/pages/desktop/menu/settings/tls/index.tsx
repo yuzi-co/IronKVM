@@ -1,6 +1,7 @@
 import { Divider } from 'antd';
 
 import { Tls as HttpsSwitch } from '../network/tls.tsx';
+import { Certificate } from './certificate.tsx';
 
 type TlsProps = {
   setIsLocked: (isLocked: boolean) => void;
@@ -14,5 +15,8 @@ export const Tls = ({ setIsLocked }: TlsProps) => (
     <Divider className="opacity-50" />
 
     <HttpsSwitch setIsLocked={setIsLocked} />
+    <Divider className="opacity-50" />
+
+    <Certificate />
   </>
 );

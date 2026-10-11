@@ -1835,6 +1835,118 @@ const nb = {
       hideLog: 'Skjul logg',
       retry: 'Prøv video igjen',
       retrying: 'Starter på nytt...'
+    },
+    totp: {
+      login: {
+        title: 'Tofaktorautentisering',
+        description:
+          'Skriv inn den 6-sifrede koden fra autentiseringsappen, eller en av gjenopprettingskodene dine.',
+        placeholder: 'Kode eller gjenopprettingskode',
+        noEmptyCode: 'Skriv inn en kode',
+        verify: 'Bekreft',
+        back: 'Tilbake til passord',
+        invalidCode: 'Ugyldig kode',
+        locked: 'For mange feil koder. Prøv igjen om noen minutter.',
+        expired: 'Innloggingen er utløpt. Skriv inn passordet på nytt.'
+      },
+      settings: {
+        title: 'Tofaktorautentisering',
+        description: 'Be om en kode fra en autentiseringsapp etter passordet.',
+        scope:
+          'Gjelder bare web-innlogging. VNC, IPMI og Redfish bruker fortsatt bare passordet, og API-nøkler virker uten kode.',
+        on: 'På',
+        off: 'Av',
+        enable: 'Slå på',
+        disable: 'Slå av',
+        regenerate: 'Nye gjenopprettingskoder',
+        codesLeft: 'Gjenopprettingskoder igjen: {{count}}',
+        enableTitle: 'Slå på tofaktorautentisering',
+        disableTitle: 'Slå av tofaktorautentisering',
+        regenerateTitle: 'Nye gjenopprettingskoder',
+        confirmPassword: 'Bekreft med passordet ditt',
+        continue: 'Fortsett',
+        scan: 'Skann QR-koden med en autentiseringsapp, eller skriv inn den hemmelige nøkkelen manuelt. Skriv deretter inn koden appen viser.',
+        secret: 'Hemmelig nøkkel',
+        enterCode: 'Kode fra appen',
+        verifyAndEnable: 'Bekreft og slå på',
+        codesOnce:
+          'Lagre disse gjenopprettingskodene nå. Hver kode virker én gang i stedet for en vanlig kode, og de vises ikke igjen.',
+        recoveryCodes: 'IronKVM-gjenopprettingskoder',
+        download: 'Last ned',
+        saved: 'Jeg har lagret dem',
+        disabled: 'Tofaktorautentisering slått av',
+        wrongPassword: 'Passordet er feil',
+        setupExpired: 'Oppsettet er utløpt. Start på nytt.',
+        loadFailed: 'Kunne ikke laste inn status for tofaktorautentisering',
+        failed: 'Endringen mislyktes'
+      },
+      users: {
+        tag: '2FA',
+        reset: 'Tilbakestill 2FA',
+        resetConfirm: 'Slå av tofaktorautentisering for {{username}}?',
+        resetDone: 'Tofaktorautentisering tilbakestilt'
+      }
+    },
+    tlsCert: {
+      title: 'Sertifikat',
+      description: 'Sertifikatet HTTPS-serveren presenterer.',
+      uploaded: 'Lastet opp',
+      selfSigned: 'Selvsignert',
+      httpsOff: 'HTTPS er slått av. Sertifikatet tas i bruk når HTTPS slås på.',
+      none: 'Ingen sertifikat ennå. Et genereres når HTTPS slås på.',
+      subject: 'Emne',
+      issuer: 'Utsteder',
+      names: 'Navn',
+      validFrom: 'Gyldig fra',
+      validUntil: 'Gyldig til',
+      keyType: 'Nøkkel',
+      chain: 'Sertifikater i kjeden',
+      fingerprint: 'SHA-256',
+      restore: 'Gjenopprett selvsignert',
+      restoreConfirm: 'Gå tilbake til det selvsignerte sertifikatet?',
+      restoreDesc:
+        'Det opplastede sertifikatet og nøkkelen slettes. Nettlesere vil igjen advare om det selvsignerte sertifikatet.',
+      restored: 'Selvsignert sertifikat gjenopprettet',
+      restoreFailed: 'Kunne ikke gjenopprette det selvsignerte sertifikatet',
+      uploadTitle: 'Last opp et sertifikat',
+      uploadDescription:
+        'PEM-format. Sett serversertifikatet først, deretter eventuelle mellomsertifikater. Nøkkelen kan ikke være kryptert.',
+      certField: 'Sertifikatkjede',
+      keyField: 'Privat nøkkel',
+      chooseFile: 'Velg fil',
+      readFailed: 'Kunne ikke lese filen',
+      check: 'Kontroller',
+      install: 'Installer',
+      installConfirm: 'Installere dette sertifikatet?',
+      installDesc:
+        'Nye tilkoblinger bruker det med en gang. Åpne sider fortsetter å virke; last inn på nytt for å se det nye sertifikatet.',
+      installed: 'Sertifikat installert',
+      installFailed: 'Kunne ikke installere sertifikatet',
+      checkFailed: 'Sertifikatet ble avvist',
+      loadFailed: 'Kunne ikke laste inn sertifikatet',
+      warnings: {
+        expiresSoon: 'Sertifikatet utløper innen 30 dager.',
+        nameMismatch:
+          'Sertifikatet dekker ikke: {{names}}. Nettlesere advarer når enheten åpnes med disse navnene.',
+        selfSigned:
+          'Dette sertifikatet er selvsignert. Nettlesere stoler bare på det etter at det er installert på hver datamaskin.'
+      },
+      errors: {
+        tooLarge: 'Filen er for stor.',
+        noCertificate: 'Fant ikke noe PEM-sertifikat.',
+        badCertificate:
+          'Sertifikatet kan ikke leses. Lim inn PEM-tekst som starter med -----BEGIN CERTIFICATE-----.',
+        noKey: 'Fant ingen privat PEM-nøkkel.',
+        encryptedKey: 'Den private nøkkelen er kryptert. Fjern passfrasen først.',
+        badKey: 'Den private nøkkelen kan ikke leses.',
+        keyMismatch: 'Den private nøkkelen hører ikke til sertifikatet.',
+        expired: 'Sertifikatet, eller et i kjeden, er utløpt.',
+        notYetValid: 'Sertifikatet er ikke gyldig ennå. Kontroller klokken på enheten.',
+        badChain:
+          'Kjeden er i feil rekkefølge eller ufullstendig. Sett serversertifikatet først, deretter hver utsteder.',
+        weakKey: 'Nøkkelen er for kort. Bruk RSA 2048 eller lengre, eller ECDSA.',
+        notServerCert: 'Sertifikatet er ikke for en TLS-server.'
+      }
     }
   }
 };
