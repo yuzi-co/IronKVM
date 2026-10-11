@@ -1305,6 +1305,17 @@ USB_STRING
         then
             echo "usb: /boot/usb.wakeup is set, and this kernel's f_hid has no wakeup_on_write"
         fi
+        # keep_latest is a mainline f_hid option (ironkvm-dist#111): a write
+        # never waits for the host, and the newest report replaces one still
+        # waiting behind the report the host was offered. A host that stops
+        # polling then cannot be left holding a key whose release timed out.
+        # Set only where each report is the whole state of the device; the
+        # pointer with report IDs is left out, since a report of one ID would
+        # replace another ID's. As with wakeup_on_write, only where it exists.
+        if [ -e functions/hid.GS0/keep_latest ]
+        then
+            echo 1 > functions/hid.GS0/keep_latest
+        fi
         echo 1 > functions/hid.GS0/protocol
         echo 8 > functions/hid.GS0/report_length
         echo -ne \\x05\\x01\\x09\\x06\\xa1\\x01\\x05\\x07\\x19\\xe0\\x29\\xe7\\x15\\x00\\x25\\x01\\x75\\x01\\x95\\x08\\x81\\x02\\x95\\x01\\x75\\x08\\x81\\x03\\x95\\x05\\x75\\x01\\x05\\x08\\x19\\x01\\x29\\x05\\x91\\x02\\x95\\x01\\x75\\x03\\x91\\x03\\x95\\x06\\x75\\x08\\x15\\x00\\x25\\xE7\\x05\\x07\\x19\\x00\\x29\\xE7\\x81\\x00\\xc0 > functions/hid.GS0/report_desc
@@ -1316,6 +1327,10 @@ USB_STRING
         if [ -e /boot/usb.wakeup ] && [ -e functions/hid.GS1/wakeup_on_write ]
         then
             echo 1 > functions/hid.GS1/wakeup_on_write
+        fi
+        if [ -e functions/hid.GS1/keep_latest ]
+        then
+            echo 1 > functions/hid.GS1/keep_latest
         fi
         echo 2 > functions/hid.GS1/protocol
         echo 5 > functions/hid.GS1/report_length
@@ -1329,6 +1344,10 @@ USB_STRING
         if [ -e /boot/usb.wakeup ] && [ -e functions/hid.GS2/wakeup_on_write ]
         then
             echo 1 > functions/hid.GS2/wakeup_on_write
+        fi
+        if [ -e functions/hid.GS2/keep_latest ] && [ ! -e /boot/usb.touch ] && [ ! -e /boot/usb.extkeys ]
+        then
+            echo 1 > functions/hid.GS2/keep_latest
         fi
         echo 2 > functions/hid.GS2/protocol
         # /boot/usb.extkeys adds the Consumer Control and System Control keys

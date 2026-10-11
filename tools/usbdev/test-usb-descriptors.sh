@@ -159,10 +159,16 @@ mkdir() {
                 /bin/mkdir -p "$_arg/os_desc/interface.ncm" ;;
             # The vendor kernel's f_hid has wakeup_on_write and starts it at
             # 0. HID_WAKEUP_ATTR=0 is a kernel without the option.
+            # HID_LATEST_ATTR=1 is a mainline f_hid with keep_latest (#111),
+            # which starts at 0 too; the vendor kernel has none.
             functions/hid.*|*/functions/hid.*)
                 if [ "${HID_WAKEUP_ATTR:-1}" = 1 ] && [ ! -e "$_arg/wakeup_on_write" ]
                 then
                     echo 0 > "$_arg/wakeup_on_write"
+                fi
+                if [ "${HID_LATEST_ATTR:-0}" = 1 ] && [ ! -e "$_arg/keep_latest" ]
+                then
+                    echo 0 > "$_arg/keep_latest"
                 fi ;;
         esac
     done
@@ -475,6 +481,26 @@ build_env
 : > "$work/boot/usb.extkeys"
 run "$S03" start_usb_dev
 hex_is functions/hid.GS2/report_desc "$TOUCH_ABSOLUTE_DESC" "/boot/usb.touch wins over /boot/usb.extkeys"
+
+# keep_latest (#111): set where the kernel has it, on every function whose
+# report is the whole state, and nowhere on a kernel without it.
+build_env
+run "$S03" start_usb_dev
+absent functions/hid.GS0/keep_latest "no keep_latest is created on a kernel without it"
+build_env
+HID_LATEST_ATTR=1 run "$S03" start_usb_dev
+is functions/hid.GS0/keep_latest 1 "the keyboard keeps only the latest report"
+is functions/hid.GS1/keep_latest 1 "so does the relative mouse"
+is functions/hid.GS2/keep_latest 1 "so does the absolute pointer without report IDs"
+build_env
+: > "$work/boot/usb.extkeys"
+HID_LATEST_ATTR=1 run "$S03" start_usb_dev
+is functions/hid.GS2/keep_latest 0 "not the pointer with the key report IDs"
+is functions/hid.GS0/keep_latest 1 "while the keyboard still does"
+build_env
+: > "$work/boot/usb.touch"
+HID_LATEST_ATTR=1 run "$S03" start_usb_dev
+is functions/hid.GS2/keep_latest 0 "nor the pointer with the touch report IDs"
 
 build_env
 : > "$work/boot/disable_hid"
