@@ -66,7 +66,11 @@ export class HoldKeepalive {
 
   // The fields are assigned by hand: node's type stripping, which runs the
   // tests, does not accept constructor parameter properties.
-  constructor(send: () => void, timers: KeepaliveTimers = browserTimers, interval = HOLD_KEEPALIVE_MS) {
+  constructor(
+    send: () => void,
+    timers: KeepaliveTimers = browserTimers,
+    interval = HOLD_KEEPALIVE_MS
+  ) {
     this.send = send;
     this.timers = timers;
     this.interval = interval;

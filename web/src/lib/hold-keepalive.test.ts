@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { HoldKeepalive, heldBy, KEEPALIVE_MESSAGE, type KeepaliveTimers } from './hold-keepalive.ts';
+import {
+  heldBy,
+  HoldKeepalive,
+  KEEPALIVE_MESSAGE,
+  type KeepaliveTimers
+} from './hold-keepalive.ts';
 
 function fakeTimers() {
   let tick: (() => void) | null = null;
