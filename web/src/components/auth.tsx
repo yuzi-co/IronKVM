@@ -5,6 +5,7 @@ import { Navigate, useLocation } from 'react-router';
 
 import { Account, getAccount } from '@/api/auth.ts';
 import { AUTH_EXPIRED_EVENT } from '@/lib/auth-events.ts';
+import { parseRole } from '@/lib/roles.ts';
 
 export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
@@ -25,7 +26,7 @@ export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
 
         setAccount({
           username: rsp.data.username,
-          role: rsp.data.role === 'admin' ? 'admin' : 'user',
+          role: parseRole(rsp.data.role),
           systemAccount: rsp.data.systemAccount === true
         });
       })

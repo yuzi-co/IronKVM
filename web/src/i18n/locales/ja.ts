@@ -28,6 +28,11 @@ const ja = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      share: {
+        opening: '共有された画面を開いています...',
+        failed: 'このリンクは無効、期限切れ、または取り消されています。',
+        toLogin: 'ログインする'
+      },
       passwordChanged: 'パスワードを変更しました。新しいパスワードでログインしてください。',
       cookieRejected:
         'ブラウザーがセッションの保存を拒否しました。以前の HTTPS セッションで残った Cookie は、通常の http 接続では置き換えられません。このアドレスの Cookie を削除するか、プライベートウィンドウを開いてから、もう一度サインインしてください。',
@@ -1642,7 +1647,31 @@ const ja = {
         title: 'アカウント',
         webAccount: 'ウェブアカウント名',
         role: 'ロール',
-        roles: { admin: '管理者', user: 'ユーザー' },
+        roles: { admin: '管理者', user: 'ユーザー', viewer: '閲覧者' },
+        shareLinks: {
+          title: '共有リンク',
+          desc: '共有リンクを開いた人は誰でも画面を見られます。キーボード、マウス、電源、メディア、設定は操作できず、有効期限が切れるか取り消されると使えなくなります。',
+          create: 'リンクを作成',
+          label: 'ラベル(任意)',
+          duration: '有効期間',
+          durations: {
+            h1: '1時間',
+            h8: '8時間',
+            d1: '1日',
+            d7: '7日',
+            d30: '30日'
+          },
+          empty: '共有リンクはありません',
+          expires: '有効期限: {{time}}',
+          revoke: '取り消す',
+          revokeConfirm: 'このリンクを取り消しますか?リンク経由で視聴中の人は切断されます。',
+          revoked: 'リンクを取り消しました',
+          loadFailed: '共有リンクを読み込めませんでした',
+          createFailed: '共有リンクを作成できませんでした',
+          revokeFailed: '共有リンクを取り消せませんでした',
+          createdTitle: '共有リンクを作成しました',
+          createdDesc: '今すぐリンクをコピーしてください。再表示はできません。'
+        },
         password: 'パスワード',
         updateBtn: '変更',
         logoutBtn: 'ログアウト',

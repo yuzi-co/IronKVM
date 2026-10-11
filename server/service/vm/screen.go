@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -38,7 +39,21 @@ func (s *Service) GetScreen(c *gin.Context) {
 
 		Aspect:          values.Aspect,
 		AspectSupported: common.AspectSupported(),
+		Type:            screenType(),
 	})
+}
+
+// screenType is the encoder mode the board last recorded: "h264" or "mjpeg".
+func screenType() string {
+	data, err := os.ReadFile(common.ScreenFileMap["type"])
+	if err != nil {
+		return ""
+	}
+	switch mode := strings.TrimSpace(string(data)); mode {
+	case "h264", "mjpeg":
+		return mode
+	}
+	return ""
 }
 
 func (s *Service) SetScreen(c *gin.Context) {

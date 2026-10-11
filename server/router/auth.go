@@ -11,8 +11,9 @@ import (
 func authRouter(r *gin.Engine) {
 	service := auth.NewService()
 
-	r.POST("/api/auth/login", service.Login)          // login
-	r.POST("/api/auth/login/totp", service.LoginTOTP) // login, second step
+	r.POST("/api/auth/login", service.Login)           // login
+	r.POST("/api/auth/login/totp", service.LoginTOTP)  // login, second step
+	r.POST("/api/auth/share", service.RedeemShareLink) // open a view-only session with a share link's token
 
 	api := r.Group("/api").Use(middleware.CheckToken())
 
@@ -52,4 +53,10 @@ func authRouter(r *gin.Engine) {
 		middleware.RequireRole(authn.RoleAdmin),
 	)
 	adminSession.DELETE("/auth/users/:username/totp", service.ResetUserTOTP)
+
+	// Share links are session work like api keys: a key must not mint a
+	// link that outlives it.
+	adminSession.GET("/auth/share-links", service.ListShareLinks)
+	adminSession.POST("/auth/share-links", service.CreateShareLink)
+	adminSession.DELETE("/auth/share-links/:id", service.RevokeShareLink)
 }

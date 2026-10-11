@@ -3,7 +3,10 @@ import { Button, Divider } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
+import { useServerFeature } from '@/hooks/useServerFeature.ts';
+
 import { Logout } from './logout.tsx';
+import { ShareLinks } from './share-links.tsx';
 import { TwoFactor } from './two-factor.tsx';
 import { Users } from './users.tsx';
 
@@ -11,6 +14,7 @@ export const Account = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { account } = useAuth();
+  const hasShareLinks = useServerFeature('share-links') === true;
 
   function changePassword() {
     navigate('/auth/password');
@@ -49,6 +53,13 @@ export const Account = () => {
       {account.role === 'admin' && (
         <>
           <Users />
+          <Divider className="opacity-50" />
+        </>
+      )}
+
+      {account.role === 'admin' && hasShareLinks && (
+        <>
+          <ShareLinks />
           <Divider className="opacity-50" />
         </>
       )}

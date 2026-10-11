@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 
+	"NanoKVM-Server/authn"
 	"NanoKVM-Server/service/roommic"
 	"NanoKVM-Server/service/stream/audio"
 
@@ -77,6 +78,9 @@ func (c *Client) setRoomMic(on bool) {
 
 	c.roomMutex.Lock()
 	switch {
+	case on && c.room == nil && c.role == authn.RoleViewer:
+		// A view-only session sees the screen and does not listen to the room.
+		c.roomError = "not-allowed"
 	case on && c.room == nil:
 		listener, err := roomMics.Open(c.user, "webrtc")
 		switch {

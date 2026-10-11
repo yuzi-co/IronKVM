@@ -10,7 +10,7 @@ import {
   setPauseWhenHidden,
   setStreamInfoVisible
 } from '@/lib/localstorage.ts';
-import { setViewOnly } from '@/lib/view-only.ts';
+import { isViewOnlyLocked, setViewOnly } from '@/lib/view-only.ts';
 import { client, MessageEvent } from '@/lib/websocket.ts';
 import { DEFAULT_BIT_RATE } from '@/pages/desktop/menu/screen/constants.ts';
 import type { StreamStats } from '@/pages/desktop/status-bar/model.ts';
@@ -113,6 +113,7 @@ const viewOnlyBaseAtom = atom(false);
 export const viewOnlyAtom = atom(
   (get) => get(viewOnlyBaseAtom),
   (_get, set, enabled: boolean) => {
+    if (!enabled && isViewOnlyLocked()) return;
     if (enabled) {
       client.send(new Uint8Array([MessageEvent.Keyboard, ...new KeyboardReport().reset()]));
     }

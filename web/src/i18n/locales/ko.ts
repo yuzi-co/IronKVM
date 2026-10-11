@@ -28,6 +28,11 @@ const ko = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      share: {
+        opening: '공유된 화면을 여는 중...',
+        failed: '이 링크는 유효하지 않거나 만료되었거나 취소되었습니다.',
+        toLogin: '대신 로그인'
+      },
       passwordChanged: '비밀번호가 변경되었습니다. 새 비밀번호로 로그인하세요.',
       cookieRejected:
         '브라우저가 세션 저장을 거부했습니다. 이전 HTTPS 세션에서 남은 쿠키는 일반 http 연결로 교체할 수 없습니다. 이 주소의 쿠키를 삭제하거나 개인 정보 보호 창을 연 다음 다시 로그인하세요.',
@@ -1611,7 +1616,31 @@ const ko = {
         title: '계정',
         webAccount: '웹 계정',
         role: '역할',
-        roles: { admin: '관리자', user: '사용자' },
+        roles: { admin: '관리자', user: '사용자', viewer: '뷰어' },
+        shareLinks: {
+          title: '공유 링크',
+          desc: '공유 링크를 여는 사람은 누구나 화면을 볼 수 있습니다. 키보드, 마우스, 전원, 미디어, 설정은 사용할 수 없으며 만료되거나 취소되면 작동하지 않습니다.',
+          create: '링크 만들기',
+          label: '라벨(선택)',
+          duration: '유효 기간',
+          durations: {
+            h1: '1시간',
+            h8: '8시간',
+            d1: '1일',
+            d7: '7일',
+            d30: '30일'
+          },
+          empty: '공유 링크가 없습니다',
+          expires: '만료: {{time}}',
+          revoke: '취소',
+          revokeConfirm: '이 링크를 취소할까요? 링크로 보고 있는 사람은 연결이 끊어집니다.',
+          revoked: '링크를 취소했습니다',
+          loadFailed: '공유 링크를 불러오지 못했습니다',
+          createFailed: '공유 링크를 만들지 못했습니다',
+          revokeFailed: '공유 링크를 취소하지 못했습니다',
+          createdTitle: '공유 링크를 만들었습니다',
+          createdDesc: '지금 링크를 복사하세요. 다시 표시할 수 없습니다.'
+        },
         password: '비밀번호',
         updateBtn: '업데이트',
         logoutBtn: '로그아웃',

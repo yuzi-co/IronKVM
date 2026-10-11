@@ -11,6 +11,8 @@ import (
 	"fmt"
 	"io"
 
+	"NanoKVM-Server/authn"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -209,6 +211,12 @@ func (s *session) checkPassword(username, password string) error {
 		return errAuthFailed
 	}
 	deps.Limiter.Succeeded(s.ip, username)
+
+	// VNC carries the keyboard and mouse, which a view-only account must not
+	// have. Answered like a wrong password.
+	if user.Role == authn.RoleViewer {
+		return errAuthFailed
+	}
 
 	// The web UI makes such an account choose a password before it may do
 	// anything else, and a VNC client has no way to.

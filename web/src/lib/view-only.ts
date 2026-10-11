@@ -6,13 +6,27 @@
 // API can read it without importing React state.
 
 let viewOnly = false;
+// A view-only account (or a share link) cannot turn view only off: the server
+// refuses it every input route anyway, and a switch that does nothing would
+// only invite pressing it.
+let locked = false;
 const listeners = new Set<(value: boolean) => void>();
 
 export function isViewOnly() {
   return viewOnly;
 }
 
+export function isViewOnlyLocked() {
+  return locked;
+}
+
+export function lockViewOnly() {
+  locked = true;
+  setViewOnly(true);
+}
+
 export function setViewOnly(value: boolean) {
+  if (locked && !value) return;
   if (value === viewOnly) return;
   viewOnly = value;
   listeners.forEach((listener) => listener(value));

@@ -1,6 +1,7 @@
 package redfish
 
 import (
+	"errors"
 	"net/http"
 	"time"
 
@@ -88,6 +89,9 @@ func (s *Service) authenticate(c *gin.Context) {
 func (s *Service) tokenPrincipal(token string) (principal, bool) {
 	if sess, ok := s.sessions.byToken(token); ok {
 		user, err := s.deps.Accounts.ValidateToken(sess.username, sess.tokenVersion)
+		if err == nil && user.Role == authn.RoleViewer {
+			err = errors.New("view-only account")
+		}
 		if err != nil {
 			s.sessions.remove(sess.id)
 			return principal{}, false
@@ -100,7 +104,7 @@ func (s *Service) tokenPrincipal(token string) (principal, bool) {
 		return principal{}, false
 	}
 	user, err := s.deps.Accounts.Get(username)
-	if err != nil || !user.Enabled {
+	if err != nil || !user.Enabled || user.Role == authn.RoleViewer {
 		return principal{}, false
 	}
 	return principal{username: user.Username, admin: user.Role == authn.RoleAdmin}, true
@@ -117,7 +121,7 @@ func (s *Service) checkPassword(c *gin.Context, username, password string) (*aut
 
 	// Credentials that passed within the last minute, for the account as it
 	// is now, skip the bcrypt.
-	if user, err := s.deps.Accounts.Get(username); err == nil && user.Enabled && s.credentials.has(user, password) {
+	if user, err := s.deps.Accounts.Get(username); err == nil && user.Enabled && user.Role != authn.RoleViewer && s.credentials.has(user, password) {
 		return user, true
 	}
 
@@ -138,6 +142,13 @@ func (s *Service) checkPassword(c *gin.Context, username, password string) (*aut
 	// failed. A right one that lands after the others locked the account is
 	// refused, as it would have been had it come a moment later.
 	if s.deps.Limiter.Locked(ip, username) {
+		unauthorized(c)
+		return nil, false
+	}
+
+	// Redfish reaches the power controls, which a view-only account must not
+	// have. Answered like a wrong password.
+	if user.Role == authn.RoleViewer {
 		unauthorized(c)
 		return nil, false
 	}

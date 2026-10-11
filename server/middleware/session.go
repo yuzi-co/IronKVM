@@ -22,6 +22,11 @@ type session struct {
 	// asks the same one rather than reading authn.DefaultStore again.
 	store  *authn.Store
 	cancel context.CancelFunc
+
+	// A session opened from a share link has no account. shareID names the
+	// link and shares is the store that holds it, and the recheck asks that.
+	shareID string
+	shares  *authn.ShareStore
 }
 
 // sessionRegistry holds the running sessions, and while there are any, one
@@ -51,7 +56,7 @@ func (r *sessionRegistry) register(entry session) func() {
 		r.byUserID[entry.username] = make(map[uint64]session)
 	}
 	r.byUserID[entry.username][id] = entry
-	if !r.watching && entry.store != nil {
+	if !r.watching && (entry.store != nil || entry.shares != nil) {
 		r.watching = true
 		go r.watch()
 	}
@@ -103,7 +108,19 @@ func (r *sessionRegistry) recheck() {
 		tokenVersion uint64
 	}
 	valid := make(map[tokenKey]bool)
+	validShare := make(map[string]bool)
 	for _, entry := range sessions {
+		if entry.shares != nil {
+			ok, seen := validShare[entry.shareID]
+			if !seen {
+				_, ok = entry.shares.Valid(entry.shareID)
+				validShare[entry.shareID] = ok
+			}
+			if !ok {
+				entry.cancel()
+			}
+			continue
+		}
 		if entry.store == nil {
 			continue
 		}

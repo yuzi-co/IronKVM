@@ -29,6 +29,11 @@ const es = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      share: {
+        opening: 'Abriendo la pantalla compartida...',
+        failed: 'Este enlace no es válido, ha caducado o se ha revocado.',
+        toLogin: 'Iniciar sesión en su lugar'
+      },
       passwordChanged: 'Contraseña cambiada. Inicia sesión con la nueva contraseña.',
       cookieRejected:
         'El navegador se ha negado a guardar la sesión. Una cookie que dejó una sesión HTTPS anterior no puede sustituirse por http sin cifrar. Borra las cookies de esta dirección, o abre una ventana privada, y vuelve a iniciar sesión.',
@@ -1660,7 +1665,31 @@ const es = {
         title: 'Cuenta',
         webAccount: 'Nombre de la cuenta web',
         role: 'Rol',
-        roles: { admin: 'Administrador', user: 'Usuario' },
+        roles: { admin: 'Administrador', user: 'Usuario', viewer: 'Espectador' },
+        shareLinks: {
+          title: 'Enlaces para compartir',
+          desc: 'Un enlace para compartir muestra la pantalla a cualquiera que lo abra. No da acceso a teclado, ratón, alimentación, medios ni ajustes, y deja de funcionar cuando caduca o se revoca.',
+          create: 'Crear enlace',
+          label: 'Etiqueta (opcional)',
+          duration: 'Válido durante',
+          durations: {
+            h1: '1 hora',
+            h8: '8 horas',
+            d1: '1 día',
+            d7: '7 días',
+            d30: '30 días'
+          },
+          empty: 'No hay enlaces para compartir',
+          expires: 'Caduca el {{time}}',
+          revoke: 'Revocar',
+          revokeConfirm: '¿Revocar este enlace? Quien lo esté usando para mirar quedará desconectado.',
+          revoked: 'Enlace revocado',
+          loadFailed: 'No se pudieron cargar los enlaces',
+          createFailed: 'No se pudo crear el enlace',
+          revokeFailed: 'No se pudo revocar el enlace',
+          createdTitle: 'Enlace creado',
+          createdDesc: 'Copia el enlace ahora. No se podrá mostrar de nuevo.'
+        },
         password: 'Contraseña',
         updateBtn: 'Actualizar',
         logoutBtn: 'Cerrar sesión',

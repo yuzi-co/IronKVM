@@ -28,6 +28,11 @@ const id = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      share: {
+        opening: 'Membuka layar yang dibagikan...',
+        failed: 'Tautan ini tidak valid, sudah kedaluwarsa, atau dicabut.',
+        toLogin: 'Masuk sebagai gantinya'
+      },
       passwordChanged: 'Kata sandi diubah. Masuk dengan kata sandi baru.',
       cookieRejected:
         'Browser menolak menyimpan sesi. Cookie yang tertinggal dari sesi HTTPS sebelumnya tidak dapat diganti melalui http biasa. Hapus cookie untuk alamat ini, atau buka jendela pribadi, lalu masuk kembali.',
@@ -1634,7 +1639,31 @@ const id = {
         title: 'Akun',
         webAccount: 'Nama akun web',
         role: 'Peran',
-        roles: { admin: 'Administrator', user: 'Pengguna' },
+        roles: { admin: 'Administrator', user: 'Pengguna', viewer: 'Penonton' },
+        shareLinks: {
+          title: 'Tautan berbagi',
+          desc: 'Tautan berbagi menampilkan layar kepada siapa pun yang membukanya. Tautan ini tidak memberi akses ke keyboard, mouse, daya, media, atau pengaturan, dan berhenti berfungsi saat kedaluwarsa atau dicabut.',
+          create: 'Buat tautan',
+          label: 'Label (opsional)',
+          duration: 'Berlaku selama',
+          durations: {
+            h1: '1 jam',
+            h8: '8 jam',
+            d1: '1 hari',
+            d7: '7 hari',
+            d30: '30 hari'
+          },
+          empty: 'Tidak ada tautan berbagi',
+          expires: 'Kedaluwarsa {{time}}',
+          revoke: 'Cabut',
+          revokeConfirm: 'Cabut tautan ini? Siapa pun yang menonton lewat tautan ini akan terputus.',
+          revoked: 'Tautan dicabut',
+          loadFailed: 'Gagal memuat tautan berbagi',
+          createFailed: 'Gagal membuat tautan berbagi',
+          revokeFailed: 'Gagal mencabut tautan berbagi',
+          createdTitle: 'Tautan berbagi dibuat',
+          createdDesc: 'Salin tautan sekarang. Tautan tidak dapat ditampilkan lagi.'
+        },
         password: 'Kata sandi',
         updateBtn: 'Update',
         logoutBtn: 'Keluar',

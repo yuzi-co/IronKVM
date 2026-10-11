@@ -116,3 +116,33 @@ type EnableTOTPReq struct {
 type RecoveryCodesRsp struct {
 	RecoveryCodes []string `json:"recoveryCodes"`
 }
+
+// ShareLinkInfo is a share link as an administrator sees it. The token is not
+// here: it is shown once, when the link is made.
+type ShareLinkInfo struct {
+	ID        string `json:"id"`
+	Label     string `json:"label"`
+	CreatedBy string `json:"createdBy"`
+	CreatedAt int64  `json:"createdAt"`
+	ExpiresAt int64  `json:"expiresAt"`
+}
+
+type ListShareLinksRsp struct {
+	Links []ShareLinkInfo `json:"links"`
+}
+
+type CreateShareLinkReq struct {
+	Label string `json:"label"`
+	// TTLSeconds is how long the link works.
+	TTLSeconds int64 `json:"ttlSeconds" validate:"required"`
+}
+
+type CreateShareLinkRsp struct {
+	ShareLinkInfo
+	// Token goes in the URL the link is shared by, and cannot be read again.
+	Token string `json:"token"`
+}
+
+type RedeemShareLinkReq struct {
+	Token string `json:"token" validate:"required"`
+}

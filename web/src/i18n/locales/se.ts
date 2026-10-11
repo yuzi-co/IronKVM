@@ -28,6 +28,11 @@ const se = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      share: {
+        opening: 'Öppnar den delade skärmen...',
+        failed: 'Länken är ogiltig, har gått ut eller har återkallats.',
+        toLogin: 'Logga in i stället'
+      },
       passwordChanged: 'Lösenordet har ändrats. Logga in med det nya lösenordet.',
       cookieRejected:
         'Webbläsaren vägrade spara sessionen. En cookie från en tidigare HTTPS-session kan inte ersättas över vanlig http. Rensa cookies för den här adressen, eller öppna ett privat fönster, och logga in igen.',
@@ -1634,7 +1639,31 @@ const se = {
         title: 'Konto',
         webAccount: 'Webbkonto-namn',
         role: 'Roll',
-        roles: { admin: 'Administratör', user: 'Användare' },
+        roles: { admin: 'Administratör', user: 'Användare', viewer: 'Tittare' },
+        shareLinks: {
+          title: 'Delningslänkar',
+          desc: 'En delningslänk visar skärmen för alla som öppnar den. Den ger ingen åtkomst till tangentbord, mus, strömförsörjning, media eller inställningar och slutar fungera när den går ut eller återkallas.',
+          create: 'Skapa länk',
+          label: 'Etikett (valfri)',
+          duration: 'Giltig i',
+          durations: {
+            h1: '1 timme',
+            h8: '8 timmar',
+            d1: '1 dag',
+            d7: '7 dagar',
+            d30: '30 dagar'
+          },
+          empty: 'Inga delningslänkar',
+          expires: 'Går ut {{time}}',
+          revoke: 'Återkalla',
+          revokeConfirm: 'Återkalla den här länken? Alla som tittar via den kopplas från.',
+          revoked: 'Länk återkallad',
+          loadFailed: 'Det gick inte att läsa in delningslänkar',
+          createFailed: 'Det gick inte att skapa delningslänken',
+          revokeFailed: 'Det gick inte att återkalla delningslänken',
+          createdTitle: 'Delningslänk skapad',
+          createdDesc: 'Kopiera länken nu. Den kan inte visas igen.'
+        },
         password: 'Lösenord',
         updateBtn: 'Byt',
         logoutBtn: 'Logga ut',

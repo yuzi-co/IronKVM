@@ -6,6 +6,7 @@ import type { LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { getScreenshot } from '@/api/stream.ts';
+import { isViewOnlyLocked } from '@/lib/view-only.ts';
 import { pauseWhenHiddenAtom, streamInfoVisibleAtom, viewOnlyAtom } from '@/jotai/screen.ts';
 
 const rowClass =
@@ -100,13 +101,15 @@ export const Session = () => {
 
   return (
     <>
-      <ToggleRow
-        icon={EyeIcon}
-        label={t('screen.viewOnly')}
-        tip={t('screen.viewOnlyTip')}
-        checked={viewOnly}
-        onChange={setViewOnly}
-      />
+      {!isViewOnlyLocked() && (
+        <ToggleRow
+          icon={EyeIcon}
+          label={t('screen.viewOnly')}
+          tip={t('screen.viewOnlyTip')}
+          checked={viewOnly}
+          onChange={setViewOnly}
+        />
+      )}
       <ToggleRow
         icon={PauseIcon}
         label={t('screen.pauseHidden')}

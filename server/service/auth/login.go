@@ -82,6 +82,14 @@ func (s *Service) Logout(c *gin.Context) {
 	var rsp proto.Response
 	principal, ok := middleware.CurrentPrincipal(c)
 	conf := config.GetInstance()
+	if ok && principal.ShareID != "" {
+		// A share session belongs to the link, not to an account: there is no
+		// token version to revoke, and the link stays good for whoever else
+		// holds it.
+		clearSessionCookie(c)
+		rsp.OkRsp(c)
+		return
+	}
 	if ok && conf.Authentication != "disable" && conf.JWT.RevokeTokensOnLogout {
 		if _, err := authn.DefaultStore.Revoke(principal.Username); err != nil {
 			rsp.ErrRsp(c, -1, "failed to revoke session")

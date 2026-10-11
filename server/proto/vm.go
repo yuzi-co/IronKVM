@@ -71,6 +71,10 @@ type GetScreenRsp struct {
 	// stretches (Sipeed's), where the menu leaves the choice out.
 	Aspect          uint8 `json:"aspect"`
 	AspectSupported bool  `json:"aspectSupported"`
+	// Type is the mode the encoder runs, "h264" or "mjpeg", or empty when the
+	// board has not recorded one. A view-only session cannot change it, so it
+	// follows this to choose the stream that has a picture.
+	Type string `json:"type,omitempty"`
 }
 
 type GetScriptsRsp struct {

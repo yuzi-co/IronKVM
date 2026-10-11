@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"NanoKVM-Server/authn"
 	"NanoKVM-Server/middleware"
 	"NanoKVM-Server/service/roommic"
 
@@ -52,7 +53,9 @@ func Connect(c *gin.Context) {
 	// The room microphone, likewise only for a browser that asked, and only on
 	// a kernel with the onboard card. Set before the client is added, which
 	// starts its writer.
-	if c.Query("room") == "1" && roommic.Available() {
+	// Never for a view-only session, which sees the screen and does not listen
+	// to the room.
+	if c.Query("room") == "1" && roommic.Available() && roommic.RoleOf(c) != authn.RoleViewer {
 		client.room = newRoomSession(client, roommic.UserOf(c))
 	}
 

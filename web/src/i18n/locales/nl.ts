@@ -28,6 +28,11 @@ const nl = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      share: {
+        opening: 'Gedeeld scherm openen...',
+        failed: 'Deze link is ongeldig, verlopen of ingetrokken.',
+        toLogin: 'In plaats daarvan inloggen'
+      },
       passwordChanged: 'Wachtwoord gewijzigd. Meld je aan met het nieuwe wachtwoord.',
       cookieRejected:
         'De browser weigerde de sessie op te slaan. Een cookie van een eerdere HTTPS-sessie kan niet via onversleuteld http worden vervangen. Wis de cookies voor dit adres of open een privévenster en log opnieuw in.',
@@ -1652,7 +1657,31 @@ const nl = {
         title: 'Account',
         webAccount: 'Web Account Naam',
         role: 'Rol',
-        roles: { admin: 'Beheerder', user: 'Gebruiker' },
+        roles: { admin: 'Beheerder', user: 'Gebruiker', viewer: 'Kijker' },
+        shareLinks: {
+          title: 'Deellinks',
+          desc: 'Een deellink toont het scherm aan iedereen die hem opent. Hij geeft geen toegang tot toetsenbord, muis, voeding, media of instellingen en werkt niet meer zodra hij verloopt of wordt ingetrokken.',
+          create: 'Link maken',
+          label: 'Label (optioneel)',
+          duration: 'Geldig voor',
+          durations: {
+            h1: '1 uur',
+            h8: '8 uur',
+            d1: '1 dag',
+            d7: '7 dagen',
+            d30: '30 dagen'
+          },
+          empty: 'Geen deellinks',
+          expires: 'Verloopt op {{time}}',
+          revoke: 'Intrekken',
+          revokeConfirm: 'Deze link intrekken? Wie via de link meekijkt, wordt losgekoppeld.',
+          revoked: 'Link ingetrokken',
+          loadFailed: 'Deellinks laden mislukt',
+          createFailed: 'Deellink maken mislukt',
+          revokeFailed: 'Deellink intrekken mislukt',
+          createdTitle: 'Deellink gemaakt',
+          createdDesc: 'Kopieer de link nu. Hij kan niet opnieuw worden getoond.'
+        },
         password: 'Wachtwoord',
         updateBtn: 'Update',
         logoutBtn: 'Afmelden',

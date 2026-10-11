@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -31,6 +32,9 @@ type Role string
 const (
 	RoleAdmin Role = "admin"
 	RoleUser  Role = "user"
+	// RoleViewer sees the video and nothing else: no input, no power, no media,
+	// no settings. middleware/viewer_policy.go is the list of what it reaches.
+	RoleViewer Role = "viewer"
 )
 
 var (
@@ -52,6 +56,9 @@ type User struct {
 	TokenVersion       uint64 `json:"tokenVersion"`
 	MustChangePassword bool   `json:"mustChangePassword,omitempty"`
 	SystemAccount      bool   `json:"systemAccount,omitempty"`
+	// OnDiskViewOnly is how a viewer is written to the account file, and it is
+	// never set on a user in memory. See toDisk.
+	OnDiskViewOnly bool `json:"viewOnly,omitempty"`
 	// IPMIPassword is the account's IPMI password, sealed by service/ipmi.
 	// IPMI's RAKP handshake needs the password itself, which the bcrypt hash
 	// above cannot give back, so it is a separate password. Empty means the
@@ -113,7 +120,7 @@ func NewStore(path string) *Store {
 }
 
 func IsValidRole(role Role) bool {
-	return role == RoleAdmin || role == RoleUser
+	return role == RoleAdmin || role == RoleUser || role == RoleViewer
 }
 
 func ValidateUsername(username string) error {
@@ -295,6 +302,7 @@ func (s *Store) readLocked() (*database, []byte, error) {
 		s.cache.Store(nil)
 		return nil, data, nil
 	}
+	fromDisk(&db)
 	if err = validateDatabase(&db); err != nil {
 		s.cache.Store(nil)
 		return nil, nil, err
@@ -667,7 +675,7 @@ func (s *Store) saveLocked(db *database) error {
 		return err
 	}
 	syncLegacyAccount(db)
-	data, err := json.MarshalIndent(db, "", "  ")
+	data, err := json.MarshalIndent(toDisk(db), "", "  ")
 	if err != nil {
 		return err
 	}
@@ -857,5 +865,41 @@ func syncLegacyAccount(db *database) {
 	if fallback != nil {
 		db.LegacyUsername = fallback.Username
 		db.LegacyPassword = fallback.PasswordHash
+	}
+}
+
+// viewerHashPrefix marks the password hash of a viewer on disk.
+const viewerHashPrefix = "viewer$"
+
+// toDisk returns the database as it is written. A server that predates the
+// viewer role rejects the whole account file over a role it does not know, and
+// slot A may run such a server against the same /etc/kvm. So a viewer is
+// written as an ordinary user with viewOnly set and a password hash that is
+// not a hash. Such a server loads the file and refuses the viewer's login,
+// which fails closed, and keeps every other account working.
+func toDisk(db *database) *database {
+	out := *db
+	out.Users = make([]User, len(db.Users))
+	for index, user := range db.Users {
+		if user.Role == RoleViewer {
+			user.Role = RoleUser
+			user.OnDiskViewOnly = true
+			user.PasswordHash = viewerHashPrefix + user.PasswordHash
+		}
+		out.Users[index] = user
+	}
+	return &out
+}
+
+// fromDisk undoes toDisk on a database just read.
+func fromDisk(db *database) {
+	for index := range db.Users {
+		user := &db.Users[index]
+		if !user.OnDiskViewOnly {
+			continue
+		}
+		user.OnDiskViewOnly = false
+		user.Role = RoleViewer
+		user.PasswordHash = strings.TrimPrefix(user.PasswordHash, viewerHashPrefix)
 	}
 }

@@ -28,6 +28,11 @@ const zh = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      share: {
+        opening: '正在打开分享的屏幕...',
+        failed: '此链接无效、已过期或已被撤销。',
+        toLogin: '改为登录'
+      },
       passwordChanged: '密码已更改。请使用新密码登录。',
       cookieRejected:
         '浏览器拒绝保存会话。之前的 HTTPS 会话留下的 Cookie 无法通过普通 http 替换。请清除此地址的 Cookie，或打开无痕窗口，然后重新登录。',
@@ -1561,7 +1566,32 @@ const zh = {
         role: '角色',
         roles: {
           admin: '管理员',
-          user: '普通用户'
+          user: '普通用户',
+          viewer: '查看者'
+        },
+        shareLinks: {
+          title: '分享链接',
+          desc: '任何打开分享链接的人都可以查看屏幕。链接不提供键盘、鼠标、电源、媒体或设置权限,过期或被撤销后即失效。',
+          create: '创建链接',
+          label: '备注(可选)',
+          duration: '有效期',
+          durations: {
+            h1: '1 小时',
+            h8: '8 小时',
+            d1: '1 天',
+            d7: '7 天',
+            d30: '30 天'
+          },
+          empty: '没有分享链接',
+          expires: '{{time}} 过期',
+          revoke: '撤销',
+          revokeConfirm: '撤销此链接?正在通过它观看的人将被断开连接。',
+          revoked: '链接已撤销',
+          loadFailed: '加载分享链接失败',
+          createFailed: '创建分享链接失败',
+          revokeFailed: '撤销分享链接失败',
+          createdTitle: '分享链接已创建',
+          createdDesc: '请立即复制链接,之后无法再次显示。'
         },
         password: '密码',
         updateBtn: '修改',

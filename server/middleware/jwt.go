@@ -34,11 +34,17 @@ const (
 type Principal struct {
 	Username string
 	Role     authn.Role
+	// ShareID is set for a session that came from a share link. Such a
+	// principal has no account behind it.
+	ShareID string
 }
 
 type Token struct {
 	Username     string `json:"username"`
 	TokenVersion uint64 `json:"tokenVersion"`
+	// ShareID names the share link a session was opened from. Its token is
+	// good only while that link is.
+	ShareID string `json:"share,omitempty"`
 	jwt.RegisteredClaims
 }
 
@@ -55,6 +61,10 @@ func CheckToken() gin.HandlerFunc {
 			return
 		}
 
+		if !allowByRole(c, principal) {
+			return
+		}
+
 		c.Set(principalContextKey, principal)
 		c.Set(tokenContextKey, token)
 		if token == nil || token.ExpiresAt == nil {
@@ -68,12 +78,18 @@ func CheckToken() gin.HandlerFunc {
 		// file behind its back.
 		requestContext, cancel := context.WithDeadline(c.Request.Context(), token.ExpiresAt.Time)
 		c.Request = c.Request.WithContext(requestContext)
-		unregister := activeSessions.register(session{
+		entry := session{
 			username:     principal.Username,
 			tokenVersion: token.TokenVersion,
 			store:        authn.DefaultStore,
 			cancel:       cancel,
-		})
+		}
+		if principal.ShareID != "" {
+			entry.store = nil
+			entry.shareID = principal.ShareID
+			entry.shares = authn.DefaultShares
+		}
+		unregister := activeSessions.register(entry)
 		defer func() {
 			unregister()
 			cancel()
@@ -97,6 +113,9 @@ func CheckSession() gin.HandlerFunc {
 		principal, token, ok := authenticateBySession(c)
 		if !ok {
 			abortUnauthorized(c)
+			return
+		}
+		if !allowByRole(c, principal) {
 			return
 		}
 
@@ -162,6 +181,9 @@ func CheckTokenOrLoopbackInternalToken() gin.HandlerFunc {
 			abortUnauthorized(c)
 			return
 		}
+		if !allowByRole(c, principal) {
+			return
+		}
 		c.Set(principalContextKey, principal)
 		c.Set(tokenContextKey, token)
 		c.Next()
@@ -200,6 +222,9 @@ func authenticateBySession(c *gin.Context) (Principal, *Token, bool) {
 	if err != nil {
 		return Principal{}, nil, false
 	}
+	if token.ShareID != "" {
+		return authenticateByShare(token)
+	}
 	user, err := authn.DefaultStore.ValidateToken(token.Username, token.TokenVersion)
 	if err != nil {
 		log.Debugf("validate session for %q: %s", token.Username, err)
@@ -216,6 +241,18 @@ func authenticateBySession(c *gin.Context) (Principal, *Token, bool) {
 	}
 
 	return Principal{Username: user.Username, Role: user.Role}, token, true
+}
+
+// authenticateByShare accepts a session opened from a share link for as long
+// as the link exists and has not expired. It is always a viewer.
+func authenticateByShare(token *Token) (Principal, *Token, bool) {
+	if token.Username != authn.SharePrincipalPrefix+token.ShareID {
+		return Principal{}, nil, false
+	}
+	if _, ok := authn.DefaultShares.Valid(token.ShareID); !ok {
+		return Principal{}, nil, false
+	}
+	return Principal{Username: token.Username, Role: authn.RoleViewer, ShareID: token.ShareID}, token, true
 }
 
 func abortUnauthorized(c *gin.Context) {
@@ -241,6 +278,30 @@ func GenerateJWT(username string, tokenVersion uint64) (string, error) {
 			Subject:   username,
 			IssuedAt:  jwt.NewNumericDate(now),
 			ExpiresAt: jwt.NewNumericDate(now.Add(expireDuration)),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte(conf.JWT.SecretKey))
+}
+
+// GenerateShareJWT is the session a share link opens. It lasts as long as the
+// link does, or as long as any session would if that is shorter.
+func GenerateShareJWT(shareID string, linkExpires time.Time) (string, error) {
+	conf := config.GetInstance()
+	now := time.Now()
+	expires := now.Add(time.Duration(conf.JWT.RefreshTokenDuration) * time.Second)
+	if linkExpires.Before(expires) {
+		expires = linkExpires
+	}
+	username := authn.SharePrincipalPrefix + shareID
+	claims := Token{
+		Username:     username,
+		TokenVersion: 1,
+		ShareID:      shareID,
+		RegisteredClaims: jwt.RegisteredClaims{
+			Subject:   username,
+			IssuedAt:  jwt.NewNumericDate(now),
+			ExpiresAt: jwt.NewNumericDate(expires),
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

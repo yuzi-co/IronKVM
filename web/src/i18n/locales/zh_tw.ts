@@ -28,6 +28,11 @@ const zh_tw = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      share: {
+        opening: '正在開啟分享的畫面...',
+        failed: '此連結無效、已過期或已遭撤銷。',
+        toLogin: '改為登入'
+      },
       passwordChanged: '密碼已變更。請使用新密碼登入。',
       cookieRejected:
         '瀏覽器拒絕儲存工作階段。先前 HTTPS 工作階段留下的 Cookie 無法透過一般 http 取代。請清除此位址的 Cookie，或開啟無痕視窗，然後重新登入。',
@@ -1558,7 +1563,31 @@ const zh_tw = {
         title: '帳號',
         webAccount: '網頁帳號',
         role: '角色',
-        roles: { admin: '管理員', user: '一般使用者' },
+        roles: { admin: '管理員', user: '一般使用者', viewer: '檢視者' },
+        shareLinks: {
+          title: '分享連結',
+          desc: '任何開啟分享連結的人都可以檢視畫面。連結不提供鍵盤、滑鼠、電源、媒體或設定的權限,過期或遭撤銷後即失效。',
+          create: '建立連結',
+          label: '備註(選填)',
+          duration: '有效期限',
+          durations: {
+            h1: '1 小時',
+            h8: '8 小時',
+            d1: '1 天',
+            d7: '7 天',
+            d30: '30 天'
+          },
+          empty: '沒有分享連結',
+          expires: '{{time}} 到期',
+          revoke: '撤銷',
+          revokeConfirm: '要撤銷此連結嗎?正透過它觀看的人將被中斷連線。',
+          revoked: '連結已撤銷',
+          loadFailed: '載入分享連結失敗',
+          createFailed: '建立分享連結失敗',
+          revokeFailed: '撤銷分享連結失敗',
+          createdTitle: '分享連結已建立',
+          createdDesc: '請立即複製連結,之後無法再次顯示。'
+        },
         password: '密碼',
         updateBtn: '修改',
         logoutBtn: '登出',

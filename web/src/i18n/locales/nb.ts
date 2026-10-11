@@ -28,6 +28,11 @@ const nb = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      share: {
+        opening: 'Åpner den delte skjermen...',
+        failed: 'Lenken er ugyldig, utløpt eller tilbakekalt.',
+        toLogin: 'Logg inn i stedet'
+      },
       passwordChanged: 'Passordet er endret. Logg inn med det nye passordet.',
       cookieRejected:
         'Nettleseren nektet å lagre økten. En informasjonskapsel fra en tidligere HTTPS-økt kan ikke erstattes over vanlig http. Slett informasjonskapslene for denne adressen, eller åpne et privat vindu, og logg inn på nytt.',
@@ -1629,7 +1634,31 @@ const nb = {
         title: 'Konto',
         webAccount: 'Navn på webkonto',
         role: 'Rolle',
-        roles: { admin: 'Administrator', user: 'Bruker' },
+        roles: { admin: 'Administrator', user: 'Bruker', viewer: 'Seer' },
+        shareLinks: {
+          title: 'Delingslenker',
+          desc: 'En delingslenke viser skjermen til alle som åpner den. Den gir ikke tilgang til tastatur, mus, strøm, medier eller innstillinger, og slutter å fungere når den utløper eller tilbakekalles.',
+          create: 'Opprett lenke',
+          label: 'Etikett (valgfri)',
+          duration: 'Gyldig i',
+          durations: {
+            h1: '1 time',
+            h8: '8 timer',
+            d1: '1 dag',
+            d7: '7 dager',
+            d30: '30 dager'
+          },
+          empty: 'Ingen delingslenker',
+          expires: 'Utløper {{time}}',
+          revoke: 'Tilbakekall',
+          revokeConfirm: 'Tilbakekalle denne lenken? Alle som ser på via den, blir koblet fra.',
+          revoked: 'Lenke tilbakekalt',
+          loadFailed: 'Kunne ikke laste delingslenker',
+          createFailed: 'Kunne ikke opprette delingslenken',
+          revokeFailed: 'Kunne ikke tilbakekalle delingslenken',
+          createdTitle: 'Delingslenke opprettet',
+          createdDesc: 'Kopier lenken nå. Den kan ikke vises igjen.'
+        },
         password: 'Passord',
         updateBtn: 'Update',
         logoutBtn: 'Logg ut',

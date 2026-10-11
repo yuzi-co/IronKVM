@@ -26,6 +26,8 @@ var features = []string{
 	"hid-macros",   // /api/hid/macro(s), /api/hid/sequence: recorded macros
 	"info-latency", // GET /api/stream/info boardLatency: the board's share of the latency
 	"ip-allowlist", // /api/network/allowlist: allowed client networks
+	"role-viewer",  // role "viewer" in /api/auth/users and GET /api/auth/account: video only
+	"share-links",  // /api/auth/share, /api/auth/share-links: expiring view-only links
 	"status-bar",   // GET /api/stream/info
 	"ui-update",    // /api/ui: separately installed UI packages
 	"webrtc-clock", // "clock" event on the WebRTC signalling socket

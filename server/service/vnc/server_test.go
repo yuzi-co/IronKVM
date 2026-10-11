@@ -79,7 +79,11 @@ type fakeAccounts map[string]string
 
 func (a fakeAccounts) Authenticate(username, password string) (*authn.User, bool, error) {
 	if want, ok := a[username]; ok && want == password {
-		return &authn.User{Username: username, Role: authn.RoleAdmin, Enabled: true}, true, nil
+		role := authn.RoleAdmin
+		if username == "guest" {
+			role = authn.RoleViewer
+		}
+		return &authn.User{Username: username, Role: role, Enabled: true}, true, nil
 	}
 	return nil, false, nil
 }
@@ -163,7 +167,7 @@ func newHarness(t *testing.T, settings config.VNC) *harness {
 			h.mu.Unlock()
 			return in
 		},
-		Accounts:      fakeAccounts{"admin": "right-password"},
+		Accounts:      fakeAccounts{"admin": "right-password", "guest": "right-password"},
 		Limiter:       h.limiter,
 		ClientAllowed: func(net.Addr) bool { return !h.refuse.Load() },
 		Password:      h.password,
@@ -571,6 +575,21 @@ func TestAWrongPasswordFails(t *testing.T) {
 	expectClosed(t, c)
 	if h.srv.State().Session != nil {
 		t.Fatal("a failed login opened a session")
+	}
+}
+
+func TestAViewOnlyAccountCannotUseVNC(t *testing.T) {
+	// VNC carries the keyboard and the mouse.
+	h := newHarness(t, config.VNC{})
+	c := dial(t, h.addr)
+	c.securityTypes("RFB 003.008\n")
+	result, reason := c.vencrypt("guest", "right-password")
+	if result != 1 || reason != errAuthFailed.Error() {
+		t.Fatalf("SecurityResult = %d %q", result, reason)
+	}
+	expectClosed(t, c)
+	if h.srv.State().Session != nil {
+		t.Fatal("a view-only login opened a session")
 	}
 }
 
