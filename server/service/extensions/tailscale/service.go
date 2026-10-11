@@ -284,12 +284,15 @@ func (s *Service) GetStatus(c *gin.Context) {
 	st := proto.VpnStatus{State: proto.VpnNotInstall}
 	if isInstalled() {
 		st = proto.VpnStatus{State: proto.VpnNotRunning}
-		if ts, err := NewCli().Status(); err != nil {
+		cli := NewCli()
+		if ts, err := cli.Status(); err != nil {
 			log.Debugf("failed to get tailscale status: %s", err)
 		} else if st, err = toVpnStatus(ts); err != nil {
 			log.Errorf("%s", err)
 			rsp.ErrRsp(c, -1, err.Error())
 			return
+		} else if server := cachedLoginServer(cli); !IsDefaultLoginServer(server) {
+			st.LoginServer = server
 		}
 	}
 

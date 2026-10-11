@@ -24,6 +24,9 @@ type VpnStatus struct {
 	BootEnabled bool      `json:"bootEnabled"`
 	Memory      VpnMemory `json:"memory"`
 	BlockedBy   string    `json:"blockedBy"` // "tailscale" or "netbird" when the other one runs or starts at boot
+	// LoginServer is Tailscale's control server when it is not Tailscale's
+	// own, a Headscale server for example. Empty otherwise, and for NetBird.
+	LoginServer string `json:"loginServer,omitempty"`
 }
 
 type VpnPeer struct {

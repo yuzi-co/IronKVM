@@ -48,8 +48,20 @@ func (c *Cli) Stop() error {
 }
 
 func (c *Cli) Up() error {
-	_, err := vpn.Run(exec.Command(TailscalePath, "up", "--accept-dns=false"))
+	args := append([]string{"up", "--accept-dns=false"}, c.keepLoginServer()...)
+	_, err := vpn.Run(exec.Command(TailscalePath, args...))
 	return err
+}
+
+// keepLoginServer is loginServerArgs for the server tailscaled holds now. A
+// preference that cannot be read adds nothing, which is the command as it was
+// before custom servers.
+func (c *Cli) keepLoginServer() []string {
+	current, err := c.LoginServer()
+	if err != nil {
+		return nil
+	}
+	return loginServerArgs(current)
 }
 
 func (c *Cli) Down() error {
@@ -81,7 +93,8 @@ func (c *Cli) State() (proto.VpnState, error) {
 func (c *Cli) Login() (string, error) {
 	// No shell: killing "sh -c tailscale ..." leaves tailscale holding the
 	// stderr pipe, so the timeout could never take effect.
-	cmd := exec.Command(TailscalePath, "login", "--accept-dns=false", "--timeout=10m")
+	args := append([]string{"login", "--accept-dns=false", "--timeout=10m"}, c.keepLoginServer()...)
+	cmd := exec.Command(TailscalePath, args...)
 
 	return vpn.LoginURL(cmd, false, loginURLTimeout, 0)
 }

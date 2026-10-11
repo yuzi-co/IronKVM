@@ -33,6 +33,9 @@ func extensionsRouter(r *gin.Engine) {
 	api.POST("/tailscale/connect", ts.Connect)       // start if needed, then up
 	api.POST("/tailscale/disconnect", ts.Disconnect) // down, then stop
 
+	// A custom control server (Headscale), rolled back when it fails.
+	api.POST("/tailscale/login-server", ts.SetLoginServer)
+
 	nb := netbird.NewService()
 
 	api.POST("/netbird/install", nb.Install)       // install netbird from Alpine's package
