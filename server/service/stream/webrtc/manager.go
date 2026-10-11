@@ -296,6 +296,7 @@ func (m *WebRTCManager) sendVideoStream() {
 			captured := common.GetScreen().Snapshot().Codec
 
 			var packets []*rtp.Packet
+			var video videoFrame
 			for _, client := range clients {
 				// A session that negotiated the other codec cannot be served
 				// this frame: its description promised something else, and
@@ -316,11 +317,15 @@ func (m *WebRTCManager) sendVideoStream() {
 						packetizer.SkipSamples(skip)
 					}
 					packets = packetizer.Packetize(frame.Data, samples)
+					video = videoFrame{packets: packets, times: frame.Times, hasTimes: frame.HasTimes}
+					if frame.HasTimes {
+						video.capture = absCaptureTime(frame.Times.CaptureStart())
+					}
 				}
 
 				// Handing the frame over never blocks: a client that is
 				// behind drops it and waits for the next keyframe.
-				client.enqueue(packets, frame.KeyFrame)
+				client.enqueueFrame(video, frame.KeyFrame)
 			}
 		}
 	}

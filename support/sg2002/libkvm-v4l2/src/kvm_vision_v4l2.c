@@ -1021,6 +1021,14 @@ static int pipe_failure(enum kvmv_pipe_status status)
  * (KVMV_DEBUG). */
 static uint64_t cold_start_us;
 
+/* kvmv_video_times: the last access unit kvmv_read_video handed out, as the
+ * pipe timed it, and when the read returned it (CLOCK_MONOTONIC us). Written
+ * under pipe_lock, read under times_lock too, so a reader never sees half of
+ * one picture's times and half of the next one's. */
+static pthread_mutex_t times_lock = PTHREAD_MUTEX_INITIALIZER;
+static struct kvmv_frame_times video_times;
+static uint64_t video_returned_us;
+
 /*
  * Scale-ahead (struct kvmv_pipe): the scaler takes the next frame while the
  * encoder works on this one. KVMV_SCALE_AHEAD=0 never, 1 always, 2 (the
@@ -1067,6 +1075,37 @@ static uint32_t ahead_delay_us(void)
 	if (delay < 0)
 		delay = (long)env_uint("KVMV_AHEAD_DELAY_US", 0);
 	return (uint32_t)delay;
+}
+
+/*
+ * KVMV_H264_LOW_DELAY_VUI: 1 (the default) gives every H.264 SPS a VUI saying
+ * no picture is reordered (kvmv_h264_au_low_delay), 0 passes the Coda980's SPS
+ * through as it is, without a VUI.
+ */
+static int low_delay_vui(void)
+{
+	static int on = -1;
+
+	if (on < 0) {
+		on = env_uint("KVMV_H264_LOW_DELAY_VUI", 1) != 0;
+		log_msg("H.264: %s", on ? "the SPS says no picture is reordered (bitstream_restriction)" :
+					  "the SPS goes out as the encoder made it");
+	}
+	return on;
+}
+
+/* The least time between the capture of two pictures at the frame rate asked
+ * (set_capture_fps), less half a source frame: kvmv_pipe.min_gap_us. */
+static uint32_t min_frame_gap_us(void)
+{
+	int fps = __atomic_load_n(&capture_fps_setting, __ATOMIC_ACQUIRE);
+	uint32_t period, half;
+
+	if (fps <= 0)
+		return 0;
+	period = 1000000U / (uint32_t)fps;
+	half = pipe_state.cap_interval_us / 2U;
+	return period > half ? period - half : 0;
 }
 
 static uint32_t ewma(uint32_t avg, uint64_t sample)
@@ -1138,6 +1177,7 @@ static int read_video_locked(unsigned int width, unsigned int height,
 
 		pipe_state.scale_ahead = want_scale_ahead();
 		pipe_state.ahead_delay_us = ahead_delay_us();
+		pipe_state.min_gap_us = min_frame_gap_us();
 		result = pipe_failure(kvmv_pipe_encode(&pipe_state, KVMV_FRAME_TIMEOUT_MS,
 						       &encoded));
 		if (result != 0)
@@ -1207,6 +1247,12 @@ static int read_video_locked(unsigned int width, unsigned int height,
 		if (prefix_len != KVMV_PREFIX_ROOM)
 			memmove(slot->data + prefix_len, unit, unit_size);
 		slot->size = (uint32_t)(prefix_len + unit_size);
+		/* Every SPS says pictures come out in decoding order, so no
+		 * decoder waits for a DPB's worth of them (kvmv_annexb.h). */
+		if (pipe_state.codec == KVMV_CODEC_KIND_H264 && (info.sps || prefix_len) &&
+		    low_delay_vui())
+			slot->size = (uint32_t)kvmv_h264_au_low_delay(slot->data, slot->size,
+								      slot->capacity);
 		slot->type = (uint8_t)type;
 		need_key = 0;
 		set_source_locked(1);
@@ -1224,6 +1270,11 @@ static int read_video_locked(unsigned int width, unsigned int height,
 			    (unsigned long long)t->copy_us);
 			cold_start_us = 0;
 		}
+
+		pthread_mutex_lock(&times_lock);
+		video_times = pipe_state.last;
+		video_returned_us = now_us();
+		pthread_mutex_unlock(&times_lock);
 
 		*data = slot->data;
 		*size = slot->size;
@@ -1727,15 +1778,21 @@ int kvmv_read_img(uint16_t _width, uint16_t _height, uint8_t _type,
 			  _p_kvmv_data_size);
 }
 
+/* A GOP setting as stored: KVMV_GOP_NONE as it is, anything else held to the
+ * vendor library's range. */
+static int gop_value(uint8_t gop)
+{
+	return gop == KVMV_GOP_NONE ? KVMV_GOP_NONE :
+				       kvmv_clamp(gop, KVMV_GOP_MIN, KVMV_GOP_MAX);
+}
+
 int kvmv_read_video(uint16_t _width, uint16_t _height, uint8_t _codec,
 		    uint16_t _bitrate, uint8_t _gop, uint8_t _fps,
 		    uint8_t **_pp_kvm_data, uint32_t *_p_kvmv_data_size)
 {
 	/* 0 keeps what set_h264_gop and set_h264_fps last set. */
 	if (_gop != 0)
-		__atomic_store_n(&gop_setting,
-				 kvmv_clamp(_gop, KVMV_GOP_MIN, KVMV_GOP_MAX),
-				 __ATOMIC_RELEASE);
+		__atomic_store_n(&gop_setting, gop_value(_gop), __ATOMIC_RELEASE);
 	if (_fps != 0)
 		set_h264_fps(_fps);
 	if (_codec != KVMV_CODEC_H264 && _codec != KVMV_CODEC_H265) {
@@ -1765,8 +1822,7 @@ void free_all_kvmv_data(void)
 
 void set_h264_gop(uint8_t _gop)
 {
-	__atomic_store_n(&gop_setting, kvmv_clamp(_gop, KVMV_GOP_MIN, KVMV_GOP_MAX),
-			 __ATOMIC_RELEASE);
+	__atomic_store_n(&gop_setting, gop_value(_gop), __ATOMIC_RELEASE);
 	/* The vendor library rebuilds its encoder here, so the next frame is a
 	 * keyframe, and the server relies on that when a stream starts. */
 	__atomic_store_n(&force_key, 1, __ATOMIC_RELEASE);
@@ -1895,4 +1951,45 @@ uint8_t kvmv_set_keep_aspect(uint8_t _keep)
 		log_msg("aspect: %s", keep ? "keep the source's shape" :
 					    "stretch to the requested size");
 	return (uint8_t)keep;
+}
+
+/*
+ * Not part of kvm_vision.h, and not in Sipeed's library (ironkvm-dist trial
+ * 78): when the picture behind the last access unit kvmv_read_video returned
+ * was captured and encoded, for a capture timestamp on the stream (the RTP
+ * abs-capture-time extension) and for the board's share of the latency.
+ * NanoKVM-Server looks it up with dlsym.
+ *
+ * Fills up to n values, CLOCK_MONOTONIC microseconds unless noted, and answers
+ * how many it filled, 0 before the first picture:
+ *   [0] the capture buffer's timestamp: the frame-done interrupt, so the end of
+ *       the frame's transfer from the HDMI receiver
+ *   [1] the source's frame time in microseconds, 0 while unknown; [0] minus
+ *       this is about when the frame's first line arrived
+ *   [2] when the picture went to the encoder
+ *   [3] when the encoder gave its access unit back
+ *   [4] when kvmv_read_video returned it, after the copy out
+ */
+__attribute__((visibility("default"))) int kvmv_video_times(uint64_t *times, int n);
+int kvmv_video_times(uint64_t *times, int n)
+{
+	uint64_t v[5];
+	int i;
+
+	if (times == NULL || n <= 0)
+		return 0;
+	pthread_mutex_lock(&times_lock);
+	v[0] = video_times.captured_us;
+	v[1] = video_times.frame_us;
+	v[2] = video_times.encode_start_us;
+	v[3] = video_times.encode_end_us;
+	v[4] = video_returned_us;
+	pthread_mutex_unlock(&times_lock);
+	if (v[0] == 0)
+		return 0;
+	if (n > 5)
+		n = 5;
+	for (i = 0; i < n; i++)
+		times[i] = v[i];
+	return n;
 }

@@ -346,6 +346,63 @@ static void test_sps(void)
 	CHECK(kvmv_h264_sps_size(nal, 5, &w, &h) != 0);
 }
 
+/* The Coda980's SPS at 1080p (trial 78): Constrained Baseline, level 4.0,
+ * POC type 2, one reference frame, no VUI. */
+static const uint8_t coda_sps[] = {
+	0x67, 0x42, 0x40, 0x28, 0xa6, 0x80, 0x78, 0x02, 0x27, 0xe5, 0x40,
+};
+
+static void test_low_delay_vui(void)
+{
+	uint8_t out[64], again[64];
+	uint8_t au[256];
+	unsigned int w = 0, h = 0, w2 = 0, h2 = 0;
+	static const uint8_t idr[] = { 0x65, 0x88, 0x84, 0x00, 0x33, 0xff };
+	size_t n, len, grown;
+
+	n = kvmv_h264_sps_low_delay(coda_sps, sizeof(coda_sps), out, sizeof(out));
+	CHECK(n > sizeof(coda_sps));
+	CHECK_EQ(out[0], 0x67);
+	/* The same picture, and now a VUI: a second pass leaves it alone. */
+	CHECK_EQ(kvmv_h264_sps_size(coda_sps, sizeof(coda_sps), &w, &h), 0);
+	CHECK_EQ(kvmv_h264_sps_size(out, n, &w2, &h2), 0);
+	CHECK_EQ(w, w2);
+	CHECK_EQ(h, h2);
+	CHECK_EQ(kvmv_h264_sps_low_delay(out, n, again, sizeof(again)), 0);
+	/* No 00 00 0x (x <= 3) left unescaped. */
+	{
+		size_t i;
+
+		for (i = 1; i + 2 < n; i++)
+			CHECK(!(out[i] == 0 && out[i + 1] == 0 && out[i + 2] <= 3 && out[i + 2] != 3));
+	}
+	/* Not an SPS; too small an output. */
+	CHECK_EQ(kvmv_h264_sps_low_delay(pps_nal, sizeof(pps_nal), out, sizeof(out)), 0);
+	CHECK_EQ(kvmv_h264_sps_low_delay(coda_sps, sizeof(coda_sps), out, 8), 0);
+
+	/* An access unit: SPS, PPS, IDR. The SPS grows, the rest follows it. */
+	len = 0;
+	memcpy(au + len, "\0\0\0\1", 4), len += 4;
+	memcpy(au + len, coda_sps, sizeof(coda_sps)), len += sizeof(coda_sps);
+	memcpy(au + len, "\0\0\0\1", 4), len += 4;
+	memcpy(au + len, pps_nal, sizeof(pps_nal)), len += sizeof(pps_nal);
+	memcpy(au + len, "\0\0\1", 3), len += 3;
+	memcpy(au + len, idr, sizeof(idr)), len += sizeof(idr);
+	grown = kvmv_h264_au_low_delay(au, len, sizeof(au));
+	CHECK_EQ(grown, len + n - sizeof(coda_sps));
+	CHECK(memcmp(au + 4, out, n) == 0);
+	CHECK(memcmp(au + 4 + n + 4, pps_nal, sizeof(pps_nal)) == 0);
+	CHECK(memcmp(au + grown - sizeof(idr), idr, sizeof(idr)) == 0);
+	/* Done once only. */
+	CHECK_EQ(kvmv_h264_au_low_delay(au, grown, sizeof(au)), grown);
+	/* No room: unchanged. */
+	len = 0;
+	memcpy(au + len, "\0\0\0\1", 4), len += 4;
+	memcpy(au + len, coda_sps, sizeof(coda_sps)), len += sizeof(coda_sps);
+	CHECK_EQ(kvmv_h264_au_low_delay(au, len, len + 1), len);
+	CHECK(memcmp(au + 4, coda_sps, sizeof(coda_sps)) == 0);
+}
+
 /* ---- H.265 --------------------------------------------------------- */
 
 /* The parameter sets the WAVE420L wrote for 1920x1080 Main, level 4.1 (trial 13). */
@@ -1352,6 +1409,17 @@ static void test_negotiate(void)
 	CHECK_EQ(negotiate(&p, 0, 0, 4000000, 100, 30), 0);
 	CHECK_EQ(mock.gop, 99);
 
+	/* KVMV_GOP_NONE: no periodic keyframes, GOP 0 to the encoder, at the
+	 * start and as a change. */
+	mock_reset();
+	CHECK_EQ(negotiate(&p, 0, 0, 4000000, KVMV_GOP_NONE, 30), 0);
+	CHECK_EQ(mock.gop, 0);
+	CHECK_EQ(p.applied.gop, 0);
+	CHECK_EQ(kvmv_pipe_set_gop(&p, 30), 0);
+	CHECK_EQ(mock.gop, 30);
+	CHECK_EQ(kvmv_pipe_set_gop(&p, KVMV_GOP_NONE), 0);
+	CHECK_EQ(mock.gop, 0);
+
 	/* An encoder that keeps a different bitrate is reported as such. */
 	mock_reset();
 	mock.coda_bitrate_divisor = 2;
@@ -1813,6 +1881,7 @@ int main(void)
 	test_classify();
 	test_ps_cache();
 	test_sps();
+	test_low_delay_vui();
 	test_hevc();
 	test_plan();
 	test_plan_keep_shape();

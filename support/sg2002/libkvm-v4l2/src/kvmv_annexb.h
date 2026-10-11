@@ -140,4 +140,23 @@ int kvmv_h264_sps_size(const uint8_t *nal, size_t len, unsigned int *width,
 int kvmv_hevc_sps_size(const uint8_t *nal, size_t len, unsigned int *width,
 		       unsigned int *height);
 
+/*
+ * Low-delay output for H.264 decoders (ironkvm-dist trial 78). The Coda980's
+ * SPS carries no VUI, so nothing tells a decoder that pictures come out in
+ * decoding order, and a decoder that goes by the level's DPB size (Chrome's
+ * VideoDecoder: 4 pictures at 1080p level 4.0) holds that many pictures before
+ * showing the first. kvmv_h264_sps_low_delay writes into out an SPS NAL (header
+ * included) equal to nal plus a VUI whose only content is bitstream_restriction
+ * with max_num_reorder_frames 0 and max_dec_frame_buffering max_num_ref_frames,
+ * as libwebrtc's SpsVuiRewriter writes it. Returns the new length, 0 when nal
+ * has a VUI already or cannot be parsed, or when out is too small.
+ *
+ * kvmv_h264_au_low_delay does it to every SPS in an Annex-B access unit in
+ * place, moving what follows; returns the new length, len when nothing
+ * changed or capacity would not hold it.
+ */
+size_t kvmv_h264_sps_low_delay(const uint8_t *nal, size_t len, uint8_t *out,
+			       size_t out_size);
+size_t kvmv_h264_au_low_delay(uint8_t *buf, size_t len, size_t capacity);
+
 #endif

@@ -71,7 +71,7 @@ func TestTheTrackRemembersWhatItSent(t *testing.T) {
 	}
 
 	track.markKey(1)
-	if err := track.writePackets(sharedFrame()); err != nil {
+	if err := track.writePackets(sharedFrame(), nil); err != nil {
 		t.Fatal(err)
 	}
 

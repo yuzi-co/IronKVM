@@ -182,12 +182,14 @@ func createMediaEngine() (*webrtc.MediaEngine, error) {
 		return nil, err
 	}
 
-	if err := mediaEngine.RegisterHeaderExtension(
-		webrtc.RTPHeaderExtensionCapability{URI: playoutDelayExtensionURI},
-		webrtc.RTPCodecTypeVideo,
-	); err != nil {
-		log.Errorf("failed to register header extension: %s", err)
-		return nil, err
+	for _, uri := range []string{playoutDelayExtensionURI, absCaptureTimeExtensionURI} {
+		if err := mediaEngine.RegisterHeaderExtension(
+			webrtc.RTPHeaderExtensionCapability{URI: uri},
+			webrtc.RTPCodecTypeVideo,
+		); err != nil {
+			log.Errorf("failed to register header extension %s: %s", uri, err)
+			return nil, err
+		}
 	}
 
 	return mediaEngine, nil

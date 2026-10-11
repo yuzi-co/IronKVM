@@ -9,3 +9,12 @@ kvmv_codec_supported
 # requested height, 0 stretches it to the requested size as Sipeed's library
 # does. Answers the setting in force.
 kvmv_set_keep_aspect
+#
+# kvmv_video_times(times, n): when the picture behind the last access unit
+# kvmv_read_video returned was captured (frame-done timestamp, and the source's
+# frame time), went to the encoder, came back, and was returned; CLOCK_MONOTONIC
+# microseconds. Answers how many values it filled, 0 before the first picture.
+# Not a function, but also an extension: set_h264_gop(255) and a
+# kvmv_read_video gop of 255 ask for no periodic keyframes (encoder GOP 0);
+# every keyframe after the first is then one the caller forces.
+kvmv_video_times

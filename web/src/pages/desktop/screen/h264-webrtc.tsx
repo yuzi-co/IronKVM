@@ -5,6 +5,7 @@ import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { useTranslation } from 'react-i18next';
 import { w3cwebsocket as W3cWebSocket } from 'websocket';
 
+import { offerAbsCaptureTime } from '@/lib/abs-capture-time.ts';
 import { audioStateFromName } from '@/lib/audio-state.ts';
 import { nextRoomMicSwitch, roomMicPushFromSignal } from '@/lib/room-mic.ts';
 import { withStereoOpus } from '@/lib/sdp-opus.ts';
@@ -254,7 +255,9 @@ export const H264Webrtc = () => {
         }
       };
 
-      peer.addTransceiver('video', { direction: 'recvonly' });
+      // The device stamps each frame with its capture time; Chrome offers the
+      // extension only when asked (lib/abs-capture-time.ts).
+      offerAbsCaptureTime(peer.addTransceiver('video', { direction: 'recvonly' }));
       peer.addTransceiver('audio', { direction: 'recvonly' });
       // A second audio line for the room microphone. A server without one
       // leaves it inactive.

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"strconv"
 	"sync"
+	"time"
 
 	"NanoKVM-Server/service/roommic"
 	"NanoKVM-Server/service/stream"
@@ -23,7 +24,7 @@ func NewClient(ws *websocket.Conn, videoConn *webrtc.PeerConnection) *Client {
 		ws:        ws,
 		video:     videoConn,
 		mutex:     sync.Mutex{},
-		queue:     framequeue.New[[]*rtp.Packet](framequeue.DefaultMaxFrames, framequeue.DefaultMaxDelay),
+		queue:     framequeue.New[videoFrame](framequeue.DefaultMaxFrames, framequeue.DefaultMaxDelay),
 		done:      make(chan struct{}),
 		ready:     make(chan struct{}),
 		stopping:  make(chan struct{}),
@@ -55,6 +56,18 @@ func (c *Client) markReady() {
 	c.readyOnce.Do(func() { close(c.ready) })
 }
 
+// videoFrame is one frame in a viewer's queue: its packets, shared by every
+// viewer, and when it was captured, where the library says (common.VideoTimes).
+type videoFrame struct {
+	packets []*rtp.Packet
+	// capture is the abs-capture-time extension's data, nil without a
+	// capture time. Shared by every viewer and never written after it is
+	// made.
+	capture  []byte
+	times    common.VideoTimes
+	hasTimes bool
+}
+
 // enqueue offers a frame to this client and never blocks.
 //
 // The writer can be well behind for a moment: a 1080p keyframe is about a
@@ -70,7 +83,12 @@ func (c *Client) markReady() {
 // next periodic keyframe, which is up to two seconds away on a clean network
 // (keyframe_policy.go).
 func (c *Client) enqueue(packets []*rtp.Packet, isKeyFrame bool) {
-	if !c.queue.Put(packets, isKeyFrame) && !isKeyFrame {
+	c.enqueueFrame(videoFrame{packets: packets}, isKeyFrame)
+}
+
+// enqueueFrame is enqueue for a frame with its capture time.
+func (c *Client) enqueueFrame(frame videoFrame, isKeyFrame bool) {
+	if !c.queue.Put(frame, isKeyFrame) && !isKeyFrame {
 		stream.RequestKeyframe(stream.KeyframeReasonWaiting)
 	}
 }
@@ -136,10 +154,11 @@ func (c *Client) write() {
 	boost := newKeyBoost()
 
 	for {
-		packets, info, ok := c.queue.TakeInfo()
+		frame, info, ok := c.queue.TakeInfo()
 		if !ok {
 			return
 		}
+		packets := frame.packets
 
 		c.mutex.Lock()
 		track := c.track
@@ -156,8 +175,11 @@ func (c *Client) write() {
 			boost.raise()
 		}
 		c.udp.begin()
-		err := track.writePackets(packets)
+		err := track.writePackets(packets, frame.capture)
 		c.udp.flush()
+		if frame.hasTimes {
+			stream.NoteSent(frame.times, time.Now())
+		}
 		if info.Key {
 			boost.lower()
 		}

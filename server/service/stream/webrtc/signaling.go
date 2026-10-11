@@ -190,15 +190,24 @@ func (s *SignalingHandler) updateHeaderExtensionID() error {
 		return errors.New("no header extensions found in negotiated parameters")
 	}
 
+	// The capture time goes out only when this viewer negotiated it.
+	s.client.track.setAbsCaptureTimeExtensionID(0)
+	playout := false
 	for _, ext := range params.HeaderExtensions {
-		if ext.URI == playoutDelayExtensionURI {
+		switch ext.URI {
+		case playoutDelayExtensionURI:
 			s.client.track.setPlayoutDelayExtensionID(uint8(ext.ID))
 			log.Debugf("found and set playout delay extension ID to: %d", ext.ID)
-			return nil
+			playout = true
+		case absCaptureTimeExtensionURI:
+			s.client.track.setAbsCaptureTimeExtensionID(uint8(ext.ID))
+			log.Debugf("abs-capture-time negotiated, extension ID %d", ext.ID)
 		}
 	}
 
-	log.Warnf("no track extension found in negotiated parameters, use default value 5")
+	if !playout {
+		log.Warnf("no track extension found in negotiated parameters, use default value 5")
+	}
 	return nil
 }
 

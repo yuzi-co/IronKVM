@@ -347,6 +347,14 @@ static int32_t ctrl_fit(int fd, uint32_t id, int32_t value)
 	return value;
 }
 
+/* The GOP control's value for a GOP setting: KVMV_GOP_NONE is 0, "no
+ * periodic keyframes", on both encoders. */
+static int32_t encoder_gop(const struct kvmv_pipe *p, unsigned int gop)
+{
+	return ctrl_fit(p->enc_fd, V4L2_CID_MPEG_VIDEO_GOP_SIZE,
+			gop == KVMV_GOP_NONE ? 0 : (int32_t)gop);
+}
+
 static int is_hevc(const struct kvmv_pipe *p)
 {
 	return p->codec == KVMV_CODEC_KIND_HEVC;
@@ -528,8 +536,7 @@ rate_control:
 			 (int32_t)cfg->bitrate_bps);
 	if (cfg->gop)
 		set_ctrl(p->enc_fd, V4L2_CID_MPEG_VIDEO_GOP_SIZE,
-			 ctrl_fit(p->enc_fd, V4L2_CID_MPEG_VIDEO_GOP_SIZE,
-				  (int32_t)cfg->gop));
+			 encoder_gop(p, cfg->gop));
 	/*
 	 * Picture quality (#35). Kernels before patch 0910 lack the minimum
 	 * QP control on the Coda980 and ignore the maximum; each is set on
@@ -1739,6 +1746,10 @@ static enum kvmv_pipe_status finish_encode(struct kvmv_pipe *p, uint64_t t0,
 		p->times.age_us += age;
 		if (age > p->times.age_max_us)
 			p->times.age_max_us = age;
+		p->last.captured_us = frame_ts;
+		p->last.frame_us = p->cap_interval_us;
+		p->last.encode_start_us = t0;
+		p->last.encode_end_us = t1;
 	}
 	p->times.frames++;
 	return KVMV_PIPE_OK;
@@ -1843,7 +1854,14 @@ enum kvmv_pipe_status kvmv_pipe_encode(struct kvmv_pipe *p,
 		status = finish_ahead(p, &mi);
 		if (status != KVMV_PIPE_OK)
 			return status;
-		if (now > p->ahead_ts_us && now - p->ahead_ts_us > stale) {
+		/* Too soon after the last picture for the frame rate asked
+		 * (min_gap_us): a source faster than the stream (110 Hz for 30
+		 * fps) completes frames during the encode that the stream must
+		 * skip, and taking them raised the rate above the one asked
+		 * (ironkvm-dist trial 78). Scale the frame that is due. */
+		if ((now > p->ahead_ts_us && now - p->ahead_ts_us > stale) ||
+		    (p->min_gap_us && p->last.captured_us &&
+		     p->ahead_ts_us < p->last.captured_us + p->min_gap_us)) {
 			p->times.ahead--;
 			status = kvmv_pipe_scale(p, timeout_ms, &mi);
 		}
@@ -2146,8 +2164,7 @@ int kvmv_pipe_set_bitrate(struct kvmv_pipe *p, uint32_t bitrate_bps)
 int kvmv_pipe_set_gop(struct kvmv_pipe *p, unsigned int gop)
 {
 	if (set_ctrl(p->enc_fd, V4L2_CID_MPEG_VIDEO_GOP_SIZE,
-		     ctrl_fit(p->enc_fd, V4L2_CID_MPEG_VIDEO_GOP_SIZE,
-			      (int32_t)gop)))
+		     encoder_gop(p, gop)))
 		return fail(p, "set GOP");
 	read_back(p);
 	return 0;

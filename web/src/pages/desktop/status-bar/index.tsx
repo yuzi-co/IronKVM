@@ -132,7 +132,9 @@ const Bar = () => {
         <Item title={t('screen.streamInfo.bitrateTip')}>{formatBitrate(stats.kbps)}</Item>
       )}
 
-      {stats?.latency && <LatencyItem latency={stats.latency} />}
+      {stats?.latency && (
+        <LatencyItem latency={directFromCapture(stats.latency, source?.captureStamps)} />
+      )}
 
       {stats?.rttMs !== null && stats?.rttMs !== undefined && (
         <Item title={t('screen.streamInfo.rttTip')} wide>
@@ -196,6 +198,12 @@ const FrameRate = ({ stats, captureFps }: { stats: StreamStats; captureFps?: num
     </>
   );
 };
+
+// H.264 Direct's age at drawing counts from the capture, not the encoder,
+// when the board stamps its frames with their capture time.
+function directFromCapture(latency: Latency, captureStamps?: boolean): Latency {
+  return latency.kind === 'encoder' && captureStamps ? { ...latency, kind: 'capture' } : latency;
+}
 
 const latencyTips: Record<Latency['kind'], string> = {
   capture: 'screen.streamInfo.latencyCapture',

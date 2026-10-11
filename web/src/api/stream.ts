@@ -9,6 +9,9 @@ export type StreamInfo = {
   refresh: number;
   // Frames per second over the last few seconds; -1 before any stream ran.
   captureFps: number;
+  // H.264 Direct's frames are stamped with their capture time rather than
+  // when they left the encoder (libkvm-v4l2 boards). Absent on older servers.
+  captureStamps?: boolean;
 };
 
 export function getStreamInfo() {
