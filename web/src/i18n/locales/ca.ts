@@ -83,7 +83,8 @@ const ca = {
         authDescription: 'Introduïu la contrasenya AP per continuar',
         authFailed: 'Contrasenya AP no vàlida',
         passPlaceholder: 'AP contrasenya',
-        verifyBtn: 'Verificar'
+        verifyBtn: 'Verificar',
+        tooManyAttempts: 'Massa contrasenyes incorrectes. Espereu un moment i torneu-ho a provar.'
       },
       ssidRequired: 'Introduïu el nom de la xarxa, fins a 32 caràcters',
       passwordLength:

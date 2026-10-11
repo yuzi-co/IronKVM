@@ -83,7 +83,8 @@ const hu = {
         authDescription: 'A folytatáshoz adja meg a AP jelszót',
         authFailed: 'Érvénytelen AP jelszó',
         passPlaceholder: 'AP jelszót',
-        verifyBtn: 'Ellenőrizze'
+        verifyBtn: 'Ellenőrizze',
+        tooManyAttempts: 'Túl sok hibás jelszó. Várjon egy kicsit, majd próbálja újra.'
       },
       ssidRequired: 'Adja meg a hálózat nevét, legfeljebb 32 karakter',
       passwordLength: 'A jelszó 8–63 karakter. Nyílt hálózatnál hagyja üresen.',

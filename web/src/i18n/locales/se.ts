@@ -80,7 +80,8 @@ const se = {
         authDescription: 'Ange lösenordet AP för att fortsätta',
         authFailed: 'Ogiltigt AP lösenord',
         passPlaceholder: 'AP lösenord',
-        verifyBtn: 'Verifiera'
+        verifyBtn: 'Verifiera',
+        tooManyAttempts: 'För många felaktiga lösenord. Vänta en stund och försök igen.'
       },
       ssidRequired: 'Ange nätverksnamnet, högst 32 tecken',
       passwordLength: 'Lösenordet är 8 till 63 tecken. Lämna det tomt för ett öppet nätverk.',

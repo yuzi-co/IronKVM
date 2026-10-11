@@ -84,7 +84,8 @@ const nl = {
         authDescription: 'Voer het wachtwoord AP in om door te gaan',
         authFailed: 'Ongeldig AP wachtwoord',
         passPlaceholder: 'AP wachtwoord',
-        verifyBtn: 'Verifieer'
+        verifyBtn: 'Verifieer',
+        tooManyAttempts: 'Te veel onjuiste wachtwoorden. Wacht even en probeer het opnieuw.'
       },
       ssidRequired: 'Voer de netwerknaam in, maximaal 32 tekens',
       passwordLength: 'Het wachtwoord is 8 tot 63 tekens. Laat het leeg voor een open netwerk.',

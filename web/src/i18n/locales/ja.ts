@@ -82,7 +82,8 @@ const ja = {
         authDescription: '続行するには、AP パスワードを入力してください',
         authFailed: '無効な AP パスワード',
         passPlaceholder: 'AP パスワード',
-        verifyBtn: '確認する'
+        verifyBtn: '確認する',
+        tooManyAttempts: 'パスワードの誤りが多すぎます。しばらく待ってから再試行してください。'
       },
       ssidRequired: 'ネットワーク名を 32 文字以内で入力してください',
       passwordLength:

@@ -83,7 +83,8 @@ const nb = {
         authDescription: 'Vennligst skriv inn AP passordet for å fortsette',
         authFailed: 'Ugyldig AP passord',
         passPlaceholder: 'AP passord',
-        verifyBtn: 'Bekreft'
+        verifyBtn: 'Bekreft',
+        tooManyAttempts: 'For mange feil passord. Vent litt og prøv igjen.'
       },
       ssidRequired: 'Skriv inn nettverksnavnet, opptil 32 tegn',
       passwordLength: 'Passordet er 8 til 63 tegn. La det stå tomt for et åpent nettverk.',

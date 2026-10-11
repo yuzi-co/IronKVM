@@ -81,7 +81,8 @@ const en = {
         authDescription: 'Please enter the AP password to continue',
         authFailed: 'Invalid AP password',
         passPlaceholder: 'AP password',
-        verifyBtn: 'Verify'
+        verifyBtn: 'Verify',
+        tooManyAttempts: 'Too many wrong passwords. Wait a moment and try again.'
       },
       ssidRequired: 'Enter the network name, up to 32 characters',
       passwordLength: 'The password is 8 to 63 characters. Leave it empty for an open network.',

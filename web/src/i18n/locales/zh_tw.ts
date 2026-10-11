@@ -79,7 +79,8 @@ const zh_tw = {
         authDescription: '請輸入 AP 密碼繼續',
         authFailed: 'AP 密碼無效',
         passPlaceholder: 'AP 密碼',
-        verifyBtn: '驗證'
+        verifyBtn: '驗證',
+        tooManyAttempts: '密碼錯誤次數過多，請稍後再試。'
       },
       ssidRequired: '請輸入網路名稱，最多 32 個字元',
       passwordLength: '密碼為 8 到 63 個字元。開放網路請留空。',

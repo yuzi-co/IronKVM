@@ -82,7 +82,8 @@ const vi = {
         authDescription: 'Vui lòng nhập mật khẩu AP để tiếp tục',
         authFailed: 'Mật khẩu AP không hợp lệ',
         passPlaceholder: 'AP mật khẩu',
-        verifyBtn: 'Xác minh'
+        verifyBtn: 'Xác minh',
+        tooManyAttempts: 'Nhập sai mật khẩu quá nhiều lần. Hãy đợi một lát rồi thử lại.'
       },
       ssidRequired: 'Nhập tên mạng, tối đa 32 ký tự',
       passwordLength: 'Mật khẩu dài 8 đến 63 ký tự. Để trống nếu là mạng mở.',

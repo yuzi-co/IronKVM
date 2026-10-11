@@ -10,7 +10,7 @@ import { useStableCallback } from '@/hooks/useStableCallback.ts';
 import { Head } from '@/components/head.tsx';
 
 type State = '' | 'loading' | 'success' | 'failed' | 'denied' | 'lost' | 'done';
-type VerifyState = '' | 'failed' | 'denied';
+type VerifyState = '' | 'failed' | 'denied' | 'locked';
 
 export const Wifi = () => {
   const { t } = useTranslation();
@@ -33,7 +33,8 @@ export const Wifi = () => {
         setApPassword(password);
         setIsAuthenticated(true);
       } else {
-        setVerifyState(rsp?.code === -1 ? 'denied' : 'failed');
+        // -5: too many wrong passwords; the server makes this address wait.
+        setVerifyState(rsp?.code === -1 ? 'denied' : rsp?.code === -5 ? 'locked' : 'failed');
       }
     } catch (err) {
       console.error(err);
@@ -133,6 +134,9 @@ export const Wifi = () => {
           <div className="flex max-w-[500px] justify-center px-5 pt-3 md:px-10">
             {verifyState === 'failed' && (
               <span className="text-sm text-red-500">{t('wifi.ap.authFailed')}</span>
+            )}
+            {verifyState === 'locked' && (
+              <span className="text-sm text-red-500">{t('wifi.ap.tooManyAttempts')}</span>
             )}
             {verifyState === 'denied' && (
               <span className="text-sm text-red-500">{t('wifi.invalidMode')}</span>

@@ -85,7 +85,8 @@ const fr = {
         authDescription: 'Veuillez saisir le mot de passe AP pour continuer',
         authFailed: 'Mot de passe AP invalide',
         passPlaceholder: 'AP mot de passe',
-        verifyBtn: 'Vérifier'
+        verifyBtn: 'Vérifier',
+        tooManyAttempts: 'Trop de mots de passe erronés. Patientez un instant puis réessayez.'
       },
       ssidRequired: 'Saisissez le nom du réseau, 32 caractères au maximum',
       passwordLength:

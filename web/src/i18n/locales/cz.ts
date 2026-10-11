@@ -83,7 +83,8 @@ const cz = {
         authDescription: 'Pokračujte zadáním hesla AP',
         authFailed: 'Neplatné heslo AP',
         passPlaceholder: 'AP heslo',
-        verifyBtn: 'Ověřte'
+        verifyBtn: 'Ověřte',
+        tooManyAttempts: 'Příliš mnoho chybných hesel. Chvíli počkejte a zkuste to znovu.'
       },
       ssidRequired: 'Zadejte název sítě, nejvýše 32 znaků',
       passwordLength: 'Heslo má 8 až 63 znaků. U otevřené sítě ho nechte prázdné.',

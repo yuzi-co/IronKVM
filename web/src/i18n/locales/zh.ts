@@ -79,7 +79,8 @@ const zh = {
         authDescription: '请输入 AP 密码以继续',
         authFailed: '密码错误',
         passPlaceholder: 'AP 密码',
-        verifyBtn: '验证'
+        verifyBtn: '验证',
+        tooManyAttempts: '密码错误次数过多，请稍后再试。'
       },
       ssidRequired: '请输入网络名称，最多 32 个字符',
       passwordLength: '密码为 8 到 63 个字符。开放网络请留空。',

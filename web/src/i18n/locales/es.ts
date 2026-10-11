@@ -84,7 +84,9 @@ const es = {
         authDescription: 'Por favor ingrese la contraseña AP para continuar',
         authFailed: 'Contraseña AP no válida',
         passPlaceholder: 'AP contraseña',
-        verifyBtn: 'Verificar'
+        verifyBtn: 'Verificar',
+        tooManyAttempts:
+          'Demasiadas contraseñas incorrectas. Espere un momento e inténtelo de nuevo.'
       },
       ssidRequired: 'Introduzca el nombre de la red, hasta 32 caracteres',
       passwordLength:

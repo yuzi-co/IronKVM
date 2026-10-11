@@ -82,7 +82,8 @@ const pt_br = {
         authDescription: 'Por favor, digite a senha AP para continuar',
         authFailed: 'Senha AP inválida',
         passPlaceholder: 'AP senha',
-        verifyBtn: 'Verificar'
+        verifyBtn: 'Verificar',
+        tooManyAttempts: 'Muitas senhas incorretas. Aguarde um momento e tente novamente.'
       },
       ssidRequired: 'Digite o nome da rede, até 32 caracteres',
       passwordLength: 'A senha tem de 8 a 63 caracteres. Deixe vazia para uma rede aberta.',

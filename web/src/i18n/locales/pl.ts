@@ -83,7 +83,8 @@ const pl = {
         authDescription: 'Aby kontynuować, wprowadź AP hasło',
         authFailed: 'Nieprawidłowe hasło AP',
         passPlaceholder: 'AP hasło',
-        verifyBtn: 'Sprawdź'
+        verifyBtn: 'Sprawdź',
+        tooManyAttempts: 'Zbyt wiele błędnych haseł. Odczekaj chwilę i spróbuj ponownie.'
       },
       ssidRequired: 'Wpisz nazwę sieci, maksymalnie 32 znaki',
       passwordLength: 'Hasło ma od 8 do 63 znaków. W przypadku sieci otwartej zostaw je puste.',

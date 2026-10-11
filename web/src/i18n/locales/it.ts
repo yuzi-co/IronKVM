@@ -83,7 +83,8 @@ const it = {
         authDescription: 'Inserisci la password AP per continuare',
         authFailed: 'Password AP non valida',
         passPlaceholder: 'AP password',
-        verifyBtn: 'Verifica'
+        verifyBtn: 'Verifica',
+        tooManyAttempts: 'Troppe password errate. Attendi un momento e riprova.'
       },
       ssidRequired: 'Inserisci il nome della rete, fino a 32 caratteri',
       passwordLength: 'La password è di 8-63 caratteri. Lasciala vuota per una rete aperta.',

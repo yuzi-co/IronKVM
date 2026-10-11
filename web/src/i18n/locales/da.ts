@@ -82,7 +82,8 @@ const da = {
         authDescription: 'Indtast venligst AP adgangskoden for at fortsætte',
         authFailed: 'Ugyldig AP adgangskode',
         passPlaceholder: 'AP adgangskode',
-        verifyBtn: 'Bekræft'
+        verifyBtn: 'Bekræft',
+        tooManyAttempts: 'For mange forkerte adgangskoder. Vent et øjeblik, og prøv igen.'
       },
       ssidRequired: 'Angiv netværksnavnet, højst 32 tegn',
       passwordLength: 'Adgangskoden er 8 til 63 tegn. Lad den stå tom for et åbent netværk.',

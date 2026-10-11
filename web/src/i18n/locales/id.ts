@@ -82,7 +82,8 @@ const id = {
         authDescription: 'Silakan masukkan kata sandi AP untuk melanjutkan',
         authFailed: 'Kata sandi AP tidak valid',
         passPlaceholder: 'AP kata sandi',
-        verifyBtn: 'Verifikasi'
+        verifyBtn: 'Verifikasi',
+        tooManyAttempts: 'Terlalu banyak kata sandi salah. Tunggu sebentar lalu coba lagi.'
       },
       ssidRequired: 'Masukkan nama jaringan, maksimal 32 karakter',
       passwordLength: 'Kata sandi 8 sampai 63 karakter. Biarkan kosong untuk jaringan terbuka.',

@@ -83,7 +83,8 @@ const tr = {
         authDescription: 'Devam etmek için lütfen AP şifresini girin',
         authFailed: 'Geçersiz AP şifresi',
         passPlaceholder: 'AP şifre',
-        verifyBtn: 'Doğrula'
+        verifyBtn: 'Doğrula',
+        tooManyAttempts: 'Çok fazla hatalı parola. Biraz bekleyip yeniden deneyin.'
       },
       ssidRequired: 'Ağ adını girin, en fazla 32 karakter',
       passwordLength: 'Parola 8 ile 63 karakter arasındadır. Açık ağ için boş bırakın.',

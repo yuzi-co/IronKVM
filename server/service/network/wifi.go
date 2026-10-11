@@ -3,6 +3,7 @@ package network
 import (
 	"crypto/subtle"
 	"fmt"
+	"math"
 	"os"
 	"os/exec"
 	"strings"
@@ -24,6 +25,10 @@ const (
 	WiFiScript     = "/etc/init.d/S30wifi"
 	WiFiApPassFile = "/kvmapp/kvm/ap.pass"
 )
+
+// apFailureDelay is the wait after a wrong AP password, as long as the web
+// login's after a wrong password.
+const apFailureDelay = 2 * time.Second
 
 func (s *Service) GetWifi(c *gin.Context) {
 	var rsp proto.Response
@@ -64,12 +69,7 @@ func (s *Service) ConnectWifiNoAuth(c *gin.Context) {
 		return
 	}
 
-	// Verify AP Password
-	apKey := c.GetHeader("X-AP-Key")
-	expectedPass := getApPassword()
-	if apKey == "" || expectedPass == "" || subtle.ConstantTimeCompare([]byte(apKey), []byte(expectedPass)) != 1 {
-		time.Sleep(2 * time.Second)
-		rsp.ErrRsp(c, -4, "unauthorized")
+	if !checkAPKey(c, &rsp) {
 		return
 	}
 
@@ -99,15 +99,37 @@ func (s *Service) VerifyApLogin(c *gin.Context) {
 		return
 	}
 
-	apKey := c.GetHeader("X-AP-Key")
-	expectedPass := getApPassword()
-	if apKey == "" || expectedPass == "" || subtle.ConstantTimeCompare([]byte(apKey), []byte(expectedPass)) != 1 {
-		time.Sleep(2 * time.Second)
-		rsp.ErrRsp(c, -4, "unauthorized")
+	if !checkAPKey(c, &rsp) {
 		return
 	}
 
 	rsp.OkRsp(c)
+}
+
+// checkAPKey checks the AP password in the X-AP-Key header, under the
+// attempt limit, and answers the request when it fails.
+func checkAPKey(c *gin.Context, rsp *proto.Response) bool {
+	ip := c.RemoteIP()
+	if retry, ok := apAttempts.begin(ip); !ok {
+		seconds := int(math.Ceil(retry.Seconds()))
+		rsp.ErrRsp(c, -5, fmt.Sprintf("too many attempts, try again in %d seconds", seconds))
+		return false
+	}
+	defer apAttempts.release(ip)
+
+	apKey := c.GetHeader("X-AP-Key")
+	expectedPass := getApPassword()
+	if apKey == "" || expectedPass == "" || subtle.ConstantTimeCompare([]byte(apKey), []byte(expectedPass)) != 1 {
+		// The attempt stays open through the delay, so the same address
+		// cannot overlap another guess with it.
+		apAttempts.end(ip, false)
+		time.Sleep(apFailureDelay)
+		rsp.ErrRsp(c, -4, "unauthorized")
+		return false
+	}
+
+	apAttempts.end(ip, true)
+	return true
 }
 
 func (s *Service) ConnectWifi(c *gin.Context) {

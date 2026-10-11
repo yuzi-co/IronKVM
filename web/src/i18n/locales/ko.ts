@@ -81,7 +81,8 @@ const ko = {
         authDescription: '계속하려면 AP 비밀번호를 입력하세요',
         authFailed: '잘못된 AP 비밀번호',
         passPlaceholder: 'AP 비밀번호',
-        verifyBtn: '확인'
+        verifyBtn: '확인',
+        tooManyAttempts: '잘못된 비밀번호가 너무 많습니다. 잠시 후 다시 시도하세요.'
       },
       ssidRequired: '네트워크 이름을 32자 이내로 입력하세요',
       passwordLength: '비밀번호는 8~63자입니다. 개방형 네트워크는 비워 두세요.',

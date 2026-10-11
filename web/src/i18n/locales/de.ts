@@ -85,7 +85,9 @@ const de = {
         authDescription: 'Bitte geben Sie das Passwort AP ein, um fortzufahren',
         authFailed: 'Ungültiges AP Passwort',
         passPlaceholder: 'AP Passwort',
-        verifyBtn: 'Überprüfen'
+        verifyBtn: 'Überprüfen',
+        tooManyAttempts:
+          'Zu viele falsche Passwörter. Warten Sie einen Moment und versuchen Sie es erneut.'
       },
       ssidRequired: 'Netzwerknamen eingeben, bis zu 32 Zeichen',
       passwordLength: 'Das Passwort hat 8 bis 63 Zeichen. Für ein offenes Netzwerk leer lassen.',
