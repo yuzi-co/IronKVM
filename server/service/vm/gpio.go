@@ -15,6 +15,7 @@ import (
 
 	"NanoKVM-Server/config"
 	"NanoKVM-Server/proto"
+	"NanoKVM-Server/service/audit"
 	"NanoKVM-Server/utils/gpiocdev"
 )
 
@@ -32,6 +33,8 @@ func (s *Service) SetGpio(c *gin.Context) {
 		return
 	}
 
+	audit.SetTarget(c, req.Type)
+	audit.SetDetail(c, pressDuration(req.Duration).String())
 	if err := PressButton(req.Type, pressDuration(req.Duration)); err != nil {
 		rsp.ErrRsp(c, -3, fmt.Sprintf("operation failed: %s", err))
 		return

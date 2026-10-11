@@ -729,6 +729,46 @@ const tr = {
         locked: 'Bir işlem sürüyor. Bitene kadar diğer sayfalar ve kapatma kullanılamaz.',
         vpnProvider: 'VPN sağlayıcısı'
       },
+      audit: {
+        title: 'Denetim günlüğü',
+        log: 'Olaylar',
+        description:
+          'Kimin oturum açtığı, denetimi aldığı, güç düğmesine bastığı, ortamı veya ayarları değiştirdiği ve yapay zekâ istemcilerinin ne yaptığı. Günlük dolduğunda en eski olaylar silinir.',
+        refresh: 'Yenile',
+        export: 'Dışa aktar',
+        time: 'Zaman',
+        who: 'Kim',
+        address: 'Adres',
+        category: 'Kategori',
+        action: 'Eylem',
+        target: 'Hedef',
+        outcome: 'Sonuç',
+        tier: 'Düzey: {{tier}}',
+        empty: 'Olay yok',
+        searchPlaceholder: 'Eylem, hedef veya ayrıntı ara',
+        loadFailed: 'Denetim günlüğü yüklenemedi.',
+        exportFailed: 'Denetim günlüğü dışa aktarılamadı.',
+        saveFailed: 'Ayar kaydedilemedi.',
+        syslog: 'Olayları syslog\'a gönder',
+        syslogDescription:
+          'Her olayı ayrıca sistem günlüğüne gönderir; sistem günlüğü, Ağ bölümünde ayarlanmışsa uzak syslog toplayıcısına iletir.',
+        storage: '{{directory}} içinde saklanır, en fazla {{size}} KB.',
+        categories: {
+          auth: 'Oturum açma',
+          control: 'Denetim',
+          power: 'Güç',
+          media: 'Ortam',
+          settings: 'Ayarlar',
+          macro: 'Makrolar',
+          system: 'Sistem',
+          agent: 'Yapay zekâ ajanları',
+        },
+        outcomes: {
+          ok: 'Başarılı',
+          fail: 'Başarısız',
+          denied: 'Reddedildi',
+        }
+      },
       mcp: {
         keyNote:
           'MCP aşağıda gösterilen kendi API anahtarını kullanır. API Anahtarları sayfasındaki anahtarlar burada çalışmaz.',

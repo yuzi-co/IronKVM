@@ -725,6 +725,46 @@ const vi = {
         locked: 'Đang có thao tác chạy. Không thể chuyển trang hoặc đóng cho đến khi hoàn tất.',
         vpnProvider: 'Nhà cung cấp VPN'
       },
+      audit: {
+        title: 'Nhật ký kiểm toán',
+        log: 'Sự kiện',
+        description:
+          'Ai đã đăng nhập, nắm quyền điều khiển, nhấn nút nguồn, đổi phương tiện hoặc cài đặt, và các client AI đã làm gì. Khi nhật ký đầy, các sự kiện cũ nhất sẽ bị xóa.',
+        refresh: 'Làm mới',
+        export: 'Xuất',
+        time: 'Thời gian',
+        who: 'Ai',
+        address: 'Địa chỉ',
+        category: 'Danh mục',
+        action: 'Hành động',
+        target: 'Đối tượng',
+        outcome: 'Kết quả',
+        tier: 'Cấp: {{tier}}',
+        empty: 'Không có sự kiện',
+        searchPlaceholder: 'Tìm hành động, đối tượng hoặc chi tiết',
+        loadFailed: 'Không thể tải nhật ký kiểm toán.',
+        exportFailed: 'Không thể xuất nhật ký kiểm toán.',
+        saveFailed: 'Không thể lưu cài đặt.',
+        syslog: 'Gửi sự kiện tới syslog',
+        syslogDescription:
+          'Gửi mỗi sự kiện tới nhật ký hệ thống, nơi sẽ chuyển tiếp tới máy thu syslog từ xa nếu có thiết lập trong Mạng.',
+        storage: 'Lưu tại {{directory}}, tối đa {{size}} KB.',
+        categories: {
+          auth: 'Đăng nhập',
+          control: 'Điều khiển',
+          power: 'Nguồn',
+          media: 'Phương tiện',
+          settings: 'Cài đặt',
+          macro: 'Macro',
+          system: 'Hệ thống',
+          agent: 'Tác tử AI',
+        },
+        outcomes: {
+          ok: 'Thành công',
+          fail: 'Thất bại',
+          denied: 'Bị từ chối',
+        }
+      },
       mcp: {
         keyNote:
           'MCP dùng khóa API riêng, hiển thị bên dưới. Khóa từ trang Khóa API không dùng được ở đây.',

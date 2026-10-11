@@ -13,6 +13,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"NanoKVM-Server/proto"
+	"NanoKVM-Server/service/audit"
 )
 
 const (
@@ -34,6 +35,7 @@ func (s *Service) WakeOnLAN(c *gin.Context) {
 		return
 	}
 
+	audit.SetTarget(c, mac)
 	cmd := exec.Command("ether-wake", "-b", mac)
 
 	output, err := cmd.CombinedOutput()

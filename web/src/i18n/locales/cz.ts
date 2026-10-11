@@ -728,6 +728,46 @@ const cz = {
         locked: 'Probíhá operace. Ostatní stránky ani zavření nejsou dostupné, dokud neskončí.',
         vpnProvider: 'Poskytovatel VPN'
       },
+      audit: {
+        title: 'Auditní protokol',
+        log: 'Události',
+        description:
+          'Kdo se přihlásil, převzal ovládání, stiskl tlačítko napájení, změnil média nebo nastavení a co dělali klienti AI. Když je protokol plný, nejstarší události se zahodí.',
+        refresh: 'Obnovit',
+        export: 'Exportovat',
+        time: 'Čas',
+        who: 'Kdo',
+        address: 'Adresa',
+        category: 'Kategorie',
+        action: 'Akce',
+        target: 'Cíl',
+        outcome: 'Výsledek',
+        tier: 'Úroveň: {{tier}}',
+        empty: 'Žádné události',
+        searchPlaceholder: 'Hledat akci, cíl nebo podrobnost',
+        loadFailed: 'Auditní protokol se nepodařilo načíst.',
+        exportFailed: 'Auditní protokol se nepodařilo exportovat.',
+        saveFailed: 'Nastavení se nepodařilo uložit.',
+        syslog: 'Posílat události do syslogu',
+        syslogDescription:
+          'Každou událost posílat také do systémového protokolu, který ji předá vzdálenému syslog kolektoru, pokud je nastaven v části Síť.',
+        storage: 'Uloženo v {{directory}}, nejvýše {{size}} KB.',
+        categories: {
+          auth: 'Přihlášení',
+          control: 'Ovládání',
+          power: 'Napájení',
+          media: 'Média',
+          settings: 'Nastavení',
+          macro: 'Makra',
+          system: 'Systém',
+          agent: 'Agenti AI',
+        },
+        outcomes: {
+          ok: 'Úspěch',
+          fail: 'Selhalo',
+          denied: 'Zamítnuto',
+        }
+      },
       mcp: {
         keyNote:
           'MCP používá vlastní API klíč, zobrazený níže. Klíče ze stránky API klíče zde nefungují.',

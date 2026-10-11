@@ -731,6 +731,46 @@ const id = {
           'Sebuah operasi sedang berjalan. Halaman lain dan tombol tutup tidak tersedia sampai selesai.',
         vpnProvider: 'Penyedia VPN'
       },
+      audit: {
+        title: 'Log audit',
+        log: 'Peristiwa',
+        description:
+          'Siapa yang masuk, mengambil kendali, menekan daya, mengubah media atau pengaturan, dan apa yang dilakukan klien AI. Saat log penuh, peristiwa terlama dihapus.',
+        refresh: 'Segarkan',
+        export: 'Ekspor',
+        time: 'Waktu',
+        who: 'Siapa',
+        address: 'Alamat',
+        category: 'Kategori',
+        action: 'Tindakan',
+        target: 'Target',
+        outcome: 'Hasil',
+        tier: 'Tingkat: {{tier}}',
+        empty: 'Tidak ada peristiwa',
+        searchPlaceholder: 'Cari tindakan, target, atau detail',
+        loadFailed: 'Log audit tidak dapat dimuat.',
+        exportFailed: 'Log audit tidak dapat diekspor.',
+        saveFailed: 'Pengaturan tidak dapat disimpan.',
+        syslog: 'Kirim peristiwa ke syslog',
+        syslogDescription:
+          'Kirim juga setiap peristiwa ke log sistem, yang meneruskannya ke kolektor syslog jarak jauh jika diatur di Jaringan.',
+        storage: 'Disimpan di {{directory}}, maksimal {{size}} KB.',
+        categories: {
+          auth: 'Masuk',
+          control: 'Kendali',
+          power: 'Daya',
+          media: 'Media',
+          settings: 'Pengaturan',
+          macro: 'Makro',
+          system: 'Sistem',
+          agent: 'Agen AI',
+        },
+        outcomes: {
+          ok: 'Berhasil',
+          fail: 'Gagal',
+          denied: 'Ditolak',
+        }
+      },
       mcp: {
         keyNote:
           'MCP memakai kunci API sendiri, ditampilkan di bawah. Kunci dari halaman Kunci API tidak berlaku di sini.',

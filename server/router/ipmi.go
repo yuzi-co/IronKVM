@@ -22,7 +22,7 @@ var ipmiKeyFile = ipmi.KeyFile
 
 func ipmiRouter(r *gin.Engine) {
 	service := ipmi.New(ipmi.Deps{
-		PressButton:       vm.PressButton,
+		PressButton:       auditedPress("ipmi"),
 		PowerLED:          vm.PowerLED,
 		PowerLEDConnected: vm.PowerLEDConnected,
 

@@ -719,6 +719,45 @@ const ko = {
         locked: '작업이 진행 중입니다. 완료될 때까지 다른 페이지로 이동하거나 닫을 수 없습니다.',
         vpnProvider: 'VPN 제공자'
       },
+      audit: {
+        title: '감사 로그',
+        log: '이벤트',
+        description:
+          '로그인한 사람, 제어권을 가져간 사람, 전원 버튼을 누른 사람, 미디어나 설정을 바꾼 사람, 그리고 AI 클라이언트가 한 일을 기록합니다. 로그가 가득 차면 가장 오래된 이벤트부터 삭제됩니다.',
+        refresh: '새로고침',
+        export: '내보내기',
+        time: '시간',
+        who: '주체',
+        address: '주소',
+        category: '분류',
+        action: '동작',
+        target: '대상',
+        outcome: '결과',
+        tier: '등급: {{tier}}',
+        empty: '이벤트 없음',
+        searchPlaceholder: '동작, 대상, 세부 정보 검색',
+        loadFailed: '감사 로그를 불러오지 못했습니다.',
+        exportFailed: '감사 로그를 내보내지 못했습니다.',
+        saveFailed: '설정을 저장하지 못했습니다.',
+        syslog: '이벤트를 syslog로 전송',
+        syslogDescription: '각 이벤트를 시스템 로그에도 보내며, 네트워크에서 원격 syslog 수집기를 설정했다면 시스템 로그가 그곳으로 전달합니다.',
+        storage: '{{directory}}에 저장, 최대 {{size}} KB.',
+        categories: {
+          auth: '로그인',
+          control: '제어',
+          power: '전원',
+          media: '미디어',
+          settings: '설정',
+          macro: '매크로',
+          system: '시스템',
+          agent: 'AI 에이전트',
+        },
+        outcomes: {
+          ok: '성공',
+          fail: '실패',
+          denied: '거부됨',
+        }
+      },
       mcp: {
         keyNote:
           'MCP는 아래에 표시된 자체 API 키를 사용합니다. API 키 페이지의 키는 여기서 작동하지 않습니다.',

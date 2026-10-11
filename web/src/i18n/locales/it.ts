@@ -738,6 +738,46 @@ const it = {
           "Un'operazione è in corso. Le altre pagine e la chiusura non sono disponibili finché non termina.",
         vpnProvider: 'Provider VPN'
       },
+      audit: {
+        title: 'Registro di audit',
+        log: 'Eventi',
+        description:
+          'Chi ha effettuato l\'accesso, preso il controllo, premuto l\'accensione, cambiato supporti o impostazioni, e cosa hanno fatto i client IA. Quando il registro è pieno, gli eventi più vecchi vengono eliminati.',
+        refresh: 'Aggiorna',
+        export: 'Esporta',
+        time: 'Ora',
+        who: 'Chi',
+        address: 'Indirizzo',
+        category: 'Categoria',
+        action: 'Azione',
+        target: 'Destinazione',
+        outcome: 'Esito',
+        tier: 'Livello: {{tier}}',
+        empty: 'Nessun evento',
+        searchPlaceholder: 'Cerca azione, destinazione o dettaglio',
+        loadFailed: 'Impossibile caricare il registro di audit.',
+        exportFailed: 'Impossibile esportare il registro di audit.',
+        saveFailed: 'Impossibile salvare l\'impostazione.',
+        syslog: 'Invia gli eventi a syslog',
+        syslogDescription:
+          'Invia ogni evento anche al registro di sistema, che lo inoltra al collettore syslog remoto se ne è impostato uno in Rete.',
+        storage: 'Conservato in {{directory}}, al massimo {{size}} KB.',
+        categories: {
+          auth: 'Accesso',
+          control: 'Controllo',
+          power: 'Alimentazione',
+          media: 'Supporti',
+          settings: 'Impostazioni',
+          macro: 'Macro',
+          system: 'Sistema',
+          agent: 'Agenti IA',
+        },
+        outcomes: {
+          ok: 'Riuscito',
+          fail: 'Non riuscito',
+          denied: 'Negato',
+        }
+      },
       mcp: {
         keyNote:
           'MCP usa una propria chiave API, mostrata qui sotto. Le chiavi della pagina Chiavi API qui non funzionano.',

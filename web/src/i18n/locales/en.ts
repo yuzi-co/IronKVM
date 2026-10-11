@@ -726,6 +726,46 @@ const en = {
           'An operation is in progress. Other pages and closing are unavailable until it finishes.',
         vpnProvider: 'VPN provider'
       },
+      audit: {
+        title: 'Audit log',
+        log: 'Events',
+        description:
+          'Who signed in, took control, pressed power, changed media or settings, and what AI clients did. When the log is full, the oldest events are dropped.',
+        refresh: 'Refresh',
+        export: 'Export',
+        time: 'Time',
+        who: 'Who',
+        address: 'Address',
+        category: 'Category',
+        action: 'Action',
+        target: 'Target',
+        outcome: 'Outcome',
+        tier: 'Tier: {{tier}}',
+        empty: 'No events',
+        searchPlaceholder: 'Search action, target or detail',
+        loadFailed: 'Could not load the audit log.',
+        exportFailed: 'Could not export the audit log.',
+        saveFailed: 'Could not save the setting.',
+        syslog: 'Send events to syslog',
+        syslogDescription:
+          'Also send each event to the system log, which forwards it to the remote syslog collector if one is set under Network.',
+        storage: 'Kept in {{directory}}, at most {{size}} KB.',
+        categories: {
+          auth: 'Sign-in',
+          control: 'Control',
+          power: 'Power',
+          media: 'Media',
+          settings: 'Settings',
+          macro: 'Macros',
+          system: 'System',
+          agent: 'AI agents',
+        },
+        outcomes: {
+          ok: 'Succeeded',
+          fail: 'Failed',
+          denied: 'Denied',
+        }
+      },
       mcp: {
         keyNote:
           'MCP uses its own API key, shown below. Keys from the API Keys page do not work here.',

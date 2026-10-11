@@ -736,6 +736,46 @@ const hu = {
           'Egy művelet folyamatban van. A többi oldal és a bezárás a befejezéséig nem érhető el.',
         vpnProvider: 'VPN-szolgáltató'
       },
+      audit: {
+        title: 'Auditnapló',
+        log: 'Események',
+        description:
+          'Ki jelentkezett be, vette át az irányítást, nyomta meg a bekapcsoló gombot, módosította a médiát vagy a beállításokat, és mit tettek az MI-kliensek. Ha a napló megtelik, a legrégebbi események törlődnek.',
+        refresh: 'Frissítés',
+        export: 'Exportálás',
+        time: 'Idő',
+        who: 'Ki',
+        address: 'Cím',
+        category: 'Kategória',
+        action: 'Művelet',
+        target: 'Cél',
+        outcome: 'Eredmény',
+        tier: 'Szint: {{tier}}',
+        empty: 'Nincs esemény',
+        searchPlaceholder: 'Keresés műveletre, célra vagy részletre',
+        loadFailed: 'Az auditnapló nem tölthető be.',
+        exportFailed: 'Az auditnapló nem exportálható.',
+        saveFailed: 'A beállítás nem menthető.',
+        syslog: 'Események küldése a syslogba',
+        syslogDescription:
+          'Minden eseményt a rendszernaplóba is elküld, amely továbbítja a távoli syslog gyűjtőnek, ha a Hálózat alatt van beállítva.',
+        storage: 'Tárolás helye: {{directory}}, legfeljebb {{size}} KB.',
+        categories: {
+          auth: 'Bejelentkezés',
+          control: 'Irányítás',
+          power: 'Tápellátás',
+          media: 'Média',
+          settings: 'Beállítások',
+          macro: 'Makrók',
+          system: 'Rendszer',
+          agent: 'MI-ügynökök',
+        },
+        outcomes: {
+          ok: 'Sikeres',
+          fail: 'Sikertelen',
+          denied: 'Elutasítva',
+        }
+      },
       mcp: {
         keyNote:
           'Az MCP saját API-kulcsot használ, lent látható. Az API-kulcsok oldal kulcsai itt nem működnek.',

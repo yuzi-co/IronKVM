@@ -20,6 +20,7 @@ import {
   PaletteIcon,
   PowerIcon,
   ScreenShareIcon,
+  ScrollTextIcon,
   SearchIcon,
   ServerCogIcon,
   SettingsIcon,
@@ -35,6 +36,7 @@ import * as ls from '@/lib/localstorage.ts';
 import { versionGt } from '@/lib/version.ts';
 import { keyboardLockAtom } from '@/jotai/keyboard.ts';
 import { settingsOpenRequestAtom, submenuOpenCountAtom } from '@/jotai/settings.ts';
+import { useServerFeature } from '@/hooks/useServerFeature.ts';
 import { useStableCallback } from '@/hooks/useStableCallback.ts';
 import { PanelBoundary } from '@/components/error-boundary';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -58,6 +60,7 @@ const pageModules = {
   about: () => import('./about'),
   account: () => import('./account'),
   apiKeys: () => import('./api-keys'),
+  audit: () => import('./audit'),
   preferences: () => import('./preferences'),
   device: () => import('./device'),
   performance: () => import('./performance'),
@@ -78,6 +81,7 @@ const pageModules = {
 const About = lazy(() => pageModules.about().then((m) => ({ default: m.About })));
 const Account = lazy(() => pageModules.account().then((m) => ({ default: m.Account })));
 const APIKeys = lazy(() => pageModules.apiKeys().then((m) => ({ default: m.APIKeys })));
+const Audit = lazy(() => pageModules.audit().then((m) => ({ default: m.Audit })));
 const Preferences = lazy(() => pageModules.preferences().then((m) => ({ default: m.Preferences })));
 const Device = lazy(() => pageModules.device().then((m) => ({ default: m.Device })));
 const Performance = lazy(() => pageModules.performance().then((m) => ({ default: m.Performance })));
@@ -136,6 +140,7 @@ export const Settings = () => {
   const { t } = useTranslation();
   const { account } = useAuth();
   const isAdmin = account.role === 'admin';
+  const hasAudit = useServerFeature('audit-log') === true;
   // Below sm the sidebar shows icons only, so each item needs a tooltip.
   const isNarrow = useIsNarrow();
 
@@ -215,6 +220,16 @@ export const Settings = () => {
             component: <Ssh />
           },
           { id: 'vnc', group: 'access', icon: <ScreenShareIcon {...icon16} />, component: <Vnc /> },
+          ...(hasAudit
+            ? ([
+                {
+                  id: 'audit',
+                  group: 'access',
+                  icon: <ScrollTextIcon {...icon16} />,
+                  component: <Audit />
+                }
+              ] satisfies Tab[])
+            : []),
           {
             id: 'tls',
             group: 'access',

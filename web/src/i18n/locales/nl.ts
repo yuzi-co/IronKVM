@@ -739,6 +739,46 @@ const nl = {
           "Er loopt een bewerking. Andere pagina's en sluiten zijn pas weer beschikbaar als die klaar is.",
         vpnProvider: 'VPN-aanbieder'
       },
+      audit: {
+        title: 'Auditlogboek',
+        log: 'Gebeurtenissen',
+        description:
+          'Wie zich aanmeldde, de besturing overnam, op aan/uit drukte, media of instellingen wijzigde en wat AI-clients deden. Als het logboek vol is, worden de oudste gebeurtenissen verwijderd.',
+        refresh: 'Vernieuwen',
+        export: 'Exporteren',
+        time: 'Tijd',
+        who: 'Wie',
+        address: 'Adres',
+        category: 'Categorie',
+        action: 'Actie',
+        target: 'Doel',
+        outcome: 'Resultaat',
+        tier: 'Niveau: {{tier}}',
+        empty: 'Geen gebeurtenissen',
+        searchPlaceholder: 'Zoek op actie, doel of detail',
+        loadFailed: 'Het auditlogboek kan niet worden geladen.',
+        exportFailed: 'Het auditlogboek kan niet worden geëxporteerd.',
+        saveFailed: 'De instelling kan niet worden opgeslagen.',
+        syslog: 'Gebeurtenissen naar syslog sturen',
+        syslogDescription:
+          'Stuur elke gebeurtenis ook naar het systeemlogboek, dat deze doorstuurt naar de externe syslog-ontvanger als er een is ingesteld onder Netwerk.',
+        storage: 'Opgeslagen in {{directory}}, maximaal {{size}} KB.',
+        categories: {
+          auth: 'Aanmelden',
+          control: 'Besturing',
+          power: 'Voeding',
+          media: 'Media',
+          settings: 'Instellingen',
+          macro: 'Macro\'s',
+          system: 'Systeem',
+          agent: 'AI-agents',
+        },
+        outcomes: {
+          ok: 'Geslaagd',
+          fail: 'Mislukt',
+          denied: 'Geweigerd',
+        }
+      },
       mcp: {
         keyNote:
           'MCP gebruikt een eigen API-sleutel, hieronder getoond. Sleutels van de pagina API-sleutels werken hier niet.',

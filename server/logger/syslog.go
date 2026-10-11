@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -60,6 +61,18 @@ type syslogHook struct {
 	conn     *net.UnixConn
 	nextDial time.Time
 	buf      []byte
+}
+
+// active is the hook Init installed, for Syslog.
+var active atomic.Pointer[syslogHook]
+
+// Syslog sends one message to the local syslog socket as an info entry,
+// whatever the log level. The audit log uses it for its forward. A message
+// that cannot be queued is dropped, like every entry here.
+func Syslog(message string) {
+	if h := active.Load(); h != nil {
+		_ = h.Fire(&logrus.Entry{Level: logrus.InfoLevel, Time: time.Now(), Message: message})
+	}
 }
 
 func newSyslogHook(socket, tag string) *syslogHook {

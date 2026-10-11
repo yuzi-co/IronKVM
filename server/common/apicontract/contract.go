@@ -21,6 +21,7 @@ const APIVersion = 1
 // route; two branches that both add one conflict only on adjacent lines, and
 // the resolution is to keep both.
 var features = []string{
+	"audit-log",    // /api/audit: the audit log, its export and settings
 	"direct-clock", // clock request (byte 5) on the direct H.264 socket
 	"hid-autotap",  // POST /api/hid/autotap, /api/hid/sequence: key auto-tap
 	"hid-macros",   // /api/hid/macro(s), /api/hid/sequence: recorded macros

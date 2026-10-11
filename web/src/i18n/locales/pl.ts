@@ -732,6 +732,46 @@ const pl = {
         locked: 'Trwa operacja. Inne strony i zamknięcie są niedostępne do jej zakończenia.',
         vpnProvider: 'Dostawca VPN'
       },
+      audit: {
+        title: 'Dziennik audytu',
+        log: 'Zdarzenia',
+        description:
+          'Kto się zalogował, przejął sterowanie, nacisnął zasilanie, zmienił nośniki lub ustawienia oraz co zrobili klienci AI. Gdy dziennik jest pełny, najstarsze zdarzenia są usuwane.',
+        refresh: 'Odśwież',
+        export: 'Eksportuj',
+        time: 'Czas',
+        who: 'Kto',
+        address: 'Adres',
+        category: 'Kategoria',
+        action: 'Akcja',
+        target: 'Cel',
+        outcome: 'Wynik',
+        tier: 'Poziom: {{tier}}',
+        empty: 'Brak zdarzeń',
+        searchPlaceholder: 'Szukaj akcji, celu lub szczegółu',
+        loadFailed: 'Nie udało się wczytać dziennika audytu.',
+        exportFailed: 'Nie udało się wyeksportować dziennika audytu.',
+        saveFailed: 'Nie udało się zapisać ustawienia.',
+        syslog: 'Wysyłaj zdarzenia do syslog',
+        syslogDescription:
+          'Wysyłaj też każde zdarzenie do dziennika systemowego, który przekaże je do zdalnego kolektora syslog, jeśli ustawiono go w sekcji Sieć.',
+        storage: 'Zapisany w {{directory}}, najwyżej {{size}} KB.',
+        categories: {
+          auth: 'Logowanie',
+          control: 'Sterowanie',
+          power: 'Zasilanie',
+          media: 'Nośniki',
+          settings: 'Ustawienia',
+          macro: 'Makra',
+          system: 'System',
+          agent: 'Agenci AI',
+        },
+        outcomes: {
+          ok: 'Powodzenie',
+          fail: 'Niepowodzenie',
+          denied: 'Odmowa',
+        }
+      },
       mcp: {
         keyNote:
           'MCP używa własnego klucza API, pokazanego poniżej. Klucze ze strony Klucze API tu nie działają.',

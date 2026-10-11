@@ -12,6 +12,7 @@ import (
 	"NanoKVM-Server/config"
 	"NanoKVM-Server/middleware"
 	"NanoKVM-Server/proto"
+	"NanoKVM-Server/service/audit"
 	"NanoKVM-Server/utils"
 )
 
@@ -59,6 +60,11 @@ var codeFailureDelay = time.Second
 // startTOTPChallenge answers a correct password for an account that has
 // TOTP on.
 func (s *Service) startTOTPChallenge(c *gin.Context, user *authn.User, rsp *proto.Response) {
+	// The password was right and the sign-in is half done: a login in the
+	// log only when the second factor passes.
+	audit.SetAction(c, "login-password")
+	audit.SetOutcome(c, audit.OutcomeOK)
+	audit.SetDetail(c, "second factor required")
 	token, err := guard.issue(user.Username, user.TokenVersion)
 	if err != nil {
 		rsp.ErrRsp(c, -3, "authentication unavailable")
@@ -101,6 +107,7 @@ func (s *Service) LoginTOTP(c *gin.Context) {
 		return
 	}
 
+	audit.SetActor(c, pending.username)
 	user, err := authn.DefaultStore.Get(pending.username)
 	if err != nil || !user.Enabled || user.TokenVersion != pending.tokenVersion || !user.TOTPEnabled() {
 		guard.drop(req.Challenge)

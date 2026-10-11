@@ -731,6 +731,45 @@ const ja = {
         locked: '処理を実行中です。完了するまで他のページへの移動や閉じる操作はできません。',
         vpnProvider: 'VPN プロバイダー'
       },
+      audit: {
+        title: '監査ログ',
+        log: 'イベント',
+        description:
+          'ログインした人、操作を引き継いだ人、電源ボタンを押した人、メディアや設定を変更した人、そして AI クライアントの操作を記録します。ログがいっぱいになると、古いイベントから削除されます。',
+        refresh: '更新',
+        export: 'エクスポート',
+        time: '日時',
+        who: '実行者',
+        address: 'アドレス',
+        category: 'カテゴリ',
+        action: '操作',
+        target: '対象',
+        outcome: '結果',
+        tier: 'ティア: {{tier}}',
+        empty: 'イベントはありません',
+        searchPlaceholder: '操作、対象、詳細を検索',
+        loadFailed: '監査ログを読み込めませんでした。',
+        exportFailed: '監査ログをエクスポートできませんでした。',
+        saveFailed: '設定を保存できませんでした。',
+        syslog: 'イベントを syslog に送信',
+        syslogDescription: '各イベントをシステムログにも送信します。ネットワークでリモート syslog 収集先が設定されている場合、システムログがそこへ転送します。',
+        storage: '{{directory}} に保存、最大 {{size}} KB。',
+        categories: {
+          auth: 'ログイン',
+          control: '操作権',
+          power: '電源',
+          media: 'メディア',
+          settings: '設定',
+          macro: 'マクロ',
+          system: 'システム',
+          agent: 'AI エージェント',
+        },
+        outcomes: {
+          ok: '成功',
+          fail: '失敗',
+          denied: '拒否',
+        }
+      },
       mcp: {
         keyNote:
           'MCP は下に表示される専用の API キーを使います。API キーページのキーはここでは使えません。',

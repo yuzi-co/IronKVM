@@ -6,6 +6,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// The keys under which ErrRsp leaves the code and message it sent on the gin
+// context, for the audit middleware (service/audit): the HTTP status of an
+// error answer is 200, so the middleware cannot tell it from a success.
+const (
+	ResponseCodeKey = "rsp.code"
+	ResponseMsgKey  = "rsp.msg"
+)
+
 type Response struct {
 	Code int         `json:"code"` // Status code. 0-success, others-failure
 	Msg  string      `json:"msg"`  // Status details
@@ -45,6 +53,8 @@ func (r *Response) OkRspWithData(c *gin.Context, data interface{}) {
 // ErrRsp Failed response.
 func (r *Response) ErrRsp(c *gin.Context, code int, msg string) {
 	r.Err(code, msg)
+	c.Set(ResponseCodeKey, code)
+	c.Set(ResponseMsgKey, msg)
 
 	c.JSON(http.StatusOK, r)
 }

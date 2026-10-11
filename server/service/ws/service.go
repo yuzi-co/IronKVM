@@ -1,7 +1,10 @@
 package ws
 
 import (
+	"time"
+
 	"NanoKVM-Server/middleware"
+	"NanoKVM-Server/service/audit"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -30,6 +33,19 @@ func (s *Service) Connect(c *gin.Context) {
 	defer stopSessionWatcher()
 
 	log.Debug("websocket connected")
+
+	// The socket carries the keyboard and mouse of the browser, so its life is
+	// a control session of the host.
+	started := time.Now()
+	audit.Request(c, audit.Event{Category: audit.CategoryControl, Action: "session-start", Outcome: audit.OutcomeOK})
+	defer func() {
+		audit.Request(c, audit.Event{
+			Category: audit.CategoryControl,
+			Action:   "session-stop",
+			Outcome:  audit.OutcomeOK,
+			Detail:   "duration " + time.Since(started).Round(time.Second).String(),
+		})
+	}()
 
 	client := NewClient(ws)
 

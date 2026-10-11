@@ -728,6 +728,46 @@ const se = {
           'En åtgärd pågår. Andra sidor och stängning är inte tillgängliga förrän den är klar.',
         vpnProvider: 'VPN-leverantör'
       },
+      audit: {
+        title: 'Granskningslogg',
+        log: 'Händelser',
+        description:
+          'Vem som loggade in, tog kontrollen, tryckte på strömbrytaren, ändrade media eller inställningar och vad AI-klienter gjorde. När loggen är full tas de äldsta händelserna bort.',
+        refresh: 'Uppdatera',
+        export: 'Exportera',
+        time: 'Tid',
+        who: 'Vem',
+        address: 'Adress',
+        category: 'Kategori',
+        action: 'Åtgärd',
+        target: 'Mål',
+        outcome: 'Resultat',
+        tier: 'Nivå: {{tier}}',
+        empty: 'Inga händelser',
+        searchPlaceholder: 'Sök åtgärd, mål eller detalj',
+        loadFailed: 'Granskningsloggen kunde inte läsas in.',
+        exportFailed: 'Granskningsloggen kunde inte exporteras.',
+        saveFailed: 'Inställningen kunde inte sparas.',
+        syslog: 'Skicka händelser till syslog',
+        syslogDescription:
+          'Skicka även varje händelse till systemloggen, som vidarebefordrar den till den fjärranslutna syslog-mottagaren om en är inställd under Nätverk.',
+        storage: 'Sparas i {{directory}}, högst {{size}} KB.',
+        categories: {
+          auth: 'Inloggning',
+          control: 'Kontroll',
+          power: 'Ström',
+          media: 'Media',
+          settings: 'Inställningar',
+          macro: 'Makron',
+          system: 'System',
+          agent: 'AI-agenter',
+        },
+        outcomes: {
+          ok: 'Lyckades',
+          fail: 'Misslyckades',
+          denied: 'Nekades',
+        }
+      },
       mcp: {
         keyNote:
           'MCP använder en egen API-nyckel, som visas nedan. Nycklar från sidan API-nycklar fungerar inte här.',

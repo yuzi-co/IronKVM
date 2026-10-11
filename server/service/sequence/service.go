@@ -7,6 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"NanoKVM-Server/proto"
+	"NanoKVM-Server/service/audit"
 )
 
 type Service struct {
@@ -33,6 +34,7 @@ func (s *Service) StartAutoTap(c *gin.Context) {
 		rsp.ErrRsp(c, -1, err.Error())
 		return
 	}
+	audit.SetTarget(c, p.name)
 	s.start(c, p)
 }
 
@@ -63,6 +65,7 @@ func (s *Service) PlayMacro(c *gin.Context) {
 		rsp.ErrRsp(c, -1, err.Error())
 		return
 	}
+	audit.SetTarget(c, name)
 	s.start(c, program{kind: KindMacro, name: name, steps: compiled})
 }
 
@@ -120,6 +123,7 @@ func (s *Service) SaveMacro(c *gin.Context) {
 		return
 	}
 
+	audit.SetTarget(c, req.Name)
 	macro, err := putMacro(proto.Macro{ID: req.ID, Name: req.Name, Steps: req.Steps})
 	if err != nil {
 		log.Errorf("failed to save macro: %v", err)
@@ -139,6 +143,7 @@ func (s *Service) DeleteMacro(c *gin.Context) {
 		return
 	}
 
+	audit.SetTarget(c, req.ID)
 	if err := deleteMacro(req.ID); err != nil {
 		log.Errorf("failed to delete macro %s: %v", req.ID, err)
 		rsp.ErrRsp(c, -2, err.Error())

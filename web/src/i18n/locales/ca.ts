@@ -734,6 +734,46 @@ const ca = {
           'Hi ha una operació en curs. Les altres pàgines i el tancament no estan disponibles fins que acabi.',
         vpnProvider: 'Proveïdor de VPN'
       },
+      audit: {
+        title: 'Registre d\'auditoria',
+        log: 'Esdeveniments',
+        description:
+          'Qui ha iniciat sessió, ha pres el control, ha premut l\'encesa, ha canviat suports o paràmetres, i què han fet els clients d\'IA. Quan el registre s\'omple, s\'eliminen els esdeveniments més antics.',
+        refresh: 'Actualitza',
+        export: 'Exporta',
+        time: 'Hora',
+        who: 'Qui',
+        address: 'Adreça',
+        category: 'Categoria',
+        action: 'Acció',
+        target: 'Objectiu',
+        outcome: 'Resultat',
+        tier: 'Nivell: {{tier}}',
+        empty: 'Cap esdeveniment',
+        searchPlaceholder: 'Cerca acció, objectiu o detall',
+        loadFailed: 'No s\'ha pogut carregar el registre d\'auditoria.',
+        exportFailed: 'No s\'ha pogut exportar el registre d\'auditoria.',
+        saveFailed: 'No s\'ha pogut desar el paràmetre.',
+        syslog: 'Envia els esdeveniments a syslog',
+        syslogDescription:
+          'Envia també cada esdeveniment al registre del sistema, que el reenvia al col·lector syslog remot si n\'hi ha un configurat a Xarxa.',
+        storage: 'Es desa a {{directory}}, com a màxim {{size}} KB.',
+        categories: {
+          auth: 'Inici de sessió',
+          control: 'Control',
+          power: 'Encesa',
+          media: 'Suports',
+          settings: 'Paràmetres',
+          macro: 'Macros',
+          system: 'Sistema',
+          agent: 'Agents d\'IA',
+        },
+        outcomes: {
+          ok: 'Correcte',
+          fail: 'Fallit',
+          denied: 'Denegat',
+        }
+      },
       mcp: {
         keyNote:
           'MCP fa servir la seva pròpia clau API, que es mostra a sota. Les claus de la pàgina Claus API no funcionen aquí.',

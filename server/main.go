@@ -15,6 +15,7 @@ import (
 	"NanoKVM-Server/middleware"
 	"NanoKVM-Server/router"
 	"NanoKVM-Server/service/application"
+	"NanoKVM-Server/service/audit"
 	"NanoKVM-Server/service/extensions/netbird"
 	"NanoKVM-Server/service/extensions/tailscale"
 	"NanoKVM-Server/service/failsafe"
@@ -44,6 +45,7 @@ func initialize() {
 	}
 
 	logger.Init()
+	audit.Init(logger.Syslog)
 
 	// Before anything can reach libkvm. After a video crash loop the server
 	// starts without video, so the web UI, updates and logs stay reachable;
@@ -262,6 +264,8 @@ func dispose() {
 	// First, and quick: it waits at most for one key press to be released, so
 	// the jiggler never leaves a key held on the host across a restart.
 	teardownStep("jiggler", jiggler.GetJiggler().Shutdown)
+	// The audit log waits in memory for up to a few seconds; write it out.
+	teardownStep("audit log", audit.Default().Flush)
 	// As quick, for the same reason: a macro or an auto-tap stops and lets go
 	// of what it holds.
 	teardownStep("input sequence", sequence.Shutdown)
