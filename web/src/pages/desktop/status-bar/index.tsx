@@ -97,7 +97,7 @@ const Bar = () => {
 
   return (
     <div
-      className="flex h-6 w-full shrink-0 [scrollbar-width:none] items-center gap-x-3 overflow-x-auto border-t border-neutral-800 bg-neutral-900 px-3 font-mono text-[11px] leading-none whitespace-nowrap text-neutral-300"
+      className="box-border flex h-6 w-full shrink-0 [scrollbar-width:none] items-center gap-x-3 overflow-x-auto border-t border-neutral-800 bg-neutral-900 px-3 font-mono text-[11px] leading-none whitespace-nowrap text-neutral-300"
       role="status"
       aria-label={t('screen.streamInfo.title')}
     >
