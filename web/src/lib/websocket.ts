@@ -1,13 +1,15 @@
-import { ICloseEvent, IMessageEvent, w3cwebsocket as W3cWebSocket } from 'websocket';
-
 import { notifyAuthExpired } from '@/lib/auth-events.ts';
 import { HoldKeepalive, KEEPALIVE_MESSAGE } from '@/lib/hold-keepalive.ts';
 import { isTapping, tapInput } from '@/lib/input-tap.ts';
 import { getBaseUrl } from '@/lib/service.ts';
 import { isViewOnly } from '@/lib/view-only.ts';
 
-type MessageHandler = (message: IMessageEvent) => void;
-type SendData = number[] | ArrayBuffer | Uint8Array;
+// The part of the browser's message event the handlers read. The enum below
+// takes the name MessageEvent in this module.
+type WsMessage = { data: string | ArrayBuffer };
+
+type MessageHandler = (message: WsMessage) => void;
+type SendData = number[] | ArrayBuffer | Uint8Array<ArrayBuffer>;
 
 export enum MessageEvent {
   Heartbeat = 0,
@@ -67,7 +69,7 @@ const DEFAULT_OPTIONS: Required<WsClientOptions> = {
 
 export class WsClient {
   private readonly options: Required<WsClientOptions>;
-  private instance: W3cWebSocket | null = null;
+  private instance: WebSocket | null = null;
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private reconnectAttempts = 0;
@@ -139,7 +141,7 @@ export class WsClient {
       return false;
     }
 
-    if (data instanceof ArrayBuffer || (data as unknown) instanceof Uint8Array) {
+    if (data instanceof ArrayBuffer || data instanceof Uint8Array) {
       this.instance.send(data);
     } else {
       this.instance.send(JSON.stringify(data));
@@ -156,7 +158,7 @@ export class WsClient {
   }
 
   public get isConnected(): boolean {
-    return this.instance?.readyState === W3cWebSocket.OPEN;
+    return this.instance?.readyState === WebSocket.OPEN;
   }
 
   // onStatus reports the connection state and returns an unsubscribe function.
@@ -188,7 +190,7 @@ export class WsClient {
     this.cleanup();
     this.dropInstance();
 
-    this.instance = new W3cWebSocket(this.options.url);
+    this.instance = new WebSocket(this.options.url);
     this.instance.binaryType = 'arraybuffer';
 
     this.instance.onopen = this.handleOpen.bind(this);
@@ -207,7 +209,7 @@ export class WsClient {
     this.emitStatus();
   }
 
-  private handleClose(event: ICloseEvent): void {
+  private handleClose(event: CloseEvent): void {
     this.stopHeartbeat();
     this.holdKeepalive.reset();
 
@@ -222,11 +224,11 @@ export class WsClient {
     this.scheduleReconnect();
   }
 
-  private handleError(error: Error): void {
+  private handleError(error: Event): void {
     console.error('[WebSocket] Error:', error);
   }
 
-  private handleMessage(message: IMessageEvent): void {
+  private handleMessage(message: WsMessage): void {
     try {
       const data = JSON.parse(message.data as string);
       const handlers = this.eventHandlers.get(data.type);
@@ -286,10 +288,7 @@ export class WsClient {
     instance.onerror = () => {};
     instance.onmessage = () => {};
 
-    if (
-      instance.readyState === W3cWebSocket.CONNECTING ||
-      instance.readyState === W3cWebSocket.OPEN
-    ) {
+    if (instance.readyState === WebSocket.CONNECTING || instance.readyState === WebSocket.OPEN) {
       instance.close();
     }
   }

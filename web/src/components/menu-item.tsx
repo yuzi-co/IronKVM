@@ -1,9 +1,9 @@
 import { ReactNode, useEffect, useRef, useState } from 'react';
 import { Popover, Tooltip } from 'antd';
 import { useAtomValue, useSetAtom } from 'jotai';
-import { useMediaQuery } from 'react-responsive';
 
 import { menuCloseSignalAtom, submenuOpenCountAtom } from '@/jotai/settings.ts';
+import { useMediaQuery } from '@/hooks/useMediaQuery.ts';
 
 type MenuItemProps = {
   title: string;

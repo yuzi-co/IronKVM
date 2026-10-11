@@ -3,7 +3,6 @@ import { notification, Spin } from 'antd';
 import clsx from 'clsx';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { useTranslation } from 'react-i18next';
-import { w3cwebsocket as W3cWebSocket } from 'websocket';
 
 import { offerAbsCaptureTime } from '@/lib/abs-capture-time.ts';
 import { audioStateFromName } from '@/lib/audio-state.ts';
@@ -115,7 +114,7 @@ export const H264Webrtc = () => {
 
   useEffect(() => {
     const url = `${getBaseUrl('ws')}/api/stream/h264`;
-    const ws = new W3cWebSocket(url);
+    const ws = new WebSocket(url);
     const videoElement = videoRef.current;
     const audioElement = audioRef.current;
     const roomAudioElement = roomAudioRef.current;
