@@ -1105,7 +1105,13 @@ const ca = {
           videoGenerations_one: '{{count}} sessió anterior de IronKVM reté memòria de vídeo',
           videoGenerations_other:
             '{{count}} sessions anteriors de IronKVM retenen memòria de vídeo',
-          videoReboot: 'Reinicieu per recuperar-la.'
+          videoReboot: 'Reinicieu per recuperar-la.',
+          videoUnmeasured: '{{size}} reservats, ús no mesurable',
+          largestFree: 'Bloc lliure més gran {{size}}',
+          peak: 'màxim {{size}}',
+          cma: 'Memòria contigua (CMA)',
+          cmaTip:
+            'Memòria que el nucli reserva per a memòries intermèdies que han de ser contigües, com els fotogrames de vídeo entre l\'escalador i els codificadors. Mentre no està assignada, la resta del sistema la pot fer servir.'
         }
       },
       appearance: {

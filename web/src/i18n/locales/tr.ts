@@ -1089,7 +1089,13 @@ const tr = {
           videoTip: 'Video yakalama için ayrılmış bellek. Sistemin geri kalanıyla paylaşılmaz.',
           videoGenerations_one: '{{count}} önceki IronKVM oturumu video belleğini tutuyor',
           videoGenerations_other: '{{count}} önceki IronKVM oturumu video belleğini tutuyor',
-          videoReboot: 'Geri kazanmak için yeniden başlatın.'
+          videoReboot: 'Geri kazanmak için yeniden başlatın.',
+          videoUnmeasured: '{{size}} ayrıldı, kullanım ölçülemiyor',
+          largestFree: 'En büyük boş blok {{size}}',
+          peak: 'zirve {{size}}',
+          cma: 'Bitişik bellek (CMA)',
+          cmaTip:
+            'Çekirdeğin bitişik olması gereken arabellekler için ayırdığı bellek; örneğin ölçekleyici ile kodlayıcılar arasındaki video kareleri. Ayrılmadığı sürece sistemin geri kalanı onu ödünç alabilir.'
         }
       },
       appearance: {

@@ -10,8 +10,10 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"NanoKVM-Server/proto"
+	"NanoKVM-Server/service/dmapool"
 	"NanoKVM-Server/service/extensions/addon"
 	"NanoKVM-Server/service/extensions/vpn"
+	"NanoKVM-Server/service/ion"
 )
 
 // memZramDir is zram's sysfs directory. A variable so the tests can point it
@@ -80,7 +82,45 @@ func readMemory() *proto.GetMemoryRsp {
 		data.Addons = &proto.MemoryGroup{Current: current, High: high, Max: max}
 	}
 
+	// The vendor kernel's video memory is the ION carveout, which the page
+	// reads from GET /api/vm/ion. Only a kernel without it reports pools.
+	if !ion.Present() {
+		addDevicePools(data, dmapool.Read())
+	}
+
 	return data
+}
+
+func addDevicePools(data *proto.GetMemoryRsp, snap dmapool.Snapshot) {
+	for _, p := range snap.Pools {
+		pool := proto.MemoryPool{
+			Name:     p.Name,
+			Size:     int64(p.Size),
+			Measured: p.Measured,
+			Used:     int64(p.Used),
+			Free:     int64(p.Free),
+			Peak:     int64(p.Peak),
+			Failed:   int64(p.Failed),
+		}
+		if p.LargestFreeKnown {
+			largest := int64(p.LargestFree)
+			pool.LargestFree = &largest
+		}
+		data.VideoPools = append(data.VideoPools, pool)
+	}
+	for _, a := range snap.Areas {
+		area := proto.MemoryCma{
+			Name:   a.Name,
+			Total:  int64(a.Total),
+			Used:   int64(a.Used),
+			Failed: int64(a.Failed),
+		}
+		if a.LargestFreeKnown {
+			largest := int64(a.LargestFree)
+			area.LargestFree = &largest
+		}
+		data.Cma = append(data.Cma, area)
+	}
 }
 
 // findKvmSystem returns kvm_system's pid: the one it had last time while it

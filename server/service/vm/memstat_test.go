@@ -8,8 +8,10 @@ import (
 	"testing"
 
 	"NanoKVM-Server/proto"
+	"NanoKVM-Server/service/dmapool"
 	"NanoKVM-Server/service/extensions/addon"
 	"NanoKVM-Server/service/extensions/vpn"
+	"NanoKVM-Server/service/ion"
 )
 
 // useMemory builds on the health fixture, which already moves /proc and the
@@ -19,11 +21,21 @@ func useMemory(t *testing.T) *healthFixture {
 	f := useHealth(t)
 
 	savedZram, savedSelf, savedGroup := memZramDir, memSelfPID, vpn.CgroupDir
+	savedIon := ion.Root
+	savedPools := []string{dmapool.CoherentDir, dmapool.CMADebugDir, dmapool.CMASysDir, dmapool.ReservedMemDir}
 	t.Cleanup(func() {
 		memZramDir, memSelfPID, vpn.CgroupDir = savedZram, savedSelf, savedGroup
+		ion.Root = savedIon
+		dmapool.CoherentDir, dmapool.CMADebugDir = savedPools[0], savedPools[1]
+		dmapool.CMASysDir, dmapool.ReservedMemDir = savedPools[2], savedPools[3]
 		kvmSystemPID.pid = 0
 	})
 	memZramDir = filepath.Join(f.base, "zram0")
+	ion.Root = filepath.Join(f.base, "ion")
+	dmapool.CoherentDir = filepath.Join(f.base, "dma_coherent")
+	dmapool.CMADebugDir = filepath.Join(f.base, "cma")
+	dmapool.CMASysDir = filepath.Join(f.base, "mm-cma")
+	dmapool.ReservedMemDir = filepath.Join(f.base, "reserved-memory")
 	vpn.CgroupDir = filepath.Join(f.base, "addons")
 	memSelfPID = func() int { return 100 }
 	kvmSystemPID.pid = 0
@@ -53,7 +65,8 @@ func TestReadMemoryWithNothingToReadIsEmpty(t *testing.T) {
 	useMemory(t)
 
 	got := readMemory()
-	if got.Total != 0 || len(got.Swaps) != 0 || len(got.Processes) != 0 || got.Addons != nil || got.ZramMemUsed != 0 {
+	if got.Total != 0 || len(got.Swaps) != 0 || len(got.Processes) != 0 || got.Addons != nil || got.ZramMemUsed != 0 ||
+		got.VideoPools != nil || got.Cma != nil {
 		t.Errorf("readMemory() = %+v, want an empty report", got)
 	}
 }
@@ -142,5 +155,60 @@ func TestReadMemoryReadsZramOnlyWhileItSwaps(t *testing.T) {
 
 	if got := readMemory(); got.ZramMemUsed != 0 {
 		t.Errorf("zramMemUsed = %d, want 0 while zram is not a swap", got.ZramMemUsed)
+	}
+}
+
+// writeMainlinePools writes the video pool and the CMA area as slot B's
+// kernel publishes them (Linux 7.2.9, read on 2026-10-11).
+func writeMainlinePools(t *testing.T) {
+	t.Helper()
+	writeFile(t, filepath.Join(dmapool.CoherentDir, "video-pool@86800000"),
+		"size_kib 28672\nused_kib 17440\nfree_kib 11232\nlargest_free_kib 8192\n"+
+			"peak_used_kib 24388\nfailed 0\nmap_chunk_kib 1024\nmap #+######+###+###+..#........\n")
+	writeFile(t, filepath.Join(dmapool.CMADebugDir, "reserved", "count"), "6144\n")
+	writeFile(t, filepath.Join(dmapool.CMADebugDir, "reserved", "used"), "1856\n")
+	writeFile(t, filepath.Join(dmapool.CMADebugDir, "reserved", "maxchunk"), "3331\n")
+	writeFile(t, filepath.Join(dmapool.CMASysDir, "reserved", "alloc_pages_fail"), "0\n")
+}
+
+func TestReadMemoryReportsTheMainlinePools(t *testing.T) {
+	useMemory(t)
+	writeMainlinePools(t)
+
+	got := readMemory()
+	page := int64(os.Getpagesize())
+	poolLargest, cmaLargest := int64(8192*1024), 3331*page
+	wantPools := []proto.MemoryPool{{
+		Name:        "video-pool@86800000",
+		Size:        28672 * 1024,
+		Measured:    true,
+		Used:        17440 * 1024,
+		Free:        11232 * 1024,
+		LargestFree: &poolLargest,
+		Peak:        24388 * 1024,
+	}}
+	if !reflect.DeepEqual(got.VideoPools, wantPools) {
+		t.Errorf("videoPools = %+v, want %+v", got.VideoPools, wantPools)
+	}
+	wantCma := []proto.MemoryCma{{
+		Name:        "reserved",
+		Total:       6144 * page,
+		Used:        1856 * page,
+		LargestFree: &cmaLargest,
+	}}
+	if !reflect.DeepEqual(got.Cma, wantCma) {
+		t.Errorf("cma = %+v, want %+v", got.Cma, wantCma)
+	}
+}
+
+// Slot A keeps its report as it was: with the carveout dump in place the
+// pools are not read, even where the vendor kernel has a CMA area.
+func TestReadMemoryLeavesThePoolsOutBesideTheCarveout(t *testing.T) {
+	useMemory(t)
+	writeMainlinePools(t)
+	writeFile(t, filepath.Join(ion.Root, "total_mem"), "78643200\n")
+
+	if got := readMemory(); got.VideoPools != nil || got.Cma != nil {
+		t.Errorf("with ION videoPools = %+v, cma = %+v, want neither", got.VideoPools, got.Cma)
 	}
 }

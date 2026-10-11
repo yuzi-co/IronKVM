@@ -1096,7 +1096,13 @@ const pl = {
           videoGenerations_few: '{{count}} wcześniejsze sesje IronKVM zajmują pamięć wideo',
           videoGenerations_many: '{{count}} wcześniejszych sesji IronKVM zajmuje pamięć wideo',
           videoGenerations_other: '{{count}} wcześniejszej sesji IronKVM zajmuje pamięć wideo',
-          videoReboot: 'Uruchom ponownie, aby ją odzyskać.'
+          videoReboot: 'Uruchom ponownie, aby ją odzyskać.',
+          videoUnmeasured: 'Zarezerwowano {{size}}, użycia nie da się zmierzyć',
+          largestFree: 'Największy wolny blok {{size}}',
+          peak: 'szczyt {{size}}',
+          cma: 'Pamięć ciągła (CMA)',
+          cmaTip:
+            'Pamięć, którą jądro trzyma dla buforów, które muszą być ciągłe, np. klatek wideo między skalerem a koderami. Dopóki nie jest przydzielona, reszta systemu może ją pożyczyć.'
         }
       },
       appearance: {

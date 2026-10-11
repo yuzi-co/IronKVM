@@ -1094,7 +1094,13 @@ const id = {
             'Memori yang dicadangkan untuk penangkapan video. Memori ini tidak dibagi dengan bagian sistem lainnya.',
           videoGenerations_other:
             '{{count}} sesi IronKVM sebelumnya masih menahan memori video',
-          videoReboot: 'Mulai ulang untuk mengambilnya kembali.'
+          videoReboot: 'Mulai ulang untuk mengambilnya kembali.',
+          videoUnmeasured: '{{size}} dicadangkan, penggunaan tidak dapat diukur',
+          largestFree: 'Blok kosong terbesar {{size}}',
+          peak: 'puncak {{size}}',
+          cma: 'Memori bersebelahan (CMA)',
+          cmaTip:
+            'Memori yang disimpan kernel untuk buffer yang harus bersebelahan, seperti frame video antara penskala dan encoder. Selama belum dialokasikan, bagian lain sistem dapat meminjamnya.'
         }
       },
       appearance: {

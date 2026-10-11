@@ -1107,7 +1107,13 @@ const hu = {
             'Videorögzítésre fenntartott memória. A rendszer többi része nem használja.',
           videoGenerations_one: '{{count}} korábbi IronKVM-munkamenet foglal videomemóriát',
           videoGenerations_other: '{{count}} korábbi IronKVM-munkamenet foglal videomemóriát',
-          videoReboot: 'A felszabadításhoz indítsa újra.'
+          videoReboot: 'A felszabadításhoz indítsa újra.',
+          videoUnmeasured: '{{size}} lefoglalva, a használat nem mérhető',
+          largestFree: 'Legnagyobb szabad blokk {{size}}',
+          peak: 'csúcs {{size}}',
+          cma: 'Összefüggő memória (CMA)',
+          cmaTip:
+            'A kernel által összefüggő pufferekhez tartott memória, például a méretező és a kódolók közötti videokockákhoz. Amíg nincs lefoglalva, a rendszer többi része kölcsönveheti.'
         }
       },
       appearance: {

@@ -1085,7 +1085,13 @@ const vi = {
           videoTip:
             'Bộ nhớ dành riêng cho việc thu video. Nó không được chia sẻ với phần còn lại của hệ thống.',
           videoGenerations_other: '{{count}} phiên IronKVM trước đó đang giữ bộ nhớ video',
-          videoReboot: 'Khởi động lại để thu hồi.'
+          videoReboot: 'Khởi động lại để thu hồi.',
+          videoUnmeasured: 'Đã dành riêng {{size}}, không đo được mức dùng',
+          largestFree: 'Khối trống lớn nhất {{size}}',
+          peak: 'đỉnh {{size}}',
+          cma: 'Bộ nhớ liên tục (CMA)',
+          cmaTip:
+            'Bộ nhớ mà nhân giữ cho các bộ đệm phải liên tục, như khung hình video giữa bộ co giãn và bộ mã hóa. Khi chưa được cấp phát, phần còn lại của hệ thống có thể mượn dùng.'
         }
       },
       appearance: {

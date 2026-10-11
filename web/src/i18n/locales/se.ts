@@ -1092,7 +1092,13 @@ const se = {
             'Minne reserverat för videoinspelning. Det delas inte med resten av systemet.',
           videoGenerations_one: '{{count}} tidigare IronKVM-session håller videominne',
           videoGenerations_other: '{{count}} tidigare IronKVM-sessioner håller videominne',
-          videoReboot: 'Starta om för att frigöra det.'
+          videoReboot: 'Starta om för att frigöra det.',
+          videoUnmeasured: '{{size}} reserverat, användning kan inte mätas',
+          largestFree: 'Största lediga block {{size}}',
+          peak: 'topp {{size}}',
+          cma: 'Sammanhängande minne (CMA)',
+          cmaTip:
+            'Minne som kärnan håller för buffertar som måste vara sammanhängande, till exempel videobilder mellan skalaren och kodarna. Så länge det inte är tilldelat kan resten av systemet låna det.'
         }
       },
       appearance: {

@@ -1079,7 +1079,13 @@ const ko = {
             '비디오 캡처용으로 예약된 메모리입니다. 시스템의 나머지 부분과 공유되지 않습니다.',
           videoGenerations_other:
             '이전 IronKVM 세션 {{count}}개가 비디오 메모리를 점유하고 있습니다',
-          videoReboot: '재부팅하면 회수됩니다.'
+          videoReboot: '재부팅하면 회수됩니다.',
+          videoUnmeasured: '{{size}} 예약됨, 사용량 측정 불가',
+          largestFree: '가장 큰 빈 블록 {{size}}',
+          peak: '최대 {{size}}',
+          cma: '연속 메모리 (CMA)',
+          cmaTip:
+            '스케일러와 인코더 사이의 비디오 프레임처럼 연속되어야 하는 버퍼를 위해 커널이 확보하는 메모리입니다. 할당되지 않은 동안에는 시스템의 다른 부분이 빌려 쓸 수 있습니다.'
         }
       },
       appearance: {

@@ -1042,7 +1042,12 @@ const zh_tw = {
           video: '視訊記憶體',
           videoTip: '為視訊擷取保留的記憶體，不與系統其他部分共用。',
           videoGenerations_other: '先前的 {{count}} 個 IronKVM 工作階段仍佔用著視訊記憶體',
-          videoReboot: '重新啟動以回收。'
+          videoReboot: '重新啟動以回收。',
+          videoUnmeasured: '已保留 {{size}}，無法測量用量',
+          largestFree: '最大可用區塊 {{size}}',
+          peak: '峰值 {{size}}',
+          cma: '連續記憶體 (CMA)',
+          cmaTip: '核心為必須連續的緩衝區保留的記憶體，例如縮放器與編碼器之間的視訊影格。未配置時，系統的其他部分可以借用。'
         }
       },
       appearance: {

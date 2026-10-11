@@ -1122,7 +1122,13 @@ const de = {
             'Für die Videoaufnahme reservierter Speicher. Er wird nicht mit dem restlichen System geteilt.',
           videoGenerations_one: '{{count}} frühere IronKVM-Sitzung belegt Videospeicher',
           videoGenerations_other: '{{count}} frühere IronKVM-Sitzungen belegen Videospeicher',
-          videoReboot: 'Neu starten, um ihn freizugeben.'
+          videoReboot: 'Neu starten, um ihn freizugeben.',
+          videoUnmeasured: '{{size}} reserviert, Belegung nicht messbar',
+          largestFree: 'Größter freier Block {{size}}',
+          peak: 'Spitze {{size}}',
+          cma: 'Zusammenhängender Speicher (CMA)',
+          cmaTip:
+            'Speicher, den der Kernel für Puffer bereithält, die zusammenhängend sein müssen, etwa Videobilder zwischen Skalierer und Encodern. Solange er nicht vergeben ist, kann der Rest des Systems ihn mitbenutzen.'
         }
       },
       appearance: {

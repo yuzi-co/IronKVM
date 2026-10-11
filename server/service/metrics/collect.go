@@ -17,6 +17,7 @@ type section struct {
 var sections = []section{
 	{name: "memory", collect: collectMemory},
 	{name: "ion", collect: collectIon},
+	{name: "device_pools", collect: collectDevicePools},
 	{name: "streams", collect: collectStreams},
 	{name: "usb", collect: collectUSB},
 	{name: "server", collect: collectServer},

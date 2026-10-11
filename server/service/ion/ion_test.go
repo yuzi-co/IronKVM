@@ -399,3 +399,15 @@ func TestReadUsageIsUnavailableForAnEmptyCarveout(t *testing.T) {
 		t.Fatal("a carveout of 0 bytes must read as unavailable, as Read does")
 	}
 }
+
+func TestPresentFollowsTheCarveoutDump(t *testing.T) {
+	fakeCarveout(t, 78643200, 19050496, 19050496, "")
+	if !Present() {
+		t.Fatal("Present() = false with the dump in place")
+	}
+
+	Root = filepath.Join(t.TempDir(), "absent")
+	if Present() {
+		t.Fatal("Present() = true without the dump")
+	}
+}

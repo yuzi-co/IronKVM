@@ -1086,7 +1086,13 @@ const cz = {
           videoGenerations_one: '{{count}} dřívější relace IronKVM drží videopaměť',
           videoGenerations_few: '{{count}} dřívější relace IronKVM drží videopaměť',
           videoGenerations_other: '{{count}} dřívějších relací IronKVM drží videopaměť',
-          videoReboot: 'Pro její uvolnění restartujte.'
+          videoReboot: 'Pro její uvolnění restartujte.',
+          videoUnmeasured: '{{size}} vyhrazeno, využití nelze změřit',
+          largestFree: 'Největší volný blok {{size}}',
+          peak: 'maximum {{size}}',
+          cma: 'Souvislá paměť (CMA)',
+          cmaTip:
+            'Paměť, kterou jádro drží pro vyrovnávací paměti, jež musí být souvislé, například snímky videa mezi škálovačem a kodéry. Dokud není přidělena, může si ji půjčit zbytek systému.'
         }
       },
       appearance: {
