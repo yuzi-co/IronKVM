@@ -24,6 +24,9 @@ const (
 	KeyboardEvent
 	MouseEvent
 	TouchEvent
+	// KeepaliveEvent says the browser still holds the keys and buttons it
+	// last reported. See hold_watch.go.
+	KeepaliveEvent
 )
 
 const (
@@ -43,6 +46,7 @@ func NewClient(ws *websocket.Conn) *Client {
 		keyboardLedDone:   make(chan struct{}),
 		lastHeartbeat:     time.Time{},
 	}
+	client.holds = newHoldWatch(holdReleaseTimeout, client.releaseHeld)
 
 	client.hid.Open()
 
@@ -87,35 +91,99 @@ func (c *Client) Read() error {
 
 		traceMessage(messageType, data)
 
-		switch data[0] {
-		case Heartbeat:
-		case KeyboardEvent:
-			report := data[1:]
-			if len(report) != 8 {
-				log.Debugf("invalid manual keyboard report: %v", report)
-				continue
-			}
-			c.queueManualReport(c.keyboard, inputcontrol.ManualKeyboard, report, keyboardReportHeld(report), true)
-		case MouseEvent:
-			report := data[1:]
-			if !isMouseReport(report) {
-				log.Debugf("invalid manual mouse report: %v", report)
-				continue
-			}
-			kind := inputcontrol.ManualRelativeMouse
-			if len(report) == hid.AbsoluteMouseReportLen {
-				kind = inputcontrol.ManualAbsoluteMouse
-			}
-			c.queueManualReport(c.mouse, kind, report, report[0] != 0, mouseReportStartsCooldown(report))
-		case TouchEvent:
-			contacts, err := decodeTouchFrame(data[1:])
-			if err != nil {
-				log.Debugf("invalid touch frame: %s", err)
-				continue
-			}
-			c.queueManualTouch(contacts)
-		}
+		c.handleMessage(data)
 	}
+}
+
+// handleMessage queues one client message. The input lock is held across it
+// because the hold watch's release queues from a timer goroutine, and the
+// queue and the manual session's lazily built hooks expect one producer.
+func (c *Client) handleMessage(data []byte) {
+	c.inputMutex.Lock()
+	defer c.inputMutex.Unlock()
+	if c.inputClosed {
+		return
+	}
+
+	switch data[0] {
+	case Heartbeat:
+	case KeepaliveEvent:
+		c.holdWatch().Keepalive()
+	case KeyboardEvent:
+		report := data[1:]
+		if len(report) != 8 {
+			log.Debugf("invalid manual keyboard report: %v", report)
+			return
+		}
+		held := keyboardReportHeld(report)
+		c.queueManualReport(c.keyboard, inputcontrol.ManualKeyboard, report, held, true)
+		c.holdWatch().Input(holdKeyboard, held)
+	case MouseEvent:
+		report := data[1:]
+		if !isMouseReport(report) {
+			log.Debugf("invalid manual mouse report: %v", report)
+			return
+		}
+		kind := inputcontrol.ManualRelativeMouse
+		hold := holdRelativeMouse
+		if len(report) == hid.AbsoluteMouseReportLen {
+			kind = inputcontrol.ManualAbsoluteMouse
+			hold = holdAbsoluteMouse
+			c.lastAbsolute = report
+		}
+		held := report[0] != 0
+		c.queueManualReport(c.mouse, kind, report, held, mouseReportStartsCooldown(report))
+		c.holdWatch().Input(hold, held)
+	case TouchEvent:
+		contacts, err := decodeTouchFrame(data[1:])
+		if err != nil {
+			log.Debugf("invalid touch frame: %s", err)
+			return
+		}
+		c.queueManualTouch(contacts)
+	}
+}
+
+// holdWatch returns the client's watch. A Client built in a test without
+// NewClient has none, and gets one that never fires: no keepalive arrives.
+func (c *Client) holdWatch() *holdWatch {
+	if c.holds == nil {
+		c.holds = newHoldWatch(holdReleaseTimeout, c.releaseHeld)
+	}
+	return c.holds
+}
+
+// releaseHeld is the hold watch's expiry. It queues the report that lets go
+// of one input, through the same reservation every manual report takes, so
+// the control lease the held input took is released with it.
+func (c *Client) releaseHeld(kind holdKind) {
+	c.inputMutex.Lock()
+	defer c.inputMutex.Unlock()
+	if c.inputClosed {
+		return
+	}
+
+	switch kind {
+	case holdKeyboard:
+		log.Warnf("no keepalive for %s with keys held, releasing the keyboard", holdReleaseTimeout)
+		c.queueManualReport(c.keyboard, inputcontrol.ManualKeyboard, make([]byte, 8), false, false)
+	case holdRelativeMouse:
+		log.Warnf("no keepalive for %s with a button held, releasing the relative mouse", holdReleaseTimeout)
+		c.queueManualReport(c.mouse, inputcontrol.ManualRelativeMouse, make([]byte, hid.RelativeMouseReportLen), false, false)
+	case holdAbsoluteMouse:
+		log.Warnf("no keepalive for %s with a button held, releasing the absolute mouse", holdReleaseTimeout)
+		c.queueManualReport(c.mouse, inputcontrol.ManualAbsoluteMouse, absoluteReleaseAt(c.lastAbsolute), false, false)
+	}
+}
+
+// absoluteReleaseAt is a report with no button down at the pointer's last
+// position, so the release does not also move the pointer to the corner.
+func absoluteReleaseAt(last []byte) []byte {
+	report := make([]byte, hid.AbsoluteMouseReportLen)
+	if len(last) == hid.AbsoluteMouseReportLen {
+		copy(report[1:5], last[1:5])
+	}
+	return report
 }
 
 func (c *Client) queueManualReport(queue chan hid.QueuedReport, kind inputcontrol.ManualReportKind, report []byte, held bool, startCooldown bool) {
@@ -273,6 +341,15 @@ func (c *Client) UpdateHeartbeat() error {
 
 func (c *Client) Close() {
 	c.closeOnce.Do(func() {
+		// Stop the hold watch's releases before the queues close. What is
+		// still held is released by the HID workers when their queues close.
+		c.inputMutex.Lock()
+		c.inputClosed = true
+		c.inputMutex.Unlock()
+		if c.holds != nil {
+			c.holds.Close()
+		}
+
 		if c.ws != nil {
 			_ = c.ws.Close()
 		}

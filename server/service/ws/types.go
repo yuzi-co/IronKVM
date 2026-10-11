@@ -34,6 +34,12 @@ type Client struct {
 	closeOnce          sync.Once
 	workers            sync.WaitGroup
 	hooks              *manualHooks
+	// inputMutex serialises queueing between the read loop and the hold
+	// watch's release, and inputClosed stops both once Close has begun.
+	inputMutex   sync.Mutex
+	inputClosed  bool
+	holds        *holdWatch
+	lastAbsolute []byte
 }
 
 type Message struct {

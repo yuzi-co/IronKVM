@@ -1,6 +1,7 @@
 import { ICloseEvent, IMessageEvent, w3cwebsocket as W3cWebSocket } from 'websocket';
 
 import { notifyAuthExpired } from '@/lib/auth-events.ts';
+import { HoldKeepalive, KEEPALIVE_MESSAGE } from '@/lib/hold-keepalive.ts';
 import { getBaseUrl } from '@/lib/service.ts';
 import { isViewOnly } from '@/lib/view-only.ts';
 
@@ -11,7 +12,10 @@ export enum MessageEvent {
   Heartbeat = 0,
   Keyboard = 1,
   Mouse = 2,
-  Touch = 3
+  Touch = 3,
+  // Sent while a key or button is held, and once when the socket opens to
+  // tell the server this client sends them. See lib/hold-keepalive.ts.
+  Keepalive = KEEPALIVE_MESSAGE
 }
 
 // Keyboard and mouse travel over this socket and nothing else carries them, so
@@ -69,6 +73,9 @@ export class WsClient {
   private shouldReconnect = true;
   private everConnected = false;
   private readonly statusHandlers = new Set<StatusHandler>();
+  private readonly holdKeepalive = new HoldKeepalive(() => {
+    this.send(new Uint8Array([MessageEvent.Keepalive]));
+  });
 
   private readonly eventHandlers = new Map<string, Set<MessageHandler>>();
 
@@ -137,6 +144,8 @@ export class WsClient {
       this.instance.send(JSON.stringify(data));
     }
 
+    this.holdKeepalive.observe(data instanceof ArrayBuffer ? new Uint8Array(data) : data);
+
     return true;
   }
 
@@ -185,12 +194,16 @@ export class WsClient {
   private handleOpen(): void {
     this.reconnectAttempts = 0;
     this.everConnected = true;
+    this.holdKeepalive.reset();
+    // The first keepalive turns on the server's hold watch for this socket.
+    this.send(new Uint8Array([MessageEvent.Keepalive]));
     this.startHeartbeat();
     this.emitStatus();
   }
 
   private handleClose(event: ICloseEvent): void {
     this.stopHeartbeat();
+    this.holdKeepalive.reset();
 
     if (event.code === 4401) {
       this.shouldReconnect = false;
@@ -277,6 +290,7 @@ export class WsClient {
 
   private cleanup(): void {
     this.stopHeartbeat();
+    this.holdKeepalive.reset();
 
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer);
