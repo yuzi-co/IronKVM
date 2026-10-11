@@ -1388,7 +1388,14 @@ const vi = {
         manualIntro: 'Hoặc cài đặt thủ công qua SSH:',
         copyBinaries: 'Sao chép tailscale và tailscaled vào {{dir}} trên IronKVM',
         linksFile: 'Trong cùng thư mục, tạo một tệp tên links chứa hai dòng sau:',
-        rebootRefresh: 'Khởi động lại IronKVM, rồi làm mới trang này'
+        rebootRefresh: 'Khởi động lại IronKVM, rồi làm mới trang này',
+        loginServer: 'Máy chủ điều khiển',
+        loginServerDesc:
+          'Để trống để dùng Tailscale. Nhập URL https của máy chủ Headscale để dùng máy chủ đó. Thay đổi sẽ bắt đầu một lần đăng nhập mới, và máy chủ cũ được giữ nếu máy chủ mới không phản hồi.',
+        loginServerDefault: 'Tailscale (mặc định)',
+        loginServerInvalid: 'Nhập URL https, ví dụ https://headscale.example.com',
+        loginServerLocked: 'Đăng xuất để đổi máy chủ điều khiển.',
+        loginServerSaved: 'Đã lưu máy chủ điều khiển'
       },
       netbird: {
         title: 'NetBird',
@@ -1760,6 +1767,14 @@ const vi = {
       criticalContinue: 'Vẫn bắt đầu video',
       criticalReboot: 'Khởi động lại IronKVM',
       criticalRebooting: 'Đang khởi động lại...'
+    },
+    failsafe: {
+      title: 'Video đã tắt: máy chủ khởi động ở chế độ an toàn',
+      body: 'Thư viện video làm máy chủ gặp sự cố nhiều lần liên tiếp, nên máy chủ đang chạy không có video. Mọi thứ khác vẫn hoạt động: cài đặt, cập nhật, nhật ký, điều khiển nguồn và terminal. Hãy thử lại video sau khi cập nhật hoặc sửa lỗi. Khởi động lại IronKVM cũng thử lại video.',
+      showLog: 'Hiện nhật ký',
+      hideLog: 'Ẩn nhật ký',
+      retry: 'Thử lại video',
+      retrying: 'Đang khởi động lại...'
     }
   }
 };

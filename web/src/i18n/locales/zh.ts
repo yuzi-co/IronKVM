@@ -1328,7 +1328,14 @@ const zh = {
         manualIntro: '或者通过 SSH 手动安装：',
         copyBinaries: '将 tailscale 和 tailscaled 复制到 IronKVM 上的 {{dir}}',
         linksFile: '在同一目录中创建名为 links 的文件，写入以下两行：',
-        rebootRefresh: '重启 IronKVM，然后刷新此页面'
+        rebootRefresh: '重启 IronKVM，然后刷新此页面',
+        loginServer: '控制服务器',
+        loginServerDesc:
+          '留空则使用 Tailscale。输入 Headscale 服务器的 https URL 以改用该服务器。更改会开始新的登录；如果新服务器无响应，将保留原服务器。',
+        loginServerDefault: 'Tailscale（默认）',
+        loginServerInvalid: '请输入 https URL，例如 https://headscale.example.com',
+        loginServerLocked: '请先退出登录再更改控制服务器。',
+        loginServerSaved: '控制服务器已保存'
       },
       netbird: {
         title: 'NetBird',
@@ -1690,6 +1697,14 @@ const zh = {
       criticalContinue: '仍然启动视频',
       criticalReboot: '重启 IronKVM',
       criticalRebooting: '正在重启...'
+    },
+    failsafe: {
+      title: '视频已关闭：服务器以故障安全模式启动',
+      body: '视频库连续多次导致服务器崩溃，因此服务器现在不带视频运行。其他功能均正常：设置、更新、日志、电源控制和终端。请在更新或修复后重试视频。重启 IronKVM 也会重新尝试视频。',
+      showLog: '显示日志',
+      hideLog: '隐藏日志',
+      retry: '重试视频',
+      retrying: '正在重启...'
     }
   }
 };

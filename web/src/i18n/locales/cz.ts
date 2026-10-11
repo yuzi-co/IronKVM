@@ -1383,7 +1383,14 @@ const cz = {
         manualIntro: 'Nebo jej nainstalujte ručně přes SSH:',
         copyBinaries: 'Zkopírujte tailscale a tailscaled do {{dir}} na IronKVM',
         linksFile: 'Ve stejném adresáři vytvořte soubor s názvem links s těmito dvěma řádky:',
-        rebootRefresh: 'Restartujte IronKVM a poté obnovte tuto stránku'
+        rebootRefresh: 'Restartujte IronKVM a poté obnovte tuto stránku',
+        loginServer: 'Řídicí server',
+        loginServerDesc:
+          'Ponechte prázdné pro Tailscale. Zadejte https URL serveru Headscale, chcete-li použít ten. Změna spustí nové přihlášení a původní server zůstane, pokud nový neodpoví.',
+        loginServerDefault: 'Tailscale (výchozí)',
+        loginServerInvalid: 'Zadejte https URL, například https://headscale.example.com',
+        loginServerLocked: 'Pro změnu řídicího serveru se odhlaste.',
+        loginServerSaved: 'Řídicí server uložen'
       },
       netbird: {
         title: 'NetBird',
@@ -1752,6 +1759,14 @@ const cz = {
       criticalContinue: 'Přesto spustit video',
       criticalReboot: 'Restartovat IronKVM',
       criticalRebooting: 'Restartování...'
+    },
+    failsafe: {
+      title: 'Video je vypnuté: server běží v nouzovém režimu',
+      body: 'Knihovna videa několikrát po sobě shodila server, proto server nyní běží bez videa. Vše ostatní funguje: nastavení, aktualizace, protokoly, ovládání napájení a terminál. Zkuste video znovu po aktualizaci nebo opravě. Restart IronKVM také zkusí video znovu.',
+      showLog: 'Zobrazit protokol',
+      hideLog: 'Skrýt protokol',
+      retry: 'Zkusit video znovu',
+      retrying: 'Restartování...'
     }
   }
 };

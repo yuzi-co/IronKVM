@@ -1395,7 +1395,14 @@ const id = {
         manualIntro: 'Atau instal secara manual lewat SSH:',
         copyBinaries: 'Salin tailscale dan tailscaled ke {{dir}} di IronKVM',
         linksFile: 'Di direktori yang sama, buat file bernama links berisi dua baris ini:',
-        rebootRefresh: 'Mulai ulang IronKVM, lalu muat ulang halaman ini'
+        rebootRefresh: 'Mulai ulang IronKVM, lalu muat ulang halaman ini',
+        loginServer: 'Server kontrol',
+        loginServerDesc:
+          'Biarkan kosong untuk memakai Tailscale. Masukkan URL https server Headscale untuk memakainya. Perubahan memulai login baru, dan server lama tetap dipakai jika server baru tidak menjawab.',
+        loginServerDefault: 'Tailscale (bawaan)',
+        loginServerInvalid: 'Masukkan URL https, misalnya https://headscale.example.com',
+        loginServerLocked: 'Keluar dulu untuk mengubah server kontrol.',
+        loginServerSaved: 'Server kontrol disimpan'
       },
       netbird: {
         title: 'NetBird',
@@ -1766,6 +1773,14 @@ const id = {
       criticalContinue: 'Tetap mulai video',
       criticalReboot: 'Mulai ulang IronKVM',
       criticalRebooting: 'Memulai ulang...'
+    },
+    failsafe: {
+      title: 'Video mati: server berjalan dalam mode aman',
+      body: 'Pustaka video membuat server mogok beberapa kali berturut-turut, jadi server sekarang berjalan tanpa video. Semua yang lain berfungsi: pengaturan, pembaruan, log, kontrol daya, dan terminal. Coba video lagi setelah pembaruan atau perbaikan. Memulai ulang IronKVM juga mencoba video lagi.',
+      showLog: 'Tampilkan log',
+      hideLog: 'Sembunyikan log',
+      retry: 'Coba video lagi',
+      retrying: 'Memulai ulang...'
     }
   }
 };

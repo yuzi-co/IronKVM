@@ -1366,7 +1366,14 @@ const th = {
         manualIntro: 'หรือติดตั้งเองผ่าน SSH:',
         copyBinaries: 'คัดลอก tailscale และ tailscaled ไปที่ {{dir}} บน IronKVM',
         linksFile: 'ในไดเรกทอรีเดียวกัน สร้างไฟล์ชื่อ links ที่มีสองบรรทัดนี้:',
-        rebootRefresh: 'รีบูต IronKVM แล้วรีเฟรชหน้านี้'
+        rebootRefresh: 'รีบูต IronKVM แล้วรีเฟรชหน้านี้',
+        loginServer: 'เซิร์ฟเวอร์ควบคุม',
+        loginServerDesc:
+          'เว้นว่างไว้เพื่อใช้ Tailscale ป้อน URL https ของเซิร์ฟเวอร์ Headscale เพื่อใช้แทน การเปลี่ยนจะเริ่มการเข้าสู่ระบบใหม่ และจะใช้เซิร์ฟเวอร์เดิมต่อหากเซิร์ฟเวอร์ใหม่ไม่ตอบ',
+        loginServerDefault: 'Tailscale (ค่าเริ่มต้น)',
+        loginServerInvalid: 'ป้อน URL https เช่น https://headscale.example.com',
+        loginServerLocked: 'ออกจากระบบเพื่อเปลี่ยนเซิร์ฟเวอร์ควบคุม',
+        loginServerSaved: 'บันทึกเซิร์ฟเวอร์ควบคุมแล้ว'
       },
       netbird: {
         title: 'NetBird',
@@ -1732,6 +1739,14 @@ const th = {
       criticalContinue: 'เริ่มวิดีโอต่อไป',
       criticalReboot: 'รีบูต IronKVM',
       criticalRebooting: 'กำลังรีบูต...'
+    },
+    failsafe: {
+      title: 'ปิดวิดีโอ: เซิร์ฟเวอร์เริ่มทำงานในโหมดปลอดภัย',
+      body: 'ไลบรารีวิดีโอทำให้เซิร์ฟเวอร์ล่มหลายครั้งติดกัน เซิร์ฟเวอร์จึงทำงานโดยไม่มีวิดีโอ ส่วนอื่นยังใช้ได้ทั้งหมด: การตั้งค่า การอัปเดต บันทึก การควบคุมพลังงาน และเทอร์มินัล ลองวิดีโออีกครั้งหลังการอัปเดตหรือการแก้ไข การรีบูต IronKVM ก็จะลองวิดีโออีกครั้งเช่นกัน',
+      showLog: 'แสดงบันทึก',
+      hideLog: 'ซ่อนบันทึก',
+      retry: 'ลองวิดีโออีกครั้ง',
+      retrying: 'กำลังรีสตาร์ท...'
     }
   }
 };

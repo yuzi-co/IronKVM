@@ -1395,7 +1395,14 @@ const se = {
         manualIntro: 'Eller installera det manuellt över SSH:',
         copyBinaries: 'Kopiera tailscale och tailscaled till {{dir}} på IronKVM',
         linksFile: 'Skapa i samma katalog en fil som heter links med de här två raderna:',
-        rebootRefresh: 'Starta om IronKVM och uppdatera sedan den här sidan'
+        rebootRefresh: 'Starta om IronKVM och uppdatera sedan den här sidan',
+        loginServer: 'Kontrollserver',
+        loginServerDesc:
+          'Lämna tomt för att använda Tailscale. Ange https-URL:en till en Headscale-server för att använda den i stället. En ändring startar en ny inloggning, och den gamla servern behålls om den nya inte svarar.',
+        loginServerDefault: 'Tailscale (standard)',
+        loginServerInvalid: 'Ange en https-URL, till exempel https://headscale.example.com',
+        loginServerLocked: 'Logga ut för att ändra kontrollservern.',
+        loginServerSaved: 'Kontrollserver sparad'
       },
       netbird: {
         title: 'NetBird',
@@ -1763,6 +1770,14 @@ const se = {
       criticalContinue: 'Starta video ändå',
       criticalReboot: 'Starta om IronKVM',
       criticalRebooting: 'Startar om...'
+    },
+    failsafe: {
+      title: 'Video är av: servern startade i felsäkert läge',
+      body: 'Videobiblioteket fick servern att krascha flera gånger i rad, så servern körs nu utan video. Allt annat fungerar: inställningar, uppdateringar, loggar, strömstyrning och terminal. Försök med video igen efter en uppdatering eller rättning. En omstart av IronKVM försöker också med video igen.',
+      showLog: 'Visa logg',
+      hideLog: 'Dölj logg',
+      retry: 'Försök med video igen',
+      retrying: 'Startar om...'
     }
   }
 };

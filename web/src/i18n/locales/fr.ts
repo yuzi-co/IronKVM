@@ -1424,7 +1424,14 @@ const fr = {
         copyBinaries: "Copiez tailscale et tailscaled dans {{dir}} sur l'IronKVM",
         linksFile:
           'Dans le même répertoire, créez un fichier nommé links contenant ces deux lignes :',
-        rebootRefresh: "Redémarrez l'IronKVM, puis actualisez cette page"
+        rebootRefresh: "Redémarrez l'IronKVM, puis actualisez cette page",
+        loginServer: 'Serveur de contrôle',
+        loginServerDesc:
+          "Laissez vide pour utiliser Tailscale. Saisissez l'URL https d'un serveur Headscale pour l'utiliser à la place. Un changement lance une nouvelle connexion, et l'ancien serveur est conservé si le nouveau ne répond pas.",
+        loginServerDefault: 'Tailscale (par défaut)',
+        loginServerInvalid: 'Saisissez une URL https, par exemple https://headscale.example.com',
+        loginServerLocked: 'Déconnectez-vous pour changer de serveur de contrôle.',
+        loginServerSaved: 'Serveur de contrôle enregistré'
       },
       netbird: {
         title: 'NetBird',
@@ -1797,6 +1804,14 @@ const fr = {
       criticalContinue: 'Lancer la vidéo quand même',
       criticalReboot: 'Redémarrer IronKVM',
       criticalRebooting: 'Redémarrage...'
+    },
+    failsafe: {
+      title: 'Vidéo désactivée : le serveur a démarré en mode sans échec',
+      body: "La bibliothèque vidéo a fait planter le serveur plusieurs fois de suite, le serveur fonctionne donc sans vidéo. Tout le reste fonctionne : paramètres, mises à jour, journaux, contrôle de l'alimentation et terminal. Réessayez la vidéo après une mise à jour ou une correction. Un redémarrage d'IronKVM réessaie aussi la vidéo.",
+      showLog: 'Afficher le journal',
+      hideLog: 'Masquer le journal',
+      retry: 'Réessayer la vidéo',
+      retrying: 'Redémarrage...'
     }
   }
 };

@@ -1377,7 +1377,14 @@ const en = {
         manualIntro: 'Or install it by hand over SSH:',
         copyBinaries: 'Copy tailscale and tailscaled to {{dir}} on the IronKVM',
         linksFile: 'In the same directory, create a file named links with these two lines:',
-        rebootRefresh: 'Reboot the IronKVM, then refresh this page'
+        rebootRefresh: 'Reboot the IronKVM, then refresh this page',
+        loginServer: 'Control server',
+        loginServerDesc:
+          'Leave empty to use Tailscale. Enter the https URL of a Headscale server to use it instead. A change starts a new login, and the old server stays when the new one does not answer.',
+        loginServerDefault: 'Tailscale (default)',
+        loginServerInvalid: 'Enter an https URL, for example https://headscale.example.com',
+        loginServerLocked: 'Log out to change the control server.',
+        loginServerSaved: 'Control server saved'
       },
       netbird: {
         title: 'NetBird',
@@ -1748,6 +1755,14 @@ const en = {
       criticalContinue: 'Start video anyway',
       criticalReboot: 'Reboot IronKVM',
       criticalRebooting: 'Rebooting...'
+    },
+    failsafe: {
+      title: 'Video is off: the server started in failsafe mode',
+      body: 'The video library crashed the server several times in a row, so the server now runs without video. Everything else works: settings, updates, logs, power control and the terminal. Retry video after an update or a fix. A reboot of IronKVM also tries video again.',
+      showLog: 'Show log',
+      hideLog: 'Hide log',
+      retry: 'Retry video',
+      retrying: 'Restarting...'
     }
   }
 };

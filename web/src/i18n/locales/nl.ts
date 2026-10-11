@@ -1413,7 +1413,14 @@ const nl = {
         manualIntro: 'Of installeer het handmatig via SSH:',
         copyBinaries: 'Kopieer tailscale en tailscaled naar {{dir}} op de IronKVM',
         linksFile: 'Maak in dezelfde map een bestand met de naam links met deze twee regels:',
-        rebootRefresh: 'Herstart de IronKVM en vernieuw daarna deze pagina'
+        rebootRefresh: 'Herstart de IronKVM en vernieuw daarna deze pagina',
+        loginServer: 'Controleserver',
+        loginServerDesc:
+          'Laat leeg om Tailscale te gebruiken. Voer de https-URL van een Headscale-server in om die te gebruiken. Een wijziging start een nieuwe aanmelding, en de oude server blijft als de nieuwe niet antwoordt.',
+        loginServerDefault: 'Tailscale (standaard)',
+        loginServerInvalid: 'Voer een https-URL in, bijvoorbeeld https://headscale.example.com',
+        loginServerLocked: 'Meld u af om de controleserver te wijzigen.',
+        loginServerSaved: 'Controleserver opgeslagen'
       },
       netbird: {
         title: 'NetBird',
@@ -1786,6 +1793,14 @@ const nl = {
       criticalContinue: 'Video toch starten',
       criticalReboot: 'IronKVM opnieuw opstarten',
       criticalRebooting: 'Opnieuw opstarten...'
+    },
+    failsafe: {
+      title: 'Video uit: de server is gestart in veilige modus',
+      body: 'De videobibliotheek liet de server meerdere keren achter elkaar crashen, dus de server draait nu zonder video. Al het andere werkt: instellingen, updates, logboeken, stroombeheer en terminal. Probeer video opnieuw na een update of een oplossing. Een herstart van IronKVM probeert video ook opnieuw.',
+      showLog: 'Logboek tonen',
+      hideLog: 'Logboek verbergen',
+      retry: 'Video opnieuw proberen',
+      retrying: 'Opnieuw opstarten...'
     }
   }
 };

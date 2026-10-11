@@ -1374,7 +1374,14 @@ const ko = {
         manualIntro: '또는 SSH로 직접 설치하세요:',
         copyBinaries: 'tailscale과 tailscaled를 IronKVM의 {{dir}}에 복사합니다',
         linksFile: '같은 디렉터리에 다음 두 줄이 담긴 links라는 파일을 만듭니다:',
-        rebootRefresh: 'IronKVM을 재부팅한 다음 이 페이지를 새로 고칩니다'
+        rebootRefresh: 'IronKVM을 재부팅한 다음 이 페이지를 새로 고칩니다',
+        loginServer: '제어 서버',
+        loginServerDesc:
+          'Tailscale을 사용하려면 비워 두세요. Headscale 서버를 사용하려면 해당 https URL을 입력하세요. 변경하면 새 로그인이 시작되며, 새 서버가 응답하지 않으면 이전 서버가 유지됩니다.',
+        loginServerDefault: 'Tailscale (기본값)',
+        loginServerInvalid: 'https URL을 입력하세요. 예: https://headscale.example.com',
+        loginServerLocked: '제어 서버를 바꾸려면 로그아웃하세요.',
+        loginServerSaved: '제어 서버가 저장되었습니다'
       },
       netbird: {
         title: 'NetBird',
@@ -1741,6 +1748,14 @@ const ko = {
       criticalContinue: '그래도 비디오 시작',
       criticalReboot: 'IronKVM 재부팅',
       criticalRebooting: '재부팅 중...'
+    },
+    failsafe: {
+      title: '비디오 꺼짐: 서버가 안전 모드로 시작됨',
+      body: '비디오 라이브러리 때문에 서버가 여러 번 연속으로 중단되어, 이제 서버가 비디오 없이 실행됩니다. 설정, 업데이트, 로그, 전원 제어, 터미널 등 나머지는 모두 작동합니다. 업데이트나 수정 후 비디오를 다시 시도하세요. IronKVM을 재부팅해도 비디오를 다시 시도합니다.',
+      showLog: '로그 보기',
+      hideLog: '로그 숨기기',
+      retry: '비디오 다시 시도',
+      retrying: '재시작 중...'
     }
   }
 };

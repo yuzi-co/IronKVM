@@ -1392,7 +1392,14 @@ const tr = {
         copyBinaries:
           "tailscale ve tailscaled dosyalarını IronKVM'deki {{dir}} dizinine kopyalayın",
         linksFile: 'Aynı dizinde, şu iki satırı içeren links adlı bir dosya oluşturun:',
-        rebootRefresh: "IronKVM'yi yeniden başlatın, ardından bu sayfayı yenileyin"
+        rebootRefresh: "IronKVM'yi yeniden başlatın, ardından bu sayfayı yenileyin",
+        loginServer: 'Denetim sunucusu',
+        loginServerDesc:
+          'Tailscale kullanmak için boş bırakın. Yerine bir Headscale sunucusu kullanmak için https URL’sini girin. Değişiklik yeni bir oturum açma başlatır ve yeni sunucu yanıt vermezse eski sunucu kalır.',
+        loginServerDefault: 'Tailscale (varsayılan)',
+        loginServerInvalid: 'Bir https URL girin, örneğin https://headscale.example.com',
+        loginServerLocked: 'Denetim sunucusunu değiştirmek için oturumu kapatın.',
+        loginServerSaved: 'Denetim sunucusu kaydedildi'
       },
       netbird: {
         title: 'NetBird',
@@ -1761,6 +1768,14 @@ const tr = {
       criticalContinue: 'Videoyu yine de başlat',
       criticalReboot: "IronKVM'i Yeniden Başlat",
       criticalRebooting: 'Yeniden başlatılıyor...'
+    },
+    failsafe: {
+      title: 'Video kapalı: sunucu güvenli modda başladı',
+      body: 'Video kitaplığı sunucuyu art arda birkaç kez çökertti, bu yüzden sunucu artık videosuz çalışıyor. Geri kalan her şey çalışır: ayarlar, güncellemeler, günlükler, güç denetimi ve terminal. Bir güncelleme veya düzeltmeden sonra videoyu yeniden deneyin. IronKVM yeniden başlatıldığında da video yeniden denenir.',
+      showLog: 'Günlüğü göster',
+      hideLog: 'Günlüğü gizle',
+      retry: 'Videoyu yeniden dene',
+      retrying: 'Yeniden başlatılıyor...'
     }
   }
 };

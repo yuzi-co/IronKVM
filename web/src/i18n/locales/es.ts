@@ -1417,7 +1417,14 @@ const es = {
         manualIntro: 'O instálalo a mano por SSH:',
         copyBinaries: 'Copia tailscale y tailscaled en {{dir}} del IronKVM',
         linksFile: 'En el mismo directorio, crea un archivo llamado links con estas dos líneas:',
-        rebootRefresh: 'Reinicia el IronKVM y luego actualiza esta página'
+        rebootRefresh: 'Reinicia el IronKVM y luego actualiza esta página',
+        loginServer: 'Servidor de control',
+        loginServerDesc:
+          'Déjelo vacío para usar Tailscale. Introduzca la URL https de un servidor Headscale para usarlo en su lugar. Un cambio inicia un nuevo inicio de sesión, y el servidor anterior se mantiene si el nuevo no responde.',
+        loginServerDefault: 'Tailscale (predeterminado)',
+        loginServerInvalid: 'Introduzca una URL https, por ejemplo https://headscale.example.com',
+        loginServerLocked: 'Cierre la sesión para cambiar el servidor de control.',
+        loginServerSaved: 'Servidor de control guardado'
       },
       netbird: {
         title: 'NetBird',
@@ -1794,6 +1801,14 @@ const es = {
       criticalContinue: 'Iniciar el vídeo de todos modos',
       criticalReboot: 'Reiniciar IronKVM',
       criticalRebooting: 'Reiniciando...'
+    },
+    failsafe: {
+      title: 'Vídeo desactivado: el servidor arrancó en modo seguro',
+      body: 'La biblioteca de vídeo bloqueó el servidor varias veces seguidas, así que ahora el servidor funciona sin vídeo. Todo lo demás funciona: ajustes, actualizaciones, registros, control de energía y terminal. Reintente el vídeo tras una actualización o una corrección. Reiniciar IronKVM también reintenta el vídeo.',
+      showLog: 'Mostrar registro',
+      hideLog: 'Ocultar registro',
+      retry: 'Reintentar vídeo',
+      retrying: 'Reiniciando...'
     }
   }
 };

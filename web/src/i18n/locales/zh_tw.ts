@@ -1327,7 +1327,14 @@ const zh_tw = {
         manualIntro: '或透過 SSH 手動安裝：',
         copyBinaries: '將 tailscale 和 tailscaled 複製到 IronKVM 上的 {{dir}}',
         linksFile: '在同一目錄中建立名為 links 的檔案，寫入以下兩行：',
-        rebootRefresh: '重新啟動 IronKVM，然後重新整理此頁面'
+        rebootRefresh: '重新啟動 IronKVM，然後重新整理此頁面',
+        loginServer: '控制伺服器',
+        loginServerDesc:
+          '留空即使用 Tailscale。輸入 Headscale 伺服器的 https URL 以改用該伺服器。變更會開始新的登入；若新伺服器沒有回應，將保留原伺服器。',
+        loginServerDefault: 'Tailscale（預設）',
+        loginServerInvalid: '請輸入 https URL，例如 https://headscale.example.com',
+        loginServerLocked: '請先登出再變更控制伺服器。',
+        loginServerSaved: '控制伺服器已儲存'
       },
       netbird: {
         title: 'NetBird',
@@ -1686,6 +1693,14 @@ const zh_tw = {
       criticalContinue: '仍然啟動視訊',
       criticalReboot: '重新啟動 IronKVM',
       criticalRebooting: '正在重新啟動...'
+    },
+    failsafe: {
+      title: '視訊已關閉：伺服器以故障安全模式啟動',
+      body: '視訊程式庫連續多次導致伺服器當機，因此伺服器現在不帶視訊執行。其他功能皆正常：設定、更新、記錄、電源控制和終端機。請在更新或修正後重試視訊。重新啟動 IronKVM 也會重新嘗試視訊。',
+      showLog: '顯示記錄',
+      hideLog: '隱藏記錄',
+      retry: '重試視訊',
+      retrying: '正在重新啟動...'
     }
   }
 };
