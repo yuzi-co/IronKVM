@@ -9,6 +9,7 @@ import (
 	"NanoKVM-Server/service/hid"
 	"NanoKVM-Server/service/inputcontrol"
 	"NanoKVM-Server/service/picoclaw"
+	"NanoKVM-Server/service/sequence"
 	"NanoKVM-Server/service/vm/jiggler"
 
 	"github.com/gorilla/websocket"
@@ -98,6 +99,10 @@ func (c *Client) Read() error {
 // handleMessage queues one client message. The input lock is held across it
 // because the hold watch's release queues from a timer goroutine, and the
 // queue and the manual session's lazily built hooks expect one producer.
+//
+// A key press, a click, a scroll or a touch also stops an auto-tap that asked
+// to stop on user input. Pointer movement alone does not: the operator moves
+// the pointer over the video while waiting for the firmware menu.
 func (c *Client) handleMessage(data []byte) {
 	c.inputMutex.Lock()
 	defer c.inputMutex.Unlock()
@@ -116,6 +121,9 @@ func (c *Client) handleMessage(data []byte) {
 			return
 		}
 		held := keyboardReportHeld(report)
+		if held {
+			sequence.NoteUserInput()
+		}
 		c.queueManualReport(c.keyboard, inputcontrol.ManualKeyboard, report, held, true)
 		c.holdWatch().Input(holdKeyboard, held)
 	case MouseEvent:
@@ -132,7 +140,11 @@ func (c *Client) handleMessage(data []byte) {
 			c.lastAbsolute = report
 		}
 		held := report[0] != 0
-		c.queueManualReport(c.mouse, kind, report, held, mouseReportStartsCooldown(report))
+		input := mouseReportStartsCooldown(report)
+		if input {
+			sequence.NoteUserInput()
+		}
+		c.queueManualReport(c.mouse, kind, report, held, input)
 		c.holdWatch().Input(hold, held)
 	case TouchEvent:
 		contacts, err := decodeTouchFrame(data[1:])
@@ -140,6 +152,7 @@ func (c *Client) handleMessage(data []byte) {
 			log.Debugf("invalid touch frame: %s", err)
 			return
 		}
+		sequence.NoteUserInput()
 		c.queueManualTouch(contacts)
 	}
 }

@@ -21,6 +21,7 @@ import (
 	"NanoKVM-Server/service/hid"
 	"NanoKVM-Server/service/ion"
 	"NanoKVM-Server/service/metrics"
+	"NanoKVM-Server/service/sequence"
 	"NanoKVM-Server/service/stream/webrtc"
 	"NanoKVM-Server/service/vm"
 	"NanoKVM-Server/service/vm/jiggler"
@@ -261,6 +262,9 @@ func dispose() {
 	// First, and quick: it waits at most for one key press to be released, so
 	// the jiggler never leaves a key held on the host across a restart.
 	teardownStep("jiggler", jiggler.GetJiggler().Shutdown)
+	// As quick, for the same reason: a macro or an auto-tap stops and lets go
+	// of what it holds.
+	teardownStep("input sequence", sequence.Shutdown)
 	teardownStep("audio capture", webrtc.StopAudioCapture)
 	teardownStep("capture pipeline", func() { common.GetKvmVision().Close() })
 	// Last and quick: it ends a VPN CLI the metrics refresher may be running,

@@ -2,6 +2,7 @@ import { message } from 'antd';
 import type { TFunction } from 'i18next';
 
 import * as api from '@/api/vm.ts';
+import { tapInput } from '@/lib/input-tap.ts';
 
 // The longest press the server carries out. server/service/vm/gpio.go caps a
 // press at this and holds the line no longer, whatever the request asks for.
@@ -17,6 +18,9 @@ export function press(
   setIsLoading: (loading: boolean) => void
 ) {
   setIsLoading(true);
+  // A macro being recorded takes the press as an ATX step, at the time of
+  // the click: the reply comes only after the button is up again.
+  tapInput({ kind: 'atx', button: type, ms: durationMs });
 
   api
     .setGpio(type, durationMs)

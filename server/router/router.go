@@ -123,6 +123,7 @@ func server(r *gin.Engine) {
 	networkRouter(r)
 	allowlistRouter(r)
 	hidRouter(r)
+	sequenceRouter(r)
 	controlRouter(r, control, picoclawService)
 	mcpRouter(r, control, picoclawService)
 	picoclawRouter(r, picoclawService)
