@@ -280,6 +280,11 @@ USB_STRING
     then
         echo "usb: /boot/usb.wakeup is set, and this kernel's f_hid has no wakeup_on_write"
     fi
+    # keep_latest: see S03usbdev.
+    if [ -e functions/hid.GS0/keep_latest ]
+    then
+        echo 1 > functions/hid.GS0/keep_latest
+    fi
     echo 1 > functions/hid.GS0/protocol
     echo 8 > functions/hid.GS0/report_length
     echo -ne \\x05\\x01\\x09\\x06\\xa1\\x01\\x05\\x07\\x19\\xe0\\x29\\xe7\\x15\\x00\\x25\\x01\\x75\\x01\\x95\\x08\\x81\\x02\\x95\\x01\\x75\\x08\\x81\\x03\\x95\\x05\\x75\\x01\\x05\\x08\\x19\\x01\\x29\\x05\\x91\\x02\\x95\\x01\\x75\\x03\\x91\\x03\\x95\\x06\\x75\\x08\\x15\\x00\\x25\\x65\\x05\\x07\\x19\\x00\\x29\\x65\\x81\\x00\\xc0 > functions/hid.GS0/report_desc
@@ -292,6 +297,10 @@ USB_STRING
     then
         echo 1 > functions/hid.GS1/wakeup_on_write
     fi
+    if [ -e functions/hid.GS1/keep_latest ]
+    then
+        echo 1 > functions/hid.GS1/keep_latest
+    fi
     echo 2 > functions/hid.GS1/protocol
     echo 5 > functions/hid.GS1/report_length
     echo -ne \\x5\\x1\\x9\\x2\\xa1\\x1\\x9\\x1\\xa1\\x0\\x5\\x9\\x19\\x1\\x29\\x3\\x15\\x0\\x25\\x1\\x95\\x3\\x75\\x1\\x81\\x2\\x95\\x1\\x75\\x5\\x81\\x3\\x5\\x1\\x9\\x30\\x9\\x31\\x9\\x38\\x15\\x81\\x25\\x7f\\x75\\x8\\x95\\x3\\x81\\x6\\x5\\xc\\xa\\x38\\x2\\x15\\x81\\x25\\x7f\\x75\\x8\\x95\\x1\\x81\\x6\\xc0\\xc0 > functions/hid.GS1/report_desc
@@ -303,6 +312,10 @@ USB_STRING
     if [ -e /boot/usb.wakeup ] && [ -e functions/hid.GS2/wakeup_on_write ]
     then
         echo 1 > functions/hid.GS2/wakeup_on_write
+    fi
+    if [ -e functions/hid.GS2/keep_latest ]
+    then
+        echo 1 > functions/hid.GS2/keep_latest
     fi
     echo 2 > functions/hid.GS2/protocol
     echo 6 > functions/hid.GS2/report_length

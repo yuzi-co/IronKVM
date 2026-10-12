@@ -141,6 +141,17 @@ int kvmv_hevc_sps_size(const uint8_t *nal, size_t len, unsigned int *width,
 		       unsigned int *height);
 
 /*
+ * The colour a VUI describes (H.264 E.1.1, H.265 E.2.1): video_full_range_flag
+ * and the colour_primaries, transfer_characteristics and matrix_coeffs codes.
+ */
+struct kvmv_vui_colour {
+	uint8_t full_range;
+	uint8_t primaries;
+	uint8_t transfer;
+	uint8_t matrix;
+};
+
+/*
  * Low-delay output for H.264 decoders (ironkvm-dist trial 78). The Coda980's
  * SPS carries no VUI, so nothing tells a decoder that pictures come out in
  * decoding order, and a decoder that goes by the level's DPB size (Chrome's
@@ -151,12 +162,31 @@ int kvmv_hevc_sps_size(const uint8_t *nal, size_t len, unsigned int *width,
  * as libwebrtc's SpsVuiRewriter writes it. Returns the new length, 0 when nal
  * has a VUI already or cannot be parsed, or when out is too small.
  *
+ * With colour, that VUI also carries the video signal type (ironkvm-dist#115).
+ *
  * kvmv_h264_au_low_delay does it to every SPS in an Annex-B access unit in
  * place, moving what follows; returns the new length, len when nothing
  * changed or capacity would not hold it.
  */
 size_t kvmv_h264_sps_low_delay(const uint8_t *nal, size_t len, uint8_t *out,
-			       size_t out_size);
-size_t kvmv_h264_au_low_delay(uint8_t *buf, size_t len, size_t capacity);
+			       size_t out_size, const struct kvmv_vui_colour *colour);
+size_t kvmv_h264_au_low_delay(uint8_t *buf, size_t len, size_t capacity,
+			      const struct kvmv_vui_colour *colour);
+
+/*
+ * The colour description of an H.265 SPS (ironkvm-dist#115). The WAVE420L
+ * writes no video signal type, so a decoder picks the matrix itself, and a
+ * pick by picture size (BT.601 for standard definition) is wrong here.
+ * kvmv_hevc_sps_colour writes into out the SPS NAL (header included) with
+ * video_signal_type_present_flag set and colour's range, primaries, transfer
+ * and matrix, giving it a VUI with that alone when it has none. Returns the new
+ * length, 0 when the SPS says a video signal type already, cannot be parsed,
+ * or out is too small. kvmv_hevc_au_colour does it to every SPS in an access
+ * unit, as kvmv_h264_au_low_delay does.
+ */
+size_t kvmv_hevc_sps_colour(const uint8_t *nal, size_t len, uint8_t *out,
+			    size_t out_size, const struct kvmv_vui_colour *colour);
+size_t kvmv_hevc_au_colour(uint8_t *buf, size_t len, size_t capacity,
+			   const struct kvmv_vui_colour *colour);
 
 #endif

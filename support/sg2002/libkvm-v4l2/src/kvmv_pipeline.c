@@ -2199,3 +2199,99 @@ int kvmv_pipe_force_key(struct kvmv_pipe *p)
 		return fail(p, "force keyframe");
 	return 0;
 }
+
+int kvmv_vui_colour_of(const struct v4l2_pix_format *fmt, struct kvmv_vui_colour *colour)
+{
+	uint32_t xfer, enc, quant;
+
+	/* H.264 table E-3 and H.265 table E.3. */
+	switch (fmt->colorspace) {
+	case V4L2_COLORSPACE_REC709:
+	case V4L2_COLORSPACE_SRGB:
+	case V4L2_COLORSPACE_JPEG:
+		colour->primaries = 1;
+		break;
+	case V4L2_COLORSPACE_SMPTE170M:
+		colour->primaries = 6;
+		break;
+	case V4L2_COLORSPACE_470_SYSTEM_M:
+		colour->primaries = 4;
+		break;
+	case V4L2_COLORSPACE_470_SYSTEM_BG:
+		colour->primaries = 5;
+		break;
+	case V4L2_COLORSPACE_SMPTE240M:
+		colour->primaries = 7;
+		break;
+	case V4L2_COLORSPACE_BT2020:
+		colour->primaries = 9;
+		break;
+	case V4L2_COLORSPACE_DCI_P3:
+		colour->primaries = 11;
+		break;
+	default:
+		return -1;
+	}
+
+	/* Table E-4 and E.4. */
+	xfer = fmt->xfer_func ? fmt->xfer_func : V4L2_MAP_XFER_FUNC_DEFAULT(fmt->colorspace);
+	switch (xfer) {
+	case V4L2_XFER_FUNC_709:
+		colour->transfer = 1;
+		break;
+	case V4L2_XFER_FUNC_SRGB:
+		colour->transfer = 13;
+		break;
+	case V4L2_XFER_FUNC_SMPTE240M:
+		colour->transfer = 7;
+		break;
+	case V4L2_XFER_FUNC_NONE:
+		colour->transfer = 8;
+		break;
+	case V4L2_XFER_FUNC_SMPTE2084:
+		colour->transfer = 16;
+		break;
+	default:
+		colour->transfer = 2; /* unspecified */
+		break;
+	}
+
+	/* Table E-5 and E.5. */
+	enc = fmt->ycbcr_enc ? fmt->ycbcr_enc : V4L2_MAP_YCBCR_ENC_DEFAULT(fmt->colorspace);
+	switch (enc) {
+	case V4L2_YCBCR_ENC_709:
+	case V4L2_YCBCR_ENC_XV709:
+		colour->matrix = 1;
+		break;
+	case V4L2_YCBCR_ENC_601:
+	case V4L2_YCBCR_ENC_XV601:
+		colour->matrix = 6;
+		break;
+	case V4L2_YCBCR_ENC_SMPTE240M:
+		colour->matrix = 7;
+		break;
+	case V4L2_YCBCR_ENC_BT2020:
+		colour->matrix = 9;
+		break;
+	case V4L2_YCBCR_ENC_BT2020_CONST_LUM:
+		colour->matrix = 10;
+		break;
+	default:
+		colour->matrix = 2; /* unspecified */
+		break;
+	}
+
+	quant = fmt->quantization ? fmt->quantization :
+		V4L2_MAP_QUANTIZATION_DEFAULT(0, fmt->colorspace, enc);
+	colour->full_range = quant == V4L2_QUANTIZATION_FULL_RANGE;
+	return 0;
+}
+
+int kvmv_pipe_colour(const struct kvmv_pipe *p, struct kvmv_vui_colour *colour)
+{
+	const struct v4l2_pix_format *fmt = &p->cap_fmt;
+
+	if (!p->direct && p->vpss_out_fmt.colorspace)
+		fmt = &p->vpss_out_fmt;
+	return kvmv_vui_colour_of(fmt, colour);
+}

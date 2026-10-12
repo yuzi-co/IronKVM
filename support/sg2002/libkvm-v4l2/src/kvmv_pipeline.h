@@ -394,4 +394,14 @@ int kvmv_pipe_set_gop(struct kvmv_pipe *pipe, unsigned int gop);
 int kvmv_pipe_set_fps(struct kvmv_pipe *pipe, unsigned int fps);
 int kvmv_pipe_force_key(struct kvmv_pipe *pipe);
 
+/*
+ * The colour of the pictures the encoder reads, as a VUI states it
+ * (ironkvm-dist#115): the scaler's output format, or the capture's when the
+ * encoder reads the capture buffers. kvmv_vui_colour_of maps one V4L2 format,
+ * its defaults filled in from the colorspace as V4L2 defines them. Each returns
+ * 0, or -1 for a colorspace with no H.26x code (RAW, or none given).
+ */
+int kvmv_vui_colour_of(const struct v4l2_pix_format *fmt, struct kvmv_vui_colour *colour);
+int kvmv_pipe_colour(const struct kvmv_pipe *pipe, struct kvmv_vui_colour *colour);
+
 #endif

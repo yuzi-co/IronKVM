@@ -1079,8 +1079,8 @@ static uint32_t ahead_delay_us(void)
 
 /*
  * KVMV_H264_LOW_DELAY_VUI: 1 (the default) gives every H.264 SPS a VUI saying
- * no picture is reordered (kvmv_h264_au_low_delay), 0 passes the Coda980's SPS
- * through as it is, without a VUI.
+ * no picture is reordered (kvmv_h264_au_low_delay) and giving the colour
+ * (stream_colour), 0 passes the Coda980's SPS through as it is, without a VUI.
  */
 static int low_delay_vui(void)
 {
@@ -1092,6 +1092,35 @@ static int low_delay_vui(void)
 					  "the SPS goes out as the encoder made it");
 	}
 	return on;
+}
+
+/*
+ * The colour description every H.264 and H.265 SPS carries (ironkvm-dist#115):
+ * that of the pictures the encoder reads, the capture's limited-range BT.709
+ * on this board. Without it a decoder assumes limited range and guesses the
+ * matrix, commonly by picture size (BT.601 for standard definition). NULL when the
+ * format names no colorspace, or with KVMV_VUI_COLOUR=0; the SPS then says
+ * nothing, as before. Logged once per change.
+ */
+static const struct kvmv_vui_colour *stream_colour(struct kvmv_vui_colour *colour)
+{
+	static int on = -1;
+	static uint32_t logged;
+	uint32_t key;
+
+	if (on < 0)
+		on = env_uint("KVMV_VUI_COLOUR", 1) != 0;
+	if (!on || kvmv_pipe_colour(&pipe_state, colour))
+		return NULL;
+	key = 1U << 31 | (uint32_t)colour->full_range << 24 |
+	      (uint32_t)colour->primaries << 16 | (uint32_t)colour->transfer << 8 |
+	      colour->matrix;
+	if (__atomic_exchange_n(&logged, key, __ATOMIC_RELAXED) != key)
+		log_msg("%s: the SPS says %s range, colour primaries %u, transfer %u, matrix %u",
+			pipe_state.codec == KVMV_CODEC_KIND_HEVC ? "H.265" : "H.264",
+			colour->full_range ? "full" : "limited", colour->primaries,
+			colour->transfer, colour->matrix);
+	return colour;
 }
 
 /* The least time between the capture of two pictures at the frame rate asked
@@ -1248,11 +1277,20 @@ static int read_video_locked(unsigned int width, unsigned int height,
 			memmove(slot->data + prefix_len, unit, unit_size);
 		slot->size = (uint32_t)(prefix_len + unit_size);
 		/* Every SPS says pictures come out in decoding order, so no
-		 * decoder waits for a DPB's worth of them (kvmv_annexb.h). */
-		if (pipe_state.codec == KVMV_CODEC_KIND_H264 && (info.sps || prefix_len) &&
-		    low_delay_vui())
-			slot->size = (uint32_t)kvmv_h264_au_low_delay(slot->data, slot->size,
-								      slot->capacity);
+		 * decoder waits for a DPB's worth of them, and says the colour
+		 * of the pictures, so none guesses it (kvmv_annexb.h). */
+		if (info.sps || prefix_len) {
+			struct kvmv_vui_colour colour;
+
+			if (pipe_state.codec == KVMV_CODEC_KIND_H264 && low_delay_vui())
+				slot->size = (uint32_t)kvmv_h264_au_low_delay(slot->data, slot->size,
+									      slot->capacity,
+									      stream_colour(&colour));
+			else if (pipe_state.codec == KVMV_CODEC_KIND_HEVC)
+				slot->size = (uint32_t)kvmv_hevc_au_colour(slot->data, slot->size,
+									   slot->capacity,
+									   stream_colour(&colour));
+		}
 		slot->type = (uint8_t)type;
 		need_key = 0;
 		set_source_locked(1);

@@ -360,7 +360,7 @@ static void test_low_delay_vui(void)
 	static const uint8_t idr[] = { 0x65, 0x88, 0x84, 0x00, 0x33, 0xff };
 	size_t n, len, grown;
 
-	n = kvmv_h264_sps_low_delay(coda_sps, sizeof(coda_sps), out, sizeof(out));
+	n = kvmv_h264_sps_low_delay(coda_sps, sizeof(coda_sps), out, sizeof(out), NULL);
 	CHECK(n > sizeof(coda_sps));
 	CHECK_EQ(out[0], 0x67);
 	/* The same picture, and now a VUI: a second pass leaves it alone. */
@@ -368,7 +368,7 @@ static void test_low_delay_vui(void)
 	CHECK_EQ(kvmv_h264_sps_size(out, n, &w2, &h2), 0);
 	CHECK_EQ(w, w2);
 	CHECK_EQ(h, h2);
-	CHECK_EQ(kvmv_h264_sps_low_delay(out, n, again, sizeof(again)), 0);
+	CHECK_EQ(kvmv_h264_sps_low_delay(out, n, again, sizeof(again), NULL), 0);
 	/* No 00 00 0x (x <= 3) left unescaped. */
 	{
 		size_t i;
@@ -377,8 +377,8 @@ static void test_low_delay_vui(void)
 			CHECK(!(out[i] == 0 && out[i + 1] == 0 && out[i + 2] <= 3 && out[i + 2] != 3));
 	}
 	/* Not an SPS; too small an output. */
-	CHECK_EQ(kvmv_h264_sps_low_delay(pps_nal, sizeof(pps_nal), out, sizeof(out)), 0);
-	CHECK_EQ(kvmv_h264_sps_low_delay(coda_sps, sizeof(coda_sps), out, 8), 0);
+	CHECK_EQ(kvmv_h264_sps_low_delay(pps_nal, sizeof(pps_nal), out, sizeof(out), NULL), 0);
+	CHECK_EQ(kvmv_h264_sps_low_delay(coda_sps, sizeof(coda_sps), out, 8, NULL), 0);
 
 	/* An access unit: SPS, PPS, IDR. The SPS grows, the rest follows it. */
 	len = 0;
@@ -388,18 +388,18 @@ static void test_low_delay_vui(void)
 	memcpy(au + len, pps_nal, sizeof(pps_nal)), len += sizeof(pps_nal);
 	memcpy(au + len, "\0\0\1", 3), len += 3;
 	memcpy(au + len, idr, sizeof(idr)), len += sizeof(idr);
-	grown = kvmv_h264_au_low_delay(au, len, sizeof(au));
+	grown = kvmv_h264_au_low_delay(au, len, sizeof(au), NULL);
 	CHECK_EQ(grown, len + n - sizeof(coda_sps));
 	CHECK(memcmp(au + 4, out, n) == 0);
 	CHECK(memcmp(au + 4 + n + 4, pps_nal, sizeof(pps_nal)) == 0);
 	CHECK(memcmp(au + grown - sizeof(idr), idr, sizeof(idr)) == 0);
 	/* Done once only. */
-	CHECK_EQ(kvmv_h264_au_low_delay(au, grown, sizeof(au)), grown);
+	CHECK_EQ(kvmv_h264_au_low_delay(au, grown, sizeof(au), NULL), grown);
 	/* No room: unchanged. */
 	len = 0;
 	memcpy(au + len, "\0\0\0\1", 4), len += 4;
 	memcpy(au + len, coda_sps, sizeof(coda_sps)), len += sizeof(coda_sps);
-	CHECK_EQ(kvmv_h264_au_low_delay(au, len, len + 1), len);
+	CHECK_EQ(kvmv_h264_au_low_delay(au, len, len + 1, NULL), len);
 	CHECK(memcmp(au + 4, coda_sps, sizeof(coda_sps)) == 0);
 }
 
@@ -420,6 +420,37 @@ static const uint8_t hevc_pps[] = { 0x44, 0x01, 0xe0, 0x72, 0xb0, 0x26, 0x40 };
 static const uint8_t hevc_idr[] = { 0x26, 0x01, 0xac, 0x19, 0x60, 0xe0 }; /* type 19 */
 static const uint8_t hevc_cra[] = { 0x2a, 0x01, 0xac, 0x19, 0x60, 0xe0 }; /* type 21 */
 static const uint8_t hevc_trail[] = { 0x02, 0x01, 0xd0, 0x08, 0x31, 0x22 }; /* type 1 */
+
+/*
+ * The SPS rewrites with limited-range BT.709 (ironkvm-dist#115), checked with
+ * an independent parser: coda_sps with the low-delay VUI and the video signal
+ * type (format 5, primaries, transfer and matrix 1), and hevc_sps with a VUI
+ * that has the video signal type alone.
+ */
+static const uint8_t h264_sps_colour[] = {
+	0x67, 0x42, 0x40, 0x28, 0xa6, 0x80, 0x78, 0x02, 0x27, 0xe5, 0x9a, 0x80,
+	0x80, 0x80, 0x83, 0x68, 0x22, 0x11, 0xa8,
+};
+static const uint8_t hevc_sps_colour[] = {
+	0x42, 0x01, 0x01, 0x01, 0x60, 0x00, 0x00, 0x03, 0x00, 0x00, 0x03, 0x00,
+	0x00, 0x03, 0x00, 0x00, 0x03, 0x00, 0x7b, 0xa0, 0x03, 0xc0, 0x80, 0x10,
+	0xe5, 0x96, 0xb9, 0x24, 0xc1, 0xae, 0x59, 0xcd, 0x40, 0x40, 0x40, 0x40,
+	0x20,
+};
+/* hevc_sps with a VUI that has timing only (1/60 s), built for this test, and
+ * the same with the video signal type put in. */
+static const uint8_t hevc_sps_timing[] = {
+	0x42, 0x01, 0x01, 0x01, 0x60, 0x00, 0x00, 0x03, 0x00, 0x00, 0x03, 0x00,
+	0x00, 0x03, 0x00, 0x00, 0x03, 0x00, 0x96, 0xa0, 0x03, 0xc0, 0x80, 0x10,
+	0xe5, 0x96, 0xb9, 0x24, 0xc1, 0xae, 0x59, 0xc0, 0x20, 0x00, 0x00, 0x03,
+	0x00, 0x20, 0x00, 0x00, 0x07, 0x81,
+};
+static const uint8_t hevc_sps_timing_colour[] = {
+	0x42, 0x01, 0x01, 0x01, 0x60, 0x00, 0x00, 0x03, 0x00, 0x00, 0x03, 0x00,
+	0x00, 0x03, 0x00, 0x00, 0x03, 0x00, 0x96, 0xa0, 0x03, 0xc0, 0x80, 0x10,
+	0xe5, 0x96, 0xb9, 0x24, 0xc1, 0xae, 0x59, 0xcd, 0x40, 0x40, 0x40, 0x41,
+	0x00, 0x00, 0x03, 0x00, 0x01, 0x00, 0x00, 0x03, 0x00, 0x3c, 0x08,
+};
 
 static void test_hevc(void)
 {
@@ -1875,6 +1906,119 @@ static void test_hwjpeg(void)
 	kvmv_ioctl_hook = saved;
 }
 
+/* What the SPS rewrites write (ironkvm-dist#115), printed for checking with an
+ * independent parser when KVMV_TEST_DUMP is set. */
+static void dump_hex(const char *what, const uint8_t *p, size_t n)
+{
+	size_t i;
+
+	if (getenv("KVMV_TEST_DUMP") == NULL)
+		return;
+	printf("%s ", what);
+	for (i = 0; i < n; i++)
+		printf("%02x", p[i]);
+	printf("\n");
+}
+
+static void test_vui_colour(void)
+{
+	static const struct kvmv_vui_colour bt709 = { 0, 1, 1, 1 };
+	struct kvmv_vui_colour got;
+	struct v4l2_pix_format fmt;
+	uint8_t out[96], again[96], au[256];
+	unsigned int w = 0, h = 0;
+	size_t n, len, grown;
+
+	/* The capture's format maps to limited-range BT.709. */
+	memset(&fmt, 0, sizeof(fmt));
+	fmt.colorspace = V4L2_COLORSPACE_REC709;
+	fmt.ycbcr_enc = V4L2_YCBCR_ENC_709;
+	fmt.quantization = V4L2_QUANTIZATION_LIM_RANGE;
+	fmt.xfer_func = V4L2_XFER_FUNC_709;
+	CHECK_EQ(kvmv_vui_colour_of(&fmt, &got), 0);
+	CHECK(memcmp(&got, &bt709, sizeof(got)) == 0);
+	/* The defaults come from the colorspace: REC709 alone is the same. */
+	fmt.ycbcr_enc = 0;
+	fmt.quantization = 0;
+	fmt.xfer_func = 0;
+	CHECK_EQ(kvmv_vui_colour_of(&fmt, &got), 0);
+	CHECK(memcmp(&got, &bt709, sizeof(got)) == 0);
+	/* JPEG: sRGB primaries and transfer, BT.601 matrix, full range. */
+	fmt.colorspace = V4L2_COLORSPACE_JPEG;
+	CHECK_EQ(kvmv_vui_colour_of(&fmt, &got), 0);
+	CHECK_EQ(got.full_range, 1);
+	CHECK_EQ(got.primaries, 1);
+	CHECK_EQ(got.transfer, 13);
+	CHECK_EQ(got.matrix, 6);
+	/* SMPTE 170M, limited. */
+	fmt.colorspace = V4L2_COLORSPACE_SMPTE170M;
+	CHECK_EQ(kvmv_vui_colour_of(&fmt, &got), 0);
+	CHECK_EQ(got.full_range, 0);
+	CHECK_EQ(got.primaries, 6);
+	CHECK_EQ(got.transfer, 1);
+	CHECK_EQ(got.matrix, 6);
+	/* No colorspace, or RAW: nothing to say. */
+	fmt.colorspace = 0;
+	CHECK_EQ(kvmv_vui_colour_of(&fmt, &got), -1);
+	fmt.colorspace = V4L2_COLORSPACE_RAW;
+	CHECK_EQ(kvmv_vui_colour_of(&fmt, &got), -1);
+
+	/* H.264: the low-delay VUI with the colour in it. */
+	n = kvmv_h264_sps_low_delay(coda_sps, sizeof(coda_sps), out, sizeof(out), &bt709);
+	CHECK(n > sizeof(coda_sps));
+	dump_hex("h264", out, n);
+	CHECK_EQ(n, sizeof(h264_sps_colour));
+	CHECK(memcmp(out, h264_sps_colour, sizeof(h264_sps_colour)) == 0);
+	CHECK_EQ(kvmv_h264_sps_size(out, n, &w, &h), 0);
+	CHECK_EQ(w, 1920);
+	CHECK_EQ(h, 1080);
+	CHECK_EQ(kvmv_h264_sps_low_delay(out, n, again, sizeof(again), &bt709), 0);
+
+	/* H.265 without a VUI (trial 13's SPS): one with the signal type alone. */
+	n = kvmv_hevc_sps_colour(hevc_sps, sizeof(hevc_sps), out, sizeof(out), &bt709);
+	CHECK(n > sizeof(hevc_sps));
+	dump_hex("h265", out, n);
+	CHECK_EQ(n, sizeof(hevc_sps_colour));
+	CHECK(memcmp(out, hevc_sps_colour, sizeof(hevc_sps_colour)) == 0);
+	CHECK_EQ(kvmv_hevc_sps_size(out, n, &w, &h), 0);
+	CHECK_EQ(w, 1920);
+	CHECK_EQ(h, 1080);
+	/* Said already: left alone. */
+	CHECK_EQ(kvmv_hevc_sps_colour(out, n, again, sizeof(again), &bt709), 0);
+
+	/* H.265 with a VUI that has timing only: the signal type goes in. */
+	n = kvmv_hevc_sps_colour(hevc_sps_timing, sizeof(hevc_sps_timing), out, sizeof(out),
+				 &bt709);
+	CHECK(n > sizeof(hevc_sps_timing));
+	dump_hex("h265t", out, n);
+	CHECK_EQ(n, sizeof(hevc_sps_timing_colour));
+	CHECK(memcmp(out, hevc_sps_timing_colour, sizeof(hevc_sps_timing_colour)) == 0);
+	CHECK_EQ(kvmv_hevc_sps_colour(out, n, again, sizeof(again), &bt709), 0);
+
+	/* Not an SPS, no colour, too small an output. */
+	CHECK_EQ(kvmv_hevc_sps_colour(hevc_pps, sizeof(hevc_pps), out, sizeof(out), &bt709), 0);
+	CHECK_EQ(kvmv_hevc_sps_colour(hevc_sps, sizeof(hevc_sps), out, sizeof(out), NULL), 0);
+	CHECK_EQ(kvmv_hevc_sps_colour(hevc_sps, sizeof(hevc_sps), out, 8, &bt709), 0);
+
+	/* An H.265 keyframe: VPS, SPS, PPS, IDR. The SPS grows, the rest follows. */
+	n = kvmv_hevc_sps_colour(hevc_sps, sizeof(hevc_sps), out, sizeof(out), &bt709);
+	len = 0;
+	memcpy(au + len, "\0\0\0\1", 4), len += 4;
+	memcpy(au + len, hevc_vps, sizeof(hevc_vps)), len += sizeof(hevc_vps);
+	memcpy(au + len, "\0\0\0\1", 4), len += 4;
+	memcpy(au + len, hevc_sps, sizeof(hevc_sps)), len += sizeof(hevc_sps);
+	memcpy(au + len, "\0\0\0\1", 4), len += 4;
+	memcpy(au + len, hevc_pps, sizeof(hevc_pps)), len += sizeof(hevc_pps);
+	memcpy(au + len, "\0\0\1", 3), len += 3;
+	memcpy(au + len, hevc_idr, sizeof(hevc_idr)), len += sizeof(hevc_idr);
+	grown = kvmv_hevc_au_colour(au, len, sizeof(au), &bt709);
+	CHECK_EQ(grown, len + n - sizeof(hevc_sps));
+	CHECK(memcmp(au + 8 + sizeof(hevc_vps), out, n) == 0);
+	CHECK(memcmp(au + grown - sizeof(hevc_idr), hevc_idr, sizeof(hevc_idr)) == 0);
+	CHECK_EQ(kvmv_hevc_au_colour(au, grown, sizeof(au), &bt709), grown);
+	CHECK_EQ(kvmv_hevc_au_colour(au, grown, sizeof(au), NULL), grown);
+}
+
 int main(void)
 {
 	test_split();
@@ -1883,6 +2027,7 @@ int main(void)
 	test_sps();
 	test_low_delay_vui();
 	test_hevc();
+	test_vui_colour();
 	test_plan();
 	test_plan_keep_shape();
 	test_source_fits();
