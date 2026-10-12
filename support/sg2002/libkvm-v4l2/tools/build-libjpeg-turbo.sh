@@ -9,6 +9,8 @@
 #   CFLAGS_ARCH extra flags, e.g. the -mcpu/-march flags the library uses
 #   SYSTEM      cmake CMAKE_SYSTEM_PROCESSOR for a cross build (e.g. riscv64);
 #               empty for a host build
+#   TURBO_BUILD the build string libjpeg-turbo embeds in the library (default
+#               20261011, see below)
 #   TURBO_TARBALL  where the source tarball is kept (default: beside OUT_DIR);
 #               downloaded when missing, checked against SHA256 either way
 #
@@ -32,6 +34,13 @@ out=$1
 cc=${CC:-cc}
 flags=${CFLAGS_ARCH:-}
 system=${SYSTEM:-}
+# libjpeg-turbo's CMake puts the date of the build into the library, as "libjpeg-turbo
+# version 3.1.2 (build YYYYMMDD)", unless BUILD is given. Left alone, the same
+# commit builds to a different libkvm.so every day (two bytes of the date) and
+# the sha256 pinned in ironkvm-dist stops matching the next morning. The default
+# is the date of the build the pinned file came from (2026-10-11), so the
+# library that already ships is the one this builds.
+build=${TURBO_BUILD:-20261011}
 
 if ! command -v cmake >/dev/null 2>&1; then
 	echo "build-libjpeg-turbo.sh: cmake not found (apt-get install -y cmake)" >&2
@@ -57,7 +66,7 @@ set -- -S "$out/src" -B "$out/cmake" \
 	-DCMAKE_C_FLAGS_RELEASE="-O2 -DNDEBUG $flags -fvisibility=hidden" \
 	-DCMAKE_POSITION_INDEPENDENT_CODE=ON \
 	-DENABLE_SHARED=0 -DENABLE_STATIC=1 -DWITH_TURBOJPEG=1 \
-	-DWITH_SIMD=0 -DWITH_TOOLS=0 -DWITH_TESTS=0 \
+	-DWITH_SIMD=0 -DWITH_TOOLS=0 -DWITH_TESTS=0 -DBUILD="$build" \
 	-DCMAKE_INSTALL_PREFIX="$out/prefix" -DCMAKE_INSTALL_LIBDIR=lib
 if [ -n "$system" ]; then
 	set -- "$@" -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR="$system"
