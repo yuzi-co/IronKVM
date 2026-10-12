@@ -5,7 +5,6 @@ import clsx from 'clsx';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { GripVerticalIcon } from 'lucide-react';
 import Draggable, { DraggableData, DraggableEvent } from 'react-draggable';
-import { useMediaQuery } from 'react-responsive';
 
 import { getVirtualDevice } from '@/api/virtual-device.ts';
 import { audioEntries, unknownRoomMicStatus } from '@/lib/room-mic.ts';
@@ -19,6 +18,7 @@ import {
   menuDisabledItemsAtom,
   virtualDiskEnabledAtom
 } from '@/jotai/settings.ts';
+import { useMediaQuery } from '@/hooks/useMediaQuery.ts';
 import { useMenuBounds } from '@/hooks/useMenuBounds.ts';
 import { useMenuVisibility } from '@/hooks/useMenuVisibility.ts';
 import { MenuBoundary } from '@/components/error-boundary';

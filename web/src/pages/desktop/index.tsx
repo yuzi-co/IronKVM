@@ -4,7 +4,6 @@ import { Splitter } from 'antd';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { LoaderCircleIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useMediaQuery } from 'react-responsive';
 
 import { getInputRegion, getScreen, setControlRegionMode } from '@/api/vm.ts';
 import { ControlRegionConfig, InputRegion, ScreenSettings } from '@/types';
@@ -26,6 +25,7 @@ import {
   videoModeAtom,
   viewOnlyAtom
 } from '@/jotai/screen.ts';
+import { useMediaQuery } from '@/hooks/useMediaQuery.ts';
 import { OverlayBoundary, PanelBoundary } from '@/components/error-boundary';
 import { Head } from '@/components/head.tsx';
 

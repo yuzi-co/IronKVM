@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -224,5 +225,83 @@ func TestCompressedCopyIsNotServedDirectly(t *testing.T) {
 
 	if got := w.Header().Get("Content-Encoding"); got != "gzip" {
 		t.Fatalf("expected an explicit encoding on a .gz request, got %q", got)
+	}
+}
+
+func TestGzipOnlyAssetIsInflatedForAClientWithoutGzip(t *testing.T) {
+	// The build keeps only the .gz of most files. A client that sends no
+	// Accept-Encoding must still get the script.
+	dir, _ := webRootWithGzip(t, "assets/app.js", scriptBody)
+	if err := os.Remove(filepath.Join(dir, "assets", "app.js")); err != nil {
+		t.Fatalf("failed to remove the plain file: %s", err)
+	}
+	r := newTestEngine(t, dir)
+
+	for _, encoding := range []string{"", "gzip;q=0", "identity"} {
+		w := getWithEncoding(t, r, "/assets/app.js", encoding)
+
+		if w.Code != http.StatusOK {
+			t.Fatalf("Accept-Encoding %q: status = %d, want 200", encoding, w.Code)
+		}
+		if w.Body.String() != scriptBody {
+			t.Fatalf("Accept-Encoding %q: expected the inflated file, got %q", encoding, w.Body.String())
+		}
+		if got := w.Header().Get("Content-Encoding"); got != "" {
+			t.Fatalf("Accept-Encoding %q: expected no Content-Encoding, got %q", encoding, got)
+		}
+		if got := w.Header().Get("Content-Length"); got != strconv.Itoa(len(scriptBody)) {
+			t.Fatalf("Accept-Encoding %q: Content-Length = %q, want %d", encoding, got, len(scriptBody))
+		}
+		if got := w.Header().Get("Content-Type"); !strings.Contains(got, "javascript") {
+			t.Fatalf("Accept-Encoding %q: Content-Type = %q, want a script type", encoding, got)
+		}
+	}
+}
+
+func TestGzipOnlyAssetIsStillServedCompressedToAClientWithGzip(t *testing.T) {
+	dir, compressed := webRootWithGzip(t, "assets/app.js", scriptBody)
+	if err := os.Remove(filepath.Join(dir, "assets", "app.js")); err != nil {
+		t.Fatalf("failed to remove the plain file: %s", err)
+	}
+	r := newTestEngine(t, dir)
+
+	w := getWithEncoding(t, r, "/assets/app.js", "gzip")
+
+	if got := w.Header().Get("Content-Encoding"); got != "gzip" {
+		t.Fatalf("Content-Encoding = %q, want gzip", got)
+	}
+	if !bytes.Equal(w.Body.Bytes(), compressed) {
+		t.Fatal("expected the stored .gz bytes")
+	}
+}
+
+func TestGzipOnlyAssetAnswersHeadWithoutABody(t *testing.T) {
+	dir, _ := webRootWithGzip(t, "assets/app.js", scriptBody)
+	if err := os.Remove(filepath.Join(dir, "assets", "app.js")); err != nil {
+		t.Fatalf("failed to remove the plain file: %s", err)
+	}
+	r := newTestEngine(t, dir)
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest(http.MethodHead, "/assets/app.js", nil))
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200", w.Code)
+	}
+	if w.Body.Len() != 0 {
+		t.Fatalf("a HEAD answer carried %d body bytes", w.Body.Len())
+	}
+	if got := w.Header().Get("Content-Length"); got != strconv.Itoa(len(scriptBody)) {
+		t.Fatalf("Content-Length = %q, want %d", got, len(scriptBody))
+	}
+}
+
+func TestMissingFileWithoutACompressedCopyIsStillNotFound(t *testing.T) {
+	r := newTestEngine(t, t.TempDir())
+
+	w := getWithEncoding(t, r, "/assets/none.js", "")
+
+	if w.Code == http.StatusOK {
+		t.Fatalf("status = %d for a file that does not exist", w.Code)
 	}
 }

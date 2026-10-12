@@ -12,12 +12,12 @@ import '@/assets/styles/keyboard.css';
 
 import { Segmented, Select } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { useMediaQuery } from 'react-responsive';
 
 import { getKeycode, getModifierBit } from '@/lib/keymap.ts';
 import * as storage from '@/lib/localstorage.ts';
 import { client, MessageEvent } from '@/lib/websocket.ts';
 import { isKeyboardOpenAtom } from '@/jotai/keyboard.ts';
+import { useMediaQuery } from '@/hooks/useMediaQuery.ts';
 
 import {
   compactDisplay,

@@ -98,7 +98,7 @@ func staticHandler(webPath string) gin.HandlerFunc {
 		c.Header("Vary", "Accept-Encoding")
 		c.Header("Cache-Control", cacheControlFor(c.Request.URL.Path))
 
-		if servePrecompressed(c, webPath) {
+		if servePrecompressed(c, webPath) || serveDecompressed(c, webPath) {
 			return
 		}
 
