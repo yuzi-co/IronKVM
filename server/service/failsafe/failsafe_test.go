@@ -41,7 +41,7 @@ maix multi-media driver destroyed.
 ISP Vipipe(0) Free pa(0x8bef4000) va(0x0x3fcd55f000)
 `
 
-const goPanic =`panic: runtime error: index out of range [3] with length 3
+const goPanic = `panic: runtime error: index out of range [3] with length 3
 
 goroutine 47 [running]:
 NanoKVM-Server/service/hid.(*Hid).Write(...)
