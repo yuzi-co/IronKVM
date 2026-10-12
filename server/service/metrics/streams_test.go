@@ -21,6 +21,8 @@ func TestStreamsWritesEveryFamily(t *testing.T) {
 		{path: "direct", read: func() uint64 { return 500 }},
 	})
 	setVar(t, &suppressedFrames, func() uint64 { return 7 })
+	setVar(t, &webrtcNacks, func() (uint64, uint64, uint64) { return 40, 3, 1 })
+	setVar(t, &webrtcDropped, func() uint64 { return 12 })
 
 	want := `# HELP ironkvm_stream_viewers Clients watching the HDMI stream, by delivery path.
 # TYPE ironkvm_stream_viewers gauge
@@ -37,6 +39,14 @@ ironkvm_stream_sent_bytes_total{path="direct"} 500
 # HELP ironkvm_stream_suppressed_frames_total MJPEG frames kept off the wire because they matched the previous frame.
 # TYPE ironkvm_stream_suppressed_frames_total counter
 ironkvm_stream_suppressed_frames_total 7
+# HELP ironkvm_webrtc_nack_packets_total Video packets WebRTC viewers asked for again, by outcome: resent, not_sent (a frame the viewer's queue gave up), expired (older than the responder keeps).
+# TYPE ironkvm_webrtc_nack_packets_total counter
+ironkvm_webrtc_nack_packets_total{result="resent"} 40
+ironkvm_webrtc_nack_packets_total{result="not_sent"} 3
+ironkvm_webrtc_nack_packets_total{result="expired"} 1
+# HELP ironkvm_webrtc_dropped_frames_total Video frames WebRTC viewers' queues gave up because the viewer was behind.
+# TYPE ironkvm_webrtc_dropped_frames_total counter
+ironkvm_webrtc_dropped_frames_total 12
 `
 	assertText(t, render(t, collectStreams), want)
 }
