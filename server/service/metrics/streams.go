@@ -4,6 +4,7 @@ import (
 	"NanoKVM-Server/service/stream"
 	"NanoKVM-Server/service/stream/direct"
 	"NanoKVM-Server/service/stream/mjpeg"
+	"NanoKVM-Server/service/stream/webrtc"
 	"NanoKVM-Server/service/vm"
 )
 
@@ -35,6 +36,9 @@ var (
 	}
 
 	suppressedFrames = mjpeg.Suppressed
+
+	webrtcNacks   = webrtc.NackCounts
+	webrtcDropped = webrtc.DroppedFrames
 )
 
 const (
@@ -42,6 +46,8 @@ const (
 	helpFPS        = "Frames per second the capture loops delivered, averaged over three seconds."
 	helpSentBytes  = "Video bytes written to viewers, by delivery path. WebRTC is not counted."
 	helpSuppressed = "MJPEG frames kept off the wire because they matched the previous frame."
+	helpNacks      = "Video packets WebRTC viewers asked for again, by outcome: resent, not_sent (a frame the viewer's queue gave up), expired (older than the responder keeps)."
+	helpDropped    = "Video frames WebRTC viewers' queues gave up because the viewer was behind."
 )
 
 func collectStreams(w *Writer) {
@@ -57,4 +63,10 @@ func collectStreams(w *Writer) {
 	}
 
 	w.Counter("ironkvm_stream_suppressed_frames_total", helpSuppressed, float64(suppressedFrames()))
+
+	resent, notSent, expired := webrtcNacks()
+	w.Counter("ironkvm_webrtc_nack_packets_total", helpNacks, float64(resent), L("result", "resent"))
+	w.Counter("ironkvm_webrtc_nack_packets_total", helpNacks, float64(notSent), L("result", "not_sent"))
+	w.Counter("ironkvm_webrtc_nack_packets_total", helpNacks, float64(expired), L("result", "expired"))
+	w.Counter("ironkvm_webrtc_dropped_frames_total", helpDropped, float64(webrtcDropped()))
 }

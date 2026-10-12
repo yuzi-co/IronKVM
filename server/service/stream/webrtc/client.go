@@ -216,6 +216,7 @@ func (c *Client) stop() {
 	<-c.audioDone
 
 	if dropped := c.queue.Dropped(); dropped > 0 {
+		closedDropped.Add(dropped)
 		log.Debugf("video client dropped %d frames in %d resyncs", dropped, c.queue.Resyncs())
 	}
 
@@ -438,9 +439,15 @@ func rtcpLoss(packets []rtcp.Packet, view sentLog) (loss bool, picture bool) {
 				for _, seq := range pair.PacketList() {
 					age := last - seq
 					if age < sentRingSize && !view.wasSent(seq) {
+						nackNotSent.Add(1)
 						continue
 					}
 					loss = true
+					if age >= nackResponderSize {
+						nackExpired.Add(1)
+					} else {
+						nackResent.Add(1)
+					}
 					superseded := keyOK && int16(seq-key) < 0
 					if age >= nackResponderSize && !superseded {
 						picture = true

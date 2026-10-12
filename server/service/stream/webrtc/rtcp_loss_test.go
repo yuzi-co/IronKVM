@@ -85,3 +85,19 @@ func TestTheTrackRemembersWhatItSent(t *testing.T) {
 		t.Fatal("the track misremembers what it sent")
 	}
 }
+
+func TestRTCPLossCountsEachNackedPacketByOutcome(t *testing.T) {
+	// 1000 sent last, 995 to 997 given up: 999 is resent, 996 was never sent,
+	// 700 is older than the responder keeps.
+	view := fakeSent{last: 1000, sent: true, key: 600, keySent: true, gaveUp: [2]uint16{995, 997}}
+	nacks := &rtcp.TransportLayerNack{Nacks: []rtcp.NackPair{{PacketID: 999}, {PacketID: 996}, {PacketID: 700}}}
+
+	resent0, notSent0, expired0 := NackCounts()
+	rtcpLoss([]rtcp.Packet{nacks}, view)
+	resent, notSent, expired := NackCounts()
+
+	if resent-resent0 != 1 || notSent-notSent0 != 1 || expired-expired0 != 1 {
+		t.Fatalf("resent +%d, not sent +%d, expired +%d; want +1 each",
+			resent-resent0, notSent-notSent0, expired-expired0)
+	}
+}
