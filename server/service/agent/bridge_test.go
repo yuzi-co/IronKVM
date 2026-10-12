@@ -248,6 +248,7 @@ func TestBridgePassesTheAgentsCloseCode(t *testing.T) {
 func TestBridgePublishesServerEvents(t *testing.T) {
 	h := newHarness(t)
 	conn, _ := h.dial(t, "s1")
+	waitFor(t, "the session to be active", func() bool { return h.bridge.IsActive("s1") })
 
 	if err := h.bridge.Publish("s1", agent.Event{Type: agent.EventObservation, MessageID: "o1", ImageBase64: "abc", MimeType: "image/jpeg"}); err != nil {
 		t.Fatal(err)
