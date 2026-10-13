@@ -104,3 +104,15 @@ body {
     opacity: 1;
   }
 }
+
+/* antd's reset gives every .ant-alert `margin: 0`. Its styles are unlayered, so
+ * they beat the layered Tailwind utilities, and an Alert dropped into a
+ * `space-y-*` stack lost the margin that stack puts after each child: the gap
+ * above it was kept (that margin belongs to the previous sibling) but nothing
+ * separated it from what follows. `revert-layer` hands the property back to the
+ * utility layers, so an Alert spaces like any other child of its container, and
+ * `mt-*` / `mb-*` / `my-*` classes on an Alert work without the `!` modifier.
+ * The `div` raises specificity over antd's `:where(.css-*).ant-alert`. */
+div.ant-alert {
+  margin: revert-layer;
+}
