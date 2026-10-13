@@ -1247,6 +1247,8 @@ const zh_tw = {
       netboot: {
         title: '網路開機',
         isoDownload: '下載',
+        updateFiles: '開機檔案（網路開機）',
+        updateIso: '開機選單 ISO（虛擬光碟）',
         description:
           '從網路開機主機：透過 USB 網路連結提供 iPXE 與 KVM 上映像檔的選單，或在區域網路上透過代理 DHCP 提供 netboot.xyz。',
         addon: 'dnsmasq 與開機檔案',

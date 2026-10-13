@@ -1299,6 +1299,8 @@ const da = {
       netboot: {
         title: 'Netværksboot',
         isoDownload: 'Hent',
+        updateFiles: 'Opstartsfiler (netværksopstart)',
+        updateIso: 'ISO med opstartsmenu (virtuel cd)',
         description:
           "Boot værten fra netværket: iPXE og en menu med billederne på KVM'en over USB-netværksforbindelsen, eller netboot.xyz via proxy-DHCP på LAN'et.",
         addon: 'dnsmasq og bootfiler',

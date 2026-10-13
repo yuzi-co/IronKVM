@@ -1289,6 +1289,8 @@ const ko = {
       netboot: {
         title: '네트워크 부팅',
         isoDownload: '다운로드',
+        updateFiles: '부팅 파일 (네트워크 부팅)',
+        updateIso: '부팅 메뉴 ISO (가상 CD)',
         description:
           '호스트를 네트워크에서 부팅합니다. USB 네트워크 링크로 iPXE와 KVM의 이미지 메뉴를 제공하거나, LAN에서 프록시 DHCP로 netboot.xyz를 제공합니다.',
         addon: 'dnsmasq 및 부팅 파일',

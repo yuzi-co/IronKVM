@@ -3,16 +3,14 @@ import { Button } from 'antd';
 import { DiscIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { UPDATE_PATHS } from '@/api/updates.ts';
 import { useStableCallback } from '@/hooks/useStableCallback.ts';
-import { UpstreamUpdate } from '@/components/upstream-update.tsx';
 
 import { TransferStatus } from '../../media/transfer.tsx';
-import { imageUpdatedEvent, useImageTransfer } from '../../media/use-image-transfer.ts';
+import { useImageTransfer } from '../../media/use-image-transfer.ts';
 
 // BootMenu downloads netboot.xyz's boot menu ISO into the image library, for
-// the virtual CD, and keeps it up to date. It works without the network boot
-// add-on: the host boots the ISO from the CD drive.
+// the virtual CD; NetbootXYZUpdate keeps it up to date. It works without the
+// network boot add-on: the host boots the ISO from the CD drive.
 export const BootMenu = () => {
   const { t } = useTranslation();
   const transfer = useImageTransfer();
@@ -43,11 +41,6 @@ export const BootMenu = () => {
       {!transfer.diskEnabled && (
         <span className="text-xs text-amber-500">{t('download.disabled')}</span>
       )}
-      <UpstreamUpdate
-        path={UPDATE_PATHS.bootMenu}
-        name="netboot.xyz.iso"
-        onUpdated={() => window.dispatchEvent(new Event(imageUpdatedEvent))}
-      />
       <TransferStatus transfer={transfer} origin="boot" />
     </div>
   );

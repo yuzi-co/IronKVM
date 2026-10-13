@@ -1315,6 +1315,8 @@ const pt_br = {
       netboot: {
         title: 'Boot pela rede',
         isoDownload: 'Baixar',
+        updateFiles: 'Arquivos de inicialização (inicialização pela rede)',
+        updateIso: 'ISO do menu de inicialização (CD virtual)',
         description:
           'Inicializar o host pela rede: iPXE e um menu das imagens no KVM pelo link de rede USB, ou netboot.xyz por proxy DHCP na LAN.',
         addon: 'dnsmasq e arquivos de boot',

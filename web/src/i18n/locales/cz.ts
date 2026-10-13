@@ -1300,6 +1300,8 @@ const cz = {
       netboot: {
         title: 'Síťové spuštění',
         isoDownload: 'Stáhnout',
+        updateFiles: 'Spouštěcí soubory (síťové spouštění)',
+        updateIso: 'ISO se spouštěcí nabídkou (virtuální CD)',
         description:
           'Spustit hostitele ze sítě: iPXE a nabídka obrazů na KVM přes síťové propojení USB, nebo netboot.xyz přes proxy DHCP v síti LAN.',
         addon: 'dnsmasq a zaváděcí soubory',

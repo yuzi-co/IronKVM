@@ -1316,6 +1316,8 @@ const ca = {
       netboot: {
         title: 'Arrencada per xarxa',
         isoDownload: 'Baixa',
+        updateFiles: "Fitxers d'arrencada (arrencada per xarxa)",
+        updateIso: "ISO del menú d'arrencada (CD virtual)",
         description:
           "Arrencar l'amfitrió des de la xarxa: iPXE i un menú de les imatges del KVM per l'enllaç de xarxa USB, o netboot.xyz per proxy DHCP a la LAN.",
         addon: "dnsmasq i fitxers d'arrencada",

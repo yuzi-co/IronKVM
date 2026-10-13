@@ -5,15 +5,14 @@ import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/netboot.ts';
 import type { NetbootStatus } from '@/api/netboot.ts';
-import { UPDATE_PATHS } from '@/api/updates.ts';
 import { getUsbNetwork } from '@/api/virtual-device.ts';
 import { describeFailure } from '@/lib/feedback.ts';
-import { UpstreamUpdate } from '@/components/upstream-update.tsx';
 
 import { CopyRow } from '../components/copy-button.tsx';
 import { usePoll } from '../components/use-poll.ts';
 import { ErrorDetail } from '../vpn/error-detail.tsx';
 import { BootMenu } from './boot-menu.tsx';
+import { NetbootXYZUpdate } from './netbootxyz-update.tsx';
 
 // Leases, boots and the log change while a host boots, which takes seconds.
 const statusPollMs = 5 * 1000;
@@ -212,13 +211,7 @@ export const Netboot = ({ setIsLocked }: NetbootProps) => {
             </Button>
           )}
         </div>
-        {status?.installed && (
-          <UpstreamUpdate
-            path={UPDATE_PATHS.netbootxyz}
-            name="netboot.xyz"
-            onUpdated={() => load(true)}
-          />
-        )}
+        <NetbootXYZUpdate addonInstalled={!!status?.installed} onFilesUpdated={() => load(true)} />
         {status && !status.onData && !status.installed && (
           <Alert type="info" showIcon message={t('settings.netboot.needsData')} />
         )}

@@ -1302,6 +1302,8 @@ const tr = {
       netboot: {
         title: 'Ağdan önyükleme',
         isoDownload: 'İndir',
+        updateFiles: 'Önyükleme dosyaları (ağdan önyükleme)',
+        updateIso: "Önyükleme menüsü ISO'su (sanal CD)",
         description:
           "Ana makineyi ağdan başlatın: USB ağ bağlantısı üzerinden iPXE ve KVM'deki görüntülerin menüsü ya da LAN'da proxy DHCP ile netboot.xyz.",
         addon: 'dnsmasq ve önyükleme dosyaları',

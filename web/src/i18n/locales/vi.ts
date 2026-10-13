@@ -1299,6 +1299,8 @@ const vi = {
       netboot: {
         title: 'Khởi động qua mạng',
         isoDownload: 'Tải xuống',
+        updateFiles: 'Tệp khởi động (khởi động qua mạng)',
+        updateIso: 'ISO menu khởi động (CD ảo)',
         description:
           'Khởi động máy chủ từ mạng: iPXE và menu các ảnh đĩa trên KVM qua liên kết mạng USB, hoặc netboot.xyz qua proxy DHCP trên LAN.',
         addon: 'dnsmasq và tệp khởi động',

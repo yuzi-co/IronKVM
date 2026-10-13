@@ -1320,6 +1320,8 @@ const es = {
       netboot: {
         title: 'Arranque por red',
         isoDownload: 'Descargar',
+        updateFiles: 'Archivos de arranque (arranque por red)',
+        updateIso: 'ISO del menú de arranque (CD virtual)',
         description:
           'Arrancar el host desde la red: iPXE y un menú de las imágenes del KVM por el enlace de red USB, o netboot.xyz por proxy DHCP en la LAN.',
         addon: 'dnsmasq y archivos de arranque',

@@ -1308,6 +1308,8 @@ const pl = {
       netboot: {
         title: 'Rozruch sieciowy',
         isoDownload: 'Pobierz',
+        updateFiles: 'Pliki rozruchowe (rozruch sieciowy)',
+        updateIso: 'ISO z menu rozruchu (wirtualna płyta CD)',
         description:
           'Uruchom hosta z sieci: iPXE i menu obrazów z KVM przez sieciowe łącze USB albo netboot.xyz przez proxy DHCP w sieci LAN.',
         addon: 'dnsmasq i pliki rozruchowe',
