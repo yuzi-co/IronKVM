@@ -1310,6 +1310,8 @@ const ru = {
       netboot: {
         title: 'Сетевая загрузка',
         isoDownload: 'Скачать',
+        updateFiles: 'Файлы загрузки (сетевая загрузка)',
+        updateIso: 'ISO меню загрузки (виртуальный CD)',
         description:
           'Загрузка хоста по сети: iPXE и меню образов на KVM через сетевое подключение USB или netboot.xyz через прокси-DHCP в локальной сети.',
         addon: 'dnsmasq и загрузочные файлы',

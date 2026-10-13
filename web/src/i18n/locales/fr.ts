@@ -1325,6 +1325,8 @@ const fr = {
       netboot: {
         title: 'Démarrage réseau',
         isoDownload: 'Télécharger',
+        updateFiles: 'Fichiers de démarrage (démarrage réseau)',
+        updateIso: 'ISO du menu de démarrage (CD virtuel)',
         description:
           "Démarrer l'hôte depuis le réseau : iPXE et un menu des images du KVM par la liaison réseau USB, ou netboot.xyz par proxy DHCP sur le LAN.",
         addon: 'dnsmasq et fichiers de démarrage',

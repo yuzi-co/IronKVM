@@ -1248,6 +1248,8 @@ const zh = {
       netboot: {
         title: '网络启动',
         isoDownload: '下载',
+        updateFiles: '启动文件（网络启动）',
+        updateIso: '启动菜单 ISO（虚拟光驱）',
         description:
           '从网络启动主机：通过 USB 网络链路提供 iPXE 和 KVM 上镜像的菜单，或在局域网上通过代理 DHCP 提供 netboot.xyz。',
         addon: 'dnsmasq 和启动文件',

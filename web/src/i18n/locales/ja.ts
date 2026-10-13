@@ -1307,6 +1307,8 @@ const ja = {
       netboot: {
         title: 'ネットワークブート',
         isoDownload: 'ダウンロード',
+        updateFiles: 'ブートファイル（ネットワークブート）',
+        updateIso: 'ブートメニュー ISO（仮想 CD）',
         description:
           'ホストをネットワークから起動します。USB ネットワークリンク経由で iPXE と KVM 上のイメージのメニュー、または LAN 上のプロキシ DHCP で netboot.xyz を提供します。',
         addon: 'dnsmasq とブートファイル',

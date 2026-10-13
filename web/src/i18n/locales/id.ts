@@ -1306,6 +1306,8 @@ const id = {
       netboot: {
         title: 'Boot jaringan',
         isoDownload: 'Unduh',
+        updateFiles: 'Berkas boot (boot jaringan)',
+        updateIso: 'ISO menu boot (CD virtual)',
         description:
           'Boot host dari jaringan: iPXE dan menu image di KVM lewat tautan jaringan USB, atau netboot.xyz lewat proxy DHCP di LAN.',
         addon: 'dnsmasq dan file boot',

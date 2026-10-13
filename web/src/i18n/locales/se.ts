@@ -1304,6 +1304,8 @@ const se = {
       netboot: {
         title: 'Nätverksstart',
         isoDownload: 'Ladda ned',
+        updateFiles: 'Startfiler (nätverksstart)',
+        updateIso: 'ISO med startmeny (virtuell cd)',
         description:
           'Starta värden från nätverket: iPXE och en meny med avbildningarna på KVM:en över USB-nätverkslänken, eller netboot.xyz via proxy-DHCP på LAN:et.',
         addon: 'dnsmasq och startfiler',

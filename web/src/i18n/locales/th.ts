@@ -1285,6 +1285,8 @@ const th = {
       netboot: {
         title: 'บูตผ่านเครือข่าย',
         isoDownload: 'ดาวน์โหลด',
+        updateFiles: 'ไฟล์บูต (บูตผ่านเครือข่าย)',
+        updateIso: 'ISO เมนูบูต (CD เสมือน)',
         description:
           'บูตโฮสต์จากเครือข่าย: iPXE และเมนูอิมเมจบน KVM ผ่านลิงก์เครือข่าย USB หรือ netboot.xyz ผ่าน proxy DHCP บน LAN',
         addon: 'dnsmasq และไฟล์บูต',

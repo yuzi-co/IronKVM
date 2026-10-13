@@ -1316,6 +1316,8 @@ const nl = {
       netboot: {
         title: 'Netwerkboot',
         isoDownload: 'Downloaden',
+        updateFiles: 'Opstartbestanden (netwerkboot)',
+        updateIso: 'ISO met opstartmenu (virtuele cd)',
         description:
           'De host via het netwerk opstarten: iPXE en een menu van de images op de KVM via de USB-netwerkverbinding, of netboot.xyz via proxy-DHCP op het LAN.',
         addon: 'dnsmasq en opstartbestanden',

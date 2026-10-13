@@ -1318,6 +1318,8 @@ const hu = {
       netboot: {
         title: 'Hálózati rendszerindítás',
         isoDownload: 'Letöltés',
+        updateFiles: 'Rendszerindító fájlok (hálózati indítás)',
+        updateIso: 'Rendszerindító menü ISO (virtuális CD)',
         description:
           'A gazdagép indítása a hálózatról: iPXE és a KVM-en lévő lemezképek menüje az USB hálózati kapcsolaton, vagy netboot.xyz proxy DHCP-vel a LAN-on.',
         addon: 'dnsmasq és rendszerindító fájlok',

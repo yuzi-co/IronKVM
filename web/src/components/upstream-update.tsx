@@ -1,16 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
-import { Button, message, Popconfirm, Progress } from 'antd';
+import { useState } from 'react';
+import { Button, Popconfirm, Progress } from 'antd';
 import { useTranslation } from 'react-i18next';
 
-import * as api from '@/api/updates.ts';
-import type { UpdateStatus } from '@/api/updates.ts';
-import { showFailure } from '@/lib/feedback.ts';
 import { updateView } from '@/lib/upstream-update.ts';
-import { pollWhileVisible } from '@/lib/visible-poll.ts';
-import { useStableCallback } from '@/hooks/useStableCallback.ts';
-
-// A running update is followed closely: it takes seconds to a minute.
-const runningPollMs = 1000;
+import { updateNote, useUpstreamUpdate } from '@/hooks/useUpstreamUpdate.ts';
 
 type UpstreamUpdateProps = {
   // The component's update endpoint, one of api.UPDATE_PATHS.
@@ -26,111 +19,19 @@ type UpstreamUpdateProps = {
 // checked or updated without a click.
 export const UpstreamUpdate = ({ path, name, onUpdated }: UpstreamUpdateProps) => {
   const { t } = useTranslation();
-  const [status, setStatus] = useState<UpdateStatus | null>(null);
+  const { status, check, start } = useUpstreamUpdate(path, name, onUpdated);
   const [busy, setBusy] = useState<'' | 'check' | 'update'>('');
-  const lastJob = useRef('');
 
-  // accept shows a status, and reports the end of an update this page saw run.
-  const accept = useStableCallback((st: UpdateStatus) => {
-    const was = lastJob.current;
-    lastJob.current = st.job.state;
-    setStatus(st);
-    if (was === 'running' && st.job.state === 'done') {
-      message.success(t('upstream.done', { name, version: st.job.version }));
-      onUpdated?.();
-    }
-    if (was === 'running' && st.job.state === 'failed') {
-      onUpdated?.();
-    }
-  });
-
-  const load = useStableCallback(() => {
-    api
-      .getUpdate(path)
-      .then((rsp) => {
-        if (rsp.code === 0) accept(rsp.data);
-      })
-      // The row stays as it was; the next poll or visit asks again.
-      .catch(() => {});
-  });
-
-  useEffect(() => {
-    load();
-  }, [path, load]);
-
-  const running = status?.job.state === 'running';
-  useEffect(() => {
-    if (!running) return;
-    return pollWhileVisible(load, runningPollMs);
-  }, [running, load]);
-
-  function check() {
-    setBusy('check');
-    api
-      .checkUpdate(path)
-      .then((rsp) => {
-        if (rsp.code !== 0) {
-          showFailure(rsp);
-          return;
-        }
-        accept(rsp.data);
-      })
-      .catch((err) => showFailure(err))
-      .finally(() => setBusy(''));
-  }
-
-  function update() {
-    setBusy('update');
-    api
-      .startUpdate(path)
-      .then((rsp) => {
-        if (rsp.code !== 0) {
-          showFailure(rsp);
-          load();
-          return;
-        }
-        accept(rsp.data);
-      })
-      .catch((err) => {
-        showFailure(err);
-        load();
-      })
-      .finally(() => setBusy(''));
+  function run(what: 'check' | 'update', call: () => Promise<boolean>) {
+    setBusy(what);
+    void call().finally(() => setBusy(''));
   }
 
   if (!status || !status.installed) return null;
 
   const view = updateView(status);
   const job = status.job;
-
-  let note = '';
-  let noteClass = 'text-neutral-500';
-  switch (view) {
-    case 'upToDate':
-      note = t('upstream.upToDate');
-      break;
-    case 'checkFailed':
-      note = t('upstream.checkFailed', { error: status.checkError });
-      noteClass = 'text-amber-500';
-      break;
-    case 'unverifiable':
-      note = t('upstream.unverifiable', { version: status.latest, reason: status.unverifiable });
-      noteClass = 'text-amber-500';
-      break;
-    case 'available':
-      if (status.inUse) {
-        note = t('upstream.inUse', { reason: status.inUse });
-        noteClass = 'text-amber-500';
-      }
-      break;
-    case 'running':
-      note = t('upstream.running', { version: job.version });
-      break;
-  }
-  if (view !== 'running' && job.state === 'failed') {
-    note = t('upstream.failed', { error: job.error });
-    noteClass = 'text-red-500';
-  }
+  const { note, noteClass } = updateNote(t, status, view);
 
   return (
     <div className="flex flex-col space-y-1">
@@ -146,7 +47,7 @@ export const UpstreamUpdate = ({ path, name, onUpdated }: UpstreamUpdateProps) =
             okText={t('upstream.ok')}
             cancelText={t('common.cancel')}
             disabled={!!status.inUse}
-            onConfirm={update}
+            onConfirm={() => run('update', start)}
           >
             <Button
               type="primary"
@@ -158,7 +59,12 @@ export const UpstreamUpdate = ({ path, name, onUpdated }: UpstreamUpdateProps) =
             </Button>
           </Popconfirm>
         ) : view !== 'running' ? (
-          <Button size="small" loading={busy === 'check'} disabled={!!busy} onClick={check}>
+          <Button
+            size="small"
+            loading={busy === 'check'}
+            disabled={!!busy}
+            onClick={() => run('check', () => check())}
+          >
             {t('upstream.check')}
           </Button>
         ) : null}

@@ -1335,6 +1335,8 @@ const de = {
       netboot: {
         title: 'Netzwerkboot',
         isoDownload: 'Herunterladen',
+        updateFiles: 'Bootdateien (Netzwerkboot)',
+        updateIso: 'Bootmenü-ISO (virtuelle CD)',
         description:
           'Den Host über das Netzwerk booten: iPXE und ein Menü der Images auf dem KVM über die USB-Netzwerkverbindung, oder netboot.xyz per Proxy-DHCP im LAN.',
         addon: 'dnsmasq und Boot-Dateien',

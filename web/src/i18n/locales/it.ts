@@ -1322,6 +1322,8 @@ const it = {
       netboot: {
         title: 'Avvio di rete',
         isoDownload: 'Scarica',
+        updateFiles: 'File di avvio (avvio di rete)',
+        updateIso: 'ISO del menu di avvio (CD virtuale)',
         description:
           "Avviare l'host dalla rete: iPXE e un menu delle immagini sul KVM tramite il collegamento di rete USB, oppure netboot.xyz tramite proxy DHCP sulla LAN.",
         addon: 'dnsmasq e file di avvio',
