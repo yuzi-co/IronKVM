@@ -1480,6 +1480,15 @@ const en = {
           rebootToApply: 'reboot to apply',
           rebootConfirm: 'Reboot now to apply {{mhz}} MHz?'
         },
+        videoClock: {
+          title: 'Video clocks',
+          description: 'Clock profile of the video encoders and scaler',
+          tip: 'Fast runs the codec core, the scaler and the codec bus at 594, 396 and 450 MHz; Standard at the chip\'s stock 396, 300 and 360 MHz. Fast cuts the stream latency by about 4 ms; Standard draws less power while the video runs. A change applies when the video next starts.',
+          standard: 'Standard',
+          fast: 'Fast',
+          rates: 'Codec {{codec}} · scaler {{vpss}} · bus {{bus}} MHz',
+          pending: 'applies when the video next starts'
+        },
         swap: {
           title: 'Swap',
           disable: 'Disable',

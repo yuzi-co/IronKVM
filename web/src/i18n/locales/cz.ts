@@ -1486,6 +1486,15 @@ const cz = {
           rebootToApply: 'pro použití restartujte',
           rebootConfirm: 'Restartovat nyní a použít {{mhz}} MHz?'
         },
+        videoClock: {
+          title: 'Takty videa',
+          description: 'Profil taktu video kodérů a škálovače',
+          tip: 'Rychlý provozuje jádro kodeku, škálovač a sběrnici kodeku na 594, 396 a 450 MHz; Standardní na výchozích 396, 300 a 360 MHz čipu. Rychlý snižuje latenci streamu asi o 4 ms; Standardní má nižší spotřebu, když video běží. Změna se projeví při dalším spuštění videa.',
+          standard: 'Standardní',
+          fast: 'Rychlý',
+          rates: 'Kodek {{codec}} · škálovač {{vpss}} · sběrnice {{bus}} MHz',
+          pending: 'projeví se při dalším spuštění videa'
+        },
         swap: {
           title: 'Vyměnit',
           disable: 'Zakázat',

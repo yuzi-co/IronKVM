@@ -51,3 +51,35 @@ func TestAPIVersionIsPositive(t *testing.T) {
 		t.Fatalf("APIVersion must be at least 1, got %d", APIVersion)
 	}
 }
+
+func TestProbeHidesAFeatureTheBoardLacks(t *testing.T) {
+	t.Cleanup(func() {
+		probesMu.Lock()
+		delete(probes, "video-clock")
+		probesMu.Unlock()
+	})
+
+	has := func() bool {
+		for _, f := range Features() {
+			if f == "video-clock" {
+				return true
+			}
+		}
+		return false
+	}
+
+	if !has() {
+		t.Fatal("a feature without a probe should be listed")
+	}
+	SetProbe("video-clock", func() bool { return false })
+	if has() {
+		t.Fatal("a feature whose probe answers false was listed")
+	}
+	SetProbe("video-clock", func() bool { return true })
+	if !has() {
+		t.Fatal("a feature whose probe answers true was left out")
+	}
+	if !Has("video-clock") {
+		t.Fatal("Has should report the registration, whatever the probe says")
+	}
+}

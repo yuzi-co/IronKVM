@@ -11,6 +11,7 @@ import (
 
 	"NanoKVM-Server/authn"
 	"NanoKVM-Server/common"
+	"NanoKVM-Server/common/apicontract"
 	"NanoKVM-Server/config"
 	"NanoKVM-Server/logger"
 	"NanoKVM-Server/middleware"
@@ -82,6 +83,12 @@ func initialize() {
 	// restart is inside the window, so the process that would clean up is the
 	// one being replaced. A server reaching this line is the proof it finished.
 	application.ClearUpdateMarker()
+
+	// The video clock profile (#135) goes to the kernel before the video
+	// starts; the kernel boots with the device tree's rates. The feature is
+	// advertised only on a kernel that has the driver (slot B).
+	apicontract.SetProbe("video-clock", vm.VideoClockSupported)
+	vm.ApplyVideoClock()
 
 	// init screen parameters
 	_ = common.GetScreen()

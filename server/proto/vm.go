@@ -341,6 +341,32 @@ type GetCpuFreqRsp struct {
 	RebootRequired bool    `json:"rebootRequired"` // Running differs from Target, so a reboot is due
 }
 
+// VideoClockRates are the video clocks in MHz: the codec core (vc-src0), the
+// VPSS and capture (vip-sys1), and the codec bus (axi-video-codec).
+type VideoClockRates struct {
+	Codec int `json:"codec"`
+	Vpss  int `json:"vpss"`
+	Bus   int `json:"bus"`
+}
+
+// VideoClockOption is one selectable video clock profile and its rates.
+type VideoClockOption struct {
+	Name  string          `json:"name"`
+	Rates VideoClockRates `json:"rates"`
+}
+
+// GetVideoClockRsp reports the video clock profile of the mainline kernel.
+// Rates is what the clock framework has now; it lags Profile (Pending) while
+// the video that ran before a change still runs.
+type GetVideoClockRsp struct {
+	Profile     string             `json:"profile"`     // the chosen profile, stored in /etc/kvm/video-clock
+	Options     []VideoClockOption `json:"options"`     // selectable profiles
+	Rates       VideoClockRates    `json:"rates"`       // MHz now, zeros when unreadable
+	Measured    bool               `json:"measured"`    // Rates was read from the kernel
+	Pending     bool               `json:"pending"`     // Rates differ from Profile's until the video next starts
+	Temperature float64            `json:"temperature"` // SoC temperature, degrees C, 0 when unavailable
+}
+
 // GetHealthRsp is what the toolbar's alert icon needs, read in one cheap
 // request: no command is run and nothing is fetched from the network.
 type GetHealthRsp struct {
@@ -436,6 +462,10 @@ type MemoryGroup struct {
 
 type SetCpuFreqReq struct {
 	Target int `validate:"required"` // MHz, must be one of GetCpuFreqRsp.Options
+}
+
+type SetVideoClockReq struct {
+	Profile string `validate:"required"` // one of GetVideoClockRsp.Options' names
 }
 
 type GetMouseJigglerRsp struct {

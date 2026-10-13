@@ -1490,6 +1490,15 @@ const tr = {
           rebootToApply: 'uygulamak için yeniden başlatın',
           rebootConfirm: '{{mhz}} MHz uygulamak için şimdi yeniden başlatılsın mı?'
         },
+        videoClock: {
+          title: 'Video saatleri',
+          description: 'Video kodlayıcıları ve ölçekleyicinin saat profili',
+          tip: 'Hızlı, kodek çekirdeğini, ölçekleyiciyi ve kodek veri yolunu 594, 396 ve 450 MHz\'de; Standart ise çipin varsayılan 396, 300 ve 360 MHz\'inde çalıştırır. Hızlı, akış gecikmesini yaklaşık 4 ms azaltır; Standart, video çalışırken daha az güç harcar. Değişiklik video bir sonraki başladığında uygulanır.',
+          standard: 'Standart',
+          fast: 'Hızlı',
+          rates: 'Kodek {{codec}} · ölçekleyici {{vpss}} · veri yolu {{bus}} MHz',
+          pending: 'video bir sonraki başladığında uygulanır'
+        },
         swap: {
           title: 'Swap',
           disable: 'Aktifleştir',

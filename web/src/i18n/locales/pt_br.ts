@@ -1507,6 +1507,15 @@ const pt_br = {
           rebootToApply: 'reinicie para aplicar',
           rebootConfirm: 'Reiniciar agora para aplicar {{mhz}} MHz?'
         },
+        videoClock: {
+          title: 'Clocks de vídeo',
+          description: 'Perfil de clock dos codificadores e do escalonador de vídeo',
+          tip: 'Rápido roda o núcleo do codec, o escalonador e o barramento do codec a 594, 396 e 450 MHz; Padrão nos valores de fábrica do chip, 396, 300 e 360 MHz. Rápido reduz a latência do stream em cerca de 4 ms; Padrão consome menos enquanto o vídeo roda. A mudança vale quando o vídeo começar de novo.',
+          standard: 'Padrão',
+          fast: 'Rápido',
+          rates: 'Codec {{codec}} · escalonador {{vpss}} · barramento {{bus}} MHz',
+          pending: 'vale quando o vídeo começar de novo'
+        },
         swap: {
           title: 'Swap',
           disable: 'Desativar',

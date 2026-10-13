@@ -1492,6 +1492,15 @@ const se = {
           rebootToApply: 'starta om för att tillämpa',
           rebootConfirm: 'Starta om nu för att tillämpa {{mhz}} MHz?'
         },
+        videoClock: {
+          title: 'Videoklockor',
+          description: 'Klockprofil för videokodarna och skalaren',
+          tip: 'Snabb kör codec-kärnan, skalaren och codec-bussen på 594, 396 och 450 MHz; Standard på kretsens standard 396, 300 och 360 MHz. Snabb sänker strömmens latens med cirka 4 ms; Standard drar mindre ström medan videon körs. En ändring gäller när videon startar nästa gång.',
+          standard: 'Standard',
+          fast: 'Snabb',
+          rates: 'Codec {{codec}} · skalare {{vpss}} · buss {{bus}} MHz',
+          pending: 'gäller när videon startar igen'
+        },
         swap: {
           title: 'Swap',
           disable: 'Inaktivera',

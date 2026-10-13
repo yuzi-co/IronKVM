@@ -1493,6 +1493,15 @@ const id = {
           rebootToApply: 'mulai ulang untuk menerapkan',
           rebootConfirm: 'Mulai ulang sekarang untuk menerapkan {{mhz}} MHz?'
         },
+        videoClock: {
+          title: 'Clock video',
+          description: 'Profil clock encoder dan scaler video',
+          tip: 'Cepat menjalankan inti codec, scaler, dan bus codec pada 594, 396, dan 450 MHz; Standar pada nilai bawaan chip, 396, 300, dan 360 MHz. Cepat menurunkan latensi stream sekitar 4 ms; Standar memakai daya lebih sedikit saat video berjalan. Perubahan berlaku saat video dimulai lagi.',
+          standard: 'Standar',
+          fast: 'Cepat',
+          rates: 'Codec {{codec}} · scaler {{vpss}} · bus {{bus}} MHz',
+          pending: 'berlaku saat video dimulai lagi'
+        },
         swap: {
           title: 'Tukar',
           disable: 'Nonaktifkan',

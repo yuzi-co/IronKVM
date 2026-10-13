@@ -276,6 +276,16 @@ export function setCpuFreq(target: number) {
   return http.post('/api/vm/cpufreq', { target });
 }
 
+// get the video clock profile and the rates now (mainline kernel only)
+export function getVideoClock() {
+  return http.get('/api/vm/video-clock');
+}
+
+// choose the video clock profile, applied when the video next starts
+export function setVideoClock(profile: string) {
+  return http.post('/api/vm/video-clock', { profile });
+}
+
 // get mouse jiggler
 export function getMouseJiggler() {
   return http.get('/api/vm/mouse-jiggler');

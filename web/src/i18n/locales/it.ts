@@ -1513,6 +1513,15 @@ const it = {
           rebootToApply: 'riavvia per applicare',
           rebootConfirm: 'Riavviare ora per applicare {{mhz}} MHz?'
         },
+        videoClock: {
+          title: 'Clock video',
+          description: 'Profilo di clock degli encoder e dello scaler video',
+          tip: 'Veloce fa funzionare il core del codec, lo scaler e il bus del codec a 594, 396 e 450 MHz; Standard ai valori di fabbrica del chip, 396, 300 e 360 MHz. Veloce riduce la latenza dello stream di circa 4 ms; Standard consuma meno mentre il video è attivo. La modifica si applica al prossimo avvio del video.',
+          standard: 'Standard',
+          fast: 'Veloce',
+          rates: 'Codec {{codec}} · scaler {{vpss}} · bus {{bus}} MHz',
+          pending: 'si applica al prossimo avvio del video'
+        },
         swap: {
           title: 'Scambia',
           disable: 'Disabilita',

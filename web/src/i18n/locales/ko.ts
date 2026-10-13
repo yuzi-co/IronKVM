@@ -1474,6 +1474,15 @@ const ko = {
           rebootToApply: '재부팅하여 적용',
           rebootConfirm: '지금 재부팅하여 {{mhz}} MHz를 적용할까요?'
         },
+        videoClock: {
+          title: '비디오 클럭',
+          description: '비디오 인코더와 스케일러의 클럭 프로필',
+          tip: '빠름은 코덱 코어, 스케일러, 코덱 버스를 594, 396, 450 MHz로, 표준은 칩 기본값인 396, 300, 360 MHz로 동작시킵니다. 빠름은 스트림 지연을 약 4 ms 줄이고, 표준은 영상이 동작하는 동안 전력을 덜 씁니다. 변경은 다음에 영상이 시작될 때 적용됩니다.',
+          standard: '표준',
+          fast: '빠름',
+          rates: '코덱 {{codec}} · 스케일러 {{vpss}} · 버스 {{bus}} MHz',
+          pending: '다음 영상 시작 시 적용'
+        },
         swap: {
           title: '스왑',
           disable: '비활성화',
