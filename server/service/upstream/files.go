@@ -58,10 +58,11 @@ func ParseChecksums(r io.Reader) (Checksums, error) {
 
 // get starts a download over HTTPS. Only https is followed, redirects
 // included: the release's files are trusted because the checksum file came
-// over the same kind of connection.
+// over the same kind of connection. A client with AllowHTTP also takes plain
+// http.
 func (c *Client) get(ctx context.Context, rawURL string) (*http.Response, error) {
 	u, err := url.Parse(rawURL)
-	if err != nil || u.Scheme != "https" {
+	if err != nil || !c.allowedScheme(u.Scheme) {
 		return nil, fmt.Errorf("refusing to download %s: not an https URL", rawURL)
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, rawURL, nil)
@@ -71,7 +72,7 @@ func (c *Client) get(ctx context.Context, rawURL string) (*http.Response, error)
 
 	httpClient := *c.HTTP
 	httpClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-		if req.URL.Scheme != "https" {
+		if !c.allowedScheme(req.URL.Scheme) {
 			return fmt.Errorf("refusing a redirect to %s", req.URL)
 		}
 		if len(via) >= 10 {
@@ -88,6 +89,10 @@ func (c *Client) get(ctx context.Context, rawURL string) (*http.Response, error)
 		return nil, fmt.Errorf("download %s: status %d", rawURL, resp.StatusCode)
 	}
 	return resp, nil
+}
+
+func (c *Client) allowedScheme(scheme string) bool {
+	return scheme == "https" || c.AllowHTTP && scheme == "http"
 }
 
 // FetchChecksums downloads and parses a release's checksum file.

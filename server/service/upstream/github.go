@@ -65,6 +65,10 @@ type Client struct {
 	HTTP    *http.Client
 	// Now is the clock, for the tests. Nil means time.Now.
 	Now func() time.Time
+	// AllowHTTP lets Download take a plain http URL. Only for a file whose
+	// SHA-256 is pinned in the source, served by a test server that has no
+	// certificate: the sum, not the connection, is what it is trusted for.
+	AllowHTTP bool
 
 	mu    sync.Mutex
 	cache map[string]*lookup
