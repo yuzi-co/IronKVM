@@ -101,7 +101,8 @@ func (c *Client) FetchChecksums(ctx context.Context, rawURL string) (Checksums, 
 	return ParseChecksums(io.LimitReader(resp.Body, checksumsMax))
 }
 
-// Download writes rawURL to dst, and keeps it only when its SHA-256 is sum.
+// Download writes rawURL to dst, and keeps it only when its SHA-256 is sum,
+// the one a release's checksum file lists or one pinned in the source.
 // It reads at most limit bytes, and reports the bytes written so far and the
 // size the server announced, or -1, to progress, which may be nil.
 func (c *Client) Download(ctx context.Context, rawURL, sum string, limit int64, dst string, progress func(done, total int64)) error {
@@ -143,7 +144,7 @@ func (c *Client) Download(ctx context.Context, rawURL, sum string, limit int64, 
 		return fmt.Errorf("download %s: larger than %d bytes", rawURL, limit)
 	}
 	if got := hex.EncodeToString(hasher.Sum(nil)); got != strings.ToLower(sum) {
-		return fmt.Errorf("%w: %s has sha256 %s, the release's checksum file says %s", ErrChecksum, filepath.Base(dst), got, sum)
+		return fmt.Errorf("%w: %s has sha256 %s, want %s", ErrChecksum, filepath.Base(dst), got, sum)
 	}
 	return os.Rename(tmp, dst)
 }
