@@ -236,7 +236,7 @@ func (h *Hid) touchDevice() hidDevice {
 }
 
 func (h *Hid) touchDeviceAt(path string) hidDevice {
-	return hidDevice{path: path, name: NameAbsoluteMouse, mu: &h.mouseMutex, file: &h.g2, health: &h.absHealth, needsID: true, needsTouch: true}
+	return hidDevice{path: path, name: NameAbsoluteMouse, mu: &h.mouseMutex, file: &h.g2, health: &h.absHealth, watch: &h.absRead, needsID: true, needsTouch: true}
 }
 
 // WriteTouchFrame writes one frame, one report per contact. The mouse lock is

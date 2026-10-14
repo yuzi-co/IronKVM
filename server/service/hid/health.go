@@ -30,7 +30,7 @@ import (
 const (
 	hidStateUnknown   = "unknown"   // nothing has been written yet
 	hidStateAccepting = "accepting" // the target is fetching reports
-	hidStateStalled   = "stalled"   // writes time out: the target is not fetching
+	hidStateStalled   = "stalled"   // writes time out, or the kernel says a report waits unread: the target is not fetching
 	hidStateDetached  = "detached"  // the gadget is not enumerated: reports go nowhere
 	hidStateError     = "error"     // the write failed some other way
 )

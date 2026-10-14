@@ -35,6 +35,12 @@ type Hid struct {
 	kbHealth  endpointHealth
 	relHealth endpointHealth
 	absHealth endpointHealth
+	// One view per endpoint of how long the host has left a report unread,
+	// where the kernel says (host_reading.go). Each is guarded by the same
+	// lock as the endpoint's handle.
+	kbRead  hostReadWatch
+	relRead hostReadWatch
+	absRead hostReadWatch
 	// absReportID is the ID put in front of every absolute pointer report, or
 	// 0 for none. It is read from configfs each time /dev/hidg2 is opened,
 	// because the gadget and this binary are deployed separately, and a
@@ -179,6 +185,9 @@ type hidDevice struct {
 	mu     *sync.Mutex
 	file   **os.File
 	health *endpointHealth
+	// watch reads the kernel's pending_ms for the endpoint, which shows a
+	// host that stopped reading when keep_latest means no write waits.
+	watch *hostReadWatch
 	// idPrefix asks writeHID to put Hid.absReportID in front of the report.
 	// Only the pointer sets it; the keys on the same endpoint carry their own
 	// ID in the report.
@@ -231,22 +240,22 @@ const (
 )
 
 func (h *Hid) keyboardDevice(path string) hidDevice {
-	return hidDevice{path: path, name: NameKeyboard, mu: &h.kbMutex, file: &h.g0, health: &h.kbHealth}
+	return hidDevice{path: path, name: NameKeyboard, mu: &h.kbMutex, file: &h.g0, health: &h.kbHealth, watch: &h.kbRead}
 }
 
 func (h *Hid) relativeMouseDevice(path string) hidDevice {
-	return hidDevice{path: path, name: NameRelativeMouse, mu: &h.mouseMutex, file: &h.g1, health: &h.relHealth}
+	return hidDevice{path: path, name: NameRelativeMouse, mu: &h.mouseMutex, file: &h.g1, health: &h.relHealth, watch: &h.relRead}
 }
 
 func (h *Hid) absoluteMouseDevice(path string) hidDevice {
-	return hidDevice{path: path, name: NameAbsoluteMouse, mu: &h.mouseMutex, file: &h.g2, health: &h.absHealth, idPrefix: true}
+	return hidDevice{path: path, name: NameAbsoluteMouse, mu: &h.mouseMutex, file: &h.g2, health: &h.absHealth, watch: &h.absRead, idPrefix: true}
 }
 
 // extendedKeyDevice is the absolute pointer's endpoint seen by the Consumer and
 // System Control keys. It shares the handle, the lock and the health record,
 // and it writes reports as given.
 func (h *Hid) extendedKeyDevice() hidDevice {
-	return hidDevice{path: HID2, name: NameAbsoluteMouse, mu: &h.mouseMutex, file: &h.g2, health: &h.absHealth, needsID: true}
+	return hidDevice{path: HID2, name: NameAbsoluteMouse, mu: &h.mouseMutex, file: &h.g2, health: &h.absHealth, watch: &h.absRead, needsID: true}
 }
 
 // Status reports what the target is doing with each endpoint. It takes none of
@@ -419,6 +428,10 @@ func (h *Hid) openDeviceNoLock(device hidDevice) error {
 }
 
 func (h *Hid) closeDeviceNoLock(device hidDevice) {
+	if device.watch != nil {
+		device.watch.forgetNoLock()
+	}
+
 	file := device.get()
 	if file == nil {
 		return
@@ -751,7 +764,11 @@ func (h *Hid) writeHIDLocked(device hidDevice, data []byte) error {
 	}
 
 	traceHIDWrite(device.path, data)
-	return nil
+
+	// The kernel took the report. Under keep_latest it always does, and only
+	// pending_ms says whether the host is still reading. The handle stays
+	// open: nothing is wrong with it.
+	return h.checkHostReadingNoLock(device)
 }
 
 // traceHIDWrite logs a report only when someone is listening. logrus skips the
