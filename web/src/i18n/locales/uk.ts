@@ -2183,6 +2183,7 @@ const uk = {
       },
       install: {
         install: 'Встановити PicoClaw',
+        update: 'Оновити до {{version}}',
         installing: 'Встановлення PicoClaw',
         success: 'PicoClaw успішно встановлено',
         failed: 'Не вдалося встановити PicoClaw',

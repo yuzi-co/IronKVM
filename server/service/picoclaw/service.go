@@ -179,7 +179,7 @@ func (s *Service) applyRuntimeIntentStatus(status RuntimeStatus) RuntimeStatus {
 		status.RuntimeIntent.LastError = err.Error()
 	}
 	status.Restoring = status.Restoring || status.Status == "restoring"
-	return status
+	return withRelease(status)
 }
 
 func applyControlModeStatus(status RuntimeStatus, modeStatus controlmode.Status) RuntimeStatus {

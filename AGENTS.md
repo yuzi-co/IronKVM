@@ -417,8 +417,11 @@ reservation and not CMA.
 with a compiled-in default if the file is missing. See `server/README.md` for the annotated schema.
 
 **PicoClaw** (`service/picoclaw/`, `kvmapp/picoclaw/`) is an on-device AI agent runtime that drives
-the KVM through HID and screenshots. The server acts as its gateway: browser-facing routes take the
-normal token check, the runtime's own callbacks come back over loopback with an internal token.
+the KVM through HID and screenshots. The binary is not in the image: installing it downloads the
+release of the fork (github.com/yuzi-co/picoclaw) that `service/picoclaw/release.go` pins by URL and
+SHA-256 into `/data/ironkvm/addons/picoclaw`, and `kvmapp/picoclaw/` holds only its agent profiles.
+The server acts as its gateway: browser-facing routes take the normal token check, the runtime's own
+callbacks come back over loopback with an internal token.
 
 **The agent interface** (`service/agent/`) sits between the server and the agent. The chat socket
 (`/api/picoclaw/gateway/ws`), the chat history routes and the task capture lease use only

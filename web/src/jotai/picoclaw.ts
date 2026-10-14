@@ -13,6 +13,8 @@ export type PicoclawRuntimeStatus = {
   install_progress?: number;
   install_stage?: string;
   install_path?: string;
+  version?: string;
+  update_available?: boolean;
   agent_profile?: string;
   model_configured: boolean;
   model_name?: string;

@@ -2195,6 +2195,7 @@ const hu = {
       },
       install: {
         install: 'PicoClaw telepítése',
+        update: 'Frissítés erre: {{version}}',
         installing: 'PicoClaw telepítése folyamatban',
         success: 'PicoClaw sikeresen telepítve',
         failed: 'Nem sikerült telepíteni PicoClaw',

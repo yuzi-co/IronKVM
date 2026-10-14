@@ -2196,6 +2196,7 @@ const ca = {
       },
       install: {
         install: 'Instal·la PicoClaw',
+        update: 'Actualitza a {{version}}',
         installing: 'Instal·lant PicoClaw',
         success: 'PicoClaw instal·lat correctament',
         failed: "No s'ha pogut instal·lar PicoClaw",

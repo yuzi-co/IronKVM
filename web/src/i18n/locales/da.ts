@@ -2171,6 +2171,7 @@ const da = {
       },
       install: {
         install: 'Installer PicoClaw',
+        update: 'Opdater til {{version}}',
         installing: 'Installation af PicoClaw',
         success: 'PicoClaw installeret korrekt',
         failed: 'Kunne ikke installere PicoClaw',

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button, Dropdown, MenuProps, Modal, Select } from 'antd';
 import {
+  DownloadIcon,
   EllipsisIcon,
   HistoryIcon,
   PlayIcon,
@@ -30,6 +31,9 @@ type SidebarHeaderProps = {
   onAgentProfileChange?: (profile: string) => void | Promise<void>;
   onOpenModelConfig?: () => void;
   isUninstallingRuntime?: boolean;
+  // The pinned PicoClaw release, when the installed build is not it.
+  updateVersion?: string;
+  onUpdateRuntime?: () => void | Promise<void>;
   onUninstallRuntime?: () => void | Promise<void>;
 };
 
@@ -51,6 +55,8 @@ export const SidebarHeader = ({
   onAgentProfileChange,
   onOpenModelConfig,
   isUninstallingRuntime,
+  updateVersion,
+  onUpdateRuntime,
   onUninstallRuntime
 }: SidebarHeaderProps) => {
   const { t } = useTranslation();
@@ -89,6 +95,23 @@ export const SidebarHeader = ({
       onClick: () => onOpenModelConfig?.(),
       disabled: areActionsDisabled || isUninstallingRuntime || isTogglingRuntime || !isInstalled
     },
+    // The server replaces the binary only while PicoClaw is stopped.
+    ...(updateVersion && isInstalled
+      ? [
+          {
+            key: 'update',
+            label: (
+              <span className="text-xs">
+                {t('picoclaw.install.update', { version: updateVersion })}
+              </span>
+            ),
+            icon: <DownloadIcon size={15} className="text-neutral-400" />,
+            onClick: () => void onUpdateRuntime?.(),
+            disabled:
+              areActionsDisabled || isUninstallingRuntime || isTogglingRuntime || isRuntimeReady
+          }
+        ]
+      : []),
     {
       type: 'divider'
     },

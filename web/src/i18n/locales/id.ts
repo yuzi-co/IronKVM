@@ -2176,6 +2176,7 @@ const id = {
       },
       install: {
         install: 'Instal PicoClaw',
+        update: 'Perbarui ke {{version}}',
         installing: 'Menginstal PicoClaw',
         success: 'PicoClaw berhasil diinstal',
         failed: 'Gagal menginstal PicoClaw',

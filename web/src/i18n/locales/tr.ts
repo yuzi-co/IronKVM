@@ -2172,6 +2172,7 @@ const tr = {
       },
       install: {
         install: 'Yükle PicoClaw',
+        update: '{{version}} sürümüne güncelle',
         installing: 'PicoClaw yükleniyor',
         success: 'PicoClaw başarıyla yüklendi',
         failed: 'PicoClaw yüklenemedi',

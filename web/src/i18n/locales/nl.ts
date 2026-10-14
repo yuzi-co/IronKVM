@@ -2195,6 +2195,7 @@ const nl = {
       },
       install: {
         install: 'PicoClaw installeren',
+        update: 'Bijwerken naar {{version}}',
         installing: 'PicoClaw installeren',
         success: 'PicoClaw is succesvol geïnstalleerd',
         failed: 'Kan PicoClaw niet installeren',

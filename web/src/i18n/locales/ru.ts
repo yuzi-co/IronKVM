@@ -2182,6 +2182,7 @@ const ru = {
       },
       install: {
         install: 'Установить PicoClaw',
+        update: 'Обновить до {{version}}',
         installing: 'Установка PicoClaw',
         success: 'PicoClaw успешно установлен',
         failed: 'Не удалось установить PicoClaw',

@@ -326,6 +326,10 @@ func (s *Service) UninstallRuntime(c *gin.Context) {
 	}
 	_ = os.Remove(picoclawBinaryPath)
 	_ = os.Remove(installedChecksumPath(picoclawBinaryPath))
+	if !addon.OnData() {
+		_ = os.RemoveAll(picoclawLicensesFallback)
+		_ = os.RemoveAll(picoclawFetchFallback)
+	}
 
 	s.runtime.Set(RuntimeStatus{
 		Ready:           false,

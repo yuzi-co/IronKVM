@@ -2173,6 +2173,7 @@ const se = {
       },
       install: {
         install: 'Installera PicoClaw',
+        update: 'Uppdatera till {{version}}',
         installing: 'Installerar PicoClaw',
         success: 'PicoClaw har installerats framgångsrikt',
         failed: 'Det gick inte att installera PicoClaw',
