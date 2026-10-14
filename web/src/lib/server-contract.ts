@@ -35,6 +35,7 @@ export const SERVER_FEATURES = [
   'share-links', // /api/auth/share and /api/auth/share-links (Settings > Account > Share links)
   'status-bar', // GET /api/stream/info (status bar source line)
   'ui-update', // /api/ui: separate UI packages (Settings > Update)
+  'video-clock', // /api/vm/video-clock (Settings > Performance > Video clocks; mainline kernel only)
   'webrtc-clock', // the clock event on the WebRTC signalling socket (status bar latency)
   'webrtc-port-forward', // /api/network/webrtc (Settings > Network > WebRTC)
   'wol-devices' // /api/network/wol/devices, /device, /check, /scan (Tools > Wake-on-LAN: managed list)

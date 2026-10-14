@@ -1507,6 +1507,15 @@ const ca = {
           rebootToApply: 'reinicieu per aplicar-ho',
           rebootConfirm: 'Voleu reiniciar ara per aplicar {{mhz}} MHz?'
         },
+        videoClock: {
+          title: 'Rellotges de vídeo',
+          description: 'Perfil de rellotge dels codificadors i de l\'escalador de vídeo',
+          tip: 'Ràpid fa anar el nucli del còdec, l\'escalador i el bus del còdec a 594, 396 i 450 MHz; Estàndard als valors de fàbrica del xip, 396, 300 i 360 MHz. Ràpid redueix la latència del flux uns 4 ms (H.265) i 3 ms (H.264), sense cap augment de temperatura mesurable. El canvi s\'aplica quan el vídeo torna a començar.',
+          standard: 'Estàndard',
+          fast: 'Ràpid',
+          rates: 'Còdec {{codec}} · escalador {{vpss}} · bus {{bus}} MHz',
+          pending: 's\'aplica quan el vídeo torni a començar'
+        },
         swap: {
           title: 'Swap',
           disable: 'Desactiva',

@@ -1517,6 +1517,15 @@ const fr = {
           rebootToApply: 'redémarrer pour appliquer',
           rebootConfirm: 'Redémarrer maintenant pour appliquer {{mhz}} MHz ?'
         },
+        videoClock: {
+          title: 'Horloges vidéo',
+          description: 'Profil d\'horloge des encodeurs et du scaler vidéo',
+          tip: 'Rapide fait tourner le cœur du codec, le scaler et le bus du codec à 594, 396 et 450 MHz ; Standard aux valeurs d\'origine de la puce, 396, 300 et 360 MHz. Rapide réduit la latence du flux d\'environ 4 ms (H.265) et 3 ms (H.264), sans hausse de température mesurable. Un changement s\'applique au prochain démarrage de la vidéo.',
+          standard: 'Standard',
+          fast: 'Rapide',
+          rates: 'Codec {{codec}} · scaler {{vpss}} · bus {{bus}} MHz',
+          pending: 's\'applique au prochain démarrage de la vidéo'
+        },
         swap: {
           title: 'Échange',
           disable: 'Désactiver',

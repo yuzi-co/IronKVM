@@ -4,7 +4,10 @@
 // server only when the two agree.
 package apicontract
 
-import "sort"
+import (
+	"sort"
+	"sync"
+)
 
 // APIVersion is bumped on a breaking change to the API the web UI uses: a
 // route removed or renamed, or a request or response changed in a way an
@@ -36,14 +39,40 @@ var features = []string{
 	"share-links",         // /api/auth/share, /api/auth/share-links: expiring view-only links
 	"status-bar",          // GET /api/stream/info
 	"ui-update",           // /api/ui: separately installed UI packages
+	"video-clock",         // /api/vm/video-clock: video clock profile (mainline kernel only, see SetProbe)
 	"webrtc-clock",        // "clock" event on the WebRTC signalling socket
 	"webrtc-port-forward", // /api/network/webrtc: fixed UDP port and public address
 	"wol-devices",         // /api/network/wol/devices, /device, /check, /scan: managed Wake-on-LAN list
 }
 
-// Features returns the registry, sorted, as a copy the caller may keep.
+// probes decide, for a feature that depends on the board rather than on this
+// server's code, whether it is there. A feature without a probe always is.
+var (
+	probesMu sync.Mutex
+	probes   = map[string]func() bool{}
+)
+
+// SetProbe makes a registered feature depend on probe: Features lists it only
+// while probe answers true. main sets the probes before the server answers.
+func SetProbe(name string, probe func() bool) {
+	probesMu.Lock()
+	defer probesMu.Unlock()
+	probes[name] = probe
+}
+
+// Features returns the registry, sorted, as a copy the caller may keep. A
+// feature whose probe answers false is left out.
 func Features() []string {
-	out := append([]string(nil), features...)
+	probesMu.Lock()
+	defer probesMu.Unlock()
+
+	out := make([]string, 0, len(features))
+	for _, f := range features {
+		if probe, ok := probes[f]; ok && !probe() {
+			continue
+		}
+		out = append(out, f)
+	}
 	sort.Strings(out)
 	return out
 }

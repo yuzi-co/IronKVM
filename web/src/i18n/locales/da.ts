@@ -1487,6 +1487,15 @@ const da = {
           rebootToApply: 'genstart for at anvende',
           rebootConfirm: 'Genstart nu for at anvende {{mhz}} MHz?'
         },
+        videoClock: {
+          title: 'Videoure',
+          description: 'Urprofil for videoencoderne og skaleren',
+          tip: 'Hurtig kører codec-kernen, skaleren og codec-bussen ved 594, 396 og 450 MHz; Standard ved chippens standard 396, 300 og 360 MHz. Hurtig sænker streamens latens med ca. 4 ms (H.265) og 3 ms (H.264) uden målbar stigning i temperaturen. En ændring træder i kraft, når videoen starter næste gang.',
+          standard: 'Standard',
+          fast: 'Hurtig',
+          rates: 'Codec {{codec}} · skaler {{vpss}} · bus {{bus}} MHz',
+          pending: 'træder i kraft, når videoen starter igen'
+        },
         swap: {
           title: 'Byt',
           disable: 'Deaktiver',

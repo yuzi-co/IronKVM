@@ -1429,6 +1429,15 @@ const zh = {
           rebootToApply: '重启后生效',
           rebootConfirm: '立即重启以应用 {{mhz}} MHz？'
         },
+        videoClock: {
+          title: '视频时钟',
+          description: '视频编码器和缩放器的时钟配置',
+          tip: '快速让编解码器核心、缩放器和编解码器总线运行在 594、396 和 450 MHz；标准为芯片默认的 396、300 和 360 MHz。快速可将视频流延迟降低约 4 ms（H.265）和 3 ms（H.264），温度无可测的升高。更改在视频下次启动时生效。',
+          standard: '标准',
+          fast: '快速',
+          rates: '编解码器 {{codec}} · 缩放器 {{vpss}} · 总线 {{bus}} MHz',
+          pending: '视频下次启动时生效'
+        },
         swap: {
           title: '交换',
           disable: '禁用',

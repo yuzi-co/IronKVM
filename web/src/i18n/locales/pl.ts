@@ -1497,6 +1497,15 @@ const pl = {
           rebootToApply: 'uruchom ponownie, aby zastosować',
           rebootConfirm: 'Uruchomić ponownie teraz, aby zastosować {{mhz}} MHz?'
         },
+        videoClock: {
+          title: 'Zegary wideo',
+          description: 'Profil zegarów koderów wideo i skalera',
+          tip: 'Szybki taktuje rdzeń kodeka, skaler i magistralę kodeka na 594, 396 i 450 MHz; Standardowy na fabrycznych 396, 300 i 360 MHz układu. Szybki zmniejsza opóźnienie strumienia o około 4 ms (H.265) i 3 ms (H.264), bez mierzalnego wzrostu temperatury. Zmiana obowiązuje od następnego uruchomienia wideo.',
+          standard: 'Standardowy',
+          fast: 'Szybki',
+          rates: 'Kodek {{codec}} · skaler {{vpss}} · magistrala {{bus}} MHz',
+          pending: 'obowiązuje od następnego uruchomienia wideo'
+        },
         swap: {
           title: 'Zamień',
           disable: 'Wyłącz',

@@ -85,6 +85,9 @@ func vmRouter(r *gin.Engine) {
 	admin.GET("/vm/cpufreq", service.GetCpuFreq)  // get cpu frequency and target
 	admin.POST("/vm/cpufreq", service.SetCpuFreq) // set the boot-time cpu frequency
 
+	admin.GET("/vm/video-clock", service.GetVideoClock)  // video clock profile and the rates now (slot B)
+	admin.POST("/vm/video-clock", service.SetVideoClock) // choose the video clock profile
+
 	admin.GET("/vm/mouse-jiggler", service.GetMouseJiggler)   // get mouse jiggler
 	admin.POST("/vm/mouse-jiggler/", service.SetMouseJiggler) // set mouse jiggler
 
