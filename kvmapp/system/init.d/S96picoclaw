@@ -1,6 +1,19 @@
 #!/bin/sh
 
-BIN_PATH="${PICOCLAW_BIN_PATH:-/usr/bin/picoclaw}"
+# PicoClaw is not in the image. The server downloads it when the owner installs
+# it from the web UI: on a distribution image into the add-on's directory on
+# /data, with a link at /usr/bin/picoclaw that S04addons puts back at every
+# boot, and anywhere else to /usr/bin/picoclaw itself. The add-on's copy is
+# taken directly, so the link is not needed to start it. Without an install,
+# start does nothing.
+ADDON_BIN=${PICOCLAW_ADDON_BIN:-/data/ironkvm/addons/picoclaw/picoclaw}
+if [ -n "${PICOCLAW_BIN_PATH:-}" ]; then
+  BIN_PATH=$PICOCLAW_BIN_PATH
+elif [ -x "$ADDON_BIN" ]; then
+  BIN_PATH=$ADDON_BIN
+else
+  BIN_PATH=/usr/bin/picoclaw
+fi
 LOG_FILE="${PICOCLAW_LOG_FILE:-/tmp/picoclaw.log}"
 KVMDIR=${KVMDIR:-/etc/kvm}
 BIN_NAME="$(basename "$BIN_PATH")"
@@ -177,6 +190,10 @@ memlimit_mib() {
 # --- end memlimit ---
 
 start_service() {
+  if [ ! -x "$BIN_PATH" ]; then
+    echo "picoclaw is not installed, nothing to start"
+    return 0
+  fi
   setup_runtime_env || return 1
 
   if pid="$(gateway_running_pid)"; then

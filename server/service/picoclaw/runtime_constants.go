@@ -17,12 +17,3 @@ const (
 	picoclawStopWaitPeriod  = 500 * time.Millisecond
 	picoclawReadyPollPeriod = 500 * time.Millisecond
 )
-
-// The image carries PicoClaw: ironkvm-dist builds it from a pinned commit of
-// github.com/yuzi-co/picoclaw and puts it here with its sha256. Installing
-// copies this file onto /data and downloads nothing. A board whose image does
-// not carry it cannot install PicoClaw. Variables so the tests can move them.
-var (
-	picoclawBundledBinary   = "/kvmapp/picoclaw/bin/picoclaw"
-	picoclawBundledChecksum = "/kvmapp/picoclaw/bin/picoclaw.sha256"
-)

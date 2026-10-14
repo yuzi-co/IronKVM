@@ -77,6 +77,8 @@ type RuntimeStatus struct {
 	InstallProgress int                 `json:"install_progress,omitempty"`
 	InstallStage    string              `json:"install_stage,omitempty"`
 	InstallPath     string              `json:"install_path,omitempty"`
+	Version         string              `json:"version,omitempty"`          // the release an install downloads
+	UpdateAvailable bool                `json:"update_available,omitempty"` // the installed build is not that one
 	AgentProfile    string              `json:"agent_profile,omitempty"`
 	ModelConfigured bool                `json:"model_configured"`
 	ModelName       string              `json:"model_name,omitempty"`
