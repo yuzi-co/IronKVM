@@ -2080,6 +2080,7 @@ const zh = {
       },
       install: {
         install: '安装 PicoClaw',
+        update: '更新到 {{version}}',
         installing: '正在安装 PicoClaw',
         success: 'PicoClaw 安装成功',
         failed: 'PicoClaw 安装失败',

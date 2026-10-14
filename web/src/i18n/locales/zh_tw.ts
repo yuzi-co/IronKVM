@@ -2075,6 +2075,7 @@ const zh_tw = {
       },
       install: {
         install: '安裝 PicoClaw',
+        update: '更新至 {{version}}',
         installing: '正在安裝 PicoClaw',
         success: 'PicoClaw 安裝成功',
         failed: 'PicoClaw 安裝失敗',

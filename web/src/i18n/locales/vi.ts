@@ -2169,6 +2169,7 @@ const vi = {
       },
       install: {
         install: 'Cài đặt PicoClaw',
+        update: 'Cập nhật lên {{version}}',
         installing: 'Đang cài đặt PicoClaw',
         success: 'PicoClaw cài đặt thành công',
         failed: 'Không cài đặt được PicoClaw',

@@ -2140,6 +2140,7 @@ const th = {
       },
       install: {
         install: 'ติดตั้ง PicoClaw',
+        update: 'อัปเดตเป็น {{version}}',
         installing: 'กำลังติดตั้ง PicoClaw',
         success: 'PicoClaw ติดตั้งสำเร็จแล้ว',
         failed: 'ไม่สามารถติดตั้ง PicoClaw',

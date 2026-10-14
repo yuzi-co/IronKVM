@@ -2172,6 +2172,7 @@ const ja = {
       },
       install: {
         install: 'PicoClaw をインストールする',
+        update: '{{version}} に更新',
         installing: 'PicoClaw をインストールしています',
         success: 'PicoClaw は正常にインストールされました',
         failed: 'PicoClaw のインストールに失敗しました',

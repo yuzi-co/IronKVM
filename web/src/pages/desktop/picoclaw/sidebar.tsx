@@ -280,6 +280,8 @@ export const Sidebar = () => {
         onAgentProfileChange={handleAgentProfileChange}
         onOpenModelConfig={handleOpenModelConfig}
         isUninstallingRuntime={isUninstallingRuntime}
+        updateVersion={runtimeStatus?.update_available ? runtimeStatus.version : undefined}
+        onUpdateRuntime={handleInstallRuntime}
         onUninstallRuntime={handleUninstallRuntime}
       />
 

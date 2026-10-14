@@ -2162,6 +2162,7 @@ const cz = {
       },
       install: {
         install: 'Nainstalovat PicoClaw',
+        update: 'Aktualizovat na {{version}}',
         installing: 'Instalace PicoClaw',
         success: 'PicoClaw úspěšně nainstalováno',
         failed: 'Nepodařilo se nainstalovat PicoClaw',

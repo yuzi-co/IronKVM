@@ -2159,6 +2159,7 @@ const en = {
       },
       install: {
         install: 'Install PicoClaw',
+        update: 'Update to {{version}}',
         installing: 'Installing PicoClaw',
         success: 'PicoClaw installed successfully',
         failed: 'Failed to install PicoClaw',

@@ -2141,6 +2141,7 @@ const ko = {
       },
       install: {
         install: 'PicoClaw 설치',
+        update: '{{version}}(으)로 업데이트',
         installing: 'PicoClaw 설치 중',
         success: 'PicoClaw가 성공적으로 설치되었습니다',
         failed: 'PicoClaw 설치에 실패했습니다',
