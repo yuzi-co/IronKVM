@@ -34,11 +34,11 @@ func scratchImage(t *testing.T, onDistro bool) (fsroot, unpacked string) {
 	mounts := filepath.Join(base, "mounts")
 	_ = os.WriteFile(mounts, []byte("/dev/x "+data+" exfat rw 0 0\n"), 0o644)
 
-	saved := struct{ root, dataDir, marker, mounts, fsroot, ts, tsd string }{
-		addon.Root, addon.DataDir, addon.DistroMarker, addon.Mounts, addon.FsRoot, TailscalePath, TailscaledPath}
+	saved := struct{ root, dataDir, marker, mounts, fsroot, ts, tsd, ws string }{
+		addon.Root, addon.DataDir, addon.DistroMarker, addon.Mounts, addon.FsRoot, TailscalePath, TailscaledPath, FallbackWorkspace}
 	t.Cleanup(func() {
 		addon.Root, addon.DataDir, addon.DistroMarker, addon.Mounts, addon.FsRoot = saved.root, saved.dataDir, saved.marker, saved.mounts, saved.fsroot
-		TailscalePath, TailscaledPath = saved.ts, saved.tsd
+		TailscalePath, TailscaledPath, FallbackWorkspace = saved.ts, saved.tsd, saved.ws
 	})
 	addon.Root = filepath.Join(data, "ironkvm", "addons")
 	addon.DataDir = data
@@ -47,6 +47,7 @@ func scratchImage(t *testing.T, onDistro bool) (fsroot, unpacked string) {
 	addon.FsRoot = fsroot
 	TailscalePath = fsroot + "/usr/bin/tailscale"
 	TailscaledPath = fsroot + "/usr/sbin/tailscaled"
+	FallbackWorkspace = filepath.Join(base, "fetch")
 	return fsroot, unpacked
 }
 

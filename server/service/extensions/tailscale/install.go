@@ -1,45 +1,32 @@
 package tailscale
 
 import (
-	"bytes"
-	"crypto/sha256"
-	"encoding/hex"
+	"context"
 	"fmt"
-	"io"
-	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
-	"regexp"
-	"strings"
 	"time"
 
 	"NanoKVM-Server/service/extensions/addon"
-	"NanoKVM-Server/service/extensions/vpn"
+	"NanoKVM-Server/service/upstream"
 	"NanoKVM-Server/utils"
 
 	log "github.com/sirupsen/logrus"
 )
 
-const (
-	OriginalURL = "https://pkgs.tailscale.com/stable/tailscale_latest_riscv64.tgz"
-	Workspace   = "/root/.tailscale"
-
-	// packageHost pins where the binaries may come from. The download URL is
-	// whatever the redirect points at, and these binaries run as root.
-	packageHost = "pkgs.tailscale.com"
-
-	// checksumSuffix is the digest the release server publishes next to each
-	// versioned package. It only exists for the resolved, versioned name.
-	checksumSuffix = ".sha256"
-
-	// maxPackageSize caps the download; the release is around 34MB and the
-	// rootfs lives on the SD card.
-	maxPackageSize = 128 * 1024 * 1024
-
-	downloadTimeout = 10 * time.Minute
-	checksumTimeout = 30 * time.Second
+// Variables rather than constants so the tests can point them at a scratch
+// directory and a local server.
+var (
+	// FallbackWorkspace is where the package is fetched off a distribution
+	// image. On one it is the add-on's directory on /data, where the binaries
+	// end up.
+	FallbackWorkspace = "/root/.tailscale"
+	// downloads fetches the package over HTTPS, bounded and checked against
+	// the pin.
+	downloads = upstream.Default
 )
+
+const downloadTimeout = 10 * time.Minute
 
 func isInstalled() bool {
 	_, err1 := os.Stat(TailscalePath)
@@ -48,22 +35,37 @@ func isInstalled() bool {
 	return err1 == nil && err2 == nil
 }
 
+func workspace() string {
+	if addon.OnData() {
+		return filepath.Join(addon.Dir(addon.Tailscale.Name), ".fetch")
+	}
+	return FallbackWorkspace
+}
+
+// install downloads the pinned release, checks it against its pin before
+// anything is unpacked, and moves the two binaries into place. A failed or
+// mismatched download leaves nothing behind: the workspace goes, and so does
+// the add-on's directory when a failed first install left it empty.
 func install() error {
-	_ = os.MkdirAll(Workspace, 0o755)
+	ws := workspace()
+	_ = os.RemoveAll(ws)
+	if err := os.MkdirAll(ws, 0o755); err != nil {
+		return err
+	}
 	defer func() {
-		_ = os.RemoveAll(Workspace)
+		_ = os.RemoveAll(ws)
+		if addon.OnData() {
+			_ = os.Remove(addon.Dir(addon.Tailscale.Name))
+		}
 	}()
 
-	tarFile := fmt.Sprintf("%s/tailscale_riscv64.tgz", Workspace)
-
-	// download
+	tarFile := filepath.Join(ws, "tailscale_riscv64.tgz")
 	if err := download(tarFile); err != nil {
-		log.Errorf("failed to download tailscale: %s", err)
+		log.Errorf("failed to download tailscale %s: %s", Version, err)
 		return err
 	}
 
-	// decompress
-	dir, err := utils.UnTarGz(tarFile, Workspace)
+	dir, err := utils.UnTarGz(tarFile, ws)
 	if err != nil {
 		log.Errorf("failed to decompress tailscale: %s", err)
 		return err
@@ -73,7 +75,7 @@ func install() error {
 		return err
 	}
 
-	log.Debugf("install tailscale successfully")
+	log.Debugf("install tailscale %s successfully", Version)
 	return nil
 }
 
@@ -107,210 +109,11 @@ func placeBinaries(dir string) error {
 	return nil
 }
 
-func download(target string) error {
-	url, err := getDownloadURL()
-	if err != nil {
-		log.Errorf("failed to get Tailscale download url: %s", err)
-		return err
-	}
-
-	// Fetch the digest first: there is no point pulling 34MB that is going to
-	// be thrown away, and a missing digest means the package cannot be trusted.
-	expected, err := fetchChecksum(url + checksumSuffix)
-	if err != nil {
-		log.Errorf("failed to get Tailscale checksum: %s", err)
-		return err
-	}
-
-	if err := fetchPackage(url, target); err != nil {
-		return err
-	}
-
-	if err := verifyFileSHA256(target, expected); err != nil {
-		_ = os.Remove(target)
-		log.Errorf("Tailscale package failed verification: %s", err)
-
-		return err
-	}
-
-	log.Debugf("download Tailscale successfully")
-	return nil
-}
-
-func fetchPackage(url string, target string) error {
-	resp, err := utils.OutboundClient(downloadTimeout).Get(url)
-	if err != nil {
-		log.Errorf("failed to download Tailscale: %s", err)
-		return err
-	}
-	defer func() {
-		_ = resp.Body.Close()
-	}()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
-	}
-
-	if resp.ContentLength > maxPackageSize {
-		return fmt.Errorf("package is too large: %d bytes", resp.ContentLength)
-	}
-
-	// Nothing has verified this yet, so it must not be executable.
-	out, err := os.OpenFile(target, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o600)
-	if err != nil {
-		log.Errorf("failed to create file: %s", err)
-		return err
-	}
-	defer func() {
-		_ = out.Close()
-	}()
-
-	written, err := io.Copy(out, io.LimitReader(resp.Body, maxPackageSize+1))
-	if err != nil {
-		log.Errorf("failed to copy response body to file: %s", err)
-		return err
-	}
-
-	if written > maxPackageSize {
-		return fmt.Errorf("package is too large")
-	}
-
-	return nil
-}
-
-// fetchChecksum reads the digest the release server publishes next to the
-// package.
-func fetchChecksum(url string) ([]byte, error) {
-	if err := checkDownloadHost(url); err != nil {
-		return nil, err
-	}
-
-	resp, err := utils.OutboundClient(checksumTimeout).Get(url)
-	if err != nil {
-		return nil, err
-	}
-	defer func() {
-		_ = resp.Body.Close()
-	}()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
-	}
-
-	body, err := io.ReadAll(io.LimitReader(resp.Body, 1024))
-	if err != nil {
-		return nil, err
-	}
-
-	return parseSHA256Checksum(string(body))
-}
-
-func parseSHA256Checksum(body string) ([]byte, error) {
-	// The file holds the digest, optionally followed by the file name.
-	digest, _, _ := strings.Cut(strings.TrimSpace(body), " ")
-
-	sum, err := hex.DecodeString(strings.TrimSpace(digest))
-	if err != nil || len(sum) != sha256.Size {
-		return nil, fmt.Errorf("failed to parse sha256 checksum")
-	}
-
-	return sum, nil
-}
-
-func verifyFileSHA256(path string, expected []byte) error {
-	file, err := os.Open(path)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		_ = file.Close()
-	}()
-
-	hasher := sha256.New()
-	if _, err := io.Copy(hasher, file); err != nil {
-		return err
-	}
-
-	if !bytes.Equal(hasher.Sum(nil), expected) {
-		return fmt.Errorf("sha256 mismatch")
-	}
-
-	return nil
-}
-
-// checkDownloadHost keeps the resolved URL on the release host over TLS.
-func checkDownloadHost(rawURL string) error {
-	parsed, err := url.Parse(rawURL)
-	if err != nil {
-		return fmt.Errorf("invalid download url: %w", err)
-	}
-
-	if parsed.Scheme != "https" {
-		return fmt.Errorf("refusing a non-https download url")
-	}
-
-	if !strings.EqualFold(parsed.Hostname(), packageHost) {
-		return fmt.Errorf("refusing a download from %q", parsed.Hostname())
-	}
-
-	return nil
-}
-
-// packageVersion is the version in a resolved package name,
-// tailscale_1.90.1_riscv64.tgz. The unresolved alias, latest, does not match.
-var packageVersion = regexp.MustCompile(`/tailscale_([0-9][0-9A-Za-z.]*)_riscv64\.tgz$`)
-
-func versionFromPackageURL(u string) (string, error) {
-	m := packageVersion.FindStringSubmatch(u)
-	if m == nil {
-		return "", fmt.Errorf("no version in %q", u)
-	}
-	return m[1], nil
-}
-
-// resolveRedirect asks for rawURL with a HEAD and returns where the redirects
-// ended. A HEAD is enough: a GET would pull the whole archive only to discard
-// it and fetch it again.
-func resolveRedirect(client *http.Client, rawURL string) (string, error) {
-	resp, err := client.Head(rawURL)
-	if err != nil {
-		return "", err
-	}
-	defer func() {
-		_ = resp.Body.Close()
-	}()
-
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusFound {
-		return "", fmt.Errorf("unexpected status code: %d", resp.StatusCode)
-	}
-
-	return resp.Request.URL.String(), nil
-}
-
-// getDownloadURL resolves the "latest" alias to the versioned package, and
-// keeps it on the release host.
-func getDownloadURL() (string, error) {
-	resolved, err := resolveRedirect(utils.OutboundClient(checksumTimeout), OriginalURL)
-	if err != nil {
-		return "", err
-	}
-
-	if err := checkDownloadHost(resolved); err != nil {
-		return "", err
-	}
-
-	return resolved, nil
-}
-
-// latestVersion is the version the release server's "latest" alias points at.
-func latestVersion() (string, error) {
-	// The whole check, redirects included, ends after vpn.CheckTimeout.
-	resolved, err := resolveRedirect(utils.OutboundClient(vpn.CheckTimeout), OriginalURL)
-	if err != nil {
-		return "", err
-	}
-	if err := checkDownloadHost(resolved); err != nil {
-		return "", err
-	}
-	return versionFromPackageURL(resolved)
+// download writes the pinned package to dst. It is kept only when its
+// SHA-256 is the pinned one; anything else, or more than its bound, is
+// removed before it takes its name.
+func download(dst string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), downloadTimeout)
+	defer cancel()
+	return downloads.Download(ctx, releasePackage.URL, releasePackage.SHA256, releasePackage.Max, dst, nil)
 }

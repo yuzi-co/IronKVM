@@ -1,11 +1,13 @@
 package tailscale
 
 import (
+	"fmt"
 	"os"
 
 	"NanoKVM-Server/proto"
 	"NanoKVM-Server/service/extensions/addon"
 	"NanoKVM-Server/service/extensions/vpn"
+	"NanoKVM-Server/service/upstream"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -20,13 +22,9 @@ var (
 	TailscaledPath = "/usr/sbin/tailscaled"
 )
 
-// The update check's cache, the lookup and the installer. Variables so the
-// tests need no network.
-var (
-	updates        = &vpn.VersionCache{TTL: vpn.UpdateTTL}
-	fetchLatest    = latestVersion
-	installPackage = install
-)
+// installPackage installs the pinned release. A variable so the tests need no
+// network.
+var installPackage = install
 
 // addonSpec is what Tailscale needs back from the root filesystem after a new
 // image: its two binaries in their usual places and its boot script while it is
@@ -305,8 +303,11 @@ func (s *Service) Boot(c *gin.Context) {
 	vpn.Boot(c, addon.Tailscale, isInstalled())
 }
 
-// GetUpdate reports the installed version and the latest one, which is
-// looked up at most once an hour.
+// GetUpdate reports the installed version and the pinned one, which is the
+// update on offer. It asks no server: an install from before the pin, of the
+// release the package server called latest then, is offered the pin when it
+// is older and nothing when it is the pin or newer, and keeps running as it
+// is either way.
 func (s *Service) GetUpdate(c *gin.Context) {
 	var rsp proto.Response
 
@@ -321,17 +322,13 @@ func (s *Service) GetUpdate(c *gin.Context) {
 		return
 	}
 
-	latest, err := updates.Latest(fetchLatest)
-	if err != nil {
-		rsp.ErrRsp(c, -1, vpn.Message("update check failed", err))
-		return
-	}
-
-	rsp.OkRspWithData(c, &proto.VpnUpdateRsp{Current: current, Latest: latest})
+	rsp.OkRspWithData(c, &proto.VpnUpdateRsp{Current: current, Latest: Version})
 }
 
-// Update installs the latest release over the installed one. The login stays
-// on /data, and the daemon runs again afterwards only if it ran before.
+// Update installs the pinned release over the installed one. It refuses an
+// install that is the pin or newer, which the pin would downgrade; one whose
+// version cannot be read is replaced. The login stays on /data, and the daemon
+// runs again afterwards only if it ran before.
 func (s *Service) Update(c *gin.Context) {
 	var rsp proto.Response
 
@@ -347,6 +344,10 @@ func (s *Service) Update(c *gin.Context) {
 	}
 
 	cli := NewCli()
+	if current, err := cli.Version(); err == nil && upstream.CompareVersions(Version, current) <= 0 {
+		rsp.ErrRsp(c, -1, fmt.Sprintf("tailscale %s is installed, and the pinned release is %s", current, Version))
+		return
+	}
 	wasRunning := addon.Running(addon.Tailscale)
 	if wasRunning {
 		if err := cli.Stop(); err != nil {
@@ -356,7 +357,6 @@ func (s *Service) Update(c *gin.Context) {
 	}
 
 	err := installPackage()
-	updates.Reset()
 
 	if wasRunning {
 		if startErr := vpn.StartChecked(addon.Tailscale, cli.Start); startErr != nil && err == nil {

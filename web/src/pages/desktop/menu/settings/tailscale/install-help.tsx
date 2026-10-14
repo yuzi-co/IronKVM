@@ -7,6 +7,9 @@ import { useTranslation } from 'react-i18next';
 // survives an image update the same way.
 const addonDir = '/data/ironkvm/addons/tailscale/';
 const links = '/usr/bin/tailscale tailscale\n/usr/sbin/tailscaled tailscaled';
+// The package the server pins (server/service/extensions/tailscale/release.go),
+// so a hand install is the release the page would have installed.
+const pinnedPackage = 'https://pkgs.tailscale.com/stable/tailscale_1.104.1_riscv64.tgz';
 
 // InstallHelp is the manual install, shown when the install from the page
 // fails.
@@ -23,7 +26,7 @@ export const InstallHelp = () => {
           {t('settings.tailscale.download')}
           <a
             className="px-1"
-            href="https://pkgs.tailscale.com/stable/tailscale_latest_riscv64.tgz"
+            href={pinnedPackage}
             target="_blank"
           >
             {t('settings.tailscale.package')}
