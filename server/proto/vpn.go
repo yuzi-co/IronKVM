@@ -52,6 +52,8 @@ type VpnBootReq struct {
 	Enabled bool `json:"enabled"`
 }
 
+// VpnUpdateRsp is the installed version and the release an update installs,
+// the one the server pins.
 type VpnUpdateRsp struct {
 	Current string `json:"current"`
 	Latest  string `json:"latest"`
