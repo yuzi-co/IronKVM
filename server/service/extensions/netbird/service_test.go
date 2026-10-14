@@ -15,7 +15,6 @@ import (
 
 	"NanoKVM-Server/proto"
 	"NanoKVM-Server/service/extensions/addon"
-	"NanoKVM-Server/service/extensions/vpn"
 
 	"github.com/gin-gonic/gin"
 )
@@ -36,11 +35,11 @@ func lifecycle(t *testing.T) (calls string) {
 
 	savedTs, savedNb := addon.Tailscale, addon.NetBird
 	savedInitd, savedPkg, savedProc := addon.InitdDir, addon.PkgInitdDir, addon.ProcDir
-	savedStatus, savedCache, savedFetch, savedInstall := statusTimeout, updates, fetchLatest, installPackage
+	savedStatus, savedInstall := statusTimeout, installPackage
 	t.Cleanup(func() {
 		addon.Tailscale, addon.NetBird = savedTs, savedNb
 		addon.InitdDir, addon.PkgInitdDir, addon.ProcDir = savedInitd, savedPkg, savedProc
-		statusTimeout, updates, fetchLatest, installPackage = savedStatus, savedCache, savedFetch, savedInstall
+		statusTimeout, installPackage = savedStatus, savedInstall
 	})
 	addon.InitdDir = filepath.Join(base, "etc-init.d")
 	addon.PkgInitdDir = filepath.Join(base, "kvmapp-init.d")
@@ -52,7 +51,6 @@ func lifecycle(t *testing.T) (calls string) {
 	}
 	addon.Tailscale.PidFile = filepath.Join(base, "run", "tailscaled.pid")
 	addon.NetBird.PidFile = filepath.Join(base, "run", "netbird.pid")
-	updates = &vpn.VersionCache{TTL: vpn.UpdateTTL}
 
 	r := strings.NewReplacer("CALLS", calls, "FIXTURE", fixture, "PIDFILE", addon.NetBird.PidFile, "PROCDIR", addon.ProcDir)
 	stub(t, filepath.Join(addon.PkgInitdDir, "S98netbird"), r.Replace(`echo "script $1" >> "CALLS"
@@ -69,7 +67,7 @@ stop) echo "Stopping netbird: ${STUB_STOP:-OK}" ;;
 esac`))
 	stub(t, NetbirdPath, r.Replace(`echo "netbird $*" | sed "s| [^ ]*netbird-setup-key[^ ]*| KEYFILE|" >> "CALLS"
 case "$1" in
-version) echo "0.78.2" ;;
+version) echo "${STUB_VERSION:-0.77.0}" ;;
 status) [ -z "$STUB_HANG" ] || exec sleep 30; cat "FIXTURE" ;;
 up)
 	if [ "$2" = "--no-browser" ]; then
@@ -223,12 +221,34 @@ func TestLogoutDeregisters(t *testing.T) {
 	}
 }
 
-func TestGetUpdateReportsCurrentAndLatest(t *testing.T) {
-	lifecycle(t)
-	fetchLatest = func() (string, error) { return "0.78.2", nil }
+// The update on offer is the pin, and finding it asks nothing but the
+// installed CLI.
+func TestGetUpdateOffersThePin(t *testing.T) {
+	calls := lifecycle(t)
 	d := data(t, call(t, NewService().GetUpdate, ""))
-	if d["current"] != "0.78.2" || d["latest"] != "0.78.2" {
+	if d["current"] != "0.77.0" || d["latest"] != Version {
 		t.Fatalf("got %v", d)
+	}
+	if got := callsOf(t, calls); got != "netbird version\n" {
+		t.Fatalf("calls:\n%s", got)
+	}
+}
+
+// An install from before the pin that is the pin or newer keeps running as
+// it is: the update would be a reinstall or a downgrade.
+func TestUpdateRefusesAnInstallAtOrPastThePin(t *testing.T) {
+	calls := lifecycle(t)
+	installPackage = func() error { t.Error("nothing may be installed over the pin or a newer release"); return nil }
+	fakeRunning(t, addon.NetBird, 4242, "/usr/bin/netbird")
+	for _, v := range []string{Version, "0.99.0"} {
+		t.Setenv("STUB_VERSION", v)
+		rsp := call(t, NewService().Update, "")
+		if rsp.Code != -1 || !strings.Contains(rsp.Msg, "the pinned release is "+Version) {
+			t.Fatalf("%s: got %d %q", v, rsp.Code, rsp.Msg)
+		}
+	}
+	if got := callsOf(t, calls); strings.Contains(got, "script") {
+		t.Fatalf("the daemon must be left alone:\n%s", got)
 	}
 }
 
@@ -248,7 +268,7 @@ func TestUpdateKeepsAStoppedDaemonStopped(t *testing.T) {
 	if rsp := call(t, s.Update, ""); rsp.Code != 0 {
 		t.Fatalf("update: %q", rsp.Msg)
 	}
-	if got := callsOf(t, calls); got != "install\n" {
+	if got := callsOf(t, calls); got != "netbird version\ninstall\n" {
 		t.Fatalf("a stopped daemon must stay stopped:\n%s", got)
 	}
 
@@ -257,7 +277,7 @@ func TestUpdateKeepsAStoppedDaemonStopped(t *testing.T) {
 	if rsp := call(t, s.Update, ""); rsp.Code != 0 {
 		t.Fatalf("update: %q", rsp.Msg)
 	}
-	if got := callsOf(t, calls); got != "script stop\ninstall\nscript start\n" {
+	if got := callsOf(t, calls); got != "netbird version\nscript stop\ninstall\nscript start\n" {
 		t.Fatalf("a running daemon must run again:\n%s", got)
 	}
 }

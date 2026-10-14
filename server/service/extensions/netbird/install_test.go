@@ -3,19 +3,28 @@
 package netbird
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
-	"time"
 
 	"NanoKVM-Server/service/extensions/addon"
 	"NanoKVM-Server/service/extensions/vpn"
+	"NanoKVM-Server/service/upstream"
 )
+
+// pinnedPackage serves a good package, pinned to its own sum.
+func pinnedPackage(t *testing.T) {
+	t.Helper()
+	pkg := fakePackage(t, "netbird 0.79.0\n")
+	servePackage(t, pkg, sha256Hex(pkg), 1<<20)
+}
 
 func TestInstallOnADistributionImagePutsTheBinaryOnData(t *testing.T) {
 	fsroot := scratchImage(t, true)
-	calls := fakeApk(t, "0.79.0")
+	calls := fakeApk(t)
+	pinnedPackage(t)
 	if err := install(); err != nil {
 		t.Fatal(err)
 	}
@@ -43,18 +52,22 @@ func TestInstallOnADistributionImagePutsTheBinaryOnData(t *testing.T) {
 
 	got := callsOf(t, calls)
 	last := -1
-	for _, want := range []string{"update\n", "fetch -o ", "verify "} {
+	for _, want := range []string{"verify ", "extract "} {
 		i := strings.Index(got, want)
 		if i <= last {
 			t.Fatalf("want %q after the previous step in:\n%s", want, got)
 		}
 		last = i
 	}
+	if !strings.Contains(got, packageFile) {
+		t.Fatalf("apk must read the pinned package:\n%s", got)
+	}
 }
 
 func TestInstallElsewhereUsesUsrBin(t *testing.T) {
 	fsroot := scratchImage(t, false)
-	fakeApk(t, "0.79.0")
+	fakeApk(t)
+	pinnedPackage(t)
 	if err := install(); err != nil {
 		t.Fatal(err)
 	}
@@ -72,7 +85,8 @@ func TestInstallElsewhereUsesUsrBin(t *testing.T) {
 
 func TestInstallRefusesAnUnsignedPackage(t *testing.T) {
 	fsroot := scratchImage(t, true)
-	fakeApk(t, "0.79.0")
+	fakeApk(t)
+	pinnedPackage(t)
 	t.Setenv("BAD_SIGNATURE", "1")
 
 	err := install()
@@ -103,49 +117,54 @@ func TestInstallWithoutApkSaysWhy(t *testing.T) {
 	}
 }
 
-func TestVersionFromSearch(t *testing.T) {
-	for out, want := range map[string]string{
-		"netbird-0.78.2-r0\n":                           "0.78.2",
-		"netbird-openrc-0.78.2-r0\nnetbird-0.78.2-r1\n": "0.78.2",
-		"netbird-0.79.0_rc1-r0":                         "0.79.0_rc1",
-	} {
-		if got, err := versionFromSearch([]byte(out)); err != nil || got != want {
-			t.Fatalf("%q: got %q %v, want %q", out, got, err, want)
-		}
+// A package whose sum is not the pin is refused before apk reads it, and
+// leaves nothing behind.
+func TestInstallRefusesAMismatchedPackage(t *testing.T) {
+	fsroot := scratchImage(t, true)
+	calls := fakeApk(t)
+	pkg := fakePackage(t, "netbird 0.79.0\n")
+	servePackage(t, pkg, sha256Hex([]byte("another package")), 1<<20)
+
+	err := install()
+	if !errors.Is(err, upstream.ErrChecksum) {
+		t.Fatalf("got %v", err)
 	}
-	if _, err := versionFromSearch([]byte("")); err == nil {
-		t.Fatal("no package must be an error")
+	assertNothingLeft(t, fsroot, calls)
+}
+
+// A package larger than its bound is refused, whatever its sum.
+func TestInstallRefusesAnOversizePackage(t *testing.T) {
+	fsroot := scratchImage(t, true)
+	calls := fakeApk(t)
+	pkg := fakePackage(t, strings.Repeat("x", 4096))
+	servePackage(t, pkg, sha256Hex(pkg), int64(len(pkg)-1))
+
+	err := install()
+	if err == nil || !strings.Contains(err.Error(), "larger than") {
+		t.Fatalf("got %v", err)
+	}
+	assertNothingLeft(t, fsroot, calls)
+}
+
+func assertNothingLeft(t *testing.T, fsroot, calls string) {
+	t.Helper()
+	if got := callsOf(t, calls); got != "" {
+		t.Fatalf("apk must not see a package that failed its pin:\n%s", got)
+	}
+	if _, err := os.Lstat(fsroot + "/usr/bin/netbird"); err == nil {
+		t.Fatal("nothing may be installed")
+	}
+	if _, err := os.Stat(addon.Dir("netbird")); err == nil {
+		t.Fatal("a failed first install must leave no add-on directory behind")
 	}
 }
 
-func TestLatestVersionAsksApk(t *testing.T) {
-	scratchImage(t, true)
-	calls := fakeApk(t, "0.79.0")
-	v, err := latestVersion()
-	if err != nil || v != "0.79.0" {
-		t.Fatalf("got %q %v", v, err)
+// The pin is what the license manifest and the update offer name.
+func TestThePinIsOneRelease(t *testing.T) {
+	if !strings.Contains(releasePackage.URL, "/netbird-"+Version+"-r") || !strings.HasSuffix(releasePackage.URL, "/"+packageFile) {
+		t.Fatalf("%s is not netbird %s as %s", releasePackage.URL, Version, packageFile)
 	}
-	if got := callsOf(t, calls); got != "update\nsearch -e netbird\n" {
-		t.Fatalf("calls:\n%s", got)
-	}
-}
-
-// The page waits on this check. A mirror that does not answer must not hold
-// it for apk's ten minutes.
-func TestLatestVersionGivesUpAfterTheCheckTimeout(t *testing.T) {
-	scratchImage(t, true)
-	fakeApk(t, "0.79.0")
-	slow := filepath.Join(t.TempDir(), "apk")
-	stub(t, slow, "exec sleep 30")
-	savedApk, savedTimeout := ApkPath, checkTimeout
-	t.Cleanup(func() { ApkPath, checkTimeout = savedApk, savedTimeout })
-	ApkPath, checkTimeout = slow, 300*time.Millisecond
-
-	start := time.Now()
-	if _, err := latestVersion(); err == nil {
-		t.Fatal("a check that timed out must fail")
-	}
-	if elapsed := time.Since(start); elapsed > 5*time.Second {
-		t.Fatalf("the check took %s", elapsed)
+	if !strings.HasPrefix(releasePackage.URL, "https://") || len(releasePackage.SHA256) != 64 {
+		t.Fatalf("not a pin: %+v", releasePackage)
 	}
 }

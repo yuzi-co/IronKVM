@@ -3,15 +3,14 @@ package netbird
 import (
 	"context"
 	"errors"
-	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"NanoKVM-Server/service/extensions/addon"
 	"NanoKVM-Server/service/extensions/vpn"
+	"NanoKVM-Server/service/upstream"
 	"NanoKVM-Server/utils"
 
 	log "github.com/sirupsen/logrus"
@@ -27,11 +26,14 @@ var (
 	// image. On one it is the add-on's directory on /data: /tmp is a 79 MB
 	// tmpfs and the binary alone is 43 MB.
 	FallbackWorkspace = "/root/.netbird-fetch"
+	// downloads fetches the package over HTTPS, bounded and checked against
+	// the pin.
+	downloads = upstream.Default
 )
 
 const (
-	packageName = "netbird"
-	apkTimeout  = 10 * time.Minute
+	apkTimeout      = 10 * time.Minute
+	downloadTimeout = 10 * time.Minute
 )
 
 // addonSpec is what NetBird needs back from the root filesystem after a new
@@ -57,10 +59,6 @@ func workspace() string {
 	return FallbackWorkspace
 }
 
-// checkTimeout bounds the update check, apk update and search together. A
-// variable for the tests.
-var checkTimeout = vpn.CheckTimeout
-
 // apk runs the package manager with apk's own deadline. A failure carries its
 // output.
 func apk(args ...string) ([]byte, error) {
@@ -77,11 +75,12 @@ func apkContext(ctx context.Context, args ...string) ([]byte, error) {
 	return vpn.Run(cmd)
 }
 
-// install fetches Alpine's netbird package, checks its signature, and takes
-// usr/bin/netbird out of it. Upstream publishes no riscv64 build; Alpine v3.24
-// community does. Nothing is installed into the root filesystem: the binary
-// goes to the add-on's directory on /data, linked from /usr/bin, or to
-// /usr/bin itself off a distribution image.
+// install downloads the pinned package, checks it against its pin before apk
+// reads it, has apk check its signature, and takes usr/bin/netbird out of it.
+// Nothing is installed into the root filesystem: the binary goes to the
+// add-on's directory on /data, linked from /usr/bin, or to /usr/bin itself
+// off a distribution image. A failed or mismatched download leaves nothing
+// behind.
 func install() error {
 	if _, err := exec.LookPath(ApkPath); err != nil {
 		return errors.New("apk not found: NetBird installs from Alpine's packages and needs an IronKVM image")
@@ -101,14 +100,8 @@ func install() error {
 		}
 	}()
 
-	if _, err := apk("update"); err != nil {
-		return err
-	}
-	if _, err := apk("fetch", "-o", ws, packageName); err != nil {
-		return err
-	}
-	pkg, err := fetchedPackage(ws)
-	if err != nil {
+	pkg := filepath.Join(ws, packageFile)
+	if err := download(pkg); err != nil {
 		return err
 	}
 	if _, err := apk("verify", pkg); err != nil {
@@ -121,20 +114,17 @@ func install() error {
 	if err := placeBinary(filepath.Join(root, "usr", "bin", "netbird")); err != nil {
 		return err
 	}
-	log.Debugf("install netbird from %s", filepath.Base(pkg))
+	log.Debugf("install netbird from %s", packageFile)
 	return nil
 }
 
-// fetchedPackage is the one netbird-<version>.apk that apk fetch wrote.
-func fetchedPackage(dir string) (string, error) {
-	matches, err := filepath.Glob(filepath.Join(dir, packageName+"-[0-9]*.apk"))
-	if err != nil {
-		return "", err
-	}
-	if len(matches) != 1 {
-		return "", fmt.Errorf("apk fetch left %d netbird packages in %s", len(matches), dir)
-	}
-	return matches[0], nil
+// download writes the pinned package to dst. It is kept only when its
+// SHA-256 is the pinned one; anything else, or more than its bound, is
+// removed before it takes its name.
+func download(dst string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), downloadTimeout)
+	defer cancel()
+	return downloads.Download(ctx, releasePackage.URL, releasePackage.SHA256, releasePackage.Max, dst, nil)
 }
 
 // extractPackage unpacks the package into dir. apk extract checks the
@@ -171,35 +161,4 @@ func placeBinary(src string) error {
 		return addon.Record(addonSpec())
 	}
 	return nil
-}
-
-// latestVersion refreshes the index and reads the version of the netbird
-// package it offers.
-func latestVersion() (string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), checkTimeout)
-	defer cancel()
-	if _, err := apkContext(ctx, "update"); err != nil {
-		return "", err
-	}
-	out, err := apkContext(ctx, "search", "-e", packageName)
-	if err != nil {
-		return "", err
-	}
-	return versionFromSearch(out)
-}
-
-// versionFromSearch reads "netbird-0.78.2-r0" and returns "0.78.2". Names
-// such as netbird-openrc-... are other packages and are skipped.
-func versionFromSearch(out []byte) (string, error) {
-	for _, word := range strings.Fields(string(out)) {
-		rest, ok := strings.CutPrefix(word, packageName+"-")
-		if !ok || rest == "" || rest[0] < '0' || rest[0] > '9' {
-			continue
-		}
-		if i := strings.LastIndex(rest, "-r"); i > 0 {
-			rest = rest[:i]
-		}
-		return rest, nil
-	}
-	return "", errors.New("apk offers no netbird package")
 }
