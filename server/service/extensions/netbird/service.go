@@ -2,6 +2,7 @@ package netbird
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -9,6 +10,7 @@ import (
 	"NanoKVM-Server/proto"
 	"NanoKVM-Server/service/extensions/addon"
 	"NanoKVM-Server/service/extensions/vpn"
+	"NanoKVM-Server/service/upstream"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -16,13 +18,9 @@ import (
 
 type Service struct{}
 
-// The update check's cache, the lookup and the installer. Variables so the
-// tests need neither the network nor apk.
-var (
-	updates        = &vpn.VersionCache{TTL: vpn.UpdateTTL}
-	fetchLatest    = latestVersion
-	installPackage = install
-)
+// installPackage installs the pinned package. A variable so the tests need
+// neither the network nor apk.
+var installPackage = install
 
 // busy keeps install, update and uninstall apart: they share the fetch
 // workspace and the binary.
@@ -283,8 +281,10 @@ func (s *Service) Boot(c *gin.Context) {
 	vpn.Boot(c, addon.NetBird, isInstalled())
 }
 
-// GetUpdate reports the installed version and the one Alpine offers, which is
-// looked up at most once an hour.
+// GetUpdate reports the installed version and the pinned one, which is the
+// update on offer. It asks no server: an install from before the pin, of the
+// package Alpine's index held then, is offered the pin when it is older and
+// nothing when it is the pin or newer, and keeps running as it is either way.
 func (s *Service) GetUpdate(c *gin.Context) {
 	var rsp proto.Response
 
@@ -297,17 +297,14 @@ func (s *Service) GetUpdate(c *gin.Context) {
 		rsp.ErrRsp(c, -1, vpn.Message("version failed", err))
 		return
 	}
-	latest, err := updates.Latest(fetchLatest)
-	if err != nil {
-		rsp.ErrRsp(c, -1, vpn.Message("update check failed", err))
-		return
-	}
-	rsp.OkRspWithData(c, &proto.VpnUpdateRsp{Current: current, Latest: latest})
+	rsp.OkRspWithData(c, &proto.VpnUpdateRsp{Current: current, Latest: Version})
 }
 
-// Update installs Alpine's current package over the installed binary. The
-// identity stays on /data, and the daemon runs again only if it ran before,
-// and only if Tailscale did not start meanwhile.
+// Update installs the pinned package over the installed binary. It refuses an
+// install that is the pin or newer, which the pin would downgrade; one whose
+// version cannot be read is replaced. The identity stays on /data, and the
+// daemon runs again only if it ran before, and only if Tailscale did not start
+// meanwhile.
 func (s *Service) Update(c *gin.Context) {
 	var rsp proto.Response
 
@@ -323,6 +320,10 @@ func (s *Service) Update(c *gin.Context) {
 	}
 
 	cli := NewCli()
+	if current, err := cli.Version(); err == nil && upstream.CompareVersions(Version, current) <= 0 {
+		rsp.ErrRsp(c, -1, fmt.Sprintf("netbird %s is installed, and the pinned release is %s", current, Version))
+		return
+	}
 	wasRunning := addon.Running(addon.NetBird)
 	if wasRunning {
 		if err := cli.Stop(); err != nil {
@@ -332,7 +333,6 @@ func (s *Service) Update(c *gin.Context) {
 	}
 
 	err := installPackage()
-	updates.Reset()
 
 	if wasRunning {
 		if startErr := vpn.StartChecked(addon.NetBird, cli.Start); startErr != nil && err == nil {

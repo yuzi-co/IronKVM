@@ -28,8 +28,8 @@ func extensionsRouter(r *gin.Engine) {
 	api.POST("/tailscale/stop", ts.Stop)             // tailscale stop
 	api.POST("/tailscale/restart", ts.Restart)       // tailscale restart
 	api.POST("/tailscale/boot", ts.Boot)             // tailscale start at boot on or off
-	api.GET("/tailscale/update", ts.GetUpdate)       // tailscale current and latest version
-	api.POST("/tailscale/update", ts.Update)         // install the latest tailscale
+	api.GET("/tailscale/update", ts.GetUpdate)       // tailscale current and pinned version
+	api.POST("/tailscale/update", ts.Update)         // install the pinned tailscale
 	api.POST("/tailscale/connect", ts.Connect)       // start if needed, then up
 	api.POST("/tailscale/disconnect", ts.Disconnect) // down, then stop
 
@@ -49,8 +49,8 @@ func extensionsRouter(r *gin.Engine) {
 	api.POST("/netbird/stop", nb.Stop)             // netbird stop
 	api.POST("/netbird/restart", nb.Restart)       // netbird restart
 	api.POST("/netbird/boot", nb.Boot)             // netbird start at boot on or off
-	api.GET("/netbird/update", nb.GetUpdate)       // netbird current and latest version
-	api.POST("/netbird/update", nb.Update)         // install the latest netbird
+	api.GET("/netbird/update", nb.GetUpdate)       // netbird current and pinned version
+	api.POST("/netbird/update", nb.Update)         // install the pinned netbird
 	api.POST("/netbird/connect", nb.Connect)       // start if needed, then up
 	api.POST("/netbird/disconnect", nb.Disconnect) // down, then stop
 }

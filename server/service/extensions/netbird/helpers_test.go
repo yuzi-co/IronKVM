@@ -3,12 +3,20 @@
 package netbird
 
 import (
+	"archive/tar"
+	"bytes"
+	"compress/gzip"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"NanoKVM-Server/service/extensions/addon"
+	"NanoKVM-Server/service/upstream"
 )
 
 // scratchImage points the add-on package and NetbirdPath at a temporary root.
@@ -74,34 +82,73 @@ func callsOf(t *testing.T, calls string) string {
 	return string(b)
 }
 
-// fakeApk puts a stub in place of apk-tools 3. It answers update, search,
-// fetch, verify and extract, builds the package it fetches with tar, and
-// appends every call to the file it returns. BAD_SIGNATURE in the environment
-// makes verify and extract refuse the package, as apk does a tampered one.
-func fakeApk(t *testing.T, version string) (calls string) {
+// fakeApk puts a stub in place of apk-tools 3. It answers verify and extract,
+// unpacks the package with tar, and appends every call to the file it
+// returns. BAD_SIGNATURE in the environment makes verify and extract refuse
+// the package, as apk does a tampered one.
+func fakeApk(t *testing.T) (calls string) {
 	t.Helper()
 	dir := t.TempDir()
 	calls = filepath.Join(dir, "calls")
-	src := filepath.Join(dir, "src")
 	path := filepath.Join(dir, "apk")
 	stub(t, path, fmt.Sprintf(`echo "$*" >> %q
 case "$1" in
-update) echo "OK: 25418 distinct packages available" ;;
-search) echo "netbird-%[2]s-r0" ;;
-fetch)
-	mkdir -p %[3]q/usr/bin
-	printf 'netbird %[2]s\n' > %[3]q/usr/bin/netbird
-	tar -czf "$3/netbird-%[2]s-r0.apk" -C %[3]q usr
-	echo "Downloading netbird-%[2]s-r0" ;;
 verify) [ -z "$BAD_SIGNATURE" ] || { echo "$2: UNTRUSTED signature" >&2; exit 1; } ;;
 extract)
 	[ -z "$BAD_SIGNATURE" ] || { echo "ERROR: $5: UNTRUSTED signature" >&2; exit 1; }
 	tar -xzf "$5" -C "$4" ;;
 *) echo "unexpected: $*" >&2; exit 2 ;;
-esac`, calls, version, src))
+esac`, calls))
 
 	saved := ApkPath
 	t.Cleanup(func() { ApkPath = saved })
 	ApkPath = path
 	return calls
+}
+
+// fakePackage is a package as the stub apk reads it: a tar.gz holding
+// usr/bin/netbird with the given content.
+func fakePackage(t *testing.T, binary string) []byte {
+	t.Helper()
+	var buf bytes.Buffer
+	gz := gzip.NewWriter(&buf)
+	tw := tar.NewWriter(gz)
+	for _, d := range []string{"usr/", "usr/bin/"} {
+		if err := tw.WriteHeader(&tar.Header{Name: d, Typeflag: tar.TypeDir, Mode: 0o755}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := tw.WriteHeader(&tar.Header{Name: "usr/bin/netbird", Mode: 0o755, Size: int64(len(binary))}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := tw.Write([]byte(binary)); err != nil {
+		t.Fatal(err)
+	}
+	if err := tw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if err := gz.Close(); err != nil {
+		t.Fatal(err)
+	}
+	return buf.Bytes()
+}
+
+// servePackage serves body over TLS as the pinned package, pinned to sum
+// with the bound limit.
+func servePackage(t *testing.T, body []byte, sum string, limit int64) {
+	t.Helper()
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write(body)
+	}))
+	t.Cleanup(srv.Close)
+
+	savedPin, savedDownloads := releasePackage, downloads
+	t.Cleanup(func() { releasePackage, downloads = savedPin, savedDownloads })
+	releasePackage = pinnedFile{URL: srv.URL + "/" + packageFile, SHA256: sum, Max: limit}
+	downloads = upstream.NewClient(srv.URL, srv.Client())
+}
+
+func sha256Hex(b []byte) string {
+	s := sha256.Sum256(b)
+	return hex.EncodeToString(s[:])
 }

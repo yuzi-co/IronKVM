@@ -3,65 +3,45 @@
 package tailscale
 
 import (
-	"net/http"
-	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 
 	"NanoKVM-Server/service/extensions/addon"
-	"NanoKVM-Server/service/extensions/vpn"
 )
 
-func TestVersionFromPackageURL(t *testing.T) {
-	v, err := versionFromPackageURL("https://pkgs.tailscale.com/stable/tailscale_1.90.1_riscv64.tgz")
-	if err != nil || v != "1.90.1" {
-		t.Fatalf("got %q %v", v, err)
+// The update on offer is the pin, and finding it asks nothing but the
+// installed CLI.
+func TestGetUpdateOffersThePin(t *testing.T) {
+	calls := lifecycle(t)
+	rsp := call(t, NewService().GetUpdate, "")
+	data, _ := rsp.Data.(map[string]any)
+	if rsp.Code != 0 || data["current"] != "1.88.3" || data["latest"] != Version {
+		t.Fatalf("got %d %q %v", rsp.Code, rsp.Msg, rsp.Data)
 	}
-	if _, err := versionFromPackageURL("https://pkgs.tailscale.com/stable/tailscale_latest_riscv64.tgz"); err == nil {
-		t.Fatal("the unresolved alias has no version")
-	}
-}
-
-// A fake release server: the latest alias redirects to a versioned package.
-func TestResolveRedirectFollowsToThePackage(t *testing.T) {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/stable/tailscale_latest_riscv64.tgz", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, "/stable/tailscale_1.90.1_riscv64.tgz", http.StatusFound)
-	})
-	mux.HandleFunc("/stable/tailscale_1.90.1_riscv64.tgz", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodHead {
-			t.Errorf("the check must not download the package, got %s", r.Method)
-		}
-	})
-	srv := httptest.NewServer(mux)
-	defer srv.Close()
-
-	resolved, err := resolveRedirect(srv.Client(), srv.URL+"/stable/tailscale_latest_riscv64.tgz")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if v, err := versionFromPackageURL(resolved); err != nil || v != "1.90.1" {
-		t.Fatalf("got %q %v from %s", v, err, resolved)
+	if got := callsOf(t, calls); got != "tailscale version\n" {
+		t.Fatalf("calls:\n%s", got)
 	}
 }
 
-func TestGetUpdateReportsCurrentAndLatestAndCaches(t *testing.T) {
-	lifecycle(t)
-	savedCache, savedFetch := updates, fetchLatest
-	t.Cleanup(func() { updates, fetchLatest = savedCache, savedFetch })
-	updates = &vpn.VersionCache{TTL: vpn.UpdateTTL}
-	fetches := 0
-	fetchLatest = func() (string, error) { fetches++; return "1.90.1", nil }
-
-	for i := 0; i < 2; i++ {
-		rsp := call(t, NewService().GetUpdate, "")
-		data, _ := rsp.Data.(map[string]any)
-		if rsp.Code != 0 || data["current"] != "1.88.3" || data["latest"] != "1.90.1" {
-			t.Fatalf("got %d %q %v", rsp.Code, rsp.Msg, rsp.Data)
+// An install from before the pin that is the pin or newer keeps running as
+// it is: the update would be a reinstall or a downgrade.
+func TestUpdateRefusesAnInstallAtOrPastThePin(t *testing.T) {
+	calls := lifecycle(t)
+	savedInstall := installPackage
+	t.Cleanup(func() { installPackage = savedInstall })
+	installPackage = func() error { t.Error("nothing may be installed over the pin or a newer release"); return nil }
+	fakeRunning(t, addon.Tailscale, 4343, "/usr/sbin/tailscaled")
+	for _, v := range []string{Version, "1.200.0"} {
+		stub(t, TailscalePath, `echo "tailscale $*" >> "`+calls+`"
+[ "$1" = version ] && echo "`+v+`"`)
+		rsp := call(t, NewService().Update, "")
+		if rsp.Code != -1 || !strings.Contains(rsp.Msg, "the pinned release is "+Version) {
+			t.Fatalf("%s: got %d %q", v, rsp.Code, rsp.Msg)
 		}
 	}
-	if fetches != 1 {
-		t.Fatalf("the release server was asked %d times within the hour", fetches)
+	if got := callsOf(t, calls); strings.Contains(got, "script") {
+		t.Fatalf("the daemon must be left alone:\n%s", got)
 	}
 }
 
@@ -85,7 +65,7 @@ func TestUpdateRestartsOnlyADaemonThatRan(t *testing.T) {
 	if rsp := call(t, s.Update, ""); rsp.Code != 0 {
 		t.Fatalf("update: %q", rsp.Msg)
 	}
-	if got := callsOf(t, calls); got != "install\n" {
+	if got := callsOf(t, calls); got != "tailscale version\ninstall\n" {
 		t.Fatalf("a stopped daemon must stay stopped:\n%s", got)
 	}
 
@@ -94,7 +74,7 @@ func TestUpdateRestartsOnlyADaemonThatRan(t *testing.T) {
 	if rsp := call(t, s.Update, ""); rsp.Code != 0 {
 		t.Fatalf("update: %q", rsp.Msg)
 	}
-	if got := callsOf(t, calls); got != "script stop\ninstall\nscript start\n" {
+	if got := callsOf(t, calls); got != "tailscale version\nscript stop\ninstall\nscript start\n" {
 		t.Fatalf("a running daemon must run again:\n%s", got)
 	}
 }

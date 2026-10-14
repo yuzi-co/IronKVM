@@ -55,7 +55,8 @@ export const Header = ({ vpn, state, failed, setIsLocked, onChange, onError }: H
   const installed = !!state && state !== 'notInstall';
   const tag = statusTag(state, failed);
 
-  // The server caches the answer for an hour, so asking on every visit is cheap.
+  // The server answers from its pinned release without asking the network, so
+  // asking on every visit is cheap. latest is that pin.
   useEffect(() => {
     if (!installed) return;
     vpn.api
