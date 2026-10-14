@@ -1513,7 +1513,7 @@ const hu = {
         videoClock: {
           title: 'Videó órajelek',
           description: 'A videókódolók és a skálázó órajelprofilja',
-          tip: 'A Gyors 594, 396 és 450 MHz-en járatja a kodekmagot, a skálázót és a kodekbuszt; a Normál a chip gyári 396, 300 és 360 MHz-én. A Gyors körülbelül 4 ms-mal csökkenti a stream késleltetését; a Normál kevesebbet fogyaszt, amíg a videó fut. A változás a videó következő indulásakor lép életbe.',
+          tip: 'A Gyors 594, 396 és 450 MHz-en járatja a kodekmagot, a skálázót és a kodekbuszt; a Normál a chip gyári 396, 300 és 360 MHz-én. A Gyors körülbelül 4 ms-mal (H.265) és 3 ms-mal (H.264) csökkenti a stream késleltetését, mérhető hőmérséklet-emelkedés nélkül. A változás a videó következő indulásakor lép életbe.',
           standard: 'Normál',
           fast: 'Gyors',
           rates: 'Kodek {{codec}} · skálázó {{vpss}} · busz {{bus}} MHz',

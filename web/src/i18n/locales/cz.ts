@@ -1489,7 +1489,7 @@ const cz = {
         videoClock: {
           title: 'Takty videa',
           description: 'Profil taktu video kodérů a škálovače',
-          tip: 'Rychlý provozuje jádro kodeku, škálovač a sběrnici kodeku na 594, 396 a 450 MHz; Standardní na výchozích 396, 300 a 360 MHz čipu. Rychlý snižuje latenci streamu asi o 4 ms; Standardní má nižší spotřebu, když video běží. Změna se projeví při dalším spuštění videa.',
+          tip: 'Rychlý provozuje jádro kodeku, škálovač a sběrnici kodeku na 594, 396 a 450 MHz; Standardní na výchozích 396, 300 a 360 MHz čipu. Rychlý snižuje latenci streamu asi o 4 ms (H.265) a 3 ms (H.264) bez měřitelného nárůstu teploty. Změna se projeví při dalším spuštění videa.',
           standard: 'Standardní',
           fast: 'Rychlý',
           rates: 'Kodek {{codec}} · škálovač {{vpss}} · sběrnice {{bus}} MHz',

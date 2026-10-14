@@ -1527,7 +1527,7 @@ const de = {
         videoClock: {
           title: 'Videotakte',
           description: 'Taktprofil der Video-Encoder und des Skalierers',
-          tip: 'Schnell betreibt Codec-Kern, Skalierer und Codec-Bus mit 594, 396 und 450 MHz; Standard mit den Werkswerten des Chips, 396, 300 und 360 MHz. Schnell senkt die Latenz des Streams um etwa 4 ms; Standard braucht weniger Strom, solange das Video läuft. Eine Änderung gilt ab dem nächsten Start des Videos.',
+          tip: 'Schnell betreibt Codec-Kern, Skalierer und Codec-Bus mit 594, 396 und 450 MHz; Standard mit den Werkswerten des Chips, 396, 300 und 360 MHz. Schnell senkt die Latenz des Streams um etwa 4 ms (H.265) und 3 ms (H.264), ohne messbar höhere Temperatur. Eine Änderung gilt ab dem nächsten Start des Videos.',
           standard: 'Standard',
           fast: 'Schnell',
           rates: 'Codec {{codec}} · Skalierer {{vpss}} · Bus {{bus}} MHz',

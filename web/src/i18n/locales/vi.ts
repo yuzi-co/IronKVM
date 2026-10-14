@@ -1487,7 +1487,7 @@ const vi = {
         videoClock: {
           title: 'Xung nhịp video',
           description: 'Cấu hình xung nhịp của bộ mã hóa và bộ co giãn video',
-          tip: 'Nhanh chạy lõi codec, bộ co giãn và bus codec ở 594, 396 và 450 MHz; Tiêu chuẩn ở mức mặc định của chip là 396, 300 và 360 MHz. Nhanh giảm độ trễ luồng khoảng 4 ms; Tiêu chuẩn tốn ít điện hơn khi video chạy. Thay đổi có hiệu lực khi video bắt đầu lần tới.',
+          tip: 'Nhanh chạy lõi codec, bộ co giãn và bus codec ở 594, 396 và 450 MHz; Tiêu chuẩn ở mức mặc định của chip là 396, 300 và 360 MHz. Nhanh giảm độ trễ luồng khoảng 4 ms (H.265) và 3 ms (H.264), không làm nhiệt độ tăng đáng kể. Thay đổi có hiệu lực khi video bắt đầu lần tới.',
           standard: 'Tiêu chuẩn',
           fast: 'Nhanh',
           rates: 'Codec {{codec}} · co giãn {{vpss}} · bus {{bus}} MHz',

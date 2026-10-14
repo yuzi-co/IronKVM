@@ -1492,7 +1492,7 @@ const nb = {
         videoClock: {
           title: 'Videoklokker',
           description: 'Klokkeprofil for videokoderne og skalereren',
-          tip: 'Rask kjører kodekkjernen, skalereren og kodekbussen på 594, 396 og 450 MHz; Standard på brikkens standard 396, 300 og 360 MHz. Rask senker strømmens forsinkelse med omtrent 4 ms; Standard bruker mindre strøm mens videoen går. En endring gjelder når videoen starter neste gang.',
+          tip: 'Rask kjører kodekkjernen, skalereren og kodekbussen på 594, 396 og 450 MHz; Standard på brikkens standard 396, 300 og 360 MHz. Rask senker strømmens forsinkelse med omtrent 4 ms (H.265) og 3 ms (H.264), uten målbar temperaturøkning. En endring gjelder når videoen starter neste gang.',
           standard: 'Standard',
           fast: 'Rask',
           rates: 'Kodek {{codec}} · skalerer {{vpss}} · buss {{bus}} MHz',

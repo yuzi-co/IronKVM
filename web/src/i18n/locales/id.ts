@@ -1496,7 +1496,7 @@ const id = {
         videoClock: {
           title: 'Clock video',
           description: 'Profil clock encoder dan scaler video',
-          tip: 'Cepat menjalankan inti codec, scaler, dan bus codec pada 594, 396, dan 450 MHz; Standar pada nilai bawaan chip, 396, 300, dan 360 MHz. Cepat menurunkan latensi stream sekitar 4 ms; Standar memakai daya lebih sedikit saat video berjalan. Perubahan berlaku saat video dimulai lagi.',
+          tip: 'Cepat menjalankan inti codec, scaler, dan bus codec pada 594, 396, dan 450 MHz; Standar pada nilai bawaan chip, 396, 300, dan 360 MHz. Cepat menurunkan latensi stream sekitar 4 ms (H.265) dan 3 ms (H.264), tanpa kenaikan suhu yang terukur. Perubahan berlaku saat video dimulai lagi.',
           standard: 'Standar',
           fast: 'Cepat',
           rates: 'Codec {{codec}} · scaler {{vpss}} · bus {{bus}} MHz',

@@ -1517,7 +1517,7 @@ const es = {
         videoClock: {
           title: 'Relojes de vídeo',
           description: 'Perfil de reloj de los codificadores y del escalador de vídeo',
-          tip: 'Rápido hace funcionar el núcleo del códec, el escalador y el bus del códec a 594, 396 y 450 MHz; Estándar a los valores de fábrica del chip, 396, 300 y 360 MHz. Rápido reduce la latencia del flujo unos 4 ms; Estándar consume menos mientras el vídeo funciona. El cambio se aplica cuando el vídeo vuelve a empezar.',
+          tip: 'Rápido hace funcionar el núcleo del códec, el escalador y el bus del códec a 594, 396 y 450 MHz; Estándar a los valores de fábrica del chip, 396, 300 y 360 MHz. Rápido reduce la latencia del flujo unos 4 ms (H.265) y 3 ms (H.264), sin un aumento de temperatura medible. El cambio se aplica cuando el vídeo vuelve a empezar.',
           standard: 'Estándar',
           fast: 'Rápido',
           rates: 'Códec {{codec}} · escalador {{vpss}} · bus {{bus}} MHz',

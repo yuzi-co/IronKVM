@@ -1483,7 +1483,7 @@ const en = {
         videoClock: {
           title: 'Video clocks',
           description: 'Clock profile of the video encoders and scaler',
-          tip: 'Fast runs the codec core, the scaler and the codec bus at 594, 396 and 450 MHz; Standard at the chip\'s stock 396, 300 and 360 MHz. Fast cuts the stream latency by about 4 ms; Standard draws less power while the video runs. A change applies when the video next starts.',
+          tip: 'Fast runs the codec core, the scaler and the codec bus at 594, 396 and 450 MHz; Standard at the chip\'s stock 396, 300 and 360 MHz. Fast cuts the stream latency by about 4 ms (H.265) and 3 ms (H.264), with no measurable rise in temperature. A change applies when the video next starts.',
           standard: 'Standard',
           fast: 'Fast',
           rates: 'Codec {{codec}} · scaler {{vpss}} · bus {{bus}} MHz',

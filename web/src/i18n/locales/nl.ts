@@ -1508,7 +1508,7 @@ const nl = {
         videoClock: {
           title: 'Videoklokken',
           description: 'Klokprofiel van de video-encoders en de scaler',
-          tip: 'Snel laat de codeckern, de scaler en de codecbus draaien op 594, 396 en 450 MHz; Standaard op de fabriekswaarden van de chip, 396, 300 en 360 MHz. Snel verlaagt de latentie van de stream met ongeveer 4 ms; Standaard verbruikt minder zolang de video loopt. Een wijziging geldt vanaf de volgende start van de video.',
+          tip: 'Snel laat de codeckern, de scaler en de codecbus draaien op 594, 396 en 450 MHz; Standaard op de fabriekswaarden van de chip, 396, 300 en 360 MHz. Snel verlaagt de latentie van de stream met ongeveer 4 ms (H.265) en 3 ms (H.264), zonder meetbaar hogere temperatuur. Een wijziging geldt vanaf de volgende start van de video.',
           standard: 'Standaard',
           fast: 'Snel',
           rates: 'Codec {{codec}} · scaler {{vpss}} · bus {{bus}} MHz',

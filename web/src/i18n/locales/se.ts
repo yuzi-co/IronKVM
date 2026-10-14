@@ -1495,7 +1495,7 @@ const se = {
         videoClock: {
           title: 'Videoklockor',
           description: 'Klockprofil för videokodarna och skalaren',
-          tip: 'Snabb kör codec-kärnan, skalaren och codec-bussen på 594, 396 och 450 MHz; Standard på kretsens standard 396, 300 och 360 MHz. Snabb sänker strömmens latens med cirka 4 ms; Standard drar mindre ström medan videon körs. En ändring gäller när videon startar nästa gång.',
+          tip: 'Snabb kör codec-kärnan, skalaren och codec-bussen på 594, 396 och 450 MHz; Standard på kretsens standard 396, 300 och 360 MHz. Snabb sänker strömmens latens med cirka 4 ms (H.265) och 3 ms (H.264), utan mätbar temperaturökning. En ändring gäller när videon startar nästa gång.',
           standard: 'Standard',
           fast: 'Snabb',
           rates: 'Codec {{codec}} · skalare {{vpss}} · buss {{bus}} MHz',
