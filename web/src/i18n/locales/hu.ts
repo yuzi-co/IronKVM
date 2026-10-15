@@ -2122,12 +2122,15 @@ const hu = {
         switchFailed: 'Nem sikerült váltani az ügynöki szerepkört'
       },
       send: 'Küldés',
+      stop: 'Leállítás',
       cancel: 'Mégse',
       status: {
         connecting: 'Csatlakozás az átjáróhoz...',
         connected: 'PicoClaw munkamenet csatlakoztatva',
         disconnected: 'PicoClaw munkamenet lezárva',
         stopped: 'Leállítási kérés elküldve',
+        stopFailed: 'A leállítási kérést nem sikerült elküldeni: a csevegés nincs csatlakoztatva.',
+        stopTimeout: 'A PicoClaw nem erősítette meg a leállítást. A feladat még futhat.',
         runtimeStarted: 'PicoClaw Runtime elindult',
         runtimeStartFailed: 'Nem sikerült elindítani a PicoClaw Runtime-ot',
         runtimeStopped: 'PicoClaw Runtime leállt',

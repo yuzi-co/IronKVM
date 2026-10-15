@@ -2099,12 +2099,15 @@ const tr = {
         switchFailed: 'Temsilci rolü değiştirilemedi'
       },
       send: 'Gönder',
+      stop: 'Durdur',
       cancel: 'İptal',
       status: {
         connecting: 'Ağ geçidine bağlanılıyor...',
         connected: 'PicoClaw oturumu bağlandı',
         disconnected: 'PicoClaw oturumu bağlantısı kesildi',
         stopped: 'Durdurma isteği gönderildi',
+        stopFailed: 'Durdurma isteği gönderilemedi: sohbet bağlı değil.',
+        stopTimeout: 'PicoClaw durdurmayı onaylamadı. Görev hâlâ çalışıyor olabilir.',
         runtimeStarted: 'PicoClaw runtime başlatıldı',
         runtimeStartFailed: 'PicoClaw runtime başlatılamadı',
         runtimeStopped: 'PicoClaw runtime durduruldu',

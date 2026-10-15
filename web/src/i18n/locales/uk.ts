@@ -2109,12 +2109,15 @@ const uk = {
         switchFailed: 'Не вдалося змінити роль агента'
       },
       send: 'Надіслати',
+      stop: 'Зупинити',
       cancel: 'Скасувати',
       status: {
         connecting: 'Підключення до шлюзу...',
         connected: 'Сеанс PicoClaw підключено',
         disconnected: 'Сеанс PicoClaw відключено',
         stopped: 'Запит на зупинку надіслано',
+        stopFailed: 'Не вдалося надіслати запит на зупинку: чат не підключено.',
+        stopTimeout: 'PicoClaw не підтвердив зупинку. Завдання, можливо, ще виконується.',
         runtimeStarted: 'Runtime PicoClaw запущено',
         runtimeStartFailed: 'Не вдалося запустити runtime PicoClaw',
         runtimeStopped: 'Runtime PicoClaw зупинено',

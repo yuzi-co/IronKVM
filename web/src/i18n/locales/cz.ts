@@ -2090,12 +2090,15 @@ const cz = {
         switchFailed: 'Přepnutí role agenta se nezdařilo'
       },
       send: 'Odeslat',
+      stop: 'Zastavit',
       cancel: 'Zrušit',
       status: {
         connecting: 'Připojování k bráně...',
         connected: 'Relace PicoClaw připojena',
         disconnected: 'Relace PicoClaw uzavřena',
         stopped: 'Požadavek na zastavení byl odeslán',
+        stopFailed: 'Požadavek na zastavení se nepodařilo odeslat: chat není připojen.',
+        stopTimeout: 'PicoClaw zastavení nepotvrdil. Úloha možná stále běží.',
         runtimeStarted: 'Spuštěno běhové prostředí PicoClaw',
         runtimeStartFailed: 'Selhalo spuštění běhového prostředí PicoClaw',
         runtimeStopped: 'Běhové prostředí PicoClaw zastaveno',

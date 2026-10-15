@@ -2120,12 +2120,16 @@ const nl = {
         switchFailed: 'Kan agentrol niet wisselen'
       },
       send: 'Verzenden',
+      stop: 'Stoppen',
       cancel: 'Annuleren',
       status: {
         connecting: 'Verbinden met gateway...',
         connected: 'PicoClaw-sessie verbonden',
         disconnected: 'PicoClaw-sessie gesloten',
         stopped: 'Stopverzoek verzonden',
+        stopFailed: 'Het stopverzoek kon niet worden verzonden: de chat is niet verbonden.',
+        stopTimeout:
+          'PicoClaw heeft het stoppen niet bevestigd. De taak wordt mogelijk nog uitgevoerd.',
         runtimeStarted: 'PicoClaw runtime gestart',
         runtimeStartFailed: 'Kan PicoClaw runtime niet starten',
         runtimeStopped: 'PicoClaw runtime gestopt',

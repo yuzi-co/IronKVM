@@ -2125,12 +2125,16 @@ const it = {
         switchFailed: "Impossibile cambiare il ruolo dell'agente"
       },
       send: 'Invia',
+      stop: 'Interrompi',
       cancel: 'Annulla',
       status: {
         connecting: 'Connessione al gateway...',
         connected: 'Sessione PicoClaw connessa',
         disconnected: 'Sessione PicoClaw chiusa',
         stopped: 'Richiesta di interruzione inviata',
+        stopFailed: 'Impossibile inviare la richiesta di interruzione: la chat non è connessa.',
+        stopTimeout:
+          "PicoClaw non ha confermato l'interruzione. L'attività potrebbe essere ancora in corso.",
         runtimeStarted: 'Runtime PicoClaw avviato',
         runtimeStartFailed: 'Impossibile avviare il runtime PicoClaw',
         runtimeStopped: 'Runtime PicoClaw interrotto',

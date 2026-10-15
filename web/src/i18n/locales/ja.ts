@@ -2099,12 +2099,15 @@ const ja = {
         switchFailed: 'エージェントの役割を切り替えることができませんでした'
       },
       send: '送信',
+      stop: '停止',
       cancel: 'キャンセル',
       status: {
         connecting: 'ゲートウェイに接続しています...',
         connected: 'PicoClaw セッションが接続されました',
         disconnected: 'PicoClaw セッションが終了しました',
         stopped: '停止要求が送信されました',
+        stopFailed: '停止要求を送信できませんでした: チャットが接続されていません。',
+        stopTimeout: 'PicoClaw が停止を確認しませんでした。タスクはまだ実行中の可能性があります。',
         runtimeStarted: 'PicoClaw ランタイムが開始されました',
         runtimeStartFailed: 'PicoClaw ランタイムの開始に失敗しました',
         runtimeStopped: 'PicoClaw ランタイムが停止しました',

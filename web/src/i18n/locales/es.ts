@@ -2128,12 +2128,16 @@ const es = {
         switchFailed: 'No se pudo cambiar la función del agente'
       },
       send: 'Enviar',
+      stop: 'Detener',
       cancel: 'Cancelar',
       status: {
         connecting: 'Conectándose a la puerta de enlace...',
         connected: 'Sesión de PicoClaw conectada',
         disconnected: 'Sesión de PicoClaw cerrada',
         stopped: 'Solicitud de detención enviada',
+        stopFailed: 'No se pudo enviar la solicitud de detención: el chat no está conectado.',
+        stopTimeout:
+          'PicoClaw no confirmó la detención. Es posible que la tarea siga en ejecución.',
         runtimeStarted: 'Tiempo de ejecución de PicoClaw iniciado',
         runtimeStartFailed: 'Error al iniciar el tiempo de ejecución de PicoClaw',
         runtimeStopped: 'Tiempo de ejecución de PicoClaw detenido',

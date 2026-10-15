@@ -2096,12 +2096,15 @@ const nb = {
         switchFailed: 'Kunne ikke bytte agentrolle'
       },
       send: 'Send',
+      stop: 'Stopp',
       cancel: 'Avbryt',
       status: {
         connecting: 'Kobler til gateway...',
         connected: 'PicoClaw-økt tilkoblet',
         disconnected: 'PicoClaw-økt frakoblet',
         stopped: 'Stoppforespørsel sendt',
+        stopFailed: 'Stoppforespørselen kunne ikke sendes: chatten er ikke tilkoblet.',
+        stopTimeout: 'PicoClaw bekreftet ikke stoppet. Oppgaven kan fortsatt kjøre.',
         runtimeStarted: 'PicoClaw runtime startet',
         runtimeStartFailed: 'Kunne ikke starte PicoClaw runtime',
         runtimeStopped: 'PicoClaw runtime stoppet',

@@ -2011,12 +2011,15 @@ const zh = {
         switchFailed: '切换角色失败'
       },
       send: '发送',
+      stop: '停止',
       cancel: '取消',
       status: {
         connecting: '正在连接 Gateway...',
         connected: 'PicoClaw 会话已连接',
         disconnected: 'PicoClaw 会话已关闭',
         stopped: '已发送停止请求',
+        stopFailed: '无法发送停止请求：聊天未连接。',
+        stopTimeout: 'PicoClaw 未确认停止，任务可能仍在运行。',
         runtimeStarted: 'PicoClaw 运行时已启动',
         runtimeStartFailed: '启动 PicoClaw 运行时失败',
         runtimeStopped: 'PicoClaw 运行时已停止',

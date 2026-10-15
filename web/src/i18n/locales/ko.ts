@@ -2067,12 +2067,15 @@ const ko = {
         switchFailed: '에이전트 역할 변경에 실패했습니다'
       },
       send: '전송',
+      stop: '중지',
       cancel: '취소',
       status: {
         connecting: '게이트웨이 연결 중...',
         connected: 'PicoClaw 세션이 연결되었습니다',
         disconnected: 'PicoClaw 세션이 종료되었습니다',
         stopped: '중지 요청이 전송되었습니다',
+        stopFailed: '중지 요청을 보낼 수 없습니다: 채팅이 연결되어 있지 않습니다.',
+        stopTimeout: 'PicoClaw가 중지를 확인하지 않았습니다. 작업이 아직 실행 중일 수 있습니다.',
         runtimeStarted: 'PicoClaw 런타임이 시작되었습니다',
         runtimeStartFailed: 'PicoClaw 런타임 시작에 실패했습니다',
         runtimeStopped: 'PicoClaw 런타임이 중지되었습니다',
