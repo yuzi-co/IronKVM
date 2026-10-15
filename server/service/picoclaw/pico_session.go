@@ -73,12 +73,23 @@ func (p *picoSession) Prompt(_ context.Context, prompt agent.Prompt) error {
 	})
 }
 
-func (p *picoSession) Cancel(_ context.Context, requestID string) error {
+// picoStopCommand is PicoClaw's command to stop the session's running turn.
+const picoStopCommand = "/stop"
+
+// Cancel stops the session's running turn. The pico protocol has no cancel
+// message: PicoClaw answers an unknown type such as "message.cancel" with an
+// error and lets the turn run on. It does honour a /stop chat command sent to
+// a session that has a turn running: it aborts that turn, which then ends with
+// a turn.done of status "canceled" that lists the /stop message's id with the
+// prompt's. /stop stops the whole turn, so requestID only matters to the
+// bridge's leases; the message gets an id of its own.
+func (p *picoSession) Cancel(_ context.Context, _ string) error {
 	return p.write(picoGatewayMessage{
-		Type:      "message.cancel",
-		ID:        requestID,
+		Type:      "message.send",
+		ID:        uuid.NewString(),
 		SessionID: p.sessionID,
-		Payload:   map[string]any{},
+		Timestamp: time.Now().UnixMilli(),
+		Payload:   map[string]any{"content": picoStopCommand},
 	})
 }
 

@@ -2106,12 +2106,15 @@ const pl = {
         switchFailed: 'Nie udało się zmienić roli agenta'
       },
       send: 'Wyślij',
+      stop: 'Zatrzymaj',
       cancel: 'Anuluj',
       status: {
         connecting: 'Łączenie z bramką...',
         connected: 'Sesja PicoClaw połączona',
         disconnected: 'Sesja PicoClaw zamknięta',
         stopped: 'Wysłano żądanie zatrzymania',
+        stopFailed: 'Nie udało się wysłać żądania zatrzymania: czat nie jest połączony.',
+        stopTimeout: 'PicoClaw nie potwierdził zatrzymania. Zadanie może nadal działać.',
         runtimeStarted: 'Runtime PicoClaw uruchomiony',
         runtimeStartFailed: 'Nie udało się uruchomić runtime PicoClaw',
         runtimeStopped: 'Runtime PicoClaw zatrzymany',

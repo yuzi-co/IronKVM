@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useAtom, useSetAtom } from 'jotai';
 import { useTranslation } from 'react-i18next';
 
@@ -34,7 +34,10 @@ import {
   usePicoclawSidebarLifecycle,
   usePicoclawStatusRefresh
 } from './sidebar-effects.ts';
-import { createPicoclawSidebarSessionActions } from './sidebar-session-actions.ts';
+import {
+  createPicoclawSidebarSessionActions,
+  createPicoclawTurnStopper
+} from './sidebar-session-actions.ts';
 
 export const useSidebar = () => {
   const { t } = useTranslation();
@@ -80,6 +83,7 @@ export const useSidebar = () => {
   const [isDeletingSession, setIsDeletingSession] = useState(false);
   const [historySessions, setHistorySessions] = useState<PicoclawSessionListItem[]>([]);
   const [activeSessionId, setActiveSessionId] = useState('');
+  const [isStoppingTurn, setIsStoppingTurn] = useState(false);
   const [installSnapshot, setInstallSnapshot] = useState<PicoclawRuntimeInstallSnapshot | null>(
     () => getPicoclawRuntimeInstallSnapshot()
   );
@@ -147,6 +151,21 @@ export const useSidebar = () => {
     refreshStateRef.current = actions.refreshState;
     isTogglingRuntimeRef.current = isTogglingRuntime;
   });
+  // One stopper for the sidebar's life: it holds the timer of a stop that
+  // waits for the agent, across renders.
+  const [turnStopper] = useState(() =>
+    createPicoclawTurnStopper({
+      setMessages,
+      setRunState,
+      setIsStoppingTurn
+    })
+  );
+  useEffect(() => {
+    if (runState !== 'busy') {
+      turnStopper.settle();
+    }
+  }, [runState, turnStopper]);
+  useEffect(() => () => turnStopper.settle(), [turnStopper]);
   const sessionActions = createPicoclawSidebarSessionActions({
     t,
     transportState,
@@ -170,7 +189,8 @@ export const useSidebar = () => {
     setIsLoadingHistory,
     setIsDeletingSession,
     setIsSwitchingSession,
-    setRuntimeStatus
+    setRuntimeStatus,
+    turnStopper
   });
 
   usePicoclawGatewayEvents({
@@ -274,6 +294,7 @@ export const useSidebar = () => {
     isInstallingRuntime,
     isLoadingHistory,
     isSwitchingSession,
+    isStoppingTurn,
     isUninstallingRuntime: isUninstallRequestPending,
     installProgress,
     installStage,

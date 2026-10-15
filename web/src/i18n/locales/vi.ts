@@ -2094,12 +2094,15 @@ const vi = {
         switchFailed: 'Chuyển đổi vai trò đại lý không thành công'
       },
       send: 'Gửi',
+      stop: 'Dừng',
       cancel: 'Hủy',
       status: {
         connecting: 'Đang kết nối với cổng...',
         connected: 'Phiên PicoClaw đã kết nối',
         disconnected: 'Phiên PicoClaw đã ngắt kết nối',
         stopped: 'Đã gửi yêu cầu dừng',
+        stopFailed: 'Không thể gửi yêu cầu dừng: cuộc trò chuyện chưa được kết nối.',
+        stopTimeout: 'PicoClaw không xác nhận việc dừng. Tác vụ có thể vẫn đang chạy.',
         runtimeStarted: 'Runtime PicoClaw đã bắt đầu',
         runtimeStartFailed: 'Không khởi động được runtime PicoClaw',
         runtimeStopped: 'Runtime PicoClaw đã dừng',

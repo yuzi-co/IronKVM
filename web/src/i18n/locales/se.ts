@@ -2101,12 +2101,15 @@ const se = {
         switchFailed: 'Det gick inte att byta agentroll'
       },
       send: 'Skicka',
+      stop: 'Stoppa',
       cancel: 'Avbryt',
       status: {
         connecting: 'Ansluter till gateway...',
         connected: 'PicoClaw-session ansluten',
         disconnected: 'PicoClaw-session frånkopplad',
         stopped: 'Stoppbegäran har skickats',
+        stopFailed: 'Stoppbegäran kunde inte skickas: chatten är inte ansluten.',
+        stopTimeout: 'PicoClaw bekräftade inte stoppet. Uppgiften kan fortfarande köras.',
         runtimeStarted: 'PicoClaw runtime startad',
         runtimeStartFailed: 'Det gick inte att starta PicoClaw runtime',
         runtimeStopped: 'PicoClaw runtime stoppad',

@@ -2101,12 +2101,15 @@ const id = {
         switchFailed: 'Gagal mengganti peran agen'
       },
       send: 'Kirim',
+      stop: 'Hentikan',
       cancel: 'Batalkan',
       status: {
         connecting: 'Menghubungkan ke gerbang...',
         connected: 'Sesi PicoClaw terhubung',
         disconnected: 'Sesi PicoClaw ditutup',
         stopped: 'Permintaan penghentian terkirim',
+        stopFailed: 'Permintaan penghentian tidak dapat dikirim: obrolan tidak terhubung.',
+        stopTimeout: 'PicoClaw tidak mengonfirmasi penghentian. Tugas mungkin masih berjalan.',
         runtimeStarted: 'Runtime PicoClaw dimulai',
         runtimeStartFailed: 'Gagal memulai Runtime PicoClaw',
         runtimeStopped: 'Runtime PicoClaw dihentikan',

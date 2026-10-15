@@ -2120,12 +2120,16 @@ const ca = {
         switchFailed: "No s'ha pogut canviar la funció d'agent"
       },
       send: 'Envia',
+      stop: 'Atura',
       cancel: 'Cancel·la',
       status: {
         connecting: "S'està connectant a la passarel·la...",
         connected: 'Sessió de PicoClaw connectada',
         disconnected: 'Sessió de PicoClaw tancada',
         stopped: "S'ha enviat la sol·licitud d'aturada",
+        stopFailed: "No s'ha pogut enviar la sol·licitud d'aturada: el xat no està connectat.",
+        stopTimeout:
+          "PicoClaw no ha confirmat l'aturada. És possible que la tasca encara s'estigui executant.",
         runtimeStarted: "Temps d'execució de PicoClaw iniciat",
         runtimeStartFailed: "No s'ha pogut iniciar el temps d'execució de PicoClaw",
         runtimeStopped: "Temps d'execució de PicoClaw aturat",

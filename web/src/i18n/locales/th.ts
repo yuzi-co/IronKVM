@@ -2069,12 +2069,15 @@ const th = {
         switchFailed: 'ไม่สามารถเปลี่ยนบทบาทตัวแทนได้'
       },
       send: 'ส่ง',
+      stop: 'หยุด',
       cancel: 'ยกเลิก',
       status: {
         connecting: 'กำลังเชื่อมต่อกับเกตเวย์...',
         connected: 'เชื่อมต่อเซสชัน PicoClaw แล้ว',
         disconnected: 'ตัดการเชื่อมต่อเซสชัน PicoClaw แล้ว',
         stopped: 'ส่งคำขอหยุดแล้ว',
+        stopFailed: 'ไม่สามารถส่งคำขอหยุดได้: แชทไม่ได้เชื่อมต่อ',
+        stopTimeout: 'PicoClaw ไม่ได้ยืนยันการหยุด งานอาจยังทำงานอยู่',
         runtimeStarted: 'เริ่ม Runtime PicoClaw แล้ว',
         runtimeStartFailed: 'ไม่สามารถเริ่ม Runtime PicoClaw ได้',
         runtimeStopped: 'หยุด Runtime PicoClaw แล้ว',

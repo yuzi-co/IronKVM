@@ -2135,12 +2135,15 @@ const fr = {
         switchFailed: "Échec du changement de rôle d'agent"
       },
       send: 'Envoyer',
+      stop: 'Arrêter',
       cancel: 'Annuler',
       status: {
         connecting: 'Connexion à la passerelle...',
         connected: 'Session PicoClaw connectée',
         disconnected: 'Session PicoClaw fermée',
         stopped: "Demande d'arrêt envoyée",
+        stopFailed: "Impossible d'envoyer la demande d'arrêt : le chat n'est pas connecté.",
+        stopTimeout: "PicoClaw n'a pas confirmé l'arrêt. La tâche est peut-être toujours en cours.",
         runtimeStarted: 'Runtime PicoClaw démarré',
         runtimeStartFailed: 'Échec du démarrage du runtime PicoClaw',
         runtimeStopped: 'Runtime PicoClaw arrêté',

@@ -12,7 +12,9 @@ import {
   sendStopMessage,
   type PicoclawSessionListItem
 } from '@/api/picoclaw.ts';
+import i18n from '@/i18n/index.ts';
 import { generateUUIDv4 } from '@/lib/picoclaw-gateway.ts';
+import { createTurnStopper, type TurnStopper } from '@/lib/picoclaw-stop.ts';
 import type {
   PicoclawChatMessage,
   PicoclawConfigState,
@@ -55,7 +57,45 @@ type PicoclawSidebarSessionActionOptions = {
   setIsDeletingSession: Dispatch<SetStateAction<boolean>>;
   setIsSwitchingSession: Dispatch<SetStateAction<boolean>>;
   setRuntimeStatus: RuntimeStatusSetter;
+  turnStopper: TurnStopper;
 };
+
+type PicoclawTurnStopperOptions = {
+  setMessages: MessageSetter;
+  setRunState: Dispatch<SetStateAction<PicoclawRunState>>;
+  setIsStoppingTurn: Dispatch<SetStateAction<boolean>>;
+};
+
+// createPicoclawTurnStopper makes the stopper behind the sidebar's Stop
+// button. The turn_done the agent sends for a cancelled turn puts the run
+// state back to idle; when the cancel cannot be sent, or the agent never
+// confirms it, the sidebar shows an error and leaves the running state here.
+export function createPicoclawTurnStopper(options: PicoclawTurnStopperOptions) {
+  const { setMessages, setRunState, setIsStoppingTurn } = options;
+  return createTurnStopper({
+    sendCancel: sendStopMessage,
+    onSent: () => {
+      setMessages((current) => [
+        ...current,
+        createStatusMessage(i18n.t('picoclaw.status.stopped'))
+      ]);
+    },
+    onFailed: (reason) => {
+      setMessages((current) => [
+        ...current,
+        createErrorMessage({
+          code: reason === 'timeout' ? 'STOP_TIMEOUT' : 'STOP_NOT_SENT',
+          message:
+            reason === 'timeout'
+              ? i18n.t('picoclaw.status.stopTimeout')
+              : i18n.t('picoclaw.status.stopFailed')
+        })
+      ]);
+      setRunState('idle');
+    },
+    onPendingChange: setIsStoppingTurn
+  });
+}
 
 export function createPicoclawSidebarSessionActions(options: PicoclawSidebarSessionActionOptions) {
   const {
@@ -81,7 +121,8 @@ export function createPicoclawSidebarSessionActions(options: PicoclawSidebarSess
     setIsLoadingHistory,
     setIsDeletingSession,
     setIsSwitchingSession,
-    setRuntimeStatus
+    setRuntimeStatus,
+    turnStopper
   } = options;
 
   async function loadHistorySessions() {
@@ -215,8 +256,10 @@ export function createPicoclawSidebarSessionActions(options: PicoclawSidebarSess
   }
 
   function handleStop() {
-    sendStopMessage();
-    setMessages((current) => [...current, createStatusMessage(t('picoclaw.status.stopped'))]);
+    if (runState !== 'busy') {
+      return;
+    }
+    turnStopper.stop();
   }
 
   async function handleOpenHistory() {

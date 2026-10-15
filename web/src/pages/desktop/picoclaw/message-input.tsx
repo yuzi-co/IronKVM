@@ -1,26 +1,34 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from 'antd';
 import { useSetAtom } from 'jotai';
-import { PlusIcon, SendIcon } from 'lucide-react';
+import { PlusIcon, SendIcon, SquareIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { keyboardLockAtom } from '@/jotai/keyboard.ts';
-import type { PicoclawTransportState } from '@/jotai/picoclaw.ts';
+import type { PicoclawRunState, PicoclawTransportState } from '@/jotai/picoclaw.ts';
 
 import { PICOCLAW_INPUT_KEYBOARD_LOCK_SOURCE } from './keyboard-lock.ts';
 
 type MessageInputProps = {
   transportState: PicoclawTransportState;
+  runState: PicoclawRunState;
   disabled?: boolean;
   onSend: (content: string) => boolean | void | Promise<boolean | void>;
+  // While a turn runs the send button is a Stop button that calls onStop.
+  // Enter still sends, so a message can still steer the running turn.
+  onStop: () => void;
+  isStopping?: boolean;
   onNewConversation: () => void | Promise<void>;
   disableNewConversation?: boolean;
 };
 
 export const MessageInput = ({
   transportState,
+  runState,
   disabled,
   onSend,
+  onStop,
+  isStopping,
   onNewConversation,
   disableNewConversation
 }: MessageInputProps) => {
@@ -33,6 +41,7 @@ export const MessageInput = ({
 
   const isConnecting = transportState === 'connecting';
   const canSubmit = !disabled && !isConnecting;
+  const isRunning = runState === 'busy';
 
   useEffect(() => {
     return () => {
@@ -102,14 +111,28 @@ export const MessageInput = ({
         className="absolute bottom-2.5 right-11 flex! !h-7 !w-7 items-center! justify-center! !rounded-lg border! !border-white/[0.08]"
         title={t('picoclaw.newConversation')}
       />
-      <Button
-        type="primary"
-        icon={<SendIcon size={15} />}
-        onClick={() => void submit()}
-        disabled={!canSubmit || !value.trim()}
-        className="absolute bottom-2.5 right-2.5 flex! !h-7 !w-7 items-center! justify-center! !rounded-lg"
-        title={t('picoclaw.send')}
-      />
+      {isRunning ? (
+        <Button
+          type="primary"
+          danger
+          icon={<SquareIcon size={13} fill="currentColor" />}
+          onClick={onStop}
+          loading={isStopping}
+          disabled={isStopping}
+          className="absolute bottom-2.5 right-2.5 flex! !h-7 !w-7 items-center! justify-center! !rounded-lg"
+          title={t('picoclaw.stop')}
+          aria-label={t('picoclaw.stop')}
+        />
+      ) : (
+        <Button
+          type="primary"
+          icon={<SendIcon size={15} />}
+          onClick={() => void submit()}
+          disabled={!canSubmit || !value.trim()}
+          className="absolute bottom-2.5 right-2.5 flex! !h-7 !w-7 items-center! justify-center! !rounded-lg"
+          title={t('picoclaw.send')}
+        />
+      )}
     </div>
   );
 };

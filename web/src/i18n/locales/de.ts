@@ -2145,12 +2145,17 @@ const de = {
         switchFailed: 'Agentenrolle konnte nicht gewechselt werden'
       },
       send: 'Senden',
+      stop: 'Stoppen',
       cancel: 'Abbrechen',
       status: {
         connecting: 'Verbindung zum Gateway wird hergestellt...',
         connected: 'PicoClaw Sitzung verbunden',
         disconnected: 'PicoClaw Sitzung geschlossen',
         stopped: 'Stoppanforderung gesendet',
+        stopFailed:
+          'Die Stoppanforderung konnte nicht gesendet werden: Der Chat ist nicht verbunden.',
+        stopTimeout:
+          'PicoClaw hat den Stopp nicht bestätigt. Die Aufgabe läuft möglicherweise noch.',
         runtimeStarted: 'PicoClaw Runtime gestartet',
         runtimeStartFailed: 'PicoClaw Runtime konnte nicht gestartet werden',
         runtimeStopped: 'PicoClaw Runtime gestoppt',

@@ -74,6 +74,8 @@ export const Sidebar = () => {
     isUninstallingRuntime,
     handleUninstallRuntime,
     handleSend,
+    handleStop,
+    isStoppingTurn,
     handleGrantControl,
     handleReleaseControl,
     handleStartRuntime,
@@ -422,8 +424,11 @@ export const Sidebar = () => {
                 <div className="border-t border-white/[0.06] px-3 pb-3 pt-3">
                   <MessageInput
                     transportState={transportState}
+                    runState={runState}
                     disabled={actionBusy}
                     onSend={handleSend}
+                    onStop={handleStop}
+                    isStopping={isStoppingTurn}
                     onNewConversation={handleNewConversation}
                     disableNewConversation={isFreshConversation || actionBusy}
                   />

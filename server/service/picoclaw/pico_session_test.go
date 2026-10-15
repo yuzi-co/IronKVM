@@ -66,7 +66,10 @@ func TestPicoSessionSpeaksThePicoProtocol(t *testing.T) {
 	if err := gateway.ReadJSON(&sent); err != nil {
 		t.Fatal(err)
 	}
-	if sent.Type != "message.cancel" || sent.SessionID != "sess" {
+	// PicoClaw has no cancel message; a cancel is its /stop command, sent as
+	// a message of its own.
+	if sent.Type != "message.send" || sent.SessionID != "sess" || sent.ID == "" || sent.ID == "r1" ||
+		sent.Payload["content"] != "/stop" {
 		t.Fatalf("PicoClaw got %+v", sent)
 	}
 

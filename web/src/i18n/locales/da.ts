@@ -2097,12 +2097,15 @@ const da = {
         switchFailed: 'Kunne ikke skifte agentrolle'
       },
       send: 'Send',
+      stop: 'Stop',
       cancel: 'Annuller',
       status: {
         connecting: 'Opretter forbindelse til gateway...',
         connected: 'PicoClaw-session tilsluttet',
         disconnected: 'PicoClaw-session lukket',
         stopped: 'Stopanmodning sendt',
+        stopFailed: 'Stopanmodningen kunne ikke sendes: chatten er ikke forbundet.',
+        stopTimeout: 'PicoClaw bekræftede ikke stoppet. Opgaven kører muligvis stadig.',
         runtimeStarted: 'PicoClaw runtime startet',
         runtimeStartFailed: 'Kunne ikke starte PicoClaw runtime',
         runtimeStopped: 'PicoClaw runtime stoppet',

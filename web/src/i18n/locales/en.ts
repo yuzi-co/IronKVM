@@ -2086,12 +2086,15 @@ const en = {
         switchFailed: 'Failed to switch agent role'
       },
       send: 'Send',
+      stop: 'Stop',
       cancel: 'Cancel',
       status: {
         connecting: 'Connecting to gateway...',
         connected: 'PicoClaw session connected',
         disconnected: 'PicoClaw session closed',
         stopped: 'Stop request sent',
+        stopFailed: 'Could not send the stop request: the chat is not connected.',
+        stopTimeout: 'PicoClaw did not confirm the stop. The task may still be running.',
         runtimeStarted: 'PicoClaw runtime started',
         runtimeStartFailed: 'Failed to start PicoClaw runtime',
         runtimeStopped: 'PicoClaw runtime stopped',

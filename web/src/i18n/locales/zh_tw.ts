@@ -2006,12 +2006,15 @@ const zh_tw = {
         switchFailed: '代理角色切換失敗'
       },
       send: '發送',
+      stop: '停止',
       cancel: '取消',
       status: {
         connecting: '正在連線 Gateway...',
         connected: 'PicoClaw 會話已連線',
         disconnected: 'PicoClaw 會話已關閉',
         stopped: '已發送停止請求',
+        stopFailed: '無法發送停止請求：聊天未連線。',
+        stopTimeout: 'PicoClaw 未確認停止，任務可能仍在執行。',
         runtimeStarted: 'PicoClaw Runtime 已啟動',
         runtimeStartFailed: '啟動 PicoClaw Runtime 失敗',
         runtimeStopped: 'PicoClaw Runtime 已停止',

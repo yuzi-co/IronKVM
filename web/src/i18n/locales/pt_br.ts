@@ -2114,12 +2114,15 @@ const pt_br = {
         switchFailed: 'Falha ao mudar de função de agente'
       },
       send: 'Enviar',
+      stop: 'Parar',
       cancel: 'Cancelar',
       status: {
         connecting: 'Conectando ao gateway...',
         connected: 'Sessão PicoClaw conectada',
         disconnected: 'Sessão PicoClaw desconectada',
         stopped: 'Solicitação de parada enviada',
+        stopFailed: 'Não foi possível enviar a solicitação de parada: o chat não está conectado.',
+        stopTimeout: 'O PicoClaw não confirmou a parada. A tarefa ainda pode estar em execução.',
         runtimeStarted: 'Runtime do PicoClaw iniciado',
         runtimeStartFailed: 'Falha ao iniciar o runtime do PicoClaw',
         runtimeStopped: 'Runtime do PicoClaw interrompido',
