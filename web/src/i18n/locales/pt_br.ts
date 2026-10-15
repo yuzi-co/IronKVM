@@ -2192,6 +2192,7 @@ const pt_br = {
       },
       install: {
         install: 'Instalar PicoClaw',
+        name: 'PicoClaw (build do IronKVM)',
         update: 'Atualizar para {{version}}',
         installing: 'Instalando PicoClaw',
         success: 'PicoClaw instalado com sucesso',

@@ -2179,6 +2179,7 @@ const id = {
       },
       install: {
         install: 'Instal PicoClaw',
+        name: 'PicoClaw (build IronKVM)',
         update: 'Perbarui ke {{version}}',
         installing: 'Menginstal PicoClaw',
         success: 'PicoClaw berhasil diinstal',

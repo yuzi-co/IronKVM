@@ -2143,6 +2143,7 @@ const th = {
       },
       install: {
         install: 'ติดตั้ง PicoClaw',
+        name: 'PicoClaw (บิลด์ IronKVM)',
         update: 'อัปเดตเป็น {{version}}',
         installing: 'กำลังติดตั้ง PicoClaw',
         success: 'PicoClaw ติดตั้งสำเร็จแล้ว',

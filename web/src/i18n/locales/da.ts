@@ -2174,6 +2174,7 @@ const da = {
       },
       install: {
         install: 'Installer PicoClaw',
+        name: 'PicoClaw (IronKVM-build)',
         update: 'Opdater til {{version}}',
         installing: 'Installation af PicoClaw',
         success: 'PicoClaw installeret korrekt',

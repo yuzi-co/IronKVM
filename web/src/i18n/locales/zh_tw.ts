@@ -2078,6 +2078,7 @@ const zh_tw = {
       },
       install: {
         install: '安裝 PicoClaw',
+        name: 'PicoClaw（IronKVM 建置版）',
         update: '更新至 {{version}}',
         installing: '正在安裝 PicoClaw',
         success: 'PicoClaw 安裝成功',

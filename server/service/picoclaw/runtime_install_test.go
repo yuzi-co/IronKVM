@@ -12,6 +12,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -28,7 +29,7 @@ func sha256Hex(s string) string {
 	return hex.EncodeToString(sum[:])
 }
 
-const testReleaseDir = "picoclaw-vtest-linux-riscv64-ironkvm"
+const testReleaseDir = "picoclaw-vtest-linux-riscv64"
 
 // fakeArchive is a release laid out as dist/release-picoclaw.sh lays it out:
 // one directory holding the binary and the license files.
@@ -377,9 +378,12 @@ func TestThePinIsTheForksRelease(t *testing.T) {
 	if !strings.HasSuffix(release.URL, "/"+release.Dir+".tar.gz") || !strings.Contains(release.Dir, Version) {
 		t.Fatalf("release URL %s does not name %s and %s", release.URL, release.Dir, Version)
 	}
+	// The release tag is the version, <upstream>-ironkvm.N (ironkvm-dist's
+	// docs/versioning.md): the build takes its version from git describe, so
+	// the binary reports the tag it was released under.
 	tag := strings.Split(strings.TrimPrefix(release.URL, "https://github.com/yuzi-co/picoclaw/releases/download/"), "/")[0]
-	if strings.HasPrefix(tag, "v") {
-		t.Fatalf("tag %s would change the version the build takes from git describe", tag)
+	if tag != Version || !regexp.MustCompile(`^v\d+\.\d+\.\d+-ironkvm\.[1-9]\d*$`).MatchString(tag) {
+		t.Fatalf("tag %s is not the version %s, <upstream>-ironkvm.N", tag, Version)
 	}
 	for _, sum := range []string{release.SHA256, release.BinarySHA256} {
 		if b, err := hex.DecodeString(sum); err != nil || len(b) != sha256.Size {

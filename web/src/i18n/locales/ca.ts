@@ -2200,6 +2200,7 @@ const ca = {
       },
       install: {
         install: 'Instal·la PicoClaw',
+        name: "PicoClaw (compilació d'IronKVM)",
         update: 'Actualitza a {{version}}',
         installing: 'Instal·lant PicoClaw',
         success: 'PicoClaw instal·lat correctament',
