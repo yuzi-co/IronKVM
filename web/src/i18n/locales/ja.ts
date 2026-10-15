@@ -2175,6 +2175,7 @@ const ja = {
       },
       install: {
         install: 'PicoClaw をインストールする',
+        name: 'PicoClaw（IronKVM ビルド）',
         update: '{{version}} に更新',
         installing: 'PicoClaw をインストールしています',
         success: 'PicoClaw は正常にインストールされました',

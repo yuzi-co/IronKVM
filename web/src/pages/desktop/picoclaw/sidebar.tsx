@@ -82,6 +82,10 @@ export const Sidebar = () => {
     refreshRuntimeState
   } = useSidebar();
   const runtimeError = runtimeStatus?.last_error || runtimeStatus?.config_error;
+  // The status names the pinned release; the installed build is that one
+  // unless an update is offered.
+  const installedVersion =
+    runtimeStatus?.installed && !runtimeStatus.update_available ? runtimeStatus.version : undefined;
   const controlView = derivePicoclawControlViewModel({
     aiControlStatus,
     runtimeStatus,
@@ -283,6 +287,7 @@ export const Sidebar = () => {
         onOpenModelConfig={handleOpenModelConfig}
         isUninstallingRuntime={isUninstallingRuntime}
         updateVersion={runtimeStatus?.update_available ? runtimeStatus.version : undefined}
+        installedVersion={installedVersion}
         onUpdateRuntime={handleInstallRuntime}
         onUninstallRuntime={handleUninstallRuntime}
       />
@@ -306,6 +311,7 @@ export const Sidebar = () => {
             installStage={installStage}
             disabled={actionBusy}
             isInstalling={isInstallingRuntime}
+            version={runtimeStatus?.version}
             onInstall={handleInstallRuntime}
           />
         ) : sidebarMode === 'model' ? (
@@ -317,6 +323,7 @@ export const Sidebar = () => {
             isSaving={isSavingModelConfig}
             modelIdentifier={modelIdentifier}
             modelName={runtimeStatus?.model_name}
+            version={installedVersion}
             onApiBaseChange={handleModelApiBaseChange}
             onApiKeyChange={handleModelApiKeyChange}
             onModelIdentifierChange={handleModelIdentifierChange}

@@ -2186,6 +2186,7 @@ const uk = {
       },
       install: {
         install: 'Встановити PicoClaw',
+        name: 'PicoClaw (збірка IronKVM)',
         update: 'Оновити до {{version}}',
         installing: 'Встановлення PicoClaw',
         success: 'PicoClaw успішно встановлено',

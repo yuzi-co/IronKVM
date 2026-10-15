@@ -2213,6 +2213,7 @@ const fr = {
       },
       install: {
         install: 'Installer PicoClaw',
+        name: 'PicoClaw (compilation IronKVM)',
         update: 'Mettre à jour vers {{version}}',
         installing: 'Installation de PicoClaw',
         success: 'PicoClaw installé avec succès',

@@ -4,6 +4,7 @@ import {
   DownloadIcon,
   EllipsisIcon,
   HistoryIcon,
+  InfoIcon,
   PlayIcon,
   PowerIcon,
   SlidersHorizontalIcon,
@@ -33,6 +34,8 @@ type SidebarHeaderProps = {
   isUninstallingRuntime?: boolean;
   // The pinned PicoClaw release, when the installed build is not it.
   updateVersion?: string;
+  // The installed PicoClaw's version, when it is the pinned release.
+  installedVersion?: string;
   onUpdateRuntime?: () => void | Promise<void>;
   onUninstallRuntime?: () => void | Promise<void>;
 };
@@ -56,6 +59,7 @@ export const SidebarHeader = ({
   onOpenModelConfig,
   isUninstallingRuntime,
   updateVersion,
+  installedVersion,
   onUpdateRuntime,
   onUninstallRuntime
 }: SidebarHeaderProps) => {
@@ -87,7 +91,24 @@ export const SidebarHeader = ({
     onUninstallRuntime?.();
   };
 
+  // The add-on is IronKVM's build of PicoClaw, so it is named that way
+  // wherever its version shows.
+  const buildName = t('picoclaw.install.name');
+
   const moreMenuItems: MenuProps['items'] = [
+    ...(installedVersion && isInstalled
+      ? [
+          {
+            key: 'version',
+            label: <span className="text-xs">{`${buildName} ${installedVersion}`}</span>,
+            icon: <InfoIcon size={15} className="text-neutral-400" />,
+            disabled: true
+          },
+          {
+            type: 'divider' as const
+          }
+        ]
+      : []),
     {
       key: 'model-config',
       label: <span className="text-xs">{t('picoclaw.model.menuLabel')}</span>,
@@ -102,7 +123,7 @@ export const SidebarHeader = ({
             key: 'update',
             label: (
               <span className="text-xs">
-                {t('picoclaw.install.update', { version: updateVersion })}
+                {t('picoclaw.install.update', { version: `${buildName} ${updateVersion}` })}
               </span>
             ),
             icon: <DownloadIcon size={15} className="text-neutral-400" />,

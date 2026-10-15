@@ -2144,6 +2144,7 @@ const ko = {
       },
       install: {
         install: 'PicoClaw 설치',
+        name: 'PicoClaw (IronKVM 빌드)',
         update: '{{version}}(으)로 업데이트',
         installing: 'PicoClaw 설치 중',
         success: 'PicoClaw가 성공적으로 설치되었습니다',

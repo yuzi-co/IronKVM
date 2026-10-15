@@ -2172,6 +2172,7 @@ const vi = {
       },
       install: {
         install: 'Cài đặt PicoClaw',
+        name: 'PicoClaw (bản dựng IronKVM)',
         update: 'Cập nhật lên {{version}}',
         installing: 'Đang cài đặt PicoClaw',
         success: 'PicoClaw cài đặt thành công',

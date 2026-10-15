@@ -7,6 +7,8 @@ type SidebarInstallProps = {
   installStage?: string;
   disabled?: boolean;
   isInstalling: boolean;
+  // The pinned release an install downloads.
+  version?: string;
   onInstall: () => void | Promise<void>;
 };
 
@@ -15,6 +17,7 @@ export const SidebarInstall = ({
   installStage,
   disabled,
   isInstalling,
+  version,
   onInstall
 }: SidebarInstallProps) => {
   const { t } = useTranslation();
@@ -64,6 +67,12 @@ export const SidebarInstall = ({
             </Button>
           )}
         </div>
+
+        {version && (
+          <div className="mt-3 text-xs text-neutral-500">
+            {`${t('picoclaw.install.name')} ${version}`}
+          </div>
+        )}
       </div>
     </div>
   );

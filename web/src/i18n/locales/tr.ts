@@ -2175,6 +2175,7 @@ const tr = {
       },
       install: {
         install: 'Yükle PicoClaw',
+        name: 'PicoClaw (IronKVM derlemesi)',
         update: '{{version}} sürümüne güncelle',
         installing: 'PicoClaw yükleniyor',
         success: 'PicoClaw başarıyla yüklendi',

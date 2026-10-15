@@ -2198,6 +2198,7 @@ const hu = {
       },
       install: {
         install: 'PicoClaw telepítése',
+        name: 'PicoClaw (IronKVM-változat)',
         update: 'Frissítés erre: {{version}}',
         installing: 'PicoClaw telepítése folyamatban',
         success: 'PicoClaw sikeresen telepítve',

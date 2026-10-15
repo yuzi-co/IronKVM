@@ -2199,6 +2199,7 @@ const nl = {
       },
       install: {
         install: 'PicoClaw installeren',
+        name: 'PicoClaw (IronKVM-build)',
         update: 'Bijwerken naar {{version}}',
         installing: 'PicoClaw installeren',
         success: 'PicoClaw is succesvol geïnstalleerd',

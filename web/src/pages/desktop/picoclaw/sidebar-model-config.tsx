@@ -24,6 +24,8 @@ type SidebarModelConfigProps = {
   isSaving: boolean;
   modelIdentifier: string;
   modelName?: string;
+  // The installed PicoClaw's version, when it is the pinned release.
+  version?: string;
   onApiBaseChange: (value: string) => void;
   onApiKeyChange: (value: string) => void;
   onModelIdentifierChange: (value: string) => void;
@@ -40,6 +42,7 @@ export const SidebarModelConfig = ({
   isSaving,
   modelIdentifier,
   modelName,
+  version,
   onApiBaseChange,
   onApiKeyChange,
   onModelIdentifierChange,
@@ -151,7 +154,12 @@ export const SidebarModelConfig = ({
       )}
 
       {/* Save */}
-      <div className="mt-6 flex justify-end gap-2">
+      <div className="mt-6 flex items-center justify-end gap-2">
+        {version && (
+          <span className="mr-auto text-xs text-neutral-500">
+            {`${t('picoclaw.install.name')} ${version}`}
+          </span>
+        )}
         {showCancel && (
           <Button disabled={disabled || isSaving} onClick={onCancel}>
             {t('picoclaw.cancel')}

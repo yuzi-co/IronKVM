@@ -2165,6 +2165,7 @@ const cz = {
       },
       install: {
         install: 'Nainstalovat PicoClaw',
+        name: 'PicoClaw (sestavení IronKVM)',
         update: 'Aktualizovat na {{version}}',
         installing: 'Instalace PicoClaw',
         success: 'PicoClaw úspěšně nainstalováno',
