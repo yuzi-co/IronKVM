@@ -31,3 +31,17 @@ type StunServerRsp struct {
 type SetStunServerReq struct {
 	Stun string `json:"stun"`
 }
+
+// WHEPSettingsRsp is the WHEP endpoint's setting and state
+// (ironkvm-dist#145). Path is where a player POSTs its offer.
+type WHEPSettingsRsp struct {
+	Enabled     bool   `json:"enabled"`
+	Path        string `json:"path"`
+	Sessions    int    `json:"sessions"`
+	MaxSessions int    `json:"maxSessions"`
+}
+
+// SetWHEPSettingsReq switches the WHEP endpoint on or off.
+type SetWHEPSettingsReq struct {
+	Enabled *bool `json:"enabled"`
+}

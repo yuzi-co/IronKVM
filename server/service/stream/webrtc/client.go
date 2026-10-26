@@ -129,7 +129,7 @@ func (c *Client) writeAudio() {
 		}
 
 		if err := track.writeAudioPackets(packets); err != nil {
-			log.Debugf("audio write to %s failed: %s", c.ws.RemoteAddr(), err)
+			log.Debugf("audio write to %s failed: %s", c.peerName(), err)
 
 			c.Close()
 
@@ -185,7 +185,7 @@ func (c *Client) write() {
 		}
 
 		if err != nil {
-			log.Debugf("h264 write to %s failed: %s", c.ws.RemoteAddr(), err)
+			log.Debugf("h264 write to %s failed: %s", c.peerName(), err)
 
 			// Unblock the reader so the handler tears this client down.
 			c.Close()
@@ -240,6 +240,11 @@ func (c *Client) Close() {
 }
 
 func (c *Client) WriteMessage(event string, data string) error {
+	// A WHEP session has no signalling socket and nothing to tell.
+	if c.ws == nil {
+		return nil
+	}
+
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
@@ -266,6 +271,13 @@ func (c *Client) WriteMessage(event string, data string) error {
 func (c *Client) noteCodecChanged(codec uint8) {
 	c.codecChanged.Do(func() {
 		if c.ws == nil {
+			// A WHEP player has no socket to be told on. Its session is
+			// ended instead, and a player that retries negotiates the
+			// codec the encoder runs now.
+			if c.video != nil {
+				log.Infof("webrtc: WHEP session negotiated codec %d, encoder runs %d; ending it", c.codec, codec)
+				go c.Close()
+			}
 			return
 		}
 		log.Infof("webrtc: session negotiated codec %d, encoder runs %d; asking the viewer to reconnect", c.codec, codec)
@@ -292,6 +304,13 @@ func (c *Client) ReadMessage() (*Message, error) {
 }
 
 func (c *Client) AddTrack() error {
+	return c.addTracks(true)
+}
+
+// addTracks adds the video track, the host's audio when the gadget has a
+// capture card, and, with room, the board's microphone. A WHEP session leaves
+// the microphone out: it has no socket to switch it on with.
+func (c *Client) addTracks(room bool) error {
 	// The codec is read once, here, and remembered. The track declares it to
 	// the peer and the answer is built from that, so this session carries this
 	// codec for as long as it lives even if the setting changes underneath.
@@ -347,7 +366,7 @@ func (c *Client) AddTrack() error {
 	// onboard card, so a viewer can switch it on without a new session. On
 	// slot A there is no such card and no track, and nothing ever opens the
 	// codec there.
-	if roommic.Available() {
+	if room && roommic.Available() {
 		roomTrack, err := newRoomTrack()
 		if err != nil {
 			log.Errorf("failed to create room microphone track: %s", err)

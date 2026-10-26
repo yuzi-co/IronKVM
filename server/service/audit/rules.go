@@ -87,6 +87,9 @@ var selfAudited = map[string]bool{
 	"/api/picoclaw/mcp":        true,
 	"/api/picoclaw/actions":    true,
 	"/api/picoclaw/load-image": true,
+	// WHEP records each session's start and end, with who opened it.
+	"/api/whep":     true,
+	"/api/whep/:id": true,
 }
 
 // Classify returns the rule for a route, if it is audited. Every other

@@ -57,6 +57,10 @@ type Config struct {
 	// which is how WebRTC has always been set up.
 	WebRTC WebRTC `yaml:"webrtc,omitempty" mapstructure:"webrtc"`
 
+	// WHEP serves the video to WHEP players, kept under "whep" in
+	// server.yaml. A file without the block loads with the endpoint off.
+	WHEP WHEP `yaml:"whep,omitempty" mapstructure:"whep"`
+
 	// Picoclaw tunes what the server hands the PicoClaw assistant, kept under
 	// "picoclaw" in server.yaml. A file without the block loads the defaults.
 	Picoclaw Picoclaw `yaml:"picoclaw,omitempty" mapstructure:"picoclaw"`
@@ -92,6 +96,14 @@ type WebRTC struct {
 	// at: an IP or a host name, resolved when a viewer connects. It is offered
 	// as one more host candidate on UDPPort. It needs UDPPort.
 	PublicAddress string `yaml:"publicAddress,omitempty" mapstructure:"publicAddress"`
+}
+
+// WHEP configures the WHEP endpoint, /api/whep (ironkvm-dist#145).
+type WHEP struct {
+	// Enabled answers WHEP offers. Off by default: it is one more way in to
+	// the picture, for an owner who wants a player such as GStreamer or OBS
+	// on it.
+	Enabled bool `yaml:"enabled" mapstructure:"enabled"`
 }
 
 // Redfish configures the Redfish service.

@@ -56,7 +56,16 @@ func authenticateByAPIKey(r *http.Request) (Principal, bool) {
 		return Principal{}, false
 	}
 
-	return Principal{Username: user.Username, Role: user.Role, Via: "apikey", Key: keyLabel(key)}, true
+	return Principal{Username: user.Username, Role: keyRole(key, user.Role), Via: "apikey", Key: keyLabel(key)}, true
+}
+
+// keyRole is the role a key acts with: its account's, or a viewer's for a
+// view-only key, whatever the account may do.
+func keyRole(key *apikey.Key, accountRole authn.Role) authn.Role {
+	if key.ViewOnly() {
+		return authn.RoleViewer
+	}
+	return accountRole
 }
 
 // presentedAPIKey pulls a key out of either header clients expect to use.
