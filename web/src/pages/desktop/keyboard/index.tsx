@@ -9,6 +9,7 @@ import { isKeyboardEnableAtom } from '@/jotai/keyboard.ts';
 import { picoclawTakeoverStateAtom } from '@/jotai/picoclaw.ts';
 
 import { isPasteShortcut, usePaste } from '../paste/use-paste.ts';
+import { isCompositionKey, staleModifiers } from './input-state.ts';
 import { Recorder } from './recorder.tsx';
 import { useAltGr } from './useAltGr.ts';
 import { useLeaderKey } from './useLeaderKey.ts';
@@ -83,13 +84,20 @@ export const Keyboard = () => {
 
     function handleKeyDown(event: KeyboardEvent) {
       if (!isKeyboardEnabled) return;
-      if (isComposing.current || event.isComposing) return;
+      if (isCompositionKey(isComposing.current, event)) return;
+      // A keydown the input method is not consuming means any composition is
+      // over, whether or not its compositionend reached the document.
+      isComposing.current = false;
 
       event.preventDefault();
       event.stopPropagation();
 
       const code = normalizeKeyCode(event, os);
-      if (!code || pressedKeys.current.has(code) || swallowedKeys.current.has(code)) return;
+      if (!code) return;
+
+      releaseStaleModifiers(event, code);
+
+      if (pressedKeys.current.has(code) || swallowedKeys.current.has(code)) return;
 
       // Handle paste shortcut. Its modifiers have reached the host already;
       // they are released first, or the host would read the pasted text as
@@ -142,6 +150,13 @@ export const Keyboard = () => {
       event.preventDefault();
       event.stopPropagation();
 
+      releaseStaleModifiers(event, code);
+      releaseKey(code);
+    }
+
+    // The release half of handleKeyUp, also used for a modifier whose keyup
+    // never came, so the leader key and AltGr see it as an ordinary release.
+    function releaseKey(code: string) {
       // Handle leader key release
       const leaderHandled = leaderKeyRef.current.handleKeyUp(code);
       if (leaderHandled) {
@@ -169,6 +184,15 @@ export const Keyboard = () => {
 
     function handleCompositionEnd() {
       isComposing.current = false;
+    }
+
+    // A modifier the host still holds but the browser reports as up lost its
+    // keyup, to an OS shortcut or a dialog that took focus inside the page.
+    // Release it now rather than leave it held until the next blur.
+    function releaseStaleModifiers(event: KeyboardEvent, code: string) {
+      for (const modifier of staleModifiers(pressedKeys.current, event, code)) {
+        releaseKey(modifier);
+      }
     }
 
     function handleBlur() {
