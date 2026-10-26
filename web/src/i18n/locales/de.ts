@@ -740,6 +740,19 @@ const de = {
       down: 'Offline',
       checking: 'Prüfe...'
     },
+    urlMedia: {
+      open: 'Von URL einbinden',
+      desc: 'Stellt ein ISO- oder Disk-Image direkt von einem Webserver bereit, ohne es auf dem Gerät zu speichern. Der Server muss Byte-Bereiche unterstützen.',
+      mount: 'Einbinden',
+      asCd: 'CD',
+      asDisk: 'Disk (schreibgeschützt)',
+      unavailable: 'In dieser Firmware nicht verfügbar: Ihr Kernel unterstützt keine Netzwerk-Blockgeräte (NBD). Das Einbinden von einer URL braucht den Mainline-Kernel (Slot B).',
+      credentials: 'Die URL wird nur im Arbeitsspeicher gehalten. Zugangsdaten oder Tokens darin werden nie angezeigt oder protokolliert.',
+      mountFailed: 'Einbinden von URL fehlgeschlagen',
+      read: '{{read}} von {{size}} gelesen',
+      hitRate: '{{rate}} % aus dem Cache',
+      lastError: 'Letzter Lesevorgang fehlgeschlagen, der nächste versucht es erneut: {{error}}'
+    },
     download: {
       uploadFailed: 'Hochladen fehlgeschlagen',
       uploadSuccess: 'Hochladen abgeschlossen',

@@ -710,6 +710,19 @@ const ko = {
       down: '꺼짐',
       checking: '확인 중...'
     },
+    urlMedia: {
+      open: 'URL에서 마운트',
+      desc: 'ISO 또는 디스크 이미지를 장치에 저장하지 않고 웹 서버에서 바로 제공합니다. 서버가 바이트 범위를 지원해야 합니다.',
+      mount: '마운트',
+      asCd: 'CD',
+      asDisk: '디스크 (읽기 전용)',
+      unavailable: '이 펌웨어에서는 사용할 수 없습니다: 커널이 네트워크 블록 장치(NBD)를 지원하지 않습니다. URL에서 마운트하려면 메인라인 커널(슬롯 B)이 필요합니다.',
+      credentials: 'URL은 메모리에만 보관됩니다. 그 안의 자격 증명이나 토큰은 표시되거나 기록되지 않습니다.',
+      mountFailed: 'URL에서 마운트하지 못했습니다',
+      read: '{{size}} 중 {{read}} 읽음',
+      hitRate: '캐시에서 {{rate}}%',
+      lastError: '마지막 읽기에 실패했습니다. 다음 읽기에서 다시 시도합니다: {{error}}'
+    },
     download: {
       uploadFailed: '업로드 실패',
       uploadSuccess: '업로드 완료',

@@ -726,6 +726,19 @@ const pt_br = {
       down: 'Desligado',
       checking: 'Verificando...'
     },
+    urlMedia: {
+      open: 'Montar a partir de URL',
+      desc: 'Serve uma imagem ISO ou de disco direto de um servidor web, sem armazená-la no dispositivo. O servidor precisa aceitar intervalos de bytes.',
+      mount: 'Montar',
+      asCd: 'CD',
+      asDisk: 'Disco (somente leitura)',
+      unavailable: 'Indisponível neste firmware: o kernel não tem suporte a dispositivos de bloco de rede (NBD). Montar a partir de uma URL exige o kernel mainline (slot B).',
+      credentials: 'A URL fica apenas na memória. Credenciais ou tokens nela nunca são exibidos nem registrados.',
+      mountFailed: 'Falha ao montar a partir da URL',
+      read: '{{read}} de {{size}} lidos',
+      hitRate: '{{rate}}% do cache',
+      lastError: 'A última leitura falhou, a próxima tentará de novo: {{error}}'
+    },
     download: {
       uploadFailed: 'Falha no envio',
       uploadSuccess: 'Envio concluído',

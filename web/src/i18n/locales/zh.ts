@@ -696,6 +696,19 @@ const zh = {
       down: '离线',
       checking: '检测中...'
     },
+    urlMedia: {
+      open: '从 URL 挂载',
+      desc: '直接从 Web 服务器提供 ISO 或磁盘镜像，不保存到设备上。服务器必须支持字节范围请求。',
+      mount: '挂载',
+      asCd: 'CD',
+      asDisk: '磁盘（只读）',
+      unavailable: '此固件不可用：其内核不支持网络块设备（NBD）。从 URL 挂载需要主线内核（B 槽）。',
+      credentials: 'URL 只保存在内存中。其中的凭据或令牌不会显示，也不会记录到日志。',
+      mountFailed: '从 URL 挂载失败',
+      read: '已读取 {{read}} / {{size}}',
+      hitRate: '{{rate}}% 来自缓存',
+      lastError: '上次读取失败，下次读取会重试：{{error}}'
+    },
     download: {
       uploadFailed: '上传失败',
       uploadSuccess: '上传完成',

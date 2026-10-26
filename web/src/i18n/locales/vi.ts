@@ -719,6 +719,19 @@ const vi = {
       down: 'Đã tắt',
       checking: 'Đang kiểm tra...'
     },
+    urlMedia: {
+      open: 'Gắn từ URL',
+      desc: 'Cung cấp ảnh ISO hoặc ảnh đĩa trực tiếp từ máy chủ web, không lưu vào thiết bị. Máy chủ phải hỗ trợ phạm vi byte.',
+      mount: 'Gắn',
+      asCd: 'CD',
+      asDisk: 'Đĩa (chỉ đọc)',
+      unavailable: 'Không khả dụng trên firmware này: nhân của nó không hỗ trợ thiết bị khối mạng (NBD). Gắn từ URL cần nhân mainline (khe B).',
+      credentials: 'URL chỉ được giữ trong bộ nhớ. Thông tin đăng nhập hoặc token trong đó không bao giờ được hiển thị hay ghi nhật ký.',
+      mountFailed: 'Gắn từ URL thất bại',
+      read: 'đã đọc {{read}} trên {{size}}',
+      hitRate: '{{rate}}% từ bộ nhớ đệm',
+      lastError: 'Lần đọc gần nhất thất bại, lần sau sẽ thử lại: {{error}}'
+    },
     download: {
       uploadFailed: 'Tải lên thất bại',
       uploadSuccess: 'Đã tải lên xong',

@@ -721,6 +721,19 @@ const da = {
       down: 'Slukket',
       checking: 'Tjekker...'
     },
+    urlMedia: {
+      open: 'Montér fra URL',
+      desc: 'Lever et ISO- eller diskbillede direkte fra en webserver uden at gemme det på enheden. Serveren skal understøtte byteintervaller.',
+      mount: 'Montér',
+      asCd: 'CD',
+      asDisk: 'Disk (skrivebeskyttet)',
+      unavailable: 'Ikke tilgængelig i denne firmware: kernen understøtter ikke netværksblokenheder (NBD). Montering fra en URL kræver mainline-kernen (slot B).',
+      credentials: 'URL\'en gemmes kun i hukommelsen. Loginoplysninger eller tokens i den vises eller logges aldrig.',
+      mountFailed: 'Montering fra URL mislykkedes',
+      read: '{{read}} af {{size}} læst',
+      hitRate: '{{rate}} % fra cache',
+      lastError: 'Seneste læsning mislykkedes, den næste prøver igen: {{error}}'
+    },
     download: {
       uploadFailed: 'Upload mislykkedes',
       uploadSuccess: 'Upload fuldført',

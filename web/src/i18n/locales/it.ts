@@ -730,6 +730,19 @@ const it = {
       down: 'Spento',
       checking: 'Controllo...'
     },
+    urlMedia: {
+      open: 'Monta da URL',
+      desc: 'Serve un\'immagine ISO o disco direttamente da un server web, senza salvarla sul dispositivo. Il server deve supportare gli intervalli di byte.',
+      mount: 'Monta',
+      asCd: 'CD',
+      asDisk: 'Disco (sola lettura)',
+      unavailable: 'Non disponibile con questo firmware: il suo kernel non supporta i dispositivi a blocchi di rete (NBD). Il montaggio da URL richiede il kernel mainline (slot B).',
+      credentials: 'L\'URL è conservato solo in memoria. Credenziali o token al suo interno non vengono mai mostrati né registrati.',
+      mountFailed: 'Montaggio da URL non riuscito',
+      read: '{{read}} di {{size}} letti',
+      hitRate: '{{rate}}% dalla cache',
+      lastError: 'L\'ultima lettura non è riuscita, la prossima riproverà: {{error}}'
+    },
     download: {
       uploadFailed: 'Caricamento non riuscito',
       uploadSuccess: 'Caricamento completato',

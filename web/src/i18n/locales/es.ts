@@ -731,6 +731,19 @@ const es = {
       down: 'Apagado',
       checking: 'Comprobando...'
     },
+    urlMedia: {
+      open: 'Montar desde URL',
+      desc: 'Sirve una imagen ISO o de disco directamente desde un servidor web, sin guardarla en el dispositivo. El servidor debe admitir rangos de bytes.',
+      mount: 'Montar',
+      asCd: 'CD',
+      asDisk: 'Disco (solo lectura)',
+      unavailable: 'No disponible en este firmware: su núcleo no admite dispositivos de bloques de red (NBD). Montar desde una URL requiere el núcleo principal (ranura B).',
+      credentials: 'La URL solo se guarda en memoria. Las credenciales o tokens que contenga nunca se muestran ni se registran.',
+      mountFailed: 'Error al montar desde la URL',
+      read: '{{read}} de {{size}} leídos',
+      hitRate: '{{rate}} % desde la caché',
+      lastError: 'La última lectura falló, la siguiente lo reintentará: {{error}}'
+    },
     download: {
       uploadFailed: 'La subida falló',
       uploadSuccess: 'Subida completada',

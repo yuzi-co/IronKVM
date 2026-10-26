@@ -726,6 +726,19 @@ const pl = {
       down: 'Wyłączony',
       checking: 'Sprawdzanie...'
     },
+    urlMedia: {
+      open: 'Zamontuj z URL',
+      desc: 'Udostępnia obraz ISO lub dysku prosto z serwera WWW, bez zapisywania go na urządzeniu. Serwer musi obsługiwać zakresy bajtów.',
+      mount: 'Zamontuj',
+      asCd: 'CD',
+      asDisk: 'Dysk (tylko do odczytu)',
+      unavailable: 'Niedostępne w tym oprogramowaniu: jego jądro nie obsługuje sieciowych urządzeń blokowych (NBD). Montowanie z URL wymaga jądra mainline (slot B).',
+      credentials: 'URL jest przechowywany tylko w pamięci. Dane logowania ani tokeny w nim nie są nigdy wyświetlane ani zapisywane w dzienniku.',
+      mountFailed: 'Nie udało się zamontować z URL',
+      read: 'odczytano {{read}} z {{size}}',
+      hitRate: '{{rate}}% z pamięci podręcznej',
+      lastError: 'Ostatni odczyt nie powiódł się, następny spróbuje ponownie: {{error}}'
+    },
     download: {
       uploadFailed: 'Przesyłanie nie powiodło się',
       uploadSuccess: 'Przesyłanie zakończone',

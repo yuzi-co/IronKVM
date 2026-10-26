@@ -724,6 +724,19 @@ const id = {
       down: 'Mati',
       checking: 'Memeriksa...'
     },
+    urlMedia: {
+      open: 'Pasang dari URL',
+      desc: 'Sajikan image ISO atau disk langsung dari server web, tanpa menyimpannya di perangkat. Server harus mendukung rentang byte.',
+      mount: 'Pasang',
+      asCd: 'CD',
+      asDisk: 'Disk (hanya baca)',
+      unavailable: 'Tidak tersedia di firmware ini: kernelnya tidak mendukung perangkat blok jaringan (NBD). Memasang dari URL memerlukan kernel mainline (slot B).',
+      credentials: 'URL hanya disimpan di memori. Kredensial atau token di dalamnya tidak pernah ditampilkan atau dicatat.',
+      mountFailed: 'Gagal memasang dari URL',
+      read: '{{read}} dari {{size}} terbaca',
+      hitRate: '{{rate}}% dari cache',
+      lastError: 'Pembacaan terakhir gagal, pembacaan berikutnya akan mencoba lagi: {{error}}'
+    },
     download: {
       uploadFailed: 'Unggahan gagal',
       uploadSuccess: 'Unggahan selesai',

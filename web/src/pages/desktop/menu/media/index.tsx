@@ -5,6 +5,7 @@ import { DiscIcon, SettingsIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import * as api from '@/api/storage.ts';
+import { getUrlMediaStatus } from '@/api/url-media.ts';
 import * as ventoyApi from '@/api/ventoy.ts';
 import type { VentoyStatus } from '@/api/ventoy.ts';
 import { pollWhileVisible } from '@/lib/visible-poll.ts';
@@ -22,6 +23,8 @@ import { ventoyUsable } from '../image/ventoy-status.ts';
 import { Ventoy } from '../image/ventoy.tsx';
 import { driveWarnings } from '../image/warnings.ts';
 import { AddImage } from './transfer.tsx';
+import type { UrlMediaStatus } from './url-media.ts';
+import { UrlMount } from './url-mount.tsx';
 import { useImageTransfer } from './use-image-transfer.ts';
 
 const DRIVES_POLL_MS = 5000;
@@ -46,6 +49,7 @@ export const Media = () => {
   const [diskRo, setDiskRo] = useState(false);
   const [images, setImages] = useState<string[]>([]);
   const [ventoy, setVentoy] = useState<VentoyStatus | null>(null);
+  const [urlMedia, setUrlMedia] = useState<UrlMediaStatus | null>(null);
   const transfer = useImageTransfer();
 
   const isMounted = drives.some((drive) => !!drive.file);
@@ -95,6 +99,20 @@ export const Media = () => {
       })
       .catch(() => setVentoy(null));
   }, [isMenuOpen, drives]);
+
+  // Images served from a URL follow the drive list while the menu is open:
+  // the list names their devices, and an eject there ends them.
+  const refreshUrlMedia = useStableCallback(() => {
+    getUrlMediaStatus()
+      .then((rsp) => {
+        if (rsp.code === 0) setUrlMedia(rsp.data);
+      })
+      .catch(() => {});
+  });
+
+  useEffect(() => {
+    if (isMenuOpen) refreshUrlMedia();
+  }, [isMenuOpen, drives, refreshUrlMedia]);
 
   // Images on the Ventoy disk are in use while that disk is in a drive, so they
   // cannot be deleted, as an image in a drive cannot.
@@ -161,6 +179,7 @@ export const Media = () => {
           drives={drives}
           diskRo={diskRo}
           setDiskRo={setDiskRo}
+          urlMounts={urlMedia?.mounts}
           onDrivesChanged={refreshDrives}
         />
 
@@ -186,6 +205,7 @@ export const Media = () => {
           />
         )}
         <AddImage transfer={transfer} />
+        <UrlMount status={urlMedia} onChanged={refreshDrives} />
       </div>
 
       <Divider style={{ margin: '4px 0 6px 0' }} />

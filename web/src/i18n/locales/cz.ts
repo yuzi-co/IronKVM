@@ -722,6 +722,19 @@ const cz = {
       down: 'Vypnuto',
       checking: 'Kontroluje se...'
     },
+    urlMedia: {
+      open: 'Připojit z URL',
+      desc: 'Poskytne obraz ISO nebo disku přímo z webového serveru, bez uložení do zařízení. Server musí podporovat rozsahy bajtů.',
+      mount: 'Připojit',
+      asCd: 'CD',
+      asDisk: 'Disk (jen pro čtení)',
+      unavailable: 'V tomto firmwaru není k dispozici: jeho jádro nepodporuje síťová bloková zařízení (NBD). Připojení z URL vyžaduje hlavní jádro (slot B).',
+      credentials: 'URL se uchovává jen v paměti. Přihlašovací údaje ani tokeny v ní se nikdy nezobrazují ani nezaznamenávají.',
+      mountFailed: 'Připojení z URL selhalo',
+      read: 'přečteno {{read}} z {{size}}',
+      hitRate: '{{rate}} % z mezipaměti',
+      lastError: 'Poslední čtení selhalo, další to zkusí znovu: {{error}}'
+    },
     download: {
       uploadFailed: 'Nahrávání selhalo',
       uploadSuccess: 'Nahrávání dokončeno',

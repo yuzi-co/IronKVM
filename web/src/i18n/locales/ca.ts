@@ -726,6 +726,19 @@ const ca = {
       down: 'Apagat',
       checking: "S'està comprovant..."
     },
+    urlMedia: {
+      open: 'Munta des d\'URL',
+      desc: 'Serveix una imatge ISO o de disc directament des d\'un servidor web, sense desar-la al dispositiu. El servidor ha d\'admetre intervals de bytes.',
+      mount: 'Munta',
+      asCd: 'CD',
+      asDisk: 'Disc (només lectura)',
+      unavailable: 'No disponible en aquest firmware: el seu nucli no admet dispositius de blocs de xarxa (NBD). Muntar des d\'una URL necessita el nucli principal (ranura B).',
+      credentials: 'L\'URL només es guarda a la memòria. Les credencials o els testimonis que contingui no es mostren ni es registren mai.',
+      mountFailed: 'No s\'ha pogut muntar des de l\'URL',
+      read: '{{read}} de {{size}} llegits',
+      hitRate: '{{rate}}% des de la memòria cau',
+      lastError: 'La darrera lectura ha fallat, la següent ho tornarà a provar: {{error}}'
+    },
     download: {
       uploadFailed: 'La pujada ha fallat',
       uploadSuccess: 'Pujada completada',

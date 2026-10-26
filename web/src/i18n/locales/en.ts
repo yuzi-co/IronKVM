@@ -720,6 +720,19 @@ const en = {
       down: 'Down',
       checking: 'Checking...'
     },
+    urlMedia: {
+      open: 'Mount from URL',
+      desc: 'Serve an ISO or disk image straight from a web server, without storing it on the device. The server must support byte ranges.',
+      mount: 'Mount',
+      asCd: 'CD',
+      asDisk: 'Disk (read-only)',
+      unavailable: 'Not available on this firmware: its kernel has no network block device (NBD) support. Mounting from a URL needs the mainline kernel (slot B).',
+      credentials: 'The URL is kept only in memory. Credentials or tokens in it are never shown or logged.',
+      mountFailed: 'Mount from URL failed',
+      read: '{{read}} of {{size}} read',
+      hitRate: '{{rate}}% from cache',
+      lastError: 'Last read failed, the next one retries: {{error}}'
+    },
     download: {
       uploadFailed: 'Upload failed',
       uploadSuccess: 'Upload complete',

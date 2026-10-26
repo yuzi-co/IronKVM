@@ -696,6 +696,19 @@ const zh_tw = {
       down: '離線',
       checking: '偵測中...'
     },
+    urlMedia: {
+      open: '從 URL 掛載',
+      desc: '直接從 Web 伺服器提供 ISO 或磁碟映像，不儲存到裝置上。伺服器必須支援位元組範圍請求。',
+      mount: '掛載',
+      asCd: 'CD',
+      asDisk: '磁碟（唯讀）',
+      unavailable: '此韌體無法使用：其核心不支援網路區塊裝置（NBD）。從 URL 掛載需要主線核心（B 槽）。',
+      credentials: 'URL 只保存在記憶體中。其中的憑證或權杖不會顯示，也不會記錄到日誌。',
+      mountFailed: '從 URL 掛載失敗',
+      read: '已讀取 {{read}} / {{size}}',
+      hitRate: '{{rate}}% 來自快取',
+      lastError: '上次讀取失敗，下次讀取會重試：{{error}}'
+    },
     download: {
       uploadFailed: '上傳失敗',
       uploadSuccess: '上傳完成',
