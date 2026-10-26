@@ -40,6 +40,7 @@ var features = []string{
 	"settings-backup",     // /api/settings/export, /preview, /import: settings file without secrets
 	"share-links",         // /api/auth/share, /api/auth/share-links: expiring view-only links
 	"status-bar",          // GET /api/stream/info
+	"stun-server",         // /api/network/webrtc/stun: the STUN server, or off
 	"ui-update",           // /api/ui: separately installed UI packages
 	"video-clock",         // /api/vm/video-clock: video clock profile (mainline kernel only, see SetProbe)
 	"webrtc-clock",        // "clock" event on the WebRTC signalling socket

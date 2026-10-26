@@ -128,22 +128,33 @@ func Connect(c *gin.Context) {
 	}
 }
 
+// createICEServers is read for every session, so a changed STUN server
+// applies to the next viewer without a restart.
 func createICEServers() []webrtc.ICEServer {
-	var iceServers []webrtc.ICEServer
-
 	conf := config.GetInstance()
 
-	if conf.Stun != "" && conf.Stun != "disable" {
+	return iceServersFor(CurrentStun(), conf.Turn)
+}
+
+// iceServersFor builds the ICE server list a session uses and sends to the
+// browser. An empty STUN setting is the default; StunDisabled leaves STUN out.
+func iceServersFor(stun string, turn config.Turn) []webrtc.ICEServer {
+	var iceServers []webrtc.ICEServer
+
+	if stun == "" {
+		stun = config.DefaultStun
+	}
+	if stun != config.StunDisabled {
 		iceServers = append(iceServers, webrtc.ICEServer{
-			URLs: []string{"stun:" + conf.Stun},
+			URLs: []string{"stun:" + stun},
 		})
 	}
 
-	if conf.Turn.TurnAddr != "" && conf.Turn.TurnUser != "" && conf.Turn.TurnCred != "" {
+	if turn.TurnAddr != "" && turn.TurnUser != "" && turn.TurnCred != "" {
 		iceServers = append(iceServers, webrtc.ICEServer{
-			URLs:       []string{"turn:" + conf.Turn.TurnAddr},
-			Username:   conf.Turn.TurnUser,
-			Credential: conf.Turn.TurnCred,
+			URLs:       []string{"turn:" + turn.TurnAddr},
+			Username:   turn.TurnUser,
+			Credential: turn.TurnCred,
 		})
 	}
 

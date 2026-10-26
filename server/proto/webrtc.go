@@ -18,3 +18,16 @@ type SetWebRTCForwardReq struct {
 	UDPPort       int    `json:"udpPort"`
 	PublicAddress string `json:"publicAddress"`
 }
+
+// StunServerRsp is the STUN server setting: host:port, or "disable" when STUN
+// is off. Default is the server a board uses until its owner sets another.
+type StunServerRsp struct {
+	Stun    string `json:"stun"`
+	Default string `json:"default"`
+}
+
+// SetStunServerReq sets the STUN server: host:port, "disable" to turn STUN
+// off, or empty for the default.
+type SetStunServerReq struct {
+	Stun string `json:"stun"`
+}
