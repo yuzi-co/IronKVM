@@ -33,13 +33,20 @@ func appendCompactLength(buf []byte, n int) []byte {
 }
 
 // jpegUpdateHeader builds everything a FramebufferUpdate with one Tight JPEG
-// rectangle over the whole framebuffer carries before the JPEG bytes.
-func jpegUpdateHeader(width, height, length int) ([]byte, error) {
+// rectangle over the whole framebuffer carries before the JPEG bytes. With
+// extKeyAck the update first carries the empty QEMU Extended Key Event
+// pseudo-rectangle, which tells the client it may send keycodes.
+func jpegUpdateHeader(width, height, length int, extKeyAck bool) ([]byte, error) {
 	if length > maxTightLength {
 		return nil, errFrameTooLarge
 	}
-	buf := make([]byte, 0, 4+12+1+3)
-	buf = append(buf, msgFramebufferUpdate, 0, 0, 1)
+	buf := make([]byte, 0, 4+12+12+1+3)
+	if extKeyAck {
+		buf = append(buf, msgFramebufferUpdate, 0, 0, 2)
+		buf = appendRectHeader(buf, 0, 0, 0, 0, encodingQEMUExtendedKeyEvent)
+	} else {
+		buf = append(buf, msgFramebufferUpdate, 0, 0, 1)
+	}
 	buf = appendRectHeader(buf, 0, 0, width, height, encodingTight)
 	buf = append(buf, tightJPEG)
 	return appendCompactLength(buf, length), nil
@@ -47,8 +54,8 @@ func jpegUpdateHeader(width, height, length int) ([]byte, error) {
 
 // writeJPEGUpdate sends one frame. The JPEG goes to the socket as the encoder
 // made it: the server never copies, decodes or re-encodes it.
-func writeJPEGUpdate(w io.Writer, width, height int, frame []byte) (int64, error) {
-	header, err := jpegUpdateHeader(width, height, len(frame))
+func writeJPEGUpdate(w io.Writer, width, height int, frame []byte, extKeyAck bool) (int64, error) {
+	header, err := jpegUpdateHeader(width, height, len(frame), extKeyAck)
 	if err != nil {
 		return 0, err
 	}

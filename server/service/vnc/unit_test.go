@@ -119,7 +119,7 @@ func decodeCompactLength(b []byte) int {
 func TestTightJPEGRectFraming(t *testing.T) {
 	frame := testJPEG(t, 64, 48)
 	var buf bytes.Buffer
-	n, err := writeJPEGUpdate(&buf, 64, 48, frame)
+	n, err := writeJPEGUpdate(&buf, 64, 48, frame, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -150,7 +150,7 @@ func TestTightJPEGRectFraming(t *testing.T) {
 }
 
 func TestAFrameTooLargeForTightIsRefused(t *testing.T) {
-	if _, err := jpegUpdateHeader(10, 10, maxTightLength+1); err == nil {
+	if _, err := jpegUpdateHeader(10, 10, maxTightLength+1, false); err == nil {
 		t.Fatal("a frame over 4MB was framed")
 	}
 }

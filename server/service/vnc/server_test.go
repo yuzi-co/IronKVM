@@ -405,6 +405,8 @@ func (c *client) update() []rect {
 			r.jpeg = c.read(length)
 		case encodingDesktopSize:
 			c.width, c.height = r.w, r.h
+		case encodingQEMUExtendedKeyEvent:
+			// An empty pseudo-rectangle with no data.
 		default:
 			c.t.Fatalf("unexpected encoding %d", r.encoding)
 		}
@@ -559,6 +561,96 @@ func TestUpdatesFollowRequestsAndTheFrameRateLimit(t *testing.T) {
 	if gap := time.Since(first); gap < 80*time.Millisecond {
 		t.Fatalf("two updates %s apart at a 10 fps limit", gap)
 	}
+}
+
+// extendedKeyEvent builds a QEMU Extended Key Event message.
+func extendedKeyEvent(down bool, sym, code uint32) []byte {
+	msg := []byte{msgQEMU, qemuExtendedKeyEvent, 0, 0}
+	if down {
+		msg[3] = 1
+	}
+	msg = binary.BigEndian.AppendUint32(msg, sym)
+	return binary.BigEndian.AppendUint32(msg, code)
+}
+
+// A client that offers the QEMU Extended Key Event pseudo-encoding gets the
+// pseudo-rectangle once, with the next update, and its keys go by keycode.
+func TestExtendedKeyEventsAreAcknowledgedAndTypedByKeycode(t *testing.T) {
+	h := newHarness(t, config.VNC{})
+	c := h.connect(t)
+	frames, input := h.session(t, 0)
+	c.setEncodings(encodingTight, encodingDesktopSize, encodingQEMUExtendedKeyEvent)
+	c.requestUpdate(false)
+
+	frame := testJPEG(t, 64, 48)
+	frames.ch <- frame
+	rects := c.update()
+	if len(rects) != 2 || rects[0].encoding != encodingQEMUExtendedKeyEvent || rects[1].encoding != encodingTight {
+		t.Fatalf("first update = %+v, want the ack and the frame", rects)
+	}
+	if !bytes.Equal(rects[1].jpeg, frame) {
+		t.Fatal("the frame next to the ack is not the frame")
+	}
+
+	c.requestUpdate(false)
+	if rects = c.update(); len(rects) != 1 || rects[0].encoding != encodingTight {
+		t.Fatalf("second update = %+v, want the frame alone", rects)
+	}
+
+	// AltGr+Q on a German client, which sends the keysym "@".
+	c.write(extendedKeyEvent(true, 0xfe03, 0xb8))
+	c.write(extendedKeyEvent(true, '@', 0x10))
+	c.write(extendedKeyEvent(false, '@', 0x10))
+	c.write(extendedKeyEvent(false, 0xfe03, 0xb8))
+	// The client still sends a plain KeyEvent for a key it has no keycode for.
+	c.write(binary.BigEndian.AppendUint32([]byte{msgKeyEvent, 1, 0, 0}, 'a'))
+	waitUntil(t, "the input", func() bool {
+		keyboard, _, _ := input.snapshot()
+		return len(keyboard) == 5
+	})
+	keyboard, _, _ := input.snapshot()
+	want := [][]byte{
+		{modRightAlt, 0, 0, 0, 0, 0, 0, 0},
+		{modRightAlt, 0, 0x14, 0, 0, 0, 0, 0},
+		{modRightAlt, 0, 0, 0, 0, 0, 0, 0},
+		{0, 0, 0, 0, 0, 0, 0, 0},
+		{0, 0, 0x04, 0, 0, 0, 0, 0},
+	}
+	for i := range want {
+		if !bytes.Equal(keyboard[i], want[i]) {
+			t.Fatalf("report %d = %v, want %v", i, keyboard[i], want[i])
+		}
+	}
+
+	// A new SetEncodings that lists the pseudo-encoding is acknowledged again.
+	c.setEncodings(encodingTight, encodingDesktopSize, encodingQEMUExtendedKeyEvent)
+	c.requestUpdate(false)
+	if rects = c.update(); len(rects) != 2 || rects[0].encoding != encodingQEMUExtendedKeyEvent {
+		t.Fatalf("update after SetEncodings = %+v, want the ack again", rects)
+	}
+}
+
+// A client that does not offer the pseudo-encoding gets no pseudo-rectangle.
+func TestNoExtendedKeyEventAckWithoutTheEncoding(t *testing.T) {
+	h := newHarness(t, config.VNC{})
+	c := h.connect(t)
+	frames, _ := h.session(t, 0)
+	c.setEncodings(encodingTight, encodingDesktopSize)
+	c.requestUpdate(false)
+	frames.ch <- testJPEG(t, 64, 48)
+	if rects := c.update(); len(rects) != 1 || rects[0].encoding != encodingTight {
+		t.Fatalf("update = %+v, want the frame alone", rects)
+	}
+}
+
+// The server cannot know the length of a QEMU submessage it does not
+// support, so the session ends.
+func TestAnUnknownQEMUSubmessageEndsTheSession(t *testing.T) {
+	h := newHarness(t, config.VNC{})
+	c := h.connect(t)
+	c.setEncodings(encodingTight)
+	c.write([]byte{msgQEMU, 1, 0, 0})
+	expectClosed(t, c)
 }
 
 func TestAWrongPasswordFails(t *testing.T) {
