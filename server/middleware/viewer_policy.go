@@ -47,6 +47,11 @@ var viewerRoutes = map[string]struct{}{
 	"GET /api/vm/failsafe":         {},
 
 	"GET /api/room-mic": {},
+
+	// The image's license manifest, read-only, beside the versions in
+	// GET /api/vm/info on the About page.
+	"GET /api/licenses":      {},
+	"GET /api/licenses/file": {},
 }
 
 // ViewerRoutes returns the allowed routes, for the router test.

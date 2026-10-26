@@ -1382,7 +1382,11 @@ const uk = {
         hardwareFaq: 'Питання щодо обладнання',
         disclaimer:
           "IronKVM: захищена прошивка спільноти для Sipeed NanoKVM. Не пов'язана з Sipeed.",
-        basedOn: 'на основі NanoKVM {{version}}'
+        basedOn: 'на основі NanoKVM {{version}}',
+        licenses: 'Ліцензії',
+        licensesDescription: 'Ліцензії програм у цьому образі',
+        licensesUnavailable: 'У цьому образі немає маніфесту ліцензій.',
+        licenseTexts: 'Тексти ліцензій ({{count}})'
       },
       preferences: {
         title: 'Уподобання'

@@ -146,6 +146,7 @@ func server(r *gin.Engine) {
 	netbootRouter(r)
 	vncRouter(r)
 	ventoyRouter(r)
+	licensesRouter(r)
 }
 
 func LoopbackHTTPAllowedPaths() []string {

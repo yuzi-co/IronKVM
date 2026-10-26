@@ -1368,7 +1368,11 @@ const vi = {
         hardwareFaq: 'Câu hỏi thường gặp về phần cứng',
         disclaimer:
           'IronKVM: firmware cộng đồng được gia cố cho Sipeed NanoKVM. Không liên kết với Sipeed.',
-        basedOn: 'dựa trên NanoKVM {{version}}'
+        basedOn: 'dựa trên NanoKVM {{version}}',
+        licenses: 'Giấy phép',
+        licensesDescription: 'Giấy phép của phần mềm trong image này',
+        licensesUnavailable: 'Image này không có bản kê giấy phép.',
+        licenseTexts: 'Văn bản giấy phép ({{count}})'
       },
       preferences: {
         title: 'Tùy chọn'

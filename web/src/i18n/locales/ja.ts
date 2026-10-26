@@ -1379,7 +1379,11 @@ const ja = {
         hardwareFaq: 'ハードウェア FAQ',
         disclaimer:
           'IronKVM: Sipeed NanoKVM 向けの堅牢化されたコミュニティファームウェア。Sipeed とは無関係です。',
-        basedOn: 'NanoKVM {{version}} ベース'
+        basedOn: 'NanoKVM {{version}} ベース',
+        licenses: 'ライセンス',
+        licensesDescription: 'このイメージに含まれるソフトウェアのライセンス',
+        licensesUnavailable: 'このイメージにはライセンスマニフェストがありません。',
+        licenseTexts: 'ライセンス本文 ({{count}})'
       },
       preferences: {
         title: '環境設定'

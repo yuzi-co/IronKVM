@@ -1373,7 +1373,11 @@ const se = {
         hardwareFaq: 'Vanliga frågor om hårdvaran',
         disclaimer:
           'IronKVM: härdad gemenskapsfirmware för Sipeed NanoKVM. Inte knuten till Sipeed.',
-        basedOn: 'baserad på NanoKVM {{version}}'
+        basedOn: 'baserad på NanoKVM {{version}}',
+        licenses: 'Licenser',
+        licensesDescription: 'Licenser för programvaran i den här avbilden',
+        licensesUnavailable: 'Den här avbilden saknar licensmanifest.',
+        licenseTexts: 'Licenstexter ({{count}})'
       },
       preferences: {
         title: 'Preferenser'

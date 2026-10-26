@@ -1373,7 +1373,11 @@ const nb = {
         hardwareFaq: 'Maskinvare-FAQ',
         disclaimer:
           'IronKVM: herdet fellesskapsfastvare for Sipeed NanoKVM. Ikke tilknyttet Sipeed.',
-        basedOn: 'basert på NanoKVM {{version}}'
+        basedOn: 'basert på NanoKVM {{version}}',
+        licenses: 'Lisenser',
+        licensesDescription: 'Lisenser for programvaren i dette avtrykket',
+        licensesUnavailable: 'Dette avtrykket har ikke noe lisensmanifest.',
+        licenseTexts: 'Lisenstekster ({{count}})'
       },
       preferences: {
         title: 'Preferanser'

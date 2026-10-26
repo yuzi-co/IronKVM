@@ -1368,7 +1368,11 @@ const da = {
         hardwareFaq: 'Hardware-FAQ',
         disclaimer:
           'IronKVM: hærdet community-firmware til Sipeed NanoKVM. Ikke tilknyttet Sipeed.',
-        basedOn: 'baseret på NanoKVM {{version}}'
+        basedOn: 'baseret på NanoKVM {{version}}',
+        licenses: 'Licenser',
+        licensesDescription: 'Licenser for softwaren i dette image',
+        licensesUnavailable: 'Dette image har intet licensmanifest.',
+        licenseTexts: 'Licenstekster ({{count}})'
       },
       preferences: {
         title: 'Præferencer'

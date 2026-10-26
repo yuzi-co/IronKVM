@@ -1387,7 +1387,11 @@ const ca = {
         hardwareFaq: 'PMF del maquinari',
         disclaimer:
           'IronKVM: firmware comunitari reforçat per al Sipeed NanoKVM. Sense cap vinculació amb Sipeed.',
-        basedOn: 'basat en NanoKVM {{version}}'
+        basedOn: 'basat en NanoKVM {{version}}',
+        licenses: 'Llicències',
+        licensesDescription: "Llicències del programari d'aquesta imatge",
+        licensesUnavailable: 'Aquesta imatge no inclou cap manifest de llicències.',
+        licenseTexts: 'Textos de llicència ({{count}})'
       },
       preferences: {
         title: 'Preferències'

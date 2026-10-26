@@ -1315,7 +1315,11 @@ const zh_tw = {
         hardware: '硬體',
         hardwareFaq: '硬體常見問題',
         disclaimer: 'IronKVM：為 Sipeed NanoKVM 打造的強化社群韌體。與 Sipeed 無關。',
-        basedOn: '基於 NanoKVM {{version}}'
+        basedOn: '基於 NanoKVM {{version}}',
+        licenses: '授權條款',
+        licensesDescription: '此映像中軟體的授權條款',
+        licensesUnavailable: '此映像未包含授權清單。',
+        licenseTexts: '授權條款全文（{{count}}）'
       },
       preferences: {
         title: '偏好設定'
