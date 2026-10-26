@@ -161,6 +161,7 @@ const hu = {
       codec: 'Kodek',
       updateFailed: 'A beállítás nem lépett érvénybe',
       scale: 'Skála',
+      pan: 'Húzással mozgathatja a nagyított képet, dupla koppintással középre igazítja',
       title: 'Képernyő',
       video: 'Videó mód',
       videoDirectTips:

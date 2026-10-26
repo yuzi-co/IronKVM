@@ -156,6 +156,7 @@ const ja = {
       codec: 'コーデック',
       updateFailed: '設定を適用できませんでした',
       scale: '倍率',
+      pan: 'ドラッグで拡大画面を移動、ダブルタップで中央に戻す',
       title: '画面',
       video: 'ビデオモード',
       videoDirectTips: 'このモードを使用するには「設定 - デバイス」で HTTPS を有効にしてください',

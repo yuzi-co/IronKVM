@@ -158,6 +158,7 @@ const en = {
       codec: 'Codec',
       updateFailed: 'The setting was not applied',
       scale: 'Scale',
+      pan: 'Drag to move the zoomed picture, double-tap to center it',
       title: 'Screen',
       video: 'Video Mode',
       videoDirectTips: 'Enable HTTPS in "Settings > Device" to use this mode',

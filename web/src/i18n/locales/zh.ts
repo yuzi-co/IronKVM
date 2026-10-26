@@ -149,6 +149,7 @@ const zh = {
       codec: '编码格式',
       updateFailed: '设置未生效',
       scale: '缩放',
+      pan: '拖动以移动放大的画面，双击使其居中',
       title: '屏幕',
       video: '视频模式',
       videoDirectTips: '该模式需启用 HTTPS，请前往「设置 - 设备」中开启',

@@ -161,6 +161,7 @@ const pt_br = {
       codec: 'Codec',
       updateFailed: 'A configuração não foi aplicada',
       scale: 'Escala',
+      pan: 'Arraste para mover a imagem ampliada; toque duas vezes para centralizá-la',
       title: 'Tela',
       video: 'Modo de Vídeo',
       videoDirectTips: 'Ative HTTPS em "Configurações > Dispositivo" para usar este modo',

@@ -161,6 +161,7 @@ const tr = {
       codec: 'Kodek',
       updateFailed: 'Ayar uygulanmadı',
       scale: 'Ölçek',
+      pan: 'Yakınlaştırılmış görüntüyü kaydırmak için sürükleyin, ortalamak için iki kez dokunun',
       title: 'Ekran',
       video: 'Görüntü modu',
       videoDirectTips: 'kullanmak için "Ayarlar > Cihaz" HTTPS aktif edin',

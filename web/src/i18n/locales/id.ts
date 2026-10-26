@@ -159,6 +159,7 @@ const id = {
       codec: 'Codec',
       updateFailed: 'Pengaturan tidak diterapkan',
       scale: 'Skala',
+      pan: 'Seret untuk menggeser gambar yang diperbesar, ketuk dua kali untuk memusatkannya',
       title: 'Layar',
       video: 'Mode Video',
       videoDirectTips: 'Aktifkan HTTPS di "Pengaturan > Perangkat" untuk menggunakan mode ini',

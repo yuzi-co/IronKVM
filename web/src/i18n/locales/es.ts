@@ -165,6 +165,7 @@ const es = {
       codec: 'Códec',
       updateFailed: 'No se aplicó el ajuste',
       scale: 'Escala',
+      pan: 'Arrastra para mover la imagen ampliada; toca dos veces para centrarla',
       title: 'Pantalla',
       video: 'Modo de vídeo',
       videoDirectTips: 'Habilita HTTPS en "Ajustes > Dispositivo" para usar este modo',

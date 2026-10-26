@@ -157,6 +157,7 @@ const se = {
       codec: 'Kodek',
       updateFailed: 'Inställningen tillämpades inte',
       scale: 'Skala',
+      pan: 'Dra för att flytta den förstorade bilden, dubbeltryck för att centrera den',
       title: 'Skärm',
       video: 'Videoläge',
       videoDirectTips: 'Aktivera HTTPS i "Inställningar > Enhet" för att använda detta läge',

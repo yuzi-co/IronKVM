@@ -161,6 +161,7 @@ const cz = {
       codec: 'Kodek',
       updateFailed: 'Nastavení nebylo použito',
       scale: 'Měřítko',
+      pan: 'Tažením posunete zvětšený obraz, dvojitým klepnutím jej vycentrujete',
       title: 'Obrazovka',
       video: 'Režim videa',
       videoDirectTips: 'Chcete-li používat tento režim, povolte HTTPS v "Nastavení > Zařízení"',

@@ -162,6 +162,7 @@ const it = {
       codec: 'Codec',
       updateFailed: "L'impostazione non è stata applicata",
       scale: 'Scala',
+      pan: "Trascina per spostare l'immagine ingrandita, tocca due volte per centrarla",
       title: 'Schermo',
       video: 'Modalità video',
       videoDirectTips:

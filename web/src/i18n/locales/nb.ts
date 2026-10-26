@@ -160,6 +160,7 @@ const nb = {
       codec: 'Kodek',
       updateFailed: 'Innstillingen ble ikke brukt',
       scale: 'Skala',
+      pan: 'Dra for å flytte det forstørrede bildet, dobbelttrykk for å sentrere det',
       title: 'Skjerm',
       video: 'Video-kodek',
       videoDirectTips: 'Aktiver HTTPS i "Innstillinger > Enhet" for å bruke denne modusen',

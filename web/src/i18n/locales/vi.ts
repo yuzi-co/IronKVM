@@ -159,6 +159,7 @@ const vi = {
       codec: 'Codec',
       updateFailed: 'Chưa áp dụng được cài đặt',
       scale: 'Quy mô',
+      pan: 'Kéo để di chuyển hình đã phóng to, chạm hai lần để căn giữa',
       title: 'Màn hình',
       video: 'Chế độ video',
       videoDirectTips: 'Bật HTTPS trong "Cài đặt > Thiết bị" để sử dụng chế độ này',

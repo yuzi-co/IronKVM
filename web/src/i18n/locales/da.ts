@@ -159,6 +159,7 @@ const da = {
       codec: 'Codec',
       updateFailed: 'Indstillingen blev ikke anvendt',
       scale: 'Skala',
+      pan: 'Træk for at flytte det forstørrede billede, dobbelttryk for at centrere det',
       title: 'Skærm',
       video: 'Videotilstand',
       videoDirectTips: 'Aktiver HTTPS i "Indstillinger > Enhed" for at bruge denne tilstand',

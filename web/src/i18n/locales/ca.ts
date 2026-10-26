@@ -163,6 +163,7 @@ const ca = {
       codec: 'Còdec',
       updateFailed: "No s'ha aplicat la configuració",
       scale: 'Escala',
+      pan: 'Arrossega per moure la imatge ampliada; toca dues vegades per centrar-la',
       title: 'Pantalla',
       video: 'Mode de vídeo',
       videoDirectTips: "Activa HTTPS a 'Configuració > Dispositiu' per utilitzar aquest mode",

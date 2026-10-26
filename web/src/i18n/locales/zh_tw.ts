@@ -149,6 +149,7 @@ const zh_tw = {
       codec: '編碼格式',
       updateFailed: '設定未套用',
       scale: '缩放',
+      pan: '拖曳以移動放大的畫面，點兩下使其置中',
       title: '螢幕',
       video: '編碼格式',
       videoDirectTips: '本模式需先啟用 HTTPS，請前往「設定 -> 設備」中開啟',

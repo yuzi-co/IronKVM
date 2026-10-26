@@ -164,6 +164,7 @@ const de = {
       codec: 'Codec',
       updateFailed: 'Die Einstellung wurde nicht übernommen',
       scale: 'Skala',
+      pan: 'Ziehen verschiebt das vergrößerte Bild, Doppeltippen zentriert es',
       title: 'Bildschirm',
       video: 'Video Modus',
       videoDirectTips:
