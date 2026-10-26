@@ -274,3 +274,11 @@ func TestVersionsReportsWhatGetInfoReports(t *testing.T) {
 			image, kernel, app, "v1.4.3", "5.10.270-ironkvm0", "2.4.3")
 	}
 }
+
+// TestGetIPsIsNeverNil keeps "ips" a list in GET /api/vm/info: the client
+// fails on null.
+func TestGetIPsIsNeverNil(t *testing.T) {
+	if getIPs() == nil {
+		t.Fatal("getIPs answered nil")
+	}
+}

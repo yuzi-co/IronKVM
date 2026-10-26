@@ -5,6 +5,16 @@ type LoginReq struct {
 	Password string `validate:"required"`
 }
 
+// LoginDisabledToken is the token a login answers with while authentication
+// is switched off. It names no session; any request is let through then.
+const LoginDisabledToken = "disabled"
+
+// LoginRsp is the data of a login while authentication is switched off. A
+// real session's token goes in the HttpOnly cookie, never in the body.
+type LoginRsp struct {
+	Token string `json:"token"`
+}
+
 type GetAccountRsp struct {
 	Username string `json:"username"`
 	Role     string `json:"role"`
