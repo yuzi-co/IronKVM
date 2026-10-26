@@ -1884,6 +1884,21 @@ const de = {
           cost:
             'Auf einem gemeinsamen Port sendet das Gerät ein Paket nach dem anderen. Das kann bei mehreren Zuschauern und hohen Bildraten die CPU-Last erhöhen.'
         },
+        stun: {
+          title: 'STUN-Server',
+          description:
+            'Der Browser und dieses Gerät kontaktieren diesen Server bei jeder WebRTC-Sitzung, um ihre öffentliche Adresse zu ermitteln. Er wird nur für WebRTC über NAT ohne VPN oder Portweiterleitung benötigt.',
+          enable: 'STUN-Server verwenden',
+          server: 'Server (Host:Port)',
+          serverHint:
+            'Standard: {{server}}. Schalte den Schalter aus, um keinen STUN-Server zu kontaktieren.',
+          useDefault: 'Standard verwenden',
+          invalid: 'Gib Host:Port ein, mit einem Port von 1 bis 65535',
+          apply: 'Übernehmen',
+          saved: 'Gespeichert. Die nächste WebRTC-Verbindung verwendet ihn.',
+          loadFailed: 'STUN-Einstellung konnte nicht gelesen werden',
+          saveFailed: 'STUN-Einstellung konnte nicht gespeichert werden'
+        },
         dns: {
           title: 'DNS',
           description: 'DNS-Server für IronKVM konfigurieren',

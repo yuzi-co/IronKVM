@@ -530,6 +530,8 @@ func TestValidation(t *testing.T) {
 		{"vnc", `{"maxFps":200}`, "frame rate"},
 		{"webrtc", `{"udpPort":80}`, "1024"},
 		{"webrtc", `{"stun":"user:pass@stun.example:3478"}`, "STUN"},
+		{"webrtc", `{"stun":"stun.example:70000"}`, "STUN"},
+		{"webrtc", `{"stun":"stun.example"}`, "STUN"},
 		{"picoclaw", `{"screenshotWidth":5}`, "width"},
 		{"hostLog", `{"bind":"eth0"}`, "bind"},
 		{"webTitle", `{"title":"a\u0007b"}`, "control"},

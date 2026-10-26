@@ -1841,6 +1841,21 @@ const cz = {
           cost:
             'Na sdíleném portu posílá deska jeden paket po druhém, což může při více divácích a vysoké snímkové frekvenci zvýšit zatížení CPU.'
         },
+        stun: {
+          title: 'Server STUN',
+          description:
+            'Prohlížeč i toto zařízení kontaktují tento server při každé relaci WebRTC, aby zjistily svou veřejnou adresu. Je potřeba jen pro WebRTC přes NAT bez VPN nebo přesměrování portu.',
+          enable: 'Používat server STUN',
+          server: 'Server (host:port)',
+          serverHint:
+            'Výchozí: {{server}}. Vypnutím přepínače se nebude kontaktovat žádný server STUN.',
+          useDefault: 'Použít výchozí',
+          invalid: 'Zadejte host:port s portem od 1 do 65535',
+          apply: 'Použít',
+          saved: 'Uloženo. Použije se při příštím připojení WebRTC.',
+          loadFailed: 'Nastavení STUN se nepodařilo načíst',
+          saveFailed: 'Nastavení STUN se nepodařilo uložit'
+        },
         dns: {
           title: 'DNS',
           description: 'Nastavit DNS servery pro IronKVM',

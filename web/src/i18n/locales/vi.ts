@@ -1838,6 +1838,20 @@ const vi = {
           cost:
             'Trên cổng dùng chung, bo mạch gửi từng gói một, có thể làm tăng mức dùng CPU khi có nhiều người xem và tốc độ khung hình cao.'
         },
+        stun: {
+          title: 'Máy chủ STUN',
+          description:
+            'Trình duyệt và thiết bị này đều liên hệ máy chủ này trong mỗi phiên WebRTC để biết địa chỉ công khai của mình. Chỉ cần khi dùng WebRTC qua NAT mà không có VPN hay chuyển tiếp cổng.',
+          enable: 'Dùng máy chủ STUN',
+          server: 'Máy chủ (host:cổng)',
+          serverHint: 'Mặc định: {{server}}. Tắt công tắc để không liên hệ máy chủ STUN nào.',
+          useDefault: 'Dùng mặc định',
+          invalid: 'Nhập host:cổng, với cổng từ 1 đến 65535',
+          apply: 'Áp dụng',
+          saved: 'Đã lưu. Kết nối WebRTC tiếp theo sẽ dùng nó.',
+          loadFailed: 'Không đọc được cài đặt STUN',
+          saveFailed: 'Không lưu được cài đặt STUN'
+        },
         dns: {
           title: 'DNS',
           description: 'Cấu hình máy chủ DNS cho IronKVM',

@@ -1863,6 +1863,21 @@ const nl = {
           cost:
             'Op een gedeelde poort verstuurt het bord één pakket tegelijk, wat het CPU-gebruik kan verhogen bij meerdere kijkers en hoge framerates.'
         },
+        stun: {
+          title: 'STUN-server',
+          description:
+            'De browser en dit apparaat nemen bij elke WebRTC-sessie contact op met deze server om hun openbare adres te achterhalen. Alleen nodig voor WebRTC via NAT zonder VPN of port forwarding.',
+          enable: 'Een STUN-server gebruiken',
+          server: 'Server (host:poort)',
+          serverHint:
+            'Standaard: {{server}}. Zet de schakelaar uit om geen STUN-server te benaderen.',
+          useDefault: 'Standaard gebruiken',
+          invalid: 'Voer host:poort in, met een poort van 1 tot 65535',
+          apply: 'Toepassen',
+          saved: 'Opgeslagen. De volgende WebRTC-verbinding gebruikt hem.',
+          loadFailed: 'Kan de STUN-instelling niet lezen',
+          saveFailed: 'Kan de STUN-instelling niet opslaan'
+        },
         dns: {
           title: 'DNS',
           description: 'Configureer DNS-servers voor IronKVM',

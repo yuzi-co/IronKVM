@@ -1833,6 +1833,20 @@ const en = {
           cost:
             'On a shared port the board sends one packet at a time, which can raise CPU use with several viewers at high frame rates.'
         },
+        stun: {
+          title: 'STUN server',
+          description:
+            'The browser and this device both contact this server for each WebRTC session to learn their public address. It is only needed for WebRTC across NAT without a VPN or a port forward.',
+          enable: 'Use a STUN server',
+          server: 'Server (host:port)',
+          serverHint: 'Default: {{server}}. Turn the switch off to contact no STUN server.',
+          useDefault: 'Use the default',
+          invalid: 'Enter host:port, with a port from 1 to 65535',
+          apply: 'Apply',
+          saved: 'Saved. The next WebRTC connection uses it.',
+          loadFailed: 'Failed to read the STUN setting',
+          saveFailed: 'Failed to save the STUN setting'
+        },
         dns: {
           title: 'DNS',
           description: 'Configure DNS servers for IronKVM',

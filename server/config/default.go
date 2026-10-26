@@ -2,6 +2,14 @@ package config
 
 import "log"
 
+// DefaultStun is the STUN server a board uses until its owner sets another.
+// The browser and the board both ask it for their public address at the start
+// of every WebRTC session.
+const DefaultStun = "stun.l.google.com:19302"
+
+// StunDisabled, saved as the STUN server, turns STUN off.
+const StunDisabled = "disable"
+
 var defaultConfig = &Config{
 	Proto: "http",
 	Host:  "",
@@ -22,7 +30,7 @@ var defaultConfig = &Config{
 		RefreshTokenDuration: 2678400,
 		RevokeTokensOnLogout: true,
 	},
-	Stun: "stun.l.google.com:19302",
+	Stun: DefaultStun,
 	Turn: Turn{
 		TurnAddr: "",
 		TurnUser: "",
@@ -64,7 +72,7 @@ func checkDefaultValue() {
 	}
 
 	if instance.Stun == "" {
-		instance.Stun = "stun.l.google.com:19302"
+		instance.Stun = DefaultStun
 	}
 
 	if instance.Authentication == "" {

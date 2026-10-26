@@ -1847,6 +1847,21 @@ const tr = {
           cost:
             'Paylaşılan portta kart paketleri teker teker gönderir; bu, birden çok izleyici ve yüksek kare hızında CPU kullanımını artırabilir.'
         },
+        stun: {
+          title: 'STUN sunucusu',
+          description:
+            'Tarayıcı ve bu cihaz, genel adreslerini öğrenmek için her WebRTC oturumunda bu sunucuya bağlanır. Yalnızca VPN veya port yönlendirme olmadan NAT üzerinden WebRTC için gereklidir.',
+          enable: 'STUN sunucusu kullan',
+          server: 'Sunucu (ana makine:port)',
+          serverHint:
+            'Varsayılan: {{server}}. Hiçbir STUN sunucusuna bağlanmamak için anahtarı kapatın.',
+          useDefault: 'Varsayılanı kullan',
+          invalid: '1 ile 65535 arasında bir portla ana makine:port girin',
+          apply: 'Uygula',
+          saved: 'Kaydedildi. Sonraki WebRTC bağlantısı bunu kullanır.',
+          loadFailed: 'STUN ayarı okunamadı',
+          saveFailed: 'STUN ayarı kaydedilemedi'
+        },
         dns: {
           title: 'DNS',
           description: 'IronKVM için DNS sunucularını yapılandır',

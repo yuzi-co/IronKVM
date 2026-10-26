@@ -58,4 +58,8 @@ func networkRouter(r *gin.Engine) {
 	// WebRTC through a port forward: a fixed UDP port and a public address.
 	admin.GET("/network/webrtc", forward.Get)  // get the port forward setting
 	admin.POST("/network/webrtc", forward.Set) // set it
+
+	// The STUN server new WebRTC sessions use, or "disable".
+	admin.GET("/network/webrtc/stun", forward.GetStun)  // get the STUN server
+	admin.POST("/network/webrtc/stun", forward.SetStun) // set it
 }

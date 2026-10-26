@@ -350,12 +350,9 @@ var webrtcSection = serverSpec("webrtc",
 		if err := webrtc.ValidatePortForward(config.WebRTC{UDPPort: v.UDPPort, PublicAddress: v.PublicAddress}, reserved...); err != nil {
 			return err
 		}
-		// A STUN server is host:port. A user name has no place in it, so an
-		// @ is refused rather than carried to another board.
-		if len(v.Stun) > 260 || strings.ContainsAny(v.Stun, " \t@/") {
-			return errors.New("the STUN server is host:port")
-		}
-		return nil
+		// A STUN server is host:port or "disable". A user name has no place
+		// in it, so an @ is refused rather than carried to another board.
+		return webrtc.ValidateStun(v.Stun)
 	})
 
 type picoclawSettings struct {
