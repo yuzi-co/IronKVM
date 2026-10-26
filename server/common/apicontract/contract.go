@@ -28,6 +28,7 @@ var features = []string{
 	"audit-log",           // /api/audit: the audit log, its export and settings
 	"diagnostics-bundle",  // GET /api/diagnostics/bundle: support bundle without secrets
 	"direct-clock",        // clock request (byte 5) on the direct H.264 socket
+	"edid-view",           // /api/edid: EDID presets and decoder, read only
 	"hid-autotap",         // POST /api/hid/autotap, /api/hid/sequence: key auto-tap
 	"hid-macros",          // /api/hid/macro(s), /api/hid/sequence: recorded macros
 	"host-log",            // /api/hostlog: UDP syslog and netconsole receiver, live tail

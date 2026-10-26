@@ -156,6 +156,7 @@ func server(r *gin.Engine) {
 	ventoyRouter(r)
 	urlMediaRouter(r)
 	licensesRouter(r)
+	edidRouter(r)
 	supportRouter(r)
 }
 
