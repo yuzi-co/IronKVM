@@ -36,6 +36,10 @@ var named = map[string]Rule{
 	"POST /api/download/file":             {CategoryMedia, "upload-image", false},
 	"POST /api/vm/device/virtual":         {CategoryMedia, "virtual-device", false},
 	"POST /api/vm/device/virtual/apply":   {CategoryMedia, "virtual-device", false},
+	// An image served from a URL: the target is the drive and the URL's
+	// host, never the URL, which may carry credentials.
+	"POST /api/storage/url/mount": {CategoryMedia, "mount-url", false},
+	"POST /api/storage/url/eject": {CategoryMedia, "eject-url", false},
 
 	"POST /api/hid/autotap":       {CategoryMacro, "autotap", false},
 	"POST /api/hid/macro/play":    {CategoryMacro, "play", false},

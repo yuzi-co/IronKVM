@@ -154,6 +154,7 @@ func server(r *gin.Engine) {
 	netbootRouter(r)
 	vncRouter(r)
 	ventoyRouter(r)
+	urlMediaRouter(r)
 	licensesRouter(r)
 	supportRouter(r)
 }
