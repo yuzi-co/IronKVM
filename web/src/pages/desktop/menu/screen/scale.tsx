@@ -1,4 +1,4 @@
-import { ReactElement, useEffect } from 'react';
+import { ReactElement } from 'react';
 import { Popover } from 'antd';
 import { useAtom } from 'jotai';
 import { CheckIcon, PercentIcon, ScalingIcon } from 'lucide-react';
@@ -19,13 +19,6 @@ export const Scale = (): ReactElement => {
   const { t } = useTranslation();
 
   const [videoScale, setVideoScale] = useAtom(videoScaleAtom);
-
-  useEffect(() => {
-    const scale = storage.getVideoScale();
-    if (scale) {
-      setVideoScale(scale);
-    }
-  }, [setVideoScale]);
 
   async function update(scale: number): Promise<void> {
     setVideoScale(scale);

@@ -7,6 +7,7 @@ import { KeyboardReport } from '@/lib/keyboard.ts';
 import {
   getPauseWhenHidden,
   getStreamInfoVisible,
+  getVideoScale,
   setPauseWhenHidden,
   setStreamInfoVisible
 } from '@/lib/localstorage.ts';
@@ -23,7 +24,9 @@ export const isHdmiEnabledAtom = atom(true);
 // mjpeg: stream JPEG over HTTP
 export const videoModeAtom = atom('');
 
-export const videoScaleAtom = atom<number>(1.0);
+// The zoom starts at the one saved, so the picture opens at it without the
+// Scale menu having been opened first.
+export const videoScaleAtom = atom<number>(getVideoScale());
 
 // capture resolution, as the board reports it
 export const resolutionAtom = atom<Resolution | null>(null);

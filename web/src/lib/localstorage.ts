@@ -1,8 +1,8 @@
 import { migrateMenuDisabledItems } from './menu-items.ts';
+import { DEFAULT_VIDEO_SCALE, readVideoScale, VIDEO_SCALE_KEY } from './video-scale.ts';
 
 const LANGUAGE_KEY = 'nano-kvm-language';
 const VIDEO_MODE_KEY = 'nano-kvm-vide-mode';
-const VIDEO_SCALE_KEY = 'nano-kvm-video-scale';
 const MOUSE_STYLE_KEY = 'nano-kvm-mouse-style';
 const MOUSE_MODE_KEY = 'nano-kvm-mouse-mode';
 const MOUSE_SCROLL_DIRECTION_KEY = 'nano-kvm-mouse-scroll-direction';
@@ -97,12 +97,14 @@ export function setVideoMode(mode: string) {
   localStorage.setItem(VIDEO_MODE_KEY, mode);
 }
 
-export function getVideoScale(): number | null {
-  const scale = localStorage.getItem(VIDEO_SCALE_KEY);
-  if (scale && Number(scale)) {
-    return Number(scale);
+// getVideoScale is the saved zoom, or 100 % when none is saved. Even
+// reaching localStorage can throw where site data is blocked.
+export function getVideoScale(): number {
+  try {
+    return readVideoScale(localStorage);
+  } catch {
+    return DEFAULT_VIDEO_SCALE;
   }
-  return null;
 }
 
 export function setVideoScale(scale: number): void {
