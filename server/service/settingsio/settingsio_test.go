@@ -128,6 +128,7 @@ func seedSecrets(b *board) {
 		"/etc/kvm/vnc.passwd", "/etc/kvm/nut.passwd", "/etc/kvm/ipmi.key",
 		"/etc/kvm/application-update.json", "/etc/kvm/syslog-remote", "/etc/kvm/ssh_port",
 		"/etc/kvm/redfish-uuid", "/etc/kvm/usb-identity", "/etc/kvm/agent-tiers.json",
+		"/etc/kvm/oidc.json",
 		"/boot/ironkvm-first-password.txt", "/boot/eth.nodhcp",
 	} {
 		b.write(path, sentinel+"-"+filepath.Base(path))

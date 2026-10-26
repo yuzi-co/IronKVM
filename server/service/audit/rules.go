@@ -17,6 +17,8 @@ var named = map[string]Rule{
 	"POST /api/auth/login":      {CategoryAuth, "login", true},
 	"POST /api/auth/login/totp": {CategoryAuth, "login-2fa", true},
 	"POST /api/auth/logout":     {CategoryAuth, "logout", false},
+	// The OIDC login is a GET, recorded by its handler as login-oidc.
+	"POST /api/auth/oidc/settings": {CategoryAuth, "oidc-settings", false},
 
 	"DELETE /api/auth/sessions/:id":         {CategoryAuth, "revoke-session", false},
 	"POST /api/auth/sessions/revoke-others": {CategoryAuth, "revoke-other-sessions", false},
