@@ -96,3 +96,22 @@ func TestConcurrentSourceReportsLeaveLatestSnapshot(t *testing.T) {
 		t.Fatalf("version=%d exists=%t, want 100/true", version, ok)
 	}
 }
+
+func TestQueueStaleWhileNoStreamDrains(t *testing.T) {
+	state := New()
+	if !state.QueueStale() {
+		t.Fatal("queue not stale with no viewer")
+	}
+	state.AcquireLease()
+	if !state.QueueStale() {
+		t.Fatal("a screenshot's lease does not drain the queue")
+	}
+	state.UpdateViewer("direct", 1, 1)
+	if state.QueueStale() {
+		t.Fatal("queue stale while a stream drains it")
+	}
+	state.UpdateViewer("direct", 0, 2)
+	if !state.QueueStale() {
+		t.Fatal("queue not stale after the last viewer left")
+	}
+}

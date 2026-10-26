@@ -84,6 +84,14 @@ func (s *State) NeedsFreshFrame() bool {
 	return s.needsFreshFrame
 }
 
+// QueueStale reports whether the head of the capture queue predates a read
+// about to start. While no stream has a viewer nothing drains the queue
+// between one-shot reads, so its head is the frame captured just after the
+// previous read, however long ago that was; the frame behind it is current.
+func (s *State) QueueStale() bool {
+	return s.viewerCount == 0
+}
+
 // ClaimFreshFrame returns true for the first successful reader after HDMI
 // resumes. Failed reads do not consume the claim.
 func (s *State) ClaimFreshFrame() bool {
