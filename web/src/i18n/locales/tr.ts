@@ -1302,6 +1302,7 @@ const tr = {
           hostLog: 'Ana bilgisayar günlüğü',
           webTitle: 'Web başlığı',
           leaderKey: 'Lider tuşu',
+          keyboardLayout: 'Ana makinenin klavye düzeni',
           shortcuts: 'Klavye kısayolları',
           macros: 'Makrolar',
           mouseJiggler: 'Fare jiggler',
@@ -1509,6 +1510,9 @@ const tr = {
         languageDesc: 'Arayüz için dili seçin',
         webTitle: 'Site başlığı',
         webTitleDesc: 'Görünen site başlığını güncelleyin',
+        hostLayout: 'Ana makinenin klavye düzeni',
+        hostLayoutDesc:
+          'Ana makinenin yazdığı düzen. Yapay zekâ ajanları bununla yazar ve düzen seçmemiş bir tarayıcıda yapıştırma bununla başlar.',
         menuBar: {
           title: 'Menü Çubuğu',
           mode: 'Görüntüleme Modu',

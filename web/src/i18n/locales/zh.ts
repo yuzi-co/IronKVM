@@ -1250,6 +1250,7 @@ const zh = {
           hostLog: '主机日志',
           webTitle: '网页标题',
           leaderKey: '引导键',
+          keyboardLayout: '主机键盘布局',
           shortcuts: '键盘快捷键',
           macros: '宏',
           mouseJiggler: '鼠标防休眠',
@@ -1449,6 +1450,9 @@ const zh = {
         languageDesc: '选择界面语言',
         webTitle: '网页标题',
         webTitleDesc: '自定义网站页面标题',
+        hostLayout: '主机键盘布局',
+        hostLayoutDesc:
+          '主机输入所用的布局。AI 代理用它输入，未选择布局的浏览器中粘贴也默认使用它。',
         menuBar: {
           title: '菜单栏',
           mode: '显示方式',

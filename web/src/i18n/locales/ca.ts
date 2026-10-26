@@ -1313,6 +1313,7 @@ const ca = {
           hostLog: 'Registre de l\'amfitrió',
           webTitle: 'Títol web',
           leaderKey: 'Tecla líder',
+          keyboardLayout: "Disposició del teclat de l'amfitrió",
           shortcuts: 'Dreceres de teclat',
           macros: 'Macros',
           mouseJiggler: 'Jiggler del ratolí',
@@ -1526,6 +1527,9 @@ const ca = {
         languageDesc: "Seleccioneu l'idioma per a la interfície",
         webTitle: 'Títol web',
         webTitleDesc: 'Personalitza el títol de la pàgina',
+        hostLayout: "Disposició del teclat de l'amfitrió",
+        hostLayoutDesc:
+          "La disposició amb què escriu l'amfitrió. Els agents d'IA escriuen amb ella, i l'enganxat hi comença en un navegador que no n'ha triat cap.",
         menuBar: {
           title: 'Barra de menús',
           mode: 'Mode de visualització',

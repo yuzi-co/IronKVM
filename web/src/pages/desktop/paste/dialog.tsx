@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 
 import { checkPaste, type PasteCheck, type PasteUntypeable } from '@/api/hid.ts';
 import { readClipboardText } from '@/lib/clipboard.ts';
+import { layoutLabelKey } from '@/lib/paste-layout.ts';
 import {
   defaultPasteDelay,
   pasteDelayAtom,
@@ -32,11 +33,6 @@ const canReadClipboard = window.isSecureContext === true && !!navigator.clipboar
 // How many untypeable characters the dialog lists. The server reports up to a
 // hundred, and the count covers the rest.
 const untypeableShown = 20;
-
-// The translation key of a layout ID: 'pt-br' is 'ptBr'.
-function layoutLabelKey(id: string) {
-  return id.replace(/-(\w)/g, (_, c: string) => c.toUpperCase());
-}
 
 function codePoint(char: string) {
   return Array.from(char)

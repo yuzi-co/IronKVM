@@ -1322,6 +1322,7 @@ const fr = {
           hostLog: 'Journal de l\'hôte',
           webTitle: 'Titre web',
           leaderKey: 'Touche leader',
+          keyboardLayout: "Disposition du clavier de l'hôte",
           shortcuts: 'Raccourcis clavier',
           macros: 'Macros',
           mouseJiggler: 'Jiggler de souris',
@@ -1536,6 +1537,9 @@ const fr = {
         languageDesc: "Sélectionnez la langue de l'interface",
         webTitle: 'Titre Web',
         webTitleDesc: 'Personnaliser le titre de la page Web',
+        hostLayout: "Disposition du clavier de l'hôte",
+        hostLayoutDesc:
+          "La disposition avec laquelle l'hôte tape. Les agents IA tapent avec elle, et le collage part d'elle dans un navigateur qui n'en a pas choisi.",
         menuBar: {
           title: 'Barre de menus',
           mode: "Mode d'affichage",

@@ -1313,6 +1313,7 @@ const pt_br = {
           hostLog: 'Log do host',
           webTitle: 'Título da web',
           leaderKey: 'Tecla líder',
+          keyboardLayout: 'Layout de teclado do host',
           shortcuts: 'Atalhos de teclado',
           macros: 'Macros',
           mouseJiggler: 'Jiggler do mouse',
@@ -1526,6 +1527,9 @@ const pt_br = {
         languageDesc: 'Selecione o idioma da interface',
         webTitle: 'Título da Web',
         webTitleDesc: 'Personalizar o título da página web',
+        hostLayout: 'Layout de teclado do host',
+        hostLayoutDesc:
+          'O layout com que o host digita. Os agentes de IA digitam com ele, e colar começa nele em um navegador que não escolheu nenhum.',
         menuBar: {
           title: 'Barra de Menu',
           mode: 'Modo de exibição',

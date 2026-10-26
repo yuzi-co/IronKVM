@@ -1298,6 +1298,7 @@ const vi = {
           hostLog: 'Nhật ký máy chủ',
           webTitle: 'Tiêu đề web',
           leaderKey: 'Phím dẫn',
+          keyboardLayout: 'Bố cục bàn phím của máy chủ',
           shortcuts: 'Phím tắt bàn phím',
           macros: 'Macro',
           mouseJiggler: 'Jiggler chuột',
@@ -1503,6 +1504,9 @@ const vi = {
         languageDesc: 'Chọn ngôn ngữ cho giao diện',
         webTitle: 'Tiêu đề trang web',
         webTitleDesc: 'Tùy chỉnh tiêu đề trang web',
+        hostLayout: 'Bố cục bàn phím của máy chủ',
+        hostLayoutDesc:
+          'Bố cục mà máy chủ dùng để gõ. Các tác tử AI gõ bằng bố cục này, và dán bắt đầu từ nó trong trình duyệt chưa chọn bố cục.',
         menuBar: {
           title: 'Thanh menu',
           mode: 'Chế độ hiển thị',

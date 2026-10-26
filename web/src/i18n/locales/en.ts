@@ -1296,6 +1296,7 @@ const en = {
           hostLog: 'Host log',
           webTitle: 'Web title',
           leaderKey: 'Leader key',
+          keyboardLayout: 'Host keyboard layout',
           shortcuts: 'Keyboard shortcuts',
           macros: 'Macros',
           mouseJiggler: 'Mouse jiggler',
@@ -1500,6 +1501,9 @@ const en = {
         languageDesc: 'Select the language for the interface',
         webTitle: 'Web Title',
         webTitleDesc: 'Customize the web page title',
+        hostLayout: 'Host keyboard layout',
+        hostLayoutDesc:
+          'The layout the host types with. AI agents type with it, and paste starts on it in a browser that has not picked one.',
         menuBar: {
           title: 'Menu Bar',
           mode: 'Display Mode',

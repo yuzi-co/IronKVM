@@ -1319,6 +1319,7 @@ const it = {
           hostLog: 'Log dell’host',
           webTitle: 'Titolo web',
           leaderKey: 'Tasto leader',
+          keyboardLayout: "Layout di tastiera dell'host",
           shortcuts: 'Scorciatoie da tastiera',
           macros: 'Macro',
           mouseJiggler: 'Jiggler del mouse',
@@ -1532,6 +1533,9 @@ const it = {
         languageDesc: "Seleziona la lingua per l'interfaccia",
         webTitle: 'Titolo web',
         webTitleDesc: 'Personalizza il titolo della pagina web',
+        hostLayout: "Layout di tastiera dell'host",
+        hostLayoutDesc:
+          "Il layout con cui digita l'host. Gli agenti IA digitano con esso, e l'incolla parte da esso in un browser che non ne ha scelto uno.",
         menuBar: {
           title: 'Barra dei menu',
           mode: 'Modalità di visualizzazione',

@@ -1249,6 +1249,7 @@ const zh_tw = {
           hostLog: '主機日誌',
           webTitle: '網頁標題',
           leaderKey: '引導鍵',
+          keyboardLayout: '主機鍵盤配置',
           shortcuts: '鍵盤快捷鍵',
           macros: '巨集',
           mouseJiggler: '滑鼠防休眠',
@@ -1448,6 +1449,9 @@ const zh_tw = {
         languageDesc: '選擇介面語言',
         webTitle: '網頁標題',
         webTitleDesc: '自訂網頁標題',
+        hostLayout: '主機鍵盤配置',
+        hostLayoutDesc:
+          '主機輸入所用的配置。AI 代理以它輸入，未選擇配置的瀏覽器中貼上也預設使用它。',
         menuBar: {
           title: '選單列',
           mode: '顯示方式',

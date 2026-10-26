@@ -1308,6 +1308,7 @@ const pl = {
           hostLog: 'Log hosta',
           webTitle: 'Tytuł strony',
           leaderKey: 'Klawisz wiodący',
+          keyboardLayout: 'Układ klawiatury hosta',
           shortcuts: 'Skróty klawiszowe',
           macros: 'Makra',
           mouseJiggler: 'Jiggler myszy',
@@ -1516,6 +1517,9 @@ const pl = {
         languageDesc: 'Wybierz język interfejsu',
         webTitle: 'Tytuł strony internetowej',
         webTitleDesc: 'Dostosuj tytuł strony internetowej',
+        hostLayout: 'Układ klawiatury hosta',
+        hostLayoutDesc:
+          'Układ, którym pisze host. Agenci AI piszą nim, a wklejanie zaczyna od niego w przeglądarce, która nie wybrała żadnego.',
         menuBar: {
           title: 'Pasek menu',
           mode: 'Tryb wyświetlania',

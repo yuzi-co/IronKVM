@@ -34,13 +34,13 @@ func TestLayoutIDsAreUnique(t *testing.T) {
 // and the menu lacks cannot be chosen, and one the menu has and the server
 // lacks fails every paste.
 func TestWebListsEveryLayout(t *testing.T) {
-	src, err := os.ReadFile("../../../web/src/jotai/paste.ts")
+	src, err := os.ReadFile("../../../web/src/lib/paste-layout.ts")
 	if err != nil {
 		t.Fatalf("mount the repository root, not server/: %v", err)
 	}
 	list := regexp.MustCompile(`(?s)pasteLayoutIds = \[(.*?)\]`).FindSubmatch(src)
 	if list == nil {
-		t.Fatal("web/src/jotai/paste.ts has no pasteLayoutIds")
+		t.Fatal("web/src/lib/paste-layout.ts has no pasteLayoutIds")
 	}
 	var web []string
 	for _, m := range regexp.MustCompile(`'([^']+)'`).FindAllSubmatch(list[1], -1) {

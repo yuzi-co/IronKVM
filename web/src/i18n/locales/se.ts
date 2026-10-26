@@ -1303,6 +1303,7 @@ const se = {
           hostLog: 'Värdlogg',
           webTitle: 'Webbtitel',
           leaderKey: 'Ledartangent',
+          keyboardLayout: 'Värdens tangentbordslayout',
           shortcuts: 'Kortkommandon',
           macros: 'Makron',
           mouseJiggler: 'Musjiggler',
@@ -1511,6 +1512,9 @@ const se = {
         languageDesc: 'Välj språk för gränssnittet',
         webTitle: 'Webbtitel',
         webTitleDesc: 'Anpassa webbsidans titel',
+        hostLayout: 'Värdens tangentbordslayout',
+        hostLayoutDesc:
+          'Layouten som värden skriver med. AI-agenter skriver med den, och klistra in börjar med den i en webbläsare som inte har valt någon.',
         menuBar: {
           title: 'Menyrad',
           mode: 'Visningsläge',
