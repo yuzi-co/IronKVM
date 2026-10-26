@@ -1307,6 +1307,7 @@ const ja = {
           hostLog: 'ホストログ',
           webTitle: 'Web タイトル',
           leaderKey: 'リーダーキー',
+          keyboardLayout: 'ホストのキーボードレイアウト',
           shortcuts: 'キーボードショートカット',
           macros: 'マクロ',
           mouseJiggler: 'マウスジグラー',
@@ -1516,6 +1517,9 @@ const ja = {
         languageDesc: 'インターフェース言語の選択',
         webTitle: 'ウェブページタイトル',
         webTitleDesc: 'ウェブページタイトルのカスタマイズ',
+        hostLayout: 'ホストのキーボードレイアウト',
+        hostLayoutDesc:
+          'ホストが入力に使うレイアウトです。AI エージェントはこれで入力し、レイアウトを選んでいないブラウザーでは貼り付けもこれで始まります。',
         menuBar: {
           title: 'メニューバー',
           mode: '表示モード',

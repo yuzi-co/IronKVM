@@ -1301,6 +1301,7 @@ const cz = {
           hostLog: 'Protokol hostitele',
           webTitle: 'Název webu',
           leaderKey: 'Hlavní klávesa',
+          keyboardLayout: 'Rozložení klávesnice hostitele',
           shortcuts: 'Klávesové zkratky',
           macros: 'Makra',
           mouseJiggler: 'Jiggler myši',
@@ -1505,6 +1506,9 @@ const cz = {
         languageDesc: 'Vyberte jazyk rozhraní',
         webTitle: 'Název webu',
         webTitleDesc: 'Přizpůsobte název webové stránky',
+        hostLayout: 'Rozložení klávesnice hostitele',
+        hostLayoutDesc:
+          'Rozložení, kterým hostitel píše. Píší s ním agenti AI a vkládání z něj vychází v prohlížeči, který si žádné nevybral.',
         menuBar: {
           title: 'Panel nabídek',
           mode: 'Režim zobrazení',

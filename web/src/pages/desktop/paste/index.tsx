@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
-import { useAtom } from 'jotai';
+import { useAtom, useSetAtom } from 'jotai';
 
-import { getPasteStatus } from '@/api/hid.ts';
+import { getHostLayout, getPasteStatus } from '@/api/hid.ts';
 import { pollWhileVisible } from '@/lib/visible-poll.ts';
-import { pasteStatusAtom } from '@/jotai/paste.ts';
+import { hostPasteLayoutAtom, pasteStatusAtom } from '@/jotai/paste.ts';
 
 import { PasteDialog } from './dialog.tsx';
 import { PasteProgress } from './progress.tsx';
@@ -17,6 +17,19 @@ const pollIntervalMs = 500;
 export const Paste = () => {
   const [status, setStatus] = useAtom(pasteStatusAtom);
   const isTyping = status?.status === 'typing';
+  const setHostLayout = useSetAtom(hostPasteLayoutAtom);
+
+  // The layout the owner set for the host is where the dialog and the paste
+  // shortcut start, until this browser picks one.
+  useEffect(() => {
+    getHostLayout()
+      .then((rsp) => {
+        if (rsp.code === 0 && rsp.data) {
+          setHostLayout(rsp.data);
+        }
+      })
+      .catch(() => {});
+  }, [setHostLayout]);
 
   // A paste started before a reload, or in another tab, is still typing on the
   // host. Picking it up gives this page its progress and its cancel.

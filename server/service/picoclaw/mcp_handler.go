@@ -7,10 +7,12 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"NanoKVM-Server/service/agent"
 	"NanoKVM-Server/service/audit"
+	"NanoKVM-Server/service/hid"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -58,6 +60,7 @@ var mcpToolDefinitions = []*protocol.Tool{
 			`{"action":"type","text":"hello"} types text; {"action":"hotkey","keys":["shift"]} presses one key, here a modifier on its own; {"action":"hotkey","keys":["ctrl","c"]} presses keys together; {"action":"scroll","direction":"down","amount":3}; ` +
 			`{"action":"drag","from":{"x":0.2,"y":0.2},"to":{"x":0.6,"y":0.2}}; {"action":"wait","duration_ms":1000}. ` +
 			"type is only for text: to press any key, such as Enter, Escape, Tab, an arrow or Shift, use hotkey with that key. " +
+			"type presses the keys that give the text on the keyboard layout the NanoKVM owner set for the host; if the host uses another, name it in layout. " +
 			"The result reports where the pointer ended up. Set screenshot_after to get a screenshot of the result in the same call.",
 		InputSchema: map[string]any{
 			"type": "object",
@@ -94,6 +97,10 @@ var mcpToolDefinitions = []*protocol.Tool{
 								"description": "click, drag: mouse button, default left.",
 							},
 							"text": map[string]any{"type": "string", "description": "type: the characters to type. Not for single keys: press Enter, Shift and other keys with hotkey."},
+							"layout": map[string]any{
+								"type":        "string",
+								"description": "type: the keyboard layout active on the host, only when it differs from the one the NanoKVM owner set (US unless set): " + strings.Join(hid.LayoutIDs(), ", ") + ".",
+							},
 							"keys": map[string]any{
 								"type":        "array",
 								"items":       map[string]any{"type": "string"},

@@ -140,6 +140,7 @@ var sections = []section{
 	hostLogSection,
 	webTitleSection,
 	leaderKeySection,
+	keyboardLayoutSection,
 	shortcutsSection,
 	macrosSection,
 	mouseJigglerSection,

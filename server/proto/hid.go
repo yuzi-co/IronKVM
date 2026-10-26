@@ -98,6 +98,19 @@ type GetLeaderKeyRsp struct {
 	Key string `json:"key"`
 }
 
+// SetHostLayoutReq sets the keyboard layout active on the host, by ID. An
+// empty Layout goes back to US.
+type SetHostLayoutReq struct {
+	Layout string `json:"layout" form:"layout"`
+}
+
+// GetHostLayoutRsp is the host's keyboard layout. Configured is false while
+// the owner has not set one and Layout is the default.
+type GetHostLayoutRsp struct {
+	Layout     string `json:"layout"`
+	Configured bool   `json:"configured"`
+}
+
 // PasteReq types Content on the target as key presses, in the background.
 //
 // Layout names the keyboard layout active on the target, because a key press

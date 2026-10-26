@@ -5,16 +5,17 @@ import { useTranslation } from 'react-i18next';
 import { LeaderKey } from '../../keyboard/leader-key.tsx';
 import { MenuAction } from '../components/menu-action.tsx';
 import { SectionHeader } from '../components/section.tsx';
+import { HostLayout } from './host-layout.tsx';
 import { KeyboardLedStatusSetting } from './keyboard-led-status.tsx';
 import { Language } from './language.tsx';
 import { MenuIcons } from './menu-icons.tsx';
 import { MenuMode } from './menu-mode.tsx';
 import { WebTitle } from './web-title.tsx';
 
-// Most of this page is stored in the browser, and only the web title and the
-// leader key on the device. The two sections say which is which, so nobody
-// expects a language change to follow them to another machine, or a title
-// change to stay local.
+// Most of this page is stored in the browser, and only the web title, the
+// host keyboard layout and the leader key on the device. The two sections say
+// which is which, so nobody expects a language change to follow them to
+// another machine, or a title change to stay local.
 export const Preferences = () => {
   const { t } = useTranslation();
   const { account } = useAuth();
@@ -44,6 +45,7 @@ export const Preferences = () => {
             description={t('settings.appearance.deviceWideDesc')}
           />
           <WebTitle />
+          <HostLayout />
           <div className="mt-8">
             <MenuAction description={t('keyboard.leaderKey.desc')}>
               <LeaderKey />

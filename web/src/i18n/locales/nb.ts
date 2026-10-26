@@ -1304,6 +1304,7 @@ const nb = {
           hostLog: 'Vertslogg',
           webTitle: 'Nettittel',
           leaderKey: 'Leader-tast',
+          keyboardLayout: 'Vertens tastaturoppsett',
           shortcuts: 'Hurtigtaster',
           macros: 'Makroer',
           mouseJiggler: 'Musejiggler',
@@ -1508,6 +1509,9 @@ const nb = {
         languageDesc: 'Velg språket for grensesnittet',
         webTitle: 'Netttittel',
         webTitleDesc: 'Tilpass nettsidetittelen',
+        hostLayout: 'Vertens tastaturoppsett',
+        hostLayoutDesc:
+          'Oppsettet verten skriver med. AI-agenter skriver med det, og lim inn starter med det i en nettleser som ikke har valgt et.',
         menuBar: {
           title: 'Menylinje',
           mode: 'Visningsmodus',

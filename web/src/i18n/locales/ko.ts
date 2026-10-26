@@ -1289,6 +1289,7 @@ const ko = {
           hostLog: '호스트 로그',
           webTitle: '웹 제목',
           leaderKey: '리더 키',
+          keyboardLayout: '호스트 키보드 레이아웃',
           shortcuts: '키보드 단축키',
           macros: '매크로',
           mouseJiggler: '마우스 지글러',
@@ -1494,6 +1495,9 @@ const ko = {
         languageDesc: '인터페이스 언어를 선택하세요',
         webTitle: '웹 제목',
         webTitleDesc: '웹 페이지 제목 사용자 지정',
+        hostLayout: '호스트 키보드 레이아웃',
+        hostLayoutDesc:
+          '호스트가 입력에 쓰는 레이아웃입니다. AI 에이전트가 이 레이아웃으로 입력하며, 레이아웃을 고르지 않은 브라우저에서는 붙여넣기도 이 레이아웃으로 시작합니다.',
         menuBar: {
           title: '메뉴 바',
           mode: '표시 모드',

@@ -267,23 +267,29 @@ func (s *Service) executeAction(ctx context.Context, action Action) (int, *Picoc
 		if action.Text == "" {
 			return 0, newPicoclawError(CodeInvalidAction, typeNeedsTextMessage)
 		}
-		charMap := hid.GetCharMap("")
+		layout, err := hid.TypingLayout(action.Layout)
+		if err != nil {
+			return 0, newPicoclawError(CodeInvalidAction, err.Error())
+		}
 		for _, char := range action.Text {
 			if contextErr := controlOperationError(ctx); contextErr != nil {
 				return out.writes, contextErr
 			}
-			key, ok := charMap[char]
+			keys, ok := layout.Keystrokes(char)
 			if !ok {
 				return out.writes, newPicoclawError(CodeInvalidAction, "unsupported character in type action")
 			}
 
-			out.key([]byte{byte(key.Modifiers), 0x00, byte(key.Code), 0x00, 0x00, 0x00, 0x00, 0x00})
-			out.key([]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
-			if out.err != nil {
-				return out.writes, out.err
-			}
-			if waitErr := waitForControlOperation(ctx, defaultKeyDelay); waitErr != nil {
-				return out.writes, waitErr
+			// An accented character can take a dead key and then the letter.
+			for _, key := range keys {
+				out.key([]byte{byte(key.Modifiers), 0x00, byte(key.Code), 0x00, 0x00, 0x00, 0x00, 0x00})
+				out.key([]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
+				if out.err != nil {
+					return out.writes, out.err
+				}
+				if waitErr := waitForControlOperation(ctx, defaultKeyDelay); waitErr != nil {
+					return out.writes, waitErr
+				}
 			}
 		}
 		return out.writes, nil

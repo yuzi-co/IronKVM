@@ -7,13 +7,18 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
 
 	"NanoKVM-Server/service/controlmode"
+	"NanoKVM-Server/service/hid"
 	"NanoKVM-Server/service/inputcontrol"
+
+	protocol "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
 type fakeSnapshotter struct {
@@ -405,5 +410,88 @@ func TestManualInputCancelsActiveMCPToolAndKeepsModeEnabled(t *testing.T) {
 	}
 	if len(hid.keyboard) < 2 || string(hid.keyboard[len(hid.keyboard)-1]) != string(keyUpReport) {
 		t.Fatalf("keyboard was not released before manual takeover: %v", hid.keyboard)
+	}
+}
+
+func typingHandler(t *testing.T) (protocol.ToolHandlerFor[TypeTextParams, TypeTextResult], *recordingHID) {
+	t.Helper()
+	control := controlmode.NewManager(filepath.Join(t.TempDir(), "mode"), controlmode.ModeMCP)
+	hid := &recordingHID{}
+	return typeTextHandler(&toolExecutor{control: control, coordinator: &inputcontrol.Coordinator{}}, newRemoteWithHID(hid)), hid
+}
+
+// useHostLayout sets the host keyboard layout for the test.
+func useHostLayout(t *testing.T, id string) {
+	t.Helper()
+	path := filepath.Join(t.TempDir(), "keyboard-layout")
+	if err := os.WriteFile(path, []byte(id), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	old := hid.HostLayoutFile
+	hid.HostLayoutFile = path
+	t.Cleanup(func() { hid.HostLayoutFile = old })
+}
+
+func TestTypeTextUsesTheNamedLayout(t *testing.T) {
+	useHostLayout(t, "fr")
+	handler, rec := typingHandler(t)
+	delayMS := 0
+
+	_, out, err := handler(context.Background(), nil, TypeTextParams{Text: "zâ", Layout: "de", DelayMS: &delayMS})
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := [][]byte{
+		{0, 0, 0x1c, 0, 0, 0, 0, 0}, keyUpReport,
+		{0, 0, 0x35, 0, 0, 0, 0, 0}, keyUpReport,
+		{0, 0, 0x04, 0, 0, 0, 0, 0}, keyUpReport,
+	}
+	if !reflect.DeepEqual(rec.keyboard, want) {
+		t.Fatalf("reports = %v, want %v", rec.keyboard, want)
+	}
+	if out.Typed != 2 || out.SkippedCount != 0 {
+		t.Fatalf("result = %+v, want 2 characters typed", out)
+	}
+}
+
+func TestTypeTextDefaultsToTheHostLayout(t *testing.T) {
+	useHostLayout(t, "de")
+	handler, rec := typingHandler(t)
+	delayMS := 0
+
+	if _, _, err := handler(context.Background(), nil, TypeTextParams{Text: "z", DelayMS: &delayMS}); err != nil {
+		t.Fatal(err)
+	}
+	if len(rec.keyboard) != 2 || rec.keyboard[0][2] != 0x1c {
+		t.Fatalf("reports = %v, want z on the German Y key", rec.keyboard)
+	}
+}
+
+func TestTypeTextRefusesAnUnknownLayout(t *testing.T) {
+	handler, rec := typingHandler(t)
+
+	_, _, err := handler(context.Background(), nil, TypeTextParams{Text: "a", Layout: "klingon"})
+	if err == nil || !strings.Contains(err.Error(), "klingon") || !strings.Contains(err.Error(), "us, uk, de") {
+		t.Fatalf("error = %v, want it to name the valid layouts", err)
+	}
+	if len(rec.keyboard) != 0 {
+		t.Fatal("an unknown layout typed something")
+	}
+}
+
+func TestTypeTextBudgetCountsKeystrokes(t *testing.T) {
+	// 600 characters at the default delay take 18 s, but each â is two
+	// keystrokes on German, so the text takes 36 s.
+	handler := typeTextHandler(nil, nil)
+	_, _, err := handler(context.Background(), nil, TypeTextParams{Text: strings.Repeat("â", 600), Layout: "de"})
+	if err == nil || !strings.Contains(err.Error(), "typing duration exceeds") {
+		t.Fatalf("error = %v, want the duration budget", err)
+	}
+}
+
+func TestTypeTextSchemaOffersTheLayouts(t *testing.T) {
+	layout := typeTextSchema().Properties["layout"]
+	if layout == nil || layout.Type != "string" || !strings.Contains(layout.Description, "en-us-colemak") {
+		t.Fatalf("layout property = %+v, want a string naming the layout IDs", layout)
 	}
 }

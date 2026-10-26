@@ -1286,6 +1286,7 @@ const th = {
           hostLog: 'บันทึกของโฮสต์',
           webTitle: 'ชื่อเว็บ',
           leaderKey: 'ปุ่มนำ',
+          keyboardLayout: 'รูปแบบแป้นพิมพ์ของโฮสต์',
           shortcuts: 'แป้นพิมพ์ลัด',
           macros: 'มาโคร',
           mouseJiggler: 'Mouse jiggler',
@@ -1490,6 +1491,9 @@ const th = {
         languageDesc: 'เลือกภาษาสำหรับอินเทอร์เฟซ',
         webTitle: 'ชื่อเว็บ',
         webTitleDesc: 'ปรับแต่งชื่อหน้าเว็บ',
+        hostLayout: 'รูปแบบแป้นพิมพ์ของโฮสต์',
+        hostLayoutDesc:
+          'รูปแบบที่โฮสต์ใช้พิมพ์ เอเจนต์ AI พิมพ์ด้วยรูปแบบนี้ และการวางจะเริ่มที่รูปแบบนี้ในเบราว์เซอร์ที่ยังไม่ได้เลือก',
         menuBar: {
           title: 'แถบเมนู',
           mode: 'โหมดการแสดงผล',

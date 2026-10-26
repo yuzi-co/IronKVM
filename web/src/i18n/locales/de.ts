@@ -1333,6 +1333,7 @@ const de = {
           hostLog: 'Host-Protokoll',
           webTitle: 'Webtitel',
           leaderKey: 'Leader-Taste',
+          keyboardLayout: 'Tastaturlayout des Hosts',
           shortcuts: 'Tastenkürzel',
           macros: 'Makros',
           mouseJiggler: 'Maus-Jiggler',
@@ -1543,6 +1544,9 @@ const de = {
         languageDesc: 'Wählen Sie die Sprache für die Benutzeroberfläche aus',
         webTitle: 'Web Titel',
         webTitleDesc: 'Passen Sie den Web-Seite Titel an',
+        hostLayout: 'Tastaturlayout des Hosts',
+        hostLayoutDesc:
+          'Das Layout, mit dem der Host tippt. KI-Agenten tippen damit, und Einfügen beginnt damit in einem Browser, der noch keines gewählt hat.',
         menuBar: {
           title: 'Menüleiste',
           mode: 'Anzeigemodus',

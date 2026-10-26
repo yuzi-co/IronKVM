@@ -1317,6 +1317,7 @@ const es = {
           hostLog: 'Registro del host',
           webTitle: 'Título web',
           leaderKey: 'Tecla líder',
+          keyboardLayout: 'Distribución de teclado del host',
           shortcuts: 'Atajos de teclado',
           macros: 'Macros',
           mouseJiggler: 'Jiggler de ratón',
@@ -1533,6 +1534,9 @@ const es = {
         languageDesc: 'Seleccionar el idioma de la interfaz',
         webTitle: 'Título web',
         webTitleDesc: 'Personaliza el título de la página web',
+        hostLayout: 'Distribución de teclado del host',
+        hostLayoutDesc:
+          'La distribución con la que escribe el host. Los agentes de IA escriben con ella, y el pegado empieza con ella en un navegador que no ha elegido ninguna.',
         menuBar: {
           title: 'Barra de menú',
           mode: 'Modo de visualización',

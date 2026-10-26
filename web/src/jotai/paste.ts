@@ -2,69 +2,12 @@ import { atom } from 'jotai';
 
 import type { PasteCheck, PasteStatus } from '@/api/hid.ts';
 import * as storage from '@/lib/localstorage.ts';
+import { guessPasteLayout, initialPasteLayout, type HostLayout } from '@/lib/paste-layout.ts';
 
-// Layouts the server can type on, in the order the menu lists them.
-export const pasteLayoutIds = [
-  'us',
-  'uk',
-  'de',
-  'fr',
-  'es',
-  'it',
-  'pt-br',
-  'se',
-  'ru',
-  'ja',
-  'ko',
-  'am',
-  'ar',
-  'bepo',
-  'cz',
-  'da',
-  'de-ch',
-  'en-us-altgr-intl',
-  'en-us-colemak',
-  'et',
-  'fo',
-  'fr-be',
-  'fr-ca',
-  'fr-ch',
-  'hr',
-  'hu',
-  'is',
-  'lt',
-  'lv',
-  'mk',
-  'nl',
-  'no',
-  'pl',
-  'pt',
-  'sl',
-  'th',
-  'tr'
-] as const;
-
-// The host's layout is not the browser's, but they agree more often than not,
-// so the browser's language is the first guess until the user picks one.
-function guessPasteLayout() {
-  const language = navigator.language.toLowerCase();
-  if (language === 'en-gb' || language === 'en-ie') return 'uk';
-  if (language === 'pt-br') return 'pt-br';
-  if (['de-ch', 'fr-be', 'fr-ca', 'fr-ch'].includes(language)) return language;
-  if (language.startsWith('sv') || language.startsWith('fi')) return 'se';
-
-  // A few layout IDs are not the language's own code.
-  const primary = language.split('-')[0];
-  const byLanguage: Record<string, string> = { cs: 'cz', hy: 'am', nb: 'no', nn: 'no' };
-  const guess = byLanguage[primary] ?? primary;
-  return (pasteLayoutIds as readonly string[]).includes(guess) ? guess : 'us';
-}
+export { pasteLayoutIds } from '@/lib/paste-layout.ts';
 
 function storedPasteLayout() {
-  const stored = storage.getPasteLayout();
-  return stored && (pasteLayoutIds as readonly string[]).includes(stored)
-    ? stored
-    : guessPasteLayout();
+  return initialPasteLayout(storage.getPasteLayout(), null, guessPasteLayout(navigator.language));
 }
 
 export const defaultPasteDelay = 30;
@@ -80,6 +23,15 @@ export const pasteLayoutAtom = atom(
     set(pasteLayoutValueAtom, layout);
   }
 );
+
+// The layout the owner set for the host on the device. The dialog starts on
+// it while this browser has not picked a layout of its own; it is not stored.
+export const hostPasteLayoutAtom = atom(null, (_get, set, host: HostLayout) => {
+  set(
+    pasteLayoutValueAtom,
+    initialPasteLayout(storage.getPasteLayout(), host, guessPasteLayout(navigator.language))
+  );
+});
 
 // The pause after each key press, in milliseconds, remembered in this browser.
 export const pasteDelayAtom = atom(

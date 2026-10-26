@@ -1314,6 +1314,7 @@ const nl = {
           hostLog: 'Hostlog',
           webTitle: 'Webtitel',
           leaderKey: 'Leadertoets',
+          keyboardLayout: 'Toetsenbordindeling van de host',
           shortcuts: 'Sneltoetsen',
           macros: 'Macro’s',
           mouseJiggler: 'Muisjiggler',
@@ -1524,6 +1525,9 @@ const nl = {
         languageDesc: 'Selecteer de taal voor de interface',
         webTitle: 'Webtitel',
         webTitleDesc: 'Pas de titel van de webpagina aan',
+        hostLayout: 'Toetsenbordindeling van de host',
+        hostLayoutDesc:
+          'De indeling waarmee de host typt. AI-agents typen ermee, en plakken begint ermee in een browser die er nog geen koos.',
         menuBar: {
           title: 'Menubalk',
           mode: 'Weergavemodus',

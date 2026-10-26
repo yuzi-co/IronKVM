@@ -101,21 +101,26 @@ func buildKeyComboReport(keys []string) ([]byte, error) {
 	return report, nil
 }
 
-func buildTypeReports(text string) ([][]byte, []rune) {
-	charMap := hid.GetCharMap("")
+// buildTypeReports turns text into keyboard reports on the given layout: for
+// every keystroke a press and then a release. A character that takes a dead
+// key takes two keystrokes. The characters the layout cannot type are
+// returned instead.
+func buildTypeReports(text string, layout *hid.Layout) ([][]byte, []rune) {
 	reports := make([][]byte, 0, len(text)*2)
 	skipped := make([]rune, 0)
 
 	for _, char := range text {
-		key, ok := charMap[char]
+		keys, ok := layout.Keystrokes(char)
 		if !ok {
 			skipped = append(skipped, char)
 			continue
 		}
-		reports = append(reports,
-			[]byte{byte(key.Modifiers), 0, byte(key.Code), 0, 0, 0, 0, 0},
-			append([]byte(nil), keyUpReport...),
-		)
+		for _, key := range keys {
+			reports = append(reports,
+				[]byte{byte(key.Modifiers), 0, byte(key.Code), 0, 0, 0, 0, 0},
+				append([]byte(nil), keyUpReport...),
+			)
+		}
 	}
 
 	return reports, skipped

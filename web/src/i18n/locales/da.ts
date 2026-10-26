@@ -1299,6 +1299,7 @@ const da = {
           hostLog: 'Værtslog',
           webTitle: 'Webtitel',
           leaderKey: 'Leader-tast',
+          keyboardLayout: 'Værtens tastaturlayout',
           shortcuts: 'Tastaturgenveje',
           macros: 'Makroer',
           mouseJiggler: 'Musejiggler',
@@ -1506,6 +1507,9 @@ const da = {
         languageDesc: 'Vælg sproget til grænsefladen',
         webTitle: 'Webtitel',
         webTitleDesc: 'Tilpas websidens titel',
+        hostLayout: 'Værtens tastaturlayout',
+        hostLayoutDesc:
+          'Det layout, værten skriver med. AI-agenter skriver med det, og indsæt starter på det i en browser, der ikke har valgt et.',
         menuBar: {
           title: 'Menulinje',
           mode: 'Visningstilstand',

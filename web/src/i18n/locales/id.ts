@@ -1304,6 +1304,7 @@ const id = {
           hostLog: 'Log host',
           webTitle: 'Judul web',
           leaderKey: 'Tombol leader',
+          keyboardLayout: 'Tata letak keyboard host',
           shortcuts: 'Pintasan keyboard',
           macros: 'Makro',
           mouseJiggler: 'Jiggler mouse',
@@ -1512,6 +1513,9 @@ const id = {
         languageDesc: 'Pilih bahasa untuk antarmuka',
         webTitle: 'Judul Web',
         webTitleDesc: 'Menyesuaikan judul halaman web',
+        hostLayout: 'Tata letak keyboard host',
+        hostLayoutDesc:
+          'Tata letak yang dipakai host untuk mengetik. Agen AI mengetik dengannya, dan tempel memakainya di browser yang belum memilih.',
         menuBar: {
           title: 'Bilah Menu',
           mode: 'Mode Tampilan',

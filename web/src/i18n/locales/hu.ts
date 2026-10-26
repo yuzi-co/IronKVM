@@ -1316,6 +1316,7 @@ const hu = {
           hostLog: 'Gazdagép napló',
           webTitle: 'Webcím',
           leaderKey: 'Vezérbillentyű',
+          keyboardLayout: 'A gazda billentyűzetkiosztása',
           shortcuts: 'Billentyűparancsok',
           macros: 'Makrók',
           mouseJiggler: 'Egér jiggler',
@@ -1529,6 +1530,9 @@ const hu = {
         languageDesc: 'Válassza ki a felület nyelvét',
         webTitle: 'Webcím',
         webTitleDesc: 'A weboldal címének testreszabása',
+        hostLayout: 'A gazda billentyűzetkiosztása',
+        hostLayoutDesc:
+          'A kiosztás, amellyel a gazda gépel. Az MI-ügynökök ezzel gépelnek, és a beillesztés ezzel indul abban a böngészőben, amely még nem választott.',
         menuBar: {
           title: 'Menüsor',
           mode: 'Megjelenítési mód',

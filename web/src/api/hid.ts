@@ -117,6 +117,16 @@ export function setLeaderKey(key: string) {
   return http.post('/api/hid/shortcut/leader-key', { key });
 }
 
+// get the keyboard layout the owner set for the host
+export function getHostLayout() {
+  return http.get('/api/hid/host-layout');
+}
+
+// set the keyboard layout of the host; an empty layout goes back to US
+export function setHostLayout(layout: string) {
+  return http.post('/api/hid/host-layout', { layout });
+}
+
 // get per-endpoint HID delivery state
 export function getHidStatus() {
   return http.get('/api/hid/status');
