@@ -37,6 +37,7 @@ var features = []string{
 	"login-sessions",      // /api/auth/sessions: login sessions, listed and revoked one by one
 	"notifications",       // /api/notify: webhook, ntfy and Telegram alerts with a snapshot
 	"nut-client",          // /api/nut: NUT client, UPS state and settings
+	"oidc-login",          // /api/auth/oidc: login through an OpenID Connect provider, its settings
 	"role-viewer",         // role "viewer" in /api/auth/users and GET /api/auth/account: video only
 	"settings-backup",     // /api/settings/export, /preview, /import: settings file without secrets
 	"share-links",         // /api/auth/share, /api/auth/share-links: expiring view-only links
