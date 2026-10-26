@@ -67,6 +67,7 @@ export const KEYWORDS: Record<string, string[]> = {
   audit: ['log', 'history', 'security', 'syslog', 'who', 'events'],
   ssh: ['shell', 'authorized keys', 'host keys', 'port'],
   vnc: ['rfb'],
+  whep: ['webrtc', 'obs', 'gstreamer', 'player', 'stream', 'egress'],
   tls: ['https', 'certificate', 'ssl'],
   ipmi: ['bmc', 'ipmitool'],
   redfish: ['bmc'],

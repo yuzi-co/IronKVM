@@ -286,3 +286,50 @@ func TestRevokeAnyRemovesAKeyWhoeverHoldsIt(t *testing.T) {
 		t.Fatalf("revoking a missing key returned %v, want ErrNotFound", err)
 	}
 }
+
+// A key can be limited to watching the video (ironkvm-dist#145). The scope is
+// kept with the key and comes back from Verify and List.
+func TestViewScopeIsKept(t *testing.T) {
+	withTempKeyStore(t)
+
+	secret, created, err := CreateWithScope("obs", owner, ScopeView)
+	if err != nil {
+		t.Fatalf("create: %s", err)
+	}
+	if created.Scope != ScopeView {
+		t.Fatalf("created scope %q, want %q", created.Scope, ScopeView)
+	}
+
+	key, ok := Verify(secret)
+	if !ok || key.Scope != ScopeView {
+		t.Fatalf("verified scope %q (ok=%v), want %q", key.Scope, ok, ScopeView)
+	}
+
+	listed, err := List(owner)
+	if err != nil || len(listed) != 1 || listed[0].Scope != ScopeView {
+		t.Fatalf("listed %+v (err %v), want one view key", listed, err)
+	}
+}
+
+// A key made before scopes existed, and one made without asking for a scope,
+// has the run of its account, as keys always had.
+func TestKeysAreFullByDefault(t *testing.T) {
+	withTempKeyStore(t)
+
+	secret, _, err := Create("automation", owner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	key, _ := Verify(secret)
+	if key.Scope != ScopeFull || key.ViewOnly() {
+		t.Fatalf("scope %q, want full", key.Scope)
+	}
+}
+
+func TestUnknownScopeIsRefused(t *testing.T) {
+	withTempKeyStore(t)
+
+	if _, _, err := CreateWithScope("x", owner, Scope("hid")); err == nil {
+		t.Fatal("an unknown scope should be refused")
+	}
+}

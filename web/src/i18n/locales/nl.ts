@@ -2309,7 +2309,25 @@ const nl = {
           deleteFailed: 'Verwijderen van gebruiker mislukt'
         }
       },
+      whep: {
+        clientsNote:
+          'Vervang <token> door de sleutel. OBS en ffmpeg hebben geen eigen WHEP-invoer. Via HTTPS moet de speler het certificaat van het bord vertrouwen.',
+        endpoint: 'Eindpunt',
+        failed: 'WHEP-instelling opslaan mislukt',
+        gstreamer: 'GStreamer',
+        obs: 'OBS: pipeline voor GStreamer Source (plug-in obs-gstreamer)',
+        saved: 'WHEP-instelling opgeslagen',
+        service: 'WHEP-eindpunt',
+        serviceDesc:
+          'Laat WHEP-spelers zoals GStreamer de video, en het geluid van de host als dat er is, via WebRTC ophalen. Elke speler telt als kijker.',
+        sessions: 'Verbonden spelers',
+        token:
+          'Een speler heeft een Bearer-token nodig dat alleen kan kijken: een API-sleutel alleen-bekijken (Instellingen > API-sleutels) of het token van een deellink. Een sleutel die meer kan, wordt geweigerd.'
+      },
       apiKeys: {
+        viewOnly: 'Alleen bekijken',
+        viewOnlyDesc:
+          'Een sleutel alleen-bekijken kijkt naar de video en verder niets. Het is de sleutel voor een WHEP-speler.',
         mcpNote:
           'Deze sleutels werken niet voor MCP, dat een eigen sleutel heeft op de MCP-pagina.',
         metricsUrl: 'Metrics-URL',

@@ -49,6 +49,9 @@ type UpdateUserReq struct {
 
 type CreateAPIKeyReq struct {
 	Name string `json:"name"`
+	// Scope is "full" (or empty), the run of the account, or "view", the
+	// video only: the key for a WHEP player (ironkvm-dist#145).
+	Scope string `json:"scope"`
 }
 
 // APIKey describes an issued key. The secret is deliberately absent: it is
@@ -59,6 +62,8 @@ type APIKey struct {
 	CreatedAt int64  `json:"createdAt"`
 	// Username is the account the key acts as.
 	Username string `json:"username"`
+	// Scope is "full" or "view".
+	Scope string `json:"scope"`
 }
 
 type CreateAPIKeyRsp struct {
@@ -67,6 +72,8 @@ type CreateAPIKeyRsp struct {
 	CreatedAt int64  `json:"createdAt"`
 	// Key is shown once and cannot be recovered afterwards.
 	Key string `json:"key"`
+	// Scope is "full" or "view".
+	Scope string `json:"scope"`
 }
 
 type GetAPIKeysRsp struct {

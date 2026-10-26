@@ -195,7 +195,7 @@ func (c *Client) forwardRoom(listener *roommic.Listener) {
 		}
 
 		if err := writeOpusPackets(track.room, packetizer.Packetize(frame.Data, audio.SamplesPerFrame)); err != nil {
-			log.Debugf("room microphone write to %s failed: %s", c.ws.RemoteAddr(), err)
+			log.Debugf("room microphone write to %s failed: %s", c.peerName(), err)
 			break
 		}
 	}

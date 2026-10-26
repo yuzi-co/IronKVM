@@ -8,7 +8,6 @@ import (
 	"NanoKVM-Server/service/vm"
 	"time"
 
-	"github.com/gorilla/websocket"
 	"github.com/pion/rtp"
 	"github.com/pion/rtp/codecs"
 	"github.com/pion/webrtc/v4"
@@ -31,7 +30,7 @@ const (
 
 func NewWebRTCManager() *WebRTCManager {
 	m := &WebRTCManager{
-		clients:      make(map[*websocket.Conn]*Client),
+		clients:      make(map[any]*Client),
 		videoSending: false,
 		videoPacketizers: map[uint8]rtp.Packetizer{
 			common.CodecH264: rtp.NewPacketizer(
@@ -71,7 +70,7 @@ func NewWebRTCManager() *WebRTCManager {
 // writer start, because a reconnect reuses the same *Client after
 // RemoveClient deleted its map entry, and the map alone cannot tell that
 // apart from a client the manager has never seen. See Client.startWriters.
-func (m *WebRTCManager) storeClient(ws *websocket.Conn, client *Client) (int, uint64, bool) {
+func (m *WebRTCManager) storeClient(ws any, client *Client) (int, uint64, bool) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -84,7 +83,7 @@ func (m *WebRTCManager) storeClient(ws *websocket.Conn, client *Client) (int, ui
 	return count, m.viewerVersion, !exists
 }
 
-func (m *WebRTCManager) AddClient(ws *websocket.Conn, client *Client) {
+func (m *WebRTCManager) AddClient(ws any, client *Client) {
 	count, version, _ := m.storeClient(ws, client)
 
 	// The writer-start guard lives on the Client, not here: ICE reaches
@@ -98,10 +97,10 @@ func (m *WebRTCManager) AddClient(ws *websocket.Conn, client *Client) {
 
 	vm.UpdateHdmiViewerSnapshot("webrtc", count, version)
 
-	log.Debugf("added client %s, total clients: %d", ws.RemoteAddr(), count)
+	log.Debugf("added client %s, total clients: %d", client.peerName(), count)
 }
 
-func (m *WebRTCManager) RemoveClient(ws *websocket.Conn) {
+func (m *WebRTCManager) RemoveClient(ws any) {
 	m.mutex.Lock()
 	client, exists := m.clients[ws]
 	delete(m.clients, ws)
@@ -113,11 +112,10 @@ func (m *WebRTCManager) RemoveClient(ws *websocket.Conn) {
 
 	if exists {
 		client.stop()
+		log.Debugf("removed client %s, total clients: %d", client.peerName(), count)
 	}
 
 	m.stopAudioStreamIfIdle()
-
-	log.Debugf("removed client %s, total clients: %d", ws.RemoteAddr(), count)
 }
 
 func (m *WebRTCManager) GetClientCount() int {

@@ -57,8 +57,8 @@ func (s *SignalingHandler) Close() {
 	if s.client != nil {
 		s.client.closeRoomMic()
 	}
-	if s.client != nil && s.client.WsConn() != nil {
-		getManager().RemoveClient(s.client.WsConn())
+	if s.client != nil {
+		getManager().RemoveClient(s.client.key())
 	}
 }
 
@@ -72,13 +72,13 @@ func (s *SignalingHandler) updateVideoStreamState(state webrtc.ICEConnectionStat
 
 	manager := getManager()
 	if s.updateH264ModeLocked(state) {
-		manager.AddClient(s.client.WsConn(), s.client)
+		manager.AddClient(s.client.key(), s.client)
 		manager.StartVideoStream()
 		manager.StartAudioStream()
 		return
 	}
 
-	manager.RemoveClient(s.client.WsConn())
+	manager.RemoveClient(s.client.key())
 }
 
 func (s *SignalingHandler) updateH264Mode(state webrtc.ICEConnectionState) bool {

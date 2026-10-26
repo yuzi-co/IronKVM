@@ -170,7 +170,12 @@ export type APIKey = {
   name: string;
   createdAt: number;
   username: string;
+  // full acts as the owner; view can only watch the video. A server without
+  // the api-key-scope feature sends none, and every key there is full.
+  scope?: APIKeyScope;
 };
+
+export type APIKeyScope = 'full' | 'view';
 
 export type CreatedAPIKey = Omit<APIKey, 'username'> & {
   key: string;
@@ -180,8 +185,8 @@ export function getAPIKeys() {
   return http.get('/api/auth/api-keys');
 }
 
-export function createAPIKey(name: string) {
-  return http.post('/api/auth/api-keys', { name });
+export function createAPIKey(name: string, scope?: APIKeyScope) {
+  return http.post('/api/auth/api-keys', scope ? { name, scope } : { name });
 }
 
 export function revokeAPIKey(id: string) {

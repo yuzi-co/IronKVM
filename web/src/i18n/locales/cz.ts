@@ -2279,7 +2279,25 @@ const cz = {
           deleteFailed: 'Uživatele se nepodařilo smazat'
         }
       },
+      whep: {
+        clientsNote:
+          'Nahraďte <token> klíčem. OBS ani ffmpeg nemají vlastní vstup WHEP. Přes HTTPS musí přehrávač důvěřovat certifikátu desky.',
+        endpoint: 'Koncový bod',
+        failed: 'Nastavení WHEP se nepodařilo uložit',
+        gstreamer: 'GStreamer',
+        obs: 'OBS: pipeline pro GStreamer Source (plugin obs-gstreamer)',
+        saved: 'Nastavení WHEP uloženo',
+        service: 'Koncový bod WHEP',
+        serviceDesc:
+          'Umožní přehrávačům WHEP, jako je GStreamer, stahovat video a zvuk hostitele, pokud je, přes WebRTC. Každý přehrávač se počítá jako divák.',
+        sessions: 'Připojené přehrávače',
+        token:
+          'Přehrávač potřebuje token Bearer, který smí jen sledovat: klíč API jen pro sledování (Nastavení > Klíče API) nebo token sdíleného odkazu. Klíč, který smí víc, je odmítnut.'
+      },
       apiKeys: {
+        viewOnly: 'Jen sledování',
+        viewOnlyDesc:
+          'Klíč jen pro sledování sleduje video a nic jiného. Je to klíč pro přehrávač WHEP.',
         mcpNote: 'Tyto klíče nefungují pro MCP, který má vlastní klíč na stránce MCP.',
         metricsUrl: 'URL metrik',
         monitoring: 'Monitorování',

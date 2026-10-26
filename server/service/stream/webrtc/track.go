@@ -84,8 +84,22 @@ func (t *Track) setPlayoutDelayExtensionID(id uint8) {
 	t.extensionID.Store(uint32(id))
 }
 
+// playoutDelayOff, held as the extension ID, sends no playout delay at all.
+const playoutDelayOff = 0x100
+
+// disablePlayoutDelay stops the playout delay extension for a peer that did
+// not negotiate it. The browser path falls back to defaultPlayoutDelayExtensionID
+// instead, but a WHEP player may have given that ID to another extension.
+func (t *Track) disablePlayoutDelay() {
+	t.extensionID.Store(playoutDelayOff)
+}
+
+// playoutDelayExtensionID is the ID to send the playout delay under, 0 for
+// none.
 func (t *Track) playoutDelayExtensionID() uint8 {
-	if id := t.extensionID.Load(); id != 0 {
+	if id := t.extensionID.Load(); id == playoutDelayOff {
+		return 0
+	} else if id != 0 {
 		return uint8(id)
 	}
 
@@ -117,18 +131,24 @@ func (t *Track) writePackets(packets []*rtp.Packet, capture []byte) error {
 	for i, source := range packets {
 		packet := rtp.Packet{Header: source.Header, Payload: source.Payload}
 
-		packet.Header.Extension = true
-		packet.Header.ExtensionProfile = rtpExtensionProfile
 		// The struct copy still points at the source's extension slice, and
 		// appending to that would reach back into the shared packet.
+		packet.Header.Extension = false
 		packet.Header.Extensions = nil
-
-		if err := packet.Header.SetExtension(id, playoutDelayExtensionData); err != nil {
-			log.Errorf("failed to set extension: %v", err)
-			return err
+		withCapture := i == 0 && absID != 0 && capture != nil
+		if id != 0 || withCapture {
+			packet.Header.Extension = true
+			packet.Header.ExtensionProfile = rtpExtensionProfile
 		}
 
-		if i == 0 && absID != 0 && capture != nil {
+		if id != 0 {
+			if err := packet.Header.SetExtension(id, playoutDelayExtensionData); err != nil {
+				log.Errorf("failed to set extension: %v", err)
+				return err
+			}
+		}
+
+		if withCapture {
 			if err := packet.Header.SetExtension(absID, capture); err != nil {
 				log.Errorf("failed to set the capture time extension: %v", err)
 				return err

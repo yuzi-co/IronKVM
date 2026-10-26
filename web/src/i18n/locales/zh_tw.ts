@@ -2192,7 +2192,21 @@ const zh_tw = {
           deleteFailed: '刪除使用者失敗'
         }
       },
+      whep: {
+        clientsNote: '將 <token> 替換為金鑰。OBS 和 ffmpeg 沒有內建的 WHEP 輸入。透過 HTTPS 時，播放器必須信任板子的憑證。',
+        endpoint: '端點',
+        failed: '儲存 WHEP 設定失敗',
+        gstreamer: 'GStreamer',
+        obs: 'OBS：GStreamer Source 管線（obs-gstreamer 外掛）',
+        saved: 'WHEP 設定已儲存',
+        service: 'WHEP 端點',
+        serviceDesc: '允許 GStreamer 等 WHEP 播放器透過 WebRTC 拉取影像，以及主機音訊（如有）。每個播放器計為一名觀看者。',
+        sessions: '已連線的播放器',
+        token: '播放器需要一個只能觀看的 Bearer 權杖：僅檢視的 API 金鑰（設定 > API 金鑰）或分享連結的權杖。權限更多的金鑰會被拒絕。'
+      },
       apiKeys: {
+        viewOnly: '僅檢視',
+        viewOnlyDesc: '僅檢視金鑰只能觀看影像，別無其他。它是給 WHEP 播放器用的金鑰。',
         mcpNote: '這些金鑰不能用於 MCP，MCP 在 MCP 頁面有自己的金鑰。',
         metricsUrl: '指標 URL',
         monitoring: '監控',

@@ -2311,7 +2311,25 @@ const hu = {
           deleteFailed: 'Nem sikerült törölni a felhasználót'
         }
       },
+      whep: {
+        clientsNote:
+          'Cserélje a <token> részt a kulcsra. Az OBS-nek és az ffmpegnek nincs saját WHEP-bemenete. HTTPS-en a lejátszónak meg kell bíznia a panel tanúsítványában.',
+        endpoint: 'Végpont',
+        failed: 'A WHEP-beállítás mentése sikertelen',
+        gstreamer: 'GStreamer',
+        obs: 'OBS: GStreamer Source folyamat (obs-gstreamer bővítmény)',
+        saved: 'WHEP-beállítás mentve',
+        service: 'WHEP-végpont',
+        serviceDesc:
+          'A WHEP-lejátszók, például a GStreamer, WebRTC-n lekérhetik a videót és, ha van, a gazdagép hangját. Minden lejátszó nézőnek számít.',
+        sessions: 'Csatlakozott lejátszók',
+        token:
+          'A lejátszónak csak nézésre jogosult Bearer-token kell: csak megtekintésre szóló API-kulcs (Beállítások > API-kulcsok) vagy egy megosztási hivatkozás tokenje. A többre jogosult kulcsot elutasítja.'
+      },
       apiKeys: {
+        viewOnly: 'Csak megtekintés',
+        viewOnlyDesc:
+          'A csak megtekintésre szóló kulcs a videót nézi, semmi mást. Ez a kulcs egy WHEP-lejátszóhoz.',
         mcpNote:
           'Ezek a kulcsok nem működnek az MCP-hez, amelynek saját kulcsa van az MCP oldalon.',
         metricsUrl: 'Metrikák URL-je',

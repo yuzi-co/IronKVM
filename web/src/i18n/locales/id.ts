@@ -2290,7 +2290,24 @@ const id = {
           deleteFailed: 'Gagal menghapus pengguna'
         }
       },
+      whep: {
+        clientsNote:
+          'Ganti <token> dengan kunci. OBS dan ffmpeg tidak memiliki input WHEP sendiri. Melalui HTTPS, pemutar harus memercayai sertifikat papan.',
+        endpoint: 'Endpoint',
+        failed: 'Gagal menyimpan pengaturan WHEP',
+        gstreamer: 'GStreamer',
+        obs: 'OBS: pipeline GStreamer Source (plugin obs-gstreamer)',
+        saved: 'Pengaturan WHEP disimpan',
+        service: 'Endpoint WHEP',
+        serviceDesc:
+          'Memungkinkan pemutar WHEP seperti GStreamer mengambil video, dan audio host jika ada, melalui WebRTC. Setiap pemutar dihitung sebagai penonton.',
+        sessions: 'Pemutar terhubung',
+        token:
+          'Pemutar memerlukan token Bearer yang hanya dapat menonton: kunci API khusus lihat (Pengaturan > Kunci API) atau token tautan berbagi. Kunci yang dapat melakukan lebih akan ditolak.'
+      },
       apiKeys: {
+        viewOnly: 'Hanya lihat',
+        viewOnlyDesc: 'Kunci khusus lihat hanya menonton video. Ini kunci untuk pemutar WHEP.',
         mcpNote:
           'Kunci ini tidak berlaku untuk MCP, yang memiliki kuncinya sendiri di halaman MCP.',
         metricsUrl: 'URL metrik',

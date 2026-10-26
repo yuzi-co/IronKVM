@@ -27,7 +27,13 @@ func (s *Service) CreateAPIKey(c *gin.Context) {
 		return
 	}
 
-	secret, key, err := apikey.Create(req.Name, principal.Username)
+	scope, err := apikey.ParseScope(req.Scope)
+	if err != nil {
+		rsp.ErrRsp(c, -1, "unknown scope")
+		return
+	}
+
+	secret, key, err := apikey.CreateWithScope(req.Name, principal.Username, scope)
 	if err != nil {
 		if errors.Is(err, apikey.ErrNameTooLong) {
 			rsp.ErrRsp(c, -1, "name is too long")
@@ -45,6 +51,7 @@ func (s *Service) CreateAPIKey(c *gin.Context) {
 		Name:      key.Name,
 		CreatedAt: key.CreatedAt,
 		Key:       secret,
+		Scope:     scopeName(key.Scope),
 	})
 
 	log.Debugf("created api key %s for %s", key.ID, principal.Username)
@@ -81,6 +88,7 @@ func (s *Service) GetAPIKeys(c *gin.Context) {
 			Name:      key.Name,
 			CreatedAt: key.CreatedAt,
 			Username:  key.Username,
+			Scope:     scopeName(key.Scope),
 		})
 	}
 
@@ -120,4 +128,12 @@ func (s *Service) DeleteAPIKey(c *gin.Context) {
 
 	rsp.OkRsp(c)
 	log.Debugf("%s revoked api key %s", principal.Username, id)
+}
+
+// scopeName is how the API names a key's scope.
+func scopeName(scope apikey.Scope) string {
+	if scope == apikey.ScopeView {
+		return "view"
+	}
+	return "full"
 }

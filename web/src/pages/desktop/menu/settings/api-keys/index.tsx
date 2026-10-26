@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/auth.ts';
-import { Alert, Button, Divider, Form, Input, message, Modal } from 'antd';
+import { Alert, Button, Checkbox, Divider, Form, Input, message, Modal, Tag } from 'antd';
 import { CheckIcon, CopyIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -9,11 +9,14 @@ import type { APIKey, CreatedAPIKey } from '@/api/auth.ts';
 import { writeClipboardText } from '@/lib/clipboard.ts';
 import { describeFailure } from '@/lib/feedback.ts';
 import { getBaseUrl, getHostname, getPort } from '@/lib/service.ts';
+import { useServerFeature } from '@/hooks/useServerFeature.ts';
 
 import { CopyBlock, CopyRow } from '../components/copy-button.tsx';
 
 type CreateValues = {
   name: string;
+  // A key that can only watch the video: the one to give a WHEP player.
+  viewOnly?: boolean;
 };
 
 // The server refuses a longer name.
@@ -47,6 +50,7 @@ export const APIKeys = () => {
   // The server lists every account's keys to an administrator, so the owner
   // is only worth a column there.
   const isAdmin = account.role === 'admin';
+  const hasScope = useServerFeature('api-key-scope') === true;
 
   const [messageApi, messageHolder] = message.useMessage();
 
@@ -96,7 +100,10 @@ export const APIKeys = () => {
   async function createKey(values: CreateValues) {
     setIsCreating(true);
     try {
-      const rsp = await api.createAPIKey(values.name.trim());
+      const rsp = await api.createAPIKey(
+        values.name.trim(),
+        hasScope && values.viewOnly ? 'view' : undefined
+      );
       if (rsp.code !== 0) throw rsp;
 
       createForm.resetFields();
@@ -184,10 +191,18 @@ export const APIKeys = () => {
               placeholder={t('settings.apiKeys.namePlaceholder')}
             />
           </Form.Item>
+          {hasScope && (
+            <Form.Item name="viewOnly" valuePropName="checked" className="!me-0 self-center">
+              <Checkbox>{t('settings.apiKeys.viewOnly')}</Checkbox>
+            </Form.Item>
+          )}
           <Button type="primary" htmlType="submit" loading={isCreating}>
             {t('settings.apiKeys.create')}
           </Button>
         </Form>
+        {hasScope && (
+          <span className="text-xs text-neutral-500">{t('settings.apiKeys.viewOnlyDesc')}</span>
+        )}
 
         <div className="flex flex-col overflow-hidden rounded-xl border border-neutral-700/50 bg-neutral-800/40">
           {keys.length === 0 ? (
@@ -205,6 +220,11 @@ export const APIKeys = () => {
                 <div className="flex min-w-0 flex-col">
                   <span className="truncate text-sm font-medium">
                     {key.name || t('settings.apiKeys.unnamed')}
+                    {key.scope === 'view' && (
+                      <Tag className="ms-2" color="blue">
+                        {t('settings.apiKeys.viewOnly')}
+                      </Tag>
+                    )}
                   </span>
                   <span className="truncate text-xs text-neutral-500">
                     {t('settings.apiKeys.created')} {formatCreatedAt(key.createdAt)}

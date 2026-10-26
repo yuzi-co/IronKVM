@@ -36,6 +36,9 @@ var ungatedRoutes = map[string]string{
 // ungatedPaths are routes open under every method, with their reason.
 var ungatedPaths = map[string]string{
 	"/api/mcp": "answers to the MCP key an administrator issued (service/mcp), not to a login",
+	// Never the cookie: the endpoint answers other origins.
+	"/api/whep":     "WHEP: answers to a view-only Bearer token (middleware.AuthenticateWHEP), not to a login",
+	"/api/whep/:id": "WHEP session: answers to the Bearer token that opened it",
 }
 
 // isLoopbackRoute is a route that answers to the loopback token, which only

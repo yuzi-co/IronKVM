@@ -34,6 +34,10 @@ const (
 	idBytes = 8
 )
 
+// SecretPrefix starts every key's secret, so a caller can tell a key from
+// another kind of token without looking it up.
+const SecretPrefix = secretPrefix
+
 var (
 	ErrNotFound    = errors.New("api key not found")
 	ErrNameTooLong = errors.New("api key name is too long")
@@ -52,7 +56,40 @@ type Key struct {
 	Username  string `json:"username,omitempty"`
 	Hash      string `json:"hash,omitempty"`
 	CreatedAt int64  `json:"createdAt"`
+	// Scope limits what the key may do. Empty is the run of its account, as
+	// every key made before scopes existed has.
+	Scope Scope `json:"scope,omitempty"`
 }
+
+// Scope narrows what a key may do within what its account may
+// (ironkvm-dist#145).
+type Scope string
+
+const (
+	// ScopeFull acts as the account, with its role.
+	ScopeFull Scope = ""
+	// ScopeView acts as a view-only principal: the video and what the page
+	// needs to draw it, never the keyboard, mouse or a setting. It is the key
+	// to hand to a WHEP player such as OBS or GStreamer.
+	ScopeView Scope = "view"
+)
+
+// ErrScope is a scope this server does not know.
+var ErrScope = errors.New("unknown api key scope")
+
+// ParseScope reads a scope as a client names it: "full" or empty, or "view".
+func ParseScope(name string) (Scope, error) {
+	switch strings.TrimSpace(name) {
+	case "", "full":
+		return ScopeFull, nil
+	case string(ScopeView):
+		return ScopeView, nil
+	}
+	return ScopeFull, ErrScope
+}
+
+// ViewOnly reports whether the key may only watch.
+func (k Key) ViewOnly() bool { return k.Scope == ScopeView }
 
 // Create issues a key to a user and returns the secret. This is the only time
 // the secret exists outside the caller's hands; it is not recoverable
@@ -63,6 +100,15 @@ type Key struct {
 // A key that authenticated as nobody in particular would give whoever holds it
 // the run of the API, which is more than the operator who issued it may have.
 func Create(name, username string) (string, *Key, error) {
+	return CreateWithScope(name, username, ScopeFull)
+}
+
+// CreateWithScope is Create for a key limited to scope.
+func CreateWithScope(name, username string, scope Scope) (string, *Key, error) {
+	if scope != ScopeFull && scope != ScopeView {
+		return "", nil, ErrScope
+	}
+
 	name = strings.TrimSpace(name)
 	if len(name) > maxNameLength {
 		return "", nil, ErrNameTooLong
@@ -85,6 +131,7 @@ func Create(name, username string) (string, *Key, error) {
 		Username:  username,
 		Hash:      hashSecret(secret),
 		CreatedAt: time.Now().Unix(),
+		Scope:     scope,
 	}
 
 	keys, err := load()

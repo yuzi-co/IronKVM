@@ -16,7 +16,10 @@ import (
 )
 
 type WebRTCManager struct {
-	clients        map[*websocket.Conn]*Client
+	// clients is keyed by what identifies a viewer's session: its signalling
+	// socket, or for a WHEP session (no socket) the client itself. See
+	// Client.key.
+	clients        map[any]*Client
 	clientSnapshot atomic.Pointer[[]*Client]
 	videoSending   bool
 	mutex          sync.Mutex
@@ -117,6 +120,26 @@ type Client struct {
 
 func (c *Client) WsConn() *websocket.Conn {
 	return c.ws
+}
+
+// key is what the manager files this client under: its socket, or the client
+// itself when it has none (a WHEP session).
+func (c *Client) key() any {
+	if c.ws != nil {
+		return c.ws
+	}
+	return c
+}
+
+// peerName names the viewer in the log.
+func (c *Client) peerName() string {
+	if c.ws != nil {
+		return c.ws.RemoteAddr().String()
+	}
+	if c.user != "" {
+		return "whep:" + c.user
+	}
+	return "whep"
 }
 
 type SignalingHandler struct {

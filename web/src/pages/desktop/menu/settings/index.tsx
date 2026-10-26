@@ -10,6 +10,7 @@ import {
   BatteryChargingIcon,
   BellIcon,
   BotIcon,
+  CastIcon,
   CircleArrowUpIcon,
   DiscIcon,
   GaugeIcon,
@@ -76,6 +77,7 @@ const pageModules = {
   vpn: () => import('./vpn/tab.tsx'),
   ssh: () => import('./ssh'),
   vnc: () => import('./vnc'),
+  whep: () => import('./whep'),
   tls: () => import('./tls'),
   ipmi: () => import('./ipmi'),
   redfish: () => import('./redfish'),
@@ -103,6 +105,7 @@ const Network = lazy(() => pageModules.network().then((m) => ({ default: m.Netwo
 const VpnTab = lazy(() => pageModules.vpn().then((m) => ({ default: m.VpnTab })));
 const Ssh = lazy(() => pageModules.ssh().then((m) => ({ default: m.Ssh })));
 const Vnc = lazy(() => pageModules.vnc().then((m) => ({ default: m.Vnc })));
+const Whep = lazy(() => pageModules.whep().then((m) => ({ default: m.Whep })));
 const Tls = lazy(() => pageModules.tls().then((m) => ({ default: m.Tls })));
 const Ipmi = lazy(() => pageModules.ipmi().then((m) => ({ default: m.Ipmi })));
 const Redfish = lazy(() => pageModules.redfish().then((m) => ({ default: m.Redfish })));
@@ -162,6 +165,7 @@ export const Settings = () => {
   // Backup holds the settings file and the diagnostics bundle, each its own feature.
   const hasSettingsBackup = useServerFeature('settings-backup') === true;
   const hasDiagnostics = useServerFeature('diagnostics-bundle') === true;
+  const hasWhep = useServerFeature('whep') === true;
   const hasBackup = hasSettingsBackup || hasDiagnostics;
   // Below sm the sidebar shows icons only, so each item needs a tooltip.
   const isNarrow = useIsNarrow();
@@ -262,6 +266,17 @@ export const Settings = () => {
             component: <Ssh />
           },
           { id: 'vnc', group: 'access', icon: <ScreenShareIcon {...icon16} />, component: <Vnc /> },
+          ...(hasWhep
+            ? ([
+                {
+                  id: 'whep',
+                  group: 'access',
+                  icon: <CastIcon {...icon16} />,
+                  label: 'WHEP',
+                  component: <Whep />
+                }
+              ] satisfies Tab[])
+            : []),
           ...(hasAudit
             ? ([
                 {

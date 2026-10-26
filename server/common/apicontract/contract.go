@@ -25,6 +25,7 @@ const APIVersion = 1
 // the resolution is to keep both.
 var features = []string{
 	"agent-tiers",         // /api/agent/tiers: what MCP and the on-board agent may do
+	"api-key-scope",       // scope "view" on POST /api/auth/api-keys: a key that can only watch
 	"audit-log",           // /api/audit: the audit log, its export and settings
 	"diagnostics-bundle",  // GET /api/diagnostics/bundle: support bundle without secrets
 	"direct-clock",        // clock request (byte 5) on the direct H.264 socket
@@ -47,6 +48,7 @@ var features = []string{
 	"video-clock",         // /api/vm/video-clock: video clock profile (mainline kernel only, see SetProbe)
 	"webrtc-clock",        // "clock" event on the WebRTC signalling socket
 	"webrtc-port-forward", // /api/network/webrtc: fixed UDP port and public address
+	"whep",                // /api/whep, /api/stream/whep: WHEP egress for players, and its switch
 	"wol-devices",         // /api/network/wol/devices, /device, /check, /scan: managed Wake-on-LAN list
 }
 

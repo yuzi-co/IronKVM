@@ -2304,7 +2304,25 @@ const pt_br = {
           deleteFailed: 'Falha ao excluir o usuário'
         }
       },
+      whep: {
+        clientsNote:
+          'Substitua <token> pela chave. OBS e ffmpeg não têm entrada WHEP própria. Por HTTPS o player precisa confiar no certificado da placa.',
+        endpoint: 'Endpoint',
+        failed: 'Falha ao salvar a configuração do WHEP',
+        gstreamer: 'GStreamer',
+        obs: 'OBS: pipeline para GStreamer Source (plugin obs-gstreamer)',
+        saved: 'Configuração do WHEP salva',
+        service: 'Endpoint WHEP',
+        serviceDesc:
+          'Permite que players WHEP como o GStreamer obtenham o vídeo, e o áudio do host quando houver, via WebRTC. Cada player conta como um espectador.',
+        sessions: 'Players conectados',
+        token:
+          'Um player precisa de um token Bearer que só possa assistir: uma chave de API somente visualização (Configurações > Chaves de API) ou o token de um link de compartilhamento. Uma chave que pode fazer mais é recusada.'
+      },
       apiKeys: {
+        viewOnly: 'Somente visualização',
+        viewOnlyDesc:
+          'Uma chave somente visualização assiste ao vídeo e nada mais. É a chave para um player WHEP.',
         mcpNote: 'Estas chaves não funcionam no MCP, que tem sua própria chave na página do MCP.',
         metricsUrl: 'URL das métricas',
         monitoring: 'Monitoramento',

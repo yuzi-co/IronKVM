@@ -2253,7 +2253,24 @@ const ko = {
           deleteFailed: '사용자를 삭제하지 못했습니다'
         }
       },
+      whep: {
+        clientsNote:
+          '<token>을 키로 바꾸세요. OBS와 ffmpeg에는 자체 WHEP 입력이 없습니다. HTTPS에서는 플레이어가 보드 인증서를 신뢰해야 합니다.',
+        endpoint: '엔드포인트',
+        failed: 'WHEP 설정을 저장하지 못했습니다',
+        gstreamer: 'GStreamer',
+        obs: 'OBS: GStreamer Source 파이프라인 (obs-gstreamer 플러그인)',
+        saved: 'WHEP 설정을 저장했습니다',
+        service: 'WHEP 엔드포인트',
+        serviceDesc:
+          'GStreamer 같은 WHEP 플레이어가 WebRTC로 영상과, 있는 경우 호스트 오디오를 가져올 수 있게 합니다. 각 플레이어는 시청자로 계산됩니다.',
+        sessions: '연결된 플레이어',
+        token:
+          '플레이어에는 보기만 가능한 Bearer 토큰이 필요합니다: 보기 전용 API 키(설정 > API 키) 또는 공유 링크 토큰. 그 이상을 할 수 있는 키는 거부됩니다.'
+      },
       apiKeys: {
+        viewOnly: '보기 전용',
+        viewOnlyDesc: '보기 전용 키는 영상만 볼 수 있습니다. WHEP 플레이어용 키입니다.',
         mcpNote: '이 키는 MCP에서 사용할 수 없습니다. MCP는 MCP 페이지에 자체 키가 있습니다.',
         metricsUrl: '메트릭 URL',
         monitoring: '모니터링',
