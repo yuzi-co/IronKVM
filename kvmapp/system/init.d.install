@@ -11,3 +11,4 @@ S97oled-nudge
 S98supervise
 S01hwdt
 S50avahi-daemon
+S31ethwatch

@@ -1,0 +1,225 @@
+#!/bin/sh
+#
+# Restart DHCP on the wired interface when the gateway stops answering.
+#
+# udhcpc only looks for a new server once its lease runs out. When the router
+# that handed out the lease goes away (a router restarted with a new address
+# plan, a mesh satellite that reboots, a second router switched off), the board
+# keeps its old address and a dead gateway until the lease ends, which can be
+# days, or until somebody power-cycles it. On a KVM that is the failure that
+# matters: nobody can reach it to fix it.
+#
+# So this checks the gateway over ARP every INTERVAL seconds, and after
+# FAIL_LIMIT checks in a row with no answer it asks udhcpc to release the lease
+# and discover again. ARP rather than ping, because a router may drop ICMP and
+# cannot drop ARP and still route.
+#
+# The lease is released only once a DHCP server is known to answer. When the
+# gateway is silent because the router itself is down, releasing would leave
+# the interface with no address at all and the KVM unreachable even from the
+# local network, which is exactly when it is needed. A one-shot udhcpc that
+# configures nothing asks first; when nobody answers, the address stays and the
+# question is asked again after the hold-off.
+#
+# It acts on nothing it does not own:
+#
+#   - a static address (/boot/eth.nodhcp): the owner chose the address and the
+#     gateway, so a silent gateway is theirs to deal with
+#   - no udhcpc for the interface: no lease to renew, or S30eth or an address
+#     trial in the server is in the middle of changing it
+#   - no carrier: the cable is out, udhcpc will discover when it comes back
+#   - no default route on the wired interface: Wi-Fi holds the route, or there
+#     is none, and the wired side has no gateway to lose
+#
+# It only ever signals the udhcpc of the wired interface, so Wi-Fi is never
+# touched.
+#
+# Like S98supervise this runs as its own detached loop, started at boot and
+# never started by anything else. It idles rather than exits while the address
+# is static, so a switch to DHCP in the web UI is watched without a reboot.
+#
+# Adapted from sipeed/NanoKVM PR 964 (S31ethwatch) by Arkadii Emelianov,
+# GPL-3.0.
+#
+# Environment (the defaults are what ships; the suite sets them):
+#   ETHWATCH_INTERVAL      seconds between checks                      (10)
+#   ETHWATCH_FAIL_LIMIT    missed checks before acting, 12 x 10s = 2min (12)
+#   ETHWATCH_HOLDOFF       seconds to leave it alone after acting       (60)
+#   ETHWATCH_RELEASE_GAP   seconds between the release and the renew    (1)
+#   ETHWATCH_LOGGER        another logger, or none when empty
+
+# The wired interface, read the same way S30eth reads it: from the board's
+# description, eth0 when it says nothing. S30eth has the account of the two
+# steps.
+DEVINFO=${DEVINFO:-ironkvm-deviceinfo}
+DEVINFO_TARBALL=${DEVINFO_TARBALL:-/kvmapp/system/ironkvm-deviceinfo}
+if [ "$DEVINFO" = ironkvm-deviceinfo ] && ! command -v "$DEVINFO" > /dev/null 2>&1
+then
+    DEVINFO=$DEVINFO_TARBALL
+fi
+IF=$("$DEVINFO" get ETH_IF 2>/dev/null)
+IF=${IF:-eth0}
+
+PIDFILE=/tmp/ethwatch.pid
+
+# --- watch ---
+# One pass of the loop is tick, and the loop does nothing but sleep between
+# them, so tools/network/test-ethwatch.sh lifts this block out and runs tick
+# against stubs. The counters live in the calling shell from one tick to the
+# next. The hold-off is counted in ticks for the same reason: nothing in here
+# sleeps longer than the release gap.
+INTERVAL=${ETHWATCH_INTERVAL:-10}
+FAIL_LIMIT=${ETHWATCH_FAIL_LIMIT:-12}
+HOLDOFF=${ETHWATCH_HOLDOFF:-60}
+RELEASE_GAP=${ETHWATCH_RELEASE_GAP:-1}
+NODHCP=${ETH_NODHCP:-/boot/eth.nodhcp}
+RUN_DIR=${ETH_RUN_DIR:-/run}
+NET=${SYS_NET:-/sys/class/net}
+
+# Syslog, tagged ethwatch, at daemon.notice; what this does to the network goes
+# at daemon.warning, as S98supervise does for what it does to the board. This
+# logs on events only.
+LOGGER=${ETHWATCH_LOGGER-$(command -v logger 2>/dev/null)}
+say() {   # $1 = syslog priority, then the line
+    pri=$1
+    shift
+    if [ -n "$LOGGER" ]; then
+        "$LOGGER" -t ethwatch -p "daemon.$pri" -- "$*" 2>/dev/null
+    fi
+    return 0
+}
+log()  { say notice "$@"; }
+warn() { say warning "$@"; }
+
+FAILS=0
+HOLD=0
+STUCK=
+
+# The pid of the udhcpc S30eth started, the server's address trial starts the
+# same one with the same pid file, and nothing when it is not running.
+udhcpc_pid() {
+    pid=$(cat "$RUN_DIR/udhcpc.$IF.pid" 2>/dev/null)
+    [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null && echo "$pid"
+}
+
+carrier() {
+    [ "$(cat "$NET/$IF/carrier" 2>/dev/null)" = 1 ]
+}
+
+# The gateway of the default route on the wired interface only. A default
+# route through Wi-Fi is not this script's business.
+gateway() {
+    ip -4 route show default dev "$IF" 2>/dev/null |
+        awk '$1 == "default" && $2 == "via" { print $3; exit }'
+}
+
+gateway_alive() {   # $1 = the gateway
+    arping -q -c 2 -w 3 -I "$IF" "$1" > /dev/null 2>&1
+}
+
+# A discover that configures nothing (-s /bin/true), exits once a server hands
+# out a lease (-q) and gives up when none does (-n). -B as S30eth asks, for the
+# networks that only answer broadcast.
+dhcp_server_alive() {
+    udhcpc -i "$IF" -f -n -q -B -t 3 -T 2 -s /bin/true > /dev/null 2>&1
+}
+
+# Back to a healthy state, saying so when it follows an outage.
+calm() {
+    [ -n "$STUCK" ] && log "gateway on $IF answers again"
+    FAILS=0
+    STUCK=
+}
+
+tick() {
+    if [ "$HOLD" -gt 0 ]; then
+        HOLD=$((HOLD - 1))
+        return 0
+    fi
+    if [ -e "$NODHCP" ]; then calm; return 0; fi
+    pid=$(udhcpc_pid) || { calm; return 0; }
+    carrier || { calm; return 0; }
+    gw=$(gateway)
+    [ -n "$gw" ] || { calm; return 0; }
+
+    if gateway_alive "$gw"; then
+        calm
+        return 0
+    fi
+
+    FAILS=$((FAILS + 1))
+    [ "$FAILS" -lt "$FAIL_LIMIT" ] && return 0
+    FAILS=0
+    HOLD=$(( (HOLDOFF + INTERVAL - 1) / INTERVAL ))
+
+    if ! dhcp_server_alive; then
+        [ -n "$STUCK" ] || log "gateway $gw on $IF unreachable and no DHCP server answers, keeping the current lease"
+        STUCK=1
+        return 0
+    fi
+
+    STUCK=
+    warn "gateway $gw on $IF unreachable for $((FAIL_LIMIT * INTERVAL))s and a DHCP server answers, restarting DHCP"
+    kill -USR2 "$pid" 2>/dev/null   # release the lease
+    sleep "$RELEASE_GAP"
+    kill -USR1 "$pid" 2>/dev/null   # and discover again
+    return 0
+}
+# --- end watch ---
+
+watch_loop() {
+    while :; do
+        sleep "$INTERVAL"
+        tick
+    done
+}
+
+start() {
+    printf "ethwatch: "
+
+    if [ -f "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
+        echo "already running (pid $(cat "$PIDFILE"))"
+        return 0
+    fi
+
+    # setsid for the reason S98supervise gives: a loop merely backgrounded
+    # holds an ssh session that ran `start` open.
+    setsid "$0" __watch < /dev/null > /dev/null 2>&1 &
+    echo "$!" > "$PIDFILE"
+    log "watching the gateway on $IF every ${INTERVAL}s, DHCP restart after $((FAIL_LIMIT * INTERVAL))s"
+    if [ -e "$NODHCP" ]; then
+        echo "OK (pid $!, idle: static address)"
+    else
+        echo "OK (pid $!, every ${INTERVAL}s)"
+    fi
+}
+
+stop() {
+    printf "ethwatch: "
+    if [ -f "$PIDFILE" ]; then
+        kill "$(cat "$PIDFILE")" 2>/dev/null
+        rm -f "$PIDFILE"
+        echo "stopped"
+    else
+        echo "not running"
+    fi
+}
+
+case "$1" in
+    __watch)
+        # Internal: the detached loop re-enters here through setsid.
+        watch_loop
+        ;;
+    start) start ;;
+    stop) stop ;;
+    restart|reload)
+        stop
+        start
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+        ;;
+esac
+
+exit 0
