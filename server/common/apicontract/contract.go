@@ -16,7 +16,12 @@ import (
 //
 // A server that predates GET /api/version speaks version 1, so the web UI
 // treats a missing endpoint as version 1 with no declared features.
-const APIVersion = 1
+//
+// Version 2: GET /api/vm/device/virtual and its apply answer moved each
+// function's state under "functions" and gave "network", "disk" and "audio"
+// back to Sipeed's booleans, which clients of Sipeed's API read
+// (ironkvm-dist#124).
+const APIVersion = 2
 
 // features is the registry, one line per feature, kept in alphabetical order.
 // A UI asks for a feature by this name (web/src/lib/server-features.ts) before
