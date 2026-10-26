@@ -28,6 +28,11 @@ type testClient struct {
 	// ignoreRAKP2 skips the RAKP 2 HMAC check, so a test can send RAKP 3
 	// with a wrong password and see what the service does with it.
 	ignoreRAKP2 bool
+
+	// exchange, when set, replaces the socket: it hands a packet to the
+	// service and returns the answer, or nil for none. The fuzz tests use it
+	// to drive handleLocked without a round trip per packet.
+	exchange func(packet []byte) []byte
 }
 
 func dial(t *testing.T, s *Service) *testClient {
@@ -66,6 +71,12 @@ func (c *testClient) receive() ([]byte, error) {
 }
 
 func (c *testClient) roundTrip(packet []byte) ([]byte, error) {
+	if c.exchange != nil {
+		if reply := c.exchange(packet); reply != nil {
+			return reply, nil
+		}
+		return nil, errNoAnswer
+	}
 	c.send(packet)
 	return c.receive()
 }
@@ -160,6 +171,15 @@ func (c *testClient) openSession(auth, integrity, confidentiality, priv byte) (b
 // rakp runs RAKP 1 to 4 and returns the first failing status, from RAKP 2
 // or RAKP 4. The RAKP 2 HMAC is checked against password.
 func (c *testClient) rakp(username, password string, role byte) (byte, error) {
+	if status, err := c.rakp1(username, password, role); err != nil || status != statusOK {
+		return status, err
+	}
+	return c.rakp3(password)
+}
+
+// rakp1 sends RAKP 1 and checks RAKP 2, leaving the handshake waiting for
+// RAKP 3.
+func (c *testClient) rakp1(username, password string, role byte) (byte, error) {
 	in := &c.in
 	in.consoleID = c.consoleID
 	in.systemID = c.systemID
@@ -191,19 +211,24 @@ func (c *testClient) rakp(username, password string, role byte) (byte, error) {
 	}
 	copy(in.rc[:], p.payload[8:24])
 	copy(in.guid[:], p.payload[24:40])
-	kuid := []byte(password)
-	if got, want := p.payload[40:], c.suite.rakp2AuthCode(kuid, in); !c.ignoreRAKP2 && string(got) != string(want) {
+	if got, want := p.payload[40:], c.suite.rakp2AuthCode([]byte(password), in); !c.ignoreRAKP2 && string(got) != string(want) {
 		return 0, errors.New("the RAKP 2 HMAC does not match the password")
 	}
+	return statusOK, nil
+}
 
-	b = []byte{0x44, statusOK, 0, 0}
+// rakp3 sends RAKP 3 for the handshake rakp1 started and checks RAKP 4.
+func (c *testClient) rakp3(password string) (byte, error) {
+	in := &c.in
+	kuid := []byte(password)
+	b := []byte{0x44, statusOK, 0, 0}
 	b = binary.LittleEndian.AppendUint32(b, c.systemID)
 	b = append(b, c.suite.rakp3AuthCode(kuid, in)...)
-	reply, err = c.roundTrip(buildV20(v20Header{payloadType: payloadRAKP3}, b, nil, nil))
+	reply, err := c.roundTrip(buildV20(v20Header{payloadType: payloadRAKP3}, b, nil, nil))
 	if err != nil {
 		return 0, err
 	}
-	p, err = parseV20(reply)
+	p, err := parseV20(reply)
 	if err != nil {
 		return 0, err
 	}

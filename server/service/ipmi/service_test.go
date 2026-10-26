@@ -316,19 +316,66 @@ func TestSessionsExpire(t *testing.T) {
 	}
 }
 
+// stepClock gives the service a clock that moves on a millisecond at every
+// reading, so no two sessions are seen at the same instant.
+func stepClock(env *testEnv) {
+	var now atomic.Int64
+	now.Store(time.Now().UnixNano())
+	env.service.mu.Lock()
+	env.service.deps.Now = func() time.Time { return time.Unix(0, now.Add(int64(time.Millisecond))) }
+	env.service.mu.Unlock()
+}
+
 func TestTheSessionCountIsBounded(t *testing.T) {
 	env := newTestEnv(t)
+	stepClock(env)
 	suite := suiteByID(t, 3)
-	c := dial(t, env.service)
 
-	for i := 0; i < maxSessions; i++ {
-		if status, err := c.openSession(suite.auth, suite.integrity, suite.confidentiality, 0); err != nil || status != statusOK {
-			t.Fatalf("session %d: status %#x, %v", i, status, err)
-		}
+	clients := make([]*testClient, maxSessions)
+	for i := range clients {
+		clients[i] = dial(t, env.service)
+		clients[i].login(3, adminName, adminIPMI, privAdmin|lookupNameOnly)
 	}
+	c := dial(t, env.service)
 	if status, err := c.openSession(suite.auth, suite.integrity, suite.confidentiality, 0); err != nil || status != statusNoResources {
 		t.Fatalf("one too many: status %#x, %v", status, err)
 	}
+	for _, c := range clients {
+		c.mustCommand(netFnApp, cmdGetDeviceID, nil, ccOK)
+	}
+}
+
+// A flood of Open Session requests, which need no password, must not lock
+// everyone out: when the table is full, a new one takes the place of the
+// handshake that has waited longest.
+func TestAnOpenSessionFloodDoesNotLockOutLogins(t *testing.T) {
+	env := newTestEnv(t)
+	stepClock(env)
+	suite := suiteByID(t, 3)
+
+	active := dial(t, env.service)
+	active.login(3, adminName, adminIPMI, privAdmin|lookupNameOnly)
+	stale := dial(t, env.service)
+	if status, err := stale.openSession(suite.auth, suite.integrity, suite.confidentiality, 0); err != nil || status != statusOK {
+		t.Fatalf("open session: status %#x, %v", status, err)
+	}
+
+	flood := dial(t, env.service)
+	for i := 0; i < 3*maxSessions; i++ {
+		if status, err := flood.openSession(suite.auth, suite.integrity, suite.confidentiality, 0); err != nil || status != statusOK {
+			t.Fatalf("open session %d: status %#x, %v", i, status, err)
+		}
+	}
+
+	// The handshake that waited longest is gone, the active session is not.
+	if _, err := stale.rakp(adminName, adminIPMI, privAdmin|lookupNameOnly); !errors.Is(err, errNoAnswer) {
+		t.Fatalf("RAKP 1 of a dropped handshake: %v", err)
+	}
+	active.mustCommand(netFnApp, cmdGetDeviceID, nil, ccOK)
+
+	c := dial(t, env.service)
+	c.login(17, adminName, adminIPMI, privAdmin|lookupNameOnly)
+	c.mustCommand(netFnApp, cmdGetDeviceID, nil, ccOK)
 }
 
 func TestAChangedOrRemovedAccountEndsItsSession(t *testing.T) {
