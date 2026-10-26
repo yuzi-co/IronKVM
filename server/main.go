@@ -30,6 +30,7 @@ import (
 	"NanoKVM-Server/service/stream/webrtc"
 	"NanoKVM-Server/service/vm"
 	"NanoKVM-Server/service/vm/jiggler"
+	"NanoKVM-Server/service/wireguard"
 	"NanoKVM-Server/utils"
 
 	"github.com/gin-gonic/gin"
@@ -139,6 +140,8 @@ func initialize() {
 	go netbird.ConnectAtBoot()
 	// The saved IPv6 setting, once per boot. See service/network/ipv6.go.
 	go network.RestoreIPv6()
+	// The WireGuard tunnel, when it starts at boot. See service/wireguard.
+	go wireguard.RestoreAtBoot()
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)

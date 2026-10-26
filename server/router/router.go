@@ -136,6 +136,7 @@ func server(r *gin.Engine) {
 	storageRouter(r)
 	networkRouter(r)
 	allowlistRouter(r)
+	wireguardRouter(r)
 	hidRouter(r)
 	sequenceRouter(r)
 	auditRouter(r)
