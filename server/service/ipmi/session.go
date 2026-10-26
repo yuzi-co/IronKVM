@@ -141,6 +141,26 @@ func (s *Service) newSessionIDLocked() (uint32, bool) {
 	return 0, false
 }
 
+// evictHandshakeLocked makes room in a full table by dropping the
+// handshake that has waited longest. Open Session costs a client one
+// unauthenticated packet, and a handshake holds its place for
+// handshakeTimeout, so without this anyone on the network could keep the
+// table full with two packets a second and lock every account out. An
+// active session took a password and is never dropped for a new one.
+func (s *Service) evictHandshakeLocked() bool {
+	var oldest *session
+	for _, sess := range s.sessions {
+		if sess.state != stateActive && (oldest == nil || sess.lastSeen.Before(oldest.lastSeen)) {
+			oldest = sess
+		}
+	}
+	if oldest == nil {
+		return false
+	}
+	delete(s.sessions, oldest.id)
+	return true
+}
+
 // openSession answers an RMCP+ Open Session Request, IPMI 2.0 section
 // 13.17. The three algorithms have to be one of the two suites exactly.
 func (s *Service) openSession(p *v20Packet, addr net.Addr, now time.Time) []byte {
@@ -179,7 +199,7 @@ func (s *Service) openSession(p *v20Packet, addr net.Addr, now time.Time) []byte
 		return fail(statusNoCipherSuiteMatch)
 	}
 
-	if len(s.sessions) >= maxSessions {
+	if len(s.sessions) >= maxSessions && !s.evictHandshakeLocked() {
 		return fail(statusNoResources)
 	}
 	id, ok := s.newSessionIDLocked()
