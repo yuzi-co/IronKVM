@@ -3,6 +3,7 @@ package picoclaw
 import (
 	"context"
 	"encoding/json"
+	"net/http"
 	"reflect"
 	"strings"
 	"sync"
@@ -42,6 +43,9 @@ type Service struct {
 	held               heldInput
 	runtimeLifecycleMu sync.Mutex
 	reconcileOnce      sync.Once
+	// mcp serves /api/picoclaw/mcp. It is built on first use.
+	mcpOnce sync.Once
+	mcp     http.Handler
 }
 
 type ConfigStore struct {

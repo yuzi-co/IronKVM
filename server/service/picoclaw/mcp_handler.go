@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"NanoKVM-Server/service/agent"
@@ -14,49 +14,39 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/modelcontextprotocol/go-sdk/jsonrpc"
+	protocol "github.com/modelcontextprotocol/go-sdk/mcp"
 	log "github.com/sirupsen/logrus"
 )
 
-// JSON-RPC 2.0 types for MCP HTTP transport
+const (
+	mcpServerName    = "nanokvm"
+	mcpServerVersion = "1.0.0"
+	// The JSON-RPC error code for a call that PicoClaw's control mode refuses.
+	// Clients read the reason from the error data.
+	mcpControlConflictCode = -32003
+	maxMCPRequestBytes     = 1 << 20
+)
 
-type jsonRPCRequest struct {
-	JSONRPC string          `json:"jsonrpc"`
-	ID      json.RawMessage `json:"id"`
-	Method  string          `json:"method"`
-	Params  json.RawMessage `json:"params,omitempty"`
-}
-
-type jsonRPCResponse struct {
-	JSONRPC string          `json:"jsonrpc"`
-	ID      json.RawMessage `json:"id"`
-	Result  interface{}     `json:"result,omitempty"`
-	Error   *jsonRPCError   `json:"error,omitempty"`
-}
-
-type jsonRPCError struct {
-	Code    int         `json:"code"`
-	Message string      `json:"message"`
-	Data    interface{} `json:"data,omitempty"`
-}
-
-// MCP tool definitions
-
-var mcpToolDefinitions = []map[string]interface{}{
+// mcpToolDefinitions are the tools the on-board agent is offered. The input
+// schemas are plain maps: the handlers decode the arguments themselves, as
+// they always have, and the SDK does not validate them.
+var mcpToolDefinitions = []*protocol.Tool{
 	{
-		"name":        "kvm_screenshot",
-		"description": "Capture the current HDMI frame from the downstream remote host as a JPEG image. Without arguments the image is scaled down (960 pixels wide unless the NanoKVM owner changed it), which is enough for most steps. To read small text or aim at a small target, pass both width and height, for example the full screen size reported with the previous screenshot.",
-		"inputSchema": map[string]interface{}{
+		Name:        "kvm_screenshot",
+		Description: "Capture the current HDMI frame from the downstream remote host as a JPEG image. Without arguments the image is scaled down (960 pixels wide unless the NanoKVM owner changed it), which is enough for most steps. To read small text or aim at a small target, pass both width and height, for example the full screen size reported with the previous screenshot.",
+		InputSchema: map[string]any{
 			"type": "object",
-			"properties": map[string]interface{}{
-				"width":   map[string]interface{}{"type": "integer", "description": "Target width in pixels (optional). Alone it can only make the default image smaller; with height the image has exactly this size"},
-				"height":  map[string]interface{}{"type": "integer", "description": "Target height in pixels (optional). Alone it can only make the default image smaller; with width the image has exactly this size"},
-				"quality": map[string]interface{}{"type": "integer", "description": "JPEG quality 1-100 (optional, default set by the NanoKVM owner, normally 60)"},
+			"properties": map[string]any{
+				"width":   map[string]any{"type": "integer", "description": "Target width in pixels (optional). Alone it can only make the default image smaller; with height the image has exactly this size"},
+				"height":  map[string]any{"type": "integer", "description": "Target height in pixels (optional). Alone it can only make the default image smaller; with width the image has exactly this size"},
+				"quality": map[string]any{"type": "integer", "description": "JPEG quality 1-100 (optional, default set by the NanoKVM owner, normally 60)"},
 			},
 		},
 	},
 	{
-		"name": "kvm_actions",
-		"description": "Send mouse and keyboard actions to the downstream remote host, in order. " +
+		Name: "kvm_actions",
+		Description: "Send mouse and keyboard actions to the downstream remote host, in order. " +
 			"Mouse positions are fractions of the screen from 0 to 1, not pixels: x=0 is the left edge, x=1 the right edge, y=0 the top, y=1 the bottom. " +
 			"For a point seen in a screenshot, divide its pixel position by the image width and height (pixel 480,270 in a 960x540 image is x=0.5, y=0.5). " +
 			"To move the pointer by a number of screen pixels from where it is, use move with dx/dy. " +
@@ -66,77 +56,77 @@ var mcpToolDefinitions = []map[string]interface{}{
 			`{"action":"drag","from":{"x":0.2,"y":0.2},"to":{"x":0.6,"y":0.2}}; {"action":"wait","duration_ms":1000}. ` +
 			"type is only for text: to press any key, such as Enter, Escape, Tab, an arrow or Shift, use hotkey with that key. " +
 			"The result reports where the pointer ended up. Set screenshot_after to get a screenshot of the result in the same call.",
-		"inputSchema": map[string]interface{}{
+		InputSchema: map[string]any{
 			"type": "object",
-			"properties": map[string]interface{}{
-				"actions": map[string]interface{}{
+			"properties": map[string]any{
+				"actions": map[string]any{
 					"type":        "array",
 					"description": "The actions to run, in order. Each object needs an \"action\" field: click, move, type, hotkey, scroll, drag or wait.",
-					"items": map[string]interface{}{
+					"items": map[string]any{
 						"type": "object",
-						"properties": map[string]interface{}{
-							"action": map[string]interface{}{
+						"properties": map[string]any{
+							"action": map[string]any{
 								"type": "string",
 								"enum": []string{"click", "move", "type", "hotkey", "scroll", "drag", "wait"},
 							},
-							"x": map[string]interface{}{
+							"x": map[string]any{
 								"type": "number", "minimum": 0, "maximum": 1,
 								"description": "click, move, scroll: horizontal position as a fraction of the screen width, 0 = left edge, 1 = right edge. Not pixels.",
 							},
-							"y": map[string]interface{}{
+							"y": map[string]any{
 								"type": "number", "minimum": 0, "maximum": 1,
 								"description": "click, move, scroll: vertical position as a fraction of the screen height, 0 = top edge, 1 = bottom edge. Not pixels.",
 							},
-							"dx": map[string]interface{}{
+							"dx": map[string]any{
 								"type":        "number",
 								"description": "move only, instead of x/y: screen pixels to move right from the current pointer position (negative = left).",
 							},
-							"dy": map[string]interface{}{
+							"dy": map[string]any{
 								"type":        "number",
 								"description": "move only, instead of x/y: screen pixels to move down from the current pointer position (negative = up).",
 							},
-							"button": map[string]interface{}{
+							"button": map[string]any{
 								"type":        "string",
 								"enum":        []string{"left", "right", "middle", "back", "forward"},
 								"description": "click, drag: mouse button, default left.",
 							},
-							"text": map[string]interface{}{"type": "string", "description": "type: the characters to type. Not for single keys: press Enter, Shift and other keys with hotkey."},
-							"keys": map[string]interface{}{
+							"text": map[string]any{"type": "string", "description": "type: the characters to type. Not for single keys: press Enter, Shift and other keys with hotkey."},
+							"keys": map[string]any{
 								"type":        "array",
-								"items":       map[string]interface{}{"type": "string"},
+								"items":       map[string]any{"type": "string"},
 								"description": `hotkey: the keys to press together and then release, modifiers first. One key works too, including a modifier alone: ["shift"], ["enter"], ["ctrl","alt","delete"].`,
 							},
-							"direction": map[string]interface{}{
+							"direction": map[string]any{
 								"type":        "string",
 								"enum":        []string{"up", "down"},
 								"description": "scroll: direction, default up.",
 							},
-							"amount": map[string]interface{}{"type": "integer", "minimum": 1, "description": "scroll: number of wheel steps, default 1."},
-							"duration_ms": map[string]interface{}{
+							"amount": map[string]any{"type": "integer", "minimum": 1, "description": "scroll: number of wheel steps, default 1."},
+							"duration_ms": map[string]any{
 								"type":        "integer",
 								"minimum":     0,
 								"maximum":     maxWaitDurationMS,
 								"description": "wait: milliseconds to wait, up to 30000.",
 							},
-							"from": map[string]interface{}{
+							"from": map[string]any{
 								"type":        "object",
 								"description": "drag: start point, with x and y as fractions from 0 to 1.",
-								"properties":  map[string]interface{}{"x": map[string]interface{}{"type": "number"}, "y": map[string]interface{}{"type": "number"}},
+								"properties":  map[string]any{"x": map[string]any{"type": "number"}, "y": map[string]any{"type": "number"}},
 							},
-							"to": map[string]interface{}{
+							"to": map[string]any{
 								"type":        "object",
 								"description": "drag: end point, with x and y as fractions from 0 to 1.",
-								"properties":  map[string]interface{}{"x": map[string]interface{}{"type": "number"}, "y": map[string]interface{}{"type": "number"}},
+								"properties":  map[string]any{"x": map[string]any{"type": "number"}, "y": map[string]any{"type": "number"}},
 							},
 						},
 						"required": []string{"action"},
 					},
 				},
-				"screenshot_after": map[string]interface{}{
+				"screenshot_after": map[string]any{
 					"type":        "boolean",
 					"description": "If true, take a screenshot after the actions and return it in this result, so no separate kvm_screenshot call is needed to check the outcome. Default false.",
 				},
-				"settle_ms": map[string]interface{}{
+				"settle_ms": map[string]any{
 					"type":        "integer",
 					"minimum":     0,
 					"maximum":     maxScreenshotSettle.Milliseconds(),
@@ -148,68 +138,188 @@ var mcpToolDefinitions = []map[string]interface{}{
 	},
 }
 
-// MCPHandler handles MCP HTTP transport (JSON-RPC 2.0 over POST).
+// MCPHandler serves the MCP endpoint that the on-board agent calls over
+// loopback. The go-sdk streamable HTTP handler speaks the protocol; this
+// package registers the tools and decides who may call them.
 func (s *Service) MCPHandler(c *gin.Context) {
-	var req jsonRPCRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, jsonRPCResponse{
-			JSONRPC: "2.0",
-			ID:      req.ID,
-			Error:   &jsonRPCError{Code: -32700, Message: "parse error"},
-		})
-		return
-	}
-
-	if req.JSONRPC != "2.0" {
-		c.JSON(http.StatusOK, jsonRPCResponse{
-			JSONRPC: "2.0",
-			ID:      req.ID,
-			Error:   &jsonRPCError{Code: -32600, Message: "invalid request: jsonrpc must be 2.0"},
-		})
-		return
-	}
-
-	var resp jsonRPCResponse
-	switch req.Method {
-	case "initialize":
-		resp = s.mcpInitialize(req)
-	case "tools/list":
-		resp = s.mcpToolsList(req)
-	case "tools/call":
-		resp = s.mcpToolsCall(req, c)
-	case "ping":
-		resp = jsonRPCResponse{JSONRPC: "2.0", ID: req.ID, Result: map[string]interface{}{}}
-	default:
-		resp = jsonRPCResponse{
-			JSONRPC: "2.0",
-			ID:      req.ID,
-			Error:   &jsonRPCError{Code: -32601, Message: fmt.Sprintf("method not found: %s", req.Method)},
-		}
-	}
-
-	c.JSON(http.StatusOK, resp)
+	// The tool handlers see only the headers of the request, so the peer
+	// address travels in one. Set, not added: a client cannot choose it.
+	c.Request.Header.Set(audit.ClientHeader, audit.ClientIP(c))
+	relaxMCPRequestHeaders(c.Request)
+	ctx := context.WithValue(c.Request.Context(), httpRequestContextKey{}, c.Request.Context())
+	s.mcpHTTPHandler().ServeHTTP(c.Writer, c.Request.WithContext(ctx))
 }
 
-func mcpModeConflictResponse(req jsonRPCRequest, err *PicoclawError, status controlStatusForMCP) jsonRPCResponse {
+type httpRequestContextKey struct{}
+
+// withHTTPRequestCancel ends a tool call when its HTTP request ends. go-sdk
+// keeps the values of the request context but detaches the call from its
+// cancellation, and an agent that gives up on a call must not leave a wait
+// holding device control.
+func withHTTPRequestCancel(ctx context.Context) (context.Context, func()) {
+	requestCtx, ok := ctx.Value(httpRequestContextKey{}).(context.Context)
+	if !ok {
+		return ctx, func() {}
+	}
+	ctx, cancel := context.WithCancelCause(ctx)
+	stop := context.AfterFunc(requestCtx, func() { cancel(context.Cause(requestCtx)) })
+	return ctx, func() {
+		stop()
+		cancel(context.Canceled)
+	}
+}
+
+// relaxMCPRequestHeaders keeps the endpoint open to a client that omits the
+// headers the streamable HTTP transport asks for, as the hand-written handler
+// that came before it was. Every answer is JSON, so the Accept header changes
+// nothing that the client gets. A Content-Type that names something other
+// than JSON is still refused.
+func relaxMCPRequestHeaders(r *http.Request) {
+	r.Header.Set("Accept", "application/json, text/event-stream")
+	if r.Header.Get("Content-Type") == "" {
+		r.Header.Set("Content-Type", "application/json")
+	}
+}
+
+func (s *Service) mcpHTTPHandler() http.Handler {
+	s.mcpOnce.Do(func() {
+		server := s.newMCPServer()
+		handler := protocol.NewStreamableHTTPHandler(
+			func(*http.Request) *protocol.Server { return server },
+			&protocol.StreamableHTTPOptions{Stateless: true, JSONResponse: true},
+		)
+		s.mcp = http.MaxBytesHandler(handler, maxMCPRequestBytes)
+	})
+	return s.mcp
+}
+
+func (s *Service) newMCPServer() *protocol.Server {
+	server := protocol.NewServer(
+		&protocol.Implementation{Name: mcpServerName, Version: mcpServerVersion},
+		&protocol.ServerOptions{
+			Capabilities: &protocol.ServerCapabilities{Tools: &protocol.ToolCapabilities{}},
+			// No Mcp-Session-Id: every request stands alone, so a client has
+			// no session to resume, lose or delete.
+			GetSessionID: func() string { return "" },
+		},
+	)
+	handlers := map[string]protocol.ToolHandler{
+		"kvm_screenshot": s.mcpScreenshot,
+		"kvm_actions":    s.mcpLeasedActions,
+	}
+	for _, tool := range mcpToolDefinitions {
+		server.AddTool(tool, agentTool(tool.Name, handlers[tool.Name]))
+	}
+	// The agent is offered only the tools whose tier is on.
+	server.AddReceivingMiddleware(onlyAllowedAgentTools)
+	return server
+}
+
+// agentTool wraps a tool handler with its tier check and its audit record. A
+// call whose tier is off never reaches the handler: it gets a tool error and
+// is recorded as denied.
+func agentTool(name string, next protocol.ToolHandler) protocol.ToolHandler {
+	tier := agentToolTiers[name]
+	return func(ctx context.Context, req *protocol.CallToolRequest) (*protocol.CallToolResult, error) {
+		arguments := toolArguments(req)
+		event := audit.Event{
+			Actor:    "picoclaw",
+			Via:      "agent",
+			IP:       requestHeader(req, audit.ClientHeader),
+			Category: audit.CategoryAgent,
+			Action:   name,
+			Tier:     string(tier),
+			Detail:   summarizeAgentCall(name, arguments),
+		}
+		if !audit.Allowed(audit.SubjectAgent, tier) {
+			event.Outcome = audit.OutcomeDenied
+			audit.Record(event)
+			return mcpToolError(audit.DeniedMessage(audit.SubjectAgent, tier)), nil
+		}
+
+		callCtx, release := withHTTPRequestCancel(ctx)
+		result, err := next(callCtx, req)
+		release()
+		switch {
+		case err != nil:
+			event.Outcome = audit.OutcomeFail
+			event.Detail = joinAuditDetail(event.Detail, mcpErrorMessage(err))
+		case result != nil && result.IsError:
+			event.Outcome = audit.OutcomeFail
+			event.Detail = joinAuditDetail(event.Detail, mcpResultText(result))
+		default:
+			event.Outcome = audit.OutcomeOK
+		}
+		audit.Record(event)
+		return result, err
+	}
+}
+
+// onlyAllowedAgentTools drops from a tools/list answer the tools whose tier
+// is off. It also lists the tools in the order of mcpToolDefinitions, which
+// the SDK sorts by name, so that the agent's prompt keeps its order.
+func onlyAllowedAgentTools(next protocol.MethodHandler) protocol.MethodHandler {
+	return func(ctx context.Context, method string, req protocol.Request) (protocol.Result, error) {
+		result, err := next(ctx, method, req)
+		if err != nil || method != "tools/list" {
+			return result, err
+		}
+		if list, ok := result.(*protocol.ListToolsResult); ok && list != nil {
+			listed := make(map[string]*protocol.Tool, len(list.Tools))
+			for _, tool := range list.Tools {
+				listed[tool.Name] = tool
+			}
+			kept := make([]*protocol.Tool, 0, len(list.Tools))
+			for _, definition := range mcpToolDefinitions {
+				tool, ok := listed[definition.Name]
+				if tier, known := agentToolTiers[definition.Name]; ok && known && audit.Allowed(audit.SubjectAgent, tier) {
+					kept = append(kept, tool)
+				}
+			}
+			list.Tools = kept
+		}
+		return result, err
+	}
+}
+
+func toolArguments(req *protocol.CallToolRequest) json.RawMessage {
+	if req == nil || req.Params == nil {
+		return nil
+	}
+	return req.Params.Arguments
+}
+
+func requestHeader(req *protocol.CallToolRequest, name string) string {
+	if req == nil || req.Extra == nil {
+		return ""
+	}
+	return req.Extra.Header.Get(name)
+}
+
+func mcpErrorMessage(err error) string {
+	var rpcErr *jsonrpc.Error
+	if errors.As(err, &rpcErr) {
+		return rpcErr.Message
+	}
+	return err.Error()
+}
+
+// mcpControlConflict is the JSON-RPC error for a call that PicoClaw's control
+// mode refuses. The data names the reason and the current mode, so that the
+// agent can tell the user why it cannot act.
+func mcpControlConflict(err *PicoclawError, status controlStatusForMCP) error {
 	message := "PicoClaw control mode is not active"
 	reason := CodeControlRequired
 	if err != nil && err.Message != "" {
 		message = err.Message
 		reason = err.Code
 	}
-	return jsonRPCResponse{
-		JSONRPC: "2.0",
-		ID:      req.ID,
-		Error: &jsonRPCError{
-			Code:    -32003,
-			Message: message,
-			Data: map[string]interface{}{
-				"reason":        reason,
-				"control_mode":  status.Mode,
-				"transitioning": status.Transitioning,
-			},
-		},
-	}
+	data, _ := json.Marshal(map[string]interface{}{
+		"reason":        reason,
+		"control_mode":  status.Mode,
+		"transitioning": status.Transitioning,
+	})
+	return &jsonrpc.Error{Code: mcpControlConflictCode, Message: message, Data: data}
 }
 
 type controlStatusForMCP struct {
@@ -217,122 +327,34 @@ type controlStatusForMCP struct {
 	Transitioning bool
 }
 
-func (s *Service) mcpInitialize(req jsonRPCRequest) jsonRPCResponse {
-	return jsonRPCResponse{
-		JSONRPC: "2.0",
-		ID:      req.ID,
-		Result: map[string]interface{}{
-			"protocolVersion": "2024-11-05",
-			"capabilities": map[string]interface{}{
-				"tools": map[string]interface{}{},
-			},
-			"serverInfo": map[string]interface{}{
-				"name":    "nanokvm",
-				"version": "1.0.0",
-			},
-		},
-	}
-}
-
-func (s *Service) mcpToolsList(req jsonRPCRequest) jsonRPCResponse {
-	return jsonRPCResponse{
-		JSONRPC: "2.0",
-		ID:      req.ID,
-		Result: map[string]interface{}{
-			"tools": allowedToolDefinitions(),
-		},
-	}
-}
-
-func (s *Service) mcpToolsCall(req jsonRPCRequest, c *gin.Context) jsonRPCResponse {
-	var params struct {
-		Name      string          `json:"name"`
-		Arguments json.RawMessage `json:"arguments"`
-	}
-	if err := json.Unmarshal(req.Params, &params); err != nil {
-		return jsonRPCResponse{
-			JSONRPC: "2.0",
-			ID:      req.ID,
-			Error:   &jsonRPCError{Code: -32602, Message: "invalid params"},
-		}
-	}
-
-	tier, known := agentToolTiers[params.Name]
-	if !known {
-		return jsonRPCResponse{
-			JSONRPC: "2.0",
-			ID:      req.ID,
-			Error:   &jsonRPCError{Code: -32602, Message: fmt.Sprintf("unknown tool: %s", params.Name)},
-		}
-	}
-
-	event := audit.Event{
-		Actor:    "picoclaw",
-		Via:      "agent",
-		IP:       audit.ClientIP(c),
-		Category: audit.CategoryAgent,
-		Action:   params.Name,
-		Tier:     string(tier),
-		Detail:   summarizeAgentCall(params.Name, params.Arguments),
-	}
-	if !audit.Allowed(audit.SubjectAgent, tier) {
-		event.Outcome = audit.OutcomeDenied
-		audit.Record(event)
-		return mcpToolError(req, audit.DeniedMessage(audit.SubjectAgent, tier))
-	}
-
-	resp := s.runMCPTool(req, params.Name, params.Arguments, c)
-	event.Outcome = audit.OutcomeOK
-	if resp.Error != nil {
-		event.Outcome = audit.OutcomeFail
-		event.Detail = joinAuditDetail(event.Detail, resp.Error.Message)
-	} else if result, ok := resp.Result.(map[string]interface{}); ok && result["isError"] == true {
-		event.Outcome = audit.OutcomeFail
-		event.Detail = joinAuditDetail(event.Detail, mcpErrorText(result))
-	}
-	audit.Record(event)
-	return resp
-}
-
-// runMCPTool runs a tool whose tier is on.
-func (s *Service) runMCPTool(req jsonRPCRequest, name string, arguments json.RawMessage, c *gin.Context) jsonRPCResponse {
-	switch name {
-	case "kvm_screenshot":
-		return s.mcpScreenshot(req, arguments, c)
-	case "kvm_actions":
-		releaseMode, modeErr := s.acquireControlMode()
-		if modeErr != nil {
-			controlStatus := controlStatusForMCP{}
-			if status, err := s.control.Status(); err == nil {
-				controlStatus = controlStatusForMCP{
-					Mode:          string(status.Mode),
-					Transitioning: status.Transitioning,
-				}
+// mcpLeasedActions runs kvm_actions under a PicoClaw control mode lease and a
+// control operation, which a switch of the control mode cancels.
+func (s *Service) mcpLeasedActions(ctx context.Context, req *protocol.CallToolRequest) (*protocol.CallToolResult, error) {
+	releaseMode, modeErr := s.acquireControlMode()
+	if modeErr != nil {
+		controlStatus := controlStatusForMCP{}
+		if status, err := s.control.Status(); err == nil {
+			controlStatus = controlStatusForMCP{
+				Mode:          string(status.Mode),
+				Transitioning: status.Transitioning,
 			}
-			return mcpModeConflictResponse(req, modeErr, controlStatus)
 		}
-		defer releaseMode()
-
-		operationCtx, releaseOperation := s.beginControlOperation(c.Request.Context())
-		defer releaseOperation()
-		c.Request = c.Request.WithContext(operationCtx)
-		return s.mcpActions(req, arguments, c)
-	default:
-		return jsonRPCResponse{
-			JSONRPC: "2.0",
-			ID:      req.ID,
-			Error:   &jsonRPCError{Code: -32602, Message: fmt.Sprintf("unknown tool: %s", name)},
-		}
+		return nil, mcpControlConflict(modeErr, controlStatus)
 	}
+	defer releaseMode()
+
+	operationCtx, releaseOperation := s.beginControlOperation(ctx)
+	defer releaseOperation()
+	return s.mcpActions(operationCtx, toolArguments(req), requestHeader(req, sessionIDHeader)), nil
 }
 
-func (s *Service) mcpScreenshot(req jsonRPCRequest, args json.RawMessage, c *gin.Context) jsonRPCResponse {
+func (s *Service) mcpScreenshot(ctx context.Context, req *protocol.CallToolRequest) (*protocol.CallToolResult, error) {
 	var params struct {
 		Width   uint16 `json:"width"`
 		Height  uint16 `json:"height"`
 		Quality uint16 `json:"quality"`
 	}
-	if args != nil {
+	if args := toolArguments(req); args != nil {
 		_ = json.Unmarshal(args, &params)
 	}
 
@@ -343,45 +365,33 @@ func (s *Service) mcpScreenshot(req jsonRPCRequest, args json.RawMessage, c *gin
 		Quality: params.Quality,
 	}
 
-	data, meta, err := s.captureScreenshot(c.Request.Context(), query)
+	data, meta, err := s.captureScreenshot(ctx, query)
 	if err != nil {
-		return mcpToolError(req, err.Message)
+		return mcpToolError(err.Message), nil
 	}
 
-	b64 := base64.StdEncoding.EncodeToString(data)
-	s.publishMCPObservation(c, "screenshot captured", b64)
+	s.publishMCPObservation(requestHeader(req, sessionIDHeader), "screenshot captured", data)
 
-	return jsonRPCResponse{
-		JSONRPC: "2.0",
-		ID:      req.ID,
-		Result: map[string]interface{}{
-			"content": []map[string]interface{}{
-				{
-					"type": "text",
-					"text": screenshotCaption(meta),
-				},
-				{
-					"type":     "image",
-					"data":     b64,
-					"mimeType": "image/jpeg",
-				},
-			},
-			"meta": map[string]interface{}{
-				"source_width":   meta.SourceWidth,
-				"source_height":  meta.SourceHeight,
-				"capture_width":  meta.CaptureWidth,
-				"capture_height": meta.CaptureHeight,
-			},
+	return &protocol.CallToolResult{
+		Meta: protocol.Meta{
+			"source_width":   meta.SourceWidth,
+			"source_height":  meta.SourceHeight,
+			"capture_width":  meta.CaptureWidth,
+			"capture_height": meta.CaptureHeight,
 		},
-	}
+		Content: []protocol.Content{
+			&protocol.TextContent{Text: screenshotCaption(meta)},
+			&protocol.ImageContent{Data: data, MIMEType: "image/jpeg"},
+		},
+	}, nil
 }
 
-func (s *Service) publishMCPObservation(c *gin.Context, text string, imageBase64 string) {
-	if strings.TrimSpace(imageBase64) == "" {
+func (s *Service) publishMCPObservation(sessionHeader string, text string, image []byte) {
+	if len(image) == 0 {
 		return
 	}
 
-	sessionID, err := s.requireActiveGatewaySession(c)
+	sessionID, err := s.activeGatewaySession(sessionHeader)
 	if err != nil {
 		return
 	}
@@ -390,7 +400,7 @@ func (s *Service) publishMCPObservation(c *gin.Context, text string, imageBase64
 		Type:        agent.EventObservation,
 		MessageID:   uuid.NewString(),
 		Text:        text,
-		ImageBase64: imageBase64,
+		ImageBase64: base64.StdEncoding.EncodeToString(image),
 		MimeType:    "image/jpeg",
 	}
 	if publishErr := s.chat.Publish(sessionID, event); publishErr != nil {
@@ -398,48 +408,35 @@ func (s *Service) publishMCPObservation(c *gin.Context, text string, imageBase64
 	}
 }
 
-func (s *Service) mcpActions(req jsonRPCRequest, args json.RawMessage, c *gin.Context) jsonRPCResponse {
+func (s *Service) mcpActions(ctx context.Context, args json.RawMessage, sessionHeader string) *protocol.CallToolResult {
 	var params struct {
 		Actions         []Action `json:"actions"`
 		ScreenshotAfter bool     `json:"screenshot_after"`
 		SettleMs        *int     `json:"settle_ms"`
 	}
 	if err := json.Unmarshal(args, &params); err != nil {
-		return mcpToolError(req, "invalid actions payload")
+		return mcpToolError("invalid actions payload")
 	}
 	if len(params.Actions) == 0 {
-		return mcpToolError(req, "empty actions array")
+		return mcpToolError("empty actions array")
 	}
 
-	sessionID := c.GetHeader(sessionIDHeader)
+	sessionID := sessionHeader
 	if sessionID == "" {
 		sessionID = s.lock.Owner()
 	}
 
-	ctx := c.Request.Context()
 	result, err := s.executeActions(ctx, sessionID, params.Actions)
 	if err != nil {
-		return mcpToolError(req, describeActionError(err, params.Actions, args))
+		return mcpToolError(describeActionError(err, params.Actions, args))
 	}
 
 	resultJSON, _ := json.Marshal(result)
-	content := []map[string]interface{}{
-		{
-			"type": "text",
-			"text": string(resultJSON),
-		},
-	}
+	content := []protocol.Content{&protocol.TextContent{Text: string(resultJSON)}}
 	if params.ScreenshotAfter {
-		content = append(content, s.screenshotAfterActions(ctx, c, settleDuration(params.SettleMs))...)
+		content = append(content, s.screenshotAfterActions(ctx, sessionHeader, settleDuration(params.SettleMs))...)
 	}
-
-	return jsonRPCResponse{
-		JSONRPC: "2.0",
-		ID:      req.ID,
-		Result: map[string]interface{}{
-			"content": content,
-		},
-	}
+	return &protocol.CallToolResult{Content: content}
 }
 
 // The pause between the last action and the screenshot that screenshot_after
@@ -467,51 +464,44 @@ func settleDuration(settleMs *int) time.Duration {
 // screenshot as tool result content. The actions have already run, so a
 // failed capture is reported as text and does not turn the result into an
 // error.
-func (s *Service) screenshotAfterActions(ctx context.Context, c *gin.Context, settle time.Duration) []map[string]interface{} {
+func (s *Service) screenshotAfterActions(ctx context.Context, sessionHeader string, settle time.Duration) []protocol.Content {
 	if waitErr := waitForControlOperation(ctx, settle); waitErr != nil {
-		return []map[string]interface{}{{
-			"type": "text",
-			"text": "actions done; no screenshot taken: " + waitErr.Message,
+		return []protocol.Content{&protocol.TextContent{
+			Text: "actions done; no screenshot taken: " + waitErr.Message,
 		}}
 	}
 
 	data, meta, captureErr := s.captureScreenshot(ctx, ScreenshotQuery{Format: "base64"})
 	if captureErr != nil {
-		return []map[string]interface{}{{
-			"type": "text",
-			"text": "actions done; screenshot failed: " + captureErr.Message,
+		return []protocol.Content{&protocol.TextContent{
+			Text: "actions done; screenshot failed: " + captureErr.Message,
 		}}
 	}
 
-	b64 := base64.StdEncoding.EncodeToString(data)
-	s.publishMCPObservation(c, "screenshot captured", b64)
-	return []map[string]interface{}{
-		{
-			"type": "text",
-			"text": screenshotCaption(meta) + fmt.Sprintf(", taken %d ms after the actions", settle.Milliseconds()),
+	s.publishMCPObservation(sessionHeader, "screenshot captured", data)
+	return []protocol.Content{
+		&protocol.TextContent{
+			Text: screenshotCaption(meta) + fmt.Sprintf(", taken %d ms after the actions", settle.Milliseconds()),
 		},
-		{
-			"type":     "image",
-			"data":     b64,
-			"mimeType": "image/jpeg",
-		},
+		&protocol.ImageContent{Data: data, MIMEType: "image/jpeg"},
 	}
 }
 
-func mcpToolError(req jsonRPCRequest, message string) jsonRPCResponse {
-	return jsonRPCResponse{
-		JSONRPC: "2.0",
-		ID:      req.ID,
-		Result: map[string]interface{}{
-			"isError": true,
-			"content": []map[string]interface{}{
-				{
-					"type": "text",
-					"text": message,
-				},
-			},
-		},
+func mcpToolError(message string) *protocol.CallToolResult {
+	return &protocol.CallToolResult{
+		IsError: true,
+		Content: []protocol.Content{&protocol.TextContent{Text: message}},
 	}
+}
+
+// mcpResultText is the first text of a tool result.
+func mcpResultText(result *protocol.CallToolResult) string {
+	for _, content := range result.Content {
+		if text, ok := content.(*protocol.TextContent); ok {
+			return text.Text
+		}
+	}
+	return ""
 }
 
 // screenshotCaption tells the model what it is looking at: the size of the

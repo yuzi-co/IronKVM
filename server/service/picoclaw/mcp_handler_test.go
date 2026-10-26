@@ -123,6 +123,11 @@ func performMCPRequest(service *Service, body string) *httptest.ResponseRecorder
 	return response
 }
 
+// jsonRPCBody is a request for a method. initialize carries the params the
+// protocol requires of it.
 func jsonRPCBody(method string) string {
+	if method == "initialize" {
+		return `{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"test","version":"1"}}}`
+	}
 	return `{"jsonrpc":"2.0","id":1,"method":"` + method + `"}`
 }
