@@ -1,0 +1,154 @@
+[
+  {
+    "description": "Capture the current HDMI frame from the downstream remote host as a JPEG image. Without arguments the image is scaled down (960 pixels wide unless the NanoKVM owner changed it), which is enough for most steps. To read small text or aim at a small target, pass both width and height, for example the full screen size reported with the previous screenshot.",
+    "inputSchema": {
+      "properties": {
+        "height": {
+          "description": "Target height in pixels (optional). Alone it can only make the default image smaller; with width the image has exactly this size",
+          "type": "integer"
+        },
+        "quality": {
+          "description": "JPEG quality 1-100 (optional, default set by the NanoKVM owner, normally 60)",
+          "type": "integer"
+        },
+        "width": {
+          "description": "Target width in pixels (optional). Alone it can only make the default image smaller; with height the image has exactly this size",
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "name": "kvm_screenshot"
+  },
+  {
+    "description": "Send mouse and keyboard actions to the downstream remote host, in order. Mouse positions are fractions of the screen from 0 to 1, not pixels: x=0 is the left edge, x=1 the right edge, y=0 the top, y=1 the bottom. For a point seen in a screenshot, divide its pixel position by the image width and height (pixel 480,270 in a 960x540 image is x=0.5, y=0.5). To move the pointer by a number of screen pixels from where it is, use move with dx/dy. Examples: {\"action\":\"click\",\"x\":0.5,\"y\":0.5} clicks the centre; {\"action\":\"move\",\"x\":0.1,\"y\":0.9} goes near the bottom-left corner; {\"action\":\"move\",\"dx\":10} moves 10 pixels right; {\"action\":\"move\",\"dy\":-20} moves 20 pixels up; {\"action\":\"click\"} clicks where the pointer is; {\"action\":\"type\",\"text\":\"hello\"} types text; {\"action\":\"hotkey\",\"keys\":[\"shift\"]} presses one key, here a modifier on its own; {\"action\":\"hotkey\",\"keys\":[\"ctrl\",\"c\"]} presses keys together; {\"action\":\"scroll\",\"direction\":\"down\",\"amount\":3}; {\"action\":\"drag\",\"from\":{\"x\":0.2,\"y\":0.2},\"to\":{\"x\":0.6,\"y\":0.2}}; {\"action\":\"wait\",\"duration_ms\":1000}. type is only for text: to press any key, such as Enter, Escape, Tab, an arrow or Shift, use hotkey with that key. The result reports where the pointer ended up. Set screenshot_after to get a screenshot of the result in the same call.",
+    "inputSchema": {
+      "properties": {
+        "actions": {
+          "description": "The actions to run, in order. Each object needs an \"action\" field: click, move, type, hotkey, scroll, drag or wait.",
+          "items": {
+            "properties": {
+              "action": {
+                "enum": [
+                  "click",
+                  "move",
+                  "type",
+                  "hotkey",
+                  "scroll",
+                  "drag",
+                  "wait"
+                ],
+                "type": "string"
+              },
+              "amount": {
+                "description": "scroll: number of wheel steps, default 1.",
+                "minimum": 1,
+                "type": "integer"
+              },
+              "button": {
+                "description": "click, drag: mouse button, default left.",
+                "enum": [
+                  "left",
+                  "right",
+                  "middle",
+                  "back",
+                  "forward"
+                ],
+                "type": "string"
+              },
+              "direction": {
+                "description": "scroll: direction, default up.",
+                "enum": [
+                  "up",
+                  "down"
+                ],
+                "type": "string"
+              },
+              "duration_ms": {
+                "description": "wait: milliseconds to wait, up to 30000.",
+                "maximum": 30000,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "dx": {
+                "description": "move only, instead of x/y: screen pixels to move right from the current pointer position (negative = left).",
+                "type": "number"
+              },
+              "dy": {
+                "description": "move only, instead of x/y: screen pixels to move down from the current pointer position (negative = up).",
+                "type": "number"
+              },
+              "from": {
+                "description": "drag: start point, with x and y as fractions from 0 to 1.",
+                "properties": {
+                  "x": {
+                    "type": "number"
+                  },
+                  "y": {
+                    "type": "number"
+                  }
+                },
+                "type": "object"
+              },
+              "keys": {
+                "description": "hotkey: the keys to press together and then release, modifiers first. One key works too, including a modifier alone: [\"shift\"], [\"enter\"], [\"ctrl\",\"alt\",\"delete\"].",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "text": {
+                "description": "type: the characters to type. Not for single keys: press Enter, Shift and other keys with hotkey.",
+                "type": "string"
+              },
+              "to": {
+                "description": "drag: end point, with x and y as fractions from 0 to 1.",
+                "properties": {
+                  "x": {
+                    "type": "number"
+                  },
+                  "y": {
+                    "type": "number"
+                  }
+                },
+                "type": "object"
+              },
+              "x": {
+                "description": "click, move, scroll: horizontal position as a fraction of the screen width, 0 = left edge, 1 = right edge. Not pixels.",
+                "maximum": 1,
+                "minimum": 0,
+                "type": "number"
+              },
+              "y": {
+                "description": "click, move, scroll: vertical position as a fraction of the screen height, 0 = top edge, 1 = bottom edge. Not pixels.",
+                "maximum": 1,
+                "minimum": 0,
+                "type": "number"
+              }
+            },
+            "required": [
+              "action"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "screenshot_after": {
+          "description": "If true, take a screenshot after the actions and return it in this result, so no separate kvm_screenshot call is needed to check the outcome. Default false.",
+          "type": "boolean"
+        },
+        "settle_ms": {
+          "description": "With screenshot_after: milliseconds to wait after the last action before the screenshot, so windows and pages can draw. Default 500, at most 5000.",
+          "maximum": 5000,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "actions"
+      ],
+      "type": "object"
+    },
+    "name": "kvm_actions"
+  }
+]
