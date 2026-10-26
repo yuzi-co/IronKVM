@@ -28,6 +28,21 @@ const it = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      oidc: {
+        signIn: 'Accedi con {{name}}',
+        usePassword: 'Accedi con la password',
+        errors: {
+          disabled: 'L\'accesso unico è disattivato.',
+          locked: 'Troppi accessi non riusciti, riprova più tardi',
+          provider: 'Il provider di identità non è raggiungibile.',
+          denied: 'Il provider di identità non ti ha fatto accedere.',
+          state: 'L\'accesso è scaduto o è stato avviato in un altro browser. Riprova.',
+          token: 'Non è stato possibile verificare la risposta del provider di identità.',
+          account: 'Il tuo account presso il provider di identità non ha un account su questo dispositivo.',
+          role: 'Il tuo account presso il provider di identità non è in nessuno dei gruppi ammessi su questo dispositivo.',
+          server: 'Non è stato possibile completare l\'accesso. Riprova.'
+        }
+      },
       share: {
         opening: 'Apertura dello schermo condiviso...',
         failed: 'Questo link non è valido, è scaduto o è stato revocato.',
@@ -2199,6 +2214,38 @@ const it = {
         }
       },
       account: {
+        oidc: {
+          title: 'Accesso unico (OIDC)',
+          desc: 'Accedi tramite un provider OpenID Connect come Authentik o Keycloak. L\'accesso con password resta disponibile.',
+          enabled: 'Attivo',
+          providerName: 'Nome del provider sul pulsante',
+          issuer: 'URL dell\'emittente (issuer)',
+          clientId: 'ID client',
+          clientSecret: 'Segreto client',
+          clientSecretSet: 'Un segreto è impostato. Lascia vuoto per mantenerlo.',
+          clearSecret: 'Rimuovi il segreto (client pubblico)',
+          scopes: 'Scopes (openid è sempre incluso)',
+          redirectUrl: 'URL di reindirizzamento',
+          redirectUrlDesc: 'Registra esattamente questo URL presso il provider. Segue l\'indirizzo con cui è stata aperta questa pagina.',
+          httpWarning: 'Questa pagina usa http non cifrato. Molti provider accettano URL di reindirizzamento http solo per localhost. Se il tuo rifiuta questo, apri il dispositivo via HTTPS o tramite un reverse proxy con TLS.',
+          mappingDesc: 'Un account del provider accede come l\'account locale con lo stesso nome utente. L\'account del proprietario del dispositivo accede solo con la sua password. L\'autenticazione a due fattori la fa il provider: il codice locale non viene chiesto.',
+          usernameClaim: 'Associa gli account per',
+          emailDomain: 'Dominio email',
+          emailDomainDesc: 'La parte prima di @ è il nome utente. Gli indirizzi di altri domini sono rifiutati.',
+          autoCreate: 'Crea un account per un utente del provider che non ne ha uno',
+          defaultRole: 'Ruolo degli account creati',
+          groupsDesc: 'Se è impostato un gruppo, il ruolo arriva dal provider a ogni accesso e gli utenti fuori da tutti i gruppi sono rifiutati.',
+          groupsClaim: 'Claim dei gruppi',
+          adminGroup: 'Gruppo amministratori',
+          userGroup: 'Gruppo utenti',
+          viewerGroup: 'Gruppo spettatori',
+          hidePassword: 'Nascondi il modulo della password nella pagina di accesso',
+          hidePasswordDesc: 'Un link nella pagina di accesso lo mostra comunque: l\'accesso con password funziona sempre.',
+          save: 'Salva',
+          saved: 'Salvato',
+          saveFailed: 'Impossibile salvare le impostazioni',
+          loadFailed: 'Impossibile caricare le impostazioni'
+        },
         title: 'Account',
         webAccount: 'Nome account web',
         role: 'Ruolo',

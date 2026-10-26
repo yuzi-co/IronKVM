@@ -28,6 +28,21 @@ const hu = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      oidc: {
+        signIn: 'Bejelentkezés ezzel: {{name}}',
+        usePassword: 'Bejelentkezés jelszóval',
+        errors: {
+          disabled: 'Az egyszeri bejelentkezés ki van kapcsolva.',
+          locked: 'Túl sok sikertelen bejelentkezés, próbálja újra később',
+          provider: 'Az identitásszolgáltató nem érhető el.',
+          denied: 'Az identitásszolgáltató nem jelentkeztette be.',
+          state: 'A bejelentkezés lejárt, vagy másik böngészőben indult. Próbálja újra.',
+          token: 'Az identitásszolgáltató válasza nem ellenőrizhető.',
+          account: 'Az identitásszolgáltatónál lévő fiókjához nincs fiók ezen az eszközön.',
+          role: 'Az identitásszolgáltatónál lévő fiókja egyik, ezen az eszközön engedélyezett csoportban sincs benne.',
+          server: 'A bejelentkezést nem sikerült befejezni. Próbálja újra.'
+        }
+      },
       share: {
         opening: 'A megosztott képernyő megnyitása...',
         failed: 'Ez a hivatkozás érvénytelen, lejárt vagy vissza lett vonva.',
@@ -2195,6 +2210,38 @@ const hu = {
         }
       },
       account: {
+        oidc: {
+          title: 'Egyszeri bejelentkezés (OIDC)',
+          desc: 'Bejelentkezés OpenID Connect szolgáltatón keresztül, például Authentik vagy Keycloak. A jelszavas bejelentkezés továbbra is elérhető.',
+          enabled: 'Engedélyezve',
+          providerName: 'Szolgáltató neve a gombon',
+          issuer: 'Kibocsátó (issuer) URL',
+          clientId: 'Kliensazonosító',
+          clientSecret: 'Klienstitok',
+          clientSecretSet: 'Titok be van állítva. Hagyja üresen a megtartásához.',
+          clearSecret: 'Titok eltávolítása (nyilvános kliens)',
+          scopes: 'Scope-ok (az openid mindig benne van)',
+          redirectUrl: 'Átirányítási URL',
+          redirectUrlDesc: 'Pontosan ezt az URL-t regisztrálja a szolgáltatónál. Annak a címnek felel meg, amelyen ezt az oldalt megnyitotta.',
+          httpWarning: 'Ez az oldal titkosítatlan http-t használ. Sok szolgáltató csak localhost esetén fogad el http átirányítási URL-t. Ha az öné ezt elutasítja, nyissa meg az eszközt HTTPS-en vagy TLS-es fordított proxyn keresztül.',
+          mappingDesc: 'A szolgáltatói fiók az azonos felhasználónevű helyi fiókként jelentkezik be. Az eszköz tulajdonosi fiókja csak a jelszavával léphet be. A kétlépcsős azonosítást a szolgáltató végzi: a helyi kódot nem kéri a rendszer.',
+          usernameClaim: 'Fiókok párosítása eszerint',
+          emailDomain: 'E-mail tartomány',
+          emailDomainDesc: 'A @ előtti rész a felhasználónév. Más tartományok címeit elutasítja.',
+          autoCreate: 'Fiók létrehozása fiók nélküli szolgáltatói felhasználónak',
+          defaultRole: 'Létrehozott fiókok szerepköre',
+          groupsDesc: 'Ha bármely csoport be van állítva, a szerepkör minden bejelentkezéskor a szolgáltatótól jön, és a csoportokon kívüli felhasználókat elutasítja.',
+          groupsClaim: 'Csoport claim',
+          adminGroup: 'Rendszergazda csoport',
+          userGroup: 'Felhasználói csoport',
+          viewerGroup: 'Megtekintő csoport',
+          hidePassword: 'Jelszó űrlap elrejtése a bejelentkezési oldalon',
+          hidePasswordDesc: 'Egy hivatkozás a bejelentkezési oldalon továbbra is megjeleníti: a jelszavas bejelentkezés mindig működik.',
+          save: 'Mentés',
+          saved: 'Mentve',
+          saveFailed: 'A beállítások mentése sikertelen',
+          loadFailed: 'A beállítások betöltése sikertelen'
+        },
         title: 'Fiók',
         webAccount: 'Webes fiók neve',
         role: 'Szerepkör',

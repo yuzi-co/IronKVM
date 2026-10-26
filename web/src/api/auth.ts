@@ -72,6 +72,57 @@ export function resetUserTotp(username: string) {
   return http.delete(`/api/auth/users/${encodeURIComponent(username)}/totp`);
 }
 
+// Login through an OpenID Connect provider. The login page sends the browser
+// to OIDC_LOGIN_URL, which redirects to the provider; the provider sends it
+// back to the server's callback, which redirects to / or to the login page
+// with ?oidc=<reason>.
+export const OIDC_LOGIN_URL = '/api/auth/oidc/login';
+
+export type OidcInfo = {
+  enabled: boolean;
+  providerName?: string;
+  hidePasswordLogin?: boolean;
+};
+
+export function getOidcInfo() {
+  return http.get('/api/auth/oidc');
+}
+
+export type OidcSettings = {
+  enabled: boolean;
+  providerName: string;
+  issuer: string;
+  clientId: string;
+  // The secret itself never comes back, only whether one is set.
+  clientSecretSet: boolean;
+  scopes: string[];
+  usernameClaim: 'preferred_username' | 'email';
+  emailDomain: string;
+  autoCreate: boolean;
+  defaultRole: UserRole;
+  groupsClaim: string;
+  adminGroup: string;
+  userGroup: string;
+  viewerGroup: string;
+  hidePasswordLogin: boolean;
+  // The callback address to register at the provider, as this page reached the board.
+  redirectUrl: string;
+};
+
+// An empty clientSecret keeps the one on the board; clearClientSecret removes it.
+export type OidcSettingsUpdate = Omit<OidcSettings, 'clientSecretSet' | 'redirectUrl'> & {
+  clientSecret?: string;
+  clearClientSecret?: boolean;
+};
+
+export function getOidcSettings() {
+  return http.get('/api/auth/oidc/settings');
+}
+
+export function setOidcSettings(settings: OidcSettingsUpdate) {
+  return http.post('/api/auth/oidc/settings', settings);
+}
+
 export function logout() {
   return http.post('/api/auth/logout');
 }

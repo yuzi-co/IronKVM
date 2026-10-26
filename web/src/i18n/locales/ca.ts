@@ -29,6 +29,21 @@ const ca = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      oidc: {
+        signIn: 'Inicia la sessió amb {{name}}',
+        usePassword: 'Inicia la sessió amb contrasenya',
+        errors: {
+          disabled: 'L\'inici de sessió únic està desactivat.',
+          locked: 'Massa inicis de sessió fallits, torneu-ho a provar més tard',
+          provider: 'No s\'ha pogut contactar amb el proveïdor d\'identitat.',
+          denied: 'El proveïdor d\'identitat no ha iniciat la vostra sessió.',
+          state: 'L\'inici de sessió ha caducat o es va començar en un altre navegador. Torneu-ho a provar.',
+          token: 'No s\'ha pogut verificar la resposta del proveïdor d\'identitat.',
+          account: 'El vostre compte del proveïdor d\'identitat no té cap compte en aquest dispositiu.',
+          role: 'El vostre compte del proveïdor d\'identitat no és a cap dels grups permesos en aquest dispositiu.',
+          server: 'No s\'ha pogut completar l\'inici de sessió. Torneu-ho a provar.'
+        }
+      },
       share: {
         opening: "S'està obrint la pantalla compartida...",
         failed: "Aquest enllaç no és vàlid, ha caducat o s'ha revocat.",
@@ -2193,6 +2208,38 @@ const ca = {
         }
       },
       account: {
+        oidc: {
+          title: 'Inici de sessió únic (OIDC)',
+          desc: 'Inicieu la sessió amb un proveïdor OpenID Connect com Authentik o Keycloak. L\'inici de sessió amb contrasenya continua disponible.',
+          enabled: 'Activat',
+          providerName: 'Nom del proveïdor al botó',
+          issuer: 'URL de l\'emissor (issuer)',
+          clientId: 'ID de client',
+          clientSecret: 'Secret de client',
+          clientSecretSet: 'Hi ha un secret desat. Deixeu-ho buit per conservar-lo.',
+          clearSecret: 'Elimina el secret (client públic)',
+          scopes: 'Scopes (openid sempre s\'inclou)',
+          redirectUrl: 'URL de redirecció',
+          redirectUrlDesc: 'Registreu exactament aquesta URL al proveïdor. Segueix l\'adreça amb què s\'ha obert aquesta pàgina.',
+          httpWarning: 'Aquesta pàgina fa servir http sense xifrar. Molts proveïdors només accepten URL de redirecció http per a localhost. Si el vostre la rebutja, obriu el dispositiu per HTTPS o a través d\'un servidor intermediari invers amb TLS.',
+          mappingDesc: 'Un compte del proveïdor inicia la sessió com el compte local amb el mateix nom d\'usuari. El compte del propietari del dispositiu només entra amb la seva contrasenya. El proveïdor fa l\'autenticació en dos passos: no es demana el codi local.',
+          usernameClaim: 'Associa els comptes per',
+          emailDomain: 'Domini de correu',
+          emailDomainDesc: 'La part abans de @ és el nom d\'usuari. Es rebutgen les adreces d\'altres dominis.',
+          autoCreate: 'Crea un compte per a un usuari del proveïdor que no en tingui',
+          defaultRole: 'Rol dels comptes creats',
+          groupsDesc: 'Si hi ha algun grup, el rol ve del proveïdor a cada inici de sessió i es rebutgen els usuaris que no siguin a cap.',
+          groupsClaim: 'Claim de grups',
+          adminGroup: 'Grup d\'administradors',
+          userGroup: 'Grup d\'usuaris',
+          viewerGroup: 'Grup d\'espectadors',
+          hidePassword: 'Amaga el formulari de contrasenya a la pàgina d\'inici de sessió',
+          hidePasswordDesc: 'Un enllaç a la pàgina d\'inici de sessió el continua mostrant: l\'inici amb contrasenya sempre funciona.',
+          save: 'Desa',
+          saved: 'Desat',
+          saveFailed: 'No s\'ha pogut desar la configuració',
+          loadFailed: 'No s\'ha pogut carregar la configuració'
+        },
         title: 'Compte',
         webAccount: 'Nom del compte web',
         role: 'Rol',

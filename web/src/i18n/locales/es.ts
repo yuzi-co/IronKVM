@@ -29,6 +29,21 @@ const es = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      oidc: {
+        signIn: 'Iniciar sesión con {{name}}',
+        usePassword: 'Iniciar sesión con contraseña',
+        errors: {
+          disabled: 'El inicio de sesión único está desactivado.',
+          locked: 'Demasiados inicios de sesión fallidos, inténtelo más tarde',
+          provider: 'No se pudo contactar con el proveedor de identidad.',
+          denied: 'El proveedor de identidad no inició su sesión.',
+          state: 'El inicio de sesión caducó o se empezó en otro navegador. Inténtelo de nuevo.',
+          token: 'No se pudo verificar la respuesta del proveedor de identidad.',
+          account: 'Su cuenta del proveedor de identidad no tiene cuenta en este dispositivo.',
+          role: 'Su cuenta del proveedor de identidad no está en ninguno de los grupos permitidos en este dispositivo.',
+          server: 'No se pudo completar el inicio de sesión. Inténtelo de nuevo.'
+        }
+      },
       share: {
         opening: 'Abriendo la pantalla compartida...',
         failed: 'Este enlace no es válido, ha caducado o se ha revocado.',
@@ -2202,6 +2217,38 @@ const es = {
         }
       },
       account: {
+        oidc: {
+          title: 'Inicio de sesión único (OIDC)',
+          desc: 'Inicie sesión con un proveedor OpenID Connect como Authentik o Keycloak. El inicio de sesión con contraseña sigue disponible.',
+          enabled: 'Activado',
+          providerName: 'Nombre del proveedor en el botón',
+          issuer: 'URL del emisor (issuer)',
+          clientId: 'ID de cliente',
+          clientSecret: 'Secreto de cliente',
+          clientSecretSet: 'Hay un secreto guardado. Déjelo vacío para conservarlo.',
+          clearSecret: 'Quitar el secreto (cliente público)',
+          scopes: 'Scopes (openid siempre se incluye)',
+          redirectUrl: 'URL de redirección',
+          redirectUrlDesc: 'Registre exactamente esta URL en el proveedor. Sigue la dirección con la que se abrió esta página.',
+          httpWarning: 'Esta página usa http sin cifrar. Muchos proveedores solo aceptan URL de redirección http para localhost. Si el suyo rechaza esta, abra el dispositivo por HTTPS o mediante un proxy inverso con TLS.',
+          mappingDesc: 'Una cuenta del proveedor inicia sesión como la cuenta local con el mismo nombre de usuario. La cuenta del propietario del dispositivo solo entra con su contraseña. El proveedor se encarga de la autenticación en dos pasos: no se pide el código local.',
+          usernameClaim: 'Asociar cuentas por',
+          emailDomain: 'Dominio de correo',
+          emailDomainDesc: 'La parte antes de @ es el nombre de usuario. Se rechazan las direcciones de otros dominios.',
+          autoCreate: 'Crear una cuenta para un usuario del proveedor que no tenga',
+          defaultRole: 'Rol de las cuentas creadas',
+          groupsDesc: 'Si hay algún grupo, el rol viene del proveedor en cada inicio de sesión y se rechaza a los usuarios que no estén en ninguno.',
+          groupsClaim: 'Claim de grupos',
+          adminGroup: 'Grupo de administradores',
+          userGroup: 'Grupo de usuarios',
+          viewerGroup: 'Grupo de espectadores',
+          hidePassword: 'Ocultar el formulario de contraseña en la página de inicio de sesión',
+          hidePasswordDesc: 'Un enlace en la página de inicio de sesión lo sigue mostrando: el inicio con contraseña siempre funciona.',
+          save: 'Guardar',
+          saved: 'Guardado',
+          saveFailed: 'No se pudo guardar la configuración',
+          loadFailed: 'No se pudo cargar la configuración'
+        },
         title: 'Cuenta',
         webAccount: 'Nombre de la cuenta web',
         role: 'Rol',

@@ -28,6 +28,21 @@ const fr = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      oidc: {
+        signIn: 'Se connecter avec {{name}}',
+        usePassword: 'Se connecter avec un mot de passe',
+        errors: {
+          disabled: 'L\'authentification unique est désactivée.',
+          locked: 'Trop de connexions échouées, veuillez réessayer plus tard',
+          provider: 'Le fournisseur d\'identité est injoignable.',
+          denied: 'Le fournisseur d\'identité ne vous a pas connecté.',
+          state: 'La connexion a expiré ou a été lancée dans un autre navigateur. Réessayez.',
+          token: 'La réponse du fournisseur d\'identité n\'a pas pu être vérifiée.',
+          account: 'Votre compte chez le fournisseur d\'identité n\'a pas de compte sur cet appareil.',
+          role: 'Votre compte chez le fournisseur d\'identité n\'appartient à aucun des groupes autorisés sur cet appareil.',
+          server: 'La connexion n\'a pas pu aboutir. Réessayez.'
+        }
+      },
       share: {
         opening: "Ouverture de l'écran partagé...",
         failed: 'Ce lien est invalide, expiré ou révoqué.',
@@ -2209,6 +2224,38 @@ const fr = {
         }
       },
       account: {
+        oidc: {
+          title: 'Authentification unique (OIDC)',
+          desc: 'Connexion via un fournisseur OpenID Connect comme Authentik ou Keycloak. La connexion par mot de passe reste disponible.',
+          enabled: 'Activé',
+          providerName: 'Nom du fournisseur sur le bouton de connexion',
+          issuer: 'URL de l\'émetteur (issuer)',
+          clientId: 'ID client',
+          clientSecret: 'Secret client',
+          clientSecretSet: 'Un secret est défini. Laissez vide pour le conserver.',
+          clearSecret: 'Supprimer le secret (client public)',
+          scopes: 'Scopes (openid est toujours inclus)',
+          redirectUrl: 'URL de redirection',
+          redirectUrlDesc: 'Enregistrez exactement cette URL chez le fournisseur. Elle suit l\'adresse à laquelle cette page a été ouverte.',
+          httpWarning: 'Cette page utilise http non chiffré. Beaucoup de fournisseurs n\'acceptent les URL de redirection http que pour localhost. Si le vôtre refuse celle-ci, ouvrez l\'appareil en HTTPS ou via un proxy inverse avec TLS.',
+          mappingDesc: 'Un compte du fournisseur se connecte en tant que compte local du même nom d\'utilisateur. Le compte propriétaire de l\'appareil se connecte uniquement avec son mot de passe. Le fournisseur gère l\'authentification à deux facteurs : le code local n\'est pas demandé.',
+          usernameClaim: 'Associer les comptes par',
+          emailDomain: 'Domaine e-mail',
+          emailDomainDesc: 'La partie avant @ est le nom d\'utilisateur. Les adresses d\'autres domaines sont refusées.',
+          autoCreate: 'Créer un compte pour un utilisateur du fournisseur qui n\'en a pas',
+          defaultRole: 'Rôle des comptes créés',
+          groupsDesc: 'Si un groupe est défini, le rôle vient du fournisseur à chaque connexion, et les utilisateurs d\'aucun de ces groupes sont refusés.',
+          groupsClaim: 'Claim des groupes',
+          adminGroup: 'Groupe administrateur',
+          userGroup: 'Groupe utilisateur',
+          viewerGroup: 'Groupe spectateur',
+          hidePassword: 'Masquer le formulaire de mot de passe sur la page de connexion',
+          hidePasswordDesc: 'Un lien sur la page de connexion l\'affiche toujours : la connexion par mot de passe fonctionne toujours.',
+          save: 'Enregistrer',
+          saved: 'Enregistré',
+          saveFailed: 'Échec de l\'enregistrement des paramètres',
+          loadFailed: 'Échec du chargement des paramètres'
+        },
         title: 'Compte',
         webAccount: 'Nom du compte Web',
         role: 'Rôle',

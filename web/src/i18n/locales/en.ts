@@ -28,6 +28,21 @@ const en = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      oidc: {
+        signIn: 'Sign in with {{name}}',
+        usePassword: 'Sign in with a password',
+        errors: {
+          disabled: 'Single sign-on is turned off.',
+          locked: 'Too many failed logins, please try again later',
+          provider: 'The identity provider could not be reached.',
+          denied: 'The identity provider did not sign you in.',
+          state: 'The sign-in expired or was started in another browser. Try again.',
+          token: 'The identity provider\'s answer could not be verified.',
+          account: 'Your identity provider account has no account on this device.',
+          role: 'Your identity provider account is in none of the groups allowed on this device.',
+          server: 'The sign-in could not be completed. Try again.'
+        }
+      },
       share: {
         opening: 'Opening the shared screen...',
         failed: 'This link is invalid, has expired or was revoked.',
@@ -2155,6 +2170,38 @@ const en = {
         }
       },
       account: {
+        oidc: {
+          title: 'Single sign-on (OIDC)',
+          desc: 'Sign in through an OpenID Connect provider such as Authentik or Keycloak. The password login stays available.',
+          enabled: 'Enabled',
+          providerName: 'Provider name on the login button',
+          issuer: 'Issuer URL',
+          clientId: 'Client ID',
+          clientSecret: 'Client secret',
+          clientSecretSet: 'A secret is set. Leave empty to keep it.',
+          clearSecret: 'Remove the secret (public client)',
+          scopes: 'Scopes (openid is always included)',
+          redirectUrl: 'Redirect URL',
+          redirectUrlDesc: 'Register this exact URL at the provider. It follows the address this page was opened at.',
+          httpWarning: 'This page uses plain http. Many providers accept http redirect URLs only for localhost. If yours refuses this one, open the device over HTTPS or through a reverse proxy with TLS.',
+          mappingDesc: 'A provider account signs in as the local account with the same username. The device owner account signs in with its password only. The provider does two-factor authentication: the local code is not asked for.',
+          usernameClaim: 'Match accounts by',
+          emailDomain: 'Email domain',
+          emailDomainDesc: 'The part before @ is the username. Addresses in other domains are refused.',
+          autoCreate: 'Create an account for a provider user who has none',
+          defaultRole: 'Role of created accounts',
+          groupsDesc: 'When any group is set, the role comes from the provider at every sign-in, and users in none of the groups are refused.',
+          groupsClaim: 'Groups claim',
+          adminGroup: 'Administrator group',
+          userGroup: 'User group',
+          viewerGroup: 'Viewer group',
+          hidePassword: 'Hide the password form on the login page',
+          hidePasswordDesc: 'A link on the login page still shows it: password login always works.',
+          save: 'Save',
+          saved: 'Saved',
+          saveFailed: 'Failed to save the settings',
+          loadFailed: 'Failed to load the settings'
+        },
         title: 'Account',
         webAccount: 'Web Account Name',
         role: 'Role',

@@ -33,6 +33,7 @@ export const SERVER_FEATURES = [
   'login-sessions', // /api/auth/sessions (Settings > Account > Sessions)
   'notifications', // /api/notify (Settings > Notifications)
   'nut-client', // /api/nut (Settings > NUT, UPS line in the status bar)
+  'oidc-login', // /api/auth/oidc (Settings > Account > Single sign-on)
   'role-viewer', // the viewer role in Settings > Users, and a UI with no input for it
   'settings-backup', // /api/settings/export, /preview, /import (Settings > Backup: settings file)
   'share-links', // /api/auth/share and /api/auth/share-links (Settings > Account > Share links)

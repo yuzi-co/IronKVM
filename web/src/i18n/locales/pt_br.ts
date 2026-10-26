@@ -28,6 +28,21 @@ const pt_br = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      oidc: {
+        signIn: 'Entrar com {{name}}',
+        usePassword: 'Entrar com senha',
+        errors: {
+          disabled: 'O login único está desativado.',
+          locked: 'Muitas tentativas de login falharam, tente novamente mais tarde',
+          provider: 'Não foi possível contatar o provedor de identidade.',
+          denied: 'O provedor de identidade não fez o seu login.',
+          state: 'O login expirou ou foi iniciado em outro navegador. Tente novamente.',
+          token: 'Não foi possível verificar a resposta do provedor de identidade.',
+          account: 'Sua conta no provedor de identidade não tem conta neste dispositivo.',
+          role: 'Sua conta no provedor de identidade não está em nenhum dos grupos permitidos neste dispositivo.',
+          server: 'Não foi possível concluir o login. Tente novamente.'
+        }
+      },
       share: {
         opening: 'Abrindo a tela compartilhada...',
         failed: 'Este link é inválido, expirou ou foi revogado.',
@@ -2188,6 +2203,38 @@ const pt_br = {
         }
       },
       account: {
+        oidc: {
+          title: 'Login único (OIDC)',
+          desc: 'Entre por um provedor OpenID Connect como Authentik ou Keycloak. O login com senha continua disponível.',
+          enabled: 'Ativado',
+          providerName: 'Nome do provedor no botão',
+          issuer: 'URL do emissor (issuer)',
+          clientId: 'ID do cliente',
+          clientSecret: 'Segredo do cliente',
+          clientSecretSet: 'Há um segredo definido. Deixe vazio para mantê-lo.',
+          clearSecret: 'Remover o segredo (cliente público)',
+          scopes: 'Scopes (openid é sempre incluído)',
+          redirectUrl: 'URL de redirecionamento',
+          redirectUrlDesc: 'Registre exatamente esta URL no provedor. Ela segue o endereço em que esta página foi aberta.',
+          httpWarning: 'Esta página usa http sem criptografia. Muitos provedores só aceitam URLs de redirecionamento http para localhost. Se o seu recusar esta, abra o dispositivo por HTTPS ou por um proxy reverso com TLS.',
+          mappingDesc: 'Uma conta do provedor entra como a conta local com o mesmo nome de usuário. A conta do dono do dispositivo entra apenas com a própria senha. O provedor faz a autenticação de dois fatores: o código local não é pedido.',
+          usernameClaim: 'Associar contas por',
+          emailDomain: 'Domínio de e-mail',
+          emailDomainDesc: 'A parte antes do @ é o nome de usuário. Endereços de outros domínios são recusados.',
+          autoCreate: 'Criar uma conta para um usuário do provedor que não tenha',
+          defaultRole: 'Papel das contas criadas',
+          groupsDesc: 'Quando algum grupo é definido, o papel vem do provedor a cada login, e usuários fora de todos os grupos são recusados.',
+          groupsClaim: 'Claim de grupos',
+          adminGroup: 'Grupo de administradores',
+          userGroup: 'Grupo de usuários',
+          viewerGroup: 'Grupo de espectadores',
+          hidePassword: 'Ocultar o formulário de senha na página de login',
+          hidePasswordDesc: 'Um link na página de login ainda o mostra: o login com senha sempre funciona.',
+          save: 'Salvar',
+          saved: 'Salvo',
+          saveFailed: 'Falha ao salvar as configurações',
+          loadFailed: 'Falha ao carregar as configurações'
+        },
         title: 'Conta',
         webAccount: 'Nome da Conta Web',
         role: 'Função',

@@ -28,6 +28,21 @@ const zh = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      oidc: {
+        signIn: '使用 {{name}} 登录',
+        usePassword: '使用密码登录',
+        errors: {
+          disabled: '单点登录已关闭。',
+          locked: '登录失败次数过多，请稍后再试',
+          provider: '无法连接身份提供商。',
+          denied: '身份提供商未让您登录。',
+          state: '登录已过期或在另一个浏览器中发起。请重试。',
+          token: '无法验证身份提供商的响应。',
+          account: '您的身份提供商账号在此设备上没有对应账号。',
+          role: '您的身份提供商账号不在此设备允许的任何组中。',
+          server: '无法完成登录。请重试。'
+        }
+      },
       share: {
         opening: '正在打开分享的屏幕...',
         failed: '此链接无效、已过期或已被撤销。',
@@ -2077,6 +2092,38 @@ const zh = {
         }
       },
       account: {
+        oidc: {
+          title: '单点登录 (OIDC)',
+          desc: '通过 Authentik 或 Keycloak 等 OpenID Connect 提供商登录。密码登录仍然可用。',
+          enabled: '启用',
+          providerName: '登录按钮上的提供商名称',
+          issuer: 'Issuer URL',
+          clientId: '客户端 ID',
+          clientSecret: '客户端密钥',
+          clientSecretSet: '已设置密钥。留空则保留。',
+          clearSecret: '删除密钥（公共客户端）',
+          scopes: 'Scopes（始终包含 openid）',
+          redirectUrl: '重定向 URL',
+          redirectUrlDesc: '在提供商处登记这个完整的 URL。它取决于打开本页面所用的地址。',
+          httpWarning: '本页面使用未加密的 http。许多提供商只允许 localhost 使用 http 重定向 URL。如果被拒绝，请通过 HTTPS 或带 TLS 的反向代理访问设备。',
+          mappingDesc: '提供商账号以同名的本地账号登录。设备所有者账号只能用其密码登录。双因素认证由提供商完成，不再询问本地验证码。',
+          usernameClaim: '账号匹配依据',
+          emailDomain: '邮箱域名',
+          emailDomainDesc: '@ 之前的部分即用户名。其他域名的地址会被拒绝。',
+          autoCreate: '为没有账号的提供商用户创建账号',
+          defaultRole: '新建账号的角色',
+          groupsDesc: '设置任一组后，每次登录时角色都由提供商决定，不在任何组中的用户会被拒绝。',
+          groupsClaim: '组 claim',
+          adminGroup: '管理员组',
+          userGroup: '用户组',
+          viewerGroup: '查看者组',
+          hidePassword: '在登录页面隐藏密码表单',
+          hidePasswordDesc: '登录页面上的链接仍可显示它：密码登录始终可用。',
+          save: '保存',
+          saved: '已保存',
+          saveFailed: '保存设置失败',
+          loadFailed: '加载设置失败'
+        },
         title: '帐号',
         webAccount: '网页帐号',
         role: '角色',

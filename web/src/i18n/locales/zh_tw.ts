@@ -28,6 +28,21 @@ const zh_tw = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      oidc: {
+        signIn: '使用 {{name}} 登入',
+        usePassword: '使用密碼登入',
+        errors: {
+          disabled: '單一登入已關閉。',
+          locked: '登入失敗次數過多，請稍後再試',
+          provider: '無法連線至身分提供者。',
+          denied: '身分提供者未讓您登入。',
+          state: '登入已逾期或在另一個瀏覽器中開始。請再試一次。',
+          token: '無法驗證身分提供者的回應。',
+          account: '您的身分提供者帳號在此裝置上沒有對應帳號。',
+          role: '您的身分提供者帳號不在此裝置允許的任何群組中。',
+          server: '無法完成登入。請再試一次。'
+        }
+      },
       share: {
         opening: '正在開啟分享的畫面...',
         failed: '此連結無效、已過期或已遭撤銷。',
@@ -2076,6 +2091,38 @@ const zh_tw = {
         }
       },
       account: {
+        oidc: {
+          title: '單一登入 (OIDC)',
+          desc: '透過 Authentik 或 Keycloak 等 OpenID Connect 提供者登入。密碼登入仍可使用。',
+          enabled: '啟用',
+          providerName: '登入按鈕上的提供者名稱',
+          issuer: 'Issuer URL',
+          clientId: '用戶端 ID',
+          clientSecret: '用戶端密鑰',
+          clientSecretSet: '已設定密鑰。留空即保留。',
+          clearSecret: '移除密鑰（公開用戶端）',
+          scopes: 'Scopes（一律包含 openid）',
+          redirectUrl: '重新導向 URL',
+          redirectUrlDesc: '請在提供者處登記這個完整的 URL。它取決於開啟本頁面的位址。',
+          httpWarning: '本頁面使用未加密的 http。許多提供者只允許 localhost 使用 http 重新導向 URL。若遭拒絕，請透過 HTTPS 或具 TLS 的反向代理開啟裝置。',
+          mappingDesc: '提供者帳號會以相同使用者名稱的本機帳號登入。裝置擁有者帳號只能用其密碼登入。雙重驗證由提供者負責，不再詢問本機驗證碼。',
+          usernameClaim: '帳號比對依據',
+          emailDomain: '電子郵件網域',
+          emailDomainDesc: '@ 之前的部分即為使用者名稱。其他網域的位址會被拒絕。',
+          autoCreate: '為沒有帳號的提供者使用者建立帳號',
+          defaultRole: '新建帳號的角色',
+          groupsDesc: '設定任一群組後，每次登入時角色都由提供者決定，不在任何群組中的使用者會被拒絕。',
+          groupsClaim: '群組 claim',
+          adminGroup: '管理員群組',
+          userGroup: '使用者群組',
+          viewerGroup: '檢視者群組',
+          hidePassword: '在登入頁面隱藏密碼表單',
+          hidePasswordDesc: '登入頁面上的連結仍可顯示它：密碼登入一律可用。',
+          save: '儲存',
+          saved: '已儲存',
+          saveFailed: '儲存設定失敗',
+          loadFailed: '載入設定失敗'
+        },
         title: '帳號',
         webAccount: '網頁帳號',
         role: '角色',

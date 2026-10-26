@@ -28,6 +28,21 @@ const nl = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      oidc: {
+        signIn: 'Aanmelden met {{name}}',
+        usePassword: 'Aanmelden met wachtwoord',
+        errors: {
+          disabled: 'Single sign-on staat uit.',
+          locked: 'Te veel mislukte aanmeldingen, probeer het later opnieuw',
+          provider: 'De identiteitsprovider is niet bereikbaar.',
+          denied: 'De identiteitsprovider heeft u niet aangemeld.',
+          state: 'De aanmelding is verlopen of in een andere browser gestart. Probeer het opnieuw.',
+          token: 'Het antwoord van de identiteitsprovider kon niet worden gecontroleerd.',
+          account: 'Uw account bij de identiteitsprovider heeft geen account op dit apparaat.',
+          role: 'Uw account bij de identiteitsprovider zit in geen van de groepen die op dit apparaat zijn toegestaan.',
+          server: 'De aanmelding kon niet worden voltooid. Probeer het opnieuw.'
+        }
+      },
       share: {
         opening: 'Gedeeld scherm openen...',
         failed: 'Deze link is ongeldig, verlopen of ingetrokken.',
@@ -2193,6 +2208,38 @@ const nl = {
         }
       },
       account: {
+        oidc: {
+          title: 'Single sign-on (OIDC)',
+          desc: 'Aanmelden via een OpenID Connect-provider zoals Authentik of Keycloak. Aanmelden met wachtwoord blijft mogelijk.',
+          enabled: 'Ingeschakeld',
+          providerName: 'Providernaam op de aanmeldknop',
+          issuer: 'Issuer-URL',
+          clientId: 'Client-ID',
+          clientSecret: 'Clientgeheim',
+          clientSecretSet: 'Er is een geheim ingesteld. Laat leeg om het te behouden.',
+          clearSecret: 'Geheim verwijderen (publieke client)',
+          scopes: 'Scopes (openid zit er altijd bij)',
+          redirectUrl: 'Doorstuur-URL',
+          redirectUrlDesc: 'Registreer precies deze URL bij de provider. Hij volgt het adres waarop deze pagina is geopend.',
+          httpWarning: 'Deze pagina gebruikt onversleuteld http. Veel providers accepteren http-doorstuur-URL\'s alleen voor localhost. Weigert de uwe deze, open het apparaat dan via HTTPS of een reverse proxy met TLS.',
+          mappingDesc: 'Een provideraccount meldt zich aan als het lokale account met dezelfde gebruikersnaam. Het account van de apparaateigenaar meldt zich alleen met zijn wachtwoord aan. De provider doet de tweestapsverificatie: de lokale code wordt niet gevraagd.',
+          usernameClaim: 'Accounts koppelen op',
+          emailDomain: 'E-maildomein',
+          emailDomainDesc: 'Het deel voor de @ is de gebruikersnaam. Adressen in andere domeinen worden geweigerd.',
+          autoCreate: 'Een account aanmaken voor een providergebruiker zonder account',
+          defaultRole: 'Rol van aangemaakte accounts',
+          groupsDesc: 'Als er een groep is ingesteld, komt de rol bij elke aanmelding van de provider, en gebruikers in geen van de groepen worden geweigerd.',
+          groupsClaim: 'Groepen-claim',
+          adminGroup: 'Beheerdersgroep',
+          userGroup: 'Gebruikersgroep',
+          viewerGroup: 'Kijkersgroep',
+          hidePassword: 'Het wachtwoordformulier op de aanmeldpagina verbergen',
+          hidePasswordDesc: 'Een link op de aanmeldpagina toont het nog: aanmelden met wachtwoord werkt altijd.',
+          save: 'Opslaan',
+          saved: 'Opgeslagen',
+          saveFailed: 'Instellingen opslaan mislukt',
+          loadFailed: 'Instellingen laden mislukt'
+        },
         title: 'Account',
         webAccount: 'Web Account Naam',
         role: 'Rol',

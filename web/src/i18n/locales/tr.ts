@@ -28,6 +28,21 @@ const tr = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      oidc: {
+        signIn: '{{name}} ile oturum aç',
+        usePassword: 'Parola ile oturum aç',
+        errors: {
+          disabled: 'Çoklu oturum açma kapalı.',
+          locked: 'Çok fazla başarısız giriş, lütfen daha sonra tekrar deneyin',
+          provider: 'Kimlik sağlayıcısına ulaşılamadı.',
+          denied: 'Kimlik sağlayıcısı oturumunuzu açmadı.',
+          state: 'Oturum açma süresi doldu veya başka bir tarayıcıda başlatıldı. Tekrar deneyin.',
+          token: 'Kimlik sağlayıcısının yanıtı doğrulanamadı.',
+          account: 'Kimlik sağlayıcısındaki hesabınızın bu cihazda hesabı yok.',
+          role: 'Kimlik sağlayıcısındaki hesabınız bu cihazda izin verilen grupların hiçbirinde değil.',
+          server: 'Oturum açma tamamlanamadı. Tekrar deneyin.'
+        }
+      },
       share: {
         opening: 'Paylaşılan ekran açılıyor...',
         failed: 'Bu bağlantı geçersiz, süresi dolmuş veya iptal edilmiş.',
@@ -2173,6 +2188,38 @@ const tr = {
         }
       },
       account: {
+        oidc: {
+          title: 'Çoklu oturum açma (OIDC)',
+          desc: 'Authentik veya Keycloak gibi bir OpenID Connect sağlayıcısıyla oturum açın. Parolayla oturum açma kullanılabilir kalır.',
+          enabled: 'Etkin',
+          providerName: 'Giriş düğmesindeki sağlayıcı adı',
+          issuer: 'Yayıncı (issuer) URL',
+          clientId: 'İstemci kimliği',
+          clientSecret: 'İstemci gizli anahtarı',
+          clientSecretSet: 'Bir gizli anahtar ayarlı. Korumak için boş bırakın.',
+          clearSecret: 'Gizli anahtarı kaldır (açık istemci)',
+          scopes: 'Scopes (openid her zaman eklenir)',
+          redirectUrl: 'Yönlendirme URL',
+          redirectUrlDesc: 'Sağlayıcıda tam olarak bu URL\'yi kaydedin. Bu sayfanın açıldığı adresi izler.',
+          httpWarning: 'Bu sayfa şifresiz http kullanıyor. Birçok sağlayıcı http yönlendirme URL\'lerini yalnızca localhost için kabul eder. Sizinki bunu reddederse cihazı HTTPS veya TLS\'li bir ters vekil üzerinden açın.',
+          mappingDesc: 'Bir sağlayıcı hesabı, aynı kullanıcı adına sahip yerel hesap olarak oturum açar. Cihaz sahibi hesabı yalnızca kendi parolasıyla girer. İki aşamalı doğrulamayı sağlayıcı yapar: yerel kod sorulmaz.',
+          usernameClaim: 'Hesapları eşleştirme ölçütü',
+          emailDomain: 'E-posta alan adı',
+          emailDomainDesc: '@ öncesindeki kısım kullanıcı adıdır. Başka alan adlarındaki adresler reddedilir.',
+          autoCreate: 'Hesabı olmayan sağlayıcı kullanıcısı için hesap oluştur',
+          defaultRole: 'Oluşturulan hesapların rolü',
+          groupsDesc: 'Herhangi bir grup ayarlıysa rol her girişte sağlayıcıdan gelir ve hiçbir grupta olmayan kullanıcılar reddedilir.',
+          groupsClaim: 'Grup claim',
+          adminGroup: 'Yönetici grubu',
+          userGroup: 'Kullanıcı grubu',
+          viewerGroup: 'İzleyici grubu',
+          hidePassword: 'Giriş sayfasında parola formunu gizle',
+          hidePasswordDesc: 'Giriş sayfasındaki bir bağlantı onu yine gösterir: parolayla giriş her zaman çalışır.',
+          save: 'Kaydet',
+          saved: 'Kaydedildi',
+          saveFailed: 'Ayarlar kaydedilemedi',
+          loadFailed: 'Ayarlar yüklenemedi'
+        },
         title: 'Hesap',
         webAccount: 'Web Hesap Adı',
         role: 'Rol',

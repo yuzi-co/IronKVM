@@ -28,6 +28,21 @@ const cz = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      oidc: {
+        signIn: 'Přihlásit se přes {{name}}',
+        usePassword: 'Přihlásit se heslem',
+        errors: {
+          disabled: 'Jednotné přihlášení je vypnuté.',
+          locked: 'Příliš mnoho neúspěšných přihlášení, zkuste to později',
+          provider: 'Poskytovatel identity není dostupný.',
+          denied: 'Poskytovatel identity vás nepřihlásil.',
+          state: 'Přihlášení vypršelo nebo bylo zahájeno v jiném prohlížeči. Zkuste to znovu.',
+          token: 'Odpověď poskytovatele identity nelze ověřit.',
+          account: 'K vašemu účtu u poskytovatele identity neexistuje účet na tomto zařízení.',
+          role: 'Váš účet u poskytovatele identity není v žádné ze skupin povolených na tomto zařízení.',
+          server: 'Přihlášení nelze dokončit. Zkuste to znovu.'
+        }
+      },
       share: {
         opening: 'Otevírá se sdílená obrazovka...',
         failed: 'Tento odkaz je neplatný, vypršel nebo byl zrušen.',
@@ -2163,6 +2178,38 @@ const cz = {
         }
       },
       account: {
+        oidc: {
+          title: 'Jednotné přihlášení (OIDC)',
+          desc: 'Přihlášení přes poskytovatele OpenID Connect, například Authentik nebo Keycloak. Přihlášení heslem zůstává dostupné.',
+          enabled: 'Zapnuto',
+          providerName: 'Název poskytovatele na tlačítku',
+          issuer: 'URL vydavatele (issuer)',
+          clientId: 'ID klienta',
+          clientSecret: 'Tajný klíč klienta',
+          clientSecretSet: 'Tajný klíč je nastaven. Nechte prázdné pro zachování.',
+          clearSecret: 'Odebrat tajný klíč (veřejný klient)',
+          scopes: 'Scopes (openid je vždy zahrnut)',
+          redirectUrl: 'Adresa přesměrování',
+          redirectUrlDesc: 'Zaregistrujte u poskytovatele přesně tuto URL. Odpovídá adrese, na které byla tato stránka otevřena.',
+          httpWarning: 'Tato stránka používá nešifrované http. Mnoho poskytovatelů povoluje http adresy přesměrování jen pro localhost. Pokud tuto odmítne, otevřete zařízení přes HTTPS nebo přes reverzní proxy s TLS.',
+          mappingDesc: 'Účet poskytovatele se přihlásí jako místní účet se stejným uživatelským jménem. Účet vlastníka zařízení se přihlašuje pouze heslem. Dvoufázové ověření zajišťuje poskytovatel: místní kód se nevyžaduje.',
+          usernameClaim: 'Párovat účty podle',
+          emailDomain: 'E-mailová doména',
+          emailDomainDesc: 'Část před @ je uživatelské jméno. Adresy z jiných domén jsou odmítnuty.',
+          autoCreate: 'Vytvořit účet uživateli poskytovatele, který žádný nemá',
+          defaultRole: 'Role vytvořených účtů',
+          groupsDesc: 'Je-li nastavena některá skupina, roli při každém přihlášení určuje poskytovatel a uživatelé mimo všechny skupiny jsou odmítnuti.',
+          groupsClaim: 'Claim skupin',
+          adminGroup: 'Skupina správců',
+          userGroup: 'Skupina uživatelů',
+          viewerGroup: 'Skupina diváků',
+          hidePassword: 'Skrýt formulář hesla na přihlašovací stránce',
+          hidePasswordDesc: 'Odkaz na přihlašovací stránce jej stále zobrazí: přihlášení heslem funguje vždy.',
+          save: 'Uložit',
+          saved: 'Uloženo',
+          saveFailed: 'Nastavení se nepodařilo uložit',
+          loadFailed: 'Nastavení se nepodařilo načíst'
+        },
         title: 'Účet',
         webAccount: 'Název webového účtu',
         role: 'Role',

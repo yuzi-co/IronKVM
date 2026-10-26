@@ -28,6 +28,21 @@ const se = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      oidc: {
+        signIn: 'Logga in med {{name}}',
+        usePassword: 'Logga in med lösenord',
+        errors: {
+          disabled: 'Enkel inloggning är avstängd.',
+          locked: 'För många misslyckade inloggningar, försök igen senare',
+          provider: 'Identitetsleverantören kunde inte nås.',
+          denied: 'Identitetsleverantören loggade inte in dig.',
+          state: 'Inloggningen gick ut eller startades i en annan webbläsare. Försök igen.',
+          token: 'Svaret från identitetsleverantören kunde inte verifieras.',
+          account: 'Ditt konto hos identitetsleverantören har inget konto på den här enheten.',
+          role: 'Ditt konto hos identitetsleverantören finns inte i någon av grupperna som är tillåtna på den här enheten.',
+          server: 'Inloggningen kunde inte slutföras. Försök igen.'
+        }
+      },
       share: {
         opening: 'Öppnar den delade skärmen...',
         failed: 'Länken är ogiltig, har gått ut eller har återkallats.',
@@ -2175,6 +2190,38 @@ const se = {
         }
       },
       account: {
+        oidc: {
+          title: 'Enkel inloggning (OIDC)',
+          desc: 'Logga in via en OpenID Connect-leverantör som Authentik eller Keycloak. Inloggning med lösenord finns kvar.',
+          enabled: 'Aktiverad',
+          providerName: 'Leverantörens namn på inloggningsknappen',
+          issuer: 'Issuer-URL',
+          clientId: 'Klient-ID',
+          clientSecret: 'Klienthemlighet',
+          clientSecretSet: 'En hemlighet är satt. Lämna tomt för att behålla den.',
+          clearSecret: 'Ta bort hemligheten (offentlig klient)',
+          scopes: 'Scopes (openid ingår alltid)',
+          redirectUrl: 'Omdirigerings-URL',
+          redirectUrlDesc: 'Registrera exakt den här URL:en hos leverantören. Den följer adressen som sidan öppnades på.',
+          httpWarning: 'Den här sidan använder okrypterad http. Många leverantörer godtar http-omdirigerings-URL:er bara för localhost. Om din nekar den här, öppna enheten via HTTPS eller en omvänd proxy med TLS.',
+          mappingDesc: 'Ett leverantörskonto loggar in som det lokala kontot med samma användarnamn. Enhetsägarens konto loggar bara in med sitt lösenord. Leverantören sköter tvåfaktorsautentisering: den lokala koden efterfrågas inte.',
+          usernameClaim: 'Matcha konton efter',
+          emailDomain: 'E-postdomän',
+          emailDomainDesc: 'Delen före @ är användarnamnet. Adresser i andra domäner nekas.',
+          autoCreate: 'Skapa ett konto för en leverantörsanvändare som saknar ett',
+          defaultRole: 'Roll för skapade konton',
+          groupsDesc: 'När en grupp är satt kommer rollen från leverantören vid varje inloggning, och användare utanför alla grupper nekas.',
+          groupsClaim: 'Grupp-claim',
+          adminGroup: 'Administratörsgrupp',
+          userGroup: 'Användargrupp',
+          viewerGroup: 'Tittargrupp',
+          hidePassword: 'Dölj lösenordsformuläret på inloggningssidan',
+          hidePasswordDesc: 'En länk på inloggningssidan visar det ändå: inloggning med lösenord fungerar alltid.',
+          save: 'Spara',
+          saved: 'Sparat',
+          saveFailed: 'Det gick inte att spara inställningarna',
+          loadFailed: 'Det gick inte att läsa in inställningarna'
+        },
         title: 'Konto',
         webAccount: 'Webbkonto-namn',
         role: 'Roll',

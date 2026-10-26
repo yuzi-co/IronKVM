@@ -28,6 +28,21 @@ const vi = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      oidc: {
+        signIn: 'Đăng nhập bằng {{name}}',
+        usePassword: 'Đăng nhập bằng mật khẩu',
+        errors: {
+          disabled: 'Đăng nhập một lần đang tắt.',
+          locked: 'Quá nhiều lần đăng nhập thất bại, vui lòng thử lại sau',
+          provider: 'Không thể kết nối tới nhà cung cấp danh tính.',
+          denied: 'Nhà cung cấp danh tính không cho bạn đăng nhập.',
+          state: 'Phiên đăng nhập đã hết hạn hoặc được bắt đầu ở trình duyệt khác. Hãy thử lại.',
+          token: 'Không thể xác minh phản hồi của nhà cung cấp danh tính.',
+          account: 'Tài khoản của bạn ở nhà cung cấp danh tính không có tài khoản trên thiết bị này.',
+          role: 'Tài khoản của bạn ở nhà cung cấp danh tính không thuộc nhóm nào được phép trên thiết bị này.',
+          server: 'Không thể hoàn tất đăng nhập. Hãy thử lại.'
+        }
+      },
       share: {
         opening: 'Đang mở màn hình được chia sẻ...',
         failed: 'Liên kết này không hợp lệ, đã hết hạn hoặc đã bị thu hồi.',
@@ -2166,6 +2181,38 @@ const vi = {
         }
       },
       account: {
+        oidc: {
+          title: 'Đăng nhập một lần (OIDC)',
+          desc: 'Đăng nhập qua nhà cung cấp OpenID Connect như Authentik hoặc Keycloak. Đăng nhập bằng mật khẩu vẫn dùng được.',
+          enabled: 'Bật',
+          providerName: 'Tên nhà cung cấp trên nút đăng nhập',
+          issuer: 'URL nhà phát hành (issuer)',
+          clientId: 'Client ID',
+          clientSecret: 'Client secret',
+          clientSecretSet: 'Đã đặt secret. Để trống để giữ nguyên.',
+          clearSecret: 'Xóa secret (client công khai)',
+          scopes: 'Scopes (luôn có openid)',
+          redirectUrl: 'URL chuyển hướng',
+          redirectUrlDesc: 'Đăng ký chính xác URL này ở nhà cung cấp. URL theo địa chỉ dùng để mở trang này.',
+          httpWarning: 'Trang này dùng http không mã hóa. Nhiều nhà cung cấp chỉ chấp nhận URL chuyển hướng http cho localhost. Nếu bị từ chối, hãy mở thiết bị qua HTTPS hoặc reverse proxy có TLS.',
+          mappingDesc: 'Tài khoản nhà cung cấp đăng nhập như tài khoản cục bộ có cùng tên người dùng. Tài khoản chủ thiết bị chỉ đăng nhập bằng mật khẩu của nó. Nhà cung cấp lo xác thực hai yếu tố: mã cục bộ không được hỏi.',
+          usernameClaim: 'Ghép tài khoản theo',
+          emailDomain: 'Tên miền email',
+          emailDomainDesc: 'Phần trước @ là tên người dùng. Địa chỉ thuộc tên miền khác bị từ chối.',
+          autoCreate: 'Tạo tài khoản cho người dùng nhà cung cấp chưa có tài khoản',
+          defaultRole: 'Vai trò của tài khoản được tạo',
+          groupsDesc: 'Khi đặt bất kỳ nhóm nào, vai trò lấy từ nhà cung cấp ở mỗi lần đăng nhập, và người dùng không thuộc nhóm nào bị từ chối.',
+          groupsClaim: 'Claim nhóm',
+          adminGroup: 'Nhóm quản trị',
+          userGroup: 'Nhóm người dùng',
+          viewerGroup: 'Nhóm người xem',
+          hidePassword: 'Ẩn biểu mẫu mật khẩu trên trang đăng nhập',
+          hidePasswordDesc: 'Một liên kết trên trang đăng nhập vẫn hiện nó: đăng nhập bằng mật khẩu luôn hoạt động.',
+          save: 'Lưu',
+          saved: 'Đã lưu',
+          saveFailed: 'Không lưu được cài đặt',
+          loadFailed: 'Không tải được cài đặt'
+        },
         title: 'Tài khoản',
         webAccount: 'Tên tài khoản web',
         role: 'Vai trò',
