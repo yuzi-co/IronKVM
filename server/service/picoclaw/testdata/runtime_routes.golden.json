@@ -1,0 +1,507 @@
+[
+  {
+    "name": "status_initial",
+    "http_status": 200,
+    "body": {
+      "code": 0,
+      "data": {
+        "agent_profile": "kvm",
+        "capabilities": {
+          "chat": false,
+          "device_write": false,
+          "read_only_tools": false
+        },
+        "checked_at": "\u003ctime\u003e",
+        "control": {
+          "can_control": false,
+          "changed_at": "\u003ctime\u003e",
+          "mode": "off",
+          "transitioning": false
+        },
+        "control_mode": "off",
+        "install_path": "/usr/bin/picoclaw",
+        "installed": false,
+        "installing": false,
+        "model_configured": false,
+        "ready": false,
+        "runtime_intent": {
+          "desired_running": false
+        },
+        "status": "not_installed",
+        "version": "v0.3.1-ironkvm.1"
+      },
+      "msg": "success"
+    }
+  },
+  {
+    "name": "start_without_control",
+    "http_status": 200,
+    "body": {
+      "code": "CONTROL_REQUIRED",
+      "data": {
+        "status": {
+          "capabilities": {
+            "chat": false,
+            "device_write": false,
+            "read_only_tools": false
+          },
+          "checked_at": "\u003ctime\u003e",
+          "control": {
+            "can_control": false,
+            "changed_at": "\u003ctime\u003e",
+            "mode": "off",
+            "transitioning": false
+          },
+          "control_mode": "off",
+          "install_path": "/usr/bin/picoclaw",
+          "installed": false,
+          "installing": false,
+          "model_configured": false,
+          "ready": false,
+          "runtime_intent": {
+            "desired_running": false
+          },
+          "status": "not_installed",
+          "version": "v0.3.1-ironkvm.1"
+        }
+      },
+      "message": "PicoClaw device control is not enabled"
+    }
+  },
+  {
+    "name": "status_with_control",
+    "http_status": 200,
+    "body": {
+      "code": 0,
+      "data": {
+        "agent_profile": "kvm",
+        "capabilities": {
+          "chat": false,
+          "device_write": true,
+          "read_only_tools": false
+        },
+        "checked_at": "\u003ctime\u003e",
+        "control": {
+          "can_control": true,
+          "changed_at": "\u003ctime\u003e",
+          "mode": "picoclaw",
+          "transitioning": false
+        },
+        "control_mode": "picoclaw",
+        "install_path": "/usr/bin/picoclaw",
+        "installed": false,
+        "installing": false,
+        "model_configured": false,
+        "ready": false,
+        "runtime_intent": {
+          "desired_running": false
+        },
+        "status": "not_installed",
+        "version": "v0.3.1-ironkvm.1"
+      },
+      "msg": "success"
+    }
+  },
+  {
+    "name": "start_not_installed",
+    "http_status": 200,
+    "body": {
+      "code": "RUNTIME_START_FAILED",
+      "data": {
+        "command": "",
+        "output": "",
+        "status": {
+          "capabilities": {
+            "chat": false,
+            "device_write": true,
+            "read_only_tools": false
+          },
+          "checked_at": "\u003ctime\u003e",
+          "control": {
+            "can_control": true,
+            "changed_at": "\u003ctime\u003e",
+            "mode": "picoclaw",
+            "transitioning": false
+          },
+          "control_mode": "picoclaw",
+          "install_path": "/usr/bin/picoclaw",
+          "installed": false,
+          "installing": false,
+          "last_error": "picoclaw is not installed",
+          "model_configured": false,
+          "ready": false,
+          "runtime_intent": {
+            "desired_running": false,
+            "last_error": "picoclaw is not installed",
+            "updated_at": "\u003ctime\u003e",
+            "updated_by": "system"
+          },
+          "status": "not_installed",
+          "version": "v0.3.1-ironkvm.1"
+        }
+      },
+      "message": "picoclaw is not installed"
+    }
+  },
+  {
+    "name": "status_after_failed_start",
+    "http_status": 200,
+    "body": {
+      "code": 0,
+      "data": {
+        "agent_profile": "kvm",
+        "capabilities": {
+          "chat": false,
+          "device_write": true,
+          "read_only_tools": false
+        },
+        "checked_at": "\u003ctime\u003e",
+        "control": {
+          "can_control": true,
+          "changed_at": "\u003ctime\u003e",
+          "mode": "picoclaw",
+          "transitioning": false
+        },
+        "control_mode": "picoclaw",
+        "install_path": "/usr/bin/picoclaw",
+        "installed": false,
+        "installing": false,
+        "last_error": "picoclaw is not installed",
+        "model_configured": false,
+        "ready": false,
+        "runtime_intent": {
+          "desired_running": false,
+          "last_error": "picoclaw is not installed",
+          "updated_at": "\u003ctime\u003e",
+          "updated_by": "system"
+        },
+        "status": "not_installed",
+        "version": "v0.3.1-ironkvm.1"
+      },
+      "msg": "success"
+    }
+  },
+  {
+    "name": "model_config_bad_payload",
+    "http_status": 200,
+    "body": {
+      "code": "INVALID_ACTION",
+      "message": "invalid model config payload"
+    }
+  },
+  {
+    "name": "model_config_bad_model",
+    "http_status": 200,
+    "body": {
+      "code": "RUNTIME_UNAVAILABLE",
+      "message": "model identifier must use provider/model format"
+    }
+  },
+  {
+    "name": "model_config_ok",
+    "http_status": 200,
+    "body": {
+      "code": "RUNTIME_UNAVAILABLE",
+      "message": "failed to initialize PicoClaw config before saving model config: RUNTIME_UNAVAILABLE: picoclaw start script not found: /etc/init.d/S96picoclaw or /kvmapp/system/init.d/S96picoclaw"
+    }
+  },
+  {
+    "name": "status_after_model_config",
+    "http_status": 200,
+    "body": {
+      "code": 0,
+      "data": {
+        "agent_profile": "kvm",
+        "capabilities": {
+          "chat": false,
+          "device_write": true,
+          "read_only_tools": false
+        },
+        "checked_at": "\u003ctime\u003e",
+        "control": {
+          "can_control": true,
+          "changed_at": "\u003ctime\u003e",
+          "mode": "picoclaw",
+          "transitioning": false
+        },
+        "control_mode": "picoclaw",
+        "install_path": "/usr/bin/picoclaw",
+        "installed": false,
+        "installing": false,
+        "last_error": "picoclaw is not installed",
+        "model_configured": false,
+        "ready": false,
+        "runtime_intent": {
+          "desired_running": false,
+          "last_error": "picoclaw is not installed",
+          "updated_at": "\u003ctime\u003e",
+          "updated_by": "system"
+        },
+        "status": "not_installed",
+        "version": "v0.3.1-ironkvm.1"
+      },
+      "msg": "success"
+    }
+  },
+  {
+    "name": "agent_profile_bad",
+    "http_status": 200,
+    "body": {
+      "code": "INVALID_ACTION",
+      "message": "invalid agent profile"
+    }
+  },
+  {
+    "name": "agent_profile_kvm",
+    "http_status": 200,
+    "body": {
+      "code": "RUNTIME_UNAVAILABLE",
+      "message": "agent profile source not found: AGENT_KVM.md"
+    }
+  },
+  {
+    "name": "release_session_no_header",
+    "http_status": 200,
+    "body": {
+      "code": "SESSION_ID_MISSING",
+      "message": "missing X-PicoClaw-Session-ID"
+    }
+  },
+  {
+    "name": "release_session",
+    "http_status": 200,
+    "body": {
+      "code": 0,
+      "data": {
+        "current_session": "",
+        "released": true
+      },
+      "msg": "success"
+    }
+  },
+  {
+    "name": "stop",
+    "http_status": 200,
+    "body": {
+      "code": 0,
+      "data": {
+        "command": "",
+        "started": false,
+        "status": {
+          "capabilities": {
+            "chat": false,
+            "device_write": false,
+            "read_only_tools": false
+          },
+          "checked_at": "\u003ctime\u003e",
+          "control": {
+            "can_control": false,
+            "changed_at": "\u003ctime\u003e",
+            "mode": "off",
+            "transitioning": false
+          },
+          "control_mode": "off",
+          "install_path": "/usr/bin/picoclaw",
+          "installed": false,
+          "installing": false,
+          "model_configured": false,
+          "ready": false,
+          "runtime_intent": {
+            "desired_running": false,
+            "last_stopped_at": "\u003ctime\u003e",
+            "updated_at": "\u003ctime\u003e",
+            "updated_by": "web"
+          },
+          "status": "stopped",
+          "version": "v0.3.1-ironkvm.1"
+        }
+      },
+      "msg": "success"
+    }
+  },
+  {
+    "name": "status_after_stop",
+    "http_status": 200,
+    "body": {
+      "code": 0,
+      "data": {
+        "agent_profile": "kvm",
+        "capabilities": {
+          "chat": false,
+          "device_write": false,
+          "read_only_tools": false
+        },
+        "checked_at": "\u003ctime\u003e",
+        "control": {
+          "can_control": false,
+          "changed_at": "\u003ctime\u003e",
+          "mode": "off",
+          "transitioning": false
+        },
+        "control_mode": "off",
+        "install_path": "/usr/bin/picoclaw",
+        "installed": false,
+        "installing": false,
+        "model_configured": false,
+        "ready": false,
+        "runtime_intent": {
+          "desired_running": false,
+          "last_stopped_at": "\u003ctime\u003e",
+          "updated_at": "\u003ctime\u003e",
+          "updated_by": "web"
+        },
+        "status": "stopped",
+        "version": "v0.3.1-ironkvm.1"
+      },
+      "msg": "success"
+    }
+  },
+  {
+    "name": "start_after_stop",
+    "http_status": 200,
+    "body": {
+      "code": "CONTROL_REQUIRED",
+      "data": {
+        "status": {
+          "capabilities": {
+            "chat": false,
+            "device_write": false,
+            "read_only_tools": false
+          },
+          "checked_at": "\u003ctime\u003e",
+          "control": {
+            "can_control": false,
+            "changed_at": "\u003ctime\u003e",
+            "mode": "off",
+            "transitioning": false
+          },
+          "control_mode": "off",
+          "install_path": "/usr/bin/picoclaw",
+          "installed": false,
+          "installing": false,
+          "model_configured": false,
+          "ready": false,
+          "runtime_intent": {
+            "desired_running": false,
+            "last_stopped_at": "\u003ctime\u003e",
+            "updated_at": "\u003ctime\u003e",
+            "updated_by": "web"
+          },
+          "status": "stopped",
+          "version": "v0.3.1-ironkvm.1"
+        }
+      },
+      "message": "PicoClaw device control is not enabled"
+    }
+  },
+  {
+    "name": "uninstall",
+    "http_status": 200,
+    "body": {
+      "code": 0,
+      "data": {
+        "binary": "/usr/bin/picoclaw",
+        "installed": false,
+        "output": "picoclaw uninstalled successfully",
+        "status": {
+          "capabilities": {
+            "chat": false,
+            "device_write": false,
+            "read_only_tools": false
+          },
+          "checked_at": "\u003ctime\u003e",
+          "control": {
+            "can_control": false,
+            "changed_at": "\u003ctime\u003e",
+            "mode": "off",
+            "transitioning": false
+          },
+          "control_mode": "off",
+          "install_path": "/usr/bin/picoclaw",
+          "installed": false,
+          "installing": false,
+          "model_configured": false,
+          "ready": false,
+          "runtime_intent": {
+            "desired_running": false,
+            "last_stopped_at": "\u003ctime\u003e",
+            "updated_at": "\u003ctime\u003e",
+            "updated_by": "web"
+          },
+          "status": "not_installed",
+          "version": "v0.3.1-ironkvm.1"
+        }
+      },
+      "msg": "success"
+    }
+  },
+  {
+    "name": "runtime_status_after_uninstall",
+    "http_status": 200,
+    "body": {
+      "capabilities": {
+        "chat": false,
+        "device_write": false,
+        "read_only_tools": false
+      },
+      "checked_at": "\u003ctime\u003e",
+      "control": {
+        "can_control": false,
+        "changed_at": "\u003ctime\u003e",
+        "mode": "off",
+        "transitioning": false
+      },
+      "control_mode": "off",
+      "install_path": "/usr/bin/picoclaw",
+      "installed": false,
+      "installing": false,
+      "model_configured": false,
+      "ready": false,
+      "runtime_intent": {
+        "desired_running": false,
+        "last_stopped_at": "\u003ctime\u003e",
+        "updated_at": "\u003ctime\u003e",
+        "updated_by": "web"
+      },
+      "status": "not_installed",
+      "version": "v0.3.1-ironkvm.1"
+    }
+  },
+  {
+    "name": "status_after_mcp_stop",
+    "http_status": 200,
+    "body": {
+      "code": 0,
+      "data": {
+        "agent_profile": "kvm",
+        "capabilities": {
+          "chat": false,
+          "device_write": false,
+          "read_only_tools": false
+        },
+        "checked_at": "\u003ctime\u003e",
+        "control": {
+          "can_control": false,
+          "changed_at": "\u003ctime\u003e",
+          "mode": "off",
+          "transitioning": false
+        },
+        "control_mode": "off",
+        "install_path": "/usr/bin/picoclaw",
+        "installed": false,
+        "installing": false,
+        "model_configured": false,
+        "ready": false,
+        "runtime_intent": {
+          "desired_running": false,
+          "last_stopped_at": "\u003ctime\u003e",
+          "updated_at": "\u003ctime\u003e",
+          "updated_by": "mcp_preempt"
+        },
+        "status": "not_installed",
+        "version": "v0.3.1-ironkvm.1"
+      },
+      "msg": "success"
+    }
+  }
+]
