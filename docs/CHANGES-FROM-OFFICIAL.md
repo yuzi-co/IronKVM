@@ -61,6 +61,12 @@ This is the largest group, and the reason the fork exists.
   changed its ssh fingerprint. They now live on the data partition, and a
   password change writes itself back with no command to remember.
 - **The server restarts when it dies.** Nothing supervised it before.
+- **DHCP starts over when the wired gateway stops answering.** After two minutes
+  of silence from the gateway, and only if a DHCP server answers, the board
+  gives up its lease and asks again, so a router restarted with a new address
+  plan no longer strands it until the lease runs out. With no DHCP server it
+  keeps the address it has, and a static address is left alone. Adapted from
+  upstream PR 964.
 - **A boot-script update can undo itself.** A package update that installs boot
   scripts keeps what it replaced. If the board cannot be reached afterwards, the
   watchdog puts them back and reboots, before it considers recovery: a board
