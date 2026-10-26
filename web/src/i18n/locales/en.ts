@@ -2084,6 +2084,24 @@ const en = {
           user: 'User',
           viewer: 'Viewer'
         },
+        sessions: {
+          title: 'Sessions',
+          desc: 'Where this account is signed in. Revoking a session signs that device out and closes its open connections.',
+          allTitle: 'All sessions',
+          allDesc: "Every account's sign-ins on this device.",
+          current: 'This session',
+          unknownClient: 'Unknown client',
+          lastUsed: 'Last active {{time}}',
+          created: 'Signed in {{time}}',
+          revoke: 'Revoke',
+          revokeConfirm: 'Revoke this session? That device is signed out and its open connections close.',
+          revokeOthers: 'Sign out other sessions',
+          revokeOthersConfirm: 'Sign out every other session of this account?',
+          revoked: 'Session revoked',
+          revokeFailed: 'Failed to revoke the session',
+          loadFailed: 'Failed to load sessions',
+          empty: 'No sessions'
+        },
         shareLinks: {
           title: 'Share links',
           desc: 'A share link shows the screen to anyone who opens it. It gives no keyboard, mouse, power, media or settings, and stops working when it expires or is revoked.',

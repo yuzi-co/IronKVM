@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router';
 import { useServerFeature } from '@/hooks/useServerFeature.ts';
 
 import { Logout } from './logout.tsx';
+import { Sessions } from './sessions.tsx';
 import { ShareLinks } from './share-links.tsx';
 import { TwoFactor } from './two-factor.tsx';
 import { Users } from './users.tsx';
@@ -15,6 +16,9 @@ export const Account = () => {
   const navigate = useNavigate();
   const { account } = useAuth();
   const hasShareLinks = useServerFeature('share-links') === true;
+  // A share session has no account, so no sessions of its own to list.
+  const hasSessions =
+    useServerFeature('login-sessions') === true && !account.username.startsWith('share:');
 
   function changePassword() {
     navigate('/auth/password');
@@ -50,9 +54,23 @@ export const Account = () => {
 
       <Divider className="opacity-50" />
 
+      {hasSessions && (
+        <>
+          <Sessions scope="own" />
+          <Divider className="opacity-50" />
+        </>
+      )}
+
       {account.role === 'admin' && (
         <>
           <Users />
+          <Divider className="opacity-50" />
+        </>
+      )}
+
+      {account.role === 'admin' && hasSessions && (
+        <>
+          <Sessions scope="all" />
           <Divider className="opacity-50" />
         </>
       )}
