@@ -39,13 +39,18 @@ func mcpRouter(r *gin.Engine, control *controlmode.Manager, picoclawService *pic
 	r.Any("/api/mcp", mcpservice.APIKeyMiddleware(control), gin.WrapH(handler))
 }
 
-// mcpDevices gives MCP the power button and the virtual media. The tools
-// exist only behind the power and media tiers, which are off by default, and
-// the audit log records each call, so the press goes through vm.PressButton
-// directly rather than the audited wrapper the other callers use.
+// mcpDevices gives MCP the power button, the power LED and the virtual media,
+// through the calls the web UI, IPMI and the drive API use. Pressing and
+// changing a drive are behind the power and media tiers, which are off by
+// default; reading the LED and listing the drives are in the observe tier.
+// The MCP audit log records each call, so the press goes through
+// vm.PressButton directly rather than the audited wrapper the other callers
+// use.
 func mcpDevices() mcpservice.Devices {
 	return mcpservice.Devices{
-		PressButton: vm.PressButton,
+		PressButton:       vm.PressButton,
+		PowerLEDConnected: vm.PowerLEDConnected,
+		PowerLED:          vm.PowerLED,
 		ListMedia: func() ([]mcpservice.MediaDrive, []string, error) {
 			drives, err := storage.Drives()
 			if err != nil {
