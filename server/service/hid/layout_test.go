@@ -85,9 +85,15 @@ func TestLayoutKeysTypeOneCharacterEach(t *testing.T) {
 func TestLayoutTypesPrintableASCII(t *testing.T) {
 	// What each layout has no key for. Everything else from space to tilde
 	// must be typeable, on its own key or as a dead key and Space.
+	// The generated non-Latin layouts are what xkeyboard-config makes them:
+	// Armenian and Thai put their own letters on the digit row.
 	missing := map[string]string{
 		"it": "`~",
 		"ru": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@#$^&[]{}'`~<>|",
+		"am": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!\"#&'*+-./:;<=>@[\\]^_`{|}~",
+		"ar": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ;?",
+		"mk": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ\"#'@[\\]{|}",
+		"th": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$&'*:;=@[\\]^`{|}~",
 	}
 	for id, layout := range layouts {
 		for r := rune(' '); r <= '~'; r++ {
@@ -99,6 +105,18 @@ func TestLayoutTypesPrintableASCII(t *testing.T) {
 		}
 	}
 }
+
+// layouts holds every layout by ID, built, for the tests that walk them all.
+var layouts = func() map[string]*Layout {
+	m := make(map[string]*Layout)
+	for id, source := range layoutSources {
+		m[id] = source.get(id)
+	}
+	return m
+}()
+
+// nonLatinLayouts lists the layouts that type no Latin letters.
+var nonLatinLayouts = map[string]bool{"ru": true, "am": true, "ar": true, "mk": true, "th": true}
 
 func containsRune(s string, r rune) bool {
 	for _, c := range s {
@@ -113,10 +131,15 @@ func TestLayoutLetters(t *testing.T) {
 	// Every Latin layout types the 26 letters in both cases, uppercase being
 	// the lowercase key with Shift.
 	for id, layout := range layouts {
-		if id == "ru" {
+		if nonLatinLayouts[id] {
 			continue
 		}
 		for r := 'a'; r <= 'z'; r++ {
+			if id == "tr" && r == 'i' {
+				// Turkish: Shift and the i key type İ, and I is
+				// Shift and the ı key.
+				continue
+			}
 			lower, ok := layout.direct[r]
 			if !ok || lower.Modifiers != 0 {
 				t.Errorf("%s: %q = %+v, %v", id, r, lower, ok)

@@ -33,7 +33,10 @@ const canReadClipboard = window.isSecureContext === true && !!navigator.clipboar
 // hundred, and the count covers the rest.
 const untypeableShown = 20;
 
-const layoutLabelKeys: Record<string, string> = { 'pt-br': 'ptBr' };
+// The translation key of a layout ID: 'pt-br' is 'ptBr'.
+function layoutLabelKey(id: string) {
+  return id.replace(/-(\w)/g, (_, c: string) => c.toUpperCase());
+}
 
 function codePoint(char: string) {
   return Array.from(char)
@@ -93,7 +96,7 @@ export const PasteDialog = () => {
 
   const layouts = pasteLayoutIds.map((id) => ({
     value: id,
-    label: t(`keyboard.pasting.layouts.${layoutLabelKeys[id] ?? id}`)
+    label: t(`keyboard.pasting.layouts.${layoutLabelKey(id)}`)
   }));
 
   const speeds = [

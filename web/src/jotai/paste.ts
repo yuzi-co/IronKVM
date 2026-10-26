@@ -15,7 +15,33 @@ export const pasteLayoutIds = [
   'se',
   'ru',
   'ja',
-  'ko'
+  'ko',
+  'am',
+  'ar',
+  'bepo',
+  'cz',
+  'da',
+  'de-ch',
+  'en-us-altgr-intl',
+  'en-us-colemak',
+  'et',
+  'fo',
+  'fr-be',
+  'fr-ca',
+  'fr-ch',
+  'hr',
+  'hu',
+  'is',
+  'lt',
+  'lv',
+  'mk',
+  'nl',
+  'no',
+  'pl',
+  'pt',
+  'sl',
+  'th',
+  'tr'
 ] as const;
 
 // The host's layout is not the browser's, but they agree more often than not,
@@ -24,10 +50,14 @@ function guessPasteLayout() {
   const language = navigator.language.toLowerCase();
   if (language === 'en-gb' || language === 'en-ie') return 'uk';
   if (language === 'pt-br') return 'pt-br';
+  if (['de-ch', 'fr-be', 'fr-ca', 'fr-ch'].includes(language)) return language;
   if (language.startsWith('sv') || language.startsWith('fi')) return 'se';
 
+  // A few layout IDs are not the language's own code.
   const primary = language.split('-')[0];
-  return (pasteLayoutIds as readonly string[]).includes(primary) ? primary : 'us';
+  const byLanguage: Record<string, string> = { cs: 'cz', hy: 'am', nb: 'no', nn: 'no' };
+  const guess = byLanguage[primary] ?? primary;
+  return (pasteLayoutIds as readonly string[]).includes(guess) ? guess : 'us';
 }
 
 function storedPasteLayout() {
