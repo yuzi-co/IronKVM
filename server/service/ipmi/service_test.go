@@ -425,3 +425,55 @@ func TestAClientOffTheAllowedNetworksIsNotAnswered(t *testing.T) {
 		t.Fatalf("an allowed client: cc %#x, %v", cc, err)
 	}
 }
+
+// A handshake holds a copy of the IPMI password from RAKP 1 on. However the
+// handshake ends, the copy is cleared, not only when it succeeds.
+func TestAHandshakeThatEndsClearsItsPasswordCopy(t *testing.T) {
+	suite := suiteByID(t, 3)
+	held := func(t *testing.T, env *testEnv, c *testClient) []byte {
+		t.Helper()
+		if status, err := c.openSession(suite.auth, suite.integrity, suite.confidentiality, 0); err != nil || status != statusOK {
+			t.Fatal(status, err)
+		}
+		if status, err := c.rakp1(adminName, adminIPMI, privAdmin|lookupNameOnly); err != nil || status != statusOK {
+			t.Fatal(status, err)
+		}
+		env.service.mu.Lock()
+		defer env.service.mu.Unlock()
+		kuid := env.service.sessions[c.systemID].kuid
+		if string(kuid) != adminIPMI {
+			t.Fatalf("the handshake holds %q", kuid)
+		}
+		return kuid
+	}
+	cleared := func(t *testing.T, kuid []byte) {
+		t.Helper()
+		if !bytes.Equal(kuid, make([]byte, len(kuid))) {
+			t.Fatalf("the password copy is still %q", kuid)
+		}
+	}
+
+	t.Run("a wrong RAKP 3", func(t *testing.T) {
+		env := newTestEnv(t)
+		c := dial(t, env.service)
+		kuid := held(t, env, c)
+		if status, err := c.rakp3("not-the-password"); err != nil || status != statusInvalidIntegrityChk {
+			t.Fatalf("status %#x, %v", status, err)
+		}
+		cleared(t, kuid)
+	})
+	t.Run("a timeout", func(t *testing.T) {
+		env := newTestEnv(t)
+		kuid := held(t, env, dial(t, env.service))
+		env.service.mu.Lock()
+		env.service.expireLocked(time.Now().Add(time.Minute))
+		env.service.mu.Unlock()
+		cleared(t, kuid)
+	})
+	t.Run("the service stopping", func(t *testing.T) {
+		env := newTestEnv(t)
+		kuid := held(t, env, dial(t, env.service))
+		env.service.Stop()
+		cleared(t, kuid)
+	})
+}

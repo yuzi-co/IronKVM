@@ -165,7 +165,9 @@ func (s *Service) closeLocked() {
 	}
 	_ = s.conn.Close()
 	s.conn = nil
-	clear(s.sessions)
+	for _, sess := range s.sessions {
+		s.dropLocked(sess)
+	}
 }
 
 // maxPacket is more than any request the service answers can take. An
@@ -284,9 +286,9 @@ func (s *Service) presession(p *v20Packet) []byte {
 func (s *Service) EndUserSessions(username string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	for id, sess := range s.sessions {
+	for _, sess := range s.sessions {
 		if sess.username == username {
-			delete(s.sessions, id)
+			s.dropLocked(sess)
 		}
 	}
 }
