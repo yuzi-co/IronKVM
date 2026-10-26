@@ -907,7 +907,7 @@ const en = {
           admin: 'Admin',
           adminDesc: 'Change the device settings (no tool uses this tier yet)',
           agentNote:
-            'The on-board agent has no power or media tools yet, so those two tiers apply to MCP clients only.',
+            'Power and media are off for the on-board agent until you turn them on. With them on, it can press the power and reset buttons and insert or eject images; it asks you before a press.',
           loadFailed: 'Could not load the capability tiers.',
           saveFailed: 'Could not save the capability tiers.'
         },

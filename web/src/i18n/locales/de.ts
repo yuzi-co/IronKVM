@@ -932,7 +932,7 @@ const de = {
           admin: 'Admin',
           adminDesc: 'Geräteeinstellungen ändern (noch kein Werkzeug nutzt diese Stufe)',
           agentNote:
-            'Der integrierte Agent hat noch keine Strom- oder Medienwerkzeuge, daher gelten diese beiden Stufen nur für MCP-Clients.',
+            'Strom und Medien sind für den integrierten Agenten aus, bis Sie sie einschalten. Dann kann er die Power- und Reset-Taste drücken und Images einlegen oder auswerfen; vor einem Tastendruck fragt er Sie.',
           loadFailed: 'Die Berechtigungsstufen konnten nicht geladen werden.',
           saveFailed: 'Die Berechtigungsstufen konnten nicht gespeichert werden.'
         },

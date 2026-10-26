@@ -909,7 +909,7 @@ const se = {
           admin: 'Admin',
           adminDesc: 'Ändra enhetens inställningar (inget verktyg använder den här nivån ännu)',
           agentNote:
-            'Den inbyggda agenten har inga ström- eller mediaverktyg ännu, så de två nivåerna gäller bara MCP-klienter.',
+            'Ström och media är avstängda för den inbyggda agenten tills du slår på dem. När de är på kan den trycka på ström- och återställningsknapparna och mata in eller mata ut avbilder; den frågar dig före ett tryck.',
           loadFailed: 'Behörighetsnivåerna kunde inte läsas in.',
           saveFailed: 'Behörighetsnivåerna kunde inte sparas.'
         },

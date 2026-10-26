@@ -912,7 +912,7 @@ const id = {
           admin: 'Admin',
           adminDesc: 'Ubah pengaturan perangkat (belum ada alat yang memakai tingkat ini)',
           agentNote:
-            'Agen bawaan belum punya alat daya atau media, jadi kedua tingkat itu hanya berlaku untuk klien MCP.',
+            'Daya dan media nonaktif untuk agen bawaan sampai Anda mengaktifkannya. Jika aktif, agen dapat menekan tombol daya dan reset serta memasukkan atau mengeluarkan image; agen bertanya dulu sebelum menekan tombol.',
           loadFailed: 'Tingkat kemampuan tidak dapat dimuat.',
           saveFailed: 'Tingkat kemampuan tidak dapat disimpan.'
         },

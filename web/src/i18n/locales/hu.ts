@@ -918,7 +918,7 @@ const hu = {
           adminDesc:
             'Az eszköz beállításainak módosítása (ezt a szintet még egyetlen eszköz sem használja)',
           agentNote:
-            'A beépített ügynöknek még nincs tápellátás- vagy médiaeszköze, ezért ez a két szint csak az MCP-kliensekre vonatkozik.',
+            'A tápellátás és a média ki van kapcsolva a beépített ügynöknél, amíg be nem kapcsolja. Bekapcsolva megnyomhatja a táp- és reset gombot, és képfájlokat helyezhet be vagy adhat ki; gombnyomás előtt megkérdezi Önt.',
           loadFailed: 'A képességszintek nem tölthetők be.',
           saveFailed: 'A képességszintek nem menthetők.'
         },

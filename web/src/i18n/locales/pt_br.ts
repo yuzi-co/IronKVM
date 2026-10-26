@@ -915,7 +915,7 @@ const pt_br = {
           adminDesc:
             'Alterar as configurações do dispositivo (nenhuma ferramenta usa este nível ainda)',
           agentNote:
-            'O agente integrado ainda não tem ferramentas de energia ou mídia, então esses dois níveis valem apenas para clientes MCP.',
+            'Energia e mídia ficam desativadas para o agente integrado até você ativá-las. Com elas ativas, ele pode pressionar os botões de energia e reset e inserir ou ejetar imagens; ele pergunta a você antes de pressionar.',
           loadFailed: 'Não foi possível carregar os níveis de capacidade.',
           saveFailed: 'Não foi possível salvar os níveis de capacidade.'
         },

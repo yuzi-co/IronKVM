@@ -909,7 +909,7 @@ const da = {
           admin: 'Admin',
           adminDesc: 'Ændr enhedens indstillinger (intet værktøj bruger endnu dette niveau)',
           agentNote:
-            'Den indbyggede agent har endnu ingen strøm- eller medieværktøjer, så disse to niveauer gælder kun MCP-klienter.',
+            'Strøm og medier er slået fra for den indbyggede agent, indtil du slår dem til. Når de er slået til, kan den trykke på tænd- og nulstil-knapperne og indsætte eller skubbe billeder ud; den spørger dig før et tryk.',
           loadFailed: 'Kapabilitetsniveauerne kunne ikke indlæses.',
           saveFailed: 'Kapabilitetsniveauerne kunne ikke gemmes.'
         },

@@ -920,7 +920,7 @@ const it = {
           adminDesc:
             'Modificare le impostazioni del dispositivo (nessuno strumento usa ancora questo livello)',
           agentNote:
-            'L\'agente integrato non ha ancora strumenti di alimentazione o supporti, quindi questi due livelli valgono solo per i client MCP.',
+            'Alimentazione e supporti sono disattivati per l\'agente integrato finché non li attivi. Una volta attivi, può premere i pulsanti di accensione e reset e inserire o espellere immagini; ti chiede conferma prima di premere.',
           loadFailed: 'Impossibile caricare i livelli di capacità.',
           saveFailed: 'Impossibile salvare i livelli di capacità.'
         },

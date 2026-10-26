@@ -910,7 +910,7 @@ const tr = {
           admin: 'Yönetim',
           adminDesc: 'Cihaz ayarlarını değiştir (bu düzeyi henüz kullanan bir araç yok)',
           agentNote:
-            'Yerleşik ajanın henüz güç veya ortam aracı yok, bu yüzden bu iki düzey yalnızca MCP istemcileri için geçerlidir.',
+            'Güç ve ortam, siz açana kadar yerleşik ajan için kapalıdır. Açıkken güç ve sıfırlama düğmelerine basabilir, imaj takıp çıkarabilir; bir düğmeye basmadan önce size sorar.',
           loadFailed: 'Yetenek düzeyleri yüklenemedi.',
           saveFailed: 'Yetenek düzeyleri kaydedilemedi.'
         },

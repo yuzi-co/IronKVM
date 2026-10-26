@@ -905,7 +905,7 @@ const vi = {
           admin: 'Quản trị',
           adminDesc: 'Đổi cài đặt thiết bị (chưa có công cụ nào dùng cấp này)',
           agentNote:
-            'Tác tử tích hợp chưa có công cụ nguồn hoặc phương tiện, nên hai cấp này chỉ áp dụng cho client MCP.',
+            'Nguồn và phương tiện bị tắt với tác tử tích hợp cho đến khi bạn bật. Khi bật, tác tử có thể nhấn nút nguồn và nút reset, gắn hoặc tháo ảnh đĩa; tác tử sẽ hỏi bạn trước khi nhấn nút.',
           loadFailed: 'Không thể tải các cấp năng lực.',
           saveFailed: 'Không thể lưu các cấp năng lực.'
         },

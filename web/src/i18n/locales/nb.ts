@@ -911,7 +911,7 @@ const nb = {
           admin: 'Admin',
           adminDesc: 'Endre enhetens innstillinger (ingen verktøy bruker dette nivået ennå)',
           agentNote:
-            'Den innebygde agenten har ingen strøm- eller medieverktøy ennå, så disse to nivåene gjelder bare MCP-klienter.',
+            'Strøm og medier er slått av for den innebygde agenten til du slår dem på. Når de er på, kan den trykke på av/på- og reset-knappene og sette inn eller løse ut bilder; den spør deg før et trykk.',
           loadFailed: 'Kunne ikke laste kapabilitetsnivåene.',
           saveFailed: 'Kunne ikke lagre kapabilitetsnivåene.'
         },
