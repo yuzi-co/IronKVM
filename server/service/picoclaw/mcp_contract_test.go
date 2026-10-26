@@ -131,12 +131,15 @@ func TestMCPPingAnswersAnEmptyResult(t *testing.T) {
 	}
 }
 
-func TestMCPUnknownMethodIsMethodNotFound(t *testing.T) {
+// TestMCPUnknownMethodIsRefused: go-sdk answers a method it does not know
+// with HTTP 400, not a JSON-RPC error. No client of the route sends one:
+// PicoClaw calls initialize, tools/list and tools/call.
+func TestMCPUnknownMethodIsRefused(t *testing.T) {
 	service, _, _ := newMCPActionTestService(t)
 
-	envelope := mcpRPC(t, service, `{"jsonrpc":"2.0","id":7,"method":"resources/list"}`, nil)
-	if envelope.Error == nil || envelope.Error.Code != -32601 {
-		t.Fatalf("envelope = %+v, want -32601", envelope)
+	response := performMCPRequest(service, `{"jsonrpc":"2.0","id":7,"method":"nanokvm/unknown"}`)
+	if response.Code != http.StatusBadRequest || !strings.Contains(response.Body.String(), "nanokvm/unknown") {
+		t.Fatalf("status = %d, body = %s, want 400 naming the method", response.Code, response.Body.String())
 	}
 }
 

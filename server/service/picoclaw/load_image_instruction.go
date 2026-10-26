@@ -56,8 +56,14 @@ func (s *Service) LoadImage(c *gin.Context) {
 // about: the one its header names, or the lock owner's. The session must be
 // open.
 func (s *Service) requireActiveGatewaySession(c *gin.Context) (string, *PicoclawError) {
+	return s.activeGatewaySession(c.GetHeader(sessionIDHeader))
+}
+
+// activeGatewaySession is requireActiveGatewaySession for a caller that has
+// only the value of the X-PicoClaw-Session-ID header.
+func (s *Service) activeGatewaySession(sessionHeader string) (string, *PicoclawError) {
 	s.ensureDependencies()
-	sessionID := strings.TrimSpace(c.GetHeader(sessionIDHeader))
+	sessionID := strings.TrimSpace(sessionHeader)
 	if sessionID == "" {
 		sessionID = strings.TrimSpace(s.lock.Owner())
 	}
