@@ -146,3 +146,24 @@ type CreateShareLinkRsp struct {
 type RedeemShareLinkReq struct {
 	Token string `json:"token" validate:"required"`
 }
+
+// LoginSessionInfo is one login session in Settings > Account. Times are Unix
+// seconds. Current marks the session the request itself came through.
+type LoginSessionInfo struct {
+	ID         string `json:"id"`
+	Username   string `json:"username"`
+	CreatedAt  int64  `json:"createdAt"`
+	LastUsedAt int64  `json:"lastUsedAt"`
+	ExpiresAt  int64  `json:"expiresAt"`
+	IP         string `json:"ip"`
+	Client     string `json:"client"`
+	Current    bool   `json:"current"`
+}
+
+type ListLoginSessionsRsp struct {
+	Sessions []LoginSessionInfo `json:"sessions"`
+}
+
+type RevokeOtherSessionsRsp struct {
+	Revoked int `json:"revoked"`
+}

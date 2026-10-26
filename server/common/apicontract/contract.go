@@ -34,6 +34,7 @@ var features = []string{
 	"info-latency",        // GET /api/stream/info boardLatency: the board's share of the latency
 	"ip-allowlist",        // /api/network/allowlist: allowed client networks
 	"ipv6-settings",       // /api/network/ipv6: SLAAC, DHCPv6, static or off
+	"login-sessions",      // /api/auth/sessions: login sessions, listed and revoked one by one
 	"notifications",       // /api/notify: webhook, ntfy and Telegram alerts with a snapshot
 	"nut-client",          // /api/nut: NUT client, UPS state and settings
 	"role-viewer",         // role "viewer" in /api/auth/users and GET /api/auth/account: video only

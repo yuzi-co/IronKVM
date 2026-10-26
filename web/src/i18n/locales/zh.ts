@@ -2027,6 +2027,24 @@ const zh = {
           user: '普通用户',
           viewer: '查看者'
         },
+        sessions: {
+          title: '会话',
+          desc: '此账户登录的位置。撤销会话会让该设备退出登录并关闭其打开的连接。',
+          allTitle: '所有会话',
+          allDesc: '此设备上所有账户的登录。',
+          current: '当前会话',
+          unknownClient: '未知客户端',
+          lastUsed: '最近活动 {{time}}',
+          created: '登录于 {{time}}',
+          revoke: '撤销',
+          revokeConfirm: '撤销此会话？该设备将退出登录，其打开的连接将关闭。',
+          revokeOthers: '退出其他会话',
+          revokeOthersConfirm: '退出此账户的所有其他会话？',
+          revoked: '会话已撤销',
+          revokeFailed: '撤销会话失败',
+          loadFailed: '加载会话失败',
+          empty: '没有会话'
+        },
         shareLinks: {
           title: '分享链接',
           desc: '任何打开分享链接的人都可以查看屏幕。链接不提供键盘、鼠标、电源、媒体或设置权限,过期或被撤销后即失效。',

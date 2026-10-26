@@ -168,3 +168,33 @@ export function revokeShareLink(id: string) {
 export function redeemShareLink(token: string) {
   return http.post('/api/auth/share', { token });
 }
+
+// LoginSession is one sign-in, until it expires or is revoked. Times are Unix
+// seconds. The id is a digest; the secret the cookie carries is never sent.
+export type LoginSession = {
+  id: string;
+  username: string;
+  createdAt: number;
+  lastUsedAt: number;
+  expiresAt: number;
+  ip: string;
+  client: string;
+  current: boolean;
+};
+
+export function getSessions() {
+  return http.get('/api/auth/sessions');
+}
+
+// getAllSessions lists every account's sessions, for an administrator.
+export function getAllSessions() {
+  return http.get('/api/auth/sessions/all');
+}
+
+export function revokeSession(id: string) {
+  return http.delete(`/api/auth/sessions/${encodeURIComponent(id)}`);
+}
+
+export function revokeOtherSessions() {
+  return http.post('/api/auth/sessions/revoke-others');
+}

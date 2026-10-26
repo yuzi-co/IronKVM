@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"errors"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -9,6 +10,7 @@ import (
 	"NanoKVM-Server/authn"
 
 	"github.com/gorilla/websocket"
+	log "github.com/sirupsen/logrus"
 )
 
 const SessionRevokedCloseCode = 4401
@@ -22,6 +24,12 @@ type session struct {
 	// asks the same one rather than reading authn.DefaultStore again.
 	store  *authn.Store
 	cancel context.CancelFunc
+
+	// sessionID names the login session the request came through, and
+	// sessions is the store that holds it. The recheck asks that too, and
+	// RevokeLoginSession ends the requests that carry the id.
+	sessionID string
+	sessions  *authn.SessionStore
 
 	// A session opened from a share link has no account. shareID names the
 	// link and shares is the store that holds it, and the recheck asks that.
@@ -124,6 +132,10 @@ func (r *sessionRegistry) recheck() {
 		if entry.store == nil {
 			continue
 		}
+		if entry.sessions != nil && !entry.sessions.Valid(entry.sessionID) {
+			entry.cancel()
+			continue
+		}
 		key := tokenKey{entry.store, entry.username, entry.tokenVersion}
 		ok, seen := valid[key]
 		if !seen {
@@ -137,17 +149,82 @@ func (r *sessionRegistry) recheck() {
 	}
 }
 
+// RevokeUserSessions ends every session of a user: the login session records
+// and the requests running on them. Every account change that should sign the
+// user out calls it, including the ones that leave the token version alone.
 func RevokeUserSessions(username string) {
-	activeSessions.revoke(username)
+	if _, err := authn.DefaultSessions.RevokeUser(username, ""); err != nil {
+		log.Warnf("revoke the login sessions of %s: %s", username, err)
+	}
+	activeSessions.revoke(username, "")
 }
 
-func (r *sessionRegistry) revoke(username string) {
+// RevokeOtherSessions ends every session of a user but keepID.
+func RevokeOtherSessions(username, keepID string) {
+	if _, err := authn.DefaultSessions.RevokeUser(username, keepID); err != nil {
+		log.Warnf("revoke the other login sessions of %s: %s", username, err)
+	}
+	activeSessions.revoke(username, keepID)
+}
+
+// RevokeLoginSession ends one login session and the requests running on it,
+// websockets included. The error is the store's: the session is gone from
+// memory either way, but a failed write may let it back after a restart.
+func RevokeLoginSession(id string) error {
+	_, err := authn.DefaultSessions.Revoke(id)
+	activeSessions.revokeSession(id)
+	if errors.Is(err, authn.ErrSessionNotFound) {
+		return err
+	}
+	if err != nil {
+		log.Warnf("revoke login session: %s", err)
+	}
+	return err
+}
+
+// revoke cancels a user's requests, except those of the session keepID when
+// it is not empty.
+func (r *sessionRegistry) revoke(username, keepID string) {
 	r.mutex.Lock()
-	sessions := r.byUserID[username]
-	delete(r.byUserID, username)
+	var cancelled []session
+	for id, entry := range r.byUserID[username] {
+		if keepID != "" && entry.sessionID == keepID {
+			continue
+		}
+		cancelled = append(cancelled, entry)
+		delete(r.byUserID[username], id)
+	}
+	if len(r.byUserID[username]) == 0 {
+		delete(r.byUserID, username)
+	}
 	r.mutex.Unlock()
 
-	for _, entry := range sessions {
+	for _, entry := range cancelled {
+		entry.cancel()
+	}
+}
+
+// revokeSession cancels the requests of one login session.
+func (r *sessionRegistry) revokeSession(sessionID string) {
+	if sessionID == "" {
+		return
+	}
+	r.mutex.Lock()
+	var cancelled []session
+	for username, byID := range r.byUserID {
+		for id, entry := range byID {
+			if entry.sessionID == sessionID {
+				cancelled = append(cancelled, entry)
+				delete(byID, id)
+			}
+		}
+		if len(byID) == 0 {
+			delete(r.byUserID, username)
+		}
+	}
+	r.mutex.Unlock()
+
+	for _, entry := range cancelled {
 		entry.cancel()
 	}
 }

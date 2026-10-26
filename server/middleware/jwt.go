@@ -42,6 +42,9 @@ type Principal struct {
 	// The audit log records both (service/audit).
 	Via string
 	Key string
+	// SessionID is the public id of the login session the request came
+	// through (authn.LoginSession), for a request that came through one.
+	SessionID string
 }
 
 type Token struct {
@@ -50,6 +53,10 @@ type Token struct {
 	// ShareID names the share link a session was opened from. Its token is
 	// good only while that link is.
 	ShareID string `json:"share,omitempty"`
+	// Session is the secret of the login session the token belongs to. The
+	// server keeps only its digest, and a token whose session was revoked or
+	// never recorded is refused.
+	Session string `json:"sid,omitempty"`
 	jwt.RegisteredClaims
 }
 
@@ -87,10 +94,13 @@ func CheckToken() gin.HandlerFunc {
 			username:     principal.Username,
 			tokenVersion: token.TokenVersion,
 			store:        authn.DefaultStore,
+			sessionID:    principal.SessionID,
+			sessions:     authn.DefaultSessions,
 			cancel:       cancel,
 		}
 		if principal.ShareID != "" {
 			entry.store = nil
+			entry.sessions = nil
 			entry.shareID = principal.ShareID
 			entry.shares = authn.DefaultShares
 		}
@@ -235,6 +245,15 @@ func authenticateBySession(c *gin.Context) (Principal, *Token, bool) {
 		log.Debugf("validate session for %q: %s", token.Username, err)
 		return Principal{}, nil, false
 	}
+	// The account still takes the token; the login session it belongs to
+	// must still exist too. That is what revokes one session and not the
+	// account's others. A token without one predates the session list and
+	// could be neither listed nor revoked, so it is refused.
+	loginSession, ok := authn.DefaultSessions.Touch(token.Session, token.Username, token.TokenVersion, c.RemoteIP())
+	if !ok {
+		log.Debugf("login session for %q is revoked, expired or unknown", token.Username)
+		return Principal{}, nil, false
+	}
 
 	// Reported from the one place that decides a session is genuine, rather
 	// than from each route. Only an administrator's: every ethernet route is
@@ -245,7 +264,7 @@ func authenticateBySession(c *gin.Context) (Principal, *Token, bool) {
 		noteSignedInAdmin(c)
 	}
 
-	return Principal{Username: user.Username, Role: user.Role, Via: "session"}, token, true
+	return Principal{Username: user.Username, Role: user.Role, Via: "session", SessionID: loginSession.ID}, token, true
 }
 
 // authenticateByShare accepts a session opened from a share link for as long
@@ -272,13 +291,34 @@ func abortForbiddenOrigin(c *gin.Context) {
 	c.Abort()
 }
 
+// IssueSession records a login session for the account and returns the token
+// for its cookie. The session notes the peer address and the user agent; the
+// address is the connection's, never a forwarded header the client wrote, as
+// in the login rate limit and the audit log.
+func IssueSession(c *gin.Context, username string, tokenVersion uint64) (string, error) {
+	return issueSession(username, tokenVersion, authn.SessionClient{
+		IP:        c.RemoteIP(),
+		UserAgent: c.Request.UserAgent(),
+	})
+}
+
+// GenerateJWT issues a session that records no client.
 func GenerateJWT(username string, tokenVersion uint64) (string, error) {
+	return issueSession(username, tokenVersion, authn.SessionClient{})
+}
+
+func issueSession(username string, tokenVersion uint64, client authn.SessionClient) (string, error) {
 	conf := config.GetInstance()
 	now := time.Now()
 	expireDuration := time.Duration(conf.JWT.RefreshTokenDuration) * time.Second
+	secret, _, err := authn.DefaultSessions.Create(username, tokenVersion, expireDuration, client)
+	if err != nil {
+		return "", err
+	}
 	claims := Token{
 		Username:     username,
 		TokenVersion: tokenVersion,
+		Session:      secret,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   username,
 			IssuedAt:  jwt.NewNumericDate(now),

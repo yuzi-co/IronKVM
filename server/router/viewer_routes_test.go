@@ -165,10 +165,10 @@ func TestViewOnlyIsRefusedEverywhereExceptTheVideo(t *testing.T) {
 
 		if middleware.ViewerMayReach(route.Method, route.Path) {
 			allowed++
-			// What a viewer may reach is read-only, apart from signing out and
-			// changing its own password.
+			// What a viewer may reach is read-only, apart from signing out,
+			// changing its own password and ending its own login sessions.
 			mutating := route.Method != http.MethodGet
-			if mutating && key != "POST /api/auth/logout" && key != "POST /api/auth/password" {
+			if mutating && !viewerAccountRoutes[key] {
 				problems = append(problems, key+": a viewer may call a route that changes state")
 			}
 			continue
@@ -207,4 +207,13 @@ func TestViewOnlyIsRefusedEverywhereExceptTheVideo(t *testing.T) {
 		t.Fatalf("the walk checked nothing: %d allowed routes, %d refused requests", allowed, dispatched)
 	}
 	t.Logf("%d routes, %d viewer routes, %d refused requests", len(routes), allowed, dispatched)
+}
+
+// viewerAccountRoutes change state, and a viewer may still call them: they
+// touch only the viewer's own account.
+var viewerAccountRoutes = map[string]bool{
+	"POST /api/auth/logout":                 true,
+	"POST /api/auth/password":               true,
+	"DELETE /api/auth/sessions/:id":         true,
+	"POST /api/auth/sessions/revoke-others": true,
 }

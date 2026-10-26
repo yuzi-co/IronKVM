@@ -30,6 +30,7 @@ export const SERVER_FEATURES = [
   'info-latency', // boardLatency in GET /api/stream/info (status bar latency estimate)
   'ip-allowlist', // /api/network/allowlist (Settings > Network > Allowed networks)
   'ipv6-settings', // /api/network/ipv6 (Settings > Network > IPv6)
+  'login-sessions', // /api/auth/sessions (Settings > Account > Sessions)
   'notifications', // /api/notify (Settings > Notifications)
   'nut-client', // /api/nut (Settings > NUT, UPS line in the status bar)
   'role-viewer', // the viewer role in Settings > Users, and a UI with no input for it

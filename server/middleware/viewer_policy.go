@@ -28,6 +28,11 @@ var viewerRoutes = map[string]struct{}{
 	// A viewer account may change its own password. A share session has no
 	// account, and the handler refuses it.
 	"POST /api/auth/password": {},
+	// And see and end its own login sessions. The handlers refuse a share
+	// session, which has none.
+	"GET /api/auth/sessions":                {},
+	"DELETE /api/auth/sessions/:id":         {},
+	"POST /api/auth/sessions/revoke-others": {},
 
 	"GET /api/stream/mjpeg":       {},
 	"GET /api/stream/h264":        {},

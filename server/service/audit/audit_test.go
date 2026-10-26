@@ -148,6 +148,8 @@ func TestClassify(t *testing.T) {
 		{"POST", "/api/storage/image/mount", CategoryMedia, "mount", true},
 		{"POST", "/api/hid/macro/play", CategoryMacro, "play", true},
 		{"POST", "/api/auth/users", CategoryAuth, "post /auth/users", true},
+		{"DELETE", "/api/auth/sessions/:id", CategoryAuth, "revoke-session", true},
+		{"POST", "/api/auth/sessions/revoke-others", CategoryAuth, "revoke-other-sessions", true},
 		{"DELETE", "/api/vm/ssh/keys", CategorySettings, "delete /vm/ssh/keys", true},
 		{"POST", "/api/mcp/config", CategorySettings, "post /mcp/config", true},
 		{"POST", "/api/mcp", "", "", false},

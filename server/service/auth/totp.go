@@ -140,7 +140,7 @@ func (s *Service) LoginTOTP(c *gin.Context) {
 	guard.drop(req.Challenge)
 	guard.succeed(user.Username)
 	ClearLoginAttempt(clientIP)
-	token, err := middleware.GenerateJWT(user.Username, user.TokenVersion)
+	token, err := middleware.IssueSession(c, user.Username, user.TokenVersion)
 	if err != nil {
 		rsp.ErrRsp(c, -3, "generate token failed")
 		return
@@ -260,6 +260,8 @@ func (s *Service) EnableTOTP(c *gin.Context) {
 		return
 	}
 
+	// The account's other sessions signed in without the second factor.
+	middleware.RevokeOtherSessions(principal.Username, principal.SessionID)
 	rsp.OkRspWithData(c, &proto.RecoveryCodesRsp{RecoveryCodes: codes})
 	log.Infof("two-factor login turned on for %s", principal.Username)
 }
@@ -277,6 +279,8 @@ func (s *Service) DisableTOTP(c *gin.Context) {
 		return
 	}
 	guard.forget(user.Username)
+	principal, _ := middleware.CurrentPrincipal(c)
+	middleware.RevokeOtherSessions(user.Username, principal.SessionID)
 	rsp.OkRsp(c)
 	log.Infof("two-factor login turned off for %s", user.Username)
 }
@@ -323,6 +327,9 @@ func (s *Service) ResetUserTOTP(c *gin.Context) {
 		return
 	}
 	guard.forget(username)
+	// Whoever lost the factor signs in again with the password alone, so the
+	// sessions that may be someone else's end here.
+	middleware.RevokeUserSessions(username)
 	rsp.OkRsp(c)
 	log.Infof("two-factor login reset for %s by %s", username, principal.Username)
 }

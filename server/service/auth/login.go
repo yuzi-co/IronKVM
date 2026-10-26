@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"time"
 
 	"NanoKVM-Server/authn"
@@ -60,7 +61,7 @@ func (s *Service) Login(c *gin.Context) {
 	}
 
 	ClearLoginAttempt(clientIP)
-	token, err := middleware.GenerateJWT(user.Username, user.TokenVersion)
+	token, err := middleware.IssueSession(c, user.Username, user.TokenVersion)
 	if err != nil {
 		time.Sleep(time.Second)
 		rsp.ErrRsp(c, -3, "generate token failed")
@@ -92,12 +93,16 @@ func (s *Service) Logout(c *gin.Context) {
 		rsp.OkRsp(c)
 		return
 	}
-	if ok && conf.Authentication != "disable" && conf.JWT.RevokeTokensOnLogout {
-		if _, err := authn.DefaultStore.Revoke(principal.Username); err != nil {
+	// Logging out ends this login session alone. Before sessions were kept
+	// one by one, revoking a token meant raising the account's token version,
+	// which signed the account out on every device; the list in Settings >
+	// Account does that now, for the sessions the user picks.
+	if ok && conf.Authentication != "disable" && conf.JWT.RevokeTokensOnLogout && principal.SessionID != "" {
+		err := middleware.RevokeLoginSession(principal.SessionID)
+		if err != nil && !errors.Is(err, authn.ErrSessionNotFound) {
 			rsp.ErrRsp(c, -1, "failed to revoke session")
 			return
 		}
-		middleware.RevokeUserSessions(principal.Username)
 		log.Infof("user logged out: %s", principal.Username)
 	}
 	clearSessionCookie(c)
