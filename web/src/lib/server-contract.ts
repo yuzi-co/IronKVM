@@ -22,6 +22,7 @@ export const LEGACY_API_VERSION = 1;
 export const SERVER_FEATURES = [
   'agent-tiers', // /api/agent/tiers (Settings > MCP: what MCP and the agent may do)
   'audit-log', // /api/audit (Settings > Audit log)
+  'diagnostics-bundle', // GET /api/diagnostics/bundle (Settings > Backup: diagnostics bundle)
   'direct-clock', // the clock request on the direct H.264 socket (status bar latency)
   'hid-autotap', // POST /api/hid/autotap and /api/hid/sequence (keyboard menu: auto-tap)
   'hid-macros', // /api/hid/macro(s) and /api/hid/sequence (keyboard menu: macros)
@@ -32,6 +33,7 @@ export const SERVER_FEATURES = [
   'notifications', // /api/notify (Settings > Notifications)
   'nut-client', // /api/nut (Settings > NUT, UPS line in the status bar)
   'role-viewer', // the viewer role in Settings > Users, and a UI with no input for it
+  'settings-backup', // /api/settings/export, /preview, /import (Settings > Backup: settings file)
   'share-links', // /api/auth/share and /api/auth/share-links (Settings > Account > Share links)
   'status-bar', // GET /api/stream/info (status bar source line)
   'ui-update', // /api/ui: separate UI packages (Settings > Update)

@@ -46,6 +46,8 @@ var named = map[string]Rule{
 	"POST /api/ui/update":                  {CategorySystem, "ui-update", false},
 	"POST /api/ui/upload":                  {CategorySystem, "ui-upload", false},
 	"POST /api/ui/rollback":                {CategorySystem, "ui-rollback", false},
+
+	"POST /api/settings/import": {CategorySettings, "settings-import", false},
 }
 
 // skipped routes change nothing worth a line: reads that use POST, progress
@@ -63,6 +65,8 @@ var skipped = map[string]bool{
 	"POST /api/network/wifi/verify":      true,
 	"POST /api/download/image/cancel":    true,
 	"POST /api/internal/usb/recover":     true,
+	// The preview writes nothing; the import that follows it is recorded.
+	"POST /api/settings/preview": true,
 }
 
 // selfAudited are the routes whose handlers record their own events, with

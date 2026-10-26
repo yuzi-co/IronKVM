@@ -106,3 +106,8 @@ func saveSettings(settings Settings) error {
 
 	return os.Rename(tmp.Name(), SettingsFile)
 }
+
+// Validate checks the settings against the limits the settings page applies.
+func (s Settings) Validate() error {
+	return s.validate()
+}

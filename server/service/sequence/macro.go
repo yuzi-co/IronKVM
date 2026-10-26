@@ -173,3 +173,30 @@ func truncate(s string, n int) string {
 	}
 	return string([]rune(s)[:n])
 }
+
+// ValidateMacros checks a whole list of macros the way putMacro checks one,
+// for a list that arrives in one piece, such as a settings import. Every macro
+// needs an ID, unique in the list, a name and steps that compile.
+func ValidateMacros(macros []proto.Macro) error {
+	if len(macros) > maxMacros {
+		return errTooManyMacros
+	}
+	seen := make(map[string]bool, len(macros))
+	for _, macro := range macros {
+		if macro.ID == "" || len(macro.ID) > maxNameLen {
+			return fmt.Errorf("a macro has no valid ID")
+		}
+		if seen[macro.ID] {
+			return fmt.Errorf("two macros have the ID %q", macro.ID)
+		}
+		seen[macro.ID] = true
+		name := strings.TrimSpace(macro.Name)
+		if name == "" || utf8.RuneCountInString(name) > maxNameLen {
+			return fmt.Errorf("the macro %q needs a name of 1 to %d characters", macro.ID, maxNameLen)
+		}
+		if _, err := compileSteps(macro.Steps); err != nil {
+			return fmt.Errorf("the macro %q: %w", name, err)
+		}
+	}
+	return nil
+}

@@ -26,6 +26,7 @@ const APIVersion = 1
 var features = []string{
 	"agent-tiers",         // /api/agent/tiers: what MCP and the on-board agent may do
 	"audit-log",           // /api/audit: the audit log, its export and settings
+	"diagnostics-bundle",  // GET /api/diagnostics/bundle: support bundle without secrets
 	"direct-clock",        // clock request (byte 5) on the direct H.264 socket
 	"hid-autotap",         // POST /api/hid/autotap, /api/hid/sequence: key auto-tap
 	"hid-macros",          // /api/hid/macro(s), /api/hid/sequence: recorded macros
@@ -36,6 +37,7 @@ var features = []string{
 	"notifications",       // /api/notify: webhook, ntfy and Telegram alerts with a snapshot
 	"nut-client",          // /api/nut: NUT client, UPS state and settings
 	"role-viewer",         // role "viewer" in /api/auth/users and GET /api/auth/account: video only
+	"settings-backup",     // /api/settings/export, /preview, /import: settings file without secrets
 	"share-links",         // /api/auth/share, /api/auth/share-links: expiring view-only links
 	"status-bar",          // GET /api/stream/info
 	"ui-update",           // /api/ui: separately installed UI packages

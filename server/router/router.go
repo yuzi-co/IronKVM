@@ -13,6 +13,7 @@ import (
 	"NanoKVM-Server/service/audit"
 	"NanoKVM-Server/service/controlmode"
 	"NanoKVM-Server/service/picoclaw"
+	"NanoKVM-Server/service/settingsio"
 	"NanoKVM-Server/service/vm"
 	"NanoKVM-Server/service/webui"
 
@@ -64,6 +65,10 @@ var bodyLimits = map[string]int64{
 	// An ISO, often several GB. It streams to /data, not to memory, and the
 	// write fails when the card is full.
 	"POST /api/download/file": middleware.NoBodyLimit,
+	// A settings file with fifty macros at their largest. The handler reads
+	// no more than this either.
+	"POST /api/settings/preview": settingsio.MaxDocumentBytes + 64<<10,
+	"POST /api/settings/import":  settingsio.MaxDocumentBytes + 64<<10,
 }
 
 // apiPrefix covers the routes of the web UI's own API.
@@ -147,6 +152,7 @@ func server(r *gin.Engine) {
 	vncRouter(r)
 	ventoyRouter(r)
 	licensesRouter(r)
+	supportRouter(r)
 }
 
 func LoopbackHTTPAllowedPaths() []string {
