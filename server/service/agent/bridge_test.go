@@ -270,6 +270,7 @@ func TestBridgePublishesServerEvents(t *testing.T) {
 func TestBridgeServerPromptReachesTheAgentWithoutALease(t *testing.T) {
 	h := newHarness(t)
 	_, session := h.dial(t, "s1")
+	waitFor(t, "the session to be active", func() bool { return h.bridge.IsActive("s1") })
 	if err := h.bridge.Prompt("s1", agent.Prompt{RequestID: "x", Text: "load"}); err != nil {
 		t.Fatal(err)
 	}
