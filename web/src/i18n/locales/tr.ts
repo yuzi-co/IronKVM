@@ -742,6 +742,19 @@ const tr = {
       down: 'Kapalı',
       checking: 'Denetleniyor...'
     },
+    urlMedia: {
+      open: 'URL\'den bağla',
+      desc: 'Bir ISO veya disk görüntüsünü cihazda saklamadan doğrudan bir web sunucusundan sunar. Sunucu bayt aralıklarını desteklemelidir.',
+      mount: 'Bağla',
+      asCd: 'CD',
+      asDisk: 'Disk (salt okunur)',
+      unavailable: 'Bu donanım yazılımında kullanılamaz: çekirdeği ağ blok aygıtlarını (NBD) desteklemiyor. URL\'den bağlamak için ana hat çekirdeği (B yuvası) gerekir.',
+      credentials: 'URL yalnızca bellekte tutulur. İçindeki kimlik bilgileri veya belirteçler asla gösterilmez ya da günlüğe yazılmaz.',
+      mountFailed: 'URL\'den bağlama başarısız',
+      read: '{{size}} içinden {{read}} okundu',
+      hitRate: 'Önbellekten %{{rate}}',
+      lastError: 'Son okuma başarısız oldu, bir sonraki yeniden deneyecek: {{error}}'
+    },
     download: {
       uploadFailed: 'Yükleme başarısız',
       uploadSuccess: 'Yükleme tamamlandı',

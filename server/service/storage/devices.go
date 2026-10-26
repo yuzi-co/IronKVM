@@ -3,16 +3,19 @@ package storage
 import (
 	"errors"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"sync"
 )
 
 // Device is a block device the server assembles from images, such as the
-// Ventoy disk. It is not an image under the image directory, so it goes into
+// Ventoy disk, or serves itself, such as an image from a URL on an nbd
+// device. It is not an image under the image directory, so it goes into
 // a drive through InsertDevice, and the checks on images do not apply to it.
 // Its images count as loaded while it is in a drive.
 type Device struct {
-	// Path is the device node a drive serves. It is under /dev/mapper.
+	// Path is the device node a drive serves: under /dev/mapper, or an nbd
+	// device.
 	Path string
 	// Name names it in messages.
 	Name string
@@ -26,6 +29,9 @@ type Device struct {
 
 // deviceDir is where the assembled devices live.
 const deviceDir = "/dev/mapper"
+
+// nbdDevice is an nbd device node, which serves an image from a URL.
+var nbdDevice = regexp.MustCompile(`^/dev/nbd[0-9]+$`)
 
 var errNotADevice = errors.New("not a device the server assembled")
 
@@ -50,6 +56,19 @@ func RegisterDevice(d Device) {
 	devices = append(devices, d)
 }
 
+// UnregisterDevice forgets a device, once no drive serves it.
+func UnregisterDevice(path string) {
+	devicesMu.Lock()
+	defer devicesMu.Unlock()
+
+	for i := range devices {
+		if devices[i].Path == path {
+			devices = append(devices[:i], devices[i+1:]...)
+			return
+		}
+	}
+}
+
 func findDevice(path string) (Device, bool) {
 	devicesMu.Lock()
 	defer devicesMu.Unlock()
@@ -69,10 +88,11 @@ func registeredDevices() []Device {
 	return append([]Device(nil), devices...)
 }
 
-// resolveDevice accepts only a registered device under /dev/mapper.
+// resolveDevice accepts only a registered device under /dev/mapper, or a
+// registered nbd device.
 func resolveDevice(path string) (string, error) {
 	path = filepath.Clean(path)
-	if !strings.HasPrefix(path, deviceDir+"/") {
+	if !strings.HasPrefix(path, deviceDir+"/") && !nbdDevice.MatchString(path) {
 		return "", errNotADevice
 	}
 	if _, ok := findDevice(path); !ok {
@@ -89,6 +109,18 @@ func InsertDevice(path string) error {
 		return errNoDrive
 	}
 	released, err := insertLocked(DriveDisk, path, true, resolveDevice)
+	release(released)
+	return err
+}
+
+// InsertDeviceInto loads a registered device into the drive id, read-only,
+// as InsertDevice does for the disk. Only the server calls it, never with a
+// path a client sent.
+func InsertDeviceInto(id, path string) error {
+	if hidOnly() {
+		return errNoDrive
+	}
+	released, err := insertLocked(id, path, true, resolveDevice)
 	release(released)
 	return err
 }

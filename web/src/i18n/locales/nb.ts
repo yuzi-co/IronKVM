@@ -741,6 +741,19 @@ const nb = {
       down: 'Av',
       checking: 'Sjekker...'
     },
+    urlMedia: {
+      open: 'Monter fra URL',
+      desc: 'Lever et ISO- eller diskbilde rett fra en webserver uten å lagre det på enheten. Serveren må støtte byteområder.',
+      mount: 'Monter',
+      asCd: 'CD',
+      asDisk: 'Disk (skrivebeskyttet)',
+      unavailable: 'Ikke tilgjengelig i denne fastvaren: kjernen støtter ikke nettverksblokkenheter (NBD). Montering fra en URL krever mainline-kjernen (spor B).',
+      credentials: 'URL-en holdes bare i minnet. Påloggingsdetaljer eller tokener i den vises eller logges aldri.',
+      mountFailed: 'Montering fra URL mislyktes',
+      read: '{{read}} av {{size}} lest',
+      hitRate: '{{rate}} % fra hurtigbuffer',
+      lastError: 'Siste lesing mislyktes, den neste prøver igjen: {{error}}'
+    },
     download: {
       uploadFailed: 'Opplastingen mislyktes',
       uploadSuccess: 'Opplasting fullført',

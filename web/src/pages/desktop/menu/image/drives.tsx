@@ -8,6 +8,7 @@ import * as api from '@/api/storage.ts';
 import { VENTOY_DEVICE } from '@/api/ventoy.ts';
 import { formatBytes } from '@/lib/health.ts';
 
+import { urlMountLabel, type UrlMount } from '../media/url-media.ts';
 import { MediaWarnings } from './media-warnings.tsx';
 import { CD_MAX_BYTES, driveWarnings } from './warnings.ts';
 
@@ -15,18 +16,28 @@ type DrivesProps = {
   drives: api.Drive[];
   diskRo: boolean;
   setDiskRo: (ro: boolean) => void;
+  // Images served from a URL, which a drive shows by their nbd device.
+  urlMounts?: UrlMount[];
   onDrivesChanged: () => void;
 };
 
-// driveLabel names what a drive holds: the image's file name, or Ventoy for the
-// disk built from the Ventoy set.
-function driveLabel(file: string) {
-  return file === VENTOY_DEVICE ? 'Ventoy' : file.replace(/^.*[\\/]/, '');
+// driveLabel names what a drive holds: the image's file name, Ventoy for the
+// disk built from the Ventoy set, or the file and host of an image served
+// from a URL.
+function driveLabel(file: string, urlMounts: UrlMount[]) {
+  if (file === VENTOY_DEVICE) return 'Ventoy';
+  return urlMountLabel(file, urlMounts) ?? file.replace(/^.*[\\/]/, '');
 }
 
 // Drives shows what each virtual drive holds, with an eject button per drive
 // and the read-only switch that the next disk insert uses.
-export const Drives = ({ drives, diskRo, setDiskRo, onDrivesChanged }: DrivesProps) => {
+export const Drives = ({
+  drives,
+  diskRo,
+  setDiskRo,
+  urlMounts = [],
+  onDrivesChanged
+}: DrivesProps) => {
   const { t } = useTranslation();
   const [notify, contextHolder] = notification.useNotification();
   const [ejecting, setEjecting] = useState('');
@@ -70,7 +81,7 @@ export const Drives = ({ drives, diskRo, setDiskRo, onDrivesChanged }: DrivesPro
                     drive.file ? 'text-blue-500' : 'text-neutral-500'
                   )}
                 >
-                  {drive.file ? driveLabel(drive.file) : t('image.driveEmpty')}
+                  {drive.file ? driveLabel(drive.file, urlMounts) : t('image.driveEmpty')}
                 </span>
 
                 {/* The flag is fixed while a disk is in: the gadget reads it at

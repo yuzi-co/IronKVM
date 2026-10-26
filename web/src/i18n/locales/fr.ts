@@ -753,6 +753,19 @@ const fr = {
       down: 'Éteint',
       checking: 'Vérification...'
     },
+    urlMedia: {
+      open: 'Monter depuis une URL',
+      desc: 'Sert une image ISO ou disque directement depuis un serveur web, sans la stocker sur l\'appareil. Le serveur doit prendre en charge les plages d\'octets.',
+      mount: 'Monter',
+      asCd: 'CD',
+      asDisk: 'Disque (lecture seule)',
+      unavailable: 'Indisponible avec ce firmware : son noyau ne prend pas en charge les périphériques bloc réseau (NBD). Le montage depuis une URL nécessite le noyau mainline (slot B).',
+      credentials: 'L\'URL est gardée uniquement en mémoire. Les identifiants ou jetons qu\'elle contient ne sont jamais affichés ni journalisés.',
+      mountFailed: 'Échec du montage depuis l\'URL',
+      read: '{{read}} lus sur {{size}}',
+      hitRate: '{{rate}} % depuis le cache',
+      lastError: 'La dernière lecture a échoué, la suivante réessaiera : {{error}}'
+    },
     download: {
       uploadFailed: "Échec de l'envoi",
       uploadSuccess: 'Envoi terminé',

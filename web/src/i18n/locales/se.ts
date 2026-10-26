@@ -738,6 +738,19 @@ const se = {
       down: 'Av',
       checking: 'Kontrollerar...'
     },
+    urlMedia: {
+      open: 'Montera från URL',
+      desc: 'Levererar en ISO- eller diskavbild direkt från en webbserver utan att spara den på enheten. Servern måste stödja byteintervall.',
+      mount: 'Montera',
+      asCd: 'CD',
+      asDisk: 'Disk (skrivskyddad)',
+      unavailable: 'Inte tillgängligt i den här firmwaren: kärnan saknar stöd för nätverksblockenheter (NBD). Montering från en URL kräver mainline-kärnan (plats B).',
+      credentials: 'URL:en hålls bara i minnet. Inloggningsuppgifter eller token i den visas eller loggas aldrig.',
+      mountFailed: 'Montering från URL misslyckades',
+      read: '{{read}} av {{size}} läst',
+      hitRate: '{{rate}} % från cache',
+      lastError: 'Senaste läsningen misslyckades, nästa försöker igen: {{error}}'
+    },
     download: {
       uploadFailed: 'Uppladdningen misslyckades',
       uploadSuccess: 'Uppladdningen är klar',

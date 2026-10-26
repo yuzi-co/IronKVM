@@ -141,3 +141,58 @@ func TestRemoveImageRefusesAnImageOnADeviceInADrive(t *testing.T) {
 		t.Fatalf("the image was removed: %s", err)
 	}
 }
+
+func TestInsertDeviceIntoTakesTheCDAndAnNBDDevice(t *testing.T) {
+	fakeGadget(t, "lun.0", "lun.1")
+	useHidOnly(t, false)
+	writes := recordWrites(t, nil)
+	registerTestDevice(t, "/dev/nbd0")
+
+	if err := InsertDeviceInto(DriveCdrom, "/dev/nbd0"); err != nil {
+		t.Fatalf("insert: %s", err)
+	}
+	if len(*writes) != 1 || (*writes)[0] != "lun.1/file=/dev/nbd0" {
+		t.Fatalf("writes %v, want the CD's file only", *writes)
+	}
+	if drive, err := DeviceDrive("/dev/nbd0"); err != nil || drive != DriveCdrom {
+		t.Fatalf("DeviceDrive = %q, %v", drive, err)
+	}
+}
+
+func TestInsertDeviceIntoLoadsTheDiskReadOnly(t *testing.T) {
+	fakeGadget(t, "lun.0", "lun.1")
+	useHidOnly(t, false)
+	writes := recordWrites(t, nil)
+	registerTestDevice(t, "/dev/nbd1")
+
+	if err := InsertDeviceInto(DriveDisk, "/dev/nbd1"); err != nil {
+		t.Fatalf("insert: %s", err)
+	}
+	want := []string{"lun.0/ro=1", "lun.0/file=/dev/nbd1"}
+	if len(*writes) != 2 || (*writes)[0] != want[0] || (*writes)[1] != want[1] {
+		t.Fatalf("writes %v, want %v", *writes, want)
+	}
+}
+
+func TestInsertDeviceIntoTakesOnlyARegisteredDevice(t *testing.T) {
+	fakeGadget(t, "lun.0", "lun.1")
+	useHidOnly(t, false)
+	registerTestDevice(t, "/dev/nbd0")
+
+	for _, path := range []string{"/dev/nbd1", "/dev/nbd0/../mmcblk0", "/dev/nbdx/../../etc/shadow", "/data/a.iso"} {
+		if err := InsertDeviceInto(DriveCdrom, path); !errors.Is(err, errNotADevice) {
+			t.Errorf("%s: got %v", path, err)
+		}
+	}
+}
+
+func TestUnregisterDeviceForgetsIt(t *testing.T) {
+	fakeGadget(t, "lun.0", "lun.1")
+	useHidOnly(t, false)
+	registerTestDevice(t, "/dev/nbd0")
+
+	UnregisterDevice("/dev/nbd0")
+	if err := InsertDeviceInto(DriveCdrom, "/dev/nbd0"); !errors.Is(err, errNotADevice) {
+		t.Fatalf("insert after unregister: %v", err)
+	}
+}

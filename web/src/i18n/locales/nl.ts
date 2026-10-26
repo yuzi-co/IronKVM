@@ -749,6 +749,19 @@ const nl = {
       down: 'Uit',
       checking: 'Controleren...'
     },
+    urlMedia: {
+      open: 'Koppelen vanaf URL',
+      desc: 'Biedt een ISO- of schijfimage rechtstreeks aan vanaf een webserver, zonder het op het apparaat op te slaan. De server moet bytebereiken ondersteunen.',
+      mount: 'Koppelen',
+      asCd: 'CD',
+      asDisk: 'Schijf (alleen-lezen)',
+      unavailable: 'Niet beschikbaar in deze firmware: de kernel ondersteunt geen netwerkblokapparaten (NBD). Koppelen vanaf een URL vereist de mainline-kernel (slot B).',
+      credentials: 'De URL blijft alleen in het geheugen. Inloggegevens of tokens erin worden nooit getoond of gelogd.',
+      mountFailed: 'Koppelen vanaf URL mislukt',
+      read: '{{read}} van {{size}} gelezen',
+      hitRate: '{{rate}}% uit cache',
+      lastError: 'Laatste leesactie mislukt, de volgende probeert het opnieuw: {{error}}'
+    },
     download: {
       uploadFailed: 'Upload mislukt',
       uploadSuccess: 'Upload voltooid',

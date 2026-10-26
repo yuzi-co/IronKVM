@@ -744,6 +744,19 @@ const hu = {
       down: 'Ki van kapcsolva',
       checking: 'Ellenőrzés...'
     },
+    urlMedia: {
+      open: 'Csatolás URL-ről',
+      desc: 'ISO- vagy lemezképet szolgál ki közvetlenül egy webszerverről, az eszközön való tárolás nélkül. A szervernek támogatnia kell a bájttartományokat.',
+      mount: 'Csatolás',
+      asCd: 'CD',
+      asDisk: 'Lemez (csak olvasható)',
+      unavailable: 'Ebben a firmware-ben nem érhető el: a kernele nem támogatja a hálózati blokkeszközöket (NBD). Az URL-ről csatoláshoz a mainline kernel kell (B slot).',
+      credentials: 'Az URL csak a memóriában marad. A benne lévő hitelesítő adatok és tokenek soha nem jelennek meg és nem kerülnek naplóba.',
+      mountFailed: 'Az URL-ről csatolás sikertelen',
+      read: '{{read}} / {{size}} beolvasva',
+      hitRate: '{{rate}}% gyorsítótárból',
+      lastError: 'Az utolsó olvasás sikertelen, a következő újrapróbálja: {{error}}'
+    },
     download: {
       uploadFailed: 'A feltöltés sikertelen',
       uploadSuccess: 'Feltöltés kész',
