@@ -523,6 +523,25 @@ const cz = {
       resetHidFailed: 'Reset USB HID se nezdařil'
     },
     image: {
+      create: {
+        button: 'Nový výměnný obraz',
+        title: 'Nový výměnný obraz',
+        desc: 'Prázdný disk pro výměnu souborů s hostitelem. Naplňte ho v prohlížeči souborů a pak ho vložte do diskové jednotky.',
+        name: 'Název',
+        nameRequired: 'Zadejte název.',
+        nameInvalid: 'Neplatný název souboru.',
+        nameIso: 'Výměnný obraz je disk: použijte .img, ne .iso.',
+        size: 'Velikost',
+        custom: 'Vlastní',
+        room: 'Na zařízení se vejde až {{max}}. Místo se zabírá až zápisem souborů.',
+        sizeTooSmall: 'Alespoň {{min}}.',
+        sizeTooLarge: 'Nejvýše {{max}}: na zařízení není víc místa.',
+        fs: 'Souborový systém',
+        exfatHint: 'Windows, macOS i Linux ho čtou i zapisují. Bez omezení velikosti souboru.',
+        fat32Hint: 'Pro starší hostitele a firmware UEFI. Soubory musí být menší než 4 GiB.',
+        submit: 'Vytvořit',
+        failed: 'Obraz se nepodařilo vytvořit',
+      },
       files: {
         browse: 'Procházet soubory',
         hostWrites:

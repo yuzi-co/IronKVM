@@ -4,7 +4,16 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+
+	"NanoKVM-Server/service/storage/mkfs"
 )
+
+// File is one image on the Ventoy partition. Its exFAT volume is laid out by
+// service/storage/mkfs, which also formats the board's exchange images.
+type File = mkfs.File
+
+// sectorSize is the disk's logical sector size.
+const sectorSize = 512
 
 // The Ventoy disk as Ventoy2Disk.sh 1.1.17 lays it out in MBR style: boot.img
 // in the MBR, core.img from sector 1, partition 1 from sector 2048, and the
@@ -160,7 +169,7 @@ func BuildDisk(files []File, tail TailReader, boot BootFiles, id Identity) (*Dis
 		return nil, errors.New("core.img does not fit before partition 1")
 	}
 
-	vol, err := newVolume(files, volumeOptions{
+	vol, err := mkfs.NewExFAT(files, mkfs.ExFATOptions{
 		PartitionOffset: part1Start,
 		EndAlign:        part2Align,
 		Serial:          id.Serial,

@@ -518,6 +518,25 @@ const se = {
       resetHidFailed: 'Återställning av USB HID misslyckades'
     },
     image: {
+      create: {
+        button: 'Ny utbytesavbild',
+        title: 'Ny utbytesavbild',
+        desc: 'En tom disk för att utbyta filer med värden. Fyll den från filbläddraren och sätt sedan in den i diskenheten.',
+        name: 'Namn',
+        nameRequired: 'Ange ett namn.',
+        nameInvalid: 'Ogiltigt filnamn.',
+        nameIso: 'En utbytesavbild är en disk: använd .img, inte .iso.',
+        size: 'Storlek',
+        custom: 'Anpassad',
+        room: 'Upp till {{max}} får plats på enheten. Utrymme används först när filer skrivs.',
+        sizeTooSmall: 'Minst {{min}}.',
+        sizeTooLarge: 'Högst {{max}}: enheten har inte mer utrymme.',
+        fs: 'Filsystem',
+        exfatHint: 'Windows, macOS och Linux kan läsa och skriva det. Ingen gräns för filstorlek.',
+        fat32Hint: 'För äldre värdar och UEFI-firmware. Filer måste vara mindre än 4 GiB.',
+        submit: 'Skapa',
+        failed: 'Kunde inte skapa avbilden',
+      },
       files: {
         browse: 'Bläddra bland filer',
         hostWrites:

@@ -20,6 +20,8 @@ func storageRouter(r *gin.Engine) {
 	api.POST("/storage/drives/:id/insert", service.InsertDrive) // insert an image into a drive
 	api.POST("/storage/drives/:id/eject", service.EjectDrive)   // eject a drive's image
 	api.POST("/storage/image/delete", service.DeleteImage)      // delete image
+	api.POST("/storage/image/create", service.CreateImage)      // create an empty exchange image
+	api.GET("/storage/image/space", service.GetImageSpace)      // the sizes a new image can have
 
 	// The files inside an image: browse it, and exchange files with the host
 	// through it while no drive serves it.

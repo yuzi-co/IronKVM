@@ -1,4 +1,8 @@
-package ventoy
+// Package mkfs lays out empty or prefilled FAT32 and exFAT volumes in pure
+// Go, so the board needs no mkfs tools for them: the exFAT partition of the
+// Ventoy disk (service/ventoy), and the exchange images an admin creates for
+// swapping files with the host.
+package mkfs
 
 import (
 	"encoding/binary"
@@ -9,7 +13,7 @@ import (
 	"unicode/utf16"
 )
 
-// The exFAT volume that is partition 1 of the Ventoy disk. Only its metadata
+// An exFAT volume, such as partition 1 of the Ventoy disk. Only its metadata
 // is generated: the boot regions, the FAT, the allocation bitmap, the up-case
 // table and the root directory. Each file takes a contiguous run of clusters
 // after them, and the caller maps that run to the file itself. Everything
@@ -64,18 +68,22 @@ type File struct {
 	ModTime time.Time
 }
 
-type volumeOptions struct {
+type ExFATOptions struct {
 	// PartitionOffset is the volume's first sector on the disk.
 	PartitionOffset uint64
 	// EndAlign rounds the volume up so that the next sector on the disk is
 	// a multiple of it. Ventoy starts partition 2 on a multiple of 8.
 	EndAlign uint64
-	Serial   uint32
-	Label    string
+	// Sectors, when set, is the volume's length: the clusters the files do
+	// not take are free. EndAlign is then ignored. Without it the volume
+	// is as long as its files need, as the Ventoy partition is.
+	Sectors uint64
+	Serial  uint32
+	Label   string
 }
 
-// volume is a laid-out exFAT volume.
-type volume struct {
+// ExFATVolume is a laid-out exFAT volume.
+type ExFATVolume struct {
 	// Meta holds the volume's sectors from the first one up to the first
 	// sector of the first file's clusters.
 	Meta []byte
@@ -164,7 +172,7 @@ var upcaseMap = func() []uint16 {
 }()
 
 // upcaseKey is the name as exFAT compares it: up-cased unit by unit.
-func upcaseKey(name string) string {
+func UpcaseKey(name string) string {
 	units := utf16.Encode([]rune(name))
 	for i, u := range units {
 		units[i] = upcaseMap[u]
@@ -287,8 +295,8 @@ func fileEntrySet(units []uint16, f File, first uint32) []byte {
 	return set
 }
 
-// newVolume lays out an exFAT volume holding files, in the order given.
-func newVolume(files []File, opts volumeOptions) (*volume, error) {
+// NewExFAT lays out an exFAT volume holding files, in the order given.
+func NewExFAT(files []File, opts ExFATOptions) (*ExFATVolume, error) {
 	if opts.EndAlign == 0 {
 		opts.EndAlign = 1
 	}
@@ -309,7 +317,7 @@ func newVolume(files []File, opts volumeOptions) (*volume, error) {
 		if f.Size < 0 {
 			return nil, fmt.Errorf("file %q has a negative size", f.Name)
 		}
-		key := upcaseKey(f.Name)
+		key := UpcaseKey(f.Name)
 		if seen[key] {
 			return nil, fmt.Errorf("two files are named %q", f.Name)
 		}
@@ -320,6 +328,12 @@ func newVolume(files []File, opts volumeOptions) (*volume, error) {
 	}
 
 	shift := clusterShift(total + 1<<20)
+	if opts.Sectors > 0 {
+		if opts.Sectors < minVolumeSectors {
+			return nil, fmt.Errorf("a volume of %d sectors is below exFAT's minimum of %d", opts.Sectors, minVolumeSectors)
+		}
+		shift = clusterShift(opts.Sectors * sectorSize)
+	}
 	spc := uint64(1) << shift
 	clusterBytes := spc * sectorSize
 
@@ -347,6 +361,30 @@ func newVolume(files []File, opts volumeOptions) (*volume, error) {
 	)
 	for {
 		used = bitmapClusters + upcaseClusters + rootClusters + fileClusters
+		if opts.Sectors > 0 {
+			// A volume of a set length. The FAT is sized for every cluster
+			// the whole length could hold, which is at least what the
+			// specification asks, and the clusters are whatever fits after
+			// it; the sectors past the last whole cluster stay unused.
+			sectors = opts.Sectors
+			fatLength = ceilDiv((sectors/spc+2)*4, sectorSize)
+			heap = alignUp(fatOffset+fatLength, spc)
+			if heap >= sectors {
+				return nil, errors.New("the volume is too small for its own metadata")
+			}
+			count = min((sectors-heap)/spc, maxClusterCnt)
+			if count < used {
+				return nil, errors.New("the files do not fit in the volume")
+			}
+			need := ceilDiv(ceilDiv(count, 8), clusterBytes)
+			if need != bitmapClusters {
+				bitmapClusters = need
+				continue
+			}
+			free = count - used
+			break
+		}
+
 		count = used + free
 		if count > maxClusterCnt {
 			return nil, errors.New("the files are too large for one exFAT volume")
@@ -367,11 +405,11 @@ func newVolume(files []File, opts volumeOptions) (*volume, error) {
 		}
 		break
 	}
-	if (sectors-heap)/spc != count {
+	if count < maxClusterCnt && (sectors-heap)/spc != count {
 		return nil, fmt.Errorf("layout error: %d sectors hold %d clusters, not %d", sectors-heap, (sectors-heap)/spc, count)
 	}
 
-	v := &volume{
+	v := &ExFATVolume{
 		Sectors:        sectors,
 		ClusterSectors: spc,
 		ClusterCount:   uint32(count),

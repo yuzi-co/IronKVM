@@ -1,4 +1,4 @@
-package ventoy
+package mkfs
 
 import (
 	"encoding/binary"
@@ -27,7 +27,7 @@ func TestUpcaseMap(t *testing.T) {
 			t.Errorf("upcase %q = %q, want %q", in, got, want)
 		}
 	}
-	if upcaseKey("Äbc.iso") != upcaseKey("äBC.ISO") {
+	if UpcaseKey("Äbc.iso") != UpcaseKey("äBC.ISO") {
 		t.Error("names that differ in case only must compare equal")
 	}
 }
@@ -66,9 +66,9 @@ func TestTimestamp(t *testing.T) {
 	}
 }
 
-func volumeFor(t *testing.T, files []File) *volume {
+func volumeFor(t *testing.T, files []File) *ExFATVolume {
 	t.Helper()
-	v, err := newVolume(files, volumeOptions{PartitionOffset: 2048, EndAlign: 8, Serial: 0x1234, Label: "Ventoy"})
+	v, err := NewExFAT(files, ExFATOptions{PartitionOffset: 2048, EndAlign: 8, Serial: 0x1234, Label: "Ventoy"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -238,7 +238,7 @@ func TestRootDirectory(t *testing.T) {
 }
 
 func TestNewVolumeRefusesDuplicateNames(t *testing.T) {
-	_, err := newVolume([]File{{Name: "a.iso"}, {Name: "A.ISO"}}, volumeOptions{})
+	_, err := NewExFAT([]File{{Name: "a.iso"}, {Name: "A.ISO"}}, ExFATOptions{})
 	if err == nil {
 		t.Fatal("names that differ in case only were accepted")
 	}

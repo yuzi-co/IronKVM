@@ -524,6 +524,25 @@ const pt_br = {
       resetHidFailed: 'Falha ao redefinir o HID USB'
     },
     image: {
+      create: {
+        button: 'Nova imagem de troca',
+        title: 'Nova imagem de troca',
+        desc: 'Um disco vazio para trocar arquivos com o host. Preencha pelo navegador de arquivos e depois insira-o na unidade de disco.',
+        name: 'Nome',
+        nameRequired: 'Digite um nome.',
+        nameInvalid: 'Nome de arquivo inválido.',
+        nameIso: 'Uma imagem de troca é um disco: use .img, não .iso.',
+        size: 'Tamanho',
+        custom: 'Personalizado',
+        room: 'Cabem até {{max}} no dispositivo. O espaço só é ocupado conforme os arquivos são gravados.',
+        sizeTooSmall: 'No mínimo {{min}}.',
+        sizeTooLarge: 'No máximo {{max}}: o dispositivo não tem mais espaço.',
+        fs: 'Sistema de arquivos',
+        exfatHint: 'Windows, macOS e Linux leem e gravam. Sem limite de tamanho de arquivo.',
+        fat32Hint: 'Para hosts antigos e firmware UEFI. Os arquivos devem ter menos de 4 GiB.',
+        submit: 'Criar',
+        failed: 'Não foi possível criar a imagem',
+      },
       files: {
         browse: 'Explorar arquivos',
         hostWrites:

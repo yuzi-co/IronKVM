@@ -504,6 +504,25 @@ const zh = {
       resetHidFailed: 'USB HID 重置失败'
     },
     image: {
+      create: {
+        button: '新建交换镜像',
+        title: '新建交换镜像',
+        desc: '用于与主机交换文件的空磁盘。先在文件浏览器中放入文件，再插入磁盘驱动器。',
+        name: '名称',
+        nameRequired: '请输入名称。',
+        nameInvalid: '文件名无效。',
+        nameIso: '交换镜像是磁盘：请使用 .img，而不是 .iso。',
+        size: '大小',
+        custom: '自定义',
+        room: '设备最多可容纳 {{max}}。只有写入文件时才会占用空间。',
+        sizeTooSmall: '至少 {{min}}。',
+        sizeTooLarge: '最多 {{max}}：设备没有更多空间。',
+        fs: '文件系统',
+        exfatHint: 'Windows、macOS 和 Linux 均可读写。无文件大小限制。',
+        fat32Hint: '适用于较旧的主机和 UEFI 固件。文件必须小于 4 GiB。',
+        submit: '创建',
+        failed: '无法创建镜像',
+      },
       files: {
         browse: '浏览文件',
         hostWrites: '主机可以写入此镜像。请弹出它，或以只读方式插入后再浏览。',

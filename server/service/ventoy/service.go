@@ -26,6 +26,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"NanoKVM-Server/service/storage"
+	"NanoKVM-Server/service/storage/mkfs"
 	"NanoKVM-Server/utils"
 )
 
@@ -514,10 +515,10 @@ func uniqueNames(images []string) []string {
 		name := base
 		ext := filepath.Ext(base)
 		stem := strings.TrimSuffix(base, ext)
-		for n := 2; taken[upcaseKey(name)]; n++ {
+		for n := 2; taken[mkfs.UpcaseKey(name)]; n++ {
 			name = fmt.Sprintf("%s (%d)%s", stem, n, ext)
 		}
-		taken[upcaseKey(name)] = true
+		taken[mkfs.UpcaseKey(name)] = true
 		names[i] = name
 	}
 	return names
