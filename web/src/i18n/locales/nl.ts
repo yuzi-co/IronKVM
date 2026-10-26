@@ -920,7 +920,7 @@ const nl = {
           admin: 'Beheer',
           adminDesc: 'Apparaatinstellingen wijzigen (nog geen tool gebruikt dit niveau)',
           agentNote:
-            'De ingebouwde agent heeft nog geen voedings- of mediatools, dus deze twee niveaus gelden alleen voor MCP-clients.',
+            'Voeding en media staan uit voor de ingebouwde agent totdat u ze inschakelt. Daarna kan hij op de aan- en resetknop drukken en images plaatsen of uitwerpen; hij vraagt het u voordat hij drukt.',
           loadFailed: 'De bevoegdheidsniveaus kunnen niet worden geladen.',
           saveFailed: 'De bevoegdheidsniveaus kunnen niet worden opgeslagen.'
         },

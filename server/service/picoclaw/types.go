@@ -11,6 +11,7 @@ import (
 
 	"NanoKVM-Server/service/agent"
 	"NanoKVM-Server/service/controlmode"
+	"NanoKVM-Server/service/hostdevices"
 )
 
 type VisionReader interface {
@@ -46,6 +47,9 @@ type Service struct {
 	// mcp serves /api/picoclaw/mcp. It is built on first use.
 	mcpOnce sync.Once
 	mcp     http.Handler
+	// devices are the power button, power LED and virtual media that the
+	// device tools reach. SetDevices sets them before the first MCP call.
+	devices hostdevices.Devices
 }
 
 type ConfigStore struct {

@@ -145,10 +145,11 @@ func TestMCPUnknownMethodIsRefused(t *testing.T) {
 
 // TestMCPToolsListMatchesGolden pins the tool names, descriptions and input
 // schemas. Run with -update to rewrite the golden file after a deliberate
-// change.
+// change. Every tier is on and the board has every device, so the file holds
+// every tool.
 func TestMCPToolsListMatchesGolden(t *testing.T) {
-	service, _, _ := newMCPActionTestService(t)
-	withAgentTiers(t, audit.TierObserve, audit.TierInput)
+	service, _ := newDeviceTestService(t)
+	withAgentTiers(t, audit.TierObserve, audit.TierInput, audit.TierPower, audit.TierMedia)
 
 	result := toolResult(t, mcpRPC(t, service, `{"jsonrpc":"2.0","id":7,"method":"tools/list"}`, nil))
 	tools, err := json.MarshalIndent(result["tools"], "", "  ")
@@ -183,8 +184,8 @@ func TestMCPUnknownToolIsInvalidParams(t *testing.T) {
 	service, _, _ := newMCPActionTestService(t)
 	store := withAgentTiers(t, audit.TierObserve, audit.TierInput)
 
-	envelope := callTool(t, service, "kvm_power", `{}`, nil)
-	if envelope.Error == nil || envelope.Error.Code != -32602 || !strings.Contains(envelope.Error.Message, "kvm_power") {
+	envelope := callTool(t, service, "kvm_format_disk", `{}`, nil)
+	if envelope.Error == nil || envelope.Error.Code != -32602 || !strings.Contains(envelope.Error.Message, "kvm_format_disk") {
 		t.Fatalf("envelope = %+v, want -32602 naming the tool", envelope)
 	}
 	if events := agentEvents(t, store); len(events) != 0 {

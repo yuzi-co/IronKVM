@@ -914,7 +914,7 @@ const pl = {
           admin: 'Administracja',
           adminDesc: 'Zmiana ustawień urządzenia (żadne narzędzie jeszcze nie używa tego poziomu)',
           agentNote:
-            'Wbudowany agent nie ma jeszcze narzędzi zasilania ani nośników, więc te dwa poziomy dotyczą tylko klientów MCP.',
+            'Zasilanie i nośniki są wyłączone dla wbudowanego agenta, dopóki ich nie włączysz. Po włączeniu może naciskać przyciski zasilania i resetu oraz wkładać lub wysuwać obrazy; przed naciśnięciem pyta o zgodę.',
           loadFailed: 'Nie udało się wczytać poziomów uprawnień.',
           saveFailed: 'Nie udało się zapisać poziomów uprawnień.'
         },

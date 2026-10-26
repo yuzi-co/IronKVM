@@ -916,7 +916,7 @@ const ca = {
           adminDesc:
             'Canvia els paràmetres del dispositiu (cap eina fa servir encara aquest nivell)',
           agentNote:
-            'L\'agent integrat encara no té eines d\'encesa ni de suports, de manera que aquests dos nivells només afecten els clients MCP.',
+            'L\'encesa i els suports estan desactivats per a l\'agent integrat fins que els activeu. Amb ells activats, pot prémer els botons d\'encesa i de reinici i inserir o expulsar imatges; us ho pregunta abans de prémer un botó.',
           loadFailed: 'No s\'han pogut carregar els nivells de capacitat.',
           saveFailed: 'No s\'han pogut desar els nivells de capacitat.'
         },

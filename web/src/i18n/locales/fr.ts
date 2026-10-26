@@ -924,7 +924,7 @@ const fr = {
           adminDesc:
             'Modifier les réglages de l\'appareil (aucun outil n\'utilise encore ce niveau)',
           agentNote:
-            'L\'agent intégré n\'a pas encore d\'outils d\'alimentation ni de médias : ces deux niveaux ne concernent que les clients MCP.',
+            'L\'alimentation et les médias sont désactivés pour l\'agent intégré tant que vous ne les activez pas. Une fois activés, il peut appuyer sur les boutons d\'alimentation et de réinitialisation et insérer ou éjecter des images ; il vous demande avant d\'appuyer.',
           loadFailed: 'Impossible de charger les niveaux de capacité.',
           saveFailed: 'Impossible d\'enregistrer les niveaux de capacité.'
         },

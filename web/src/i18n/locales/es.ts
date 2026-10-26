@@ -920,7 +920,7 @@ const es = {
           admin: 'Administración',
           adminDesc: 'Cambiar los ajustes del dispositivo (ninguna herramienta usa aún este nivel)',
           agentNote:
-            'El agente integrado aún no tiene herramientas de energía ni de medios, así que esos dos niveles solo afectan a los clientes MCP.',
+            'La energía y los medios están desactivados para el agente integrado hasta que los actives. Con ellos activos, puede pulsar los botones de encendido y reinicio e insertar o expulsar imágenes; te pregunta antes de pulsar.',
           loadFailed: 'No se pudieron cargar los niveles de capacidad.',
           saveFailed: 'No se pudieron guardar los niveles de capacidad.'
         },

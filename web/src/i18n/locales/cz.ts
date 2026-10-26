@@ -908,7 +908,7 @@ const cz = {
           admin: 'Správa',
           adminDesc: 'Měnit nastavení zařízení (tuto úroveň zatím nepoužívá žádný nástroj)',
           agentNote:
-            'Vestavěný agent zatím nemá nástroje pro napájení ani média, proto se tyto dvě úrovně týkají jen klientů MCP.',
+            'Napájení a média jsou pro vestavěného agenta vypnuté, dokud je nezapnete. Když jsou zapnuté, může mačkat tlačítka napájení a resetu a vkládat či vysouvat obrazy; před stiskem se vás zeptá.',
           loadFailed: 'Úrovně oprávnění se nepodařilo načíst.',
           saveFailed: 'Úrovně oprávnění se nepodařilo uložit.'
         },

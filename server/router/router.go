@@ -117,6 +117,9 @@ func staticHandler(webPath string) gin.HandlerFunc {
 func server(r *gin.Engine) {
 	control := controlmode.GetManager()
 	picoclawService := picoclaw.NewService(control)
+	// The on-board agent reaches the power button and the virtual media through
+	// the same calls as MCP, behind its own power and media tiers.
+	picoclawService.SetDevices(mcpDevices())
 	// PicoClaw is the agent behind the chat routes. Another agent needs only
 	// another agent.Agent here.
 	chatAgent := picoclawService.Agent()

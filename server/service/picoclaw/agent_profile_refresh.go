@@ -34,6 +34,7 @@ var shippedAgentProfiles = map[string]string{
 	"d67bc0dc27f84df68011bb1f47c6041a9e2a4ace9826ca8f59ee7f61eaee07f4": agentProfileKVM,
 	"60d96fad3ffbc4122c56ff18efb0893c1f7a199785894aafde570d72a49df4f4": agentProfileKVM,
 	"3a4f0ac2cb9ae963fa8e04c55fa5124c4474a0c74d7595e5439f31d9592b3062": agentProfileKVM,
+	"122b315a3a5d6168137862cb99d370600ad5b6f785ddedec89a9f16637079e58": agentProfileKVM,
 }
 
 func agentProfileDigest(content []byte) string {
