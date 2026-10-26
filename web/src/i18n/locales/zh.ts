@@ -1316,7 +1316,11 @@ const zh = {
         hardware: '硬件',
         hardwareFaq: '硬件常见问题',
         disclaimer: 'IronKVM：面向 Sipeed NanoKVM 的加固社区固件。与 Sipeed 无关。',
-        basedOn: '基于 NanoKVM {{version}}'
+        basedOn: '基于 NanoKVM {{version}}',
+        licenses: '许可证',
+        licensesDescription: '此镜像中软件的许可证',
+        licensesUnavailable: '此镜像未包含许可证清单。',
+        licenseTexts: '许可证文本（{{count}}）'
       },
       preferences: {
         title: '偏好设置'

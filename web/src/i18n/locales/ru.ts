@@ -1380,7 +1380,11 @@ const ru = {
         hardwareFaq: 'Вопросы по оборудованию',
         disclaimer:
           'IronKVM: защищённая прошивка сообщества для Sipeed NanoKVM. Не связана с Sipeed.',
-        basedOn: 'на основе NanoKVM {{version}}'
+        basedOn: 'на основе NanoKVM {{version}}',
+        licenses: 'Лицензии',
+        licensesDescription: 'Лицензии программ в этом образе',
+        licensesUnavailable: 'В этом образе нет манифеста лицензий.',
+        licenseTexts: 'Тексты лицензий ({{count}})'
       },
       preferences: {
         title: 'Предпочтения'

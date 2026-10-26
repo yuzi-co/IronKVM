@@ -1372,7 +1372,11 @@ const tr = {
         hardwareFaq: 'Donanım SSS',
         disclaimer:
           'IronKVM: Sipeed NanoKVM için sağlamlaştırılmış topluluk yazılımı. Sipeed ile bağlantılı değildir.',
-        basedOn: 'NanoKVM {{version}} tabanlı'
+        basedOn: 'NanoKVM {{version}} tabanlı',
+        licenses: 'Lisanslar',
+        licensesDescription: 'Bu imajdaki yazılımların lisansları',
+        licensesUnavailable: 'Bu imaj bir lisans bildirimi içermiyor.',
+        licenseTexts: 'Lisans metinleri ({{count}})'
       },
       preferences: {
         title: 'Tercihler'

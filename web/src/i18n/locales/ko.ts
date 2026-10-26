@@ -1358,7 +1358,11 @@ const ko = {
         hardwareFaq: '하드웨어 FAQ',
         disclaimer:
           'IronKVM: Sipeed NanoKVM용 보안 강화 커뮤니티 펌웨어. Sipeed와 관련이 없습니다.',
-        basedOn: 'NanoKVM {{version}} 기반'
+        basedOn: 'NanoKVM {{version}} 기반',
+        licenses: '라이선스',
+        licensesDescription: '이 이미지에 포함된 소프트웨어의 라이선스',
+        licensesUnavailable: '이 이미지에는 라이선스 매니페스트가 없습니다.',
+        licenseTexts: '라이선스 전문 ({{count}})'
       },
       preferences: {
         title: '환경설정'

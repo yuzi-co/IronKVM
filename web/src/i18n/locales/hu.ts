@@ -1390,7 +1390,11 @@ const hu = {
         hardwareFaq: 'Hardver GYIK',
         disclaimer:
           'IronKVM: megerősített közösségi firmware a Sipeed NanoKVM-hez. Nem áll kapcsolatban a Sipeeddel.',
-        basedOn: 'NanoKVM {{version}} alapján'
+        basedOn: 'NanoKVM {{version}} alapján',
+        licenses: 'Licencek',
+        licensesDescription: 'A képfájlban lévő szoftverek licencei',
+        licensesUnavailable: 'Ez a képfájl nem tartalmaz licencjegyzéket.',
+        licenseTexts: 'Licencszövegek ({{count}})'
       },
       preferences: {
         title: 'Preferenciák'

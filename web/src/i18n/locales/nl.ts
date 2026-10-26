@@ -1385,7 +1385,11 @@ const nl = {
         hardwareFaq: 'Hardware-FAQ',
         disclaimer:
           'IronKVM: geharde community-firmware voor de Sipeed NanoKVM. Niet verbonden aan Sipeed.',
-        basedOn: 'gebaseerd op NanoKVM {{version}}'
+        basedOn: 'gebaseerd op NanoKVM {{version}}',
+        licenses: 'Licenties',
+        licensesDescription: 'Licenties van de software in deze image',
+        licensesUnavailable: 'Deze image bevat geen licentiemanifest.',
+        licenseTexts: 'Licentieteksten ({{count}})'
       },
       preferences: {
         title: 'Voorkeuren'

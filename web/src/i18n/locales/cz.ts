@@ -1369,7 +1369,11 @@ const cz = {
         hardwareFaq: 'Časté dotazy k hardwaru',
         disclaimer:
           'IronKVM: zabezpečený komunitní firmware pro Sipeed NanoKVM. Bez vazby na společnost Sipeed.',
-        basedOn: 'založeno na NanoKVM {{version}}'
+        basedOn: 'založeno na NanoKVM {{version}}',
+        licenses: 'Licence',
+        licensesDescription: 'Licence softwaru v tomto obrazu',
+        licensesUnavailable: 'Tento obraz neobsahuje manifest licencí.',
+        licenseTexts: 'Texty licencí ({{count}})'
       },
       preferences: {
         title: 'Předvolby'

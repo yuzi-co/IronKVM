@@ -1375,7 +1375,11 @@ const id = {
         hardwareFaq: 'FAQ perangkat keras',
         disclaimer:
           'IronKVM: firmware komunitas yang diperkuat untuk Sipeed NanoKVM. Tidak berafiliasi dengan Sipeed.',
-        basedOn: 'berbasis NanoKVM {{version}}'
+        basedOn: 'berbasis NanoKVM {{version}}',
+        licenses: 'Lisensi',
+        licensesDescription: 'Lisensi perangkat lunak dalam image ini',
+        licensesUnavailable: 'Image ini tidak menyertakan manifes lisensi.',
+        licenseTexts: 'Teks lisensi ({{count}})'
       },
       preferences: {
         title: 'Preferensi'

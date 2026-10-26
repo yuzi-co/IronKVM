@@ -1364,7 +1364,11 @@ const en = {
         hardwareFaq: 'Hardware FAQ',
         disclaimer:
           'IronKVM: hardened community firmware for the Sipeed NanoKVM. Not affiliated with Sipeed.',
-        basedOn: 'based on NanoKVM {{version}}'
+        basedOn: 'based on NanoKVM {{version}}',
+        licenses: 'Licenses',
+        licensesDescription: 'Licenses of the software in this image',
+        licensesUnavailable: 'This image carries no license manifest.',
+        licenseTexts: 'License texts ({{count}})'
       },
       preferences: {
         title: 'Preferences'

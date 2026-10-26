@@ -1377,7 +1377,11 @@ const pl = {
         hardwareFaq: 'FAQ sprzętu',
         disclaimer:
           'IronKVM: wzmocnione firmware społeczności dla Sipeed NanoKVM. Niezwiązane z firmą Sipeed.',
-        basedOn: 'na bazie NanoKVM {{version}}'
+        basedOn: 'na bazie NanoKVM {{version}}',
+        licenses: 'Licencje',
+        licensesDescription: 'Licencje oprogramowania w tym obrazie',
+        licensesUnavailable: 'Ten obraz nie zawiera manifestu licencji.',
+        licenseTexts: 'Teksty licencji ({{count}})'
       },
       preferences: {
         title: 'Preferencje'

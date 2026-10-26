@@ -1354,7 +1354,11 @@ const th = {
         hardwareFaq: 'คำถามที่พบบ่อยเกี่ยวกับฮาร์ดแวร์',
         disclaimer:
           'IronKVM: เฟิร์มแวร์ชุมชนที่เสริมความปลอดภัยสำหรับ Sipeed NanoKVM ไม่มีส่วนเกี่ยวข้องกับ Sipeed',
-        basedOn: 'อิงจาก NanoKVM {{version}}'
+        basedOn: 'อิงจาก NanoKVM {{version}}',
+        licenses: 'สัญญาอนุญาต',
+        licensesDescription: 'สัญญาอนุญาตของซอฟต์แวร์ในอิมเมจนี้',
+        licensesUnavailable: 'อิมเมจนี้ไม่มีรายการสัญญาอนุญาต',
+        licenseTexts: 'ข้อความสัญญาอนุญาต ({{count}})'
       },
       preferences: {
         title: 'การกำหนดลักษณะ'

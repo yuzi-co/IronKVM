@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { Community } from './community.tsx';
 import { Information } from './information.tsx';
+import { Licenses } from './licenses.tsx';
 
 export const About = () => {
   const { t } = useTranslation();
@@ -16,6 +17,9 @@ export const About = () => {
       <Divider className="opacity-50" />
 
       <Community />
+      <Divider className="opacity-50" />
+
+      <Licenses />
     </>
   );
 };
