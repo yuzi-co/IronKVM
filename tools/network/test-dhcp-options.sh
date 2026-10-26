@@ -1,5 +1,6 @@
 #!/bin/sh
-# Check that every udhcpc call asks the server for classless static routes.
+# Check the options every udhcpc call passes: classless static routes, a
+# broadcast reply and the hostname.
 #
 #   test-dhcp-options.sh [path-to-init.d]
 #
@@ -99,6 +100,40 @@ for f in S30eth S30wifi; do
     done
 
     [ "$missing" = 0 ] && note "$f: all $total udhcpc call(s) ask for a broadcast reply" OK
+done
+
+echo "===== every udhcpc call sends the hostname ====="
+
+# udhcpc sends no hostname (option 12) unless the command line gives one, so a
+# router that registers DHCP clients in its DNS, or lists them by name, shows
+# the board as an anonymous MAC address. The calls pass "$DHCP_HOSTNAME", which
+# each script reads from hostname(1) and leaves empty when there is no name.
+for f in S30eth S30wifi; do
+    script="$DIR/$f"
+    if [ ! -f "$script" ]; then
+        note "$f exists" FAIL
+        continue
+    fi
+
+    calls=$(grep -n 'udhcpc ' "$script" | grep -v 'kill\|rm \|-e "\|\[ ' || true)
+
+    if [ -z "$calls" ]; then
+        note "$f calls udhcpc" FAIL
+        continue
+    fi
+
+    total=0
+    missing=0
+    for n in $(echo "$calls" | cut -d: -f1); do
+        total=$((total + 1))
+        text=$(sed -n "${n}p" "$script")
+        case "$text" in
+            *'${DHCP_HOSTNAME:+-x "hostname:$DHCP_HOSTNAME"}'*) : ;;
+            *) missing=$((missing + 1)); note "$f:$n sends the hostname" FAIL ;;
+        esac
+    done
+
+    [ "$missing" = 0 ] && note "$f: all $total udhcpc call(s) send the hostname" OK
 done
 
 echo "===== no address flush takes the IPv6 addresses with it ====="
