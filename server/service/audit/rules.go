@@ -18,6 +18,9 @@ var named = map[string]Rule{
 	"POST /api/auth/login/totp": {CategoryAuth, "login-2fa", true},
 	"POST /api/auth/logout":     {CategoryAuth, "logout", false},
 
+	"DELETE /api/auth/sessions/:id":         {CategoryAuth, "revoke-session", false},
+	"POST /api/auth/sessions/revoke-others": {CategoryAuth, "revoke-other-sessions", false},
+
 	"POST /api/vm/gpio":          {CategoryPower, "press", false},
 	"POST /api/network/wol":      {CategoryPower, "wake-on-lan", false},
 	"POST /api/vm/system/reboot": {CategoryPower, "reboot", false},

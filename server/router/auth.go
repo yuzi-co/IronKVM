@@ -48,11 +48,18 @@ func authRouter(r *gin.Engine) {
 	keys.POST("/auth/totp/disable", service.DisableTOTP)
 	keys.POST("/auth/totp/recovery-codes", service.RegenerateRecoveryCodes)
 
+	// Login sessions are session work too: a key must not be able to sign
+	// its owner out, or see where they are signed in from.
+	keys.GET("/auth/sessions", service.ListSessions)
+	keys.DELETE("/auth/sessions/:id", service.RevokeSession)
+	keys.POST("/auth/sessions/revoke-others", service.RevokeOtherSessions)
+
 	adminSession := r.Group("/api").Use(
 		middleware.CheckSession(),
 		middleware.RequireRole(authn.RoleAdmin),
 	)
 	adminSession.DELETE("/auth/users/:username/totp", service.ResetUserTOTP)
+	adminSession.GET("/auth/sessions/all", service.ListAllSessions)
 
 	// Share links are session work like api keys: a key must not mint a
 	// link that outlives it.

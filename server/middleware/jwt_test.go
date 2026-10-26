@@ -260,12 +260,15 @@ func useTestAuthStore(t *testing.T, store *authn.Store) func() {
 	originalAuthentication := conf.Authentication
 	originalSecret := conf.JWT.SecretKey
 	originalDuration := conf.JWT.RefreshTokenDuration
+	originalSessions := authn.DefaultSessions
 	authn.DefaultStore = store
+	authn.DefaultSessions = authn.NewSessionStore(filepath.Join(t.TempDir(), "login_sessions.json"))
 	conf.Authentication = "enable"
 	conf.JWT.SecretKey = "test-secret"
 	conf.JWT.RefreshTokenDuration = 3600
 	return func() {
 		authn.DefaultStore = originalStore
+		authn.DefaultSessions = originalSessions
 		conf.Authentication = originalAuthentication
 		conf.JWT.SecretKey = originalSecret
 		conf.JWT.RefreshTokenDuration = originalDuration

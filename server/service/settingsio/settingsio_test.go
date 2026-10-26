@@ -122,7 +122,7 @@ func seedSecrets(b *board) {
 
 	for _, path := range []string{
 		"/etc/kvm/pwd", "/etc/kvm/.jwt_secret", "/etc/kvm/totp.key", "/etc/kvm/api_keys.json",
-		"/etc/kvm/share_links.json", "/etc/kvm/mcp.json", "/etc/kvm/.picoclaw_internal_token",
+		"/etc/kvm/share_links.json", "/etc/kvm/login_sessions.json", "/etc/kvm/mcp.json", "/etc/kvm/.picoclaw_internal_token",
 		"/etc/kvm/first-boot-password", "/etc/kvm/server.key", "/etc/kvm/uploaded.key",
 		"/etc/kvm/server.crt", "/etc/kvm/uploaded.crt", "/etc/kvm/wifi.ssid", "/etc/kvm/wifi.pass",
 		"/etc/kvm/vnc.passwd", "/etc/kvm/nut.passwd", "/etc/kvm/ipmi.key",
