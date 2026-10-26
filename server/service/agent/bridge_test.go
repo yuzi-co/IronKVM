@@ -216,6 +216,42 @@ func TestBridgeRelaysAPromptTurnThroughTheInterface(t *testing.T) {
 	}
 }
 
+// The sidebar's Stop button sends session/cancel while a turn runs. The
+// bridge ends the turn's capture lease at once, without waiting for the
+// agent, and passes the cancel on; the turn_done the agent sends for the
+// cancelled turn reaches the browser as "cancelled".
+func TestBridgeCancelEndsTheRunningTurnsLease(t *testing.T) {
+	h := newHarness(t)
+	conn, session := h.dial(t, "s1")
+
+	if err := conn.WriteJSON(map[string]any{"type": "session/prompt", "requestId": "r1", "text": "hello"}); err != nil {
+		t.Fatal(err)
+	}
+	<-session.Prompts
+	session.Emit(agent.Event{Type: agent.EventTurnStarted})
+	if event := readEvent(t, conn); event["type"] != "turn_started" {
+		t.Fatalf("got %v", event)
+	}
+	if held, _ := h.leases.counts(); held != 1 {
+		t.Fatalf("a running turn holds %d capture leases, want 1", held)
+	}
+
+	if err := conn.WriteJSON(map[string]any{"type": "session/cancel", "requestId": "r1"}); err != nil {
+		t.Fatal(err)
+	}
+	if requestID := <-session.Cancels; requestID != "r1" {
+		t.Fatalf("cancel named %q, want r1", requestID)
+	}
+	if held, _ := h.leases.counts(); held != 0 {
+		t.Fatalf("a cancelled turn still holds %d capture leases", held)
+	}
+
+	session.Emit(agent.Event{Type: agent.EventTurnDone, RequestIDs: []string{"r1", "stop-1"}, StopReason: agent.StopCancelled})
+	if event := readEvent(t, conn); event["type"] != "turn_done" || event["stopReason"] != "cancelled" {
+		t.Fatalf("got %v", event)
+	}
+}
+
 func TestBridgeClosesWithUpstreamClosedWhenTheAgentGoesAway(t *testing.T) {
 	h := newHarness(t)
 	conn, session := h.dial(t, "s1")
