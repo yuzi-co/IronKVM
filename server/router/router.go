@@ -160,6 +160,7 @@ func server(r *gin.Engine) {
 	urlMediaRouter(r)
 	whepRouter(r)
 	licensesRouter(r)
+	edidRouter(r)
 	supportRouter(r)
 }
 

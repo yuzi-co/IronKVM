@@ -25,6 +25,7 @@ export const SERVER_FEATURES = [
   'audit-log', // /api/audit (Settings > Audit log)
   'diagnostics-bundle', // GET /api/diagnostics/bundle (Settings > Backup: diagnostics bundle)
   'direct-clock', // the clock request on the direct H.264 socket (status bar latency)
+  'edid-view', // /api/edid (Settings > Device > EDID: presets and decoder, read only)
   'hid-autotap', // POST /api/hid/autotap and /api/hid/sequence (keyboard menu: auto-tap)
   'hid-macros', // /api/hid/macro(s) and /api/hid/sequence (keyboard menu: macros)
   'host-log', // /api/hostlog (Settings > Host log)

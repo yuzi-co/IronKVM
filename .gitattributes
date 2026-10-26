@@ -114,6 +114,9 @@ kvmapp/kvm_new_app          binary
 # server/dl_lib/. Same reason: a device payload, not source, and it must not
 # be run through any text conversion.
 *.a                         binary
+# EDID presets embedded into the server. They hold NUL bytes, so text=auto
+# would leave them alone anyway; this says so rather than relying on it.
+server/service/edid/presets/*.bin  binary
 
 # The six exceptions the default at the top of this file refers to. Upstream
 # committed these with CRLF, and the blobs still hold it. `-text` turns every
