@@ -133,6 +133,14 @@ func seedSecrets(b *board) {
 		b.write(path, sentinel+"-"+filepath.Base(path))
 	}
 
+	// WireGuard has no section: its private key and its address are this
+	// board's own (service/wireguard).
+	b.write("/etc/kvm/wireguard.json", fmt.Sprintf(`{
+  "privateKey": "%[1]s-wgprivate",
+  "addresses": ["10.98.0.2/24"],
+  "peers": [{"publicKey": "%[1]s-wgpeer", "presharedKey": "%[1]s-wgpsk", "endpoint": "%[1]s-wg.example:51820", "allowedIPs": ["10.98.0.0/24"]}]
+}`, sentinel))
+
 	b.write("/etc/kvm/notify.json", fmt.Sprintf(`{
   "enabled": true,
   "webhook": {"enabled": true, "url": "https://hooks.example/%[1]s-webhook"},
@@ -153,6 +161,9 @@ func TestExportCarriesNoSecret(t *testing.T) {
 	}
 	if strings.Contains(out, "10.99.0.0") {
 		t.Fatal("the export holds the allowed networks")
+	}
+	if strings.Contains(out, "10.98.0.") || strings.Contains(strings.ToLower(out), "wireguard") {
+		t.Fatal("the export holds the WireGuard configuration")
 	}
 }
 
