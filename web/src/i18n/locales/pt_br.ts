@@ -247,7 +247,11 @@ const pt_br = {
       },
       webrtcConnectionFailed: {
         title: 'Falha na conexão WebRTC',
-        description: 'Verifique a conexão de rede ou alterne o modo de vídeo.'
+        description: 'Verifique a conexão de rede ou alterne o modo de vídeo.',
+        noCandidates:
+          'O navegador não encontrou nenhum endereço de rede para oferecer para o vídeo. Uma configuração ou extensão do navegador que limita o WebRTC pode ser a causa. Permita o WebRTC, configure um servidor STUN ou mude o modo de vídeo para MJPEG.',
+        noRoute:
+          'Nenhuma rota de rede até o dispositivo foi encontrada. De outra rede, configure um servidor STUN, conecte-se por VPN ou redirecione uma porta, ou mude o modo de vídeo para MJPEG.'
       },
       captureStatus: {
         hdmiError: 'Erro na imagem HDMI',

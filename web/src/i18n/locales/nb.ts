@@ -246,7 +246,11 @@ const nb = {
       },
       webrtcConnectionFailed: {
         title: 'WebRTC-tilkobling mislyktes',
-        description: 'Kontroller nettverkstilkoblingen eller bytt videomodus.'
+        description: 'Kontroller nettverkstilkoblingen eller bytt videomodus.',
+        noCandidates:
+          'Nettleseren fant ingen nettverksadresse å tilby for videoen. En nettleserinnstilling eller utvidelse som begrenser WebRTC, kan være årsaken. Tillat WebRTC, angi en STUN-server, eller bytt videomodus til MJPEG.',
+        noRoute:
+          'Fant ingen nettverksrute til enheten. Fra et annet nettverk må du angi en STUN-server, koble til via VPN eller videresende en port, eller bytte videomodus til MJPEG.'
       },
       captureStatus: {
         hdmiError: 'HDMI-skjermfeil',

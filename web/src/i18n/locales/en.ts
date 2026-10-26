@@ -243,7 +243,11 @@ const en = {
       },
       webrtcConnectionFailed: {
         title: 'WebRTC connection failed',
-        description: 'Check the network connection or switch the video mode.'
+        description: 'Check the network connection or switch the video mode.',
+        noCandidates:
+          'The browser found no network address to offer for the video. A browser setting or extension that limits WebRTC can cause this. Allow WebRTC, set a STUN server, or switch the video mode to MJPEG.',
+        noRoute:
+          'No network route to the device was found. From another network, set a STUN server, connect over a VPN or forward a port, or switch the video mode to MJPEG.'
       },
       captureStatus: {
         hdmiError: 'HDMI screen error',

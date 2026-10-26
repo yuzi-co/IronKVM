@@ -249,7 +249,11 @@ const nl = {
       },
       webrtcConnectionFailed: {
         title: 'WebRTC-verbinding mislukt',
-        description: 'Controleer de netwerkverbinding of wijzig de videomodus.'
+        description: 'Controleer de netwerkverbinding of wijzig de videomodus.',
+        noCandidates:
+          'De browser vond geen netwerkadres om voor de video aan te bieden. Een browserinstelling of extensie die WebRTC beperkt, kan de oorzaak zijn. Sta WebRTC toe, stel een STUN-server in of schakel de videomodus naar MJPEG.',
+        noRoute:
+          'Er is geen netwerkroute naar het apparaat gevonden. Stel vanaf een ander netwerk een STUN-server in, maak verbinding via VPN of stuur een poort door, of schakel de videomodus naar MJPEG.'
       },
       captureStatus: {
         hdmiError: 'HDMI-schermfout',

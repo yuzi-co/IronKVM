@@ -245,7 +245,11 @@ const vi = {
       },
       webrtcConnectionFailed: {
         title: 'Kết nối WebRTC thất bại',
-        description: 'Kiểm tra kết nối mạng hoặc chuyển đổi chế độ video.'
+        description: 'Kiểm tra kết nối mạng hoặc chuyển đổi chế độ video.',
+        noCandidates:
+          'Trình duyệt không tìm thấy địa chỉ mạng nào để đề xuất cho video. Nguyên nhân có thể là cài đặt hoặc tiện ích mở rộng của trình duyệt giới hạn WebRTC. Hãy cho phép WebRTC, đặt máy chủ STUN hoặc chuyển chế độ video sang MJPEG.',
+        noRoute:
+          'Không tìm thấy tuyến mạng nào đến thiết bị. Từ mạng khác, hãy đặt máy chủ STUN, kết nối qua VPN hoặc chuyển tiếp cổng, hoặc chuyển chế độ video sang MJPEG.'
       },
       captureStatus: {
         hdmiError: 'Lỗi màn hình HDMI',

@@ -232,7 +232,11 @@ const zh_tw = {
       },
       webrtcConnectionFailed: {
         title: 'WebRTC 連線失敗',
-        description: '請檢查網路連線或切換影片模式。'
+        description: '請檢查網路連線或切換影片模式。',
+        noCandidates:
+          '瀏覽器找不到可為影像提供的網路位址。可能是限制 WebRTC 的瀏覽器設定或擴充功能所致。請允許 WebRTC、設定 STUN 伺服器，或將影像模式切換為 MJPEG。',
+        noRoute:
+          '找不到通往裝置的網路路由。從其他網路連線時，請設定 STUN 伺服器、透過 VPN 連線或轉發連接埠，或將影像模式切換為 MJPEG。'
       },
       captureStatus: {
         hdmiError: 'HDMI 畫面異常',

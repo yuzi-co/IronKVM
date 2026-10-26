@@ -253,7 +253,11 @@ const de = {
       },
       webrtcConnectionFailed: {
         title: 'WebRTC-Verbindung fehlgeschlagen',
-        description: 'Überprüfen Sie die Netzwerkverbindung oder wechseln Sie den Videomodus.'
+        description: 'Überprüfen Sie die Netzwerkverbindung oder wechseln Sie den Videomodus.',
+        noCandidates:
+          'Der Browser hat keine Netzwerkadresse für das Video gefunden. Eine Browsereinstellung oder Erweiterung, die WebRTC einschränkt, kann die Ursache sein. Erlauben Sie WebRTC, richten Sie einen STUN-Server ein oder wechseln Sie den Videomodus zu MJPEG.',
+        noRoute:
+          'Es wurde keine Netzwerkroute zum Gerät gefunden. Aus einem anderen Netzwerk richten Sie einen STUN-Server ein, verbinden sich per VPN oder leiten einen Port weiter, oder wechseln Sie den Videomodus zu MJPEG.'
       },
       captureStatus: {
         hdmiError: 'HDMI-Bildschirmfehler',

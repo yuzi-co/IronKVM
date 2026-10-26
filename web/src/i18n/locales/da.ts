@@ -245,7 +245,11 @@ const da = {
       },
       webrtcConnectionFailed: {
         title: 'WebRTC-forbindelse mislykkedes',
-        description: 'Kontrollér netværksforbindelsen, eller skift videotilstand.'
+        description: 'Kontrollér netværksforbindelsen, eller skift videotilstand.',
+        noCandidates:
+          'Browseren fandt ingen netværksadresse at tilbyde til videoen. En browserindstilling eller udvidelse, der begrænser WebRTC, kan være årsagen. Tillad WebRTC, angiv en STUN-server, eller skift videotilstand til MJPEG.',
+        noRoute:
+          'Der blev ikke fundet nogen netværksrute til enheden. Fra et andet netværk skal du angive en STUN-server, forbinde via VPN eller videresende en port, eller skifte videotilstand til MJPEG.'
       },
       captureStatus: {
         hdmiError: 'Fejl i HDMI-billedet',

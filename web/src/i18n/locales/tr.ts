@@ -247,7 +247,11 @@ const tr = {
       },
       webrtcConnectionFailed: {
         title: 'WebRTC bağlantısı başarısız',
-        description: 'Ağ bağlantısını kontrol edin veya video modunu değiştirin.'
+        description: 'Ağ bağlantısını kontrol edin veya video modunu değiştirin.',
+        noCandidates:
+          "Tarayıcı, video için sunabileceği bir ağ adresi bulamadı. Buna WebRTC'yi sınırlayan bir tarayıcı ayarı veya uzantısı neden olabilir. WebRTC'ye izin verin, bir STUN sunucusu ayarlayın veya video modunu MJPEG'e geçirin.",
+        noRoute:
+          "Cihaza giden bir ağ yolu bulunamadı. Başka bir ağdan bağlanıyorsanız bir STUN sunucusu ayarlayın, VPN üzerinden bağlanın veya bir port yönlendirin ya da video modunu MJPEG'e geçirin."
       },
       captureStatus: {
         hdmiError: 'HDMI ekran hatası',

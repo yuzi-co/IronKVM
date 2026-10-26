@@ -246,7 +246,11 @@ const cz = {
       },
       webrtcConnectionFailed: {
         title: 'Připojení WebRTC se nezdařilo',
-        description: 'Zkontrolujte síťové připojení nebo přepněte režim videa.'
+        description: 'Zkontrolujte síťové připojení nebo přepněte režim videa.',
+        noCandidates:
+          'Prohlížeč nenašel žádnou síťovou adresu, kterou by pro video nabídl. Příčinou může být nastavení nebo rozšíření prohlížeče, které omezuje WebRTC. Povolte WebRTC, nastavte server STUN nebo přepněte režim videa na MJPEG.',
+        noRoute:
+          'Nebyla nalezena žádná síťová cesta k zařízení. Z jiné sítě nastavte server STUN, připojte se přes VPN nebo přesměrujte port, případně přepněte režim videa na MJPEG.'
       },
       captureStatus: {
         hdmiError: 'Chyba obrazu HDMI',

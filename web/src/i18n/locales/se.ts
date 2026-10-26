@@ -242,7 +242,11 @@ const se = {
       },
       webrtcConnectionFailed: {
         title: 'WebRTC-anslutningen misslyckades',
-        description: 'Kontrollera nätverksanslutningen eller byt videoläge.'
+        description: 'Kontrollera nätverksanslutningen eller byt videoläge.',
+        noCandidates:
+          'Webbläsaren hittade ingen nätverksadress att erbjuda för videon. En webbläsarinställning eller ett tillägg som begränsar WebRTC kan vara orsaken. Tillåt WebRTC, ange en STUN-server eller byt videoläge till MJPEG.',
+        noRoute:
+          'Ingen nätverksväg till enheten hittades. Från ett annat nätverk anger du en STUN-server, ansluter via VPN eller vidarebefordrar en port, eller byter videoläge till MJPEG.'
       },
       captureStatus: {
         hdmiError: 'HDMI-skärmfel',
