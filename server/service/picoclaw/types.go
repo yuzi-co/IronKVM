@@ -208,6 +208,7 @@ type Action struct {
 	To         *Point     `json:"to"`
 	Button     string     `json:"button"`
 	Text       string     `json:"text"`
+	Layout     string     `json:"layout"`
 	Keys       HotkeyKeys `json:"keys"`
 	Direction  string     `json:"direction"`
 	Amount     int        `json:"amount"`

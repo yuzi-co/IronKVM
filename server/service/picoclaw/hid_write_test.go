@@ -2,8 +2,13 @@ package picoclaw
 
 import (
 	"errors"
+	"os"
+	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
+
+	hidservice "NanoKVM-Server/service/hid"
 )
 
 // errHIDTimeout is what a write to a gadget endpoint the host is not polling
@@ -137,4 +142,70 @@ func TestHotkeyPressesASingleModifier(t *testing.T) {
 		strings.Trim(string(hid.keys[1]), "\x00") != "" {
 		t.Fatalf("keyboard reports = %v, want Shift down then all keys up", hid.keys)
 	}
+}
+
+// useHostLayout sets the host keyboard layout for the test.
+func useHostLayout(t *testing.T, id string) {
+	t.Helper()
+	path := filepath.Join(t.TempDir(), "keyboard-layout")
+	if err := os.WriteFile(path, []byte(id), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	old := hidservice.HostLayoutFile
+	hidservice.HostLayoutFile = path
+	t.Cleanup(func() { hidservice.HostLayoutFile = old })
+}
+
+func TestTypeUsesTheNamedLayoutAndItsDeadKeys(t *testing.T) {
+	useHostLayout(t, "fr")
+	service, _, hid := newMCPActionTestService(t)
+
+	actionResultOf(t, callKVMActions(t, service, `{"actions":[{"action":"type","text":"zâ","layout":"de"}]}`))
+	// German swaps Z and Y and types â as the dead key ^ and then a.
+	up := []byte{0, 0, 0, 0, 0, 0, 0, 0}
+	want := [][]byte{
+		{0, 0, 0x1c, 0, 0, 0, 0, 0}, up,
+		{0, 0, 0x35, 0, 0, 0, 0, 0}, up,
+		{0, 0, 0x04, 0, 0, 0, 0, 0}, up,
+	}
+	if !reflect.DeepEqual(hid.keys, want) {
+		t.Fatalf("keyboard reports = %v, want %v", hid.keys, want)
+	}
+}
+
+func TestTypeDefaultsToTheHostLayout(t *testing.T) {
+	useHostLayout(t, "de")
+	service, _, hid := newMCPActionTestService(t)
+
+	actionResultOf(t, callKVMActions(t, service, `{"actions":[{"action":"type","text":"z"}]}`))
+	if len(hid.keys) != 2 || hid.keys[0][2] != 0x1c {
+		t.Fatalf("keyboard reports = %v, want z on the German Y key", hid.keys)
+	}
+}
+
+func TestTypeRefusesAnUnknownLayout(t *testing.T) {
+	service, _, hid := newMCPActionTestService(t)
+
+	text := errorTextOf(t, callKVMActions(t, service, `{"actions":[{"action":"type","text":"a","layout":"klingon"}]}`))
+	if !strings.Contains(text, "klingon") || !strings.Contains(text, "us, uk, de") {
+		t.Fatalf("error = %q, want it to name the valid layouts", text)
+	}
+	if len(hid.keys) != 0 {
+		t.Fatal("an unknown layout typed something")
+	}
+}
+
+func TestActionsSchemaOffersTheLayout(t *testing.T) {
+	for _, tool := range mcpToolDefinitions {
+		if tool.Name != "kvm_actions" {
+			continue
+		}
+		items := tool.InputSchema.(map[string]any)["properties"].(map[string]any)["actions"].(map[string]any)["items"].(map[string]any)
+		layout, ok := items["properties"].(map[string]any)["layout"].(map[string]any)
+		if !ok || layout["type"] != "string" || !strings.Contains(layout["description"].(string), "type") {
+			t.Fatalf("layout property = %v", layout)
+		}
+		return
+	}
+	t.Fatal("no kvm_actions tool")
 }

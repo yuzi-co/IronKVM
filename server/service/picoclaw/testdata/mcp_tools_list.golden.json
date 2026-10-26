@@ -21,7 +21,7 @@
     "name": "kvm_screenshot"
   },
   {
-    "description": "Send mouse and keyboard actions to the downstream remote host, in order. Mouse positions are fractions of the screen from 0 to 1, not pixels: x=0 is the left edge, x=1 the right edge, y=0 the top, y=1 the bottom. For a point seen in a screenshot, divide its pixel position by the image width and height (pixel 480,270 in a 960x540 image is x=0.5, y=0.5). To move the pointer by a number of screen pixels from where it is, use move with dx/dy. Examples: {\"action\":\"click\",\"x\":0.5,\"y\":0.5} clicks the centre; {\"action\":\"move\",\"x\":0.1,\"y\":0.9} goes near the bottom-left corner; {\"action\":\"move\",\"dx\":10} moves 10 pixels right; {\"action\":\"move\",\"dy\":-20} moves 20 pixels up; {\"action\":\"click\"} clicks where the pointer is; {\"action\":\"type\",\"text\":\"hello\"} types text; {\"action\":\"hotkey\",\"keys\":[\"shift\"]} presses one key, here a modifier on its own; {\"action\":\"hotkey\",\"keys\":[\"ctrl\",\"c\"]} presses keys together; {\"action\":\"scroll\",\"direction\":\"down\",\"amount\":3}; {\"action\":\"drag\",\"from\":{\"x\":0.2,\"y\":0.2},\"to\":{\"x\":0.6,\"y\":0.2}}; {\"action\":\"wait\",\"duration_ms\":1000}. type is only for text: to press any key, such as Enter, Escape, Tab, an arrow or Shift, use hotkey with that key. The result reports where the pointer ended up. Set screenshot_after to get a screenshot of the result in the same call.",
+    "description": "Send mouse and keyboard actions to the downstream remote host, in order. Mouse positions are fractions of the screen from 0 to 1, not pixels: x=0 is the left edge, x=1 the right edge, y=0 the top, y=1 the bottom. For a point seen in a screenshot, divide its pixel position by the image width and height (pixel 480,270 in a 960x540 image is x=0.5, y=0.5). To move the pointer by a number of screen pixels from where it is, use move with dx/dy. Examples: {\"action\":\"click\",\"x\":0.5,\"y\":0.5} clicks the centre; {\"action\":\"move\",\"x\":0.1,\"y\":0.9} goes near the bottom-left corner; {\"action\":\"move\",\"dx\":10} moves 10 pixels right; {\"action\":\"move\",\"dy\":-20} moves 20 pixels up; {\"action\":\"click\"} clicks where the pointer is; {\"action\":\"type\",\"text\":\"hello\"} types text; {\"action\":\"hotkey\",\"keys\":[\"shift\"]} presses one key, here a modifier on its own; {\"action\":\"hotkey\",\"keys\":[\"ctrl\",\"c\"]} presses keys together; {\"action\":\"scroll\",\"direction\":\"down\",\"amount\":3}; {\"action\":\"drag\",\"from\":{\"x\":0.2,\"y\":0.2},\"to\":{\"x\":0.6,\"y\":0.2}}; {\"action\":\"wait\",\"duration_ms\":1000}. type is only for text: to press any key, such as Enter, Escape, Tab, an arrow or Shift, use hotkey with that key. type presses the keys that give the text on the keyboard layout the NanoKVM owner set for the host; if the host uses another, name it in layout. The result reports where the pointer ended up. Set screenshot_after to get a screenshot of the result in the same call.",
     "inputSchema": {
       "properties": {
         "actions": {
@@ -96,6 +96,10 @@
                   "type": "string"
                 },
                 "type": "array"
+              },
+              "layout": {
+                "description": "type: the keyboard layout active on the host, only when it differs from the one the NanoKVM owner set (US unless set): us, uk, de, fr, es, it, pt-br, se, ru, ja, ko, am, ar, bepo, cz, da, de-ch, en-us-altgr-intl, en-us-colemak, et, fo, fr-be, fr-ca, fr-ch, hr, hu, is, lt, lv, mk, nl, no, pl, pt, sl, th, tr.",
+                "type": "string"
               },
               "text": {
                 "description": "type: the characters to type. Not for single keys: press Enter, Shift and other keys with hotkey.",

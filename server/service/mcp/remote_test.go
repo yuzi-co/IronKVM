@@ -105,7 +105,7 @@ func TestRemoteTypeTextCancellationReleasesKeyboard(t *testing.T) {
 		}
 	}
 
-	_, err := newRemoteWithHID(hid).TypeText(ctx, "A", 0)
+	_, err := newRemoteWithHID(hid).TypeText(ctx, "A", mustLayout(t, "us"), 0)
 	if !errors.Is(err, context.Canceled) {
 		t.Fatalf("error = %v, want canceled", err)
 	}

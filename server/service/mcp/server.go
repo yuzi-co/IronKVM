@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"NanoKVM-Server/service/controlmode"
+	"NanoKVM-Server/service/hid"
 	"NanoKVM-Server/service/inputcontrol"
 
 	"github.com/google/jsonschema-go/jsonschema"
@@ -34,6 +35,7 @@ const (
 type TypeTextParams struct {
 	Text    string `json:"text" jsonschema:"text to type on the remote host"`
 	DelayMS *int   `json:"delayMs,omitempty" jsonschema:"delay between typed characters in milliseconds"`
+	Layout  string `json:"layout,omitempty" jsonschema:"keyboard layout active on the host"`
 }
 
 type TypeTextResult struct {
@@ -112,7 +114,7 @@ func newMCPHandler(control *controlmode.Manager, coordinator *inputcontrol.Coord
 }
 
 func registerTools(server *protocol.Server, executor *toolExecutor, remote *Remote, snapshotter Snapshotter) {
-	protocol.AddTool(server, &protocol.Tool{Name: typeTextToolName, Description: "Type short text into the remote host", InputSchema: typeTextSchema()}, guard(typeTextToolName, describeTypeText, typeTextHandler(executor, remote)))
+	protocol.AddTool(server, &protocol.Tool{Name: typeTextToolName, Description: "Type short text into the remote host, as key presses on the host's keyboard layout", InputSchema: typeTextSchema()}, guard(typeTextToolName, describeTypeText, typeTextHandler(executor, remote)))
 	protocol.AddTool(server, &protocol.Tool{Name: pressKeysToolName, Description: "Press one keyboard shortcut on the remote host", InputSchema: pressKeysSchema()}, guard(pressKeysToolName, describePressKeys, pressKeysHandler(executor, remote)))
 	protocol.AddTool(server, &protocol.Tool{Name: moveMouseToolName, Description: "Move the remote mouse pointer", InputSchema: moveMouseSchema()}, guard(moveMouseToolName, describeMoveMouse, moveMouseHandler(executor, remote)))
 	protocol.AddTool(server, &protocol.Tool{Name: clickMouseToolName, Description: "Click a remote mouse button", InputSchema: clickMouseSchema()}, guard(clickMouseToolName, describeClickMouse, clickMouseHandler(executor, remote)))
@@ -127,11 +129,17 @@ func typeTextHandler(executor *toolExecutor, remote *Remote) protocol.ToolHandle
 		if len(textRunes) > maxTypeTextRunes {
 			return nil, TypeTextResult{}, fmt.Errorf("text exceeds maximum length of %d runes", maxTypeTextRunes)
 		}
+		layout, err := hid.TypingLayout(input.Layout)
+		if err != nil {
+			return nil, TypeTextResult{}, err
+		}
 		delay := time.Duration(resolveDelayMS(input.DelayMS, defaultTypeDelayMS)) * time.Millisecond
-		reports, _ := buildTypeReports(input.Text)
-		typeableRunes := len(reports) / 2
-		if time.Duration(typeableRunes)*delay > maxTypeTextDuration {
-			return nil, TypeTextResult{}, fmt.Errorf("typing duration exceeds %s for %d typeable runes at %s delay", maxTypeTextDuration, typeableRunes, delay)
+		// The delay follows every keystroke, and a character typed with a
+		// dead key takes two.
+		reports, _ := buildTypeReports(input.Text, layout)
+		keystrokes := len(reports) / 2
+		if time.Duration(keystrokes)*delay > maxTypeTextDuration {
+			return nil, TypeTextResult{}, fmt.Errorf("typing duration exceeds %s for %d keystrokes at %s delay", maxTypeTextDuration, keystrokes, delay)
 		}
 		operationCtx, release, err := executor.begin(ctx, inputcontrol.OperationHID)
 		if err != nil {
@@ -139,7 +147,7 @@ func typeTextHandler(executor *toolExecutor, remote *Remote) protocol.ToolHandle
 		}
 		defer release()
 
-		skipped, err := remote.TypeText(operationCtx, input.Text, delay)
+		skipped, err := remote.TypeText(operationCtx, input.Text, layout, delay)
 		if err != nil {
 			return nil, TypeTextResult{}, err
 		}
@@ -404,7 +412,8 @@ func (e *toolExecutor) begin(ctx context.Context, kind inputcontrol.OperationKin
 func typeTextSchema() *jsonschema.Schema {
 	return objectSchema(map[string]*jsonschema.Schema{
 		"text":    {Type: "string", Description: "Text to type on the remote host", MaxLength: jsonschema.Ptr(maxTypeTextRunes)},
-		"delayMs": integerSchema(fmt.Sprintf("Delay between typed characters in milliseconds; defaults to %d when omitted, and 0 disables the delay", defaultTypeDelayMS), 0, 1000),
+		"delayMs": integerSchema(fmt.Sprintf("Delay after each key press in milliseconds (a character typed with a dead key takes two); defaults to %d when omitted, and 0 disables the delay", defaultTypeDelayMS), 0, 1000),
+		"layout":  {Type: "string", Description: "Keyboard layout active on the host, when it differs from the one the NanoKVM owner set (US unless set): " + strings.Join(hid.LayoutIDs(), ", ")},
 	}, "text")
 }
 
