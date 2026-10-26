@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"NanoKVM-Server/service/agent"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -119,6 +121,7 @@ func withAgentProfile(status RuntimeStatus) RuntimeStatus {
 	return status
 }
 
+// UpdateAgentProfile puts the chosen AGENT.md in PicoClaw's workspace.
 func (s *Service) UpdateAgentProfile(c *gin.Context) {
 	s.ensureDependencies()
 	var req AgentProfileUpdateRequest
@@ -133,19 +136,20 @@ func (s *Service) UpdateAgentProfile(c *gin.Context) {
 		return
 	}
 
-	unlockLifecycle := s.lockRuntimeLifecycle()
-	defer unlockLifecycle()
-
-	if err := applyPicoclawAgentProfile(profile); err != nil {
-		writePicoclawError(c, newPicoclawError(CodeRuntimeUnavailable, err.Error()))
+	if !s.lifecycle.Reconfigure(c, agent.Reconfiguration{
+		Apply: func() error {
+			if err := applyPicoclawAgentProfile(profile); err != nil {
+				return agentError(newPicoclawError(CodeRuntimeUnavailable, err.Error()))
+			}
+			return nil
+		},
+		Refresh: func() { _ = s.syncConfigFromPicoclaw() },
+	}) {
 		return
 	}
 
-	_ = s.syncConfigFromPicoclaw()
-	_ = s.ensureRuntimeReadyForLifecycle()
-
 	writeSuccess(c, gin.H{
 		"profile": profile,
-		"status":  withAgentProfile(s.runtimeStatus()),
+		"status":  withAgentProfile(s.lifecycle.RuntimeStatus()),
 	})
 }

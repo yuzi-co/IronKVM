@@ -3,6 +3,8 @@ package picoclaw
 import (
 	"net/http"
 
+	"NanoKVM-Server/service/agent"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -32,6 +34,22 @@ type PicoclawError struct {
 
 func (e *PicoclawError) Error() string {
 	return e.Code + ": " + e.Message
+}
+
+// AgentError is the error as the agent package answers it.
+func (e *PicoclawError) AgentError() *agent.Error {
+	if e == nil {
+		return nil
+	}
+	return &agent.Error{Status: e.StatusCode, Code: e.Code, Message: e.Message}
+}
+
+// picoclawErrorFrom is an agent package error as a *PicoclawError.
+func picoclawErrorFrom(err *agent.Error) *PicoclawError {
+	if err == nil {
+		return nil
+	}
+	return &PicoclawError{StatusCode: err.Status, Code: err.Code, Message: err.Message}
 }
 
 func newPicoclawError(code string, message string) *PicoclawError {

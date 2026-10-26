@@ -11,12 +11,25 @@ import (
 )
 
 // Agent is an in-memory agent. Tests drive its sessions through the
-// channels of Session.
+// channels of Session, and its runtime through its exported fields.
 type Agent struct {
-	mu      sync.Mutex
-	running bool
+	mu        sync.Mutex
+	installed bool
+	running   bool
 	// Configured counts ApplyConfig calls.
 	Configured int
+	// Launches and Halts count Launch and Halt calls.
+	Launches, Halts int
+	// LaunchErr, when set, makes Launch fail.
+	LaunchErr error
+	// NeverReady keeps a running agent from answering Check.
+	NeverReady bool
+	// StaleInstall makes Stale report an update.
+	StaleInstall bool
+	// InstallErr, when set, makes Install fail.
+	InstallErr error
+	// Uninstalled counts Uninstall calls.
+	Uninstalled int
 	// OpenErr, when set, makes OpenSession fail.
 	OpenErr error
 	stored  map[string]agent.SessionDetail
@@ -24,42 +37,70 @@ type Agent struct {
 	Opened chan *Session
 }
 
-var _ agent.Agent = (*Agent)(nil)
+var (
+	_ agent.Agent = (*Agent)(nil)
+)
 
-// New returns a stopped agent with no stored sessions.
+// New returns an installed, stopped agent with no stored sessions.
 func New() *Agent {
 	return &Agent{
-		stored: make(map[string]agent.SessionDetail),
-		Opened: make(chan *Session, 16),
+		installed: true,
+		stored:    make(map[string]agent.SessionDetail),
+		Opened:    make(chan *Session, 16),
 	}
 }
 
 func (a *Agent) Name() string { return "agenttest" }
 
-func (a *Agent) Start(ctx context.Context) error {
-	if err := a.ApplyConfig(ctx); err != nil {
-		return err
-	}
+// InstallPath is where the agent claims to be installed.
+const InstallPath = "/usr/bin/agenttest"
+
+// Version is the release the agent claims Install installs.
+const Version = "v1.0.0-test"
+
+func (a *Agent) InstallPath() string { return InstallPath }
+func (a *Agent) Version() string     { return Version }
+
+func (a *Agent) Installed() (bool, error) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	a.running = true
+	return a.installed, nil
+}
+
+// SetInstalled installs or removes the agent without Install.
+func (a *Agent) SetInstalled(installed bool) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	a.installed = installed
+}
+
+func (a *Agent) Stale() bool {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	return a.StaleInstall
+}
+
+func (a *Agent) Install(progress func(stage string, percent int, lastError string)) error {
+	progress("downloading", 50, "")
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	if a.InstallErr != nil {
+		return a.InstallErr
+	}
+	a.installed = true
+	a.StaleInstall = false
 	return nil
 }
 
-func (a *Agent) Stop(context.Context) error {
+func (a *Agent) Uninstall() {
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	a.running = false
-	return nil
+	a.installed = false
+	a.Uninstalled++
 }
 
-func (a *Agent) Ready(context.Context) error {
-	a.mu.Lock()
-	defer a.mu.Unlock()
-	if !a.running {
-		return agent.NewError(agent.CodeRuntimeUnavailable, "agent is stopped")
-	}
-	return nil
+func (a *Agent) Model() (agent.Model, error) {
+	return agent.Model{Configured: true, Name: "test-model", Target: "test-model"}, nil
 }
 
 func (a *Agent) ApplyConfig(context.Context) error {
@@ -67,6 +108,73 @@ func (a *Agent) ApplyConfig(context.Context) error {
 	defer a.mu.Unlock()
 	a.Configured++
 	return nil
+}
+
+func (a *Agent) Running() (bool, error) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	return a.running, nil
+}
+
+// SetRunning starts or stops the process without Launch or Halt.
+func (a *Agent) SetRunning(running bool) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	a.running = running
+}
+
+func (a *Agent) Launch(ctx context.Context) (string, string, error) {
+	if err := a.ApplyConfig(ctx); err != nil {
+		return "", "", err
+	}
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	a.Launches++
+	if a.LaunchErr != nil {
+		return "agenttest start", "", a.LaunchErr
+	}
+	if !a.installed {
+		return "", "", agent.NewError(agent.CodeRuntimeStartFailed, "agenttest is not installed")
+	}
+	a.running = true
+	return "agenttest start", "started", nil
+}
+
+func (a *Agent) Halt() (string, string, error) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	a.Halts++
+	a.running = false
+	return "agenttest stop", "", nil
+}
+
+func (a *Agent) Check(context.Context) (*agent.RuntimeStatus, error) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	status := &agent.RuntimeStatus{Installed: a.installed, ModelConfigured: true, ModelName: "test-model"}
+	switch {
+	case !a.installed:
+		status.Installed = false
+		status.ModelConfigured = false
+		status.ModelName = ""
+		status.Status = "not_installed"
+		return status, agent.NewError(agent.CodeRuntimeUnavailable, "agenttest is not installed")
+	case !a.running:
+		status.Status = "stopped"
+		return status, agent.NewError(agent.CodeRuntimeUnavailable, "agenttest runtime is stopped")
+	case a.NeverReady:
+		status.Status = "unavailable"
+		return status, agent.NewError(agent.CodeRuntimeUnavailable, "agenttest is not answering")
+	}
+	status.Ready = true
+	status.InstallProgress = 100
+	status.Status = "ready"
+	return status, nil
+}
+
+func (a *Agent) Describe(status agent.RuntimeStatus) agent.RuntimeStatus {
+	status.AgentProfile = "test"
+	return status
 }
 
 func (a *Agent) OpenSession(_ context.Context, sessionID string) (agent.Session, error) {

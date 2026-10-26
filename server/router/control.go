@@ -6,10 +6,10 @@ import (
 
 	"NanoKVM-Server/authn"
 	"NanoKVM-Server/middleware"
+	"NanoKVM-Server/service/agent"
 	"NanoKVM-Server/service/controlmode"
 	"NanoKVM-Server/service/hid"
 	"NanoKVM-Server/service/inputcontrol"
-	"NanoKVM-Server/service/picoclaw"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -19,7 +19,7 @@ type setAIControlModeRequest struct {
 	Mode controlmode.Mode `json:"mode"`
 }
 
-func controlRouter(r *gin.Engine, control *controlmode.Manager, picoclawService *picoclaw.Service) {
+func controlRouter(r *gin.Engine, control *controlmode.Manager, lifecycle *agent.Lifecycle) {
 	group := r.Group("/api/ai/control").Use(
 		middleware.CheckToken(),
 		middleware.RequireRole(authn.RoleAdmin),
@@ -58,9 +58,9 @@ func controlRouter(r *gin.Engine, control *controlmode.Manager, picoclawService 
 		preempt := func() error {
 			inputcontrol.GetCoordinator().CancelMCP()
 			if req.Mode == controlmode.ModeMCP {
-				return picoclawService.PreemptControlLeasesForMCP()
+				return lifecycle.PreemptForMCP()
 			}
-			picoclawService.CancelActiveControlOperations()
+			lifecycle.CancelOperations()
 			return nil
 		}
 		cleanup := func() error {
@@ -68,7 +68,7 @@ func controlRouter(r *gin.Engine, control *controlmode.Manager, picoclawService 
 		}
 		if req.Mode == controlmode.ModeMCP {
 			cleanup = func() error {
-				if err := picoclawService.StopRuntimeForMCP(); err != nil {
+				if err := lifecycle.StopForMCP(); err != nil {
 					return err
 				}
 				return hid.ReleaseAllHIDStateBestEffort()
@@ -77,10 +77,10 @@ func controlRouter(r *gin.Engine, control *controlmode.Manager, picoclawService 
 		if err := control.SwitchWithCleanup(req.Mode, preempt, cleanup); err != nil {
 			if req.Mode == controlmode.ModeOff {
 				if status, statusErr := control.Status(); statusErr == nil && status.Mode == controlmode.ModeOff {
-					picoclawService.CancelActiveControlOperations()
-					picoclawService.PreserveRuntimeForChatOnly("control_release_chat_only")
+					lifecycle.CancelOperations()
+					lifecycle.PreserveForChatOnly("control_release_chat_only")
 					closedSessions := 0
-					picoclawService.PublishControlModeChangedFrom(status, "ai_control_mode")
+					lifecycle.PublishControlModeChanged(status, "ai_control_mode")
 					log.WithFields(log.Fields{
 						"request_mode":    string(req.Mode),
 						"previous_mode":   string(previousStatus.Mode),
@@ -94,7 +94,7 @@ func controlRouter(r *gin.Engine, control *controlmode.Manager, picoclawService 
 						"msg":  "success",
 						"data": gin.H{
 							"control":         status,
-							"runtime":         picoclawService.RuntimeStatus(),
+							"runtime":         lifecycle.RuntimeStatus(),
 							"released":        true,
 							"closed_sessions": closedSessions,
 							"cleanup_warning": err.Error(),
@@ -124,10 +124,10 @@ func controlRouter(r *gin.Engine, control *controlmode.Manager, picoclawService 
 		}
 		closedSessions := 0
 		if req.Mode == controlmode.ModeOff {
-			picoclawService.CancelActiveControlOperations()
-			picoclawService.PreserveRuntimeForChatOnly("control_release_chat_only")
+			lifecycle.CancelOperations()
+			lifecycle.PreserveForChatOnly("control_release_chat_only")
 		}
-		picoclawService.PublishControlModeChangedFrom(status, "ai_control_mode")
+		lifecycle.PublishControlModeChanged(status, "ai_control_mode")
 		log.WithFields(log.Fields{
 			"request_mode":  string(req.Mode),
 			"previous_mode": string(previousStatus.Mode),
@@ -141,7 +141,7 @@ func controlRouter(r *gin.Engine, control *controlmode.Manager, picoclawService 
 				"msg":  "success",
 				"data": gin.H{
 					"control":         status,
-					"runtime":         picoclawService.RuntimeStatus(),
+					"runtime":         lifecycle.RuntimeStatus(),
 					"released":        true,
 					"closed_sessions": closedSessions,
 					"cleanup_warning": "",

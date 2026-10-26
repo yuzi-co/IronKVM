@@ -4,7 +4,6 @@ import (
 	"context"
 	"path/filepath"
 	"testing"
-	"time"
 
 	"NanoKVM-Server/service/controlmode"
 )
@@ -77,7 +76,7 @@ func TestControlModeSwitchCancelsRuntimeLifecycle(t *testing.T) {
 	lifecycleDone := make(chan *PicoclawError, 1)
 	go func() {
 		<-operationCtx.Done()
-		lifecycleErr := runtimeLifecycleOperationError(operationCtx)
+		lifecycleErr := service.operationError(operationCtx)
 		releaseOperation()
 		releaseMode()
 		lifecycleDone <- lifecycleErr
@@ -104,17 +103,6 @@ func TestControlModeSwitchCancelsRuntimeLifecycle(t *testing.T) {
 
 	if got := control.Current(); got != controlmode.ModeMCP {
 		t.Fatalf("mode = %q, want %q", got, controlmode.ModeMCP)
-	}
-}
-
-func TestRuntimeReadyWaitHonorsLifecycleCancellation(t *testing.T) {
-	service := &Service{}
-	ctx, cancel := context.WithCancelCause(context.Background())
-	cancel(errControlModeSwitch)
-
-	err := service.waitForRuntimeReadyContext(ctx, time.Hour)
-	if err == nil || err.Code != CodeControlModeConflict {
-		t.Fatalf("error = %+v, want %s", err, CodeControlModeConflict)
 	}
 }
 

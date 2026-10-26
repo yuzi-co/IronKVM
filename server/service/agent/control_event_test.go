@@ -1,4 +1,4 @@
-package picoclaw
+package agent_test
 
 import (
 	"testing"
@@ -10,7 +10,7 @@ import (
 
 func TestControlModeChangedEventIncludesControlMetadata(t *testing.T) {
 	changedAt := time.Now().UTC()
-	event := controlModeChangedEvent(controlmode.Status{
+	event := agent.ControlModeChangedEvent(controlmode.Status{
 		Mode:          controlmode.ModeMCP,
 		Transitioning: true,
 		LastError:     "switch failed",
@@ -31,7 +31,7 @@ func TestControlModeChangedEventIncludesControlMetadata(t *testing.T) {
 }
 
 func TestControlModeChangedEventAllowsPicoclawControlWhenStable(t *testing.T) {
-	event := controlModeChangedEvent(controlmode.Status{
+	event := agent.ControlModeChangedEvent(controlmode.Status{
 		Mode: controlmode.ModePicoclaw,
 	}, "")
 

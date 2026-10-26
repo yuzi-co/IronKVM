@@ -349,6 +349,13 @@ func TestAnInstallThatIsNotThePinIsOfferedTheUpdate(t *testing.T) {
 	if !installedPicoclawIsStale() {
 		t.Fatal("an install of another build must count as stale")
 	}
+	// withRelease renders a status as the runtime routes do.
+	tmp := t.TempDir()
+	service := newRuntimeRoutesService(controlmode.NewManager(filepath.Join(tmp, "mode"), controlmode.ModeOff), filepath.Join(tmp, "intent.json"))
+	withRelease := func(status RuntimeStatus) RuntimeStatus {
+		service.runtime.Set(status)
+		return service.Lifecycle().RuntimeStatus()
+	}
 	status := withRelease(RuntimeStatus{Installed: true})
 	if !status.UpdateAvailable || status.Version != Version {
 		t.Fatalf("status %+v, want the update offered", status)
@@ -415,14 +422,14 @@ func TestUninstallRemovesTheAddonAndAReinstallBringsItBack(t *testing.T) {
 	tmp := t.TempDir()
 	service := &Service{
 		control:       controlmode.NewManager(filepath.Join(tmp, "mode"), controlmode.ModeOff),
-		runtime:       &RuntimeStore{},
+		runtime:       newRuntimeStore(RuntimeStatus{}),
 		runtimeIntent: NewRuntimeIntentStore(filepath.Join(tmp, "intent.json")),
 		releaseHID:    func() error { return nil },
 	}
 	recorder := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(recorder)
 	c.Request = httptest.NewRequest(http.MethodPost, "/api/picoclaw/runtime/uninstall", nil)
-	service.UninstallRuntime(c)
+	service.Lifecycle().Uninstall(c)
 	if recorder.Code != http.StatusOK {
 		t.Fatalf("uninstall answered %d: %s", recorder.Code, recorder.Body.String())
 	}

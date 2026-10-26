@@ -52,89 +52,7 @@ const picoclawDownloadTimeout = 10 * time.Minute
 // written afterwards.
 const spaceMargin = 2 << 20
 
-var (
-	errPicoclawRunning = errors.New("stop PicoClaw before updating it")
-	errNoSpace         = errors.New("not enough free space")
-)
-
-func (s *Service) installRuntime() (string, *PicoclawError) {
-	if s == nil {
-		return "", newPicoclawError(CodeRuntimeUnavailable, "picoclaw service is unavailable")
-	}
-	s.ensureDependencies()
-	log.Debugf("picoclaw install: start, binary=%s, release=%s", picoclawBinaryPath, Version)
-
-	currentStatus := s.runtime.Get()
-	if currentStatus.Installing {
-		log.Debugf("picoclaw install: install already in progress")
-		return "picoclaw installation is already in progress", nil
-	}
-
-	installed, err := isPicoclawInstalled()
-	if err == nil && installed && !installedPicoclawIsStale() {
-		settings, _ := loadPicoclawGatewaySettings()
-		log.Debugf("picoclaw install: %s is already installed at %s", Version, picoclawBinaryPath)
-		s.runtime.Set(RuntimeStatus{
-			Ready:           false,
-			Installed:       true,
-			Installing:      false,
-			InstallProgress: 100,
-			InstallStage:    "installed",
-			InstallPath:     picoclawBinaryPath,
-			ModelConfigured: settings.ModelConfigured,
-			ModelName:       settings.ModelName,
-			Status:          "installed",
-			CheckedAt:       time.Now(),
-		})
-		return "picoclaw is already installed", nil
-	}
-	// An update replaces the binary of a running gateway, and the status
-	// would then describe a process that is not the installed one.
-	if err == nil && installed {
-		if running, runErr := isRuntimeRunning(); runErr == nil && running {
-			return "", newPicoclawError(CodeRuntimeStartFailed, errPicoclawRunning.Error())
-		}
-	}
-
-	s.runtime.Set(RuntimeStatus{
-		Ready:           false,
-		Installed:       false,
-		Installing:      true,
-		InstallProgress: 0,
-		InstallStage:    "preparing",
-		InstallPath:     picoclawBinaryPath,
-		Status:          "installing",
-		CheckedAt:       time.Now(),
-	})
-
-	go s.runInstallRuntime()
-	return "picoclaw installation started", nil
-}
-
-func (s *Service) runInstallRuntime() {
-	s.ensureDependencies()
-
-	if err := installReleasePicoclaw(s.setInstallProgress); err != nil {
-		log.Errorf("picoclaw install: %v", err)
-		s.finishInstallFailure("install_failed", err.Error())
-		return
-	}
-	log.Infof("picoclaw install: %s installed", Version)
-
-	settings, _ := loadPicoclawGatewaySettings()
-	s.runtime.Set(RuntimeStatus{
-		Ready:           false,
-		Installed:       true,
-		Installing:      false,
-		InstallProgress: 100,
-		InstallStage:    "installed",
-		InstallPath:     picoclawBinaryPath,
-		ModelConfigured: settings.ModelConfigured,
-		ModelName:       settings.ModelName,
-		Status:          "installed",
-		CheckedAt:       time.Now(),
-	})
-}
+var errNoSpace = errors.New("not enough free space")
 
 // installReleasePicoclaw downloads the pinned release, checks the archive and
 // then the binary in it against their pins, and moves the binary into place
@@ -361,55 +279,8 @@ func installedPicoclawIsStale() bool {
 	return err != nil || strings.TrimSpace(string(have)) != release.BinarySHA256
 }
 
-// withRelease adds the pinned version and whether the installed PicoClaw is
-// older than it.
-func withRelease(status RuntimeStatus) RuntimeStatus {
-	status.Version = Version
-	status.UpdateAvailable = status.Installed && !status.Installing && installedPicoclawIsStale()
-	return status
-}
-
 func installedChecksumPath(binary string) string {
 	return binary + ".sha256"
-}
-
-func (s *Service) setInstallProgress(stage string, progress int, lastError string) {
-	s.ensureDependencies()
-	if progress < 0 {
-		progress = 0
-	}
-	if progress > 100 {
-		progress = 100
-	}
-
-	s.runtime.UpdateInstallStatus(func(status *RuntimeStatus) {
-		status.Ready = false
-		status.Installed = false
-		status.Installing = true
-		status.InstallProgress = progress
-		status.InstallStage = stage
-		status.Status = "installing"
-		status.LastError = lastError
-		status.CheckedAt = time.Now()
-	})
-}
-
-// finishInstallFailure records a failed install. A failed update leaves the
-// PicoClaw that was installed, so the status says it is still there.
-func (s *Service) finishInstallFailure(status string, message string) {
-	s.ensureDependencies()
-	installed, _ := isPicoclawInstalled()
-	s.runtime.Set(RuntimeStatus{
-		Ready:           false,
-		Installed:       installed,
-		Installing:      false,
-		InstallProgress: 0,
-		InstallStage:    status,
-		InstallPath:     picoclawBinaryPath,
-		Status:          status,
-		LastError:       message,
-		CheckedAt:       time.Now(),
-	})
 }
 
 // installPicoclawBinary copies source to destination through a temporary file
@@ -504,4 +375,30 @@ func recordPicoclawAddon() error {
 		return nil
 	}
 	return addon.Record(picoclawAddon())
+}
+
+// removePicoclaw removes PicoClaw's settings, binary, add-on and license
+// files. PicoClaw is stopped.
+func removePicoclaw() {
+	if configPath, err := resolvePicoclawConfigPath(); err == nil {
+		_ = os.RemoveAll(filepath.Dir(configPath))
+	} else {
+		home, err := os.UserHomeDir()
+		if err == nil {
+			_ = os.RemoveAll(filepath.Join(home, ".picoclaw"))
+		} else {
+			_ = os.RemoveAll("/root/.picoclaw")
+		}
+	}
+	if addon.OnData() {
+		if err := addon.Remove(picoclawAddon()); err != nil {
+			log.Errorf("picoclaw uninstall: failed to remove the add-on: %v", err)
+		}
+	}
+	_ = os.Remove(picoclawBinaryPath)
+	_ = os.Remove(installedChecksumPath(picoclawBinaryPath))
+	if !addon.OnData() {
+		_ = os.RemoveAll(picoclawLicensesFallback)
+		_ = os.RemoveAll(picoclawFetchFallback)
+	}
 }
