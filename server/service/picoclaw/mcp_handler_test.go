@@ -81,7 +81,7 @@ func TestMCPActionsReturnStructuredControlErrors(t *testing.T) {
 			if response.Code != http.StatusOK {
 				t.Fatalf("status = %d, body = %s", response.Code, body)
 			}
-			if !strings.Contains(body, `"code":-32003`) || !strings.Contains(body, `"reason":"`+test.reason+`"`) {
+			if !strings.Contains(body, `"code":-32010`) || !strings.Contains(body, `"reason":"`+test.reason+`"`) {
 				t.Fatalf("body = %s, want structured %s error", body, test.reason)
 			}
 		})

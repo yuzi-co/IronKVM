@@ -23,8 +23,11 @@ const (
 	mcpServerName    = "nanokvm"
 	mcpServerVersion = "1.0.0"
 	// The JSON-RPC error code for a call that PicoClaw's control mode refuses.
-	// Clients read the reason from the error data.
-	mcpControlConflictCode = -32003
+	// Clients read the reason from the error data. It was -32003 until
+	// go-sdk's client read that as its own "client is closing" code and
+	// logged every refusal as a closed connection; go-sdk uses -32001 to
+	// -32005 and -32042, so this stays clear of them.
+	mcpControlConflictCode = -32010
 	maxMCPRequestBytes     = 1 << 20
 )
 
