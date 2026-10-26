@@ -168,7 +168,7 @@ func TestDeniedCallIsAudited(t *testing.T) {
 	store := isolateAudit(t)
 	var pressed []string
 	s := newSession(t, testDevices(&pressed))
-	s.call("cube_media", `{"action":"list"}`)
+	s.call("cube_media", `{"action":"eject","drive":"cdrom"}`)
 
 	got := events(t, store)
 	if len(got) != 1 || got[0].Outcome != audit.OutcomeDenied || got[0].Tier != "media" || got[0].Action != "cube_media" {
@@ -203,6 +203,7 @@ func TestEveryToolHasATier(t *testing.T) {
 	for _, name := range []string{
 		screenshotToolName, typeTextToolName, pressKeysToolName, moveMouseToolName,
 		clickMouseToolName, scrollMouseToolName, powerToolName, mediaToolName,
+		powerStatusToolName, mediaListToolName, wakeToolName,
 	} {
 		if _, ok := toolTiers[name]; !ok {
 			t.Errorf("%s has no tier", name)

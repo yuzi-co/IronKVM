@@ -20,6 +20,8 @@ var toolTiers = map[string]audit.Tier{
 	moveMouseToolName:   audit.TierInput,
 	clickMouseToolName:  audit.TierInput,
 	scrollMouseToolName: audit.TierInput,
+	powerStatusToolName: audit.TierObserve,
+	mediaListToolName:   audit.TierObserve,
 	powerToolName:       audit.TierPower,
 	mediaToolName:       audit.TierMedia,
 	wakeToolName:        audit.TierPower,
