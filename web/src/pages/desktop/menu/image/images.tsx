@@ -5,6 +5,7 @@ import {
   ArrowBigDownDashIcon,
   ArrowBigUpDashIcon,
   DiscIcon,
+  FolderOpenIcon,
   HardDriveIcon,
   LoaderCircleIcon,
   PackageIcon,
@@ -18,6 +19,7 @@ import * as api from '@/api/storage.ts';
 import { formatBytes } from '@/lib/health.ts';
 import { useStableCallback } from '@/hooks/useStableCallback.ts';
 
+import { browseState } from './file-paths.ts';
 import { CD_MAX_BYTES, imageWarnings } from './warnings.ts';
 
 const imageUpdatedEvent = 'nanokvm:image-updated';
@@ -29,6 +31,8 @@ type ImagesProps = {
   inUse: string[];
   onImagesChanged: (images: string[]) => void;
   onDrivesChanged: () => void;
+  // onBrowse opens the file browser on an image.
+  onBrowse: (image: string) => void;
 };
 
 // defaultDrive picks where a click inserts an image: an ISO into the CD drive
@@ -44,7 +48,8 @@ export const Images = ({
   diskRo,
   inUse,
   onImagesChanged,
-  onDrivesChanged
+  onDrivesChanged,
+  onBrowse
 }: ImagesProps) => {
   const { t } = useTranslation();
   const [notify, contextHolder] = notification.useNotification();
@@ -67,6 +72,15 @@ export const Images = ({
   // through the Ventoy disk.
   function isLocked(image: string) {
     return !!loadedIn(image) || inUse.includes(image);
+  }
+
+  // The board keeps away from an image the host can write.
+  function hostWrites(image: string) {
+    return browseState(image, drives, inUse) === 'hostWrites';
+  }
+
+  function browseLabel(image: string) {
+    return hostWrites(image) ? t('image.files.hostWrites') : t('image.files.browse');
   }
 
   function targetOf(image: string): api.DriveId {
@@ -306,6 +320,28 @@ export const Images = ({
                   />
                 )}
               </div>
+
+              {/* The files inside the image. An image the host can write is
+                  left alone: its filesystem changes under any reader here. */}
+              <Tooltip title={browseLabel(image)} mouseEnterDelay={0.6}>
+                <button
+                  type="button"
+                  aria-label={browseLabel(image)}
+                  aria-disabled={hostWrites(image)}
+                  className={clsx(
+                    'flex h-[24px] w-[24px] items-center justify-center rounded p-0 hover:bg-neutral-500/50',
+                    hostWrites(image)
+                      ? 'cursor-not-allowed text-neutral-500'
+                      : 'text-neutral-300 hover:text-blue-400'
+                  )}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (!hostWrites(image)) onBrowse(image);
+                  }}
+                >
+                  <FolderOpenIcon size={15} />
+                </button>
+              </Tooltip>
 
               {/* The confirmation is a popover rather than a dialog, so it
                   counts as part of the Media menu and does not close it. The

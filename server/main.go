@@ -26,6 +26,7 @@ import (
 	"NanoKVM-Server/service/metrics"
 	"NanoKVM-Server/service/network"
 	"NanoKVM-Server/service/sequence"
+	"NanoKVM-Server/service/storage/diskfs"
 	"NanoKVM-Server/service/stream/webrtc"
 	"NanoKVM-Server/service/vm"
 	"NanoKVM-Server/service/vm/jiggler"
@@ -83,6 +84,11 @@ func initialize() {
 	// restart is inside the window, so the process that would clean up is the
 	// one being replaced. A server reaching this line is the proof it finished.
 	application.ClearUpdateMarker()
+
+	// Take down the image mounts a crashed or restarted server left behind,
+	// so the file browser starts with none and their images are free for the
+	// drives again.
+	diskfs.CleanupStale()
 
 	// The video clock profile (#135) goes to the kernel before the video
 	// starts; the kernel boots with the device tree's rates. The feature is

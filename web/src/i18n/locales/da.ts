@@ -521,6 +521,33 @@ const da = {
       resetHidFailed: 'Nulstilling af USB HID mislykkedes'
     },
     image: {
+      files: {
+        browse: 'Gennemse filer',
+        hostWrites:
+          'Værten kan skrive til dette billede. Skub det ud, eller indsæt det skrivebeskyttet, for at gennemse det.',
+        root: 'Billede',
+        up: 'Op',
+        refresh: 'Opdater',
+        allowChanges: 'Tillad ændringer',
+        changesHint:
+          'Ændringer skrives ind i billedet. Værten ser dem, næste gang billedet indsættes.',
+        inDrive: 'I {{drive}}-drevet: skub det ud for at ændre dets filer.',
+        readOnlyFs: '{{fs}} er skrivebeskyttet.',
+        free: '{{free}} ledig af {{total}}',
+        upload: 'Upload',
+        uploadFailed: 'Upload mislykkedes',
+        download: 'Download',
+        delete: 'Slet',
+        deleteConfirm: 'Slet {{name}}?',
+        deleteDirConfirm: 'Slet mappen {{name}} og alt i den?',
+        deleteFailed: 'Sletning mislykkedes',
+        empty: 'Denne mappe er tom',
+        notBrowsable:
+          'Billedet indeholder intet filsystem, der kan gennemses (FAT, exFAT, ISO 9660 eller UDF).',
+        busy: 'Billedet er i brug.',
+        loadFailed: 'Kunne ikke læse billedet',
+        truncated: 'Viser kun de første {{shown}} poster.',
+      },
       driveLoaded: 'image indsat',
       driveWarning: 'se advarslerne',
       warning: {

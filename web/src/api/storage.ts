@@ -1,4 +1,5 @@
 import { http } from '@/lib/http.ts';
+import { getBaseUrl } from '@/lib/service.ts';
 
 export type DriveId = 'disk' | 'cdrom';
 
@@ -38,4 +39,70 @@ export function deleteImage(file: string) {
     file
   };
   return http.post('/api/storage/image/delete', data);
+}
+
+// The file browser: the files inside an image, named by the image's path as
+// the drives name it, and a path inside the image.
+
+export type ImageFile = {
+  name: string;
+  size: number;
+  isDir: boolean;
+  modifiedAt: string;
+};
+
+export type ImageFiles = {
+  file: string;
+  path: string;
+  // fat12, fat16, fat32, exfat, iso9660 or udf
+  fs: string;
+  // Files can be written now: the filesystem can be, and no drive serves it.
+  writable: boolean;
+  // The drive serving the image, '' when none does.
+  drive: DriveId | '';
+  entries: ImageFile[];
+  truncated: boolean;
+  free: number;
+  total: number;
+};
+
+// Error codes of the file routes the UI tells apart.
+export const FILES_BUSY = -12;
+export const FILES_NOT_BROWSABLE = -13;
+export const FILES_NO_SPACE = -14;
+export const FILES_READ_ONLY = -15;
+
+export function listFiles(file: string, path: string) {
+  return http.get('/api/storage/files', { file, path });
+}
+
+// The URL a file downloads from. The session cookie authenticates it, so a
+// plain link streams the file without holding it in memory.
+export function fileDownloadUrl(file: string, path: string) {
+  const query = new URLSearchParams({ file, path });
+  return `${getBaseUrl('http')}/api/storage/files/download?${query.toString()}`;
+}
+
+// Write a file into the directory path of an image. The image and directory go
+// in the query string so the body holds nothing but the file.
+export function uploadFile(
+  file: string,
+  path: string,
+  data: File,
+  onProgress: (percent: number) => void
+) {
+  const form = new FormData();
+  form.append('file', data);
+
+  return http.post(`/api/storage/files/upload?${new URLSearchParams({ file, path })}`, form, {
+    timeout: 0,
+    onUploadProgress: (event) => {
+      if (event.total) onProgress(Math.round((event.loaded / event.total) * 100));
+    }
+  });
+}
+
+// Delete a file, or a directory with everything in it.
+export function deleteFile(file: string, path: string) {
+  return http.post('/api/storage/files/delete', { file, path });
 }

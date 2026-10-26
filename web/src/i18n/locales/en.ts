@@ -519,6 +519,33 @@ const en = {
       resetHidFailed: 'USB HID reset failed'
     },
     image: {
+      files: {
+        browse: 'Browse files',
+        hostWrites:
+          'The host can write this image. Eject it, or insert it read-only, to browse it.',
+        root: 'Image',
+        up: 'Up',
+        refresh: 'Refresh',
+        allowChanges: 'Allow changes',
+        changesHint:
+          'Changes are written into the image. The host sees them the next time the image is inserted.',
+        inDrive: 'In the {{drive}} drive: eject it to change its files.',
+        readOnlyFs: '{{fs}} is read-only.',
+        free: '{{free}} free of {{total}}',
+        upload: 'Upload',
+        uploadFailed: 'Upload failed',
+        download: 'Download',
+        delete: 'Delete',
+        deleteConfirm: 'Delete {{name}}?',
+        deleteDirConfirm: 'Delete the folder {{name}} and everything in it?',
+        deleteFailed: 'Delete failed',
+        empty: 'This folder is empty',
+        notBrowsable:
+          'The image holds no filesystem that can be browsed (FAT, exFAT, ISO 9660 or UDF).',
+        busy: 'The image is in use.',
+        loadFailed: 'Could not read the image',
+        truncated: 'Showing the first {{shown}} entries only.',
+      },
       driveLoaded: 'image loaded',
       driveWarning: 'check the warnings',
       warning: {

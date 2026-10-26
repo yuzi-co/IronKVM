@@ -29,6 +29,8 @@ var named = map[string]Rule{
 	"POST /api/storage/drives/:id/insert": {CategoryMedia, "insert", false},
 	"POST /api/storage/drives/:id/eject":  {CategoryMedia, "eject", false},
 	"POST /api/storage/image/delete":      {CategoryMedia, "delete-image", false},
+	"POST /api/storage/files/upload":      {CategoryMedia, "file-upload", false},
+	"POST /api/storage/files/delete":      {CategoryMedia, "file-delete", false},
 	"POST /api/download/image":            {CategoryMedia, "download-image", false},
 	"POST /api/download/image/netboot":    {CategoryMedia, "download-image", false},
 	"POST /api/download/file":             {CategoryMedia, "upload-image", false},

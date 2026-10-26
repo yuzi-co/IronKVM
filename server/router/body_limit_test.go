@@ -26,6 +26,7 @@ func TestEveryBodyLimitExceptionIsARoute(t *testing.T) {
 	applicationRouter(r)
 	uiRouter(r)
 	downloadRouter(r)
+	storageRouter(r)
 	supportRouter(r)
 
 	routes := map[string]bool{}

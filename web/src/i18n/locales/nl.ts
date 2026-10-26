@@ -527,6 +527,33 @@ const nl = {
       resetHidFailed: 'USB-HID resetten mislukt'
     },
     image: {
+      files: {
+        browse: 'Bestanden bekijken',
+        hostWrites:
+          'De host kan naar deze image schrijven. Werp hem uit, of plaats hem alleen-lezen, om hem te bekijken.',
+        root: 'Image',
+        up: 'Omhoog',
+        refresh: 'Vernieuwen',
+        allowChanges: 'Wijzigingen toestaan',
+        changesHint:
+          'Wijzigingen worden in de image geschreven. De host ziet ze wanneer de image weer wordt geplaatst.',
+        inDrive: 'In het {{drive}}-station: werp hem uit om de bestanden te wijzigen.',
+        readOnlyFs: '{{fs}} is alleen-lezen.',
+        free: '{{free}} vrij van {{total}}',
+        upload: 'Uploaden',
+        uploadFailed: 'Uploaden mislukt',
+        download: 'Downloaden',
+        delete: 'Verwijderen',
+        deleteConfirm: '{{name}} verwijderen?',
+        deleteDirConfirm: 'De map {{name}} en alles erin verwijderen?',
+        deleteFailed: 'Verwijderen mislukt',
+        empty: 'Deze map is leeg',
+        notBrowsable:
+          'De image bevat geen bestandssysteem dat bekeken kan worden (FAT, exFAT, ISO 9660 of UDF).',
+        busy: 'De image is in gebruik.',
+        loadFailed: 'Kan de image niet lezen',
+        truncated: 'Alleen de eerste {{shown}} items worden getoond.',
+      },
       driveLoaded: 'image geladen',
       driveWarning: 'bekijk de waarschuwingen',
       warning: {

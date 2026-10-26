@@ -528,6 +528,33 @@ const es = {
       resetHidFailed: 'No se pudo reiniciar el HID USB'
     },
     image: {
+      files: {
+        browse: 'Explorar archivos',
+        hostWrites:
+          'El host puede escribir en esta imagen. Expúlsela o insértela en solo lectura para explorarla.',
+        root: 'Imagen',
+        up: 'Subir un nivel',
+        refresh: 'Actualizar',
+        allowChanges: 'Permitir cambios',
+        changesHint:
+          'Los cambios se escriben en la imagen. El host los verá la próxima vez que se inserte la imagen.',
+        inDrive: 'En la unidad {{drive}}: expúlsela para cambiar sus archivos.',
+        readOnlyFs: '{{fs}} es de solo lectura.',
+        free: '{{free}} libres de {{total}}',
+        upload: 'Subir',
+        uploadFailed: 'Error al subir',
+        download: 'Descargar',
+        delete: 'Eliminar',
+        deleteConfirm: '¿Eliminar {{name}}?',
+        deleteDirConfirm: '¿Eliminar la carpeta {{name}} y todo su contenido?',
+        deleteFailed: 'Error al eliminar',
+        empty: 'Esta carpeta está vacía',
+        notBrowsable:
+          'La imagen no contiene ningún sistema de archivos explorable (FAT, exFAT, ISO 9660 o UDF).',
+        busy: 'La imagen está en uso.',
+        loadFailed: 'No se pudo leer la imagen',
+        truncated: 'Solo se muestran las primeras {{shown}} entradas.',
+      },
       driveLoaded: 'imagen cargada',
       driveWarning: 'revise los avisos',
       warning: {

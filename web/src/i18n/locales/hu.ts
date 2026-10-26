@@ -525,6 +525,33 @@ const hu = {
       resetHidFailed: 'Az USB HID újraindítása sikertelen'
     },
     image: {
+      files: {
+        browse: 'Fájlok böngészése',
+        hostWrites:
+          'A gazdagép írhatja ezt a képfájlt. A böngészéshez adja ki, vagy helyezze be csak olvashatóként.',
+        root: 'Képfájl',
+        up: 'Fel',
+        refresh: 'Frissítés',
+        allowChanges: 'Módosítások engedélyezése',
+        changesHint:
+          'A módosítások a képfájlba íródnak. A gazdagép a képfájl következő behelyezésekor látja őket.',
+        inDrive: 'A(z) {{drive}} meghajtóban: a fájlok módosításához adja ki.',
+        readOnlyFs: 'A(z) {{fs}} csak olvasható.',
+        free: '{{free}} szabad ennyiből: {{total}}',
+        upload: 'Feltöltés',
+        uploadFailed: 'A feltöltés sikertelen',
+        download: 'Letöltés',
+        delete: 'Törlés',
+        deleteConfirm: 'Törli: {{name}}?',
+        deleteDirConfirm: 'Törli a(z) {{name}} mappát és teljes tartalmát?',
+        deleteFailed: 'A törlés sikertelen',
+        empty: 'Ez a mappa üres',
+        notBrowsable:
+          'A képfájl nem tartalmaz böngészhető fájlrendszert (FAT, exFAT, ISO 9660 vagy UDF).',
+        busy: 'A képfájl használatban van.',
+        loadFailed: 'A képfájl nem olvasható',
+        truncated: 'Csak az első {{shown}} bejegyzés látható.',
+      },
       driveLoaded: 'lemezkép betöltve',
       driveWarning: 'nézze meg a figyelmeztetéseket',
       warning: {

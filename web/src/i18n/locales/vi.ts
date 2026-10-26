@@ -521,6 +521,32 @@ const vi = {
       resetHidFailed: 'Đặt lại USB HID thất bại'
     },
     image: {
+      files: {
+        browse: 'Duyệt tệp',
+        hostWrites:
+          'Máy chủ có thể ghi vào image này. Hãy đẩy ra hoặc lắp ở chế độ chỉ đọc để duyệt.',
+        root: 'Image',
+        up: 'Lên',
+        refresh: 'Làm mới',
+        allowChanges: 'Cho phép thay đổi',
+        changesHint:
+          'Thay đổi được ghi vào image. Máy chủ sẽ thấy chúng ở lần lắp image tiếp theo.',
+        inDrive: 'Trong ổ {{drive}}: đẩy ra để thay đổi tệp.',
+        readOnlyFs: '{{fs}} chỉ đọc.',
+        free: 'Còn trống {{free}} / {{total}}',
+        upload: 'Tải lên',
+        uploadFailed: 'Tải lên thất bại',
+        download: 'Tải xuống',
+        delete: 'Xóa',
+        deleteConfirm: 'Xóa {{name}}?',
+        deleteDirConfirm: 'Xóa thư mục {{name}} và mọi thứ bên trong?',
+        deleteFailed: 'Xóa thất bại',
+        empty: 'Thư mục này trống',
+        notBrowsable: 'Image không chứa hệ thống tệp có thể duyệt (FAT, exFAT, ISO 9660 hoặc UDF).',
+        busy: 'Image đang được sử dụng.',
+        loadFailed: 'Không thể đọc image',
+        truncated: 'Chỉ hiển thị {{shown}} mục đầu tiên.',
+      },
       driveLoaded: 'đã nạp ảnh đĩa',
       driveWarning: 'xem các cảnh báo',
       warning: {

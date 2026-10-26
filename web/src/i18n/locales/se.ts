@@ -518,6 +518,33 @@ const se = {
       resetHidFailed: 'Återställning av USB HID misslyckades'
     },
     image: {
+      files: {
+        browse: 'Bläddra bland filer',
+        hostWrites:
+          'Värden kan skriva till den här avbildningen. Mata ut den, eller sätt in den skrivskyddad, för att bläddra i den.',
+        root: 'Avbildning',
+        up: 'Upp',
+        refresh: 'Uppdatera',
+        allowChanges: 'Tillåt ändringar',
+        changesHint:
+          'Ändringar skrivs in i avbildningen. Värden ser dem nästa gång avbildningen sätts in.',
+        inDrive: 'I {{drive}}-enheten: mata ut den för att ändra dess filer.',
+        readOnlyFs: '{{fs}} är skrivskyddat.',
+        free: '{{free}} ledigt av {{total}}',
+        upload: 'Ladda upp',
+        uploadFailed: 'Uppladdningen misslyckades',
+        download: 'Ladda ner',
+        delete: 'Ta bort',
+        deleteConfirm: 'Ta bort {{name}}?',
+        deleteDirConfirm: 'Ta bort mappen {{name}} och allt i den?',
+        deleteFailed: 'Borttagningen misslyckades',
+        empty: 'Den här mappen är tom',
+        notBrowsable:
+          'Avbildningen innehåller inget filsystem som går att bläddra i (FAT, exFAT, ISO 9660 eller UDF).',
+        busy: 'Avbildningen används.',
+        loadFailed: 'Kunde inte läsa avbildningen',
+        truncated: 'Visar bara de första {{shown}} posterna.',
+      },
       driveLoaded: 'avbild isatt',
       driveWarning: 'se varningarna',
       warning: {

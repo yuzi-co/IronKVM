@@ -523,6 +523,32 @@ const cz = {
       resetHidFailed: 'Reset USB HID se nezdařil'
     },
     image: {
+      files: {
+        browse: 'Procházet soubory',
+        hostWrites:
+          'Hostitel může do tohoto obrazu zapisovat. Pro procházení jej vysuňte nebo vložte jen pro čtení.',
+        root: 'Obraz',
+        up: 'Nahoru',
+        refresh: 'Obnovit',
+        allowChanges: 'Povolit změny',
+        changesHint: 'Změny se zapisují do obrazu. Hostitel je uvidí při příštím vložení obrazu.',
+        inDrive: 'V jednotce {{drive}}: pro změnu souborů jej vysuňte.',
+        readOnlyFs: '{{fs}} je jen pro čtení.',
+        free: 'Volno {{free}} z {{total}}',
+        upload: 'Nahrát',
+        uploadFailed: 'Nahrání selhalo',
+        download: 'Stáhnout',
+        delete: 'Smazat',
+        deleteConfirm: 'Smazat {{name}}?',
+        deleteDirConfirm: 'Smazat složku {{name}} a vše, co obsahuje?',
+        deleteFailed: 'Smazání selhalo',
+        empty: 'Tato složka je prázdná',
+        notBrowsable:
+          'Obraz neobsahuje souborový systém, který lze procházet (FAT, exFAT, ISO 9660 nebo UDF).',
+        busy: 'Obraz se používá.',
+        loadFailed: 'Obraz nelze přečíst',
+        truncated: 'Zobrazuje se jen prvních {{shown}} položek.',
+      },
       driveLoaded: 'obraz vložen',
       driveWarning: 'zkontrolujte varování',
       warning: {

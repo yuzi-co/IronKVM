@@ -526,6 +526,33 @@ const it = {
       resetHidFailed: 'Reimpostazione HID USB non riuscita'
     },
     image: {
+      files: {
+        browse: 'Sfoglia i file',
+        hostWrites:
+          "L'host può scrivere su questa immagine. Espellila o inseriscila in sola lettura per sfogliarla.",
+        root: 'Immagine',
+        up: 'Su',
+        refresh: 'Aggiorna',
+        allowChanges: 'Consenti modifiche',
+        changesHint:
+          "Le modifiche vengono scritte nell'immagine. L'host le vedrà al prossimo inserimento dell'immagine.",
+        inDrive: "Nell'unità {{drive}}: espellila per modificarne i file.",
+        readOnlyFs: '{{fs}} è in sola lettura.',
+        free: '{{free}} liberi su {{total}}',
+        upload: 'Carica',
+        uploadFailed: 'Caricamento non riuscito',
+        download: 'Scarica',
+        delete: 'Elimina',
+        deleteConfirm: 'Eliminare {{name}}?',
+        deleteDirConfirm: 'Eliminare la cartella {{name}} e tutto il suo contenuto?',
+        deleteFailed: 'Eliminazione non riuscita',
+        empty: 'Questa cartella è vuota',
+        notBrowsable:
+          "L'immagine non contiene un file system esplorabile (FAT, exFAT, ISO 9660 o UDF).",
+        busy: "L'immagine è in uso.",
+        loadFailed: "Impossibile leggere l'immagine",
+        truncated: 'Vengono mostrate solo le prime {{shown}} voci.',
+      },
       driveLoaded: 'immagine caricata',
       driveWarning: 'vedi gli avvisi',
       warning: {

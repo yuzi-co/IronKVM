@@ -264,6 +264,12 @@ func insertLocked(id string, file string, ro bool, resolve func(string) (string,
 		return "", err
 	}
 
+	// The file browser may have the image open. The host must not see an
+	// image the board writes, nor write one the board reads.
+	if err := browserAllows(file, d.id == DriveDisk && !ro); err != nil {
+		return "", err
+	}
+
 	// A writable disk and a CD on one backing file would corrupt it.
 	holder, err := loadedDrive(file)
 	if err != nil {
@@ -321,6 +327,9 @@ func removeImage(file string) error {
 // itself or through a device such as the Ventoy disk. The caller holds
 // driveMu.
 func imageInUse(file string) error {
+	if open, _ := openHere(file); open {
+		return errImageOpen
+	}
 	holder, err := loadedDrive(file)
 	if err != nil {
 		return err

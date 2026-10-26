@@ -524,6 +524,33 @@ const pl = {
       resetHidFailed: 'Nie udało się zresetować USB HID'
     },
     image: {
+      files: {
+        browse: 'Przeglądaj pliki',
+        hostWrites:
+          'Host może zapisywać ten obraz. Aby go przeglądać, wysuń go lub włóż tylko do odczytu.',
+        root: 'Obraz',
+        up: 'W górę',
+        refresh: 'Odśwież',
+        allowChanges: 'Zezwól na zmiany',
+        changesHint:
+          'Zmiany są zapisywane w obrazie. Host zobaczy je przy następnym włożeniu obrazu.',
+        inDrive: 'W napędzie {{drive}}: wysuń go, aby zmienić pliki.',
+        readOnlyFs: '{{fs}} jest tylko do odczytu.',
+        free: 'Wolne {{free}} z {{total}}',
+        upload: 'Prześlij',
+        uploadFailed: 'Przesyłanie nie powiodło się',
+        download: 'Pobierz',
+        delete: 'Usuń',
+        deleteConfirm: 'Usunąć {{name}}?',
+        deleteDirConfirm: 'Usunąć folder {{name}} wraz z całą zawartością?',
+        deleteFailed: 'Usuwanie nie powiodło się',
+        empty: 'Ten folder jest pusty',
+        notBrowsable:
+          'Obraz nie zawiera systemu plików, który można przeglądać (FAT, exFAT, ISO 9660 lub UDF).',
+        busy: 'Obraz jest w użyciu.',
+        loadFailed: 'Nie można odczytać obrazu',
+        truncated: 'Wyświetlono tylko pierwsze {{shown}} pozycji.',
+      },
       driveLoaded: 'obraz załadowany',
       driveWarning: 'sprawdź ostrzeżenia',
       warning: {

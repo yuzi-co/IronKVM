@@ -522,6 +522,32 @@ const nb = {
       resetHidFailed: 'Tilbakestilling av USB HID mislyktes'
     },
     image: {
+      files: {
+        browse: 'Bla gjennom filer',
+        hostWrites:
+          'Verten kan skrive til dette bildet. Løs det ut, eller sett det inn skrivebeskyttet, for å bla gjennom det.',
+        root: 'Bilde',
+        up: 'Opp',
+        refresh: 'Oppdater',
+        allowChanges: 'Tillat endringer',
+        changesHint: 'Endringer skrives inn i bildet. Verten ser dem neste gang bildet settes inn.',
+        inDrive: 'I {{drive}}-stasjonen: løs det ut for å endre filene.',
+        readOnlyFs: '{{fs}} er skrivebeskyttet.',
+        free: '{{free}} ledig av {{total}}',
+        upload: 'Last opp',
+        uploadFailed: 'Opplasting mislyktes',
+        download: 'Last ned',
+        delete: 'Slett',
+        deleteConfirm: 'Slette {{name}}?',
+        deleteDirConfirm: 'Slette mappen {{name}} og alt i den?',
+        deleteFailed: 'Sletting mislyktes',
+        empty: 'Denne mappen er tom',
+        notBrowsable:
+          'Bildet inneholder ikke noe filsystem som kan blas gjennom (FAT, exFAT, ISO 9660 eller UDF).',
+        busy: 'Bildet er i bruk.',
+        loadFailed: 'Kunne ikke lese bildet',
+        truncated: 'Viser bare de første {{shown}} oppføringene.',
+      },
       driveLoaded: 'avbildning satt inn',
       driveWarning: 'se advarslene',
       warning: {

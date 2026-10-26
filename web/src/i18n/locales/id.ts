@@ -522,6 +522,33 @@ const id = {
       resetHidFailed: 'Reset HID USB gagal'
     },
     image: {
+      files: {
+        browse: 'Jelajahi file',
+        hostWrites:
+          'Host dapat menulis image ini. Keluarkan, atau masukkan sebagai baca-saja, untuk menjelajahinya.',
+        root: 'Image',
+        up: 'Naik',
+        refresh: 'Muat ulang',
+        allowChanges: 'Izinkan perubahan',
+        changesHint:
+          'Perubahan ditulis ke dalam image. Host melihatnya saat image dimasukkan berikutnya.',
+        inDrive: 'Di drive {{drive}}: keluarkan untuk mengubah file-nya.',
+        readOnlyFs: '{{fs}} hanya-baca.',
+        free: '{{free}} bebas dari {{total}}',
+        upload: 'Unggah',
+        uploadFailed: 'Unggah gagal',
+        download: 'Unduh',
+        delete: 'Hapus',
+        deleteConfirm: 'Hapus {{name}}?',
+        deleteDirConfirm: 'Hapus folder {{name}} beserta seluruh isinya?',
+        deleteFailed: 'Hapus gagal',
+        empty: 'Folder ini kosong',
+        notBrowsable:
+          'Image tidak berisi sistem file yang dapat dijelajahi (FAT, exFAT, ISO 9660, atau UDF).',
+        busy: 'Image sedang digunakan.',
+        loadFailed: 'Tidak dapat membaca image',
+        truncated: 'Hanya menampilkan {{shown}} entri pertama.',
+      },
       driveLoaded: 'image dimuat',
       driveWarning: 'periksa peringatannya',
       warning: {

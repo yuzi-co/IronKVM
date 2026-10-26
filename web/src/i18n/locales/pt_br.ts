@@ -524,6 +524,33 @@ const pt_br = {
       resetHidFailed: 'Falha ao redefinir o HID USB'
     },
     image: {
+      files: {
+        browse: 'Explorar arquivos',
+        hostWrites:
+          'O host pode gravar nesta imagem. Ejete-a, ou insira-a somente leitura, para explorá-la.',
+        root: 'Imagem',
+        up: 'Acima',
+        refresh: 'Atualizar',
+        allowChanges: 'Permitir alterações',
+        changesHint:
+          'As alterações são gravadas na imagem. O host as verá na próxima vez que a imagem for inserida.',
+        inDrive: 'Na unidade {{drive}}: ejete-a para alterar seus arquivos.',
+        readOnlyFs: '{{fs}} é somente leitura.',
+        free: '{{free}} livres de {{total}}',
+        upload: 'Enviar',
+        uploadFailed: 'Falha no envio',
+        download: 'Baixar',
+        delete: 'Excluir',
+        deleteConfirm: 'Excluir {{name}}?',
+        deleteDirConfirm: 'Excluir a pasta {{name}} e todo o seu conteúdo?',
+        deleteFailed: 'Falha ao excluir',
+        empty: 'Esta pasta está vazia',
+        notBrowsable:
+          'A imagem não contém um sistema de arquivos navegável (FAT, exFAT, ISO 9660 ou UDF).',
+        busy: 'A imagem está em uso.',
+        loadFailed: 'Não foi possível ler a imagem',
+        truncated: 'Mostrando apenas as primeiras {{shown}} entradas.',
+      },
       driveLoaded: 'imagem carregada',
       driveWarning: 'veja os avisos',
       warning: {

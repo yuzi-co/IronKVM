@@ -528,6 +528,33 @@ const fr = {
       resetHidFailed: 'La réinitialisation du HID USB a échoué'
     },
     image: {
+      files: {
+        browse: 'Parcourir les fichiers',
+        hostWrites:
+          "L'hôte peut écrire dans cette image. Éjectez-la ou insérez-la en lecture seule pour la parcourir.",
+        root: 'Image',
+        up: 'Remonter',
+        refresh: 'Actualiser',
+        allowChanges: 'Autoriser les modifications',
+        changesHint:
+          "Les modifications sont écrites dans l'image. L'hôte les verra à la prochaine insertion de l'image.",
+        inDrive: 'Dans le lecteur {{drive}} : éjectez-la pour modifier ses fichiers.',
+        readOnlyFs: '{{fs}} est en lecture seule.',
+        free: '{{free}} libres sur {{total}}',
+        upload: 'Téléverser',
+        uploadFailed: 'Échec du téléversement',
+        download: 'Télécharger',
+        delete: 'Supprimer',
+        deleteConfirm: 'Supprimer {{name}} ?',
+        deleteDirConfirm: 'Supprimer le dossier {{name}} et tout son contenu ?',
+        deleteFailed: 'Échec de la suppression',
+        empty: 'Ce dossier est vide',
+        notBrowsable:
+          "L'image ne contient aucun système de fichiers navigable (FAT, exFAT, ISO 9660 ou UDF).",
+        busy: "L'image est en cours d'utilisation.",
+        loadFailed: "Impossible de lire l'image",
+        truncated: 'Seules les {{shown}} premières entrées sont affichées.',
+      },
       driveLoaded: 'image chargée',
       driveWarning: 'voir les avertissements',
       warning: {
