@@ -156,6 +156,7 @@ func (s *SignalingHandler) handleVideoOffer(data string) error {
 		log.Errorf("failed to set remote description: %s", err)
 		return err
 	}
+	s.addPendingCandidates()
 
 	answer, err := s.client.video.CreateAnswer(nil)
 	if err != nil {
@@ -215,12 +216,30 @@ func (s *SignalingHandler) updateHeaderExtensionID() error {
 	return nil
 }
 
-// handle video candidate
+// maxPendingCandidates bounds the candidates held for an offer that has not
+// come yet. A browser gathers a handful; the bound only stops a viewer that
+// never offers from growing the list.
+const maxPendingCandidates = 64
+
+// handleVideoCandidate adds a candidate from the viewer. The browser can
+// surface candidates before its offer goes out (a pooled candidate, or a
+// browser that fires icecandidate before setLocalDescription resolves), and
+// pion refuses a candidate before the remote description. Such a candidate is
+// held and added with the offer, rather than dropped.
 func (s *SignalingHandler) handleVideoCandidate(data string) error {
 	candidate := webrtc.ICECandidateInit{}
 	if err := json.Unmarshal([]byte(data), &candidate); err != nil {
 		log.Errorf("failed to unmarshal candidate: %s", err)
 		return err
+	}
+
+	if s.client.video.RemoteDescription() == nil {
+		if len(s.pendingCandidates) >= maxPendingCandidates {
+			return errors.New("too many ICE candidates before the offer")
+		}
+		s.pendingCandidates = append(s.pendingCandidates, candidate)
+		log.Debugf("holding ICE candidate %d until the offer", len(s.pendingCandidates))
+		return nil
 	}
 
 	if err := s.client.video.AddICECandidate(candidate); err != nil {
@@ -229,6 +248,20 @@ func (s *SignalingHandler) handleVideoCandidate(data string) error {
 	}
 
 	return nil
+}
+
+// addPendingCandidates adds the candidates held for the offer just applied.
+func (s *SignalingHandler) addPendingCandidates() {
+	pending := s.pendingCandidates
+	s.pendingCandidates = nil
+	for _, candidate := range pending {
+		if err := s.client.video.AddICECandidate(candidate); err != nil {
+			log.Errorf("failed to add held ICECandidate: %s", err)
+		}
+	}
+	if len(pending) > 0 {
+		log.Debugf("added %d ICE candidates held for the offer", len(pending))
+	}
 }
 
 // handle heartbeat

@@ -124,6 +124,11 @@ type SignalingHandler struct {
 	mutex          sync.Mutex
 	unregisterMode func()
 	closed         bool
+
+	// pendingCandidates holds the viewer's ICE candidates that came before
+	// its offer, to be added once the offer is applied. Only the socket's
+	// read goroutine touches it.
+	pendingCandidates []webrtc.ICECandidateInit
 }
 
 type Track struct {
