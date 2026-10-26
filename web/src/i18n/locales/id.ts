@@ -28,6 +28,21 @@ const id = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      oidc: {
+        signIn: 'Masuk dengan {{name}}',
+        usePassword: 'Masuk dengan kata sandi',
+        errors: {
+          disabled: 'Single sign-on dimatikan.',
+          locked: 'Terlalu banyak login gagal, coba lagi nanti',
+          provider: 'Penyedia identitas tidak dapat dihubungi.',
+          denied: 'Penyedia identitas tidak memasukkan Anda.',
+          state: 'Proses masuk kedaluwarsa atau dimulai di peramban lain. Coba lagi.',
+          token: 'Jawaban penyedia identitas tidak dapat diverifikasi.',
+          account: 'Akun Anda di penyedia identitas tidak punya akun di perangkat ini.',
+          role: 'Akun Anda di penyedia identitas tidak ada di grup mana pun yang diizinkan di perangkat ini.',
+          server: 'Proses masuk tidak dapat diselesaikan. Coba lagi.'
+        }
+      },
       share: {
         opening: 'Membuka layar yang dibagikan...',
         failed: 'Tautan ini tidak valid, sudah kedaluwarsa, atau dicabut.',
@@ -2174,6 +2189,38 @@ const id = {
         }
       },
       account: {
+        oidc: {
+          title: 'Single sign-on (OIDC)',
+          desc: 'Masuk melalui penyedia OpenID Connect seperti Authentik atau Keycloak. Login dengan kata sandi tetap tersedia.',
+          enabled: 'Aktif',
+          providerName: 'Nama penyedia pada tombol masuk',
+          issuer: 'URL penerbit (issuer)',
+          clientId: 'ID klien',
+          clientSecret: 'Rahasia klien',
+          clientSecretSet: 'Rahasia sudah diatur. Kosongkan untuk mempertahankannya.',
+          clearSecret: 'Hapus rahasia (klien publik)',
+          scopes: 'Scopes (openid selalu disertakan)',
+          redirectUrl: 'URL pengalihan',
+          redirectUrlDesc: 'Daftarkan URL ini persis di penyedia. URL ini mengikuti alamat yang dipakai untuk membuka halaman ini.',
+          httpWarning: 'Halaman ini memakai http tanpa enkripsi. Banyak penyedia hanya menerima URL pengalihan http untuk localhost. Jika penyedia Anda menolaknya, buka perangkat lewat HTTPS atau reverse proxy dengan TLS.',
+          mappingDesc: 'Akun penyedia masuk sebagai akun lokal dengan nama pengguna yang sama. Akun pemilik perangkat hanya masuk dengan kata sandinya. Penyedia menangani autentikasi dua faktor: kode lokal tidak diminta.',
+          usernameClaim: 'Cocokkan akun berdasarkan',
+          emailDomain: 'Domain email',
+          emailDomainDesc: 'Bagian sebelum @ adalah nama pengguna. Alamat di domain lain ditolak.',
+          autoCreate: 'Buat akun untuk pengguna penyedia yang belum punya',
+          defaultRole: 'Peran akun yang dibuat',
+          groupsDesc: 'Jika ada grup yang diatur, peran berasal dari penyedia setiap kali masuk, dan pengguna di luar semua grup ditolak.',
+          groupsClaim: 'Claim grup',
+          adminGroup: 'Grup administrator',
+          userGroup: 'Grup pengguna',
+          viewerGroup: 'Grup penonton',
+          hidePassword: 'Sembunyikan formulir kata sandi di halaman masuk',
+          hidePasswordDesc: 'Tautan di halaman masuk tetap menampilkannya: login dengan kata sandi selalu berfungsi.',
+          save: 'Simpan',
+          saved: 'Tersimpan',
+          saveFailed: 'Gagal menyimpan pengaturan',
+          loadFailed: 'Gagal memuat pengaturan'
+        },
         title: 'Akun',
         webAccount: 'Nama akun web',
         role: 'Peran',

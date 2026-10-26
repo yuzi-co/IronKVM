@@ -28,6 +28,21 @@ const pl = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      oidc: {
+        signIn: 'Zaloguj przez {{name}}',
+        usePassword: 'Zaloguj hasłem',
+        errors: {
+          disabled: 'Logowanie jednokrotne jest wyłączone.',
+          locked: 'Zbyt wiele nieudanych logowań, spróbuj ponownie później',
+          provider: 'Nie można połączyć się z dostawcą tożsamości.',
+          denied: 'Dostawca tożsamości nie zalogował cię.',
+          state: 'Logowanie wygasło lub zostało rozpoczęte w innej przeglądarce. Spróbuj ponownie.',
+          token: 'Nie udało się zweryfikować odpowiedzi dostawcy tożsamości.',
+          account: 'Twoje konto u dostawcy tożsamości nie ma konta na tym urządzeniu.',
+          role: 'Twoje konto u dostawcy tożsamości nie należy do żadnej z grup dozwolonych na tym urządzeniu.',
+          server: 'Nie udało się dokończyć logowania. Spróbuj ponownie.'
+        }
+      },
       share: {
         opening: 'Otwieranie udostępnionego ekranu...',
         failed: 'Ten link jest nieprawidłowy, wygasł lub został unieważniony.',
@@ -2180,6 +2195,38 @@ const pl = {
         }
       },
       account: {
+        oidc: {
+          title: 'Logowanie jednokrotne (OIDC)',
+          desc: 'Logowanie przez dostawcę OpenID Connect, np. Authentik lub Keycloak. Logowanie hasłem pozostaje dostępne.',
+          enabled: 'Włączone',
+          providerName: 'Nazwa dostawcy na przycisku',
+          issuer: 'URL wystawcy (issuer)',
+          clientId: 'ID klienta',
+          clientSecret: 'Sekret klienta',
+          clientSecretSet: 'Sekret jest ustawiony. Zostaw puste, aby go zachować.',
+          clearSecret: 'Usuń sekret (klient publiczny)',
+          scopes: 'Scopes (openid jest zawsze dodawany)',
+          redirectUrl: 'Adres przekierowania',
+          redirectUrlDesc: 'Zarejestruj dokładnie ten URL u dostawcy. Odpowiada adresowi, pod którym otwarto tę stronę.',
+          httpWarning: 'Ta strona używa nieszyfrowanego http. Wielu dostawców akceptuje adresy przekierowania http tylko dla localhost. Jeśli twój odrzuca ten adres, otwórz urządzenie przez HTTPS lub odwrotne proxy z TLS.',
+          mappingDesc: 'Konto dostawcy loguje się jako konto lokalne o tej samej nazwie użytkownika. Konto właściciela urządzenia loguje się tylko swoim hasłem. Uwierzytelnianie dwuskładnikowe zapewnia dostawca: lokalny kod nie jest wymagany.',
+          usernameClaim: 'Dopasuj konta według',
+          emailDomain: 'Domena e-mail',
+          emailDomainDesc: 'Część przed @ to nazwa użytkownika. Adresy z innych domen są odrzucane.',
+          autoCreate: 'Utwórz konto dla użytkownika dostawcy, który go nie ma',
+          defaultRole: 'Rola tworzonych kont',
+          groupsDesc: 'Gdy ustawiona jest jakaś grupa, rola pochodzi od dostawcy przy każdym logowaniu, a użytkownicy spoza wszystkich grup są odrzucani.',
+          groupsClaim: 'Claim grup',
+          adminGroup: 'Grupa administratorów',
+          userGroup: 'Grupa użytkowników',
+          viewerGroup: 'Grupa widzów',
+          hidePassword: 'Ukryj formularz hasła na stronie logowania',
+          hidePasswordDesc: 'Link na stronie logowania nadal go pokazuje: logowanie hasłem zawsze działa.',
+          save: 'Zapisz',
+          saved: 'Zapisano',
+          saveFailed: 'Nie udało się zapisać ustawień',
+          loadFailed: 'Nie udało się wczytać ustawień'
+        },
         title: 'Konto',
         webAccount: 'Nazwa konta web',
         role: 'Rola',

@@ -29,6 +29,21 @@ const de = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      oidc: {
+        signIn: 'Anmelden mit {{name}}',
+        usePassword: 'Mit Passwort anmelden',
+        errors: {
+          disabled: 'Single Sign-on ist ausgeschaltet.',
+          locked: 'Zu viele fehlgeschlagene Anmeldungen, bitte später erneut versuchen',
+          provider: 'Der Identitätsanbieter ist nicht erreichbar.',
+          denied: 'Der Identitätsanbieter hat die Anmeldung nicht durchgeführt.',
+          state: 'Die Anmeldung ist abgelaufen oder wurde in einem anderen Browser begonnen. Bitte erneut versuchen.',
+          token: 'Die Antwort des Identitätsanbieters konnte nicht geprüft werden.',
+          account: 'Zu Ihrem Konto beim Identitätsanbieter gibt es kein Konto auf diesem Gerät.',
+          role: 'Ihr Konto beim Identitätsanbieter ist in keiner der auf diesem Gerät erlaubten Gruppen.',
+          server: 'Die Anmeldung konnte nicht abgeschlossen werden. Bitte erneut versuchen.'
+        }
+      },
       share: {
         opening: 'Geteilter Bildschirm wird geöffnet...',
         failed: 'Dieser Link ist ungültig, abgelaufen oder wurde widerrufen.',
@@ -2218,6 +2233,38 @@ const de = {
         }
       },
       account: {
+        oidc: {
+          title: 'Single Sign-on (OIDC)',
+          desc: 'Anmeldung über einen OpenID-Connect-Anbieter wie Authentik oder Keycloak. Die Anmeldung mit Passwort bleibt verfügbar.',
+          enabled: 'Aktiviert',
+          providerName: 'Anbietername auf der Anmeldeschaltfläche',
+          issuer: 'Issuer-URL',
+          clientId: 'Client-ID',
+          clientSecret: 'Client-Secret',
+          clientSecretSet: 'Ein Secret ist gesetzt. Leer lassen, um es zu behalten.',
+          clearSecret: 'Secret entfernen (öffentlicher Client)',
+          scopes: 'Scopes (openid ist immer enthalten)',
+          redirectUrl: 'Weiterleitungs-URL',
+          redirectUrlDesc: 'Genau diese URL beim Anbieter eintragen. Sie folgt der Adresse, unter der diese Seite geöffnet wurde.',
+          httpWarning: 'Diese Seite nutzt unverschlüsseltes http. Viele Anbieter erlauben http-Weiterleitungs-URLs nur für localhost. Lehnt Ihrer diese ab, öffnen Sie das Gerät über HTTPS oder einen Reverse-Proxy mit TLS.',
+          mappingDesc: 'Ein Anbieterkonto meldet sich als das lokale Konto mit demselben Benutzernamen an. Das Gerätebesitzerkonto meldet sich nur mit seinem Passwort an. Die Zwei-Faktor-Authentifizierung übernimmt der Anbieter: der lokale Code wird nicht abgefragt.',
+          usernameClaim: 'Konten zuordnen über',
+          emailDomain: 'E-Mail-Domain',
+          emailDomainDesc: 'Der Teil vor dem @ ist der Benutzername. Adressen anderer Domains werden abgelehnt.',
+          autoCreate: 'Konto für Anbieterbenutzer ohne Konto anlegen',
+          defaultRole: 'Rolle angelegter Konten',
+          groupsDesc: 'Ist eine Gruppe gesetzt, kommt die Rolle bei jeder Anmeldung vom Anbieter, und Benutzer in keiner der Gruppen werden abgelehnt.',
+          groupsClaim: 'Gruppen-Claim',
+          adminGroup: 'Administratorgruppe',
+          userGroup: 'Benutzergruppe',
+          viewerGroup: 'Betrachtergruppe',
+          hidePassword: 'Passwortformular auf der Anmeldeseite ausblenden',
+          hidePasswordDesc: 'Ein Link auf der Anmeldeseite zeigt es weiterhin: die Anmeldung mit Passwort funktioniert immer.',
+          save: 'Speichern',
+          saved: 'Gespeichert',
+          saveFailed: 'Einstellungen konnten nicht gespeichert werden',
+          loadFailed: 'Einstellungen konnten nicht geladen werden'
+        },
         title: 'Konto',
         webAccount: 'Web Konto Name',
         role: 'Rolle',

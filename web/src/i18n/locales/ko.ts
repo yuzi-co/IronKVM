@@ -28,6 +28,21 @@ const ko = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      oidc: {
+        signIn: '{{name}}(으)로 로그인',
+        usePassword: '비밀번호로 로그인',
+        errors: {
+          disabled: '싱글 사인온이 꺼져 있습니다.',
+          locked: '로그인 실패가 너무 많습니다. 나중에 다시 시도하세요',
+          provider: 'ID 공급자에 연결할 수 없습니다.',
+          denied: 'ID 공급자가 로그인을 허용하지 않았습니다.',
+          state: '로그인이 만료되었거나 다른 브라우저에서 시작되었습니다. 다시 시도하세요.',
+          token: 'ID 공급자의 응답을 확인할 수 없습니다.',
+          account: 'ID 공급자 계정에 해당하는 계정이 이 장치에 없습니다.',
+          role: 'ID 공급자 계정이 이 장치에서 허용된 어떤 그룹에도 속하지 않습니다.',
+          server: '로그인을 완료할 수 없습니다. 다시 시도하세요.'
+        }
+      },
       share: {
         opening: '공유된 화면을 여는 중...',
         failed: '이 링크는 유효하지 않거나 만료되었거나 취소되었습니다.',
@@ -2137,6 +2152,38 @@ const ko = {
         }
       },
       account: {
+        oidc: {
+          title: '싱글 사인온 (OIDC)',
+          desc: 'Authentik이나 Keycloak 같은 OpenID Connect 공급자로 로그인합니다. 비밀번호 로그인도 계속 사용할 수 있습니다.',
+          enabled: '사용',
+          providerName: '로그인 버튼의 공급자 이름',
+          issuer: 'Issuer URL',
+          clientId: '클라이언트 ID',
+          clientSecret: '클라이언트 시크릿',
+          clientSecretSet: '시크릿이 설정되어 있습니다. 유지하려면 비워 두세요.',
+          clearSecret: '시크릿 삭제 (공개 클라이언트)',
+          scopes: '스코프 (openid는 항상 포함)',
+          redirectUrl: '리디렉션 URL',
+          redirectUrlDesc: '이 URL을 그대로 공급자에 등록하세요. 이 페이지를 연 주소를 따릅니다.',
+          httpWarning: '이 페이지는 암호화되지 않은 http를 사용합니다. 많은 공급자가 http 리디렉션 URL을 localhost에만 허용합니다. 거부되면 HTTPS 또는 TLS 리버스 프록시를 통해 장치를 여세요.',
+          mappingDesc: '공급자 계정은 같은 사용자 이름의 로컬 계정으로 로그인합니다. 장치 소유자 계정은 비밀번호로만 로그인합니다. 2단계 인증은 공급자가 하므로 로컬 코드는 묻지 않습니다.',
+          usernameClaim: '계정 매칭 기준',
+          emailDomain: '이메일 도메인',
+          emailDomainDesc: '@ 앞부분이 사용자 이름입니다. 다른 도메인의 주소는 거부됩니다.',
+          autoCreate: '계정이 없는 공급자 사용자에게 계정 만들기',
+          defaultRole: '만든 계정의 역할',
+          groupsDesc: '그룹을 하나라도 설정하면 로그인할 때마다 공급자에서 역할을 가져오며, 어느 그룹에도 없는 사용자는 거부됩니다.',
+          groupsClaim: '그룹 claim',
+          adminGroup: '관리자 그룹',
+          userGroup: '사용자 그룹',
+          viewerGroup: '뷰어 그룹',
+          hidePassword: '로그인 페이지에서 비밀번호 양식 숨기기',
+          hidePasswordDesc: '로그인 페이지의 링크로 계속 표시할 수 있습니다. 비밀번호 로그인은 항상 작동합니다.',
+          save: '저장',
+          saved: '저장됨',
+          saveFailed: '설정을 저장하지 못했습니다',
+          loadFailed: '설정을 불러오지 못했습니다'
+        },
         title: '계정',
         webAccount: '웹 계정',
         role: '역할',

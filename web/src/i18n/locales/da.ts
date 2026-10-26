@@ -28,6 +28,21 @@ const da = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      oidc: {
+        signIn: 'Log ind med {{name}}',
+        usePassword: 'Log ind med adgangskode',
+        errors: {
+          disabled: 'Single sign-on er slået fra.',
+          locked: 'For mange mislykkede logins, prøv igen senere',
+          provider: 'Identitetsudbyderen kunne ikke nås.',
+          denied: 'Identitetsudbyderen loggede dig ikke ind.',
+          state: 'Login udløb eller blev startet i en anden browser. Prøv igen.',
+          token: 'Svaret fra identitetsudbyderen kunne ikke verificeres.',
+          account: 'Din konto hos identitetsudbyderen har ingen konto på denne enhed.',
+          role: 'Din konto hos identitetsudbyderen er ikke i nogen af de grupper, der er tilladt på denne enhed.',
+          server: 'Login kunne ikke gennemføres. Prøv igen.'
+        }
+      },
       share: {
         opening: 'Åbner den delte skærm...',
         failed: 'Linket er ugyldigt, udløbet eller tilbagekaldt.',
@@ -2171,6 +2186,38 @@ const da = {
         }
       },
       account: {
+        oidc: {
+          title: 'Single sign-on (OIDC)',
+          desc: 'Log ind via en OpenID Connect-udbyder som Authentik eller Keycloak. Login med adgangskode er stadig muligt.',
+          enabled: 'Aktiveret',
+          providerName: 'Udbyderens navn på login-knappen',
+          issuer: 'Issuer-URL',
+          clientId: 'Klient-ID',
+          clientSecret: 'Klienthemmelighed',
+          clientSecretSet: 'En hemmelighed er sat. Lad feltet være tomt for at beholde den.',
+          clearSecret: 'Fjern hemmeligheden (offentlig klient)',
+          scopes: 'Scopes (openid er altid med)',
+          redirectUrl: 'Omdirigerings-URL',
+          redirectUrlDesc: 'Registrer præcis denne URL hos udbyderen. Den følger den adresse, siden blev åbnet på.',
+          httpWarning: 'Denne side bruger ukrypteret http. Mange udbydere accepterer kun http-omdirigerings-URL\'er for localhost. Afviser din denne, så åbn enheden via HTTPS eller en reverse proxy med TLS.',
+          mappingDesc: 'En udbyderkonto logger ind som den lokale konto med samme brugernavn. Enhedsejerens konto logger kun ind med sin adgangskode. Udbyderen står for totrinsgodkendelse: den lokale kode bliver ikke krævet.',
+          usernameClaim: 'Match konti efter',
+          emailDomain: 'E-maildomæne',
+          emailDomainDesc: 'Delen før @ er brugernavnet. Adresser i andre domæner afvises.',
+          autoCreate: 'Opret en konto til en udbyderbruger uden konto',
+          defaultRole: 'Rolle for oprettede konti',
+          groupsDesc: 'Når en gruppe er sat, kommer rollen fra udbyderen ved hvert login, og brugere uden for alle grupperne afvises.',
+          groupsClaim: 'Gruppe-claim',
+          adminGroup: 'Administratorgruppe',
+          userGroup: 'Brugergruppe',
+          viewerGroup: 'Seergruppe',
+          hidePassword: 'Skjul adgangskodeformularen på login-siden',
+          hidePasswordDesc: 'Et link på login-siden viser den stadig: login med adgangskode virker altid.',
+          save: 'Gem',
+          saved: 'Gemt',
+          saveFailed: 'Indstillingerne kunne ikke gemmes',
+          loadFailed: 'Indstillingerne kunne ikke indlæses'
+        },
         title: 'Konto',
         webAccount: 'Navn på webkonto',
         role: 'Rolle',

@@ -1,11 +1,12 @@
 import { ReactElement, useEffect, useState } from 'react';
 import { Alert, Button, Form, Input } from 'antd';
-import { KeyRoundIcon, LockIcon, UserIcon } from 'lucide-react';
+import { KeyRoundIcon, LockIcon, LogInIcon, UserIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
 
 import * as api from '@/api/auth.ts';
 import { encrypt } from '@/lib/encrypt.ts';
+import { oidcReason } from '@/lib/oidc.ts';
 import { Head } from '@/components/head.tsx';
 
 import { loginNotice, returnTo } from './return-to.ts';
@@ -21,9 +22,28 @@ export const Login = (): ReactElement => {
   const notice = loginNotice(location.state);
 
   const [isLoading, setIsloading] = useState(false);
-  const [msg, setMsg] = useState('');
+  // Why the server's OIDC callback sent the browser back here, if it did.
+  const [oidcMessage] = useState(() => {
+    const reason = oidcReason(location.search);
+    return reason ? t(`auth.oidc.errors.${reason}`) : '';
+  });
+  const [msg, setMsg] = useState(oidcMessage);
   // Set while the password was right and the account still owes a TOTP code.
   const [challenge, setChallenge] = useState<string | null>(null);
+  // The OIDC provider's button, when the server has one configured.
+  const [oidc, setOidc] = useState<api.OidcInfo | null>(null);
+  // Set when the operator unfolds a password form the settings fold away.
+  const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    api
+      .getOidcInfo()
+      .then((rsp) => {
+        if (rsp.code === 0 && rsp.data?.enabled) setOidc(rsp.data);
+      })
+      // An older server has no OIDC: no button.
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     api
@@ -37,10 +57,19 @@ export const Login = (): ReactElement => {
   }, [navigate, target]);
 
   useEffect(() => {
-    if (msg) {
+    // A refused OIDC login stays on screen: the operator left this page
+    // and came back, and may not be looking yet.
+    if (msg && msg !== oidcMessage) {
       setTimeout(() => setMsg(''), 3000);
     }
-  }, [msg]);
+  }, [msg, oidcMessage]);
+
+  // The login leaves the page: the server redirects to the provider.
+  function signInWithOidc() {
+    window.location.assign(api.OIDC_LOGIN_URL);
+  }
+
+  const passwordFolded = !!oidc?.hidePasswordLogin && !showPassword;
 
   // A session cookie was just set. A browser that discards it sends the
   // operator back here with no explanation, forever. That happens when the
@@ -207,31 +236,60 @@ export const Login = (): ReactElement => {
               />
             )}
 
-            <Form.Item
-              name="username"
-              rules={[{ required: true, message: t('auth.noEmptyUsername'), min: 1 }]}
-            >
-              <Input prefix={<UserIcon size={15} />} placeholder={t('auth.placeholderUsername')} />
-            </Form.Item>
+            {oidc && (
+              <div className="pb-4">
+                <Button
+                  type={passwordFolded ? 'primary' : 'default'}
+                  className="w-full"
+                  icon={<LogInIcon size={15} />}
+                  onClick={signInWithOidc}
+                >
+                  {t('auth.oidc.signIn', { name: oidc.providerName })}
+                </Button>
+              </div>
+            )}
 
-            <Form.Item
-              name="password"
-              rules={[{ required: true, message: t('auth.noEmptyPassword'), min: 1 }]}
-            >
-              <Input
-                prefix={<LockIcon size={15} />}
-                type="password"
-                placeholder={t('auth.placeholderPassword')}
-              />
-            </Form.Item>
+            {passwordFolded ? (
+              <>
+                <div className="pb-1 text-red-500">{msg}</div>
+                <div className="flex justify-center pb-4 text-sm">
+                  <Button type="link" size="small" onClick={() => setShowPassword(true)}>
+                    {t('auth.oidc.usePassword')}
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <Form.Item
+                  name="username"
+                  rules={[{ required: true, message: t('auth.noEmptyUsername'), min: 1 }]}
+                >
+                  <Input
+                    prefix={<UserIcon size={15} />}
+                    placeholder={t('auth.placeholderUsername')}
+                  />
+                </Form.Item>
 
-            <div className="pb-1 text-red-500">{msg}</div>
+                <Form.Item
+                  name="password"
+                  rules={[{ required: true, message: t('auth.noEmptyPassword'), min: 1 }]}
+                >
+                  <Input
+                    prefix={<LockIcon size={15} />}
+                    type="password"
+                    placeholder={t('auth.placeholderPassword')}
+                  />
+                </Form.Item>
 
-            <Form.Item>
-              <Button type="primary" htmlType="submit" className="w-full" loading={isLoading}>
-                {t('auth.loginButtonText')}
-              </Button>
-            </Form.Item>
+                <div className="pb-1 text-red-500">{msg}</div>
+
+                <Form.Item>
+                  <Button type="primary" htmlType="submit" className="w-full" loading={isLoading}>
+                    {t('auth.loginButtonText')}
+                  </Button>
+                </Form.Item>
+              </>
+            )}
 
             <div className="flex justify-end pb-4 text-sm">
               <Tips />

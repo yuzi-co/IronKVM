@@ -62,7 +62,7 @@ export const KEYWORDS: Record<string, string[]> = {
     'firewall'
   ],
   vpn: ['tailscale', 'netbird', 'wireguard'],
-  account: ['user', 'password', 'login', 'logout'],
+  account: ['user', 'password', 'login', 'logout', 'oidc', 'sso', 'single sign-on', 'authentik', 'keycloak'],
   apiKeys: ['api', 'token', 'key'],
   audit: ['log', 'history', 'security', 'syslog', 'who', 'events'],
   ssh: ['shell', 'authorized keys', 'host keys', 'port'],

@@ -15,6 +15,12 @@ func authRouter(r *gin.Engine) {
 	r.POST("/api/auth/login/totp", service.LoginTOTP)  // login, second step
 	r.POST("/api/auth/share", service.RedeemShareLink) // open a view-only session with a share link's token
 
+	// Login through an OpenID Connect provider. The callback is a GET: the
+	// IdP sends the browser back to it.
+	r.GET("/api/auth/oidc", service.OIDCInfo)              // is the provider's button shown, and its name
+	r.GET("/api/auth/oidc/login", service.OIDCLogin)       // start a login at the provider
+	r.GET("/api/auth/oidc/callback", service.OIDCCallback) // finish it
+
 	api := r.Group("/api").Use(middleware.CheckToken())
 
 	api.GET("/auth/password", service.IsPasswordUpdated) // is password updated
@@ -60,6 +66,11 @@ func authRouter(r *gin.Engine) {
 	)
 	adminSession.DELETE("/auth/users/:username/totp", service.ResetUserTOTP)
 	adminSession.GET("/auth/sessions/all", service.ListAllSessions)
+
+	// The provider's settings hold its client secret, which no api key
+	// should be able to change or point elsewhere.
+	adminSession.GET("/auth/oidc/settings", service.GetOIDCSettings)
+	adminSession.POST("/auth/oidc/settings", service.SetOIDCSettings)
 
 	// Share links are session work like api keys: a key must not mint a
 	// link that outlives it.

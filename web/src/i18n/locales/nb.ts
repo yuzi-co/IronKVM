@@ -28,6 +28,21 @@ const nb = {
       wifi: 'Wi-Fi'
     },
     auth: {
+      oidc: {
+        signIn: 'Logg inn med {{name}}',
+        usePassword: 'Logg inn med passord',
+        errors: {
+          disabled: 'Enkel pålogging er slått av.',
+          locked: 'For mange mislykkede pålogginger, prøv igjen senere',
+          provider: 'Identitetsleverandøren kunne ikke nås.',
+          denied: 'Identitetsleverandøren logget deg ikke inn.',
+          state: 'Påloggingen utløp eller ble startet i en annen nettleser. Prøv igjen.',
+          token: 'Svaret fra identitetsleverandøren kunne ikke bekreftes.',
+          account: 'Kontoen din hos identitetsleverandøren har ingen konto på denne enheten.',
+          role: 'Kontoen din hos identitetsleverandøren er ikke i noen av gruppene som er tillatt på denne enheten.',
+          server: 'Påloggingen kunne ikke fullføres. Prøv igjen.'
+        }
+      },
       share: {
         opening: 'Åpner den delte skjermen...',
         failed: 'Lenken er ugyldig, utløpt eller tilbakekalt.',
@@ -2168,6 +2183,38 @@ const nb = {
         }
       },
       account: {
+        oidc: {
+          title: 'Enkel pålogging (OIDC)',
+          desc: 'Logg inn via en OpenID Connect-leverandør som Authentik eller Keycloak. Pålogging med passord er fortsatt tilgjengelig.',
+          enabled: 'Aktivert',
+          providerName: 'Leverandørnavn på påloggingsknappen',
+          issuer: 'Issuer-URL',
+          clientId: 'Klient-ID',
+          clientSecret: 'Klienthemmelighet',
+          clientSecretSet: 'En hemmelighet er satt. La feltet stå tomt for å beholde den.',
+          clearSecret: 'Fjern hemmeligheten (offentlig klient)',
+          scopes: 'Scopes (openid er alltid med)',
+          redirectUrl: 'Omdirigerings-URL',
+          redirectUrlDesc: 'Registrer nøyaktig denne URL-en hos leverandøren. Den følger adressen denne siden ble åpnet på.',
+          httpWarning: 'Denne siden bruker ukryptert http. Mange leverandører godtar http-omdirigerings-URL-er bare for localhost. Avviser din denne, åpne enheten via HTTPS eller en omvendt proxy med TLS.',
+          mappingDesc: 'En leverandørkonto logger inn som den lokale kontoen med samme brukernavn. Enhetseierens konto logger bare inn med passordet sitt. Leverandøren står for tofaktorautentisering: den lokale koden blir ikke spurt om.',
+          usernameClaim: 'Koble kontoer etter',
+          emailDomain: 'E-postdomene',
+          emailDomainDesc: 'Delen før @ er brukernavnet. Adresser i andre domener avvises.',
+          autoCreate: 'Opprett en konto for en leverandørbruker uten konto',
+          defaultRole: 'Rolle for opprettede kontoer',
+          groupsDesc: 'Når en gruppe er satt, kommer rollen fra leverandøren ved hver pålogging, og brukere utenfor alle gruppene avvises.',
+          groupsClaim: 'Gruppe-claim',
+          adminGroup: 'Administratorgruppe',
+          userGroup: 'Brukergruppe',
+          viewerGroup: 'Seergruppe',
+          hidePassword: 'Skjul passordskjemaet på påloggingssiden',
+          hidePasswordDesc: 'En lenke på påloggingssiden viser det fortsatt: pålogging med passord virker alltid.',
+          save: 'Lagre',
+          saved: 'Lagret',
+          saveFailed: 'Kunne ikke lagre innstillingene',
+          loadFailed: 'Kunne ikke laste innstillingene'
+        },
         title: 'Konto',
         webAccount: 'Navn på webkonto',
         role: 'Rolle',
