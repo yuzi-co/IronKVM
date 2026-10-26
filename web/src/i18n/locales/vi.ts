@@ -2235,7 +2235,24 @@ const vi = {
           deleteFailed: 'Không xóa được người dùng'
         }
       },
+      whep: {
+        clientsNote:
+          'Thay <token> bằng khóa. OBS và ffmpeg không có đầu vào WHEP riêng. Qua HTTPS, trình phát phải tin cậy chứng chỉ của bo mạch.',
+        endpoint: 'Điểm cuối',
+        failed: 'Không lưu được cài đặt WHEP',
+        gstreamer: 'GStreamer',
+        obs: 'OBS: pipeline cho GStreamer Source (plugin obs-gstreamer)',
+        saved: 'Đã lưu cài đặt WHEP',
+        service: 'Điểm cuối WHEP',
+        serviceDesc:
+          'Cho phép trình phát WHEP như GStreamer lấy video, và âm thanh của máy chủ nếu có, qua WebRTC. Mỗi trình phát được tính là một người xem.',
+        sessions: 'Trình phát đã kết nối',
+        token:
+          'Trình phát cần một token Bearer chỉ được xem: khóa API chỉ xem (Cài đặt > Khóa API) hoặc token của liên kết chia sẻ. Khóa có quyền nhiều hơn sẽ bị từ chối.'
+      },
       apiKeys: {
+        viewOnly: 'Chỉ xem',
+        viewOnlyDesc: 'Khóa chỉ xem chỉ xem được video. Đây là khóa cho trình phát WHEP.',
         mcpNote: 'Các khóa này không dùng được cho MCP, vì MCP có khóa riêng trên trang MCP.',
         metricsUrl: 'URL số liệu',
         monitoring: 'Giám sát',

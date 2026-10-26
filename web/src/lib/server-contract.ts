@@ -21,6 +21,7 @@ export const LEGACY_API_VERSION = 1;
 // registers (server/common/apicontract/contract.go). Keep the list sorted.
 export const SERVER_FEATURES = [
   'agent-tiers', // /api/agent/tiers (Settings > MCP: what MCP and the agent may do)
+  'api-key-scope', // scope "view" on POST /api/auth/api-keys (Settings > API Keys: view only)
   'audit-log', // /api/audit (Settings > Audit log)
   'diagnostics-bundle', // GET /api/diagnostics/bundle (Settings > Backup: diagnostics bundle)
   'direct-clock', // the clock request on the direct H.264 socket (status bar latency)
@@ -42,6 +43,7 @@ export const SERVER_FEATURES = [
   'video-clock', // /api/vm/video-clock (Settings > Performance > Video clocks; mainline kernel only)
   'webrtc-clock', // the clock event on the WebRTC signalling socket (status bar latency)
   'webrtc-port-forward', // /api/network/webrtc (Settings > Network > WebRTC)
+  'whep', // /api/whep and /api/stream/whep (Settings > WHEP)
   'wol-devices' // /api/network/wol/devices, /device, /check, /scan (Tools > Wake-on-LAN: managed list)
 ] as const;
 

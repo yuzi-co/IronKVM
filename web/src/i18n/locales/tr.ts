@@ -2242,7 +2242,25 @@ const tr = {
           deleteFailed: 'Kullanıcı silinemedi'
         }
       },
+      whep: {
+        clientsNote:
+          '<token> yerine anahtarı yazın. OBS ve ffmpeg’in kendi WHEP girişi yoktur. HTTPS üzerinden oynatıcı kartın sertifikasına güvenmelidir.',
+        endpoint: 'Uç nokta',
+        failed: 'WHEP ayarı kaydedilemedi',
+        gstreamer: 'GStreamer',
+        obs: 'OBS: GStreamer Source için ardışık düzen (obs-gstreamer eklentisi)',
+        saved: 'WHEP ayarı kaydedildi',
+        service: 'WHEP uç noktası',
+        serviceDesc:
+          'GStreamer gibi WHEP oynatıcılarının görüntüyü ve varsa ana makinenin sesini WebRTC üzerinden almasını sağlar. Her oynatıcı bir izleyici sayılır.',
+        sessions: 'Bağlı oynatıcılar',
+        token:
+          'Oynatıcının yalnızca izleyebilen bir Bearer belirtecine ihtiyacı vardır: yalnızca görüntüleme API anahtarı (Ayarlar > API Anahtarları) veya bir paylaşım bağlantısının belirteci. Daha fazlasını yapabilen anahtar reddedilir.'
+      },
       apiKeys: {
+        viewOnly: 'Yalnızca görüntüleme',
+        viewOnlyDesc:
+          'Yalnızca görüntüleme anahtarı görüntüyü izler, başka bir şey yapmaz. WHEP oynatıcısı için anahtardır.',
         mcpNote: "Bu anahtarlar MCP için çalışmaz; MCP'nin MCP sayfasında kendi anahtarı vardır.",
         metricsUrl: "Metrik URL'si",
         monitoring: 'İzleme',

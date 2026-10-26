@@ -2262,7 +2262,25 @@ const ca = {
           deleteFailed: "No s'ha pogut suprimir l'usuari"
         }
       },
+      whep: {
+        clientsNote:
+          'Substituïu <token> per la clau. OBS i ffmpeg no tenen entrada WHEP pròpia. Per HTTPS el reproductor ha de confiar en el certificat de la placa.',
+        endpoint: 'Punt final',
+        failed: 'No s’ha pogut desar la configuració de WHEP',
+        gstreamer: 'GStreamer',
+        obs: 'OBS: canalització de GStreamer Source (connector obs-gstreamer)',
+        saved: 'Configuració de WHEP desada',
+        service: 'Punt final WHEP',
+        serviceDesc:
+          "Permet que reproductors WHEP com GStreamer obtinguin el vídeo, i l'àudio de l'amfitrió si n'hi ha, per WebRTC. Cada reproductor compta com un espectador.",
+        sessions: 'Reproductors connectats',
+        token:
+          "Un reproductor necessita un testimoni Bearer que només pugui mirar: una clau d'API només de visualització (Configuració > Claus d'API) o el testimoni d'un enllaç compartit. Es rebutja una clau que pugui fer més."
+      },
       apiKeys: {
+        viewOnly: 'Només visualització',
+        viewOnlyDesc:
+          'Una clau només de visualització mira el vídeo i res més. És la clau per a un reproductor WHEP.',
         mcpNote:
           'Aquestes claus no serveixen per a MCP, que té la seva pròpia clau a la pàgina de MCP.',
         metricsUrl: 'URL de mètriques',

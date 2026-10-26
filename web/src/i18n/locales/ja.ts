@@ -2238,7 +2238,24 @@ const ja = {
           deleteFailed: 'ユーザーの削除に失敗しました'
         }
       },
+      whep: {
+        clientsNote:
+          '<token> をキーに置き換えてください。OBS と ffmpeg には独自の WHEP 入力がありません。HTTPS ではプレーヤーがボードの証明書を信頼する必要があります。',
+        endpoint: 'エンドポイント',
+        failed: 'WHEP の設定を保存できませんでした',
+        gstreamer: 'GStreamer',
+        obs: 'OBS: GStreamer Source のパイプライン（obs-gstreamer プラグイン）',
+        saved: 'WHEP の設定を保存しました',
+        service: 'WHEP エンドポイント',
+        serviceDesc:
+          'GStreamer などの WHEP プレーヤーが WebRTC で映像と、あればホストの音声を取得できるようにします。各プレーヤーは視聴者として数えられます。',
+        sessions: '接続中のプレーヤー',
+        token:
+          'プレーヤーには視聴しかできない Bearer トークンが必要です: 閲覧専用の API キー（設定 > API キー）または共有リンクのトークン。それ以上の権限を持つキーは拒否されます。'
+      },
       apiKeys: {
+        viewOnly: '閲覧のみ',
+        viewOnlyDesc: '閲覧専用キーは映像を見ることしかできません。WHEP プレーヤー用のキーです。',
         mcpNote: 'これらのキーは MCP では使えません。MCP には MCP ページに専用のキーがあります。',
         metricsUrl: 'メトリクス URL',
         monitoring: '監視',

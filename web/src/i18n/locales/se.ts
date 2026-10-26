@@ -2244,7 +2244,25 @@ const se = {
           deleteFailed: 'Det gick inte att ta bort användaren'
         }
       },
+      whep: {
+        clientsNote:
+          'Ersätt <token> med nyckeln. OBS och ffmpeg har ingen egen WHEP-ingång. Över HTTPS måste spelaren lita på kortets certifikat.',
+        endpoint: 'Slutpunkt',
+        failed: 'Det gick inte att spara WHEP-inställningen',
+        gstreamer: 'GStreamer',
+        obs: 'OBS: pipeline för GStreamer Source (obs-gstreamer-tillägg)',
+        saved: 'WHEP-inställningen sparad',
+        service: 'WHEP-slutpunkt',
+        serviceDesc:
+          'Låter WHEP-spelare som GStreamer hämta videon, och värdens ljud om det finns, över WebRTC. Varje spelare räknas som en tittare.',
+        sessions: 'Anslutna spelare',
+        token:
+          'En spelare behöver en Bearer-token som bara kan titta: en API-nyckel endast för visning (Inställningar > API-nycklar) eller en token från en delningslänk. En nyckel som kan mer avvisas.'
+      },
       apiKeys: {
+        viewOnly: 'Endast visning',
+        viewOnlyDesc:
+          'En nyckel endast för visning tittar på videon och inget annat. Det är nyckeln för en WHEP-spelare.',
         mcpNote: 'Dessa nycklar fungerar inte för MCP, som har en egen nyckel på MCP-sidan.',
         metricsUrl: 'Mätvärdes-URL',
         monitoring: 'Övervakning',

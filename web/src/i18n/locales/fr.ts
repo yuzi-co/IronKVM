@@ -2278,7 +2278,25 @@ const fr = {
           deleteFailed: "Impossible de supprimer l'utilisateur"
         }
       },
+      whep: {
+        clientsNote:
+          "Remplacez <token> par la clé. OBS et ffmpeg n'ont pas d'entrée WHEP propre. En HTTPS, le lecteur doit faire confiance au certificat de la carte.",
+        endpoint: 'Point de terminaison',
+        failed: "Échec de l'enregistrement du paramètre WHEP",
+        gstreamer: 'GStreamer',
+        obs: 'OBS : pipeline pour GStreamer Source (plugin obs-gstreamer)',
+        saved: 'Paramètre WHEP enregistré',
+        service: 'Point de terminaison WHEP',
+        serviceDesc:
+          "Permet aux lecteurs WHEP comme GStreamer de récupérer la vidéo, et l'audio de l'hôte s'il y en a, via WebRTC. Chaque lecteur compte comme un spectateur.",
+        sessions: 'Lecteurs connectés',
+        token:
+          "Un lecteur a besoin d'un jeton Bearer qui peut seulement regarder : une clé d'API en lecture seule (Paramètres > Clés d'API) ou le jeton d'un lien de partage. Une clé qui peut faire davantage est refusée."
+      },
       apiKeys: {
+        viewOnly: 'Lecture seule',
+        viewOnlyDesc:
+          "Une clé en lecture seule regarde la vidéo et rien d'autre. C'est la clé pour un lecteur WHEP.",
         mcpNote: 'Ces clés ne fonctionnent pas pour MCP, qui a sa propre clé sur la page MCP.',
         metricsUrl: 'URL des métriques',
         monitoring: 'Supervision',
