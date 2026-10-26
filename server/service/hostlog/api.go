@@ -333,3 +333,9 @@ func writeJSON(ws *websocket.Conn, v any) bool {
 	_ = ws.SetWriteDeadline(time.Now().Add(writeWait))
 	return ws.WriteMessage(websocket.TextMessage, data) == nil
 }
+
+// ValidateSettings checks h against the limits the settings page applies and
+// returns it as the page would save it. h must have its defaults filled in.
+func ValidateSettings(h config.HostLog) (config.HostLog, error) {
+	return settingsOf(h).validate()
+}

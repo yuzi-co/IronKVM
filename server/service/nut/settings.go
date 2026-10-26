@@ -139,3 +139,8 @@ func (f FilePassword) Set(password string) error {
 	}
 	return os.Rename(tmp.Name(), f.Path)
 }
+
+// ValidName says whether s can be a UPS name or a NUT user name.
+func ValidName(s string) bool {
+	return upsNamePattern.MatchString(s)
+}
