@@ -202,8 +202,11 @@ func AcquireHdmiCaptureLease() func() {
 
 // AcquireHdmiCaptureLeaseForRead keeps capture active and waits outside
 // hdmiMutex until a capture resumed from idle has had time to produce a new
-// frame. The returned claim function is consumed only by the first successful
-// reader, so concurrent readers do not all discard a frame.
+// frame. The returned claim function tells the reader to discard its first
+// successful frame and read again: once after a resume, consumed by the first
+// successful reader so concurrent readers do not all discard, and on every
+// read while no stream viewer drains the queue, whose head then dates from
+// the previous read (see QueueStale).
 func AcquireHdmiCaptureLeaseForRead(ctx context.Context) (func(), func() bool, error) {
 	release, readyAt := acquireHdmiCaptureLease()
 	if wait := time.Until(readyAt); wait > 0 {
@@ -233,15 +236,16 @@ func AcquireHdmiCaptureLeaseForRead(ctx context.Context) (func(), func() bool, e
 
 	hdmiMutex.Lock()
 	needsFreshFrame := hdmiDemand.NeedsFreshFrame()
+	queueStale := hdmiDemand.QueueStale()
 	hdmiMutex.Unlock()
-	if !needsFreshFrame {
+	if !needsFreshFrame && !queueStale {
 		return releaseRead, nil, nil
 	}
 	claimFresh := func() bool {
 		hdmiMutex.Lock()
 		claimed := hdmiDemand.ClaimFreshFrame()
 		hdmiMutex.Unlock()
-		return claimed
+		return claimed || queueStale
 	}
 	return releaseRead, claimFresh, nil
 }
