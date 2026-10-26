@@ -46,6 +46,7 @@ export const KEYWORDS: Record<string, string[]> = {
   hostLog: ['syslog', 'netconsole', 'kernel', 'panic', 'dmesg', 'logs', 'udp'],
   notifications: ['alert', 'webhook', 'ntfy', 'telegram', 'push', 'snapshot', 'screenshot'],
   update: ['upgrade', 'firmware', 'version', 'addon', 'offline'],
+  backup: ['export', 'import', 'restore', 'settings file', 'diagnostics', 'support', 'bundle', 'dmesg'],
   network: [
     'ip',
     'dhcp',

@@ -5,6 +5,7 @@ import { Badge, Input, Modal, Tooltip } from 'antd';
 import clsx from 'clsx';
 import { useAtom, useSetAtom } from 'jotai';
 import {
+  ArchiveIcon,
   BadgeInfoIcon,
   BatteryChargingIcon,
   BellIcon,
@@ -70,6 +71,7 @@ const pageModules = {
   notifications: () => import('./notifications'),
   hostLog: () => import('./host-log'),
   update: () => import('./update'),
+  backup: () => import('./backup'),
   network: () => import('./network'),
   vpn: () => import('./vpn/tab.tsx'),
   ssh: () => import('./ssh'),
@@ -96,6 +98,7 @@ const Notifications = lazy(() =>
 );
 const HostLog = lazy(() => pageModules.hostLog().then((m) => ({ default: m.HostLog })));
 const Update = lazy(() => pageModules.update().then((m) => ({ default: m.Update })));
+const Backup = lazy(() => pageModules.backup().then((m) => ({ default: m.Backup })));
 const Network = lazy(() => pageModules.network().then((m) => ({ default: m.Network })));
 const VpnTab = lazy(() => pageModules.vpn().then((m) => ({ default: m.VpnTab })));
 const Ssh = lazy(() => pageModules.ssh().then((m) => ({ default: m.Ssh })));
@@ -156,6 +159,10 @@ export const Settings = () => {
   const hasHostLog = useServerFeature('host-log') === true;
   // The NUT client is there only on a server that declares it.
   const nutSupported = useServerFeature('nut-client') === true;
+  // Backup holds the settings file and the diagnostics bundle, each its own feature.
+  const hasSettingsBackup = useServerFeature('settings-backup') === true;
+  const hasDiagnostics = useServerFeature('diagnostics-bundle') === true;
+  const hasBackup = hasSettingsBackup || hasDiagnostics;
   // Below sm the sidebar shows icons only, so each item needs a tooltip.
   const isNarrow = useIsNarrow();
 
@@ -224,6 +231,16 @@ export const Settings = () => {
             icon: <CircleArrowUpIcon {...icon16} />,
             component: <Update setIsLocked={setIsLocked} />
           },
+          ...(hasBackup
+            ? ([
+                {
+                  id: 'backup',
+                  group: 'system',
+                  icon: <ArchiveIcon {...icon16} />,
+                  component: <Backup />
+                }
+              ] satisfies Tab[])
+            : []),
           {
             id: 'network',
             group: 'network',
