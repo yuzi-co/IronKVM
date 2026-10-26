@@ -220,6 +220,9 @@ func (s *Service) newMCPServer() *protocol.Server {
 	for _, tool := range mcpToolDefinitions {
 		server.AddTool(tool, agentTool(tool.Name, handlers[tool.Name]))
 	}
+	for _, device := range s.deviceTools() {
+		server.AddTool(device.tool, agentTool(device.tool.Name, device.handler))
+	}
 	// The agent is offered only the tools whose tier is on.
 	server.AddReceivingMiddleware(onlyAllowedAgentTools)
 	return server
@@ -232,6 +235,7 @@ func agentTool(name string, next protocol.ToolHandler) protocol.ToolHandler {
 	tier := agentToolTiers[name]
 	return func(ctx context.Context, req *protocol.CallToolRequest) (*protocol.CallToolResult, error) {
 		arguments := toolArguments(req)
+		target, detail := describeAgentCall(name, arguments)
 		event := audit.Event{
 			Actor:    "picoclaw",
 			Via:      "agent",
@@ -239,7 +243,8 @@ func agentTool(name string, next protocol.ToolHandler) protocol.ToolHandler {
 			Category: audit.CategoryAgent,
 			Action:   name,
 			Tier:     string(tier),
-			Detail:   summarizeAgentCall(name, arguments),
+			Target:   target,
+			Detail:   detail,
 		}
 		if !audit.Allowed(audit.SubjectAgent, tier) {
 			event.Outcome = audit.OutcomeDenied
@@ -266,8 +271,8 @@ func agentTool(name string, next protocol.ToolHandler) protocol.ToolHandler {
 }
 
 // onlyAllowedAgentTools drops from a tools/list answer the tools whose tier
-// is off. It also lists the tools in the order of mcpToolDefinitions, which
-// the SDK sorts by name, so that the agent's prompt keeps its order.
+// is off. It also lists the tools in the order of agentToolOrder, which the
+// SDK sorts by name, so that the agent's prompt keeps its order.
 func onlyAllowedAgentTools(next protocol.MethodHandler) protocol.MethodHandler {
 	return func(ctx context.Context, method string, req protocol.Request) (protocol.Result, error) {
 		result, err := next(ctx, method, req)
@@ -280,9 +285,9 @@ func onlyAllowedAgentTools(next protocol.MethodHandler) protocol.MethodHandler {
 				listed[tool.Name] = tool
 			}
 			kept := make([]*protocol.Tool, 0, len(list.Tools))
-			for _, definition := range mcpToolDefinitions {
-				tool, ok := listed[definition.Name]
-				if tier, known := agentToolTiers[definition.Name]; ok && known && audit.Allowed(audit.SubjectAgent, tier) {
+			for _, name := range agentToolOrder {
+				tool, ok := listed[name]
+				if tier, known := agentToolTiers[name]; ok && known && audit.Allowed(audit.SubjectAgent, tier) {
 					kept = append(kept, tool)
 				}
 			}
@@ -342,20 +347,26 @@ type controlStatusForMCP struct {
 func (s *Service) mcpLeasedActions(ctx context.Context, req *protocol.CallToolRequest) (*protocol.CallToolResult, error) {
 	releaseMode, modeErr := s.acquireControlMode()
 	if modeErr != nil {
-		controlStatus := controlStatusForMCP{}
-		if status, err := s.control.Status(); err == nil {
-			controlStatus = controlStatusForMCP{
-				Mode:          string(status.Mode),
-				Transitioning: status.Transitioning,
-			}
-		}
-		return nil, mcpControlConflict(modeErr, controlStatus)
+		return nil, s.controlConflictForMCP(modeErr)
 	}
 	defer releaseMode()
 
 	operationCtx, releaseOperation := s.beginControlOperation(ctx)
 	defer releaseOperation()
 	return s.mcpActions(operationCtx, toolArguments(req), requestHeader(req, sessionIDHeader)), nil
+}
+
+// controlConflictForMCP is the control conflict error for a refused lease,
+// with the control mode as it now is.
+func (s *Service) controlConflictForMCP(modeErr *PicoclawError) error {
+	controlStatus := controlStatusForMCP{}
+	if status, err := s.control.Status(); err == nil {
+		controlStatus = controlStatusForMCP{
+			Mode:          string(status.Mode),
+			Transitioning: status.Transitioning,
+		}
+	}
+	return mcpControlConflict(modeErr, controlStatus)
 }
 
 func (s *Service) mcpScreenshot(ctx context.Context, req *protocol.CallToolRequest) (*protocol.CallToolResult, error) {

@@ -154,5 +154,93 @@
       "type": "object"
     },
     "name": "kvm_actions"
+  },
+  {
+    "description": "Report whether the remote host is powered on, by its power LED: state is on, off or unknown. Unknown means the LED header is not wired to the NanoKVM or could not be read, so the power state cannot be told; use a screenshot instead and do not assume the host is off.",
+    "inputSchema": {
+      "properties": {},
+      "type": "object"
+    },
+    "name": "kvm_power_status"
+  },
+  {
+    "description": "Press the ATX power or reset button of the remote host. A short power press asks the operating system to shut down, or switches on a host that is off; a long power press holds the button for 5 seconds and forces the host off at once, losing unsaved work. A short reset press restarts the host immediately, also losing unsaved work. Check kvm_power_status first: the same short press switches a host on or off depending on its state. Only one press runs at a time; a call made while another press is held is refused. Before any press, tell the user which button and press you will use and wait for them to confirm.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "button": {
+          "description": "The front-panel button to press",
+          "enum": [
+            "power",
+            "reset"
+          ],
+          "type": "string"
+        },
+        "press": {
+          "description": "short holds the button 800ms (the default); long holds it 5s, which on the power button forces the host off",
+          "enum": [
+            "short",
+            "long"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "button"
+      ],
+      "type": "object"
+    },
+    "name": "kvm_power"
+  },
+  {
+    "description": "List the virtual drives the remote host sees (cdrom and disk), the image each one holds (empty when none) and whether it is read-only, and the image files on the NanoKVM that can be inserted.",
+    "inputSchema": {
+      "properties": {},
+      "type": "object"
+    },
+    "name": "kvm_media_list"
+  },
+  {
+    "description": "Insert an image into a virtual drive of the remote host, or eject it. Use a file path exactly as kvm_media_list returns it. Inserting replaces any image already in the drive. The cdrom drive is always read-only. The disk is read-only unless readOnly is false; a writable disk lets the host change or format the image, so only ask for it when the user wants that. Ejecting an image the host is using can lose its writes. On a board that supports it, insert can take a url instead of a file: the image is read from that http or https server on demand, read-only, without being stored; the server must support byte ranges.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "enum": [
+            "insert",
+            "eject"
+          ],
+          "type": "string"
+        },
+        "drive": {
+          "description": "The drive to insert into or eject",
+          "enum": [
+            "cdrom",
+            "disk"
+          ],
+          "type": "string"
+        },
+        "file": {
+          "description": "insert: an image path exactly as kvm_media_list returns it",
+          "maxLength": 512,
+          "type": "string"
+        },
+        "readOnly": {
+          "description": "insert into disk: false lets the host write to and format the image; defaults to true. The cdrom drive is always read-only.",
+          "type": "boolean"
+        },
+        "url": {
+          "description": "insert: an http or https URL to serve the image from on demand, read-only, instead of a file",
+          "maxLength": 2048,
+          "type": "string"
+        }
+      },
+      "required": [
+        "action",
+        "drive"
+      ],
+      "type": "object"
+    },
+    "name": "kvm_media"
   }
 ]

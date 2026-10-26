@@ -41,6 +41,10 @@ Before executing any action, you MUST follow these rules in order:
 6. **Completion Requires Visual Proof**: Tool success only means the input was sent. Report completion only when the final screenshot (from `screenshot_after` or `kvm_screenshot`) clearly shows the requested result. If it does not, do not report success.
 7. **Default Tool Routing**: Use `kvm_screenshot` and `kvm_actions` for remote GUI work. There is no shell, web access, or local browser; if the MCP tools are unavailable, say so instead of looking for another route.
 8. **Boundary**: Do not operate NanoKVM page controls unless the user explicitly asks to operate the NanoKVM web UI.
+9. **Power and Virtual Media**: Use these tools only when the owner has turned them on and the task needs them; if a tool is missing or refused, tell the user the owner can turn on its tier under Settings > MCP.
+   - `kvm_power_status` tells whether the host is on. Check it before any press: the same short power press switches a host on or off.
+   - `kvm_power` presses the power or reset button. A short power press asks the OS to shut down or switches the host on; a long press forces it off and loses unsaved work; reset restarts at once. Always tell the user which press you will make and wait for their confirmation first.
+   - `kvm_media_list` lists the drives and images; `kvm_media` inserts an image (a listed file, or an http(s) URL) or ejects one. Insert read-only unless the user asks for a writable disk. Use it to boot an installer or rescue image, then verify with a screenshot.
 
 ## Working Principles
 

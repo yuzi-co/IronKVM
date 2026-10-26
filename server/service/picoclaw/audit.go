@@ -11,8 +11,31 @@ import (
 // agentToolTiers say which capability tier each tool of the on-board agent
 // needs. A tool the table does not name is unknown and refused.
 var agentToolTiers = map[string]audit.Tier{
-	"kvm_screenshot": audit.TierObserve,
-	"kvm_actions":    audit.TierInput,
+	"kvm_screenshot":    audit.TierObserve,
+	"kvm_actions":       audit.TierInput,
+	powerStatusToolName: audit.TierObserve,
+	powerToolName:       audit.TierPower,
+	mediaListToolName:   audit.TierObserve,
+	mediaToolName:       audit.TierMedia,
+}
+
+// agentToolOrder is the order tools/list gives the agent's tools in.
+var agentToolOrder = []string{
+	"kvm_screenshot",
+	"kvm_actions",
+	powerStatusToolName,
+	powerToolName,
+	mediaListToolName,
+	mediaToolName,
+}
+
+// describeAgentCall reduces a call's arguments to the audit record's target
+// and detail.
+func describeAgentCall(name string, arguments json.RawMessage) (target, detail string) {
+	if name == "kvm_actions" {
+		return "", summarizeAgentCall(name, arguments)
+	}
+	return describeDeviceCall(name, arguments)
 }
 
 // summarizeAgentCall reduces a call's arguments to what a reviewer needs: how
