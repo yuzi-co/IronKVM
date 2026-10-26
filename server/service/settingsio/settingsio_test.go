@@ -296,6 +296,7 @@ func sourceBoard(t *testing.T) *board {
 	b.writeConfig(conf)
 	b.write(webTitleFile, "Rack 4")
 	b.write(leaderKeyFile, "ControlRight")
+	b.write(keyboardLayoutFile, "de")
 	b.write(mouseJigglerFile, "absolute")
 	b.write(keyJigglerFile, "on\nshift\n")
 	b.write(oledSleepFile, "120")
@@ -340,6 +341,7 @@ func TestImportRoundTrip(t *testing.T) {
 	checks := map[string]string{
 		webTitleFile:        "Rack 4",
 		leaderKeyFile:       "ControlRight",
+		keyboardLayoutFile:  "de",
 		mouseJigglerFile:    "absolute",
 		keyJigglerFile:      "on\nshift\n",
 		oledSleepFile:       "120",
@@ -532,6 +534,7 @@ func TestValidation(t *testing.T) {
 		{"hostLog", `{"bind":"eth0"}`, "bind"},
 		{"webTitle", `{"title":"a\u0007b"}`, "control"},
 		{"leaderKey", `{"key":"rm -rf"}`, "leader key"},
+		{"keyboardLayout", `{"layout":"klingon"}`, "keyboard layout"},
 		{"shortcuts", `{"shortcuts":[{"id":"x","keys":[]}]}`, "keys"},
 		{"macros", `{"macros":[{"id":"m","name":"x","steps":[]}]}`, "no steps"},
 		{"macros", `{"macros":[{"id":"m","name":"","steps":[{"type":"delay","ms":5}]}]}`, "name"},
@@ -675,6 +678,28 @@ func TestDefaultTitleRemovesTheFile(t *testing.T) {
 	}
 	if b.exists(webTitleFile) || b.exists(mouseJigglerFile) {
 		t.Fatal("a file that means the default was kept")
+	}
+}
+
+func TestKeyboardLayoutImportsItsID(t *testing.T) {
+	b := newBoard(t)
+	b.writeConfig(baseConfig())
+	b.write(keyboardLayoutFile, "fr")
+
+	doc := parse(t, []byte(`{"format":"ironkvm-settings","version":1,"sections":{"keyboardLayout":{"layout":" PT-BR "}}}`))
+	if _, err := b.dev.Import(doc, nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := b.read(keyboardLayoutFile); got != "pt-br" {
+		t.Fatalf("layout file = %q, want pt-br", got)
+	}
+
+	doc = parse(t, []byte(`{"format":"ironkvm-settings","version":1,"sections":{"keyboardLayout":{"layout":""}}}`))
+	if _, err := b.dev.Import(doc, nil); err != nil {
+		t.Fatal(err)
+	}
+	if b.exists(keyboardLayoutFile) {
+		t.Fatal("the default layout kept the file")
 	}
 }
 

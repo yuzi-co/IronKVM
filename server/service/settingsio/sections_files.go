@@ -11,6 +11,7 @@ import (
 	"unicode/utf8"
 
 	"NanoKVM-Server/proto"
+	"NanoKVM-Server/service/hid"
 	"NanoKVM-Server/service/notify"
 	"NanoKVM-Server/service/roommic"
 	"NanoKVM-Server/service/sequence"
@@ -21,17 +22,18 @@ import (
 // The files in /etc/kvm the sections read and write. Each one belongs to the
 // service named beside it, which reads it at start or on every request.
 const (
-	webTitleFile        = "/etc/kvm/web-title"      // service/vm/web_title.go
-	leaderKeyFile       = "/etc/kvm/leader-key"     // service/hid/leader_key.go
-	shortcutsFile       = "/etc/kvm/shortcuts.json" // service/hid/shortcut.go
-	macrosFile          = "/etc/kvm/macros.json"    // service/sequence/macro.go
-	mouseJigglerFile    = "/etc/kvm/mouse-jiggler"  // service/vm/jiggler/jiggler.go
-	keyJigglerFile      = "/etc/kvm/key-jiggler"    // service/vm/jiggler/keys.go
-	oledSleepFile       = "/etc/kvm/oled_sleep"     // service/vm/oled.go
-	oledBrightnessFile  = "/etc/kvm/oled_contrast"  // service/vm/oled.go
-	hdmiIdleTimeoutFile = utils.HDMIIdleTimeoutFile // utils/hdmi.go
-	roomMicFile         = "/etc/kvm/room-mic"       // service/roommic/settings.go
-	notifyFile          = notify.File               // service/notify/settings.go
+	webTitleFile        = "/etc/kvm/web-title"       // service/vm/web_title.go
+	leaderKeyFile       = "/etc/kvm/leader-key"      // service/hid/leader_key.go
+	keyboardLayoutFile  = "/etc/kvm/keyboard-layout" // service/hid/host_layout.go
+	shortcutsFile       = "/etc/kvm/shortcuts.json"  // service/hid/shortcut.go
+	macrosFile          = "/etc/kvm/macros.json"     // service/sequence/macro.go
+	mouseJigglerFile    = "/etc/kvm/mouse-jiggler"   // service/vm/jiggler/jiggler.go
+	keyJigglerFile      = "/etc/kvm/key-jiggler"     // service/vm/jiggler/keys.go
+	oledSleepFile       = "/etc/kvm/oled_sleep"      // service/vm/oled.go
+	oledBrightnessFile  = "/etc/kvm/oled_contrast"   // service/vm/oled.go
+	hdmiIdleTimeoutFile = utils.HDMIIdleTimeoutFile  // utils/hdmi.go
+	roomMicFile         = "/etc/kvm/room-mic"        // service/roommic/settings.go
+	notifyFile          = notify.File                // service/notify/settings.go
 
 	// vncPasswordFile is only checked for existence: plain VNC
 	// authentication can be imported only where a password is set.
@@ -130,6 +132,40 @@ var leaderKeySection = spec[leaderKeySettings]{
 			p.remove(leaderKeyFile)
 		} else {
 			p.write(leaderKeyFile, []byte(v.Key), settingsFileMode)
+		}
+		return nil
+	},
+}
+
+type keyboardLayoutSettings struct {
+	Layout string `json:"layout"`
+}
+
+// keyboardLayoutSection is the keyboard layout active on the host. An empty
+// layout is the default, US.
+var keyboardLayoutSection = spec[keyboardLayoutSettings]{
+	id: "keyboardLayout",
+	get: func(s *snapshot) (keyboardLayoutSettings, error) {
+		layout, err := trimmedText(s, keyboardLayoutFile)
+		return keyboardLayoutSettings{Layout: layout}, err
+	},
+	check: func(_ *snapshot, v *keyboardLayoutSettings) error {
+		v.Layout = strings.TrimSpace(v.Layout)
+		if v.Layout == "" {
+			return nil
+		}
+		layout, err := hid.GetLayout(v.Layout)
+		if err != nil {
+			return fmt.Errorf("unknown keyboard layout %q", v.Layout)
+		}
+		v.Layout = layout.ID
+		return nil
+	},
+	put: func(p *plan, v keyboardLayoutSettings) error {
+		if v.Layout == "" {
+			p.remove(keyboardLayoutFile)
+		} else {
+			p.write(keyboardLayoutFile, []byte(v.Layout), settingsFileMode)
 		}
 		return nil
 	},

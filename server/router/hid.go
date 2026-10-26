@@ -28,6 +28,7 @@ func hidRouter(r *gin.Engine) {
 
 	api.GET("/hid/shortcuts", service.GetShortcuts)           // get shortcuts
 	api.GET("/hid/shortcut/leader-key", service.GetLeaderKey) // get shortcut leader key
+	api.GET("/hid/host-layout", service.GetHostLayout)        // keyboard layout active on the host
 
 	api.GET("/hid/status", service.GetHidStatus) // per-endpoint delivery state
 
@@ -43,6 +44,7 @@ func hidRouter(r *gin.Engine) {
 	admin.POST("/hid/shortcut", service.AddShortcut)
 	admin.DELETE("/hid/shortcut", service.DeleteShortcut)
 	admin.POST("/hid/shortcut/leader-key", service.SetLeaderKey)
+	admin.POST("/hid/host-layout", service.SetHostLayout)
 
 	localAPI.POST("/usb/recover", service.RecoverUSB)
 }
