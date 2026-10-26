@@ -45,3 +45,19 @@ type InsertDriveReq struct {
 	File string `json:"file" validate:"required"`
 	Ro   bool   `json:"ro" validate:"omitempty"`
 }
+
+type CreateImageReq struct {
+	Name string `json:"name"`
+	Size int64  `json:"size"`
+	FS   string `json:"fs"`
+}
+
+type CreateImageRsp struct {
+	File string `json:"file"`
+}
+
+type ImageSpaceRsp struct {
+	Min  int64 `json:"min"`
+	Max  int64 `json:"max"`
+	Free int64 `json:"free"`
+}

@@ -1,4 +1,4 @@
-package ventoy
+package mkfs
 
 // upcaseTable is the up-case table of Microsoft's exFAT specification,
 // section 7.2.5.1, in the compressed form the specification recommends: a
