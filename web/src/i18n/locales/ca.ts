@@ -1862,6 +1862,21 @@ const ca = {
           cost:
             "En un port compartit la placa envia un paquet cada cop, cosa que pot augmentar l'ús de CPU amb diversos espectadors i fotogrames alts."
         },
+        stun: {
+          title: 'Servidor STUN',
+          description:
+            'El navegador i aquest dispositiu contacten aquest servidor a cada sessió WebRTC per conèixer la seva adreça pública. Només cal per a WebRTC a través de NAT sense VPN ni redirecció de ports.',
+          enable: 'Utilitza un servidor STUN',
+          server: 'Servidor (host:port)',
+          serverHint:
+            'Per defecte: {{server}}. Desactiva l\'interruptor per no contactar cap servidor STUN.',
+          useDefault: 'Utilitza el valor per defecte',
+          invalid: 'Introdueix host:port, amb un port de l\'1 al 65535',
+          apply: 'Aplica',
+          saved: 'Desat. La propera connexió WebRTC el fa servir.',
+          loadFailed: 'No s\'ha pogut llegir la configuració STUN',
+          saveFailed: 'No s\'ha pogut desar la configuració STUN'
+        },
         dns: {
           title: 'DNS',
           description: 'Configura els servidors DNS per a IronKVM',

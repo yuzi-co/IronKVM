@@ -1846,6 +1846,21 @@ const se = {
           cost:
             'På en delad port skickar kortet ett paket i taget, vilket kan öka CPU-belastningen med flera tittare och hög bildfrekvens.'
         },
+        stun: {
+          title: 'STUN-server',
+          description:
+            'Webbläsaren och den här enheten kontaktar båda servern vid varje WebRTC-session för att ta reda på sin publika adress. Den behövs bara för WebRTC genom NAT utan VPN eller portvidarebefordran.',
+          enable: 'Använd en STUN-server',
+          server: 'Server (värd:port)',
+          serverHint:
+            'Standard: {{server}}. Stäng av reglaget för att inte kontakta någon STUN-server.',
+          useDefault: 'Använd standard',
+          invalid: 'Ange värd:port, med en port från 1 till 65535',
+          apply: 'Verkställ',
+          saved: 'Sparat. Nästa WebRTC-anslutning använder den.',
+          loadFailed: 'Kunde inte läsa STUN-inställningen',
+          saveFailed: 'Kunde inte spara STUN-inställningen'
+        },
         dns: {
           title: 'DNS',
           description: 'Konfigurera DNS-servrar för IronKVM',

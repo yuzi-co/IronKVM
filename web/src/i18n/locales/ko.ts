@@ -1823,6 +1823,20 @@ const ko = {
           offered: '시청자에게 제공: {{addresses}}',
           cost: '공유 포트에서는 보드가 패킷을 하나씩 보내므로, 시청자가 많고 프레임 속도가 높으면 CPU 사용량이 늘 수 있습니다.'
         },
+        stun: {
+          title: 'STUN 서버',
+          description:
+            '브라우저와 이 장치는 WebRTC 세션마다 이 서버에 접속해 공인 주소를 확인합니다. VPN이나 포트 포워딩 없이 NAT를 거쳐 WebRTC를 쓸 때만 필요합니다.',
+          enable: 'STUN 서버 사용',
+          server: '서버(호스트:포트)',
+          serverHint: '기본값: {{server}}. 스위치를 끄면 어떤 STUN 서버에도 접속하지 않습니다.',
+          useDefault: '기본값 사용',
+          invalid: '호스트:포트를 입력하세요(포트는 1~65535)',
+          apply: '적용',
+          saved: '저장했습니다. 다음 WebRTC 연결부터 사용합니다.',
+          loadFailed: 'STUN 설정을 읽지 못했습니다',
+          saveFailed: 'STUN 설정을 저장하지 못했습니다'
+        },
         dns: {
           title: 'DNS',
           description: 'IronKVM의 DNS 서버 설정',

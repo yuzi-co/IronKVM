@@ -1866,6 +1866,21 @@ const hu = {
           cost:
             'Közös porton a panel egyszerre egy csomagot küld, ami több nézőnél és magas képkockasebességnél növelheti a CPU-terhelést.'
         },
+        stun: {
+          title: 'STUN-szerver',
+          description:
+            'A böngésző és ez az eszköz is ezt a szervert keresi meg minden WebRTC-munkamenetnél, hogy megtudja a nyilvános címét. Csak NAT-on át, VPN vagy porttovábbítás nélküli WebRTC-hez kell.',
+          enable: 'STUN-szerver használata',
+          server: 'Szerver (gép:port)',
+          serverHint:
+            'Alapértelmezett: {{server}}. Kapcsold ki a kapcsolót, hogy egyetlen STUN-szervert se keressen meg.',
+          useDefault: 'Alapértelmezett használata',
+          invalid: 'Adj meg gép:port értéket, 1 és 65535 közötti porttal',
+          apply: 'Alkalmaz',
+          saved: 'Mentve. A következő WebRTC-kapcsolat ezt használja.',
+          loadFailed: 'Nem sikerült beolvasni a STUN-beállítást',
+          saveFailed: 'Nem sikerült menteni a STUN-beállítást'
+        },
         dns: {
           title: 'DNS',
           description: 'DNS-kiszolgálók beállítása a IronKVM számára',

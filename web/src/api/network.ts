@@ -238,3 +238,19 @@ export function getWebRTCForward() {
 export function setWebRTCForward(udpPort: number, publicAddress: string) {
   return http.post('/api/network/webrtc', { udpPort, publicAddress });
 }
+
+// The STUN server new WebRTC sessions use (feature stun-server): host:port, or
+// "disable" when STUN is off. default is the server's built-in choice.
+export type StunServerState = {
+  stun: string;
+  default: string;
+};
+
+export function getStunServer() {
+  return http.get('/api/network/webrtc/stun');
+}
+
+// stun is host:port, "disable" to turn STUN off, or empty for the default.
+export function setStunServer(stun: string) {
+  return http.post('/api/network/webrtc/stun', { stun });
+}

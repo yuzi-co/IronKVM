@@ -1768,6 +1768,20 @@ const zh = {
           offered: '向观看者提供：{{addresses}}',
           cost: '在共用端口上，开发板一次发送一个数据包，观看者较多且帧率较高时可能增加 CPU 占用。'
         },
+        stun: {
+          title: 'STUN 服务器',
+          description:
+            '每次 WebRTC 会话时，浏览器和本设备都会联系此服务器以获知各自的公网地址。仅在没有 VPN 或端口转发、需要穿越 NAT 使用 WebRTC 时才需要。',
+          enable: '使用 STUN 服务器',
+          server: '服务器（主机:端口）',
+          serverHint: '默认：{{server}}。关闭开关后不联系任何 STUN 服务器。',
+          useDefault: '使用默认值',
+          invalid: '请输入 主机:端口，端口范围 1 到 65535',
+          apply: '应用',
+          saved: '已保存。下一次 WebRTC 连接将使用它。',
+          loadFailed: '读取 STUN 设置失败',
+          saveFailed: '保存 STUN 设置失败'
+        },
         dns: {
           title: 'DNS',
           description: '配置 IronKVM 使用的 DNS 服务器',

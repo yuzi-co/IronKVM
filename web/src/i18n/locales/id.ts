@@ -1847,6 +1847,21 @@ const id = {
           cost:
             'Pada port bersama, board mengirim satu paket pada satu waktu, yang dapat menaikkan penggunaan CPU dengan banyak penonton dan frame rate tinggi.'
         },
+        stun: {
+          title: 'Server STUN',
+          description:
+            'Browser dan perangkat ini sama-sama menghubungi server ini pada setiap sesi WebRTC untuk mengetahui alamat publiknya. Hanya diperlukan untuk WebRTC melalui NAT tanpa VPN atau port forward.',
+          enable: 'Gunakan server STUN',
+          server: 'Server (host:port)',
+          serverHint:
+            'Bawaan: {{server}}. Matikan sakelar agar tidak menghubungi server STUN mana pun.',
+          useDefault: 'Gunakan bawaan',
+          invalid: 'Masukkan host:port, dengan port dari 1 sampai 65535',
+          apply: 'Terapkan',
+          saved: 'Tersimpan. Koneksi WebRTC berikutnya memakainya.',
+          loadFailed: 'Gagal membaca pengaturan STUN',
+          saveFailed: 'Gagal menyimpan pengaturan STUN'
+        },
         dns: {
           title: 'DNS',
           description: 'Konfigurasi server DNS untuk IronKVM',

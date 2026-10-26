@@ -36,6 +36,7 @@ export const SERVER_FEATURES = [
   'settings-backup', // /api/settings/export, /preview, /import (Settings > Backup: settings file)
   'share-links', // /api/auth/share and /api/auth/share-links (Settings > Account > Share links)
   'status-bar', // GET /api/stream/info (status bar source line)
+  'stun-server', // /api/network/webrtc/stun (Settings > Network > STUN server)
   'ui-update', // /api/ui: separate UI packages (Settings > Update)
   'video-clock', // /api/vm/video-clock (Settings > Performance > Video clocks; mainline kernel only)
   'webrtc-clock', // the clock event on the WebRTC signalling socket (status bar latency)

@@ -1853,6 +1853,21 @@ const pl = {
           cost:
             'Na współdzielonym porcie płytka wysyła jeden pakiet naraz, co przy kilku widzach i wysokiej liczbie klatek może zwiększyć obciążenie CPU.'
         },
+        stun: {
+          title: 'Serwer STUN',
+          description:
+            'Przeglądarka i to urządzenie łączą się z tym serwerem przy każdej sesji WebRTC, aby poznać swój adres publiczny. Jest potrzebny tylko dla WebRTC przez NAT bez VPN ani przekierowania portu.',
+          enable: 'Używaj serwera STUN',
+          server: 'Serwer (host:port)',
+          serverHint:
+            'Domyślnie: {{server}}. Wyłącz przełącznik, aby nie łączyć się z żadnym serwerem STUN.',
+          useDefault: 'Użyj domyślnego',
+          invalid: 'Wpisz host:port, z portem od 1 do 65535',
+          apply: 'Zastosuj',
+          saved: 'Zapisano. Następne połączenie WebRTC go użyje.',
+          loadFailed: 'Nie udało się odczytać ustawienia STUN',
+          saveFailed: 'Nie udało się zapisać ustawienia STUN'
+        },
         dns: {
           title: 'DNS',
           description: 'Skonfiguruj serwery DNS dla IronKVM',

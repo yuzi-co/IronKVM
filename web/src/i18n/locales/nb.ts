@@ -1843,6 +1843,20 @@ const nb = {
           cost:
             'På en delt port sender kortet én pakke om gangen, noe som kan øke CPU-bruken med flere seere og høy bildefrekvens.'
         },
+        stun: {
+          title: 'STUN-server',
+          description:
+            'Nettleseren og denne enheten kontakter begge denne serveren ved hver WebRTC-økt for å finne den offentlige adressen sin. Den trengs bare for WebRTC gjennom NAT uten VPN eller portvideresending.',
+          enable: 'Bruk en STUN-server',
+          server: 'Server (vert:port)',
+          serverHint: 'Standard: {{server}}. Slå av bryteren for ikke å kontakte noen STUN-server.',
+          useDefault: 'Bruk standard',
+          invalid: 'Skriv inn vert:port, med en port fra 1 til 65535',
+          apply: 'Bruk',
+          saved: 'Lagret. Neste WebRTC-tilkobling bruker den.',
+          loadFailed: 'Kunne ikke lese STUN-innstillingen',
+          saveFailed: 'Kunne ikke lagre STUN-innstillingen'
+        },
         dns: {
           title: 'DNS',
           description: 'Konfigurer DNS-servere for IronKVM',

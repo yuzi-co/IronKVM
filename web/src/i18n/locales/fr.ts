@@ -1875,6 +1875,21 @@ const fr = {
           cost:
             "Sur un port partagé, la carte envoie un paquet à la fois, ce qui peut augmenter la charge CPU avec plusieurs spectateurs à fréquence d'images élevée."
         },
+        stun: {
+          title: 'Serveur STUN',
+          description:
+            'Le navigateur et cet appareil contactent ce serveur à chaque session WebRTC pour connaître leur adresse publique. Il n\'est utile que pour WebRTC à travers un NAT sans VPN ni redirection de port.',
+          enable: 'Utiliser un serveur STUN',
+          server: 'Serveur (hôte:port)',
+          serverHint:
+            'Par défaut : {{server}}. Désactivez l\'interrupteur pour ne contacter aucun serveur STUN.',
+          useDefault: 'Utiliser la valeur par défaut',
+          invalid: 'Saisissez hôte:port, avec un port de 1 à 65535',
+          apply: 'Appliquer',
+          saved: 'Enregistré. La prochaine connexion WebRTC l\'utilise.',
+          loadFailed: 'Impossible de lire le réglage STUN',
+          saveFailed: 'Impossible d\'enregistrer le réglage STUN'
+        },
         dns: {
           title: 'DNS',
           description: 'Configurer les serveurs DNS pour IronKVM',

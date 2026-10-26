@@ -1848,6 +1848,20 @@ const ja = {
           offered: '視聴者に提示するアドレス: {{addresses}}',
           cost: '共有ポートでは1パケットずつ送信するため、視聴者が複数でフレームレートが高いとCPU使用率が上がることがあります。'
         },
+        stun: {
+          title: 'STUNサーバー',
+          description:
+            'WebRTCセッションのたびに、ブラウザーとこのデバイスの両方がこのサーバーに接続して自分のパブリックアドレスを調べます。VPNやポート転送なしでNATを越えてWebRTCを使う場合にのみ必要です。',
+          enable: 'STUNサーバーを使用',
+          server: 'サーバー（ホスト:ポート）',
+          serverHint: '既定値: {{server}}。スイッチをオフにすると、STUNサーバーには接続しません。',
+          useDefault: '既定値に戻す',
+          invalid: 'ホスト:ポートを入力してください（ポートは1〜65535）',
+          apply: '適用',
+          saved: '保存しました。次のWebRTC接続から使用されます。',
+          loadFailed: 'STUN設定を読み込めませんでした',
+          saveFailed: 'STUN設定を保存できませんでした'
+        },
         dns: {
           title: 'DNS',
           description: 'IronKVM の DNS サーバーを設定',

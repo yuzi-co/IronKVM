@@ -9,6 +9,7 @@ import { AllowedNetworks } from './allowlist.tsx';
 import { DNS } from './dns.tsx';
 import { Ethernet } from './ethernet.tsx';
 import { IPv6 } from './ipv6.tsx';
+import { StunServer } from './stun.tsx';
 import { Syslog } from './syslog.tsx';
 import { WebRTCForward } from './webrtc.tsx';
 import { Wifi } from './wifi.tsx';
@@ -48,6 +49,8 @@ export const Network = () => {
       <AllowedNetworksBlock />
 
       <WebRTCForwardBlock />
+
+      <StunServerBlock />
     </>
   );
 };
@@ -89,6 +92,20 @@ const WebRTCForwardBlock = () => {
     <>
       <Divider className="opacity-50" style={{ margin: '32px 0' }} />
       <WebRTCForward />
+    </>
+  );
+};
+
+// The STUN server renders nothing on a server without the setting, so its
+// divider goes with it.
+const StunServerBlock = () => {
+  const supported = useServerFeature('stun-server');
+  if (!supported) return null;
+
+  return (
+    <>
+      <Divider className="opacity-50" style={{ margin: '32px 0' }} />
+      <StunServer />
     </>
   );
 };

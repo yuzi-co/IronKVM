@@ -1767,6 +1767,20 @@ const zh_tw = {
           offered: '提供給觀看者：{{addresses}}',
           cost: '在共用連接埠上，開發板一次傳送一個封包，觀看者較多且畫面更新率較高時可能增加 CPU 使用率。'
         },
+        stun: {
+          title: 'STUN 伺服器',
+          description:
+            '每次 WebRTC 工作階段時，瀏覽器和本裝置都會聯絡此伺服器以得知各自的公用位址。僅在沒有 VPN 或連接埠轉送、需要穿越 NAT 使用 WebRTC 時才需要。',
+          enable: '使用 STUN 伺服器',
+          server: '伺服器（主機:連接埠）',
+          serverHint: '預設：{{server}}。關閉開關後不聯絡任何 STUN 伺服器。',
+          useDefault: '使用預設值',
+          invalid: '請輸入 主機:連接埠，連接埠範圍 1 到 65535',
+          apply: '套用',
+          saved: '已儲存。下一次 WebRTC 連線將使用它。',
+          loadFailed: '讀取 STUN 設定失敗',
+          saveFailed: '儲存 STUN 設定失敗'
+        },
         dns: {
           title: 'DNS',
           description: '設定 IronKVM 使用的 DNS 伺服器',
