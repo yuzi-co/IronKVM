@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/url"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -55,6 +56,9 @@ type Devices struct {
 	InsertMedia func(drive, file string, readOnly bool) error
 	// EjectMedia empties a drive.
 	EjectMedia func(drive string) error
+	// MountURL serves an image straight from an http(s) URL in a drive,
+	// read-only, on a board whose kernel has NBD. Nil leaves URLs out.
+	MountURL func(drive, url string) error
 }
 
 type PowerParams struct {
@@ -78,6 +82,7 @@ type MediaParams struct {
 	Action   string `json:"action" jsonschema:"insert or eject"`
 	Drive    string `json:"drive,omitempty" jsonschema:"cdrom or disk"`
 	File     string `json:"file,omitempty" jsonschema:"image path as listed"`
+	URL      string `json:"url,omitempty" jsonschema:"insert only: an http or https URL to serve the image from, instead of a file"`
 	ReadOnly *bool  `json:"readOnly,omitempty" jsonschema:"disk only: false lets the host write to the image"`
 }
 
@@ -106,7 +111,9 @@ const mediaDescription = "Insert an image into a virtual drive of the remote hos
 	"Use a file path exactly as cube_media_list returns it. Inserting replaces any image already in the drive. " +
 	"The cdrom drive is always read-only. The disk is read-only unless readOnly is false; " +
 	"a writable disk lets the host change or format the image, so only ask for it when the user wants that. " +
-	"Ejecting an image the host is using can lose its writes."
+	"Ejecting an image the host is using can lose its writes. " +
+	"On a board that supports it, insert can take a url instead of a file: the image is read from that " +
+	"http or https server on demand, read-only, without being stored; the server must support byte ranges."
 
 func registerDeviceTools(server *protocol.Server, devices Devices) {
 	if devices.PowerLEDConnected != nil && devices.PowerLED != nil {
@@ -219,6 +226,9 @@ func mediaHandler(devices Devices) protocol.ToolHandlerFor[MediaParams, MediaRes
 		switch strings.ToLower(strings.TrimSpace(in.Action)) {
 		case "insert":
 			drive := normalizedDrive(in.Drive)
+			if in.URL != "" {
+				return insertURL(devices, drive, in)
+			}
 			if drive == "" || in.File == "" {
 				return nil, MediaResult{}, fmt.Errorf("insert needs a drive (cdrom or disk) and a file")
 			}
@@ -243,6 +253,24 @@ func mediaHandler(devices Devices) protocol.ToolHandlerFor[MediaParams, MediaRes
 			return nil, MediaResult{}, fmt.Errorf("action must be insert or eject; cube_media_list lists the drives and images")
 		}
 	}
+}
+
+// insertURL serves an image from a URL in the drive.
+func insertURL(devices Devices, drive string, in MediaParams) (*protocol.CallToolResult, MediaResult, error) {
+	switch {
+	case devices.MountURL == nil:
+		return nil, MediaResult{}, fmt.Errorf("this board cannot serve an image from a URL")
+	case drive == "":
+		return nil, MediaResult{}, fmt.Errorf("insert needs a drive (cdrom or disk)")
+	case in.File != "":
+		return nil, MediaResult{}, fmt.Errorf("give a file or a url, not both")
+	case in.ReadOnly != nil && !*in.ReadOnly:
+		return nil, MediaResult{}, fmt.Errorf("an image from a URL is always read-only")
+	}
+	if err := devices.MountURL(drive, in.URL); err != nil {
+		return nil, MediaResult{}, err
+	}
+	return nil, mediaAfter(devices), nil
 }
 
 // mediaAfter is a change's result: the drives as they now are, when they can
@@ -296,6 +324,14 @@ func describeMedia(in MediaParams) (string, string) {
 			detail += " ro"
 		}
 	}
+	if in.URL != "" {
+		// The URL may carry credentials: the log gets its host only.
+		host := ""
+		if u, err := url.Parse(in.URL); err == nil {
+			host = u.Host
+		}
+		return host, detail + " url"
+	}
 	return in.File, detail
 }
 
@@ -315,5 +351,6 @@ func mediaSchema() *jsonschema.Schema {
 		"drive":    {Type: "string", Enum: []any{"cdrom", "disk"}, Description: "The drive to insert into or eject"},
 		"file":     {Type: "string", Description: "insert: an image path exactly as cube_media_list returns it", MaxLength: jsonschema.Ptr(512)},
 		"readOnly": {Type: "boolean", Description: "insert into disk: false lets the host write to and format the image; defaults to true. The cdrom drive is always read-only."},
+		"url":      {Type: "string", Description: "insert: an http or https URL to serve the image from on demand, read-only, instead of a file", MaxLength: jsonschema.Ptr(2048)},
 	}, "action", "drive")
 }

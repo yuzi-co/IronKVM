@@ -1,7 +1,9 @@
 package router
 
 import (
+	"context"
 	"net/http"
+	"time"
 
 	"NanoKVM-Server/authn"
 	"NanoKVM-Server/middleware"
@@ -11,6 +13,7 @@ import (
 	"NanoKVM-Server/service/mcp/capture/kvm"
 	"NanoKVM-Server/service/picoclaw"
 	"NanoKVM-Server/service/storage"
+	"NanoKVM-Server/service/urlmedia"
 	"NanoKVM-Server/service/vm"
 
 	"github.com/gin-gonic/gin"
@@ -68,5 +71,11 @@ func mcpDevices() mcpservice.Devices {
 		},
 		InsertMedia: storage.Insert,
 		EjectMedia:  storage.Eject,
+		MountURL: func(drive, url string) error {
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+			_, err := urlmedia.Default().Mount(ctx, drive, url)
+			return err
+		},
 	}
 }
