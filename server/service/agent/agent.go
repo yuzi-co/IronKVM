@@ -1,7 +1,9 @@
 // Package agent is the boundary between the IronKVM server and the on-device
-// AI agent. The server's chat socket, the chat history routes and the task
-// capture lease use only the interfaces here; an adapter such as the PicoClaw
-// one in service/picoclaw translates them to one agent's own protocol and
+// AI agent. The server's chat socket, the chat history routes, the task
+// capture lease and the agent's lifecycle (install, start, stop, restore at
+// boot, the runtime status and the AI control mode around them; see
+// Lifecycle) use only the interfaces here. An adapter such as the PicoClaw one
+// in service/picoclaw translates them to one agent's own protocol, process and
 // files.
 //
 // The chat events the browser receives are normalized (see Event). Where the
@@ -18,6 +20,7 @@ import "context"
 type Agent interface {
 	// Name is a short identifier for logs, such as "picoclaw".
 	Name() string
+	Runtime
 	Chat
 	History
 }

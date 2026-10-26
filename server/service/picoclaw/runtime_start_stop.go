@@ -13,19 +13,15 @@ import (
 	"time"
 )
 
-func (s *Service) startRuntime() (string, string, *PicoclawError) {
-	return s.startRuntimeContext(context.Background())
-}
-
-func (s *Service) startRuntimeContext(ctx context.Context) (string, string, *PicoclawError) {
+// launchRuntime runs the S96picoclaw script's start after checking the
+// install and writing the enforced settings. The lifecycle waits for the
+// gateway to be ready.
+func (s *Service) launchRuntime(ctx context.Context) (string, string, *PicoclawError) {
 	if ctx == nil {
 		ctx = context.Background()
 	}
 	if s == nil {
 		return "", "", newPicoclawError(CodeRuntimeStartFailed, "picoclaw service is unavailable")
-	}
-	if lifecycleErr := runtimeLifecycleOperationError(ctx); lifecycleErr != nil {
-		return "", "", lifecycleErr
 	}
 	s.ensureDependencies()
 
@@ -93,7 +89,7 @@ func (s *Service) startRuntimeContext(ctx context.Context) (string, string, *Pic
 	output, execErr := exec.CommandContext(startCtx, "sh", "-c", command).CombinedOutput()
 	trimmedOutput := strings.TrimSpace(string(output))
 	if execErr != nil {
-		if lifecycleErr := runtimeLifecycleOperationError(ctx); lifecycleErr != nil {
+		if lifecycleErr := s.operationError(ctx); lifecycleErr != nil {
 			return command, trimmedOutput, lifecycleErr
 		}
 		s.runtime.Update(func(status *RuntimeStatus) {
@@ -109,53 +105,165 @@ func (s *Service) startRuntimeContext(ctx context.Context) (string, string, *Pic
 		return command, trimmedOutput, newPicoclawError(CodeRuntimeStartFailed, "failed to start picoclaw runtime")
 	}
 
-	if lifecycleErr := sleepRuntimeLifecycleContext(ctx, picoclawStartWaitPeriod); lifecycleErr != nil {
-		return command, trimmedOutput, lifecycleErr
-	}
-	if runtimeErr := s.waitForRuntimeReadyContext(ctx, picoclawStartTimeout); runtimeErr != nil {
-		startErr := newPicoclawError(CodeRuntimeStartFailed, runtimeErr.Message)
-		failureStatus := "unavailable"
-		if runtimeErr.Code == CodeControlModeConflict {
-			startErr = runtimeErr
-			failureStatus = "starting"
-		} else {
-			if cleanupErr := s.stopRuntimeAndVerify(true); cleanupErr != nil {
-				failureStatus = "error"
-				startErr.Message = fmt.Sprintf(
-					"%s; failed to stop partially started runtime: %v",
-					startErr.Message,
-					cleanupErr,
-				)
-			}
-		}
-		s.runtime.Update(func(status *RuntimeStatus) {
-			status.Ready = false
-			status.Status = failureStatus
-			status.LastError = startErr.Message
-			status.CurrentSession = ""
-			status.CheckedAt = time.Now()
-		})
-		return command, trimmedOutput, startErr
-	}
-
 	return command, trimmedOutput, nil
 }
 
-func (s *Service) markRuntimeLifecycleCanceled(err *PicoclawError) {
-	if s == nil || err == nil || err.Code != CodeControlModeConflict {
-		return
+// checkRuntime checks that PicoClaw is installed, has a config (running its
+// onboarding when it has none) with a configured model, runs, and answers on
+// its gateway. It returns the status to record, nil when there is none to
+// record, and why PicoClaw cannot take a chat session.
+func (s *Service) checkRuntime(ctx context.Context) (*RuntimeStatus, *PicoclawError) {
+	if s == nil {
+		return nil, newPicoclawError(CodeRuntimeUnavailable, "picoclaw service is unavailable")
 	}
 	s.ensureDependencies()
-	s.runtime.Update(func(status *RuntimeStatus) {
-		status.Ready = false
-		status.Restoring = false
-		if isRuntimeLifecycleStatusPending(*status) {
-			status.Status = "stopped"
+
+	installed, statErr := isPicoclawInstalled()
+	if statErr != nil {
+		return &RuntimeStatus{
+			Ready:           false,
+			Installed:       false,
+			Installing:      false,
+			InstallProgress: 0,
+			Status:          "not_installed",
+			LastError:       statErr.Error(),
+		}, newPicoclawError(CodeRuntimeUnavailable, "failed to check picoclaw installation")
+	}
+	if !installed {
+		return &RuntimeStatus{
+			Ready:           false,
+			Installed:       false,
+			Installing:      false,
+			InstallProgress: 0,
+			ModelConfigured: false,
+			Status:          "not_installed",
+		}, newPicoclawError(CodeRuntimeUnavailable, "picoclaw is not installed")
+	}
+
+	configPath, pathErr := resolvePicoclawConfigPath()
+	if pathErr != nil {
+		return &RuntimeStatus{
+			Ready:           false,
+			Installed:       true,
+			Installing:      false,
+			InstallProgress: 0,
+			ModelConfigured: false,
+			Status:          "model_not_configured",
+			LastError:       pathErr.Error(),
+		}, newPicoclawError(CodeRuntimeUnavailable, "picoclaw model is not configured")
+	}
+	if _, err := os.Stat(configPath); err != nil {
+		if os.IsNotExist(err) {
+			if lifecycleErr := s.operationError(ctx); lifecycleErr != nil {
+				return nil, lifecycleErr
+			}
+			if _, onboardErr := s.runPicoclawOnboardContext(ctx); onboardErr != nil {
+				return &RuntimeStatus{
+					Ready:           false,
+					Installed:       true,
+					Installing:      false,
+					InstallProgress: 0,
+					ModelConfigured: false,
+					Status:          "model_not_configured",
+					LastError:       onboardErr.Message,
+				}, newPicoclawError(CodeRuntimeUnavailable, "picoclaw model is not configured")
+			}
+			if lifecycleErr := s.operationError(ctx); lifecycleErr != nil {
+				return nil, lifecycleErr
+			}
+			if _, statErr := os.Stat(configPath); statErr == nil {
+				goto configReady
+			}
+			return &RuntimeStatus{
+				Ready:           false,
+				Installed:       true,
+				Installing:      false,
+				InstallProgress: 0,
+				ModelConfigured: false,
+				Status:          "model_not_configured",
+			}, newPicoclawError(CodeRuntimeUnavailable, "picoclaw model is not configured")
 		}
-		status.LastError = err.Message
-		status.CurrentSession = ""
-		status.CheckedAt = time.Now()
-	})
+		return &RuntimeStatus{
+			Ready:           false,
+			Installed:       true,
+			Installing:      false,
+			InstallProgress: 0,
+			ModelConfigured: false,
+			Status:          "config_error",
+			ConfigError:     err.Error(),
+			LastError:       err.Error(),
+		}, newPicoclawError(CodeRuntimeUnavailable, "gateway config is invalid")
+	}
+
+configReady:
+	if syncErr := s.syncConfigFromPicoclaw(); syncErr != nil {
+		return nil, syncErr
+	}
+	settings, settingsErr := loadPicoclawGatewaySettings()
+	if settingsErr != nil {
+		return nil, newPicoclawError(CodeRuntimeUnavailable, settingsErr.Error())
+	}
+	if !settings.ModelConfigured {
+		return &RuntimeStatus{
+			Ready:           false,
+			Installed:       true,
+			Installing:      false,
+			InstallProgress: 0,
+			ModelConfigured: false,
+			ModelName:       settings.TargetModelName,
+			Status:          "model_not_configured",
+		}, newPicoclawError(CodeRuntimeUnavailable, "picoclaw model is not configured")
+	}
+
+	running, runningErr := isRuntimeRunning()
+	if runningErr != nil {
+		return &RuntimeStatus{
+			Ready:           false,
+			Installed:       true,
+			Installing:      false,
+			InstallProgress: 0,
+			ModelConfigured: true,
+			ModelName:       settings.ModelName,
+			Status:          "unavailable",
+			LastError:       runningErr.Error(),
+		}, newPicoclawError(CodeRuntimeUnavailable, "failed to check picoclaw runtime")
+	}
+	if !running {
+		return &RuntimeStatus{
+			Ready:           false,
+			Installed:       true,
+			Installing:      false,
+			InstallProgress: 0,
+			ModelConfigured: true,
+			ModelName:       settings.ModelName,
+			Status:          "stopped",
+		}, newPicoclawError(CodeRuntimeUnavailable, "picoclaw runtime is stopped")
+	}
+
+	cfg := s.config.Get()
+	if probeErr := probePicoclawGateway(cfg); probeErr != nil {
+		return &RuntimeStatus{
+			Ready:           false,
+			Installed:       true,
+			Installing:      false,
+			InstallProgress: 0,
+			ModelConfigured: true,
+			ModelName:       settings.ModelName,
+			Status:          probeErr.status,
+			ConfigError:     probeErr.configError,
+			LastError:       probeErr.lastError,
+		}, newPicoclawError(CodeRuntimeUnavailable, probeErr.message)
+	}
+
+	return &RuntimeStatus{
+		Ready:           true,
+		Installed:       true,
+		Installing:      false,
+		InstallProgress: 100,
+		ModelConfigured: true,
+		ModelName:       settings.ModelName,
+		Status:          "ready",
+	}, nil
 }
 
 func (s *Service) stopRuntime() (string, string, *PicoclawError) {
@@ -219,44 +327,6 @@ func (s *Service) stopRuntime() (string, string, *PicoclawError) {
 	return command, trimmedOutput, nil
 }
 
-func (s *Service) waitForRuntimeReady(timeout time.Duration) *PicoclawError {
-	return s.waitForRuntimeReadyContext(context.Background(), timeout)
-}
-
-func (s *Service) waitForRuntimeReadyContext(ctx context.Context, timeout time.Duration) *PicoclawError {
-	if ctx == nil {
-		ctx = context.Background()
-	}
-	deadline := time.Now().Add(timeout)
-	var lastErr *PicoclawError
-
-	for {
-		if lifecycleErr := runtimeLifecycleOperationError(ctx); lifecycleErr != nil {
-			return lifecycleErr
-		}
-
-		runtimeErr := s.ensureRuntimeReadyForLifecycleContext(ctx)
-		if runtimeErr == nil {
-			return nil
-		} else {
-			lastErr = runtimeErr
-		}
-
-		if time.Now().After(deadline) {
-			break
-		}
-
-		if lifecycleErr := sleepRuntimeLifecycleContext(ctx, picoclawReadyPollPeriod); lifecycleErr != nil {
-			return lifecycleErr
-		}
-	}
-
-	if lastErr != nil {
-		return lastErr
-	}
-	return newPicoclawError(CodeRuntimeUnavailable, "gateway is unavailable")
-}
-
 func resolvePicoclawStartScript() (string, error) {
 	if _, err := os.Stat(kvmappPicoclawScript); err == nil {
 		return kvmappPicoclawScript, nil
@@ -268,10 +338,16 @@ func resolvePicoclawStartScript() (string, error) {
 }
 
 func runPicoclawOnboard() (string, *PicoclawError) {
-	return runPicoclawOnboardContext(context.Background())
+	return runPicoclawOnboardWith(context.Background(), func(context.Context) *PicoclawError { return nil })
 }
 
-func runPicoclawOnboardContext(ctx context.Context) (string, *PicoclawError) {
+// runPicoclawOnboardContext runs the onboarding for a check, which the
+// lifecycle may cancel.
+func (s *Service) runPicoclawOnboardContext(ctx context.Context) (string, *PicoclawError) {
+	return runPicoclawOnboardWith(ctx, s.operationError)
+}
+
+func runPicoclawOnboardWith(ctx context.Context, operationError func(context.Context) *PicoclawError) (string, *PicoclawError) {
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -279,7 +355,7 @@ func runPicoclawOnboardContext(ctx context.Context) (string, *PicoclawError) {
 	if err != nil {
 		return "", newPicoclawError(CodeRuntimeUnavailable, err.Error())
 	}
-	if lifecycleErr := runtimeLifecycleOperationError(ctx); lifecycleErr != nil {
+	if lifecycleErr := operationError(ctx); lifecycleErr != nil {
 		return "", lifecycleErr
 	}
 
@@ -290,7 +366,7 @@ func runPicoclawOnboardContext(ctx context.Context) (string, *PicoclawError) {
 	output, execErr := exec.CommandContext(onboardCtx, "sh", "-c", command).CombinedOutput()
 	trimmedOutput := strings.TrimSpace(string(output))
 	if execErr != nil {
-		if lifecycleErr := runtimeLifecycleOperationError(ctx); lifecycleErr != nil {
+		if lifecycleErr := operationError(ctx); lifecycleErr != nil {
 			return trimmedOutput, lifecycleErr
 		}
 		if trimmedOutput == "" {
@@ -300,23 +376,6 @@ func runPicoclawOnboardContext(ctx context.Context) (string, *PicoclawError) {
 	}
 
 	return trimmedOutput, nil
-}
-
-func sleepRuntimeLifecycleContext(ctx context.Context, delay time.Duration) *PicoclawError {
-	if ctx == nil {
-		ctx = context.Background()
-	}
-	if delay <= 0 {
-		return runtimeLifecycleOperationError(ctx)
-	}
-	timer := time.NewTimer(delay)
-	defer timer.Stop()
-	select {
-	case <-ctx.Done():
-		return runtimeLifecycleOperationError(ctx)
-	case <-timer.C:
-		return nil
-	}
 }
 
 func isPicoclawInstalled() (bool, error) {

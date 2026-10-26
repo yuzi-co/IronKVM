@@ -5,6 +5,8 @@ import (
 	"regexp"
 	"strings"
 
+	"NanoKVM-Server/service/agent"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -160,6 +162,8 @@ type ModelConfigUpdateRequest struct {
 	APIKey  string `json:"api_key"`
 }
 
+// UpdateModelConfig writes the model settings and restarts a running
+// PicoClaw so it reads them.
 func (s *Service) UpdateModelConfig(c *gin.Context) {
 	s.ensureDependencies()
 	var req ModelConfigUpdateRequest
@@ -168,68 +172,34 @@ func (s *Service) UpdateModelConfig(c *gin.Context) {
 		return
 	}
 
-	currentStatus := s.runtime.Get()
-	shouldRestart := currentStatus.Ready || currentStatus.Status == "ready"
-	var releaseControl func()
-	if shouldRestart {
-		// Restart follows StartRuntime's lock order: stable PicoClaw control
-		// lease first, then the runtime lifecycle lock around config write and
-		// stop/start.
-		var controlErr *PicoclawError
-		releaseControl, controlErr = s.acquireControlMode()
-		if controlErr != nil {
-			writePicoclawErrorWithData(c, controlErr, gin.H{"status": s.runtimeStatus()})
-			return
-		}
-		defer releaseControl()
-	}
-
-	unlockLifecycle := s.lockRuntimeLifecycle()
-	defer unlockLifecycle()
-	currentStatus = s.runtime.Get()
-	if !shouldRestart && (currentStatus.Ready || currentStatus.Status == "ready") {
-		var controlErr *PicoclawError
-		releaseControl, controlErr = s.acquireControlMode()
-		if controlErr != nil {
-			writePicoclawErrorWithData(c, controlErr, gin.H{"status": s.runtimeStatus()})
-			return
-		}
-		defer releaseControl()
-		shouldRestart = true
-	}
-
-	modelName, err := updatePicoclawModelConfig(
-		strings.TrimSpace(req.APIBase),
-		strings.TrimSpace(req.APIKey),
-		strings.TrimSpace(req.Model),
-	)
-	if err != nil {
-		writePicoclawError(c, newPicoclawError(CodeRuntimeUnavailable, err.Error()))
+	var modelName string
+	if !s.lifecycle.Reconfigure(c, agent.Reconfiguration{
+		Apply: func() error {
+			name, err := updatePicoclawModelConfig(
+				strings.TrimSpace(req.APIBase),
+				strings.TrimSpace(req.APIKey),
+				strings.TrimSpace(req.Model),
+			)
+			if err != nil {
+				return agentError(newPicoclawError(CodeRuntimeUnavailable, err.Error()))
+			}
+			if err := ensurePicoclawStartupDefaults(); err != nil {
+				return agentError(newPicoclawError(CodeRuntimeUnavailable, "model config saved, but failed to persist picoclaw defaults: "+err.Error()))
+			}
+			modelName = name
+			return nil
+		},
+		Restart:       true,
+		RestartFailed: "model config saved, but failed to restart picoclaw runtime: ",
+		Refresh:       func() { _ = s.syncConfigFromPicoclaw() },
+		Source:        "model_config",
+	}) {
 		return
-	}
-	if err := ensurePicoclawStartupDefaults(); err != nil {
-		writePicoclawError(c, newPicoclawError(CodeRuntimeUnavailable, "model config saved, but failed to persist picoclaw defaults: "+err.Error()))
-		return
-	}
-
-	if shouldRestart {
-		if _, _, stopErr := s.stopRuntime(); stopErr != nil {
-			writePicoclawError(c, newPicoclawError(CodeRuntimeUnavailable, "model config saved, but failed to restart picoclaw runtime: "+stopErr.Message))
-			return
-		}
-		if _, _, startErr := s.startRuntime(); startErr != nil {
-			writePicoclawError(c, newPicoclawError(CodeRuntimeUnavailable, "model config saved, but failed to restart picoclaw runtime: "+startErr.Message))
-			return
-		}
-		s.setRuntimeIntentDesired(true, "model_config")
-	} else {
-		_ = s.syncConfigFromPicoclaw()
-		_ = s.ensureRuntimeReadyForLifecycle()
 	}
 
 	writeSuccess(c, gin.H{
 		"model_name": modelName,
-		"status":     s.runtimeStatus(),
+		"status":     s.lifecycle.RuntimeStatus(),
 	})
 }
 

@@ -7,11 +7,11 @@ import (
 
 	"NanoKVM-Server/authn"
 	"NanoKVM-Server/middleware"
+	"NanoKVM-Server/service/agent"
 	"NanoKVM-Server/service/controlmode"
 	"NanoKVM-Server/service/hid"
 	mcpservice "NanoKVM-Server/service/mcp"
 	"NanoKVM-Server/service/mcp/capture/kvm"
-	"NanoKVM-Server/service/picoclaw"
 	"NanoKVM-Server/service/storage"
 	"NanoKVM-Server/service/urlmedia"
 	"NanoKVM-Server/service/vm"
@@ -19,14 +19,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func mcpRouter(r *gin.Engine, control *controlmode.Manager, picoclawService *picoclaw.Service) {
+func mcpRouter(r *gin.Engine, control *controlmode.Manager, lifecycle *agent.Lifecycle) {
 	service := mcpservice.NewServiceWithPreempt(
 		control,
-		picoclawService.PreemptControlLeasesForMCP,
-		picoclawService.StopRuntimeForMCP,
+		lifecycle.PreemptForMCP,
+		lifecycle.StopForMCP,
 		hid.ReleaseAllHIDStateBestEffort,
 		func(status controlmode.Status) {
-			picoclawService.PublishControlModeChangedFrom(status, "mcp_config")
+			lifecycle.PublishControlModeChanged(status, "mcp_config")
 		},
 	)
 	management := r.Group("/api/mcp").Use(

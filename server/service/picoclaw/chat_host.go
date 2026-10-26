@@ -21,6 +21,9 @@ func (s *Service) SetChat(chat ChatHub) {
 		chat = noChat{}
 	}
 	s.chat = chat
+	if s.lifecycle != nil {
+		s.lifecycle.SetChat(chat)
+	}
 }
 
 // Admit lets a chat session open while the AI control mode allows chat and

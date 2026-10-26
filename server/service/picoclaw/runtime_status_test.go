@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"NanoKVM-Server/service/agent"
 	"NanoKVM-Server/service/controlmode"
 )
 
@@ -48,10 +49,10 @@ func TestSyncRuntimeConfigMetadataFromPicoclawReadsPersistedModelWithoutMutation
 	}
 
 	service := &Service{
-		runtime: &RuntimeStore{status: RuntimeStatus{
+		runtime: newRuntimeStore(RuntimeStatus{
 			Status:    "model_not_configured",
 			LastError: "stale model error",
-		}},
+		}),
 	}
 	if syncErr := service.syncRuntimeConfigMetadataFromPicoclaw(); syncErr != nil {
 		t.Fatal(syncErr)
@@ -83,7 +84,7 @@ func TestSyncRuntimeConfigMetadataFromPicoclawReadsPersistedModelWithoutMutation
 		{mode: controlmode.ModeOff, wantStatus: "checking"},
 		{mode: controlmode.ModeMCP, wantStatus: "checking"},
 	} {
-		rendered := applyControlModeStatus(status, controlmode.Status{Mode: test.mode})
+		rendered := agent.ApplyControlModeStatus(status, controlmode.Status{Mode: test.mode})
 		if !rendered.ModelConfigured || rendered.ModelName != "test-model" {
 			t.Fatalf("mode %q lost model metadata: %+v", test.mode, rendered)
 		}
@@ -128,7 +129,7 @@ func TestSyncRuntimeConfigMetadataFromPicoclawReadsPersistedModelWithoutMutation
 			status: controlmode.Status{Mode: controlmode.ModePicoclaw, Transitioning: true},
 		},
 	} {
-		rendered := applyControlModeStatus(ready, test.status)
+		rendered := agent.ApplyControlModeStatus(ready, test.status)
 		if !rendered.Ready || rendered.Status != "ready" {
 			t.Fatalf("%s changed runtime readiness: %+v", test.name, rendered)
 		}
@@ -149,13 +150,13 @@ func TestSyncRuntimeConfigMetadataFromPicoclawReadsPersistedModelWithoutMutation
 func TestSyncRuntimeConfigMetadataFromPicoclawTreatsMissingConfigAsUnconfigured(t *testing.T) {
 	t.Setenv("PICOCLAW_HOME", t.TempDir())
 	service := &Service{
-		runtime: &RuntimeStore{status: RuntimeStatus{
+		runtime: newRuntimeStore(RuntimeStatus{
 			ModelConfigured: true,
 			ModelName:       "stale-model",
 			Status:          "config_error",
 			ConfigError:     "stale config error",
 			LastError:       "stale config error",
-		}},
+		}),
 	}
 
 	if syncErr := service.syncRuntimeConfigMetadataFromPicoclaw(); syncErr != nil {

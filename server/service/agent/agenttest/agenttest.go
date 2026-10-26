@@ -38,8 +38,7 @@ type Agent struct {
 }
 
 var (
-	_ agent.Agent   = (*Agent)(nil)
-	_ agent.Runtime = (*Agent)(nil)
+	_ agent.Agent = (*Agent)(nil)
 )
 
 // New returns an installed, stopped agent with no stored sessions.

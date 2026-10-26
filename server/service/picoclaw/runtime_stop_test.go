@@ -1,140 +1,9 @@
 package picoclaw
 
 import (
-	"errors"
 	"path/filepath"
-	"strings"
 	"testing"
-	"time"
 )
-
-func TestStopRuntimeProcessAndVerifyForceStopRunsStopBeforeChecking(t *testing.T) {
-	stopCalled := false
-	err := stopRuntimeProcessAndVerify(
-		true,
-		func() (bool, error) {
-			if !stopCalled {
-				return false, errors.New("runtime checked before compensating stop")
-			}
-			return false, nil
-		},
-		func() error {
-			stopCalled = true
-			return nil
-		},
-		time.Second,
-		time.Millisecond,
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !stopCalled {
-		t.Fatal("compensating stop was not called")
-	}
-}
-
-func TestStopRuntimeProcessAndVerifyWaitsForExit(t *testing.T) {
-	checks := 0
-	stopCalled := false
-	err := stopRuntimeProcessAndVerify(
-		false,
-		func() (bool, error) {
-			checks++
-			switch checks {
-			case 1:
-				return true, nil
-			case 2:
-				if !stopCalled {
-					return false, errors.New("runtime verified before stop")
-				}
-				return true, nil
-			default:
-				return false, nil
-			}
-		},
-		func() error {
-			stopCalled = true
-			return nil
-		},
-		time.Second,
-		0,
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !stopCalled || checks != 3 {
-		t.Fatalf("stopCalled=%v checks=%d, want true and 3", stopCalled, checks)
-	}
-}
-
-func TestStopRuntimeProcessAndVerifyIgnoresStopErrorAfterExit(t *testing.T) {
-	checks := 0
-	wantStopErr := errors.New("stop command failed after cleanup")
-	err := stopRuntimeProcessAndVerify(
-		false,
-		func() (bool, error) {
-			checks++
-			return checks == 1, nil
-		},
-		func() error { return wantStopErr },
-		time.Second,
-		0,
-	)
-	if err != nil {
-		t.Fatalf("error = %v, want nil after runtime exits", err)
-	}
-	if checks != 2 {
-		t.Fatalf("checks = %d, want 2", checks)
-	}
-}
-
-func TestStopRuntimeProcessAndVerifyReportsStopAndVerificationFailures(t *testing.T) {
-	wantStopErr := errors.New("stop command failed")
-	err := stopRuntimeProcessAndVerify(
-		true,
-		func() (bool, error) { return true, nil },
-		func() error { return wantStopErr },
-		0,
-		0,
-	)
-	if !errors.Is(err, wantStopErr) {
-		t.Fatalf("error = %v, want wrapped stop error", err)
-	}
-	if !strings.Contains(err.Error(), "PicoClaw runtime is still running") {
-		t.Fatalf("error = %v, want verification failure", err)
-	}
-}
-
-func TestStopRuntimeCloseSessionsDoesNotRequireHIDRelease(t *testing.T) {
-	t.Setenv("PICOCLAW_HOME", t.TempDir())
-	service := &Service{
-		runtime: getRuntimeStore(),
-		releaseHID: func() error {
-			return errors.New("hid unavailable")
-		},
-	}
-
-	if err := service.stopRuntimeAndCloseSessions(CloseCodeRuntimeStopped, "test stop"); err != nil {
-		t.Fatalf("stopRuntimeAndCloseSessions error = %v, want nil", err)
-	}
-}
-
-func TestStopRuntimeCloseSessionsReleasesStaleLock(t *testing.T) {
-	t.Setenv("PICOCLAW_HOME", t.TempDir())
-	lock := &SessionLock{}
-	lock.ForceTakeover("stale-session")
-	service := &Service{
-		lock:    lock,
-		runtime: getRuntimeStore(),
-	}
-
-	if err := service.stopRuntimeAndCloseSessions(CloseCodeRuntimeStopped, "test stop"); err != nil {
-		t.Fatalf("stopRuntimeAndCloseSessions error = %v, want nil", err)
-	}
-	if owner := lock.Owner(); owner != "" {
-		t.Fatalf("lock owner = %q, want released", owner)
-	}
-}
 
 func TestPreemptControlLeasesForMCPDoesNotStopRuntimeOrChangeIntent(t *testing.T) {
 	t.Setenv("PICOCLAW_HOME", t.TempDir())
@@ -147,12 +16,12 @@ func TestPreemptControlLeasesForMCPDoesNotStopRuntimeOrChangeIntent(t *testing.T
 	lock.ForceTakeover("session-1")
 	service := &Service{
 		lock:          lock,
-		runtime:       &RuntimeStore{status: RuntimeStatus{Ready: true, Status: "ready"}},
+		runtime:       newRuntimeStore(RuntimeStatus{Ready: true, Status: "ready"}),
 		runtimeIntent: intentStore,
 		operations:    newControlOperationTracker(),
 	}
 
-	if err := service.PreemptControlLeasesForMCP(); err != nil {
+	if err := service.Lifecycle().PreemptForMCP(); err != nil {
 		t.Fatal(err)
 	}
 	if owner := lock.Owner(); owner != "" {
@@ -179,11 +48,11 @@ func TestStopRuntimeForMCPStopsRuntimeAndDisablesIntent(t *testing.T) {
 	}
 
 	service := &Service{
-		runtime:       &RuntimeStore{status: RuntimeStatus{Ready: true, Status: "ready"}},
+		runtime:       newRuntimeStore(RuntimeStatus{Ready: true, Status: "ready"}),
 		runtimeIntent: intentStore,
 	}
 
-	if err := service.StopRuntimeForMCP(); err != nil {
+	if err := service.Lifecycle().StopForMCP(); err != nil {
 		t.Fatal(err)
 	}
 	status := service.runtime.Get()
@@ -220,6 +89,9 @@ func TestEnsureDependenciesInitializesRuntimeFields(t *testing.T) {
 	}
 	if service.releaseHID == nil {
 		t.Fatal("HID release callback was not initialized")
+	}
+	if service.lifecycle == nil {
+		t.Fatal("lifecycle was not initialized")
 	}
 }
 

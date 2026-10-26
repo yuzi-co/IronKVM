@@ -9,8 +9,8 @@ import (
 )
 
 // Adapter is PicoClaw behind the agent interface: the pico channel for chat,
-// PicoClaw's session files for history and the S96picoclaw script for the
-// runtime.
+// PicoClaw's session files for history, and for the runtime the pinned
+// release, the S96picoclaw script and the gateway's /ready probe.
 type Adapter struct {
 	service *Service
 }
@@ -24,22 +24,59 @@ func (s *Service) Agent() *Adapter {
 
 func (a *Adapter) Name() string { return "picoclaw" }
 
-func (a *Adapter) Start(ctx context.Context) error {
-	a.service.ensureDependencies()
-	_, _, err := a.service.startRuntimeContext(ctx)
-	return agentError(err)
+func (a *Adapter) InstallPath() string { return picoclawBinaryPath }
+
+func (a *Adapter) Version() string { return Version }
+
+func (a *Adapter) Installed() (bool, error) { return isPicoclawInstalled() }
+
+func (a *Adapter) Stale() bool { return installedPicoclawIsStale() }
+
+func (a *Adapter) Install(progress func(stage string, percent int, lastError string)) error {
+	return installReleasePicoclaw(progress)
 }
 
-func (a *Adapter) Stop(context.Context) error {
-	return a.service.stopRuntimeAndVerify(false)
-}
+func (a *Adapter) Uninstall() { removePicoclaw() }
 
-func (a *Adapter) Ready(ctx context.Context) error {
-	return agentError(a.service.ensureRuntimeReadyWithProbeProtection(ctx, false))
+// Model reads the model settings from PicoClaw's configuration. The fields
+// are what the configuration gave even when err is set.
+func (a *Adapter) Model() (agent.Model, error) {
+	settings, err := loadPicoclawGatewaySettings()
+	return agent.Model{
+		Configured: settings.ModelConfigured,
+		Name:       settings.ModelName,
+		Target:     settings.TargetModelName,
+	}, err
 }
 
 func (a *Adapter) ApplyConfig(context.Context) error {
 	return applyPicoclawConfig()
+}
+
+func (a *Adapter) Running() (bool, error) { return isRuntimeRunning() }
+
+func (a *Adapter) Launch(ctx context.Context) (string, string, error) {
+	command, output, err := a.service.launchRuntime(ctx)
+	return command, output, agentError(err)
+}
+
+// Halt runs the S96picoclaw script's stop. Its error keeps the PicoClaw
+// error's text, which leads with the code.
+func (a *Adapter) Halt() (string, string, error) {
+	command, output, err := a.service.stopRuntime()
+	if err != nil {
+		return command, output, err
+	}
+	return command, output, nil
+}
+
+func (a *Adapter) Check(ctx context.Context) (*agent.RuntimeStatus, error) {
+	status, err := a.service.checkRuntime(ctx)
+	return status, agentError(err)
+}
+
+func (a *Adapter) Describe(status agent.RuntimeStatus) agent.RuntimeStatus {
+	return withAgentProfile(status)
 }
 
 // OpenSession connects to the pico channel for the session, with the token
@@ -76,5 +113,5 @@ func agentError(err *PicoclawError) error {
 	if err == nil {
 		return nil
 	}
-	return &agent.Error{Status: err.StatusCode, Code: err.Code, Message: err.Message}
+	return err.AgentError()
 }

@@ -41,8 +41,9 @@ func PicoclawLoopbackHTTPAllowedPaths() []string {
 	return append([]string(nil), picoclawLoopbackHTTPAllowedPaths...)
 }
 
-// picoclawRouter registers PicoClaw's own routes: its runtime, model and
-// profile settings, and the KVM tools it calls back over loopback.
+// picoclawRouter registers PicoClaw's own routes: its model and profile
+// settings, its session release, and the KVM tools it calls back over
+// loopback.
 func picoclawRouter(r *gin.Engine, service *picoclaw.Service) {
 	frontendAPI := picoclawFrontendAPI(r)
 	localAPI := r.Group(picoclawBasePath).Use(middleware.CheckLoopbackInternalToken())
@@ -55,12 +56,18 @@ func picoclawRouter(r *gin.Engine, service *picoclaw.Service) {
 
 	frontendAPI.POST(picoclawModelConfigPath, service.UpdateModelConfig)
 	frontendAPI.POST(picoclawAgentProfilePath, service.UpdateAgentProfile)
-	frontendAPI.GET(picoclawRuntimeStatusPath, service.GetRuntimeStatus)
 	frontendAPI.DELETE(picoclawRuntimeSessionPath, service.ReleaseRuntimeSession)
-	frontendAPI.POST(picoclawRuntimeInstallPath, service.InstallRuntime)
-	frontendAPI.POST(picoclawRuntimeUninstallPath, service.UninstallRuntime)
-	frontendAPI.POST(picoclawRuntimeStartPath, service.StartRuntime)
-	frontendAPI.POST(picoclawRuntimeStopPath, service.StopRuntime)
+}
+
+// runtimeRouter registers the runtime routes. They use only the agent
+// lifecycle, and keep the /api/picoclaw paths the web UI has always used.
+func runtimeRouter(r *gin.Engine, lifecycle *agent.Lifecycle) {
+	frontendAPI := picoclawFrontendAPI(r)
+	frontendAPI.GET(picoclawRuntimeStatusPath, lifecycle.Status)
+	frontendAPI.POST(picoclawRuntimeInstallPath, lifecycle.Install)
+	frontendAPI.POST(picoclawRuntimeUninstallPath, lifecycle.Uninstall)
+	frontendAPI.POST(picoclawRuntimeStartPath, lifecycle.Start)
+	frontendAPI.POST(picoclawRuntimeStopPath, lifecycle.Stop)
 }
 
 // agentRouter registers the chat socket and the chat history routes. They use

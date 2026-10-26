@@ -158,16 +158,16 @@ func TestRuntimeRoutesAnswerAsRecorded(t *testing.T) {
 	}
 	h.do("uninstall", http.MethodPost, routes.uninstall, "", nil)
 
-	raw, err := json.Marshal(h.service.RuntimeStatus())
+	raw, err := json.Marshal(h.service.Lifecycle().RuntimeStatus())
 	if err != nil {
 		t.Fatal(err)
 	}
 	h.record("runtime_status_after_uninstall", http.StatusOK, raw)
 
-	if err := h.service.StopRuntimeForMCP(); err != nil {
+	if err := h.service.Lifecycle().StopForMCP(); err != nil {
 		t.Fatal(err)
 	}
-	h.service.PreserveRuntimeForChatOnly("test")
+	h.service.Lifecycle().PreserveForChatOnly("test")
 	h.do("status_after_mcp_stop", http.MethodGet, routes.status, "", nil)
 
 	got, err := json.MarshalIndent(h.steps, "", "  ")

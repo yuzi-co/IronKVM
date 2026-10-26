@@ -16,7 +16,7 @@ type runtimeRoutes struct {
 func newRuntimeRoutesService(control *controlmode.Manager, intentPath string) *Service {
 	return &Service{
 		control:       control,
-		runtime:       &RuntimeStore{},
+		runtime:       newRuntimeStore(RuntimeStatus{}),
 		runtimeIntent: NewRuntimeIntentStore(intentPath),
 		releaseHID:    func() error { return nil },
 		lock:          &SessionLock{},
@@ -24,12 +24,13 @@ func newRuntimeRoutesService(control *controlmode.Manager, intentPath string) *S
 }
 
 func runtimeRoutesUnderTest(s *Service) runtimeRoutes {
+	lifecycle := s.Lifecycle()
 	return runtimeRoutes{
-		status:         s.GetRuntimeStatus,
-		start:          s.StartRuntime,
-		stop:           s.StopRuntime,
-		install:        s.InstallRuntime,
-		uninstall:      s.UninstallRuntime,
+		status:         lifecycle.Status,
+		start:          lifecycle.Start,
+		stop:           lifecycle.Stop,
+		install:        lifecycle.Install,
+		uninstall:      lifecycle.Uninstall,
 		modelConfig:    s.UpdateModelConfig,
 		agentProfile:   s.UpdateAgentProfile,
 		releaseSession: s.ReleaseRuntimeSession,

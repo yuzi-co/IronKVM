@@ -6,6 +6,8 @@ import (
 	"sync"
 	"time"
 
+	"NanoKVM-Server/service/agent"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -15,7 +17,9 @@ const (
 )
 
 var (
-	errControlModeSwitch = errors.New("PicoClaw control operation canceled by control mode switch")
+	// errControlModeSwitch is the cause a control mode switch cancels an
+	// operation with. The agent lifecycle reads it.
+	errControlModeSwitch = agent.ErrControlModeSwitch
 	errControlTimeout    = errors.New("PicoClaw control operation timed out")
 )
 
@@ -125,22 +129,6 @@ func (s *Service) CancelActiveControlOperations() int {
 		"active_operations": count,
 	}).Info("picoclaw control operations canceled for control mode switch")
 	return count
-}
-
-func runtimeLifecycleOperationError(ctx context.Context) *PicoclawError {
-	if ctx == nil || ctx.Err() == nil {
-		return nil
-	}
-
-	cause := context.Cause(ctx)
-	switch {
-	case errors.Is(cause, errControlModeSwitch):
-		return newPicoclawError(CodeControlModeConflict, "PicoClaw runtime lifecycle canceled because the control mode is switching")
-	case errors.Is(cause, context.DeadlineExceeded):
-		return newPicoclawError(CodeRuntimeUnavailable, "PicoClaw runtime lifecycle timed out")
-	default:
-		return newPicoclawError(CodeRuntimeUnavailable, "PicoClaw runtime lifecycle was canceled")
-	}
 }
 
 func controlOperationError(ctx context.Context) *PicoclawError {
