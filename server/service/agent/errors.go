@@ -19,9 +19,14 @@ const (
 // Error codes the routes in this package answer with. They are the codes the
 // PicoClaw routes always used, so the browser reads them unchanged.
 const (
-	CodeLockHeld           = "AI_LOCK_HELD"
-	CodeRuntimeUnavailable = "RUNTIME_UNAVAILABLE"
-	CodeInvalidRequest     = "INVALID_ACTION"
+	CodeLockHeld             = "AI_LOCK_HELD"
+	CodeRuntimeUnavailable   = "RUNTIME_UNAVAILABLE"
+	CodeRuntimeStartFailed   = "RUNTIME_START_FAILED"
+	CodeInvalidRequest       = "INVALID_ACTION"
+	CodeControlModeConflict  = "AI_MODE_CONFLICT"
+	CodeControlRequired      = "CONTROL_REQUIRED"
+	CodeControlOwnedByMCP    = "CONTROL_OWNED_BY_MCP"
+	CodeControlTransitioning = "CONTROL_TRANSITIONING"
 )
 
 // Error is an error with the code and HTTP status a route answers with.
@@ -54,12 +59,26 @@ type CloseError struct {
 
 func (e *CloseError) Error() string { return e.Reason }
 
+// CodedError is an adapter's own error type that carries a route's code and
+// message. Its Error text may differ from the message, as when it leads with
+// the code.
+type CodedError interface {
+	error
+	AgentError() *Error
+}
+
 // asError returns err as an *Error, wrapping any other error in one with
 // the given code.
 func asError(err error, code string) *Error {
 	var agentErr *Error
 	if errors.As(err, &agentErr) {
 		return agentErr
+	}
+	var coded CodedError
+	if errors.As(err, &coded) {
+		if converted := coded.AgentError(); converted != nil {
+			return converted
+		}
 	}
 	return NewError(code, err.Error())
 }

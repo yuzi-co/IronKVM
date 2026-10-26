@@ -18,23 +18,71 @@ import "context"
 type Agent interface {
 	// Name is a short identifier for logs, such as "picoclaw".
 	Name() string
-	Runtime
 	Chat
 	History
 }
 
-// Runtime controls the agent process.
+// Runtime is the agent's own part of its lifecycle: its install, its process
+// and its configuration. The Lifecycle drives it and keeps the rest: the AI
+// control mode, the persisted intent to run, the status the web UI reads, the
+// locks around a start or stop, and the restore at boot. A Runtime may record
+// detail only it knows, such as a config error, into the StatusStore the
+// Lifecycle was built with.
+//
+// Errors that answer a route are *Error values or CodedError ones; any other
+// error answers with the code the route uses for failures.
 type Runtime interface {
-	// Start starts the agent and returns once it is ready or has failed.
-	Start(ctx context.Context) error
-	// Stop stops the agent and returns once it no longer runs.
-	Stop(ctx context.Context) error
-	// Ready returns nil when the agent can take a chat session.
-	Ready(ctx context.Context) error
+	// InstallPath is where the agent's binary is installed.
+	InstallPath() string
+	// Version is the release Install installs.
+	Version() string
+	// Installed reports whether the agent is installed.
+	Installed() (bool, error)
+	// Stale reports whether the installed agent is not the release
+	// Install installs, so an update is available.
+	Stale() bool
+	// Install downloads and installs the release. It reports its progress
+	// as it goes. The Lifecycle runs it in the background.
+	Install(progress func(stage string, percent int, lastError string)) error
+	// Uninstall removes the agent's binary and settings. The Lifecycle has
+	// stopped the agent first.
+	Uninstall()
+
+	// Model reports the agent's model settings.
+	Model() (Model, error)
 	// ApplyConfig writes the agent's configuration with the settings the
 	// server enforces (hardening, the KVM MCP server, the agent profile).
-	// Start applies it too.
+	// Launch applies it too.
 	ApplyConfig(ctx context.Context) error
+
+	// Running reports whether the agent's process runs.
+	Running() (bool, error)
+	// Launch starts the agent's process and returns the command it ran and
+	// its output. It does not wait for the agent to be ready: the
+	// Lifecycle polls Check for that, and stops the process when it does
+	// not become ready.
+	Launch(ctx context.Context) (command, output string, err error)
+	// Halt asks the agent's process to stop, once. The Lifecycle waits
+	// until Running reports it gone.
+	Halt() (command, output string, err error)
+	// Check checks that the agent is installed, configured, running and
+	// answering. It returns the status to record, or nil to keep the one
+	// recorded, and an error when the agent cannot take a chat session.
+	// The Lifecycle sets the status's CheckedAt and CurrentSession.
+	Check(ctx context.Context) (*RuntimeStatus, error)
+	// Describe adds the agent's own fields to the status the status route
+	// answers with.
+	Describe(status RuntimeStatus) RuntimeStatus
+}
+
+// Model is the agent's model settings.
+type Model struct {
+	// Configured says the model has what it needs, such as its API key.
+	Configured bool
+	// Name is the configured model's name.
+	Name string
+	// Target is the model the agent is set to use, configured or not.
+	Target string
 }
 
 // Chat opens chat sessions with the agent.
