@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { PowerLedSetting } from '../../power/power-led-setting.tsx';
 import { Section } from '../components/section.tsx';
+import { Edid } from './edid.tsx';
 import { Hdmi } from './hdmi.tsx';
 import { Oled } from './oled.tsx';
 import { Reboot } from './reboot.tsx';
@@ -11,8 +12,8 @@ import { UsbIdentity } from './usb-identity.tsx';
 import { VirtualDevices } from './virtual-devices.tsx';
 
 // The board's hardware, by what it faces: the video it takes in (PCIe boards
-// only, so Hdmi draws its own section), the USB devices it presents to the
-// host, and its own front panel.
+// only, so Hdmi draws its own section), the EDID it offers the host, the USB
+// devices it presents to the host, and its own front panel.
 export const Device = () => {
   const { t } = useTranslation();
 
@@ -23,6 +24,9 @@ export const Device = () => {
 
       <div className="flex flex-col space-y-8">
         <Hdmi />
+
+        <Edid />
+        <Divider className="opacity-50" style={{ margin: 0 }} />
 
         <Section loose title={t('settings.device.sections.usb')}>
           <VirtualDevices />
