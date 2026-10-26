@@ -120,11 +120,22 @@ func (sess *session) timeout() time.Duration {
 }
 
 func (s *Service) expireLocked(now time.Time) {
-	for id, sess := range s.sessions {
+	for _, sess := range s.sessions {
 		if now.Sub(sess.lastSeen) >= sess.timeout() {
-			delete(s.sessions, id)
+			s.dropLocked(sess)
 		}
 	}
+}
+
+// dropLocked ends a session and clears the copy of the IPMI password a
+// handshake holds. RAKP 3 clears it on success; every other way out of the
+// table, a failure, a timeout or an eviction, goes through here. Go may have
+// copied the bytes elsewhere, so this shortens the time they sit in memory
+// rather than guaranteeing they are gone.
+func (s *Service) dropLocked(sess *session) {
+	clear(sess.kuid)
+	sess.kuid = nil
+	delete(s.sessions, sess.id)
 }
 
 func (s *Service) newSessionIDLocked() (uint32, bool) {
@@ -157,7 +168,7 @@ func (s *Service) evictHandshakeLocked() bool {
 	if oldest == nil {
 		return false
 	}
-	delete(s.sessions, oldest.id)
+	s.dropLocked(oldest)
 	return true
 }
 
@@ -275,7 +286,7 @@ func (s *Service) rakp1(p *v20Packet, addr net.Addr, now time.Time) []byte {
 	}
 
 	fail := func(status byte) []byte {
-		delete(s.sessions, sess.id)
+		s.dropLocked(sess)
 		out := []byte{tag, status, 0, 0}
 		out = binary.LittleEndian.AppendUint32(out, sess.consoleID)
 		return buildV20(v20Header{payloadType: payloadRAKP2}, out, nil, nil)
@@ -374,7 +385,7 @@ func (s *Service) rakp3(p *v20Packet, addr net.Addr, now time.Time) []byte {
 	ip := hostOf(sess.addr)
 
 	fail := func(status byte) []byte {
-		delete(s.sessions, sess.id)
+		s.dropLocked(sess)
 		out := []byte{tag, status, 0, 0}
 		out = binary.LittleEndian.AppendUint32(out, sess.consoleID)
 		return buildV20(v20Header{payloadType: payloadRAKP4}, out, nil, nil)
@@ -384,7 +395,7 @@ func (s *Service) rakp3(p *v20Packet, addr net.Addr, now time.Time) []byte {
 	// not match its password, with a status here. There is nothing to
 	// answer.
 	if b[1] != statusOK {
-		delete(s.sessions, sess.id)
+		s.dropLocked(sess)
 		return nil
 	}
 
@@ -474,7 +485,7 @@ func (s *Service) inSession(p *v20Packet, addr net.Addr, now time.Time) []byte {
 	// IPMI password since the session opened.
 	user, err := s.deps.Accounts.Get(sess.username)
 	if err != nil || !user.Enabled || user.Role == authn.RoleViewer || user.IPMIPassword != sess.sealed {
-		delete(s.sessions, sess.id)
+		s.dropLocked(sess)
 		return nil
 	}
 	sess.limit = min(sess.limit, userLimit(user))
@@ -511,7 +522,7 @@ func (s *Service) inSession(p *v20Packet, addr net.Addr, now time.Time) []byte {
 	}, payload, sess.suite, sess.k1)
 
 	if sess.closing {
-		delete(s.sessions, sess.id)
+		s.dropLocked(sess)
 	}
 	return out
 }
