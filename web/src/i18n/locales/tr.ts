@@ -269,6 +269,7 @@ const tr = {
       placeholder: 'Girdi',
       submit: 'Gönder',
       virtual: 'Klavye',
+      onScreen: 'Ekran klavyesi',
       readClipboard: 'Panodan Oku',
       clipboardPermissionDenied:
         'Pano izni reddedildi. Lütfen tarayıcınızda pano erişimine izin verin.',

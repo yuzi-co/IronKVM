@@ -267,6 +267,7 @@ const da = {
       placeholder: 'Indtast tekst',
       submit: 'Send',
       virtual: 'Tastatur',
+      onScreen: 'Skærmtastatur',
       readClipboard: 'Læs fra udklipsholder',
       clipboardPermissionDenied:
         'Udklipsholdertilladelse nægtet. Tillad venligst udklipsholderadgang i din browser.',

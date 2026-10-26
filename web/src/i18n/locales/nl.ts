@@ -271,6 +271,7 @@ const nl = {
       placeholder: 'Voer tekst in',
       submit: 'Verzenden',
       virtual: 'Toetsenbord',
+      onScreen: 'Schermtoetsenbord',
       readClipboard: 'Lezen vanaf het Klembord',
       clipboardPermissionDenied:
         'Klembordtoestemming geweigerd. Sta klembordtoegang toe in uw browser.',

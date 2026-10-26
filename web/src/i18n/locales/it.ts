@@ -271,6 +271,7 @@ const it = {
       placeholder: 'Inserisci testo',
       submit: 'Invia',
       virtual: 'Tastiera',
+      onScreen: 'Tastiera su schermo',
       readClipboard: 'Leggi dagli Appunti',
       clipboardPermissionDenied:
         "Autorizzazione Appunti negata. Consenti l'accesso agli appunti nel tuo browser.",

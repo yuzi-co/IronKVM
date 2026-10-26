@@ -270,6 +270,7 @@ const hu = {
       placeholder: 'Írja be',
       submit: 'Elküldés',
       virtual: 'Billentyűzet',
+      onScreen: 'Képernyő-billentyűzet',
       readClipboard: 'Olvasás a vágólapról',
       clipboardPermissionDenied:
         'A vágólap engedélye megtagadva. Kérjük, engedélyezze a vágólaphoz való hozzáférést a böngészőjében.',

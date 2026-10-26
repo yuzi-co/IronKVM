@@ -269,6 +269,7 @@ const pl = {
       placeholder: 'Proszę wprowadzić coś',
       submit: 'Prześlij',
       virtual: 'Klawiatura',
+      onScreen: 'Klawiatura ekranowa',
       readClipboard: 'Czytaj ze schowka',
       clipboardPermissionDenied:
         'Odmowa dostępu do schowka. Zezwól na dostęp do schowka w przeglądarce.',

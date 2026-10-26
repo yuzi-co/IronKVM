@@ -264,6 +264,7 @@ const ja = {
       placeholder: '入力してください',
       submit: '送信',
       virtual: '仮想キーボード',
+      onScreen: 'スクリーンキーボード',
       readClipboard: 'クリップボードから読み取る',
       clipboardPermissionDenied:
         'クリップボードのアクセス許可が拒否されました。ブラウザでクリップボードへのアクセスを許可してください。',

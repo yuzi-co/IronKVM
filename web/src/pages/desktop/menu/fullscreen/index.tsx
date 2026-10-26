@@ -48,7 +48,7 @@ export const Fullscreen = () => {
       <button
         type="button"
         aria-label={t('fullscreen.toggle')}
-        className="flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded p-0 text-neutral-300 hover:bg-neutral-700/80 hover:text-white"
+        className="flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded p-0 text-neutral-300 hover:bg-neutral-700/80 hover:text-white max-sm:size-9"
         onClick={handleFullscreen}
       >
         {isFullscreen ? <MinimizeIcon size={18} /> : <MaximizeIcon size={18} />}

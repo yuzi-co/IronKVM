@@ -275,6 +275,7 @@ const de = {
       placeholder: 'Bitte eingeben',
       submit: 'Senden',
       virtual: 'Tastatur',
+      onScreen: 'Bildschirmtastatur',
       readClipboard: 'Aus der Zwischenablage lesen',
       clipboardPermissionDenied:
         'Berechtigung für die Zwischenablage verweigert. Bitte erlauben Sie den Zugriff auf die Zwischenablage in Ihrem Browser.',

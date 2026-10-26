@@ -254,6 +254,7 @@ const zh_tw = {
       placeholder: '請輸入內容',
       submit: '送出',
       virtual: '虛擬鍵盤',
+      onScreen: '螢幕鍵盤',
       readClipboard: '從剪貼簿讀取',
       clipboardPermissionDenied: '剪貼簿權限被拒絕。請允許您的瀏覽器存取剪貼簿。',
       clipboardReadError: '無法讀取剪貼簿',

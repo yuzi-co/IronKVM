@@ -267,6 +267,7 @@ const id = {
       placeholder: 'Silahkan isi',
       submit: 'Kirimkan',
       virtual: 'Keyboard',
+      onScreen: 'Keyboard layar',
       readClipboard: 'Membaca dari Papan Klip',
       clipboardPermissionDenied:
         'Izin papan klip ditolak. Harap izinkan akses clipboard di browser Anda.',

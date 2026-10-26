@@ -273,6 +273,7 @@ const es = {
       placeholder: 'Por favor, introduce el texto',
       submit: 'Enviar',
       virtual: 'Teclado virtual',
+      onScreen: 'Teclado en pantalla',
       readClipboard: 'Leer del portapapeles',
       clipboardPermissionDenied:
         'Permiso de portapapeles denegado. Por favor, permite el acceso al portapapeles en tu navegador.',

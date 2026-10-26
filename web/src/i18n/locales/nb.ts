@@ -268,6 +268,7 @@ const nb = {
       placeholder: 'Vennligst angi teksten du vil lime inn',
       submit: 'Lim inn',
       virtual: 'Åpne tastatur',
+      onScreen: 'Skjermtastatur',
       readClipboard: 'Les fra utklippstavlen',
       clipboardPermissionDenied:
         'Utklippstavle tillatelse nektet. Tillat utklippstavletilgang i nettleseren din.',

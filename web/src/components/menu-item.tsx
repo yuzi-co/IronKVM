@@ -106,7 +106,7 @@ export const MenuItem = ({
             className={
               className
                 ? className
-                : 'flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded p-0 text-neutral-300 hover:bg-neutral-700/80 hover:text-white'
+                : 'flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded p-0 text-neutral-300 hover:bg-neutral-700/80 hover:text-white max-sm:size-9'
             }
           >
             {icon}

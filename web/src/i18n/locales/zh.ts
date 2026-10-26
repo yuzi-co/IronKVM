@@ -254,6 +254,7 @@ const zh = {
       placeholder: '请输入内容',
       submit: '确定',
       virtual: '虚拟键盘',
+      onScreen: '屏幕键盘',
       readClipboard: '从剪贴板读取',
       clipboardPermissionDenied: '剪贴板权限被拒绝。请允许您的浏览器访问剪贴板。',
       clipboardReadError: '无法读取剪贴板',

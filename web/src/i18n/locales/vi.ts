@@ -267,6 +267,7 @@ const vi = {
       placeholder: 'Vui lòng nhập',
       submit: 'Gửi',
       virtual: 'Bàn phím',
+      onScreen: 'Bàn phím ảo',
       readClipboard: 'Đọc từ Clipboard',
       clipboardPermissionDenied:
         'Quyền bảng nhớ tạm bị từ chối. Vui lòng cho phép truy cập clipboard trong trình duyệt của bạn.',

@@ -264,6 +264,7 @@ const se = {
       placeholder: 'Ange text',
       submit: 'Skicka',
       virtual: 'Tangentbord',
+      onScreen: 'Skärmtangentbord',
       readClipboard: 'Läs från Urklipp',
       clipboardPermissionDenied:
         'Behörighet till Urklipp nekad. Vänligen tillåt åtkomst till Urklipp i din webbläsare.',

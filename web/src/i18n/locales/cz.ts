@@ -268,6 +268,7 @@ const cz = {
       placeholder: 'Zadejte text',
       submit: 'Odeslat',
       virtual: 'Klávesnice',
+      onScreen: 'Klávesnice na obrazovce',
       readClipboard: 'Přečíst ze schránky',
       clipboardPermissionDenied:
         'Oprávnění ke schránce odepřeno. Povolte prosím přístup do schránky ve svém prohlížeči.',

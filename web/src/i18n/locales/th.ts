@@ -263,6 +263,7 @@ const th = {
       placeholder: 'กรุณาป้อน',
       submit: 'ยืนยัน',
       virtual: 'คีบอร์ด',
+      onScreen: 'แป้นพิมพ์บนหน้าจอ',
       readClipboard: 'อ่านจากคลิปบอร์ด',
       clipboardPermissionDenied:
         'การอนุญาตคลิปบอร์ดถูกปฏิเสธ โปรดอนุญาตการเข้าถึงคลิปบอร์ดในเบราว์เซอร์ของคุณ',

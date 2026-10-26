@@ -269,6 +269,7 @@ const pt_br = {
       placeholder: 'Por favor, digite',
       submit: 'Enviar',
       virtual: 'Teclado',
+      onScreen: 'Teclado na tela',
       readClipboard: 'Ler da área de transferência',
       clipboardPermissionDenied:
         'Permissão da área de transferência negada. Permita o acesso à área de transferência no seu navegador.',

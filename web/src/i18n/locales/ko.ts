@@ -260,6 +260,7 @@ const ko = {
       placeholder: '입력하세요',
       submit: '전송',
       virtual: '키보드',
+      onScreen: '화상 키보드',
       readClipboard: '클립보드에서 읽기',
       clipboardPermissionDenied:
         '클립보드 권한이 거부되었습니다. 브라우저에서 클립보드 액세스를 허용해 주세요.',

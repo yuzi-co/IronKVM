@@ -32,7 +32,7 @@ export const RoomMicIndicator = () => {
         className="mr-1 flex h-[24px] shrink-0 items-center space-x-1 rounded bg-red-600 px-2 text-xs font-medium text-white select-none"
       >
         <MicIcon size={14} className="animate-pulse" />
-        <span className="whitespace-nowrap">{t('speaker.roomLive')}</span>
+        <span className="whitespace-nowrap max-sm:hidden">{t('speaker.roomLive')}</span>
       </div>
     </Tooltip>
   );

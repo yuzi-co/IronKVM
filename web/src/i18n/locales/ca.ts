@@ -271,6 +271,7 @@ const ca = {
       placeholder: 'Escriu aquí',
       submit: 'Envia',
       virtual: 'Teclat',
+      onScreen: 'Teclat en pantalla',
       readClipboard: 'Llegir des del porta-retalls',
       clipboardPermissionDenied:
         "S'ha denegat el permís del porta-retalls. Permet l'accés al porta-retalls al teu navegador.",

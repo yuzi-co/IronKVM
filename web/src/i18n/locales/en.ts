@@ -265,6 +265,7 @@ const en = {
       placeholder: 'Please input',
       submit: 'Submit',
       virtual: 'Keyboard',
+      onScreen: 'On-screen keyboard',
       readClipboard: 'Read from Clipboard',
       clipboardPermissionDenied:
         'Clipboard permission denied. Please allow clipboard access in your browser.',
