@@ -153,6 +153,7 @@ const ko = {
       codec: '코덱',
       updateFailed: '설정이 적용되지 않았습니다',
       scale: '규모',
+      pan: '드래그하여 확대된 화면을 이동하고, 두 번 탭하여 가운데로 맞춥니다',
       title: '화면',
       video: '비디오 모드',
       videoDirectTips: '이 모드를 사용하려면 "설정 > 장치"에서 HTTPS를 활성화하세요',
@@ -264,6 +265,7 @@ const ko = {
       placeholder: '입력하세요',
       submit: '전송',
       virtual: '키보드',
+      onScreen: '화상 키보드',
       readClipboard: '클립보드에서 읽기',
       clipboardPermissionDenied:
         '클립보드 권한이 거부되었습니다. 브라우저에서 클립보드 액세스를 허용해 주세요.',

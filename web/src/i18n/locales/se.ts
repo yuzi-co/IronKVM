@@ -157,6 +157,7 @@ const se = {
       codec: 'Kodek',
       updateFailed: 'Inställningen tillämpades inte',
       scale: 'Skala',
+      pan: 'Dra för att flytta den förstorade bilden, dubbeltryck för att centrera den',
       title: 'Skärm',
       video: 'Videoläge',
       videoDirectTips: 'Aktivera HTTPS i "Inställningar > Enhet" för att använda detta läge',
@@ -268,6 +269,7 @@ const se = {
       placeholder: 'Ange text',
       submit: 'Skicka',
       virtual: 'Tangentbord',
+      onScreen: 'Skärmtangentbord',
       readClipboard: 'Läs från Urklipp',
       clipboardPermissionDenied:
         'Behörighet till Urklipp nekad. Vänligen tillåt åtkomst till Urklipp i din webbläsare.',

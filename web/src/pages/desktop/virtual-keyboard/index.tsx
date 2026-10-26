@@ -271,8 +271,10 @@ export const VirtualKeyboard = () => {
           )}
         >
           {/* header */}
-          <div className="flex items-center justify-between px-3 py-1">
-            <div className="flex items-center space-x-5">
+          {/* At 320 px the language and system pickers can outgrow the
+              header, so they scroll and the close button stays put. */}
+          <div className="flex items-center justify-between gap-2 px-2 py-1 sm:px-3">
+            <div className="flex min-w-0 [scrollbar-width:none] items-center space-x-5 overflow-x-auto">
               <Select
                 size="small"
                 style={{ minWidth: 90 }}
@@ -291,11 +293,11 @@ export const VirtualKeyboard = () => {
               )}
             </div>
 
-            <div className="flex items-center justify-end">
+            <div className="flex flex-none items-center justify-end">
               <button
                 type="button"
                 aria-label={t('keyboard.close')}
-                className="flex h-[24px] w-[24px] cursor-pointer items-center justify-center rounded p-0 text-neutral-400 hover:bg-neutral-700 hover:text-white"
+                className="flex size-8 cursor-pointer items-center justify-center rounded p-0 text-neutral-400 hover:bg-neutral-700 hover:text-white sm:size-6"
                 onClick={() => setIsKeyboardOpen(false)}
               >
                 <XIcon size={18} />

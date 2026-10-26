@@ -160,6 +160,7 @@ const nb = {
       codec: 'Kodek',
       updateFailed: 'Innstillingen ble ikke brukt',
       scale: 'Skala',
+      pan: 'Dra for å flytte det forstørrede bildet, dobbelttrykk for å sentrere det',
       title: 'Skjerm',
       video: 'Video-kodek',
       videoDirectTips: 'Aktiver HTTPS i "Innstillinger > Enhet" for å bruke denne modusen',
@@ -272,6 +273,7 @@ const nb = {
       placeholder: 'Vennligst angi teksten du vil lime inn',
       submit: 'Lim inn',
       virtual: 'Åpne tastatur',
+      onScreen: 'Skjermtastatur',
       readClipboard: 'Les fra utklippstavlen',
       clipboardPermissionDenied:
         'Utklippstavle tillatelse nektet. Tillat utklippstavletilgang i nettleseren din.',

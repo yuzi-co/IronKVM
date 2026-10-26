@@ -165,6 +165,7 @@ const fr = {
       codec: 'Codec',
       updateFailed: "Le réglage n'a pas été appliqué",
       scale: 'Échelle',
+      pan: "Faites glisser pour déplacer l'image agrandie, touchez deux fois pour la centrer",
       title: 'Écran',
       video: 'Mode vidéo',
       videoDirectTips: 'Activez HTTPS dans "Paramètres > Appareil" pour utiliser ce mode',
@@ -277,6 +278,7 @@ const fr = {
       placeholder: 'Veuillez saisir',
       submit: 'Soumettre',
       virtual: 'Clavier',
+      onScreen: 'Clavier virtuel',
       readClipboard: 'Lire le presse-papiers',
       clipboardPermissionDenied:
         "Accès au presse-papiers refusé. Veuillez autoriser l'accès dans votre navigateur.",

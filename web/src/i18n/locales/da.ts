@@ -159,6 +159,7 @@ const da = {
       codec: 'Codec',
       updateFailed: 'Indstillingen blev ikke anvendt',
       scale: 'Skala',
+      pan: 'Træk for at flytte det forstørrede billede, dobbelttryk for at centrere det',
       title: 'Skærm',
       video: 'Videotilstand',
       videoDirectTips: 'Aktiver HTTPS i "Indstillinger > Enhed" for at bruge denne tilstand',
@@ -271,6 +272,7 @@ const da = {
       placeholder: 'Indtast tekst',
       submit: 'Send',
       virtual: 'Tastatur',
+      onScreen: 'Skærmtastatur',
       readClipboard: 'Læs fra udklipsholder',
       clipboardPermissionDenied:
         'Udklipsholdertilladelse nægtet. Tillad venligst udklipsholderadgang i din browser.',

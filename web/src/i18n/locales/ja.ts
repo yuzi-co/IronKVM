@@ -156,6 +156,7 @@ const ja = {
       codec: 'コーデック',
       updateFailed: '設定を適用できませんでした',
       scale: '倍率',
+      pan: 'ドラッグで拡大画面を移動、ダブルタップで中央に戻す',
       title: '画面',
       video: 'ビデオモード',
       videoDirectTips: 'このモードを使用するには「設定 - デバイス」で HTTPS を有効にしてください',
@@ -268,6 +269,7 @@ const ja = {
       placeholder: '入力してください',
       submit: '送信',
       virtual: '仮想キーボード',
+      onScreen: 'スクリーンキーボード',
       readClipboard: 'クリップボードから読み取る',
       clipboardPermissionDenied:
         'クリップボードのアクセス許可が拒否されました。ブラウザでクリップボードへのアクセスを許可してください。',

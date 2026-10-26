@@ -29,7 +29,7 @@ export const Speaker = () => {
         type="button"
         aria-label={isHostIdle ? `${action}. ${t('speaker.hostIdle')}` : action}
         className={clsx(
-          'relative flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded p-0 hover:bg-neutral-700/80 hover:text-white',
+          'relative flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded p-0 hover:bg-neutral-700/80 hover:text-white max-sm:size-9',
           isHostIdle ? 'text-neutral-500' : 'text-neutral-300'
         )}
         onClick={() => setIsMuted(!isMuted)}

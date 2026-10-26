@@ -158,6 +158,7 @@ const en = {
       codec: 'Codec',
       updateFailed: 'The setting was not applied',
       scale: 'Scale',
+      pan: 'Drag to move the zoomed picture, double-tap to center it',
       title: 'Screen',
       video: 'Video Mode',
       videoDirectTips: 'Enable HTTPS in "Settings > Device" to use this mode',
@@ -269,6 +270,7 @@ const en = {
       placeholder: 'Please input',
       submit: 'Submit',
       virtual: 'Keyboard',
+      onScreen: 'On-screen keyboard',
       readClipboard: 'Read from Clipboard',
       clipboardPermissionDenied:
         'Clipboard permission denied. Please allow clipboard access in your browser.',

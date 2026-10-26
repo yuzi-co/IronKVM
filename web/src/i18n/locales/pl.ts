@@ -161,6 +161,7 @@ const pl = {
       codec: 'Kodek',
       updateFailed: 'Ustawienie nie zostało zastosowane',
       scale: 'Skala',
+      pan: 'Przeciągnij, aby przesunąć powiększony obraz, stuknij dwukrotnie, aby go wyśrodkować',
       title: 'Ekran',
       video: 'Tryb wideo',
       videoDirectTips: 'Włącz HTTPS w „Ustawienia > Urządzenie”, aby korzystać z tego trybu',
@@ -273,6 +274,7 @@ const pl = {
       placeholder: 'Proszę wprowadzić coś',
       submit: 'Prześlij',
       virtual: 'Klawiatura',
+      onScreen: 'Klawiatura ekranowa',
       readClipboard: 'Czytaj ze schowka',
       clipboardPermissionDenied:
         'Odmowa dostępu do schowka. Zezwól na dostęp do schowka w przeglądarce.',

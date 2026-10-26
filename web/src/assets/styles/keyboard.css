@@ -174,7 +174,8 @@
     height: 34px;
     padding: 0;
     border-radius: 4px;
-    font-size: 12px;
+    /* Keys are about 20 px wide at 320 px, too narrow for "Caps" at 12 px. */
+    font-size: clamp(9px, 3.2vw, 12px);
   }
 
   .keyboard-compact .simple-keyboard .hg-button.hg-double {
@@ -184,5 +185,37 @@
 
   .keyboard-compact .simple-keyboard-pad .hg-button {
     font-size: 11px;
+  }
+}
+
+/*
+ * A phone on its side is under 500 px tall, and the compact keyboard at its
+ * full key height would cover the picture. The keys get shorter so the top
+ * of the host screen stays in view. From upstream sipeed/NanoKVM#926.
+ */
+@media (max-height: 500px) and (orientation: landscape) {
+  .keyboard-compact .hg-theme-default {
+    padding: 2px;
+  }
+
+  .keyboard-compact .hg-theme-default .hg-button {
+    height: 24px;
+    padding: 0;
+    font-size: 11px;
+  }
+
+  .keyboard-compact .simple-keyboard .hg-button.hg-double {
+    font-size: 9px;
+    line-height: 10px;
+  }
+
+  .keyboard-compact .hg-theme-default .hg-row:not(:last-child),
+  .keyboard-compact .simple-keyboard-main.simple-keyboard .hg-row:first-child {
+    margin-bottom: 2px;
+  }
+
+  .keyboard-compact .hg-theme-default .hg-row .hg-button:not(:last-child),
+  .keyboard-compact .hg-theme-default .hg-row .hg-button-container {
+    margin-right: 2px;
   }
 }

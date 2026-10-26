@@ -159,6 +159,7 @@ const vi = {
       codec: 'Codec',
       updateFailed: 'Chưa áp dụng được cài đặt',
       scale: 'Quy mô',
+      pan: 'Kéo để di chuyển hình đã phóng to, chạm hai lần để căn giữa',
       title: 'Màn hình',
       video: 'Chế độ video',
       videoDirectTips: 'Bật HTTPS trong "Cài đặt > Thiết bị" để sử dụng chế độ này',
@@ -271,6 +272,7 @@ const vi = {
       placeholder: 'Vui lòng nhập',
       submit: 'Gửi',
       virtual: 'Bàn phím',
+      onScreen: 'Bàn phím ảo',
       readClipboard: 'Đọc từ Clipboard',
       clipboardPermissionDenied:
         'Quyền bảng nhớ tạm bị từ chối. Vui lòng cho phép truy cập clipboard trong trình duyệt của bạn.',

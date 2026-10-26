@@ -3,8 +3,9 @@ import { useAuth } from '@/contexts/auth.ts';
 import { Divider } from 'antd';
 import clsx from 'clsx';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
-import { GripVerticalIcon } from 'lucide-react';
+import { ChevronDownIcon, GripVerticalIcon } from 'lucide-react';
 import Draggable, { DraggableData, DraggableEvent } from 'react-draggable';
+import { useTranslation } from 'react-i18next';
 
 import { getVirtualDevice } from '@/api/virtual-device.ts';
 import { audioEntries, unknownRoomMicStatus } from '@/lib/room-mic.ts';
@@ -21,12 +22,20 @@ import {
 import { useMediaQuery } from '@/hooks/useMediaQuery.ts';
 import { useMenuBounds } from '@/hooks/useMenuBounds.ts';
 import { useMenuVisibility } from '@/hooks/useMenuVisibility.ts';
+import { useViewportWidth } from '@/hooks/useViewportWidth.ts';
 import { MenuBoundary } from '@/components/error-boundary';
 
 import { KeyboardLedStatus } from '../keyboard-led-status';
 import { Alerts } from './alerts';
 import { Fullscreen } from './fullscreen';
 import { Keyboard } from './keyboard';
+import { VirtualKeyboardToggle } from './keyboard/virtual-keyboard-toggle.tsx';
+import {
+  NARROW_MENU_MAX_WIDTH,
+  NarrowMenuEntry,
+  narrowMenuSlots,
+  splitNarrowMenu
+} from './layout.ts';
 import { Media } from './media';
 import { More } from './more.tsx';
 import { Mouse } from './mouse';
@@ -46,6 +55,7 @@ import { Tools } from './tools';
 import { Wol } from './wol';
 
 export const Menu = () => {
+  const { t } = useTranslation();
   const nodeRef = useRef<HTMLDivElement | null>(null);
   const { account } = useAuth();
   const isAdmin = account.role === 'admin';
@@ -76,8 +86,10 @@ export const Menu = () => {
   const requestMenuClose = useSetAtom(menuCloseSignalAtom);
 
   // Below the sm breakpoint the full bar is wider than a phone. The entries
-  // used most stay on the bar and the rest move into the overflow popover.
-  const isNarrow = useMediaQuery({ maxWidth: 639 });
+  // used most stay on the bar, as many as the width allows, and the rest
+  // move into the overflow popover.
+  const isNarrow = useMediaQuery({ maxWidth: NARROW_MENU_MAX_WIDTH });
+  const viewportWidth = useViewportWidth();
 
   const {
     isInitialized,
@@ -85,6 +97,7 @@ export const Menu = () => {
     isMenuHidden,
     handleHovered,
     handleMoved,
+    reveal,
     setIsMenuExpanded
   } = useMenuVisibility();
 
@@ -132,6 +145,11 @@ export const Menu = () => {
   const keyboard = !isViewer && (
     <MenuBoundary key="keyboard" name="keyboard">
       <Keyboard />
+    </MenuBoundary>
+  );
+  const virtualKeyboard = !isViewer && (
+    <MenuBoundary key="virtual-keyboard" name="virtual-keyboard">
+      <VirtualKeyboardToggle />
     </MenuBoundary>
   );
   const mouse = !isViewer && (
@@ -240,6 +258,27 @@ export const Menu = () => {
     .map((group) => group.filter(Boolean))
     .filter((group) => group.length > 0);
 
+  // The narrow bar: the entries this account has, split between the bar and
+  // More by the room there is.
+  const narrowEntries: Record<NarrowMenuEntry, ReactNode> = {
+    virtualKeyboard,
+    keyboard,
+    mouse,
+    power,
+    media,
+    screen,
+    text,
+    terminal,
+    tools,
+    speaker,
+    roomMic,
+    fullscreen
+  };
+  const narrow = splitNarrowMenu(
+    (Object.keys(narrowEntries) as NarrowMenuEntry[]).filter((entry) => !!narrowEntries[entry]),
+    narrowMenuSlots(viewportWidth)
+  );
+
   return (
     <Draggable
       nodeRef={nodeRef}
@@ -292,29 +331,26 @@ export const Menu = () => {
             <MenuBoundary name="alerts">
               <Alerts />
             </MenuBoundary>
-            <strong>
-              <div className="flex h-[30px] cursor-move items-center justify-center pl-1 text-neutral-500 select-none">
-                <GripVerticalIcon size={18} />
-              </div>
-            </strong>
-            <Divider type="vertical" />
+            {/* A phone has no room for the grip, and no use for moving
+                the bar: it sits centred at the top. */}
+            {!isNarrow && (
+              <>
+                <strong>
+                  <div className="flex h-[30px] cursor-move items-center justify-center pl-1 text-neutral-500 select-none">
+                    <GripVerticalIcon size={18} />
+                  </div>
+                </strong>
+                <Divider type="vertical" />
+              </>
+            )}
 
             {isNarrow ? (
               <>
-                {keyboard}
-                {mouse}
-                {media}
-                {power}
+                {narrow.bar.map((entry) => narrowEntries[entry])}
                 <Divider type="vertical" />
                 {settings}
                 <More>
-                  {screen}
-                  {speaker}
-                  {roomMic}
-                  {terminal}
-                  {text}
-                  {tools}
-                  {fullscreen}
+                  {narrow.more.map((entry) => narrowEntries[entry])}
                   {collapse(() => requestMenuClose((signal) => signal + 1))}
                 </More>
               </>
@@ -328,6 +364,19 @@ export const Menu = () => {
             )}
           </div>
         </div>
+
+        {/* A touch screen has no hover to bring a hidden bar back, so a
+            narrow screen gets a tab to tap. */}
+        {isMenuExpanded && isMenuHidden && isNarrow && (
+          <button
+            type="button"
+            aria-label={t('menu.expand')}
+            className="absolute top-[-10px] left-1/2 flex h-6 w-12 -translate-x-1/2 cursor-pointer items-center justify-center rounded-b-lg border-0 bg-neutral-800/80 p-0 text-neutral-300"
+            onClick={reveal}
+          >
+            <ChevronDownIcon size={18} />
+          </button>
+        )}
 
         {/* Menubar expand button */}
         {!isMenuExpanded && (

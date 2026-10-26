@@ -22,6 +22,7 @@ export interface MenuVisibilityState {
   isMenuMoved: boolean;
   handleHovered: (hovered: boolean) => void;
   handleMoved: () => void;
+  reveal: () => void;
   setIsMenuExpanded: (expanded: boolean) => void;
 }
 
@@ -117,6 +118,13 @@ export function useMenuVisibility(): MenuVisibilityState {
     }
   }, []);
 
+  // reveal brings a hidden bar back for another countdown. A tap does this
+  // on a touch screen, which has no hover to do it.
+  const reveal = useCallback(() => {
+    setIsMenuHidden(false);
+    startCountdown();
+  }, [startCountdown]);
+
   const handleMoved = useCallback(() => {
     if (!isMenuMoved) {
       setIsMenuMoved(true);
@@ -130,6 +138,7 @@ export function useMenuVisibility(): MenuVisibilityState {
     isInitialized,
     handleHovered,
     handleMoved,
+    reveal,
     setIsMenuExpanded
   };
 }

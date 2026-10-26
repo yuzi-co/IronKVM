@@ -162,6 +162,7 @@ const nl = {
       codec: 'Codec',
       updateFailed: 'De instelling is niet toegepast',
       scale: 'Schaal',
+      pan: 'Sleep om het vergrote beeld te verschuiven, dubbeltik om het te centreren',
       title: 'Scherm',
       video: 'Videomodus',
       videoDirectTips: 'Schakel HTTPS in "Instellingen > Apparaat" in om deze modus te gebruiken',
@@ -275,6 +276,7 @@ const nl = {
       placeholder: 'Voer tekst in',
       submit: 'Verzenden',
       virtual: 'Toetsenbord',
+      onScreen: 'Schermtoetsenbord',
       readClipboard: 'Lezen vanaf het Klembord',
       clipboardPermissionDenied:
         'Klembordtoestemming geweigerd. Sta klembordtoegang toe in uw browser.',

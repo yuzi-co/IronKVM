@@ -161,6 +161,7 @@ const tr = {
       codec: 'Kodek',
       updateFailed: 'Ayar uygulanmadı',
       scale: 'Ölçek',
+      pan: 'Yakınlaştırılmış görüntüyü kaydırmak için sürükleyin, ortalamak için iki kez dokunun',
       title: 'Ekran',
       video: 'Görüntü modu',
       videoDirectTips: 'kullanmak için "Ayarlar > Cihaz" HTTPS aktif edin',
@@ -273,6 +274,7 @@ const tr = {
       placeholder: 'Girdi',
       submit: 'Gönder',
       virtual: 'Klavye',
+      onScreen: 'Ekran klavyesi',
       readClipboard: 'Panodan Oku',
       clipboardPermissionDenied:
         'Pano izni reddedildi. Lütfen tarayıcınızda pano erişimine izin verin.',

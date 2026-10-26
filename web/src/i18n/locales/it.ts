@@ -162,6 +162,7 @@ const it = {
       codec: 'Codec',
       updateFailed: "L'impostazione non è stata applicata",
       scale: 'Scala',
+      pan: "Trascina per spostare l'immagine ingrandita, tocca due volte per centrarla",
       title: 'Schermo',
       video: 'Modalità video',
       videoDirectTips:
@@ -275,6 +276,7 @@ const it = {
       placeholder: 'Inserisci testo',
       submit: 'Invia',
       virtual: 'Tastiera',
+      onScreen: 'Tastiera su schermo',
       readClipboard: 'Leggi dagli Appunti',
       clipboardPermissionDenied:
         "Autorizzazione Appunti negata. Consenti l'accesso agli appunti nel tuo browser.",

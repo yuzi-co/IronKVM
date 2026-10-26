@@ -14,7 +14,7 @@ export const Collapse = ({ toggleMenu }: CollapseProps) => {
       <button
         type="button"
         aria-label={t('menu.collapse')}
-        className="flex size-[30px] cursor-pointer items-center justify-center rounded p-0 text-neutral-300 hover:bg-neutral-700/80 hover:text-white"
+        className="flex size-[30px] cursor-pointer items-center justify-center rounded p-0 text-neutral-300 hover:bg-neutral-700/80 hover:text-white max-sm:size-9"
         onClick={() => toggleMenu(false)}
       >
         <XIcon size={18} />

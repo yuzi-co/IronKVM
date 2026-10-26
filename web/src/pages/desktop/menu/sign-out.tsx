@@ -40,7 +40,7 @@ export const SignOut = () => {
         <button
           type="button"
           aria-label={t('settings.account.logoutBtn')}
-          className="flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded p-0 text-neutral-300 hover:bg-neutral-700/80 hover:text-white"
+          className="flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded p-0 text-neutral-300 hover:bg-neutral-700/80 hover:text-white max-sm:size-9"
         >
           <LogOutIcon size={18} />
         </button>

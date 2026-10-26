@@ -480,7 +480,7 @@ export const Settings = () => {
         <button
           type="button"
           aria-label={t('settings.title')}
-          className="flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded p-0 hover:bg-neutral-700/80"
+          className="flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded p-0 hover:bg-neutral-700/80 max-sm:size-9"
           onClick={() => openModal()}
         >
           <Badge dot={isUpdateAvailable} color="blue" offset={[0, 2]}>

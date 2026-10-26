@@ -163,6 +163,7 @@ const ca = {
       codec: 'Còdec',
       updateFailed: "No s'ha aplicat la configuració",
       scale: 'Escala',
+      pan: 'Arrossega per moure la imatge ampliada; toca dues vegades per centrar-la',
       title: 'Pantalla',
       video: 'Mode de vídeo',
       videoDirectTips: "Activa HTTPS a 'Configuració > Dispositiu' per utilitzar aquest mode",
@@ -275,6 +276,7 @@ const ca = {
       placeholder: 'Escriu aquí',
       submit: 'Envia',
       virtual: 'Teclat',
+      onScreen: 'Teclat en pantalla',
       readClipboard: 'Llegir des del porta-retalls',
       clipboardPermissionDenied:
         "S'ha denegat el permís del porta-retalls. Permet l'accés al porta-retalls al teu navegador.",

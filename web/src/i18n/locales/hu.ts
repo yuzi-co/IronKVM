@@ -161,6 +161,7 @@ const hu = {
       codec: 'Kodek',
       updateFailed: 'A beállítás nem lépett érvénybe',
       scale: 'Skála',
+      pan: 'Húzással mozgathatja a nagyított képet, dupla koppintással középre igazítja',
       title: 'Képernyő',
       video: 'Videó mód',
       videoDirectTips:
@@ -274,6 +275,7 @@ const hu = {
       placeholder: 'Írja be',
       submit: 'Elküldés',
       virtual: 'Billentyűzet',
+      onScreen: 'Képernyő-billentyűzet',
       readClipboard: 'Olvasás a vágólapról',
       clipboardPermissionDenied:
         'A vágólap engedélye megtagadva. Kérjük, engedélyezze a vágólaphoz való hozzáférést a böngészőjében.',

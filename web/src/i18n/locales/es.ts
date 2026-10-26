@@ -165,6 +165,7 @@ const es = {
       codec: 'Códec',
       updateFailed: 'No se aplicó el ajuste',
       scale: 'Escala',
+      pan: 'Arrastra para mover la imagen ampliada; toca dos veces para centrarla',
       title: 'Pantalla',
       video: 'Modo de vídeo',
       videoDirectTips: 'Habilita HTTPS en "Ajustes > Dispositivo" para usar este modo',
@@ -277,6 +278,7 @@ const es = {
       placeholder: 'Por favor, introduce el texto',
       submit: 'Enviar',
       virtual: 'Teclado virtual',
+      onScreen: 'Teclado en pantalla',
       readClipboard: 'Leer del portapapeles',
       clipboardPermissionDenied:
         'Permiso de portapapeles denegado. Por favor, permite el acceso al portapapeles en tu navegador.',
