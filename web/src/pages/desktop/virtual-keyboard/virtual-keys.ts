@@ -127,7 +127,7 @@ export const keyboardOptions = {
     BracketRight: '}<br/>]',
     Backslash: '|<br>\\',
 
-    '{capslock}': 'Caps',
+    '{capslock}': '⇪',
     KeyA: 'A',
     KeyS: 'S',
     KeyD: 'D',
@@ -434,7 +434,7 @@ export const keyboardCompactPadOptions = {
 export const compactDisplay: Record<string, string> = {
   '{backspace}': '⌫',
   '{enter}': '↵',
-  '{capslock}': 'Caps',
+  '{capslock}': '⇪',
   '{shiftleft}': '⇧',
   '{shiftright}': '⇧'
 };
