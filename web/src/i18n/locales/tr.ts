@@ -522,6 +522,25 @@ const tr = {
       resetHidFailed: 'USB HID sıfırlanamadı'
     },
     image: {
+      create: {
+        button: 'Yeni değişim imajı',
+        title: 'Yeni değişim imajı',
+        desc: 'Ana bilgisayarla dosya alışverişi için boş bir disk. Dosya tarayıcısından doldurun, ardından disk sürücüsüne takın.',
+        name: 'Ad',
+        nameRequired: 'Bir ad girin.',
+        nameInvalid: 'Geçerli bir dosya adı değil.',
+        nameIso: 'Değişim imajı bir disktir: .iso değil .img kullanın.',
+        size: 'Boyut',
+        custom: 'Özel',
+        room: 'Cihaza en fazla {{max}} sığar. Alan yalnızca dosyalar yazıldıkça kullanılır.',
+        sizeTooSmall: 'En az {{min}}.',
+        sizeTooLarge: 'En fazla {{max}}: cihazda daha fazla yer yok.',
+        fs: 'Dosya sistemi',
+        exfatHint: 'Windows, macOS ve Linux okuyup yazabilir. Dosya boyutu sınırı yok.',
+        fat32Hint: 'Eski ana bilgisayarlar ve UEFI ürün yazılımı için. Dosyalar 4 GiB’den küçük olmalı.',
+        submit: 'Oluştur',
+        failed: 'İmaj oluşturulamadı',
+      },
       files: {
         browse: 'Dosyalara göz at',
         hostWrites:

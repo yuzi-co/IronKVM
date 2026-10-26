@@ -525,6 +525,25 @@ const ca = {
       resetHidFailed: "No s'ha pogut reiniciar l'HID USB"
     },
     image: {
+      create: {
+        button: 'Nova imatge d\'intercanvi',
+        title: 'Nova imatge d\'intercanvi',
+        desc: 'Un disc buit per intercanviar fitxers amb l\'amfitrió. Omple\'l des de l\'explorador de fitxers i després insereix-lo a la unitat de disc.',
+        name: 'Nom',
+        nameRequired: 'Introdueix un nom.',
+        nameInvalid: 'No és un nom de fitxer vàlid.',
+        nameIso: 'Una imatge d\'intercanvi és un disc: fes servir .img, no .iso.',
+        size: 'Mida',
+        custom: 'Personalitzada',
+        room: 'Hi caben fins a {{max}} al dispositiu. L\'espai només s\'ocupa a mesura que s\'escriuen fitxers.',
+        sizeTooSmall: 'Com a mínim {{min}}.',
+        sizeTooLarge: 'Com a màxim {{max}}: el dispositiu no té més espai.',
+        fs: 'Sistema de fitxers',
+        exfatHint: 'Windows, macOS i Linux el llegeixen i escriuen. Sense límit de mida de fitxer.',
+        fat32Hint: 'Per a amfitrions antics i firmware UEFI. Els fitxers han de ser de menys de 4 GiB.',
+        submit: 'Crea',
+        failed: 'No s\'ha pogut crear la imatge',
+      },
       files: {
         browse: 'Explora els fitxers',
         hostWrites:

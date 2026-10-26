@@ -504,6 +504,25 @@ const zh_tw = {
       resetHidFailed: 'USB HID 重設失敗'
     },
     image: {
+      create: {
+        button: '新增交換映像檔',
+        title: '新增交換映像檔',
+        desc: '用於與主機交換檔案的空磁碟。先在檔案瀏覽器中放入檔案，再插入磁碟機。',
+        name: '名稱',
+        nameRequired: '請輸入名稱。',
+        nameInvalid: '檔案名稱無效。',
+        nameIso: '交換映像檔是磁碟：請使用 .img，而非 .iso。',
+        size: '大小',
+        custom: '自訂',
+        room: '裝置最多可容納 {{max}}。只有寫入檔案時才會佔用空間。',
+        sizeTooSmall: '至少 {{min}}。',
+        sizeTooLarge: '最多 {{max}}：裝置沒有更多空間。',
+        fs: '檔案系統',
+        exfatHint: 'Windows、macOS 和 Linux 皆可讀寫。無檔案大小限制。',
+        fat32Hint: '適用於較舊的主機與 UEFI 韌體。檔案必須小於 4 GiB。',
+        submit: '建立',
+        failed: '無法建立映像檔',
+      },
       files: {
         browse: '瀏覽檔案',
         hostWrites: '主機可以寫入此映像檔。請退出，或以唯讀方式插入後再瀏覽。',

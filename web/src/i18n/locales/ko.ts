@@ -512,6 +512,25 @@ const ko = {
       resetHidFailed: 'USB HID를 초기화하지 못했습니다'
     },
     image: {
+      create: {
+        button: '새 교환용 이미지',
+        title: '새 교환용 이미지',
+        desc: '호스트와 파일을 주고받기 위한 빈 디스크입니다. 파일 브라우저에서 채운 뒤 디스크 드라이브에 삽입하세요.',
+        name: '이름',
+        nameRequired: '이름을 입력하세요.',
+        nameInvalid: '올바른 파일 이름이 아닙니다.',
+        nameIso: '교환용 이미지는 디스크입니다. .iso가 아닌 .img를 사용하세요.',
+        size: '크기',
+        custom: '사용자 지정',
+        room: '장치에 최대 {{max}}까지 만들 수 있습니다. 공간은 파일을 쓸 때만 사용됩니다.',
+        sizeTooSmall: '최소 {{min}}이어야 합니다.',
+        sizeTooLarge: '최대 {{max}}: 장치에 더 이상 공간이 없습니다.',
+        fs: '파일 시스템',
+        exfatHint: 'Windows, macOS, Linux에서 읽고 쓸 수 있습니다. 파일 크기 제한이 없습니다.',
+        fat32Hint: '오래된 호스트와 UEFI 펌웨어용입니다. 파일은 4 GiB보다 작아야 합니다.',
+        submit: '만들기',
+        failed: '이미지를 만들지 못했습니다',
+      },
       files: {
         browse: '파일 탐색',
         hostWrites: '호스트가 이 이미지에 쓸 수 있습니다. 탐색하려면 꺼내거나 읽기 전용으로 삽입하세요.',

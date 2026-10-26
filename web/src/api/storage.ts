@@ -106,3 +106,19 @@ export function uploadFile(
 export function deleteFile(file: string, path: string) {
   return http.post('/api/storage/files/delete', { file, path });
 }
+
+// Exchange images: a new, empty disk image for swapping files with the host.
+
+export type ImageFs = 'exfat' | 'fat32';
+
+// The sizes a new image may have, in bytes; max is the free space on the
+// device less a reserve.
+export function getImageSpace() {
+  return http.get('/api/storage/image/space');
+}
+
+// Create an empty image of size bytes (whole MiB). The answer's data.file is
+// its path, as the image list names it.
+export function createImage(name: string, size: number, fs: ImageFs) {
+  return http.post('/api/storage/image/create', { name, size, fs });
+}

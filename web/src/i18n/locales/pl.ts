@@ -524,6 +524,25 @@ const pl = {
       resetHidFailed: 'Nie udało się zresetować USB HID'
     },
     image: {
+      create: {
+        button: 'Nowy obraz wymiany',
+        title: 'Nowy obraz wymiany',
+        desc: 'Pusty dysk do wymiany plików z hostem. Wypełnij go w przeglądarce plików, a potem włóż do napędu dysku.',
+        name: 'Nazwa',
+        nameRequired: 'Podaj nazwę.',
+        nameInvalid: 'Nieprawidłowa nazwa pliku.',
+        nameIso: 'Obraz wymiany to dysk: użyj .img, nie .iso.',
+        size: 'Rozmiar',
+        custom: 'Własny',
+        room: 'Na urządzeniu zmieści się do {{max}}. Miejsce jest zajmowane dopiero przy zapisie plików.',
+        sizeTooSmall: 'Co najmniej {{min}}.',
+        sizeTooLarge: 'Najwyżej {{max}}: urządzenie nie ma więcej miejsca.',
+        fs: 'System plików',
+        exfatHint: 'Windows, macOS i Linux go odczytują i zapisują. Bez limitu rozmiaru pliku.',
+        fat32Hint: 'Dla starszych hostów i firmware UEFI. Pliki muszą być mniejsze niż 4 GiB.',
+        submit: 'Utwórz',
+        failed: 'Nie udało się utworzyć obrazu',
+      },
       files: {
         browse: 'Przeglądaj pliki',
         hostWrites:

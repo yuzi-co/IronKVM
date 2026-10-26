@@ -525,6 +525,25 @@ const hu = {
       resetHidFailed: 'Az USB HID újraindítása sikertelen'
     },
     image: {
+      create: {
+        button: 'Új cserelemezkép',
+        title: 'Új cserelemezkép',
+        desc: 'Üres lemez a gazdagéppel való fájlcseréhez. Töltsd fel a fájlböngészőben, majd helyezd be a lemezmeghajtóba.',
+        name: 'Név',
+        nameRequired: 'Adj meg egy nevet.',
+        nameInvalid: 'Érvénytelen fájlnév.',
+        nameIso: 'A cserelemezkép lemez: .img legyen, ne .iso.',
+        size: 'Méret',
+        custom: 'Egyéni',
+        room: 'Legfeljebb {{max}} fér el az eszközön. A hely csak a fájlok írásakor fogy.',
+        sizeTooSmall: 'Legalább {{min}}.',
+        sizeTooLarge: 'Legfeljebb {{max}}: az eszközön nincs több hely.',
+        fs: 'Fájlrendszer',
+        exfatHint: 'Windows, macOS és Linux olvassa és írja. Nincs fájlméret-korlát.',
+        fat32Hint: 'Régebbi gazdagépekhez és UEFI firmware-hez. A fájlok 4 GiB-nál kisebbek legyenek.',
+        submit: 'Létrehozás',
+        failed: 'A lemezkép létrehozása sikertelen',
+      },
       files: {
         browse: 'Fájlok böngészése',
         hostWrites:

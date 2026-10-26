@@ -522,6 +522,25 @@ const id = {
       resetHidFailed: 'Reset HID USB gagal'
     },
     image: {
+      create: {
+        button: 'Image pertukaran baru',
+        title: 'Image pertukaran baru',
+        desc: 'Disk kosong untuk bertukar file dengan host. Isi dari penjelajah file, lalu masukkan ke drive disk.',
+        name: 'Nama',
+        nameRequired: 'Masukkan nama.',
+        nameInvalid: 'Nama file tidak valid.',
+        nameIso: 'Image pertukaran adalah disk: gunakan .img, bukan .iso.',
+        size: 'Ukuran',
+        custom: 'Kustom',
+        room: 'Hingga {{max}} muat di perangkat. Ruang baru terpakai saat file ditulis.',
+        sizeTooSmall: 'Minimal {{min}}.',
+        sizeTooLarge: 'Maksimal {{max}}: perangkat tidak punya ruang lagi.',
+        fs: 'Sistem file',
+        exfatHint: 'Windows, macOS, dan Linux dapat membaca dan menulisnya. Tanpa batas ukuran file.',
+        fat32Hint: 'Untuk host lama dan firmware UEFI. File harus lebih kecil dari 4 GiB.',
+        submit: 'Buat',
+        failed: 'Gagal membuat image',
+      },
       files: {
         browse: 'Jelajahi file',
         hostWrites:

@@ -519,6 +519,25 @@ const en = {
       resetHidFailed: 'USB HID reset failed'
     },
     image: {
+      create: {
+        button: 'New exchange image',
+        title: 'New exchange image',
+        desc: 'An empty disk for swapping files with the host. Fill it from the file browser, then insert it into the disk drive.',
+        name: 'Name',
+        nameRequired: 'Enter a name.',
+        nameInvalid: 'Not a valid file name.',
+        nameIso: 'An exchange image is a disk: use .img, not .iso.',
+        size: 'Size',
+        custom: 'Custom',
+        room: 'Up to {{max}} fits on the device. Space is used only as files are written.',
+        sizeTooSmall: 'At least {{min}}.',
+        sizeTooLarge: 'At most {{max}}: the device has no more room.',
+        fs: 'Filesystem',
+        exfatHint: 'Windows, macOS and Linux read and write it. No file size limit.',
+        fat32Hint: 'For older hosts and UEFI firmware. Files must be smaller than 4 GiB.',
+        submit: 'Create',
+        failed: 'Could not create the image',
+      },
       files: {
         browse: 'Browse files',
         hostWrites:

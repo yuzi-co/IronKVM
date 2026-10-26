@@ -527,6 +527,25 @@ const nl = {
       resetHidFailed: 'USB-HID resetten mislukt'
     },
     image: {
+      create: {
+        button: 'Nieuwe uitwisselingsimage',
+        title: 'Nieuwe uitwisselingsimage',
+        desc: 'Een lege schijf om bestanden met de host uit te wisselen. Vul hem in de bestandsbrowser en plaats hem daarna in het schijfstation.',
+        name: 'Naam',
+        nameRequired: 'Voer een naam in.',
+        nameInvalid: 'Geen geldige bestandsnaam.',
+        nameIso: 'Een uitwisselingsimage is een schijf: gebruik .img, niet .iso.',
+        size: 'Grootte',
+        custom: 'Aangepast',
+        room: 'Er past tot {{max}} op het apparaat. Ruimte wordt pas gebruikt als er bestanden worden geschreven.',
+        sizeTooSmall: 'Minstens {{min}}.',
+        sizeTooLarge: 'Hoogstens {{max}}: het apparaat heeft niet meer ruimte.',
+        fs: 'Bestandssysteem',
+        exfatHint: 'Windows, macOS en Linux lezen en schrijven het. Geen limiet op bestandsgrootte.',
+        fat32Hint: 'Voor oudere hosts en UEFI-firmware. Bestanden moeten kleiner zijn dan 4 GiB.',
+        submit: 'Aanmaken',
+        failed: 'Kan de image niet aanmaken',
+      },
       files: {
         browse: 'Bestanden bekijken',
         hostWrites:

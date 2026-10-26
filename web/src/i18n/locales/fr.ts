@@ -528,6 +528,25 @@ const fr = {
       resetHidFailed: 'La réinitialisation du HID USB a échoué'
     },
     image: {
+      create: {
+        button: 'Nouvelle image d\'échange',
+        title: 'Nouvelle image d\'échange',
+        desc: 'Un disque vide pour échanger des fichiers avec l\'hôte. Remplissez-le depuis le navigateur de fichiers, puis insérez-le dans le lecteur de disque.',
+        name: 'Nom',
+        nameRequired: 'Saisissez un nom.',
+        nameInvalid: 'Nom de fichier non valide.',
+        nameIso: 'Une image d\'échange est un disque : utilisez .img, pas .iso.',
+        size: 'Taille',
+        custom: 'Personnalisée',
+        room: 'Jusqu\'à {{max}} tient sur l\'appareil. L\'espace n\'est occupé qu\'à mesure que des fichiers sont écrits.',
+        sizeTooSmall: 'Au moins {{min}}.',
+        sizeTooLarge: 'Au plus {{max}} : l\'appareil n\'a pas plus de place.',
+        fs: 'Système de fichiers',
+        exfatHint: 'Windows, macOS et Linux le lisent et l’écrivent. Aucune limite de taille de fichier.',
+        fat32Hint: 'Pour les hôtes anciens et le firmware UEFI. Les fichiers doivent faire moins de 4 Gio.',
+        submit: 'Créer',
+        failed: 'Impossible de créer l\'image',
+      },
       files: {
         browse: 'Parcourir les fichiers',
         hostWrites:

@@ -17,6 +17,7 @@ import { StatusDot } from '@/components/status-dot.tsx';
 import { Drives } from '../image/drives.tsx';
 import { FilesModal } from '../image/files.tsx';
 import { Images } from '../image/images.tsx';
+import { NewImageButton, NewImageModal } from '../image/new-image.tsx';
 import { TipsButton, TipsModal } from '../image/tips.tsx';
 import { ventoyUsable } from '../image/ventoy-status.ts';
 import { Ventoy } from '../image/ventoy.tsx';
@@ -42,6 +43,8 @@ export const Media = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isTipsOpen, setIsTipsOpen] = useState(false);
   const [browsing, setBrowsing] = useState('');
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [createKey, setCreateKey] = useState(0);
   const [drives, setDrives] = useState<api.Drive[]>([]);
   const [diskRo, setDiskRo] = useState(false);
   const [images, setImages] = useState<string[]>([]);
@@ -128,6 +131,19 @@ export const Media = () => {
     setBrowsing(image);
   }
 
+  // The new image dialog is outside the popover as well. A created image
+  // opens in the file browser, ready to take files for the host.
+  function openCreate() {
+    requestMenuClose((signal) => signal + 1);
+    setCreateKey((key) => key + 1);
+    setIsCreateOpen(true);
+  }
+
+  function handleCreated(image: string) {
+    setIsCreateOpen(false);
+    setBrowsing(image);
+  }
+
   // MenuItem keeps the submenu count; this follows the open state for the
   // polling, the keyboard lock and the transfer status.
   const handleOpenChange = useStableCallback((open: boolean) => {
@@ -176,6 +192,7 @@ export const Media = () => {
           onDrivesChanged={refreshDrives}
           onBrowse={openFiles}
         />
+        <NewImageButton onClick={openCreate} />
         {/* Ventoy shows once it is installed; Settings sets it up. */}
         {ventoyUsable(ventoy) && (
           <Ventoy
@@ -206,6 +223,12 @@ export const Media = () => {
       <MenuItem title={title} icon={icon} content={content} onOpenChange={handleOpenChange} />
       <TipsModal open={isTipsOpen} onClose={() => setIsTipsOpen(false)} />
       <FilesModal key={browsing} image={browsing} onClose={() => setBrowsing('')} />
+      <NewImageModal
+        key={createKey}
+        open={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+        onCreated={handleCreated}
+      />
     </>
   );
 };

@@ -521,6 +521,25 @@ const vi = {
       resetHidFailed: 'Đặt lại USB HID thất bại'
     },
     image: {
+      create: {
+        button: 'Ảnh trao đổi mới',
+        title: 'Ảnh trao đổi mới',
+        desc: 'Một ổ đĩa trống để trao đổi tệp với máy chủ. Thêm tệp từ trình duyệt tệp, rồi lắp vào ổ đĩa.',
+        name: 'Tên',
+        nameRequired: 'Nhập tên.',
+        nameInvalid: 'Tên tệp không hợp lệ.',
+        nameIso: 'Ảnh trao đổi là ổ đĩa: dùng .img, không phải .iso.',
+        size: 'Dung lượng',
+        custom: 'Tùy chỉnh',
+        room: 'Thiết bị chứa được tối đa {{max}}. Dung lượng chỉ bị dùng khi ghi tệp.',
+        sizeTooSmall: 'Tối thiểu {{min}}.',
+        sizeTooLarge: 'Tối đa {{max}}: thiết bị không còn chỗ.',
+        fs: 'Hệ thống tệp',
+        exfatHint: 'Windows, macOS và Linux đọc và ghi được. Không giới hạn kích thước tệp.',
+        fat32Hint: 'Cho máy chủ cũ và firmware UEFI. Tệp phải nhỏ hơn 4 GiB.',
+        submit: 'Tạo',
+        failed: 'Không thể tạo ảnh',
+      },
       files: {
         browse: 'Duyệt tệp',
         hostWrites:

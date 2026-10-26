@@ -522,6 +522,25 @@ const nb = {
       resetHidFailed: 'Tilbakestilling av USB HID mislyktes'
     },
     image: {
+      create: {
+        button: 'Nytt utvekslingsbilde',
+        title: 'Nytt utvekslingsbilde',
+        desc: 'En tom disk for å utveksle filer med verten. Fyll den fra filutforskeren, og sett den deretter inn i diskstasjonen.',
+        name: 'Navn',
+        nameRequired: 'Skriv inn et navn.',
+        nameInvalid: 'Ikke et gyldig filnavn.',
+        nameIso: 'Et utvekslingsbilde er en disk: bruk .img, ikke .iso.',
+        size: 'Størrelse',
+        custom: 'Egendefinert',
+        room: 'Opptil {{max}} får plass på enheten. Plass brukes først når filer skrives.',
+        sizeTooSmall: 'Minst {{min}}.',
+        sizeTooLarge: 'Høyst {{max}}: enheten har ikke mer plass.',
+        fs: 'Filsystem',
+        exfatHint: 'Windows, macOS og Linux kan lese og skrive det. Ingen grense for filstørrelse.',
+        fat32Hint: 'For eldre verter og UEFI-fastvare. Filer må være mindre enn 4 GiB.',
+        submit: 'Opprett',
+        failed: 'Kunne ikke opprette bildet',
+      },
       files: {
         browse: 'Bla gjennom filer',
         hostWrites:

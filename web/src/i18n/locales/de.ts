@@ -532,6 +532,25 @@ const de = {
       resetHidFailed: 'USB-HID konnte nicht zurückgesetzt werden'
     },
     image: {
+      create: {
+        button: 'Neues Austausch-Image',
+        title: 'Neues Austausch-Image',
+        desc: 'Ein leerer Datenträger zum Austausch von Dateien mit dem Host. Im Dateibrowser befüllen, dann ins Laufwerk einlegen.',
+        name: 'Name',
+        nameRequired: 'Namen eingeben.',
+        nameInvalid: 'Kein gültiger Dateiname.',
+        nameIso: 'Ein Austausch-Image ist ein Datenträger: .img verwenden, nicht .iso.',
+        size: 'Größe',
+        custom: 'Eigene',
+        room: 'Bis zu {{max}} passen auf das Gerät. Platz wird erst belegt, wenn Dateien geschrieben werden.',
+        sizeTooSmall: 'Mindestens {{min}}.',
+        sizeTooLarge: 'Höchstens {{max}}: Mehr Platz hat das Gerät nicht.',
+        fs: 'Dateisystem',
+        exfatHint: 'Windows, macOS und Linux lesen und schreiben es. Keine Grenze für die Dateigröße.',
+        fat32Hint: 'Für ältere Hosts und UEFI-Firmware. Dateien müssen kleiner als 4 GiB sein.',
+        submit: 'Erstellen',
+        failed: 'Image konnte nicht erstellt werden',
+      },
       files: {
         browse: 'Dateien durchsuchen',
         hostWrites:
