@@ -1,0 +1,76 @@
+// Browser key events are not a reliable stream of matched pairs. A keyup can be
+// lost to an OS shortcut, an Alt menu or a dialog that takes focus inside the
+// page, and an input-method composition can end without its compositionend
+// reaching the document. Every key event carries the browser's own view of the
+// modifiers, though, so these helpers derive the true state from each new event
+// rather than waiting for the next blur to clean up (ironkvm-dist#154).
+
+export interface ModifierState {
+  readonly ctrlKey: boolean;
+  readonly shiftKey: boolean;
+  readonly altKey: boolean;
+  readonly metaKey: boolean;
+  getModifierState(key: string): boolean;
+}
+
+type Family = {
+  codes: readonly string[];
+  held: (event: ModifierState, code: string) => boolean;
+};
+
+const FAMILIES: readonly Family[] = [
+  { codes: ['ControlLeft', 'ControlRight'], held: (event) => event.ctrlKey },
+  { codes: ['ShiftLeft', 'ShiftRight'], held: (event) => event.shiftKey },
+  {
+    codes: ['AltLeft', 'AltRight'],
+    // Linux reports a right Alt that acts as AltGr as AltGraph, not as Alt.
+    // Windows reports AltGr as Ctrl+Alt, which altKey covers.
+    held: (event, code) =>
+      event.altKey || (code === 'AltRight' && event.getModifierState('AltGraph'))
+  },
+  { codes: ['MetaLeft', 'MetaRight'], held: (event) => event.metaKey }
+];
+
+/**
+ * Modifiers recorded as pressed that the event says are released. The family of
+ * the key behind the event is left alone: browsers disagree on whether a
+ * modifier's own keydown and keyup already carry its new state, and with both
+ * sides of one held, the flag cannot say which side was let go.
+ */
+export function staleModifiers(
+  pressed: Iterable<string>,
+  event: ModifierState,
+  eventCode: string
+): string[] {
+  const pressedSet = new Set(pressed);
+  const stale: string[] = [];
+
+  for (const family of FAMILIES) {
+    if (family.codes.includes(eventCode)) continue;
+    for (const code of family.codes) {
+      if (pressedSet.has(code) && !family.held(event, code)) stale.push(code);
+    }
+  }
+
+  return stale;
+}
+
+export interface CompositionKeyEvent {
+  readonly isComposing: boolean;
+  readonly keyCode: number;
+  readonly key: string;
+}
+
+// keyCode 229, key "Process", marks a key the input method is consuming.
+const IME_KEY_CODE = 229;
+
+/**
+ * Whether a keydown belongs to an input-method composition. Once one has
+ * started, a keydown that is neither flagged as composing nor addressed to the
+ * input method shows it is over, even if its compositionend never arrived.
+ */
+export function isCompositionKey(started: boolean, event: CompositionKeyEvent): boolean {
+  if (event.isComposing) return true;
+  if (!started) return false;
+  return event.keyCode === IME_KEY_CODE || event.key === 'Process';
+}
