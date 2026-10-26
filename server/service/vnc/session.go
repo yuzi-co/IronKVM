@@ -73,6 +73,9 @@ type session struct {
 	width, height int
 	pending       bool
 	incremental   bool
+	// extKeyAck is set when the client lists QEMU Extended Key Event, and
+	// cleared when the next update carries the pseudo-rectangle.
+	extKeyAck bool
 
 	// notify wakes the writer when a request arrives.
 	notify chan struct{}
@@ -288,7 +291,7 @@ func (s *session) read(input Input) error {
 			if count > maxEncodings {
 				return fmt.Errorf("the client listed %d encodings", count)
 			}
-			tight, desktopSize := false, false
+			tight, desktopSize, extKey := false, false, false
 			for range count {
 				if _, err := io.ReadFull(s.reader, buf[:4]); err != nil {
 					return err
@@ -298,10 +301,16 @@ func (s *session) read(input Input) error {
 					tight = true
 				case encodingDesktopSize:
 					desktopSize = true
+				case encodingQEMUExtendedKeyEvent:
+					extKey = true
 				}
 			}
 			s.mu.Lock()
 			s.tight, s.desktopSize = tight, desktopSize
+			// Acknowledged on every SetEncodings that lists it, as QEMU
+			// does. Keycodes are accepted whatever the list says, because
+			// a client sends them only once acknowledged.
+			s.extKeyAck = extKey
 			s.mu.Unlock()
 
 		case msgFramebufferUpdateRequest:
@@ -315,6 +324,25 @@ func (s *session) read(input Input) error {
 				return err
 			}
 			if report := keys.event(buf[0] != 0, binary.BigEndian.Uint32(buf[3:7])); report != nil {
+				input.Keyboard(report)
+			}
+
+		case msgQEMU:
+			submessage, err := s.reader.ReadByte()
+			if err != nil {
+				return err
+			}
+			if submessage != qemuExtendedKeyEvent {
+				// The length of any other submessage is unknown here.
+				return fmt.Errorf("unknown QEMU client message %d", submessage)
+			}
+			if _, err := io.ReadFull(s.reader, buf[:10]); err != nil {
+				return err
+			}
+			down := binary.BigEndian.Uint16(buf[0:2]) != 0
+			sym := binary.BigEndian.Uint32(buf[2:6])
+			code := binary.BigEndian.Uint32(buf[6:10])
+			if report := keys.scancodeEvent(down, code, sym); report != nil {
 				input.Keyboard(report)
 			}
 
@@ -398,6 +426,16 @@ func (s *session) clearRequest() {
 	s.mu.Lock()
 	s.pending = false
 	s.mu.Unlock()
+}
+
+// takeExtKeyAck reports whether the next update must carry the QEMU Extended
+// Key Event pseudo-rectangle, and clears the need.
+func (s *session) takeExtKeyAck() bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	ack := s.extKeyAck
+	s.extKeyAck = false
+	return ack
 }
 
 // write answers update requests with frames from the stream.
@@ -498,7 +536,9 @@ func (s *session) write(frames FrameSubscription) error {
 
 		s.clearRequest()
 		_ = s.conn.SetWriteDeadline(time.Now().Add(writeTimeout))
-		n, err := writeJPEGUpdate(s.conn, width, height, frame)
+		// The ack rides with a frame rather than in an update of its own,
+		// so it answers a request the client made.
+		n, err := writeJPEGUpdate(s.conn, width, height, frame, s.takeExtKeyAck())
 		if err != nil {
 			return err
 		}

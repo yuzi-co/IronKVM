@@ -31,16 +31,23 @@ const (
 	msgKeyEvent                 byte = 4
 	msgPointerEvent             byte = 5
 	msgClientCutText            byte = 6
+	msgQEMU                     byte = 255
 )
+
+// QEMU client message submessage types.
+const qemuExtendedKeyEvent byte = 0
 
 // Server to client message types.
 const msgFramebufferUpdate byte = 0
 
 // Encodings. Tight is the only one the server sends pixels in; DesktopSize is
-// the pseudo-encoding that tells the client the framebuffer changed size.
+// the pseudo-encoding that tells the client the framebuffer changed size. A
+// client that lists QEMU Extended Key Event can send keycodes, and does once
+// the server answers with the empty pseudo-rectangle of that encoding.
 const (
-	encodingTight       int32 = 7
-	encodingDesktopSize int32 = -223
+	encodingTight                int32 = 7
+	encodingDesktopSize          int32 = -223
+	encodingQEMUExtendedKeyEvent int32 = -258
 )
 
 // maxEncodings bounds SetEncodings. Real clients list about twenty.

@@ -126,8 +126,9 @@ func keysymRune(sym uint32) (rune, bool) {
 	return 0, false
 }
 
-// keyAction is what one keysym presses: a modifier, or a key with the
-// modifiers the US layout needs to type the character on it.
+// keyAction is what one key event presses: a modifier, or a key with the
+// modifiers the US layout needs to type the character on it. A keycode never
+// implies a modifier.
 type keyAction struct {
 	modifier byte
 	code     byte
@@ -154,9 +155,25 @@ func mapKeysym(sym uint32) (keyAction, bool) {
 	return keyAction{code: byte(strokes[0].Code), implied: byte(strokes[0].Modifiers)}, true
 }
 
-// heldKey is a key down on the host, with the keysym that pressed it.
+// keyID names a key the client holds: by keysym for a KeyEvent, by keycode
+// for a QEMU Extended Key Event. The two never match each other, so each
+// release finds the key its own kind of message pressed.
+type keyID struct {
+	scancode bool
+	value    uint32
+}
+
+// action is what the key presses.
+func (id keyID) action() (keyAction, bool) {
+	if id.scancode {
+		return mapScancode(id.value)
+	}
+	return mapKeysym(id.value)
+}
+
+// heldKey is a key down on the host, with the key that pressed it.
 type heldKey struct {
-	sym     uint32
+	id      keyID
 	code    byte
 	implied byte
 }
@@ -166,23 +183,38 @@ type heldKey struct {
 // names it differently by then: a client that pressed "!" and let go of Shift
 // first releases "1".
 type keyboard struct {
-	modifiers map[uint32]byte
+	modifiers map[keyID]byte
 	keys      []heldKey
 }
 
 func newKeyboard() *keyboard {
-	return &keyboard{modifiers: make(map[uint32]byte)}
+	return &keyboard{modifiers: make(map[keyID]byte)}
 }
 
 // event applies one KeyEvent and returns the report to send, or nil when the
 // report would not change.
 func (k *keyboard) event(down bool, sym uint32) []byte {
+	return k.apply(down, keyID{value: sym})
+}
+
+// scancodeEvent applies one QEMU Extended Key Event. The keycode decides the
+// key and the keysym is ignored, so the host's layout types what the user
+// pressed. A keycode the table does not know falls back to the keysym, which
+// is what the client would have sent in a KeyEvent.
+func (k *keyboard) scancodeEvent(down bool, code, sym uint32) []byte {
+	if _, ok := mapScancode(code); ok {
+		return k.apply(down, keyID{scancode: true, value: code})
+	}
+	return k.event(down, sym)
+}
+
+func (k *keyboard) apply(down bool, id keyID) []byte {
 	before := k.report()
 
 	if down {
-		k.press(sym)
+		k.press(id)
 	} else {
-		k.release(sym)
+		k.release(id)
 	}
 
 	after := k.report()
@@ -192,34 +224,34 @@ func (k *keyboard) event(down bool, sym uint32) []byte {
 	return after
 }
 
-func (k *keyboard) press(sym uint32) {
-	if _, ok := k.modifiers[sym]; ok {
+func (k *keyboard) press(id keyID) {
+	if _, ok := k.modifiers[id]; ok {
 		return
 	}
 	for _, key := range k.keys {
-		if key.sym == sym {
+		if key.id == id {
 			return
 		}
 	}
 
-	action, ok := mapKeysym(sym)
+	action, ok := id.action()
 	if !ok {
 		return
 	}
 	if action.modifier != 0 {
-		k.modifiers[sym] = action.modifier
+		k.modifiers[id] = action.modifier
 		return
 	}
-	k.keys = append(k.keys, heldKey{sym: sym, code: action.code, implied: action.implied})
+	k.keys = append(k.keys, heldKey{id: id, code: action.code, implied: action.implied})
 }
 
-func (k *keyboard) release(sym uint32) {
-	if _, ok := k.modifiers[sym]; ok {
-		delete(k.modifiers, sym)
+func (k *keyboard) release(id keyID) {
+	if _, ok := k.modifiers[id]; ok {
+		delete(k.modifiers, id)
 		return
 	}
 	for i, key := range k.keys {
-		if key.sym == sym {
+		if key.id == id {
 			k.keys = append(k.keys[:i], k.keys[i+1:]...)
 			return
 		}

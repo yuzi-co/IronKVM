@@ -67,6 +67,16 @@ already makes for the MJPEG stream.
   keys. A character that needs Shift on the US layout adds Shift while its key is held, so a
   client that sends `!` without Shift still types `!`. The release of a keysym releases the key
   that its press chose, even if the modifiers changed in between.
+- **Keycodes (yuzi-co/ironkvm-dist#144).** The keysym path types through the US table, so a
+  client or a host with another layout gets the wrong keys. If the client lists the QEMU
+  Extended Key Event pseudo-encoding (-258) in SetEncodings, the next frame update carries
+  the empty pseudo-rectangle of that encoding. The client then sends QEMU client messages
+  (type 255, submessage 0) with an XT keycode. The keycode goes through a table in
+  `service/vnc/scancode.go` straight to a HID usage, and the keysym is ignored, so the host's
+  own layout decides the character. An E0-prefixed key arrives as 0x80 or'd with its second
+  byte: AltGr is 0xb8. A keycode that the table does not know falls back to the keysym in the
+  same message. A client that does not list the pseudo-encoding keeps the keysym path.
+  TigerVNC and Remmina send keycodes; noVNC does too when it has them.
 - **Pointer.** PointerEvent goes to the absolute pointer. The position is scaled from the
   framebuffer size to the 1 to 32768 range that the web UI uses. Buttons 1, 2 and 3 are left,
   middle and right. Buttons 4 and 5 are one wheel step up and down, sent on the press only.
@@ -135,7 +145,8 @@ second from the metrics endpoint:
 
 It must also check: the JPEG rectangles decode in TigerVNC and Remmina, and in noVNC through
 websockify with plain VNC authentication; the keyboard types the full US layout, the modifiers
-and the function keys; the pointer lands where it is clicked at two resolutions; a resolution change on the host resizes the client; a second client
+and the function keys; with keycodes, a German and a French client on a host with the same
+layout type AltGr characters, dead keys and the ISO key left of Z; the pointer lands where it is clicked at two resolutions; a resolution change on the host resizes the client; a second client
 is refused; the disconnect button ends the session and releases held keys; the RSS goes back
 after the session ends.
 
