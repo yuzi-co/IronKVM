@@ -351,7 +351,7 @@ func TestMCPControlConflictCarriesTheModeInData(t *testing.T) {
 	service := &Service{control: controlmode.NewManager(path, controlmode.ModePicoclaw)}
 
 	envelope := callTool(t, service, "kvm_actions", `{"actions":[{"action":"move","x":0.5,"y":0.5}]}`, nil)
-	if envelope.Error == nil || envelope.Error.Code != -32003 || envelope.Error.Message != "external MCP owns device control" {
+	if envelope.Error == nil || envelope.Error.Code != -32010 || envelope.Error.Message != "external MCP owns device control" {
 		t.Fatalf("envelope = %+v", envelope)
 	}
 	var data map[string]any

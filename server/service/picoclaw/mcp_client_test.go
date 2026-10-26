@@ -136,10 +136,9 @@ func TestPicoClawClientRunsActions(t *testing.T) {
 	}
 }
 
-// TestPicoClawClientSeesTheControlConflict: the go-sdk client reads the
-// -32003 that the route has always used as its own ErrClientClosing code, so
-// it reports the conflict as "connection closed" with the server's message.
-// The session stays usable. The wire answer is pinned by
+// TestPicoClawClientSeesTheControlConflict: the go-sdk client reports the
+// conflict as the server's error, not as a closed connection, and the session
+// stays usable. The wire answer is pinned by
 // TestMCPControlConflictCarriesTheModeInData.
 func TestPicoClawClientSeesTheControlConflict(t *testing.T) {
 	gin.SetMode(gin.TestMode)
@@ -156,6 +155,9 @@ func TestPicoClawClientSeesTheControlConflict(t *testing.T) {
 	})
 	if err == nil || !strings.Contains(err.Error(), "PicoClaw device control is not enabled") {
 		t.Fatalf("err = %v, want the control conflict", err)
+	}
+	if strings.Contains(err.Error(), "connection closed") {
+		t.Fatalf("err = %v, the client read the conflict as a closed connection", err)
 	}
 	if _, err := session.CallTool(context.Background(), &protocol.CallToolParams{Name: "kvm_screenshot"}); err != nil {
 		t.Fatalf("the next call failed: %v", err)
