@@ -15,6 +15,7 @@ import { MenuItem } from '@/components/menu-item.tsx';
 import { StatusDot } from '@/components/status-dot.tsx';
 
 import { Drives } from '../image/drives.tsx';
+import { FilesModal } from '../image/files.tsx';
 import { Images } from '../image/images.tsx';
 import { TipsButton, TipsModal } from '../image/tips.tsx';
 import { ventoyUsable } from '../image/ventoy-status.ts';
@@ -40,6 +41,7 @@ export const Media = () => {
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isTipsOpen, setIsTipsOpen] = useState(false);
+  const [browsing, setBrowsing] = useState('');
   const [drives, setDrives] = useState<api.Drive[]>([]);
   const [diskRo, setDiskRo] = useState(false);
   const [images, setImages] = useState<string[]>([]);
@@ -120,6 +122,12 @@ export const Media = () => {
     setIsTipsOpen(true);
   }
 
+  // The file browser is a dialog outside the popover too, like the tips.
+  function openFiles(image: string) {
+    requestMenuClose((signal) => signal + 1);
+    setBrowsing(image);
+  }
+
   // MenuItem keeps the submenu count; this follows the open state for the
   // polling, the keyboard lock and the transfer status.
   const handleOpenChange = useStableCallback((open: boolean) => {
@@ -166,6 +174,7 @@ export const Media = () => {
           inUse={ventoyInUse}
           onImagesChanged={setImages}
           onDrivesChanged={refreshDrives}
+          onBrowse={openFiles}
         />
         {/* Ventoy shows once it is installed; Settings sets it up. */}
         {ventoyUsable(ventoy) && (
@@ -196,6 +205,7 @@ export const Media = () => {
     <>
       <MenuItem title={title} icon={icon} content={content} onOpenChange={handleOpenChange} />
       <TipsModal open={isTipsOpen} onClose={() => setIsTipsOpen(false)} />
+      <FilesModal key={browsing} image={browsing} onClose={() => setBrowsing('')} />
     </>
   );
 };

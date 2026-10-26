@@ -516,6 +516,33 @@ const tr = {
       resetHidFailed: 'USB HID sıfırlanamadı'
     },
     image: {
+      files: {
+        browse: 'Dosyalara göz at',
+        hostWrites:
+          'Ana bilgisayar bu kalıba yazabilir. Göz atmak için çıkarın veya salt okunur takın.',
+        root: 'Kalıp',
+        up: 'Yukarı',
+        refresh: 'Yenile',
+        allowChanges: 'Değişikliklere izin ver',
+        changesHint:
+          'Değişiklikler kalıba yazılır. Ana bilgisayar bunları kalıp bir sonraki takılışında görür.',
+        inDrive: '{{drive}} sürücüsünde: dosyalarını değiştirmek için çıkarın.',
+        readOnlyFs: '{{fs}} salt okunurdur.',
+        free: '{{total}} içinde {{free}} boş',
+        upload: 'Yükle',
+        uploadFailed: 'Yükleme başarısız',
+        download: 'İndir',
+        delete: 'Sil',
+        deleteConfirm: '{{name}} silinsin mi?',
+        deleteDirConfirm: '{{name}} klasörü ve içindeki her şey silinsin mi?',
+        deleteFailed: 'Silme başarısız',
+        empty: 'Bu klasör boş',
+        notBrowsable:
+          'Kalıp, göz atılabilecek bir dosya sistemi içermiyor (FAT, exFAT, ISO 9660 veya UDF).',
+        busy: 'Kalıp kullanımda.',
+        loadFailed: 'Kalıp okunamadı',
+        truncated: 'Yalnızca ilk {{shown}} öğe gösteriliyor.',
+      },
       driveLoaded: 'imaj takılı',
       driveWarning: 'uyarılara bakın',
       warning: {

@@ -526,6 +526,33 @@ const de = {
       resetHidFailed: 'USB-HID konnte nicht zurückgesetzt werden'
     },
     image: {
+      files: {
+        browse: 'Dateien durchsuchen',
+        hostWrites:
+          'Der Host kann dieses Image beschreiben. Werfen Sie es aus oder legen Sie es schreibgeschützt ein, um es zu durchsuchen.',
+        root: 'Image',
+        up: 'Nach oben',
+        refresh: 'Aktualisieren',
+        allowChanges: 'Änderungen erlauben',
+        changesHint:
+          'Änderungen werden in das Image geschrieben. Der Host sieht sie beim nächsten Einlegen des Images.',
+        inDrive: 'Im Laufwerk {{drive}}: auswerfen, um seine Dateien zu ändern.',
+        readOnlyFs: '{{fs}} ist schreibgeschützt.',
+        free: '{{free}} frei von {{total}}',
+        upload: 'Hochladen',
+        uploadFailed: 'Hochladen fehlgeschlagen',
+        download: 'Herunterladen',
+        delete: 'Löschen',
+        deleteConfirm: '{{name}} löschen?',
+        deleteDirConfirm: 'Den Ordner {{name}} mit allem Inhalt löschen?',
+        deleteFailed: 'Löschen fehlgeschlagen',
+        empty: 'Dieser Ordner ist leer',
+        notBrowsable:
+          'Das Image enthält kein durchsuchbares Dateisystem (FAT, exFAT, ISO 9660 oder UDF).',
+        busy: 'Das Image wird verwendet.',
+        loadFailed: 'Das Image konnte nicht gelesen werden',
+        truncated: 'Nur die ersten {{shown}} Einträge werden angezeigt.',
+      },
       driveLoaded: 'Image eingelegt',
       driveWarning: 'Warnungen beachten',
       warning: {

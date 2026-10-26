@@ -519,6 +519,33 @@ const ca = {
       resetHidFailed: "No s'ha pogut reiniciar l'HID USB"
     },
     image: {
+      files: {
+        browse: 'Explora els fitxers',
+        hostWrites:
+          "L'amfitrió pot escriure aquesta imatge. Expulseu-la o inseriu-la només de lectura per explorar-la.",
+        root: 'Imatge',
+        up: 'Amunt',
+        refresh: 'Actualitza',
+        allowChanges: 'Permet canvis',
+        changesHint:
+          "Els canvis s'escriuen a la imatge. L'amfitrió els veu la propera vegada que s'insereixi la imatge.",
+        inDrive: 'A la unitat {{drive}}: expulseu-la per canviar-ne els fitxers.',
+        readOnlyFs: '{{fs}} és només de lectura.',
+        free: '{{free}} lliures de {{total}}',
+        upload: 'Puja',
+        uploadFailed: 'La pujada ha fallat',
+        download: 'Baixa',
+        delete: 'Suprimeix',
+        deleteConfirm: 'Voleu suprimir {{name}}?',
+        deleteDirConfirm: 'Voleu suprimir la carpeta {{name}} i tot el que conté?',
+        deleteFailed: 'La supressió ha fallat',
+        empty: 'Aquesta carpeta és buida',
+        notBrowsable:
+          'La imatge no conté cap sistema de fitxers que es pugui explorar (FAT, exFAT, ISO 9660 o UDF).',
+        busy: "La imatge s'està utilitzant.",
+        loadFailed: "No s'ha pogut llegir la imatge",
+        truncated: 'Només es mostren les primeres {{shown}} entrades.',
+      },
       driveLoaded: 'imatge carregada',
       driveWarning: 'revisa els avisos',
       warning: {
