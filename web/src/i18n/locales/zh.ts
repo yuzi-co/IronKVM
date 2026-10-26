@@ -232,7 +232,11 @@ const zh = {
       },
       webrtcConnectionFailed: {
         title: 'WebRTC 连接失败',
-        description: '请检查网络连接或切换视频模式。'
+        description: '请检查网络连接或切换视频模式。',
+        noCandidates:
+          '浏览器没有找到可为视频提供的网络地址。可能是限制 WebRTC 的浏览器设置或扩展导致的。请允许 WebRTC、设置 STUN 服务器，或将视频模式切换为 MJPEG。',
+        noRoute:
+          '未找到到设备的网络路由。从其他网络连接时，请设置 STUN 服务器、通过 VPN 连接或转发端口，或将视频模式切换为 MJPEG。'
       },
       captureStatus: {
         hdmiError: 'HDMI 画面异常',

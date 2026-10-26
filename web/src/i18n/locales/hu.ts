@@ -248,7 +248,11 @@ const hu = {
       },
       webrtcConnectionFailed: {
         title: 'A WebRTC-kapcsolat sikertelen',
-        description: 'Ellenőrizze a hálózati kapcsolatot, vagy váltson videómódot.'
+        description: 'Ellenőrizze a hálózati kapcsolatot, vagy váltson videómódot.',
+        noCandidates:
+          'A böngésző nem talált a videóhoz felajánlható hálózati címet. Ezt a WebRTC-t korlátozó böngészőbeállítás vagy bővítmény okozhatja. Engedélyezze a WebRTC-t, állítson be STUN-kiszolgálót, vagy váltsa a videómódot MJPEG-re.',
+        noRoute:
+          'Nem található hálózati útvonal az eszközhöz. Másik hálózatról állítson be STUN-kiszolgálót, csatlakozzon VPN-en, vagy továbbítson egy portot, illetve váltsa a videómódot MJPEG-re.'
       },
       captureStatus: {
         hdmiError: 'HDMI-képernyőhiba',

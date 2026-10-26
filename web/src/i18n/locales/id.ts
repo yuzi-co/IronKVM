@@ -245,7 +245,11 @@ const id = {
       },
       webrtcConnectionFailed: {
         title: 'Koneksi WebRTC gagal',
-        description: 'Periksa koneksi jaringan atau ganti mode video.'
+        description: 'Periksa koneksi jaringan atau ganti mode video.',
+        noCandidates:
+          'Browser tidak menemukan alamat jaringan untuk ditawarkan bagi video. Pengaturan atau ekstensi browser yang membatasi WebRTC dapat menjadi penyebabnya. Izinkan WebRTC, atur server STUN, atau ganti mode video ke MJPEG.',
+        noRoute:
+          'Tidak ditemukan rute jaringan ke perangkat. Dari jaringan lain, atur server STUN, sambungkan melalui VPN, atau teruskan port, atau ganti mode video ke MJPEG.'
       },
       captureStatus: {
         hdmiError: 'Kesalahan layar HDMI',

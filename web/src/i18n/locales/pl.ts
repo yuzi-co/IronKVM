@@ -247,7 +247,11 @@ const pl = {
       },
       webrtcConnectionFailed: {
         title: 'Połączenie WebRTC nie powiodło się',
-        description: 'Sprawdź połączenie sieciowe lub zmień tryb wideo.'
+        description: 'Sprawdź połączenie sieciowe lub zmień tryb wideo.',
+        noCandidates:
+          'Przeglądarka nie znalazła adresu sieciowego, który mogłaby zaoferować dla wideo. Przyczyną może być ustawienie lub rozszerzenie przeglądarki ograniczające WebRTC. Zezwól na WebRTC, ustaw serwer STUN lub przełącz tryb wideo na MJPEG.',
+        noRoute:
+          'Nie znaleziono trasy sieciowej do urządzenia. Z innej sieci ustaw serwer STUN, połącz się przez VPN lub przekieruj port albo przełącz tryb wideo na MJPEG.'
       },
       captureStatus: {
         hdmiError: 'Błąd obrazu HDMI',

@@ -238,7 +238,11 @@ const ko = {
       },
       webrtcConnectionFailed: {
         title: 'WebRTC 연결에 실패했습니다',
-        description: '네트워크 연결을 확인하거나 비디오 모드를 전환하세요.'
+        description: '네트워크 연결을 확인하거나 비디오 모드를 전환하세요.',
+        noCandidates:
+          '브라우저가 비디오에 제공할 네트워크 주소를 찾지 못했습니다. WebRTC를 제한하는 브라우저 설정이나 확장 프로그램 때문일 수 있습니다. WebRTC를 허용하거나 STUN 서버를 설정하거나 비디오 모드를 MJPEG로 전환하세요.',
+        noRoute:
+          '장치로 가는 네트워크 경로를 찾지 못했습니다. 다른 네트워크에서 접속하는 경우 STUN 서버를 설정하거나 VPN으로 연결하거나 포트를 포워딩하세요. 또는 비디오 모드를 MJPEG로 전환하세요.'
       },
       captureStatus: {
         hdmiError: 'HDMI 화면 오류',

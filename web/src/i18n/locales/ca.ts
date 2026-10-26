@@ -249,7 +249,11 @@ const ca = {
       },
       webrtcConnectionFailed: {
         title: 'Error de connexió WebRTC',
-        description: 'Comproveu la connexió de xarxa o canvieu el mode de vídeo.'
+        description: 'Comproveu la connexió de xarxa o canvieu el mode de vídeo.',
+        noCandidates:
+          'El navegador no ha trobat cap adreça de xarxa per oferir per al vídeo. Ho pot causar una configuració o una extensió del navegador que limita WebRTC. Permeteu WebRTC, configureu un servidor STUN o canvieu el mode de vídeo a MJPEG.',
+        noRoute:
+          "No s'ha trobat cap ruta de xarxa fins al dispositiu. Des d'una altra xarxa, configureu un servidor STUN, connecteu-vos per VPN o redirigiu un port, o canvieu el mode de vídeo a MJPEG."
       },
       captureStatus: {
         hdmiError: 'Error a la pantalla HDMI',

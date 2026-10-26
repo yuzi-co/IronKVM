@@ -7,6 +7,12 @@ import { useTranslation } from 'react-i18next';
 import { offerAbsCaptureTime } from '@/lib/abs-capture-time.ts';
 import { audioStateFromName } from '@/lib/audio-state.ts';
 import { CLOCK_EVENT, ClockSampler, parseClockReply } from '@/lib/clock-offset.ts';
+import {
+  CandidateInbox,
+  CandidateOutbox,
+  iceFailure,
+  type IceFailure
+} from '@/lib/ice-candidates.ts';
 import { nextRoomMicSwitch, roomMicPushFromSignal } from '@/lib/room-mic.ts';
 import { withStereoOpus } from '@/lib/sdp-opus.ts';
 import { getBaseUrl } from '@/lib/service.ts';
@@ -87,7 +93,6 @@ export const H264Webrtc = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const roomAudioRef = useRef<HTMLAudioElement | null>(null);
   const videoOfferSent = useRef(false);
-  const videoIceCandidates = useRef<RTCIceCandidate[]>([]);
   const translationRef = useRef(t);
 
   useEffect(() => {
@@ -123,12 +128,41 @@ export const H264Webrtc = () => {
     let heartbeatTimer: ReturnType<typeof setInterval> | null = null;
     let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
     let disposed = false;
+    // The session's candidates both ways, held until the description they
+    // belong to is with the other side (lib/ice-candidates.ts).
+    let outbox: CandidateOutbox | null = null;
+    let inbox: CandidateInbox<RTCIceCandidate> | null = null;
+    let answerApplied = false;
 
-    const showConnectionFailureNotification = () => {
+    // Why ICE failed, when the user can act on it, from the peer as it is now.
+    const currentIceFailure = (): IceFailure => {
+      if (!video || !outbox) {
+        return null;
+      }
+      return iceFailure({
+        gatheringState: video.iceGatheringState,
+        localCandidates: outbox.count,
+        answerApplied,
+        connectionState: video.connectionState
+      });
+    };
+
+    const failureDescription = (failure: IceFailure) => {
+      switch (failure) {
+        case 'no-candidates':
+          return translationRef.current('screen.webrtcConnectionFailed.noCandidates');
+        case 'no-route':
+          return translationRef.current('screen.webrtcConnectionFailed.noRoute');
+        default:
+          return translationRef.current('screen.webrtcConnectionFailed.description');
+      }
+    };
+
+    const showConnectionFailureNotification = (failure: IceFailure = null) => {
       notificationApi.error({
         key: WEBRTC_CONNECTION_FAILED_NOTIFICATION_KEY,
         message: translationRef.current('screen.webrtcConnectionFailed.title'),
-        description: translationRef.current('screen.webrtcConnectionFailed.description'),
+        description: failureDescription(failure),
         placement: 'topRight',
         closable: false,
         duration: false
@@ -144,13 +178,13 @@ export const H264Webrtc = () => {
       reconnectTimer = null;
     };
 
-    const scheduleReconnect = (reason: string, error?: unknown) => {
+    const scheduleReconnect = (reason: string, error?: unknown, failure: IceFailure = null) => {
       if (disposed) {
         return;
       }
 
-      console.error(`WebRTC connection failed: ${reason}`, error);
-      showConnectionFailureNotification();
+      console.error(`WebRTC connection failed: ${reason}${failure ? ` (${failure})` : ''}`, error);
+      showConnectionFailureNotification(failure);
       setIsLoading(false);
 
       if (reconnectTimer) {
@@ -163,15 +197,17 @@ export const H264Webrtc = () => {
       }, WEBRTC_RECONNECT_DELAY);
     };
 
-    const sendMsg = (event: string, data: string) => {
+    const sendMsg = (event: string, data: string): boolean => {
       if (ws.readyState !== WebSocket.OPEN) {
-        return;
+        return false;
       }
 
       try {
         ws.send(JSON.stringify({ event, data }));
+        return true;
       } catch (err) {
         console.error('Error sending event: ', err);
+        return false;
       }
     };
     sendRoomSwitchRef.current = (on: boolean) => sendMsg('room-mic', on ? 'on' : 'off');
@@ -198,7 +234,16 @@ export const H264Webrtc = () => {
       video = peer;
       peerRef.current = peer;
       videoOfferSent.current = false;
-      videoIceCandidates.current = [];
+      const sessionOutbox = new CandidateOutbox((candidate) =>
+        sendMsg('video-candidate', JSON.stringify(candidate))
+      );
+      outbox = sessionOutbox;
+      inbox = new CandidateInbox((candidate) => {
+        peer
+          .addIceCandidate(candidate)
+          .catch((e: Error) => console.error('Video candidate failed to add:', e.message));
+      });
+      answerApplied = false;
 
       // --- Init Video ---
       peer.onnegotiationneeded = async () => {
@@ -223,7 +268,14 @@ export const H264Webrtc = () => {
 
           await peer.setLocalDescription(offer);
 
-          sendMsg('video-offer', JSON.stringify(peer.localDescription));
+          if (!sendMsg('video-offer', JSON.stringify(peer.localDescription))) {
+            throw new Error('the signaling WebSocket is not open');
+          }
+          // Candidates gathered so far go after the offer, so the board has
+          // a description to add them to.
+          if (!sessionOutbox.offerSent()) {
+            throw new Error('the signaling WebSocket closed while sending ICE candidates');
+          }
         } catch (error) {
           videoOfferSent.current = false;
           console.error('Video negotiation failed:', error);
@@ -237,7 +289,7 @@ export const H264Webrtc = () => {
         }
 
         if (peer.connectionState === 'failed') {
-          scheduleReconnect('peer connection state is failed');
+          scheduleReconnect('peer connection state is failed', undefined, currentIceFailure());
         } else if (peer.connectionState === 'connected') {
           cancelReconnect();
           notificationApi.destroy(WEBRTC_CONNECTION_FAILED_NOTIFICATION_KEY);
@@ -269,8 +321,21 @@ export const H264Webrtc = () => {
       };
 
       peer.onicecandidate = (event) => {
-        if (event.candidate) {
-          sendMsg('video-candidate', JSON.stringify(event.candidate));
+        if (event.candidate && !sessionOutbox.add(event.candidate.toJSON())) {
+          scheduleReconnect('sending a local ICE candidate');
+        }
+      };
+
+      // With no candidate at all the board has nothing to check against, and
+      // waiting for the timeout tells the user nothing. Say so at once.
+      peer.onicegatheringstatechange = () => {
+        if (disposed || peer !== video) {
+          return;
+        }
+        if (currentIceFailure() === 'no-candidates') {
+          console.error('WebRTC: ICE gathering completed with no local candidates');
+          showConnectionFailureNotification('no-candidates');
+          setIsLoading(false);
         }
       };
 
@@ -299,12 +364,8 @@ export const H264Webrtc = () => {
         .setRemoteDescription(new RTCSessionDescription(data))
         .then(() => {
           videoOfferSent.current = false;
-          videoIceCandidates.current.forEach((candidate) => {
-            peer
-              .addIceCandidate(candidate)
-              .catch((e) => console.error('Video candidate failed to add:', e.message));
-          });
-          videoIceCandidates.current = [];
+          answerApplied = true;
+          inbox?.answerApplied();
         })
         .catch((error) => {
           console.error('Video answer set failed:', error);
@@ -319,14 +380,7 @@ export const H264Webrtc = () => {
         return;
       }
 
-      const candidate = new RTCIceCandidate(data);
-      if (peer.remoteDescription) {
-        peer
-          .addIceCandidate(candidate)
-          .catch((e) => console.error('Video candidate failed to add:', e.message));
-      } else {
-        videoIceCandidates.current.push(candidate);
-      }
+      inbox?.receive(new RTCIceCandidate(data), peer.remoteDescription !== null);
     };
 
     ws.onopen = () => {
@@ -426,14 +480,16 @@ export const H264Webrtc = () => {
       setIsLoading(false);
 
       if (!video || video.connectionState !== 'connected') {
-        showConnectionFailureNotification();
+        showConnectionFailureNotification(currentIceFailure());
       }
     }, 5 * 1000);
 
     const connectionTimeoutTimer = setTimeout(() => {
       if (!video || video.connectionState !== 'connected') {
         scheduleReconnect(
-          `connection timed out in state ${video?.connectionState ?? 'not initialized'}`
+          `connection timed out in state ${video?.connectionState ?? 'not initialized'}`,
+          undefined,
+          currentIceFailure()
         );
       }
     }, WEBRTC_CONNECTION_TIMEOUT);
@@ -470,7 +526,8 @@ export const H264Webrtc = () => {
       setHasAudio(false);
       setAudioState('unknown');
       videoOfferSent.current = false;
-      videoIceCandidates.current = [];
+      outbox = null;
+      inbox = null;
 
       if (heartbeatTimer) {
         clearInterval(heartbeatTimer);

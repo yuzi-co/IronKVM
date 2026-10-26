@@ -249,7 +249,11 @@ const it = {
       },
       webrtcConnectionFailed: {
         title: 'Connessione WebRTC non riuscita',
-        description: 'Controlla la connessione di rete o cambia la modalità video.'
+        description: 'Controlla la connessione di rete o cambia la modalità video.',
+        noCandidates:
+          "Il browser non ha trovato alcun indirizzo di rete da offrire per il video. Può dipendere da un'impostazione o un'estensione del browser che limita WebRTC. Consenti WebRTC, imposta un server STUN o passa la modalità video a MJPEG.",
+        noRoute:
+          "Non è stato trovato alcun percorso di rete verso il dispositivo. Da un'altra rete, imposta un server STUN, collegati tramite VPN o inoltra una porta, oppure passa la modalità video a MJPEG."
       },
       captureStatus: {
         hdmiError: 'Errore schermata HDMI',
