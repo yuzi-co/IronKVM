@@ -65,6 +65,9 @@ var bodyLimits = map[string]int64{
 	// An ISO, often several GB. It streams to /data, not to memory, and the
 	// write fails when the card is full.
 	"POST /api/download/file": middleware.NoBodyLimit,
+	// A file written into an image. The handler caps it at the image's free
+	// space, and at 4 GiB on FAT.
+	"POST /api/storage/files/upload": middleware.NoBodyLimit,
 	// A settings file with fifty macros at their largest. The handler reads
 	// no more than this either.
 	"POST /api/settings/preview": settingsio.MaxDocumentBytes + 64<<10,
