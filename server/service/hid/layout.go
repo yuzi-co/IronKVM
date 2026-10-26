@@ -3,6 +3,7 @@ package hid
 import (
 	"fmt"
 	"strings"
+	"sync"
 	"unicode"
 )
 
@@ -88,14 +89,31 @@ func with(base []keyDef, overrides ...keyDef) []keyDef {
 }
 
 // deadCompose lists what each dead key composes with the letter typed after
-// it. The pairs are the ones Windows and the X11 compose tables agree on.
+// it. The pairs are the ones Windows and the X11 compose tables agree on;
+// TestDeadComposeAgreesWithX11 holds them against the X11 table. The accents
+// after the first five occur only in the generated layouts.
 var deadCompose = map[rune][2]string{
 	'´': {"aeiouyAEIOUY", "áéíóúýÁÉÍÓÚÝ"},
 	'`': {"aeiouAEIOU", "àèìòùÀÈÌÒÙ"},
 	'^': {"aeiouAEIOU", "âêîôûÂÊÎÔÛ"},
 	'¨': {"aeiouyAEIOU", "äëïöüÿÄËÏÖÜ"},
 	'~': {"anoANO", "ãñõÃÑÕ"},
+	'ˇ': {"cdelnrstzCDELNRSTZ", "čďěľňřšťžČĎĚĽŇŘŠŤŽ"},
+	'˛': {"aeAE", "ąęĄĘ"},
+	'˚': {"auAU", "åůÅŮ"},
+	'˝': {"ouOU", "őűŐŰ"},
+	'¸': {"csCS", "çşÇŞ"},
+	'˘': {"agAG", "ăğĂĞ"},
+	'˙': {"zeZE", "żėŻĖ"},
+	'¯': {"aeiouAEIOU", "āēīōūĀĒĪŌŪ"},
 }
+
+// deadSpaceDiffers lists the accents whose dead key and Space type something
+// else on Linux than on Windows: the X11 compose table turns ´ into ', ¨
+// into " and ˚ into °. A generated layout does not type these accents with
+// a dead key, so a text never receives the wrong character. The hand-written
+// layouts keep the Windows behaviour they always had.
+var deadSpaceDiffers = map[rune]bool{'´': true, '¨': true, '˚': true}
 
 // Layout maps characters to the key presses that type them on a target whose
 // active keyboard layout is this one.
@@ -109,6 +127,8 @@ type Layout struct {
 	deadKeys map[rune]Char
 	// composed holds the characters a dead key and a letter type together.
 	composed map[rune][]Char
+	// noDeadSpace holds the accents a dead key and Space must not type.
+	noDeadSpace map[rune]bool
 }
 
 // buildLayout turns a key table into a Layout. Where two keys type the same
@@ -169,6 +189,15 @@ func buildLayout(id string, defs []keyDef) *Layout {
 	return l
 }
 
+// buildGeneratedLayout turns a key table read from xkeyboard-config into a
+// Layout. It differs from buildLayout only in leaving out the accents of
+// deadSpaceDiffers when they exist only as a dead key.
+func buildGeneratedLayout(id string, defs []keyDef) *Layout {
+	l := buildLayout(id, defs)
+	l.noDeadSpace = deadSpaceDiffers
+	return l
+}
+
 // Keystrokes returns the key presses that type r, and false when this layout
 // cannot type it. A character on its own key takes one press. An accented
 // letter takes its dead key and then the letter, and an accent that exists
@@ -180,14 +209,18 @@ func (l *Layout) Keystrokes(r rune) ([]Char, bool) {
 	if keys, ok := l.composed[r]; ok {
 		return keys, true
 	}
-	if key, ok := l.deadKeys[r]; ok {
+	if key, ok := l.deadKeys[r]; ok && !l.noDeadSpace[r] {
 		return []Char{key, {0, usageSpace}}, true
 	}
 	return nil, false
 }
 
-// The key tables follow the Windows layouts of the same names. Where Linux
-// differs, it is only in whether a few AltGr accents are dead.
+// The hand-written key tables follow the Windows layouts of the same names.
+// TestHandWrittenLayoutsAgainstXkb lists every character they type
+// differently from xkeyboard-config, which is what a Linux host reads: a few
+// AltGr accents that are dead only on Windows, and the accents ´ and ¨,
+// whose dead key and Space type ' and " on Linux. Linux also types many
+// AltGr extras these tables leave out, because Windows does not.
 
 var usLetters = letters("abcdefghijklmnopqrstuvwxyz")
 
@@ -303,48 +336,102 @@ var jaKeys = with(usLetters,
 	k(54, ',', '<'), k(55, '.', '>'), k(56, '/', '?'), k(135, '\\', '_'),
 )
 
-// layouts holds every layout by ID. Korean keyboards carry the US layout for
-// Latin text; Hangul needs the IME and is not typed.
-var layouts = func() map[string]*Layout {
-	m := make(map[string]*Layout)
-	for _, def := range []struct {
-		id   string
-		keys []keyDef
-	}{
-		{"us", usKeys},
-		{"uk", ukKeys},
-		{"de", deKeys},
-		{"fr", frKeys},
-		{"es", esKeys},
-		{"it", itKeys},
-		{"pt-br", ptBRKeys},
-		{"se", seKeys},
-		{"ru", ruKeys},
-		{"ja", jaKeys},
-		{"ko", usKeys},
-	} {
-		m[def.id] = buildLayout(def.id, def.keys)
+// handWrittenLayouts holds the layouts with a table in this file. Korean
+// keyboards carry the US layout for Latin text; Hangul needs the IME and is
+// not typed.
+var handWrittenLayouts = []struct {
+	id   string
+	keys []keyDef
+}{
+	{"us", usKeys},
+	{"uk", ukKeys},
+	{"de", deKeys},
+	{"fr", frKeys},
+	{"es", esKeys},
+	{"it", itKeys},
+	{"pt-br", ptBRKeys},
+	{"se", seKeys},
+	{"ru", ruKeys},
+	{"ja", jaKeys},
+	{"ko", usKeys},
+}
+
+// layoutSource is the key table of one layout, and the Layout built from it
+// the first time a paste names it. Building all of them at start would hold
+// a few hundred kilobytes of maps that most devices never use.
+type layoutSource struct {
+	keys      []keyDef
+	generated bool
+
+	once   sync.Once
+	layout *Layout
+}
+
+func (s *layoutSource) get(id string) *Layout {
+	s.once.Do(func() {
+		if s.generated {
+			s.layout = buildGeneratedLayout(id, s.keys)
+		} else {
+			s.layout = buildLayout(id, s.keys)
+		}
+	})
+	return s.layout
+}
+
+// layoutSources holds every layout by ID: the hand-written ones, then the
+// ones generated from xkeyboard-config (layout_gen.go).
+var layoutSources = func() map[string]*layoutSource {
+	m := make(map[string]*layoutSource)
+	for _, def := range handWrittenLayouts {
+		m[def.id] = &layoutSource{keys: def.keys}
+	}
+	for _, def := range generatedLayouts {
+		if _, ok := m[def.id]; ok {
+			panic("hid: generated layout " + def.id + " has a hand-written table")
+		}
+		m[def.id] = &layoutSource{keys: def.keys, generated: true}
 	}
 	return m
 }()
 
-// LayoutIDs lists the IDs GetLayout accepts, besides the aliases.
-func LayoutIDs() []string {
-	return []string{"us", "uk", "de", "fr", "es", "it", "pt-br", "se", "ru", "ja", "ko"}
+// layoutAliases maps other names for a layout to its ID. "en" is the name an
+// older web client sends. The others are PiKVM's keymap names for a layout
+// that has a hand-written table here. Finnish is the Swedish table, as on
+// Windows.
+var layoutAliases = map[string]string{
+	"":      "us",
+	"en":    "us",
+	"en-us": "us",
+	"en-gb": "uk",
+	"sv":    "se",
+	"fi":    "se",
 }
 
-// GetLayout returns the layout with the given ID. An empty ID and "en", the
-// name an older web client sends, both mean US.
+// LayoutIDs lists the IDs GetLayout accepts, besides the aliases: the
+// hand-written layouts, then the generated ones.
+func LayoutIDs() []string {
+	ids := make([]string, 0, len(handWrittenLayouts)+len(generatedLayouts))
+	for _, def := range handWrittenLayouts {
+		ids = append(ids, def.id)
+	}
+	for _, def := range generatedLayouts {
+		ids = append(ids, def.id)
+	}
+	return ids
+}
+
+// GetLayout returns the layout with the given ID or alias. An empty ID means
+// US.
 func GetLayout(id string) (*Layout, error) {
 	id = strings.ToLower(strings.TrimSpace(id))
-	if id == "" || id == "en" {
-		id = "us"
+	if alias, ok := layoutAliases[id]; ok {
+		id = alias
 	}
-	layout, ok := layouts[id]
+	source, ok := layoutSources[id]
 	if !ok {
 		return nil, fmt.Errorf("unknown keyboard layout %q", id)
 	}
-	return layout, nil
+	return source.get(id), nil
 }
 
 // GetCharMap returns the characters one key press types on the layout, or on
@@ -352,7 +439,7 @@ func GetLayout(id string) (*Layout, error) {
 func GetCharMap(lang string) map[rune]Char {
 	layout, err := GetLayout(lang)
 	if err != nil {
-		layout = layouts["us"]
+		layout = layoutSources["us"].get("us")
 	}
 	m := make(map[rune]Char, len(layout.direct))
 	for r, key := range layout.direct {

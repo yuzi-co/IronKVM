@@ -80,8 +80,9 @@ func TestPlanPasteTabs(t *testing.T) {
 	for _, id := range LayoutIDs() {
 		plan := planPaste("\tx\t", mustLayout(t, id))
 		codes := planCodes(plan)
-		if id == "ru" {
-			// x is untypeable on Russian; the tabs still are.
+		if nonLatinLayouts[id] {
+			// x is untypeable on Russian and the other non-Latin
+			// layouts; the tabs still are.
 			if len(codes) != 2 || codes[0][0] != (Char{0, usageTab}) || codes[1][0] != (Char{0, usageTab}) {
 				t.Errorf("%s: strokes = %+v", id, codes)
 			}
