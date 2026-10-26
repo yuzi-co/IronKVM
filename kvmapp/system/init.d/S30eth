@@ -25,6 +25,11 @@ fi
 IF=$("$DEVINFO" get ETH_IF 2>/dev/null)
 IF=${IF:-eth0}
 
+# The name sent in DHCP option 12, so a router that lists or registers DHCP
+# clients shows the board by name. It is read when the script starts: a rename
+# in the web UI reaches the DHCP server at the next restart of the interface.
+DHCP_HOSTNAME=$(hostname 2>/dev/null)
+
 # The address this script falls back to when there is no static configuration
 # and no DHCP answer. It looks like a device fact and it is not: the fork chose
 # this address, every board that runs this script falls back to the same one,
@@ -91,7 +96,7 @@ start() {
         done < /boot/eth.nodhcp
 
         ip a show dev "$IF" | grep inet > /dev/null || {
-            udhcpc -i "$IF" -t 3 -T 1 -A 5 -O 121 -B -b -p "/run/udhcpc.$IF.pid" &>/dev/null
+            udhcpc -i "$IF" -t 3 -T 1 -A 5 -O 121 -B -b ${DHCP_HOSTNAME:+-x "hostname:$DHCP_HOSTNAME"} -p "/run/udhcpc.$IF.pid" &>/dev/null
             ip a show dev "$IF" | grep inet > /dev/null
         } || {
             inet=$RESERVE_INET
@@ -99,7 +104,7 @@ start() {
             ip a add "$inet" brd + dev "$IF"
         } || exit 1
     else
-        udhcpc -i "$IF" -t 10 -T 1 -A 5 -O 121 -B -b -p "/run/udhcpc.$IF.pid" &
+        udhcpc -i "$IF" -t 10 -T 1 -A 5 -O 121 -B -b ${DHCP_HOSTNAME:+-x "hostname:$DHCP_HOSTNAME"} -p "/run/udhcpc.$IF.pid" &
     fi
 }
 

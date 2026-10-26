@@ -39,6 +39,11 @@ if [ -z "$IF" ]; then
     exit 0
 fi
 
+# The name sent in DHCP option 12, so a router that lists or registers DHCP
+# clients shows the board by name. It is read when the script starts: a rename
+# in the web UI reaches the DHCP server at the next restart of the interface.
+DHCP_HOSTNAME=$(hostname 2>/dev/null)
+
 # airmon-ng names the monitor interface after the one it was started on.
 MONIF="${IF}mon"
 
@@ -125,7 +130,7 @@ start() {
     gen_wpa_conf "$ssid" "$pass" >/etc/wpa_supplicant.conf
     wpa_supplicant -B -i "$IF" -c /etc/wpa_supplicant.conf
     if [ ! -e /boot/wifi.nodhcp ]; then
-        (udhcpc -i "$IF" -t 10 -T 1 -A 5 -O 121 -B -b -p "/run/udhcpc.$IF.pid") &
+        (udhcpc -i "$IF" -t 10 -T 1 -A 5 -O 121 -B -b ${DHCP_HOSTNAME:+-x "hostname:$DHCP_HOSTNAME"} -p "/run/udhcpc.$IF.pid") &
     fi
 }
 
