@@ -382,6 +382,12 @@ type recordingChat struct {
 
 func (c *recordingChat) IsActive(sessionID string) bool { return sessionID == c.active }
 func (c *recordingChat) InTurn(sessionID string) bool   { return sessionID == c.active }
+func (c *recordingChat) Turn(sessionID string) uint64 {
+	if sessionID == c.active {
+		return 1
+	}
+	return 0
+}
 
 func (c *recordingChat) Publish(sessionID string, event agent.Event) error {
 	c.mu.Lock()

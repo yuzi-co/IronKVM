@@ -52,6 +52,11 @@ type Service struct {
 	// devices are the power button, power LED and virtual media that the
 	// device tools reach. SetDevices sets them before the first MCP call.
 	devices hostdevices.Devices
+	// presser presses the buttons for the agent, once a person confirmed
+	// the press (power_confirm.go). SetDevices sets it.
+	presser *hostdevices.Presser
+	// confirmations are the agent's presses that wait for a person.
+	confirmations confirmationStore
 }
 
 type ConfigStore struct {
@@ -214,6 +219,7 @@ type ChatHub interface {
 	Prompt(sessionID string, prompt agent.Prompt) error
 	IsActive(sessionID string) bool
 	InTurn(sessionID string) bool
+	Turn(sessionID string) uint64
 	CloseSession(sessionID string, closeCode int, reason string) bool
 	CloseAll(closeCode int, reason string) int
 	SessionCount() int

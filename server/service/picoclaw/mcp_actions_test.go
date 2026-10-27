@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"NanoKVM-Server/config"
+	"NanoKVM-Server/service/agent"
 	"NanoKVM-Server/service/controlmode"
 
 	"github.com/gin-gonic/gin"
@@ -86,18 +87,44 @@ func (h *fakeHID) lastMouse() []byte {
 // the user waits for the agent, until the test ends a session's turn.
 type turnChat struct {
 	noChat
-	mu    sync.Mutex
-	ended map[string]bool
+	mu        sync.Mutex
+	ended     map[string]bool
+	turns     map[string]uint64
+	published []agent.Event
 }
 
 func newTurnChat() *turnChat {
-	return &turnChat{ended: make(map[string]bool)}
+	return &turnChat{ended: make(map[string]bool), turns: make(map[string]uint64)}
 }
 
 func (c *turnChat) InTurn(sessionID string) bool {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	return sessionID != "" && !c.ended[sessionID]
+}
+
+func (c *turnChat) Turn(sessionID string) uint64 {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if sessionID == "" || c.ended[sessionID] {
+		return 0
+	}
+	return c.turns[sessionID] + 1
+}
+
+func (c *turnChat) Publish(_ string, event agent.Event) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.published = append(c.published, event)
+	return nil
+}
+
+// nextTurn starts the session's next turn, as the user's next prompt does.
+func (c *turnChat) nextTurn(sessionID string) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.ended[sessionID] = false
+	c.turns[sessionID]++
 }
 
 // endTurn ends the session's turn, as a cancel or turn_done does.

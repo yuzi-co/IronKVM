@@ -35,6 +35,10 @@ const (
 	// EventControlModeChanged: the AI control mode changed. Field: control.
 	// The server sends it, not the agent.
 	EventControlModeChanged EventType = "control_mode_changed"
+	// EventPowerConfirmation: a power or reset press the agent asked for
+	// waits for the user's confirmation, or that wait ended. Field:
+	// confirmation. The server sends it, not the agent.
+	EventPowerConfirmation EventType = "power_confirmation"
 )
 
 // MessageKind says how the browser shows an agent_message.
@@ -107,6 +111,28 @@ type Event struct {
 	Usage      *Usage     `json:"usage,omitempty"`
 
 	Control *ControlMode `json:"control,omitempty"`
+
+	Confirmation *PowerConfirmation `json:"confirmation,omitempty"`
+}
+
+// PowerConfirmation is a press of the host's power or reset button that the
+// agent asked for. The server does not press until a signed-in user confirms
+// it in the web UI; it expires unconfirmed.
+type PowerConfirmation struct {
+	ID string `json:"id"`
+	// Agent names the agent that asked, SessionID the chat session.
+	Agent     string `json:"agent,omitempty"`
+	SessionID string `json:"sessionId"`
+	// Button is power or reset, Press short or long.
+	Button string `json:"button"`
+	Press  string `json:"press"`
+	// State is pending, pressed, denied, expired or failed.
+	State     string    `json:"state"`
+	Message   string    `json:"message,omitempty"`
+	CreatedAt time.Time `json:"createdAt"`
+	ExpiresAt time.Time `json:"expiresAt"`
+	// DecidedBy is the account that confirmed or denied it.
+	DecidedBy string `json:"decidedBy,omitempty"`
 }
 
 // Command types the browser sends on the chat socket. The names are ACP's

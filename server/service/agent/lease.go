@@ -32,6 +32,10 @@ type TaskLeases struct {
 	leases   map[string]func()
 	timers   map[string]*time.Timer
 	turnDone map[string]bool
+	// turns numbers each session's turn, from the prompt that found the
+	// session out of a turn (Turn).
+	turns    map[string]uint64
+	lastTurn uint64
 }
 
 // NewTaskLeases returns a lease tracker that takes a capture lease with
@@ -42,6 +46,7 @@ func NewTaskLeases(acquire func() func()) *TaskLeases {
 		leases:   make(map[string]func()),
 		timers:   make(map[string]*time.Timer),
 		turnDone: make(map[string]bool),
+		turns:    make(map[string]uint64),
 	}
 }
 
@@ -60,6 +65,10 @@ func (l *TaskLeases) Prompt(sessionID, requestID string, maxRuntimeMs int) {
 	key := taskLeaseKey(sessionID, requestID)
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	if !l.inTurnLocked(sessionID) {
+		l.lastTurn++
+		l.turns[sessionID] = l.lastTurn
+	}
 	if l.leases[key] == nil && l.acquire != nil {
 		l.leases[key] = l.acquire()
 	}
@@ -136,9 +145,29 @@ func (l *TaskLeases) InTurn(sessionID string) bool {
 	if l == nil || sessionID == "" {
 		return false
 	}
-	prefix := "task:" + sessionID + ":"
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	return l.inTurnLocked(sessionID)
+}
+
+// Turn names the session's turn in progress, 0 when it has none. A prompt
+// sent while a turn runs joins that turn; one sent after it ended starts a
+// new one with a new number. Something tied to one turn, such as a press
+// that waits for the user's confirmation, compares the numbers.
+func (l *TaskLeases) Turn(sessionID string) uint64 {
+	if l == nil || sessionID == "" {
+		return 0
+	}
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	if !l.inTurnLocked(sessionID) {
+		return 0
+	}
+	return l.turns[sessionID]
+}
+
+func (l *TaskLeases) inTurnLocked(sessionID string) bool {
+	prefix := "task:" + sessionID + ":"
 	for key := range l.timers {
 		if strings.HasPrefix(key, prefix) {
 			return true
@@ -175,6 +204,7 @@ func (l *TaskLeases) Forget(sessionID string) {
 	l.ReleaseSession(sessionID)
 	l.mu.Lock()
 	delete(l.turnDone, sessionID)
+	delete(l.turns, sessionID)
 	l.mu.Unlock()
 }
 

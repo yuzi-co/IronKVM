@@ -38,6 +38,10 @@ const (
 	agentActionsPath          = "/actions"
 	agentMCPPath              = "/mcp"
 	agentLoadImagePath        = "/load-image"
+
+	agentPowerConfirmationsPath = "/power/confirmations"
+	agentPowerConfirmPath       = "/power/confirmations/:id/confirm"
+	agentPowerDenyPath          = "/power/confirmations/:id/deny"
 )
 
 // chatSocketPaths are the chat socket's path under each base: "gateway" was
@@ -85,6 +89,19 @@ func picoclawRouter(r *gin.Engine, service *picoclaw.Service) {
 
 		frontendAPI.DELETE(agentRuntimeSessionPath, service.ReleaseRuntimeSession)
 	}
+
+	// The agent's power and reset presses wait for a person to confirm them
+	// (ironkvm-dist#167). Any role that may press power sees and answers
+	// them, but only through a login session: an API key cannot confirm what
+	// an agent asked for. The routes are new, so they live under the
+	// agent-neutral base only.
+	confirmAPI := r.Group(agentBasePath).Use(
+		middleware.CheckSession(),
+		middleware.RequireRole(authn.RoleAdmin, authn.RoleUser),
+	)
+	confirmAPI.GET(agentPowerConfirmationsPath, service.ListPowerConfirmations)
+	confirmAPI.POST(agentPowerConfirmPath, service.ConfirmPowerConfirmation)
+	confirmAPI.POST(agentPowerDenyPath, service.DenyPowerConfirmation)
 }
 
 // runtimeRouter registers the runtime routes. They use only the agent

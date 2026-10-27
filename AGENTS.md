@@ -438,7 +438,14 @@ the AI input lock, or the one `X-Agent-Session-ID` names, and their audit record
 name and that session. They act only while that session has a turn in progress
 (`agent.Bridge.InTurn`): from the prompt the user sent until turn_done, an error, a cancel, the close
 or the prompt's time limit, the same span as the task capture lease. A call after that is refused
-with `TURN_NOT_ACTIVE`.
+with `TURN_NOT_ACTIVE`. `kvm_power` never presses at once (`service/picoclaw/power_confirm.go`,
+ironkvm-dist#167): it records a confirmation tied to the session and its turn, answers
+`CONFIRMATION_REQUIRED` with its id, and the press waits 60 s for a person. The web UI lists pending
+presses from `GET /api/agent/power/confirmations` (feature `agent-power-confirm`) and answers them
+with `POST .../:id/confirm` or `.../:id/deny`; those routes take a login session of an admin or user,
+never an API key. A confirmation presses once, and only while the turn it was asked in goes on;
+`kvm_power_confirmation` lets the agent wait for the outcome. Presses from the web UI, IPMI, Home
+Assistant, external MCP and the REST API do not go through it.
 
 ## Frontend architecture
 

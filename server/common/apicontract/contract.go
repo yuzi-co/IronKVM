@@ -29,6 +29,7 @@ const APIVersion = 2
 // route; two branches that both add one conflict only on adjacent lines, and
 // the resolution is to keep both.
 var features = []string{
+	"agent-power-confirm", // /api/agent/power/confirmations: the agent's power presses wait for a person
 	"agent-routes",        // /api/agent/runtime, /sessions, /chat/ws: the on-board agent, by its neutral name
 	"agent-tiers",         // /api/agent/tiers: what MCP and the on-board agent may do
 	"api-key-scope",       // scope "view" on POST /api/auth/api-keys: a key that can only watch

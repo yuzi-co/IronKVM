@@ -255,8 +255,10 @@ func (s *Service) agentTool(name string, next protocol.ToolHandler) protocol.Too
 		}
 
 		callCtx, release := withHTTPRequestCancel(ctx)
-		result, err := next(callCtx, req)
+		note := &toolNote{}
+		result, err := next(context.WithValue(callCtx, toolNoteKey{}, note), req)
 		release()
+		event.Detail = joinAuditDetail(event.Detail, note.detail)
 		switch {
 		case err != nil:
 			event.Outcome = audit.OutcomeFail
@@ -269,6 +271,21 @@ func (s *Service) agentTool(name string, next protocol.ToolHandler) protocol.Too
 		}
 		audit.Record(event)
 		return result, err
+	}
+}
+
+type toolNoteKey struct{}
+
+// toolNote is what a tool handler adds to its call's audit record.
+type toolNote struct {
+	detail string
+}
+
+// noteToolDetail adds a remark to the audit record of the call ctx belongs
+// to, such as that a press only waits for confirmation.
+func noteToolDetail(ctx context.Context, detail string) {
+	if note, ok := ctx.Value(toolNoteKey{}).(*toolNote); ok {
+		note.detail = detail
 	}
 }
 
