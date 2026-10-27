@@ -39,6 +39,33 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         coreutils tar gzip file patchelf parted exfatprogs minisign kmod \
     && rm -rf /var/lib/apt/lists/*
 
+# genimage is for that repository's abslots/build-card.sh, which builds the card
+# image with it, and for the suites that call that script. It is built from the
+# upstream release because bookworm carries 16, and genimage 17 and older end
+# the extended partition at the end of the image instead of at the end of its
+# last logical partition. build-card.sh refuses the table that produces, and
+# refuses anything older than 18 before it starts. 19 is what Alpine 3.24
+# packages, so it is the version the other build containers use too.
+#
+# The compiler, make and pkg-config come with the base image. Only the headers
+# of libconfuse are added for the build, and they go again afterwards, while
+# libconfuse2 stays because the binary links against it.
+ARG GENIMAGE_VERSION=19
+ARG GENIMAGE_SHA256=7ec4fcb865662a8b2ff20284819044ffa84137bf3ca16fb749701291bc01f108
+RUN apt-get update && apt-get install -y --no-install-recommends libconfuse2 libconfuse-dev \
+    && curl -fsSL "https://github.com/pengutronix/genimage/releases/download/v${GENIMAGE_VERSION}/genimage-${GENIMAGE_VERSION}.tar.xz" \
+        -o /tmp/genimage.tar.xz \
+    && echo "${GENIMAGE_SHA256}  /tmp/genimage.tar.xz" | sha256sum -c - \
+    && tar -xJf /tmp/genimage.tar.xz -C /tmp \
+    && cd "/tmp/genimage-${GENIMAGE_VERSION}" \
+    && ./configure --prefix=/usr/local > /dev/null \
+    && make -j"$(nproc)" > /dev/null \
+    && make install > /dev/null \
+    && cd / && rm -rf /tmp/genimage.tar.xz "/tmp/genimage-${GENIMAGE_VERSION}" \
+    && apt-get purge -y libconfuse-dev \
+    && rm -rf /var/lib/apt/lists/* \
+    && genimage --version
+
 # The client only. The daemon is the workstation's, reached over the socket.
 ARG DOCKER_VERSION=27.5.1
 RUN curl -fsSL "https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VERSION}.tgz" \
