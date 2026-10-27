@@ -2443,7 +2443,7 @@ const fr = {
           redirectUrlOverrideDesc: 'Laissez vide pour utiliser l\'adresse ci-dessus. Renseignez-la quand un proxy inverse ne transmet pas le nom d\'hôte ou https.',
           httpWarning: 'Cette page utilise http non chiffré. Beaucoup de fournisseurs n\'acceptent les URL de redirection http que pour localhost. Si le vôtre refuse celle-ci, ouvrez l\'appareil en HTTPS ou via un proxy inverse avec TLS.',
           mappingDesc: 'Un compte du fournisseur se connecte en tant que compte local du même nom d\'utilisateur. Le compte propriétaire de l\'appareil se connecte uniquement avec son mot de passe. Le fournisseur gère l\'authentification à deux facteurs : le code local n\'est pas demandé.',
-          bindingDesc: 'La première connexion unique lie le compte local à ce compte du fournisseur, et les connexions suivantes doivent venir du même. Un administrateur peut délier un compte dans la liste des utilisateurs. Après un changement d\'émetteur, chaque compte est lié à nouveau à sa prochaine connexion.',
+          bindingDesc: 'Un administrateur lie le compte à un compte du fournisseur d\'identité, ou il est lié à la première connexion unique avec le mot de passe du compte. Les connexions suivantes doivent venir du même. Un administrateur peut délier un compte dans la liste des utilisateurs. Après un changement d\'émetteur, chaque compte doit être lié à nouveau.',
           usernameClaim: 'Associer les comptes par',
           emailDomain: 'Domaine e-mail',
           emailDomainDesc: 'La partie avant @ est le nom d\'utilisateur. Les adresses d\'autres domaines sont refusées.',

@@ -2389,7 +2389,7 @@ const en = {
           redirectUrlOverrideDesc: 'Leave empty to use the address above. Set it when a reverse proxy does not pass on the host name or https.',
           httpWarning: 'This page uses plain http. Many providers accept http redirect URLs only for localhost. If yours refuses this one, open the device over HTTPS or through a reverse proxy with TLS.',
           mappingDesc: 'A provider account signs in as the local account with the same username. The device owner account signs in with its password only. The provider does two-factor authentication: the local code is not asked for.',
-          bindingDesc: 'The first single sign-on links the local account to that provider account, and later sign-ins must come from the same one. An administrator can unlink an account in the user list. After a change of issuer, each account is linked again at its next sign-in.',
+          bindingDesc: 'An account is linked to one identity provider account by an administrator, or at its first single sign-on with the account password. Later sign-ins must come from the same one. An administrator can unlink an account in the user list. After a change of issuer, each account must be linked again.',
           usernameClaim: 'Match accounts by',
           emailDomain: 'Email domain',
           emailDomainDesc: 'The part before @ is the username. Addresses in other domains are refused.',

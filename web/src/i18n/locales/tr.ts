@@ -2407,7 +2407,7 @@ const tr = {
           redirectUrlOverrideDesc: 'Yukarıdaki adresi kullanmak için boş bırakın. Ters proxy ana bilgisayar adını veya https\'yi iletmiyorsa ayarlayın.',
           httpWarning: 'Bu sayfa şifresiz http kullanıyor. Birçok sağlayıcı http yönlendirme URL\'lerini yalnızca localhost için kabul eder. Sizinki bunu reddederse cihazı HTTPS veya TLS\'li bir ters vekil üzerinden açın.',
           mappingDesc: 'Bir sağlayıcı hesabı, aynı kullanıcı adına sahip yerel hesap olarak oturum açar. Cihaz sahibi hesabı yalnızca kendi parolasıyla girer. İki aşamalı doğrulamayı sağlayıcı yapar: yerel kod sorulmaz.',
-          bindingDesc: 'İlk çoklu oturum açma, yerel hesabı o sağlayıcı hesabına bağlar ve sonraki oturum açmalar aynı hesaptan gelmelidir. Bir yönetici, kullanıcı listesinden bir hesabın bağlantısını kaldırabilir. Yayıncı değiştirildikten sonra her hesap bir sonraki oturum açmada yeniden bağlanır.',
+          bindingDesc: 'Bir yönetici hesabı kimlik sağlayıcısındaki bir hesaba bağlar ya da hesap ilk çoklu oturum açmada hesap parolasıyla bağlanır. Sonraki oturum açmalar aynı hesaptan gelmelidir. Bir yönetici, kullanıcı listesinden bir hesabın bağlantısını kaldırabilir. Yayıncı değiştirildikten sonra her hesabın yeniden bağlanması gerekir.',
           usernameClaim: 'Hesapları eşleştirme ölçütü',
           emailDomain: 'E-posta alan adı',
           emailDomainDesc: '@ öncesindeki kısım kullanıcı adıdır. Başka alan adlarındaki adresler reddedilir.',

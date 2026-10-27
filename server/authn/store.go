@@ -114,6 +114,8 @@ type UserInfo struct {
 	SystemAccount bool   `json:"systemAccount,omitempty"`
 	TOTPEnabled   bool   `json:"totpEnabled,omitempty"`
 	OIDCLinked    bool   `json:"oidcLinked,omitempty"`
+	// OIDCIssuer is the issuer the link was made under.
+	OIDCIssuer string `json:"-"`
 }
 
 type UserPatch struct {
@@ -186,6 +188,7 @@ func (s *Store) List() ([]UserInfo, error) {
 			SystemAccount: user.SystemAccount,
 			TOTPEnabled:   user.TOTPEnabled(),
 			OIDCLinked:    user.OIDCLinked(),
+			OIDCIssuer:    user.OIDCIssuer,
 		})
 	}
 	return users, nil
@@ -643,63 +646,49 @@ func (s *Store) updateUser(username string, change func(*User) bool) (*User, err
 	return cloneUser(&db.Users[index]), nil
 }
 
-// BindOIDC checks the link of an account a single sign-on is for. It returns
-// the account and the issuer it was linked under before: issuer itself when
-// the link was already this one.
+// BindOIDC checks the link of an account a single sign-on is for, and
+// returns the account when the link is this identity. It never changes the
+// link.
 //
 // An account with no link is ErrOIDCNotLinked: a single sign-on alone never
 // links an existing account (ironkvm-dist#169). See LinkOIDC and ConfirmOIDC.
 //
-// A link made under another issuer is replaced. Only an administrator can
-// change the issuer in the settings, and a sub means nothing outside its
-// issuer, so after such a change each account links again at its next single
-// sign-on instead of being locked out. The caller audits the change.
+// So is an account linked under another issuer. A sub means nothing outside
+// its issuer, and whoever runs the identity provider the settings now name
+// could otherwise take any account by its name. After an issuer change each
+// account is linked again by an administrator or by its own password.
 //
-// A link under the same issuer with another subject is ErrOIDCSubjectMismatch,
-// and the account is left as it is.
-func (s *Store) BindOIDC(username, issuer, subject string) (*User, string, error) {
+// A link under the same issuer with another subject is ErrOIDCSubjectMismatch.
+func (s *Store) BindOIDC(username, issuer, subject string) (*User, error) {
 	if issuer == "" || subject == "" {
-		return nil, "", errors.New("an OIDC link needs an issuer and a subject")
+		return nil, errors.New("an OIDC link needs an issuer and a subject")
 	}
-	previous := ""
-	var refusal error
-	user, err := s.updateUser(username, func(user *User) bool {
-		previous = user.OIDCIssuer
-		switch {
-		case user.OIDCSubject == "":
-			refusal = ErrOIDCNotLinked
-			return false
-		case user.OIDCIssuer == issuer:
-			if user.OIDCSubject != subject {
-				refusal = ErrOIDCSubjectMismatch
-			}
-			return false
-		}
-		user.OIDCIssuer = issuer
-		user.OIDCSubject = subject
-		return true
-	})
+	user, err := s.Get(username)
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
-	if refusal != nil {
-		return nil, previous, refusal
+	switch {
+	case user.OIDCSubject == "" || user.OIDCIssuer != issuer:
+		return nil, ErrOIDCNotLinked
+	case user.OIDCSubject != subject:
+		return nil, ErrOIDCSubjectMismatch
 	}
-	return user, previous, nil
+	return user, nil
 }
 
-// ConfirmOIDC links an account that has no link, for a user who confirmed a
-// single sign-on with the account's password. The same link again is no
-// change. Any other link, which an administrator may have made meanwhile, is
-// ErrOIDCSubjectMismatch, and the account is left as it is.
+// ConfirmOIDC links an account that has no link, or one under another issuer,
+// for a user who confirmed a single sign-on with the account's password. The
+// same link again is no change. Another subject under the same issuer, which
+// an administrator may have linked meanwhile, is ErrOIDCSubjectMismatch, and
+// the account is left as it is.
 func (s *Store) ConfirmOIDC(username, issuer, subject string) (*User, error) {
 	if issuer == "" || subject == "" {
 		return nil, errors.New("an OIDC link needs an issuer and a subject")
 	}
 	mismatch := false
 	user, err := s.updateUser(username, func(user *User) bool {
-		if user.OIDCSubject != "" {
-			mismatch = user.OIDCIssuer != issuer || user.OIDCSubject != subject
+		if user.OIDCSubject != "" && user.OIDCIssuer == issuer {
+			mismatch = user.OIDCSubject != subject
 			return false
 		}
 		user.OIDCIssuer = issuer

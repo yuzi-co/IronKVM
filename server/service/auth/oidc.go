@@ -534,10 +534,10 @@ func roleFromGroups(settings *oidcSettings, claim any) authn.Role {
 // password, or by the login that created it, and a login with the same issuer
 // and another sub is refused. An account with no link is refused with
 // oidcErrUnlinked, and user is set so that the caller can offer the password
-// confirmation (ironkvm-dist#169). A link made under
-// another issuer is replaced (see authn.Store.BindOIDC), so changing the
-// issuer in the settings links every account again at its next login rather
-// than locking them all out.
+// confirmation (ironkvm-dist#169). So is an account
+// linked under another issuer (see authn.Store.BindOIDC): after the issuer in
+// the settings changes, each account is linked again by an administrator or
+// by its own password.
 func resolveOIDCAccount(settings *oidcSettings, username string, groupRole authn.Role, identity oidcIdentity) (user *authn.User, link, reason, detail string) {
 	user, err := authn.DefaultStore.Get(username)
 	if errors.Is(err, authn.ErrUserNotFound) {
@@ -582,18 +582,16 @@ func resolveOIDCAccount(settings *oidcSettings, username string, groupRole authn
 
 	// The link is checked before the groups touch the role, so an IdP
 	// account that is not this one cannot change it either.
-	bound, previous, err := authn.DefaultStore.BindOIDC(user.Username, identity.issuer, identity.subject)
+	bound, err := authn.DefaultStore.BindOIDC(user.Username, identity.issuer, identity.subject)
 	switch {
+	case errors.Is(err, authn.ErrOIDCNotLinked) && user.OIDCSubject != "" && user.OIDCIssuer != identity.issuer:
+		return user, link, oidcErrUnlinked, "linked under another issuer, " + clip(user.OIDCIssuer, 128)
 	case errors.Is(err, authn.ErrOIDCNotLinked):
 		return user, link, oidcErrUnlinked, "not linked to an identity provider account yet"
 	case errors.Is(err, authn.ErrOIDCSubjectMismatch):
 		return nil, link, oidcErrBinding, "linked to another account at " + identity.issuer + ", not sub " + clip(identity.subject, 64)
 	case err != nil:
 		return nil, link, oidcErrServer, "link account: " + err.Error()
-	case previous == "":
-		link = "linked to " + identity.issuer
-	case previous != identity.issuer:
-		link = "linked to " + identity.issuer + " in place of " + previous
 	}
 	user, err = applyGroupRole(bound, groupRole)
 	if err != nil {

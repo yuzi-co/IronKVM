@@ -2428,7 +2428,7 @@ const ca = {
           redirectUrlOverrideDesc: 'Deixeu-ho buit per usar l\'adreça de dalt. Definiu-ho quan un servidor intermediari invers no transmet el nom de l\'amfitrió o https.',
           httpWarning: 'Aquesta pàgina fa servir http sense xifrar. Molts proveïdors només accepten URL de redirecció http per a localhost. Si el vostre la rebutja, obriu el dispositiu per HTTPS o a través d\'un servidor intermediari invers amb TLS.',
           mappingDesc: 'Un compte del proveïdor inicia la sessió com el compte local amb el mateix nom d\'usuari. El compte del propietari del dispositiu només entra amb la seva contrasenya. El proveïdor fa l\'autenticació en dos passos: no es demana el codi local.',
-          bindingDesc: 'El primer inici de sessió únic vincula el compte local a aquell compte del proveïdor, i els inicis de sessió posteriors han de venir del mateix. Un administrador pot desvincular un compte a la llista d\'usuaris. Després d\'un canvi d\'emissor, cada compte es torna a vincular en el següent inici de sessió.',
+          bindingDesc: 'Un administrador vincula el compte a un compte del proveïdor d\'identitat, o es vincula en el primer inici de sessió únic amb la contrasenya del compte. Els inicis de sessió posteriors han de venir del mateix. Un administrador pot desvincular un compte a la llista d\'usuaris. Després d\'un canvi d\'emissor, cal tornar a vincular cada compte.',
           usernameClaim: 'Associa els comptes per',
           emailDomain: 'Domini de correu',
           emailDomainDesc: 'La part abans de @ és el nom d\'usuari. Es rebutgen les adreces d\'altres dominis.',
