@@ -49,6 +49,7 @@ var features = []string{
 	"role-viewer",         // role "viewer" in /api/auth/users and GET /api/auth/account: video only
 	"settings-backup",     // /api/settings/export, /preview, /import: settings file without secrets
 	"share-links",         // /api/auth/share, /api/auth/share-links: expiring view-only links
+	"slot-install",        // /api/slot: A/B slot status, install with progress, try, confirm, revert (see SetProbe)
 	"status-bar",          // GET /api/stream/info
 	"stun-server",         // /api/network/webrtc/stun: the STUN server, or off
 	"ui-update",           // /api/ui: separately installed UI packages

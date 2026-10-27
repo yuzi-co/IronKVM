@@ -40,6 +40,7 @@ export const SERVER_FEATURES = [
   'role-viewer', // the viewer role in Settings > Users, and a UI with no input for it
   'settings-backup', // /api/settings/export, /preview, /import (Settings > Backup: settings file)
   'share-links', // /api/auth/share and /api/auth/share-links (Settings > Account > Share links)
+  'slot-install', // /api/slot (Settings > Update: system slots, install, try, confirm, revert)
   'status-bar', // GET /api/stream/info (status bar source line)
   'stun-server', // /api/network/webrtc/stun (Settings > Network > STUN server)
   'ui-update', // /api/ui: separate UI packages (Settings > Update)

@@ -26,6 +26,7 @@ import (
 	"NanoKVM-Server/service/metrics"
 	"NanoKVM-Server/service/network"
 	"NanoKVM-Server/service/sequence"
+	"NanoKVM-Server/service/slot"
 	"NanoKVM-Server/service/storage/diskfs"
 	"NanoKVM-Server/service/stream/webrtc"
 	"NanoKVM-Server/service/vm"
@@ -95,6 +96,9 @@ func initialize() {
 	// starts; the kernel boots with the device tree's rates. The feature is
 	// advertised only on a kernel that has the driver (slot B).
 	apicontract.SetProbe("video-clock", vm.VideoClockSupported)
+	// Slot installs need the slot tool, which only the distribution image
+	// carries (ironkvm-dist#165).
+	apicontract.SetProbe("slot-install", slot.Available)
 	vm.ApplyVideoClock()
 
 	// init screen parameters

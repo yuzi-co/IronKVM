@@ -130,6 +130,7 @@ func server(r *gin.Engine) {
 	versionRouter(r)
 	authRouter(r)
 	applicationRouter(r)
+	slotRouter(r)
 	uiRouter(r)
 	vmRouter(r)
 	streamRouter(r)

@@ -112,6 +112,10 @@ func Request(c *gin.Context, e Event) {
 	Record(e)
 }
 
+// IdentityOf is who made the request, for a handler that records an event
+// after the request has answered, such as the end of a slot install.
+func IdentityOf(c *gin.Context) (Identity, bool) { return identityOf(c) }
+
 func identityOf(c *gin.Context) (Identity, bool) {
 	if identify == nil {
 		return Identity{}, false
