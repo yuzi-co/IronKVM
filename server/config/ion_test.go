@@ -2,7 +2,7 @@ package config
 
 import "testing"
 
-// A server.yaml written before this feature existed has no ion block, so viper
+// A server.yaml written before this feature existed has no ion block, so loading
 // leaves the floor at zero. Zero would make every verdict unavailable, which is
 // a silent loss of the whole feature on every existing device.
 func TestAMissingIonBlockGetsTheDefaultFloor(t *testing.T) {
@@ -18,7 +18,7 @@ func TestAMissingIonBlockGetsTheDefaultFloor(t *testing.T) {
 }
 
 // The floor is written twice: once in defaultConfig, which a device with no
-// server.yaml at all gets through readByDefault, and once in the coercion
+// server.yaml at all gets through defaultRoot, and once in the coercion
 // above, which a device with an older server.yaml gets. A half-applied edit
 // moves one and leaves the other, and then two devices grade the same carveout
 // differently. Neither test above reads defaultConfig, so neither would notice.

@@ -1,0 +1,31 @@
+# Scalars of a type other than the field's.
+port:
+    http: "8080"
+    https: "0x20FB"
+http2: "true"
+host: 127
+stun: true
+proxy: 1.5
+jwt:
+    refreshTokenDuration: "100"
+    revokeTokensOnLogout: "false"
+ion:
+    reserveFloor: 1.0e7
+security:
+    loginMaxFailures: "7"
+    loginLockoutDuration: true
+    allowedNetworks: "10.0.0.0/8, 192.168.1.1"
+vnc:
+    enabled: 1
+    port: "5902"
+    vncAuth: 0
+hostlog:
+    sources: 10.0.0.1
+    patterns: ""
+    syslog:
+        enabled: "1"
+    netconsole:
+        port: 6000.0
+watchdog:
+    action: 5
+    pingHost: 10

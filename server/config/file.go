@@ -16,9 +16,15 @@ func Read() (*Config, error) {
 		return nil, err
 	}
 
+	// Read the file as the server did at start, so that saving a setting
+	// keeps a key written in another case or a value of another type.
 	var conf Config
 
-	if err := yaml.Unmarshal(data, &conf); err != nil {
+	root, err := parseConfig(data)
+	if err == nil {
+		err = decodeConfig(root, &conf)
+	}
+	if err != nil {
 		log.Fatalf("failed to unmarshal config: %v", err)
 		return nil, err
 	}

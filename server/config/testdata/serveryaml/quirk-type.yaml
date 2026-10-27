@@ -1,0 +1,4 @@
+port:
+    http: 80
+    https: 443
+logger: info

@@ -1,0 +1,7 @@
+# The same key twice in different casings: the later one wins.
+port:
+    http: 80
+    https: 443
+logger:
+    level: info
+    Level: debug

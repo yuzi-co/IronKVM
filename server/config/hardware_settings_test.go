@@ -1,25 +1,22 @@
 package config
 
 import (
-	"bytes"
 	"strings"
 	"testing"
 
-	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
 )
 
-// loadYAML decodes server.yaml content the way initialize does, through viper.
+// loadYAML decodes server.yaml content the way initialize does.
 func loadYAML(t *testing.T, content string) Config {
 	t.Helper()
 
-	v := viper.New()
-	v.SetConfigType("yaml")
-	if err := v.ReadConfig(bytes.NewBufferString(content)); err != nil {
+	root, err := parseConfig([]byte(content))
+	if err != nil {
 		t.Fatalf("read: %s", err)
 	}
 	var conf Config
-	if err := v.Unmarshal(&conf); err != nil {
+	if err := decodeConfig(root, &conf); err != nil {
 		t.Fatalf("unmarshal: %s", err)
 	}
 	return conf
@@ -58,7 +55,7 @@ func TestAnOldConfigWithoutTheKeyLoadsAsNotConnected(t *testing.T) {
 	}
 }
 
-// The key is hardware.powerLed, both for viper at start and for the
+// The key is hardware.powerLed, both for the server at start and for the
 // Read/Write pair that saves settings.
 func TestThePowerLEDSettingIsKeptUnderHardware(t *testing.T) {
 	conf := loadYAML(t, "hardware:\n  powerLed: true\n")

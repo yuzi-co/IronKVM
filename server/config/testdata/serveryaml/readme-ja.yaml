@@ -1,0 +1,47 @@
+proto: http
+host: ""
+port:
+    http: 80
+    https: 443
+cert:
+    crt: server.crt
+    key: server.key
+
+# HTTPS リスナーが HTTP/2 を提供するかどうか。 デフォルト: false。 このデフォルトを推奨します。
+# ここには多重化するものがなく、HTTP/2 は映像ストリームに代償を払わせます。 1080p での実測では、
+# MJPEG は HTTP/1.1 で 10.5MB/s、HTTP/2 では 3.5MB/s でした。 さらにキーボードとマウスが
+# 使えなくなります。 websocket は HTTP/2 接続では動作せず、HID は `/api/ws` を使うからです。
+# 平文の HTTP リスナーは HTTP/2 を提供しないため、`proto` が `http` のときこの設定は効きません。
+http2: false
+
+# ログレベル (debug/info/warn/error)
+# 注意: 本番環境では 'info' または 'error' を使用し、'debug' は開発環境でのみ使用してください
+logger:
+    level: info
+    file: stdout
+
+# 認証設定 (enable/disable)
+# 注意: 認証を無効にするのは開発環境でのみ行ってください
+authentication: enable
+
+jwt:
+   # JWT 秘密鍵の設定。 空のままにすると、サーバーは初回起動時にランダムな 64 バイトの鍵を生成し、`/etc/kvm/.jwt_secret` に保存します。 再起動してもセッションは有効なままです。
+   secretKey: ""
+   # JWT トークンの有効期限（秒単位）。 デフォルト: 2678400 (31 日)
+   refreshTokenDuration: 2678400
+   # ユーザーがログアウトすると、すべての JWT トークンが無効になります。 デフォルト: true
+   revokeTokensOnLogout: true
+
+# ION 予約領域
+ion:
+   # ストリームの開始が必要とするメモリ量の推定値です（バイト単位）。 サーバーは動作中に実際のコストを測定します。 この値と実測値のうち大きい方を使用します。 デフォルト: 12582912 (12MB)
+   reserveFloor: 12582912
+
+# カスタム STUN サーバーのアドレス
+stun: stun.l.google.com:19302
+
+# カスタム TURN サーバーのアドレスと認証情報
+turn:
+    turnAddr: turn.cloudflare.com:3478
+    turnUser: example_user
+    turnCred: example_cred

@@ -1,0 +1,130 @@
+{
+	"Source": "file",
+	"Error": false,
+	"Config": {
+		"Proto": "https",
+		"Host": "",
+		"Port": {
+			"Http": 8080,
+			"Https": 8443
+		},
+		"Cert": {
+			"Crt": "a.crt",
+			"Key": ""
+		},
+		"Logger": {
+			"Level": "",
+			"File": ""
+		},
+		"Authentication": "",
+		"JWT": {
+			"SecretKey": "abc",
+			"RefreshTokenDuration": 10,
+			"RevokeTokensOnLogout": false
+		},
+		"Stun": "",
+		"Turn": {
+			"TurnAddr": "",
+			"TurnUser": "",
+			"TurnCred": ""
+		},
+		"Security": {
+			"LoginLockoutDuration": 0,
+			"LoginMaxFailures": 9,
+			"AllowedNetworks": [
+				"10.0.0.0/8"
+			]
+		},
+		"Ion": {
+			"ReserveFloor": 1000
+		},
+		"Proxy": "",
+		"HTTP2": true,
+		"HardwareSettings": {
+			"PowerLED": true
+		},
+		"Redfish": {
+			"Enabled": false
+		},
+		"Watchdog": {
+			"Enabled": false,
+			"TimeoutMinutes": 0,
+			"Action": "",
+			"CooldownMinutes": 0,
+			"MaxPerHour": 0,
+			"PingHost": ""
+		},
+		"NUT": {
+			"Enabled": false,
+			"Host": "",
+			"Port": 0,
+			"UPS": "",
+			"Username": "",
+			"OnBatteryMinutes": 0,
+			"ForceOffMinutes": 0,
+			"PowerOnRestore": false,
+			"PowerOnMinCharge": 0,
+			"PowerOnDelaySeconds": 0
+		},
+		"IPMI": {
+			"Enabled": false
+		},
+		"NetBoot": {
+			"USB": true,
+			"LAN": false
+		},
+		"VNC": {
+			"Enabled": false,
+			"Port": 0,
+			"MaxFPS": 5,
+			"VNCAuth": true
+		},
+		"WebRTC": {
+			"UDPPort": 9,
+			"PublicAddress": "x.example"
+		},
+		"WHEP": {
+			"Enabled": false
+		},
+		"RTSP": {
+			"Enabled": false,
+			"Port": 0,
+			"UDP": false,
+			"UDPPort": 0,
+			"TLS": false,
+			"TLSPort": 0
+		},
+		"SRT": {
+			"Enabled": false,
+			"Port": 0,
+			"LatencyMs": 0
+		},
+		"Picoclaw": {
+			"ScreenshotWidth": 640,
+			"ScreenshotQuality": 0
+		},
+		"HostLog": {
+			"Syslog": {
+				"Enabled": true,
+				"Port": 1514
+			},
+			"Netconsole": {
+				"Enabled": false,
+				"Port": 0
+			},
+			"Bind": "",
+			"Sources": null,
+			"MemoryKB": 64,
+			"Disk": false,
+			"DiskKB": 0,
+			"Patterns": null
+		},
+		"Hardware": {
+			"Version": 0,
+			"GPIOReset": "",
+			"GPIOPower": "",
+			"GPIOPowerLED": "",
+			"GPIOHDDLed": ""
+		}
+	}
+}

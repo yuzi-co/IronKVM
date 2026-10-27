@@ -1,0 +1,136 @@
+{
+	"Source": "file",
+	"Error": false,
+	"Config": {
+		"Proto": "https",
+		"Host": "10.0.30.222",
+		"Port": {
+			"Http": 8080,
+			"Https": 8443
+		},
+		"Cert": {
+			"Crt": "/etc/kvm/server.crt",
+			"Key": "/etc/kvm/server.key"
+		},
+		"Logger": {
+			"Level": "debug",
+			"File": "/tmp/server.log"
+		},
+		"Authentication": "enable",
+		"JWT": {
+			"SecretKey": "0123456789abcdef",
+			"RefreshTokenDuration": 86400,
+			"RevokeTokensOnLogout": false
+		},
+		"Stun": "disable",
+		"Turn": {
+			"TurnAddr": "turn.example.com:3478",
+			"TurnUser": "user",
+			"TurnCred": "cred"
+		},
+		"Security": {
+			"LoginLockoutDuration": 300,
+			"LoginMaxFailures": 3,
+			"AllowedNetworks": [
+				"10.0.0.0/8",
+				"192.168.1.5"
+			]
+		},
+		"Ion": {
+			"ReserveFloor": 25165824
+		},
+		"Proxy": "http://proxy.lan:3128",
+		"HTTP2": true,
+		"HardwareSettings": {
+			"PowerLED": true
+		},
+		"Redfish": {
+			"Enabled": false
+		},
+		"Watchdog": {
+			"Enabled": true,
+			"TimeoutMinutes": 7,
+			"Action": "power",
+			"CooldownMinutes": 20,
+			"MaxPerHour": 2,
+			"PingHost": "10.0.30.1"
+		},
+		"NUT": {
+			"Enabled": true,
+			"Host": "nut.lan",
+			"Port": 3494,
+			"UPS": "ups1",
+			"Username": "monuser",
+			"OnBatteryMinutes": 4,
+			"ForceOffMinutes": 6,
+			"PowerOnRestore": true,
+			"PowerOnMinCharge": 40,
+			"PowerOnDelaySeconds": 90
+		},
+		"IPMI": {
+			"Enabled": true
+		},
+		"NetBoot": {
+			"USB": true,
+			"LAN": true
+		},
+		"VNC": {
+			"Enabled": true,
+			"Port": 5901,
+			"MaxFPS": 10,
+			"VNCAuth": true
+		},
+		"WebRTC": {
+			"UDPPort": 50000,
+			"PublicAddress": "kvm.example.com"
+		},
+		"WHEP": {
+			"Enabled": true
+		},
+		"RTSP": {
+			"Enabled": true,
+			"Port": 8555,
+			"UDP": true,
+			"UDPPort": 8002,
+			"TLS": true,
+			"TLSPort": 8323
+		},
+		"SRT": {
+			"Enabled": true,
+			"Port": 8891,
+			"LatencyMs": 200
+		},
+		"Picoclaw": {
+			"ScreenshotWidth": 1280,
+			"ScreenshotQuality": 70
+		},
+		"HostLog": {
+			"Syslog": {
+				"Enabled": true,
+				"Port": 5514
+			},
+			"Netconsole": {
+				"Enabled": true,
+				"Port": 6667
+			},
+			"Bind": "usb",
+			"Sources": [
+				"10.0.30.0/24"
+			],
+			"MemoryKB": 512,
+			"Disk": true,
+			"DiskKB": 2048,
+			"Patterns": [
+				"panic",
+				"\\bBUG\\b"
+			]
+		},
+		"Hardware": {
+			"Version": 0,
+			"GPIOReset": "",
+			"GPIOPower": "",
+			"GPIOPowerLED": "",
+			"GPIOHDDLed": ""
+		}
+	}
+}

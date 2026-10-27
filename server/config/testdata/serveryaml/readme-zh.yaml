@@ -1,0 +1,40 @@
+# 网络设置
+proto: http            # 访问协议，默认为 `http`，仅当配置了证书时支持改为 `https`
+host: ""
+port:
+    http: 80           # HTTP 服务的监听端口，默认为 `80`
+    https: 443         # HTTPS 服务的监听端口（启用 https 协议时生效），默认为 `443`
+cert:
+    crt: server.crt    # HTTPS 服务使用的公钥证书路径
+    key: server.key    # HTTPS 服务使用的私钥文件路径
+http2: false           # HTTPS 监听端口是否提供 HTTP/2，默认为 `false`，并且建议保持默认。此处没有可复用连接的多路请求，而 HTTP/2 会让视频流付出代价：在 1080p 下实测，MJPEG 经 HTTP/1.1 传输 10.5MB/s，经 HTTP/2 仅 3.5MB/s。它还会让键盘和鼠标失效，因为 websocket 无法运行在 HTTP/2 连接上，而 HID 使用 `/api/ws`。纯 HTTP 监听端口从不提供 HTTP/2，因此 `proto` 为 `http` 时该设置无效
+
+
+# 日志配置
+logger:
+    level: info     # 全局日志打印级别，从高到底可选 `trace`, `debug`, `info`, `warn`, `error`, `fatal`, `panic`。默认为 `info`
+    file: stdout    # 日志输出目标位置。若填写 `stdout` 则输出在控制台。配置为文件路径则会输出到对应的文件。默认为 `stdout`
+
+
+# 认证与安全
+authentication: enable              # 是否开启 HTTP 接口与网页的身份校验。可选 `enable` (开启) 或 `disable` (禁用)。默认为 `enable`。强烈建议公开在互联网的机器开启此项！
+jwt:
+   secretKey: ""                    # 用于签发和验证 JWT Token 的密钥。如果不填，服务首次启动时自动随机生成并保存到 `/etc/kvm/.jwt_secret`，重启后会话依然有效
+   refreshTokenDuration: 2678400    # 登录超时的刷新周期（单位：秒）。默认为 `2678400`（约31天）
+   revokeTokensOnLogout: true       # 退出登录时是否废除该用户的全部会话；不会影响其他用户。设为 false 时仅清除浏览器 Cookie，不推荐使用。默认为 `true`
+security:
+   loginLockoutDuration: 0,         # 达到失败上限后，禁止该 IP 再次尝试登录的持续时间（单位：秒）。如果设为 `0` 或不填，则代表不开启防暴力破解功能。默认为 `0`
+   loginMaxFailures:     5,         # 允许触发保护前，单个 IP 连续登录失败的最大次数。默认为 `5`
+
+
+# ION 预留内存
+ion:
+    reserveFloor: 12582912    # 启动视频流的预估内存开销（单位：字节）。服务运行期间会持续测量实际开销，并取该预设值与实测值中的较大者。默认为 `12582912`（12MB）
+
+
+# WebRTC 内网穿透
+stun: stun.l.google.com:19302    # 默认使用的 STUN 服务器地址，用于打洞获取公网 IP 建立 P2P 流
+turn:
+    turnAddr: example_addr       # 当 P2P 直连失败时，作为备用的中继（TURN）服务器地址（格式如 `ip:port`）。留空表示不使用 TURN 中继
+    turnUser: example_user       # TURN 服务器授权连接时使用的用户名
+    turnCred: example_cred       # TURN 服务器授权连接时使用的凭据/密码

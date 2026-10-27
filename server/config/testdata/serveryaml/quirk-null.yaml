@@ -1,0 +1,15 @@
+# Blocks and values present but empty.
+port:
+    http: 80
+    https: 443
+host:
+ion:
+jwt:
+redfish:
+    enabled:
+security:
+    allowedNetworks:
+hostlog:
+    sources: []
+    patterns:
+webrtc: {}

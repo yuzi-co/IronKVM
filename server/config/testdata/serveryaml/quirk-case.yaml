@@ -1,0 +1,36 @@
+# Keys in casings other than the ones the server writes.
+Proto: https
+PORT:
+    HTTP: 8080
+    Https: 8443
+Cert:
+    CRT: a.crt
+JWT:
+    SecretKey: abc
+    RefreshTokenDuration: 10
+    REVOKETOKENSONLOGOUT: false
+HTTP2: true
+Security:
+    AllowedNetworks: [10.0.0.0/8]
+    loginmaxfailures: 9
+ION:
+    ReserveFloor: 1000
+Hardware:
+    PowerLED: true
+Redfish:
+    Enabled: false
+HostLog:
+    Syslog:
+        Enabled: true
+        PORT: 1514
+    MemoryKB: 64
+WebRTC:
+    UdpPort: 9
+    PUBLICADDRESS: x.example
+NetBoot:
+    USB: true
+VNC:
+    MaxFPS: 5
+    VNCAuth: true
+PicoClaw:
+    ScreenshotWidth: 640
