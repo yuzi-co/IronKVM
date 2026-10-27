@@ -16,6 +16,7 @@ import (
 	"NanoKVM-Server/service/netboot"
 	"NanoKVM-Server/service/storage"
 	"NanoKVM-Server/service/upstream"
+	"NanoKVM-Server/utils/atomicfile"
 )
 
 // The netboot.xyz ISO behind the image downloader's boot menu button. The
@@ -163,11 +164,7 @@ func writeBootMenuRecord(rec bootMenu) error {
 	if err := os.MkdirAll(filepath.Dir(bootMenuRecordPath), 0o755); err != nil {
 		return err
 	}
-	tmp := bootMenuRecordPath + ".tmp"
-	if err := os.WriteFile(tmp, data, 0o644); err != nil {
-		return err
-	}
-	if err := os.Rename(tmp, bootMenuRecordPath); err != nil {
+	if err := atomicfile.WriteFile(bootMenuRecordPath, data, 0o644); err != nil {
 		log.Errorf("record the netboot.xyz ISO's release: %s", err)
 		return err
 	}

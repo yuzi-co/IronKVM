@@ -14,6 +14,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"NanoKVM-Server/proto"
+	"NanoKVM-Server/utils/atomicfile"
 )
 
 // The USB identity is the vendor and product IDs and the strings the gadget
@@ -332,12 +333,7 @@ func writeUSBIdentityFile(data []byte) error {
 		return err
 	}
 
-	tmp := usbIdentityFile + ".tmp"
-	if err := os.WriteFile(tmp, data, 0o644); err != nil {
-		return err
-	}
-
-	return os.Rename(tmp, usbIdentityFile)
+	return atomicfile.WriteFile(usbIdentityFile, data, 0o644)
 }
 
 func removeUSBIdentityFile() error {

@@ -2,11 +2,12 @@ package redfish
 
 import (
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
+
+	"NanoKVM-Server/utils/atomicfile"
 )
 
 // UUIDFile keeps the service's UUID, so it stays the same across restarts.
@@ -24,34 +25,8 @@ func LoadUUID(path string) string {
 	}
 
 	id := uuid.NewString()
-	if err := writeFileAtomic(path, []byte(id+"\n")); err != nil {
+	if err := atomicfile.WriteFile(path, []byte(id+"\n"), 0o644); err != nil {
 		log.Warnf("redfish: keep the service UUID in %s: %s", path, err)
 	}
 	return id
-}
-
-// writeFileAtomic replaces path in one rename, so a power cut leaves either
-// the old file or the new one.
-func writeFileAtomic(path string, data []byte) error {
-	tmp, err := os.CreateTemp(filepath.Dir(path), filepath.Base(path)+".*")
-	if err != nil {
-		return err
-	}
-	defer os.Remove(tmp.Name())
-
-	if _, err := tmp.Write(data); err != nil {
-		tmp.Close()
-		return err
-	}
-	if err := tmp.Sync(); err != nil {
-		tmp.Close()
-		return err
-	}
-	if err := tmp.Close(); err != nil {
-		return err
-	}
-	if err := os.Chmod(tmp.Name(), 0o644); err != nil {
-		return err
-	}
-	return os.Rename(tmp.Name(), path)
 }

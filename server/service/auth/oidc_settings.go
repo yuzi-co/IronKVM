@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"net/url"
 	"os"
-	"path/filepath"
 	"strings"
 	"sync"
 	"unicode"
 	"unicode/utf8"
 
 	"NanoKVM-Server/authn"
+	"NanoKVM-Server/utils/atomicfile"
 )
 
 // OIDCSettingsFile holds the OpenID Connect provider's settings, client
@@ -131,31 +131,7 @@ func saveOIDCSettingsLocked(s oidcSettings) error {
 	if err != nil {
 		return err
 	}
-	dir := filepath.Dir(oidcSettingsFile)
-	tmp, err := os.CreateTemp(dir, ".oidc-*.json")
-	if err != nil {
-		return err
-	}
-	name := tmp.Name()
-	defer os.Remove(name)
-	// CreateTemp makes the file 0600, so the secret is never readable to
-	// others, not even for the moment before the rename.
-	if err = tmp.Chmod(0o600); err != nil {
-		tmp.Close()
-		return err
-	}
-	if _, err = tmp.Write(append(data, '\n')); err != nil {
-		tmp.Close()
-		return err
-	}
-	if err = tmp.Sync(); err != nil {
-		tmp.Close()
-		return err
-	}
-	if err = tmp.Close(); err != nil {
-		return err
-	}
-	return os.Rename(name, oidcSettingsFile)
+	return atomicfile.WriteFile(oidcSettingsFile, append(data, '\n'), 0o600)
 }
 
 // useOIDCSettingsFile points the settings at path, for tests.

@@ -28,6 +28,7 @@ import (
 	"NanoKVM-Server/service/storage"
 	"NanoKVM-Server/service/storage/mkfs"
 	"NanoKVM-Server/utils"
+	"NanoKVM-Server/utils/atomicfile"
 )
 
 const (
@@ -233,15 +234,7 @@ func (s *Service) saveState(st state) error {
 	if err != nil {
 		return err
 	}
-	return writeAtomic(inDir(stateName), data)
-}
-
-func writeAtomic(name string, data []byte) error {
-	tmp := name + ".tmp"
-	if err := os.WriteFile(tmp, data, 0o644); err != nil {
-		return err
-	}
-	return os.Rename(tmp, name)
+	return atomicfile.WriteFile(inDir(stateName), data, 0o644)
 }
 
 func (st state) identity() (Identity, error) {
@@ -394,7 +387,7 @@ func (s *Service) insert() error {
 	if err != nil {
 		return err
 	}
-	if err := writeAtomic(inDir(headName), disk.Head); err != nil {
+	if err := atomicfile.WriteFile(inDir(headName), disk.Head, 0o644); err != nil {
 		return err
 	}
 

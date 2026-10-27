@@ -22,6 +22,7 @@ import (
 	"NanoKVM-Server/service/extensions/addon"
 	"NanoKVM-Server/service/extensions/vpn"
 	"NanoKVM-Server/utils"
+	"NanoKVM-Server/utils/atomicfile"
 )
 
 // AddonName is the add-on that carries dnsmasq and the boot files, in
@@ -389,11 +390,7 @@ func replaceFile(name, content string) (bool, error) {
 	if err := os.MkdirAll(filepath.Dir(name), 0o755); err != nil {
 		return false, err
 	}
-	tmp := name + ".tmp"
-	if err := os.WriteFile(tmp, []byte(content), 0o644); err != nil {
-		return false, err
-	}
-	return true, os.Rename(tmp, name)
+	return true, atomicfile.WriteFile(name, []byte(content), 0o644)
 }
 
 // removeFile removes a file and says whether there was one.

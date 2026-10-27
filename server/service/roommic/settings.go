@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"NanoKVM-Server/utils/atomicfile"
 )
 
 // SettingsFile holds the administrator's choice, next to the other device
@@ -83,28 +85,7 @@ func saveSettings(settings Settings) error {
 		return err
 	}
 
-	tmp, err := os.CreateTemp(dir, ".room-mic-*")
-	if err != nil {
-		return err
-	}
-	defer func() { _ = os.Remove(tmp.Name()) }()
-
-	if _, err := tmp.Write(append(data, '\n')); err != nil {
-		_ = tmp.Close()
-		return err
-	}
-	if err := tmp.Sync(); err != nil {
-		_ = tmp.Close()
-		return err
-	}
-	if err := tmp.Close(); err != nil {
-		return err
-	}
-	if err := os.Chmod(tmp.Name(), 0o644); err != nil {
-		return err
-	}
-
-	return os.Rename(tmp.Name(), SettingsFile)
+	return atomicfile.WriteFile(SettingsFile, append(data, '\n'), 0o644)
 }
 
 // Validate checks the settings against the limits the settings page applies.

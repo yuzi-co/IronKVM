@@ -12,6 +12,7 @@ import (
 	"sync"
 
 	"NanoKVM-Server/service/events"
+	"NanoKVM-Server/utils/atomicfile"
 )
 
 // File holds the notification settings, tokens included, so it is written
@@ -273,29 +274,7 @@ func (st *Store) save(s Settings) error {
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return err
 	}
-	tmp, err := os.CreateTemp(dir, ".notify.json.*")
-	if err != nil {
-		return err
-	}
-	tmpPath := tmp.Name()
-	defer func() { _ = os.Remove(tmpPath) }()
-
-	if err := tmp.Chmod(0o600); err != nil {
-		_ = tmp.Close()
-		return err
-	}
-	if _, err := tmp.Write(data); err != nil {
-		_ = tmp.Close()
-		return err
-	}
-	if err := tmp.Sync(); err != nil {
-		_ = tmp.Close()
-		return err
-	}
-	if err := tmp.Close(); err != nil {
-		return err
-	}
-	return os.Rename(tmpPath, st.path)
+	return atomicfile.WriteFile(st.path, data, 0o600)
 }
 
 // hint shows where a secret URL points without the part that is secret: the

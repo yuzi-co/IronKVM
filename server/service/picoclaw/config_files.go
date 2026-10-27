@@ -11,6 +11,8 @@ import (
 	"strings"
 
 	"gopkg.in/yaml.v3"
+
+	"NanoKVM-Server/utils/atomicfile"
 )
 
 type picoclawConfigFile struct {
@@ -171,7 +173,7 @@ func (d *picoclawConfigDocument) saveConfig() error {
 		return fmt.Errorf("failed to encode updated picoclaw config: %w", err)
 	}
 	defer invalidatePicoclawSettingsCache()
-	if err := writeFileAtomic(d.configPath, updated, 0o600); err != nil {
+	if err := atomicfile.WriteFile(d.configPath, updated, 0o600); err != nil {
 		return fmt.Errorf("failed to write picoclaw config: %w", err)
 	}
 	return nil
@@ -188,7 +190,7 @@ func (d *picoclawConfigDocument) saveSecurity() error {
 		return fmt.Errorf("failed to finalize picoclaw security config: %w", err)
 	}
 	defer invalidatePicoclawSettingsCache()
-	if err := writeFileAtomic(d.securityPath, buf.Bytes(), 0o600); err != nil {
+	if err := atomicfile.WriteFile(d.securityPath, buf.Bytes(), 0o600); err != nil {
 		return fmt.Errorf("failed to write picoclaw security config: %w", err)
 	}
 	return nil

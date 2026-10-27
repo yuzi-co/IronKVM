@@ -15,6 +15,7 @@ import (
 
 	"NanoKVM-Server/proto"
 	"NanoKVM-Server/service/hid"
+	"NanoKVM-Server/utils/atomicfile"
 )
 
 // The USB network is a private link between the board and the managed host.
@@ -140,12 +141,7 @@ func writeUSBSubnet(subnet usbSubnet) error {
 		return err
 	}
 
-	tmp := usbNetworkSubnetFile + ".tmp"
-	if err := os.WriteFile(tmp, []byte(subnet.prefix.String()+"\n"), 0o644); err != nil {
-		return err
-	}
-
-	return os.Rename(tmp, usbNetworkSubnetFile)
+	return atomicfile.WriteFile(usbNetworkSubnetFile, []byte(subnet.prefix.String()+"\n"), 0o644)
 }
 
 // usbSubnetOverlap names the first address on another interface of the board

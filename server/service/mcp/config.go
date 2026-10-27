@@ -9,6 +9,8 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+
+	"NanoKVM-Server/utils/atomicfile"
 )
 
 const (
@@ -81,29 +83,7 @@ func saveConfigToPath(path string, cfg Config) error {
 	}
 	data = append(data, '\n')
 
-	tmp, err := os.CreateTemp(dir, ".mcp.json.*")
-	if err != nil {
-		return fmt.Errorf("create temporary MCP config: %w", err)
-	}
-	tmpPath := tmp.Name()
-	defer func() { _ = os.Remove(tmpPath) }()
-
-	if err := tmp.Chmod(0o600); err != nil {
-		_ = tmp.Close()
-		return fmt.Errorf("set temporary MCP config permissions: %w", err)
-	}
-	if _, err := tmp.Write(data); err != nil {
-		_ = tmp.Close()
-		return fmt.Errorf("write temporary MCP config: %w", err)
-	}
-	if err := tmp.Sync(); err != nil {
-		_ = tmp.Close()
-		return fmt.Errorf("sync temporary MCP config: %w", err)
-	}
-	if err := tmp.Close(); err != nil {
-		return fmt.Errorf("close temporary MCP config: %w", err)
-	}
-	if err := os.Rename(tmpPath, path); err != nil {
+	if err := atomicfile.WriteFile(path, data, 0o600); err != nil {
 		return fmt.Errorf("replace MCP config: %w", err)
 	}
 	if err := os.Chmod(path, 0o600); err != nil {

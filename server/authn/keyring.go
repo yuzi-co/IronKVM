@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+
+	"NanoKVM-Server/utils/atomicfile"
 )
 
 // sealedPrefix marks the format of a sealed value, so a later format can be
@@ -80,25 +82,7 @@ func writeKey(path string, key []byte) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
-	tmp, err := os.CreateTemp(filepath.Dir(path), ".key-*")
-	if err != nil {
-		return err
-	}
-	defer os.Remove(tmp.Name())
-
-	if err = tmp.Chmod(0o600); err == nil {
-		_, err = tmp.Write(key)
-	}
-	if err == nil {
-		err = tmp.Sync()
-	}
-	if closeErr := tmp.Close(); err == nil {
-		err = closeErr
-	}
-	if err != nil {
-		return err
-	}
-	return os.Rename(tmp.Name(), path)
+	return atomicfile.WriteFile(path, key, 0o600)
 }
 
 func (k *Keyring) aead(create bool) (cipher.AEAD, error) {

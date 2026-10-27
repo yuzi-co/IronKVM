@@ -6,9 +6,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 	"time"
+
+	"NanoKVM-Server/utils/atomicfile"
 )
 
 // IntentStore persists whether the agent should run, so the server can
@@ -120,30 +121,7 @@ func (s *IntentStore) saveLocked(intent RuntimeIntentStatus) error {
 	}
 	data = append(data, '\n')
 
-	base := filepath.Base(s.path)
-	tmp, err := os.CreateTemp(dir, "."+strings.TrimSuffix(base, filepath.Ext(base))+".*")
-	if err != nil {
-		return fmt.Errorf("create temporary %s runtime intent: %w", s.title, err)
-	}
-	tmpPath := tmp.Name()
-	defer func() { _ = os.Remove(tmpPath) }()
-
-	if err := tmp.Chmod(0o600); err != nil {
-		_ = tmp.Close()
-		return fmt.Errorf("set %s runtime intent permissions: %w", s.title, err)
-	}
-	if _, err := tmp.Write(data); err != nil {
-		_ = tmp.Close()
-		return fmt.Errorf("write %s runtime intent: %w", s.title, err)
-	}
-	if err := tmp.Sync(); err != nil {
-		_ = tmp.Close()
-		return fmt.Errorf("sync %s runtime intent: %w", s.title, err)
-	}
-	if err := tmp.Close(); err != nil {
-		return fmt.Errorf("close %s runtime intent: %w", s.title, err)
-	}
-	if err := os.Rename(tmpPath, s.path); err != nil {
+	if err := atomicfile.WriteFile(s.path, data, 0o600); err != nil {
 		return fmt.Errorf("replace %s runtime intent: %w", s.title, err)
 	}
 

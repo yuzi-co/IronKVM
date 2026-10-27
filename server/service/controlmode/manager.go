@@ -10,6 +10,8 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+
+	"NanoKVM-Server/utils/atomicfile"
 )
 
 const ModeFile = "/etc/kvm/ai-control.mode"
@@ -473,29 +475,7 @@ func (m *Manager) saveLocked(mode Mode) error {
 		return fmt.Errorf("create AI control mode directory: %w", err)
 	}
 
-	tmp, err := os.CreateTemp(dir, ".ai-control.mode.*")
-	if err != nil {
-		return fmt.Errorf("create temporary AI control mode: %w", err)
-	}
-	tmpPath := tmp.Name()
-	defer func() { _ = os.Remove(tmpPath) }()
-
-	if err := tmp.Chmod(0o600); err != nil {
-		_ = tmp.Close()
-		return fmt.Errorf("set AI control mode permissions: %w", err)
-	}
-	if _, err := tmp.WriteString(string(mode) + "\n"); err != nil {
-		_ = tmp.Close()
-		return fmt.Errorf("write AI control mode: %w", err)
-	}
-	if err := tmp.Sync(); err != nil {
-		_ = tmp.Close()
-		return fmt.Errorf("sync AI control mode: %w", err)
-	}
-	if err := tmp.Close(); err != nil {
-		return fmt.Errorf("close AI control mode: %w", err)
-	}
-	if err := os.Rename(tmpPath, m.path); err != nil {
+	if err := atomicfile.WriteFile(m.path, []byte(string(mode)+"\n"), 0o600); err != nil {
 		return fmt.Errorf("replace AI control mode: %w", err)
 	}
 	m.mode = mode

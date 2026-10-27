@@ -9,6 +9,8 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+
+	"NanoKVM-Server/utils/atomicfile"
 )
 
 // The trial timer in ethernet.go lives in the server process, and it is the
@@ -75,12 +77,7 @@ func writeTrialState(state trialState) error {
 	// Written whole. A detached revert reads this file, and a half-written one
 	// would read as a trial that does not match its own token, which is the
 	// one case where the revert must not be skipped.
-	temporary := trialStateFile + ".new"
-	if err := os.WriteFile(temporary, append(data, '\n'), 0o600); err != nil {
-		return err
-	}
-
-	return os.Rename(temporary, trialStateFile)
+	return atomicfile.WriteFile(trialStateFile, append(data, '\n'), 0o600)
 }
 
 func readTrialState() (trialState, bool) {

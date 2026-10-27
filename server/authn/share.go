@@ -13,6 +13,8 @@ import (
 	"sort"
 	"sync"
 	"time"
+
+	"NanoKVM-Server/utils/atomicfile"
 )
 
 const (
@@ -281,25 +283,5 @@ func (s *ShareStore) saveLocked(links []ShareLink) error {
 	if err = os.MkdirAll(directory, 0o755); err != nil {
 		return err
 	}
-	temporary, err := os.CreateTemp(directory, ".share-*")
-	if err != nil {
-		return err
-	}
-	temporaryPath := temporary.Name()
-	defer func() { _ = os.Remove(temporaryPath) }()
-
-	if err = temporary.Chmod(0o600); err == nil {
-		_, err = temporary.Write(data)
-	}
-	if err == nil {
-		err = temporary.Sync()
-	}
-	closeErr := temporary.Close()
-	if err == nil {
-		err = closeErr
-	}
-	if err != nil {
-		return err
-	}
-	return os.Rename(temporaryPath, s.path)
+	return atomicfile.WriteFile(s.path, data, 0o600)
 }

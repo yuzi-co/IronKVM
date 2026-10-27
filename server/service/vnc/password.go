@@ -3,8 +3,9 @@ package vnc
 import (
 	"errors"
 	"os"
-	"path/filepath"
 	"strings"
+
+	"NanoKVM-Server/utils/atomicfile"
 )
 
 // PasswordFile holds the password for plain VNC authentication. The protocol
@@ -60,22 +61,5 @@ func (f FilePassword) Set(password string) error {
 		return err
 	}
 
-	tmp, err := os.CreateTemp(filepath.Dir(f.Path), ".vnc.passwd-*")
-	if err != nil {
-		return err
-	}
-	defer func() { _ = os.Remove(tmp.Name()) }()
-
-	if err := tmp.Chmod(0o600); err != nil {
-		_ = tmp.Close()
-		return err
-	}
-	if _, err := tmp.WriteString(password + "\n"); err != nil {
-		_ = tmp.Close()
-		return err
-	}
-	if err := tmp.Close(); err != nil {
-		return err
-	}
-	return os.Rename(tmp.Name(), f.Path)
+	return atomicfile.WriteFile(f.Path, []byte(password+"\n"), 0o600)
 }

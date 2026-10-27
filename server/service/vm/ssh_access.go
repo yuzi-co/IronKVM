@@ -19,6 +19,7 @@ import (
 
 	"NanoKVM-Server/proto"
 	"NanoKVM-Server/utils"
+	"NanoKVM-Server/utils/atomicfile"
 	"NanoKVM-Server/utils/unixcrypt"
 
 	"github.com/gin-gonic/gin"
@@ -160,43 +161,7 @@ func writeAuthorizedKeys(lines []authorizedLine) error {
 	if err := os.Chmod(dir, 0o700); err != nil {
 		return err
 	}
-	return writeFileAtomic(authorizedKeysPath, buf.Bytes(), 0o600)
-}
-
-// writeFileAtomic replaces path by renaming a synced temporary file over it,
-// so a power cut leaves the old file or the new one and never half of either.
-// The temporary file is made in the same directory, which on /root/.ssh keeps
-// the rename inside the bind from /data.
-func writeFileAtomic(path string, data []byte, mode os.FileMode) error {
-	dir := filepath.Dir(path)
-	tmp, err := os.CreateTemp(dir, "."+filepath.Base(path)+".*")
-	if err != nil {
-		return err
-	}
-	name := tmp.Name()
-	defer func() { _ = os.Remove(name) }()
-
-	if _, err = tmp.Write(data); err == nil {
-		err = tmp.Chmod(mode)
-	}
-	if err == nil {
-		err = tmp.Sync()
-	}
-	if closeErr := tmp.Close(); err == nil {
-		err = closeErr
-	}
-	if err != nil {
-		return err
-	}
-	if err = os.Rename(name, path); err != nil {
-		return err
-	}
-
-	if d, err := os.Open(dir); err == nil {
-		_ = d.Sync()
-		_ = d.Close()
-	}
-	return nil
+	return atomicfile.WriteFile(authorizedKeysPath, buf.Bytes(), 0o600)
 }
 
 // normaliseKey parses what the owner pasted and returns the line to store:
@@ -318,7 +283,7 @@ func setKeysOnly(enabled bool) error {
 		if err := os.MkdirAll(filepath.Dir(sshKeysOnlyDropIn), 0o755); err != nil {
 			return err
 		}
-		if err := writeFileAtomic(sshKeysOnlyDropIn, []byte(keysOnlyConfig), 0o644); err != nil {
+		if err := atomicfile.WriteFile(sshKeysOnlyDropIn, []byte(keysOnlyConfig), 0o644); err != nil {
 			return err
 		}
 		// Ask sshd what it would do with the drop-in in place. This also

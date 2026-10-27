@@ -11,6 +11,8 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+
+	"NanoKVM-Server/utils/atomicfile"
 )
 
 // LogDir holds the action log and its screenshots. It is on /data and not on
@@ -115,24 +117,7 @@ func (l *Log) saveLocked() error {
 		return err
 	}
 
-	tmp, err := os.CreateTemp(l.dir, ".log-*.json")
-	if err != nil {
-		return err
-	}
-	defer os.Remove(tmp.Name())
-
-	if _, err := tmp.Write(data); err != nil {
-		tmp.Close()
-		return err
-	}
-	if err := tmp.Sync(); err != nil {
-		tmp.Close()
-		return err
-	}
-	if err := tmp.Close(); err != nil {
-		return err
-	}
-	return os.Rename(tmp.Name(), filepath.Join(l.dir, logFile))
+	return atomicfile.WriteFile(filepath.Join(l.dir, logFile), data, 0o600)
 }
 
 // Entries returns the log, newest first.

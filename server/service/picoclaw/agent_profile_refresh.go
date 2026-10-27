@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"NanoKVM-Server/utils/atomicfile"
 )
 
 // shippedAgentProfiles maps the SHA-256 of every AGENT.md and AGENT_KVM.md
@@ -94,7 +96,7 @@ func refreshAgentProfileIn(workspacePath string, readSource func(profile string)
 	if err := os.MkdirAll(workspacePath, 0o755); err != nil {
 		return false, fmt.Errorf("failed to create picoclaw workspace: %w", err)
 	}
-	if err := writeFileAtomic(targetPath, bundled, 0o644); err != nil {
+	if err := atomicfile.WriteFile(targetPath, bundled, 0o644); err != nil {
 		return false, fmt.Errorf("failed to write picoclaw AGENT.md: %w", err)
 	}
 
