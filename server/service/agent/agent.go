@@ -112,6 +112,15 @@ type Session interface {
 	Close() error
 }
 
+// TurnReporter is a Session that may say up front that its agent ends every
+// turn with turn_done. The capture lease of a turn then lasts until turn_done
+// from the first turn on. Without it, the bridge learns this from the first
+// turn_done of the session, and until then a reply ends the lease, which in
+// a turn that replies before its last tool call is too soon.
+type TurnReporter interface {
+	ReportsTurnDone() bool
+}
+
 // Prompt is a user message for the agent.
 type Prompt struct {
 	// RequestID identifies the prompt in the turn_done event and the

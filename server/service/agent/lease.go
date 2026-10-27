@@ -20,7 +20,8 @@ const (
 //   - an error names its request (or names none: all of the session's),
 //   - the browser cancels it, the session closes, or its timer runs out,
 //   - a reply arrives from an agent that has not sent turn_done in this
-//     session, the same rule the sidebar uses for its run state.
+//     session and did not say it would (ExpectTurnDone), the same rule the
+//     sidebar uses for its run state.
 type TaskLeases struct {
 	acquire func() func()
 
@@ -65,6 +66,18 @@ func (l *TaskLeases) Prompt(sessionID, requestID string, maxRuntimeMs int) {
 	l.timers[key] = time.AfterFunc(duration, func() {
 		l.release(key)
 	})
+}
+
+// ExpectTurnDone records that the session's agent ends every turn with
+// turn_done, so that only turn_done, and no reply, ends a lease from the
+// session's first turn on. Forget drops it with the session.
+func (l *TaskLeases) ExpectTurnDone(sessionID string) {
+	if l == nil || sessionID == "" {
+		return
+	}
+	l.mu.Lock()
+	l.turnDone[sessionID] = true
+	l.mu.Unlock()
 }
 
 // Cancel ends the lease of requestID, or every lease of the session when

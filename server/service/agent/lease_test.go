@@ -100,3 +100,27 @@ func TestARepeatedPromptKeepsOneLease(t *testing.T) {
 		t.Fatalf("released %v, want one lease", released)
 	}
 }
+
+func TestAnAgentThatSaysItSendsTurnDoneKeepsTheFirstTurnsLease(t *testing.T) {
+	leases, released := newCountingLeases()
+	leases.ExpectTurnDone("s")
+	leases.Prompt("s", "r1", 0)
+
+	leases.Observe("s", Event{Type: EventAgentMessage, Kind: KindReply})
+	if released["a"] {
+		t.Fatal("a reply ended the first turn's lease of an agent that said it sends turn_done")
+	}
+	leases.Observe("s", Event{Type: EventTurnDone, RequestIDs: []string{"r1"}})
+	if !released["a"] {
+		t.Fatal("turn_done did not end the lease")
+	}
+
+	// Forget drops what the agent said with the session, so a later
+	// session of the same id starts from the reply rule again.
+	leases.Forget("s")
+	leases.Prompt("s", "r2", 0)
+	leases.Observe("s", Event{Type: EventAgentMessage, Kind: KindReply})
+	if !released["b"] {
+		t.Fatal("a reply did not end the lease after the session was forgotten")
+	}
+}

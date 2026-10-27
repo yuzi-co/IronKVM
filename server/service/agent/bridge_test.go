@@ -391,3 +391,40 @@ func TestBridgeReportsAnAgentThatCannotOpen(t *testing.T) {
 		t.Fatalf("host.Closed got %+v", call)
 	}
 }
+
+// An agent that says it ends every turn with turn_done keeps the capture lease
+// of its first turn past a reply: a reply before the last tool call does not
+// end the turn.
+func TestBridgeTrustsTurnDoneFromTheFirstTurnOfAnAgentThatReportsIt(t *testing.T) {
+	h := newHarness(t)
+	h.agent.TurnDone = true
+	conn, session := h.dial(t, "s1")
+
+	if err := conn.WriteJSON(map[string]any{"type": "session/prompt", "requestId": "r1", "text": "hello"}); err != nil {
+		t.Fatal(err)
+	}
+	<-session.Prompts
+	session.Emit(agent.Event{Type: agent.EventAgentMessage, MessageID: "m1", Kind: agent.KindReply, Text: "Looking."})
+	readEvent(t, conn)
+	if held, _ := h.leases.counts(); held != 1 {
+		t.Fatal("a reply ended the first turn's capture lease")
+	}
+
+	session.Emit(agent.Event{Type: agent.EventTurnDone, RequestIDs: []string{"r1"}, StopReason: agent.StopEndTurn})
+	readEvent(t, conn)
+	waitFor(t, "turn_done to end the lease", func() bool { held, _ := h.leases.counts(); return held == 0 })
+}
+
+// Without the report, a reply in the first turn ends the lease, as before.
+func TestBridgeEndsTheFirstTurnsLeaseAtAReplyOfAnAgentThatDoesNotReportTurnDone(t *testing.T) {
+	h := newHarness(t)
+	conn, session := h.dial(t, "s1")
+
+	if err := conn.WriteJSON(map[string]any{"type": "session/prompt", "requestId": "r1", "text": "hello"}); err != nil {
+		t.Fatal(err)
+	}
+	<-session.Prompts
+	session.Emit(agent.Event{Type: agent.EventAgentMessage, MessageID: "m1", Kind: agent.KindReply, Text: "Done."})
+	readEvent(t, conn)
+	waitFor(t, "the reply to end the lease", func() bool { held, _ := h.leases.counts(); return held == 0 })
+}

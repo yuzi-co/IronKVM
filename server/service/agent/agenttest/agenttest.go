@@ -32,7 +32,10 @@ type Agent struct {
 	Uninstalled int
 	// OpenErr, when set, makes OpenSession fail.
 	OpenErr error
-	stored  map[string]agent.SessionDetail
+	// TurnDone makes the sessions OpenSession returns say that the agent
+	// ends every turn with turn_done (agent.TurnReporter).
+	TurnDone bool
+	stored   map[string]agent.SessionDetail
 	// Opened receives every session OpenSession returns.
 	Opened chan *Session
 }
@@ -180,6 +183,7 @@ func (a *Agent) Describe(status agent.RuntimeStatus) agent.RuntimeStatus {
 func (a *Agent) OpenSession(_ context.Context, sessionID string) (agent.Session, error) {
 	a.mu.Lock()
 	openErr := a.OpenErr
+	turnDone := a.TurnDone
 	a.mu.Unlock()
 	if openErr != nil {
 		return nil, openErr
@@ -191,6 +195,8 @@ func (a *Agent) OpenSession(_ context.Context, sessionID string) (agent.Session,
 		events:  make(chan agent.Event, 16),
 		ended:   make(chan error, 1),
 		closed:  make(chan struct{}),
+
+		turnDone: turnDone,
 	}
 	a.Opened <- session
 	return session, nil
@@ -251,9 +257,16 @@ type Session struct {
 	ended     chan error
 	closed    chan struct{}
 	closeOnce sync.Once
+	turnDone  bool
 }
 
-var _ agent.Session = (*Session)(nil)
+var (
+	_ agent.Session      = (*Session)(nil)
+	_ agent.TurnReporter = (*Session)(nil)
+)
+
+// ReportsTurnDone is the agent's TurnDone when the session opened.
+func (s *Session) ReportsTurnDone() bool { return s.turnDone }
 
 // Emit makes the agent send an event.
 func (s *Session) Emit(event agent.Event) { s.events <- event }

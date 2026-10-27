@@ -125,8 +125,13 @@ func (b *Bridge) Connect(c *gin.Context) {
 		b.closeSession(session, CloseRuntimeUnavailable, asError(err, CodeRuntimeUnavailable).Message)
 		return
 	}
+	// Before setAgent, so that a close that comes after it forgets this too.
+	if reporter, ok := agentSession.(TurnReporter); ok && reporter.ReportsTurnDone() {
+		b.leases.ExpectTurnDone(sessionID)
+	}
 	if !session.setAgent(agentSession) {
 		// The session was closed while the agent connected.
+		b.leases.Forget(sessionID)
 		_ = agentSession.Close()
 		return
 	}

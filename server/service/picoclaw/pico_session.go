@@ -33,7 +33,10 @@ type picoSession struct {
 	done      chan struct{}
 }
 
-var _ agent.Session = (*picoSession)(nil)
+var (
+	_ agent.Session      = (*picoSession)(nil)
+	_ agent.TurnReporter = (*picoSession)(nil)
+)
 
 func newPicoSession(sessionID string, conn *websocket.Conn, cfg Config) *picoSession {
 	session := &picoSession{
@@ -72,6 +75,11 @@ func (p *picoSession) Prompt(_ context.Context, prompt agent.Prompt) error {
 		Payload:   payload,
 	})
 }
+
+// ReportsTurnDone says that PicoClaw ends every turn with turn.done: the
+// pinned release, from the IronKVM fork, sends it for a finished, a failed and
+// a cancelled turn alike.
+func (p *picoSession) ReportsTurnDone() bool { return true }
 
 // picoStopCommand is PicoClaw's command to stop the session's running turn.
 const picoStopCommand = "/stop"
