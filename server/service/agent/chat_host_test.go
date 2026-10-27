@@ -1,13 +1,9 @@
-package picoclaw
+package agent
 
-import (
-	"testing"
-
-	"NanoKVM-Server/service/agent"
-)
+import "testing"
 
 func TestStaleSessionDoesNotReleaseHID(t *testing.T) {
-	lock := &agent.SessionLock{}
+	lock := &SessionLock{}
 	if err := lock.Ensure("current"); err != nil {
 		t.Fatal(err)
 	}

@@ -122,7 +122,7 @@ func server(r *gin.Engine) {
 	// PicoClaw is the agent behind the chat routes. Another agent needs only
 	// another agent.Agent here.
 	chatAgent := picoclawService.Agent()
-	chatBridge := agent.NewBridge(chatAgent, picoclawService, agent.NewTaskLeases(vm.AcquireHdmiCaptureLease))
+	chatBridge := agent.NewBridge(chatAgent, picoclawService.ChatHost(), agent.NewTaskLeases(vm.AcquireHdmiCaptureLease))
 	picoclawService.SetChat(chatBridge)
 	lifecycle := picoclawService.Lifecycle()
 

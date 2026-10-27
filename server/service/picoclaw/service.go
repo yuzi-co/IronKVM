@@ -95,7 +95,7 @@ func (s *Service) ensureDependencies() {
 		s.acquireHDMIForRead = vm.AcquireHdmiCaptureLeaseForRead
 	}
 	if s.chat == nil {
-		s.chat = noChat{}
+		s.chat = agent.NoChat{}
 	}
 	if s.lifecycle == nil {
 		s.lifecycle = agent.NewLifecycle(agent.LifecycleConfig{
@@ -112,6 +112,16 @@ func (s *Service) ensureDependencies() {
 			Timing:           picoclawLifecycleTiming,
 		})
 		s.lifecycle.SetChat(s.chat)
+	}
+	if s.host == nil {
+		s.host = agent.NewChatHost(agent.ChatHostConfig{
+			Lifecycle:    s.lifecycle,
+			Lock:         s.lock,
+			RelayConfig:  s.relayConfig,
+			Opened:       s.chatOpened,
+			Closed:       s.chatClosed,
+			ReleaseInput: s.releaseHeldInput,
+		})
 	}
 }
 

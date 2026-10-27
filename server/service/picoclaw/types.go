@@ -39,12 +39,14 @@ type Service struct {
 	releaseHID         func() error
 	operations         *controlOperationTracker
 	acquireHDMIForRead func(context.Context) (func(), func() bool, error)
-	chat               ChatHub
+	chat               agent.ChatHub
 	pointer            pointerTracker
 	held               heldInput
 	// lifecycle runs PicoClaw through the agent-neutral lifecycle. It is
 	// built on first use.
 	lifecycle *agent.Lifecycle
+	// host is the KVM side of the chat bridge, built with the lifecycle.
+	host *agent.ChatHost
 	// mcp serves /api/agent/mcp and /api/picoclaw/mcp. It is built on first
 	// use.
 	mcpOnce sync.Once
@@ -211,19 +213,6 @@ const (
 	CloseCodeControlModeSwitched = agent.CloseControlModeSwitched
 	CloseCodeRuntimeStopped      = agent.CloseRuntimeStopped
 )
-
-// ChatHub is the chat socket side the service reaches: the agent.Bridge.
-type ChatHub interface {
-	Publish(sessionID string, event agent.Event) error
-	Broadcast(event agent.Event)
-	Prompt(sessionID string, prompt agent.Prompt) error
-	IsActive(sessionID string) bool
-	InTurn(sessionID string) bool
-	Turn(sessionID string) uint64
-	CloseSession(sessionID string, closeCode int, reason string) bool
-	CloseAll(closeCode int, reason string) int
-	SessionCount() int
-}
 
 type LoadImageRequest struct {
 	Path     string `json:"path"`

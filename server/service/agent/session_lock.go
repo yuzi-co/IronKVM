@@ -13,6 +13,10 @@ var (
 
 const sessionLockDuration = 30 * time.Minute
 
+// NoSessionMessage refuses device control to a request that names no chat
+// session. The model reads it as a tool error, so it says what to do next.
+const NoSessionMessage = "no chat session holds device control: the agent acts only for a user chatting with it"
+
 // ErrNoSessionID refuses the AI input lock to a request that names no chat
 // session.
 var ErrNoSessionID = errors.New("no chat session id")

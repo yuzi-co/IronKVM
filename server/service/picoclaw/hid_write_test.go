@@ -69,7 +69,7 @@ func TestSessionEndWritesNothingWhenNothingIsHeld(t *testing.T) {
 	if err := service.releaseHeldInput(); err != nil {
 		t.Fatalf("release after a turn that left nothing held = %v, want no writes", err)
 	}
-	service.releaseGatewaySession("test-session")
+	service.ChatHost().Release("test-session")
 	if len(hid.keys) != keys || len(hid.mouse) != mouse {
 		t.Fatal("session end wrote HID reports although nothing was held")
 	}

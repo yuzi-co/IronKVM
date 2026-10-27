@@ -52,7 +52,7 @@ func (s *Service) actingSession(named string) string {
 // The refusals of a device call that no user asked for. The model reads them
 // as tool errors, so they say what to do next.
 const (
-	noSessionMessage = "no chat session holds device control: the agent acts only for a user chatting with it"
+	noSessionMessage = agent.NoSessionMessage
 	noTurnMessage    = "the user's turn has ended: do not act on the host now; wait for the user's next prompt"
 )
 
