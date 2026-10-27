@@ -701,3 +701,50 @@ func TestTheSignalMustHoldForTwoReadsBeforeItIsReported(t *testing.T) {
 	setPresent(true)
 	quiet()
 }
+
+// Another service that listens for the signal (the dashcam) has it watched
+// while notifications are off; nobody listening leaves it unread.
+func TestTheSignalIsWatchedForAnotherService(t *testing.T) {
+	for _, wanted := range []bool{true, false} {
+		f := newFixture(t, Settings{})
+
+		var mu sync.Mutex
+		present, reads := true, 0
+		f.svc.deps.Signal = func() (bool, bool) {
+			mu.Lock()
+			defer mu.Unlock()
+			reads++
+			return present, true
+		}
+		f.svc.deps.SignalWanted = func() bool { return wanted }
+		f.svc.deps.SignalInterval = 20 * time.Millisecond
+
+		got := make(chan events.Event, 8)
+		cancelSub := f.bus.Subscribe(func(e events.Event) { got <- e })
+		stop := f.svc.run()
+
+		time.Sleep(100 * time.Millisecond)
+		mu.Lock()
+		present = false
+		mu.Unlock()
+
+		select {
+		case e := <-got:
+			if !wanted || e.Type != events.SignalLost {
+				t.Fatalf("wanted %t: got %s", wanted, e.Type)
+			}
+		case <-time.After(500 * time.Millisecond):
+			if wanted {
+				t.Fatal("no signal.lost event for the other service")
+			}
+		}
+		stop()
+		cancelSub()
+
+		mu.Lock()
+		if !wanted && reads != 0 {
+			t.Fatalf("the signal was read %d times with nobody listening", reads)
+		}
+		mu.Unlock()
+	}
+}

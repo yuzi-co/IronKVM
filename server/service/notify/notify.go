@@ -29,6 +29,11 @@ type Deps struct {
 	// Signal reports whether the HDMI signal is present. ok is false when
 	// that cannot be told, as with capture switched off.
 	Signal func() (present, ok bool)
+	// SignalWanted says another service listens for the signal events, so
+	// the signal is watched and they are published even while notifications
+	// leave them off. The notifier still sends only the ones its rules ask
+	// for. Nil means none does.
+	SignalWanted func() bool
 	// Client returns the HTTP client for the outside world, which honours
 	// the configured proxy. Nil means a plain client.
 	Client func() *http.Client
@@ -394,7 +399,8 @@ func (s *Service) watchSignal(done <-chan struct{}) {
 			continue
 		}
 		set, err := s.deps.Store.Load()
-		if err != nil || !set.Enabled || !(set.Events[events.SignalLost].Enabled || set.Events[events.SignalRestored].Enabled) {
+		wanted := err == nil && set.Enabled && (set.Events[events.SignalLost].Enabled || set.Events[events.SignalRestored].Enabled)
+		if !wanted && (s.deps.SignalWanted == nil || !s.deps.SignalWanted()) {
 			known, havePending = false, false
 			continue
 		}
