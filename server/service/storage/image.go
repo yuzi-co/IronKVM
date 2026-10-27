@@ -46,13 +46,21 @@ func isMountableImage(path string) bool {
 	return hasImageSuffix(path)
 }
 
+// imageSuffixes are the names the drives serve: CD images, disk images, and
+// the .ima and .vfd names floppy images also go by.
+var imageSuffixes = []string{".iso", ".img", ".ima", ".vfd"}
+
 func hasImageSuffix(path string) bool {
 	name := strings.ToLower(path)
-
-	return strings.HasSuffix(name, ".iso") || strings.HasSuffix(name, ".img")
+	for _, suffix := range imageSuffixes {
+		if strings.HasSuffix(name, suffix) {
+			return true
+		}
+	}
+	return false
 }
 
-// listImages finds the .iso and .img files under root, with their sizes.
+// listImages finds the image files under root, with their sizes.
 func listImages(root string) ([]string, map[string]int64, error) {
 	var images []string
 	sizes := map[string]int64{}
@@ -72,8 +80,7 @@ func listImages(root string) ([]string, map[string]int64, error) {
 		}
 
 		if !info.IsDir() {
-			name := strings.ToLower(info.Name())
-			if strings.HasSuffix(name, ".iso") || strings.HasSuffix(name, ".img") {
+			if hasImageSuffix(info.Name()) {
 				images = append(images, path)
 				sizes[path] = info.Size()
 				// Walk does not follow links; the size that matters is

@@ -17,7 +17,8 @@ import (
 
 // Exchange images: an empty disk image an admin creates to swap files with
 // the host. It lands in the image list like any other, goes into the disk
-// drive, and its files are browsed and changed through the file browser.
+// drive, and its files are browsed and changed through the file browser. A
+// floppy image (fs fat12) is one too, at one of the three floppy sizes.
 
 // reservedFreeBytes is kept free on /data when sizing an exchange image, as
 // downloads keep it: the image is sparse, and the host filling it must not
@@ -85,18 +86,26 @@ func (s *Service) CreateImage(c *gin.Context) {
 		respondFileError(c, err)
 		return
 	}
-	audit.SetTarget(c, fmt.Sprintf("%s (%s, %d MiB)", path, req.FS, req.Size>>20))
-
 	fsType := mkfs.FS(strings.ToLower(req.FS))
 	if fsType == "" {
 		fsType = mkfs.ExFAT
 	}
-	if fsType != mkfs.ExFAT && fsType != mkfs.FAT32 {
-		rsp.ErrRsp(c, codeInvalidArgument, fmt.Sprintf("unknown filesystem %q: exfat or fat32", req.FS))
+	floppy := fsType == mkfs.FAT12
+	if floppy {
+		audit.SetTarget(c, fmt.Sprintf("%s (floppy, %d KiB)", path, req.Size>>10))
+	} else {
+		audit.SetTarget(c, fmt.Sprintf("%s (%s, %d MiB)", path, req.FS, req.Size>>20))
+	}
+	if fsType != mkfs.ExFAT && fsType != mkfs.FAT32 && !floppy {
+		rsp.ErrRsp(c, codeInvalidArgument, fmt.Sprintf("unknown filesystem %q: exfat, fat32 or fat12", req.FS))
 		return
 	}
 
-	if req.Size < mkfs.MinImageSize || req.Size%(1<<20) != 0 {
+	switch {
+	case floppy && !mkfs.IsFloppySize(req.Size):
+		rsp.ErrRsp(c, codeInvalidArgument, "a floppy image is 737280, 1474560 or 2949120 bytes")
+		return
+	case !floppy && (req.Size < mkfs.MinImageSize || req.Size%(1<<20) != 0):
 		rsp.ErrRsp(c, codeInvalidArgument, fmt.Sprintf("the size must be whole MiB, %d MiB at least", mkfs.MinImageSize>>20))
 		return
 	}
@@ -111,14 +120,19 @@ func (s *Service) CreateImage(c *gin.Context) {
 	}
 
 	label := mkfs.LabelFor(strings.TrimSuffix(filepath.Base(path), filepath.Ext(path)), fsType)
-	if err := mkfs.CreateImage(path, req.Size, fsType, label); err != nil {
+	if floppy {
+		err = mkfs.CreateFloppy(path, req.Size, label)
+	} else {
+		err = mkfs.CreateImage(path, req.Size, fsType, label)
+	}
+	if err != nil {
 		log.Errorf("create image %s failed: %s", path, err)
 		respondFileError(c, err)
 		return
 	}
 
 	rsp.OkRspWithData(c, &proto.CreateImageRsp{File: path})
-	log.Infof("created %s: %d MiB, %s", path, req.Size>>20, fsType)
+	log.Infof("created %s: %d KiB, %s", path, req.Size>>10, fsType)
 }
 
 // errNoSpaceOnCard refuses an image larger than /data can hold. It counts as
