@@ -41,6 +41,7 @@ const de = {
           token: 'Die Antwort des Identitätsanbieters konnte nicht geprüft werden.',
           account: 'Zu Ihrem Konto beim Identitätsanbieter gibt es kein Konto auf diesem Gerät.',
           role: 'Ihr Konto beim Identitätsanbieter ist in keiner der auf diesem Gerät erlaubten Gruppen.',
+          binding: 'Ihr Konto beim Identitätsanbieter ist nicht das, mit dem dieses Konto auf dem Gerät verknüpft ist. Bitten Sie einen Administrator, die Verknüpfung aufzuheben.',
           server: 'Die Anmeldung konnte nicht abgeschlossen werden. Bitte erneut versuchen.'
         }
       },
@@ -2365,6 +2366,7 @@ const de = {
           redirectUrlOverrideDesc: 'Leer lassen, um die Adresse oben zu verwenden. Setzen, wenn ein Reverse-Proxy den Hostnamen oder https nicht weitergibt.',
           httpWarning: 'Diese Seite nutzt unverschlüsseltes http. Viele Anbieter erlauben http-Weiterleitungs-URLs nur für localhost. Lehnt Ihrer diese ab, öffnen Sie das Gerät über HTTPS oder einen Reverse-Proxy mit TLS.',
           mappingDesc: 'Ein Anbieterkonto meldet sich als das lokale Konto mit demselben Benutzernamen an. Das Gerätebesitzerkonto meldet sich nur mit seinem Passwort an. Die Zwei-Faktor-Authentifizierung übernimmt der Anbieter: der lokale Code wird nicht abgefragt.',
+          bindingDesc: 'Die erste Anmeldung per Single Sign-on verknüpft das lokale Konto mit diesem Anbieterkonto, und spätere Anmeldungen müssen von demselben kommen. Ein Administrator kann die Verknüpfung in der Benutzerliste aufheben. Nach einem Wechsel des Ausstellers wird jedes Konto bei seiner nächsten Anmeldung neu verknüpft.',
           usernameClaim: 'Konten zuordnen über',
           emailDomain: 'E-Mail-Domain',
           emailDomainDesc: 'Der Teil vor dem @ ist der Benutzername. Adressen anderer Domains werden abgelehnt.',
@@ -2440,6 +2442,10 @@ const de = {
           enabled: 'Aktiviert',
           disabled: 'Deaktiviert',
           deviceOwner: 'Gerätebesitzer',
+          ssoTag: 'SSO',
+          ssoUnlink: 'SSO-Verknüpfung aufheben',
+          ssoUnlinkConfirm: 'Verknüpfung von {{username}} mit dem Konto beim Identitätsanbieter aufheben? Die nächste Anmeldung per Single Sign-on verknüpft es erneut.',
+          ssoUnlinked: 'Single-Sign-on-Verknüpfung aufgehoben',
           resetPassword: 'Passwort zurücksetzen',
           delete: 'Löschen',
           deleteConfirm: 'Diesen Benutzer löschen und alle seine Sitzungen widerrufen?',

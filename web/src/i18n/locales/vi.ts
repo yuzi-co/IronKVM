@@ -40,6 +40,7 @@ const vi = {
           token: 'Không thể xác minh phản hồi của nhà cung cấp danh tính.',
           account: 'Tài khoản của bạn ở nhà cung cấp danh tính không có tài khoản trên thiết bị này.',
           role: 'Tài khoản của bạn ở nhà cung cấp danh tính không thuộc nhóm nào được phép trên thiết bị này.',
+          binding: 'Tài khoản của bạn ở nhà cung cấp danh tính không phải là tài khoản được liên kết với tài khoản này trên thiết bị. Hãy nhờ quản trị viên hủy liên kết.',
           server: 'Không thể hoàn tất đăng nhập. Hãy thử lại.'
         }
       },
@@ -2310,6 +2311,7 @@ const vi = {
           redirectUrlOverrideDesc: 'Để trống để dùng địa chỉ ở trên. Đặt khi reverse proxy không chuyển tiếp tên máy chủ hoặc https.',
           httpWarning: 'Trang này dùng http không mã hóa. Nhiều nhà cung cấp chỉ chấp nhận URL chuyển hướng http cho localhost. Nếu bị từ chối, hãy mở thiết bị qua HTTPS hoặc reverse proxy có TLS.',
           mappingDesc: 'Tài khoản nhà cung cấp đăng nhập như tài khoản cục bộ có cùng tên người dùng. Tài khoản chủ thiết bị chỉ đăng nhập bằng mật khẩu của nó. Nhà cung cấp lo xác thực hai yếu tố: mã cục bộ không được hỏi.',
+          bindingDesc: 'Lần đăng nhập một lần đầu tiên liên kết tài khoản cục bộ với tài khoản đó ở nhà cung cấp, và các lần đăng nhập sau phải đến từ cùng tài khoản đó. Quản trị viên có thể hủy liên kết một tài khoản trong danh sách người dùng. Sau khi đổi bên phát hành, mỗi tài khoản sẽ được liên kết lại ở lần đăng nhập kế tiếp.',
           usernameClaim: 'Ghép tài khoản theo',
           emailDomain: 'Tên miền email',
           emailDomainDesc: 'Phần trước @ là tên người dùng. Địa chỉ thuộc tên miền khác bị từ chối.',
@@ -2385,6 +2387,10 @@ const vi = {
           enabled: 'Đã bật',
           disabled: 'Đã tắt',
           deviceOwner: 'Chủ sở hữu thiết bị',
+          ssoTag: 'SSO',
+          ssoUnlink: 'Hủy liên kết SSO',
+          ssoUnlinkConfirm: 'Hủy liên kết {{username}} với tài khoản ở nhà cung cấp danh tính? Lần đăng nhập một lần kế tiếp sẽ liên kết lại.',
+          ssoUnlinked: 'Đã xóa liên kết đăng nhập một lần',
           resetPassword: 'Đặt lại mật khẩu',
           delete: 'Xóa',
           deleteConfirm: 'Xóa người dùng này và thu hồi mọi phiên của họ?',

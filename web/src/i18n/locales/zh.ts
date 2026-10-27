@@ -40,6 +40,7 @@ const zh = {
           token: '无法验证身份提供商的响应。',
           account: '您的身份提供商账号在此设备上没有对应账号。',
           role: '您的身份提供商账号不在此设备允许的任何组中。',
+          binding: '您的身份提供商账号不是与此设备上该账号关联的那个账号。请联系管理员解除关联。',
           server: '无法完成登录。请重试。'
         }
       },
@@ -2217,6 +2218,7 @@ const zh = {
           redirectUrlOverrideDesc: '留空则使用上方地址。当反向代理不传递主机名或 https 时设置此项。',
           httpWarning: '本页面使用未加密的 http。许多提供商只允许 localhost 使用 http 重定向 URL。如果被拒绝，请通过 HTTPS 或带 TLS 的反向代理访问设备。',
           mappingDesc: '提供商账号以同名的本地账号登录。设备所有者账号只能用其密码登录。双因素认证由提供商完成，不再询问本地验证码。',
+          bindingDesc: '首次单点登录会把本地账号关联到该提供商账号，之后的登录必须来自同一个账号。管理员可以在用户列表中解除账号的关联。更换颁发者后，每个账号会在下次登录时重新关联。',
           usernameClaim: '账号匹配依据',
           emailDomain: '邮箱域名',
           emailDomainDesc: '@ 之前的部分即用户名。其他域名的地址会被拒绝。',
@@ -2296,6 +2298,10 @@ const zh = {
           enabled: '已启用',
           disabled: '已禁用',
           deviceOwner: '设备所有者',
+          ssoTag: 'SSO',
+          ssoUnlink: '解除 SSO 关联',
+          ssoUnlinkConfirm: '解除 {{username}} 与身份提供商账号的关联？下次单点登录时会重新关联。',
+          ssoUnlinked: '已解除单点登录关联',
           resetPassword: '重置密码',
           delete: '删除',
           deleteConfirm: '删除此用户并撤销其全部会话？',

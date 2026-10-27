@@ -40,6 +40,7 @@ const da = {
           token: 'Svaret fra identitetsudbyderen kunne ikke verificeres.',
           account: 'Din konto hos identitetsudbyderen har ingen konto på denne enhed.',
           role: 'Din konto hos identitetsudbyderen er ikke i nogen af de grupper, der er tilladt på denne enhed.',
+          binding: 'Din konto hos identitetsudbyderen er ikke den, der er knyttet til denne konto på enheden. Bed en administrator om at fjerne tilknytningen.',
           server: 'Login kunne ikke gennemføres. Prøv igen.'
         }
       },
@@ -2316,6 +2317,7 @@ const da = {
           redirectUrlOverrideDesc: 'Lad stå tom for at bruge adressen ovenfor. Angiv den, når en reverse proxy ikke videregiver værtsnavnet eller https.',
           httpWarning: 'Denne side bruger ukrypteret http. Mange udbydere accepterer kun http-omdirigerings-URL\'er for localhost. Afviser din denne, så åbn enheden via HTTPS eller en reverse proxy med TLS.',
           mappingDesc: 'En udbyderkonto logger ind som den lokale konto med samme brugernavn. Enhedsejerens konto logger kun ind med sin adgangskode. Udbyderen står for totrinsgodkendelse: den lokale kode bliver ikke krævet.',
+          bindingDesc: 'Det første single sign-on knytter den lokale konto til kontoen hos udbyderen, og senere logins skal komme fra den samme. En administrator kan fjerne tilknytningen i brugerlisten. Efter et skift af udsteder knyttes hver konto igen ved næste login.',
           usernameClaim: 'Match konti efter',
           emailDomain: 'E-maildomæne',
           emailDomainDesc: 'Delen før @ er brugernavnet. Adresser i andre domæner afvises.',
@@ -2391,6 +2393,10 @@ const da = {
           enabled: 'Aktiveret',
           disabled: 'Deaktiveret',
           deviceOwner: 'Enhedsejer',
+          ssoTag: 'SSO',
+          ssoUnlink: 'Fjern SSO-tilknytning',
+          ssoUnlinkConfirm: 'Fjern tilknytningen mellem {{username}} og kontoen hos identitetsudbyderen? Næste single sign-on knytter den igen.',
+          ssoUnlinked: 'Tilknytning til single sign-on fjernet',
           resetPassword: 'Nulstil adgangskode',
           delete: 'Slet',
           deleteConfirm: 'Slet denne bruger og tilbagekald alle brugerens sessioner?',

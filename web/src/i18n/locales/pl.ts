@@ -40,6 +40,7 @@ const pl = {
           token: 'Nie udało się zweryfikować odpowiedzi dostawcy tożsamości.',
           account: 'Twoje konto u dostawcy tożsamości nie ma konta na tym urządzeniu.',
           role: 'Twoje konto u dostawcy tożsamości nie należy do żadnej z grup dozwolonych na tym urządzeniu.',
+          binding: 'Twoje konto u dostawcy tożsamości nie jest tym, które jest powiązane z tym kontem na urządzeniu. Poproś administratora o usunięcie powiązania.',
           server: 'Nie udało się dokończyć logowania. Spróbuj ponownie.'
         }
       },
@@ -2325,6 +2326,7 @@ const pl = {
           redirectUrlOverrideDesc: 'Pozostaw puste, aby użyć adresu powyżej. Ustaw, gdy odwrotne proxy nie przekazuje nazwy hosta lub https.',
           httpWarning: 'Ta strona używa nieszyfrowanego http. Wielu dostawców akceptuje adresy przekierowania http tylko dla localhost. Jeśli twój odrzuca ten adres, otwórz urządzenie przez HTTPS lub odwrotne proxy z TLS.',
           mappingDesc: 'Konto dostawcy loguje się jako konto lokalne o tej samej nazwie użytkownika. Konto właściciela urządzenia loguje się tylko swoim hasłem. Uwierzytelnianie dwuskładnikowe zapewnia dostawca: lokalny kod nie jest wymagany.',
+          bindingDesc: 'Pierwsze logowanie jednokrotne wiąże konto lokalne z tym kontem dostawcy, a kolejne logowania muszą pochodzić z tego samego konta. Administrator może usunąć powiązanie na liście użytkowników. Po zmianie wystawcy każde konto zostanie powiązane ponownie przy następnym logowaniu.',
           usernameClaim: 'Dopasuj konta według',
           emailDomain: 'Domena e-mail',
           emailDomainDesc: 'Część przed @ to nazwa użytkownika. Adresy z innych domen są odrzucane.',
@@ -2400,6 +2402,10 @@ const pl = {
           enabled: 'Włączony',
           disabled: 'Wyłączony',
           deviceOwner: 'Właściciel urządzenia',
+          ssoTag: 'SSO',
+          ssoUnlink: 'Usuń powiązanie SSO',
+          ssoUnlinkConfirm: 'Usunąć powiązanie konta {{username}} z kontem u dostawcy tożsamości? Następne logowanie jednokrotne powiąże je ponownie.',
+          ssoUnlinked: 'Powiązanie logowania jednokrotnego usunięte',
           resetPassword: 'Resetuj hasło',
           delete: 'Usuń',
           deleteConfirm: 'Usunąć tego użytkownika i unieważnić wszystkie jego sesje?',

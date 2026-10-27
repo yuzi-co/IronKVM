@@ -40,6 +40,7 @@ const tr = {
           token: 'Kimlik sağlayıcısının yanıtı doğrulanamadı.',
           account: 'Kimlik sağlayıcısındaki hesabınızın bu cihazda hesabı yok.',
           role: 'Kimlik sağlayıcısındaki hesabınız bu cihazda izin verilen grupların hiçbirinde değil.',
+          binding: 'Kimlik sağlayıcısındaki hesabınız, cihazdaki bu hesaba bağlı olan hesap değil. Bağlantıyı kaldırması için bir yöneticiye başvurun.',
           server: 'Oturum açma tamamlanamadı. Tekrar deneyin.'
         }
       },
@@ -2318,6 +2319,7 @@ const tr = {
           redirectUrlOverrideDesc: 'Yukarıdaki adresi kullanmak için boş bırakın. Ters proxy ana bilgisayar adını veya https\'yi iletmiyorsa ayarlayın.',
           httpWarning: 'Bu sayfa şifresiz http kullanıyor. Birçok sağlayıcı http yönlendirme URL\'lerini yalnızca localhost için kabul eder. Sizinki bunu reddederse cihazı HTTPS veya TLS\'li bir ters vekil üzerinden açın.',
           mappingDesc: 'Bir sağlayıcı hesabı, aynı kullanıcı adına sahip yerel hesap olarak oturum açar. Cihaz sahibi hesabı yalnızca kendi parolasıyla girer. İki aşamalı doğrulamayı sağlayıcı yapar: yerel kod sorulmaz.',
+          bindingDesc: 'İlk çoklu oturum açma, yerel hesabı o sağlayıcı hesabına bağlar ve sonraki oturum açmalar aynı hesaptan gelmelidir. Bir yönetici, kullanıcı listesinden bir hesabın bağlantısını kaldırabilir. Yayıncı değiştirildikten sonra her hesap bir sonraki oturum açmada yeniden bağlanır.',
           usernameClaim: 'Hesapları eşleştirme ölçütü',
           emailDomain: 'E-posta alan adı',
           emailDomainDesc: '@ öncesindeki kısım kullanıcı adıdır. Başka alan adlarındaki adresler reddedilir.',
@@ -2393,6 +2395,10 @@ const tr = {
           enabled: 'Etkin',
           disabled: 'Devre dışı',
           deviceOwner: 'Cihaz sahibi',
+          ssoTag: 'SSO',
+          ssoUnlink: 'SSO bağlantısını kaldır',
+          ssoUnlinkConfirm: '{{username}} ile kimlik sağlayıcısındaki hesabı arasındaki bağlantı kaldırılsın mı? Bir sonraki çoklu oturum açma onu yeniden bağlar.',
+          ssoUnlinked: 'Çoklu oturum açma bağlantısı kaldırıldı',
           resetPassword: 'Şifreyi Sıfırla',
           delete: 'Sil',
           deleteConfirm: 'Bu kullanıcı silinsin ve tüm oturumları iptal edilsin mi?',

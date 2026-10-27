@@ -40,6 +40,7 @@ const fr = {
           token: 'La réponse du fournisseur d\'identité n\'a pas pu être vérifiée.',
           account: 'Votre compte chez le fournisseur d\'identité n\'a pas de compte sur cet appareil.',
           role: 'Votre compte chez le fournisseur d\'identité n\'appartient à aucun des groupes autorisés sur cet appareil.',
+          binding: 'Votre compte chez le fournisseur d\'identité n\'est pas celui qui est lié à ce compte sur l\'appareil. Demandez à un administrateur de le délier.',
           server: 'La connexion n\'a pas pu aboutir. Réessayez.'
         }
       },
@@ -2354,6 +2355,7 @@ const fr = {
           redirectUrlOverrideDesc: 'Laissez vide pour utiliser l\'adresse ci-dessus. Renseignez-la quand un proxy inverse ne transmet pas le nom d\'hôte ou https.',
           httpWarning: 'Cette page utilise http non chiffré. Beaucoup de fournisseurs n\'acceptent les URL de redirection http que pour localhost. Si le vôtre refuse celle-ci, ouvrez l\'appareil en HTTPS ou via un proxy inverse avec TLS.',
           mappingDesc: 'Un compte du fournisseur se connecte en tant que compte local du même nom d\'utilisateur. Le compte propriétaire de l\'appareil se connecte uniquement avec son mot de passe. Le fournisseur gère l\'authentification à deux facteurs : le code local n\'est pas demandé.',
+          bindingDesc: 'La première connexion unique lie le compte local à ce compte du fournisseur, et les connexions suivantes doivent venir du même. Un administrateur peut délier un compte dans la liste des utilisateurs. Après un changement d\'émetteur, chaque compte est lié à nouveau à sa prochaine connexion.',
           usernameClaim: 'Associer les comptes par',
           emailDomain: 'Domaine e-mail',
           emailDomainDesc: 'La partie avant @ est le nom d\'utilisateur. Les adresses d\'autres domaines sont refusées.',
@@ -2429,6 +2431,10 @@ const fr = {
           enabled: 'Activé',
           disabled: 'Désactivé',
           deviceOwner: "Propriétaire de l'appareil",
+          ssoTag: 'SSO',
+          ssoUnlink: 'Délier le SSO',
+          ssoUnlinkConfirm: 'Délier {{username}} de son compte chez le fournisseur d\'identité ? La prochaine connexion unique le liera à nouveau.',
+          ssoUnlinked: 'Lien de connexion unique supprimé',
           resetPassword: 'Réinitialiser le mot de passe',
           delete: 'Supprimer',
           deleteConfirm: 'Supprimer cet utilisateur et révoquer toutes ses sessions ?',

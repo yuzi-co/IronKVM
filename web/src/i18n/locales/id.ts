@@ -40,6 +40,7 @@ const id = {
           token: 'Jawaban penyedia identitas tidak dapat diverifikasi.',
           account: 'Akun Anda di penyedia identitas tidak punya akun di perangkat ini.',
           role: 'Akun Anda di penyedia identitas tidak ada di grup mana pun yang diizinkan di perangkat ini.',
+          binding: 'Akun Anda di penyedia identitas bukan akun yang ditautkan ke akun ini di perangkat. Minta administrator untuk melepas tautannya.',
           server: 'Proses masuk tidak dapat diselesaikan. Coba lagi.'
         }
       },
@@ -2321,6 +2322,7 @@ const id = {
           redirectUrlOverrideDesc: 'Kosongkan untuk memakai alamat di atas. Isi jika reverse proxy tidak meneruskan nama host atau https.',
           httpWarning: 'Halaman ini memakai http tanpa enkripsi. Banyak penyedia hanya menerima URL pengalihan http untuk localhost. Jika penyedia Anda menolaknya, buka perangkat lewat HTTPS atau reverse proxy dengan TLS.',
           mappingDesc: 'Akun penyedia masuk sebagai akun lokal dengan nama pengguna yang sama. Akun pemilik perangkat hanya masuk dengan kata sandinya. Penyedia menangani autentikasi dua faktor: kode lokal tidak diminta.',
+          bindingDesc: 'Single sign-on pertama menautkan akun lokal ke akun penyedia tersebut, dan login berikutnya harus berasal dari akun yang sama. Administrator dapat melepas tautan akun di daftar pengguna. Setelah penerbit diganti, setiap akun ditautkan lagi saat login berikutnya.',
           usernameClaim: 'Cocokkan akun berdasarkan',
           emailDomain: 'Domain email',
           emailDomainDesc: 'Bagian sebelum @ adalah nama pengguna. Alamat di domain lain ditolak.',
@@ -2396,6 +2398,10 @@ const id = {
           enabled: 'Aktif',
           disabled: 'Nonaktif',
           deviceOwner: 'Pemilik perangkat',
+          ssoTag: 'SSO',
+          ssoUnlink: 'Lepas tautan SSO',
+          ssoUnlinkConfirm: 'Lepas tautan {{username}} dari akunnya di penyedia identitas? Single sign-on berikutnya akan menautkannya lagi.',
+          ssoUnlinked: 'Tautan single sign-on dihapus',
           resetPassword: 'Atur Ulang Kata Sandi',
           delete: 'Hapus',
           deleteConfirm: 'Hapus pengguna ini dan cabut semua sesinya?',

@@ -40,6 +40,7 @@ const nb = {
           token: 'Svaret fra identitetsleverandøren kunne ikke bekreftes.',
           account: 'Kontoen din hos identitetsleverandøren har ingen konto på denne enheten.',
           role: 'Kontoen din hos identitetsleverandøren er ikke i noen av gruppene som er tillatt på denne enheten.',
+          binding: 'Kontoen din hos identitetsleverandøren er ikke den som er knyttet til denne kontoen på enheten. Be en administrator om å fjerne koblingen.',
           server: 'Påloggingen kunne ikke fullføres. Prøv igjen.'
         }
       },
@@ -2314,6 +2315,7 @@ const nb = {
           redirectUrlOverrideDesc: 'La stå tom for å bruke adressen over. Angi den når en omvendt proxy ikke sender videre vertsnavnet eller https.',
           httpWarning: 'Denne siden bruker ukryptert http. Mange leverandører godtar http-omdirigerings-URL-er bare for localhost. Avviser din denne, åpne enheten via HTTPS eller en omvendt proxy med TLS.',
           mappingDesc: 'En leverandørkonto logger inn som den lokale kontoen med samme brukernavn. Enhetseierens konto logger bare inn med passordet sitt. Leverandøren står for tofaktorautentisering: den lokale koden blir ikke spurt om.',
+          bindingDesc: 'Den første single sign-on-innloggingen knytter den lokale kontoen til kontoen hos leverandøren, og senere innlogginger må komme fra den samme. En administrator kan fjerne koblingen i brukerlisten. Etter et bytte av utsteder blir hver konto knyttet på nytt ved neste innlogging.',
           usernameClaim: 'Koble kontoer etter',
           emailDomain: 'E-postdomene',
           emailDomainDesc: 'Delen før @ er brukernavnet. Adresser i andre domener avvises.',
@@ -2389,6 +2391,10 @@ const nb = {
           enabled: 'Aktivert',
           disabled: 'Deaktivert',
           deviceOwner: 'Enhetseier',
+          ssoTag: 'SSO',
+          ssoUnlink: 'Fjern SSO-kobling',
+          ssoUnlinkConfirm: 'Fjerne koblingen mellom {{username}} og kontoen hos identitetsleverandøren? Neste single sign-on knytter den på nytt.',
+          ssoUnlinked: 'Koblingen til single sign-on er fjernet',
           resetPassword: 'Tilbakestill passord',
           delete: 'Slett',
           deleteConfirm: 'Slette denne brukeren og tilbakekalle alle øktene deres?',

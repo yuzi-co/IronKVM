@@ -152,6 +152,9 @@ export const Oidc = () => {
             <div className="pb-3 text-xs text-neutral-500">
               {t('settings.account.oidc.mappingDesc')}
             </div>
+            <div className="pb-3 text-xs text-neutral-500">
+              {t('settings.account.oidc.bindingDesc')}
+            </div>
             <Form.Item name="usernameClaim" label={t('settings.account.oidc.usernameClaim')}>
               <Select
                 options={[

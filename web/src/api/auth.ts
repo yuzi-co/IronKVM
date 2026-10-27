@@ -16,6 +16,9 @@ export type Account = {
 export type User = Account & {
   enabled: boolean;
   systemAccount?: boolean;
+  // Whether a single sign-on has linked the account to an account at the
+  // identity provider. Later sign-ins must come from that provider account.
+  oidcLinked?: boolean;
 };
 
 export function login(username: string, password: string) {
@@ -70,6 +73,12 @@ export function regenerateRecoveryCodes(password: string) {
 
 export function resetUserTotp(username: string) {
   return http.delete(`/api/auth/users/${encodeURIComponent(username)}/totp`);
+}
+
+// Forget which identity provider account an account is linked to, for a user
+// who was recreated at the provider. The next single sign-on links it again.
+export function unlinkUserOidc(username: string) {
+  return http.delete(`/api/auth/users/${encodeURIComponent(username)}/oidc`);
 }
 
 // Login through an OpenID Connect provider. The login page sends the browser

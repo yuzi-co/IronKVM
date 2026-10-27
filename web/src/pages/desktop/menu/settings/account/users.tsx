@@ -68,7 +68,8 @@ export const Users = () => {
               role: parseRole(user.role),
               enabled: user.enabled !== false,
               systemAccount: user.systemAccount === true,
-              totpEnabled: user.totpEnabled === true
+              totpEnabled: user.totpEnabled === true,
+              oidcLinked: user.oidcLinked === true
             }))
           );
         })
@@ -139,6 +140,19 @@ export const Users = () => {
     }
   }
 
+  async function unlinkOidc(username: string) {
+    setIsLoading(true);
+    try {
+      const rsp = await api.unlinkUserOidc(username);
+      if (rsp.code !== 0) throw rsp;
+      messageApi.success(t('settings.account.users.ssoUnlinked'));
+      await loadUsers();
+    } catch (err) {
+      messageApi.error(describeFailure(err, t('settings.account.users.saveFailed')));
+      setIsLoading(false);
+    }
+  }
+
   async function resetPassword(values: PasswordValues) {
     if (!passwordUser) return;
     setIsLoading(true);
@@ -186,6 +200,11 @@ export const Users = () => {
                     {t('totp.users.tag')}
                   </Tag>
                 )}
+                {user.oidcLinked && (
+                  <Tag className="ml-2" color="blue">
+                    {t('settings.account.users.ssoTag')}
+                  </Tag>
+                )}
               </span>
               <Select<UserRole>
                 className="w-28"
@@ -217,6 +236,18 @@ export const Users = () => {
                 >
                   <Button size="small" disabled={isLoading}>
                     {t('totp.users.reset')}
+                  </Button>
+                </Popconfirm>
+              )}
+              {user.oidcLinked && (
+                <Popconfirm
+                  title={t('settings.account.users.ssoUnlinkConfirm', { username: user.username })}
+                  okText={t('settings.account.okBtn')}
+                  cancelText={t('settings.account.cancelBtn')}
+                  onConfirm={() => unlinkOidc(user.username)}
+                >
+                  <Button size="small" disabled={isLoading}>
+                    {t('settings.account.users.ssoUnlink')}
                   </Button>
                 </Popconfirm>
               )}

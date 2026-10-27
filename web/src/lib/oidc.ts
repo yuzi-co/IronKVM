@@ -13,7 +13,9 @@ export const OIDC_REASONS = [
   'token',
   'account',
   'role',
-  'server'
+  'server',
+  // The account is linked to another account at the provider.
+  'binding'
 ] as const;
 
 export type OidcReason = (typeof OIDC_REASONS)[number];

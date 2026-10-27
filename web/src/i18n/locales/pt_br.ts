@@ -40,6 +40,7 @@ const pt_br = {
           token: 'Não foi possível verificar a resposta do provedor de identidade.',
           account: 'Sua conta no provedor de identidade não tem conta neste dispositivo.',
           role: 'Sua conta no provedor de identidade não está em nenhum dos grupos permitidos neste dispositivo.',
+          binding: 'Sua conta no provedor de identidade não é a que está vinculada a esta conta do dispositivo. Peça a um administrador que a desvincule.',
           server: 'Não foi possível concluir o login. Tente novamente.'
         }
       },
@@ -2333,6 +2334,7 @@ const pt_br = {
           redirectUrlOverrideDesc: 'Deixe vazio para usar o endereço acima. Defina quando um proxy reverso não repassa o nome do host ou https.',
           httpWarning: 'Esta página usa http sem criptografia. Muitos provedores só aceitam URLs de redirecionamento http para localhost. Se o seu recusar esta, abra o dispositivo por HTTPS ou por um proxy reverso com TLS.',
           mappingDesc: 'Uma conta do provedor entra como a conta local com o mesmo nome de usuário. A conta do dono do dispositivo entra apenas com a própria senha. O provedor faz a autenticação de dois fatores: o código local não é pedido.',
+          bindingDesc: 'O primeiro login único vincula a conta local àquela conta do provedor, e os logins seguintes devem vir da mesma. Um administrador pode desvincular uma conta na lista de usuários. Depois de uma troca de emissor, cada conta é vinculada de novo no próximo login.',
           usernameClaim: 'Associar contas por',
           emailDomain: 'Domínio de e-mail',
           emailDomainDesc: 'A parte antes do @ é o nome de usuário. Endereços de outros domínios são recusados.',
@@ -2408,6 +2410,10 @@ const pt_br = {
           enabled: 'Habilitado',
           disabled: 'Desabilitado',
           deviceOwner: 'Dono do dispositivo',
+          ssoTag: 'SSO',
+          ssoUnlink: 'Desvincular SSO',
+          ssoUnlinkConfirm: 'Desvincular {{username}} da conta no provedor de identidade? O próximo login único a vinculará de novo.',
+          ssoUnlinked: 'Vínculo de login único removido',
           resetPassword: 'Redefinir Senha',
           delete: 'Excluir',
           deleteConfirm: 'Excluir este usuário e revogar todas as sessões dele?',
