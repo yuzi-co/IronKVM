@@ -1390,6 +1390,8 @@ const pt_br = {
           netboot: 'Boot pela rede',
           vnc: 'VNC',
           webrtc: 'WebRTC',
+          rtsp: 'RTSP',
+          srt: 'SRT',
           picoclaw: 'Capturas de tela da IA',
           hostLog: 'Log do host',
           webTitle: 'Título da web',
@@ -2505,6 +2507,73 @@ const pt_br = {
         sessions: 'Players conectados',
         token:
           'Um player precisa de um token Bearer que só possa assistir: uma chave de API somente visualização (Configurações > Chaves de API) ou o token de um link de compartilhamento. Uma chave que pode fazer mais é recusada.'
+      },
+      rtsp: {
+        address: 'Endereço',
+        addressHint:
+          'Substitua <token> pela chave. No OBS, adicione uma Fonte de mídia, desmarque Arquivo local e cole o endereço como entrada.',
+        cleartext:
+          'O RTSP não é criptografado. O token e a imagem atravessam a rede sem criptografia; use-o em uma rede confiável ou pela VPN.',
+        client: 'Cliente',
+        connecting: 'Conectando',
+        credentials:
+          'Um player entra com qualquer nome de usuário e, como senha, um token que só pode assistir: uma chave de API somente de visualização (Configurações > Chaves de API) ou o token de um link de compartilhamento. Uma chave que pode fazer mais é recusada.',
+        failed: 'Falha ao salvar as configurações de RTSP',
+        limits:
+          'No máximo dois players ao mesmo tempo. Uma troca do codec de vídeo os encerra, e eles se conectam de novo.',
+        noPlayers: 'Nenhum player conectado',
+        players: 'Players',
+        playing: 'Reproduzindo',
+        port: 'Porta',
+        portDesc: 'A porta TCP à qual os players se conectam.',
+        save: 'Salvar',
+        saved: 'Configurações de RTSP salvas',
+        service: 'Servidor RTSP',
+        serviceDesc:
+          'Permite que o OBS (Fonte de mídia), o VLC, o ffmpeg e NVRs reproduzam o vídeo, e o áudio do host quando houver. A placa envia o que seu codificador já produz; nada é recodificado. Cada player conta como um espectador.',
+        since: 'Desde',
+        state: 'Estado',
+        transport: 'Transporte',
+        udp: 'RTP sobre UDP',
+        udpDesc:
+          'Oferecer a mídia também por UDP. Por padrão ela trafega dentro da conexão RTSP, que atravessa NAT e firewalls, e um player que pede UDP recorre a ela.',
+        udpPort: 'Portas UDP',
+        udpPortDesc: 'A porta RTP. O RTCP usa a seguinte.',
+        user: 'Usuário'
+      },
+      srt: {
+        address: 'Entrada da Fonte de mídia do OBS',
+        addressHint:
+          'Substitua <passphrase> e <token>. No OBS, adicione uma Fonte de mídia, desmarque Arquivo local e cole o endereço como entrada.',
+        callers: 'Chamadores',
+        client: 'Cliente',
+        credentials:
+          'Um chamador precisa da frase secreta, que criptografa o fluxo, e, como ID do fluxo, de um token que só pode assistir: uma chave de API somente de visualização (Configurações > Chaves de API) ou o token de um link de compartilhamento.',
+        failed: 'Falha ao salvar as configurações de SRT',
+        latency: 'Latência',
+        latencyDesc:
+          'Quanto tempo um chamador espera o reenvio de um pacote perdido. Aumente-a em um link com perdas. Um chamador que pede mais recebe mais.',
+        limits:
+          'No máximo dois chamadores ao mesmo tempo. Cada um é criptografado por software e custa CPU. Para streamers: no máximo 1080p60, cerca de 100 Mbit/s no Cube, som apenas do dispositivo de áudio USB, e uma fonte com HDCP precisa estar com o HDCP desligado.',
+        noCallers: 'Nenhum chamador conectado',
+        packetCounts:
+          '{{sent}} enviados, {{lost}} perdidos, {{retransmitted}} reenviados, {{dropped}} descartados',
+        packets: 'Pacotes',
+        passphrase: 'Frase secreta',
+        passphraseFirst: 'Defina uma frase secreta e salve-a primeiro.',
+        passphraseInvalid: 'A frase secreta tem de 10 a 79 caracteres.',
+        passphraseSet: 'Há uma frase secreta definida. Digite uma nova para substituí-la.',
+        port: 'Porta',
+        portDesc: 'A porta UDP à qual os chamadores se conectam.',
+        rate: 'Taxa de envio',
+        rtt: 'Ida e volta',
+        save: 'Salvar',
+        saved: 'Configurações de SRT salvas',
+        service: 'Escuta SRT',
+        serviceDesc:
+          'Permite que o OBS e outros chamadores SRT obtenham o vídeo em MPEG-TS, e o áudio do host quando houver. O SRT reenvia pacotes perdidos, o que convém a um link ruim. Nada é recodificado.',
+        since: 'Desde',
+        user: 'Usuário'
       },
       apiKeys: {
         viewOnly: 'Somente visualização',

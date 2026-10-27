@@ -1381,6 +1381,8 @@ const id = {
           netboot: 'Boot jaringan',
           vnc: 'VNC',
           webrtc: 'WebRTC',
+          rtsp: 'RTSP',
+          srt: 'SRT',
           picoclaw: 'Tangkapan layar AI',
           hostLog: 'Log host',
           webTitle: 'Judul web',
@@ -2493,6 +2495,73 @@ const id = {
         sessions: 'Pemutar terhubung',
         token:
           'Pemutar memerlukan token Bearer yang hanya dapat menonton: kunci API khusus lihat (Pengaturan > Kunci API) atau token tautan berbagi. Kunci yang dapat melakukan lebih akan ditolak.'
+      },
+      rtsp: {
+        address: 'Alamat',
+        addressHint:
+          'Ganti <token> dengan kunci. Di OBS, tambahkan Sumber Media, hapus centang File Lokal, lalu tempel alamat sebagai input.',
+        cleartext:
+          'RTSP tidak terenkripsi. Token dan gambar melintasi jaringan tanpa enkripsi, jadi gunakan di jaringan tepercaya atau lewat VPN.',
+        client: 'Klien',
+        connecting: 'Menghubungkan',
+        credentials:
+          'Pemutar masuk dengan nama pengguna apa saja dan, sebagai kata sandi, token yang hanya bisa menonton: kunci API khusus lihat (Pengaturan > Kunci API) atau token tautan berbagi. Kunci yang bisa lebih dari itu ditolak.',
+        failed: 'Gagal menyimpan pengaturan RTSP',
+        limits:
+          'Paling banyak dua pemutar sekaligus. Perubahan codec video mengakhiri mereka, dan mereka terhubung lagi.',
+        noPlayers: 'Tidak ada pemutar terhubung',
+        players: 'Pemutar',
+        playing: 'Memutar',
+        port: 'Port',
+        portDesc: 'Port TCP yang dihubungi pemutar.',
+        save: 'Simpan',
+        saved: 'Pengaturan RTSP disimpan',
+        service: 'Server RTSP',
+        serviceDesc:
+          'Memungkinkan OBS (Sumber Media), VLC, ffmpeg, dan NVR memutar video, serta audio host bila ada. Papan mengirim apa yang sudah dibuat encodernya; tidak ada yang dienkode ulang. Setiap pemutar dihitung sebagai penonton.',
+        since: 'Sejak',
+        state: 'Status',
+        transport: 'Transport',
+        udp: 'RTP lewat UDP',
+        udpDesc:
+          'Tawarkan media juga lewat UDP. Secara bawaan media berjalan di dalam koneksi RTSP, yang melewati NAT dan firewall, dan pemutar yang meminta UDP kembali ke sana.',
+        udpPort: 'Port UDP',
+        udpPortDesc: 'Port RTP. RTCP memakai port berikutnya.',
+        user: 'Pengguna'
+      },
+      srt: {
+        address: 'Input Sumber Media OBS',
+        addressHint:
+          'Ganti <passphrase> dan <token>. Di OBS, tambahkan Sumber Media, hapus centang File Lokal, lalu tempel alamat sebagai input.',
+        callers: 'Pemanggil',
+        client: 'Klien',
+        credentials:
+          'Pemanggil memerlukan frasa sandi, yang mengenkripsi aliran, dan sebagai ID aliran sebuah token yang hanya bisa menonton: kunci API khusus lihat (Pengaturan > Kunci API) atau token tautan berbagi.',
+        failed: 'Gagal menyimpan pengaturan SRT',
+        latency: 'Latensi',
+        latencyDesc:
+          'Berapa lama pemanggil menunggu paket yang hilang dikirim ulang. Naikkan pada tautan yang sering kehilangan paket. Pemanggil yang meminta lebih mendapat lebih.',
+        limits:
+          'Paling banyak dua pemanggil sekaligus. Masing-masing dienkripsi lewat perangkat lunak dan memakan CPU. Untuk streamer: paling tinggi 1080p60, sekitar 100 Mbit/s di Cube, suara hanya dari perangkat audio USB, dan sumber ber-HDCP harus mematikan HDCP.',
+        noCallers: 'Tidak ada pemanggil terhubung',
+        packetCounts:
+          '{{sent}} terkirim, {{lost}} hilang, {{retransmitted}} dikirim ulang, {{dropped}} dibuang',
+        packets: 'Paket',
+        passphrase: 'Frasa sandi',
+        passphraseFirst: 'Tetapkan dan simpan frasa sandi terlebih dahulu.',
+        passphraseInvalid: 'Frasa sandi terdiri dari 10 sampai 79 karakter.',
+        passphraseSet: 'Frasa sandi sudah ditetapkan. Masukkan yang baru untuk menggantinya.',
+        port: 'Port',
+        portDesc: 'Port UDP yang dihubungi pemanggil.',
+        rate: 'Laju kirim',
+        rtt: 'Pulang-pergi',
+        save: 'Simpan',
+        saved: 'Pengaturan SRT disimpan',
+        service: 'Pendengar SRT',
+        serviceDesc:
+          'Memungkinkan OBS dan pemanggil SRT lain menarik video dalam MPEG-TS, serta audio host bila ada. SRT mengirim ulang paket yang hilang, cocok untuk tautan yang buruk. Tidak ada yang dienkode ulang.',
+        since: 'Sejak',
+        user: 'Pengguna'
       },
       apiKeys: {
         viewOnly: 'Hanya lihat',

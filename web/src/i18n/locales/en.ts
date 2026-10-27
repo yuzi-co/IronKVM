@@ -1373,6 +1373,8 @@ const en = {
           netboot: 'Network boot',
           vnc: 'VNC',
           webrtc: 'WebRTC',
+          rtsp: 'RTSP',
+          srt: 'SRT',
           picoclaw: 'AI screenshots',
           hostLog: 'Host log',
           webTitle: 'Web title',
@@ -2476,6 +2478,72 @@ const en = {
         sessions: 'Players connected',
         token:
           'A player needs a Bearer token that can only watch: a view-only API key (Settings > API Keys) or a share link token. A key that can do more is refused.'
+      },
+      rtsp: {
+        address: 'Address',
+        addressHint:
+          'Replace <token> with the key. In OBS, add a Media Source, untick Local File and paste the address as the input.',
+        cleartext:
+          'RTSP is not encrypted. The token and the picture cross the network in the clear, so use it on a trusted network or over the VPN.',
+        client: 'Client',
+        connecting: 'Connecting',
+        credentials:
+          'A player signs in with any user name and, as the password, a token that can only watch: a view-only API key (Settings > API Keys) or a share link token. A key that can do more is refused.',
+        failed: 'Failed to save the RTSP settings',
+        limits:
+          'At most two players at once. A change of the video codec ends them, and they connect again.',
+        noPlayers: 'No player connected',
+        players: 'Players',
+        playing: 'Playing',
+        port: 'Port',
+        portDesc: 'The TCP port players connect to.',
+        save: 'Save',
+        saved: 'RTSP settings saved',
+        service: 'RTSP server',
+        serviceDesc:
+          'Lets OBS (Media Source), VLC, ffmpeg and NVRs play the video, and the host audio when there is any. The board sends what its encoder already makes; nothing is re-encoded. Each player counts as a viewer.',
+        since: 'Since',
+        state: 'State',
+        transport: 'Transport',
+        udp: 'RTP over UDP',
+        udpDesc:
+          'Also offer the media over UDP. By default it travels inside the RTSP connection, which crosses NAT and firewalls, and a player that asks for UDP falls back to that.',
+        udpPort: 'UDP ports',
+        udpPortDesc: 'The RTP port. RTCP uses the next one.',
+        user: 'User'
+      },
+      srt: {
+        address: 'OBS Media Source input',
+        addressHint:
+          'Replace <passphrase> and <token>. In OBS, add a Media Source, untick Local File and paste the address as the input.',
+        callers: 'Callers',
+        client: 'Client',
+        credentials:
+          'A caller needs the passphrase, which encrypts the stream, and as its stream ID a token that can only watch: a view-only API key (Settings > API Keys) or a share link token.',
+        failed: 'Failed to save the SRT settings',
+        latency: 'Latency',
+        latencyDesc:
+          'How long a caller waits for a lost packet to be resent. Raise it on a lossy link. A caller that asks for more gets more.',
+        limits:
+          'At most two callers at once. Each one is encrypted in software and costs CPU. For streamers: 1080p60 at most, about 100 Mbit/s on the Cube, sound only from the USB audio device, and an HDCP source must have HDCP off.',
+        noCallers: 'No caller connected',
+        packetCounts: '{{sent}} sent, {{lost}} lost, {{retransmitted}} resent, {{dropped}} dropped',
+        packets: 'Packets',
+        passphrase: 'Passphrase',
+        passphraseFirst: 'Set a passphrase and save it first.',
+        passphraseInvalid: 'The passphrase is 10 to 79 characters.',
+        passphraseSet: 'A passphrase is set. Enter a new one to replace it.',
+        port: 'Port',
+        portDesc: 'The UDP port callers connect to.',
+        rate: 'Send rate',
+        rtt: 'Round trip',
+        save: 'Save',
+        saved: 'SRT settings saved',
+        service: 'SRT listener',
+        serviceDesc:
+          'Lets OBS and other SRT callers pull the video, and the host audio when there is any, in MPEG-TS. SRT resends lost packets, which suits a poor link. Nothing is re-encoded.',
+        since: 'Since',
+        user: 'User'
       },
       apiKeys: {
         viewOnly: 'View only',

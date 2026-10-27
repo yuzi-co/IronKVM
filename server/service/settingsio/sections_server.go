@@ -355,6 +355,75 @@ var webrtcSection = serverSpec("webrtc",
 		return webrtc.ValidateStun(v.Stun)
 	})
 
+type rtspSettings struct {
+	Enabled bool `json:"enabled"`
+	Port    int  `json:"port"`
+	UDP     bool `json:"udp"`
+	UDPPort int  `json:"udpPort"`
+}
+
+func (v rtspSettings) config() config.RTSP {
+	return config.RTSP{Enabled: v.Enabled, Port: v.Port, UDP: v.UDP, UDPPort: v.UDPPort}
+}
+
+var rtspSection = serverSpec("rtsp",
+	func(c *config.Config) rtspSettings {
+		r := c.RTSP
+		return rtspSettings{Enabled: r.Enabled, Port: r.Port, UDP: r.UDP, UDPPort: r.UDPPort}
+	},
+	// Players authenticate with view-only API keys, which stay on the board
+	// they were made on.
+	func(c *config.Config, v rtspSettings) { c.RTSP = v.config() },
+	// The limits of the RTSP page (service/rtsp/settings.go).
+	func(s *snapshot, v *rtspSettings) error {
+		r := v.config().WithDefaults()
+		if r.Port < 1 || r.Port > 65535 {
+			return errors.New("the port is 1 to 65535")
+		}
+		if r.UDPPort < 1 || r.UDPPort > 65534 {
+			return errors.New("the UDP port is 1 to 65534")
+		}
+		if conf, err := s.config(); err == nil {
+			if r.Port == conf.Port.Http || r.Port == conf.Port.Https {
+				return errors.New("the port is used by the web server")
+			}
+		}
+		return nil
+	})
+
+type srtSettings struct {
+	Enabled   bool `json:"enabled"`
+	Port      int  `json:"port"`
+	LatencyMs int  `json:"latencyMs"`
+}
+
+func (v srtSettings) config() config.SRT {
+	return config.SRT{Enabled: v.Enabled, Port: v.Port, LatencyMs: v.LatencyMs}
+}
+
+var srtSection = serverSpec("srt",
+	func(c *config.Config) srtSettings {
+		return srtSettings{Enabled: c.SRT.Enabled, Port: c.SRT.Port, LatencyMs: c.SRT.LatencyMs}
+	},
+	// The passphrase stays in /etc/kvm/srt.passphrase.
+	func(c *config.Config, v srtSettings) { c.SRT = v.config() },
+	// The limits of the SRT page (service/srt/settings.go).
+	func(s *snapshot, v *srtSettings) error {
+		srt := v.config().WithDefaults()
+		if srt.Port < 1 || srt.Port > 65535 {
+			return errors.New("the port is 1 to 65535")
+		}
+		if srt.LatencyMs < config.MinSRTLatencyMs || srt.LatencyMs > config.MaxSRTLatencyMs {
+			return fmt.Errorf("the latency is %d to %d ms", config.MinSRTLatencyMs, config.MaxSRTLatencyMs)
+		}
+		// The passphrase is a secret and is not in the file, so SRT can only
+		// be switched on where one is already set.
+		if srt.Enabled && !s.exists(srtPassphraseFile) {
+			return errors.New("SRT needs a passphrase on this board; set one first")
+		}
+		return nil
+	})
+
 type picoclawSettings struct {
 	ScreenshotWidth   int `json:"screenshotWidth"`
 	ScreenshotQuality int `json:"screenshotQuality"`

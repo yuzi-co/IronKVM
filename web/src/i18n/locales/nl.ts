@@ -1391,6 +1391,8 @@ const nl = {
           netboot: 'Netwerkboot',
           vnc: 'VNC',
           webrtc: 'WebRTC',
+          rtsp: 'RTSP',
+          srt: 'SRT',
           picoclaw: 'AI-schermafbeeldingen',
           hostLog: 'Hostlog',
           webTitle: 'Webtitel',
@@ -2511,6 +2513,73 @@ const nl = {
         sessions: 'Verbonden spelers',
         token:
           'Een speler heeft een Bearer-token nodig dat alleen kan kijken: een API-sleutel alleen-bekijken (Instellingen > API-sleutels) of het token van een deellink. Een sleutel die meer kan, wordt geweigerd.'
+      },
+      rtsp: {
+        address: 'Adres',
+        addressHint:
+          'Vervang <token> door de sleutel. Voeg in OBS een Mediabron toe, vink Lokaal bestand uit en plak het adres als invoer.',
+        cleartext:
+          'RTSP is niet versleuteld. Het token en het beeld gaan onversleuteld over het netwerk; gebruik het op een vertrouwd netwerk of via de VPN.',
+        client: 'Client',
+        connecting: 'Verbinden',
+        credentials:
+          'Een speler meldt zich aan met een willekeurige gebruikersnaam en, als wachtwoord, een token dat alleen mag kijken: een API-sleutel voor alleen bekijken (Instellingen > API-sleutels) of het token van een deellink. Een sleutel die meer mag, wordt geweigerd.',
+        failed: 'Opslaan van de RTSP-instellingen mislukt',
+        limits:
+          'Hoogstens twee spelers tegelijk. Een wissel van videocodec beëindigt ze, en ze maken opnieuw verbinding.',
+        noPlayers: 'Geen speler verbonden',
+        players: 'Spelers',
+        playing: 'Speelt af',
+        port: 'Poort',
+        portDesc: 'De TCP-poort waarmee spelers verbinden.',
+        save: 'Opslaan',
+        saved: 'RTSP-instellingen opgeslagen',
+        service: 'RTSP-server',
+        serviceDesc:
+          'Laat OBS (Mediabron), VLC, ffmpeg en NVR\'s de video afspelen, en het geluid van de host als dat er is. Het bord stuurt wat zijn encoder al maakt; er wordt niets opnieuw gecodeerd. Elke speler telt als kijker.',
+        since: 'Sinds',
+        state: 'Status',
+        transport: 'Transport',
+        udp: 'RTP over UDP',
+        udpDesc:
+          'De media ook via UDP aanbieden. Standaard gaan ze binnen de RTSP-verbinding, die NAT en firewalls passeert, en een speler die om UDP vraagt valt daarop terug.',
+        udpPort: 'UDP-poorten',
+        udpPortDesc: 'De RTP-poort. RTCP gebruikt de volgende.',
+        user: 'Gebruiker'
+      },
+      srt: {
+        address: 'Invoer voor de OBS-mediabron',
+        addressHint:
+          'Vervang <passphrase> en <token>. Voeg in OBS een Mediabron toe, vink Lokaal bestand uit en plak het adres als invoer.',
+        callers: 'Bellers',
+        client: 'Client',
+        credentials:
+          'Een beller heeft de wachtwoordzin nodig, die de stream versleutelt, en als stream-ID een token dat alleen mag kijken: een API-sleutel voor alleen bekijken (Instellingen > API-sleutels) of het token van een deellink.',
+        failed: 'Opslaan van de SRT-instellingen mislukt',
+        latency: 'Latentie',
+        latencyDesc:
+          'Hoe lang een beller wacht tot een verloren pakket opnieuw is verzonden. Verhoog dit op een verbinding met verlies. Een beller die om meer vraagt, krijgt meer.',
+        limits:
+          'Hoogstens twee bellers tegelijk. Elke beller wordt in software versleuteld en kost CPU. Voor streamers: hoogstens 1080p60, ongeveer 100 Mbit/s op de Cube, geluid alleen van het USB-audioapparaat, en bij een HDCP-bron moet HDCP uit staan.',
+        noCallers: 'Geen beller verbonden',
+        packetCounts:
+          '{{sent}} verzonden, {{lost}} verloren, {{retransmitted}} opnieuw verzonden, {{dropped}} verworpen',
+        packets: 'Pakketten',
+        passphrase: 'Wachtwoordzin',
+        passphraseFirst: 'Stel eerst een wachtwoordzin in en sla die op.',
+        passphraseInvalid: 'De wachtwoordzin is 10 tot 79 tekens.',
+        passphraseSet: 'Er is een wachtwoordzin ingesteld. Voer een nieuwe in om die te vervangen.',
+        port: 'Poort',
+        portDesc: 'De UDP-poort waarmee bellers verbinden.',
+        rate: 'Verzendsnelheid',
+        rtt: 'Retourtijd',
+        save: 'Opslaan',
+        saved: 'SRT-instellingen opgeslagen',
+        service: 'SRT-listener',
+        serviceDesc:
+          'Laat OBS en andere SRT-bellers de video in MPEG-TS ophalen, en het geluid van de host als dat er is. SRT verzendt verloren pakketten opnieuw, wat past bij een slechte verbinding. Er wordt niets opnieuw gecodeerd.',
+        since: 'Sinds',
+        user: 'Gebruiker'
       },
       apiKeys: {
         viewOnly: 'Alleen bekijken',

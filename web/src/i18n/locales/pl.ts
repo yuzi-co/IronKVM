@@ -1385,6 +1385,8 @@ const pl = {
           netboot: 'Rozruch sieciowy',
           vnc: 'VNC',
           webrtc: 'WebRTC',
+          rtsp: 'RTSP',
+          srt: 'SRT',
           picoclaw: 'Zrzuty ekranu AI',
           hostLog: 'Log hosta',
           webTitle: 'Tytuł strony',
@@ -2497,6 +2499,73 @@ const pl = {
         sessions: 'Połączone odtwarzacze',
         token:
           'Odtwarzacz potrzebuje tokenu Bearer, który może tylko oglądać: klucza API tylko do podglądu (Ustawienia > Klucze API) lub tokenu linku udostępniania. Klucz, który może więcej, jest odrzucany.'
+      },
+      rtsp: {
+        address: 'Adres',
+        addressHint:
+          'Zastąp <token> kluczem. W OBS dodaj Źródło multimediów, odznacz Plik lokalny i wklej adres jako wejście.',
+        cleartext:
+          'RTSP nie jest szyfrowany. Token i obraz idą przez sieć jawnie, więc używaj go w zaufanej sieci lub przez VPN.',
+        client: 'Klient',
+        connecting: 'Łączenie',
+        credentials:
+          'Odtwarzacz loguje się dowolną nazwą użytkownika i, jako hasłem, tokenem, który może tylko oglądać: kluczem API tylko do podglądu (Ustawienia > Klucze API) lub tokenem linku udostępniania. Klucz, który może więcej, zostaje odrzucony.',
+        failed: 'Nie udało się zapisać ustawień RTSP',
+        limits:
+          'Najwyżej dwa odtwarzacze naraz. Zmiana kodeka wideo je kończy i łączą się ponownie.',
+        noPlayers: 'Brak połączonego odtwarzacza',
+        players: 'Odtwarzacze',
+        playing: 'Odtwarza',
+        port: 'Port',
+        portDesc: 'Port TCP, z którym łączą się odtwarzacze.',
+        save: 'Zapisz',
+        saved: 'Zapisano ustawienia RTSP',
+        service: 'Serwer RTSP',
+        serviceDesc:
+          'Pozwala OBS (Źródło multimediów), VLC, ffmpeg i rejestratorom NVR odtwarzać wideo oraz dźwięk hosta, gdy jest. Płytka wysyła to, co jej koder już tworzy; nic nie jest kodowane ponownie. Każdy odtwarzacz liczy się jako widz.',
+        since: 'Od',
+        state: 'Stan',
+        transport: 'Transport',
+        udp: 'RTP przez UDP',
+        udpDesc:
+          'Oferuj media także przez UDP. Domyślnie idą wewnątrz połączenia RTSP, które przechodzi przez NAT i zapory, a odtwarzacz proszący o UDP wraca do niego.',
+        udpPort: 'Porty UDP',
+        udpPortDesc: 'Port RTP. RTCP używa następnego.',
+        user: 'Użytkownik'
+      },
+      srt: {
+        address: 'Wejście Źródła multimediów OBS',
+        addressHint:
+          'Zastąp <passphrase> i <token>. W OBS dodaj Źródło multimediów, odznacz Plik lokalny i wklej adres jako wejście.',
+        callers: 'Wywołujący',
+        client: 'Klient',
+        credentials:
+          'Wywołujący potrzebuje hasła szyfrującego strumień, a jako ID strumienia tokenu, który może tylko oglądać: klucza API tylko do podglądu (Ustawienia > Klucze API) lub tokenu linku udostępniania.',
+        failed: 'Nie udało się zapisać ustawień SRT',
+        latency: 'Opóźnienie',
+        latencyDesc:
+          'Jak długo wywołujący czeka na ponowne wysłanie utraconego pakietu. Zwiększ je na łączu ze stratami. Wywołujący, który prosi o więcej, dostaje więcej.',
+        limits:
+          'Najwyżej dwóch wywołujących naraz. Każdy jest szyfrowany programowo i kosztuje CPU. Dla streamerów: najwyżej 1080p60, około 100 Mbit/s na Cube, dźwięk tylko z urządzenia audio USB, a źródło z HDCP musi mieć HDCP wyłączone.',
+        noCallers: 'Brak połączonego wywołującego',
+        packetCounts:
+          'wysłane: {{sent}}, utracone: {{lost}}, ponowione: {{retransmitted}}, odrzucone: {{dropped}}',
+        packets: 'Pakiety',
+        passphrase: 'Hasło',
+        passphraseFirst: 'Najpierw ustaw i zapisz hasło.',
+        passphraseInvalid: 'Hasło ma od 10 do 79 znaków.',
+        passphraseSet: 'Hasło jest ustawione. Wpisz nowe, aby je zastąpić.',
+        port: 'Port',
+        portDesc: 'Port UDP, z którym łączą się wywołujący.',
+        rate: 'Szybkość wysyłania',
+        rtt: 'Czas w obie strony',
+        save: 'Zapisz',
+        saved: 'Zapisano ustawienia SRT',
+        service: 'Nasłuch SRT',
+        serviceDesc:
+          'Pozwala OBS i innym wywołującym SRT pobierać wideo w MPEG-TS oraz dźwięk hosta, gdy jest. SRT ponawia utracone pakiety, co pasuje do słabego łącza. Nic nie jest kodowane ponownie.',
+        since: 'Od',
+        user: 'Użytkownik'
       },
       apiKeys: {
         viewOnly: 'Tylko podgląd',

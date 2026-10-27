@@ -49,7 +49,16 @@ export const KEYWORDS: Record<string, string[]> = {
   hostLog: ['syslog', 'netconsole', 'kernel', 'panic', 'dmesg', 'logs', 'udp'],
   notifications: ['alert', 'webhook', 'ntfy', 'telegram', 'push', 'snapshot', 'screenshot'],
   update: ['upgrade', 'firmware', 'version', 'addon', 'offline'],
-  backup: ['export', 'import', 'restore', 'settings file', 'diagnostics', 'support', 'bundle', 'dmesg'],
+  backup: [
+    'export',
+    'import',
+    'restore',
+    'settings file',
+    'diagnostics',
+    'support',
+    'bundle',
+    'dmesg'
+  ],
   network: [
     'ip',
     'dhcp',
@@ -65,12 +74,24 @@ export const KEYWORDS: Record<string, string[]> = {
     'firewall'
   ],
   vpn: ['tailscale', 'netbird', 'wireguard'],
-  account: ['user', 'password', 'login', 'logout', 'oidc', 'sso', 'single sign-on', 'authentik', 'keycloak'],
+  account: [
+    'user',
+    'password',
+    'login',
+    'logout',
+    'oidc',
+    'sso',
+    'single sign-on',
+    'authentik',
+    'keycloak'
+  ],
   apiKeys: ['api', 'token', 'key'],
   audit: ['log', 'history', 'security', 'syslog', 'who', 'events'],
   ssh: ['shell', 'authorized keys', 'host keys', 'port'],
   vnc: ['rfb'],
   whep: ['webrtc', 'obs', 'gstreamer', 'player', 'stream', 'egress'],
+  rtsp: ['obs', 'vlc', 'ffmpeg', 'nvr', 'player', 'stream', 'egress', 'media source'],
+  srt: ['obs', 'ffmpeg', 'mpeg-ts', 'player', 'stream', 'egress', 'media source', 'passphrase'],
   tls: ['https', 'certificate', 'ssl'],
   ipmi: ['bmc', 'ipmitool'],
   redfish: ['bmc'],

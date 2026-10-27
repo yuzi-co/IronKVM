@@ -38,6 +38,23 @@ type WHEPViewer struct {
 // a shell history or a player's URL bar, and one that can also type on the
 // host must not.
 func AuthenticateWHEP(r *http.Request) (WHEPViewer, int) {
+	authorization := r.Header.Get("Authorization")
+	token := ""
+	if strings.HasPrefix(authorization, bearerPrefix) {
+		token = strings.TrimSpace(strings.TrimPrefix(authorization, bearerPrefix))
+	}
+
+	return AuthenticateViewToken(token)
+}
+
+// AuthenticateViewToken checks a token that may only watch, however it
+// arrived: WHEP's Bearer header, the password of an RTSP request
+// (ironkvm-dist#142) or the stream ID of an SRT caller (ironkvm-dist#143).
+// Each of those ends up in a player's settings or URL, so the rules are
+// WHEP's: a view-only API key, the key of a view-only account, or a share
+// link token, and never a key that could also type on the host. It returns
+// 0, 401 or 403 as AuthenticateWHEP does.
+func AuthenticateViewToken(token string) (WHEPViewer, int) {
 	if config.GetInstance().Authentication == "disable" {
 		// The whole board is open; there is nobody to check.
 		return WHEPViewer{
@@ -46,11 +63,6 @@ func AuthenticateWHEP(r *http.Request) (WHEPViewer, int) {
 		}, 0
 	}
 
-	authorization := r.Header.Get("Authorization")
-	if !strings.HasPrefix(authorization, bearerPrefix) {
-		return WHEPViewer{}, http.StatusUnauthorized
-	}
-	token := strings.TrimSpace(strings.TrimPrefix(authorization, bearerPrefix))
 	if token == "" {
 		return WHEPViewer{}, http.StatusUnauthorized
 	}

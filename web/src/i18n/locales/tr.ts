@@ -1379,6 +1379,8 @@ const tr = {
           netboot: 'Ağdan önyükleme',
           vnc: 'VNC',
           webrtc: 'WebRTC',
+          rtsp: 'RTSP',
+          srt: 'SRT',
           picoclaw: 'Yapay zeka ekran görüntüleri',
           hostLog: 'Ana bilgisayar günlüğü',
           webTitle: 'Web başlığı',
@@ -2490,6 +2492,73 @@ const tr = {
         sessions: 'Bağlı oynatıcılar',
         token:
           'Oynatıcının yalnızca izleyebilen bir Bearer belirtecine ihtiyacı vardır: yalnızca görüntüleme API anahtarı (Ayarlar > API Anahtarları) veya bir paylaşım bağlantısının belirteci. Daha fazlasını yapabilen anahtar reddedilir.'
+      },
+      rtsp: {
+        address: 'Adres',
+        addressHint:
+          '<token> yerine anahtarı yazın. OBS\'de bir Medya Kaynağı ekleyin, Yerel Dosya işaretini kaldırın ve adresi giriş olarak yapıştırın.',
+        cleartext:
+          'RTSP şifrelenmez. Belirteç ve görüntü ağda açık olarak gider; güvenilir bir ağda veya VPN üzerinden kullanın.',
+        client: 'İstemci',
+        connecting: 'Bağlanıyor',
+        credentials:
+          'Bir oynatıcı herhangi bir kullanıcı adıyla ve parola olarak yalnızca izleyebilen bir belirteçle oturum açar: yalnızca görüntüleme amaçlı bir API anahtarı (Ayarlar > API Anahtarları) veya bir paylaşım bağlantısının belirteci. Daha fazlasını yapabilen bir anahtar reddedilir.',
+        failed: 'RTSP ayarları kaydedilemedi',
+        limits:
+          'Aynı anda en fazla iki oynatıcı. Video codec değişikliği onları sonlandırır ve yeniden bağlanırlar.',
+        noPlayers: 'Bağlı oynatıcı yok',
+        players: 'Oynatıcılar',
+        playing: 'Oynatıyor',
+        port: 'Bağlantı noktası',
+        portDesc: 'Oynatıcıların bağlandığı TCP bağlantı noktası.',
+        save: 'Kaydet',
+        saved: 'RTSP ayarları kaydedildi',
+        service: 'RTSP sunucusu',
+        serviceDesc:
+          'OBS (Medya Kaynağı), VLC, ffmpeg ve NVR\'lerin videoyu ve varsa ana makinenin sesini oynatmasını sağlar. Kart, kodlayıcısının zaten ürettiğini gönderir; hiçbir şey yeniden kodlanmaz. Her oynatıcı bir izleyici sayılır.',
+        since: 'Başlangıç',
+        state: 'Durum',
+        transport: 'Taşıma',
+        udp: 'UDP üzerinden RTP',
+        udpDesc:
+          'Medyayı UDP üzerinden de sun. Varsayılan olarak NAT ve güvenlik duvarlarından geçen RTSP bağlantısının içinde gider; UDP isteyen bir oynatıcı ona geri döner.',
+        udpPort: 'UDP bağlantı noktaları',
+        udpPortDesc: 'RTP bağlantı noktası. RTCP bir sonrakini kullanır.',
+        user: 'Kullanıcı'
+      },
+      srt: {
+        address: 'OBS Medya Kaynağı girişi',
+        addressHint:
+          '<passphrase> ve <token> yerine değerleri yazın. OBS\'de bir Medya Kaynağı ekleyin, Yerel Dosya işaretini kaldırın ve adresi giriş olarak yapıştırın.',
+        callers: 'Arayanlar',
+        client: 'İstemci',
+        credentials:
+          'Bir arayanın, akışı şifreleyen parola ifadesine ve akış kimliği olarak yalnızca izleyebilen bir belirtece ihtiyacı vardır: yalnızca görüntüleme amaçlı bir API anahtarı (Ayarlar > API Anahtarları) veya bir paylaşım bağlantısının belirteci.',
+        failed: 'SRT ayarları kaydedilemedi',
+        latency: 'Gecikme',
+        latencyDesc:
+          'Arayanın kaybolan bir paketin yeniden gönderilmesini ne kadar beklediği. Kayıplı bir bağlantıda artırın. Daha fazlasını isteyen daha fazlasını alır.',
+        limits:
+          'Aynı anda en fazla iki arayan. Her biri yazılımla şifrelenir ve CPU harcar. Yayıncılar için: en fazla 1080p60, Cube\'da yaklaşık 100 Mbit/s, ses yalnızca USB ses aygıtından ve HDCP\'li bir kaynakta HDCP kapalı olmalıdır.',
+        noCallers: 'Bağlı arayan yok',
+        packetCounts:
+          '{{sent}} gönderildi, {{lost}} kayboldu, {{retransmitted}} yeniden gönderildi, {{dropped}} atıldı',
+        packets: 'Paketler',
+        passphrase: 'Parola ifadesi',
+        passphraseFirst: 'Önce bir parola ifadesi belirleyip kaydedin.',
+        passphraseInvalid: 'Parola ifadesi 10 ile 79 karakter arasındadır.',
+        passphraseSet: 'Bir parola ifadesi ayarlı. Değiştirmek için yenisini girin.',
+        port: 'Bağlantı noktası',
+        portDesc: 'Arayanların bağlandığı UDP bağlantı noktası.',
+        rate: 'Gönderme hızı',
+        rtt: 'Gidiş-dönüş',
+        save: 'Kaydet',
+        saved: 'SRT ayarları kaydedildi',
+        service: 'SRT dinleyicisi',
+        serviceDesc:
+          'OBS ve diğer SRT arayanların videoyu ve varsa ana makinenin sesini MPEG-TS olarak çekmesini sağlar. SRT kaybolan paketleri yeniden gönderir, bu da zayıf bir bağlantıya uyar. Hiçbir şey yeniden kodlanmaz.',
+        since: 'Başlangıç',
+        user: 'Kullanıcı'
       },
       apiKeys: {
         viewOnly: 'Yalnızca görüntüleme',
