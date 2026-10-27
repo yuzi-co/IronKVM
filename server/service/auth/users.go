@@ -29,6 +29,7 @@ func (s *Service) ListUsers(c *gin.Context) {
 			Enabled:       user.Enabled,
 			SystemAccount: user.SystemAccount,
 			TOTPEnabled:   user.TOTPEnabled,
+			OIDCLinked:    user.OIDCLinked,
 		})
 	}
 	rsp.OkRspWithData(c, &proto.ListUsersRsp{Users: result})

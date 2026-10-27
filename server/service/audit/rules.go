@@ -19,6 +19,8 @@ var named = map[string]Rule{
 	"POST /api/auth/logout":     {CategoryAuth, "logout", false},
 	// The OIDC login is a GET, recorded by its handler as login-oidc.
 	"POST /api/auth/oidc/settings": {CategoryAuth, "oidc-settings", false},
+	// The target is the account, the route's last parameter.
+	"DELETE /api/auth/users/:username/oidc": {CategoryAuth, "oidc-unlink", false},
 
 	"DELETE /api/auth/sessions/:id":         {CategoryAuth, "revoke-session", false},
 	"POST /api/auth/sessions/revoke-others": {CategoryAuth, "revoke-other-sessions", false},
