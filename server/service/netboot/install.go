@@ -350,13 +350,20 @@ func writeMember(r io.Reader, size int64, m archiveMember, dir string) error {
 		return fmt.Errorf("%s is %d bytes, larger than a boot loader", m.Member, size)
 	}
 
-	dst := filepath.Join(dir, m.Name)
-	tmp := dst + ".part"
-	out, err := os.Create(tmp)
+	// The names are the table's, not the archive's, but dir is on /data and
+	// a symbolic link there must not carry the write elsewhere.
+	root, err := os.OpenRoot(dir)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = os.Remove(tmp) }()
+	defer func() { _ = root.Close() }()
+
+	tmp := m.Name + ".part"
+	out, err := root.Create(tmp)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = root.Remove(tmp) }()
 
 	hasher := sha256.New()
 	_, copyErr := io.Copy(io.MultiWriter(out, hasher), io.LimitReader(r, size))
@@ -371,7 +378,7 @@ func writeMember(r io.Reader, size int64, m archiveMember, dir string) error {
 		return fmt.Errorf("%s: sha256 %s, want %s", m.Member, got, m.SHA256)
 	}
 
-	return os.Rename(tmp, dst)
+	return root.Rename(tmp, m.Name)
 }
 
 // writeFile replaces a file whole.

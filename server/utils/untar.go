@@ -19,6 +19,18 @@ func UnTarGz(srcFile string, destDir string) (string, error) {
 		return "", err
 	}
 
+	// Every write goes through root, which refuses a name that leaves
+	// destDir, whether by "..", an absolute path or a symbolic link already
+	// on disk. The checks below refuse such entries first, with a clearer
+	// error; root is what holds if one of them is ever wrong.
+	root, err := os.OpenRoot(destDir)
+	if err != nil {
+		return "", err
+	}
+	defer func() {
+		_ = root.Close()
+	}()
+
 	fr, err := os.Open(srcFile)
 	if err != nil {
 		return "", err
@@ -71,12 +83,12 @@ func UnTarGz(srcFile string, destDir string) (string, error) {
 		case tar.TypeDir:
 			// Keep the owner's write and search bits, otherwise an archive
 			// declaring a read-only directory blocks its own extraction.
-			if err := os.MkdirAll(filename, os.FileMode(header.Mode)|0o700); err != nil {
+			if err := root.MkdirAll(header.Name, os.FileMode(header.Mode)|0o700); err != nil {
 				return "", err
 			}
 
 		case tar.TypeReg:
-			file, err := os.OpenFile(filename, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode))
+			file, err := root.OpenFile(header.Name, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode))
 			if err != nil {
 				return "", err
 			}

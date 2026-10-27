@@ -226,3 +226,62 @@ func TestThePinsAreWellFormed(t *testing.T) {
 		seen[name] = true
 	}
 }
+
+// A member is taken by its exact name and type, so an archive cannot pass off
+// a "../", absolute or link entry as one, and the write does not follow a
+// symbolic link already in the directory.
+func TestExtractWritesNothingOutsideItsDirectory(t *testing.T) {
+	member := archiveMember{Member: "ipxeboot/x86_64/ipxe.efi", Name: "ipxe.efi", SHA256: sum([]byte("efi"))}
+
+	for name, entries := range map[string][]tarEntry{
+		"dot-dot":  {{name: "ipxeboot/x86_64/../x86_64/../../ipxe.efi", content: "efi"}},
+		"absolute": {{name: "/ipxeboot/x86_64/ipxe.efi", content: "efi"}},
+		"symlink":  {{name: "ipxeboot/x86_64/ipxe.efi", linkname: "/etc/shadow"}},
+	} {
+		t.Run(name, func(t *testing.T) {
+			dir := t.TempDir()
+			archive := filepath.Join(dir, "a.tar.gz")
+			if err := os.WriteFile(archive, tarGz(t, entries), 0o644); err != nil {
+				t.Fatal(err)
+			}
+			out := filepath.Join(dir, "out")
+			if err := os.MkdirAll(out, 0o755); err != nil {
+				t.Fatal(err)
+			}
+			if err := extractMembers(archive, []archiveMember{member}, out); err == nil {
+				t.Fatal("the entry was taken for the member")
+			}
+			if entries, _ := os.ReadDir(out); len(entries) != 0 {
+				t.Fatalf("wrote %v", entries)
+			}
+			if _, err := os.Lstat(filepath.Join(dir, "ipxe.efi")); err == nil {
+				t.Fatal("a file was written outside the directory")
+			}
+		})
+	}
+
+	t.Run("symlink-on-disk", func(t *testing.T) {
+		dir := t.TempDir()
+		archive := filepath.Join(dir, "a.tar.gz")
+		if err := os.WriteFile(archive, tarGz(t, []tarEntry{{name: member.Member, content: "efi"}}), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		outside := filepath.Join(t.TempDir(), "victim")
+		if err := os.WriteFile(outside, []byte("keep"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		out := filepath.Join(dir, "out")
+		if err := os.MkdirAll(out, 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Symlink(outside, filepath.Join(out, member.Name+".part")); err != nil {
+			t.Fatal(err)
+		}
+		if err := extractMembers(archive, []archiveMember{member}, out); err == nil {
+			t.Fatal("wrote through a symlink")
+		}
+		if data, _ := os.ReadFile(outside); string(data) != "keep" {
+			t.Fatalf("the file outside now holds %q", data)
+		}
+	})
+}

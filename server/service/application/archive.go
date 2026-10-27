@@ -96,6 +96,19 @@ func extractUpdateArchive(archivePath, destDir, expectedRoot string) (string, er
 	}
 	defer reader.Close()
 
+	// Every write goes through root, which refuses a name that leaves destDir,
+	// whether by "..", an absolute path or a symbolic link already on disk.
+	// validateArchiveHeader refuses such names first; root holds if it is
+	// ever wrong.
+	if err := os.MkdirAll(destDir, 0o755); err != nil {
+		return "", fmt.Errorf("create archive directory: %w", err)
+	}
+	root, err := os.OpenRoot(destDir)
+	if err != nil {
+		return "", err
+	}
+	defer root.Close()
+
 	seen := make(map[string]struct{})
 	entries := 0
 	expanded := uint64(0)
@@ -121,10 +134,10 @@ func extractUpdateArchive(archivePath, destDir, expectedRoot string) (string, er
 			return "", fmt.Errorf("update archive has more than %d entries", maxArchiveEntries)
 		}
 
-		filename := filepath.Join(destDir, filepath.FromSlash(name))
+		filename := filepath.FromSlash(name)
 		switch header.Typeflag {
 		case tar.TypeDir:
-			if err := os.MkdirAll(filename, 0o755); err != nil {
+			if err := root.MkdirAll(filename, 0o755); err != nil {
 				return "", fmt.Errorf("create archive directory: %w", err)
 			}
 		case tar.TypeReg, tar.TypeRegA:
@@ -136,10 +149,10 @@ func extractUpdateArchive(archivePath, destDir, expectedRoot string) (string, er
 				return "", fmt.Errorf("update archive expanded size exceeds %d bytes", maxExpandedSize)
 			}
 			expanded += size
-			if err := os.MkdirAll(filepath.Dir(filename), 0o755); err != nil {
+			if err := root.MkdirAll(filepath.Dir(filename), 0o755); err != nil {
 				return "", fmt.Errorf("create archive parent directory: %w", err)
 			}
-			out, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_EXCL, os.FileMode(header.Mode)&0o777)
+			out, err := root.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_EXCL, os.FileMode(header.Mode)&0o777)
 			if err != nil {
 				return "", fmt.Errorf("create archive file: %w", err)
 			}

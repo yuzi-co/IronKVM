@@ -164,6 +164,15 @@ func extractChecked(archive string, members []releaseMember, ws string) (map[str
 	if err != nil {
 		return nil, err
 	}
+
+	// The names are the table's, not the archive's, but ws is on /data and a
+	// symbolic link there must not carry a write elsewhere.
+	root, err := os.OpenRoot(ws)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = root.Close() }()
+
 	want := map[string]releaseMember{}
 	for _, m := range members {
 		want[m.Member] = m
@@ -186,8 +195,7 @@ func extractChecked(archive string, members []releaseMember, ws string) (map[str
 		if hdr.Size > memberMax {
 			return nil, fmt.Errorf("%s: larger than %d bytes", m.Member, memberMax)
 		}
-		tmp := filepath.Join(ws, m.Name+".raw")
-		out, err := os.Create(tmp)
+		out, err := root.Create(m.Name + ".raw")
 		if err != nil {
 			return nil, err
 		}
@@ -199,7 +207,7 @@ func extractChecked(archive string, members []releaseMember, ws string) (map[str
 		if closeErr != nil {
 			return nil, closeErr
 		}
-		raw[m.Member] = tmp
+		raw[m.Member] = m.Name + ".raw"
 	}
 
 	sums := map[string]string{}
@@ -208,24 +216,30 @@ func extractChecked(archive string, members []releaseMember, ws string) (map[str
 		if !ok {
 			return nil, fmt.Errorf("the release has no %s", m.Member)
 		}
-		sum, err := writeChecked(src, filepath.Join(ws, m.Name), m)
+		sum, err := writeChecked(root, src, m.Name, m)
 		if err != nil {
 			return nil, err
 		}
-		_ = os.Remove(src)
+		_ = root.Remove(src)
 		sums[m.Name] = sum
 	}
 	return sums, nil
 }
 
-// writeChecked writes the member at src to dst, decompressed when it is xz,
-// and keeps it only when its sum is the pinned one, if it has one. It
-// returns the sum.
-func writeChecked(src, dst string, m releaseMember) (string, error) {
-	out, err := os.Create(dst)
+// writeChecked writes the member at src to dst, both names in root,
+// decompressed when it is xz, and keeps it only when its sum is the pinned
+// one, if it has one. It returns the sum.
+func writeChecked(root *os.Root, src, dst string, m releaseMember) (string, error) {
+	out, err := root.Create(dst)
 	if err != nil {
 		return "", err
 	}
+	in, err := root.Open(src)
+	if err != nil {
+		_ = out.Close()
+		return "", err
+	}
+	defer func() { _ = in.Close() }()
 	hasher := sha256.New()
 	w := io.MultiWriter(out, hasher)
 
@@ -233,7 +247,8 @@ func writeChecked(src, dst string, m releaseMember) (string, error) {
 	if m.XZ {
 		ctx, cancel := context.WithTimeout(context.Background(), fetchTimeout)
 		defer cancel()
-		cmd := exec.CommandContext(ctx, XzcatPath, src)
+		cmd := exec.CommandContext(ctx, XzcatPath)
+		cmd.Stdin = in
 		cmd.Stdout = &limitWriter{w: w, left: memberMax}
 		var stderr limitBuffer
 		cmd.Stderr = &stderr
@@ -241,13 +256,7 @@ func writeChecked(src, dst string, m releaseMember) (string, error) {
 			copyErr = fmt.Errorf("decompress %s: %w: %s", m.Member, err, stderr.String())
 		}
 	} else {
-		in, err := os.Open(src)
-		if err != nil {
-			_ = out.Close()
-			return "", err
-		}
 		_, copyErr = io.Copy(w, in)
-		_ = in.Close()
 	}
 	closeErr := out.Close()
 	if copyErr != nil {
