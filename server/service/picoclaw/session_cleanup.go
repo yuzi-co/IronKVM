@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"NanoKVM-Server/service/agent"
 	"NanoKVM-Server/service/controlmode"
 	"NanoKVM-Server/service/hid"
 
@@ -15,7 +16,7 @@ import (
 const picoclawMediaTempDirName = "picoclaw_media"
 
 func ReleaseSession(sessionID string) {
-	_, err := releaseOwnedSession(GetSessionLock(), sessionID, hid.ReleaseAllHIDState)
+	_, err := releaseOwnedSession(agent.GetSessionLock(), sessionID, hid.ReleaseAllHIDState)
 	if err != nil {
 		log.Errorf("failed to release HID state for PicoClaw session %s: %v", sessionID, err)
 	}
@@ -40,7 +41,7 @@ func (s *Service) releaseGatewaySession(sessionID string) {
 	}
 }
 
-func releaseOwnedSession(lock *SessionLock, sessionID string, releaseHID func() error) (bool, error) {
+func releaseOwnedSession(lock *agent.SessionLock, sessionID string, releaseHID func() error) (bool, error) {
 	if lock == nil || !lock.ReleaseOwned(sessionID) {
 		return false, nil
 	}

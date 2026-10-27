@@ -3,6 +3,7 @@ package picoclaw
 import (
 	"github.com/gin-gonic/gin"
 
+	"NanoKVM-Server/service/agent"
 	"NanoKVM-Server/service/controlmode"
 )
 
@@ -19,7 +20,7 @@ func newRuntimeRoutesService(control *controlmode.Manager, intentPath string) *S
 		runtime:       newRuntimeStore(RuntimeStatus{}),
 		runtimeIntent: NewRuntimeIntentStore(intentPath),
 		releaseHID:    func() error { return nil },
-		lock:          &SessionLock{},
+		lock:          &agent.SessionLock{},
 	}
 }
 

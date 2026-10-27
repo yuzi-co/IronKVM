@@ -43,7 +43,7 @@ func (s *Service) Actions(c *gin.Context) {
 		return
 	}
 
-	releaseAfter, lockErr := s.lock.AcquireTemporary(sessionID)
+	releaseAfter, lockErr := s.acquireLock(sessionID)
 	if lockErr != nil {
 		writePicoclawError(c, lockErr)
 		return
@@ -120,7 +120,7 @@ func (s *Service) executeActions(ctx context.Context, sessionID string, actions 
 			}
 			return ActionResult{}, turnErr
 		}
-		acquired, lockErr := s.lock.acquire(sessionID)
+		acquired, lockErr := s.acquireLock(sessionID)
 		if lockErr != nil {
 			lockErr.Index = &idx
 			return ActionResult{}, lockErr

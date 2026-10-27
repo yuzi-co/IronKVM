@@ -47,7 +47,7 @@ func NewService(control *controlmode.Manager) *Service {
 		vision:             common.GetKvmVision(),
 		hid:                hid.GetHid(),
 		config:             getConfigStore(),
-		lock:               GetSessionLock(),
+		lock:               agent.GetSessionLock(),
 		runtime:            getRuntimeStore(),
 		runtimeIntent:      getRuntimeIntentStore(),
 		control:            control,
@@ -74,7 +74,7 @@ func (s *Service) ensureDependencies() {
 		s.config = getConfigStore()
 	}
 	if s.lock == nil {
-		s.lock = GetSessionLock()
+		s.lock = agent.GetSessionLock()
 	}
 	if s.runtime == nil {
 		s.runtime = getRuntimeStore()

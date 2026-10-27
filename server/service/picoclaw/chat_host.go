@@ -38,7 +38,7 @@ func (s *Service) Admit(sessionID string) error {
 		controlErr := s.controlWriteError(controlmode.ModePicoclaw, nil)
 		return &agent.Error{Status: http.StatusConflict, Code: controlErr.Code, Message: controlErr.Message}
 	}
-	if lockErr := s.lock.Ensure(sessionID); lockErr != nil {
+	if lockErr := lockError(s.lock.Ensure(sessionID)); lockErr != nil {
 		return &agent.Error{Status: http.StatusConflict, Code: CodePicoclawLockHeld, Message: lockErr.Message}
 	}
 	return nil

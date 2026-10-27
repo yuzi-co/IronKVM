@@ -1,6 +1,7 @@
-package picoclaw
+package agent
 
 import (
+	"errors"
 	"sync"
 	"time"
 )
@@ -12,6 +13,24 @@ var (
 
 const sessionLockDuration = 30 * time.Minute
 
+// ErrNoSessionID refuses the AI input lock to a request that names no chat
+// session.
+var ErrNoSessionID = errors.New("no chat session id")
+
+// LockHeldError refuses the AI input lock to a session while another one
+// holds it.
+type LockHeldError struct {
+	// Owner is the session that holds the lock.
+	Owner string
+}
+
+func (e *LockHeldError) Error() string {
+	return "another chat session holds the AI input lock"
+}
+
+// SessionLock is the AI input lock: one chat session at a time may have the
+// agent write to the host, and while one holds it the browser's own input
+// waits. There is one lock whichever agent runs (GetSessionLock).
 type SessionLock struct {
 	mu             sync.Mutex
 	ownerSessionID string
@@ -19,6 +38,7 @@ type SessionLock struct {
 	expiresAt      time.Time
 }
 
+// GetSessionLock returns the server's AI input lock.
 func GetSessionLock() *SessionLock {
 	sessionLockOnce.Do(func() {
 		sessionLock = &SessionLock{}
@@ -27,12 +47,16 @@ func GetSessionLock() *SessionLock {
 	return sessionLock
 }
 
-func (l *SessionLock) Ensure(sessionID string) *PicoclawError {
+// Ensure takes the lock for sessionID or extends its hold. The error is
+// ErrNoSessionID or a *LockHeldError.
+func (l *SessionLock) Ensure(sessionID string) error {
 	_, err := l.acquire(sessionID)
 	return err
 }
 
-func (l *SessionLock) AcquireTemporary(sessionID string) (bool, *PicoclawError) {
+// AcquireTemporary is Ensure that also reports whether the lock was free, so
+// that the caller releases it again when done.
+func (l *SessionLock) AcquireTemporary(sessionID string) (bool, error) {
 	return l.acquire(sessionID)
 }
 
@@ -65,9 +89,9 @@ func (l *SessionLock) clearExpiredLocked(now time.Time) {
 	l.expiresAt = time.Time{}
 }
 
-func (l *SessionLock) acquire(sessionID string) (bool, *PicoclawError) {
+func (l *SessionLock) acquire(sessionID string) (bool, error) {
 	if sessionID == "" {
-		return false, newPicoclawError(CodeSessionIDInvalid, noSessionMessage)
+		return false, ErrNoSessionID
 	}
 
 	l.mu.Lock()
@@ -86,9 +110,7 @@ func (l *SessionLock) acquire(sessionID string) (bool, *PicoclawError) {
 		return acquired, nil
 	}
 
-	err := newPicoclawError(CodePicoclawLockHeld, "another PicoClaw session is running")
-	err.SessionID = l.ownerSessionID
-	return false, err
+	return false, &LockHeldError{Owner: l.ownerSessionID}
 }
 
 func (l *SessionLock) Release(sessionID string) bool {

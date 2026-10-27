@@ -32,7 +32,7 @@ type Service struct {
 	vision             VisionReader
 	hid                HIDWriter
 	config             *ConfigStore
-	lock               *SessionLock
+	lock               *agent.SessionLock
 	runtime            *RuntimeStore
 	runtimeIntent      *RuntimeIntentStore
 	control            *controlmode.Manager

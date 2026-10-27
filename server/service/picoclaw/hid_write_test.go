@@ -63,7 +63,7 @@ func TestSessionEndWritesNothingWhenNothingIsHeld(t *testing.T) {
 	// does not poll.
 	hid.keyErr, hid.mouseErr = errHIDTimeout, errHIDTimeout
 
-	if _, err := service.lock.acquire("test-session"); err != nil {
+	if _, err := service.lock.AcquireTemporary("test-session"); err != nil {
 		t.Fatal(err)
 	}
 	if err := service.releaseHeldInput(); err != nil {

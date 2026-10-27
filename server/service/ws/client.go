@@ -5,10 +5,10 @@ import (
 	"errors"
 	"time"
 
+	"NanoKVM-Server/service/agent"
 	"NanoKVM-Server/service/controlmode"
 	"NanoKVM-Server/service/hid"
 	"NanoKVM-Server/service/inputcontrol"
-	"NanoKVM-Server/service/picoclaw"
 	"NanoKVM-Server/service/sequence"
 	"NanoKVM-Server/service/vm/jiggler"
 
@@ -221,7 +221,7 @@ func (c *Client) queueManualTouch(contacts []hid.TouchContact) {
 // rather than a literal at the call site so the per-event path plainly holds no
 // closure.
 func allowManualInput(mode controlmode.Mode) bool {
-	return mode != controlmode.ModePicoclaw || !picoclaw.GetSessionLock().BlocksManualInput()
+	return mode != controlmode.ModePicoclaw || !agent.GetSessionLock().BlocksManualInput()
 }
 
 // manualHooks are the callbacks every queued report carries. They depend only

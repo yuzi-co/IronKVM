@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"NanoKVM-Server/service/agent"
 	"NanoKVM-Server/service/audit"
 
 	"github.com/gin-gonic/gin"
@@ -107,7 +108,7 @@ func TestAgentGateRefusesAndRecordsALoopbackRoute(t *testing.T) {
 
 	ran := false
 	r := gin.New()
-	service := &Service{lock: &SessionLock{}}
+	service := &Service{lock: &agent.SessionLock{}}
 	if err := service.lock.Ensure("chat-1"); err != nil {
 		t.Fatal(err)
 	}
