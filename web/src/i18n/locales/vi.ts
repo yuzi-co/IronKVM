@@ -1373,6 +1373,8 @@ const vi = {
           netboot: 'Khởi động qua mạng',
           vnc: 'VNC',
           webrtc: 'WebRTC',
+          rtsp: 'RTSP',
+          srt: 'SRT',
           picoclaw: 'Ảnh chụp màn hình AI',
           hostLog: 'Nhật ký máy chủ',
           webTitle: 'Tiêu đề web',
@@ -2410,6 +2412,72 @@ const vi = {
         sessions: 'Trình phát đã kết nối',
         token:
           'Trình phát cần một token Bearer chỉ được xem: khóa API chỉ xem (Cài đặt > Khóa API) hoặc token của liên kết chia sẻ. Khóa có quyền nhiều hơn sẽ bị từ chối.'
+      },
+      rtsp: {
+        address: 'Địa chỉ',
+        addressHint:
+          'Thay <token> bằng khóa. Trong OBS, thêm Nguồn phương tiện, bỏ chọn Tệp cục bộ và dán địa chỉ làm đầu vào.',
+        cleartext:
+          'RTSP không được mã hóa. Token và hình ảnh đi qua mạng ở dạng rõ, vì vậy hãy dùng trên mạng tin cậy hoặc qua VPN.',
+        client: 'Máy khách',
+        connecting: 'Đang kết nối',
+        credentials:
+          'Trình phát đăng nhập bằng tên người dùng bất kỳ và, làm mật khẩu, một token chỉ có thể xem: khóa API chỉ xem (Cài đặt > Khóa API) hoặc token của liên kết chia sẻ. Khóa có thể làm nhiều hơn sẽ bị từ chối.',
+        failed: 'Không lưu được cài đặt RTSP',
+        limits:
+          'Tối đa hai trình phát cùng lúc. Việc đổi codec video sẽ ngắt chúng và chúng kết nối lại.',
+        noPlayers: 'Không có trình phát nào kết nối',
+        players: 'Trình phát',
+        playing: 'Đang phát',
+        port: 'Cổng',
+        portDesc: 'Cổng TCP mà trình phát kết nối tới.',
+        save: 'Lưu',
+        saved: 'Đã lưu cài đặt RTSP',
+        service: 'Máy chủ RTSP',
+        serviceDesc:
+          'Cho phép OBS (Nguồn phương tiện), VLC, ffmpeg và NVR phát video, cùng âm thanh của máy chủ khi có. Bo mạch gửi những gì bộ mã hóa của nó đã tạo; không có gì bị mã hóa lại. Mỗi trình phát được tính là một người xem.',
+        since: 'Từ',
+        state: 'Trạng thái',
+        transport: 'Truyền tải',
+        udp: 'RTP qua UDP',
+        udpDesc:
+          'Cung cấp thêm phương tiện qua UDP. Mặc định chúng đi bên trong kết nối RTSP, vốn đi qua được NAT và tường lửa, và trình phát yêu cầu UDP sẽ quay về đó.',
+        udpPort: 'Cổng UDP',
+        udpPortDesc: 'Cổng RTP. RTCP dùng cổng kế tiếp.',
+        user: 'Người dùng'
+      },
+      srt: {
+        address: 'Đầu vào Nguồn phương tiện OBS',
+        addressHint:
+          'Thay <passphrase> và <token>. Trong OBS, thêm Nguồn phương tiện, bỏ chọn Tệp cục bộ và dán địa chỉ làm đầu vào.',
+        callers: 'Bên gọi',
+        client: 'Máy khách',
+        credentials:
+          'Bên gọi cần cụm mật khẩu, dùng để mã hóa luồng, và làm ID luồng một token chỉ có thể xem: khóa API chỉ xem (Cài đặt > Khóa API) hoặc token của liên kết chia sẻ.',
+        failed: 'Không lưu được cài đặt SRT',
+        latency: 'Độ trễ',
+        latencyDesc:
+          'Bên gọi chờ bao lâu để gói bị mất được gửi lại. Tăng lên trên đường truyền hay mất gói. Bên gọi yêu cầu nhiều hơn sẽ được nhiều hơn.',
+        limits:
+          'Tối đa hai bên gọi cùng lúc. Mỗi bên được mã hóa bằng phần mềm và tốn CPU. Cho người phát trực tiếp: tối đa 1080p60, khoảng 100 Mbit/s trên Cube, âm thanh chỉ từ thiết bị âm thanh USB, và nguồn có HDCP phải tắt HDCP.',
+        noCallers: 'Không có bên gọi nào kết nối',
+        packetCounts: 'đã gửi {{sent}}, mất {{lost}}, gửi lại {{retransmitted}}, bỏ {{dropped}}',
+        packets: 'Gói tin',
+        passphrase: 'Cụm mật khẩu',
+        passphraseFirst: 'Hãy đặt và lưu cụm mật khẩu trước.',
+        passphraseInvalid: 'Cụm mật khẩu dài từ 10 đến 79 ký tự.',
+        passphraseSet: 'Đã đặt cụm mật khẩu. Nhập cụm mới để thay thế.',
+        port: 'Cổng',
+        portDesc: 'Cổng UDP mà bên gọi kết nối tới.',
+        rate: 'Tốc độ gửi',
+        rtt: 'Thời gian khứ hồi',
+        save: 'Lưu',
+        saved: 'Đã lưu cài đặt SRT',
+        service: 'Bộ lắng nghe SRT',
+        serviceDesc:
+          'Cho phép OBS và các bên gọi SRT khác lấy video dạng MPEG-TS, cùng âm thanh của máy chủ khi có. SRT gửi lại gói bị mất, phù hợp với đường truyền kém. Không có gì bị mã hóa lại.',
+        since: 'Từ',
+        user: 'Người dùng'
       },
       apiKeys: {
         viewOnly: 'Chỉ xem',

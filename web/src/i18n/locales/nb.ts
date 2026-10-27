@@ -1379,6 +1379,8 @@ const nb = {
           netboot: 'Nettverksoppstart',
           vnc: 'VNC',
           webrtc: 'WebRTC',
+          rtsp: 'RTSP',
+          srt: 'SRT',
           picoclaw: 'KI-skjermbilder',
           hostLog: 'Vertslogg',
           webTitle: 'Nettittel',
@@ -2414,6 +2416,73 @@ const nb = {
         sessions: 'Tilkoblede spillere',
         token:
           'En spiller trenger et Bearer-token som bare kan se: en API-nøkkel kun for visning (Innstillinger > API-nøkler) eller et token fra en delingslenke. En nøkkel som kan mer, avvises.'
+      },
+      rtsp: {
+        address: 'Adresse',
+        addressHint:
+          'Erstatt <token> med nøkkelen. Legg til en Mediekilde i OBS, fjern merket for Lokal fil, og lim inn adressen som inndata.',
+        cleartext:
+          'RTSP er ikke kryptert. Token og bilde går ukryptert over nettverket, så bruk det på et klarert nettverk eller via VPN.',
+        client: 'Klient',
+        connecting: 'Kobler til',
+        credentials:
+          'En spiller logger inn med et hvilket som helst brukernavn og, som passord, et token som bare kan se på: en API-nøkkel kun for visning (Innstillinger > API-nøkler) eller tokenet fra en delingslenke. En nøkkel som kan mer, avvises.',
+        failed: 'Kunne ikke lagre RTSP-innstillingene',
+        limits:
+          'Høyst to spillere samtidig. Et bytte av videokodek avslutter dem, og de kobler til igjen.',
+        noPlayers: 'Ingen spiller tilkoblet',
+        players: 'Spillere',
+        playing: 'Spiller',
+        port: 'Port',
+        portDesc: 'TCP-porten spillere kobler til.',
+        save: 'Lagre',
+        saved: 'RTSP-innstillinger lagret',
+        service: 'RTSP-server',
+        serviceDesc:
+          'Lar OBS (Mediekilde), VLC, ffmpeg og NVR-er spille av videoen og vertens lyd når det finnes. Kortet sender det koderen allerede lager; ingenting kodes om. Hver spiller teller som en seer.',
+        since: 'Siden',
+        state: 'Tilstand',
+        transport: 'Transport',
+        udp: 'RTP over UDP',
+        udpDesc:
+          'Tilby også mediene over UDP. Som standard går de inne i RTSP-forbindelsen, som kommer gjennom NAT og brannmurer, og en spiller som ber om UDP, faller tilbake til den.',
+        udpPort: 'UDP-porter',
+        udpPortDesc: 'RTP-porten. RTCP bruker den neste.',
+        user: 'Bruker'
+      },
+      srt: {
+        address: 'Inndata for OBS-mediekilde',
+        addressHint:
+          'Erstatt <passphrase> og <token>. Legg til en Mediekilde i OBS, fjern merket for Lokal fil, og lim inn adressen som inndata.',
+        callers: 'Oppringere',
+        client: 'Klient',
+        credentials:
+          'En oppringer trenger passordfrasen, som krypterer strømmen, og som strøm-ID et token som bare kan se på: en API-nøkkel kun for visning (Innstillinger > API-nøkler) eller tokenet fra en delingslenke.',
+        failed: 'Kunne ikke lagre SRT-innstillingene',
+        latency: 'Forsinkelse',
+        latencyDesc:
+          'Hvor lenge en oppringer venter på at en tapt pakke sendes på nytt. Øk den på en forbindelse med tap. En oppringer som ber om mer, får mer.',
+        limits:
+          'Høyst to oppringere samtidig. Hver krypteres i programvare og koster CPU. For strømmere: høyst 1080p60, omtrent 100 Mbit/s på Cube, lyd bare fra USB-lydenheten, og en HDCP-kilde må ha HDCP slått av.',
+        noCallers: 'Ingen oppringer tilkoblet',
+        packetCounts:
+          '{{sent}} sendt, {{lost}} tapt, {{retransmitted}} sendt på nytt, {{dropped}} forkastet',
+        packets: 'Pakker',
+        passphrase: 'Passordfrase',
+        passphraseFirst: 'Angi og lagre en passordfrase først.',
+        passphraseInvalid: 'Passordfrasen er på 10 til 79 tegn.',
+        passphraseSet: 'En passordfrase er angitt. Skriv inn en ny for å erstatte den.',
+        port: 'Port',
+        portDesc: 'UDP-porten oppringere kobler til.',
+        rate: 'Sendehastighet',
+        rtt: 'Tur-retur',
+        save: 'Lagre',
+        saved: 'SRT-innstillinger lagret',
+        service: 'SRT-lytter',
+        serviceDesc:
+          'Lar OBS og andre SRT-oppringere hente videoen i MPEG-TS og vertens lyd når det finnes. SRT sender tapte pakker på nytt, noe som passer en dårlig forbindelse. Ingenting kodes om.',
+        since: 'Siden',
+        user: 'Bruker'
       },
       apiKeys: {
         viewOnly: 'Kun visning',

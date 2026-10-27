@@ -37,8 +37,10 @@ export const SERVER_FEATURES = [
   'nut-client', // /api/nut (Settings > NUT, UPS line in the status bar)
   'oidc-login', // /api/auth/oidc (Settings > Account > Single sign-on)
   'role-viewer', // the viewer role in Settings > Users, and a UI with no input for it
+  'rtsp', // /api/stream/rtsp (Settings > RTSP)
   'settings-backup', // /api/settings/export, /preview, /import (Settings > Backup: settings file)
   'share-links', // /api/auth/share and /api/auth/share-links (Settings > Account > Share links)
+  'srt', // /api/stream/srt (Settings > SRT)
   'status-bar', // GET /api/stream/info (status bar source line)
   'stun-server', // /api/network/webrtc/stun (Settings > Network > STUN server)
   'ui-update', // /api/ui: separate UI packages (Settings > Update)

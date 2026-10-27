@@ -78,6 +78,8 @@ const pageModules = {
   ssh: () => import('./ssh'),
   vnc: () => import('./vnc'),
   whep: () => import('./whep'),
+  rtsp: () => import('./streaming/rtsp.tsx'),
+  srt: () => import('./streaming/srt.tsx'),
   tls: () => import('./tls'),
   ipmi: () => import('./ipmi'),
   redfish: () => import('./redfish'),
@@ -106,6 +108,8 @@ const VpnTab = lazy(() => pageModules.vpn().then((m) => ({ default: m.VpnTab }))
 const Ssh = lazy(() => pageModules.ssh().then((m) => ({ default: m.Ssh })));
 const Vnc = lazy(() => pageModules.vnc().then((m) => ({ default: m.Vnc })));
 const Whep = lazy(() => pageModules.whep().then((m) => ({ default: m.Whep })));
+const Rtsp = lazy(() => pageModules.rtsp().then((m) => ({ default: m.Rtsp })));
+const Srt = lazy(() => pageModules.srt().then((m) => ({ default: m.Srt })));
 const Tls = lazy(() => pageModules.tls().then((m) => ({ default: m.Tls })));
 const Ipmi = lazy(() => pageModules.ipmi().then((m) => ({ default: m.Ipmi })));
 const Redfish = lazy(() => pageModules.redfish().then((m) => ({ default: m.Redfish })));
@@ -166,6 +170,8 @@ export const Settings = () => {
   const hasSettingsBackup = useServerFeature('settings-backup') === true;
   const hasDiagnostics = useServerFeature('diagnostics-bundle') === true;
   const hasWhep = useServerFeature('whep') === true;
+  const hasRtsp = useServerFeature('rtsp') === true;
+  const hasSrt = useServerFeature('srt') === true;
   const hasBackup = hasSettingsBackup || hasDiagnostics;
   // Below sm the sidebar shows icons only, so each item needs a tooltip.
   const isNarrow = useIsNarrow();
@@ -274,6 +280,28 @@ export const Settings = () => {
                   icon: <CastIcon {...icon16} />,
                   label: 'WHEP',
                   component: <Whep />
+                }
+              ] satisfies Tab[])
+            : []),
+          ...(hasRtsp
+            ? ([
+                {
+                  id: 'rtsp',
+                  group: 'access',
+                  icon: <CastIcon {...icon16} />,
+                  label: 'RTSP',
+                  component: <Rtsp />
+                }
+              ] satisfies Tab[])
+            : []),
+          ...(hasSrt
+            ? ([
+                {
+                  id: 'srt',
+                  group: 'access',
+                  icon: <CastIcon {...icon16} />,
+                  label: 'SRT',
+                  component: <Srt />
                 }
               ] satisfies Tab[])
             : []),

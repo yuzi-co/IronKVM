@@ -1379,6 +1379,8 @@ const se = {
           netboot: 'Nätverksstart',
           vnc: 'VNC',
           webrtc: 'WebRTC',
+          rtsp: 'RTSP',
+          srt: 'SRT',
           picoclaw: 'AI-skärmbilder',
           hostLog: 'Värdlogg',
           webTitle: 'Webbtitel',
@@ -2420,6 +2422,73 @@ const se = {
         sessions: 'Anslutna spelare',
         token:
           'En spelare behöver en Bearer-token som bara kan titta: en API-nyckel endast för visning (Inställningar > API-nycklar) eller en token från en delningslänk. En nyckel som kan mer avvisas.'
+      },
+      rtsp: {
+        address: 'Adress',
+        addressHint:
+          'Ersätt <token> med nyckeln. Lägg till en Mediekälla i OBS, avmarkera Lokal fil och klistra in adressen som indata.',
+        cleartext:
+          'RTSP är inte krypterat. Token och bild går okrypterade över nätverket, så använd det på ett betrott nätverk eller via VPN.',
+        client: 'Klient',
+        connecting: 'Ansluter',
+        credentials:
+          'En spelare loggar in med valfritt användarnamn och, som lösenord, en token som bara kan titta: en API-nyckel endast för visning (Inställningar > API-nycklar) eller token från en delningslänk. En nyckel som kan mer avvisas.',
+        failed: 'Det gick inte att spara RTSP-inställningarna',
+        limits:
+          'Högst två spelare samtidigt. Ett byte av videokodek avslutar dem, och de ansluter igen.',
+        noPlayers: 'Ingen spelare ansluten',
+        players: 'Spelare',
+        playing: 'Spelar',
+        port: 'Port',
+        portDesc: 'TCP-porten som spelare ansluter till.',
+        save: 'Spara',
+        saved: 'RTSP-inställningar sparade',
+        service: 'RTSP-server',
+        serviceDesc:
+          'Låter OBS (Mediekälla), VLC, ffmpeg och NVR:er spela upp videon och värdens ljud när det finns. Kortet skickar det som dess kodare redan gör; inget kodas om. Varje spelare räknas som en tittare.',
+        since: 'Sedan',
+        state: 'Tillstånd',
+        transport: 'Transport',
+        udp: 'RTP över UDP',
+        udpDesc:
+          'Erbjud även medierna över UDP. Som standard går de inuti RTSP-anslutningen, som tar sig igenom NAT och brandväggar, och en spelare som ber om UDP faller tillbaka på den.',
+        udpPort: 'UDP-portar',
+        udpPortDesc: 'RTP-porten. RTCP använder nästa.',
+        user: 'Användare'
+      },
+      srt: {
+        address: 'Indata för OBS-mediekälla',
+        addressHint:
+          'Ersätt <passphrase> och <token>. Lägg till en Mediekälla i OBS, avmarkera Lokal fil och klistra in adressen som indata.',
+        callers: 'Anropare',
+        client: 'Klient',
+        credentials:
+          'En anropare behöver lösenfrasen, som krypterar strömmen, och som ström-ID en token som bara kan titta: en API-nyckel endast för visning (Inställningar > API-nycklar) eller token från en delningslänk.',
+        failed: 'Det gick inte att spara SRT-inställningarna',
+        latency: 'Latens',
+        latencyDesc:
+          'Hur länge en anropare väntar på att ett förlorat paket skickas igen. Höj den på en länk med förluster. En anropare som ber om mer får mer.',
+        limits:
+          'Högst två anropare samtidigt. Varje krypteras i programvara och kostar CPU. För streamare: högst 1080p60, ungefär 100 Mbit/s på Cube, ljud bara från USB-ljudenheten, och en HDCP-källa måste ha HDCP avstängt.',
+        noCallers: 'Ingen anropare ansluten',
+        packetCounts:
+          '{{sent}} skickade, {{lost}} förlorade, {{retransmitted}} omskickade, {{dropped}} kasserade',
+        packets: 'Paket',
+        passphrase: 'Lösenfras',
+        passphraseFirst: 'Ange och spara en lösenfras först.',
+        passphraseInvalid: 'Lösenfrasen är 10 till 79 tecken.',
+        passphraseSet: 'En lösenfras är angiven. Ange en ny för att ersätta den.',
+        port: 'Port',
+        portDesc: 'UDP-porten som anropare ansluter till.',
+        rate: 'Sändhastighet',
+        rtt: 'Tur och retur',
+        save: 'Spara',
+        saved: 'SRT-inställningar sparade',
+        service: 'SRT-lyssnare',
+        serviceDesc:
+          'Låter OBS och andra SRT-anropare hämta videon i MPEG-TS och värdens ljud när det finns. SRT skickar om förlorade paket, vilket passar en dålig länk. Inget kodas om.',
+        since: 'Sedan',
+        user: 'Användare'
       },
       apiKeys: {
         viewOnly: 'Endast visning',

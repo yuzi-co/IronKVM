@@ -1376,6 +1376,8 @@ const cz = {
           netboot: 'Síťové spouštění',
           vnc: 'VNC',
           webrtc: 'WebRTC',
+          rtsp: 'RTSP',
+          srt: 'SRT',
           picoclaw: 'Snímky obrazovky pro AI',
           hostLog: 'Protokol hostitele',
           webTitle: 'Název webu',
@@ -2407,6 +2409,72 @@ const cz = {
         sessions: 'Připojené přehrávače',
         token:
           'Přehrávač potřebuje token Bearer, který smí jen sledovat: klíč API jen pro sledování (Nastavení > Klíče API) nebo token sdíleného odkazu. Klíč, který smí víc, je odmítnut.'
+      },
+      rtsp: {
+        address: 'Adresa',
+        addressHint:
+          'Nahraďte <token> klíčem. V OBS přidejte Zdroj médií, zrušte zaškrtnutí Místní soubor a vložte adresu jako vstup.',
+        cleartext:
+          'RTSP není šifrované. Token i obraz jdou sítí nešifrovaně, proto ho používejte v důvěryhodné síti nebo přes VPN.',
+        client: 'Klient',
+        connecting: 'Připojování',
+        credentials:
+          'Přehrávač se přihlásí libovolným uživatelským jménem a jako heslem tokenem, který smí jen sledovat: klíčem API jen pro zobrazení (Nastavení > Klíče API) nebo tokenem odkazu pro sdílení. Klíč, který smí víc, je odmítnut.',
+        failed: 'Nastavení RTSP se nepodařilo uložit',
+        limits: 'Nejvýše dva přehrávače najednou. Změna video kodeku je ukončí a připojí se znovu.',
+        noPlayers: 'Žádný přehrávač není připojen',
+        players: 'Přehrávače',
+        playing: 'Přehrává',
+        port: 'Port',
+        portDesc: 'Port TCP, ke kterému se přehrávače připojují.',
+        save: 'Uložit',
+        saved: 'Nastavení RTSP uloženo',
+        service: 'Server RTSP',
+        serviceDesc:
+          'Umožňuje OBS (Zdroj médií), VLC, ffmpeg a NVR přehrávat video a zvuk hostitele, pokud nějaký je. Deska posílá to, co její kodér už vytváří; nic se nepřekódovává. Každý přehrávač se počítá jako divák.',
+        since: 'Od',
+        state: 'Stav',
+        transport: 'Přenos',
+        udp: 'RTP přes UDP',
+        udpDesc:
+          'Nabízet média také přes UDP. Ve výchozím stavu jdou uvnitř spojení RTSP, které projde NAT i firewally, a přehrávač žádající UDP se k němu vrátí.',
+        udpPort: 'Porty UDP',
+        udpPortDesc: 'Port RTP. RTCP používá následující.',
+        user: 'Uživatel'
+      },
+      srt: {
+        address: 'Vstup Zdroje médií v OBS',
+        addressHint:
+          'Nahraďte <passphrase> a <token>. V OBS přidejte Zdroj médií, zrušte zaškrtnutí Místní soubor a vložte adresu jako vstup.',
+        callers: 'Volající',
+        client: 'Klient',
+        credentials:
+          'Volající potřebuje heslovou frázi, která šifruje stream, a jako ID streamu token, který smí jen sledovat: klíč API jen pro zobrazení (Nastavení > Klíče API) nebo token odkazu pro sdílení.',
+        failed: 'Nastavení SRT se nepodařilo uložit',
+        latency: 'Latence',
+        latencyDesc:
+          'Jak dlouho volající čeká na opětovné odeslání ztraceného paketu. Na ztrátovém spojení ji zvyšte. Volající, který žádá víc, dostane víc.',
+        limits:
+          'Nejvýše dva volající najednou. Každý je šifrován softwarově a stojí CPU. Pro streamery: nejvýše 1080p60, asi 100 Mbit/s na Cube, zvuk jen ze zvukového zařízení USB a zdroj s HDCP musí mít HDCP vypnuté.',
+        noCallers: 'Žádný volající není připojen',
+        packetCounts:
+          'odesláno {{sent}}, ztraceno {{lost}}, znovu odesláno {{retransmitted}}, zahozeno {{dropped}}',
+        packets: 'Pakety',
+        passphrase: 'Heslová fráze',
+        passphraseFirst: 'Nejprve nastavte a uložte heslovou frázi.',
+        passphraseInvalid: 'Heslová fráze má 10 až 79 znaků.',
+        passphraseSet: 'Heslová fráze je nastavena. Zadáním nové ji nahradíte.',
+        port: 'Port',
+        portDesc: 'Port UDP, ke kterému se volající připojují.',
+        rate: 'Rychlost odesílání',
+        rtt: 'Doba odezvy',
+        save: 'Uložit',
+        saved: 'Nastavení SRT uloženo',
+        service: 'Naslouchání SRT',
+        serviceDesc:
+          'Umožňuje OBS a dalším volajícím SRT stahovat video v MPEG-TS a zvuk hostitele, pokud nějaký je. SRT znovu posílá ztracené pakety, což se hodí pro špatné spojení. Nic se nepřekódovává.',
+        since: 'Od',
+        user: 'Uživatel'
       },
       apiKeys: {
         viewOnly: 'Jen sledování',

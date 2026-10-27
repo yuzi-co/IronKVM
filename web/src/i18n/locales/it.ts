@@ -1395,6 +1395,8 @@ const it = {
           netboot: 'Avvio di rete',
           vnc: 'VNC',
           webrtc: 'WebRTC',
+          rtsp: 'RTSP',
+          srt: 'SRT',
           picoclaw: 'Screenshot IA',
           hostLog: 'Log dell’host',
           webTitle: 'Titolo web',
@@ -2444,6 +2446,73 @@ const it = {
         sessions: 'Player connessi',
         token:
           'Un player ha bisogno di un token Bearer che possa solo guardare: una chiave API di sola visione (Impostazioni > Chiavi API) o il token di un link di condivisione. Una chiave che può fare di più viene rifiutata.'
+      },
+      rtsp: {
+        address: 'Indirizzo',
+        addressHint:
+          'Sostituisci <token> con la chiave. In OBS aggiungi una Sorgente multimediale, deseleziona File locale e incolla l\'indirizzo come input.',
+        cleartext:
+          'RTSP non è cifrato. Il token e l\'immagine attraversano la rete in chiaro: usalo su una rete fidata o tramite la VPN.',
+        client: 'Client',
+        connecting: 'Connessione',
+        credentials:
+          'Un player accede con un nome utente qualsiasi e, come password, un token che può solo guardare: una chiave API di sola visualizzazione (Impostazioni > Chiavi API) o il token di un link di condivisione. Una chiave che può fare di più viene rifiutata.',
+        failed: 'Impossibile salvare le impostazioni RTSP',
+        limits:
+          'Al massimo due player alla volta. Un cambio di codec video li chiude, e si ricollegano.',
+        noPlayers: 'Nessun player connesso',
+        players: 'Player',
+        playing: 'In riproduzione',
+        port: 'Porta',
+        portDesc: 'La porta TCP a cui si collegano i player.',
+        save: 'Salva',
+        saved: 'Impostazioni RTSP salvate',
+        service: 'Server RTSP',
+        serviceDesc:
+          'Permette a OBS (Sorgente multimediale), VLC, ffmpeg e agli NVR di riprodurre il video, e l\'audio dell\'host quando c\'è. La scheda invia ciò che il suo encoder produce già; nulla viene ricodificato. Ogni player conta come spettatore.',
+        since: 'Dal',
+        state: 'Stato',
+        transport: 'Trasporto',
+        udp: 'RTP su UDP',
+        udpDesc:
+          'Offri i media anche su UDP. Per impostazione predefinita viaggiano dentro la connessione RTSP, che attraversa NAT e firewall, e un player che chiede UDP ripiega su di essa.',
+        udpPort: 'Porte UDP',
+        udpPortDesc: 'La porta RTP. RTCP usa la successiva.',
+        user: 'Utente'
+      },
+      srt: {
+        address: 'Input della Sorgente multimediale di OBS',
+        addressHint:
+          'Sostituisci <passphrase> e <token>. In OBS aggiungi una Sorgente multimediale, deseleziona File locale e incolla l\'indirizzo come input.',
+        callers: 'Chiamanti',
+        client: 'Client',
+        credentials:
+          'Un chiamante ha bisogno della passphrase, che cifra il flusso, e come ID del flusso di un token che può solo guardare: una chiave API di sola visualizzazione (Impostazioni > Chiavi API) o il token di un link di condivisione.',
+        failed: 'Impossibile salvare le impostazioni SRT',
+        latency: 'Latenza',
+        latencyDesc:
+          'Quanto un chiamante attende il reinvio di un pacchetto perso. Aumentala su un collegamento con perdite. Un chiamante che chiede di più ottiene di più.',
+        limits:
+          'Al massimo due chiamanti alla volta. Ognuno è cifrato via software e costa CPU. Per gli streamer: al massimo 1080p60, circa 100 Mbit/s sul Cube, audio solo dal dispositivo audio USB, e una sorgente HDCP deve avere l\'HDCP disattivato.',
+        noCallers: 'Nessun chiamante connesso',
+        packetCounts:
+          '{{sent}} inviati, {{lost}} persi, {{retransmitted}} reinviati, {{dropped}} scartati',
+        packets: 'Pacchetti',
+        passphrase: 'Passphrase',
+        passphraseFirst: 'Imposta prima una passphrase e salvala.',
+        passphraseInvalid: 'La passphrase ha da 10 a 79 caratteri.',
+        passphraseSet: 'È impostata una passphrase. Inseriscine una nuova per sostituirla.',
+        port: 'Porta',
+        portDesc: 'La porta UDP a cui si collegano i chiamanti.',
+        rate: 'Velocità di invio',
+        rtt: 'Andata e ritorno',
+        save: 'Salva',
+        saved: 'Impostazioni SRT salvate',
+        service: 'Listener SRT',
+        serviceDesc:
+          'Permette a OBS e ad altri chiamanti SRT di prelevare il video in MPEG-TS, e l\'audio dell\'host quando c\'è. SRT reinvia i pacchetti persi, adatto a un collegamento scadente. Nulla viene ricodificato.',
+        since: 'Dal',
+        user: 'Utente'
       },
       apiKeys: {
         viewOnly: 'Solo visione',

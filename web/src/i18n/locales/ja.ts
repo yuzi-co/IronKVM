@@ -1380,6 +1380,8 @@ const ja = {
           netboot: 'ネットワークブート',
           vnc: 'VNC',
           webrtc: 'WebRTC',
+          rtsp: 'RTSP',
+          srt: 'SRT',
           picoclaw: 'AI スクリーンショット',
           hostLog: 'ホストログ',
           webTitle: 'Web タイトル',
@@ -2409,6 +2411,67 @@ const ja = {
         sessions: '接続中のプレーヤー',
         token:
           'プレーヤーには視聴しかできない Bearer トークンが必要です: 閲覧専用の API キー（設定 > API キー）または共有リンクのトークン。それ以上の権限を持つキーは拒否されます。'
+      },
+      rtsp: {
+        address: 'アドレス',
+        addressHint: '<token> をキーに置き換えてください。OBS でメディアソースを追加し、「ローカルファイル」のチェックを外して、アドレスを入力に貼り付けます。',
+        cleartext: 'RTSP は暗号化されません。トークンと映像は平文のままネットワークを流れるため、信頼できるネットワークか VPN 経由で使ってください。',
+        client: 'クライアント',
+        connecting: '接続中',
+        credentials:
+          'プレーヤーは任意のユーザー名と、パスワードとして視聴しかできないトークンでサインインします: 閲覧専用の API キー（設定 > API キー）または共有リンクのトークン。それ以上の権限を持つキーは拒否されます。',
+        failed: 'RTSP 設定の保存に失敗しました',
+        limits: '同時に再生できるプレーヤーは 2 つまでです。映像コーデックを変更すると切断され、再接続されます。',
+        noPlayers: '接続中のプレーヤーはありません',
+        players: 'プレーヤー',
+        playing: '再生中',
+        port: 'ポート',
+        portDesc: 'プレーヤーが接続する TCP ポートです。',
+        save: '保存',
+        saved: 'RTSP 設定を保存しました',
+        service: 'RTSP サーバー',
+        serviceDesc:
+          'OBS（メディアソース）、VLC、ffmpeg、NVR で映像を、音声があればホストの音声も再生できます。ボードはエンコーダーがすでに作ったものを送るだけで、再エンコードはしません。各プレーヤーは視聴者 1 人として数えられます。',
+        since: '開始',
+        state: '状態',
+        transport: 'トランスポート',
+        udp: 'UDP 上の RTP',
+        udpDesc: 'メディアを UDP でも提供します。既定では NAT やファイアウォールを越えられる RTSP 接続の中を流れ、UDP を求めたプレーヤーもそちらに戻ります。',
+        udpPort: 'UDP ポート',
+        udpPortDesc: 'RTP ポートです。RTCP は次のポートを使います。',
+        user: 'ユーザー'
+      },
+      srt: {
+        address: 'OBS メディアソースの入力',
+        addressHint:
+          '<passphrase> と <token> を置き換えてください。OBS でメディアソースを追加し、「ローカルファイル」のチェックを外して、アドレスを入力に貼り付けます。',
+        callers: '発呼側',
+        client: 'クライアント',
+        credentials:
+          '発呼側には、ストリームを暗号化するパスフレーズと、ストリーム ID として視聴しかできないトークンが必要です: 閲覧専用の API キー（設定 > API キー）または共有リンクのトークン。',
+        failed: 'SRT 設定の保存に失敗しました',
+        latency: 'レイテンシー',
+        latencyDesc: '失われたパケットの再送を発呼側が待つ時間です。損失の多い回線では大きくしてください。より大きな値を求めた発呼側にはその値が使われます。',
+        limits:
+          '同時に接続できる発呼側は 2 つまでです。それぞれソフトウェアで暗号化され、CPU を消費します。配信者向け: 最大 1080p60、Cube では約 100 Mbit/s、音声は USB オーディオデバイスからのみ、HDCP のあるソースは HDCP をオフにする必要があります。',
+        noCallers: '接続中の発呼側はありません',
+        packetCounts: '送信 {{sent}}、損失 {{lost}}、再送 {{retransmitted}}、破棄 {{dropped}}',
+        packets: 'パケット',
+        passphrase: 'パスフレーズ',
+        passphraseFirst: '先にパスフレーズを設定して保存してください。',
+        passphraseInvalid: 'パスフレーズは 10～79 文字です。',
+        passphraseSet: 'パスフレーズは設定済みです。置き換えるには新しいものを入力してください。',
+        port: 'ポート',
+        portDesc: '発呼側が接続する UDP ポートです。',
+        rate: '送信レート',
+        rtt: '往復時間',
+        save: '保存',
+        saved: 'SRT 設定を保存しました',
+        service: 'SRT リスナー',
+        serviceDesc:
+          'OBS などの SRT 発呼側が映像を、音声があればホストの音声も MPEG-TS で取得できます。SRT は失われたパケットを再送するため、品質の悪い回線に向いています。再エンコードはしません。',
+        since: '開始',
+        user: 'ユーザー'
       },
       apiKeys: {
         viewOnly: '閲覧のみ',

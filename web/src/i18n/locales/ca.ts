@@ -1389,6 +1389,8 @@ const ca = {
           netboot: 'Arrencada per xarxa',
           vnc: 'VNC',
           webrtc: 'WebRTC',
+          rtsp: 'RTSP',
+          srt: 'SRT',
           picoclaw: 'Captures de pantalla d\'IA',
           hostLog: 'Registre de l\'amfitrió',
           webTitle: 'Títol web',
@@ -2440,6 +2442,74 @@ const ca = {
         sessions: 'Reproductors connectats',
         token:
           "Un reproductor necessita un testimoni Bearer que només pugui mirar: una clau d'API només de visualització (Configuració > Claus d'API) o el testimoni d'un enllaç compartit. Es rebutja una clau que pugui fer més."
+      },
+      rtsp: {
+        address: 'Adreça',
+        addressHint:
+          'Substituïu <token> per la clau. A OBS, afegiu una Font multimèdia, desmarqueu Fitxer local i enganxeu l\'adreça com a entrada.',
+        cleartext:
+          'RTSP no està xifrat. El testimoni i la imatge travessen la xarxa sense xifrar; feu-lo servir en una xarxa de confiança o a través de la VPN.',
+        client: 'Client',
+        connecting: 'Connectant',
+        credentials:
+          'Un reproductor inicia la sessió amb qualsevol nom d\'usuari i, com a contrasenya, un testimoni que només pot mirar: una clau d\'API només de visualització (Configuració > Claus d\'API) o el testimoni d\'un enllaç compartit. Una clau que pot fer més es rebutja.',
+        failed: 'No s\'ha pogut desar la configuració RTSP',
+        limits:
+          'Com a màxim dos reproductors alhora. Un canvi de còdec de vídeo els atura i tornen a connectar-se.',
+        noPlayers: 'Cap reproductor connectat',
+        players: 'Reproductors',
+        playing: 'Reproduint',
+        port: 'Port',
+        portDesc: 'El port TCP al qual es connecten els reproductors.',
+        save: 'Desa',
+        saved: 'S\'ha desat la configuració RTSP',
+        service: 'Servidor RTSP',
+        serviceDesc:
+          'Permet que OBS (Font multimèdia), VLC, ffmpeg i els NVR reprodueixin el vídeo, i l\'àudio de l\'amfitrió quan n\'hi ha. La placa envia el que el seu codificador ja genera; no es recodifica res. Cada reproductor compta com a espectador.',
+        since: 'Des de',
+        state: 'Estat',
+        transport: 'Transport',
+        udp: 'RTP sobre UDP',
+        udpDesc:
+          'Oferiu també els mitjans per UDP. Per defecte viatgen dins la connexió RTSP, que travessa NAT i tallafocs, i un reproductor que demana UDP hi recorre.',
+        udpPort: 'Ports UDP',
+        udpPortDesc: 'El port RTP. RTCP fa servir el següent.',
+        user: 'Usuari'
+      },
+      srt: {
+        address: 'Entrada de la Font multimèdia d\'OBS',
+        addressHint:
+          'Substituïu <passphrase> i <token>. A OBS, afegiu una Font multimèdia, desmarqueu Fitxer local i enganxeu l\'adreça com a entrada.',
+        callers: 'Trucadors',
+        client: 'Client',
+        credentials:
+          'Un trucador necessita la frase de pas, que xifra el flux, i com a ID de flux un testimoni que només pot mirar: una clau d\'API només de visualització (Configuració > Claus d\'API) o el testimoni d\'un enllaç compartit.',
+        failed: 'No s\'ha pogut desar la configuració SRT',
+        latency: 'Latència',
+        latencyDesc:
+          'Quant espera un trucador que es reenviï un paquet perdut. Augmenteu-la en un enllaç amb pèrdues. Un trucador que en demana més n\'obté més.',
+        limits:
+          'Com a màxim dos trucadors alhora. Cadascun es xifra per programari i consumeix CPU. Per a streamers: 1080p60 com a màxim, uns 100 Mbit/s al Cube, so només des del dispositiu d\'àudio USB, i una font amb HDCP ha de tenir l\'HDCP desactivat.',
+        noCallers: 'Cap trucador connectat',
+        packetCounts:
+          '{{sent}} enviats, {{lost}} perduts, {{retransmitted}} reenviats, {{dropped}} descartats',
+        packets: 'Paquets',
+        passphrase: 'Frase de pas',
+        passphraseFirst: 'Primer definiu una frase de pas i deseu-la.',
+        passphraseInvalid: 'La frase de pas té de 10 a 79 caràcters.',
+        passphraseSet:
+          'Hi ha una frase de pas definida. Escriviu-ne una de nova per substituir-la.',
+        port: 'Port',
+        portDesc: 'El port UDP al qual es connecten els trucadors.',
+        rate: 'Velocitat d\'enviament',
+        rtt: 'Anada i tornada',
+        save: 'Desa',
+        saved: 'S\'ha desat la configuració SRT',
+        service: 'Escolta SRT',
+        serviceDesc:
+          'Permet que OBS i altres trucadors SRT obtinguin el vídeo en MPEG-TS, i l\'àudio de l\'amfitrió quan n\'hi ha. SRT reenvia els paquets perduts, cosa que convé a un enllaç deficient. No es recodifica res.',
+        since: 'Des de',
+        user: 'Usuari'
       },
       apiKeys: {
         viewOnly: 'Només visualització',

@@ -1398,6 +1398,8 @@ const fr = {
           netboot: 'Démarrage réseau',
           vnc: 'VNC',
           webrtc: 'WebRTC',
+          rtsp: 'RTSP',
+          srt: 'SRT',
           picoclaw: 'Captures d\'écran IA',
           hostLog: 'Journal de l\'hôte',
           webTitle: 'Titre web',
@@ -2454,6 +2456,74 @@ const fr = {
         sessions: 'Lecteurs connectés',
         token:
           "Un lecteur a besoin d'un jeton Bearer qui peut seulement regarder : une clé d'API en lecture seule (Paramètres > Clés d'API) ou le jeton d'un lien de partage. Une clé qui peut faire davantage est refusée."
+      },
+      rtsp: {
+        address: 'Adresse',
+        addressHint:
+          'Remplacez <token> par la clé. Dans OBS, ajoutez une Source média, décochez Fichier local et collez l\'adresse comme entrée.',
+        cleartext:
+          'RTSP n\'est pas chiffré. Le jeton et l\'image traversent le réseau en clair : utilisez-le sur un réseau de confiance ou via le VPN.',
+        client: 'Client',
+        connecting: 'Connexion',
+        credentials:
+          'Un lecteur se connecte avec n\'importe quel nom d\'utilisateur et, comme mot de passe, un jeton qui ne peut que regarder : une clé d\'API en lecture seule (Paramètres > Clés d\'API) ou le jeton d\'un lien de partage. Une clé qui peut faire plus est refusée.',
+        failed: 'Échec de l\'enregistrement des paramètres RTSP',
+        limits:
+          'Deux lecteurs au plus à la fois. Un changement de codec vidéo les arrête, et ils se reconnectent.',
+        noPlayers: 'Aucun lecteur connecté',
+        players: 'Lecteurs',
+        playing: 'Lecture',
+        port: 'Port',
+        portDesc: 'Le port TCP auquel les lecteurs se connectent.',
+        save: 'Enregistrer',
+        saved: 'Paramètres RTSP enregistrés',
+        service: 'Serveur RTSP',
+        serviceDesc:
+          'Permet à OBS (Source média), VLC, ffmpeg et aux NVR de lire la vidéo, et l\'audio de l\'hôte s\'il y en a. La carte envoie ce que son encodeur produit déjà ; rien n\'est réencodé. Chaque lecteur compte comme un spectateur.',
+        since: 'Depuis',
+        state: 'État',
+        transport: 'Transport',
+        udp: 'RTP sur UDP',
+        udpDesc:
+          'Proposer aussi les médias sur UDP. Par défaut, ils passent dans la connexion RTSP, qui traverse le NAT et les pare-feu ; un lecteur qui demande UDP s\'y replie.',
+        udpPort: 'Ports UDP',
+        udpPortDesc: 'Le port RTP. RTCP utilise le suivant.',
+        user: 'Utilisateur'
+      },
+      srt: {
+        address: 'Entrée de la Source média OBS',
+        addressHint:
+          'Remplacez <passphrase> et <token>. Dans OBS, ajoutez une Source média, décochez Fichier local et collez l\'adresse comme entrée.',
+        callers: 'Appelants',
+        client: 'Client',
+        credentials:
+          'Un appelant a besoin de la phrase secrète, qui chiffre le flux, et, comme identifiant de flux, d\'un jeton qui ne peut que regarder : une clé d\'API en lecture seule (Paramètres > Clés d\'API) ou le jeton d\'un lien de partage.',
+        failed: 'Échec de l\'enregistrement des paramètres SRT',
+        latency: 'Latence',
+        latencyDesc:
+          'Durée pendant laquelle un appelant attend le renvoi d\'un paquet perdu. Augmentez-la sur un lien avec des pertes. Un appelant qui demande plus obtient plus.',
+        limits:
+          'Deux appelants au plus à la fois. Chacun est chiffré en logiciel et coûte du CPU. Pour les streamers : 1080p60 au maximum, environ 100 Mbit/s sur le Cube, le son uniquement depuis le périphérique audio USB, et une source HDCP doit avoir le HDCP désactivé.',
+        noCallers: 'Aucun appelant connecté',
+        packetCounts:
+          '{{sent}} envoyés, {{lost}} perdus, {{retransmitted}} renvoyés, {{dropped}} abandonnés',
+        packets: 'Paquets',
+        passphrase: 'Phrase secrète',
+        passphraseFirst: 'Définissez d\'abord une phrase secrète et enregistrez-la.',
+        passphraseInvalid: 'La phrase secrète compte de 10 à 79 caractères.',
+        passphraseSet:
+          'Une phrase secrète est définie. Saisissez-en une nouvelle pour la remplacer.',
+        port: 'Port',
+        portDesc: 'Le port UDP auquel les appelants se connectent.',
+        rate: 'Débit d\'envoi',
+        rtt: 'Aller-retour',
+        save: 'Enregistrer',
+        saved: 'Paramètres SRT enregistrés',
+        service: 'Écouteur SRT',
+        serviceDesc:
+          'Permet à OBS et aux autres appelants SRT de récupérer la vidéo en MPEG-TS, et l\'audio de l\'hôte s\'il y en a. SRT renvoie les paquets perdus, ce qui convient à un lien médiocre. Rien n\'est réencodé.',
+        since: 'Depuis',
+        user: 'Utilisateur'
       },
       apiKeys: {
         viewOnly: 'Lecture seule',

@@ -1362,6 +1362,8 @@ const ko = {
           netboot: '네트워크 부팅',
           vnc: 'VNC',
           webrtc: 'WebRTC',
+          rtsp: 'RTSP',
+          srt: 'SRT',
           picoclaw: 'AI 스크린샷',
           hostLog: '호스트 로그',
           webTitle: '웹 제목',
@@ -2377,6 +2379,68 @@ const ko = {
         sessions: '연결된 플레이어',
         token:
           '플레이어에는 보기만 가능한 Bearer 토큰이 필요합니다: 보기 전용 API 키(설정 > API 키) 또는 공유 링크 토큰. 그 이상을 할 수 있는 키는 거부됩니다.'
+      },
+      rtsp: {
+        address: '주소',
+        addressHint: '<token>을 키로 바꾸세요. OBS에서 미디어 소스를 추가하고 로컬 파일 선택을 해제한 뒤 주소를 입력으로 붙여 넣으세요.',
+        cleartext: 'RTSP는 암호화되지 않습니다. 토큰과 화면이 암호화 없이 네트워크를 지나가므로 신뢰할 수 있는 네트워크나 VPN을 통해 사용하세요.',
+        client: '클라이언트',
+        connecting: '연결 중',
+        credentials:
+          '플레이어는 아무 사용자 이름과, 비밀번호로 시청만 할 수 있는 토큰을 사용해 로그인합니다: 보기 전용 API 키(설정 > API 키) 또는 공유 링크 토큰. 더 많은 권한이 있는 키는 거부됩니다.',
+        failed: 'RTSP 설정을 저장하지 못했습니다',
+        limits: '동시에 최대 두 개의 플레이어. 비디오 코덱을 바꾸면 연결이 끊기고 다시 연결됩니다.',
+        noPlayers: '연결된 플레이어 없음',
+        players: '플레이어',
+        playing: '재생 중',
+        port: '포트',
+        portDesc: '플레이어가 연결하는 TCP 포트입니다.',
+        save: '저장',
+        saved: 'RTSP 설정이 저장되었습니다',
+        service: 'RTSP 서버',
+        serviceDesc:
+          'OBS(미디어 소스), VLC, ffmpeg, NVR이 비디오와, 있는 경우 호스트 오디오를 재생할 수 있게 합니다. 보드는 인코더가 이미 만든 것을 보낼 뿐 다시 인코딩하지 않습니다. 각 플레이어는 시청자 한 명으로 계산됩니다.',
+        since: '시작',
+        state: '상태',
+        transport: '전송',
+        udp: 'UDP를 통한 RTP',
+        udpDesc:
+          '미디어를 UDP로도 제공합니다. 기본적으로 NAT와 방화벽을 통과하는 RTSP 연결 안으로 전송되며, UDP를 요청한 플레이어도 이 방식으로 돌아갑니다.',
+        udpPort: 'UDP 포트',
+        udpPortDesc: 'RTP 포트입니다. RTCP는 다음 포트를 사용합니다.',
+        user: '사용자'
+      },
+      srt: {
+        address: 'OBS 미디어 소스 입력',
+        addressHint:
+          '<passphrase>와 <token>을 바꾸세요. OBS에서 미디어 소스를 추가하고 로컬 파일 선택을 해제한 뒤 주소를 입력으로 붙여 넣으세요.',
+        callers: '호출자',
+        client: '클라이언트',
+        credentials:
+          '호출자에게는 스트림을 암호화하는 암호 구문과, 스트림 ID로 시청만 할 수 있는 토큰이 필요합니다: 보기 전용 API 키(설정 > API 키) 또는 공유 링크 토큰.',
+        failed: 'SRT 설정을 저장하지 못했습니다',
+        latency: '지연 시간',
+        latencyDesc: '손실된 패킷의 재전송을 호출자가 기다리는 시간입니다. 손실이 많은 회선에서는 늘리세요. 더 큰 값을 요청한 호출자는 그 값을 받습니다.',
+        limits:
+          '동시에 최대 두 호출자. 각각 소프트웨어로 암호화되어 CPU를 사용합니다. 스트리머용: 최대 1080p60, Cube에서 약 100 Mbit/s, 소리는 USB 오디오 장치에서만, HDCP 소스는 HDCP를 꺼야 합니다.',
+        noCallers: '연결된 호출자 없음',
+        packetCounts: '전송 {{sent}}, 손실 {{lost}}, 재전송 {{retransmitted}}, 폐기 {{dropped}}',
+        packets: '패킷',
+        passphrase: '암호 구문',
+        passphraseFirst: '먼저 암호 구문을 설정하고 저장하세요.',
+        passphraseInvalid: '암호 구문은 10~79자입니다.',
+        passphraseSet: '암호 구문이 설정되어 있습니다. 바꾸려면 새 암호 구문을 입력하세요.',
+        port: '포트',
+        portDesc: '호출자가 연결하는 UDP 포트입니다.',
+        rate: '전송 속도',
+        rtt: '왕복 시간',
+        save: '저장',
+        saved: 'SRT 설정이 저장되었습니다',
+        service: 'SRT 리스너',
+        serviceDesc:
+          'OBS와 다른 SRT 호출자가 비디오와, 있는 경우 호스트 오디오를 MPEG-TS로 가져갈 수 있게 합니다. SRT는 손실된 패킷을 다시 보내므로 품질이 나쁜 회선에 적합합니다. 다시 인코딩하지 않습니다.',
+        since: '시작',
+        user: '사용자'
       },
       apiKeys: {
         viewOnly: '보기 전용',

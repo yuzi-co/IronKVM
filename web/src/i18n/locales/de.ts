@@ -1409,6 +1409,8 @@ const de = {
           netboot: 'Netzwerkstart',
           vnc: 'VNC',
           webrtc: 'WebRTC',
+          rtsp: 'RTSP',
+          srt: 'SRT',
           picoclaw: 'KI-Bildschirmfotos',
           hostLog: 'Host-Protokoll',
           webTitle: 'Webtitel',
@@ -2465,6 +2467,74 @@ const de = {
         sessions: 'Verbundene Player',
         token:
           'Ein Player braucht ein Bearer-Token, das nur zuschauen darf: einen API-Schlüssel nur zum Ansehen (Einstellungen > API-Schlüssel) oder das Token eines Freigabelinks. Ein Schlüssel, der mehr darf, wird abgelehnt.'
+      },
+      rtsp: {
+        address: 'Adresse',
+        addressHint:
+          'Ersetzen Sie <token> durch den Schlüssel. Fügen Sie in OBS eine Medienquelle hinzu, deaktivieren Sie „Lokale Datei“ und fügen Sie die Adresse als Eingabe ein.',
+        cleartext:
+          'RTSP ist nicht verschlüsselt. Token und Bild gehen unverschlüsselt über das Netzwerk; verwenden Sie es nur in einem vertrauenswürdigen Netzwerk oder über das VPN.',
+        client: 'Client',
+        connecting: 'Verbindet',
+        credentials:
+          'Ein Player meldet sich mit einem beliebigen Benutzernamen und als Passwort mit einem Token an, das nur zuschauen darf: einem API-Schlüssel nur zum Ansehen (Einstellungen > API-Schlüssel) oder dem Token eines Freigabelinks. Ein Schlüssel, der mehr darf, wird abgelehnt.',
+        failed: 'Die RTSP-Einstellungen konnten nicht gespeichert werden',
+        limits:
+          'Höchstens zwei Player gleichzeitig. Ein Wechsel des Videocodecs beendet sie, und sie verbinden sich neu.',
+        noPlayers: 'Kein Player verbunden',
+        players: 'Player',
+        playing: 'Spielt',
+        port: 'Port',
+        portDesc: 'Der TCP-Port, mit dem sich Player verbinden.',
+        save: 'Speichern',
+        saved: 'RTSP-Einstellungen gespeichert',
+        service: 'RTSP-Server',
+        serviceDesc:
+          'Lässt OBS (Medienquelle), VLC, ffmpeg und NVRs das Video abspielen, dazu den Ton des Hosts, wenn es welchen gibt. Das Board sendet, was sein Encoder ohnehin erzeugt; nichts wird neu kodiert. Jeder Player zählt als Zuschauer.',
+        since: 'Seit',
+        state: 'Status',
+        transport: 'Transport',
+        udp: 'RTP über UDP',
+        udpDesc:
+          'Die Medien zusätzlich über UDP anbieten. Standardmäßig laufen sie in der RTSP-Verbindung, die NAT und Firewalls passiert; ein Player, der UDP verlangt, weicht darauf aus.',
+        udpPort: 'UDP-Ports',
+        udpPortDesc: 'Der RTP-Port. RTCP nutzt den nächsten.',
+        user: 'Benutzer'
+      },
+      srt: {
+        address: 'Eingabe für die OBS-Medienquelle',
+        addressHint:
+          'Ersetzen Sie <passphrase> und <token>. Fügen Sie in OBS eine Medienquelle hinzu, deaktivieren Sie „Lokale Datei“ und fügen Sie die Adresse als Eingabe ein.',
+        callers: 'Anrufer',
+        client: 'Client',
+        credentials:
+          'Ein Anrufer braucht die Passphrase, die den Stream verschlüsselt, und als Stream-ID ein Token, das nur zuschauen darf: einen API-Schlüssel nur zum Ansehen (Einstellungen > API-Schlüssel) oder das Token eines Freigabelinks.',
+        failed: 'Die SRT-Einstellungen konnten nicht gespeichert werden',
+        latency: 'Latenz',
+        latencyDesc:
+          'Wie lange ein Anrufer auf die erneute Sendung eines verlorenen Pakets wartet. Erhöhen Sie sie bei einer verlustreichen Verbindung. Ein Anrufer, der mehr verlangt, bekommt mehr.',
+        limits:
+          'Höchstens zwei Anrufer gleichzeitig. Jeder wird in Software verschlüsselt und kostet CPU. Für Streamer: höchstens 1080p60, etwa 100 Mbit/s beim Cube, Ton nur vom USB-Audiogerät, und bei einer HDCP-Quelle muss HDCP aus sein.',
+        noCallers: 'Kein Anrufer verbunden',
+        packetCounts:
+          '{{sent}} gesendet, {{lost}} verloren, {{retransmitted}} erneut gesendet, {{dropped}} verworfen',
+        packets: 'Pakete',
+        passphrase: 'Passphrase',
+        passphraseFirst: 'Legen Sie zuerst eine Passphrase fest und speichern Sie sie.',
+        passphraseInvalid: 'Die Passphrase hat 10 bis 79 Zeichen.',
+        passphraseSet:
+          'Eine Passphrase ist festgelegt. Geben Sie eine neue ein, um sie zu ersetzen.',
+        port: 'Port',
+        portDesc: 'Der UDP-Port, mit dem sich Anrufer verbinden.',
+        rate: 'Senderate',
+        rtt: 'Umlaufzeit',
+        save: 'Speichern',
+        saved: 'SRT-Einstellungen gespeichert',
+        service: 'SRT-Listener',
+        serviceDesc:
+          'Lässt OBS und andere SRT-Anrufer das Video in MPEG-TS abrufen, dazu den Ton des Hosts, wenn es welchen gibt. SRT sendet verlorene Pakete erneut, was zu einer schlechten Verbindung passt. Nichts wird neu kodiert.',
+        since: 'Seit',
+        user: 'Benutzer'
       },
       apiKeys: {
         viewOnly: 'Nur ansehen',

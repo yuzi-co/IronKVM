@@ -1392,6 +1392,8 @@ const hu = {
           netboot: 'Hálózati indítás',
           vnc: 'VNC',
           webrtc: 'WebRTC',
+          rtsp: 'RTSP',
+          srt: 'SRT',
           picoclaw: 'AI képernyőképek',
           hostLog: 'Gazdagép napló',
           webTitle: 'Webcím',
@@ -2440,6 +2442,73 @@ const hu = {
         sessions: 'Csatlakozott lejátszók',
         token:
           'A lejátszónak csak nézésre jogosult Bearer-token kell: csak megtekintésre szóló API-kulcs (Beállítások > API-kulcsok) vagy egy megosztási hivatkozás tokenje. A többre jogosult kulcsot elutasítja.'
+      },
+      rtsp: {
+        address: 'Cím',
+        addressHint:
+          'Cserélje a <token> részt a kulcsra. Az OBS-ben adjon hozzá egy Médiaforrást, vegye ki a pipát a Helyi fájl elől, és illessze be a címet bemenetként.',
+        cleartext:
+          'Az RTSP nincs titkosítva. A token és a kép titkosítatlanul halad a hálózaton, ezért megbízható hálózaton vagy VPN-en keresztül használja.',
+        client: 'Kliens',
+        connecting: 'Kapcsolódás',
+        credentials:
+          'A lejátszó tetszőleges felhasználónévvel és jelszóként egy csak megtekintésre jogosult tokennel jelentkezik be: egy csak megtekintésre szolgáló API-kulccsal (Beállítások > API-kulcsok) vagy egy megosztási hivatkozás tokenjével. A többre jogosult kulcsot elutasítja.',
+        failed: 'Nem sikerült menteni az RTSP-beállításokat',
+        limits:
+          'Egyszerre legfeljebb két lejátszó. A videokodek váltása leállítja őket, és újra kapcsolódnak.',
+        noPlayers: 'Nincs csatlakozott lejátszó',
+        players: 'Lejátszók',
+        playing: 'Lejátszás',
+        port: 'Port',
+        portDesc: 'A TCP-port, amelyre a lejátszók csatlakoznak.',
+        save: 'Mentés',
+        saved: 'RTSP-beállítások mentve',
+        service: 'RTSP-szerver',
+        serviceDesc:
+          'Lehetővé teszi, hogy az OBS (Médiaforrás), a VLC, az ffmpeg és az NVR-ek lejátsszák a videót, és a gazdagép hangját, ha van. A kártya azt küldi, amit a kódolója már előállít; semmi sem kódolódik újra. Minden lejátszó nézőnek számít.',
+        since: 'Óta',
+        state: 'Állapot',
+        transport: 'Átvitel',
+        udp: 'RTP UDP-n',
+        udpDesc:
+          'A média felajánlása UDP-n is. Alapértelmezés szerint az RTSP-kapcsolaton belül halad, amely átjut a NAT-on és a tűzfalakon, és az UDP-t kérő lejátszó erre tér vissza.',
+        udpPort: 'UDP-portok',
+        udpPortDesc: 'Az RTP-port. Az RTCP a következőt használja.',
+        user: 'Felhasználó'
+      },
+      srt: {
+        address: 'OBS Médiaforrás bemenete',
+        addressHint:
+          'Cserélje a <passphrase> és a <token> részt. Az OBS-ben adjon hozzá egy Médiaforrást, vegye ki a pipát a Helyi fájl elől, és illessze be a címet bemenetként.',
+        callers: 'Hívók',
+        client: 'Kliens',
+        credentials:
+          'A hívónak szüksége van a jelmondatra, amely titkosítja a streamet, és stream-azonosítóként egy csak megtekintésre jogosult tokenre: egy csak megtekintésre szolgáló API-kulcsra (Beállítások > API-kulcsok) vagy egy megosztási hivatkozás tokenjére.',
+        failed: 'Nem sikerült menteni az SRT-beállításokat',
+        latency: 'Késleltetés',
+        latencyDesc:
+          'Mennyit vár a hívó egy elveszett csomag újraküldésére. Veszteséges kapcsolaton növelje. Aki többet kér, többet kap.',
+        limits:
+          'Egyszerre legfeljebb két hívó. Mindegyik szoftveresen titkosított, és CPU-t igényel. Streamereknek: legfeljebb 1080p60, kb. 100 Mbit/s a Cube-on, hang csak az USB-hangeszközről, és a HDCP-s forrásnál a HDCP-t ki kell kapcsolni.',
+        noCallers: 'Nincs csatlakozott hívó',
+        packetCounts:
+          '{{sent}} elküldve, {{lost}} elveszett, {{retransmitted}} újraküldve, {{dropped}} eldobva',
+        packets: 'Csomagok',
+        passphrase: 'Jelmondat',
+        passphraseFirst: 'Előbb adjon meg és mentsen egy jelmondatot.',
+        passphraseInvalid: 'A jelmondat 10–79 karakter hosszú.',
+        passphraseSet: 'Van beállított jelmondat. Írjon be újat a cseréjéhez.',
+        port: 'Port',
+        portDesc: 'Az UDP-port, amelyre a hívók csatlakoznak.',
+        rate: 'Küldési sebesség',
+        rtt: 'Körülfordulási idő',
+        save: 'Mentés',
+        saved: 'SRT-beállítások mentve',
+        service: 'SRT-figyelő',
+        serviceDesc:
+          'Lehetővé teszi, hogy az OBS és más SRT-hívók MPEG-TS-ben lekérjék a videót, és a gazdagép hangját, ha van. Az SRT újraküldi az elveszett csomagokat, ami gyenge kapcsolathoz illik. Semmi sem kódolódik újra.',
+        since: 'Óta',
+        user: 'Felhasználó'
       },
       apiKeys: {
         viewOnly: 'Csak megtekintés',
