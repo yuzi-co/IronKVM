@@ -827,6 +827,16 @@ const pl = {
         'Strumień wideo przestał działać. Wypróbuj inny tryb wideo w menu Ekran lub odśwież stronę.'
     },
     power: {
+      agentConfirm: {
+        title: 'Agent AI prosi o naciśnięcie przycisku',
+        hint:
+          'Nic nie zostanie naciśnięte, dopóki nie potwierdzisz tutaj. Odpowiedź na czacie tego nie potwierdza.',
+        expires: 'Wygasa za {{seconds}} s',
+        confirm: 'Naciśnij',
+        deny: 'Odrzuć',
+        pressed: 'Przycisk naciśnięty',
+        denied: 'Naciśnięcie odrzucone'
+      },
       resetDesc: 'Natychmiast restartuje hosta. Niezapisana praca przepada.',
       powerShortDesc: 'Włącza hosta albo prosi jego system o wyłączenie (ACPI).',
       powerLongDesc: 'Wymusza wyłączenie hosta bez zamknięcia systemu.',

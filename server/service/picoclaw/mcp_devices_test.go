@@ -116,12 +116,12 @@ func TestDeviceToolsAreListedOnlyWithTheirTiers(t *testing.T) {
 	}
 
 	withAgentTiers(t, audit.TierObserve, audit.TierInput, audit.TierPower)
-	if got, want := listedTools(t, service), []string{"kvm_screenshot", "kvm_actions", "kvm_power_status", "kvm_power", "kvm_media_list"}; !reflect.DeepEqual(got, want) {
+	if got, want := listedTools(t, service), []string{"kvm_screenshot", "kvm_actions", "kvm_power_status", "kvm_power", "kvm_power_confirmation", "kvm_media_list"}; !reflect.DeepEqual(got, want) {
 		t.Fatalf("with power: tools = %v, want %v", got, want)
 	}
 
 	withAgentTiers(t, audit.TierObserve, audit.TierInput, audit.TierPower, audit.TierMedia)
-	if got, want := listedTools(t, service), []string{"kvm_screenshot", "kvm_actions", "kvm_power_status", "kvm_power", "kvm_media_list", "kvm_media"}; !reflect.DeepEqual(got, want) {
+	if got, want := listedTools(t, service), []string{"kvm_screenshot", "kvm_actions", "kvm_power_status", "kvm_power", "kvm_power_confirmation", "kvm_media_list", "kvm_media"}; !reflect.DeepEqual(got, want) {
 		t.Fatalf("all tiers: tools = %v, want %v", got, want)
 	}
 }
@@ -204,13 +204,14 @@ func TestPowerStatusReportsTheLED(t *testing.T) {
 	}
 }
 
-func TestPowerPressesGoThroughTheButton(t *testing.T) {
+func TestPowerPressesGoThroughTheButtonOnceConfirmed(t *testing.T) {
 	service, host := newDeviceTestService(t)
 	store := withAgentTiers(t, audit.TierObserve, audit.TierPower)
 
 	for _, args := range []string{`{"button":"power"}`, `{"button":"power","press":"long"}`, `{"button":"reset","press":"short"}`} {
-		if result := toolResult(t, callTool(t, service, "kvm_power", args, nil)); isErrorResult(result) {
-			t.Fatalf("%s: result = %v", args, result)
+		id := requestPress(t, service, args)
+		if _, code, message := service.confirmPowerPress(id, "alice"); code != 0 {
+			t.Fatalf("%s: confirm = %d %s", args, code, message)
 		}
 	}
 	want := []string{
@@ -232,8 +233,9 @@ func TestPowerPressesGoThroughTheButton(t *testing.T) {
 			long = &events[i]
 		}
 	}
-	if long == nil || long.Target != "power" || long.Tier != "power" || long.Outcome != audit.OutcomeOK || long.Detail != "long hold=5000ms" {
-		t.Fatalf("events = %+v, want the long press recorded", events)
+	if long == nil || long.Target != "power" || long.Tier != "power" || long.Outcome != audit.OutcomeOK ||
+		!strings.HasPrefix(long.Detail, "long hold=5000ms: awaiting confirmation ") {
+		t.Fatalf("events = %+v, want the long press recorded as awaiting confirmation", events)
 	}
 }
 
@@ -251,15 +253,19 @@ func TestPowerArgumentErrorsAreToolErrors(t *testing.T) {
 	}
 }
 
+// Two presses that overlap are a mistake: while a confirmed press holds the
+// button, the agent cannot ask for another and nobody can confirm it twice.
 func TestConcurrentPowerPressIsRefused(t *testing.T) {
 	service, host := newDeviceTestService(t)
 	withAgentTiers(t, audit.TierPower)
 	host.hold = make(chan struct{})
 	host.holding = make(chan struct{}, 1)
 
-	first := make(chan map[string]any, 1)
+	firstID := requestPress(t, service, `{"button":"power","press":"long"}`)
+	first := make(chan int, 1)
 	go func() {
-		first <- toolResult(t, callTool(t, service, "kvm_power", `{"button":"power","press":"long"}`, nil))
+		_, code, _ := service.confirmPowerPress(firstID, "alice")
+		first <- code
 	}()
 	select {
 	case <-host.holding:
@@ -267,13 +273,18 @@ func TestConcurrentPowerPressIsRefused(t *testing.T) {
 		t.Fatal("the first press never reached the button")
 	}
 
-	second := toolResult(t, callTool(t, service, "kvm_power", `{"button":"reset"}`, nil))
-	if !isErrorResult(second) || !strings.Contains(toolText(t, second), "another button press is still in progress") {
-		t.Fatalf("second press = %v, want refused", second)
+	// While it is held, the agent cannot ask for another.
+	result := toolResult(t, callTool(t, service, "kvm_power", `{"button":"reset"}`, nil))
+	if !isErrorResult(result) || !strings.Contains(toolText(t, result), firstID) {
+		t.Fatalf("second request = %v, want refused", result)
+	}
+	// A second confirmation of the same press is refused too.
+	if _, code, _ := service.confirmPowerPress(firstID, "bob"); code != confirmationNotPending {
+		t.Fatalf("second confirm = %d, want not pending", code)
 	}
 	close(host.hold)
-	if result := <-first; isErrorResult(result) {
-		t.Fatalf("first press = %v", result)
+	if code := <-first; code != 0 {
+		t.Fatalf("first press = %d", code)
 	}
 	if len(host.pressed) != 1 {
 		t.Fatalf("pressed = %v, want only the first", host.pressed)

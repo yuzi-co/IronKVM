@@ -795,6 +795,15 @@ const zh = {
       stream: '视频流失败。请在屏幕菜单中尝试其他视频模式，或刷新页面。'
     },
     power: {
+      agentConfirm: {
+        title: 'AI 智能体请求按下按钮',
+        hint: '在您于此处确认之前不会按下任何按钮。聊天中的回复不算确认。',
+        expires: '{{seconds}} 秒后过期',
+        confirm: '按下',
+        deny: '拒绝',
+        pressed: '已按下按钮',
+        denied: '已拒绝按下'
+      },
       resetDesc: '立即重启主机，未保存的工作会丢失。',
       powerShortDesc: '开启主机，或请求其操作系统关机 (ACPI)。',
       powerLongDesc: '不经关机直接强制关闭主机电源。',

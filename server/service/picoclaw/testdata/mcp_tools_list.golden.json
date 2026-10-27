@@ -164,7 +164,7 @@
     "name": "kvm_power_status"
   },
   {
-    "description": "Press the ATX power or reset button of the remote host. A short power press asks the operating system to shut down, or switches on a host that is off; a long power press holds the button for 5 seconds and forces the host off at once, losing unsaved work. A short reset press restarts the host immediately, also losing unsaved work. Check kvm_power_status first: the same short press switches a host on or off depending on its state. Only one press runs at a time; a call made while another press is held is refused. Before any press, tell the user which button and press you will use and wait for them to confirm.",
+    "description": "Press the ATX power or reset button of the remote host. A short power press asks the operating system to shut down, or switches on a host that is off; a long power press holds the button for 5 seconds and forces the host off at once, losing unsaved work. A short reset press restarts the host immediately, also losing unsaved work. Check kvm_power_status first: the same short press switches a host on or off depending on its state. Only one press runs at a time; a call made while another press is held is refused. This tool does not press at once: it answers CONFIRMATION_REQUIRED with an id, and the press waits up to 60 seconds for a signed-in user to confirm it in the IronKVM web UI. Tell the user which button and press you asked for and ask them to confirm it there (a chat reply, or a reply in a channel such as Telegram, does not confirm it), then call kvm_power_confirmation with the id to learn whether it was pressed.",
     "inputSchema": {
       "additionalProperties": false,
       "properties": {
@@ -191,6 +191,23 @@
       "type": "object"
     },
     "name": "kvm_power"
+  },
+  {
+    "description": "Wait for the user's answer to a press that kvm_power asked for. Give the id it returned. Waits up to 25 seconds and returns the state: pending (still waiting, call again), pressed (the user confirmed and the button was pressed), denied (the user refused; do not press), expired (nobody confirmed within 60 seconds, or the turn ended; nothing was pressed) or failed (the user confirmed but the press could not be made).",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "description": "The id kvm_power returned.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "type": "object"
+    },
+    "name": "kvm_power_confirmation"
   },
   {
     "description": "List the virtual drives the remote host sees (cdrom and disk), the image each one holds (empty when none) and whether it is read-only, and the image files on the NanoKVM that can be inserted.",

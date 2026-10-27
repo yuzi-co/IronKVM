@@ -827,6 +827,15 @@ const pt_br = {
         'O stream de vídeo falhou. Tente outro modo de vídeo no menu Tela ou recarregue a página.'
     },
     power: {
+      agentConfirm: {
+        title: 'O agente de IA pede para pressionar um botão',
+        hint: 'Nada é pressionado até você confirmar aqui. Uma resposta no chat não confirma.',
+        expires: 'Expira em {{seconds}} s',
+        confirm: 'Pressionar',
+        deny: 'Recusar',
+        pressed: 'Botão pressionado',
+        denied: 'Pressionamento recusado'
+      },
       resetDesc: 'Reinicia o host na hora. O trabalho não salvo é perdido.',
       powerShortDesc: 'Liga o host, ou pede ao sistema operacional que desligue (ACPI).',
       powerLongDesc: 'Força o desligamento do host sem encerrar o sistema.',

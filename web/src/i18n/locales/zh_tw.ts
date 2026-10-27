@@ -795,6 +795,15 @@ const zh_tw = {
       stream: '影像串流失敗。請在螢幕選單中嘗試其他影像模式，或重新整理頁面。'
     },
     power: {
+      agentConfirm: {
+        title: 'AI 代理請求按下按鈕',
+        hint: '在您於此處確認之前不會按下任何按鈕。聊天中的回覆不算確認。',
+        expires: '{{seconds}} 秒後過期',
+        confirm: '按下',
+        deny: '拒絕',
+        pressed: '已按下按鈕',
+        denied: '已拒絕按下'
+      },
       resetDesc: '立即重新啟動主機，未儲存的工作會遺失。',
       powerShortDesc: '開啟主機，或請求其作業系統關機 (ACPI)。',
       powerLongDesc: '不經關機直接強制關閉主機電源。',

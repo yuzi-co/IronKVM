@@ -23,13 +23,18 @@ const (
 )
 
 // agentPowerNote is what the agent's press tool adds to the shared
-// description: the owner, not the agent, decides when the host goes down.
-const agentPowerNote = " Before any press, tell the user which button and press you will use and wait for them to confirm."
+// description: the owner, not the agent, decides when the host goes down, and
+// the server holds the press until a person confirms it (power_confirm.go).
+const agentPowerNote = " This tool does not press at once: it answers " + CodeConfirmationRequired + " with an id, and the press waits up to 60 seconds for a signed-in user to confirm it in the IronKVM web UI. Tell the user which button and press you asked for and ask them to confirm it there (a chat reply, or a reply in a channel such as Telegram, does not confirm it), then call " + powerConfirmationToolName + " with the id to learn whether it was pressed."
+
+// powerConfirmationDescription describes the tool the agent waits with.
+const powerConfirmationDescription = "Wait for the user's answer to a press that " + powerToolName + " asked for. Give the id it returned. Waits up to 25 seconds and returns the state: pending (still waiting, call again), pressed (the user confirmed and the button was pressed), denied (the user refused; do not press), expired (nobody confirmed within 60 seconds, or the turn ended; nothing was pressed) or failed (the user confirmed but the press could not be made)."
 
 // SetDevices gives the agent's tools the board's devices. The router calls it
 // before the first MCP call; a function left nil leaves its tool out.
 func (s *Service) SetDevices(devices hostdevices.Devices) {
 	s.devices = devices
+	s.presser = hostdevices.NewPresser(devices)
 }
 
 type deviceTool struct {
@@ -59,7 +64,21 @@ func (s *Service) deviceTools() []deviceTool {
 				Description: hostdevices.PowerDescription(powerStatusToolName) + agentPowerNote,
 				InputSchema: hostdevices.PowerSchema(false),
 			},
-			handler: s.withAgentSession(mcpPower(hostdevices.NewPresser(devices))),
+			handler: s.withAgentSession(s.requestPowerPress),
+		}, deviceTool{
+			tool: &protocol.Tool{
+				Name:        powerConfirmationToolName,
+				Description: powerConfirmationDescription,
+				InputSchema: map[string]any{
+					"type":                 "object",
+					"additionalProperties": false,
+					"properties": map[string]any{
+						"id": map[string]any{"type": "string", "description": "The id " + powerToolName + " returned."},
+					},
+					"required": []string{"id"},
+				},
+			},
+			handler: s.mcpPowerConfirmation,
 		})
 	}
 	if devices.CanListMedia() {
@@ -116,19 +135,6 @@ func (s *Service) mcpPowerStatus(context.Context, *protocol.CallToolRequest) (*p
 	return mcpJSONResult(s.devices.ReadPower()), nil
 }
 
-func mcpPower(presser *hostdevices.Presser) protocol.ToolHandler {
-	return func(_ context.Context, req *protocol.CallToolRequest) (*protocol.CallToolResult, error) {
-		var args powerArguments
-		if !decodeArguments(req, &args) {
-			return mcpToolError("invalid arguments: give button (power or reset) and press (short or long)"), nil
-		}
-		if err := presser.Press(args.press()); err != nil {
-			return mcpToolError(err.Error()), nil
-		}
-		return mcpJSONResult(map[string]bool{"ok": true}), nil
-	}
-}
-
 func (s *Service) mcpMediaList(context.Context, *protocol.CallToolRequest) (*protocol.CallToolResult, error) {
 	state, err := s.devices.List()
 	if err != nil {
@@ -162,6 +168,11 @@ func describeDeviceCall(name string, arguments json.RawMessage) (target, detail 
 		var args powerArguments
 		if json.Unmarshal(arguments, &args) == nil {
 			return hostdevices.DescribePress(args.press())
+		}
+	case powerConfirmationToolName:
+		var args confirmationArguments
+		if json.Unmarshal(arguments, &args) == nil {
+			return args.ID, ""
 		}
 	case mediaToolName:
 		var args mediaArguments

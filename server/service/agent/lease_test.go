@@ -158,3 +158,31 @@ func TestInTurnFollowsTheLeases(t *testing.T) {
 		t.Fatal("no tracker means no turn")
 	}
 }
+
+// A turn keeps its number while prompts join it and gets a new one once it
+// has ended, so something tied to one turn can tell the next apart.
+func TestTurnNumbersEachTurnOfASession(t *testing.T) {
+	leases, _ := newCountingLeases()
+	if got := leases.Turn("s"); got != 0 {
+		t.Fatalf("turn before any prompt = %d", got)
+	}
+	leases.Prompt("s", "r1", 0)
+	first := leases.Turn("s")
+	leases.Prompt("s", "r2", 0)
+	if first == 0 || leases.Turn("s") != first {
+		t.Fatalf("turn = %d, then %d with a second prompt, want the same nonzero", first, leases.Turn("s"))
+	}
+	leases.Prompt("other", "r1", 0)
+	if leases.Turn("other") == first {
+		t.Fatal("another session shares the turn's number")
+	}
+
+	leases.Cancel("s", "")
+	if got := leases.Turn("s"); got != 0 {
+		t.Fatalf("turn after cancel = %d", got)
+	}
+	leases.Prompt("s", "r3", 0)
+	if second := leases.Turn("s"); second == 0 || second == first {
+		t.Fatalf("next turn = %d, want a new number after %d", second, first)
+	}
+}

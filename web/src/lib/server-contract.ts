@@ -20,6 +20,7 @@ export const LEGACY_API_VERSION = 1;
 // The server features this UI gates on, one line each, by the name the server
 // registers (server/common/apicontract/contract.go). Keep the list sorted.
 export const SERVER_FEATURES = [
+  'agent-power-confirm', // /api/agent/power/confirmations (agent power presses wait for a person)
   'agent-routes', // /api/agent/runtime, /sessions, /chat/ws (the AI sidebar; /api/picoclaw before)
   'agent-tiers', // /api/agent/tiers (Settings > MCP: what MCP and the agent may do)
   'api-key-scope', // scope "view" on POST /api/auth/api-keys (Settings > API Keys: view only)

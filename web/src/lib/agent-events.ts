@@ -37,7 +37,10 @@ export type AgentEvent =
     }
   | { type: 'error'; code: string; message: string; requestId?: string }
   | { type: 'turn_done'; requestIds: string[]; stopReason: AgentStopReason; usage?: AgentUsage }
-  | { type: 'control_mode_changed'; control: AgentControlMode };
+  | { type: 'control_mode_changed'; control: AgentControlMode }
+  // A power or reset press the agent asked for waits for a person, or that
+  // wait ended. The web UI reads the presses themselves from the server.
+  | { type: 'power_confirmation'; id: string; state: string };
 
 // Commands the browser sends.
 export type AgentCommand =
@@ -136,6 +139,15 @@ export function parseAgentEvent(data: unknown): AgentEvent | undefined {
         }
       };
     }
+    case 'power_confirmation': {
+      const confirmation = event.confirmation;
+      if (!confirmation || typeof confirmation !== 'object') return undefined;
+      const value = confirmation as JsonObject;
+      const id = str(value.id);
+      return id
+        ? { type: 'power_confirmation', id, state: str(value.state) ?? 'pending' }
+        : undefined;
+    }
     default:
       return undefined;
   }
@@ -166,6 +178,7 @@ export type AgentEventSink = {
   error: (error: { code: string; message: string; raw?: unknown }) => void;
   turnDone: (done: Extract<AgentEvent, { type: 'turn_done' }>) => void;
   controlModeChanged: (control: AgentControlMode) => void;
+  powerConfirmation: (confirmation: { id: string; state: string }) => void;
 };
 
 // createAgentEventHandler returns the function that handles each message of
@@ -215,6 +228,9 @@ export function createAgentEventHandler(sink: AgentEventSink, newId: () => strin
         return;
       case 'control_mode_changed':
         sink.controlModeChanged(event.control);
+        return;
+      case 'power_confirmation':
+        sink.powerConfirmation({ id: event.id, state: event.state });
         return;
       case 'agent_message':
         if (event.kind === 'hidden') {

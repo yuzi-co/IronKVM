@@ -821,6 +821,15 @@ const da = {
         'Videostreamen er fejlet. Prøv en anden videotilstand i menuen Skærm, eller genindlæs siden.'
     },
     power: {
+      agentConfirm: {
+        title: 'AI-agenten beder om at trykke på en knap',
+        hint: 'Der trykkes ikke på noget, før du bekræfter her. Et svar i chatten bekræfter ikke.',
+        expires: 'Udløber om {{seconds}} s',
+        confirm: 'Tryk',
+        deny: 'Afvis',
+        pressed: 'Knap trykket',
+        denied: 'Tryk afvist'
+      },
       resetDesc: 'Genstarter værten med det samme. Ikke-gemt arbejde går tabt.',
       powerShortDesc: 'Tænder værten eller beder dens OS om at lukke ned (ACPI).',
       powerLongDesc: 'Tvinger værten slukket uden nedlukning.',

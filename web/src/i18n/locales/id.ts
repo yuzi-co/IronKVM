@@ -824,6 +824,16 @@ const id = {
       stream: 'Stream video gagal. Coba mode video lain di menu Layar, atau muat ulang halaman.'
     },
     power: {
+      agentConfirm: {
+        title: 'Agen AI meminta untuk menekan tombol',
+        hint:
+          'Tidak ada yang ditekan sampai Anda mengonfirmasi di sini. Balasan di obrolan tidak mengonfirmasinya.',
+        expires: 'Kedaluwarsa dalam {{seconds}} dtk',
+        confirm: 'Tekan',
+        deny: 'Tolak',
+        pressed: 'Tombol ditekan',
+        denied: 'Penekanan ditolak'
+      },
       resetDesc: 'Memulai ulang host seketika. Pekerjaan yang belum disimpan hilang.',
       powerShortDesc: 'Menyalakan host, atau meminta OS-nya untuk mati (ACPI).',
       powerLongDesc: 'Memaksa host mati tanpa shutdown.',

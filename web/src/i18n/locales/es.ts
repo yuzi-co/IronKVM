@@ -832,6 +832,16 @@ const es = {
         'El stream de vídeo ha fallado. Pruebe otro modo de vídeo en el menú Pantalla o recargue la página.'
     },
     power: {
+      agentConfirm: {
+        title: 'El agente de IA pide pulsar un botón',
+        hint:
+          'No se pulsa nada hasta que lo confirme aquí. Una respuesta en el chat no lo confirma.',
+        expires: 'Caduca en {{seconds}} s',
+        confirm: 'Pulsar',
+        deny: 'Rechazar',
+        pressed: 'Botón pulsado',
+        denied: 'Pulsación rechazada'
+      },
       resetDesc: 'Reinicia el host al instante. Se pierde el trabajo sin guardar.',
       powerShortDesc: 'Enciende el host o pide a su sistema operativo que se apague (ACPI).',
       powerLongDesc: 'Fuerza el apagado del host sin cerrar el sistema.',

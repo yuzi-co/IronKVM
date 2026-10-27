@@ -40,6 +40,7 @@ import { H264ModeNotification, Notification } from './notification.tsx';
 import { Ocr } from './ocr';
 import { Paste } from './paste';
 import { ActionOverlay } from './picoclaw/action-overlay.tsx';
+import { PowerConfirmPrompt } from './power-confirm/prompt.tsx';
 import { Screen } from './screen';
 import { AutoRegion } from './screen/auto-region.tsx';
 import {
@@ -330,6 +331,7 @@ export const Desktop = () => {
         <ViewOnlyBadge />
         <FailsafeBanner />
         <SequenceBanner />
+        <PowerConfirmPrompt />
         <MacroEditor />
       </OverlayBoundary>
 

@@ -304,6 +304,15 @@ func (b *Bridge) InTurn(sessionID string) bool {
 	return b.activeSession(sessionID) != nil && b.leases.InTurn(sessionID)
 }
 
+// Turn names an open session's turn in progress, 0 when InTurn is false
+// (TaskLeases.Turn).
+func (b *Bridge) Turn(sessionID string) uint64 {
+	if b.activeSession(sessionID) == nil {
+		return 0
+	}
+	return b.leases.Turn(sessionID)
+}
+
 // CloseSession ends one session and releases its task capture leases, also
 // when no session has the id.
 func (b *Bridge) CloseSession(sessionID string, closeCode int, reason string) bool {

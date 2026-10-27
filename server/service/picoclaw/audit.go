@@ -15,8 +15,10 @@ var agentToolTiers = map[string]audit.Tier{
 	"kvm_actions":       audit.TierInput,
 	powerStatusToolName: audit.TierObserve,
 	powerToolName:       audit.TierPower,
-	mediaListToolName:   audit.TierObserve,
-	mediaToolName:       audit.TierMedia,
+	// Waiting for the answer to a press is part of pressing.
+	powerConfirmationToolName: audit.TierPower,
+	mediaListToolName:         audit.TierObserve,
+	mediaToolName:             audit.TierMedia,
 }
 
 // agentToolOrder is the order tools/list gives the agent's tools in.
@@ -25,6 +27,7 @@ var agentToolOrder = []string{
 	"kvm_actions",
 	powerStatusToolName,
 	powerToolName,
+	powerConfirmationToolName,
 	mediaListToolName,
 	mediaToolName,
 }

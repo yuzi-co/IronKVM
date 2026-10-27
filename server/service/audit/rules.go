@@ -31,6 +31,10 @@ var named = map[string]Rule{
 	"POST /api/vm/gpio":          {CategoryPower, "press", false},
 	"POST /api/network/wol":      {CategoryPower, "wake-on-lan", false},
 	"POST /api/vm/system/reboot": {CategoryPower, "reboot", false},
+	// A person's answer to a press the on-board agent asked for. The target
+	// is the button; the detail names the press, the agent and its session.
+	"POST /api/agent/power/confirmations/:id/confirm": {CategoryPower, "agent-press-confirm", false},
+	"POST /api/agent/power/confirmations/:id/deny":    {CategoryPower, "agent-press-deny", false},
 
 	"POST /api/storage/image/mount":       {CategoryMedia, "mount", false},
 	"POST /api/storage/drives/:id/insert": {CategoryMedia, "insert", false},

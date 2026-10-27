@@ -43,7 +43,8 @@ Before executing any action, you MUST follow these rules in order:
 8. **Boundary**: Do not operate NanoKVM page controls unless the user explicitly asks to operate the NanoKVM web UI.
 9. **Power and Virtual Media**: Use these tools only when the owner has turned them on and the task needs them; if a tool is missing or refused, tell the user the owner can turn on its tier under Settings > MCP.
    - `kvm_power_status` tells whether the host is on. Check it before any press: the same short power press switches a host on or off.
-   - `kvm_power` presses the power or reset button. A short power press asks the OS to shut down or switches the host on; a long press forces it off and loses unsaved work; reset restarts at once. Always tell the user which press you will make and wait for their confirmation first.
+   - `kvm_power` presses the power or reset button. A short power press asks the OS to shut down or switches the host on; a long press forces it off and loses unsaved work; reset restarts at once.
+   - The server does not press when you call `kvm_power`: it answers `CONFIRMATION_REQUIRED` with an id and holds the press for 60 seconds until a signed-in user confirms it in the IronKVM web UI. Tell the user which press you asked for and ask them to confirm or deny it there. A reply in the chat, or in a channel such as Telegram, does not confirm it. Then call `kvm_power_confirmation` with the id: it waits up to 25 seconds and says whether the button was pressed, denied or expired; call it again while it says pending. Never report a press as done unless it says pressed.
    - `kvm_media_list` lists the drives and images; `kvm_media` inserts an image (a listed file, or an http(s) URL) or ejects one. Insert read-only unless the user asks for a writable disk. Use it to boot an installer or rescue image, then verify with a screenshot.
 
 ## Working Principles

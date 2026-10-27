@@ -827,6 +827,16 @@ const hu = {
         'A videostream leállt. Próbáljon másik videómódot a Képernyő menüben, vagy töltse újra az oldalt.'
     },
     power: {
+      agentConfirm: {
+        title: 'Az AI-ügynök egy gomb megnyomását kéri',
+        hint:
+          'Semmi sem lesz megnyomva, amíg itt meg nem erősíti. A csevegésben adott válasz nem megerősítés.',
+        expires: 'Lejár {{seconds}} mp múlva',
+        confirm: 'Megnyomás',
+        deny: 'Elutasítás',
+        pressed: 'Gomb megnyomva',
+        denied: 'Megnyomás elutasítva'
+      },
       resetDesc: 'Azonnal újraindítja a gazdagépet. A mentetlen munka elvész.',
       powerShortDesc:
         'Bekapcsolja a gazdagépet, vagy leállásra kéri az operációs rendszerét (ACPI).',

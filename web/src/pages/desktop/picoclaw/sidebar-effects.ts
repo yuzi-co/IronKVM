@@ -18,6 +18,7 @@ import type {
   PicoclawTakeoverState,
   PicoclawTransportState
 } from '@/jotai/picoclaw.ts';
+import { refreshPowerConfirmations } from '@/jotai/power-confirm.ts';
 
 import { PICOCLAW_INPUT_KEYBOARD_LOCK_SOURCE, releasePicoclawInputFocus } from './keyboard-lock.ts';
 import {
@@ -240,6 +241,9 @@ export function usePicoclawGatewayEvents({
       picoclawGateway.on('error', (error) => {
         setMessages((current) => [...current, createErrorMessage(error)]);
       }),
+      // A press the agent asked for shows at once, without waiting for the
+      // next poll.
+      picoclawGateway.on('power_confirmation', () => refreshPowerConfirmations()),
       picoclawGateway.on('control_mode_changed', (control) => {
         syncAIControlStatus(control, control.source ?? 'gateway');
         setRuntimeStatus((current) =>

@@ -138,13 +138,23 @@ type Presser struct {
 // NewPresser returns a Presser for the devices.
 func NewPresser(devices Devices) *Presser { return &Presser{devices: devices} }
 
+// CheckPress checks a call to press without pressing: the button it names
+// and how long it holds it.
+func CheckPress(in Press) (button string, hold time.Duration, err error) {
+	button = strings.ToLower(strings.TrimSpace(in.Button))
+	if button != hostpower.ButtonPower && button != hostpower.ButtonReset {
+		return "", 0, fmt.Errorf("button must be power or reset")
+	}
+	hold, err = Hold(in)
+	if err != nil {
+		return "", 0, err
+	}
+	return button, hold, nil
+}
+
 // Press checks the call and presses.
 func (p *Presser) Press(in Press) error {
-	button := strings.ToLower(strings.TrimSpace(in.Button))
-	if button != hostpower.ButtonPower && button != hostpower.ButtonReset {
-		return fmt.Errorf("button must be power or reset")
-	}
-	hold, err := Hold(in)
+	button, hold, err := CheckPress(in)
 	if err != nil {
 		return err
 	}

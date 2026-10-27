@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { closeGateway } from '@/api/picoclaw.ts';
 import { picoclawChatOpenAtom } from '@/jotai/picoclaw.ts';
 
+import { PowerConfirmPrompt } from '../power-confirm/prompt.tsx';
 import { MessageInput } from './message-input.tsx';
 import { MessageList } from './message-list.tsx';
 import { canConnectGateway, derivePicoclawControlViewModel } from './runtime-view.ts';
@@ -295,6 +296,7 @@ export const Sidebar = () => {
       {/* Divider */}
       <div className="h-px bg-white/[0.06]" />
       {controlStatusBar}
+      <PowerConfirmPrompt inline />
 
       {/* Body */}
       <div className="flex min-h-0 flex-1 flex-col">

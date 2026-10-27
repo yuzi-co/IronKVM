@@ -843,6 +843,16 @@ const de = {
         'Der Videostream ist ausgefallen. Versuchen Sie im Menü Bildschirm einen anderen Videomodus oder laden Sie die Seite neu.'
     },
     power: {
+      agentConfirm: {
+        title: 'Der KI-Agent möchte eine Taste drücken',
+        hint:
+          'Nichts wird gedrückt, solange Sie hier nicht bestätigen. Eine Antwort im Chat bestätigt nicht.',
+        expires: 'Läuft in {{seconds}} s ab',
+        confirm: 'Drücken',
+        deny: 'Ablehnen',
+        pressed: 'Taste gedrückt',
+        denied: 'Drücken abgelehnt'
+      },
       resetDesc: 'Startet den Host sofort neu. Nicht gespeicherte Arbeit geht verloren.',
       powerShortDesc:
         'Schaltet den Host ein oder bittet sein Betriebssystem, herunterzufahren (ACPI).',

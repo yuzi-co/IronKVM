@@ -827,6 +827,15 @@ const ca = {
         'El flux de vídeo ha fallat. Prova un altre mode de vídeo al menú Pantalla o torna a carregar la pàgina.'
     },
     power: {
+      agentConfirm: {
+        title: 'L\'agent d\'IA demana prémer un botó',
+        hint: 'No es prem res fins que ho confirmeu aquí. Una resposta al xat no ho confirma.',
+        expires: 'Caduca en {{seconds}} s',
+        confirm: 'Prémer',
+        deny: 'Rebutjar',
+        pressed: 'Botó premut',
+        denied: 'Pulsació rebutjada'
+      },
       resetDesc: "Reinicia l'amfitrió a l'instant. Es perd la feina no desada.",
       powerShortDesc: "Engega l'amfitrió o demana al seu sistema operatiu que s'apagui (ACPI).",
       powerLongDesc: "Força l'apagada de l'amfitrió sense tancar el sistema.",

@@ -832,6 +832,16 @@ const nl = {
         'De videostream is mislukt. Probeer een andere videomodus in het menu Scherm of herlaad de pagina.'
     },
     power: {
+      agentConfirm: {
+        title: 'De AI-agent vraagt om een knop in te drukken',
+        hint:
+          'Er wordt niets ingedrukt tot u hier bevestigt. Een antwoord in de chat bevestigt niet.',
+        expires: 'Verloopt over {{seconds}} s',
+        confirm: 'Indrukken',
+        deny: 'Weigeren',
+        pressed: 'Knop ingedrukt',
+        denied: 'Indrukken geweigerd'
+      },
       resetDesc: 'Herstart de host meteen. Niet-opgeslagen werk gaat verloren.',
       powerShortDesc: 'Zet de host aan, of vraagt het besturingssysteem af te sluiten (ACPI).',
       powerLongDesc: 'Zet de host geforceerd uit zonder af te sluiten.',

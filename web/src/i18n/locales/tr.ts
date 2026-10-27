@@ -824,6 +824,16 @@ const tr = {
         'Video akışı başarısız oldu. Ekran menüsünde başka bir video modu deneyin veya sayfayı yenileyin.'
     },
     power: {
+      agentConfirm: {
+        title: 'Yapay zekâ ajanı bir düğmeye basmak istiyor',
+        hint:
+          'Burada onaylamadığınız sürece hiçbir şeye basılmaz. Sohbetteki bir yanıt onay sayılmaz.',
+        expires: '{{seconds}} sn içinde sona eriyor',
+        confirm: 'Bas',
+        deny: 'Reddet',
+        pressed: 'Düğmeye basıldı',
+        denied: 'Basma reddedildi'
+      },
       resetDesc: 'Ana bilgisayarı hemen yeniden başlatır. Kaydedilmemiş iş kaybolur.',
       powerShortDesc: 'Ana bilgisayarı açar veya işletim sisteminden kapanmasını ister (ACPI).',
       powerLongDesc: 'Ana bilgisayarı düzgün kapatmadan zorla kapatır.',
