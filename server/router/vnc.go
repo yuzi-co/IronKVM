@@ -1,7 +1,6 @@
 package router
 
 import (
-	"crypto/tls"
 	"os"
 	"time"
 
@@ -16,7 +15,6 @@ import (
 	"NanoKVM-Server/service/redfish"
 	"NanoKVM-Server/service/stream/mjpeg"
 	"NanoKVM-Server/service/vnc"
-	"NanoKVM-Server/utils"
 )
 
 func vncRouter(r *gin.Engine) {
@@ -44,7 +42,7 @@ func vncRouter(r *gin.Engine) {
 		// The web login waits as long after a wrong password.
 		FailureDelay: 2 * time.Second,
 		Password:     vnc.FilePassword{Path: vnc.PasswordFile},
-		Certificate:  vncCertificate,
+		Certificate:  servingCertificate,
 
 		Name: vncDesktopName,
 	})
@@ -61,29 +59,6 @@ func vncRouter(r *gin.Engine) {
 	admin.POST("/settings", service.SetSettings)
 	admin.GET("/state", service.GetState)
 	admin.POST("/disconnect", service.EndSession)
-}
-
-// vncCertificate is the certificate the HTTPS listener serves, including one
-// uploaded since the server started. A board that serves plain HTTP has
-// none in memory, so it loads the configured pair, and when there is none
-// yet the shipped one is made the same way the HTTPS switch makes it.
-func vncCertificate() (*tls.Certificate, error) {
-	if cert := utils.ActiveCert.Current(); cert != nil {
-		return cert, nil
-	}
-	conf := config.GetInstance()
-	if cert, err := tls.LoadX509KeyPair(conf.Cert.Crt, conf.Cert.Key); err == nil {
-		return &cert, nil
-	}
-
-	if err := utils.EnsureCert(); err != nil {
-		return nil, err
-	}
-	cert, err := tls.LoadX509KeyPair(utils.CertFile, utils.KeyFile)
-	if err != nil {
-		return nil, err
-	}
-	return &cert, nil
 }
 
 // vncDesktopName is the name a VNC client shows for the session: the board's

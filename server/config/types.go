@@ -118,17 +118,19 @@ type WHEP struct {
 // The RTSP server's defaults (ironkvm-dist#142). A zero value in server.yaml
 // means the default. 8554 is the port RTSP servers that cannot bind 554 use,
 // and 8000 and 8001 are the RTP and RTCP ports MediaMTX picked, so a player's
-// firewall rules for either carry over.
+// firewall rules for either carry over. 8322 is MediaMTX's RTSPS port, for
+// the same reason.
 const (
 	DefaultRTSPPort    = 8554
 	DefaultRTSPUDPPort = 8000
+	DefaultRTSPSPort   = 8322
 )
 
 // RTSP configures the RTSP server. Read it through WithDefaults.
 type RTSP struct {
-	// Enabled listens for RTSP players. Off by default.
+	// Enabled listens for plain RTSP players on Port. Off by default.
 	Enabled bool `yaml:"enabled" mapstructure:"enabled"`
-	// Port is the TCP port the server listens on.
+	// Port is the TCP port plain RTSP listens on.
 	Port int `yaml:"port,omitempty" mapstructure:"port"`
 	// UDP offers RTP over UDP beside RTP interleaved in the RTSP connection.
 	// Off by default: TCP crosses NAT and firewalls as it is, and a player
@@ -136,6 +138,18 @@ type RTSP struct {
 	UDP bool `yaml:"udp,omitempty" mapstructure:"udp"`
 	// UDPPort is the RTP port when UDP is on. RTCP takes the port above it.
 	UDPPort int `yaml:"udpPort,omitempty" mapstructure:"udpPort"`
+	// TLS listens for RTSPS players, RTSP over TLS with the web server's
+	// certificate, on TLSPort. Off by default. The media stays inside the TLS
+	// connection: UDP above applies to plain RTSP only, so an RTSPS player
+	// never sends or receives RTP outside it.
+	TLS bool `yaml:"tls,omitempty" mapstructure:"tls"`
+	// TLSPort is the TCP port RTSPS listens on.
+	TLSPort int `yaml:"tlsPort,omitempty" mapstructure:"tlsPort"`
+}
+
+// Listening reports whether either listener is on.
+func (r RTSP) Listening() bool {
+	return r.Enabled || r.TLS
 }
 
 // WithDefaults returns the settings with every zero value replaced by its
@@ -146,6 +160,9 @@ func (r RTSP) WithDefaults() RTSP {
 	}
 	if r.UDPPort <= 0 {
 		r.UDPPort = DefaultRTSPUDPPort
+	}
+	if r.TLSPort <= 0 {
+		r.TLSPort = DefaultRTSPSPort
 	}
 	return r
 }

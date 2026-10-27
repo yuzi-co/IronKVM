@@ -8,15 +8,21 @@
 // however many watch, and gortsplib gives each player its own bounded write
 // queue: a player that cannot keep up loses packets, and nobody else waits.
 //
-// The server is off until an administrator switches it on. A player
-// authenticates with Basic authentication, the password being a token that
-// can do no more than watch (middleware.AuthenticateViewToken), as WHEP's
-// Bearer token is. The allowed networks list applies before a request is
-// read, and at most egress.MaxClients players are served at once.
+// The server is off until an administrator switches it on. It has two
+// listeners, each with its own switch: plain RTSP, and RTSPS, which is RTSP
+// over TLS with the web server's certificate. Plain RTSP carries the
+// player's token in clear text, so RTSPS is the one to use anywhere the
+// network is not trusted. A player authenticates with Basic authentication,
+// the password being a token that can do no more than watch
+// (middleware.AuthenticateViewToken), as WHEP's Bearer token is. The allowed
+// networks list applies before a request is read, and at most
+// egress.MaxClients players are served at once, over both listeners.
 package rtsp
 
 import (
+	"crypto/tls"
 	"errors"
+	"fmt"
 	"net"
 	"strconv"
 	"sync"
@@ -71,8 +77,9 @@ const (
 )
 
 var (
-	errNotRunning = errors.New("the RTSP server is not running")
-	errNoPicture  = errors.New("no picture from the encoder")
+	errNotRunning    = errors.New("the RTSP server is not running")
+	errNoPicture     = errors.New("no picture from the encoder")
+	errNoCertificate = errors.New("no TLS certificate")
 )
 
 // Deps are what the server needs from the rest of NanoKVM-Server. Tests
@@ -88,6 +95,14 @@ type Deps struct {
 	// Nil allows every address.
 	ClientAllowed func(net.Addr) bool
 	Authenticate  egress.Authenticator
+
+	// Certificate is the certificate RTSPS serves, asked for at every
+	// handshake so a certificate replaced on the settings page applies to the
+	// next player without a restart. Nil leaves RTSPS unable to start.
+	Certificate func() (*tls.Certificate, error)
+	// HasCertificate reports, cheaply enough for every poll of the settings
+	// page, whether Certificate has one to give.
+	HasCertificate func() bool
 
 	Tap *egress.Tap
 	// AudioAvailable reports whether the host's sound can be captured, which
@@ -105,8 +120,12 @@ type Deps struct {
 type Server struct {
 	deps Deps
 
-	mu        sync.Mutex
+	mu sync.Mutex
+	// rtsp and rtsps are the plain and the TLS listener, each nil while it is
+	// off. gortsplib takes TLS for a whole server, so each is a server of
+	// its own, and the feed keeps a stream on each.
 	rtsp      *gortsplib.Server
+	rtsps     *gortsplib.Server
 	running   config.RTSP
 	listenErr string
 	stopWatch chan struct{}
@@ -127,6 +146,8 @@ type session struct {
 	client  string
 	since   time.Time
 	playing bool
+	// secure is a player that came in over RTSPS.
+	secure  bool
 	session *gortsplib.ServerSession
 }
 
@@ -156,14 +177,118 @@ func (s *Server) Apply() error {
 	defer s.feedMu.Unlock()
 
 	s.mu.Lock()
-	if s.rtsp != nil && settings.Enabled && settings == s.running {
+	if s.listeningLocked() && settings.Listening() && settings == s.running {
 		s.mu.Unlock()
 		return nil
 	}
-	old, oldFeed, oldWatch := s.rtsp, s.feed, s.stopWatch
-	s.rtsp, s.feed, s.stopWatch = nil, nil, nil
+	s.mu.Unlock()
+
+	s.stopLocked()
+
+	s.mu.Lock()
 	s.running = config.RTSP{}
 	s.listenErr = ""
+	s.mu.Unlock()
+
+	if !settings.Listening() {
+		return nil
+	}
+
+	// Both listeners start or neither does, so the page never shows the
+	// server running with half of what was asked for, and the next Apply
+	// tries both again.
+	var plain, secure *gortsplib.Server
+	fail := func(port int, err error) error {
+		for _, server := range []*gortsplib.Server{plain, secure} {
+			if server != nil {
+				server.Close()
+			}
+		}
+		s.mu.Lock()
+		s.listenErr = err.Error()
+		s.mu.Unlock()
+		log.Errorf("rtsp: listen on port %d: %s", port, err)
+		return err
+	}
+
+	if settings.Enabled {
+		plain = s.newServer(settings.Port, false)
+		if settings.UDP {
+			plain.UDPRTPAddress = ":" + strconv.Itoa(settings.UDPPort)
+			plain.UDPRTCPAddress = ":" + strconv.Itoa(settings.UDPPort+1)
+		}
+		if err := plain.Start(); err != nil {
+			plain = nil
+			return fail(settings.Port, err)
+		}
+	}
+	if settings.TLS {
+		// Checked here rather than left to the first handshake, so a board
+		// without a certificate says so on the settings page.
+		if s.deps.Certificate == nil {
+			return fail(settings.TLSPort, errNoCertificate)
+		}
+		if _, err := s.deps.Certificate(); err != nil {
+			return fail(settings.TLSPort, fmt.Errorf("%w: %w", errNoCertificate, err))
+		}
+		secure = s.newServer(settings.TLSPort, true)
+		// No UDP listeners: RTP goes in the TLS connection. gortsplib refuses
+		// a player that asks for UDP here, and the player falls back to TCP.
+		secure.TLSConfig = &tls.Config{
+			MinVersion: tls.VersionTLS12,
+			GetCertificate: func(*tls.ClientHelloInfo) (*tls.Certificate, error) {
+				return s.deps.Certificate()
+			},
+		}
+		if err := secure.Start(); err != nil {
+			secure = nil
+			return fail(settings.TLSPort, err)
+		}
+	}
+
+	stop := make(chan struct{})
+	s.mu.Lock()
+	s.rtsp, s.rtsps, s.running, s.stopWatch = plain, secure, settings, stop
+	s.mu.Unlock()
+	go s.watch(stop)
+
+	if plain != nil {
+		log.Infof("rtsp: listening on port %d (UDP %t)", settings.Port, settings.UDP)
+	}
+	if secure != nil {
+		log.Infof("rtsp: RTSPS listening on port %d", settings.TLSPort)
+	}
+	return nil
+}
+
+// newServer is a plain or TLS listener on port, not yet started.
+func (s *Server) newServer(port int, secure bool) *gortsplib.Server {
+	return &gortsplib.Server{
+		Handler:        &handler{s: s, secure: secure},
+		RTSPAddress:    ":" + strconv.Itoa(port),
+		WriteQueueSize: writeQueueSize,
+		// The password is a token the board keeps only a hash of, so it
+		// cannot answer a digest challenge: Basic is the only method.
+		AuthMethods: []auth.VerifyMethod{auth.VerifyMethodBasic},
+		// gortsplib puts its TLS layer over this listener, so the allowed
+		// networks list and the connection limit apply before a handshake.
+		Listen: s.listen,
+	}
+}
+
+// Stop ends every player and closes the listeners.
+func (s *Server) Stop() {
+	s.feedMu.Lock()
+	defer s.feedMu.Unlock()
+
+	s.stopLocked()
+}
+
+// stopLocked closes the listeners and the feed. The caller holds feedMu.
+func (s *Server) stopLocked() {
+	s.mu.Lock()
+	plain, secure, oldFeed, oldWatch := s.rtsp, s.rtsps, s.feed, s.stopWatch
+	s.rtsp, s.rtsps, s.feed, s.stopWatch = nil, nil, nil, nil
 	s.mu.Unlock()
 
 	// Outside the lock: closing a stream and the server closes sessions,
@@ -174,76 +299,43 @@ func (s *Server) Apply() error {
 	if oldFeed != nil {
 		oldFeed.close()
 	}
-	if old != nil {
-		old.Close()
-		log.Infof("rtsp: stopped")
+	if plain == nil && secure == nil {
+		return
 	}
-
-	if !settings.Enabled {
-		return nil
+	for _, server := range []*gortsplib.Server{plain, secure} {
+		if server != nil {
+			server.Close()
+		}
 	}
-
-	server := &gortsplib.Server{
-		Handler:        &handler{s: s},
-		RTSPAddress:    ":" + strconv.Itoa(settings.Port),
-		WriteQueueSize: writeQueueSize,
-		// The password is a token the board keeps only a hash of, so it
-		// cannot answer a digest challenge: Basic is the only method.
-		AuthMethods: []auth.VerifyMethod{auth.VerifyMethodBasic},
-		Listen:      s.listen,
-	}
-	if settings.UDP {
-		server.UDPRTPAddress = ":" + strconv.Itoa(settings.UDPPort)
-		server.UDPRTCPAddress = ":" + strconv.Itoa(settings.UDPPort+1)
-	}
-	if err := server.Start(); err != nil {
-		s.mu.Lock()
-		s.listenErr = err.Error()
-		s.mu.Unlock()
-		log.Errorf("rtsp: listen on port %d: %s", settings.Port, err)
-		return err
-	}
-
-	stop := make(chan struct{})
-	s.mu.Lock()
-	s.rtsp, s.running, s.stopWatch = server, settings, stop
-	s.mu.Unlock()
-	go s.watch(stop)
-
-	log.Infof("rtsp: listening on port %d (UDP %t)", settings.Port, settings.UDP)
-	return nil
+	log.Infof("rtsp: stopped")
 }
 
-// Stop ends every player and closes the listener.
-func (s *Server) Stop() {
-	s.feedMu.Lock()
-	defer s.feedMu.Unlock()
-
-	s.mu.Lock()
-	old, oldFeed, oldWatch := s.rtsp, s.feed, s.stopWatch
-	s.rtsp, s.feed, s.stopWatch = nil, nil, nil
-	s.mu.Unlock()
-
-	if oldWatch != nil {
-		close(oldWatch)
-	}
-	if oldFeed != nil {
-		oldFeed.close()
-	}
-	if old != nil {
-		old.Close()
-	}
+// listeningLocked reports whether either listener is up. The caller holds mu.
+func (s *Server) listeningLocked() bool {
+	return s.rtsp != nil || s.rtsps != nil
 }
 
-// Addr is the listener's address, or nil when the server is not listening.
+// Addr is the plain listener's address, or nil when it is not listening.
 func (s *Server) Addr() net.Addr {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if s.rtsp == nil || s.rtsp.NetListener() == nil {
+	return listenerAddr(s.rtsp)
+}
+
+// TLSAddr is the RTSPS listener's address, or nil when it is not listening.
+func (s *Server) TLSAddr() net.Addr {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	return listenerAddr(s.rtsps)
+}
+
+func listenerAddr(server *gortsplib.Server) net.Addr {
+	if server == nil || server.NetListener() == nil {
 		return nil
 	}
-	return s.rtsp.NetListener().Addr()
+	return server.NetListener().Addr()
 }
 
 // listen opens the TCP listener behind the allowed networks list.
@@ -334,9 +426,10 @@ func unauthorized() (*base.Response, error) {
 	return &base.Response{StatusCode: base.StatusUnauthorized}, liberrors.ErrServerAuth{}
 }
 
-// handler is the server's side of gortsplib's callbacks.
+// handler is the server's side of gortsplib's callbacks, for one listener.
 type handler struct {
-	s *Server
+	s      *Server
+	secure bool
 }
 
 func (h *handler) OnDescribe(ctx *gortsplib.ServerHandlerOnDescribeCtx) (*base.Response, *gortsplib.ServerStream, error) {
@@ -350,7 +443,7 @@ func (h *handler) OnDescribe(ctx *gortsplib.ServerHandlerOnDescribeCtx) (*base.R
 		log.Debugf("rtsp: DESCRIBE from %s: %s", ctx.Conn.NetConn().RemoteAddr(), err)
 		return &base.Response{StatusCode: base.StatusServiceUnavailable}, nil, nil
 	}
-	return &base.Response{StatusCode: base.StatusOK}, f.stream, nil
+	return &base.Response{StatusCode: base.StatusOK}, f.stream(h.secure), nil
 }
 
 func (h *handler) OnSetup(ctx *gortsplib.ServerHandlerOnSetupCtx) (*base.Response, *gortsplib.ServerStream, error) {
@@ -366,11 +459,11 @@ func (h *handler) OnSetup(ctx *gortsplib.ServerHandlerOnSetupCtx) (*base.Respons
 	}
 
 	client := ctx.Conn.NetConn().RemoteAddr().String()
-	if !h.s.admit(ctx.Session, viewer, client) {
+	if !h.s.admit(ctx.Session, viewer, client, h.secure) {
 		log.Debugf("rtsp: refused %s, %d players already", client, egress.MaxClients)
 		return &base.Response{StatusCode: base.StatusServiceUnavailable}, nil, nil
 	}
-	return &base.Response{StatusCode: base.StatusOK}, f.stream, nil
+	return &base.Response{StatusCode: base.StatusOK}, f.stream(h.secure), nil
 }
 
 func (h *handler) OnPlay(ctx *gortsplib.ServerHandlerOnPlayCtx) (*base.Response, error) {
@@ -388,7 +481,7 @@ func (h *handler) OnSessionClose(ctx *gortsplib.ServerHandlerOnSessionCloseCtx) 
 // admit records a session's first SETUP, and refuses it when the server
 // already serves as many players as it may. A further SETUP of the same
 // session, for its second track, is always let through.
-func (s *Server) admit(ss *gortsplib.ServerSession, viewer egress.Viewer, client string) bool {
+func (s *Server) admit(ss *gortsplib.ServerSession, viewer egress.Viewer, client string, secure bool) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -398,7 +491,7 @@ func (s *Server) admit(ss *gortsplib.ServerSession, viewer egress.Viewer, client
 	if len(s.sessions) >= egress.MaxClients {
 		return false
 	}
-	s.sessions[ss] = &session{viewer: viewer, client: client, since: time.Now(), session: ss}
+	s.sessions[ss] = &session{viewer: viewer, client: client, since: time.Now(), secure: secure, session: ss}
 	return true
 }
 
@@ -440,6 +533,10 @@ func record(sess *session, action, detail string) {
 	if err != nil {
 		host = sess.client
 	}
+	target := "rtsp"
+	if sess.secure {
+		target = "rtsps"
+	}
 	audit.Record(audit.Event{
 		Actor:    sess.viewer.Username,
 		Via:      sess.viewer.Via,
@@ -448,7 +545,7 @@ func record(sess *session, action, detail string) {
 		IP:       host,
 		Category: audit.CategoryAuth,
 		Action:   action,
-		Target:   "rtsp",
+		Target:   target,
 		Outcome:  audit.OutcomeOK,
 		Detail:   detail,
 	})
@@ -483,9 +580,12 @@ func (s *Server) watch(stop chan struct{}) {
 	}
 }
 
-// feed is the stream every player shares, and the tap reader behind it.
+// feed is the stream every player shares, and the tap reader behind it. A
+// gortsplib stream belongs to one server, so each listener has its own, both
+// with the same description and fed the same packets.
 type feed struct {
-	stream *gortsplib.ServerStream
+	plain  *gortsplib.ServerStream
+	secure *gortsplib.ServerStream
 	reader *egress.Reader
 	codec  uint8
 	video  *description.Media
@@ -493,11 +593,44 @@ type feed struct {
 	once   sync.Once
 }
 
-// close ends the stream, and with it every player on it.
+// stream is the stream for the plain or the TLS listener.
+func (f *feed) stream(secure bool) *gortsplib.ServerStream {
+	if secure {
+		return f.secure
+	}
+	return f.plain
+}
+
+// streams are the streams there are, one for each listener that is on.
+func (f *feed) streams() []*gortsplib.ServerStream {
+	var out []*gortsplib.ServerStream
+	for _, st := range []*gortsplib.ServerStream{f.plain, f.secure} {
+		if st != nil {
+			out = append(out, st)
+		}
+	}
+	return out
+}
+
+// write sends a packet to every stream.
+func (f *feed) write(media *description.Media, packet *rtp.Packet, wall time.Time) {
+	for _, st := range f.streams() {
+		// A stream stamps its own SSRC on the packet it is given, so each
+		// gets its own copy of the header. The payload is only read.
+		p := *packet
+		// The error is a closed stream, and the reader closing ends the
+		// loop that writes.
+		_ = st.WritePacketRTPWithNTP(media, &p, wall)
+	}
+}
+
+// close ends the streams, and with them every player on them.
 func (f *feed) close() {
 	f.once.Do(func() {
 		f.reader.Close()
-		f.stream.Close()
+		for _, st := range f.streams() {
+			st.Close()
+		}
 	})
 }
 
@@ -509,9 +642,9 @@ func (s *Server) ensureFeed() (*feed, error) {
 	defer s.feedMu.Unlock()
 
 	s.mu.Lock()
-	server, current := s.rtsp, s.feed
+	plain, secure, current := s.rtsp, s.rtsps, s.feed
 	s.mu.Unlock()
-	if server == nil {
+	if plain == nil && secure == nil {
 		return nil, errNotRunning
 	}
 	if current != nil {
@@ -554,10 +687,22 @@ func (s *Server) ensureFeed() (*feed, error) {
 		medias = append(medias, f.audio)
 	}
 
-	f.stream = &gortsplib.ServerStream{Server: server, Desc: &description.Session{Medias: medias}}
-	if err := f.stream.Initialize(); err != nil {
-		reader.Close()
-		return nil, err
+	// The streams share the description, and with it the formats whose
+	// parameter sets refreshParams updates.
+	desc := &description.Session{Medias: medias}
+	for _, l := range []struct {
+		server *gortsplib.Server
+		stream **gortsplib.ServerStream
+	}{{plain, &f.plain}, {secure, &f.secure}} {
+		if l.server == nil {
+			continue
+		}
+		st := &gortsplib.ServerStream{Server: l.server, Desc: desc}
+		if err := st.Initialize(); err != nil {
+			f.close()
+			return nil, err
+		}
+		*l.stream = st
 	}
 
 	s.mu.Lock()
@@ -633,9 +778,7 @@ func (s *Server) run(f *feed, first egress.Unit) {
 		ts := rtpTime(unit.PTS, videoClockRate)
 		for _, packet := range packets {
 			packet.Timestamp = ts
-			// The error is a closed stream, and the reader closing ends
-			// this loop.
-			_ = f.stream.WritePacketRTPWithNTP(f.video, packet, unit.Wall)
+			f.write(f.video, packet, unit.Wall)
 		}
 	}
 
@@ -659,7 +802,7 @@ func (s *Server) run(f *feed, first egress.Unit) {
 					continue
 				}
 				packet.Timestamp = rtpTime(unit.PTS, int64(audio.SampleRate))
-				_ = f.stream.WritePacketRTPWithNTP(f.audio, packet, unit.Wall)
+				f.write(f.audio, packet, unit.Wall)
 				continue
 			}
 			if unit.Codec != f.codec {
@@ -702,7 +845,9 @@ func (s *Server) refreshParams(f *feed, unit egress.Unit) {
 	default:
 		return
 	}
-	f.stream.ReloadDesc()
+	for _, st := range f.streams() {
+		st.ReloadDesc()
+	}
 }
 
 func clone(b []byte) []byte {

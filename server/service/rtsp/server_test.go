@@ -2,7 +2,14 @@ package rtsp
 
 import (
 	"bytes"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
+	"crypto/tls"
+	"crypto/x509"
+	"crypto/x509/pkix"
 	"errors"
+	"math/big"
 	"net"
 	"strconv"
 	"sync"
@@ -37,24 +44,43 @@ type harness struct {
 	server  *Server
 	feed    *egresstest.Feed
 	port    int
+	tlsPort int
 	stop    chan struct{}
 	allowed atomic.Bool
 	mu      sync.Mutex
 	valid   bool
+	// cert is what RTSPS serves; a test swaps it as the settings page would.
+	cert atomic.Pointer[tls.Certificate]
 }
 
-// start runs a server on a free port with a tap the test feeds, and pumps
-// 30 frames a second into it, with sound when withAudio.
+// start runs a plain RTSP server on a free port with a tap the test feeds,
+// and pumps 30 frames a second into it, with sound when withAudio.
 func start(t *testing.T, withAudio bool) *harness {
 	t.Helper()
-	tap, feed := egresstest.New()
-	h := &harness{feed: feed, port: freePort(t), stop: make(chan struct{}), valid: true}
-	h.allowed.Store(true)
+	return launch(t, withAudio, config.RTSP{Enabled: true})
+}
 
-	settings := config.RTSP{Enabled: true, Port: h.port, UDPPort: config.DefaultRTSPUDPPort}
+// launch is start with the listeners settings asks for, on free ports, and a
+// test certificate for RTSPS.
+func launch(t *testing.T, withAudio bool, settings config.RTSP) *harness {
+	t.Helper()
+	tap, feed := egresstest.New()
+	h := &harness{feed: feed, port: freePort(t), tlsPort: freePort(t), stop: make(chan struct{}), valid: true}
+	h.allowed.Store(true)
+	h.cert.Store(testCertificate(t))
+
+	settings.Port, settings.TLSPort = h.port, h.tlsPort
+	settings.UDPPort = config.DefaultRTSPUDPPort
 	h.server = New(Deps{
 		Settings:      func() config.RTSP { return settings },
 		ClientAllowed: func(net.Addr) bool { return h.allowed.Load() },
+		Certificate: func() (*tls.Certificate, error) {
+			if cert := h.cert.Load(); cert != nil {
+				return cert, nil
+			}
+			return nil, errors.New("no certificate")
+		},
+		HasCertificate: func() bool { return h.cert.Load() != nil },
 		Authenticate: func(token string) (egress.Viewer, bool) {
 			if token != goodToken {
 				return egress.Viewer{}, false
@@ -93,15 +119,61 @@ func (h *harness) url(token string) string {
 	return "rtsp://" + userinfo + "127.0.0.1:" + strconv.Itoa(h.port) + Path
 }
 
+func (h *harness) tlsURL(token string) string {
+	return "rtsps://obs:" + token + "@127.0.0.1:" + strconv.Itoa(h.tlsPort) + Path
+}
+
+// testCertificate is a self-signed certificate for 127.0.0.1, as the board's
+// generated one is self-signed for its address.
+func testCertificate(t *testing.T) *tls.Certificate {
+	t.Helper()
+	key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	template := &x509.Certificate{
+		SerialNumber: big.NewInt(time.Now().UnixNano()),
+		Subject:      pkix.Name{CommonName: "rtsp test"},
+		NotBefore:    time.Now().Add(-time.Hour),
+		NotAfter:     time.Now().Add(time.Hour),
+		IPAddresses:  []net.IP{net.IPv4(127, 0, 0, 1)},
+		KeyUsage:     x509.KeyUsageDigitalSignature,
+		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+	}
+	der, err := x509.CreateCertificate(rand.Reader, template, template, &key.PublicKey, key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	leaf, err := x509.ParseCertificate(der)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return &tls.Certificate{Certificate: [][]byte{der}, PrivateKey: key, Leaf: leaf}
+}
+
+// trusting is a client TLS configuration that accepts only cert, as a player
+// told to trust the board's self-signed certificate does.
+func trusting(cert *tls.Certificate) *tls.Config {
+	pool := x509.NewCertPool()
+	pool.AddCert(cert.Leaf)
+	return &tls.Config{RootCAs: pool, MinVersion: tls.VersionTLS12}
+}
+
 // dial connects a player over TCP and describes the stream.
 func dial(t *testing.T, address string) (*gortsplib.Client, *description.Session, error) {
+	t.Helper()
+	return dialWith(t, address, gortsplib.ProtocolTCP, nil)
+}
+
+// dialWith connects a player over the given transport, with the TLS
+// configuration an rtsps:// address needs, and describes the stream.
+func dialWith(t *testing.T, address string, protocol gortsplib.Protocol, tlsConfig *tls.Config) (*gortsplib.Client, *description.Session, error) {
 	t.Helper()
 	u, err := base.ParseURL(address)
 	if err != nil {
 		t.Fatal(err)
 	}
-	tcp := gortsplib.ProtocolTCP
-	c := &gortsplib.Client{Scheme: u.Scheme, Host: u.Host, Protocol: &tcp}
+	c := &gortsplib.Client{Scheme: u.Scheme, Host: u.Host, Protocol: &protocol, TLSConfig: tlsConfig}
 	if err := c.Start(); err != nil {
 		t.Fatal(err)
 	}

@@ -1,6 +1,7 @@
 package rtsp
 
 import (
+	"errors"
 	"slices"
 	"sort"
 	"sync"
@@ -59,8 +60,13 @@ type Settings struct {
 	Port       int    `json:"port"`
 	UDP        bool   `json:"udp"`
 	UDPPort    int    `json:"udpPort"`
+	TLS        bool   `json:"tls"`
+	TLSPort    int    `json:"tlsPort"`
 	Path       string `json:"path"`
 	MaxClients int    `json:"maxClients"`
+	// Certificate reports whether the board has a certificate RTSPS can
+	// serve, so the page can offer RTSPS first.
+	Certificate bool `json:"certificate"`
 
 	Listening bool     `json:"listening"`
 	Error     string   `json:"error,omitempty"`
@@ -74,6 +80,8 @@ type Client struct {
 	Transport string `json:"transport,omitempty"`
 	Since     string `json:"since"`
 	Playing   bool   `json:"playing"`
+	// Secure is a player on the RTSPS listener.
+	Secure bool `json:"secure"`
 }
 
 type setSettingsRequest struct {
@@ -82,26 +90,36 @@ type setSettingsRequest struct {
 	UDP     bool  `json:"udp" form:"udp"`
 	// RTCP takes the port above the RTP one, so the RTP one stops short of
 	// the top.
-	UDPPort int `json:"udpPort" form:"udpPort" validate:"min=1,max=65534"`
+	UDPPort int  `json:"udpPort" form:"udpPort" validate:"min=1,max=65534"`
+	TLS     bool `json:"tls" form:"tls"`
+	// Zero is the default, so a request from a page that predates RTSPS
+	// still saves.
+	TLSPort int `json:"tlsPort" form:"tlsPort" validate:"omitempty,min=1,max=65535"`
 }
 
 // State is the settings page's view of the server.
 func (s *Server) State() Settings {
 	settings := s.deps.Settings()
 
+	// Outside the lock: it may read the disk.
+	certificate := s.deps.HasCertificate != nil && s.deps.HasCertificate()
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	state := Settings{
-		Enabled:    settings.Enabled,
-		Port:       settings.Port,
-		UDP:        settings.UDP,
-		UDPPort:    settings.UDPPort,
-		Path:       Path,
-		MaxClients: egress.MaxClients,
-		Listening:  s.rtsp != nil,
-		Error:      s.listenErr,
-		Clients:    []Client{},
+		Enabled:     settings.Enabled,
+		Port:        settings.Port,
+		UDP:         settings.UDP,
+		UDPPort:     settings.UDPPort,
+		TLS:         settings.TLS,
+		TLSPort:     settings.TLSPort,
+		Path:        Path,
+		MaxClients:  egress.MaxClients,
+		Certificate: certificate,
+		Listening:   s.listeningLocked(),
+		Error:       s.listenErr,
+		Clients:     []Client{},
 	}
 	for _, sess := range s.sessions {
 		client := Client{
@@ -109,6 +127,7 @@ func (s *Server) State() Settings {
 			User:    sess.viewer.Username,
 			Since:   sess.since.Format(time.RFC3339),
 			Playing: sess.playing,
+			Secure:  sess.secure,
 		}
 		if t := sess.session.Transport(); t != nil {
 			client.Transport = transportName(t.Protocol)
@@ -143,17 +162,20 @@ func (s *Server) SetSettings(c *gin.Context) {
 		rsp.ErrRsp(c, -1, "invalid arguments")
 		return
 	}
-	if s.deps.ReservedPorts != nil && slices.Contains(s.deps.ReservedPorts(), req.Port) {
-		rsp.ErrRsp(c, -1, "the port is used by the web server")
-		return
-	}
-
-	err := s.deps.SetSettings(config.RTSP{
+	settings := config.RTSP{
 		Enabled: *req.Enabled,
 		Port:    req.Port,
 		UDP:     req.UDP,
 		UDPPort: req.UDPPort,
-	})
+		TLS:     req.TLS,
+		TLSPort: req.TLSPort,
+	}
+	if err := CheckPorts(settings, s.reservedPorts()); err != nil {
+		rsp.ErrRsp(c, -1, err.Error())
+		return
+	}
+
+	err := s.deps.SetSettings(settings)
 	if err != nil {
 		log.Errorf("rtsp: save the settings: %s", err)
 		rsp.ErrRsp(c, -2, "failed to save the settings")
@@ -165,6 +187,30 @@ func (s *Server) SetSettings(c *gin.Context) {
 		return
 	}
 
-	log.Infof("rtsp: settings saved, enabled %t, port %d, udp %t", *req.Enabled, req.Port, req.UDP)
+	log.Infof("rtsp: settings saved, enabled %t, port %d, udp %t, rtsps %t", *req.Enabled, req.Port, req.UDP, req.TLS)
 	rsp.OkRspWithData(c, s.State())
+}
+
+func (s *Server) reservedPorts() []int {
+	if s.deps.ReservedPorts == nil {
+		return nil
+	}
+	return s.deps.ReservedPorts()
+}
+
+// CheckPorts refuses TCP ports the two listeners cannot have: one of the web
+// server's, or the same port for both. The ports are checked whether or not
+// their listener is on, so switching one on later cannot collide.
+func CheckPorts(r config.RTSP, reserved []int) error {
+	r = r.WithDefaults()
+	if slices.Contains(reserved, r.Port) {
+		return errors.New("the port is used by the web server")
+	}
+	if slices.Contains(reserved, r.TLSPort) {
+		return errors.New("the RTSPS port is used by the web server")
+	}
+	if r.Port == r.TLSPort {
+		return errors.New("RTSP and RTSPS need different ports")
+	}
+	return nil
 }
