@@ -38,6 +38,31 @@ const (
 	noCache = "no-store"
 )
 
+// serveFiles answers a request whose path names a file or a directory under
+// webPath, and leaves any other request to the routes. A directory with an
+// index.html is answered with it, and one without is listed. This is what
+// github.com/gin-gonic/contrib/static did, which is deprecated and was linked
+// for these few lines.
+func serveFiles(webPath string) gin.HandlerFunc {
+	files := http.FileServer(gin.Dir(webPath, true))
+
+	return func(c *gin.Context) {
+		name, ok := strings.CutPrefix(c.Request.URL.Path, "/")
+		if !ok {
+			return
+		}
+		// A ".." can take this check above webPath, as it could in the
+		// library. Only the check: the file server cleans the path again and
+		// serves nothing outside webPath.
+		if _, err := os.Stat(path.Join(webPath, name)); err != nil {
+			return
+		}
+
+		files.ServeHTTP(c.Writer, c.Request)
+		c.Abort()
+	}
+}
+
 // cacheControlFor picks a caching policy from the request path alone, so it
 // applies whichever branch below ends up answering.
 func cacheControlFor(urlPath string) string {

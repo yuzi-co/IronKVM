@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"NanoKVM-Server/proto"
+	"NanoKVM-Server/utils/atomicfile"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -203,35 +204,11 @@ func (e syslogEnv) write(target string) error {
 			return err
 		}
 
-		if err := writeFileAtomic(name, []byte(target+"\n"), 0o600); err != nil {
+		if err := atomicfile.WriteFile(name, []byte(target+"\n"), 0o600); err != nil {
 			return err
 		}
 	}
 	return nil
-}
-
-func writeFileAtomic(name string, data []byte, perm os.FileMode) error {
-	tmp, err := os.CreateTemp(filepath.Dir(name), "."+filepath.Base(name)+".*")
-	if err != nil {
-		return err
-	}
-	tmpName := tmp.Name()
-	defer func() { _ = os.Remove(tmpName) }()
-
-	if _, err := tmp.Write(data); err != nil {
-		_ = tmp.Close()
-		return err
-	}
-	if err := tmp.Sync(); err != nil {
-		_ = tmp.Close()
-		return err
-	}
-	if err := tmp.Close(); err != nil {
-		return err
-	}
-	// exFAT has no permissions to set, and a failure there is not one.
-	_ = os.Chmod(tmpName, perm)
-	return os.Rename(tmpName, name)
 }
 
 func runInitScript(ctx context.Context, script string) error {

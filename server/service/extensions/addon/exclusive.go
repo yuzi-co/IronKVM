@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
+	"NanoKVM-Server/utils/atomicfile"
 )
 
 // Paths the boot and exclusivity checks read. Variables so the tests can point
@@ -164,15 +166,7 @@ func copyFile(src, dst string, mode os.FileMode) error {
 	if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
 		return err
 	}
-	tmp := dst + ".tmp"
-	if err := os.WriteFile(tmp, b, mode); err != nil {
-		return err
-	}
-	// WriteFile honours the umask.
-	if err := os.Chmod(tmp, mode); err != nil {
-		return err
-	}
-	return os.Rename(tmp, dst)
+	return atomicfile.WriteFile(dst, b, mode)
 }
 
 // vpnMu serialises every action that could leave both VPNs running or

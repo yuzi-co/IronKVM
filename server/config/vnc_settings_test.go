@@ -31,14 +31,14 @@ func TestAnOldConfigLoadsWithTheVNCServerOff(t *testing.T) {
 	}
 }
 
-// The settings are kept under vnc, for viper at start and for the Read/Write
+// The settings are kept under vnc, for the server at start and for the Read/Write
 // pair that saves settings.
 func TestVNCSettingsAreKeptUnderVNC(t *testing.T) {
 	text := "vnc:\n  enabled: true\n  port: 5901\n  maxFps: 30\n  vncAuth: true\n"
 	want := VNC{Enabled: true, Port: 5901, MaxFPS: 30, VNCAuth: true}
 
 	if got := loadYAML(t, text).VNC; got != want {
-		t.Fatalf("viper loaded %+v, want %+v", got, want)
+		t.Fatalf("start loaded %+v, want %+v", got, want)
 	}
 
 	var conf Config

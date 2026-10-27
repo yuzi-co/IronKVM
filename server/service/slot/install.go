@@ -19,6 +19,7 @@ import (
 
 	"NanoKVM-Server/service/audit"
 	"NanoKVM-Server/utils"
+	"NanoKVM-Server/utils/atomicfile"
 )
 
 var (
@@ -197,11 +198,7 @@ func writeJob(job Job) error {
 	if err != nil {
 		return err
 	}
-	tmp := JobFile + ".tmp"
-	if err := os.WriteFile(tmp, data, 0o600); err != nil {
-		return err
-	}
-	return os.Rename(tmp, JobFile)
+	return atomicfile.WriteFile(JobFile, data, 0o600)
 }
 
 // lastLogLine is the tool's reason for an install that ended without saying

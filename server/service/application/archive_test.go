@@ -88,3 +88,51 @@ func TestInspectAndExtractArchive(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+// extractUpdateArchive checks every entry itself, not only through
+// inspectUpdateArchive, and writes nothing outside the destination: not for a
+// "../" or absolute name, not for a link entry, and not through a symbolic
+// link already in the destination.
+func TestExtractArchiveWritesNothingOutsideTheDestination(t *testing.T) {
+	root := "nanokvm_1.2.3"
+	cases := map[string][]archiveEntry{
+		"dot-dot":  {{name: root + "/../escape", typeFlag: tar.TypeReg, data: "x"}},
+		"absolute": {{name: "/escape", typeFlag: tar.TypeReg, data: "x"}},
+		"symlink":  {{name: root + "/link", typeFlag: tar.TypeSymlink}},
+		"hardlink": {{name: root + "/link", typeFlag: tar.TypeLink}},
+	}
+	for name, entries := range cases {
+		t.Run(name, func(t *testing.T) {
+			parent := t.TempDir()
+			destination := filepath.Join(parent, "dest")
+			archive := writeTestArchive(t, append([]archiveEntry{{name: root, typeFlag: tar.TypeDir}}, entries...))
+			if _, err := extractUpdateArchive(archive, destination, root); err == nil {
+				t.Fatal("the entry was accepted")
+			}
+			if _, err := os.Lstat(filepath.Join(parent, "escape")); err == nil {
+				t.Fatal("a file was written outside the destination")
+			}
+			if _, err := os.Lstat(filepath.Join(destination, root, "link")); err == nil {
+				t.Fatal("a link was created")
+			}
+		})
+	}
+
+	t.Run("symlink-on-disk", func(t *testing.T) {
+		outside := t.TempDir()
+		destination := t.TempDir()
+		if err := os.Symlink(outside, filepath.Join(destination, root)); err != nil {
+			t.Fatal(err)
+		}
+		archive := writeTestArchive(t, []archiveEntry{
+			{name: root, typeFlag: tar.TypeDir},
+			{name: root + "/version", typeFlag: tar.TypeReg, data: "1.2.3\n"},
+		})
+		if _, err := extractUpdateArchive(archive, destination, root); err == nil {
+			t.Fatal("extracted through a symlink")
+		}
+		if names, _ := os.ReadDir(outside); len(names) != 0 {
+			t.Fatalf("%d entries were written outside the destination", len(names))
+		}
+	})
+}

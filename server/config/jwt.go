@@ -9,6 +9,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"NanoKVM-Server/utils/atomicfile"
 )
 
 const (
@@ -128,29 +130,5 @@ func writeSecretKey(key string) error {
 		return err
 	}
 
-	file, err := os.CreateTemp(dir, ".jwt_secret.*")
-	if err != nil {
-		return err
-	}
-
-	name := file.Name()
-	defer func() { _ = os.Remove(name) }()
-
-	if err := file.Chmod(0o600); err != nil {
-		_ = file.Close()
-
-		return err
-	}
-
-	if _, err := file.WriteString(key + "\n"); err != nil {
-		_ = file.Close()
-
-		return err
-	}
-
-	if err := file.Close(); err != nil {
-		return err
-	}
-
-	return os.Rename(name, jwtSecretPath)
+	return atomicfile.WriteFile(jwtSecretPath, []byte(key+"\n"), 0o600)
 }

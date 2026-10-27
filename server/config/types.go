@@ -25,63 +25,63 @@ type Config struct {
 	// HardwareSettings is what the owner says about how the board is wired to
 	// the host, kept under "hardware" in server.yaml. A file without the
 	// block loads with every setting off.
-	HardwareSettings HardwareSettings `yaml:"hardware" mapstructure:"hardware"`
+	HardwareSettings HardwareSettings `yaml:"hardware"`
 
 	// Redfish configures the Redfish service at /redfish, kept under
 	// "redfish" in server.yaml.
-	Redfish Redfish `yaml:"redfish,omitempty" mapstructure:"redfish"`
+	Redfish Redfish `yaml:"redfish,omitempty"`
 
 	// Watchdog configures the host watchdog, kept under "watchdog" in
 	// server.yaml. A file without the block loads with the watchdog off.
-	Watchdog Watchdog `yaml:"watchdog,omitempty" mapstructure:"watchdog"`
+	Watchdog Watchdog `yaml:"watchdog,omitempty"`
 
 	// NUT configures the NUT client, kept under "nut" in server.yaml. A file
 	// without the block loads with the client off. The password is kept
 	// outside server.yaml.
-	NUT NUT `yaml:"nut,omitempty" mapstructure:"nut"`
+	NUT NUT `yaml:"nut,omitempty"`
 
 	// IPMI configures IPMI over LAN, kept under "ipmi" in server.yaml. A
 	// file without the block loads with the service off.
-	IPMI IPMI `yaml:"ipmi,omitempty" mapstructure:"ipmi"`
+	IPMI IPMI `yaml:"ipmi,omitempty"`
 
 	// NetBoot configures network boot of the host, kept under "netboot" in
 	// server.yaml. A file without the block loads with both sides off.
-	NetBoot NetBoot `yaml:"netboot,omitempty" mapstructure:"netboot"`
+	NetBoot NetBoot `yaml:"netboot,omitempty"`
 
 	// VNC configures the VNC server, kept under "vnc" in server.yaml. A file
 	// without the block loads with the server off.
-	VNC VNC `yaml:"vnc,omitempty" mapstructure:"vnc"`
+	VNC VNC `yaml:"vnc,omitempty"`
 
 	// WebRTC reaches the video through a port forward, kept under "webrtc"
 	// in server.yaml. A file without the block loads with both settings off,
 	// which is how WebRTC has always been set up.
-	WebRTC WebRTC `yaml:"webrtc,omitempty" mapstructure:"webrtc"`
+	WebRTC WebRTC `yaml:"webrtc,omitempty"`
 
 	// WHEP serves the video to WHEP players, kept under "whep" in
 	// server.yaml. A file without the block loads with the endpoint off.
-	WHEP WHEP `yaml:"whep,omitempty" mapstructure:"whep"`
+	WHEP WHEP `yaml:"whep,omitempty"`
 
 	// RTSP serves the video and the host audio to RTSP players, kept under
 	// "rtsp" in server.yaml. A file without the block loads with the server
 	// off.
-	RTSP RTSP `yaml:"rtsp,omitempty" mapstructure:"rtsp"`
+	RTSP RTSP `yaml:"rtsp,omitempty"`
 
 	// SRT serves the video and the host audio over SRT, kept under "srt" in
 	// server.yaml. A file without the block loads with the listener off.
-	SRT SRT `yaml:"srt,omitempty" mapstructure:"srt"`
+	SRT SRT `yaml:"srt,omitempty"`
 
 	// Picoclaw tunes what the server hands the PicoClaw assistant, kept under
 	// "picoclaw" in server.yaml. A file without the block loads the defaults.
-	Picoclaw Picoclaw `yaml:"picoclaw,omitempty" mapstructure:"picoclaw"`
+	Picoclaw Picoclaw `yaml:"picoclaw,omitempty"`
 
 	// HostLog configures the receiver for the host's logs, kept under
 	// "hostlog" in server.yaml. A file without the block loads with both
 	// listeners off.
-	HostLog HostLog `yaml:"hostlog,omitempty" mapstructure:"hostlog"`
+	HostLog HostLog `yaml:"hostlog,omitempty"`
 
 	// Hardware holds the board's pins, derived from its version at start. It
 	// is never read from or written to server.yaml.
-	Hardware Hardware `yaml:"-" mapstructure:"-"`
+	Hardware Hardware `yaml:"-"`
 }
 
 // HardwareSettings are the wiring choices the owner makes.
@@ -91,7 +91,7 @@ type HardwareSettings struct {
 	// power state is unknown, and anything that decides from it, such as
 	// Redfish's On and ForceOff, must not press. Off by default: most boards
 	// are installed without that header.
-	PowerLED bool `yaml:"powerLed" mapstructure:"powerLed"`
+	PowerLED bool `yaml:"powerLed"`
 }
 
 // WebRTC lets a viewer reach the video from outside the LAN through a router's
@@ -100,11 +100,11 @@ type WebRTC struct {
 	// UDPPort, when not zero, is the one UDP port every viewer's ICE agent
 	// shares, so a router can forward it. Zero leaves each viewer on its own
 	// ephemeral port, as before.
-	UDPPort int `yaml:"udpPort,omitempty" mapstructure:"udpPort"`
+	UDPPort int `yaml:"udpPort,omitempty"`
 	// PublicAddress is the address a viewer outside the LAN reaches the router
 	// at: an IP or a host name, resolved when a viewer connects. It is offered
 	// as one more host candidate on UDPPort. It needs UDPPort.
-	PublicAddress string `yaml:"publicAddress,omitempty" mapstructure:"publicAddress"`
+	PublicAddress string `yaml:"publicAddress,omitempty"`
 }
 
 // WHEP configures the WHEP endpoint, /api/whep (ironkvm-dist#145).
@@ -112,7 +112,7 @@ type WHEP struct {
 	// Enabled answers WHEP offers. Off by default: it is one more way in to
 	// the picture, for an owner who wants a player such as GStreamer or OBS
 	// on it.
-	Enabled bool `yaml:"enabled" mapstructure:"enabled"`
+	Enabled bool `yaml:"enabled"`
 }
 
 // The RTSP server's defaults (ironkvm-dist#142). A zero value in server.yaml
@@ -129,22 +129,22 @@ const (
 // RTSP configures the RTSP server. Read it through WithDefaults.
 type RTSP struct {
 	// Enabled listens for plain RTSP players on Port. Off by default.
-	Enabled bool `yaml:"enabled" mapstructure:"enabled"`
+	Enabled bool `yaml:"enabled"`
 	// Port is the TCP port plain RTSP listens on.
-	Port int `yaml:"port,omitempty" mapstructure:"port"`
+	Port int `yaml:"port,omitempty"`
 	// UDP offers RTP over UDP beside RTP interleaved in the RTSP connection.
 	// Off by default: TCP crosses NAT and firewalls as it is, and a player
 	// that asks for UDP falls back to it.
-	UDP bool `yaml:"udp,omitempty" mapstructure:"udp"`
+	UDP bool `yaml:"udp,omitempty"`
 	// UDPPort is the RTP port when UDP is on. RTCP takes the port above it.
-	UDPPort int `yaml:"udpPort,omitempty" mapstructure:"udpPort"`
+	UDPPort int `yaml:"udpPort,omitempty"`
 	// TLS listens for RTSPS players, RTSP over TLS with the web server's
 	// certificate, on TLSPort. Off by default. The media stays inside the TLS
 	// connection: UDP above applies to plain RTSP only, so an RTSPS player
 	// never sends or receives RTP outside it.
-	TLS bool `yaml:"tls,omitempty" mapstructure:"tls"`
+	TLS bool `yaml:"tls,omitempty"`
 	// TLSPort is the TCP port RTSPS listens on.
-	TLSPort int `yaml:"tlsPort,omitempty" mapstructure:"tlsPort"`
+	TLSPort int `yaml:"tlsPort,omitempty"`
 }
 
 // Listening reports whether either listener is on.
@@ -180,13 +180,13 @@ const (
 // passphrase it requires is kept outside server.yaml.
 type SRT struct {
 	// Enabled listens for SRT callers. Off by default.
-	Enabled bool `yaml:"enabled" mapstructure:"enabled"`
+	Enabled bool `yaml:"enabled"`
 	// Port is the UDP port the listener takes.
-	Port int `yaml:"port,omitempty" mapstructure:"port"`
+	Port int `yaml:"port,omitempty"`
 	// LatencyMs is how long the receiver holds a packet for a
 	// retransmission to arrive before it plays on without it. A caller that
 	// asks for more gets more.
-	LatencyMs int `yaml:"latencyMs,omitempty" mapstructure:"latencyMs"`
+	LatencyMs int `yaml:"latencyMs,omitempty"`
 }
 
 // WithDefaults returns the settings with every zero value replaced by its
@@ -206,7 +206,7 @@ type Redfish struct {
 	// Enabled serves /redfish. It is a pointer so that a server.yaml written
 	// before the setting existed, which has no key, keeps the service on as
 	// it always was. Read it through IsEnabled.
-	Enabled *bool `yaml:"enabled,omitempty" mapstructure:"enabled"`
+	Enabled *bool `yaml:"enabled,omitempty"`
 }
 
 // IsEnabled reports whether the Redfish service answers. A missing key means
@@ -220,7 +220,7 @@ type IPMI struct {
 	// Enabled answers IPMI on UDP port 623. Off by default, because IPMI
 	// 2.0 authentication is weak by design: anyone who knows a user name
 	// can get a hash of that user's IPMI password to crack offline.
-	Enabled bool `yaml:"enabled" mapstructure:"enabled"`
+	Enabled bool `yaml:"enabled"`
 }
 
 // The host watchdog's defaults. A zero value in server.yaml means the default.
@@ -236,19 +236,19 @@ const (
 type Watchdog struct {
 	// Enabled runs the watchdog. Off by default: sampling the picture keeps
 	// capture running.
-	Enabled bool `yaml:"enabled" mapstructure:"enabled"`
+	Enabled bool `yaml:"enabled"`
 	// TimeoutMinutes is how long the host may show no sign of life before
 	// the watchdog acts.
-	TimeoutMinutes int `yaml:"timeoutMinutes,omitempty" mapstructure:"timeoutMinutes"`
+	TimeoutMinutes int `yaml:"timeoutMinutes,omitempty"`
 	// Action is "reset" or "power".
-	Action string `yaml:"action,omitempty" mapstructure:"action"`
+	Action string `yaml:"action,omitempty"`
 	// CooldownMinutes is the least time between two actions.
-	CooldownMinutes int `yaml:"cooldownMinutes,omitempty" mapstructure:"cooldownMinutes"`
+	CooldownMinutes int `yaml:"cooldownMinutes,omitempty"`
 	// MaxPerHour caps the actions in any hour.
-	MaxPerHour int `yaml:"maxPerHour,omitempty" mapstructure:"maxPerHour"`
+	MaxPerHour int `yaml:"maxPerHour,omitempty"`
 	// PingHost is an address the watchdog pings; a reply is a sign of life.
 	// Empty means no ping.
-	PingHost string `yaml:"pingHost,omitempty" mapstructure:"pingHost"`
+	PingHost string `yaml:"pingHost,omitempty"`
 }
 
 // WithDefaults returns the settings with every zero value replaced by its
@@ -281,31 +281,31 @@ const (
 type NUT struct {
 	// Enabled runs the client. Off by default: it presses the host's power
 	// button.
-	Enabled bool `yaml:"enabled" mapstructure:"enabled"`
+	Enabled bool `yaml:"enabled"`
 	// Host is the NUT server's address, and Port its TCP port.
-	Host string `yaml:"host,omitempty" mapstructure:"host"`
-	Port int    `yaml:"port,omitempty" mapstructure:"port"`
+	Host string `yaml:"host,omitempty"`
+	Port int    `yaml:"port,omitempty"`
 	// UPS is the name of the UPS on that server.
-	UPS string `yaml:"ups,omitempty" mapstructure:"ups"`
+	UPS string `yaml:"ups,omitempty"`
 	// Username is the NUT user. With a password the client logs in as a
 	// secondary, so the primary waits for the host to shut down before it cuts
 	// the UPS output. Without them it only reads.
-	Username string `yaml:"username,omitempty" mapstructure:"username"`
+	Username string `yaml:"username,omitempty"`
 
 	// OnBatteryMinutes shuts the host down once the UPS has run on battery
 	// this long. Zero means never: low battery and a forced shutdown still do.
-	OnBatteryMinutes int `yaml:"onBatteryMinutes,omitempty" mapstructure:"onBatteryMinutes"`
+	OnBatteryMinutes int `yaml:"onBatteryMinutes,omitempty"`
 	// ForceOffMinutes presses power for five seconds when the host is still on
 	// this long after the shutdown press. Zero means never.
-	ForceOffMinutes int `yaml:"forceOffMinutes,omitempty" mapstructure:"forceOffMinutes"`
+	ForceOffMinutes int `yaml:"forceOffMinutes,omitempty"`
 
 	// PowerOnRestore presses power when mains is back and the host is off.
-	PowerOnRestore bool `yaml:"powerOnRestore,omitempty" mapstructure:"powerOnRestore"`
+	PowerOnRestore bool `yaml:"powerOnRestore,omitempty"`
 	// PowerOnMinCharge is the battery charge, in percent, the UPS must reach
 	// before the host is switched on. Zero means any.
-	PowerOnMinCharge int `yaml:"powerOnMinCharge,omitempty" mapstructure:"powerOnMinCharge"`
+	PowerOnMinCharge int `yaml:"powerOnMinCharge,omitempty"`
 	// PowerOnDelaySeconds is how long mains must be back before the press.
-	PowerOnDelaySeconds int `yaml:"powerOnDelaySeconds,omitempty" mapstructure:"powerOnDelaySeconds"`
+	PowerOnDelaySeconds int `yaml:"powerOnDelaySeconds,omitempty"`
 }
 
 // WithDefaults returns the settings with every zero value replaced by its
@@ -326,10 +326,10 @@ func (n NUT) WithDefaults() NUT {
 type NetBoot struct {
 	// USB serves PXE, iPXE and a menu of the images on /data to the host over
 	// the USB network link. It takes effect only while the link is on.
-	USB bool `yaml:"usb" mapstructure:"usb"`
+	USB bool `yaml:"usb"`
 	// LAN answers PXE clients on the LAN with proxy DHCP. It never hands out
 	// an address, and it offers a boot loader only.
-	LAN bool `yaml:"lan" mapstructure:"lan"`
+	LAN bool `yaml:"lan"`
 }
 
 // The VNC server's defaults. A zero value in server.yaml means the default.
@@ -341,16 +341,16 @@ const (
 // VNC configures the VNC server. Read it through WithDefaults.
 type VNC struct {
 	// Enabled listens for VNC clients. Off by default.
-	Enabled bool `yaml:"enabled" mapstructure:"enabled"`
+	Enabled bool `yaml:"enabled"`
 	// Port is the TCP port the server listens on.
-	Port int `yaml:"port,omitempty" mapstructure:"port"`
+	Port int `yaml:"port,omitempty"`
 	// MaxFPS caps the frames a second a client is sent, below the stream's
 	// own rate.
-	MaxFPS int `yaml:"maxFps,omitempty" mapstructure:"maxFps"`
+	MaxFPS int `yaml:"maxFps,omitempty"`
 	// VNCAuth offers plain VNC authentication beside VeNCrypt. It sends the
 	// picture and the keystrokes without encryption, so it is off by default.
 	// The password it checks is kept outside server.yaml.
-	VNCAuth bool `yaml:"vncAuth,omitempty" mapstructure:"vncAuth"`
+	VNCAuth bool `yaml:"vncAuth,omitempty"`
 }
 
 // WithDefaults returns the settings with every zero value replaced by its
@@ -449,9 +449,9 @@ type Picoclaw struct {
 	// 16:9 at most. Smaller images cost fewer tokens and less time on small
 	// local models, larger ones help them read small text and hit small
 	// targets. The model can still ask for any size per screenshot.
-	ScreenshotWidth int `yaml:"screenshotWidth,omitempty" mapstructure:"screenshotWidth"`
+	ScreenshotWidth int `yaml:"screenshotWidth,omitempty"`
 	// ScreenshotQuality is the JPEG quality, 10 to 100, of those screenshots.
-	ScreenshotQuality int `yaml:"screenshotQuality,omitempty" mapstructure:"screenshotQuality"`
+	ScreenshotQuality int `yaml:"screenshotQuality,omitempty"`
 }
 
 // WithDefaults returns the settings with zero values replaced by their
@@ -488,31 +488,31 @@ const (
 // HostLog configures the receiver for the managed host's logs: UDP syslog and
 // netconsole. Both listeners are off by default. Read it through WithDefaults.
 type HostLog struct {
-	Syslog     HostLogListener `yaml:"syslog,omitempty" mapstructure:"syslog"`
-	Netconsole HostLogListener `yaml:"netconsole,omitempty" mapstructure:"netconsole"`
+	Syslog     HostLogListener `yaml:"syslog,omitempty"`
+	Netconsole HostLogListener `yaml:"netconsole,omitempty"`
 	// Bind is where the listeners bind: "" for every interface, or "usb" for
 	// the board's address on the USB network link.
-	Bind string `yaml:"bind,omitempty" mapstructure:"bind"`
+	Bind string `yaml:"bind,omitempty"`
 	// Sources are the client addresses, single or CIDR, that may send. Empty
 	// means the host on the USB link when it is up, else the watchdog's ping
 	// host, else any address.
-	Sources []string `yaml:"sources,omitempty" mapstructure:"sources"`
+	Sources []string `yaml:"sources,omitempty"`
 	// MemoryKB caps the in-memory ring.
-	MemoryKB int `yaml:"memoryKb,omitempty" mapstructure:"memoryKb"`
+	MemoryKB int `yaml:"memoryKb,omitempty"`
 	// Disk keeps the log on /data as well, up to DiskKB. Off by default:
 	// it writes to the SD card.
-	Disk   bool `yaml:"disk,omitempty" mapstructure:"disk"`
-	DiskKB int  `yaml:"diskKb,omitempty" mapstructure:"diskKb"`
+	Disk   bool `yaml:"disk,omitempty"`
+	DiskKB int  `yaml:"diskKb,omitempty"`
 	// Patterns are regular expressions; a line that matches one raises a
 	// notification. Empty means the defaults for a kernel panic.
-	Patterns []string `yaml:"patterns,omitempty" mapstructure:"patterns"`
+	Patterns []string `yaml:"patterns,omitempty"`
 }
 
 // HostLogListener is one UDP listener.
 type HostLogListener struct {
-	Enabled bool `yaml:"enabled" mapstructure:"enabled"`
+	Enabled bool `yaml:"enabled"`
 	// Port is the UDP port; zero means the protocol's default.
-	Port int `yaml:"port,omitempty" mapstructure:"port"`
+	Port int `yaml:"port,omitempty"`
 }
 
 // WithDefaults returns the settings with every zero value replaced by its

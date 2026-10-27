@@ -11,6 +11,7 @@ import (
 	"sync"
 
 	"NanoKVM-Server/proto"
+	"NanoKVM-Server/utils/atomicfile"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -176,36 +177,8 @@ func saveUpdateServerConfigToPath(path string, cfg UpdateServerConfig) error {
 	}
 	data = append(data, '\n')
 
-	tmp, err := os.CreateTemp(dir, ".application-update.json.*")
-	if err != nil {
-		return fmt.Errorf("create temporary update server config: %w", err)
-	}
-	tmpPath := tmp.Name()
-	defer func() { _ = os.Remove(tmpPath) }()
-
-	if err := tmp.Chmod(0o600); err != nil {
-		_ = tmp.Close()
-		return fmt.Errorf("set update server config permissions: %w", err)
-	}
-	if _, err := tmp.Write(data); err != nil {
-		_ = tmp.Close()
-		return fmt.Errorf("write update server config: %w", err)
-	}
-	if err := tmp.Sync(); err != nil {
-		_ = tmp.Close()
-		return fmt.Errorf("sync update server config: %w", err)
-	}
-	if err := tmp.Close(); err != nil {
-		return fmt.Errorf("close update server config: %w", err)
-	}
-	if err := os.Rename(tmpPath, path); err != nil {
+	if err := atomicfile.WriteFile(path, data, 0o600); err != nil {
 		return fmt.Errorf("replace update server config: %w", err)
-	}
-
-	directory, err := os.Open(dir)
-	if err == nil {
-		_ = directory.Sync()
-		_ = directory.Close()
 	}
 
 	return nil

@@ -53,7 +53,7 @@ func TestAnOldConfigWithoutTheKeyLoadsWithRedfishOn(t *testing.T) {
 	}
 }
 
-// Off is kept under redfish.enabled, for viper at start and for the
+// Off is kept under redfish.enabled, for the server at start and for the
 // Read/Write pair that saves settings.
 func TestRedfishOffIsKeptUnderRedfishEnabled(t *testing.T) {
 	conf := loadYAML(t, "redfish:\n  enabled: false\n")

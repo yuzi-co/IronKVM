@@ -16,6 +16,7 @@ import (
 	"NanoKVM-Server/config"
 	"NanoKVM-Server/proto"
 	"NanoKVM-Server/service/netboot"
+	"NanoKVM-Server/utils/atomicfile"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -172,7 +173,7 @@ func restoreFile(path string, data []byte, existed bool) {
 		_ = os.Remove(path)
 		return
 	}
-	if err := writeFileAtomic(path, data, 0o644); err != nil {
+	if err := atomicfile.WriteFile(path, data, 0o644); err != nil {
 		log.Errorf("failed to restore %s: %s", path, err)
 	}
 }
@@ -207,7 +208,7 @@ func setSSHPort(port int) error {
 		if err := os.MkdirAll(filepath.Dir(sshPortDropIn), 0o755); err != nil {
 			return err
 		}
-		if err := writeFileAtomic(sshPortDropIn, []byte(portConfig(port)), 0o644); err != nil {
+		if err := atomicfile.WriteFile(sshPortDropIn, []byte(portConfig(port)), 0o644); err != nil {
 			return err
 		}
 	}
@@ -231,7 +232,7 @@ func setSSHPort(port int) error {
 			err = nil
 		}
 	} else {
-		err = writeFileAtomic(sshPortFile, []byte(strconv.Itoa(port)+"\n"), 0o644)
+		err = atomicfile.WriteFile(sshPortFile, []byte(strconv.Itoa(port)+"\n"), 0o644)
 	}
 	if err != nil {
 		restoreFile(sshPortDropIn, previous, existed)
@@ -276,7 +277,7 @@ func advertiseSSHPort(port int) {
 		if bytes.Equal(updated, data) {
 			continue
 		}
-		if err := writeFileAtomic(path, updated, 0o644); err != nil {
+		if err := atomicfile.WriteFile(path, updated, 0o644); err != nil {
 			log.Errorf("failed to update %s: %s", path, err)
 			continue
 		}

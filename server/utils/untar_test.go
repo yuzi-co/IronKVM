@@ -140,3 +140,27 @@ func TestUnTarGzRejectsHardLink(t *testing.T) {
 		t.Fatalf("a hard link entry must be rejected, got %v", err)
 	}
 }
+
+// A symbolic link already in the destination, left by an earlier run or put
+// there by anyone, must not carry an entry out of it. The name checks pass
+// "app/pwned" as inside; only the write itself can see where it lands.
+func TestUnTarGzDoesNotWriteThroughASymlinkOnDisk(t *testing.T) {
+	outside := t.TempDir()
+	dest := t.TempDir()
+	if err := os.Symlink(outside, filepath.Join(dest, "app")); err != nil {
+		t.Fatalf("failed to create the symlink: %s", err)
+	}
+
+	for _, entries := range [][]tarEntry{
+		{{name: "app/pwned", typeflag: tar.TypeReg, content: "owned"}},
+		{{name: "app/sub", typeflag: tar.TypeDir}},
+	} {
+		if _, err := UnTarGz(writeTarGz(t, entries), dest); err == nil {
+			t.Fatalf("extracting %s through a symlink succeeded", entries[0].name)
+		}
+	}
+
+	if names, _ := os.ReadDir(outside); len(names) != 0 {
+		t.Fatalf("%d entries were written outside the destination", len(names))
+	}
+}

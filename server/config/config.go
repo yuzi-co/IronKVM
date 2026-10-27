@@ -1,13 +1,12 @@
 package config
 
 import (
-	"bytes"
 	"errors"
+	"io/fs"
 	"log"
 	"os"
 	"sync"
 
-	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
 )
 
@@ -23,23 +22,24 @@ func GetInstance() *Config {
 }
 
 func initialize() {
-	if err := readByFile(); err != nil {
-		if errors.As(err, &viper.ConfigFileNotFoundError{}) {
+	root, err := readByFile()
+	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
 			create()
 		}
 
-		if err = readByDefault(); err != nil {
+		if root, err = defaultRoot(); err != nil {
 			log.Fatalf("Failed to read default configuration!")
 		}
 
 		log.Println("using default configuration")
 	}
 
-	if err := validate(); err != nil {
+	if root, err = validate(root); err != nil {
 		log.Fatalf("Failed to validate configuration!")
 	}
 
-	if err := viper.Unmarshal(&instance); err != nil {
+	if err := decodeConfig(root, &instance); err != nil {
 		log.Fatalf("Failed to parse configuration: %s", err)
 	}
 
@@ -52,22 +52,13 @@ func initialize() {
 	log.Println("config loaded successfully")
 }
 
-func readByFile() error {
-	viper.SetConfigName("server")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath("/etc/kvm/")
-
-	return viper.ReadInConfig()
-}
-
-func readByDefault() error {
-	data, err := yaml.Marshal(defaultConfig)
+func readByFile() (*yaml.Node, error) {
+	data, err := os.ReadFile(ConfigurationFile)
 	if err != nil {
-		log.Printf("failed to marshal default config: %s", err)
-		return err
+		return nil, err
 	}
 
-	return viper.ReadConfig(bytes.NewBuffer(data))
+	return parseConfig(data)
 }
 
 // Create configuration file.
@@ -110,15 +101,15 @@ func create() {
 }
 
 // Validate the configuration. This is to ensure compatibility with earlier versions.
-func validate() error {
-	if viper.GetInt("port.http") > 0 && viper.GetInt("port.https") > 0 {
-		return nil
+func validate(root *yaml.Node) (*yaml.Node, error) {
+	if hasPorts(root) {
+		return root, nil
 	}
 
-	_ = os.Remove("/etc/kvm/server.yaml")
+	_ = os.Remove(ConfigurationFile)
 	log.Println("delete empty configuration file")
 
 	create()
 
-	return readByDefault()
+	return defaultRoot()
 }

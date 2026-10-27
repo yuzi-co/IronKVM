@@ -3,8 +3,9 @@ package srt
 import (
 	"errors"
 	"os"
-	"path/filepath"
 	"strings"
+
+	"NanoKVM-Server/utils/atomicfile"
 )
 
 // PassphraseFile holds the SRT passphrase. SRT derives the stream's AES key
@@ -69,22 +70,5 @@ func (f FilePassphrase) Set(passphrase string) error {
 		return err
 	}
 
-	tmp, err := os.CreateTemp(filepath.Dir(f.Path), ".srt.passphrase-*")
-	if err != nil {
-		return err
-	}
-	defer func() { _ = os.Remove(tmp.Name()) }()
-
-	if err := tmp.Chmod(0o600); err != nil {
-		_ = tmp.Close()
-		return err
-	}
-	if _, err := tmp.WriteString(passphrase + "\n"); err != nil {
-		_ = tmp.Close()
-		return err
-	}
-	if err := tmp.Close(); err != nil {
-		return err
-	}
-	return os.Rename(tmp.Name(), f.Path)
+	return atomicfile.WriteFile(f.Path, []byte(passphrase+"\n"), 0o600)
 }

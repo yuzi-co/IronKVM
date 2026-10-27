@@ -16,6 +16,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"NanoKVM-Server/proto"
+	"NanoKVM-Server/utils/atomicfile"
 )
 
 // IPv6 on the wired interface.
@@ -108,12 +109,7 @@ func writeIPv6Config(config ipv6Config) error {
 		return err
 	}
 
-	tmp := ipv6ConfigFile + ".tmp"
-	if err := os.WriteFile(tmp, append(data, '\n'), 0o644); err != nil {
-		return err
-	}
-
-	return os.Rename(tmp, ipv6ConfigFile)
+	return atomicfile.WriteFile(ipv6ConfigFile, append(data, '\n'), 0o644)
 }
 
 // validateIPv6Static rejects a setting that would leave the interface with an

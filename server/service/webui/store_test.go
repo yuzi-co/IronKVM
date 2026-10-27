@@ -333,3 +333,50 @@ func TestReinstallingThePreviousUISwapsThem(t *testing.T) {
 		t.Fatalf("status %+v", st)
 	}
 }
+
+// extractPackage checks every entry itself, not only through inspectPackage,
+// and writes nothing outside dest: not for a "../" or absolute name, not for
+// a link entry, and not through a symbolic link already in dest.
+func TestExtractPackageWritesNothingOutsideDest(t *testing.T) {
+	cases := map[string][]tarEntry{
+		"traversal": {{name: "web/../../evil", body: []byte("x")}},
+		"absolute":  {{name: "/evil", body: []byte("x")}},
+		"symlink":   {{name: "web/evil", typ: tar.TypeSymlink, link: "/etc/shadow"}},
+	}
+	for name, entries := range cases {
+		t.Run(name, func(t *testing.T) {
+			parent := t.TempDir()
+			dest := filepath.Join(parent, "dest")
+			if err := os.Mkdir(dest, 0o755); err != nil {
+				t.Fatal(err)
+			}
+			pkg := filepath.Join(t.TempDir(), "p.tar.gz")
+			writeTarGz(t, pkg, entries)
+			if err := extractPackage(pkg, dest); err == nil {
+				t.Fatal("the entry was extracted")
+			}
+			if _, err := os.Lstat(filepath.Join(parent, "evil")); err == nil {
+				t.Fatal("a file was written outside dest")
+			}
+			if _, err := os.Lstat(filepath.Join(dest, "web", "evil")); err == nil {
+				t.Fatal("a link was created")
+			}
+		})
+	}
+
+	t.Run("symlink-on-disk", func(t *testing.T) {
+		outside := t.TempDir()
+		dest := t.TempDir()
+		if err := os.Symlink(outside, filepath.Join(dest, "web")); err != nil {
+			t.Fatal(err)
+		}
+		pkg := filepath.Join(t.TempDir(), "p.tar.gz")
+		writeTarGz(t, pkg, []tarEntry{{name: "web/index.html", body: []byte("x")}})
+		if err := extractPackage(pkg, dest); err == nil {
+			t.Fatal("extracted through a symlink")
+		}
+		if names, _ := os.ReadDir(outside); len(names) != 0 {
+			t.Fatalf("%d entries were written outside dest", len(names))
+		}
+	})
+}

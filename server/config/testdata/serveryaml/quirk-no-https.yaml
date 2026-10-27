@@ -1,0 +1,3 @@
+proto: http
+port:
+    http: 80

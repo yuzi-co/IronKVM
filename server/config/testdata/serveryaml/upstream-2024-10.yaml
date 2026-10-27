@@ -1,0 +1,7 @@
+proto: http
+port:
+  http: 80 
+  https: 443
+cert:
+  crt: server.crt
+  key: server.key

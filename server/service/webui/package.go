@@ -244,6 +244,15 @@ func extractPackage(pkg, dest string) error {
 	}
 	defer closeTar()
 
+	// Every write goes through root, which refuses a name that leaves dest,
+	// whether by "..", an absolute path or a symbolic link already on disk.
+	// entryPath refuses such names first; root holds if it is ever wrong.
+	root, err := os.OpenRoot(dest)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = root.Close() }()
+
 	var written uint64
 	for {
 		h, err := tr.Next()
@@ -260,17 +269,17 @@ func extractPackage(pkg, dest string) error {
 		if name == "" {
 			continue
 		}
-		target := filepath.Join(dest, filepath.FromSlash(name))
+		target := filepath.FromSlash(name)
 		if h.Typeflag == tar.TypeDir {
-			if err := os.MkdirAll(target, 0o755); err != nil {
+			if err := root.MkdirAll(target, 0o755); err != nil {
 				return err
 			}
 			continue
 		}
-		if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
+		if err := root.MkdirAll(filepath.Dir(target), 0o755); err != nil {
 			return err
 		}
-		out, err := os.OpenFile(target, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
+		out, err := root.OpenFile(target, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
 		if err != nil {
 			return err
 		}

@@ -17,6 +17,8 @@ import (
 	"strings"
 	"sync/atomic"
 	"time"
+
+	"NanoKVM-Server/utils/atomicfile"
 )
 
 // An uploaded certificate lives beside the generated one, in /etc/kvm. On a
@@ -340,35 +342,15 @@ func DescribeCertFile(path string, id CertIdentity) (*CertInfo, error) {
 // a key that does not match its certificate, and LoadServingCert then falls
 // back to the generated pair rather than failing to listen.
 func WriteCertPair(certPath, keyPath string, certPEM, keyPEM []byte) error {
-	if err := writeFileAtomic(keyPath, keyPEM, 0o600); err != nil {
+	for _, dir := range []string{filepath.Dir(keyPath), filepath.Dir(certPath)} {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			return err
+		}
+	}
+	if err := atomicfile.WriteFile(keyPath, keyPEM, 0o600); err != nil {
 		return err
 	}
-	return writeFileAtomic(certPath, certPEM, 0o644)
-}
-
-func writeFileAtomic(path string, data []byte, mode os.FileMode) error {
-	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
-		return err
-	}
-	tmp, err := os.CreateTemp(dir, ".cert-*")
-	if err != nil {
-		return err
-	}
-	defer func() { _ = os.Remove(tmp.Name()) }()
-	if err = tmp.Chmod(mode); err == nil {
-		_, err = tmp.Write(data)
-	}
-	if err == nil {
-		err = tmp.Sync()
-	}
-	if closeErr := tmp.Close(); err == nil {
-		err = closeErr
-	}
-	if err != nil {
-		return err
-	}
-	return os.Rename(tmp.Name(), path)
+	return atomicfile.WriteFile(certPath, certPEM, 0o644)
 }
 
 // ServingCert is the certificate the HTTPS listener and the VNC TLS layer

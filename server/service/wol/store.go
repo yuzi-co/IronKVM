@@ -18,6 +18,8 @@ import (
 	"strings"
 	"sync"
 	"unicode/utf8"
+
+	"NanoKVM-Server/utils/atomicfile"
 )
 
 const (
@@ -216,7 +218,7 @@ func (s *Store) writeLines(lines []macLine) error {
 		b.WriteByte('\n')
 	}
 
-	return writeFileAtomic(s.macPath, []byte(b.String()), 0o644)
+	return writeFile(s.macPath, []byte(b.String()), 0o644)
 }
 
 func (s *Store) readOptions() (map[string]Options, error) {
@@ -249,34 +251,16 @@ func (s *Store) writeOptions(opts map[string]Options) error {
 		return err
 	}
 
-	return writeFileAtomic(s.optPath, append(data, '\n'), 0o600)
+	return writeFile(s.optPath, append(data, '\n'), 0o600)
 }
 
-func writeFileAtomic(path string, data []byte, mode os.FileMode) error {
+// writeFile replaces path, making its directory first: /etc/kvm/cache does
+// not exist on a board that has never saved a device.
+func writeFile(path string, data []byte, mode os.FileMode) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
-
-	tmp, err := os.CreateTemp(filepath.Dir(path), ".wol-*")
-	if err != nil {
-		return err
-	}
-	name := tmp.Name()
-	if _, err = tmp.Write(data); err == nil {
-		err = tmp.Chmod(mode)
-	}
-	if cerr := tmp.Close(); err == nil {
-		err = cerr
-	}
-	if err != nil {
-		_ = os.Remove(name)
-		return err
-	}
-	if err = os.Rename(name, path); err != nil {
-		_ = os.Remove(name)
-	}
-
-	return err
+	return atomicfile.WriteFile(path, data, mode)
 }
 
 // List returns the devices in file order.

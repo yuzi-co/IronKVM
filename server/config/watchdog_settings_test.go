@@ -45,7 +45,7 @@ func TestAnOldConfigLoadsWithTheWatchdogOff(t *testing.T) {
 	}
 }
 
-// The keys live under watchdog, both for viper at start and for the
+// The keys live under watchdog, both for the server at start and for the
 // Read/Write pair that saves settings.
 func TestTheWatchdogSettingsAreKeptUnderWatchdog(t *testing.T) {
 	content := "watchdog:\n  enabled: true\n  timeoutMinutes: 7\n  action: power\n" +
@@ -61,7 +61,7 @@ func TestTheWatchdogSettingsAreKeptUnderWatchdog(t *testing.T) {
 
 	conf := loadYAML(t, content)
 	if conf.Watchdog != want {
-		t.Fatalf("viper loaded %+v", conf.Watchdog)
+		t.Fatalf("start loaded %+v", conf.Watchdog)
 	}
 
 	data, err := yaml.Marshal(&conf)

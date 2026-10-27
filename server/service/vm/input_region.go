@@ -11,6 +11,7 @@ import (
 	"sync"
 
 	"NanoKVM-Server/proto"
+	"NanoKVM-Server/utils/atomicfile"
 
 	"github.com/gin-gonic/gin"
 )
@@ -359,23 +360,5 @@ func writeInputRegion(path string, region proto.InputRegion) error {
 		return err
 	}
 
-	tmp, err := os.CreateTemp(dir, ".input-region-*.tmp")
-	if err != nil {
-		return err
-	}
-	tmpPath := tmp.Name()
-	defer os.Remove(tmpPath)
-
-	if _, err := tmp.Write(data); err != nil {
-		_ = tmp.Close()
-		return err
-	}
-	if err := tmp.Chmod(0o644); err != nil {
-		_ = tmp.Close()
-		return err
-	}
-	if err := tmp.Close(); err != nil {
-		return err
-	}
-	return os.Rename(tmpPath, path)
+	return atomicfile.WriteFile(path, data, 0o644)
 }

@@ -20,14 +20,14 @@ func TestNetworkBootIsOffByDefault(t *testing.T) {
 	}
 }
 
-// The keys live under netboot, both for viper at start and for the Read/Write
+// The keys live under netboot, both for the server at start and for the Read/Write
 // pair that saves settings.
 func TestTheNetworkBootSettingsAreKeptUnderNetboot(t *testing.T) {
 	want := NetBoot{USB: true, LAN: true}
 
 	conf := loadYAML(t, "netboot:\n  usb: true\n  lan: true\n")
 	if conf.NetBoot != want {
-		t.Fatalf("viper loaded %+v", conf.NetBoot)
+		t.Fatalf("start loaded %+v", conf.NetBoot)
 	}
 
 	data, err := yaml.Marshal(&conf)

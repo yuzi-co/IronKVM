@@ -32,6 +32,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/sys/unix"
+
+	"NanoKVM-Server/utils/atomicfile"
 )
 
 const (
@@ -129,27 +131,7 @@ func (s *Store) writeState(st State) error {
 	if err != nil {
 		return err
 	}
-	tmp := filepath.Join(s.Root, stateFile+".tmp")
-	f, err := os.OpenFile(tmp, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o644)
-	if err != nil {
-		return err
-	}
-	if _, err := f.Write(data); err != nil {
-		_ = f.Close()
-		return err
-	}
-	if err := f.Sync(); err != nil {
-		_ = f.Close()
-		return err
-	}
-	if err := f.Close(); err != nil {
-		return err
-	}
-	if err := os.Rename(tmp, filepath.Join(s.Root, stateFile)); err != nil {
-		return err
-	}
-	syncDir(s.Root)
-	return nil
+	return atomicfile.WriteFile(filepath.Join(s.Root, stateFile), data, 0o644)
 }
 
 func syncDir(dir string) {

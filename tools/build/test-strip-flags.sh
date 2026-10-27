@@ -61,6 +61,17 @@ grep -q "^GO_BUILD_CMD.*go build .*-trimpath" "$ROOT/Makefile" \
     && note "the Makefile passes -trimpath" OK \
     || note "the Makefile passes -trimpath" FAIL
 
+# -tags nomsgpack leaves gin's MessagePack binding and renderer out of the
+# binary. Nothing in the server reads or writes MessagePack, so every build
+# line carries it, or one entry point ships a larger binary than the others.
+for file in Makefile server/build.sh tools/build/build-app.sh tools/release/release.sh; do
+    lines=$(grep -n "[^a-z]go build " "$ROOT/$file" | grep -v "^[0-9]*:[[:space:]]*#" | grep -v echo | grep -c . || true)
+    tagged=$(grep -n "[^a-z]go build " "$ROOT/$file" | grep -v "^[0-9]*:[[:space:]]*#" | grep -v echo | grep -c -- "-tags nomsgpack" || true)
+    [ "$lines" -gt 0 ] && [ "$tagged" = "$lines" ] \
+        && note "$file passes -tags nomsgpack on every build line" OK \
+        || note "$file passes -tags nomsgpack on every build line ($tagged/$lines)" FAIL
+done
+
 # A build with no stamp must still strip. The Makefile expresses the stamp as
 # an optional fragment, so -s -w has to sit outside that fragment.
 grep -q 'ldflags "-s -w' "$ROOT/Makefile" \

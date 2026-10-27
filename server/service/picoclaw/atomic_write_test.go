@@ -8,63 +8,6 @@ import (
 	"testing"
 )
 
-func TestWriteFileAtomicReplacesFileAndLeavesNoTemporary(t *testing.T) {
-	dir := t.TempDir()
-	path := filepath.Join(dir, "config.json")
-	if err := os.WriteFile(path, []byte("old"), 0o644); err != nil {
-		t.Fatal(err)
-	}
-
-	if err := writeFileAtomic(path, []byte("new"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-
-	data, err := os.ReadFile(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if string(data) != "new" {
-		t.Fatalf("content = %q, want new", data)
-	}
-	if runtime.GOOS != "windows" {
-		info, err := os.Stat(path)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if mode := info.Mode().Perm(); mode != 0o600 {
-			t.Fatalf("mode = %o, want 600", mode)
-		}
-	}
-	assertOnlyEntries(t, dir, "config.json")
-}
-
-func TestWriteFileAtomicKeepsOldFileWhenReplaceFails(t *testing.T) {
-	dir := t.TempDir()
-	// A directory in the target's place makes the final rename fail.
-	target := filepath.Join(dir, "config.json")
-	if err := os.Mkdir(target, 0o755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(target, "keep"), []byte("x"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-
-	if err := writeFileAtomic(target, []byte("new"), 0o600); err == nil {
-		t.Fatal("expected an error when the target is a non-empty directory")
-	}
-	if _, err := os.Stat(filepath.Join(target, "keep")); err != nil {
-		t.Fatalf("existing target was disturbed: %v", err)
-	}
-	assertOnlyEntries(t, dir, "config.json")
-}
-
-func TestWriteFileAtomicFailsForMissingDirectory(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "missing", "config.json")
-	if err := writeFileAtomic(path, []byte("new"), 0o600); err == nil {
-		t.Fatal("expected an error for a missing directory")
-	}
-}
-
 func TestPicoclawConfigDocumentSavesAtomically(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("PICOCLAW_HOME", home)

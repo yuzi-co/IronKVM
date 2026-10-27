@@ -19,6 +19,7 @@ import (
 	"NanoKVM-Server/service/extensions/addon"
 	"NanoKVM-Server/service/upstream"
 	"NanoKVM-Server/utils"
+	"NanoKVM-Server/utils/atomicfile"
 )
 
 // Variables rather than constants so the tests can point them at a scratch
@@ -179,7 +180,7 @@ func placePicoclaw(binary, dir, destination string) error {
 		_ = os.Remove(staged)
 		return fmt.Errorf("failed to install picoclaw binary: %w", err)
 	}
-	if err := writeFileAtomic(installedChecksumPath(destination), []byte(release.BinarySHA256+"\n"), 0o644); err != nil {
+	if err := atomicfile.WriteFile(installedChecksumPath(destination), []byte(release.BinarySHA256+"\n"), 0o644); err != nil {
 		return fmt.Errorf("failed to record the installed sha256: %w", err)
 	}
 	if err := placeLicenses(dir); err != nil {

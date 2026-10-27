@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
-	"path/filepath"
+
+	"NanoKVM-Server/utils/atomicfile"
 )
 
 // configFile holds the private key, so it is 0600 and written by rename. A var
@@ -33,30 +34,7 @@ func Save(c Config) error {
 	if err != nil {
 		return err
 	}
-	dir := filepath.Dir(configFile)
-	tmp, err := os.CreateTemp(dir, ".wireguard-*.json")
-	if err != nil {
-		return err
-	}
-	name := tmp.Name()
-	defer os.Remove(name)
-
-	if err := tmp.Chmod(0o600); err != nil {
-		tmp.Close()
-		return err
-	}
-	if _, err := tmp.Write(append(data, '\n')); err != nil {
-		tmp.Close()
-		return err
-	}
-	if err := tmp.Sync(); err != nil {
-		tmp.Close()
-		return err
-	}
-	if err := tmp.Close(); err != nil {
-		return err
-	}
-	return os.Rename(name, configFile)
+	return atomicfile.WriteFile(configFile, append(data, '\n'), 0o600)
 }
 
 // Remove deletes the stored configuration.

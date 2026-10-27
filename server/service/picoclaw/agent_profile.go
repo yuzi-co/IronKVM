@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"NanoKVM-Server/service/agent"
+	"NanoKVM-Server/utils/atomicfile"
 
 	"github.com/gin-gonic/gin"
 )
@@ -109,7 +110,7 @@ func applyPicoclawAgentProfile(profile string) error {
 	}
 
 	targetPath := filepath.Join(workspacePath, agentProfileFile)
-	if err := writeFileAtomic(targetPath, sourceContent, 0o644); err != nil {
+	if err := atomicfile.WriteFile(targetPath, sourceContent, 0o644); err != nil {
 		return fmt.Errorf("failed to write picoclaw AGENT.md: %w", err)
 	}
 

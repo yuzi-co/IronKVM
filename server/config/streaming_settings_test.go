@@ -35,7 +35,7 @@ func TestAnOldConfigLoadsWithRTSPAndSRTOff(t *testing.T) {
 	}
 }
 
-// The settings are kept under rtsp and srt, for viper at start and for the
+// The settings are kept under rtsp and srt, for the server at start and for the
 // Read/Write pair that saves settings.
 func TestRTSPAndSRTSettingsAreKeptUnderTheirNames(t *testing.T) {
 	text := "rtsp:\n  enabled: true\n  port: 8555\n  udp: true\n  udpPort: 9000\n  tls: true\n  tlsPort: 8323\n" +
@@ -45,7 +45,7 @@ func TestRTSPAndSRTSettingsAreKeptUnderTheirNames(t *testing.T) {
 
 	loaded := loadYAML(t, text)
 	if loaded.RTSP != wantRTSP || loaded.SRT != wantSRT {
-		t.Fatalf("viper loaded %+v and %+v, want %+v and %+v", loaded.RTSP, loaded.SRT, wantRTSP, wantSRT)
+		t.Fatalf("start loaded %+v and %+v, want %+v and %+v", loaded.RTSP, loaded.SRT, wantRTSP, wantSRT)
 	}
 
 	var conf Config

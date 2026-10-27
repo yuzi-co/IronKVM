@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 	"sync"
 	"unicode/utf8"
@@ -13,6 +12,7 @@ import (
 	"github.com/google/uuid"
 
 	"NanoKVM-Server/proto"
+	"NanoKVM-Server/utils/atomicfile"
 )
 
 // macroFile keeps the macros beside the keyboard shortcuts, so they follow
@@ -65,26 +65,7 @@ func saveMacros(store *macroStore) error {
 		return err
 	}
 
-	tmp, err := os.CreateTemp(filepath.Dir(macroFile), ".macros-*.json")
-	if err != nil {
-		return err
-	}
-	defer os.Remove(tmp.Name())
-	if _, err := tmp.Write(data); err != nil {
-		tmp.Close()
-		return err
-	}
-	if err := tmp.Sync(); err != nil {
-		tmp.Close()
-		return err
-	}
-	if err := tmp.Close(); err != nil {
-		return err
-	}
-	if err := os.Chmod(tmp.Name(), 0o644); err != nil {
-		return err
-	}
-	return os.Rename(tmp.Name(), macroFile)
+	return atomicfile.WriteFile(macroFile, data, 0o644)
 }
 
 func listMacros() ([]proto.Macro, error) {

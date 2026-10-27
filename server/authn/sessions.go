@@ -12,6 +12,8 @@ import (
 	"sync"
 	"time"
 	"unicode"
+
+	"NanoKVM-Server/utils/atomicfile"
 )
 
 const (
@@ -339,7 +341,10 @@ func (s *SessionStore) saveLocked() error {
 		return err
 	}
 	data = append(data, '\n')
-	if err = writeFileAtomic(s.path, ".sessions-*", data); err != nil {
+	if err = os.MkdirAll(filepath.Dir(s.path), 0o755); err != nil {
+		return err
+	}
+	if err = atomicfile.WriteFile(s.path, data, 0o600); err != nil {
 		return err
 	}
 	s.persisted = make(map[string]time.Time, len(sessions))
@@ -347,36 +352,6 @@ func (s *SessionStore) saveLocked() error {
 		s.persisted[session.ID] = session.LastUsedAt
 	}
 	return nil
-}
-
-// writeFileAtomic writes data to path through a temporary file in the same
-// directory, readable by the owner alone.
-func writeFileAtomic(path, pattern string, data []byte) error {
-	directory := filepath.Dir(path)
-	if err := os.MkdirAll(directory, 0o755); err != nil {
-		return err
-	}
-	temporary, err := os.CreateTemp(directory, pattern)
-	if err != nil {
-		return err
-	}
-	temporaryPath := temporary.Name()
-	defer func() { _ = os.Remove(temporaryPath) }()
-
-	if err = temporary.Chmod(0o600); err == nil {
-		_, err = temporary.Write(data)
-	}
-	if err == nil {
-		err = temporary.Sync()
-	}
-	closeErr := temporary.Close()
-	if err == nil {
-		err = closeErr
-	}
-	if err != nil {
-		return err
-	}
-	return os.Rename(temporaryPath, path)
 }
 
 // SummarizeUserAgent turns a User-Agent header into "Browser on System". An

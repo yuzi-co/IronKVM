@@ -21,7 +21,7 @@ func TestPicoclawSettingsAreKeptUnderPicoclaw(t *testing.T) {
 	want := Picoclaw{ScreenshotWidth: 768, ScreenshotQuality: 50}
 
 	if got := loadYAML(t, text).Picoclaw; got != want {
-		t.Fatalf("viper loaded %+v, want %+v", got, want)
+		t.Fatalf("start loaded %+v, want %+v", got, want)
 	}
 
 	var conf Config

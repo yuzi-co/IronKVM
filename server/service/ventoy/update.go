@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"NanoKVM-Server/service/upstream"
+	"NanoKVM-Server/utils/atomicfile"
 )
 
 // Ventoy can be updated past the pinned release, from the project's GitHub
@@ -184,6 +185,6 @@ func (s *Service) update(version, archiveSum string, fetch func(dst string) erro
 		return err
 	}
 	return upstream.Swap(staged, Dir, names, func() error {
-		return writeAtomic(inDir(releaseName), data)
+		return atomicfile.WriteFile(inDir(releaseName), data, 0o644)
 	})
 }

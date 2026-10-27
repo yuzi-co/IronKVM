@@ -148,3 +148,89 @@ func TestInstallRefusesAMissingMember(t *testing.T) {
 		t.Fatalf("got %v", err)
 	}
 }
+
+// writeArchive writes a .tar.gz of hdrs, each with body as its content when it
+// is a regular file.
+func writeArchive(t *testing.T, hdrs []*tar.Header, body []byte) string {
+	t.Helper()
+	path := filepath.Join(t.TempDir(), "release.tar.gz")
+	f, err := os.Create(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	gz := gzip.NewWriter(f)
+	tw := tar.NewWriter(gz)
+	for _, h := range hdrs {
+		if h.Typeflag == tar.TypeReg {
+			h.Size = int64(len(body))
+		}
+		if err := tw.WriteHeader(h); err != nil {
+			t.Fatal(err)
+		}
+		if h.Typeflag == tar.TypeReg {
+			if _, err := tw.Write(body); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+	if err := tw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if err := gz.Close(); err != nil {
+		t.Fatal(err)
+	}
+	return path
+}
+
+// A member is taken by its exact name and type, so an archive cannot pass off
+// a "../", absolute or link entry as one, and the write does not follow a
+// symbolic link already in the workspace.
+func TestExtractWritesNothingOutsideTheWorkspace(t *testing.T) {
+	body := []byte("content")
+	member := releaseMember{Member: "ventoy-1.1.17/boot/boot.img", Name: "boot.img", SHA256: sum(body)}
+
+	for name, hdr := range map[string]*tar.Header{
+		"dot-dot":  {Name: "ventoy-1.1.17/../ventoy-1.1.17/boot/../../boot.img", Typeflag: tar.TypeReg, Mode: 0o644},
+		"absolute": {Name: "/" + member.Member, Typeflag: tar.TypeReg, Mode: 0o644},
+		"symlink":  {Name: member.Member, Typeflag: tar.TypeSymlink, Linkname: "/etc/shadow"},
+	} {
+		t.Run(name, func(t *testing.T) {
+			archive := writeArchive(t, []*tar.Header{hdr}, body)
+			parent := t.TempDir()
+			ws := filepath.Join(parent, "ws")
+			if err := os.Mkdir(ws, 0o755); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := extractChecked(archive, []releaseMember{member}, ws); err == nil {
+				t.Fatal("the entry was taken for the member")
+			}
+			if entries, _ := os.ReadDir(ws); len(entries) != 0 {
+				t.Fatalf("wrote %v", entries)
+			}
+			if entries, _ := os.ReadDir(parent); len(entries) != 1 {
+				t.Fatalf("wrote beside the workspace: %v", entries)
+			}
+		})
+	}
+
+	for _, link := range []string{member.Name + ".raw", member.Name} {
+		t.Run("symlink-on-disk-"+link, func(t *testing.T) {
+			archive := writeArchive(t, []*tar.Header{{Name: member.Member, Typeflag: tar.TypeReg, Mode: 0o644}}, body)
+			outside := filepath.Join(t.TempDir(), "victim")
+			if err := os.WriteFile(outside, []byte("keep"), 0o644); err != nil {
+				t.Fatal(err)
+			}
+			ws := t.TempDir()
+			if err := os.Symlink(outside, filepath.Join(ws, link)); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := extractChecked(archive, []releaseMember{member}, ws); err == nil {
+				t.Fatal("wrote through a symlink")
+			}
+			if data, _ := os.ReadFile(outside); string(data) != "keep" {
+				t.Fatalf("the file outside now holds %q", data)
+			}
+		})
+	}
+}
