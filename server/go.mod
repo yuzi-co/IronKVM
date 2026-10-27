@@ -100,3 +100,8 @@ require (
 	golang.zx2c4.com/wireguard v0.0.0-20231211153847-12269c276173 // indirect
 	google.golang.org/protobuf v1.34.1 // indirect
 )
+
+// gosrt imports aes/keywrap from this module, whose repository has no LICENSE
+// file. third_party/benburkert-openpgp holds that package unchanged, with the
+// licence from its source header.
+replace github.com/benburkert/openpgp => ./third_party/benburkert-openpgp
