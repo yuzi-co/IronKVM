@@ -2,6 +2,11 @@ package auth
 
 import (
 	"bytes"
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/md5"
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -17,7 +22,6 @@ import (
 	"NanoKVM-Server/utils"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mervick/aes-everywhere/go/aes256"
 )
 
 func TestLoginCookieAndUserAuthorizationLifecycle(t *testing.T) {
@@ -319,8 +323,35 @@ func jsonRequest(method, path string, body any) *http.Request {
 	return request
 }
 
+// encryptForRequest encrypts a password as the web UI does before it posts it:
+// salted AES-256-CBC with the key and IV from OpenSSL's EVP_BytesToKey (MD5,
+// one round), base64 and then percent-encoded. utils/encrypt_test.go checks
+// utils.Decrypt against cipher texts the web UI wrote.
 func encryptForRequest(password string) string {
-	return url.QueryEscape(aes256.Encrypt(password, utils.SecretKey))
+	salt := make([]byte, 8)
+	if _, err := rand.Read(salt); err != nil {
+		panic(err)
+	}
+
+	var derived, previous []byte
+	for len(derived) < 48 {
+		sum := md5.Sum(append(append(previous, utils.SecretKey...), salt...))
+		previous = sum[:]
+		derived = append(derived, previous...)
+	}
+
+	padding := aes.BlockSize - len(password)%aes.BlockSize
+	plaintext := append([]byte(password), bytes.Repeat([]byte{byte(padding)}, padding)...)
+
+	block, err := aes.NewCipher(derived[:32])
+	if err != nil {
+		panic(err)
+	}
+	ciphertext := make([]byte, len(plaintext))
+	cipher.NewCBCEncrypter(block, derived[32:48]).CryptBlocks(ciphertext, plaintext)
+
+	data := append(append([]byte("Salted__"), salt...), ciphertext...)
+	return url.QueryEscape(base64.StdEncoding.EncodeToString(data))
 }
 
 func useTestStore(store *authn.Store) func() {

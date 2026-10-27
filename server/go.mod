@@ -23,7 +23,6 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.3
 	github.com/mdlayher/netlink v1.11.2
-	github.com/mervick/aes-everywhere/go/aes256 v0.0.0-20240803013625-6759956693c0
 	github.com/modelcontextprotocol/go-sdk v1.6.1
 	github.com/pion/dtls/v3 v3.1.8
 	github.com/pion/ice/v4 v4.4.0
