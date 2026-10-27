@@ -54,7 +54,14 @@ D=%q
 echo "$*" >> "$D/args"
 case "$1" in
 status)
-	cat "$D/status"
+	# An older tool ignores --json and prints the text form, which is what
+	# this does until a case writes status.json.
+	if [ "$2" = --json ] && [ -e "$D/status.json" ]; then
+		cat "$D/status.warn" >&2 2>/dev/null
+		cat "$D/status.json"
+	else
+		cat "$D/status"
+	fi
 	;;
 install)
 	shift
@@ -596,7 +603,7 @@ func TestTryConfirmRevert(t *testing.T) {
 		t.Fatalf("revert: %+v", rsp)
 	}
 
-	want := []string{"try b", "status", "confirm", "status", "revert"}
+	want := []string{"try b", "status --json", "confirm", "status --json", "revert"}
 	if got := s.args(t); strings.Join(got, "|") != strings.Join(want, "|") {
 		t.Fatalf("the tool was run as %q", got)
 	}
@@ -614,5 +621,163 @@ func TestStatusWithoutTheTool(t *testing.T) {
 	}
 	if _, err := readStatus(context.Background()); err == nil {
 		t.Fatal("no error")
+	}
+}
+
+// What `slot status --json` prints for the board statusArmed describes, in
+// the tool's own layout (generic/slot, cmd_status_json). The manifest repeats
+// a key and carries a value with a quote, a backslash and a tab in it, which
+// the column parser could never have read back.
+const statusArmedJSON = `{
+  "format": 1,
+  "running": "a",
+  "trusted": "a",
+  "trial": "b",
+  "prev": "none",
+  "recovery": "no",
+  "bootloader": "installed",
+  "kernel": "slot",
+  "slots": [
+    {"name": "a", "state": "unknown", "version": "dist-0123456789ab"},
+    {"name": "b", "state": "installed", "version": "2026.10.27", "sha256": "abc", "size": "4194304", "installed": "2026-10-27T10:00:00Z", "trial": "armed", "source": "ironkvm-2026.10.27.img.zst"},
+    {"name": "recovery", "state": "installed"}
+  ],
+  "manifest": [
+    {"key": "device", "value": "lichee-rv-nano"},
+    {"key": "vermagic", "value": "5.10.4-tag- mod_unload riscv"},
+    {"key": "slotkernel", "value": "6.12.0"},
+    {"key": "flavour", "value": "say \"hi\" \\ to\tall"},
+    {"key": "flavour", "value": "second"},
+    {"key": "libkvm", "value": "libkvm-vendor.so 0123"},
+    {"key": "version", "value": "dist-0123456789ab"}
+  ]
+}
+`
+
+func TestParseStatusJSON(t *testing.T) {
+	st, err := parseStatusJSON(statusArmedJSON)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Running != "a" || st.Trusted != "a" || st.Trial != "b" || st.Prev != "none" ||
+		st.Recovery != "no" || st.Bootloader != "installed" || st.Kernel != "slot" {
+		t.Fatalf("status fields: %+v", st)
+	}
+	if len(st.Slots) != 3 {
+		t.Fatalf("slots: %+v", st.Slots)
+	}
+	b, _ := st.Slot("b")
+	want := Info{Name: "b", State: "installed", Version: "2026.10.27", Sha256: "abc",
+		Installed: "2026-10-27T10:00:00Z", Trial: "armed", Source: "ironkvm-2026.10.27.img.zst"}
+	if b != want {
+		t.Fatalf("slot b: %+v", b)
+	}
+	// The running slot's version, which the tool takes from its manifest when
+	// no install recorded one.
+	if a, _ := st.Slot("a"); a.State != "unknown" || a.Version != "dist-0123456789ab" {
+		t.Fatalf("slot a: %+v", a)
+	}
+	if r, _ := st.Slot("recovery"); r.State != "installed" {
+		t.Fatalf("slot recovery: %+v", r)
+	}
+	if st.Image["device"] != "lichee-rv-nano" || st.Image["slotkernel"] != "6.12.0" ||
+		st.Image["version"] != "dist-0123456789ab" {
+		t.Fatalf("image: %v", st.Image)
+	}
+	// The first of a repeated key, as the column parser keeps it, and the
+	// escapes read back.
+	if st.Image["flavour"] != "say \"hi\" \\ to\tall" {
+		t.Fatalf("flavour: %q", st.Image["flavour"])
+	}
+	if _, ok := st.Image["vermagic"]; ok {
+		t.Fatal("the module line is not shown")
+	}
+}
+
+// Both forms describe the same board the same way, apart from what only the
+// JSON carries.
+func TestParseStatusJSONAgreesWithTheText(t *testing.T) {
+	fromJSON, err := parseStatusJSON(statusArmedJSON)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fromText := parseStatus(statusArmed)
+	for i := range fromJSON.Slots {
+		fromJSON.Slots[i].Source = ""
+		if fromJSON.Slots[i].Name == "a" {
+			fromJSON.Slots[i].Version = ""
+		}
+	}
+	a, _ := json.Marshal(fromJSON.Slots)
+	b, _ := json.Marshal(fromText.Slots)
+	if string(a) != string(b) {
+		t.Fatalf("slots differ:\n json %s\n text %s", a, b)
+	}
+	fromJSON.Slots, fromText.Slots, fromJSON.Image, fromText.Image = nil, nil, nil, nil
+	a, _ = json.Marshal(fromJSON)
+	b, _ = json.Marshal(fromText)
+	if string(a) != string(b) {
+		t.Fatalf("fields differ:\n json %s\n text %s", a, b)
+	}
+}
+
+func TestParseStatusJSONRefusesWhatItCannotRead(t *testing.T) {
+	if _, err := parseStatusJSON(strings.Replace(statusArmedJSON, `"format": 1`, `"format": 2`, 1)); err == nil ||
+		!strings.Contains(err.Error(), "format 2") {
+		t.Fatalf("a later format: %v", err)
+	}
+	if _, err := parseStatusJSON(`{"running": "a"}`); err == nil {
+		t.Fatal("an object with no format was read")
+	}
+	if _, err := parseStatusJSON(`{"format": 1, "running": `); err == nil {
+		t.Fatal("a cut-off object was read")
+	}
+	st, err := parseStatusJSON(`{"format": 1, "running": "a", "trusted": "a", "slots": []}`)
+	if err != nil || st.Slots == nil || len(st.Slots) != 0 || st.Image != nil {
+		t.Fatalf("a board with no records and no manifest: %+v, %v", st, err)
+	}
+}
+
+func TestReadStatusAsksForJSON(t *testing.T) {
+	s := newStub(t)
+	s.write(t, "status.json", statusArmedJSON)
+	// A warning on stderr is not part of the answer.
+	s.write(t, "status.warn", "slot: cannot keep a record in /data/ironkvm/slots\n")
+	st, err := readStatus(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if b, _ := st.Slot("b"); b.Source != "ironkvm-2026.10.27.img.zst" {
+		t.Fatalf("the JSON was not read: %+v", st)
+	}
+	if got := s.args(t); strings.Join(got, "|") != "status --json" {
+		t.Fatalf("the tool was run as %q", got)
+	}
+}
+
+// An image from before --json has a tool that ignores the option and prints
+// the text form. That is read with the column parser.
+func TestReadStatusFromAnOlderTool(t *testing.T) {
+	s := newStub(t)
+	st, err := readStatus(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if b, _ := st.Slot("b"); b.Version != "2026.10.27" || b.Trial != "armed" || b.Source != "" {
+		t.Fatalf("the text was not read: %+v", st)
+	}
+	if st.Image["device"] != "lichee-rv-nano" {
+		t.Fatalf("image: %v", st.Image)
+	}
+	if got := s.args(t); strings.Join(got, "|") != "status --json" {
+		t.Fatalf("the tool was run as %q", got)
+	}
+}
+
+func TestReadStatusOfALaterFormat(t *testing.T) {
+	s := newStub(t)
+	s.write(t, "status.json", `{"format": 2, "board": {}}`)
+	if _, err := readStatus(context.Background()); err == nil {
+		t.Fatal("a format this server does not know was read")
 	}
 }
