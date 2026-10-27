@@ -2502,11 +2502,16 @@ const nb = {
         failed: 'Kunne ikke lagre RTSP-innstillingene',
         limits:
           'Høyst to spillere samtidig. Et bytte av videokodek avslutter dem, og de kobler til igjen.',
+        noCertificate:
+          'Kortet har ikke noe TLS-sertifikat ennå. Når RTSPS slås på, lages et selvsignert.',
         noPlayers: 'Ingen spiller tilkoblet',
+        plain: 'Ukryptert RTSP',
+        plainDesc: 'Ukryptert, for avspillere som ikke kan RTSPS.',
         players: 'Spillere',
         playing: 'Spiller',
-        port: 'Port',
+        port: 'RTSP-port',
         portDesc: 'TCP-porten spillere kobler til.',
+        recommended: 'Anbefalt',
         save: 'Lagre',
         saved: 'RTSP-innstillinger lagret',
         service: 'RTSP-server',
@@ -2514,10 +2519,19 @@ const nb = {
           'Lar OBS (Mediekilde), VLC, ffmpeg og NVR-er spille av videoen og vertens lyd når det finnes. Kortet sender det koderen allerede lager; ingenting kodes om. Hver spiller teller som en seer.',
         since: 'Siden',
         state: 'Tilstand',
+        tls: 'RTSPS (kryptert)',
+        tlsAddress: 'RTSPS-adresse',
+        tlsDesc:
+          'RTSP over TLS, med sertifikatet webgrensesnittet bruker. Token, bilde og lyd er kryptert, og mediene blir værende i forbindelsen.',
+        tlsHint:
+          'Kortets sertifikat er selvsignert med mindre du har lastet opp et, så avspilleren må godta det: VLC spør, OBS kan avvise det.',
+        tlsPort: 'RTSPS-port',
+        tlsPortDesc: 'TCP-porten RTSPS-avspillere kobler til.',
         transport: 'Transport',
         udp: 'RTP over UDP',
         udpDesc:
           'Tilby også mediene over UDP. Som standard går de inne i RTSP-forbindelsen, som kommer gjennom NAT og brannmurer, og en spiller som ber om UDP, faller tilbake til den.',
+        udpPlainOnly: 'Bare ukryptert RTSP: RTSPS holder mediene inne i forbindelsen sin.',
         udpPort: 'UDP-porter',
         udpPortDesc: 'RTP-porten. RTCP bruker den neste.',
         user: 'Bruker'

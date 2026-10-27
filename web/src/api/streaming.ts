@@ -9,6 +9,8 @@ export type RtspClient = {
   transport?: 'tcp' | 'udp';
   since: string;
   playing: boolean;
+  // A player on the RTSPS listener.
+  secure: boolean;
 };
 
 export type RtspSettings = {
@@ -16,8 +18,13 @@ export type RtspSettings = {
   port: number;
   udp: boolean;
   udpPort: number;
+  // RTSPS, RTSP over TLS, on a port of its own. `enabled` is plain RTSP.
+  tls: boolean;
+  tlsPort: number;
   path: string;
   maxClients: number;
+  // Whether the board has a certificate RTSPS can serve.
+  certificate: boolean;
   listening: boolean;
   error?: string;
   clients: RtspClient[];
@@ -28,6 +35,8 @@ export type RtspSettingsRequest = {
   port: number;
   udp: boolean;
   udpPort: number;
+  tls: boolean;
+  tlsPort: number;
 };
 
 export function getRtspSettings() {

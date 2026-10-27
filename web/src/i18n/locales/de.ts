@@ -2553,11 +2553,16 @@ const de = {
         failed: 'Die RTSP-Einstellungen konnten nicht gespeichert werden',
         limits:
           'Höchstens zwei Player gleichzeitig. Ein Wechsel des Videocodecs beendet sie, und sie verbinden sich neu.',
+        noCertificate:
+          'Die Platine hat noch kein TLS-Zertifikat. Beim Einschalten von RTSPS wird ein selbstsigniertes erstellt.',
         noPlayers: 'Kein Player verbunden',
+        plain: 'Unverschlüsseltes RTSP',
+        plainDesc: 'Unverschlüsselt, für Player, die kein RTSPS können.',
         players: 'Player',
         playing: 'Spielt',
-        port: 'Port',
+        port: 'RTSP-Port',
         portDesc: 'Der TCP-Port, mit dem sich Player verbinden.',
+        recommended: 'Empfohlen',
         save: 'Speichern',
         saved: 'RTSP-Einstellungen gespeichert',
         service: 'RTSP-Server',
@@ -2565,10 +2570,19 @@ const de = {
           'Lässt OBS (Medienquelle), VLC, ffmpeg und NVRs das Video abspielen, dazu den Ton des Hosts, wenn es welchen gibt. Das Board sendet, was sein Encoder ohnehin erzeugt; nichts wird neu kodiert. Jeder Player zählt als Zuschauer.',
         since: 'Seit',
         state: 'Status',
+        tls: 'RTSPS (verschlüsselt)',
+        tlsAddress: 'RTSPS-Adresse',
+        tlsDesc:
+          'RTSP über TLS, mit dem Zertifikat der Weboberfläche. Token, Bild und Ton sind verschlüsselt, und die Medien bleiben in der Verbindung.',
+        tlsHint:
+          'Das Zertifikat der Platine ist selbstsigniert, sofern Sie kein eigenes hochgeladen haben, daher muss der Player es akzeptieren: VLC fragt nach, OBS lehnt es eventuell ab.',
+        tlsPort: 'RTSPS-Port',
+        tlsPortDesc: 'Der TCP-Port, mit dem sich RTSPS-Player verbinden.',
         transport: 'Transport',
         udp: 'RTP über UDP',
         udpDesc:
           'Die Medien zusätzlich über UDP anbieten. Standardmäßig laufen sie in der RTSP-Verbindung, die NAT und Firewalls passiert; ein Player, der UDP verlangt, weicht darauf aus.',
+        udpPlainOnly: 'Nur für unverschlüsseltes RTSP: RTSPS hält die Medien in seiner Verbindung.',
         udpPort: 'UDP-Ports',
         udpPortDesc: 'Der RTP-Port. RTCP nutzt den nächsten.',
         user: 'Benutzer'

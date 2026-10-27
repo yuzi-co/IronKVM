@@ -2508,11 +2508,16 @@ const se = {
         failed: 'Det gick inte att spara RTSP-inställningarna',
         limits:
           'Högst två spelare samtidigt. Ett byte av videokodek avslutar dem, och de ansluter igen.',
+        noCertificate:
+          'Kortet har inget TLS-certifikat ännu. När RTSPS slås på skapas ett självsignerat.',
         noPlayers: 'Ingen spelare ansluten',
+        plain: 'Okrypterad RTSP',
+        plainDesc: 'Okrypterad, för spelare som inte klarar RTSPS.',
         players: 'Spelare',
         playing: 'Spelar',
-        port: 'Port',
+        port: 'RTSP-port',
         portDesc: 'TCP-porten som spelare ansluter till.',
+        recommended: 'Rekommenderas',
         save: 'Spara',
         saved: 'RTSP-inställningar sparade',
         service: 'RTSP-server',
@@ -2520,10 +2525,19 @@ const se = {
           'Låter OBS (Mediekälla), VLC, ffmpeg och NVR:er spela upp videon och värdens ljud när det finns. Kortet skickar det som dess kodare redan gör; inget kodas om. Varje spelare räknas som en tittare.',
         since: 'Sedan',
         state: 'Tillstånd',
+        tls: 'RTSPS (krypterad)',
+        tlsAddress: 'RTSPS-adress',
+        tlsDesc:
+          'RTSP över TLS, med certifikatet som webbgränssnittet använder. Token, bild och ljud är krypterade, och media stannar i anslutningen.',
+        tlsHint:
+          'Kortets certifikat är självsignerat om du inte har laddat upp ett, så spelaren måste godta det: VLC frågar, OBS kan neka det.',
+        tlsPort: 'RTSPS-port',
+        tlsPortDesc: 'TCP-porten som RTSPS-spelare ansluter till.',
         transport: 'Transport',
         udp: 'RTP över UDP',
         udpDesc:
           'Erbjud även medierna över UDP. Som standard går de inuti RTSP-anslutningen, som tar sig igenom NAT och brandväggar, och en spelare som ber om UDP faller tillbaka på den.',
+        udpPlainOnly: 'Endast okrypterad RTSP: RTSPS håller media i sin egen anslutning.',
         udpPort: 'UDP-portar',
         udpPortDesc: 'RTP-porten. RTCP använder nästa.',
         user: 'Användare'

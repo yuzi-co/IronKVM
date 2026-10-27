@@ -2528,11 +2528,16 @@ const hu = {
         failed: 'Nem sikerült menteni az RTSP-beállításokat',
         limits:
           'Egyszerre legfeljebb két lejátszó. A videokodek váltása leállítja őket, és újra kapcsolódnak.',
+        noCertificate:
+          'A panelnek még nincs TLS-tanúsítványa. Az RTSPS bekapcsolása létrehoz egy önaláírtat.',
         noPlayers: 'Nincs csatlakozott lejátszó',
+        plain: 'Titkosítatlan RTSP',
+        plainDesc: 'Titkosítatlan, az RTSPS-t nem ismerő lejátszóknak.',
         players: 'Lejátszók',
         playing: 'Lejátszás',
-        port: 'Port',
+        port: 'RTSP-port',
         portDesc: 'A TCP-port, amelyre a lejátszók csatlakoznak.',
+        recommended: 'Ajánlott',
         save: 'Mentés',
         saved: 'RTSP-beállítások mentve',
         service: 'RTSP-szerver',
@@ -2540,10 +2545,19 @@ const hu = {
           'Lehetővé teszi, hogy az OBS (Médiaforrás), a VLC, az ffmpeg és az NVR-ek lejátsszák a videót, és a gazdagép hangját, ha van. A kártya azt küldi, amit a kódolója már előállít; semmi sem kódolódik újra. Minden lejátszó nézőnek számít.',
         since: 'Óta',
         state: 'Állapot',
+        tls: 'RTSPS (titkosított)',
+        tlsAddress: 'RTSPS-cím',
+        tlsDesc:
+          'RTSP TLS-en keresztül, a webes felület tanúsítványával. A token, a kép és a hang titkosítva halad, a média a kapcsolaton belül marad.',
+        tlsHint:
+          'A panel tanúsítványa önaláírt, hacsak nem töltött fel sajátot, ezért a lejátszónak el kell fogadnia: a VLC rákérdez, az OBS elutasíthatja.',
+        tlsPort: 'RTSPS-port',
+        tlsPortDesc: 'A TCP-port, amelyhez az RTSPS-lejátszók csatlakoznak.',
         transport: 'Átvitel',
         udp: 'RTP UDP-n',
         udpDesc:
           'A média felajánlása UDP-n is. Alapértelmezés szerint az RTSP-kapcsolaton belül halad, amely átjut a NAT-on és a tűzfalakon, és az UDP-t kérő lejátszó erre tér vissza.',
+        udpPlainOnly: 'Csak titkosítatlan RTSP-nél: az RTSPS a kapcsolatán belül tartja a médiát.',
         udpPort: 'UDP-portok',
         udpPortDesc: 'Az RTP-port. Az RTCP a következőt használja.',
         user: 'Felhasználó'

@@ -2509,11 +2509,16 @@ const id = {
         failed: 'Gagal menyimpan pengaturan RTSP',
         limits:
           'Paling banyak dua pemutar sekaligus. Perubahan codec video mengakhiri mereka, dan mereka terhubung lagi.',
+        noCertificate:
+          'Papan belum punya sertifikat TLS. Menyalakan RTSPS akan membuat sertifikat swatanda.',
         noPlayers: 'Tidak ada pemutar terhubung',
+        plain: 'RTSP tanpa enkripsi',
+        plainDesc: 'Tanpa enkripsi, untuk pemutar yang tidak mendukung RTSPS.',
         players: 'Pemutar',
         playing: 'Memutar',
-        port: 'Port',
+        port: 'Port RTSP',
         portDesc: 'Port TCP yang dihubungi pemutar.',
+        recommended: 'Disarankan',
         save: 'Simpan',
         saved: 'Pengaturan RTSP disimpan',
         service: 'Server RTSP',
@@ -2521,10 +2526,19 @@ const id = {
           'Memungkinkan OBS (Sumber Media), VLC, ffmpeg, dan NVR memutar video, serta audio host bila ada. Papan mengirim apa yang sudah dibuat encodernya; tidak ada yang dienkode ulang. Setiap pemutar dihitung sebagai penonton.',
         since: 'Sejak',
         state: 'Status',
+        tls: 'RTSPS (terenkripsi)',
+        tlsAddress: 'Alamat RTSPS',
+        tlsDesc:
+          'RTSP melalui TLS, dengan sertifikat yang dipakai antarmuka web. Token, gambar, dan suara terenkripsi, dan media tetap di dalam koneksi.',
+        tlsHint:
+          'Sertifikat papan bersifat swatanda kecuali Anda mengunggah sendiri, jadi pemutar harus menerimanya: VLC akan bertanya, OBS mungkin menolaknya.',
+        tlsPort: 'Port RTSPS',
+        tlsPortDesc: 'Port TCP yang dihubungi pemutar RTSPS.',
         transport: 'Transport',
         udp: 'RTP lewat UDP',
         udpDesc:
           'Tawarkan media juga lewat UDP. Secara bawaan media berjalan di dalam koneksi RTSP, yang melewati NAT dan firewall, dan pemutar yang meminta UDP kembali ke sana.',
+        udpPlainOnly: 'Hanya untuk RTSP tanpa enkripsi: RTSPS menjaga media di dalam koneksinya.',
         udpPort: 'Port UDP',
         udpPortDesc: 'Port RTP. RTCP memakai port berikutnya.',
         user: 'Pengguna'

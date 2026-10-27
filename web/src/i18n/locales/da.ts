@@ -2504,11 +2504,16 @@ const da = {
         failed: 'RTSP-indstillingerne kunne ikke gemmes',
         limits:
           'Højst to afspillere ad gangen. Et skift af videocodec afslutter dem, og de forbinder igen.',
+        noCertificate:
+          'Kortet har endnu intet TLS-certifikat. Når RTSPS slås til, laves et selvsigneret.',
         noPlayers: 'Ingen afspiller forbundet',
+        plain: 'Ukrypteret RTSP',
+        plainDesc: 'Ukrypteret, til afspillere der ikke kan RTSPS.',
         players: 'Afspillere',
         playing: 'Afspiller',
-        port: 'Port',
+        port: 'RTSP-port',
         portDesc: 'TCP-porten, som afspillere forbinder til.',
+        recommended: 'Anbefalet',
         save: 'Gem',
         saved: 'RTSP-indstillinger gemt',
         service: 'RTSP-server',
@@ -2516,10 +2521,19 @@ const da = {
           'Lader OBS (Mediekilde), VLC, ffmpeg og NVR\'er afspille videoen og værtens lyd, når der er nogen. Kortet sender, hvad dets encoder allerede laver; intet kodes om. Hver afspiller tæller som en seer.',
         since: 'Siden',
         state: 'Tilstand',
+        tls: 'RTSPS (krypteret)',
+        tlsAddress: 'RTSPS-adresse',
+        tlsDesc:
+          'RTSP over TLS med det certifikat, webgrænsefladen bruger. Token, billede og lyd er krypteret, og mediet bliver inde i forbindelsen.',
+        tlsHint:
+          'Kortets certifikat er selvsigneret, medmindre du har uploadet et, så afspilleren skal acceptere det: VLC spørger, OBS kan afvise det.',
+        tlsPort: 'RTSPS-port',
+        tlsPortDesc: 'Den TCP-port, RTSPS-afspillere forbinder til.',
         transport: 'Transport',
         udp: 'RTP over UDP',
         udpDesc:
           'Tilbyd også medierne over UDP. Som standard går de inde i RTSP-forbindelsen, som kommer gennem NAT og firewalls, og en afspiller, der beder om UDP, falder tilbage til den.',
+        udpPlainOnly: 'Kun ukrypteret RTSP: RTSPS holder mediet inde i sin forbindelse.',
         udpPort: 'UDP-porte',
         udpPortDesc: 'RTP-porten. RTCP bruger den næste.',
         user: 'Bruger'

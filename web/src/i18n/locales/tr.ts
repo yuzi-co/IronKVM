@@ -2506,11 +2506,16 @@ const tr = {
         failed: 'RTSP ayarları kaydedilemedi',
         limits:
           'Aynı anda en fazla iki oynatıcı. Video codec değişikliği onları sonlandırır ve yeniden bağlanırlar.',
+        noCertificate:
+          'Kartın henüz TLS sertifikası yok. RTSPS açıldığında kendinden imzalı bir sertifika oluşturulur.',
         noPlayers: 'Bağlı oynatıcı yok',
+        plain: 'Şifresiz RTSP',
+        plainDesc: 'Şifresiz, RTSPS desteklemeyen oynatıcılar için.',
         players: 'Oynatıcılar',
         playing: 'Oynatıyor',
-        port: 'Bağlantı noktası',
+        port: 'RTSP bağlantı noktası',
         portDesc: 'Oynatıcıların bağlandığı TCP bağlantı noktası.',
+        recommended: 'Önerilen',
         save: 'Kaydet',
         saved: 'RTSP ayarları kaydedildi',
         service: 'RTSP sunucusu',
@@ -2518,10 +2523,20 @@ const tr = {
           'OBS (Medya Kaynağı), VLC, ffmpeg ve NVR\'lerin videoyu ve varsa ana makinenin sesini oynatmasını sağlar. Kart, kodlayıcısının zaten ürettiğini gönderir; hiçbir şey yeniden kodlanmaz. Her oynatıcı bir izleyici sayılır.',
         since: 'Başlangıç',
         state: 'Durum',
+        tls: 'RTSPS (şifreli)',
+        tlsAddress: 'RTSPS adresi',
+        tlsDesc:
+          'Web arayüzünün kullandığı sertifikayla TLS üzerinden RTSP. Belirteç, görüntü ve ses şifrelenir, medya bağlantının içinde kalır.',
+        tlsHint:
+          'Kendi sertifikanızı yüklemediyseniz kartın sertifikası kendinden imzalıdır, bu yüzden oynatıcının onu kabul etmesi gerekir: VLC sorar, OBS reddedebilir.',
+        tlsPort: 'RTSPS bağlantı noktası',
+        tlsPortDesc: 'RTSPS oynatıcılarının bağlandığı TCP bağlantı noktası.',
         transport: 'Taşıma',
         udp: 'UDP üzerinden RTP',
         udpDesc:
           'Medyayı UDP üzerinden de sun. Varsayılan olarak NAT ve güvenlik duvarlarından geçen RTSP bağlantısının içinde gider; UDP isteyen bir oynatıcı ona geri döner.',
+        udpPlainOnly:
+          'Yalnızca şifresiz RTSP için: RTSPS medyayı kendi bağlantısının içinde tutar.',
         udpPort: 'UDP bağlantı noktaları',
         udpPortDesc: 'RTP bağlantı noktası. RTCP bir sonrakini kullanır.',
         user: 'Kullanıcı'

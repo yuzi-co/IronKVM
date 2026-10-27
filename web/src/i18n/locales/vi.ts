@@ -2498,11 +2498,15 @@ const vi = {
         failed: 'Không lưu được cài đặt RTSP',
         limits:
           'Tối đa hai trình phát cùng lúc. Việc đổi codec video sẽ ngắt chúng và chúng kết nối lại.',
+        noCertificate: 'Bo mạch chưa có chứng chỉ TLS. Bật RTSPS sẽ tạo một chứng chỉ tự ký.',
         noPlayers: 'Không có trình phát nào kết nối',
+        plain: 'RTSP không mã hóa',
+        plainDesc: 'Không mã hóa, dành cho trình phát không hỗ trợ RTSPS.',
         players: 'Trình phát',
         playing: 'Đang phát',
-        port: 'Cổng',
+        port: 'Cổng RTSP',
         portDesc: 'Cổng TCP mà trình phát kết nối tới.',
+        recommended: 'Khuyên dùng',
         save: 'Lưu',
         saved: 'Đã lưu cài đặt RTSP',
         service: 'Máy chủ RTSP',
@@ -2510,10 +2514,19 @@ const vi = {
           'Cho phép OBS (Nguồn phương tiện), VLC, ffmpeg và NVR phát video, cùng âm thanh của máy chủ khi có. Bo mạch gửi những gì bộ mã hóa của nó đã tạo; không có gì bị mã hóa lại. Mỗi trình phát được tính là một người xem.',
         since: 'Từ',
         state: 'Trạng thái',
+        tls: 'RTSPS (mã hóa)',
+        tlsAddress: 'Địa chỉ RTSPS',
+        tlsDesc:
+          'RTSP qua TLS, dùng chứng chỉ của giao diện web. Token, hình ảnh và âm thanh được mã hóa, và dữ liệu media nằm trong kết nối.',
+        tlsHint:
+          'Chứng chỉ của bo mạch là tự ký trừ khi bạn đã tải lên chứng chỉ riêng, nên trình phát phải chấp nhận nó: VLC sẽ hỏi, OBS có thể từ chối.',
+        tlsPort: 'Cổng RTSPS',
+        tlsPortDesc: 'Cổng TCP mà trình phát RTSPS kết nối tới.',
         transport: 'Truyền tải',
         udp: 'RTP qua UDP',
         udpDesc:
           'Cung cấp thêm phương tiện qua UDP. Mặc định chúng đi bên trong kết nối RTSP, vốn đi qua được NAT và tường lửa, và trình phát yêu cầu UDP sẽ quay về đó.',
+        udpPlainOnly: 'Chỉ áp dụng cho RTSP không mã hóa: RTSPS giữ media trong kết nối của nó.',
         udpPort: 'Cổng UDP',
         udpPortDesc: 'Cổng RTP. RTCP dùng cổng kế tiếp.',
         user: 'Người dùng'
