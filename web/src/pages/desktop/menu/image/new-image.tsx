@@ -9,9 +9,12 @@ import { formatBytes } from '@/lib/health.ts';
 import { useKeyboardLock } from '@/hooks/useKeyboardLock.ts';
 
 import {
+  checkFloppySize,
   checkName,
   checkSize,
   defaultSize,
+  FLOPPIES,
+  FLOPPY_DEFAULT,
   imageFileName,
   PRESETS,
   toBytes,
@@ -39,9 +42,9 @@ type NewImageModalProps = {
 };
 
 // NewImageModal creates an empty disk image for exchanging files with the
-// host: a name, a size the device has room for, and a filesystem. The image
-// joins the library, ready to fill from the file browser or to insert into
-// the disk drive.
+// host: a name, a size the device has room for, and a filesystem. Or a blank
+// FAT12 floppy, at one of the floppy sizes. The image joins the library,
+// ready to fill from the file browser or to insert into the disk drive.
 export const NewImageModal = ({ open, onClose, onCreated }: NewImageModalProps) => {
   const { t } = useTranslation();
   useKeyboardLock('image-create', open);
@@ -49,7 +52,9 @@ export const NewImageModal = ({ open, onClose, onCreated }: NewImageModalProps) 
   const [space, setSpace] = useState<ImageSpace | null>(null);
   const [spaceError, setSpaceError] = useState('');
   const [name, setName] = useState('exchange');
+  const [kind, setKind] = useState<'disk' | 'floppy'>('disk');
   const [fs, setFs] = useState<api.ImageFs>('exfat');
+  const [floppySize, setFloppySize] = useState(FLOPPY_DEFAULT);
   const [preset, setPreset] = useState<number | 'custom'>(0);
   const [custom, setCustom] = useState<number | null>(2);
   const [unit, setUnit] = useState<SizeUnit>('GiB');
@@ -75,17 +80,27 @@ export const NewImageModal = ({ open, onClose, onCreated }: NewImageModalProps) 
       .catch((err) => setSpaceError(err?.message ?? ''));
   }, [open]);
 
-  const size = preset === 'custom' ? toBytes(custom ?? 0, unit) : preset;
+  const floppy = kind === 'floppy';
+  const diskSize = preset === 'custom' ? toBytes(custom ?? 0, unit) : preset;
+  const size = floppy ? floppySize : diskSize;
   const nameProblem = checkName(name);
-  const sizeProblem = space ? checkSize(size, space) : '';
+  const check = floppy ? checkFloppySize : checkSize;
+  const sizeProblem = space ? check(size, space) : '';
   const canCreate = !!space && !nameProblem && !sizeProblem && !creating;
+
+  // The name follows the kind while it is still the suggested one.
+  function changeKind(next: 'disk' | 'floppy') {
+    setKind(next);
+    if (name === 'exchange' && next === 'floppy') setName('floppy');
+    if (name === 'floppy' && next === 'disk') setName('exchange');
+  }
 
   function create() {
     if (!canCreate) return;
     setCreating(true);
     setError('');
     api
-      .createImage(name.trim(), size, fs)
+      .createImage(name.trim(), size, floppy ? 'fat12' : fs)
       .then((rsp) => {
         if (rsp.code !== 0) {
           setError(rsp.msg || t('image.create.failed'));
@@ -118,7 +133,19 @@ export const NewImageModal = ({ open, onClose, onCreated }: NewImageModalProps) 
       ]}
     >
       <div className="flex flex-col space-y-4 pt-2">
-        <span className="text-sm text-neutral-400">{t('image.create.desc')}</span>
+        <Radio.Group
+          value={kind}
+          optionType="button"
+          buttonStyle="solid"
+          onChange={(e) => changeKind(e.target.value)}
+        >
+          <Radio.Button value="disk">{t('image.disk')}</Radio.Button>
+          <Radio.Button value="floppy">{t('image.floppy')}</Radio.Button>
+        </Radio.Group>
+
+        <span className="text-sm text-neutral-400">
+          {floppy ? t('image.create.floppyDesc') : t('image.create.desc')}
+        </span>
 
         <div>
           <div className={label}>{t('image.create.name')}</div>
@@ -140,7 +167,29 @@ export const NewImageModal = ({ open, onClose, onCreated }: NewImageModalProps) 
             <LoaderCircleIcon className="animate-spin text-neutral-400" size={16} />
           )}
           {spaceError && <div className="text-sm text-red-500">{spaceError}</div>}
-          {space && (
+          {space && floppy && (
+            <>
+              <Radio.Group
+                value={floppySize}
+                optionType="button"
+                buttonStyle="solid"
+                size="small"
+                onChange={(e) => setFloppySize(e.target.value)}
+              >
+                {FLOPPIES.map((f) => (
+                  <Radio.Button key={f.size} value={f.size} disabled={f.size > space.max}>
+                    {f.name}
+                  </Radio.Button>
+                ))}
+              </Radio.Group>
+              {sizeProblem && (
+                <div className="mt-1 text-xs text-red-500">
+                  {t(`image.create.${sizeProblem}`, { max: formatBytes(space.max) })}
+                </div>
+              )}
+            </>
+          )}
+          {space && !floppy && (
             <>
               <Radio.Group
                 value={preset}
@@ -192,21 +241,23 @@ export const NewImageModal = ({ open, onClose, onCreated }: NewImageModalProps) 
           )}
         </div>
 
-        <div>
-          <div className={label}>{t('image.create.fs')}</div>
-          <Radio.Group value={fs} onChange={(e) => setFs(e.target.value)}>
-            <div className="flex flex-col space-y-2">
-              <Radio value="exfat">
-                <span>exFAT</span>
-                <div className="text-xs text-neutral-500">{t('image.create.exfatHint')}</div>
-              </Radio>
-              <Radio value="fat32">
-                <span>FAT32</span>
-                <div className="text-xs text-neutral-500">{t('image.create.fat32Hint')}</div>
-              </Radio>
-            </div>
-          </Radio.Group>
-        </div>
+        {!floppy && (
+          <div>
+            <div className={label}>{t('image.create.fs')}</div>
+            <Radio.Group value={fs} onChange={(e) => setFs(e.target.value)}>
+              <div className="flex flex-col space-y-2">
+                <Radio value="exfat">
+                  <span>exFAT</span>
+                  <div className="text-xs text-neutral-500">{t('image.create.exfatHint')}</div>
+                </Radio>
+                <Radio value="fat32">
+                  <span>FAT32</span>
+                  <div className="text-xs text-neutral-500">{t('image.create.fat32Hint')}</div>
+                </Radio>
+              </div>
+            </Radio.Group>
+          </div>
+        )}
 
         {error && <div className="text-sm text-red-500">{error}</div>}
       </div>
