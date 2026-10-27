@@ -47,6 +47,31 @@ func (s *Service) actingSession(named string) string {
 	return s.lock.Owner()
 }
 
+// The refusals of a device call that no user asked for. The model reads them
+// as tool errors, so they say what to do next.
+const (
+	noSessionMessage = "no chat session holds device control: the agent acts only for a user chatting with it"
+	noTurnMessage    = "the user's turn has ended: do not act on the host now; wait for the user's next prompt"
+)
+
+// requireTurn refuses a device call unless sessionID is a chat session whose
+// agent is working on a prompt the user sent. An open chat is not enough:
+// after the user cancels a turn, or once the agent has answered, tool calls
+// the agent still has running must not reach the host. The turn is the
+// bridge's own record (agent.Bridge.InTurn).
+func (s *Service) requireTurn(sessionID string) *PicoclawError {
+	if sessionID == "" {
+		return newPicoclawError(CodeSessionIDInvalid, noSessionMessage)
+	}
+	s.ensureDependencies()
+	if !s.chat.InTurn(sessionID) {
+		err := newPicoclawError(CodeTurnNotActive, noTurnMessage)
+		err.SessionID = sessionID
+		return err
+	}
+	return nil
+}
+
 // AuditPrincipal is who a loopback route acts as, for its audit record: the
 // agent, and the session the request acts for.
 func (s *Service) AuditPrincipal(c *gin.Context) audit.Principal {
@@ -62,7 +87,8 @@ func (s *Service) agentName() string {
 
 // withAgentSession runs a device tool (a power press, a media change) for the
 // chat session that holds the AI input lock, under a control mode lease, as
-// kvm_actions runs. Without it, a turn the agent kept running after the user
+// kvm_actions runs, and only while that session has a turn in progress.
+// Without it, a turn the agent kept running after the user cancelled it or
 // closed the chat could still press the power button: kvm_actions is refused
 // then, and these are no less consequential.
 func (s *Service) withAgentSession(next protocol.ToolHandler) protocol.ToolHandler {
@@ -74,6 +100,9 @@ func (s *Service) withAgentSession(next protocol.ToolHandler) protocol.ToolHandl
 		defer release()
 
 		sessionID := s.actingSession(requestSession(req))
+		if turnErr := s.requireTurn(sessionID); turnErr != nil {
+			return mcpToolError(turnErr.Message), nil
+		}
 		acquired, lockErr := s.lock.AcquireTemporary(sessionID)
 		if lockErr != nil {
 			return mcpToolError(lockErr.Message), nil

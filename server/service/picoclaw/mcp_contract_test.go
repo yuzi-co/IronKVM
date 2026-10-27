@@ -195,6 +195,10 @@ func TestMCPUnknownToolIsInvalidParams(t *testing.T) {
 
 func TestMCPScreenshotResultShape(t *testing.T) {
 	service, vision, _ := newMCPActionTestService(t)
+	// The screen is looked at for the user chatting in a turn.
+	if err := service.lock.Ensure("chat-1"); err != nil {
+		t.Fatal(err)
+	}
 	store := withAgentTiers(t, audit.TierObserve, audit.TierInput)
 
 	result := toolResult(t, callTool(t, service, "kvm_screenshot", `{}`, nil))
@@ -229,6 +233,10 @@ func TestMCPScreenshotResultShape(t *testing.T) {
 
 func TestMCPScreenshotPassesTheSizeArguments(t *testing.T) {
 	service, vision, _ := newMCPActionTestService(t)
+	// The screen is looked at for the user chatting in a turn.
+	if err := service.lock.Ensure("chat-1"); err != nil {
+		t.Fatal(err)
+	}
 
 	result := toolResult(t, callTool(t, service, "kvm_screenshot", `{"width":1280,"height":720,"quality":80}`, nil))
 	if isErrorResult(result) {
@@ -373,6 +381,7 @@ type recordingChat struct {
 }
 
 func (c *recordingChat) IsActive(sessionID string) bool { return sessionID == c.active }
+func (c *recordingChat) InTurn(sessionID string) bool   { return sessionID == c.active }
 
 func (c *recordingChat) Publish(sessionID string, event agent.Event) error {
 	c.mu.Lock()

@@ -22,6 +22,7 @@ const (
 	CodeControlRequired      = "CONTROL_REQUIRED"
 	CodeControlOwnedByMCP    = "CONTROL_OWNED_BY_MCP"
 	CodeControlTransitioning = "CONTROL_TRANSITIONING"
+	CodeTurnNotActive        = "TURN_NOT_ACTIVE"
 )
 
 type PicoclawError struct {

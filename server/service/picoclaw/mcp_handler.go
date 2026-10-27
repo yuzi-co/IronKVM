@@ -371,7 +371,15 @@ func (s *Service) controlConflictForMCP(modeErr *PicoclawError) error {
 	return mcpControlConflict(modeErr, controlStatus)
 }
 
+// mcpScreenshot captures the screen for the session the call acts for, as
+// kvm_actions acts for it, and only while that session has a turn in
+// progress: the screen may show what the user would not show an agent that
+// nobody asked to look.
 func (s *Service) mcpScreenshot(ctx context.Context, req *protocol.CallToolRequest) (*protocol.CallToolResult, error) {
+	if turnErr := s.requireTurn(s.actingSession(requestSession(req))); turnErr != nil {
+		return mcpToolError(turnErr.Message), nil
+	}
+
 	var params struct {
 		Width   uint16 `json:"width"`
 		Height  uint16 `json:"height"`
