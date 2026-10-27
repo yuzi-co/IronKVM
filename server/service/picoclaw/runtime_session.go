@@ -1,15 +1,13 @@
 package picoclaw
 
 import (
-	"strings"
-
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
 
 func (s *Service) ReleaseRuntimeSession(c *gin.Context) {
 	s.ensureDependencies()
-	sessionID := strings.TrimSpace(c.GetHeader(sessionIDHeader))
+	sessionID := namedSession(c.Request.Header)
 	if sessionID == "" {
 		writePicoclawError(c, newPicoclawError(CodeSessionIDMissing, "missing X-PicoClaw-Session-ID"))
 		return

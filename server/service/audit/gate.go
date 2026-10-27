@@ -16,14 +16,26 @@ func DeniedMessage(subject string, tier Tier) string {
 	return fmt.Sprintf("the %s tier is off for %s; an administrator can turn it on under Settings > MCP", tier, who)
 }
 
+// Principal is who an on-board agent's call acts as: the agent, by name, and
+// the chat session it acts for, empty when none holds device control.
+type Principal struct {
+	Actor   string
+	Session string
+}
+
 // AgentGate guards a route the on-board agent calls over loopback. The route
 // needs the tier; with it off the call is refused with 403, and either way it
-// is recorded with the tier and the outcome.
-func AgentGate(tool string, tier Tier) gin.HandlerFunc {
+// is recorded with the tier, the outcome and the principal who reports.
+func AgentGate(who func(*gin.Context) Principal, tool string, tier Tier) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		principal := Principal{Actor: "agent"}
+		if who != nil {
+			principal = who(c)
+		}
 		e := Event{
-			Actor:    "picoclaw",
+			Actor:    principal.Actor,
 			Via:      "agent",
+			Session:  principal.Session,
 			IP:       ClientIP(c),
 			Category: CategoryAgent,
 			Action:   tool,

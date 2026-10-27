@@ -88,6 +88,9 @@ var skipped = map[string]bool{
 // loopback tools.
 var selfAudited = map[string]bool{
 	"/api/mcp":                 true,
+	"/api/agent/mcp":           true,
+	"/api/agent/actions":       true,
+	"/api/agent/load-image":    true,
 	"/api/picoclaw/mcp":        true,
 	"/api/picoclaw/actions":    true,
 	"/api/picoclaw/load-image": true,

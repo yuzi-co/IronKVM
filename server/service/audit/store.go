@@ -90,6 +90,9 @@ type Event struct {
 	Via string `json:"via,omitempty"`
 	// Key is the name of the API key, when one was used.
 	Key string `json:"key,omitempty"`
+	// Session is the chat session an on-board agent acted for, so that two
+	// conversations with the same agent can be told apart.
+	Session string `json:"session,omitempty"`
 	// Role is the actor's role: admin, user or viewer.
 	Role     string `json:"role,omitempty"`
 	IP       string `json:"ip,omitempty"`
@@ -344,7 +347,8 @@ func (q Query) matches(e Event) bool {
 	if q.Outcome != "" && e.Outcome != q.Outcome {
 		return false
 	}
-	if q.Actor != "" && !containsFold(e.Actor, q.Actor) && !containsFold(e.Key, q.Actor) {
+	if q.Actor != "" && !containsFold(e.Actor, q.Actor) && !containsFold(e.Key, q.Actor) &&
+		!containsFold(e.Session, q.Actor) {
 		return false
 	}
 	if q.IP != "" && !strings.Contains(e.IP, q.IP) {
@@ -370,7 +374,8 @@ func containsFold(s, part string) bool {
 // repeats reports whether b is a second copy of a within the window.
 func repeats(a, b Event) bool {
 	return b.Time.Sub(a.Time) < coalesceWindow &&
-		a.Actor == b.Actor && a.Via == b.Via && a.Key == b.Key && a.Role == b.Role && a.IP == b.IP &&
+		a.Actor == b.Actor && a.Via == b.Via && a.Key == b.Key && a.Session == b.Session &&
+		a.Role == b.Role && a.IP == b.IP &&
 		a.Category == b.Category && a.Action == b.Action && a.Target == b.Target &&
 		a.Outcome == b.Outcome && a.Tier == b.Tier && a.Detail == b.Detail
 }
@@ -386,6 +391,7 @@ func clean(e Event) Event {
 	e.Actor = field(e.Actor, maxActor)
 	e.Via = field(e.Via, 16)
 	e.Key = field(e.Key, maxActor)
+	e.Session = field(e.Session, maxActor)
 	e.Role = field(e.Role, 8)
 	e.IP = field(e.IP, 45)
 	e.Category = field(e.Category, 16)

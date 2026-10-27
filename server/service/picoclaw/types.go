@@ -45,7 +45,8 @@ type Service struct {
 	// lifecycle runs PicoClaw through the agent-neutral lifecycle. It is
 	// built on first use.
 	lifecycle *agent.Lifecycle
-	// mcp serves /api/picoclaw/mcp. It is built on first use.
+	// mcp serves /api/agent/mcp and /api/picoclaw/mcp. It is built on first
+	// use.
 	mcpOnce sync.Once
 	mcp     http.Handler
 	// devices are the power button, power LED and virtual media that the

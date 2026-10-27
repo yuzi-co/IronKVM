@@ -107,8 +107,12 @@ func TestAgentGateRefusesAndRecordsALoopbackRoute(t *testing.T) {
 
 	ran := false
 	r := gin.New()
-	r.POST("/actions", audit.AgentGate("actions", audit.TierInput), func(c *gin.Context) { ran = true })
-	r.GET("/screenshot", audit.AgentGate("screenshot", audit.TierObserve), func(c *gin.Context) { c.Status(http.StatusOK) })
+	service := &Service{lock: &SessionLock{}}
+	if err := service.lock.Ensure("chat-1"); err != nil {
+		t.Fatal(err)
+	}
+	r.POST("/actions", audit.AgentGate(service.AuditPrincipal, "actions", audit.TierInput), func(c *gin.Context) { ran = true })
+	r.GET("/screenshot", audit.AgentGate(service.AuditPrincipal, "screenshot", audit.TierObserve), func(c *gin.Context) { c.Status(http.StatusOK) })
 
 	denied := httptest.NewRecorder()
 	r.ServeHTTP(denied, httptest.NewRequest("POST", "/actions", nil))
@@ -125,5 +129,10 @@ func TestAgentGateRefusesAndRecordsALoopbackRoute(t *testing.T) {
 	if len(events) != 2 || events[0].Outcome != audit.OutcomeOK || events[0].Tier != "observe" ||
 		events[1].Outcome != audit.OutcomeDenied || events[1].Tier != "input" {
 		t.Fatalf("events = %+v", events)
+	}
+	for _, e := range events {
+		if e.Actor != "picoclaw" || e.Session != "chat-1" {
+			t.Fatalf("event = %+v, want picoclaw acting for chat-1", e)
+		}
 	}
 }

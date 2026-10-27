@@ -72,11 +72,18 @@ func (h *fakeHost) devices() hostdevices.Devices {
 	}
 }
 
+// deviceTestSession is the chat session that holds the AI input lock in the
+// device tests, as the bridge's session does while the user chats.
+const deviceTestSession = "chat-1"
+
 func newDeviceTestService(t *testing.T) (*Service, *fakeHost) {
 	t.Helper()
 	service, _, _ := newMCPActionTestService(t)
 	host := &fakeHost{}
 	service.SetDevices(host.devices())
+	if err := service.lock.Ensure(deviceTestSession); err != nil {
+		t.Fatal(err)
+	}
 	return service, host
 }
 
@@ -379,6 +386,63 @@ func TestMediaURLInsertKeepsCredentialsOutOfTheAuditLog(t *testing.T) {
 		}
 		if e.Target != "images.example" || !strings.Contains(e.Detail, "url") {
 			t.Fatalf("event %+v, want the host and a url insert", e)
+		}
+	}
+}
+
+// A press and a media change act for the chat session that holds the AI input
+// lock, as kvm_actions does. With no session, as after the user closed the
+// chat while the agent's turn ran on, they are refused.
+func TestPowerAndMediaNeedAChatSession(t *testing.T) {
+	service, host := newDeviceTestService(t)
+	store := withAgentTiers(t, audit.TierPower, audit.TierMedia)
+	service.lock.Release(deviceTestSession)
+
+	for _, call := range []struct{ name, args string }{
+		{"kvm_power", `{"button":"power"}`},
+		{"kvm_media", `{"action":"eject","drive":"cdrom"}`},
+	} {
+		result := toolResult(t, callTool(t, service, call.name, call.args, nil))
+		if !isErrorResult(result) || !strings.Contains(toolText(t, result), "no chat session holds device control") {
+			t.Fatalf("%s: result = %v, want refused", call.name, result)
+		}
+	}
+	if len(host.pressed) != 0 || len(host.ejected) != 0 {
+		t.Fatalf("pressed %v, ejected %v without a session", host.pressed, host.ejected)
+	}
+	for _, e := range agentEvents(t, store) {
+		if e.Outcome != audit.OutcomeFail || e.Session != "" {
+			t.Fatalf("event = %+v, want a failure with no session", e)
+		}
+	}
+}
+
+// Another session's lock refuses the call that names its own session.
+func TestPowerForAnotherSessionIsRefused(t *testing.T) {
+	service, host := newDeviceTestService(t)
+	withAgentTiers(t, audit.TierPower)
+
+	result := toolResult(t, callTool(t, service, "kvm_power", `{"button":"power"}`, map[string]string{agentSessionHeader: "chat-2"}))
+	if !isErrorResult(result) || len(host.pressed) != 0 {
+		t.Fatalf("result = %v, pressed %v, want refused", result, host.pressed)
+	}
+}
+
+// The audit record names the agent and the session it acted for.
+func TestDeviceCallsRecordTheAgentAndItsSession(t *testing.T) {
+	service, _ := newDeviceTestService(t)
+	store := withAgentTiers(t, audit.TierObserve, audit.TierPower)
+
+	toolResult(t, callTool(t, service, "kvm_power", `{"button":"power"}`, nil))
+	toolResult(t, callTool(t, service, "kvm_power_status", `{}`, map[string]string{agentSessionHeader: "chat-1"}))
+
+	events := agentEvents(t, store)
+	if len(events) != 2 {
+		t.Fatalf("events = %+v", events)
+	}
+	for _, e := range events {
+		if e.Actor != "picoclaw" || e.Session != deviceTestSession || e.Outcome != audit.OutcomeOK {
+			t.Fatalf("event = %+v, want picoclaw acting for %s", e, deviceTestSession)
 		}
 	}
 }

@@ -9,7 +9,7 @@ import type { AuditEvent, AuditFilter, AuditSettings } from '@/api/audit.ts';
 import { describeFailure } from '@/lib/feedback.ts';
 
 import { Section } from '../components/section.tsx';
-import { auditFileName, subject, who } from './format.ts';
+import { auditFileName, subject, via, who } from './format.ts';
 
 const pageSize = 25;
 
@@ -114,7 +114,11 @@ export const Audit = () => {
       render: (_, event) => (
         <div className="flex flex-col">
           <span>{who(event)}</span>
-          {event.via && <span className="text-xs text-neutral-500">{event.via}</span>}
+          {(event.via || event.session) && (
+            <span className="text-xs text-neutral-500" title={event.session}>
+              {via(event)}
+            </span>
+          )}
         </div>
       )
     },
