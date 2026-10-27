@@ -34,6 +34,7 @@ var features = []string{
 	"agent-tiers",         // /api/agent/tiers: what MCP and the on-board agent may do
 	"api-key-scope",       // scope "view" on POST /api/auth/api-keys: a key that can only watch
 	"audit-log",           // /api/audit: the audit log, its export and settings
+	"dashcam",             // /api/dashcam: the last minute of video saved on an event, its clips and settings
 	"diagnostics-bundle",  // GET /api/diagnostics/bundle: support bundle without secrets
 	"direct-clock",        // clock request (byte 5) on the direct H.264 socket
 	"edid-view",           // /api/edid: EDID presets and decoder, read only

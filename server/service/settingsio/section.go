@@ -151,6 +151,7 @@ var sections = []section{
 	hdmiSection,
 	roomMicSection,
 	notificationsSection,
+	dashcamSection,
 }
 
 func sectionByName(name string) (section, bool) {

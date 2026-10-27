@@ -11,6 +11,7 @@ import (
 	"NanoKVM-Server/authn"
 	"NanoKVM-Server/common"
 	"NanoKVM-Server/middleware"
+	"NanoKVM-Server/service/dashcam"
 	"NanoKVM-Server/service/events"
 	"NanoKVM-Server/service/failsafe"
 	kvmcapture "NanoKVM-Server/service/mcp/capture/kvm"
@@ -44,7 +45,10 @@ func notifyRouter(r *gin.Engine) {
 			}
 			return common.GetKvmVision().HasHDMISignal(), true
 		},
-		Client: func() *http.Client { return utils.OutboundClient(notifyTimeout) },
+		// The dashcam saves a clip on the signal events, whether or not a
+		// notification is sent for them.
+		SignalWanted: dashcam.SignalWanted,
+		Client:       func() *http.Client { return utils.OutboundClient(notifyTimeout) },
 		Device: func() string {
 			if name, err := os.Hostname(); err == nil && name != "" {
 				return name
