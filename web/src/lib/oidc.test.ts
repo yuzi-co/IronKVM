@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { httpRedirectWarning, oidcReason, scopesFromText, scopesToText } from './oidc.ts';
+import {
+  httpRedirectWarning,
+  oidcReason,
+  pendingForAccount,
+  scopesFromText,
+  scopesToText
+} from './oidc.ts';
 
 test('reads the reason the server sent the browser back with', () => {
   assert.equal(oidcReason('?oidc=state'), 'state');
@@ -14,7 +20,8 @@ test('reads the reason the server sent the browser back with', () => {
     'token',
     'role',
     'server',
-    'binding'
+    'binding',
+    'unlinked'
   ]) {
     assert.equal(oidcReason(`?oidc=${reason}`), reason);
   }
@@ -24,6 +31,25 @@ test('an unknown or missing reason is none, never text from the address bar', ()
   for (const search of ['', '?', '?oidc=', '?oidc=<script>', '?other=state', '?oidc=State']) {
     assert.equal(oidcReason(search), null, search);
   }
+});
+
+test('refused sign-ins under the name of the account come first, each group newest first', () => {
+  const signIns = [
+    { username: 'bob', issuer: 'i', subject: 'b1', time: 300 },
+    { username: 'alice', issuer: 'i', subject: 'a1', time: 100 },
+    { username: 'carol', issuer: 'i', subject: 'c1', time: 200 },
+    { username: 'alice', issuer: 'i', subject: 'a2', time: 150 }
+  ];
+  assert.deepEqual(
+    pendingForAccount(signIns, 'alice').map((s) => s.subject),
+    ['a2', 'a1', 'b1', 'c1']
+  );
+  assert.deepEqual(
+    pendingForAccount(signIns, 'nobody').map((s) => s.subject),
+    ['b1', 'c1', 'a2', 'a1']
+  );
+  // The list it was given is left as it was.
+  assert.equal(signIns[0].subject, 'b1');
 });
 
 test('scopes are split on spaces and commas, without duplicates or openid', () => {

@@ -31,6 +31,15 @@ const hu = {
       oidc: {
         signIn: 'Bejelentkezés ezzel: {{name}}',
         usePassword: 'Bejelentkezés jelszóval',
+        confirm: {
+          title: 'Egyszeri bejelentkezés összekapcsolása',
+          description: 'Az identitásszolgáltató {{username}} néven jelentkeztette be, de ez a fiók még nincs vele összekapcsolva. Adja meg a fiók jelszavát az összekapcsoláshoz és a bejelentkezéshez.',
+          submit: 'Összekapcsolás és bejelentkezés',
+          cancel: 'Mégse',
+          invalid: 'Hibás jelszó vagy kód',
+          expired: 'A bejelentkezés lejárt. Jelentkezzen be újra az identitásszolgáltatónál.',
+          taken: 'Ezt a fiókot időközben egy másik identitásszolgáltatói fiókhoz kapcsolták.'
+        },
         errors: {
           disabled: 'Az egyszeri bejelentkezés ki van kapcsolva.',
           locked: 'Túl sok sikertelen bejelentkezés, próbálja újra később',
@@ -41,6 +50,7 @@ const hu = {
           account: 'Az identitásszolgáltatónál lévő fiókjához nincs fiók ezen az eszközön.',
           role: 'Az identitásszolgáltatónál lévő fiókja egyik, ezen az eszközön engedélyezett csoportban sincs benne.',
           binding: 'Az identitásszolgáltatónál lévő fiókja nem az, amelyikhez ez az eszközön lévő fiók kapcsolva van. Kérje meg egy rendszergazdát, hogy bontsa a kapcsolatot.',
+          unlinked: 'Ez a fiók még nincs összekapcsolva az identitásszolgáltatónál lévő fiókjával. Kérje meg egy rendszergazdát, hogy kapcsolja össze.',
           server: 'A bejelentkezést nem sikerült befejezni. Próbálja újra.'
         }
       },
@@ -2487,8 +2497,18 @@ const hu = {
           deviceOwner: 'Eszköz tulajdonosa',
           ssoTag: 'SSO',
           ssoUnlink: 'SSO-kapcsolat bontása',
-          ssoUnlinkConfirm: 'Bontja {{username}} kapcsolatát az identitásszolgáltatónál lévő fiókjával? A következő egyszeri bejelentkezés újra összekapcsolja. Emellett mindenhol kijelentkezik.',
+          ssoUnlinkConfirm: 'Megszünteti {{username}} kapcsolatát az identitásszolgáltatói fiókkal? A következő egyszeri bejelentkezés előtt újra össze kell kapcsolni. Mindenhol ki is jelentkezik.',
           ssoUnlinked: 'Az egyszeri bejelentkezés kapcsolata eltávolítva',
+          ssoLink: 'SSO összekapcsolása',
+          ssoLinkTitle: '{{username}} összekapcsolása egy identitásszolgáltatói fiókkal',
+          ssoLinkDesc: 'Az egyszeri bejelentkezés egy össze nem kapcsolt fiókba el van utasítva. Adja meg az identitásszolgáltatói fiók subject (sub) értékét, vagy válasszon lent egy elutasított bejelentkezést. A kibocsátót hagyja üresen a beállításokban megadotthoz.',
+          ssoIssuer: 'Kibocsátó (issuer)',
+          ssoSubject: 'Subject (sub)',
+          ssoSubjectRequired: 'A subject kötelező',
+          ssoPending: 'Elutasított bejelentkezések',
+          ssoPendingEmpty: 'Az elmúlt napban nem volt elutasított bejelentkezés',
+          ssoPick: 'Használat',
+          ssoLinked: 'Egyszeri bejelentkezési kapcsolat mentve',
           resetPassword: 'Jelszó visszaállítása',
           delete: 'Törlés',
           deleteConfirm: 'Törli ezt a felhasználót, és visszavonja az összes munkamenetét?',

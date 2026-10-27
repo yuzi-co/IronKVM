@@ -31,6 +31,15 @@ const cz = {
       oidc: {
         signIn: 'Přihlásit se přes {{name}}',
         usePassword: 'Přihlásit se heslem',
+        confirm: {
+          title: 'Propojit jednotné přihlášení',
+          description: 'Poskytovatel identity vás přihlásil jako {{username}}, ale tento účet s ním zatím není propojen. Zadejte heslo účtu, abyste jej propojili a přihlásili se.',
+          submit: 'Propojit a přihlásit',
+          cancel: 'Zrušit',
+          invalid: 'Nesprávné heslo nebo kód',
+          expired: 'Přihlášení vypršelo. Přihlaste se znovu u poskytovatele identity.',
+          taken: 'Tento účet byl mezitím propojen s jiným účtem u poskytovatele identity.'
+        },
         errors: {
           disabled: 'Jednotné přihlášení je vypnuté.',
           locked: 'Příliš mnoho neúspěšných přihlášení, zkuste to později',
@@ -41,6 +50,7 @@ const cz = {
           account: 'K vašemu účtu u poskytovatele identity neexistuje účet na tomto zařízení.',
           role: 'Váš účet u poskytovatele identity není v žádné ze skupin povolených na tomto zařízení.',
           binding: 'Váš účet u poskytovatele identity není ten, který je propojen s tímto účtem na zařízení. Požádejte správce o zrušení propojení.',
+          unlinked: 'Tento účet zatím není propojen s vaším účtem u poskytovatele identity. Požádejte správce o propojení.',
           server: 'Přihlášení nelze dokončit. Zkuste to znovu.'
         }
       },
@@ -2454,8 +2464,18 @@ const cz = {
           deviceOwner: 'Vlastník zařízení',
           ssoTag: 'SSO',
           ssoUnlink: 'Zrušit propojení SSO',
-          ssoUnlinkConfirm: 'Zrušit propojení účtu {{username}} s účtem u poskytovatele identity? Další jednotné přihlášení jej propojí znovu. Zároveň bude všude odhlášen.',
+          ssoUnlinkConfirm: 'Zrušit propojení {{username}} s účtem u poskytovatele identity? Před dalším jednotným přihlášením bude nutné jej znovu propojit. Bude také všude odhlášen.',
           ssoUnlinked: 'Propojení jednotného přihlášení odstraněno',
+          ssoLink: 'Propojit SSO',
+          ssoLinkTitle: 'Propojit {{username}} s účtem u poskytovatele identity',
+          ssoLinkDesc: 'Jednotné přihlášení k nepropojenému účtu je odmítnuto. Zadejte subject (sub) účtu u poskytovatele identity, nebo níže vyberte odmítnuté přihlášení. Vydavatele nechte prázdného, chcete-li použít toho z nastavení.',
+          ssoIssuer: 'Vydavatel (issuer)',
+          ssoSubject: 'Subject (sub)',
+          ssoSubjectRequired: 'Subject je povinný',
+          ssoPending: 'Odmítnutá přihlášení',
+          ssoPendingEmpty: 'Za poslední den žádná odmítnutá přihlášení',
+          ssoPick: 'Použít',
+          ssoLinked: 'Propojení jednotného přihlášení uloženo',
           resetPassword: 'Resetovat heslo',
           delete: 'Smazat',
           deleteConfirm: 'Smazat tohoto uživatele a zrušit všechny jeho relace?',

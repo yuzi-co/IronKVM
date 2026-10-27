@@ -34,6 +34,23 @@ export const Login = (): ReactElement => {
   const [oidc, setOidc] = useState<api.OidcInfo | null>(null);
   // Set when the operator unfolds a password form the settings fold away.
   const [showPassword, setShowPassword] = useState(false);
+  // A refused single sign-on to an account with no link, waiting for the
+  // account's password to link it.
+  const [oidcLink, setOidcLink] = useState<api.OidcLink | null>(null);
+
+  useEffect(() => {
+    if (oidcReason(location.search) !== 'unlinked') return;
+    api
+      .getOidcLink()
+      .then((rsp) => {
+        if (rsp.code === 0 && rsp.data?.username) {
+          setOidcLink(rsp.data);
+          setMsg('');
+        }
+      })
+      // None waits: the message asks for an administrator.
+      .catch(() => {});
+  }, [location.search]);
 
   useEffect(() => {
     api
@@ -166,12 +183,106 @@ export const Login = (): ReactElement => {
     setMsg('');
   }
 
+  function confirmLink(values: { password: string; code?: string }) {
+    if (isLoading || !oidcLink) return;
+    setIsloading(true);
+
+    api
+      .confirmOidcLink(encrypt(values.password), (values.code ?? '').trim())
+      .then((rsp: any) => {
+        if (rsp.code === api.OIDC_LINK_GONE || rsp.code === api.OIDC_LINK_TAKEN) {
+          setOidcLink(null);
+          setMsg(
+            t(
+              rsp.code === api.OIDC_LINK_GONE
+                ? 'auth.oidc.confirm.expired'
+                : 'auth.oidc.confirm.taken'
+            )
+          );
+          return;
+        }
+        if (rsp.code !== 0) {
+          let errorMsg = t('auth.error');
+          if (rsp.code === -2) errorMsg = t('auth.oidc.confirm.invalid');
+          else if (rsp.code === -5) errorMsg = t('auth.locked');
+          else if (rsp.code === -4) errorMsg = t('auth.globalLocked');
+
+          setMsg(errorMsg);
+          return;
+        }
+
+        return finishLogin();
+      })
+      .catch(() => {
+        setMsg(t('auth.error'));
+      })
+      .finally(() => {
+        setIsloading(false);
+      });
+  }
+
+  function cancelLink() {
+    setOidcLink(null);
+    setMsg('');
+  }
+
   return (
     <>
       <Head title={t('head.login')} />
 
       <div className="flex h-screen w-screen flex-col items-center justify-center">
-        {challenge ? (
+        {oidcLink ? (
+          <Form key="link" style={{ minWidth: 300, maxWidth: 500 }} onFinish={confirmLink}>
+            <div className="flex flex-col items-center justify-center pb-4">
+              <img id="logo" src="/ironkvm.ico" alt="IronKVM" />
+            </div>
+            <div className="pb-1 text-base">{t('auth.oidc.confirm.title')}</div>
+            <div className="pb-4 text-sm text-neutral-500">
+              {t('auth.oidc.confirm.description', { username: oidcLink.username })}
+            </div>
+
+            <Form.Item
+              name="password"
+              rules={[{ required: true, message: t('auth.noEmptyPassword'), min: 1 }]}
+            >
+              <Input
+                prefix={<LockIcon size={15} />}
+                type="password"
+                autoFocus
+                autoComplete="current-password"
+                placeholder={t('auth.placeholderPassword')}
+              />
+            </Form.Item>
+
+            {oidcLink.totpRequired && (
+              <Form.Item
+                name="code"
+                rules={[{ required: true, message: t('totp.login.noEmptyCode') }]}
+              >
+                <Input
+                  prefix={<KeyRoundIcon size={15} />}
+                  autoComplete="one-time-code"
+                  maxLength={64}
+                  placeholder={t('totp.login.placeholder')}
+                />
+              </Form.Item>
+            )}
+
+            <div className="pb-1 text-red-500">{msg}</div>
+
+            <Form.Item>
+              <Button type="primary" htmlType="submit" className="w-full" loading={isLoading}>
+                {t('auth.oidc.confirm.submit')}
+              </Button>
+            </Form.Item>
+
+            <div className="flex justify-end pb-4 text-sm">
+              <Button type="link" size="small" className="px-0!" onClick={cancelLink}>
+                {t('auth.oidc.confirm.cancel')}
+              </Button>
+            </div>
+          </Form>
+        ) : challenge ? (
           <Form key="code" style={{ minWidth: 300, maxWidth: 500 }} onFinish={submitCode}>
             <div className="flex flex-col items-center justify-center pb-4">
               <img id="logo" src="/ironkvm.ico" alt="IronKVM" />
@@ -228,12 +339,7 @@ export const Login = (): ReactElement => {
               />
             </div>
             {notice === 'passwordChanged' && (
-              <Alert
-                className="mb-4"
-                type="success"
-                showIcon
-                message={t('auth.passwordChanged')}
-              />
+              <Alert className="mb-4" type="success" showIcon message={t('auth.passwordChanged')} />
             )}
 
             {oidc && (

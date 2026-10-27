@@ -31,6 +31,15 @@ const nb = {
       oidc: {
         signIn: 'Logg inn med {{name}}',
         usePassword: 'Logg inn med passord',
+        confirm: {
+          title: 'Koble enkel pålogging',
+          description: 'Identitetsleverandøren logget deg inn som {{username}}, men denne kontoen er ennå ikke koblet til den. Skriv inn kontoens passord for å koble den og logge inn.',
+          submit: 'Koble og logg inn',
+          cancel: 'Avbryt',
+          invalid: 'Feil passord eller kode',
+          expired: 'Påloggingen er utløpt. Logg inn hos identitetsleverandøren igjen.',
+          taken: 'Denne kontoen er i mellomtiden koblet til en annen konto hos identitetsleverandøren.'
+        },
         errors: {
           disabled: 'Enkel pålogging er slått av.',
           locked: 'For mange mislykkede pålogginger, prøv igjen senere',
@@ -41,6 +50,7 @@ const nb = {
           account: 'Kontoen din hos identitetsleverandøren har ingen konto på denne enheten.',
           role: 'Kontoen din hos identitetsleverandøren er ikke i noen av gruppene som er tillatt på denne enheten.',
           binding: 'Kontoen din hos identitetsleverandøren er ikke den som er knyttet til denne kontoen på enheten. Be en administrator om å fjerne koblingen.',
+          unlinked: 'Denne kontoen er ennå ikke koblet til kontoen din hos identitetsleverandøren. Be en administrator om å koble den.',
           server: 'Påloggingen kunne ikke fullføres. Prøv igjen.'
         }
       },
@@ -2461,8 +2471,18 @@ const nb = {
           deviceOwner: 'Enhetseier',
           ssoTag: 'SSO',
           ssoUnlink: 'Fjern SSO-kobling',
-          ssoUnlinkConfirm: 'Fjerne koblingen mellom {{username}} og kontoen hos identitetsleverandøren? Neste single sign-on knytter den på nytt. Den logges også ut overalt.',
+          ssoUnlinkConfirm: 'Fjerne koblingen mellom {{username}} og kontoen hos identitetsleverandøren? Den må kobles på nytt før neste enkle pålogging. Den blir også logget ut overalt.',
           ssoUnlinked: 'Koblingen til single sign-on er fjernet',
+          ssoLink: 'Koble SSO',
+          ssoLinkTitle: 'Koble {{username}} til en konto hos identitetsleverandøren',
+          ssoLinkDesc: 'Enkel pålogging til en konto som ikke er koblet, avvises. Skriv inn subject (sub) for kontoen hos identitetsleverandøren, eller velg en avvist pålogging nedenfor. La utstederen stå tom for å bruke den fra innstillingene.',
+          ssoIssuer: 'Utsteder (issuer)',
+          ssoSubject: 'Subject (sub)',
+          ssoSubjectRequired: 'Subject kreves',
+          ssoPending: 'Avviste pålogginger',
+          ssoPendingEmpty: 'Ingen avviste pålogginger det siste døgnet',
+          ssoPick: 'Bruk',
+          ssoLinked: 'Kobling for enkel pålogging lagret',
           resetPassword: 'Tilbakestill passord',
           delete: 'Slett',
           deleteConfirm: 'Slette denne brukeren og tilbakekalle alle øktene deres?',

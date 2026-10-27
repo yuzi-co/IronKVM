@@ -31,6 +31,15 @@ const ko = {
       oidc: {
         signIn: '{{name}}(으)로 로그인',
         usePassword: '비밀번호로 로그인',
+        confirm: {
+          title: '통합 로그인 연결',
+          description: 'ID 공급자가 {{username}}(으)로 로그인했지만 이 계정은 아직 연결되지 않았습니다. 연결하고 로그인하려면 계정 비밀번호를 입력하세요.',
+          submit: '연결하고 로그인',
+          cancel: '취소',
+          invalid: '비밀번호 또는 코드가 올바르지 않습니다',
+          expired: '로그인이 만료되었습니다. ID 공급자로 다시 로그인하세요.',
+          taken: '그 사이에 이 계정이 다른 ID 공급자 계정에 연결되었습니다.'
+        },
         errors: {
           disabled: '싱글 사인온이 꺼져 있습니다.',
           locked: '로그인 실패가 너무 많습니다. 나중에 다시 시도하세요',
@@ -41,6 +50,7 @@ const ko = {
           account: 'ID 공급자 계정에 해당하는 계정이 이 장치에 없습니다.',
           role: 'ID 공급자 계정이 이 장치에서 허용된 어떤 그룹에도 속하지 않습니다.',
           binding: 'ID 공급자 계정이 이 장치의 계정에 연결된 계정이 아닙니다. 관리자에게 연결 해제를 요청하세요.',
+          unlinked: '이 계정은 아직 ID 공급자 계정에 연결되지 않았습니다. 관리자에게 연결을 요청하세요.',
           server: '로그인을 완료할 수 없습니다. 다시 시도하세요.'
         }
       },
@@ -2424,8 +2434,18 @@ const ko = {
           deviceOwner: '장치 소유자',
           ssoTag: 'SSO',
           ssoUnlink: 'SSO 연결 해제',
-          ssoUnlinkConfirm: '{{username}}과(와) ID 공급자 계정의 연결을 해제하시겠습니까? 다음 SSO 로그인 때 다시 연결됩니다. 모든 곳에서 로그아웃도 됩니다.',
+          ssoUnlinkConfirm: '{{username}}과(와) ID 공급자 계정의 연결을 해제할까요? 다음 통합 로그인 전에 다시 연결해야 합니다. 모든 곳에서 로그아웃됩니다.',
           ssoUnlinked: 'SSO 연결이 해제되었습니다',
+          ssoLink: 'SSO 연결',
+          ssoLinkTitle: '{{username}}을(를) ID 공급자 계정에 연결',
+          ssoLinkDesc: '연결되지 않은 계정으로의 통합 로그인은 거부됩니다. ID 공급자 계정의 subject(sub)를 입력하거나 아래에서 거부된 로그인을 선택하세요. 발급자를 비워 두면 설정의 발급자를 사용합니다.',
+          ssoIssuer: '발급자 (issuer)',
+          ssoSubject: 'Subject (sub)',
+          ssoSubjectRequired: 'subject를 입력하세요',
+          ssoPending: '거부된 로그인',
+          ssoPendingEmpty: '지난 하루 동안 거부된 로그인이 없습니다',
+          ssoPick: '사용',
+          ssoLinked: '통합 로그인 연결이 저장되었습니다',
           resetPassword: '비밀번호 재설정',
           delete: '삭제',
           deleteConfirm: '이 사용자를 삭제하고 모든 세션을 취소할까요?',

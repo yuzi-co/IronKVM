@@ -31,6 +31,15 @@ const pl = {
       oidc: {
         signIn: 'Zaloguj przez {{name}}',
         usePassword: 'Zaloguj hasłem',
+        confirm: {
+          title: 'Połącz logowanie jednokrotne',
+          description: 'Dostawca tożsamości zalogował Cię jako {{username}}, ale to konto nie jest jeszcze z nim połączone. Wpisz hasło konta, aby je połączyć i się zalogować.',
+          submit: 'Połącz i zaloguj',
+          cancel: 'Anuluj',
+          invalid: 'Nieprawidłowe hasło lub kod',
+          expired: 'Logowanie wygasło. Zaloguj się ponownie u dostawcy tożsamości.',
+          taken: 'W międzyczasie to konto zostało połączone z innym kontem u dostawcy tożsamości.'
+        },
         errors: {
           disabled: 'Logowanie jednokrotne jest wyłączone.',
           locked: 'Zbyt wiele nieudanych logowań, spróbuj ponownie później',
@@ -41,6 +50,7 @@ const pl = {
           account: 'Twoje konto u dostawcy tożsamości nie ma konta na tym urządzeniu.',
           role: 'Twoje konto u dostawcy tożsamości nie należy do żadnej z grup dozwolonych na tym urządzeniu.',
           binding: 'Twoje konto u dostawcy tożsamości nie jest tym, które jest powiązane z tym kontem na urządzeniu. Poproś administratora o usunięcie powiązania.',
+          unlinked: 'To konto nie jest jeszcze połączone z Twoim kontem u dostawcy tożsamości. Poproś administratora o połączenie.',
           server: 'Nie udało się dokończyć logowania. Spróbuj ponownie.'
         }
       },
@@ -2472,8 +2482,18 @@ const pl = {
           deviceOwner: 'Właściciel urządzenia',
           ssoTag: 'SSO',
           ssoUnlink: 'Usuń powiązanie SSO',
-          ssoUnlinkConfirm: 'Usunąć powiązanie konta {{username}} z kontem u dostawcy tożsamości? Następne logowanie jednokrotne powiąże je ponownie. Zostanie też wszędzie wylogowane.',
+          ssoUnlinkConfirm: 'Odłączyć {{username}} od konta u dostawcy tożsamości? Przed następnym logowaniem jednokrotnym trzeba będzie je połączyć ponownie. Zostanie też wylogowane wszędzie.',
           ssoUnlinked: 'Powiązanie logowania jednokrotnego usunięte',
+          ssoLink: 'Połącz SSO',
+          ssoLinkTitle: 'Połącz {{username}} z kontem u dostawcy tożsamości',
+          ssoLinkDesc: 'Logowanie jednokrotne na niepołączone konto jest odrzucane. Wpisz subject (sub) konta u dostawcy tożsamości lub wybierz poniżej odrzucone logowanie. Zostaw wystawcę pustego, aby użyć tego z ustawień.',
+          ssoIssuer: 'Wystawca (issuer)',
+          ssoSubject: 'Subject (sub)',
+          ssoSubjectRequired: 'Subject jest wymagany',
+          ssoPending: 'Odrzucone logowania',
+          ssoPendingEmpty: 'Brak odrzuconych logowań w ostatniej dobie',
+          ssoPick: 'Użyj',
+          ssoLinked: 'Zapisano połączenie logowania jednokrotnego',
           resetPassword: 'Resetuj hasło',
           delete: 'Usuń',
           deleteConfirm: 'Usunąć tego użytkownika i unieważnić wszystkie jego sesje?',

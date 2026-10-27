@@ -32,6 +32,15 @@ const ca = {
       oidc: {
         signIn: 'Inicia la sessió amb {{name}}',
         usePassword: 'Inicia la sessió amb contrasenya',
+        confirm: {
+          title: 'Vincula l\'inici de sessió únic',
+          description: 'El vostre proveïdor d\'identitat us ha identificat com a {{username}}, però aquest compte encara no hi està vinculat. Introduïu la contrasenya del compte per vincular-lo i iniciar la sessió.',
+          submit: 'Vincula i inicia la sessió',
+          cancel: 'Cancel·la',
+          invalid: 'Contrasenya o codi incorrectes',
+          expired: 'L\'inici de sessió ha caducat. Torneu a iniciar la sessió amb el proveïdor d\'identitat.',
+          taken: 'Mentrestant, aquest compte s\'ha vinculat a un altre compte del proveïdor d\'identitat.'
+        },
         errors: {
           disabled: 'L\'inici de sessió únic està desactivat.',
           locked: 'Massa inicis de sessió fallits, torneu-ho a provar més tard',
@@ -42,6 +51,7 @@ const ca = {
           account: 'El vostre compte del proveïdor d\'identitat no té cap compte en aquest dispositiu.',
           role: 'El vostre compte del proveïdor d\'identitat no és a cap dels grups permesos en aquest dispositiu.',
           binding: 'El vostre compte del proveïdor d\'identitat no és el que està vinculat a aquest compte del dispositiu. Demaneu a un administrador que el desvinculi.',
+          unlinked: 'Aquest compte encara no està vinculat al vostre compte del proveïdor d\'identitat. Demaneu a un administrador que el vinculi.',
           server: 'No s\'ha pogut completar l\'inici de sessió. Torneu-ho a provar.'
         }
       },
@@ -2487,8 +2497,18 @@ const ca = {
           deviceOwner: 'Propietari del dispositiu',
           ssoTag: 'SSO',
           ssoUnlink: 'Desvincula l\'SSO',
-          ssoUnlinkConfirm: 'Voleu desvincular {{username}} del seu compte del proveïdor d\'identitat? El següent inici de sessió únic el tornarà a vincular. També es tanca la sessió a tot arreu.',
+          ssoUnlinkConfirm: 'Voleu desvincular {{username}} del seu compte del proveïdor d\'identitat? Caldrà vincular-lo de nou abans del següent inici de sessió únic. També se\'n tancaran totes les sessions.',
           ssoUnlinked: 'S\'ha eliminat el vincle d\'inici de sessió únic',
+          ssoLink: 'Vincula SSO',
+          ssoLinkTitle: 'Vincula {{username}} a un compte del proveïdor d\'identitat',
+          ssoLinkDesc: 'Es rebutja l\'inici de sessió únic en un compte no vinculat. Introduïu el subjecte (sub) del compte del proveïdor d\'identitat o trieu a sota un inici de sessió rebutjat. Deixeu l\'emissor buit per fer servir el de la configuració.',
+          ssoIssuer: 'Emissor (issuer)',
+          ssoSubject: 'Subjecte (sub)',
+          ssoSubjectRequired: 'Cal el subjecte',
+          ssoPending: 'Inicis de sessió rebutjats',
+          ssoPendingEmpty: 'Cap inici de sessió rebutjat l\'últim dia',
+          ssoPick: 'Fes servir',
+          ssoLinked: 'S\'ha desat el vincle d\'inici de sessió únic',
           resetPassword: 'Restableix la contrasenya',
           delete: 'Suprimeix',
           deleteConfirm: 'Voleu suprimir aquest usuari i revocar totes les seves sessions?',

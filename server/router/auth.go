@@ -20,6 +20,10 @@ func authRouter(r *gin.Engine) {
 	r.GET("/api/auth/oidc", service.OIDCInfo)              // is the provider's button shown, and its name
 	r.GET("/api/auth/oidc/login", service.OIDCLogin)       // start a login at the provider
 	r.GET("/api/auth/oidc/callback", service.OIDCCallback) // finish it
+	// A refused sign-in to an account with no link waits behind a cookie for
+	// the account's password, which links the account (ironkvm-dist#169).
+	r.GET("/api/auth/oidc/link", service.GetOIDCLink)      // which account waits for its password
+	r.POST("/api/auth/oidc/link", service.ConfirmOIDCLink) // confirm the link with the password, and sign in
 
 	api := r.Group("/api").Use(middleware.CheckToken())
 
@@ -66,6 +70,10 @@ func authRouter(r *gin.Engine) {
 	)
 	adminSession.DELETE("/auth/users/:username/totp", service.ResetUserTOTP)
 	adminSession.DELETE("/auth/users/:username/oidc", service.UnlinkUserOIDC) // forget the account's single sign-on link
+	// Linking an account decides who signs in as it, which no api key
+	// should be able to do (ironkvm-dist#169).
+	adminSession.PUT("/auth/users/:username/oidc", service.LinkUserOIDC) // link the account to an IdP account before its first single sign-on
+	adminSession.GET("/auth/oidc/pending", service.GetOIDCPending)       // refused single sign-ons to accounts with no link
 	adminSession.GET("/auth/sessions/all", service.ListAllSessions)
 
 	// The provider's settings hold its client secret, which no api key

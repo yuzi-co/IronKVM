@@ -32,6 +32,15 @@ const es = {
       oidc: {
         signIn: 'Iniciar sesión con {{name}}',
         usePassword: 'Iniciar sesión con contraseña',
+        confirm: {
+          title: 'Vincular el inicio de sesión único',
+          description: 'Su proveedor de identidad le ha identificado como {{username}}, pero esta cuenta aún no está vinculada a él. Introduzca la contraseña de la cuenta para vincularla e iniciar sesión.',
+          submit: 'Vincular e iniciar sesión',
+          cancel: 'Cancelar',
+          invalid: 'Contraseña o código incorrectos',
+          expired: 'El inicio de sesión ha caducado. Vuelva a iniciar sesión con el proveedor de identidad.',
+          taken: 'Mientras tanto, esta cuenta se ha vinculado a otra cuenta del proveedor de identidad.'
+        },
         errors: {
           disabled: 'El inicio de sesión único está desactivado.',
           locked: 'Demasiados inicios de sesión fallidos, inténtelo más tarde',
@@ -42,6 +51,7 @@ const es = {
           account: 'Su cuenta del proveedor de identidad no tiene cuenta en este dispositivo.',
           role: 'Su cuenta del proveedor de identidad no está en ninguno de los grupos permitidos en este dispositivo.',
           binding: 'Su cuenta del proveedor de identidad no es la que está vinculada a esta cuenta del dispositivo. Pida a un administrador que la desvincule.',
+          unlinked: 'Esta cuenta aún no está vinculada a su cuenta del proveedor de identidad. Pida a un administrador que la vincule.',
           server: 'No se pudo completar el inicio de sesión. Inténtelo de nuevo.'
         }
       },
@@ -2496,8 +2506,18 @@ const es = {
           deviceOwner: 'Propietario del dispositivo',
           ssoTag: 'SSO',
           ssoUnlink: 'Desvincular SSO',
-          ssoUnlinkConfirm: '¿Desvincular {{username}} de su cuenta del proveedor de identidad? El siguiente inicio de sesión único la volverá a vincular. También se cierra su sesión en todas partes.',
+          ssoUnlinkConfirm: '¿Desvincular {{username}} de su cuenta del proveedor de identidad? Deberá vincularse de nuevo antes de su próximo inicio de sesión único. También se cerrarán todas sus sesiones.',
           ssoUnlinked: 'Vínculo de inicio de sesión único eliminado',
+          ssoLink: 'Vincular SSO',
+          ssoLinkTitle: 'Vincular {{username}} a una cuenta del proveedor de identidad',
+          ssoLinkDesc: 'Se rechaza el inicio de sesión único en una cuenta no vinculada. Introduzca el sujeto (sub) de la cuenta del proveedor de identidad o elija abajo un inicio de sesión rechazado. Deje el emisor vacío para usar el de los ajustes.',
+          ssoIssuer: 'Emisor (issuer)',
+          ssoSubject: 'Sujeto (sub)',
+          ssoSubjectRequired: 'Sujeto obligatorio',
+          ssoPending: 'Inicios de sesión rechazados',
+          ssoPendingEmpty: 'Ningún inicio de sesión rechazado en el último día',
+          ssoPick: 'Usar',
+          ssoLinked: 'Vínculo de inicio de sesión único guardado',
           resetPassword: 'Restablecer contraseña',
           delete: 'Eliminar',
           deleteConfirm: '¿Eliminar este usuario y revocar todas sus sesiones?',

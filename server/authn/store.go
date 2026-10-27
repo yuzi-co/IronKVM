@@ -47,6 +47,10 @@ var (
 	// ErrOIDCSubjectMismatch is a single sign-on to an account that is linked
 	// to another account at the same identity provider.
 	ErrOIDCSubjectMismatch = errors.New("the account is linked to another identity provider account")
+	// ErrOIDCNotLinked is a single sign-on to an account that is not linked
+	// to any identity provider account yet. An administrator links it, or the
+	// user confirms the link with the account's password.
+	ErrOIDCNotLinked = errors.New("the account is not linked to an identity provider account")
 
 	usernamePattern = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9_.-]{0,31}$`)
 )
@@ -75,13 +79,20 @@ type User struct {
 	RecoveryCodes []string `json:"recoveryCodes,omitempty"`
 	// OIDCIssuer and OIDCSubject link the account to one account at an
 	// OpenID Connect provider: the issuer and the sub claim of its ID token.
-	// The first single sign-on sets them, and later ones must carry the same
-	// sub, so an IdP account that renames itself into this username does not
-	// get in. Empty means not linked yet. Older servers ignore both fields and
-	// drop them when they write the file, which leaves the account to be
-	// linked again at its next single sign-on.
+	// An administrator sets them, or the user does by confirming a first
+	// single sign-on with the account's password, or a single sign-on that
+	// creates the account. Every single sign-on must carry the same sub, so
+	// an IdP account that renames itself into this username does not get in.
+	// Empty means not linked yet, and a single sign-on is refused. Older
+	// servers ignore both fields and drop them when they write the file,
+	// which leaves the account to be linked again.
 	OIDCIssuer  string `json:"oidcIssuer,omitempty"`
 	OIDCSubject string `json:"oidcSubject,omitempty"`
+	// NoPassword marks an account made by a single sign-on, whose password
+	// is random and known to nobody, until a password is set. Such an
+	// account cannot confirm a link with its password; only an administrator
+	// can link it again.
+	NoPassword bool `json:"noPassword,omitempty"`
 }
 
 // TOTPEnabled reports whether the web login asks this account for a second
@@ -358,7 +369,7 @@ func (s *Store) CreateOIDC(username, password string, role Role, issuer, subject
 	if issuer == "" || subject == "" {
 		return errors.New("an OIDC account needs an issuer and a subject")
 	}
-	return s.create(User{Username: username, Role: role, OIDCIssuer: issuer, OIDCSubject: subject}, password)
+	return s.create(User{Username: username, Role: role, OIDCIssuer: issuer, OIDCSubject: subject, NoPassword: true}, password)
 }
 
 // create adds the account template describes, with the password hashed, the
@@ -508,6 +519,7 @@ func (s *Store) SetPasswordAndRun(username, password string, afterCommit func() 
 	previous.Users = append([]User(nil), db.Users...)
 	db.Users[index].PasswordHash = string(hash)
 	db.Users[index].MustChangePassword = false
+	db.Users[index].NoPassword = false
 	db.Users[index].TokenVersion++
 	if err = s.saveLocked(db); err != nil {
 		return nil, err
@@ -631,10 +643,12 @@ func (s *Store) updateUser(username string, change func(*User) bool) (*User, err
 	return cloneUser(&db.Users[index]), nil
 }
 
-// BindOIDC links an account to the identity provider account a single
-// sign-on came from, or checks the link it already has. It returns the
-// account and the issuer it was linked under before: empty when it was not
-// linked, issuer itself when the link was already this one.
+// BindOIDC checks the link of an account a single sign-on is for. It returns
+// the account and the issuer it was linked under before: issuer itself when
+// the link was already this one.
+//
+// An account with no link is ErrOIDCNotLinked: a single sign-on alone never
+// links an existing account (ironkvm-dist#169). See LinkOIDC and ConfirmOIDC.
 //
 // A link made under another issuer is replaced. Only an administrator can
 // change the issuer in the settings, and a sub means nothing outside its
@@ -648,11 +662,17 @@ func (s *Store) BindOIDC(username, issuer, subject string) (*User, string, error
 		return nil, "", errors.New("an OIDC link needs an issuer and a subject")
 	}
 	previous := ""
-	mismatch := false
+	var refusal error
 	user, err := s.updateUser(username, func(user *User) bool {
 		previous = user.OIDCIssuer
-		if user.OIDCSubject != "" && user.OIDCIssuer == issuer {
-			mismatch = user.OIDCSubject != subject
+		switch {
+		case user.OIDCSubject == "":
+			refusal = ErrOIDCNotLinked
+			return false
+		case user.OIDCIssuer == issuer:
+			if user.OIDCSubject != subject {
+				refusal = ErrOIDCSubjectMismatch
+			}
 			return false
 		}
 		user.OIDCIssuer = issuer
@@ -662,15 +682,65 @@ func (s *Store) BindOIDC(username, issuer, subject string) (*User, string, error
 	if err != nil {
 		return nil, "", err
 	}
-	if mismatch {
-		return nil, previous, ErrOIDCSubjectMismatch
+	if refusal != nil {
+		return nil, previous, refusal
 	}
 	return user, previous, nil
 }
 
+// ConfirmOIDC links an account that has no link, for a user who confirmed a
+// single sign-on with the account's password. The same link again is no
+// change. Any other link, which an administrator may have made meanwhile, is
+// ErrOIDCSubjectMismatch, and the account is left as it is.
+func (s *Store) ConfirmOIDC(username, issuer, subject string) (*User, error) {
+	if issuer == "" || subject == "" {
+		return nil, errors.New("an OIDC link needs an issuer and a subject")
+	}
+	mismatch := false
+	user, err := s.updateUser(username, func(user *User) bool {
+		if user.OIDCSubject != "" {
+			mismatch = user.OIDCIssuer != issuer || user.OIDCSubject != subject
+			return false
+		}
+		user.OIDCIssuer = issuer
+		user.OIDCSubject = subject
+		return true
+	})
+	if err != nil {
+		return nil, err
+	}
+	if mismatch {
+		return nil, ErrOIDCSubjectMismatch
+	}
+	return user, nil
+}
+
+// LinkOIDC is an administrator linking an account to an identity provider
+// account before its first single sign-on, or to another one. It replaces
+// whatever link the account had, and returns that link's issuer and subject.
+func (s *Store) LinkOIDC(username, issuer, subject string) (*User, string, string, error) {
+	if issuer == "" || subject == "" {
+		return nil, "", "", errors.New("an OIDC link needs an issuer and a subject")
+	}
+	var previousIssuer, previousSubject string
+	user, err := s.updateUser(username, func(user *User) bool {
+		previousIssuer, previousSubject = user.OIDCIssuer, user.OIDCSubject
+		if user.OIDCIssuer == issuer && user.OIDCSubject == subject {
+			return false
+		}
+		user.OIDCIssuer = issuer
+		user.OIDCSubject = subject
+		return true
+	})
+	if err != nil {
+		return nil, "", "", err
+	}
+	return user, previousIssuer, previousSubject, nil
+}
+
 // ClearOIDC removes an account's link to an identity provider account, for a
-// user who was recreated at the provider. The next single sign-on links the
-// account again.
+// user who was recreated at the provider. The account is then linked again
+// like one that never had a link.
 func (s *Store) ClearOIDC(username string) (*User, error) {
 	return s.updateUser(username, func(user *User) bool {
 		changed := user.OIDCIssuer != "" || user.OIDCSubject != ""

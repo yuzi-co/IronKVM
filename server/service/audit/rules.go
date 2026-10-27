@@ -21,6 +21,9 @@ var named = map[string]Rule{
 	"POST /api/auth/oidc/settings": {CategoryAuth, "oidc-settings", false},
 	// The target is the account, the route's last parameter.
 	"DELETE /api/auth/users/:username/oidc": {CategoryAuth, "oidc-unlink", false},
+	"PUT /api/auth/users/:username/oidc":    {CategoryAuth, "oidc-prelink", false},
+	// The user confirms a single sign-on's link with the account's password.
+	"POST /api/auth/oidc/link": {CategoryAuth, "login-oidc-link", true},
 
 	"DELETE /api/auth/sessions/:id":         {CategoryAuth, "revoke-session", false},
 	"POST /api/auth/sessions/revoke-others": {CategoryAuth, "revoke-other-sessions", false},

@@ -31,6 +31,15 @@ const vi = {
       oidc: {
         signIn: 'Đăng nhập bằng {{name}}',
         usePassword: 'Đăng nhập bằng mật khẩu',
+        confirm: {
+          title: 'Liên kết đăng nhập một lần',
+          description: 'Nhà cung cấp danh tính đã đăng nhập bạn với tên {{username}}, nhưng tài khoản này chưa được liên kết. Nhập mật khẩu của tài khoản để liên kết và đăng nhập.',
+          submit: 'Liên kết và đăng nhập',
+          cancel: 'Hủy',
+          invalid: 'Sai mật khẩu hoặc mã',
+          expired: 'Phiên đăng nhập đã hết hạn. Hãy đăng nhập lại qua nhà cung cấp danh tính.',
+          taken: 'Trong lúc đó, tài khoản này đã được liên kết với một tài khoản khác của nhà cung cấp danh tính.'
+        },
         errors: {
           disabled: 'Đăng nhập một lần đang tắt.',
           locked: 'Quá nhiều lần đăng nhập thất bại, vui lòng thử lại sau',
@@ -41,6 +50,7 @@ const vi = {
           account: 'Tài khoản của bạn ở nhà cung cấp danh tính không có tài khoản trên thiết bị này.',
           role: 'Tài khoản của bạn ở nhà cung cấp danh tính không thuộc nhóm nào được phép trên thiết bị này.',
           binding: 'Tài khoản của bạn ở nhà cung cấp danh tính không phải là tài khoản được liên kết với tài khoản này trên thiết bị. Hãy nhờ quản trị viên hủy liên kết.',
+          unlinked: 'Tài khoản này chưa được liên kết với tài khoản của bạn tại nhà cung cấp danh tính. Hãy nhờ quản trị viên liên kết.',
           server: 'Không thể hoàn tất đăng nhập. Hãy thử lại.'
         }
       },
@@ -2457,8 +2467,18 @@ const vi = {
           deviceOwner: 'Chủ sở hữu thiết bị',
           ssoTag: 'SSO',
           ssoUnlink: 'Hủy liên kết SSO',
-          ssoUnlinkConfirm: 'Hủy liên kết {{username}} với tài khoản ở nhà cung cấp danh tính? Lần đăng nhập một lần kế tiếp sẽ liên kết lại. Tài khoản cũng bị đăng xuất ở mọi nơi.',
+          ssoUnlinkConfirm: 'Hủy liên kết {{username}} khỏi tài khoản nhà cung cấp danh tính? Cần liên kết lại trước lần đăng nhập một lần tiếp theo. Tài khoản cũng bị đăng xuất ở mọi nơi.',
           ssoUnlinked: 'Đã xóa liên kết đăng nhập một lần',
+          ssoLink: 'Liên kết SSO',
+          ssoLinkTitle: 'Liên kết {{username}} với một tài khoản nhà cung cấp danh tính',
+          ssoLinkDesc: 'Đăng nhập một lần vào tài khoản chưa liên kết sẽ bị từ chối. Nhập subject (sub) của tài khoản tại nhà cung cấp danh tính, hoặc chọn một lần đăng nhập bị từ chối bên dưới. Để trống bên phát hành để dùng giá trị trong cài đặt.',
+          ssoIssuer: 'Bên phát hành (issuer)',
+          ssoSubject: 'Subject (sub)',
+          ssoSubjectRequired: 'Cần nhập subject',
+          ssoPending: 'Lần đăng nhập bị từ chối',
+          ssoPendingEmpty: 'Không có lần đăng nhập bị từ chối nào trong ngày qua',
+          ssoPick: 'Dùng',
+          ssoLinked: 'Đã lưu liên kết đăng nhập một lần',
           resetPassword: 'Đặt lại mật khẩu',
           delete: 'Xóa',
           deleteConfirm: 'Xóa người dùng này và thu hồi mọi phiên của họ?',

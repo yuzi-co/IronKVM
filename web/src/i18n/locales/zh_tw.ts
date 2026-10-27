@@ -31,6 +31,15 @@ const zh_tw = {
       oidc: {
         signIn: '使用 {{name}} 登入',
         usePassword: '使用密碼登入',
+        confirm: {
+          title: '連結單一登入',
+          description: '身分提供者已將你登入為 {{username}}，但此帳戶尚未與其連結。輸入該帳戶的密碼以完成連結並登入。',
+          submit: '連結並登入',
+          cancel: '取消',
+          invalid: '密碼或驗證碼錯誤',
+          expired: '登入已逾時。請重新透過身分提供者登入。',
+          taken: '在此期間，此帳戶已連結到身分提供者的另一個帳戶。'
+        },
         errors: {
           disabled: '單一登入已關閉。',
           locked: '登入失敗次數過多，請稍後再試',
@@ -41,6 +50,7 @@ const zh_tw = {
           account: '您的身分提供者帳號在此裝置上沒有對應帳號。',
           role: '您的身分提供者帳號不在此裝置允許的任何群組中。',
           binding: '您的身分提供者帳號不是與此裝置上該帳號連結的那個帳號。請聯絡管理員解除連結。',
+          unlinked: '此帳戶尚未連結到你在身分提供者的帳戶。請聯絡管理員進行連結。',
           server: '無法完成登入。請再試一次。'
         }
       },
@@ -2363,8 +2373,18 @@ const zh_tw = {
           deviceOwner: '裝置擁有者',
           ssoTag: 'SSO',
           ssoUnlink: '解除 SSO 連結',
-          ssoUnlinkConfirm: '解除 {{username}} 與身分提供者帳號的連結？下次單一登入時會重新連結。該帳戶在所有地方的登入也會結束。',
+          ssoUnlinkConfirm: '解除 {{username}} 與身分提供者帳戶的連結？下次單一登入前需要重新連結。該帳戶也會在所有地方登出。',
           ssoUnlinked: '已解除單一登入連結',
+          ssoLink: '連結 SSO',
+          ssoLinkTitle: '將 {{username}} 連結到身分提供者帳戶',
+          ssoLinkDesc: '未連結帳戶的單一登入會被拒絕。輸入身分提供者帳戶的 subject (sub)，或在下方選擇一次被拒絕的登入。簽發者留空則使用設定中的簽發者。',
+          ssoIssuer: '簽發者 (issuer)',
+          ssoSubject: 'Subject (sub)',
+          ssoSubjectRequired: '請輸入 subject',
+          ssoPending: '被拒絕的登入',
+          ssoPendingEmpty: '過去一天內沒有被拒絕的登入',
+          ssoPick: '使用',
+          ssoLinked: '單一登入連結已儲存',
           resetPassword: '重設密碼',
           delete: '刪除',
           deleteConfirm: '刪除此使用者並撤銷其所有工作階段？',

@@ -15,7 +15,10 @@ export const OIDC_REASONS = [
   'role',
   'server',
   // The account is linked to another account at the provider.
-  'binding'
+  'binding',
+  // The account is not linked yet: an administrator links it, or the
+  // account's password confirms the link (ironkvm-dist#169).
+  'unlinked'
 ] as const;
 
 export type OidcReason = (typeof OIDC_REASONS)[number];
@@ -25,6 +28,24 @@ export type OidcReason = (typeof OIDC_REASONS)[number];
 export function oidcReason(search: string): OidcReason | null {
   const value = new URLSearchParams(search).get('oidc');
   return (OIDC_REASONS as readonly string[]).includes(value ?? '') ? (value as OidcReason) : null;
+}
+
+// A refused sign-in an administrator can link an account to, as
+// GET /api/auth/oidc/pending lists it.
+export type PendingSignIn = {
+  username: string;
+  issuer: string;
+  subject: string;
+  time: number;
+};
+
+// pendingForAccount orders the refused sign-ins for linking one account: the
+// ones under its username first, then the others, each newest first.
+export function pendingForAccount<T extends PendingSignIn>(signIns: T[], username: string): T[] {
+  return [...signIns].sort((a, b) => {
+    const mine = Number(b.username === username) - Number(a.username === username);
+    return mine !== 0 ? mine : b.time - a.time;
+  });
 }
 
 // scopesFromText reads the scopes field. openid is left out: the server always

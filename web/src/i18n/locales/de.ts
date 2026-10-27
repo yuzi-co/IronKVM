@@ -32,6 +32,15 @@ const de = {
       oidc: {
         signIn: 'Anmelden mit {{name}}',
         usePassword: 'Mit Passwort anmelden',
+        confirm: {
+          title: 'Single Sign-on verknüpfen',
+          description: 'Ihr Identitätsanbieter hat Sie als {{username}} angemeldet, aber dieses Konto ist noch nicht damit verknüpft. Geben Sie das Passwort des Kontos ein, um es zu verknüpfen und sich anzumelden.',
+          submit: 'Verknüpfen und anmelden',
+          cancel: 'Abbrechen',
+          invalid: 'Falsches Passwort oder falscher Code',
+          expired: 'Die Anmeldung ist abgelaufen. Melden Sie sich erneut beim Identitätsanbieter an.',
+          taken: 'Dieses Konto wurde inzwischen mit einem anderen Konto beim Identitätsanbieter verknüpft.'
+        },
         errors: {
           disabled: 'Single Sign-on ist ausgeschaltet.',
           locked: 'Zu viele fehlgeschlagene Anmeldungen, bitte später erneut versuchen',
@@ -42,6 +51,7 @@ const de = {
           account: 'Zu Ihrem Konto beim Identitätsanbieter gibt es kein Konto auf diesem Gerät.',
           role: 'Ihr Konto beim Identitätsanbieter ist in keiner der auf diesem Gerät erlaubten Gruppen.',
           binding: 'Ihr Konto beim Identitätsanbieter ist nicht das, mit dem dieses Konto auf dem Gerät verknüpft ist. Bitten Sie einen Administrator, die Verknüpfung aufzuheben.',
+          unlinked: 'Dieses Konto ist noch nicht mit Ihrem Konto beim Identitätsanbieter verknüpft. Bitten Sie einen Administrator, es zu verknüpfen.',
           server: 'Die Anmeldung konnte nicht abgeschlossen werden. Bitte erneut versuchen.'
         }
       },
@@ -2512,8 +2522,18 @@ const de = {
           deviceOwner: 'Gerätebesitzer',
           ssoTag: 'SSO',
           ssoUnlink: 'SSO-Verknüpfung aufheben',
-          ssoUnlinkConfirm: 'Verknüpfung von {{username}} mit dem Konto beim Identitätsanbieter aufheben? Die nächste Anmeldung per Single Sign-on verknüpft es erneut. Es wird außerdem überall abgemeldet.',
+          ssoUnlinkConfirm: 'Verknüpfung von {{username}} mit dem Konto beim Identitätsanbieter aufheben? Vor der nächsten Anmeldung per Single Sign-on muss es erneut verknüpft werden. Es wird außerdem überall abgemeldet.',
           ssoUnlinked: 'Single-Sign-on-Verknüpfung aufgehoben',
+          ssoLink: 'SSO verknüpfen',
+          ssoLinkTitle: '{{username}} mit einem Konto beim Identitätsanbieter verknüpfen',
+          ssoLinkDesc: 'Eine Anmeldung per Single Sign-on bei einem nicht verknüpften Konto wird abgelehnt. Geben Sie das Subject (sub) des Kontos beim Identitätsanbieter ein oder wählen Sie unten eine abgelehnte Anmeldung. Lassen Sie den Aussteller leer, um den aus den Einstellungen zu verwenden.',
+          ssoIssuer: 'Aussteller (Issuer)',
+          ssoSubject: 'Subject (sub)',
+          ssoSubjectRequired: 'Subject erforderlich',
+          ssoPending: 'Abgelehnte Anmeldungen',
+          ssoPendingEmpty: 'Keine abgelehnten Anmeldungen am letzten Tag',
+          ssoPick: 'Übernehmen',
+          ssoLinked: 'Single-Sign-on-Verknüpfung gespeichert',
           resetPassword: 'Passwort zurücksetzen',
           delete: 'Löschen',
           deleteConfirm: 'Diesen Benutzer löschen und alle seine Sitzungen widerrufen?',

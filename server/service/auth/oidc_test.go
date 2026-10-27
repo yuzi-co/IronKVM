@@ -240,12 +240,16 @@ func newOIDCFixture(t *testing.T) *oidcFixture {
 	r.GET("/api/auth/oidc", service.OIDCInfo)
 	r.GET("/api/auth/oidc/login", service.OIDCLogin)
 	r.GET("/api/auth/oidc/callback", service.OIDCCallback)
+	r.GET("/api/auth/oidc/link", service.GetOIDCLink)
+	r.POST("/api/auth/oidc/link", service.ConfirmOIDCLink)
 	api := r.Group("/api").Use(middleware.CheckToken())
 	api.GET("/auth/account", service.GetAccount)
 	adminSession := r.Group("/api").Use(middleware.CheckSession(), middleware.RequireRole(authn.RoleAdmin))
 	adminSession.GET("/auth/oidc/settings", service.GetOIDCSettings)
 	adminSession.POST("/auth/oidc/settings", service.SetOIDCSettings)
 	adminSession.DELETE("/auth/users/:username/oidc", service.UnlinkUserOIDC)
+	adminSession.PUT("/auth/users/:username/oidc", service.LinkUserOIDC)
+	adminSession.GET("/auth/oidc/pending", service.GetOIDCPending)
 	f.router = r
 	return f
 }
@@ -315,6 +319,15 @@ func (f *oidcFixture) login() *httptest.ResponseRecorder {
 	return f.callback(code, state, flow)
 }
 
+// prelink links an account to the mock IdP's account sub, as an
+// administrator does before its first single sign-on.
+func (f *oidcFixture) prelink(username, sub string) {
+	f.t.Helper()
+	if _, _, _, err := f.store.LinkOIDC(username, f.idp.server.URL, sub); err != nil {
+		f.t.Fatal(err)
+	}
+}
+
 func sessionCookieOf(rec *httptest.ResponseRecorder) *http.Cookie {
 	for _, c := range rec.Result().Cookies() {
 		if c.Name == middleware.CookieName && c.Value != "" {
@@ -376,6 +389,7 @@ func (f *oidcFixture) sessions(username string) int {
 func TestOIDCLoginCreatesASession(t *testing.T) {
 	f := newOIDCFixture(t)
 	f.idp.claims["preferred_username"] = "alice"
+	f.prelink("alice", "subject-1")
 
 	rec := f.login()
 
@@ -407,6 +421,7 @@ func TestOIDCLoginCreatesASession(t *testing.T) {
 func TestOIDCStateIsSingleUse(t *testing.T) {
 	f := newOIDCFixture(t)
 	f.idp.claims["preferred_username"] = "alice"
+	f.prelink("alice", "subject-1")
 	location, flow := f.begin()
 	code, state := f.idp.authorize(location)
 	if rec := f.callback(code, state, flow); sessionCookieOf(rec) == nil {
@@ -514,6 +529,7 @@ func TestOIDCEmailClaimNeedsTheDomainAndAVerifiedAddress(t *testing.T) {
 
 	f.idp.claims["email_verified"] = true
 	f.idp.claims["email"] = "alice@Corp.Example"
+	f.prelink("alice", "subject-1")
 	rec := f.login()
 	if name, _ := f.account(sessionCookieOf(rec)); name != "alice" {
 		t.Fatalf("email login signed in as %q", name)
@@ -554,6 +570,7 @@ func TestOIDCAutoCreateAndGroupRoles(t *testing.T) {
 
 	// The IdP's groups set the role of an existing account at each login.
 	f.idp.claims["preferred_username"] = "alice"
+	f.prelink("alice", "subject-1")
 	f.idp.claims["groups"] = "kvm-viewers"
 	rec = f.login()
 	if name, role := f.account(sessionCookieOf(rec)); name != "alice" || role != authn.RoleViewer {
@@ -577,6 +594,7 @@ func TestOIDCSkipsLocalTOTP(t *testing.T) {
 		t.Fatal(err)
 	}
 	f.idp.claims["preferred_username"] = "alice"
+	f.prelink("alice", "subject-1")
 	if sessionCookieOf(f.login()) == nil {
 		t.Fatal("OIDC login asked for the local second factor")
 	}
@@ -695,6 +713,7 @@ func TestOIDCSettingsNeverReturnTheSecret(t *testing.T) {
 func TestOIDCRedirectURLOverride(t *testing.T) {
 	f := newOIDCFixture(t)
 	f.idp.claims["preferred_username"] = "alice"
+	f.prelink("alice", "subject-1")
 	const override = "https://kvm.example.org/api/auth/oidc/callback"
 	f.save(func(s *oidcSettings) { s.RedirectURL = override })
 
@@ -763,32 +782,33 @@ func (f *oidcFixture) link(username string) (string, string) {
 	return user.OIDCIssuer, user.OIDCSubject
 }
 
-func TestOIDCFirstLoginLinksTheAccountAndLaterOnesMustMatch(t *testing.T) {
+func TestOIDCPreLinkedAccountSignsInAndLaterLoginsMustMatch(t *testing.T) {
 	f := newOIDCFixture(t)
 	f.save(func(s *oidcSettings) { s.UserGroup = "kvm-users"; s.ViewerGroup = "kvm-viewers" })
 	f.idp.claims["preferred_username"] = "alice"
 	f.idp.claims["groups"] = "kvm-users"
 
-	// An account from before the link existed signs in, and is linked.
+	// An administrator links the account before its first single sign-on.
 	if issuer, sub := f.link("alice"); issuer != "" || sub != "" {
 		t.Fatalf("alice linked before any login: %q %q", issuer, sub)
 	}
-	if sessionCookieOf(f.login()) == nil {
-		t.Fatal("first login refused")
+	admin := loginCookie(t, f.router, "admin", "admin")
+	rec := requestJSONRecorder(f.router, http.MethodPut, "/api/auth/users/alice/oidc", map[string]string{"subject": "subject-1"}, admin)
+	if !strings.Contains(rec.Body.String(), `"code":0`) {
+		t.Fatalf("pre-link = %s", rec.Body.String())
 	}
 	if issuer, sub := f.link("alice"); issuer != f.idp.server.URL || sub != "subject-1" {
-		t.Fatalf("alice linked to %q %q", issuer, sub)
+		t.Fatalf("alice pre-linked to %q %q", issuer, sub)
 	}
-	if links := f.eventsOf("oidc-link"); len(links) != 1 || links[0].Target != "alice" || !strings.Contains(links[0].Detail, f.idp.server.URL) {
-		t.Fatalf("link audited as %+v", links)
+	if sessionCookieOf(f.login()) == nil {
+		t.Fatal("pre-linked login refused")
 	}
-
-	// The same IdP account signs in again, and nothing is linked anew.
+	// The sign-in found the link made: nothing is linked anew.
+	if n := len(f.eventsOf("oidc-link")); n != 0 {
+		t.Fatalf("%d link events after a pre-linked login", n)
+	}
 	if sessionCookieOf(f.login()) == nil {
 		t.Fatal("second login refused")
-	}
-	if n := len(f.eventsOf("oidc-link")); n != 1 {
-		t.Fatalf("%d link events after a second login", n)
 	}
 
 	// Another IdP account that took the name alice is refused, and its
@@ -808,6 +828,7 @@ func TestOIDCFirstLoginLinksTheAccountAndLaterOnesMustMatch(t *testing.T) {
 func TestOIDCAdministratorUnlinksAnAccount(t *testing.T) {
 	f := newOIDCFixture(t)
 	f.idp.claims["preferred_username"] = "alice"
+	f.prelink("alice", "subject-1")
 	if sessionCookieOf(f.login()) == nil {
 		t.Fatal("first login refused")
 	}
@@ -841,12 +862,15 @@ func TestOIDCAdministratorUnlinksAnAccount(t *testing.T) {
 		t.Fatalf("unlinked an account that does not exist: %s", rec.Body.String())
 	}
 
-	// The next login links the new IdP account.
-	if sessionCookieOf(f.login()) == nil {
-		t.Fatal("login after unlink refused")
+	// The account is unlinked like one that never had a link: the next
+	// login waits for a new link, and is not made one.
+	f.refused(f.loginFresh(), "unlinked")
+	if _, sub := f.link("alice"); sub != "" {
+		t.Fatalf("alice linked to %q by a login after the unlink", sub)
 	}
-	if _, sub := f.link("alice"); sub != "subject-2" {
-		t.Fatalf("alice linked to %q after unlink", sub)
+	f.prelink("alice", "subject-2")
+	if sessionCookieOf(f.login()) == nil {
+		t.Fatal("login after the new link refused")
 	}
 }
 
@@ -875,7 +899,7 @@ func TestOIDCAutoCreatedAccountIsLinkedAtCreation(t *testing.T) {
 func TestOIDCIssuerChangeLinksAccountsAgain(t *testing.T) {
 	f := newOIDCFixture(t)
 	const oldIssuer = "https://old-idp.example"
-	if _, _, err := f.store.BindOIDC("alice", oldIssuer, "old-sub"); err != nil {
+	if _, _, _, err := f.store.LinkOIDC("alice", oldIssuer, "old-sub"); err != nil {
 		t.Fatal(err)
 	}
 	f.idp.claims["preferred_username"] = "alice"
