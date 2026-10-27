@@ -1,6 +1,9 @@
 package agent
 
-import "testing"
+import (
+	"testing"
+	"time"
+)
 
 func newCountingLeases() (*TaskLeases, map[string]bool) {
 	released := map[string]bool{}
@@ -122,5 +125,36 @@ func TestAnAgentThatSaysItSendsTurnDoneKeepsTheFirstTurnsLease(t *testing.T) {
 	leases.Observe("s", Event{Type: EventAgentMessage, Kind: KindReply})
 	if !released["b"] {
 		t.Fatal("a reply did not end the lease after the session was forgotten")
+	}
+}
+
+// A session is in a turn while it holds a lease, whether or not a capture
+// lease could be taken, and its timer ends the turn as it ends the lease.
+func TestInTurnFollowsTheLeases(t *testing.T) {
+	leases := NewTaskLeases(nil)
+	if leases.InTurn("s") {
+		t.Fatal("in a turn before any prompt")
+	}
+	leases.Prompt("s", "r1", 0)
+	if !leases.InTurn("s") || leases.InTurn("other") {
+		t.Fatal("the prompt did not start a turn for its session alone")
+	}
+	leases.Observe("s", Event{Type: EventTurnDone, RequestIDs: []string{"r1"}})
+	if leases.InTurn("s") {
+		t.Fatal("turn_done did not end the turn")
+	}
+
+	leases.Prompt("s", "r2", 20)
+	deadline := time.Now().Add(5 * time.Second)
+	for leases.InTurn("s") {
+		if time.Now().After(deadline) {
+			t.Fatal("the prompt's time limit did not end the turn")
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+
+	var none *TaskLeases
+	if none.InTurn("s") {
+		t.Fatal("no tracker means no turn")
 	}
 }

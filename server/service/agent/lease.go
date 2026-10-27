@@ -22,6 +22,9 @@ const (
 //   - a reply arrives from an agent that has not sent turn_done in this
 //     session and did not say it would (ExpectTurnDone), the same rule the
 //     sidebar uses for its run state.
+//
+// The bridge also takes a session's leases as the record of its turns: while
+// one is held, the agent is working on a prompt the user sent (InTurn).
 type TaskLeases struct {
 	acquire func() func()
 
@@ -124,6 +127,24 @@ func (l *TaskLeases) Observe(sessionID string, event Event) {
 			l.ReleaseSession(sessionID)
 		}
 	}
+}
+
+// InTurn reports whether the session holds a lease, that is whether its agent
+// is working on a prompt the user sent. A lease is held from its prompt until
+// one of the ends above, also when acquire is nil: its timer is the record.
+func (l *TaskLeases) InTurn(sessionID string) bool {
+	if l == nil || sessionID == "" {
+		return false
+	}
+	prefix := "task:" + sessionID + ":"
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	for key := range l.timers {
+		if strings.HasPrefix(key, prefix) {
+			return true
+		}
+	}
+	return false
 }
 
 // ReleaseSession ends every lease of the session.

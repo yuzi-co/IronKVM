@@ -428,3 +428,69 @@ func TestBridgeEndsTheFirstTurnsLeaseAtAReplyOfAnAgentThatDoesNotReportTurnDone(
 	readEvent(t, conn)
 	waitFor(t, "the reply to end the lease", func() bool { held, _ := h.leases.counts(); return held == 0 })
 }
+
+// A turn is the span the device tools may act in: from the prompt the browser
+// sent until turn_done, an error, a cancel or the close ends it. A prompt the
+// server made starts none.
+func TestBridgeInTurnFollowsTheUsersTurns(t *testing.T) {
+	h := newHarness(t)
+	h.agent.TurnDone = true
+	conn, session := h.dial(t, "s1")
+	waitFor(t, "the session to be active", func() bool { return h.bridge.IsActive("s1") })
+
+	prompt := func(requestID string) {
+		t.Helper()
+		if err := conn.WriteJSON(map[string]any{"type": "session/prompt", "requestId": requestID, "text": "hello"}); err != nil {
+			t.Fatal(err)
+		}
+		<-session.Prompts
+		if !h.bridge.InTurn("s1") {
+			t.Fatalf("not in a turn after prompt %s", requestID)
+		}
+	}
+
+	if h.bridge.InTurn("s1") {
+		t.Fatal("in a turn before any prompt")
+	}
+	if err := h.bridge.Prompt("s1", agent.Prompt{RequestID: "x", Text: "load"}); err != nil {
+		t.Fatal(err)
+	}
+	<-session.Prompts
+	if h.bridge.InTurn("s1") {
+		t.Fatal("a server prompt started a turn")
+	}
+
+	prompt("r1")
+	session.Emit(agent.Event{Type: agent.EventAgentMessage, MessageID: "m1", Kind: agent.KindReply, Text: "Looking."})
+	readEvent(t, conn)
+	if !h.bridge.InTurn("s1") {
+		t.Fatal("a reply ended the turn of an agent that reports turn_done")
+	}
+	session.Emit(agent.Event{Type: agent.EventTurnDone, RequestIDs: []string{"r1"}, StopReason: agent.StopEndTurn})
+	readEvent(t, conn)
+	if h.bridge.InTurn("s1") {
+		t.Fatal("turn_done did not end the turn")
+	}
+
+	prompt("r2")
+	if err := conn.WriteJSON(map[string]any{"type": "session/cancel", "requestId": "r2"}); err != nil {
+		t.Fatal(err)
+	}
+	<-session.Cancels
+	if h.bridge.InTurn("s1") {
+		t.Fatal("the cancel did not end the turn")
+	}
+
+	prompt("r3")
+	session.Emit(agent.Event{Type: agent.EventError, RequestID: "r3", Message: "model failed"})
+	readEvent(t, conn)
+	if h.bridge.InTurn("s1") {
+		t.Fatal("the error did not end the turn")
+	}
+
+	prompt("r4")
+	h.bridge.CloseSession("s1", websocket.CloseNormalClosure, "bye")
+	if h.bridge.InTurn("s1") {
+		t.Fatal("the close did not end the turn")
+	}
+}

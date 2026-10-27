@@ -296,6 +296,14 @@ func (b *Bridge) IsActive(sessionID string) bool {
 	return b.activeSession(sessionID) != nil
 }
 
+// InTurn reports whether an open session's agent is working on a prompt the
+// user sent: from the prompt until turn_done, an error, a cancel, the close of
+// the session or the prompt's time limit ends the turn, as the session's task
+// capture leases end. A prompt the server made (Prompt) starts no turn.
+func (b *Bridge) InTurn(sessionID string) bool {
+	return b.activeSession(sessionID) != nil && b.leases.InTurn(sessionID)
+}
+
 // CloseSession ends one session and releases its task capture leases, also
 // when no session has the id.
 func (b *Bridge) CloseSession(sessionID string, closeCode int, reason string) bool {
