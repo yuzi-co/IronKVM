@@ -29,6 +29,7 @@ type fakeServer struct {
 	commands []string
 	accepts  int
 	conns    []net.Conn
+	closed   bool
 }
 
 func newFakeServer(t *testing.T) *fakeServer {
@@ -60,6 +61,7 @@ func (s *fakeServer) hostPort() (string, int) {
 func (s *fakeServer) close() {
 	_ = s.ln.Close()
 	s.mu.Lock()
+	s.closed = true
 	for _, c := range s.conns {
 		_ = c.Close()
 	}
@@ -117,7 +119,14 @@ func (s *fakeServer) serve() {
 		if err != nil {
 			return
 		}
+		// A connection Accept returned while close ran is closed here, or
+		// it would be served after the server was closed.
 		s.mu.Lock()
+		if s.closed {
+			s.mu.Unlock()
+			_ = conn.Close()
+			return
+		}
 		s.accepts++
 		s.conns = append(s.conns, conn)
 		s.mu.Unlock()
