@@ -245,6 +245,7 @@ func newOIDCFixture(t *testing.T) *oidcFixture {
 	adminSession := r.Group("/api").Use(middleware.CheckSession(), middleware.RequireRole(authn.RoleAdmin))
 	adminSession.GET("/auth/oidc/settings", service.GetOIDCSettings)
 	adminSession.POST("/auth/oidc/settings", service.SetOIDCSettings)
+	adminSession.DELETE("/auth/users/:username/oidc", service.UnlinkUserOIDC)
 	f.router = r
 	return f
 }
@@ -729,5 +730,169 @@ func TestOIDCRedirectURLOverride(t *testing.T) {
 	rec = requestJSONRecorder(f.router, http.MethodPost, "/api/auth/oidc/settings", update, admin)
 	if !strings.Contains(rec.Body.String(), `"redirectUrl":"http://example.com/api/auth/oidc/callback"`) {
 		t.Fatalf("save without override = %s", rec.Body.String())
+	}
+}
+
+// loginFresh is a login after the session store was emptied, so refused can
+// count sessions after earlier logins succeeded.
+func (f *oidcFixture) loginFresh() *httptest.ResponseRecorder {
+	authn.DefaultSessions = authn.NewSessionStore(filepath.Join(f.t.TempDir(), "login_sessions.json"))
+	return f.login()
+}
+
+// eventsOf returns the audited events with an action.
+func (f *oidcFixture) eventsOf(action string) []audit.Event {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	var out []audit.Event
+	for _, e := range f.events {
+		if e.Action == action {
+			out = append(out, e)
+		}
+	}
+	return out
+}
+
+// link returns the issuer and sub an account is linked to.
+func (f *oidcFixture) link(username string) (string, string) {
+	f.t.Helper()
+	user, err := f.store.Get(username)
+	if err != nil {
+		f.t.Fatal(err)
+	}
+	return user.OIDCIssuer, user.OIDCSubject
+}
+
+func TestOIDCFirstLoginLinksTheAccountAndLaterOnesMustMatch(t *testing.T) {
+	f := newOIDCFixture(t)
+	f.save(func(s *oidcSettings) { s.UserGroup = "kvm-users"; s.ViewerGroup = "kvm-viewers" })
+	f.idp.claims["preferred_username"] = "alice"
+	f.idp.claims["groups"] = "kvm-users"
+
+	// An account from before the link existed signs in, and is linked.
+	if issuer, sub := f.link("alice"); issuer != "" || sub != "" {
+		t.Fatalf("alice linked before any login: %q %q", issuer, sub)
+	}
+	if sessionCookieOf(f.login()) == nil {
+		t.Fatal("first login refused")
+	}
+	if issuer, sub := f.link("alice"); issuer != f.idp.server.URL || sub != "subject-1" {
+		t.Fatalf("alice linked to %q %q", issuer, sub)
+	}
+	if links := f.eventsOf("oidc-link"); len(links) != 1 || links[0].Target != "alice" || !strings.Contains(links[0].Detail, f.idp.server.URL) {
+		t.Fatalf("link audited as %+v", links)
+	}
+
+	// The same IdP account signs in again, and nothing is linked anew.
+	if sessionCookieOf(f.login()) == nil {
+		t.Fatal("second login refused")
+	}
+	if n := len(f.eventsOf("oidc-link")); n != 1 {
+		t.Fatalf("%d link events after a second login", n)
+	}
+
+	// Another IdP account that took the name alice is refused, and its
+	// groups do not touch alice's role.
+	f.idp.claims["sub"] = "subject-2"
+	f.idp.claims["groups"] = "kvm-viewers"
+	f.refused(f.loginFresh(), "binding")
+	if e := f.lastEvent(); e.Outcome != audit.OutcomeDenied || e.Actor != "alice" || !strings.Contains(e.Detail, "subject-2") {
+		t.Fatalf("mismatch audited as %+v", e)
+	}
+	alice, _ := f.store.Get("alice")
+	if alice.Role != authn.RoleUser || alice.OIDCSubject != "subject-1" {
+		t.Fatalf("after a refused login alice is %s, linked to %q", alice.Role, alice.OIDCSubject)
+	}
+}
+
+func TestOIDCAdministratorUnlinksAnAccount(t *testing.T) {
+	f := newOIDCFixture(t)
+	f.idp.claims["preferred_username"] = "alice"
+	if sessionCookieOf(f.login()) == nil {
+		t.Fatal("first login refused")
+	}
+
+	// The user was recreated at the IdP, with a new sub.
+	f.idp.claims["sub"] = "subject-2"
+	f.refused(f.loginFresh(), "binding")
+
+	// Only an administrator unlinks.
+	alice := loginCookie(t, f.router, "alice", "alice-password")
+	if code := requestJSON(f.router, http.MethodDelete, "/api/auth/users/alice/oidc", nil, alice); code != http.StatusForbidden {
+		t.Fatalf("a user unlinked an account: %d", code)
+	}
+	admin := loginCookie(t, f.router, "admin", "admin")
+	rec := requestJSONRecorder(f.router, http.MethodDelete, "/api/auth/users/alice/oidc", nil, admin)
+	if !strings.Contains(rec.Body.String(), `"code":0`) {
+		t.Fatalf("unlink = %s", rec.Body.String())
+	}
+	if issuer, sub := f.link("alice"); issuer != "" || sub != "" {
+		t.Fatalf("alice still linked to %q %q", issuer, sub)
+	}
+	rec = requestJSONRecorder(f.router, http.MethodDelete, "/api/auth/users/nobody/oidc", nil, admin)
+	if strings.Contains(rec.Body.String(), `"code":0`) {
+		t.Fatalf("unlinked an account that does not exist: %s", rec.Body.String())
+	}
+
+	// The next login links the new IdP account.
+	if sessionCookieOf(f.login()) == nil {
+		t.Fatal("login after unlink refused")
+	}
+	if _, sub := f.link("alice"); sub != "subject-2" {
+		t.Fatalf("alice linked to %q after unlink", sub)
+	}
+}
+
+func TestOIDCAutoCreatedAccountIsLinkedAtCreation(t *testing.T) {
+	f := newOIDCFixture(t)
+	f.save(func(s *oidcSettings) { s.AutoCreate = true })
+	f.idp.claims["preferred_username"] = "dave"
+	f.idp.claims["sub"] = "dave-sub"
+	if sessionCookieOf(f.login()) == nil {
+		t.Fatal("auto-create login refused")
+	}
+	if issuer, sub := f.link("dave"); issuer != f.idp.server.URL || sub != "dave-sub" {
+		t.Fatalf("dave created linked to %q %q", issuer, sub)
+	}
+	if links := f.eventsOf("oidc-link"); len(links) != 1 || !strings.Contains(links[0].Detail, "created") {
+		t.Fatalf("creation audited as %+v", links)
+	}
+
+	f.idp.claims["sub"] = "someone-else"
+	f.refused(f.loginFresh(), "binding")
+}
+
+// A sub means nothing outside its issuer: after the administrator points the
+// settings at another provider, each account links again at its next login
+// instead of every one being locked out.
+func TestOIDCIssuerChangeLinksAccountsAgain(t *testing.T) {
+	f := newOIDCFixture(t)
+	const oldIssuer = "https://old-idp.example"
+	if _, _, err := f.store.BindOIDC("alice", oldIssuer, "old-sub"); err != nil {
+		t.Fatal(err)
+	}
+	f.idp.claims["preferred_username"] = "alice"
+	if sessionCookieOf(f.login()) == nil {
+		t.Fatal("login under the new issuer refused")
+	}
+	if issuer, sub := f.link("alice"); issuer != f.idp.server.URL || sub != "subject-1" {
+		t.Fatalf("alice linked to %q %q", issuer, sub)
+	}
+	links := f.eventsOf("oidc-link")
+	if len(links) != 1 || !strings.Contains(links[0].Detail, "in place of "+oldIssuer) {
+		t.Fatalf("relink audited as %+v", links)
+	}
+	// And under the new issuer the link holds.
+	f.idp.claims["sub"] = "subject-2"
+	f.refused(f.loginFresh(), "binding")
+}
+
+func TestOIDCTokenWithoutSubIsRefused(t *testing.T) {
+	f := newOIDCFixture(t)
+	f.idp.claims["preferred_username"] = "alice"
+	f.idp.tamper = func(c jwt.MapClaims) { delete(c, "sub") }
+	f.refused(f.login(), "token")
+	if _, sub := f.link("alice"); sub != "" {
+		t.Fatalf("alice linked to %q without a sub", sub)
 	}
 }

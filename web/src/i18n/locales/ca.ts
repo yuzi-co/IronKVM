@@ -41,6 +41,7 @@ const ca = {
           token: 'No s\'ha pogut verificar la resposta del proveïdor d\'identitat.',
           account: 'El vostre compte del proveïdor d\'identitat no té cap compte en aquest dispositiu.',
           role: 'El vostre compte del proveïdor d\'identitat no és a cap dels grups permesos en aquest dispositiu.',
+          binding: 'El vostre compte del proveïdor d\'identitat no és el que està vinculat a aquest compte del dispositiu. Demaneu a un administrador que el desvinculi.',
           server: 'No s\'ha pogut completar l\'inici de sessió. Torneu-ho a provar.'
         }
       },
@@ -2340,6 +2341,7 @@ const ca = {
           redirectUrlOverrideDesc: 'Deixeu-ho buit per usar l\'adreça de dalt. Definiu-ho quan un servidor intermediari invers no transmet el nom de l\'amfitrió o https.',
           httpWarning: 'Aquesta pàgina fa servir http sense xifrar. Molts proveïdors només accepten URL de redirecció http per a localhost. Si el vostre la rebutja, obriu el dispositiu per HTTPS o a través d\'un servidor intermediari invers amb TLS.',
           mappingDesc: 'Un compte del proveïdor inicia la sessió com el compte local amb el mateix nom d\'usuari. El compte del propietari del dispositiu només entra amb la seva contrasenya. El proveïdor fa l\'autenticació en dos passos: no es demana el codi local.',
+          bindingDesc: 'El primer inici de sessió únic vincula el compte local a aquell compte del proveïdor, i els inicis de sessió posteriors han de venir del mateix. Un administrador pot desvincular un compte a la llista d\'usuaris. Després d\'un canvi d\'emissor, cada compte es torna a vincular en el següent inici de sessió.',
           usernameClaim: 'Associa els comptes per',
           emailDomain: 'Domini de correu',
           emailDomainDesc: 'La part abans de @ és el nom d\'usuari. Es rebutgen les adreces d\'altres dominis.',
@@ -2415,6 +2417,10 @@ const ca = {
           enabled: 'Activat',
           disabled: 'Desactivat',
           deviceOwner: 'Propietari del dispositiu',
+          ssoTag: 'SSO',
+          ssoUnlink: 'Desvincula l\'SSO',
+          ssoUnlinkConfirm: 'Voleu desvincular {{username}} del seu compte del proveïdor d\'identitat? El següent inici de sessió únic el tornarà a vincular.',
+          ssoUnlinked: 'S\'ha eliminat el vincle d\'inici de sessió únic',
           resetPassword: 'Restableix la contrasenya',
           delete: 'Suprimeix',
           deleteConfirm: 'Voleu suprimir aquest usuari i revocar totes les seves sessions?',

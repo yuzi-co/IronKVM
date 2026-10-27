@@ -40,6 +40,7 @@ const cz = {
           token: 'Odpověď poskytovatele identity nelze ověřit.',
           account: 'K vašemu účtu u poskytovatele identity neexistuje účet na tomto zařízení.',
           role: 'Váš účet u poskytovatele identity není v žádné ze skupin povolených na tomto zařízení.',
+          binding: 'Váš účet u poskytovatele identity není ten, který je propojen s tímto účtem na zařízení. Požádejte správce o zrušení propojení.',
           server: 'Přihlášení nelze dokončit. Zkuste to znovu.'
         }
       },
@@ -2307,6 +2308,7 @@ const cz = {
           redirectUrlOverrideDesc: 'Nechte prázdné pro použití adresy výše. Nastavte, pokud reverzní proxy nepředává název hostitele nebo https.',
           httpWarning: 'Tato stránka používá nešifrované http. Mnoho poskytovatelů povoluje http adresy přesměrování jen pro localhost. Pokud tuto odmítne, otevřete zařízení přes HTTPS nebo přes reverzní proxy s TLS.',
           mappingDesc: 'Účet poskytovatele se přihlásí jako místní účet se stejným uživatelským jménem. Účet vlastníka zařízení se přihlašuje pouze heslem. Dvoufázové ověření zajišťuje poskytovatel: místní kód se nevyžaduje.',
+          bindingDesc: 'První jednotné přihlášení propojí místní účet s tímto účtem u poskytovatele a další přihlášení musí přicházet ze stejného účtu. Správce může propojení zrušit v seznamu uživatelů. Po změně vydavatele se každý účet při dalším přihlášení propojí znovu.',
           usernameClaim: 'Párovat účty podle',
           emailDomain: 'E-mailová doména',
           emailDomainDesc: 'Část před @ je uživatelské jméno. Adresy z jiných domén jsou odmítnuty.',
@@ -2382,6 +2384,10 @@ const cz = {
           enabled: 'Povolen',
           disabled: 'Zakázán',
           deviceOwner: 'Vlastník zařízení',
+          ssoTag: 'SSO',
+          ssoUnlink: 'Zrušit propojení SSO',
+          ssoUnlinkConfirm: 'Zrušit propojení účtu {{username}} s účtem u poskytovatele identity? Další jednotné přihlášení jej propojí znovu.',
+          ssoUnlinked: 'Propojení jednotného přihlášení odstraněno',
           resetPassword: 'Resetovat heslo',
           delete: 'Smazat',
           deleteConfirm: 'Smazat tohoto uživatele a zrušit všechny jeho relace?',

@@ -40,6 +40,7 @@ const hu = {
           token: 'Az identitásszolgáltató válasza nem ellenőrizhető.',
           account: 'Az identitásszolgáltatónál lévő fiókjához nincs fiók ezen az eszközön.',
           role: 'Az identitásszolgáltatónál lévő fiókja egyik, ezen az eszközön engedélyezett csoportban sincs benne.',
+          binding: 'Az identitásszolgáltatónál lévő fiókja nem az, amelyikhez ez az eszközön lévő fiók kapcsolva van. Kérje meg egy rendszergazdát, hogy bontsa a kapcsolatot.',
           server: 'A bejelentkezést nem sikerült befejezni. Próbálja újra.'
         }
       },
@@ -2340,6 +2341,7 @@ const hu = {
           redirectUrlOverrideDesc: 'Hagyja üresen a fenti cím használatához. Akkor adja meg, ha egy fordított proxy nem adja tovább a gépnevet vagy a https-t.',
           httpWarning: 'Ez az oldal titkosítatlan http-t használ. Sok szolgáltató csak localhost esetén fogad el http átirányítási URL-t. Ha az öné ezt elutasítja, nyissa meg az eszközt HTTPS-en vagy TLS-es fordított proxyn keresztül.',
           mappingDesc: 'A szolgáltatói fiók az azonos felhasználónevű helyi fiókként jelentkezik be. Az eszköz tulajdonosi fiókja csak a jelszavával léphet be. A kétlépcsős azonosítást a szolgáltató végzi: a helyi kódot nem kéri a rendszer.',
+          bindingDesc: 'Az első egyszeri bejelentkezés a helyi fiókot ahhoz a szolgáltatói fiókhoz kapcsolja, és a későbbi bejelentkezéseknek ugyanonnan kell érkezniük. A rendszergazda a felhasználók listájában bonthatja a kapcsolatot. A kibocsátó megváltoztatása után minden fiók a következő bejelentkezéskor újra kapcsolódik.',
           usernameClaim: 'Fiókok párosítása eszerint',
           emailDomain: 'E-mail tartomány',
           emailDomainDesc: 'A @ előtti rész a felhasználónév. Más tartományok címeit elutasítja.',
@@ -2415,6 +2417,10 @@ const hu = {
           enabled: 'Engedélyezve',
           disabled: 'Letiltva',
           deviceOwner: 'Eszköz tulajdonosa',
+          ssoTag: 'SSO',
+          ssoUnlink: 'SSO-kapcsolat bontása',
+          ssoUnlinkConfirm: 'Bontja {{username}} kapcsolatát az identitásszolgáltatónál lévő fiókjával? A következő egyszeri bejelentkezés újra összekapcsolja.',
+          ssoUnlinked: 'Az egyszeri bejelentkezés kapcsolata eltávolítva',
           resetPassword: 'Jelszó visszaállítása',
           delete: 'Törlés',
           deleteConfirm: 'Törli ezt a felhasználót, és visszavonja az összes munkamenetét?',

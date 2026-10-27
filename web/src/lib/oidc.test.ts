@@ -6,7 +6,16 @@ import { httpRedirectWarning, oidcReason, scopesFromText, scopesToText } from '.
 test('reads the reason the server sent the browser back with', () => {
   assert.equal(oidcReason('?oidc=state'), 'state');
   assert.equal(oidcReason('?x=1&oidc=account'), 'account');
-  for (const reason of ['disabled', 'locked', 'provider', 'denied', 'token', 'role', 'server']) {
+  for (const reason of [
+    'disabled',
+    'locked',
+    'provider',
+    'denied',
+    'token',
+    'role',
+    'server',
+    'binding'
+  ]) {
     assert.equal(oidcReason(`?oidc=${reason}`), reason);
   }
 });

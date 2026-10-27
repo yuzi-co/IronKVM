@@ -152,3 +152,20 @@ func (s *Service) SetOIDCSettings(c *gin.Context) {
 	log.Infof("oidc settings changed by %s: enabled=%v issuer=%s", principal.Username, next.Enabled, next.Issuer)
 	rsp.OkRspWithData(c, viewOf(&next, c))
 }
+
+// UnlinkUserOIDC is an administrator forgetting which identity provider
+// account an account is linked to, for a user who was recreated at the
+// provider and now has another sub. The next single sign-on links the account
+// again. Sessions are not revoked: the account's own sign-ins are unchanged,
+// and the login that was refused never made one.
+func (s *Service) UnlinkUserOIDC(c *gin.Context) {
+	var rsp proto.Response
+	username := c.Param("username")
+	if _, err := authn.DefaultStore.ClearOIDC(username); err != nil {
+		rsp.ErrRsp(c, -1, err.Error())
+		return
+	}
+	rsp.OkRsp(c)
+	principal, _ := middleware.CurrentPrincipal(c)
+	log.Infof("single sign-on link of %s removed by %s", username, principal.Username)
+}

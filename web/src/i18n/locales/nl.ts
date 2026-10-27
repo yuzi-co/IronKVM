@@ -40,6 +40,7 @@ const nl = {
           token: 'Het antwoord van de identiteitsprovider kon niet worden gecontroleerd.',
           account: 'Uw account bij de identiteitsprovider heeft geen account op dit apparaat.',
           role: 'Uw account bij de identiteitsprovider zit in geen van de groepen die op dit apparaat zijn toegestaan.',
+          binding: 'Uw account bij de identiteitsprovider is niet het account dat aan dit account op het apparaat is gekoppeld. Vraag een beheerder de koppeling op te heffen.',
           server: 'De aanmelding kon niet worden voltooid. Probeer het opnieuw.'
         }
       },
@@ -2339,6 +2340,7 @@ const nl = {
           redirectUrlOverrideDesc: 'Laat leeg om het adres hierboven te gebruiken. Stel in als een reverse proxy de hostnaam of https niet doorgeeft.',
           httpWarning: 'Deze pagina gebruikt onversleuteld http. Veel providers accepteren http-doorstuur-URL\'s alleen voor localhost. Weigert de uwe deze, open het apparaat dan via HTTPS of een reverse proxy met TLS.',
           mappingDesc: 'Een provideraccount meldt zich aan als het lokale account met dezelfde gebruikersnaam. Het account van de apparaateigenaar meldt zich alleen met zijn wachtwoord aan. De provider doet de tweestapsverificatie: de lokale code wordt niet gevraagd.',
+          bindingDesc: 'De eerste single sign-on koppelt het lokale account aan dat provideraccount, en latere aanmeldingen moeten van hetzelfde account komen. Een beheerder kan de koppeling opheffen in de gebruikerslijst. Na een wijziging van de uitgever wordt elk account bij de volgende aanmelding opnieuw gekoppeld.',
           usernameClaim: 'Accounts koppelen op',
           emailDomain: 'E-maildomein',
           emailDomainDesc: 'Het deel voor de @ is de gebruikersnaam. Adressen in andere domeinen worden geweigerd.',
@@ -2414,6 +2416,10 @@ const nl = {
           enabled: 'Ingeschakeld',
           disabled: 'Uitgeschakeld',
           deviceOwner: 'Eigenaar van het apparaat',
+          ssoTag: 'SSO',
+          ssoUnlink: 'SSO-koppeling opheffen',
+          ssoUnlinkConfirm: 'Koppeling van {{username}} met het account bij de identiteitsprovider opheffen? De volgende single sign-on koppelt het opnieuw.',
+          ssoUnlinked: 'Single sign-on-koppeling opgeheven',
           resetPassword: 'Wachtwoord resetten',
           delete: 'Verwijderen',
           deleteConfirm: 'Deze gebruiker verwijderen en al zijn sessies intrekken?',

@@ -40,6 +40,7 @@ const zh_tw = {
           token: '無法驗證身分提供者的回應。',
           account: '您的身分提供者帳號在此裝置上沒有對應帳號。',
           role: '您的身分提供者帳號不在此裝置允許的任何群組中。',
+          binding: '您的身分提供者帳號不是與此裝置上該帳號連結的那個帳號。請聯絡管理員解除連結。',
           server: '無法完成登入。請再試一次。'
         }
       },
@@ -2216,6 +2217,7 @@ const zh_tw = {
           redirectUrlOverrideDesc: '留空則使用上方位址。當反向代理不轉送主機名稱或 https 時設定此項。',
           httpWarning: '本頁面使用未加密的 http。許多提供者只允許 localhost 使用 http 重新導向 URL。若遭拒絕，請透過 HTTPS 或具 TLS 的反向代理開啟裝置。',
           mappingDesc: '提供者帳號會以相同使用者名稱的本機帳號登入。裝置擁有者帳號只能用其密碼登入。雙重驗證由提供者負責，不再詢問本機驗證碼。',
+          bindingDesc: '首次單一登入會將本機帳號連結到該提供者帳號，之後的登入必須來自同一個帳號。管理員可以在使用者清單中解除帳號的連結。更換簽發者後，每個帳號會在下次登入時重新連結。',
           usernameClaim: '帳號比對依據',
           emailDomain: '電子郵件網域',
           emailDomainDesc: '@ 之前的部分即為使用者名稱。其他網域的位址會被拒絕。',
@@ -2291,6 +2293,10 @@ const zh_tw = {
           enabled: '已啟用',
           disabled: '已停用',
           deviceOwner: '裝置擁有者',
+          ssoTag: 'SSO',
+          ssoUnlink: '解除 SSO 連結',
+          ssoUnlinkConfirm: '解除 {{username}} 與身分提供者帳號的連結？下次單一登入時會重新連結。',
+          ssoUnlinked: '已解除單一登入連結',
           resetPassword: '重設密碼',
           delete: '刪除',
           deleteConfirm: '刪除此使用者並撤銷其所有工作階段？',

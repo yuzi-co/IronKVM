@@ -40,6 +40,7 @@ const ko = {
           token: 'ID 공급자의 응답을 확인할 수 없습니다.',
           account: 'ID 공급자 계정에 해당하는 계정이 이 장치에 없습니다.',
           role: 'ID 공급자 계정이 이 장치에서 허용된 어떤 그룹에도 속하지 않습니다.',
+          binding: 'ID 공급자 계정이 이 장치의 계정에 연결된 계정이 아닙니다. 관리자에게 연결 해제를 요청하세요.',
           server: '로그인을 완료할 수 없습니다. 다시 시도하세요.'
         }
       },
@@ -2277,6 +2278,7 @@ const ko = {
           redirectUrlOverrideDesc: '비워 두면 위 주소를 사용합니다. 리버스 프록시가 호스트 이름이나 https를 전달하지 않을 때 설정하세요.',
           httpWarning: '이 페이지는 암호화되지 않은 http를 사용합니다. 많은 공급자가 http 리디렉션 URL을 localhost에만 허용합니다. 거부되면 HTTPS 또는 TLS 리버스 프록시를 통해 장치를 여세요.',
           mappingDesc: '공급자 계정은 같은 사용자 이름의 로컬 계정으로 로그인합니다. 장치 소유자 계정은 비밀번호로만 로그인합니다. 2단계 인증은 공급자가 하므로 로컬 코드는 묻지 않습니다.',
+          bindingDesc: '첫 번째 SSO 로그인 시 로컬 계정이 해당 공급자 계정에 연결되며, 이후 로그인은 같은 계정에서 이루어져야 합니다. 관리자는 사용자 목록에서 계정 연결을 해제할 수 있습니다. 발급자를 변경하면 각 계정은 다음 로그인 때 다시 연결됩니다.',
           usernameClaim: '계정 매칭 기준',
           emailDomain: '이메일 도메인',
           emailDomainDesc: '@ 앞부분이 사용자 이름입니다. 다른 도메인의 주소는 거부됩니다.',
@@ -2352,6 +2354,10 @@ const ko = {
           enabled: '활성',
           disabled: '비활성',
           deviceOwner: '장치 소유자',
+          ssoTag: 'SSO',
+          ssoUnlink: 'SSO 연결 해제',
+          ssoUnlinkConfirm: '{{username}}과(와) ID 공급자 계정의 연결을 해제하시겠습니까? 다음 SSO 로그인 때 다시 연결됩니다.',
+          ssoUnlinked: 'SSO 연결이 해제되었습니다',
           resetPassword: '비밀번호 재설정',
           delete: '삭제',
           deleteConfirm: '이 사용자를 삭제하고 모든 세션을 취소할까요?',

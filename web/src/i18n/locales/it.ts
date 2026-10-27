@@ -40,6 +40,7 @@ const it = {
           token: 'Non è stato possibile verificare la risposta del provider di identità.',
           account: 'Il tuo account presso il provider di identità non ha un account su questo dispositivo.',
           role: 'Il tuo account presso il provider di identità non è in nessuno dei gruppi ammessi su questo dispositivo.',
+          binding: 'Il tuo account presso il provider di identità non è quello collegato a questo account sul dispositivo. Chiedi a un amministratore di scollegarlo.',
           server: 'Non è stato possibile completare l\'accesso. Riprova.'
         }
       },
@@ -2344,6 +2345,7 @@ const it = {
           redirectUrlOverrideDesc: 'Lasciare vuoto per usare l\'indirizzo sopra. Impostarlo quando un reverse proxy non inoltra il nome host o https.',
           httpWarning: 'Questa pagina usa http non cifrato. Molti provider accettano URL di reindirizzamento http solo per localhost. Se il tuo rifiuta questo, apri il dispositivo via HTTPS o tramite un reverse proxy con TLS.',
           mappingDesc: 'Un account del provider accede come l\'account locale con lo stesso nome utente. L\'account del proprietario del dispositivo accede solo con la sua password. L\'autenticazione a due fattori la fa il provider: il codice locale non viene chiesto.',
+          bindingDesc: 'Il primo accesso Single Sign-On collega l\'account locale a quell\'account del provider, e gli accessi successivi devono provenire dallo stesso. Un amministratore può scollegare un account nell\'elenco utenti. Dopo un cambio di emittente, ogni account viene collegato di nuovo al suo accesso successivo.',
           usernameClaim: 'Associa gli account per',
           emailDomain: 'Dominio email',
           emailDomainDesc: 'La parte prima di @ è il nome utente. Gli indirizzi di altri domini sono rifiutati.',
@@ -2419,6 +2421,10 @@ const it = {
           enabled: 'Abilitato',
           disabled: 'Disabilitato',
           deviceOwner: 'Proprietario del dispositivo',
+          ssoTag: 'SSO',
+          ssoUnlink: 'Scollega SSO',
+          ssoUnlinkConfirm: 'Scollegare {{username}} dal suo account presso il provider di identità? Il prossimo accesso Single Sign-On lo collegherà di nuovo.',
+          ssoUnlinked: 'Collegamento Single Sign-On rimosso',
           resetPassword: 'Reimposta password',
           delete: 'Elimina',
           deleteConfirm: 'Eliminare questo utente e revocare tutte le sue sessioni?',

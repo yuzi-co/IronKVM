@@ -44,6 +44,9 @@ var (
 	ErrSelfModification = errors.New("administrators cannot disable or demote themselves")
 	ErrSelfDelete       = errors.New("administrators cannot delete themselves")
 	ErrSystemAccount    = errors.New("the device owner account must remain an enabled administrator")
+	// ErrOIDCSubjectMismatch is a single sign-on to an account that is linked
+	// to another account at the same identity provider.
+	ErrOIDCSubjectMismatch = errors.New("the account is linked to another identity provider account")
 
 	usernamePattern = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9_.-]{0,31}$`)
 )
@@ -70,6 +73,15 @@ type User struct {
 	// RecoveryCodes are the SHA-256 hashes of the recovery codes that have not
 	// been used yet. Each one stands in for a TOTP code once.
 	RecoveryCodes []string `json:"recoveryCodes,omitempty"`
+	// OIDCIssuer and OIDCSubject link the account to one account at an
+	// OpenID Connect provider: the issuer and the sub claim of its ID token.
+	// The first single sign-on sets them, and later ones must carry the same
+	// sub, so an IdP account that renames itself into this username does not
+	// get in. Empty means not linked yet. Older servers ignore both fields and
+	// drop them when they write the file, which leaves the account to be
+	// linked again at its next single sign-on.
+	OIDCIssuer  string `json:"oidcIssuer,omitempty"`
+	OIDCSubject string `json:"oidcSubject,omitempty"`
 }
 
 // TOTPEnabled reports whether the web login asks this account for a second
@@ -78,12 +90,19 @@ func (u *User) TOTPEnabled() bool {
 	return u.TOTPSecret != ""
 }
 
+// OIDCLinked reports whether a single sign-on has linked the account to an
+// account at an identity provider.
+func (u *User) OIDCLinked() bool {
+	return u.OIDCSubject != ""
+}
+
 type UserInfo struct {
 	Username      string `json:"username"`
 	Role          Role   `json:"role"`
 	Enabled       bool   `json:"enabled"`
 	SystemAccount bool   `json:"systemAccount,omitempty"`
 	TOTPEnabled   bool   `json:"totpEnabled,omitempty"`
+	OIDCLinked    bool   `json:"oidcLinked,omitempty"`
 }
 
 type UserPatch struct {
@@ -155,6 +174,7 @@ func (s *Store) List() ([]UserInfo, error) {
 			Enabled:       user.Enabled,
 			SystemAccount: user.SystemAccount,
 			TOTPEnabled:   user.TOTPEnabled(),
+			OIDCLinked:    user.OIDCLinked(),
 		})
 	}
 	return users, nil
@@ -328,6 +348,23 @@ func (s *Store) ValidateToken(username string, tokenVersion uint64) (*User, erro
 }
 
 func (s *Store) Create(username, password string, role Role) error {
+	return s.create(User{Username: username, Role: role}, password)
+}
+
+// CreateOIDC creates an account for a single sign-on, already linked to the
+// identity provider account it was made for, so that no other login can link
+// it first.
+func (s *Store) CreateOIDC(username, password string, role Role, issuer, subject string) error {
+	if issuer == "" || subject == "" {
+		return errors.New("an OIDC account needs an issuer and a subject")
+	}
+	return s.create(User{Username: username, Role: role, OIDCIssuer: issuer, OIDCSubject: subject}, password)
+}
+
+// create adds the account template describes, with the password hashed, the
+// account enabled and a fresh token version.
+func (s *Store) create(template User, password string) error {
+	username, role := template.Username, template.Role
 	if err := ValidateUsername(username); err != nil {
 		return err
 	}
@@ -356,13 +393,11 @@ func (s *Store) Create(username, password string, role Role) error {
 	if _, err = findUser(db.Users, username); err == nil {
 		return ErrUserExists
 	}
-	db.Users = append(db.Users, User{
-		Username:     username,
-		PasswordHash: string(hash),
-		Role:         role,
-		Enabled:      true,
-		TokenVersion: tokenVersion,
-	})
+	user := template
+	user.PasswordHash = string(hash)
+	user.Enabled = true
+	user.TokenVersion = tokenVersion
+	db.Users = append(db.Users, user)
 	return s.saveLocked(db)
 }
 
@@ -518,7 +553,7 @@ func (s *Store) SetTOTP(username, sealed string, recoveryHashes []string) (*User
 	if sealed == "" {
 		return nil, errors.New("empty TOTP secret")
 	}
-	return s.updateTOTP(username, func(user *User) bool {
+	return s.updateUser(username, func(user *User) bool {
 		user.TOTPSecret = sealed
 		user.RecoveryCodes = append([]string(nil), recoveryHashes...)
 		return true
@@ -528,7 +563,7 @@ func (s *Store) SetTOTP(username, sealed string, recoveryHashes []string) (*User
 // SetRecoveryCodes replaces the recovery codes of an account that has TOTP
 // on.
 func (s *Store) SetRecoveryCodes(username string, recoveryHashes []string) (*User, error) {
-	return s.updateTOTP(username, func(user *User) bool {
+	return s.updateUser(username, func(user *User) bool {
 		if !user.TOTPEnabled() {
 			return false
 		}
@@ -540,7 +575,7 @@ func (s *Store) SetRecoveryCodes(username string, recoveryHashes []string) (*Use
 // ClearTOTP turns the second login step off for an account and forgets its
 // secret and recovery codes.
 func (s *Store) ClearTOTP(username string) (*User, error) {
-	return s.updateTOTP(username, func(user *User) bool {
+	return s.updateUser(username, func(user *User) bool {
 		changed := user.TOTPSecret != "" || len(user.RecoveryCodes) > 0
 		user.TOTPSecret = ""
 		user.RecoveryCodes = nil
@@ -553,7 +588,7 @@ func (s *Store) ClearTOTP(username string) (*User, error) {
 // lock, so a code cannot be spent twice by two requests at once.
 func (s *Store) ConsumeRecoveryCode(username, hash string) (bool, error) {
 	found := false
-	_, err := s.updateTOTP(username, func(user *User) bool {
+	_, err := s.updateUser(username, func(user *User) bool {
 		if !user.TOTPEnabled() {
 			return false
 		}
@@ -574,9 +609,9 @@ func (s *Store) ConsumeRecoveryCode(username, hash string) (bool, error) {
 	return found, nil
 }
 
-// updateTOTP applies change to an account under the write lock, and saves
+// updateUser applies change to an account under the write lock, and saves
 // when change reports that it changed something.
-func (s *Store) updateTOTP(username string, change func(*User) bool) (*User, error) {
+func (s *Store) updateUser(username string, change func(*User) bool) (*User, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	db, err := s.loadLocked(true)
@@ -594,6 +629,55 @@ func (s *Store) updateTOTP(username string, change func(*User) bool) (*User, err
 		return nil, err
 	}
 	return cloneUser(&db.Users[index]), nil
+}
+
+// BindOIDC links an account to the identity provider account a single
+// sign-on came from, or checks the link it already has. It returns the
+// account and the issuer it was linked under before: empty when it was not
+// linked, issuer itself when the link was already this one.
+//
+// A link made under another issuer is replaced. Only an administrator can
+// change the issuer in the settings, and a sub means nothing outside its
+// issuer, so after such a change each account links again at its next single
+// sign-on instead of being locked out. The caller audits the change.
+//
+// A link under the same issuer with another subject is ErrOIDCSubjectMismatch,
+// and the account is left as it is.
+func (s *Store) BindOIDC(username, issuer, subject string) (*User, string, error) {
+	if issuer == "" || subject == "" {
+		return nil, "", errors.New("an OIDC link needs an issuer and a subject")
+	}
+	previous := ""
+	mismatch := false
+	user, err := s.updateUser(username, func(user *User) bool {
+		previous = user.OIDCIssuer
+		if user.OIDCSubject != "" && user.OIDCIssuer == issuer {
+			mismatch = user.OIDCSubject != subject
+			return false
+		}
+		user.OIDCIssuer = issuer
+		user.OIDCSubject = subject
+		return true
+	})
+	if err != nil {
+		return nil, "", err
+	}
+	if mismatch {
+		return nil, previous, ErrOIDCSubjectMismatch
+	}
+	return user, previous, nil
+}
+
+// ClearOIDC removes an account's link to an identity provider account, for a
+// user who was recreated at the provider. The next single sign-on links the
+// account again.
+func (s *Store) ClearOIDC(username string) (*User, error) {
+	return s.updateUser(username, func(user *User) bool {
+		changed := user.OIDCIssuer != "" || user.OIDCSubject != ""
+		user.OIDCIssuer = ""
+		user.OIDCSubject = ""
+		return changed
+	})
 }
 
 func (s *Store) Revoke(username string) (*User, error) {

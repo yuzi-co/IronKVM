@@ -40,6 +40,9 @@ type UserInfo struct {
 	Enabled       bool   `json:"enabled"`
 	SystemAccount bool   `json:"systemAccount,omitempty"`
 	TOTPEnabled   bool   `json:"totpEnabled,omitempty"`
+	// OIDCLinked is set when a single sign-on has linked the account to an
+	// account at the identity provider.
+	OIDCLinked bool `json:"oidcLinked,omitempty"`
 }
 
 type ListUsersRsp struct {

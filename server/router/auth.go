@@ -65,6 +65,7 @@ func authRouter(r *gin.Engine) {
 		middleware.RequireRole(authn.RoleAdmin),
 	)
 	adminSession.DELETE("/auth/users/:username/totp", service.ResetUserTOTP)
+	adminSession.DELETE("/auth/users/:username/oidc", service.UnlinkUserOIDC) // forget the account's single sign-on link
 	adminSession.GET("/auth/sessions/all", service.ListAllSessions)
 
 	// The provider's settings hold its client secret, which no api key

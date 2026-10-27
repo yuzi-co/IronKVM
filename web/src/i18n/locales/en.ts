@@ -40,6 +40,7 @@ const en = {
           token: 'The identity provider\'s answer could not be verified.',
           account: 'Your identity provider account has no account on this device.',
           role: 'Your identity provider account is in none of the groups allowed on this device.',
+          binding: 'Your identity provider account is not the one linked to this account on the device. Ask an administrator to unlink it.',
           server: 'The sign-in could not be completed. Try again.'
         }
       },
@@ -2300,6 +2301,7 @@ const en = {
           redirectUrlOverrideDesc: 'Leave empty to use the address above. Set it when a reverse proxy does not pass on the host name or https.',
           httpWarning: 'This page uses plain http. Many providers accept http redirect URLs only for localhost. If yours refuses this one, open the device over HTTPS or through a reverse proxy with TLS.',
           mappingDesc: 'A provider account signs in as the local account with the same username. The device owner account signs in with its password only. The provider does two-factor authentication: the local code is not asked for.',
+          bindingDesc: 'The first single sign-on links the local account to that provider account, and later sign-ins must come from the same one. An administrator can unlink an account in the user list. After a change of issuer, each account is linked again at its next sign-in.',
           usernameClaim: 'Match accounts by',
           emailDomain: 'Email domain',
           emailDomainDesc: 'The part before @ is the username. Addresses in other domains are refused.',
@@ -2379,6 +2381,10 @@ const en = {
           enabled: 'Enabled',
           disabled: 'Disabled',
           deviceOwner: 'Device owner',
+          ssoTag: 'SSO',
+          ssoUnlink: 'Unlink SSO',
+          ssoUnlinkConfirm: 'Unlink {{username}} from its identity provider account? The next single sign-on links it again.',
+          ssoUnlinked: 'Single sign-on link removed',
           resetPassword: 'Reset Password',
           delete: 'Delete',
           deleteConfirm: 'Delete this user and revoke all of their sessions?',
