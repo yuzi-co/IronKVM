@@ -31,6 +31,15 @@ const en = {
       oidc: {
         signIn: 'Sign in with {{name}}',
         usePassword: 'Sign in with a password',
+        confirm: {
+          title: 'Link single sign-on',
+          description: 'Your identity provider signed you in as {{username}}, but this account is not linked to it yet. Enter the account\'s password to link it and sign in.',
+          submit: 'Link and sign in',
+          cancel: 'Cancel',
+          invalid: 'Wrong password or code',
+          expired: 'The sign-in expired. Sign in with the identity provider again.',
+          taken: 'This account was linked to another identity provider account meanwhile.'
+        },
         errors: {
           disabled: 'Single sign-on is turned off.',
           locked: 'Too many failed logins, please try again later',
@@ -41,6 +50,7 @@ const en = {
           account: 'Your identity provider account has no account on this device.',
           role: 'Your identity provider account is in none of the groups allowed on this device.',
           binding: 'Your identity provider account is not the one linked to this account on the device. Ask an administrator to unlink it.',
+          unlinked: 'This account is not linked to your identity provider account yet. Ask an administrator to link it.',
           server: 'The sign-in could not be completed. Try again.'
         }
       },
@@ -2451,8 +2461,18 @@ const en = {
           deviceOwner: 'Device owner',
           ssoTag: 'SSO',
           ssoUnlink: 'Unlink SSO',
-          ssoUnlinkConfirm: 'Unlink {{username}} from its identity provider account? The next single sign-on links it again. It is also signed out everywhere.',
+          ssoUnlinkConfirm: 'Unlink {{username}} from its identity provider account? It must be linked again before its next single sign-on. It is also signed out everywhere.',
           ssoUnlinked: 'Single sign-on link removed',
+          ssoLink: 'Link SSO',
+          ssoLinkTitle: 'Link {{username}} to an identity provider account',
+          ssoLinkDesc: 'A single sign-on to an account that is not linked is refused. Enter the subject (sub) of the identity provider account, or pick a refused sign-in below. Leave the issuer empty for the one in the settings.',
+          ssoIssuer: 'Issuer',
+          ssoSubject: 'Subject (sub)',
+          ssoSubjectRequired: 'Subject required',
+          ssoPending: 'Refused sign-ins',
+          ssoPendingEmpty: 'No refused sign-ins in the last day',
+          ssoPick: 'Use',
+          ssoLinked: 'Single sign-on link saved',
           resetPassword: 'Reset Password',
           delete: 'Delete',
           deleteConfirm: 'Delete this user and revoke all of their sessions?',

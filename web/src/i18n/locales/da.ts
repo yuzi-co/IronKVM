@@ -31,6 +31,15 @@ const da = {
       oidc: {
         signIn: 'Log ind med {{name}}',
         usePassword: 'Log ind med adgangskode',
+        confirm: {
+          title: 'Knyt single sign-on',
+          description: 'Din identitetsudbyder har logget dig ind som {{username}}, men denne konto er endnu ikke knyttet til den. Indtast kontoens adgangskode for at knytte den og logge ind.',
+          submit: 'Knyt og log ind',
+          cancel: 'Annuller',
+          invalid: 'Forkert adgangskode eller kode',
+          expired: 'Login er udløbet. Log ind hos identitetsudbyderen igen.',
+          taken: 'Denne konto er i mellemtiden knyttet til en anden konto hos identitetsudbyderen.'
+        },
         errors: {
           disabled: 'Single sign-on er slået fra.',
           locked: 'For mange mislykkede logins, prøv igen senere',
@@ -41,6 +50,7 @@ const da = {
           account: 'Din konto hos identitetsudbyderen har ingen konto på denne enhed.',
           role: 'Din konto hos identitetsudbyderen er ikke i nogen af de grupper, der er tilladt på denne enhed.',
           binding: 'Din konto hos identitetsudbyderen er ikke den, der er knyttet til denne konto på enheden. Bed en administrator om at fjerne tilknytningen.',
+          unlinked: 'Denne konto er endnu ikke knyttet til din konto hos identitetsudbyderen. Bed en administrator om at knytte den.',
           server: 'Login kunne ikke gennemføres. Prøv igen.'
         }
       },
@@ -2463,8 +2473,18 @@ const da = {
           deviceOwner: 'Enhedsejer',
           ssoTag: 'SSO',
           ssoUnlink: 'Fjern SSO-tilknytning',
-          ssoUnlinkConfirm: 'Fjern tilknytningen mellem {{username}} og kontoen hos identitetsudbyderen? Næste single sign-on knytter den igen. Den logges også ud overalt.',
+          ssoUnlinkConfirm: 'Fjern tilknytningen mellem {{username}} og kontoen hos identitetsudbyderen? Den skal knyttes igen før næste single sign-on. Den bliver også logget ud overalt.',
           ssoUnlinked: 'Tilknytning til single sign-on fjernet',
+          ssoLink: 'Knyt SSO',
+          ssoLinkTitle: 'Knyt {{username}} til en konto hos identitetsudbyderen',
+          ssoLinkDesc: 'Single sign-on til en konto, der ikke er knyttet, afvises. Indtast subject (sub) for kontoen hos identitetsudbyderen, eller vælg et afvist login nedenfor. Lad udstederen være tom for at bruge den fra indstillingerne.',
+          ssoIssuer: 'Udsteder (issuer)',
+          ssoSubject: 'Subject (sub)',
+          ssoSubjectRequired: 'Subject påkrævet',
+          ssoPending: 'Afviste logins',
+          ssoPendingEmpty: 'Ingen afviste logins det seneste døgn',
+          ssoPick: 'Brug',
+          ssoLinked: 'Single sign-on-tilknytning gemt',
           resetPassword: 'Nulstil adgangskode',
           delete: 'Slet',
           deleteConfirm: 'Slet denne bruger og tilbagekald alle brugerens sessioner?',

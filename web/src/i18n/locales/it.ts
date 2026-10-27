@@ -31,6 +31,15 @@ const it = {
       oidc: {
         signIn: 'Accedi con {{name}}',
         usePassword: 'Accedi con la password',
+        confirm: {
+          title: 'Collega l\'accesso singolo',
+          description: 'Il provider di identità ti ha autenticato come {{username}}, ma questo account non è ancora collegato. Inserisci la password dell\'account per collegarlo e accedere.',
+          submit: 'Collega e accedi',
+          cancel: 'Annulla',
+          invalid: 'Password o codice errati',
+          expired: 'L\'accesso è scaduto. Accedi di nuovo con il provider di identità.',
+          taken: 'Nel frattempo questo account è stato collegato a un altro account del provider di identità.'
+        },
         errors: {
           disabled: 'L\'accesso unico è disattivato.',
           locked: 'Troppi accessi non riusciti, riprova più tardi',
@@ -41,6 +50,7 @@ const it = {
           account: 'Il tuo account presso il provider di identità non ha un account su questo dispositivo.',
           role: 'Il tuo account presso il provider di identità non è in nessuno dei gruppi ammessi su questo dispositivo.',
           binding: 'Il tuo account presso il provider di identità non è quello collegato a questo account sul dispositivo. Chiedi a un amministratore di scollegarlo.',
+          unlinked: 'Questo account non è ancora collegato al tuo account del provider di identità. Chiedi a un amministratore di collegarlo.',
           server: 'Non è stato possibile completare l\'accesso. Riprova.'
         }
       },
@@ -2491,8 +2501,18 @@ const it = {
           deviceOwner: 'Proprietario del dispositivo',
           ssoTag: 'SSO',
           ssoUnlink: 'Scollega SSO',
-          ssoUnlinkConfirm: 'Scollegare {{username}} dal suo account presso il provider di identità? Il prossimo accesso Single Sign-On lo collegherà di nuovo. Viene anche disconnesso ovunque.',
+          ssoUnlinkConfirm: 'Scollegare {{username}} dal suo account del provider di identità? Dovrà essere collegato di nuovo prima del prossimo accesso singolo. Verrà anche disconnesso ovunque.',
           ssoUnlinked: 'Collegamento Single Sign-On rimosso',
+          ssoLink: 'Collega SSO',
+          ssoLinkTitle: 'Collega {{username}} a un account del provider di identità',
+          ssoLinkDesc: 'L\'accesso singolo a un account non collegato viene rifiutato. Inserisci il subject (sub) dell\'account del provider di identità, oppure scegli qui sotto un accesso rifiutato. Lascia vuoto l\'emittente per usare quello delle impostazioni.',
+          ssoIssuer: 'Emittente (issuer)',
+          ssoSubject: 'Subject (sub)',
+          ssoSubjectRequired: 'Subject obbligatorio',
+          ssoPending: 'Accessi rifiutati',
+          ssoPendingEmpty: 'Nessun accesso rifiutato nell\'ultimo giorno',
+          ssoPick: 'Usa',
+          ssoLinked: 'Collegamento di accesso singolo salvato',
           resetPassword: 'Reimposta password',
           delete: 'Elimina',
           deleteConfirm: 'Eliminare questo utente e revocare tutte le sue sessioni?',

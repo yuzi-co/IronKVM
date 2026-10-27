@@ -31,6 +31,15 @@ const pt_br = {
       oidc: {
         signIn: 'Entrar com {{name}}',
         usePassword: 'Entrar com senha',
+        confirm: {
+          title: 'Vincular login único',
+          description: 'Seu provedor de identidade conectou você como {{username}}, mas esta conta ainda não está vinculada a ele. Digite a senha da conta para vinculá-la e entrar.',
+          submit: 'Vincular e entrar',
+          cancel: 'Cancelar',
+          invalid: 'Senha ou código incorretos',
+          expired: 'O login expirou. Entre novamente pelo provedor de identidade.',
+          taken: 'Enquanto isso, esta conta foi vinculada a outra conta do provedor de identidade.'
+        },
         errors: {
           disabled: 'O login único está desativado.',
           locked: 'Muitas tentativas de login falharam, tente novamente mais tarde',
@@ -41,6 +50,7 @@ const pt_br = {
           account: 'Sua conta no provedor de identidade não tem conta neste dispositivo.',
           role: 'Sua conta no provedor de identidade não está em nenhum dos grupos permitidos neste dispositivo.',
           binding: 'Sua conta no provedor de identidade não é a que está vinculada a esta conta do dispositivo. Peça a um administrador que a desvincule.',
+          unlinked: 'Esta conta ainda não está vinculada à sua conta no provedor de identidade. Peça a um administrador para vinculá-la.',
           server: 'Não foi possível concluir o login. Tente novamente.'
         }
       },
@@ -2480,8 +2490,18 @@ const pt_br = {
           deviceOwner: 'Dono do dispositivo',
           ssoTag: 'SSO',
           ssoUnlink: 'Desvincular SSO',
-          ssoUnlinkConfirm: 'Desvincular {{username}} da conta no provedor de identidade? O próximo login único a vinculará de novo. A sessão também é encerrada em todos os lugares.',
+          ssoUnlinkConfirm: 'Desvincular {{username}} da conta no provedor de identidade? Ela precisará ser vinculada novamente antes do próximo login único. Também será desconectada em todos os lugares.',
           ssoUnlinked: 'Vínculo de login único removido',
+          ssoLink: 'Vincular SSO',
+          ssoLinkTitle: 'Vincular {{username}} a uma conta do provedor de identidade',
+          ssoLinkDesc: 'Um login único em uma conta não vinculada é recusado. Digite o subject (sub) da conta no provedor de identidade ou escolha abaixo um login recusado. Deixe o emissor vazio para usar o das configurações.',
+          ssoIssuer: 'Emissor (issuer)',
+          ssoSubject: 'Subject (sub)',
+          ssoSubjectRequired: 'Subject obrigatório',
+          ssoPending: 'Logins recusados',
+          ssoPendingEmpty: 'Nenhum login recusado no último dia',
+          ssoPick: 'Usar',
+          ssoLinked: 'Vínculo de login único salvo',
           resetPassword: 'Redefinir Senha',
           delete: 'Excluir',
           deleteConfirm: 'Excluir este usuário e revogar todas as sessões dele?',

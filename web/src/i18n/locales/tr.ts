@@ -31,6 +31,15 @@ const tr = {
       oidc: {
         signIn: '{{name}} ile oturum aç',
         usePassword: 'Parola ile oturum aç',
+        confirm: {
+          title: 'Çoklu oturum açmayı bağla',
+          description: 'Kimlik sağlayıcınız sizi {{username}} olarak oturum açtırdı, ancak bu hesap henüz ona bağlı değil. Bağlamak ve oturum açmak için hesabın parolasını girin.',
+          submit: 'Bağla ve oturum aç',
+          cancel: 'İptal',
+          invalid: 'Parola veya kod yanlış',
+          expired: 'Oturum açma süresi doldu. Kimlik sağlayıcısıyla yeniden oturum açın.',
+          taken: 'Bu hesap bu arada kimlik sağlayıcısındaki başka bir hesaba bağlandı.'
+        },
         errors: {
           disabled: 'Çoklu oturum açma kapalı.',
           locked: 'Çok fazla başarısız giriş, lütfen daha sonra tekrar deneyin',
@@ -41,6 +50,7 @@ const tr = {
           account: 'Kimlik sağlayıcısındaki hesabınızın bu cihazda hesabı yok.',
           role: 'Kimlik sağlayıcısındaki hesabınız bu cihazda izin verilen grupların hiçbirinde değil.',
           binding: 'Kimlik sağlayıcısındaki hesabınız, cihazdaki bu hesaba bağlı olan hesap değil. Bağlantıyı kaldırması için bir yöneticiye başvurun.',
+          unlinked: 'Bu hesap henüz kimlik sağlayıcısındaki hesabınıza bağlanmadı. Bağlaması için bir yöneticiye başvurun.',
           server: 'Oturum açma tamamlanamadı. Tekrar deneyin.'
         }
       },
@@ -2465,8 +2475,18 @@ const tr = {
           deviceOwner: 'Cihaz sahibi',
           ssoTag: 'SSO',
           ssoUnlink: 'SSO bağlantısını kaldır',
-          ssoUnlinkConfirm: '{{username}} ile kimlik sağlayıcısındaki hesabı arasındaki bağlantı kaldırılsın mı? Bir sonraki çoklu oturum açma onu yeniden bağlar. Ayrıca her yerde oturumu kapatılır.',
+          ssoUnlinkConfirm: '{{username}} kimlik sağlayıcısı hesabından ayrılsın mı? Bir sonraki çoklu oturum açmadan önce yeniden bağlanması gerekir. Ayrıca her yerde oturumu kapatılır.',
           ssoUnlinked: 'Çoklu oturum açma bağlantısı kaldırıldı',
+          ssoLink: 'SSO bağla',
+          ssoLinkTitle: '{{username}} hesabını bir kimlik sağlayıcısı hesabına bağla',
+          ssoLinkDesc: 'Bağlı olmayan bir hesaba çoklu oturum açma reddedilir. Kimlik sağlayıcısı hesabının subject (sub) değerini girin veya aşağıdan reddedilmiş bir oturum açmayı seçin. Ayarlardakini kullanmak için yayıcıyı boş bırakın.',
+          ssoIssuer: 'Yayıcı (issuer)',
+          ssoSubject: 'Subject (sub)',
+          ssoSubjectRequired: 'Subject gerekli',
+          ssoPending: 'Reddedilen oturum açmalar',
+          ssoPendingEmpty: 'Son bir günde reddedilen oturum açma yok',
+          ssoPick: 'Kullan',
+          ssoLinked: 'Çoklu oturum açma bağlantısı kaydedildi',
           resetPassword: 'Şifreyi Sıfırla',
           delete: 'Sil',
           deleteConfirm: 'Bu kullanıcı silinsin ve tüm oturumları iptal edilsin mi?',

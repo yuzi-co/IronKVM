@@ -31,6 +31,15 @@ const se = {
       oidc: {
         signIn: 'Logga in med {{name}}',
         usePassword: 'Logga in med lösenord',
+        confirm: {
+          title: 'Koppla enkel inloggning',
+          description: 'Identitetsleverantören loggade in dig som {{username}}, men det här kontot är ännu inte kopplat till den. Ange kontots lösenord för att koppla det och logga in.',
+          submit: 'Koppla och logga in',
+          cancel: 'Avbryt',
+          invalid: 'Fel lösenord eller kod',
+          expired: 'Inloggningen har gått ut. Logga in hos identitetsleverantören igen.',
+          taken: 'Det här kontot har under tiden kopplats till ett annat konto hos identitetsleverantören.'
+        },
         errors: {
           disabled: 'Enkel inloggning är avstängd.',
           locked: 'För många misslyckade inloggningar, försök igen senare',
@@ -41,6 +50,7 @@ const se = {
           account: 'Ditt konto hos identitetsleverantören har inget konto på den här enheten.',
           role: 'Ditt konto hos identitetsleverantören finns inte i någon av grupperna som är tillåtna på den här enheten.',
           binding: 'Ditt konto hos identitetsleverantören är inte det som är kopplat till det här kontot på enheten. Be en administratör att ta bort kopplingen.',
+          unlinked: 'Det här kontot är ännu inte kopplat till ditt konto hos identitetsleverantören. Be en administratör att koppla det.',
           server: 'Inloggningen kunde inte slutföras. Försök igen.'
         }
       },
@@ -2467,8 +2477,18 @@ const se = {
           deviceOwner: 'Enhetens ägare',
           ssoTag: 'SSO',
           ssoUnlink: 'Ta bort SSO-koppling',
-          ssoUnlinkConfirm: 'Ta bort kopplingen mellan {{username}} och kontot hos identitetsleverantören? Nästa enkla inloggning kopplar det igen. Det loggas också ut överallt.',
+          ssoUnlinkConfirm: 'Ta bort kopplingen mellan {{username}} och kontot hos identitetsleverantören? Det måste kopplas igen före nästa enkla inloggning. Det loggas också ut överallt.',
           ssoUnlinked: 'Kopplingen till enkel inloggning har tagits bort',
+          ssoLink: 'Koppla SSO',
+          ssoLinkTitle: 'Koppla {{username}} till ett konto hos identitetsleverantören',
+          ssoLinkDesc: 'Enkel inloggning till ett konto som inte är kopplat nekas. Ange subject (sub) för kontot hos identitetsleverantören, eller välj en nekad inloggning nedan. Lämna utfärdaren tom för att använda den i inställningarna.',
+          ssoIssuer: 'Utfärdare (issuer)',
+          ssoSubject: 'Subject (sub)',
+          ssoSubjectRequired: 'Subject krävs',
+          ssoPending: 'Nekade inloggningar',
+          ssoPendingEmpty: 'Inga nekade inloggningar det senaste dygnet',
+          ssoPick: 'Använd',
+          ssoLinked: 'Koppling för enkel inloggning sparad',
           resetPassword: 'Återställ lösenord',
           delete: 'Ta bort',
           deleteConfirm: 'Ta bort den här användaren och återkalla alla dess sessioner?',

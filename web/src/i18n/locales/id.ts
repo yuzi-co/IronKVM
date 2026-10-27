@@ -31,6 +31,15 @@ const id = {
       oidc: {
         signIn: 'Masuk dengan {{name}}',
         usePassword: 'Masuk dengan kata sandi',
+        confirm: {
+          title: 'Tautkan masuk tunggal',
+          description: 'Penyedia identitas Anda memasukkan Anda sebagai {{username}}, tetapi akun ini belum ditautkan dengannya. Masukkan kata sandi akun untuk menautkannya dan masuk.',
+          submit: 'Tautkan dan masuk',
+          cancel: 'Batal',
+          invalid: 'Kata sandi atau kode salah',
+          expired: 'Proses masuk kedaluwarsa. Masuk lagi melalui penyedia identitas.',
+          taken: 'Sementara itu, akun ini telah ditautkan ke akun lain di penyedia identitas.'
+        },
         errors: {
           disabled: 'Single sign-on dimatikan.',
           locked: 'Terlalu banyak login gagal, coba lagi nanti',
@@ -41,6 +50,7 @@ const id = {
           account: 'Akun Anda di penyedia identitas tidak punya akun di perangkat ini.',
           role: 'Akun Anda di penyedia identitas tidak ada di grup mana pun yang diizinkan di perangkat ini.',
           binding: 'Akun Anda di penyedia identitas bukan akun yang ditautkan ke akun ini di perangkat. Minta administrator untuk melepas tautannya.',
+          unlinked: 'Akun ini belum ditautkan ke akun Anda di penyedia identitas. Minta administrator untuk menautkannya.',
           server: 'Proses masuk tidak dapat diselesaikan. Coba lagi.'
         }
       },
@@ -2468,8 +2478,18 @@ const id = {
           deviceOwner: 'Pemilik perangkat',
           ssoTag: 'SSO',
           ssoUnlink: 'Lepas tautan SSO',
-          ssoUnlinkConfirm: 'Lepas tautan {{username}} dari akunnya di penyedia identitas? Single sign-on berikutnya akan menautkannya lagi. Akun ini juga dikeluarkan dari semua sesi.',
+          ssoUnlinkConfirm: 'Lepaskan tautan {{username}} dari akun penyedia identitasnya? Akun harus ditautkan lagi sebelum masuk tunggal berikutnya. Akun juga dikeluarkan dari semua tempat.',
           ssoUnlinked: 'Tautan single sign-on dihapus',
+          ssoLink: 'Tautkan SSO',
+          ssoLinkTitle: 'Tautkan {{username}} ke akun penyedia identitas',
+          ssoLinkDesc: 'Masuk tunggal ke akun yang belum ditautkan akan ditolak. Masukkan subject (sub) akun di penyedia identitas, atau pilih upaya masuk yang ditolak di bawah. Biarkan penerbit kosong untuk memakai yang ada di pengaturan.',
+          ssoIssuer: 'Penerbit (issuer)',
+          ssoSubject: 'Subject (sub)',
+          ssoSubjectRequired: 'Subject wajib diisi',
+          ssoPending: 'Upaya masuk yang ditolak',
+          ssoPendingEmpty: 'Tidak ada upaya masuk yang ditolak dalam sehari terakhir',
+          ssoPick: 'Gunakan',
+          ssoLinked: 'Tautan masuk tunggal disimpan',
           resetPassword: 'Atur Ulang Kata Sandi',
           delete: 'Hapus',
           deleteConfirm: 'Hapus pengguna ini dan cabut semua sesinya?',

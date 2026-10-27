@@ -1,5 +1,4 @@
 import { http } from '@/lib/http';
-
 import type { UserRole } from '@/lib/roles.ts';
 
 export type { UserRole };
@@ -76,9 +75,63 @@ export function resetUserTotp(username: string) {
 }
 
 // Forget which identity provider account an account is linked to, for a user
-// who was recreated at the provider. The next single sign-on links it again.
+// who was recreated at the provider. The account must be linked again before
+// it signs in with the provider.
 export function unlinkUserOidc(username: string) {
   return http.delete(`/api/auth/users/${encodeURIComponent(username)}/oidc`);
+}
+
+// Link an account to an identity provider account before its first single
+// sign-on. An empty issuer is the one in the settings.
+export function linkUserOidc(username: string, issuer: string, subject: string) {
+  return http.request({
+    method: 'put',
+    url: `/api/auth/users/${encodeURIComponent(username)}/oidc`,
+    data: { issuer, subject }
+  });
+}
+
+// A single sign-on refused because the account had no link, kept for a day
+// for an administrator to link the account to it.
+export type OidcPendingSignIn = {
+  username: string;
+  issuer: string;
+  subject: string;
+  email?: string;
+  name?: string;
+  // Unix seconds.
+  time: number;
+};
+
+export type OidcPending = {
+  // The issuer in the settings, which a link with no issuer is made under.
+  issuer: string;
+  signIns: OidcPendingSignIn[];
+};
+
+export function getOidcPending() {
+  return http.get('/api/auth/oidc/pending');
+}
+
+// A refused single sign-on to an account with no link waits, in this browser
+// and for a few minutes, for the account's password.
+export type OidcLink = {
+  username: string;
+  totpRequired: boolean;
+};
+
+// No sign-in waits for a password, or it expired.
+export const OIDC_LINK_GONE = -7;
+// The account was linked to another provider account meanwhile.
+export const OIDC_LINK_TAKEN = -8;
+
+export function getOidcLink() {
+  return http.get('/api/auth/oidc/link');
+}
+
+// The password is encrypted the way the login form sends it.
+export function confirmOidcLink(password: string, code: string) {
+  return http.post('/api/auth/oidc/link', { password, code });
 }
 
 // Login through an OpenID Connect provider. The login page sends the browser

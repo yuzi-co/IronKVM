@@ -31,6 +31,15 @@ const fr = {
       oidc: {
         signIn: 'Se connecter avec {{name}}',
         usePassword: 'Se connecter avec un mot de passe',
+        confirm: {
+          title: 'Lier l\'authentification unique',
+          description: 'Votre fournisseur d\'identité vous a connecté en tant que {{username}}, mais ce compte n\'y est pas encore lié. Saisissez le mot de passe du compte pour le lier et vous connecter.',
+          submit: 'Lier et se connecter',
+          cancel: 'Annuler',
+          invalid: 'Mot de passe ou code incorrect',
+          expired: 'La connexion a expiré. Reconnectez-vous auprès du fournisseur d\'identité.',
+          taken: 'Ce compte a été lié entre-temps à un autre compte du fournisseur d\'identité.'
+        },
         errors: {
           disabled: 'L\'authentification unique est désactivée.',
           locked: 'Trop de connexions échouées, veuillez réessayer plus tard',
@@ -41,6 +50,7 @@ const fr = {
           account: 'Votre compte chez le fournisseur d\'identité n\'a pas de compte sur cet appareil.',
           role: 'Votre compte chez le fournisseur d\'identité n\'appartient à aucun des groupes autorisés sur cet appareil.',
           binding: 'Votre compte chez le fournisseur d\'identité n\'est pas celui qui est lié à ce compte sur l\'appareil. Demandez à un administrateur de le délier.',
+          unlinked: 'Ce compte n\'est pas encore lié à votre compte chez le fournisseur d\'identité. Demandez à un administrateur de le lier.',
           server: 'La connexion n\'a pas pu aboutir. Réessayez.'
         }
       },
@@ -2501,8 +2511,18 @@ const fr = {
           deviceOwner: "Propriétaire de l'appareil",
           ssoTag: 'SSO',
           ssoUnlink: 'Délier le SSO',
-          ssoUnlinkConfirm: 'Délier {{username}} de son compte chez le fournisseur d\'identité ? La prochaine connexion unique le liera à nouveau. Il est aussi déconnecté partout.',
+          ssoUnlinkConfirm: 'Délier {{username}} de son compte chez le fournisseur d\'identité ? Il devra être lié de nouveau avant sa prochaine authentification unique. Il est aussi déconnecté partout.',
           ssoUnlinked: 'Lien de connexion unique supprimé',
+          ssoLink: 'Lier le SSO',
+          ssoLinkTitle: 'Lier {{username}} à un compte du fournisseur d\'identité',
+          ssoLinkDesc: 'Une authentification unique vers un compte non lié est refusée. Saisissez le sujet (sub) du compte chez le fournisseur d\'identité, ou choisissez ci-dessous une connexion refusée. Laissez l\'émetteur vide pour utiliser celui des paramètres.',
+          ssoIssuer: 'Émetteur (issuer)',
+          ssoSubject: 'Sujet (sub)',
+          ssoSubjectRequired: 'Sujet requis',
+          ssoPending: 'Connexions refusées',
+          ssoPendingEmpty: 'Aucune connexion refusée depuis un jour',
+          ssoPick: 'Utiliser',
+          ssoLinked: 'Lien d\'authentification unique enregistré',
           resetPassword: 'Réinitialiser le mot de passe',
           delete: 'Supprimer',
           deleteConfirm: 'Supprimer cet utilisateur et révoquer toutes ses sessions ?',

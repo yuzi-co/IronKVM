@@ -31,6 +31,15 @@ const nl = {
       oidc: {
         signIn: 'Aanmelden met {{name}}',
         usePassword: 'Aanmelden met wachtwoord',
+        confirm: {
+          title: 'Eenmalige aanmelding koppelen',
+          description: 'Uw identiteitsprovider heeft u aangemeld als {{username}}, maar dit account is er nog niet aan gekoppeld. Voer het wachtwoord van het account in om het te koppelen en aan te melden.',
+          submit: 'Koppelen en aanmelden',
+          cancel: 'Annuleren',
+          invalid: 'Onjuist wachtwoord of onjuiste code',
+          expired: 'De aanmelding is verlopen. Meld u opnieuw aan bij de identiteitsprovider.',
+          taken: 'Dit account is intussen gekoppeld aan een ander account bij de identiteitsprovider.'
+        },
         errors: {
           disabled: 'Single sign-on staat uit.',
           locked: 'Te veel mislukte aanmeldingen, probeer het later opnieuw',
@@ -41,6 +50,7 @@ const nl = {
           account: 'Uw account bij de identiteitsprovider heeft geen account op dit apparaat.',
           role: 'Uw account bij de identiteitsprovider zit in geen van de groepen die op dit apparaat zijn toegestaan.',
           binding: 'Uw account bij de identiteitsprovider is niet het account dat aan dit account op het apparaat is gekoppeld. Vraag een beheerder de koppeling op te heffen.',
+          unlinked: 'Dit account is nog niet gekoppeld aan uw account bij de identiteitsprovider. Vraag een beheerder om het te koppelen.',
           server: 'De aanmelding kon niet worden voltooid. Probeer het opnieuw.'
         }
       },
@@ -2486,8 +2496,18 @@ const nl = {
           deviceOwner: 'Eigenaar van het apparaat',
           ssoTag: 'SSO',
           ssoUnlink: 'SSO-koppeling opheffen',
-          ssoUnlinkConfirm: 'Koppeling van {{username}} met het account bij de identiteitsprovider opheffen? De volgende single sign-on koppelt het opnieuw. Het wordt ook overal afgemeld.',
+          ssoUnlinkConfirm: 'Koppeling van {{username}} met het account bij de identiteitsprovider verwijderen? Het moet opnieuw worden gekoppeld voor de volgende eenmalige aanmelding. Het wordt ook overal afgemeld.',
           ssoUnlinked: 'Single sign-on-koppeling opgeheven',
+          ssoLink: 'SSO koppelen',
+          ssoLinkTitle: '{{username}} koppelen aan een account bij de identiteitsprovider',
+          ssoLinkDesc: 'Eenmalige aanmelding bij een account dat niet gekoppeld is, wordt geweigerd. Voer het subject (sub) van het account bij de identiteitsprovider in, of kies hieronder een geweigerde aanmelding. Laat de uitgever leeg voor die uit de instellingen.',
+          ssoIssuer: 'Uitgever (issuer)',
+          ssoSubject: 'Subject (sub)',
+          ssoSubjectRequired: 'Subject vereist',
+          ssoPending: 'Geweigerde aanmeldingen',
+          ssoPendingEmpty: 'Geen geweigerde aanmeldingen in de afgelopen dag',
+          ssoPick: 'Gebruiken',
+          ssoLinked: 'Koppeling voor eenmalige aanmelding opgeslagen',
           resetPassword: 'Wachtwoord resetten',
           delete: 'Verwijderen',
           deleteConfirm: 'Deze gebruiker verwijderen en al zijn sessies intrekken?',

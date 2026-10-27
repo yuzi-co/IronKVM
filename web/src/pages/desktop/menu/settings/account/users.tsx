@@ -7,8 +7,9 @@ import * as api from '@/api/auth.ts';
 import { User, UserRole } from '@/api/auth.ts';
 import { encrypt } from '@/lib/encrypt.ts';
 import { describeFailure } from '@/lib/feedback.ts';
-import { useServerFeature } from '@/hooks/useServerFeature.ts';
+import { pendingForAccount } from '@/lib/oidc.ts';
 import { parseRole } from '@/lib/roles.ts';
+import { useServerFeature } from '@/hooks/useServerFeature.ts';
 
 type CreateValues = {
   username: string;
@@ -20,16 +21,25 @@ type PasswordValues = {
   password: string;
 };
 
+type LinkValues = {
+  issuer: string;
+  subject: string;
+};
+
 export const Users = () => {
   const { t } = useTranslation();
   const { account } = useAuth();
   const [messageApi, contextHolder] = message.useMessage();
   const [createForm] = Form.useForm<CreateValues>();
   const [passwordForm] = Form.useForm<PasswordValues>();
+  const [linkForm] = Form.useForm<LinkValues>();
 
   // The viewer role is offered only by a server that has it, and an account
   // that already is one keeps its entry in the list either way.
   const hasViewerRole = useServerFeature('role-viewer') === true;
+  // A server that refuses a single sign-on to an account with no link lets an
+  // administrator link it first (ironkvm-dist#169).
+  const hasOidcPrelink = useServerFeature('oidc-prelink') === true;
   function roleOptions(current?: UserRole) {
     const options: { value: UserRole; label: string }[] = [
       { value: 'admin', label: t('settings.account.roles.admin') },
@@ -48,6 +58,10 @@ export const Users = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [passwordUser, setPasswordUser] = useState<string | null>(null);
+  // The account being linked to an identity provider account, and the
+  // refused sign-ins to pick one from.
+  const [linkUser, setLinkUser] = useState<string | null>(null);
+  const [pending, setPending] = useState<api.OidcPending | null>(null);
 
   // A promise chain rather than async/await: the lint that forbids a
   // synchronous setState in an effect cannot see that a finally block after an
@@ -153,6 +167,47 @@ export const Users = () => {
     }
   }
 
+  function openLink(username: string) {
+    setLinkUser(username);
+    setPending(null);
+    api
+      .getOidcPending()
+      .then((rsp) => {
+        if (rsp.code !== 0) throw rsp;
+        setPending({
+          issuer: rsp.data?.issuer ?? '',
+          signIns: Array.isArray(rsp.data?.signIns) ? rsp.data.signIns : []
+        });
+      })
+      .catch((err) => {
+        messageApi.error(describeFailure(err, t('settings.account.users.loadFailed')));
+      });
+  }
+
+  function closeLink() {
+    setLinkUser(null);
+    linkForm.resetFields();
+  }
+
+  async function linkOidc(values: LinkValues) {
+    if (!linkUser) return;
+    setIsLoading(true);
+    try {
+      const rsp = await api.linkUserOidc(
+        linkUser,
+        (values.issuer ?? '').trim(),
+        values.subject.trim()
+      );
+      if (rsp.code !== 0) throw rsp;
+      closeLink();
+      messageApi.success(t('settings.account.users.ssoLinked'));
+      await loadUsers();
+    } catch (err) {
+      messageApi.error(describeFailure(err, t('settings.account.users.saveFailed')));
+      setIsLoading(false);
+    }
+  }
+
   async function resetPassword(values: PasswordValues) {
     if (!passwordUser) return;
     setIsLoading(true);
@@ -238,6 +293,11 @@ export const Users = () => {
                     {t('totp.users.reset')}
                   </Button>
                 </Popconfirm>
+              )}
+              {hasOidcPrelink && !user.oidcLinked && !user.systemAccount && (
+                <Button size="small" disabled={isLoading} onClick={() => openLink(user.username)}>
+                  {t('settings.account.users.ssoLink')}
+                </Button>
               )}
               {user.oidcLinked && (
                 <Popconfirm
@@ -331,6 +391,78 @@ export const Users = () => {
             {t('auth.ok')}
           </Button>
         </Form>
+      </Modal>
+
+      <Modal
+        title={t('settings.account.users.ssoLinkTitle', { username: linkUser ?? '' })}
+        open={!!linkUser}
+        footer={null}
+        destroyOnHidden
+        onCancel={closeLink}
+      >
+        <div className="pb-4 text-sm text-neutral-400">
+          {t('settings.account.users.ssoLinkDesc')}
+        </div>
+        <Form<LinkValues> form={linkForm} layout="vertical" onFinish={linkOidc}>
+          <Form.Item name="issuer" label={t('settings.account.users.ssoIssuer')}>
+            <Input autoComplete="off" placeholder={pending?.issuer} />
+          </Form.Item>
+          <Form.Item
+            name="subject"
+            label={t('settings.account.users.ssoSubject')}
+            rules={[
+              {
+                required: true,
+                whitespace: true,
+                message: t('settings.account.users.ssoSubjectRequired')
+              },
+              { max: 255 }
+            ]}
+          >
+            <Input autoComplete="off" />
+          </Form.Item>
+          <Button type="primary" htmlType="submit" loading={isLoading} className="w-full">
+            {t('settings.account.users.ssoLink')}
+          </Button>
+        </Form>
+
+        <div className="pt-6 pb-2 text-base">{t('settings.account.users.ssoPending')}</div>
+        {pending && pending.signIns.length === 0 && (
+          <div className="text-sm text-neutral-500">
+            {t('settings.account.users.ssoPendingEmpty')}
+          </div>
+        )}
+        <div className="flex flex-col space-y-2">
+          {pendingForAccount(pending?.signIns ?? [], linkUser ?? '').map((signIn) => (
+            <div
+              key={`${signIn.issuer} ${signIn.subject} ${signIn.username}`}
+              className="flex items-center gap-2 rounded-md bg-neutral-800/60 px-3 py-2"
+            >
+              <div className="min-w-0 flex-1 text-sm">
+                <div className="truncate">
+                  {signIn.username}
+                  {signIn.name && <span className="ml-2 text-neutral-400">{signIn.name}</span>}
+                  {signIn.email && <span className="ml-2 text-neutral-400">{signIn.email}</span>}
+                </div>
+                <div className="truncate font-mono text-xs text-neutral-500" title={signIn.subject}>
+                  {signIn.subject}
+                </div>
+                <div className="truncate text-xs text-neutral-500" title={signIn.issuer}>
+                  {new Date(signIn.time * 1000).toLocaleString()}
+                  {signIn.issuer !== pending?.issuer && ` � ${signIn.issuer}`}
+                </div>
+              </div>
+              <Button
+                size="small"
+                onClick={() =>
+                  linkForm.setFieldsValue({ issuer: signIn.issuer, subject: signIn.subject })
+                }
+              >
+                {t('settings.account.users.ssoPick')}
+              </Button>
+            </div>
+          ))}
+        </div>
       </Modal>
     </>
   );

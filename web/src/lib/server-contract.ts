@@ -37,6 +37,7 @@ export const SERVER_FEATURES = [
   'notifications', // /api/notify (Settings > Notifications)
   'nut-client', // /api/nut (Settings > NUT, UPS line in the status bar)
   'oidc-login', // /api/auth/oidc (Settings > Account > Single sign-on)
+  'oidc-prelink', // PUT /api/auth/users/:username/oidc, /api/auth/oidc/pending (Settings > Users: link single sign-on)
   'role-viewer', // the viewer role in Settings > Users, and a UI with no input for it
   'rtsp', // /api/stream/rtsp (Settings > RTSP)
   'settings-backup', // /api/settings/export, /preview, /import (Settings > Backup: settings file)

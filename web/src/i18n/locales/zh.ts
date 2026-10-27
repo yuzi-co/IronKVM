@@ -31,6 +31,15 @@ const zh = {
       oidc: {
         signIn: '使用 {{name}} 登录',
         usePassword: '使用密码登录',
+        confirm: {
+          title: '关联单点登录',
+          description: '身份提供商已将你登录为 {{username}}，但此账户尚未与其关联。输入该账户的密码以完成关联并登录。',
+          submit: '关联并登录',
+          cancel: '取消',
+          invalid: '密码或验证码错误',
+          expired: '登录已过期。请重新通过身份提供商登录。',
+          taken: '在此期间，此账户已关联到身份提供商的另一个账户。'
+        },
         errors: {
           disabled: '单点登录已关闭。',
           locked: '登录失败次数过多，请稍后再试',
@@ -41,6 +50,7 @@ const zh = {
           account: '您的身份提供商账号在此设备上没有对应账号。',
           role: '您的身份提供商账号不在此设备允许的任何组中。',
           binding: '您的身份提供商账号不是与此设备上该账号关联的那个账号。请联系管理员解除关联。',
+          unlinked: '此账户尚未关联到你在身份提供商的账户。请联系管理员进行关联。',
           server: '无法完成登录。请重试。'
         }
       },
@@ -2368,8 +2378,18 @@ const zh = {
           deviceOwner: '设备所有者',
           ssoTag: 'SSO',
           ssoUnlink: '解除 SSO 关联',
-          ssoUnlinkConfirm: '解除 {{username}} 与身份提供商账号的关联？下次单点登录时会重新关联。该账户在所有地方的登录也会结束。',
+          ssoUnlinkConfirm: '解除 {{username}} 与身份提供商账户的关联？下次单点登录前需要重新关联。该账户也会在所有地方退出登录。',
           ssoUnlinked: '已解除单点登录关联',
+          ssoLink: '关联 SSO',
+          ssoLinkTitle: '将 {{username}} 关联到身份提供商账户',
+          ssoLinkDesc: '未关联账户的单点登录会被拒绝。输入身份提供商账户的 subject (sub)，或在下方选择一次被拒绝的登录。签发者留空则使用设置中的签发者。',
+          ssoIssuer: '签发者 (issuer)',
+          ssoSubject: 'Subject (sub)',
+          ssoSubjectRequired: '请输入 subject',
+          ssoPending: '被拒绝的登录',
+          ssoPendingEmpty: '过去一天内没有被拒绝的登录',
+          ssoPick: '使用',
+          ssoLinked: '单点登录关联已保存',
           resetPassword: '重置密码',
           delete: '删除',
           deleteConfirm: '删除此用户并撤销其全部会话？',
