@@ -17,7 +17,6 @@ import (
 	"NanoKVM-Server/service/vm"
 	"NanoKVM-Server/service/webui"
 
-	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 )
@@ -94,7 +93,7 @@ func skipsStatic(urlPath string) bool {
 // websocket upgrade would pay a syscall against the SD card, and a file that
 // happened to sit at the same path would shadow the real handler.
 func staticHandler(webPath string) gin.HandlerFunc {
-	serve := static.Serve("/", static.LocalFile(webPath, true))
+	serve := serveFiles(webPath)
 
 	return func(c *gin.Context) {
 		if skipsStatic(c.Request.URL.Path) {
