@@ -18,6 +18,7 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/time/rate"
 
 	"NanoKVM-Server/config"
 	"NanoKVM-Server/service/events"
@@ -89,9 +90,9 @@ type Service struct {
 	patSrc    []string
 	lastMatch time.Time
 
-	// The token bucket.
-	tokens float64
-	refill time.Time
+	// limit keeps a flood to maxRate lines a second, after a burst of
+	// maxBurst. It is read with the time Deps.Now gives, so tests can move it.
+	limit *rate.Limiter
 
 	received    atomic.Uint64
 	filtered    atomic.Uint64
@@ -116,7 +117,7 @@ func New(deps Deps) *Service {
 		listeners: map[string]*listener{},
 		errs:      map[string]string{},
 		waiting:   map[string]bool{},
-		tokens:    maxBurst,
+		limit:     rate.NewLimiter(maxRate, maxBurst),
 	}
 }
 
@@ -343,25 +344,6 @@ func (s *Service) allowed(ip netip.Addr) bool {
 	return false
 }
 
-// takeToken applies the rate limit.
-func (s *Service) takeToken(now time.Time) bool {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	if !s.refill.IsZero() {
-		s.tokens += now.Sub(s.refill).Seconds() * maxRate
-		if s.tokens > maxBurst {
-			s.tokens = maxBurst
-		}
-	}
-	s.refill = now
-	if s.tokens < 1 {
-		return false
-	}
-	s.tokens--
-	return true
-}
-
 // Ingest handles one datagram from a sender.
 func (s *Service) Ingest(proto string, from netip.Addr, data []byte) {
 	if !s.allowed(from) {
@@ -381,7 +363,7 @@ func (s *Service) Ingest(proto string, from netip.Addr, data []byte) {
 	now := s.deps.Now()
 	for _, p := range msgs {
 		s.received.Add(1)
-		if !s.takeToken(now) {
+		if !s.limit.AllowN(now, 1) {
 			s.rateLimited.Add(1)
 			continue
 		}
