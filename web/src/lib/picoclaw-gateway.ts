@@ -86,6 +86,7 @@ type GatewayEventMap = {
   close: GatewayClose;
   control_mode_changed: GatewayControlStatus;
   turn_done: GatewayTurnDone;
+  power_confirmation: { id: string; state: string };
 };
 
 type EventName = keyof GatewayEventMap;
@@ -350,6 +351,7 @@ class PicoClawGateway {
         observation: (observation) => this.emit('observation', observation),
         error: (error) => this.emit('error', error),
         turnDone: (done) => this.emit('turn_done', done),
+        powerConfirmation: (confirmation) => this.emit('power_confirmation', confirmation),
         controlModeChanged: (control) => {
           const mode = control.mode;
           if (mode !== 'off' && mode !== 'mcp' && mode !== 'picoclaw') {

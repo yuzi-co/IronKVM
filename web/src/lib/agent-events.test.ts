@@ -16,7 +16,8 @@ function recorder() {
     observation: (observation) => calls.push(['observation', observation]),
     error: (error) => calls.push(['error', error]),
     turnDone: (done) => calls.push(['turnDone', done]),
-    controlModeChanged: (control) => calls.push(['controlModeChanged', control])
+    controlModeChanged: (control) => calls.push(['controlModeChanged', control]),
+    powerConfirmation: (confirmation) => calls.push(['powerConfirmation', confirmation])
   };
   let next = 0;
   const handle = createAgentEventHandler(sink, () => `gen-${++next}`);
@@ -146,4 +147,21 @@ test('turn_done stop reasons', () => {
   assert.equal(reason('cancelled'), 'cancelled');
   assert.equal(reason('error'), 'error');
   assert.equal(reason('odd'), 'end_turn');
+});
+
+test('a press waiting for confirmation reaches the sink, and nothing else changes', () => {
+  const { send, take } = recorder();
+  send({
+    type: 'power_confirmation',
+    sessionId: 's1',
+    confirmation: { id: 'c1', button: 'power', press: 'long', state: 'pending' }
+  });
+  assert.deepEqual(take(), [['powerConfirmation', { id: 'c1', state: 'pending' }]]);
+
+  send({ type: 'power_confirmation', confirmation: { id: 'c1', state: 'pressed' } });
+  assert.deepEqual(take(), [['powerConfirmation', { id: 'c1', state: 'pressed' }]]);
+
+  send({ type: 'power_confirmation' });
+  send({ type: 'power_confirmation', confirmation: { state: 'pending' } });
+  assert.deepEqual(take(), [], 'an event without a confirmation id is ignored');
 });

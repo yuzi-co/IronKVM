@@ -812,6 +812,15 @@ const se = {
         'Videoströmmen har misslyckats. Prova ett annat videoläge i menyn Skärm eller ladda om sidan.'
     },
     power: {
+      agentConfirm: {
+        title: 'AI-agenten ber om att trycka på en knapp',
+        hint: 'Inget trycks förrän du bekräftar här. Ett svar i chatten bekräftar inte.',
+        expires: 'Upphör om {{seconds}} s',
+        confirm: 'Tryck',
+        deny: 'Neka',
+        pressed: 'Knapp tryckt',
+        denied: 'Tryck nekat'
+      },
       resetDesc: 'Startar om värden direkt. Osparat arbete går förlorat.',
       powerShortDesc: 'Startar värden, eller ber dess OS att stänga av (ACPI).',
       powerLongDesc: 'Tvingar av värden utan avstängning.',

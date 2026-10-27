@@ -825,6 +825,16 @@ const fr = {
         'Le flux vidéo a échoué. Essayez un autre mode vidéo dans le menu Écran, ou rechargez la page.'
     },
     power: {
+      agentConfirm: {
+        title: 'L\'agent IA demande à appuyer sur un bouton',
+        hint:
+          'Rien n\'est pressé tant que vous ne confirmez pas ici. Une réponse dans le chat ne confirme pas.',
+        expires: 'Expire dans {{seconds}} s',
+        confirm: 'Appuyer',
+        deny: 'Refuser',
+        pressed: 'Bouton pressé',
+        denied: 'Appui refusé'
+      },
       resetDesc: "Redémarre l'hôte immédiatement. Le travail non enregistré est perdu.",
       powerShortDesc: "Allume l'hôte, ou demande à son système de s'éteindre (ACPI).",
       powerLongDesc: "Force l'arrêt de l'hôte sans extinction propre.",

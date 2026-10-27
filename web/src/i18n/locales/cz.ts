@@ -812,6 +812,15 @@ const cz = {
         'Videostream selhal. Zkuste jiný režim videa v nabídce Obrazovka nebo obnovte stránku.'
     },
     power: {
+      agentConfirm: {
+        title: 'AI agent žádá o stisknutí tlačítka',
+        hint: 'Nic se nestiskne, dokud to zde nepotvrdíte. Odpověď v chatu to nepotvrzuje.',
+        expires: 'Vyprší za {{seconds}} s',
+        confirm: 'Stisknout',
+        deny: 'Odmítnout',
+        pressed: 'Tlačítko stisknuto',
+        denied: 'Stisknutí odmítnuto'
+      },
       resetDesc: 'Okamžitě restartuje hostitele. Neuložená práce se ztratí.',
       powerShortDesc: 'Zapne hostitele, nebo požádá jeho OS o vypnutí (ACPI).',
       powerLongDesc: 'Vynutí vypnutí hostitele bez řádného ukončení.',

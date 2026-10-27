@@ -810,6 +810,16 @@ const vi = {
         'Luồng video bị lỗi. Hãy thử chế độ video khác trong menu Màn hình hoặc tải lại trang.'
     },
     power: {
+      agentConfirm: {
+        title: 'Tác tử AI yêu cầu nhấn một nút',
+        hint:
+          'Không có gì được nhấn cho đến khi bạn xác nhận tại đây. Trả lời trong cuộc trò chuyện không phải là xác nhận.',
+        expires: 'Hết hạn sau {{seconds}} giây',
+        confirm: 'Nhấn',
+        deny: 'Từ chối',
+        pressed: 'Đã nhấn nút',
+        denied: 'Đã từ chối nhấn'
+      },
       resetDesc: 'Khởi động lại máy chủ ngay. Công việc chưa lưu sẽ mất.',
       powerShortDesc: 'Bật máy chủ, hoặc yêu cầu hệ điều hành tắt máy (ACPI).',
       powerLongDesc: 'Buộc tắt máy chủ mà không tắt hệ thống.',

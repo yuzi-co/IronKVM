@@ -810,6 +810,16 @@ const en = {
         'The video stream has failed. Try another video mode in the Screen menu, or reload the page.'
     },
     power: {
+      agentConfirm: {
+        title: 'The AI agent asks to press a button',
+        hint:
+          'Nothing is pressed unless you confirm here. A reply in the chat does not confirm it.',
+        expires: 'Expires in {{seconds}} s',
+        confirm: 'Press',
+        deny: 'Deny',
+        pressed: 'Button pressed',
+        denied: 'Press denied'
+      },
       resetDesc: 'Restarts the host at once. Unsaved work is lost.',
       powerShortDesc: 'Turns the host on, or asks its OS to shut down (ACPI).',
       powerLongDesc: 'Forces the host off without a shutdown.',

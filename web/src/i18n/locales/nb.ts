@@ -813,6 +813,15 @@ const nb = {
         'Videostrømmen har feilet. Prøv en annen videomodus i Skjerm-menyen, eller last inn siden på nytt.'
     },
     power: {
+      agentConfirm: {
+        title: 'AI-agenten ber om å trykke på en knapp',
+        hint: 'Ingenting trykkes før du bekrefter her. Et svar i chatten bekrefter ikke.',
+        expires: 'Utløper om {{seconds}} s',
+        confirm: 'Trykk',
+        deny: 'Avvis',
+        pressed: 'Knapp trykket',
+        denied: 'Trykk avvist'
+      },
       resetDesc: 'Starter verten på nytt med en gang. Ulagret arbeid går tapt.',
       powerShortDesc: 'Slår på verten, eller ber operativsystemet slå seg av (ACPI).',
       powerLongDesc: 'Tvinger verten av uten avslutning.',

@@ -821,6 +821,16 @@ const it = {
         "Lo stream video non è riuscito. Prova un'altra modalità video nel menu Schermo o ricarica la pagina."
     },
     power: {
+      agentConfirm: {
+        title: 'L\'agente IA chiede di premere un pulsante',
+        hint:
+          'Non viene premuto nulla finché non confermi qui. Una risposta nella chat non conferma.',
+        expires: 'Scade tra {{seconds}} s',
+        confirm: 'Premi',
+        deny: 'Rifiuta',
+        pressed: 'Pulsante premuto',
+        denied: 'Pressione rifiutata'
+      },
       resetDesc: "Riavvia subito l'host. Il lavoro non salvato va perso.",
       powerShortDesc: "Accende l'host o chiede al suo sistema operativo di spegnersi (ACPI).",
       powerLongDesc: "Forza lo spegnimento dell'host senza arresto.",
