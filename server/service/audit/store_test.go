@@ -113,6 +113,30 @@ func TestRepeatedFailuresAreFolded(t *testing.T) {
 	}
 }
 
+// An agent's session is part of who acted: the failures of two chat sessions
+// stay apart, and the session is found by the actor filter and forwarded.
+func TestTheAgentsSessionIsKeptApartFoundAndForwarded(t *testing.T) {
+	s := newTestStore(t)
+	var forwarded []string
+	s.SetSink(func(e Event) { forwarded = append(forwarded, Syslog(e)) })
+	now := time.Now()
+	for i, session := range []string{"chat-1", "chat-2"} {
+		s.Record(Event{Time: now.Add(time.Duration(i) * time.Second), Actor: "picoclaw", Via: "agent", Session: session, Category: CategoryAgent, Action: "kvm_power", Outcome: OutcomeFail})
+	}
+
+	page, _ := s.Query(Query{})
+	if page.Total != 2 {
+		t.Fatalf("got %d events, want the two sessions' failures kept apart", page.Total)
+	}
+	page, _ = s.Query(Query{Actor: "chat-2"})
+	if page.Total != 1 || page.Events[0].Session != "chat-2" {
+		t.Fatalf("actor filter chat-2 found %+v", page.Events)
+	}
+	if len(forwarded) != 2 || !strings.Contains(forwarded[0], " session=chat-1 ") {
+		t.Fatalf("forwarded %q", forwarded)
+	}
+}
+
 func TestSuccessesAreNeverFolded(t *testing.T) {
 	s := newTestStore(t)
 	for i := 0; i < 3; i++ {

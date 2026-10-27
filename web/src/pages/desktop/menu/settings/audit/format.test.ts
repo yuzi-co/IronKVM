@@ -1,12 +1,18 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { auditFileName, subject, who } from './format.ts';
+import { auditFileName, subject, via, who } from './format.ts';
 
 test('who names the key beside the account', () => {
   assert.equal(who({ actor: 'alice' }), 'alice');
   assert.equal(who({ actor: 'alice', key: 'ci' }), 'alice (ci)');
   assert.equal(who({}), '-');
+});
+
+test('via shows the start of the agent session', () => {
+  assert.equal(via({}), '');
+  assert.equal(via({ via: 'session' }), 'session');
+  assert.equal(via({ via: 'agent', session: '3f2a9c1e-77aa-4b1e-9d1c-0a1b2c3d4e5f' }), 'agent · 3f2a9c1e');
 });
 
 test('subject joins target and detail and shows a repeat count', () => {

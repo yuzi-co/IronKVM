@@ -218,10 +218,10 @@ func (s *Service) newMCPServer() *protocol.Server {
 		"kvm_actions":    s.mcpLeasedActions,
 	}
 	for _, tool := range mcpToolDefinitions {
-		server.AddTool(tool, agentTool(tool.Name, handlers[tool.Name]))
+		server.AddTool(tool, s.agentTool(tool.Name, handlers[tool.Name]))
 	}
 	for _, device := range s.deviceTools() {
-		server.AddTool(device.tool, agentTool(device.tool.Name, device.handler))
+		server.AddTool(device.tool, s.agentTool(device.tool.Name, device.handler))
 	}
 	// The agent is offered only the tools whose tier is on.
 	server.AddReceivingMiddleware(onlyAllowedAgentTools)
@@ -230,15 +230,17 @@ func (s *Service) newMCPServer() *protocol.Server {
 
 // agentTool wraps a tool handler with its tier check and its audit record. A
 // call whose tier is off never reaches the handler: it gets a tool error and
-// is recorded as denied.
-func agentTool(name string, next protocol.ToolHandler) protocol.ToolHandler {
+// is recorded as denied. The record names the agent and the chat session the
+// call acts for.
+func (s *Service) agentTool(name string, next protocol.ToolHandler) protocol.ToolHandler {
 	tier := agentToolTiers[name]
 	return func(ctx context.Context, req *protocol.CallToolRequest) (*protocol.CallToolResult, error) {
 		arguments := toolArguments(req)
 		target, detail := describeAgentCall(name, arguments)
 		event := audit.Event{
-			Actor:    "picoclaw",
+			Actor:    s.agentName(),
 			Via:      "agent",
+			Session:  s.actingSession(requestSession(req)),
 			IP:       requestHeader(req, audit.ClientHeader),
 			Category: audit.CategoryAgent,
 			Action:   name,
@@ -353,7 +355,7 @@ func (s *Service) mcpLeasedActions(ctx context.Context, req *protocol.CallToolRe
 
 	operationCtx, releaseOperation := s.beginControlOperation(ctx)
 	defer releaseOperation()
-	return s.mcpActions(operationCtx, toolArguments(req), requestHeader(req, sessionIDHeader)), nil
+	return s.mcpActions(operationCtx, toolArguments(req), requestSession(req)), nil
 }
 
 // controlConflictForMCP is the control conflict error for a refused lease,
@@ -391,7 +393,7 @@ func (s *Service) mcpScreenshot(ctx context.Context, req *protocol.CallToolReque
 		return mcpToolError(err.Message), nil
 	}
 
-	s.publishMCPObservation(requestHeader(req, sessionIDHeader), "screenshot captured", data)
+	s.publishMCPObservation(requestSession(req), "screenshot captured", data)
 
 	return &protocol.CallToolResult{
 		Meta: protocol.Meta{
@@ -442,12 +444,7 @@ func (s *Service) mcpActions(ctx context.Context, args json.RawMessage, sessionH
 		return mcpToolError("empty actions array")
 	}
 
-	sessionID := sessionHeader
-	if sessionID == "" {
-		sessionID = s.lock.Owner()
-	}
-
-	result, err := s.executeActions(ctx, sessionID, params.Actions)
+	result, err := s.executeActions(ctx, s.actingSession(sessionHeader), params.Actions)
 	if err != nil {
 		return mcpToolError(describeActionError(err, params.Actions, args))
 	}

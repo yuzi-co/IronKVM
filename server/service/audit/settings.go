@@ -108,6 +108,7 @@ func Syslog(e Event) string {
 	add("actor", e.Actor)
 	add("via", e.Via)
 	add("key", e.Key)
+	add("session", e.Session)
 	add("role", e.Role)
 	add("ip", e.IP)
 	add("category", e.Category)

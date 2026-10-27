@@ -48,10 +48,10 @@ func picoclawRouter(r *gin.Engine, service *picoclaw.Service) {
 	frontendAPI := picoclawFrontendAPI(r)
 	localAPI := r.Group(picoclawBasePath).Use(middleware.CheckLoopbackInternalToken())
 
-	localAPI.GET(picoclawScreenshotPath, audit.AgentGate("screenshot", audit.TierObserve), service.Screenshot)
-	localAPI.POST(picoclawActionsPath, audit.AgentGate("actions", audit.TierInput), service.Actions)
+	localAPI.GET(picoclawScreenshotPath, audit.AgentGate(service.AuditPrincipal, "screenshot", audit.TierObserve), service.Screenshot)
+	localAPI.POST(picoclawActionsPath, audit.AgentGate(service.AuditPrincipal, "actions", audit.TierInput), service.Actions)
 	localAPI.POST(picoclawMCPPath, service.MCPHandler)
-	localAPI.POST(picoclawLoadImagePath, audit.AgentGate("load-image", audit.TierObserve), service.LoadImage)
+	localAPI.POST(picoclawLoadImagePath, audit.AgentGate(service.AuditPrincipal, "load-image", audit.TierObserve), service.LoadImage)
 	localAPI.GET(picoclawRuntimeSessionPath, service.GetRuntimeSession)
 
 	frontendAPI.POST(picoclawModelConfigPath, service.UpdateModelConfig)

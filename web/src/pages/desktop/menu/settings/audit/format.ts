@@ -9,6 +9,14 @@ export function who(event: WhoFields): string {
   return event.key ? `${actor} (${event.key})` : actor;
 }
 
+// via is how the actor got in, with the start of the chat session an agent
+// acted for: enough to tell two conversations apart in the list. The full id
+// is in the row's tooltip and the export.
+export function via(event: { via?: string; session?: string }): string {
+  const session = event.session ? event.session.slice(0, 8) : '';
+  return [event.via, session].filter(Boolean).join(' · ');
+}
+
 // subject joins what an event acted on with its remark, either of which may
 // be missing.
 export function subject(event: { target?: string; detail?: string; repeat?: number }): string {

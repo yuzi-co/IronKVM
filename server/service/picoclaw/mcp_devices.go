@@ -38,8 +38,9 @@ type deviceTool struct {
 }
 
 // deviceTools are the device tools the board's devices allow. Pressing and
-// changing media need PicoClaw to hold device control, as kvm_actions does;
-// reading the state does not, as kvm_screenshot does not.
+// changing media need PicoClaw to hold device control and a chat session to
+// hold the AI input lock, as kvm_actions does; reading the state does not, as
+// kvm_screenshot does not.
 func (s *Service) deviceTools() []deviceTool {
 	devices := s.devices
 	empty := map[string]any{"type": "object", "properties": map[string]any{}}
@@ -57,7 +58,7 @@ func (s *Service) deviceTools() []deviceTool {
 				Description: hostdevices.PowerDescription(powerStatusToolName) + agentPowerNote,
 				InputSchema: hostdevices.PowerSchema(false),
 			},
-			handler: s.withControlMode(mcpPower(hostdevices.NewPresser(devices))),
+			handler: s.withAgentSession(mcpPower(hostdevices.NewPresser(devices))),
 		})
 	}
 	if devices.CanListMedia() {
@@ -73,7 +74,7 @@ func (s *Service) deviceTools() []deviceTool {
 				Description: hostdevices.MediaDescription(mediaListToolName),
 				InputSchema: hostdevices.MediaSchema(mediaListToolName),
 			},
-			handler: s.withControlMode(s.mcpMedia),
+			handler: s.withAgentSession(s.mcpMedia),
 		})
 	}
 	return tools
@@ -145,20 +146,6 @@ func (s *Service) mcpMedia(_ context.Context, req *protocol.CallToolRequest) (*p
 		return mcpToolError(err.Error()), nil
 	}
 	return mcpJSONResult(state), nil
-}
-
-// withControlMode runs a tool under a PicoClaw control mode lease. Without
-// device control the call is refused with the control conflict error, as
-// kvm_actions is.
-func (s *Service) withControlMode(next protocol.ToolHandler) protocol.ToolHandler {
-	return func(ctx context.Context, req *protocol.CallToolRequest) (*protocol.CallToolResult, error) {
-		release, modeErr := s.acquireControlMode()
-		if modeErr != nil {
-			return nil, s.controlConflictForMCP(modeErr)
-		}
-		defer release()
-		return next(ctx, req)
-	}
 }
 
 func mcpJSONResult(v any) *protocol.CallToolResult {

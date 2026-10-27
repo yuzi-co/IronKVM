@@ -21,6 +21,8 @@ export type AuditEvent = {
   actor?: string;
   via?: string;
   key?: string;
+  // session is the chat session an on-board agent acted for.
+  session?: string;
   ip?: string;
   category: string;
   action: string;

@@ -14,6 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// sessionIDHeader is agentSessionHeader's old name.
 const sessionIDHeader = "X-PicoClaw-Session-ID"
 
 // RuntimeIntentFile keeps whether PicoClaw should run, across reboots.
@@ -202,7 +203,7 @@ func (s *Service) operationError(ctx context.Context) *PicoclawError {
 }
 
 func (s *Service) requireSessionID(c *gin.Context) (string, *PicoclawError) {
-	sessionID := c.GetHeader(sessionIDHeader)
+	sessionID := namedSession(c.Request.Header)
 	if sessionID == "" {
 		return "", newPicoclawError(CodeSessionIDMissing, "missing X-PicoClaw-Session-ID")
 	}
