@@ -2395,7 +2395,7 @@ const cz = {
           redirectUrlOverrideDesc: 'Nechte prázdné pro použití adresy výše. Nastavte, pokud reverzní proxy nepředává název hostitele nebo https.',
           httpWarning: 'Tato stránka používá nešifrované http. Mnoho poskytovatelů povoluje http adresy přesměrování jen pro localhost. Pokud tuto odmítne, otevřete zařízení přes HTTPS nebo přes reverzní proxy s TLS.',
           mappingDesc: 'Účet poskytovatele se přihlásí jako místní účet se stejným uživatelským jménem. Účet vlastníka zařízení se přihlašuje pouze heslem. Dvoufázové ověření zajišťuje poskytovatel: místní kód se nevyžaduje.',
-          bindingDesc: 'První jednotné přihlášení propojí místní účet s tímto účtem u poskytovatele a další přihlášení musí přicházet ze stejného účtu. Správce může propojení zrušit v seznamu uživatelů. Po změně vydavatele se každý účet při dalším přihlášení propojí znovu.',
+          bindingDesc: 'Účet propojí s účtem u poskytovatele identity správce, nebo se propojí při prvním jednotném přihlášení heslem k účtu. Další přihlášení musí přicházet ze stejného účtu. Správce může propojení zrušit v seznamu uživatelů. Po změně vydavatele je nutné každý účet propojit znovu.',
           usernameClaim: 'Párovat účty podle',
           emailDomain: 'E-mailová doména',
           emailDomainDesc: 'Část před @ je uživatelské jméno. Adresy z jiných domén jsou odmítnuty.',

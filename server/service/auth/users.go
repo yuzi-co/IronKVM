@@ -21,15 +21,22 @@ func (s *Service) ListUsers(c *gin.Context) {
 		rsp.ErrRsp(c, -1, "failed to load users")
 		return
 	}
+	settings, err := loadOIDCSettings()
+	if err != nil {
+		log.Warnf("oidc settings: %s", err)
+	}
 	result := make([]proto.UserInfo, 0, len(users))
 	for _, user := range users {
+		// A link under an issuer the settings no longer name is no link
+		// (see authn.Store.BindOIDC), so the account is offered for linking.
+		linked := user.OIDCLinked && (settings.Issuer == "" || user.OIDCIssuer == settings.Issuer)
 		result = append(result, proto.UserInfo{
 			Username:      user.Username,
 			Role:          string(user.Role),
 			Enabled:       user.Enabled,
 			SystemAccount: user.SystemAccount,
 			TOTPEnabled:   user.TOTPEnabled,
-			OIDCLinked:    user.OIDCLinked,
+			OIDCLinked:    linked,
 		})
 	}
 	rsp.OkRspWithData(c, &proto.ListUsersRsp{Users: result})

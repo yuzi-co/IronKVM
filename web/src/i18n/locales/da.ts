@@ -2404,7 +2404,7 @@ const da = {
           redirectUrlOverrideDesc: 'Lad stå tom for at bruge adressen ovenfor. Angiv den, når en reverse proxy ikke videregiver værtsnavnet eller https.',
           httpWarning: 'Denne side bruger ukrypteret http. Mange udbydere accepterer kun http-omdirigerings-URL\'er for localhost. Afviser din denne, så åbn enheden via HTTPS eller en reverse proxy med TLS.',
           mappingDesc: 'En udbyderkonto logger ind som den lokale konto med samme brugernavn. Enhedsejerens konto logger kun ind med sin adgangskode. Udbyderen står for totrinsgodkendelse: den lokale kode bliver ikke krævet.',
-          bindingDesc: 'Det første single sign-on knytter den lokale konto til kontoen hos udbyderen, og senere logins skal komme fra den samme. En administrator kan fjerne tilknytningen i brugerlisten. Efter et skift af udsteder knyttes hver konto igen ved næste login.',
+          bindingDesc: 'En administrator knytter kontoen til en konto hos identitetsudbyderen, eller den knyttes ved første single sign-on med kontoens adgangskode. Senere logins skal komme fra den samme. En administrator kan fjerne tilknytningen i brugerlisten. Efter et skift af udsteder skal hver konto knyttes igen.',
           usernameClaim: 'Match konti efter',
           emailDomain: 'E-maildomæne',
           emailDomainDesc: 'Delen før @ er brugernavnet. Adresser i andre domæner afvises.',

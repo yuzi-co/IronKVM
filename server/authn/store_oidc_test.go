@@ -17,7 +17,7 @@ func TestOIDCLinkIsMadeOnceAndChecked(t *testing.T) {
 
 	// A single sign-on does not link an account that has no link yet: an
 	// administrator or the account's password does (ironkvm-dist#169).
-	if _, _, err := store.BindOIDC("alice", "https://idp.example", "sub-1"); !errors.Is(err, ErrOIDCNotLinked) {
+	if _, err := store.BindOIDC("alice", "https://idp.example", "sub-1"); !errors.Is(err, ErrOIDCNotLinked) {
 		t.Fatalf("an unlinked account was bound: %v", err)
 	}
 	if got, _ := store.Get("alice"); got.OIDCLinked() {
@@ -28,25 +28,26 @@ func TestOIDCLinkIsMadeOnceAndChecked(t *testing.T) {
 	if err != nil || user.OIDCSubject != "sub-1" || user.OIDCIssuer != "https://idp.example" {
 		t.Fatalf("first link: %+v, %v", user, err)
 	}
-	previous := ""
 	// Linking is not a credential change: sessions stay.
 	if user.TokenVersion != before.TokenVersion {
 		t.Fatal("linking revoked the sessions")
 	}
-	if _, previous, err = store.BindOIDC("alice", "https://idp.example", "sub-1"); err != nil || previous != "https://idp.example" {
-		t.Fatalf("same identity: %q, %v", previous, err)
+	if _, err = store.BindOIDC("alice", "https://idp.example", "sub-1"); err != nil {
+		t.Fatalf("same identity: %v", err)
 	}
-	if _, _, err = store.BindOIDC("alice", "https://idp.example", "sub-2"); !errors.Is(err, ErrOIDCSubjectMismatch) {
+	if _, err = store.BindOIDC("alice", "https://idp.example", "sub-2"); !errors.Is(err, ErrOIDCSubjectMismatch) {
 		t.Fatalf("another sub: %v", err)
 	}
 	if got, _ := store.Get("alice"); got.OIDCSubject != "sub-1" {
 		t.Fatalf("a refused link changed the account: %q", got.OIDCSubject)
 	}
 
-	// Another issuer replaces the link.
-	user, previous, err = store.BindOIDC("alice", "https://new-idp.example", "sub-9")
-	if err != nil || previous != "https://idp.example" || user.OIDCIssuer != "https://new-idp.example" || user.OIDCSubject != "sub-9" {
-		t.Fatalf("new issuer: %+v, %q, %v", user, previous, err)
+	// Under another issuer the account is not linked, and stays as it is.
+	if _, err = store.BindOIDC("alice", "https://new-idp.example", "sub-9"); !errors.Is(err, ErrOIDCNotLinked) {
+		t.Fatalf("new issuer: %v", err)
+	}
+	if got, _ := store.Get("alice"); got.OIDCIssuer != "https://idp.example" || got.OIDCSubject != "sub-1" {
+		t.Fatalf("a refused bind changed the link: %q %q", got.OIDCIssuer, got.OIDCSubject)
 	}
 
 	users, _ := store.List()
@@ -62,17 +63,17 @@ func TestOIDCLinkIsMadeOnceAndChecked(t *testing.T) {
 	if _, err = store.ClearOIDC("nobody"); !errors.Is(err, ErrUserNotFound) {
 		t.Fatalf("clear an unknown account: %v", err)
 	}
-	if _, _, err = store.BindOIDC("alice", "", "sub-1"); err == nil {
+	if _, err = store.BindOIDC("alice", "", "sub-1"); err == nil {
 		t.Fatal("linked without an issuer")
 	}
-	if _, _, err = store.BindOIDC("nobody", "https://idp.example", "sub-1"); !errors.Is(err, ErrUserNotFound) {
+	if _, err = store.BindOIDC("nobody", "https://idp.example", "sub-1"); !errors.Is(err, ErrUserNotFound) {
 		t.Fatalf("link an unknown account: %v", err)
 	}
 }
 
-// ConfirmOIDC links only an account with no link, or the same one again: a
-// password confirmed while an administrator linked the account elsewhere must
-// not undo that.
+// ConfirmOIDC links only an account with no link, or the same one again, or
+// one linked under another issuer: a password confirmed while an
+// administrator linked the account to another sub must not undo that.
 func TestOIDCConfirmLinksOnlyAnUnlinkedAccount(t *testing.T) {
 	store := NewStore(filepath.Join(t.TempDir(), "pwd"))
 	if err := store.Create("alice", "password-123", RoleUser); err != nil {
@@ -84,13 +85,14 @@ func TestOIDCConfirmLinksOnlyAnUnlinkedAccount(t *testing.T) {
 	if _, err := store.ConfirmOIDC("alice", "https://idp.example", "sub-1"); err != nil {
 		t.Fatalf("the same link again: %v", err)
 	}
-	for _, other := range [][2]string{{"https://idp.example", "sub-2"}, {"https://other.example", "sub-1"}} {
-		if _, err := store.ConfirmOIDC("alice", other[0], other[1]); !errors.Is(err, ErrOIDCSubjectMismatch) {
-			t.Fatalf("confirm over %v: %v", other, err)
-		}
+	if _, err := store.ConfirmOIDC("alice", "https://idp.example", "sub-2"); !errors.Is(err, ErrOIDCSubjectMismatch) {
+		t.Fatalf("confirm over another sub: %v", err)
 	}
 	if got, _ := store.Get("alice"); got.OIDCIssuer != "https://idp.example" || got.OIDCSubject != "sub-1" {
 		t.Fatalf("a refused confirm changed the link: %q %q", got.OIDCIssuer, got.OIDCSubject)
+	}
+	if user, err := store.ConfirmOIDC("alice", "https://other.example", "sub-7"); err != nil || user.OIDCIssuer != "https://other.example" || user.OIDCSubject != "sub-7" {
+		t.Fatalf("confirm under another issuer: %+v %v", user, err)
 	}
 	if _, err := store.ConfirmOIDC("alice", "", "sub-1"); err == nil {
 		t.Fatal("confirmed without an issuer")
@@ -112,7 +114,7 @@ func TestOIDCAdministratorLinkReplacesTheLink(t *testing.T) {
 	if err != nil || previousIssuer != "https://idp.example" || previousSubject != "sub-1" {
 		t.Fatalf("relink: %q %q %v", previousIssuer, previousSubject, err)
 	}
-	if _, _, err = store.BindOIDC("alice", "https://idp.example", "sub-2"); err != nil {
+	if _, err = store.BindOIDC("alice", "https://idp.example", "sub-2"); err != nil {
 		t.Fatalf("a sign-in as the pre-linked sub: %v", err)
 	}
 	if _, _, _, err = store.LinkOIDC("alice", "https://idp.example", ""); err == nil {

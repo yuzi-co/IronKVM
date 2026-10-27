@@ -2428,7 +2428,7 @@ const nl = {
           redirectUrlOverrideDesc: 'Laat leeg om het adres hierboven te gebruiken. Stel in als een reverse proxy de hostnaam of https niet doorgeeft.',
           httpWarning: 'Deze pagina gebruikt onversleuteld http. Veel providers accepteren http-doorstuur-URL\'s alleen voor localhost. Weigert de uwe deze, open het apparaat dan via HTTPS of een reverse proxy met TLS.',
           mappingDesc: 'Een provideraccount meldt zich aan als het lokale account met dezelfde gebruikersnaam. Het account van de apparaateigenaar meldt zich alleen met zijn wachtwoord aan. De provider doet de tweestapsverificatie: de lokale code wordt niet gevraagd.',
-          bindingDesc: 'De eerste single sign-on koppelt het lokale account aan dat provideraccount, en latere aanmeldingen moeten van hetzelfde account komen. Een beheerder kan de koppeling opheffen in de gebruikerslijst. Na een wijziging van de uitgever wordt elk account bij de volgende aanmelding opnieuw gekoppeld.',
+          bindingDesc: 'Een beheerder koppelt het account aan een account bij de identiteitsprovider, of het wordt bij de eerste single sign-on gekoppeld met het wachtwoord van het account. Latere aanmeldingen moeten van hetzelfde account komen. Een beheerder kan de koppeling opheffen in de gebruikerslijst. Na een wijziging van de uitgever moet elk account opnieuw worden gekoppeld.',
           usernameClaim: 'Accounts koppelen op',
           emailDomain: 'E-maildomein',
           emailDomainDesc: 'Het deel voor de @ is de gebruikersnaam. Adressen in andere domeinen worden geweigerd.',

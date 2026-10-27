@@ -20,6 +20,7 @@ import (
 	"NanoKVM-Server/authn"
 	"NanoKVM-Server/config"
 	"NanoKVM-Server/middleware"
+	"NanoKVM-Server/proto"
 	"NanoKVM-Server/service/audit"
 
 	"github.com/gin-gonic/gin"
@@ -250,6 +251,7 @@ func newOIDCFixture(t *testing.T) *oidcFixture {
 	adminSession.DELETE("/auth/users/:username/oidc", service.UnlinkUserOIDC)
 	adminSession.PUT("/auth/users/:username/oidc", service.LinkUserOIDC)
 	adminSession.GET("/auth/oidc/pending", service.GetOIDCPending)
+	adminSession.GET("/auth/users", service.ListUsers)
 	f.router = r
 	return f
 }
@@ -894,24 +896,58 @@ func TestOIDCAutoCreatedAccountIsLinkedAtCreation(t *testing.T) {
 }
 
 // A sub means nothing outside its issuer: after the administrator points the
-// settings at another provider, each account links again at its next login
-// instead of every one being locked out.
-func TestOIDCIssuerChangeLinksAccountsAgain(t *testing.T) {
+// settings at another provider, an account linked under the old one is
+// refused as unlinked, so that whoever runs the new provider cannot take it
+// by its name. Its password links it again, under the new issuer.
+func TestOIDCIssuerChangeNeedsTheAccountLinkedAgain(t *testing.T) {
 	f := newOIDCFixture(t)
+	resetPendingSignIns(t)
 	const oldIssuer = "https://old-idp.example"
 	if _, _, _, err := f.store.LinkOIDC("alice", oldIssuer, "old-sub"); err != nil {
 		t.Fatal(err)
 	}
 	f.idp.claims["preferred_username"] = "alice"
-	if sessionCookieOf(f.login()) == nil {
-		t.Fatal("login under the new issuer refused")
+	rec := f.login()
+	f.refused(rec, "unlinked")
+	if issuer, sub := f.link("alice"); issuer != oldIssuer || sub != "old-sub" {
+		t.Fatalf("a refused login changed the link to %q %q", issuer, sub)
+	}
+	admin := loginCookie(t, f.router, "admin", "admin")
+	if signIns := f.pending(admin).Data.SignIns; len(signIns) != 1 || signIns[0].Username != "alice" {
+		t.Fatalf("pending sign-ins %+v", signIns)
+	}
+	// The user list offers the account for linking.
+	linked := func() bool {
+		rec := requestJSONRecorder(f.router, http.MethodGet, "/api/auth/users", nil, admin)
+		var reply struct {
+			Data proto.ListUsersRsp `json:"data"`
+		}
+		if err := json.Unmarshal(rec.Body.Bytes(), &reply); err != nil {
+			t.Fatalf("users: %s", rec.Body.String())
+		}
+		for _, user := range reply.Data.Users {
+			if user.Username == "alice" {
+				return user.OIDCLinked
+			}
+		}
+		t.Fatal("alice not listed")
+		return false
+	}
+	if linked() {
+		t.Fatal("the list shows alice linked under the old issuer")
+	}
+
+	if reply, _ := f.confirm(linkCookieOf(rec), "alice-password", ""); reply.Code != 0 {
+		t.Fatalf("confirm %+v", reply)
 	}
 	if issuer, sub := f.link("alice"); issuer != f.idp.server.URL || sub != "subject-1" {
 		t.Fatalf("alice linked to %q %q", issuer, sub)
 	}
-	links := f.eventsOf("oidc-link")
-	if len(links) != 1 || !strings.Contains(links[0].Detail, "in place of "+oldIssuer) {
-		t.Fatalf("relink audited as %+v", links)
+	if sessionCookieOf(f.login()) == nil {
+		t.Fatal("login after the new link refused")
+	}
+	if !linked() {
+		t.Fatal("the list shows alice unlinked after the new link")
 	}
 	// And under the new issuer the link holds.
 	f.idp.claims["sub"] = "subject-2"

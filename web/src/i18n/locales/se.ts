@@ -2408,7 +2408,7 @@ const se = {
           redirectUrlOverrideDesc: 'Lämna tomt för att använda adressen ovan. Ange den när en omvänd proxy inte skickar vidare värdnamnet eller https.',
           httpWarning: 'Den här sidan använder okrypterad http. Många leverantörer godtar http-omdirigerings-URL:er bara för localhost. Om din nekar den här, öppna enheten via HTTPS eller en omvänd proxy med TLS.',
           mappingDesc: 'Ett leverantörskonto loggar in som det lokala kontot med samma användarnamn. Enhetsägarens konto loggar bara in med sitt lösenord. Leverantören sköter tvåfaktorsautentisering: den lokala koden efterfrågas inte.',
-          bindingDesc: 'Den första enkla inloggningen kopplar det lokala kontot till kontot hos leverantören, och senare inloggningar måste komma från samma konto. En administratör kan ta bort kopplingen i användarlistan. Efter ett byte av utfärdare kopplas varje konto på nytt vid nästa inloggning.',
+          bindingDesc: 'En administratör kopplar kontot till ett konto hos identitetsleverantören, eller så kopplas det vid den första enkla inloggningen med kontots lösenord. Senare inloggningar måste komma från samma konto. En administratör kan ta bort kopplingen i användarlistan. Efter ett byte av utfärdare måste varje konto kopplas på nytt.',
           usernameClaim: 'Matcha konton efter',
           emailDomain: 'E-postdomän',
           emailDomainDesc: 'Delen före @ är användarnamnet. Adresser i andra domäner nekas.',

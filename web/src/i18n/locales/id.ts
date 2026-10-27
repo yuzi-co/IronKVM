@@ -2410,7 +2410,7 @@ const id = {
           redirectUrlOverrideDesc: 'Kosongkan untuk memakai alamat di atas. Isi jika reverse proxy tidak meneruskan nama host atau https.',
           httpWarning: 'Halaman ini memakai http tanpa enkripsi. Banyak penyedia hanya menerima URL pengalihan http untuk localhost. Jika penyedia Anda menolaknya, buka perangkat lewat HTTPS atau reverse proxy dengan TLS.',
           mappingDesc: 'Akun penyedia masuk sebagai akun lokal dengan nama pengguna yang sama. Akun pemilik perangkat hanya masuk dengan kata sandinya. Penyedia menangani autentikasi dua faktor: kode lokal tidak diminta.',
-          bindingDesc: 'Single sign-on pertama menautkan akun lokal ke akun penyedia tersebut, dan login berikutnya harus berasal dari akun yang sama. Administrator dapat melepas tautan akun di daftar pengguna. Setelah penerbit diganti, setiap akun ditautkan lagi saat login berikutnya.',
+          bindingDesc: 'Administrator menautkan akun ke satu akun penyedia identitas, atau akun ditautkan pada single sign-on pertama dengan kata sandi akun. Login berikutnya harus berasal dari akun yang sama. Administrator dapat melepas tautan akun di daftar pengguna. Setelah penerbit diganti, setiap akun harus ditautkan lagi.',
           usernameClaim: 'Cocokkan akun berdasarkan',
           emailDomain: 'Domain email',
           emailDomainDesc: 'Bagian sebelum @ adalah nama pengguna. Alamat di domain lain ditolak.',

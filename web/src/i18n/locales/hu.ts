@@ -2429,7 +2429,7 @@ const hu = {
           redirectUrlOverrideDesc: 'Hagyja üresen a fenti cím használatához. Akkor adja meg, ha egy fordított proxy nem adja tovább a gépnevet vagy a https-t.',
           httpWarning: 'Ez az oldal titkosítatlan http-t használ. Sok szolgáltató csak localhost esetén fogad el http átirányítási URL-t. Ha az öné ezt elutasítja, nyissa meg az eszközt HTTPS-en vagy TLS-es fordított proxyn keresztül.',
           mappingDesc: 'A szolgáltatói fiók az azonos felhasználónevű helyi fiókként jelentkezik be. Az eszköz tulajdonosi fiókja csak a jelszavával léphet be. A kétlépcsős azonosítást a szolgáltató végzi: a helyi kódot nem kéri a rendszer.',
-          bindingDesc: 'Az első egyszeri bejelentkezés a helyi fiókot ahhoz a szolgáltatói fiókhoz kapcsolja, és a későbbi bejelentkezéseknek ugyanonnan kell érkezniük. A rendszergazda a felhasználók listájában bonthatja a kapcsolatot. A kibocsátó megváltoztatása után minden fiók a következő bejelentkezéskor újra kapcsolódik.',
+          bindingDesc: 'A fiókot a rendszergazda kapcsolja egy identitásszolgáltatói fiókhoz, vagy az első egyszeri bejelentkezéskor kapcsolódik a fiók jelszavával. A későbbi bejelentkezéseknek ugyanonnan kell érkezniük. A rendszergazda a felhasználók listájában bonthatja a kapcsolatot. A kibocsátó megváltoztatása után minden fiókot újra kell kapcsolni.',
           usernameClaim: 'Fiókok párosítása eszerint',
           emailDomain: 'E-mail tartomány',
           emailDomainDesc: 'A @ előtti rész a felhasználónév. Más tartományok címeit elutasítja.',

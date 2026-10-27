@@ -2402,7 +2402,7 @@ const nb = {
           redirectUrlOverrideDesc: 'La stå tom for å bruke adressen over. Angi den når en omvendt proxy ikke sender videre vertsnavnet eller https.',
           httpWarning: 'Denne siden bruker ukryptert http. Mange leverandører godtar http-omdirigerings-URL-er bare for localhost. Avviser din denne, åpne enheten via HTTPS eller en omvendt proxy med TLS.',
           mappingDesc: 'En leverandørkonto logger inn som den lokale kontoen med samme brukernavn. Enhetseierens konto logger bare inn med passordet sitt. Leverandøren står for tofaktorautentisering: den lokale koden blir ikke spurt om.',
-          bindingDesc: 'Den første single sign-on-innloggingen knytter den lokale kontoen til kontoen hos leverandøren, og senere innlogginger må komme fra den samme. En administrator kan fjerne koblingen i brukerlisten. Etter et bytte av utsteder blir hver konto knyttet på nytt ved neste innlogging.',
+          bindingDesc: 'En administrator knytter kontoen til en konto hos identitetsleverandøren, eller den knyttes ved første single sign-on med kontoens passord. Senere innlogginger må komme fra den samme. En administrator kan fjerne koblingen i brukerlisten. Etter et bytte av utsteder må hver konto knyttes på nytt.',
           usernameClaim: 'Koble kontoer etter',
           emailDomain: 'E-postdomene',
           emailDomainDesc: 'Delen før @ er brukernavnet. Adresser i andre domener avvises.',

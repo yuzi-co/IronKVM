@@ -2433,7 +2433,7 @@ const it = {
           redirectUrlOverrideDesc: 'Lasciare vuoto per usare l\'indirizzo sopra. Impostarlo quando un reverse proxy non inoltra il nome host o https.',
           httpWarning: 'Questa pagina usa http non cifrato. Molti provider accettano URL di reindirizzamento http solo per localhost. Se il tuo rifiuta questo, apri il dispositivo via HTTPS o tramite un reverse proxy con TLS.',
           mappingDesc: 'Un account del provider accede come l\'account locale con lo stesso nome utente. L\'account del proprietario del dispositivo accede solo con la sua password. L\'autenticazione a due fattori la fa il provider: il codice locale non viene chiesto.',
-          bindingDesc: 'Il primo accesso Single Sign-On collega l\'account locale a quell\'account del provider, e gli accessi successivi devono provenire dallo stesso. Un amministratore può scollegare un account nell\'elenco utenti. Dopo un cambio di emittente, ogni account viene collegato di nuovo al suo accesso successivo.',
+          bindingDesc: 'Un amministratore collega l\'account a un account del provider di identità, oppure viene collegato al primo accesso Single Sign-On con la password dell\'account. Gli accessi successivi devono provenire dallo stesso. Un amministratore può scollegare un account nell\'elenco utenti. Dopo un cambio di emittente, ogni account deve essere collegato di nuovo.',
           usernameClaim: 'Associa gli account per',
           emailDomain: 'Dominio email',
           emailDomainDesc: 'La parte prima di @ è il nome utente. Gli indirizzi di altri domini sono rifiutati.',

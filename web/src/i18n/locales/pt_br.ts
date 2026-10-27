@@ -2421,7 +2421,7 @@ const pt_br = {
           redirectUrlOverrideDesc: 'Deixe vazio para usar o endereço acima. Defina quando um proxy reverso não repassa o nome do host ou https.',
           httpWarning: 'Esta página usa http sem criptografia. Muitos provedores só aceitam URLs de redirecionamento http para localhost. Se o seu recusar esta, abra o dispositivo por HTTPS ou por um proxy reverso com TLS.',
           mappingDesc: 'Uma conta do provedor entra como a conta local com o mesmo nome de usuário. A conta do dono do dispositivo entra apenas com a própria senha. O provedor faz a autenticação de dois fatores: o código local não é pedido.',
-          bindingDesc: 'O primeiro login único vincula a conta local àquela conta do provedor, e os logins seguintes devem vir da mesma. Um administrador pode desvincular uma conta na lista de usuários. Depois de uma troca de emissor, cada conta é vinculada de novo no próximo login.',
+          bindingDesc: 'Um administrador vincula a conta a uma conta do provedor de identidade, ou ela é vinculada no primeiro login único com a senha da conta. Os logins seguintes devem vir da mesma. Um administrador pode desvincular uma conta na lista de usuários. Depois de uma troca de emissor, cada conta precisa ser vinculada de novo.',
           usernameClaim: 'Associar contas por',
           emailDomain: 'Domínio de e-mail',
           emailDomainDesc: 'A parte antes do @ é o nome de usuário. Endereços de outros domínios são recusados.',

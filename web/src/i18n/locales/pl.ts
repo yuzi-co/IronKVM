@@ -2414,7 +2414,7 @@ const pl = {
           redirectUrlOverrideDesc: 'Pozostaw puste, aby użyć adresu powyżej. Ustaw, gdy odwrotne proxy nie przekazuje nazwy hosta lub https.',
           httpWarning: 'Ta strona używa nieszyfrowanego http. Wielu dostawców akceptuje adresy przekierowania http tylko dla localhost. Jeśli twój odrzuca ten adres, otwórz urządzenie przez HTTPS lub odwrotne proxy z TLS.',
           mappingDesc: 'Konto dostawcy loguje się jako konto lokalne o tej samej nazwie użytkownika. Konto właściciela urządzenia loguje się tylko swoim hasłem. Uwierzytelnianie dwuskładnikowe zapewnia dostawca: lokalny kod nie jest wymagany.',
-          bindingDesc: 'Pierwsze logowanie jednokrotne wiąże konto lokalne z tym kontem dostawcy, a kolejne logowania muszą pochodzić z tego samego konta. Administrator może usunąć powiązanie na liście użytkowników. Po zmianie wystawcy każde konto zostanie powiązane ponownie przy następnym logowaniu.',
+          bindingDesc: 'Administrator wiąże konto z kontem u dostawcy tożsamości albo konto zostaje powiązane przy pierwszym logowaniu jednokrotnym hasłem konta. Kolejne logowania muszą pochodzić z tego samego konta. Administrator może usunąć powiązanie na liście użytkowników. Po zmianie wystawcy każde konto trzeba powiązać ponownie.',
           usernameClaim: 'Dopasuj konta według',
           emailDomain: 'Domena e-mail',
           emailDomainDesc: 'Część przed @ to nazwa użytkownika. Adresy z innych domen są odrzucane.',
