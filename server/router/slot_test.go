@@ -12,6 +12,7 @@ import (
 	"NanoKVM-Server/authn"
 	"NanoKVM-Server/config"
 	"NanoKVM-Server/middleware"
+	"NanoKVM-Server/service/apikey"
 	"NanoKVM-Server/service/slot"
 )
 
@@ -38,7 +39,10 @@ func TestSlotRoutesNeedAnAdministrator(t *testing.T) {
 	// the handler with "no slot tool", never by running anything.
 	originalBin := slot.Bin
 	slot.Bin = filepath.Join(t.TempDir(), "slot")
+	originalKeys := apikey.File
+	apikey.File = filepath.Join(t.TempDir(), "api_keys.json")
 	t.Cleanup(func() {
+		apikey.File = originalKeys
 		authn.DefaultStore = originalStore
 		conf.Authentication, conf.JWT.SecretKey, conf.JWT.RefreshTokenDuration =
 			originalAuthentication, originalSecret, originalDuration
@@ -93,5 +97,28 @@ func TestSlotRoutesNeedAnAdministrator(t *testing.T) {
 	w := call(http.MethodGet, "/api/slot", token("admin"))
 	if w.Code != http.StatusOK || !strings.Contains(w.Body.String(), "no slot tool") {
 		t.Fatalf("admin status: %d %s", w.Code, w.Body.String())
+	}
+
+	// An administrator's API key reads the slots but writes none of them.
+	key, _, err := apikey.Create("test", "admin")
+	if err != nil {
+		t.Fatal(err)
+	}
+	withKey := func(method, path string) int {
+		req := httptest.NewRequest(method, path, strings.NewReader(`{"slot":"b"}`))
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("X-API-Key", key)
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+		return w.Code
+	}
+	for _, route := range routes {
+		code := withKey(route[0], route[1])
+		if route[0] == http.MethodGet && code != http.StatusOK {
+			t.Errorf("%s %s: an admin key got %d, want it read", route[0], route[1], code)
+		}
+		if route[0] == http.MethodPost && code < 400 {
+			t.Errorf("%s %s: an admin key got %d, want it refused", route[0], route[1], code)
+		}
 	}
 }
