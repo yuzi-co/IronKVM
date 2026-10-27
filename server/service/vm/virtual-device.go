@@ -156,11 +156,18 @@ func virtualDeviceState(present func(string) bool) *proto.GetVirtualDeviceRsp {
 		}
 	}
 
-	return &proto.GetVirtualDeviceRsp{
+	functions := proto.VirtualDeviceFunctions{
 		Console: state("console"),
 		Network: state("network"),
 		Disk:    state("disk"),
 		Audio:   state("audio"),
+	}
+
+	return &proto.GetVirtualDeviceRsp{
+		Network:   functions.Network.Enabled,
+		Disk:      functions.Disk.Enabled,
+		Audio:     functions.Audio.Enabled,
+		Functions: functions,
 		// The panel reports the inbound direction. It is the one that runs
 		// out: with every function enabled the gadget asks for eight inbound
 		// endpoints of six, and seven outbound of seven.

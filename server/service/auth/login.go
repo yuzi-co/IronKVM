@@ -21,7 +21,10 @@ func (s *Service) Login(c *gin.Context) {
 
 	conf := config.GetInstance()
 	if conf.Authentication == "disable" {
-		rsp.OkRsp(c)
+		// There is no session to hand out. Clients of Sipeed's API still
+		// expect a token from a successful login, Home Assistant's nanokvm
+		// integration among them, and take "disabled" to mean this.
+		rsp.OkRspWithData(c, &proto.LoginRsp{Token: proto.LoginDisabledToken})
 		return
 	}
 

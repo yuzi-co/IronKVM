@@ -1,31 +1,23 @@
 import { http } from '@/lib/http.ts';
 import type { UsbIdentity, UsbIdentityPresetName } from '@/lib/usb-identity.ts';
+import {
+  readVirtualDevices,
+  type VirtualDeviceName,
+  type VirtualDevices
+} from '@/lib/virtual-devices.ts';
 
-export type VirtualDeviceName = 'console' | 'disk' | 'network' | 'audio';
+export type {
+  VirtualDeviceName,
+  VirtualDeviceState,
+  VirtualDevices
+} from '@/lib/virtual-devices.ts';
 
-// enabled is the /boot marker, active is the function the running gadget
-// actually carries. They differ when the USB controller ran out of endpoints.
-export type VirtualDeviceState = {
-  enabled: boolean;
-  active: boolean;
-  cost: number;
-};
-
-export type VirtualDevices = {
-  console: VirtualDeviceState;
-  network: VirtualDeviceState;
-  disk: VirtualDeviceState;
-  audio: VirtualDeviceState;
-  used: number;
-  total: number;
-  // Every largest set of optional devices that fits beside the keyboard and
-  // mouse, highest priority first.
-  fits: VirtualDeviceName[][];
-};
-
-// get virtual devices status
-export function getVirtualDevice() {
-  return http.get('/api/vm/device/virtual');
+// get virtual devices status, in one shape whichever API version the server
+// speaks
+export async function getVirtualDevice() {
+  const rsp = await http.get('/api/vm/device/virtual');
+  if (rsp.code === 0 && rsp.data) rsp.data = readVirtualDevices(rsp.data);
+  return rsp;
 }
 
 // mount/unmount virtual device
@@ -74,8 +66,10 @@ export type UsbApplyRequest = {
   network: { mode: UsbNetworkMode; subnet: string };
 };
 
-export function applyUsbDevices(request: UsbApplyRequest) {
-  return http.post('/api/vm/device/virtual/apply', request);
+export async function applyUsbDevices(request: UsbApplyRequest) {
+  const rsp = await http.post('/api/vm/device/virtual/apply', request);
+  if (rsp.code === 0 && rsp.data) rsp.data = readVirtualDevices(rsp.data);
+  return rsp;
 }
 
 // The IDs and strings the gadget shows the host. preset is default, a named

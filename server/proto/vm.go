@@ -116,13 +116,26 @@ type VirtualDeviceState struct {
 	Cost    int  `json:"cost"`
 }
 
-type GetVirtualDeviceRsp struct {
+// VirtualDeviceFunctions is each optional USB function's state.
+type VirtualDeviceFunctions struct {
 	Console VirtualDeviceState `json:"console"`
 	Network VirtualDeviceState `json:"network"`
 	Disk    VirtualDeviceState `json:"disk"`
 	Audio   VirtualDeviceState `json:"audio"`
-	Used    int                `json:"used"`
-	Total   int                `json:"total"`
+}
+
+type GetVirtualDeviceRsp struct {
+	// Network, Disk and Audio are Sipeed's shape of this answer: whether the
+	// function is asked for, the same as Functions.*.Enabled. Clients written
+	// against Sipeed's API read them, Home Assistant's nanokvm integration
+	// among them, and fail on anything but a boolean here.
+	Network bool `json:"network"`
+	Disk    bool `json:"disk"`
+	Audio   bool `json:"audio"`
+
+	Functions VirtualDeviceFunctions `json:"functions"`
+	Used      int                    `json:"used"`
+	Total     int                    `json:"total"`
 	// Fits lists every largest set of optional functions that fits beside
 	// HID, so the UI can say which functions go together before a refusal.
 	Fits [][]string `json:"fits"`

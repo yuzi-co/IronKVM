@@ -12,7 +12,7 @@ export const handlers = [
   http.get('/api/version', () => {
     return HttpResponse.json({
       code: 0,
-      data: { version: '1.0.0', api: 1, features: ['direct-clock', 'status-bar', 'ui-update'] }
+      data: { version: '1.0.0', api: 2, features: ['direct-clock', 'status-bar', 'ui-update'] }
     });
   }),
   http.get('/api/ui', () => {

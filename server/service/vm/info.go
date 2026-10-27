@@ -42,10 +42,13 @@ func (s *Service) GetInfo(c *gin.Context) {
 	log.Debug("get vm information success")
 }
 
-func getIPs() (ips []proto.IP) {
+// getIPs never answers nil: "ips" is a list for clients of Sipeed's API, and
+// Home Assistant's nanokvm integration fails on null (ironkvm-dist#124).
+func getIPs() []proto.IP {
+	ips := []proto.IP{}
 	interfaces, err := GetInterfaceInfos()
 	if err != nil {
-		return
+		return ips
 	}
 
 	for _, iface := range interfaces {
@@ -59,7 +62,7 @@ func getIPs() (ips []proto.IP) {
 		}
 	}
 
-	return
+	return ips
 }
 
 func getMdns() string {
