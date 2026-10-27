@@ -284,7 +284,7 @@ func TestLifecycleRestoreStopsAnAgentThatShouldNotRun(t *testing.T) {
 	h.agent.SetRunning(true)
 
 	h.lifecycle.StartRestore()
-	waitFor(t, "the lifecycle", func() bool { return h.agent.Halts > 0 })
+	waitFor(t, "the lifecycle", func() bool { _, halts := h.agent.Counts(); return halts > 0 })
 	waitFor(t, "the lifecycle", func() bool { return h.lifecycle.RuntimeStatus().Status == "stopped" })
 }
 

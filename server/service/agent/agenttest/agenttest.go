@@ -143,6 +143,14 @@ func (a *Agent) Launch(ctx context.Context) (string, string, error) {
 	return "agenttest start", "started", nil
 }
 
+// Counts reads Launches and Halts under the lock, for a test that checks
+// them while the lifecycle may still be calling Launch or Halt.
+func (a *Agent) Counts() (launches, halts int) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	return a.Launches, a.Halts
+}
+
 func (a *Agent) Halt() (string, string, error) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
