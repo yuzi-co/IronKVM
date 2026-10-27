@@ -44,6 +44,8 @@ type fakeHID struct {
 	// way a gadget endpoint the host does not poll does.
 	mouseErr error
 	keyErr   error
+	// afterMouse, when set, runs after every mouse write that succeeds.
+	afterMouse func()
 }
 
 func (h *fakeHID) WriteKeyboardReport(data []byte) error {
@@ -58,11 +60,16 @@ func (h *fakeHID) WriteKeyboardReport(data []byte) error {
 
 func (h *fakeHID) WriteAbsoluteMouseReport(data []byte) error {
 	h.mu.Lock()
-	defer h.mu.Unlock()
 	if h.mouseErr != nil {
+		h.mu.Unlock()
 		return h.mouseErr
 	}
 	h.mouse = append(h.mouse, append([]byte(nil), data...))
+	after := h.afterMouse
+	h.mu.Unlock()
+	if after != nil {
+		after()
+	}
 	return nil
 }
 
@@ -73,6 +80,31 @@ func (h *fakeHID) lastMouse() []byte {
 		return nil
 	}
 	return h.mouse[len(h.mouse)-1]
+}
+
+// turnChat is a chat in which every session has a turn in progress, as while
+// the user waits for the agent, until the test ends a session's turn.
+type turnChat struct {
+	noChat
+	mu    sync.Mutex
+	ended map[string]bool
+}
+
+func newTurnChat() *turnChat {
+	return &turnChat{ended: make(map[string]bool)}
+}
+
+func (c *turnChat) InTurn(sessionID string) bool {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return sessionID != "" && !c.ended[sessionID]
+}
+
+// endTurn ends the session's turn, as a cancel or turn_done does.
+func (c *turnChat) endTurn(sessionID string) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.ended[sessionID] = true
 }
 
 func newMCPActionTestService(t *testing.T) (*Service, *fakeVision, *fakeHID) {
@@ -98,6 +130,7 @@ func newMCPActionTestService(t *testing.T) (*Service, *fakeVision, *fakeHID) {
 			return func() {}, nil, nil
 		},
 		releaseHID: func() error { return nil },
+		chat:       newTurnChat(),
 	}
 	if err := service.control.Switch(controlmode.ModePicoclaw, func() error { return nil }); err != nil {
 		t.Fatal(err)

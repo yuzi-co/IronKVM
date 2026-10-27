@@ -95,6 +95,10 @@ func TestPicoClawClientListsTheToolsInOrder(t *testing.T) {
 
 func TestPicoClawClientGetsTheScreenshotAsAnImage(t *testing.T) {
 	service, _, _ := newMCPActionTestService(t)
+	// The screen is looked at for the user chatting in a turn.
+	if err := service.lock.Ensure("chat-1"); err != nil {
+		t.Fatal(err)
+	}
 	session := connectLikePicoClaw(t, service)
 
 	result, err := session.CallTool(context.Background(), &protocol.CallToolParams{Name: "kvm_screenshot"})

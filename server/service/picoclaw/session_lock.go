@@ -67,7 +67,7 @@ func (l *SessionLock) clearExpiredLocked(now time.Time) {
 
 func (l *SessionLock) acquire(sessionID string) (bool, *PicoclawError) {
 	if sessionID == "" {
-		return false, newPicoclawError(CodeSessionIDInvalid, "no chat session holds device control: the agent acts only for a user chatting with it")
+		return false, newPicoclawError(CodeSessionIDInvalid, noSessionMessage)
 	}
 
 	l.mu.Lock()

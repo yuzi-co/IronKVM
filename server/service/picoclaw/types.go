@@ -213,6 +213,7 @@ type ChatHub interface {
 	Broadcast(event agent.Event)
 	Prompt(sessionID string, prompt agent.Prompt) error
 	IsActive(sessionID string) bool
+	InTurn(sessionID string) bool
 	CloseSession(sessionID string, closeCode int, reason string) bool
 	CloseAll(closeCode int, reason string) int
 	SessionCount() int

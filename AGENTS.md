@@ -432,9 +432,13 @@ in-memory one for tests. A second agent needs its own `agent.Agent` and one line
 `router/router.go`. The agent routes are also served under their old `/api/picoclaw` base (the chat
 socket there is `/gateway/ws`) for older UIs and agent configs; the UI uses `/api/agent` on a server
 that declares the `agent-routes` feature. PicoClaw's model and profile routes stay PicoClaw's own,
-under `/api/picoclaw`. The agent's device tools (`kvm_actions`, `kvm_power`, `kvm_media`) act for
-the chat session that holds the AI input lock, or the one `X-Agent-Session-ID` names, and their
-audit records carry the agent's name and that session.
+under `/api/picoclaw`. The agent's device tools (`kvm_actions`, `kvm_power`, `kvm_media`,
+`kvm_screenshot`, and the loopback `/actions` and `/screenshot`) act for the chat session that holds
+the AI input lock, or the one `X-Agent-Session-ID` names, and their audit records carry the agent's
+name and that session. They act only while that session has a turn in progress
+(`agent.Bridge.InTurn`): from the prompt the user sent until turn_done, an error, a cancel, the close
+or the prompt's time limit, the same span as the task capture lease. A call after that is refused
+with `TURN_NOT_ACTIVE`.
 
 ## Frontend architecture
 

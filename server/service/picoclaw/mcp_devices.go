@@ -38,9 +38,10 @@ type deviceTool struct {
 }
 
 // deviceTools are the device tools the board's devices allow. Pressing and
-// changing media need PicoClaw to hold device control and a chat session to
-// hold the AI input lock, as kvm_actions does; reading the state does not, as
-// kvm_screenshot does not.
+// changing media need PicoClaw to hold device control and a chat session in a
+// turn to hold the AI input lock, as kvm_actions does; reading the power LED
+// or the drive list does not, since neither shows the user's screen or
+// changes the host.
 func (s *Service) deviceTools() []deviceTool {
 	devices := s.devices
 	empty := map[string]any{"type": "object", "properties": map[string]any{}}

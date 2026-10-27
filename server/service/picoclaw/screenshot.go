@@ -37,6 +37,12 @@ func (s *Service) Screenshot(c *gin.Context) {
 		writePicoclawError(c, sessionErr)
 		return
 	}
+	// The screen is the user's as much as the keyboard is: the agent looks
+	// at it only while working on a prompt, as it acts only then.
+	if turnErr := s.requireTurn(sessionID); turnErr != nil {
+		writePicoclawError(c, turnErr)
+		return
+	}
 
 	releaseAfter, lockErr := s.lock.AcquireTemporary(sessionID)
 	if lockErr != nil {

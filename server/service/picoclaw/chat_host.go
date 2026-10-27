@@ -100,6 +100,7 @@ func (noChat) Publish(string, agent.Event) error     { return agent.ErrSessionNo
 func (noChat) Broadcast(agent.Event)                 {}
 func (noChat) Prompt(string, agent.Prompt) error     { return agent.ErrSessionNotActive }
 func (noChat) IsActive(string) bool                  { return false }
+func (noChat) InTurn(string) bool                    { return false }
 func (noChat) CloseSession(string, int, string) bool { return false }
 func (noChat) CloseAll(int, string) int              { return 0 }
 func (noChat) SessionCount() int                     { return 0 }

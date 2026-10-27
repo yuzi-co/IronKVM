@@ -38,6 +38,10 @@ func (s *Service) Actions(c *gin.Context) {
 		writePicoclawError(c, sessionErr)
 		return
 	}
+	if turnErr := s.requireTurn(sessionID); turnErr != nil {
+		writePicoclawError(c, turnErr)
+		return
+	}
 
 	releaseAfter, lockErr := s.lock.AcquireTemporary(sessionID)
 	if lockErr != nil {
@@ -107,6 +111,14 @@ func (s *Service) executeActions(ctx context.Context, sessionID string, actions 
 		if contextErr := controlOperationError(ctx); contextErr != nil {
 			contextErr.Index = &idx
 			return ActionResult{}, contextErr
+		}
+		// Every step checks the turn, so that a cancel stops a batch that
+		// is still running at the next step.
+		if turnErr := s.requireTurn(sessionID); turnErr != nil {
+			if idx > 0 {
+				turnErr.Index = &idx
+			}
+			return ActionResult{}, turnErr
 		}
 		acquired, lockErr := s.lock.acquire(sessionID)
 		if lockErr != nil {
