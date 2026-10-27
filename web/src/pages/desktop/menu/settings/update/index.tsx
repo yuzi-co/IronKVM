@@ -15,6 +15,7 @@ import { useStableCallback } from '@/hooks/useStableCallback.ts';
 import { CustomServer } from './custom-server.tsx';
 import { Offline } from './offline.tsx';
 import { Preview } from './preview.tsx';
+import { Slots } from './slots.tsx';
 import { UiPackage } from './ui-package.tsx';
 
 type UpdateProps = {
@@ -116,6 +117,7 @@ export const Update = ({ setIsLocked }: UpdateProps) => {
         setErrMsg={setErrMsg}
       />
       <UiPackage disabled={status === 'updating'} />
+      <Slots disabled={status === 'updating'} />
       <Divider className="opacity-50" />
 
       <div className="flex min-h-[320px] flex-col justify-between">
