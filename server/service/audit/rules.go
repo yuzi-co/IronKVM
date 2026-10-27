@@ -58,6 +58,12 @@ var named = map[string]Rule{
 	"POST /api/ui/update":                  {CategorySystem, "ui-update", false},
 	"POST /api/ui/upload":                  {CategorySystem, "ui-upload", false},
 	"POST /api/ui/rollback":                {CategorySystem, "ui-rollback", false},
+	// An install is recorded when it starts, with the slot and the image's
+	// host and path, and its end again as slot-install-result.
+	"POST /api/slot/install": {CategorySystem, "slot-install", false},
+	"POST /api/slot/try":     {CategorySystem, "slot-try", false},
+	"POST /api/slot/confirm": {CategorySystem, "slot-confirm", false},
+	"POST /api/slot/revert":  {CategorySystem, "slot-revert", false},
 
 	"POST /api/settings/import": {CategorySettings, "settings-import", false},
 }
