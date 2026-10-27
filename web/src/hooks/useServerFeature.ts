@@ -43,6 +43,12 @@ function subscribe(listener: () => void) {
   };
 }
 
+// currentServerContract is the server's contract, or null until it is known,
+// for code outside React.
+export function currentServerContract(): ServerContract | null {
+  return contract;
+}
+
 // useServerContract is the server's contract, or null until it is known.
 export function useServerContract(): ServerContract | null {
   return useSyncExternalStore(subscribe, () => contract);

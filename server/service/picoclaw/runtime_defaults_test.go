@@ -59,7 +59,7 @@ func nanokvmEntry(token string) map[string]any {
 	return map[string]any{
 		"enabled": true,
 		"type":    "http",
-		"url":     "http://127.0.0.1:80/api/picoclaw/mcp",
+		"url":     "http://127.0.0.1:80/api/agent/mcp",
 		"headers": map[string]any{
 			serverConfig.PicoclawInternalTokenHeader: token,
 		},

@@ -1,4 +1,6 @@
+import { currentServerContract } from '@/hooks/useServerFeature.ts';
 import { createAgentEventHandler, type AgentCommand, type AgentEvent } from '@/lib/agent-events.ts';
+import { agentRoutes } from '@/lib/agent-routes.ts';
 import { clearPicoclawSessionId, setPicoclawSessionId } from '@/lib/picoclaw-storage.ts';
 import { getBaseUrl } from '@/lib/service.ts';
 
@@ -162,7 +164,8 @@ class PicoClawGateway {
     const attemptId = ++this.connectionAttemptId;
     this.sessionId = sessionId;
     setPicoclawSessionId(sessionId);
-    const url = `${getBaseUrl('ws')}/api/picoclaw/gateway/ws?session_id=${encodeURIComponent(sessionId)}`;
+    const { chatSocket } = agentRoutes(currentServerContract());
+    const url = `${getBaseUrl('ws')}${chatSocket}?session_id=${encodeURIComponent(sessionId)}`;
 
     this.connectPromise = new Promise<string>((resolve, reject) => {
       const ws = new WebSocket(url);

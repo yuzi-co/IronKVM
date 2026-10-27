@@ -424,12 +424,17 @@ The server acts as its gateway: browser-facing routes take the normal token chec
 callbacks come back over loopback with an internal token.
 
 **The agent interface** (`service/agent/`) sits between the server and the agent. The chat socket
-(`/api/picoclaw/gateway/ws`), the chat history routes and the task capture lease use only
-`agent.Agent`, and the browser receives normalized events (`agent_message`, `turn_done`, and so on),
-never PicoClaw's pico protocol. `picoclaw.Adapter` is the PicoClaw implementation;
-`service/agent/agenttest` is an in-memory one for tests. A second agent needs its own `agent.Agent`
-and one line in `router/router.go`. PicoClaw's runtime, install, model and profile routes are still
-PicoClaw's own.
+(`/api/agent/chat/ws`), the chat history routes, the runtime routes (`/api/agent/runtime/...`,
+driven by `agent.Lifecycle`) and the task capture lease use only `agent.Agent`, and the browser
+receives normalized events (`agent_message`, `turn_done`, and so on), never PicoClaw's pico
+protocol. `picoclaw.Adapter` is the PicoClaw implementation; `service/agent/agenttest` is an
+in-memory one for tests. A second agent needs its own `agent.Agent` and one line in
+`router/router.go`. The agent routes are also served under their old `/api/picoclaw` base (the chat
+socket there is `/gateway/ws`) for older UIs and agent configs; the UI uses `/api/agent` on a server
+that declares the `agent-routes` feature. PicoClaw's model and profile routes stay PicoClaw's own,
+under `/api/picoclaw`. The agent's device tools (`kvm_actions`, `kvm_power`, `kvm_media`) act for
+the chat session that holds the AI input lock, or the one `X-Agent-Session-ID` names, and their
+audit records carry the agent's name and that session.
 
 ## Frontend architecture
 

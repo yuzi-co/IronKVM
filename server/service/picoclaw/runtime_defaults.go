@@ -171,7 +171,7 @@ func nanoKVMMCPURL() string {
 		port = 80
 	}
 
-	return fmt.Sprintf("http://%s:%d/api/picoclaw/mcp", defaultPicoclawGatewayHost, port)
+	return fmt.Sprintf("http://%s:%d/api/agent/mcp", defaultPicoclawGatewayHost, port)
 }
 
 type picoclawConfigEditor struct {

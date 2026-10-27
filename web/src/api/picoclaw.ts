@@ -1,3 +1,5 @@
+import { currentServerContract } from '@/hooks/useServerFeature.ts';
+import { agentRoutes } from '@/lib/agent-routes.ts';
 import { http } from '@/lib/http.ts';
 import {
   picoclawGateway,
@@ -5,7 +7,11 @@ import {
   type GatewayTransportState
 } from '@/lib/picoclaw-gateway.ts';
 
-const sessionIDHeader = 'X-PicoClaw-Session-ID';
+// routes are the agent routes of this server. Model and profile settings are
+// PicoClaw's own and stay under /api/picoclaw.
+function routes() {
+  return agentRoutes(currentServerContract());
+}
 
 type ModelConfigRequest = {
   model: string;
@@ -48,27 +54,27 @@ export function setPicoclawAgentProfile(data: AgentProfileRequest) {
 }
 
 export function listPicoclawSessions(params?: { offset?: number; limit?: number }) {
-  return http.get('/api/picoclaw/sessions', { params });
+  return http.get(`${routes().base}/sessions`, { params });
 }
 
 export function getPicoclawSession(id: string) {
-  return http.get(`/api/picoclaw/sessions/${id}`);
+  return http.get(`${routes().base}/sessions/${id}`);
 }
 
 export function deletePicoclawSession(id: string) {
-  return http.delete(`/api/picoclaw/sessions/${id}`);
+  return http.delete(`${routes().base}/sessions/${id}`);
 }
 
 export function getRuntimeStatus() {
-  return http.get('/api/picoclaw/runtime/status');
+  return http.get(`${routes().base}/runtime/status`);
 }
 
 export function startRuntime() {
-  return http.post('/api/picoclaw/runtime/start');
+  return http.post(`${routes().base}/runtime/start`);
 }
 
 export function stopRuntime() {
-  return http.post('/api/picoclaw/runtime/stop');
+  return http.post(`${routes().base}/runtime/stop`);
 }
 
 export function getAIControlStatus() {
@@ -84,11 +90,11 @@ export function setAIControlMode(mode: 'off' | 'mcp' | 'picoclaw') {
 }
 
 export function installRuntime() {
-  return http.post('/api/picoclaw/runtime/install');
+  return http.post(`${routes().base}/runtime/install`);
 }
 
 export function uninstallRuntime() {
-  return http.post('/api/picoclaw/runtime/uninstall');
+  return http.post(`${routes().base}/runtime/uninstall`);
 }
 
 export function connectGateway(sessionId?: string) {
@@ -101,11 +107,12 @@ export function releaseRuntimeSession(sessionId?: string) {
     return Promise.resolve(null);
   }
 
+  const { base, sessionHeader } = routes();
   return http.request({
     method: 'delete',
-    url: '/api/picoclaw/runtime/session',
+    url: `${base}/runtime/session`,
     headers: {
-      [sessionIDHeader]: activeSessionId
+      [sessionHeader]: activeSessionId
     }
   });
 }
