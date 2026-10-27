@@ -2395,7 +2395,7 @@ const da = {
           deviceOwner: 'Enhedsejer',
           ssoTag: 'SSO',
           ssoUnlink: 'Fjern SSO-tilknytning',
-          ssoUnlinkConfirm: 'Fjern tilknytningen mellem {{username}} og kontoen hos identitetsudbyderen? Næste single sign-on knytter den igen.',
+          ssoUnlinkConfirm: 'Fjern tilknytningen mellem {{username}} og kontoen hos identitetsudbyderen? Næste single sign-on knytter den igen. Den logges også ud overalt.',
           ssoUnlinked: 'Tilknytning til single sign-on fjernet',
           resetPassword: 'Nulstil adgangskode',
           delete: 'Slet',

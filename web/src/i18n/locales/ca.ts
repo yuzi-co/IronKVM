@@ -2419,7 +2419,7 @@ const ca = {
           deviceOwner: 'Propietari del dispositiu',
           ssoTag: 'SSO',
           ssoUnlink: 'Desvincula l\'SSO',
-          ssoUnlinkConfirm: 'Voleu desvincular {{username}} del seu compte del proveïdor d\'identitat? El següent inici de sessió únic el tornarà a vincular.',
+          ssoUnlinkConfirm: 'Voleu desvincular {{username}} del seu compte del proveïdor d\'identitat? El següent inici de sessió únic el tornarà a vincular. També es tanca la sessió a tot arreu.',
           ssoUnlinked: 'S\'ha eliminat el vincle d\'inici de sessió únic',
           resetPassword: 'Restableix la contrasenya',
           delete: 'Suprimeix',

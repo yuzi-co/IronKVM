@@ -829,6 +829,13 @@ func TestOIDCAdministratorUnlinksAnAccount(t *testing.T) {
 	if issuer, sub := f.link("alice"); issuer != "" || sub != "" {
 		t.Fatalf("alice still linked to %q %q", issuer, sub)
 	}
+	// The unlink ends alice's sessions, and not the administrator's.
+	if name, _ := f.account(alice); name != "" {
+		t.Fatalf("alice's session survived the unlink as %q", name)
+	}
+	if name, _ := f.account(admin); name != "admin" {
+		t.Fatalf("the administrator's session ended: %q", name)
+	}
 	rec = requestJSONRecorder(f.router, http.MethodDelete, "/api/auth/users/nobody/oidc", nil, admin)
 	if strings.Contains(rec.Body.String(), `"code":0`) {
 		t.Fatalf("unlinked an account that does not exist: %s", rec.Body.String())

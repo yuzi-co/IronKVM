@@ -2419,7 +2419,7 @@ const hu = {
           deviceOwner: 'Eszköz tulajdonosa',
           ssoTag: 'SSO',
           ssoUnlink: 'SSO-kapcsolat bontása',
-          ssoUnlinkConfirm: 'Bontja {{username}} kapcsolatát az identitásszolgáltatónál lévő fiókjával? A következő egyszeri bejelentkezés újra összekapcsolja.',
+          ssoUnlinkConfirm: 'Bontja {{username}} kapcsolatát az identitásszolgáltatónál lévő fiókjával? A következő egyszeri bejelentkezés újra összekapcsolja. Emellett mindenhol kijelentkezik.',
           ssoUnlinked: 'Az egyszeri bejelentkezés kapcsolata eltávolítva',
           resetPassword: 'Jelszó visszaállítása',
           delete: 'Törlés',

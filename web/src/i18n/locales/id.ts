@@ -2400,7 +2400,7 @@ const id = {
           deviceOwner: 'Pemilik perangkat',
           ssoTag: 'SSO',
           ssoUnlink: 'Lepas tautan SSO',
-          ssoUnlinkConfirm: 'Lepas tautan {{username}} dari akunnya di penyedia identitas? Single sign-on berikutnya akan menautkannya lagi.',
+          ssoUnlinkConfirm: 'Lepas tautan {{username}} dari akunnya di penyedia identitas? Single sign-on berikutnya akan menautkannya lagi. Akun ini juga dikeluarkan dari semua sesi.',
           ssoUnlinked: 'Tautan single sign-on dihapus',
           resetPassword: 'Atur Ulang Kata Sandi',
           delete: 'Hapus',

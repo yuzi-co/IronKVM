@@ -2418,7 +2418,7 @@ const nl = {
           deviceOwner: 'Eigenaar van het apparaat',
           ssoTag: 'SSO',
           ssoUnlink: 'SSO-koppeling opheffen',
-          ssoUnlinkConfirm: 'Koppeling van {{username}} met het account bij de identiteitsprovider opheffen? De volgende single sign-on koppelt het opnieuw.',
+          ssoUnlinkConfirm: 'Koppeling van {{username}} met het account bij de identiteitsprovider opheffen? De volgende single sign-on koppelt het opnieuw. Het wordt ook overal afgemeld.',
           ssoUnlinked: 'Single sign-on-koppeling opgeheven',
           resetPassword: 'Wachtwoord resetten',
           delete: 'Verwijderen',

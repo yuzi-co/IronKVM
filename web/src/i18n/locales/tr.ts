@@ -2397,7 +2397,7 @@ const tr = {
           deviceOwner: 'Cihaz sahibi',
           ssoTag: 'SSO',
           ssoUnlink: 'SSO bağlantısını kaldır',
-          ssoUnlinkConfirm: '{{username}} ile kimlik sağlayıcısındaki hesabı arasındaki bağlantı kaldırılsın mı? Bir sonraki çoklu oturum açma onu yeniden bağlar.',
+          ssoUnlinkConfirm: '{{username}} ile kimlik sağlayıcısındaki hesabı arasındaki bağlantı kaldırılsın mı? Bir sonraki çoklu oturum açma onu yeniden bağlar. Ayrıca her yerde oturumu kapatılır.',
           ssoUnlinked: 'Çoklu oturum açma bağlantısı kaldırıldı',
           resetPassword: 'Şifreyi Sıfırla',
           delete: 'Sil',

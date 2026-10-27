@@ -2433,7 +2433,7 @@ const fr = {
           deviceOwner: "Propriétaire de l'appareil",
           ssoTag: 'SSO',
           ssoUnlink: 'Délier le SSO',
-          ssoUnlinkConfirm: 'Délier {{username}} de son compte chez le fournisseur d\'identité ? La prochaine connexion unique le liera à nouveau.',
+          ssoUnlinkConfirm: 'Délier {{username}} de son compte chez le fournisseur d\'identité ? La prochaine connexion unique le liera à nouveau. Il est aussi déconnecté partout.',
           ssoUnlinked: 'Lien de connexion unique supprimé',
           resetPassword: 'Réinitialiser le mot de passe',
           delete: 'Supprimer',

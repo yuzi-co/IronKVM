@@ -2383,7 +2383,7 @@ const en = {
           deviceOwner: 'Device owner',
           ssoTag: 'SSO',
           ssoUnlink: 'Unlink SSO',
-          ssoUnlinkConfirm: 'Unlink {{username}} from its identity provider account? The next single sign-on links it again.',
+          ssoUnlinkConfirm: 'Unlink {{username}} from its identity provider account? The next single sign-on links it again. It is also signed out everywhere.',
           ssoUnlinked: 'Single sign-on link removed',
           resetPassword: 'Reset Password',
           delete: 'Delete',

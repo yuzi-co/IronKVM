@@ -2444,7 +2444,7 @@ const de = {
           deviceOwner: 'Gerätebesitzer',
           ssoTag: 'SSO',
           ssoUnlink: 'SSO-Verknüpfung aufheben',
-          ssoUnlinkConfirm: 'Verknüpfung von {{username}} mit dem Konto beim Identitätsanbieter aufheben? Die nächste Anmeldung per Single Sign-on verknüpft es erneut.',
+          ssoUnlinkConfirm: 'Verknüpfung von {{username}} mit dem Konto beim Identitätsanbieter aufheben? Die nächste Anmeldung per Single Sign-on verknüpft es erneut. Es wird außerdem überall abgemeldet.',
           ssoUnlinked: 'Single-Sign-on-Verknüpfung aufgehoben',
           resetPassword: 'Passwort zurücksetzen',
           delete: 'Löschen',

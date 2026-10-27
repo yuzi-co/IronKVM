@@ -2388,7 +2388,7 @@ const ja = {
           deviceOwner: 'デバイス所有者',
           ssoTag: 'SSO',
           ssoUnlink: 'SSO のリンクを解除',
-          ssoUnlinkConfirm: '{{username}} と ID プロバイダーのアカウントのリンクを解除しますか？次回のシングルサインオンで再びリンクされます。',
+          ssoUnlinkConfirm: '{{username}} と ID プロバイダーのアカウントのリンクを解除しますか？次回のシングルサインオンで再びリンクされます。すべての場所でサインアウトもされます。',
           ssoUnlinked: 'シングルサインオンのリンクを解除しました',
           resetPassword: 'パスワードをリセット',
           delete: '削除',

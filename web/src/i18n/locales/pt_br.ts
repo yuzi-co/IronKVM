@@ -2412,7 +2412,7 @@ const pt_br = {
           deviceOwner: 'Dono do dispositivo',
           ssoTag: 'SSO',
           ssoUnlink: 'Desvincular SSO',
-          ssoUnlinkConfirm: 'Desvincular {{username}} da conta no provedor de identidade? O próximo login único a vinculará de novo.',
+          ssoUnlinkConfirm: 'Desvincular {{username}} da conta no provedor de identidade? O próximo login único a vinculará de novo. A sessão também é encerrada em todos os lugares.',
           ssoUnlinked: 'Vínculo de login único removido',
           resetPassword: 'Redefinir Senha',
           delete: 'Excluir',

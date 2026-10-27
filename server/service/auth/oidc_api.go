@@ -156,8 +156,10 @@ func (s *Service) SetOIDCSettings(c *gin.Context) {
 // UnlinkUserOIDC is an administrator forgetting which identity provider
 // account an account is linked to, for a user who was recreated at the
 // provider and now has another sub. The next single sign-on links the account
-// again. Sessions are not revoked: the account's own sign-ins are unchanged,
-// and the login that was refused never made one.
+// again. The account's sessions end, as when two-factor login is reset: an
+// unlink is done when the link is in doubt, and a session opened through it
+// may be someone else's. An administrator unlinking their own account keeps
+// the session they are doing it from.
 func (s *Service) UnlinkUserOIDC(c *gin.Context) {
 	var rsp proto.Response
 	username := c.Param("username")
@@ -165,7 +167,12 @@ func (s *Service) UnlinkUserOIDC(c *gin.Context) {
 		rsp.ErrRsp(c, -1, err.Error())
 		return
 	}
-	rsp.OkRsp(c)
 	principal, _ := middleware.CurrentPrincipal(c)
+	if principal.Username == username {
+		middleware.RevokeOtherSessions(username, principal.SessionID)
+	} else {
+		middleware.RevokeUserSessions(username)
+	}
+	rsp.OkRsp(c)
 	log.Infof("single sign-on link of %s removed by %s", username, principal.Username)
 }

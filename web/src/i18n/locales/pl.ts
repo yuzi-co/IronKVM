@@ -2404,7 +2404,7 @@ const pl = {
           deviceOwner: 'Właściciel urządzenia',
           ssoTag: 'SSO',
           ssoUnlink: 'Usuń powiązanie SSO',
-          ssoUnlinkConfirm: 'Usunąć powiązanie konta {{username}} z kontem u dostawcy tożsamości? Następne logowanie jednokrotne powiąże je ponownie.',
+          ssoUnlinkConfirm: 'Usunąć powiązanie konta {{username}} z kontem u dostawcy tożsamości? Następne logowanie jednokrotne powiąże je ponownie. Zostanie też wszędzie wylogowane.',
           ssoUnlinked: 'Powiązanie logowania jednokrotnego usunięte',
           resetPassword: 'Resetuj hasło',
           delete: 'Usuń',

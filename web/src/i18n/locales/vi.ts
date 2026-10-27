@@ -2389,7 +2389,7 @@ const vi = {
           deviceOwner: 'Chủ sở hữu thiết bị',
           ssoTag: 'SSO',
           ssoUnlink: 'Hủy liên kết SSO',
-          ssoUnlinkConfirm: 'Hủy liên kết {{username}} với tài khoản ở nhà cung cấp danh tính? Lần đăng nhập một lần kế tiếp sẽ liên kết lại.',
+          ssoUnlinkConfirm: 'Hủy liên kết {{username}} với tài khoản ở nhà cung cấp danh tính? Lần đăng nhập một lần kế tiếp sẽ liên kết lại. Tài khoản cũng bị đăng xuất ở mọi nơi.',
           ssoUnlinked: 'Đã xóa liên kết đăng nhập một lần',
           resetPassword: 'Đặt lại mật khẩu',
           delete: 'Xóa',

@@ -2295,7 +2295,7 @@ const zh_tw = {
           deviceOwner: '裝置擁有者',
           ssoTag: 'SSO',
           ssoUnlink: '解除 SSO 連結',
-          ssoUnlinkConfirm: '解除 {{username}} 與身分提供者帳號的連結？下次單一登入時會重新連結。',
+          ssoUnlinkConfirm: '解除 {{username}} 與身分提供者帳號的連結？下次單一登入時會重新連結。該帳戶在所有地方的登入也會結束。',
           ssoUnlinked: '已解除單一登入連結',
           resetPassword: '重設密碼',
           delete: '刪除',

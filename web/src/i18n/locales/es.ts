@@ -2428,7 +2428,7 @@ const es = {
           deviceOwner: 'Propietario del dispositivo',
           ssoTag: 'SSO',
           ssoUnlink: 'Desvincular SSO',
-          ssoUnlinkConfirm: '¿Desvincular {{username}} de su cuenta del proveedor de identidad? El siguiente inicio de sesión único la volverá a vincular.',
+          ssoUnlinkConfirm: '¿Desvincular {{username}} de su cuenta del proveedor de identidad? El siguiente inicio de sesión único la volverá a vincular. También se cierra su sesión en todas partes.',
           ssoUnlinked: 'Vínculo de inicio de sesión único eliminado',
           resetPassword: 'Restablecer contraseña',
           delete: 'Eliminar',

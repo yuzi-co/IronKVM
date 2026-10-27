@@ -2399,7 +2399,7 @@ const se = {
           deviceOwner: 'Enhetens ägare',
           ssoTag: 'SSO',
           ssoUnlink: 'Ta bort SSO-koppling',
-          ssoUnlinkConfirm: 'Ta bort kopplingen mellan {{username}} och kontot hos identitetsleverantören? Nästa enkla inloggning kopplar det igen.',
+          ssoUnlinkConfirm: 'Ta bort kopplingen mellan {{username}} och kontot hos identitetsleverantören? Nästa enkla inloggning kopplar det igen. Det loggas också ut överallt.',
           ssoUnlinked: 'Kopplingen till enkel inloggning har tagits bort',
           resetPassword: 'Återställ lösenord',
           delete: 'Ta bort',

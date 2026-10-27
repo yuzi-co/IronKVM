@@ -2423,7 +2423,7 @@ const it = {
           deviceOwner: 'Proprietario del dispositivo',
           ssoTag: 'SSO',
           ssoUnlink: 'Scollega SSO',
-          ssoUnlinkConfirm: 'Scollegare {{username}} dal suo account presso il provider di identità? Il prossimo accesso Single Sign-On lo collegherà di nuovo.',
+          ssoUnlinkConfirm: 'Scollegare {{username}} dal suo account presso il provider di identità? Il prossimo accesso Single Sign-On lo collegherà di nuovo. Viene anche disconnesso ovunque.',
           ssoUnlinked: 'Collegamento Single Sign-On rimosso',
           resetPassword: 'Reimposta password',
           delete: 'Elimina',

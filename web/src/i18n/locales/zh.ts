@@ -2300,7 +2300,7 @@ const zh = {
           deviceOwner: '设备所有者',
           ssoTag: 'SSO',
           ssoUnlink: '解除 SSO 关联',
-          ssoUnlinkConfirm: '解除 {{username}} 与身份提供商账号的关联？下次单点登录时会重新关联。',
+          ssoUnlinkConfirm: '解除 {{username}} 与身份提供商账号的关联？下次单点登录时会重新关联。该账户在所有地方的登录也会结束。',
           ssoUnlinked: '已解除单点登录关联',
           resetPassword: '重置密码',
           delete: '删除',

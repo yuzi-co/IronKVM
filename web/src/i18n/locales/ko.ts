@@ -2356,7 +2356,7 @@ const ko = {
           deviceOwner: '장치 소유자',
           ssoTag: 'SSO',
           ssoUnlink: 'SSO 연결 해제',
-          ssoUnlinkConfirm: '{{username}}과(와) ID 공급자 계정의 연결을 해제하시겠습니까? 다음 SSO 로그인 때 다시 연결됩니다.',
+          ssoUnlinkConfirm: '{{username}}과(와) ID 공급자 계정의 연결을 해제하시겠습니까? 다음 SSO 로그인 때 다시 연결됩니다. 모든 곳에서 로그아웃도 됩니다.',
           ssoUnlinked: 'SSO 연결이 해제되었습니다',
           resetPassword: '비밀번호 재설정',
           delete: '삭제',

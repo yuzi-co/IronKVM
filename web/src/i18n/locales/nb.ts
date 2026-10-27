@@ -2393,7 +2393,7 @@ const nb = {
           deviceOwner: 'Enhetseier',
           ssoTag: 'SSO',
           ssoUnlink: 'Fjern SSO-kobling',
-          ssoUnlinkConfirm: 'Fjerne koblingen mellom {{username}} og kontoen hos identitetsleverandøren? Neste single sign-on knytter den på nytt.',
+          ssoUnlinkConfirm: 'Fjerne koblingen mellom {{username}} og kontoen hos identitetsleverandøren? Neste single sign-on knytter den på nytt. Den logges også ut overalt.',
           ssoUnlinked: 'Koblingen til single sign-on er fjernet',
           resetPassword: 'Tilbakestill passord',
           delete: 'Slett',

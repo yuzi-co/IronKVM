@@ -2386,7 +2386,7 @@ const cz = {
           deviceOwner: 'Vlastník zařízení',
           ssoTag: 'SSO',
           ssoUnlink: 'Zrušit propojení SSO',
-          ssoUnlinkConfirm: 'Zrušit propojení účtu {{username}} s účtem u poskytovatele identity? Další jednotné přihlášení jej propojí znovu.',
+          ssoUnlinkConfirm: 'Zrušit propojení účtu {{username}} s účtem u poskytovatele identity? Další jednotné přihlášení jej propojí znovu. Zároveň bude všude odhlášen.',
           ssoUnlinked: 'Propojení jednotného přihlášení odstraněno',
           resetPassword: 'Resetovat heslo',
           delete: 'Smazat',
