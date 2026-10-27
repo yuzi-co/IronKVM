@@ -136,6 +136,16 @@ const nl = {
       screenshot: 'Schermafbeelding',
       screenshotTip: 'Slaat het scherm van de host op als PNG op volle opnamegrootte.',
       screenshotFailed: 'Schermafbeelding mislukt',
+      dashcam: {
+        save: 'Laatste {{seconds}} s opslaan',
+        tip:
+          'Slaat de laatste minuut van de video, en enkele seconden daarna, op als MP4-bestand op het bord. Een beheerder vindt het onder Instellingen > Dashcam.',
+        saving: 'De clip wordt opgeslagen. Hij is klaar over {{seconds}} s.',
+        joined: 'Toegevoegd aan de clip die wordt opgeslagen.',
+        empty: 'De dashcam bevat nog geen video.',
+        tooSoon: 'Zojuist is een clip opgeslagen. Probeer het over een paar seconden opnieuw.',
+        failed: 'De clip is niet opgeslagen'
+      },
       streamInfo: {
         toggle: 'Streaminfo',
         toggleTip:
@@ -1213,6 +1223,56 @@ const nl = {
         lastOk: 'verstuurd',
         lastFailed: 'mislukt'
       },
+      dashcam: {
+        title: 'Dashcam',
+        enabled: 'Laatste video bewaren',
+        enabledDesc:
+          'Bewaart de laatste seconden van de video in het geheugen van het bord. Wanneer de host wordt gereset of aangezet, het HDMI-signaal wegvalt of terugkomt, of u erom vraagt, slaat het bord ze op als MP4-bestand in /data/dashcam. Tot dan wordt er niets naar de SD-kaart geschreven.',
+        cost:
+          'Zolang de dashcam aan staat, legt het bord de video vast en codeert het die, ook als niemand kijkt. Dat kost CPU-tijd, stroom en tot 16 MB geheugen. Kijkers behouden hun streaminstellingen. Met de mainline-kernel maakt de encoder bovendien elke 4 seconden een keyframe, die elke kijker ontvangt.',
+        noVideo: 'De dashcam staat aan, maar het bord legt geen video vast (failsafe-modus).',
+        lastError: 'De laatste clip is niet opgeslagen: {{error}}',
+        seconds: 'Voor de gebeurtenis',
+        secondsDesc: 'Hoeveel video van voor de gebeurtenis een clip bewaart: 30 tot 120 seconden.',
+        postSeconds: 'Na de gebeurtenis',
+        postSecondsDesc:
+          'Hoeveel video van na de gebeurtenis een clip ook bewaart: 0 tot 30 seconden.',
+        bitrate: 'Geheugenlimiet per bitrate',
+        bitrateDesc:
+          'Beperkt het geheugen voor de video tot deze bitrate over de duur. De stream verandert niet: een beeld dat veel verandert geeft een kortere clip.',
+        bitrateStream: 'Huidige stream gebruiken',
+        storage: 'Opslaglimiet',
+        storageDesc:
+          'Hoeveel van /data de clips mogen gebruiken. De oudste clips worden eerst verwijderd.',
+        triggers: 'Een clip opslaan wanneer',
+        triggerAtx: 'De aan- of resetknop wordt ingedrukt, vanuit elke bron of door de watchdog',
+        triggerSignal: 'Het HDMI-signaal wegvalt of terugkomt',
+        triggerFailsafe: 'De server start in failsafe-modus',
+        triggerNote:
+          'De knop in het menu Scherm en POST /api/dashcam/save slaan altijd een clip op.',
+        save: 'Opslaan',
+        saved: 'Dashcam-instellingen opgeslagen',
+        failed: 'Dashcam-instellingen opslaan mislukt',
+        buffered: 'In geheugen',
+        bufferedValue: '{{seconds}} s, {{size}} van {{budget}}',
+        clips: 'Clips',
+        noClips: 'Nog geen clips.',
+        download: 'Downloaden',
+        delete: 'Verwijderen',
+        deleteConfirm: '{{name}} verwijderen?',
+        deleted: 'Clip verwijderd',
+        deleteFailed: 'Clip verwijderen mislukt',
+        triggerNames: {
+          power: 'Aan-knop',
+          reset: 'Resetknop',
+          watchdog: 'Watchdog',
+          signalLost: 'Signaal weg',
+          signalRestored: 'Signaal terug',
+          failsafe: 'Failsafe-modus',
+          manual: 'Handmatig opgeslagen',
+          api: 'API'
+        }
+      },
       hostLog: {
         title: 'Hostlogboek',
         intro:
@@ -1427,7 +1487,8 @@ const nl = {
           oled: 'OLED-scherm',
           hdmi: 'HDMI-inactiviteitstijd',
           roomMic: 'Ruimtemicrofoon',
-          notifications: 'Meldingsregels'
+          notifications: 'Meldingsregels',
+          dashcam: 'Dashcam'
         }
       },
       watchdog: {

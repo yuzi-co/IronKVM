@@ -135,6 +135,16 @@ const pl = {
       screenshot: 'Zrzut ekranu',
       screenshotTip: 'Zapisuje ekran hosta jako PNG w pełnym rozmiarze przechwytywania.',
       screenshotFailed: 'Zrzut ekranu nie powiódł się',
+      dashcam: {
+        save: 'Zapisz ostatnie {{seconds}} s',
+        tip:
+          'Zapisuje ostatnią minutę wideo, i kilka sekund po niej, jako plik MP4 na płytce. Administrator znajdzie go w Ustawienia > Wideorejestrator.',
+        saving: 'Zapisywanie klipu. Będzie gotowy za {{seconds}} s.',
+        joined: 'Dodano do zapisywanego klipu.',
+        empty: 'Wideorejestrator nie ma jeszcze wideo.',
+        tooSoon: 'Klip został zapisany przed chwilą. Spróbuj ponownie za kilka sekund.',
+        failed: 'Klip nie został zapisany'
+      },
       streamInfo: {
         toggle: 'Informacje o strumieniu',
         toggleTip:
@@ -1207,6 +1217,56 @@ const pl = {
         lastOk: 'wysłano',
         lastFailed: 'niepowodzenie'
       },
+      dashcam: {
+        title: 'Wideorejestrator',
+        enabled: 'Zachowuj ostatnie wideo',
+        enabledDesc:
+          'Zachowuje ostatnie sekundy wideo w pamięci płytki. Gdy host zostanie zresetowany lub włączony, sygnał HDMI zniknie lub wróci albo gdy o to poprosisz, płytka zapisze je jako plik MP4 w /data/dashcam. Do tego czasu nic nie jest zapisywane na karcie SD.',
+        cost:
+          'Gdy wideorejestrator jest włączony, płytka przechwytuje i koduje wideo, nawet gdy nikt nie ogląda. Kosztuje to czas procesora, energię i do 16 MB pamięci. Widzowie zachowują swoje ustawienia strumienia. Z jądrem mainline koder dodatkowo tworzy klatkę kluczową co 4 sekundy, którą otrzymuje każdy widz.',
+        noVideo:
+          'Wideorejestrator jest włączony, ale płytka nie przechwytuje wideo (tryb awaryjny).',
+        lastError: 'Ostatni klip nie został zapisany: {{error}}',
+        seconds: 'Przed zdarzeniem',
+        secondsDesc: 'Ile wideo sprzed zdarzenia zachowuje klip: od 30 do 120 sekund.',
+        postSeconds: 'Po zdarzeniu',
+        postSecondsDesc: 'Ile wideo po zdarzeniu klip zachowuje dodatkowo: od 0 do 30 sekund.',
+        bitrate: 'Limit pamięci według przepływności',
+        bitrateDesc:
+          'Ogranicza pamięć na wideo do tej przepływności przez czas trwania. Strumień się nie zmienia: obraz, który bardzo się zmienia, daje krótszy klip.',
+        bitrateStream: 'Użyj bieżącego strumienia',
+        storage: 'Limit miejsca',
+        storageDesc:
+          'Ile miejsca w /data mogą zajmować klipy. Najstarsze klipy są usuwane jako pierwsze.',
+        triggers: 'Zapisz klip, gdy',
+        triggerAtx:
+          'Zostanie naciśnięty przycisk zasilania lub resetu, z dowolnego źródła lub przez watchdog',
+        triggerSignal: 'Sygnał HDMI zniknie lub wróci',
+        triggerFailsafe: 'Serwer uruchomi się w trybie awaryjnym',
+        triggerNote: 'Przycisk w menu Ekran i POST /api/dashcam/save zawsze zapisują klip.',
+        save: 'Zapisz',
+        saved: 'Zapisano ustawienia wideorejestratora',
+        failed: 'Nie udało się zapisać ustawień wideorejestratora',
+        buffered: 'W pamięci',
+        bufferedValue: '{{seconds}} s, {{size}} z {{budget}}',
+        clips: 'Klipy',
+        noClips: 'Brak klipów.',
+        download: 'Pobierz',
+        delete: 'Usuń',
+        deleteConfirm: 'Usunąć {{name}}?',
+        deleted: 'Usunięto klip',
+        deleteFailed: 'Nie udało się usunąć klipu',
+        triggerNames: {
+          power: 'Przycisk zasilania',
+          reset: 'Przycisk resetu',
+          watchdog: 'Watchdog',
+          signalLost: 'Utrata sygnału',
+          signalRestored: 'Powrót sygnału',
+          failsafe: 'Tryb awaryjny',
+          manual: 'Zapisany ręcznie',
+          api: 'API'
+        }
+      },
       hostLog: {
         title: 'Log hosta',
         intro:
@@ -1421,7 +1481,8 @@ const pl = {
           oled: 'Wyświetlacz OLED',
           hdmi: 'Limit bezczynności HDMI',
           roomMic: 'Mikrofon w pomieszczeniu',
-          notifications: 'Reguły powiadomień'
+          notifications: 'Reguły powiadomień',
+          dashcam: 'Wideorejestrator'
         }
       },
       watchdog: {

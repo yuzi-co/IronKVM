@@ -135,6 +135,16 @@ const nb = {
       screenshot: 'Skjermbilde',
       screenshotTip: 'Lagrer vertens skjerm som PNG i full opptaksstørrelse.',
       screenshotFailed: 'Skjermbilde mislyktes',
+      dashcam: {
+        save: 'Lagre siste {{seconds}} s',
+        tip:
+          'Lagrer det siste minuttet av videoen, og noen sekunder etter, som en MP4-fil på kortet. En administrator finner den under Innstillinger > Dashcam.',
+        saving: 'Klippet lagres. Det er klart om {{seconds}} s.',
+        joined: 'Lagt til klippet som lagres nå.',
+        empty: 'Dashcamen har ingen video ennå.',
+        tooSoon: 'Et klipp ble lagret for et øyeblikk siden. Prøv igjen om noen sekunder.',
+        failed: 'Klippet ble ikke lagret'
+      },
       streamInfo: {
         toggle: 'Strøminfo',
         toggleTip:
@@ -1201,6 +1211,55 @@ const nb = {
         lastOk: 'sendt',
         lastFailed: 'mislyktes'
       },
+      dashcam: {
+        title: 'Dashcam',
+        enabled: 'Behold den siste videoen',
+        enabledDesc:
+          'Beholder de siste sekundene av videoen i minnet på kortet. Når verten tilbakestilles eller slås på, HDMI-signalet forsvinner eller kommer tilbake, eller du ber om det, lagrer kortet dem som en MP4-fil i /data/dashcam. Inntil da skrives ingenting til SD-kortet.',
+        cost:
+          'Mens dashcamen er på, tar kortet opp og koder videoen også når ingen ser på. Det koster CPU-tid, strøm og opptil 16 MB minne. Seerne beholder strøminnstillingene sine. Med mainline-kjernen lager koderen i tillegg et nøkkelbilde hvert 4. sekund, som alle seere mottar.',
+        noVideo: 'Dashcamen er på, men kortet tar ikke opp video (failsafe-modus).',
+        lastError: 'Det siste klippet ble ikke lagret: {{error}}',
+        seconds: 'Før hendelsen',
+        secondsDesc: 'Hvor mye video fra før hendelsen et klipp beholder: 30 til 120 sekunder.',
+        postSeconds: 'Etter hendelsen',
+        postSecondsDesc:
+          'Hvor mye video fra etter hendelsen et klipp også beholder: 0 til 30 sekunder.',
+        bitrate: 'Minnegrense etter bitrate',
+        bitrateDesc:
+          'Begrenser minnet for videoen til denne bitraten over varigheten. Strømmen endres ikke: et bilde som endrer seg mye gir et kortere klipp.',
+        bitrateStream: 'Bruk gjeldende strøm',
+        storage: 'Lagringsgrense',
+        storageDesc: 'Hvor mye av /data klippene kan bruke. De eldste klippene slettes først.',
+        triggers: 'Lagre et klipp når',
+        triggerAtx:
+          'Av/på- eller reset-knappen trykkes, fra hvilken som helst kilde eller av watchdogen',
+        triggerSignal: 'HDMI-signalet forsvinner eller kommer tilbake',
+        triggerFailsafe: 'Serveren starter i failsafe-modus',
+        triggerNote: 'Knappen i Skjerm-menyen og POST /api/dashcam/save lagrer alltid et klipp.',
+        save: 'Lagre',
+        saved: 'Dashcam-innstillinger lagret',
+        failed: 'Kunne ikke lagre dashcam-innstillingene',
+        buffered: 'I minnet',
+        bufferedValue: '{{seconds}} s, {{size}} av {{budget}}',
+        clips: 'Klipp',
+        noClips: 'Ingen klipp ennå.',
+        download: 'Last ned',
+        delete: 'Slett',
+        deleteConfirm: 'Slette {{name}}?',
+        deleted: 'Klipp slettet',
+        deleteFailed: 'Kunne ikke slette klippet',
+        triggerNames: {
+          power: 'Av/på-knapp',
+          reset: 'Reset-knapp',
+          watchdog: 'Watchdog',
+          signalLost: 'Signal borte',
+          signalRestored: 'Signal tilbake',
+          failsafe: 'Failsafe-modus',
+          manual: 'Lagret for hånd',
+          api: 'API'
+        }
+      },
       hostLog: {
         title: 'Vertslogg',
         intro:
@@ -1415,7 +1474,8 @@ const nb = {
           oled: 'OLED-skjerm',
           hdmi: 'HDMI-tidsavbrudd ved inaktivitet',
           roomMic: 'Rommikrofon',
-          notifications: 'Varslingsregler'
+          notifications: 'Varslingsregler',
+          dashcam: 'Dashcam'
         }
       },
       watchdog: {

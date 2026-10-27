@@ -11,6 +11,7 @@ import {
   BellIcon,
   BotIcon,
   CastIcon,
+  CctvIcon,
   CircleArrowUpIcon,
   DiscIcon,
   GaugeIcon,
@@ -69,6 +70,7 @@ const pageModules = {
   device: () => import('./device'),
   performance: () => import('./performance'),
   watchdog: () => import('./watchdog'),
+  dashcam: () => import('./dashcam'),
   notifications: () => import('./notifications'),
   hostLog: () => import('./host-log'),
   update: () => import('./update'),
@@ -97,6 +99,7 @@ const Preferences = lazy(() => pageModules.preferences().then((m) => ({ default:
 const Device = lazy(() => pageModules.device().then((m) => ({ default: m.Device })));
 const Performance = lazy(() => pageModules.performance().then((m) => ({ default: m.Performance })));
 const Watchdog = lazy(() => pageModules.watchdog().then((m) => ({ default: m.Watchdog })));
+const Dashcam = lazy(() => pageModules.dashcam().then((m) => ({ default: m.Dashcam })));
 const Notifications = lazy(() =>
   pageModules.notifications().then((m) => ({ default: m.Notifications }))
 );
@@ -172,6 +175,7 @@ export const Settings = () => {
   const hasWhep = useServerFeature('whep') === true;
   const hasRtsp = useServerFeature('rtsp') === true;
   const hasSrt = useServerFeature('srt') === true;
+  const hasDashcam = useServerFeature('dashcam') === true;
   const hasBackup = hasSettingsBackup || hasDiagnostics;
   // Below sm the sidebar shows icons only, so each item needs a tooltip.
   const isNarrow = useIsNarrow();
@@ -225,6 +229,16 @@ export const Settings = () => {
             icon: <HeartPulseIcon {...icon16} />,
             component: <Watchdog />
           },
+          ...(hasDashcam
+            ? ([
+                {
+                  id: 'dashcam',
+                  group: 'system',
+                  icon: <CctvIcon {...icon16} />,
+                  component: <Dashcam />
+                }
+              ] satisfies Tab[])
+            : []),
           ...(hasHostLog
             ? ([
                 {

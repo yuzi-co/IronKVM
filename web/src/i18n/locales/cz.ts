@@ -135,6 +135,16 @@ const cz = {
       screenshot: 'Snímek obrazovky',
       screenshotTip: 'Uloží obrazovku hostitele jako PNG v plné velikosti záznamu.',
       screenshotFailed: 'Snímek obrazovky se nezdařil',
+      dashcam: {
+        save: 'Uložit posledních {{seconds}} s',
+        tip:
+          'Uloží poslední minutu videa, a několik sekund po ní, jako soubor MP4 na desce. Správce jej najde v Nastavení > Palubní kamera.',
+        saving: 'Klip se ukládá. Bude hotový za {{seconds}} s.',
+        joined: 'Přidáno do klipu, který se právě ukládá.',
+        empty: 'Palubní kamera zatím nemá žádné video.',
+        tooSoon: 'Před chvílí byl uložen klip. Zkuste to znovu za několik sekund.',
+        failed: 'Klip nebyl uložen'
+      },
       streamInfo: {
         toggle: 'Informace o streamu',
         toggleTip:
@@ -1197,6 +1207,55 @@ const cz = {
         lastOk: 'odesláno',
         lastFailed: 'selhalo'
       },
+      dashcam: {
+        title: 'Palubní kamera',
+        enabled: 'Uchovávat poslední video',
+        enabledDesc:
+          'Uchovává poslední sekundy videa v paměti desky. Když je hostitel resetován nebo zapnut, signál HDMI zmizí nebo se vrátí, nebo o to požádáte, deska je uloží jako soubor MP4 do /data/dashcam. Do té doby se na SD kartu nic nezapisuje.',
+        cost:
+          'Dokud je palubní kamera zapnutá, deska zachytává a kóduje video, i když se nikdo nedívá. Stojí to čas CPU, energii a až 16 MB paměti. Diváci si ponechají svá nastavení streamu. S jádrem mainline kodér navíc vytváří klíčový snímek každé 4 sekundy, který dostane každý divák.',
+        noVideo: 'Palubní kamera je zapnutá, ale deska nezachytává žádné video (nouzový režim).',
+        lastError: 'Poslední klip nebyl uložen: {{error}}',
+        seconds: 'Před událostí',
+        secondsDesc: 'Kolik videa z doby před událostí klip uchová: 30 až 120 sekund.',
+        postSeconds: 'Po události',
+        postSecondsDesc: 'Kolik videa z doby po události klip navíc uchová: 0 až 30 sekund.',
+        bitrate: 'Limit paměti podle datového toku',
+        bitrateDesc:
+          'Omezí paměť pro video na tento datový tok po dobu trvání. Stream se nemění: obraz, který se hodně mění, dá kratší klip.',
+        bitrateStream: 'Použít aktuální stream',
+        storage: 'Limit úložiště',
+        storageDesc:
+          'Kolik místa v /data mohou klipy zabírat. Nejstarší klipy se mažou jako první.',
+        triggers: 'Uložit klip, když',
+        triggerAtx:
+          'Je stisknuto tlačítko napájení nebo resetu, z jakéhokoli zdroje nebo watchdogem',
+        triggerSignal: 'Signál HDMI zmizí nebo se vrátí',
+        triggerFailsafe: 'Server se spustí v nouzovém režimu',
+        triggerNote: 'Tlačítko v nabídce Obrazovka a POST /api/dashcam/save vždy uloží klip.',
+        save: 'Uložit',
+        saved: 'Nastavení palubní kamery uloženo',
+        failed: 'Nastavení palubní kamery se nepodařilo uložit',
+        buffered: 'V paměti',
+        bufferedValue: '{{seconds}} s, {{size}} z {{budget}}',
+        clips: 'Klipy',
+        noClips: 'Zatím žádné klipy.',
+        download: 'Stáhnout',
+        delete: 'Smazat',
+        deleteConfirm: 'Smazat {{name}}?',
+        deleted: 'Klip smazán',
+        deleteFailed: 'Klip se nepodařilo smazat',
+        triggerNames: {
+          power: 'Tlačítko napájení',
+          reset: 'Tlačítko resetu',
+          watchdog: 'Watchdog',
+          signalLost: 'Ztráta signálu',
+          signalRestored: 'Návrat signálu',
+          failsafe: 'Nouzový režim',
+          manual: 'Uloženo ručně',
+          api: 'API'
+        }
+      },
       hostLog: {
         title: 'Log hostitele',
         intro:
@@ -1412,7 +1471,8 @@ const cz = {
           oled: 'Displej OLED',
           hdmi: 'Časový limit nečinnosti HDMI',
           roomMic: 'Mikrofon v místnosti',
-          notifications: 'Pravidla oznámení'
+          notifications: 'Pravidla oznámení',
+          dashcam: 'Palubní kamera'
         }
       },
       watchdog: {

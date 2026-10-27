@@ -25,6 +25,7 @@ export const SERVER_FEATURES = [
   'agent-tiers', // /api/agent/tiers (Settings > MCP: what MCP and the agent may do)
   'api-key-scope', // scope "view" on POST /api/auth/api-keys (Settings > API Keys: view only)
   'audit-log', // /api/audit (Settings > Audit log)
+  'dashcam', // /api/dashcam (Settings > Dashcam, Screen menu: save the last minute)
   'diagnostics-bundle', // GET /api/diagnostics/bundle (Settings > Backup: diagnostics bundle)
   'direct-clock', // the clock request on the direct H.264 socket (status bar latency)
   'edid-view', // /api/edid (Settings > Device > EDID: presets and decoder, read only)

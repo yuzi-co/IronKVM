@@ -134,6 +134,16 @@ const id = {
       screenshot: 'Tangkapan layar',
       screenshotTip: 'Menyimpan layar host sebagai PNG dalam ukuran tangkapan penuh.',
       screenshotFailed: 'Tangkapan layar gagal',
+      dashcam: {
+        save: 'Simpan {{seconds}} dtk terakhir',
+        tip:
+          'Menyimpan menit terakhir video, dan beberapa detik setelahnya, sebagai file MP4 di papan. Administrator menemukannya di Pengaturan > Dashcam.',
+        saving: 'Klip sedang disimpan. Siap dalam {{seconds}} dtk.',
+        joined: 'Ditambahkan ke klip yang sedang disimpan.',
+        empty: 'Dashcam belum memiliki video.',
+        tooSoon: 'Sebuah klip baru saja disimpan. Coba lagi dalam beberapa detik.',
+        failed: 'Klip tidak disimpan'
+      },
       streamInfo: {
         toggle: 'Info stream',
         toggleTip:
@@ -1204,6 +1214,56 @@ const id = {
         lastOk: 'terkirim',
         lastFailed: 'gagal'
       },
+      dashcam: {
+        title: 'Dashcam',
+        enabled: 'Simpan video terakhir',
+        enabledDesc:
+          'Menyimpan detik-detik terakhir video di memori papan. Saat host di-reset atau dinyalakan, sinyal HDMI hilang atau kembali, atau Anda memintanya, papan menyimpannya sebagai file MP4 di /data/dashcam. Sampai saat itu tidak ada yang ditulis ke kartu SD.',
+        cost:
+          'Selama dashcam aktif, papan menangkap dan mengodekan video meskipun tidak ada yang menonton. Ini memakan waktu CPU, daya, dan hingga 16 MB memori. Penonton tetap memakai pengaturan stream mereka. Dengan kernel mainline, encoder juga membuat keyframe setiap 4 detik, yang diterima setiap penonton.',
+        noVideo: 'Dashcam aktif, tetapi papan tidak menangkap video (mode failsafe).',
+        lastError: 'Klip terakhir tidak disimpan: {{error}}',
+        seconds: 'Sebelum peristiwa',
+        secondsDesc:
+          'Berapa banyak video sebelum peristiwa yang disimpan klip: 30 hingga 120 detik.',
+        postSeconds: 'Setelah peristiwa',
+        postSecondsDesc:
+          'Berapa banyak video setelah peristiwa yang juga disimpan klip: 0 hingga 30 detik.',
+        bitrate: 'Batas memori menurut bitrate',
+        bitrateDesc:
+          'Membatasi memori untuk video pada bitrate ini selama durasinya. Stream tidak berubah: gambar yang banyak berubah menghasilkan klip yang lebih pendek.',
+        bitrateStream: 'Gunakan stream saat ini',
+        storage: 'Batas penyimpanan',
+        storageDesc:
+          'Berapa banyak /data yang boleh dipakai klip. Klip terlama dihapus lebih dulu.',
+        triggers: 'Simpan klip saat',
+        triggerAtx: 'Tombol daya atau reset ditekan, dari sumber mana pun atau oleh watchdog',
+        triggerSignal: 'Sinyal HDMI hilang atau kembali',
+        triggerFailsafe: 'Server dimulai dalam mode failsafe',
+        triggerNote: 'Tombol di menu Layar dan POST /api/dashcam/save selalu menyimpan klip.',
+        save: 'Simpan',
+        saved: 'Pengaturan dashcam disimpan',
+        failed: 'Gagal menyimpan pengaturan dashcam',
+        buffered: 'Di memori',
+        bufferedValue: '{{seconds}} dtk, {{size}} dari {{budget}}',
+        clips: 'Klip',
+        noClips: 'Belum ada klip.',
+        download: 'Unduh',
+        delete: 'Hapus',
+        deleteConfirm: 'Hapus {{name}}?',
+        deleted: 'Klip dihapus',
+        deleteFailed: 'Gagal menghapus klip',
+        triggerNames: {
+          power: 'Tombol daya',
+          reset: 'Tombol reset',
+          watchdog: 'Watchdog',
+          signalLost: 'Sinyal hilang',
+          signalRestored: 'Sinyal kembali',
+          failsafe: 'Mode failsafe',
+          manual: 'Disimpan manual',
+          api: 'API'
+        }
+      },
       hostLog: {
         title: 'Log host',
         intro:
@@ -1417,7 +1477,8 @@ const id = {
           oled: 'Layar OLED',
           hdmi: 'Batas waktu diam HDMI',
           roomMic: 'Mikrofon ruangan',
-          notifications: 'Aturan notifikasi'
+          notifications: 'Aturan notifikasi',
+          dashcam: 'Dashcam'
         }
       },
       watchdog: {

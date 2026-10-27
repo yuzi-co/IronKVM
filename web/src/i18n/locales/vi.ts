@@ -134,6 +134,16 @@ const vi = {
       screenshot: 'Chụp màn hình',
       screenshotTip: 'Lưu màn hình máy chủ thành tệp PNG ở kích thước chụp đầy đủ.',
       screenshotFailed: 'Chụp màn hình thất bại',
+      dashcam: {
+        save: 'Lưu {{seconds}} giây cuối',
+        tip:
+          'Lưu phút cuối của video, và vài giây sau đó, thành tệp MP4 trên bo mạch. Quản trị viên tìm thấy nó trong Cài đặt > Camera hành trình.',
+        saving: 'Đang lưu clip. Clip sẵn sàng sau {{seconds}} giây.',
+        joined: 'Đã thêm vào clip đang được lưu.',
+        empty: 'Camera hành trình chưa có video.',
+        tooSoon: 'Một clip vừa được lưu. Hãy thử lại sau vài giây.',
+        failed: 'Clip chưa được lưu'
+      },
       streamInfo: {
         toggle: 'Thông tin luồng',
         toggleTip:
@@ -1196,6 +1206,53 @@ const vi = {
         lastOk: 'đã gửi',
         lastFailed: 'thất bại'
       },
+      dashcam: {
+        title: 'Camera hành trình',
+        enabled: 'Giữ video gần nhất',
+        enabledDesc:
+          'Giữ những giây cuối của video trong bộ nhớ của bo mạch. Khi máy chủ được reset hoặc bật nguồn, tín hiệu HDMI mất hoặc có lại, hoặc khi bạn yêu cầu, bo mạch lưu chúng thành tệp MP4 trong /data/dashcam. Trước đó không có gì được ghi vào thẻ SD.',
+        cost:
+          'Khi camera hành trình bật, bo mạch thu và mã hóa video ngay cả khi không ai xem. Việc này tốn thời gian CPU, điện năng và tối đa 16 MB bộ nhớ. Người xem giữ nguyên cài đặt luồng của họ. Với kernel mainline, bộ mã hóa còn tạo một khung hình chính mỗi 4 giây, mà mọi người xem đều nhận.',
+        noVideo: 'Camera hành trình đang bật, nhưng bo mạch không thu video (chế độ an toàn).',
+        lastError: 'Clip gần nhất chưa được lưu: {{error}}',
+        seconds: 'Trước sự kiện',
+        secondsDesc: 'Lượng video trước sự kiện mà một clip giữ: 30 đến 120 giây.',
+        postSeconds: 'Sau sự kiện',
+        postSecondsDesc: 'Lượng video sau sự kiện mà một clip giữ thêm: 0 đến 30 giây.',
+        bitrate: 'Giới hạn bộ nhớ theo bitrate',
+        bitrateDesc:
+          'Giới hạn bộ nhớ cho video ở bitrate này trong suốt thời lượng. Luồng không thay đổi: hình ảnh thay đổi nhiều cho clip ngắn hơn.',
+        bitrateStream: 'Dùng luồng hiện tại',
+        storage: 'Giới hạn lưu trữ',
+        storageDesc: 'Dung lượng /data mà các clip được dùng. Các clip cũ nhất bị xóa trước.',
+        triggers: 'Lưu clip khi',
+        triggerAtx: 'Nút nguồn hoặc reset được nhấn, từ bất kỳ nguồn nào hoặc bởi watchdog',
+        triggerSignal: 'Tín hiệu HDMI mất hoặc có lại',
+        triggerFailsafe: 'Máy chủ khởi động ở chế độ an toàn',
+        triggerNote: 'Nút trong menu Màn hình và POST /api/dashcam/save luôn lưu một clip.',
+        save: 'Lưu',
+        saved: 'Đã lưu cài đặt camera hành trình',
+        failed: 'Không lưu được cài đặt camera hành trình',
+        buffered: 'Trong bộ nhớ',
+        bufferedValue: '{{seconds}} giây, {{size}} / {{budget}}',
+        clips: 'Clip',
+        noClips: 'Chưa có clip nào.',
+        download: 'Tải xuống',
+        delete: 'Xóa',
+        deleteConfirm: 'Xóa {{name}}?',
+        deleted: 'Đã xóa clip',
+        deleteFailed: 'Không xóa được clip',
+        triggerNames: {
+          power: 'Nút nguồn',
+          reset: 'Nút reset',
+          watchdog: 'Watchdog',
+          signalLost: 'Mất tín hiệu',
+          signalRestored: 'Có lại tín hiệu',
+          failsafe: 'Chế độ an toàn',
+          manual: 'Lưu thủ công',
+          api: 'API'
+        }
+      },
       hostLog: {
         title: 'Nhật ký máy chủ',
         intro:
@@ -1410,7 +1467,8 @@ const vi = {
           oled: 'Màn hình OLED',
           hdmi: 'Thời gian chờ HDMI',
           roomMic: 'Micro trong phòng',
-          notifications: 'Quy tắc thông báo'
+          notifications: 'Quy tắc thông báo',
+          dashcam: 'Camera hành trình'
         }
       },
       watchdog: {

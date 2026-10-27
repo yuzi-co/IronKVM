@@ -138,6 +138,16 @@ const es = {
       screenshot: 'Captura de pantalla',
       screenshotTip: 'Guarda la pantalla del host como PNG al tamaño completo de captura.',
       screenshotFailed: 'Error en la captura de pantalla',
+      dashcam: {
+        save: 'Guardar los últimos {{seconds}} s',
+        tip:
+          'Guarda el último minuto del vídeo, y unos segundos después, como archivo MP4 en la placa. Un administrador lo encuentra en Ajustes > Dashcam.',
+        saving: 'Guardando el clip. Estará listo en {{seconds}} s.',
+        joined: 'Añadido al clip que se está guardando.',
+        empty: 'La dashcam aún no tiene vídeo.',
+        tooSoon: 'Se guardó un clip hace un momento. Inténtelo de nuevo en unos segundos.',
+        failed: 'El clip no se guardó'
+      },
       streamInfo: {
         toggle: 'Info del flujo',
         toggleTip:
@@ -1215,6 +1225,57 @@ const es = {
         lastOk: 'enviada',
         lastFailed: 'fallida'
       },
+      dashcam: {
+        title: 'Dashcam',
+        enabled: 'Conservar el último vídeo',
+        enabledDesc:
+          'Conserva los últimos segundos del vídeo en la memoria de la placa. Cuando el host se reinicia o se enciende, la señal HDMI se pierde o vuelve, o usted lo pide, la placa los guarda como archivo MP4 en /data/dashcam. Hasta entonces no se escribe nada en la tarjeta SD.',
+        cost:
+          'Mientras la dashcam está activa, la placa captura y codifica el vídeo aunque nadie lo vea. Esto cuesta tiempo de CPU, energía y hasta 16 MB de memoria. Los espectadores conservan sus ajustes de transmisión. Con el kernel mainline, el codificador además genera un fotograma clave cada 4 segundos, que recibe cada espectador.',
+        noVideo:
+          'La dashcam está activa, pero la placa no captura vídeo (modo a prueba de fallos).',
+        lastError: 'El último clip no se guardó: {{error}}',
+        seconds: 'Antes del evento',
+        secondsDesc: 'Cuánto vídeo de antes del evento conserva un clip: de 30 a 120 segundos.',
+        postSeconds: 'Después del evento',
+        postSecondsDesc:
+          'Cuánto vídeo de después del evento conserva también un clip: de 0 a 30 segundos.',
+        bitrate: 'Límite de memoria por tasa de bits',
+        bitrateDesc:
+          'Limita la memoria del vídeo a esta tasa de bits durante la duración. La transmisión no cambia: una imagen que cambia mucho da un clip más corto.',
+        bitrateStream: 'Usar la transmisión actual',
+        storage: 'Límite de almacenamiento',
+        storageDesc:
+          'Cuánto de /data pueden ocupar los clips. Los clips más antiguos se eliminan primero.',
+        triggers: 'Guardar un clip cuando',
+        triggerAtx:
+          'Se pulsa el botón de encendido o de reinicio, desde cualquier origen o por el watchdog',
+        triggerSignal: 'La señal HDMI se pierde o vuelve',
+        triggerFailsafe: 'El servidor arranca en modo a prueba de fallos',
+        triggerNote: 'El botón del menú Pantalla y POST /api/dashcam/save siempre guardan un clip.',
+        save: 'Guardar',
+        saved: 'Ajustes de la dashcam guardados',
+        failed: 'No se pudieron guardar los ajustes de la dashcam',
+        buffered: 'En memoria',
+        bufferedValue: '{{seconds}} s, {{size}} de {{budget}}',
+        clips: 'Clips',
+        noClips: 'Aún no hay clips.',
+        download: 'Descargar',
+        delete: 'Eliminar',
+        deleteConfirm: '¿Eliminar {{name}}?',
+        deleted: 'Clip eliminado',
+        deleteFailed: 'No se pudo eliminar el clip',
+        triggerNames: {
+          power: 'Botón de encendido',
+          reset: 'Botón de reinicio',
+          watchdog: 'Watchdog',
+          signalLost: 'Señal perdida',
+          signalRestored: 'Señal recuperada',
+          failsafe: 'Modo a prueba de fallos',
+          manual: 'Guardado a mano',
+          api: 'API'
+        }
+      },
       hostLog: {
         title: 'Registro del host',
         intro:
@@ -1430,7 +1491,8 @@ const es = {
           oled: 'Pantalla OLED',
           hdmi: 'Tiempo de inactividad HDMI',
           roomMic: 'Micrófono de la sala',
-          notifications: 'Reglas de notificación'
+          notifications: 'Reglas de notificación',
+          dashcam: 'Dashcam'
         }
       },
       watchdog: {

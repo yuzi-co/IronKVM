@@ -134,6 +134,15 @@ const ja = {
       screenshot: 'スクリーンショット',
       screenshotTip: 'ホストの画面をキャプチャの原寸で PNG として保存します。',
       screenshotFailed: 'スクリーンショットに失敗しました',
+      dashcam: {
+        save: '直近 {{seconds}} 秒を保存',
+        tip: '映像の直近 1 分とその後の数秒を、MP4 ファイルとしてボードに保存します。管理者は 設定 > ドライブレコーダー で見つけられます。',
+        saving: 'クリップを保存しています。{{seconds}} 秒後に完了します。',
+        joined: '保存中のクリップに追加しました。',
+        empty: 'ドライブレコーダーにはまだ映像がありません。',
+        tooSoon: 'たった今クリップを保存しました。数秒後にもう一度お試しください。',
+        failed: 'クリップは保存されませんでした'
+      },
       streamInfo: {
         toggle: 'ストリーム情報',
         toggleTip: '映像の下に、このブラウザーが測定したストリームの接続、解像度、フレームレート、ビットレート、遅延を 1 行で表示します。',
@@ -1201,6 +1210,52 @@ const ja = {
         lastOk: '送信済み',
         lastFailed: '失敗'
       },
+      dashcam: {
+        title: 'ドライブレコーダー',
+        enabled: '直近の映像を保持',
+        enabledDesc:
+          '映像の直近の数秒をボードのメモリに保持します。ホストがリセットまたは電源投入されたとき、HDMI 信号が失われたか戻ったとき、または指示したときに、ボードはそれを MP4 ファイルとして /data/dashcam に保存します。それまで SD カードには何も書き込みません。',
+        cost:
+          'ドライブレコーダーがオンの間、誰も見ていなくてもボードは映像をキャプチャしてエンコードします。CPU 時間と電力、最大 16 MB のメモリを使います。視聴者のストリーム設定は変わりません。mainline カーネルでは、エンコーダーが 4 秒ごとにキーフレームも作り、すべての視聴者がそれを受け取ります。',
+        noVideo: 'ドライブレコーダーはオンですが、ボードは映像をキャプチャしていません(フェイルセーフモード)。',
+        lastError: '直近のクリップは保存されませんでした: {{error}}',
+        seconds: 'イベント前',
+        secondsDesc: 'クリップがイベント前から保持する映像の長さ: 30〜120 秒。',
+        postSeconds: 'イベント後',
+        postSecondsDesc: 'クリップがイベント後からも保持する映像の長さ: 0〜30 秒。',
+        bitrate: 'ビットレートによるメモリ上限',
+        bitrateDesc: '映像のメモリを、この期間このビットレート分に制限します。ストリームは変わりません。変化の多い画面ではクリップが短くなります。',
+        bitrateStream: '現在のストリームを使用',
+        storage: '保存容量の上限',
+        storageDesc: 'クリップが使える /data の容量。古いクリップから削除します。',
+        triggers: 'クリップを保存するタイミング',
+        triggerAtx: '電源またはリセットボタンが押されたとき(どの経路からでも、ウォッチドッグによるものも含む)',
+        triggerSignal: 'HDMI 信号が失われたか戻ったとき',
+        triggerFailsafe: 'サーバーがフェイルセーフモードで起動したとき',
+        triggerNote: '画面メニューのボタンと POST /api/dashcam/save は常にクリップを保存します。',
+        save: '保存',
+        saved: 'ドライブレコーダーの設定を保存しました',
+        failed: 'ドライブレコーダーの設定を保存できませんでした',
+        buffered: 'メモリ内',
+        bufferedValue: '{{seconds}} 秒、{{size}} / {{budget}}',
+        clips: 'クリップ',
+        noClips: 'クリップはまだありません。',
+        download: 'ダウンロード',
+        delete: '削除',
+        deleteConfirm: '{{name}} を削除しますか?',
+        deleted: 'クリップを削除しました',
+        deleteFailed: 'クリップを削除できませんでした',
+        triggerNames: {
+          power: '電源ボタン',
+          reset: 'リセットボタン',
+          watchdog: 'ウォッチドッグ',
+          signalLost: '信号喪失',
+          signalRestored: '信号復帰',
+          failsafe: 'フェイルセーフモード',
+          manual: '手動保存',
+          api: 'API'
+        }
+      },
       hostLog: {
         title: 'ホストログ',
         intro:
@@ -1416,7 +1471,8 @@ const ja = {
           oled: 'OLED ディスプレイ',
           hdmi: 'HDMI アイドルタイムアウト',
           roomMic: 'ルームマイク',
-          notifications: '通知ルール'
+          notifications: '通知ルール',
+          dashcam: 'ドライブレコーダー'
         }
       },
       watchdog: {

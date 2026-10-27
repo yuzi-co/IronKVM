@@ -46,6 +46,7 @@ export const KEYWORDS: Record<string, string[]> = {
   ],
   performance: ['cpu', 'frequency', 'swap', 'zram', 'memory', 'ram'],
   watchdog: ['health', 'ping', 'hang', 'heartbeat'],
+  dashcam: ['recording', 'record', 'clip', 'video', 'mp4', 'replay', 'crash', 'boot', 'reset'],
   hostLog: ['syslog', 'netconsole', 'kernel', 'panic', 'dmesg', 'logs', 'udp'],
   notifications: ['alert', 'webhook', 'ntfy', 'telegram', 'push', 'snapshot', 'screenshot'],
   update: ['upgrade', 'firmware', 'version', 'addon', 'offline'],

@@ -134,6 +134,16 @@ const pt_br = {
       screenshot: 'Captura de tela',
       screenshotTip: 'Salva a tela do host como PNG no tamanho total de captura.',
       screenshotFailed: 'Falha na captura de tela',
+      dashcam: {
+        save: 'Salvar últimos {{seconds}} s',
+        tip:
+          'Salva o último minuto do vídeo, e alguns segundos depois, como arquivo MP4 na placa. Um administrador o encontra em Configurações > Dashcam.',
+        saving: 'Salvando o clipe. Ficará pronto em {{seconds}} s.',
+        joined: 'Adicionado ao clipe que está sendo salvo.',
+        empty: 'A dashcam ainda não tem vídeo.',
+        tooSoon: 'Um clipe foi salvo há pouco. Tente novamente em alguns segundos.',
+        failed: 'O clipe não foi salvo'
+      },
       streamInfo: {
         toggle: 'Info do stream',
         toggleTip:
@@ -1209,6 +1219,56 @@ const pt_br = {
         lastOk: 'enviado',
         lastFailed: 'falhou'
       },
+      dashcam: {
+        title: 'Dashcam',
+        enabled: 'Manter o último vídeo',
+        enabledDesc:
+          'Mantém os últimos segundos do vídeo na memória da placa. Quando o host é reiniciado ou ligado, o sinal HDMI se perde ou volta, ou você pede, a placa os salva como arquivo MP4 em /data/dashcam. Nada é gravado no cartão SD antes disso.',
+        cost:
+          'Enquanto a dashcam está ativa, a placa captura e codifica o vídeo mesmo quando ninguém assiste. Isso custa tempo de CPU, energia e até 16 MB de memória. Os espectadores mantêm suas configurações de stream. Com o kernel mainline, o codificador também gera um quadro-chave a cada 4 segundos, que todo espectador recebe.',
+        noVideo: 'A dashcam está ativa, mas a placa não captura vídeo (modo de segurança).',
+        lastError: 'O último clipe não foi salvo: {{error}}',
+        seconds: 'Antes do evento',
+        secondsDesc: 'Quanto vídeo de antes do evento um clipe mantém: de 30 a 120 segundos.',
+        postSeconds: 'Depois do evento',
+        postSecondsDesc:
+          'Quanto vídeo de depois do evento um clipe também mantém: de 0 a 30 segundos.',
+        bitrate: 'Limite de memória por taxa de bits',
+        bitrateDesc:
+          'Limita a memória do vídeo a esta taxa de bits durante a duração. O stream não muda: uma imagem que muda muito gera um clipe mais curto.',
+        bitrateStream: 'Usar o stream atual',
+        storage: 'Limite de armazenamento',
+        storageDesc:
+          'Quanto de /data os clipes podem usar. Os clipes mais antigos são excluídos primeiro.',
+        triggers: 'Salvar um clipe quando',
+        triggerAtx:
+          'O botão de energia ou reset é pressionado, de qualquer origem ou pelo watchdog',
+        triggerSignal: 'O sinal HDMI se perde ou volta',
+        triggerFailsafe: 'O servidor inicia em modo de segurança',
+        triggerNote: 'O botão no menu Tela e POST /api/dashcam/save sempre salvam um clipe.',
+        save: 'Salvar',
+        saved: 'Configurações da dashcam salvas',
+        failed: 'Falha ao salvar as configurações da dashcam',
+        buffered: 'Na memória',
+        bufferedValue: '{{seconds}} s, {{size}} de {{budget}}',
+        clips: 'Clipes',
+        noClips: 'Nenhum clipe ainda.',
+        download: 'Baixar',
+        delete: 'Excluir',
+        deleteConfirm: 'Excluir {{name}}?',
+        deleted: 'Clipe excluído',
+        deleteFailed: 'Falha ao excluir o clipe',
+        triggerNames: {
+          power: 'Botão de energia',
+          reset: 'Botão de reset',
+          watchdog: 'Watchdog',
+          signalLost: 'Sinal perdido',
+          signalRestored: 'Sinal restaurado',
+          failsafe: 'Modo de segurança',
+          manual: 'Salvo à mão',
+          api: 'API'
+        }
+      },
       hostLog: {
         title: 'Log do host',
         intro:
@@ -1425,7 +1485,8 @@ const pt_br = {
           oled: 'Tela OLED',
           hdmi: 'Tempo de inatividade HDMI',
           roomMic: 'Microfone do ambiente',
-          notifications: 'Regras de notificação'
+          notifications: 'Regras de notificação',
+          dashcam: 'Dashcam'
         }
       },
       watchdog: {

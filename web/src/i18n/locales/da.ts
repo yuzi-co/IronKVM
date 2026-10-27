@@ -134,6 +134,16 @@ const da = {
       screenshot: 'Skærmbillede',
       screenshotTip: 'Gemmer værtens skærm som PNG i fuld optagestørrelse.',
       screenshotFailed: 'Skærmbillede mislykkedes',
+      dashcam: {
+        save: 'Gem sidste {{seconds}} s',
+        tip:
+          'Gemmer det sidste minut af videoen, og nogle sekunder efter, som en MP4-fil på boardet. En administrator finder den under Indstillinger > Dashcam.',
+        saving: 'Klippet gemmes. Det er klar om {{seconds}} s.',
+        joined: 'Føjet til klippet, der er ved at blive gemt.',
+        empty: 'Dashcammet har endnu ingen video.',
+        tooSoon: 'Et klip blev gemt for et øjeblik siden. Prøv igen om et par sekunder.',
+        failed: 'Klippet blev ikke gemt'
+      },
       streamInfo: {
         toggle: 'Streaminfo',
         toggleTip:
@@ -1197,6 +1207,54 @@ const da = {
         lastOk: 'sendt',
         lastFailed: 'mislykkedes'
       },
+      dashcam: {
+        title: 'Dashcam',
+        enabled: 'Behold den seneste video',
+        enabledDesc:
+          'Beholder de sidste sekunder af videoen i boardets hukommelse. Når værten nulstilles eller tændes, HDMI-signalet forsvinder eller kommer tilbage, eller du beder om det, gemmer boardet dem som en MP4-fil i /data/dashcam. Indtil da skrives der intet til SD-kortet.',
+        cost:
+          'Mens dashcammet er slået til, optager og koder boardet videoen, også når ingen ser med. Det koster CPU-tid, strøm og op til 16 MB hukommelse. Seere beholder deres streamindstillinger. Med mainline-kernen laver encoderen desuden et keyframe hvert 4. sekund, som alle seere modtager.',
+        noVideo: 'Dashcammet er slået til, men boardet optager ingen video (failsafe-tilstand).',
+        lastError: 'Det seneste klip blev ikke gemt: {{error}}',
+        seconds: 'Før hændelsen',
+        secondsDesc: 'Hvor meget video fra før hændelsen et klip beholder: 30 til 120 sekunder.',
+        postSeconds: 'Efter hændelsen',
+        postSecondsDesc:
+          'Hvor meget video fra efter hændelsen et klip også beholder: 0 til 30 sekunder.',
+        bitrate: 'Hukommelsesgrænse efter bitrate',
+        bitrateDesc:
+          'Begrænser hukommelsen til videoen til denne bitrate over varigheden. Streamen ændres ikke: et billede, der ændrer sig meget, giver et kortere klip.',
+        bitrateStream: 'Brug den aktuelle stream',
+        storage: 'Lagergrænse',
+        storageDesc: 'Hvor meget af /data klippene må bruge. De ældste klip slettes først.',
+        triggers: 'Gem et klip, når',
+        triggerAtx: 'Tænd- eller reset-knappen trykkes, fra enhver kilde eller af watchdoggen',
+        triggerSignal: 'HDMI-signalet forsvinder eller kommer tilbage',
+        triggerFailsafe: 'Serveren starter i failsafe-tilstand',
+        triggerNote: 'Knappen i Skærm-menuen og POST /api/dashcam/save gemmer altid et klip.',
+        save: 'Gem',
+        saved: 'Dashcam-indstillinger gemt',
+        failed: 'Kunne ikke gemme dashcam-indstillingerne',
+        buffered: 'I hukommelsen',
+        bufferedValue: '{{seconds}} s, {{size}} af {{budget}}',
+        clips: 'Klip',
+        noClips: 'Ingen klip endnu.',
+        download: 'Hent',
+        delete: 'Slet',
+        deleteConfirm: 'Slet {{name}}?',
+        deleted: 'Klip slettet',
+        deleteFailed: 'Kunne ikke slette klippet',
+        triggerNames: {
+          power: 'Tænd-knap',
+          reset: 'Reset-knap',
+          watchdog: 'Watchdog',
+          signalLost: 'Signal tabt',
+          signalRestored: 'Signal tilbage',
+          failsafe: 'Failsafe-tilstand',
+          manual: 'Gemt manuelt',
+          api: 'API'
+        }
+      },
       hostLog: {
         title: 'Værtslog',
         intro:
@@ -1411,7 +1469,8 @@ const da = {
           oled: 'OLED-skærm',
           hdmi: 'HDMI-inaktivitetstid',
           roomMic: 'Rummikrofon',
-          notifications: 'Notifikationsregler'
+          notifications: 'Notifikationsregler',
+          dashcam: 'Dashcam'
         }
       },
       watchdog: {
