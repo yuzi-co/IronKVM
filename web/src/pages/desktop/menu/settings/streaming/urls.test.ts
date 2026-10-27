@@ -21,6 +21,17 @@ test('the RTSP address carries the token as the password', () => {
   );
 });
 
+test('the RTSPS address differs only in its scheme and port', () => {
+  assert.equal(
+    rtspUrl('kvm.local', 8322, '/stream', undefined, true),
+    'rtsps://viewer:<token>@kvm.local:8322/stream'
+  );
+  assert.equal(
+    rtspUrl('fe80::1', 8322, '/stream', 'nkvm_abc', true),
+    'rtsps://viewer:nkvm_abc@[fe80::1]:8322/stream'
+  );
+});
+
 test('the SRT address calls the board with the passphrase and the token', () => {
   assert.equal(
     srtUrl('kvm.local', 8890),

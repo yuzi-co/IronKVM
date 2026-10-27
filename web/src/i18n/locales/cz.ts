@@ -2494,11 +2494,16 @@ const cz = {
           'Přehrávač se přihlásí libovolným uživatelským jménem a jako heslem tokenem, který smí jen sledovat: klíčem API jen pro zobrazení (Nastavení > Klíče API) nebo tokenem odkazu pro sdílení. Klíč, který smí víc, je odmítnut.',
         failed: 'Nastavení RTSP se nepodařilo uložit',
         limits: 'Nejvýše dva přehrávače najednou. Změna video kodeku je ukončí a připojí se znovu.',
+        noCertificate:
+          'Deska zatím nemá certifikát TLS. Zapnutím RTSPS se vytvoří certifikát podepsaný sám sebou.',
         noPlayers: 'Žádný přehrávač není připojen',
+        plain: 'Nešifrované RTSP',
+        plainDesc: 'Bez šifrování, pro přehrávače, které RTSPS neumějí.',
         players: 'Přehrávače',
         playing: 'Přehrává',
-        port: 'Port',
+        port: 'Port RTSP',
         portDesc: 'Port TCP, ke kterému se přehrávače připojují.',
+        recommended: 'Doporučeno',
         save: 'Uložit',
         saved: 'Nastavení RTSP uloženo',
         service: 'Server RTSP',
@@ -2506,10 +2511,19 @@ const cz = {
           'Umožňuje OBS (Zdroj médií), VLC, ffmpeg a NVR přehrávat video a zvuk hostitele, pokud nějaký je. Deska posílá to, co její kodér už vytváří; nic se nepřekódovává. Každý přehrávač se počítá jako divák.',
         since: 'Od',
         state: 'Stav',
+        tls: 'RTSPS (šifrované)',
+        tlsAddress: 'Adresa RTSPS',
+        tlsDesc:
+          'RTSP přes TLS s certifikátem, který používá webové rozhraní. Token, obraz i zvuk jsou šifrované a média zůstávají uvnitř spojení.',
+        tlsHint:
+          'Certifikát desky je podepsaný sám sebou, pokud jste nenahráli vlastní, takže ho přehrávač musí přijmout: VLC se zeptá, OBS ho může odmítnout.',
+        tlsPort: 'Port RTSPS',
+        tlsPortDesc: 'Port TCP, ke kterému se připojují přehrávače RTSPS.',
         transport: 'Přenos',
         udp: 'RTP přes UDP',
         udpDesc:
           'Nabízet média také přes UDP. Ve výchozím stavu jdou uvnitř spojení RTSP, které projde NAT i firewally, a přehrávač žádající UDP se k němu vrátí.',
+        udpPlainOnly: 'Jen pro nešifrované RTSP: RTSPS drží média uvnitř svého spojení.',
         udpPort: 'Porty UDP',
         udpPortDesc: 'Port RTP. RTCP používá následující.',
         user: 'Uživatel'

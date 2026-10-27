@@ -20,15 +20,17 @@ function encode(value: string, placeholder: string): string {
 }
 
 // rtspUrl is the address with the credentials in it, which OBS, VLC and
-// ffmpeg all take.
+// ffmpeg all take. secure gives the rtsps:// address of the TLS listener.
 export function rtspUrl(
   host: string,
   port: number,
   path: string,
-  token: string = TOKEN_PLACEHOLDER
+  token: string = TOKEN_PLACEHOLDER,
+  secure = false
 ): string {
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  return `rtsp://${RTSP_USER}:${encode(token, TOKEN_PLACEHOLDER)}@${hostPart(host)}:${port}${cleanPath}`;
+  const scheme = secure ? 'rtsps' : 'rtsp';
+  return `${scheme}://${RTSP_USER}:${encode(token, TOKEN_PLACEHOLDER)}@${hostPart(host)}:${port}${cleanPath}`;
 }
 
 // srtUrl is the address for OBS's Media Source and ffmpeg: the board

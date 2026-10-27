@@ -44,8 +44,12 @@ func rtspRouter(r *gin.Engine) {
 		SetSettings:   rtsp.ApplySettings,
 		ReservedPorts: webServerPorts,
 		// The allowed networks setting covers RTSP as it does the web UI.
-		ClientAllowed:  allowlist.AllowedAddr,
-		Authenticate:   viewTokenAuthenticator,
+		ClientAllowed: allowlist.AllowedAddr,
+		Authenticate:  viewTokenAuthenticator,
+		// RTSPS serves the web server's certificate, and a certificate
+		// replaced on the settings page applies to the next player.
+		Certificate:    servingCertificate,
+		HasCertificate: hasServingCertificate,
 		Tap:            egress.Shared(),
 		AudioAvailable: audio.Available,
 	})

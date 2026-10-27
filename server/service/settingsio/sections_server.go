@@ -11,6 +11,7 @@ import (
 	"NanoKVM-Server/config"
 	"NanoKVM-Server/service/hostlog"
 	"NanoKVM-Server/service/nut"
+	"NanoKVM-Server/service/rtsp"
 	"NanoKVM-Server/service/stream/webrtc"
 )
 
@@ -360,16 +361,24 @@ type rtspSettings struct {
 	Port    int  `json:"port"`
 	UDP     bool `json:"udp"`
 	UDPPort int  `json:"udpPort"`
+	TLS     bool `json:"tls,omitempty"`
+	TLSPort int  `json:"tlsPort,omitempty"`
 }
 
 func (v rtspSettings) config() config.RTSP {
-	return config.RTSP{Enabled: v.Enabled, Port: v.Port, UDP: v.UDP, UDPPort: v.UDPPort}
+	return config.RTSP{
+		Enabled: v.Enabled, Port: v.Port, UDP: v.UDP, UDPPort: v.UDPPort,
+		TLS: v.TLS, TLSPort: v.TLSPort,
+	}
 }
 
 var rtspSection = serverSpec("rtsp",
 	func(c *config.Config) rtspSettings {
 		r := c.RTSP
-		return rtspSettings{Enabled: r.Enabled, Port: r.Port, UDP: r.UDP, UDPPort: r.UDPPort}
+		return rtspSettings{
+			Enabled: r.Enabled, Port: r.Port, UDP: r.UDP, UDPPort: r.UDPPort,
+			TLS: r.TLS, TLSPort: r.TLSPort,
+		}
 	},
 	// Players authenticate with view-only API keys, which stay on the board
 	// they were made on.
@@ -383,12 +392,14 @@ var rtspSection = serverSpec("rtsp",
 		if r.UDPPort < 1 || r.UDPPort > 65534 {
 			return errors.New("the UDP port is 1 to 65534")
 		}
-		if conf, err := s.config(); err == nil {
-			if r.Port == conf.Port.Http || r.Port == conf.Port.Https {
-				return errors.New("the port is used by the web server")
-			}
+		if r.TLSPort < 1 || r.TLSPort > 65535 {
+			return errors.New("the RTSPS port is 1 to 65535")
 		}
-		return nil
+		var reserved []int
+		if conf, err := s.config(); err == nil {
+			reserved = []int{conf.Port.Http, conf.Port.Https}
+		}
+		return rtsp.CheckPorts(r, reserved)
 	})
 
 type srtSettings struct {

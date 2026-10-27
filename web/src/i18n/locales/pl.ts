@@ -2513,11 +2513,16 @@ const pl = {
         failed: 'Nie udało się zapisać ustawień RTSP',
         limits:
           'Najwyżej dwa odtwarzacze naraz. Zmiana kodeka wideo je kończy i łączą się ponownie.',
+        noCertificate:
+          'Płytka nie ma jeszcze certyfikatu TLS. Włączenie RTSPS utworzy certyfikat z podpisem własnym.',
         noPlayers: 'Brak połączonego odtwarzacza',
+        plain: 'Nieszyfrowany RTSP',
+        plainDesc: 'Bez szyfrowania, dla odtwarzaczy, które nie obsługują RTSPS.',
         players: 'Odtwarzacze',
         playing: 'Odtwarza',
-        port: 'Port',
+        port: 'Port RTSP',
         portDesc: 'Port TCP, z którym łączą się odtwarzacze.',
+        recommended: 'Zalecane',
         save: 'Zapisz',
         saved: 'Zapisano ustawienia RTSP',
         service: 'Serwer RTSP',
@@ -2525,10 +2530,20 @@ const pl = {
           'Pozwala OBS (Źródło multimediów), VLC, ffmpeg i rejestratorom NVR odtwarzać wideo oraz dźwięk hosta, gdy jest. Płytka wysyła to, co jej koder już tworzy; nic nie jest kodowane ponownie. Każdy odtwarzacz liczy się jako widz.',
         since: 'Od',
         state: 'Stan',
+        tls: 'RTSPS (szyfrowany)',
+        tlsAddress: 'Adres RTSPS',
+        tlsDesc:
+          'RTSP przez TLS, z certyfikatem używanym przez interfejs WWW. Token, obraz i dźwięk są szyfrowane, a media pozostają wewnątrz połączenia.',
+        tlsHint:
+          'Certyfikat płytki ma podpis własny, chyba że wgrano własny certyfikat, więc odtwarzacz musi go zaakceptować: VLC o to zapyta, OBS może go odrzucić.',
+        tlsPort: 'Port RTSPS',
+        tlsPortDesc: 'Port TCP, z którym łączą się odtwarzacze RTSPS.',
         transport: 'Transport',
         udp: 'RTP przez UDP',
         udpDesc:
           'Oferuj media także przez UDP. Domyślnie idą wewnątrz połączenia RTSP, które przechodzi przez NAT i zapory, a odtwarzacz proszący o UDP wraca do niego.',
+        udpPlainOnly:
+          'Tylko dla nieszyfrowanego RTSP: RTSPS trzyma media wewnątrz swojego połączenia.',
         udpPort: 'Porty UDP',
         udpPortDesc: 'Port RTP. RTCP używa następnego.',
         user: 'Użytkownik'

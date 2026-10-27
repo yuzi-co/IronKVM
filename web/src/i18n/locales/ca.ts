@@ -2528,11 +2528,16 @@ const ca = {
         failed: 'No s\'ha pogut desar la configuració RTSP',
         limits:
           'Com a màxim dos reproductors alhora. Un canvi de còdec de vídeo els atura i tornen a connectar-se.',
+        noCertificate:
+          'La placa encara no té cap certificat TLS. En activar RTSPS se\'n crea un d\'autosignat.',
         noPlayers: 'Cap reproductor connectat',
+        plain: 'RTSP sense xifrar',
+        plainDesc: 'Sense xifrar, per als reproductors que no admeten RTSPS.',
         players: 'Reproductors',
         playing: 'Reproduint',
-        port: 'Port',
+        port: 'Port RTSP',
         portDesc: 'El port TCP al qual es connecten els reproductors.',
+        recommended: 'Recomanat',
         save: 'Desa',
         saved: 'S\'ha desat la configuració RTSP',
         service: 'Servidor RTSP',
@@ -2540,10 +2545,19 @@ const ca = {
           'Permet que OBS (Font multimèdia), VLC, ffmpeg i els NVR reprodueixin el vídeo, i l\'àudio de l\'amfitrió quan n\'hi ha. La placa envia el que el seu codificador ja genera; no es recodifica res. Cada reproductor compta com a espectador.',
         since: 'Des de',
         state: 'Estat',
+        tls: 'RTSPS (xifrat)',
+        tlsAddress: 'Adreça RTSPS',
+        tlsDesc:
+          'RTSP sobre TLS, amb el certificat que fa servir la interfície web. El testimoni, la imatge i el so van xifrats, i els mitjans es queden dins la connexió.',
+        tlsHint:
+          'El certificat de la placa és autosignat si no n\'heu pujat un, així que el reproductor l\'ha d\'acceptar: VLC us ho demana, OBS pot rebutjar-lo.',
+        tlsPort: 'Port RTSPS',
+        tlsPortDesc: 'El port TCP al qual es connecten els reproductors RTSPS.',
         transport: 'Transport',
         udp: 'RTP sobre UDP',
         udpDesc:
           'Oferiu també els mitjans per UDP. Per defecte viatgen dins la connexió RTSP, que travessa NAT i tallafocs, i un reproductor que demana UDP hi recorre.',
+        udpPlainOnly: 'Només RTSP sense xifrar: RTSPS manté els mitjans dins la seva connexió.',
         udpPort: 'Ports UDP',
         udpPortDesc: 'El port RTP. RTCP fa servir el següent.',
         user: 'Usuari'

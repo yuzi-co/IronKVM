@@ -2492,11 +2492,16 @@ const en = {
         failed: 'Failed to save the RTSP settings',
         limits:
           'At most two players at once. A change of the video codec ends them, and they connect again.',
+        noCertificate:
+          'The board has no TLS certificate yet. Switching RTSPS on makes a self-signed one.',
         noPlayers: 'No player connected',
+        plain: 'Plain RTSP',
+        plainDesc: 'Unencrypted, for players that cannot do RTSPS.',
         players: 'Players',
         playing: 'Playing',
-        port: 'Port',
+        port: 'RTSP port',
         portDesc: 'The TCP port players connect to.',
+        recommended: 'Recommended',
         save: 'Save',
         saved: 'RTSP settings saved',
         service: 'RTSP server',
@@ -2504,10 +2509,19 @@ const en = {
           'Lets OBS (Media Source), VLC, ffmpeg and NVRs play the video, and the host audio when there is any. The board sends what its encoder already makes; nothing is re-encoded. Each player counts as a viewer.',
         since: 'Since',
         state: 'State',
+        tls: 'RTSPS (encrypted)',
+        tlsAddress: 'RTSPS address',
+        tlsDesc:
+          'RTSP over TLS, with the certificate the web interface uses. The token, the picture and the sound are encrypted, and the media stays inside the connection.',
+        tlsHint:
+          'The board\'s certificate is self-signed unless you uploaded one, so the player has to accept it: VLC asks you to, OBS may refuse it.',
+        tlsPort: 'RTSPS port',
+        tlsPortDesc: 'The TCP port RTSPS players connect to.',
         transport: 'Transport',
         udp: 'RTP over UDP',
         udpDesc:
           'Also offer the media over UDP. By default it travels inside the RTSP connection, which crosses NAT and firewalls, and a player that asks for UDP falls back to that.',
+        udpPlainOnly: 'Plain RTSP only: RTSPS keeps the media inside its connection.',
         udpPort: 'UDP ports',
         udpPortDesc: 'The RTP port. RTCP uses the next one.',
         user: 'User'

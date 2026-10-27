@@ -2527,11 +2527,16 @@ const nl = {
         failed: 'Opslaan van de RTSP-instellingen mislukt',
         limits:
           'Hoogstens twee spelers tegelijk. Een wissel van videocodec beëindigt ze, en ze maken opnieuw verbinding.',
+        noCertificate:
+          'Het bord heeft nog geen TLS-certificaat. Bij het inschakelen van RTSPS wordt een zelfondertekend certificaat gemaakt.',
         noPlayers: 'Geen speler verbonden',
+        plain: 'Onversleutelde RTSP',
+        plainDesc: 'Onversleuteld, voor spelers die geen RTSPS kunnen.',
         players: 'Spelers',
         playing: 'Speelt af',
-        port: 'Poort',
+        port: 'RTSP-poort',
         portDesc: 'De TCP-poort waarmee spelers verbinden.',
+        recommended: 'Aanbevolen',
         save: 'Opslaan',
         saved: 'RTSP-instellingen opgeslagen',
         service: 'RTSP-server',
@@ -2539,10 +2544,20 @@ const nl = {
           'Laat OBS (Mediabron), VLC, ffmpeg en NVR\'s de video afspelen, en het geluid van de host als dat er is. Het bord stuurt wat zijn encoder al maakt; er wordt niets opnieuw gecodeerd. Elke speler telt als kijker.',
         since: 'Sinds',
         state: 'Status',
+        tls: 'RTSPS (versleuteld)',
+        tlsAddress: 'RTSPS-adres',
+        tlsDesc:
+          'RTSP over TLS, met het certificaat van de webinterface. Het token, het beeld en het geluid zijn versleuteld, en de media blijven binnen de verbinding.',
+        tlsHint:
+          'Het certificaat van het bord is zelfondertekend, tenzij je er een hebt geüpload, dus de speler moet het accepteren: VLC vraagt erom, OBS kan het weigeren.',
+        tlsPort: 'RTSPS-poort',
+        tlsPortDesc: 'De TCP-poort waarmee RTSPS-spelers verbinden.',
         transport: 'Transport',
         udp: 'RTP over UDP',
         udpDesc:
           'De media ook via UDP aanbieden. Standaard gaan ze binnen de RTSP-verbinding, die NAT en firewalls passeert, en een speler die om UDP vraagt valt daarop terug.',
+        udpPlainOnly:
+          'Alleen onversleutelde RTSP: RTSPS houdt de media binnen de eigen verbinding.',
         udpPort: 'UDP-poorten',
         udpPortDesc: 'De RTP-poort. RTCP gebruikt de volgende.',
         user: 'Gebruiker'

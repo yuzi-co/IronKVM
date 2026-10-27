@@ -19,11 +19,22 @@ const pollMs = 5 * 1000;
 
 const defaultPort = 8554;
 const defaultUdpPort = 8000;
+const defaultTlsPort = 8322;
 
-type Draft = { port: number; udp: boolean; udpPort: number };
+type Draft = { port: number; udp: boolean; udpPort: number; tlsPort: number };
 
-// The RTSP server (ironkvm-dist#142): its switch, its ports, the address a
-// player is given, and the players connected.
+function draftOf(settings: RtspSettings): Draft {
+  return {
+    port: settings.port,
+    udp: settings.udp,
+    udpPort: settings.udpPort,
+    tlsPort: settings.tlsPort
+  };
+}
+
+// The RTSP server (ironkvm-dist#142): a switch for RTSPS and one for plain
+// RTSP, their ports, the addresses a player is given, and the players
+// connected.
 export const Rtsp = () => {
   const { t } = useTranslation();
   const [settings, setSettings] = useState<RtspSettings | null>(null);
@@ -45,9 +56,7 @@ export const Rtsp = () => {
         const next: RtspSettings = rsp.data;
         setSettings(next);
         setIsStale(false);
-        setDraft((current) =>
-          keepDraft && current ? current : { port: next.port, udp: next.udp, udpPort: next.udpPort }
-        );
+        setDraft((current) => (keepDraft && current ? current : draftOf(next)));
       })
       .catch(() => setIsStale(true));
   }, []);
@@ -74,10 +83,13 @@ export const Rtsp = () => {
       .finally(() => setIsSaving(false));
   }
 
-  // The switch saves at once, with the settings as they were last saved.
-  function setEnabled(enabled: boolean) {
+  // A switch saves at once, with the other settings as they were last saved.
+  function setSwitch(key: 'enabled' | 'tls', value: boolean) {
     if (!settings) return;
-    save({ enabled, port: settings.port, udp: settings.udp, udpPort: settings.udpPort }, true);
+    save(
+      { enabled: settings.enabled, tls: settings.tls, ...draftOf(settings), [key]: value },
+      true
+    );
   }
 
   function update<K extends keyof Draft>(key: K, value: Draft[K]) {
@@ -89,14 +101,79 @@ export const Rtsp = () => {
     !!settings &&
     (draft.port !== settings.port ||
       draft.udp !== settings.udp ||
-      draft.udpPort !== settings.udpPort);
+      draft.udpPort !== settings.udpPort ||
+      draft.tlsPort !== settings.tlsPort);
 
   function saveDraft() {
     if (!draft || !settings) return;
-    save({ enabled: settings.enabled, ...draft }, false);
+    save({ enabled: settings.enabled, tls: settings.tls, ...draft }, false);
   }
 
-  const address = settings ? rtspUrl(getHostname(), settings.port, settings.path) : '';
+  const host = getHostname();
+  const address = settings ? rtspUrl(host, settings.port, settings.path) : '';
+  const tlsAddress = settings
+    ? rtspUrl(host, settings.tlsPort, settings.path, undefined, true)
+    : '';
+
+  // RTSPS comes first once the board has a certificate to serve. Without
+  // one, plain RTSP is what works today, and RTSPS says how to get there.
+  const preferTls = settings?.certificate ?? true;
+
+  const tlsSwitch = (
+    <div key="tls" className="flex flex-col space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="flex flex-col space-y-1 pr-4">
+          <span className="text-sm font-medium">
+            {t('settings.rtsp.tls')}
+            {settings?.certificate && (
+              <Tag color="green" className="ml-2">
+                {t('settings.rtsp.recommended')}
+              </Tag>
+            )}
+          </span>
+          <span className="text-xs text-neutral-500">{t('settings.rtsp.tlsDesc')}</span>
+          {settings && !settings.certificate && (
+            <span className="text-xs text-neutral-500">{t('settings.rtsp.noCertificate')}</span>
+          )}
+        </div>
+        <Switch
+          checked={settings?.tls ?? false}
+          loading={!settings || isSaving}
+          onChange={(value) => setSwitch('tls', value)}
+        />
+      </div>
+      {settings?.tls && (
+        <>
+          <div className="rounded-xl border border-neutral-700/50 bg-neutral-800/40 px-4 py-3 text-sm">
+            <CopyRow label={t('settings.rtsp.tlsAddress')} value={tlsAddress} />
+          </div>
+          <span className="text-xs text-neutral-500">{t('settings.rtsp.tlsHint')}</span>
+        </>
+      )}
+    </div>
+  );
+
+  const plainSwitch = (
+    <div key="plain" className="flex flex-col space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="flex flex-col space-y-1 pr-4">
+          <span className="text-sm font-medium">{t('settings.rtsp.plain')}</span>
+          <span className="text-xs text-neutral-500">{t('settings.rtsp.plainDesc')}</span>
+        </div>
+        <Switch
+          checked={settings?.enabled ?? false}
+          loading={!settings || isSaving}
+          onChange={(value) => setSwitch('enabled', value)}
+        />
+      </div>
+      <Alert type="warning" showIcon message={t('settings.rtsp.cleartext')} />
+      {settings?.enabled && (
+        <div className="rounded-xl border border-neutral-700/50 bg-neutral-800/40 px-4 py-3 text-sm">
+          <CopyRow label={t('settings.rtsp.address')} value={address} />
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <>
@@ -107,32 +184,32 @@ export const Rtsp = () => {
       <Divider className="opacity-50" />
 
       <div className="flex flex-col space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex flex-col space-y-1 pr-4">
-            <span className="text-sm font-medium">{t('settings.rtsp.service')}</span>
-            <span className="text-xs text-neutral-500">{t('settings.rtsp.serviceDesc')}</span>
-          </div>
-          <Switch
-            checked={settings?.enabled ?? false}
-            loading={!settings || isSaving}
-            onChange={setEnabled}
-          />
+        <div className="flex flex-col space-y-1">
+          <span className="text-sm font-medium">{t('settings.rtsp.service')}</span>
+          <span className="text-xs text-neutral-500">{t('settings.rtsp.serviceDesc')}</span>
         </div>
 
         <span className="text-xs text-neutral-500">{t('settings.rtsp.credentials')}</span>
-        <Alert type="warning" showIcon message={t('settings.rtsp.cleartext')} />
 
-        {settings?.enabled && (
-          <div className="flex flex-col space-y-3">
-            <div className="rounded-xl border border-neutral-700/50 bg-neutral-800/40 px-4 py-3 text-sm">
-              <CopyRow label={t('settings.rtsp.address')} value={address} />
-            </div>
-            <span className="text-xs text-neutral-500">{t('settings.rtsp.addressHint')}</span>
-          </div>
+        {preferTls ? [tlsSwitch, plainSwitch] : [plainSwitch, tlsSwitch]}
+
+        {(settings?.enabled || settings?.tls) && (
+          <span className="text-xs text-neutral-500">{t('settings.rtsp.addressHint')}</span>
         )}
 
         {draft && (
           <div className="flex flex-col space-y-4">
+            <SettingRow label={t('settings.rtsp.tlsPort')} desc={t('settings.rtsp.tlsPortDesc')}>
+              <InputNumber
+                style={{ width: 150 }}
+                min={1}
+                max={65535}
+                precision={0}
+                value={draft.tlsPort}
+                onChange={(value) => update('tlsPort', value ?? defaultTlsPort)}
+              />
+            </SettingRow>
+
             <SettingRow label={t('settings.rtsp.port')} desc={t('settings.rtsp.portDesc')}>
               <InputNumber
                 style={{ width: 150 }}
@@ -144,7 +221,10 @@ export const Rtsp = () => {
               />
             </SettingRow>
 
-            <SettingRow label={t('settings.rtsp.udp')} desc={t('settings.rtsp.udpDesc')}>
+            <SettingRow
+              label={t('settings.rtsp.udp')}
+              desc={`${t('settings.rtsp.udpDesc')} ${t('settings.rtsp.udpPlainOnly')}`}
+            >
               <Switch checked={draft.udp} onChange={(value) => update('udp', value)} />
             </SettingRow>
 
@@ -196,10 +276,15 @@ export const Rtsp = () => {
                       client.playing ? t('settings.rtsp.playing') : t('settings.rtsp.connecting')
                     ],
                     ...(client.transport
-                      ? ([[t('settings.rtsp.transport'), client.transport.toUpperCase()]] as [
-                          string,
-                          string
-                        ][])
+                      ? ([
+                          [
+                            t('settings.rtsp.transport'),
+                            // RTSPS is TCP inside TLS.
+                            client.secure
+                              ? `${client.transport.toUpperCase()}, TLS`
+                              : client.transport.toUpperCase()
+                          ]
+                        ] as [string, string][])
                       : []),
                     [t('settings.rtsp.since'), formatTime(client.since)]
                   ]}
