@@ -8,10 +8,10 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
+	"NanoKVM-Server/service/agent"
 	"NanoKVM-Server/service/controlmode"
 	"NanoKVM-Server/service/hid"
 	"NanoKVM-Server/service/inputcontrol"
-	"NanoKVM-Server/service/picoclaw"
 	"NanoKVM-Server/service/vm/jiggler"
 )
 
@@ -82,7 +82,7 @@ func (i *hidInput) queue(queue chan hid.QueuedReport, kind inputcontrol.ManualRe
 	defer cancel()
 
 	reservation, err := i.manual.ReserveWithCooldown(ctx, kind, held, startCooldown, func(mode controlmode.Mode) bool {
-		return mode != controlmode.ModePicoclaw || !picoclaw.GetSessionLock().BlocksManualInput()
+		return mode != controlmode.ModePicoclaw || !agent.GetSessionLock().BlocksManualInput()
 	})
 	if err != nil {
 		if errors.Is(err, inputcontrol.ErrManualInputBlocked) {

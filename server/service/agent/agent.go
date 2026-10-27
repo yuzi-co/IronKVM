@@ -2,7 +2,9 @@
 // AI agent. The server's chat socket, the chat history routes, the task
 // capture lease and the agent's lifecycle (install, start, stop, restore at
 // boot, the runtime status and the AI control mode around them; see
-// Lifecycle) use only the interfaces here. An adapter such as the PicoClaw one
+// Lifecycle) use only the interfaces here. So do the AI input lock
+// (SessionLock) and the KVM side of a chat session (ChatHost), which are the
+// same whichever agent runs. An adapter such as the PicoClaw one
 // in service/picoclaw translates them to one agent's own protocol, process and
 // files.
 //

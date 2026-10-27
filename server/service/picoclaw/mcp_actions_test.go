@@ -86,7 +86,7 @@ func (h *fakeHID) lastMouse() []byte {
 // turnChat is a chat in which every session has a turn in progress, as while
 // the user waits for the agent, until the test ends a session's turn.
 type turnChat struct {
-	noChat
+	agent.NoChat
 	mu        sync.Mutex
 	ended     map[string]bool
 	turns     map[string]uint64
@@ -149,7 +149,7 @@ func newMCPActionTestService(t *testing.T) (*Service, *fakeVision, *fakeHID) {
 		vision:     vision,
 		hid:        hid,
 		config:     &ConfigStore{},
-		lock:       &SessionLock{},
+		lock:       &agent.SessionLock{},
 		runtime:    &RuntimeStore{},
 		control:    controlmode.NewManager(filepath.Join(t.TempDir(), "mode"), controlmode.ModePicoclaw),
 		operations: newControlOperationTracker(),

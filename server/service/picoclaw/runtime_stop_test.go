@@ -3,6 +3,8 @@ package picoclaw
 import (
 	"path/filepath"
 	"testing"
+
+	"NanoKVM-Server/service/agent"
 )
 
 func TestPreemptControlLeasesForMCPDoesNotStopRuntimeOrChangeIntent(t *testing.T) {
@@ -12,7 +14,7 @@ func TestPreemptControlLeasesForMCPDoesNotStopRuntimeOrChangeIntent(t *testing.T
 		t.Fatal(err)
 	}
 
-	lock := &SessionLock{}
+	lock := &agent.SessionLock{}
 	lock.ForceTakeover("session-1")
 	service := &Service{
 		lock:          lock,

@@ -44,7 +44,7 @@ func (s *Service) Screenshot(c *gin.Context) {
 		return
 	}
 
-	releaseAfter, lockErr := s.lock.AcquireTemporary(sessionID)
+	releaseAfter, lockErr := s.acquireLock(sessionID)
 	if lockErr != nil {
 		writePicoclawError(c, lockErr)
 		return

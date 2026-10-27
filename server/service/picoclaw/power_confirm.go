@@ -371,7 +371,7 @@ func (s *Service) pressConfirmed(c *powerConfirmation) (state, message string) {
 		return confirmationFailed, "The agent does not hold device control: " + modeErr.Message
 	}
 	defer release()
-	acquired, lockErr := s.lock.AcquireTemporary(c.SessionID)
+	acquired, lockErr := s.acquireLock(c.SessionID)
 	if lockErr != nil {
 		return confirmationFailed, lockErr.Message
 	}

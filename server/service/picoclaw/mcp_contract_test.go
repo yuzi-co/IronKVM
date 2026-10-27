@@ -374,7 +374,7 @@ func TestMCPControlConflictCarriesTheModeInData(t *testing.T) {
 }
 
 type recordingChat struct {
-	noChat
+	agent.NoChat
 	mu        sync.Mutex
 	active    string
 	published []agent.Event

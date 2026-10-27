@@ -2,9 +2,11 @@ package picoclaw
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strings"
 
+	"NanoKVM-Server/service/agent"
 	"NanoKVM-Server/service/audit"
 
 	"github.com/gin-gonic/gin"
@@ -50,7 +52,7 @@ func (s *Service) actingSession(named string) string {
 // The refusals of a device call that no user asked for. The model reads them
 // as tool errors, so they say what to do next.
 const (
-	noSessionMessage = "no chat session holds device control: the agent acts only for a user chatting with it"
+	noSessionMessage = agent.NoSessionMessage
 	noTurnMessage    = "the user's turn has ended: do not act on the host now; wait for the user's next prompt"
 )
 
@@ -103,7 +105,7 @@ func (s *Service) withAgentSession(next protocol.ToolHandler) protocol.ToolHandl
 		if turnErr := s.requireTurn(sessionID); turnErr != nil {
 			return mcpToolError(turnErr.Message), nil
 		}
-		acquired, lockErr := s.lock.AcquireTemporary(sessionID)
+		acquired, lockErr := s.acquireLock(sessionID)
 		if lockErr != nil {
 			return mcpToolError(lockErr.Message), nil
 		}
@@ -112,4 +114,31 @@ func (s *Service) withAgentSession(next protocol.ToolHandler) protocol.ToolHandl
 		}
 		return next(ctx, req)
 	}
+}
+
+// lockHeldMessage refuses the AI input lock while another chat session holds
+// it.
+const lockHeldMessage = "another PicoClaw session is running"
+
+// acquireLock takes the AI input lock for sessionID as
+// agent.SessionLock.AcquireTemporary does, with its refusal as the routes and
+// tools answer it.
+func (s *Service) acquireLock(sessionID string) (bool, *PicoclawError) {
+	acquired, err := s.lock.AcquireTemporary(sessionID)
+	return acquired, lockError(err)
+}
+
+// lockError is a refusal of the AI input lock as the routes and tools answer
+// it, nil for nil.
+func lockError(err error) *PicoclawError {
+	if err == nil {
+		return nil
+	}
+	var held *agent.LockHeldError
+	if errors.As(err, &held) {
+		lockErr := newPicoclawError(CodePicoclawLockHeld, lockHeldMessage)
+		lockErr.SessionID = held.Owner
+		return lockErr
+	}
+	return newPicoclawError(CodeSessionIDInvalid, noSessionMessage)
 }
