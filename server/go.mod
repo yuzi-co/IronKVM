@@ -30,6 +30,7 @@ require (
 	github.com/pion/interceptor v0.1.47
 	github.com/pion/rtcp v1.2.17
 	github.com/pion/rtp v1.10.5
+	github.com/pion/transport/v4 v4.1.0
 	github.com/pion/webrtc/v4 v4.2.19
 	github.com/rs/cors/wrapper/gin v0.0.0-20260604061346-2f30c9cf7731
 	github.com/sirupsen/logrus v1.10.2
@@ -78,7 +79,6 @@ require (
 	github.com/pion/sdp/v3 v3.0.19 // indirect
 	github.com/pion/srtp/v3 v3.0.13 // indirect
 	github.com/pion/stun/v3 v3.1.7 // indirect
-	github.com/pion/transport/v4 v4.1.0 // indirect
 	github.com/pion/turn/v5 v5.0.13 // indirect
 	github.com/rs/cors v1.11.0 // indirect
 	github.com/sagikazarmark/locafero v0.11.0 // indirect
