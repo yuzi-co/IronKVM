@@ -22,6 +22,8 @@ const (
 	// FAT32 is for hosts too old for exFAT and for UEFI firmware, which
 	// only has to read FAT. It holds no file of 4 GiB or more.
 	FAT32 FS = "fat32"
+	// FAT12 is a floppy disk, made by CreateFloppy rather than CreateImage.
+	FAT12 FS = "fat12"
 )
 
 const (
@@ -193,11 +195,11 @@ const fallbackLabel = "EXCHANGE"
 
 // LabelFor makes a volume label from an image's name, which is what the host
 // shows the disk as. FAT keeps a label in upper case, in the characters of
-// a short name, so everything else becomes "_"; exFAT keeps any character a
-// file name can hold. Both stop at 11 characters.
+// a short name, so everything else becomes "_" (FAT12 the same); exFAT keeps
+// any character a file name can hold. Both stop at 11 characters.
 func LabelFor(name string, fs FS) string {
 	var label string
-	if fs == FAT32 {
+	if fs == FAT32 || fs == FAT12 {
 		var b strings.Builder
 		for _, r := range strings.ToUpper(strings.TrimSpace(name)) {
 			if b.Len() == 11 {

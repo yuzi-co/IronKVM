@@ -3,6 +3,7 @@ package storage
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -138,6 +139,9 @@ func TestCreateImageValidatesTheRequest(t *testing.T) {
 		{"not whole MiB", "x", 64<<20 + 512, "exfat", codeInvalidArgument},
 		{"more than the card has", "x", 4 << 30, "exfat", codeNoSpace},
 		{"into the reserve", "x", 4<<30 - 128<<20, "exfat", codeNoSpace},
+		{"a floppy of a disk's size", "x", 64 << 20, "fat12", codeInvalidArgument},
+		{"a floppy of no floppy size", "x", 1440000, "fat12", codeInvalidArgument},
+		{"a disk of a floppy's size", "x", 1474560, "fat32", codeInvalidArgument},
 	} {
 		rsp := createCall(t, c.name, c.size, c.fs)
 		if rsp.Code != c.code {
@@ -148,6 +152,41 @@ func TestCreateImageValidatesTheRequest(t *testing.T) {
 	entries, _ := os.ReadDir(root)
 	if len(entries) != 0 {
 		t.Errorf("refused requests left %d files", len(entries))
+	}
+}
+
+// A floppy image is a bare FAT12 volume of one of the floppy sizes, made
+// like any other exchange image and listed with them.
+func TestCreateImageMakesAFloppy(t *testing.T) {
+	root := createFixture(t)
+
+	for _, size := range []int64{737280, 1474560, 2949120} {
+		name := fmt.Sprintf("floppy%d", size)
+		rsp := createCall(t, name, size, "fat12")
+		if rsp.Code != 0 {
+			t.Fatalf("create %d: %d %s", size, rsp.Code, rsp.Msg)
+		}
+		path := filepath.Join(root, name+".img")
+		info, err := os.Stat(path)
+		if err != nil || info.Size() != size {
+			t.Fatalf("%s: %v, %v", path, info, err)
+		}
+		if vol, err := diskfs.Detect(path); err != nil || vol.Kind != diskfs.KindFAT12 {
+			t.Errorf("%s holds %+v, %v", path, vol, err)
+		}
+	}
+	if images, _, err := listImages(root); err != nil || len(images) != 3 {
+		t.Errorf("the list holds %v, %v", images, err)
+	}
+}
+
+// A floppy still leaves the card its reserve.
+func TestCreateFloppyKeepsTheReserve(t *testing.T) {
+	createFixture(t)
+	freeBytes = func(string) (int64, error) { return reservedFreeBytes + 1<<20, nil }
+
+	if rsp := createCall(t, "x", 1474560, "fat12"); rsp.Code != codeNoSpace {
+		t.Errorf("code %d (%s), want %d", rsp.Code, rsp.Msg, codeNoSpace)
 	}
 }
 

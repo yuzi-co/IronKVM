@@ -53,6 +53,15 @@ func TestIsMountableImageRejectsOtherExtensions(t *testing.T) {
 	}
 }
 
+// Floppy images also go by .ima and .vfd.
+func TestIsMountableImageTakesFloppyNames(t *testing.T) {
+	for _, path := range []string{"/data/dos.img", "/data/bios.ima", "/data/F6.VFD"} {
+		if !isMountableImage(path) {
+			t.Errorf("%q must be mountable", path)
+		}
+	}
+}
+
 func TestIsMountableImageRejectsEmptyPath(t *testing.T) {
 	if isMountableImage("") {
 		t.Fatal("an empty path is not a mountable image")
@@ -185,13 +194,15 @@ func TestListImagesFindsImagesAndNeedsItsRoot(t *testing.T) {
 	}
 	write("a.iso")
 	write("sub/b.IMG")
+	write("bios.ima")
+	write("f6.VFD")
 	write("notes.txt")
 
 	images, sizes, err := listImages(root)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(images) != 2 || sizes[filepath.Join(root, "a.iso")] != 1 {
+	if len(images) != 4 || sizes[filepath.Join(root, "a.iso")] != 1 {
 		t.Errorf("images = %v, sizes = %v", images, sizes)
 	}
 

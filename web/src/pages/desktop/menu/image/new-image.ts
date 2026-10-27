@@ -8,6 +8,21 @@ export const GiB = 1024 * MiB;
 // The sizes offered as buttons; anything else is a custom size.
 export const PRESETS = [1 * GiB, 4 * GiB, 8 * GiB, 16 * GiB, 32 * GiB];
 
+// The floppy sizes, in bytes, by the names they are sold under. A floppy
+// image is formatted FAT12 and has no other size.
+export const FLOPPIES = [
+  { size: 737280, name: '720 KB' },
+  { size: 1474560, name: '1.44 MB' },
+  { size: 2949120, name: '2.88 MB' }
+];
+
+export const FLOPPY_DEFAULT = 1474560;
+
+// isFloppy reports whether an image of size bytes is a floppy disk.
+export function isFloppy(size: number | undefined): boolean {
+  return FLOPPIES.some((f) => f.size === size);
+}
+
 // What the server says an image may be: min and max in bytes, and the free
 // space max was derived from.
 export type ImageSpace = { min: number; max: number; free: number };
@@ -56,6 +71,14 @@ export function toBytes(value: number, unit: SizeUnit): number {
 // checkSize returns the locale key of what is wrong with size, or ''.
 export function checkSize(size: number, space: ImageSpace): string {
   if (size < space.min) return 'sizeTooSmall';
+  if (size > space.max) return 'sizeTooLarge';
+  return '';
+}
+
+// checkFloppySize is checkSize for a floppy, which is below the minimum of
+// a disk image by design.
+export function checkFloppySize(size: number, space: ImageSpace): string {
+  if (!isFloppy(size)) return 'sizeTooSmall';
   if (size > space.max) return 'sizeTooLarge';
   return '';
 }

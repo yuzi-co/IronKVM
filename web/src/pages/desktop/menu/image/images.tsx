@@ -10,6 +10,7 @@ import {
   LoaderCircleIcon,
   PackageIcon,
   PackageSearchIcon,
+  SaveIcon,
   Trash2Icon,
   TriangleAlertIcon
 } from 'lucide-react';
@@ -20,6 +21,7 @@ import { formatBytes } from '@/lib/health.ts';
 import { useStableCallback } from '@/hooks/useStableCallback.ts';
 
 import { browseState } from './file-paths.ts';
+import { isFloppy } from './new-image.ts';
 import { CD_MAX_BYTES, imageWarnings } from './warnings.ts';
 
 const imageUpdatedEvent = 'nanokvm:image-updated';
@@ -263,12 +265,20 @@ export const Images = ({
               <div className="flex h-[24px] w-[24px] items-center justify-center">
                 {busyImage === image ? (
                   <LoaderCircleIcon className="animate-spin" size={18} />
+                ) : isFloppy(sizes[image]) ? (
+                  <SaveIcon size={18} />
                 ) : (
                   <PackageIcon size={18} />
                 )}
               </div>
 
               <div className="flex-1 truncate">{image.replace(/^.*[\\/]/, '')}</div>
+
+              {isFloppy(sizes[image]) && (
+                <span className="shrink-0 rounded bg-neutral-700 px-1 text-xs text-neutral-300">
+                  {t('image.floppy')}
+                </span>
+              )}
 
               {warnings.length > 0 && (
                 <Tooltip title={warningText}>

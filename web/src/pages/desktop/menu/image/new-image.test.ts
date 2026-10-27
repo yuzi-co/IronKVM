@@ -2,11 +2,14 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import {
+  checkFloppySize,
   checkName,
   checkSize,
   defaultSize,
+  FLOPPIES,
   GiB,
   imageFileName,
+  isFloppy,
   MiB,
   PRESETS,
   toBytes
@@ -56,4 +59,20 @@ test('the default is the largest preset up to 4 GiB that fits', () => {
   // Less than the smallest preset: whatever there is.
   assert.equal(defaultSize({ ...space, max: 300 * MiB }), 300 * MiB);
   assert.equal(defaultSize({ ...space, max: 0 }), 0);
+});
+
+test('a floppy is one of the three floppy sizes, below the disk minimum', () => {
+  assert.deepEqual(
+    FLOPPIES.map((f) => f.size),
+    [720 * 1024, 1440 * 1024, 2880 * 1024]
+  );
+  for (const f of FLOPPIES) {
+    assert.equal(isFloppy(f.size), true);
+    assert.equal(checkFloppySize(f.size, space), '');
+  }
+  assert.equal(isFloppy(undefined), false);
+  assert.equal(isFloppy(1440000), false);
+  assert.equal(isFloppy(64 * MiB), false);
+  assert.equal(checkFloppySize(64 * MiB, space), 'sizeTooSmall');
+  assert.equal(checkFloppySize(1474560, { ...space, max: 0 }), 'sizeTooLarge');
 });
