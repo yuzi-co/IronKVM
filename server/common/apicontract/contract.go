@@ -46,6 +46,7 @@ var features = []string{
 	"notifications",       // /api/notify: webhook, ntfy and Telegram alerts with a snapshot
 	"nut-client",          // /api/nut: NUT client, UPS state and settings
 	"oidc-login",          // /api/auth/oidc: login through an OpenID Connect provider, its settings
+	"oidc-prelink",        // PUT /api/auth/users/:username/oidc, /api/auth/oidc/pending, /link: link before the first single sign-on
 	"role-viewer",         // role "viewer" in /api/auth/users and GET /api/auth/account: video only
 	"rtsp",                // /api/stream/rtsp: the RTSP server's settings and players
 	"settings-backup",     // /api/settings/export, /preview, /import: settings file without secrets

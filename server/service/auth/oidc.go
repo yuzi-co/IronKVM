@@ -35,10 +35,13 @@ import (
 //     must match the cookie and a flow in memory, which is used up. The code
 //     is exchanged with the verifier, and the ID token is verified: the
 //     signature against the IdP's key set, iss, aud, exp and the nonce.
-//  3. The token's claims name a local account (see mapOIDCUser). The first
-//     login of an account links it to the token's issuer and sub, and later
-//     ones must carry the same sub (see resolveOIDCAccount). A login records
-//     a login session like the password login does, and is audited.
+//  3. The token's claims name a local account (see mapOIDCUser). The
+//     account must be linked to the token's issuer and sub (see
+//     resolveOIDCAccount). A login records a login session like the password
+//     login does, and is audited.
+//  4. An account with no link yet is refused, and the sign-in waits for an
+//     administrator to link it or for the user to confirm it with the
+//     account's password (see oidc_link.go).
 //
 // The IdP does the second factor: an OIDC login does not ask for the local
 // TOTP code.
@@ -70,6 +73,9 @@ const (
 	// oidcErrBinding is an account linked to another account at the IdP:
 	// the username matched, the sub did not.
 	oidcErrBinding = "binding"
+	// oidcErrUnlinked is an account with no link yet. An administrator links
+	// it, or the user confirms the link with the account's password.
+	oidcErrUnlinked = "unlinked"
 )
 
 // oidcFailureDelay slows a refused callback down, as a wrong password is.
@@ -103,6 +109,7 @@ func resetOIDCState() {
 	defer oidcMu.Unlock()
 	oidcFlows = map[string]*oidcFlow{}
 	cachedProvider = nil
+	resetOIDCLinks()
 }
 
 func oidcHTTPClient() *http.Client {
@@ -320,6 +327,10 @@ func (s *Service) OIDCCallback(c *gin.Context) {
 	if link != "" {
 		auditOIDCLink(c, username, link)
 	}
+	if reason == oidcErrUnlinked {
+		s.oidcUnlinked(c, user, groupRole, identity, claims)
+		return
+	}
 	if reason != "" {
 		s.oidcRefused(c, username, reason, detail, true)
 		return
@@ -393,7 +404,7 @@ func (s *Service) oidcRefused(c *gin.Context, actor, reason, detail string, coun
 	}
 	outcome := audit.OutcomeFail
 	switch reason {
-	case oidcErrAccount, oidcErrRole, oidcErrLocked, oidcErrDenied, oidcErrBinding:
+	case oidcErrAccount, oidcErrRole, oidcErrLocked, oidcErrDenied, oidcErrBinding, oidcErrUnlinked:
 		outcome = audit.OutcomeDenied
 	}
 	audit.Request(c, audit.Event{
@@ -518,9 +529,12 @@ func roleFromGroups(settings *oidcSettings, claim any) authn.Role {
 // log, and is empty when the account was already linked to this identity.
 //
 // The username alone trusts the IdP not to let a user rename themselves into
-// another user's name, which some providers allow. The link closes that: the
-// first login of an account records the token's issuer and sub, and a later
-// one with the same issuer and another sub is refused. A link made under
+// another user's name, which some providers allow. The link closes that: an
+// account is linked to an issuer and sub by an administrator, by its own
+// password, or by the login that created it, and a login with the same issuer
+// and another sub is refused. An account with no link is refused with
+// oidcErrUnlinked, and user is set so that the caller can offer the password
+// confirmation (ironkvm-dist#169). A link made under
 // another issuer is replaced (see authn.Store.BindOIDC), so changing the
 // issuer in the settings links every account again at its next login rather
 // than locking them all out.
@@ -570,6 +584,8 @@ func resolveOIDCAccount(settings *oidcSettings, username string, groupRole authn
 	// account that is not this one cannot change it either.
 	bound, previous, err := authn.DefaultStore.BindOIDC(user.Username, identity.issuer, identity.subject)
 	switch {
+	case errors.Is(err, authn.ErrOIDCNotLinked):
+		return user, link, oidcErrUnlinked, "not linked to an identity provider account yet"
 	case errors.Is(err, authn.ErrOIDCSubjectMismatch):
 		return nil, link, oidcErrBinding, "linked to another account at " + identity.issuer + ", not sub " + clip(identity.subject, 64)
 	case err != nil:
@@ -579,17 +595,25 @@ func resolveOIDCAccount(settings *oidcSettings, username string, groupRole authn
 	case previous != identity.issuer:
 		link = "linked to " + identity.issuer + " in place of " + previous
 	}
-	user = bound
-
-	if groupRole != "" && groupRole != user.Role {
-		updated, err := authn.DefaultStore.Update("", user.Username, authn.UserPatch{Role: &groupRole})
-		if err != nil {
-			return nil, link, oidcErrRole, "set role from groups: " + err.Error()
-		}
-		// The role changed: the account's other sessions end, as when an
-		// administrator changes it.
-		middleware.RevokeUserSessions(user.Username)
-		user = updated
+	user, err = applyGroupRole(bound, groupRole)
+	if err != nil {
+		return nil, link, oidcErrRole, "set role from groups: " + err.Error()
 	}
 	return user, link, "", ""
+}
+
+// applyGroupRole gives a linked account the role its IdP groups map to, when
+// they are mapped and it differs.
+func applyGroupRole(user *authn.User, groupRole authn.Role) (*authn.User, error) {
+	if groupRole == "" || groupRole == user.Role {
+		return user, nil
+	}
+	updated, err := authn.DefaultStore.Update("", user.Username, authn.UserPatch{Role: &groupRole})
+	if err != nil {
+		return nil, err
+	}
+	// The role changed: the account's other sessions end, as when an
+	// administrator changes it.
+	middleware.RevokeUserSessions(user.Username)
+	return updated, nil
 }

@@ -28,6 +28,8 @@ var ungatedRoutes = map[string]string{
 	"GET /api/auth/oidc":            "the login page asks whether to show the OIDC button",
 	"GET /api/auth/oidc/login":      "starts an OIDC login at the provider",
 	"GET /api/auth/oidc/callback":   "the OIDC provider sends the browser back here",
+	"GET /api/auth/oidc/link":       "the login page asks which account a refused OIDC sign-in waits for",
+	"POST /api/auth/oidc/link":      "the OIDC sign-in's link, confirmed with the account's password",
 	"POST /api/network/wifi":        "only answers in access point mode",
 	"POST /api/network/wifi/verify": "only answers in access point mode",
 	"GET /api/version":              "the UI asks before it logs in",
