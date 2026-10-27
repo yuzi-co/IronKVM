@@ -162,6 +162,8 @@ func server(r *gin.Engine) {
 	ventoyRouter(r)
 	urlMediaRouter(r)
 	whepRouter(r)
+	rtspRouter(r)
+	srtRouter(r)
 	licensesRouter(r)
 	edidRouter(r)
 	supportRouter(r)

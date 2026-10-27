@@ -38,6 +38,10 @@ const (
 	// vncPasswordFile is only checked for existence: plain VNC
 	// authentication can be imported only where a password is set.
 	vncPasswordFile = "/etc/kvm/vnc.passwd" // service/vnc/password.go
+
+	// srtPassphraseFile is only checked for existence: SRT can be imported
+	// switched on only where a passphrase is set.
+	srtPassphraseFile = "/etc/kvm/srt.passphrase" // service/srt/passphrase.go
 )
 
 // The limits that mirror the service that owns the file.

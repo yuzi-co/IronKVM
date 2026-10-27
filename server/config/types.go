@@ -61,6 +61,15 @@ type Config struct {
 	// server.yaml. A file without the block loads with the endpoint off.
 	WHEP WHEP `yaml:"whep,omitempty" mapstructure:"whep"`
 
+	// RTSP serves the video and the host audio to RTSP players, kept under
+	// "rtsp" in server.yaml. A file without the block loads with the server
+	// off.
+	RTSP RTSP `yaml:"rtsp,omitempty" mapstructure:"rtsp"`
+
+	// SRT serves the video and the host audio over SRT, kept under "srt" in
+	// server.yaml. A file without the block loads with the listener off.
+	SRT SRT `yaml:"srt,omitempty" mapstructure:"srt"`
+
 	// Picoclaw tunes what the server hands the PicoClaw assistant, kept under
 	// "picoclaw" in server.yaml. A file without the block loads the defaults.
 	Picoclaw Picoclaw `yaml:"picoclaw,omitempty" mapstructure:"picoclaw"`
@@ -104,6 +113,75 @@ type WHEP struct {
 	// the picture, for an owner who wants a player such as GStreamer or OBS
 	// on it.
 	Enabled bool `yaml:"enabled" mapstructure:"enabled"`
+}
+
+// The RTSP server's defaults (ironkvm-dist#142). A zero value in server.yaml
+// means the default. 8554 is the port RTSP servers that cannot bind 554 use,
+// and 8000 and 8001 are the RTP and RTCP ports MediaMTX picked, so a player's
+// firewall rules for either carry over.
+const (
+	DefaultRTSPPort    = 8554
+	DefaultRTSPUDPPort = 8000
+)
+
+// RTSP configures the RTSP server. Read it through WithDefaults.
+type RTSP struct {
+	// Enabled listens for RTSP players. Off by default.
+	Enabled bool `yaml:"enabled" mapstructure:"enabled"`
+	// Port is the TCP port the server listens on.
+	Port int `yaml:"port,omitempty" mapstructure:"port"`
+	// UDP offers RTP over UDP beside RTP interleaved in the RTSP connection.
+	// Off by default: TCP crosses NAT and firewalls as it is, and a player
+	// that asks for UDP falls back to it.
+	UDP bool `yaml:"udp,omitempty" mapstructure:"udp"`
+	// UDPPort is the RTP port when UDP is on. RTCP takes the port above it.
+	UDPPort int `yaml:"udpPort,omitempty" mapstructure:"udpPort"`
+}
+
+// WithDefaults returns the settings with every zero value replaced by its
+// default.
+func (r RTSP) WithDefaults() RTSP {
+	if r.Port <= 0 {
+		r.Port = DefaultRTSPPort
+	}
+	if r.UDPPort <= 0 {
+		r.UDPPort = DefaultRTSPUDPPort
+	}
+	return r
+}
+
+// The SRT listener's defaults (ironkvm-dist#143). 8890 is the port MediaMTX
+// listens for SRT on, and 120 ms is SRT's own default latency.
+const (
+	DefaultSRTPort      = 8890
+	DefaultSRTLatencyMs = 120
+	MinSRTLatencyMs     = 20
+	MaxSRTLatencyMs     = 8000
+)
+
+// SRT configures the SRT listener. Read it through WithDefaults. The
+// passphrase it requires is kept outside server.yaml.
+type SRT struct {
+	// Enabled listens for SRT callers. Off by default.
+	Enabled bool `yaml:"enabled" mapstructure:"enabled"`
+	// Port is the UDP port the listener takes.
+	Port int `yaml:"port,omitempty" mapstructure:"port"`
+	// LatencyMs is how long the receiver holds a packet for a
+	// retransmission to arrive before it plays on without it. A caller that
+	// asks for more gets more.
+	LatencyMs int `yaml:"latencyMs,omitempty" mapstructure:"latencyMs"`
+}
+
+// WithDefaults returns the settings with every zero value replaced by its
+// default.
+func (s SRT) WithDefaults() SRT {
+	if s.Port <= 0 {
+		s.Port = DefaultSRTPort
+	}
+	if s.LatencyMs <= 0 {
+		s.LatencyMs = DefaultSRTLatencyMs
+	}
+	return s
 }
 
 // Redfish configures the Redfish service.

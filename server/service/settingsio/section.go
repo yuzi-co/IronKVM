@@ -136,6 +136,8 @@ var sections = []section{
 	netbootSection,
 	vncSection,
 	webrtcSection,
+	rtspSection,
+	srtSection,
 	picoclawSection,
 	hostLogSection,
 	webTitleSection,

@@ -10,8 +10,11 @@ go 1.25.0
 godebug updatemaxprocs=0
 
 require (
+	github.com/bluenviron/gortsplib/v5 v5.6.4
+	github.com/bluenviron/mediacommon/v2 v2.9.3
 	github.com/coreos/go-oidc/v3 v3.21.0
 	github.com/creack/pty v1.1.24
+	github.com/datarhei/gosrt v0.11.0
 	github.com/gin-gonic/contrib v0.0.0-20260101091603-d12f07a9136b
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-playground/validator/v10 v10.30.3
@@ -42,6 +45,9 @@ require (
 )
 
 require (
+	github.com/asticode/go-astikit v0.30.0 // indirect
+	github.com/asticode/go-astits v1.16.0 // indirect
+	github.com/benburkert/openpgp v0.0.0-20160410205803-c2471f86866c // indirect
 	github.com/bytedance/sonic v1.11.6 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect

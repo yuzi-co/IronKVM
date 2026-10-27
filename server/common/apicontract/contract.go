@@ -46,8 +46,10 @@ var features = []string{
 	"nut-client",          // /api/nut: NUT client, UPS state and settings
 	"oidc-login",          // /api/auth/oidc: login through an OpenID Connect provider, its settings
 	"role-viewer",         // role "viewer" in /api/auth/users and GET /api/auth/account: video only
+	"rtsp",                // /api/stream/rtsp: the RTSP server's settings and players
 	"settings-backup",     // /api/settings/export, /preview, /import: settings file without secrets
 	"share-links",         // /api/auth/share, /api/auth/share-links: expiring view-only links
+	"srt",                 // /api/stream/srt: the SRT listener's settings and callers
 	"status-bar",          // GET /api/stream/info
 	"stun-server",         // /api/network/webrtc/stun: the STUN server, or off
 	"ui-update",           // /api/ui: separately installed UI packages
