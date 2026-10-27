@@ -49,8 +49,8 @@ jwt:
    refreshTokenDuration: 2678400    # 登录超时的刷新周期（单位：秒）。默认为 `2678400`（约31天）
    revokeTokensOnLogout: true       # 退出登录时是否废除该用户的全部会话；不会影响其他用户。设为 false 时仅清除浏览器 Cookie，不推荐使用。默认为 `true`
 security:
-   loginLockoutDuration: 0,         # 达到失败上限后，禁止该 IP 再次尝试登录的持续时间（单位：秒）。如果设为 `0` 或不填，则代表不开启防暴力破解功能。默认为 `0`
-   loginMaxFailures:     5,         # 允许触发保护前，单个 IP 连续登录失败的最大次数。默认为 `5`
+   loginLockoutDuration: 0          # 达到失败上限后，禁止该 IP 再次尝试登录的持续时间（单位：秒）。如果设为 `0` 或不填，则代表不开启防暴力破解功能。默认为 `0`
+   loginMaxFailures:     5          # 允许触发保护前，单个 IP 连续登录失败的最大次数。默认为 `5`
 
 
 # ION 预留内存

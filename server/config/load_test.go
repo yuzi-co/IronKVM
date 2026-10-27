@@ -52,7 +52,8 @@ func loadForTest(data []byte) goldenResult {
 // configuration, or stop where viper stopped it.
 //
 // readme-en.yaml and readme-zh.yaml stop the server: their security block has
-// a comma after each number.
+// a comma after each number. They are kept as the READMEs had them, since a
+// board may run a server.yaml copied from there; the READMEs are fixed.
 func TestServerYAMLLoadsAsViperLoadedIt(t *testing.T) {
 	files, err := filepath.Glob("testdata/serveryaml/*.yaml")
 	if err != nil {
