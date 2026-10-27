@@ -690,3 +690,44 @@ func TestOIDCSettingsNeverReturnTheSecret(t *testing.T) {
 		}
 	}
 }
+
+func TestOIDCRedirectURLOverride(t *testing.T) {
+	f := newOIDCFixture(t)
+	f.idp.claims["preferred_username"] = "alice"
+	const override = "https://kvm.example.org/api/auth/oidc/callback"
+	f.save(func(s *oidcSettings) { s.RedirectURL = override })
+
+	// The IdP is sent the override, and the code exchange carries it too.
+	location, flow := f.begin()
+	u, err := url.Parse(location)
+	if err != nil || u.Query().Get("redirect_uri") != override {
+		t.Fatalf("authorization request %q, want redirect_uri %q", location, override)
+	}
+	code, state := f.idp.authorize(location)
+	if rec := f.callback(code, state, flow); sessionCookieOf(rec) == nil {
+		t.Fatalf("callback refused: %d %s", rec.Code, rec.Body.String())
+	}
+
+	admin := loginCookie(t, f.router, "admin", "admin")
+	body := requestJSONRecorder(f.router, http.MethodGet, "/api/auth/oidc/settings", nil, admin).Body.String()
+	if !strings.Contains(body, `"redirectUrl":"`+override+`"`) || !strings.Contains(body, `"redirectUrlOverride":"`+override+`"`) {
+		t.Fatalf("settings = %s", body)
+	}
+
+	update := map[string]any{
+		"enabled": true, "issuer": f.idp.server.URL, "clientId": testClientID,
+		"usernameClaim": "preferred_username", "defaultRole": "viewer",
+		"redirectUrlOverride": "kvm.example.org/callback",
+	}
+	rec := requestJSONRecorder(f.router, http.MethodPost, "/api/auth/oidc/settings", update, admin)
+	if strings.Contains(rec.Body.String(), `"code":0`) {
+		t.Fatalf("a redirect URL without a scheme was accepted: %s", rec.Body.String())
+	}
+
+	// Saving without one goes back to the address the request came in on.
+	update["redirectUrlOverride"] = ""
+	rec = requestJSONRecorder(f.router, http.MethodPost, "/api/auth/oidc/settings", update, admin)
+	if !strings.Contains(rec.Body.String(), `"redirectUrl":"http://example.com/api/auth/oidc/callback"`) {
+		t.Fatalf("save without override = %s", rec.Body.String())
+	}
+}

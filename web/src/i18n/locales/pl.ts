@@ -2321,6 +2321,8 @@ const pl = {
           scopes: 'Scopes (openid jest zawsze dodawany)',
           redirectUrl: 'Adres przekierowania',
           redirectUrlDesc: 'Zarejestruj dokładnie ten URL u dostawcy. Odpowiada adresowi, pod którym otwarto tę stronę.',
+          redirectUrlOverride: 'Nadpisanie adresu URL przekierowania',
+          redirectUrlOverrideDesc: 'Pozostaw puste, aby użyć adresu powyżej. Ustaw, gdy odwrotne proxy nie przekazuje nazwy hosta lub https.',
           httpWarning: 'Ta strona używa nieszyfrowanego http. Wielu dostawców akceptuje adresy przekierowania http tylko dla localhost. Jeśli twój odrzuca ten adres, otwórz urządzenie przez HTTPS lub odwrotne proxy z TLS.',
           mappingDesc: 'Konto dostawcy loguje się jako konto lokalne o tej samej nazwie użytkownika. Konto właściciela urządzenia loguje się tylko swoim hasłem. Uwierzytelnianie dwuskładnikowe zapewnia dostawca: lokalny kod nie jest wymagany.',
           usernameClaim: 'Dopasuj konta według',

@@ -2314,6 +2314,8 @@ const tr = {
           scopes: 'Scopes (openid her zaman eklenir)',
           redirectUrl: 'Yönlendirme URL',
           redirectUrlDesc: 'Sağlayıcıda tam olarak bu URL\'yi kaydedin. Bu sayfanın açıldığı adresi izler.',
+          redirectUrlOverride: 'Yönlendirme URL\'sini geçersiz kıl',
+          redirectUrlOverrideDesc: 'Yukarıdaki adresi kullanmak için boş bırakın. Ters proxy ana bilgisayar adını veya https\'yi iletmiyorsa ayarlayın.',
           httpWarning: 'Bu sayfa şifresiz http kullanıyor. Birçok sağlayıcı http yönlendirme URL\'lerini yalnızca localhost için kabul eder. Sizinki bunu reddederse cihazı HTTPS veya TLS\'li bir ters vekil üzerinden açın.',
           mappingDesc: 'Bir sağlayıcı hesabı, aynı kullanıcı adına sahip yerel hesap olarak oturum açar. Cihaz sahibi hesabı yalnızca kendi parolasıyla girer. İki aşamalı doğrulamayı sağlayıcı yapar: yerel kod sorulmaz.',
           usernameClaim: 'Hesapları eşleştirme ölçütü',

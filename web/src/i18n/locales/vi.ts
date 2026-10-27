@@ -2306,6 +2306,8 @@ const vi = {
           scopes: 'Scopes (luôn có openid)',
           redirectUrl: 'URL chuyển hướng',
           redirectUrlDesc: 'Đăng ký chính xác URL này ở nhà cung cấp. URL theo địa chỉ dùng để mở trang này.',
+          redirectUrlOverride: 'Ghi đè URL chuyển hướng',
+          redirectUrlOverrideDesc: 'Để trống để dùng địa chỉ ở trên. Đặt khi reverse proxy không chuyển tiếp tên máy chủ hoặc https.',
           httpWarning: 'Trang này dùng http không mã hóa. Nhiều nhà cung cấp chỉ chấp nhận URL chuyển hướng http cho localhost. Nếu bị từ chối, hãy mở thiết bị qua HTTPS hoặc reverse proxy có TLS.',
           mappingDesc: 'Tài khoản nhà cung cấp đăng nhập như tài khoản cục bộ có cùng tên người dùng. Tài khoản chủ thiết bị chỉ đăng nhập bằng mật khẩu của nó. Nhà cung cấp lo xác thực hai yếu tố: mã cục bộ không được hỏi.',
           usernameClaim: 'Ghép tài khoản theo',

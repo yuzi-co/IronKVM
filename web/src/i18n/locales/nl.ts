@@ -2335,6 +2335,8 @@ const nl = {
           scopes: 'Scopes (openid zit er altijd bij)',
           redirectUrl: 'Doorstuur-URL',
           redirectUrlDesc: 'Registreer precies deze URL bij de provider. Hij volgt het adres waarop deze pagina is geopend.',
+          redirectUrlOverride: 'Omleidings-URL overschrijven',
+          redirectUrlOverrideDesc: 'Laat leeg om het adres hierboven te gebruiken. Stel in als een reverse proxy de hostnaam of https niet doorgeeft.',
           httpWarning: 'Deze pagina gebruikt onversleuteld http. Veel providers accepteren http-doorstuur-URL\'s alleen voor localhost. Weigert de uwe deze, open het apparaat dan via HTTPS of een reverse proxy met TLS.',
           mappingDesc: 'Een provideraccount meldt zich aan als het lokale account met dezelfde gebruikersnaam. Het account van de apparaateigenaar meldt zich alleen met zijn wachtwoord aan. De provider doet de tweestapsverificatie: de lokale code wordt niet gevraagd.',
           usernameClaim: 'Accounts koppelen op',

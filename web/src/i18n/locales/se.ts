@@ -2316,6 +2316,8 @@ const se = {
           scopes: 'Scopes (openid ingår alltid)',
           redirectUrl: 'Omdirigerings-URL',
           redirectUrlDesc: 'Registrera exakt den här URL:en hos leverantören. Den följer adressen som sidan öppnades på.',
+          redirectUrlOverride: 'Åsidosätt omdirigerings-URL',
+          redirectUrlOverrideDesc: 'Lämna tomt för att använda adressen ovan. Ange den när en omvänd proxy inte skickar vidare värdnamnet eller https.',
           httpWarning: 'Den här sidan använder okrypterad http. Många leverantörer godtar http-omdirigerings-URL:er bara för localhost. Om din nekar den här, öppna enheten via HTTPS eller en omvänd proxy med TLS.',
           mappingDesc: 'Ett leverantörskonto loggar in som det lokala kontot med samma användarnamn. Enhetsägarens konto loggar bara in med sitt lösenord. Leverantören sköter tvåfaktorsautentisering: den lokala koden efterfrågas inte.',
           usernameClaim: 'Matcha konton efter',

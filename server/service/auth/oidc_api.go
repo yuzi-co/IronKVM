@@ -34,9 +34,11 @@ type oidcSettingsView struct {
 	UserGroup         string     `json:"userGroup"`
 	ViewerGroup       string     `json:"viewerGroup"`
 	HidePasswordLogin bool       `json:"hidePasswordLogin"`
-	// RedirectURL is the callback address to register at the IdP, as this
-	// request reached the board.
+	// RedirectURL is the callback address to register at the IdP: the
+	// override when one is set, else the board's as this request reached it.
 	RedirectURL string `json:"redirectUrl"`
+	// RedirectURLOverride is the override as saved, empty when there is none.
+	RedirectURLOverride string `json:"redirectUrlOverride"`
 }
 
 // oidcSettingsReq is a save. An empty ClientSecret keeps the one on file;
@@ -58,26 +60,29 @@ type oidcSettingsReq struct {
 	UserGroup         string     `json:"userGroup"`
 	ViewerGroup       string     `json:"viewerGroup"`
 	HidePasswordLogin bool       `json:"hidePasswordLogin"`
+	// RedirectURLOverride replaces the derived redirect URL; empty removes it.
+	RedirectURLOverride string `json:"redirectUrlOverride"`
 }
 
 func viewOf(s *oidcSettings, c *gin.Context) oidcSettingsView {
 	return oidcSettingsView{
-		Enabled:           s.Enabled,
-		ProviderName:      s.ProviderName,
-		Issuer:            s.Issuer,
-		ClientID:          s.ClientID,
-		ClientSecretSet:   s.ClientSecret != "",
-		Scopes:            s.Scopes,
-		UsernameClaim:     s.UsernameClaim,
-		EmailDomain:       s.EmailDomain,
-		AutoCreate:        s.AutoCreate,
-		DefaultRole:       s.DefaultRole,
-		GroupsClaim:       s.GroupsClaim,
-		AdminGroup:        s.AdminGroup,
-		UserGroup:         s.UserGroup,
-		ViewerGroup:       s.ViewerGroup,
-		HidePasswordLogin: s.HidePasswordLogin,
-		RedirectURL:       redirectURL(c),
+		Enabled:             s.Enabled,
+		ProviderName:        s.ProviderName,
+		Issuer:              s.Issuer,
+		ClientID:            s.ClientID,
+		ClientSecretSet:     s.ClientSecret != "",
+		Scopes:              s.Scopes,
+		UsernameClaim:       s.UsernameClaim,
+		EmailDomain:         s.EmailDomain,
+		AutoCreate:          s.AutoCreate,
+		DefaultRole:         s.DefaultRole,
+		GroupsClaim:         s.GroupsClaim,
+		AdminGroup:          s.AdminGroup,
+		UserGroup:           s.UserGroup,
+		ViewerGroup:         s.ViewerGroup,
+		HidePasswordLogin:   s.HidePasswordLogin,
+		RedirectURL:         redirectURL(s, c),
+		RedirectURLOverride: s.RedirectURL,
 	}
 }
 
@@ -123,6 +128,7 @@ func (s *Service) SetOIDCSettings(c *gin.Context) {
 		UserGroup:         req.UserGroup,
 		ViewerGroup:       req.ViewerGroup,
 		HidePasswordLogin: req.HidePasswordLogin,
+		RedirectURL:       req.RedirectURLOverride,
 	}
 	switch {
 	case req.ClientSecret != "":

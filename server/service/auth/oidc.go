@@ -176,9 +176,13 @@ func takeFlow(state string) (*oidcFlow, bool) {
 	return flow, true
 }
 
-// redirectURL is the callback address the IdP sends the browser back to, as
-// the browser reached the board. It has to be registered at the IdP exactly.
-func redirectURL(c *gin.Context) string {
+// redirectURL is the callback address the IdP sends the browser back to: the
+// one in the settings, or else the board's as the browser reached it. It has
+// to be registered at the IdP exactly.
+func redirectURL(settings *oidcSettings, c *gin.Context) string {
+	if settings.RedirectURL != "" {
+		return settings.RedirectURL
+	}
 	scheme := "http"
 	if middleware.RequestIsSecure(c) {
 		scheme = "https"
@@ -234,7 +238,7 @@ func (s *Service) OIDCLogin(c *gin.Context) {
 	flow := &oidcFlow{
 		verifier:    verifier,
 		nonce:       nonce,
-		redirectURL: redirectURL(c),
+		redirectURL: redirectURL(&settings, c),
 		issuer:      settings.Issuer,
 		clientID:    settings.ClientID,
 		expires:     time.Now().Add(oidcFlowTTL),

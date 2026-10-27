@@ -2273,6 +2273,8 @@ const ko = {
           scopes: '스코프 (openid는 항상 포함)',
           redirectUrl: '리디렉션 URL',
           redirectUrlDesc: '이 URL을 그대로 공급자에 등록하세요. 이 페이지를 연 주소를 따릅니다.',
+          redirectUrlOverride: '리디렉션 URL 재정의',
+          redirectUrlOverrideDesc: '비워 두면 위 주소를 사용합니다. 리버스 프록시가 호스트 이름이나 https를 전달하지 않을 때 설정하세요.',
           httpWarning: '이 페이지는 암호화되지 않은 http를 사용합니다. 많은 공급자가 http 리디렉션 URL을 localhost에만 허용합니다. 거부되면 HTTPS 또는 TLS 리버스 프록시를 통해 장치를 여세요.',
           mappingDesc: '공급자 계정은 같은 사용자 이름의 로컬 계정으로 로그인합니다. 장치 소유자 계정은 비밀번호로만 로그인합니다. 2단계 인증은 공급자가 하므로 로컬 코드는 묻지 않습니다.',
           usernameClaim: '계정 매칭 기준',

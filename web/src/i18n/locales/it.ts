@@ -2340,6 +2340,8 @@ const it = {
           scopes: 'Scopes (openid è sempre incluso)',
           redirectUrl: 'URL di reindirizzamento',
           redirectUrlDesc: 'Registra esattamente questo URL presso il provider. Segue l\'indirizzo con cui è stata aperta questa pagina.',
+          redirectUrlOverride: 'Sostituisci URL di reindirizzamento',
+          redirectUrlOverrideDesc: 'Lasciare vuoto per usare l\'indirizzo sopra. Impostarlo quando un reverse proxy non inoltra il nome host o https.',
           httpWarning: 'Questa pagina usa http non cifrato. Molti provider accettano URL di reindirizzamento http solo per localhost. Se il tuo rifiuta questo, apri il dispositivo via HTTPS o tramite un reverse proxy con TLS.',
           mappingDesc: 'Un account del provider accede come l\'account locale con lo stesso nome utente. L\'account del proprietario del dispositivo accede solo con la sua password. L\'autenticazione a due fattori la fa il provider: il codice locale non viene chiesto.',
           usernameClaim: 'Associa gli account per',

@@ -2361,6 +2361,8 @@ const de = {
           scopes: 'Scopes (openid ist immer enthalten)',
           redirectUrl: 'Weiterleitungs-URL',
           redirectUrlDesc: 'Genau diese URL beim Anbieter eintragen. Sie folgt der Adresse, unter der diese Seite geöffnet wurde.',
+          redirectUrlOverride: 'Weiterleitungs-URL überschreiben',
+          redirectUrlOverrideDesc: 'Leer lassen, um die Adresse oben zu verwenden. Setzen, wenn ein Reverse-Proxy den Hostnamen oder https nicht weitergibt.',
           httpWarning: 'Diese Seite nutzt unverschlüsseltes http. Viele Anbieter erlauben http-Weiterleitungs-URLs nur für localhost. Lehnt Ihrer diese ab, öffnen Sie das Gerät über HTTPS oder einen Reverse-Proxy mit TLS.',
           mappingDesc: 'Ein Anbieterkonto meldet sich als das lokale Konto mit demselben Benutzernamen an. Das Gerätebesitzerkonto meldet sich nur mit seinem Passwort an. Die Zwei-Faktor-Authentifizierung übernimmt der Anbieter: der lokale Code wird nicht abgefragt.',
           usernameClaim: 'Konten zuordnen über',

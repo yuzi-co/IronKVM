@@ -2296,6 +2296,8 @@ const en = {
           scopes: 'Scopes (openid is always included)',
           redirectUrl: 'Redirect URL',
           redirectUrlDesc: 'Register this exact URL at the provider. It follows the address this page was opened at.',
+          redirectUrlOverride: 'Redirect URL override',
+          redirectUrlOverrideDesc: 'Leave empty to use the address above. Set it when a reverse proxy does not pass on the host name or https.',
           httpWarning: 'This page uses plain http. Many providers accept http redirect URLs only for localhost. If yours refuses this one, open the device over HTTPS or through a reverse proxy with TLS.',
           mappingDesc: 'A provider account signs in as the local account with the same username. The device owner account signs in with its password only. The provider does two-factor authentication: the local code is not asked for.',
           usernameClaim: 'Match accounts by',

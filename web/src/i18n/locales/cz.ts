@@ -2303,6 +2303,8 @@ const cz = {
           scopes: 'Scopes (openid je vždy zahrnut)',
           redirectUrl: 'Adresa přesměrování',
           redirectUrlDesc: 'Zaregistrujte u poskytovatele přesně tuto URL. Odpovídá adrese, na které byla tato stránka otevřena.',
+          redirectUrlOverride: 'Přepsání URL přesměrování',
+          redirectUrlOverrideDesc: 'Nechte prázdné pro použití adresy výše. Nastavte, pokud reverzní proxy nepředává název hostitele nebo https.',
           httpWarning: 'Tato stránka používá nešifrované http. Mnoho poskytovatelů povoluje http adresy přesměrování jen pro localhost. Pokud tuto odmítne, otevřete zařízení přes HTTPS nebo přes reverzní proxy s TLS.',
           mappingDesc: 'Účet poskytovatele se přihlásí jako místní účet se stejným uživatelským jménem. Účet vlastníka zařízení se přihlašuje pouze heslem. Dvoufázové ověření zajišťuje poskytovatel: místní kód se nevyžaduje.',
           usernameClaim: 'Párovat účty podle',

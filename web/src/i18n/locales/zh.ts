@@ -2213,6 +2213,8 @@ const zh = {
           scopes: 'Scopes（始终包含 openid）',
           redirectUrl: '重定向 URL',
           redirectUrlDesc: '在提供商处登记这个完整的 URL。它取决于打开本页面所用的地址。',
+          redirectUrlOverride: '重定向 URL 覆盖',
+          redirectUrlOverrideDesc: '留空则使用上方地址。当反向代理不传递主机名或 https 时设置此项。',
           httpWarning: '本页面使用未加密的 http。许多提供商只允许 localhost 使用 http 重定向 URL。如果被拒绝，请通过 HTTPS 或带 TLS 的反向代理访问设备。',
           mappingDesc: '提供商账号以同名的本地账号登录。设备所有者账号只能用其密码登录。双因素认证由提供商完成，不再询问本地验证码。',
           usernameClaim: '账号匹配依据',

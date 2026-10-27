@@ -105,8 +105,11 @@ export type OidcSettings = {
   userGroup: string;
   viewerGroup: string;
   hidePasswordLogin: boolean;
-  // The callback address to register at the provider, as this page reached the board.
+  // The callback address to register at the provider: the override when one is
+  // set, else the board's as this page reached it.
   redirectUrl: string;
+  // Replaces the derived redirect URL, for a reverse proxy; empty when unset.
+  redirectUrlOverride: string;
 };
 
 // An empty clientSecret keeps the one on the board; clearClientSecret removes it.

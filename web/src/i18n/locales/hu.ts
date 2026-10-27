@@ -2336,6 +2336,8 @@ const hu = {
           scopes: 'Scope-ok (az openid mindig benne van)',
           redirectUrl: 'Átirányítási URL',
           redirectUrlDesc: 'Pontosan ezt az URL-t regisztrálja a szolgáltatónál. Annak a címnek felel meg, amelyen ezt az oldalt megnyitotta.',
+          redirectUrlOverride: 'Átirányítási URL felülírása',
+          redirectUrlOverrideDesc: 'Hagyja üresen a fenti cím használatához. Akkor adja meg, ha egy fordított proxy nem adja tovább a gépnevet vagy a https-t.',
           httpWarning: 'Ez az oldal titkosítatlan http-t használ. Sok szolgáltató csak localhost esetén fogad el http átirányítási URL-t. Ha az öné ezt elutasítja, nyissa meg az eszközt HTTPS-en vagy TLS-es fordított proxyn keresztül.',
           mappingDesc: 'A szolgáltatói fiók az azonos felhasználónevű helyi fiókként jelentkezik be. Az eszköz tulajdonosi fiókja csak a jelszavával léphet be. A kétlépcsős azonosítást a szolgáltató végzi: a helyi kódot nem kéri a rendszer.',
           usernameClaim: 'Fiókok párosítása eszerint',

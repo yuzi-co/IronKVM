@@ -33,7 +33,8 @@ function toValues(s: OidcSettings): Values {
     adminGroup: s.adminGroup ?? '',
     userGroup: s.userGroup ?? '',
     viewerGroup: s.viewerGroup ?? '',
-    hidePasswordLogin: s.hidePasswordLogin
+    hidePasswordLogin: s.hidePasswordLogin,
+    redirectUrlOverride: s.redirectUrlOverride ?? ''
   };
 }
 
@@ -76,7 +77,8 @@ export const Oidc = () => {
       const rsp = await api.setOidcSettings({
         ...values,
         scopes: scopesFromText(values.scopes),
-        clientSecret: values.clearClientSecret ? '' : values.clientSecret.trim()
+        clientSecret: values.clearClientSecret ? '' : values.clientSecret.trim(),
+        redirectUrlOverride: values.redirectUrlOverride.trim()
       });
       if (rsp.code !== 0) throw rsp;
       apply(rsp.data);
@@ -138,6 +140,13 @@ export const Oidc = () => {
             )}
             <Form.Item name="scopes" label={t('settings.account.oidc.scopes')}>
               <Input placeholder="profile email groups" />
+            </Form.Item>
+            <Form.Item
+              name="redirectUrlOverride"
+              label={t('settings.account.oidc.redirectUrlOverride')}
+              extra={t('settings.account.oidc.redirectUrlOverrideDesc')}
+            >
+              <Input placeholder="https://kvm.example.com/api/auth/oidc/callback" />
             </Form.Item>
 
             <div className="pb-3 text-xs text-neutral-500">

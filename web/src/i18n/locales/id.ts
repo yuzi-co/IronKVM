@@ -2317,6 +2317,8 @@ const id = {
           scopes: 'Scopes (openid selalu disertakan)',
           redirectUrl: 'URL pengalihan',
           redirectUrlDesc: 'Daftarkan URL ini persis di penyedia. URL ini mengikuti alamat yang dipakai untuk membuka halaman ini.',
+          redirectUrlOverride: 'Ganti URL pengalihan',
+          redirectUrlOverrideDesc: 'Kosongkan untuk memakai alamat di atas. Isi jika reverse proxy tidak meneruskan nama host atau https.',
           httpWarning: 'Halaman ini memakai http tanpa enkripsi. Banyak penyedia hanya menerima URL pengalihan http untuk localhost. Jika penyedia Anda menolaknya, buka perangkat lewat HTTPS atau reverse proxy dengan TLS.',
           mappingDesc: 'Akun penyedia masuk sebagai akun lokal dengan nama pengguna yang sama. Akun pemilik perangkat hanya masuk dengan kata sandinya. Penyedia menangani autentikasi dua faktor: kode lokal tidak diminta.',
           usernameClaim: 'Cocokkan akun berdasarkan',

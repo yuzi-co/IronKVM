@@ -2336,6 +2336,8 @@ const ca = {
           scopes: 'Scopes (openid sempre s\'inclou)',
           redirectUrl: 'URL de redirecció',
           redirectUrlDesc: 'Registreu exactament aquesta URL al proveïdor. Segueix l\'adreça amb què s\'ha obert aquesta pàgina.',
+          redirectUrlOverride: 'Substitució de la URL de redirecció',
+          redirectUrlOverrideDesc: 'Deixeu-ho buit per usar l\'adreça de dalt. Definiu-ho quan un servidor intermediari invers no transmet el nom de l\'amfitrió o https.',
           httpWarning: 'Aquesta pàgina fa servir http sense xifrar. Molts proveïdors només accepten URL de redirecció http per a localhost. Si el vostre la rebutja, obriu el dispositiu per HTTPS o a través d\'un servidor intermediari invers amb TLS.',
           mappingDesc: 'Un compte del proveïdor inicia la sessió com el compte local amb el mateix nom d\'usuari. El compte del propietari del dispositiu només entra amb la seva contrasenya. El proveïdor fa l\'autenticació en dos passos: no es demana el codi local.',
           usernameClaim: 'Associa els comptes per',

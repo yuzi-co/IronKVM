@@ -2310,6 +2310,8 @@ const nb = {
           scopes: 'Scopes (openid er alltid med)',
           redirectUrl: 'Omdirigerings-URL',
           redirectUrlDesc: 'Registrer nøyaktig denne URL-en hos leverandøren. Den følger adressen denne siden ble åpnet på.',
+          redirectUrlOverride: 'Overstyr omdirigerings-URL',
+          redirectUrlOverrideDesc: 'La stå tom for å bruke adressen over. Angi den når en omvendt proxy ikke sender videre vertsnavnet eller https.',
           httpWarning: 'Denne siden bruker ukryptert http. Mange leverandører godtar http-omdirigerings-URL-er bare for localhost. Avviser din denne, åpne enheten via HTTPS eller en omvendt proxy med TLS.',
           mappingDesc: 'En leverandørkonto logger inn som den lokale kontoen med samme brukernavn. Enhetseierens konto logger bare inn med passordet sitt. Leverandøren står for tofaktorautentisering: den lokale koden blir ikke spurt om.',
           usernameClaim: 'Koble kontoer etter',

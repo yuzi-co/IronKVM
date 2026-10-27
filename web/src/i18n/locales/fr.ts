@@ -2350,6 +2350,8 @@ const fr = {
           scopes: 'Scopes (openid est toujours inclus)',
           redirectUrl: 'URL de redirection',
           redirectUrlDesc: 'Enregistrez exactement cette URL chez le fournisseur. Elle suit l\'adresse à laquelle cette page a été ouverte.',
+          redirectUrlOverride: 'Remplacer l\'URL de redirection',
+          redirectUrlOverrideDesc: 'Laissez vide pour utiliser l\'adresse ci-dessus. Renseignez-la quand un proxy inverse ne transmet pas le nom d\'hôte ou https.',
           httpWarning: 'Cette page utilise http non chiffré. Beaucoup de fournisseurs n\'acceptent les URL de redirection http que pour localhost. Si le vôtre refuse celle-ci, ouvrez l\'appareil en HTTPS ou via un proxy inverse avec TLS.',
           mappingDesc: 'Un compte du fournisseur se connecte en tant que compte local du même nom d\'utilisateur. Le compte propriétaire de l\'appareil se connecte uniquement avec son mot de passe. Le fournisseur gère l\'authentification à deux facteurs : le code local n\'est pas demandé.',
           usernameClaim: 'Associer les comptes par',

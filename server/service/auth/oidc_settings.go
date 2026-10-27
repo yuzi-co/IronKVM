@@ -72,6 +72,11 @@ type oidcSettings struct {
 	// login page. The password login itself stays on: it is how an
 	// administrator gets in when the IdP is down.
 	HidePasswordLogin bool `json:"hidePasswordLogin"`
+
+	// RedirectURL, when set, is the callback address registered at the IdP,
+	// in place of the one derived from the request. A reverse proxy that does
+	// not pass the Host header or the scheme on needs it.
+	RedirectURL string `json:"redirectUrl,omitempty"`
 }
 
 func defaultOIDCSettings() oidcSettings {
@@ -178,6 +183,7 @@ func (s *oidcSettings) normalize() error {
 	s.AdminGroup = strings.TrimSpace(s.AdminGroup)
 	s.UserGroup = strings.TrimSpace(s.UserGroup)
 	s.ViewerGroup = strings.TrimSpace(s.ViewerGroup)
+	s.RedirectURL = strings.TrimSpace(s.RedirectURL)
 
 	if s.ProviderName == "" {
 		s.ProviderName = defaultProviderName
@@ -186,7 +192,7 @@ func (s *oidcSettings) normalize() error {
 		return fmt.Errorf("the provider name is at most %d characters", maxProviderNameRune)
 	}
 	for _, field := range []string{s.ProviderName, s.Issuer, s.ClientID, s.ClientSecret, s.EmailDomain,
-		s.GroupsClaim, s.AdminGroup, s.UserGroup, s.ViewerGroup} {
+		s.GroupsClaim, s.AdminGroup, s.UserGroup, s.ViewerGroup, s.RedirectURL} {
 		if len(field) > maxSettingLength {
 			return fmt.Errorf("a value is longer than %d bytes", maxSettingLength)
 		}
@@ -198,6 +204,12 @@ func (s *oidcSettings) normalize() error {
 		u, err := url.Parse(s.Issuer)
 		if err != nil || (u.Scheme != "https" && u.Scheme != "http") || u.Host == "" || u.RawQuery != "" || u.Fragment != "" {
 			return errors.New("the issuer is an http or https URL")
+		}
+	}
+	if s.RedirectURL != "" {
+		u, err := url.Parse(s.RedirectURL)
+		if err != nil || (u.Scheme != "https" && u.Scheme != "http") || u.Host == "" || u.RawQuery != "" || u.Fragment != "" {
+			return errors.New("the redirect URL is an http or https URL")
 		}
 	}
 	if s.Enabled && (s.Issuer == "" || s.ClientID == "") {

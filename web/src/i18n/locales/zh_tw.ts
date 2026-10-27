@@ -2212,6 +2212,8 @@ const zh_tw = {
           scopes: 'Scopes（一律包含 openid）',
           redirectUrl: '重新導向 URL',
           redirectUrlDesc: '請在提供者處登記這個完整的 URL。它取決於開啟本頁面的位址。',
+          redirectUrlOverride: '覆寫重新導向 URL',
+          redirectUrlOverrideDesc: '留空則使用上方位址。當反向代理不轉送主機名稱或 https 時設定此項。',
           httpWarning: '本頁面使用未加密的 http。許多提供者只允許 localhost 使用 http 重新導向 URL。若遭拒絕，請透過 HTTPS 或具 TLS 的反向代理開啟裝置。',
           mappingDesc: '提供者帳號會以相同使用者名稱的本機帳號登入。裝置擁有者帳號只能用其密碼登入。雙重驗證由提供者負責，不再詢問本機驗證碼。',
           usernameClaim: '帳號比對依據',

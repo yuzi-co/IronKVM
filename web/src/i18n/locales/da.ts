@@ -2312,6 +2312,8 @@ const da = {
           scopes: 'Scopes (openid er altid med)',
           redirectUrl: 'Omdirigerings-URL',
           redirectUrlDesc: 'Registrer præcis denne URL hos udbyderen. Den følger den adresse, siden blev åbnet på.',
+          redirectUrlOverride: 'Tilsidesæt omdirigerings-URL',
+          redirectUrlOverrideDesc: 'Lad stå tom for at bruge adressen ovenfor. Angiv den, når en reverse proxy ikke videregiver værtsnavnet eller https.',
           httpWarning: 'Denne side bruger ukrypteret http. Mange udbydere accepterer kun http-omdirigerings-URL\'er for localhost. Afviser din denne, så åbn enheden via HTTPS eller en reverse proxy med TLS.',
           mappingDesc: 'En udbyderkonto logger ind som den lokale konto med samme brugernavn. Enhedsejerens konto logger kun ind med sin adgangskode. Udbyderen står for totrinsgodkendelse: den lokale kode bliver ikke krævet.',
           usernameClaim: 'Match konti efter',
