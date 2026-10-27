@@ -9,6 +9,8 @@ import { getScreenshot } from '@/api/stream.ts';
 import { isViewOnlyLocked } from '@/lib/view-only.ts';
 import { pauseWhenHiddenAtom, streamInfoVisibleAtom, viewOnlyAtom } from '@/jotai/screen.ts';
 
+import { DashcamSave } from './dashcam-save.tsx';
+
 const rowClass =
   'box-border flex h-[30px] w-full items-center space-x-2 rounded p-0 pr-5 pl-3 text-left text-neutral-300';
 
@@ -72,7 +74,9 @@ const ToggleRow = ({ icon: Icon, label, tip, checked, onChange }: ToggleRowProps
 
 // Session holds the switches that belong to this tab rather than to the
 // board, as PiKVM's System menu does: view only, pausing the stream while the
-// tab is hidden, the stream status bar, and a screenshot of the host screen.
+// tab is hidden, the stream status bar, and a screenshot of the host screen. The
+// dashcam's save button sits beside the screenshot, as the other way to keep
+// what the screen showed.
 export const Session = () => {
   const { t } = useTranslation();
   const [viewOnly, setViewOnly] = useAtom(viewOnlyAtom);
@@ -138,6 +142,7 @@ export const Session = () => {
           <span className="text-sm select-none">{t('screen.screenshot')}</span>
         </button>
       </Tooltip>
+      <DashcamSave />
     </>
   );
 };

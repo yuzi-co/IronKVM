@@ -138,6 +138,17 @@ const de = {
       screenshot: 'Bildschirmfoto',
       screenshotTip: 'Speichert den Bildschirm des Hosts als PNG-Datei in voller Aufnahmegröße.',
       screenshotFailed: 'Bildschirmfoto fehlgeschlagen',
+      dashcam: {
+        save: 'Letzte {{seconds}} s speichern',
+        tip:
+          'Speichert die letzte Minute des Videos und einige Sekunden danach als MP4-Datei auf dem Board. Ein Administrator findet sie unter Einstellungen > Dashcam.',
+        saving: 'Der Clip wird gespeichert. Er ist in {{seconds}} s fertig.',
+        joined: 'Zum Clip hinzugefügt, der gerade gespeichert wird.',
+        empty: 'Die Dashcam enthält noch kein Video.',
+        tooSoon:
+          'Gerade eben wurde ein Clip gespeichert. Versuchen Sie es in einigen Sekunden erneut.',
+        failed: 'Der Clip wurde nicht gespeichert'
+      },
       streamInfo: {
         toggle: 'Stream-Info',
         toggleTip:
@@ -1230,6 +1241,57 @@ const de = {
         lastOk: 'gesendet',
         lastFailed: 'fehlgeschlagen'
       },
+      dashcam: {
+        title: 'Dashcam',
+        enabled: 'Letztes Video behalten',
+        enabledDesc:
+          'Behält die letzten Sekunden des Videos im Speicher des Boards. Wenn der Host zurückgesetzt oder eingeschaltet wird, das HDMI-Signal verloren geht oder zurückkehrt oder Sie es anfordern, speichert das Board sie als MP4-Datei in /data/dashcam. Bis dahin wird nichts auf die SD-Karte geschrieben.',
+        cost:
+          'Solange die Dashcam aktiv ist, nimmt das Board das Video auf und kodiert es, auch wenn niemand zusieht. Das kostet CPU-Zeit, Strom und bis zu 16 MB Speicher. Zuschauer behalten ihre Stream-Einstellungen. Mit dem Mainline-Kernel erzeugt der Encoder zusätzlich alle 4 Sekunden einen Keyframe, den jeder Zuschauer erhält.',
+        noVideo: 'Die Dashcam ist aktiv, aber das Board nimmt kein Video auf (Failsafe-Modus).',
+        lastError: 'Der letzte Clip wurde nicht gespeichert: {{error}}',
+        seconds: 'Vor dem Ereignis',
+        secondsDesc: 'Wie viel Video ein Clip von vor dem Ereignis behält: 30 bis 120 Sekunden.',
+        postSeconds: 'Nach dem Ereignis',
+        postSecondsDesc:
+          'Wie viel Video ein Clip zusätzlich von nach dem Ereignis behält: 0 bis 30 Sekunden.',
+        bitrate: 'Speichergrenze nach Bitrate',
+        bitrateDesc:
+          'Begrenzt den Speicher für das Video auf diese Bitrate über die Dauer. Der Stream ändert sich nicht: Ein Bild, das sich stark ändert, ergibt einen kürzeren Clip.',
+        bitrateStream: 'Aktuellen Stream verwenden',
+        storage: 'Speicherplatzgrenze',
+        storageDesc:
+          'Wie viel von /data die Clips belegen dürfen. Die ältesten Clips werden zuerst gelöscht.',
+        triggers: 'Clip speichern, wenn',
+        triggerAtx:
+          'Die Power- oder Reset-Taste gedrückt wird, aus beliebiger Quelle oder vom Watchdog',
+        triggerSignal: 'Das HDMI-Signal verloren geht oder zurückkehrt',
+        triggerFailsafe: 'Der Server im Failsafe-Modus startet',
+        triggerNote:
+          'Die Schaltfläche im Bildschirm-Menü und POST /api/dashcam/save speichern immer einen Clip.',
+        save: 'Speichern',
+        saved: 'Dashcam-Einstellungen gespeichert',
+        failed: 'Dashcam-Einstellungen konnten nicht gespeichert werden',
+        buffered: 'Im Speicher',
+        bufferedValue: '{{seconds}} s, {{size}} von {{budget}}',
+        clips: 'Clips',
+        noClips: 'Noch keine Clips.',
+        download: 'Herunterladen',
+        delete: 'Löschen',
+        deleteConfirm: '{{name}} löschen?',
+        deleted: 'Clip gelöscht',
+        deleteFailed: 'Clip konnte nicht gelöscht werden',
+        triggerNames: {
+          power: 'Power-Taste',
+          reset: 'Reset-Taste',
+          watchdog: 'Watchdog',
+          signalLost: 'Signal verloren',
+          signalRestored: 'Signal zurück',
+          failsafe: 'Failsafe-Modus',
+          manual: 'Von Hand gespeichert',
+          api: 'API'
+        }
+      },
       hostLog: {
         title: 'Host-Protokoll',
         intro:
@@ -1446,7 +1508,8 @@ const de = {
           oled: 'OLED-Anzeige',
           hdmi: 'HDMI-Leerlaufzeit',
           roomMic: 'Raummikrofon',
-          notifications: 'Benachrichtigungsregeln'
+          notifications: 'Benachrichtigungsregeln',
+          dashcam: 'Dashcam'
         }
       },
       watchdog: {

@@ -75,6 +75,12 @@ var named = map[string]Rule{
 	"POST /api/slot/revert":  {CategorySystem, "slot-revert", false},
 
 	"POST /api/settings/import": {CategorySettings, "settings-import", false},
+
+	// A clip of the last minute, asked for by hand or by a script, and its
+	// deletion. The target is the clip. A clip an event saved is recorded by
+	// the dashcam itself.
+	"POST /api/dashcam/save":          {CategoryMedia, "dashcam-save", false},
+	"DELETE /api/dashcam/clips/:name": {CategoryMedia, "dashcam-delete", false},
 }
 
 // skipped routes change nothing worth a line: reads that use POST, progress

@@ -135,6 +135,16 @@ const tr = {
       screenshot: 'Ekran görüntüsü',
       screenshotTip: 'Ana bilgisayar ekranını tam yakalama boyutunda PNG olarak kaydeder.',
       screenshotFailed: 'Ekran görüntüsü alınamadı',
+      dashcam: {
+        save: 'Son {{seconds}} sn\'yi kaydet',
+        tip:
+          'Videonun son dakikasını ve sonrasındaki birkaç saniyeyi kartta MP4 dosyası olarak kaydeder. Yönetici onu Ayarlar > Araç kamerası altında bulur.',
+        saving: 'Klip kaydediliyor. {{seconds}} sn içinde hazır olacak.',
+        joined: 'Kaydedilmekte olan klibe eklendi.',
+        empty: 'Araç kamerasında henüz video yok.',
+        tooSoon: 'Az önce bir klip kaydedildi. Birkaç saniye sonra tekrar deneyin.',
+        failed: 'Klip kaydedilmedi'
+      },
       streamInfo: {
         toggle: 'Akış bilgisi',
         toggleTip:
@@ -1199,6 +1209,57 @@ const tr = {
         lastOk: 'gönderildi',
         lastFailed: 'başarısız'
       },
+      dashcam: {
+        title: 'Araç kamerası',
+        enabled: 'Son videoyu sakla',
+        enabledDesc:
+          'Videonun son saniyelerini kartın belleğinde saklar. Ana makine sıfırlandığında veya açıldığında, HDMI sinyali kesildiğinde veya geri geldiğinde ya da siz istediğinizde, kart bunları /data/dashcam içine MP4 dosyası olarak kaydeder. O zamana kadar SD karta hiçbir şey yazılmaz.',
+        cost:
+          'Araç kamerası açıkken kart, kimse izlemese bile videoyu yakalar ve kodlar. Bu, CPU zamanına, enerjiye ve 16 MB\'a kadar belleğe mal olur. İzleyiciler akış ayarlarını korur. Mainline çekirdekte kodlayıcı ayrıca her 4 saniyede bir anahtar kare üretir ve bunu her izleyici alır.',
+        noVideo: 'Araç kamerası açık, ancak kart video yakalamıyor (güvenli mod).',
+        lastError: 'Son klip kaydedilmedi: {{error}}',
+        seconds: 'Olaydan önce',
+        secondsDesc: 'Bir klibin olaydan öncesinden ne kadar video sakladığı: 30 ile 120 saniye.',
+        postSeconds: 'Olaydan sonra',
+        postSecondsDesc:
+          'Bir klibin olaydan sonrasından da ne kadar video sakladığı: 0 ile 30 saniye.',
+        bitrate: 'Bit hızına göre bellek sınırı',
+        bitrateDesc:
+          'Video belleğini süre boyunca bu bit hızıyla sınırlar. Akış değişmez: çok değişen bir görüntü daha kısa bir klip verir.',
+        bitrateStream: 'Geçerli akışı kullan',
+        storage: 'Depolama sınırı',
+        storageDesc:
+          'Kliplerin /data içinde ne kadar yer kullanabileceği. En eski klipler önce silinir.',
+        triggers: 'Şu durumda klip kaydet',
+        triggerAtx:
+          'Güç veya sıfırlama düğmesine herhangi bir kaynaktan ya da watchdog tarafından basıldığında',
+        triggerSignal: 'HDMI sinyali kesildiğinde veya geri geldiğinde',
+        triggerFailsafe: 'Sunucu güvenli modda başladığında',
+        triggerNote:
+          'Ekran menüsündeki düğme ve POST /api/dashcam/save her zaman bir klip kaydeder.',
+        save: 'Kaydet',
+        saved: 'Araç kamerası ayarları kaydedildi',
+        failed: 'Araç kamerası ayarları kaydedilemedi',
+        buffered: 'Bellekte',
+        bufferedValue: '{{seconds}} sn, {{size}} / {{budget}}',
+        clips: 'Klipler',
+        noClips: 'Henüz klip yok.',
+        download: 'İndir',
+        delete: 'Sil',
+        deleteConfirm: '{{name}} silinsin mi?',
+        deleted: 'Klip silindi',
+        deleteFailed: 'Klip silinemedi',
+        triggerNames: {
+          power: 'Güç düğmesi',
+          reset: 'Sıfırlama düğmesi',
+          watchdog: 'Watchdog',
+          signalLost: 'Sinyal kesildi',
+          signalRestored: 'Sinyal geri geldi',
+          failsafe: 'Güvenli mod',
+          manual: 'Elle kaydedildi',
+          api: 'API'
+        }
+      },
       hostLog: {
         title: 'Ana makine günlüğü',
         intro:
@@ -1415,7 +1476,8 @@ const tr = {
           oled: 'OLED ekran',
           hdmi: 'HDMI boşta kalma süresi',
           roomMic: 'Oda mikrofonu',
-          notifications: 'Bildirim kuralları'
+          notifications: 'Bildirim kuralları',
+          dashcam: 'Araç kamerası'
         }
       },
       watchdog: {

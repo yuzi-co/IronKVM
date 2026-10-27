@@ -63,6 +63,7 @@ const (
 const (
 	KeyframeReasonWaiting  = "a viewer waits for one"
 	KeyframeReasonPicture  = "a viewer lost a picture"
+	KeyframeReasonDashcam  = "the dashcam needs a recent one"
 	keyframeReasonLossy    = "interval while a viewer loses packets"
 	keyframeReasonOverdue  = "no keyframe from the encoder's GOP"
 	keyframeReasonInterval = "the longest interval without one passed"

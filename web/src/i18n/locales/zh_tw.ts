@@ -129,6 +129,15 @@ const zh_tw = {
       screenshot: '螢幕截圖',
       screenshotTip: '將主機螢幕以完整擷取尺寸儲存為 PNG 檔案。',
       screenshotFailed: '螢幕截圖失敗',
+      dashcam: {
+        save: '儲存最近 {{seconds}} 秒',
+        tip: '將影片的最近一分鐘及之後幾秒儲存為板上的 MP4 檔案。管理員可在 設定 > 行車記錄器 中找到。',
+        saving: '正在儲存片段，{{seconds}} 秒後完成。',
+        joined: '已加入正在儲存的片段。',
+        empty: '行車記錄器中還沒有影片。',
+        tooSoon: '剛剛儲存過片段。請幾秒後再試。',
+        failed: '片段未儲存'
+      },
       streamInfo: {
         toggle: '串流資訊',
         toggleTip: '在畫面下方顯示一行，包含此瀏覽器測得的串流連線、解析度、影格率、位元率和延遲。',
@@ -1148,6 +1157,52 @@ const zh_tw = {
         lastOk: '已傳送',
         lastFailed: '失敗'
       },
+      dashcam: {
+        title: '行車記錄器',
+        enabled: '保留最近的影片',
+        enabledDesc:
+          '在板子記憶體中保留影片的最後幾秒。當主機被重設或開機、HDMI 訊號遺失或恢復，或您要求時，板子會將其儲存為 /data/dashcam 中的 MP4 檔案。在此之前不會寫入 SD 卡。',
+        cost:
+          '行車記錄器開啟期間，即使無人觀看，板子也會擷取並編碼影片。這會占用 CPU 時間、電力和最多 16 MB 記憶體。觀看者的串流設定保持不變。在 mainline 核心上，編碼器還會每 4 秒產生一個關鍵影格，所有觀看者都會收到。',
+        noVideo: '行車記錄器已開啟，但板子沒有擷取影片（故障安全模式）。',
+        lastError: '上一個片段未儲存：{{error}}',
+        seconds: '事件之前',
+        secondsDesc: '片段保留事件之前多長的影片：30 到 120 秒。',
+        postSeconds: '事件之後',
+        postSecondsDesc: '片段還保留事件之後多長的影片：0 到 30 秒。',
+        bitrate: '依位元率限制記憶體',
+        bitrateDesc: '將影片所用記憶體限制為此位元率乘以時長。串流不會改變：畫面變化越多，片段越短。',
+        bitrateStream: '使用目前串流',
+        storage: '儲存上限',
+        storageDesc: '片段可以占用的 /data 空間。最舊的片段會最先刪除。',
+        triggers: '在以下情況儲存片段',
+        triggerAtx: '電源或重設按鈕被按下（任何來源，包括看門狗）',
+        triggerSignal: 'HDMI 訊號遺失或恢復',
+        triggerFailsafe: '伺服器以故障安全模式啟動',
+        triggerNote: '畫面選單中的按鈕和 POST /api/dashcam/save 一定會儲存片段。',
+        save: '儲存',
+        saved: '行車記錄器設定已儲存',
+        failed: '儲存行車記錄器設定失敗',
+        buffered: '記憶體中',
+        bufferedValue: '{{seconds}} 秒，{{size}} / {{budget}}',
+        clips: '片段',
+        noClips: '還沒有片段。',
+        download: '下載',
+        delete: '刪除',
+        deleteConfirm: '刪除 {{name}}？',
+        deleted: '片段已刪除',
+        deleteFailed: '刪除片段失敗',
+        triggerNames: {
+          power: '電源按鈕',
+          reset: '重設按鈕',
+          watchdog: '看門狗',
+          signalLost: '訊號遺失',
+          signalRestored: '訊號恢復',
+          failsafe: '故障安全模式',
+          manual: '手動儲存',
+          api: 'API'
+        }
+      },
       hostLog: {
         title: '主機日誌',
         intro: '透過網路接收受管主機的日誌：syslog 和核心 netconsole。兩者在你開啟之前均為關閉。日誌行儲存在記憶體中，如有需要也可儲存到磁碟。',
@@ -1358,7 +1413,8 @@ const zh_tw = {
           oled: 'OLED 顯示器',
           hdmi: 'HDMI 閒置逾時',
           roomMic: '房間麥克風',
-          notifications: '通知規則'
+          notifications: '通知規則',
+          dashcam: '行車記錄器'
         }
       },
       watchdog: {

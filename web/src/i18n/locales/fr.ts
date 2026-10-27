@@ -138,6 +138,16 @@ const fr = {
       screenshot: "Capture d'écran",
       screenshotTip: "Enregistre l'écran de l'hôte en PNG, à la taille de capture complète.",
       screenshotFailed: "Échec de la capture d'écran",
+      dashcam: {
+        save: 'Enregistrer les {{seconds}} dernières s',
+        tip:
+          'Enregistre la dernière minute de la vidéo, et quelques secondes après, dans un fichier MP4 sur la carte. Un administrateur le trouve dans Paramètres > Dashcam.',
+        saving: 'Enregistrement du clip. Il est prêt dans {{seconds}} s.',
+        joined: 'Ajouté au clip en cours d\'enregistrement.',
+        empty: 'La dashcam ne contient pas encore de vidéo.',
+        tooSoon: 'Un clip vient d\'être enregistré. Réessayez dans quelques secondes.',
+        failed: 'Le clip n\'a pas été enregistré'
+      },
       streamInfo: {
         toggle: 'Infos du flux',
         toggleTip:
@@ -1220,6 +1230,58 @@ const fr = {
         lastOk: 'envoyée',
         lastFailed: 'échec'
       },
+      dashcam: {
+        title: 'Dashcam',
+        enabled: 'Garder la dernière vidéo',
+        enabledDesc:
+          'Garde les dernières secondes de la vidéo dans la mémoire de la carte. Quand l\'hôte est réinitialisé ou allumé, que le signal HDMI est perdu ou revient, ou que vous le demandez, la carte les enregistre dans un fichier MP4 dans /data/dashcam. Rien n\'est écrit sur la carte SD avant cela.',
+        cost:
+          'Tant que la dashcam est active, la carte capture et encode la vidéo même quand personne ne regarde. Cela coûte du temps CPU, de l\'énergie et jusqu\'à 16 Mo de mémoire. Les spectateurs gardent leurs réglages de flux. Avec le noyau mainline, l\'encodeur produit aussi une image clé toutes les 4 secondes, que chaque spectateur reçoit.',
+        noVideo: 'La dashcam est active, mais la carte ne capture aucune vidéo (mode de secours).',
+        lastError: 'Le dernier clip n\'a pas été enregistré : {{error}}',
+        seconds: 'Avant l\'événement',
+        secondsDesc:
+          'Quantité de vidéo d\'avant l\'événement qu\'un clip garde : 30 à 120 secondes.',
+        postSeconds: 'Après l\'événement',
+        postSecondsDesc:
+          'Quantité de vidéo d\'après l\'événement qu\'un clip garde aussi : 0 à 30 secondes.',
+        bitrate: 'Limite de mémoire par débit',
+        bitrateDesc:
+          'Limite la mémoire de la vidéo à ce débit sur la durée. Le flux ne change pas : une image qui change beaucoup donne un clip plus court.',
+        bitrateStream: 'Utiliser le flux actuel',
+        storage: 'Limite de stockage',
+        storageDesc:
+          'Espace de /data que les clips peuvent utiliser. Les clips les plus anciens sont supprimés en premier.',
+        triggers: 'Enregistrer un clip quand',
+        triggerAtx:
+          'Le bouton d\'alimentation ou de réinitialisation est pressé, depuis n\'importe quelle source ou par le watchdog',
+        triggerSignal: 'Le signal HDMI est perdu ou revient',
+        triggerFailsafe: 'Le serveur démarre en mode de secours',
+        triggerNote:
+          'Le bouton du menu Écran et POST /api/dashcam/save enregistrent toujours un clip.',
+        save: 'Enregistrer',
+        saved: 'Paramètres de la dashcam enregistrés',
+        failed: 'Échec de l\'enregistrement des paramètres de la dashcam',
+        buffered: 'En mémoire',
+        bufferedValue: '{{seconds}} s, {{size}} sur {{budget}}',
+        clips: 'Clips',
+        noClips: 'Aucun clip pour le moment.',
+        download: 'Télécharger',
+        delete: 'Supprimer',
+        deleteConfirm: 'Supprimer {{name}} ?',
+        deleted: 'Clip supprimé',
+        deleteFailed: 'Échec de la suppression du clip',
+        triggerNames: {
+          power: 'Bouton d\'alimentation',
+          reset: 'Bouton de réinitialisation',
+          watchdog: 'Watchdog',
+          signalLost: 'Signal perdu',
+          signalRestored: 'Signal revenu',
+          failsafe: 'Mode de secours',
+          manual: 'Enregistré à la main',
+          api: 'API'
+        }
+      },
       hostLog: {
         title: "Journal de l'hôte",
         intro:
@@ -1435,7 +1497,8 @@ const fr = {
           oled: 'Écran OLED',
           hdmi: 'Délai d’inactivité HDMI',
           roomMic: 'Microphone de la pièce',
-          notifications: 'Règles de notification'
+          notifications: 'Règles de notification',
+          dashcam: 'Dashcam'
         }
       },
       watchdog: {

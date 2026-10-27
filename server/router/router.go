@@ -164,6 +164,7 @@ func server(r *gin.Engine) {
 	whepRouter(r)
 	rtspRouter(r)
 	srtRouter(r)
+	dashcamRouter(r)
 	licensesRouter(r)
 	edidRouter(r)
 	supportRouter(r)

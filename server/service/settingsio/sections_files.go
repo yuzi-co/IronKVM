@@ -11,6 +11,7 @@ import (
 	"unicode/utf8"
 
 	"NanoKVM-Server/proto"
+	"NanoKVM-Server/service/dashcam"
 	"NanoKVM-Server/service/hid"
 	"NanoKVM-Server/service/notify"
 	"NanoKVM-Server/service/roommic"
@@ -34,6 +35,7 @@ const (
 	hdmiIdleTimeoutFile = utils.HDMIIdleTimeoutFile  // utils/hdmi.go
 	roomMicFile         = "/etc/kvm/room-mic"        // service/roommic/settings.go
 	notifyFile          = notify.File                // service/notify/settings.go
+	dashcamFile         = dashcam.File               // service/dashcam/settings.go
 
 	// vncPasswordFile is only checked for existence: plain VNC
 	// authentication can be imported only where a password is set.
@@ -523,6 +525,34 @@ var notificationsSection = spec[notificationSettings]{
 			return err
 		}
 		p.write(notifyFile, data, secretsFileMode)
+		return nil
+	},
+}
+
+// dashcamSection is the dashcam's settings. The clips stay on the board they
+// were saved on.
+var dashcamSection = spec[dashcam.Settings]{
+	id: "dashcam",
+	get: func(s *snapshot) (dashcam.Settings, error) {
+		v := dashcam.Defaults()
+		data, ok, err := s.readFile(dashcamFile)
+		if err != nil || !ok {
+			return v, err
+		}
+		if err := json.Unmarshal(data, &v); err != nil {
+			return dashcam.Defaults(), errors.New("dashcam.json is not valid JSON")
+		}
+		return v, nil
+	},
+	check: func(_ *snapshot, v *dashcam.Settings) error {
+		return v.Validate()
+	},
+	put: func(p *plan, v dashcam.Settings) error {
+		data, err := json.Marshal(v)
+		if err != nil {
+			return err
+		}
+		p.write(dashcamFile, data, settingsFileMode)
 		return nil
 	},
 }

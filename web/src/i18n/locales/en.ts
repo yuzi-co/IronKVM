@@ -133,6 +133,16 @@ const en = {
       screenshot: 'Screenshot',
       screenshotTip: 'Saves the host screen as a PNG file at full capture size.',
       screenshotFailed: 'Screenshot failed',
+      dashcam: {
+        save: 'Save last {{seconds}} s',
+        tip:
+          'Saves the last minute of the video, and a few seconds after it, as an MP4 file on the board. An administrator finds it under Settings > Dashcam.',
+        saving: 'Saving the clip. It is ready in {{seconds}} s.',
+        joined: 'Added to the clip that is being saved.',
+        empty: 'The dashcam holds no video yet.',
+        tooSoon: 'A clip was saved a moment ago. Try again in a few seconds.',
+        failed: 'The clip was not saved'
+      },
       streamInfo: {
         toggle: 'Stream info',
         toggleTip:
@@ -1195,6 +1205,53 @@ const en = {
         lastOk: 'sent',
         lastFailed: 'failed'
       },
+      dashcam: {
+        title: 'Dashcam',
+        enabled: 'Keep the last video',
+        enabledDesc:
+          'Keeps the last seconds of the video in the board\'s memory. When the host is reset or powered, the HDMI signal is lost or comes back, or you ask, the board saves them as an MP4 file in /data/dashcam. Nothing is written to the SD card until then.',
+        cost:
+          'While the dashcam is on, the board captures and encodes the video even when nobody watches. This costs CPU time and power, and up to 16 MB of memory. Viewers keep their stream settings. On the mainline kernel, the encoder also makes a keyframe every 4 seconds, which every viewer receives.',
+        noVideo: 'The dashcam is on, but the board captures no video (failsafe mode).',
+        lastError: 'The last clip was not saved: {{error}}',
+        seconds: 'Before the event',
+        secondsDesc: 'How much video a clip keeps from before the event: 30 to 120 seconds.',
+        postSeconds: 'After the event',
+        postSecondsDesc: 'How much video a clip also keeps from after the event: 0 to 30 seconds.',
+        bitrate: 'Memory limit by bitrate',
+        bitrateDesc:
+          'Limits the memory for the video to this bitrate over the duration. The stream does not change: a picture that changes a lot gives a shorter clip.',
+        bitrateStream: 'Use the current stream',
+        storage: 'Storage limit',
+        storageDesc: 'How much of /data the clips can use. The oldest clips are deleted first.',
+        triggers: 'Save a clip when',
+        triggerAtx: 'The power or reset button is pressed, from any source or by the watchdog',
+        triggerSignal: 'The HDMI signal is lost or comes back',
+        triggerFailsafe: 'The server starts in failsafe mode',
+        triggerNote: 'The button in the Screen menu and POST /api/dashcam/save always save a clip.',
+        save: 'Save',
+        saved: 'Dashcam settings saved',
+        failed: 'Failed to save the dashcam settings',
+        buffered: 'In memory',
+        bufferedValue: '{{seconds}} s, {{size}} of {{budget}}',
+        clips: 'Clips',
+        noClips: 'No clips yet.',
+        download: 'Download',
+        delete: 'Delete',
+        deleteConfirm: 'Delete {{name}}?',
+        deleted: 'Clip deleted',
+        deleteFailed: 'Failed to delete the clip',
+        triggerNames: {
+          power: 'Power button',
+          reset: 'Reset button',
+          watchdog: 'Watchdog',
+          signalLost: 'Signal lost',
+          signalRestored: 'Signal restored',
+          failsafe: 'Failsafe mode',
+          manual: 'Saved by hand',
+          api: 'API'
+        }
+      },
       hostLog: {
         title: 'Host log',
         intro:
@@ -1409,7 +1466,8 @@ const en = {
           oled: 'OLED display',
           hdmi: 'HDMI idle timeout',
           roomMic: 'Room microphone',
-          notifications: 'Notification rules'
+          notifications: 'Notification rules',
+          dashcam: 'Dashcam'
         }
       },
       watchdog: {

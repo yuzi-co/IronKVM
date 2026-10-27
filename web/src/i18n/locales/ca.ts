@@ -136,6 +136,16 @@ const ca = {
       screenshot: 'Captura de pantalla',
       screenshotTip: "Desa la pantalla de l'amfitrió com a PNG a mida completa de captura.",
       screenshotFailed: 'Ha fallat la captura de pantalla',
+      dashcam: {
+        save: 'Desa els últims {{seconds}} s',
+        tip:
+          'Desa l\'últim minut del vídeo, i uns segons després, com a fitxer MP4 a la placa. Un administrador el troba a Configuració > Dashcam.',
+        saving: 'S\'està desant el clip. Estarà llest d\'aquí a {{seconds}} s.',
+        joined: 'Afegit al clip que s\'està desant.',
+        empty: 'La dashcam encara no té vídeo.',
+        tooSoon: 'S\'ha desat un clip fa un moment. Torneu-ho a provar d\'aquí a uns segons.',
+        failed: 'El clip no s\'ha desat'
+      },
       streamInfo: {
         toggle: 'Info del flux',
         toggleTip:
@@ -1210,6 +1220,58 @@ const ca = {
         lastOk: 'enviada',
         lastFailed: 'fallida'
       },
+      dashcam: {
+        title: 'Dashcam',
+        enabled: 'Conserva l\'últim vídeo',
+        enabledDesc:
+          'Conserva els últims segons del vídeo a la memòria de la placa. Quan l\'amfitrió es reinicia o s\'encén, el senyal HDMI es perd o torna, o ho demaneu, la placa els desa com a fitxer MP4 a /data/dashcam. Fins aleshores no s\'escriu res a la targeta SD.',
+        cost:
+          'Mentre la dashcam està activa, la placa captura i codifica el vídeo encara que ningú no el miri. Això costa temps de CPU, energia i fins a 16 MB de memòria. Els espectadors conserven la seva configuració de transmissió. Amb el nucli mainline, el codificador també genera un fotograma clau cada 4 segons, que rep cada espectador.',
+        noVideo:
+          'La dashcam està activa, però la placa no captura vídeo (mode a prova de fallades).',
+        lastError: 'L\'últim clip no s\'ha desat: {{error}}',
+        seconds: 'Abans de l\'esdeveniment',
+        secondsDesc:
+          'Quant vídeo d\'abans de l\'esdeveniment conserva un clip: de 30 a 120 segons.',
+        postSeconds: 'Després de l\'esdeveniment',
+        postSecondsDesc:
+          'Quant vídeo de després de l\'esdeveniment conserva també un clip: de 0 a 30 segons.',
+        bitrate: 'Límit de memòria per taxa de bits',
+        bitrateDesc:
+          'Limita la memòria del vídeo a aquesta taxa de bits durant la durada. La transmissió no canvia: una imatge que canvia molt dona un clip més curt.',
+        bitrateStream: 'Fes servir la transmissió actual',
+        storage: 'Límit d\'emmagatzematge',
+        storageDesc:
+          'Quant de /data poden ocupar els clips. Els clips més antics s\'eliminen primer.',
+        triggers: 'Desa un clip quan',
+        triggerAtx:
+          'Es prem el botó d\'engegada o de reinici, des de qualsevol origen o pel watchdog',
+        triggerSignal: 'El senyal HDMI es perd o torna',
+        triggerFailsafe: 'El servidor s\'inicia en mode a prova de fallades',
+        triggerNote: 'El botó del menú Pantalla i POST /api/dashcam/save sempre desen un clip.',
+        save: 'Desa',
+        saved: 'S\'ha desat la configuració de la dashcam',
+        failed: 'No s\'ha pogut desar la configuració de la dashcam',
+        buffered: 'A la memòria',
+        bufferedValue: '{{seconds}} s, {{size}} de {{budget}}',
+        clips: 'Clips',
+        noClips: 'Encara no hi ha clips.',
+        download: 'Baixa',
+        delete: 'Elimina',
+        deleteConfirm: 'Voleu eliminar {{name}}?',
+        deleted: 'S\'ha eliminat el clip',
+        deleteFailed: 'No s\'ha pogut eliminar el clip',
+        triggerNames: {
+          power: 'Botó d\'engegada',
+          reset: 'Botó de reinici',
+          watchdog: 'Watchdog',
+          signalLost: 'Senyal perdut',
+          signalRestored: 'Senyal recuperat',
+          failsafe: 'Mode a prova de fallades',
+          manual: 'Desat a mà',
+          api: 'API'
+        }
+      },
       hostLog: {
         title: "Registre de l'amfitrió",
         intro:
@@ -1425,7 +1487,8 @@ const ca = {
           oled: 'Pantalla OLED',
           hdmi: 'Temps d\'inactivitat HDMI',
           roomMic: 'Micròfon de la sala',
-          notifications: 'Regles de notificació'
+          notifications: 'Regles de notificació',
+          dashcam: 'Dashcam'
         }
       },
       watchdog: {

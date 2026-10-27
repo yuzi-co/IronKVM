@@ -135,6 +135,16 @@ const hu = {
       screenshot: 'Képernyőkép',
       screenshotTip: 'A gazdagép képernyőjét PNG-fájlba menti teljes rögzítési méretben.',
       screenshotFailed: 'A képernyőkép nem sikerült',
+      dashcam: {
+        save: 'Utolsó {{seconds}} mp mentése',
+        tip:
+          'Elmenti a videó utolsó percét, és néhány másodpercet utána, MP4-fájlként a panelre. A rendszergazda a Beállítások > Fedélzeti kamera alatt találja.',
+        saving: 'A klip mentése folyamatban. {{seconds}} mp múlva kész.',
+        joined: 'Hozzáadva a mentés alatt álló kliphez.',
+        empty: 'A fedélzeti kamerában még nincs videó.',
+        tooSoon: 'Egy klipet az imént mentettünk. Próbálja újra néhány másodperc múlva.',
+        failed: 'A klip nem lett mentve'
+      },
       streamInfo: {
         toggle: 'Stream infó',
         toggleTip:
@@ -1213,6 +1223,56 @@ const hu = {
         lastOk: 'elküldve',
         lastFailed: 'sikertelen'
       },
+      dashcam: {
+        title: 'Fedélzeti kamera',
+        enabled: 'Az utolsó videó megtartása',
+        enabledDesc:
+          'A videó utolsó másodperceit a panel memóriájában tartja. Amikor a gazdagépet újraindítják vagy bekapcsolják, a HDMI-jel megszűnik vagy visszatér, vagy Ön kéri, a panel MP4-fájlként menti őket a /data/dashcam mappába. Addig semmi sem kerül az SD-kártyára.',
+        cost:
+          'Amíg a fedélzeti kamera be van kapcsolva, a panel akkor is rögzíti és kódolja a videót, ha senki sem nézi. Ez CPU-időbe, energiába és legfeljebb 16 MB memóriába kerül. A nézők megtartják a stream beállításaikat. A mainline kernellel a kódoló ezenfelül 4 másodpercenként kulcskockát készít, amelyet minden néző megkap.',
+        noVideo:
+          'A fedélzeti kamera be van kapcsolva, de a panel nem rögzít videót (hibatűrő mód).',
+        lastError: 'Az utolsó klip nem lett mentve: {{error}}',
+        seconds: 'Az esemény előtt',
+        secondsDesc: 'Mennyi videót tart meg egy klip az esemény előttről: 30–120 másodperc.',
+        postSeconds: 'Az esemény után',
+        postSecondsDesc: 'Mennyi videót tart meg egy klip az esemény utánról is: 0–30 másodperc.',
+        bitrate: 'Memóriakorlát bitráta szerint',
+        bitrateDesc:
+          'A videó memóriáját erre a bitrátára korlátozza az időtartamra. A stream nem változik: a sokat változó kép rövidebb klipet ad.',
+        bitrateStream: 'Az aktuális stream használata',
+        storage: 'Tárhelykorlát',
+        storageDesc:
+          'Mennyit használhatnak a klipek a /data területből. A legrégebbi klipek törlődnek először.',
+        triggers: 'Klip mentése, ha',
+        triggerAtx:
+          'Megnyomják a bekapcsoló vagy a reset gombot, bármilyen forrásból vagy a watchdog által',
+        triggerSignal: 'A HDMI-jel megszűnik vagy visszatér',
+        triggerFailsafe: 'A szerver hibatűrő módban indul',
+        triggerNote: 'A Képernyő menü gombja és a POST /api/dashcam/save mindig ment egy klipet.',
+        save: 'Mentés',
+        saved: 'A fedélzeti kamera beállításai mentve',
+        failed: 'Nem sikerült menteni a fedélzeti kamera beállításait',
+        buffered: 'Memóriában',
+        bufferedValue: '{{seconds}} mp, {{size}} / {{budget}}',
+        clips: 'Klipek',
+        noClips: 'Még nincsenek klipek.',
+        download: 'Letöltés',
+        delete: 'Törlés',
+        deleteConfirm: 'Törli: {{name}}?',
+        deleted: 'Klip törölve',
+        deleteFailed: 'Nem sikerült törölni a klipet',
+        triggerNames: {
+          power: 'Bekapcsoló gomb',
+          reset: 'Reset gomb',
+          watchdog: 'Watchdog',
+          signalLost: 'Jel megszűnt',
+          signalRestored: 'Jel visszatért',
+          failsafe: 'Hibatűrő mód',
+          manual: 'Kézzel mentve',
+          api: 'API'
+        }
+      },
       hostLog: {
         title: 'Gazdagép-napló',
         intro:
@@ -1429,7 +1489,8 @@ const hu = {
           oled: 'OLED kijelző',
           hdmi: 'HDMI tétlenségi idő',
           roomMic: 'Szobai mikrofon',
-          notifications: 'Értesítési szabályok'
+          notifications: 'Értesítési szabályok',
+          dashcam: 'Fedélzeti kamera'
         }
       },
       watchdog: {

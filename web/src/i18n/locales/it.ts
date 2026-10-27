@@ -135,6 +135,16 @@ const it = {
       screenshot: 'Screenshot',
       screenshotTip: "Salva lo schermo dell'host come PNG alla piena dimensione di acquisizione.",
       screenshotFailed: 'Screenshot non riuscito',
+      dashcam: {
+        save: 'Salva gli ultimi {{seconds}} s',
+        tip:
+          'Salva l\'ultimo minuto del video, e alcuni secondi dopo, come file MP4 sulla scheda. Un amministratore lo trova in Impostazioni > Dashcam.',
+        saving: 'Salvataggio del clip. Sarà pronto tra {{seconds}} s.',
+        joined: 'Aggiunto al clip in fase di salvataggio.',
+        empty: 'La dashcam non contiene ancora video.',
+        tooSoon: 'Un clip è stato salvato un attimo fa. Riprova tra qualche secondo.',
+        failed: 'Il clip non è stato salvato'
+      },
       streamInfo: {
         toggle: 'Info stream',
         toggleTip:
@@ -1216,6 +1226,57 @@ const it = {
         lastOk: 'inviato',
         lastFailed: 'non riuscito'
       },
+      dashcam: {
+        title: 'Dashcam',
+        enabled: 'Conserva l\'ultimo video',
+        enabledDesc:
+          'Conserva gli ultimi secondi del video nella memoria della scheda. Quando l\'host viene resettato o acceso, il segnale HDMI si perde o ritorna, o lo chiedi tu, la scheda li salva come file MP4 in /data/dashcam. Fino ad allora nulla viene scritto sulla scheda SD.',
+        cost:
+          'Finché la dashcam è attiva, la scheda acquisisce e codifica il video anche quando nessuno guarda. Questo costa tempo di CPU, energia e fino a 16 MB di memoria. Gli spettatori mantengono le loro impostazioni di streaming. Con il kernel mainline, l\'encoder genera inoltre un fotogramma chiave ogni 4 secondi, che ogni spettatore riceve.',
+        noVideo: 'La dashcam è attiva, ma la scheda non acquisisce video (modalità failsafe).',
+        lastError: 'L\'ultimo clip non è stato salvato: {{error}}',
+        seconds: 'Prima dell\'evento',
+        secondsDesc: 'Quanto video di prima dell\'evento conserva un clip: da 30 a 120 secondi.',
+        postSeconds: 'Dopo l\'evento',
+        postSecondsDesc:
+          'Quanto video di dopo l\'evento conserva anche un clip: da 0 a 30 secondi.',
+        bitrate: 'Limite di memoria per bitrate',
+        bitrateDesc:
+          'Limita la memoria per il video a questo bitrate per la durata. Lo stream non cambia: un\'immagine che cambia molto dà un clip più corto.',
+        bitrateStream: 'Usa lo stream attuale',
+        storage: 'Limite di spazio',
+        storageDesc:
+          'Quanto di /data possono occupare i clip. I clip più vecchi vengono eliminati per primi.',
+        triggers: 'Salva un clip quando',
+        triggerAtx:
+          'Viene premuto il pulsante di accensione o di reset, da qualsiasi origine o dal watchdog',
+        triggerSignal: 'Il segnale HDMI si perde o ritorna',
+        triggerFailsafe: 'Il server si avvia in modalità failsafe',
+        triggerNote:
+          'Il pulsante nel menu Schermo e POST /api/dashcam/save salvano sempre un clip.',
+        save: 'Salva',
+        saved: 'Impostazioni della dashcam salvate',
+        failed: 'Impossibile salvare le impostazioni della dashcam',
+        buffered: 'In memoria',
+        bufferedValue: '{{seconds}} s, {{size}} di {{budget}}',
+        clips: 'Clip',
+        noClips: 'Ancora nessun clip.',
+        download: 'Scarica',
+        delete: 'Elimina',
+        deleteConfirm: 'Eliminare {{name}}?',
+        deleted: 'Clip eliminato',
+        deleteFailed: 'Impossibile eliminare il clip',
+        triggerNames: {
+          power: 'Pulsante di accensione',
+          reset: 'Pulsante di reset',
+          watchdog: 'Watchdog',
+          signalLost: 'Segnale perso',
+          signalRestored: 'Segnale tornato',
+          failsafe: 'Modalità failsafe',
+          manual: 'Salvato a mano',
+          api: 'API'
+        }
+      },
       hostLog: {
         title: "Log dell'host",
         intro:
@@ -1432,7 +1493,8 @@ const it = {
           oled: 'Display OLED',
           hdmi: 'Timeout inattività HDMI',
           roomMic: 'Microfono ambiente',
-          notifications: 'Regole di notifica'
+          notifications: 'Regole di notifica',
+          dashcam: 'Dashcam'
         }
       },
       watchdog: {

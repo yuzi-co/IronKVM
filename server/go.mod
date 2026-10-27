@@ -44,6 +44,7 @@ require (
 )
 
 require (
+	github.com/abema/go-mp4 v1.7.1 // indirect
 	github.com/asticode/go-astikit v0.30.0 // indirect
 	github.com/asticode/go-astits v1.16.0 // indirect
 	github.com/benburkert/openpgp v0.0.0-20160410205803-c2471f86866c // indirect

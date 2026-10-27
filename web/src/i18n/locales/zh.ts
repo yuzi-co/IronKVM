@@ -129,6 +129,15 @@ const zh = {
       screenshot: '截图',
       screenshotTip: '将主机屏幕以完整采集尺寸保存为 PNG 文件。',
       screenshotFailed: '截图失败',
+      dashcam: {
+        save: '保存最近 {{seconds}} 秒',
+        tip: '将视频的最近一分钟及之后几秒保存为板上的 MP4 文件。管理员可在 设置 > 行车记录仪 中找到。',
+        saving: '正在保存片段，{{seconds}} 秒后完成。',
+        joined: '已加入正在保存的片段。',
+        empty: '行车记录仪中还没有视频。',
+        tooSoon: '刚刚保存过片段。请几秒后再试。',
+        failed: '片段未保存'
+      },
       streamInfo: {
         toggle: '串流信息',
         toggleTip: '在画面下方显示一行，包含此浏览器测得的串流连接、分辨率、帧率、码率和延迟。',
@@ -1149,6 +1158,52 @@ const zh = {
         lastOk: '已发送',
         lastFailed: '失败'
       },
+      dashcam: {
+        title: '行车记录仪',
+        enabled: '保留最近的视频',
+        enabledDesc:
+          '在板子内存中保留视频的最后几秒。当主机被复位或开机、HDMI 信号丢失或恢复，或您要求时，板子会将其保存为 /data/dashcam 中的 MP4 文件。在此之前不会向 SD 卡写入任何内容。',
+        cost:
+          '行车记录仪开启期间，即使无人观看，板子也会采集并编码视频。这会占用 CPU 时间、电力和最多 16 MB 内存。观看者的串流设置保持不变。在 mainline 内核上，编码器还会每 4 秒生成一个关键帧，所有观看者都会收到。',
+        noVideo: '行车记录仪已开启，但板子没有采集视频（故障安全模式）。',
+        lastError: '上一个片段未保存：{{error}}',
+        seconds: '事件之前',
+        secondsDesc: '片段保留事件之前多长的视频：30 到 120 秒。',
+        postSeconds: '事件之后',
+        postSecondsDesc: '片段还保留事件之后多长的视频：0 到 30 秒。',
+        bitrate: '按码率限制内存',
+        bitrateDesc: '将视频所用内存限制为该码率乘以时长。串流不会改变：画面变化越多，片段越短。',
+        bitrateStream: '使用当前串流',
+        storage: '存储上限',
+        storageDesc: '片段可以占用的 /data 空间。最旧的片段会最先删除。',
+        triggers: '在以下情况保存片段',
+        triggerAtx: '电源或复位按钮被按下（任何来源，包括看门狗）',
+        triggerSignal: 'HDMI 信号丢失或恢复',
+        triggerFailsafe: '服务器以故障安全模式启动',
+        triggerNote: '屏幕菜单中的按钮和 POST /api/dashcam/save 总会保存片段。',
+        save: '保存',
+        saved: '行车记录仪设置已保存',
+        failed: '保存行车记录仪设置失败',
+        buffered: '内存中',
+        bufferedValue: '{{seconds}} 秒，{{size}} / {{budget}}',
+        clips: '片段',
+        noClips: '还没有片段。',
+        download: '下载',
+        delete: '删除',
+        deleteConfirm: '删除 {{name}}？',
+        deleted: '片段已删除',
+        deleteFailed: '删除片段失败',
+        triggerNames: {
+          power: '电源按钮',
+          reset: '复位按钮',
+          watchdog: '看门狗',
+          signalLost: '信号丢失',
+          signalRestored: '信号恢复',
+          failsafe: '故障安全模式',
+          manual: '手动保存',
+          api: 'API'
+        }
+      },
       hostLog: {
         title: '主机日志',
         intro: '通过网络接收受管主机的日志：syslog 和内核 netconsole。两者在你开启之前均为关闭。日志行保存在内存中，如有需要也可保存到磁盘。',
@@ -1359,7 +1414,8 @@ const zh = {
           oled: 'OLED 显示屏',
           hdmi: 'HDMI 空闲超时',
           roomMic: '房间麦克风',
-          notifications: '通知规则'
+          notifications: '通知规则',
+          dashcam: '行车记录仪'
         }
       },
       watchdog: {

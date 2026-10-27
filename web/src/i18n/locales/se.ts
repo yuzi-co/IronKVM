@@ -132,6 +132,16 @@ const se = {
       screenshot: 'Skärmbild',
       screenshotTip: 'Sparar värdens skärm som PNG i full inspelningsstorlek.',
       screenshotFailed: 'Skärmbilden misslyckades',
+      dashcam: {
+        save: 'Spara senaste {{seconds}} s',
+        tip:
+          'Sparar den sista minuten av videon, och några sekunder efter, som en MP4-fil på kortet. En administratör hittar den under Inställningar > Dashcam.',
+        saving: 'Klippet sparas. Det är klart om {{seconds}} s.',
+        joined: 'Tillagt i klippet som sparas.',
+        empty: 'Dashcamen har ingen video ännu.',
+        tooSoon: 'Ett klipp sparades för ett ögonblick sedan. Försök igen om några sekunder.',
+        failed: 'Klippet sparades inte'
+      },
       streamInfo: {
         toggle: 'Strömningsinfo',
         toggleTip:
@@ -1201,6 +1211,56 @@ const se = {
         lastOk: 'skickad',
         lastFailed: 'misslyckades'
       },
+      dashcam: {
+        title: 'Dashcam',
+        enabled: 'Behåll den senaste videon',
+        enabledDesc:
+          'Behåller de sista sekunderna av videon i kortets minne. När värden återställs eller startas, HDMI-signalen försvinner eller kommer tillbaka, eller du ber om det, sparar kortet dem som en MP4-fil i /data/dashcam. Fram till dess skrivs ingenting till SD-kortet.',
+        cost:
+          'Medan dashcamen är på spelar kortet in och kodar videon även när ingen tittar. Det kostar CPU-tid, ström och upp till 16 MB minne. Tittarna behåller sina strömningsinställningar. Med mainline-kärnan gör kodaren dessutom en nyckelbildruta var 4:e sekund, som alla tittare får.',
+        noVideo: 'Dashcamen är på, men kortet spelar inte in någon video (failsafe-läge).',
+        lastError: 'Det senaste klippet sparades inte: {{error}}',
+        seconds: 'Före händelsen',
+        secondsDesc:
+          'Hur mycket video från före händelsen ett klipp behåller: 30 till 120 sekunder.',
+        postSeconds: 'Efter händelsen',
+        postSecondsDesc:
+          'Hur mycket video från efter händelsen ett klipp också behåller: 0 till 30 sekunder.',
+        bitrate: 'Minnesgräns efter bithastighet',
+        bitrateDesc:
+          'Begränsar minnet för videon till denna bithastighet under tiden. Strömmen ändras inte: en bild som ändras mycket ger ett kortare klipp.',
+        bitrateStream: 'Använd aktuell ström',
+        storage: 'Lagringsgräns',
+        storageDesc: 'Hur mycket av /data klippen får använda. De äldsta klippen tas bort först.',
+        triggers: 'Spara ett klipp när',
+        triggerAtx:
+          'Ström- eller återställningsknappen trycks, från valfri källa eller av watchdogen',
+        triggerSignal: 'HDMI-signalen försvinner eller kommer tillbaka',
+        triggerFailsafe: 'Servern startar i failsafe-läge',
+        triggerNote: 'Knappen i Skärm-menyn och POST /api/dashcam/save sparar alltid ett klipp.',
+        save: 'Spara',
+        saved: 'Dashcam-inställningar sparade',
+        failed: 'Det gick inte att spara dashcam-inställningarna',
+        buffered: 'I minnet',
+        bufferedValue: '{{seconds}} s, {{size}} av {{budget}}',
+        clips: 'Klipp',
+        noClips: 'Inga klipp ännu.',
+        download: 'Ladda ner',
+        delete: 'Ta bort',
+        deleteConfirm: 'Ta bort {{name}}?',
+        deleted: 'Klippet togs bort',
+        deleteFailed: 'Det gick inte att ta bort klippet',
+        triggerNames: {
+          power: 'Strömknapp',
+          reset: 'Återställningsknapp',
+          watchdog: 'Watchdog',
+          signalLost: 'Signal förlorad',
+          signalRestored: 'Signal tillbaka',
+          failsafe: 'Failsafe-läge',
+          manual: 'Sparat för hand',
+          api: 'API'
+        }
+      },
       hostLog: {
         title: 'Värdlogg',
         intro:
@@ -1415,7 +1475,8 @@ const se = {
           oled: 'OLED-skärm',
           hdmi: 'HDMI-tidsgräns vid inaktivitet',
           roomMic: 'Rumsmikrofon',
-          notifications: 'Aviseringsregler'
+          notifications: 'Aviseringsregler',
+          dashcam: 'Dashcam'
         }
       },
       watchdog: {

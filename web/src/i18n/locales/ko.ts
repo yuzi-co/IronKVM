@@ -132,6 +132,15 @@ const ko = {
       screenshot: '스크린샷',
       screenshotTip: '호스트 화면을 전체 캡처 크기의 PNG로 저장합니다.',
       screenshotFailed: '스크린샷 실패',
+      dashcam: {
+        save: '최근 {{seconds}}초 저장',
+        tip: '영상의 최근 1분과 그 뒤 몇 초를 보드에 MP4 파일로 저장합니다. 관리자는 설정 > 블랙박스에서 찾을 수 있습니다.',
+        saving: '클립을 저장하는 중입니다. {{seconds}}초 후에 준비됩니다.',
+        joined: '저장 중인 클립에 추가했습니다.',
+        empty: '블랙박스에 아직 영상이 없습니다.',
+        tooSoon: '방금 클립을 저장했습니다. 몇 초 후에 다시 시도하세요.',
+        failed: '클립을 저장하지 못했습니다'
+      },
       streamInfo: {
         toggle: '스트림 정보',
         toggleTip: '이 브라우저가 측정한 스트림의 연결, 해상도, 프레임 속도, 비트레이트, 지연 시간을 화면 아래 한 줄로 표시합니다.',
@@ -1183,6 +1192,52 @@ const ko = {
         lastOk: '전송됨',
         lastFailed: '실패'
       },
+      dashcam: {
+        title: '블랙박스',
+        enabled: '최근 영상 보관',
+        enabledDesc:
+          '영상의 마지막 몇 초를 보드 메모리에 보관합니다. 호스트가 리셋되거나 전원이 켜질 때, HDMI 신호가 끊기거나 돌아올 때, 또는 요청할 때 보드가 이를 /data/dashcam에 MP4 파일로 저장합니다. 그 전에는 SD 카드에 아무것도 쓰지 않습니다.',
+        cost:
+          '블랙박스가 켜져 있는 동안 보드는 아무도 보지 않아도 영상을 캡처하고 인코딩합니다. CPU 시간과 전력, 최대 16MB의 메모리를 사용합니다. 시청자의 스트림 설정은 그대로입니다. mainline 커널에서는 인코더가 4초마다 키프레임도 만들며, 모든 시청자가 이를 받습니다.',
+        noVideo: '블랙박스가 켜져 있지만 보드가 영상을 캡처하지 않습니다(페일세이프 모드).',
+        lastError: '마지막 클립을 저장하지 못했습니다: {{error}}',
+        seconds: '이벤트 전',
+        secondsDesc: '클립이 이벤트 전부터 보관하는 영상 길이: 30~120초.',
+        postSeconds: '이벤트 후',
+        postSecondsDesc: '클립이 이벤트 후에도 보관하는 영상 길이: 0~30초.',
+        bitrate: '비트레이트 기준 메모리 제한',
+        bitrateDesc: '영상 메모리를 기간 동안 이 비트레이트로 제한합니다. 스트림은 바뀌지 않습니다. 많이 변하는 화면은 더 짧은 클립이 됩니다.',
+        bitrateStream: '현재 스트림 사용',
+        storage: '저장 공간 제한',
+        storageDesc: '클립이 사용할 수 있는 /data 용량입니다. 가장 오래된 클립부터 삭제합니다.',
+        triggers: '클립 저장 시점',
+        triggerAtx: '전원 또는 리셋 버튼이 눌렸을 때(모든 경로 및 워치독 포함)',
+        triggerSignal: 'HDMI 신호가 끊기거나 돌아왔을 때',
+        triggerFailsafe: '서버가 페일세이프 모드로 시작했을 때',
+        triggerNote: '화면 메뉴의 버튼과 POST /api/dashcam/save는 항상 클립을 저장합니다.',
+        save: '저장',
+        saved: '블랙박스 설정을 저장했습니다',
+        failed: '블랙박스 설정을 저장하지 못했습니다',
+        buffered: '메모리',
+        bufferedValue: '{{seconds}}초, {{size}} / {{budget}}',
+        clips: '클립',
+        noClips: '아직 클립이 없습니다.',
+        download: '다운로드',
+        delete: '삭제',
+        deleteConfirm: '{{name}}을(를) 삭제할까요?',
+        deleted: '클립을 삭제했습니다',
+        deleteFailed: '클립을 삭제하지 못했습니다',
+        triggerNames: {
+          power: '전원 버튼',
+          reset: '리셋 버튼',
+          watchdog: '워치독',
+          signalLost: '신호 끊김',
+          signalRestored: '신호 복귀',
+          failsafe: '페일세이프 모드',
+          manual: '수동 저장',
+          api: 'API'
+        }
+      },
       hostLog: {
         title: '호스트 로그',
         intro:
@@ -1398,7 +1453,8 @@ const ko = {
           oled: 'OLED 디스플레이',
           hdmi: 'HDMI 유휴 시간 제한',
           roomMic: '실내 마이크',
-          notifications: '알림 규칙'
+          notifications: '알림 규칙',
+          dashcam: '블랙박스'
         }
       },
       watchdog: {
