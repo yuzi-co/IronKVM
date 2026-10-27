@@ -12,11 +12,16 @@ package slot
 
 import (
 	"bufio"
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -60,24 +65,57 @@ var errUnavailable = errors.New("this board has no slot tool; slot installs need
 // run runs the tool with args and returns what it printed. A failure carries
 // the tool's own reason: its last "slot: " line, without the prefix.
 func run(ctx context.Context, timeout time.Duration, args ...string) (string, error) {
+	_, combined, err := runSplit(ctx, timeout, args...)
+	return combined, err
+}
+
+// runSplit is run that also keeps what the tool wrote to stdout on its own,
+// for an answer a program reads: a warning on stderr would otherwise land in
+// the middle of it.
+func runSplit(ctx context.Context, timeout time.Duration, args ...string) (stdout, combined string, err error) {
 	if !Available() {
-		return "", errUnavailable
+		return "", "", errUnavailable
 	}
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 	cmd := exec.CommandContext(ctx, Bin, args...)
 	cmd.WaitDelay = time.Second
-	out, err := cmd.CombinedOutput()
+	var out bytes.Buffer
+	all := &lockedBuffer{}
+	cmd.Stdout = io.MultiWriter(&out, all)
+	cmd.Stderr = all
+	err = cmd.Run()
+	stdout, combined = out.String(), all.String()
 	if err != nil {
 		if ctx.Err() != nil {
-			return string(out), errors.New("slot " + args[0] + " did not finish in time")
+			return stdout, combined, errors.New("slot " + args[0] + " did not finish in time")
 		}
-		if reason := lastReason(string(out)); reason != "" {
-			return string(out), errors.New(reason)
+		if reason := lastReason(combined); reason != "" {
+			return stdout, combined, errors.New(reason)
 		}
-		return string(out), err
+		return stdout, combined, err
 	}
-	return string(out), nil
+	return stdout, combined, nil
+}
+
+// lockedBuffer takes stdout and stderr together. exec copies the two from
+// separate goroutines when they are different writers, so the writes are
+// serialised here.
+type lockedBuffer struct {
+	mu  sync.Mutex
+	buf bytes.Buffer
+}
+
+func (b *lockedBuffer) Write(p []byte) (int, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.buf.Write(p)
+}
+
+func (b *lockedBuffer) String() string {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.buf.String()
 }
 
 // lastReason is the last line the tool printed about itself, the one die()
@@ -104,6 +142,9 @@ type Info struct {
 	Installed string `json:"installed,omitempty"`
 	// Trial is none, armed, booted, passed or failed.
 	Trial string `json:"trial,omitempty"`
+	// Source is the file name the slot was installed from. Only the JSON
+	// form of `slot status` carries it.
+	Source string `json:"source,omitempty"`
 }
 
 // Status is `slot status`, read into fields.
@@ -221,13 +262,69 @@ func parseStatus(out string) Status {
 	return st
 }
 
-// readStatus runs `slot status`. It also brings the records up to date: the
-// tool turns an install whose process is gone into "interrupted" as it
-// answers.
+// statusFormat is the format of `slot status --json` this server reads.
+const statusFormat = 1
+
+// statusJSON is what `slot status --json` prints (generic/slot in
+// ironkvm-dist, cmd_status_json). The names of the running, trusted, backend
+// and slot fields are the ones Status already uses, so they decode straight
+// into it.
+type statusJSON struct {
+	Format int `json:"format"`
+	Status
+	// Manifest is the running slot's /etc/slot-manifest, one entry per line
+	// in order. Some keys repeat, which is why it is not an object.
+	Manifest []struct {
+		Key   string `json:"key"`
+		Value string `json:"value"`
+	} `json:"manifest"`
+}
+
+// parseStatusJSON reads `slot status --json`. A format this server does not
+// know is refused rather than read as if it were format 1: the tool raises it
+// only for a change a reader has to understand.
+func parseStatusJSON(out string) (Status, error) {
+	var doc statusJSON
+	if err := json.Unmarshal([]byte(out), &doc); err != nil {
+		return Status{}, fmt.Errorf("slot status --json printed something that is not JSON: %w", err)
+	}
+	if doc.Format != statusFormat {
+		return Status{}, fmt.Errorf("slot status --json is format %d, and this server reads format %d", doc.Format, statusFormat)
+	}
+	st := doc.Status
+	if st.Slots == nil {
+		st.Slots = []Info{}
+	}
+	st.Image = nil
+	for _, line := range doc.Manifest {
+		if !imageFields[line.Key] {
+			continue
+		}
+		if st.Image == nil {
+			st.Image = map[string]string{}
+		}
+		if _, seen := st.Image[line.Key]; !seen {
+			st.Image[line.Key] = line.Value
+		}
+	}
+	return st, nil
+}
+
+// readStatus runs `slot status --json`. It also brings the records up to
+// date: the tool turns an install whose process is gone into "interrupted" as
+// it answers.
+//
+// A tool from before --json, on an image older than the option, ignores it
+// and prints the text form, so what came back decides the parser: an object
+// is JSON, anything else is the columns. Only stdout is read, so a warning
+// the tool writes to stderr cannot break either.
 func readStatus(ctx context.Context) (Status, error) {
-	out, err := run(ctx, statusTimeout, "status")
+	out, _, err := runSplit(ctx, statusTimeout, "status", "--json")
 	if err != nil {
 		return Status{}, err
+	}
+	if strings.HasPrefix(strings.TrimSpace(out), "{") {
+		return parseStatusJSON(out)
 	}
 	return parseStatus(out), nil
 }
