@@ -86,12 +86,29 @@ test('a Ctrl let go while Alt is held is released by the next event', () => {
   );
 });
 
+test("a modifier's keyup re-syncs its own family, apart from itself", () => {
+  assert.deepEqual(staleModifiers(['ShiftLeft', 'ShiftRight'], event({}), 'ShiftRight', 'keyup'), [
+    'ShiftLeft'
+  ]);
+  assert.deepEqual(
+    staleModifiers(['ShiftLeft', 'ShiftRight'], event({ shift: true }), 'ShiftRight', 'keyup'),
+    []
+  );
+  // Linux reports a right Alt used as AltGr as AltGraph, not as Alt.
+  assert.deepEqual(
+    staleModifiers(['AltLeft', 'AltRight'], event({ altGraph: true }), 'AltLeft', 'keyup'),
+    []
+  );
+});
+
 type Held = Parameters<typeof event>[0];
-type Step = ['down' | 'up', string, Held] | ['blur'];
+type Step = ['down' | 'up', string, Held, 'repeat'?] | ['blur'];
 
 // Replays browser events the way the keyboard component handles them and
-// returns what the host is sent: each key event first releases the stale
-// modifiers, then is passed on.
+// returns what the host is sent. Each key event first has the modifiers
+// re-synced, then is passed on. Like the component, the replay does not look at
+// the repeat flag: a keydown is dropped only for a key already held, so a
+// first keydown that Windows flags as a repeat still presses its key.
 function replay(steps: Step[]): string[] {
   const sync = new ModifierSync();
   const pressed = new Set<string>();
@@ -99,6 +116,10 @@ function replay(steps: Step[]): string[] {
   const release = (code: string) => {
     pressed.delete(code);
     host.push(`${code} up`);
+  };
+  const press = (code: string) => {
+    pressed.add(code);
+    host.push(`${code} down`);
   };
 
   for (const step of steps) {
@@ -109,33 +130,154 @@ function replay(steps: Step[]): string[] {
       continue;
     }
     const [type, code, held] = step;
-    for (const stale of sync.stale(pressed, event(held), code)) release(stale);
+    const changes = sync.sync(pressed, event(held), type === 'down' ? 'keydown' : 'keyup', code);
+    changes.release.forEach(release);
+    changes.press.forEach(press);
     if (type === 'down') {
-      if (pressed.has(code)) continue;
-      sync.keyDown(code);
-      pressed.add(code);
-      host.push(`${code} down`);
-    } else {
-      sync.keyUp(code, pressed);
-      if (pressed.has(code)) release(code);
+      if (!pressed.has(code)) press(code);
+    } else if (pressed.has(code)) {
+      release(code);
     }
   }
   return host;
 }
 
-// Windows keeps one Shift state for both keys, so after the left Shift is
-// released the browser reports Shift as up while the right one is still held.
-test('a Shift held after the other Shift is released keeps shifting', () => {
+// Brave on Windows, recorded with the W3C key-event-viewer: hold the left
+// Shift, press the right Shift, release the left Shift, tap A, release the
+// right Shift. Releasing the first Shift of a held pair sends no event, Shift
+// is reported as held while either side is, the right Shift's first keydown is
+// already flagged as a repeat, and the last release sends one keyup, for the
+// right Shift only.
+const windowsShiftPair: Step[] = [
+  ['down', 'ShiftLeft', { shift: true }],
+  ['down', 'ShiftLeft', { shift: true }, 'repeat'],
+  ['down', 'ShiftLeft', { shift: true }, 'repeat'],
+  ['down', 'ShiftLeft', { shift: true }, 'repeat'],
+  ['down', 'ShiftRight', { shift: true }, 'repeat'],
+  ['down', 'ShiftRight', { shift: true }, 'repeat'],
+  ['down', 'ShiftRight', { shift: true }, 'repeat'],
+  ['down', 'ShiftRight', { shift: true }, 'repeat'],
+  ['down', 'KeyA', { shift: true }],
+  ['up', 'KeyA', { shift: true }],
+  ['up', 'ShiftRight', {}]
+];
+
+test('the Windows Shift pair trace shifts A and leaves no Shift held', () => {
+  assert.deepEqual(replay([...windowsShiftPair, ['down', 'KeyB', {}], ['up', 'KeyB', {}]]), [
+    'ShiftLeft down',
+    'ShiftRight down',
+    'KeyA down',
+    'KeyA up',
+    'ShiftLeft up',
+    'ShiftRight up',
+    'KeyB down',
+    'KeyB up'
+  ]);
+});
+
+// The same hands on the target before the re-sync had a memory, where the host
+// saw the left Shift released as it was let go and the right Shift released
+// just before A. The re-sync of that build skipped the family of a modifier's
+// own event and did nothing else, so the left Shift can only have gone with a
+// ShiftLeft keyup, and the right Shift, still held, with an A keydown that
+// reported Shift as up. The browser of that run did not behave like the one in
+// the trace above.
+const windowsShiftPairRunA: Step[] = [
+  ['down', 'ShiftLeft', { shift: true }],
+  ['down', 'ShiftRight', { shift: true }, 'repeat'],
+  ['up', 'ShiftLeft', {}],
+  ['down', 'KeyA', {}],
+  ['up', 'KeyA', {}],
+  ['up', 'ShiftRight', {}]
+];
+
+test('the earlier re-sync explains what the host saw for the Shift pair', () => {
+  const pressed = new Set<string>();
+  const host: string[] = [];
+  for (const step of windowsShiftPairRunA) {
+    if (step[0] === 'blur') continue;
+    const [type, code, held] = step;
+    for (const stale of staleModifiers(pressed, event(held), code)) {
+      pressed.delete(stale);
+      host.push(`${stale} up`);
+    }
+    if (type === 'down' && !pressed.has(code)) {
+      pressed.add(code);
+      host.push(`${code} down`);
+    } else if (type === 'up' && pressed.delete(code)) {
+      host.push(`${code} up`);
+    }
+  }
+  assert.deepEqual(host, [
+    'ShiftLeft down',
+    'ShiftRight down',
+    'ShiftLeft up',
+    'ShiftRight up',
+    'KeyA down',
+    'KeyA up'
+  ]);
+});
+
+test('a Shift keyup that reports Shift as up releases both Shifts', () => {
+  // The browser reports A as unshifted, so it reaches the host unshifted.
+  assert.deepEqual(replay(windowsShiftPairRunA), [
+    'ShiftLeft down',
+    'ShiftRight down',
+    'ShiftRight up',
+    'ShiftLeft up',
+    'KeyA down',
+    'KeyA up'
+  ]);
+});
+
+// On Windows each Ctrl sends its own keyup, and the host saw the left Ctrl
+// released as it was let go and C typed with the right Ctrl held. Whether the
+// left Ctrl's keyup reports Ctrl as held was not recorded, so both are replayed.
+for (const ctrlOnKeyUp of [true, false]) {
+  test(`the Ctrl pair keeps the right Ctrl for C, ctrlKey ${ctrlOnKeyUp} on the left keyup`, () => {
+    const leftRelease = ctrlOnKeyUp
+      ? ['ControlLeft up']
+      : ['ControlRight up', 'ControlLeft up', 'ControlRight down'];
+    assert.deepEqual(
+      replay([
+        ['down', 'ControlLeft', { ctrl: true }],
+        ['down', 'ControlRight', { ctrl: true }, 'repeat'],
+        ['up', 'ControlLeft', { ctrl: ctrlOnKeyUp }],
+        ['down', 'KeyC', { ctrl: true }],
+        ['up', 'KeyC', { ctrl: true }],
+        ['up', 'ControlRight', {}],
+        ['down', 'KeyD', {}]
+      ]),
+      [
+        'ControlLeft down',
+        'ControlRight down',
+        ...leftRelease,
+        'KeyC down',
+        'KeyC up',
+        'ControlRight up',
+        'KeyD down'
+      ]
+    );
+  });
+}
+
+test('a side released with its pair is not pressed again once reported up', () => {
   assert.deepEqual(
     replay([
-      ['down', 'ShiftLeft', { shift: true }],
-      ['down', 'ShiftRight', { shift: true }],
-      ['up', 'ShiftLeft', {}],
-      ['down', 'KeyA', {}],
-      ['up', 'KeyA', {}],
-      ['up', 'ShiftRight', {}]
+      ['down', 'ControlLeft', { ctrl: true }],
+      ['down', 'ControlRight', { ctrl: true }],
+      ['up', 'ControlLeft', {}],
+      ['down', 'KeyC', {}],
+      ['up', 'KeyC', { ctrl: true }]
     ]),
-    ['ShiftLeft down', 'ShiftRight down', 'ShiftLeft up', 'KeyA down', 'KeyA up', 'ShiftRight up']
+    [
+      'ControlLeft down',
+      'ControlRight down',
+      'ControlRight up',
+      'ControlLeft up',
+      'KeyC down',
+      'KeyC up'
+    ]
   );
 });
 
@@ -146,45 +288,23 @@ test('both Shifts held over a key, released right then left', () => {
       ['down', 'ShiftRight', { shift: true }],
       ['down', 'KeyA', { shift: true }],
       ['up', 'KeyA', { shift: true }],
-      ['up', 'ShiftRight', {}],
+      ['up', 'ShiftRight', { shift: true }],
+      ['down', 'KeyB', { shift: true }],
+      ['up', 'KeyB', { shift: true }],
       ['up', 'ShiftLeft', {}]
     ]),
-    ['ShiftLeft down', 'ShiftRight down', 'KeyA down', 'KeyA up', 'ShiftRight up', 'ShiftLeft up']
+    [
+      'ShiftLeft down',
+      'ShiftRight down',
+      'KeyA down',
+      'KeyA up',
+      'ShiftRight up',
+      'KeyB down',
+      'KeyB up',
+      'ShiftLeft up'
+    ]
   );
 });
-
-for (const [article, name, left, right, flag] of [
-  ['a', 'Ctrl', 'ControlLeft', 'ControlRight', 'ctrl'],
-  ['an', 'Alt', 'AltLeft', 'AltRight', 'alt']
-] as const) {
-  test(`${article} ${name} held after the other ${name} is released stays held`, () => {
-    assert.deepEqual(
-      replay([
-        ['down', left, { [flag]: true }],
-        ['down', right, { [flag]: true }],
-        ['up', left, {}],
-        ['down', 'KeyC', {}],
-        ['up', 'KeyC', {}],
-        ['up', right, {}]
-      ]),
-      [`${left} down`, `${right} down`, `${left} up`, 'KeyC down', 'KeyC up', `${right} up`]
-    );
-  });
-
-  test(`both ${name}s held over a key, released right then left`, () => {
-    assert.deepEqual(
-      replay([
-        ['down', left, { [flag]: true }],
-        ['down', right, { [flag]: true }],
-        ['down', 'KeyC', { [flag]: true }],
-        ['up', 'KeyC', { [flag]: true }],
-        ['up', right, {}],
-        ['up', left, {}]
-      ]),
-      [`${left} down`, `${right} down`, 'KeyC down', 'KeyC up', `${right} up`, `${left} up`]
-    );
-  });
-}
 
 test('a lone Shift whose keyup was lost is still released by the next event', () => {
   assert.deepEqual(
@@ -197,48 +317,50 @@ test('a lone Shift whose keyup was lost is still released by the next event', ()
   );
 });
 
-test('an unconfirmed Shift is re-synced again once the browser reports it held', () => {
+test('a Shift pair whose keyups were lost is released by the next event', () => {
   assert.deepEqual(
     replay([
       ['down', 'ShiftLeft', { shift: true }],
       ['down', 'ShiftRight', { shift: true }],
-      ['up', 'ShiftLeft', {}],
-      ['down', 'KeyA', { shift: true }],
-      ['up', 'KeyA', { shift: true }],
-      ['down', 'KeyB', {}]
+      ['down', 'KeyA', {}],
+      ['up', 'KeyA', {}]
     ]),
-    [
-      'ShiftLeft down',
-      'ShiftRight down',
-      'ShiftLeft up',
-      'KeyA down',
-      'KeyA up',
-      'ShiftRight up',
-      'KeyB down'
-    ]
+    ['ShiftLeft down', 'ShiftRight down', 'ShiftLeft up', 'ShiftRight up', 'KeyA down', 'KeyA up']
   );
 });
 
-test('blur releases every key, an unconfirmed Shift included', () => {
+test('Windows Ctrl+Alt+Del keeps the left Ctrl through the replay', () => {
+  const ctrlAlt = { ctrl: true, alt: true, altGraph: true };
   assert.deepEqual(
     replay([
-      ['down', 'ShiftLeft', { shift: true }],
-      ['down', 'ShiftRight', { shift: true }],
-      ['up', 'ShiftLeft', {}],
-      ['down', 'KeyA', {}],
+      ['down', 'ControlLeft', { ctrl: true }],
+      ['down', 'AltLeft', ctrlAlt],
+      ['down', 'Delete', ctrlAlt],
+      ['up', 'Delete', ctrlAlt]
+    ]),
+    ['ControlLeft down', 'AltLeft down', 'Delete down', 'Delete up']
+  );
+});
+
+test('blur releases every key, and a side released with its pair stays released', () => {
+  assert.deepEqual(
+    replay([
+      ['down', 'ControlLeft', { ctrl: true }],
+      ['down', 'ControlRight', { ctrl: true }],
+      ['up', 'ControlLeft', {}],
+      ['down', 'KeyA', { ctrl: true }],
       ['blur'],
-      ['down', 'ShiftRight', { shift: true }],
-      ['down', 'KeyB', {}]
+      ['down', 'KeyB', { ctrl: true }]
     ]),
     [
-      'ShiftLeft down',
-      'ShiftRight down',
-      'ShiftLeft up',
+      'ControlLeft down',
+      'ControlRight down',
+      'ControlRight up',
+      'ControlLeft up',
+      'ControlRight down',
       'KeyA down',
-      'ShiftRight up',
+      'ControlRight up',
       'KeyA up',
-      'ShiftRight down',
-      'ShiftRight up',
       'KeyB down'
     ]
   );
