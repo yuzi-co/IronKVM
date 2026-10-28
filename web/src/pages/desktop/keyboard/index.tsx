@@ -9,7 +9,7 @@ import { isKeyboardEnableAtom } from '@/jotai/keyboard.ts';
 import { picoclawTakeoverStateAtom } from '@/jotai/picoclaw.ts';
 
 import { isPasteShortcut, usePaste } from '../paste/use-paste.ts';
-import { isCompositionKey, staleModifiers } from './input-state.ts';
+import { isCompositionKey, ModifierSync } from './input-state.ts';
 import { Recorder } from './recorder.tsx';
 import { useAltGr } from './useAltGr.ts';
 import { useLeaderKey } from './useLeaderKey.ts';
@@ -29,6 +29,7 @@ export const Keyboard = () => {
   const keyboardRef = useRef(new KeyboardReport());
   const pressedKeys = useRef(new Set<string>());
   const isComposing = useRef(false);
+  const modifierSync = useRef(new ModifierSync());
   // Keys whose press started the paste shortcut. The host has been told they
   // are released, so their auto-repeat and their keyup stay on this side.
   const swallowedKeys = useRef(new Set<string>());
@@ -69,6 +70,7 @@ export const Keyboard = () => {
     }
 
     pressedKeys.current.clear();
+    modifierSync.current.reset();
     leaderKeyRef.current.reset();
     altGrRef.current.reset();
     sendReport(keyboardRef.current.reset());
@@ -119,6 +121,7 @@ export const Keyboard = () => {
       // Handle AltGr key
       altGrRef.current.handleKeyDown(code, event.timeStamp);
 
+      modifierSync.current.keyDown(code);
       pressedKeys.current.add(code);
       sendKeyEvent('keydown', code);
     }
@@ -151,6 +154,7 @@ export const Keyboard = () => {
       event.stopPropagation();
 
       releaseStaleModifiers(event, code);
+      modifierSync.current.keyUp(code, pressedKeys.current);
       releaseKey(code);
     }
 
@@ -190,7 +194,7 @@ export const Keyboard = () => {
     // keyup, to an OS shortcut or a dialog that took focus inside the page.
     // Release it now rather than leave it held until the next blur.
     function releaseStaleModifiers(event: KeyboardEvent, code: string) {
-      for (const modifier of staleModifiers(pressedKeys.current, event, code)) {
+      for (const modifier of modifierSync.current.stale(pressedKeys.current, event, code)) {
         releaseKey(modifier);
       }
     }
@@ -219,6 +223,7 @@ export const Keyboard = () => {
       });
       pressedKeys.current.clear();
       swallowedKeys.current.clear();
+      modifierSync.current.reset();
 
       // Releasing everything ends any composition as far as this side is
       // concerned. Leaving the flag set would have the next keyup skipped for a

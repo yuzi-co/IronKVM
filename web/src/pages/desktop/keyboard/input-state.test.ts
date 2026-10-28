@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { isCompositionKey, staleModifiers } from './input-state.ts';
+import { isCompositionKey, ModifierSync, staleModifiers } from './input-state.ts';
 
 function event(held: {
   ctrl?: boolean;
@@ -83,6 +83,164 @@ test('a Ctrl let go while Alt is held is released by the next event', () => {
   assert.deepEqual(
     staleModifiers(['ControlLeft', 'AltLeft'], event({ alt: true }), 'Tab'),
     ['ControlLeft']
+  );
+});
+
+type Held = Parameters<typeof event>[0];
+type Step = ['down' | 'up', string, Held] | ['blur'];
+
+// Replays browser events the way the keyboard component handles them and
+// returns what the host is sent: each key event first releases the stale
+// modifiers, then is passed on.
+function replay(steps: Step[]): string[] {
+  const sync = new ModifierSync();
+  const pressed = new Set<string>();
+  const host: string[] = [];
+  const release = (code: string) => {
+    pressed.delete(code);
+    host.push(`${code} up`);
+  };
+
+  for (const step of steps) {
+    if (step[0] === 'blur') {
+      pressed.forEach((code) => host.push(`${code} up`));
+      pressed.clear();
+      sync.reset();
+      continue;
+    }
+    const [type, code, held] = step;
+    for (const stale of sync.stale(pressed, event(held), code)) release(stale);
+    if (type === 'down') {
+      if (pressed.has(code)) continue;
+      sync.keyDown(code);
+      pressed.add(code);
+      host.push(`${code} down`);
+    } else {
+      sync.keyUp(code, pressed);
+      if (pressed.has(code)) release(code);
+    }
+  }
+  return host;
+}
+
+// Windows keeps one Shift state for both keys, so after the left Shift is
+// released the browser reports Shift as up while the right one is still held.
+test('a Shift held after the other Shift is released keeps shifting', () => {
+  assert.deepEqual(
+    replay([
+      ['down', 'ShiftLeft', { shift: true }],
+      ['down', 'ShiftRight', { shift: true }],
+      ['up', 'ShiftLeft', {}],
+      ['down', 'KeyA', {}],
+      ['up', 'KeyA', {}],
+      ['up', 'ShiftRight', {}]
+    ]),
+    ['ShiftLeft down', 'ShiftRight down', 'ShiftLeft up', 'KeyA down', 'KeyA up', 'ShiftRight up']
+  );
+});
+
+test('both Shifts held over a key, released right then left', () => {
+  assert.deepEqual(
+    replay([
+      ['down', 'ShiftLeft', { shift: true }],
+      ['down', 'ShiftRight', { shift: true }],
+      ['down', 'KeyA', { shift: true }],
+      ['up', 'KeyA', { shift: true }],
+      ['up', 'ShiftRight', {}],
+      ['up', 'ShiftLeft', {}]
+    ]),
+    ['ShiftLeft down', 'ShiftRight down', 'KeyA down', 'KeyA up', 'ShiftRight up', 'ShiftLeft up']
+  );
+});
+
+for (const [article, name, left, right, flag] of [
+  ['a', 'Ctrl', 'ControlLeft', 'ControlRight', 'ctrl'],
+  ['an', 'Alt', 'AltLeft', 'AltRight', 'alt']
+] as const) {
+  test(`${article} ${name} held after the other ${name} is released stays held`, () => {
+    assert.deepEqual(
+      replay([
+        ['down', left, { [flag]: true }],
+        ['down', right, { [flag]: true }],
+        ['up', left, {}],
+        ['down', 'KeyC', {}],
+        ['up', 'KeyC', {}],
+        ['up', right, {}]
+      ]),
+      [`${left} down`, `${right} down`, `${left} up`, 'KeyC down', 'KeyC up', `${right} up`]
+    );
+  });
+
+  test(`both ${name}s held over a key, released right then left`, () => {
+    assert.deepEqual(
+      replay([
+        ['down', left, { [flag]: true }],
+        ['down', right, { [flag]: true }],
+        ['down', 'KeyC', { [flag]: true }],
+        ['up', 'KeyC', { [flag]: true }],
+        ['up', right, {}],
+        ['up', left, {}]
+      ]),
+      [`${left} down`, `${right} down`, 'KeyC down', 'KeyC up', `${right} up`, `${left} up`]
+    );
+  });
+}
+
+test('a lone Shift whose keyup was lost is still released by the next event', () => {
+  assert.deepEqual(
+    replay([
+      ['down', 'ShiftRight', { shift: true }],
+      ['down', 'KeyA', {}],
+      ['up', 'KeyA', {}]
+    ]),
+    ['ShiftRight down', 'ShiftRight up', 'KeyA down', 'KeyA up']
+  );
+});
+
+test('an unconfirmed Shift is re-synced again once the browser reports it held', () => {
+  assert.deepEqual(
+    replay([
+      ['down', 'ShiftLeft', { shift: true }],
+      ['down', 'ShiftRight', { shift: true }],
+      ['up', 'ShiftLeft', {}],
+      ['down', 'KeyA', { shift: true }],
+      ['up', 'KeyA', { shift: true }],
+      ['down', 'KeyB', {}]
+    ]),
+    [
+      'ShiftLeft down',
+      'ShiftRight down',
+      'ShiftLeft up',
+      'KeyA down',
+      'KeyA up',
+      'ShiftRight up',
+      'KeyB down'
+    ]
+  );
+});
+
+test('blur releases every key, an unconfirmed Shift included', () => {
+  assert.deepEqual(
+    replay([
+      ['down', 'ShiftLeft', { shift: true }],
+      ['down', 'ShiftRight', { shift: true }],
+      ['up', 'ShiftLeft', {}],
+      ['down', 'KeyA', {}],
+      ['blur'],
+      ['down', 'ShiftRight', { shift: true }],
+      ['down', 'KeyB', {}]
+    ]),
+    [
+      'ShiftLeft down',
+      'ShiftRight down',
+      'ShiftLeft up',
+      'KeyA down',
+      'ShiftRight up',
+      'KeyA up',
+      'ShiftRight down',
+      'ShiftRight up',
+      'KeyB down'
+    ]
   );
 });
 
