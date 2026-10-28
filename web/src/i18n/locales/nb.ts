@@ -2141,6 +2141,8 @@ const nb = {
         kvmUrl: 'KVM-adresse',
         moreTip: 'Flere handlinger',
         updateTip: 'Oppdater til {{version}}',
+        versionPastPin: '{{version}}, nyere enn den testede',
+        pastPin: 'Nyere enn {{pinned}}, versjonen denne fastvaren ble testet med. Den testede builden publiseres ikke lenger, så den nyere ble installert fra den samme signerte kilden.',
         loading: 'Laster...',
         okBtn: 'Ja',
         cancelBtn: 'Nei',

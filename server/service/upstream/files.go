@@ -86,9 +86,26 @@ func (c *Client) get(ctx context.Context, rawURL string) (*http.Response, error)
 	}
 	if resp.StatusCode != http.StatusOK {
 		_ = resp.Body.Close()
-		return nil, fmt.Errorf("download %s: status %d", rawURL, resp.StatusCode)
+		return nil, &StatusError{URL: rawURL, Code: resp.StatusCode}
 	}
 	return resp, nil
+}
+
+// StatusError is a download the server answered with a status other than
+// 200, so a caller can tell a file that is gone (404) from a failure.
+type StatusError struct {
+	URL  string
+	Code int
+}
+
+func (e *StatusError) Error() string {
+	return fmt.Sprintf("download %s: status %d", e.URL, e.Code)
+}
+
+// IsNotFound reports whether err is a download the server answered with 404.
+func IsNotFound(err error) bool {
+	var se *StatusError
+	return errors.As(err, &se) && se.Code == http.StatusNotFound
 }
 
 func (c *Client) allowedScheme(scheme string) bool {
@@ -114,7 +131,19 @@ func (c *Client) Download(ctx context.Context, rawURL, sum string, limit int64, 
 	if b, err := hex.DecodeString(sum); err != nil || len(b) != sha256.Size {
 		return fmt.Errorf("no valid SHA-256 for %s", filepath.Base(dst))
 	}
+	return c.fetch(ctx, rawURL, sum, limit, dst, progress)
+}
 
+// Fetch writes rawURL to dst as Download does, but with no sum to check it
+// against. It is for a file that something else vouches for once it is on
+// disk, such as an Alpine index or package, whose signature apk checks; the
+// caller must make that check before it trusts a byte of the file.
+func (c *Client) Fetch(ctx context.Context, rawURL string, limit int64, dst string, progress func(done, total int64)) error {
+	return c.fetch(ctx, rawURL, "", limit, dst, progress)
+}
+
+// fetch is Download and Fetch: an empty sum checks nothing.
+func (c *Client) fetch(ctx context.Context, rawURL, sum string, limit int64, dst string, progress func(done, total int64)) error {
 	resp, err := c.get(ctx, rawURL)
 	if err != nil {
 		return err
@@ -148,7 +177,7 @@ func (c *Client) Download(ctx context.Context, rawURL, sum string, limit int64, 
 	if n > limit {
 		return fmt.Errorf("download %s: larger than %d bytes", rawURL, limit)
 	}
-	if got := hex.EncodeToString(hasher.Sum(nil)); got != strings.ToLower(sum) {
+	if got := hex.EncodeToString(hasher.Sum(nil)); sum != "" && got != strings.ToLower(sum) {
 		return fmt.Errorf("%w: %s has sha256 %s, want %s", ErrChecksum, filepath.Base(dst), got, sum)
 	}
 	return os.Rename(tmp, dst)

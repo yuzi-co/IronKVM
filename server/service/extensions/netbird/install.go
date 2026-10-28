@@ -3,6 +3,7 @@ package netbird
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -55,19 +56,32 @@ func isInstalled() bool {
 
 // install downloads the pinned package, checks it against its pin before apk
 // reads it, has apk check its signature, and takes usr/bin/netbird out of it.
-// Nothing is installed into the root filesystem: the binary goes to the
-// add-on's image on /data, linked from /usr/bin, or to /usr/bin itself off a
-// distribution image. A failed or mismatched download leaves nothing behind.
+// When the pinned package is gone from the mirror, and only then, it installs
+// the build the branch's index names instead (follow.go). Nothing is installed
+// into the root filesystem: the binary goes to the add-on's image on /data,
+// linked from /usr/bin, or to /usr/bin itself off a distribution image. A
+// failed or mismatched download leaves nothing behind.
 func install() error {
 	if _, err := exec.LookPath(ApkPath); err != nil {
 		return errors.New("apk not found: NetBird installs from Alpine's packages and needs an IronKVM image")
 	}
-	res, err := installer.Install(context.Background(), release, installer.Options{
+	ctx := context.Background()
+	opt := installer.Options{
 		Client:    downloads,
 		Apk:       ApkPath,
 		Workspace: FallbackWorkspace,
 		Plain:     placeBinary,
-	})
+	}
+	m := release
+	res, err := installer.Install(ctx, m, opt)
+	if upstream.IsNotFound(err) {
+		var followErr error
+		m, res, followErr = installFollowing(ctx, opt)
+		if followErr != nil {
+			return fmt.Errorf("the pinned %s is gone from Alpine's mirror, and the build v3.24's index names was not installed: %w", packageFile, followErr)
+		}
+		err = nil
+	}
 	if err != nil {
 		return err
 	}
@@ -77,7 +91,7 @@ func install() error {
 			return err
 		}
 	}
-	log.Debugf("install netbird from %s", packageFile)
+	log.Infof("installed netbird %s from %s", m.Version, m.Artifact.URL)
 	return nil
 }
 

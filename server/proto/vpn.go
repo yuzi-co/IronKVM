@@ -57,6 +57,9 @@ type VpnBootReq struct {
 type VpnUpdateRsp struct {
 	Current string `json:"current"`
 	Latest  string `json:"latest"`
+	// Pinned is the release the server was tested with, where an add-on can
+	// install a newer one than it (NetBird, from Alpine's index).
+	Pinned string `json:"pinned,omitempty"`
 }
 
 type VpnLoginRsp struct {

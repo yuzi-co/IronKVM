@@ -2151,6 +2151,8 @@ const tr = {
         kvmUrl: 'KVM adresi',
         moreTip: 'Diğer işlemler',
         updateTip: '{{version}} sürümüne güncelle',
+        versionPastPin: '{{version}}, test edilenden yeni',
+        pastPin: 'Bu yazılımın test edildiği {{pinned}} sürümünden daha yeni. Test edilen derleme artık yayımlanmadığı için daha yenisi aynı imzalı kaynaktan kuruldu.',
         loading: 'Yükleniyor...',
         okBtn: 'Evet',
         cancelBtn: 'Hayır',

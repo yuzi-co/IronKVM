@@ -2135,6 +2135,8 @@ const ja = {
         kvmUrl: 'KVM アドレス',
         moreTip: 'その他の操作',
         updateTip: '{{version}} に更新',
+        versionPastPin: '{{version}}（検証済みより新しい）',
+        pastPin: 'このファームウェアの検証に使われた {{pinned}} より新しいバージョンです。検証済みのビルドは公開されなくなったため、同じ署名付きの配布元から新しいものをインストールしました。',
         loading: '読み込み中...',
         okBtn: 'はい',
         cancelBtn: 'いいえ',

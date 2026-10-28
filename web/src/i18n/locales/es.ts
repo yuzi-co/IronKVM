@@ -2174,6 +2174,8 @@ const es = {
         kvmUrl: 'Dirección del KVM',
         moreTip: 'Más acciones',
         updateTip: 'Actualizar a {{version}}',
+        versionPastPin: '{{version}}, más nueva que la probada',
+        pastPin: 'Más nueva que {{pinned}}, la versión con la que se probó este firmware. La compilación probada ya no se publica, así que se instaló la más nueva desde la misma fuente firmada.',
         loading: 'Cargando...',
         okBtn: 'Sí',
         cancelBtn: 'No',

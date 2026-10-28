@@ -45,6 +45,12 @@ type Options struct {
 	Workspace string
 	// Progress hears the stage and a percentage; nil for none.
 	Progress func(stage string, percent int)
+	// Fetch replaces the download for a manifest with no pinned sum: it
+	// writes the artifact to dst, checks it against whatever vouches for it
+	// in place of a pin, and returns its SHA-256, which installed.json
+	// records as the artifact's. An apk artifact still has its signature
+	// checked by apk before anything is taken out of it.
+	Fetch func(ctx context.Context, dst string, progress func(done, total int64)) (string, error)
 	// Plain places the checked files the way the add-on did before images:
 	// stage holds each member under its saved name and the licence files
 	// in stage/licenses. Install calls it off a distribution image, and on
@@ -133,14 +139,23 @@ func Install(ctx context.Context, m Manifest, opt Options) (Result, error) {
 		url = opt.URL
 	}
 	artifact := filepath.Join(ws, artifactName(url, m))
-	if err := download(ctx, opt.Client, url, m, artifact, func(done, total int64) {
+	downloading := func(done, total int64) {
 		if total <= 0 {
 			total = m.Artifact.Size
 		}
 		if total > 0 {
 			progress("downloading", 5+int(done*65/total))
 		}
-	}); err != nil {
+	}
+	if opt.Fetch != nil {
+		fctx, cancel := context.WithTimeout(ctx, downloadTimeout)
+		sum, err := opt.Fetch(fctx, artifact, downloading)
+		cancel()
+		if err != nil {
+			return Result{}, fmt.Errorf("failed to download %s %s: %w", m.Title, m.Version, err)
+		}
+		m.Artifact.SHA256 = sum
+	} else if err := download(ctx, opt.Client, url, m, artifact, downloading); err != nil {
 		return Result{}, err
 	}
 

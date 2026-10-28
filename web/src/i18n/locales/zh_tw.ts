@@ -2053,6 +2053,8 @@ const zh_tw = {
         kvmUrl: 'KVM 位址',
         moreTip: '更多操作',
         updateTip: '更新到 {{version}}',
+        versionPastPin: '{{version}}，比已測試版本新',
+        pastPin: '比 {{pinned}}（此韌體測試所用的版本）新。已測試的建置不再發布，因此從同一簽署來源安裝了較新的版本。',
         loading: '載入中...',
         okBtn: '是',
         cancelBtn: '否',

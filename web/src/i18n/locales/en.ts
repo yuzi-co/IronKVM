@@ -2130,6 +2130,9 @@ const en = {
         kvmUrl: 'KVM address',
         moreTip: 'More actions',
         updateTip: 'Update to {{version}}',
+        versionPastPin: '{{version}}, newer than tested',
+        pastPin:
+          'Newer than {{pinned}}, the release this firmware was tested with. The tested build is no longer published, so the newer one was installed from the same signed source.',
         loading: 'Loading...',
         okBtn: 'Yes',
         cancelBtn: 'No',

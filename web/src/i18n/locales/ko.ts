@@ -2110,6 +2110,8 @@ const ko = {
         kvmUrl: 'KVM 주소',
         moreTip: '추가 작업',
         updateTip: '{{version}}(으)로 업데이트',
+        versionPastPin: '{{version}}, 검증된 버전보다 최신',
+        pastPin: '이 펌웨어를 테스트한 {{pinned}}보다 최신입니다. 테스트한 빌드가 더 이상 게시되지 않아 같은 서명된 출처에서 최신 빌드를 설치했습니다.',
         loading: '불러오는 중...',
         okBtn: '네',
         cancelBtn: '아니오',

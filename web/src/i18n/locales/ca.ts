@@ -2168,6 +2168,8 @@ const ca = {
         kvmUrl: 'Adreça del KVM',
         moreTip: 'Més accions',
         updateTip: 'Actualitza a {{version}}',
+        versionPastPin: '{{version}}, més nova que la provada',
+        pastPin: "Més nova que {{pinned}}, la versió amb què es va provar aquest firmware. La compilació provada ja no es publica, així que s'ha instal·lat la més nova des de la mateixa font signada.",
         loading: "S'està carregant...",
         okBtn: 'Sí',
         cancelBtn: 'No',

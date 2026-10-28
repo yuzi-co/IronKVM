@@ -2169,6 +2169,8 @@ const hu = {
         kvmUrl: 'KVM címe',
         moreTip: 'További műveletek',
         updateTip: 'Frissítés erre: {{version}}',
+        versionPastPin: '{{version}}, újabb a teszteltnél',
+        pastPin: 'Újabb, mint a(z) {{pinned}}, amellyel ezt a firmware-t tesztelték. A tesztelt build már nem érhető el, ezért az újabb lett telepítve ugyanabból az aláírt forrásból.',
         loading: 'Betöltés...',
         okBtn: 'Igen',
         cancelBtn: 'Nem',

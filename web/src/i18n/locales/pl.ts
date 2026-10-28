@@ -2156,6 +2156,8 @@ const pl = {
         kvmUrl: 'Adres KVM',
         moreTip: 'Więcej działań',
         updateTip: 'Aktualizuj do {{version}}',
+        versionPastPin: '{{version}}, nowsza niż testowana',
+        pastPin: 'Nowsza niż {{pinned}}, wersja, z którą testowano to oprogramowanie. Testowana kompilacja nie jest już publikowana, więc zainstalowano nowszą z tego samego podpisanego źródła.',
         loading: 'Ładowanie...',
         okBtn: 'Tak',
         cancelBtn: 'Nie',

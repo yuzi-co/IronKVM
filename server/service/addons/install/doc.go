@@ -5,6 +5,11 @@
 // apk), takes out only the members the manifest lists, each checked against
 // its own sum, and then packs them into one read-only squashfs image.
 //
+// An artifact with no pin can come in through Options.Fetch, which downloads
+// and checks it against whatever vouches for it instead: NetBird's package,
+// when Alpine has replaced the pinned build, is checked against the branch's
+// signed index before apk checks its own signature.
+//
 // It replaces five copies of that code, in the Tailscale, NetBird, PicoClaw,
 // netboot and Ventoy packages, which now keep only their manifests and their
 // configuration. See ironkvm-dist's
