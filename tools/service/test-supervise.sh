@@ -1174,6 +1174,32 @@ STUB
         && note "without logger kvm_system starts as before" OK \
         || note "without logger: tracked=$([ -e "$SL/tracked2" ] && echo yes || echo no) loggers=$(logger_pids)" FAIL
     kill "$pid" 2>/dev/null
+    wait_for "the logger to go" '[ -z "$(logger_pids)" ]'
+
+    # The caller's own output ends when the start does. The server reads
+    # S98tailscaled's output to its end, and a logger that kept the caller's
+    # stdout held the web UI's start request, and the VPN lock with it, for as
+    # long as tailscaled ran.
+    rm -f "$SL/caller.done"
+    (
+        SYSLOG_LOGGER="$SL/bin/logger" SYSLOG_FIFO_DIR="$SL" LOGGER_OUT="$SL/out" TALK="$SL/talk" \
+            SYSTEM_BIN="$SL/bin/kvm_system" WORK="$WORK" SL="$SL" sh -c '
+            . "$WORK/syslog.sh"
+            . "$WORK/procs.sh"
+            start_system
+            echo "$SYS_PID" > "$SL/pid"
+        ' | cat > /dev/null
+        echo done > "$SL/caller.done"
+    ) &
+    if wait_for "the caller's output to end" '[ -e "$SL/caller.done" ]'; then
+        note "the logger leaves the caller's stdout alone" OK
+    else
+        note "the caller's output stays open while the program runs" FAIL
+    fi
+    pid=$(cat "$SL/pid" 2>/dev/null)
+    kill "$pid" 2>/dev/null
+    wait_for "the logger to go" '[ -z "$(logger_pids)" ]'
+    wait
 else
     note "the syslog pipe itself (needs Linux /proc and mkfifo)" SKIP
 fi
