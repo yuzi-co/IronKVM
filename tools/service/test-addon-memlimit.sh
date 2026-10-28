@@ -20,7 +20,7 @@ limit() {
     rm -rf "$WORK/kvm" "$WORK/cg"; mkdir -p "$WORK/kvm" "$WORK/cg"
     [ "$1" = - ] || printf '%s\n' "$1" > "$WORK/kvm/GOMEMLIMIT"
     [ "$2" = - ] || printf '%s\n' "$2" > "$WORK/cg/memory.high"
-    KVMDIR=$WORK/kvm CGROUP_PROCS=$WORK/cg/cgroup.procs \
+    KVMDIR=$WORK/kvm ADDONS_CGROUP=$WORK/cg \
         sh -c '. "$1"; memlimit_mib' _ "$WORK/block.sh"
 }
 

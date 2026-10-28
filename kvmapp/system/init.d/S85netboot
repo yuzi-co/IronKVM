@@ -35,14 +35,26 @@ STOP_WAIT=${STOP_WAIT:-5}
 LOG_MAX=${LOG_MAX:-262144}
 
 # --- cgroup ---
-# ironkvm-dist's S01cgroups makes an addons memory group, and the VPN daemons
-# run in it. This script joins it before it starts dnsmasq, so dnsmasq inherits
-# it however the script is run: from S03usbdev at boot, or from the server,
-# whose own group it would otherwise inherit. Without the group nothing
-# changes.
-CGROUP_PROCS=${CGROUP_PROCS:-/sys/fs/cgroup/addons/cgroup.procs}
-if [ -w "$CGROUP_PROCS" ]; then
-    { echo $$ > "$CGROUP_PROCS"; } 2>/dev/null || true
+# ironkvm-dist's S01cgroups makes an addons memory group with a soft and
+# a hard limit, and under it addons/daemons, which holds one leaf group
+# per host add-on. This script joins its own leaf, addons/daemons/netboot,
+# before it starts dnsmasq, so dnsmasq inherits it however the script is run:
+# at boot, or from the web UI through the server, whose own group it would
+# otherwise inherit. addon-cgroup.sh makes the leaf, and says what it falls
+# back to on an older image or on a kernel without cgroup2.
+#
+# The leaf's memory.max is "max", no limit of its own. That is what dnsmasq
+# had when every add-on shared addons/ directly: it is still throttled at
+# the group's memory.high and killed at the group's memory.max (96M and 128M
+# on the reference board, from the device description). dnsmasq, unmeasured,
+# holds a few MB at most. A limit of its own comes with the add-on manifest,
+# once it is measured alone.
+ADDONS_CGROUP=${ADDONS_CGROUP:-/sys/fs/cgroup/addons}
+ADDON_CGROUP_SH=${ADDON_CGROUP_SH:-/kvmapp/system/addon-cgroup.sh}
+if [ -r "$ADDON_CGROUP_SH" ]; then
+    # shellcheck source=../addon-cgroup.sh
+    . "$ADDON_CGROUP_SH"
+    addon_cgroup_join netboot max
 fi
 # --- end cgroup ---
 

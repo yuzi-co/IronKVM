@@ -13,7 +13,11 @@ import (
 )
 
 // CgroupDir is the addons memory group that ironkvm-dist's S01cgroups makes.
-// A variable for the tests.
+// It holds no process itself: each host add-on runs in its own leaf under
+// addons/daemons (kvmapp/system/addon-cgroup.sh) and the containers under
+// addons/lxc. The kernel charges a leaf's memory to its parents too, so the
+// group's memory.current is every add-on's together, and its memory.high and
+// memory.max are the limits all of them share. A variable for the tests.
 var CgroupDir = "/sys/fs/cgroup/addons"
 
 // clockTicks is USER_HZ, the unit of the start time in /proc/<pid>/stat. It is
@@ -93,8 +97,9 @@ func RSS(pid int) int64 {
 	return 0
 }
 
-// GroupMemory reads the addons group's use and its two limits, in bytes. A
-// limit of "max", or a group that is not there, reads as 0.
+// GroupMemory reads the addons group's use, which is the sum of every add-on's
+// leaf, and the two limits they share, in bytes. A limit of "max", or a group
+// that is not there, reads as 0.
 func GroupMemory() (current, high, max int64) {
 	return readBytes("memory.current"), readBytes("memory.high"), readBytes("memory.max")
 }

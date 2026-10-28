@@ -12,11 +12,36 @@ import (
 // The roots every memory source is read from. Variables so tests point them
 // at fixtures.
 var (
-	procDir      = "/proc"
-	zramDir      = "/sys/block/zram0"
-	cgroupDir    = "/sys/fs/cgroup"
-	cgroupGroups = []string{"kvm", "addons"}
+	procDir   = "/proc"
+	zramDir   = "/sys/block/zram0"
+	cgroupDir = "/sys/fs/cgroup"
 )
+
+// The groups ironkvm-dist's S01cgroups makes, by their path under cgroupDir,
+// which is also their label. addons holds no process: its memory is the sum
+// of the host add-ons, one leaf each under addons/daemons, and the containers
+// under addons/lxc. The leaves are made by the add-ons' start scripts, so
+// they are listed at each scrape.
+const (
+	cgroupDaemons = "addons/daemons"
+	cgroupLxc     = "addons/lxc"
+)
+
+var cgroupFixed = []string{"kvm", "addons"}
+
+// cgroupGroups is every group to report, in output order: kvm, addons, each
+// add-on's leaf by name, then the containers' group.
+func cgroupGroups() []string {
+	groups := append([]string{}, cgroupFixed...)
+	if entries, err := os.ReadDir(filepath.Join(cgroupDir, cgroupDaemons)); err == nil {
+		for _, e := range entries { // ReadDir sorts by name
+			if e.IsDir() {
+				groups = append(groups, cgroupDaemons+"/"+e.Name())
+			}
+		}
+	}
+	return append(groups, cgroupLxc)
+}
 
 // meminfoKinds are the /proc/meminfo fields reported, in output order.
 var meminfoKinds = []string{"MemTotal", "MemAvailable", "MemFree", "SwapTotal", "SwapFree", "CmaTotal", "CmaFree"}
@@ -124,7 +149,7 @@ func writeCgroups(w *Writer) {
 	}
 
 	var groups []group
-	for _, name := range cgroupGroups {
+	for _, name := range cgroupGroups() {
 		body, ok := readText(filepath.Join(cgroupDir, name, "memory.current"))
 		if !ok {
 			continue

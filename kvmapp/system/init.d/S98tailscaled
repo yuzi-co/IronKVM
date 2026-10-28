@@ -103,15 +103,26 @@ running_pid() {
 }
 
 # --- cgroup ---
-# ironkvm-dist's S01cgroups makes an addons memory group with a soft and a hard
-# limit, so that tailscaled, the largest process on the board, cannot take the
-# memory the KVM needs. This script joins it before it starts the daemon, so
-# the daemon inherits it however the script is run: at boot, or from the web UI
-# through the server, whose own group it would otherwise inherit. Without the
-# group nothing changes.
-CGROUP_PROCS=${CGROUP_PROCS:-/sys/fs/cgroup/addons/cgroup.procs}
-if [ -w "$CGROUP_PROCS" ]; then
-    { echo $$ > "$CGROUP_PROCS"; } 2>/dev/null || true
+# ironkvm-dist's S01cgroups makes an addons memory group with a soft and a
+# hard limit, and under it addons/daemons, which holds one leaf group per
+# host add-on. This script joins its own leaf, addons/daemons/tailscale,
+# before it starts the daemon, so the daemon inherits it however the script
+# is run: at boot, or from the web UI through the server, whose own group
+# it would otherwise inherit. addon-cgroup.sh makes the leaf, and says what
+# it falls back to on an older image or on a kernel without cgroup2.
+#
+# The leaf's memory.max is "max", no limit of its own. That is what the daemon
+# had when every add-on shared addons/ directly: it is still throttled at
+# the group's memory.high and killed at the group's memory.max (96M and 128M
+# on the reference board, from the device description). Tailscale peaked at
+# 33 MB in the group under load, well inside both. A limit of its own comes
+# with the add-on manifest, once it is measured alone.
+ADDONS_CGROUP=${ADDONS_CGROUP:-/sys/fs/cgroup/addons}
+ADDON_CGROUP_SH=${ADDON_CGROUP_SH:-/kvmapp/system/addon-cgroup.sh}
+if [ -r "$ADDON_CGROUP_SH" ]; then
+    # shellcheck source=../addon-cgroup.sh
+    . "$ADDON_CGROUP_SH"
+    addon_cgroup_join tailscale max
 fi
 # --- end cgroup ---
 
@@ -137,7 +148,7 @@ memlimit_mib() {
             *) mib=$v ;;
         esac
     fi
-    high=$(cat "${CGROUP_PROCS%/*}/memory.high" 2>/dev/null)
+    high=$(cat "${ADDONS_CGROUP:-/sys/fs/cgroup/addons}/memory.high" 2>/dev/null)
     case "$high" in
         ''|*[!0-9]*) ;;
         *)
