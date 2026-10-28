@@ -619,6 +619,11 @@ refresh_kvm_system() {
 # a stop or a killall sends, and the OOM killer is told to pass it by; it holds
 # one line of text and cannot grow. Only a SIGKILL by hand ends it early.
 #
+# The logger's own output goes to /dev/null. It would otherwise keep the
+# caller's stdout and stderr open for as long as the program runs, and a
+# caller that reads the script's output to its end, as the server does when
+# it starts tailscaled from the web UI, would wait for the program to exit.
+#
 # Every line goes out at daemon.info under the tag given. Without logger or
 # mkfifo this returns 1 and the caller starts the program as it always did.
 # SYSLOG_LOGGER names another logger, or none when empty.
@@ -632,7 +637,7 @@ syslog_pipe() {
     exec 8<>"$fifo"
     exec 9<"$fifo" 8>"$fifo"
     rm -f "$fifo"
-    ( trap '' HUP INT QUIT TERM PIPE; exec "$SYSLOG_LOGGER" -t "$1" -p daemon.info ) <&9 8>&- 9<&- &
+    ( trap '' HUP INT QUIT TERM PIPE; exec "$SYSLOG_LOGGER" -t "$1" -p daemon.info ) <&9 >/dev/null 2>&1 8>&- 9<&- &
     { echo -1000 > "/proc/$!/oom_score_adj"; } 2>/dev/null
     exec 9<&-
     return 0
