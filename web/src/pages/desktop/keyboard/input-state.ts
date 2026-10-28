@@ -31,23 +31,33 @@ const FAMILIES: readonly Family[] = [
   { codes: ['MetaLeft', 'MetaRight'], held: (event) => event.metaKey }
 ];
 
+function familyOf(code: string): Family | undefined {
+  return FAMILIES.find((family) => family.codes.includes(code));
+}
+
 /**
- * Modifiers recorded as pressed that the event says are released. The family of
- * the key behind the event is left alone: browsers disagree on whether a
- * modifier's own keydown and keyup already carry its new state, and with both
- * sides of one held, the flag cannot say which side was let go.
+ * Modifiers recorded as pressed that the event says are released. On a keydown
+ * the family of the key behind the event is left alone, since browsers
+ * disagree on whether a modifier's own keydown already carries its new state.
+ * On a modifier's keyup its family is checked as well, apart from the key
+ * itself, which the keyup releases anyway: a keyup that reports the family as
+ * no longer held means no side of it is held. Windows sends a single Shift
+ * keyup when the last of two held Shifts is released, and none for the first,
+ * so this is the only point at which the first one can be let go.
  */
 export function staleModifiers(
   pressed: Iterable<string>,
   event: ModifierState,
-  eventCode: string
+  eventCode: string,
+  type: 'keydown' | 'keyup' = 'keydown'
 ): string[] {
   const pressedSet = new Set(pressed);
   const stale: string[] = [];
 
   for (const family of FAMILIES) {
-    if (family.codes.includes(eventCode)) continue;
+    if (type === 'keydown' && family.codes.includes(eventCode)) continue;
     for (const code of family.codes) {
+      if (code === eventCode) continue;
       if (pressedSet.has(code) && !family.held(event, code)) stale.push(code);
     }
   }
@@ -55,60 +65,70 @@ export function staleModifiers(
   return stale;
 }
 
+export interface ModifierChanges {
+  release: string[];
+  press: string[];
+}
+
 /**
- * The re-sync above with a memory for one case it gets wrong. Windows keeps one
- * combined state per modifier family, so once either Shift is released the
- * browser reports Shift as up, although the other Shift is still physically
- * held. Ctrl and Alt are tracked the same way, so they are given the same
- * treatment, and so is Meta, at no cost. A side that is still pressed when its
- * family's other side has its keyup is therefore marked as unconfirmed: the
- * flag can no longer say whether it is held, so a flag that reads as released
- * does not release it. It is kept until its own keyup, a blur or visibility
- * change that releases every key, or an event that reports the family as held
- * again. That last event shows the browser's state agrees with ours once more,
- * so the mark is dropped and the re-sync covers the key from then on. The cost
- * is that a side whose keyup is lost while it is unconfirmed stays held until
- * the next blur, which is the behaviour from before the re-sync existed.
+ * The re-sync above, with a memory for the sides it releases on another side's
+ * keyup. A browser that clears a modifier's flag on its own keyup whatever the
+ * other side is doing would have that keyup release both sides while one is
+ * still held. On Windows the two Ctrls each send their own keyup, and whether
+ * the first one reports Ctrl as held has not been recorded. Such a side is
+ * pressed again by the next
+ * event for another key that reports its family as held while no side of the
+ * family is held on the host. The memory never keeps a key held: it can only
+ * restore one the browser reports as held, and it is dropped as soon as an
+ * event reports the family as up, a key of the family is pressed, the side has
+ * its own keyup, or every key is released.
  */
 export class ModifierSync {
-  private readonly unconfirmed = new Set<string>();
+  private readonly implied = new Set<string>();
 
-  /** Modifiers to release before handling an event for eventCode. */
-  stale(pressed: Iterable<string>, event: ModifierState, eventCode: string): string[] {
+  /** Modifiers to release and to press again before handling a key event. */
+  sync(
+    pressed: Iterable<string>,
+    event: ModifierState,
+    type: 'keydown' | 'keyup',
+    eventCode: string
+  ): ModifierChanges {
     const pressedSet = new Set(pressed);
+    const own = familyOf(eventCode);
 
+    if (own && type === 'keydown') {
+      for (const code of own.codes) this.implied.delete(code);
+    } else {
+      this.implied.delete(eventCode);
+    }
+
+    const release = staleModifiers(pressedSet, event, eventCode, type);
+    for (const code of release) {
+      pressedSet.delete(code);
+      if (own?.codes.includes(code)) this.implied.add(code);
+    }
+
+    const press: string[] = [];
     for (const family of FAMILIES) {
-      if (family.codes.includes(eventCode)) continue;
+      if (family === own) continue;
       for (const code of family.codes) {
-        if (this.unconfirmed.has(code) && family.held(event, code)) {
-          this.unconfirmed.delete(code);
+        if (!this.implied.has(code)) continue;
+        if (!family.held(event, code)) {
+          this.implied.delete(code);
+        } else if (!family.codes.some((side) => pressedSet.has(side))) {
+          this.implied.delete(code);
+          pressedSet.add(code);
+          press.push(code);
         }
       }
     }
 
-    return staleModifiers(pressedSet, event, eventCode).filter(
-      (code) => !this.unconfirmed.has(code)
-    );
+    return { release, press };
   }
 
-  /** Records a key's own keydown. A fresh press starts with nothing in doubt. */
-  keyDown(code: string) {
-    this.unconfirmed.delete(code);
-  }
-
-  /** Records a key's own keyup, with the keys still pressed when it came. */
-  keyUp(code: string, pressed: Iterable<string>) {
-    this.unconfirmed.delete(code);
-    const family = FAMILIES.find((f) => f.codes.includes(code));
-    if (!family) return;
-    for (const other of pressed) {
-      if (other !== code && family.codes.includes(other)) this.unconfirmed.add(other);
-    }
-  }
-
-  /** Forgets every mark, for when every key has been released. */
+  /** Forgets every released side, for when every key has been released. */
   reset() {
-    this.unconfirmed.clear();
+    this.implied.clear();
   }
 }
 

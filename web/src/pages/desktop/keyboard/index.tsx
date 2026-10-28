@@ -97,7 +97,7 @@ export const Keyboard = () => {
       const code = normalizeKeyCode(event, os);
       if (!code) return;
 
-      releaseStaleModifiers(event, code);
+      syncModifiers(event, 'keydown', code);
 
       if (pressedKeys.current.has(code) || swallowedKeys.current.has(code)) return;
 
@@ -121,7 +121,6 @@ export const Keyboard = () => {
       // Handle AltGr key
       altGrRef.current.handleKeyDown(code, event.timeStamp);
 
-      modifierSync.current.keyDown(code);
       pressedKeys.current.add(code);
       sendKeyEvent('keydown', code);
     }
@@ -153,8 +152,7 @@ export const Keyboard = () => {
       event.preventDefault();
       event.stopPropagation();
 
-      releaseStaleModifiers(event, code);
-      modifierSync.current.keyUp(code, pressedKeys.current);
+      syncModifiers(event, 'keyup', code);
       releaseKey(code);
     }
 
@@ -192,10 +190,16 @@ export const Keyboard = () => {
 
     // A modifier the host still holds but the browser reports as up lost its
     // keyup, to an OS shortcut or a dialog that took focus inside the page.
-    // Release it now rather than leave it held until the next blur.
-    function releaseStaleModifiers(event: KeyboardEvent, code: string) {
-      for (const modifier of modifierSync.current.stale(pressedKeys.current, event, code)) {
+    // Release it now rather than leave it held until the next blur. A side that
+    // went with its pair's keyup and is reported as held again is pressed again.
+    function syncModifiers(event: KeyboardEvent, type: 'keydown' | 'keyup', code: string) {
+      const changes = modifierSync.current.sync(pressedKeys.current, event, type, code);
+      for (const modifier of changes.release) {
         releaseKey(modifier);
+      }
+      for (const modifier of changes.press) {
+        pressedKeys.current.add(modifier);
+        sendKeyEvent('keydown', modifier);
       }
     }
 
