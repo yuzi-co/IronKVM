@@ -2191,6 +2191,8 @@ const de = {
         kvmUrl: 'KVM-Adresse',
         moreTip: 'Weitere Aktionen',
         updateTip: 'Auf {{version}} aktualisieren',
+        versionPastPin: '{{version}}, neuer als getestet',
+        pastPin: 'Neuer als {{pinned}}, die Version, mit der diese Firmware getestet wurde. Der getestete Build wird nicht mehr veröffentlicht, daher wurde der neuere aus derselben signierten Quelle installiert.',
         loading: 'Lädt...',
         okBtn: 'Ja',
         cancelBtn: 'Nein',

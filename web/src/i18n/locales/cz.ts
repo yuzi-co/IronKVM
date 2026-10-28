@@ -2138,6 +2138,8 @@ const cz = {
         kvmUrl: 'Adresa KVM',
         moreTip: 'Další akce',
         updateTip: 'Aktualizovat na {{version}}',
+        versionPastPin: '{{version}}, novější než testovaná',
+        pastPin: 'Novější než {{pinned}}, verze, se kterou byl tento firmware testován. Testované sestavení už není zveřejněno, proto byla nainstalována novější ze stejného podepsaného zdroje.',
         loading: 'Načítání...',
         okBtn: 'Ano',
         cancelBtn: 'Ne',

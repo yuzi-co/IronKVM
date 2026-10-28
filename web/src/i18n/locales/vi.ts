@@ -2137,6 +2137,8 @@ const vi = {
         kvmUrl: 'Địa chỉ KVM',
         moreTip: 'Thao tác khác',
         updateTip: 'Cập nhật lên {{version}}',
+        versionPastPin: '{{version}}, mới hơn bản đã kiểm thử',
+        pastPin: 'Mới hơn {{pinned}}, bản dùng để kiểm thử firmware này. Bản đã kiểm thử không còn được phát hành, nên bản mới hơn đã được cài từ cùng nguồn có chữ ký.',
         loading: 'Đang tải...',
         okBtn: 'Có',
         cancelBtn: 'Không',

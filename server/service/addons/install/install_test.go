@@ -593,3 +593,36 @@ func TestTheRealMksquashfsCommandLine(t *testing.T) {
 	}
 	t.Logf("unsquashfs -lls:\n%s", list)
 }
+
+// Fetch stands in for the download of an artifact with no pin: its sum is the
+// one installed.json records, and its refusal installs nothing.
+func TestFetchReplacesTheDownloadAndItsSumIsRecorded(t *testing.T) {
+	scratch(t, true, true, true)
+	body, members := release(t, "tool v2\n")
+	m, client := serve(t, "2.0", body, members)
+	m.Artifact.SHA256 = ""
+
+	refuse := func(ctx context.Context, dst string, progress func(done, total int64)) (string, error) {
+		return "", errors.New("not the index's package")
+	}
+	if _, err := Install(context.Background(), m, Options{Client: client, Fetch: refuse}); err == nil || !strings.Contains(err.Error(), "not the index's package") {
+		t.Fatalf("got %v", err)
+	}
+	if _, err := os.Stat(addon.Dir("tool")); err == nil {
+		t.Fatal("a refused fetch must leave nothing behind")
+	}
+
+	fetch := func(ctx context.Context, dst string, progress func(done, total int64)) (string, error) {
+		if err := client.Fetch(ctx, m.Artifact.URL, m.Artifact.Max, dst, progress); err != nil {
+			return "", err
+		}
+		return sum(body), nil
+	}
+	if _, err := Install(context.Background(), m, Options{Client: client, Fetch: fetch}); err != nil {
+		t.Fatal(err)
+	}
+	rec, ok := ReadInstalled("tool")
+	if !ok || rec.Manifest.Artifact.SHA256 != sum(body) || rec.Manifest.Version != "2.0" {
+		t.Fatalf("installed.json %+v", rec.Manifest)
+	}
+}

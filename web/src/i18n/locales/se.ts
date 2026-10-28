@@ -2149,6 +2149,8 @@ const se = {
         kvmUrl: 'KVM-adress',
         moreTip: 'Fler åtgärder',
         updateTip: 'Uppdatera till {{version}}',
+        versionPastPin: '{{version}}, nyare än den testade',
+        pastPin: 'Nyare än {{pinned}}, versionen som den här firmwaren testades med. Den testade versionen publiceras inte längre, så den nyare installerades från samma signerade källa.',
         loading: 'Laddar...',
         okBtn: 'Ja',
         cancelBtn: 'Nej',

@@ -3,7 +3,9 @@
 package netbird
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -41,6 +43,9 @@ func lifecycle(t *testing.T) (calls string) {
 		addon.InitdDir, addon.PkgInitdDir, addon.ProcDir = savedInitd, savedPkg, savedProc
 		statusTimeout, installPackage = savedStatus, savedInstall
 	})
+	// The index was looked at just now and found nothing, so GetUpdate
+	// starts no background download.
+	noIndex(t)
 	addon.InitdDir = filepath.Join(base, "etc-init.d")
 	addon.PkgInitdDir = filepath.Join(base, "kvmapp-init.d")
 	addon.ProcDir = filepath.Join(base, "proc")
@@ -231,6 +236,58 @@ func TestGetUpdateOffersThePin(t *testing.T) {
 	}
 	if got := callsOf(t, calls); got != "netbird version\n" {
 		t.Fatalf("calls:\n%s", got)
+	}
+}
+
+// noIndex makes the last look at Alpine's index a recent one that found
+// nothing, and any further look fail.
+func noIndex(t *testing.T) {
+	t.Helper()
+	saved := lookupIndex
+	t.Cleanup(func() {
+		lookupIndex = saved
+		setIndexCheck(indexEntry{}, false)
+	})
+	lookupIndex = func(context.Context) (indexEntry, error) { return indexEntry{}, errors.New("no network in the tests") }
+	setIndexCheck(indexEntry{}, false)
+}
+
+func setIndexCheck(e indexEntry, ok bool) {
+	indexCheck.Lock()
+	defer indexCheck.Unlock()
+	indexCheck.entry, indexCheck.ok, indexCheck.at, indexCheck.running = e, ok, time.Now(), false
+}
+
+// A newer build in Alpine's index is offered, with the pin beside it so the
+// page can say the install would be past it.
+func TestGetUpdateOffersTheIndexBuild(t *testing.T) {
+	lifecycle(t)
+	setIndexCheck(indexEntry{Name: "netbird", Release: "0.82.0-r0"}, true)
+	d := data(t, call(t, NewService().GetUpdate, ""))
+	if d["current"] != "0.77.0" || d["latest"] != "0.82.0" || d["pinned"] != Version {
+		t.Fatalf("got %v", d)
+	}
+}
+
+// An index build that is no newer than the pin changes nothing.
+func TestGetUpdateIgnoresAnIndexBuildAtThePin(t *testing.T) {
+	lifecycle(t)
+	setIndexCheck(indexEntry{Name: "netbird", Release: pinRelease}, true)
+	d := data(t, call(t, NewService().GetUpdate, ""))
+	if d["latest"] != Version {
+		t.Fatalf("got %v", d)
+	}
+}
+
+// An install at the index's build is not updated again.
+func TestUpdateRefusesAnInstallAtTheIndexBuild(t *testing.T) {
+	lifecycle(t)
+	installPackage = func() error { t.Error("nothing may be installed over the latest build"); return nil }
+	setIndexCheck(indexEntry{Name: "netbird", Release: "0.82.0-r0"}, true)
+	t.Setenv("STUB_VERSION", "0.82.0")
+	rsp := call(t, NewService().Update, "")
+	if rsp.Code != -1 || !strings.Contains(rsp.Msg, "the newest in Alpine's index is 0.82.0") {
+		t.Fatalf("got %d %q", rsp.Code, rsp.Msg)
 	}
 }
 

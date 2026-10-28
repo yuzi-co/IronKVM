@@ -30,7 +30,9 @@ export type Status = {
   loginServer?: string;
 };
 
-export type UpdateInfo = { current: string; latest: string };
+// pinned is the release the server was tested with, where an add-on can
+// install a newer one (NetBird).
+export type UpdateInfo = { current: string; latest: string; pinned?: string };
 
 // The server's reply, as lib/http.ts returns it.
 export type Rsp = { code: number; msg: string; data: any };

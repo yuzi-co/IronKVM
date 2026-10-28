@@ -281,10 +281,13 @@ func (s *Service) Boot(c *gin.Context) {
 	vpn.Boot(c, addon.NetBird, isInstalled())
 }
 
-// GetUpdate reports the installed version and the pinned one, which is the
-// update on offer. It asks no server: an install from before the pin, of the
-// package Alpine's index held then, is offered the pin when it is older and
-// nothing when it is the pin or newer, and keeps running as it is either way.
+// GetUpdate reports the installed version, the pinned one, and the newest an
+// update installs: the pin, or the build in Alpine's v3.24 index when the last
+// look at it found a newer one. It never waits on the network: a look older
+// than indexCheckEvery starts a new one in the background, and the page sees
+// its answer on its next visit. An install older than the pin is offered the
+// pin, and one that is the latest or newer is offered nothing and keeps
+// running as it is.
 func (s *Service) GetUpdate(c *gin.Context) {
 	var rsp proto.Response
 
@@ -297,14 +300,17 @@ func (s *Service) GetUpdate(c *gin.Context) {
 		rsp.ErrRsp(c, -1, vpn.Message("version failed", err))
 		return
 	}
-	rsp.OkRspWithData(c, &proto.VpnUpdateRsp{Current: current, Latest: Version})
+	checkIndexSoon()
+	latest, _ := latestRelease()
+	rsp.OkRspWithData(c, &proto.VpnUpdateRsp{Current: current, Latest: latest, Pinned: Version})
 }
 
-// Update installs the pinned package over the installed binary. It refuses an
-// install that is the pin or newer, which the pin would downgrade; one whose
-// version cannot be read is replaced. The identity stays on /data, and the
-// daemon runs again only if it ran before, and only if Tailscale did not start
-// meanwhile.
+// Update installs the latest release over the installed binary: the pin, or,
+// when the pin is gone from Alpine's mirror, the build the index names. It
+// refuses an install that is the latest or newer, which the update would
+// downgrade; one whose version cannot be read is replaced. The identity stays
+// on /data, and the daemon runs again only if it ran before, and only if
+// Tailscale did not start meanwhile.
 func (s *Service) Update(c *gin.Context) {
 	var rsp proto.Response
 
@@ -320,8 +326,13 @@ func (s *Service) Update(c *gin.Context) {
 	}
 
 	cli := NewCli()
-	if current, err := cli.Version(); err == nil && upstream.CompareVersions(Version, current) <= 0 {
-		rsp.ErrRsp(c, -1, fmt.Sprintf("netbird %s is installed, and the pinned release is %s", current, Version))
+	latest, fromIndex := latestRelease()
+	if current, err := cli.Version(); err == nil && upstream.CompareVersions(latest, current) <= 0 {
+		if fromIndex {
+			rsp.ErrRsp(c, -1, fmt.Sprintf("netbird %s is installed, and the newest in Alpine's index is %s", current, latest))
+		} else {
+			rsp.ErrRsp(c, -1, fmt.Sprintf("netbird %s is installed, and the pinned release is %s", current, Version))
+		}
 		return
 	}
 	wasRunning := addon.Running(addon.NetBird)

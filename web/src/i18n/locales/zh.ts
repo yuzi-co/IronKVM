@@ -2054,6 +2054,8 @@ const zh = {
         kvmUrl: 'KVM 地址',
         moreTip: '更多操作',
         updateTip: '更新到 {{version}}',
+        versionPastPin: '{{version}}，比已测试版本新',
+        pastPin: '比 {{pinned}}（此固件测试所用的版本）新。已测试的构建不再发布，因此从同一签名来源安装了较新的版本。',
         loading: '加载中...',
         okBtn: '是',
         cancelBtn: '否',

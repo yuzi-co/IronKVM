@@ -55,8 +55,9 @@ export const Header = ({ vpn, state, failed, setIsLocked, onChange, onError }: H
   const installed = !!state && state !== 'notInstall';
   const tag = statusTag(state, failed);
 
-  // The server answers from its pinned release without asking the network, so
-  // asking on every visit is cheap. latest is that pin.
+  // The server answers without waiting on the network, so asking on every
+  // visit is cheap. latest is the pinned release, or for NetBird a newer build
+  // the server's last background look at Alpine's index found.
   useEffect(() => {
     if (!installed) return;
     vpn.api
@@ -68,6 +69,13 @@ export const Header = ({ vpn, state, failed, setIsLocked, onChange, onError }: H
   }, [installed, vpn.api]);
 
   const hasUpdate = installed && !!update && isNewer(update.latest, update.current);
+  // The installed build is newer than the one this firmware was tested with,
+  // as a NetBird install that followed Alpine's index past the pin is.
+  const pastPin =
+    !!update?.pinned &&
+    isValidVersion(update.current) &&
+    isValidVersion(update.pinned) &&
+    versionGt(update.current, update.pinned);
 
   function act(kind: Loading, request: () => Promise<Rsp>, lock = false) {
     if (loading !== '') return;
@@ -166,6 +174,17 @@ export const Header = ({ vpn, state, failed, setIsLocked, onChange, onError }: H
     <div className="flex items-center justify-between">
       <div className="flex items-center space-x-2">
         <span className="text-base">{vpn.title}</span>
+        {installed && update?.current && (
+          <Tooltip
+            title={pastPin ? t('settings.vpn.pastPin', { pinned: update.pinned }) : undefined}
+          >
+            <span className="text-xs text-neutral-500">
+              {pastPin
+                ? t('settings.vpn.versionPastPin', { version: update.current })
+                : update.current}
+            </span>
+          </Tooltip>
+        )}
         {tag && <StateTag color={tagColor[tag]} label={tagLabel[tag]} />}
       </div>
 

@@ -2142,6 +2142,8 @@ const da = {
         kvmUrl: 'KVM-adresse',
         moreTip: 'Flere handlinger',
         updateTip: 'Opdater til {{version}}',
+        versionPastPin: '{{version}}, nyere end den testede',
+        pastPin: 'Nyere end {{pinned}}, den version denne firmware blev testet med. Den testede build udgives ikke længere, så den nyere blev installeret fra samme signerede kilde.',
         loading: 'Indlæser...',
         okBtn: 'Ja',
         cancelBtn: 'Nej',

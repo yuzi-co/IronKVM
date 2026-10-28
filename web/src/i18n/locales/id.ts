@@ -2150,6 +2150,8 @@ const id = {
         kvmUrl: 'Alamat KVM',
         moreTip: 'Tindakan lain',
         updateTip: 'Perbarui ke {{version}}',
+        versionPastPin: '{{version}}, lebih baru dari yang diuji',
+        pastPin: 'Lebih baru dari {{pinned}}, rilis yang digunakan untuk menguji firmware ini. Build yang diuji tidak lagi diterbitkan, jadi yang lebih baru dipasang dari sumber bertanda tangan yang sama.',
         loading: 'Memuat...',
         okBtn: 'Ya',
         cancelBtn: 'Tidak',

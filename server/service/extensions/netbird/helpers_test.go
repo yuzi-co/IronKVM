@@ -85,7 +85,8 @@ func callsOf(t *testing.T, calls string) string {
 // fakeApk puts a stub in place of apk-tools 3. It answers verify and extract,
 // unpacks the package with tar, and appends every call to the file it
 // returns. BAD_SIGNATURE in the environment makes verify and extract refuse
-// the package, as apk does a tampered one.
+// the package, as apk does a tampered one, and BAD_INDEX_SIGNATURE makes
+// verify refuse an index.
 func fakeApk(t *testing.T) (calls string) {
 	t.Helper()
 	dir := t.TempDir()
@@ -93,7 +94,12 @@ func fakeApk(t *testing.T) (calls string) {
 	path := filepath.Join(dir, "apk")
 	stub(t, path, fmt.Sprintf(`echo "$*" >> %q
 case "$1" in
-verify) [ -z "$BAD_SIGNATURE" ] || { echo "$2: UNTRUSTED signature" >&2; exit 1; } ;;
+verify)
+	case "$2" in
+	*APKINDEX*) bad=$BAD_INDEX_SIGNATURE ;;
+	*) bad=$BAD_SIGNATURE ;;
+	esac
+	[ -z "$bad" ] || { echo "$2: UNTRUSTED signature" >&2; exit 1; } ;;
 extract)
 	[ -z "$BAD_SIGNATURE" ] || { echo "ERROR: $5: UNTRUSTED signature" >&2; exit 1; }
 	tar -xzf "$5" -C "$4" ;;

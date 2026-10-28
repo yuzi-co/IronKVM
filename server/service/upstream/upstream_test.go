@@ -185,6 +185,33 @@ func TestDownloadKeepsOnlyAVerifiedFile(t *testing.T) {
 	}
 }
 
+// Fetch keeps any file within its bound, and a missing file is a 404 the
+// caller can tell from other failures.
+func TestFetchHasNoSumAndTellsAMissingFile(t *testing.T) {
+	data := []byte("an index")
+	f, c := newFakeGitHub(t, "1.0", map[string][]byte{"f.bin": data})
+	dst := filepath.Join(t.TempDir(), "f.bin")
+	url := f.srv.URL + "/download/f.bin"
+
+	if err := c.Fetch(context.Background(), url, 4, dst, nil); err == nil {
+		t.Fatal("a file over the limit was kept")
+	}
+	if err := c.Fetch(context.Background(), url, 1<<20, dst, nil); err != nil {
+		t.Fatal(err)
+	}
+	if got, _ := os.ReadFile(dst); string(got) != string(data) {
+		t.Fatalf("fetched %q", got)
+	}
+
+	err := c.Fetch(context.Background(), f.srv.URL+"/download/gone.bin", 1<<20, dst+".2", nil)
+	if !IsNotFound(err) || err.Error() != "download "+f.srv.URL+"/download/gone.bin: status 404" {
+		t.Fatalf("got %v", err)
+	}
+	if IsNotFound(errors.New("download x: status 404")) {
+		t.Fatal("only a StatusError is a 404")
+	}
+}
+
 func writeFiles(t *testing.T, dir string, files map[string]string) {
 	t.Helper()
 	for name, content := range files {

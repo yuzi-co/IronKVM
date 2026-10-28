@@ -2167,6 +2167,8 @@ const nl = {
         kvmUrl: 'KVM-adres',
         moreTip: 'Meer acties',
         updateTip: 'Bijwerken naar {{version}}',
+        versionPastPin: '{{version}}, nieuwer dan getest',
+        pastPin: 'Nieuwer dan {{pinned}}, de versie waarmee deze firmware is getest. De geteste build wordt niet meer gepubliceerd, dus de nieuwere is geïnstalleerd uit dezelfde ondertekende bron.',
         loading: 'Laden...',
         okBtn: 'Ja',
         cancelBtn: 'Nee',

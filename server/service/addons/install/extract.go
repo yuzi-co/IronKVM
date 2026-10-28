@@ -201,7 +201,7 @@ func ExtractApk(pkg string, members []Member, dir, apkPath string) (map[string]s
 	if apkPath == "" {
 		apkPath = ApkPath
 	}
-	if _, err := runTool(apkPath, "verify", pkg); err != nil {
+	if err := VerifyApk(pkg, apkPath); err != nil {
 		return nil, err
 	}
 	unpacked := dir + ".apk"
@@ -250,6 +250,17 @@ func ExtractApk(pkg string, members []Member, dir, apkPath string) (map[string]s
 		sums[m.Name] = sum
 	}
 	return sums, nil
+}
+
+// VerifyApk has apk check Alpine's signature on a package or an index
+// (APKINDEX.tar.gz), against the keys in /etc/apk/keys, which on the image
+// are alpine-keys' riscv64 keys. apkPath is ApkPath when empty.
+func VerifyApk(file, apkPath string) error {
+	if apkPath == "" {
+		apkPath = ApkPath
+	}
+	_, err := runTool(apkPath, "verify", file)
+	return err
 }
 
 // runTool runs a tool under its own deadline. WaitDelay closes the pipes if

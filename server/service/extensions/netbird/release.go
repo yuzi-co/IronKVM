@@ -17,14 +17,20 @@ import installer "NanoKVM-Server/service/addons/install"
 // signature over its contents already cover it.
 //
 // Alpine keeps one build of a package in a branch: when v3.24 takes a newer
-// one, this file leaves the mirror and the install fails, naming the URL,
-// until the pin moves.
+// one, this file leaves the mirror. The install then follows the branch's
+// signed index to the build that replaced it, no older than the pin
+// (follow.go), and a new pin is only needed to move to a build the board has
+// been tested with.
 
 // Version is the pinned NetBird release, as `netbird version` reports it.
 const Version = "0.81.2"
 
+// pinRelease is the pinned package's Alpine version, the oldest the install
+// accepts from the branch's index.
+const pinRelease = Version + "-r0"
+
 // packageFile is the name the package is saved under in the workspace.
-const packageFile = "netbird-0.81.2-r0.apk"
+const packageFile = "netbird-" + pinRelease + ".apk"
 
 // release is a variable only so the tests can serve their own file; nothing
 // else changes it. The package is 15,326,705 bytes and the binary about 43 MB.
