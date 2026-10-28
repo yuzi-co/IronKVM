@@ -69,6 +69,23 @@ test('Windows AltGr, reported as Ctrl+Alt, keeps AltRight held', () => {
   assert.deepEqual(staleModifiers(['AltRight'], event({ ctrl: true, alt: true }), 'KeyQ'), []);
 });
 
+// Chromium on Windows reports a left Ctrl and a left Alt held together as
+// AltGraph as well, with ctrlKey and altKey still set. The AltGraph rule above
+// is about the right Alt only, so a real Ctrl+Alt chord must keep both keys.
+test('Windows Ctrl+Alt, also reported as AltGraph, keeps the left Ctrl held', () => {
+  const ctrlAlt = event({ ctrl: true, alt: true, altGraph: true });
+  assert.deepEqual(staleModifiers(['ControlLeft'], ctrlAlt, 'AltLeft'), []);
+  assert.deepEqual(staleModifiers(['ControlLeft', 'AltLeft'], ctrlAlt, 'Delete'), []);
+  assert.deepEqual(staleModifiers(['ControlLeft', 'AltLeft'], ctrlAlt, 'KeyT'), []);
+});
+
+test('a Ctrl let go while Alt is held is released by the next event', () => {
+  assert.deepEqual(
+    staleModifiers(['ControlLeft', 'AltLeft'], event({ alt: true }), 'Tab'),
+    ['ControlLeft']
+  );
+});
+
 test('a composition suppresses only the keys the input method consumes', () => {
   assert.equal(isCompositionKey(false, { isComposing: true, keyCode: 65, key: 'a' }), true);
   assert.equal(isCompositionKey(true, { isComposing: false, keyCode: 229, key: 'Process' }), true);
