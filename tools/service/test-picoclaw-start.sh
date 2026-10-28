@@ -31,7 +31,7 @@ run() {
     mkdir -p "$WORK/home"
     echo '{}' > "$WORK/home/config.json"
     env PICOCLAW_HOME="$WORK/home" PICOCLAW_LOG_FILE="$WORK/log" KVMDIR="$WORK/kvm" \
-        CGROUP_PROCS="$WORK/no-group/cgroup.procs" PICOCLAW_ADDON_BIN="$WORK/addons/picoclaw/picoclaw" \
+        ADDONS_CGROUP="$WORK/no-group" PICOCLAW_ADDON_BIN="$WORK/addons/picoclaw/picoclaw" \
         "$@" sh "$S" "$action" > "$WORK/out" 2>&1
 }
 

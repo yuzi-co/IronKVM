@@ -38,6 +38,11 @@ func scratchProc(t *testing.T) {
 		"addons/memory.current": "64592691\n",
 		"addons/memory.high":    "67108864\n",
 		"addons/memory.max":     "max\n",
+		// The daemon's own leaf, with no limit of its own. The page reports
+		// the group all add-ons share, never a leaf.
+		"addons/daemons/netbird/memory.current": "33554432\n",
+		"addons/daemons/netbird/memory.high":    "max\n",
+		"addons/daemons/netbird/memory.max":     "max\n",
 	}
 	for name, body := range files {
 		path := filepath.Join(base, name)

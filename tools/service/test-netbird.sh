@@ -62,7 +62,7 @@ run() {
     LOGFILE="$work/root/var/log/netbird.log" \
     STATEDIR="$work/root/var/lib/netbird" \
     KVMDIR="$work/root/etc/kvm" MOUNTS="$work/root/mounts" DATA="$work/root/data" \
-    CGROUP_PROCS="$work/root/no-cgroup/cgroup.procs" \
+    ADDONS_CGROUP="$work/root/no-cgroup" \
     START_WAIT=1 STOP_WAIT=5 STUB_LOG="$work/stub.log" \
         sh "$S98" "$@" > "$work/out" 2>&1
 }

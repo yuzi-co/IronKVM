@@ -8,6 +8,7 @@
 # one for proxy DHCP on the LAN, each by its own pid file. It decides nothing:
 # the configuration files the server writes say what is on.
 S85=${1:-$(dirname "$0")/../../kvmapp/system/init.d/S85netboot}
+HELPER=$(cd "$(dirname "$0")/../../kvmapp/system" && pwd)/addon-cgroup.sh
 [ -f "$S85" ] || { echo "usage: test-netboot.sh <S85netboot>"; exit 1; }
 
 for tool in pgrep mktemp; do
@@ -48,7 +49,7 @@ chmod 755 "$work/bin/dnsmasq"
 reset_tree() {
     for p in $(pgrep -f "$work/bin/dnsmasq"); do kill -9 "$p" 2>/dev/null; done
     rm -rf "$work/root" "$work/stub.log"
-    mkdir -p "$work/root/conf" "$work/root/cgroup" "$work/root/data/tftp"
+    mkdir -p "$work/root/conf" "$work/root/cgroup/addons/daemons/netboot" "$work/root/data/tftp"
     # As on /data: exFAT with fmask 0077 makes every file root's alone.
     echo boot > "$work/root/data/tftp/boot.ipxe"
     chmod 600 "$work/root/data/tftp/boot.ipxe"
@@ -62,7 +63,7 @@ reset_tree() {
 run() {
     DNSMASQ="${DNSMASQ_BIN:-$work/bin/dnsmasq}" \
     CONFDIR="$work/root/conf" RUN="$work/root/run"     TFTP_SRC="$work/root/data/tftp" TFTP="$work/root/var/netboot/tftp" \
-    CGROUP_PROCS="$work/root/cgroup/cgroup.procs" \
+    ADDON_CGROUP_SH="$HELPER" ADDONS_CGROUP="$work/root/cgroup/addons" \
     START_WAIT=1 STOP_WAIT=5 STUB_LOG="$work/stub.log" \
         sh "$S85" "$@" > "$work/out" 2>&1
 }
@@ -78,7 +79,7 @@ has() {
 
 echo "===== the USB link ====="
 reset_tree usb
-: > "$work/root/cgroup/cgroup.procs"
+: > "$work/root/cgroup/addons/daemons/netboot/cgroup.procs"
 run start-usb usb1 172.31.255.2 255.255.255.252
 st=$?
 [ "$st" = 0 ] && grep -q '^Starting dnsmasq on usb1: OK$' "$work/out" \
@@ -97,9 +98,9 @@ pid=$(cat "$work/root/run/usb.pid" 2>/dev/null)
 [ -n "$pid" ] && grep -q dnsmasq "/proc/$pid/cmdline" 2>/dev/null \
     && note "the pid file names the daemon" OK \
     || note "the pid file names the daemon" FAIL
-grep -qx "[0-9]*" "$work/root/cgroup/cgroup.procs" \
-    && note "the script joins the addons group before it starts dnsmasq" OK \
-    || note "the script joins the addons group before it starts dnsmasq" FAIL
+grep -qx "[0-9]*" "$work/root/cgroup/addons/daemons/netboot/cgroup.procs" \
+    && note "the script joins its addons/daemons/netboot leaf before dnsmasq" OK \
+    || note "the script joins its addons/daemons/netboot leaf before dnsmasq" FAIL
 
 old=$pid
 run start-usb usb1 172.31.255.2 255.255.255.252

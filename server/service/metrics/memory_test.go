@@ -86,6 +86,39 @@ ironkvm_cgroup_memory_events_total{group="addons",event="oom_kill"} 1
 	assertText(t, render(t, collectMemory), want)
 }
 
+// The tree with add-on leaves: each host add-on's leaf under addons/daemons is
+// reported by its path, in name order after addons, and the containers' group
+// last. A file that is not a group, and a leaf without memory.current (no
+// memory controller), are left out.
+func TestMemoryReportsTheAddonLeaves(t *testing.T) {
+	_, _, cgroup := useMemoryRoots(t)
+	writeFixture(t, cgroup, "kvm/memory.current", "83886080\n")
+	writeFixture(t, cgroup, "addons/memory.current", "50331648\n")
+	writeFixture(t, cgroup, "addons/daemons/memory.current", "46137344\n")
+	writeFixture(t, cgroup, "addons/daemons/cgroup.procs", "")
+	writeFixture(t, cgroup, "addons/daemons/tailscale/memory.current", "33554432\n")
+	writeFixture(t, cgroup, "addons/daemons/tailscale/memory.events", "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\n")
+	writeFixture(t, cgroup, "addons/daemons/picoclaw/memory.current", "12582912\n")
+	writeFixture(t, cgroup, "addons/daemons/netboot/cgroup.procs", "")
+	writeFixture(t, cgroup, "addons/lxc/memory.current", "4194304\n")
+
+	want := `# HELP ironkvm_cgroup_memory_bytes Memory charged to a cgroup, from memory.current.
+# TYPE ironkvm_cgroup_memory_bytes gauge
+ironkvm_cgroup_memory_bytes{group="kvm"} 83886080
+ironkvm_cgroup_memory_bytes{group="addons"} 50331648
+ironkvm_cgroup_memory_bytes{group="addons/daemons/picoclaw"} 12582912
+ironkvm_cgroup_memory_bytes{group="addons/daemons/tailscale"} 33554432
+ironkvm_cgroup_memory_bytes{group="addons/lxc"} 4194304
+# HELP ironkvm_cgroup_memory_events_total Memory events in a cgroup, from memory.events.
+# TYPE ironkvm_cgroup_memory_events_total counter
+ironkvm_cgroup_memory_events_total{group="addons/daemons/tailscale",event="high"} 0
+ironkvm_cgroup_memory_events_total{group="addons/daemons/tailscale",event="max"} 0
+ironkvm_cgroup_memory_events_total{group="addons/daemons/tailscale",event="oom"} 0
+ironkvm_cgroup_memory_events_total{group="addons/daemons/tailscale",event="oom_kill"} 0
+`
+	assertText(t, render(t, collectMemory), want)
+}
+
 // A kernel without CMA, PSI switched off, no zram, no vmstat, a board with no
 // add-ons, and a kvm group whose events file cannot be read. Each missing
 // source drops its own samples and nothing else.
