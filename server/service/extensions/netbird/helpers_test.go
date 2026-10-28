@@ -142,9 +142,10 @@ func servePackage(t *testing.T, body []byte, sum string, limit int64) {
 	}))
 	t.Cleanup(srv.Close)
 
-	savedPin, savedDownloads := releasePackage, downloads
-	t.Cleanup(func() { releasePackage, downloads = savedPin, savedDownloads })
-	releasePackage = pinnedFile{URL: srv.URL + "/" + packageFile, SHA256: sum, Max: limit}
+	savedPin, savedDownloads := release, downloads
+	t.Cleanup(func() { release, downloads = savedPin, savedDownloads })
+	release.Artifact.URL = srv.URL + "/" + packageFile
+	release.Artifact.SHA256, release.Artifact.Max, release.Artifact.Size = sum, limit, 0
 	downloads = upstream.NewClient(srv.URL, srv.Client())
 }
 

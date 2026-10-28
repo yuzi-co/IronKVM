@@ -4,7 +4,8 @@
 #   test-picoclaw-start.sh
 #
 # The server installs PicoClaw on demand into /data/ironkvm/addons/picoclaw.
-# The script starts that copy when it is there, /usr/bin/picoclaw when it is
+# The script starts that copy when it is there, the one in the add-on's mounted
+# squashfs image (sqfs/picoclaw) over a plain one, /usr/bin/picoclaw when it is
 # not (an install off a distribution image), PICOCLAW_BIN_PATH over both, and
 # nothing, successfully, when PicoClaw is not installed. The binaries here are
 # stubs that write what they were run as.
@@ -31,8 +32,7 @@ run() {
     mkdir -p "$WORK/home"
     echo '{}' > "$WORK/home/config.json"
     env PICOCLAW_HOME="$WORK/home" PICOCLAW_LOG_FILE="$WORK/log" KVMDIR="$WORK/kvm" \
-        ADDONS_CGROUP="$WORK/no-group" PICOCLAW_ADDON_BIN="$WORK/addons/picoclaw/picoclaw" \
-        "$@" sh "$S" "$action" > "$WORK/out" 2>&1
+        ADDONS_CGROUP="$WORK/no-group" PICOCLAW_ADDON_BIN="$WORK/addons/picoclaw/picoclaw"         PICOCLAW_ADDON_IMAGE_BIN="$WORK/addons/picoclaw/sqfs/picoclaw" "$@" sh "$S" "$action" > "$WORK/out" 2>&1
 }
 
 # ran: what the stub recorded, waiting up to five seconds for the gateway,
@@ -58,6 +58,10 @@ stub "$WORK/addons/picoclaw/picoclaw"
 run start; st=$?
 check "the add-on's copy: start succeeds" "$st" "0"
 check "the add-on's copy is the one started" "$(ran)" "$WORK/addons/picoclaw/picoclaw gateway"
+
+stub "$WORK/addons/picoclaw/sqfs/picoclaw"
+run start
+check "the copy in the add-on's image wins over a plain one" "$(ran)" "$WORK/addons/picoclaw/sqfs/picoclaw gateway"
 
 stub "$WORK/other/picoclaw"
 run start PICOCLAW_BIN_PATH="$WORK/other/picoclaw"

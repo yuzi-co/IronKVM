@@ -19,6 +19,7 @@ import (
 
 	"NanoKVM-Server/config"
 	"NanoKVM-Server/service/extensions/addon"
+	"NanoKVM-Server/service/upstream"
 )
 
 // scratchImage points the add-on package and this package's paths at a
@@ -233,14 +234,15 @@ func fakeReleases(t *testing.T) *atomic.Int32 {
 		xyz[i].URL = srv.URL + "/" + xyz[i].Name
 	}
 
-	savedArchive, savedMembers, savedXYZ, savedClient := ipxeArchive, ipxeMembers, netbootXYZFiles, httpClient
+	savedArchive, savedMembers, savedXYZ, savedClient := ipxeArchive, ipxeMembers, netbootXYZFiles, downloads
 	t.Cleanup(func() {
-		ipxeArchive, ipxeMembers, netbootXYZFiles, httpClient = savedArchive, savedMembers, savedXYZ, savedClient
+		ipxeArchive, ipxeMembers, netbootXYZFiles, downloads = savedArchive, savedMembers, savedXYZ, savedClient
 	})
 	ipxeArchive = pinnedFile{Name: "ipxeboot.tar.gz", URL: srv.URL + "/ipxeboot.tar.gz", SHA256: sum(archive)}
 	ipxeMembers = members
 	netbootXYZFiles = xyz
-	httpClient = srv.Client()
+	downloads = upstream.NewClient(srv.URL, srv.Client())
+	downloads.AllowHTTP = true
 
 	return &requests
 }

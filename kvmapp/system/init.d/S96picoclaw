@@ -4,11 +4,15 @@
 # it from the web UI: on a distribution image into the add-on's directory on
 # /data, with a link at /usr/bin/picoclaw that S04addons puts back at every
 # boot, and anywhere else to /usr/bin/picoclaw itself. The add-on's copy is
-# taken directly, so the link is not needed to start it. Without an install,
-# start does nothing.
+# taken directly, so the link is not needed to start it: in its squashfs image,
+# mounted at sqfs/ in the add-on's directory, or, on a slot that cannot mount
+# one, as a plain file there. Without an install, start does nothing.
+ADDON_IMAGE_BIN=${PICOCLAW_ADDON_IMAGE_BIN:-/data/ironkvm/addons/picoclaw/sqfs/picoclaw}
 ADDON_BIN=${PICOCLAW_ADDON_BIN:-/data/ironkvm/addons/picoclaw/picoclaw}
 if [ -n "${PICOCLAW_BIN_PATH:-}" ]; then
   BIN_PATH=$PICOCLAW_BIN_PATH
+elif [ -x "$ADDON_IMAGE_BIN" ]; then
+  BIN_PATH=$ADDON_IMAGE_BIN
 elif [ -x "$ADDON_BIN" ]; then
   BIN_PATH=$ADDON_BIN
 else

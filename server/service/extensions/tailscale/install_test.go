@@ -14,6 +14,7 @@ import (
 	"strings"
 	"testing"
 
+	installer "NanoKVM-Server/service/addons/install"
 	"NanoKVM-Server/service/extensions/addon"
 	"NanoKVM-Server/service/upstream"
 )
@@ -61,9 +62,16 @@ func servePackage(t *testing.T, body []byte, sum string, limit int64) {
 	}))
 	t.Cleanup(srv.Close)
 
-	savedPin, savedDownloads := releasePackage, downloads
-	t.Cleanup(func() { releasePackage, downloads = savedPin, savedDownloads })
-	releasePackage = pinnedFile{URL: srv.URL + "/tailscale_" + Version + "_riscv64.tgz", SHA256: sum, Max: limit}
+	savedPin, savedDownloads := release, downloads
+	t.Cleanup(func() { release, downloads = savedPin, savedDownloads })
+	release.Artifact.URL = srv.URL + "/tailscale_" + Version + "_riscv64.tgz"
+	release.Artifact.SHA256, release.Artifact.Max, release.Artifact.Size = sum, limit, 0
+	// The fake binaries are not the real ones; their sums are covered by the
+	// package's, which is what these tests vary.
+	release.Artifact.Members = append([]installer.Member(nil), release.Artifact.Members...)
+	for i := range release.Artifact.Members {
+		release.Artifact.Members[i].SHA256 = ""
+	}
 	downloads = upstream.NewClient(srv.URL, srv.Client())
 }
 
@@ -148,10 +156,10 @@ func assertNothingLeft(t *testing.T, fsroot string) {
 // The pin is what the license manifest and the update offer name.
 func TestThePinIsOneRelease(t *testing.T) {
 	want := "https://pkgs.tailscale.com/stable/tailscale_" + Version + "_riscv64.tgz"
-	if releasePackage.URL != want {
-		t.Fatalf("the pinned URL is %s, want %s", releasePackage.URL, want)
+	if release.Artifact.URL != want {
+		t.Fatalf("the pinned URL is %s, want %s", release.Artifact.URL, want)
 	}
-	if len(releasePackage.SHA256) != 64 {
-		t.Fatalf("not a SHA-256: %q", releasePackage.SHA256)
+	if len(release.Artifact.SHA256) != 64 {
+		t.Fatalf("not a SHA-256: %q", release.Artifact.SHA256)
 	}
 }

@@ -1,26 +1,21 @@
 package netboot
 
 import (
-	"archive/tar"
-	"compress/gzip"
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"errors"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"sort"
 	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
 
+	installer "NanoKVM-Server/service/addons/install"
 	"NanoKVM-Server/service/extensions/addon"
 	"NanoKVM-Server/service/extensions/vpn"
+	"NanoKVM-Server/service/upstream"
 	"NanoKVM-Server/utils"
 	"NanoKVM-Server/utils/atomicfile"
 )
@@ -37,16 +32,9 @@ const Initd = "S85netboot"
 // root and a stub package manager.
 var (
 	ApkPath = "apk"
-	// httpClient fetches the pinned files. No overall timeout, as the
-	// download service has none: these bound a server that never answers.
-	httpClient = &http.Client{
-		Transport: &http.Transport{
-			Proxy:                 utils.ProxyFromConfig,
-			TLSHandshakeTimeout:   30 * time.Second,
-			ResponseHeaderTimeout: 60 * time.Second,
-			IdleConnTimeout:       90 * time.Second,
-		},
-	}
+	// downloads fetches the pinned files, bounded and checked against their
+	// pins (service/addons/install shares it).
+	downloads = upstream.Default
 )
 
 const (
@@ -153,28 +141,16 @@ func installDnsmasq(ws string) error {
 	if err != nil {
 		return err
 	}
-	if _, err := apk("verify", pkg); err != nil {
-		return err
-	}
 
-	root := filepath.Join(ws, "root")
-	if err := os.MkdirAll(root, 0o755); err != nil {
+	// The shared installer has apk check the signature again while it
+	// unpacks the package, and takes only usr/sbin/dnsmasq out of it.
+	stage := filepath.Join(ws, "stage")
+	if _, err := installer.ExtractApk(pkg, []installer.Member{
+		{Path: "usr/sbin/dnsmasq", Name: "dnsmasq", Mode: 0o755},
+	}, stage, ApkPath); err != nil {
 		return err
 	}
-	// --no-chown because /data is exFAT, which has no owners.
-	if _, err := apk("extract", "--no-chown", "--destination", root, pkg); err != nil {
-		return err
-	}
-
-	src := filepath.Join(root, "usr", "sbin", "dnsmasq")
-	fi, err := os.Stat(src)
-	if err != nil || !fi.Mode().IsRegular() {
-		return errors.New("the dnsmasq package has no usr/sbin/dnsmasq")
-	}
-	if err := os.Chmod(src, 0o755); err != nil {
-		return err
-	}
-	if err := utils.MoveFile(src, dnsmasqPath()); err != nil {
+	if err := utils.MoveFile(filepath.Join(stage, "dnsmasq"), dnsmasqPath()); err != nil {
 		return err
 	}
 
@@ -253,132 +229,20 @@ func exists(name string) bool {
 func fetchPinned(url, sum string, limit int64, dst string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), fetchTimeout)
 	defer cancel()
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		return err
-	}
-	resp, err := httpClient.Do(req)
-	if err != nil {
-		return fmt.Errorf("download %s: %w", url, err)
-	}
-	defer func() { _ = resp.Body.Close() }()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("download %s: status %d", url, resp.StatusCode)
-	}
-
-	tmp := dst + ".part"
-	out, err := os.Create(tmp)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = os.Remove(tmp) }()
-
-	hasher := sha256.New()
-	n, copyErr := io.Copy(io.MultiWriter(out, hasher), io.LimitReader(resp.Body, limit+1))
-	closeErr := out.Close()
-	if copyErr != nil {
-		return fmt.Errorf("download %s: %w", url, copyErr)
-	}
-	if closeErr != nil {
-		return closeErr
-	}
-	if n > limit {
-		return fmt.Errorf("download %s: larger than %d bytes", url, limit)
-	}
-	if got := hex.EncodeToString(hasher.Sum(nil)); got != sum {
-		return fmt.Errorf("download %s: sha256 %s, want %s", url, got, sum)
-	}
-
-	return os.Rename(tmp, dst)
+	return downloads.Download(ctx, url, sum, limit, dst, nil)
 }
 
 // extractMembers takes the named members out of a .tar.gz into dir, each
-// checked against its own sum. Nothing else in the archive is written, so a
-// member's path never becomes a path on the board.
+// checked against its own sum, through the shared installer. Nothing else in
+// the archive is written, so a member's path never becomes a path on the
+// board.
 func extractMembers(archive string, members []archiveMember, dir string) error {
-	f, err := os.Open(archive)
-	if err != nil {
-		return err
+	ms := make([]installer.Member, len(members))
+	for i, m := range members {
+		ms[i] = installer.Member{Path: m.Member, Name: m.Name, SHA256: m.SHA256, Max: bootFileMax}
 	}
-	defer func() { _ = f.Close() }()
-
-	gz, err := gzip.NewReader(f)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = gz.Close() }()
-
-	want := make(map[string]archiveMember, len(members))
-	for _, m := range members {
-		want[m.Member] = m
-	}
-
-	tr := tar.NewReader(gz)
-	for len(want) > 0 {
-		hdr, err := tr.Next()
-		if errors.Is(err, io.EOF) {
-			break
-		}
-		if err != nil {
-			return err
-		}
-		m, ok := want[hdr.Name]
-		if !ok || hdr.Typeflag != tar.TypeReg {
-			continue
-		}
-		if err := writeMember(tr, hdr.Size, m, dir); err != nil {
-			return err
-		}
-		delete(want, hdr.Name)
-	}
-
-	if len(want) > 0 {
-		missing := make([]string, 0, len(want))
-		for name := range want {
-			missing = append(missing, name)
-		}
-		sort.Strings(missing)
-		return fmt.Errorf("the archive has no %s", strings.Join(missing, ", "))
-	}
-	return nil
-}
-
-func writeMember(r io.Reader, size int64, m archiveMember, dir string) error {
-	if size > bootFileMax {
-		return fmt.Errorf("%s is %d bytes, larger than a boot loader", m.Member, size)
-	}
-
-	// The names are the table's, not the archive's, but dir is on /data and
-	// a symbolic link there must not carry the write elsewhere.
-	root, err := os.OpenRoot(dir)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = root.Close() }()
-
-	tmp := m.Name + ".part"
-	out, err := root.Create(tmp)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = root.Remove(tmp) }()
-
-	hasher := sha256.New()
-	_, copyErr := io.Copy(io.MultiWriter(out, hasher), io.LimitReader(r, size))
-	closeErr := out.Close()
-	if copyErr != nil {
-		return copyErr
-	}
-	if closeErr != nil {
-		return closeErr
-	}
-	if got := hex.EncodeToString(hasher.Sum(nil)); got != m.SHA256 {
-		return fmt.Errorf("%s: sha256 %s, want %s", m.Member, got, m.SHA256)
-	}
-
-	return root.Rename(tmp, m.Name)
+	_, err := installer.ExtractTarGz(archive, ms, dir)
+	return err
 }
 
 // writeFile replaces a file whole.

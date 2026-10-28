@@ -19,6 +19,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	installer "NanoKVM-Server/service/addons/install"
 	"NanoKVM-Server/service/controlmode"
 	"NanoKVM-Server/service/extensions/addon"
 	"NanoKVM-Server/service/upstream"
@@ -83,15 +84,15 @@ func serveRelease(t *testing.T, body []byte, sum, binarySum string) *atomic.Int3
 
 func pin(t *testing.T, url, sum string, size int64, binarySum string) {
 	t.Helper()
-	savedRelease, savedDownloads, savedFree, savedOverride := release, downloads, freeBytes, picoclawReleaseURLOverride
+	savedRelease, savedDownloads, savedFree, savedOverride := release, downloads, installer.FreeBytes, picoclawReleaseURLOverride
 	t.Cleanup(func() {
-		release, downloads, freeBytes, picoclawReleaseURLOverride = savedRelease, savedDownloads, savedFree, savedOverride
+		release, downloads, installer.FreeBytes, picoclawReleaseURLOverride = savedRelease, savedDownloads, savedFree, savedOverride
 	})
 	release = pinnedRelease{
 		URL: url, SHA256: sum, Size: size, Max: 1 << 20,
 		Dir: testReleaseDir, BinarySHA256: binarySum, BinarySize: 1 << 10,
 	}
-	freeBytes = func(string) (uint64, error) { return 1 << 40, nil }
+	installer.FreeBytes = func(string) (uint64, error) { return 1 << 40, nil }
 	picoclawReleaseURLOverride = filepath.Join(t.TempDir(), "no-override")
 }
 
@@ -244,7 +245,7 @@ func TestTooLittleSpaceIsRefusedBeforeTheDownload(t *testing.T) {
 	archive := fakeArchive(t, "fork build")
 	hits := serveRelease(t, archive, sha256Hex(string(archive)), sha256Hex("fork build"))
 	var asked string
-	freeBytes = func(path string) (uint64, error) { asked = path; return 1 << 20, nil }
+	installer.FreeBytes = func(path string) (uint64, error) { asked = path; return 1 << 20, nil }
 
 	err := installReleasePicoclaw(nil)
 	if !errors.Is(err, errNoSpace) {

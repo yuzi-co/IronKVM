@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	installer "NanoKVM-Server/service/addons/install"
 )
 
 // newRelease builds the Linux archive of a Ventoy release, with its files
@@ -48,9 +50,9 @@ func writeTo(data []byte) func(string) error {
 func setupUpdate(t *testing.T) (*fakeBoard, *Service) {
 	t.Helper()
 	b, s, _ := newFakeBoard(t)
-	oldXz := XzcatPath
-	t.Cleanup(func() { XzcatPath = oldXz })
-	XzcatPath = "cat"
+	oldXz := installer.XzcatPath
+	t.Cleanup(func() { installer.XzcatPath = oldXz })
+	installer.XzcatPath = "cat"
 	writeRelease(t)
 	return b, s
 }

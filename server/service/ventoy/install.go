@@ -1,42 +1,25 @@
 package ventoy
 
 import (
-	"archive/tar"
-	"compress/gzip"
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"errors"
-	"fmt"
-	"io"
-	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"time"
 
-	"NanoKVM-Server/utils"
+	installer "NanoKVM-Server/service/addons/install"
+	"NanoKVM-Server/service/upstream"
 )
 
 // Variables rather than constants so the tests can point them at a scratch
-// directory and a stand-in for xzcat.
+// directory and a local server. xzcat is installer.XzcatPath.
 var (
 	// Dir holds the release's files, the head and the state. It is on
 	// /data, and its files have no image suffix, so the image list skips
 	// them.
 	Dir = "/data/ironkvm/ventoy"
-	// XzcatPath decompresses a member. The image has xzcat.
-	XzcatPath = "xzcat"
-	// httpClient fetches the archive. No overall timeout, as the download
-	// service has none: these bound a server that never answers.
-	httpClient = &http.Client{
-		Transport: &http.Transport{
-			Proxy:                 utils.ProxyFromConfig,
-			TLSHandshakeTimeout:   30 * time.Second,
-			ResponseHeaderTimeout: 60 * time.Second,
-			IdleConnTimeout:       90 * time.Second,
-		},
-	}
+	// downloads fetches the archive, bounded and checked against the pin.
+	downloads = upstream.Default
 )
 
 const fetchTimeout = 10 * time.Minute
@@ -93,41 +76,7 @@ func uninstall() error {
 func fetchPinned(f pinnedFile, dst string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), fetchTimeout)
 	defer cancel()
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, f.URL, nil)
-	if err != nil {
-		return err
-	}
-	resp, err := httpClient.Do(req)
-	if err != nil {
-		return fmt.Errorf("download %s: %w", f.URL, err)
-	}
-	defer func() { _ = resp.Body.Close() }()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("download %s: status %d", f.URL, resp.StatusCode)
-	}
-
-	out, err := os.Create(dst)
-	if err != nil {
-		return err
-	}
-	hasher := sha256.New()
-	n, copyErr := io.Copy(io.MultiWriter(out, hasher), io.LimitReader(resp.Body, f.Max+1))
-	closeErr := out.Close()
-	if copyErr != nil {
-		return fmt.Errorf("download %s: %w", f.URL, copyErr)
-	}
-	if closeErr != nil {
-		return closeErr
-	}
-	if n > f.Max {
-		return fmt.Errorf("download %s: larger than %d bytes", f.URL, f.Max)
-	}
-	if got := hex.EncodeToString(hasher.Sum(nil)); got != f.SHA256 {
-		return fmt.Errorf("download %s: sha256 %s, want %s", f.URL, got, f.SHA256)
-	}
-	return nil
+	return downloads.Download(ctx, f.URL, f.SHA256, f.Max, dst, nil)
 }
 
 // extractMembers takes the named members out of the archive into ws,
@@ -150,151 +99,13 @@ func extractMembers(archive string, members []releaseMember, ws, dir string) err
 }
 
 // extractChecked takes the named members out of the archive into ws under
-// their saved names, decompressed and checked, and returns their sums. A
-// member with no pinned sum, from a release newer than the pin, is checked
-// by the archive's sum alone.
+// their saved names, decompressed and checked by the shared installer, and
+// returns their sums. A member with no pinned sum, from a release newer than
+// the pin, is checked by the archive's sum alone.
 func extractChecked(archive string, members []releaseMember, ws string) (map[string]string, error) {
-	f, err := os.Open(archive)
-	if err != nil {
-		return nil, err
+	ms := make([]installer.Member, len(members))
+	for i, m := range members {
+		ms[i] = installer.Member{Path: m.Member, Name: m.Name, SHA256: m.SHA256, XZ: m.XZ, Max: memberMax}
 	}
-	defer func() { _ = f.Close() }()
-
-	gz, err := gzip.NewReader(f)
-	if err != nil {
-		return nil, err
-	}
-
-	// The names are the table's, not the archive's, but ws is on /data and a
-	// symbolic link there must not carry a write elsewhere.
-	root, err := os.OpenRoot(ws)
-	if err != nil {
-		return nil, err
-	}
-	defer func() { _ = root.Close() }()
-
-	want := map[string]releaseMember{}
-	for _, m := range members {
-		want[m.Member] = m
-	}
-
-	raw := map[string]string{}
-	tr := tar.NewReader(gz)
-	for len(raw) < len(members) {
-		hdr, err := tr.Next()
-		if errors.Is(err, io.EOF) {
-			break
-		}
-		if err != nil {
-			return nil, err
-		}
-		m, ok := want[hdr.Name]
-		if !ok || hdr.Typeflag != tar.TypeReg {
-			continue
-		}
-		if hdr.Size > memberMax {
-			return nil, fmt.Errorf("%s: larger than %d bytes", m.Member, memberMax)
-		}
-		out, err := root.Create(m.Name + ".raw")
-		if err != nil {
-			return nil, err
-		}
-		_, copyErr := io.Copy(out, io.LimitReader(tr, hdr.Size))
-		closeErr := out.Close()
-		if copyErr != nil {
-			return nil, copyErr
-		}
-		if closeErr != nil {
-			return nil, closeErr
-		}
-		raw[m.Member] = m.Name + ".raw"
-	}
-
-	sums := map[string]string{}
-	for _, m := range members {
-		src, ok := raw[m.Member]
-		if !ok {
-			return nil, fmt.Errorf("the release has no %s", m.Member)
-		}
-		sum, err := writeChecked(root, src, m.Name, m)
-		if err != nil {
-			return nil, err
-		}
-		_ = root.Remove(src)
-		sums[m.Name] = sum
-	}
-	return sums, nil
+	return installer.ExtractTarGz(archive, ms, ws)
 }
-
-// writeChecked writes the member at src to dst, both names in root,
-// decompressed when it is xz, and keeps it only when its sum is the pinned
-// one, if it has one. It returns the sum.
-func writeChecked(root *os.Root, src, dst string, m releaseMember) (string, error) {
-	out, err := root.Create(dst)
-	if err != nil {
-		return "", err
-	}
-	in, err := root.Open(src)
-	if err != nil {
-		_ = out.Close()
-		return "", err
-	}
-	defer func() { _ = in.Close() }()
-	hasher := sha256.New()
-	w := io.MultiWriter(out, hasher)
-
-	var copyErr error
-	if m.XZ {
-		ctx, cancel := context.WithTimeout(context.Background(), fetchTimeout)
-		defer cancel()
-		cmd := exec.CommandContext(ctx, XzcatPath)
-		cmd.Stdin = in
-		cmd.Stdout = &limitWriter{w: w, left: memberMax}
-		var stderr limitBuffer
-		cmd.Stderr = &stderr
-		if err := cmd.Run(); err != nil {
-			copyErr = fmt.Errorf("decompress %s: %w: %s", m.Member, err, stderr.String())
-		}
-	} else {
-		_, copyErr = io.Copy(w, in)
-	}
-	closeErr := out.Close()
-	if copyErr != nil {
-		return "", copyErr
-	}
-	if closeErr != nil {
-		return "", closeErr
-	}
-	got := hex.EncodeToString(hasher.Sum(nil))
-	if m.SHA256 != "" && got != m.SHA256 {
-		return "", fmt.Errorf("%s: sha256 %s, want %s", m.Member, got, m.SHA256)
-	}
-	return got, nil
-}
-
-// limitWriter fails a write past its limit, so a member that decompresses
-// to more than any pinned one can hold stops early.
-type limitWriter struct {
-	w    io.Writer
-	left int64
-}
-
-func (l *limitWriter) Write(p []byte) (int, error) {
-	if int64(len(p)) > l.left {
-		return 0, fmt.Errorf("larger than %d bytes", memberMax)
-	}
-	l.left -= int64(len(p))
-	return l.w.Write(p)
-}
-
-// limitBuffer keeps the first 4 KB of a command's error output.
-type limitBuffer struct{ buf []byte }
-
-func (b *limitBuffer) Write(p []byte) (int, error) {
-	if room := 4096 - len(b.buf); room > 0 {
-		b.buf = append(b.buf, p[:min(room, len(p))]...)
-	}
-	return len(p), nil
-}
-
-func (b *limitBuffer) String() string { return string(b.buf) }
