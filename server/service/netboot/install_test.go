@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"NanoKVM-Server/service/extensions/addon"
+	"NanoKVM-Server/service/upstream"
 )
 
 func TestInstallPutsDnsmasqAndTheBootFilesOnData(t *testing.T) {
@@ -117,9 +118,10 @@ func TestADownloadThatDoesNotMatchItsPinIsRefused(t *testing.T) {
 		_, _ = w.Write([]byte("tampered"))
 	}))
 	defer srv.Close()
-	saved := httpClient
-	defer func() { httpClient = saved }()
-	httpClient = srv.Client()
+	saved := downloads
+	defer func() { downloads = saved }()
+	downloads = upstream.NewClient(srv.URL, srv.Client())
+	downloads.AllowHTTP = true
 
 	dst := filepath.Join(t.TempDir(), "file")
 	err := fetchPinned(srv.URL, sum([]byte("original")), 1<<20, dst)

@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"NanoKVM-Server/proto"
+	installer "NanoKVM-Server/service/addons/install"
 	"NanoKVM-Server/service/extensions/addon"
 	"NanoKVM-Server/service/extensions/vpn"
 	"NanoKVM-Server/service/upstream"
@@ -28,13 +29,20 @@ var installPackage = install
 
 // addonSpec is what Tailscale needs back from the root filesystem after a new
 // image: its two binaries in their usual places and its boot script while it is
-// enabled. Its login is already on /data, where S98tailscaled keeps it.
+// enabled. Its login is already on /data, where S98tailscaled keeps it. The
+// links name the binaries in the add-on's image while it is one.
 func addonSpec() addon.Spec {
+	return spec(func(f string) string { return installer.LinkFile(addon.Tailscale.Name, f) })
+}
+
+// spec is addonSpec with the links' files named by file. A plain install
+// records plain names before the image it replaces, if any, goes.
+func spec(file func(string) string) addon.Spec {
 	return addon.Spec{
 		Name: addon.Tailscale.Name,
 		Links: []addon.Link{
-			{Path: "/usr/bin/tailscale", File: "tailscale"},
-			{Path: "/usr/sbin/tailscaled", File: "tailscaled"},
+			{Path: "/usr/bin/tailscale", File: file("tailscale")},
+			{Path: "/usr/sbin/tailscaled", File: file("tailscaled")},
 		},
 		Initd: addon.Tailscale.Initd,
 	}

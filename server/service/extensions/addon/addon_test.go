@@ -140,6 +140,9 @@ func TestRecordRefusesWhatS04addonsRefuses(t *testing.T) {
 		{Name: "vpn", Links: []Link{{"/etc/shadow", "tool"}}},
 		{Name: "vpn", Links: []Link{{"/usr/bin/../../etc/passwd", "tool"}}},
 		{Name: "vpn", Links: []Link{{"/usr/bin/tool", "../x"}}},
+		{Name: "vpn", Links: []Link{{"/usr/bin/tool", "sqfs/../x"}}},
+		{Name: "vpn", Links: []Link{{"/usr/bin/tool", "sqfs/a/b"}}},
+		{Name: "vpn", Links: []Link{{"/usr/bin/tool", "other/tool"}}},
 		{Name: "vpn", Binds: []Bind{{"/etc/kvm", "home"}}},
 		{Name: "vpn", Binds: []Bind{{"/root/.agent", "a/b"}}},
 		{Name: "vpn", Initd: "../../bin/sh"},
@@ -239,5 +242,40 @@ func TestRemoveLeavesNothing(t *testing.T) {
 	}
 	if !strings.Contains(read(t, calls), "umount "+fsroot+"/root/.vpn") {
 		t.Fatal("the bind was not undone")
+	}
+}
+
+// A link may name a file in the add-on's mounted image, sqfs/<file>.
+func TestRecordLinksIntoTheImage(t *testing.T) {
+	fsroot, _ := scratch(t)
+	s := Spec{Name: "vpn", Links: []Link{{"/usr/bin/tool", ImageDir + "/tool"}}}
+	if err := Record(s); err != nil {
+		t.Fatal(err)
+	}
+	if target, _ := os.Readlink(fsroot + "/usr/bin/tool"); target != filepath.Join(Dir("vpn"), "sqfs", "tool") {
+		t.Fatalf("the link points at %s", target)
+	}
+	if got := read(t, filepath.Join(Dir("vpn"), "links")); got != "/usr/bin/tool sqfs/tool\n" {
+		t.Fatalf("links is %q", got)
+	}
+}
+
+// Remove detaches the image, lazily, before it removes the directory.
+func TestRemoveDetachesTheImage(t *testing.T) {
+	_, calls := scratch(t)
+	if err := Record(vpn); err != nil {
+		t.Fatal(err)
+	}
+	mnt := filepath.Join(Dir("vpn"), ImageDir)
+	_ = os.MkdirAll(mnt, 0o755)
+	f, _ := os.OpenFile(Mounts, os.O_APPEND|os.O_WRONLY, 0)
+	_, _ = f.WriteString("/dev/loop0 " + mnt + " squashfs ro 0 0\n")
+	_ = f.Close()
+
+	if err := Remove(vpn); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(read(t, calls), "umount -l "+mnt) {
+		t.Fatalf("the image was not detached:\n%s", read(t, calls))
 	}
 }

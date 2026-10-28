@@ -161,10 +161,10 @@ func assertNothingLeft(t *testing.T, fsroot, calls string) {
 
 // The pin is what the license manifest and the update offer name.
 func TestThePinIsOneRelease(t *testing.T) {
-	if !strings.Contains(releasePackage.URL, "/netbird-"+Version+"-r") || !strings.HasSuffix(releasePackage.URL, "/"+packageFile) {
-		t.Fatalf("%s is not netbird %s as %s", releasePackage.URL, Version, packageFile)
+	if !strings.Contains(release.Artifact.URL, "/netbird-"+Version+"-r") || !strings.HasSuffix(release.Artifact.URL, "/"+packageFile) {
+		t.Fatalf("%s is not netbird %s as %s", release.Artifact.URL, Version, packageFile)
 	}
-	if !strings.HasPrefix(releasePackage.URL, "https://") || len(releasePackage.SHA256) != 64 {
-		t.Fatalf("not a pin: %+v", releasePackage)
+	if !strings.HasPrefix(release.Artifact.URL, "https://") || len(release.Artifact.SHA256) != 64 {
+		t.Fatalf("not a pin: %+v", release.Artifact)
 	}
 }

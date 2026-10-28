@@ -8,7 +8,8 @@
 // Root/<name>/ instead, and three small files beside its own say what the root
 // filesystem needs for it:
 //
-//	links    "<path> <file>"          a symlink at <path> to <file> in the directory
+//	links    "<path> <file>"          a symlink at <path> to <file> in the directory,
+//	                                  or to sqfs/<file>, a file in its mounted image
 //	binds    "<directory> <subdir>"   a bind of <subdir> over <directory>
 //	initd    "<script>"               the boot script, while the file enabled exists
 //
@@ -17,6 +18,12 @@
 // at once, so an add-on works on the running slot without a reboot. The format
 // and the rules on paths are the ones S04addons checks: a link directly under
 // /usr/bin or /usr/sbin, a bind directly under /root, and plain names.
+//
+// An add-on installed by service/addons/install keeps its program files in a
+// read-only squashfs image beside these files, mounted at ImageDir inside the
+// directory, so a link can name sqfs/<file> as well as <file>. Its writable
+// state stays in plain directories beside the mount. The package doc of
+// service/addons/install describes that layout.
 //
 // Off a distribution image, or with /data not mounted, OnData is false and the
 // callers install the way they always have.
@@ -45,6 +52,10 @@ var (
 	UmountCmd = "umount"
 )
 
+// ImageDir is where an add-on's squashfs image is mounted, inside its
+// directory. A link may name a file in it as ImageDir/<file>.
+const ImageDir = "sqfs"
+
 // Link is a symlink at Path, in the root filesystem, to File in the add-on's
 // directory.
 type Link struct{ Path, File string }
@@ -67,7 +78,7 @@ func OnData() bool {
 	if _, err := os.Stat(DistroMarker); err != nil {
 		return false
 	}
-	return isMounted(DataDir)
+	return IsMounted(DataDir)
 }
 
 // Dir is the add-on's directory on /data.
@@ -139,7 +150,7 @@ func SetEnabled(name string, on bool) error {
 }
 
 // Remove takes the add-on out: its links, if they still point into its
-// directory, its binds, and the directory itself.
+// directory, its binds, its mounted image, and the directory itself.
 func Remove(s Spec) error {
 	dir := Dir(s.Name)
 	for _, l := range s.Links {
@@ -149,13 +160,32 @@ func Remove(s Spec) error {
 		}
 	}
 	for _, b := range s.Binds {
-		if isMounted(FsRoot + b.Dir) {
+		if IsMounted(FsRoot + b.Dir) {
 			if out, err := exec.Command(UmountCmd, FsRoot+b.Dir).CombinedOutput(); err != nil {
 				return fmt.Errorf("umount %s: %v: %s", b.Dir, err, strings.TrimSpace(string(out)))
 			}
 		}
 	}
+	if err := UnmountImage(s.Name); err != nil {
+		return err
+	}
 	return os.RemoveAll(dir)
+}
+
+// UnmountImage detaches the add-on's squashfs image, if one is mounted. The
+// detach is lazy: a daemon of the add-on that still runs keeps reading the
+// image it started from, and the kernel lets go of it when the daemon exits.
+// Without that an update, which mounts the new image on the same directory,
+// would have to wait for every process of the add-on to stop first.
+func UnmountImage(name string) error {
+	mnt := filepath.Join(Dir(name), ImageDir)
+	if !IsMounted(mnt) {
+		return nil
+	}
+	if out, err := exec.Command(UmountCmd, "-l", mnt).CombinedOutput(); err != nil {
+		return fmt.Errorf("umount %s: %v: %s", mnt, err, strings.TrimSpace(string(out)))
+	}
+	return nil
 }
 
 func (s Spec) validate() error {
@@ -166,7 +196,7 @@ func (s Spec) validate() error {
 		if !directlyUnder(l.Path, "/usr/bin/") && !directlyUnder(l.Path, "/usr/sbin/") {
 			return fmt.Errorf("link %s is not directly under /usr/bin or /usr/sbin", l.Path)
 		}
-		if !plain(l.File) {
+		if !plain(l.File) && !plain(strings.TrimPrefix(l.File, ImageDir+"/")) {
 			return fmt.Errorf("link target %q is not a plain name", l.File)
 		}
 	}
@@ -233,7 +263,7 @@ func makeBind(src, dst string) error {
 	if err := os.MkdirAll(dst, 0o755); err != nil {
 		return err
 	}
-	if isMounted(dst) {
+	if IsMounted(dst) {
 		return nil
 	}
 	// What the owner already has there is copied in before the bind covers
@@ -255,7 +285,8 @@ func hasEntries(dir string) bool {
 	return err == nil && len(entries) > 0
 }
 
-func isMounted(path string) bool {
+// IsMounted reports whether path is a mount point, as Mounts lists them.
+func IsMounted(path string) bool {
 	f, err := os.Open(Mounts)
 	if err != nil {
 		return false

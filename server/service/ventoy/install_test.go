@@ -12,6 +12,9 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	installer "NanoKVM-Server/service/addons/install"
+	"NanoKVM-Server/service/upstream"
 )
 
 func sum(data []byte) string {
@@ -47,12 +50,14 @@ func serveRelease(t *testing.T, members map[string][]byte, extra map[string][]by
 	}))
 	t.Cleanup(srv.Close)
 
-	oldArchive, oldMembers, oldDir, oldXz := releaseArchive, releaseMembers, Dir, XzcatPath
+	oldArchive, oldMembers, oldDir, oldXz, oldDownloads := releaseArchive, releaseMembers, Dir, installer.XzcatPath, downloads
 	t.Cleanup(func() {
-		releaseArchive, releaseMembers, Dir, XzcatPath = oldArchive, oldMembers, oldDir, oldXz
+		releaseArchive, releaseMembers, Dir, installer.XzcatPath, downloads = oldArchive, oldMembers, oldDir, oldXz, oldDownloads
 	})
 	Dir = t.TempDir()
-	XzcatPath = "cat"
+	installer.XzcatPath = "cat"
+	downloads = upstream.NewClient(srv.URL, srv.Client())
+	downloads.AllowHTTP = true
 	releaseArchive = pinnedFile{URL: srv.URL, SHA256: sum(archive), Max: 1 << 20}
 	releaseMembers = nil
 	for _, m := range oldMembers {
@@ -214,7 +219,7 @@ func TestExtractWritesNothingOutsideTheWorkspace(t *testing.T) {
 		})
 	}
 
-	for _, link := range []string{member.Name + ".raw", member.Name} {
+	for _, link := range []string{member.Name + ".part", member.Name} {
 		t.Run("symlink-on-disk-"+link, func(t *testing.T) {
 			archive := writeArchive(t, []*tar.Header{{Name: member.Member, Typeflag: tar.TypeReg, Mode: 0o644}}, body)
 			outside := filepath.Join(t.TempDir(), "victim")
