@@ -20,6 +20,13 @@ WD=${1:-$HERE/S01hwdt}
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 
+# nowayout is read from sysfs. Point the script at an empty tree, so a board
+# whose driver has it set answers the same as a workstation; the nowayout cases
+# below fill it in.
+HWDOG_SYSFS=$WORK/sys
+export HWDOG_SYSFS
+mkdir -p "$HWDOG_SYSFS"
+
 fails=0
 note() { printf '  %-62s %s\n' "$1" "$2"; [ "$2" = FAIL ] && fails=$((fails + 1)); return 0; }
 
@@ -553,6 +560,60 @@ case "$out" in
     *"STILL ARMED"*rc=1*) note "a daemon that will not leave is reported, not assumed gone" OK ;;
     *)                    note "a daemon that will not leave reports [$out]" FAIL ;;
 esac
+
+# On a driver with nowayout the magic V is ignored, so a disarm would leave the
+# timer running and the board would reset after being told it was safe
+# (ironkvm-dist #176). disarm refuses and leaves the daemon alone; restart
+# still hands over, as start follows at once.
+nowayout_case() {   # nowayout_case <disarm|"disarm restart"> <class|module> <value>
+    rm -rf "$HWDOG_SYSFS" "$WORK/signal"
+    if [ "$2" = class ]; then
+        mkdir -p "$HWDOG_SYSFS/class/watchdog/watchdog0"
+        echo "$3" > "$HWDOG_SYSFS/class/watchdog/watchdog0/nowayout"
+    else
+        mkdir -p "$HWDOG_SYSFS/module/soph_wdt/parameters"
+        echo "$3" > "$HWDOG_SYSFS/module/soph_wdt/parameters/nowayout"
+    fi
+    (
+        LOG="$WORK/hwdt.log"
+        DEVICE=/dev/watchdog
+        MODULE=soph_wdt
+        export LOG
+        n=0
+        running() { n=$((n + 1)); [ "$n" -le 2 ]; }
+        killall() { echo "$@" > "$WORK/signal"; }
+        sleep() { :; }
+        log() { :; }
+        . "$WORK/stopping.sh"
+        $1
+        echo "rc=$?"
+    ) 2>&1
+}
+
+out=$(nowayout_case disarm class 1)
+case "$out" in
+    *"NOT disarmed"*rc=1*) [ -e "$WORK/signal" ]         && note "nowayout (sysfs): disarm refused but signalled the daemon" FAIL         || note "nowayout (sysfs): disarm refuses and leaves the daemon running" OK ;;
+    *) note "nowayout (sysfs): disarm reported [$out]" FAIL ;;
+esac
+
+out=$(nowayout_case disarm module Y)
+case "$out" in
+    *"NOT disarmed"*rc=1*) note "nowayout (module parameter): disarm refuses" OK ;;
+    *)                     note "nowayout (module parameter): disarm reported [$out]" FAIL ;;
+esac
+
+out=$(nowayout_case disarm class 0)
+case "$out" in
+    *"hwdt: disarmed"*rc=0*) note "nowayout off: disarm goes ahead" OK ;;
+    *)                       note "nowayout off: disarm reported [$out]" FAIL ;;
+esac
+
+out=$(nowayout_case "disarm restart" class 1)
+case "$out" in
+    *rc=0*) [ -e "$WORK/signal" ]         && note "nowayout: a restart still stops the daemon for start" OK         || note "nowayout: a restart did not stop the daemon" FAIL ;;
+    *) note "nowayout: a restart reported [$out]" FAIL ;;
+esac
+rm -rf "$HWDOG_SYSFS"; mkdir -p "$HWDOG_SYSFS"
 
 echo
 echo "===== the script parses ====="

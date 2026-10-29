@@ -311,6 +311,29 @@ start() {
 # case completely and it would also make a daemon that cannot start into an
 # unbreakable reset loop, on a board with no way to cut power. The partial cover
 # is worth more than that risk.
+#
+# A kernel can still have it on: the mainline kernels before v7.3-ironkvm.3
+# were built with WATCHDOG_NOWAYOUT=y (ironkvm-dist #176). There the magic V
+# is ignored, so a disarm would stop the daemon and leave the timer running,
+# and the board would reset one timeout later after being told it was safe.
+# disarm refuses on such a kernel. restart still hands over, since start
+# follows at once, well inside the timeout.
+nowayout() {
+    sysfs=${HWDOG_SYSFS:-/sys}
+    name=${DEVICE##*/}
+    [ "$name" = watchdog ] && name=watchdog0
+    if [ -r "$sysfs/class/watchdog/$name/nowayout" ]; then
+        [ "$(cat "$sysfs/class/watchdog/$name/nowayout")" = 1 ]
+        return
+    fi
+    if [ -n "$MODULE" ] && [ -r "$sysfs/module/$MODULE/parameters/nowayout" ]; then
+        case "$(cat "$sysfs/module/$MODULE/parameters/nowayout")" in
+            Y|1) return 0 ;;
+        esac
+    fi
+    return 1
+}
+
 stop() {
     if running; then
         killall -9 watchdog 2>/dev/null
@@ -326,6 +349,12 @@ disarm() {
     if ! running; then
         echo "hwdt: not running"
         return 0
+    fi
+
+    if [ "${1:-}" != restart ] && nowayout; then
+        log "not disarming: the driver has nowayout set, so the timer cannot be stopped"
+        echo "hwdt: nowayout is set, the timer cannot be stopped; NOT disarmed"
+        return 1
     fi
 
     killall watchdog 2>/dev/null
@@ -353,8 +382,12 @@ disarm() {
         return 1
     fi
 
-    log "disarmed by hand"
-    echo "hwdt: disarmed"
+    if [ "${1:-}" = restart ]; then
+        log "stopped for a restart"
+    else
+        log "disarmed by hand"
+        echo "hwdt: disarmed"
+    fi
     return 0
 }
 # --- end stopping ---
@@ -367,7 +400,7 @@ case "$1" in
         stop
         ;;
     restart|reload)
-        disarm
+        disarm restart
         start
         ;;
     disarm)
