@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
+#include <sys/mman.h>
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
@@ -91,6 +92,15 @@ void set_capture_fps(uint8_t _fps);
 #define KVMV_WATCHDOG_MODE "/etc/kvm/watchdog"
 #define KVMV_WATCHDOG_TEMP "/tmp/watchdog"
 #define KVMV_WATCHDOG_FILE "/tmp/nanokvm_wd"
+/* The VI state kvm_system shows on the OLED: the layout of struct
+ * vi_state_shared::detail::SharedState in
+ * support/sg2002/additional/kvm/include/vi_state_shared.hpp, which the vendor
+ * library publishes from /proc/cvitek/vi_dbg. kvm_system takes it as stale
+ * after 30 s, so the monitor thread writes it every few seconds. */
+#define KVMV_VI_STATE_FILE "/dev/shm/nanokvm_vi_state"
+#define KVMV_VI_STATE_MAGIC 0x4e4b5649U
+#define KVMV_VI_STATE_VERSION 1U
+#define KVMV_VI_STATE_TICKS 10 /* monitor ticks of half a second */
 
 /* ---- state --------------------------------------------------------- */
 
@@ -330,6 +340,65 @@ static void publish_timings(const struct v4l2_dv_timings *timings)
 		unlink(KVMV_REFRESH_FILE);
 }
 
+struct kvmv_vi_state {
+	uint32_t sequence; /* odd while being written */
+	uint32_t magic;
+	uint32_t version;
+	uint32_t updated_ms; /* CLOCK_MONOTONIC */
+	uint32_t dev_fps;
+	uint32_t fps;
+	uint32_t width_gt;
+	uint32_t width_ls;
+	uint32_t height_gt;
+	uint32_t height_ls;
+};
+
+/*
+ * Publish the HDMI signal as the vendor library's VI state. There is no
+ * vi_dbg here: an active signal reports the source's refresh rate as both the
+ * device and the channel rate (1 when it is not known yet), no signal reports
+ * 0 for both, which kvm_system shows as HDMI down. The CSI error counters stay
+ * 0. Called with signal_lock held, so writes do not interleave.
+ */
+static void publish_vi_state(int active)
+{
+	struct kvmv_vi_state *shared;
+	uint32_t sequence, fps = 0;
+	int fd;
+
+	if (active) {
+		fps = (__atomic_load_n(&published_refresh, __ATOMIC_RELAXED) + 500U) / 1000U;
+		if (fps == 0)
+			fps = 1;
+	}
+	fd = open(KVMV_VI_STATE_FILE, O_CREAT | O_RDWR | O_CLOEXEC | O_NOFOLLOW, 0600);
+	if (fd < 0)
+		return;
+	if (ftruncate(fd, sizeof(*shared)) != 0) {
+		close(fd);
+		return;
+	}
+	shared = mmap(NULL, sizeof(*shared), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	close(fd);
+	if (shared == MAP_FAILED)
+		return;
+	sequence = (__atomic_load_n(&shared->sequence, __ATOMIC_RELAXED) & ~1U) + 1U;
+	__atomic_store_n(&shared->sequence, sequence, __ATOMIC_RELAXED);
+	__atomic_thread_fence(__ATOMIC_RELEASE);
+	__atomic_store_n(&shared->magic, KVMV_VI_STATE_MAGIC, __ATOMIC_RELAXED);
+	__atomic_store_n(&shared->version, KVMV_VI_STATE_VERSION, __ATOMIC_RELAXED);
+	__atomic_store_n(&shared->updated_ms, (uint32_t)now_ms(), __ATOMIC_RELAXED);
+	__atomic_store_n(&shared->dev_fps, fps, __ATOMIC_RELAXED);
+	__atomic_store_n(&shared->fps, fps, __ATOMIC_RELAXED);
+	__atomic_store_n(&shared->width_gt, 0, __ATOMIC_RELAXED);
+	__atomic_store_n(&shared->width_ls, 0, __ATOMIC_RELAXED);
+	__atomic_store_n(&shared->height_gt, 0, __ATOMIC_RELAXED);
+	__atomic_store_n(&shared->height_ls, 0, __ATOMIC_RELAXED);
+	__atomic_thread_fence(__ATOMIC_RELEASE);
+	__atomic_store_n(&shared->sequence, sequence + 1U, __ATOMIC_RELAXED);
+	munmap(shared, sizeof(*shared));
+}
+
 static void update_signal(void)
 {
 	int next, previous;
@@ -340,6 +409,7 @@ static void update_signal(void)
 	previous = __atomic_exchange_n(&signal_active, next, __ATOMIC_ACQ_REL);
 	if (previous != next) {
 		publish_state_file(next);
+		publish_vi_state(next);
 		DBG("HDMI signal %s", next ? "active" : "inactive");
 	}
 	pthread_mutex_unlock(&signal_lock);
@@ -357,6 +427,7 @@ static void set_capture_enabled(int enabled)
 	__atomic_store_n(&capture_enabled, enabled ? 1 : 0, __ATOMIC_RELEASE);
 	__atomic_store_n(&signal_active, 0, __ATOMIC_RELEASE);
 	publish_state_file(0);
+	publish_vi_state(0);
 	pthread_mutex_unlock(&signal_lock);
 }
 
@@ -1692,7 +1763,8 @@ static void feed_watchdog(void)
 
 /*
  * Every half second: feed the watchdog file, as the vendor library's thread
- * does. Every second: while no pipeline runs, ask the receiver whether a
+ * does. Every five seconds: publish the VI state (publish_vi_state). Every
+ * second: while no pipeline runs, ask the receiver whether a
  * source is there, so HasHDMISignal and /tmp/kvm/state stay true without a
  * viewer; and take an unread pipeline down, so an idle board is not running
  * capture DMA for nobody.
@@ -1717,6 +1789,11 @@ static void *monitor_main(void *arg)
 
 		if (watchdog_enabled())
 			feed_watchdog();
+		if (tick % KVMV_VI_STATE_TICKS == 1) {
+			pthread_mutex_lock(&signal_lock);
+			publish_vi_state(__atomic_load_n(&signal_active, __ATOMIC_ACQUIRE));
+			pthread_mutex_unlock(&signal_lock);
+		}
 		if (tick % 2)
 			continue;
 

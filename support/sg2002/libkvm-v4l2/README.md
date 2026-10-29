@@ -200,6 +200,10 @@ The same files the vendor library maintains:
 
 - `/tmp/kvm/state`: `1` or `0`, the signal state, written by temporary file and rename.
 - `/kvmapp/kvm/width`, `/kvmapp/kvm/height`: the HDMI input size, when `/kvmapp/kvm` exists.
+- `/dev/shm/nanokvm_vi_state`: the VI state kvm_system shows on the OLED (layout in
+  `support/sg2002/additional/kvm/include/vi_state_shared.hpp`), every 5 s and on each signal
+  change. With no `vi_dbg` to read, an active signal gives the source's refresh rate as both
+  rates, no signal gives 0, and the CSI error counters stay 0.
 - `/tmp/nanokvm_wd`: touched every 500 ms while `/etc/kvm/watchdog` or `/tmp/watchdog` exists.
 
 The monitor thread also asks the receiver for its timings once a second while no pipeline is
