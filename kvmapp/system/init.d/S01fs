@@ -738,9 +738,33 @@ grow_stock_root() {
 }
 # --- end stock root grow ---
 
+# --- version boot ---
+# A version boot is told apart by ironkvm.version= on the kernel command line,
+# which U-Boot writes from the version it chose. The word is matched whole, so
+# a longer name that merely contains it does not count.
+#
+# Its root is a read-only squashfs under a tmpfs overlay, and the initramfs has
+# already mounted /data (exFAT) and the store before this script runs. Growing
+# a partition, provisioning the data device or mounting /data again would be
+# wrong there, and on a card that has no p3 yet the stock grow below would
+# resize the store.
+CMDLINE=${CMDLINE:-/proc/cmdline}
+
+version_boot() {
+    case " $(cat "$CMDLINE" 2>/dev/null) " in
+        *" ironkvm.version="*) return 0 ;;
+    esac
+    return 1
+}
+# --- end version boot ---
+
 if [ "$1" = "start" ]
 then
-        if needs_resize
+        if version_boot
+        then
+                # The initramfs owns the card layout on a version boot.
+                :
+        elif needs_resize
         then
                 grow_stock_root
         else
@@ -763,6 +787,17 @@ then
         mount -t vfat "$(devinfo_part BOOT_PART)" /boot
         mount -t configfs configfs /sys/kernel/config
         mount -t debugfs debugfs /sys/kernel/debug
+
+        if version_boot
+        then
+                # /boot is mounted for the version tool's markers, and the
+                # two pseudo filesystems are for the USB gadget and the
+                # hardware tools. Everything below is about the card layout
+                # and /data, which the initramfs has already settled.
+                printf "(version boot: /data was mounted by the initramfs) "
+                echo "OK"
+                exit 0
+        fi
 
         if [ -e /boot/usb.disk0 ] && may_autopartition
         then
