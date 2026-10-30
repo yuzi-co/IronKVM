@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"NanoKVM-Server/authn"
@@ -139,4 +140,138 @@ func changeOwnPassword(t *testing.T, router http.Handler, cookie *http.Cookie) i
 	}
 
 	return response.Code
+}
+
+// stubStockPassword stands in for the kernel command line and for the version
+// tool. boot is the version id the command line names, "" for a boot that is
+// not a version boot. Each run of the tool appends "stock" to order, and each
+// identity write-back appends "identity", so a test can see which came first.
+func stubStockPassword(t *testing.T, boot string, err error) *[]string {
+	t.Helper()
+
+	originalBoot, originalCopy, originalSave := versionBoot, copyRootPasswordToStock, saveIdentity
+	t.Cleanup(func() {
+		versionBoot, copyRootPasswordToStock, saveIdentity = originalBoot, originalCopy, originalSave
+	})
+
+	var order []string
+	versionBoot = func() string { return boot }
+	copyRootPasswordToStock = func() error {
+		order = append(order, "stock")
+		return err
+	}
+	saveIdentity = func() error {
+		order = append(order, "identity")
+		return nil
+	}
+
+	return &order
+}
+
+// On a version boot the owner's new root password also goes to stock's root on
+// p2, after the identity write-back, so stock's ssh takes the same password.
+func TestChangePasswordCopiesRootPasswordToStockOnAVersionBoot(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	store := authn.NewStore(filepath.Join(t.TempDir(), "pwd"))
+	restore := useTestStore(store)
+	defer restore()
+
+	stubSystemPassword(t, nil)
+	order := stubStockPassword(t, "1.2.1-mainline", nil)
+
+	router := passwordRouter()
+	cookie := loginCookie(t, router, "admin", "admin")
+
+	if code := changeOwnPassword(t, router, cookie); code != 0 {
+		t.Fatalf("password change returned code %d, want 0", code)
+	}
+
+	if got := strings.Join(*order, " "); got != "identity stock" {
+		t.Fatalf("ran %q, want the identity write-back and then the stock copy", got)
+	}
+}
+
+// A slot boot or an upstream image has no stock root beside it.
+func TestChangePasswordSkipsTheStockCopyOffAVersionBoot(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	store := authn.NewStore(filepath.Join(t.TempDir(), "pwd"))
+	restore := useTestStore(store)
+	defer restore()
+
+	stubSystemPassword(t, nil)
+	order := stubStockPassword(t, "", nil)
+
+	router := passwordRouter()
+	cookie := loginCookie(t, router, "admin", "admin")
+
+	if code := changeOwnPassword(t, router, cookie); code != 0 {
+		t.Fatalf("password change returned code %d, want 0", code)
+	}
+
+	if got := strings.Join(*order, " "); got != "identity" {
+		t.Fatalf("ran %q, want only the identity write-back", got)
+	}
+}
+
+// The password is already set when the copy runs, so a failure cannot be undone
+// by refusing; it is logged, and the next boot copies the hash again.
+func TestChangePasswordSucceedsWhenTheStockCopyFails(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	store := authn.NewStore(filepath.Join(t.TempDir(), "pwd"))
+	restore := useTestStore(store)
+	defer restore()
+
+	stubSystemPassword(t, nil)
+	order := stubStockPassword(t, "1.2.1-mainline", errors.New("store busy"))
+
+	router := passwordRouter()
+	cookie := loginCookie(t, router, "admin", "admin")
+
+	if code := changeOwnPassword(t, router, cookie); code != 0 {
+		t.Fatalf("a failed stock copy must not fail the password change, got code %d", code)
+	}
+
+	if got := strings.Join(*order, " "); got != "identity stock" {
+		t.Fatalf("ran %q, want the identity write-back and then the stock copy", got)
+	}
+	if _, ok, err := store.Authenticate("admin", "new-password"); err != nil || !ok {
+		t.Fatalf("the password change did not take: ok=%v err=%v", ok, err)
+	}
+}
+
+// Only the device owner's change sets root's password, so another user's
+// change has nothing to copy to stock.
+func TestChangePasswordSkipsTheStockCopyForAnotherUser(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	store := authn.NewStore(filepath.Join(t.TempDir(), "pwd"))
+	restore := useTestStore(store)
+	defer restore()
+	if _, ok, err := store.Authenticate("admin", "admin"); err != nil || !ok {
+		t.Fatalf("default login: ok=%v err=%v", ok, err)
+	}
+	if err := store.Create("alice", "alice-password", authn.RoleUser); err != nil {
+		t.Fatal(err)
+	}
+
+	stubSystemPassword(t, nil)
+	order := stubStockPassword(t, "1.2.1-mainline", nil)
+
+	router := passwordRouter()
+	cookie := loginCookie(t, router, "alice", "alice-password")
+
+	recorder := requestJSONRecorder(router, http.MethodPost, "/password", map[string]any{
+		"currentPassword": encryptForRequest("alice-password"),
+		"password":        encryptForRequest("new-password"),
+	}, cookie)
+	var response proto.Response
+	if err := json.Unmarshal(recorder.Body.Bytes(), &response); err != nil {
+		t.Fatalf("decode response: %s", err)
+	}
+	if response.Code != 0 {
+		t.Fatalf("password change returned code %d, want 0", response.Code)
+	}
+
+	if got := strings.Join(*order, " "); got != "identity" {
+		t.Fatalf("ran %q, want only the identity write-back", got)
+	}
 }
