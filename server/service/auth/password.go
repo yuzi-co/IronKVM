@@ -167,12 +167,16 @@ func ownsSystemPassword(username string) bool {
 	return err == nil && isSystemPasswordOwner(user)
 }
 
-// runStockPassword runs `version stock-password`, which copies root's hash from
-// /etc/shadow to stock's /etc/shadow on p2.
+// runStockPassword runs `version stock-password --owner-set`, which copies
+// root's hash from /etc/shadow to stock's /etc/shadow on p2. The flag says the
+// owner has just set this password, so the tool also removes stock's ssh_stop
+// and stock starts ssh (ironkvm-dist ruling 15). It needs a version tool from
+// ironkvm-dist 2026-10-30 or later; an older one refuses the flag, which only
+// costs the warning the caller logs.
 func runStockPassword() error {
-	out, err := exec.Command(versionTool, "stock-password").CombinedOutput()
+	out, err := exec.Command(versionTool, "stock-password", "--owner-set").CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("%s stock-password: %w: %s", versionTool, err, strings.TrimSpace(string(out)))
+		return fmt.Errorf("%s stock-password --owner-set: %w: %s", versionTool, err, strings.TrimSpace(string(out)))
 	}
 	log.Info(strings.TrimSpace(string(out)))
 	return nil
