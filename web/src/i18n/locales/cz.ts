@@ -2880,6 +2880,8 @@ const cz = {
         'Prohlížeč bez dotazu odmítl zabezpečené spojení, které přenáší klávesnici a myš. Certifikát vygenerovaný tímto zařízením zatím není důvěryhodný. Otevřete tuto adresu na nové kartě, přijměte certifikát a pak stránku znovu načtěte. Spolehlivým řešením je certifikát nainstalovat.',
       disconnectedNever:
         'Spojení, které přenáší klávesnici a myš, se nepodařilo otevřít. Zbytek stránky funguje, protože ho nepoužívá. Zkontrolujte, zda ho nic mezi vámi a zařízením neblokuje.',
+      disconnectedOrigin:
+        'Zařízení přijímá požadavky této stránky pro hostitele {{host}}, ale stránka je na {{origin}}. Reverzní proxy před zařízením musí předávat původní hlavičku Host (Caddy: `header_up Host {host}`; nginx: `proxy_set_header Host $host`).',
       disconnectedDropped:
         'Spojení, které přenáší klávesnici a myš, bylo přerušeno a neobnovilo se. Po restartu se připojí samo; pokud tento stav trvá, načtěte stránku znovu.',
       hidDisabled: 'HID je na tomto zařízení vypnuto (/boot/disable_hid).',

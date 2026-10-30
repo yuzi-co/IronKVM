@@ -2951,6 +2951,8 @@ const de = {
         'Der Browser hat die sichere Verbindung für Tastatur und Maus abgelehnt, und zwar ohne nachzufragen. Das von diesem Gerät erzeugte Zertifikat wird noch nicht als vertrauenswürdig eingestuft. Öffnen Sie diese Adresse in einem neuen Tab, akzeptieren Sie das Zertifikat und laden Sie dann neu. Zuverlässig hilft nur die Installation des Zertifikats.',
       disconnectedNever:
         'Die Verbindung für Tastatur und Maus konnte nicht aufgebaut werden. Der Rest der Seite funktioniert, weil er sie nicht nutzt. Prüfen Sie, ob etwas zwischen Ihnen und dem Gerät sie blockiert.',
+      disconnectedOrigin:
+        'Das Gerät erhält die Anfragen dieser Seite für den Host {{host}}, die Seite liegt aber unter {{origin}}. Ein Reverse-Proxy vor dem Gerät muss den ursprünglichen Host-Header weiterreichen (Caddy: `header_up Host {host}`; nginx: `proxy_set_header Host $host`).',
       disconnectedDropped:
         'Die Verbindung für Tastatur und Maus ist abgebrochen und nicht wiederhergestellt. Nach einem Neustart verbindet sie sich von selbst; bleibt diese Meldung bestehen, laden Sie die Seite neu.',
       hidDisabled: 'HID ist auf diesem Gerät ausgeschaltet (/boot/disable_hid).',

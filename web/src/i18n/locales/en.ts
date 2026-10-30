@@ -2877,6 +2877,8 @@ const en = {
         'The browser refused the secure connection that carries keyboard and mouse, which it does without asking. The certificate this device generated is not trusted yet. Open this address in a new tab, accept the certificate, then reload. Installing the certificate is the reliable fix.',
       disconnectedNever:
         'The connection that carries keyboard and mouse could not be opened. The rest of the page works because it does not use it. Check that nothing between you and the device is blocking it.',
+      disconnectedOrigin:
+        'The device received this page’s requests for host {{host}}, but the page is at {{origin}}. A reverse proxy in front of the device must pass the original Host header (Caddy: `header_up Host {host}`; nginx: `proxy_set_header Host $host`).',
       disconnectedDropped:
         'The connection that carries keyboard and mouse was lost and has not come back. It reconnects on its own after a restart; if this stays, reload the page.',
       hidDisabled: 'HID is switched off on this device (/boot/disable_hid).',

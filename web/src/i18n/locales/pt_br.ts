@@ -2910,6 +2910,8 @@ const pt_br = {
         'O navegador recusou a conexão segura que transporta o teclado e o mouse, e faz isso sem perguntar. O certificado gerado por este dispositivo ainda não é confiável. Abra este endereço em uma nova aba, aceite o certificado e recarregue. Instalar o certificado é a solução definitiva.',
       disconnectedNever:
         'Não foi possível abrir a conexão que transporta o teclado e o mouse. O resto da página funciona porque não a utiliza. Verifique se nada entre você e o dispositivo a está bloqueando.',
+      disconnectedOrigin:
+        'O dispositivo recebe as requisições desta página para o host {{host}}, mas a página está em {{origin}}. Um proxy reverso na frente do dispositivo precisa repassar o cabeçalho Host original (Caddy: `header_up Host {host}`; nginx: `proxy_set_header Host $host`).',
       disconnectedDropped:
         'A conexão que transporta o teclado e o mouse caiu e não voltou. Ela se reconecta sozinha após uma reinicialização; se isso persistir, recarregue a página.',
       hidDisabled: 'O HID está desativado neste dispositivo (/boot/disable_hid).',

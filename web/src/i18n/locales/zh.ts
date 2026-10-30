@@ -2768,6 +2768,8 @@ const zh = {
         '浏览器拒绝了传输键盘和鼠标的安全连接，而且不会提示。此设备生成的证书尚未被信任。请在新标签页中打开此地址并接受证书，然后刷新页面。安装该证书才是可靠的解决方法。',
       disconnectedNever:
         '无法建立传输键盘和鼠标的连接。页面其他部分不使用该连接，因此仍可正常工作。请检查你与设备之间是否有东西阻断了它。',
+      disconnectedOrigin:
+        '设备收到的是此页面发往主机 {{host}} 的请求，但页面位于 {{origin}}。设备前面的反向代理必须传递原始的 Host 头 (Caddy: `header_up Host {host}`；nginx: `proxy_set_header Host $host`)。',
       disconnectedDropped:
         '传输键盘和鼠标的连接已断开，且尚未恢复。重启后它会自动重连；如果一直如此，请刷新页面。',
       hidDisabled: '此设备已关闭 HID（/boot/disable_hid）。',

@@ -2,7 +2,10 @@ import { useEffect, useRef } from 'react';
 import { notification } from 'antd';
 import { useTranslation } from 'react-i18next';
 
+import { http } from '@/lib/http.ts';
 import { client } from '@/lib/websocket.ts';
+
+import { originMismatch, probeFromError } from './origin-probe.ts';
 
 const NOTIFICATION_KEY = 'input_disconnected';
 
@@ -35,12 +38,15 @@ export const InputDisconnectedWarning = () => {
   // on every open and close would unsubscribe and resubscribe, and onStatus
   // fires on subscribe, so the notice would rebuild itself in a loop.
   const isOpen = useRef(false);
+  // Counts stuck episodes, so an answer from the probe of an earlier one is dropped.
+  const episode = useRef(0);
 
   useEffect(() => {
     return client.onStatus((status) => {
       const stuck = !status.connected && status.attempts >= ATTEMPTS_BEFORE_WARNING;
 
       if (!stuck) {
+        episode.current += 1;
         if (isOpen.current) {
           api.destroy(NOTIFICATION_KEY);
           isOpen.current = false;
@@ -55,22 +61,49 @@ export const InputDisconnectedWarning = () => {
       // dropped. The first is refused before it starts, which over HTTPS is
       // almost always the certificate. The second usually means the server went
       // away, and it comes back on its own.
-      const description = status.everConnected
+      const fallback = status.everConnected
         ? t('input.disconnectedDropped')
         : window.location.protocol === 'https:'
           ? t('input.disconnectedTls')
           : t('input.disconnectedNever');
 
-      api.error({
-        key: NOTIFICATION_KEY,
-        message: t('input.disconnected'),
-        description,
-        placement: 'topRight',
-        duration: false,
-        onClose: () => {
-          isOpen.current = false;
-        }
-      });
+      const show = (description: string) => {
+        api.error({
+          key: NOTIFICATION_KEY,
+          message: t('input.disconnected'),
+          description,
+          placement: 'topRight',
+          duration: false,
+          onClose: () => {
+            isOpen.current = false;
+          }
+        });
+      };
+
+      if (status.everConnected) {
+        show(fallback);
+        return;
+      }
+
+      // A socket that never opened is either a refused certificate or a refused
+      // origin, and the browser reports neither. Behind a reverse proxy that
+      // rewrites Host the device refuses the socket's Origin, and the
+      // certificate advice would be wrong. Ask once per episode: fetch sends
+      // Origin on a same-origin POST, so the device runs the same check and a
+      // 403 names both hosts (ironkvm-dist#178).
+      const mine = (episode.current += 1);
+      http
+        .post('/origin-check')
+        .then(() => null, probeFromError)
+        .then((probe) => {
+          if (episode.current !== mine || !isOpen.current) return;
+          const mismatch = originMismatch(probe);
+          show(
+            mismatch
+              ? t('input.disconnectedOrigin', { host: mismatch.host, origin: mismatch.origin })
+              : fallback
+          );
+        });
     });
   }, [api, t]);
 

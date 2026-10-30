@@ -2896,6 +2896,8 @@ const tr = {
         'Tarayıcı, klavye ve fareyi taşıyan güvenli bağlantıyı sormadan reddetti. Bu cihazın oluşturduğu sertifikaya henüz güvenilmiyor. Bu adresi yeni bir sekmede açın, sertifikayı kabul edin ve ardından sayfayı yeniden yükleyin. Kalıcı çözüm sertifikayı yüklemektir.',
       disconnectedNever:
         'Klavye ve fareyi taşıyan bağlantı açılamadı. Sayfanın geri kalanı bu bağlantıyı kullanmadığı için çalışıyor. Sizinle cihaz arasında hiçbir şeyin onu engellemediğinden emin olun.',
+      disconnectedOrigin:
+        'Cihaz bu sayfanın isteklerini {{host}} ana bilgisayarı için alıyor, ancak sayfa {{origin}} adresinde. Cihazın önündeki ters proxy özgün Host başlığını iletmelidir (Caddy: `header_up Host {host}`; nginx: `proxy_set_header Host $host`).',
       disconnectedDropped:
         'Klavye ve fareyi taşıyan bağlantı koptu ve geri gelmedi. Yeniden başlatmanın ardından kendiliğinden yeniden bağlanır; bu durum sürerse sayfayı yeniden yükleyin.',
       hidDisabled: 'Bu cihazda HID kapalı (/boot/disable_hid).',

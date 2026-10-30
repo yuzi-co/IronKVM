@@ -3,11 +3,13 @@ package middleware
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
 	"NanoKVM-Server/authn"
 	"NanoKVM-Server/config"
+	"NanoKVM-Server/proto"
 	"NanoKVM-Server/service/network"
 
 	"github.com/gin-gonic/gin"
@@ -285,9 +287,16 @@ func abortUnauthorized(c *gin.Context) {
 }
 
 func abortForbiddenOrigin(c *gin.Context) {
-	log.Debugf("rejected request from origin %s to host %s", c.Request.Header.Get("Origin"), c.Request.Host)
+	origin := c.Request.Header.Get("Origin")
+	host := c.Request.Host
 
-	c.JSON(http.StatusForbidden, "forbidden origin")
+	logForbiddenOrigin(origin, host)
+
+	c.JSON(http.StatusForbidden, proto.Response{
+		Code: -1,
+		Msg:  fmt.Sprintf("forbidden origin: the page is at %s but the device saw host %s", originHost(origin), host),
+		Data: ForbiddenOrigin{Origin: originHost(origin), Host: host},
+	})
 	c.Abort()
 }
 

@@ -2906,6 +2906,8 @@ const pl = {
         'Przeglądarka odrzuciła bezpieczne połączenie, które przenosi klawiaturę i mysz, i zrobiła to bez pytania. Certyfikat wygenerowany przez to urządzenie nie jest jeszcze zaufany. Otwórz ten adres w nowej karcie, zaakceptuj certyfikat, a potem odśwież stronę. Niezawodnym rozwiązaniem jest zainstalowanie certyfikatu.',
       disconnectedNever:
         'Nie udało się otworzyć połączenia, które przenosi klawiaturę i mysz. Reszta strony działa, bo z niego nie korzysta. Sprawdź, czy nic między Tobą a urządzeniem go nie blokuje.',
+      disconnectedOrigin:
+        'Urządzenie odbiera żądania tej strony dla hosta {{host}}, ale strona jest pod adresem {{origin}}. Zwrotny proxy przed urządzeniem musi przekazywać oryginalny nagłówek Host (Caddy: `header_up Host {host}`; nginx: `proxy_set_header Host $host`).',
       disconnectedDropped:
         'Połączenie, które przenosi klawiaturę i mysz, zostało utracone i nie wróciło. Po restarcie łączy się samo; jeśli to nie mija, odśwież stronę.',
       hidDisabled: 'HID jest wyłączone na tym urządzeniu (/boot/disable_hid).',
